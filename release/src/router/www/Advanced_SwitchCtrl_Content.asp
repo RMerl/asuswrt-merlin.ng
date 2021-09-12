@@ -16,6 +16,16 @@
 <script type="text/javascript" src="/general.js"></script>
 <script type="text/javascript" src="/popup.js"></script>
 <script type="text/javascript" src="/help.js"></script>
+<script type="text/javascript" src="/js/jquery.js"></script>
+<style>
+.perNode_app_table{
+	width: 740px;
+	position: absolute;
+	left: 50%;
+	margin-top: 30px;
+	margin-left: -370px;
+}
+</style>
 
 <script>
 var lacp_support = isSupport("lacp");
@@ -49,6 +59,12 @@ function disable_lacp_if_conflicts_with_iptv(){
 }
 
 function initial(){
+	if((based_modelid == "RT-AX89U" || based_modelid == "GT-AXY16000")){
+			document.form.sfpp_max_speed.disabled = false;
+			document.form.sfpp_force_on.disabled = false;
+			document.getElementById("sfpp_max_speed_tr").style.display = "";
+			document.getElementById("sfpp_force_on_tr").style.display = "";
+	}
 	if(qca_support){
 		var nataccel = '<% nvram_get("qca_sfe"); %>';
 		var nataccel_status = '<% nat_accel_status(); %>';
@@ -75,7 +91,17 @@ function initial(){
 		}
 	}
 
-	show_menu();
+	if (re_mode == "1"){
+		$("#tabMenu").addClass("perNode_app_table");
+		$(".submenuBlock").css("margin-top", "initial");
+		show_loading_obj();
+	} else {
+		$("#content_table").addClass("content");
+		$("#tabMenu").addClass("app_table app_table_usb");
+		show_menu();
+	}
+
+	$("#tabMenu").css("display", "");
 
 	if(lacp_support){
 		document.getElementById("lacp_tr").style.display = "";
@@ -250,7 +276,8 @@ function check_bonding_policy(obj){
 <input type="hidden" name="preferred_lang" id="preferred_lang" value="<% nvram_get("preferred_lang"); %>">
 <input type="hidden" name="firmver" value="<% nvram_get("firmver"); %>">
 <input type="hidden" name="iptv_port_settings" value="<% nvram_get("iptv_port_settings"); %>" disabled>
-<table class="content" align="center" cellpadding="0" cellspacing="0">
+<input type="hidden" name="sfpp_force_on" value="<% nvram_get("sfpp_force_on"); %>" disabled>
+<table id="content_table" align="center" cellspacing="0" style="margin:auto;">
 	<tr>
 		<td width="17">&nbsp;</td>
 		
@@ -324,6 +351,24 @@ function check_bonding_policy(obj){
 														<option class="content_input_fd" value="0" <% nvram_match("lan_stp", "0","selected"); %>><#WLANConfig11b_WirelessCtrl_buttonname#></option>
 														<option class="content_input_fd" value="1" <% nvram_match("lan_stp", "1","selected"); %>><#WLANConfig11b_WirelessCtrl_button1name#></option>
 													</select>
+												</td>
+											</tr>
+
+											<tr id="sfpp_max_speed_tr" style="display:none">
+												<th>SFP+ port maximum link speed</th><!--untranslated-->
+												<td>
+													<select name="sfpp_max_speed" class="input_option" disabled>
+														<option value="0" <% nvram_match("sfpp_max_speed", "0","selected"); %>><#Auto#></option>
+														<option value="1000" <% nvram_match("sfpp_max_speed", "1000","selected"); %>>1Gbps</option>
+													</select>
+												</td>
+											</tr>
+
+											<tr id="sfpp_force_on_tr" style="display:none">
+												<th>SFP+ port TX clock</th><!--untranslated-->
+												<td>
+													<input type="radio" name="sfpp_force_on" value="0" <% nvram_match("sfpp_force_on", "0", "checked"); %>><#Auto#>
+													<input type="radio" name="sfpp_force_on" value="1" <% nvram_match("sfpp_force_on", "1", "checked"); %>>ON<!--untranslated-->
 												</td>
 											</tr>
 

@@ -284,17 +284,14 @@ int get_wan_unit(char *ifname)
 		wan_proto = get_wan_proto(prefix);
 
 		switch (wan_proto) {
-#ifdef RTCONFIG_IPV4IN6
-		case IPV4_DSLITE:
-		case IPV4_MAPE:
-			/* no ipv4 multiwan tunnel support so far */
-			if (strcmp(ifname, "v4tun0") == 0)
-				return unit;
-			break;
+		case WAN_PPPOE:
+		case WAN_PPTP:
+		case WAN_L2TP:
+#ifdef RTCONFIG_SOFTWIRE46
+		case WAN_LW4O6:
+		case WAN_MAPE:
+		case WAN_V6PLUS:
 #endif
-		case IPV4_PPPOE:
-		case IPV4_PPTP:
-		case IPV4_L2TP:
 			if (nvram_match(strcat_r(prefix, "pppoe_ifname", tmp), ifname))
 				return unit;
 #ifdef RTCONFIG_USB_MODEM
@@ -341,23 +338,33 @@ char *get_wan_ifname(int unit)
 
 #ifdef RTCONFIG_USB_MODEM
 	if (dualwan_unit__usbif(unit)) {
-		wan_ifname = (wan_proto == IPV4_DHCP) ?
+		wan_ifname = (wan_proto == WAN_DHCP) ?
 			nvram_safe_get(strcat_r(prefix, "ifname", tmp)) :
 			nvram_safe_get(strcat_r(prefix, "pppoe_ifname", tmp));
 	} else
 #endif
+#ifdef RTAX82_XD6
+	if (!strncmp(nvram_safe_get("territory_code"), "CH", 2) &&
+		nvram_match(ipv6_nvname("ipv6_only"), "1"))
+		return nvram_safe_get(strcat_r(prefix, "ifname", tmp));
+	else
+#endif
 	switch (wan_proto) {
-	case IPV4_PPPOE:
-	case IPV4_PPTP:
-	case IPV4_L2TP:
+	case WAN_PPPOE:
+	case WAN_PPTP:
+	case WAN_L2TP:
+#ifdef RTCONFIG_SOFTWIRE46
+	case WAN_LW4O6:
+	case WAN_MAPE:
+#endif
 		wan_ifname = nvram_safe_get(strcat_r(prefix, "pppoe_ifname", tmp));
 		break;
-#ifdef RTCONFIG_IPV4IN6
-	case IPV4_DSLITE:
-	case IPV4_MAPE:
-		/* no ipv4 multiwan tunnel support so far */
-		wan_ifname = "v4tun0";
-		break;
+#ifdef RTCONFIG_SOFTWIRE46
+	case WAN_V6PLUS:
+		if (nvram_get_int("s46_hgw_case") >= S46_CASE_MAP_HGW_OFF) {
+			wan_ifname = nvram_safe_get(strcat_r(prefix, "pppoe_ifname", tmp));
+			break;
+		}
 #endif
 	default:
 		wan_ifname = nvram_safe_get(strcat_r(prefix, "ifname", tmp));
@@ -386,15 +393,15 @@ char *get_wan6_ifname(int unit)
 
 #ifdef RTCONFIG_USB_MODEM
 		if (dualwan_unit__usbif(unit)) {
-			wan_ifname = (wan_proto == IPV4_DHCP) ?
+			wan_ifname = (wan_proto == WAN_DHCP) ?
 				nvram_safe_get(strcat_r(prefix, "ifname", tmp)) :
 				nvram_safe_get(strcat_r(prefix, "pppoe_ifname", tmp));
 		} else
 #endif
 		switch (wan_proto) {
-		case IPV4_PPPOE:
-		case IPV4_PPTP:
-		case IPV4_L2TP:
+		case WAN_PPPOE:
+		case WAN_PPTP:
+		case WAN_L2TP:
 			if (nvram_match(ipv6_nvname_by_unit("ipv6_ifdev", unit), "ppp")) {
 				wan_ifname = nvram_safe_get(strcat_r(prefix, "pppoe_ifname", tmp));
 				break;
@@ -543,7 +550,6 @@ wan_primary_ifunit_ipv6(void)
 	int unit = wan_primary_ifunit();
 
 	if (!strstr(nvram_safe_get("wans_dualwan"), "none")
-	    && !strcmp(nvram_safe_get("wans_mode"), "lb")
 #ifdef RTCONFIG_IPV6
 	    && get_ipv6_service_by_unit(unit) == IPV6_DISABLED
 #endif
@@ -807,9 +813,26 @@ int get_wans_cap(void)
 		if (!strcmp(word,"wan")) caps |= WANSCAP_WAN;
 		if (!strcmp(word,"wan2")) caps |= WANSCAP_WAN2;
 		if (!strcmp(word,"sfp+")) caps |= WANSCAP_SFPP;
+		if (!strcmp(word,"6g")) caps |= WANSCAP_6G;
 	}
 
 	return caps;
+}
+
+int get_wans_dualwan_str(char *wancaps, int size){
+	snprintf(wancaps, size, "%s", nvram_get("wans_dualwan") ? : (nvram_default_get("wans_dualwan") ? :
+#ifdef RTCONFIG_DSL
+				"dsl"
+#elif defined(RTCONFIG_INTERNAL_GOBI) && defined(RTCONFIG_NO_WANPORT)
+				"usb"
+#else
+				"wan"
+#endif
+				" "DEF_SECOND_WANIF
+				)
+			);
+
+	return 0;
 }
 
 int get_wans_dualwan(void) 
@@ -839,6 +862,7 @@ int get_wans_dualwan(void)
 		if (!strcmp(word,"wan")) caps |= WANSCAP_WAN;
 		if (!strcmp(word,"wan2")) caps |= WANSCAP_WAN2;
 		if (!strcmp(word,"sfp+")) caps |= WANSCAP_SFPP;
+		if (!strcmp(word,"6g")) caps |= WANSCAP_6G;
 	}
 
 	return caps;
@@ -1173,7 +1197,7 @@ char *get_default_ssid(int unit, int subunit)
 	unsigned char mac_binary[6];
 	const char *post_5g __attribute__((unused)) = "-1", *post_5g2 __attribute__((unused))= "-2", *post_guest = "_Guest";	/* postfix for RTCONFIG_NEWSSID_REV2 case */
 
-#if defined(RTCONFIG_NEWSSID_REV2) || defined(RTCONFIG_NEWSSID_REV4) || defined(RTCONFIG_NEWSSID_REV6)
+#if defined(RTCONFIG_NEWSSID_REV2) || defined(RTCONFIG_NEWSSID_REV4) || defined(RTCONFIG_NEWSSID_REV5) || defined(RTCONFIG_NEWSSID_REV6)
 	rev3 = 1;
 #endif
 
@@ -1183,7 +1207,7 @@ char *get_default_ssid(int unit, int subunit)
 	}
 
 	/* Adjust postfix for different conditions. */
-#if defined(GTAC5300) || defined(GTAX11000)
+#if defined(GTAC5300) || defined(GTAX11000) || defined(GTAX11000_PRO) || defined(GTAXE16000)
 	post_5g = "";
 	post_5g2 = "_Gaming";
 #elif defined(RTCONFIG_NEWSSID_REV6)
@@ -1193,6 +1217,16 @@ char *get_default_ssid(int unit, int subunit)
 	post_5g = "";
 #endif
 
+#if defined(RTCONFIG_NEWSSID_REV5)
+#if defined(RTAX56_XD4) || defined(XD4PRO)
+	if (nvram_match("SSIDRULE", "RT-V5")){
+		post_5g = "";
+	}
+#elif defined(ET12) || defined(XT12)
+	post_5g = "";
+	post_5g2 = "";
+#endif
+#endif
 #if defined(RTCONFIG_SINGLE_SSID) && defined(RTCONFIG_SSID_AMAPS)
 	post_guest = "_AMAPS_Guest";
 #endif
@@ -1248,6 +1282,7 @@ char *get_default_ssid(int unit, int subunit)
 
 	strlcpy(ssid, ssidbase, sizeof(ssid));
 
+	/* main ssid */
 #ifdef RTCONFIG_NEWSSID_REV4
 	if ((!subunit)) {
 #if defined(RTAC59U)
@@ -1258,9 +1293,22 @@ char *get_default_ssid(int unit, int subunit)
 		strlcat(ssid, "_CD6", sizeof(ssid));
 #elif defined(PLAX56_XP4)
 		strlcat(ssid, "_XP4", sizeof(ssid));
+#elif defined(RTAX82_XD6)
+		strlcat(ssid, "_XD6", sizeof(ssid));
 #elif defined(DSL_AX82U) && !defined(RTCONFIG_BCM_MFG)
 		if (is_ax5400_i1() && unit == WL_5G_BAND)
 			strlcat(ssid, "_5G", sizeof(ssid));
+#endif
+#if defined(RTCONFIG_NEWSSID_REV5)
+#if defined(RTAX56_XD4) || defined(XD4PRO)
+		if (nvram_match("SSIDRULE", "RT-V5")){
+			strlcat(ssid, "_XD4", sizeof(ssid));
+		}
+#elif defined(ET12) || defined(XT12)
+		strlcat(ssid, "_", sizeof(ssid));
+		strlcat(ssid, nvram_safe_get("model"), sizeof(ssid));
+#endif
+
 #endif
 		return ssid;
 	}
@@ -1465,11 +1513,6 @@ end:
 	close(sock_fd);
 	return brs;
 }
-
-enum {
-	BROOP_IDLE,
-	BROOP_DETECT
-};
 
 int detect_broop()
 {

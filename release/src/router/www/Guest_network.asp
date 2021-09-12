@@ -127,11 +127,48 @@ function initial(){
 		document.getElementById("gn_index_tr").style.display = "none";
 
 	if(ifttt_support || alexa_support){
+		var cur_str_0 = $("#smart_home_0").text();
+		if(!ifttt_support){
+			cur_str_0 = cur_str_0.replace("/", "").replace("IFTTT", "");
+			$("#smart_home_0").text(cur_str_0);
+		}
+
+		if(!alexa_support){
+			cur_str_0 = cur_str_0.replace("/", "").replace("Alexa", "");
+			$("#smart_home_0").text(cur_str_0);
+		}
+
 		$("#smart_home_0").show();
-		if(band5g_support)
+
+		if(band5g_support){
+			var cur_str_1 = $("#smart_home_1").text();
+			if(!ifttt_support){
+				cur_str_1 = cur_str_1.replace("/", "").replace("IFTTT", "");
+				$("#smart_home_1").text(cur_str_1);
+			}
+
+			if(!alexa_support){
+				cur_str_1 = cur_str_1.replace("/", "").replace("Alexa", "");
+				$("#smart_home_1").text(cur_str_1);
+			}
+
 			$("#smart_home_1").show();
-		if(wl_info.band5g_2_support || wl_info.band6g_support)
+		}
+
+		if(wl_info.band5g_2_support || wl_info.band6g_support){
+			var cur_str_2 = $("#smart_home_2").text();
+			if(!ifttt_support){
+				cur_str_2 = cur_str_2.replace("/", "").replace("IFTTT", "");
+				$("#smart_home_2").text(cur_str_2);
+			}
+
+			if(!alexa_support){
+				cur_str_2 = cur_str_2.replace("/", "").replace("Alexa", "");
+				$("#smart_home_2").text(cur_str_2);
+			}
+
 			$("#smart_home_2").show();
+		}
 	}
 
 	//When redirect page from Free WiFi or Captive Portal, auto go to anchor tag
@@ -298,7 +335,7 @@ function gen_gntable_tr(unit, gn_array, slicesb){
 						_enable_flag = '<% nvram_get("captive_portal_enable"); %>';
 						if(_enable_flag == "on") {
 							_profile_list = decodeURIComponent('<% nvram_char_to_ascii("","captive_portal"); %>');
-							parse_wl_list(_profile_list, 5, "Free Wi-Fi", captive_portal_used_wl_array);
+							parse_wl_list(_profile_list, 5, "Free WiFi", captive_portal_used_wl_array);
 						}
 					}
 					//check captive portal adv
@@ -306,7 +343,7 @@ function gen_gntable_tr(unit, gn_array, slicesb){
 						_enable_flag = '<% nvram_get("captive_portal_adv_enable"); %>';
 						if(_enable_flag == "on") {
 							_profile_list = decodeURIComponent('<% nvram_char_to_ascii("","captive_portal_adv_profile"); %>');
-							parse_wl_list(_profile_list, 5, "Captive Portal Wi-Fi", captive_portal_used_wl_array);
+							parse_wl_list(_profile_list, 5, "Captive Portal WiFi", captive_portal_used_wl_array);
 						}
 					}
 				}
@@ -317,18 +354,18 @@ function gen_gntable_tr(unit, gn_array, slicesb){
 					if(_enable_flag == "on") {
 						var fbwifi_2g = '<% nvram_get("fbwifi_2g"); %>';
 						if(fbwifi_2g != "off") {
-							captive_portal_used_wl_array[fbwifi_2g] = "Facebook Wi-Fi";
+							captive_portal_used_wl_array[fbwifi_2g] = "Facebook WiFi";
 						}
 						if(wl_info.band5g_support) {
 							var fbwifi_5g = '<% nvram_get("fbwifi_5g"); %>';
 							if(fbwifi_5g != "off") {
-								captive_portal_used_wl_array[fbwifi_5g] = "Facebook Wi-Fi";
+								captive_portal_used_wl_array[fbwifi_5g] = "Facebook WiFi";
 							}
 						}
 						if(wl_info.band5g_2_support || wl_info.band6g_support) {
 							var fbwifi_5g_2 = '<% nvram_get("fbwifi_5g_2"); %>';
 							if(fbwifi_5g_2 != "off") {
-								captive_portal_used_wl_array[fbwifi_5g_2] = "Facebook Wi-Fi";
+								captive_portal_used_wl_array[fbwifi_5g_2] = "Facebook WiFi";
 							}
 						}
 					}
@@ -336,13 +373,13 @@ function gen_gntable_tr(unit, gn_array, slicesb){
 			}
 
 			var control_setting_flag = false;
-			if(captive_portal_used_wl_array["wl" + unit_subunit] == undefined || captive_portal_used_wl_array["wl" + unit_subunit] != "Facebook Wi-Fi")
+			if(captive_portal_used_wl_array["wl" + unit_subunit] == undefined || captive_portal_used_wl_array["wl" + unit_subunit] != "Facebook WiFi")
 				control_setting_flag = true;
 			var amazon_wss_if_support = (amazon_wss_support && httpApi.amazon_wss.if_support(unit, subunit));
 			var amazon_wss_status = (amazon_wss_support && httpApi.amazon_wss.getStatue(unit, subunit) == "1") ? true : false;
 			htmlcode += '<td style="position:relative;"><table id="GNW_'+GN_band+'G'+i+'" class="gninfo_table" align="center" style="margin:auto;border-collapse:collapse;">';
 			if(amazon_wss_if_support && amazon_wss_status){
-				htmlcode += '<tr><td align="center"><input type="button" class="button_gen" value="<#btn_remove#>" onclick="remove_amazon_wss('+ unit +','+ subunit +');"></td></tr>';
+				htmlcode += '<tr><td align="center"><input type="button" class="button_gen" value="<#btn_disable#>" onclick="remove_amazon_wss('+ unit +','+ subunit +');"></td></tr>';
 			}
 			else{
 				if(gn_array[i][0] == "1"){
@@ -416,13 +453,13 @@ function gen_gntable_tr(unit, gn_array, slicesb){
 						htmlcode += '<div style="margin:10px 0 10px 0px;height:2px;width:100%;padding:0;" class="splitLine"></div>';
 						htmlcode += '<div style="background-color: #596E74; padding:10px;" id="qr' + unit + subunit + '"></div><input style="margin-top:10px; width:100%;" type="button" class="button_gen" value="Close" onclick="hide_qr_code(\'' + unit + subunit + '\');"></div></div>';
 
-						htmlcode += '<tfoot><tr><td align="center" class="gninfo_table_bottom"><div id="showqrdiv' + unit + subunit + '"><span style="color:#FFCC00;cursor:pointer;text-decoration:underline" onclick="show_qr_code(\'' + unit + subunit + '\');">Show QR code</span></div>';
+						htmlcode += '<tfoot><tr><td align="center"><input type="button" class="button_gen" value="<#btn_disable#>" onclick="close_guest_unit('+ unit +','+ subunit +');"></td></tr></tfoot>';
 						htmlcode += '</td></tr>';
 
 						htmlcode += '<tr><td align="center"><input type="button" class="button_gen" value="<#btn_remove#>" onclick="close_guest_unit('+ unit +','+ subunit +');"></td></tr></tfoot>';
 					}
 					else {
-						if(captive_portal_used_wl_array["wl" + unit_subunit] != "Facebook Wi-Fi")
+						if(captive_portal_used_wl_array["wl" + unit_subunit] != "Facebook WiFi")
 							htmlcode += '<tfoot><tr rowspan="3"><td align="center"><span style="color:#FFCC00;">Used by ' + captive_portal_used_wl_array["wl" + unit_subunit] + '</span></td></tr></tfoot>';
 					}
 				}
@@ -430,7 +467,7 @@ function gen_gntable_tr(unit, gn_array, slicesb){
 			htmlcode += '</table>';
 			if(amazon_wss_if_support){
 				if(amazon_wss_status)
-					htmlcode += '<div style="font-size:12px;font-weight:bolder;color:#FC0;position:absolute;text-align:center;width:100%;">Used by <br>Amazon Wi-Fi Simple Setup</div>';/* untranslated */
+					htmlcode += '<div style="font-size:12px;font-weight:bolder;color:#FC0;position:absolute;text-align:center;width:100%;">Used by <br>Amazon WiFi Simple Setup</div>';/* untranslated */
 				else
 					htmlcode += '<div style="position:absolute;margin-top:10px;text-align:center;""><input type="button" class="button_gen" style="word-break:break-word;"value="<#WSS_setup#>" onclick="enable_amazon_wss('+ unit +','+ subunit +');"></div>';
 			}
@@ -487,7 +524,7 @@ function gen_gntable(){
 	};
 
 	if(gn_array_2g_tmp.length > 0){
-		htmlcode += '<table style="margin-left:20px;margin-top:25px;" width="95%" align="center" cellpadding="4" cellspacing="0" class="gninfo_head_table" id="gninfo_table_2g">';
+		htmlcode += '<table style="margin-left:20px;margin-bottom:25px;" width="95%" align="center" cellpadding="4" cellspacing="0" class="gninfo_head_table" id="gninfo_table_2g">';
 		htmlcode += '<tr id="2g_title"><td align="left" style="color:#5AD;font-size:16px; border-bottom:1px dashed #AAA;"><span>2.4 GHz</span>';
 		htmlcode += '<span id="2g_radio_hint" style="font-size: 14px;display:none;color:#FC0;margin-left:17px;">* <#GuestNetwork_Radio_Status#>	<a style="font-family:Lucida Console;color:#FC0;text-decoration:underline;cursor:pointer;" onclick="_change_wl_unit_status(0);"><#btn_go#></a></span></td></tr>';
 		while(gn_array_2g_tmp.length > 4){
@@ -508,7 +545,7 @@ function gen_gntable(){
 	}
 	
 	if(gn_array_5g_tmp.length > 0){
-		htmlcode5 += '<table style="margin-left:20px;margin-top:25px;" width="95%" align="center" cellpadding="4" cellspacing="0" class="gninfo_head_table" id="gninfo_table_5g">';
+		htmlcode5 += '<table style="margin-left:20px;margin-bottom:25px;" width="95%" align="center" cellpadding="4" cellspacing="0" class="gninfo_head_table" id="gninfo_table_5g">';
 		htmlcode5 += '<tr id="5g_title"><td align="left" style="color:#5AD; font-size:16px; border-bottom:1px dashed #AAA;">';
 		if(wl_info.band5g_2_support || wl_info.band6g_support){
 			if(band6g_support){
@@ -540,7 +577,7 @@ function gen_gntable(){
 	}
 
   	if((wl_info.band5g_2_support || wl_info.band6g_support)&& gn_array_5g_2_tmp.length > 0){
-		htmlcode5_2 += '<table style="margin-left:20px;margin-top:25px;" width="95%" align="center" cellpadding="4" cellspacing="0" class="gninfo_head_table" id="gninfo_table_5g_2">';
+		htmlcode5_2 += '<table style="margin-left:20px;margin-bottom:25px;" width="95%" align="center" cellpadding="4" cellspacing="0" class="gninfo_head_table" id="gninfo_table_5g_2">';
 		if(band6g_support){
 			htmlcode5_2 += '<tr id="5g_2_title"><td align="left" style="color:#5AD; font-size:16px; border-bottom:1px dashed #AAA;"><span>6 GHz</span>';
 		}
@@ -567,7 +604,7 @@ function gen_gntable(){
 	}
 
 	if(wl_info.band60g_support) {
-		htmlcode60 += '<table style="margin-left:20px;margin-top:25px;" width="95%" align="center" cellpadding="4" cellspacing="0" class="gninfo_head_table" id="gninfo_table_60g">';
+		htmlcode60 += '<table style="margin-left:20px;margin-bottom:25px;" width="95%" align="center" cellpadding="4" cellspacing="0" class="gninfo_head_table" id="gninfo_table_60g">';
 		htmlcode60 += '<tr id="60g_title"><td align="left" style="color:#5AD; font-size:16px; border-bottom:1px dashed #AAA;"><span>60 GHz</span></td></tr>';
 		htmlcode60 += '<tr><td><span style="font-size: 14px;color:#FC0;"><#CTL_nonsupported#></span></td></tr>';
 		htmlcode60 += '</table>';
@@ -699,10 +736,10 @@ function applyRule(){
 			document.form.wl_bw_dl.disabled = true;
 			document.form.wl_bw_ul.disabled = true;	
 			switch(captive_portal_used_wl_array[_unit_subunit]) {
-				case "Free Wi-Fi" :
+				case "Free WiFi" :
 					document.form.action_script.value = "overwrite_captive_portal_ssid;" + document.form.action_script.value;
 					break;
-				case "Captive Portal Wi-Fi" :
+				case "Captive Portal WiFi" :
 					document.form.action_script.value = "overwrite_captive_portal_adv_ssid;" + document.form.action_script.value;
 					break;
 			}
@@ -998,7 +1035,7 @@ function change_guest_unit(_unit, _subunit){
 
 	updateMacModeOption();
 
-	if(captive_portal_used_wl_array["wl" + _unit + "." + _subunit] == "Free Wi-Fi" || captive_portal_used_wl_array["wl" + _unit + "." + _subunit] == "Captive Portal Wi-Fi") {
+	if(captive_portal_used_wl_array["wl" + _unit + "." + _subunit] == "Free WiFi" || captive_portal_used_wl_array["wl" + _unit + "." + _subunit] == "Captive Portal WiFi") {
 		$(".captive_portal_control_class").css("display", "none");
 	}
 	else {
@@ -1596,7 +1633,7 @@ function hide_qr_code(unit) {
 						<div id="guest_table5_2" class="gn_info_table_bg"></div>
 						<div id="guest_table60" class="gn_info_table_bg"></div>
 						<div id="guest_tableFBWiFi" class="gn_info_table_bg">
-							<table style="margin-left:20px;margin-top:25px;" width="95%" align="center" cellpadding="4" cellspacing="0" class="gninfo_head_table" id="gninfo_table_FBWiFi">
+							<table style="margin-left:20px;margin-bottom:25px;" width="95%" align="center" cellpadding="4" cellspacing="0" class="gninfo_head_table" id="gninfo_table_FBWiFi">
 								<tr id="FBWiFi_title">
 									<td align="left" style="color:#5AD; font-size:16px; border-bottom:1px dashed #AAA;" colspan="2">
 										<span>Facebook WiFi</span>
@@ -1604,7 +1641,7 @@ function hide_qr_code(unit) {
 								</tr>
 								<tr>
 									<td width="70%">
-										<span style="line-height: 20px;" >Facebook Wi-Fi lets customers check in to participating businesses on Facebok for free Wi-Fi access. When people check int to your Page, you can share offers and other announcements with them.
+										<span style="line-height: 20px;" >Facebook WiFi lets customers check in to participating businesses on Facebok for free WiFi access. When people check int to your Page, you can share offers and other announcements with them.
 										</span>
 									</td>
 									<td width="30%" style="text-align:center;">
@@ -1614,7 +1651,7 @@ function hide_qr_code(unit) {
 							</table>
 						</div>
 						<div id="guest_tableAmazonWSS" class="gn_info_table_bg" style="display:none;">
-							<table style="margin-left:20px;margin-top:25px;" width="95%" align="center" cellpadding="4" cellspacing="0" class="gninfo_head_table">
+							<table style="margin-left:20px;margin-bottom:25px;" width="95%" align="center" cellpadding="4" cellspacing="0" class="gninfo_head_table">
 								<tr>
 									<td align="left" style="color:#5AD; font-size:16px; border-bottom:1px dashed #AAA;" colspan="2">
 										<span><#WSS_setup#></span>
@@ -1843,10 +1880,10 @@ function hide_qr_code(unit) {
 								</td>
 							</tr>
 							<tr id="aimesh_sync_field" class="captive_portal_control_class">
-								<th>Sync to AiMesh Node</th><!-- untranslated -->
+								<th><#sync_node#></th>
 								<td>
 									<select name="wl_sync_node" class="input_option">
-										<option class="content_input_fd" value="0" <% nvram_match("wl_sync_node", "0","selected"); %>>Router only</option><!-- untranslated -->
+										<option class="content_input_fd" value="0" <% nvram_match("wl_sync_node", "0","selected"); %>><#Router_only#></option>
 										<option class="content_input_fd" value="1" <% nvram_match("wl_sync_node", "1","selected"); %>><#All#></option>
 									</select>
 								</td>

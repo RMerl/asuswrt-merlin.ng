@@ -920,6 +920,7 @@ int set_bonding(const char *bond_if, const char *mode, const char *policy, char 
 #if defined(RTCONFIG_SWITCH_RTL8370M_PHY_QCA8033_X2) || \
     defined(RTCONFIG_SWITCH_RTL8370MB_PHY_QCA8033_X2)
 	const char *default_mode = "balance-xor";   // using "802.3ad" the Tx packet would go through eth0 almost.
+	int wans = get_wans_dualwan();
 #else
 	const char *default_mode = "802.3ad";
 #endif
@@ -930,12 +931,20 @@ int set_bonding(const char *bond_if, const char *mode, const char *policy, char 
 	if (bond_if == NULL)
 		return -1;
 
+#if defined(RTCONFIG_SWITCH_RTL8370M_PHY_QCA8033_X2) || \
+    defined(RTCONFIG_SWITCH_RTL8370MB_PHY_QCA8033_X2)
+	if ((wans & (WANSCAP_LAN | WANSCAP_WAN | WANSCAP_WAN2)) == WANSCAP_LAN) {
+		/* LAN as WAN, none of any WAN port acts as WAN, LAN LACP enabled. */
+		default_mode = "802.3ad";
+	}
+#endif
+
 	if (!check_bonding_mode(mode))
 		mode = default_mode;
 
 #if defined(RTCONFIG_SWITCH_RTL8370M_PHY_QCA8033_X2) || \
     defined(RTCONFIG_SWITCH_RTL8370MB_PHY_QCA8033_X2)
-	if(nvram_match("lan_trunk_type", "2")){
+	if (nvram_match("lan_trunk_type", "2") && !(wans & WANSCAP_LAN)) {
 		if(nvram_get_int("lan_trunk_0") == 0 &&
 			nvram_get_int("lan_trunk_1") == 0){
 			mode = "balance-xor";
@@ -1008,7 +1017,12 @@ int set_bonding(const char *bond_if, const char *mode, const char *policy, char 
     defined(RTCONFIG_SWITCH_RTL8370MB_PHY_QCA8033_X2)
 	if (!strcmp(mode, "802.3ad") || !strcmp(mode, "4")) {
 		snprintf(path, sizeof(path), bonding_entry, bond_if, "all_slaves_active");
-		f_write_string(path, "1", 0, 0);
+		if (wans & WANSCAP_LAN) {
+			/* two WAN port act as LAN LACP, all_slaves_active workaround should be off. */
+			f_write_string(path, "0", 0, 0);
+		} else {
+			f_write_string(path, "1", 0, 0);
+		}
 	}
 #endif
 
@@ -1198,7 +1212,7 @@ void start_lan(void)
 	int dpsta = 0;
 	dpsta_enable_info_t info = { 0 };
 #endif
-#if defined(RTCONFIG_GMAC3) || defined(RTCONFIG_DPSTA)
+#if defined(RTCONFIG_GMAC3) || defined(RTCONFIG_DPSTA) || defined(RTCONFIG_HND_ROUTER_AX) || defined(RTCONFIG_BCM4708)
 	char name[80];
 #endif
 #ifdef __CONFIG_DHDAP__
@@ -1261,7 +1275,7 @@ void start_lan(void)
 #endif
 #endif
 
-#ifdef RTCONFIG_HND_ROUTER_AX_6710
+#if defined(RTCONFIG_HND_ROUTER_AX_6710) && !defined(RTAC68U_V4)
 	// BCM6710 needs to execute the below cmd once to light on the LED
 	eval("wl", "-i", "eth6", "gpioout", "0x80", "0x00");
 	eval("wl", "-i", "eth6", "ledbh", "7", "7"); // twinkle the wl 2.4G LED
@@ -1269,6 +1283,36 @@ void start_lan(void)
 	eval("wl", "-i", "eth7", "gpioout", "0x80", "0x00");
 	eval("wl", "-i", "eth7", "ledbh", "7", "7"); // twinkle the wl 5G LED
 #endif
+#endif
+
+#ifdef GTAX6000
+	// configure 6715 GPIO direction
+	eval("wl", "-i", "eth6", "gpioout", "0x2002", "0x2002");
+	eval("wl", "-i", "eth7", "gpioout", "0x2002", "0x2002");
+	eval("wl", "-i", "eth6", "ledbh", "13", "7");
+	eval("wl", "-i", "eth7", "ledbh", "13", "7");
+#endif
+
+#ifdef GTAX11000_PRO
+	// configure 6715 GPIO direction
+	eval("wl", "-i", "eth6", "gpioout", "0x2002", "0x2002");
+	eval("wl", "-i", "eth7", "gpioout", "0x2002", "0x2002");
+	eval("wl", "-i", "eth8", "gpioout", "0x2002", "0x2002");
+	eval("wl", "-i", "eth6", "ledbh", "13", "7");
+	eval("wl", "-i", "eth7", "ledbh", "13", "7");
+	eval("wl", "-i", "eth8", "ledbh", "13", "7");
+#endif
+
+#ifdef GTAXE16000
+	// configure 6715 GPIO direction
+	eval("wl", "-i", "eth7", "gpioout", "0x2002", "0x2002");
+	eval("wl", "-i", "eth8", "gpioout", "0x2002", "0x2002");
+	eval("wl", "-i", "eth9", "gpioout", "0x2002", "0x2002");
+	eval("wl", "-i", "eth10", "gpioout", "0x2002", "0x2002");
+	eval("wl", "-i", "eth7", "ledbh", "13", "7");
+	eval("wl", "-i", "eth8", "ledbh", "13", "7");
+	eval("wl", "-i", "eth9", "ledbh", "13", "7");
+	eval("wl", "-i", "eth10", "ledbh", "13", "7");
 #endif
 
 #ifdef DSL_AX82U
@@ -1643,11 +1687,11 @@ void start_lan(void)
 					set_hwaddr(ifname, (const char *) get_lan_hwaddr());
 #endif
 #if defined(RTCONFIG_HND_ROUTER_AX_675X) && !defined(RTCONFIG_HND_ROUTER_AX_6710)
-#if !defined(RPAX56)
+#if !defined(RPAX56) && !defined(RPAX58)
 				if (!strcmp(ifname, "eth1")
 					|| !strcmp(ifname, "eth2")
 					|| !strcmp(ifname, "eth3")
-#if !defined(RTAX95Q) && !defined(RTAXE95Q)
+#if !defined(RTAX95Q) && !defined(XT8PRO) && !defined(RTAXE95Q) && !defined(ET8PRO)
 					|| !strcmp(ifname, "eth4")
 #endif
 					)
@@ -1655,7 +1699,7 @@ void start_lan(void)
 #endif
 #endif
 
-#if defined(RTAX56_XD4) || defined(CTAX56_XD4)
+#if defined(RTAX56_XD4) || defined(XD4PRO) || defined(CTAX56_XD4)
 				if (!strcmp(ifname, "wl0"))
 					set_hwaddr(ifname, (const char *) nvram_safe_get("0:macaddr"));
 				if (!strcmp(ifname, "wl1"))
@@ -1930,6 +1974,12 @@ void start_lan(void)
 					if (!strstr(bonding_ifnames, ifname))
 #endif
 					{
+#ifdef RTCONFIG_QCA_PLC2
+						get_plc_ifname(tmp);
+						if (strcmp(tmp, ifname) == 0) {
+							_dprintf("[%s][%d] SKIP ifname(%s) NOT to bridge\n", __func__, __LINE__, ifname);	//skip PLC interface not add to LAN bridge
+						} else
+#endif	/* RTCONFIG_QCA_PLC2 */
 #ifdef RTCONFIG_WIFI_SON
 						if ((sw_mode() != SW_MODE_REPEATER && nvram_get_int("wl0.1_bss_enabled")
 								&& nvram_match("wl0.1_lanaccess", "off") && !strcmp(nvram_safe_get("wl0.1_ifname"), ifname)) && nvram_match("wifison_ready", "1"))
@@ -1945,7 +1995,15 @@ void start_lan(void)
  && !defined(RTCONFIG_SWITCH_QCA8075_QCA8337_PHY_AQR107_AR8035_QCA8033)
 						if (!strstr(nvram_safe_get("eth_ifnames"), ifname))
 #endif
+						{
+#ifdef RTCONFIG_DPSR
+							if(!dpsr_mode() || dpsr_main(ifname))
+#endif
 							eval("brctl", "addif", lan_ifname, ifname);
+#ifdef RTCONFIG_DPSR
+							_dprintf("%s, chk add brif: %s (%d/%d)\n", __func__, ifname, !dpsr_mode(), dpsr_main(ifname));
+#endif
+						}
 					}
 #ifdef CONFIG_BCMWL5
 					add_to_list(ifname, list, sizeof(list));
@@ -2229,7 +2287,7 @@ gmac3_no_swbr:
 /* [MUST]: Need to discuss to add new mode for Media Bridge */
 	if(!(access_point_mode()) && !re_mode())
 #else
-#ifdef RPAX56
+#if defined(RPAX56) || defined(RPAX58)
 	if(nvram_match("x_Setting", "0"))
 #else
 	if(sw_mode() != SW_MODE_AP)
@@ -2307,7 +2365,9 @@ _dprintf("nat_rule: stop_nat_rules 1.\n");
 	extern int wgn_process(void);
        wgn_process();
 #endif
-	start_amas_lldpd();
+	if (nvram_get_int("re_mode") == 1) {
+		start_amas_lldpd();
+	}
 #endif	
 
 #ifdef RTCONFIG_ALPINE
@@ -2563,7 +2623,9 @@ skip_br:
 #endif
 #ifdef RTCONFIG_AMAS_WGN
 	wgn_stop();
-	start_amas_lldpd();
+	if (nvram_get_int("re_mode") == 1) {
+		start_amas_lldpd();
+	}
 #endif	
 
 #ifdef RTCONFIG_BCMWL6
@@ -4299,7 +4361,9 @@ gmac3_no_swbr:
 #endif
 #ifdef RTCONFIG_AMAS_WGN
 	wgn_stop();
-	start_amas_lldpd();
+	if (nvram_get_int("re_mode") == 1) {
+		start_amas_lldpd();
+	}
 #endif	
 
 #ifdef RTCONFIG_BCMWL6
@@ -4366,8 +4430,8 @@ void start_lan_wl(void)
 	int s = 0;
 	int dpsta = 0;
 	dpsta_enable_info_t info = { 0 };
-	char name[80];
 #endif
+	char name[80];
 #ifdef RTCONFIG_WIFI_SON
 	int dbg=nvram_get_int("hive_dbg");
 #endif
@@ -4907,7 +4971,12 @@ void start_lan_wl(void)
 						eval("brctl", "addif", BR_GUEST, ifname);
 					else
 #endif
+					{
+#ifdef RTCONFIG_DPSR
+						if(!dpsr_mode() || dpsr_main(ifname))
+#endif
 						eval("brctl", "addif", lan_ifname, ifname);
+					}
 #ifdef CONFIG_BCMWL5
 					add_to_list(ifname, list2, sizeof(list2));
 #endif
@@ -4992,7 +5061,9 @@ gmac3_no_swbr:
 	wgn_check_subnet_conflict();
 	wgn_check_avalible_brif();
 	wgn_start();
-	start_amas_lldpd();
+	if (nvram_get_int("re_mode") == 1) {
+		start_amas_lldpd();
+	}
 #endif	
 #ifdef RTCONFIG_BCMWL6
 	set_acs_ifnames();
@@ -5143,6 +5214,7 @@ void lanaccess_mssid(const char *limited_ifname, int mode)
 	char lan_ipaddr[16] = {0}, lan_netmask[16] = {0};
 	char *s1 = NULL, *s2 = NULL;
 #endif	/* RTCONFIG_AMAS_WGN */	
+	char cap_subnet[32] = {0};
 
 #ifdef RTAC87U
 	char limited_ifname_real[32] = {0};
@@ -5170,6 +5242,7 @@ void lanaccess_mssid(const char *limited_ifname, int mode)
 	snprintf(lan_subnet, sizeof(lan_subnet), "%s/%s", nvram_safe_get("lan_ipaddr"), nvram_safe_get("lan_netmask"));
 	eval("ebtables", "-t", "broute", mode ? "-A" : "-D", "BROUTING", "-i", (char*)limited_ifname_real, "-p", "ipv4", "--ip-dst", lan_subnet, "--ip-proto", "tcp", "-j", "DROP");
 #else
+	snprintf(cap_subnet, sizeof(cap_subnet), "%s/%s", nvram_safe_get("lan_ipaddr"), nvram_safe_get("lan_netmask"));
 
 #ifdef RTCONFIG_WIFI_SON
 	if ((sw_mode()!=SW_MODE_REPEATER && strcmp(limited_ifname, nvram_safe_get("wl0.1_ifname"))) && nvram_match("wifison_ready", "1"))
@@ -5211,6 +5284,7 @@ void lanaccess_mssid(const char *limited_ifname, int mode)
 	eval("ebtables", "-t", "broute", mode ? "-A" : "-D", "BROUTING", "-i", (char*)limited_ifname, "-p", "ipv4", "--ip-proto", "icmp", "--ip-dst", nvram_safe_get("lan_ipaddr"), "-j", "ACCEPT");
 #endif	/* RTCONFIG_AMAS_WGN */
 	eval("ebtables", "-t", "broute", mode ? "-A" : "-D", "BROUTING", "-i", (char*)limited_ifname, "-p", "ipv4", "--ip-proto", "icmp", "--ip-dst", lan_subnet, "-j", "DROP");
+	eval("ebtables", "-t", "broute", mode ? "-A" : "-D", "BROUTING", "-i", (char*)limited_ifname, "-p", "ipv4", "--ip-proto", "icmp", "--ip-dst", cap_subnet, "-j", "DROP");
 #ifdef RTCONFIG_FBWIFI
 	if(sw_mode() == SW_MODE_ROUTER){
 		eval("ebtables", "-t", "broute", mode ? "-A" : "-D", "BROUTING", "-i", (char*)limited_ifname, "-p", "ipv4", "--ip-dst", lan_subnet, "--ip-dport", "!", "8084", "--ip-proto", "tcp", "-j", "DROP");
@@ -5220,6 +5294,7 @@ void lanaccess_mssid(const char *limited_ifname, int mode)
 	}
 #else
 	eval("ebtables", "-t", "broute", mode ? "-A" : "-D", "BROUTING", "-i", (char*)limited_ifname, "-p", "ipv4", "--ip-dst", lan_subnet, "--ip-proto", "tcp", "-j", "DROP");
+	eval("ebtables", "-t", "broute", mode ? "-A" : "-D", "BROUTING", "-i", (char*)limited_ifname, "-p", "ipv4", "--ip-dst", cap_subnet, "--ip-proto", "tcp", "-j", "DROP");
 #endif
 #endif	/* RTAC87U */
 }
@@ -5465,7 +5540,7 @@ void restart_wireless(void)
 #ifdef BCM_ASPMD
 	stop_aspmd();
 #endif
-#ifdef RTCONFIG_DHDAP
+#if defined(RTCONFIG_DHDAP) || defined(RTCONFIG_HND_ROUTER_AX)
 	stop_dhd_monitor();
 #endif
 	stop_acsd();
@@ -5582,7 +5657,7 @@ void restart_wireless(void)
 	start_eventd();
 #endif
 	start_acsd();
-#ifdef RTCONFIG_DHDAP
+#if defined(RTCONFIG_DHDAP) || defined(RTCONFIG_HND_ROUTER_AX)
 	start_dhd_monitor();
 #endif
 #ifdef BCM_ASPMD
@@ -5788,7 +5863,7 @@ void stop_wl_bcm(void)
 #ifdef BCM_ASPMD
 	stop_aspmd();
 #endif
-#ifdef RTCONFIG_DHDAP
+#if defined(RTCONFIG_DHDAP) || defined(RTCONFIG_HND_ROUTER_AX)
 	stop_dhd_monitor();
 #endif
 	stop_acsd();
@@ -6166,14 +6241,25 @@ void set_onboarding_vif_status()
 {
 	char prefix[] = "wlXXXXXXXXXX_", tmp[64];
 	int unit = 0;
+	char wl_radio[] = "wlXXXX_radio";
 
 	if (nvram_get_int("re_mode") == 1)
 		snprintf(prefix, sizeof(prefix), "wl%d.1_", unit);
 	else
+	{
+		/* not router mode or ap mode, return it */
+		if (!is_router_mode() && !access_point_mode())
+			return;
 		snprintf(prefix, sizeof(prefix), "wl%d_", unit);
+	}
 
-	if (nvram_match(strcat_r(prefix, "auth_mode_x", tmp), "sae"))
-		nvram_set_int("obvif_bss", 1);
+	if (nvram_match(strcat_r(prefix, "auth_mode_x", tmp), "sae")) {
+		snprintf(wl_radio, sizeof(wl_radio), "wl%d_radio", unit);
+		if (nvram_get_int(wl_radio)) //radio on
+			nvram_set_int("obvif_bss", 1);
+		else //radio off
+			nvram_set_int("obvif_bss", 0);
+	}
 	else
 		nvram_set_int("obvif_bss", 0);
 }

@@ -101,6 +101,9 @@ ipup_main(int argc, char **argv)
 	}
 #endif
 
+	snprintf(tmp, sizeof(tmp), "/tmp/%sppp.env", prefix);
+	envsave(tmp);
+
 	/* Stop triggering demand connection */
 	if (nvram_get_int(strcat_r(prefix, "pppoe_demand", tmp)))
 		nvram_set_int(strcat_r(prefix, "pppoe_demand", tmp), 1);
@@ -250,6 +253,9 @@ int ip6up_main(int argc, char **argv)
 		}
 	}
 	snprintf(prefix, sizeof(prefix), "wan%d_", unit);
+
+	snprintf(tmp, sizeof(tmp), "/tmp/%sppp6.env", prefix);
+	envsave(tmp);
 
 	/* share the same interface with pppoe ipv4 connection */
 	nvram_set(strcat_r(prefix, "pppoe_ifname", tmp), wan_ifname);

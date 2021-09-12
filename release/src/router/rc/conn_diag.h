@@ -51,15 +51,23 @@ enum {
 
 enum {
 	DIAGMODE_NONE = 0,
-	DIAGMODE_CHKSTA = 1,
-	DIAGMODE_SYS_DETECT = 2,
-	DIAGMODE_SYS_SETTING = 4,
-	DIAGMODE_WIFI_DETECT = 8,
-	DIAGMODE_WIFI_SETTING = 16,
-	DIAGMODE_STAINFO = 32,
-	DIAGMODE_NET_DETECT = 64,
-	DIAGMODE_ETH_DETECT = 128,
-	DIAGMODE_PORTINFO = 256,
+	DIAGMODE_CHKSTA = 0x1,
+	DIAGMODE_SYS_DETECT = 0x2,
+	DIAGMODE_SYS_SETTING = 0x4,
+	DIAGMODE_WIFI_DETECT = 0x8,
+	DIAGMODE_WIFI_SETTING = 0x10,
+	DIAGMODE_STAINFO = 0x20,
+	DIAGMODE_NET_DETECT = 0x40,
+	DIAGMODE_ETH_DETECT = 0x80,
+	DIAGMODE_PORTINFO = 0x100,
+	DIAGMODE_WIFI_DFS = 0x200,
+	DIAGMODE_SITE_SURVEY = 0x400,
+	DIAGMODE_SITE_SURVEY_2G = 0x800,
+	DIAGMODE_SITE_SURVEY_5G1 = 0x1000,
+	DIAGMODE_SITE_SURVEY_5G2 = 0x2000,
+	DIAGMODE_CHANNEL_CHANGE = 0x4000,
+	DIAGMODE_PORT_STATUS_CHANGE = 0x8000,
+	DIAGMODE_ALL_CHAN_RADAR = 0x10000,
 	DIAGMODE_MAX
 };
 
@@ -110,8 +118,39 @@ extern int get_wifi_chanim(char *ifname, char *output, int outputlen);
 extern char *diag_get_wifi_fh_ifnames(int wifi_unit, char *buffer, size_t buffer_size);
 extern char *diag_get_eth_bh_ifnames(char *buffer, size_t buffer_size);
 extern char *diag_get_eth_fh_ifnames(char *buffer, size_t buffer_size);
+extern int get_plc_phy_rate(unsigned long *tx_rate, unsigned long *rx_rate);
 
 // non-sysdep
 extern char* diag_get_wl_ifname(int unit, int subunit, char *buffer, size_t buffer_size);
 extern int diag_get_sub_if_bss_enabled(int unit, int subunit);
 extern int diag_get_sub_if_closed(int unit, int subunit);
+
+
+extern int special_alphasort(const void *d1, const void *d2);
+
+#define DIAG_DEBUG "/tmp/DIAG_DEBUG"
+
+#define LOG_TITLE_DIAG "conndiag"
+
+#define DIAG_INFO(fmt, arg...) \
+	do { \
+		_dprintf("DIAG %lu: "fmt, uptime(), ##arg); \
+		if(diag_syslog || f_exists(DIAG_DEBUG)) \
+			logmessage(LOG_TITLE_DIAG, fmt, ##arg); \
+	} while (0)
+#define DIAG_DBG(fmt, arg...) \
+	do { \
+		if(diag_dbg || f_exists(DIAG_DEBUG)) \
+			_dprintf("DIAG %lu: "fmt, uptime(), ##arg); \
+		if(diag_syslog || f_exists(DIAG_DEBUG)) \
+			logmessage(LOG_TITLE_DIAG, fmt, ##arg); \
+	} while (0)
+#define DIAG_SYSLOG(fmt, arg...) \
+	do { \
+		_dprintf("DIAG %lu: "fmt"\n", uptime(), ##arg); \
+		logmessage(LOG_TITLE_DIAG, fmt, ##arg); \
+	} while (0)
+
+
+
+

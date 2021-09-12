@@ -238,3 +238,7 @@ extern void rc_ipsec_pki_gen_exec(uint32_t idx);
 extern int rc_ipsec_ca_txt_parse();
 extern void rc_ipsec_gen_cert(int skip_checking);
 
+#ifdef RTCONFIG_UPNPC_NEW
+extern void add_upnp_port(int type);
+extern int upnpclist_content_parser(char *str, upnpc_list_t *ucl);
+#endif /* RTCONFIG_UPNPC_NEW */

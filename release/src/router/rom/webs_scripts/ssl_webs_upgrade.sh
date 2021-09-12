@@ -9,11 +9,13 @@ dl_path_SQ_beta="https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless_
 dl_path_file="https://dlcdnets.asus.com/pub/ASUS/wireless/ASUSWRT"
 
 echo "---- To download fw/rsa, Start ----" > /tmp/webs_upgrade.log
+logger -t AUTO_UPGRADE "To download fw/rsa, Start"
 nvram set webs_state_upgrade=0 # INITIALIZING
 nvram set auto_upgrade=1
 
 cfg_trigger=`echo $1`	# cfg_mnt skip
 echo "---- cfg_trigger=${cfg_trigger} ----" >> /tmp/webs_upgrade.log
+logger -t AUTO_UPGRADE "cfg_trigger=${cfg_trigger}"
 
 if [ "$cfg_trigger" != "1" ]; then # cfg_mnt skip these
 
@@ -41,6 +43,7 @@ fw_check=`nvram get fw_check`
 model=`nvram get productid`
 if [ "$model" == "RT-AC68U" ] && [ "$fw_check" == "1" ]; then
 	echo "---- TM model restore ----" >> /tmp/webs_upgrade.log
+	logger -t AUTO_UPGRADE "TM model restore"
 	fw_check
 else
 
@@ -68,6 +71,7 @@ small_fw_update=`nvram show | grep rc_support | grep small_fw`
 
 if [ "$small_fw_update" != "" ]; then
 	echo "---- small_fw_update path ----" >> /tmp/webs_upgrade.log
+	logger -t AUTO_UPGRADE "small_fw_update path"
 	mkdir /tmp/mytmpfs
 	mount -t tmpfs -o size=16M,nr_inodes=10k,mode=700 tmpfs /tmp/mytmpfs
 	firmware_path="/tmp/mytmpfs/linux.trx"
@@ -90,6 +94,7 @@ fi
 urlpath=`nvram get webs_state_url`
 if [ -z "$IS_BCMHND" ]; then
 	echo "---- ! IS_BCMHND ----" >> /tmp/webs_upgrade.log
+	logger -t AUTO_UPGRADE "! IS_BCMHND"
 	echo 3 > /proc/sys/vm/drop_caches
 fi
 
@@ -101,63 +106,84 @@ wget_result=0
 wget_result2=0
 if [ "$update_url" != "" ]; then
 	echo "---- wget fw nvram webs_state_url ${update_url}/$firmware_file ----" >> /tmp/webs_upgrade.log
+	logger -t AUTO_UPGRADE "wget fw nvram webs_state_url $firmware_file"
 	wget -t 2 -T 30 --no-check-certificate --output-file=/tmp/fwget_log ${update_url}/$firmware_file -O $firmware_path
 	wget_result=$?
 	echo "---- wget fw nvram webs_state_url, exit code: ${wget_result} ----" >> /tmp/webs_upgrade.log
+	logger -t AUTO_UPGRADE "exit code: ${wget_result}"
 
 	echo "---- wget rsa nvram webs_state_url ${update_url}/$firmware_rsasign ----" >> /tmp/webs_upgrade.log
+	logger -t AUTO_UPGRADE "wget rsa nvram webs_state_url $firmware_rsasign"
 	wget $wget_options ${update_url}/$firmware_rsasign -O $rsa_path
 	wget_result2=$?
 	echo "---- wget rsa nvram webs_state_url, exit code: ${wget_result2} ----" >> /tmp/webs_upgrade.log
+	logger -t AUTO_UPGRADE "exit code: ${wget_result2}"
 
 elif [ "$forsq" -ge 2 ] && [ "$forsq" -le 9 ]; then
 	echo "---- wget fw sq beta_user ${dl_path_SQ_beta}${forsq}/$firmware_file ----" >> /tmp/webs_upgrade.log
+	logger -t AUTO_UPGRADE "wget fw sq beta_user ${forsq}/$firmware_file"
 	wget -t 2 -T 30 --no-check-certificate --output-file=/tmp/fwget_log ${dl_path_SQ_beta}${forsq}/$firmware_file -O $firmware_path
 	wget_result=$?
 	echo "---- [LiveUpdate] wget fw, exit code: ${wget_result} ----" >> /tmp/webs_upgrade.log
+	logger -t AUTO_UPGRADE "exit code: ${wget_result}"
 
 	echo "---- wget fw sq beta_user ${dl_path_SQ_beta}${forsq}/$firmware_rsasign ----" >> /tmp/webs_upgrade.log
+	logger -t AUTO_UPGRADE "wget fw sq beta_user ${forsq}/$firmware_rsasign"
 	wget $wget_options ${dl_path_SQ_beta}${forsq}/$firmware_rsasign -O $rsa_path
 	wget_result2=$?
 	echo "---- [LiveUpdate] wget rsa, exit code: ${wget_result2} ----" >> /tmp/webs_upgrade.log
+	logger -t AUTO_UPGRADE "exit code: ${wget_result2}"
 
 elif [ "$forsq" == "1" ]; then
 	echo "---- wget fw sq ${dl_path_SQ}/$firmware_file ----" >> /tmp/webs_upgrade.log
+	logger -t AUTO_UPGRADE "wget fw sq $firmware_file"
 	wget -t 2 -T 30 --no-check-certificate --output-file=/tmp/fwget_log ${dl_path_SQ}/$firmware_file -O $firmware_path
 	wget_result=$?
 	echo "---- [LiveUpdate] wget fw, exit code: ${wget_result} ----" >> /tmp/webs_upgrade.log
+	logger -t AUTO_UPGRADE "exit code: ${wget_result}"
 
 	echo "---- wget fw sq ${dl_path_SQ}/$firmware_rsasign ----" >> /tmp/webs_upgrade.log
+	logger -t AUTO_UPGRADE "wget fw sq $firmware_rsasign"
 	wget $wget_options ${dl_path_SQ}/$firmware_rsasign -O $rsa_path
 	wget_result2=$?
 	echo "---- [LiveUpdate] wget rsa, exit code: ${wget_result2} ----" >> /tmp/webs_upgrade.log
+	logger -t AUTO_UPGRADE "exit code: ${wget_result2}"
 
 elif [ "$urlpath" == "" ]; then
 	echo "---- wget fw Real ${dl_path_file}/$firmware_file ----" >> /tmp/webs_upgrade.log
+	logger -t AUTO_UPGRADE "wget fw Real $firmware_file"
 	wget -t 2 -T 30 --no-check-certificate --output-file=/tmp/fwget_log ${dl_path_file}/$firmware_file -O $firmware_path
 	wget_result=$?
 	echo "---- [LiveUpdate] wget fw, exit code: ${wget_result} ----" >> /tmp/webs_upgrade.log
+	logger -t AUTO_UPGRADE "exit code: ${wget_result}"
 
 	echo "---- wget fw Real ${dl_path_file}/$firmware_rsasign ----" >> /tmp/webs_upgrade.log
+	logger -t AUTO_UPGRADE "wget fw Real $firmware_rsasign"
 	wget $wget_options ${dl_path_file}/$firmware_rsasign -O $rsa_path
 	wget_result2=$?
 	echo "---- [LiveUpdate] wget rsa, exit code: ${wget_result2} ----" >> /tmp/webs_upgrade.log
+	logger -t AUTO_UPGRADE "exit code: ${wget_result2}"
 
 else
 	echo "---- wget fw URL ----" >> /tmp/webs_upgrade.log
+	logger -t AUTO_UPGRADE "wget fw URL"
 	wget -t 2 -T 30 --no-check-certificate --output-file=/tmp/fwget_log $urlpath/$firmware_file -O $firmware_path
 	wget_result=$?
 	echo "---- [LiveUpdate] wget fw, exit code: ${wget_result} ----" >> /tmp/webs_upgrade.log
+	logger -t AUTO_UPGRADE "exit code: ${wget_result}"
 
 	echo "---- [LiveUpdate] wget rsa URL ----" >> /tmp/webs_upgrade.log
+	logger -t AUTO_UPGRADE "wget rsa URL"
 	wget $wget_options $urlpath/$firmware_rsasign -O $rsa_path
 	wget_result2=$?
 	echo "---- [LiveUpdate] wget rsa, exit code: ${wget_result2} ----" >> /tmp/webs_upgrade.log
+	logger -t AUTO_UPGRADE "exit code: ${wget_result2}"
 
 fi	
 
 if [ "$wget_result" != "0" ]; then
 	echo "---- download fw failure ----" >> /tmp/webs_upgrade.log
+	logger -t AUTO_UPGRADE "download fw failure"
 	rm -f $firmware_path
 	nvram set $record=1	# fail to download the firmware
 	if [ "$cfg_trigger" != "1" ]; then	# cfg_mnt skip
@@ -170,6 +196,7 @@ if [ "$wget_result" != "0" ]; then
 	fi # cfg_trigger!=1
 elif [ "$wget_result2" != "0" ]; then
 	echo "---- download rsa failure ----" >> /tmp/webs_upgrade.log
+	logger -t AUTO_UPGRADE "download rsa failure"
 	rm -f $firmware_path
 	nvram set $record=2	# fail to download the rsa
 	if [ "$cfg_trigger" != "1" ]; then	# cfg_mnt skip
@@ -183,6 +210,7 @@ elif [ "$wget_result2" != "0" ]; then
 else
 	nvram set webs_state_upgrade=2	
 	echo "---- mv trx OK ----" >> /tmp/webs_upgrade.log
+	logger -t AUTO_UPGRADE "mv trx OK"
 	nvram set firmware_check=0
 	firmware_check $firmware_path
 	sleep 1
@@ -196,6 +224,7 @@ else
 
 	if [ "$firmware_check_ret" == "1" ] && [ "$rsasign_check_ret" == "1" ]; then
 		echo "---- fw check OK ----" >> /tmp/webs_upgrade.log
+		logger -t AUTO_UPGRADE "fw check OK"
 		/sbin/ejusb -1 0
 		nvram set fwpath=2
 		if [ "$cfg_trigger" != "1" ]; then	# cfg_mnt skip
@@ -206,6 +235,7 @@ else
 		fi # cfg_trigger!=1
 	else
 		echo "---- fw check error, CRC: ${firmware_check_ret}  rsa: ${rsasign_check_ret} ----" >> /tmp/webs_upgrade.log
+		logger -t AUTO_UPGRADE "fw check error, CRC: ${firmware_check_ret}  rsa: ${rsasign_check_ret}"
 		rm -f $firmware_path
 		nvram set $record=3	# wrong fw
 		if [ "$cfg_trigger" != "1" ]; then	# cfg_mnt skip
@@ -223,5 +253,6 @@ fi
 fi # RT-AC68U fw_check
 
 echo "---- To download fw/rsa, End ----" >> /tmp/webs_upgrade.log
+logger -t AUTO_UPGRADE "To download fw/rsa, End"
 nvram set webs_state_upgrade=1
 nvram commit

@@ -125,6 +125,7 @@ enum  NET_CMD_ID
 	NET_CMD_ID_MANU_CMD,	    //  51		0x33
 	NET_CMD_ID_GETINFO_MANU,    //  52              0x34
 	NET_CMD_ID_GETINFO_EX2,     //  53              0x35
+	NET_CMD_ID_FIND_CAP,     //  54              0x36
 	NET_CMD_ID_MAXIMUM
 };
 
@@ -293,6 +294,19 @@ typedef struct storage_info_t {
 	BYTE AAEDeviceID[64];
 	BYTE Label_MacAddress[6];
 } STORAGE_INFO_T;
+
+typedef struct storage_info_findcap_t {
+	WORD MagicWord;
+	WORD ExtendCap;
+	BYTE Info[500];
+} STORAGE_INFO_FINDCAP_T;
+
+enum infoType {
+	INFO_TYPE_GROUPID = 1,
+	INFO_TYPE_PRODUCT_NAME,
+	INFO_TYPE_MAC,
+	INFO_TYPE_MAX
+};
 
 typedef struct PktGetInfoEx1
 {

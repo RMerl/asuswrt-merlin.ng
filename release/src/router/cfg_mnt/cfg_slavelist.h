@@ -54,14 +54,24 @@ typedef struct _CM_CLIENT_TABLE {
 	unsigned char ap5g1[CFG_CLIENT_NUM][MAC_LEN];
 	unsigned char apDwb[CFG_CLIENT_NUM][MAC_LEN];
 	unsigned char ap6g[CFG_CLIENT_NUM][MAC_LEN];
+	unsigned char ap2g_fh[CFG_CLIENT_NUM][MAC_LEN];
+	unsigned char ap5g_fh[CFG_CLIENT_NUM][MAC_LEN];
+	unsigned char ap5g1_fh[CFG_CLIENT_NUM][MAC_LEN];
+	unsigned char ap6g_fh[CFG_CLIENT_NUM][MAC_LEN];
 	char ap2g_ssid[CFG_CLIENT_NUM][SSID_LEN];
 	char ap5g_ssid[CFG_CLIENT_NUM][SSID_LEN];
 	char ap5g1_ssid[CFG_CLIENT_NUM][SSID_LEN];
 	char ap6g_ssid[CFG_CLIENT_NUM][SSID_LEN];
+	char ap2g_ssid_fh[CFG_CLIENT_NUM][SSID_LEN];
+	char ap5g_ssid_fh[CFG_CLIENT_NUM][SSID_LEN];
+	char ap5g1_ssid_fh[CFG_CLIENT_NUM][SSID_LEN];
+	char ap6g_ssid_fh[CFG_CLIENT_NUM][SSID_LEN];
 	int level[CFG_CLIENT_NUM];
 	char fwVer[CFG_CLIENT_NUM][FWVER_LEN];
 	char newFwVer[CFG_CLIENT_NUM][FWVER_LEN];
 	char modelName[CFG_CLIENT_NUM][MODEL_NAME_LEN];
+	char productId[CFG_CLIENT_NUM][MODEL_NAME_LEN];
+	char frsModelName[CFG_CLIENT_NUM][MODEL_NAME_LEN];
 	char territoryCode[CFG_CLIENT_NUM][TERRITORY_CODE_LEN];
 	int activePath[CFG_CLIENT_NUM];
 	int bandnum[CFG_CLIENT_NUM];
@@ -79,8 +89,8 @@ typedef struct _CM_CLIENT_TABLE {
 } CM_CLIENT_TABLE, *P_CM_CLIENT_TABLE;
 
 extern int cm_checkReListExist(char *Mac);
-extern int cm_checkReListUpdate(char *newReMac, char *sta2gMac, char *sta5gMac);
-extern void cm_updateReList(char *newReMac, char *sta2gMac, char *sta5gMac, int action);
+extern int cm_checkReListUpdate(char *newReMac, char *sta2gMac, char *sta5gMac, char *sta6gMac);
+extern void cm_updateReList(char *newReMac, char *sta2gMac, char *sta5gMac, char *sta6gMac, int action);
 extern void cm_handleReListUpdate(unsigned char *decodeMsg);
 extern int cm_isReWifiUpstreamMac(char *staMac);
 extern int cm_prepareReListMsg(char *msg, int msgLen);
@@ -106,6 +116,7 @@ extern int cm_checkObVifReListUpdate(char *newReMac);
 extern int cm_getObVifReByNewReMac(char *newReMac, char *obReMac, int macLen);
 extern void cm_updateObVifReList(char *newReMac, char *obReMac, int action);
 #endif
+extern void cm_reorganizeReList();
 
 #endif /* __CFG_SLAVELIST_H__ */
 /* End of cfg_slavelist.h */

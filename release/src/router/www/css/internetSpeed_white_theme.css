@@ -1,0 +1,476 @@
+.container{
+	background-color: #FFFFFF;
+}
+
+.function_title_m{
+	color: #000000;
+	font-weight: bolder;
+}
+
+.function_title_pc{
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 16px;
+	color: #000000;
+	font-weight: bolder;
+}
+
+.formfontdesc{
+	color: #C9D1D7;
+}
+
+.desc_div{
+	color: #333538;
+}
+
+.description-bar{
+	border-left: none;
+	padding-left: 0;
+}
+
+.speedtest_logo{
+	background: url(../images/speedtest/white_theme/speedtest.svg) no-repeat center;
+}
+
+.wan_notice{
+	margin-left: 5px;
+	color: #F13E3E;
+}
+
+.split-Line{
+	background: linear-gradient(#CEC1C7 0%, #CEC1C7 20%, #766D71 80%,#766D71 100%);
+	height: 1px;
+}
+
+.ookla_info{
+	color: #9EAEB9;
+}
+
+.speedTest_div{
+	background: rgba(255, 255, 255, 0.16);
+	border: 0px;
+}
+
+.speedTest_result_div{
+	background: #1F2025;
+}
+
+.date_div{
+	border-bottom: solid #006EFF 6px;
+	color: #5E6470;
+}
+
+.time_div{
+	color: #5E6470;
+}
+
+.download_upload_text{
+	color: #333538;
+}
+
+.test_result{
+	color: #006EFF;
+}
+
+
+.ping_result_title{
+	color: #3E4044;
+}
+
+.ping_result_value{
+	color: #006EFF;
+}
+
+.ping_result_unit{
+	color: #3E4044;
+}
+
+.speedTest_btn_normal{
+	background-image: url('../images/speedtest/white_theme/btn_go_normal.svg');
+}
+
+.speedTest_btn_press{
+	background-image: url('../images/speedtest/white_theme/btn_go_press.svg');
+	color: #5BFDFF;
+}
+
+.speedTest_btn_disable{
+	background-image:
+		url('../images/speedtest/wan_disconnect.svg'),
+		url('../images/speedtest/btn_go_disable.svg');
+}
+
+.speed_level_title_default{
+	color: #5E6470;
+}
+
+.speed_level_ultra{
+	background-image:url('../images/speedtest/white_theme/btn_speed_ultra.svg');
+}
+
+.speed_level_super{
+	background-image:url('../images/speedtest/white_theme/btn_speed_super.svg');
+}
+
+.speed_level_great{
+	background-image:url('../images/speedtest/white_theme/btn_speed_great.svg');
+}
+
+.speed_level_fast{
+	background-image:url('../images/speedtest/white_theme/btn_speed_fast.svg');
+}
+
+.speed_level_good{
+	background-image:url('../images/speedtest/white_theme/btn_speed_good.svg');
+}
+
+.speed_level_normal{
+	background-image:url('../images/speedtest/white_theme/btn_speed_normal.svg');
+}
+
+.speed_level_default{
+	background-image:url('../images/speedtest/white_theme/btn_speed_default.svg');
+}
+.speed_icon_ultra{
+	background: url(../images/speedtest/white_theme/speed_ultra.svg) no-repeat center;
+	background-size: contain;
+}
+
+.speed_icon_super{
+	background: url(../images/speedtest/white_theme/speed_super.svg) no-repeat center;
+	background-size: contain;
+}
+
+.speed_icon_great{
+	background: url(../images/speedtest/white_theme/speed_great.svg) no-repeat center;
+	background-size: contain;
+}
+
+.speed_icon_fast{
+	background: url(../images/speedtest/white_theme/speed_fast.svg) no-repeat center;
+	background-size: contain;
+}
+
+.speed_icon_good{
+	background: url(../images/speedtest/white_theme/speed_good.svg) no-repeat center;
+	background-size: contain;
+}
+
+.speed_icon_normal{
+	background: url(../images/speedtest/white_theme/speed_normal.svg) no-repeat center;
+	background-size: contain;
+}
+
+.speed_icon_normal_s{
+	margin-left: 20px;
+	width: 18px;
+	height: 18px;
+	background: url(../images/speedtest/white_theme/speed_normal.svg) no-repeat center;
+}
+
+.speed_icon_normal_l{
+	margin-left: 30px;
+	width: 24px;
+	height: 24px;
+	background: url(../images/speedtest/white_theme/speed_normal.svg) no-repeat center;
+}
+
+.close_icon{
+	background-color: #FFFFFF;
+	background: url(../images/speedtest/white_theme/close.svg) no-repeat center;
+	background-size: 50%;
+	box-shadow: 0px 2px 2px 0px rgba(0, 0, 0, 0.14),
+	0px 3px 2px -2px rgba(0, 0, 0, 0.12),
+	0px 1px 5px 0px rgba(0, 0, 0, 0.2);
+}
+
+.close_icon:hover{
+	background-color: #333333;
+}
+
+.history_desc{
+	color: #354052;
+}
+
+.history_icon{
+	background: url(../images/speedtest/white_theme/speedtest_history.svg) no-repeat center;
+}
+
+.history_delete{
+	background: url(../images/speedtest/white_theme/speedtest_delete.svg) no-repeat center;
+	background-size: 50%;
+}
+
+.history_delete_enable{
+	background: rgba(37,151,255,0.10) url(../images/speedtest/white_theme/speedtest_delete_enable.svg) no-repeat center;
+	background-size: 50%;
+	border-radius: 50%;
+}
+
+.history_delete:hover{
+	background: rgba(37,151,255,0.10) url(../images/speedtest/white_theme/speedtest_delete_enable.svg) no-repeat center;
+	background-size: 50%;
+	border-radius: 50%;
+}
+
+.left_arrow:hover{
+	background: rgba(255,255,255,0.05) url(../images/speedtest/speedtest_arrow_left_yellow.svg) no-repeat center;
+	background-size: 50%;
+}
+
+.history_title_m{
+	color: #5E6470;
+}
+
+.history_timestamp_div{
+	color: #5E6470;
+}
+
+.history_downup_font{
+	color: #333538;
+}
+
+.history_more{
+	background: url(../images/speedtest/white_theme/down_active.svg) no-repeat center;
+	background-size: 50%;
+	transform:rotate(-90deg);
+}
+
+.right_arrow:hover{
+	background: rgba(255,255,255,0.05) url(../images/speedtest/speedtest_arrow_right_yellow.svg) no-repeat center;
+	background-size: 50%;
+}
+
+.up_arrow{
+	background: url(../images/speedtest/speedtest_arrow_right_white.svg) no-repeat center;
+	background-size: 50%;
+}
+
+.history_select{
+	border: #9EAEB9 solid 1px;
+}
+
+.history_select:hover{
+	border: 1px solid #5E6470;
+}
+
+.history_select_checked{
+	background: #006EFF url(../images/speedtest/white_theme/checked_24px_white.svg) no-repeat center;
+	border: #5E6470 solid 1px;
+	background-size: 90%;
+}
+
+.detail_speed_level{
+	background-color: #EFF6FF;
+}
+
+.detail_title{
+	border-bottom: #4C5B65 solid 1px;
+}
+
+.detail_level_desc_div{
+	border-bottom: #4C5B65 solid 1px;
+}
+
+.detail_last_test_div{
+	border-bottom: #4C5B65 solid 1px;
+}
+
+.detail_downup_text{
+	color: #006EFF;
+}
+
+.speed_level_container{
+	background-color: #F9FBFD;
+}
+
+.speed_level_rating{
+	color: #4C5B65;
+}
+
+.speed_level_text2{
+	font-family: Xolonium;
+}
+
+.speed_level_range{
+	color: #3E4044;
+}
+
+.speed_level_detail{
+	color: #4C4F54;
+}
+
+.speed_level_desc_level{
+	color: #3E4044;
+}
+
+.speed_level_desc_font{
+	color: #4C4F54;
+}
+
+.level_desc_title{
+	color: #006EFF;
+}
+
+.ping_title{
+	color: #006EFF;
+}
+
+.ping_unit{
+	color: #727781;
+}
+
+.history_value_font{
+	color: #333538;
+}
+
+.down_arrow{
+	background: url(../images/speedtest/white_theme/down_active.svg) no-repeat center;
+	background-size: 50%;
+	transform:rotate(0deg);
+}
+
+.down_arrow_up{
+	transform:rotate(180deg);
+}
+
+.host_div{
+	border-top: 1px solid #B2BBC1;
+}
+
+.host_font{
+	color: #333538;
+}
+
+.location_font{
+	color: rgba(51, 53, 56, 0.74);
+}
+
+.server_icon{
+	background: url(../images/speedtest/white_theme/server_connect.svg) no-repeat center;
+	background-size: 100%;
+}
+
+.server_list_check{
+	background: url(../images/speedtest/white_theme/checked_24px.svg) no-repeat center;
+	background-size: 50%;
+}
+
+.no_test_result{
+	color: #8492B4;
+}
+
+.cur_server_container{
+	background: #EFF6FF;
+}
+
+#outer_server_container{
+	background: #EFF6FF;
+}
+
+.server_list_brick{
+	background: #006EFF;
+}
+
+.sub_server_title{
+	color: #000000;
+}
+
+.level_ping_div{
+	background-color: #F3F8FF;
+}
+
+.download_result_icon{
+	background-image: url(../images/speedtest/white_theme/download.svg);
+	background-size: 12px 12px;
+}
+
+.upload_result_icon{
+	background-image: url(../images/speedtest/white_theme/upload.svg);
+	background-size: 12px 12px;
+}
+
+.download_icon{
+	background-image: url(../images/speedtest/white_theme/download.svg);
+	background-size: 12px 12px;
+}
+
+.upload_icon{
+	background-image: url(../images/speedtest/white_theme/upload.svg);
+	background-size: 12px 12px;
+}
+
+.alert_header{
+	color: #000000;
+	font-weight: bolder;
+}
+
+.alert_notification{
+	background-color: #FDFEFF;
+	opacity: 1;
+}
+
+.alert_text_noImg{
+	color: #4C4F54;
+}
+
+.alert_text_withImg{
+	color: #4C4F54;
+}
+
+.alert_notification_text{
+	color: #50ABFF;
+}
+
+::-webkit-scrollbar{
+	background: #B2BBC1;
+}
+
+::-webkit-scrollbar-thumb {
+	background: #006EFF;
+}
+
+@media (max-width: 720px) {
+	.level_ping_div{
+		background-color: transparent;
+	}
+
+	.ping_result_div{
+		background-color: #F3F8FF;
+	}
+
+	.up_arrow_container{
+		background: #006EFF;
+	}
+
+	#outer_server_container{
+		background: #FDFEFF;
+	}
+
+	.wan_notice_m{
+		background: #F13E3E;
+		color: #FFFFFF;
+	}
+
+	.function_desc{
+		opacity: 1;
+		background: #FDFEFF;
+	}
+
+	.content_div{
+		border-top: 1px solid #ABB4C2;
+		border-bottom: 1px solid #ABB4C2;
+	}
+
+	.info_icon{
+		background: url(../images/speedtest/white_theme/information.svg) no-repeat center;
+		background-size: 60%;
+	}
+
+	.alert_notification_text{
+		color: #50ABFF;
+	}
+
+	.speedtest_logo{
+		background-position: left;
+	}
+}

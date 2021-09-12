@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!-- The documentation for this file is available here:
+          https://developer.apple.com/library/mac/#documentation/DeveloperTools/Reference/DistributionDefinitionRef/Chapters/Distribution_XML_Ref.html -->
+<installer-gui-script minSpecVersion="1">
+    <title>@PACKAGE@ @VERSION@</title>
+    <organization>im.bernat.@PACKAGE@</organization>
+    <welcome file="welcome.html" mime-type="text/html" />
+    <license file="license.html" mime-type="text/html" />
+    <conclusion file="conclusion.html" mime-type="text/html" />
+    <options customize="never" require-scripts="true" rootVolumeOnly="true" />
+    <choices-outline>
+        <line choice="im.bernat.@PACKAGE@.daemon"/>
+    </choices-outline>
+    <choice
+        id="im.bernat.@PACKAGE@.daemon"
+        visible="false"
+        title="lldpd daemon"
+        description="The LLDP daemon and its client."
+        start_selected="true">
+      <pkg-ref id="im.bernat.@PACKAGE@.daemon"/>
+    </choice>
+    <pkg-ref
+        id="im.bernat.@PACKAGE@.daemon"
+        version="0"
+        onConclusion="none"
+        auth="root">@PACKAGE@-@VERSION@.pkg</pkg-ref>
+</installer-gui-script>

@@ -25,6 +25,7 @@
 #include "mkfs.ubifs.h"
 #include <crc32.h>
 #include "common.h"
+#include <sys/sysmacros.h>
 
 /* Size (prime number) of hash table for link counting */
 #define HASH_TABLE_SIZE 10099

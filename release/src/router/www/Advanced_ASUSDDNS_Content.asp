@@ -51,6 +51,15 @@
 	*color:#000;
 	border:0px;
 }
+
+.cert_status_title{
+	width: 20%;
+}
+
+.cert_status_val{
+	width: 76%;
+	padding-left: 10px;
+}
 </style>
 
 <script>
@@ -77,9 +86,13 @@ var deregister_fail = 0;
 var cur_wan_ipaddr = wanlink_ipaddr();
 var inadyn = isSupport("inadyn");
 
+var le_sbstate_t = '<% nvram_get("le_sbstate_t"); %>';
+var le_auxstate_t = '<% nvram_get("le_auxstate_t"); %>';
+var faq_href = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=105";
+
 function init(){
 	show_menu();
-	httpApi.faqURL("1034294", function(url){document.getElementById("faq").href=url;});
+	document.getElementById("faq").href=faq_href;
 	ddns_load_body();
 	update_ddns_wan_unit_option();
 
@@ -708,11 +721,15 @@ function show_cert_details(){
 		}
 	}
 	else{
-		if(orig_le_enable == "1") {
+		if(le_auxstate_t == "5" && le_sbstate_t == "7"){
+			console.log("show alert msg")
+			var ddnsHint = "<#DDNS_Auth_Fail_Hint#>";
+			$("#cert_status").text(ddnsHint);
+			$("#cert_status").css("color", "#FFCC00")
+		}
+		else{
 			document.getElementById("cert_status").innerHTML = "<#vpn_openvpn_KC_Authorizing#>";
 			setTimeout("get_cert_info();", 1000);
-		} else {
-			document.getElementById("cert_status").innerHTML = "No certificate found";
 		}
 	}
 }
@@ -1020,25 +1037,25 @@ function check_unregister_result(){
 			<tr id="cert_details" style="display:none;">
 				<th><#vpn_openvpn_KC_SA#></th>
 				<td>
-					<div style="display:table-row;white-space: nowrap;">
-						<div style="display:table-cell;white-space: nowrap;"><#Status_Str#> :</div>
-						<div id="cert_status" style="display:table-cell; padding-left:10px;"></div>
+					<div style="display: flex;">
+						<div class="cert_status_title"><#Status_Str#> :</div>
+						<div id="cert_status" class="cert_status_val"></div>
 					</div>
-					<div style="display:table-row;white-space: nowrap;">
-						<div style="display:table-cell;"><#vpn_openvpn_KC_to#> :</div>
-						<div id="issueTo" style="display:table-cell; padding-left:10px;"></div>
+					<div style="display: flex;">
+						<div class="cert_status_title"><#vpn_openvpn_KC_to#> :</div>
+						<div id="issueTo" class="cert_status_val"></div>
 					</div>
 					<div style="display:table-row;">
 						<div style="display:table-cell;">SAN :</div>
 						<div id="SAN" style="display:table-cell; padding-left:10px;"></div>
 					</div>
-					<div style="display:table-row;white-space: nowrap;">
-						<div style="display:table-cell;"><#vpn_openvpn_KC_by#> :</div>
-						<div id="issueBy" style="display:table-cell; padding-left:10px;"></div>
+					<div style="display: flex;">
+						<div class="cert_status_title"><#vpn_openvpn_KC_by#> :</div>
+						<div id="issueBy" class="cert_status_val"></div>
 					</div>
-					<div style="display:table-row;white-space: nowrap;">
-						<div style="display:table-cell;"><#vpn_openvpn_KC_expire#> :</div>
-						<div id="expireOn" style="display:table-cell; padding-left:10px;"></div>
+					<div style="display: flex;">
+						<div class="cert_status_title"><#vpn_openvpn_KC_expire#> :</div>
+						<div id="expireOn" class="cert_status_val"></div>
 					</div>
 					<div>
 						<input class="button_gen" onclick="save_cert_key();" type="button" value="<#btn_Export#>" />

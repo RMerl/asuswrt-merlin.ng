@@ -6,9 +6,6 @@
 #include <time.h>
 #include "rc.h"
 
-#define iptables_chk_mac " -m mac --mac-source"
-#define iptables_chk_ip " -s"
-
 static void retreive_daytime_from_ts(const char *s_ts, ic_event_s *ic_event) {
 	char *ptr;
 	struct tm *ptm;
@@ -226,7 +223,8 @@ static int is_valid_pair_ic_event(const ic_event_s *start_ic_event, const ic_eve
 	if (!start_ic_event || !end_ic_event)
 		return -1;
 
-	start_ts = start_ic_event->utc ? start_ic_event->ts : convert_to_utc(start_ic_event->ts); 
+	start_ts = start_ic_event->utc ? start_ic_event->ts : convert_to_utc(start_ic_event->ts);
+	(void) start_ts;
 	end_ts = end_ic_event->utc ? end_ic_event->ts : convert_to_utc(end_ic_event->ts);
 	//_dprintf("     is_valid_pair_ic_event now=%ld\n", now);
 
@@ -465,8 +463,8 @@ void config_ic_rule_string(ic_s *ic_list, FILE *fp, char *logaccept, char *logdr
 #ifdef BLOCKLOCAL
 	ftype = logaccept;
 #endif
-	fftype_accept = "ICAccept";
-	fftype_drop = "ICDrop";
+	fftype_accept = "RETURN";
+	fftype_drop = logdrop;
 
 	follow_ic = ic_list;
 	if(follow_ic == NULL){
@@ -512,7 +510,7 @@ void config_ic_rule_string(ic_s *ic_list, FILE *fp, char *logaccept, char *logdr
 					continue;
 				}
 
-				fprintf(fp, "-A FORWARD -i %s -m time", lan_if);
+				fprintf(fp, "-A IControls -i %s -m time", lan_if);
 				if(follow_e->start_year > 0 || follow_e->start_mon > 0 || follow_e->start_day > 0)
 					fprintf(fp, " --kerneltz --datestart %d-%d-%dT%d:%d", follow_e->start_year, follow_e->start_mon, follow_e->start_day, follow_e->start_hour, follow_e->start_min);
 
@@ -523,17 +521,18 @@ void config_ic_rule_string(ic_s *ic_list, FILE *fp, char *logaccept, char *logdr
 					fprintf(fp, " %s %s -j %s\n", chk_type, follow_addr, fftype);
 
 					// Write the reverse rule for the unmatched time.
-					fprintf(fp, "-A FORWARD -i %s %s %s -j %s\n", lan_if, chk_type, follow_addr, fftype_reverse);
+					fprintf(fp, "-A IControls -i %s %s %s -j %s\n", lan_if, chk_type, follow_addr, fftype_reverse);
 				} else {
 					fprintf(fp, " %s %s -j %s\n", chk_type, follow_addr, fftype);
 				}
 			} else if (follow_e->type == IC_TYPE_WEEK) {
-				fprintf(fp, "-A FORWARD -i %s -m time", lan_if);
+				fprintf(fp, "-A IControls -i %s -m time", lan_if);
 				if(follow_e->start_hour > 0 || follow_e->start_min > 0)
 					fprintf(fp, " --timestart %d:%d", follow_e->start_hour, follow_e->start_min);
 				fprintf(fp, DAYS_PARAM "%s %s %s -j %s\n", datestr[follow_e->start_day], chk_type, follow_addr, fftype);
 			}
 		}
+		fprintf(fp, "-A FORWARD -i %s %s %s -j IControls\n", lan_if, chk_type, follow_addr);
 	}
 
 	clean_invalid_config(ic_list);

@@ -32,6 +32,8 @@ var qos_rulelist_array = "<% nvram_char_to_ascii("","qos_rulelist"); %>";
 var overlib_str0 = new Array();	//Viz add 2011.06 for record longer qos rule desc
 var overlib_str = new Array();	//Viz add 2011.06 for record longer portrange value
 
+var faq_href = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=110";
+
 function key_event(evt){
 	if(evt.keyCode != 27 || isMenuopen == 0) 
 		return false;
@@ -40,8 +42,7 @@ function key_event(evt){
 
 function initial(){
 	show_menu();
-	//	https://www.asus.com/support/FAQ/1010951/
-	httpApi.faqURL("1010951", function(url){document.getElementById("faq").href=url;});
+	document.getElementById("faq").href=faq_href;
 	if(bwdpi_support){
 		document.getElementById('content_title').innerHTML = "<#menu5_3_2#> - <#EzQoS_type_traditional#>";
 	}

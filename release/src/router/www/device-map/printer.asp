@@ -19,6 +19,11 @@ if(parent.location.pathname.search("index") === -1) top.location.href = "../"+'<
 
 <% login_state_hook(); %>
 
+var faq_href = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=157";
+var faq_href1 = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=146";
+var faq_href2 = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=147";
+var faq_href3 = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=148";
+
 function initial(){
 	showtext(document.getElementById("printerModel"), parent.usbPorts[parent.currentUsbPort].deviceName);
 	
@@ -45,9 +50,10 @@ function initial(){
 		document.getElementById("monoBtn").style.display = "";
 		document.getElementById("monoDesc").style.display = "none";
 	}
-	httpApi.faqURL("114046", function(url){document.getElementById("faq1").href=url;});
-	httpApi.faqURL("114024", function(url){document.getElementById("faq2").href=url;});
-	httpApi.faqURL("113661", function(url){document.getElementById("faq3").href=url;});
+	document.getElementById("faq").href=faq_href;
+	document.getElementById("faq1").href=faq_href1;
+	document.getElementById("faq2").href=faq_href2;
+	document.getElementById("faq3").href=faq_href3;
 }
 
 function cleanTask(){
@@ -99,7 +105,7 @@ function cleanTask(){
 
 <div id="button_descrition" style="display:none;padding:5px 0px 5px 25px;">
 <ul style="font-size:11px; font-family:Arial; color:#FFF; padding:0px; margin:0px; list-style:outside; line-height:150%;">
-	<li><#PrinterStatus_x_Monopoly_itemdesc#> <a id="faq" href="https://www.asus.com/support/FAQ/113988/" target="_blank" style="text-decoration:underline;">FAQ</a></li>
+	<li><#PrinterStatus_x_Monopoly_itemdesc#> <a id="faq" href="" target="_blank" style="text-decoration:underline;">FAQ</a></li>
 	<li>
 		<a id="faq1" href="" target="_blank" style="text-decoration:underline;"><#asus_ez_print_share#> FAQ</a>
 		<br>

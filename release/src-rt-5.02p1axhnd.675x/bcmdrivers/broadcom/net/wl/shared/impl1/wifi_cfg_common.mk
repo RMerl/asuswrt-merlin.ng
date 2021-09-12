@@ -18,6 +18,11 @@ EXTRA_CFLAGS += -DWLBIN_COMPAT
 endif
 
 # new dhd lock flag
+PWD = $(shell pwd)
+DHD_SRC_FILE=$(PWD)/../../bcmdrivers/broadcom/net/wl/bcm9$(BRCM_CHIP)/sys/src/dhd/sys/dhd_linux.c
+DHD_LOCK = $(shell grep 'DHD_LOCK' $(DHD_SRC_FILE))
+ifneq ($(DHD_LOCK),)
 EXTRA_CFLAGS += -DBCM_DHD_LOCK
+endif
 
 EXTRA_CFLAGS += -I$(WLAN_SHARED_DIR) -DBCA_CPE_BSP_SHARED

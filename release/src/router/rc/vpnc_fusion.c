@@ -655,6 +655,19 @@ static int _find_vpnc_idx_by_ovpn_unit(const int ovpn_unit)
 	return -1;
 }
 
+int find_vpnc_idx_by_wgc_unit(int wgc_unit)
+{
+	int i;
+	VPNC_PROFILE *prof;
+	for(i = 0; i < vpnc_profile_num; ++i)
+	{
+		prof = vpnc_profile + i;
+		if(prof->protocol == VPNC_PROTO_WG && prof->config.wg.wg_idx == wgc_unit)
+			return prof->vpnc_idx;
+	}
+	return -1;
+}
+
 void vpnc_ovpn_set_dns(int ovpn_unit)
 {
 	char nvname[16] = {0};
@@ -807,20 +820,9 @@ int vpnc_ovpn_up_main(int argc, char **argv)
 		nvram_set_int(strlcat_r(prefix, "route_num", tmp, sizeof(tmp)), cnt);
 
 		//set remote ip
-		cnt = 0;
-		while(1)
-		{
-			snprintf(tmp, sizeof(tmp), "remote_%d", cnt + 1);
-			remote = safe_getenv(tmp);
-			if(!remote || remote[0] == '\0')
-				break;
-
-			snprintf(tmp2, sizeof(tmp2), "remote_%d", cnt);
-			nvram_set(strlcat_r(prefix, tmp2, tmp, sizeof(tmp)), remote);
-
-			++cnt;
-		}
-		nvram_set_int(strlcat_r(prefix, "remote_num", tmp, sizeof(tmp)), cnt);
+		remote = safe_getenv("trusted_ip");
+		if(remote && remote[0] != '\0')
+			nvram_set("trusted_ip", remote);
 
 		//set dns server policy rule
 		//vpnc_handle_dns_policy_rule(VPNC_ROUTE_ADD, vpnc_idx);
@@ -1155,6 +1157,7 @@ int vpnc_load_profile(VPNC_PROFILE *list, const int list_size, const int prof_ve
 	char *nv = NULL, *nvp = NULL, *b = NULL;
 	int cnt = 0, i;
 	char * desc, *proto, *server, *username, *passwd, *active, *vpnc_idx;
+	char *region, *conntype;
 
 	if(!list || list_size <= 0)
 		return -1;
@@ -1168,7 +1171,7 @@ int vpnc_load_profile(VPNC_PROFILE *list, const int list_size, const int prof_ve
 		if(VPNC_PROFILE_VER1 == prof_ver)
 		{
 			//proto, server, active and vpnc_idx are mandatory
-			if (vstrsep(b, ">", &desc, &proto, &server, &username, &passwd, &active, &vpnc_idx) < 4)
+			if (vstrsep(b, ">", &desc, &proto, &server, &username, &passwd, &active, &vpnc_idx, &region, &conntype) < 4)
 				continue;
 
 			if(!active || !vpnc_idx)
@@ -1201,6 +1204,47 @@ int vpnc_load_profile(VPNC_PROFILE *list, const int list_size, const int prof_ve
 				list[cnt].protocol = VPNC_PROTO_OVPN;
 				list[cnt].config.ovpn.ovpn_idx = atoi(server);
 			}
+#ifdef RTCONFIG_WIREGUARD
+			else if(!strcmp(proto, PROTO_WG))
+			{
+				char prefix[16] = {0};
+				list[cnt].protocol = VPNC_PROTO_WG;
+				list[cnt].config.wg.wg_idx = atoi(server);
+				snprintf(prefix, sizeof(prefix), "%s%d_", WG_CLIENT_NVRAM_PREFIX, list[cnt].config.wg.wg_idx);
+				nvram_pf_set_int(prefix, "enable", list[cnt].active);
+			}
+#endif
+#ifdef RTCONFIG_TPVPN
+			else if(!strcmp(proto, PROTO_HMA))
+			{
+				if (is_tpvpn_configured(TPVPN_HMA, region, conntype, atoi(server)))
+				{
+					list[cnt].protocol = VPNC_PROTO_OVPN;
+					list[cnt].config.ovpn.ovpn_idx = atoi(server);
+				}
+				else
+				{
+					list[cnt].protocol = VPNC_PROTO_HMA;
+					list[cnt].config.tpvpn.tpvpn_idx = atoi(server);
+					if(region && conntype)
+					{
+						strlcpy(list[cnt].config.tpvpn.region, region, sizeof(list[cnt].config.tpvpn.region));
+						strlcpy(list[cnt].config.tpvpn.conntype, conntype, sizeof(list[cnt].config.tpvpn.conntype));
+					}
+					else
+						logmessage_normal("VPN", "no data for HMA\n");
+				}
+			}
+			else if(!strcmp(proto, PROTO_NORDVPN))
+			{
+				list[cnt].protocol = VPNC_PROTO_NORDVPN;
+				list[cnt].config.tpvpn.tpvpn_idx = atoi(server);
+				if(region)
+					strlcpy(list[cnt].config.tpvpn.region, region, sizeof(list[cnt].config.tpvpn.region));
+				else
+					logmessage_normal("VPN", "no data for NordVPN\n");
+			}
+#endif
 			++cnt;
 		}
 	}
@@ -1375,6 +1419,13 @@ _vpnc_find_index_by_ifname(const char *vpnc_ifname)
 		unit = atoi(vpnc_ifname + 3) - OVPN_CLIENT_BASE;
 		return _find_vpnc_idx_by_ovpn_unit(unit);
 	}
+#ifdef RTCONFIG_WIREGUARD
+	else if(!strncmp(vpnc_ifname, WG_CLIENT_IF_PREFIX, 3))	//wireguard
+	{
+		unit = atoi(vpnc_ifname + 3);
+		return find_vpnc_idx_by_wgc_unit(unit);
+	}
+#endif
 	return -1;
 }
 
@@ -1728,6 +1779,39 @@ start_vpnc_by_unit(const int unit)
 		_dprintf("[%s, %d]Start to connect IPSec.\n", __FUNCTION__, __LINE__);
 		return 0;
 	}
+#ifdef RTCONFIG_WIREGUARD
+	else if(VPNC_PROTO_WG== prof->protocol)
+	{
+		_dprintf("[%s, %d]Start to connect WireGuard(%d).\n", __FUNCTION__, __LINE__, prof->config.wg.wg_idx);
+		start_wgc(prof->config.wg.wg_idx);
+		vpnc_update_resolvconf(prof->vpnc_idx);
+		update_vpnc_state(prof->vpnc_idx, WAN_STATE_CONNECTED, 0);
+		set_policy_dns_iptables_rules();
+		return 0;
+	}
+	else if(VPNC_PROTO_NORDVPN == prof->protocol)
+	{
+		char cmd[256] = {0};
+		_dprintf("[%s, %d]Start to connect NordVPN(%d).\n", __FUNCTION__, __LINE__, prof->config.tpvpn.tpvpn_idx);
+		snprintf(cmd, sizeof(cmd), "nordvpn setconf '%s' %d &"
+			, prof->config.tpvpn.region
+			, prof->config.tpvpn.tpvpn_idx, unit
+			);
+		system(cmd);
+		return 0;
+	}
+#endif
+	else if(VPNC_PROTO_HMA == prof->protocol)
+	{
+		char cmd[256] = {0};
+		_dprintf("[%s, %d]Start to connect HMA(%d).\n", __FUNCTION__, __LINE__, prof->config.tpvpn.tpvpn_idx);
+		snprintf(cmd, sizeof(cmd), "hmavpn setconf '%s' '%s' %d %d &"
+			, prof->config.tpvpn.region , prof->config.tpvpn.conntype
+			, prof->config.tpvpn.tpvpn_idx, unit
+			);
+		system(cmd);
+		return 0;
+	}
 	else
 	{
 		_dprintf("[%s, %d]Unknown protocol\n", __FUNCTION__, __LINE__);
@@ -1995,6 +2079,18 @@ stop_vpnc_by_unit(const int unit)
 		_dprintf("[%s, %d]Stop OpenVPN(%d).\n", __FUNCTION__, __LINE__, prof->config.ovpn.ovpn_idx);
 		stop_ovpn_client(prof->config.ovpn.ovpn_idx);
 	}
+#ifdef RTCONFIG_WIREGUARD
+	else if(VPNC_PROTO_WG == prof->protocol)
+	{
+		_dprintf("[%s, %d]Stop WireGuard(%d).\n", __FUNCTION__, __LINE__, prof->config.wg.wg_idx);
+		stop_wgc(prof->config.wg.wg_idx);
+	}
+	else if(VPNC_PROTO_NORDVPN == prof->protocol)
+	{
+		_dprintf("[%s, %d]Stop NordVPN(%d).\n", __FUNCTION__, __LINE__, prof->config.tpvpn.tpvpn_idx);
+		stop_wgc(prof->config.tpvpn.tpvpn_idx);
+	}
+#endif
 	return 0;
 }
 
@@ -2133,16 +2229,11 @@ int set_routing_table(const int cmd, const int vpnc_id)
 				eval("ip", "route", "add", "128.0.0.0/1", "via", nvram_safe_get(strlcat_r(prefix, "gateway", tmp, sizeof(tmp))),
 					"dev", nvram_safe_get(strlcat_r(prefix, "ifname", tmp, sizeof(tmp))), "table", id_str);
 
-				//set remote routing rule
-				cnt = nvram_get_int(strlcat_r(prefix, "remote_num", tmp, sizeof(tmp)));
-				for(i = 0; i < cnt; ++i)
-				{
-					snprintf(tmp2, sizeof(tmp2), "remote_%d", i);
-					eval("ip", "route", "add", nvram_safe_get(strlcat_r(prefix, tmp2, tmp, sizeof(tmp))),
-						"via", nvram_safe_get(strlcat_r(wan_prefix, "gateway", tmp, sizeof(tmp))),
-						"dev", nvram_safe_get(strlcat_r(wan_prefix, "gw_ifname", tmp, sizeof(tmp))),
-						"table", id_str);
-				}
+				//set remote routing rule			
+				eval("ip", "route", "add", nvram_safe_get("trusted_ip"),
+					"via", nvram_safe_get(strlcat_r(wan_prefix, "gateway", tmp, sizeof(tmp))),
+					"dev", nvram_safe_get(strlcat_r(wan_prefix, "gw_ifname", tmp, sizeof(tmp))),
+					"table", id_str);
 
 				//set route
 				cnt = nvram_get_int(strlcat_r(prefix, "route_num", tmp, sizeof(tmp)));
@@ -2310,16 +2401,7 @@ int clean_vpnc_setting_value(const int vpnc_idx)
 
 	if(prof && prof->protocol == VPNC_PROTO_OVPN)
 	{
-		cnt = nvram_get_int(strlcat_r(prefix, "remote_num", tmp, sizeof(tmp)));
-
-		nvram_unset(strlcat_r(prefix, "remote_num", tmp, sizeof(tmp)));
-
-		for(i = 0; i < cnt; ++i)
-		{
-			snprintf(tmp2, sizeof(tmp2), "remote_%d", i);
-			nvram_unset(strlcat_r(prefix, tmp2, tmp, sizeof(tmp)));
-		}
-
+		nvram_unset("trusted_ip");
 		cnt = nvram_get_int(strlcat_r(prefix, "route_num", tmp, sizeof(tmp)));
 
 		nvram_unset(strlcat_r(prefix, "route_num", tmp, sizeof(tmp)));

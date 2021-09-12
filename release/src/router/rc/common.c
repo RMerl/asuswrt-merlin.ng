@@ -45,6 +45,9 @@
 #include <sys/wait.h>
 #include <sys/stat.h>
 #include <shared.h>
+#if !defined(__GLIBC__) && !defined(__UCLIBC__) /* musl */
+#include <sys/syscall.h>
+#endif
 
 #ifdef RTCONFIG_RALINK
 #include <ralink.h>
@@ -1198,7 +1201,7 @@ const zoneinfo_t tz_list[] = {
         {"UTC4DST_2",	"America/Santiago"},	// (GMT-04:00) Santiago
         {"NST3.30DST",	"Canada/Newfoundland"},	// (GMT-03:30) Newfoundland
         {"EBST3",	"America/Araguaina"},	// (GMT-03:00) Brasilia //EBST3DST_1
-		{"UTC3",	"America/Araguaina"},	// (GMT-03:00) Buenos Aires, Georgetown
+	{"UTC3",	"America/Araguaina"},	// (GMT-03:00) Buenos Aires, Georgetown
         {"EBST3DST_2",	"America/Godthab"},	// (GMT-03:00) Greenland
         {"UTC2",	"Atlantic/South_Georgia"},	// (GMT-02:00) South Georgia
         {"EUT1DST",     "Atlantic/Azores"},	// (GMT-01:00) Azores
@@ -1228,14 +1231,14 @@ const zoneinfo_t tz_list[] = {
         {"UTC-3_1",     "Asia/Kuwait"},		// (GMT+03:00) Kuwait, Riyadh
         {"UTC-3_2",     "Africa/Nairobi"},	// (GMT+03:00) Nairobi
         {"UTC-3_3",     "Europe/Minsk"},	// (GMT+03:00) Minsk
-        {"UTC-3_4",     "Europe/Moscow"},	// (GMT+03:00) Moscow, St. Petersburg        
+        {"UTC-3_4",     "Europe/Moscow"},	// (GMT+03:00) Moscow, St. Petersburg
+	{"UTC-3_5",     "Europe/Volgograd"},    // (GMT+03:00) Volgograd        //UTC-4_7
         {"IST-3",       "Asia/Baghdad"},	// (GMT+03:00) Baghdad
         {"UTC-3_6",     "Asia/Istanbul"},	// (GMT+03:00) Istanbul
         {"UTC-3.30DST", "Asia/Tehran"},		// (GMT+03:00) Tehran        
         {"UTC-4_1",     "Asia/Muscat"},		// (GMT+04:00) Abu Dhabi, Muscat
         {"UTC-4_5",     "Europe/Samara"},	// (GMT+04:00) Izhevsk, Samara
-		{"UTC-4_7",     "Europe/Volgograd"},	// (GMT+03:00) Volgograd	//UTC-3_5
-		{"UTC-4_4",     "Asia/Tbilisi"},	// (GMT+04:00) Tbilisi, Yerevan
+	{"UTC-4_4",     "Asia/Tbilisi"},	// (GMT+04:00) Tbilisi, Yerevan
         {"UTC-4_6",	"Asia/Baku"},		// (GMT+04:00) Baku
         {"UTC-4.30",    "Asia/Kabul"},		// (GMT+04:30) Kabul
         {"UTC-5",       "Asia/Karachi"},	// (GMT+05:00) Islamabad, Karachi, Tashkent
@@ -1271,10 +1274,11 @@ const zoneinfo_t tz_list[] = {
         {"UTC-11",      "Pacific/Noumea"},	// (GMT+11:00) Solomon Is.
         {"UTC-11_1",    "Pacific/Noumea"},	// (GMT+11:00) New Caledonia
         {"UTC-11_3",    "Asia/Srednekolymsk"},	// (GMT+11:00) Chokurdakh, Srednekolymsk
-        {"UTC-12",      "Pacific/Fiji"},	// (GMT+12:00) Fiji, Marshall IS.
-        {"UTC-12_2",	"Asia/Anadyr"},		// (GMT+12:00) Anadyr, Petropavlovsk-Kamchatsky
-        {"NZST-12DST",  "Pacific/Auckland"},	// (GMT+12:00) Auckland, Wellington
-        {"UTC-13",      "Pacific/Tongatapu"},	// (GMT+13:00) Nuku'alofa
+	{"UTC-12",      "Pacific/Majuro"},	// (GMT+12:00) Marshall IS.
+	{"UTC-12DST",	"Pacific/Fiji"},	// (GMT+12:00) Fiji
+	{"UTC-12_2",	"Asia/Anadyr"},		// (GMT+12:00) Anadyr, Petropavlovsk-Kamchatsky
+	{"NZST-12DST",  "Pacific/Auckland"},	// (GMT+12:00) Auckland, Wellington
+	{"UTC-13",      "Pacific/Tongatapu"},	// (GMT+13:00) Nuku'alofa
 	{ NULL }
 };
 #endif
@@ -1356,9 +1360,9 @@ void time_zone_x_mapping(void)
 		nvram_set("time_zone", "EBST3");
 		nvram_set("time_zone_dst", "0");
 	}
-	else if (nvram_match("time_zone", "UTC-3_5")){	/*Volgograd*/
-		nvram_set("time_zone", "UTC-4_7");
-	}
+	else if (nvram_match("time_zone", "UTC-4_7")){  /*Volgograd*/
+		nvram_set("time_zone", "UTC-3_5");
+	}	
 	else if (nvram_match("time_zone", "UTC-6_2")){  /*Novosibirsk*/
 		nvram_set("time_zone", "UTC-7_3");
 	}
@@ -1425,7 +1429,13 @@ setup_timezone(void)
 	gmtime_r(&now, &gm);
 	localtime_r(&now, &local);
 	gm.tm_isdst = local.tm_isdst;
+	memset(&tz, 0, sizeof(tz));	// On Linux, with glibc, the setting of the tz_dsttime field of struct timezone has never been used by settimeofday() or gettimeofday().
 	tz.tz_minuteswest = (mktime(&gm) - mktime(&local)) / 60;
+
+#if !defined(__GLIBC__) && !defined(__UCLIBC__) /* musl */
+	if (syscall(SYS_settimeofday, NULL, &tz))
+		_dprintf("[%s]: can't set kernel time zone!!!!\n");
+#endif
 
 	/* Setup sane start time */
 	if (now < RC_BUILDTIME) {
@@ -1435,7 +1445,6 @@ setup_timezone(void)
 		tv.tv_sec += info.uptime;
 		tvp = &tv;
 	}
-
 	settimeofday(tvp, &tz);
 }
 
@@ -1746,3 +1755,93 @@ void kill_wifi_wpa_supplicant(int unit)
 }
 #endif	/* RTCONFIG_QCA */
 
+void reset_corefilesize(rlim_t s)
+{
+	struct rlimit lim;
+
+	getrlimit(RLIMIT_CORE, &lim);
+	_dprintf("\nnow sys rlimit core:cur=%d, max=%d\n", (int)lim.rlim_cur, (int)lim.rlim_max);
+
+	lim.rlim_cur = s;
+	if (setrlimit(RLIMIT_CORE, &lim) < 0)
+		_dprintf("\nreset core file size failed\n\n");
+	else
+		_dprintf("\nreset core file size as %d\n\n", s);
+}
+
+#define DEBUGLOG_KLOG_PATH "/jffs/debuglog_klog.tgz"
+#define DEBUGLOG_CORE_PATH "/jffs/debuglog_core.tgz"
+#define DEBUGLOG_SLOG_PATH "/jffs/debuglog_slog.tgz"
+extern void collect_misclog(char* file_list, size_t len);
+extern void delete_tmplog();
+void collect_debuglog(int type)
+{
+	char cmd[1024] = {0};
+	char path[128] = {0};
+	char buf[1024] = {0};
+
+	if (type & DEBUGLOG_KLOG) {
+		strlcpy(path, "/tmp/klog.txt", sizeof(path));
+		snprintf(cmd, sizeof(cmd), "dmesg -r > %s", path);
+		system(cmd);
+		snprintf(cmd, sizeof(cmd), "tar zcf %s %s", DEBUGLOG_KLOG_PATH, path);
+		system(cmd);
+		unlink(path);
+	}
+	if (type & DEBUGLOG_CORE) {
+		strlcpy(path, "/tmp/corelist.txt", sizeof(path));
+		snprintf(cmd, sizeof(cmd), "ls -l /tmp/core-* > %s", path);
+		system(cmd);
+		snprintf(cmd, sizeof(cmd), "tar zcf %s /tmp/core-* %s", DEBUGLOG_CORE_PATH, path);
+		system(cmd);
+		unlink(path);
+	}
+	if (type & DEBUGLOG_SLOG) {
+		snprintf(cmd, sizeof(cmd), "tar zcf %s /tmp/syslog.log*", DEBUGLOG_SLOG_PATH);
+		collect_misclog(buf, sizeof(buf));
+		strlcat(cmd, buf, sizeof(cmd));
+		system(cmd);
+		delete_tmplog();
+	}
+}
+
+int check_mountpoint(char *mountpoint)
+{
+	FILE *procpt;
+	char line[256], devname[48], mpname[48], system_type[10], mount_mode[128];
+	int dummy1, dummy2;
+
+	if ((procpt = fopen("/proc/mounts", "r")) != NULL)
+	while (fgets(line, sizeof(line), procpt)) {
+		memset(mpname, 0x0, sizeof(mpname));
+		if (sscanf(line, "%s %s %s %s %d %d", devname, mpname, system_type, mount_mode, &dummy1, &dummy2) != 6)
+			continue;
+
+		if (!strcmp(mpname, mountpoint))
+			return 1;
+	}
+
+	if (procpt)
+		fclose(procpt);
+
+	return 0;
+}
+
+extern char **environ;
+void envsave(const char* path)
+{
+	FILE* fp;
+	int i = 0;
+
+	if (!*path)
+		return;
+
+	fp = fopen(path, "w");
+	if (fp) {
+		while(environ[i] != NULL) {
+			fprintf(fp, "%s\n", environ[i]);
+			i++;
+		}
+		fclose(fp);
+	}
+}

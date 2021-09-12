@@ -68,6 +68,8 @@ var original_ppp_echo = parseInt('<% nvram_get("wan_ppp_echo"); %>');
 var default_ppp_echo = parseInt('<% nvram_default_get("wan_ppp_echo"); %>');
 var wan_unit_flag = '<% nvram_get("wan_unit"); %>';
 
+var ipv6_service_orig = '<% nvram_get("ipv6_service"); %>';
+
 if(yadns_support){
 	var yadns_enable = '<% nvram_get("yadns_enable_x"); %>';
 	var yadns_mode = '<% nvram_get("yadns_mode"); %>';
@@ -80,6 +82,10 @@ if(dnspriv_support){
 
 var pppoe_username = decodeURIComponent('<% nvram_char_to_ascii("", "wan_pppoe_username"); %>');
 var pppoe_password = decodeURIComponent('<% nvram_char_to_ascii("", "wan_pppoe_passwd"); %>');
+
+var faq_href1 = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=125";
+var faq_href2 = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=126";
+var faq_href3 = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=127";
 
 function initial(){
 	if (dnspriv_support) {
@@ -104,8 +110,23 @@ function initial(){
 	}
 	
 	show_menu();
-	// https://www.asus.com/support/FAQ/1011715/
-	httpApi.faqURL("1011715", function(url){document.getElementById("faq").href=url;});
+
+	document.getElementById("faq_nat").href=faq_href1;
+	document.getElementById("faq").href=faq_href2;
+	
+	if(!Softwire46_support){
+		$("#wan_proto_menu option[value='lw4o6']").remove();
+		$("#wan_proto_menu option[value='map-e']").remove();
+		$("#wan_proto_menu option[value='v6plus']").remove();
+	}
+	else{
+		$("#wan_proto_menu option[value='lw4o6']").remove();
+		$("#wan_proto_menu option[value='map-e']").remove();
+		if(dualWAN_support && wan_unit_flag == 1){
+			$("#wan_proto_menu option[value='v6plus']").remove();		
+		}
+	}
+
 	change_wan_type(document.form.wan_proto.value, 0);	
 	fixed_change_wan_type(document.form.wan_proto.value);
 	genWANSoption();
@@ -200,8 +221,9 @@ function initial(){
 		}
 	}
 
-	if(wan_bonding_support)
-		httpApi.faqURL("1039053", function(url){console.log(url); document.getElementById("wanAgg_faq").href=url;});
+	if(wan_bonding_support){
+		document.getElementById("wanAgg_faq").href=faq_href3;
+	}
 
 	$.getJSON("/ajax/dns_db.json",
 		function(data){
@@ -327,7 +349,7 @@ function genWANSoption(){
 				(productid == "DSL-N55U" || productid == "DSL-N55U-B" || productid == "DSL-AC68U" || productid == "DSL-AC68R"))
 			wans_dualwan_NAME = "Ethernet WAN";
 		else if(wans_dualwan_NAME == "LAN"){
-			if((productid == "GT-AX11000" || productid == "RT-AX86U" || productid == "GT-AXE11000") && wans_lanport == "5"){
+			if((productid == "GT-AX11000" || productid == "RT-AX86U" || productid == "GT-AXE11000" || productid == "GT-AX6000" || productid == "GT-AX11000_PRO" || productid == "GT-AXE16000") && wans_lanport == "5"){
 				if(wans_extwan == "0")
 					wans_dualwan_NAME = "2.5G WAN";
 				else
@@ -336,7 +358,7 @@ function genWANSoption(){
 			else
 				wans_dualwan_NAME = "Ethernet LAN";
 		}
-		else if(wans_dualwan_NAME == "WAN" && (productid == "GT-AX11000" || productid == "RT-AX86U" || productid == "GT-AXE11000") && wans_extwan == "1")
+		else if(wans_dualwan_NAME == "WAN" && (productid == "GT-AX11000" || productid == "RT-AX86U" || productid == "GT-AXE11000" || productid == "GT-AX6000"  || productid == "GT-AX11000_PRO" || productid == "GT-AXE16000") && wans_extwan == "1")
 			wans_dualwan_NAME = "2.5G WAN";
 		else if(wans_dualwan_NAME == "USB" && (based_modelid == "4G-AC53U" || based_modelid == "4G-AC55U" || based_modelid == "4G-AC68U"))
 			wans_dualwan_NAME = "<#Mobile_title#>";
@@ -391,8 +413,26 @@ function applyRule(){
 			inputCtrl(document.form.wan_ipaddr_x, 1);
 			inputCtrl(document.form.wan_netmask_x, 1);
 			inputCtrl(document.form.wan_gateway_x, 1);
+			if(Softwire46_support){
+				inputCtrl(document.form.wan_s46_peer_x, 1);
+				inputCtrl(document.form.wan_s46_prefix4_x, 1);
+				inputCtrl(document.form.wan_s46_prefix4len_x, 1);
+				inputCtrl(document.form.wan_s46_prefix6_x, 1);
+				inputCtrl(document.form.wan_s46_prefix6len_x, 1);
+				inputCtrl(document.form.wan_s46_ealen_x, 1);
+				inputCtrl(document.form.wan_s46_offset_x, 1);
+				inputCtrl(document.form.wan_s46_psidlen_x, 1);
+				inputCtrl(document.form.wan_s46_psid_x, 1);
+			}
 		}
 		
+		if (Softwire46_support && document.form.wan_proto.value == "v6plus" && ipv6_service_orig != "ipv6pt"){
+				document.form.ipv6_service.disabled = false;
+				document.form.ipv6_service.value = "ipv6pt";
+				document.form.action_script.value += ";restart_net";
+				document.form.action_wait.value = "30";
+		}
+
 		inputCtrl(document.form.wan_dnsenable_x[0], 1);
 		inputCtrl(document.form.wan_dnsenable_x[1], 1);
 		if(!document.form.wan_dnsenable_x[0].checked){
@@ -530,7 +570,8 @@ function valid_IP(obj_name, obj_flag){
 function validForm(){
 	var wan_type = document.form.wan_proto.value;
 
-	if(!document.form.wan_dhcpenable_x[0].checked){// Set IP address by userself
+	if(!document.form.wan_dhcpenable_x[0].checked &&
+	   !(Softwire46_support && (wan_type == "lw4o6" || wan_type == "map-e" || wan_type == "v6plus"))){// Set IP address by userself
 		if(!valid_IP(document.form.wan_ipaddr_x, "")) return false;  //WAN IP
 		if(!valid_IP(document.form.wan_gateway_x, "GW"))return false;  //Gateway IP		
 
@@ -589,7 +630,7 @@ function validForm(){
 			return false;
 		}
 	}
-	
+
 	if(wan_type == "pppoe" || wan_type == "pptp" || wan_type == "l2tp" ||
 	   document.form.wan_auth_x.value != ""){
 	   	
@@ -643,7 +684,11 @@ function validForm(){
 				return false;
 	}
 
-	if(productid == "DSL-AC68U" || productid == "DSL-AC68R"){      //MODELDEP: DSL-AC68U,DSL-AC68R	
+	if (Softwire46_support && (wan_type == "lw4o6" || wan_type == "map-e" || wan_type == "v6plus")){
+		//
+	}
+
+	if(productid == "DSL-AC68U" || productid == "DSL-AC68R"){      //MODELDEP: DSL-AC68U,DSL-AC68R
 		if(document.form.ewan_dot1q.value == 1) {
 			if(!validator.range(document.form.ewan_vid, 1, 4094)) {
 				document.form.ewan_vid.focus();
@@ -788,6 +833,7 @@ function change_wan_type(wan_type, flag){
 		inputCtrl(document.form.wan_auth_x, 0);
 		inputCtrl(document.form.wan_pppoe_username, 1);
 		inputCtrl(document.form.wan_pppoe_passwd, 1);
+		inputCtrl(document.form.wan_pppoe_auth, 1);
 		inputCtrl(document.form.wan_pppoe_idletime, 1);
 		inputCtrl(document.form.wan_pppoe_idletime_check, 1);
 		inputCtrl(document.form.wan_pppoe_mtu, 1);
@@ -824,6 +870,7 @@ function change_wan_type(wan_type, flag){
 		inputCtrl(document.form.wan_auth_x, 0);
 		inputCtrl(document.form.wan_pppoe_username, 1);
 		inputCtrl(document.form.wan_pppoe_passwd, 1);
+		inputCtrl(document.form.wan_pppoe_auth, 1);
 		inputCtrl(document.form.wan_pppoe_idletime, 1);
 		inputCtrl(document.form.wan_pppoe_idletime_check, 1);
 		inputCtrl(document.form.wan_pppoe_mtu, 0);
@@ -860,6 +907,7 @@ function change_wan_type(wan_type, flag){
 		inputCtrl(document.form.wan_auth_x, 0);
 		inputCtrl(document.form.wan_pppoe_username, 1);
 		inputCtrl(document.form.wan_pppoe_passwd, 1);
+		inputCtrl(document.form.wan_pppoe_auth, 1);
 		inputCtrl(document.form.wan_pppoe_idletime, 0);
 		inputCtrl(document.form.wan_pppoe_idletime_check, 0);
 		inputCtrl(document.form.wan_pppoe_mtu, 0);
@@ -896,6 +944,7 @@ function change_wan_type(wan_type, flag){
 		inputCtrl(document.form.wan_auth_x, 1);
 		inputCtrl(document.form.wan_pppoe_username, (document.form.wan_auth_x.value != ""));
 		inputCtrl(document.form.wan_pppoe_passwd, (document.form.wan_auth_x.value != ""));
+		inputCtrl(document.form.wan_pppoe_auth, 0);
 		inputCtrl(document.form.wan_pppoe_idletime, 0);
 		inputCtrl(document.form.wan_pppoe_idletime_check, 0);
 		inputCtrl(document.form.wan_pppoe_mtu, 0);
@@ -938,6 +987,39 @@ function change_wan_type(wan_type, flag){
 			}
 		}
 	}
+	else if(Softwire46_support && (wan_type == "lw4o6" || wan_type == "map-e" || wan_type == "v6plus")){
+		inputCtrl(document.form.wan_dnsenable_x[0], 1);
+		inputCtrl(document.form.wan_dnsenable_x[1], 1);
+		showhide("wan_DHCP_opt",0);
+		
+		inputCtrl(document.form.wan_auth_x, 0);
+		inputCtrl(document.form.wan_pppoe_username, 0);
+		inputCtrl(document.form.wan_pppoe_passwd, 0);
+		inputCtrl(document.form.wan_pppoe_auth, 0);
+		inputCtrl(document.form.wan_pppoe_idletime, 0);
+		inputCtrl(document.form.wan_pppoe_idletime_check, 0);
+		inputCtrl(document.form.wan_pppoe_mtu, 0);
+		inputCtrl(document.form.wan_pppoe_mru, 0);
+		inputCtrl(document.form.wan_pppoe_service, 0);
+		inputCtrl(document.form.wan_pppoe_ac, 0);
+		inputCtrl(document.form.wan_pppoe_hostuniq, 0);
+		inputCtrl(document.form.wan_dhcp_qry, 0);
+
+		// 2008.03 James. patch for Oleg's patch. {
+		inputCtrl(document.form.wan_pppoe_options_x, 0);
+		inputCtrl(document.form.wan_pptp_options_x, 0);
+		// 2008.03 James. patch for Oleg's patch. }
+		inputCtrl(document.form.wan_heartbeat_x, 0);
+		document.getElementById("vpn_dhcp").style.display = "none";
+		inputCtrl(document.form.wan_ppp_echo, 0);
+		ppp_echo_control(0);
+
+		if(wan_bonding_support){
+			inputCtrl(document.form.bond_wan_radio[0], 0);
+			inputCtrl(document.form.bond_wan_radio[1], 0);
+			document.form.bond_wan_radio.value = orig_bond_wan;
+		}
+	}
 	else{	// Automatic IP or 802.11 MD or ""		
 		inputCtrl(document.form.wan_dnsenable_x[0], 1);
 		inputCtrl(document.form.wan_dnsenable_x[1], 1);
@@ -950,6 +1032,7 @@ function change_wan_type(wan_type, flag){
 		inputCtrl(document.form.wan_auth_x, 1);	
 		inputCtrl(document.form.wan_pppoe_username, (document.form.wan_auth_x.value != ""));
 		inputCtrl(document.form.wan_pppoe_passwd, (document.form.wan_auth_x.value != ""));
+		inputCtrl(document.form.wan_pppoe_auth, 0);
 		inputCtrl(document.form.wan_pppoe_idletime, 0);
 		inputCtrl(document.form.wan_pppoe_idletime_check, 0);
 		inputCtrl(document.form.wan_pppoe_mtu, 0);
@@ -1024,7 +1107,7 @@ function fixed_change_wan_type(wan_type){
 			document.form.wan_ppp_echo.value = default_ppp_echo;
 			ppp_echo_control();
 		}		
-	}else if(wan_type == "pptp"	|| wan_type == "l2tp"){	
+	}else if(wan_type == "pptp" || wan_type == "l2tp"){
 		if(wan_type == original_wan_type){
 			document.form.wan_dnsenable_x[0].checked = original_dnsenable;
 			document.form.wan_dnsenable_x[1].checked = !original_dnsenable;
@@ -1048,7 +1131,7 @@ function fixed_change_wan_type(wan_type){
 		document.form.wan_dnsenable_x[0].disabled = true;
 		change_common_radio(document.form.wan_dnsenable_x, 'IPConnection', 'wan_dnsenable_x', 0);
 	}
-	else{	// wan_type == "dhcp"	
+	else{	// wan_type == "dhcp" || wan_type == "lw4o6" || wan_type == "map-e" || wan_type == "v6plus"
 		if(wan_type == original_wan_type){
 			document.form.wan_dnsenable_x[0].checked = original_dnsenable;
 			document.form.wan_dnsenable_x[1].checked = !original_dnsenable;
@@ -1060,9 +1143,13 @@ function fixed_change_wan_type(wan_type){
 			change_common_radio(document.form.wan_dnsenable_x, 'IPConnection', 'wan_dnsenable_x', 1);
 		}
 	}
-	
+
 	if(wan_type != "static"){  // disable DNS server "Yes" when choosing static IP, Jieming add at 2012/12/18
 		if(document.form.wan_dhcpenable_x[0].checked){
+			inputCtrl(document.form.wan_dnsenable_x[0], 1);
+			inputCtrl(document.form.wan_dnsenable_x[1], 1);
+		}
+		else if(Softwire46_support && (wan_type == "lw4o6" || wan_type == "map-e" || wan_type == "v6plus")){
 			inputCtrl(document.form.wan_dnsenable_x[0], 1);
 			inputCtrl(document.form.wan_dnsenable_x[1], 1);
 		}
@@ -1094,6 +1181,8 @@ function change_wan_dhcp_enable(flag){
 		}
 		
 		document.getElementById('IPsetting').style.display = "";
+		document.getElementById('S46setting').style.display = "none";
+		document.getElementById('PPPsetting').style.display = "";
 		inputCtrl(document.form.wan_dhcpenable_x[0], 1);
 		inputCtrl(document.form.wan_dhcpenable_x[1], 1);
 		
@@ -1117,6 +1206,8 @@ function change_wan_dhcp_enable(flag){
 		}
 		
 		document.getElementById('IPsetting').style.display = "";
+		document.getElementById('S46setting').style.display = "none";
+		document.getElementById('PPPsetting').style.display = "";
 		inputCtrl(document.form.wan_dhcpenable_x[0], 1);
 		inputCtrl(document.form.wan_dhcpenable_x[1], 1);
 		
@@ -1134,9 +1225,48 @@ function change_wan_dhcp_enable(flag){
 		inputCtrl(document.form.wan_dhcpenable_x[1], 0);
 		
 		document.getElementById('IPsetting').style.display = "";
+		document.getElementById('S46setting').style.display = "none";
+		document.getElementById('PPPsetting').style.display = "";
 		inputCtrl(document.form.wan_ipaddr_x, 1);
 		inputCtrl(document.form.wan_netmask_x, 1);
 		inputCtrl(document.form.wan_gateway_x, 1);
+	}
+	else if(Softwire46_support && (wan_type == "lw4o6" || wan_type == "map-e" || wan_type == "v6plus")){
+		if(flag == 1){
+			if(wan_type == original_wan_type){
+				document.form.wan_dhcpenable_x[0].checked = original_wan_dhcpenable;
+				document.form.wan_dhcpenable_x[1].checked = !original_wan_dhcpenable;
+			}
+			else{
+				document.form.wan_dhcpenable_x[0].checked = 1;
+				document.form.wan_dhcpenable_x[1].checked = 0;
+			}
+			document.form.wan_s46_dhcpenable_x[0].checked = document.form.wan_dhcpenable_x[0].checked;
+			document.form.wan_s46_dhcpenable_x[1].checked = document.form.wan_dhcpenable_x[1].checked;
+		}else{
+			document.form.wan_dhcpenable_x[0].checked = document.form.wan_s46_dhcpenable_x[0].checked;
+			document.form.wan_dhcpenable_x[1].checked = document.form.wan_s46_dhcpenable_x[1].checked;
+		}
+		
+		document.getElementById('s46_prefix_hint').style.display = (wan_type == "lw4o6") ? "none" : "";
+		document.getElementById('s46_ipaddr_hint').style.display = (wan_type == "lw4o6") ? "" : "none";
+		
+		document.getElementById('IPsetting').style.display = "none";
+		//document.getElementById('S46setting').style.display = "";
+		document.getElementById('S46setting').style.display = "none";
+		document.getElementById('PPPsetting').style.display = "none";
+		
+		var wan_dhcpenable = document.form.wan_dhcpenable_x[0].checked;
+		
+		inputCtrl(document.form.wan_s46_peer_x, !wan_dhcpenable);
+		inputCtrl(document.form.wan_s46_prefix4_x, !wan_dhcpenable);
+		inputCtrl(document.form.wan_s46_prefix4len_x, !wan_dhcpenable && wan_type != "lw4o6");
+		inputCtrl(document.form.wan_s46_prefix6_x, !wan_dhcpenable);
+		inputCtrl(document.form.wan_s46_prefix6len_x, !wan_dhcpenable);
+		inputCtrl(document.form.wan_s46_ealen_x, !wan_dhcpenable && wan_type != "lw4o6");
+		inputCtrl(document.form.wan_s46_offset_x, !wan_dhcpenable);
+		inputCtrl(document.form.wan_s46_psidlen_x, !wan_dhcpenable);
+		inputCtrl(document.form.wan_s46_psid_x, !wan_dhcpenable);
 	}
 	else{	// wan_type == "dhcp"
 		document.form.wan_dhcpenable_x[0].checked = 1;
@@ -1149,9 +1279,15 @@ function change_wan_dhcp_enable(flag){
 		inputCtrl(document.form.wan_netmask_x, 0);
 		inputCtrl(document.form.wan_gateway_x, 0);
 		document.getElementById('IPsetting').style.display = "none";
+		document.getElementById('S46setting').style.display = "none";
+		document.getElementById('PPPsetting').style.display = "";
 	}
 	
 	if(document.form.wan_dhcpenable_x[0].checked){
+		inputCtrl(document.form.wan_dnsenable_x[0], 1);
+		inputCtrl(document.form.wan_dnsenable_x[1], 1);
+	}
+	else if(Softwire46_support && (wan_type == "lw4o6" || wan_type == "map-e" || wan_type == "v6plus")){
 		inputCtrl(document.form.wan_dnsenable_x[0], 1);
 		inputCtrl(document.form.wan_dnsenable_x[1], 1);
 	}
@@ -1209,18 +1345,14 @@ function ppp_echo_control(flag){
 	inputCtrl(document.form.dns_delay_round, enable);
 }
 
-function change_nat(state) {
-	if (hnd_support) {
-		document.getElementById("nat_type_tr").style.display = (state ? "" : "none");
-	}
-}
-
 function change_dnspriv_enable(flag){
 	if(flag == 1){
 		inputCtrl(document.form.dnspriv_profile[0], 1);
 		inputCtrl(document.form.dnspriv_profile[1], 1);
 		document.getElementById("DNSPrivacy").style.display = "";
 		document.getElementById("dnspriv_rulelist_Block").style.display = "";
+//		if($("#dotPresets option").length > 1)
+//			document.getElementById("dot_presets_tr").style.display = "";
 		show_dnspriv_rulelist();
 	}
 	else{
@@ -1228,6 +1360,7 @@ function change_dnspriv_enable(flag){
 		inputCtrl(document.form.dnspriv_profile[1], 0);
 		document.getElementById("DNSPrivacy").style.display = "none";
 		document.getElementById("dnspriv_rulelist_Block").style.display = "none";
+//		document.getElementById("dot_presets_tr").style.display = "none";
 	}
 }
 
@@ -1342,6 +1475,7 @@ function show_dnspriv_rulelist(){
 
 function build_dot_server_presets(){
 	var code = "";
+	var overlib_str;
 
 	for(var i = 0; i < dot_servers_array.length; i++) {
 		if (dot_servers_array[i].length == 1) {
@@ -1483,6 +1617,7 @@ function change_nat(state) {
 <input type="hidden" name="lacp_enabled" value="<% nvram_get("lacp_enabled"); %>" disabled>
 <input type="hidden" name="wan_clientid_type" value="">
 <input type="hidden" name="dnspriv_rulelist" value="" disabled>
+<input type="hidden" name="ipv6_service" value="<% nvram_get("ipv6_service"); %>" disabled>
 
 <table class="content" align="center" cellpadding="0" cellspacing="0">
   <tr>
@@ -1539,7 +1674,10 @@ function change_nat(state) {
 										<option value="static" <% nvram_match("wan_proto", "static", "selected"); %>><#BOP_ctype_title5#></option>
 										<option value="pppoe" <% nvram_match("wan_proto", "pppoe", "selected"); %>>PPPoE</option>
 										<option value="pptp" <% nvram_match("wan_proto", "pptp", "selected"); %>>PPTP</option>
-										<option value="l2tp" <% nvram_match("wan_proto", "l2tp", "selected"); %>>L2TP</option>										
+										<option value="l2tp" <% nvram_match("wan_proto", "l2tp", "selected"); %>>L2TP</option>
+										<option value="lw4o6" <% nvram_match("wan_proto", "lw4o6", "selected"); %>>LW 4over6</option>
+										<option value="map-e" <% nvram_match("wan_proto", "map-e", "selected"); %>>MAP-E</option>
+										<option value="v6plus" <% nvram_match("wan_proto", "v6plus", "selected"); %>><#IPv6_plus#></option>
 									</select>
 								</td>
 							</tr>
@@ -1561,7 +1699,7 @@ function change_nat(state) {
 							</tr>
 
 							<tr id="nat_type_tr" style="display:none;">
-								<th>NAT Type</th>
+								<th>NAT Type&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp<a id="faq_nat" href="" target="_blank" style="font-family:Lucida Console;text-decoration:underline;">FAQ</a></th> 
 								<td>
 									<select name="nat_type" class="input_option">
 										<option value="0" <% nvram_match("nat_type", "0", "selected"); %>>Symmetric</option>
@@ -1696,6 +1834,60 @@ function change_nat(state) {
 							</tr>
 						</table>
 
+						<table id="S46setting" width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable">
+							<thead>
+							<tr>
+								<td colspan="2"><#IPConnection_ExternalIPAddress_sectionname#></td>
+							</tr>
+							</thead>
+							<tr>
+								<th><#Layer3Forwarding_x_DHCPClient_itemname#></th>
+								<td>
+									<input type="radio" name="wan_s46_dhcpenable_x" class="input" value="1" onclick="change_wan_dhcp_enable(0);" <% nvram_match("wan_dhcpenable_x", "1", "checked"); %>><#checkbox_Yes#>
+									<input type="radio" name="wan_s46_dhcpenable_x" class="input" value="0" onclick="change_wan_dhcp_enable(0);" <% nvram_match("wan_dhcpenable_x", "0", "checked"); %>><#checkbox_No#>
+								</td>
+							</tr>
+							<tr>
+								<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(-1,-1);">BR / AFTR IPv6 Address</a></th>
+								<td><input type="text" name="wan_s46_peer_x" maxlength="39" class="input_32_table" value="<% nvram_get("wan_s46_peer_x"); %>"  autocorrect="off" autocapitalize="off"></td>
+							</tr>
+							<tr>
+								<th>
+									<a id="s46_prefix_hint" class="hintstyle" href="javascript:void(0);" onClick="openHint(-1,-1);">IP Prefix</a>
+									<a id="s46_ipaddr_hint" class="hintstyle" href="javascript:void(0);" onClick="openHint(7,1);" style="display:none"><#IPConnection_ExternalIPAddress_itemname#></a>
+								</th>
+								<td><input type="text" name="wan_s46_prefix4_x" maxlength="15" class="input_15_table" value="<% nvram_get("wan_s46_prefix4_x"); %>" onKeyPress="return validator.isIPAddr(this, event);" autocorrect="off" autocapitalize="off"></td>
+							</tr>
+							<tr>
+								<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(-1,-1);">IP Prefix Length</a></th>
+								<td><input type="text" name="wan_s46_prefix4len_x" maxlength="2" class="input_3_table" value="<% nvram_get("wan_s46_prefix4len_x"); %>" autocorrect="off" autocapitalize="off"></td>
+							</tr>
+							<tr>
+								<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(-1,-1);"><#ipv6_6rd_Prefix#></a></th>
+								<td><input type="text" name="wan_s46_prefix6_x" maxlength="39" class="input_32_table" value="<% nvram_get("wan_s46_prefix6_x"); %>"  autocorrect="off" autocapitalize="off"></td>
+							</tr>
+							<tr>
+								<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(-1,-1);"><#IPv6_Prefix_Length#></a></th>
+								<td><input type="text" name="wan_s46_prefix6len_x" maxlength="3" class="input_3_table" value="<% nvram_get("wan_s46_prefix6len_x"); %>" autocorrect="off" autocapitalize="off"></td>
+							</tr>
+							<tr>
+								<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(-1,-1);">EA-bit Length</a></th>
+								<td><input type="text" name="wan_s46_ealen_x" maxlength="2" class="input_3_table" value="<% nvram_get("wan_s46_ealen_x"); %>" autocorrect="off" autocapitalize="off"></td>
+							</tr>
+							<tr>
+								<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(-1,-1);">PSID Offset</a></th>
+								<td><input type="text" name="wan_s46_offset_x" maxlength="2" class="input_3_table" value="<% nvram_get("wan_s46_offset_x"); %>" autocorrect="off" autocapitalize="off"></td>
+							</tr>
+							<tr>
+								<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(-1,-1);">PSID Length</a></th>
+								<td><input type="text" name="wan_s46_psidlen_x" maxlength="2" class="input_3_table" value="<% nvram_get("wan_s46_psidlen_x"); %>" autocorrect="off" autocapitalize="off"></td>
+							</tr>
+							<tr>
+								<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(-1,-1);">PSID</a></th>
+								<td><input type="text" name="wan_s46_psid_x" maxlength="5" class="input_3_table" value="<% nvram_get("wan_s46_psid_x"); %>" autocorrect="off" autocapitalize="off"></td>
+							</tr>
+						</table>
+
 				<table id="DNSsetting" width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
           		<thead>
             	<tr>
@@ -1819,7 +2011,7 @@ function change_nat(state) {
 				</tr>
 			</table>
 			<!-- server block -->
-			<div id="dnspriv_rulelist_Block"></div>
+			<div id="dnspriv_rulelist_Block" style="word-break:break-all;"></div>
 
 			<table id="wan_DHCP_opt" width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
 			<thead>
@@ -1855,18 +2047,28 @@ function change_nat(state) {
 							    <option value="telenet" <% nvram_match("wan_auth_x", "telenet", "selected"); %>>Кабinet</option>
 							    </select></td>
 							</tr>
-            	<tr>
-              	<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,4);"><#Username#></a></th>
-              	<td><input type="text" maxlength="64" class="input_32_table" name="wan_pppoe_username" value="" autocomplete="off" onkeypress="return validator.isString(this, event)" autocorrect="off" autocapitalize="off"></td>
-            	</tr>
-            	<tr>
-              	<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,5);"><#PPPConnection_Password_itemname#></a></th>
-              	<td>
-									<input type="password" maxlength="64" class="input_32_table" style="margin-top:2px;" id="wan_pppoe_passwd" name="wan_pppoe_passwd" value="" autocomplete="off" autocorrect="off" autocapitalize="off">
-									<div style="margin-top:1px;"><input type="checkbox" name="show_pass_1" onclick="pass_checked(document.form.wan_pppoe_passwd);"><#QIS_show_pass#></div>
-								</td>
-            	</tr>            	
-							<tr style="display:none">
+				<tr>
+					<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,4);"><#Username#></a></th>
+					<td><input type="text" maxlength="64" class="input_32_table" name="wan_pppoe_username" value="" autocomplete="off" onkeypress="return validator.isString(this, event)" autocorrect="off" autocapitalize="off"></td>
+				</tr>
+				<tr>
+					<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,5);"><#PPPConnection_Password_itemname#></a></th>
+					<td>
+						<input type="password" maxlength="64" class="input_32_table" style="margin-top:2px;" id="wan_pppoe_passwd" name="wan_pppoe_passwd" value="" autocomplete="off" autocorrect="off" autocapitalize="off">
+						<div style="margin-top:1px;"><input type="checkbox" name="show_pass_1" onclick="pass_checked(document.form.wan_pppoe_passwd);"><#QIS_show_pass#></div>
+					</td>
+				</tr>
+				<tr style="display:none">
+					<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,6);"><#WANPPPAuthText#></a></th>
+					<td align="left">
+						<select class="input_option" name="wan_pppoe_auth">
+						<option value="" <% nvram_match("wan_pppoe_auth", "", "selected"); %>><#Auto#></option>
+						<option value="pap" <% nvram_match("wan_pppoe_auth", "pap", "selected"); %>>PAP</option>
+						<option value="chap" <% nvram_match("wan_pppoe_auth", "chap", "selected"); %>>CHAP</option>
+						</select>
+					</td>
+				</tr>
+				<tr style="display:none">
               	<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,6);"><#PPPConnection_IdleDisconnectTime_itemname#></a></th>
               	<td>
                 	<input type="text" maxlength="10" class="input_12_table" name="wan_pppoe_idletime" value="<% nvram_get("wan_pppoe_idletime"); %>" onKeyPress="return validator.isNumber(this,event);" autocorrect="off" autocapitalize="off"/>

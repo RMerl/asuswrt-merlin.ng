@@ -71,7 +71,35 @@ extern int chk_plc_alive(void);
 extern void do_plc_reset(int force);
 extern int plctool_get(const char *cmd, char buf[], int size, const char *chk_str);
 extern int plc_wait_busy(void);
+/* 
+ * int do_plc_pushbutton(int pb_act)
+ *
+ * pb_act:
+ * 	1: join
+ * 	2: leave
+ * 	3: status
+ * 	4: reset
+ * 	5: stop
+ * 	6: start/extend
+ * 	7: pbstat
+ */
 extern int do_plc_pushbutton(int pb_act);
+
+/* 
+	get pbstat
+
+0x001B 1 Current Push Button state 
+=0x00 = Idle
+=0x01 = In Process
+=0x02 = Adder
+=0x03 = Joiner
+=0x04 = Complete
+=0x05 = Timeout
+=0x06 = SCError
+
+*/
+
 extern int get_plc_pb_state(void);
+#define IS_PLC_JOIN_STOPPED(pb_state) (pb_state == 0 || pb_state == 4 || pb_state == 5 || pb_state == 6)
 
 #endif /* _plc_utils_h_ */

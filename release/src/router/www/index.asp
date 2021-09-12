@@ -68,6 +68,39 @@
 	-moz-border-radius: 10px;
 	border-radius: 10px;
 }
+.block_all_icon{
+	position: absolute;
+	width: 80%;
+	background-color: #f5a02b;
+	height: 32px;
+	border-radius: 24px;
+	left: 10%;
+	align-items: center;
+	justify-content: center;
+	top: -16px;
+	cursor: pointer;
+	box-shadow: 0 2px 4px 0 rgba(0,0,0,0.20), 0 1px 4px 0 rgba(60,60,60,0.30);
+	font-weight: bolder;
+	display: none;
+}
+.block_all_icon:hover{
+	background-color: #FBB655;
+}
+.block_all_icon > div{
+	position: relative;
+	margin-left: 8px;
+}
+.block_all_icon > div:before{
+	content: "";
+	position: absolute;
+	left: -22px;
+	top: -2px;
+	width: 18px;
+	height: 18px;
+	background-size: contain;
+	background-repeat: no-repeat;
+	background-image: url("data:image/jpeg;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAACXBIWXMAAAsTAAALEwEAmpwYAAAF92lUWHRYTUw6Y29tLmFkb2JlLnhtcAAAAAAAPD94cGFja2V0IGJlZ2luPSLvu78iIGlkPSJXNU0wTXBDZWhpSHpyZVN6TlRjemtjOWQiPz4gPHg6eG1wbWV0YSB4bWxuczp4PSJhZG9iZTpuczptZXRhLyIgeDp4bXB0az0iQWRvYmUgWE1QIENvcmUgNi4wLWMwMDYgNzkuMTY0NjQ4LCAyMDIxLzAxLzEyLTE1OjUyOjI5ICAgICAgICAiPiA8cmRmOlJERiB4bWxuczpyZGY9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkvMDIvMjItcmRmLXN5bnRheC1ucyMiPiA8cmRmOkRlc2NyaXB0aW9uIHJkZjphYm91dD0iIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtbG5zOnhtcE1NPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvbW0vIiB4bWxuczpzdEV2dD0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL3NUeXBlL1Jlc291cmNlRXZlbnQjIiB4bWxuczpkYz0iaHR0cDovL3B1cmwub3JnL2RjL2VsZW1lbnRzLzEuMS8iIHhtbG5zOnBob3Rvc2hvcD0iaHR0cDovL25zLmFkb2JlLmNvbS9waG90b3Nob3AvMS4wLyIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgMjIuMiAoTWFjaW50b3NoKSIgeG1wOkNyZWF0ZURhdGU9IjIwMjEtMDgtMDRUMTU6MTQ6NDArMDg6MDAiIHhtcDpNZXRhZGF0YURhdGU9IjIwMjEtMDgtMDRUMTU6MTQ6NDArMDg6MDAiIHhtcDpNb2RpZnlEYXRlPSIyMDIxLTA4LTA0VDE1OjE0OjQwKzA4OjAwIiB4bXBNTTpJbnN0YW5jZUlEPSJ4bXAuaWlkOmYwOTZmYjFhLTY3ZDktNDkyZS1hNDk5LTdiZjUwMGU0NWNlMCIgeG1wTU06RG9jdW1lbnRJRD0iYWRvYmU6ZG9jaWQ6cGhvdG9zaG9wOmYzNDJlYWZiLTA3YmItMWI0NS05ZWI4LTY3ODExYjcxODg3MSIgeG1wTU06T3JpZ2luYWxEb2N1bWVudElEPSJ4bXAuZGlkOmEwODg4MWYwLTEwYWQtNGI4OC04MTFmLWIyZWQ3ZWVkZjliMCIgZGM6Zm9ybWF0PSJpbWFnZS9wbmciIHBob3Rvc2hvcDpDb2xvck1vZGU9IjMiIHBob3Rvc2hvcDpJQ0NQcm9maWxlPSJzUkdCIElFQzYxOTY2LTIuMSI+IDx4bXBNTTpIaXN0b3J5PiA8cmRmOlNlcT4gPHJkZjpsaSBzdEV2dDphY3Rpb249ImNyZWF0ZWQiIHN0RXZ0Omluc3RhbmNlSUQ9InhtcC5paWQ6YTA4ODgxZjAtMTBhZC00Yjg4LTgxMWYtYjJlZDdlZWRmOWIwIiBzdEV2dDp3aGVuPSIyMDIxLTA4LTA0VDE1OjE0OjQwKzA4OjAwIiBzdEV2dDpzb2Z0d2FyZUFnZW50PSJBZG9iZSBQaG90b3Nob3AgMjIuMiAoTWFjaW50b3NoKSIvPiA8cmRmOmxpIHN0RXZ0OmFjdGlvbj0ic2F2ZWQiIHN0RXZ0Omluc3RhbmNlSUQ9InhtcC5paWQ6ZjA5NmZiMWEtNjdkOS00OTJlLWE0OTktN2JmNTAwZTQ1Y2UwIiBzdEV2dDp3aGVuPSIyMDIxLTA4LTA0VDE1OjE0OjQwKzA4OjAwIiBzdEV2dDpzb2Z0d2FyZUFnZW50PSJBZG9iZSBQaG90b3Nob3AgMjIuMiAoTWFjaW50b3NoKSIgc3RFdnQ6Y2hhbmdlZD0iLyIvPiA8L3JkZjpTZXE+IDwveG1wTU06SGlzdG9yeT4gPC9yZGY6RGVzY3JpcHRpb24+IDwvcmRmOlJERj4gPC94OnhtcG1ldGE+IDw/eHBhY2tldCBlbmQ9InIiPz5gqlrZAAABEklEQVQ4jYWRsU4CQRRF7yCJ2hAKQ2Vpb0UDVnRE/4ZCWwsTwgf4CTRbQkGDf7MJLYSwwWKPBYNel2W41e688+7ceS/ojIAbSfeSSkl5CGF/jq02DoAF8M2f9sAM6Kcam8AnlzUBGnUG3rwCRkAPeALegNzq47rYrh0wqDAtYGlM14sLu3mXMGlHBiD7nbYNbBTTpEzeY217PHiwWD17Uq0JMDS+09Bhz0c1JCmE8CXpRVIh6VbS3Ex8A6WAaw57BnitGe6/JMBH/F87OIuHOdBKmBTAJn5PHerbu5ZAu8akMKYEHlWBJgas4rSHwHOMvbF6pqqAK2BMWiWQAc0TAzPqRmhrjWtgehL7koAOcJdifgCrvyzQ8BT7EAAAAABJRU5ErkJggg==");
+}
 </style>
 <script type="text/javascript" src="/md5.js"></script>
 <script type="text/javascript" src="/state.js"></script>
@@ -202,8 +235,20 @@ function initial(){
 		show_middle_status(wlc_auth_mode, 0);
 	}
 	else if(sw_mode == 2){
-		var wl_auth_mode = '<% nvram_get("wl0.1_auth_mode_x"); %>';
-		var wl_wep_x = '<% nvram_get("wl0.1_wep_x"); %>';
+		var wlc_band = '<% nvram_get("wlc_band"); %>';
+		if(wlc_band == '1'){
+			var wl_auth_mode = '<% nvram_get("wl1.1_auth_mode_x"); %>';
+			var wl_wep_x = '<% nvram_get("wl1.1_wep_x"); %>';
+		}
+		else if(wlc_band == '2'){
+			var wl_auth_mode = '<% nvram_get("wl2.1_auth_mode_x"); %>';
+			var wl_wep_x = '<% nvram_get("wl2.1_wep_x"); %>';
+		}
+		else{
+			var wl_auth_mode = '<% nvram_get("wl0.1_auth_mode_x"); %>';
+			var wl_wep_x = '<% nvram_get("wl0.1_wep_x"); %>';
+		}
+
 		show_middle_status(wl_auth_mode, wl_wep_x);
 	}
 	else
@@ -431,6 +476,9 @@ function initial(){
 			}
 		);
 	}
+	var MULTIFILTER_BLOCK_ALL = httpApi.nvramGet(["MULTIFILTER_BLOCK_ALL"]).MULTIFILTER_BLOCK_ALL;
+	if(MULTIFILTER_BLOCK_ALL == "1")
+		$(".block_all_icon").css("display", "flex");
 }
 
 function check_eula(){
@@ -892,6 +940,13 @@ function clickEvent(obj){
 		obj.classList.add('iconAMesh');
 		obj.classList.remove('iconAMesh_dis');
 	}
+	else if(obj.id.indexOf("Client") > 0) {
+		var MULTIFILTER_BLOCK_ALL = httpApi.nvramGet(["MULTIFILTER_BLOCK_ALL"]).MULTIFILTER_BLOCK_ALL;
+		if(MULTIFILTER_BLOCK_ALL == "1")
+			obj.style.backgroundPosition = '0% -192px';
+		else
+			obj.style.backgroundPosition = '0% -96px';
+	}
 	else{
 		obj.style.backgroundPosition = '0% 101%';
 	}
@@ -1059,8 +1114,8 @@ function validForm(){
 			ip_obj.focus();
 			retFlag = 0;
 		}
-		else if(ip_num <= getSubnet('<% nvram_get("lan_ipaddr"); %>', '<% nvram_get("lan_netmask"); %>', "head") ||
-			 ip_num >= getSubnet('<% nvram_get("lan_ipaddr"); %>', '<% nvram_get("lan_netmask"); %>', "end")){
+		else if(ipBindingFlag && (ip_num <= getSubnet('<% nvram_get("lan_ipaddr"); %>', '<% nvram_get("lan_netmask"); %>', "head") ||
+			 ip_num >= getSubnet('<% nvram_get("lan_ipaddr"); %>', '<% nvram_get("lan_netmask"); %>', "end"))){
 			alert(ip_obj.value+" <#JS_validip#>");
 			ip_obj.value = document.getElementById("ipaddr_field_orig").value;
 			ip_obj.focus();
@@ -1826,10 +1881,10 @@ function popupEditBlock(clientObj){
 }
 
 function check_usb3(){
-	if(based_modelid == "DSL-AC68U" || based_modelid == "RT-AC3200" || based_modelid == "RT-AC87U" || based_modelid == "RT-AC68U" || based_modelid == "RT-AC68A" || based_modelid == "RT-AC56S" || based_modelid == "RT-AC56U" || based_modelid == "RT-AC55U" || based_modelid == "RT-AC55UHP" || based_modelid == "RT-N18U" || based_modelid == "RT-AC88U" || based_modelid == "RT-AC86U" || based_modelid == "GT-AC2900" || based_modelid == "RT-AC3100" || based_modelid == "RT-AC5300" || based_modelid == "RP-AC68U" || based_modelid == "RT-AC58U" || based_modelid == "RT-AC82U" || based_modelid == "MAP-AC3000" || based_modelid == "RT-AC85P" || based_modelid == "RT-AC85U" || based_modelid == "RT-AC65U"|| based_modelid == "4G-AC68U" || based_modelid == "BLUECAVE" || based_modelid == "RT-AX92U" || based_modelid == "RT-ACRH26" || based_modelid == "RT-AC95U" || based_modelid == "RT-AX95Q" || based_modelid == "RT-AXE95Q" || based_modelid == "RT-AX56_XD4" || based_modelid == "CT-AX56_XD4" || based_modelid == "RT-AX58U" || based_modelid == "TUF-AX3000" || based_modelid == "TUF-AX5400" ||based_modelid == "DSL-AX82U" || based_modelid == "RT-AX82U" || based_modelid == "RT-AX56U" || based_modelid == "RT-ACRH18" || based_modelid == "GS-AX3000" || based_modelid == "GS-AX5400"){
+	if(based_modelid == "DSL-AC68U" || based_modelid == "RT-AC3200" || based_modelid == "RT-AC87U" || based_modelid == "RT-AC68U" || based_modelid == "RT-AC68U_V4" || based_modelid == "RT-AC68A" || based_modelid == "RT-AC56S" || based_modelid == "RT-AC56U" || based_modelid == "RT-AC55U" || based_modelid == "RT-AC55UHP" || based_modelid == "RT-N18U" || based_modelid == "RT-AC88U" || based_modelid == "RT-AC86U" || based_modelid == "GT-AC2900" || based_modelid == "RT-AC3100" || based_modelid == "RT-AC5300" || based_modelid == "RP-AC68U" || based_modelid == "RT-AC58U" || based_modelid == "RT-AC82U" || based_modelid == "MAP-AC3000" || based_modelid == "RT-AC85P" || based_modelid == "RT-AC85U" || based_modelid == "RT-AC65U" || based_modelid == "4G-AC68U" || based_modelid == "BLUECAVE" || based_modelid == "RT-AX92U" || based_modelid == "RT-ACRH26" || based_modelid == "RT-AC95U" || based_modelid == "RT-AX95Q" || based_modelid == "XT8PRO" || based_modelid == "RT-AXE95Q" || based_modelid == "ET8PRO" || based_modelid == "RT-AX56_XD4" || based_modelid == "XD4PRO" || based_modelid == "CT-AX56_XD4" || based_modelid == "RT-AX58U" || based_modelid == "RT-AX58U_V2" || based_modelid == "TUF-AX3000" || based_modelid == "TUF-AX5400" || based_modelid == "DSL-AX82U" || based_modelid == "RT-AX82U" || based_modelid == "RT-AX56U" || based_modelid == "RT-ACRH18" || based_modelid == "GS-AX3000" || based_modelid == "GS-AX5400" || based_modelid == "PL-AX56_XP4" || productid == "RT-AX86S" || based_modelid == "RT-AX68U" || based_modelid == "GT-AX6000"){
 		document.getElementById('usb_text_1').innerHTML = "USB 3.0";
 	}
-	else if(based_modelid == "RT-AC88Q" || based_modelid == "RT-AX89U" || based_modelid == "RT-AD7200" || based_modelid == "RT-N65U" || based_modelid == "GT-AC5300" || based_modelid == "RT-AX88U" || based_modelid == "GT-AX11000" || based_modelid == "GT-AC9600" || based_modelid == "GT-AXY16000" || based_modelid == "RT-AX86U" || based_modelid == "RT-AX5700" || based_modelid == "RT-AX68U" || based_modelid == "RT-AC68U_V4" || based_modelid == "GT-AXE11000"){
+	else if(based_modelid == "RT-AC88Q" || based_modelid == "RT-AX89U" || based_modelid == "RT-AD7200" || based_modelid == "RT-N65U" || based_modelid == "GT-AC5300" || based_modelid == "RT-AX88U" || based_modelid == "GT-AX11000" || based_modelid == "GT-AC9600" || based_modelid == "GT-AXY16000" || productid == "RT-AX86U" || based_modelid == "GT-AXE11000" || based_modelid == "GT-AX11000_PRO" || based_modelid == "GT-AXE16000"){
 		document.getElementById('usb_text_1').innerHTML = "USB 3.0";
 		document.getElementById('usb_text_2').innerHTML = "USB 3.0";
 	}
@@ -2304,7 +2359,7 @@ function notice_apply(){
 				<div class="clientList_line"></div>
 				<div style="height:32px;width:100%;margin:5px 0;">
 					<div style="width:65%;float:left;line-height:32px;">
-						<span id="time_scheduling_title" onmouseover="return overlib('Time Scheduling allows you to set the time limit for a client\'s network usage.');" onmouseout="return nd();"><#Parental_Control#></span><!--untranslated-->
+						<span id="time_scheduling_title" onmouseover='return overlib("<#ParentalCtrl_Desc_TS#>");' onmouseout="return nd();"><#Parental_Control#></span>
 					</div>
 					<div align="center" class="left" style="cursor:pointer;float:right;" id="radio_TimeScheduling_enable"></div>
 					<div id="internetTimeScheduling" class="internetTimeEdit" style="float:right;margin-right:10px;" title="<#Time_Scheduling#>" onclick="redirectTimeScheduling(document.getElementById('macaddr_field').value);" ></div>
@@ -2491,6 +2546,14 @@ function notice_apply(){
 				</tr>
 				<tr>
 					<td id="clients_td" width="150" bgcolor="#444f53" align="center" valign="top" class="NM_radius" style="padding-bottom:15px;">
+						<div class="block_all_icon"><div>Blocked</div></div>
+						<script type="text/javascript">
+							$(".block_all_icon").unbind("click").click(function(e){
+								e = e || event;
+								e.stopPropagation();
+								block_all_device_hint();
+							});
+						</script>
 						<div id="clientsContainer" onclick="showstausframe('Client');">
 							<a id="clientStatusLink" href="device-map/clients.asp" target="statusframe">
 							<div id="iconClient" style="margin-top:20px;" onclick="clickEvent(this);"></div>

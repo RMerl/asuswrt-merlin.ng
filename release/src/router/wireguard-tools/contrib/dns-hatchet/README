@@ -1,0 +1,8 @@
+The DNS Hatchet
+===============
+
+This is a workaround for distributions without resolvconf or any proper
+mechanism of setting the DNS. Running 'apply.sh` in this directory will
+insert 'hatchet.bash` into the right place in 'wg-quick.bash`. It is
+recommended that distributions without any resolvconf available run this
+before calling 'make install` in their packaging scripts.

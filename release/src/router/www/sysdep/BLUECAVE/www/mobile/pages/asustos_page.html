@@ -119,7 +119,7 @@
 					</dl>
 					<br><br>
 					<strong>Privacy Policy</strong>
-					<p>Due to respect to personal information, ASUS is committed to protecting and respecting YOUR privacy with <a href="https://www.asus.com/Terms_of_Use_Notice_Privacy_Policy/Privacy_Policy">ASUS Privacy Policy</a>.</p>
+					<p>Due to respect to personal information, ASUS is committed to protecting and respecting YOUR privacy with <a id="eula_url" target="_blank" href="">ASUS Privacy Policy</a>.</p>
 					<strong>License and Restriction</strong>
 					<dl>
 						<dt>5.1</dt>
@@ -211,3 +211,8 @@
 	</div>
 </div>
 <div class='footerPadding'></div>
+<script>
+	var ui_lang = '<% nvram_get("preferred_lang"); %>';
+	var policy_href = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Policy&lang="+ui_lang+"&kw=&num=";
+	$("#eula_url").attr({"href": policy_href});
+</script>

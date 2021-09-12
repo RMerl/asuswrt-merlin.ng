@@ -18,6 +18,9 @@
 #include <pwd.h>
 #include <grp.h>
 #include <sys/wait.h>
+#if defined(RTCONFIG_HND_ROUTER_AX_6756)
+#include <sys/sysmacros.h>
+#endif
 #include <sys/types.h>
 #include <sys/stat.h>
 

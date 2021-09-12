@@ -52,6 +52,13 @@ union nf_conntrack_man_proto
 	struct {
 		__be16 key;	/* GRE key is 32bit, PPtP only uses 16bit */
 	} gre;
+	union {
+		struct {
+			u_int8_t offset;
+			u_int8_t length;
+		};
+		__be16 psid;
+	} psid;
 };
 
 /* The manipulable part of the tuple. */

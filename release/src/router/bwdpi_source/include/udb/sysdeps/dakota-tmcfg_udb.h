@@ -25,7 +25,7 @@
 
 /*
  * Automatically generated make config: don't edit
- * Date: Thu Aug  2 10:26:35 2018
+ * Date: Fri Feb 26 16:57:17 2021
  */
 #ifndef __TMCFG__UDB_AUTOCONF_OUTPUT_H_
 #define __TMCFG__UDB_AUTOCONF_OUTPUT_H_
@@ -50,6 +50,7 @@
 #undef TMCFG_APP_U_TC_AR
 #undef TMCFG_APP_U_TC_PFX
 #undef TMCFG_APP_U_TC_CC
+#undef TMCFG_TC_PFX
 #undef TMCFG_APP_U_TC_PFX
 #undef TMCFG_APP_K_TEMPLATE
 #undef TMCFG_APP_K_TDTS_NFFW
@@ -93,8 +94,8 @@
 
 #define TMCFG_BRAND_ASUS 1 // y
 #define TMCFG_BRAND "asus"
-#define TMCFG_MODEL_MAP_AC2200 1 // y
-#define TMCFG_MODEL "map-ac2200"
+#define TMCFG_MODEL_RT_AC95U 1 // y
+#define TMCFG_MODEL "rt-ac95u"
 #define TMCFG_OEM_SRC 1 // y
 #define TMCFG_OEM_SRC_QUALCOMM_SFE 1 // y
 
@@ -109,13 +110,13 @@
 #define TMCFG_CPU_64BITS 0 // n
 #define TMCFG_CPU_BIG_ENDIAN 0 // n
 #define TMCFG_CPU_LITTLE_ENDIAN 1 // y
-#define TMCFG_KERN_DIR "/opt/ASUS/asusmap_AC2200_GPL_382_11600/release/src-qca-dakota/linux/linux-3.14.x/"
+#define TMCFG_KERN_DIR "/opt/ASUS/asuswrt_AC95U_GPL_386_22735/release/src-qca-dakota/linux/linux-3.14.x"
 #define TMCFG_KERN_ARCH "arm"
 
 /*
  * Toolchain (TC) configurations
  */
-#define TMCFG_TC_PFX "/opt/ASUS/toolchains/asus-toolchain-arm-map_ac1300/bin/arm-openwrt-linux-uclibcgnueabi-"
+#define TMCFG_TC_PFX "/opt/ASUS/toolchains/openwrt-gcc463.arm/bin/arm-openwrt-linux-uclibcgnueabi-"
 
 /*
  * Advanced Build Options
@@ -152,7 +153,7 @@
 #define TMCFG_E_UDB_CORE 1 // y
 #define TMCFG_E_UDB_CORE_MAJ_VER 0
 #define TMCFG_E_UDB_CORE_MIN_VER 2
-#define TMCFG_E_UDB_CORE_REV_VER 18
+#define TMCFG_E_UDB_CORE_REV_VER 20
 #define TMCFG_E_UDB_CORE_SHN_REV_NUM 0
 #define TMCFG_E_UDB_CORE_USE_KBUILD 1 // y
 #define TMCFG_E_UDB_CORE_EXTRA_CFLAGS ""
@@ -161,7 +162,6 @@
 #define TMCFG_E_UDB_CORE_MESH 1 // y
 #define TMCFG_E_UDB_CORE_URL_QUERY 1 // y
 #define TMCFG_E_UDB_CORE_SHN_QUERY 0 // n
-#define TMCFG_E_UDB_CORE_APP_WBL 0 // n
 #define TMCFG_E_UDB_CORE_WBL 1 // y
 #define TMCFG_E_UDB_CORE_WBL_MAJ_VER 2
 #define TMCFG_E_UDB_CORE_WBL_MIN_VER 2
@@ -195,7 +195,7 @@
 #define TMCFG_E_UDB_CORE_PROG_LIC_CTRL_NONE 1 // y
 #define TMCFG_E_UDB_CORE_PROG_LIC_CTRL_V1 0 // n
 #define TMCFG_E_UDB_CORE_PROG_LIC_CTRL_V2 0 // n
-#define TMCFG_E_UDB_CORE_WPR_PAGE 1 // y
+#define TMCFG_E_UDB_CORE_WPR_PAGE 0 // n
 #define TMCFG_E_UDB_CORE_TMDBG 0 // n
 #define TMCFG_E_UDB_CORE_MEMTRACK 0 // n
 #define TMCFG_E_UDB_CORE_HTTP_REFER 0 // n
@@ -212,7 +212,7 @@
 #define TMCFG_E_REL_PKG_MAJ_VER 2
 #define TMCFG_E_REL_PKG_MIN_VER 0
 #define TMCFG_E_REL_PKG_REV_VER 1
-#define TMCFG_E_REL_PKG_LOCAL_VER "890c91d"
+#define TMCFG_E_REL_PKG_LOCAL_VER "09fc605"
 
 /*
  * Accompany applications or modules
@@ -221,7 +221,7 @@
 /*
  * Kernel
  */
-#define TMCFG_APP_K_EXTRA_CFLAGS "-I/opt/ASUS/asusmap_AC2200_GPL_382_11600/release/src-qca-dakota/include"
+#define TMCFG_APP_K_EXTRA_CFLAGS "-I/opt/ASUS/asuswrt_AC95U_GPL_386_22735/release/src-qca-dakota/router/shortcut-fe.ipq40xx/source/shortcut-fe"
 #define TMCFG_APP_K_TDTS_NFFW 0 // n
 #define TMCFG_APP_K_TDTS_UDBFW 1 // y
 #define TMCFG_APP_K_TDTS_UDBFW_EXTRA_SYMBOLS ""
@@ -285,10 +285,10 @@
 #define TMCFG_APP_U_TDTS_WRED_THREAD_POOL 1 // y
 #define TMCFG_APP_U_TDTS_WRED_PROG_CTRL 1 // y
 #define TMCFG_APP_U_WRS_LOCAL_CACHE 0x7D000
-#define TMCFG_APP_U_WRED_TMUFE_LICENSE_ID "RGOM10"
+#define TMCFG_APP_U_WRED_TMUFE_LICENSE_ID "RGOM10-ASUS-HRU77VWJ"
 #define TMCFG_APP_U_WRED_TMUFE_VENDOR_ID "ASUS"
-#define TMCFG_APP_U_WRED_TMUFE_RS_HOST "rgom10-en.url.trendmicro.com"
-#define TMCFG_APP_U_WRED_TMUFE_CUSTOM 0 // n
+#define TMCFG_APP_U_WRED_TMUFE_RS_HOST "rgom10-asus-en.url.trendmicro.com"
+#define TMCFG_APP_U_WRED_TMUFE_CUSTOM 1 // y
 #define TMCFG_APP_U_TDTS_WRED_TMUFE21 0 // n
 #define TMCFG_APP_U_WBL 1 // y
 

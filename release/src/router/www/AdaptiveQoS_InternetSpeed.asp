@@ -31,6 +31,9 @@ function initial(){
 	if(rog_support){
 		$("#FormTitle").css("background-color", "transparent");
 	}
+	else if(tuf_support){
+		$("#FormTitle").css("background", "rgba(17, 17, 17, .5)");
+	}
 	setTimeout(load_page, 100);
 
 }

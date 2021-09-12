@@ -82,6 +82,9 @@ function set_scheme_mode(_type, _LED_Set_Obj){
 			break;
 		case "4" :
 			$light_effect_bg.addClass("evolution");
+			var CoBrand = httpApi.nvramGet(["CoBrand"]).CoBrand;
+			if(CoBrand == "2")
+				$light_effect_bg.addClass("CoBrand_2");
 			break;
 		case "5" :
 			$light_effect_bg.addClass("rainbow");

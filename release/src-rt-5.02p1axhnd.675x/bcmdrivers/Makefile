@@ -320,6 +320,10 @@ endif
 
 symlinks: bcm_headers_install
 
+ifeq ($(wildcard $(BRCMDRIVERS_DIR)/broadcom/include/$(BRCM_BOARD)),)
+bcm_headers_install:
+	@echo "skip bcm_headers"
+else
 bcm_headers_install: $(LN_TARGS)
 	@echo "Installing bcm_headers"
 	mkdir -p $(INC_BCMDRIVER_PATH)/include/
@@ -328,5 +332,6 @@ bcm_headers_install: $(LN_TARGS)
 	for i in `egrep -l '^bcm_headers_install:' $(BRCMDRIVERS_DIR)/*/*/*/$(LN_NAME)/Makefile` ; \
 	   do $(MAKE) -C `dirname $$i` -f $$i bcm_headers_install INC_BCMDRIVER_PATH=$(INC_BCMDRIVER_PATH) ; \
 	   done 
+endif
 
 .PHONY : cleanlinks $(_CLEAN_LN_TARGS) clean $(_CLEAN_CLEAN_DRIVER_DIRS) bcm_headers_install

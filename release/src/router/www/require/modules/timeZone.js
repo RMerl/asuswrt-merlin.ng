@@ -78,7 +78,7 @@ define(function(){
 				"240":"AST4DST",
 				"210":"NST3.30DST",
 				"180":"EBST3DST_2",
-				"120":"UTC2",
+				"120":"UTC2DST",
 				"60":"EUT1DST",
 				"0":"GMT0DST_1",
 				"-60":"UTC-1DST_1",

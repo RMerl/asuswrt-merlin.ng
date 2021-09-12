@@ -23,6 +23,9 @@
 #include <sys/stat.h>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
+#if defined(RTCONFIG_HND_ROUTER_AX_6756)
+#include <sys/sysmacros.h>
+#endif
 #include <linux/sockios.h>
 
 #include "libudev.h"

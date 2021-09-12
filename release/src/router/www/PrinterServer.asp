@@ -67,14 +67,15 @@
 }
 </style>
 <script>
+var faq_href1 = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=146";
+var faq_href2 = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=147";
+var faq_href3 = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=148";
+
 function initial(){
 	show_menu();
-	//id="faq" href="https://www.asus.com/US/support/FAQ/114046"
-        httpApi.faqURL("114046", function(url){document.getElementById("faq1").href=url;});
-	//id="faq" href="https://www.asus.com/US/support/FAQ/114024"
-        httpApi.faqURL("114024", function(url){document.getElementById("faq2").href=url;});
-	//id="faq" href="https://www.asus.com/US/support/FAQ/113661"
-        httpApi.faqURL("113661", function(url){document.getElementById("faq3").href=url;});
+	document.getElementById("faq1").href=faq_href1;
+	document.getElementById("faq2").href=faq_href2;
+	document.getElementById("faq3").href=faq_href3;
 }
 
 function showMethod(flag1, flag2){

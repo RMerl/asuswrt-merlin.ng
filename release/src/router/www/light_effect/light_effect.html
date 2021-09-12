@@ -6,6 +6,27 @@
 <script type="text/javascript" src="/js/httpApi.js"></script>
 </head>
 <script >
+$(function(){
+	var getUrlParameter = function getUrlParameter(param){
+		var url_parm = window.location.search.substring(1);
+		var parm_array = url_parm.split("&");
+		var key_value;
+
+		for(var i = 0; i < parm_array.length; i += 1){
+			key_value = parm_array[i].split("=");
+			if (key_value[0] == param) {
+				return typeof key_value[1] == "undefined" ? "" : decodeURIComponent(key_value[1]);
+			}
+		}
+		return "";
+	};
+
+	var theme = getUrlParameter("current_theme").toLocaleLowerCase();
+	if(theme != ""){
+		$('link[href*="/light_effect/light_effect_' + theme + '.css"]').remove();
+		$('link').last().after('<link rel="stylesheet" type="text/css" href="/light_effect/light_effect_' + theme + '.css">');
+	}
+});
 var $light_effect_bg = $("#light_effect_bg");
 var $hue_bar = $("#hue_bar");
 var $hue_slider = $("#hue_slider");
@@ -58,6 +79,11 @@ function initial_led_control() {
 			}
 		}
 	};
+
+	var productid = httpApi.nvramGet(["productid"], true).productid;
+	if(productid == "TUF-AX5400")
+		$(".scheme_bg:not(#static, #breathing, #wave, #rainbow)").remove();
+
 	$light_effect_bg = $("#light_effect_bg");
 	$hue_bar = $("#hue_bar");
 	$hue_slider = $("#hue_slider");
@@ -147,17 +173,34 @@ function initial_led_control() {
 	$(".setting_scheme .scheme_bg").click(function(e){
 		e = e || event;
 		e.stopPropagation();
+		var id = e.currentTarget.id;
+		if(id == "")
+			return;
 		lightl_effect_animate.clear($light_effect_bg);
 		$light_effect_bg.removeClass().addClass("light_effect_bg");
-		var id = e.currentTarget.id;
 		var mode = e.currentTarget.getAttribute("mode");
 		$(".setting_scheme .scheme_bg").removeClass("active");
 		$(".setting_scheme #" + id + "").addClass("active");
 		var ledg_rgb = httpApi.nvramGet(["ledg_rgb" + mode + ""], true)["ledg_rgb" + mode + ""];
 		if(mode == "6"){
-			ledg_rgb = "0,0,128,0,0,128,0,0,128,0,0,128";
-			if(ledg_group == 5)
-				ledg_rgb = "0,0,128,0,0,128,0,0,128,0,0,128,0,0,128";
+			if(productid == "TUF-AX5400"){
+				ledg_rgb = "128,70,0,128,70,0,128,70,0,128,70,0";
+				if(ledg_group == 5)
+					ledg_rgb = "128,70,0,128,70,0,128,70,0,128,70,0,128,70,0";
+			}
+			else{
+				var CoBrand = httpApi.nvramGet(["CoBrand"]).CoBrand;
+				if(CoBrand == "2"){
+					ledg_rgb = "128,50,35,128,50,35,128,50,35,128,50,35";
+					if(ledg_group == 5)
+						ledg_rgb = "128,50,35,128,50,35,128,50,35,128,50,35,128,50,35";
+				}
+				else{
+					ledg_rgb = "0,0,128,0,0,128,0,0,128,0,0,128";
+					if(ledg_group == 5)
+						ledg_rgb = "0,0,128,0,0,128,0,0,128,0,0,128,0,0,128";
+				}
+			}
 		}
 
 		set_scheme_item_post(ledg_rgb);
@@ -299,6 +342,9 @@ function set_scheme_mode(_type, _LED_Set_Obj){
 			break;
 		case "4" :
 			$light_effect_bg.addClass("evolution");
+			var CoBrand = httpApi.nvramGet(["CoBrand"]).CoBrand;
+			if(CoBrand == "2")
+				$light_effect_bg.addClass("CoBrand_2");
 			$(".setting_hue").fadeTo(0, 0);
 			scheme_item_post.Mode = "4";//evolution
 			break;
@@ -625,7 +671,7 @@ $(document).ready(initial_led_control);
 					<div class="icon"></div>
 					<div class="text"><#BoostKey_AURA_state_rainbow#></div>
 				</div>
-				<div class="scheme_bg"></div>
+				<div class="scheme_bg empty"></div>
 			</div>
 			<div id="boundary_right" class="boundary arrow"></div>
 		</div>

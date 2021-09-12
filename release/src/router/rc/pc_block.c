@@ -1,4 +1,5 @@
 #include <time.h>
+#include <netdb.h>
 #include "pc_block.h"
 
 
@@ -171,8 +172,7 @@ char *arp_mac(struct in_addr sin_addr){
 	struct sockaddr_in *sin;
 	
 	memset((caddr_t)&areq, 0, sizeof(areq));
-	sin = (struct sockaddr_in *)&areq.arp_pa;
-	sin->sin_family = AF_INET;
+	sin = (struct sockaddr_in *)&areq.arp_pa;	sin->sin_family = AF_INET;
 	sin->sin_addr = sin_addr;
 
 	if((s_arp = socket(AF_INET, SOCK_DGRAM, 0)) < 0){
@@ -252,6 +252,200 @@ void perform_http_serv(int sockfd, char *mac){
                 handle_req(sockfd, buf, mac);
 
 }
+
+#ifdef DSL_AX82U
+/*
+	For Optus puase customization.
+*/
+#define DEF_OP_URL_WHITELIST "cdn.optusdigital.com>messaging.optus.com.au>moa.optusnet.com.au>gateway.optus.com.au>branch-api.apps.aws.optus.com.au"
+static char *get_op_url_whitelist(char buf[], int buf_len) {
+	char *op_urls = strdup(nvram_safe_get("optus_url_whitelist"));
+	snprintf(buf, buf_len, "%s", (op_urls && strlen(op_urls)) ? op_urls : DEF_OP_URL_WHITELIST);
+	if (op_urls)
+		free(op_urls);
+	return buf;
+}
+
+int op_is_whitelist_url(const char *url) {
+	char word[4096], *next_word;
+	char op_urls[4096];
+
+	if (get_op_url_whitelist(op_urls, sizeof(op_urls))) {
+		fprintf(stderr, "%s\n", op_urls);
+		foreach_62(word, op_urls, next_word) {
+			if (!strcasecmp(word, url)) {
+				return 1;
+			}
+		}
+	}
+	return 0;
+}
+
+//"iptables -t nat -I PREROUTING -p udp --dport 53 -m string --icase --hex-string "|03|cdn|0c|optusdigital|03|com" --algo bm -j DNAT --to-destination 192.168.50.1:18018"
+#define OP_REDIRECT_CMD "-I PREROUTING -p udp --dport 53 -m string --icase --hex-string \"%s\" --algo bm -j DNAT --to-destination %s:18018\n"
+void op_write_redirect_rules(FILE *fp) {
+	pc_s *pc_list = NULL, *enabled_list = NULL, *follow_pc;
+	char word[4096], *next_word;
+	char op_urls[4096];
+	char *lan_ip = nvram_safe_get("lan_ipaddr");
+
+	if (nvram_invmatch("OPTUS_MULTIFILTER_ALL", "1"))
+		return;
+
+	follow_pc = op_get_all_pc_list(&pc_list);
+	if(follow_pc == NULL)
+		return;
+
+	follow_pc = match_enabled_pc_list(pc_list, &enabled_list, 2);
+	free_pc_list(&pc_list);
+	if(follow_pc == NULL)
+		return;
+
+	if (get_op_url_whitelist(op_urls, sizeof(op_urls))) {
+		foreach_62(word, op_urls, next_word) {
+			if (strstr(word, ".")) {
+				char list[256], list2[256];
+				char *ptr, *p, *pvalue;
+				int first = 1;
+				memset(list, 0, sizeof(list));
+				memset(list2, 0, sizeof(list2));
+
+				ptr = pvalue = strdup(word);
+				first = 1;
+				while (pvalue && (p = strsep(&pvalue, ".")) != NULL) {
+					if (!strlen(p)) {
+						pvalue++;
+						continue;
+					}
+
+					if (first) {
+						first = 0;
+						if (!strncasecmp(p, "www", 3))
+							continue;
+					}
+
+					snprintf(list2, sizeof(list2), "%s|%02x|%s", list, strlen(p), p);
+					strlcpy(list, list2, sizeof(list));
+				}
+				fprintf(fp, OP_REDIRECT_CMD, list, lan_ip);
+
+				free(ptr);
+			} else {
+				fprintf(fp, OP_REDIRECT_CMD, word, lan_ip);
+			}
+		}
+	}
+}
+
+#if 0
+#define RULE_FINDING "-A FORWARD -m state --state INVALID -j DROP"
+static int op_find_rule_insert_pos(int ipv6) {
+	FILE *fp = NULL;
+	if (!ipv6)
+		fp = popen("iptables -S FORWARD", "r");
+	else
+		fp = popen("ip6tables -S FORWARD", "r");
+
+	int num = 1;
+	if (fp) {
+		int count = 0;
+		char buf[256] = {};
+		while (++count && fgets(buf, sizeof(buf), fp) != NULL) {
+			//_dprintf("find_rule_insert_pos : %s\n", buf);
+			if (strstr(buf, RULE_FINDING)) {
+				num = count;
+				break;
+			}
+		}
+		pclose(fp);
+	}
+	return num;
+}
+#endif
+
+#if 1
+#define IPTABLES_CLS_CMD "iptables -C %s -i %s -d %s -j RETURN && iptables -D %s -i %s -d %s -j RETURN\n"
+#define IPTABLES_INS_CMD "iptables -C %s -i %s -d %s -j RETURN || iptables -I %s -i %s -d %s -j RETURN\n"
+#else
+#define IPTABLES_CLS_CMD "iptables -C %s -i %s %s %s -d %s -j RETURN && iptables -D %s -i %s %s %s -d %s -j RETURN\n"
+#define IPTABLES_INS_CMD "iptables -C %s -i %s %s %s -d %s -j RETURN || iptables -I %s -i %s %s %s -d %s -j RETURN\n"
+#endif
+#define OP_RULE_SCRIPT_PATH "/tmp/op_rule_script.sh"
+void op_check_and_add_rules(void *info) {
+	pc_s *pc_list = NULL, *enabled_list = NULL, *follow_pc;
+	struct addrinfo *p;
+
+	if (nvram_invmatch("OPTUS_MULTIFILTER_ALL", "1"))
+		return;
+
+	follow_pc = op_get_all_pc_list(&pc_list);
+	if(follow_pc == NULL)
+		return;
+
+	follow_pc = match_enabled_pc_list(pc_list, &enabled_list, 2);
+	free_pc_list(&pc_list);
+	if(follow_pc == NULL)
+		return;
+
+	struct addrinfo *host_info = info;
+	//int pos = op_find_rule_insert_pos(0);
+	char *lan_if = nvram_safe_get("lan_ifname");
+	FILE *fp = NULL;
+
+	if ((fp=fopen(OP_RULE_SCRIPT_PATH, "w"))==NULL)
+		return;
+
+	fprintf(fp, "#!/bin/sh\n");
+	chmod(OP_RULE_SCRIPT_PATH, 0777);
+#if 1
+	for(p = host_info; p != NULL; p = p->ai_next) {
+		if (p->ai_family == AF_INET) {
+			const char *ip_addr = inet_ntoa(((struct sockaddr_in*)(p->ai_addr))->sin_addr);
+			//fprintf(fp, IPTABLES_CLS_CMD, CHAIN_OPTUS_PAUSE, lan_if, ip_addr, CHAIN_OPTUS_PAUSE, lan_if, ip_addr);
+			fprintf(fp, IPTABLES_INS_CMD, CHAIN_OPTUS_PAUSE, lan_if, ip_addr, CHAIN_OPTUS_PAUSE, lan_if, ip_addr);
+		}
+	}
+#else
+	for(follow_pc = enabled_list; follow_pc != NULL; follow_pc = follow_pc->next) {
+		const char *chk_type;
+		char follow_addr[18] = {0};
+		struct addrinfo *p;
+#ifdef RTCONFIG_AMAS
+		_dprintf("op_check_and_add_rules\n");
+		if (strlen(follow_pc->mac) && amas_lib_device_ip_query(follow_pc->mac, follow_addr)) {
+			chk_type = iptables_chk_ip;
+		} else
+#endif
+		{
+			chk_type = iptables_chk_mac;
+			snprintf(follow_addr, sizeof(follow_addr), "%s", follow_pc->mac);
+		}
+		for(p = host_info; p != NULL; p = p->ai_next) {
+			if (p->ai_family == AF_INET) {
+				const char *ip_addr = inet_ntoa(((struct sockaddr_in*)(p->ai_addr))->sin_addr);
+				if (!strcmp(chk_type, iptables_chk_ip)) {
+					fprintf(fp, IPTABLES_CLS_CMD, 
+						CHAIN_OPTUS_PAUSE, lan_if, iptables_chk_mac, follow_pc->mac, ip_addr, 
+						CHAIN_OPTUS_PAUSE, lan_if, iptables_chk_mac, follow_pc->mac, ip_addr);
+				}
+				fprintf(fp, IPTABLES_CLS_CMD, 
+					CHAIN_OPTUS_PAUSE, lan_if, chk_type, follow_addr, ip_addr,
+					CHAIN_OPTUS_PAUSE, lan_if, chk_type, follow_addr, ip_addr);
+				fprintf(fp, IPTABLES_INS_CMD, 
+					CHAIN_OPTUS_PAUSE, lan_if, chk_type, follow_addr, ip_addr,
+					/*pos, */lan_if, chk_type, follow_addr, ip_addr);
+			}
+		}
+	}
+#endif
+	fclose(fp);
+	system(OP_RULE_SCRIPT_PATH);
+}
+/*
+	For Optus puase customization.
+*/
+#endif
+
 
 int pc_block_main(int argc, char *argv[]){
 

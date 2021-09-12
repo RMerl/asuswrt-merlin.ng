@@ -75,7 +75,7 @@ function submitForm(){
 		return false;
 	}
 	else{
-		var alert_str = validator.account_name(document.form.http_username);
+		var alert_str = validator.host_name(document.form.http_username);
 		if(alert_str != ""){
 			document.getElementById("alert_msg1").innerHTML = htmlEnDeCode.htmlEncode(alert_str);
 			document.getElementById("alert_msg1").style.display = "";
@@ -119,13 +119,6 @@ function submitForm(){
 		return false;
 	}
 	
-	if(document.form.http_passwd.value.length > 0 && document.form.http_passwd.value.length < 5){
-		showtext(document.getElementById("alert_msg2"),"* <#JS_short_password#>");
-		document.form.http_passwd.focus();
-		document.form.http_passwd.select();
-		return false;
-	}		
-
 	if(document.form.http_passwd.value != document.form.v_password2.value){
 		document.getElementById("alert_msg2").innerHTML = "* <#File_Pop_content_alert_desc7#>";
 		document.form.http_passwd.focus();
@@ -133,14 +126,29 @@ function submitForm(){
 		return false;
 	}
 
-	if(is_KR_sku){		/* MODELDEP by Territory Code */
+	if(is_KR_sku || is_SG_sku || is_AA_sku){		/* MODELDEP by Territory Code */
 		if(!validator.string_KR(document.form.http_passwd)){
+			document.form.http_passwd.focus();
+			document.form.http_passwd.select();
+			return false;
+		}
+
+		if(document.form.http_passwd.value == document.form.http_username.value){
+			alert("<#JS_validLoginPWD#>");
 			document.form.http_passwd.focus();
 			document.form.http_passwd.select();
 			return false;
 		}
 	}
 	else{
+
+		if(document.form.http_passwd.value.length > 0 && document.form.http_passwd.value.length < 5){
+			showtext(document.getElementById("alert_msg2"),"* <#JS_short_password#> <#JS_password_length#>");
+			document.form.http_passwd.focus();
+			document.form.http_passwd.select();
+			return false;
+		}
+
 		if(!validator.string(document.form.http_passwd)){
 			document.form.http_passwd.focus();
 			document.form.http_passwd.select();
@@ -284,12 +292,12 @@ body{
 	<div id="alert_msg2" style="color:#FC0;margin-left:15px;"></div>
 	<div style="font-size:1em;color:#B8D8FF;margin-left:15px;"><#Router_Login_Name#></div>
 	<div style="margin:1px 27px 10px 15px">
-		<input type="text" name="http_username" tabindex="1" style="width:100%;height:25px;padding-left:9px;font-size:0.9em;color:#9BA7B1;background-color:rgba(28,28,28,1);border:1px solid #43474B" maxlength="20" value="<% nvram_get("http_username"); %>" autocomplete="off" autocorrect="off" autocapitalize="off" onBlur="clean_scorebar(this);">
+		<input type="text" name="http_username" tabindex="1" style="width:100%;height:25px;padding-left:9px;font-size:0.9em;color:#9BA7B1;background-color:rgba(28,28,28,1);border:1px solid #43474B" maxlength="32" value="<% nvram_get("http_username"); %>" autocomplete="off" autocorrect="off" autocapitalize="off" onBlur="clean_scorebar(this);">
 	</div>
 	<div id="alert_msg1" style="color:#FC0;margin-left:15px;display:none;"></div>
 	<div style="font-size:1em;color:#B8D8FF;margin-left:15px;"><#PASS_new#></div>
 	<div style="margin:10px 27px 10px 15px;">
-		<input type="password" name="http_passwd" tabindex="2" style="width:100%;height:25px;padding-left:9px;font-size:0.9em;color:#9BA7B1;background-color:rgba(28,28,28,1);border:1px solid #43474B" maxlength="16" onpaste="setTimeout('paste_password();', 10)" onBlur="clean_scorebar(this);" autocomplete="off" autocorrect="off" autocapitalize="off">
+		<input type="password" name="http_passwd" tabindex="2" style="width:100%;height:25px;padding-left:9px;font-size:0.9em;color:#9BA7B1;background-color:rgba(28,28,28,1);border:1px solid #43474B" maxlength="32" onpaste="setTimeout('paste_password();', 10)" onBlur="clean_scorebar(this);" autocomplete="off" autocorrect="off" autocapitalize="off">
 	</div>
 	<div id="scorebarBorder" style="display:none;margin-left:15px" title="<#LANHostConfig_x_Password_itemSecur#>">
 		<div id="score"></div>
@@ -297,7 +305,7 @@ body{
 	</div>
 	<div style="font-size:1em;color:#B8D8FF;margin-left:15px;"><#PASS_retype#></div>
 	<div style="margin:10px 27px 120px 15px">
-		<input type="password" name="v_password2" tabindex="3" style="width:100%;height:25px;padding-left:9px;font-size:0.9em;color:#9BA7B1;background-color:rgba(28,28,28,1);border:1px solid #43474B" maxlength="16" onpaste="setTimeout('paste_password();', 10)" autocomplete="off" autocorrect="off" autocapitalize="off"/ onBlur="clean_scorebar(this);">
+		<input type="password" name="v_password2" tabindex="3" style="width:100%;height:25px;padding-left:9px;font-size:0.9em;color:#9BA7B1;background-color:rgba(28,28,28,1);border:1px solid #43474B" maxlength="32" onpaste="setTimeout('paste_password();', 10)" autocomplete="off" autocorrect="off" autocapitalize="off"/ onBlur="clean_scorebar(this);">
 	</div>
 	<div id="bottom_button" style="position:fixed;bottom:36px;width:100%;height:50px;background:rgb(34,34,34);z-index:2;">
 		<div style="width:100%;height:100%;display:table">

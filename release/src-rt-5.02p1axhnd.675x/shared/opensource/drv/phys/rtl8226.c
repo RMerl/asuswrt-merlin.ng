@@ -44,11 +44,6 @@ Exit:
 
 static int _phy_power_set(phy_dev_t *phy_dev, int enable)
 {
-#if 1
-		printk("[%s-%d]: return RTL8226B Power set.\n",__FUNCTION__,__LINE__);
-		return 0;
-#endif
-
     uint16_t val;
     int ret;
 
@@ -248,29 +243,31 @@ int _phy_caps_get(phy_dev_t *phy_dev, int caps_type, uint32_t *pcaps)
 	if (status != SUCCESS)
 		goto Exit;
 
-    if (phylinkability.FC)
+    // if (phylinkability.FC)
         caps |= PHY_CAP_PAUSE;
 
-    if (phylinkability.AsyFC)
+    // if (phylinkability.AsyFC)
         caps |= PHY_CAP_PAUSE_ASYM;
 
-	if (phylinkability.Half_10)
+	// if (phylinkability.Half_10)
         caps |= PHY_CAP_10_HALF;
 
-    if (phylinkability.Full_10)
+    // if (phylinkability.Full_10)
         caps |= PHY_CAP_10_FULL;
 
-    if (phylinkability.Half_100)
+    // if (phylinkability.Half_100)
         caps |= PHY_CAP_100_HALF;
 
-    if (phylinkability.Full_100)
+    // if (phylinkability.Full_100)
         caps |= PHY_CAP_100_FULL;
 
-    if (phylinkability.Full_1000)
+    // if (phylinkability.Full_1000)
         caps |= PHY_CAP_1000_FULL;
 
-    if (phylinkability.adv_2_5G)
+    // if (phylinkability.adv_2_5G)
         caps |= PHY_CAP_2500;
+
+	caps |= PHY_CAP_AUTONEG;
 
     *pcaps = caps;
 Exit:
@@ -449,7 +446,7 @@ static int _phy_dev_del(phy_dev_t *phy_dev)
     return 0;
 }
 
-#if 0
+#if 1
 static int _phy_drv_init(phy_drv_t *phy_drv)
 {
 	//Reset phy and Read phy device ID
@@ -468,7 +465,7 @@ phy_drv_t phy_drv_rtl8226 =
 	.init = _phy_init,
 	.dev_add = _phy_dev_add,
 	.dev_del = _phy_dev_del,
-	//.drv_init = _phy_drv_init,
+	.drv_init = _phy_drv_init,
 	.eee_get = _phy_eee_get,
 	.eee_set = _phy_eee_set,
 	.eee_resolution_get = _phy_eee_resolution_get,

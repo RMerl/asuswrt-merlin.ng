@@ -185,6 +185,38 @@ static char *probe_hfs(struct volume_id *id, char *dev)
 }
 #endif
 
+#ifdef RTCONFIG_APFS
+static char *probe_apfs(struct volume_id *id, char *dev)
+{
+#ifdef RTCONFIG_TUXERA_APFS
+	char cmd[32], buf[PATH_MAX];
+	FILE *fp;
+
+	memset(id->uuid, 0, sizeof(id->uuid));
+
+	snprintf(cmd, sizeof(cmd), "/usr/sbin/apfsinfo %s", dev);
+	if((fp = popen(cmd, "r")) != NULL){
+		int first = 1;
+		while(fgets(buf, sizeof(buf), fp) != NULL){
+			if(!strncmp(buf, "UUID", 4) && !first){
+				first = 0;
+
+				sscanf(buf, "UUID: %s", id->uuid);
+				break;
+			}
+			else if(!strncmp(buf, "Name", 4))
+				sscanf(buf, "Name: %s %*s", id->label);
+		}
+		fclose(fp);
+	}
+
+	return *(id->label) || *(id->uuid) ? "apfs" : NULL;
+#endif
+
+	return NULL;
+}
+#endif
+
 #ifdef RTCONFIG_USB_CDROM
 static char *probe_udf(struct volume_id *id, char *dev)
 {
@@ -252,6 +284,11 @@ int probe_fs(char *device, char **type, char *label, char *uuid)
 found:
 	volume_id_free_buffer(&id);
 	close(id.fd);
+
+#ifdef RTCONFIG_APFS
+	if(fstype == NULL)
+		fstype = probe_apfs(&id, device);
+#endif
 
 	if (fstype == NULL && id.error) {
 		_dprintf("%s: probe %s failed: %s", __FUNCTION__, device, strerror(errno));

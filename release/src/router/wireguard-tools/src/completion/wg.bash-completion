@@ -1,0 +1,99 @@
+# SPDX-License-Identifier: GPL-2.0
+# Copyright (C) 2015-2020 Jason A. Donenfeld <Jason@zx2c4.com>. All Rights Reserved.
+
+_wg_completion() {
+	local a
+
+	if [[ $COMP_CWORD -eq 1 ]]; then
+		COMPREPLY+=( $(compgen -W "show showconf set setconf addconf genkey genpsk pubkey" -- "${COMP_WORDS[1]}") )
+		return
+	fi
+	case "${COMP_WORDS[1]}" in
+		genkey|genpsk|pubkey|help) return; ;;
+		show|showconf|set|setconf|addconf) ;;
+		*) return;
+	esac
+
+	if [[ $COMP_CWORD -eq 2 ]]; then
+		local extra
+		[[ ${COMP_WORDS[1]} == show ]] && extra=" all interfaces"
+		COMPREPLY+=( $(compgen -W "$(wg show interfaces 2>/dev/null)$extra" -- "${COMP_WORDS[2]}") )
+		return
+	fi
+
+	if [[ $COMP_CWORD -eq 3 && ${COMP_WORDS[1]} == show && ${COMP_WORDS[2]} != interfaces ]]; then
+		COMPREPLY+=( $(compgen -W "public-key private-key listen-port peers preshared-keys endpoints allowed-ips fwmark latest-handshakes persistent-keepalive transfer dump" -- "${COMP_WORDS[3]}") )
+		return
+	fi
+
+	if [[ $COMP_CWORD -eq 3 && ( ${COMP_WORDS[1]} == setconf || ${COMP_WORDS[1]} == addconf ) ]]; then
+		compopt -o filenames
+		mapfile -t a < <(compgen -f -- "${COMP_WORDS[3]}")
+		COMPREPLY+=( "${a[@]}" )
+		return
+	fi
+
+	[[ ${COMP_WORDS[1]} == set ]] || return
+
+	local has_listen_port=0 has_fwmark=0 has_private_key=0 has_preshared_key=0 has_peer=0 has_remove=0 has_endpoint=0 has_persistent_keepalive=0 has_allowed_ips=0 words=() i j
+	for ((i=3;i<COMP_CWORD;i+=2)); do
+		[[ ${COMP_WORDS[i]} == listen-port ]] && has_listen_port=1
+		[[ ${COMP_WORDS[i]} == fwmark ]] && has_fwmark=1
+		[[ ${COMP_WORDS[i]} == private-key ]] && has_private_key=1
+		[[ ${COMP_WORDS[i]} == peer ]] && { has_peer=$i; break; }
+	done
+	if [[ $has_peer -eq 0 ]]; then
+		if ((COMP_CWORD % 2 != 0)); then
+			[[ $has_listen_port -eq 1 ]] || words+=( listen-port )
+			[[ $has_fwmark -eq 1 ]] || words+=( fwmark )
+			[[ $has_private_key -eq 1 ]] || words+=( private-key )
+			words+=( peer )
+			COMPREPLY+=( $(compgen -W "${words[*]}" -- "${COMP_WORDS[COMP_CWORD]}") )
+		elif [[ ${COMP_WORDS[COMP_CWORD-1]} == *-key ]]; then
+			compopt -o filenames
+			mapfile -t a < <(compgen -f -- "${COMP_WORDS[COMP_CWORD]}")
+			COMPREPLY+=( "${a[@]}" )
+		fi
+		return
+	fi
+
+	if [[ ${COMP_WORDS[COMP_CWORD-1]} == peer ]]; then
+		COMPREPLY+=( $(compgen -W "$(wg show "${COMP_WORDS[2]}" peers 2>/dev/null)" -- "${COMP_WORDS[COMP_CWORD]}") )
+		return
+	fi
+
+	for ((i=has_peer;i<COMP_CWORD;i++)); do
+		j=i
+		if [[ ${COMP_WORDS[i]} == peer ]]; then
+			has_remove=0
+			has_endpoint=0
+			has_persistent_keepalive=0
+			has_allowed_ips=0
+			has_preshared_key=0
+			[[ ${COMP_WORDS[i+2]} == = ]] && ((i+=2)) || ((i++))
+			continue
+		fi
+		[[ ${COMP_WORDS[i]} == remove ]] && has_remove=1
+		[[ ${COMP_WORDS[i]} == endpoint ]] && has_endpoint=1
+		[[ ${COMP_WORDS[i]} == persistent-keepalive ]] && has_persistent_keepalive=1
+		[[ ${COMP_WORDS[i]} == allowed-ips ]] && has_allowed_ips=1
+		[[ ${COMP_WORDS[i]} == preshared-key ]] && has_preshared_key=1
+
+		[[ ${COMP_WORDS[i]} == remove ]] || ((i++))
+	done
+
+	((COMP_CWORD == j)) || return
+
+	if [[ $has_remove -ne 1 ]]; then
+		[[ $has_preshared_key -eq 1 ]] || words+=( preshared-key )
+		[[ $has_endpoint -eq 1 ]] || words+=( endpoint )
+		[[ $has_allowed_ips -eq 1 ]] || words+=( allowed-ips )
+		[[ $has_persistent_keepalive -eq 1 ]] || words+=( persistent-keepalive )
+		words+=( remove )
+	fi
+	words+=( peer )
+
+	COMPREPLY+=( $(compgen -W "${words[*]}" -- "${COMP_WORDS[COMP_CWORD]}") )
+}
+
+complete -o nosort -F _wg_completion wg

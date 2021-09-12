@@ -48,11 +48,11 @@ var ipv6_service_opt = new Array(	new Array("<#btn_disable#>", "disabled"),
 new Array("SLAAC", "slaac"),
 new Array("ICMPv6", "icmp6")
 */
+var faq_href = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=108";
 
 function initial(){	
 	show_menu();	
-	// https://www.asus.com/US/support/FAQ/113990
-	httpApi.faqURL("113990", function(url){document.getElementById("faq").href=url;});
+	document.getElementById("faq").href=faq_href;
 	if(!IPv6_Passthrough_support){
 		$("#ipv61_service option[value='ipv6pt']").remove();
 		$("#ipv61_service option[value='flets']").remove();
@@ -1034,13 +1034,13 @@ function genWANSoption(){
 		     		<td>
 							<select id="ipv61_service" name="ipv61_service" class="input_option" onchange="showInputfield(this.value);">
 								<option value="disabled" <% nvram_match("ipv61_service", "disabled", "selected"); %>><#btn_disable#></option>
-								<option value="dhcp6" <% nvram_match("ipv61_service", "dhcp6", "selected"); %>>Native</option>
+								<option value="dhcp6" <% nvram_match("ipv61_service", "dhcp6", "selected"); %>><#IPv6_native#></option>
 								<option value="other" <% nvram_match("ipv61_service", "other", "selected"); %>><#IPv6_static_IP#></option>
-								<option value="ipv6pt" <% nvram_match("ipv61_service", "ipv6pt", "selected"); %>>Passthrough</option>
-								<option value="flets" <% nvram_match("ipv61_service", "flets", "selected"); %>>FLET'S IPv6 service</option>
-								<option value="6to4" <% nvram_match("ipv61_service", "6to4", "selected"); %>>Tunnel 6to4</option>
-								<option value="6in4" <% nvram_match("ipv61_service", "6in4", "selected"); %>>Tunnel 6in4</option>
-								<option value="6rd" <% nvram_match("ipv61_service", "6rd", "selected"); %>>Tunnel 6rd</option>
+								<option value="ipv6pt" <% nvram_match("ipv61_service", "ipv6pt", "selected"); %>><#ipv6_passthrough#></option>
+								<option value="flets" <% nvram_match("ipv61_service", "flets", "selected"); %>><#ipv6_flets#></option>
+								<option value="6to4" <% nvram_match("ipv61_service", "6to4", "selected"); %>><#ipv6_tunnel_6to4#></option>
+								<option value="6in4" <% nvram_match("ipv61_service", "6in4", "selected"); %>><#ipv6_tunnel_6in4#></option>
+								<option value="6rd" <% nvram_match("ipv61_service", "6rd", "selected"); %>><#ipv6_tunnel_6rd#></option>
 								<!--option value="slaac" <% nvram_match("ipv61_service", "slaac", "selected"); %>>SLAAC</option-->
 								<!--option value="icmp6" <% nvram_match("ipv61_service", "icmp6", "selected"); %>>ICMPv6</option-->
 							</select>
@@ -1065,7 +1065,7 @@ function genWANSoption(){
 		     		</td>
 		     	</tr>
 		     	<tr style="display:none;"><!-- Viz add ipv6_accept_defrtr 2019.01-->
-					<th>Accept Default Route</th>		<!-- Untranslated -->
+					<th><#ipv6_default_route#></th>
 					<td>
 						<input type="radio" name="_ipv61_accept_defrtr" class="input" value="1" <% nvram_match("ipv61_accept_defrtr", "1","checked"); %>><#WLANConfig11b_WirelessCtrl_button1name#>
 						<input type="radio" name="_ipv61_accept_defrtr" class="input" value="0" <% nvram_match("ipv61_accept_defrtr", "0","checked"); %>><#btn_disable#>

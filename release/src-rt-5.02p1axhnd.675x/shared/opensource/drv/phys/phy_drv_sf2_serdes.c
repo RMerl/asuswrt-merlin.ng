@@ -196,7 +196,7 @@ int dsl_runner_ext3_phy_init(phy_dev_t *phy_dev)
 #if 1
         if (!timeout){
             printk("Could not reset PHY. Your PHY rev is unsupported in u-boot.\n");
-	    return 0;
+            return 0;
         }
 #else
         //BUG_ON(!timeout);

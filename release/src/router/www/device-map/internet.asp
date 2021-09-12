@@ -347,6 +347,12 @@ function update_connection_type(dualwan_unit){
 		wanlink_type_conv = "PPPoA";
 	else if(wanlink_type_conv == "ipoa")
 		wanlink_type_conv = "IPoA";
+	else if(wanlink_type_conv == "lw4o6")
+		wanlink_type_conv = "LW 4over6";
+	else if(wanlink_type_conv == "map-e")
+		wanlink_type_conv = "MAP-E";
+	else if(wanlink_type_conv == "v6plus")
+		wanlink_type_conv = "<#IPv6_plus#>";
 
 	showtext($("#connectionType")[0], wanlink_type_conv);
 }

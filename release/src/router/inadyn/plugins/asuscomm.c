@@ -87,6 +87,7 @@ static int response_register(http_trans_t *trans, ddns_info_t *info, ddns_alias_
 static ddns_system_t asus_update = {
 	.name         = "update@asus.com",
 
+	.setup = NULL,
 	.request      = (req_fn_t)request,
 	.response     = (rsp_fn_t)response_update,
 
@@ -100,6 +101,7 @@ static ddns_system_t asus_update = {
 static ddns_system_t asus_register = {
 	.name         = "register@asus.com",
 
+	.setup = NULL,
 	.request      = (req_fn_t)request,
 	.response     = (rsp_fn_t)response_register,
 
@@ -113,6 +115,7 @@ static ddns_system_t asus_register = {
 static ddns_system_t asus_unregister = {
 	.name         = "unregister@asus.com",
 
+	.setup = NULL,
 	.request      = (req_fn_t)request_unregister,
 	.response     = (rsp_fn_t)response_register,
 
@@ -125,7 +128,7 @@ static ddns_system_t asus_unregister = {
 
 #ifdef USE_IPV6
 #define IPV6_ADDR_GLOBAL        0x0000U
-static char * _get_ipv6_addr(const char *ifname, char *ipv6addr, const size_t len)
+static int _get_ipv6_addr(const char *ifname, char *ipv6addr, const size_t len)
 {
 	FILE *f;
 	int ret = -1, scope, prefix;
@@ -384,7 +387,7 @@ static int request(ddns_t *ctx, ddns_info_t *info, ddns_alias_t *alias)
 			info->creds.encoded_password ? : "",
 			info->server_name.name,
 			info->user_agent);
-	//logit(LOG_WARNING, "request<%s>", ctx->request_buf);
+	logit(LOG_WARNING, "request<%s>", ctx->request_buf);
 	return strlen(ctx->request_buf);
 #endif
 }
@@ -393,13 +396,15 @@ static int request_unregister(ddns_t *ctx, ddns_info_t *info, ddns_alias_t *alia
 {
 	logit(LOG_WARNING, "do request_unregister");
 	make_request(ctx, info, alias);
-	return snprintf(ctx->request_buf, ctx->request_buflen,
+	snprintf(ctx->request_buf, ctx->request_buflen,
 			ASUSDDNS_UNREG_HTTP_REQUEST,
 			info->server_url,
 			alias->name,
 			info->creds.encoded_password ? : "",
 			info->server_name.name,
 			info->user_agent);
+	logit(LOG_WARNING, "unregister_request<%s>", ctx->request_buf);
+	return strlen(ctx->request_buf);
 }
 
 static int response_update(http_trans_t *trans, ddns_info_t *info, ddns_alias_t *alias)
@@ -410,6 +415,9 @@ static int response_update(http_trans_t *trans, ddns_info_t *info, ddns_alias_t 
 	char ret_buf[64];
 #endif
 	p_rsp = trans->rsp_body;
+
+	if(trans->rsp)
+		logit(LOG_WARNING, "[%s]%s", __FUNCTION__, trans->rsp);
 
 	if ((p = strchr(p_rsp, '|')) && (p = strchr(++p, '|')))
 		sscanf(p, "|%255[^|\r\n]", domain);
@@ -477,6 +485,9 @@ static int response_register(http_trans_t *trans, ddns_info_t *info, ddns_alias_
 #endif
 
 	p_rsp = trans->rsp_body;
+
+	if(trans->rsp)
+		logit(LOG_WARNING, "[%s]%s", __FUNCTION__, trans->rsp);
 
 	if ((p = strchr(p_rsp, '|')) && (p = strchr(++p, '|')))
 		sscanf(p, "|%255[^|\r\n]", domain);

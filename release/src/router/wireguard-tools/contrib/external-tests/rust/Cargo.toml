@@ -1,0 +1,16 @@
+[package]
+name = "wireguard-ping"
+version = "0.1.0"
+authors = ["jason@zx2c4.com", "me@jake.su"]
+publish = false
+
+[dependencies]
+snow = "^0.1.0-preview"
+base64 = "^0.5"
+rust-crypto = "*"
+byteorder = "*"
+time = "*"
+
+[dependencies.pnet]
+version = "*"
+features = [ ]

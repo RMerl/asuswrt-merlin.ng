@@ -66,11 +66,11 @@ var apps_id_array = [["22", "", ""],
 					 ["8", "4", ""]];
 
 var curState = '<% nvram_get("wrs_enable"); %>';
+var faq_href = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=140";
 
 function initial(){
 	show_menu();
-	//	https://www.asus.com/support/FAQ/1008720/
-	httpApi.faqURL("1008720", function(url){document.getElementById("faq").href=url;});
+	document.getElementById("faq").href=faq_href;
 	translate_category_id();
 	genMain_table();
 	if('<% nvram_get("wrs_enable"); %>' == 1)
@@ -365,7 +365,7 @@ function genMain_table(){
 		}
 
 		code += '</div>';
-		code += '<div style="margin-left:25px;color:#FC0;font-size:12px;font-weight:normal;">'+ category_desc[i] +'</div>';
+		code += '<div class="hint-color" style="margin-left:25px;font-size:12px;font-weight:normal;">'+ category_desc[i] +'</div>';
 		code += '</div>';
 	}
 
@@ -851,9 +851,9 @@ function switch_control(_status){
 									<table width="730px">
 										<tr>
 											<td align="left">
-												<div class="formfonttitle" style="width:400px"><#AiProtection_title#> - <#AiProtection_filter#></div>
+												<div class="formfonttitle" style="width:400px"><#Parental_Control#> - <#AiProtection_filter#></div>
 											</td>
-											<td>
+											<td style="display:none;">
 												<div id="switch_menu" style="margin:-20px 0px 0px 0px;">
 													<div style="width:168px;height:30px;border-top-left-radius:8px;border-bottom-left-radius:8px;" class="block_filter_pressed">
 														<table class="block_filter_name_table_pressed"><tr><td style="line-height:13px;"><#AiProtection_filter#></td></tr></table>

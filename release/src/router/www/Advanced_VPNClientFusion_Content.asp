@@ -144,6 +144,20 @@
 	width: 98%;
 	margin: auto;
 }
+.conn_status_hint{
+	color: #FC0;
+	font-weight: bolder;
+	font-size: 13px;
+	margin-left: 5px;
+	margin-top: 0px;
+	position: relative;
+	display: none;
+}
+.conn_status_hint > a{
+	color: #33ACFF;
+	text-decoration: underline;
+	cursor: pointer;
+}
 </style>
 <script>
 var subnetIP_support_IPv6 = false;
@@ -174,6 +188,10 @@ var all_profile_subnet_list = "";
 var control_profile_flag = true;
 var serverList_maxNum = 0;
 var openvpnc_max = 5;
+
+var faq_href1 = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=123";
+var faq_href2 = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=132";
+var faq_href3 = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=133";
 
 function parseNvramToArray(_oriNvram, _arrayLength) {
 	var parseArray = [];
@@ -225,7 +243,11 @@ function initial(){
 		var dhcp_staticlist_row = decodeURIComponent(dhcp_staticlist_tmp).split("<");
 		for(var i = 1; i < dhcp_staticlist_row.length; i += 1) {
 			var dhcp_staticlist_col = dhcp_staticlist_row[i].split('>');
-			var item_para = {"mac" : dhcp_staticlist_col[0].toUpperCase(), "dns" : (dhcp_staticlist_col[2] == undefined) ? "" : dhcp_staticlist_col[2]};
+			var item_para = {
+				"mac" : dhcp_staticlist_col[0].toUpperCase(),
+				"dns" : (dhcp_staticlist_col[2] == undefined) ? "" : dhcp_staticlist_col[2],
+				"hostname" : (dhcp_staticlist_col[3] == undefined) ? "" : dhcp_staticlist_col[3]
+			};
 			dhcp_staticlist_array[dhcp_staticlist_col[1]] = item_para;
 		}
 	}
@@ -235,9 +257,11 @@ function initial(){
 		var dhcp_staticlist_dns = dhcp_staticlist_array[vpnc_dev_policy_ipaddr].dns;
 		if(dhcp_staticlist_dns == "")
 			dhcp_staticlist_dns = "<#Setting_factorydefault_value#>";
+		var dhcp_staticlist_hostname = dhcp_staticlist_array[vpnc_dev_policy_ipaddr].hostname;
 		if(dhcp_staticlist_mac != undefined) {
 			vpnc_dev_policy_list_array[i].splice(0, 0, dhcp_staticlist_mac);
 			vpnc_dev_policy_list_array[i].splice(2, 0, dhcp_staticlist_dns);
+			vpnc_dev_policy_list_array[i].splice(5, 0, dhcp_staticlist_hostname);
 		}
 		else {
 			vpnc_dev_policy_list_array.splice(i, 1);
@@ -294,15 +318,18 @@ function initial(){
 			option.text = wan_type_list[i][1];
 			selectobject.add(option);
 		}
-		$("#ipsec_vpn_type_faq").html("IPSec Net-to-Net FAQ");/*untranslated*/
-		httpApi.faqURL("1033578", function(url){document.getElementById("ipsec_vpn_type_faq").href=url;});
+		$("#ipsec_vpn_type_faq").html("IPSec Net-to-Net FAQ")	/*untranslated*/
+					.attr("href", faq_href1);
 	}
 
 	get_vpnc_profile_status();
 	gen_exception_list_table();
 
-	//	https://www.asus.com/support/FAQ/1033909
-	httpApi.faqURL("1033909", function(url){document.getElementById("faq1").href=url;});	//this id is include in string : #VPN_Fusion_FAQ#	
+	document.getElementById("faq1").href=faq_href2;		//this id is include in string : #VPN_Fusion_FAQ#	
+
+	$("#ip_conflict_hint").html("<#vpn_openvpn_conflict#>: Please change your router LAN subnet, please refer to this <a target='_blank'>FAQ</a> for detail");/* untranslated */
+	$("#ip_conflict_hint a").attr("href", faq_href3);
+
 }
 function gen_exception_list_table() {
 	//set table Struct
@@ -350,7 +377,7 @@ function gen_exception_list_table() {
 					"validator" : "ipAddressDHCP"
 				},
 				{
-					"editMode" : "hidden"
+					"editMode" : "hidden"//dns server
 				},
 				{
 					"editMode" : "select",
@@ -360,7 +387,10 @@ function gen_exception_list_table() {
 				{
 					"editMode" : "hidden",
 					"value" : "0"
-				}
+				},
+				{
+					"editMode" : "hidden"//host name
+				},
 			],
 			maximum: 64
 		},
@@ -373,7 +403,7 @@ function gen_exception_list_table() {
 					"editMode" : "macShowClientName",
 				},
 				{
-					"editMode" : "pureText",
+					"editMode" : "pureText",//dns server
 					"styleList" : {"display":"none"}
 				},
 				{
@@ -384,6 +414,10 @@ function gen_exception_list_table() {
 				{
 					"editMode" : "activateIcon",
 					"callBackFun" : control_exception_list_status
+				},
+				{
+					"editMode" : "pureText",//host name
+					"styleList" : {"display":"none"}
 				}
 			],
 			callBackFun : update_exception_list
@@ -797,6 +831,7 @@ function update_unit_option(){
 var ipsec_arrayLength = 0;
 var openvpn_arrayLength = 0;
 function show_vpnc_rulelist(){
+	$("#ip_conflict_hint").hide();
 	var gen_default_connect = function(_idx) {
 		var html = "";
 		html +='<tr>';
@@ -891,6 +926,7 @@ function show_vpnc_rulelist(){
 									break;
 								case "1" :
 									code += "<div title='<#vpn_openvpn_conflict#>' class='vpnc_ipconflict_icon'></div>";
+									$("#ip_conflict_hint").show();
 									break;
 								case "2" :
 									code += "<img title='<#qis_fail_desc1#>' src='/images/button-close2.png' style='width:25px;'>";
@@ -2618,7 +2654,7 @@ function parseArrayToStr_vpnc_dev_policy_list(_array) {
 	var vpnc_dev_policy_list = "";
 	for(var i = 0; i < _array.length; i += 1) {
 		if(_array[i].length != 0) {
-			if(_array[i].length == 5) {
+			if(_array[i].length == 6) {
 				if(i != 0)
 					vpnc_dev_policy_list += "<";
 
@@ -2627,6 +2663,7 @@ function parseArrayToStr_vpnc_dev_policy_list(_array) {
 				var temp_dns = _array[i][2];
 				var temp_vpnc_idx = _array[i][3];
 				var temp_active = _array[i][4];
+				var temp_hostname = _array[i][5];
 				var temp_destination_ip = "";
 				vpnc_dev_policy_list += temp_active + ">" + temp_ipaddr + ">" + temp_destination_ip + ">" + temp_vpnc_idx;
 			}
@@ -2640,13 +2677,14 @@ function parseArrayToStr_dhcp_staticlist() {
 		if(vpnc_dev_policy_list_array[i].length != 0) {
 			dhcp_staticlist += "<";
 
-			if(vpnc_dev_policy_list_array[i].length == 5) {
+			if(vpnc_dev_policy_list_array[i].length == 6) {
 				var temp_mac = vpnc_dev_policy_list_array[i][0];
 				var temp_ip = vpnc_dev_policy_list_array[i][1];
 				var temp_dns = vpnc_dev_policy_list_array[i][2];
+				var temp_hostname = vpnc_dev_policy_list_array[i][5];
 				if(!validator.ipv4_addr(temp_dns))
 					temp_dns = "";
-				dhcp_staticlist += temp_mac + ">" + temp_ip + ">" + temp_dns;
+				dhcp_staticlist += temp_mac + ">" + temp_ip + ">" + temp_dns + ">" + temp_hostname;
 			}
 		}
 	}
@@ -2751,6 +2789,7 @@ function get_vpnc_profile_status() {
 	});
 }
 function update_vpnc_profile_status(_vpnc_status_array) {
+	$("#ip_conflict_hint").hide();
 	for (var i = 0; i < _vpnc_status_array.length; i++) {
 		var vpnc_status = _vpnc_status_array[i][0];
 		var vpnc_reason = _vpnc_status_array[i][1];
@@ -2769,6 +2808,7 @@ function update_vpnc_profile_status(_vpnc_status_array) {
 							break;
 						case "1" :
 							status_hint = "<div title='<#vpn_openvpn_conflict#>' class='vpnc_ipconflict_icon'></div>";
+							$("#ip_conflict_hint").show();
 							break;
 						case "2" :
 							status_hint = "<img title='<#qis_fail_desc1#>' src='/images/button-close2.png' style='width:25px;'>";
@@ -2843,7 +2883,11 @@ function del_exception_list_confirm(_parArray) {
 		var dhcp_staticlist_row = dhcp_staticlist_array.split('&#60');
 		for(var i = 1; i < dhcp_staticlist_row.length; i += 1) {
 			var dhcp_staticlist_col = dhcp_staticlist_row[i].split('&#62');
-			var item_para = {"mac" : dhcp_staticlist_col[0].toUpperCase(), "dns" : (dhcp_staticlist_col[2] == undefined) ? "" : dhcp_staticlist_col[2]};
+			var item_para = {
+				"mac" : dhcp_staticlist_col[0].toUpperCase(),
+				"dns" : (dhcp_staticlist_col[2] == undefined) ? "" : dhcp_staticlist_col[2],
+				"hostname" : (dhcp_staticlist_col[3] == undefined) ? "" : dhcp_staticlist_col[3]
+			};
 			manually_dhcp_list_array_ori[dhcp_staticlist_col[1]] = item_para;
 		}
 		if(manually_dhcp_list_array_ori[ipAddr] != undefined) {
@@ -2998,6 +3042,7 @@ function del_exception_list_confirm(_parArray) {
 								<div class="add_btn" style="float:left;" onclick="Add_profile(16)"></div>
 							</div>
 							<span style="color:#FC0;margin-left:5px;"><#VPN_Fusion_Server_List_hint#></span>
+							<div id="ip_conflict_hint" class="conn_status_hint"></div>
 							<table width="98%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable_table">
 								<tr>
 									<th width="10%"><a class='hintstyle' href='javascript:void(0);' onClick='openHint(32, 1);'><#Setting_factorydefault_value#></a></th>

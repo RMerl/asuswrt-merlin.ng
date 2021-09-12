@@ -7,6 +7,12 @@
 #define QUERY_LEN 960 // BWSQL_LOG buffer size is 1024
 #define LEN_MAX	8000
 
+#define BWMON_LOCK   "/var/lock/AiProtectionMonitor.lock"
+#define BWMON_PID    "/var/run/AiProtectionMonitor.pid"
+
+#define BWHIS_LOCK   "/var/lock/WebHistory.lock"
+#define BWHIS_PID    "/var/run/WebHistory.pid"
+
 // traffic_analyzer.c
 extern int traffic_analyzer_main(int argc, char **argv);
 extern int sql_integrity_check(sqlite3 *db, char *db_path);
@@ -30,3 +36,4 @@ extern int web_history_main(int argc, char **argv);
 
 // AiProctionMonitor.c
 extern int aiprotection_monitor_main(int argc, char **argv);
+extern void ProcessCheckPid(char *type);

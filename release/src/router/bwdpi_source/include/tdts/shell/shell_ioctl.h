@@ -145,6 +145,15 @@ enum
 	TDTS_SHELL_IOCTL_NR_MAX   //!< Max ioctl no. \warning Should not exceed 0xff.
 };
 
+enum
+{
+	TDTS_SHELL_IOCTL_DIR_NA = 0x0,  //!< Not available.
+	TDTS_SHELL_IOCTL_DIR_WR,        //!< Write (0x1)
+	TDTS_SHELL_IOCTL_DIR_RD,        //!< Read (0x2)
+	TDTS_SHELL_IOCTL_DIR_WTRD,      //!< Write && Read (0x3)
+	TDTS_SHELL_IOCTL_DIR_MAX = TDTS_SHELL_IOCTL_DIR_WTRD
+};
+
 #define TDTS_SHELL_IOCTL_NR_NA 0x00 //!< N/A. Do not use
 #define TDTS_SHELL_IOCTL_CMD_DBG _IOCTL_CMD_WR(TDTS_SHELL_IOCTL_NR_DBG)   //!< \copydoc TDTS_SHELL_IOCTL_NR_DBG
 #define TDTS_SHELL_IOCTL_CMD_SIG _IOCTL_CMD_WR(TDTS_SHELL_IOCTL_NR_SIG)   //!< \copydoc TDTS_SHELL_IOCTL_NR_SIG

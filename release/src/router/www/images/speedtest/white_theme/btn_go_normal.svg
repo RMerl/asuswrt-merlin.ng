@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="138" height="138" viewBox="0 0 138 138">
+  <defs>
+    <radialGradient id="btn_go_normal-c" cx="60.516%" cy="3.441%" r="101.56%" fx="60.516%" fy="3.441%" gradientTransform="matrix(-.10354 .99128 -2.4672 -.41745 .753 -.551)">
+      <stop offset="0%" stop-color="#3C7694"/>
+      <stop offset="64.028%" stop-color="#21333C" stop-opacity=".136"/>
+      <stop offset="100%" stop-color="#8CDBFF" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="btn_go_normal-d" x1="-3.088%" x2="95.215%" y1="99.117%" y2="16.681%">
+      <stop offset="0%" stop-color="#45505E"/>
+      <stop offset="54.593%" stop-color="#8ED1FF"/>
+      <stop offset="100%" stop-color="#45505E"/>
+    </linearGradient>
+    <linearGradient id="btn_go_normal-f" x1="96.167%" x2="13.913%" y1="22.293%" y2="83.99%">
+      <stop offset="0%" stop-color="#6AC9FF"/>
+      <stop offset="59.825%" stop-color="#0078B9" stop-opacity=".402"/>
+      <stop offset="100%" stop-color="#00AEFF" stop-opacity="0"/>
+    </linearGradient>
+    <path id="btn_go_normal-b" d="M64.8095024,101.522231 C100.48989,101.522231 129.210112,59.4146225 129.210112,36.5638842 C129.210112,13.713146 106.312118,1.89933539e-14 64.8095024,1.89933539e-14 C23.3068873,1.89933539e-14 -1.51946831e-13,13.713146 -1.51946831e-13,36.5638842 C-1.51946831e-13,59.4146225 29.1291152,101.522231 64.8095024,101.522231 Z"/>
+    <filter id="btn_go_normal-a" width="114.8%" height="124.7%" x="-7.4%" y="-13.3%" filterUnits="objectBoundingBox">
+      <feMorphology in="SourceAlpha" operator="dilate" radius="1.538" result="shadowSpreadOuter1"/>
+      <feOffset dy="-4" in="shadowSpreadOuter1" result="shadowOffsetOuter1"/>
+      <feGaussianBlur in="shadowOffsetOuter1" result="shadowBlurOuter1" stdDeviation="2"/>
+      <feComposite in="shadowBlurOuter1" in2="SourceAlpha" operator="out" result="shadowBlurOuter1"/>
+      <feColorMatrix in="shadowBlurOuter1" result="shadowMatrixOuter1" values="0 0 0 0 0   0 0 0 0 0   0 0 0 0 0  0 0 0 0.1 0"/>
+      <feMorphology in="SourceAlpha" operator="dilate" radius="1.538" result="shadowSpreadOuter2"/>
+      <feOffset dy="2" in="shadowSpreadOuter2" result="shadowOffsetOuter2"/>
+      <feGaussianBlur in="shadowOffsetOuter2" result="shadowBlurOuter2" stdDeviation="2"/>
+      <feComposite in="shadowBlurOuter2" in2="SourceAlpha" operator="out" result="shadowBlurOuter2"/>
+      <feColorMatrix in="shadowBlurOuter2" result="shadowMatrixOuter2" values="0 0 0 0 0   0 0 0 0 0   0 0 0 0 0  0 0 0 0.1 0"/>
+      <feMerge>
+        <feMergeNode in="shadowMatrixOuter1"/>
+        <feMergeNode in="shadowMatrixOuter2"/>
+      </feMerge>
+    </filter>
+    <filter id="btn_go_normal-e" width="120.2%" height="131.6%" x="-10.1%" y="-16.8%" filterUnits="objectBoundingBox">
+      <feMorphology in="SourceAlpha" radius="2" result="shadowSpreadInner1"/>
+      <feGaussianBlur in="shadowSpreadInner1" result="shadowBlurInner1" stdDeviation="4"/>
+      <feOffset dx="-2" dy="-5" in="shadowBlurInner1" result="shadowOffsetInner1"/>
+      <feComposite in="shadowOffsetInner1" in2="SourceAlpha" k2="-1" k3="1" operator="arithmetic" result="shadowInnerInner1"/>
+      <feColorMatrix in="shadowInnerInner1" values="0 0 0 0 0.148097386   0 0 0 0 0.785428975   0 0 0 0 0.904579937  0 0 0 0.8 0"/>
+    </filter>
+    <radialGradient id="btn_go_normal-h" cx="50.396%" cy="27.925%" r="76.612%" fx="50.396%" fy="27.925%" gradientTransform="matrix(0 1 -2.4889 0 1.199 -.225)">
+      <stop offset="0%" stop-color="#4997C0"/>
+      <stop offset="56.866%" stop-color="#21333C" stop-opacity=".136"/>
+      <stop offset="100%" stop-color="#1D282E" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="btn_go_normal-i" cx="61.114%" cy="24.651%" r="51.845%" fx="61.114%" fy="24.651%" gradientTransform="matrix(-.26436 .9417 -1.12066 -.50961 1.049 -.203)">
+      <stop offset="0%" stop-color="#00B3FF" stop-opacity=".729"/>
+      <stop offset="100%" stop-color="#196F97" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="btn_go_normal-j" x1="22.321%" x2="100%" y1="36.494%" y2="74.974%">
+      <stop offset="0%" stop-color="#2FD0FF" stop-opacity=".2"/>
+      <stop offset="43.51%" stop-color="#00A4FF"/>
+      <stop offset="100%" stop-color="#143A57"/>
+    </linearGradient>
+    <path id="btn_go_normal-g" d="M63.7840254,101.522231 C97.4203226,101.522231 129.210112,65.6681113 129.210112,36.9709519 C129.210112,8.27379245 99.4644126,1.42450154e-13 63.7840254,1.42450154e-13 C28.1036381,1.42450154e-13 -3.03893662e-13,13.8892997 -3.03893662e-13,36.9709519 C-3.03893662e-13,60.052604 30.1477281,101.522231 63.7840254,101.522231 Z"/>
+  </defs>
+  <g fill="none" fill-rule="evenodd" transform="rotate(-5 256.656 6.984)">
+    <path fill="#006EFF" d="M63.7840254,101.522231 C97.4203226,101.522231 129.210112,65.6681113 129.210112,36.9709519 C129.210112,8.27379245 99.4644126,1.89933539e-14 63.7840254,1.89933539e-14 C28.1036381,1.89933539e-14 -1.51946831e-13,13.8892997 -1.51946831e-13,36.9709519 C-1.51946831e-13,60.052604 30.1477281,101.522231 63.7840254,101.522231 Z" style="mix-blend-mode:hard-light"/>
+    <use fill="#000" filter="url(#btn_go_normal-a)" xlink:href="#btn_go_normal-b"/>
+    <use fill="url(#btn_go_normal-c)" xlink:href="#btn_go_normal-b"/>
+    <use fill="url(#btn_go_normal-c)" xlink:href="#btn_go_normal-b" style="mix-blend-mode:hard-light"/>
+    <use fill="url(#btn_go_normal-d)" fill-opacity=".6" xlink:href="#btn_go_normal-b" style="mix-blend-mode:hard-light"/>
+    <use fill="#000" filter="url(#btn_go_normal-e)" xlink:href="#btn_go_normal-b"/>
+    <path stroke="url(#btn_go_normal-f)" stroke-width="1.538" d="M64.8095024,-0.76910781 C44.0163832,-0.76910781 27.7626726,2.66762552 16.665316,8.92847378 C10.9516877,12.1519586 6.59416271,16.1256768 3.66398783,20.7617572 C0.738681846,25.390134 -0.76910781,30.6814261 -0.76910781,36.5638842 C-0.76910781,49.3474078 8.20167423,68.1137354 22.3764346,82.3210501 C33.8359714,93.8069055 48.668289,102.291339 64.8095024,102.291339 C80.9279703,102.291339 95.6589729,93.831587 107.021234,82.3709243 C121.11202,68.158106 129.97922,49.362755 129.97922,36.5638842 C129.97922,30.6668901 128.489839,25.3642349 125.589314,20.7280759 C122.689271,16.0926869 118.37374,12.1207125 112.700822,8.89987452 C101.70608,2.65753548 85.5713638,-0.76910781 64.8095024,-0.76910781 Z"/>
+    <use fill="#2A96FF" xlink:href="#btn_go_normal-g"/>
+    <use fill="url(#btn_go_normal-h)" fill-opacity=".7" xlink:href="#btn_go_normal-g"/>
+    <use fill="url(#btn_go_normal-i)" xlink:href="#btn_go_normal-g" style="mix-blend-mode:screen"/>
+    <path stroke="url(#btn_go_normal-j)" stroke-linejoin="square" stroke-width="1.538" d="M63.7840254,0.76910781 C45.6121775,0.76910781 29.4158926,4.38622953 17.9647695,11.0236112 C7.30571239,17.2018899 0.76910781,26.0074911 0.76910781,36.9709519 C0.76910781,49.446681 9.72369849,67.3319636 23.2233712,80.994023 C34.4030033,92.3081341 48.7304513,100.753123 63.7840254,100.753123 C79.8019941,100.753123 95.3833327,92.501844 107.237041,80.8066303 C119.978689,68.2353504 128.441004,51.662644 128.441004,36.9709519 C128.441004,30.7870005 127.032502,25.5723262 124.450389,21.2038473 C121.684906,16.5251383 117.577653,12.8211019 112.448248,9.92257897 C100.479245,3.15913861 82.9932204,0.76910781 63.7840254,0.76910781 Z"/>
+  </g>
+</svg>

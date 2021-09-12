@@ -4,6 +4,9 @@
 //Feature definition
 #define AHS 0
 #define SECURITY_DAEMON 1
+#define TPVPN_GET_CONF 2
+#define TPVPN_GET_LIST 3
+#define TPVPN_GET_VERSION 4
 
 
 //return value definition

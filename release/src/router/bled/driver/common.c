@@ -1768,6 +1768,7 @@ static int bled_register_cdev(dev_t dev)
 
 	// register cdev fail, cleanup.
 	kobject_put(&bled_cdev->kobj);
+	cdev_del(bled_cdev);
 	bled_cdev = NULL;
 
 	return rc;

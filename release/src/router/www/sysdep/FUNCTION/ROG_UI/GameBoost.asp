@@ -32,9 +32,15 @@ var ctf_fa_mode = '<% nvram_get("ctf_fa_mode"); %>';
 var label_mac = <% get_label_mac(); %>;
 var bwdpi_app_rulelist = "<% nvram_get("bwdpi_app_rulelist"); %>".replace(/&#60/g, "<");
 var CNSku = in_territory_code("CN");
+
+var faq_href1 = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=110";
+var faq_href2 = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=153";
+var faq_href3 = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=152";
+
 function initial(){
 	show_menu();
-	httpApi.faqURL("1010951", function(url){document.getElementById("faq").href=url;});
+	document.getElementById("faq").href=faq_href1;
+	document.getElementById("faq2").href=faq_href2;
 	if((document.form.qos_enable.value == '1') && (document.form.qos_type.value == '1') && (bwdpi_app_rulelist.indexOf('game') != -1)){
 		document.getElementById("game_boost_enable").checked = true;
 	}
@@ -108,7 +114,7 @@ function eula_confirm(){
 function cancel(){
 	refreshpage();
 }
-var siteInfo = ['https://www.asus.com/support/FAQ/1042778/',
+var siteInfo = [faq_href3,
 	     		'Advanced_WTFast_Content.asp',
 				'QoS_EZQoS.asp'];
 function redirectSite(url){
@@ -235,7 +241,7 @@ function uuRegister(mac){
 									<div class="content-desc-title">ROG First</div>
 									<div class="content-divide-line-sm"></div>
 									<div class="content-detail">
-										<a href="https://www.asus.com/support/FAQ/1036877" target="_blank">FAQ</a>
+										<a id="faq2" href="" target="_blank">FAQ</a>
 									</div>
 								</div>
 								<div class="content-desc"><#Game_First_desc#></div>

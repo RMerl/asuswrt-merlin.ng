@@ -70,7 +70,7 @@ start_nas(void)
 	{
 #ifdef RTCONFIG_BRCM_HOSTAPD
 		if (!nvram_match("hapd_enable", "0")) {
-			start_hapd_wpasupp();
+			start_hapd_wpasupp(0);
 			return 0;
 		} else
 #endif
@@ -445,11 +445,11 @@ void update_wifi_led_state_in_wlcmode(void)
 
 		if (wlc_state == WLC_STATE_CONNECTED) {
 			set_bled_normal_mode(led_gpio);
-			led_control(id, LED_ON);
+			led_control(id, inhibit_led_on()? LED_OFF : LED_ON);
 		} else {
 			set_bled_udef_pattern(led_gpio, 700, "0 1");
 			set_bled_udef_pattern_mode(led_gpio);
-			led_control(id, LED_ON);
+			led_control(id, inhibit_led_on()? LED_OFF : LED_ON);
 		}
 	}
 }

@@ -55,6 +55,9 @@ var component_attribute = function() {
 	this.style_color = "#000000";
 };
 var jscolor_attr = "{closable:true, closeText:\"<#CTL_close#>\", onFineChange:\"edit_component_color_callback(this)\"}";
+
+var faq_href = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=143";
+
 window.onresize = function() {
 	if(document.getElementById("captive_portal_adv_log_panel").style.display == "block") {
 		cal_panel_block("captive_portal_adv_log_panel", 0.05);
@@ -77,7 +80,7 @@ function initial(){
 
 	var series = productid.split("-")[0].toUpperCase();
 	if(series == "BRT")
-		httpApi.faqURL("1034977", function(url){document.getElementById("faq").href=url;});
+		document.getElementById("faq").href=faq_href;
 	else
 		$(".brt_series").remove();
 }
@@ -961,13 +964,13 @@ function edit_component_eula() {
 	code += "<div class='edit_component_item_title'><#Captive_Portal_Terms_Service#> <span>(* <#Captive_Portal_Terms_Dialog#>)</span></div>";
 	code += "<div class='edit_component_item_content'>";
 	code += "<div class='edit_component_item_title' style='margin-top:5px;'><#Captive_Portal_Terms_Service#> title</div>";/*untranslated*/
-	code += "<input name='edit_eula_terms_service_title' class='input_30_table auto_add_onblur' value='Welcome to Captive Portal Wi-Fi!' type='text' maxlength='128' autocorrect='off' autocapitalize='off'>";
+	code += "<input name='edit_eula_terms_service_title' class='input_30_table auto_add_onblur' value='Welcome to Captive Portal WiFi!' type='text' maxlength='128' autocorrect='off' autocapitalize='off'>";
 	code += "</div>";
 
 	code += "<div class='edit_component_item_content' style='margin-top:5px;'>";
 	code += "<div class='edit_component_item_title' style='margin-top:5px;'><#Terms_of_Service#></div>";
 	code += "<textarea name='edit_eula_terms_service' id='edit_eula_terms_service' class='edit_eula_textarea auto_add_onblur' rows='8' cols='40' maxlength='2048'>";
-	code += "By using Captive Portal Wi-Fi internet service, you hereby expressly acknowledge and agree that there are significant security, privacy and confidentiality risks inherent in accessing or transmitting information through the internet, whether the connection is facilitated through wired or wireless technology. Security issues include, without limitation, interception of transmissions, loss of data, and the introduction or viruses and other programs that can corrupt or damage your computer.\n\nAccordingly, you agree that the owner and/or provider of this network is NOT liable for any interception or transmissions, computer worms or viruses, loss of data, file corruption, hacking or damage to your computer or other devices that result from the transmission or download of information or materials through the internet service provided.\n\nUse of the wireless network is subject to the general restrictions outlined below. If abnormal, illegal, or unauthorized behavior is detected, including heavy consumption of bandwidth, the network provider reserves the right to permanently disconnect the offending device from the wireless network.";
+	code += "By using Captive Portal WiFi internet service, you hereby expressly acknowledge and agree that there are significant security, privacy and confidentiality risks inherent in accessing or transmitting information through the internet, whether the connection is facilitated through wired or wireless technology. Security issues include, without limitation, interception of transmissions, loss of data, and the introduction or viruses and other programs that can corrupt or damage your computer.\n\nAccordingly, you agree that the owner and/or provider of this network is NOT liable for any interception or transmissions, computer worms or viruses, loss of data, file corruption, hacking or damage to your computer or other devices that result from the transmission or download of information or materials through the internet service provided.\n\nUse of the wireless network is subject to the general restrictions outlined below. If abnormal, illegal, or unauthorized behavior is detected, including heavy consumption of bandwidth, the network provider reserves the right to permanently disconnect the offending device from the wireless network.";
 	code += "</textarea>";
 	code += "</div>";
 
@@ -1993,7 +1996,7 @@ function edit_component_help() {
 	$("#splash_page_container_edit").html(code);
 
 	code += "<div class='edit_component_item_title'>Introduce</div>";/*untranslated*/
-	code += "<div class='edit_component_item_title'>The page will be pop up once the client successful access the Wi-Fi network you designated in the previous step. ASUS BERT-AC828 provide you plenty of pre-customized template.</div>";/*untranslated*/
+	code += "<div class='edit_component_item_title'>The page will be pop up once the client successful access the WiFi network you designated in the previous step. ASUS BERT-AC828 provide you plenty of pre-customized template.</div>";/*untranslated*/
 
 	code += "<div class='edit_component_item_title'><#Captive_Portal_Editor#></div>";
 	code += "<div class='edit_component_item_title'>EThe splash editor allows you to build a self-defined HTML web page with easiest way. The editor supports several web components, which includes Image, Text, EULA and Authentication unit. Just have few of clicks and fill the retired content. At the left hand size, the field is the mobile view that allow user directly position the unit of the web page. After the unit be pitched, you can edit the contents at the right hand size editing field.</div>";/*untranslated*/

@@ -49,7 +49,7 @@ var changedPermissions = new Array();
 var folderlist = new Array();
 
 var ddns_enable = '<% nvram_get("ddns_enable_x"); %>';
-var usb_port_conflict_faq = "https://www.asus.com/support/FAQ/1037906";
+var usb_port_conflict_faq = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=134";
 function initial(){
 	if(re_mode == "1"){
 		$("#apply_btn").addClass("perNode_apply_gen");
@@ -69,6 +69,9 @@ function initial(){
 	if(is_KR_sku){
 		document.getElementById("radio_anonymous_enable_tr").style.display = "none";
 	}
+
+	if(!isSupport("ftp_ssl"))
+		document.getElementById("radio_ftp_tls_enable_tr").style.display = "none";
 	
 	// show accounts
 	showAccountGroupMenu(select_flag);
@@ -113,14 +116,13 @@ function initial(){
 		$("#ftpPortConflict").show();
 		var text = httpApi.ftp_port_conflict_check.usb_ftp.hint;
 		text += "<br>";
-		text += "<a id='ftp_port_conflict_faq' href='" + usb_port_conflict_faq + "' target='_blank' style='text-decoration:underline;color:#FC0;'><#FAQ_Find#></a>";
+		text += "<a id='ftp_port_conflict_faq' href='' target='_blank' style='text-decoration:underline;color:#FC0;'><#FAQ_Find#></a>";
 		$("#ftpPortConflict").html(text);
 	}
-	httpApi.faqURL("1037906", function(url){
-		usb_port_conflict_faq = url;
-		if($("#ftpPortConflict").find("#ftp_port_conflict_faq").length)
-			$("#ftpPortConflict").find("#ftp_port_conflict_faq").attr("href", usb_port_conflict_faq);
-	});
+
+	if($("#ftpPortConflict").find("#ftp_port_conflict_faq").length){
+		$("#ftpPortConflict").find("#ftp_port_conflict_faq").attr("href", usb_port_conflict_faq);
+	}
 }
 
 function get_disk_tree(){
@@ -523,9 +525,10 @@ function onEvent(){
 		changeActionButton(document.getElementById("createAccountBtn"), 'User', 'Add', 0);
 
 		var accounts_length = this.accounts.length;
+		var maximum_account = httpApi.nvramGet(["st_max_user"]).st_max_user;
 		document.getElementById("createAccountBtn").onclick = function(){
-				if(accounts_length >= 6) {
-					alert("<#JS_itemlimit1#> 6 <#JS_itemlimit2#>");
+				if(accounts_length >= maximum_account) {
+					alert("<#JS_itemlimit1#> " + maximum_account + " <#JS_itemlimit2#>");
 					return false;
 				}
 				else
@@ -744,6 +747,17 @@ function switchUserType(flag){
 	lastClickedObj = 0;
 	setTimeout('get_disk_tree();', 1000);
 }
+
+function secure_check(flag){
+	
+	document.getElementById("TLS_disabled").innerHTML = (flag==1)? "":"<#usb_tls_disabled_hint#>";
+
+	if(flag==1 && !get_manage_type(PROTOCOL)){
+		alert("<#usb_tls_conflict#>");
+		document.form.ftp_tls[1].checked = true;
+		return;
+	}
+}
 </script>
 </head>
 
@@ -867,8 +881,8 @@ function switchUserType(flag){
 						</div>	
 					</td>
 				</tr>
-				<tr>
-					<th>Enable TLS support</th>
+				<tr id="radio_ftp_tls_enable_tr">
+					<th><#AiDisk_Enable_TLS#></th>
 					<td>
 						<input type="radio" name="ftp_tls" class="input" value="1" <% nvram_match_x("", "ftp_tls", "1", "checked"); %>><#checkbox_Yes#>
 						<input type="radio" name="ftp_tls" class="input" value="0" <% nvram_match_x("", "ftp_tls", "0", "checked"); %>><#checkbox_No#>

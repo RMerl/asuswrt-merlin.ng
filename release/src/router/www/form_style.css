@@ -2244,3 +2244,32 @@ padding-top:1px;
 	z-index:200;
 	background-color:#2B373B;
 }
+
+.hint-color{
+	color: #FFCC00;
+}
+#cancelBtn, #applyBtn{
+	font-weight: bolder;
+	text-shadow: 1px 1px 0px black;
+	background: #121C1E;
+	background: -webkit-linear-gradient(#233438 0%, #0F1011 100%);
+	background: -o-linear-gradient(#233438 0%, #0F1011 100%);
+	background: linear-gradient(#233438 0%, #0F1011 100%);
+	border-radius: 8px;
+  border:0;
+  color: #FFFFFF;
+	height:33px;
+	font-family:Verdana;
+	font-size:12px;
+  padding:0 .70em 0 .70em;
+  	width: auto;
+ 	min-width: 122px;
+  overflow:visible;
+	cursor:pointer;
+	outline: none; /* for Firefox */
+ 	hlbr:expression(this.onFocus=this.blur()); /* for IE */
+ 	white-space:normal;
+	 word-break: break-all;
+	 line-height: 33px;
+	 text-align: center;
+}

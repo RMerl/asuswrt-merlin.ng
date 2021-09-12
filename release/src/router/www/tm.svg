@@ -221,7 +221,7 @@ function getTrafficUnit(){
 	var _index = 'ASUS_TrafficMonitor_unit=';
 	var x = document.cookie;
 	if(x.indexOf(_index) == -1){
-		document.cookie = 'ASUS_TrafficMonitor_unit=9';
+		document.cookie = 'ASUS_TrafficMonitor_unit=1';
 		x = document.cookie
 	}
 

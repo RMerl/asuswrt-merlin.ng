@@ -1678,9 +1678,13 @@ _dhd_pktfwd_mcasthandler(uint32_t radio_idx, uint16_t ifidx, pNBuff_t * pNBuf)
     dhd_wmf_t * wmf;
 #endif /* DHD_WMF */
 
+#ifdef BCM_DHD_LOCK
     dhd_pub = g_dhd_info[radio_idx];
-
     DHD_LOCK(dhd_pub); //+++++++++++++++++++++++++
+#else
+    DHD_PERIM_LOCK_ALL(radio_idx % FWDER_MAX_UNIT); //+++++++++++++++++++++++++
+    dhd_pub = g_dhd_info[radio_idx];
+#endif
 
     if(dhd_idx2net(dhd_pub,ifidx)==NULL)
        goto dhd_pktfwd_mcasthandler_free;
@@ -1762,7 +1766,11 @@ dhd_pktfwd_mcasthandler_drop:
 
 dhd_pktfwd_mcasthandler_success:
 
+#ifdef BCM_DHD_LOCK
     DHD_UNLOCK(dhd_pub); //-----------------------
+#else
+    DHD_PERIM_UNLOCK_ALL(radio_idx % FWDER_MAX_UNIT); //-----------------------
+#endif
 
     return;
 }   /* _dhd_pktfwd_mcasthandler() */
@@ -2024,11 +2032,19 @@ dhd_pktfwd_pktlist_xmit(pktlist_context_t * dhd_pktlist_context,
     dhd_pub     = g_dhd_info[radio_idx];
     dhd_pktfwd_keymap = dhd_pktfwd->dhd_pktfwd_keymap[radio_idx];
 
+#ifdef BCM_DHD_LOCK
     DHD_LOCK(dhd_pub); //+++++++++++++++++++++++++
+#else
+    DHD_PERIM_LOCK_ALL(radio_idx % FWDER_MAX_UNIT); //+++++++++++++++++++++++++
+#endif
 
     flowid = dhd_pktfwd_keymap->pktfwdkey_flowid[pktlist->prio][dest];
 
+#ifdef BCM_DHD_LOCK
     DHD_UNLOCK(dhd_pub); //-----------------------
+#else
+    DHD_PERIM_UNLOCK_ALL(radio_idx % FWDER_MAX_UNIT); //-----------------------
+#endif
 
     d3lut_elem->ext.hit = 1;
 	
@@ -2061,8 +2077,11 @@ dhd_pktfwd_pktlist_xmit(pktlist_context_t * dhd_pktlist_context,
         return BCME_OK;
     }
 
+#ifdef BCM_DHD_LOCK
     DHD_LOCK(dhd_pub); //+++++++++++++++++++++++++
-
+#else
+    DHD_PERIM_LOCK_ALL(radio_idx % FWDER_MAX_UNIT); //+++++++++++++++++++++++++
+#endif
     flow_ring_node = DHD_FLOW_RING(dhd_pub, flowid);
     if ((flow_ring_node->status != FLOW_RING_STATUS_PENDING) &&
 	    (flow_ring_node->status != FLOW_RING_STATUS_OPEN)) {
@@ -2107,7 +2126,11 @@ dhd_pktfwd_pktlist_xmit(pktlist_context_t * dhd_pktlist_context,
 
 dhd_pktfwd_pktlist_xmit_done:
 
+#ifdef BCM_DHD_LOCK
     DHD_UNLOCK(dhd_pub); //-----------------------
+#else
+    DHD_PERIM_UNLOCK_ALL(radio_idx % FWDER_MAX_UNIT); //-----------------------
+#endif
 
     return ret;
 } /* dhd_pktfwd_pktlist_xmit */

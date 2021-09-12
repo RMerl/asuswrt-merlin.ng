@@ -1,0 +1,75 @@
+#!/bin/bash
+####	set path variable #####
+cur_dir=`pwd`									### current directory
+router_dir=$cur_dir/..
+srcbase_dir=$SRCBASE
+mipsel_path=$TOOLCHAIN								### mipsel tool-chain path
+uclib=$TOOLCHAIN/lib								### mipsel lib path 
+uclib_inc=$TOOLCHAIN/include							### mipsel include path
+sqlite_dir=$cur_dir/../sqlite
+sqlite_inc=$sqlite_dir
+sqlite_lib=$sqlite_dir/.libs
+user=`echo $HOME`								### /home/XXXXX
+echo $cur_dir
+echo $SRCBASE
+
+PCRE_VER=8.31
+
+
+CFLAGS="-I$cur_dir/../pcre-$PCRE_VER -I$uclib_inc -I$cur_dir/../sqlite -I$cur_dir/../curl-7.21.7/include -I$srcbase_dir/include -I$router_dir/nvram${BCMEX} -I$router_dir/shared -I$router_dir/libdisk -I$router_dir/libpasswd -DHAVE_OPENSSL_SSL_H=1 -DHAVE_LIBSSL=1 -DEMBEDDED_EANBLE=1"
+LIBS="-L$uclib -L$router_dir/shared -lshared -L$router_dir/nvram${BCMEX} -lnvram -L$router_dir/libdisk -ldisk -L$router_dir/libpasswd -lpasswd -lpthread -L$router_dir/openssl -lcrypto -lssl -L$router_dir/curl-7.21.7/lib/.libs -lcurl -L$router_dir/libxml2/.libs -lxml2 -lpthread -lcrypt"
+LDFLAGS="-L$uclib -L$cur_dir/../pcre-$PCRE_VER/.libs -lpcre -L$cur_dir/../libxml2/.libs -lxml2 -L$router_dir/openssl -L$cur_dir/../curl-7.21.7/lib/.libs"
+XML_LIBS="-L$cur_dir/../libxml2/.libs -lxml2"
+
+QTN=`cat ../.config |grep "RTCONFIG_QTN=y"`
+if [ -n "$QTN" ]; then
+	LIBS+=" -L$router_dir/libqcsapi_client -lqcsapi_client"
+else
+	LDFLAGS+=" -ldl -lm"
+	XML_LIBS+=" -lm"
+fi
+
+PMS=`cat ../.config |grep "RTCONFIG_PERMISSION_MANAGEMENT=y"`
+if [ -n "$PMS" ]; then
+	CFLAGS+=" -I$router_dir/sqlCipher -I$router_dir/PMS_DBapis"
+	LDFLAGS+=" -L$router_dir/sqlCipher/.libs -lsqlcipher -L$router_dir/PMS_DBapis -lpms_sql"
+fi
+
+BCMARM=`cat ../.config |grep "RTCONFIG_BCMARM=y"`
+if [ -n "$BCMARM" ]; then
+	CFLAGS+=" -I$srcbase_dir/shared/bcmwifi/include"
+fi
+
+NVRAM_ENCRYPT=`cat ../.config |grep "RTCONFIG_NVRAM_ENCRYPT=y"`
+if [ -n "$NVRAM_ENCRYPT" ]; then
+        CFLAGS+=" -DNVRAM_ENCRYPT_ENABLE=1"
+fi
+
+####	Set compiler variable ####
+export CFLAGS="$CFLAGS"
+export LIBS="$LIBS"
+export LDFLAGS="$LDFLAGS"
+export XML_CFLAGS="-I$cur_dir/../libxml2/include"
+export XML_LIBS="$XML_LIBS"
+export SQLITE_CFLAGS="-I$cur_dir/../sqlite"
+export SQLITE_LIBS="-L$cur_dir/../sqlite/.libs -lsqlite3"
+export CURL_CFLAGS="-I$cur_dir/../curl-7.21.7/include"
+export CURL_LIBS="-L$cur_dir/../curl-7.21.7/lib/.libs -lcurl"
+export PCRE_LIB="-L$cur_dir/../pcre-$PCRE_VER/.libs -lpcre"
+export PCRECONFIG="$cur_dir/../pcre-$PCRE_VER/pcre-config"
+export SSL_LIB="-L$router_dir/openssl -lcrypto -lssl"
+#export SSL_LIB="-L$router_dir/openssl -lcrypto -lssl -L$router_dir/shared -lshared -L$router_dir/nvram -lnvram"
+#export SSL_LIB="-L$router_dir/shared -lshared"
+#export SHARED_LIBS="-L$router_dir/shared -lshared"
+$CONFIGURE --prefix=/usr \
+--with-pcre PCRECONFIG="$cur_dir/../pcre-$PCRE_VER/pcre-config" \
+--with-smbdav-props \
+--with-openssl=$router_dir/openssl \
+--with-openssl-includes=$router_dir/openssl/include/openssl \
+--with-openssl-libs=$router_dir/openssl/ \
+--with-smbdav-locks=yes \
+--with-libsmbclient=$cur_dir/../samba-3.5.8/source3 \
+--without-zlib \
+--without-bzip2 \
+--enable-shared \
+--disable-static

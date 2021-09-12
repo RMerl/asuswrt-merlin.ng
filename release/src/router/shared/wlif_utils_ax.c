@@ -2978,3 +2978,281 @@ end:
 }
 #endif	/* MULTIAP */
 #endif	/* CONFIG_HOSTAPD */
+
+#if defined(RTCONFIG_HND_ROUTER_AX_6756)
+#if !defined(RTCONFIG_SDK504L02_188_1303)
+
+static bit2rate_map_t tbl_2g[] = {
+	{BIT0, 2},      /* 1 Mbps */
+	{BIT1, 4},      /* 2 Mbps */
+	{BIT2, 11},     /* 5.5 Mbps */
+	{BIT4, 12},     /* 6 Mbps */
+	{BIT5, 18},     /* 9 Mbps */
+	{BIT3, 22},     /* 11  Mbps */
+	{BIT6, 24},     /* 12 Mbps */
+	{BIT7, 36},     /* 18 Mbps */
+	{BIT8, 48},     /* 24 Mbps */
+	{BIT9, 72},     /* 36 Mbps */
+	{BIT10, 96},    /* 48 Mbps */
+	{BIT11, 108},   /* 54 Mbps */
+	{BIT12, 0},     /* MCS 0 */
+	{BIT13, 1},     /* MCS 1 */
+	{BIT14, 2},     /* MCS 2 */
+	{BIT15, 3},     /* MCS 3 */
+	{BIT16, 4},     /* MCS 4 */
+	{BIT17, 5},     /* MCS 5 */
+	{BIT18, 6},     /* MCS 6 */
+	{BIT19, 7},     /* MCS 7 */
+};
+
+static bit2rate_map_t tbl_5g[] = {
+	{BIT0, 12},     /* 6 Mbps */
+	{BIT1, 18},     /* 9 Mbps */
+	{BIT2, 24},     /* 12 Mbps */
+	{BIT3, 36},     /* 18 Mbps */
+	{BIT4, 48},     /* 24 Mbps */
+	{BIT5, 72},     /* 36 Mbps */
+	{BIT6, 96},     /* 48 Mbps */
+	{BIT7, 108},    /* 54 Mbps */
+	{BIT8, 0},      /* MCS 0 */
+	{BIT9, 1},      /* MCS 1 */
+	{BIT10, 2},     /* MCS 2 */
+	{BIT11, 3},     /* MCS 3 */
+	{BIT12, 4},     /* MCS 4 */
+	{BIT13, 5},     /* MCS 5 */
+	{BIT14, 6},     /* MCS 6 */
+	{BIT15, 7},     /* MCS 7 */
+};
+
+#define BASIC_RATES_BITS_COUNT_2G	12
+#define BASIC_RATES_BITS_COUNT_5G	8
+#define SUPPORTED_RATES_BITS_COUNT_2G	20	/* 12 legacy rates + 8 ht rates */
+#define SUPPORTED_RATES_BITS_COUNT_5G	16	/* 8 legacy rate + 8 ht rates */
+
+int
+wl_rateset_get_bitmap_index(bit2rate_map_t *tbl, int tbl_sz, int i, int *l)
+{
+	if (!(tbl && l))
+		return -1;
+
+	for (*l = 0; *l < tbl_sz ; (*l)++) {
+		 if (i == tbl[*l].bit) {
+			 return 0;
+		 }
+	}
+
+	/* if we are out out the for loop, then nothing was found. */
+	return -2;
+}
+
+/* function from wlu_common.c of same name */
+void
+wl_rateset_init_fields(wl_rateset_args_u_t* rs, int rsver)
+{
+	switch (rsver) {
+		case RATESET_ARGS_V1:
+			/* NO version support. */
+			break;
+		case RATESET_ARGS_V2:
+			rs->rsv2.version = rsver;
+			break;
+			/* add new versions here */
+		default:
+			/* nothing needed here */
+			break;
+	}
+}
+
+/* function from wlu_common.c of same name */
+void
+wl_rateset_get_fields(wl_rateset_args_u_t *rs, int rsver, uint32 **rscount, uint8 **rsrates,
+		uint8 **rsmcs, uint16 **rsvht_mcs, uint16 **rshe_mcs)
+{
+	switch (rsver) {
+		case RATESET_ARGS_V1:
+			if (rscount)
+				*rscount = &rs->rsv1.count;
+			if (rsrates)
+				*rsrates = rs->rsv1.rates;
+			if (rsmcs)
+				*rsmcs = rs->rsv1.mcs;
+			if (rsvht_mcs)
+				*rsvht_mcs = rs->rsv1.vht_mcs;
+			break;
+		case RATESET_ARGS_V2:
+			if (rscount)
+				*rscount = &rs->rsv2.count;
+			if (rsrates)
+				*rsrates = rs->rsv2.rates;
+			if (rsmcs)
+				*rsmcs = rs->rsv2.mcs;
+			if (rsvht_mcs)
+				*rsvht_mcs = rs->rsv2.vht_mcs;
+			if (rshe_mcs)
+				*rshe_mcs = rs->rsv2.he_mcs;
+			break;
+			/* add new length returning here */
+		default:
+			/* nothing needed here */
+			break;
+	}
+}
+
+/* code modified based on wl_get_rateset_args_info from wlu_common.c */
+int
+wl_rateset_get_args_info(void *wl, int *rs_len, int *rs_ver)
+{
+	int err = 0;
+	wl_wlc_version_t wlc_ver;
+	wl_rateset_args_v2_t wlrs;
+	wl_rateset_args_v2_t *wlrs2;
+	char buf[WLC_IOCTL_MEDLEN] = {0};
+
+	memset(&wlc_ver, 0, sizeof(wlc_ver));
+	err = wl_iovar_get(wl, "wlc_ver", &wlc_ver, sizeof(wl_wlc_version_t));
+	if (err == BCME_OK) {
+		/* rateset args query is available from wlc_ver_major >= 9 */
+		if ((wlc_ver.wlc_ver_major >= 9)) {
+			/* Now, query the wl_rateset_args_t version, by giving version=0 and
+			 * length as 4 bytes ssizeof(int32).
+			 */
+			memset(&wlrs, 0, sizeof(wlrs));
+			err = wl_iovar_getbuf(wl, "rateset", &wlrs, sizeof(int32), buf, sizeof(buf));
+			if (err == BCME_OK) {
+				wlrs2 = (wl_rateset_args_v2_t *)buf;
+				*rs_ver = wlrs2->version;
+				switch (*rs_ver) {
+					case RATESET_ARGS_V2:
+						*rs_len = sizeof(wl_rateset_args_v2_t);
+						break;
+						/* add new length returning here */
+					default:
+						*rs_len = 0; /* ERROR */
+						err = BCME_UNSUPPORTED;
+				}
+			}
+		} else {
+			*rs_ver = RATESET_ARGS_V1;
+			*rs_len = sizeof(struct wl_rateset_args_v1);
+		}
+	} else {
+		/* for old branches which doesn't even support wlc_ver */
+		*rs_ver = RATESET_ARGS_V1;
+		*rs_len = sizeof(wl_rateset_args_v1_t);
+		err = BCME_OK;
+	}
+
+	return err;
+}
+
+bool
+rateset_overwrite_by_supportedRatesBitmap(char *name, char *prefix)
+{
+	bool rateControlBitmap = FALSE;
+	char *sr_bitmap_str, *br_bitmap_str;
+	uint16 br_bitmap = 0;
+	uint32 sr_bitmap = 0xffffffff;
+	char *ptr;
+	int i, j, l, k, bandtype, ret, bitlen, srbitlen, tbl_sz, rslen = 0, rsver = 0;
+	uint8 *rsrates = NULL, *rsmcs = NULL;
+	uint32 *rscount = NULL;
+	bit2rate_map_t *tbl;
+	char tmp[100];
+	wl_rateset_args_u_t defrs;
+
+	rateControlBitmap = (atoi(nvram_safe_get(WLIF_NVRAM_SUPPORT_RATE_BITMAP)) == 1) ?
+			TRUE : FALSE;
+
+	if (!rateControlBitmap)
+		return FALSE;
+
+	sr_bitmap_str = nvram_safe_get(strcat_r(prefix, "supported_rates_bitmap", tmp));
+	br_bitmap_str = nvram_safe_get(strcat_r(prefix, "basic_rates_bitmap", tmp));
+	sr_bitmap = (uint32) strtoul(sr_bitmap_str, &ptr, 16);
+	br_bitmap = (uint16) strtoul(br_bitmap_str, &ptr, 16);
+
+	printf("%s: sr_bitmap_str: %s (%x) br_bitmap_str: %s (%x)\n",
+		__FUNCTION__, sr_bitmap_str, sr_bitmap, br_bitmap_str, br_bitmap);
+
+	if ((sr_bitmap == 0) || (br_bitmap == 0)) {
+		printf("%s: either one or both nvram for sr_bitmap and br_bitmap are missing\n", __FUNCTION__);
+		return FALSE;
+	}
+
+	/* Read it back, and set bandtype accordingly */
+	wl_ioctl(name, WLC_GET_BAND, &bandtype, sizeof(bandtype));
+
+	if (bandtype == WLC_BAND_2G) {
+		tbl = tbl_2g;
+		tbl_sz = sizeof(tbl_2g) / sizeof(bit2rate_map_t);
+		srbitlen = SUPPORTED_RATES_BITS_COUNT_2G;
+		bitlen = BASIC_RATES_BITS_COUNT_2G;
+	} else {
+		tbl = tbl_5g;
+		tbl_sz = sizeof(tbl_5g) / sizeof(bit2rate_map_t);
+		srbitlen = SUPPORTED_RATES_BITS_COUNT_5G;
+		bitlen = BASIC_RATES_BITS_COUNT_5G;
+	}
+
+	if ((ret = wl_rateset_get_args_info(name, &rslen, &rsver)) < 0) {
+		printf("%s: wl_rateset_get_args_info failed\n", __FUNCTION__);
+		return FALSE;
+	}
+	wl_rateset_init_fields(&defrs, rsver);
+
+	if (ret = wl_iovar_get(name, "rateset", &defrs, rslen) < 0) {
+		printf("%s: wl_iovar_get rateset failed\n", __FUNCTION__);
+		return FALSE;
+	}
+	wl_rateset_get_fields(&defrs, rsver, &rscount, &rsrates, &rsmcs, NULL, NULL);
+
+	for (j = i = 0; i < bitlen; i++) {
+		if (!(sr_bitmap & (1 << i)) && (br_bitmap & (1 << i))) {
+			printf("%s: %d bit from sr_bitmap (%x) and br_bitmap (%x) don't match\n",
+				       __FUNCTION__, i, sr_bitmap, br_bitmap);
+			return FALSE;
+		}
+		if (sr_bitmap & (1 << i)) {
+			if (wl_rateset_get_bitmap_index(tbl, tbl_sz, i, &l) < 0) {
+				printf("%s: can't find bit %d in bitmap table\n", __FUNCTION__, i);
+				return FALSE;
+			}
+			rsrates[j] = tbl[l].rate;
+			rsrates[j] = (br_bitmap & (1 << i)) ?
+					(rsrates[j] | 0x80) : (rsrates[j] & ~0x80);
+			j++;
+		}
+	}
+
+	for (i = 0; i < srbitlen - bitlen; i++) {
+		(sr_bitmap & (1 << (i + bitlen))) ? setbit(rsmcs, i) :
+			clrbit(rsmcs, i);
+	}
+
+	/* check for no basic rates */
+	j = 0;	/* number of basic rate count */
+	k = 0;	/* number of rate count */
+	for (i = 0; i < bitlen; i++) {
+		if (rsrates[i]) {
+			k++;
+			if (rsrates[i] & 0x80)
+				j++;
+		}
+	}
+
+	if (j == 0) {
+		printf("%s: missing basic rate\n", __FUNCTION__);
+		return FALSE;
+	}
+
+	*rscount = k;
+
+	if (wl_iovar_set(name, "rateset", &defrs, rslen) < 0) {
+		printf("%s: wl_iovar_set rateset failed\n", __FUNCTION__);
+		return FALSE;
+	}
+
+	return TRUE;
+}
+#endif
+#endif

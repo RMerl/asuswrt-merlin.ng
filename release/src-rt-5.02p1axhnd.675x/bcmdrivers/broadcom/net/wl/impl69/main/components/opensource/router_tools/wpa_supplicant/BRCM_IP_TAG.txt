@@ -1,0 +1,2 @@
+<<Broadcom-WL-IPTag/Open:opensource wpa_supplicant root folder>>
+<<Broadcom-WL-IPTag/Open:opensource wpa_supplicant root folder>>

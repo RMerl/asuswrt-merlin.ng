@@ -59,6 +59,7 @@ pc_event_s *get_event_list_by_sched_v2(pc_event_s **target_list, char *sched_v2_
 #endif
 
 extern pc_s *get_all_pc_list(pc_s **pc_list);
+extern pc_s *op_get_all_pc_list(pc_s **pc_list);
 extern pc_s *get_all_pc_tmp_list(pc_s **pc_list);
 
 extern pc_event_s *initial_event(pc_event_s **target_e);
@@ -87,6 +88,12 @@ extern int cleantrack_daytime_pc_list(pc_s *pc_list, int target_day, int target_
 #endif
 extern void config_daytime_string(pc_s *pc_list, FILE *fp, char *logaccept, char *logdrop, int temp);
 extern void config_pause_block_string(pc_s *pc_list, FILE *fp, char *logaccept, char *logdrop, int temp);
+#ifdef DSL_AX82U
+// For optus customization
+#define CHAIN_OPTUS_PAUSE "OPTUS_PAUSE"
+extern pc_s *op_get_all_pc_list(pc_s **pc_list);
+extern void op_config_pause_block_string(pc_s *pc_list, FILE *fp, char *logaccept, char *logdrop, int temp);
+#endif
 extern int count_pc_rules(pc_s *pc_list, int enabled);
 extern int count_event_rules(pc_event_s *event_list);
 #endif // #ifndef __PC_H__

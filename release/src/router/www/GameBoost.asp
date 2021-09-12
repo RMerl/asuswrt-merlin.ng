@@ -545,7 +545,7 @@ function redirectSite(url){
 										<tr>
 											<td align="left">
 
-												<div style="display:table-cell;background:url('/images/New_ui/game.svg');width:77px;height:77px;"></div>
+												<div style="display:table-cell;background:url('/images/New_ui/game.svg');width:77px;height:77px;background-size: 100%;"></div>
 												<div class="formfonttitle" style="display:table-cell;font-size:26px;font-weight:bold;color:#EBE8E8;vertical-align:middle">Game</div>
 											</td>
 										</tr>

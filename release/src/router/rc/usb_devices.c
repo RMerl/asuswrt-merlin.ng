@@ -3238,8 +3238,8 @@ int asus_sd(const char *device_name, const char *action)
 		usb_dbg("(%s): stop the xhci mode.\n", device_name);
 	else if(nvram_get_int("usb_usb3") != 1){
 		// Get VID & PID
-		if ((vid = get_usb_vid(usb_node)) == 0 ||
-		    (pid = get_usb_pid(usb_node)) == 0) {
+		if ((vid = get_usb_vid(usb_node)) == 0
+				|| (pid = get_usb_pid(usb_node)) == 0) {
 			usb_dbg("(%s): Fail to get VID/PID of USB(%s).\n", device_name, usb_node);
 			file_unlock(isLock);
 			return 0;
@@ -3571,15 +3571,26 @@ int asus_sg(const char *device_name, const char *action)
 		return 0;
 	}
 
-	memset(nvram_name, 0, 32);
-	sprintf(nvram_name, "usb_path%s", port_path);
-	memset(nvram_value, 0, 32);
-	strcpy(nvram_value, nvram_safe_get(nvram_name));
+	snprintf(nvram_name, sizeof(nvram_name), "usb_path%s", port_path);
+	snprintf(nvram_value, sizeof(nvram_value), "%s", nvram_safe_get(nvram_name));
+
+	// Storage interface is first up with some composite devices,
+	// so needs to wait that other interfaces wake up.
+	int retry = 0;
+	while(strcmp(nvram_value, "printer") && strcmp(nvram_value, "modem") && retry < MAX_WAIT_MODULE){
+		++retry;
+		usb_dbg("(%s): wait %d second for the printer/modem on Port %s.\n", device_name, retry, usb_node);
+		sleep(1);
+		snprintf(nvram_value, sizeof(nvram_value), "%s", nvram_safe_get(nvram_name));
+	}
+	if(!strcmp(nvram_value, "printer") || !strcmp(nvram_value, "modem")){
+		usb_dbg("(%s): Already there was a other interface(%s).\n", device_name, nvram_value);
+		file_unlock(isLock);
+		return 0;
+	}
 
 #ifdef RTCONFIG_USB_MODEM
-	//if(!strcmp(nvram_value, "printer") || !strcmp(nvram_value, "modem")){
-	memset(switch_file, 0, 32);
-	sprintf(switch_file, "%s.%s", USB_MODESWITCH_CONF, port_path);
+	snprintf(switch_file, sizeof(switch_file), "%s.%s", USB_MODESWITCH_CONF, port_path);
 	if(strcmp(nvram_value, "") && check_if_file_exist(switch_file)){
 		usb_dbg("(%s): Already there was a other interface(%s).\n", device_name, nvram_value);
 		file_unlock(isLock);
@@ -3588,8 +3599,8 @@ int asus_sg(const char *device_name, const char *action)
 #endif // RTCONFIG_USB_MODEM
 
 	// Get VID & PID
-	if ((vid = get_usb_vid(usb_node)) == 0 ||
-	    (pid = get_usb_pid(usb_node)) == 0) {
+	if ((vid = get_usb_vid(usb_node)) == 0
+			|| (pid = get_usb_pid(usb_node)) == 0) {
 		usb_dbg("(%s): Fail to get VID/PID of USB(%s).\n", device_name, usb_node);
 		file_unlock(isLock);
 		return 0;
@@ -3803,8 +3814,8 @@ int asus_sr(const char *device_name, const char *action)
 	}
 
 	// Get VID & PID
-	if ((vid = get_usb_vid(usb_node)) == 0 ||
-	    (pid = get_usb_pid(usb_node)) == 0) {
+	if ((vid = get_usb_vid(usb_node)) == 0
+			|| (pid = get_usb_pid(usb_node)) == 0) {
 		usb_dbg("(%s): Fail to get VID/PID of USB(%s).\n", device_name, usb_node);
 		file_unlock(isLock);
 		return 0;
@@ -4037,8 +4048,8 @@ int asus_tty(const char *device_name, const char *action)
 	}
 
 	// Get VID & PID
-	if ((vid = get_usb_vid(usb_node)) == 0 ||
-	    (pid = get_usb_pid(usb_node)) == 0) {
+	if ((vid = get_usb_vid(usb_node)) == 0
+			|| (pid = get_usb_pid(usb_node)) == 0) {
 		usb_dbg("(%s): Fail to get VID/PID of USB(%s).\n", device_name, usb_node);
 		file_unlock(isLock);
 		return 0;
@@ -4610,8 +4621,8 @@ int asus_usb_interface(const char *device_name, const char *action)
 
 #ifdef RTCONFIG_USB_MODEM
 	// Get VID & PID
-	if ((vid = get_usb_vid(usb_node)) == 0 ||
-	    (pid = get_usb_pid(usb_node)) == 0) {
+	if ((vid = get_usb_vid(usb_node)) == 0
+			|| (pid = get_usb_pid(usb_node)) == 0) {
 		usb_dbg("(%s): Fail to get VID/PID of USB(%s).\n", device_name, usb_node);
 		file_unlock(isLock);
 		return 0;
@@ -4659,6 +4670,12 @@ int asus_usb_interface(const char *device_name, const char *action)
 #if defined(RTCONFIG_USB) || defined(RTCONFIG_USB_PRINTER) || defined(RTCONFIG_USB_MODEM)
 		retry = 0;
 		while(retry < MAX_WAIT_MODULE){
+			if(isStorageInterface(device_name)){
+				usb_dbg("(%s): Is Storage interface on Port %s.\n", device_name, usb_node);
+				file_unlock(isLock);
+				return 0;
+			}
+
 #ifdef RTCONFIG_USB_PRINTER
 			if(hadPrinterInterface(usb_node)){
 				usb_dbg("(%s): Had Printer interface on Port %s.\n", device_name, usb_node);
@@ -4679,7 +4696,7 @@ int asus_usb_interface(const char *device_name, const char *action)
 					|| isGCTInterface(device_name)
 #endif
 					){
-				usb_dbg("(%s): Had Modem interface on Port %s.\n", device_name, usb_node);
+				usb_dbg("(%s): Is Modem interface on Port %s.\n", device_name, usb_node);
 				break;
 			}
 #endif

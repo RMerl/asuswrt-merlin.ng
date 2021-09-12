@@ -380,6 +380,7 @@ edp_decode(struct lldpd *cfg, char *frame, int s,
 			}
 			break;
 		case EDP_TLV_DISPLAY:
+			free(chassis->c_name);
 			if ((chassis->c_name = (char *)calloc(1, tlv_len + 1)) == NULL) {
 				log_warn("edp", "unable to allocate memory for chassis "
 				    "name");

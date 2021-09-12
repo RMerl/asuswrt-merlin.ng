@@ -461,7 +461,7 @@ function threatQuery(id, keyword){
 		"800": "File Transfer"
 	}
 */
-	var url = 'http://nw-dlcdnet.asus.com/trend/' + id + "?q=" + keyword/*8keywordMappingTable[catId]*/;
+	var url = 'https://nw-dlcdnet.asus.com/trend/' + id + "?q=" + keyword/*8keywordMappingTable[catId]*/;
 	window.open(url, '_blank');
 }
 

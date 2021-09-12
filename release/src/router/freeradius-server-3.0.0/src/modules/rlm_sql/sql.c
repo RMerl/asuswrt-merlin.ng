@@ -437,6 +437,7 @@ int sql_getvpdata(rlm_sql_t * inst, rlm_sql_handle_t **handle,
 	return rows;
 }
 
+#include <fcntl.h>
 /*
  *	Log the query to a file.
  */

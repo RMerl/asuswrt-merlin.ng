@@ -8,7 +8,7 @@
 <meta HTTP-EQUIV="Expires" CONTENT="-1">
 <link rel="shortcut icon" href="images/favicon.png">
 <link rel="icon" href="images/favicon.png">
-<title><#Web_Title#> - Facebook Wi-Fi<!--untranslated--></title>
+<title><#Web_Title#> - Facebook WiFi<!--untranslated--></title>
 <link rel="stylesheet" type="text/css" href="index_style.css"> 
 <link rel="stylesheet" type="text/css" href="form_style.css">
 <link rel="stylesheet" type="text/css" href="other.css">
@@ -584,7 +584,7 @@ function check_gn_if_status(_subunit, _gn_array) {
 									<table width="98%" align="center" cellpadding="4" cellspacing="0" class="gninfo_head_table" id="gninfo_table_FBWiFi">
 										<tr id="FBWiFi_title">
 											<td align="left" style="color:#5AD; font-size:16px; border-bottom:1px dashed #AAA;" colspan="2">
-												<span>Facebook Wi-Fi<!--untranslated--></span>
+												<span>Facebook WiFi<!--untranslated--></span>
 												<span id="FBWiFi_radio_hint" style="font-size: 14px;display:none;color:#FC0;margin-left:17px;">* <#GuestNetwork_Radio_Status#><a style="font-family:Lucida Console;color:#FC0;text-decoration:underline;cursor:pointer;" onclick="_change_wl_unit_status(0);"><#btn_go#></a>
 												</span>
 											</td>
@@ -612,7 +612,7 @@ function check_gn_if_status(_subunit, _gn_array) {
 										</tr>
 										<tr>
 											<td colspan="2">
-												<div style="color:#FC0;">Please notice that current Facebook Wi-Fi only blocks the access from http:// connections before checking in.<!--untranslated--></div>
+												<div style="color:#FC0;">Please notice that current Facebook WiFi only blocks the access from http:// connections before checking in.<!--untranslated--></div>
 											</td>
 										</tr>
 									</table>

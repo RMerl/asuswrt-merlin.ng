@@ -381,13 +381,15 @@ cdp_decode(struct lldpd *cfg, char *frame, int s,
 		}
 		switch (tlv_type) {
 		case CDP_TLV_CHASSIS:
+			free(chassis->c_name);
 			if ((chassis->c_name = (char *)calloc(1, tlv_len + 1)) == NULL) {
 				log_warn("cdp", "unable to allocate memory for chassis name");
 				goto malformed;
 			}
 			PEEK_BYTES(chassis->c_name, tlv_len);
 			chassis->c_id_subtype = LLDP_CHASSISID_SUBTYPE_LOCAL;
-			if ((chassis->c_id =  (char *)malloc(tlv_len)) == NULL) {
+			free(chassis->c_id);
+			if ((chassis->c_id = (char *)malloc(tlv_len)) == NULL) {
 				log_warn("cdp", "unable to allocate memory for chassis ID");
 				goto malformed;
 			}
@@ -455,12 +457,14 @@ cdp_decode(struct lldpd *cfg, char *frame, int s,
 				log_warn("cdp", "too short port description received");
 				goto malformed;
 			}
+			free(port->p_descr);
 			if ((port->p_descr = (char *)calloc(1, tlv_len + 1)) == NULL) {
 				log_warn("cdp", "unable to allocate memory for port description");
 				goto malformed;
 			}
 			PEEK_BYTES(port->p_descr, tlv_len);
 			port->p_id_subtype = LLDP_PORTID_SUBTYPE_IFNAME;
+			free(port->p_id);
 			if ((port->p_id =  (char *)calloc(1, tlv_len)) == NULL) {
 				log_warn("cdp", "unable to allocate memory for port ID");
 				goto malformed;

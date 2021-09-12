@@ -370,4 +370,14 @@ ifeq ($(RTCONFIG_DNSPRIVACY),y)
 	install -m 0644 dot-servers.dat $(INSTALLDIR)/rom/dot-servers.dat
 endif
 
+ifeq ($(RTCONFIG_TPVPN),y)
+	mkdir -p $(INSTALLDIR)/rom/vpn
+	install -m 0644 vpn/HMA_TCP.JSON $(INSTALLDIR)/rom/vpn/HMA_TCP.JSON
+	install -m 0644 vpn/HMA_UDP.JSON $(INSTALLDIR)/rom/vpn/HMA_UDP.JSON
+endif
+
+ifeq ($(RTCONFIG_HND_ROUTER_AX_6756), y)
+	install -m 0755 apps_scripts/brcm_cled.sh $(INSTALLDIR)/usr/sbin
+endif
+
 .PHONY: dummy

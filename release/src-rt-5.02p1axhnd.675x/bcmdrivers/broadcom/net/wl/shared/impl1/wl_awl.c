@@ -1164,14 +1164,14 @@ wl_awl_detach(struct wl_info *wl, void *ctxt)
 	archer_wlan_rx_register(wl->unit, NULL, NULL);
 
 	pktlist = WL_AWL_RX_A2W_PKTL(awl);
-	npkts = pktlist->len;
-
-	if (npkts) {
+	if (pktlist->len) {
 	    /* Free A2W packet SLL under lock */
 	    WL_AWL_PKTLIST_LOCK(awl->rx.a2w_pktl_lock);
+	    npkts = pktlist->len;
 	    wl_awl_pktlist_free(wl, pktlist);
 	    WL_AWL_PKTLIST_UNLK(awl->rx.a2w_pktl_lock);
-	    atomic_sub(npkts, &wl->callbacks);
+	    if (npkts)
+		atomic_sub(npkts, &wl->callbacks);
 	}
 
 	/* Free Lock-less W2A packet SLL */

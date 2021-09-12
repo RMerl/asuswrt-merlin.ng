@@ -190,6 +190,19 @@ Set Up Environment(Tested in Fedora 8/9 and Ubuntu)
 
 		      export STAGING_DIR=/opt/openwrt-gcc483.arm
 
+	Qualcomm IPQ60xx ARM SoC models
+	===============================
+
+		For example, PL-AX56XP4
+
+		To install the tools:
+		    - extract tools/openwrt-gcc520_musl.arm.tar.bz2 directory to /opt
+		    - add /opt/openwrt-gcc520_musl.arm/bin to your path
+		    - If you want to build small utilities out of asuswrt box,
+		      add STAGING_DIR environment variable as below:
+
+		      export STAGING_DIR=/opt/openwrt-gcc520_musl.arm
+
 
 	Note: Broadcom/Ralink(except 4708 series) platform use the same toolchain for user space program, so please set PATH to the same directory as above
 

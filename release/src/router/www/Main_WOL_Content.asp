@@ -25,10 +25,11 @@
 <script>
 var wollist_array = "<% nvram_get("wollist"); %>";
 var manually_wol_list_array = new Array();
+var faq_href = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=145";
+
 function initial(){
 	show_menu();
-	//	https://www.asus.com/support/FAQ/1011268
-	httpApi.faqURL("1011268", function(url){document.getElementById("faq3").href=url;});	// id in #smart_access3#
+	document.getElementById("faq3").href=faq_href;	// id in #smart_access3#
 
 	var wollist_row = wollist_array.split('&#60');
 	for(var i = 1; i < wollist_row.length; i += 1) {

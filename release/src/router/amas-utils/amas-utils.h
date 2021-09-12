@@ -16,6 +16,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 typedef enum
 {
+	AMAS_RESULT_SET_MISC_INFO_FAILED		= -25,
+	AMAS_RESULT_GET_MISC_INFO_FAILED          = -24,
 #ifdef RTCONFIG_VIF_ONBOARDING
 	AMAS_RESULT_GEN_ONBOARDING_VIF_WIFI_SECURITY_FAILED		= -23,
 #endif
@@ -54,7 +56,17 @@ typedef enum
 //
 ////////////////////////////////////////////////////////////////////////////////
 #define MAX_VERSION_TEXT_LENGTH		512
+#define MISC_INFO_FILE_PATH		"/tmp/misc.json"
 
+////////////////////////////////////////////////////////////////////////////////
+//
+//	Define for misc info
+//
+////////////////////////////////////////////////////////////////////////////////
+enum MISC_INFO_TYPE {
+    MISC_INFO_COBRAND = 1,
+    MISC_INFO_MAX
+};
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -66,6 +78,7 @@ typedef struct _ob_status{
 	unsigned char neighmac[7];
 	unsigned char modelname[64];
 	unsigned char tcode[16];
+	unsigned char miscinfo[128];
 	int obstatus; 		//1 (OB_OFF),  2 (OB_Available), 3 (OB_REQ), 4 (OB_LOCKED), 5 (OB_SUCCESS)
 	int timestamp;
 	int reboottime;
@@ -114,6 +127,7 @@ typedef struct _id_info{
 	unsigned int  idlen;
 	unsigned char modelname[64];
 	unsigned char tcode[16];
+	unsigned char miscinfo[128];
 	int obstatus; 		//1 (OB_OFF),  2 (OB_Available), 3 (OB_REQ), 4 (OB_LOCKED), 5 (OB_SUCCESS)
 	int timestamp;
 	unsigned char bundlekey[MAX_VERSION_TEXT_LENGTH+1];
@@ -144,6 +158,9 @@ AMAS_FUNC AMAS_RESULT	AMAS_API amas_get_cost(char *ifname, int bandindex, int ca
 #else	// USE_GET_TLV_SUPPORT_MAC
 AMAS_FUNC AMAS_RESULT	AMAS_API amas_get_cost(char *ifname, int bandindex, int capability5g, int *cost);
 #endif	// USE_GET_TLV_SUPPORT_MAC
+AMAS_FUNC AMAS_RESULT	AMAS_API amas_is_plc_head(char *ifname, int *is_plc_head);
+AMAS_FUNC AMAS_RESULT	AMAS_API amas_find_mac_role(char *ifname, char *mac, int *role);
+AMAS_FUNC AMAS_RESULT	AMAS_API amas_find_role_lan(char *ifname, char *mac);
 AMAS_FUNC AMAS_RESULT	AMAS_API amas_set_cost(int cost);
 AMAS_FUNC AMAS_RESULT	AMAS_API amas_set_obstatus(int status);
 AMAS_FUNC AMAS_RESULT 	AMAS_API amas_get_obstatus(ob_status **P_obstatus, int *len);
@@ -180,4 +197,6 @@ AMAS_FUNC AMAS_RESULT AMAS_API amas_gen_onboarding_vif_security(char *ssid, int 
 #endif	/* RTCONFIG_VIF_ONBOARDING */
 AMAS_FUNC AMAS_RESULT AMAS_API amas_set_eth_role(char *input_eth_role);
 AMAS_FUNC AMAS_RESULT AMAS_API amas_get_dest_eth_role(char *ifname, int *eth_role);
+AMAS_FUNC AMAS_RESULT AMAS_API amas_set_misc_info(int index, char *value);
+AMAS_FUNC AMAS_RESULT AMAS_API amas_get_misc_info(unsigned char *misc_info, int *misc_info_len);
 #endif /* !__AMASUTILSH__ */

@@ -191,10 +191,10 @@ ifeq ($(strip ${BRCM_CHIP}),4908)
     DRV_OBJS += phys/phy_bp_parsing_4908.o
     DRV_OBJS += phys/phy_drv_sf2.o
     DRV_OBJS += phys/phy_drv_ext3.o
-    DRV_OBJS += phys/phy_drv_sgmii_plus2.o
     DRV_OBJS += phys/nic_rtl8226b_init.o
     DRV_OBJS += phys/nic_rtl8226.o
     DRV_OBJS += phys/rtl8226.o
+    DRV_OBJS += phys/gpy211.o
     DRV_OBJS += phys/phy_mac_sec.o
     DRV_OBJS += phys/phy_mac_sec_list.o
     DRV_OBJS += phys/sha256.o

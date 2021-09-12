@@ -152,7 +152,7 @@ function getCookie(c_name)
 										<table width="99%" border="0" align="center" cellpadding="0" cellspacing="0" bordercolor="#6b8fa3" class="FormTable">
 											<thead>
 											<tr>
-												<td colspan="2">System Temperature</td><!-- untranslated -->
+												<td colspan="2"><#fan_tuning_temperature#></td>
 											</tr>
 											</thead>
 											
@@ -182,11 +182,11 @@ function getCookie(c_name)
 										<table width="99%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable">
 											<thead>
 											<tr>
-												<td colspan="2">System adjustment</td>
+												<td colspan="2"><#sys_adjustment#></td>
 											</tr>
 											</thead>
 											<tr>
-												<th>Temperature unit</th>
+												<th><#sys_temp_unit#></th>
 												<td>
 													<select name="fanctrl_fullspeed_temp_unit" class="input_option" onchange="changeTempUnit(this.value)">
 														<option class="content_input_fd" value="0">°C</option>

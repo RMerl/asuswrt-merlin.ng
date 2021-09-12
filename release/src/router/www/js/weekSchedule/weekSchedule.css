@@ -26,7 +26,7 @@
 	background-color: #F79800;
 }
 .offtime_schedule_text.dis:before{
-	background-color: #717f84;
+	background-color: rgb(255 255 255 / 20%);
 }
 .overview_a_week_bg .weekday_bg{
 	margin-bottom: 10px;
@@ -55,13 +55,13 @@
 }
 .overview_a_week_bg .weekday_bg .weekday_time_bg{
 	width: 90%;
-	background-color: #5C6B70;
+	background-color: rgb(255 255 255 / 8%);
 	z-index: 1;
 	cursor: pointer;
 }
 .overview_a_week_bg .weekday_bg .demarcation_line{
 	width: 1px;
-	background-color: #4D595D;
+	background-color: rgb(255 255 255 / 15%);
 	position: absolute;
 	height: 100%;
 	z-index: 4;
@@ -73,7 +73,7 @@
 	z-index: 3;
 }
 .overview_a_week_bg .weekday_bg .offtime_bg.dis{
-	background-color: #717f84;
+	background-color: rgb(255 255 255 / 20%);
 	z-index: 2;
 }
 .overview_time_title_bg{

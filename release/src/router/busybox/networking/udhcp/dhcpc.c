@@ -519,7 +519,7 @@ static char **fill_envp(struct dhcp_packet *packet)
 		temp = udhcp_get_option(packet, code);
 		*curr = xmalloc_optname_optval(temp, &dhcp_optflags[i], opt_name);
 		putenv(*curr++);
-		if (code == DHCP_SUBNET) {
+		if (code == DHCP_SUBNET && temp[-OPT_DATA + OPT_LEN] == 4) {
 			/* Subnet option: make things like "$ip/$mask" possible */
 			uint32_t subnet;
 			move_from_unaligned32(subnet, temp);
@@ -1713,7 +1713,7 @@ int udhcpc_main(int argc UNUSED_PARAM, char **argv)
  * They say ISC DHCP client supports this case.
  */
 				server_addr = 0;
-				temp = udhcp_get_option(&packet, DHCP_SERVER_ID);
+				temp = udhcp_get_option32(&packet, DHCP_SERVER_ID);
 				if (!temp) {
 					bb_error_msg("no server ID, using 0.0.0.0");
 				} else {
@@ -1740,7 +1740,7 @@ int udhcpc_main(int argc UNUSED_PARAM, char **argv)
 				struct in_addr temp_addr;
 				uint8_t *temp;
 
-				temp = udhcp_get_option(&packet, DHCP_LEASE_TIME);
+				temp = udhcp_get_option32(&packet, DHCP_LEASE_TIME);
 				if (!temp) {
 					bb_error_msg("no lease time with ACK, using 1 hour lease");
 					lease_seconds = 60 * 60;
@@ -1833,7 +1833,7 @@ int udhcpc_main(int argc UNUSED_PARAM, char **argv)
 					uint32_t svid;
 					uint8_t *temp;
 
-					temp = udhcp_get_option(&packet, DHCP_SERVER_ID);
+					temp = udhcp_get_option32(&packet, DHCP_SERVER_ID);
 					if (!temp) {
  non_matching_svid:
 						log1("received DHCP NAK with wrong"

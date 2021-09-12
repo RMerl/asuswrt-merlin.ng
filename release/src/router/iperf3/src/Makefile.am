@@ -49,9 +49,9 @@ iperf3_LDFLAGS          = -g
 iperf3_profile_SOURCES  = main.c \
 						  $(libiperf_la_SOURCES)
 
-iperf3_profile_CFLAGS   = -pg -g
+iperf3_profile_CFLAGS   = -g
 iperf3_profile_LDADD    = libiperf.la
-iperf3_profile_LDFLAGS  = -pg -g
+iperf3_profile_LDFLAGS  = -g
 
 # Specify the sources and various flags for the test cases
 t_timer_SOURCES         = t_timer.c

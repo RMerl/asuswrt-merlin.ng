@@ -45,6 +45,8 @@
 #ifdef RTCONFIG_AMAS_WGN
 #define FT_BW_LIMIT BIT(20) /* Bandwidth limiter for guest network feature */
 #endif
+#define FT_PLC_MASTER BIT(21)
+#define FT_LOCAL_ACCESS	BIT(22)
 
 /* service */
 #define RESTART_WIRELESS		"restart_wireless"
@@ -57,6 +59,7 @@
 #define RESTART_AMAS_BHCTRL	"restart_amas_bhctrl"
 #define RESET_LED		"reset_led"
 #define REBOOT		"reboot"
+#define RESTART_PLC_MASTER	"restart_plc_master"
 #ifdef RTCONFIG_WIFI_SON
 #if defined(MAPAC2200)
 #define RESTART_BHBLOCK		"restart_bhblock"
@@ -72,6 +75,7 @@
 #ifdef RTCONFIG_AMAS_WGN
 #define RESTART_BW_LIMIT	"restart_qos;restart_firewall"
 #endif
+#define RESTART_HTTPD	"restart_httpd"
 
 struct feature_mapping_s {
 	char *name;
@@ -116,6 +120,10 @@ struct feature_mapping_s feature_mapping_list[] = {
 #if defined(RTCONFIG_FANCTRL)
 	{ "fanctrl",	FT_FANCTRL,	RESTART_FANCTRL },
 #endif
+#ifdef RTCONFIG_QCA_PLC2
+	{ "plc_master",	FT_PLC_MASTER,	RESTART_PLC_MASTER },
+#endif
+	{ "local_access", 	FT_LOCAL_ACCESS,	RESTART_HTTPD },
 	{ NULL, 0, NULL }
 };
 
@@ -327,6 +335,9 @@ enum {
 #if defined(RTCONFIG_FANCTRL)
 	SUBFT_FANCTRL,
 #endif
+	SUBFT_PLC_MASTER,
+	SUBFT_LOCAL_ACCESS,
+
 	SUBFT_MAX
 };
 
@@ -388,6 +399,7 @@ struct subfeature_mapping_s subfeature_mapping_list[] = {
 
 	/* administration */
 	{ "router_login", 	SUBFT_ROUTER_LOGIN,	FT_LOGIN },
+	{ "local_access", 	SUBFT_LOCAL_ACCESS,	FT_LOCAL_ACCESS },
 	{ "time_zone",		SUBFT_TIMEZONE,		FT_TIME },
 	{ "ntp_server",		SUBFT_NTP_SERVER,	FT_TIME },
 	{ "telnet_server",		SUBFT_TELNET_SERVER,	FT_TIME },
@@ -528,6 +540,9 @@ struct subfeature_mapping_s subfeature_mapping_list[] = {
 #if defined(RTCONFIG_FANCTRL)
 	{ "fanctrl",		SUBFT_FANCTRL,	FT_FANCTRL },
 #endif
+#ifdef RTCONFIG_QCA_PLC2
+	{ "plc_master",		SUBFT_PLC_MASTER,	FT_PLC_MASTER },
+#endif
 	/* END */
 	{ NULL, 0, 0}
 };
@@ -631,6 +646,7 @@ struct param_mapping_s param_mapping_list[] = {
 	{ "wl2_radius_port",	FT_WIRELESS,		SUBFT_RADIUS_5G1},
 	{ "wl2_radio",	FT_WIRELESS,		SUBFT_RADIO_5G1},
 	/* guest network */
+	{ "wl0.1_closed", 	FT_WIRELESS, 		SUBFT_BASIC_2G_G1}, 
 	{ "wl0.1_ssid", 	FT_WIRELESS, 		SUBFT_BASIC_2G_G1},
 	{ "wl0.1_wpa_psk",	FT_WIRELESS,		SUBFT_BASIC_2G_G1},
 	{ "wl0.1_bss_enabled",	FT_WIRELESS,		SUBFT_BASIC_2G_G1},
@@ -638,6 +654,7 @@ struct param_mapping_s param_mapping_list[] = {
 	{ "wl0.1_crypto",	FT_WIRELESS,		SUBFT_BASIC_2G_G1},
 	{ "wl0.1_expire",	FT_WIRELESS,		SUBFT_GUEST_MISC_2G_G1},
 	{ "wl0.1_lanaccess",	FT_WIRELESS,	SUBFT_GUEST_MISC_2G_G1},
+	{ "wl1.1_closed", 	FT_WIRELESS, 		SUBFT_BASIC_5G_G1}, 
 	{ "wl1.1_ssid", 	FT_WIRELESS,		SUBFT_BASIC_5G_G1},
 	{ "wl1.1_wpa_psk",	FT_WIRELESS,		SUBFT_BASIC_5G_G1},
 	{ "wl1.1_bss_enabled",	FT_WIRELESS,		SUBFT_BASIC_5G_G1},
@@ -645,6 +662,7 @@ struct param_mapping_s param_mapping_list[] = {
 	{ "wl1.1_crypto",	FT_WIRELESS,		SUBFT_BASIC_5G_G1},
 	{ "wl1.1_expire",	FT_WIRELESS,		SUBFT_GUEST_MISC_5G_G1},
 	{ "wl1.1_lanaccess",	FT_WIRELESS,	SUBFT_GUEST_MISC_5G_G1},
+	{ "wl2.1_closed", 	FT_WIRELESS, 		SUBFT_BASIC_5G1_G1},
 	{ "wl2.1_ssid",		FT_WIRELESS,		SUBFT_BASIC_5G1_G1},
 	{ "wl2.1_wpa_psk",	FT_WIRELESS,		SUBFT_BASIC_5G1_G1},
 	{ "wl2.1_bss_enabled",	FT_WIRELESS,		SUBFT_BASIC_5G1_G1},
@@ -658,6 +676,7 @@ struct param_mapping_s param_mapping_list[] = {
 	{ "wl1.1_maclist_x",	FT_WIRELESS,		SUBFT_MACFILTER_5G_G1},
 	{ "wl2.1_macmode",	FT_WIRELESS,		SUBFT_MACFILTER_5G1_G1},
 	{ "wl2.1_maclist_x",	FT_WIRELESS,		SUBFT_MACFILTER_5G1_G1},
+	{ "wl0.2_closed", 	FT_WIRELESS, 		SUBFT_BASIC_2G_G2},
 	{ "wl0.2_ssid", 	FT_WIRELESS, 		SUBFT_BASIC_2G_G2},
 	{ "wl0.2_wpa_psk",	FT_WIRELESS,		SUBFT_BASIC_2G_G2},
 	{ "wl0.2_auth_mode_x",	FT_WIRELESS,		SUBFT_BASIC_2G_G2},
@@ -665,6 +684,7 @@ struct param_mapping_s param_mapping_list[] = {
 	{ "wl0.2_bss_enabled",	FT_WIRELESS,		SUBFT_BASIC_2G_G2},
 	{ "wl0.2_expire",	FT_WIRELESS,		SUBFT_GUEST_MISC_2G_G2},
 	{ "wl0.2_lanaccess",	FT_WIRELESS,	SUBFT_GUEST_MISC_2G_G2},
+	{ "wl1.2_closed", 	FT_WIRELESS, 		SUBFT_BASIC_5G_G2},
 	{ "wl1.2_ssid", 	FT_WIRELESS,		SUBFT_BASIC_5G_G2},
 	{ "wl1.2_wpa_psk",	FT_WIRELESS,		SUBFT_BASIC_5G_G2},
 	{ "wl1.2_auth_mode_x",	FT_WIRELESS,		SUBFT_BASIC_5G_G2},
@@ -672,6 +692,7 @@ struct param_mapping_s param_mapping_list[] = {
 	{ "wl1.2_bss_enabled",	FT_WIRELESS,		SUBFT_BASIC_5G_G2},
 	{ "wl1.2_expire",	FT_WIRELESS,		SUBFT_GUEST_MISC_5G_G2},
 	{ "wl1.2_lanaccess",	FT_WIRELESS,	SUBFT_GUEST_MISC_5G_G2},
+    { "wl2.2_closed", 	FT_WIRELESS, 		SUBFT_BASIC_5G1_G2},
 	{ "wl2.2_ssid",		FT_WIRELESS,		SUBFT_BASIC_5G1_G2},
 	{ "wl2.2_wpa_psk",	FT_WIRELESS,		SUBFT_BASIC_5G1_G2},
 	{ "wl2.2_auth_mode_x",	FT_WIRELESS,		SUBFT_BASIC_5G1_G2},
@@ -685,6 +706,7 @@ struct param_mapping_s param_mapping_list[] = {
 	{ "wl1.2_maclist_x",	FT_WIRELESS,		SUBFT_MACFILTER_5G_G2},
 	{ "wl2.2_macmode",	FT_WIRELESS,		SUBFT_MACFILTER_5G1_G2},
 	{ "wl2.2_maclist_x",	FT_WIRELESS,		SUBFT_MACFILTER_5G1_G2},
+	{ "wl0.3_closed", 	FT_WIRELESS, 		SUBFT_BASIC_2G_G3},
 	{ "wl0.3_ssid", 	FT_WIRELESS, 		SUBFT_BASIC_2G_G3},
 	{ "wl0.3_wpa_psk",	FT_WIRELESS,		SUBFT_BASIC_2G_G3},
 	{ "wl0.3_auth_mode_x",	FT_WIRELESS,		SUBFT_BASIC_2G_G3},
@@ -692,6 +714,7 @@ struct param_mapping_s param_mapping_list[] = {
 	{ "wl0.3_bss_enabled",	FT_WIRELESS,		SUBFT_BASIC_2G_G3},
 	{ "wl0.3_expire",	FT_WIRELESS,		SUBFT_GUEST_MISC_2G_G3},
 	{ "wl0.3_lanaccess",	FT_WIRELESS,	SUBFT_GUEST_MISC_2G_G3},
+	{ "wl1.3_closed", 	FT_WIRELESS, 		SUBFT_BASIC_5G_G3},
 	{ "wl1.3_ssid", 	FT_WIRELESS,		SUBFT_BASIC_5G_G3},
 	{ "wl1.3_wpa_psk",	FT_WIRELESS,		SUBFT_BASIC_5G_G3},
 	{ "wl1.3_auth_mode_x",	FT_WIRELESS,		SUBFT_BASIC_5G_G3},
@@ -699,6 +722,7 @@ struct param_mapping_s param_mapping_list[] = {
 	{ "wl1.3_bss_enabled",	FT_WIRELESS,		SUBFT_BASIC_5G_G3},
 	{ "wl1.3_expire",	FT_WIRELESS,	SUBFT_GUEST_MISC_5G_G3},
 	{ "wl1.3_lanaccess",	FT_WIRELESS,	SUBFT_GUEST_MISC_5G_G3},
+	{ "wl2.3_closed", 	FT_WIRELESS, 		SUBFT_BASIC_5G1_G3}, 
 	{ "wl2.3_ssid",		FT_WIRELESS,		SUBFT_BASIC_5G1_G3},
 	{ "wl2.3_wpa_psk",	FT_WIRELESS,		SUBFT_BASIC_5G1_G3},
 	{ "wl2.3_auth_mode_x",	FT_WIRELESS,		SUBFT_BASIC_5G1_G3},
@@ -751,6 +775,9 @@ struct param_mapping_s param_mapping_list[] = {
 	/* http login */
 	{ "http_username", 	FT_LOGIN,		SUBFT_ROUTER_LOGIN},
 	{ "http_passwd",	FT_LOGIN,		SUBFT_ROUTER_LOGIN},
+	/* local access config */
+	{ "http_enable", 	FT_LOCAL_ACCESS,	SUBFT_LOCAL_ACCESS},
+	{ "https_lanport",	FT_LOCAL_ACCESS,	SUBFT_LOCAL_ACCESS},
 	/* time zone */
 	{ "time_zone", 		FT_TIME,		SUBFT_TIMEZONE},
 	{ "time_zone_dst", 	FT_TIME,		SUBFT_TIMEZONE},
@@ -984,6 +1011,9 @@ struct param_mapping_s param_mapping_list[] = {
 
 #if defined(RTCONFIG_FANCTRL)
 	{ "fanctrl_dutycycle",	FT_FANCTRL,	SUBFT_FANCTRL },
+#endif
+#ifdef RTCONFIG_QCA_PLC2
+	{ "cfg_plc_master",	FT_PLC_MASTER,	SUBFT_PLC_MASTER},
 #endif
 	/* END */
 	{ NULL, 0, 0 }

@@ -10,7 +10,7 @@ MODALIAS is set, ACTION == add {
 	exec /sbin/modprobe -q %MODALIAS% ;
 }
 
-SUBSYSTEM == usb, DEVICENAME ~~ ^([1-4]-[1-3][:.0-9]*+)$, ACTION ~~ ^(add|remove)$ {
+SUBSYSTEM == usb, DEVICENAME ~~ ^([1-9]-[1-3][:.0-9]*+)$, ACTION ~~ ^(add|remove)$ {
 	exec /sbin/asus_usb_interface %DEVICENAME% %ACTION% ;
 }
 

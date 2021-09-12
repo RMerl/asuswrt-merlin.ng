@@ -290,50 +290,60 @@
 302510,Videotron media,*99#,,,media.videotron,Videotron media
 302660,MTS Tethering,*99#,,,internet.mts,MTS Tethering
 302720,Rogers Wireless,*99***1#,,,chatrisp.apn,Chatr Tethering
-310004,Verizon,#777,,,,Verizon
-310005,Verizon,#777,,,,Verizon
-310012,Verizon,#777,,,,Verizon
-310026,T-Mobile,*99***1#,,,epc.tmobile.com,T-Mobile
+310004,Verizon,#777,,,vzwinternet,Verizon
+310005,Verizon,#777,,,vzwinternet,Verizon
+310012,Verizon,#777,,,vzwinternet,Verizon
+310026,T-Mobile,*99***1#,,,fast.t-mobile.com,T-Mobile
 310030,AT&T,*99***1#,,,broadband,Centennial
+310032,IT&E Wireless,,,,vzwinternet,Itewire
 310070,ATT Activation,*99#,,,lwaactivate,ATT Activation
+310080,ATT Activation,*99#,,,lwaactivate,
 310090,ATT Activation,*99#,,,lwaactivate,ATT Activation
-310120,Verizon,#777,,,,Sprint
-310150,AT&T,*99***1#,,,broadband,AT&amp;T
-310160,T-Mobile VPN United States GPRS15,*99***1#,,,internet3.voicestream.com,T-Mobile
-310170,AT&T,*99***1#,,,broadband,AT&amp;T
-31018,Cingular Accelerated United States UMTS EDGE GPRS2,,ISPDA@CINGULARGPRS.COM,CINGULAR1,isp.cingular,Cingular Accelerated United States UMTS EDGE GPRS2
-310200,T-Mobile (T-Zone),*99***1#,,,epc.tmobile.com,T-Mobile
-31020,T-Mobile (Internet),*99***1#,,,internet2.voicestream.com,T-Mobile (Internet)
-310210,T-Mobile (T-Zone),*99***1#,,,epc.tmobile.com,T-Mobile
-31021,T-Mobile (Internet),*99***1#,,,internet2.voicestream.com,T-Mobile (Internet)
-310220,T-Mobile (T-Zone),*99***1#,,,epc.tmobile.com,T-Mobile
-31022,T-Mobile (Internet),*99***1#,,,internet2.voicestream.com,T-Mobile (Internet)
-310230,T-Mobile (T-Zone),*99***1#,,,epc.tmobile.com,T-Mobile
-31023,T-Mobile (Internet),*99***1#,,,internet2.voicestream.com,T-Mobile (Internet)
-310240,T-Mobile (T-Zone),*99***1#,,,epc.tmobile.com,T-Mobile
-31024,T-Mobile (Internet),*99***1#,,,internet2.voicestream.com,T-Mobile (Internet)
-310250,T-Mobile (T-Zone),*99***1#,,,epc.tmobile.com,T-Mobile
-31025,T-Mobile (Internet),*99***1#,,,internet2.voicestream.com,T-Mobile (Internet)
-310260,T-Mobile (T-Zone),*99***1#,,,epc.tmobile.com,T-Mobile
-31026,T-Mobile (Internet),*99***1#,,,internet2.voicestream.com,T-Mobile (Internet)
-310270,T-Mobile (T-Zone),*99***1#,,,epc.tmobile.com,T-Mobile
-31027,T-Mobile (Internet),*99***1#,,,internet2.voicestream.com,T-Mobile (Internet)
+310120,Sprint,#777,,,sprint,Sprint
+310150,AT&T,*99***1#,,,ndo,Internet
+310160,T-Mobile VPN United States GPRS15,*99***1#,,,fast.t-mobile.com,T-Mobile
+310170,AT&T,*99***1#,,,isp.cingular,AT&amp;T
+310180,West Central,,13257630000,mmsc,internet.wcc.net,WCW-INTERNET
+310200,T-Mobile (Internet),*99***1#,,,fast.t-mobile.com,T-Mobile
+310210,T-Mobile (Internet),*99***1#,,,fast.t-mobile.com,T-Mobile
+310220,T-Mobile (Internet),*99***1#,,,fast.t-mobile.com,T-Mobile
+310230,T-Mobile (Internet),*99***1#,,,fast.t-mobile.com,T-Mobile
+310240,T-Mobile (Internet),*99***1#,,,fast.t-mobile.com,T-Mobile
+310250,T-Mobile (Internet),*99***1#,,,fast.t-mobile.com,T-Mobile
+310260,T-Mobile (Internet),*99***1#,,,fast.t-mobile.com,T-Mobile
+310270,T-Mobile (Internet),*99***1#,,,fast.t-mobile.com,T-Mobile
 310280,AT&T,*99***1#,,,broadband,T-Mobile
-31031,T-Mobile VPN United States GPRS12,*99***1#,,,internet3.voicestream.com,T-Mobile VPN United States GPRS12
-310320,Cellular One,*99***1#,,,cellular1wap,Cellular One
-310330,T-Mobile,*99***1#,,,epc.tmobile.com,T-Mobile
+310320,Cellular One,*99***1#,,,isp.cellularoneaz.net,Alltel2
+310330,Alltel2,*99***1#,,,vzwinternet,T-Mobile
+310370,NTT Docomo Pacific,,,,internet,Docomo
 310380,AT&T,*99***1#,,,agms.nl.gmm,AGMS Global
-310390,Cellular One,*99***1#,,,cellular1wap,Cellular One of East Texas
-310410,AT&T,*99***1#,,,broadband,AT&amp;T
+310390,Cellular One,*99***1#,user1@mms.celloneet.com,celloneet,mms.celloneet.com,CELLONEET
+310400,IT&E Wireless,,,,,
+310410,AT&T,*99***1#,,,nxtgenphone,ATT Nextgenphone
 310420,Cincinnati Bell,*99***1#,,,wap.gocbw.com,Cincinnati Bell
+310430,GCI,,,,vzwinternet,GCI
 310440,Cellular One,*99***1#,,,cellular1wap,Cellular One
+310450,Viaero Connect,,,,internet.vedge.com,Viaero Wireless
 310490,T-Mobile,*99***1#,,,epc.tmobile.com,SunCom
-310560,AT&T,*99***1#,,,broadband,AT&amp;T
-310570,Cellular One,*99***1#,,,cellular1wap,Chinook Wireless
-31064,Telecom Italia Mobile,*99***1#,,,proxy,Telecom Italia Mobile
-310660,T-Mobile,*99***1#,,,epc.tmobile.com,T-Mobile
+310530,T-Mobile,,,,fast.t-mobile.com,T-Mobile US 530
+310560,AT&T,*99***1#,,,nxtgenphone,ATT Nextgenphone
+310570,Cellular One,*99***1#,,,internet,Chinook Wireless
+310580,Inland Cellular,,,,vzwinternet,Inland
+310590,T-Mobile,,,,fast.t-mobile.com,T-Mobile US 590
+310600,Cellcom,,,,vzwinternet,NewCell Inc.
+310640,T-Mobile,*99***1#,,,fast.t-mobile.com,T-Mobile US 640
+310660,T-Mobile,*99***1#,,,fast.t-mobile.com,T-Mobile US 660
 310680,AT&T,*99***1#,,,broadband,AT&amp;T
-310800,T-Mobile,*99***1#,,,epc.tmobile.com,T-Mobile
+310690,Limitless,,,,limitless.us4g.com,Limitless Mobile
+310750,Appalachian,,,,vzwinternet,Appalachian Wireless
+310770,iWireless,,,,i2.iwireless.com,Iowa
+310800,T-Mobile,*99***1#,,,"fast.t-mobile.com""",T-Mobile US 800
+310820,Nepa,,,,vzwinternet,Nepa
+310840,Telna Mobile,,,,isp,Telna Mobile
+310900,Mid-Rivers Wireless,,,,vzwinternet,Mid-Rivers Wireless
+310920,Jamesvalley,,,,vzwinternet,James Valley Wireless
+310930,Copper Valley,,,,vzwinternet,Copper Valley Wireless
+310950,Nntcwire-Silverstar,,,,vzwinternet,Nntcwire-Silverstar-Snakeriver-Southcentral
 310980,AT&T,*99***1#,,,broadband,AT&amp;T Mobility
 310990,AT&T,*99***1#,,,broadband,AT&amp;T Mobility
 311480,Verizon,#777,,,,Verizon

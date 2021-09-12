@@ -223,8 +223,13 @@ extern char * nvram_get(const char *name);
 #else /* !DOR_NPM_DEFAULT */
 #define DHD_RNR_BCMC_TXOFFL_PRIORITY        1                /* Normal */
 #endif /* !DOR_NPM_DEFAULT */
+#ifdef BCM_DHD_LOCK
 #define DHD_RNR_INIT_PERIM_UNLOCK(dhdp)     DHD_UNLOCK(dhdp)
 #define DHD_RNR_INIT_PERIM_LOCK(dhdp)       DHD_LOCK(dhdp)
+#else
+#define DHD_RNR_INIT_PERIM_UNLOCK(dhdp)     DHD_PERIM_UNLOCK(dhdp)
+#define DHD_RNR_INIT_PERIM_LOCK(dhdp)       DHD_PERIM_LOCK(dhdp)
+#endif /* BCM_DHD_LOCK */
 #else /* !BCA_HNDROUTER */
 /* N+M feature default, disabled from REL_5.04L.01 and REL_5.02L.07P1 */
 #define DOR_NPM_DEFAULT                     0
@@ -3572,10 +3577,18 @@ dhd_runner_request(struct dhd_runner_hlp *dhd_hlp,
 	            (void*)arg1, (int)arg2));
 	        if (DHD_RNR_RX_OFFLOAD(dhd_hlp)) {
 	            RPR1("dhd_bus_rx_frame pkt<0x%p> if<%d>", (void*)arg1, (int)arg2);
+#ifdef BCM_DHD_LOCK
 	            DHD_LOCK(dhd);
+#else
+	            DHD_PERIM_LOCK_ALL((dhd->fwder_unit % FWDER_MAX_UNIT));
+#endif
 	            dhd_hlp->r2h_rx_compl_req++;
 	            dhd_bus_rx_frame(dhd->bus, (void *)arg1, (int)arg2, 1);
+#ifdef BCM_DHD_LOCK
 	            DHD_UNLOCK(dhd);
+#else
+	            DHD_PERIM_UNLOCK_ALL((dhd->fwder_unit % FWDER_MAX_UNIT));
+#endif
 	        } else {
 	            DHD_ERROR(("dhd%d: unexpected R2H_RX_COMPL_REQUEST <0x%lx> <0x%lx>\n",
 	                  dhd->unit, arg1, arg2));

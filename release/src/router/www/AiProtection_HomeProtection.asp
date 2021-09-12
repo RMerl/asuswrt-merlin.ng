@@ -156,10 +156,11 @@ var danger_count = 0;
 var risk_count = 0;
 var safe_count = 0;
 
+var faq_href = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=139";
+
 function initial(){
 	show_menu();
-	//	https://www.asus.com/support/FAQ/1008719/
-	httpApi.faqURL("1008719", function(url){document.getElementById("faq").href=url;});
+	document.getElementById("faq").href=faq_href;
 	if(based_modelid == "MAP-AC1750"){
 		$("#scenario_tr").css({"visibility":"hidden"});
 		$("#scenario_img").attr({"height":"0"});
@@ -302,7 +303,10 @@ function check_weakness(){
 	check_login_name_password();
 	check_wireless_password();
 	check_wireless_encryption();
-	check_WPS();
+	if(!SG_mode) {
+		$(".wps_tr").show();
+		check_WPS();
+	}
 	check_upnp();
 	check_wan_access();
 	check_ping_form_wan();
@@ -591,8 +595,25 @@ function check_upnp(){
 			document.getElementById('upnp_service').className = "status_yes";
 		}
 		else{
-			risk_count++
-			document.getElementById('upnp_service').innerHTML = "<a href='Advanced_WAN_Content.asp' target='_blank'><#checkbox_No#></a>";
+			risk_count++;
+
+			document.getElementById('upnp_service').onclick = function(){
+				function change_wan_unit(unit){
+					FormActions("apply.cgi", "change_wan_unit", "", "");
+					document.form.wan_unit.value = unit;
+					document.form.wan_unit.disabled = false;
+					document.form.current_page.value="Advanced_WAN_Content.asp";
+					document.form.target = "";
+					document.form.submit();
+				}
+
+				if(wan0_upnp_enable == "1")
+					change_wan_unit(0);
+				else
+					change_wan_unit(1);
+			}
+
+			document.getElementById('upnp_service').innerHTML = "<a><#checkbox_No#></a>";
 			document.getElementById('upnp_service').className = "status_no_risk";
 			document.getElementById('upnp_service').onmouseover = function(){overHint(13);}
 			document.getElementById('upnp_service').onmouseout = function(){nd();}
@@ -959,7 +980,7 @@ function shadeHandle(flag){
 								<div id="wireless_encryption"></div>
 							</td>
 						</tr>
-						<tr>
+						<tr class="wps_tr" style="display:none;">
 							<th><#WPS_disabled#> -</th>
 							<td>
 								<div id="wps_status"></div>
@@ -1143,6 +1164,7 @@ function shadeHandle(flag){
 <input type="hidden" name="wrs_vp_enable" value="<% nvram_get("wrs_vp_enable"); %>">
 <input type="hidden" name="wan0_upnp_enable" value="<% nvram_get("wan0_upnp_enable"); %>" disabled>
 <input type="hidden" name="wan1_upnp_enable" value="<% nvram_get("wan1_upnp_enable"); %>" disabled>
+<input type="hidden" name="wan_unit" value="<% nvram_get("wan_unit"); %>" disabled>
 <input type="hidden" name="misc_http_x" value="<% nvram_get("misc_http_x"); %>" disabled>
 <input type="hidden" name="misc_ping_x" value="<% nvram_get("misc_ping_x"); %>" disabled>
 <input type="hidden" name="dmz_ip" value="<% nvram_get("dmz_ip"); %>" disabled>

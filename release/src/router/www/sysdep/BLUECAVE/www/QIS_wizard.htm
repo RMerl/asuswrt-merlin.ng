@@ -18,8 +18,13 @@
 		<script type="text/javascript" src="./mobile/js/plugins.js"></script>
 		<script type="text/javascript" src="./mobile/js/qisData.js"></script>
 		<script type="text/javascript" src="./mobile/js/handler.js"></script>
+		<script type="text/javascript" src="./js/https_redirect/https_redirect.js"></script>
 		<script>
 			$(document).ready(function(){
+				if(Check_Https_Redirect_Status()){
+					Initial_Https_Redirect();
+					return;
+				}
 				var getJsonFromUrl = (function(){
 					var query = location.search.substr(1);
 					var result = {};
@@ -44,6 +49,7 @@
 				$(".secureInput").click(checkPasswd);
 				$("div[data-role='page']").append("<div class='footerPadding'></div>");
 				$(".headerBar").html(Get_Component_Header());
+				$("#http_passwd").showPasswordScore();
 				handleModelIcon();
 
 				// setup systemVariables
@@ -71,7 +77,8 @@
 						"dsl8_proto", 
 						"dsl8_pppoe_username", 
 						"dsl8_pppoe_passwd", 
-						"dsl8_dnsenable"
+						"dsl8_dnsenable",
+						"smart_connect_x"
 					]);
 
 					systemVariable.historyPage = [];
@@ -110,20 +117,21 @@
 					else{
 
 						systemVariable.originWanType = initWanNvram.wan_proto;
-					if(systemVariable.originWanType == "pppoe" || systemVariable.originWanType == "pptp" || systemVariable.originWanType == "l2tp"){
+						if(systemVariable.originWanType == "pppoe" || systemVariable.originWanType == "pptp" || systemVariable.originWanType == "l2tp"){
 							systemVariable.originPppAccount.username = initWanNvram.wan_pppoe_username;
 							systemVariable.originPppAccount.password = initWanNvram.wan_pppoe_passwd;
-					}
+						}
 						systemVariable.wanDnsenable = initWanNvram.wan_dnsenable_x;
-					systemVariable.originOpMode = (function(){
-						if(initNvram.sw_mode == "2" && (initNvram.wlc_psta == "0" || initNvram.wlc_psta == "") && (initNvram.wlc_dpsta == "0" || initNvram.wlc_dpsta == "")) return "RP";
-						else if(initNvram.sw_mode == "3" && initNvram.wlc_psta == "2" && (initNvram.wlc_dpsta == "0" || initNvram.wlc_dpsta == "")) return "RP";
-						else if(initNvram.sw_mode == "3" && initNvram.wlc_psta == "2" && initNvram.wlc_dpsta == "1") return "RP";
-						else if(initNvram.sw_mode == "3" && (initNvram.wlc_psta == "0" || initNvram.wlc_psta == "") && (initNvram.wlc_dpsta == "0" || initNvram.wlc_dpsta == "")) return "AP";
-						else if(initNvram.sw_mode == "2" && initNvram.wlc_psta == "1" && (initNvram.wlc_dpsta == "0" || initNvram.wlc_dpsta == "")) return "MB";
-						else if(initNvram.sw_mode == "3" && initNvram.wlc_psta == "1" && (initNvram.wlc_dpsta == "0" || initNvram.wlc_dpsta == "")) return "MB";
-						else return "RT";
-					})();
+						systemVariable.originOpMode = (function(){
+							if(initNvram.sw_mode == "2" && (initNvram.wlc_psta == "0" || initNvram.wlc_psta == "") && (initNvram.wlc_dpsta == "0" || initNvram.wlc_dpsta == "")) return "RP";
+							else if(initNvram.sw_mode == "3" && initNvram.wlc_psta == "2" && (initNvram.wlc_dpsta == "0" || initNvram.wlc_dpsta == "")) return "RP";
+							else if(initNvram.sw_mode == "3" && initNvram.wlc_psta == "2" && initNvram.wlc_dpsta == "1") return "RP";
+							else if(initNvram.sw_mode == "3" && initNvram.wlc_psta == "2" && initNvram.wlc_dpsta == "2") return "RP";
+							else if(initNvram.sw_mode == "3" && (initNvram.wlc_psta == "0" || initNvram.wlc_psta == "") && (initNvram.wlc_dpsta == "0" || initNvram.wlc_dpsta == "")) return "AP";
+							else if(initNvram.sw_mode == "2" && initNvram.wlc_psta == "1" && (initNvram.wlc_dpsta == "0" || initNvram.wlc_dpsta == "")) return "MB";
+							else if(initNvram.sw_mode == "3" && initNvram.wlc_psta == "1" && (initNvram.wlc_dpsta == "0" || initNvram.wlc_dpsta == "")) return "MB";
+							else return "RT";
+						})();
 					}
 					systemVariable.opMode = systemVariable.originOpMode;
 					systemVariable.wirelessBand = initNvram.wl_ifnames.split(" ").length;
@@ -138,6 +146,7 @@
 					systemVariable.CoBrand = initNvram.CoBrand;
 					systemVariable.forceChangePw = (httpApi.hookGet("check_pw") == '1') ? true : false;
 					systemVariable.linkLnternet = httpApi.isConnected();
+					systemVariable.maxPasswordLen = getSupportNum("MaxLen_http_passwd");
 
 					if(isSupport("2p5G_LWAN"))
 						systemVariable.originWansExtwan = httpApi.nvramGet(["wans_extwan"]).wans_extwan;
@@ -152,6 +161,20 @@
 						systemVariable.multiPAP.wlcStatus["wlc" + allWlArray[i].ifname + "_manual"] = false;
 						systemVariable.multiPAP.wlcStatus["wlc" + allWlArray[i].ifname + "_skip"] = false;
 					}
+
+					systemVariable.get_feat_def = httpApi.hookGet("get_feat_def") || {};
+					systemVariable.scMode = "SC_all";
+					if(systemVariable.get_feat_def.smart_connect_opt){
+						if( 
+							systemVariable.get_feat_def.smart_connect_opt.join(",").indexOf("3")+1 &&
+							isSupport("wifi6e")
+						){
+							systemVariable.scMode = "SC_2g5g";
+						}
+					}
+					var dwb_mode = httpApi.nvramGet(["dwb_mode"]).dwb_mode;
+					if(dwb_mode == "1" && systemVariable.scMode == "SC_all")
+						systemVariable.scMode = "SC_dwb_mode";
 
 					handleSysDep();
 
@@ -472,7 +495,7 @@
 								<div class="inputTitle"><#Router_Login_Name#></div>
 							</div>
 							<div class="inputContainer">
-								<input id="http_username" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" maxlength="20" class="textInput" data-role="none" value="" data-clear-btn="true" />
+								<input id="http_username" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" maxlength="32" class="textInput" data-role="none" value="" data-clear-btn="true" />
 							</div>
 						</div>
 						<div>
@@ -481,7 +504,7 @@
 								<div class="secureInput icon_eye_close" for="http_passwd http_passwd_confirm"></div>
 							</div>
 							<div class="inputContainer">
-								<input id="http_passwd" type="password" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" maxlength="17" class="textInput" data-role="none" value="" data-clear-btn="true" />
+								<input id="http_passwd" type="password" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" maxlength="33" class="textInput" data-role="none" value="" data-clear-btn="true" onkeyup="chkPass('httpd', this.value); check_password_length(this);"/>
 							</div>
 						</div>
 						<div>
@@ -489,7 +512,7 @@
 								<div class="inputTitle"><#PASS_retype#></div>
 							</div>
 							<div class="inputContainer">
-								<input id="http_passwd_confirm" type="password" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" maxlength="17" class="textInput" data-role="none" value="" data-clear-btn="true" />
+								<input id="http_passwd_confirm" type="password" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" maxlength="33" class="textInput" data-role="none" value="" data-clear-btn="true" />
 							</div>
 						</div>
 						<!-- Action Button -->
@@ -620,8 +643,7 @@
 					<div class="pageDesc">
 						<div><#QKSet_detect_waitdesc#></div>
 					</div>
-					<strong><span id="LED_state" style="display:none;"></span></strong>
-					<strong><span id="no_cable" style="color:#FFCC00;display:none;"><#QIS_NoCable_desc#></span></strong>
+					<strong><span class="pageDesc" id="LED_state" style="color:#FFCC00;display:none;"></span></strong>
 					<div class="cssload-bellContainer">
 						<div class="cssload-bell">
 							<div class="cssload-circle">
@@ -768,7 +790,7 @@
 						<!-- Action Button -->
 						<div class="footer_desktop">
 							<div class="desktop_abortBtn" onclick="abort.nowan()"><#CTL_prev#></div>
-							<div id="desktop_manual_applyBtn" class="desktop_applyBtn" onclick="apply.manual()"><#Manual_Setting_btn#></div>
+							<div id="desktop_manual_applyBtn" class="desktop_applyBtn" onclick="goTo.WAN()"><#Manual_Setting_btn#></div>
 						</div>
 						<div class="footer_mobile">
 							<table style="width:100%;" cellpadding="0" cellspacing="0">
@@ -776,7 +798,7 @@
 									<td class="mobileAbort" style="width:50%" onclick='abort.nowan()'>
 										<div class="mobile_abortBtn"><#CTL_prev#></div>
 									</td>
-									<td class="mobileApply" onclick="apply.manual()">
+									<td class="mobileApply" onclick="goTo.WAN()">
 										<div id="mobile_manual_applyBtn" class="mobile_applyBtn"><#Manual_Setting_btn#></div>
 									</td>
 								</tr>
@@ -829,12 +851,12 @@
 					<div>
 						<!-- Action Button -->
 						<div class="footer_desktop">
-							<div class="desktop_abortBtn" onclick='abort.wanType()'><#CTL_prev#></div>
+							<div class="desktop_abortBtn" onclick='abort.wan()'><#CTL_prev#></div>
 						</div>
 						<div class="footer_mobile">
 							<table style="width:100%;" cellpadding="0" cellspacing="0">
 								<tr>
-									<td class="mobileAbort" style="width:100%;" onclick='abort.wanType()'>
+									<td class="mobileAbort" style="width:100%;" onclick='abort.wan()'>
 										<div class="mobile_abortBtn"><#CTL_prev#></div>
 									</td>
 								</tr>
@@ -845,22 +867,22 @@
 			</div>
 		</div>
 
-		<!-- Account prompt for PPPDHCP -->
-		<div id="wanTypePrompt_setting" data-role="page" class="qisBackground">
+		<!-- Special ISP Requirement -->
+		<div id="special_isp_requirement" data-role="page" class="qisBackground">
 			<div class="headerBar"></div>
 			<div class="tableContainer">
 				<div class="desktop_left_field">
 					<div>
 						<div class="titleMain"><#Internet#></div>
-						<div class="titleSub"><#Connectiontype#></div>
+						<div class="titleSub"><#QKSet_account_webtitle#></div>
 					</div>
 				</div>
 				<div class="table_td">
-					<div class="pageDesc"><#QIS_SmartConn_title1#></div>
+					<div class="pageDesc"><#PPPConnection_x_HostNameForISP_sectionname#></div>
 					<div>
 						<div class="selectorTopContainer" id="test">
 							<div class="selectorContainer">
-								<div class="selectorContainerDiv" onclick="goTo.PPPoE()">
+								<div class="selectorContainerDiv" onclick="goTo.IPTV()">
 									<div class="selectBar">
 										<#checkbox_Yes#>
 									</div>
@@ -873,7 +895,7 @@
 						<div class="selectorTopContainer">
 							<div class="selectorContainer">
 								<div class="selectorContainerDiv">
-									<div class="selectBar" onclick="goTo.DHCP()">
+									<div class="selectBar" onclick="goTo.wirelessWithoutIPTV();">
 										<#checkbox_No#>
 									</div>
 									<div class="narrowContainer">
@@ -881,18 +903,18 @@
 									</div>
 								</div>
 							</div>
-						</div>		
+						</div>
 					</div>
 
 					<div>
 						<!-- Action Button -->
 						<div class="footer_desktop">
-							<div class="desktop_abortBtn" onclick='abort.wanType()'><#CTL_prev#></div>
+							<div class="desktop_abortBtn" onclick='abort.specialISP()'><#CTL_prev#></div>
 						</div>
 						<div class="footer_mobile">
 							<table style="width:100%;" cellpadding="0" cellspacing="0">
 								<tr>
-									<td class="mobileAbort" style="width:100%;" onclick='abort.wanType()'>
+									<td class="mobileAbort" style="width:100%;" onclick='abort.specialISP()'>
 										<div class="mobile_abortBtn"><#CTL_prev#></div>
 									</td>
 								</tr>
@@ -941,6 +963,16 @@
 								<div class="selectorContainerDiv">
 									<div class="selectBar" onclick="goTo.Static()">
 										<#BOP_ctype_title5#>
+									</div>
+									<div class="narrowContainer">
+										<div class="icon_arrow_right" style="width:20px;height:32px;"></div>
+									</div>
+								</div>
+							</div>
+							<div class="selectorContainer v6plus">
+								<div class="selectorContainerDiv">
+									<div class="selectBar" onclick="goTo.V6PLUS()">
+										<#IPv6_plus#>
 									</div>
 									<div class="narrowContainer">
 										<div class="icon_arrow_right" style="width:20px;height:32px;"></div>
@@ -1074,12 +1106,12 @@
 
 						<!-- Action Button -->
 						<div class="footer_desktop">
-							<div class="desktop_abortBtn" onclick='abort.wanType()'><#CTL_prev#></div>
+							<div class="desktop_abortBtn" onclick='abort.wan()'><#CTL_prev#></div>
 						</div>
 						<div class="footer_mobile">
 							<table style="width:100%;" cellpadding="0" cellspacing="0">
 								<tr>
-									<td class="mobileAbort" style="width:100%;" onclick='abort.wanType()'>
+									<td class="mobileAbort" style="width:100%;" onclick='abort.wan()'>
 										<div class="mobile_abortBtn"><#CTL_prev#></div>
 									</td>
 								</tr>
@@ -2093,13 +2125,13 @@
 							<div class="ap_sort_text"><#QIS_RP_desc9#></div>
 						</td>
 						<td>
-							<div class="ap_sort_icon_background" onclick="sortAP('band', 'down')">
-								<div class="icon_sort_band_2g ap_sort_icon_container"></div>
+							<div class="ap_sort_icon_background" onclick="sortAP('band', 'top')">
+								<div class="icon_sort_freq_high ap_sort_icon_container"></div>
 							</div>
 						</td>
 						<td>
-							<div class="ap_sort_icon_background" onclick="sortAP('band', 'top')">
-								<div class="icon_sort_band_5g ap_sort_icon_container"></div>
+							<div class="ap_sort_icon_background" onclick="sortAP('band', 'down')">
+								<div class="icon_sort_freq_low ap_sort_icon_container"></div>
 							</div>
 						</td>
 					</tr>
@@ -2242,7 +2274,7 @@
 		  				<input type="checkbox" id="wireless_checkbox" data-mini="true"/>
 					</div>
 
-					<div id="wifi6e_legacy_hint" class="hint_yellow" style="margin-top:6px;display:none">By using the same wireless network of all bands, some legacy devices might encounter compatibility issue when connecting to 6GHz network. To make sure the connectivity, we suggest you to separate 2.4GHz, 5GHz and 6GHz wireless settings.</div>
+					<div id="wifi6e_legacy_hint" class="hint_yellow" style="padding:30px;margin-top:6px;display:none"><#Wireless_SSID_hint2#> <#Wireless_SSID_hint3#></div>
 					<div class="labelContainer" id="syncSSID" style="display:none;">
 						<label for="wireless_sync_checkbox" class="labelInput"><#qis_ssid_desc#></label>
 		  				<input type="checkbox" id="wireless_sync_checkbox" data-mini="true"/>
@@ -2419,8 +2451,8 @@
 						<div class="descSteps">Step 2</div>
 						<div id="stepText2"><#qis_summary_description_step2#></div>
 					</div>
-						
-					<div id="wifi6e_legacy_hint_summary" class="hint_yellow" style="display:none">*Note: If your devices have connection issues afterwards, please go to “Wireless Setting” in Web/App to change configurations via a hardwired device or a device supporting WiFi 6E.</div>
+					
+					<div id="wifi6e_legacy_hint_summary" class="hint_yellow" style="display:none">*Note: <#Wirelesss_Connectivity_hint1#></div>
 					<div id="finishButton" style="display:none">
 						<div class="footer_desktop">
 							<div class="desktop_applyBtn" onclick="goTo.leaveQIS();"><#QKSet_finishpre_rebootnow#></div>

@@ -189,12 +189,16 @@ function drawClientList(tab){
 		clientHtmlTd += '</div></td>';
 		
 		clientHtmlTd += '<td style="width:55px">';
-		if(!clientObj.internetState) {
+		var MULTIFILTER_BLOCK_ALL = parent.httpApi.nvramGet(["MULTIFILTER_BLOCK_ALL"]).MULTIFILTER_BLOCK_ALL;
+		if(MULTIFILTER_BLOCK_ALL == "1")
 			clientHtmlTd += '<div class="internetBlock" title="Block Internet access" style="height:20px;width:20px;margin-right:5px;float:right;"></div>';/*untranslated*/
-		}
-
-		if(clientObj.internetMode == "time") {
-			clientHtmlTd += '<div class="internetTimeLimits" title="Time Scheduling" style="background-size:25px 20px;height:20px;width:25px;margin-right:5px;float:right;"></div>';/*untranslated*/
+		else{
+			if(!clientObj.internetState) {
+				clientHtmlTd += '<div class="internetBlock" title="Block Internet access" style="height:20px;width:20px;margin-right:5px;float:right;"></div>';/*untranslated*/
+			}
+			if(clientObj.internetMode == "time") {
+				clientHtmlTd += '<div class="internetTimeLimits" title="Time Scheduling" style="background-size:25px 20px;height:20px;width:25px;margin-right:5px;float:right;"></div>';/*untranslated*/
+			}
 		}
 		if(parent.sw_mode == 1){
 			clientHtmlTd += '</td></tr><tr><td style="height:20px;" title=\'' + ipState[clientObj.ipMethod] + '\'>';
@@ -309,7 +313,7 @@ function drawClientList(tab){
 		if(document.getElementById("tabWireless").offsetWidth > 150 || 
 			(document.getElementById("tabOnline").offsetWidth+document.getElementById("tabWired").offsetWidth+document.getElementById("tabWireless").offsetWidth) > 300){
 			var wireless_span = document.getElementById("tabWirelessSpan").innerHTML;
-			var Modified_wireless_term = wireless_span.replace("<#tm_wireless#>", "Wi-Fi");
+			var Modified_wireless_term = wireless_span.replace("<#tm_wireless#>", "WiFi");
 			document.getElementById("tabWirelessSpan").innerHTML = Modified_wireless_term;
 		}
 	}

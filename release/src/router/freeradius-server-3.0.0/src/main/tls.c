@@ -106,6 +106,26 @@ static unsigned int psk_client_callback(SSL *ssl, UNUSED char const *hint,
 
 #endif
 
+void tls_session_id(SSL_SESSION *ssn, char *buffer, size_t bufsize)
+{
+#if OPENSSL_VERSION_NUMBER < 0x10001000L
+	size_t size;
+
+	size = ssn->session_id_length;
+	if (size > bufsize) size = bufsize;
+
+	fr_bin2hex(buffer, ssn->session_id, size);
+#else
+	unsigned int size;
+	uint8_t const *p;
+
+	p = SSL_SESSION_get_id(ssn, &size);
+	if (size > bufsize) size = bufsize;
+
+	fr_bin2hex(buffer, p, size);
+
+#endif
+}
 tls_session_t *tls_new_client_session(fr_tls_server_conf_t *conf, int fd)
 {
 	int verify_mode;
@@ -942,7 +962,7 @@ static int load_dh_params(SSL_CTX *ctx, char *file)
 	return 0;
 }
 
-
+#if 0
 /*
  *	Generate ephemeral RSA keys.
  */
@@ -960,6 +980,7 @@ static int generate_eph_rsa_key(SSL_CTX *ctx)
 	RSA_free(rsa);
 	return 0;
 }
+#endif
 
 /* index we use to store cached session VPs
  * needs to be dynamic so we can supply a "free" function
@@ -977,14 +998,18 @@ static int FR_TLS_EX_INDEX_VPS = -1;
 
 static void cbtls_remove_session(SSL_CTX *ctx, SSL_SESSION *sess)
 {
-	size_t size;
 	char buffer[2 * MAX_SESSION_SIZE + 1];
 	fr_tls_server_conf_t *conf;
 
+#if 1
+	tls_session_id(sess, buffer, MAX_SESSION_SIZE);
+#else
+	size_t size;
 	size = sess->session_id_length;
 	if (size > MAX_SESSION_SIZE) size = MAX_SESSION_SIZE;
 
 	fr_bin2hex(buffer, sess->session_id, size);
+#endif
 
 	DEBUG2("  SSL: Removing session %s from the cache", buffer);
 	conf = (fr_tls_server_conf_t *)SSL_CTX_get_app_data(ctx);
@@ -1012,16 +1037,17 @@ static void cbtls_remove_session(SSL_CTX *ctx, SSL_SESSION *sess)
 
 static int cbtls_new_session(SSL *ssl, SSL_SESSION *sess)
 {
-	size_t size;
 	char buffer[2 * MAX_SESSION_SIZE + 1];
 	fr_tls_server_conf_t *conf;
 	unsigned char *sess_blob = NULL;
 
+#if 0
+	size_t size;
 	size = sess->session_id_length;
 	if (size > MAX_SESSION_SIZE) size = MAX_SESSION_SIZE;
 
 	fr_bin2hex(buffer, sess->session_id, size);
-
+#endif
 	DEBUG2("  SSL: adding session %s to cache", buffer);
 
 	conf = (fr_tls_server_conf_t *)SSL_get_ex_data(ssl, FR_TLS_EX_INDEX_CONF);
@@ -1571,7 +1597,7 @@ int cbtls_verify(int ok, X509_STORE_CTX *ctx)
 		pairmake(NULL, certs, cert_attr_names[FR_TLS_SUBJECT][lookup], subject, T_OP_SET);
 	}
 
-	X509_NAME_oneline(X509_get_issuer_name(ctx->current_cert), issuer,
+	X509_NAME_oneline(X509_get_issuer_name(client_cert), issuer,
 			  sizeof(issuer));
 	issuer[sizeof(issuer) - 1] = '\0';
 	if (identity && (lookup <= 1) && issuer[0]) {
@@ -1637,8 +1663,13 @@ int cbtls_verify(int ok, X509_STORE_CTX *ctx)
 	}
 
 	if (lookup == 0) {
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L && !defined(LIBRESSL_VERSION_NUMBER)
+		ext_list = X509_get0_extensions(client_cert);
+#else
+		X509_CINF	*client_inf;
 		client_inf = client_cert->cert_info;
 		ext_list = client_inf->extensions;
+#endif
 	} else {
 		ext_list = NULL;
 	}
@@ -1690,7 +1721,7 @@ int cbtls_verify(int ok, X509_STORE_CTX *ctx)
 		BIO_free_all(out);
 	}
 
-	switch (ctx->error) {
+	switch (X509_STORE_CTX_get_error(ctx)) {
 
 	case X509_V_ERR_UNABLE_TO_GET_ISSUER_CERT:
 		ERROR("issuer= %s\n", issuer);
@@ -2359,9 +2390,9 @@ fr_tls_server_conf_t *tls_server_conf_parse(CONF_SECTION *cs)
 		goto error;
 	}
 
-	if (generate_eph_rsa_key(conf->ctx) < 0) {
-		goto error;
-	}
+	//if (generate_eph_rsa_key(conf->ctx) < 0) {
+	//	goto error;
+	//}
 
 	if (conf->verify_tmp_dir) {
 		if (chmod(conf->verify_tmp_dir, S_IRWXU) < 0) {
@@ -2422,9 +2453,9 @@ fr_tls_server_conf_t *tls_client_conf_parse(CONF_SECTION *cs)
 		goto error;
 	}
 
-	if (generate_eph_rsa_key(conf->ctx) < 0) {
-		goto error;
-	}
+	//if (generate_eph_rsa_key(conf->ctx) < 0) {
+	//	goto error;
+	//}
 
 	cf_data_add(cs, "tls-conf", conf, (void *)(void *) tls_server_conf_free);
 
@@ -2452,7 +2483,7 @@ int tls_success(tls_session_t *ssn, REQUEST *request)
 	    (((vp = pairfind(request->config_items, 1127, 0, TAG_ANY)) != NULL) &&
 	     (vp->vp_integer == 0))) {
 		SSL_CTX_remove_session(ssn->ctx,
-				       ssn->ssl->session);
+				       ssn->ssl_session);
 		ssn->allow_session_resumption = 0;
 
 		/*
@@ -2469,14 +2500,18 @@ int tls_success(tls_session_t *ssn, REQUEST *request)
 		 *	user data in the cache.
 		 */
 	} else if (!SSL_session_reused(ssn->ssl)) {
-		size_t size;
 		VALUE_PAIR **certs;
 		char buffer[2 * MAX_SESSION_SIZE + 1];
 
+#if 1
+		tls_session_id(ssn->ssl_session, buffer, MAX_SESSION_SIZE);
+#else
+		size_t size;
 		size = ssn->ssl->session->session_id_length;
 		if (size > MAX_SESSION_SIZE) size = MAX_SESSION_SIZE;
-
 		fr_bin2hex(buffer, ssn->ssl->session->session_id, size);
+#endif
+
 
 		vp = paircopy2(NULL, request->reply->vps, PW_USER_NAME, 0, TAG_ANY);
 		if (vp) pairadd(&vps, vp);
@@ -2502,7 +2537,7 @@ int tls_success(tls_session_t *ssn, REQUEST *request)
 
 		if (vps) {
 			RDEBUG2("Saving session %s vps %p in the cache", buffer, vps);
-			SSL_SESSION_set_ex_data(ssn->ssl->session,
+			SSL_SESSION_set_ex_data(ssn->ssl_session,
 						FR_TLS_EX_INDEX_VPS, vps);
 			if (conf->session_cache_path) {
 				/* write the VPs to the cache file */
@@ -2532,7 +2567,7 @@ int tls_success(tls_session_t *ssn, REQUEST *request)
 		} else {
 			RWDEBUG2("No information to cache: session caching will be disabled for session %s", buffer);
 			SSL_CTX_remove_session(ssn->ctx,
-					       ssn->ssl->session);
+					       ssn->ssl_session);
 		}
 
 		/*
@@ -2540,9 +2575,12 @@ int tls_success(tls_session_t *ssn, REQUEST *request)
 		 *	reply.
 		 */
 	} else {
-		size_t size;
 		char buffer[2 * MAX_SESSION_SIZE + 1];
 
+#if 1
+		tls_session_id(ssn->ssl_session, buffer, MAX_SESSION_SIZE);
+#else
+		size_t size;
 		size = ssn->ssl->session->session_id_length;
 		if (size > MAX_SESSION_SIZE) size = MAX_SESSION_SIZE;
 
@@ -2577,7 +2615,7 @@ int tls_success(tls_session_t *ssn, REQUEST *request)
 						paircopyvp(request->packet, vp));
 				}
 			}
-
+#endif
 			if (conf->session_cache_path) {
 				/* "touch" the cached session/vp file */
 				char filename[256];
@@ -2596,7 +2634,9 @@ int tls_success(tls_session_t *ssn, REQUEST *request)
 			 *	Mark the request as resumed.
 			 */
 			pairmake_packet("EAP-Session-Resumed", "1", T_OP_SET);
+#if 0
 		}
+#endif
 	}
 
 	return 0;
@@ -2608,7 +2648,7 @@ void tls_fail(tls_session_t *ssn)
 	/*
 	 *	Force the session to NOT be cached.
 	 */
-	SSL_CTX_remove_session(ssn->ctx, ssn->ssl->session);
+	SSL_CTX_remove_session(ssn->ctx, ssn->ssl_session);
 }
 
 fr_tls_status_t tls_application_data(tls_session_t *ssn,

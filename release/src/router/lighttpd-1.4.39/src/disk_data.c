@@ -3245,7 +3245,7 @@ extern int add_account(const char *const account, const char *const password){
     memset(ascii_passwd, 0, 64);
     char_to_ascii_safe(ascii_passwd, password, 64);
 #ifdef RTCONFIG_NVRAM_ENCRYPT
-    int enclen = pw_enc_blen(ascii_passwd);
+    int enclen = pw_enc_blen(ascii_passwd) + 1;
     char enc_passwd[enclen];
     memset(enc_passwd, 0, sizeof(enc_passwd));
     pw_enc(ascii_passwd, enc_passwd);

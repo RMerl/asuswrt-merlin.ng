@@ -241,7 +241,7 @@ function checkPasswdValid(obj){
                 
                 	<tr id="target2">
                   	<td height="35"><span id="user2" style="color:#FFFFFF;"></span></td>
-                  	<td><input type="text" name="userpasswd2" id="userpasswd2" value="" class="input_25_table" onKeyPress="return validator.isString(this, event);" maxlength="16" autocorrect="off" autocapitalize="off"></td>
+					<td><input type="text" name="userpasswd2" id="userpasswd2" value="" class="input_25_table" onKeyPress="return validator.isString(this, event);" maxlength="32" autocorrect="off" autocapitalize="off"></td>
                   	<td align="center"><img src="/images/New_ui/checkbox.png"></td>
                   	<td align="center">&nbsp;</td>
                 	</tr>

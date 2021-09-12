@@ -12,6 +12,7 @@
 <link rel="stylesheet" type="text/css" href="index_style.css"> 
 <link rel="stylesheet" type="text/css" href="form_style.css">
 <link rel="stylesheet" type="text/css" href="menu_style.css">
+<link rel="stylesheet" type="text/css" href="pwdmeter.css">
 <script language="JavaScript" type="text/javascript" src="/help.js"></script>
 <script language="JavaScript" type="text/javascript" src="/state.js"></script>
 <script language="JavaScript" type="text/javascript" src="/general.js"></script>
@@ -60,6 +61,11 @@
 	font-weight:bold;
 	line-height:140%;
 	color:#ffffff;	
+}
+#client_pwd_strength{
+	margin-top: 6px;
+	display: flex;
+	justify-content: center;
 }
 </style>
 <script>
@@ -120,6 +126,12 @@ var hmacarray = [
 var wans_mode ='<% nvram_get("wans_mode"); %>';
 
 
+var faq_href_windows = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=119";
+var faq_href_macOS = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=120";
+var faq_href_iPhone = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=121";
+var faq_href_android = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=122";
+var faq_href_port_forwarding = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=118";
+
 function initial(){
 	var current_server_igncrt = "<% nvram_get("vpn_server_igncrt"); %>";
 	var currentcipher = "<% nvram_get("vpn_server_cipher"); %>";
@@ -176,22 +188,30 @@ function initial(){
 	//check DUT is belong to private IP.
 	setTimeout("show_warning_message();", 1000);
 
-	//set FAQ URL
-	//	https://www.asus.com/support/FAQ/1004469
-	httpApi.faqURL("1004469", function(url){document.getElementById("faq_windows").href=url;});
-	//	https://www.asus.com/support/FAQ/1004472
-	httpApi.faqURL("1004472", function(url){document.getElementById("faq_macOS").href=url;});
-	//	https://www.asus.com/support/FAQ/1004471
-	httpApi.faqURL("1004471", function(url){document.getElementById("faq_iPhone").href=url;});
-	//	https://www.asus.com/support/FAQ/1004466
-	httpApi.faqURL("1004466", function(url){document.getElementById("faq_android").href=url;});
+	document.getElementById("faq_windows").href=faq_href_windows;
+	document.getElementById("faq_macOS").href=faq_href_macOS;
+	document.getElementById("faq_iPhone").href=faq_href_iPhone;
+	document.getElementById("faq_android").href=faq_href_android;
+
+	$("#client_pwd_strength").append(Get_Component_PWD_Strength_Meter());
+	if($("[name='vpn_server_clientlist_password']").val() == "")
+		$("#client_pwd_strength").css("display", "none");
+	else
+		chkPass($("[name='vpn_server_clientlist_password']").val(), "", $("#client_pwd_strength"));
+	$("[name='vpn_server_clientlist_password']").keyup(function(){
+		chkPass($(this).val(), "", $("#client_pwd_strength"));
+	});
+	$("[name='vpn_server_clientlist_password']").blur(function(){
+		if($(this).val() == "")
+			$("#client_pwd_strength").css("display", "none");
+	});
 
 }
 
 var MAX_RETRY_NUM = 5;
 var external_ip_retry_cnt = MAX_RETRY_NUM;
 function show_warning_message(){
-	if(realip_support && wans_mode != "lb"){
+	if(realip_support && (based_modelid == "BRT-AC828" || wans_mode != "lb")){
 		if(realip_state != "2" && external_ip_retry_cnt > 0){
 			if( external_ip_retry_cnt == MAX_RETRY_NUM )
 				get_real_ip();
@@ -202,24 +222,21 @@ function show_warning_message(){
 			if(validator.isPrivateIP(wanlink_ipaddr())){
 				document.getElementById("privateIP_notes").innerHTML = "<#vpn_privateIP_hint#>";
 				document.getElementById("privateIP_notes").style.display = "";
-				//      https://www.asus.com/support/FAQ/1033906
-				httpApi.faqURL("1033906", function(url){document.getElementById("faq_port_forwarding").href=url;});      //this id is include in string : #vpn_privateIP_hint#
+				document.getElementById("faq_port_forwarding").href=faq_href_port_forwarding;	//this id is include in string : #vpn_privateIP_hint#
 			}
 		}
 		else{
 			if(!external_ip){
 				document.getElementById("privateIP_notes").innerHTML = "<#vpn_privateIP_hint#>";
 				document.getElementById("privateIP_notes").style.display = "";
-				//      https://www.asus.com/support/FAQ/1033906
-				httpApi.faqURL("1033906", function(url){document.getElementById("faq_port_forwarding").href=url;});	//this id is include in string : #vpn_privateIP_hint#
+				document.getElementById("faq_port_forwarding").href=faq_href_port_forwarding;	//this id is include in string : #vpn_privateIP_hint#
 			}
 		}
 	}
 	else if(validator.isPrivateIP(wanlink_ipaddr())){
 		document.getElementById("privateIP_notes").innerHTML = "<#vpn_privateIP_hint#>";
 		document.getElementById("privateIP_notes").style.display = "";
-		//      https://www.asus.com/support/FAQ/1033906
-		httpApi.faqURL("1033906", function(url){document.getElementById("faq_port_forwarding").href=url;});	//this id is include in string : #vpn_privateIP_hint#
+		document.getElementById("faq_port_forwarding").href=faq_href_port_forwarding;	//this id is include in string : #vpn_privateIP_hint#
 	}
 }
 
@@ -630,6 +647,7 @@ function addRow_Group(upper){
 		addRow(password_obj, 0);
 		showopenvpnd_clientlist();
 		openvpnd_connected_status();
+		$("#client_pwd_strength").css("display", "none");
 	}
 }
 
@@ -1441,6 +1459,7 @@ function callback_upload_cert(_flag) {
 												</td>
 												<td width="35%">
 													<input type="text" class="input_25_table" maxlength="64" name="vpn_server_clientlist_password" onKeyPress="return validator.isString(this, event)" autocorrect="off" autocapitalize="off">
+													<div id="client_pwd_strength"></div>
 												</td>
 												<td width="15%">
 													<div><input type="button" class="add_btn" onClick="addRow_Group(32);" value=""></div>
@@ -1510,7 +1529,7 @@ function callback_upload_cert(_flag) {
 												<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,6);">Server Port</a></th>
 												<td>
 													<input type="text" maxlength="5" class="input_6_table" name="vpn_server_port" onKeyPress="return validator.isNumber(this,event);" value="<% nvram_get("vpn_server_port"); %>" autocorrect="off" autocapitalize="off">
-													<span style="color:#FC0">(<#Setting_factorydefault_value#> : 1194)</span>
+													<span class="hint-color">(<#Setting_factorydefault_value#> : 1194)</span>
 												</td>
 											</tr>
 											<tr id="server_crypt_tr">
@@ -1560,7 +1579,7 @@ function callback_upload_cert(_flag) {
 											<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,26);">HMAC Authentication<!--untranslated--></a></th>
 												<td>
 													<select name="vpn_server_digest" class="input_option" onChange="update_digest();"></select>
-													<span id="digest_hint" style="color:#FC0">(Not recommended)<!--untranslated--></span>
+													<span id="digest_hint" class="hint-color">(Not recommended)<!--untranslated--></span>
 												</td>
 											</tr>
 											<tr id="server_snnm">
@@ -1608,7 +1627,7 @@ function callback_upload_cert(_flag) {
 												<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,17);">Cipher</a></th>
 												<td>
 													<select name="vpn_server_cipher" class="input_option" onChange="update_cipher();"></select>
-													<span id="cipher_hint" style="color:#FC0">(Default : BF-CBC)</span>
+													<span id="cipher_hint" class="hint-color">(Default : BF-CBC)</span>
 												</td>
 											</tr>
 											<tr>
@@ -1628,7 +1647,7 @@ function callback_upload_cert(_flag) {
 												<th>Log verbosity</th>
 												<td>
 													<input type="text" maxlength="2" class="input_6_table" name="vpn_server_verb" onKeyPress="return validator.isNumber(this,event);" value="<% nvram_get("vpn_server_verb"); %>">
-													<span style="color:#FC0">(Between 0 and 6. Default: 3)</span>
+													<span class="hint-color">(Between 0 and 6. Default: 3)</span>
 												</td>
 											</tr>
 											<tr id="server_ccd">

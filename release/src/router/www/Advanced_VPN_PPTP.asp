@@ -12,6 +12,7 @@
 <link rel="stylesheet" type="text/css" href="index_style.css"> 
 <link rel="stylesheet" type="text/css" href="form_style.css">
 <link rel="stylesheet" type="text/css" href="menu_style.css">
+<link rel="stylesheet" type="text/css" href="pwdmeter.css">
 <script language="JavaScript" type="text/javascript" src="/help.js"></script>
 <script language="JavaScript" type="text/javascript" src="/state.js"></script>
 <script language="JavaScript" type="text/javascript" src="/general.js"></script>
@@ -37,6 +38,11 @@
 	box-shadow: 3px 3px 10px #000;
 	display:none;
 }
+#client_pwd_strength{
+	margin-top: 6px;
+	display: flex;
+	justify-content: center;
+}
 </style>
 <script>
 
@@ -56,8 +62,8 @@ var pptpd_sr_edit_username = "";
 
 var max_shift = "";	/*MODELDEP (include dict #PPTP_desc2# #vpn_max_clients# #vpn_maximum_clients#) : 
 				RT-AC5300/GT-AC5300/GT-AX11000/RT-AC86U/AC2900/RT-AC3200/RT-AC3100/RT-AC88U/RT-AX88U/RT-AC87U/RT-AC68U/RT-AC66U/RT-AC56U/RT-N66U/RT-N18U */
-if(based_modelid == "RT-AC5300" || based_modelid == "GT-AC5300" || based_modelid == "GT-AC9600" || based_modelid == "RT-AC3200" || based_modelid == "RT-AC3100" || based_modelid == "GT-AX11000" || based_modelid == "RT-AX92U" || based_modelid == "RT-AX95Q" || based_modelid == "RT-AXE95Q" || based_modelid == "RT-AX56_XD4" || based_modelid == "CT-AX56_XD4" || based_modelid == "RT-AX58U" || based_modelid == "TUF-AX3000" || based_modelid == "TUF-AX5400" || based_modelid == "DSL-AX82U" || based_modelid == "RT-AX82U" || based_modelid == "RT-AX56U" ||
-		based_modelid == "RT-AC88U" || based_modelid == "RT-AX88U" || based_modelid == "RT-AC86U" || based_modelid == "GT-AC2900" || based_modelid == "RT-AC87U" || based_modelid == "RT-AC68U" || based_modelid == "RT-AX86U" || based_modelid == "RT-AX5700" || based_modelid == "RT-AX68U" || based_modelid == "RT-AC68U_V4" || based_modelid == "GT-AXE11000" || based_modelid == "GS-AX3000" || based_modelid == "GS-AX5400" ||
+if(based_modelid == "RT-AC5300" || based_modelid == "GT-AC5300" || based_modelid == "GT-AC9600" || based_modelid == "RT-AC3200" || based_modelid == "RT-AC3100" || based_modelid == "GT-AX11000" || based_modelid == "RT-AX92U" || based_modelid == "RT-AX95Q" || based_modelid == "XT8PRO" || based_modelid == "RT-AXE95Q" || based_modelid == "ET8PRO" || based_modelid == "RT-AX56_XD4" || based_modelid == "XD4PRO" || based_modelid == "CT-AX56_XD4" || based_modelid == "RT-AX58U" || based_modelid == "RT-AX58U_V2" || based_modelid == "TUF-AX3000" || based_modelid == "TUF-AX5400" || based_modelid == "DSL-AX82U" || based_modelid == "RT-AX82U" || based_modelid == "RT-AX56U" ||
+		based_modelid == "RT-AC88U" || based_modelid == "RT-AX88U" || based_modelid == "RT-AC86U" || based_modelid == "GT-AC2900" || based_modelid == "RT-AC87U" || based_modelid == "RT-AC68U" || based_modelid == "RT-AX86U" || based_modelid == "RT-AX68U" || based_modelid == "RT-AC68U_V4" || based_modelid == "GT-AXE11000" || based_modelid == "GS-AX3000" || based_modelid == "GS-AX5400" || based_modelid == "GT-AX6000" || based_modelid == "GT-AX11000_PRO" || based_modelid == "ET12" || based_modelid == "XT12" || based_modelid == "GT-AXE16000" ||
 		based_modelid == "RT-AC66U" || based_modelid == "RT-AC56U" ||
 		based_modelid == "RT-N66U" || based_modelid == "RT-N18U"){
 	max_shift = parseInt("29");
@@ -68,6 +74,9 @@ else{
 
 var wans_mode ='<% nvram_get("wans_mode"); %>';
 
+var faq_href1 = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=124";
+var faq_href2 = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=118";
+
 function initial(){
 	var pptpd_dns1_orig = '<% nvram_get("pptpd_dns1"); %>';
 	var pptpd_dns2_orig = '<% nvram_get("pptpd_dns2"); %>';
@@ -76,8 +85,8 @@ function initial(){
 	var pptpd_clients = '<% nvram_get("pptpd_clients"); %>';
 	
 	show_menu();
-	httpApi.faqURL("114892", function(url){document.getElementById("faq").href=url;});
-	httpApi.faqURL("1033906", function(url){document.getElementById("faq_port_forwarding").href=url;});
+	document.getElementById("faq").href=faq_href1;
+	document.getElementById("faq_port_forwarding").href=faq_href2;
 
 	//if support pptpd and openvpnd then show switch button
 	if(pptpd_support && openvpnd_support) {
@@ -184,6 +193,18 @@ function initial(){
 
 	$('#divSwitchMenu').html(gen_switch_menu(vpn_server_array, "PPTP"));
 
+	$("#client_pwd_strength").append(Get_Component_PWD_Strength_Meter());
+	if($("[name='pptpd_clientlist_password']").val() == "")
+		$("#client_pwd_strength").css("display", "none");
+	else
+		chkPass($("[name='pptpd_clientlist_password']").val(), "", $("#client_pwd_strength"));
+	$("[name='pptpd_clientlist_password']").keyup(function(){
+		chkPass($(this).val(), "", $("#client_pwd_strength"));
+	});
+	$("[name='pptpd_clientlist_password']").blur(function(){
+		if($(this).val() == "")
+			$("#client_pwd_strength").css("display", "none");
+	});
 }
 
 var MAX_RETRY_NUM = 5;
@@ -488,6 +509,7 @@ function addRow_Group(upper){
 		addRow(password_obj, 0);
 		showpptpd_clientlist();
 		pptpd_connected_status();
+		$("#client_pwd_strength").css("display", "none");
 	}
 }
 
@@ -950,6 +972,7 @@ function check_vpn_conflict() {		//if conflict with LAN ip & DHCP ip pool & stat
 												</td>
 												<td width="30%">
 													<input type="text" class="input_22_table" maxlength="64" name="pptpd_clientlist_password" onKeyPress="return validator.isString(this, event)" autocorrect="off" autocapitalize="off">
+													<div id="client_pwd_strength"></div>
 												</td>
 												<td width="15%">
 													<div><input type="button" class="add_btn" onClick="addRow_Group(32);" value=""></div>

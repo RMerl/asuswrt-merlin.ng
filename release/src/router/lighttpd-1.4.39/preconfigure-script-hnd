@@ -24,6 +24,12 @@ if [ -n "$NVRAM_ENCRYPT" ]; then
 fi
 
 export LDFLAGS="-L$uclib -ldl -L$cur_dir/../pcre-$PCRE_VER/.libs -lpcre -L$cur_dir/../libxml2/.libs -lxml2 -lm -L$router_dir/openssl -L$cur_dir/../curl-7.21.7/lib/.libs"
+
+TR069=`cat ../.config |grep "RTCONFIG_TR069=y"`
+if [ -n "$TR069" ]; then
+        LDFLAGS+=" -L$router_dir/libssh2-1.9.0/src/.libs -lssh2 -L$router_dir/zlib -lz"
+fi
+
 export XML_CFLAGS="-I$cur_dir/../libxml2/include"
 export XML_LIBS="-L$cur_dir/../libxml2/.libs -lxml2 -lm"
 export SQLITE_CFLAGS="-I$cur_dir/../sqlite"

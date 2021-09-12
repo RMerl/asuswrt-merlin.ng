@@ -1,0 +1,136 @@
+.TH QRENCODE 1 "Aug. 28, 2020" "qrencode @VERSION@"
+.SH NAME
+qrencode \- Encode input data in a QR Code and save as a PNG or EPS image.
+.SH SYNOPSIS
+.B "qrencode"
+[-o FILENAME]
+[OPTION]...
+[STRING]
+
+.SH DESCRIPTION
+Libqrencode is a library for encoding data in a QR Code symbol, a kind of 2D
+symbology that can be scanned by handy terminals such as a mobile phone with
+CCD. The capacity of QR Code is up to 7000 digits or 4000 characters, and has
+high robustness.
+
+Qrencode is a utility software using libqrencode to encode string data in
+a QR Code and save as a PNG or EPS image.
+
+.SH OPTIONS
+.TP
+.B \-h, \-\-help
+display help message.
+.TP
+.B \-o FILENAME, \-\-output=FILENAME
+write image to FILENAME. If '\-' is specified, the result will be output to standard output. If \-S is given, structured symbols are written to FILENAME-01.png, FILENAME-02.png, ... (suffix is removed from FILENAME, if specified)
+.TP
+.B \-r FILENAME, \-\-read\-from=FILENAME
+read input data from FILENAME.
+.TP
+.B \-s NUMBER, \-\-size=NUMBER
+specify the size of dot (pixel). (default=3)
+.TP
+.B \-l {LMQH}, \-\-level={LMQH}
+specify error correction level from L (lowest) to H (highest). (default=L)
+.TP
+.B \-v NUMBER, \-\-symversion=NUMBER
+specify the minimum version of the symbol. See SYMBOL VERSIONS for more information. (default=auto)
+.TP
+.B \-m NUMBER, \-\-margin=NUMBER
+specify the width of margin. (default=4)
+.TP
+.B \-d NUMBER, \-\-dpi=NUMBER
+specify the DPI of the generated PNG. (default=72)
+.TP
+.PD 0
+.B \-t {PNG,PNG32,EPS,SVG,XPM,ANSI,ANSI256,ASCII,ASCIIi,UTF8,UTF8i,ANSIUTF8,ANSIUTF8i,ANSI256UTF8}
+.TP
+.PD
+.B \-\-type={PNG,PNG32,EPS,SVG,XPM,ANSI,ANSI256,ASCII,ASCIIi,UTF8,UTF8i,ANSIUTF8,ANSIUTF8i,ANSI256UTF8}
+specify the type of the generated image. (default=PNG)
+.TP
+.B \-S, \-\-structured
+make structured symbols. Version number must be specified with '-v'.
+.TP
+.B \-k, \-\-kanji
+assume that the input text contains kanji (shift-jis).
+.TP
+.B \-c, \-\-casesensitive
+encode lower-case alphabet characters in 8-bit mode. (default)
+.TP
+.B \-i, \-\-ignorecase
+ignore case distinctions and use only upper-case characters.
+.TP
+.B \-8, \-\-8bit
+encode entire data in 8-bit mode. \-k, \-c and \-i will be ignored.
+.TP
+.B \-M, \-\-micro
+encode in a Micro QR Code. See MICRO QR CODE for more information.
+.TP
+.B \-\-rle
+enable run-length encoding for SVG.
+.TP
+.B \-\-svg-path
+use single path to draw modules for SVG.
+.TP
+.B \-\-inline
+only useful for SVG output, generates an SVG without the XML tag.
+.TP
+.PD 0
+.B \-\-foreground=RRGGBB[AA]
+.TP
+.PD
+.B \-\-background=RRGGBB[AA]
+specify foreground/background color in hexadecimal notation.
+6-digit (RGB) or 8-digit (RGBA) form are supported.
+Color output support available only in PNG, EPS and SVG.
+.TP
+.B \-\-strict\-version
+disable automatic version number adjustment. If the input data is
+too large for the specified version, the program exits with the
+code of 1.
+.TP
+.B \-V, \-\-version
+display the version number and copyrights of the qrencode.
+.TP
+.B \-\-verbose
+display verbose information to stderr.
+.TP
+.B [STRING]
+input data. If it is not specified, data will be taken from standard input.
+
+.SH SYMBOL VERSIONS
+The symbol versions of QR Code range from Version 1 to Version 40.
+Each version has a different module configuration or number of modules,
+ranging from Version 1 (21 x 21 modules) up to Version 40 (177 x 177 modules).
+Each higher version number comprises 4 additional modules per side by default.
+See http://www.qrcode.com/en/about/version.html for a detailed version list.
+
+.SH MICRO QR CODE
+With Micro QR Code, You can embed data in a smaller area than with QR Code,
+but the data capacity is strongly limited. The symbol versions range from
+Version 1 to 4.
+
+.SH EXAMPLES
+.TP
+.B qrencode \-l L \-v 1 \-o output.png 'Hello, world!'
+encode into a symbol version 1, level L.
+.TP
+.B qrencode \-iSv 1 \-\-output=output.png
+read standard input and encode it into a structured-appended symbols in
+case-insensitive mode.
+.TP
+.B qrencode \-S \-v 40 \-l L \-r bigfile.txt \-o output.png
+read input data from bigfile.txt and encode into a symbol version 40, level L.
+
+.SH AUTHOR
+Written by Kentaro Fukuchi.
+
+.SH RESOURCES
+.TP
+Main Web Site: https://fukuchi.org/works/qrencode/
+.TP
+Source code repository: https://github.com/fukuchi/libqrencode/
+
+.SH COPYRIGHT
+Copyright (C) 2006-2018 Kentaro Fukuchi.

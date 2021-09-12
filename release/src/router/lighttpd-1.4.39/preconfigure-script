@@ -21,6 +21,11 @@ LIBS="-L$uclib -L$router_dir/shared -lshared -L$router_dir/nvram${BCMEX} -lnvram
 LDFLAGS="-L$uclib -L$cur_dir/../pcre-$PCRE_VER/.libs -lpcre -L$cur_dir/../libxml2/.libs -lxml2 -L$router_dir/openssl -L$cur_dir/../curl-7.21.7/lib/.libs"
 XML_LIBS="-L$cur_dir/../libxml2/.libs -lxml2"
 
+TR069=`cat ../.config |grep "RTCONFIG_TR069=y"`
+if [ -n "$TR069" ]; then
+        LDFLAGS+=" -L$router_dir/libssh2-1.9.0/src/.libs -lssh2 -L$router_dir/zlib -lz"
+fi
+
 QTN=`cat ../.config |grep "RTCONFIG_QTN=y"`
 if [ -n "$QTN" ]; then
 	LIBS+=" -L$router_dir/libqcsapi_client -lqcsapi_client"

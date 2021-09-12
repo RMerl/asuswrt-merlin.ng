@@ -1,0 +1,1019 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>                                     
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta HTTP-EQUIV="Pragma" CONTENT="no-cache">
+<meta HTTP-EQUIV="Expires" CONTENT="-1">
+<link href="../form_style.css"  rel="stylesheet" type="text/css">
+<style type="text/css">
+.wan_type_title{
+	color:#FFFFFF;
+	font-size:18px;
+	font-weight:bold;
+ 	margin-top:100px;
+	padding:10 0 5 0;
+	text-align:left;
+	width:100px;
+	text-shadow: 1px 1px 0px black;
+	filter: progid:DXImageTransform.Microsoft.DropShadow(OffX=1, OffY=1, Color=#000000);
+}
+.wan_type_dec{
+	line-height:20px;
+	color:#FFFFFF;
+	font-size:14px;
+	text-align:left;
+}
+
+</style>
+<script type="text/javascript" src="/qis/QISMobilePlugin.js"></script>
+<script language="JavaScript" type="text/javascript" src="/js/jquery.js"></script>
+<script type="text/JavaScript" src="/general.js"></script>
+<script type="text/javascript" src="../js/httpApi.js"></script>
+<script type="text/javascript" src="../validator.js"></script>
+<script type="text/javascript">
+var now_flag = '<% get_parameter("flag"); %>';
+var original_switch_wantag = '<% nvram_get("switch_wantag"); %>';
+var contentM_height_orig = parent.document.getElementById("contentM").height;
+var ttc = '<% nvram_get("territory_code"); %>';
+var is_TW_sku = (ttc.search("TW") == -1) ? false : true;
+var is_CN_sku = (ttc.search("CN") == -1) ? false : true;
+var odmpid = '<% nvram_get("odmpid"); %>';
+var iptv_port_settings_orig = '<%nvram_get("iptv_port_settings"); %>' == ""? "12": '<%nvram_get("iptv_port_settings"); %>';
+
+<% start_autodet(); %>
+
+var phy_port_state = <% get_wan_lan_status(); %>;
+function QKinternettype_load_body(){
+	parent.document.title = "<#Web_Title#> - <#QKSet_type_head#>";
+	parent.set_step("t2");
+	if('<% nvram_get("autodet_state"); %>' == "6" || '<% nvram_get("autodet_auxstate"); %>' == "6")
+		document.applyForm.wan_proto.value = "pppoe"
+	else			
+		document.applyForm.wan_proto.value = '<% nvram_get("wan_proto"); %>';
+
+	detect_if_wan_plug();
+	if(phy_port_state.portSpeed["WAN 0"] && phy_port_state.portSpeed["WAN 0"] != "X"){
+		$("#rj45_1g").prop("checked", true);
+		$("#rj45_1g").prop("disabled", true);
+		$("#rj45_1g_main").show();
+	}
+
+	if(phy_port_state.portSpeed["WAN 1"] && phy_port_state.portSpeed["WAN 1"] != "X"){
+		$("#rj45_10g").prop("checked", true);
+		$("#rj45_10g_main").show();
+	}
+
+	if(phy_port_state.portSpeed["SFP+"] && phy_port_state.portSpeed["SFP+"] != "X"){
+		if(phy_port_state.portSpeed["WAN 0"] == "X" || phy_port_state.portSpeed["WAN 1"] == "X"){
+			$("#sfp_10g").prop("checked", true);
+		}
+
+		$("#sfp_10g_main").show();
+	}
+}
+
+function gotoprev_type(){
+	parent.location.href = "<% abs_index_page(); %>";
+}
+
+function submitenter(myfield,e){	
+	var keycode;
+	if (window.event) {
+		keycode = window.event.keyCode;
+	}
+	else if (e){
+		keycode = e.which;
+	}
+	else{
+		return true;
+	}
+
+	if (keycode == 13){
+   		return false;
+  	}
+	else{
+ 	  	return true;
+	}
+}
+
+function detect_if_wan_plug(flag){
+	String.prototype.strlenHandler = function(maxLen, handler){
+		var len = 0;
+		for(var i=0; i<this.length; i++){
+			var c = this.charCodeAt(i); 
+			if((c >= 0x0001 && c <= 0x007e) || (0xff60<=c && c<=0xff9f)){len++;} 
+			else{len+=2;} 
+		} 
+
+		if(len > maxLen) handler();
+	}
+
+	$.ajax({
+		url: '/result_of_get_changed_status_QIS.asp',
+		dataType: 'script',		
+		error: function(xhr){
+			detect_if_wan_plug();		
+		},
+		success: function(response){
+			if(autodet_state == 4){ // ethernet did not plug
+				document.getElementById("wan_unplug").innerHTML.strlenHandler(135, function(){
+					document.getElementById("unknownIsp").style.display = "none";
+				});
+				document.getElementById("wan_unplug").style.display = "";
+			}
+			else if(autodet_state == 0)
+				detect_if_wan_plug();
+			else
+				return true;
+		}
+	});	
+}
+
+function objectWAN(proto, dhcpEnable, dnsEnable, pppoeUsername, pppoePassword, ipaddr, netmask, gateway, dns1, dns2){
+	this.proto = proto;		//wan_proto
+	this.dhcpEnable = dhcpEnable;		//wan_dhcpenable_x
+	this.dnsEnable = dnsEnable;		//wan_dnsenable_x
+	this.pppoeUsername = pppoeUsername;		//wan_pppoe_username
+	this.pppoePassword = pppoePassword;		//wan_pppoe_passwd
+	this.ipaddr = ipaddr;
+	this.netmask = netmask;
+	this.gateway = gateway;
+	this.dns1 = dns1;
+	this.dns2 = dns2;
+}
+
+function next_step(flag){
+	var rj45_1g_checked = $("#rj45_1g").prop("checked");
+	var rj45_10g_checked = $("#rj45_10g").prop("checked");
+	var sfp_10g_checked = $("#sfp_10g").prop("checked");
+	var wans_mode = "<% nvram_get("wans_mode"); %>";
+	var wans_dualwan = "<% nvram_get("wans_dualwan"); %>";
+	var wan0 = wan1 = "";
+	if(rj45_1g_checked){
+		wan0 = "rj45_1g";
+		wans_dualwan = "wan none";
+		if(rj45_10g_checked){
+			wan0 = "rj45_10g";
+			wan1 = "rj45_1g";
+			wans_mode = "fo";
+			wans_dualwan = "wan2 wan";
+		}
+		else if(sfp_10g_checked){
+			wan0 = "sfp_10g";
+			wan1 = "rj45_1g";
+			wans_mode = "fo";
+			wans_dualwan = "sfp+ wan";
+		}
+	}
+	else if(rj45_10g_checked){
+		wan0 = "rj45_10g";
+		wans_mode = "fo";
+		wans_dualwan = "wan2 none";
+		if(sfp_10g_checked){
+			wan1 = "sfp_10g";
+			wans_dualwan = "wan2 sfp+";
+		}
+
+	}
+	else if(sfp_10g_checked){
+		wan0 = "sfp_10g";
+		wans_mode = "fo";
+		wans_dualwan = "sfp+ none";
+	}
+
+	if(wan0 == "rj45_1g"){
+		var wan0_proto = document.applyForm.rj45_1g_wan_type.value;
+		var wan0_dhcpEnable = 0;
+		var wan0_dnsEnable = 0;
+		if(wan0_proto == "dhcp" || wan0_proto == "pppoe"){
+			wan0_dhcpEnable = 1;
+			wan0_dnsEnable = 1;
+		}
+
+		var wan0 = new objectWAN(
+				wan0_proto,		
+				wan0_dhcpEnable,		
+				wan0_dnsEnable,		
+				document.applyForm.rj45_1g_wan_pppoe_username.value,	
+				document.applyForm.rj45_1g_wan_pppoe_passwd.value,
+				document.applyForm.rj45_1g_wan_ip.value,
+				document.applyForm.rj45_1g_netmask.value,
+				document.applyForm.rj45_1g_gateway.value,
+				document.applyForm.rj45_1g_dns1.value,
+				document.applyForm.rj45_1g_dns2.value
+			);
+	}
+	else if(wan0 == "rj45_10g"){
+		var wan0_proto = document.applyForm.rj45_10g_wan_type.value;
+		var wan0_dhcpEnable = 0;
+		var wan0_dnsEnable = 0;
+		if(wan0_proto == "dhcp" || wan0_proto == "pppoe"){
+			wan0_dhcpEnable = 1;
+			wan0_dnsEnable = 1;
+		}
+
+		var wan0 = new objectWAN(
+				wan0_proto,		
+				wan0_dhcpEnable,		
+				wan0_dnsEnable,		
+				document.applyForm.rj45_10g_wan_pppoe_username.value,	
+				document.applyForm.rj45_10g_wan_pppoe_passwd.value,
+				document.applyForm.rj45_10g_wan_ip.value,
+				document.applyForm.rj45_10g_netmask.value,
+				document.applyForm.rj45_10g_gateway.value,
+				document.applyForm.rj45_10g_dns1.value,
+				document.applyForm.rj45_10g_dns2.value
+			);
+	}
+	else if(wan0 == "sfp_10g"){
+		var wan0_proto = document.applyForm.sfp_10g_wan_type.value;
+		var wan0_dhcpEnable = 0;
+		var wan0_dnsEnable = 0;
+		if(wan0_proto == "dhcp" || wan0_proto == "pppoe"){
+			wan0_dhcpEnable = 1;
+			wan0_dnsEnable = 1;
+		}
+
+		var wan0 = new objectWAN(
+				wan0_proto,		
+				wan0_dhcpEnable,		
+				wan0_dnsEnable,		
+				document.applyForm.sfp_10g_wan_pppoe_username.value,	
+				document.applyForm.sfp_10g_wan_pppoe_passwd.value,
+				document.applyForm.sfp_10g_wan_ip.value,
+				document.applyForm.sfp_10g_netmask.value,
+				document.applyForm.sfp_10g_gateway.value,
+				document.applyForm.sfp_10g_dns1.value,
+				document.applyForm.sfp_10g_dns2.value
+			);
+	}
+
+	if(wan1 == "rj45_1g"){
+		var wan1_proto = document.applyForm.rj45_1g_wan_type.value;
+		var wan1_dhcpEnable = 0;
+		var wan1_dnsEnable = 0;
+		if(wan1_proto == "dhcp" || wan1_proto == "pppoe"){
+			wan1_dhcpEnable = 1;
+			wan1_dnsEnable = 1;
+		}
+
+		var wan1 = new objectWAN(
+				wan1_proto,		
+				wan1_dhcpEnable,		
+				wan1_dnsEnable,		
+				document.applyForm.rj45_1g_wan_pppoe_username.value,	
+				document.applyForm.rj45_1g_wan_pppoe_passwd.value,
+				document.applyForm.rj45_1g_wan_ip.value,
+				document.applyForm.rj45_1g_netmask.value,
+				document.applyForm.rj45_1g_gateway.value,
+				document.applyForm.rj45_1g_dns1.value,
+				document.applyForm.rj45_1g_dns2.value
+			);
+	}
+	else if(wan1 == "rj45_10g"){
+		var wan1_proto = document.applyForm.rj45_10g_wan_type.value;
+		var wan1_dhcpEnable = 0;
+		var wan1_dnsEnable = 0;
+		if(wan1_proto == "dhcp" || wan1_proto == "pppoe"){
+			wan1_dhcpEnable = 1;
+			wan1_dnsEnable = 1;
+		}
+
+		var wan1 = new objectWAN(
+				wan1_proto,		
+				wan1_dhcpEnable,		
+				wan1_dnsEnable,		
+				document.applyForm.rj45_10g_wan_pppoe_username.value,	
+				document.applyForm.rj45_10g_wan_pppoe_passwd.value,
+				document.applyForm.rj45_10g_wan_ip.value,
+				document.applyForm.rj45_10g_netmask.value,
+				document.applyForm.rj45_10g_gateway.value,
+				document.applyForm.rj45_10g_dns1.value,
+				document.applyForm.rj45_10g_dns2.value
+			);
+	}
+	else if(wan1 == "sfp_10g+"){
+		var wan1_proto = document.applyForm.sfp_10g_wan_type.value;
+		var wan1_dhcpEnable = 0;
+		var wan1_dnsEnable = 0;
+		if(wan1_proto == "dhcp" || wan1_proto == "pppoe"){
+			wan1_dhcpEnable = 1;
+			wan1_dnsEnable = 1;
+		}
+
+		var wan1 = new objectWAN(
+				wan1_proto,		
+				wan1_dhcpEnable,		
+				wan1_dnsEnable,		
+				document.applyForm.sfp_10g_wan_pppoe_username.value,	
+				document.applyForm.sfp_10g_wan_pppoe_passwd.value,
+				document.applyForm.sfp_10g_wan_ip.value,
+				document.applyForm.sfp_10g_netmask.value,
+				document.applyForm.sfp_10g_gateway.value,
+				document.applyForm.sfp_10g_dns1.value,
+				document.applyForm.sfp_10g_dns2.value
+			);
+	}
+
+	validForm();
+	document.applyForm.wans_mode.value = wans_mode;
+	document.applyForm.wans_dualwan.value = wans_dualwan;
+	
+/* Primary WAN */
+	document.applyForm.action_script.value = "restart_wan_if";
+	document.applyForm.wan_unit.value = 0;
+	document.applyForm.wan_proto.value = wan0.proto;
+	document.applyForm.wan_dhcpenable_x.value = wan0.dhcpEnable;
+	document.applyForm.wan_dnsenable_x.value = wan0.dnsEnable;
+	document.applyForm.wan_pppoe_username.value = wan0.pppoeUsername;
+	document.applyForm.wan_pppoe_passwd.value = wan0.pppoePassword;
+	document.applyForm.wan_ipaddr_x.value = wan0.ipaddr;
+	document.applyForm.wan_netmask_x.value = wan0.netmask;
+	document.applyForm.wan_gateway_x.value = wan0.gateway;
+	document.applyForm.wan_dns1_x.value = wan0.dns1;
+	document.applyForm.wan_dns2_x.value = wan0.dns2;
+	document.applyForm.submit();
+/* End of Primary WAN */
+/* Secondary WAN */
+	if(wan1){
+		setTimeout(function(){
+			document.applyForm.action_script.value = "restart_wan_if";
+			document.applyForm.wan_unit.value = 1;
+			document.applyForm.wan_proto.value = wan1.proto;
+			document.applyForm.wan_dhcpenable_x.value = wan1.dhcpEnable;
+			document.applyForm.wan_dnsenable_x.value = wan1.dnsEnable;
+			document.applyForm.wan_pppoe_username.value = wan1.pppoeUsername;
+			document.applyForm.wan_pppoe_passwd.value = wan1.pppoePassword;
+			document.applyForm.wan_ipaddr_x.value = wan1.ipaddr;
+			document.applyForm.wan_netmask_x.value = wan1.netmask;
+			document.applyForm.wan_gateway_x.value = wan1.gateway;
+			document.applyForm.wan_dns1_x.value = wan1.dns1;
+			document.applyForm.wan_dns2_x.value = wan1.dns2;
+			document.applyForm.submit();
+			location.href = "QIS_wireless.htm";
+		}, 5000);
+	}
+	else{
+		location.href = "QIS_wireless.htm";
+	}
+/* End of Secondary WAN */ 
+}
+
+function previous_step(flag){
+	if(flag == 1){
+		document.getElementById('previous_button').style.display = "none";
+		stage = 0; 
+	}
+}
+
+function switch_wan_type(flag, type){
+	if(flag == "rj45_1g_wan_type"){
+		if(type == "dhcp"){
+			$("#rj45_1g_ip_field").hide();
+			$("#rj45_1g_account_field").hide();
+		}
+		else if(type == "pppoe"){
+			$("#rj45_1g_ip_field").hide();
+			$("#rj45_1g_account_field").show();
+		}
+		else if(type == "static"){
+			$("#rj45_1g_ip_field").show();
+			$("#rj45_1g_account_field").hide();
+		}
+	}
+	else if(flag == "rj45_10g_wan_type"){
+		if(type == "dhcp"){
+			$("#rj45_10g_ip_field").hide();
+			$("#rj45_10g_account_field").hide();
+		}
+		else if(type == "pppoe"){
+			$("#rj45_10g_ip_field").hide();
+			$("#rj45_10g_account_field").show();
+		}
+		else if(type == "static"){
+			$("#rj45_10g_ip_field").show();
+			$("#rj45_10g_account_field").hide();
+		}
+	}
+	else if(flag == "sfp_10g_wan_type"){
+		if(type == "dhcp"){
+			$("#sfp_10g_ip_field").hide();
+			$("#sfp_10g_account_field").hide();
+		}
+		else if(type == "pppoe"){
+			$("#sfp_10g_ip_field").hide();
+			$("#sfp_10g_account_field").show();
+		}
+		else if(type == "static"){
+			$("#sfp_10g_ip_field").show();
+			$("#sfp_10g_account_field").hide();
+		}		
+	}
+}
+
+function pass_checked(target, obj){
+	switchType(target, $(obj)[0].checked, true);
+}
+
+var isNotIE = (navigator.userAgent.search("MSIE") == -1); 
+function switchType(obj, showText, chkBox){
+	if(chkBox == undefined) chkBox = false;
+	var newType = showText ? "text" : "password";
+	if(isNotIE){	//Not IE
+		obj.type = newType;
+	}
+	else {	//IE
+		if(obj.type != newType){
+			var input2 = document.createElement('input');
+			input2.mergeAttributes(obj);
+			input2.type = newType;
+			input2.name = obj.name;
+			input2.id = obj.id? obj.id : obj.name;
+			input2.value = obj.value;
+
+			obj.parentNode.replaceChild(input2,obj);
+			if(showText && input2.id && !chkBox)
+				setTimeout(function(){document.getElementById(input2.id).focus()},10);
+		}
+	}
+}
+
+function validForm(){
+	//1Gb RJ-45
+	if($("#rj45_1g").prop("checked")){
+		var wan_type_1g = $("#rj45_1g_wan_type").val();
+		if(wan_type_1g == "static"){
+			if(!valid_IP(document.applyForm.rj45_1g_wan_ip, "")) return false;  //WAN IP
+			if(!valid_IP(document.applyForm.rj45_1g_gateway, "GW"))return false;  //Gateway IP
+
+			if(document.applyForm.rj45_1g_gateway.value == document.applyForm.rj45_1g_wan_ip.value){
+				document.applyForm.rj45_1g_wan_ip.focus();
+				alert("<#IPConnection_warning_WANIPEQUALGatewayIP#>");
+				return false;
+			}
+
+			// test if netmask is valid.
+			var default_netmask = "";
+			var wrong_netmask = 0;
+			var netmask_obj = document.applyForm.rj45_1g_netmask;
+			var netmask_num = inet_network(netmask_obj.value);
+			
+			if(netmask_num==0){
+				var netmask_reverse_num = 0;		//Viz 2011.07 : Let netmask 0.0.0.0 pass
+			}else{
+				var netmask_reverse_num = ~netmask_num;
+			}
+			
+			if(netmask_num < 0) wrong_netmask = 1;
+
+			var test_num = netmask_reverse_num;
+			while(test_num != 0){
+				if((test_num+1)%2 == 0)
+					test_num = (test_num+1)/2-1;
+				else{
+					wrong_netmask = 1;
+					break;
+				}
+			}
+
+			if(wrong_netmask == 1){
+				alert(netmask_obj.value+" <#JS_validip#>");
+				netmask_obj.value = default_netmask;
+				netmask_obj.focus();
+				netmask_obj.select();
+				return false;
+			}
+
+			if(!valid_IP(document.applyForm.rj45_1g_dns1, "DNS")) return false;  //DNS1
+			if(!valid_IP(document.applyForm.rj45_1g_dns2, "DNS")) return false;  //DNS2
+		}
+		else if(wan_type_1g == "pppoe"){
+			if(document.applyForm.rj45_1g_wan_pppoe_username.value.length <= 0){
+				alert("<#WANJS9Text#>");
+				document.applyForm.rj45_1g_wan_pppoe_username.focus();
+				return false;
+			}
+			else{
+				if(!validator.string(document.applyForm.rj45_1g_wan_pppoe_username)){
+					document.applyForm.rj45_1g_wan_pppoe_username.focus();
+					return false;
+				}
+			}
+			
+			if(document.applyForm.rj45_1g_wan_pppoe_passwd.value.length <= 0){
+				alert("<#WANJS9Text#>");
+				document.applyForm.rj45_1g_wan_pppoe_passwd.focus();
+				return false;
+			}
+			else{
+				if(!validator.string(document.applyForm.rj45_1g_wan_pppoe_passwd)){
+					document.applyForm.rj45_1g_wan_pppoe_passwd.focus();
+					return false;
+				}
+			}
+		}
+	}
+
+	//10Gb RJ-45
+	if($("#rj45_10g").prop("checked")){
+		var wan_type_10g = $("#rj45_10g_wan_type").val();
+		if(wan_type_10g == "static"){
+			if(!valid_IP(document.applyForm.rj45_10g_wan_ip, "")) return false;  //WAN IP
+			if(!valid_IP(document.applyForm.rj45_10g_gateway, "GW"))return false;  //Gateway IP
+
+			if(document.applyForm.rj45_10g_gateway.value == document.applyForm.rj45_10g_wan_ip.value){
+				document.applyForm.rj45_10g_wan_ip.focus();
+				alert("<#IPConnection_warning_WANIPEQUALGatewayIP#>");
+				return false;
+			}
+
+			// test if netmask is valid.
+			var default_netmask = "";
+			var wrong_netmask = 0;
+			var netmask_obj = document.applyForm.rj45_10g_netmask;
+			var netmask_num = inet_network(netmask_obj.value);
+			
+			if(netmask_num==0){
+				var netmask_reverse_num = 0;		//Viz 2011.07 : Let netmask 0.0.0.0 pass
+			}else{
+				var netmask_reverse_num = ~netmask_num;
+			}
+			
+			if(netmask_num < 0) wrong_netmask = 1;
+
+			var test_num = netmask_reverse_num;
+			while(test_num != 0){
+				if((test_num+1)%2 == 0)
+					test_num = (test_num+1)/2-1;
+				else{
+					wrong_netmask = 1;
+					break;
+				}
+			}
+
+			if(wrong_netmask == 1){
+				alert(netmask_obj.value+" <#JS_validip#>");
+				netmask_obj.value = default_netmask;
+				netmask_obj.focus();
+				netmask_obj.select();
+				return false;
+			}
+
+			if(!valid_IP(document.applyForm.rj45_10g_dns1, "DNS")) return false;  //DNS1
+			if(!valid_IP(document.applyForm.rj45_10g_dns2, "DNS")) return false;  //DNS2
+		}
+		else if(wan_type_10g == "pppoe"){
+			if(document.applyForm.rj45_10g_wan_pppoe_username.value.length <= 0){
+				alert("<#WANJS9Text#>");
+				document.applyForm.rj45_10g_wan_pppoe_username.focus();
+				return false;
+			}
+			else{
+				if(!validator.string(document.applyForm.rj45_10g_wan_pppoe_username)){
+					document.applyForm.rj45_10g_wan_pppoe_username.focus();
+					return false;
+				}
+			}
+			
+			if(document.applyForm.rj45_10g_wan_pppoe_passwd.value.length <= 0){
+				alert("<#WANJS9Text#>");
+				document.applyForm.rj45_10g_wan_pppoe_passwd.focus();
+				return false;
+			}
+			else{
+				if(!validator.string(document.applyForm.rj45_10g_wan_pppoe_passwd)){
+					document.applyForm.rj45_10g_wan_pppoe_passwd.focus();
+					return false;
+				}
+			}
+		}
+	}
+
+	//SFP+
+	if($("#sfp_10g").prop("checked")){
+		var wan_type_10g_sfp = $("#sfp_10g_wan_type").val();
+		if(wan_type_10g_sfp == "static"){
+			if(!valid_IP(document.applyForm.sfp_10g_wan_ip, "")) return false;  //WAN IP
+			if(!valid_IP(document.applyForm.sfp_10g_gateway, "GW"))return false;  //Gateway IP
+
+			if(document.applyForm.sfp_10g_gateway.value == document.applyForm.sfp_10g_wan_ip.value){
+				document.applyForm.sfp_10g_wan_ip.focus();
+				alert("<#IPConnection_warning_WANIPEQUALGatewayIP#>");
+				return false;
+			}
+
+			// test if netmask is valid.
+			var default_netmask = "";
+			var wrong_netmask = 0;
+			var netmask_obj = document.applyForm.sfp_10g_netmask;
+			var netmask_num = inet_network(netmask_obj.value);
+			
+			if(netmask_num==0){
+				var netmask_reverse_num = 0;		//Viz 2011.07 : Let netmask 0.0.0.0 pass
+			}else{
+				var netmask_reverse_num = ~netmask_num;
+			}
+			
+			if(netmask_num < 0) wrong_netmask = 1;
+
+			var test_num = netmask_reverse_num;
+			while(test_num != 0){
+				if((test_num+1)%2 == 0)
+					test_num = (test_num+1)/2-1;
+				else{
+					wrong_netmask = 1;
+					break;
+				}
+			}
+
+			if(wrong_netmask == 1){
+				alert(netmask_obj.value+" <#JS_validip#>");
+				netmask_obj.value = default_netmask;
+				netmask_obj.focus();
+				netmask_obj.select();
+				return false;
+			}
+
+			if(!valid_IP(document.applyForm.sfp_10g_dns1, "DNS")) return false;  //DNS1
+			if(!valid_IP(document.applyForm.sfp_10g_dns2, "DNS")) return false;  //DNS2
+		}
+		else if(wan_type_10g_sfp == "pppoe"){
+			if(document.applyForm.sfp_10g_wan_pppoe_username.value.length <= 0){
+				alert("<#WANJS9Text#>");
+				document.applyForm.sfp_10g_wan_pppoe_passwd.focus();
+				return false;
+			}
+			else{
+				if(!validator.string(document.applyForm.sfp_10g_wan_pppoe_username)){
+					document.applyForm.sfp_10g_wan_pppoe_username.focus();
+					return false;
+				}
+			}
+			
+			if(document.applyForm.sfp_10g_wan_pppoe_passwd.value.length <= 0){
+				alert("<#WANJS9Text#>");
+				document.applyForm.sfp_10g_wan_pppoe_passwd.focus();
+				return false;
+			}
+			else{
+				if(!validator.string(document.applyForm.sfp_10g_wan_pppoe_passwd)){
+					document.applyForm.sfp_10g_wan_pppoe_passwd.focus();
+					return false;
+				}
+			}
+		}
+
+	}
+
+}
+
+function valid_IP(obj_name, obj_flag){
+		// A : 1.0.0.0~126.255.255.255
+		// B : 127.0.0.0~127.255.255.255 (forbidden)
+		// C : 128.0.0.0~255.255.255.254
+		var A_class_start = inet_network("1.0.0.0");
+		var A_class_end = inet_network("126.255.255.255");
+		var B_class_start = inet_network("127.0.0.0");
+		var B_class_end = inet_network("127.255.255.255");
+		var C_class_start = inet_network("128.0.0.0");
+		var C_class_end = inet_network("255.255.255.255");
+		
+		var ip_obj = obj_name;
+		var ip_num = inet_network(ip_obj.value);
+
+		if(obj_flag == "DNS" && ip_num == -1){ //DNS allows to input nothing
+			return true;
+		}
+		
+		if(obj_flag == "GW" && ip_num == -1){ //GW allows to input nothing
+			return true;
+		}
+		
+		if(ip_num > A_class_start && ip_num < A_class_end){
+		   obj_name.value = ipFilterZero(ip_obj.value);
+			return true;
+		}
+		else if(ip_num > B_class_start && ip_num < B_class_end){
+			alert(ip_obj.value+" <#JS_validip#>");
+			ip_obj.focus();
+			ip_obj.select();
+			return false;
+		}
+		else if(ip_num > C_class_start && ip_num < C_class_end){
+			obj_name.value = ipFilterZero(ip_obj.value);
+			return true;
+		}
+		else{
+			alert(ip_obj.value+" <#JS_validip#>");
+			ip_obj.focus();
+			ip_obj.select();
+			return false;
+		}	
+}
+</script>               
+</head>  
+
+<body onLoad="QKinternettype_load_body();" onunload="" onKeyPress="submitenter(this,event)">
+
+<form method="post" name="applyForm" action="../start_apply.htm" target="hidden_frame" autocomplete="off">                      
+<input type="hidden" name="current_page" value="QIS_internet_type.htm">
+<input type="hidden" name="next_page" value="/qis/QIS_finish.htm">   
+<input type="hidden" name="prev_page" value="/qis/QIS_detect.htm">
+<input type="hidden" name="wan_unit" value="<% nvram_get("wan_unit"); %>">
+<input type="hidden" name="wan_proto" value="">
+<input type="hidden" name="switch_stb_x" value="">
+<input type="hidden" name="mr_enable_x" value="<% nvram_get("mr_enable_x"); %>">
+<input type="hidden" name="emf_enable" value="<% nvram_get("emf_enable"); %>">
+<input type="hidden" name="ttl_inc_enable" value="<% nvram_get("ttl_inc_enable"); %>">
+<input type="hidden" name="action_mode" value="apply">
+<input type="hidden" name="action_script" value="">
+<input type="hidden" name="action_wait" value="5">
+<input type="hidden" name="flag" value="no_wait">
+<input type="hidden" name="wan_dhcpenable_x" value="<% nvram_get("wan_dhcpenable_x"); %>">
+<input type="hidden" name="wan_dnsenable_x" value="<% nvram_get("wan_dnsenable_x"); %>">
+<input type="hidden" name="wan_pppoe_username" value="<% nvram_get("wan_pppoe_username"); %>">
+<input type="hidden" name="wan_pppoe_passwd" value="<% nvram_get("wan_pppoe_passwd"); %>">
+<input type="hidden" name="wan_ipaddr_x" value="<% nvram_get("wan_ipaddr_x"); %>">
+<input type="hidden" name="wan_netmask_x" value="<% nvram_get("wan_netmask_x"); %>">
+<input type="hidden" name="wan_gateway_x" value="<% nvram_get("wan_gateway_x"); %>">
+<input type="hidden" name="wan_dns1_x" value="<% nvram_get("wan_dns1_x"); %>">
+<input type="hidden" name="wan_dns2_x" value="<% nvram_get("wan_dns2_x"); %>">
+<input type="hidden" name="wans_mode" value="<% nvram_get("wans_mode"); %>">
+<input type="hidden" name="wans_dualwan" value="<% nvram_get("wans_dualwan"); %>">
+<div class="QISmain">
+	<div id="descTltle">
+		<table width="100%">
+			<tr>
+				<td align="left">
+					<div class="description_down">設定WAN</div>
+				</td>
+			</tr>
+		</table>
+	</div>
+	<div style="margin:5px;border: 1px solid #FFF" id="splitLine"></div>
+</div>	
+<br/>
+
+<div>
+	<div style="font-size:14px; margin-left: 15px;">偵測到10G已接上網路線，是否要設定成WAN?</div>
+
+	<!-- 1G RJ-45 -->
+	<div id="rj45_1g_main" style="margin: 10px 0;display:none">
+		<div style="display:inline-block;margin-left:5px;">
+			<input type="checkbox" id="rj45_1g" name="wan_type" value="0" onClick="" onKeyPress="" style="margin-left:10px;">
+		</div>
+		<div style="display:inline-block;font-size: 18px;font-weight:bold;width:100px;">1G RJ-45</div>
+		<div style="display:inline-block;margin-left:20px;">
+			<select name="rj45_1g_wan_type" id="rj45_1g_wan_type" class="input_option" onchange="switch_wan_type(this.id, this.value)">
+				<option value="dhcp"><#BOP_ctype_title1#></option>
+				<option value="pppoe">PPPoE</option>
+				<option value="static"><#BOP_ctype_title5#></option>
+			</select>
+		</div>
+	</div>
+	<div id="rj45_1g_ip_field" style="display:none">
+		<div style="margin:10px 0 0 35px;">
+			<div style="display:inline-block;width:100px;"><#IPConnection_ExternalIPAddress_itemname#></div>
+			<div style="display:inline-block;width:150px;">
+				<input type="text" name="rj45_1g_wan_ip" maxlength="15" class="input_15_table" value="0.0.0.0" onkeypress="return validator.isIPAddr(this, event);" autocorrect="off" autocapitalize="off">
+			</div>
+			<div style="display:inline-block;width:100px;"><#IPConnection_x_DNSServer1_itemname#></div>
+			<div style="display:inline-block;width:150px;">
+				<input type="text" name="rj45_1g_dns1" maxlength="15" class="input_15_table" value="0.0.0.0" onkeypress="return validator.isIPAddr(this, event);" autocorrect="off" autocapitalize="off">
+			</div>
+		</div>
+		<div style="margin:10px 0 0 35px;">
+			<div style="display:inline-block;width:100px;"><#IPConnection_x_ExternalSubnetMask_itemname#></div>
+			<div style="display:inline-block;width:150px;">
+				<input type="text" name="rj45_1g_netmask" maxlength="15" class="input_15_table" value="0.0.0.0" onkeypress="return validator.isIPAddr(this, event);" autocorrect="off" autocapitalize="off">
+			</div>
+			<div style="display:inline-block;width:100px;"><#IPConnection_x_DNSServer2_itemname#></div>
+			<div style="display:inline-block;width:150px;">
+				<input type="text" name="rj45_1g_dns2" maxlength="15" class="input_15_table" value="0.0.0.0" onkeypress="return validator.isIPAddr(this, event);" autocorrect="off" autocapitalize="off">
+			</div>
+		</div>
+		<div style="margin:10px 0 0 35px;">
+			<div style="display:inline-block;width:100px;"><#IPConnection_x_ExternalGateway_itemname#></div>
+			<div style="display:inline-block;width:150px;">
+				<input type="text" name="rj45_1g_gateway" maxlength="15" class="input_15_table" value="0.0.0.0" onkeypress="return validator.isIPAddr(this, event);" autocorrect="off" autocapitalize="off">
+			</div>			
+		</div>
+	</div>
+
+	<div id="rj45_1g_account_field" style="display:none">
+		<div style="margin:10px 0 0 35px;">
+			<div style="display:inline-block;width:100px;"><#HSDPAConfig_Username_itemname#></div>
+			<div style="display:inline-block;width:180px;">
+				<input type="text" name="rj45_1g_wan_pppoe_username" maxlength="64" value="" tabindex="1" onkeypress="return validator.isString(this, event);" class="input_18_table" size="36" autocapitalization="off" autocomplete="off">
+			</div>
+		</div>
+		<div style="margin:10px 0 0 35px;">
+			<div style="display:inline-block;width:100px;"><#PPPConnection_Password_itemname#></div>
+			<div style="display:inline-block;width:180px;">
+				<input type="password" id="rj45_1g_wan_pppoe_passwd" name="rj45_1g_wan_pppoe_passwd" maxlength="64" value="" tabindex="2" onkeypress="return validator.isString(this, event);" class="input_18_table" size="36" autocomplete="off" autocorrect="off" autocapitalize="off">
+			</div>
+			<div style="display:inline-block;">
+				<input type="checkbox" id="rj45_1g_show_pass_1" name="rj45_1g_show_pass_1" onclick="pass_checked($('#rj45_1g_wan_pppoe_passwd')[0], this);"><#QIS_show_pass#>
+			</div>
+		</div>
+	</div>
+	<!-- End of 1G RJ-45 -->
+
+	<!-- 2.5G RJ-45 -->
+	<div id="rj45_2g_main" style="margin: 10px 0;">
+		<div style="display:inline-block;margin-left:5px;">
+			<input type="checkbox" id="rj45_1g" name="wan_type" value="0" onClick="" onKeyPress="" style="margin-left:10px;">
+		</div>
+		<div style="display:inline-block;font-size: 18px;font-weight:bold;width:100px;">2.5G RJ-45</div>
+		<div style="display:inline-block;margin-left:20px;">
+			<select name="rj45_1g_wan_type" id="rj45_1g_wan_type" class="input_option" onchange="switch_wan_type(this.id, this.value)">
+				<option value="dhcp"><#BOP_ctype_title1#></option>
+				<option value="pppoe">PPPoE</option>
+				<option value="static"><#BOP_ctype_title5#></option>
+			</select>
+		</div>
+	</div>
+	<div id="rj45_2g_ip_field" style="">
+		<div style="margin:10px 0 0 35px;">
+			<div style="display:inline-block;width:100px;"><#IPConnection_ExternalIPAddress_itemname#></div>
+			<div style="display:inline-block;width:150px;">
+				<input type="text" name="rj45_2g_wan_ip" maxlength="15" class="input_15_table" value="0.0.0.0" onkeypress="return validator.isIPAddr(this, event);" autocorrect="off" autocapitalize="off">
+			</div>
+			<div style="display:inline-block;width:100px;"><#IPConnection_x_DNSServer1_itemname#></div>
+			<div style="display:inline-block;width:150px;">
+				<input type="text" name="rj45_2g_dns1" maxlength="15" class="input_15_table" value="0.0.0.0" onkeypress="return validator.isIPAddr(this, event);" autocorrect="off" autocapitalize="off">
+			</div>
+		</div>
+		<div style="margin:10px 0 0 35px;">
+			<div style="display:inline-block;width:100px;"><#IPConnection_x_ExternalSubnetMask_itemname#></div>
+			<div style="display:inline-block;width:150px;">
+				<input type="text" name="rj45_2g_netmask" maxlength="15" class="input_15_table" value="0.0.0.0" onkeypress="return validator.isIPAddr(this, event);" autocorrect="off" autocapitalize="off">
+			</div>
+			<div style="display:inline-block;width:100px;"><#IPConnection_x_DNSServer2_itemname#></div>
+			<div style="display:inline-block;width:150px;">
+				<input type="text" name="rj45_2g_dns2" maxlength="15" class="input_15_table" value="0.0.0.0" onkeypress="return validator.isIPAddr(this, event);" autocorrect="off" autocapitalize="off">
+			</div>
+		</div>
+		<div style="margin:10px 0 0 35px;">
+			<div style="display:inline-block;width:100px;"><#IPConnection_x_ExternalGateway_itemname#></div>
+			<div style="display:inline-block;width:150px;">
+				<input type="text" name="rj45_2g_gateway" maxlength="15" class="input_15_table" value="0.0.0.0" onkeypress="return validator.isIPAddr(this, event);" autocorrect="off" autocapitalize="off">
+			</div>			
+		</div>
+	</div>
+
+	<div id="rj45_2g_account_field" style="display:none">
+		<div style="margin:10px 0 0 35px;">
+			<div style="display:inline-block;width:100px;"><#HSDPAConfig_Username_itemname#></div>
+			<div style="display:inline-block;width:180px;">
+				<input type="text" name="rj45_2g_wan_pppoe_username" maxlength="64" value="" tabindex="1" onkeypress="return validator.isString(this, event);" class="input_18_table" size="36" autocapitalization="off" autocomplete="off">
+			</div>
+		</div>
+		<div style="margin:10px 0 0 35px;">
+			<div style="display:inline-block;width:100px;"><#PPPConnection_Password_itemname#></div>
+			<div style="display:inline-block;width:180px;">
+				<input type="password" id="rj45_2g_wan_pppoe_passwd" name="rj45_2g_wan_pppoe_passwd" maxlength="64" value="" tabindex="2" onkeypress="return validator.isString(this, event);" class="input_18_table" size="36" autocomplete="off" autocorrect="off" autocapitalize="off">
+			</div>
+			<div style="display:inline-block;">
+				<input type="checkbox" id="rj45_2g_show_pass_1" name="rj45_2g_show_pass_1" onclick="pass_checked($('#rj45_2g_wan_pppoe_passwd')[0], this);"><#QIS_show_pass#>
+			</div>
+		</div>
+	</div>
+	<!-- End of 2.5G RJ-45 -->
+
+	<!-- 10G RJ-45 -->
+	<div id="rj45_10g_main" style="margin: 10px 0;display:none">
+		<div style="display:inline-block;margin-left:5px;">
+			<input type="checkbox" id="rj45_10g" name="wan_type" value="0" onClick="" onKeyPress="" style="margin-left:10px;">
+		</div>
+		<div style="display:inline-block;font-size: 18px;font-weight:bold;width:100px;">10G RJ-45</div>
+		<div style="display:inline-block;margin-left:20px;">
+			<select name="rj45_10g_wan_type" id="rj45_10g_wan_type" class="input_option" onchange="switch_wan_type(this.id, this.value)">
+				<option value="dhcp"><#BOP_ctype_title1#></option>
+				<option value="pppoe">PPPoE</option>
+				<option value="static"><#BOP_ctype_title5#></option>
+			</select>
+		</div>
+	</div>
+	<div id="rj45_10g_ip_field" style="display:none">
+		<div style="margin:10px 0 0 35px;">
+			<div style="display:inline-block;width:100px;"><#IPConnection_ExternalIPAddress_itemname#></div>
+			<div style="display:inline-block;width:150px;">
+				<input type="text" name="rj45_10g_wan_ip" maxlength="15" class="input_15_table" value="0.0.0.0" onkeypress="return validator.isIPAddr(this, event);" autocorrect="off" autocapitalize="off">
+			</div>
+			<div style="display:inline-block;width:100px;"><#IPConnection_x_DNSServer1_itemname#></div>
+			<div style="display:inline-block;width:150px;">
+				<input type="text" name="rj45_10g_dns1" maxlength="15" class="input_15_table" value="0.0.0.0" onkeypress="return validator.isIPAddr(this, event);" autocorrect="off" autocapitalize="off">
+			</div>
+		</div>
+		<div style="margin:10px 0 0 35px;">
+			<div style="display:inline-block;width:100px;"><#IPConnection_x_ExternalSubnetMask_itemname#></div>
+			<div style="display:inline-block;width:150px;">
+				<input type="text" name="rj45_10g_netmask" maxlength="15" class="input_15_table" value="0.0.0.0" onkeypress="return validator.isIPAddr(this, event);" autocorrect="off" autocapitalize="off">
+			</div>
+			<div style="display:inline-block;width:100px;"><#IPConnection_x_DNSServer2_itemname#></div>
+			<div style="display:inline-block;width:150px;">
+				<input type="text" name="rj45_10g_dns2" maxlength="15" class="input_15_table" value="0.0.0.0" onkeypress="return validator.isIPAddr(this, event);" autocorrect="off" autocapitalize="off">
+			</div>
+		</div>
+		<div style="margin:10px 0 0 35px;">
+			<div style="display:inline-block;width:100px;"><#IPConnection_x_ExternalGateway_itemname#></div>
+			<div style="display:inline-block;width:150px;">
+				<input type="text" name="rj45_10g_gateway" maxlength="15" class="input_15_table" value="0.0.0.0" onkeypress="return validator.isIPAddr(this, event);" autocorrect="off" autocapitalize="off">
+			</div>			
+		</div>
+	</div>
+	<div id="rj45_10g_account_field" style="display:none">
+		<div style="margin:10px 0 0 35px;">
+			<div style="display:inline-block;width:100px;"><#HSDPAConfig_Username_itemname#></div>
+			<div style="display:inline-block;width:180px;">
+				<input type="text" name="rj45_10g_wan_pppoe_username" maxlength="64" value="" tabindex="1" onkeypress="return validator.isString(this, event);" class="input_18_table" size="36" autocapitalization="off" autocomplete="off">
+			</div>
+		</div>
+		<div style="margin:10px 0 0 35px;">
+			<div style="display:inline-block;width:100px;"><#PPPConnection_Password_itemname#></div>
+			<div style="display:inline-block;width:180px;">
+				<input type="password" id="rj45_10g_wan_pppoe_passwd" name="rj45_10g_wan_pppoe_passwd" maxlength="64" value="" tabindex="2" onkeypress="return validator.isString(this, event);" class="input_18_table" size="36" autocomplete="off" autocorrect="off" autocapitalize="off">
+			</div>
+			<div style="display:inline-block;">
+				<input type="checkbox" name="rj45_10g_show_pass_1" onclick="pass_checked($('#rj45_10g_wan_pppoe_passwd')[0], this);"><#QIS_show_pass#>
+			</div>
+		</div>
+	</div>
+	<!-- End of 10G RJ-45 -->
+	<!-- 10G Fiber -->
+	<div id="sfp_10g_main" style="margin: 10px 0;display:none">
+		<div style="display:inline-block;margin-left:5px;">
+			<input type="checkbox" id="sfp_10g" name="wan_type" value="0" onClick="" onKeyPress="" style="margin-left:10px;">
+		</div>
+		<div style="display:inline-block;font-size: 18px;font-weight:bold;width:100px;">10G Fiber</div>
+		<div style="display:inline-block;margin-left:20px;">
+			<select name="sfp_10g_wan_type" id="sfp_10g_wan_type" class="input_option" onchange="switch_wan_type(this.id, this.value)">
+				<option value="dhcp"><#BOP_ctype_title1#></option>
+				<option value="pppoe">PPPoE</option>
+				<option value="static"><#BOP_ctype_title5#></option>
+			</select>
+		</div>
+	</div>
+	<div id="sfp_10g_ip_field" style="display:none">
+		<div style="margin:10px 0 0 35px;">
+			<div style="display:inline-block;width:100px;"><#IPConnection_ExternalIPAddress_itemname#></div>
+			<div style="display:inline-block;width:150px;">
+				<input type="text" name="sfp_10g_wan_ip" maxlength="15" class="input_15_table" value="0.0.0.0" onkeypress="return validator.isIPAddr(this, event);" autocorrect="off" autocapitalize="off">
+			</div>
+			<div style="display:inline-block;width:100px;"><#IPConnection_x_DNSServer1_itemname#></div>
+			<div style="display:inline-block;width:150px;">
+				<input type="text" name="sfp_10g_dns1" maxlength="15" class="input_15_table" value="0.0.0.0" onkeypress="return validator.isIPAddr(this, event);" autocorrect="off" autocapitalize="off">
+			</div>
+		</div>
+		<div style="margin:10px 0 0 35px;">
+			<div style="display:inline-block;width:100px;"><#IPConnection_x_ExternalSubnetMask_itemname#></div>
+			<div style="display:inline-block;width:150px;">
+				<input type="text" name="sfp_10g_netmask" maxlength="15" class="input_15_table" value="0.0.0.0" onkeypress="return validator.isIPAddr(this, event);" autocorrect="off" autocapitalize="off">
+			</div>
+			<div style="display:inline-block;width:100px;"><#IPConnection_x_DNSServer2_itemname#></div>
+			<div style="display:inline-block;width:150px;">
+				<input type="text" name="sfp_10g_dns2" maxlength="15" class="input_15_table" value="0.0.0.0" onkeypress="return validator.isIPAddr(this, event);" autocorrect="off" autocapitalize="off">
+			</div>
+		</div>
+		<div style="margin:10px 0 0 35px;">
+			<div style="display:inline-block;width:100px;"><#IPConnection_x_ExternalGateway_itemname#></div>
+			<div style="display:inline-block;width:150px;">
+				<input type="text" name="sfp_10g_gateway" maxlength="15" class="input_15_table" value="0.0.0.0" onkeypress="return validator.isIPAddr(this, event);" autocorrect="off" autocapitalize="off">
+			</div>			
+		</div>
+	</div>
+	<div id="sfp_10g_account_field" style="display:none">
+		<div style="margin:10px 0 0 35px;">
+			<div style="display:inline-block;width:100px;"><#HSDPAConfig_Username_itemname#></div>
+			<div style="display:inline-block;width:180px;">
+				<input type="text" name="sfp_10g_wan_pppoe_username" maxlength="64" value="" tabindex="1" onkeypress="return validator.isString(this, event);" class="input_18_table" size="36" autocapitalization="off" autocomplete="off">
+			</div>
+		</div>
+		<div style="margin:10px 0 0 35px;">
+			<div style="display:inline-block;width:100px;"><#PPPConnection_Password_itemname#></div>
+			<div style="display:inline-block;width:180px;">
+				<input type="password" id="sfp_10g_wan_pppoe_passwd" name="sfp_10g_wan_pppoe_passwd" maxlength="64" value="" tabindex="2" onkeypress="return validator.isString(this, event);" class="input_18_table" size="36" autocomplete="off" autocorrect="off" autocapitalize="off">
+			</div>
+			<div style="display:inline-block;">
+				<input type="checkbox" name="sfp_10g_show_pass_1" onclick="pass_checked($('#sfp_10g_wan_pppoe_passwd')[0], this);"><#QIS_show_pass#>
+			</div>
+		</div>
+	</div>
+	<!-- End of 10G Fiber -->
+
+	<!-- Button -->
+	<div style="margin:20px 0 10px 0;">
+		<div class="apply_gen">
+			<input type="button" id="previous_button" value="<#CTL_prev#>" onclick="previous_step();" class="button_gen" width="70px" align="center" style="display:none">
+			<input type="button" value="<#CTL_next#>" onclick="next_step();" class="button_gen" width="70px" align="center">
+		</div>
+	</div>
+	<!-- End of Button -->
+	<div style="border: 1px solid #FFF;width:710px;margin-left:10px;"></div>
+	<div id="unknownIsp" style="color:#FC0;font-size:14px;margin: 10px 0 0 10px;"><#QIS_SmartConn_TypeNote#></div>
+	<div id="wan_unplug" style="color:#FC0;font-size:14px;margin: 5px 0 0 10px;display:none">* <#web_redirect_suggestion1#></div>
+</div>
+   
+</form>
+</body> 

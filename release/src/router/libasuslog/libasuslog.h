@@ -17,8 +17,10 @@
 #include <time.h>
 #include <bcmnvram.h>
 #include <sys/stat.h>
+#include <sys/file.h>
 #include <shared.h>  
 #include <assert.h>
+#include <sys/sysmacros.h>
 
 
 int asusdebuglog(int level, char *path, int conlog, int showtime, unsigned filesize, const char *msgfmt, ...);

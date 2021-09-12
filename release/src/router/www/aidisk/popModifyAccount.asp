@@ -105,7 +105,7 @@ function validForm(){
 		return false;
 	}
 
-	if(document.getElementById("new_password").value.length > 16){
+	if(document.getElementById("new_password").value.length > 32){
 		showtext(document.getElementById("alert_msg2"),"*<#LANHostConfig_x_Password_itemdesc#>");
 		document.getElementById("password").focus();
 		document.getElementById("password").select();
@@ -133,16 +133,16 @@ function validForm(){
     <tr>
       <th><#AiDisk_Account#>: </th>
       <td>
-      	<input class="input_15_table" name="new_account" id="new_account" type="text" maxlength="20" autocorrect="off" autocapitalize="off">
+		<input class="input_15_table" name="new_account" id="new_account" type="text" maxlength="32" autocorrect="off" autocapitalize="off">
       </td>
     </tr>
     <tr>
       <th><#ModAccountPassword#>: </th>
-      <td><input type="password" class="input_15_table" name="new_password" id="new_password" onKeyPress="return validator.isString(this, event);" maxlength="17" autocorrect="off" autocapitalize="off"></td>
+      <td><input type="password" class="input_15_table" name="new_password" id="new_password" onKeyPress="return validator.isString(this, event);" maxlength="33" autocorrect="off" autocapitalize="off"></td>
     </tr>
     <tr>
       <th><#Confirmpassword#>: </th>
-      <td><input type="password" class="input_15_table" name="confirm_password" id="confirm_password" onKeyPress="return validator.isString(this, event);" maxlength="17" autocorrect="off" autocapitalize="off">
+      <td><input type="password" class="input_15_table" name="confirm_password" id="confirm_password" onKeyPress="return validator.isString(this, event);" maxlength="33" autocorrect="off" autocapitalize="off">
       		<br/><span id="alert_msg2" style="color:#FC0;margin-left:8px;"></span>	
       </td>
     </tr>

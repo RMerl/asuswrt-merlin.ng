@@ -1,0 +1,22 @@
+[Unit]
+Description=LLDP daemon
+Documentation=man:lldpd(8)
+After=network.target
+RequiresMountsFor=@PRIVSEP_CHROOT@
+
+[Service]
+Type=notify
+NotifyAccess=main
+EnvironmentFile=-/etc/default/lldpd
+EnvironmentFile=-/etc/sysconfig/lldpd
+ExecStart=@sbindir@/lldpd $DAEMON_ARGS $LLDPD_OPTIONS
+Restart=on-failure
+PrivateTmp=yes
+ProtectHome=yes
+ProtectKernelTunables=no
+ProtectControlGroups=yes
+ProtectKernelModules=yes
+#ProtectSystem=full
+
+[Install]
+WantedBy=multi-user.target

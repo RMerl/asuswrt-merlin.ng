@@ -1,4 +1,4 @@
-#score {
+#score, .strength_text {
 	color: #222;
 	font-weight: bold;
 	position:absolute;
@@ -7,7 +7,7 @@
 	z-index: 10;
 }
 
-#scorebar {
+#scorebar, .strength_color{
 	background-image: url(images/pwd_strength_gradient.jpg);
 	background-repeat: repeat;
 	background-position: 0 0;
@@ -23,4 +23,10 @@
 	height: 23px;
 	margin-bottom: 2px;
 	width: 120px;	
+}
+.pwd_strength_container {
+	height: 23px;
+	line-height: 25px;
+	width: 120px;
+	outline: 1px #999 solid;
 }

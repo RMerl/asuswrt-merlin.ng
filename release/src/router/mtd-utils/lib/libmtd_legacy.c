@@ -37,6 +37,8 @@
 #include "libmtd_int.h"
 #include "common.h"
 
+#include <sys/sysmacros.h>
+
 #define MTD_PROC_FILE "/proc/mtd"
 #define MTD_DEV_PATT  "/dev/mtd%d"
 #define MTD_DEV_MAJOR 90

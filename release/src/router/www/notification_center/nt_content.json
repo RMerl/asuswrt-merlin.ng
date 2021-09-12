@@ -31,7 +31,7 @@
 "10006":{
 	"group":"1",
 	"item":"Guest Network is avaiable now!",
-	"contents":"Click to share Wi-Fi to your friends",
+	"contents":"Click to share WiFi to your friends",
 	"buttom1":"Skip",
 	"callback":"",
 	"buttom2":"",
@@ -40,7 +40,7 @@
 "10007":{
 	"group":"1",
 	"item":"Guest Network is avaiable now!",
-	"contents":"Click to share Wi-Fi to your friends",
+	"contents":"Click to share WiFi to your friends",
 	"buttom1":"Skip",
 	"callback":"",
 	"buttom2":"",
@@ -469,7 +469,7 @@
 "1000000A":{
 	"group":"1",
 	"item":"DFS Channel",
-	"contents":"For improved 5GHz Wi-Fi performance, we recommend checking \"Auto-Select Channel Including DFS Channels\" option to support 5GHz devices with DFS function-enabled connection. Enable auto-select channel?",
+	"contents":"For improved 5GHz WiFi performance, we recommend checking \"Auto-Select Channel Including DFS Channels\" option to support 5GHz devices with DFS function-enabled connection. Enable auto-select channel?",
 	"buttom1":"Enable",
 	"callback":"Advanced_Wireless_Content.asp",
 	"buttom2":"Skip",

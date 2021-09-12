@@ -20,6 +20,9 @@
 if(parent.location.pathname.search("index") === -1) top.location.href = "../"+'<% networkmap_page(); %>';
 
 function initial(){
+	var faq_href = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=150";
+	document.getElementById("faq_link").href=faq_href;
+	
 	if((parent.sw_mode == 2 || parent.sw_mode == 4) && '<% nvram_get("wlc_band"); %>' == '<% nvram_get("wl_unit"); %>')
 		document.form.wl_subunit.value = 1;
 	else
@@ -154,14 +157,14 @@ function tab_reset(v){
 			document.getElementById("t3").style.display = "none";
 		}		
 	}else if(v == 1){	//Smart Connect
-		if(based_modelid == "RT-AC5300" || based_modelid == "RT-AC3200" || based_modelid == "GT-AC5300" || based_modelid == "GT-AX11000" || based_modelid == "RT-AX92U" || based_modelid == "RT-AX95Q" || based_modelid == "RT-AXE95Q" || based_modelid == "RT-AC95U" || based_modelid == "GT-AXE11000") {
+		if(based_modelid == "RT-AC5300" || based_modelid == "RT-AC3200" || based_modelid == "GT-AC5300" || based_modelid == "GT-AX11000" || based_modelid == "RT-AX92U" || based_modelid == "RT-AX95Q" || based_modelid == "XT8PRO" || based_modelid == "RT-AXE95Q" || based_modelid == "ET8PRO" || based_modelid == "RT-AC95U" || based_modelid == "GT-AXE11000" || based_modelid == "GT-AX6000" || based_modelid == "GT-AX11000_PRO" || based_modelid == "ET12" || based_modelid == "XT12" || based_modelid == "GT-AXE16000") {
 			if(isSupport("triband") && dwb_info.mode) {
 				document.getElementById("span0").innerHTML = "2.4GHz and 5GHz";
 			}
 			else
 				document.getElementById("span0").innerHTML = "2.4GHz, 5GHz-1 and 5GHz-2";
 		}
-		else if(based_modelid == "RT-AC88U" || based_modelid == "RT-AX88U" || based_modelid == "RT-AC86U" || based_modelid == "GT-AC2900" || based_modelid == "RT-AC3100" || based_modelid == "BLUECAVE" || based_modelid == "MAP-AC1750" || based_modelid == "RT-AX58U" || based_modelid == "TUF-AX3000" || based_modelid == "TUF-AX5400" || based_modelid == "DSL-AX82U" || based_modelid == "RT-AX82U" || based_modelid == "RT-AX56U" || based_modelid == "RT-AX56_XD4" || based_modelid == "CT-AX56_XD4" || based_modelid == "RT-AX86U" || based_modelid == "RT-AX5700" || based_modelid == "RT-AX68U" || based_modelid == "RT-AC68U_V4" || based_modelid == "RT-AX89U" || based_modelid == "GT-AXY16000" || based_modelid == "GS-AX3000" || based_modelid == "GS-AX5400")
+		else if(based_modelid == "RT-AC88U" || based_modelid == "RT-AX88U" || based_modelid == "RT-AC86U" || based_modelid == "GT-AC2900" || based_modelid == "RT-AC3100" || based_modelid == "BLUECAVE" || based_modelid == "MAP-AC1750" || based_modelid == "RT-AX58U" || based_modelid == "RT-AX58U_V2" || based_modelid == "TUF-AX3000" || based_modelid == "TUF-AX5400" || based_modelid == "DSL-AX82U" || based_modelid == "RT-AX82U" || based_modelid == "RT-AX56U" || based_modelid == "RT-AX56_XD4" || based_modelid == "XD4PRO" || based_modelid == "CT-AX56_XD4" || based_modelid == "RT-AX86U" || based_modelid == "RT-AX68U" || based_modelid == "RT-AC68U_V4" || based_modelid == "RT-AX89U" || based_modelid == "GT-AXY16000" || based_modelid == "GS-AX3000" || based_modelid == "GS-AX5400")
 			document.getElementById("span0").innerHTML = "2.4GHz and 5GHz";
 		
 		document.getElementById("t1").style.display = "none";
@@ -330,7 +333,7 @@ function applyRule(){
 						<div style="padding: 5px 0;line-height: 16px;">In additiotn, please make sure your WLAN card driver is updated to the latest version. More information is provided in
 						the following links.</div>
 						<div style="padding: 5px 0;line-height: 16px;word-break: break-word;">Intel WLAN Driver Download: <a href="https://downloadcenter.intel.com/product/59485/Wireless-Networking" target="_blank" style="text-decoration: underline;font-weight:bold">Link</a></div>
-						<div style="padding: 5px 0;line-height: 16px;">How to Update WLAN Card Driver Manually? <a href="https://www.asus.com/support/FAQ/1037422/" target="_blank" style="text-decoration: underline;font-weight:bold">Link</a></div>
+						<div style="padding: 5px 0;line-height: 16px;">How to Update WLAN Card Driver Manually? <a id="faq_link" href="" target="_blank" style="text-decoration: underline;font-weight:bold">Link</a></div>
 					</div>
 				</td>
 			</tr>

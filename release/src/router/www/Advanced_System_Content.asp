@@ -21,6 +21,7 @@
 <script language="JavaScript" type="text/javascript" src="/client_function.js"></script>
 <script language="JavaScript" type="text/javascript" src="/validator.js"></script>
 <script language="JavaScript" type="text/javascript" src="/js/jquery.js"></script>
+<script language="JavaScript" type="text/javascript" src="/md5.js"></script>
 <script type="text/javascript" src="/js/httpApi.js"></script>
 <style>
 .cancel{
@@ -130,6 +131,36 @@
         background-color:#CCC;
         padding:3px 2px 4px 0px;
 }
+
+.content_chpass{
+	position:absolute;
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+	border-radius: 5px;
+	z-index:500;
+	background-color:#2B373B;
+	margin-left: 45%;
+	margin-top: 10px;
+	width:380px;
+	box-shadow: 3px 3px 10px #000;
+	display: none;
+}
+::placeholder { /* Chrome, Firefox, Opera, Safari 10.1+ */
+  color: #323d40;
+  opacity: 1; /* Firefox */
+}
+
+.icon_eye_open{
+	width: 40px;
+	height: 27px;
+	background-size: 50%;
+}
+
+.icon_eye_close{
+	width: 40px;
+	height: 27px;
+	background-size: 50%;
+}
 </style>
 <script>
 time_day = uptimeStr.substring(5,7);//Mon, 01 Aug 2011 16:25:44 +0800(1467 secs since boot....
@@ -180,6 +211,11 @@ var captcha_support = isSupport("captcha");
 
 var tz_table = {}
 $.getJSON("/ajax/tz_db.json", function(data){tz_table = data;})
+var max_name_length = isSupport("MaxLen_http_name");
+var max_pwd_length = isSupport("MaxLen_http_passwd");
+
+var faq_href1 = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=105";
+var faq_href2 = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=111";
 
 function initial(){	
 	//parse nvram to array
@@ -202,8 +238,9 @@ function initial(){
 	restrict_rulelist_array = JSON.parse(JSON.stringify(orig_restrict_rulelist_array));
 
 	show_menu();
-	httpApi.faqURL("1034294", function(url){document.getElementById("faq").href=url;});
-	httpApi.faqURL("1037370", function(url){document.getElementById("ntp_faq").href=url;});
+	document.getElementById("creat_cert_link").href=faq_href1;
+	document.getElementById("faq").href=faq_href1;
+	document.getElementById("ntp_faq").href=faq_href2;
 	show_http_clientlist();
 	showNTPList();
 	display_spec_IP(document.form.http_client.value);
@@ -220,6 +257,10 @@ function initial(){
 		document.form.reboot_time_x_min.value = getrebootTimeRange(document.form.reboot_schedule.value, 1);
 		document.getElementById('reboot_schedule_enable_tr').style.display = "";
 		hide_reboot_option('<% nvram_get("reboot_schedule_enable"); %>');
+		
+		if("<% get_parameter("af"); %>" == "reboot_schedule_enable_x"){
+			autoFocus("reboot_schedule_enable_x");
+		}
 	}
 	else{
 		document.getElementById('reboot_schedule_enable_tr').style.display = "none";
@@ -230,7 +271,6 @@ function initial(){
 	setInterval("corrected_timezone();", 5000);
 	load_timezones();
 	parse_dstoffset(dstoffset);
-	document.form.http_passwd2.value = "";
 	
 	if(svc_ready == "0")
 		document.getElementById('svc_hint_div').style.display = "";
@@ -307,8 +347,6 @@ function initial(){
 	}
 	else
 		hideport(document.form.misc_http_x[0].checked);
-
-	document.form.http_username.value = '<% nvram_get("http_username"); %>';
 	
 	if(ssh_support){
 		check_sshd_enable('<% nvram_get("sshd_enable"); %>');
@@ -327,7 +365,7 @@ function initial(){
 	}
 
 
-	if(isSupport("is_ax5400_i1") || tmo_support){
+	if(isSupport("is_ax5400_i1n") || tmo_support){
 		document.getElementById("telnetd_sshd_table").style.display = "none";
 		document.form.telnetd_enable[0].disabled = true;
 		document.form.telnetd_enable[1].disabled = true;
@@ -397,6 +435,11 @@ function initial(){
 	$("#https_download_cert").css("display", (le_enable != "1" && orig_http_enable != "0")? "": "none");
 
 	$("#login_captcha_tr").css("display", captcha_support? "": "none");
+
+	document.getElementById("http_username_new").maxLength = max_name_length;
+	document.getElementById("http_passwd_cur").maxLength = max_pwd_length + 1;
+	document.getElementById("http_passwd_new").maxLength = max_pwd_length + 1;
+	document.getElementById("http_passwd_re").maxLength = max_pwd_length + 1;
 }
 
 var time_zone_tmp="";
@@ -469,11 +512,6 @@ function applyRule(){
 //			|| (document.form.ntpd_server_redir.value != orig_ntpd_server_redir) )
 			restart_firewall_flag = true;
 
-		if(document.form.http_passwd2.value.length > 0){
-			document.form.http_passwd.value = document.form.http_passwd2.value;
-			document.form.http_passwd.disabled = false;
-		}
-		
 		if(document.form.time_zone_select.value.search("DST") >= 0 || document.form.time_zone_select.value.search("TDT") >= 0){		// DST area
 
 				time_zone_tmp = document.form.time_zone_select.value.split("_");	//0:time_zone 1:serial number
@@ -662,112 +700,6 @@ function applyRule(){
 }
 
 function validForm(){
-	showtext(document.getElementById("alert_msg1"), "");
-	showtext(document.getElementById("alert_msg2"), "");
-
-	if(document.form.http_username.value.length == 0){
-		showtext(document.getElementById("alert_msg1"), "<#File_Pop_content_alert_desc1#>");
-		document.form.http_username.focus();
-		document.form.http_username.select();
-		return false;
-	}
-	else{
-		var alert_str = validator.account_name(document.form.http_username);
-
-		if(alert_str != ""){
-			showtext(document.getElementById("alert_msg1"), alert_str);
-			document.getElementById("alert_msg1").style.display = "";
-			document.form.http_username.focus();
-			document.form.http_username.select();
-			return false;
-		}else{
-			document.getElementById("alert_msg1").style.display = "none";
-		}
-
-		document.form.http_username.value = trim(document.form.http_username.value);
-
-		if(document.form.http_username.value == "root"
-				|| document.form.http_username.value == "guest"
-				|| document.form.http_username.value == "anonymous"
-		){
-				showtext(document.getElementById("alert_msg1"), "<#USB_Application_account_alert#>");
-				document.getElementById("alert_msg1").style.display = "";
-				document.form.http_username.focus();
-				document.form.http_username.select();
-				return false;
-		}
-		else if(accounts.getIndexByValue(document.form.http_username.value) > 0
-				&& document.form.http_username.value != accounts[0]){
-				showtext(document.getElementById("alert_msg1"), "<#File_Pop_content_alert_desc5#>");
-				document.getElementById("alert_msg1").style.display = "";
-				document.form.http_username.focus();
-				document.form.http_username.select();
-				return false;
-		}else{
-				document.getElementById("alert_msg1").style.display = "none";
-		}
-	}
-
-	if(document.form.http_passwd2.value.length > 0 && document.form.http_passwd2.value.length < 5){
-		showtext(document.getElementById("alert_msg2"),"* <#JS_short_password#>");
-		document.form.http_passwd2.focus();
-		document.form.http_passwd2.select();
-		return false;
-	}
-
-	if(document.form.http_passwd2.value.length > 16){
-		showtext(document.getElementById("alert_msg2"),"* <#JS_max_password#>");
-		document.form.http_passwd2.focus();
-		document.form.http_passwd2.select();
-		return false;
-	}
-
-	if(document.form.http_passwd2.value != document.form.v_password2.value){
-		showtext(document.getElementById("alert_msg2"),"* <#File_Pop_content_alert_desc7#>");
-		if(document.form.http_passwd2.value.length <= 0){
-			document.form.http_passwd2.focus();
-			document.form.http_passwd2.select();
-		}else{
-			document.form.v_password2.focus();
-			document.form.v_password2.select();
-		}
-		return false;
-	}
-
-	if(is_KR_sku){		/* MODELDEP by Territory Code */
-		if(document.form.http_passwd2.value.length > 0 || document.form.http_passwd2.value.length > 0){
-			if(!validator.string_KR(document.form.http_passwd2)){
-				document.form.http_passwd2.focus();
-				document.form.http_passwd2.select();
-				return false;
-			}
-		}
-	}
-	else{
-		if(!validator.string(document.form.http_passwd2)){
-			document.form.http_passwd2.focus();
-			document.form.http_passwd2.select();
-			return false;
-		}
-	}
-
-	if(document.form.http_passwd2.value == '<% nvram_default_get("http_passwd"); %>'){
-		showtext(document.getElementById("alert_msg2"),"* <#QIS_adminpass_confirm0#>");
-		document.form.http_passwd2.focus();
-		document.form.http_passwd2.select();
-		return false;
-	}	
-	
-	//confirm common string combination	#JS_common_passwd#
-	var is_common_string = check_common_string(document.form.http_passwd2.value, "httpd_password");
-	if(document.form.http_passwd2.value.length > 0 && is_common_string){
-			if(!confirm("<#JS_common_passwd#>")){
-				document.form.http_passwd2.focus();
-				document.form.http_passwd2.select();
-				return false;
-			}
-	}
-
 	if(hdspindown_support) {
 		if($('select[name="usb_idle_enable"]').val() == 1) {
 			$('input[name="usb_idle_timeout"]').prop("disabled", false);
@@ -809,6 +741,7 @@ function validForm(){
 
 	if (!validator.range(document.form.http_lanport, 1, 65535))
 		/*return false;*/ document.form.http_lanport = 80;
+
 	if (HTTPS_support && !document.form.https_lanport.disabled && !validator.range(document.form.https_lanport, 1, 65535) && !tmo_support)
 		return false;
 
@@ -887,9 +820,6 @@ function validForm(){
 		}
 	}
 
-	if(document.form.http_passwd2.value.length > 0)	//password setting changed
-		alert("<#File_Pop_content_alert_desc10#>");
-	
 	//Not allowed no Web UI in restrict_rulelist_array
 	var WebUI_selected=0
 	if(document.form.http_client_radio[0].checked && restrict_rulelist_array.length >0){  //Allow only specified IP address
@@ -919,16 +849,13 @@ function corrected_timezone(){
 	var StrIndex;
 	var timezone = uptimeStr_update.substring(26,31);
 	var startPos = today.toString().indexOf("(");
-	if ( startPos < 0 )
-		startPos = today.toString().length;
 
-	if(today.toString().lastIndexOf("-", startPos) > 0)
-		StrIndex = today.toString().lastIndexOf("-", startPos);
-	else if(today.toString().lastIndexOf("+", startPos) > 0)
-		StrIndex = today.toString().lastIndexOf("+", startPos);
+	if(today.toString().indexOf("-") > 0)
+		StrIndex = today.toString().indexOf("-");
+	else if(today.toString().indexOf("+") > 0)
+		StrIndex = today.toString().indexOf("+");
 
 	if(StrIndex > 0){
-		//alert('dstoffset='+dstoffset+', 設定時區='+timezone+' , 當地時區='+today.toString().substring(StrIndex, StrIndex+5))
 		if(timezone != today.toString().substring(StrIndex, StrIndex+5)){
 			document.getElementById("timezone_hint").style.display = "block";
 			document.getElementById("timezone_hint").innerHTML = "* <#LANHostConfig_x_TimeZone_itemhint#>";
@@ -965,6 +892,7 @@ var timezones = [
 	["UTC3",	"(GMT-03:00) <#TZ22#>"],
 	["EBST3DST_2",	"(GMT-03:00) <#TZ23#>"],
 	["UTC2",	"(GMT-02:00) <#TZ24#>"],
+	["UTC2DST",	"(GMT-02:00) <#TZ87#>"],
 	["EUT1DST",	"(GMT-01:00) <#TZ25#>"],
 	["UTC1",	"(GMT-01:00) <#TZ26#>"],
 	["GMT0",	"(GMT) <#TZ27#>"],
@@ -992,13 +920,13 @@ var timezones = [
 	["UTC-3_1",	"(GMT+03:00) <#TZ46#>"],
 	["UTC-3_2",	"(GMT+03:00) <#TZ47#>"],
 	["UTC-3_3",	"(GMT+03:00) <#TZ40_1#>"],
-	["UTC-3_4",	"(GMT+03:00) <#TZ44#>"],	
+	["UTC-3_4",	"(GMT+03:00) <#TZ44#>"],
+	["UTC-3_5",     "(GMT+03:00) <#TZ45#>"],        //UTC-4_7
 	["IST-3",	"(GMT+03:00) <#TZ48#>"],
 	["UTC-3_6",	"(GMT+03:00) <#TZ48_1#>"],
 	["UTC-3.30DST",	"(GMT+03:30) <#TZ49#>"],	
 	["UTC-4_1",	"(GMT+04:00) <#TZ50#>"],
 	["UTC-4_5",	"(GMT+04:00) <#TZ50_2#>"],
-	["UTC-4_7",	"(GMT+04:00) <#TZ45#>"],	//UTC-3_5
 	["UTC-4_4",	"(GMT+04:00) <#TZ50_1#>"],
 	["UTC-4_6",	"(GMT+04:00) <#TZ51#>"],
 	["UTC-4.30",	"(GMT+04:30) <#TZ52#>"],
@@ -1036,6 +964,7 @@ var timezones = [
 	["UTC-11_3",	"(GMT+11:00) <#TZ86#>"],
 	["UTC-11_4",	"(GMT+11:00) <#TZ82_1#>"],
 	["UTC-12",      "(GMT+12:00) <#TZ82#>"],
+	["UTC-12DST",      "(GMT+12:00) <#TZ82_2#>"],
 	["UTC-12_2",      "(GMT+12:00) <#TZ85#>"],
 	["NZST-12DST",	"(GMT+12:00) <#TZ83#>"],
 	["UTC-13",	"(GMT+13:00) <#TZ84#>"]];
@@ -1485,8 +1414,12 @@ function change_url(num, flag){
 }
 
 /* password item show or not */
-function pass_checked(obj){
-	switchType(obj, document.form.show_pass_1.checked, true);
+function plain_text_check(obj){
+	obj.toggleClass("icon_eye_close").toggleClass("icon_eye_open");
+
+	$.each( obj.attr("for").split(" "), function(i, val){
+		$("#"+val).prop("type", (function(){return obj.hasClass("icon_eye_close") ? "password" : "text";}));
+	});
 }
 
 function select_time_zone(){
@@ -1614,10 +1547,10 @@ function updateDateTime()
 }
 
 function paste_password(){
-	document.form.show_pass_1.checked = true;
-	pass_checked(document.form.http_passwd2);
-	pass_checked(document.form.v_password2);
+	if($("#show_pass_1").hasClass("icon_eye_close"))
+		plain_text_check($("#show_pass_1"));
 }
+
 function control_rule_status(obj) {
 	var $itemObj = $(obj);
 	var $trObj = $itemObj.closest('tr');
@@ -1819,6 +1752,7 @@ function pullPingTargetList(obj){
 		hidePingTargetList();
 }
 
+
 function reset_portconflict_hint(){
 	if($("#sshd_port").hasClass("highlight"))
 		$("#sshd_port").removeClass("highlight");
@@ -1904,14 +1838,288 @@ function hideNTP_Block(){
 }
 
 function pullNTPList(obj){
-	if(isMenuopen == 0){		
+	if(isMenuopen == 0){
 		obj.src = "/images/arrow-top.gif"
 		document.getElementById("NTPList_Block_PC").style.display = 'block';		
-		document.form.ntp_server0.focus();		
+		document.form.ntp_server0.focus();
 		isMenuopen = 1;
 	}
 	else
 		hideNTP_Block();
+}
+
+function open_chpass(type){ //0: username 1: password
+	$("#http_passwd_cur").val("");
+	$("#http_passwd_new").val("");
+	$("#http_passwd_re").val("");
+	$("#http_username_new").val("");
+	showtext(document.getElementById("pwd_msg"), "");
+	showtext(document.getElementById("alert_msg"), "");
+	showtext(document.getElementById("new_pwd_msg"), "");
+
+	if(type == 0){
+		$("#chpass_title").html("<#Change_Login_Name#>");
+		$("#pwd_input_title").css("display", "none");
+		$("#new_pwd_td").css("display", "none");
+		$("#pwd_input").css("display", "none");
+		$("#pwd_confirm_title").css("display", "none");
+		$("#pwd_confirm").css("display", "none");
+		$("#name_input_title").css("display", "");
+		$("#name_input").css("display", "");
+		document.getElementById("apply_chpass").onclick = function(){
+				change_username();
+			};
+	}
+	else{
+		$("#chpass_title").html("<#PASS_changepasswd#>");
+		$("#name_input_title").css("display", "none");
+		$("#name_input").css("display", "none");
+		$("#pwd_input_title").css("display", "");
+		$("#pwd_input").css("display", "");
+		$("#new_pwd_td").css("display", "");
+		$("#pwd_confirm_title").css("display", "");
+		$("#pwd_confirm").css("display", "");
+		document.getElementById("apply_chpass").onclick = function(){
+				change_passwd();
+			};
+	}
+
+	$("#chpass_div").fadeIn(500);
+}
+
+function reset_plain_text(){
+	if($("#show_pass_1").hasClass("icon_eye_open"))
+		plain_text_check($("#show_pass_1"));
+}
+
+function close_chpass(){
+	$("#chpass_div").fadeOut(500);
+	setTimeout("reset_plain_text();", 500);
+}
+
+function check_httpd(){
+	$.ajax({
+		url: '/httpd_check.xml',
+		dataType: 'xml',
+
+		error: function(xhr){
+			setTimeout("check_httpd();", 1000);
+		},
+		success: function(response){
+			setTimeout("location.href='Main_Login.asp'", 500);
+		}
+	});
+}
+
+function redirect_mainLogin(alert_msg){
+	stopFlag = 1;
+	alert(alert_msg);
+	showLoading();
+	setTimeout("check_httpd();", 3000);
+}
+
+function change_username(){
+	var postData = {"restart_httpd": "1", "cur_username":accounts[0], "cur_passwd":"", "new_username":""};
+	var change_result = "";
+
+	if($("#http_passwd_cur").val().length == 0){
+		showtext(document.getElementById("pwd_msg"), "<#Input_Current_Password#>");
+		$("#http_passwd_cur").focus();
+		$("#http_passwd_cur").select();
+		return false;
+	}
+
+	if($("#http_username_new").val().length == 0){
+		showtext(document.getElementById("alert_msg"), "* <#File_Pop_content_alert_desc1#>");
+		$("#http_username_new").focus();
+		$("#http_username_new").select();
+		return false;
+	}
+	else{
+		var alert_str = validator.host_name(document.getElementById("http_username_new"));
+
+		if(alert_str != ""){
+			showtext(document.getElementById("alert_msg"), alert_str);
+			$("#http_username_new").focus();
+			$("#http_username_new").select();
+			return false;
+		}
+
+		$("#http_username_new").val($("#http_username_new").val().trim());
+
+		if($("#http_username_new").val() == "root"
+				|| $("#http_username_new").val() == "guest"
+				|| $("#http_username_new").val() == "anonymous"
+		){
+				showtext(document.getElementById("alert_msg"), "* <#USB_Application_account_alert#>");
+				$("#http_username_new").focus();
+				$("#http_username_new").select();
+				return false;
+		}
+		else if(accounts.getIndexByValue($("#http_username_new").val()) > 0
+				&& $("#http_username_new").val() != accounts[0]){
+				showtext(document.getElementById("alert_msg"), "* <#File_Pop_content_alert_desc5#>");
+				$("#http_username_new").focus();
+				$("#http_username_new").select();
+				return false;
+		}else{
+				showtext(document.getElementById("alert_msg"), "");
+		}
+	}
+
+	postData.cur_passwd = $("#http_passwd_cur").val();
+	postData.new_username = $("#http_username_new").val();
+	change_result = httpApi.chpass(postData);
+	if(change_result == "401"){
+		showtext(document.getElementById("pwd_msg"), "<#Wrong_current_password#>");
+		$("#http_passwd_cur").focus();
+		$("#http_passwd_cur").select();
+	}
+	else{
+		var alert_msg = "";
+		if(change_result == "200")
+			alert_msg = "<#Change_username_successfully_hint#>";
+		else if(change_result == "402")
+			alert_msg = "<#Five_attempts_logout_hint#>";
+		else
+			alert_msg = "<#Fail_change_username#>";
+
+		close_chpass();
+		redirect_mainLogin(alert_msg);
+	}
+}
+
+
+function change_passwd(){
+	var postData = {"restart_httpd": "1", "cur_username":accounts[0], "cur_passwd":"", "new_passwd":""};
+	var change_result = "";
+
+	showtext(document.getElementById("pwd_msg"), "");
+	showtext(document.getElementById("alert_msg"), "");
+
+	if($("#http_passwd_cur").val().length == 0){
+		showtext(document.getElementById("pwd_msg"), "<#Input_Current_Password#>");
+		$("#http_passwd_cur").focus();
+		$("#http_passwd_cur").select();
+		return false;
+	}
+
+	if($("#http_passwd_new").val().length == 0){
+		showtext(document.getElementById("new_pwd_msg"), "* <#File_Pop_content_alert_desc6#>");
+		$("#http_passwd_new").focus();
+		$("#http_passwd_new").select();
+		return false;
+	}
+
+	if($("#http_passwd_new").val().length > max_pwd_length){
+		showtext(document.getElementById("new_pwd_msg"),"* <#JS_max_password#>");
+		$("#http_passwd_new").focus();
+		$("#http_passwd_new").select();
+		return false;
+	}
+
+	if($("#http_passwd_new").val() != $("#http_passwd_re").val()){
+		showtext(document.getElementById("alert_msg"),"* <#File_Pop_content_alert_desc7#>");
+		if($("#http_passwd_new").val().length <= 0){
+			$("#http_passwd_new").focus();
+			$("#http_passwd_new").select();
+		}else{
+			$("#http_passwd_re").focus();
+			$("#http_passwd_re").select();
+		}
+		return false;
+	}
+
+	if(is_KR_sku || is_SG_sku || is_AA_sku){	/* MODELDEP by Territory Code */
+		if($("#http_passwd_new").val().length > 0){
+			if(!validator.string_KR(document.getElementById("http_passwd_new"))){
+				$("#http_passwd_new").focus();
+				$("#http_passwd_new").select();
+				return false;
+			}
+		}
+
+		if($("#http_passwd_new").val() == accounts[0]){
+			alert("<#JS_validLoginPWD#>");
+			document.form.http_passwd_new.focus();
+			document.form.http_passwd_new.select();
+			return false;
+		}
+	}
+	else{
+
+		if($("#http_passwd_new").val().length > 0 &&$("#http_passwd_new").val().length < 5){
+			showtext(document.getElementById("new_pwd_msg"),"* <#JS_short_password#> <#JS_password_length#>");
+			$("#http_passwd_new").focus();
+			$("#http_passwd_new").select();
+			return false;
+		}
+
+		if(!validator.string(document.getElementById("http_passwd_new"))){
+			$("#http_passwd_new").focus();
+			$("#http_passwd_new").select();
+			return false;
+		}
+	}
+
+	if($("#http_passwd_new").val() == '<% nvram_default_get("http_passwd"); %>'){
+		showtext(document.getElementById("alert_msg"),"* <#QIS_adminpass_confirm0#>");
+		$("#http_passwd_new").focus();
+		$("#http_passwd_new").select();
+		return false;
+	}
+
+	//confirm common string combination	#JS_common_passwd#
+	var is_common_string = check_common_string($("#http_passwd_new").val(), "httpd_password");
+	if($("#http_passwd_new").val().length > 0 && is_common_string){
+			if(!confirm("<#JS_common_passwd#>")){
+				$("#http_passwd_new").focus();
+				$("#http_passwd_new").select();
+				return false;
+			}
+	}
+
+	postData.cur_passwd = $("#http_passwd_cur").val();
+	postData.new_passwd = $("#http_passwd_new").val();
+	change_result = httpApi.chpass(postData);
+	if(change_result == "401"){
+		showtext(document.getElementById("pwd_msg"), "<#Wrong_current_password#>");
+		$("#http_passwd_cur").focus();
+		$("#http_passwd_cur").select();
+	}
+	else{
+		var alert_msg = "";
+		if(change_result == "200")
+			alert_msg = "<#Change_password_successfully_hint#>";
+		else if(change_result == "402")
+			alert_msg = "<#Five_attempts_logout_hint#>";
+		else
+			alert_msg = "<#Fail_change_password#>";
+
+		close_chpass();
+		redirect_mainLogin(alert_msg);
+	}
+}
+
+function check_password_length(obj){
+
+	if(is_KR_sku || is_SG_sku || is_AA_sku){     /* MODELDEP by Territory Code */
+		showtext(document.getElementById("new_pwd_msg"),"");
+		return;
+	}
+	
+	var password = obj.value;
+	if(password.length > max_pwd_length){
+		showtext(document.getElementById("new_pwd_msg"),"* <#JS_max_password#>");
+		obj.focus();
+	}
+	else if(password.length > 0 && password.length < 5){
+		showtext(document.getElementById("new_pwd_msg"),"* <#JS_short_password#> <#JS_password_length#>");
+		obj.focus();
+	}
+	else{
+		showtext(document.getElementById("new_pwd_msg"),"");
+	}
 }
 </script>
 </head>
@@ -1920,7 +2128,76 @@ function pullNTPList(obj){
 <div id="TopBanner"></div>
 
 <div id="Loading" class="popup_bg"></div>
-
+<div id="chpass_div"  class="content_chpass">
+<table align="center" cellpadding="5" cellspacing="0" style="margin-top: 5px; width:95%;">
+	<tr>
+		<td id="chpass_title" style="text-align: center;"></td>
+	</tr>
+	<tr>
+		<td ><div style="width:360px;" class="splitLine"></div></td>
+	</tr>
+	<tr>
+		<td align="left"><#Current_Login_Password#></td>
+	</tr>
+	<tr>
+		<td>
+			<div style="display: flex; align-items: center;">
+				<div><input type="password" autocomplete="off" id="http_passwd_cur" tabindex="1" onkeydown="showtext(document.getElementById('pwd_msg'), '');" onpaste="setTimeout('paste_password();', 10)" class="input_18_table" style="width:200px;" maxlength="32" autocorrect="off" autocapitalize="off"/></div>
+				<div class="icon_eye_close" id="show_pass_1" type="password" for="http_passwd_cur http_passwd_new http_passwd_re" onclick="plain_text_check($('#show_pass_1'));"></div>
+			</div>
+		</td>
+	</tr>
+	<tr>
+		<td style="height: 25px;padding-top: 0px;">
+			<span id="pwd_msg" style="color:#FC0;margin-left:2px;"></span>
+		</td>
+	</tr>
+	<tr>
+		<td ><div style="width:360px; margin-bottom: 10px;" class="splitLine"></div></td>
+	</tr>
+	<tr id="pwd_input_title" style="display: none;">
+		<td align="left"><#New_Login_Password#></td>
+	</tr>
+	<tr id="pwd_input" style="display: none;">
+		<td>
+			<input type="password" autocomplete="off" id="http_passwd_new" tabindex="2" onkeydown="" onKeyPress="return validator.isString(this, event);" onkeyup="chkPass(this.value, 'http_passwd'); check_password_length(this);" onblur="check_password_length(this);" onpaste="setTimeout('paste_password();', 10)" class="input_18_table" style="width:200px;" maxlength="33" onBlur="clean_scorebar(this);" autocorrect="off" autocapitalize="off"/>
+			<div id="scorebarBorder" style="margin-left:224px; margin-top:-25px; display:none;" title="<#LANHostConfig_x_Password_itemSecur#>">
+				<div id="score" style="margin-top: 5px;"></div>
+				<div id="scorebar">&nbsp;</div>
+			</div>
+		</td>
+	</tr>
+	<tr id="new_pwd_td">
+		<td style="height: 35px; padding-top: 0px;">
+			<span id="new_pwd_msg" style="color:#FC0;margin-left:2px;"></span>
+		</td>
+	</tr>
+	<tr id="pwd_confirm_title" style="display: none;">
+		<td align="left"><#Retype_New_Login_Password#></td>
+	</tr>
+	<tr id="pwd_confirm" style="display: none;">
+		<td><input type="password" autocomplete="off" id="http_passwd_re" tabindex="3" onkeydown="showtext(document.getElementById('alert_msg'), '');" onKeyPress="return validator.isString(this, event);" onpaste="setTimeout('paste_password();', 10)" class="input_18_table" style="width:200px;" maxlength="33" autocorrect="off" autocapitalize="off"/></td>
+	</tr>
+	<tr id="name_input_title" style="display: none;">
+		<td align="left"><#New_Login_Name#></td>
+	</tr>
+	<tr id="name_input" style="display: none;">
+		<td>
+			<input type="text" autocomplete="off" id="http_username_new" tabindex="4" onKeyPress="return validator.isString(this, event);" class="input_20_table" style="width:200px;" maxlength="32" autocorrect="off" autocapitalize="off"/>
+		</td>
+	</tr>
+	<tr>
+		<td style="height: 25px; padding-bottom: 15px; padding-top: 0px;">
+			<span id="alert_msg" style="color:#FC0;margin-left:2px;"></span>
+		</td>
+	</tr>
+</table>
+<div style="padding-bottom:10px;width:100%;text-align:center;">
+	<input class="button_gen" type="button" onclick="close_chpass();" value="<#CTL_Cancel#>">
+	<input id="apply_chpass" class="button_gen" type="button" onclick="" value="<#CTL_ok#>">
+	<img id="loadingIcon_sim" style="margin-left:10px; display:none;" src="/images/InternetScan.gif">
+</div>
+</div>
 <iframe name="hidden_frame" id="hidden_frame" src="" width="0" height="0" frameborder="0"></iframe>
 <form method="post" name="form" id="ruleForm" action="/start_apply.htm" target="hidden_frame">
 <input type="hidden" name="productid" value="<% nvram_get("productid"); %>">
@@ -1937,7 +2214,6 @@ function pullNTPList(obj){
 <input type="hidden" name="time_zone_dst" value="<% nvram_get("time_zone_dst"); %>">
 <input type="hidden" name="time_zone" value="<% nvram_get("time_zone"); %>">
 <input type="hidden" name="time_zone_dstoff" value="<% nvram_get("time_zone_dstoff"); %>">
-<input type="hidden" name="http_passwd" value="" disabled>
 <input type="hidden" name="http_client" value="<% nvram_get("http_client"); %>"><!--for old fw-->
 <input type="hidden" name="http_clientlist" value="<% nvram_get("http_clientlist"); %>"><!--for old fw-->
 <input type="hidden" name="enable_acc_restriction" value="<% nvram_get("enable_acc_restriction"); %>">
@@ -1951,7 +2227,6 @@ function pullNTPList(obj){
 <input type="hidden" name="ncb_enable" value="<% nvram_get("ncb_enable"); %>">
 <input type="hidden" name="dns_probe" value="<% nvram_get("dns_probe"); %>">
 <input type="hidden" name="wandog_enable" value="<% nvram_get("wandog_enable"); %>">
-
 <table class="content" align="center" cellpadding="0" cellspacing="0">
   <tr>
 	<td width="17">&nbsp;</td>
@@ -1961,7 +2236,7 @@ function pullNTPList(obj){
 	  <div id="mainMenu"></div>
 	  <div id="subMenu"></div>
 	</td>
-		
+
     <td valign="top">
 	<div id="tabMenu" class="submenuBlock"></div>
 		<!--===================================Beginning of Main Content===========================================-->
@@ -1980,38 +2255,26 @@ function pullNTPList(obj){
 			<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
 			<thead>
 				<tr>
-					<td colspan="2"><#PASS_changepasswd#></td>
+					<td colspan="2"><#Router_Account#></td>
 				</tr>
 			</thead>
 				<tr>
 				  <th width="40%"><#Router_Login_Name#></th>
 					<td>
-						<div><input type="text" id="http_username" name="http_username" tabindex="1" autocomplete="off" style="height:25px;" class="input_18_table" maxlength="20" autocorrect="off" autocapitalize="off"><br/><span id="alert_msg1" style="color:#FC0;margin-left:8px;display:inline-block;"></span></div>
+						<span style="color:#FFF; display: inline-block; width: 250px;"><% nvram_get("http_username"); %></span>
+					<span style="text-decoration: underline; cursor: pointer;" onclick="open_chpass(0);"><#Change#></span>
 					</td>
 				</tr>
 
 				<tr>
-					<th width="40%"><a class="hintstyle" href="javascript:void(0);" onClick="openHint(11,4)"><#PASS_new#></a></th>
+					<th width="40%"><a class="hintstyle" href="javascript:void(0);" onClick="openHint(11,4)"><#Router_Login_Password#></a></th>
 					<td>
-						<input type="password" autocomplete="new-password" name="http_passwd2" tabindex="2" onKeyPress="return validator.isString(this, event);" onkeyup="chkPass(this.value, 'http_passwd');" onpaste="setTimeout('paste_password();', 10)" class="input_18_table" maxlength="17" onBlur="clean_scorebar(this);" autocorrect="off" autocapitalize="off"/>
-						&nbsp;&nbsp;
-						<div id="scorebarBorder" style="margin-left:180px; margin-top:-25px; display:none;" title="<#LANHostConfig_x_Password_itemSecur#>">
-							<div id="score"></div>
-							<div id="scorebar">&nbsp;</div>
-						</div>            
-					</td>
-				</tr>
-				<tr>
-					<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(11,4)"><#PASS_retype#></a></th>
-					<td>
-						<input type="password" autocomplete="new-password" name="v_password2" tabindex="3" onKeyPress="return validator.isString(this, event);" onpaste="setTimeout('paste_password();', 10)" class="input_18_table" maxlength="17" autocorrect="off" autocapitalize="off"/>
-						<div style="margin:-25px 0px 5px 175px;"><input type="checkbox" name="show_pass_1" onclick="pass_checked(document.form.http_passwd2);pass_checked(document.form.v_password2);"><#QIS_show_pass#></div>
-						<span id="alert_msg2" style="color:#FC0;margin-left:8px;display:inline-block;"></span>
-					
+						<span style="color:#FFF; display: inline-block; width: 250px;">-</span>
+						<span style="text-decoration: underline; cursor: pointer;" onclick="open_chpass(1);""><#Change#></span>
 					</td>
 				</tr>
 				<tr id="login_captcha_tr" style="display:none">
-					<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(11,13)">Enable Login Captcha</a></th>
+					<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(11,13)"><#Enable_Login_Captcha#></a></th>
 					<td>
 						<input type="radio" value="1" name="captcha_enable" <% nvram_match("captcha_enable", "1", "checked"); %>><#checkbox_Yes#>
 						<input type="radio" value="0" name="captcha_enable" <% nvram_match("captcha_enable", "0", "checked"); %>><#checkbox_No#>
@@ -2406,7 +2669,7 @@ function pullNTPList(obj){
 					<th><#Local_access_certificate_download#></th>
 					<td>
 						<input id="download_cert_btn" class="button_gen" onclick="save_cert_key();" type="button" value="<#btn_Export#>" />
-						<span id="download_cert_desc"><#Local_access_certificate_desc#></span><a href="https://www.asus.com/support/FAQ/1034294" style="font-family:Lucida Console;text-decoration:underline;color:#FFCC00; margin-left: 5px;" target="_blank">FAQ</a>
+						<span id="download_cert_desc"><#Local_access_certificate_desc#></span><a id="creat_cert_link" href="" style="font-family:Lucida Console;text-decoration:underline;color:#FFCC00; margin-left: 5px;" target="_blank">FAQ</a>
 					</td>
 				</tr>
 			</table>

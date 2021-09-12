@@ -1,7 +1,3 @@
-# Linux eventd Makefile
-
-include $(TOP)/.config
-
 include $(TOP)/.config
 
 CFLAGS	+= -I. -I$(TOP)/shared -I$(SRCBASE)/include ${WLAN_StdIncPathA} -I$(SRCBASE)/common/include -Wall -Werror

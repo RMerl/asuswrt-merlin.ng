@@ -930,6 +930,7 @@ static void dispatch_packet(AvahiServer *s, AvahiDnsPacket *p, const AvahiAddres
 
     if (avahi_dns_packet_is_query(p)) {
         int legacy_unicast = 0;
+        char t[AVAHI_ADDRESS_STR_MAX];
 
         /* For queries EDNS0 might allow ARCOUNT != 0. We ignore the
          * AR section completely here, so far. Until the day we add
@@ -945,6 +946,13 @@ static void dispatch_packet(AvahiServer *s, AvahiDnsPacket *p, const AvahiAddres
             }
 
             legacy_unicast = 1;
+        }
+
+        if (!is_mdns_mcast_address(dst_address) &&
+            !avahi_interface_address_on_link(i, src_address)) {
+
+            avahi_log_debug("Received non-local unicast query from host %s on interface '%s.%i'.", avahi_address_snprint(t, sizeof(t), src_address), i->hardware->name, i->protocol);
+            return;
         }
 
         if (legacy_unicast)

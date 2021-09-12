@@ -32,6 +32,9 @@
 #include <linux/leds.h>
 
 extern struct list_head leds_list;
+#elif defined(CONFIG_ETJ)
+#include <linux/pwm.h>
+struct pwm_device *pwmget_sysfsdev(unsigned int hwid);
 #endif
 
 /* __gpio_set_value() and __gpio_get_value() are defined and exported
@@ -51,6 +54,10 @@ static void gpio_set(int gpio_nr, int value)
 			return;
 		}
 	}
+#elif defined(CONFIG_ETJ)
+	struct pwm_device *pwm = pwmget_sysfsdev(gpio_nr);
+	if (pwm)
+		value? pwm_enable(pwm):pwm_disable(pwm);
 #else
 	__gpio_set_value(gpio_nr, value);
 #endif
@@ -74,6 +81,14 @@ static int gpio_get(int gpio_nr)
 	}
 
 	return brightness;
+#elif defined(CONFIG_ETJ)
+	struct pwm_device *pwm = pwmget_sysfsdev(gpio_nr);
+	if (pwm) {
+		if (test_bit(PWMF_ENABLED, &pwm->flags))
+			return 1;
+		else
+			return 0;
+	}
 #else
 	return __gpio_get_value(gpio_nr);
 #endif

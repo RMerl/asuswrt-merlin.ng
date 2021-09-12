@@ -54,6 +54,9 @@ extern "C" {
 #define EXT2_LIB_CURRENT_REV	EXT2_DYNAMIC_REV
 
 #ifdef HAVE_SYS_TYPES_H
+#if defined(RTCONFIG_HND_ROUTER_AX_6756)
+#include <sys/sysmacros.h>
+#endif
 #include <sys/types.h>
 #endif
 

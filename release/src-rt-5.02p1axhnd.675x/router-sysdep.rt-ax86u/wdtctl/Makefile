@@ -6,7 +6,7 @@ all:
 
 install: generic_exe_install
 
-clean: 
+clean:
 
 dynamic: all install
 

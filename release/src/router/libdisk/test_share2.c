@@ -666,7 +666,7 @@ extern int get_all_folder(const char *const mount_path, int *sh_num, char ***fol
 extern int get_var_file_name(const int type, const char *const name, const char *const path, char **file_name){
 	int len;
 	char *var_file;
-	char ascii_user[64];
+	char ascii_user[128];
 
 	if(path == NULL)
 		return -1;
@@ -677,7 +677,7 @@ extern int get_var_file_name(const int type, const char *const name, const char 
 
 	memset(ascii_user, 0, szieof(ascii_user));
 	if(name != NULL){
-		char_to_ascii_safe(ascii_user, name, 64);
+		char_to_ascii_safe(ascii_user, name, 128);
 
 		len += strlen(ascii_user);
 	}

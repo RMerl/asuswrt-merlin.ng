@@ -1,0 +1,1677 @@
+body{
+	margin: 0;
+}
+
+.bg{
+	background-color: transparent;
+	color: #FFFFFF;
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 13px;
+	line-height: 180%;
+	width: 100%;
+	min-height: 930px;
+	display: flex;
+	justify-content: center;
+}
+
+.container{
+	margin: 0px 0px 0px 10px;
+}
+
+.function_title_pc{
+	height: 45px;
+	display: flex;
+	align-items: flex-end;
+	font-size: 20px;
+}
+
+.function_title_m{
+	display: none;
+	height: 70px;
+	font-size: 20px;
+}
+
+.normal_show{
+	display: block;
+}
+
+.mobile_show{
+	display: none;
+}
+
+.split-Line{
+	background: rgba(74,144,226,0.50);
+	width: 98%;
+	height: 1px;
+	margin: 6px 0;
+}
+
+.function_container{
+	margin-left: 10px;
+}
+
+.content_div{
+	width: 100%;
+	display: flex;
+	flex-wrap: wrap;
+	margin-top: 10px;
+}
+
+.info_content{
+	width: 100%;
+}
+
+.desc_div{
+	width: 70%;
+}
+
+.speedtest_logo{
+	width: 30%;
+	height: 40px;
+	background: url(../images/speedtest/speedtest.svg) no-repeat center;
+}
+
+.wan_notice{
+	color: rgb(255, 204, 0);
+	margin-left: 10px;
+	display: none;
+}
+
+
+.ookla_info{
+	font-size: 12px;
+	color: #7D96A7;
+	margin-top: 5px;
+	display: flex;
+	align-items: center;
+}
+
+.speedTest_div{
+	background: #2C373D;
+	border: 1px solid #364752;
+	box-shadow: 0 2px 4px 0 rgba(0,0,0,0.20) , 0 1px 4px 0 rgba(60,60,60,0.30);
+	border-radius: 5px;
+	width: 98%;
+	margin-left: 5px;
+}
+
+.level_ping_div{
+	height: 60px;
+	background: #33434B;
+	border-radius: 30px 0 5px 30px;
+	margin-left: 2%;
+	width: 98%;
+	display: flex;
+	align-items: center;
+}
+
+.time_column{
+	height: 70px;
+	margin-top: 5px;
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-start;
+}
+
+.time_container{
+	height: 100%;
+	display: flex;
+	align-items: center;
+}
+
+.date_div{
+	width: 40%;
+	height: 22px;
+	border-bottom: solid #303D43 6px;
+	font-size: 14px;
+	text-align: right;
+	color: #CDEBFF;
+}
+
+.time_div{
+	font-size: 30px;
+	color: #CDEBFF;
+	margin-top: 5px;
+	margin-left: 5px;
+}
+
+.download_upload_text{
+	font-size: 12px;
+	color: #A4B7C3;
+	letter-spacing: 0.6px;
+	line-height: 14px;
+	margin-left: 20px;
+}
+
+.test_result{
+	width: 60%;
+	height: 72px;
+	font-size: 54px;
+	color: #FFFFFF;
+	line-height: 72px;
+}
+
+.speed_level_div{
+	width: 40%;
+	display: flex;
+	justify-content: center;
+}
+
+.ping_result_div{
+	height: 100%;
+	font-size: 12px;
+	display: flex;
+	flex-grow: 1;
+	align-items: center;
+	justify-content: space-around;
+}
+
+.ping_result_sub_div{
+	height: 80%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.speedTest_btn_container{
+	width: 40%;
+	line-height: 135px;
+	display: flex;
+	justify-content: center;
+}
+
+.speedTest_btn_normal{
+	width: 135px;
+	background-image: url('../images/speedtest/btn_go_normal.svg');
+	background-repeat: no-repeat;
+	text-align: center;
+	font-size: 35px;
+	color:#FFFFFF;
+	cursor: pointer;
+}
+
+.speedTest_btn_press{
+	width: 135px;
+	background-image: url('../images/speedtest/btn_go_press.svg');
+	background-repeat: no-repeat;
+	text-align: center;
+	font-size: 18px;
+	color:#00FCFF;
+}
+
+.speedTest_btn_disable{
+	width: 135px;
+	height: 135px;
+	background-image:
+		url('../images/speedtest/wan_disconnect.svg'),
+		url('../images/speedtest/btn_go_disable.svg');
+	background-repeat: no-repeat, no-repeat;
+	background-position: center;
+	background-size: 50%, contain;
+	text-align: center;
+	font-size: 35px;
+	color:#FFFFFF;
+}
+
+.ping_result_title{
+	color: #A4B7C3;
+	display: flex;
+	align-items: flex-start;
+	height: 60%;
+	margin-right: 10px;
+}
+
+.ping_value_container{
+	display: flex;
+	align-items: center;
+}
+
+.ping_result_value{
+	font-size: 24px;
+}
+
+.ping_result_unit{
+	height: 70%;
+	display: flex;
+	align-items: flex-end;
+	margin-left: 10px;
+}
+
+.speed_level_ultra{
+	width: 245px;
+	height: 50px;
+	background-image:url('../images/speedtest/btn_speed_ultra.svg');
+	background-position: center;
+	cursor: pointer;
+}
+
+.speed_level_super{
+	width: 245px;
+	height: 50px;
+	background-image:url('../images/speedtest/btn_speed_super.svg');
+	background-position: center;
+	cursor: pointer;
+}
+
+.speed_level_great{
+	width: 245px;
+	height: 50px;
+	background-image:url('../images/speedtest/btn_speed_great.svg');
+	background-position: center;
+	cursor: pointer;
+}
+
+.speed_level_fast{
+	width: 245px;
+	height: 50px;
+	background-image:url('../images/speedtest/btn_speed_fast.svg');
+	background-position: center;
+	cursor: pointer;
+}
+
+.speed_level_good{
+	width: 245px;
+	height: 50px;
+	background-image:url('../images/speedtest/btn_speed_good.svg');
+	background-position: center;
+	cursor: pointer;
+}
+
+.speed_level_normal{
+	width: 245px;
+	height: 50px;
+	background-image:url('../images/speedtest/btn_speed_default.svg');
+	background-position: center;
+	cursor: pointer;
+}
+
+.speed_level_default{
+	width: 245px;
+	height: 50px;
+	background-image:url('../images/speedtest/btn_speed_default.svg');
+	background-position: center;
+	cursor: pointer;
+}
+
+.speed_icon_white{
+	margin-left: 8px;
+}
+
+.speed_icon_ultra_white{
+	width: 30px;
+	height: 30px;
+	background: url(../images/speedtest/speed_ultra_white.svg) no-repeat center;
+}
+
+.speed_icon_super_white{
+	width: 30px;
+	height: 30px;
+	background: url(../images/speedtest/speed_super_white.svg) no-repeat center;
+}
+
+.speed_icon_great_white{
+	width: 30px;
+	height: 30px;
+	background: url(../images/speedtest/speed_great_white.svg) no-repeat center;
+}
+
+.speed_icon_fast_white{
+	width: 30px;
+	height: 30px;
+	background: url(../images/speedtest/speed_fast_white.svg) no-repeat center;
+}
+
+.speed_icon_good_white{
+	width: 30px;
+	height: 30px;
+	background: url(../images/speedtest/speed_good_white.svg) no-repeat center;
+}
+
+.speed_icon_normal_s{
+	margin-left: 20px;
+	width: 18px;
+	height: 18px;
+	background: url(../images/speedtest/speed_normal.svg) no-repeat center;
+}
+
+.speed_icon_normal_l{
+	margin-left: 30px;
+	width: 24px;
+	height: 24px;
+	background: url(../images/speedtest/speed_normal.svg) no-repeat center;
+}
+
+.speed_result_level_icon{
+	width: 30px;
+	height: 30px;
+	margin-left: 30px;
+}
+
+.speed_icon_ultra{
+	background: url(../images/speedtest/speed_ultra.svg) no-repeat center;
+}
+
+.speed_icon_super{
+	background: url(../images/speedtest/speed_super.svg) no-repeat center;
+}
+
+.speed_icon_great{
+	background: url(../images/speedtest/speed_great.svg) no-repeat center;
+}
+
+.speed_icon_fast{
+	background: url(../images/speedtest/speed_fast.svg) no-repeat center;
+}
+
+.speed_icon_good{
+	background: url(../images/speedtest/speed_good.svg) no-repeat center;
+}
+
+.speed_icon_normal{
+	background: url(../images/speedtest/speed_normal.svg) no-repeat center;
+}
+
+.speed_level_title{
+	margin-left: 27px;
+	font-size: 12px;
+}
+
+.speed_level_title_default{
+	margin-left: 20px;
+	font-size: 12px;
+	width:170px;
+	text-align: center;
+}
+
+.speed_level_text{
+	width: 80px;
+	margin-left: 10px;
+	font-size: 16px;
+	text-align: center;
+}
+
+.speed_level_more{
+	margin-left: 8px;
+	width: 30px;
+	height: 10px;
+	background: url(../images/speedtest/more.svg) no-repeat center;
+}
+
+.history_desc{
+	width: 100%;
+	height: 50px;
+	font-size: 20px;
+	display: flex;
+	justify-content: flex-start;
+	align-items: flex-end;
+}
+
+.history_icon{
+	width: 30px;
+	height: 30px;
+	background: url(../images/speedtest/speedtest_history.svg) no-repeat center;
+}
+
+.history_delete{
+	width: 32px;
+	height: 32px;
+	background: url(../images/speedtest/speedtest_delete.svg) no-repeat center;
+	background-size: 50%;
+	cursor: pointer;
+	margin-left: 20px;
+}
+
+.history_delete_enable{
+	background: rgba(37,151,255,0.10) url(../images/speedtest/speedtest_delete_enable.svg) no-repeat center;
+	background-size: 50%;
+	border-radius: 50%;
+}
+
+.history_delete:hover{
+	background: rgba(37,151,255,0.10) url(../images/speedtest/speedtest_delete_enable.svg) no-repeat center;
+	background-size: 50%;
+	border-radius: 50%;
+}
+
+.left_arrow{
+	width: 32px;
+	height: 32px;
+	background: url(../images/speedtest/speedtest_arrow_left.svg) no-repeat center;
+	background-size: 50%;
+	cursor: pointer;
+}
+
+.left_arrow:hover{
+	border-radius: 50%;
+	background: rgba(255,255,255,0.04) url(../images/speedtest/speedtest_arrow_left_white.svg) no-repeat center;
+	background-size: 50%;
+}
+
+.right_arrow{
+	width: 32px;
+	height: 32px;
+	background: url(../images/speedtest/speedtest_arrow_right.svg) no-repeat center;
+	background-size: 50%;
+	cursor: pointer;
+	margin-right: 20px;
+}
+
+.right_arrow:hover{
+	border-radius: 50%;
+	background: rgba(255,255,255,0.04) url(../images/speedtest/speedtest_arrow_right_white.svg) no-repeat center;
+	background-size: 50%;
+}
+
+.fadeOut_close{
+	height: 45px;
+	width: 97%;
+	display: flex;
+	justify-content: flex-end;
+	align-items: center;
+}
+
+.slideUp_close{
+	height: 50px;
+	width: 100%;
+	display: none;
+	flex-grow: 1;
+	justify-content: center;
+}
+
+.up_arrow_container{
+	width: 108px;
+	height: 30px;
+	background-color: #373E50;
+	border-radius: 20px;
+	display: flex;
+	justify-content: center;
+}
+
+.up_arrow{
+	width: 32px;
+	height: 32px;
+	border-radius: 20%;
+	background: url(../images/speedtest/speedtest_arrow_right_white.svg) no-repeat center;
+	background-size: 50%;
+	cursor: pointer;
+	transform:rotate(-90deg);
+}
+
+.up_arrow:hover{
+	width: 32px;
+	height: 32px;
+	background: url(../images/speedtest/arrow_right_blue.svg) no-repeat center;
+	background-size: 50%;
+}
+
+.down_arrow{
+	width: 32px;
+	height: 32px;
+	border-radius: 20%;
+	background: url(../images/speedtest/arrow_right_blue.svg) no-repeat center;
+	background-size: 50%;
+	cursor: pointer;
+	transform:rotate(90deg);
+}
+
+.down_arrow_up{
+	transform:rotate(-90deg);
+}
+
+.history_item_range{
+	height: 24px;
+	font-size: 14px;
+	line-height: 24px;
+}
+
+.history_select{
+	width: 12px;
+	height: 12px;
+	border: rgba(255,255,255,0.3) solid 1px;
+	cursor:pointer;
+}
+
+.history_select_checked{
+	background: #006EFF url(../images/speedtest/checked_24px.svg) no-repeat center;
+	background-size: 90%;
+}
+
+.history_select:hover{
+	border: 1px solid #FFFFFF;
+}
+
+#function_row{
+	width: 100%;
+	height: 48px;
+	border-bottom: #4C5B65 solid 1px;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.history_row{
+	width: 100%;
+	height: auto;
+	border-bottom: #4C5B65 solid 1px;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.select_container{
+	width: 32px;
+	height: 32px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	margin-left: 20px;
+}
+
+.history_container{
+	display:flex;
+	flex-grow: 1;
+	margin-left: 10px;
+}
+
+.time_speed_container{
+	width: 50%;
+	display: flex;
+	align-items: center;
+}
+
+.border_bottom{
+	border-bottom: none;
+}
+
+.history_more{
+	width: 32px;
+	height: 32px;
+	background: url(../images/speedtest/speedtest_arrow_right.svg) no-repeat center;
+	background-size: 50%;
+	cursor: pointer;
+	display: none;
+}
+
+.ping_container{
+	width: 45%;
+	display: flex;
+	text-align: center;
+	align-items: center;
+	justify-content: space-between;
+}
+
+.ping_title{
+	display: none;
+	height: 100%;
+	color: #7ECAFF;
+}
+
+.ping_unit{
+	display: none;
+	color: #A4B7C3;
+}
+
+.history_title{
+	color:#A4B7C3;
+}
+
+.history_title_m{
+	color:#A4B7C3;
+	display: none;
+}
+
+.downup_title_container{
+	width: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.download_result_icon{
+	background-image: url(../images/speedtest/download.svg);
+	background-repeat: no-repeat;
+	background-position: left;
+	background-size: 11px 11px;
+}
+
+.upload_result_icon{
+	background-image: url(../images/speedtest/upload.svg);
+	background-repeat: no-repeat;
+	background-position: left;
+	background-size: 11px 11px;
+}
+
+.download_icon{
+	background-image: url(../images/speedtest/download.svg);
+	background-repeat: no-repeat;
+	background-position: center;
+	background-size: 12px 12px;
+	width: 23px; height: 23px;
+}
+
+.upload_icon{
+	background-image: url(../images/speedtest/upload.svg);
+	background-repeat: no-repeat;
+	background-position: center;
+	background-size: 12px 12px;
+	width: 23px; height: 23px;
+}
+
+.history_value_font{
+	font-size: 12px;
+}
+
+.no_test_result{
+	margin-top: 15px;
+	font-size: 18px;
+	color: #7F91A4;
+	text-align: center;
+}
+
+.history_timestamp_div{
+	width: 20%;
+	height: 50px;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+}
+
+.history_downup_div{
+	display: flex;
+	justify-content: center;
+	flex-wrap: wrap;
+	flex-grow: 1;
+}
+
+.history_downup_font{
+	color: #7ECAFF;
+}
+
+.history_ping_div{
+	width: 25%;
+}
+
+.history_jitter_div{
+	width: 40%;
+}
+
+.history_loss_div{
+	width: 30%;
+}
+
+.history_ping_val{
+	display: flex;
+	justify-content: center;
+}
+
+.speed_level_detail{
+	width: 97%;
+	height: 545px;
+	background-color: #2E3B43;
+	border-radius: 5px;
+	position: fixed;
+	top: 150px;
+	z-index: 1000;
+	box-shadow: 0 2px 4px 0 rgba(0,0,0,0.20) , 0 1px 4px 0 rgba(60,60,60,0.30);
+	display: none;
+}
+
+.detail_speed_level{
+	height: 100%;
+	display: flex;
+	border-radius: 5px;
+}
+
+.last_test_container{
+	width: 35%;
+	height: 100%;
+	margin-left: 24px;
+}
+
+.speed_level_container{
+	width: 63%;
+	height: 100%;
+	background-color: #171616;
+	border-radius: 0 5px 5px 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.detail_title{
+	height: 15%;
+	display: flex;
+    align-items: flex-end;
+	font-size: 24px;
+	line-height: 120%;
+	border-bottom: #4C5B65 solid 1px;
+}
+
+.detail_last_test_div{
+	height: 25%;
+	border-bottom: #4C5B65 solid 1px;
+}
+
+.detail_downup_text{
+	height: 48px;
+	font-size: 32px;
+	color: #FFFFFF;
+	line-height: 48px;
+	margin-left: 15px;
+}
+
+.speedtest_result_div_small{
+	width: 50%;
+	float:left;
+}
+
+
+.speed_level_range{
+	width: 100%;
+	min-height: 75px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.speed_level_rainbow_bar{
+	background: #dc00b9; /* Old browsers */
+	background: -moz-linear-gradient(top,  #dc00b9 0%, #2e00d4 20%, #0051b1 40%, #3f93fb 60%, #31ffaf 80%, #2c3f4a 100%, #2c3f4a 100%); /* FF3.6-15 */
+	background: -webkit-linear-gradient(top,  #dc00b9 0%,#2e00d4 20%,#0051b1 40%,#3f93fb 60%,#31ffaf 80%,#2c3f4a 100%,#2c3f4a 100%); /* Chrome10-25,Safari5.1-6 */
+	background: linear-gradient(to bottom,  #dc00b9 0%,#2e00d4 20%,#0051b1 40%,#3f93fb 60%,#31ffaf 80%,#2c3f4a 100%,#2c3f4a 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#dc00b9', endColorstr='#2c3f4a',GradientType=0 ); /* IE6-9 */
+	width: 4px;
+	height: 445px;
+	border-radius: 5px;
+	margin-left: 90%;
+}
+
+.close_icon{
+	width: 30px;
+	height: 30px;
+	background: url(../images/speedtest/close.svg) no-repeat center;
+	background-size: 50%;
+	background-color: #2E3B43;
+	border-radius: 50%;
+}
+
+.close_icon:hover{
+	background: url(../images/speedtest/close_hover.svg) no-repeat center;
+	background-size: 50%;
+	background-color: #2E3B43;
+}
+
+.detail_level_desc_div{
+	height: 40%;
+	border-bottom: #4C5B65 solid 1px;
+}
+
+.speed_level_rating{
+	color: #A4B7C3;
+	font-size: 12px;
+	margin-top: 20px;
+}
+
+.speed_level_text2{
+	font-size: 24px;
+}
+
+.level_desc_title{
+	font-size: 14px;
+	font-weight: bold;
+}
+
+.speed_level_desc_div{
+	width: 90%;
+	min-height: 75px;
+	border-bottom: #4C5B65 solid 1px;
+	float: left;
+}
+
+.speed_level_desc_icon{
+	width: 10%;
+	height: 18px;
+	float: left;
+	margin-top: 3px;
+	background-size: contain;
+}
+
+.speed_level_desc_level{
+	width: 14%;
+	height: 64px;
+	line-height: 110%;
+	margin-top: 3px;
+	float: left;
+	overflow-wrap: break-word;
+}
+
+.speed_level_desc_detail{
+	width: 86%;
+	float: left;
+}
+.speed_level_desc_title{
+	margin: 3px 0 3px 3px;
+	line-height: 110%;
+}
+
+.speed_level_desc_font{
+	color: #A4B7C3;
+	line-height: 120%;
+	margin-left: 3px;
+}
+
+.speed_level_mask{
+	position:fixed;
+	margin: auto;
+	top: 0;
+	left: 0;
+	width:100%;
+	height: 100%;
+	z-index:999;
+	background: rgba(19,24,32,0.80);
+	filter:alpha(opacity=94);  /*IE5、IE5.5、IE6、IE7*/
+	opacity: .94;  /*Opera9.0+、Firefox1.5+、Safari、Chrome*/
+	background-repeat: repeat;
+	display:none;
+	overflow:hidden;
+}
+
+.alert_notification{
+	width: 500px;
+	height: 200px;
+	background-color: #4C5B65;
+	opacity: 0.95;
+	border-radius: 4px;
+	position: fixed;
+	right: calc(50% - 250px);
+	top: 150px;
+	z-index: 1001;
+	box-shadow: 0 8px 10px 1px rgba(0,0,0,0.20) , 0 1px 4px 0 rgba(60,60,60,0.30);
+	display: none;
+}
+
+.alert_close{
+	width: 100%;
+	height: 40px;
+}
+
+.notice_title_container{
+	width: 100%;
+	height: 30px;
+	display: flex;
+	justify-content: flex-start;
+	align-items: flex-end;
+	margin-left: 30px;
+}
+
+.notice_icon{
+	width: 20px;
+	height: 20px;
+	background: url(../images/speedtest/alert_bell.svg) no-repeat center;
+	background-size: contain;
+}
+
+.alert_header{
+	height: 20px;
+	font-size: 20px;
+	color: #FFFFFF;
+	letter-spacing: 0.27px;
+	margin-left: 10px;
+}
+
+.alert_text_noImg{
+	width: 80%;
+	margin-left: 60px;
+	font-size: 14px;
+	color: #C9D1D7;
+}
+
+.alert_text_withImg{
+	width: 70%;
+	margin-left: 60px;
+	margin-right: 20px;
+	font-size: 14px;
+	color: #C9D1D7;
+}
+
+.alert_notification_text{
+	color:#FC0;
+	text-decoration: underline;
+}
+
+.alert_notification_close{
+	height: 26px;
+	width: 26px;
+	top: 10px;
+	left: 92%;
+	position: relative;
+}
+
+.wan_disconn{
+	width: 45px;
+	height: 45px;
+	margin-top: 10px;
+	background: url(../images/speedtest/wan_connect_trouble.svg) no-repeat center;
+	background-size: contain;
+	float: left;
+}
+
+.speedTest_btn_15{
+	font-size: 15px;
+}
+
+.speedTest_btn_18{
+	font-size: 18px;
+}
+
+.speedTest_btn_20{
+	font-size: 20px;
+}
+
+.speedTest_btn_25{
+	font-size: 25px;
+}
+
+.go_speed_container{
+	width: 98%;
+	margin-left: 2%;
+	height: auto;
+	display: flex;
+	justify-content: space-between;
+}
+
+.download_upload_container{
+	width: 60%;
+	display: flex;
+}
+
+.speedResult_container{
+	width:50%;
+	margin-top: 20px;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+.test_server_container{
+	width: 50%;
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+}
+
+.cur_server_container{
+	width: 100%;
+	height: 50px;
+	background: #33434B;
+	border-radius: 30px;
+	margin-top: 5px;
+	margin-right: 10px;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	font-size: 15px;
+	cursor: pointer;
+}
+
+.cur_server_container_click{
+	border-radius: 30px 30px 0 0;
+}
+
+.server_item_div{
+	width: 85%;
+	height: 100%;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+#outer_server_container{
+	width: 100%;
+	background: #33434B;
+	border-radius: 0 0 30px 30px;
+	margin-right: 10px;
+	display: none;
+	z-index: 9999;
+	padding-top: 10px;
+	padding-bottom: 10px;
+	font-size: 15px;
+}
+
+.server_list_container{
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+.server_list_close{
+	display: none;
+}
+
+.sub_server_container{
+	width: 85%;
+	height: 90%;
+	display: flex;
+}
+
+.server_brick_container{
+	width: 20px;
+	height: 30px;
+	display: flex;
+	justify-content: flex-start;
+	align-items: center;
+}
+
+.server_list_brick{
+	width: 12px;
+	height: 18px;
+	background: #0085FF;
+}
+
+.sub_server_title{
+	display: flex;
+	align-items: center;
+	font-weight: bolder;
+	width: 75%;
+	height: 30px;
+	font-size: 16px;
+}
+
+#server_list{
+	height: 450px;
+	overflow: auto;
+}
+
+.server_icon{
+	width: 40px;
+	height: 40px;
+	background: url(../images/speedtest/server_connect.svg) no-repeat center;
+	background-size: 100%;
+	background-color: transparent;
+	border-radius: 50%;
+}
+
+.cur_server_info{
+	display: flex;
+	flex-direction: column;
+	max-width: 70% ;
+}
+
+.host_div{
+	width: 100%;
+	border-top: 1px solid #4C5B65;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.server_info{
+	width: 75%;
+	height: 50px;
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-end;
+}
+
+.host_font{
+	font-size: 15px;
+}
+
+.location_font{
+	font-size: 13px;
+}
+
+.text_ellipsis{
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.server_list_check{
+	width: 32px;
+	height: 32px;
+	border-radius: 20%;
+	background: url(../images/speedtest/checked_24px_blue.svg) no-repeat center;
+	background-size: 50%;
+}
+
+.noscroll{
+	overflow: hidden;
+}
+
+::-webkit-scrollbar{
+	width: 8px;
+	border-radius: 4px;
+	background: #364357;
+}
+
+::-webkit-scrollbar-track {
+	-webkit-border-radius: 6px;
+	border-radius:6px;
+}
+
+::-webkit-scrollbar-thumb {
+	-webkit-border-radius: 4px;
+	border-radius: 4px;
+	background: #4B596F;
+}
+
+@media (max-width: 720px) {
+	.bg{
+		padding: 10px 0 0 0;
+	}
+
+	.container{
+		width: 98%;
+		margin: 0;
+	}
+
+	.function_title_pc{
+		display: none;
+	}
+
+	.function_title_m{
+		width: 97%;
+		display: flex;
+		flex-direction: column;
+	}
+
+	.split-Line{
+		display: none;
+	}
+
+	.info_title{
+		display: flex;
+		align-items: flex-end;
+		flex-grow: 1;
+	}
+
+	.info_close{
+		height: 40px;
+		display: flex;
+		justify-content: flex-end;
+		align-items: center;
+	}
+
+	.speedTest_div{
+		width: 100%;
+		border-left: 0px;
+		border-right: 0px;
+		background: #1E2A41;
+		margin-left: 0px;
+	}
+
+	.speedTest_btn{
+		width:	180px;
+		height:	180px;
+		line-height: 180px;
+	}
+
+	.function_desc{
+		height: 100%;
+		position: fixed;
+		border-radius: 15px;
+		opacity: 0.8;
+		background: #000000;
+		z-index: 9999;
+		display: none;
+	}
+
+	.content_div{
+		border-top: 1px solid #7F8FA4;
+		border-bottom: 1px solid #7F8FA4;
+	}
+
+	.info_content{
+		width: 97%;
+	}
+
+	.notice_content_m{
+		width: 96%;
+	}
+
+	.desc_div{
+		width: 100%;
+		margin-top: 10px;
+	}
+
+	.speedtest_logo{
+		width: 100%;
+		background-position: left;
+	}
+
+	.ookla_info{
+		margin: 5px 0 0 5px;
+	}
+
+	.speed_level_div{
+		margin: 10px 0;
+		width: 100%;
+		display: flex;
+		justify-content: center;
+	}
+
+	.level_ping_div{
+		height: auto;
+		background-color: transparent;
+		display: flex;
+		flex-direction: column-reverse;
+	}
+
+	.date_div{
+		width: 60%;
+		border-bottom: solid #293A5D 6px;
+	}
+
+	.go_speed_container{
+		flex-direction: column;
+		align-items: center;
+	}
+
+	.speedTest_btn_container{
+		width: 100%;
+	}
+
+	.download_upload_container{
+		width: 100%;
+		height: 106px;
+		justify-content: space-around;
+	}
+
+	.test_server_container{
+		width: 60%;
+	}
+
+	.speedResult_container{
+		margin-top: 0px;
+		height: 100%;
+	}
+
+	.test_result{
+		height: 60px;
+		line-height: 60px;
+	}
+
+	.ping_result_div{
+		height: 45px;
+		width: 100%;
+		border-radius: 30px 0 0 30px;
+		background: #2C3A56;
+		box-shadow: 0px 3px 4px rgba(0, 0, 0, 0.14),
+					0px 3px 3px rgba(0, 0, 0, 0.12),
+					0px 1px 8px rgba(0, 0, 0, 0.2);
+	}
+
+	.history_desc{
+		height: 45px;
+	}
+
+	#function_row{
+		display: none;
+	}
+
+	.history_container{
+		flex-wrap: wrap;
+	}
+
+	.time_speed_container{
+		width: 98%;
+		height: 50px;
+	}
+
+	.border_bottom{
+		border-bottom: #4C5B65 solid 1px;
+	}
+	.history_downup_font{
+		color: #FFFFFF;
+		font-size: 18px;
+	}
+
+	.ping_container{
+		width: 98%;
+		height: 50px;
+	}
+
+	.ping_result_title{
+		height: 75%;
+	}
+
+	.ping_result_unit{
+		height: 85%;
+	}
+
+	.history_ping_div{
+		height: 100%;
+		display: flex;
+		align-items: center;
+	}
+
+	.history_jitter_div{
+		height: 100%;
+		display: flex;
+		align-items: center;
+	}
+
+	.history_loss_div{
+		height: 100%;
+		display: flex;
+		align-items: center;
+	}
+
+	.ping_title{
+		display: block;
+		margin-right: 10px;
+	}
+
+	.ping_unit{
+		display: block;
+		margin-left: 10px;
+	}
+
+	.history_title{
+		display: none;
+	}
+
+	.history_title_m{
+		display: flex;
+	}
+
+	.history_value_font{
+		font-size: 18px;
+	}
+
+	.history_more{
+		display: block;
+	}
+
+	.ping_container{
+		display: none;
+	}
+
+	.speed_level_detail{
+		position: relative;
+		width: 100%;
+		height: 600px;
+		right: auto;
+		top: 0;
+	}
+
+	.last_test_container{
+		display: none;
+	}
+
+	.speed_level_container{
+		width: 100%;
+		border-radius: 5px;
+	}
+
+	.speed_level_close{
+		display: none;
+	}
+
+	.slideUp_close{
+		display: flex;
+	}
+
+	.normal_show{
+		display: none;
+	}
+
+	.mobile_show{
+		display: block;
+	}
+
+	.info_icon{
+		width: 30px;
+		height: 30px;
+		background: url(../images/speedtest/information.svg) no-repeat center;
+		background-size: 60%;
+		cursor: pointer;
+	}
+
+	.wan_notice_m{
+		height: 30px;
+		border: 1px solid #BD2E1E;
+		background: #1B2435;
+		border-radius: 15px;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		padding-left: 10px;
+		padding-right: 10px;
+		cursor: pointer;
+	}
+
+	.alert_notification{
+		width: auto;
+		height: 100%;
+		border-radius: 15px;
+		right: 0;
+		top: 100px;
+		opacity: 0.8;
+		background: #000000;
+	}
+
+	.alert_close{
+		width: 92%;
+	}
+
+	.notice_title_container{
+		width: 92%;
+		margin-left: 0px;
+	}
+
+	.notice_content_m{
+		width: 92%;
+	}
+
+	.alert_header{
+		color: #FC0;
+		margin-left: 0px;
+	}
+
+	.alert_text_withImg{
+		width: 100%;
+		margin: 10px 0 20px;
+	}
+
+	.alert_notification_text{
+		color:#50ABFF;
+	}
+
+	.cur_server_container{
+		background: #142036;
+	}
+
+	#outer_server_container{
+		width: 100%;
+		height: 100%;
+		background: #142036;
+		border-radius: 15px;
+		position: fixed;
+		top: 0;
+		left: 0;
+		z-index: 9999;
+		display: none;
+	}
+
+	.server_list_container{
+		display: flex;
+		height: 90%;
+		background: transparent;
+		opacity: 1;
+	}
+
+	.server_list_close{
+		height: 45px;
+		width: 97%;
+		display: flex;
+		justify-content: flex-end;
+		align-items: center;
+	}
+
+	#server_list{
+		height: 95%;
+	}
+
+	.up_arrow_container{
+		background: #2C3A56;
+	}
+
+	.close_icon{
+		background-color: #2C3A56;
+	}
+}
+
+@media (max-width: 480px) {
+	.time_container{
+		flex-direction: column;
+	}
+
+	.date_div{
+		width: 100%;
+	}
+
+	.time_div{
+		width: 100%;
+		text-align: right;
+	}
+
+	.test_result{
+		font-size: 40px;
+	}
+
+	.ping_result_div{
+		height: 70px;
+	}
+
+	.ping_result_sub_div{
+		height: 100%;
+		flex-direction: column;
+		align-items: flex-start;
+	}
+
+	.select_container{
+		margin-left: 0;
+	}
+
+	.history_ping_div{
+		flex-direction: column;
+		align-items: center;
+	}
+
+	.history_jitter_div{
+		flex-direction: column;
+		align-items: center;
+	}
+
+	.history_loss_div{
+		flex-direction: column;
+		align-items: center;
+	}
+
+	.ping_title{
+		height: 50%;
+	}
+
+	.ping_result_value{
+		margin-left: 0;
+	}
+
+	.ping_result_unit{
+		margin-left: 0;
+	}
+
+	.history_timestamp_div{
+		width: 30%;
+	}
+
+	.history_downup_font{
+		font-size: 16px;
+	}
+
+	.history_value_font{
+		font-size: 16px;
+	}
+
+	.speed_level_desc_font{
+		font-size: 12px;
+	}
+
+	.speed_level_range{
+		width: 90%;
+		min-height: 76px;
+		margin-left: 5px;
+	}
+
+	.speed_level_rainbow_bar{
+		height: 460px;
+	}
+
+	.server_item_div{
+		width: 98%;
+	}
+
+	.host_font{
+		font-size: 14px;
+	}
+
+	.fadeOut_close{
+		height: 30px;
+	}
+
+	.slideUp_close{
+		height: 40px;
+	}
+}
+
+@media (max-width: 320px) {
+	.bg{
+		width: 320px;
+	}
+
+	.speed_level_range{
+		min-height: 82px;
+	}
+
+	.speed_level_rainbow_bar{
+		height: 495px;
+	}
+
+	.host_font{
+		font-size: 12px;
+	}
+
+	.server_list_container{
+		height: 85%;
+	}
+
+	.fadeOut_close{
+		height: 20px;
+	}
+
+	.slideUp_close{
+		height: 30px;
+	}
+}
+
+@media (min-width: 1024px) {
+	.container{
+		width: 1024px;
+	}
+
+	.speed_level_detail{
+		width: 1024px;
+	}
+}
+.input_option{
+       height:25px;
+       background-color:#576D73;
+       border-top-width:1px;
+       border-bottom-width:1px;
+       border-color:#888;
+       color:#FFFFFF;
+       font-family: Lucida Console;
+       font-size:13px;
+       margin-bottom:8px;
+}

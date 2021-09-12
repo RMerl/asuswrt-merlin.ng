@@ -55,9 +55,9 @@ define(function(){
 				index: "menu_GuestNetwork",
 				tab: [
 					{url: "Guest_network.asp", tabName: "<#Guest_Network#>"},
-					{url: "Captive_Portal.asp", tabName: "Free Wi-Fi"},
+					{url: "Captive_Portal.asp", tabName: "Free WiFi"},
 					{url: "Captive_Portal_Advanced.asp", tabName: "<#Captive_Portal#>"},
-					{url: "Guest_network_fbwifi.asp", tabName: "Facebook Wi-Fi"},
+					{url: "Guest_network_fbwifi.asp", tabName: "Facebook WiFi"},
 					{url: "NULL", tabName: "__INHERIT__"}
 				]
 			},
@@ -65,16 +65,12 @@ define(function(){
 				menuName: "<#AiProtection_title#>",
 				index: "menu_AiProtection", 
 				tab: [
-					{url: "AiProtection_HomeSecurity.asp", tabName: "__HIDE__"},
 					{url: "AiProtection_HomeProtection.asp", tabName: "<#AiProtection_Home#>"},
 					{url: "AiProtection_MaliciousSitesBlocking.asp", tabName: "<#AiProtection_sites_blocking#>"},
 					{url: "AiProtection_IntrusionPreventionSystem.asp", tabName: "<#AiProtection_two-way_IPS#>"},
 					{url: "AiProtection_InfectedDevicePreventBlock.asp", tabName: "<#AiProtection_detection_blocking#>"},
-					{url: "AiProtection_WebProtector.asp", tabName: "<#Parental_Control#>"},
-					{url: "ParentalControl.asp", tabName: "__INHERIT__"},
 					{url: "AiProtection_AdBlock.asp", tabName: "Ad Blocking"},
 					{url: "AiProtection_Key_Guard.asp", tabName: "Key Guard"},
-					{url: "YandexDNS.asp", tabName: "<#YandexDNS#>"},
 					{url: "NULL", tabName: "__INHERIT__"}
 				] 
 			},
@@ -86,6 +82,7 @@ define(function(){
 					{url: "Main_TrafficMonitor_realtime.asp", tabName: "<#traffic_monitor#>"},
 					{url: "Main_TrafficMonitor_last24.asp", tabName: "__INHERIT__"},
 					{url: "Main_TrafficMonitor_daily.asp", tabName: "__INHERIT__"},
+					{url: "AdaptiveQoS_InternetSpeed.asp", tabName: "<#InternetSpeed#>"},
 					{url: "AdaptiveQoS_ROG.asp", tabName: "<table style='margin-top:-7px;'><tr><td><img src='/images/ROG_Logo.png' style='border:0px;width:32px;'></td><td>ROG First</td></tr></table>"}, 
 					{url: "Main_Spectrum_Content.asp", tabName: "<#Spectrum_title#>"},
 					{url: "AdaptiveQoS_TrafficLimiter.asp", tabName: "Traffic Limiter"},
@@ -93,11 +90,12 @@ define(function(){
 					{url: "Advanced_QOSUserRules_Content.asp", tabName: "__INHERIT__"},
 				] 
 			},
-			{		//for without bwdpi model, RT-N66U_C1
+			{
 				menuName: "<#Parental_Control#>",
 				index: "menu_ParentalControl", 
 				tab: [
-					{url: "ParentalControl.asp", tabName: "<#Parental_Control#>"},
+					{url: "AiProtection_WebProtector.asp", tabName: "<#AiProtection_filter#>"},
+					{url: "ParentalControl.asp", tabName: "<#Time_Scheduling#>"},
 					{url: "YandexDNS.asp", tabName: "<#YandexDNS#>"},
 					{url: "NULL", tabName: "__INHERIT__"}
 				] 
@@ -292,7 +290,9 @@ define(function(){
 					{url: "Advanced_OpenVPNClient_Content.asp", tabName: (vpn_fusion_support) ? "<#VPN_Fusion#>" : "<#vpnc_title#>"},
 					{url: "Advanced_VPNClient_Content.asp", tabName: "__INHERIT__"},
 					{url: "Advanced_TOR_Content.asp", tabName: "TOR"},
-					{url: "Advanced_Instant_Guard.asp", tabName: "Instant Guard"},/*untranslated*/
+					{url: "Advanced_Instant_Guard.asp", tabName: "<#Instant_Guard_title#>"},
+					{url: "Advanced_WireguardServer_Content.asp", tabName: "WireGuard Server"},/*untranslated*/
+					{url: "Advanced_WireguardClient_Content.asp", tabName: "WireGuard Client"},/*untranslated*/
 					{url: "NULL", tabName: "__INHERIT__"}
 				]
 			},		
@@ -379,7 +379,6 @@ define(function(){
 					retArray.push("menu_BandwidthMonitor");
 				}
 				else{
-					retArray.push("menu_ParentalControl");
 					retArray.push("menu_QoS");
 				}
 
@@ -439,7 +438,7 @@ define(function(){
 				if(!rrsut_support)
 					retArray.push("cloud_router_sync.asp");
 
-				if(!tencent_qmacc_support)
+				if(!tencent_qmacc_support || !isSwMode("rt"))
 					retArray.push("menu_TencentAcceleration");
 
 				if(!uu_support){
@@ -587,6 +586,13 @@ define(function(){
 							menuTree.list[i].tab.push({url: "Main_TrafficMonitor_daily.asp", tabName: "__INHERIT__"});
 							menuTree.list[i].tab.push({url: "NULL", tabName: "__INHERIT__"});
 						}
+						else if(menuTree.list[i].menuName == '<#menu5_3_2#>'){
+							var index = menuTree.list[i].tab.length-1;
+							menuTree.list[i].tab[index] = {url: "Main_TrafficMonitor_realtime.asp", tabName: "<#traffic_monitor#>"};
+							menuTree.list[i].tab.push({url: "Main_TrafficMonitor_last24.asp", tabName: "__INHERIT__"});
+							menuTree.list[i].tab.push({url: "Main_TrafficMonitor_daily.asp", tabName: "__INHERIT__"});
+							menuTree.list[i].tab.push({url: "NULL", tabName: "__INHERIT__"});
+						}
 					}
 					retArray.push("AdaptiveQoS_Bandwidth_Monitor.asp");
 				}
@@ -710,7 +716,8 @@ define(function(){
 				else{					
 					retArray.push("Advanced_WAN_Content.asp");
 					retArray.push("Advanced_VDSL_Content.asp");
-					retArray.push("Advanced_OperationMode_Content.asp");					
+					if(support_site_modelid != "DSL-AX82U")
+						retArray.push("Advanced_OperationMode_Content.asp");					
 					if(!spectrum_support)
 						retArray.push("Main_Spectrum_Content.asp");
 				}
@@ -795,6 +802,14 @@ define(function(){
 				if(!fileflex_support)
 					retArray.push("fileflex.asp");
 
+				if(!wireguard_support) {
+					retArray.push("Advanced_WireguardServer_Content.asp");
+					retArray.push("Advanced_WireguardClient_Content.asp");
+				}
+
+				if(SG_mode)
+					retArray.push("Advanced_WWPS_Content.asp");
+
 				/* Operation Mode */
 				if(isSwMode("re")){
 					retArray.push("GameBoost.asp");
@@ -810,6 +825,7 @@ define(function(){
 					retArray.push("Main_ConnStatus_Content.asp");
 					retArray.push("DNSFilter.asp");
 					retArray.push("Advanced_Smart_Connect.asp");
+					retArray.push("DNSFilter.asp");
 
 					if(userRSSI_support){
 						retArray.push("Advanced_ACL_Content.asp");
@@ -896,6 +912,8 @@ define(function(){
 
 				if (isSupport("is_ax5400_i1")) {
 					retArray.push("Advanced_ADSL_Content.asp");
+					retArray.push("Advanced_Feedback.asp");
+					retArray.push("Feedback_Info.asp");
 				}
 
 				return retArray;
@@ -903,11 +921,21 @@ define(function(){
 		}
 	}
 
-	if(isSupport("is_ax5400_i1") || odmpid == "RT-N66U_C1"){
-		menuTree.list.splice(8,2);
+	if(isSupport("is_ax5400_i1") || odmpid == "RT-N66U_C1" || (odmpid == "ZenWiFi_XD6" && !bwdpi_support)){
+		menuTree.list.filter(function(item, index, array){
+			if(item.index == "menu_BandwidthMonitor")
+				menuTree.list.splice(index, 1);
+		});
+		menuTree.list.filter(function(item, index, array){
+			if(item.index == "menu_TrafficAnalyzer")
+				menuTree.list.splice(index, 1);
+		});
 	}
 	else{
-		menuTree.list.splice(6,2);
+		menuTree.list.filter(function(item, index, array){
+			if(item.index == "menu_QoS")
+				menuTree.list.splice(index, 1);
+		});
 	}
 
 	return menuTree;

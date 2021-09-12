@@ -26,13 +26,13 @@
 
 /*
  * Automatically generated make config: don't edit
- * Date: Tue Jul 31 00:17:52 2018
+ * Date: Thu Nov  5 16:51:13 2020
  */
 #ifndef __TMCFG__AUTOCONF_OUTPUT_H_
 #define __TMCFG__AUTOCONF_OUTPUT_H_
 
 #define TMCFG_BRAND "asus"
-#define TMCFG_MODEL "map-ac2200"
+#define TMCFG_MODEL "rt-ac95u"
 
 /*
  * Target device information
@@ -47,7 +47,7 @@
 #define TMCFG_ARCH_POWERPC 0 // n
 #define TMCFG_CPU_BIG_ENDIAN 0 // n
 #define TMCFG_CPU_LITTLE_ENDIAN 1 // y
-#define TMCFG_KERN_DIR "/opt/ASUS/asusmap_AC2200_GPL_382_11600/release/src-qca-dakota/linux/linux-3.14.x/"
+#define TMCFG_KERN_DIR "/opt/ASUS/asuswrt_AC95U_GPL_386_22735/release/src-qca-dakota/linux/linux-3.14.x"
 #define TMCFG_KERN_ARCH "arm"
 #define TMCFG_CPU_32BITS 1 // y
 #define TMCFG_CPU_64BITS 0 // n
@@ -60,7 +60,7 @@
 /*
  * Target device toolchain (cross utilities)
  */
-#define TMCFG_TC_PFX "/opt/ASUS/toolchains/asus-toolchain-arm-map_ac1300/bin/arm-openwrt-linux-uclibcgnueabi-"
+#define TMCFG_TC_PFX "/opt/ASUS/toolchains/openwrt-gcc520.arm/bin/arm-openwrt-linux-uclibcgnueabi-"
 #define TMCFG_TC_BIT_FIELD_ORDER_LITTLE_ENDIAN 1 // y
 #define TMCFG_TC_BIT_FIELD_ORDER_BIG_ENDIAN 0 // n
 #define TMCFG_TC_CC "$(TMCFG_TC_PFX)gcc"
@@ -95,7 +95,7 @@
  */
 #define TMCFG_E_EXTRA_CFLAGS ""
 #define TMCFG_E_KMOD_NAME "tdts"
-#define TMCFG_E_KMOD_IOCTL_DEV_NAME "detector"
+#define TMCFG_E_KMOD_IOCTL_DEV_NAME "idp"
 #define TMCFG_E_KMOD_IOCTL_DEV_MAJ 190
 #define TMCFG_E_KMOD_IOCTL_DEV_MIN 0
 #define TMCFG_E_KMOD_IOCTL_DEV_MAGIC 190
@@ -239,7 +239,7 @@
  * Kernel
  */
 #define TMCFG_APP_K_EXTRA_CFLAGS ""
-#define TMCFG_APP_K_TDTS_NFFW 0 // n
+#define TMCFG_APP_K_TDTS_NFFW 1 // y
 #define TMCFG_APP_K_TDTS_NFFW_INTERNAL 0 // n
 #define TMCFG_APP_K_TEMPLATE 0 // n
 
@@ -250,7 +250,7 @@
 /*
  * Userspace toolchain
  */
-#define TMCFG_APP_U_TC_PFX "/opt/ASUS/toolchains/asus-toolchain-arm-map_ac1300/bin/arm-openwrt-linux-uclibcgnueabi-"
+#define TMCFG_APP_U_TC_PFX "$(TMCFG_TC_PFX)"
 #define TMCFG_APP_U_TC_CC "$(TMCFG_APP_U_TC_PFX)gcc"
 #define TMCFG_APP_U_TC_AR "$(TMCFG_APP_U_TC_PFX)ar"
 #define TMCFG_APP_U_TC_LD "$(TMCFG_APP_U_TC_PFX)ld"

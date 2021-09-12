@@ -471,6 +471,7 @@ int rad_vp2attr(RADIUS_PACKET const *packet,
 /* valuepair.c */
 VALUE_PAIR	*pairalloc(TALLOC_CTX *ctx, DICT_ATTR const *da);
 VALUE_PAIR	*paircreate(TALLOC_CTX *ctx, unsigned int attr, unsigned int vendor);
+VALUE_PAIR	*fr_pair_afrom_num(TALLOC_CTX *ctx, unsigned int attr, unsigned int vendor);
 int		pair2unknown(VALUE_PAIR *vp);
 void		pairfree(VALUE_PAIR **);
 VALUE_PAIR	*pairfind(VALUE_PAIR *, unsigned int attr, unsigned int vendor, int8_t tag);
@@ -486,6 +487,7 @@ void		pairinsert(vp_cursor_t *cursor, VALUE_PAIR *vp);
 VALUE_PAIR	*pairremove(vp_cursor_t *cursor);
 void		pairdelete(VALUE_PAIR **, unsigned int attr, unsigned int vendor, int8_t tag);
 void		pairadd(VALUE_PAIR **, VALUE_PAIR *);
+void		fr_pair_add(VALUE_PAIR **, VALUE_PAIR *);
 void		pairreplace(VALUE_PAIR **first, VALUE_PAIR *add);
 int		paircmp(VALUE_PAIR *check, VALUE_PAIR *data);
 int		paircmp_op(VALUE_PAIR const *one, FR_TOKEN op, VALUE_PAIR const *two);
@@ -497,6 +499,7 @@ VALUE_PAIR	*paircopy(TALLOC_CTX *ctx, VALUE_PAIR *from);
 VALUE_PAIR	*paircopy2(TALLOC_CTX *ctx, VALUE_PAIR *from, unsigned int attr, unsigned int vendor, int8_t tag);
 void		pairmemcpy(VALUE_PAIR *vp, uint8_t const * src, size_t len);
 void		pairmemsteal(VALUE_PAIR *vp, uint8_t *src);
+void		fr_pair_value_memsteal(VALUE_PAIR *vp, uint8_t const *src);
 void		pairstrsteal(VALUE_PAIR *vp, char *src);
 void		pairstrcpy(VALUE_PAIR *vp, char const * src);
 void		pairsprintf(VALUE_PAIR *vp, char const * fmt, ...)

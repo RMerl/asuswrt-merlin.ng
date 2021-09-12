@@ -111,6 +111,9 @@ var webs_state_info;
 var wan_unit_orig = '<% nvram_get("wan_unit"); %>';
 var fileflex_text = "<#FileFlex_desc0#>";
 
+var faq_href1 = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=141";
+var faq_href2 = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=142";
+
 function initial(){
 	default_apps_array = [["AiDisk", "aidisk.asp", "<#AiDiskWelcome_desp1#>", "Aidisk_png", ""],
 			["<#Servers_Center#>", "mediaserver.asp", "<#UPnPMediaServer_Help#>", "server_png", ""],
@@ -174,10 +177,8 @@ function initial(){
 	}
 
 	setTimeout(function(){
-		//	https://www.asus.com/support/FAQ/114001/
-		httpApi.faqURL("114001", function(url){document.getElementById("faq").href=url;});
-		//	https://www.asus.com/support/FAQ/1016385/
-		httpApi.faqURL("1016385", function(url){document.getElementById("faq2").href=url;});
+		document.getElementById("faq").href=faq_href1;
+		document.getElementById("faq2").href=faq_href2;
 	}, 1000);
 }
 

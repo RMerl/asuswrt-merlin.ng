@@ -1103,7 +1103,7 @@ function clean_macerr(){
 							<table width="710px" border="0">
 								<tr>
 									<td>
-										<div style="float:left; margin-left:20px; margin-top:-10px;"><img src="images/New_ui/game.svg" style="width:77px; height:77px;"></div>
+										<div style="float:left; margin-left:20px; margin-top:-10px;"><img src="images/New_ui/game.svg" style="width:77px; height:77px;background-size: 100%;"></div>
 										<div style="color:#EBE8E8; font-size:26px; font-weight:bold; font-family:calibri; float:left; margin-top:12px; margin-left:6px;"><#Game_Boost_management#></div>
 									</td>
 									<td align="right">

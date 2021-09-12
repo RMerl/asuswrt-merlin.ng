@@ -1,0 +1,470 @@
+﻿body {         
+	margin-left: 0px;
+	/*margin-top: 15px;*/
+	background-color:transparent; /*#AAD1E0*/
+}
+
+fieldset{
+	margin-left:20px;
+	margin-right:20px;	
+	margin-top:10px;
+}
+legend {
+	color:#FFFFFF;	
+	font-weight:bold;
+	font-size:14px;
+}
+.banner_1{
+	height:100px;
+}
+
+.LevelQIS {  
+	margin-left: 0px;
+	margin-top: 5px;
+	margin-top: -15px \9;
+}
+
+.qis_title{
+	background-image: url(/images/New_ui/title_bg.png);	/*0121*/
+	width:998px;
+	background-repeat:no-repeat;
+}
+
+.qis_title{
+	width:660px;
+	height:19px;
+	float:left;
+	text-align:left;
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: 14px;
+	font-weight: bold;
+	border-bottom:1px solid #CCC;
+	line-height:19px;
+	color:#FFFFFF;	/*1023*/
+}
+
+.QISmain{
+	width:730px;
+	font-size:14px;
+	z-index:400;
+	position:relative;
+}
+
+/*   0831 added for setting Form table in QIS iframe*/
+.QISform{
+	width:600px;
+	font-size:13px;
+	color:#FFFFFF;
+}
+
+.QISform thead{
+	font-size:15px;
+	line-height:20px;
+	color:#FFFFFF;	
+}
+
+.QISform th{
+	padding-left:10px;
+	font-size:14px;
+	font-weight: bolder;
+	color: #FFFFFF;
+	text-align:left; 
+}
+               
+.QISform li{	
+	margin-top:10px;
+}
+
+.QISform_finish{
+	width:600px;
+	font-size:13px;
+	color:#FFFFFF;
+}
+.QISform_finish thead{
+	font-size:15px;
+	line-height:20px;
+	color:#FFFFFF;	
+}
+.QISform_finish th{
+	padding-left:10px;
+	font-size:13px;
+	font-weight:border;
+	color: #FFFFFF;
+	text-align:left; 
+}              
+.QISform_finish li{	
+	margin-top:10px;
+}
+.QISform_finish td span{	
+	color: #FFF;	
+}
+
+.QISform_wireless{
+	width:600px;
+	font-size:12px;
+	color:#FFFFFF;
+}
+
+.QISform_wireless thead{
+	font-size:15px;
+	line-height:20px;
+	color:#FFFFFF;	
+}
+
+.QISform_wireless th{
+	padding-left:10px;
+	font-size:12px;
+	font-weight:bolder;
+	color: #FFFFFF;
+	text-align:left; 
+}
+               
+.QISform_wireless li{	
+	margin-top:10px;
+}
+
+.QISform2{
+	width:600px;
+	font-size:12px;
+	color:#FFFFFF;
+	line-height:110%;
+}
+
+.QISform2 thead{
+	font-size:13px;
+	line-height:20px;
+}
+
+.QISform2 th{
+	padding-left:10px;
+	font-size:12px;
+	font-weight:bolder;
+	color: #FFFFFF;
+	width:70%;
+	text-align:right; 
+	font-size:13px;
+	line-height:20px;
+}
+
+.QISalert{	
+	font-family:Verdana, Arial, Helvetica, sans-serif;
+	font-size:12px;
+}
+
+.description_down{
+	font-size:14px;
+	margin-left:10px;
+	padding-left:5px;
+	font-weight:bold;
+	line-height:140%;	
+	color:#FFFFFF;
+	font-family:Arial, Helvetica, sans-serif;
+}
+
+.hackiframe{	/* iframe for Hack IE 6.0 to avoid select menu over DIV layer. */
+	display:none;/*sorry for IE5*/
+	display/**/:block;/*sorry for IE5*/
+	position:absolute;/*must have*/
+	top:0;/*must have*/
+	left:0;/*must have*/
+	z-index:-1;/*must have*/
+	filter:mask();/*must have*/
+	width:3000px;/*must have for any big value*/
+	height:3000px/*must have for any big value*/;
+}
+.auto_way{
+ border:2px solid #CE1E1E;
+ background-color:#FFFFCC;
+}
+.navtext {
+	font-size:8pt; 
+	border: 1px double #999;
+	background-color: #FFC; 
+	color: #003366;
+	text-align:left;
+	width:auto;
+	padding:3px;
+	line-height:150%;
+}
+.mode_desc{
+	font-family:Segoe UI, Arial, sans-serif;
+	font-size:8pt;
+	color:#333;
+	font-family:Verdana, Arial, Helvetica, sans-serif;
+	line-height:130%;
+	padding:2px;
+}
+
+.lefttabhead {
+	margin-top:12px;
+	width:185px;
+	text-align:center;
+	font-family:Verdana;
+	color:#ffffff;
+	font-weight:bold;
+	padding-top:0px;
+	position:relative;
+	background-color:rgba(207,10,44,.5);
+	border-top-left-radius:8px;
+	border-top-right-radius:8px;
+	height:33px;
+}
+
+.lefttabmidfocus {
+	/*margin-top: -2px;*/
+	width:192px;
+	height: 54px;
+	font-family:Verdana;
+	font-size : 12px;
+	color:#ffffff;
+	padding-left:0px;
+	position:relative;
+	background: url('/images/New_ui/btn_hover.png') no-repeat;
+}
+
+.lefttabmid {
+	width:188px;
+	height:48px;
+	font-family:Verdana;
+	font-size:12px;
+	text-align:left;
+	position:relative;
+	margin-top: -2px;
+	background:url('/images/New_ui/btn_underline.png') no-repeat;
+}
+@-moz-document url-prefix(){
+	.lefttabmid{
+		border: 1px solid #6B7071;
+	}
+	
+	.lefttabmidfocus{
+		border:1px solid #8AA6BE;
+	}
+	
+	.lefttabhead{
+		border: 1px solid #6B7071;
+	}
+	
+}
+/* show loading */ 
+.popup_bg{
+	position:absolute;	
+	margin: auto;
+	top: 0;
+	left: 0;
+	width:1003px;
+	height:303px;
+	z-index:99;
+	background-color: #444F53;
+	filter:alpha(opacity=94);  /*IE5、IE5.5、IE6、IE7*/
+	opacity: .94;  /*Opera9.0+、Firefox1.5+、Safari、Chrome*/
+	background-repeat: repeat;
+	visibility:hidden;
+	overflow:hidden;
+	font-family:Arial, Helvetica, sans-serif;
+}
+.loadingBlock{
+	filter:alpha(opacity=90);
+	opacity:.90;
+	-webkit-border-radius: 10px;
+	-moz-border-radius: 10px;
+	border-radius: 10px;
+	behavior: url(/PIE.htc);
+	border-radius: 10px 10px 10px 10px;
+	border: 0px;
+	margin-top:200px;
+	width:400px;
+	font-size:20px;
+	color:#FFFFFF;
+	font-weight:bolder;
+	background-color:#000000;
+	font-family:Arial, Helvetica, sans-serif;
+}
+
+.dr_sweet_advise{
+	filter:alpha(opacity=90);
+	opacity:.90;
+	-webkit-border-radius: 10px;
+	-moz-border-radius: 10px;
+	border-radius: 10px;
+	behavior: url(/PIE.htc);
+	border-radius: 10px 10px 10px 10px;
+	border: 0px;
+	margin-top:200px;
+	width:500px;
+	font-size:20px;
+	color:#FFFFFF;
+	background-color:#000000;
+	font-family:Arial, Helvetica, sans-serif;
+}
+
+.IPaddr_qis{
+	font-size:12px;
+	font-weight:normal;
+	font-family:Arial, Helvetica, sans-serif;
+	color:#000000;
+	border: 2px inset #F4F4F4;
+	background-color:#4D595D;
+	width:170px;
+	*width:175px;
+	display: inline-block;
+}
+.IPaddr_qis input{
+	border:0px solid #CCC;
+	font-size:12px;
+	font-family:Arial, Helvetica, sans-serif;
+	width:25px;
+	text-align:center;
+	margin:0px auto;
+	ime-mode:disabled;
+	background-color:#4D595D;
+}
+
+.QISGeneralFont{
+	font-size: 14px;
+	font-family:Segoe UI, Arial, sans-serif;
+	margin-left:70px;
+	*margin-left:90px;
+	margin-right:20px;
+	color:white;
+	LINE-HEIGHT:18px;
+}
+
+.QISWireless_DescFont{
+	font-size: 12px;
+	width:590px;
+	font-family:Segoe UI, Arial, sans-serif;
+	margin-left:45px;
+	*margin-left:65px;
+	color:white;
+	LINE-HEIGHT:18px;
+}
+
+.QISWireless_DescSetting{
+	font-style:normal;
+	font-size: 13px;
+	font-weight:bold;
+	margin-left:20px;
+	*margin-left:40px;
+	margin-top:5px;
+	color:white;
+}
+
+.QISWireless_DescSecurity{
+	width:160px;
+	padding-top:12px;
+}
+
+.QISSmartCon_table{
+	width:630px;
+	margin-left:25px;
+}
+
+.QISSmartCon_desc{
+	 font-style:italic;
+	 font-size:15px;
+	 padding:5px 0px 0px 7px;
+}
+
+.contentM_qis{
+	position:relative;
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+	border-radius: 5px;
+	*width:105%;
+	*margin-left:-45px;
+	background-color:rgba(1,1,1,.4);
+}
+
+._contentM_qis{
+	margin-top: -160px;
+	width: 99%;
+	height: 540px;
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+	border-radius: 5px;
+}
+
+.QIS_survey{
+	text-align:left;
+	color:#FFFFFF;
+	height:30px;
+	font-family: Verdana;
+	font-size:12px;
+	/*background-color:#1f2d35;*/
+	background-color:#2B373B;
+	border-collapse: collapse;
+}
+
+.QIS_survey th{
+	height:30px;
+	border: 1px solid #334044;
+	background-color:#151E21;
+}
+
+.QIS_survey td{
+	color:#7EA2AE;
+	border: 1px solid #334044;
+}
+.test_css{	
+	font-size:16px;
+	font-weight:bolder;
+	color:#FFFFFF;
+}
+.QISTutorFont_admin_pass{
+	font-family: Verdana, Arial, sans-serif;
+	line-height: 20px;
+}
+#radio_1{
+	background: url(../images/survey/radio_status.png);
+	background-position: -0px -83px; width: 28px; height: 20px;
+}
+#radio_2{
+	background: url(../images/survey/radio_status.png);
+	background-position: -0px -103px; width: 28px; height: 20px;
+}	
+#radio_3{
+	background: url(../images/survey/radio_status.png);
+	background-position: -0px -125px; width: 28px; height: 20px;
+}	
+#radio_4{
+	background: url(../images/survey/radio_status.png);
+	background-position: -0px -147px; width: 28px; height: 20px;
+}
+.cfg_val{
+	font-size:14px;
+	font-weight:bolder;
+	color:#FC0;
+}
+.qis_button{
+	background: url('/images/New_ui/QIS_btn.png') no-repeat;
+	position: absolute;
+	bottom: 70px;
+	right: 50px;
+	text-align: center;
+	width: 150px;
+	height: 36px;
+	line-height: 36px;
+	font-size: 16px;
+	border-radius: 4px;
+	cursor: pointer;
+}
+
+.VR_bg{
+	background:url('/images/New_ui/QIS_bg.png') no-repeat center center fixed,url('/images/rog_feature_VR.png') no-repeat center center fixed,url('/images/New_ui/QIS_bg-black.png') no-repeat center center fixed;
+}
+.dashboard_bg{
+	background:url('/images/New_ui/QIS_bg.png') no-repeat center center fixed,url('/images/rog_feature_dashboard.png') no-repeat center center fixed,url('/images/New_ui/QIS_bg-black.png') no-repeat center center fixed;
+}
+.gameRadar_bg{
+	background:url('/images/New_ui/QIS_bg.png') no-repeat center center fixed,url('/images/rog_feature_radar.png') no-repeat center center fixed,url('/images/New_ui/QIS_bg-black.png') no-repeat center center fixed;
+}
+.gameWiFi_bg{
+	background:url('/images/New_ui/QIS_bg.png') no-repeat center center fixed,url('/images/rog_feature_gaming_wifi.png') no-repeat center center fixed,url('/images/New_ui/QIS_bg-black.png') no-repeat center center fixed;	
+}
+.gameBoost_bg{
+	background:url('/images/New_ui/QIS_bg.png') no-repeat center center fixed,url('/images/rog_feature_boost.png') no-repeat center center fixed,url('/images/New_ui/QIS_bg-black.png') no-repeat center center fixed;	
+}
+.gameProtection_bg{
+	background:url('/images/New_ui/QIS_bg.png') no-repeat center center fixed,url('/images/rog_feature_protection.png') no-repeat center center fixed,url('/images/New_ui/QIS_bg-black.png') no-repeat center center fixed;		
+}

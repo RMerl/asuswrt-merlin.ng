@@ -44,6 +44,7 @@
  * for more information about what the device table is.
  */
 
+#include <sys/sysmacros.h>
 #include "mkfs.ubifs.h"
 #include "hashtable/hashtable.h"
 #include "hashtable/hashtable_itr.h"

@@ -15,6 +15,10 @@
 
 include ../.config
 CFLAGS  += -I. -I$(TOP)/shared  -I$(SRCBASE)/include -Wall
+ifeq ($(RTCONFIG_AMAS),y)
+CFLAGS += -I$(TOP)/openssl/include
+CFLAGS += -I$(TOP)/json-c
+endif
 CFLAGS += $(PRIVATE_EXTRACFLAGS)
 ifeq ($(RTCONFIG_BCMWL6),y)
 CFLAGS  += -I$(SRCBASE)/shared/bcmwifi/include
@@ -28,6 +32,19 @@ endif
 ifeq ($(RTCONFIG_BCMARM),y)
 CFLAGS += -I$(SRCBASE)/common/include
 LDFLAGS += -lgcc_s
+endif
+
+ifeq ($(RTCONFIG_AMAS),y)
+LDFLAGS += -L$(TOP)/openssl -lcrypto -lssl
+LDFLAGS += -L$(TOP)/json-c/.libs -ljson-c
+ifeq ($(RTCONFIG_LLDPD_1_0_11),y)
+LLDPD_DIR = $(TOP)/lldpd-1.0.11
+else
+LLDPD_DIR = $(TOP)/lldpd-0.9.8
+endif
+CFLAGS += -I$(TOP)/amas-utils -I$(TOP)/shared/sysdeps/amas
+LDFLAGS += -L$(TOP)/amas-utils -lamas-utils
+LDFLAGS += -L$(LLDPD_DIR)/src/lib/.libs -llldpctl -L$(STAGEDIR)/usr/lib/ -ljansson
 endif
 
 ifeq ($(RTCONFIG_QTN),y)
@@ -56,5 +73,8 @@ install: all
 
 infosvr: ./infosvr.o ./common.o ./packet.o ./storage.o
 	$(CC) -o $@ $^ $(LDFLAGS) $(CFLAGS)
-	$(STRIP) $@
 
+ifneq ($(wildcard ./prebuild/interface.o),)
+interface.o:
+	@-cp -f ./prebuild/interface.o .
+endif

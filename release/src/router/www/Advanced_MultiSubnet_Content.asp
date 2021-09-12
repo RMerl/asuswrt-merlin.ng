@@ -195,7 +195,7 @@ function show_subnet_list(){
 		code += '<td width="'+wid[2]+'%">'+ ip_range[0] +'</td>';
 		code += '<td width="'+wid[3]+'%">'+ ip_range[1] +'</td>';
 		code += '<td width="'+wid[4]+'%">'+ chilli_lease +'</td>';
-		code += '<td colspan = "2"> Free Wi-Fi </td>';
+		code += '<td colspan = "2"> Free WiFi </td>';
 		code += '</tr>';
 	}
 
@@ -549,7 +549,7 @@ function validSubnetForm() {
 	if(cp_freewifi_support){
 		var ipConflict_chilli = checkIPConflict("", lanIPAddr, lanNetMask, chilli_gateway, chilli_netmask);
 		if(ipConflict_chilli.state) {
-			alertMsg("Free Wi-Fi", ipConflict_chilli.ipAddr, ipConflict_chilli.netLegalRangeStart, ipConflict_chilli.netLegalRangeEnd);
+			alertMsg("Free WiFi", ipConflict_chilli.ipAddr, ipConflict_chilli.netLegalRangeStart, ipConflict_chilli.netLegalRangeEnd);
 			return false;
 		}
 	}

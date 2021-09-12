@@ -1,8 +1,0 @@
-#
-# Add the objects in cms-dm-bcm-filters.xml as the
-# last children objects of Device.WiFi.
-#
-# See 0000-README.txt for more details
-#
-
-addObjAboveObj cms-dm-bcm-filters.xml Device.WiFi.

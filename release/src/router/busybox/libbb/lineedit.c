@@ -632,6 +632,18 @@ static void free_tab_completion_data(void)
 
 static void add_match(char *matched)
 {
+	unsigned char *p = (unsigned char*)matched;
+	while (*p) {
+		/* ESC attack fix: drop any string with control chars */
+		if (*p < ' '
+		 || (!ENABLE_UNICODE_SUPPORT && *p >= 0x7f)
+		 || (ENABLE_UNICODE_SUPPORT && *p == 0x7f)
+		) {
+			free(matched);
+			return;
+		}
+		p++;
+	}
 	matches = xrealloc_vector(matches, 4, num_matches);
 	matches[num_matches] = matched;
 	num_matches++;

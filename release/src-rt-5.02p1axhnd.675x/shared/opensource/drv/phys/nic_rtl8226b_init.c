@@ -649,7 +649,6 @@ Rtl8226b_phy_init(
                 goto exit;
         }
 		
-        printk("[%s-%d]: GPIO(29): %d 0: BCM54991, 1: RTL8226\n",__FUNCTION__,__LINE__, bcm_gpio_get_data(29));
         printk("[%s-%d]: Set RTL8226B to SERDES %d mode \n",__FUNCTION__,__LINE__, SerdesMode);
         status = MmdPhyWrite(hDevice, MMD_VEND1, 0x75f3, 0x0);
         if (status != SUCCESS)
@@ -734,6 +733,12 @@ Rtl8226b_phy_init(
         if (status != SUCCESS)
             goto exit;
     }
+
+    // MMD 31.0xA430[15:0] = 0x019E
+	printk("[%s-%d]: RTL8226B ignore broadcast\n",__FUNCTION__,__LINE__);
+    status = MmdPhyWrite(hDevice, MMD_VEND2, 0xA430, 0x019E);
+    if (status != SUCCESS)
+        goto exit;
 
 exit:
     return status;

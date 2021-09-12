@@ -26,17 +26,15 @@
 #include "web-qtn.h"
 #endif
 #ifdef HND_ROUTER
-#include <linux/mii.h>
-//#include "bcmnet.h"
-//#include "bcm/bcmswapitypes.h"
-#include "ethctl.h"
-#include "ethswctl.h"
-#include "ethswctl_api.h"
-#include "bcm/bcmswapistat.h"
-#include "boardparms.h"
-#include <asm/byteorder.h>
 #include <board.h>
 #endif
+
+typedef enum cmds_e {
+        REGACCESS,
+        PMDIOACCESS,
+} ecmd_t;
+
+extern uint64_t hnd_ethswctl(ecmd_t act, unsigned int val, int len, int wr, unsigned long long regdata);
 
 uint32_t gpio_dir(uint32_t gpio, int dir)
 {
@@ -75,20 +73,154 @@ typedef struct {
 	char config3_val[3][20];
 }bcm_cled_rgb_led_s;
 
+#if defined(RPAX56) || defined(RPAX58) || defined(ET12) || defined(XT12)
+typedef struct {
+	char config0_path[40];
+	char config0_val[20];
+	char config1_path[40];
+	char config1_val[20];
+	char config2_path[40];
+	char config2_val[20];
+	char config3_path[40];
+	char config3_val[20];
+}bcm_cled_x_led_s;
+#endif
+
 int read_cled_value(bcm_cled_rgb_led_s *cur_led)
 {
 	int i = 0;
+#if defined(BCM4912) || defined(RPAX58)
+	FILE *fp = NULL;
+	char *ptr, *saveptr, *val;
+	char cmd[64], buf[128];
+	int found;
 
+	for(i = 0; i < 3; i++)	{
+		snprintf(cmd, sizeof(cmd), "dw %s 4", cur_led->config0_path[i]);
+		fp = popen(cmd, "r");
+		if (fp) {
+			memset(buf, 0, sizeof(buf));
+			while(fgets(buf, sizeof(buf), fp) != NULL) {
+				if((ptr = strchr(buf, ':')) != NULL) {
+					found = 1;
+					break;
+				}
+			}
+			pclose(fp);
+		}
+
+		if (found) {
+			ptr++;
+			//config0
+			if (!(val = strtok_r(ptr, " ", &saveptr)))
+			    return -1;
+			if(strlen(val)) {
+				 snprintf(cur_led->config0_val[i], sizeof(cur_led->config0_val[i]), "%s", val);
+			}
+			//config1
+			if (!(val = strtok_r(NULL, " ", &saveptr)))
+				return -1;
+			if(strlen(val)) {
+				 snprintf(cur_led->config1_val[i], sizeof(cur_led->config1_val[i]), "%s", val);
+			}
+			//config2
+			if (!(val = strtok_r(NULL, " ", &saveptr)))
+				return -1;
+			if(strlen(val)) {
+				 snprintf(cur_led->config2_val[i], sizeof(cur_led->config2_val[i]), "%s", val);
+			}
+			//config3
+			if (!(val = strtok_r(NULL, " ", &saveptr)))
+				return -1;
+			if(strlen(val)) {
+				 snprintf(cur_led->config3_val[i], sizeof(cur_led->config3_val[i]), "%s", val);
+			}
+		}
+	}
+#else
 	for(i = 0; i < 3; i++){
 		f_read_string(cur_led->config0_path[i], cur_led->config0_val[i], sizeof(cur_led->config0_val[i]));
 		f_read_string(cur_led->config1_path[i], cur_led->config1_val[i], sizeof(cur_led->config1_val[i]));
 		f_read_string(cur_led->config2_path[i], cur_led->config2_val[i], sizeof(cur_led->config2_val[i]));
 		f_read_string(cur_led->config3_path[i], cur_led->config3_val[i], sizeof(cur_led->config3_val[i]));
 	}
+#endif
 }
+
+#if defined(RPAX56) || defined(RPAX58) || defined(ET12) || defined(XT12)
+int read_cled_value_x(bcm_cled_x_led_s *cur_led)
+{
+#if defined(BCM4912) || defined(RPAX58)
+	FILE *fp = NULL;
+	char *ptr, *saveptr, *val;
+	char cmd[64], buf[128];
+	int found;
+
+	snprintf(cmd, sizeof(cmd), "dw %s 4", cur_led->config0_path);
+
+	fp = popen(cmd, "r");
+	if (fp) {
+		memset(buf, 0, sizeof(buf));
+		while(fgets(buf, sizeof(buf), fp) != NULL) {
+			if((ptr = strchr(buf, ':')) != NULL) {
+				found = 1;
+				break;
+			}
+		}
+		pclose(fp);
+	}
+
+	if (found) {
+		ptr++;
+		//config0
+		if (!(val = strtok_r(ptr, " ", &saveptr)))
+		    return -1;
+		if(strlen(val)) {
+			 snprintf(cur_led->config0_val, sizeof(cur_led->config0_val), "%s", val);
+		}
+		//config1
+		if (!(val = strtok_r(NULL, " ", &saveptr)))
+			return -1;
+		if(strlen(val)) {
+			 snprintf(cur_led->config1_val, sizeof(cur_led->config1_val), "%s", val);
+		}
+		//config2
+		if (!(val = strtok_r(NULL, " ", &saveptr)))
+			return -1;
+		if(strlen(val)) {
+			 snprintf(cur_led->config2_val, sizeof(cur_led->config2_val), "%s", val);
+		}
+		//config3
+		if (!(val = strtok_r(NULL, " ", &saveptr)))
+			return -1;
+		if(strlen(val)) {
+			 snprintf(cur_led->config3_val, sizeof(cur_led->config3_val), "%s", val);
+		}
+	}
+#else
+	f_read_string(cur_led->config0_path, cur_led->config0_val, sizeof(cur_led->config0_val));
+	f_read_string(cur_led->config1_path, cur_led->config1_val, sizeof(cur_led->config1_val));
+	f_read_string(cur_led->config2_path, cur_led->config2_val, sizeof(cur_led->config2_val));
+	f_read_string(cur_led->config3_path, cur_led->config3_val, sizeof(cur_led->config3_val));
+#endif
+}
+
+#endif
+
 
 int is_cled_value_correct(bcm_cled_rgb_led_s *cur_led, int rgb_id, char *val0, char *val1, char *val2, char *val3)
 {
+#if defined(BCM4912) || defined(RPAX58)
+	if(strtoul(cur_led->config0_val[rgb_id], NULL, 16) != strtoul(val0, NULL, 16) ||
+	   strtoul(cur_led->config1_val[rgb_id], NULL, 16) != strtoul(val1, NULL, 16) ||
+	   strtoul(cur_led->config2_val[rgb_id], NULL, 16) != strtoul(val2, NULL, 16) ||
+	   strtoul(cur_led->config3_val[rgb_id], NULL, 16) != strtoul(val3, NULL, 16)) {
+		return 0;
+	}
+	else {
+		return 1;
+	}
+#else
 	if(strcmp(cur_led->config0_val[rgb_id], val0) != 0 ||
 		strcmp(cur_led->config1_val[rgb_id], val1) != 0 ||
 		strcmp(cur_led->config2_val[rgb_id], val2) != 0 ||
@@ -97,164 +229,435 @@ int is_cled_value_correct(bcm_cled_rgb_led_s *cur_led, int rgb_id, char *val0, c
 	}else{
 		return 1;
 	}
+#endif
 }
 
 int set_cled_value(bcm_cled_rgb_led_s *cur_led, int rgb_id, char *val0, char *val1, char *val2, char *val3)
 {
+#if defined(BCM4912) || defined(RPAX58)
+	eval("sw", cur_led->config0_path[rgb_id], val0, val1, val2, val3);
+#else
 	f_write_string(cur_led->config0_path[rgb_id], val0, 0, 0);
 	f_write_string(cur_led->config1_path[rgb_id], val1, 0, 0);
 	f_write_string(cur_led->config2_path[rgb_id], val2, 0, 0);
 	f_write_string(cur_led->config3_path[rgb_id], val3, 0, 0);
+#endif
 }
+
+#if defined(RPAX56) || defined(RPAX58) || defined(ET12) || defined(XT12)
+int is_cled_value_correct_x(bcm_cled_x_led_s *cur_led, char *val0, char *val1, char *val2, char *val3)
+{
+#if defined(BCM4912) || defined(RPAX58)
+	if(strtoul(cur_led->config0_val, NULL, 16) != strtoul(val0, NULL, 16) ||
+	   strtoul(cur_led->config1_val, NULL, 16) != strtoul(val1, NULL, 16) ||
+	   strtoul(cur_led->config2_val, NULL, 16) != strtoul(val2, NULL, 16) ||
+	   strtoul(cur_led->config3_val, NULL, 16) != strtoul(val3, NULL, 16)) {
+		return 0;
+	}
+	else {
+		return 1;
+	}
+#else
+	if(strcmp(cur_led->config0_val, val0) != 0 ||
+		strcmp(cur_led->config1_val, val1) != 0 ||
+		strcmp(cur_led->config2_val, val2) != 0 ||
+		strcmp(cur_led->config3_val, val3) != 0){
+		return 0;
+	}else{
+		return 1;
+	}
+#endif
+}
+
+int set_cled_value_x(bcm_cled_x_led_s *cur_led, char *val0, char *val1, char *val2, char *val3)
+{
+#if defined(BCM4912) || defined(RPAX58)
+#ifdef RPAX58
+	strlcpy(cur_led->config0_val, val0, sizeof(cur_led->config0_val));
+	strlcpy(cur_led->config1_val, val1, sizeof(cur_led->config0_val));
+	strlcpy(cur_led->config2_val, val2, sizeof(cur_led->config0_val));
+	strlcpy(cur_led->config3_val, val3, sizeof(cur_led->config0_val));
+#endif
+	eval("sw", cur_led->config0_path, val0, val1, val2, val3);
+#else
+	f_write_string(cur_led->config0_path, val0, 0, 0);
+	f_write_string(cur_led->config1_path, val1, 0, 0);
+	f_write_string(cur_led->config2_path, val2, 0, 0);
+	f_write_string(cur_led->config3_path, val3, 0, 0);
+#endif
+}
+#endif
+
+#if defined(ET12) || defined(XT12)
+#define CLED_RGB_NUM 3
+#else
+#define CLED_RGB_NUM 1
+#endif
 
 int _bcm_cled_ctrl(int rgb, int cled_mode)
 {
+	int index;
 	int state_changed = 0;
 	char LED_BEHAVIOR_WRITE[BCM_CLED_MODE_END][20] =
-			{"0x0003e000", "0x0003d000", "0x0003e018", "0x0003e002", "0x0003e038", ""};
+			{"0x0003e000", "0x0003d000", "0x0003c400", "0x0003e018", "0x0003e002", "0x0003e038", ""};
 	char LED_BEHAVIOR_READ[BCM_CLED_MODE_END][20] =
-			{"3e000\n", "3d000\n", "3e018\n", "3e002\n", "3e038\n", ""};
+			{"3e000\n", "3d000\n", "3c400\n", "3e018\n", "3e002\n", "3e038\n", ""};
 
-	bcm_cled_rgb_led_s led1 = {
+	bcm_cled_rgb_led_s led[CLED_RGB_NUM] = {
 #ifdef RTAX82_XD6
-		{"/proc/bcm_cled/led7/config0", "/proc/bcm_cled/led8/config0", "/proc/bcm_cled/led9/config0"},
-		{"0x00000000", "0x00000000", "0x00000000"},
-		{"/proc/bcm_cled/led7/config1", "/proc/bcm_cled/led8/config1", "/proc/bcm_cled/led9/config1"},
-		{"0x00000000", "0x00000000", "0x00000000"},
-		{"/proc/bcm_cled/led7/config2", "/proc/bcm_cled/led8/config2", "/proc/bcm_cled/led9/config2"},
-		{"0x00000000", "0x00000000", "0x00000000"},
-		{"/proc/bcm_cled/led7/config3", "/proc/bcm_cled/led8/config3", "/proc/bcm_cled/led9/config3"},
-		{"0x00000000", "0x00000000", "0x00000000"}
+		{"/proc/bcm_cled/led7/config0", "/proc/bcm_cled/led8/config0", "/proc/bcm_cled/led9/config0",
+		"0x00000000", "0x00000000", "0x00000000",
+		"/proc/bcm_cled/led7/config1", "/proc/bcm_cled/led8/config1", "/proc/bcm_cled/led9/config1",
+		"0x00000000", "0x00000000", "0x00000000",
+		"/proc/bcm_cled/led7/config2", "/proc/bcm_cled/led8/config2", "/proc/bcm_cled/led9/config2",
+		"0x00000000", "0x00000000", "0x00000000",
+		"/proc/bcm_cled/led7/config3", "/proc/bcm_cled/led8/config3", "/proc/bcm_cled/led9/config3",
+		"0x00000000", "0x00000000", "0x00000000"}
 #elif defined(RPAX56)
-                {"/proc/bcm_cled/led5/config0", "/proc/bcm_cled/led7/config0", "/proc/bcm_cled/led11/config0"},
-                {"0x00000000", "0x00000000", "0x00000000"},
-                {"/proc/bcm_cled/led5/config1", "/proc/bcm_cled/led7/config1", "/proc/bcm_cled/led11/config1"},
-                {"0x00000000", "0x00000000", "0x00000000"},
-                {"/proc/bcm_cled/led5/config2", "/proc/bcm_cled/led7/config2", "/proc/bcm_cled/led11/config2"},
-                {"0x00000000", "0x00000000", "0x00000000"},
-                {"/proc/bcm_cled/led5/config3", "/proc/bcm_cled/led7/config3", "/proc/bcm_cled/led11/config3"},
-                {"0x00000000", "0x00000000", "0x00000000"}
+                {"/proc/bcm_cled/led5/config0", "/proc/bcm_cled/led7/config0", "/proc/bcm_cled/led11/config0",
+                "0x00000000", "0x00000000", "0x00000000",
+                "/proc/bcm_cled/led5/config1", "/proc/bcm_cled/led7/config1", "/proc/bcm_cled/led11/config1",
+                "0x00000000", "0x00000000", "0x00000000",
+                "/proc/bcm_cled/led5/config2", "/proc/bcm_cled/led7/config2", "/proc/bcm_cled/led11/config2",
+                "0x00000000", "0x00000000", "0x00000000",
+                "/proc/bcm_cled/led5/config3", "/proc/bcm_cled/led7/config3", "/proc/bcm_cled/led11/config3",
+                "0x00000000", "0x00000000", "0x00000000"}
+#elif defined(RPAX58)
+                {"0xff803070", "0xff803090", "0xff8030d0",
+                "0x00000000", "0x00000000", "0x00000000",
+                "0xff803074", "0xff803094", "0xff8030d4",
+                "0x00000000", "0x00000000", "0x00000000",
+                "0xff803078", "0xff803098", "0xff8030d8",
+                "0x00000000", "0x00000000", "0x00000000",
+                "0xff80307c", "0xff80309c", "0xff8030dc",
+                "0x00000000", "0x00000000", "0x00000000"}
+#elif defined(ET12) || defined(XT12)
+		// LED1 [cled21 - cled17 - cled16]
+		{"0xff803170", "0xff803130", "0xff803120",
+                "0x00000000", "0x00000000", "0x00000000",
+                "0xff803174", "0xff803134", "0xff803124",
+                "0x00000000", "0x00000000", "0x00000000",
+                "0xff803178", "0xff803138", "0xff803128",
+                "0x00000000", "0x00000000", "0x00000000",
+                "0xff80317c", "0xff80313c", "0xff80312c",
+                "0x00000000", "0x00000000", "0x00000000"},
+		// LED2 [cled18 - cled1 - cled13]
+		{"0xff803140", "0xff803030", "0xff8030f0",
+                "0x00000000", "0x00000000", "0x00000000",
+                "0xff803144", "0xff803034", "0xff8030f4",
+                "0x00000000", "0x00000000", "0x00000000",
+                "0xff803148", "0xff803038", "0xff8030f8",
+                "0x00000000", "0x00000000", "0x00000000",
+                "0xff80314c", "0xff80303c", "0xff8030fc",
+                "0x00000000", "0x00000000", "0x00000000"},
+		// LED3 [cled2 - cled14 - cled15]
+		{"0xff803040", "0xff803100", "0xff803110",
+                "0x00000000", "0x00000000", "0x00000000",
+                "0xff803044", "0xff803104", "0xff803114",
+                "0x00000000", "0x00000000", "0x00000000",
+                "0xff803048", "0xff803108", "0xff803118",
+                "0x00000000", "0x00000000", "0x00000000",
+                "0xff80304c", "0xff80310c", "0xff80311c",
+                "0x00000000", "0x00000000", "0x00000000"}
 #else
-		{"/proc/bcm_cled/led14/config0", "/proc/bcm_cled/led15/config0", "/proc/bcm_cled/led16/config0"},
-                {"0x00000000", "0x00000000", "0x00000000"},
-		{"/proc/bcm_cled/led14/config1", "/proc/bcm_cled/led15/config1", "/proc/bcm_cled/led16/config1"},
-                {"0x00000000", "0x00000000", "0x00000000"},
-		{"/proc/bcm_cled/led14/config2", "/proc/bcm_cled/led15/config2", "/proc/bcm_cled/led16/config2"},
-                {"0x00000000", "0x00000000", "0x00000000"},
-		{"/proc/bcm_cled/led14/config3", "/proc/bcm_cled/led15/config3", "/proc/bcm_cled/led16/config3"},
-                {"0x00000000", "0x00000000", "0x00000000"}
+		{"/proc/bcm_cled/led14/config0", "/proc/bcm_cled/led15/config0", "/proc/bcm_cled/led16/config0",
+                "0x00000000", "0x00000000", "0x00000000",
+		"/proc/bcm_cled/led14/config1", "/proc/bcm_cled/led15/config1", "/proc/bcm_cled/led16/config1",
+                "0x00000000", "0x00000000", "0x00000000",
+		"/proc/bcm_cled/led14/config2", "/proc/bcm_cled/led15/config2", "/proc/bcm_cled/led16/config2",
+                "0x00000000", "0x00000000", "0x00000000",
+		"/proc/bcm_cled/led14/config3", "/proc/bcm_cled/led15/config3", "/proc/bcm_cled/led16/config3",
+                "0x00000000", "0x00000000", "0x00000000"}
 #endif
 	};
 
-	read_cled_value(&led1);
+#if defined(RPAX56)
+	bcm_cled_x_led_s led_w = {
+                "/proc/bcm_cled/led12/config0",
+                "0x00000000",
+                "/proc/bcm_cled/led12/config1",
+                "0x00000000",
+                "/proc/bcm_cled/led12/config2",
+                "0x00000000",
+                "/proc/bcm_cled/led12/config3",
+                "0x00000000"
+	};
+	read_cled_value_x(&led_w);
 
-	if(rgb == BCM_CLED_RED ){
-		if(is_cled_value_correct(&led1, BCM_CLED_RED, LED_BEHAVIOR_READ[cled_mode], "a34a32\n", "c34\n", "0\n") == 0 ||
-			strcmp(led1.config0_val[BCM_CLED_GREEN], "0\n") != 0 ||
-			strcmp(led1.config0_val[BCM_CLED_BLUE], "0\n") != 0){
+	bcm_cled_x_led_s led_y = {
+                "/proc/bcm_cled/led14/config0",
+                "0x00000000",
+                "/proc/bcm_cled/led14/config1",
+                "0x00000000",
+                "/proc/bcm_cled/led14/config2",
+                "0x00000000",
+                "/proc/bcm_cled/led14/config3",
+                "0x00000000"
+	};
+	read_cled_value_x(&led_y);
+#elif defined(RPAX58)
+	bcm_cled_x_led_s led_w = {
+                "0xff8030e0",
+                "0x00000000",
+                "0xff8030e4",
+                "0x00000000",
+                "0xff8030e8",
+                "0x00000000",
+                "0xff8030ec",
+                "0x00000000"
+	};
+	read_cled_value_x(&led_w);
 
-			set_cled_value(&led1, BCM_CLED_RED, LED_BEHAVIOR_WRITE[cled_mode], "0x00a34a32", "0x00000c34", "0x00000000");
+	bcm_cled_x_led_s led_y = {
+                "0xff803100",
+                "0x00000000",
+                "0xff803104",
+                "0x00000000",
+                "0xff803108",
+                "0x00000000",
+                "0xff80310c",
+                "0x00000000"
+	};
+	read_cled_value_x(&led_y);
+#endif
 
-			f_write_string(led1.config0_path[BCM_CLED_GREEN], "0x00000000", 0, 0);
-			f_write_string(led1.config0_path[BCM_CLED_BLUE], "0x00000000", 0, 0);
+	for(index = 0; index < CLED_RGB_NUM; index++) {
+		read_cled_value(&led[index]);
 
-			state_changed = 1;
-		}
-	}else if(rgb == BCM_CLED_GREEN){
-		if(is_cled_value_correct(&led1, BCM_CLED_GREEN, LED_BEHAVIOR_READ[cled_mode], "a34a32\n", "c34\n", "0\n") == 0 ||
-			strcmp(led1.config0_val[BCM_CLED_RED], "0\n") != 0 ||
-			strcmp(led1.config0_val[BCM_CLED_BLUE], "0\n") != 0){
+		if(rgb == BCM_CLED_RED ){
+			if(is_cled_value_correct(&led[index], BCM_CLED_RED, LED_BEHAVIOR_READ[cled_mode], "a34a32\n", "c34\n", "0\n") == 0 ||
+				strtoul(led[index].config0_val[BCM_CLED_GREEN], NULL, 16) != 0 ||
+				strtoul(led[index].config0_val[BCM_CLED_BLUE], NULL, 16) != 0) {
 
-			set_cled_value(&led1, BCM_CLED_GREEN, LED_BEHAVIOR_WRITE[cled_mode], "0x00a34a32", "0x00000c34", "0x00000000");
+				set_cled_value(&led[index], BCM_CLED_RED, LED_BEHAVIOR_WRITE[cled_mode], "0x00a34a32", "0x00000c34", "0x00000000");
+#if defined(BCM4912) || defined(RPAX58)
+				eval("sw", led[index].config0_path[BCM_CLED_GREEN], "0x00000000");
+				eval("sw", led[index].config0_path[BCM_CLED_BLUE], "0x00000000");
+#else
+				f_write_string(led[index].config0_path[BCM_CLED_GREEN], "0x00000000", 0, 0);
+				f_write_string(led[index].config0_path[BCM_CLED_BLUE], "0x00000000", 0, 0);
+#endif
+				state_changed = 1;
+			}
+#if defined(RPAX56) || defined(RPAX58)
+			if(is_cled_value_correct_x(&led_w, "0\n", "a34a32\n", "c34\n", "0\n") == 0){
+				set_cled_value_x(&led_w, "0x00000000", "0x00a34a32", "0x00000c34", "0x00000000");
+#ifdef RPAX58
+				eval("sw", led_w.config0_path, "0x00000000");
+#endif
+				state_changed = 1;
+			}
+			if(is_cled_value_correct_x(&led_y, "0\n", "a34a32\n", "c34\n", "0\n") == 0){
+				set_cled_value_x(&led_y, "0x00000000", "0x00a34a32", "0x00000c34", "0x00000000");
+#ifdef RPAX58
+				eval("sw", led_y.config0_path, "0x00000000");
+#endif
+				state_changed = 1;
+			}
+#endif
+		}else if(rgb == BCM_CLED_GREEN){
+			if(is_cled_value_correct(&led[index], BCM_CLED_GREEN, LED_BEHAVIOR_READ[cled_mode], "a34a32\n", "c34\n", "0\n") == 0 ||
+				strtoul(led[index].config0_val[BCM_CLED_RED], NULL, 16) != 0 ||
+				strtoul(led[index].config0_val[BCM_CLED_BLUE], NULL, 16) != 0){
 
-			f_write_string(led1.config0_path[BCM_CLED_RED], "0x00000000", 0, 0);
-			f_write_string(led1.config0_path[BCM_CLED_BLUE], "0x00000000", 0, 0);
+				set_cled_value(&led[index], BCM_CLED_GREEN, LED_BEHAVIOR_WRITE[cled_mode], "0x00a34a32", "0x00000c34", "0x00000000");
+#if defined(BCM4912) || defined(RPAX58)
+				eval("sw", led[index].config0_path[BCM_CLED_RED], "0x00000000");
+				eval("sw", led[index].config0_path[BCM_CLED_BLUE], "0x00000000");
+#else
+				f_write_string(led[index].config0_path[BCM_CLED_RED], "0x00000000", 0, 0);
+				f_write_string(led[index].config0_path[BCM_CLED_BLUE], "0x00000000", 0, 0);
+#endif
+				state_changed = 1;
+			}
+#if defined(RPAX56) || defined(RPAX58)
+			if(is_cled_value_correct_x(&led_w, "0\n", "a34a32\n", "c34\n", "0\n") == 0){
+				set_cled_value_x(&led_w, "0x00000000", "0x00a34a32", "0x00000c34", "0x00000000");
+#ifdef RPAX58
+				eval("sw", led_w.config0_path, "0x00000000");
+#endif
+				state_changed = 1;
+			}
+			if(is_cled_value_correct_x(&led_y, "0\n", "a34a32\n", "c34\n", "0\n") == 0){
+				set_cled_value_x(&led_y, "0x00000000", "0x00a34a32", "0x00000c34", "0x00000000");
+#ifdef RPAX58
+				eval("sw", led_y.config0_path, "0x00000000");
+#endif
+				state_changed = 1;
+			}
+#endif
+		}else if(rgb == BCM_CLED_BLUE){
+			if(is_cled_value_correct(&led[index], BCM_CLED_BLUE, LED_BEHAVIOR_READ[cled_mode], "a34a32\n", "c34\n", "0\n") == 0 ||
+				strtoul(led[index].config0_val[BCM_CLED_RED], NULL, 16) != 0 ||
+				strtoul(led[index].config0_val[BCM_CLED_GREEN], NULL, 16) != 0){
 
-			state_changed = 1;
-		}
-	}else if(rgb == BCM_CLED_BLUE){
-		if(is_cled_value_correct(&led1, BCM_CLED_BLUE, LED_BEHAVIOR_READ[cled_mode], "a34a32\n", "c34\n", "0\n") == 0 ||
-			strcmp(led1.config0_val[BCM_CLED_RED], "0\n") != 0 ||
-			strcmp(led1.config0_val[BCM_CLED_GREEN], "0\n") != 0){
-
-			set_cled_value(&led1, BCM_CLED_BLUE, LED_BEHAVIOR_WRITE[cled_mode], "0x00a34a32", "0x00000c34", "0x00000000");
-
-			f_write_string(led1.config0_path[BCM_CLED_RED], "0x00000000", 0, 0);
-			f_write_string(led1.config0_path[BCM_CLED_GREEN], "0x00000000", 0, 0);
-
-			state_changed = 1;
-		}
-	}else if(rgb == BCM_CLED_YELLOW){
-		if(is_cled_value_correct(&led1, BCM_CLED_RED, LED_BEHAVIOR_READ[cled_mode], "a34a32\n", "c34\n", "0\n") == 0){
-			set_cled_value(&led1, BCM_CLED_RED, LED_BEHAVIOR_WRITE[cled_mode], "0x00a34a32", "0x00000c34", "0x00000000");
-			state_changed = 1;
-		}
-		if(is_cled_value_correct(&led1, BCM_CLED_GREEN, LED_BEHAVIOR_READ[cled_mode], "a34a32\n", "c34\n", "0\n") == 0){
-			set_cled_value(&led1, BCM_CLED_GREEN, LED_BEHAVIOR_WRITE[cled_mode], "0x00a34a32", "0x00000c34", "0x00000000");
-			state_changed = 1;
-		}
-		if(is_cled_value_correct(&led1, BCM_CLED_BLUE, "0\n", "a34a32\n", "c34\n", "0\n") == 0){
-			set_cled_value(&led1, BCM_CLED_BLUE, "0x00000000", "0x00a34a32", "0x00000c34", "0x00000000");
-			state_changed = 1;
-		}
-	}else if(rgb == BCM_CLED_WHITE){
-		if(is_cled_value_correct(&led1, BCM_CLED_RED, LED_BEHAVIOR_READ[cled_mode], "a34a32\n", "c34\n", "0\n") == 0){
-			set_cled_value(&led1, BCM_CLED_RED, LED_BEHAVIOR_WRITE[cled_mode], "0x00a34a32", "0x00000c34", "0x00000000");
-			state_changed = 1;
-		}
-		if(is_cled_value_correct(&led1, BCM_CLED_GREEN, LED_BEHAVIOR_READ[cled_mode], "a34a32\n", "c34\n", "0\n") == 0){
-			set_cled_value(&led1, BCM_CLED_GREEN, LED_BEHAVIOR_WRITE[cled_mode], "0x00a34a32", "0x00000c34", "0x00000000");
-			state_changed = 1;
-		}
-		if(is_cled_value_correct(&led1, BCM_CLED_BLUE, LED_BEHAVIOR_READ[cled_mode], "a34a32\n", "c34\n", "0\n") == 0){
-			set_cled_value(&led1, BCM_CLED_BLUE, LED_BEHAVIOR_WRITE[cled_mode], "0x00a34a32", "0x00000c34", "0x00000000");
-			state_changed = 1;
-		}
-	}else if(rgb == BCM_CLED_OFF){
-		if(is_cled_value_correct(&led1, BCM_CLED_RED, "0\n", "a34a32\n", "c34\n", "0\n") == 0){
-			set_cled_value(&led1, BCM_CLED_RED, "0x00000000", "0x00a34a32", "0x00000c34", "0x00000000");
-			state_changed = 1;
-		}
-		if(is_cled_value_correct(&led1, BCM_CLED_GREEN, "0\n", "a34a32\n", "c34\n", "0\n") == 0){
-			set_cled_value(&led1, BCM_CLED_GREEN, "0x00000000", "0x00a34a32", "0x00000c34", "0x00000000");
-			state_changed = 1;
-		}
-		if(is_cled_value_correct(&led1, BCM_CLED_BLUE, "0\n", "a34a32\n", "c34\n", "0\n") == 0){
-			set_cled_value(&led1, BCM_CLED_BLUE, "0x00000000", "0x00a34a32", "0x00000c34", "0x00000000");
-			state_changed = 1;
+				set_cled_value(&led[index], BCM_CLED_BLUE, LED_BEHAVIOR_WRITE[cled_mode], "0x00a34a32", "0x00000c34", "0x00000000");
+#if defined(BCM4912) || defined(RPAX58)
+				eval("sw", led[index].config0_path[BCM_CLED_RED], "0x00000000");
+				eval("sw", led[index].config0_path[BCM_CLED_GREEN], "0x00000000");
+#else
+				f_write_string(led[index].config0_path[BCM_CLED_RED], "0x00000000", 0, 0);
+				f_write_string(led[index].config0_path[BCM_CLED_GREEN], "0x00000000", 0, 0);
+#endif
+				state_changed = 1;
+			}
+#if defined(RPAX56) || defined(RPAX58)
+			if(is_cled_value_correct_x(&led_w, "0\n", "a34a32\n", "c34\n", "0\n") == 0){
+				set_cled_value_x(&led_w, "0x00000000", "0x00a34a32", "0x00000c34", "0x00000000");
+#ifdef RPAX58
+				eval("sw", led_w.config0_path, "0x00000000");
+#endif
+				state_changed = 1;
+			}
+			if(is_cled_value_correct_x(&led_y, "0\n", "a34a32\n", "c34\n", "0\n") == 0){
+				set_cled_value_x(&led_y, "0x00000000", "0x00a34a32", "0x00000c34", "0x00000000");
+#ifdef RPAX58
+				eval("sw", led_y.config0_path, "0x00000000");
+#endif
+				state_changed = 1;
+			}
+#endif
+		}else if(rgb == BCM_CLED_YELLOW){
+#if defined(RPAX56) || defined(RPAX58)
+			if(is_cled_value_correct_x(&led_w, "0\n", "a34a32\n", "c34\n", "0\n") == 0){
+				set_cled_value_x(&led_w, "0x00000000", "0x00a34a32", "0x00000c34", "0x00000000");
+#ifdef RPAX58
+				eval("sw", led_w.config0_path, "0x00000000");
+#endif
+				state_changed = 1;
+			}
+			if(is_cled_value_correct_x(&led_y, LED_BEHAVIOR_READ[cled_mode], "a34a32\n", "c34\n", "0\n") == 0){
+				set_cled_value_x(&led_y, LED_BEHAVIOR_READ[cled_mode], "0x00a34a32", "0x00000c34", "0x00000000");
+#ifdef RPAX58
+				eval("sw", led_y.config0_path, led_y.config0_val);
+#endif
+				state_changed = 1;
+			}
+			if(is_cled_value_correct(&led[index], BCM_CLED_RED, LED_BEHAVIOR_READ[cled_mode], "a34a32\n", "c34\n", "0\n") == 0){
+				set_cled_value(&led[index], BCM_CLED_RED, LED_BEHAVIOR_READ[cled_mode], "0x00a34a32", "0x00000c34", "0x00000000");
+				state_changed = 1;
+			}
+#ifdef RPAX58
+			int _cled_mode = cled_mode;
+			if(_cled_mode == BCM_CLED_STEADY_NOBLINK)
+				_cled_mode = BCM_CLED_STEADY_NOBLINK_DIM;
+			if(is_cled_value_correct(&led[index], BCM_CLED_GREEN, LED_BEHAVIOR_READ[_cled_mode], "a34a32\n", "c34\n", "0\n") == 0){
+				set_cled_value(&led[index], BCM_CLED_GREEN, LED_BEHAVIOR_READ[_cled_mode], "0x00a34a32", "0x00000c34", "0x00000000");
+				state_changed = 1;
+			}
+#else
+			if(is_cled_value_correct(&led[index], BCM_CLED_GREEN, LED_BEHAVIOR_READ[cled_mode], "a34a32\n", "c34\n", "0\n") == 0){
+				set_cled_value(&led[index], BCM_CLED_GREEN, LED_BEHAVIOR_READ[cled_mode], "0x00a34a32", "0x00000c34", "0x00000000");
+				state_changed = 1;
+			}
+#endif
+#else
+			if(is_cled_value_correct(&led[index], BCM_CLED_RED, LED_BEHAVIOR_READ[cled_mode], "a34a32\n", "c34\n", "0\n") == 0){
+				set_cled_value(&led[index], BCM_CLED_RED, LED_BEHAVIOR_WRITE[cled_mode], "0x00a34a32", "0x00000c34", "0x00000000");
+				state_changed = 1;
+			}
+			if(is_cled_value_correct(&led[index], BCM_CLED_GREEN, LED_BEHAVIOR_READ[cled_mode], "a34a32\n", "c34\n", "0\n") == 0){
+				set_cled_value(&led[index], BCM_CLED_GREEN, LED_BEHAVIOR_WRITE[cled_mode], "0x00a34a32", "0x00000c34", "0x00000000");
+				state_changed = 1;
+			}
+#endif
+			if(is_cled_value_correct(&led[index], BCM_CLED_BLUE, "0\n", "a34a32\n", "c34\n", "0\n") == 0){
+				set_cled_value(&led[index], BCM_CLED_BLUE, "0x00000000", "0x00a34a32", "0x00000c34", "0x00000000");
+				state_changed = 1;
+			}
+		}else if(rgb == BCM_CLED_WHITE){
+#if defined(RPAX56) || defined(RPAX58)
+			if(is_cled_value_correct(&led[index], BCM_CLED_RED, "0\n", "a34a32\n", "c34\n", "0\n") == 0){
+				set_cled_value(&led[index], BCM_CLED_RED, "0x00000000", "0x00a34a32", "0x00000c34", "0x00000000");
+				state_changed = 1;
+			}
+			if(is_cled_value_correct(&led[index], BCM_CLED_GREEN, "0\n", "a34a32\n", "c34\n", "0\n") == 0){
+				set_cled_value(&led[index], BCM_CLED_GREEN, "0x00000000", "0x00a34a32", "0x00000c34", "0x00000000");
+				state_changed = 1;
+			}
+			if(is_cled_value_correct(&led[index], BCM_CLED_BLUE, "0\n", "a34a32\n", "c34\n", "0\n") == 0){
+				set_cled_value(&led[index], BCM_CLED_BLUE, "0x00000000", "0x00a34a32", "0x00000c34", "0x00000000");
+				state_changed = 1;
+			}
+			if(is_cled_value_correct_x(&led_w, LED_BEHAVIOR_READ[cled_mode], "a34a32\n", "c34\n", "0\n") == 0){
+				set_cled_value_x(&led_w, LED_BEHAVIOR_WRITE[cled_mode], "0x00a34a32", "0x00000c34", "0x00000000");
+#ifdef RPAX58
+				eval("sw", led_w.config0_path, led_w.config0_val);
+#endif
+				state_changed = 1;
+			}
+			if(is_cled_value_correct_x(&led_y, "0\n", "a34a32\n", "c34\n", "0\n") == 0){
+				set_cled_value_x(&led_y, "0\n", "0x00a34a32", "0x00000c34", "0x00000000");
+#ifdef RPAX58
+				eval("sw", led_y.config0_path, "0");
+#endif
+				state_changed = 1;
+			}
+#else
+			if(is_cled_value_correct(&led[index], BCM_CLED_RED, LED_BEHAVIOR_READ[cled_mode], "a34a32\n", "c34\n", "0\n") == 0){
+				set_cled_value(&led[index], BCM_CLED_RED, LED_BEHAVIOR_WRITE[cled_mode], "0x00a34a32", "0x00000c34", "0x00000000");
+				state_changed = 1;
+			}
+			if(is_cled_value_correct(&led[index], BCM_CLED_GREEN, LED_BEHAVIOR_READ[cled_mode], "a34a32\n", "c34\n", "0\n") == 0){
+				set_cled_value(&led[index], BCM_CLED_GREEN, LED_BEHAVIOR_WRITE[cled_mode], "0x00a34a32", "0x00000c34", "0x00000000");
+				state_changed = 1;
+			}
+			if(is_cled_value_correct(&led[index], BCM_CLED_BLUE, LED_BEHAVIOR_READ[cled_mode], "a34a32\n", "c34\n", "0\n") == 0){
+				set_cled_value(&led[index], BCM_CLED_BLUE, LED_BEHAVIOR_WRITE[cled_mode], "0x00a34a32", "0x00000c34", "0x00000000");
+				state_changed = 1;
+			}
+#endif
+		}else if(rgb == BCM_CLED_OFF){
+			if(is_cled_value_correct(&led[index], BCM_CLED_RED, "0\n", "a34a32\n", "c34\n", "0\n") == 0){
+				set_cled_value(&led[index], BCM_CLED_RED, "0x00000000", "0x00a34a32", "0x00000c34", "0x00000000");
+				state_changed = 1;
+			}
+			if(is_cled_value_correct(&led[index], BCM_CLED_GREEN, "0\n", "a34a32\n", "c34\n", "0\n") == 0){
+				set_cled_value(&led[index], BCM_CLED_GREEN, "0x00000000", "0x00a34a32", "0x00000c34", "0x00000000");
+				state_changed = 1;
+			}
+			if(is_cled_value_correct(&led[index], BCM_CLED_BLUE, "0\n", "a34a32\n", "c34\n", "0\n") == 0){
+				set_cled_value(&led[index], BCM_CLED_BLUE, "0x00000000", "0x00a34a32", "0x00000c34", "0x00000000");
+				state_changed = 1;
+			}
+#if defined(RPAX56) || defined(RPAX58)
+			if(is_cled_value_correct_x(&led_w, "0\n", "a34a32\n", "c34\n", "0\n") == 0){
+				set_cled_value_x(&led_w, "0x00000000", "0x00a34a32", "0x00000c34", "0x00000000");
+				state_changed = 1;
+			}
+			if(is_cled_value_correct_x(&led_y, "0\n", "a34a32\n", "c34\n", "0\n") == 0){
+				set_cled_value_x(&led_y, "0x00000000", "0x00a34a32", "0x00000c34", "0x00000000");
+				state_changed = 1;
+			}
+#endif
 		}
 	}
 
 	return state_changed;
 }
 
-#ifdef RPAX56
-static int _reset12 = 0;
-#endif
 /* rgb: 0:red, 1:green, 2:blue, 3:white */
 int bcm_cled_ctrl(int rgb, int cled_mode)
 {
 	int state_changed = 0;
 
-#ifdef RPAX56
-	if(ate_brcm_factory_mode()) {
+#if defined(RPAX56) || defined(RPAX58)
+	if(ate_brcm_factory_mode() || nvram_match("stop_watchdog", "1")) {
 		//_dprintf("skip bcmcledctrl under atemode\n");
 		return 0;
 	}
 #endif
-#if defined(RTAX95Q) || defined(RTAXE95Q) || defined(RTAX56_XD4) || defined(CTAX56_XD4) || defined(RTAX82_XD6) || defined(RPAX56)
+#if defined(RTAX95Q) || defined(XT8PRO) || defined(RTAXE95Q) || defined(ET8PRO) || defined(RTAX56_XD4) || defined(XD4PRO) || defined(CTAX56_XD4) || defined(RTAX82_XD6) || defined(RPAX56) || defined(RPAX58) || defined(ET12) || defined(XT12)
 	state_changed = _bcm_cled_ctrl(rgb, cled_mode);
 	if(state_changed == 1){
 #ifdef RTAX82_XD6
 		f_write_string("/proc/bcm_cled/activate", "0x00000380", 0, 0);
 #elif defined(RPAX56)
-                f_write_string("/proc/bcm_cled/activate", "0x000008a0", 0, 0);
-                if(!_reset12) {
-                        _dprintf("\n rc: Reset(2) led12 ah/al\n");
-                        eval("sw", "0xff803014", "0xfffff75f");
-                        eval("sw", "0xff803018", "0x00001000");
-                        _reset12 = 1;
-                }
+                f_write_string("/proc/bcm_cled/activate", "0x000058a0", 0, 0);
+#elif defined(RPAX58)
+		eval("sw", "0xff80301c", "0x000058a0");
+#elif defined(ET12) || defined(XT12)
+		eval("sw", "0xff80301c", "0x0027E006");
 #else
 		f_write_string("/proc/bcm_cled/activate", "0x0001C000", 0, 0);
 #endif
@@ -262,6 +665,79 @@ int bcm_cled_ctrl(int rgb, int cled_mode)
 #endif
 	return state_changed;
 }
+
+int rc_bcm_cled_ctrl(int rgb, int cled_mode)
+{
+	int state_changed = 0;
+
+	state_changed = _bcm_cled_ctrl(rgb, cled_mode);
+
+	if(state_changed == 1){
+#if defined(RPAX56)
+                f_write_string("/proc/bcm_cled/activate", "0x000058a0", 0, 0);
+#elif defined(RPAX58)
+		eval("sw", "0xff80301c", "0x000058a0");
+#endif
+	}
+	return state_changed;
+}
+
+#if defined(ET12) || defined(XT12)
+#define CLED_W_NUM 3
+int bcm_cled_ctrl_single_white(int rgb, int cled_mode) {
+
+	int index = 0;
+	int state_changed = 0;
+	char LED_BEHAVIOR_WRITE[BCM_CLED_MODE_END][20] =
+			{"0x0003e000", "0x0003d000", "0x0003e018", "0x0003e002", "0x0003e038", ""};
+	char LED_BEHAVIOR_READ[BCM_CLED_MODE_END][20] =
+			{"3e000\n", "3d000\n", "3e018\n", "3e002\n", "3e038\n", ""};
+
+	bcm_cled_x_led_s led_w[CLED_W_NUM] = {
+		// SIDE1 - cled23
+		{"0xff803190", "0x00000000",
+		 "0xff803394", "0x00000000",
+		 "0xff803398", "0x00000000",
+		 "0xff80339c", "0x00000000"},
+		// SIDE2 - cled24
+		{"0xff8031a0", "0x00000000",
+		 "0xff8033a4", "0x00000000",
+		 "0xff8033a8", "0x00000000",
+		 "0xff8033ac", "0x00000000"},
+		// SIDE3 - cled22
+		{"0xff803180", "0x00000000",
+		 "0xff803380", "0x00000000",
+		 "0xff803380", "0x00000000",
+		 "0xff803380", "0x00000000"}
+	};
+
+	if(rgb != BCM_CLED_WHITE && rgb != BCM_CLED_OFF)
+		_dprintf("unsupport color [%d] for single while cled !!!\n", rgb);
+
+	for(index = 0; index < CLED_W_NUM; index++) {
+		read_cled_value_x(&led_w[index]);
+		if(rgb == BCM_CLED_WHITE) {
+			if(is_cled_value_correct_x(&led_w[index], LED_BEHAVIOR_READ[cled_mode], "a34a32\n", "c34\n", "0\n") == 0){
+				set_cled_value_x(&led_w[index], LED_BEHAVIOR_WRITE[cled_mode], "0x00a34a32", "0x00000c34", "0x00000000");
+				state_changed = 1;
+			}
+		}
+		else {
+			if(is_cled_value_correct_x(&led_w[index], "0\n", "a34a32\n", "c34\n", "0\n") == 0){
+				set_cled_value_x(&led_w[index], "0x00000000", "0x00a34a32", "0x00000c34", "0x00000000");
+				state_changed = 1;
+			}
+		}
+	}
+
+	if(state_changed)
+#if defined(RPAX58)
+		 eval("sw", "0xff80301c", "0x000058a0");
+#else
+		 eval("sw", "0xff80301c", "0x01C00000");
+#endif
+}
+#endif
 #endif
 
 uint32_t get_gpio(uint32_t gpio)
@@ -301,7 +777,7 @@ uint32_t get_gpio(uint32_t gpio)
 #endif
 }
 
-#if defined(RTCONFIG_HND_ROUTER_AX_6710) || defined(BCM6750)
+#if defined(RTCONFIG_HND_ROUTER_AX_6710) || defined(BCM6750) || defined(BCM6756) || defined(GTAX6000)
 uint32_t get_gpio2(uint32_t gpio)
 {
 	int board_fp = open("/dev/brcmboard", O_RDWR);
@@ -336,15 +812,24 @@ uint32_t set_gpio(uint32_t gpio, uint32_t value)
 		dump_ledtable();
 		return -1;
 	}
+#if defined(RTCONFIG_HND_ROUTER_AX_6756)
+	sprintf(ledpath, "/sys/class/leds/sw_parallel_led_%d/brightness", gpio);
+	if (!f_exists(ledpath))
+		sprintf(ledpath, "/sys/class/leds/led_gpio_%d/brightness", gpio);
+	else if (!f_exists(ledpath))
+		sprintf(ledpath, "/sys/class/leds/sw_led_%d/brightness", gpio);
+#else
 	sprintf(ledpath, "/sys/class/leds/%d/brightness", gpio);
+#endif
 	ledfd = open(ledpath, O_RDWR);
 	if (ledfd <=0 ) {
 		printf("\nopen ledpath %s failed !\n", ledpath);
 		return -1;
 	}
-
 #if defined(RTAX95Q) || defined(RTAXE95Q)
 	write(ledfd, active_low?(!value?"0":"255"):(!value?"255":"0"), active_low?(!value?1:3):(!value?3:1));
+#elif defined(RTCONFIG_HND_ROUTER_AX_6756) && !defined(BCM4912)
+	write(ledfd, active_low?(!value?"255":"0"):(!value?"255":"0"), active_low?(!value?3:1):(!value?3:1));
 #else
 	write(ledfd, active_low?(!value?"255":"0"):(!value?"0":"255"), active_low?(!value?3:1):(!value?1:3));
 #endif
@@ -556,7 +1041,7 @@ int phy_ioctl(int fd, int write, int phy, int reg, uint32_t *value)
 	struct ifreq ifr;
 	int ret, vecarg[2];
 
-#if defined(RTAX95Q) || defined(RTAXE95Q) || defined(RTAX56_XD4) || defined(CTAX56_XD4) || defined(RTAX55) || defined(RTAX1800)
+#if defined(RTAX95Q) || defined(XT8PRO) || defined(RTAXE95Q) || defined(ET8PRO) || defined(RTAX56_XD4) || defined(XD4PRO) || defined(CTAX56_XD4) || defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2)
 	return 1;
 #endif
 	memset(&ifr, 0, sizeof(ifr));
@@ -574,1192 +1059,6 @@ int phy_ioctl(int fd, int write, int phy, int reg, uint32_t *value)
 	return robo_ioctl(fd, write, 0x10 + phy, reg, value);
 #endif
 }
-
-#ifdef HND_ROUTER
-static inline int ethswctl_init(struct ifreq *p_ifr)
-{
-    int skfd;
-
-#if defined(RTAX95Q) || defined(RTAXE95Q) || defined(RTAX56_XD4) || defined(CTAX56_XD4) || defined(RTAX55) || defined(RTAX1800)
-	return 1;
-#endif
-    /* Open a basic socket */
-    if ((skfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
-        perror("socket open error\n");
-        return -1;
-    }
-
-    /* Get the name -> if_index mapping for ethswctl */
-    strcpy(p_ifr->ifr_name, "bcmsw");
-    if (ioctl(skfd, SIOCGIFINDEX, p_ifr) < 0 ) {
-        strcpy(p_ifr->ifr_name, WAN_IF_ETH);
-        if (ioctl(skfd, SIOCGIFINDEX, p_ifr) < 0 ) {
-            close(skfd);
-            printf("neither bcmsw nor %s exist\n", WAN_IF_ETH);
-            return -1;
-        }
-    }
-
-    return skfd;
-}
-
-#if !defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(RTCONFIG_EXTPHY_BCM84880)
-static int et_dev_subports_query(int skfd, struct ifreq *ifr)
-{
-	int port_list = 0;
-
-	ifr->ifr_data = (char*)&port_list;
-	if (ioctl(skfd, SIOCGQUERYNUMPORTS, ifr) < 0) {
-		fprintf(stderr, "Error: Interface %s ioctl SIOCGQUERYNUMPORTS error!\n", ifr->ifr_name);
-		return -1;
-	}
-	return port_list;;
-}
-
-static int get_bit_count(int i)
-{
-	i = i - ((i >> 1) & 0x55555555);
-	i = (i & 0x33333333) + ((i >> 2) & 0x33333333);
-	return (((i + (i >> 4)) & 0x0F0F0F0F) * 0x01010101) >> 24;
-}
-
-static int et_get_phyid2(int skfd, struct ifreq *ifr, int sub_port)
-{
-	unsigned long phy_id;
-	struct mii_ioctl_data *mii = (void *)&ifr->ifr_data;
-
-	mii->val_in = sub_port;
-
-	if (ioctl(skfd, SIOCGMIIPHY, ifr) < 0)
-		return -1;
-
-	phy_id = MII_IOCTL_2_PHYID(mii);
-	/*
-	* returned phy id carries mii->val_out flags if phy is
-	* internal/external phy/phy on ext switch.
-	* we save it in higher byte to pass to kernel when
-	* phy is accessed.
-	*/
-	return phy_id;
-}
-
-static int et_get_phyid(int skfd, struct ifreq *ifr, int sub_port)
-{
-	int sub_port_map;
-#ifdef RTCONFIG_HND_ROUTER_AX
-#define MAX_SUB_PORT_BITS (sizeof(int)*8)
-#else
-#define MAX_SUB_PORT_BITS (sizeof(sub_port_map)*8)
-#endif
-	if ((sub_port_map = et_dev_subports_query(skfd, ifr)) < 0) {
-		return -1;
-	}
-
-	if (sub_port_map > 0) {
-		if (sub_port == -1) {
-			if (get_bit_count(sub_port_map) > 1) {
-				fprintf(stderr, "Error: Interface %s has sub ports, please specified one of port map: 0x%x\n",
-				ifr->ifr_name, sub_port_map);
-				return -1;
-			}
-			else if (get_bit_count(sub_port_map) == 1) {
-				// get bit position
-				for(sub_port = 0; sub_port < MAX_SUB_PORT_BITS; sub_port++) {
-					if ((sub_port_map & (1 << sub_port)))
-					break;
-				}
-			}
-		}
-
-		if ((sub_port_map & (1 << sub_port)) == 0) {
-			fprintf(stderr, "Specified SubPort %d is not interface %s's member port with map %x\n",
-				sub_port, ifr->ifr_name, sub_port_map);
-			return -1;
-		}
-	} else {
-		if (sub_port != -1) {
-			fprintf(stderr, "Interface %s has no sub port\n", ifr->ifr_name);
-			return -1;
-		}
-	}
-
-	return et_get_phyid2(skfd, ifr, sub_port);
-}
-
-int mdio_read(int skfd, struct ifreq *ifr, int phy_id, int location)
-{
-	struct mii_ioctl_data *mii = (void *)&ifr->ifr_data;
-
-	PHYID_2_MII_IOCTL(phy_id, mii);
-	mii->reg_num = location;
-	if (ioctl(skfd, SIOCGMIIREG, ifr) < 0) {
-		fprintf(stderr, "SIOCGMIIREG on %s failed: %s\n", ifr->ifr_name,
-		strerror(errno));
-		return 0;
-	}
-	return mii->val_out;
-}
-
-static void mdio_write(int skfd, struct ifreq *ifr, int phy_id, int location, int value)
-{
-	struct mii_ioctl_data *mii = (void *)&ifr->ifr_data;
-
-	PHYID_2_MII_IOCTL(phy_id, mii);
-	mii->reg_num = location;
-	mii->val_in = value;
-
-	if (ioctl(skfd, SIOCSMIIREG, ifr) < 0) {
-		fprintf(stderr, "SIOCSMIIREG on %s failed: %s\n", ifr->ifr_name,
-			strerror(errno));
-	}
-}
-
-int ethctl_get_link_status(char *ifname)
-{
-#ifdef RTCONFIG_HND_ROUTER_AX_6710
-	char tmp[100], buf[32];
-
-	snprintf(tmp, sizeof(tmp), "/sys/class/net/%s/operstate", ifname);
-
-	f_read_string(tmp, buf, sizeof(buf));
-	if(!strncmp(buf, "up", 2))
-		return 1;
-	else
-		return 0;
-#else
-	int skfd=0, err, bmsr;
-	struct ethswctl_data ifdata;
-	struct ifreq ifr;
-	int phy_id = 0, sub_port = -1;
-
-	if ( strstr(ifname, "eth") == ifname ||
-	     strstr(ifname, "epon") == ifname) {
-		strcpy(ifr.ifr_name, ifname);
-	} else {
-		fprintf(stderr, "invalid interface name %s\n", ifname);
-		goto error;
-	}
-
-	/* Open a basic socket */
-	if ((skfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
-		perror("ethctl: socket open error\n");
-		return -1;
-	}
-
-	/* Get the name -> if_index mapping for ethctl */
-	strcpy(ifr.ifr_name, ifname);
-	if (ioctl(skfd, SIOCGIFINDEX, &ifr) < 0 ) {
-		fprintf(stderr, "No %s interface exist\n", ifr.ifr_name);
-		goto error;
-	}
-
-	if ((phy_id = et_get_phyid(skfd, &ifr, sub_port)) == -1)
-		goto error;
-
-	if (ETHCTL_GET_FLAG_FROM_PHYID(phy_id) & ETHCTL_FLAG_ACCESS_SERDES) {
-		ifr.ifr_data = (void*) &ifdata;
-		ifdata.op = ETHSWPHYMODE;
-		ifdata.type = TYPE_GET;
-		ifdata.addressing_flag = ETHSW_ADDRESSING_DEV;
-		if (sub_port != -1) {
-			ifdata.sub_unit = -1; // Set sub_unit to -1 so that main unit of dev will be used
-			ifdata.sub_port = sub_port;
-			ifdata.addressing_flag |= ETHSW_ADDRESSING_SUBPORT;
-		}
-
-		if ((err = ioctl(skfd, SIOCETHSWCTLOPS, &ifr))) {
-			fprintf(stderr, "ioctl command return error %d!\n", err);
-			goto error;
-		}
-
-		close(skfd);
-
-		return (ifdata.speed == 0) ? 0 : 1;
-	}
-
-	bmsr = mdio_read(skfd, &ifr, phy_id, MII_BMSR);
-	if (bmsr == 0x0000) {
-		fprintf(stderr, "No MII transceiver present!.\n");
-		goto error;
-	}
-	//printf("Link is %s\n", (bmsr & BMSR_LSTATUS) ? "up" : "down");
-
-	close(skfd);
-	return (bmsr & BMSR_LSTATUS) ? 1 : 0;
-error:
-	if (skfd) close(skfd);
-	return -1;
-#endif
-}
-
-#define _MB 0x1
-#define _GB 0x2
-#define _2GB 0x4
-static int ethctl_get_link_speed(char *ifname)
-{
-	int skfd=0, err;
-	struct ethswctl_data ifdata;
-	struct ifreq ifr;
-	int phy_id = 0, sub_port = -1;
-	int bmcr, bmsr, gig_ctrl, gig_status, v16;
-
-	if ( strstr(ifname, "eth") == ifname ||
-	     strstr(ifname, "epon") == ifname) {
-		strcpy(ifr.ifr_name, ifname);
-	} else {
-		fprintf(stderr, "invalid interface name %s\n", ifname);
-		goto error;
-	}
-
-	/* Open a basic socket */
-	if ((skfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
-		perror("ethctl: socket open error\n");
-		return -1;
-	}
-
-	/* Get the name -> if_index mapping for ethctl */
-	strcpy(ifr.ifr_name, ifname);
-	if (ioctl(skfd, SIOCGIFINDEX, &ifr) < 0 ) {
-		printf("No %s interface exist\n", ifr.ifr_name);
-		goto error;
-	}
-
-	if ((phy_id = et_get_phyid(skfd, &ifr, sub_port)) == -1)
-		goto error;
-
-	if (ETHCTL_GET_FLAG_FROM_PHYID(phy_id) & ETHCTL_FLAG_ACCESS_SERDES) {
-		ifr.ifr_data = (void*) &ifdata;
-		ifdata.op = ETHSWPHYMODE;
-		ifdata.type = TYPE_GET;
-		ifdata.addressing_flag = ETHSW_ADDRESSING_DEV;
-		if (sub_port != -1) {
-			ifdata.sub_unit = -1; // Set sub_unit to -1 so that main unit of dev will be used
-			ifdata.sub_port = sub_port;
-			ifdata.addressing_flag |= ETHSW_ADDRESSING_SUBPORT;
-		}
-
-		if ((err = ioctl(skfd, SIOCETHSWCTLOPS, &ifr))) {
-			fprintf(stderr, "ioctl command return error %d!\n", err);
-			goto error;;
-		}
-
-		close(skfd);
-		return (ifdata.speed >= 2000 ? _2GB : (ifdata.speed >= 1000 ? _GB : _MB));
-	}
-
-	bmsr = mdio_read(skfd, &ifr, phy_id, MII_BMSR);
-	bmcr = mdio_read(skfd, &ifr, phy_id, MII_BMCR);
-	if (bmcr == 0xffff ||  bmsr == 0x0000) {
-		fprintf(stderr, "No MII transceiver present!.\n");
-		goto error;
-	}
-
-	if (!(bmsr & BMSR_LSTATUS)) {
-		fprintf(stderr, "Link is down!.\n");
-		goto error;
-	}
-
-	if (bmcr & BMCR_ANENABLE) {
-		gig_ctrl = mdio_read(skfd, &ifr, phy_id, MII_CTRL1000);
-		// check ethernet@wirspeed only for PHY support 1G
-		if (gig_ctrl & ADVERTISE_1000FULL || gig_ctrl & ADVERTISE_1000HALF) {
-			// check if ethernet@wirespeed is enabled, reg 0x18, shodow 0b'111, bit4
-			mdio_write(skfd, &ifr, phy_id, 0x18, 0x7007);
-			v16 = mdio_read(skfd, &ifr, phy_id, 0x18);
-			if (v16 & 0x0010) {
-				// get link speed from ASR if ethernet@wirespeed is enabled
-				v16 = mdio_read(skfd, &ifr, phy_id, 0x19);
-#define MII_ASR_1000(r) (((r & 0x0700) == 0x0700) || ((r & 0x0700) == 0x0600))
-#define MII_ASR_100(r)  (((r & 0x0700) == 0x0500) || ((r & 0x0700) == 0x0300))
-#define MII_ASR_10(r)   (((r & 0x0700) == 0x0200) || ((r & 0x0700) == 0x0100))
-				close(skfd);
-				return MII_ASR_1000(v16) ? _GB : (MII_ASR_100(v16) || MII_ASR_10(v16)) ? _MB : -1;
-			}
-		}
-
-		gig_status = mdio_read(skfd, &ifr, phy_id, MII_STAT1000);
-		close(skfd);
-		if (((gig_ctrl & ADVERTISE_1000FULL) && (gig_status & LPA_1000FULL)) ||
-		    ((gig_ctrl & ADVERTISE_1000HALF) && (gig_status & LPA_1000HALF))) {
-			close(skfd);
-			return _GB;
-		}
-		else {
-			return _MB;
-		}
-	}
-	else {
-		close(skfd);
-		return (bmcr & BMCR_SPEED1000) ? _GB : _MB;
-	}
-
-error:
-	if (skfd) close(skfd);
-	return -1;
-}
-
-static int ethctl_get_link_duplex(char *ifname)
-{
-	int skfd=0, err;
-	struct ethswctl_data ifdata;
-	struct ifreq ifr;
-	int phy_id = 0, sub_port = -1;
-	int bmcr, bmsr, gig_ctrl, gig_status, v16;
-
-	if ( strstr(ifname, "eth") == ifname ||
-	     strstr(ifname, "epon") == ifname) {
-		strcpy(ifr.ifr_name, ifname);
-	} else {
-		fprintf(stderr, "invalid interface name %s\n", ifname);
-		goto error;
-	}
-
-	/* Open a basic socket */
-	if ((skfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
-		perror("ethctl: socket open error\n");
-		return -1;
-	}
-
-	/* Get the name -> if_index mapping for ethctl */
-	strcpy(ifr.ifr_name, ifname);
-	if (ioctl(skfd, SIOCGIFINDEX, &ifr) < 0 ) {
-		printf("No %s interface exist\n", ifr.ifr_name);
-		goto error;
-	}
-
-	if ((phy_id = et_get_phyid(skfd, &ifr, sub_port)) == -1)
-		goto error;
-
-	if (ETHCTL_GET_FLAG_FROM_PHYID(phy_id) & ETHCTL_FLAG_ACCESS_SERDES) {
-		ifr.ifr_data = (void*) &ifdata;
-		ifdata.op = ETHSWPHYMODE;
-		ifdata.type = TYPE_GET;
-		ifdata.addressing_flag = ETHSW_ADDRESSING_DEV;
-		if (sub_port != -1) {
-			ifdata.sub_unit = -1; // Set sub_unit to -1 so that main unit of dev will be used
-			ifdata.sub_port = sub_port;
-			ifdata.addressing_flag |= ETHSW_ADDRESSING_SUBPORT;
-		}
-
-		if ((err = ioctl(skfd, SIOCETHSWCTLOPS, &ifr))) {
-			fprintf(stderr, "ioctl command return error %d!\n", err);
-			goto error;;
-		}
-
-		close(skfd);
-		return (ifdata.speed >= 2000 ? _2GB : (ifdata.speed >= 1000 ? _GB : _MB));
-	}
-
-	bmsr = mdio_read(skfd, &ifr, phy_id, MII_BMSR);
-	bmcr = mdio_read(skfd, &ifr, phy_id, MII_BMCR);
-	if (bmcr == 0xffff ||  bmsr == 0x0000) {
-		fprintf(stderr, "No MII transceiver present!.\n");
-		goto error;
-	}
-
-	if (!(bmsr & BMSR_LSTATUS)) {
-		fprintf(stderr, "Link is down!.\n");
-		goto error;
-	}
-
-	if (bmcr & BMCR_ANENABLE) { // auto nego
-		gig_ctrl = mdio_read(skfd, &ifr, phy_id, MII_CTRL1000);
-		// check ethernet@wirspeed only for PHY support 1G
-		if (gig_ctrl & ADVERTISE_1000FULL || gig_ctrl & ADVERTISE_1000HALF) {
-			// check if ethernet@wirespeed is enabled, reg 0x18, shodow 0b'111, bit4
-			mdio_write(skfd, &ifr, phy_id, 0x18, 0x7007);
-			v16 = mdio_read(skfd, &ifr, phy_id, 0x18);
-			if (v16 & 0x0010) {
-				// get link speed from ASR if ethernet@wirespeed is enabled
-				v16 = mdio_read(skfd, &ifr, phy_id, 0x19);
-#define MII_ASR_FDX(r)  (((r & 0x0700) == 0x0700) || ((r & 0x0700) == 0x0500) || ((r & 0x0700) == 0x0200))
-				close(skfd);
-				return MII_ASR_FDX(v16);
-			}
-		}
-
-		gig_status = mdio_read(skfd, &ifr, phy_id, MII_STAT1000);
-		close(skfd);
-		if (((gig_ctrl & ADVERTISE_1000FULL) && (gig_status & LPA_1000FULL)) ||
-		    (gig_ctrl & ADVERTISE_100FULL) || 
-		    (gig_ctrl & ADVERTISE_10FULL)) {
-			close(skfd);
-			return 1;
-		}
-		else {
-			return 0;
-		}
-	}
-	else {
-		close(skfd);
-		return (bmcr & BMCR_FULLDPLX);
-	}
-
-error:
-	if (skfd) close(skfd);
-	return -1;
-}
-#else
-int ethctl_get_link_status(char *ifname)
-{
-#if defined(RTCONFIG_HND_ROUTER_AX_675X)
-	char tmp[100], buf[32];
-	int ret = 0;
-
-	snprintf(tmp, sizeof(tmp), "/sys/class/net/%s/operstate", ifname);
-	f_read_string(tmp, buf, sizeof(buf));
-
-	if(strcmp(buf, "up\n")==0) ret = 1;
-	else ret = 0;
-#else
-	char *cmd[] = {"ethctl", ifname, "media-type", NULL};
-	char *output = "/tmp/ethctl_get_link_status.txt";
-	char *str;
-	int ret;
-	int lock;
-
-	lock = file_lock("ethctl_link");
-
-	unlink(output);
-	_eval(cmd, output, 0, NULL);
-
-	str = file2str(output);
-	if(!strstr(str, "Enabled"))
-		ret = -1;
-	else{
-		if(strstr(str, "Up"))
-			ret = 1;
-		else
-			ret = 0;
-	}
-
-	free(str);
-	unlink(output);
-
-	file_unlock(lock);
-
-#endif
-	return ret;
-}
-#endif //!defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(RTCONFIG_EXTPHY_BCM84880)
-
-struct ethctl_data ethctl;
-int ethctl_phy_op(char* phy_type, int addr, unsigned int reg, unsigned int value, int wr)
-{
-	struct ifreq ifr;
-    	int skfd;
-	int err, phy_id = 0, phy_flag = 0;
-	unsigned int phy_reg = 0;
-
-	strcpy(ifr.ifr_name, "bcmsw");
-	if ((skfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
-		fprintf(stderr, "socket open error\n");
-		return -1;
-	}
-
-	if (ioctl(skfd, SIOCGIFINDEX, &ifr) < 0 ) {
-		fprintf(stderr, "ioctl failed. check if %s exists\n", ifr.ifr_name);
-		close(skfd);
-		return -1;
-	}
-
-
-	if (strcmp(phy_type, "ext") == 0) {
-		phy_flag = ETHCTL_FLAG_ACCESS_EXT_PHY;
-	} else if (strcmp(phy_type, "int") == 0) {
-		phy_flag = ETHCTL_FLAG_ACCESS_INT_PHY;
-	} else if (strcmp(phy_type, "extsw") == 0) { // phy connected to external switch
-		phy_flag = ETHCTL_FLAG_ACCESS_EXTSW_PHY;
-	} else if (strcmp(phy_type, "i2c") == 0) { // phy connected through I2C bus
-		phy_flag = ETHCTL_FLAG_ACCESS_I2C_PHY;
-#ifdef RTCONFIG_EXTPHY_BCM84880
-	} else if (strcmp(phy_type, "10gserdes") == 0) { // phy connected through I2C bus
-		phy_flag = ETHCTL_FLAG_ACCESS_10GSERDES;
-	} else if (strcmp(phy_type, "10gpcs") == 0) { // phy connected through I2C bus
-		phy_flag = ETHCTL_FLAG_ACCESS_10GPCS;
-#endif
-	} else if (strcmp(phy_type, "serdespower") == 0) { // Serdes power saving mode
-		phy_flag = ETHCTL_FLAG_ACCESS_SERDES_POWER_MODE;
-	} else if (strcmp(phy_type, "ext32") == 0) { // Extended 32bit register access.
-		phy_flag = ETHCTL_FLAG_ACCESS_32BIT|ETHCTL_FLAG_ACCESS_EXT_PHY;
-	} else {
-		fprintf(stderr, "Unknown phy type!\n");
-		close(skfd);
-		return -1;
-	}
-
-	phy_id = addr;
-	phy_reg = reg;
-
-	if ((phy_id < 0) || (phy_id > 31)) {
-		fprintf(stderr, "Invalid Phy Address 0x%02x\n", phy_id);
-		close(skfd);
-		return -1;
-        }
-
-	if(phy_flag == ETHCTL_FLAG_ACCESS_SERDES_POWER_MODE && (reg < 0 || reg > 2))
-        {
-		fprintf(stderr, "Invalid Serdes Power Mode%02x\n", reg);
-		close(skfd);
-		return -1;
-	}
-
-	ethctl.phy_addr = phy_id;
-	ethctl.phy_reg = phy_reg;
-	ethctl.flags = phy_flag;
-
-	if(wr) { // Write
-		ethctl.op = ETHSETMIIREG;
-		ethctl.val = value;
-		ifr.ifr_data = (void *)&ethctl;
-		err = ioctl(skfd, SIOCETHCTLOPS, &ifr);
-		if (ethctl.ret_val || err) {
-			_dprintf("SET ERROR!!!\n");
-            		fprintf(stderr, "command return error!\n");
-			close(skfd);
-			return -1;
-		}
-
-//		_dprintf("[SET] %08x = %08x\n", phy_reg, value);
-	}
-	else { // Read
-		ethctl.op = ETHGETMIIREG;
-		ifr.ifr_data = (void *)&ethctl;
-		err = ioctl(skfd, SIOCETHCTLOPS, &ifr);
-		if (ethctl.ret_val || err) {
-			_dprintf("GET ERROR!!!\n");
-			fprintf(stderr, "command return error!\n");
-			close(skfd);
-			return -1;
-		}
-		else {
-//			_dprintf("[GET] %08x = %04x\n", phy_reg, ethctl.val);
-			close(skfd);
-			return ethctl.val;
-		}
-	}
-
-	return 0;
-}
-
-#ifdef RTCONFIG_EXTPHY_BCM84880
-int extphy_bit_op(unsigned int reg, unsigned int val, int wr, unsigned int start_bit, unsigned int end_bit, unsigned int wait_ms){
-#define MIN_BIT 0
-#define MAX_BIT 15
-	struct ifreq ifr;
-	int skfd, err;
-	int orig_val, val_mask, val_reverse_mask;
-	int bit;
-
-	if((skfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0){
-		fprintf(stderr, "socket open error\n");
-		return -1;
-	}
-
-	strcpy(ifr.ifr_name, "bcmsw");
-	if(ioctl(skfd, SIOCGIFINDEX, &ifr) < 0 ){
-		fprintf(stderr, "ioctl failed. check if %s exists\n", ifr.ifr_name);
-		close(skfd);
-		return -1;
-	}
-
-	if(nvram_get_int("ext_phy_model") == 1)
-		ethctl.phy_addr = EXTPHY_RTL_ADDR;
-	else
-		ethctl.phy_addr = EXTPHY_ADDR;
-	ethctl.phy_reg = reg;
-	ethctl.flags = ETHCTL_FLAG_ACCESS_EXT_PHY;
-
-	// Read
-	ethctl.op = ETHGETMIIREG;
-	ifr.ifr_data = (void *)&ethctl;
-	err = ioctl(skfd, SIOCETHCTLOPS, &ifr);
-	if(ethctl.ret_val || err){
-		_dprintf("GET ERROR!!!\n");
-		fprintf(stderr, "command return error!\n");
-		close(skfd);
-		return -1;
-	}
-
-	if(start_bit < MIN_BIT || start_bit > MAX_BIT)
-		start_bit = MIN_BIT;
-
-	if(end_bit < MIN_BIT || end_bit > MAX_BIT)
-		end_bit = MAX_BIT;
-
-	val_mask = 0;
-	for(bit = start_bit; bit <= end_bit; ++bit)
-		val_mask |= 0x1<<bit;
-	//_dprintf("[val_mask] [%u:%u], 0x%04x\n", end_bit, start_bit, val_mask);
-
-	val_reverse_mask = val_mask^0xffff;
-	//_dprintf("[val_reverse_mask] [%u:%u], 0x%04x\n", end_bit, start_bit, val_reverse_mask);
-
-	orig_val = ethctl.val;
-	if(!wr){
-		ethctl.val &= val_mask;
-		ethctl.val >>= start_bit;
-		_dprintf("[GET] 0x%08x [%u:%u] = 0x%04x, full 0x%04x\n", reg, end_bit, start_bit, ethctl.val, orig_val);
-		close(skfd);
-		return ethctl.val;
-	}
-	else
-		_dprintf("[Ori] 0x%08x [%u:%u] = 0x%04x\n", reg, MAX_BIT, MIN_BIT, orig_val);
-
-	// Write
-	ethctl.op = ETHSETMIIREG;
-	ethctl.val = (orig_val&val_reverse_mask) + (val<<start_bit);
-	ifr.ifr_data = (void *)&ethctl;
-	err = ioctl(skfd, SIOCETHCTLOPS, &ifr);
-	if (ethctl.ret_val || err) {
-		_dprintf("SET ERROR!!!\n");
-		fprintf(stderr, "command return error!\n");
-		close(skfd);
-		return -1;
-	}
-
-	_dprintf("[SET] 0x%08x [%u:%u] = 0x%04x, full 0x%04x\n", reg, end_bit, start_bit, val, ethctl.val);
-	close(skfd);
-
-	if(wait_ms > 0){
-		//_dprintf("Sleeping %u mini seconds...\n", wait_ms);
-		usleep(wait_ms*1000);
-	}
-
-	//_dprintf("done\n");
-
-	return ethctl.val;
-}
-#endif
-
-int bcm_reg_read_X(int unit, unsigned int addr, char* data, int len)
-{
-    int skfd, err = 0;
-    struct ifreq ifr;
-    struct ethswctl_data ifdata;
-    struct ethswctl_data *e = &ifdata;
-
-    if ((skfd=ethswctl_init(&ifr)) < 0) {
-        printf("ethswctl_init failed. \n");
-        return skfd;
-    }
-    ifr.ifr_data = (char *)&ifdata;
-
-    e->op = ETHSWREGACCESS;
-    e->type = TYPE_GET;
-    e->offset = addr;
-    e->length = len;
-    e->unit = unit;
-
-    if ((err = ioctl(skfd, SIOCETHSWCTLOPS, &ifr))) {
-        printf("ioctl command return error!\n");
-        goto out;
-    }
-
-    memcpy(data, e->data, len);
-
-out:
-    close(skfd);
-    return err;
-}
-
-int bcm_reg_write_X(int unit, unsigned int addr, char* data, int len)
-{
-    int skfd, err = 0;
-    struct ifreq ifr;
-    struct ethswctl_data ifdata;
-    struct ethswctl_data *e = &ifdata;
-
-    if ((skfd=ethswctl_init(&ifr)) < 0) {
-        printf("ethswctl_init failed. \n");
-        return skfd;
-    }
-    ifr.ifr_data = (char *)&ifdata;
-
-    e->op = ETHSWREGACCESS;
-    e->type = TYPE_SET;
-    e->offset = addr;
-    e->length = len;
-    e->unit = unit;
-    memcpy(e->data, data, len);
-
-    if ((err = ioctl(skfd, SIOCETHSWCTLOPS, &ifr))) {
-        printf("ioctl command return error!\n");
-        goto out;
-    }
-
-out:
-    close(skfd);
-    return err;
-}
-
-int bcm_pseudo_mdio_read(unsigned int addr, char* data, int len)
-{
-    int skfd, err = 0;
-    struct ifreq ifr;
-    struct ethswctl_data ifdata;
-    struct ethswctl_data *e = &ifdata;
-
-    if ((skfd=ethswctl_init(&ifr)) < 0) {
-        printf("ethswctl_init failed. \n");
-        return skfd;
-    }
-    ifr.ifr_data = (char *)&ifdata;
-
-    e->op = ETHSWPSEUDOMDIOACCESS;
-    e->type = TYPE_GET;
-    e->offset = addr;
-    e->length = len;
-
-    if ((err = ioctl(skfd, SIOCETHSWCTLOPS, &ifr))) {
-        printf("ioctl command return error!\n");
-        goto out;
-    }
-
-    memcpy(data, e->data, len);
-
-out:
-    close(skfd);
-    return err;
-}
-
-int bcm_pseudo_mdio_write(unsigned int addr, char* data, int len)
-{
-    int skfd, err = 0;
-    struct ifreq ifr;
-    struct ethswctl_data ifdata;
-    struct ethswctl_data *e = &ifdata;
-
-    if ((skfd=ethswctl_init(&ifr)) < 0) {
-        printf("ethswctl_init failed. \n");
-        return skfd;
-    }
-    ifr.ifr_data = (char *)&ifdata;
-
-    e->op = ETHSWPSEUDOMDIOACCESS;
-    e->type = TYPE_SET;
-    e->offset = addr;
-    e->length = len;
-    memcpy(e->data, data, sizeof(e->data));
-
-    if ((err = ioctl(skfd, SIOCETHSWCTLOPS, &ifr))) {
-        printf("ioctl command return error!\n");
-        goto out;
-    }
-
-out:
-    close(skfd);
-    return err;
-}
-
-uint64_t hnd_ethswctl(ecmd_t act, unsigned int val, int len, int wr, unsigned long long regdata)
-{
-	unsigned long long data64 = 0;
-	int ret_val = 0, i;
-	unsigned char data[8];
-
-	switch(act) {
-		case REGACCESS:
-			if (wr) {
-				data64 = cpu_to_le64(regdata);
-				//_dprintf("w Data: %08x %08x \n", (unsigned int)(data64 >> 32), (unsigned int)(data64) );
-				ret_val = bcm_reg_write_X(1, val, (char *)&data64, len);
-			} else {
-				ret_val = bcm_reg_read_X(1, val, (char *)&data64, len);
-				data64 = le64_to_cpu(data64);
-				//_dprintf("Data: %08x %08x \n", (unsigned int)(data64 >> 32), (unsigned int)(data64) );
-				return data64;
-			}
-			break;
-		case PMDIOACCESS:
-#ifdef RTCONFIG_HND_ROUTER_AX
-			data64 = cpu_to_le64(regdata);
-			for(i = 0; i < 8; i++)
-			{
-				data[i] = (unsigned char) (*( ((char *)&data64) + i));
-			}
-#else
-			for(i = 0; i < 8; i++)
-			{
- 				data[i] = (unsigned char) (*( ((char *)&regdata) + 7-i));
-			}
-#endif
-			if (wr) {
-				//_dprintf("\npw data\n");
-				ret_val = bcm_pseudo_mdio_write(val, (char*)data, len);
-			} else {
-				memset(data, 0, sizeof(data));
-				ret_val = bcm_pseudo_mdio_read(val, (char*)data, len);
-				//_dprintf("pr Data: %02x%02x%02x%02x %02x%02x%02x%02x\n",
-				//data[7], data[6], data[5], data[4], data[3], data[2], data[1], data[0]);
-				memcpy(&data64, data, 8);
-				return data64;
-			}
-			break;
-	}
-
-	return ret_val;
-}
-
-typedef struct {
-	unsigned int link[4];
-	unsigned int speed[4];
-	unsigned int duplex[4];
-} phyState;
-
-#if defined(RTCONFIG_HND_ROUTER_AX_6710)
-uint32_t hnd_get_phy_status(char *ifname)
-{
-	char tmp[100], buf[32];
-
-	snprintf(tmp, sizeof(tmp), "/sys/class/net/%s/operstate", ifname);
-
-	f_read_string(tmp, buf, sizeof(buf));
-	if(!strncmp(buf, "up", 2))
-		return 1;
-	else
-		return 0;
-}
-#elif defined(RTCONFIG_HND_ROUTER_AX_675X)
-uint32_t hnd_get_phy_status(int port)
-{
-	char ifname[16], tmp[100], buf[32];
-
-#if defined(RTAX55) || defined(RTAX1800)
-	int fd;
-	phyState pS;
-
-	if (port)
-	{
-		fd = open("/dev/rtkswitch", O_RDONLY);
-		if (fd < 0) {
-			perror("/dev/rtkswitch");
-		} else {
-			memset(&pS, 0, sizeof(pS));
-			if (ioctl(fd, 0, &pS) < 0) {
-				perror("rtkswitch ioctl");
-				close(fd);
-			}
-
-			close(fd);
-		}
-
-		return pS.link[port - 1];
-	}
-	else
-#endif
-	{
-		snprintf(ifname, sizeof(ifname), "eth%d", port);
-		snprintf(tmp, sizeof(tmp), "/sys/class/net/%s/operstate", ifname);
-
-		f_read_string(tmp, buf, sizeof(buf));
-		if(!strncmp(buf, "up", 2))
-			return 1;
-		else
-			return 0;
-	}
-}
-#else
-uint32_t hnd_get_phy_status(int port, int offs, unsigned int regv, unsigned int pmdv)
-{
-	if (port == 7
-#ifdef RTCONFIG_EXTPHY_BCM84880
-	    || port == 4
-#endif 
-	) {			// wan port
-#ifdef RTCONFIG_EXTPHY_BCM84880
-		// port4(eth0)->1G WAN, port7(eth5)->2.5G LAN
-		return ethctl_get_link_status(port == 4 ? WAN_IF_ETH : "eth5");
-#else
-		return ethctl_get_link_status(WAN_IF_ETH);
-#endif
-	} else if (!offs || (port-offs < 0)) {	// main switch
-		return regv & (1<<port) ? 1 : 0;
-	} else {				// externai switch
-		return pmdv & (1<<(port-offs)) ? 1 : 0;
-	}
-}
-#endif
-
-#if defined(RTCONFIG_HND_ROUTER_AX_6710)
-uint32_t hnd_get_phy_speed(char *ifname)
-{
-	char tmp[100], buf[32];
-
-	snprintf(tmp, sizeof(tmp), "/sys/class/net/%s/speed", ifname);
-
-	f_read_string(tmp, buf, sizeof(buf));
-	return strtoul(buf, NULL, 10);
-}
-#elif defined(RTCONFIG_HND_ROUTER_AX_675X)
-uint32_t hnd_get_phy_speed(int port)
-{
-	char ifname[16], tmp[100], buf[32];
-
-#if defined(RTAX55) || defined(RTAX1800)
-	int fd;
-	phyState pS;
-
-	if (port)
-	{
-		fd = open("/dev/rtkswitch", O_RDONLY);
-		if (fd < 0) {
-			perror("/dev/rtkswitch");
-		} else {
-			memset(&pS, 0, sizeof(pS));
-			if (ioctl(fd, 0, &pS) < 0) {
-				perror("rtkswitch ioctl");
-				close(fd);
-			}
-
-			close(fd);
-		}
-
-		if (pS.link[port - 1])
-			return ((pS.speed[port - 1] == 2) ? 1000 : 100);
-		else
-			return 0;
-	}
-	else
-#endif
-	{
-		snprintf(ifname, sizeof(ifname), "eth%d", port);
-		snprintf(tmp, sizeof(tmp), "/sys/class/net/%s/speed", ifname);
-
-		f_read_string(tmp, buf, sizeof(buf));
-		return strtoul(buf, NULL, 10);
-	}
-}
-#else
-uint32_t hnd_get_phy_speed(int port, int offs, unsigned int regv, unsigned int pmdv)
-{
-	int val = 0;
-	if (port == 7
-#ifdef RTCONFIG_EXTPHY_BCM84880
-            || port == 4
-#endif
-	) {			// wan port
-#ifdef RTCONFIG_EXTPHY_BCM84880
-                // port4(eth0)->1G WAN, port7(eth5)->2.5G LAN
-		return ethctl_get_link_speed(port == 4 ? WAN_IF_ETH : "eth5");
-#else
-		return ethctl_get_link_speed(WAN_IF_ETH);
-#endif
-	}
-	else if (!offs || (port-offs < 0)) {	// main switch
-		val = regv & (0x0003<<(port*2));
-		return val>>(port*2);
-	} else {				// externai switch
-		val = pmdv & (0x0003<<((port-offs)*2));
-		return val>>((port-offs)*2);
-	}
-}
-#endif
-
-#if defined(RTCONFIG_HND_ROUTER_AX_6710)
-uint32_t hnd_get_phy_duplex(char *ifname)
-{
-	char tmp[100], buf[32];
-
-	snprintf(tmp, sizeof(tmp), "/sys/class/net/%s/duplex", ifname);
-
-	f_read_string(tmp, buf, sizeof(buf));
-	if(!strncmp(buf, "full", 4))
-		return 1;
-	else
-		return 0;
-}
-#elif defined(RTCONFIG_HND_ROUTER_AX_675X)
-uint32_t hnd_get_phy_duplex(int port)
-{
-	char ifname[16], tmp[100], buf[32];
-
-#if defined(RTAX55) || defined(RTAX1800)
-	int fd;
-	phyState pS;
-
-	if (port)
-	{
-		fd = open("/dev/rtkswitch", O_RDONLY);
-		if (fd < 0) {
-			perror("/dev/rtkswitch");
-		} else {
-			memset(&pS, 0, sizeof(pS));
-			if (ioctl(fd, 0, &pS) < 0) {
-				perror("rtkswitch ioctl");
-				close(fd);
-			}
-
-			close(fd);
-		}
-
-		return pS.duplex[port - 1];
-	}
-	else
-#endif
-	{
-		snprintf(ifname, sizeof(ifname), "eth%d", port);
-		snprintf(tmp, sizeof(tmp), "/sys/class/net/%s/duplex", ifname);
-
-		f_read_string(tmp, buf, sizeof(buf));
-		if(!strncmp(buf, "full", 4))
-			return 1;
-		else
-			return 0;
-	}
-}
-#else
-uint32_t hnd_get_phy_duplex(int port, int offs, unsigned int regv, unsigned int pmdv)
-{
-	if (port == 7
-#ifdef RTCONFIG_EXTPHY_BCM84880
-	    || port == 4
-#endif 
-	) {			// wan port
-#ifdef RTCONFIG_EXTPHY_BCM84880
-		// port4(eth0)->1G WAN, port7(eth5)->2.5G LAN
-		return ethctl_get_link_duplex(port == 4 ? WAN_IF_ETH : "eth5");
-#else
-		return ethctl_get_link_duplex(WAN_IF_ETH);
-#endif
-	} else if (!offs || (port-offs < 0)) {	// main switch
-		return regv & (1<<port) ? 1 : 0;
-	} else {				// externai switch
-		return pmdv & (1<<(port-offs)) ? 1 : 0;
-	}
-}
-#endif
-
-static uint64_t hnd_get_phy_mib_by_ifname(char *ifname, char *type)
-{
-	char tmp[100], buf[32];
-	int result = 0;
-
-	if (!ifname || !type)
-		return result;
-
-	snprintf(tmp, sizeof(tmp), "/sys/class/net/%s/statistics/%s", ifname, type);
-
-	f_read_string(tmp, buf, sizeof(buf));
-	return strtoull(buf, NULL, 10);
-}
-
-#if defined(RTCONFIG_HND_ROUTER_AX_6710)
-uint64_t hnd_get_phy_mib(char *ifname, char *type)
-{
-	return hnd_get_phy_mib_by_ifname(ifname, type);
-}
-#elif defined(RTCONFIG_HND_ROUTER_AX_675X)
-uint64_t hnd_get_phy_mib(int port, char *type)
-{
-	char ifname[16], tmp[100], buf[32];
-	int result = 0;
-
-	if (!type)
-		return result;
-
-#if defined(RTAX55) || defined(RTAX1800)
-	int fd;
-	int *p = NULL;
-	rtk_stat_port_cntr_t Port_cntrs;
-
-	if (port)
-	{
-		fd = open("/dev/rtkswitch", O_RDONLY);
-		if (fd < 0) {
-			perror("/dev/rtkswitch");
-		} else {
-			memset(&Port_cntrs, 0, sizeof(Port_cntrs));
-			p = (int *) &Port_cntrs;
-			*p = port - 1;
-			if (ioctl(fd, 1, &Port_cntrs) < 0) {
-				perror("rtkswitch ioctl");
-				close(fd);
-			} else {
-				if (!strcmp(type, "tx_bytes"))
-					result = Port_cntrs.ifOutOctets;
-				else if (!strcmp(type, "rx_bytes"))
-					result = Port_cntrs.ifInOctets;
-				else if (!strcmp(type, "tx_packets"))
-					result = Port_cntrs.ifOutUcastPkts + Port_cntrs.ifOutMulticastPkts + Port_cntrs.ifOutBrocastPkts;
-				else if (!strcmp(type, "rx_packets"))
-					result = Port_cntrs.ifInUcastPkts + Port_cntrs.ifInMulticastPkts;
-				else if (!strcmp(type, "rx_crc_errors"))
-					result = Port_cntrs.dot3StatsFCSErrors;
-			}
-
-			close(fd);
-		}
-		return result;
-	}
-	else
-#endif
-	{
-		snprintf(ifname, sizeof(ifname), "eth%d", port);
-		snprintf(tmp, sizeof(tmp), "/sys/class/net/%s/statistics/%s", ifname, type);
-
-		f_read_string(tmp, buf, sizeof(buf));
-		return strtoull(buf, NULL, 10);
-	}
-}
-#else
-static uint64_t hnd_get_phy_mib_by_ethswctl(int port, int offs, char *type)
-{
-	uint64_t val = 0;
-	int addr_cnt = 0, i = 0;
-	unsigned int addr[8] = {0};
-	unsigned long long data = 0;
-	unsigned int port_id = (!offs || (port-offs < 0)) ? port : port-offs;
-	ecmd_t act = (!offs || (port-offs < 0)) ? REGACCESS : PMDIOACCESS;
-	if (!strcmp(type, "tx_bytes")) {
-		addr[addr_cnt++] = ((PAGE_MIB_BASE+port_id)<<8) + REG_OFFSET_TX_BYTES;
-	}
-	else if (!strcmp(type, "rx_bytes")) {
-		addr[addr_cnt++] = ((PAGE_MIB_BASE+port_id)<<8) + REG_OFFSET_RX_BYTES;
-	}
-	else if (!strcmp(type, "tx_packets")) {
-		addr[addr_cnt++] = ((PAGE_MIB_BASE+port_id)<<8) + REG_OFFSET_TX_BROADCAST_PACKETS;
-		addr[addr_cnt++] = ((PAGE_MIB_BASE+port_id)<<8) + REG_OFFSET_TX_MULTICAST_PACKETS;
-		addr[addr_cnt++] = ((PAGE_MIB_BASE+port_id)<<8) + REG_OFFSET_TX_UNICAST_PACKETS;
-	}
-	else if (!strcmp(type, "rx_packets")) {
-		addr[addr_cnt++] = ((PAGE_MIB_BASE+port_id)<<8) + REG_OFFSET_RX_UNICAST_PACKETS;
-		addr[addr_cnt++] = ((PAGE_MIB_BASE+port_id)<<8) + REG_OFFSET_RX_MULTICAST_PACKETS;
-		addr[addr_cnt++] = ((PAGE_MIB_BASE+port_id)<<8) + REG_OFFSET_RX_BROADCAST_PACKETS;
-	}
-	else if (!strcmp(type, "rx_crc_errors")) {
-		addr[addr_cnt++] = ((PAGE_MIB_BASE+port_id)<<8) + REG_OFFSET_RX_FCS_ERROR;
-	}
-
-	for (i = 0; i < addr_cnt; i++) {
-		data = 0;
-		data = hnd_ethswctl(act, addr[i], 8, 0, 0);
-		//fprintf(stderr, "addr=%x, data=%llu\n", addr[i], data);
-		val += data;
-	}
-	return val;
-}
-
-uint64_t hnd_get_phy_mib(int port, int offs, char *type)
-{
-	if (port == 7
-#ifdef RTCONFIG_EXTPHY_BCM84880
-            || port == 4
-#endif
-	) {			// wan port
-#ifdef RTCONFIG_EXTPHY_BCM84880
-                // port4(eth0)->1G WAN, port7(eth5)->2.5G LAN
-		return hnd_get_phy_mib_by_ifname(port == 4 ? WAN_IF_ETH : "eth5", type);
-#else
-		return hnd_get_phy_mib_by_ifname(WAN_IF_ETH, type);
-#endif
-	} else {
-		return hnd_get_phy_mib_by_ethswctl(port, offs, type);
-	}
-}
-#endif /* RTCONFIG_HND_ROUTER_AX_6710 */
-
-#endif /* HND_ROUTER */
 
 // !0: connected
 //  0: disconnected
@@ -1982,7 +1281,7 @@ uint32_t set_ex53134_ctrl(uint32_t portmask, int ctrl)
 	int i=0;
 	uint32_t value;
 
-#if defined(RTAX95Q) || defined(RTAXE95Q) || defined(RTAX56_XD4) || defined(CTAX56_XD4)
+#if defined(RTAX95Q) || defined(XT8PRO) || defined(RTAXE95Q) || defined(ET8PRO) || defined(RTAX56_XD4) || defined(XD4PRO) || defined(CTAX56_XD4)
 	return 1;
 #endif
 	for (i = 0; i < 4 && (portmask >> i); i++) {
@@ -2004,7 +1303,7 @@ uint32_t set_phy_ctrl(uint32_t portmask, int ctrl)
 	int fd, i, model;
 	uint32_t value;
 
-#if defined(RTAX95Q) || defined(RTAXE95Q) || defined(RTAX56_XD4) || defined(CTAX56_XD4) || defined(RTAX55) || defined(RTAX1800)
+#if defined(RTAX95Q) || defined(XT8PRO) || defined(RTAXE95Q) || defined(ET8PRO) || defined(RTAX56_XD4) || defined(XD4PRO) || defined(CTAX56_XD4) || defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2)
 	return 1;
 #endif
 	model = get_switch();
@@ -2490,8 +1789,10 @@ int get_bonding_port_status(int port)
 #ifdef RTCONFIG_BONDING_WAN
 	int port_status = 0;
 	int ret;
+#if !RTCONFIG_HND_ROUTER_AX_6710 && !RTCONFIG_HND_ROUTER_AX_675X && !defined(RTCONFIG_HND_ROUTER_AX_6756)
 	int extra_p0=0;
 	unsigned int regv=0, pmdv=0, regv2=0, pmdv2=0;
+#endif
 #ifdef RTCONFIG_EXT_BCM53134 /* RT-AX88U */
 	int lan_ports=4;
 	int ports[lan_ports+1];
@@ -2501,7 +1802,7 @@ int get_bonding_port_status(int port)
 	int ports[lan_ports+1];
 	/* 7 3 2 1 0	W0 L1 L2 L3 L4 */
 	ports[0]=7; ports[1]=3; ports[2]=2; ports[3]=1; ports[4]=0;
-#elif defined(RTAX95Q) || defined(RTAXE95Q)
+#elif defined(RTAX95Q) || defined(XT8PRO) || defined(RTAXE95Q) || defined(ET8PRO)
 	int lan_ports=4;
 	int ports[lan_ports+1];
 	/* 7 3 2 1 0	W0 L1 L2 L3 L4 */
@@ -2522,6 +1823,12 @@ int get_bonding_port_status(int port)
 		/* 7 W0 */
 		ports[0]=7;
 	}
+#elif defined(XD4PRO)
+	int lan_ports=1;
+
+	int ports[lan_ports+1];
+	/* 7 3	W0 L1 */
+	ports[0]=7; ports[1]=3;
 #elif defined(CTAX56_XD4)
 	int lan_ports=1;
 
@@ -2534,10 +1841,10 @@ int get_bonding_port_status(int port)
 	/* 4 3 2 1 0	W0 L1 L2 L3 L4 */
 	ports[0]=4; ports[1]=3; ports[2]=2; ports[3]=1; ports[4]=0;
 #elif defined(RTAX82_XD6)
-        int lan_ports=3;
-        int ports[lan_ports+1];
-        /* 4 2 1 0    W0 L1 L2 L3 */
-        ports[0]=4; ports[1]=2; ports[2]=1; ports[3]=0;
+	int lan_ports=3;
+	int ports[lan_ports+1];
+	/* 4 2 1 0    W0 L1 L2 L3 */
+	ports[0]=4; ports[1]=2; ports[2]=1; ports[3]=0;
 #elif defined(RTAX56U)
 	int lan_ports=4;
 	int ports[lan_ports+1];
@@ -2555,6 +1862,15 @@ int get_bonding_port_status(int port)
 	/* 4 3 2 1 0	W0 L1 L2 L3 L4 */
 	/* eth0 eth4 eth3 eth2 eth1 */
 	ports[0] = "eth0"; ports[1] = "eth4"; ports[2] = "eth3"; ports[3] = "eth2"; ports[4] = "eth1";
+#elif defined(GTAX6000)
+	/* 6 5 3 2 1 0  L5(2.5G) W0 L1 L2 L3 L4 */
+	char *ports[6] = { "eth5", "eth0", "eth1", "eth2", "eth3", "eth4" };
+#elif defined(GTAX11000_PRO)
+	char *ports[6] = { "eth5", "eth0", "eth1", "eth2", "eth3", "eth4" };
+#elif defined(GTAXE16000)
+	char *ports[7] = { "eth6", "eth5", "eth0", "eth1", "eth2", "eth3", "eth4" };
+#elif defined(ET12) || defined(XT12)
+	char *ports[4] = { "eth0", "eth1", "eth2", "eth3" };
 #elif defined(RTCONFIG_EXTPHY_BCM84880) /* GT-AX11000 */
 	int lan_ports=5;
 	int ports[lan_ports+1];
@@ -2570,6 +1886,7 @@ int get_bonding_port_status(int port)
 #endif
 
 #ifdef HND_ROUTER
+#if !RTCONFIG_HND_ROUTER_AX_6710 && !RTCONFIG_HND_ROUTER_AX_675X && !defined(RTCONFIG_HND_ROUTER_AX_6756)
 		regv = hnd_ethswctl(REGACCESS, 0x0100, 2, 0, 0);
 #ifdef RTCONFIG_EXT_BCM53134
 		pmdv = hnd_ethswctl(PMDIOACCESS, 0x0100, 2, 0, 0);
@@ -2579,11 +1896,12 @@ int get_bonding_port_status(int port)
 		pmdv2 = hnd_ethswctl(PMDIOACCESS, 0x0104, 4, 0, 0);
 #endif
 #endif
+#endif
 
 	/* WAN port */
-#ifdef RTCONFIG_HND_ROUTER_AX_6710
+#if defined(RTCONFIG_HND_ROUTER_AX_6710) || defined(BCM4912)
 	if (!hnd_get_phy_status(ports[port]))				/*Disconnect*/
-#elif defined(RTCONFIG_HND_ROUTER_AX_675X)
+#elif defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(BCM6756)
 	if (!hnd_get_phy_status(ports[port]))				/*Disconnect*/
 #else
 	if (!hnd_get_phy_status(ports[port], extra_p0, regv, pmdv))	/*Disconnect*/
@@ -2591,18 +1909,18 @@ int get_bonding_port_status(int port)
 	{
 		port_status = 0;
 	}else{
-#ifdef RTCONFIG_HND_ROUTER_AX_6710
+#if defined(RTCONFIG_HND_ROUTER_AX_6710) || defined(BCM4912)
 		ret = hnd_get_phy_speed(ports[port]);
-#elif defined(RTCONFIG_HND_ROUTER_AX_675X)
+#elif defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(BCM6756)
 		ret = hnd_get_phy_speed(ports[port]);
 #else
 		ret = hnd_get_phy_speed(ports[port], extra_p0, regv2, pmdv2);
 #endif
 		port_status =
 #ifdef RTCONFIG_EXTPHY_BCM84880
-                 (ret & 4)? 2500 :
+				(ret & 4)? 2500 :
 #endif
-					(ret & 2)? 1000:100;
+						(ret & 2)? 1000:100;
 	}
 
 /*
@@ -2647,7 +1965,6 @@ int wl_max_no_vifs(int unit)
 #endif
 #endif
 
-
 #ifdef RTCONFIG_QTN
 	if (unit == 1)
 		return 4;
@@ -2674,6 +1991,11 @@ int wl_max_no_vifs(int unit)
 				max_no_vifs = 4;
 		}
 	}
+
+#if defined(RTCONFIG_OWE_TRANS)
+	if(wl_get_band(name) != WLC_BAND_6G)
+		base_no_vifs++;
+#endif
 
 #if defined(RTCONFIG_AMAS) && (defined(RTCONFIG_FRONTHAUL_DWB) || defined(RTCONFIG_MSSID_PRELINK) || defined(RTCONFIG_FRONTHAUL_DBG))
 	if (nvram_match("re_mode", "1"))
@@ -2722,3 +2044,63 @@ int wl_check_is_primary_ifce(const char *ifname)
 
 	return 1;
 }
+
+#ifdef RTCONFIG_HND_ROUTER_AX
+/*
+ * Set msched maxn
+ */
+int
+wl_msched_iovar_setmaxn(char *ifname, char *iovar, char *subcmd, int bw, int val)
+{
+	int ret = BCME_OK;
+	wl_musched_cmd_params_t *musched_params = NULL;
+	uint musched_cmd_param_size = sizeof(wl_musched_cmd_params_t);
+
+	if ((musched_params = (wl_musched_cmd_params_t *)malloc(musched_cmd_param_size)) == NULL) {
+		fprintf(stderr, "Error allocating %d bytes for musched_cmd params\n",
+			musched_cmd_param_size);
+		ret = BCME_NOMEM;
+		goto fail;
+	}
+
+	/* Init musched_params */
+	memset(musched_params, 0, musched_cmd_param_size);
+
+	WL_MUSCHED_FLAGS_BW_SET(musched_params);
+	if (bw == 20)
+		musched_params->bw = 0;
+	else if (bw == 40)
+		musched_params->bw = 1;
+	else if (bw == 80)
+		musched_params->bw = 2;
+	else if (bw == 160)
+		musched_params->bw = 3;
+	else if (bw == -1)
+		musched_params->bw = -1;
+
+	musched_params->ac = -1;
+	musched_params->row = -1;
+	musched_params->col = -1;
+
+	/* Init flags based on the one passed from caller */
+	if (strcmp(iovar, "msched") == 0) {
+		WL_MUSCHED_FLAGS_DL_SET(musched_params);
+	} else if (strcmp(iovar, "umsched") == 0) {
+		WL_MUSCHED_FLAGS_UL_SET(musched_params);
+	}
+
+	strncpy(musched_params->keystr, subcmd,
+		MIN(strlen(subcmd), WL_MUSCHED_CMD_KEYSTR_MAXLEN));
+
+	musched_params->vals[musched_params->num_vals++] = (int16)val;
+
+	ret = wl_iovar_set(ifname, iovar, (void *)musched_params, musched_cmd_param_size);
+
+fail:
+	if (musched_params)
+		free(musched_params);
+
+	return ret;
+}
+#endif
+

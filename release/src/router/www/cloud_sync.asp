@@ -190,9 +190,11 @@ var FromObject = "0";
 var lastClickedObj = 0;
 var _layer_order = "";
 var PROTOCOL = "cifs";
+var faq_href = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=156";
 
 function initial(){
 	show_menu();	
+	document.getElementById("faq_link").href=faq_href;
 	showAddTable();
 	document.aidiskForm.protocol.value = PROTOCOL;
 	initial_dir();
@@ -1968,7 +1970,7 @@ function onDropBoxLogin(_parm){
 									<td>&nbsp;&nbsp;</td>
 									<td>
 										<div style="padding:10px;width:95%;font-style:italic;font-size:14px;word-break:break-all;">
-											<#smart_sync_help#> <a href="https://www.asus.com/support/FAQ/1010006/" style="text-decoration:underline;font-weight:bolder;">FAQ</a>
+											<#smart_sync_help#> <a id="faq_link" href="" style="text-decoration:underline;font-weight:bolder;">FAQ</a>
 										</div>
 									</td>
 								</tr>

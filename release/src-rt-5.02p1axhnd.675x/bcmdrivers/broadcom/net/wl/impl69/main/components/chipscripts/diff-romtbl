@@ -1,0 +1,127 @@
+#!/usr/bin/perl
+#
+# Compares old and new romtable hash tables. Output any symbols that are present in one but missing
+# in the other.
+#
+# This is a debug/utility script, and is not used as part of the build process.
+#
+# Usage: See 'usage' subroutine below.
+#
+#
+# $ Copyright Broadcom Corporation $
+#
+# <<Broadcom-WL-IPTag/Proprietary:>>
+#
+
+use strict;
+use warnings;
+use File::Basename;
+
+
+# Display usage info.
+#
+# Params: None.
+#
+# Returns: Nothing.
+sub usage {
+	print STDERR "\nUsage: diff-romtbl <old romtable.S> <new romtable.S>\n";
+	print STDERR "   <old romtable.S>: IN  Old romtable input file.\n";
+	print STDERR "   <new romtable.S>: IN  New romtable input file.\n";
+	exit 1;
+}
+
+# Input filenames.
+my $g_fname_romtable_old;
+my $g_fname_romtable_new;
+
+
+# Hash table of symbols from romtable.S.
+my %g_romtable_syms_old;
+my %g_romtable_syms_new;
+
+
+# Parse command line arguments.
+($g_fname_romtable_old = shift @ARGV) || &usage;
+($g_fname_romtable_new = shift @ARGV) || &usage;
+shift @ARGV && &usage;
+
+# Regular expression search strings.
+my $g_sym_regexp = '([\w$]+)';
+my $g_addr_regexp = '([0-9a-fA-F]{8})';
+
+
+
+# Parse ROM symbols from input romtable.
+#
+# Params:  fname:              IN  Input filename.
+#          rom_syms:           OUT Hash table of all symbols in ROM (from input romtable.S).
+#
+# Returns: Nothing.
+sub parse_romtable_file {
+	my ($fname, $rom_syms) = @_;
+	my ($fd, $line);
+
+	# Open romtable input file.
+	open($fd, "<$fname") or
+		die "Could not open $fname for reading: $!\n";
+
+	# Parse symbols.
+	foreach $line (<$fd>) {
+
+		# Parse all ROM symbols. The syntax is:
+		#
+		#   .extern bcm_mp_alloc
+		if ($line =~ /^\s*\.extern\s+${g_sym_regexp}\b/) {
+			$rom_syms->{$1} = 1;
+
+			# Debug.
+	       		#printf("$1\n");
+		}
+	}
+
+	# Clean up.
+	close $fd;
+}
+
+
+# Compare old and new romtable hash tables. Output any symbols that are present in one but missing
+# in the other.
+#
+# Params:  romtable_syms_old:  IN  Old hash table of all symbols in ROM.
+#          romtable_syms_new:  IN  New hash table of all symbols in ROM.
+#
+# Returns: Nothing.
+sub compare_romtables {
+	my ($romtable_syms_old, $romtable_syms_new) = @_;
+	my ($sym, $dep);
+
+	# Verify that the number of symbols from the input romtable.S matches the number of symbols
+	# in the ROM md5 signature file.
+	if (scalar(keys %{$romtable_syms_old}) != scalar(keys %{$romtable_syms_new})) {
+		printf("Error: num romtable syms old(%d) != num romtable syms new(%d)\n",
+		          scalar(keys(%{$romtable_syms_old})), scalar(keys(%{$romtable_syms_new})));
+	}
+
+	foreach $sym (keys %{$romtable_syms_old}) {
+		if (!$romtable_syms_new->{$sym}) {
+			printf("New romtable is missing ($sym)\n");
+		}
+	}
+
+	foreach $sym (keys %{$romtable_syms_new}) {
+		if (!$romtable_syms_old->{$sym}) {
+			printf("Old romtable is missing ($sym)\n");
+		}
+	}
+}
+
+
+printf("Hello, world!\n");
+
+# Parse romtable files.
+parse_romtable_file($g_fname_romtable_old, \%g_romtable_syms_old);
+parse_romtable_file($g_fname_romtable_new, \%g_romtable_syms_new);
+
+# Compare them.
+compare_romtables(\%g_romtable_syms_old, \%g_romtable_syms_new);
+

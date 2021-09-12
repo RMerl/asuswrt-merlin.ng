@@ -267,7 +267,7 @@ if(wans_dualwan_orig.search(" ") == -1)
 var new_lan_ip = [<% get_next_lanip(); %>][0].next_lanip;
 var header_info = [<% get_header_info(); %>];
 var location_org = header_info[0].protocol + "://" + header_info[0].host + ":" + header_info[0].port;
-var odm_support = ('<% nvram_get("rc_support"); %>'.indexOf('odm') != -1) ? true : false;
+var odm_support = ('<% nvram_get("rc_support"); %>'.indexOf(' odm') != -1) ? true : false;
 
 function initial(){
 	var is_logined = [<% is_logined_hook(); %>][0];

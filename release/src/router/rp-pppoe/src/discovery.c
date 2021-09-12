@@ -127,9 +127,12 @@ parsePADOTags(UINT16_t type, UINT16_t len, unsigned char *data,
 #ifdef PLUGIN
     UINT16_t mru;
 #endif
+    char buf[128] = {0};
 
     switch(type) {
     case TAG_AC_NAME:
+	snprintf(buf, sizeof(buf), "%.*s", (int) len, data);
+	script_setenv("AC", buf, 1);
 	pc->seenACName = 1;
 	if (conn->printACNames) {
 	    printf("Access-Concentrator: %.*s\n", (int) len, data);
@@ -140,6 +143,8 @@ parsePADOTags(UINT16_t type, UINT16_t len, unsigned char *data,
 	}
 	break;
     case TAG_SERVICE_NAME:
+	snprintf(buf, sizeof(buf), "%.*s", (int) len, data);
+	script_setenv("SERVICE", buf, 1);
 	pc->seenServiceName = 1;
 	if (conn->printACNames && len > 0) {
 	    printf("       Service-Name: %.*s\n", (int) len, data);

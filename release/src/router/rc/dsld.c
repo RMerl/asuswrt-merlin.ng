@@ -354,6 +354,8 @@ static void update_xdsl_status()
 	nvram_set_int("dsllog_crcup", (int)info.crc_up);
 	nvram_set_int("dsllog_fecdown", (int)info.fec_down);
 	nvram_set_int("dsllog_fecup", (int)info.fec_up);
+	nvram_set_int("dsllog_hecdown", (int)info.hec_down);
+	nvram_set_int("dsllog_hecup", (int)info.hec_up);
 	nvram_set_int("dsllog_esdown", (int)info.es_down);
 	nvram_set_int("dsllog_esup", (int)info.es_up);
 	nvram_set_int("dsllog_sesdown", (int)info.ses_down);
@@ -515,8 +517,10 @@ static void update_params()
 	strlcat(serial_no, " ", sizeof(serial_no));
 
 	strlcpy(model, get_productid(), sizeof(model));
-	trim_char(model, '-');
-	strlcat(serial_no, model, sizeof(serial_no));
+	if ((p = strchr(model, '-')))
+		strlcat(serial_no, p+1, sizeof(serial_no));
+	else
+		strlcat(serial_no, model, sizeof(serial_no));
 	strlcat(serial_no, " ", sizeof(serial_no));
 
 	nvram_safe_get_r("buildno", buildno, sizeof(buildno));

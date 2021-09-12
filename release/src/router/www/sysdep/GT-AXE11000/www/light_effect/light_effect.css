@@ -244,6 +244,7 @@
 	width: 100%;
 	color: rgba(255,255,255,0.60);
 	font-size: 13px;
+	word-break: break-word;
 }
 .setting_scheme .active .text, .setting_scheme.support_hover > div:hover .text{
 	color: #FFFFFF;

@@ -168,44 +168,46 @@ function get_client_used_apps_info(client_index, used_data_array, top5_info, typ
 	else{
 		if(type_detail == "detail"){
 			if(type == "router"){
-				document.getElementById('top_client_name').innerHTML = total_clients_array[client_index].name;
+				var _temp = client_index.replaceAll('%20', ' ');
+				document.getElementById('top_client_name').innerHTML = total_clients_array[_temp].name;
 				if(document.getElementById('traffic_option').value == "both"){
-					total_traffic = total_clients_array[client_index].rx + total_clients_array[client_index].tx;
+					total_traffic = total_clients_array[_temp].rx + total_clients_array[_temp].tx;
 				}
 				else if(document.getElementById('traffic_option').value == "down"){
-					total_traffic = total_clients_array[client_index].rx;
+					total_traffic = total_clients_array[_temp].rx;
 				}
 				else{
-					total_traffic = total_clients_array[client_index].tx;
+					total_traffic = total_clients_array[_temp].tx;
 				}
 			}
 			else{
 				if(client_index == undefined){
 					client_index = "0";
 				}
-				
-				document.getElementById('top_client_name').innerHTML = total_apps_array[client_index].name;
+				var _temp = client_index.replaceAll('%20', ' ');
+				document.getElementById('top_client_name').innerHTML = total_apps_array[_temp].name;
 				if(document.getElementById('traffic_option').value == "both"){
-					total_traffic = total_apps_array[client_index].rx + total_apps_array[client_index].tx;
+					total_traffic = total_apps_array[_temp].rx + total_apps_array[_temp].tx;
 				}
 				else if(document.getElementById('traffic_option').value == "down"){
-					total_traffic = total_apps_array[client_index].rx;
+					total_traffic = total_apps_array[_temp].rx;
 				}
 				else{
-					total_traffic = top5_info[client_index].tx;
+					total_traffic = top5_info[_temp].tx;
 				}
 			}
 		}
 		else{
-			document.getElementById('top_client_name').innerHTML = total_clients_array[client_index].name;
+			var _temp = client_index.replaceAll('%20', ' ');
+			document.getElementById('top_client_name').innerHTML = total_clients_array[_temp].name;
 			if(document.getElementById('traffic_option').value == "both"){
-				total_traffic = total_clients_array[client_index].rx + total_clients_array[client_index].tx;
+				total_traffic = total_clients_array[_temp].rx + total_clients_array[_temp].tx;
 			}
 			else if(document.getElementById('traffic_option').value == "down"){
-				total_traffic = total_clients_array[client_index].rx;
+				total_traffic = total_clients_array[_temp].rx;
 			}
 			else{
-				total_traffic = total_clients_array[client_index].tx;
+				total_traffic = total_clients_array[_temp].tx;
 			}
 		}
 
@@ -379,7 +381,7 @@ function get_client_info(list_info, type){
 			};
 		}
 		else{
-			code += "<option value=" + all_app_traffic[i][0].replace(/\s/g, '_') + ">" + all_app_traffic[i][0] + "</option>";
+			code += "<option value=" + all_app_traffic[i][0].replace(/\s/g, '%20') + ">" + all_app_traffic[i][0] + "</option>";
 			if(i<6){
 				top5_app_array[i] = all_app_traffic[i][0];
 				top5_app_array[all_app_traffic[i][0]] = {
@@ -1583,7 +1585,7 @@ function setUnit(unit){
 									<div style="margin-left:10px;">
 										<label style="font-size:16px;"><#Statistic_last_date#>:</label>
 										<input class="input_12_table" id="datepicker" value="">
-										<div id="statistic_hint" style="text-align:right;margin-top:-21px;padding-right:15px;color:#FC0;font-size:14px;">* <#Traffic_Analyzer_note#></div>
+										<div id="statistic_hint" class="hint-color" style="text-align:right;margin-top:-21px;padding-right:15px;font-size:14px;">* <#Traffic_Analyzer_note#></div>
 									</div>
 									<div style="margin:10px 0 10px 4px;">
 										<div style="float:left;">
@@ -1660,9 +1662,9 @@ function setUnit(unit){
 													</td>
 												</tr>
 												<tr>
-													<td style="width:25%;text-align:center;font-size:16px;color:#FC0" id="current_traffic_percent_field"></td>
-													<td style="width:25%;text-align:center;font-size:16px;color:#FC0" id="current_traffic_field"></td>
-													<td style="width:25%;text-align:center;font-size:16px;color:#FC0" id="total_traffic_field"></td>
+													<td class="hint-color" style="width:25%;text-align:center;font-size:16px;" id="current_traffic_percent_field"></td>
+													<td class="hint-color" style="width:25%;text-align:center;font-size:16px;" id="current_traffic_field"></td>
+													<td class="hint-color" style="width:25%;text-align:center;font-size:16px;" id="total_traffic_field"></td>
 												</tr>
 											</table>
 										</div>
@@ -1701,7 +1703,7 @@ function setUnit(unit){
 											</tr>
 											<tr>
 												<td colspan="3">
-													<div style="font-size:16px;color:#FC0;text-align:center;" id="info_block_title"><#traffic_analysis_top5client_daily#></div>
+													<div class="hint-color" style="font-size:16px;text-align:center;" id="info_block_title"><#traffic_analysis_top5client_daily#></div>
 												</td>
 											</td>
 										</table>

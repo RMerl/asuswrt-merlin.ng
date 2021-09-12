@@ -33,6 +33,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <libubi.h>
+#include <sys/sysmacros.h>
 #include "libubi_int.h"
 #include "common.h"
 

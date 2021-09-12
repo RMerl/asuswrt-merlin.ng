@@ -25,7 +25,7 @@
 
 /*
  * Automatically generated make config: don't edit
- * Date: Mon Aug 21 18:11:49 2017
+ * Date: Mon Mar  8 10:30:19 2021
  */
 #ifndef __TMCFG__UDB_AUTOCONF_OUTPUT_H_
 #define __TMCFG__UDB_AUTOCONF_OUTPUT_H_
@@ -93,10 +93,10 @@
 
 #define TMCFG_BRAND_ASUS 1 // y
 #define TMCFG_BRAND "asus"
-#define TMCFG_MODEL_RT_AC3100 1 // y
-#define TMCFG_MODEL "rt-ac3100"
+#define TMCFG_MODEL_RT_AC88U 1 // y
+#define TMCFG_MODEL "rt-ac88u"
 #define TMCFG_OEM_SRC 1 // y
-#define TMCFG_OEM_SRC_BRCM 1 // y
+#define TMCFG_OEM_SRC_BRCM_CTF_4708 1 // y
 
 /*
  * Target device information
@@ -109,13 +109,13 @@
 #define TMCFG_CPU_64BITS 0 // n
 #define TMCFG_CPU_BIG_ENDIAN 0 // n
 #define TMCFG_CPU_LITTLE_ENDIAN 1 // y
-#define TMCFG_KERN_DIR "/opt/ASUS/asuswrt_AC3100_GPL_382_11683/release/src-rt-7.14.114.x/src/linux/linux-2.6.36"
+#define TMCFG_KERN_DIR "/opt/ASUS/asuswrt_AC88U_GPL_386.41700/release/src-rt-7.14.114.x/src/linux/linux-2.6.36"
 #define TMCFG_KERN_ARCH "arm"
 
 /*
  * Toolchain (TC) configurations
  */
-#define TMCFG_TC_PFX "/opt/ASUS/toolchains/asus-toolchain-arm-rt_ac3100/bin/arm-brcm-linux-uclibcgnueabi-"
+#define TMCFG_TC_PFX "/opt/ASUS/toolchains/hndtools-arm-linux-2.6.36-uclibc-4.5.3-AC88U/bin/arm-brcm-linux-uclibcgnueabi-"
 
 /*
  * Advanced Build Options
@@ -152,12 +152,13 @@
 #define TMCFG_E_UDB_CORE 1 // y
 #define TMCFG_E_UDB_CORE_MAJ_VER 0
 #define TMCFG_E_UDB_CORE_MIN_VER 2
-#define TMCFG_E_UDB_CORE_REV_VER 14
-#define TMCFG_E_UDB_CORE_SHN_REV_NUM 3529123
+#define TMCFG_E_UDB_CORE_REV_VER 20
+#define TMCFG_E_UDB_CORE_SHN_REV_NUM 0
 #define TMCFG_E_UDB_CORE_USE_KBUILD 1 // y
 #define TMCFG_E_UDB_CORE_EXTRA_CFLAGS ""
 #define TMCFG_E_UDB_CORE_CONN_EXTRA 1 // y
 #define TMCFG_E_UDB_CORE_RULE_FORMAT_V2 0 // n
+#define TMCFG_E_UDB_CORE_MESH 1 // y
 #define TMCFG_E_UDB_CORE_URL_QUERY 1 // y
 #define TMCFG_E_UDB_CORE_SHN_QUERY 0 // n
 #define TMCFG_E_UDB_CORE_WBL 1 // y
@@ -181,6 +182,7 @@
 #define TMCFG_E_UDB_CORE_SWNAT 0 // n
 #define TMCFG_E_UDB_CORE_IQOS_SUPPORT 1 // y
 #define TMCFG_E_UDB_CORE_IQOS_RSV_DEF_CLS 0 // n
+#define TMCFG_E_UDB_CORE_GCTRL_SUPPORT 0 // n
 #define TMCFG_E_UDB_CORE_HWNAT 0 // n
 #define TMCFG_E_UDB_CORE_HWQOS 0 // n
 #define TMCFG_E_UDB_CORE_APP_PATROL 1 // y
@@ -195,6 +197,7 @@
 #define TMCFG_E_UDB_CORE_WPR_PAGE 1 // y
 #define TMCFG_E_UDB_CORE_TMDBG 0 // n
 #define TMCFG_E_UDB_CORE_MEMTRACK 0 // n
+#define TMCFG_E_UDB_CORE_HTTP_REFER 0 // n
 #define TMCFG_E_UDB_SHELL 1 // y
 #define TMCFG_E_UDB_SHELL_EXTRA_CFLAGS ""
 #define TMCFG_E_UDB_SHELL_KMOD_NAME "tdts_udb"
@@ -208,7 +211,7 @@
 #define TMCFG_E_REL_PKG_MAJ_VER 2
 #define TMCFG_E_REL_PKG_MIN_VER 0
 #define TMCFG_E_REL_PKG_REV_VER 1
-#define TMCFG_E_REL_PKG_LOCAL_VER "3529123"
+#define TMCFG_E_REL_PKG_LOCAL_VER "a1864ea2"
 
 /*
  * Accompany applications or modules
@@ -217,7 +220,7 @@
 /*
  * Kernel
  */
-#define TMCFG_APP_K_EXTRA_CFLAGS "-I/opt/ASUS/asuswrt_AC3100_GPL_382_11683/release/src-rt-7.14.114.x/src/include -I/opt/ASUS/asuswrt_AC3100_GPL_382_11683/release/src-rt-7.14.114.x/src/common/include"
+#define TMCFG_APP_K_EXTRA_CFLAGS "-I/opt/ASUS/asuswrt_AC88U_GPL_386.41700/release/src-rt-7.14.114.x/src/include -I/opt/ASUS/asuswrt_AC88U_GPL_386.41700/release/src-rt-7.14.114.x/src/common/include"
 #define TMCFG_APP_K_TDTS_NFFW 0 // n
 #define TMCFG_APP_K_TDTS_UDBFW 1 // y
 #define TMCFG_APP_K_TDTS_UDBFW_EXTRA_SYMBOLS ""
@@ -281,10 +284,10 @@
 #define TMCFG_APP_U_TDTS_WRED_THREAD_POOL 1 // y
 #define TMCFG_APP_U_TDTS_WRED_PROG_CTRL 1 // y
 #define TMCFG_APP_U_WRS_LOCAL_CACHE 0x7D000
-#define TMCFG_APP_U_WRED_TMUFE_LICENSE_ID "RGOM10"
+#define TMCFG_APP_U_WRED_TMUFE_LICENSE_ID "RGOM10-ASUS-HRU77VWJ"
 #define TMCFG_APP_U_WRED_TMUFE_VENDOR_ID "ASUS"
-#define TMCFG_APP_U_WRED_TMUFE_RS_HOST "rgom10-en.url.trendmicro.com"
-#define TMCFG_APP_U_WRED_TMUFE_CUSTOM 0 // n
+#define TMCFG_APP_U_WRED_TMUFE_RS_HOST "rgom10-asus-en.url.trendmicro.com"
+#define TMCFG_APP_U_WRED_TMUFE_CUSTOM 1 // y
 #define TMCFG_APP_U_TDTS_WRED_TMUFE21 0 // n
 #define TMCFG_APP_U_WBL 1 // y
 
@@ -297,6 +300,7 @@
 #define TMCFG_APP_U_UDB_SAMPLE 1 // y
 #define TMCFG_APP_U_TC_DAEMON 1 // y
 #define TMCFG_APP_U_MTK 0 // n
+#define TMCFG_APP_U_MTK_V2 0 // n
 #define TMCFG_APP_U_PROG_CTRL 1 // y
 #define TMCFG_APP_U_DEMO_GUI 0 // n
 #define TMCFG_APP_U_DEMO_GUI_V22 0 // n

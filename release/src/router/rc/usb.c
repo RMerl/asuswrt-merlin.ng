@@ -110,8 +110,17 @@ start_lpd()
 		return;
 #endif
 
-	if (!nvram_get_int("usb_printer"))
+	if (!nvram_get_int("usb_printer")) {
+		if (module_loaded(USBPRINTER_MOD)) {
+			modprobe_r(USBPRINTER_MOD);
+		}
 		return;
+	} else {
+		if (!module_loaded(USBPRINTER_MOD)) {
+			symlink("/dev/usb", "/dev/printers");
+			modprobe(USBPRINTER_MOD);
+		}
+	}
 
 	if (!pids("lpd"))
 	{
@@ -242,7 +251,7 @@ fill_smbpasswd_input_file(const char *passwd)
 }
 #endif
 
-void add_usb_host_module(void)
+void add_usb_host_modules(void)
 {
 #if defined(RTCONFIG_USB_XHCI)
 #if defined(RTN65U) || defined(RTCONFIG_QCA) || defined(RTAC85U) || defined(RTAC85P) || defined(RTACRH26) || defined(TUFAC1750)
@@ -707,9 +716,10 @@ void start_usb(int mode)
 	tune_bdflush();
 
 	if (nvram_get_int("usb_enable")) {
+#if !defined(RTCONFIG_BT_CONN)
 		if(mode != 0)
-			add_usb_host_module();
-
+			add_usb_host_modules();
+#endif
 #ifdef RTCONFIG_USB_MODEM
 		if(mode == 1)
 			add_usb_modem_modules();
@@ -843,6 +853,10 @@ void start_usb(int mode)
 		}
 #endif
 #if defined(RTCONFIG_BT_CONN_USB)
+#if defined(BCM4912)
+		modprobe("btintel");
+		modprobe("btrtl");
+#endif
 		modprobe("btusb");
 		modprobe("ath3k");
 #endif	/* RTCONFIG_BT_CONN_USB */
@@ -987,6 +1001,10 @@ void remove_usb_host_module(void)
 #if defined(RTCONFIG_BT_CONN_USB)
 	modprobe_r("ath3k");
 	modprobe_r("btusb");
+#if defined(BCM4912)
+	modprobe_r("btintel");
+	modprobe_r("btrtl");
+#endif
 #endif
 #if defined(RTCONFIG_USB_XHCI)
 	remove_kmods(POST_XHCI_KMODS);
@@ -1173,6 +1191,10 @@ void stop_usb(int f_force)
 #if defined(RTCONFIG_BT_CONN_USB)
 		modprobe_r("ath3k");
 		modprobe_r("btusb");
+#if defined(BCM4912)
+		modprobe_r("btintel");
+		modprobe_r("btrtl");
+#endif
 #endif	/* RTCONFIG_BT_CONN_USB */
 #if defined(RTCONFIG_USB_XHCI) && !defined(RTCONFIG_HND_ROUTER)
 #if defined(RTCONFIG_SOC_IPQ8064) || defined(RTCONFIG_SOC_IPQ8074)
@@ -1256,6 +1278,10 @@ int mount_r(char *mnt_dev, char *mnt_dir, char *_type)
 
 	if(strlen(type) > 0 && !strcmp(type, "apple_efi")){
 		TRACE_PT("Don't mount the EFI partition(%s) of APPLE!\n", mnt_dev);
+		return MOUNT_VAL_EXIST;
+	}
+	else if(strlen(type) > 0 && !strcmp(type, "vfat") && !strncmp(mnt_dir, "/tmp/mnt/EFI", 12)){
+		TRACE_PT("Don't mount the EFI partition(%s) of Microsoft!\n", mnt_dev);
 		return MOUNT_VAL_EXIST;
 	}
 
@@ -1469,8 +1495,8 @@ int mount_r(char *mnt_dev, char *mnt_dir, char *_type)
 #endif
 
 				if(ret != 0){
-					syslog(LOG_INFO, "USB %s(%s) failed to mount!" , mnt_dev, type);
-					TRACE_PT("USB %s(%s) failed to mount!\n", mnt_dev, type);
+					syslog(LOG_INFO, "USB %s(%s) failed to mount as FAT32!" , mnt_dev, type);
+					TRACE_PT("USB %s(%s) failed to mount as FAT32!\n", mnt_dev, type);
 				}
 			}
 
@@ -1503,46 +1529,59 @@ int mount_r(char *mnt_dev, char *mnt_dir, char *_type)
 #endif
 
 					if(ret != 0){
-						syslog(LOG_INFO, "USB %s(%s) failed to mount!" , mnt_dev, type);
-						TRACE_PT("USB %s(%s) failed to mount!\n", mnt_dev, type);
+						syslog(LOG_INFO, "USB %s(%s) failed to mount as NTFS!" , mnt_dev, type);
+						TRACE_PT("USB %s(%s) failed to mount as NTFS!\n", mnt_dev, type);
 					}
 				}
 			}
 #endif
 
+			if(ret != 0){
 #ifdef RTCONFIG_HFS
-			/* try HFS in case it's installed */
-			if(ret != 0 && !strncmp(type, "hfs", 3)){
-				if (nvram_get_int("usb_fs_hfs")) {
+				/* try HFS in case it's installed */
+				if(!strncmp(type, "hfs", 3)){
+					if (nvram_get_int("usb_fs_hfs")) {
 #ifdef RTCONFIG_KERNEL_HFSPLUS
 #if defined(RTCONFIG_OPENPLUSPARAGON_HFS) || defined(RTCONFIG_OPENPLUSTUXERA_HFS)
-					if(nvram_match("usb_hfs_mod", "open"))
+						if(nvram_match("usb_hfs_mod", "open"))
 #endif
-					{
-						eval("fsck.hfsplus", "-f", mnt_dev);//Scan
-						ret = eval("mount", "-t", "hfsplus", "-o", options, mnt_dev, mnt_dir);
-					}
+						{
+							eval("fsck.hfsplus", "-f", mnt_dev);//Scan
+							ret = eval("mount", "-t", "hfsplus", "-o", options, mnt_dev, mnt_dir);
+						}
 #endif
 #if defined(RTCONFIG_TUXERA_HFS)
 #if defined(RTCONFIG_OPENPLUSTUXERA_HFS)
-					else
+						else
 #endif
-						ret = eval("mount", "-t", "thfsplus", "-o", options, mnt_dev, mnt_dir);
+							ret = eval("mount", "-t", "thfsplus", "-o", options, mnt_dev, mnt_dir);
 #endif
 #if defined(RTCONFIG_PARAGON_HFS)
 #if defined(RTCONFIG_OPENPLUSPARAGON_HFS)
-					else
+						else
 #endif
-						ret = eval("mount", "-t", "ufsd", "-o", options, mnt_dev, mnt_dir);
+							ret = eval("mount", "-t", "ufsd", "-o", options, mnt_dev, mnt_dir);
 #endif
 
-					if(ret != 0){
-						syslog(LOG_INFO, "USB %s(%s) failed to mount!" , mnt_dev, type);
-						TRACE_PT("USB %s(%s) failed to mount!\n", mnt_dev, type);
+						if(ret != 0){
+							syslog(LOG_INFO, "USB %s(%s) failed to mount as HFS!" , mnt_dev, type);
+							TRACE_PT("USB %s(%s) failed to mount as HFS!\n", mnt_dev, type);
+						}
 					}
 				}
-			}
 #endif
+#ifdef RTCONFIG_APFS
+#if defined(RTCONFIG_TUXERA_APFS)
+				if(ret != 0 && nvram_get_int("usb_fs_apfs")){
+					ret = eval("tapfs-u", mnt_dev, mnt_dir);
+					if(ret != 0){
+						syslog(LOG_INFO, "USB %s(%s) failed to mount as APFS!" , mnt_dev, type);
+						TRACE_PT("USB %s(%s) failed to mount as APFS!\n", mnt_dev, type);
+					}
+				}
+#endif
+#endif
+			}
 
 #ifdef RTCONFIG_USB_CDROM
 			if(ret != 0 && !strncmp(type, "udf", 3)){
@@ -2733,9 +2772,6 @@ void write_ftpd_conf()
 #if (!defined(LINUX30) && LINUX_VERSION_CODE < KERNEL_VERSION(2,6,36))
 	fprintf(fp, "use_sendfile=NO\n");
 #endif
-#ifndef RTCONFIG_BCMARM
-	fprintf(fp, "isolate=NO\n");	// 3.x: Broken for MIPS
-#endif
 
 #ifdef RTCONFIG_IPV6
 	if (ipv6_enabled()) {
@@ -3034,7 +3070,7 @@ void create_custom_passwd(void)
 	FILE *fps, *fpp;
 	PMS_ACCOUNT_INFO_T *account_list, *follow_account;
 	PMS_ACCOUNT_GROUP_INFO_T *group_list, *follow_group;
-	char char_user[64];
+	char char_user[128];
 
 	/* Get account / group list */
 	if (PMS_GetAccountInfo(PMS_ACTION_GET_FULL, &account_list, &group_list, &acc_num, &group_num) < 0) {
@@ -3087,6 +3123,9 @@ void create_custom_passwd(void)
 				default_set = 1;
 			}
 			else if (!strcmp(char_user, nvram_safe_get("http_username"))) {
+				continue;
+			}
+			else if (nvram_invmatch("shell_username", "") && !strcmp(char_user, nvram_safe_get("shell_username"))) {
 				continue;
 			}
 			else {
@@ -3264,6 +3303,12 @@ extern void add_samba_rules(void);
 #endif
 
 void
+start_write_smb_conf(void)
+{
+	system("/sbin/write_smb_conf");
+}
+
+void
 start_samba(void)
 {
 	int acc_num;
@@ -3431,7 +3476,7 @@ start_samba(void)
 #else
 	xstart("nmbd", "-D", "-s", "/etc/smb.conf");
 
-#if defined(RTCONFIG_TFAT) || defined(RTCONFIG_TUXERA_NTFS) || defined(RTCONFIG_TUXERA_HFS)
+#if defined(RTCONFIG_TFAT) || defined(RTCONFIG_TUXERA_NTFS) || defined(RTCONFIG_TUXERA_HFS) || defined(RTCONFIG_TUXERA_APFS)
 	if(nvram_get_int("enable_samba_tuxera") == 1)
 		snprintf(smbd_cmd, sizeof(smbd_cmd), "%s/smbd", "/usr/bin");
 	else
@@ -4990,7 +5035,7 @@ static void start_diskformat(char *port_path)
 		dbg("disk_format: Can't unmount %d partition(s) of device %s\n", di->device, mount_counter);
 		logmessage("disk_format", "Can't unmount %d partition(s) of device %s", di->device, mount_counter);
 	} else {
-#if defined(RTCONFIG_TUXERA_NTFS) || defined(RTCONFIG_TUXERA_HFS)
+#if defined(RTCONFIG_TFAT) || defined(RTCONFIG_TUXERA_NTFS) || defined(RTCONFIG_TUXERA_HFS)
 		char *tfat_cmd[] = { "mkfatfs", "-l", disk_label, "-v", devpath, NULL };
 		char *tntfs_cmd[] = {"mkntfs", "-F", "-L", disk_label, "-v", devpath, NULL };
 		char *thfsplus_cmd[] = { "newfs_hfs", "-v", disk_label, devpath, NULL };
@@ -5009,7 +5054,7 @@ static void start_diskformat(char *port_path)
 			unlink(write_file_name);
 
 		cmd = NULL;
-#if defined(RTCONFIG_TUXERA_NTFS) || defined(RTCONFIG_TUXERA_HFS)
+#if defined(RTCONFIG_TFAT) || defined(RTCONFIG_TUXERA_NTFS) || defined(RTCONFIG_TUXERA_HFS)
 		if (!strcmp(disk_system, "tfat") && nvram_match("usb_fatfs_mod", "tuxera")) {
 			cmd = tfat_cmd;
 		}

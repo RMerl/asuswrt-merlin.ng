@@ -585,7 +585,12 @@ function parserPropfindXML(xmlDoc, open_url, append_result){
 								this_online = String(a[l].childNodes[0].nodeValue);
 							}
 							else if(a[l].nodeName=="D:getlastmodified"){
+								
 								this_lastmodified = String(a[l].childNodes[0].nodeValue);
+								
+								// markcool add
+								var localDate = new Date(String(a[l].childNodes[0].nodeValue)).toLocaleString().toLocaleString();
+								this_lastmodified = localDate;
 							}
 							else if(a[l].nodeName=="D:getcontentlength"){
 								this_contentlength = String( size_format(parseInt(a[l].childNodes[0].nodeValue)));
@@ -987,7 +992,10 @@ function refreshHostList(){
 												this_online = String(a[l].childNodes[0].nodeValue);
 											}
 											else if(a[l].nodeName=="D:getlastmodified"){
-												this_lastmodified = String(a[l].childNodes[0].nodeValue);
+												// this_lastmodified = String(a[l].childNodes[0].nodeValue);
+												
+												// markcool add : GMT time to local time 
+												this_lastmodified = new Date(String(a[l].childNodes[0].nodeValue)).toLocaleString();
 											}
 											else if(a[l].nodeName=="D:getcontentlength"){
 												this_contentlength = String( size_format(parseInt(a[l].childNodes[0].nodeValue)));

@@ -1,0 +1,277 @@
+.TH WG-QUICK 8 "2016 January 1" ZX2C4 "WireGuard"
+
+.SH NAME
+wg-quick - set up a WireGuard interface simply
+
+.SH SYNOPSIS
+.B wg-quick
+[
+.I up
+|
+.I down
+|
+.I save
+|
+.I strip
+] [
+.I CONFIG_FILE
+|
+.I INTERFACE
+]
+
+.SH DESCRIPTION
+
+This is an extremely simple script for easily bringing up a WireGuard interface,
+suitable for a few common use cases.
+
+Use \fIup\fP to add and set up an interface, and use \fIdown\fP to tear down and remove
+an interface. Running \fIup\fP adds a WireGuard interface, brings up the interface with the
+supplied IP addresses, sets up mtu and routes, and optionally runs pre/post up scripts. Running \fIdown\fP
+optionally saves the current configuration, removes the WireGuard interface, and optionally
+runs pre/post down scripts. Running \fIsave\fP saves the configuration of an existing
+interface without bringing the interface down. Use \fIstrip\fP to output a configuration file
+with all
+.BR wg-quick (8)-specific
+options removed, suitable for use with
+.BR wg (8).
+
+\fICONFIG_FILE\fP is a configuration file, whose filename is the interface name
+followed by `.conf'. Otherwise, \fIINTERFACE\fP is an interface name, with configuration
+found at `/etc/wireguard/\fIINTERFACE\fP.conf', searched first, followed by distro-specific
+search paths.
+
+Generally speaking, this utility is just a simple script that wraps invocations to
+.BR wg (8)
+and
+.BR ip (8)
+in order to set up a WireGuard interface. It is designed for users with simple
+needs, and users with more advanced needs are highly encouraged to use a more
+specific tool, a more complete network manager, or otherwise just use
+.BR wg (8)
+and
+.BR ip (8),
+as usual.
+
+.SH CONFIGURATION
+
+The configuration file adds a few extra configuration values to the format understood by
+.BR wg (8)
+in order to configure additional attributes of an interface. It handles the
+values that it understands, and then it passes the remaining ones directly to
+.BR wg (8)
+for further processing.
+
+It infers all routes from the list of peers' allowed IPs, and automatically adds
+them to the system routing table. If one of those routes is the default route
+(0.0.0.0/0 or ::/0), then it uses
+.BR ip-rule (8)
+to handle overriding of the default gateway.
+
+The configuration file will be passed directly to \fBwg\fP(8)'s `setconf'
+sub-command, with the exception of the following additions to the \fIInterface\fP section,
+which are handled by this tool:
+
+.IP \(bu
+Address \(em a comma-separated list of IP (v4 or v6) addresses (optionally with CIDR masks)
+to be assigned to the interface. May be specified multiple times.
+.IP \(bu
+DNS \(em a comma-separated list of IP (v4 or v6) addresses to be set as the interface's
+DNS servers, or non-IP hostnames to be set as the interface's DNS search domains. May be
+specified multiple times. Upon bringing the interface up, this runs
+`resolvconf -a tun.\fIINTERFACE\fP -m 0 -x` and upon bringing it down, this runs
+`resolvconf -d tun.\fIINTERFACE\fP`. If these particular invocations of
+.BR resolvconf (8)
+are undesirable, the PostUp and PostDown keys below may be used instead.
+.IP \(bu
+MTU \(em if not specified, the MTU is automatically determined from the endpoint addresses
+or the system default route, which is usually a sane choice. However, to manually specify
+an MTU to override this automatic discovery, this value may be specified explicitly.
+.IP \(bu
+Table \(em Controls the routing table to which routes are added. There are two
+special values: `off' disables the creation of routes altogether, and `auto'
+(the default) adds routes to the default table and enables special handling of
+default routes.
+.IP \(bu
+PreUp, PostUp, PreDown, PostDown \(em script snippets which will be executed by
+.BR bash (1)
+before/after setting up/tearing down the interface, most commonly used
+to configure custom DNS options or firewall rules. The special string `%i'
+is expanded to \fIINTERFACE\fP. Each one may be specified multiple times, in which case
+the commands are executed in order.
+.IP \(bu
+SaveConfig \(em if set to `true', the configuration is saved from the current state of the
+interface upon shutdown. Any changes made to the configuration file before the
+interface is removed will therefore be overwritten.
+
+.P
+Recommended \fIINTERFACE\fP names include `wg0' or `wgvpn0' or even `wgmgmtlan0'.
+However, the number at the end is in fact optional, and really
+any free-form string [a-zA-Z0-9_=+.-]{1,15} will work. So even interface names corresponding
+to geographic locations would suffice, such as `cincinnati', `nyc', or `paris', if that's
+somehow desirable.
+
+.SH EXAMPLES
+
+These examples draw on the same syntax found for
+.BR wg (8),
+and a more complete description may be found there. Bold lines below are for options that extend
+.BR wg (8).
+
+The following might be used for connecting as a client to a VPN gateway for tunneling all
+traffic:
+
+    [Interface]
+.br
+    \fBAddress = 10.200.100.8/24\fP
+.br
+    \fBDNS = 10.200.100.1\fP
+.br
+    PrivateKey = oK56DE9Ue9zK76rAc8pBl6opph+1v36lm7cXXsQKrQM=
+.br
+
+.br
+    [Peer]
+.br
+    PublicKey = GtL7fZc/bLnqZldpVofMCD6hDjrK28SsdLxevJ+qtKU=
+.br
+    PresharedKey = /UwcSPg38hW/D9Y3tcS1FOV0K1wuURMbS0sesJEP5ak=
+.br
+    AllowedIPs = 0.0.0.0/0
+.br
+    Endpoint = demo.wireguard.com:51820
+.br
+
+The `Address` field is added here in order to set up the address for the interface. The `DNS` field
+indicates that a DNS server for the interface should be configured via
+.BR resolvconf (8).
+The peer's allowed IPs entry implies that this interface should be configured as the default gateway,
+which this script does.
+
+Building on the last example, one might attempt the so-called ``kill-switch'', in order
+to prevent the flow of unencrypted packets through the non-WireGuard interfaces, by adding the following
+two lines `PostUp` and `PreDown` lines to the `[Interface]` section:
+
+    \fBPostUp = iptables -I OUTPUT ! -o %i -m mark ! --mark $(wg show %i fwmark) -m addrtype ! --dst-type LOCAL -j REJECT\fP
+.br
+    \fBPreDown = iptables -D OUTPUT ! -o %i -m mark ! --mark $(wg show %i fwmark) -m addrtype ! --dst-type LOCAL -j REJECT\fP
+.br
+
+The `PostUp' and `PreDown' fields have been added to specify an
+.BR iptables (8)
+command which, when used with interfaces that have a peer that specifies 0.0.0.0/0 as part of the
+`AllowedIPs', works together with wg-quick's fwmark usage in order to drop all packets that
+are either not coming out of the tunnel encrypted or not going through the tunnel itself. (Note
+that this continues to allow most DHCP traffic through, since most DHCP clients make use of PF_PACKET
+sockets, which bypass Netfilter.) When IPv6 is in use, additional similar lines could be added using
+.BR ip6tables (8).
+
+Or, perhaps it is desirable to store private keys in encrypted form, such as through use of
+.BR pass (1):
+
+    \fBPostUp = wg set %i private-key <(pass WireGuard/private-keys/%i)\fP
+.br
+
+For use on a server, the following is a more complicated example involving multiple peers:
+
+    [Interface]
+.br
+    \fBAddress = 10.192.122.1/24\fP
+.br
+    \fBAddress = 10.10.0.1/16\fP
+.br
+    \fBSaveConfig = true\fP
+.br
+    PrivateKey = yAnz5TF+lXXJte14tji3zlMNq+hd2rYUIgJBgB3fBmk=
+.br
+    ListenPort = 51820
+.br
+
+.br
+    [Peer]
+.br
+    PublicKey = xTIBA5rboUvnH4htodjb6e697QjLERt1NAB4mZqp8Dg=
+.br
+    AllowedIPs = 10.192.122.3/32, 10.192.124.1/24
+.br
+
+.br
+    [Peer]
+.br
+    PublicKey = TrMvSoP4jYQlY6RIzBgbssQqY3vxI2Pi+y71lOWWXX0=
+.br
+    AllowedIPs = 10.192.122.4/32, 192.168.0.0/16
+.br
+
+.br
+    [Peer]
+.br
+    PublicKey = gN65BkIKy1eCE9pP1wdc8ROUtkHLF2PfAqYdyYBz6EA=
+.br
+    AllowedIPs = 10.10.10.230/32
+
+Notice the two `Address' lines at the top, and that `SaveConfig' is set to `true', indicating
+that the configuration file should be saved on shutdown using the current status of the
+interface.
+
+A combination of the `Table', `PostUp', and `PreDown' fields may be used for policy routing
+as well. For example, the following may be used to send SSH traffic (TCP port 22) traffic
+through the tunnel:
+
+    [Interface]
+.br
+    Address = 10.192.122.1/24
+.br
+    PrivateKey = yAnz5TF+lXXJte14tji3zlMNq+hd2rYUIgJBgB3fBmk=
+.br
+    ListenPort = 51820
+.br
+    \fBTable = 1234\fP
+.br
+    \fBPostUp = ip rule add ipproto tcp dport 22 table 1234\fP
+.br
+    \fBPreDown = ip rule delete ipproto tcp dport 22 table 1234\fP
+.br
+
+.br
+    [Peer]
+.br
+    PublicKey = xTIBA5rboUvnH4htodjb6e697QjLERt1NAB4mZqp8Dg=
+.br
+    AllowedIPs = 0.0.0.0/0
+
+These configuration files may be placed in any directory, putting the desired interface name
+in the filename:
+
+\fB    # wg-quick up /path/to/wgnet0.conf\fP
+
+For convenience, if only an interface name is supplied, it automatically chooses a path in
+`/etc/wireguard/':
+
+\fB    # wg-quick up wgnet0\fP
+
+This will load the configuration file `/etc/wireguard/wgnet0.conf'.
+
+The \fIstrip\fP command is useful for reloading configuration files without disrupting active
+sessions:
+
+\fB    # wg syncconf wgnet0 <(wg-quick strip wgnet0)\fP
+
+.SH SEE ALSO
+.BR wg (8),
+.BR ip (8),
+.BR ip-link (8),
+.BR ip-address (8),
+.BR ip-route (8),
+.BR ip-rule (8),
+.BR resolvconf (8).
+
+.SH AUTHOR
+.B wg-quick
+was written by
+.MT Jason@zx2c4.com
+Jason A. Donenfeld
+.ME .
+For updates and more information, a project page is available on the
+.UR https://\:www.wireguard.com/
+World Wide Web
+.UE .

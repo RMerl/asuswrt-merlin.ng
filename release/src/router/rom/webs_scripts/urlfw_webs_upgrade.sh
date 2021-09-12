@@ -10,11 +10,13 @@ dl_path_file="https://dlcdnets.asus.com/pub/ASUS/wireless/ASUSWRT"
 #wget -q -y -O- ${path}/${file} | hnd-write -
 
 echo "---- URLFW To download fw/rsa, Start ----" > /tmp/webs_upgrade.log
+logger -t AUTO_UPGRADE "URLFW To download fw/rsa, Start"
 nvram set webs_state_upgrade=0 # INITIALIZING
 nvram set auto_upgrade=1
 
 cfg_trigger=`echo $1`	# cfg_mnt skip
 echo "---- cfg_trigger=${cfg_trigger} ----" >> /tmp/webs_upgrade.log
+logger -t AUTO_UPGRADE "cfg_trigger=${cfg_trigger}"
 
 if [ "$cfg_trigger" != "1" ]; then # cfg_mnt skip these
 
@@ -64,6 +66,7 @@ fi
 urlpath=`nvram get webs_state_url`
 if [ -z "$IS_BCMHND" ]; then
 	echo "---- ! IS_BCMHND ----" >> /tmp/webs_upgrade.log
+	logger -t AUTO_UPGRADE "! IS_BCMHND"
 	echo 3 > /proc/sys/vm/drop_caches
 fi
 
@@ -76,28 +79,34 @@ fi #cfg_trigger==1
 wget_result=0
 if [ "$update_url" != "" ]; then
 	echo "---- wget fw nvram webs_state_url ${update_url}/$firmware_file ----" >> /tmp/webs_upgrade.log
+	logger -t AUTO_UPGRADE "wget fw nvram webs_state_url $firmware_file"
 	hnd-write ${update_url}/$firmware_file
 elif [ "$forsq" -ge 2 ] && [ "$forsq" -le 9 ]; then
 	echo "---- wget fw sq beta_user ${dl_path_SQ_beta}${forsq}/$firmware_file ----" >> /tmp/webs_upgrade.log
+	logger -t AUTO_UPGRADE "wget fw sq beta_user ${forsq}/$firmware_file"
 	hnd-write ${dl_path_SQ_beta}${forsq}/$firmware_file
 elif [ "$forsq" == "1" ]; then
 	echo "---- wget fw sq ${dl_path_SQ}/$firmware_file ----" >> /tmp/webs_upgrade.log
+	logger -t AUTO_UPGRADE "wget fw sq $firmware_file"
 	hnd-write ${dl_path_SQ}/$firmware_file
 elif [ "$urlpath" == "" ]; then
 	echo "---- wget fw Real ${dl_path_file}/$firmware_file ----" >> /tmp/webs_upgrade.log
+	logger -t AUTO_UPGRADE "wget fw Real $firmware_file"
 	hnd-write ${dl_path_file}/$firmware_file
 else
 	echo "---- wget fw URL ----" >> /tmp/webs_upgrade.log
+	logger -t AUTO_UPGRADE "wget fw URL"
 	hnd-write ${urlpath}/$firmware_file
 fi
 wget_result=$?
 echo "---- [LiveUpdate] hnd-write fw, exit code: ${wget_result} ----" >> /tmp/webs_upgrade.log
-
+logger -t AUTO_UPGRADE "exit code: ${wget_result}"
 
 hndwr_status=`nvram get hndwr`
 if [ "$hndwr_status" != "99" ] && [ "$hndwr_status" != "-100" ]; then
 	echo "---- download fw failure ----" >> /tmp/webs_upgrade.log
-	
+	logger -t AUTO_UPGRADE "download fw failure"
+
 	nvram set $record=1	# fail to download the firmware
 	if [ "$cfg_trigger" != "1" ]; then	# cfg_mnt skip
 		if [ "$force_upgrade" == "1" ]; then
@@ -110,6 +119,7 @@ if [ "$hndwr_status" != "99" ] && [ "$hndwr_status" != "-100" ]; then
 else
 	nvram set webs_state_upgrade=2	
 	echo "---- mv trx OK ----" >> /tmp/webs_upgrade.log
+	logger -t AUTO_UPGRADE "mv trx OK"
 
 	/sbin/ejusb -1 0
 	nvram set fwpath=2
@@ -122,6 +132,7 @@ else
 	fi # cfg_trigger!=1
 fi
 
-echo "---- To download fw/rsa, End ----" >> /tmp/webs_upgrade.log
+echo "---- URLFW To download fw/rsa, End ----" >> /tmp/webs_upgrade.log
+logger -t AUTO_UPGRADE "URLFW To download fw/rsa, End"
 nvram set webs_state_upgrade=1
 nvram commit

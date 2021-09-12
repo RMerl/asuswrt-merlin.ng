@@ -24,6 +24,20 @@ jQuery.fn.enableCheckBox = function(checked){
 		.checkboxradio('refresh')
 }
 
+jQuery.fn.showPasswordScore = function(id){
+	var postfix = (id == undefined)? "": ("_"+id);
+	$("<div>")
+		.attr("id", "scorebarBorder"+postfix)
+		.attr("title", "<#LANHostConfig_x_Password_itemSecur#>")
+		.addClass("scorebarBorder")
+		.appendTo(this.parent());
+
+	$("<div>")
+		.attr("id", "scorebar"+postfix)
+		.addClass("scorebar")
+		.appendTo($("#scorebarBorder"+postfix));
+}
+
 var htmlEnDeCode = (function() {
 	var charToEntityRegex,
 		entityToCharRegex,
@@ -81,6 +95,29 @@ var htmlEnDeCode = (function() {
 		htmlDecode: htmlDecode
 	};
 })();
+
+function getScArray(mode){
+	var smartConnectTable = {
+		"SC_2g5g": {
+			"wlArray": [{"title":"2.4 GHz / 5 GHz", "ifname":"0"}, {"title":"6 GHz", "ifname":"2"}],
+			"value": 3
+		},
+		"SC_5g5g": {
+			"wlArray": [{"title":"2.4 GHz", "ifname":"0"}, {"title":"5 GHz", "ifname":"1"}],
+			"value": 2
+		},
+		"SC_dwb_mode": {
+			"wlArray": [{"title":"2.4 GHz / 5 GHz-1", "ifname":"0"}, {"title":"5 GHz-2", "ifname":"2"}],
+			"value": 1
+		},
+		"SC_all": {
+			"wlArray": [{"title":"", "ifname":"0"}],
+			"value": 1
+		}
+	}
+
+	return smartConnectTable[mode] ||  smartConnectTable["SC_all"];
+}
 
 function getAllWlArray(){
 	var wlArrayRet = [{"title":"2.4 GHz", "ifname":"0", "suffix": ""}];
@@ -264,6 +301,218 @@ function checkPasswd($obj){
 	});
 }
 
+String.prototype.strReverse = function() {
+	var newstring = "";
+	for (var s=0; s < this.length; s++) {
+		newstring = this.charAt(s) + newstring;
+	}
+	return newstring;
+};
+
+function chkPass(flag, pwd, idx) {
+	var orig_pwd = "";
+	var postfix = (idx == undefined)? "": ("_" + idx);
+	var oScorebar = document.getElementById("scorebar"+postfix);
+
+	if(flag == "httpd" && (isSku("KR") || isSku("SG") || isSku("AA"))){
+		oScorebar.style.display = "none";
+		return;
+	}
+
+	// Simultaneous variable declaration and value assignment aren't supported in IE apparently
+	// so I'm forced to assign the same value individually per var to support a crappy browser *sigh*
+	var nScore=0, nLength=0, nAlphaUC=0, nAlphaLC=0, nNumber=0, nSymbol=0, nMidChar=0, nRequirements=0, nAlphasOnly=0, nNumbersOnly=0, nUnqChar=0, nRepChar=0, nRepInc=0, nConsecAlphaUC=0, nConsecAlphaLC=0, nConsecNumber=0, nConsecSymbol=0, nConsecCharType=0, nSeqAlpha=0, nSeqNumber=0, nSeqSymbol=0, nSeqChar=0, nReqChar=0, nMultConsecCharType=0;
+	var nMultRepChar=1, nMultConsecSymbol=1;
+	var nMultMidChar=2, nMultRequirements=2, nMultConsecAlphaUC=2, nMultConsecAlphaLC=2, nMultConsecNumber=2;
+	var nReqCharType=3, nMultAlphaUC=3, nMultAlphaLC=3, nMultSeqAlpha=3, nMultSeqNumber=3, nMultSeqSymbol=3;
+	var nMultLength=4, nMultNumber=4;
+	var nMultSymbol=6;
+	var nTmpAlphaUC="", nTmpAlphaLC="", nTmpNumber="", nTmpSymbol="";
+	var sAlphaUC="0", sAlphaLC="0", sNumber="0", sSymbol="0", sMidChar="0", sRequirements="0", sAlphasOnly="0", sNumbersOnly="0", sRepChar="0", sConsecAlphaUC="0", sConsecAlphaLC="0", sConsecNumber="0", sSeqAlpha="0", sSeqNumber="0", sSeqSymbol="0";
+	var sAlphas = "abcdefghijklmnopqrstuvwxyz";
+	var sNumerics = "01234567890";
+	var sSymbols = "~!@#$%^&*()_+";
+	var sComplexity = "";
+	var nMinPwdLen = 8;
+	if (document.all) { var nd = 0; } else { var nd = 1; }
+	if (pwd) {
+		nScore = parseInt(pwd.length * nMultLength);
+		nLength = pwd.length;
+		var arrPwd = pwd.replace(/\s+/g,"").split(/\s*/);
+		var arrPwdLen = arrPwd.length;
+
+		/* Main calculation for strength:
+				Loop through password to check for Symbol, Numeric, Lowercase and Uppercase pattern matches */
+		for (var a=0; a < arrPwdLen; a++) {
+			if (arrPwd[a].match(/[A-Z]/g)) {
+				if (nTmpAlphaUC !== "") { if ((nTmpAlphaUC + 1) == a) { nConsecAlphaUC++; nConsecCharType++; } }
+				nTmpAlphaUC = a;
+				nAlphaUC++;
+			}
+			else if (arrPwd[a].match(/[a-z]/g)) {
+				if (nTmpAlphaLC !== "") { if ((nTmpAlphaLC + 1) == a) { nConsecAlphaLC++; nConsecCharType++; } }
+				nTmpAlphaLC = a;
+				nAlphaLC++;
+			}
+			else if (arrPwd[a].match(/[0-9]/g)) {
+				if (a > 0 && a < (arrPwdLen - 1)) { nMidChar++; }
+				if (nTmpNumber !== "") { if ((nTmpNumber + 1) == a) { nConsecNumber++; nConsecCharType++; } }
+				nTmpNumber = a;
+				nNumber++;
+			}
+			else if (arrPwd[a].match(/[^a-zA-Z0-9_]/g)) {
+				if (a > 0 && a < (arrPwdLen - 1)) { nMidChar++; }
+				if (nTmpSymbol !== "") { if ((nTmpSymbol + 1) == a) { nConsecSymbol++; nConsecCharType++; } }
+				nTmpSymbol = a;
+				nSymbol++;
+			}
+			/* Internal loop through password to check for repeat characters */
+			var bCharExists = false;
+			for (var b=0; b < arrPwdLen; b++) {
+				if (arrPwd[a] == arrPwd[b] && a != b) { /* repeat character exists */
+					bCharExists = true;
+					/*
+					Calculate icrement deduction based on proximity to identical characters
+					Deduction is incremented each time a new match is discovered
+					Deduction amount is based on total password length divided by the
+					difference of distance between currently selected match
+					*/
+					nRepInc += Math.abs(arrPwdLen/(b-a));
+				}
+			}
+			if (bCharExists) {
+				nRepChar++;
+				nUnqChar = arrPwdLen-nRepChar;
+				nRepInc = (nUnqChar) ? Math.ceil(nRepInc/nUnqChar) : Math.ceil(nRepInc);
+			}
+		}
+
+		/* Check for sequential alpha string patterns (forward and reverse) */
+		for (var s=0; s < 23; s++) {
+			var sFwd = sAlphas.substring(s,parseInt(s+3));
+			var sRev = sFwd.strReverse();
+			if (pwd.toLowerCase().indexOf(sFwd) != -1 || pwd.toLowerCase().indexOf(sRev) != -1) { nSeqAlpha++; nSeqChar++;}
+		}
+
+		/* Check for sequential numeric string patterns (forward and reverse) */
+		for (var s=0; s < 8; s++) {
+			var sFwd = sNumerics.substring(s,parseInt(s+3));
+			var sRev = sFwd.strReverse();
+			if (pwd.toLowerCase().indexOf(sFwd) != -1 || pwd.toLowerCase().indexOf(sRev) != -1) { nSeqNumber++; nSeqChar++;}
+		}
+
+		/* Check for sequential symbol string patterns (forward and reverse) */
+		for (var s=0; s < 8; s++) {
+			var sFwd = sSymbols.substring(s,parseInt(s+3));
+			var sRev = sFwd.strReverse();
+			if (pwd.toLowerCase().indexOf(sFwd) != -1 || pwd.toLowerCase().indexOf(sRev) != -1) { nSeqSymbol++; nSeqChar++;}
+		}
+
+		/* Modify overall score value based on usage vs requirements */
+
+		/* General point assignment */
+		if (nAlphaUC > 0 && nAlphaUC < nLength) {
+			nScore = parseInt(nScore + ((nLength - nAlphaUC) * 2));
+			sAlphaUC = "+ " + parseInt((nLength - nAlphaUC) * 2);
+		}
+		if (nAlphaLC > 0 && nAlphaLC < nLength) {
+			nScore = parseInt(nScore + ((nLength - nAlphaLC) * 2));
+			sAlphaLC = "+ " + parseInt((nLength - nAlphaLC) * 2);
+		}
+		if (nNumber > 0 && nNumber < nLength) {
+			nScore = parseInt(nScore + (nNumber * nMultNumber));
+			sNumber = "+ " + parseInt(nNumber * nMultNumber);
+		}
+		if (nSymbol > 0) {
+			nScore = parseInt(nScore + (nSymbol * nMultSymbol));
+			sSymbol = "+ " + parseInt(nSymbol * nMultSymbol);
+		}
+		if (nMidChar > 0) {
+			nScore = parseInt(nScore + (nMidChar * nMultMidChar));
+			sMidChar = "+ " + parseInt(nMidChar * nMultMidChar);
+		}
+
+		/* Point deductions for poor practices */
+		if ((nAlphaLC > 0 || nAlphaUC > 0) && nSymbol === 0 && nNumber === 0) {  // Only Letters
+			nScore = parseInt(nScore - nLength);
+			nAlphasOnly = nLength;
+			sAlphasOnly = "- " + nLength;
+		}
+		if (nAlphaLC === 0 && nAlphaUC === 0 && nSymbol === 0 && nNumber > 0) {  // Only Numbers
+			nScore = parseInt(nScore - nLength);
+			nNumbersOnly = nLength;
+			sNumbersOnly = "- " + nLength;
+		}
+		if (nRepChar > 0) {  // Same character exists more than once
+			nScore = parseInt(nScore - nRepInc);
+			sRepChar = "- " + nRepInc;
+		}
+		if (nConsecAlphaUC > 0) {  // Consecutive Uppercase Letters exist
+			nScore = parseInt(nScore - (nConsecAlphaUC * nMultConsecAlphaUC));
+			sConsecAlphaUC = "- " + parseInt(nConsecAlphaUC * nMultConsecAlphaUC);
+		}
+		if (nConsecAlphaLC > 0) {  // Consecutive Lowercase Letters exist
+			nScore = parseInt(nScore - (nConsecAlphaLC * nMultConsecAlphaLC));
+			sConsecAlphaLC = "- " + parseInt(nConsecAlphaLC * nMultConsecAlphaLC);
+		}
+		if (nConsecNumber > 0) {  // Consecutive Numbers exist
+			nScore = parseInt(nScore - (nConsecNumber * nMultConsecNumber));
+			sConsecNumber = "- " + parseInt(nConsecNumber * nMultConsecNumber);
+		}
+		if (nSeqAlpha > 0) {  // Sequential alpha strings exist (3 characters or more)
+			nScore = parseInt(nScore - (nSeqAlpha * nMultSeqAlpha));
+			sSeqAlpha = "- " + parseInt(nSeqAlpha * nMultSeqAlpha);
+		}
+		if (nSeqNumber > 0) {  // Sequential numeric strings exist (3 characters or more)
+			nScore = parseInt(nScore - (nSeqNumber * nMultSeqNumber));
+			sSeqNumber = "- " + parseInt(nSeqNumber * nMultSeqNumber);
+		}
+		if (nSeqSymbol > 0) {  // Sequential symbol strings exist (3 characters or more)
+			nScore = parseInt(nScore - (nSeqSymbol * nMultSeqSymbol));
+			sSeqSymbol = "- " + parseInt(nSeqSymbol * nMultSeqSymbol);
+		}
+
+		/* Determine complexity based on overall score */
+		if (nScore > 100) { nScore = 100; } else if (nScore < 0) { nScore = 0; }
+		if (nScore >= 0 && nScore < 20) { sComplexity = "<#AiProtection_scan_rDanger#>"; }
+		else if (nScore >= 20 && nScore < 40) { sComplexity = "<#PASS_score1#>"; }
+		else if (nScore >= 40 && nScore < 60) { sComplexity = "<#PASS_score2#>"; }
+		else if (nScore >= 60 && nScore < 80) { sComplexity = "<#PASS_score3#>"; }
+		else if (nScore >= 80 && nScore <= 100) { sComplexity = "<#PASS_score4#>"; }
+
+		/* Display updated score criteria to client */
+		$('#scorebarBorder'+postfix).css("display", "block");
+		oScorebar.style.backgroundPosition = parseInt(nScore) + "%";
+		oScorebar.innerHTML = sComplexity;
+	}
+	else{
+		chkPass("", " ", idx);
+	}
+}
+
+function check_password_length(obj){
+
+	var password = obj.value;
+	var httpPassInput = $("#http_passwd");
+
+        if(isSku("KR") || isSku("SG") || isSku("AA")){     /* MODELDEP by Territory Code */
+		httpPassInput.showTextHint("");
+		return;
+	}
+
+	if(password.length > systemVariable.maxPasswordLen){
+		httpPassInput.showTextHint("<#JS_max_password#>");
+		obj.focus();
+	}
+	else if(password.length > 0 && password.length < 5){
+		httpPassInput.showTextHint("<#JS_short_password#> <#JS_password_length#>");
+		obj.focus();
+	}
+	else{
+		httpPassInput.showTextHint("");
+	}
+}
+
 function checkWepKey($obj, wepType){
 	var status = false;
 	var wepKey = $obj.val();
@@ -284,6 +533,30 @@ function checkWepKey($obj, wepType){
 		}
 	}
 	return status;
+}
+
+function check_dwb_ssid(){
+	var confilct_flag = false;
+	var dwb_band = httpApi.nvramGet(["dwb_band"]).dwb_band;
+	var $dwbObj = $("#wireless_ssid_" + dwb_band + "");
+	if($dwbObj.length == "1"){
+		var backhaul_ssid = $dwbObj.val();
+		if(backhaul_ssid != ""){
+			var confilct_flag = false;
+			$(".wlInput").each(function(index, item) {
+				var item_id = $(item).attr("id");
+				if(item_id.indexOf("wireless_ssid_") >= 0 && item_id != $dwbObj.attr("id")){
+					if($(item).val() == backhaul_ssid){
+						var hint = "Use a different Network Name (SSID) for your #WIRELESSBAND band.".replace("#WIRELESSBAND", getAllWlArray()[dwb_band].title);
+						$dwbObj.showTextHint(hint);
+						confilct_flag = true;
+						return false;
+					}
+				}
+			});
+		}
+	}
+	return confilct_flag;
 }
 
 function hasBlank(objArray){
@@ -325,6 +598,32 @@ function showDiableDHCPclientID(clientid_enable){
 		                  .show();
 	}
 }
+
+function set_state_info(state){
+	        switch(state) {
+                case "down":
+                        $("#LED_state").html("<#adsl_link_sts_itemname#> : Link down (DSL LED Off)<br>");
+                        $("#LED_state").show();
+                        break;
+                case "wait":
+                case "wait for init":
+                        $("#LED_state").html("<#adsl_link_sts_itemname#> : Wait for init (DSL LED Flashing)<br>");
+                        $("#LED_state").show();
+                        break;
+                case "init":
+                case "initializing":
+                        $("#LED_state").html("<#adsl_link_sts_itemname#> : Initializing (DSL LED Flashing)<br>");
+                        $("#LED_state").show();
+                        break;
+                case "up":
+                        $("#LED_state").html("<#adsl_link_sts_itemname#> : Link up (DSL LED On)<br>");
+                        $("#LED_state").show();
+                        break;
+                default:
+                        $("#LED_state").hide();
+                        break;
+        	}
+	}
 
 var Get_Component_Header = function(){
 	var tableTr = $("<tr>");
@@ -478,10 +777,6 @@ var Get_Component_WirelessInput = function(wlArray){
 			wirelessAP["wl" + wl.ifname + "_ssid"] = "";
 			wirelessAP["wl" + wl.ifname + "_wpa_psk"] = "";
 		}
-		else{
-			if(wirelessAP["wl" + wl.ifname + "_auth_mode_x"] != "psk2")
-				wirelessAP["wl" + wl.ifname + "_wpa_psk"] = "";
-		}
 
 		if(systemVariable.multiPAP.wlcOrder.length > 0){
 			var ssid_tmp = "";
@@ -529,7 +824,7 @@ var Get_Component_WirelessInput = function(wlArray){
 				.attr({
 					"id": "wireless_ssid_" + wl.ifname,
 					"type": "text",
-					"maxlength": "32",
+					"maxlength": "33",
 					"class": "textInput wlInput",
 					"autocomplete": "off",
 					"autocorrect": "off",
@@ -546,6 +841,8 @@ var Get_Component_WirelessInput = function(wlArray){
 					if(e.keyCode == 13){
 						$(".wlInput")[idx*2+1].focus();
 					}
+
+					validator.ssidCheck($("#"+this.id));
 				})
 				.val(decodeURIComponent(wirelessAP["wl" + wl.ifname + "_ssid"]))
 			)
@@ -585,6 +882,7 @@ var Get_Component_WirelessInput = function(wlArray){
 							apply.wireless();
 						}
 					}
+					chkPass("WiFi", this.value, wl.ifname);
 				})
 				.val(decodeURIComponent(wirelessAP["wl" + wl.ifname + "_wpa_psk"]))
 			)
@@ -645,6 +943,7 @@ function handleSysDep(){
 	$(".repeaterSupport").toggle(isSupport("repeater"));
 	$(".pstaSupport").toggle(isSupport("psta"));
 	$(".dualbandSupport").toggle(isSupport("dualband") || isSupport("triband"));
+	$(".v6plus").toggle(isSupport("s46"));
 	$(".vpnClient").toggle(isSupport("VPNCLIENT"));
 	$(".iptv").toggle(isSupport("IPTV"));
 	$(".defaultSupport").toggle(systemVariable.isDefault);
@@ -670,10 +969,24 @@ function handleSysDep(){
 			$("#product_location").attr("src", "/images/product_location_3pack.png")
 	}
 
-	if(isGundam() && !$('.GD-head').length){
-		$('head').append('<link rel="stylesheet" type="text/css" href="/css/gundam.css">');
+	if((isGundam() || isKimetsu()) && !$('.GD-head').length){
+		if(isGundam()){
+			$('head').append('<link rel="stylesheet" type="text/css" href="/css/gundam.css">');
+		}
+		else if(isKimetsu()){
+			$('head').append('<link rel="stylesheet" type="text/css" href="/css/kimetsu.css">');
+		}
+		
 		$("#summary_page").append($("<div>").attr({"id": "gdContainer", "class": "gundam-footer-field"}).hide())
-		$("#gdContainer").append($("<div>").attr({"class": "GD-head"}))
+		$("#summary_page").append($("<div>").attr({"id": "gd-logo", "class": "icon_logo-1"}).show())
+		$("#gdContainer").html('');
+		if(systemVariable.productid == 'GT-AX11000'){
+			$("#gdContainer").append($("<div>").attr({"class": "GD-head-1"}))
+		}
+		else{
+			$("#gdContainer").append($("<div>").attr({"class": "GD-head"}))
+		}
+		
 		$("#gdContainer").append($("<div>").attr({"class": "GD-wait"}).append($("<div>").attr({"id": "GD-status"}).html("Installing..")))
 		$("#gdContainer").append($("<div>").attr({"class": "GD-footer-left"}))
 		$("#gdContainer").append($("<div>").attr({"class": "GD-footer-extend"}))
@@ -681,28 +994,39 @@ function handleSysDep(){
 		$("#gdContainer").append($("<div>").attr({"class": "GD-footer-extend"}))
 		$("#gdContainer").append($("<div>").attr({"class": "GD-footer-right"}))
 		$("#gdContainer").append($("<div>").attr({"class": "GD-law-label"}))
-
 		// systemVariable.imgContainer = [];
 
-		var gdImagesList = ["-head", "_bg", "_bg_bottom01", "_bg_bottom02", "_bg_bottom03", "_bg_bottom04", "_lawlabel", "-logo", "-waiting"]
-		gdImagesList.forEach(function(imageUrl){
-			var tmpObj = new Image();
-			tmpObj.src = "/images/gundam" + imageUrl + ".png";
-			// systemVariable.imgContainer.push(tmpObj)
-		})
+		if(isGundam()){
+			var gdImagesList = ["-head", "_bg", "_bg_bottom01", "_bg_bottom02", "_bg_bottom03", "_bg_bottom04", "_lawlabel", "-logo", "-waiting"]
+			gdImagesList.forEach(function(imageUrl){
+				var tmpObj = new Image();
+				tmpObj.src = "/images/gundam" + imageUrl + ".png";
+				// systemVariable.imgContainer.push(tmpObj)
+			})
+		}
+		else if(isKimetsu()){
+			var gdImagesList = ["-head", "_bg", "_bg_bottom02", "_lawlabel", "-logo", "-waiting"]
+			gdImagesList.forEach(function(imageUrl){
+				var tmpObj = new Image();
+				tmpObj.src = "/images/kimetsu_no_yaiba" + imageUrl + ".png";
+				// systemVariable.imgContainer.push(tmpObj)
+			})
+		}
+		
 	}
 }
 
 function handleModelIcon() {
-	$('#ModelPid_img').css('background-image', 'url(' + function() {
-		var modelInfo = httpApi.nvramGet(["territory_code", "productid", "odmpid", "color", "rc_support", "CoBrand"], true);
-		var ttc = modelInfo.territory_code;
-		var CoBrand = modelInfo.CoBrand;
-		var isGundam = (CoBrand == 1 || ttc.search('GD') == '0');
-		var based_modelid = modelInfo.productid;
-		var odmpid = modelInfo.odmpid;
-		var color = modelInfo.color.toUpperCase();
-		var odm_support = (modelInfo.rc_support.indexOf('odm') != -1) ? true : false;
+	var modelInfo = httpApi.nvramGet(["territory_code", "productid", "odmpid", "color", "rc_support", "CoBrand"], true);
+	var ttc = modelInfo.territory_code;
+	var CoBrand = modelInfo.CoBrand;
+	var isGundam = (CoBrand == 1 || ttc.search('GD') == '0');
+	var isKimetsu = (CoBrand == 2);
+	var based_modelid = modelInfo.productid;
+	var odmpid = modelInfo.odmpid;
+	var color = modelInfo.color.toUpperCase();
+	var odm_support = (modelInfo.rc_support.indexOf('odm') != -1) ? true : false;
+	$('#ModelPid_img').css('background-image', 'url(' + function() {	
 		var LinkCheck = function(url) {
 			var http = new XMLHttpRequest();
 			http.open('HEAD', url, false);
@@ -745,6 +1069,9 @@ function handleModelIcon() {
 				MP_png_path = "/images/RT-AC66U_V2/Model_product.png";
 			else if(odmpid == "RP-AC1900")
 				MP_png_path = "/images/RP-AC1900/Model_product.png";
+			else if(odmpid == "RT-AX86S"){
+				MP_png_path = "/images/Model_product_rt-ax86s.png";
+			}
 
 			if(MP_png_path == "")
 				return default_png_path;
@@ -755,15 +1082,25 @@ function handleModelIcon() {
 					return default_png_path;
 			}
 		}
-		else if((based_modelid == 'RT-AX82U' || based_modelid == 'RT-AX86U') && isGundam){
+		else if(isGundam){
 			return default_png_path = "/images/Model_product_GD.png";
 		}
 		else if(odm_support){
 			return default_png_path = "/images/Model_product_COD.png";
 		}
+		else if(isKimetsu){
+			return default_png_path = "/images/Model_product_KNY.png";
+		}
 		else
 			return default_png_path;	
 	}() + ')');
+
+	if(odmpid == 'RT-AX86S'){
+		$("#resetModem").removeClass('unplug').addClass("unplug-ax86s");
+		$("#noWanPic").attr("src", "/images/WANunplug_rt-ax86s.png");
+		$("#noWanEth").attr("src", "/images/WANunplug_eth_rt-ax86s.png");
+		$("#noWanUsb").attr("src", "/images/WANunplug_usb_rt-ax86s.png");
+	}
 }
 
 function handleSortField(){
@@ -946,6 +1283,8 @@ function updateSubnet(ipAddr){
 var getRestartService = function(){
 	var actionScript = [];
 	var original_switch_wantag = httpApi.nvramGet(["switch_wantag"]).switch_wantag;
+	var current_webs_chg_sku = (httpApi.nvramGet(["webs_chg_sku"], true).webs_chg_sku=="1")? true:false;
+	var current_webs_SG_mode = (httpApi.nvramGet(["webs_SG_mode"], true).webs_SG_mode=="1")? true:false;
 
 	if(isWANChanged()){
 		actionScript.push("restart_wan_if " + systemVariable.ethWanIf);
@@ -965,6 +1304,10 @@ var getRestartService = function(){
 
 	if(qisPostData.hasOwnProperty("yadns_enable_x")){
 		actionScript.push("restart_yadns");
+	}
+
+	if(qisPostData.hasOwnProperty("ipv6_service")){
+		actionScript.push("restart_net");	
 	}
 
 	if(
@@ -998,6 +1341,11 @@ var getRestartService = function(){
 		return "restart_all";
 	}
 
+	/*if(current_webs_SG_mode){
+		actionScript.push("restart_wireless");
+		actionScript.push("stop_upnp");
+	}*/
+
 	if(isSupport("2p5G_LWAN") || isSupport("10G_LWAN") || isSupport("10GS_LWAN")){
 		if(isWANLANChange())
 			return "reboot";
@@ -1009,6 +1357,10 @@ var getRestartService = function(){
 		qisPostData.hasOwnProperty("wans_dualwan") ||
 		isSwModeChanged()
 	){
+		return "reboot";
+	}
+
+	if(current_webs_chg_sku){
 		return "reboot";
 	}
 
@@ -1134,22 +1486,22 @@ var isSupport = function(_ptn){
 			matchingResult = (isSku("US") || isSku("CA") || isSku("TW") || isSku("CN") || isSku("CT") || isSku("GD") || isSku("TC")) ? false : true;
 			break;
 		case "IPTV":
-			matchingResult = (isSku("US") || isSku("CN") || isSku("CT") || isSku("GD") || isSku("TC") || isSku("CA")) ? false : true;
+			matchingResult = (isSku("US") || isSku("CN") || isSku("CT") || isSku("GD") || isSku("TC") || isSku("CA")|| isSku("U2") || isSku("TW")) ? false : true;
 			break;
 		case "SMARTCONNECT":
-			matchingResult = (ui_support["smart_connect"] == 1 || ui_support["bandstr"] == 1) ? true : false;
+			matchingResult = (ui_support["smart_connect"] == "1" || ui_support["smart_connect"] == "2" || ui_support["bandstr"] == "1") ? true : false;
 			break;
 		case "GUNDAM_UI":
-			matchingResult = (isGundam() && $(".desktop_left_field").is(":visible")) ? true : false;
+			matchingResult = ((isGundam() || isKimetsu()) && $(".desktop_left_field").is(":visible")) ? true : false;
 			break;
 		case "amas_bdl":
-			matchingResult = (ui_support["amas_bdl"] == 1 && amas_bdlkey.length == 0) ? true : false;
+			matchingResult = (ui_support["amas_bdl"] == 1 && amas_bdlkey.length != 0) ? true : false;
 			break;
 		case "FRONTHAUL_NETWORK":
 			matchingResult = ui_support["amas_fronthaul_network"] || false;
 			break;
 		case "MB_mode_concurrep":
-			if(isSwMode("MB") && (ui_support["concurrep"] == 1) && odmpid != "RP-AC1900" && based_modelid != 'RP-AX56')
+			if(isSwMode("MB") && (ui_support["concurrep"] == 1) && odmpid != "RP-AC1900" && based_modelid != 'RP-AX56' && based_modelid != 'RP-AX58')
 				matchingResult = true;
 			else
 				matchingResult = false;
@@ -1162,10 +1514,17 @@ var isSupport = function(_ptn){
 	return matchingResult;
 }
 
+var getSupportNum = function(_ptn){
+	var ui_support = httpApi.hookGet("get_ui_support");
+	return ui_support[_ptn];
+}
+
 var isGundam = function(){
 	return (isSku("GD") || systemVariable.CoBrand == "1");
 }
-
+var isKimetsu = function(){
+	return (systemVariable.CoBrand == "2");
+}
 var isSku = function(_ptn){
 	return (systemVariable.territoryCode.search(_ptn) == -1) ? false : true;
 }
@@ -1341,11 +1700,12 @@ validator.KRSkuPwd = function(str){
 		'errReason': ''
 	}
 
-	if( !/[A-Za-z]/.test(str) || !/[0-9]/.test(str) || str.length < 8 
+	if( !/[A-Za-z]/.test(str) || !/[0-9]/.test(str) || str.length < 10
 		|| !/[\!\"\#\$\%\&\'\(\)\*\+\,\-\.\/\:\;\<\=\>\?\@\[\\\]\^\_\`\{\|\}\~]/.test(str)
+		|| /([A-Za-z0-9\!\"\#\$\%\&\'\(\)\*\+\,\-\.\/\:\;\<\=\>\?\@\[\\\]\^\_\`\{\|\}\~])\1/.test(str)
 	){
 		testResult.isError = true;
-		testResult.errReason = "<#JS_validPWD#>";
+		testResult.errReason = "<#JS_validLoginPWD#>";
 	}
 
 	var invalid_char = [];

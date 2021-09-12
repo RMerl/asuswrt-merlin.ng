@@ -15,7 +15,7 @@ LDFLAGS += -L$(TOP)/openssl -lcrypto -lssl $(if $(RTCONFIG_OPENSSL11),-lpthread,
 
 INSTALL = install
 
-OBJS = openvpn_config.o openvpn_control.o openvpn_setup.o
+OBJS = openvpn_config.o openvpn_control.o openvpn_setup.o openvpn_options.o
 
 all: libovpn.so
 

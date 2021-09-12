@@ -2,8 +2,19 @@
 
 echo "!!! ATE RUN-IN START !!!"
 
-intf_2G=eth6
-intf_5G=eth7
+wl_ifnames=`nvram get wl_ifnames`
+
+wl_unit=0
+for ifname in $wl_ifnames; do
+	if [ $wl_unit -eq 0 ]; then
+		intf_2G=$ifname
+	elif [ $wl_unit -eq 1 ]; then
+		intf_5G=$ifname
+		break
+	fi
+
+	wl_unit=`expr $wl_unit + 1`
+done
 
 # CPU (+ MEMORY ?)
 echo "start stress..."

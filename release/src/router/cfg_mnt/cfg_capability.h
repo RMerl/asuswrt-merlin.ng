@@ -32,12 +32,12 @@ enum capabilityType {
 	GUEST_NETWORK_NO_5G = 7,
 	GUEST_NETWORK_NO_5GH = 8,
 #endif
-	STA_2G_AUTH = 9,			/* supported authentication for 2g sta (upstream) */
-	STA_5G_AUTH = 10,			/* supported authentication for 5g/5g low sta (upstream) */
-	STA_5GH_AUTH = 11,			/* supported authentication for 5g high sta (upstream) */
-	AP_2G_AUTH = 12,			/* supported authentication for 2g ap (downstream) */
-	AP_5G_AUTH = 13,			/* supported authentication for 5g/5g low ap (downstream) */
-	AP_5GH_AUTH = 14,			/* supported authentication for 5g high ap (downstream) */
+	STA_BAND0_AUTH = 9,			/* supported authentication for band0 sta (upstream) */
+	STA_BAND1_AUTH = 10,			/* supported authentication for band1 sta (upstream) */
+	STA_BAND2_AUTH = 11,			/* supported authentication for band2 sta (upstream) */
+	AP_BAND0_AUTH = 12,			/* supported authentication for band0 ap (downstream) */
+	AP_BAND1_AUTH = 13,			/* supported authentication for band1 ap (downstream) */
+	AP_BAND2_AUTH = 14,			/* supported authentication for band2 ap (downstream) */
 	WANS_CAP = 15,
 	RE_RECONNECT = 16,
 	FORCE_ROAMING = 17,
@@ -84,6 +84,8 @@ enum capabilityType {
 #define WL_SCHED_V2		BIT(4)
 #define WIFI_RADIO		BIT(5)
 #define WL_SCHED_V3		BIT(6)
+#define SWITCHCTRL		BIT(8)
+#define LOCAL_ACCESS		BIT(10)
 
 /* for LINK_AGGREGATION */
 #define LACP_ENABLE                    BIT(0)
@@ -107,6 +109,7 @@ enum capabilityType {
 #define WPA_WPA2_ENTERPRISE	BIT(10)
 #define WPA2_WPA3_ENTERPRISE	BIT(11)
 #define RADIUS_WITH_8021X		BIT(12)
+#define OWE						BIT(13)
 
 /* for wan capability */
 #define WANS_CAP_WAN        BIT(0)

@@ -33,20 +33,36 @@ function initial_amesh_obj() {
 		$('.amesh_popup_bg').remove();
 	}
 }
-function check_wl_auth_support(_wl_auth_mode_x, _obj) {
+function check_wl_auth_support(_obj, _wl_unit) {
+	var auth_mode = _obj.val();
+	var auth_text = _obj.text();
 	var support_flag = false;
 	var support_auth = ["psk2", "pskpsk2"];
 
+	if(isSupport("wifi6e")){
+		var wl_band = httpApi.nvramGet(["wl" + _wl_unit + "_nband"])["wl" + _wl_unit + "_nband"];//1:5G, 2:2.4G, 4:6G
+		if(wl_band == 4)
+			support_auth = ["sae"];
+		else
+			support_auth = ["psk2", "pskpsk2", "psk2sae"];
+	}
+	else{
+		var re_count = httpApi.hookGet("get_cfg_clientlist", true).length;
+		if(re_count > 1)// have re node
+			support_auth = ["psk2", "pskpsk2", "psk2sae"];
+		else
+			support_auth = ["psk2", "pskpsk2"];
+	}
+
 	for (var idx in support_auth) {
 		if (support_auth.hasOwnProperty(idx)) {
-			if(_wl_auth_mode_x == support_auth[idx]) {
+			if(auth_mode == support_auth[idx]) {
 				support_flag = true;
 				break;
 			}
 		}
 	}
 	if(!support_flag) {
-		var auth_text = _obj.text();
 		var confirm_msg = "<#AiMesh_confirm_msg9#>".replace("#AUTHMODE", auth_text);
 		support_flag = confirm(confirm_msg);
 	}

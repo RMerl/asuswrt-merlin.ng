@@ -234,6 +234,7 @@ uint8_t* FAST_FUNC udhcp_get_option(struct dhcp_packet *packet, int code)
 	rem = sizeof(packet->options);
 	while (1) {
 		if (rem <= 0) {
+complain:
 			bb_error_msg("bad packet, malformed option field");
 			return NULL;
 		}
@@ -262,9 +263,18 @@ uint8_t* FAST_FUNC udhcp_get_option(struct dhcp_packet *packet, int code)
 		len = 2 + optionptr[OPT_LEN];
 		rem -= len;
 		if (rem < 0)
-			continue; /* complain and return NULL */
+			goto complain; /* complain and return NULL */
 
 		if (optionptr[OPT_CODE] == code) {
+			if (optionptr[OPT_LEN] == 0) {
+				/* So far no valid option with length 0 known.
+				 * Having this check means that searching
+				 * for DHCP_MESSAGE_TYPE need not worry
+				 * that returned pointer might be unsafe
+				 * to dereference.
+				 */
+				goto complain; /* complain and return NULL */
+			}
 			log_option("option found", optionptr);
 			return optionptr + OPT_DATA;
 		}
@@ -279,6 +289,16 @@ uint8_t* FAST_FUNC udhcp_get_option(struct dhcp_packet *packet, int code)
 	/* log3 because udhcpc uses it a lot - very noisy */
 	log3("option 0x%02x not found", code);
 	return NULL;
+}
+
+uint8_t* FAST_FUNC udhcp_get_option32(struct dhcp_packet *packet, int code)
+{
+	uint8_t *r = udhcp_get_option(packet, code);
+	if (r) {
+		if (r[-OPT_DATA + OPT_LEN] != 4)
+			r = NULL;
+	}
+	return r;
 }
 
 /* Return the position of the 'end' option (no bounds checking) */

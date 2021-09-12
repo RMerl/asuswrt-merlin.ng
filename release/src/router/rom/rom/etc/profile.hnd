@@ -11,6 +11,14 @@ ldd() {
 
 [ -n "${TMOUT+x}" ] || export TMOUT="$(nvram get shell_timeout 2>/dev/null)"
 
+enable=`nvram get enable_core_dump`
+if [ ! -z $enable ]; then
+	mount ubi:rootfs_ubifs / -t ubifs -o remount,rw
+	ulimit -c unlimited
+	echo 1 > /proc/sys/kernel/core_uses_pid
+	echo "/tmp/core-%e-%g-%p-%s-%t-%u" > /proc/sys/kernel/core_pattern
+	echo 2 > /proc/sys/fs/suid_dumpable
+fi
 [ -f /jffs/etc/profile ] && . /jffs/etc/profile
 [ -f /opt/etc/profile ] && . /opt/etc/profile
 [ "$(nvram get jffs2_scripts)" = "1" ] && [ -f /jffs/configs/profile.add ] && . /jffs/configs/profile.add

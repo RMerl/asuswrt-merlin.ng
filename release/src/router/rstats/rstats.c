@@ -155,6 +155,8 @@ enum if_id {
 	IFID_WAGGR8,		/* WAGGR8, if LAN8 is slave interface of WAN bonding interface */
 	IFID_WAGGR30,		/* WAGGR30, if 10G base-T (RJ-45) is slave interface of WAN bonding interface */
 	IFID_WAGGR31,		/* WAGGR30, if 10G SFP+ is slave interface of WAN bonding interface */
+	IFID_LACPW1,		/* LACPW1, if WAN1 is slave interface of LAN bonding interface */
+	IFID_LACPW2,		/* LACPW2, if WAN2 is slave interface of LAN bonding interface */
 
 	IFID_MAX
 };
@@ -797,11 +799,20 @@ static enum if_id desc_to_id(char *desc)
 		else if (*d == '.' && *s >= '0' && *s <= '6' && *(s + 1) == '\0')
 			id = IFID_WIRELESS3 + *s - '0' + 1;
 	} else if (!strncmp(desc, "LACP", 4)) {
-		s = desc + 4;
-		if (*s != '\0') {
-			v = safe_atoi(s);
-			if (v >= 1 && v <= 8)
-				id = IFID_LACP1 + v - 1;
+		if (!strncmp(desc, "LACPW", 5)) {
+			s = desc + 5;
+			if (*s != '\0') {
+				v = safe_atoi(s);
+				if (v >= 1 && v <= 2)
+					id = IFID_LACPW1 + v - 1;
+			}
+		} else {
+			s = desc + 4;
+			if (*s != '\0') {
+				v = safe_atoi(s);
+				if (v >= 1 && v <= 8)
+					id = IFID_LACP1 + v - 1;
+			}
 		}
 	} else if (!strncmp(desc, "WAGGR", 5)) {
 		s = desc + 5;

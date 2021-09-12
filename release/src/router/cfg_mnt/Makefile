@@ -15,9 +15,14 @@ LDFLAGS += -L$(TOP)/json-c/.libs -ljson-c
 LDFLAGS += -lm
 
 ifeq ($(RTCONFIG_AMAS),y)
+ifeq ($(RTCONFIG_LLDPD_1_0_11),y)
+LLDPD_DIR = $(TOP)/lldpd-1.0.11
+else
+LLDPD_DIR = $(TOP)/lldpd-0.9.8
+endif
 CFLAGS += -I$(TOP)/amas-utils -I$(TOP)/shared/sysdeps/amas
 LDFLAGS += -L$(TOP)/amas-utils -lamas-utils
-LDFLAGS += -L$(TOP)/lldpd-0.9.8/src/lib/.libs -llldpctl -L$(STAGEDIR)/usr/lib/ -ljansson
+LDFLAGS += -L$(LLDPD_DIR)/src/lib/.libs -llldpctl -L$(STAGEDIR)/usr/lib/ -ljansson
 ifeq ($(RTCONFIG_AVBLCHAN),y)
 CFLAGS += -DAVBLCHAN
 endif
@@ -96,7 +101,8 @@ endif
 ifeq ($(RTCONFIG_AMAS),y)
 COMMON_OBJS += chmgmt.o
 endif
-COMMON_OBJS += encrypt.o cfg_crc.o cfg_udp.o cfg_dencrypt.o cfg_common.o cfg_ipc.o cfg_wevent.o cfg_upgrade.o cfg_clientlist.o cfg_sched.o cfg_slavelist.o
+COMMON_OBJS += encrypt.o linklist.o
+COMMON_OBJS += cfg_crc.o cfg_udp.o cfg_dencrypt.o cfg_common.o cfg_ipc.o cfg_wevent.o cfg_upgrade.o cfg_clientlist.o cfg_sched.o cfg_slavelist.o
 COMMON_OBJS += cfg_capability.o cfg_action.o cfg_eventnotify.o
 COMMON_OBJS += cfg_ctrllist.o
 ifeq ($(RTCONFIG_DWB),y)
@@ -154,7 +160,7 @@ endif
 
 ifeq ($(RTCONFIG_HAS_5G_2), y)
 CFLAGS += -DSUPPORT_TRI_BAND
-else ifdef $(filter $(BUILD_NAME), RT-AC5300 GT-AC5300 RT-AC92U RT-AX92U GT-AX11000 RT-AX95Q RT-AXE95Q RP-AC92 GT-AXE11000)
+else ifdef $(filter $(BUILD_NAME), RT-AC5300 GT-AC5300 RT-AC92U RT-AX92U GT-AX11000 RT-AX95Q XT8PRO RT-AXE95Q ET8PRO RP-AC92 GT-AXE11000 GT-AX11000PRO)
 CFLAGS += -DSUPPORT_TRI_BAND
 endif
 

@@ -86,7 +86,10 @@ function saveSetting(mode){
 	}
 	remove_passwd = document.getElementById("remove_passwd").checked ? 1 : 0;
 
-	location.href='Settings_'+productid+'.CFG?path=' + flag+'&remove_passwd='+remove_passwd;
+	if(isp_customize_tool_support)
+		location.href='Settings_'+document.form.productid.value+'.CFG?path=' + flag+'&remove_passwd='+remove_passwd;
+	else
+		location.href='Settings_'+productid+'.CFG?path=' + flag+'&remove_passwd='+remove_passwd;
 }
 
 function uploadSetting(){

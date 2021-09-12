@@ -41,7 +41,15 @@
 #include <wlutils.h>
 #include <wlscan.h>
 #ifdef RTCONFIG_WPS
+#if defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_HND_ROUTER_AX_675X)
+#if defined(RTCONFIG_SDK502L07P1_121_37)
 #include <wps_ui.h>
+#else
+#include <wpsdefs.h>
+#endif
+#else
+#include <wps_ui.h>
+#endif
 #endif
 
 #ifdef RTCONFIG_QTN
@@ -53,7 +61,15 @@
 #endif
 
 #ifdef RTCONFIG_BRCM_HOSTAPD
+#if defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_HND_ROUTER_AX_675X)
+#if defined(RTCONFIG_SDK502L07P1_121_37)
 #include <wps_ui.h>
+#else
+#include <wpsdefs.h>
+#endif
+#else
+#include <wps_ui.h>
+#endif
 #include <wlif_utils.h>
 #define HAPD_DIR	"/var/run/hostapd"
 #define HAPD_CMD_BUF	256
@@ -109,6 +125,190 @@ exit:
 	return -1;
 }
 
+#ifdef RTCONFIG_BRCM_HOSTAPD
+#define HAPD_ON_PRIMARY_IFACE           0x0     /* run hostapd on primary interface */
+#define HAPD_ON_VIRTUAL_IFACE           0x1     /* run hostapd on virtual interface */
+extern int hapd_get_config_filename(char *nv_ifname, char *o_fname, int sz, uint32 *o_flgs, int mode);
+extern int hapd_create_config_file(char *nv_ifname, char *filename, uint32 flags);
+extern void stop_hostapd_per_radio(int radio_idx);
+extern int start_hostapd_per_radio(int radio_idx);
+#endif
+
+int
+start_wps_method_ob(void)
+{
+	int wps_band;
+	char prefix[] = "wlXXXXXX_";
+#ifdef RTCONFIG_BRCM_HOSTAPD
+	FILE *fp = NULL;
+	char tmp[100];
+	char filename[128];
+	char cmd[64], buf[256];
+	int mode;
+	int wait_hapd = 20;
+	int hapd_is_ready = 0;
+	uint32 flags = 0;
+#endif
+
+#if defined(RTCONFIG_AMAS) && defined(RTCONFIG_CFGSYNC)
+	if (nvram_get_int("cfg_obstatus") == OB_TYPE_LOCKED) {
+		wps_band = 0;
+	}
+	else
+#endif
+	wps_band = nvram_get_int("wps_band_x");
+	snprintf(prefix, sizeof(prefix), "wl%d", wps_band);
+
+#ifdef RTCONFIG_BRCM_HOSTAPD
+	if(!HAPD_DISABLED() && !nvram_get_int("wps_enable_x")) {
+		_dprintf("Prepare to trigger WPS upon radio [%d]...\n", wps_band);
+		nvram_set(strcat_r(prefix, "_wps_mode", tmp), "enabled");
+#if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
+		if (is_dpsr(wps_band)
+#ifdef RTCONFIG_DPSTA
+			|| is_dpsta(wps_band)
+#endif
+		)
+			mode = HAPD_ON_VIRTUAL_IFACE;
+		else
+			mode = HAPD_ON_PRIMARY_IFACE;
+#endif
+		if (hapd_get_config_filename(prefix, filename, sizeof(filename), &flags, mode) < 0) {
+			_dprintf("Error to get hostapd config filename\n");
+			return -1;
+		}
+
+		if (hapd_create_config_file(prefix, filename, flags) < 0) {
+			_dprintf("Error to get hostapd config filename\n");
+			return -1;
+		}
+		else {
+			_dprintf("restart hostapd upon radio [%d]\n", wps_band);
+			stop_hostapd_per_radio(wps_band);
+			start_hostapd_per_radio(wps_band);
+
+			snprintf(cmd, sizeof(cmd), "hostapd_cli -i %s ping", nvram_safe_get(strcat_r(prefix, "_ifname", tmp)));
+
+			while(wait_hapd) {
+				if (wait_hapd != 20)
+				    sleep(1);
+
+				if ((--wait_hapd) == 0) {
+					_dprintf("restart hostapd upon radio [%d] - FAILED\n", wps_band);
+					break;
+				}
+
+				fp = popen(cmd, "r");
+				if(fp) {
+					while (fgets(buf, sizeof(buf), fp) != NULL) {
+						if(strstr(buf, "PONG") != NULL)
+						{
+							hapd_is_ready = 1;
+							_dprintf("restart hostapd upon radio [%d] - DONE\n");
+							start_wps_pbcd();
+							sleep(1);
+							break;
+						}
+					}
+					pclose(fp);
+				}
+
+				if(!hapd_is_ready)
+					continue;
+
+				break;
+			}
+		}
+	}
+#endif
+	start_wps_method();
+}
+
+int
+stop_wps_method_ob(void)
+{
+#ifdef RTCONFIG_BRCM_HOSTAPD
+	FILE *fp = NULL;
+	char prefix[] = "wlXXXXXX_";
+	char word[256], *next;
+	char tmp[100], cmd[64], buf[256];
+	char filename[128];
+	int unit;
+	int mode;
+	int wait_hapd = 20;
+	int hapd_is_ready = 0;
+	uint32 flags = 0;
+#endif
+
+	stop_wps_method();
+#ifdef RTCONFIG_BRCM_HOSTAPD
+	if(!HAPD_DISABLED() && !nvram_get_int("wps_enable_x")) {
+		stop_wps_pbcd();
+		foreach (word, nvram_safe_get("wl_ifnames"), next) {
+			if (wl_ioctl(word, WLC_GET_INSTANCE, &unit, sizeof(unit)))
+				continue;
+
+			snprintf(prefix, sizeof(prefix), "wl%d", unit);
+			if(nvram_match(strcat_r(prefix, "_wps_mode", tmp), "enabled")) {
+				nvram_set(strcat_r(prefix, "_wps_mode", tmp), "disabled");
+#if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
+				if (is_dpsr(unit)
+#ifdef RTCONFIG_DPSTA
+					|| is_dpsta(unit)
+#endif
+				)
+					mode = HAPD_ON_VIRTUAL_IFACE;
+				else
+					mode = HAPD_ON_PRIMARY_IFACE;
+#endif
+				if (hapd_get_config_filename(prefix, filename, sizeof(filename), &flags, mode) < 0) {
+					_dprintf("Error to get hostapd config filename\n");
+					return -1;
+				}
+
+				if (hapd_create_config_file(prefix, filename, flags) < 0) {
+					_dprintf("Error to get hostapd config filename\n");
+					return -1;
+				}
+				else {
+					_dprintf("restart hostapd upon radio [%d]\n", unit);
+					stop_hostapd_per_radio(unit);
+					start_hostapd_per_radio(unit);
+
+					snprintf(cmd, sizeof(cmd), "hostapd_cli -i %s ping", nvram_safe_get(strcat_r(prefix, "_ifname", tmp)));
+					while(wait_hapd) {
+						if (wait_hapd != 20)
+							sleep(1);
+
+						if ((--wait_hapd) == 0) {
+							_dprintf("restart hostapd upon radio [%d] - FAILED\n", unit);
+							break;
+						}
+
+						fp = popen(cmd, "r");
+						if(fp) {
+							while (fgets(buf, sizeof(buf), fp) != NULL) {
+								if(strstr(buf, "PONG") != NULL)
+								{
+									hapd_is_ready = 1;
+									_dprintf("restart hostapd upon radio [%d] - DONE\n", unit);
+									break;
+								}
+							}
+							pclose(fp);
+						}
+
+						if(!hapd_is_ready)
+							continue;
+
+						break;
+					}
+				}
+			}
+		}
+	}
+#endif
+}
 /*
  * input variables:
  * 	nvram: wps_band_x:
@@ -468,8 +668,8 @@ int is_wps_stopped(void)
 	if ((is_router_mode()
 #if defined(RTCONFIG_DPSTA) && defined(RTAC68U)
 		|| (is_dpsta_repeater() && dpsta_mode() && nvram_get_int("re_mode") == 0)
-#elif defined(RPAX56)
-		|| ((dpsta_mode()||rp_mode()) && nvram_get_int("re_mode") == 0)
+#elif defined(RPAX56) || defined(RPAX58)
+		|| ((dpsta_mode()||rp_mode()||dpsr_mode) && nvram_get_int("re_mode") == 0)
 #endif
 		) && !nvram_get_int("obd_Setting") && nvram_match("amesh_led", "1"))
 		return 0;

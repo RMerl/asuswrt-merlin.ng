@@ -1,0 +1,3 @@
+These scripts should be modified according to your precise setup.
+They provide a very simple way of tunneling synergy inside of a
+WireGuard tunnel, to protect your data in transit.

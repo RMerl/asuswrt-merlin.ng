@@ -390,7 +390,7 @@ function getIPSDetailData(type, event){
 var cat_id_index = [["39", "Proxy Avoidance"], ["73", "Malicious Software"], ["74", "Spyware"], ["75", "Phishing"], ["76", "Spam"], 
 					["77", "Adware"], ["78", "Malware Accomplic"], ["79", "Disease Vector"], ["80", "Cookies"], ["81", "Dialers"], 
 					["82", "Hacking"], ["83", "Joke Program"], ["84", "Password Cracking Apps"], ["85", "Remote Access"], ["86", "Made for AdSense sites"],
-					["91", "C&C Server"], ["92", "Malicious Domain"], ["94", "Scam"], ["95", "Ransomware"]];
+					["91", "C&C Server"], ["92", "Malicious Domain"], ["94", "Scam"], ["95", "Ransomware"], ["2", "Illegal"]];
 var cat_id_array = new Array();
 for(i=0; i<cat_id_index.length;i++){
 	var index = "_" + cat_id_index[i][0];
@@ -798,7 +798,7 @@ function quickAdd(value){
 													<div id="bar_shade" style="position:absolute;width:330px;height:330px;background-color:#505050;opacity:0.6;margin:5px;display:none"></div>
 													<div>
 														<div style="display:table-cell;width:50px;padding: 10px;">
-															<div style="width:35px;height:35px;background:url('images/New_ui/mals.svg');margin: 0 auto;"></div>
+															<div style="width:35px;height:35px;background:url('images/New_ui/mals.svg');margin: 0 auto;background-size: 100%;"></div>
 
 														</div>	
 														<div style="display:table-cell;width:200px;padding: 10px;vertical-align:middle;text-align:center;">

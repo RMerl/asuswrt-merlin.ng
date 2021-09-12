@@ -1,0 +1,93 @@
+
+
+                    RELEASE NOTES FOR TUXERA HFS+
+
+
+--- Introduction ---
+
+This file contains information regarding to the latest Tuxera HFS+
+delivery. Tuxera recommends to read the entire file.
+
+Table of content
+
+ * Installation
+ * Usage
+ * Contact & Support Information
+
+
+--- Installation ---
+
+Load the Tuxera HFS+ kernel module, called thfsplus.ko, into the kernel:
+
+	insmod thfsplus.ko
+
+then the Tuxera HFS+ kernel driver is ready to be used.
+
+
+--- Usage ---
+
+Mount HFS+ volumes the following way:
+
+	mount -t thfsplus device mountpoint
+
+Example:
+
+	mount -t hfsplus /dev/sda1 /mnt/usb
+
+
+--- Mount Options ---
+
+In addition to the generic mount options described by the manual page for the
+mount(8) command (e.g. ro, rw, sync, noatime, dirsync, etc, please see 'man 8
+mount' and 'man 5 fstab' for details), as well as the default mount options
+supported by the open source HFS+ driver described in its documentation (ref.
+Documentation/filesystems/hfsplus.txt), the Tuxera HFS+ filesystem driver
+supports the following mount options:
+
+  fmask=, dmask=
+  Instead of specifying umask= which applies both to files and directories,
+  fmask applies only to files and dmask only to directories.
+
+  allow_utime=n
+	Allow other users to change timestamps as well. For example, to allow
+	the group foo to modify anything in the filesystem, and allow others to
+	read but not write, you would pass the parameters.
+
+  utf8
+	Use full Unicode support thus interpreting the HFS+ characters to be
+	stored in utf16 rather than UCS2 and assuming that the Linux side is
+	using utf8.
+
+  noutf8
+	Disable use of full Unicode support thus interpreting the HFS+
+	characters to be stored as UCS and assuming that the Linux side is
+	using whatever the default or specified NLS codepage is (see nls= mount
+	option).
+
+  nls=name
+	Character set containing the definition of byte encoding used to
+	represent each Unicode character of file names. It is used for Unicode
+	string handling. To be sure you are not missing any files, it is
+	advised to use nls=utf8 which is capable of representing all Unicode
+	characters or even better to use the utf8 option (see above).
+        Usage: -o nls=utf8
+
+  nomode
+	Gives read, write and execute permissions to all files and directories for all
+  users while retaining the original permissions .i.e when the file-system is
+  mounted without nomode mount option the original permissions are set.
+
+--- Contact & Support Information ---
+
+Please send feedback and support queries to hfsplus-support@tuxera.com.
+
+Besides describing your issue please provide the following information
+to help Tuxera's engineers address the issue:
+
+  - detailed console error messages
+  - kernel log by using the 'dmesg' command, or 'cat /proc/kmsg'
+  - steps to reproduce the issue
+
+Thank you.
+
+Copyright (c) 2008-2021 Tuxera Inc. All Rights Reserved.

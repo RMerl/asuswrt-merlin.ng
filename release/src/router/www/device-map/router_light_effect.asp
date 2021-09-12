@@ -48,7 +48,7 @@ function switchTab(id){
 		<script>
 			$("#light_effect_iframe").attr("src", "/light_effect/light_effect.html");
 			$("#light_effect_iframe").load(function(){
-				if(based_modelid.substr(0,2) == "GT")
+				if(based_modelid.substr(0,2) == "GT" || based_modelid.substr(0,3) == "TUF")
 					$("#light_effect_iframe").css("background-color", "initial");
 				else
 					$("#light_effect_iframe").css("background-color", "#273342");

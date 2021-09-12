@@ -272,4 +272,35 @@ void wl_wlif_wps_gpio_cleanup(int board_fp);
 #define wl_wlif_wps_gpio_cleanup(a)             do {} while (0)
 #endif  /* BCA_HNDROUTER */
 #endif  /* CONFIG_HOSTAPD */
+
+#if defined(RTCONFIG_HND_ROUTER_AX_6756)
+#if !defined(RTCONFIG_SDK504L02_188_1303)
+/* LGI supported rate bitmap control feature */
+typedef enum _bits {
+	BIT0 = 0,	BIT1,	BIT2,	BIT3,	BIT4,	BIT5,	BIT6,	BIT7,
+	BIT8,		BIT9,	BIT10,	BIT11,	BIT12,	BIT13,	BIT14,	BIT15,
+	BIT16,		BIT17,	BIT18,	BIT19,	BIT20,	BIT21,	BIT22,	BIT23,
+	BIT24,		BIT25,	BIT26,	BIT27,	BIT28,	BIT29,	BIT30,	BIT31
+} bits_t;
+/*
+ * supported rate bitmap definition
+ * b19b18b17b16b15b14b13b12b11b10b9b8b1b7b6b5b4b3b2b1b0
+ * mcs7mcs6mcs5mcs4mcs3mcs2mcs1mcs054Mbps48Mbps36Mbps24Mbps18Mbps12Mpbs9Mbps6Mbps11Mbps5.5Mbps2Mps1Mbps
+ */
+typedef struct bit2rate_map {
+	bits_t bit;	/* bitmap order */
+	int rate;       /* in 500 kbps unit for legacy rate */
+} bit2rate_map_t;
+
+/* from wlu_common.h of the same type name */
+typedef union wl_rateset_args_u {
+	wl_rateset_args_v1_t rsv1;
+	wl_rateset_args_v2_t rsv2;
+} wl_rateset_args_u_t;
+
+#define WLIF_NVRAM_SUPPORT_RATE_BITMAP	"support_rate_bitmap"
+
+#endif
+#endif
+
 #endif /* _wlif_utils_h_ */

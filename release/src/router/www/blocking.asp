@@ -237,7 +237,6 @@ var block_info = '<% bwdpi_redirect_info(); %>';
 if(block_info != "")
 	block_info = JSON.parse(block_info);
 var category_info = [	["Parental Controls", "1", "<#AiProtection_filter_Adult#>", "<#AiProtection_filter_Adult1#>", "<#block_cate_PC1#>"],
-			["Parental Controls", "2", "<#AiProtection_filter_Adult#>", "<#AiProtection_filter_Adult1#>", "<#block_cate_PC2#>"],
 			["Parental Controls", "3", "<#AiProtection_filter_Adult#>", "<#AiProtection_filter_Adult1#>", "<#block_cate_PC3#>"],
 			["Parental Controls", "4", "<#AiProtection_filter_Adult#>", "<#AiProtection_filter_Adult1#>", "<#block_cate_PC4#>"],
 			["Parental Controls", "5", "<#AiProtection_filter_Adult#>", "<#AiProtection_filter_Adult1#>", "<#block_cate_PC5#>"],
@@ -264,6 +263,7 @@ var category_info = [	["Parental Controls", "1", "<#AiProtection_filter_Adult#>"
 			["Parental Controls", "23", "<#AiProtection_filter_stream#>", "<#AiProtection_filter_stream3#>", "<#block_cate_PC23#>"],
 
 			 ["Home Protection", "91", "Anti-Trojan detecting and blocked", "", "<#block_cate_HP91#>"],
+			["Home Protection", "2", "Malicious site blocked", "", "<#block_cate_PC2#>"],
 			["Home Protection", "39", "Malicious site blocked", "", "<#block_cate_HP39#>"],
 			["Home Protection", "73", "Malicious site blocked", "", "<#block_cate_HP73#>"],
 			["Home Protection", "74", "Malicious site blocked", "", "<#block_cate_HP74#>"],
@@ -363,7 +363,7 @@ function show_information(){
 		code_suggestion = "<ul>";
 		//code_suggestion += "<li><#block_HP_suggest1#></li>";
 		//code_suggestion += '<li><#AiProtection_sites_report_desc#><a href="https://global.sitesafety.trendmicro.com/index.php" target="_blank"><#AiProtection_sites_report_tm#></a></li>';
-		code_suggestion += '<li>If you are not sure of this webiste, visit <a href="https://global.sitesafety.trendmicro.com/index.php" target="_blank">TrendMicro\'s Site Safety Caneter</a> for more information. You can check the safety level of a particular URL that might seem suspicious.</li>';
+		code_suggestion += '<li>If you are not sure of this webiste, visit <a href="https://global.sitesafety.trendmicro.com/index.php" target="_blank">TrendMicro\'s Site Safety Center</a> for more information. You can check the safety level of a particular URL that might seem suspicious.</li>';
 		code_suggestion += "<li>If you trust this website, click <a id='goToSetup' style='text-decoration:underline;'>here</a> to unblock (administrator credential required)</li>";
 		code_suggestion += "</ul>";
 		document.getElementById('tm_block').style.display = "";

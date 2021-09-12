@@ -110,10 +110,12 @@ enum {
 	MODEL_RTAX92U,
 	MODEL_RTAX95Q,
 	MODEL_RTAXE95Q,
+	MODEL_ET8PRO,
 	MODEL_RTAX56_XD4,
 	MODEL_RTAX58U,
 	MODEL_RTAX56U,
 	MODEL_RPAX56,
+	MODEL_RPAX58,
 	MODEL_SHAC1300,
 	MODEL_RPAC92,
 	MODEL_RTAC59CD6R,
@@ -128,6 +130,18 @@ enum {
 	MODEL_PLAX56XP4,
 	MODEL_CTAX56_XD4,
 	MODEL_RTAC68U_V4,
+	MODEL_GTAX11000_PRO,
+	MODEL_GTAXE16000,
+	MODEL_ET12,
+	MODEL_XT12,
+	MODEL_ETJ,
+	MODEL_RT4GAC86U,
+	MODEL_RT4GAX56,
+	MODEL_RTAX53U,
+	MODEL_RTAX58U_V2,
+	MODEL_GTAX6000,
+	MODEL_XD4PRO,
+	MODEL_XT8PRO,
 	MODEL_MAX
 };
 
@@ -160,5 +174,13 @@ extern int get_fwver(char *buildno, char *extendno);
 extern int get_model(void);
 extern char *get_modelid(int model);
 extern int get_switch(void);
+
+/* define external PHY */
+enum {
+	EXT_PHY_BCM54991 = 0,
+	EXT_PHY_RTL8226  = 1,
+	EXT_PHY_GPY211   = 2,
+	EXT_PHY_MAX
+};
 
 #endif /* __MODEL_H__ */

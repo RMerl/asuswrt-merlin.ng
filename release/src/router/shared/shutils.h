@@ -204,6 +204,20 @@ static inline char * strcat_r(const char *s1, const char *s2, char *buf)
 #ifndef foreach
 #define _FOREACH_MACRO_
 
+/* Copy each token in wordlist delimited by @sep into word */
+#define __foreach(word, wordlist, next, sep) \
+		for (next = &wordlist[strspn(wordlist, (sep))], \
+				strncpy(word, next, sizeof(word)), \
+				word[strcspn(word, (sep))] = '\0', \
+				word[sizeof(word) - 1] = '\0', \
+				next = strchr(next, *(sep)); \
+				strlen(word); \
+				next = next ? &next[strspn(next, (sep))] : "", \
+				strncpy(word, next, sizeof(word)), \
+				word[strcspn(word, (sep))] = '\0', \
+				word[sizeof(word) - 1] = '\0', \
+				next = strchr(next, *(sep)))
+
 /* Copy each token in wordlist delimited by space into word */
 #define foreach(word, wordlist, next) \
 		for (next = &wordlist[strspn(wordlist, " ")], \
@@ -563,6 +577,7 @@ extern int generate_wireless_key(unsigned char *key);
 
 extern int strArgs(int argc, char **argv, char *fmt, ...);
 extern char *trimNL(char *str);
+extern char *trimWS(char *str);
 extern int get_char_count(char *str, int ch);
 extern pid_t get_pid_by_name(char *name);
 extern pid_t get_pid_by_thrd_name(char *name);

@@ -1,5 +1,5 @@
 
-EXE  = nvramUpdate
+EXE = nvramUpdate
 
 all:
 	@cp -f prebuilt/$(EXE) .

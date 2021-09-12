@@ -32,7 +32,6 @@ var interval_ajax_AiMesh_node_clients_status;
 var checkCloudIconErrorTimes = new Array();
 var onboarding_flag = false;
 var search_result_fail = "init";
-var wps_enable_status = '<% nvram_get("wps_enable"); %>';
 var aimesh_node_client_list = new Array();
 var aimesh_node_client_list_colspan = 4;
 var aimesh_node_client_info_width = (top.isIE8) ? ["", "40%", "40%", "20%"] : ["15", "40%", "30%", "15%"];
@@ -40,6 +39,8 @@ var aimesh_node_client_upload_icon = new Array();
 var aimesh_select_new_re_mac = "";
 var AUTOLOGOUT_MAX_MINUTE_ORI = 0;
 var restore_autologout = false;
+var faq_href = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=149";
+var aimesh_href = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=AiMesh&lang="+ui_lang+"&kw=&num=";
 var led_control = {
 	"status": function(_node_info){
 		var result = {"support": 0, "value": 0};
@@ -357,6 +358,7 @@ function gen_ready_onboardinglist(_onboardingList) {
 			var source = newReMacArray[newReMac].source;
 			var tcode = newReMacArray[newReMac].tcode;
 			var type = newReMacArray[newReMac].type;
+			var cobrand = httpApi.aimesh_get_misc_info(newReMacArray[newReMac]).cobrand;
 			if($('#ready_onBoarding_block').find('#' + onboarding_device_id + '').length == 0) {
 				if(checkCloudIconExist[model_name] == undefined)
 					checkCloudIconExist[model_name] = false;
@@ -420,7 +422,7 @@ function gen_ready_onboardinglist(_onboardingList) {
 
 				if(isNaN(parseInt(checkCloudIconErrorTimes[model_name])))
 					checkCloudIconErrorTimes[model_name] = 0;
-				download_cloud_icon(model_name, onboarding_device_id, "ready_onBoarding_block", tcode);
+				download_cloud_icon(model_name, onboarding_device_id, "ready_onBoarding_block", tcode, cobrand);
 
 				if(typeof parent.show_AMesh_status !== 'undefined' && $.isFunction(parent.show_AMesh_status))
 					parent.show_AMesh_status($('#ready_onBoarding_block').children().length, 0);
@@ -446,7 +448,7 @@ function gen_ready_onboardinglist(_onboardingList) {
 
 				if(isNaN(parseInt(checkCloudIconErrorTimes[model_name])))
 					checkCloudIconErrorTimes[model_name] = 0;
-				download_cloud_icon(model_name, onboarding_device_id, "ready_onBoarding_block", tcode);
+				download_cloud_icon(model_name, onboarding_device_id, "ready_onBoarding_block", tcode, cobrand);
 			}
 		});
 	});
@@ -479,6 +481,7 @@ function gen_current_onboardinglist(_onboardingList, _wclientlist, _wiredclientl
 				var online = _onboardingList[idx].online;
 				var connect_type = handle_re_path(_onboardingList[idx].re_path);
 				var tcode = _onboardingList[idx].tcode;
+				var cobrand = httpApi.aimesh_get_misc_info(_onboardingList[idx]).cobrand;
 				var wireless_band = 0;
 				var wireless_band_array = ["2.4G", "5G", "6G"];
 				var wireless_rssi = 4;
@@ -598,7 +601,7 @@ function gen_current_onboardinglist(_onboardingList, _wclientlist, _wiredclientl
 					if(isNaN(parseInt(checkCloudIconErrorTimes[model_name])))
 						checkCloudIconErrorTimes[model_name] = 0;
 					if(!checkCloudIconExist[model_name])
-						download_cloud_icon(model_name, device_id, "onBoarding_block", tcode);
+						download_cloud_icon(model_name, device_id, "onBoarding_block", tcode, cobrand);
 				}
 			}
 		}
@@ -883,7 +886,7 @@ function scenario() {
 	description += "<br>";
 	description += "<#AiMesh_Desc32#>";
 	description += "<br>";
-	description += "<a style='font-weight:bolder;text-decoration:underline;color:#FC0;' href='https://www.asus.com/AiMesh/' target='_blank'><#AiMesh_Desc3_note#></a>";
+	description += "<a id='aimesh_link' style='font-weight:bolder;text-decoration:underline;color:#FC0;' href='' target='_blank'><#AiMesh_Desc3_note#></a>";
 	gen_each_step_content(description, 3);
 
 	interval = setInterval(set_slider, 15000);
@@ -914,6 +917,7 @@ function scenario() {
 	parent.$("#amesh_scenario").fadeIn(300);
 	parent.cal_panel_block("amesh_scenario", 0.2);
 	parent.adjust_panel_block_top("amesh_scenario", 170);
+	parent.$("#aimesh_link").attr({"href": aimesh_href});
 }
 function show_connect_msg(_reMac, _newReMac, _model_name, _ui_model_name, _rssi, _ob_path) {
 	aimesh_select_new_re_mac = _newReMac;
@@ -1044,28 +1048,77 @@ function show_connect_msg(_reMac, _newReMac, _model_name, _ui_model_name, _rssi,
 				$amesh_action_bg.append($amesh_apply);
 				$amesh_apply.click(
 					function() {
+						var re_isAX_model = (_model_name.toUpperCase().indexOf("AX") >= 0 || _model_name.toUpperCase().indexOf("ZENWIFI_X") >= 0 || _model_name.toUpperCase().indexOf("ZENWIFI_E") >= 0);
+						var auth_flag = false;
+						var wps_flag = false;
 						var postData = {};
 						var band6g = 4;
+						var auth_list = [];
+						auth_list["psk2"] = "WPA2-Personal";
+						auth_list["psk2sae"] = "WPA2/WPA3-personal";
+						auth_list["wpa2"] = "WPA2-Enterprise";
+						auth_list["wpawpa2"] = "WPA/WPA2-Enterprise";
+						auth_list["sae"] = "WPA3-Personal";
+
+						var current_auth = "";
+						var changeTo_auth = "";
+						var set_replace_str = function(_str, _auth, _idx){
+							var result = "";
+							if(_str != "")
+								result += ", ";
+							result += auth_list[_auth];
+							result += " (" + wl_nband_title[_idx] + ")";
+							return result;
+						};
 						$.each(wl_nband_array, function(index, value){
 							var authMode = httpApi.nvramGet(["wl" + index + "_auth_mode_x"], true)["wl" + index + "_auth_mode_x"];
 							if(value == band6g)
 								return true;
-							if(authMode == "sae"){
+							//case 1, WPA2-Enterprise or WPA/WPA2-Enterprise
+							if(authMode == "wpa2" || authMode == "wpawpa2"){
+								postData["wl" + index + "_auth_mode_x"] = "psk2";
+								current_auth += set_replace_str(current_auth, authMode, index);
+								changeTo_auth += set_replace_str(changeTo_auth, "psk2", index);
+								auth_flag = true;
+							}
+							//case 2, WPA3-personal and not AX model
+							if(authMode == "sae" && !re_isAX_model){
 								postData["wl" + index + "_auth_mode_x"] = "psk2sae";
 								postData["wl" + index + "_mfp"] = 1;
+								current_auth += set_replace_str(current_auth, authMode, index);
+								changeTo_auth += set_replace_str(changeTo_auth, "psk2sae", index);
+								auth_flag = true;
 							}
 						});
 
+						var wps_enable = httpApi.nvramGet(["wps_enable"])["wps_enable"];
+						if(_ob_path == "1" && wps_enable == "0"){
+							postData["wps_enable"] = "1";
+							wps_flag = true;
+						}
+
 						if(Object.keys(postData).length){
-							var $amesh_wpa3_text = $('<div>');
-							$amesh_wpa3_text.addClass("amesh_hint_text");
-							var hint_text = "<#AiMesh_confirm_msg11#>";
-							hint_text += "<br>";
-							hint_text += "<#AiMesh_confirm_msg12#>";
-							$amesh_wpa3_text.html(hint_text);
-							$amesh_wpa3_text.find("#wpa3FaqLink").attr("target", "_blank").css({"color": "#FC0", "text-decoration": "underline"});
-							httpApi.faqURL("1042500", function(url){$amesh_wpa3_text.find("#wpa3FaqLink").attr("href", url);});
-							$connectHtml.find(".amesh_action_bg").before($amesh_wpa3_text);
+							if(auth_flag){
+								var $amesh_wpa3_text = $('<div>');
+								$amesh_wpa3_text.addClass("amesh_hint_text");
+								var auth_change_str = "* <#ADSL_FW_note#> <#AiMesh_confirm_msg11#>".replace("WPA3-personal", current_auth).replace("WPA2/WPA3-personal", changeTo_auth);
+								$amesh_wpa3_text.append($("<div>").html(auth_change_str).css("color", "#FC0"));
+								$amesh_wpa3_text.append($("<div>").html("<#AiMesh_confirm_msg12#>"));
+								$amesh_wpa3_text.find("#wpa3FaqLink").attr("target", "_blank").css({"color": "#FC0", "text-decoration": "underline"});
+								$amesh_wpa3_text.find("#wpa3FaqLink").attr("href", faq_href);
+								$connectHtml.find(".amesh_action_bg").before($amesh_wpa3_text);
+							}
+
+							if(wps_flag){
+								var $amesh_wps_text = $('<div>');
+								$amesh_wps_text.addClass("amesh_hint_text");
+								var hint_text = "<#AiMesh_FindNode_confirm_WPS#>";
+								hint_text += "<br>";
+								hint_text += "<#WiFi_temp_unavailable#>";
+								$amesh_wps_text.html(hint_text);
+								$connectHtml.find(".amesh_action_bg").before($amesh_wps_text);
+							}
+
 							$amesh_apply.unbind("click");
 							$amesh_apply.click(
 								function() {
@@ -1354,7 +1407,7 @@ function show_search_fail_result() {
 	parent.cal_panel_block("amesh_search_fail_result", 0.2);
 	parent.adjust_panel_block_top("amesh_search_fail_result", 170);
 }
-function download_cloud_icon(model_name, device_id, parent_bg_id, tcode) {
+function download_cloud_icon(model_name, device_id, parent_bg_id, tcode, cobrand) {
 	var set_default_router_icon = function(_parent_bg_id, _device_id) {
 		if($('#' + _parent_bg_id + '').find('#' + _device_id + '').length != 0) {
 			$ ('#' + _parent_bg_id + '').find('#' + _device_id + '').children().find('.amesh_each_router_icon_bg').addClass('amesh_router_icon');
@@ -1369,8 +1422,9 @@ function download_cloud_icon(model_name, device_id, parent_bg_id, tcode) {
 	};
 
 	if('<% nvram_get("x_Setting"); %>' == '1' && parent.wanConnectStatus && checkCloudIconErrorTimes[model_name] < 5 && !checkCloudIconExist[model_name]) {
+		var model_info = {"model_name": model_name, "tcode": tcode, "cobrand": cobrand};
 		httpApi.checkCloudModelIcon(
-			model_name,
+			model_info,
 			function(src){
 				checkCloudIconExist[model_name] = src;
 				set_cloud_router_icon(parent_bg_id, device_id);
@@ -1380,8 +1434,7 @@ function download_cloud_icon(model_name, device_id, parent_bg_id, tcode) {
 				checkCloudIconExist[model_name] = false;
 				set_default_router_icon(parent_bg_id, device_id);
 				checkCloudIconErrorTimes[model_name] = parseInt(checkCloudIconErrorTimes[model_name]) + 1;
-			},
-			tcode
+			}
 		);
 	}
 	else {
@@ -1429,7 +1482,7 @@ function reset_re_device(_reMac, _reModelName, _reUiModelName, _evt, _online) {
 	if(_online == "0"){
 		var $amesh_hint_text = $('<div>');
 		$amesh_hint_text.addClass("amesh_hint_text amesh_quality_text");
-		$amesh_hint_text.html("* Please manually reset the node you're going to remove from the system.");/* untranslated */
+		$amesh_hint_text.html("* <#AiMesh_Node_RemoveDesc01#>");
 		$resetHtml.append($amesh_hint_text);
 	}
 
@@ -1508,48 +1561,38 @@ function searchReadyOnBoarding() {
 		parent.adjust_panel_block_top("amesh_maxnum_msg", 170);
 	}
 	else{
-		if(wps_enable_status == "1") {
-			$.ajax({
-				url: '/ajax_onboarding.asp',
-				dataType: 'script',
-				error: function(xhr) {
+		$.ajax({
+			url: '/ajax_onboarding.asp',
+			dataType: 'script',
+			error: function(xhr) {
+				setTimeout(function(){
+					searchReadyOnBoarding();
+				}, 3000);
+			},
+			success: function() {
+				if(get_onboardingstatus.cfg_obstatus == "") {
+					$("#searchReadyOnBoarding").css("display", "none");
+					$("#amesh_loadingIcon").css("display", "");
 					setTimeout(function(){
 						searchReadyOnBoarding();
 					}, 3000);
-				},
-				success: function() {
-					if(get_onboardingstatus.cfg_obstatus == "") {
+				}
+				else {
+					if(get_onboardingstatus.cfg_obstatus == "1") {
+						if(interval_ajax_onboarding_status) {
+							clearInterval(interval_ajax_onboarding_status);
+							interval_ajax_onboarding_status = false;
+						}
 						$("#searchReadyOnBoarding").css("display", "none");
 						$("#amesh_loadingIcon").css("display", "");
-						setTimeout(function(){
-							searchReadyOnBoarding();
-						}, 3000);
-					}
-					else {
-						if(get_onboardingstatus.cfg_obstatus == "1") {
-							if(interval_ajax_onboarding_status) {
-								clearInterval(interval_ajax_onboarding_status);
-								interval_ajax_onboarding_status = false;
-							}
-							$("#searchReadyOnBoarding").css("display", "none");
-							$("#amesh_loadingIcon").css("display", "");
-							document.form.re_mac.disabled = true;
-							document.form.new_re_mac.disabled = true;
-							document.form.submit();
-							interval_ajax_onboarding_status = setInterval(ajax_onboarding, 5000);
-						}
+						document.form.re_mac.disabled = true;
+						document.form.new_re_mac.disabled = true;
+						document.form.submit();
+						interval_ajax_onboarding_status = setInterval(ajax_onboarding, 5000);
 					}
 				}
-			});
-		}
-		else {
-			var confirm_flag = confirm("<#AiMesh_FindNode_confirm_WPS#>\n<#WiFi_temp_unavailable#>");
-			if(confirm_flag) {
-				wps_enable_status = "1"
-				document.wps_form.submit();
-				searchReadyOnBoarding();
 			}
-		}
+		});
 	}
 }
 
@@ -2442,7 +2485,7 @@ function get_connect_type(_node_info) {
 				wireless_band = 0;
 				wireless_rssi = client_convRSSI(_node_info.rssi2g);
 			}
-			if(_node_info.re_path == "128") {
+			else if(_node_info.re_path == "128") {
 				wireless_band = 2;
 				wireless_rssi = client_convRSSI(_node_info.rssi6g);
 			}
@@ -2536,7 +2579,7 @@ function gen_conn_priority_select_option(_node_info, _eap_flag){
 	option_array.push(gen_option_attr("3", ((_eap_flag) ? "<#Auto#> (<#AiMesh_Node_ConnPrio_Eth_Based_Title#>)" : "<#Auto#>"), "auto"));
 
 	var port_mapping = [{value:"1", text:"WAN"}, {value:"2", text:"LAN"}];//Def
-	var interface_mapping = [{value:"1", text:"Ethernet"}, {value:"2", text:"Wi-Fi"}, {value:"3", text:"Powerline"}];//Type
+	var interface_mapping = [{value:"1", text:"Ethernet"}, {value:"2", text:"WiFi"}, {value:"3", text:"Powerline"}];//Type
 	var eth_rate_mapping = [{value:"1", text:"10M"}, {value:"2", text:"100M"}, {value:"3", text:"1G"}, {value:"4", text:"2.5G"}, {value:"5", text:"5G"},
 		{value:"6", text:"10G base-T"}, {value:"7", text:"10G SFP+"}];//SubType
 	var wifi_rate_mapping = [{value:"1", text:"2.4G"}, {value:"2", text:"5G"}, {value:"3", text:"6G"}];//SubType
@@ -2594,6 +2637,8 @@ function gen_conn_priority_select_option(_node_info, _eap_flag){
 					option_text += " " + eap_text;
 					if(_eap_flag && conn_type == "wifi")
 						return true;
+					if(conn_type == "plc" && !isSupport("qca_plc2"))
+						return true;
 					option_array.push(gen_option_attr(option_value, option_text, option_conn_type));
 				});
 			}
@@ -2641,16 +2686,6 @@ function handle_re_path(_re_path){
 <input type="hidden" name="next_page" value="device-map/amesh.asp">
 <input type="hidden" name="new_re_mac" value=''>
 <input type="hidden" name="ob_path" value=''>
-</form>
-<iframe name="wpsFrame" id="wpsFrame" src="" width="0" height="0" frameborder="0" scrolling="no"></iframe>
-<form method="post" name="wps_form" id="wps_form" action="/start_apply.htm" target="wpsFrame">
-<input type="hidden" name="productid" value="<% nvram_get("productid"); %>">
-<input type="hidden" name="action_mode" value="apply_new">
-<input type="hidden" name="action_script" value="restart_wireless">
-<input type="hidden" name="action_wait" value="3">
-<input type="hidden" name="current_page" value="device-map/amesh.asp">
-<input type="hidden" name="next_page" value="device-map/amesh.asp">
-<input type="hidden" name="wps_enable" value='1'>
 </form>
 <table id="description_table" width="95%" border="0" align="center" cellpadding="4" cellspacing="0" class="description_table">
 	<tr>

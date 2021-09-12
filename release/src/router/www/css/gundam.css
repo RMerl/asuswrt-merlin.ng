@@ -1,12 +1,11 @@
 #gundam_page{
     background-color: #000 !important;
 }
-/*
+
 .gundam-bg{
-    background-image: url('../images/gundam_body_bg.png');
-    background-repeat: no-repeat;
+    /*background-image: url('../images/gundam_body_bg.png');
+    background-repeat: no-repeat;*/
 }
-*/
 .gundam-footer-field{
     width: 100%;
     height: 144px;
@@ -19,7 +18,7 @@
     background-image: url('../images/gundam_bg.png');
     background-repeat: no-repeat;
     width: 1440px;
-    height: 600px;					
+    height: 1024px;					
 }
 .GD-logo{
     background-image: url('../images/gundam-logo.png');
@@ -37,6 +36,21 @@
     background-image: url('../images/gundam-head.png');
     width: 120px;
     height: 120px;
+    z-index: 9;
+    top: -125px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin: auto;
+}
+.GD-head-1{
+    animation-name: GD-header-rotation;
+    animation-duration: 2s;
+    animation-iteration-count: 3;
+    position: absolute;
+    background-image: url('../images/gundam-head.png');
+    width: 240px;
+    height: 162px;
     z-index: 9;
     top: -125px;
     left: 0;
@@ -107,6 +121,27 @@
     transform: scale(1);
 }
 
+.banner_GD{
+    position: absolute;
+	z-index: -1;
+	margin: -120px 0 0 -260px;
+	background: url('../images/New_ui/GT-bg_header_GD.png');
+	width: 1127px;
+	height: 439px;
+}
+.gd_connect{
+	width: 295px;
+	height: 170px;
+	background: url('../images/New_ui/wan-connect-GD.png') center no-repeat;
+}
+.icon_logo-1{
+    width: 100%;
+    height: 168px;
+    background: url('../images/gundam-logo-1.png') no-repeat;
+    background-position-x: right;
+    top: 0;
+    position: absolute;
+}
 @media screen and (max-width: 1000px){
     .gundam-footer-field{
         display: none;
@@ -117,5 +152,15 @@
     .gundam-bg{
         background-image: url('../images/gundam_body_bg.png');
         background-repeat: no-repeat;
+    }
+    .gundam-header-1{
+        background-image:url('../images/Gundam_header_bg1.png');
+        width: 99%;
+        height: 80px;
+        background-size: cover;
+        position: absolute;
+        background-repeat: no-repeat;
+        background-position: center;
+        z-index: -1;
     }
 }

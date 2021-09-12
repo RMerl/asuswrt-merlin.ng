@@ -73,9 +73,6 @@ var static_enable = '<% nvram_get("dhcp_static_x"); %>';
 var dhcp_staticlists = '<% nvram_get("dhcp_staticlist"); %>';
 var staticclist_row = dhcp_staticlists.split('&#60');
 
-var dhcp_hostnames_array = "<% nvram_get("dhcp_hostnames"); %>";
-var manually_dhcp_hosts_array = new Array();
-
 var lan_domain_ori = '<% nvram_get("lan_domain"); %>';
 var dhcp_gateway_ori = '<% nvram_get("dhcp_gateway_x"); %>';
 var dhcp_dns1_ori = '<% nvram_get("dhcp_dns1_x"); %>';
@@ -93,26 +90,23 @@ var backup_name = "";
 var sortfield, sortdir;
 var sorted_array = Array();
 
+var MaxRule_extend_limit = ((isSupport("MaxRule_extend_limit") != "") ? isSupport("MaxRule_extend_limit") : 64);
 var manually_dhcp_sort_type = 0;//0:increase, 1:decrease
+
+var faq_href = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=101";
+
 function initial(){
 	show_menu();
-	//id="faq" href="https://www.asus.com/US/support/FAQ/1036677"
-	httpApi.faqURL("1036677", function(url){document.getElementById("faq").href=url;});
-
-	var dhcp_hostnames_row = dhcp_hostnames_array.split('&#60');
-	for(var i = 1; i < dhcp_hostnames_row.length; i += 1) {
-		var dhcp_hostnames_col = dhcp_hostnames_row[i].split('&#62');
-		var item_para = {"hostname" : dhcp_hostnames_col[1]};
-		manually_dhcp_hosts_array[dhcp_hostnames_col[0]] = item_para;
-	}
+	document.getElementById("faq").href=faq_href;
 
 	var dhcp_staticlist_row = dhcp_staticlist_array.split('&#60');
 	for(var i = 1; i < dhcp_staticlist_row.length; i += 1) {
 		var dhcp_staticlist_col = dhcp_staticlist_row[i].split('&#62');
 		var item_para = {"mac" : dhcp_staticlist_col[0].toUpperCase(),
 		                 "dns" : (dhcp_staticlist_col[2] == undefined) ? "" : dhcp_staticlist_col[2],
-		                 "hostname" : (manually_dhcp_hosts_array[dhcp_staticlist_col[0]] == undefined) ? "" : manually_dhcp_hosts_array[dhcp_staticlist_col[0]].hostname,
-						 "ip" : dhcp_staticlist_col[1]};	// For sorting purposes
+		                 "hostname" : (dhcp_staticlist_col[3] == undefined) ? "" : dhcp_staticlist_col[3],
+		                 "ip" : dhcp_staticlist_col[1]	// For sorting purposes
+		};
 		manually_dhcp_list_array[dhcp_staticlist_col[1]] = item_para;
 		manually_dhcp_list_array_ori[dhcp_staticlist_col[1]] = item_para;
 	}
@@ -169,28 +163,21 @@ function initial(){
 	if(lyra_hide_support){
 		$("#dhcpEnable").hide();
 	}
+
+	$("#GWStatic").html("<#LANHostConfig_ManualDHCPList_groupitemdesc#>&nbsp;(<#List_limit#>&nbsp;"+MaxRule_extend_limit+")");
 }
 
-function get_static_hostname(mac) {
-	for (var i = 1; i < dhcp_hostnames_row.length; i++){
-		var entry = dhcp_hostnames_row[i].split('&#62');
-		if (mac == entry[0])
-			return entry[1];
-	}
-	return "";
-}
-
-function addRow_Group(upper){
+function addRow_Group(){
 	if(dhcp_enable != "1")
 		document.form.dhcp_enable_x[0].checked = true;	
 	if(static_enable != "1")
 		document.form.dhcp_static_x[0].checked = true;
 		
 	var rule_num = Object.keys(manually_dhcp_list_array).length;
-	if(rule_num >= upper){
-		alert("<#JS_itemlimit1#> " + upper + " <#JS_itemlimit2#>");
-		return false;	
-	}			
+	if(rule_num >= MaxRule_extend_limit){
+		alert("<#JS_itemlimit1#> " + MaxRule_extend_limit + " <#JS_itemlimit2#>");
+		return false;
+	}
 		
 	if(document.form.dhcp_staticmac_x_0.value==""){
 		alert("<#JS_fieldblank#>");
@@ -202,10 +189,10 @@ function addRow_Group(upper){
 		document.form.dhcp_staticip_x_0.focus();
 		document.form.dhcp_staticip_x_0.select();
 		return false;
-	}else if ((document.form.dhcp_staticname_x_0.value != "") && ((alert_str = validator.host_name(document.form.dhcp_staticname_x_0)) != "")){
+	}else if ((document.form.dhcp_hostname_x_0.value != "") && ((alert_str = validator.host_name(document.form.dhcp_hostname_x_0)) != "")){
 		alert(alert_str);
-		document.form.dhcp_staticname_x_0.focus();
-		document.form.dhcp_staticname_x_0.select();
+		document.form.dhcp_hostname_x_0.focus();
+		document.form.dhcp_hostname_x_0.select();
 		return false;
 	}else if(check_macaddr(document.form.dhcp_staticmac_x_0, check_hwaddr_flag(document.form.dhcp_staticmac_x_0, 'inner')) == true &&
 		 validator.validIPForm(document.form.dhcp_staticip_x_0,0) == true &&
@@ -239,7 +226,23 @@ function addRow_Group(upper){
 		}
 		if(match_flag) return false;
 
-		var item_para = {"mac" : document.form.dhcp_staticmac_x_0.value.toUpperCase(), "dns" : document.form.dhcp_dnsip_x_0.value, "hostname" : document.form.dhcp_staticname_x_0.value, "ip" : document.form.dhcp_staticip_x_0.value};
+		var alert_str = "";
+		if(document.form.dhcp_hostname_x_0.value.length > 0)
+			alert_str = validator.host_name(document.form.dhcp_hostname_x_0);
+		if(alert_str != ""){
+			alert(alert_str);
+			document.form.dhcp_hostname_x_0.focus();
+			document.form.dhcp_hostname_x_0.select();
+			return false;
+		}
+
+		var item_para = {
+			"mac" : document.form.dhcp_staticmac_x_0.value.toUpperCase(),
+			"dns" : document.form.dhcp_dnsip_x_0.value,
+			"hostname" : document.form.dhcp_hostname_x_0.value,
+			"ip" : document.form.dhcp_staticip_x_0.value
+		};
+
 		manually_dhcp_list_array[document.form.dhcp_staticip_x_0.value.toUpperCase()] = item_para;
 
 		if(vpn_fusion_support) {
@@ -253,7 +256,7 @@ function addRow_Group(upper){
 		document.form.dhcp_staticip_x_0.value = "";
 		document.form.dhcp_staticmac_x_0.value = "";
 		document.form.dhcp_dnsip_x_0.value = "";
-		document.form.dhcp_staticname_x_0.value = "";
+		document.form.dhcp_hostname_x_0.value = "";
 
 		sortdir = sortdir * -1;	/* sortlist() will switch order back */
 		sortlist(sortfield);
@@ -283,7 +286,6 @@ function del_Row(r){
 	}
 
 	delete manually_dhcp_list_array[delIP];
-	delete manually_dhcp_hosts_array[delIP];
 	document.getElementById('dhcp_staticlist_table').deleteRow(i);
 
 	if(Object.keys(manually_dhcp_list_array).length == 0)
@@ -313,11 +315,11 @@ function edit_Row(r){
 	document.form.dhcp_staticip_x_0.value = document.getElementById('dhcp_staticlist_table').rows[i].cells[1].innerHTML;
 	if(validator.ipv4_addr(document.getElementById('dhcp_staticlist_table').rows[i].cells[2].innerHTML, 'dhcp_dns1_x'))
 		document.form.dhcp_dnsip_x_0.value = document.getElementById('dhcp_staticlist_table').rows[i].cells[2].innerHTML;
-	document.form.dhcp_staticname_x_0.value = document.getElementById('dhcp_staticlist_table').rows[i].cells[3].title;
+	document.form.dhcp_hostname_x_0.value = document.getElementById('dhcp_staticlist_table').rows[i].cells[3].title;
 	backup_mac = document.form.dhcp_staticmac_x_0.value;
 	backup_ip = document.form.dhcp_staticip_x_0.value;
 	backup_dns = document.form.dhcp_dnsip_x_0.value;
-	backup_name = document.form.dhcp_staticname_x_0.value;
+	backup_name = document.form.dhcp_hostname_x_0.value;
 	del_Row(r);
   	document.form.dhcp_staticmac_x_0.focus();
 }
@@ -327,7 +329,7 @@ function cancel_Edit(){
 		document.form.dhcp_staticmac_x_0.value = backup_mac;
 		document.form.dhcp_staticip_x_0.value = backup_ip;
 		document.form.dhcp_dnsip_x_0.value = backup_dns;
-		document.form.dhcp_staticname_x_0.value = backup_name;
+		document.form.dhcp_hostname_x_0.value = backup_name;
 		addRow_Group(64);
 	}
 }
@@ -345,12 +347,13 @@ function showdhcp_staticlist(){
 
 		for(var i = 0; i < sorted_array.length; i++){
 			var key = sorted_array[i].ip;
-			var clientMac = manually_dhcp_list_array[key]["mac"].toUpperCase();
-			var clientDNS = manually_dhcp_list_array[key]["dns"];
+			var clientIP = key;
+			var clientMac = manually_dhcp_list_array[clientIP]["mac"].toUpperCase();
+			var clientDNS = manually_dhcp_list_array[clientIP]["dns"];
 			if(clientDNS == "")
 				clientDNS = "<#Setting_factorydefault_value#>";
+			var clientHostname = manually_dhcp_list_array[clientIP]["hostname"];
 			var clientIconID = "clientIcon_" + clientMac.replace(/\:/g, "");
-			var clientIP = key;
 			if(clientList[clientMac]) {
 				clientName = (clientList[clientMac].nickName == "") ? clientList[clientMac].name : clientList[clientMac].nickName;
 				deviceType = clientList[clientMac].type;
@@ -361,8 +364,8 @@ function showdhcp_staticlist(){
 				deviceType = 0;
 				deviceVender = "";
 			}
-			if (manually_dhcp_list_array[key] != undefined)
-				var clientHostname = manually_dhcp_list_array[key].hostname;
+			if (manually_dhcp_list_array[clientIP] != undefined)
+				var clientHostname = manually_dhcp_list_array[clientIP].hostname;
 			else
 				var clientHostname = "";
 
@@ -425,16 +428,10 @@ function applyRule(){
 
 	if(validForm()){
 		dhcp_staticlist_array = "";
-		dhcp_hostnames_array = "";
 		Object.keys(manually_dhcp_list_array).forEach(function(key) {
-			dhcp_staticlist_array += "<" + manually_dhcp_list_array[key].mac + ">"  + key + ">" + manually_dhcp_list_array[key].dns;
-			dhcp_hostnames_array += "<" + manually_dhcp_list_array[key].mac + ">" + manually_dhcp_list_array[key].hostname;
+			dhcp_staticlist_array += "<" + manually_dhcp_list_array[key].mac + ">"  + key + ">" + manually_dhcp_list_array[key].dns + ">" + manually_dhcp_list_array[key].hostname;
 		});
-
-		if (dhcp_staticlist_array.length > 2499 || dhcp_hostnames_array.length > 2998)  {
-			alert("Resulting list of DHCP reservations is too long - remove some, or use shorter names.");
-			return false;
-		}
+		document.form.dhcp_staticlist.value = dhcp_staticlist_array;
 
 		// Only restart the whole network if needed
 		if ((document.form.dhcp_wins_x.value != dhcp_wins_ori) ||
@@ -449,9 +446,6 @@ function applyRule(){
 			document.form.action_wait.value = 5;
 		}
 
-		document.form.dhcp_staticlist.value = dhcp_staticlist_array;
-		document.form.dhcp_hostnames.value = dhcp_hostnames_array;
-		
 		if(vpn_fusion_support) {
 			if(vpnc_dev_policy_list_array.toString() != vpnc_dev_policy_list_array_ori.toString()) {
 				var action_script_tmp = "restart_vpnc_dev_policy;" + document.form.action_script.value;
@@ -837,7 +831,6 @@ function sortClientIP(){
 <input type="hidden" name="lan_ipaddr" value="<% nvram_get("lan_ipaddr"); %>">
 <input type="hidden" name="lan_netmask" value="<% nvram_get("lan_netmask"); %>">
 <input type="hidden" name="dhcp_staticlist" value="">
-<input type="hidden" name="dhcp_hostnames" value="">
 <input type="hidden" name="vpnc_dev_policy_list" value="" disabled>
 <input type="hidden" name="vpnc_dev_policy_list_tmp" value="" disabled>
 
@@ -865,8 +858,8 @@ function sortClientIP(){
 		  <div class="formfonttitle"><#menu5_2#> - <#menu5_2_2#></div>
 		  <div style="margin:10px 0 10px 5px;" class="splitLine"></div>
       <div class="formfontdesc"><#LANHostConfig_DHCPServerConfigurable_sectiondesc#></div>
-      <div id="router_in_pool" class="formfontdesc" style="color:#FFCC00;display:none;">WARNING: The router's IP address is within your pool! <span id="LANIP"></span> </div>
-      <div id="VPN_conflict" class="formfontdesc" style="color:#FFCC00;display:none;"><span id="VPN_conflict_span"></span></div>
+      <div id="router_in_pool" class="formfontdesc" class="hint-color" style="display:none;"><#LANHostConfig_DHCPServerConfigurable_sectiondesc2#><span id="LANIP"></span></div>	
+      <div id="VPN_conflict" class="formfontdesc" class="hint-color" style="display:none;"><span id="VPN_conflict_span"></span></div>
 			<div class="formfontdesc" style="margin-top:-10px;">
 				<a id="faq" href="" target="_blank" style="font-family:Lucida Console;text-decoration:underline;"><#LANHostConfig_ManualDHCPList_groupitemdesc#>&nbsp;FAQ</a>
 			</div>
@@ -987,7 +980,7 @@ function sortClientIP(){
 			<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable_table" style="margin-top:8px;">
 				<thead>
 					<tr>
-						<td colspan="5" id="GWStatic"><#LANHostConfig_ManualDHCPList_groupitemdesc#>&nbsp;(<#List_limit#>&nbsp;64)</td>
+						<td colspan="5" id="GWStatic"></td>
 					</tr>
 				</thead>
 
@@ -995,7 +988,7 @@ function sortClientIP(){
 					<th id="col0" style="cursor: pointer;" onclick="sortlist(0); showdhcp_staticlist();"><a class="hintstyle" href="javascript:void(0);" onClick="openHint(5,10);"><#Client_Name#> (<#PPPConnection_x_MacAddressForISP_itemname#>)</a></th>
 					<th id="col1" style="cursor: pointer;" onclick="sortlist(1); showdhcp_staticlist();"><#IPConnection_ExternalIPAddress_itemname#></th>
 					<th id="col3" style="cursor: pointer;" onclick="sortlist(3); showdhcp_staticlist();"><#LANHostConfig_x_LDNSServer1_itemname#> (Optional)</th>
-					<th id="col2" style="cursor: pointer;" onclick="sortlist(2); showdhcp_staticlist();">Hostname (Optional)</th>
+					<th id="col2" style="cursor: pointer;" onclick="sortlist(2); showdhcp_staticlist();"><#LANHostConfig_x_DDNSHostNames_itemname#> (Optional)</th>
 					<th>Edit</th>
 				</tr>
 				<tr>
@@ -1012,11 +1005,11 @@ function sortClientIP(){
 						<input type="text" class="input_15_table" maxlength="15" name="dhcp_dnsip_x_0" onkeypress="return validator.isIPAddr(this,event)" autocorrect="off" autocapitalize="off">
 					</td>
 					<td width="23%">
-						<input type="text" class="input_15_table" maxlenght="30" onKeyPress="return validator.isString(this, event);" name="dhcp_staticname_x_0" autocorrect="off" autocapitalize="off">
+						<input type="text" class="input_15_table" maxlenght="30" onKeyPress="return validator.isString(this, event);" name="dhcp_hostname_x_0" autocorrect="off" autocapitalize="off">
 					</td>	
 					<td width="7%">
 						<div>
-							<input type="button" class="add_btn" onClick="addRow_Group(64);" value="">
+							<input type="button" class="add_btn" onClick="addRow_Group();" value="">
 						</div>
 					</td>
 			  	</tr>	 			  

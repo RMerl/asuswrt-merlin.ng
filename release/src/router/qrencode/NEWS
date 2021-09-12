@@ -1,0 +1,332 @@
+libqrencode NEWS - Overview of changes
+======================================
+
+Version 4.1.1 (2020.9.28)
+-------------------------
+* Some minor bugs in Micro QR Code generation have been fixed.
+  * The data capacity calculations are now correct. These bugs probably did not
+    affect the Micro QR Code generation.
+
+Version 4.1.0 (2020.8.29)
+-------------------------
+* Command line tool "qrencode" has been improved:
+	* New option "--inline" has been added. (Thanks to @jp-bennett)
+	* New option "--strict-version" has been added.
+	* UTF8 mode now supports ANSI256 color. (Thanks to András Veres-
+	  Szentkirályi)
+* Micro QR Code no longer requires to specify the version number.
+* 'make check' allows to run the test programs. (Thanks to Jan Tojnar)
+* Some compile time warnings have been fixed.
+* Various CMake support improvements. (Thanks to @mgorny and @sdf5)
+* Some minor bug fixes. (Thanks to Lonnie Abelbeck and Frédéric Wang)
+* Some documentation/manpage improvements. (Thanks to Dan Jacobson)
+* Some performance improvements. (Thanks to @4061N and Mika Lindqvist)
+
+Release Note:
+The internal representation of the output code has been slightly changed -
+the second bit from LSB side now represents; 1:ECC bit / 0:data bit.
+This change is only for debug purposes and does not affect user applications.
+
+
+Version 4.0.2 (2018.6.6)
+------------------------
+* Build script fixes. (Thanks to @mgorny)
+
+
+Version 4.0.1 (2018.6.4)
+------------------------
+* CMake support improved.
+* New test scripts have been added.
+* Some compile time warnings have been fixed.
+
+
+Version 4.0.0 (2017.9.21)
+-------------------------
+* Memory efficiency has been improved.
+* QRcode_clearCache() has been deprecated.
+* Error correction code generating functions have been improved.
+* Command line tool "qrencode" has been improved:
+	* XPM support. (Thanks to Tobias Klauser)
+	* PNG32 (direct color mode) support. (Thanks to Greg Hart)
+	* EPS output now supports foreground and background color.
+	* New options "-r" and "--svg-path" have been added.
+	  (Thanks to Robert Petersen and @Oblomov)
+* CMake support has been added. (optional) (Thanks to @misery)
+* Various bug fixes.
+* Various performance improvements.
+
+Release Note:
+While the API has not been changed since the previous major release, we
+incremented the major version number of libqrencode to 4 because the
+implementation of the library has been largely changed.
+
+This release improves the performance and memory footprints of code generation.
+
+Now you can build libqrencode with CMake.
+
+If you build the test programs, please note that the required SDL version has
+been changed from 1.2 to 2.0.
+
+
+Version 3.4.4 (2014.7.24)
+-------------------------
+* Bug fix release. (Thanks to Yoshimichi Inoue)
+* New option "--verbose" has been added to the command line tool.
+
+Release Note:
+When only one symbol is generated in structured-append mode, the library had
+inserted unnecessary chunk to the symbol and some QR Code readers fail to read
+it. Now the library omits the chunk and generate a symbol identical to non-
+structured symbol.
+
+Version 3.4.3 (2013.8.12)
+-------------------------
+* New option "--rle" has been added to the command line tool (Thanks to Daniel
+  Dörrhöfer)
+* Bug fixes. (Thanks to Hassan Hajji, Emmanuel Blot, and ßlúèÇhîp)
+
+Release Note:
+This release contains a couple of bug fixes and a new minor feature of the
+command line tool. Some minor bugs in the library have been fixed.
+
+Run Length Encoding (RLE) for SVG output decreases the size of the output file,
+but it makes complicated to edit the image by SVG editors. A newly introduced
+command line option "--rle" enables RLE. RLE will not be applied if it is not
+given.
+
+Version 3.4.2 (2013.3.1)
+------------------------
+* Bug fix release. (Thanks to chisj, vlad417, Petr and Viona)
+
+Release Note:
+Micro QR Code encoder had a bug that caused incorrect output (issue #25). Now
+the bug has been fixed. Memory leak bug (#24) and insufficient string splitting
+bug have been fixed.
+
+Version 3.4.1 (2012.10.17)
+--------------------------
+* Bug fix release.
+
+Release Note:
+Mutual exclusion did not work correctly since 3.3.1. If your application uses
+libqrencode in multithreaded environment, it is strongly recommended to update
+it.
+
+Version 3.4.0 (2012.10.15)
+--------------------------
+* SVG, UTF8, and ANSIUTF8 output supports have been added to the command line
+  tool. (Thanks to Dan Storm, David Dahl, and Lennart Poettering)
+* Colored QR Code support.
+* Bug fixes. (Thanks to Terry Burton, Fred Steinhaeuser, and Yann Droneaud)
+
+Release Note:
+Three new output format, SVG, UTF8, and ANSIUTF8 have been added to the command
+line tool. UTF8 and ANSIUTF8 are another text art mode, using Unicode block
+elements for high-resolution text output. Long-awaited colored QR code has been
+introduced. Try "--foreground" and "--background" options to set the colors.
+Currently PNG and SVG supports colored output.
+
+Version 3.3.1 (2012.4.18)
+-------------------------
+* Bugs in command line tool, manual, configure script, and libtool files have
+  been fixed. (Thanks to Yutaka Niibe and Rob Ryan)
+
+Version 3.3.0 (2012.4.1)
+-------------------------
+* EPS, ANSI, and ASCII text output supports have been added.
+  (Thanks to Zapster, Colin, and Ralf)
+* QRcode_APIVersion() and QRcode_APIVersionString() have been added.
+
+Release Note:
+Three new output format, EPS, ANSI, and ASCII text, have been added to the
+command line tool. ANSI and ASCII mode ignore "-size" option. Give "-t ASCIIi"
+to get an ASCII-mode symbol in inverted color.
+
+QRcode_APIVersion() is requested by Matthew Baker for better support of Python
+ctypes binding. Check them out at https://code.google.com/p/libqrencode-ctypes/
+
+Version 3.2.1 (2012.4.1)
+------------------------
+* Bugs in configure script and libtool file has been fixed. (Thanks to Yutaka
+  Niibe)
+
+Version 3.2.0 (2011.11.26)
+--------------------------
+* "--dpi" (or "-d") option has been added to qrencode. This option set DPI
+  information in an output PNG image. (Thanks to David Dahl)
+* New option "--enable-thread-safety" has been added to the configure script
+  that makes the library thread-safe. It is enabled by default.
+* QRcode_encodeData(), QRcode_encodeDataMQR, QRcode_encodeDataStructured() have
+  been added for binary data encoding including '\0'.
+* Typo and bug fixes.
+* Experimental Micro QR Code support has been added.
+* "--micro" (or "-M") option for Micro QR Code has been added to qrencode.
+  (experimental)
+
+Release Note:
+Binary data including '\0' is now supported. To encode a binary data, give "-8"
+option to qrencode, and let qrencode obtain data via standard input like
+"qrencode -8 -o output.png < binary". "--dpi" and "-d" are also added to embed
+DPI information to PNG file.
+
+A bug in the mask pattern evaluation routine has been fixed. In some cases,
+libqrencode may generate a different symbol from the one that was generated by
+the prior libqrencode because of this bug fix, but the embedded data are not
+affected. The symbols generated by the old libqrencode are valid.
+
+Experimental support of Micro QR Code encoder has been added. Some functions
+(QRcode_*MQR()) have been added to the library. The command line tool generates
+Micro QR Code when "--micro" or "-M" is given.
+
+Version 3.1.1 (2010.2.3)
+------------------------
+* A bug in the library has been fixed.
+
+Release Note:
+Libqrecode had generated incorrect QR Code in some cases. Symbols larger than
+version 5 (error correction level Q and H) were affected. In many cases this
+bug did not cause serious damage thanks to the error correction mechanism, but
+we highly recommend you to encode symbols again using this release.
+
+Version 3.1.0 (2009.6.6)
+------------------------
+* Various code cleanups and performance improves.
+* Strict internal error checks have been added.
+* "--without-tests" has become default setting. Specify "--with-tests" to
+  compile test programs.
+* Some memory leak bugs have been fixed.
+
+Release Note:
+This release focuses on the code cleanup and performance improve. Encoding time
+has been improved, drastically in large symbols. Basically this update only
+changes its internal code. The API is not changed, no need to recompile user
+applications that includes only qrencode.h. If your application refers the
+internal data representation (not recommended), see ChangeLog for further
+information.
+
+Version 3.0.3 (2008.6.1)
+------------------------
+* Portability enhancement. (Thanks to Gavan Fantom)
+* The command line tool "qrencode" now accepts long options. See the man page
+  for the detailed instruction.
+
+Release Note:
+This release improves the portability of our command line tool "qrencode".
+The library is not changed so that any applications using libqrencode are not
+affected.
+
+From this release, qrencode accepts "long" options, such as "--help". See the
+manpage for the detailed instructions.
+
+Qrencode now uses getopt_long() instead of getopt_long_only() which is not
+available in some operating systems. If the getopt_long() is not provided or
+the implementation of it is not compatible with GNU's one, please try
+qrencode-3.0.3-gnulib, that contains the source code of the getopt_long().
+Gnulib version is a test release. If you feel happy with it, please let us know
+and the future releases will include gnulib.
+
+Version 3.0.2 (2008.5.18)
+-------------------------
+* Some compile-time warnings/errors with g++ have been fixed.
+  (Thanks to wangsai)
+* The bit order of "Version information" has been corrected.
+  Symbols greater than version 6 were affected. (Thanks to Paul Janssesn)
+* The "--without-tests" option has been added to the configure script.
+
+Version 3.0.1 (2008.5.9)
+------------------------
+* A bug fix for non-POSIX platform. (Thanks to Paul Janssens)
+* The RPM spec file now packages the man page correctly.
+
+Version 3.0.0 (2008.4.30)
+-------------------------
+* The interface of QRencode_encodeInput() has been changed. User applications
+  using it must be modified.
+* Structured append support has been added. (patches from Yusuke Mihara)
+* The "-S" option for structured append has been added to qrencode and
+  view_qrcode.
+* Some functions now set errno to indicate errors.
+* Some bug fixes.
+
+Release Note:
+Now libqrencode supports "structured-append" of symbols. A large data set can
+be split into multiple QR code symbols. The basic usage of structured-append
+is not so different from the single symbol encoding: just call
+QRcode_encodeStringStructured() or QRcode_encodeString8bitStructured() and
+they return a list of symbols. Instead of giving a string, you can encode
+an explicitly typed data. See the manual generated by Doxygen for the detailed
+usage.
+
+Many thanks to Yusuke Mihara, who contributed a patch to add support of
+structured-append to version 1.0.2.
+
+API changes:
+
+* Incompatible API changes:
+  - QRencode_encodeInput
+* New types:
+  - QRinput_Struct
+  - QRcode_List
+* New functions:
+  - QRinput_new2
+  - QRinput_Struct_new
+  - QRinput_Struct_setParity
+  - QRinput_Struct_appendInput
+  - QRinput_Struct_free
+  - QRinput_Struct_insertStructuredAppendHeaders
+  - QRinput_splitQRinputToStruct
+  - QRcode_encodeStructuredInput
+  - QRcode_encodeStringStructured
+  - QRcode_encodeString8bitStructured
+  - QRcode_List_size
+  - QRcode_List_free
+* Declarations moved to qrencode.h:
+  - QRinput_getErrorCorrectionLevel
+  - QRinput_setErrorCorrectionLevel
+  - QRinput_getVersion
+  - QRinput_setVersion
+
+Version 2.0.0 (2008.1.24)
+-------------------------
+* "-i" option to ignore case distinctions has been added to qrencode and
+  view_qrcode.
+* "-c" option (case-sensitive mode) of qrencode is now enabled by default and
+  has been improved. See details in Release Note section.
+* "-8" option has been added to qrencode to encode whole data in 8-bit mode.
+* tests/view_qrcode now accepts various options like qrencode.
+* Man page has been added.
+* Code cleanup.
+* The mask evaluation bug has been fixed. (Philippe Delcroix)
+
+* API changes
+  - QRcode_encodeString() now receives case-sensitive flag.
+  - QRcode_encodeStringCase() has been removed.
+  - QRcode_encodeString8bit() has been added.
+
+Release Note:
+Previously libqrencode encodes lower-case alphabet characters in Alphabet-
+Numeric mode (upper-case alphabet and numeric) by default. According to the
+specification of QR code, however, it is clearly claimed that Alphabet-Numeric
+mode provides only upper-case alphabet (+ numeric and some symbol) characters.
+Since this version, libqrencode distinguishes lower-case and upper-case of
+alphabet characters by default. Because of that, "-c" option of qrencode
+is now deprecated, and "-i" option has been added. By giving "-i", qrencode
+converts lower-case characters to upper-case if possible, then encode a QR code
+symbol. Please read qrencode.h for the details about API changes if you are
+going to use this library.
+
+Many thanks to NANKI Haruo for his suggestions.
+
+Version 1.0.2 (2007.03.24)
+--------------------------
+* A small bug fix. (Thanks to NANKI Haruo)
+* 'extern "C"' barrier has been added to qrencode.h.
+
+Version 1.0.1 (2006.12.27)
+--------------------------
+* Added "force 8-bit encoding mode".
+* Configure script finds libpng's header correctly.
+
+Version 1.0.0 (2006.12.12)
+--------------------------
+* The first public release.

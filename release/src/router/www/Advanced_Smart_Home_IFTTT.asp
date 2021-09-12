@@ -253,7 +253,6 @@ function get_activation_code(){
 	ASUS_EULA.config(get_activation_code, function(){});
 	if(ASUS_EULA.check("asus")){
 		detcet_aae_state();
-		gen_new_pincode();
 	}
 }
 
@@ -439,7 +438,7 @@ function show_account_state(){
 														<a style="font-size:13px;padding-top: 2px;padding-left: 20px;font-style:italic;text-decoration: underline;cursor:pointer;" href="https://ifttt.com/asusrouter" target="_blank"><#IFTTT_more_applets#></a>
 													</div>
 													<div style="text-align:center;padding-top:60px;font-family:Arial, Helvetica, sans-serif;font-style:italic;font-weight:lighter;font-size:18px;"><#IFTTT_start0#></div>
-													<div id="acc_link_status" style="text-align:center;padding-top:10px;font-size:15px;color:#FFCC00;font-weight:bolder;"></div> <!-- id="remote_control_here" -->
+													<div id="acc_link_status" class="hint-color" style="text-align:center;padding-top:10px;font-size:15px;font-weight:bolder;"></div> <!-- id="remote_control_here" -->
 													<div class="div_img">
 														<table style="width:99%">
 															<div style="font-size:20px;color:#c0c0c0;padding-bottom:20px;"><#IFTTT_start1#></div>
@@ -477,7 +476,7 @@ function show_account_state(){
 																		<div class="step_3"></div>
 																	</div>
 																	<div class="div_td" style="font-size:16px;padding:5px 0px 0px 10px;">
-																		<div><span style="color:#FFCC00;text-decoration:underline;cursor:pointer;" onclick="get_activation_code();"><#Get_Activation_Code#></span> ,<#Link_IFTTT_and_Router#></div>
+																		<div><span class="hint-color" style="text-decoration:underline;cursor:pointer;" onclick="get_activation_code();"><#Get_Activation_Code#></span> ,<#Link_IFTTT_and_Router#></div>
 																	</div>
 																</div>
 																<div style="font-weight:bolder;font-size:20px;color:#c0c0c0;padding-top:57px;padding-left:15px;"><#IFTTT_and#></div>

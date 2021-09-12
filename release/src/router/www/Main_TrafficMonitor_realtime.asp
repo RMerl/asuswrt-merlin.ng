@@ -35,50 +35,6 @@ var debugTime = 0;
 var avgMode = 0;
 var wdog = null;
 var wdogWarn = null;
-var href_lang = get_supportsite_lang();
-switch("<% nvram_get("preferred_lang"); %>"){
-	case "KR":
-						href_lang = "/";
-						break;
-	case "RO":
-						href_lang = "/";
-						break;
-	case "HU":
-						href_lang = "/";
-						break;
-	case "IT":
-						href_lang = "/";
-						break;
-	case "DA":
-						href_lang = "/";
-						break;	
-	case "BR":
-						href_lang = "/";
-						break;
-	case "SV":
-						href_lang = "/";
-						break;
-	case "FI":
-						href_lang = "/";
-						break;
-	case "NO":
-						href_lang = "/";
-						break;
-	case "TH":
-						href_lang = "/";
-						break;
-	case "DE":
-						href_lang = "/";
-						break;
-	case "PL":
-						href_lang = "/";
-						break;
-	case "CZ":
-						href_lang = "/";
-						break;
-	default:
-						break;
-}
 
 // disable auto log out
 AUTOLOGOUT_MAX_MINUTE = 0;
@@ -186,7 +142,8 @@ function init()
 	watchdogReset();
 
 	ref.start();
-	document.getElementById("faq0").href = "https://www.asus.com/support/FAQ/114483/" ;
+	var faq_href = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=158";
+	document.getElementById("faq0").href = faq_href;
 
 	var ctf_disable = '<% nvram_get("ctf_disable"); %>';
 	if(ctf_disable == "0"){
@@ -342,7 +299,7 @@ function setUnit(unit){
         			<tr>
         				<td>
 							<span id="tab-area"></span>
-							<span id="iftitle" style="font-weight: bold; color: #A0B06B; position: absolute; margin-top: 30px; margin-left: 41%; min-width: 180px;"></span>
+							<span id="iftitle" style="font-weight: bold; color: #A0B06B; position: absolute; top: 375px; left: 45%; min-width: 180px;"></span>
 							<!--========= svg =========-->
 							<!--[if IE]>
 								<div id="svg-table" align="left" class="IE8HACK">

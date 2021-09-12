@@ -1,7 +1,7 @@
 /*
  * Broadcom micro scheduler library definitions
  *
- * Copyright (C) 2020, Broadcom. All Rights Reserved.
+ * Copyright (C) 2021, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: bcm_usched.c 783930 2020-02-13 03:19:33Z $
+ * $Id: bcm_usched.c 790390 2020-08-24 20:41:17Z $
  */
 
 #include <stdio.h>

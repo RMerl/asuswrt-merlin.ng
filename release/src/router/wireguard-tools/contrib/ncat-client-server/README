@@ -1,0 +1,16 @@
+                === IMPORTANT NOTE ===
+
+Do not use these scripts in production. They are simply a
+demonstration of how easy the `wg(8)` tool is at the command
+line, but by no means should you actually attempt to use
+these. They are horribly insecure and defeat the purpose
+of WireGuard.
+                     STAY AWAY!
+
+That all said, this is a pretty cool example of just how
+darn easy WireGuard can be.
+
+Disclaimer:
+  The `demo.wireguard.com` server in client.sh is for testing
+  purposes only. You may not use this server for abusive or
+  illegal purposes.

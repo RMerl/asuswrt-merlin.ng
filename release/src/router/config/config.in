@@ -90,8 +90,20 @@ config RTCONFIG_HND_ROUTER_AX_675X
 	bool "Bcm hnd 11ax (675x) bsp"
 	default n
 
+config RTCONFIG_HND_ROUTER_AX_6756
+	bool "Bcm hnd 11ax (6756) bsp"
+	default n
+
 config RTCONFIG_HND_ROUTER_AX_6710
 	bool "BCM6710"
+	default n
+
+config RTCONFIG_SDK502L07P1_121_37
+	bool "SDK 5.02L.07p1_17.10.121.37"
+	default n
+
+config RTCONFIG_SDK504L02_188_1303
+	bool "SDK 5.04L.02_17.10.188.1303"
 	default n
 
 config RTCONFIG_HND_WL
@@ -145,6 +157,10 @@ config RTCONFIG_DPSTA
 	bool "Bcm7 dpsta"
 	default n
 
+config RTCONFIG_DPSR
+	bool "Bcm7 dpsr"
+	default n
+
 config RTCONFIG_GMAC3
 	bool "Bcm7 gmac3"
 	default n
@@ -183,7 +199,7 @@ config RTCONFIG_BRCM_NAND_JFFS2
 
 config RTCONFIG_JFFS_NVRAM
 	bool "NVRAM on JFFS support"
-	depends on RTCONFIG_BRCM_NAND_JFFS2
+	depends on RTCONFIG_BRCM_NAND_JFFS2 || RTCONFIG_UBIFS
 	default y
 
 config RTCONFIG_JFFS2
@@ -215,6 +231,10 @@ config RTCONFIG_INADYN
 	bool "Dynamic DNS"
 	depends on RTCONFIG_DDNS
 	default y
+
+config RTCONFIG_ASUSDDNS_ACCOUNT_BASE
+	bool "ASUS DDNS for Account base"
+	default n
 
 config RTCONFIG_L7
 	bool "Layer 7 Netfilter"
@@ -575,7 +595,7 @@ config RTCONFIG_FTP
 config RTCONFIG_FTP_SSL
 	bool "FTP SSL Support"
 	depends on RTCONFIG_USB && RTCONFIG_FTP
-	default n
+	default y
 
 config RTCONFIG_WEBDAV
 	bool "WebDav Support"
@@ -680,6 +700,16 @@ config RTCONFIG_OPENPLUSPARAGON_HFS
 config RTCONFIG_OPENPLUSTUXERA_HFS
 	bool "Kernel HFSPLUS + Tuxera support"
 	depends on RTCONFIG_KERNEL_HFSPLUS
+	default n
+
+config RTCONFIG_APFS
+	bool "APFS Support"
+	depends on RTCONFIG_USB
+	default n
+
+config RTCONFIG_TUXERA_APFS
+	bool "APFS Support by Tuxera"
+	depends on RTCONFIG_APFS
 	default n
 
 config RTCONFIG_UFSD_DEBUG
@@ -822,6 +852,10 @@ config RTCONFIG_NEWSSID_REV2
 
 config RTCONFIG_NEWSSID_REV4
 	bool "RT-V4 SSID rule"
+	default n
+
+config RTCONFIG_NEWSSID_REV5
+	bool "RT-V5 SSID rule"
 	default n
 
 config RTCONFIG_NEWSSID_REV6
@@ -986,6 +1020,10 @@ config RTCONFIG_SOC_IPQ40XX
 
 config RTCONFIG_SOC_IPQ60XX
 	bool "Qualcomm Atheros IPQ60XX Chip Support"
+	default n
+
+config RTCONFIG_SOC_IPQ50XX
+	bool "Qualcomm Atheros IPQ50XX Chip Support"
 	default n
 
 config RTCONFIG_FITFDT
@@ -1566,6 +1604,14 @@ config RTCONFIG_TR181
 	bool "Support TR-181 data model"
 	default n
 
+config RTCONFIG_TR143_110
+	bool "Support TR-143-1-1-0 data model"
+	default n
+
+config RTCONFIG_ISP_OPTUS
+	bool "Support ISP OPTUS Customize"
+	default n
+
 config RTCONFIG_STAINFO
 	bool "STA informtion support"
 	default n
@@ -1727,8 +1773,8 @@ config RTCONFIG_6RELAYD
 	depends on RTCONFIG_IPV6
 	default n
 
-config RTCONFIG_IPV4IN6
-	bool "IP-in-IPv6 tunnel support"
+config RTCONFIG_SOFTWIRE46
+	bool "IPv6 Softwire46 tunnel support"
 	depends on RTCONFIG_IPV6
 	default n
 
@@ -1876,13 +1922,13 @@ config RTCONFIG_MERLINUPDATE
 	bool "Check for new firmware version - Merlin-only"
 	default n
 
+config RTCONFIG_OPENSSL11
+	bool "OpenSSL 1.1.x"
+	default n
+
 config RTCONFIG_DNSFILTER
 	bool "DNS-based filtering Support"
 	depends on !RTCONFIG_YANDEXDNS
-	default n
-
-config RTCONFIG_OPENSSL11
-	bool "OpenSSL 1.1.x"
 	default n
 
 config RTCONFIG_LETSENCRYPT
@@ -2248,6 +2294,10 @@ config RTCONFIG_FRS_LIVE_UPDATE
 	bool "RTCONFIG_FRS_LIVE_UPDATE support"
 	default n
 
+config RTCONFIG_AUTO_FW_UPGRADE
+	bool "RTCONFIG_AUTO_FW_UPGRADE support"
+	default n
+
 config RTCONFIG_ASD
 	bool "RTCONFIG_ASD support"
 	default n
@@ -2430,3 +2480,78 @@ config RTCONFIG_FRONTHAUL_DBG
 config RTCONFIG_MAX_RE_32
 	bool "max number of RE is 32"
 	default n
+
+config RTCONFIG_SPF11_3_QSDK
+	bool "SPF11.3 QSDK"
+	depends on RTCONFIG_QCA
+	default n
+
+config RTCONFIG_SPF11_4_QSDK
+	bool "SPF11.4 QSDK"
+	depends on RTCONFIG_QCA
+	default n
+
+config RTCONFIG_QCA_WLAN_SCRIPTS
+	depends on RTCONFIG_QCA
+	bool "use script to load/unload wifi instead of complex & mass code"
+	default n
+
+config RTCONFIG_QCA_AXCHIP
+	depends on RTCONFIG_QCA
+	bool "enable some 11AX features"
+	default n
+
+config RTCONFIG_WIREGUARD
+	bool "enable Wireguard features"
+	default n
+
+config RTCONFIG_OWE_TRANS
+	bool "OWE Transition authentication mode support"
+	default n
+
+config RTCONFIG_TPVPN
+	bool "3rd party VPN support"
+	default n
+
+config RTCONFIG_SPECIFIC_PPPOE
+	bool "Support specific PPPoE features"
+	default n
+
+config RTCONFIG_ACL96
+	bool "Support maximum 96 MAC address in ACL list control"
+	default n
+
+config RTCONFIG_ISP_CUSTOMIZE_TOOL
+	bool "ISP customiztion tool"
+	default n
+
+config RTCONFIG_ISPCTRL
+	bool "Append ISP model description to the file name of firmware"
+	default n
+
+config RTCONFIG_GOOGLE_ASST
+	bool "GOOGLE_ASST support"
+	default n
+
+config RTCONFIG_EXTEND_LIMIT
+	bool "Extend rule limitation"
+	default n
+
+config RTCONFIG_COMFW
+	bool "Combined image support"
+	default n
+
+config RTCONFIG_QUADBAND
+	bool "WiFi quad band support"
+	default n
+
+choice
+	prompt "lldpd program & library"
+	default RTCONFIG_LLDPD_0_9_8
+
+config RTCONFIG_LLDPD_0_9_8
+	bool "lldpd-0.9.8"
+
+config RTCONFIG_LLDPD_1_0_11
+	bool "lldpd-1.0.11"
+endchoice

@@ -2194,6 +2194,13 @@ padding-top:1px;
 	width: 740px;
 	margin: 1px 0;
 }
+.MainContent{
+	background-color: transparent;
+	width: 99%;
+	-webkit-border-radius: 3px;
+	-moz-border-radius: 3px;
+	border-radius:3px;
+}
 .query_list{
 	display: none;
 	background-color: rgb(62,3,13);
@@ -2250,4 +2257,7 @@ padding-top:1px;
 	height: 16px;
 	width: 14px;
 	display: none;
+}
+.hint-color{
+	color: #FFCC00;
 }

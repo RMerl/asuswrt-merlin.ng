@@ -576,9 +576,19 @@ function wl_wep_change(){
 		if(mode != "wpa" && mode != "wpa2" && mode != "wpawpa2"){
 			inputCtrl(document.form.wl_crypto, 1);
 			if(mode != "owe"){
+				if(document.querySelector('#wpa_psk_key_field')){
+					document.querySelector('#wpa_psk_key_field').style.display = '';
+				}
 				inputCtrl(document.form.wl_wpa_psk, 1);
 			}
 			
+		}
+		else{
+			if(document.querySelector('#wpa_psk_key_field')){
+				document.querySelector('#wpa_psk_key_field').style.display = 'none';
+			}
+	
+			inputCtrl(document.form.wl_wpa_psk, 0);
 		}
 		inputCtrl(document.form.wl_wpa_gtk_rekey, 1);
 		inputCtrl(document.form.wl_wep_x, 0);
@@ -591,6 +601,10 @@ function wl_wep_change(){
 	}
 	else if(mode == "radius"){ //2009.01 magic
 		inputCtrl(document.form.wl_crypto, 0);
+		if(document.querySelector('#wpa_psk_key_field')){
+			document.querySelector('#wpa_psk_key_field').style.display = 'none';
+		}
+
 		inputCtrl(document.form.wl_wpa_psk, 0);
 		inputCtrl(document.form.wl_wpa_gtk_rekey, 0);
 		inputCtrl(document.form.wl_wep_x, 0); //2009.0310 Lock
@@ -603,6 +617,10 @@ function wl_wep_change(){
 	}
 	else{
 		inputCtrl(document.form.wl_crypto, 0);
+		if(document.querySelector('#wpa_psk_key_field')){
+			document.querySelector('#wpa_psk_key_field').style.display = 'none';
+		}
+
 		inputCtrl(document.form.wl_wpa_psk, 0);
 		inputCtrl(document.form.wl_wpa_gtk_rekey, 0);
 		if(mode == "open" && document.form.wl_nmode_x.value != 2){
@@ -685,6 +703,36 @@ function filter_5g_channel_by_bw(ch_ary, bw){
 		var ch=[36,52,100,116,132,149], cnt=[0,0,0,0,0,0], d=12, nr_ch=4;
 	}else if(bw == 40){
 		var ch=[36,44,52,60,100,108,116,124,132,140,149,157], cnt=[0,0,0,0,0,0,0,0,0,0,0,0], d=4, nr_ch=2;
+	}else
+		return ch_ary;
+
+	ary = ch_ary.slice();
+	for(i=0; i < ary.length; i++){
+		for(j=0; j<ch.length; j++)
+			if((ary[i] - ch[j]) >= 0 && (ary[i] - ch[j]) <= d)
+				cnt[j]++;
+	}
+	for(i=0; i < ary.length; i++){
+		del=1;
+		for(j=0; j<ch.length; j++)
+			if((ary[i] - ch[j]) >= 0 && (ary[i] - ch[j]) <= d && cnt[j] == nr_ch)
+				del=0;
+		if(del){
+			ary.splice(i,1);
+			i--;
+		}
+	}
+	return ary;
+}
+
+function filter_6g_channel_by_bw(ch_ary, bw){
+	var del, ary;;
+	if(bw == 160){
+		var ch=[33,65,97,129,161,193], cnt=[0,0,0,0,0,0], d = 28, nr_ch=8;
+	}else if(bw == 80){
+		var ch=[33,49,65,81,97,113,129,145,161,177,193,209], cnt=[0,0,0,0,0,0,0,0,0,0,0,0], d=12, nr_ch=4;
+	}else if(bw == 40){
+		var ch=[33,41,49,57,65,73,81,89,97,105,113,121,129,137,145,153,161,169,177,185,193,201,209,217,225], cnt=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], d=4, nr_ch=2;
 	}else
 		return ch_ary;
 
@@ -849,6 +897,7 @@ function insertChannelOption_60g(){
 function insertExtChannelOption_5g(){
     var country = "<% nvram_get("wl1_country_code"); %>";
     var orig = document.form.wl_channel.value;
+    var nband = "<% nvram_get("wl_nband"); %>";
     free_options(document.form.wl_channel);
 		if(wl_channel_list_5g != ""){	//With wireless channel 5g hook
 			if('<% nvram_get("wl_unit"); %>' == '1')
@@ -914,17 +963,26 @@ function insertExtChannelOption_5g(){
 			else if(document.form.wl_bw.value != "0" && document.form.wl_nmode_x.value != "2"){ //not Legacy mode and BW != 20MHz
 					// for V40, if not all 2 continuous channels exist, remove them.
 					if(document.form.wl_bw.value == "2" && (Rawifi_support || Qcawifi_support || Rtkwifi_support)){
-						wl_channel_list_5g = filter_5g_channel_by_bw(wl_channel_list_5g, 40);
+						if(nband == "4")
+							wl_channel_list_5g = filter_6g_channel_by_bw(wl_channel_list_5g, 40);
+						else
+							wl_channel_list_5g = filter_5g_channel_by_bw(wl_channel_list_5g, 40);
 					}
 					// for V80, V80+80, if not all 4 continuous channels exist, remove them.
 					if((vht80_80_support && (document.form.wl_bw.value == "3" || document.form.wl_bw.value == "4") && (Rawifi_support || Qcawifi_support))
 					|| (band5g_11ac_support && document.form.wl_bw.value == "3" && (Rtkwifi_support || Rawifi_support))
 					|| (band5g_11ax_support || band5g_11ac_support) && (document.form.wl_bw.value == "3") && Qcawifi_support){
-						wl_channel_list_5g = filter_5g_channel_by_bw(wl_channel_list_5g, 80);
+						if(nband == "4")
+							wl_channel_list_5g = filter_6g_channel_by_bw(wl_channel_list_5g, 80);
+						else
+							wl_channel_list_5g = filter_5g_channel_by_bw(wl_channel_list_5g, 80);
 					}
 					// For V160, if not all 8 continuous channels exist, remove them.
 					if(vht160_support && document.form.wl_bw.value == "5" && (Rawifi_support || Qcawifi_support)){
-						wl_channel_list_5g = filter_5g_channel_by_bw(wl_channel_list_5g, 160);
+						if(nband == "4")
+							wl_channel_list_5g = filter_6g_channel_by_bw(wl_channel_list_5g, 160);
+						else
+							wl_channel_list_5g = filter_5g_channel_by_bw(wl_channel_list_5g, 160);
 					}
 				}
 				if(wl_channel_list_5g[0] != "<#Auto#>")
@@ -1463,7 +1521,7 @@ function wl_auth_mode_change(isload){
 		opts = document.form.wl_auth_mode_x.options;
 		if(opts[opts.selectedIndex].text == "WPA-Personal" || opts[opts.selectedIndex].text == "WPA-Enterprise")
 			algos = new Array("TKIP");
-		else if(opts[opts.selectedIndex].text == "WPA2-Personal" || opts[opts.selectedIndex].text == "Opportunistic Wireless Encryption" || opts[opts.selectedIndex].text == "WPA3-Personal" || opts[opts.selectedIndex].text == "WPA2/WPA3-Personal" || opts[opts.selectedIndex].text == "WPA2-Enterprise")
+		else if(opts[opts.selectedIndex].text == "WPA2-Personal" || opts[opts.selectedIndex].text == "<#Wireless_Encryption_OWE#>" || opts[opts.selectedIndex].text == "WPA3-Personal" || opts[opts.selectedIndex].text == "WPA2/WPA3-Personal" || opts[opts.selectedIndex].text == "WPA2-Enterprise")
 			algos = new Array("AES");
 		else
 			algos = new Array("AES", "TKIP+AES");
@@ -1704,7 +1762,7 @@ function limit_auth_method(g_unit){
 	if(sw_mode == 2){
 		if(wpa3_support){
 			if(band6g_support && wl_unit == '2'){	// for 6 GHz
-				var auth_array = [["Opportunistic Wireless Encryption", "owe"], ["WPA3-Personal", "sae"]];
+				var auth_array = [["<#Wireless_Encryption_OWE#>", "owe"], ["WPA3-Personal", "sae"]];
 			}
 			else{
 				var auth_array = [["Open System", "open"], ["WPA2-Personal", "psk2"], ["WPA3-Personal", "sae"], ["WPA/WPA2-Personal", "pskpsk2"], ["WPA2/WPA3-Personal", "psk2sae"]];
@@ -1727,7 +1785,7 @@ function limit_auth_method(g_unit){
 		else{
 			if(wpa3_support){
 				if(band6g_support && wl_unit == '2'){	// for 6 GHz
-					var auth_array = [["Opportunistic Wireless Encryption", "owe"], ["WPA3-Personal", "sae"]];
+					var auth_array = [["<#Wireless_Encryption_OWE#>", "owe"], ["WPA3-Personal", "sae"]];
 				}
 				else{
 					var auth_array = [["Open System", "open"], ["WPA2-Personal", "psk2"], ["WPA3-Personal", "sae"], ["WPA/WPA2-Personal", "pskpsk2"], ["WPA2/WPA3-Personal", "psk2sae"], ["WPA2-Enterprise", "wpa2"], ["WPA/WPA2-Enterprise", "wpawpa2"]];
@@ -1749,7 +1807,7 @@ function limit_auth_method(g_unit){
 			if(new_wifi_cert_support){
 				if(wpa3_support){
 					if(band6g_support && wl_unit == '2'){	// for 6 GHz
-						var auth_array = [["Opportunistic Wireless Encryption", "owe"], ["WPA3-Personal", "sae"]];
+						var auth_array = [["<#Wireless_Encryption_OWE#>", "owe"], ["WPA3-Personal", "sae"]];
 					}
 					else{
 						var auth_array = [["Open System", "open"], ["Shared Key", "shared"], ["WPA2-Personal", "psk2"], ["WPA3-Personal", "sae"], ["WPA/WPA2-Personal", "pskpsk2"], ["WPA2/WPA3-Personal", "psk2sae"], ["WPA2-Enterprise", "wpa2"], ["WPA/WPA2-Enterprise", "wpawpa2"], ["Radius with 802.1x", "radius"]];
@@ -1775,7 +1833,7 @@ function limit_auth_method(g_unit){
 		if(wpa3_support){
 			if(band6g_support && g_unit == '2'){	// for 6 GHz
 	
-				var auth_array = [["Opportunistic Wireless Encryption", "owe"], ["WPA3-Personal", "sae"]];
+				var auth_array = [["<#Wireless_Encryption_OWE#>", "owe"], ["WPA3-Personal", "sae"]];
 				if(auth_method_array != 'owe' && auth_method_array != 'sae'){
 					auth_method_array = 'owe';
 				}
@@ -1791,6 +1849,15 @@ function limit_auth_method(g_unit){
 
 	if(is_KR_sku){	// MODELDEP by Territory_code
 		auth_array.splice(0, 1); //remove Open System
+	}
+
+	if(isSupport("amas") && isSupport("amasRouter") && (isSwMode("rt") || isSwMode("ap"))){
+		var re_count = httpApi.hookGet("get_cfg_clientlist", true).length;
+		if(re_count > 1){
+			auth_array = auth_array.filter(function(item){
+				return (item[1] != "wpa2" && item[1] != "wpawpa2");//have re node then hide WPA2-Enterprise, WPA/WPA2-Enterprise
+			});
+		}
 	}
 
 	free_options(document.form.wl_auth_mode_x);
@@ -1828,6 +1895,8 @@ function getDDNSState(ddns_return_code, ddns_hostname, ddns_old_hostname)
 		ddnsStateHint = "<#LANHostConfig_x_DDNS_alarm_8#>";
 	else if(ddns_return_code.indexOf('299')!=-1)
 		ddnsStateHint = "<#LANHostConfig_x_DDNS_alarm_9#>";
+	else if(ddns_return_code.indexOf('390')!=-1)
+		ddnsStateHint = "Server Error";
 	else if(ddns_return_code.indexOf('401')!=-1)
 		ddnsStateHint = "<#LANHostConfig_x_DDNS_alarm_10#>";
 	else if(ddns_return_code.indexOf('407')!=-1)

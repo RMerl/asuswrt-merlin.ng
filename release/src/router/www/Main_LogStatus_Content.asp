@@ -115,6 +115,15 @@ function applySettings(){
 		document.config_form.submit();
 	}
 }
+var filter = [
+    "already exist in UDB, can't add it", 
+    "not mesh client, can't update it's ip",
+    "not exist in UDB, can't update it"
+]
+
+$.getJSON("https://nw-dlcdnet.asus.com/plugin/js/logFilter.json", function(data){
+	filter = data.filter;
+})
 
 var height = 0;
 function get_log_data(){
@@ -127,8 +136,22 @@ function get_log_data(){
     	},
     	success: function(response){
     		h = $("#textarea").scrollTop();
+			var _log = '';
 			if((document.getElementById("auto_refresh").checked) && !(height > 0 && h < height)){
-				document.getElementById("textarea").innerHTML = htmlEnDeCode.htmlEncode(logString);
+				var _string = logString.split('\n');
+				for(var i=0;i<_string.length;i++){
+
+					if((_string[i].indexOf(filter[0]) != -1)
+					|| (_string[i].indexOf(filter[1]) != -1)
+					|| (_string[i].indexOf(filter[2]) != -1)){
+						continue;						
+					}
+					else{
+						_log += _string[i] + '\n';
+					}
+				}
+
+				document.getElementById("textarea").innerHTML = htmlEnDeCode.htmlEncode(_log);
 				$("#textarea").animate({ scrollTop: 9999999 }, "slow");
 				setTimeout('height = $("#textarea").scrollTop();', 500);
 			}
@@ -198,14 +221,14 @@ function get_log_data(){
 												<th><a class="hintstyle"  href="javascript:void(0);" onClick="openHint(11,1)"><#LANHostConfig_x_ServerLogEnable_itemname#></a></th>
 												<td>
 														<input type="text" maxlength="64" class="input_30_table" name="log_ipaddr" value="<% nvram_get("log_ipaddr"); %>" onKeyPress="return validator.isString(this, event)" autocorrect="off" autocapitalize="off">
-														<br/><span id="alert_msg1" style="color:#FC0;"></span>
+														<br/><span id="alert_msg1" class="hint-color"></span>
 													</td>
 												</tr>
 												<tr>
 													<th><#LANHostConfig_x_ServerLogPort_itemname#></th>
 													<td>
 														<input type="text" class="input_6_table" maxlength="5" name="log_port" onKeyPress="return validator.isNumber(this,event);" autocorrect="off" autocapitalize="off" value='<% nvram_get("log_port"); %>'>
-													  <div style="color: #FFCC00;"><#LANHostConfig_x_ServerLogPort_itemhint#></div>
+													  <div class="hint-color"><#LANHostConfig_x_ServerLogPort_itemhint#></div>
 												</td>
 											</tr>
 											<tr>

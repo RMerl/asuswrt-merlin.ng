@@ -9,6 +9,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
 <link rel="icon" href="images/favicon.png">
 <title><#Web_Title#></title>
+<script language="JavaScript" type="text/javascript" src="/js/jquery.js"></script>
+<script type="text/javascript" src="/js/httpApi.js"></script>
 <style>
 body, .p1, .form-input{
 	color: #FFF;
@@ -202,16 +204,24 @@ String.prototype.strReverse = function() {
 	//strOrig = ' texttotrim ';
 	//strReversed = strOrig.revstring();
 };
-	
+
+var is_AA_sku = (function(){
+	var ttc = '<% nvram_get("territory_code"); %>';
+	return (ttc.search("AA") == -1) ? false : true;
+})();
 var is_KR_sku = (function(){
 	var ttc = '<% nvram_get("territory_code"); %>';
 	return (ttc.search("KR") == -1) ? false : true;
+})();
+var is_SG_sku = (function(){
+	var ttc = '<% nvram_get("territory_code"); %>';
+	return (ttc.search("SG") == -1) ? false : true;
 })();
 var isIE8 = navigator.userAgent.search("MSIE 8") > -1; 
 var isIE9 = navigator.userAgent.search("MSIE 9") > -1; 
 
 function initial(){
-	if(is_KR_sku)
+	if(is_KR_sku || is_SG_sku || is_AA_sku)
 		document.getElementById("KRHint").style.display = "";
 
 	if(isIE8 || isIE9){
@@ -310,7 +320,7 @@ function validForm(){
 			return false;                   
 	}
 
-	if(is_KR_sku){		/* MODELDEP by Territory Code */
+	if(is_KR_sku || is_SG_sku || is_AA_sku){		/* MODELDEP by Territory Code */
 		if(!validator.chkLoginPw_KR(document.form.http_passwd_x)){
 			return false;
 		}
@@ -343,20 +353,27 @@ function validForm(){
 }
 
 function submitForm(){
+	var postData = {"restart_httpd": "0", "new_username":document.form.http_username_x.value, "new_passwd":document.form.http_passwd_x.value};
+	var sw_mode = '<% nvram_get("sw_mode"); %>';
+
+	if(sw_mode == 3 && '<% nvram_get("wlc_psta"); %>' == 2)
+		sw_mode = 2;
+
 	if(validForm()){
 		document.getElementById("error_status_field").style.display = "none";
-		document.form.http_username.value = document.form.http_username_x.value;
-		document.form.http_passwd.value = document.form.http_passwd_x.value;
-		document.form.http_username_x.disabled = true;
-		document.form.http_passwd_x.disabled = true;
-		document.form.http_passwd_2_x.disabled = true;
 		document.getElementById('btn_modify').style.display = "none";
 		document.getElementById('loadingIcon').style.display = '';
-		document.form.submit();
+
+		setTimeout(function(){
+			httpApi.chpass(postData);
+		}, 100);
 
 		var nextPage = decodeURIComponent('<% get_ascii_parameter("nextPage"); %>');
 		setTimeout(function(){
-			location.href = (nextPage != "") ? nextPage : "/";
+			if('<% nvram_get("w_Setting"); %>' == '0' && sw_mode != 2)
+				location.href = '/QIS_wizard.htm?flag=wireless';
+			else
+				location.href = (nextPage != "") ? nextPage : "/";
 		}, 3000);
 	}
 	else
@@ -408,7 +425,7 @@ var validator = {
 			return false;
 		}		
 
-		if(obj.value.length > 16){
+		if(obj.value.length > 32){
             showError("<#JS_max_password#>");
             obj.value = "";
             obj.focus();
@@ -443,26 +460,30 @@ var validator = {
 		return true;
 	},
 	
-	chkLoginPw_KR: function(obj){		//Alphabets, numbers, specialcharacters mixed
+	chkLoginPw_KR: function(obj){		//KR: Alphabets, numbers, specialcharacters mixed. 8 chars at least.
+						//S2: Mixed 2 out of Alphabets(Upper/Lower case), numbers, specialcharacters.
+						//    10 chars at least. Not have consecutive identical characters.
 		var string_length = obj.value.length;		
 		
-		if(!/[A-Za-z]/.test(obj.value) || !/[0-9]/.test(obj.value) || string_length < 8
-				|| !/[\!\"\#\$\%\&\'\(\)\*\+\,\-\.\/\:\;\<\=\>\?\@\[\\\]\^\_\`\{\|\}\~]/.test(obj.value)){
+		if(!/[A-Za-z]/.test(obj.value) || !/[0-9]/.test(obj.value) || string_length < 10
+				|| !/[\!\"\#\$\%\&\'\(\)\*\+\,\-\.\/\:\;\<\=\>\?\@\[\\\]\^\_\`\{\|\}\~]/.test(obj.value)
+				|| /([A-Za-z0-9\!\"\#\$\%\&\'\(\)\*\+\,\-\.\/\:\;\<\=\>\?\@\[\\\]\^\_\`\{\|\}\~])\1/.test(obj.value)
+		){
 				
-				showError("<#JS_validPWD#>");
+				showError("<#JS_validLoginPWD#>");
 				obj.value = "";
 				obj.focus();
 				obj.select();
 				return false;	
 		}
 
-		if(obj.value.length > 16){
-            showError("<#JS_max_password#>");
-            obj.value = "";
-            obj.focus();
-            obj.select();
-            return false;
-        }	
+		if(obj.value.length > 32){
+			showError("<#JS_max_password#>");
+			obj.value = "";
+			obj.focus();
+			obj.select();
+			return false;
+		}
 		
 		var invalid_char = "";
 		for(var i = 0; i < obj.value.length; ++i){
@@ -513,20 +534,20 @@ function showError(str){
 		<div class="login-title-desc">
 			<div class="desc"><#Web_Title2#> is currently not protected and uses an unsafe default username and password.</div>
 			<div class="desc"><#QIS_pass_desc1#></div>
-			<div id="KRHint" class="desc" style="display: none;"><#JS_validPWD#></div>
+			<div id="KRHint" class="desc" style="display: none;"><#JS_validLoginPWD#></div>
 		</div>
 		<div>
 			<div id="router_name_tr" style="display:none" class="p1"><#Router_Login_Name#></div>
 			<div class="input-container">
-				<input type="text" id="http_username_x" name="http_username_x" tabindex="1" class="form-input" maxlength="20" autocapitalize="off" autocomplete="off" placeholder="<#Router_Login_Name#>">
+				<input type="text" id="http_username_x" name="http_username_x" tabindex="1" class="form-input" maxlength="32" autocapitalize="off" autocomplete="off" placeholder="<#Router_Login_Name#>">
 			</div>
 			<div id="router_password_tr" style="display:none" class="p1"><#PASS_new#></div>
 			<div class="input-container">
-				<input type="password" id="http_passwd_x" name="http_passwd_x" tabindex="2" class="form-input" maxlength="17" autocapitalize="off" autocomplete="off" placeholder="<#PASS_new#>">
+				<input type="password" id="http_passwd_x" name="http_passwd_x" tabindex="2" class="form-input" maxlength="33" autocapitalize="off" autocomplete="off" placeholder="<#PASS_new#>">
 			</div>
 			<div id="router_password_confirm_tr" style="display:none" class="p1"><#Confirmpassword#></div>
 			<div class="input-container">
-				<input type="password" id="http_passwd_2_x" name="http_passwd_2_x" tabindex="3" class="form-input" maxlength="17" autocapitalize="off" autocomplete="off" placeholder="<#Confirmpassword#>">
+				<input type="password" id="http_passwd_2_x" name="http_passwd_2_x" tabindex="3" class="form-input" maxlength="33" autocapitalize="off" autocomplete="off" placeholder="<#Confirmpassword#>">
 			</div>
 			<div id="error_status_field" class="error-hint-bg" style="display: none;" ></div>
 			<div id="btn_modify" class="login-btn-bg" onclick="submitForm();"><#CTL_modify#></div>

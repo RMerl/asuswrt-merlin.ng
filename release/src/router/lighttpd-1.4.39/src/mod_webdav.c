@@ -3560,7 +3560,7 @@ propmatch_cleanup:
 		if (NULL != (ds = (data_string *)array_get_element(con->request.headers, "FILENAME"))) {
 			buffer_filename = ds->value;
 
-			if (buffer_filename->used> 255) {
+			if (buffer_filename->used> 512) {
 				con->http_status = 400;
 				return HANDLER_FINISHED;
 			}

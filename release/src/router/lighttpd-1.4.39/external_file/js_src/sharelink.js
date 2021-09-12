@@ -628,7 +628,10 @@ function doPROPFIND(open_url, complete_handler, auth){
 												this_online = String(a[l].childNodes[0].nodeValue);
 											}
 											else if(a[l].nodeName=="D:getlastmodified"){
-												this_lastmodified = String(a[l].childNodes[0].nodeValue);
+												// this_lastmodified = String(a[l].childNodes[0].nodeValue);
+												
+												// markcool add : GMT time to local time 
+												this_lastmodified = new Date(String(a[l].childNodes[0].nodeValue)).toLocaleString();
 											}
 											else if(a[l].nodeName=="D:getcontentlength"){
 												this_contentlength = String( size_format(parseInt(a[l].childNodes[0].nodeValue)));

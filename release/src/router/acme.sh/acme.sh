@@ -4378,8 +4378,10 @@ $_authorizations_map"
         _debug2 errordetail "$errordetail"
         if [ "$errordetail" ]; then
           _err "$d:Verify error:$errordetail"
+          echo -n "$errordetail" > /tmp/acme_err
         else
           _err "$d:Verify error:$error"
+          echo -n "$error" > /tmp/acme_err
         fi
         if [ "$DEBUG" ]; then
           if [ "$vtype" = "$VTYPE_HTTP" ]; then

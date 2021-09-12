@@ -1,0 +1,9 @@
+reresolve-dns
+=============
+
+Run this script from cron every thirty seconds or so, and it will ensure
+that if, when using a dynamic DNS service, the DNS entry for a hosts
+changes, the kernel will get the update to the DNS entry.
+
+This works by parsing configuration files, and simply running:
+    $ wg set wg0 peer ... endpoint ...

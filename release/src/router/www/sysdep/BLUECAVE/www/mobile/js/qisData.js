@@ -40,6 +40,10 @@ var wanObj = {
 		"wan_dns2_x": ""
 	},
 
+	"v6plus": {
+		"ipv6_service": "ipv6pt"
+	},
+
 	"vpn": {
 		"wan_heartbeat_x": ""
 	},
@@ -58,7 +62,8 @@ var wanObj = {
 		"wan_gateway_x": "",
 		"wan_dns1_x": "",
 		"wan_dns2_x": "",
-		"wan_heartbeat_x": ""
+		"wan_heartbeat_x": "",
+		"ipv6_service": ""
 	},
 
 	"LWAN_2p5G": {
@@ -90,19 +95,22 @@ var wirelessObj = {
 		"wl0_ssid": "",
 		"wl0_wpa_psk": "",
 		"wl0_auth_mode_x": "",
-		"wl0_crypto": ""
+		"wl0_crypto": "",
+		"wl0_mfp": ""
 	},
 	"wl1": {
 		"wl1_ssid": "",
 		"wl1_wpa_psk": "",
 		"wl1_auth_mode_x": "",
-		"wl1_crypto": ""
+		"wl1_crypto": "",
+		"wl1_mfp": ""
 	},
 	"wl2": {
 		"wl2_ssid": "",
 		"wl2_wpa_psk": "",
 		"wl2_auth_mode_x": "",
-		"wl2_crypto": ""
+		"wl2_crypto": "",
+		"wl2_mfp": ""
 	},
 	"wl3": {
 		"wl3_ssid": "",
@@ -246,6 +254,7 @@ var systemVariable = {
 		"username": "",
 		"password": ""
 	},
+	"maxPasswordLen": 32,
 	"originWansExtwan": "",
 	"originWansDualwan": "",
 	"manualWanSetup": false,

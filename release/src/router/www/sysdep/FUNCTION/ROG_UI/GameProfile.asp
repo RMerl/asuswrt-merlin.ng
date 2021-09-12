@@ -14,7 +14,7 @@
 <link rel="stylesheet" type="text/css" href="css/basic.css">
 <link rel="stylesheet" type="text/css" href="css/gameprofile.css">
 <script type="text/javascript" src="js/jquery.js"></script>
-<script type="text/javascript" src="/js/httpApi.js"></script>
+<script type="text/javascript" src="js/httpApi.js"></script>
 <script type="text/javascript" src="/state.js"></script>
 <script type="text/javascript" src="/help.js"></script>
 <script type="text/javascript" src="/general.js"></script>
@@ -33,9 +33,13 @@ var overlib_str = new Array();	//Viz add 2011.07 for record longer virtual srvr 
 var vts_rulelist_array = decodeURIComponent('<% nvram_char_to_ascii("","game_vts_rulelist"); %>').replace(/&#62/g, ">");
 var nvram = httpApi.nvramGet(["vts_enable_x"]);
 var gameList = new Object;
+var faq_href = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=125";
 
 function initial(){
 	show_menu();
+        $("#faq").attr('target','_blank')
+		 .attr("href", faq_href);
+
 	(nvram.vts_enable_x == '1') ? $('#PF_switch').prop('checked', true) :  $('#PF_switch').prop('checked', false);
 	collectGameList();
 	updatProfileOnline();
@@ -607,6 +611,7 @@ function newProfileOK(){
 
 				<!-- Content field -->
 				<div class="description-container"><#OpenNAT_desc#></div>
+				<div class="description-container" style="color:#FFCC00;position:relative;z-index:9;"><#OpenNAT_note#></div>
 				<div class="world-map">
 					<div class="map-connection-line"></div>
 					<div class="location-indicator location-US3"></div>

@@ -1,0 +1,38 @@
+APFSINFO(8)                 System Manager's Manual                APFSINFO(8)
+
+
+
+NAME
+       apfsinfo - Tool for listing volumes in an APFS container.
+
+SYNOPSIS
+       apfsinfo volume
+
+DESCRIPTION
+       apfsinfo is a tool which displays the volumes stored in an APFS
+       container.
+
+       The volume can be either a block device or an image file.
+
+EXAMPLES
+       Show volumes in /dev/sda2:
+
+              apfsinfo /dev/sda2
+
+
+EXIT CODES
+       Exit code 0 means success, and everything else means error.
+
+KNOWN ISSUES
+       No known issues.
+
+       Please see:
+              http://www.tuxera.com/support/
+       for info on commercial support services.
+
+AUTHORS
+       apfsinfo was written in 2018 by Simon Gander for Tuxera Inc.
+
+
+
+Tuxera APFS Info 3020.7.28.4     October 2018                      APFSINFO(8)

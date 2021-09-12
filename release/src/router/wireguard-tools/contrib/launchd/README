@@ -1,0 +1,12 @@
+WireGuard for Launchd
+=====================
+
+The example `com.wireguard.wg0.plist` file may be used for running wg-quick(8)
+as a launchd service. Note that the `PATH` variable is modified to point to
+the PATH used by Homebrew or Macports, so that it uses the non-system bash(1).
+
+Usage
+-----
+
+$ sudo cp com.wireguard.wg0.plist /Library/LaunchDaemons
+$ sudo launchctl load /Library/LaunchDaemons/com.wireguard.wg0.plist

@@ -363,7 +363,7 @@ else # SRCBASE/wl/sys doesn't exist
     else
 	prebuilt := wl.o
     endif
-    $(TARGET)-objs := $(SRCBASE_OFFSET)/wl/linux/prebuilt/$(prebuilt)
+    $(TARGET)-objs := prebuilt/$(prebuilt)
     obj-$(CONFIG_BCM_WLAN) := $(TARGET).o
 
 endif

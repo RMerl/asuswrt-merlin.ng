@@ -49,6 +49,9 @@
 
 char pdubuf_res[INFO_PDU_LENGTH];
 extern int getStorageStatus(STORAGE_INFO_T *st);
+#if defined(RTCONFIG_AMAS)
+extern int getStorageStatusFindCap(STORAGE_INFO_FINDCAP_T *st);
+#endif
 extern void sendInfo(int sockfd, char *pdubuf, unsigned short cli_port);
 
 #ifdef BTN_SETUP
@@ -165,6 +168,9 @@ char *processPacket(int sockfd, char *pdubuf, unsigned short cli_port)
 #endif
 //#ifdef WL700G
     STORAGE_INFO_T *st;
+#if defined(RTCONFIG_AMAS)
+    STORAGE_INFO_FINDCAP_T *st1;
+#endif
 //#endif
 //    int i;
     char ftype[8], prinfo[128];	/* get disk type */
@@ -179,8 +185,12 @@ char *processPacket(int sockfd, char *pdubuf, unsigned short cli_port)
 
     if (phdr->ServiceID==NET_SERVICE_ID_IBOX_INFO &&
 	phdr->PacketType==NET_PACKET_TYPE_CMD)
-    {	    
-	if (realOPCode!=NET_CMD_ID_GETINFO && realOPCode!=NET_CMD_ID_GETINFO_MANU&&
+    {
+	if (realOPCode!=NET_CMD_ID_GETINFO && 
+#if defined(RTCONFIG_AMAS)
+		realOPCode!=NET_CMD_ID_FIND_CAP && 
+#endif
+		realOPCode!=NET_CMD_ID_GETINFO_MANU &&
 	    phdr_res->OpCode==phdr->OpCode &&
 	    phdr_res->Info==phdr->Info)
 	{	
@@ -192,7 +202,11 @@ char *processPacket(int sockfd, char *pdubuf, unsigned short cli_port)
 	phdr_res->PacketType=NET_PACKET_TYPE_RES;
 	phdr_res->OpCode=phdr->OpCode;
 
-	if (realOPCode!=NET_CMD_ID_GETINFO && realOPCode!=NET_CMD_ID_GETINFO_MANU)
+	if (realOPCode!=NET_CMD_ID_GETINFO && 
+#if defined(RTCONFIG_AMAS)
+		realOPCode!=NET_CMD_ID_FIND_CAP && 
+#endif
+		realOPCode!=NET_CMD_ID_GETINFO_MANU)
 	{
 		phdr_ex = (IBOX_COMM_PKT_HDR_EX *)pdubuf;	
 		
@@ -276,7 +290,7 @@ char *processPacket(int sockfd, char *pdubuf, unsigned short cli_port)
 		     return pdubuf_res;
 
 		case NET_CMD_ID_GETINFO:
-			//_dprintf("NET CMD GETINFO\n");
+			 //_dprintf("NET CMD GETINFO\n");
 		     ginfo=(PKT_GET_INFO *)(pdubuf_res+sizeof(IBOX_COMM_PKT_RES));
 		     memset(ginfo, 0, sizeof(*ginfo));
 #if 0
@@ -547,6 +561,14 @@ fprintf(stderr, "3. NET_CMD_ID_MANU_CMD:\n");
 		     sendInfo(sockfd, pdubuf_res, send_port);
 		     return pdubuf_res;
 		}
+#endif
+#if defined(RTCONFIG_AMAS)
+		case NET_CMD_ID_FIND_CAP:
+			//_dprintf("***NET CMD FIND_CAP\n");
+			st1 = (STORAGE_INFO_FINDCAP_T *) (pdubuf_res + sizeof (IBOX_COMM_PKT_RES));
+			getStorageStatusFindCap(st1);
+			sendInfo(sockfd, pdubuf_res,send_port);
+			return pdubuf_res;
 #endif
 		default:
 			return NULL;	

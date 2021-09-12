@@ -68,12 +68,21 @@ else ifeq ($(BUILD_NAME), RT-AX92U)
 else ifeq ($(BUILD_NAME), RT-AX95Q)
 	install icon.rtax95q.ico $(INSTALLDIR)/usr/sbin/icon.ico
 	install icon.large.rtax95q.ico $(INSTALLDIR)/usr/sbin/icon.large.ico
+else ifeq ($(BUILD_NAME), XT8PRO)
+	install icon.xt8pro.ico $(INSTALLDIR)/usr/sbin/icon.ico
+	install icon.large.xt8pro.ico $(INSTALLDIR)/usr/sbin/icon.large.ico
 else ifeq ($(BUILD_NAME), RT-AXE95Q)
 	install icon.rtaxe95q.ico $(INSTALLDIR)/usr/sbin/icon.ico
 	install icon.large.rtaxe95q.ico $(INSTALLDIR)/usr/sbin/icon.large.ico
+else ifeq ($(BUILD_NAME), ET8PRO)
+	install icon.et8pro.ico $(INSTALLDIR)/usr/sbin/icon.ico
+	install icon.large.et8pro.ico $(INSTALLDIR)/usr/sbin/icon.large.ico
 else ifeq ($(BUILD_NAME), RT-AX56_XD4)
 	install icon.rtax56_xd4.ico $(INSTALLDIR)/usr/sbin/icon.ico
 	install icon.large.rtax56_xd4.ico $(INSTALLDIR)/usr/sbin/icon.large.ico
+else ifeq ($(BUILD_NAME), XD4PRO)
+	install icon.xd4pro.ico $(INSTALLDIR)/usr/sbin/icon.ico
+	install icon.large.xd4pro.ico $(INSTALLDIR)/usr/sbin/icon.large.ico
 else ifeq ($(BUILD_NAME), CT-AX56_XD4)
 	install icon.ctax56_xd4.ico $(INSTALLDIR)/usr/sbin/icon.ico
 	install icon.large.ctax56_xd4.ico $(INSTALLDIR)/usr/sbin/icon.large.ico
@@ -83,6 +92,9 @@ else ifeq ($(BUILD_NAME), RT-AX58U)
 else ifeq ($(BUILD_NAME), RT-AX56U)
 	install icon.rtax56u.ico $(INSTALLDIR)/usr/sbin/icon.ico
 	install icon.large.rtax56u.ico $(INSTALLDIR)/usr/sbin/icon.large.ico
+else ifeq ($(BUILD_NAME), RT-AX86U)
+	install icon.rtax86u.ico $(INSTALLDIR)/usr/sbin/icon.ico
+	install icon.large.rtax86u.ico $(INSTALLDIR)/usr/sbin/icon.large.ico	
 else ifeq ($(BUILD_NAME), RT-AX68U)
 	install icon.rtax68u.ico $(INSTALLDIR)/usr/sbin/icon.ico
 	install icon.large.rtax68u.ico $(INSTALLDIR)/usr/sbin/icon.large.ico	
@@ -98,11 +110,33 @@ else ifeq ($(BUILD_NAME),DSL-AC68U)
 else ifeq ($(BUILD_NAME), GT-AXE11000)
 	install icon.gtaxe11000.ico $(INSTALLDIR)/usr/sbin/icon.ico
 	install icon.large.gtaxe11000.ico $(INSTALLDIR)/usr/sbin/icon.large.ico
+	install icon.gtax11000_gd.ico $(INSTALLDIR)/usr/sbin/icon_gd.ico
+	install icon.large.gtax11000_gd.ico $(INSTALLDIR)/usr/sbin/icon_gd.large.ico
 else ifeq ($(BUILD_NAME),RT-AX82U)
 	install icon.rtax82u.ico $(INSTALLDIR)/usr/sbin/icon_default.ico
 	install icon.large.rtax82u.ico $(INSTALLDIR)/usr/sbin/icon_default.large.ico
 	install icon.rtax82u_gd.ico $(INSTALLDIR)/usr/sbin/icon_gd.ico
 	install icon.large.rtax82u_gd.ico $(INSTALLDIR)/usr/sbin/icon_gd.large.ico
+else ifeq ($(BUILD_NAME),RT-AX88U)
+	install icon.rtax88u.ico $(INSTALLDIR)/usr/sbin/icon_default.ico
+	install icon.large.rtax88u.ico $(INSTALLDIR)/usr/sbin/icon_default.large.ico
+	install icon.rtax88u_gd.ico $(INSTALLDIR)/usr/sbin/icon_gd.ico
+	install icon.large.rtax88u_gd.ico $(INSTALLDIR)/usr/sbin/icon_gd.large.ico
+else ifeq ($(BUILD_NAME), GT-AX11000_PRO)
+	install icon.gtax11000_pro.ico $(INSTALLDIR)/usr/sbin/icon.ico
+	install icon.large.gtax11000_pro.ico $(INSTALLDIR)/usr/sbin/icon.large.ico
+else ifeq ($(BUILD_NAME), GT-AXE16000)
+	install icon.gtaxe16000.ico $(INSTALLDIR)/usr/sbin/icon.ico
+	install icon.large.gtaxe16000.ico $(INSTALLDIR)/usr/sbin/icon.large.ico
+else ifeq ($(BUILD_NAME), ET12)
+	install icon.et12.ico $(INSTALLDIR)/usr/sbin/icon.ico
+	install icon.large.et12.ico $(INSTALLDIR)/usr/sbin/icon.large.ico
+else ifeq ($(BUILD_NAME), XT12)
+	install icon.xt12.ico $(INSTALLDIR)/usr/sbin/icon.ico
+	install icon.large.xt12.ico $(INSTALLDIR)/usr/sbin/icon.large.ico
+else ifeq ($(BUILD_NAME), GT-AX6000)
+	install icon.gtax6000.ico $(INSTALLDIR)/usr/sbin/icon.ico
+	install icon.large.gtax6000.ico $(INSTALLDIR)/usr/sbin/icon.large.ico
 else
 	install icon.$(modelstr).ico $(INSTALLDIR)/usr/sbin/icon.ico
 	install icon.large.$(modelstr).ico $(INSTALLDIR)/usr/sbin/icon.large.ico
@@ -111,7 +145,7 @@ ifneq ($(RTCONFIG_BCMARM),y)
 	install lld2d.conf $(INSTALLDIR)/usr/sbin
 else
 	cd $(INSTALLDIR)/usr/sbin && ln -sf /tmp/lld2d.conf lld2d.conf
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-AC68U RT-AX82U))
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-AC68U RT-AX82U RT-AX88U GT-AX11000))
 	cd $(INSTALLDIR)/usr/sbin && ln -sf /tmp/icon.ico icon.ico
 	cd $(INSTALLDIR)/usr/sbin && ln -sf /tmp/icon.large.ico icon.large.ico
 endif

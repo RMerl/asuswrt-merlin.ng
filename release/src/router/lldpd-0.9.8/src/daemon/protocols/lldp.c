@@ -727,15 +727,23 @@ lldp_decode(struct lldpd *cfg, char *frame, int s,
 				goto malformed;
 			}
 			PEEK_BYTES(b, tlv_size);
-			if (tlv_type == LLDP_TLV_PORT_DESCR) {
+			switch (tlv_type) {
+			case LLDP_TLV_PORT_DESCR:
 				free(port->p_descr);
 				port->p_descr = b;
-			} else if (tlv_type == LLDP_TLV_SYSTEM_NAME) {
+				break;
+			case LLDP_TLV_SYSTEM_NAME:
 				free(chassis->c_name);
 				chassis->c_name = b;
-			} else {
+				break;
+			case LLDP_TLV_SYSTEM_DESCR:
 				free(chassis->c_descr);
 				chassis->c_descr = b;
+				break;
+			default:
+				/* unreachable */
+				free(b);
+				break;
 			}
 			break;
 		case LLDP_TLV_SYSTEM_CAP:
@@ -989,6 +997,7 @@ lldp_decode(struct lldpd *cfg, char *frame, int s,
 						    hardware->h_ifname);
 						break;
 					}
+					free(port->p_med_location[loctype - 1].data);
 					if ((port->p_med_location[loctype - 1].data =
 						(char*)malloc(tlv_size - 5)) == NULL) {
 						log_warn("lldp", "unable to allocate memory "
@@ -1089,25 +1098,36 @@ lldp_decode(struct lldpd *cfg, char *frame, int s,
 					}
 					switch (tlv_subtype) {
 					case LLDP_TLV_MED_IV_HW:
+						free(chassis->c_med_hw);
 						chassis->c_med_hw = b;
 						break;
 					case LLDP_TLV_MED_IV_FW:
+						free(chassis->c_med_fw);
 						chassis->c_med_fw = b;
 						break;
 					case LLDP_TLV_MED_IV_SW:
+						free(chassis->c_med_sw);
 						chassis->c_med_sw = b;
 						break;
 					case LLDP_TLV_MED_IV_SN:
+						free(chassis->c_med_sn);
 						chassis->c_med_sn = b;
 						break;
 					case LLDP_TLV_MED_IV_MANUF:
+						free(chassis->c_med_manuf);
 						chassis->c_med_manuf = b;
 						break;
 					case LLDP_TLV_MED_IV_MODEL:
+						free(chassis->c_med_model);
 						chassis->c_med_model = b;
 						break;
 					case LLDP_TLV_MED_IV_ASSET:
+						free(chassis->c_med_asset);
 						chassis->c_med_asset = b;
+						break;
+					default:
+						/* unreachable */
+						free(b);
 						break;
 					}
 					port->p_med_cap_enabled |=

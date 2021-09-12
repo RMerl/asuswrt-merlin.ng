@@ -13,6 +13,7 @@ enum {
 	O_RANDOM,
 	O_PERSISTENT,
 	O_X_TO_SRC,
+	O_PSID,
 	F_TO_SRC   = 1 << O_TO_SRC,
 	F_RANDOM   = 1 << O_RANDOM,
 	F_X_TO_SRC = 1 << O_X_TO_SRC,
@@ -32,6 +33,8 @@ static void SNAT_help(void)
 "SNAT target options:\n"
 " --to-source [<ipaddr>[-<ipaddr>]][:port[-port]]\n"
 "				Address to map source to.\n"
+"[--psid <offset,length,psid>]\n"
+"				Port Set to map source to.\n"
 "[--random] [--persistent]\n");
 }
 
@@ -40,6 +43,7 @@ static const struct xt_option_entry SNAT_opts[] = {
 	 .flags = XTOPT_MAND | XTOPT_MULTI},
 	{.name = "random", .id = O_RANDOM, .type = XTTYPE_NONE},
 	{.name = "persistent", .id = O_PERSISTENT, .type = XTTYPE_NONE},
+	{.name = "psid", .id = O_PSID, .type = XTTYPE_STRING},
 	XTOPT_TABLEEND,
 };
 
@@ -148,6 +152,33 @@ parse_to(const char *orig_arg, int portok, struct ipt_natinfo *info)
 	return &(append_range(info, &range)->t);
 }
 
+static void
+parse_psid(const char *arg, int portok, struct nf_nat_multi_range *mr)
+{
+	char *end;
+	unsigned int offset, length, psid;
+
+	if (!portok)
+		xtables_error(PARAMETER_PROBLEM,
+			   "Need TCP, UDP, ICMP, SCTP or DCCP with port specification");
+
+	if (!xtables_strtoui(arg, &end, &offset, 0, 16) || *end++ != ',' ||
+	    !xtables_strtoui(end, &end, &length, 0, 16) || *end++ != ',' ||
+	    !xtables_strtoui(end, &end, &psid, 0, UINT16_MAX))
+		xtables_error(PARAMETER_PROBLEM,
+			   "Invalid --psid syntax\n");
+
+	if (offset + length > 16 ||
+	    (1 << (16 - length)) - (!!offset << (16 - offset - length)) <= 0)
+		xtables_error(PARAMETER_PROBLEM,
+			   "Invalid --psid range\n");
+
+	mr->range[0].flags |= IP_NAT_RANGE_PROTO_PSID;
+	mr->range[0].min.psid.offset = offset;
+	mr->range[0].min.psid.length = length;
+	mr->range[0].max.psid.psid = psid & ((1 << length) - 1);
+}
+
 static void SNAT_parse(struct xt_option_call *cb)
 {
 	const struct ipt_entry *entry = cb->xt_entry;
@@ -178,6 +209,9 @@ static void SNAT_parse(struct xt_option_call *cb)
 		break;
 	case O_PERSISTENT:
 		info->mr.range[0].flags |= IP_NAT_RANGE_PERSISTENT;
+		break;
+	case O_PSID:
+		parse_psid(cb->arg, portok, &info->mr);
 		break;
 	}
 }
@@ -220,6 +254,12 @@ static void SNAT_print(const void *ip, const struct xt_entry_target *target,
 	printf(" to:");
 	for (i = 0; i < info->mr.rangesize; i++) {
 		print_range(&info->mr.range[i]);
+		if (info->mr.range[i].flags & IP_NAT_RANGE_PROTO_PSID) {
+			printf(" psid: offset %d, length %d, 0x%x",
+				    info->mr.range[i].min.psid.offset,
+				    info->mr.range[i].min.psid.length,
+				    info->mr.range[i].max.psid.psid);
+		}
 		if (info->mr.range[i].flags & IP_NAT_RANGE_PROTO_RANDOM)
 			printf(" random");
 		if (info->mr.range[i].flags & IP_NAT_RANGE_PERSISTENT)
@@ -235,6 +275,12 @@ static void SNAT_save(const void *ip, const struct xt_entry_target *target)
 	for (i = 0; i < info->mr.rangesize; i++) {
 		printf(" --to-source ");
 		print_range(&info->mr.range[i]);
+		if (info->mr.range[i].flags & IP_NAT_RANGE_PROTO_PSID) {
+			printf(" --psid %d,%d,0x%x",
+				    info->mr.range[i].min.psid.offset,
+				    info->mr.range[i].min.psid.length,
+				    info->mr.range[i].max.psid.psid);
+		}
 		if (info->mr.range[i].flags & IP_NAT_RANGE_PROTO_RANDOM)
 			printf(" --random");
 		if (info->mr.range[i].flags & IP_NAT_RANGE_PERSISTENT)

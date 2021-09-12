@@ -661,12 +661,14 @@ int start_vlan(void)
 		nvram_match("switch_wantag", "aapt") || nvram_match("switch_wantag", "intronode") ||
 		nvram_match("switch_wantag", "amaysim") || nvram_match("switch_wantag", "dodo") ||
 		nvram_match("switch_wantag", "iprimus") || nvram_match("switch_wantag", "manual") ||
-		nvram_match("switch_wantag", "kpn_nl") || nvram_match("switch_wantag", "centurylink") ||
+		nvram_match("switch_wantag", "iprimus") || nvram_match("switch_wantag", "centurylink") ||
 		nvram_match("switch_wantag", "actrix") || nvram_match("switch_wantag", "jastel") ||
+		nvram_match("switch_wantag", "kpn_nl") || nvram_match("switch_wantag", "meo_iptv") ||
+		nvram_match("switch_wantag", "meo_br") ||
+		nvram_match("switch_wantag", "hinet_mesh") ||
 		nvram_match("switch_wantag", "google_fiber"))) {
-		char *wan_base_if = (get_model() == MODEL_RTAX58U) ? "eth4" : "eth0";
-		ifconfig(wan_base_if, IFUP, NULL, NULL);
-		set_wan_tag(wan_base_if);
+		ifconfig(WAN_IF_ETH, IFUP, NULL, NULL);
+		set_wan_tag(WAN_IF_ETH);
 	}
 #elif defined(BLUECAVE)
 	if(!nvram_match("switch_wantag", "") && (nvram_get_int("switch_stb_x") > 0 || nvram_match("switch_wantag", "unifi_biz") || 

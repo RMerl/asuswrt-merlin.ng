@@ -13,7 +13,9 @@
 #include <sys/stat.h>
 #include <syslog.h>
 #include <shared.h>
+#if defined(RTCONFIG_USB)
 #include <disk_io_tools.h>
+#endif
 #include <linklist.h>
 
 #define NETOOL_DEBUG                       "/tmp/NETOOL_DEBUG"

@@ -159,4 +159,10 @@ void stop_mastiff()
 	
 	stop_aae();
 }
+
+void restart_mastiff()
+{
+	stop_mastiff();
+	start_mastiff();
+}
 #endif

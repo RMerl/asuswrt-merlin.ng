@@ -207,15 +207,17 @@ a{
 	left: .6em !important;
 }
 .inputTitleContainer{
-	 display:table;
-	 margin:18px 0 19px 30px;
-	 width:100%;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin:50px 0 19px 30px;
+	width:100%;
 }
 .textInput{
 	width: 98%;
 	max-width: 100%;
 	padding-left: 18px;
-	margin-bottom: 35px;
+	margin-bottom: 10px;
 	font-family: HelveticaNeueW10-45Ligh, Helvetica, Arial;
 	font-size:1.875em;
 	height: 65px;
@@ -354,15 +356,13 @@ a{
 	display:table-cell;
 }
 .icon_eye_open{
-	width:32px;
-	height:32px;
-	display:table-cell;
+	width:40px;
+	height:30px;
 	padding-right:110px;	
 }
 .icon_eye_close{
-	width:32px;
-	height:32px;
-	display:table-cell;
+	width:40px;
+	height:35px;
 	padding-right:110px;	
 }
 .qisBackgroundIndex{
@@ -482,12 +482,17 @@ a{
 .plug{
 	background: url('../../images/modem_plug.png') no-repeat, url('../../images/modem_background.png') no-repeat;
 }
+.plug-ax86s{
+	background: url('../../images/modem_plug_rt-ax86s.png') no-repeat, url('../../images/modem_background.png') no-repeat;
+}
 .unplug{
 	background: url('../../images/modem_unplug.png') no-repeat, url('../../images/modem_background.png') no-repeat;
 }
+.unplug-ax86s{
+	background: url('../../images/modem_unplug_rt-ax86s.png') no-repeat, url('../../images/modem_background.png') no-repeat;
+}
 .hint{
 	color: #F00;
-	margin-top: -25px;
 	font-size: 1.4em;
 	font-style: italic;
 }
@@ -1514,4 +1519,27 @@ a{
 }
 #wireless_setting{
 	min-height: 800px;
+}
+.scorebar {
+	color: #222;
+	font-weight: bold;
+	font-size: 1.2em;
+	text-align: center;
+	background-image: url(/images/pwd_strength_gradient.jpg);
+	background-repeat: repeat;
+	background-position: 0 0;
+	background-size: 500%;
+	position: relative;
+	width: 100%;
+	height: 30px;
+	line-height: 30px;
+	box-shadow: inset 1px 1px 1px 0px rgba(20%, 20%, 20%, 1);
+}
+.scorebarBorder {
+	background: #333;
+	border: 1px #999 solid;
+	height: 30px;
+	margin-bottom: 5px;
+	width: 100%;
+	display:none;
 }

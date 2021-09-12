@@ -84,17 +84,15 @@ if(support_dual_wan_unit_flag){
 	rulelist_nv.push("vts1_rulelist");
 }
 var profileMaxNum = 64;
-var usb_port_conflict_faq = "https://www.asus.com/support/FAQ/1037906";
+var usb_port_conflict_faq = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=134";
 var usb_port_conflict_current = false;
 var vts_enable_current = "0";
 function initial(){
 	show_menu();
-	httpApi.faqURL("1037906", function(url){
-		document.getElementById("faq").href = url;
-		usb_port_conflict_faq = url;
-		if($("#ftpPortConflict").find("#ftp_port_conflict_faq").length)
+	document.getElementById("faq").href=usb_port_conflict_faq;
+	if($("#ftpPortConflict").find("#ftp_port_conflict_faq").length){
 			$("#ftpPortConflict").find("#ftp_port_conflict_faq").attr("href", usb_port_conflict_faq);
-	});
+	}
 	//parse nvram to array
 	var parseNvramToArray = function(oriNvram) {
 		var parseArray = [];

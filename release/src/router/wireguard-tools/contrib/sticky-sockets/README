@@ -1,0 +1,5 @@
+Sticky Sockets
+==============
+
+This is a small userspace mini-library that implements as close to
+possible how the kernel does its sticky src address sending.

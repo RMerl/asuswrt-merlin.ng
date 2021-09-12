@@ -157,15 +157,6 @@ start_pppd(int unit)
 			fprintf(fp, "vc-encaps\n");
 		else
 			fprintf(fp, "llc-encaps\n");
-		if (nvram_pf_match(dsl_prefix, "pppoe_auth", "pap")) {
-			fprintf(fp, "-chap\n"
-						"-mschap\n"
-						"-mschap-v2\n"
-						);
-		}
-		else if (nvram_pf_match(dsl_prefix, "pppoe_auth", "chap")) {
-			fprintf(fp, "-pap\n");
-		}
 	}
 	else
 #endif
@@ -187,18 +178,7 @@ start_pppd(int unit)
 			fprintf(fp, "host-uniq %s\n",
 				nvram_safe_get(strcat_r(prefix, "pppoe_hostuniq", tmp)));
 		}
-
 #ifdef RTCONFIG_DSL
-		if (nvram_match(strcat_r(prefix, "pppoe_auth", tmp), "pap")) {
-			fprintf(fp, "-chap\n"
-						"-mschap\n"
-						"-mschap-v2\n"
-						);
-		}
-		else if (nvram_match(strcat_r(prefix, "pppoe_auth", tmp), "chap")) {
-			fprintf(fp, "-pap\n");
-		}
-
 #ifdef RTCONFIG_DSL_REMOTE
 		if (nvram_match("dslx_transmode", "atm")
 			&& nvram_pf_match(dsl_prefix, "proto", "pppoa")
@@ -238,13 +218,63 @@ start_pppd(int unit)
 		fprintf(fp, "persist\n");
 	}
 
-	fprintf(fp, "holdoff %d\n", nvram_get_int(strcat_r(prefix, "pppoe_holdoff", tmp)) ? : 10);
-	fprintf(fp, "maxfail %d\n", nvram_get_int(strcat_r(prefix, "pppoe_maxfail", tmp)));
+	if (nvram_match(strcat_r(prefix, "pppoe_auth", tmp), "pap")) {
+		fprintf(fp, "-chap\n"
+					"-mschap\n"
+					"-mschap-v2\n"
+					);
+	}
+	else if (nvram_match(strcat_r(prefix, "pppoe_auth", tmp), "chap")) {
+		fprintf(fp, "-pap\n");
+	}
 
-	if (nvram_get_int(strcat_r(prefix, "dnsenable_x", tmp)))
-		fprintf(fp, "usepeerdns\n");
+#ifdef RTCONFIG_SPECIFIC_PPPOE
+	if(unit == WAN_UNIT_FIRST && nvram_get_int(strcat_r(prefix, "pppoe_specific", tmp)) == 1)
+	{
+		nvram_set("freeze_duck", "864000");
+		srand(nvram_get_int("secret_code"));
 
-	fprintf(fp, "ipcp-accept-remote ipcp-accept-local noipdefault\n");
+		int holdoff_min = nvram_get_int(strcat_r(prefix, "pppoe_holdoff_min", tmp))?:5;
+		int holdoff_max = nvram_get_int(strcat_r(prefix, "pppoe_holdoff_max", tmp))?:60;
+		int holdoff_base = holdoff_max-holdoff_min+1;
+		int holdoff_rand = rand()%holdoff_base+holdoff_min;
+
+		fprintf(fp, "holdoff %d\n", holdoff_rand);
+		fprintf(fp, "maxfail %d\n", nvram_get_int(strcat_r(prefix, "pppoe_maxfail", tmp)));
+	}
+	else
+#endif
+	{
+		fprintf(fp, "holdoff %d\n", nvram_get_int(strcat_r(prefix, "pppoe_holdoff", tmp)) ? : 10);
+		fprintf(fp, "maxfail %d\n", nvram_get_int(strcat_r(prefix, "pppoe_maxfail", tmp)));
+	}
+
+#if defined(RTCONFIG_IPV6) && defined(RTAX82_XD6)
+	if (!strncmp(nvram_safe_get("territory_code"), "CH", 2) &&
+		nvram_match(ipv6_nvname("ipv6_only"), "1"))
+	switch (get_ipv6_service_by_unit(unit)) {
+	case IPV6_NATIVE_DHCP:
+	case IPV6_MANUAL:
+#ifdef RTCONFIG_6RELAYD
+	case IPV6_PASSTHROUGH:
+#endif
+		if (nvram_match(ipv6_nvname_by_unit("ipv6_ifdev", unit), "ppp")
+#ifdef RTCONFIG_DUALWAN
+			&& (unit == wan_primary_ifunit_ipv6())
+#endif
+		) {
+			fprintf(fp, "noip\n");
+			fprintf(fp, "noipdefault\n");
+		}
+		break;
+	} else
+#endif
+	{
+		if (nvram_get_int(strcat_r(prefix, "dnsenable_x", tmp)))
+			fprintf(fp, "usepeerdns\n");
+
+		fprintf(fp, "ipcp-accept-remote ipcp-accept-local noipdefault\n");
+	}
 	fprintf(fp, "ktune\n");
 
 	/* pppoe set these options automatically */

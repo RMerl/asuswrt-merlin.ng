@@ -14,6 +14,11 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include "shutils.h"
+#include <shared.h>
+
+#if defined(HND_ROUTER) && !(defined(RTCONFIG_HND_ROUTER_AX_675X) && !defined(RTCONFIG_HND_ROUTER_AX_6710)) && !defined(RTCONFIG_HND_ROUTER_AX_6756)
+#define WGN_HAVE_VLAN0
+#endif
 
 #define SYNC_NODE_ROUTER_ONLY	0
 #define SYNC_NODE_RE_ALL		1
@@ -100,4 +105,6 @@ extern char*			wgn_guest_all_ifnames(char *ret_ifnames, size_t ifnames_bsize);
 extern char*			wgn_guest_vlans(char *ifnames, char *ret_vlans, size_t vlans_bsize);
 extern void 			wgn_check_settings(void);
 extern int 				wgn_guest_is_enabled(void);
+extern int 				wgn_check_vlan_invalid(char *word,char *iface);
+extern void 			wgn_subnet(const char *guest_ifname, char *net, int len);
 #endif 	/* !__WGN_SHAREDH__ */

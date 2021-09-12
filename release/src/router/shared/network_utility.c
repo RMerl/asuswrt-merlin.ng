@@ -1,6 +1,13 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <arpa/inet.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netdb.h>
+#include <sys/ioctl.h>
+#include <netinet/in.h>
+#include <net/if.h>
 
 int bit_count(in_addr_t i)
 {
@@ -117,3 +124,75 @@ int get_network_addr_by_ip_prefix(const char *ip, const char *netmask, char *ful
 	return _convert_addr(addrt, prefix, full_addr, len);	
 }
 
+int is_valid_ip(const char* addr)
+{
+	struct addrinfo hint, *res = NULL;
+	int ret = -1;
+
+	memset(&hint, 0, sizeof(hint));
+
+	hint.ai_family = PF_UNSPEC;
+	hint.ai_flags = AI_NUMERICHOST;
+
+	if (getaddrinfo(addr, NULL, &hint, &res))
+		ret = -1;
+	else if (res->ai_family == AF_INET)
+		ret = 1;
+	else if (res->ai_family == AF_INET6)
+		ret = 2;
+	else
+		ret = 0;
+
+	freeaddrinfo(res);
+	return (ret);
+}
+
+int is_valid_ip4(const char* addr)
+{
+	return (is_valid_ip(addr) == 1) ? 1 : 0;
+}
+
+int is_valid_ip6(const char* addr)
+{
+	return (is_valid_ip(addr) == 2) ? 1 : 0;
+}
+
+int is_ip4_in_use(const char* addr)
+{
+	struct in_addr ipaddr;
+	int fd;
+	struct ifreq *ifreq;
+	struct ifconf ifconf;
+	char buf[8192];
+
+	if (inet_pton(AF_INET, addr, &ipaddr) <= 0) {
+		perror("inet_pton()");
+		return 0;
+	}
+
+	fd = socket(AF_INET, SOCK_DGRAM, 0);
+	if (fd < 0) {
+		perror("socket()");
+		return 0;
+	}
+
+	ifconf.ifc_len = sizeof(buf);
+	ifconf.ifc_buf = buf;
+	if (ioctl(fd, SIOCGIFCONF, &ifconf) != 0) {
+		perror("ioctl(SIOCGIFCONF)");
+		return 0;
+	}
+
+	ifreq = ifconf.ifc_req;
+	while ( (char*)ifreq < buf + ifconf.ifc_len ) {
+		if( ((struct sockaddr_in*)&ifreq->ifr_addr)->sin_addr.s_addr == ipaddr.s_addr ) {
+			//char text[16];
+			//cprintf("ifr %s: %s\n", ifreq->ifr_name, inet_ntop(AF_INET, &(((struct sockaddr_in*)&ifreq->ifr_addr)->sin_addr), text, sizeof(text)));
+			return 1;
+		}
+
+		ifreq = (struct ifreq*)((char*)ifreq + sizeof(*ifreq));
+	}
+
+	return 0;
+}

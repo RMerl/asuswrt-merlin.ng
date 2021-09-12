@@ -24,6 +24,7 @@ typedef struct _SearchRouterInfoStruct
 	char routerOperationMode;
 	char routerRegulation;
 	char routerPrinterInfo[128];
+	char routerCfgGroup[41];
 	
 	// webdav
 	char webdavSupport;

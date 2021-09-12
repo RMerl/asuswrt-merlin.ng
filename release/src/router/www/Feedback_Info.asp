@@ -22,6 +22,8 @@
 <script type="text/javascript" src="/js/httpApi.js"></script>
 <script>
 var fb_state = httpApi.nvramGet(["fb_state"], true).fb_state;
+var dblog_enable = httpApi.nvramGet(["dblog_enable"], true).dblog_enable;
+var dblog_service = httpApi.nvramGet(["dblog_service"], true).dblog_service;
 
 var firmver = httpApi.nvramGet(["firmver"], true).firmver;
 var buildno = httpApi.nvramGet(["buildno"], true).buildno;
@@ -32,14 +34,11 @@ var FWString = '';
 FWString = firmver+"."+buildno;
 FWString += "_"+extendno;
 
+const DHD_Service = 16;
 
 function initial(){
 	show_menu();
 	check_info();
-	$("#bind_google")
-		.attr('target','_self')
-		.attr("href", "Advanced_Feedback.asp?provider=google&reload=1")
-		.attr("style", "text-decoration:underline;color:#FFCC00;");
 }
 
 function check_info(){
@@ -57,6 +56,10 @@ function check_info(){
 		else{
 			document.getElementById("fb_success_router_0").style.display = "";
 			document.getElementById("fb_success_router_1").style.display = "";
+		}
+
+		if(dhdlog_support && dblog_enable=="1" && (dblog_service & DHD_Service)){	//dhd
+				setTimeout("rebootnow();", 5000);
 		}
 	} 	
 
@@ -272,7 +275,6 @@ function get_split_feedback(seg){
 	<#feedback_fail0#>
 	<br><br>
 	<#feedback_fail1#> : ( <a href="mailto:router_feedback@asus.com?Subject=<%nvram_get("productid");%>" target="_top" style="color:#FFCC00;">router_feedback@asus.com </a>) <#feedback_fail2#>
-	&nbsp;<#feedback_fail_BindGoogle#>
 	<br>
 	<#feedback_fail3#> :
 	<br>
@@ -327,6 +329,27 @@ function get_split_feedback(seg){
 </table>
 </td>
 </form>
+<script>
+	function rebootnow(){
+		var win_time = window.setTimeout(function() {}, 0);
+        while (win_time--)
+			window.clearTimeout(win_time);
+		var win_inter = window.setInterval(function() {}, 0);
+		while (win_inter--)
+			window.clearInterval(win_inter);
+		var iframe_len = frames.length;
+		for(var i = 0; i < iframe_len; i += 1) {
+			var ifr_time = frames[i].window.setTimeout(function() {}, 0);
+			while (ifr_time--)
+			frames[i].window.clearTimeout(ifr_time);
+			var ifr_inter = frames[i].window.setInterval(function() {}, 0);
+			while (ifr_inter--)
+			frames[i].window.clearInterval(ifr_inter);
+		}
+
+		document.rebootForm.submit();
+	}
+</script>
 </tr>
 </table>
 </td>

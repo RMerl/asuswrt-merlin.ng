@@ -40,7 +40,6 @@
 #include "phy_drv.h"
 #include "phy_drv_mii.h"
 #include "phy_drv_sgmii_plus2.h"
-#include "bcm_gpio.h"
 
 #define XGXS_STATUS1     0x8122
 
@@ -200,19 +199,14 @@ int sgmii_read_status(phy_dev_t *phy_dev)
     uint16_t val;
     int ret, speed, duplex;
 
-    if(bcm_gpio_get_data(29))
-        phy_dev->link = phy_dev->cascade_prev->link;
-    else
-        phy_dev->link = 0;
-    phy_dev->link = phy_dev->cascade_prev->link;
+    phy_dev->link = 0;
     phy_dev->speed = PHY_SPEED_UNKNOWN;
     phy_dev->duplex = PHY_DUPLEX_UNKNOWN;
 
     if ((ret = sgmii_read(phy_dev, XGXS_STATUS1, &val)))
         return ret;
 
-    if(!bcm_gpio_get_data(29))
-        phy_dev->link = ((val >> 8) & 0x1);
+    phy_dev->link = ((val >> 8) & 0x1);
 
     if (!phy_dev->link)
         return 0;

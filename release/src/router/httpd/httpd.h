@@ -174,7 +174,7 @@ struct REPLACE_PRODUCTID_S {
 #define NOLOGINTRY   0
 #define LOGINTRY   1
 
-#if defined(RTCONFIG_IFTTT) || defined(RTCONFIG_ALEXA)
+#if defined(RTCONFIG_IFTTT) || defined(RTCONFIG_ALEXA) || defined(RTCONFIG_GOOGLE_ASST)
 #define IFTTTUSERAGENT  "asusrouter-Windows-IFTTT-1.0"
 #define GETIFTTTCGI     "get_IFTTTPincode.cgi"
 #define GETIFTTTOKEN "get_IFTTTtoken.cgi"
@@ -190,6 +190,8 @@ struct REPLACE_PRODUCTID_S {
 enum {
 	HTTP_OK = 200,
 	HTTP_FAIL = 400,
+        HTTP_CHPASS_FAIL,
+        HTTP_CHPASS_FAIL_MAX,
 	HTTP_RULE_ADD_SUCCESS = 2001,
 	HTTP_RULE_DEL_SUCCESS,
 	HTTP_NORULE_DEL,
@@ -340,7 +342,7 @@ extern struct ej_handler ej_handlers[];
 #define LOCK_LOGIN_LAN 	0x01
 #define LOCK_LOGIN_WAN 	0x02
 
-#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400)
+#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400)
 enum {
         LEDG_QIS_RUN = 1,
         LEDG_QIS_FINISH
@@ -395,7 +397,6 @@ extern int json_support;
 extern int amas_support;
 extern void start_ssl(int http_port);
 extern char *gethost(void);
-extern void http_logout(unsigned int ip, char *cookies, int fromapp_flag);
 extern int is_auth(void);
 extern int is_firsttime(void);
 extern char *generate_token(char *token_buf, size_t length);
@@ -404,6 +405,28 @@ extern int match_one( const char* pattern, int patternlen, const char* string );
 extern void send_page( int status, char* title, char* extra_header, char* text , int fromapp);
 extern void send_content_page( int status, char* title, char* extra_header, char* text , int fromapp);
 extern char *get_referrer(char *referer, char *auth_referer, size_t length);
+extern int save_ui_support_to_file(void);
+extern int save_iptvSettings_to_file(void);
+
+struct usockaddr;
+typedef struct usockaddr usockaddr;
+typedef struct uaddr {
+	int family;
+	union {
+		struct in_addr in;
+#ifdef RTCONFIG_IPV6
+		struct in6_addr in6;
+#endif
+	};
+} uaddr;
+extern uaddr *uaddr_ston(const usockaddr *u, uaddr *uip);
+extern uaddr *uaddr_pton(const char *src, uaddr *uip);
+extern char *uaddr_ntop(const uaddr *uip, char *dst, size_t cnt);
+extern unsigned int uaddr_addr(uaddr *uip);
+extern int uaddr_is_unspecified(uaddr *uip);
+extern int uaddr_is_localhost(uaddr *uip);
+extern int uaddr_is_equal(uaddr *a, uaddr *b);
+extern uaddr *uaddr_getpeer(webs_t wp, uaddr *uip);
 
 /* web.c */
 extern int ej_lan_leases(int eid, webs_t wp, int argc, char_t **argv);
@@ -454,9 +477,15 @@ extern char host_name[64];
 extern char user_agent[1024];
 extern char gen_token[32];
 extern char indexpage[128];
-extern unsigned int login_ip_tmp;
+extern char url[128];
+extern unsigned int login_ip; // the logined ip
+extern unsigned int app_login_ip; // the app logined ip
+extern char cookies_buf[4096];
+extern unsigned int login_ip_tmp; /* IPv6 compat */
+extern uaddr login_uip_tmp;
+extern time_t login_timestamp_cache;
 extern int check_user_agent(char* user_agent);
-#if defined(RTCONFIG_IFTTT) || defined(RTCONFIG_ALEXA)
+#if defined(RTCONFIG_IFTTT) || defined(RTCONFIG_ALEXA) || defined(RTCONFIG_GOOGLE_ASST)
 extern void add_ifttt_flag(void);
 #endif
 
@@ -466,7 +495,7 @@ extern int check_model_name(void);
 extern char *pwenc(char *input, char *output, int len);
 #endif
 
-#if defined(RTCONFIG_IFTTT) || defined(RTCONFIG_ALEXA)
+#if defined(RTCONFIG_IFTTT) || defined(RTCONFIG_ALEXA) || defined(RTCONFIG_GOOGLE_ASST)
 extern char ifttt_stoken[128];
 extern char ifttt_query_string[2048];
 extern time_t ifttt_timestamp;
@@ -487,14 +516,14 @@ extern unsigned int login_try;
 extern unsigned int login_try_wan;
 extern time_t auth_check_dt;
 extern int lock_flag;
+extern int max_lock_time;
 extern int add_try;
-extern char auth_passwd[AUTH_MAX];
 extern char* ipisdomain(char* hostname, char* str);
 #ifdef RTCONFIG_AMAS
 extern char* iscap(char* str);
 #endif
 extern int referer_check(char* referer, int fromapp_flag);
-extern int auth_check( char* dirname, char* authorization, char* url, char* file, char* cookies, int fromapp_flag);
+extern int auth_check(char* url, char* file, char* cookies, int fromapp_flag);
 extern int check_noauth_referrer(char* referer, int fromapp_flag);
 extern char current_page_name[128];
 extern int gen_guestnetwork_pass(char *key, size_t size);
@@ -528,9 +557,14 @@ extern void do_get_eptoken_cgi(char *url, FILE *stream);
 extern unsigned int login_fail_num;
 extern int is_captcha_match(char *catpch);
 #endif
-#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400)
+#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400)
 extern void switch_ledg(int action);
 #endif
 extern int get_external_ip(void);
 extern int get_rtinfo();
+extern void clean_ban_ip_timeout();
+extern int filter_ban_ip();
+extern void slowloris_check();
+extern void slow_post_read_check();
+extern int check_chpass_auth(char *cur_username, char *cur_passwd);
 #endif /* _httpd_h_ */

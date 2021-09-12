@@ -8,7 +8,7 @@
 <meta HTTP-EQUIV="Expires" CONTENT="-1">
 <link rel="shortcut icon" href="images/favicon.png">
 <link rel="icon" href="images/favicon.png">
-<title><#Web_Title#> - Instant Guard</title>
+<title><#Web_Title#> - <#Instant_Guard_title#></title>
 <link rel="stylesheet" type="text/css" href="index_style.css">
 <link rel="stylesheet" type="text/css" href="form_style.css">
 <link rel="stylesheet" type="text/css" href="other.css">
@@ -206,7 +206,7 @@ function update_ipsec_conn(){
 							<tr>
 								<td bgcolor="#4D595D" valign="top">
 									<div>&nbsp;</div>
-									<div class="formfonttitle">Instant Guard</div><!-- untranslated -->
+									<div class="formfonttitle"><#Instant_Guard_title#></div>
 									<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 									<div class="formfontdesc"><#Instant_Guard_desc#></div>
 									<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable">
@@ -216,7 +216,7 @@ function update_ipsec_conn(){
 										</tr>
 										</thead>
 										<tr>
-											<th>Enable Instant Guard</th><!-- untranslated -->
+											<th><#Instant_Guard_title#></th>
 											<td>
 												<div align="center" class="left" style="float:left;cursor:pointer;" id="radio_IG_enable"></div>
 												<div class="iphone_switch_container" style="height:32px; width:74px; position: relative; overflow: hidden;"></div>

@@ -91,6 +91,9 @@ int rtkswitch_ioctl(int val, int val2)
 	case 5:		/* power up LAN ports */
 	case 6:		/* power down LAN ports */
 	case 8:		/* reset per port MIB counter */
+	case 41:	/* turn off led */
+	case 42:	/* turn on led by force */
+	case 43:	/* turn on led normally */
 		p = NULL;
 		break;
 	default:

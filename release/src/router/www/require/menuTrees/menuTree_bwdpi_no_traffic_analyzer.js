@@ -55,9 +55,9 @@ define(function(){
 				index: "menu_GuestNetwork",
 				tab: [
 					{url: "Guest_network.asp", tabName: "<#Guest_Network#>"},
-					{url: "Captive_Portal.asp", tabName: "Free Wi-Fi"},
+					{url: "Captive_Portal.asp", tabName: "Free WiFi"},
 					{url: "Captive_Portal_Advanced.asp", tabName: "<#Captive_Portal#>"},
-					{url: "Guest_network_fbwifi.asp", tabName: "Facebook Wi-Fi"},
+					{url: "Guest_network_fbwifi.asp", tabName: "Facebook WiFi"},
 					{url: "NULL", tabName: "__INHERIT__"}
 				]
 			},
@@ -65,15 +65,21 @@ define(function(){
 				menuName: "<#AiProtection_title#>",
 				index: "menu_AiProtection", 
 				tab: [
-					{url: "AiProtection_HomeSecurity.asp", tabName: "__HIDE__"},
 					{url: "AiProtection_HomeProtection.asp", tabName: "<#AiProtection_Home#>"},
 					{url: "AiProtection_MaliciousSitesBlocking.asp", tabName: "<#AiProtection_sites_blocking#>"},
 					{url: "AiProtection_IntrusionPreventionSystem.asp", tabName: "<#AiProtection_two-way_IPS#>"},
 					{url: "AiProtection_InfectedDevicePreventBlock.asp", tabName: "<#AiProtection_detection_blocking#>"},
-					{url: "AiProtection_WebProtector.asp", tabName: "<#Parental_Control#>"},
-					{url: "ParentalControl.asp", tabName: "<#Parental_Control#>"},
 					{url: "AiProtection_AdBlock.asp", tabName: "Ad Blocking"},
 					{url: "AiProtection_Key_Guard.asp", tabName: "Key Guard"},
+					{url: "NULL", tabName: "__INHERIT__"}
+				] 
+			},
+			{
+				menuName: "<#Parental_Control#>",
+				index: "menu_ParentalControl", 
+				tab: [
+					{url: "AiProtection_WebProtector.asp", tabName: "<#AiProtection_filter#>"},
+					{url: "ParentalControl.asp", tabName: "<#Time_Scheduling#>"},
 					{url: "YandexDNS.asp", tabName: "<#YandexDNS#>"},
 					{url: "NULL", tabName: "__INHERIT__"}
 				] 
@@ -179,6 +185,7 @@ define(function(){
 				tab: [
 					{url: "Advanced_LAN_Content.asp", tabName: "<#menu5_2_1#>"},
 					{url: "Advanced_DHCP_Content.asp", tabName: "<#menu5_2_2#>"},
+					{url: "DNSFilter.asp", tabName: "DNSFilter"},
 					{url: "Advanced_MultiSubnet_Content.asp", tabName: "<#menu5_2_2#>"},
 					{url: "Advanced_GWStaticRoute_Content.asp", tabName: "<#menu5_2_3#>"},
 					{url: "Advanced_IPTV_Content.asp", tabName: "IPTV"},
@@ -230,7 +237,7 @@ define(function(){
 					{url: "Advanced_VPN_IPSec.asp", tabName: "__INHERIT__"},
 					{url: "Advanced_VPNClient_Content.asp", tabName: (vpn_fusion_support) ? "<#VPN_Fusion#>" : "<#vpnc_title#>"},
 					{url: "Advanced_TOR_Content.asp", tabName: "TOR"},
-					{url: "Advanced_Instant_Guard.asp", tabName: "Instant Guard"},/*untranslated*/
+					{url: "Advanced_Instant_Guard.asp", tabName: "<#Instant_Guard_title#>"},
 					{url: "NULL", tabName: "__INHERIT__"}
 				]
 			},		
@@ -253,7 +260,7 @@ define(function(){
 					{url: "Advanced_System_Content.asp", tabName: "<#menu5_6_2#>"},
 					{url: "Advanced_FirmwareUpgrade_Content.asp", tabName: "<#menu5_6_3#>"},
 					{url: "Advanced_SettingBackup_Content.asp", tabName: "<#menu5_6_4#>"},
-					{url: "Advanced_PerformanceTuning_Content.asp", tabName: "Fan tuning"},
+					{url: "Advanced_PerformanceTuning_Content.asp", tabName: "<#fan_tuning#>"},
 					{url: "Advanced_ADSL_Content.asp", tabName: "<#menu_dsl_setting#>"},
 					{url: "Advanced_Feedback.asp", tabName: "<#menu_feedback#>"},
 					{url: "Feedback_Info.asp", tabName: "__INHERIT__"},
@@ -347,7 +354,7 @@ define(function(){
 					retArray.push("menu_GameBoost");
 				}
 
-				if(!tencent_qmacc_support)
+				if(!tencent_qmacc_support || !isSwMode("rt"))
 					retArray.push("menu_TencentAcceleration");
 
 				if(!uu_support){
@@ -378,6 +385,7 @@ define(function(){
 					retArray.push("menu_VPN");
 					retArray.push("menu_VLAN");
 					retArray.push("menu_Firewall");
+					retArray.push("menu_ParentalControl");
 					retArray.push("menu_Wireless");
 
 					if(ifttt_support || alexa_support){
@@ -395,6 +403,7 @@ define(function(){
 					retArray.push("menu_VPN");
 					retArray.push("menu_VLAN");
 					retArray.push("menu_Firewall");
+					retArray.push("menu_ParentalControl");
 
 					if(ifttt_support || alexa_support){
 						retArray.push("menu_Alexa_IFTTT");
@@ -413,6 +422,7 @@ define(function(){
 					retArray.push("menu_VPN");
 					retArray.push("menu_VLAN");
 					retArray.push("menu_Firewall");
+					retArray.push("menu_ParentalControl");
 
 					if(ifttt_support || alexa_support){
 						retArray.push("menu_Alexa_IFTTT");
@@ -595,7 +605,7 @@ define(function(){
 					retArray.push("GameBoost.asp");
 				}
 
-				if(!tencent_qmacc_support)
+				if(!tencent_qmacc_support || !isSwMode("rt"))
 					retArray.push("GameBoost_Tencent.asp");
 
 				if(!alexa_support){
@@ -657,6 +667,12 @@ define(function(){
 				if(!fileflex_support)
 					retArray.push("fileflex.asp");
 
+				if(!dnsfilter_support)
+					retArray.push("DNSFilter.asp");
+
+				if(SG_mode)
+					retArray.push("Advanced_WWPS_Content.asp");
+
 				/* Operation Mode */
 				if(isSwMode("re")){
 					retArray.push("GameBoost.asp");
@@ -671,6 +687,7 @@ define(function(){
 					retArray.push("Main_IPTStatus_Content.asp");
 					retArray.push("Main_ConnStatus_Content.asp");
 					retArray.push("Advanced_Smart_Connect.asp");
+					retArray.push("DNSFilter.asp");
 
 					if(userRSSI_support){
 						retArray.push("Advanced_ACL_Content.asp");
@@ -701,6 +718,7 @@ define(function(){
 					retArray.push("Captive_Portal_Advanced.asp");
 					//short term solution for only router mode support Facebook Wi-Fi
 					retArray.push("Guest_network_fbwifi.asp");
+					retArray.push("DNSFilter.asp");
 				}
 				else if(isSwMode("mb")){
 					retArray.push("GameBoost.asp");
@@ -715,6 +733,7 @@ define(function(){
 					retArray.push("Main_IPTStatus_Content.asp");
 					retArray.push("Main_ConnStatus_Content.asp");
 					retArray.push("Advanced_Smart_Connect.asp");
+					retArray.push("DNSFilter.asp");
 				}
 
 				/* System Status Changed */

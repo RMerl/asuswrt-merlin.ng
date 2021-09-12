@@ -27,6 +27,7 @@
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
 <script type="text/javascript" src="/js/weekSchedule/weekSchedule.js"></script>
 <script type="text/javascript" src="/form.js"></script>
+<script type="text/javascript" src="/js/httpApi.js"></script>
 <style>
   #selectable .ui-selecting { background: #FECA40; }
   #selectable .ui-selected { background: #F39814; color: white; }
@@ -136,12 +137,12 @@ function initial(){
 
 	if(bwdpi_support){
 		document.getElementById('guest_image').style.background = "url(images/New_ui/TimeLimits.png)";
-		document.getElementById('content_title').innerHTML = "<#AiProtection_title#> - <#Time_Scheduling#>";
+		document.getElementById('content_title').innerHTML = "<#Parental_Control#> - <#Time_Scheduling#>";
 		document.getElementById('desc_title').innerHTML = "<#ParentalCtrl_Desc_TS#>";
 		document.getElementById('web_title').innerHTML = "<#Web_Title#> - <#Time_Scheduling#>";
 		document.getElementById('PC_enable').innerHTML = "<#ParentalCtrl_Enable_TS#>";
-		if(isSupport("webs_filter") && isSupport("apps_filter"))
-			document.getElementById('switch_menu').style.display = "";
+		//if(isSupport("webs_filter") && isSupport("apps_filter"))
+		//	document.getElementById('switch_menu').style.display = "";
 	}
 	if(isSupport("PC_SCHED_V3")){
 		$("#desc_title").html("This feature allows you to set up a scheduled time for specific devices' Internet access.");/* untranslated */
@@ -189,6 +190,8 @@ function initial(){
 		}
 		cookie.unset("time_scheduling_mac");
 	}
+	if(isSupport("PC_SCHED_V3") == "2")
+		$("#block_all_device").show();
 }
 
 /*------------ Mouse event of fake LAN IP select menu {-----------------*/
@@ -617,6 +620,41 @@ function show_inner_tab(){
 				</tr>
 			</table>
 			<div style="margin:0 0 10px 5px;" class="splitLine"></div>
+			<div id="block_all_device" style="margin-bottom:6px;display:none;">
+				<div style="font-size:14px;margin-left:6px;margin-bottom:6px;">By enabling Block All Devices, all of the connected devices will be blocked from Internet access.</div>
+				<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable">
+					<tr>
+						<th>Enable block all device</th>
+						<td>
+							<div align="center" class="left" style="width:94px; float:left; cursor:pointer;" id="radio_block_all"></div>
+							<div class="iphone_switch_container" style="height:32px; width:74px; position: relative; overflow: hidden">
+								<script type="text/javascript">
+									$('#radio_block_all').iphoneSwitch('<% nvram_get("MULTIFILTER_BLOCK_ALL"); %>',
+										function(){
+											httpApi.nvramSet({
+												"action_mode": "apply",
+												"rc_service": "restart_firewall",
+												"MULTIFILTER_BLOCK_ALL": "1"
+											}, function(){
+												showLoading(3);
+											});
+										},
+										function(){
+											httpApi.nvramSet({
+												"action_mode": "apply",
+												"rc_service": "restart_firewall",
+												"MULTIFILTER_BLOCK_ALL": "0"
+											}, function(){
+												showLoading(3);
+											});
+										}
+									);
+								</script>
+							</div>
+						</td>
+					</tr>
+				</table>
+			</div>
 		</div>
 		<div id="PC_desc">
 			<table width="700px" style="margin-left:25px;">
@@ -634,8 +672,8 @@ function show_inner_tab(){
 							<li><#ParentalCtrl_Desc4#></li>
 							<li><#ParentalCtrl_Desc5#></li>							
 						</ol>
-						<span id="desc_note" style="color:#FC0;"><#ADSL_FW_note#></span>
-						<ol style="color:#FC0;margin:-5px 0px 3px -18px;*margin-left:18px;">
+						<span id="desc_note" class="hint-color"><#ADSL_FW_note#></span>
+						<ol class="hint-color" style="margin:-5px 0px 3px -18px;*margin-left:18px;">
 							<li><#ParentalCtrl_default#></li>
 							<li id="nat_desc"><#ParentalCtrl_disable_NAT#></li>
 						</ol>	
@@ -672,8 +710,8 @@ function show_inner_tab(){
 				<tr class="switch_on_content">
 					<th><#General_x_SystemTime_itemname#></th>
 					<td align="left"><input type="text" id="system_time" name="system_time" class="devicepin" value="" readonly="1" style="font-size:12px;width:200px;" autocorrect="off" autocapitalize="off">
-						<div id="svc_hint_div" style="display:none;"><span onClick="location.href='Advanced_System_Content.asp?af=ntp_server0'" style="color:#FFCC00;text-decoration:underline;cursor:pointer;"><#General_x_SystemTime_syncNTP#></span></div>
-							<div id="timezone_hint_div" style="display:none;"><span id="timezone_hint" onclick="location.href='Advanced_System_Content.asp?af=time_zone_select'" style="color:#FFCC00;text-decoration:underline;cursor:pointer;"></span></div>
+						<div id="svc_hint_div" style="display:none;"><span onClick="location.href='Advanced_System_Content.asp?af=ntp_server0'" class="hint-color" style="text-decoration:underline;cursor:pointer;"><#General_x_SystemTime_syncNTP#></span></div>
+							<div id="timezone_hint_div" style="display:none;"><span id="timezone_hint" onclick="location.href='Advanced_System_Content.asp?af=time_zone_select'" class="hint-color" style="text-decoration:underline;cursor:pointer;"></span></div>
 					</td>
 				</tr>
 			</table>

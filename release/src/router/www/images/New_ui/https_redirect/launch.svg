@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="18" height="18" viewBox="0 0 18 18">
+  <defs>
+    <path id="ic_launch-a" d="M19,19 L5,19 L5,5 L12,5 L12,3 L5,3 C3.89,3 3,3.9 3,5 L3,19 C3,20.1 3.89,21 5,21 L19,21 C20.1,21 21,20.1 21,19 L21,12 L19,12 L19,19 L19,19 Z M14,3 L14,5 L17.59,5 L7.76,14.83 L9.17,16.24 L19,6.41 L19,10 L21,10 L21,3 L14,3 L14,3 Z"/>
+    <rect id="ic_launch-c" width="50" height="50" x="0" y="0"/>
+  </defs>
+  <g fill="none" fill-rule="evenodd" transform="translate(-3 -3)">
+    <mask id="ic_launch-b" fill="#fff">
+      <use xlink:href="#ic_launch-a"/>
+    </mask>
+    <g mask="url(#ic_launch-b)">
+      <use fill="#0070FF" transform="translate(-13 -13)" xlink:href="#ic_launch-c"/>
+    </g>
+  </g>
+</svg>

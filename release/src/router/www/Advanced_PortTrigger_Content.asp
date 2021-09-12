@@ -24,11 +24,11 @@
 <script>
 var autofw_rulelist_array = [];
 var wans_mode ='<% nvram_get("wans_mode"); %>';
+var faq_href = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=109";
 
 function initial(){
 	show_menu();
-	// https://www.asus.com/support/FAQ/114110/
-	httpApi.faqURL("114110", function(url){document.getElementById("faq").href=url;});
+	document.getElementById("faq").href=faq_href;
 	well_known_apps();
 	//parse nvram to array
 	var parseNvramToArray = function() {

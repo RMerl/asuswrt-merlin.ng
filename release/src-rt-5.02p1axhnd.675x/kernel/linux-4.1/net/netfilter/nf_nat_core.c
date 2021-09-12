@@ -163,9 +163,11 @@ static int in_range(const struct nf_nat_l3proto *l3proto,
 	    !l3proto->in_range(tuple, range))
 		return 0;
 
+	if (range->flags & NF_NAT_RANGE_PROTO_PSID)
+		return l4proto->in_range(tuple, NF_NAT_MANIP_SRC, range);
+
 	if (!(range->flags & NF_NAT_RANGE_PROTO_SPECIFIED) ||
-	    l4proto->in_range(tuple, NF_NAT_MANIP_SRC,
-			      &range->min_proto, &range->max_proto))
+	    l4proto->in_range(tuple, NF_NAT_MANIP_SRC, range))
 		return 1;
 
 	return 0;
@@ -341,10 +343,12 @@ get_unique_tuple(struct nf_conntrack_tuple *tuple,
 
 	/* Only bother mapping if it's not already in range and unique */
 	if (!(range->flags & NF_NAT_RANGE_PROTO_RANDOM_ALL)) {
-		if (range->flags & NF_NAT_RANGE_PROTO_SPECIFIED) {
-			if (l4proto->in_range(tuple, maniptype,
-					      &range->min_proto,
-					      &range->max_proto) &&
+		if (range->flags & NF_NAT_RANGE_PROTO_PSID) {
+			if (l4proto->in_range(tuple, maniptype, range) &&
+			    !nf_nat_used_tuple(tuple, ct))
+				goto out;
+		} else if (range->flags & NF_NAT_RANGE_PROTO_SPECIFIED) {
+			if (l4proto->in_range(tuple, maniptype, range) &&
 			    (range->min_proto.all == range->max_proto.all ||
 			     !nf_nat_used_tuple(tuple, ct)))
 				goto out;

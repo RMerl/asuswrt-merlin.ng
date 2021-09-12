@@ -743,6 +743,8 @@ void rc_ipsec_stop(FILE *fp)
     if(NULL != fp){
         /*Disabled ipsec*/
         fprintf(fp, "ipsec stop > /dev/null 2>&1\n"
+				"killall charon\n"
+				"rm -f /var/run/charon.*\n"
         		"sleep 1 > /dev/null 2>&1\n");
 #if defined(RTCONFIG_QUICKSEC)
 		//fprintf(fp, "killall quicksecpm\n");
@@ -1028,6 +1030,7 @@ void rc_ipsec_gen_cert(int skip_checking)
     if((skip_checking == 0) && (!nvram_match("ntp_ready", "1")))
     {
         DBG(("NTP is not synced yet, skip generating CA files.\n"));
+        logmessage("ipsec", "NTP is not synced yet, skip generating CA files.\n");
         return;
     }
 
@@ -1076,6 +1079,15 @@ void rc_ipsec_gen_cert(int skip_checking)
     }
     chmod(FILE_PATH_CA_ETC"generate.sh", 0777);
     system(FILE_PATH_CA_ETC"generate.sh");
+	if(check_if_file_exist(FILE_PATH_CA_ETC FILE_NAME_CERT_PEM)&&check_if_file_exist(FILE_PATH_CA_ETC FILE_NAME_SVR_PRIVATE_KEY)&&check_if_file_exist(FILE_PATH_CA_ETC FILE_NAME_SVR_CERT_PEM)){
+		DBG(("CA files are generated properly.\n"));
+		logmessage("ipsec", "CA files are generated properly.\n");
+	}
+	else
+	{
+		DBG(("CA files are not generated properly.\n"));
+		logmessage("ipsec", "CA files are not generated properly.\n");
+	}
 }
 
 void rc_ipsec_ca_init( )
@@ -1584,6 +1596,12 @@ void rc_ipsec_topology_set()
 			else{
 	            fprintf(fp,"  keyexchange=%s\n", ikev[prof[prof_count][i].ike]);
         	}
+
+			if(IKE_TYPE_V2 == prof[prof_count][i].ike){
+				//MOBIKE(RFC 4555) is for IKEv2 only.
+				fprintf(fp,"  mobike=no\n");
+			}
+
 		    if(IKE_AGGRESSIVE_MODE == prof[prof_count][i].exchange){
             	fprintf(fp,"  aggressive=yes\n");
         	}
@@ -2116,6 +2134,209 @@ void rc_ipsec_topology_set_XML()
 
 #endif
 
+#ifdef RTCONFIG_UPNPC_NEW
+int upnpclist_content_parser(char *str, upnpc_list_t *ucl)
+{
+	int n;
+	int complete = 0;
+	char *nextptr = NULL;
+	char *token = NULL;
+	char processbuf[256] = {0};
+
+	if(!str || !ucl)
+	{
+		_dprintf("[upnpclist_content_parser]Null pointers!\n");
+		return -1;
+	}
+
+	snprintf(processbuf, sizeof(processbuf), "%s", str);
+
+	token = strtok(processbuf, "'");
+	if(token)
+	{
+		memset(ucl, 0, sizeof(*ucl));
+		n = 0;
+		//token="1 UDP 25261->192.168.1.230:25261 'libtorrent/1.0.5.0 at 192.168.1.230:25261' '' 0"
+		n = sscanf(token, "%d %s %[^->]->%[^:]:%s", &(ucl->index), ucl->protocol, ucl->extPort, ucl->intClient, ucl->intPort);
+
+		if(n == 5)
+		{
+			nextptr = processbuf + strlen(token) + 1;
+			token = strstr(nextptr, "'");
+			if(token)
+			{
+				*token = '\0';
+				snprintf(ucl->desc, sizeof(ucl->desc), "%s", nextptr);
+				nextptr = strstr(token + 1, "'");
+				if(nextptr)
+				{
+					nextptr++;
+					token = strstr(nextptr, "'");
+					if(token)
+					{
+						*token = '\0';
+						snprintf(ucl->rHost, sizeof(ucl->rHost), "%s", nextptr);
+						n = sscanf(token + 1, "%s", ucl->duration);
+						if(n == 1)
+						{
+							complete = 1;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	if(complete == 1)
+	{
+		if(nvram_get_int("ipsec_upnpc_debug") == 1)
+		{
+			_dprintf("index=%d\n", ucl->index);
+			_dprintf("protocol=%s\n", ucl->protocol);
+			_dprintf("extPort=%s\n", ucl->extPort);
+			_dprintf("intClient=%s\n", ucl->intClient);
+			_dprintf("intPort=%s\n", ucl->intPort);
+			_dprintf("desc=%s\n", ucl->desc);
+			_dprintf("rHost=%s\n", ucl->rHost);
+			_dprintf("duration=%s\n", ucl->duration);
+		}
+	}
+
+	return (complete == 1);
+}
+
+int scan_upnpclist(char *filename, upnpc_list_t target, char *output_duration, int len)
+{
+	FILE *fp = NULL;
+	char linebuf[256] = {0};
+	char processbuf[256] = {0};
+	upnpc_list_t ucl;
+	int ret;
+	int match = 0;
+
+	if(!filename)
+	{
+		_dprintf("[%s]Null pointer.\n", __FUNCTION__);
+		return 0;
+	}
+
+	fp = fopen(filename, "r");
+	if(fp)
+	{
+		if(fgets(linebuf, sizeof(linebuf), fp))
+		{
+			snprintf(processbuf, sizeof(processbuf), "%s", trimNL(trimWS(linebuf)));
+			if(strcmp(processbuf, "i protocol exPort->inAddr:inPort description remoteHost leaseTime") == 0)
+			{
+				while(fgets(linebuf, sizeof(linebuf), fp))
+				{
+					ret = upnpclist_content_parser(trimNL(trimWS(linebuf)), &ucl);
+					if(ret == 1)
+					{
+						if((strcmp(ucl.protocol, target.protocol) == 0) && (strcmp(ucl.intClient, target.intClient) == 0))
+						{
+							if((strcmp(ucl.extPort, target.extPort) == 0) && (strcmp(ucl.intPort, target.intPort) == 0))
+							{
+								match = 1;
+								if((output_duration) && (len > 0))
+								{
+									snprintf(output_duration, len, "%s", ucl.duration);
+								}
+								break;
+							}
+						}
+					}
+				}
+			}
+			else
+			{
+				_dprintf("[%s]Wrong format.\n", __FUNCTION__);
+			}
+		}
+		else
+		{
+			_dprintf("[%s]Empty file.\n", __FUNCTION__);
+		}
+		fclose(fp);
+	}
+	else
+	{
+		_dprintf("[%s]Cannot open file [%s].\n", __FUNCTION__, filename);
+	}
+
+	return (match == 1);
+}
+
+void add_upnp_port(int type)
+{
+	char cmd[256] = {0};
+	char protocol[4] = "UDP";
+	char duration[16] = "86400"; //You can set it "86400000" if you want.
+	char prefix[16] = {0};
+	char wan_ifname[16] = {0};
+	char wan_ipaddr[32] = {0};
+	int r = 0;
+	upnpc_list_t target;
+
+	nvram_set_int("ipsec_upnpc_ext_isakmp_port", 0);
+	nvram_set_int("ipsec_upnpc_ext_esp_port", 0);
+	memset(&target, 0, sizeof(target));
+
+	if((strcmp(nvram_safe_get("ipsec_upnpc_duration"), "") != 0) && (nvram_get_int("ipsec_upnpc_duration") != 0))
+	{
+		snprintf(duration, sizeof(duration), "%s", nvram_safe_get("ipsec_upnpc_duration"));
+	}
+
+	if((type != UPNPC_TYPE_UDP) && (type != UPNPC_TYPE_TCP))
+	{
+		_dprintf("[%s]Wrong type:[%d]\n", __FUNCTION__, type);
+		logmessage("rc_ipsec", "[%s]Wrong type:[%d]\n", __FUNCTION__, type);
+		return;
+	}
+
+	if(type == UPNPC_TYPE_TCP)
+	{
+		snprintf(protocol, sizeof(protocol), "%s", "TCP");
+	}
+	snprintf(prefix, sizeof(prefix), "wan%d_", get_active_wan_unit());
+	snprintf(wan_ifname, sizeof(wan_ifname), "%s", nvram_pf_safe_get(prefix, "ifname"));
+	snprintf(wan_ipaddr, sizeof(wan_ipaddr), "%s", nvram_pf_safe_get(prefix, "ipaddr"));
+
+	snprintf(target.protocol, sizeof(target.protocol), "%s", protocol);
+	snprintf(target.intClient, sizeof(target.intClient), "%s", wan_ipaddr);
+	snprintf(target.extPort, sizeof(target.extPort), "%d", nvram_get_int("ipsec_isakmp_ext_port"));
+	snprintf(target.intPort, sizeof(target.intPort), "%d", nvram_get_int("ipsec_isakmp_port"));
+
+	snprintf(cmd, sizeof(cmd), "miniupnpc-new -m %s -i -a %s %d %d %s %s", wan_ifname, wan_ipaddr, nvram_get_int("ipsec_isakmp_port"), nvram_get_int("ipsec_isakmp_ext_port"), protocol, duration);
+	system(cmd);
+	snprintf(cmd, sizeof(cmd), "miniupnpc-new -m %s -i -a %s %d %d %s %s", wan_ifname, wan_ipaddr, nvram_get_int("ipsec_nat_t_port"), nvram_get_int("ipsec_nat_t_ext_port"), protocol, duration);
+	system(cmd);
+
+	snprintf(cmd, sizeof(cmd), "miniupnpc-new -m eth0 -i -f %s", UPNPC_OUTPUT_FILE);
+	system(cmd);
+
+	r = scan_upnpclist(UPNPC_OUTPUT_FILE, target, NULL, 0);
+	if(r == 1)
+	{
+		nvram_set_int("ipsec_upnpc_ext_isakmp_port", nvram_get_int("ipsec_isakmp_ext_port"));
+	}
+	_dprintf("[%s]Create ISAKMP port [%d] is %s\n", __FUNCTION__, nvram_get_int("ipsec_isakmp_ext_port"), (r == 1)?"successful":"failed");
+	logmessage("rc_ipsec", "[%s]Create ISAKMP port [%d] is %s\n", __FUNCTION__, nvram_get_int("ipsec_isakmp_ext_port"), (r == 1)?"successful":"failed");
+
+	r = 0;
+	snprintf(target.extPort, sizeof(target.extPort), "%d", nvram_get_int("ipsec_nat_t_ext_port"));
+	snprintf(target.intPort, sizeof(target.intPort), "%d", nvram_get_int("ipsec_nat_t_port"));
+	r = scan_upnpclist(UPNPC_OUTPUT_FILE, target, NULL, 0);
+	if(r == 1)
+	{
+		nvram_set_int("ipsec_upnpc_ext_esp_port", nvram_get_int("ipsec_nat_t_ext_port"));
+	}
+	_dprintf("[%s]Create ESP port [%d] is %s\n", __FUNCTION__, nvram_get_int("ipsec_nat_t_ext_port"), (r == 1)?"successful":"failed");
+	logmessage("rc_ipsec", "[%s]Create ESP port [%d] is %s\n", __FUNCTION__, nvram_get_int("ipsec_nat_t_ext_port"), (r == 1)?"successful":"failed");
+
+}
+#endif /* RTCONFIG_UPNPC_NEW */
+
 void rc_ipsec_set(ipsec_conn_status_t conn_status, ipsec_prof_type_t prof_type)
 {
     static bool ipsec_start_en = FALSE;
@@ -2449,6 +2670,9 @@ void rc_ipsec_set(ipsec_conn_status_t conn_status, ipsec_prof_type_t prof_type)
 	_eval(argv, NULL, 0, NULL);
 	DBG(("rc_ipsec_down_stat<<<< CLI: 0x%x, SVR: 0x%x\n", cur_bitmap_en_p[PROF_CLI],cur_bitmap_en_p[PROF_SVR]));
 	run_ipsec_firewall_scripts();
+#ifdef RTCONFIG_UPNPC_NEW
+	add_upnp_port(UPNPC_TYPE_UDP);
+#endif /* RTCONFIG_UPNPC_NEW */
     return;
 }
 

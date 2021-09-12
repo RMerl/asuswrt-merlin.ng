@@ -904,7 +904,7 @@ char *wgn_guest_all_ifnames(
 	for (i=0, offset=0; i<vlan_total && offset<ifnames_bsize; i++) {
 		unit = subunit = -1;
 		wgn_get_wl_unit(&unit, &subunit, &vlan_list[i]);
-        if (unit > 0 && subunit > 0)
+        if (unit > -1 && subunit > 0)
         {
             memset(s, 0, sizeof(s));
             snprintf(s, sizeof(s), "wl%d.%d ", unit, subunit);
@@ -1037,5 +1037,70 @@ void wgn_check_settings(
 			}
 		}
 	}
+	return;
+}
+
+int wgn_check_vlan_invalid(char *word,char *iface)
+{
+        int ret = 0;
+        FILE *fp = NULL;
+        char buf[1024] = {0};
+        char vlan[20] = {0};
+        char dev[20] = {0};
+        int n = 2;
+        if ((fp = fopen("/proc/net/vlan/config", "r")) != NULL)
+    {
+                // skip rows
+        /* 
+         * VLAN Dev name    | VLAN ID
+         * Name-Type: VLAN_NAME_TYPE_PLUS_VID_NO_PAD
+         */
+        while(n--)
+                    fgets(buf, sizeof(buf), fp);
+
+                // while loop
+                while (fgets(buf, sizeof(buf), fp))
+                {
+                        memset(vlan, 0, sizeof(vlan));
+                        memset(dev, 0, sizeof(dev));
+                        if (sscanf(buf, "%s %*s %*s %*s %s", vlan, dev) != 2) continue;
+                        if (!strcmp(vlan, word))
+            {
+                _dprintf("%s is a Vlan and we will use other names..\n",word);
+                strcpy(iface,dev);
+                ret=1;
+                break;
+                    }
+                }
+        fclose(fp);
+        }
+        else
+                _dprintf("FAIL to open vlan config\n");
+
+        return ret;
+}
+
+void wgn_subnet(const char *guest_ifname, char *net, int len)
+{
+	wgn_vlan_rule *p = NULL;
+	wgn_vlan_rule vlan_list[WGN_MAXINUM_VLAN_RULELIST];
+	int unit = -1, subunit = -1;
+	size_t vlan_list_count = 0;
+
+	if (!net || len <=0)
+		return;
+
+	sscanf(guest_ifname, "wl%d.%d_", &unit, &subunit);
+	if (unit < 0 || subunit < 1)
+		return;
+
+	memset(vlan_list, 0, sizeof(wgn_vlan_rule) * WGN_MAXINUM_VLAN_RULELIST);
+	if (!wgn_vlan_list_get_from_nvram(vlan_list, WGN_MAXINUM_VLAN_RULELIST, &vlan_list_count))
+		return;
+
+	if ((p = wgn_vlan_list_find_unit(vlan_list, vlan_list_count, unit, subunit)) == NULL)
+		return;
+
+	snprintf(net, len, "%s", p->subnet_name);
 	return;
 }

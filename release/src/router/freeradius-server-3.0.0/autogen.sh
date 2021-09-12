@@ -10,7 +10,7 @@ libtoolize -f -c
 autoheader
 autoconf
 
-mysubdirs="$mysubdirs `find src/modules/ -name configure -print | sed 's%/configure%%'`"
+mysubdirs="$mysubdirs `find src/modules/ -name configure.ac -print | sed 's%/configure\.ac%%'`"
 mysubdirs=`echo $mysubdirs`
 
 for F in $mysubdirs

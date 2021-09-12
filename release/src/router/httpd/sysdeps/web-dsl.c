@@ -430,9 +430,13 @@ int update_dsl_iptv_variables()
 
 		if(!strcmp(proto, "0")) {
 			nvram_set(strcat_r(prefix, "proto", tmp), "pppoe");
+			nvram_set(strcat_r(prefix, "nat", tmp), "1");
+			nvram_set(strcat_r(prefix, "dnsenable", tmp), "1");
 		}
 		else if(!strcmp(proto, "1")) {
 			nvram_set(strcat_r(prefix, "proto", tmp), "pppoa");
+			nvram_set(strcat_r(prefix, "nat", tmp), "1");
+			nvram_set(strcat_r(prefix, "dnsenable", tmp), "1");
 		}
 		else if(!strcmp(proto, "2")) {
 			if(nvram_match("dsltmp_transmode", "atm"))
@@ -440,6 +444,8 @@ int update_dsl_iptv_variables()
 			else
 				nvram_set(strcat_r(prefix, "proto", tmp), "dhcp");
 			nvram_set(strcat_r(prefix, "DHCPClient", tmp), "1");
+			nvram_set(strcat_r(prefix, "nat", tmp), "1");
+			nvram_set(strcat_r(prefix, "dnsenable", tmp), "1");
 			is_dhcp = 1;
 		}
 		else if(!strcmp(proto, "3")) {
@@ -448,6 +454,8 @@ int update_dsl_iptv_variables()
 		}
 		else if(!strcmp(proto, "4")) {
 			nvram_set(strcat_r(prefix, "proto", tmp), "ipoa");
+			nvram_set(strcat_r(prefix, "nat", tmp), "1");
+			nvram_set(strcat_r(prefix, "dnsenable", tmp), "1");
 		}
 		else {
 			nvram_set(strcat_r(prefix, "proto", tmp), "bridge");

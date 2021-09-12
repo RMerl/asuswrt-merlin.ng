@@ -149,7 +149,7 @@ int config_netdev_bled(const char *led_gpio, const char *ifname)
 int set_bled_udef_pattern(const char *led_gpio, unsigned int interval, const char *pattern)
 {
 	int gpio_nr, fd, r, ret = 0;
-	char *str, *p, *token;
+	char *str = NULL, *p, *token;
 	struct bled_common bl_common, *bl = &bl_common;
 	unsigned int curr, *patt = &bl->pattern[0];
 
@@ -197,9 +197,10 @@ int set_bled_udef_pattern(const char *led_gpio, unsigned int interval, const cha
 	}
 
 	close(fd);
-	free(str);
 
 exit_set_bled_udef_pattern:
+	if (str)
+		free(str);
 
 	return ret;
 }
@@ -216,7 +217,7 @@ exit_set_bled_udef_pattern:
 int set_bled_udef_trigger(const char *main_led_gpio, const char *trigger)
 {
 	int gpio_nr, fd, r, ret = 0;
-	char *str, *p, *token;
+	char *str = NULL, *p, *token;
 	struct bled_common bl_common, *bl = &bl_common;
 	unsigned int curr, *m = &bl->trigger[0];
 
@@ -259,11 +260,11 @@ int set_bled_udef_trigger(const char *main_led_gpio, const char *trigger)
 		ret = -6;
 		goto exit_set_bled_udef_trigger;
 	}
-
 	close(fd);
-	free(str);
 
 exit_set_bled_udef_trigger:
+	if (str)
+		free(str);
 
 	return ret;
 }

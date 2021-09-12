@@ -22,6 +22,9 @@
 #include "pc.h"
 
 #define NORMAL_PERIOD           5*TIMER_HZ      /* minisecond */
+
+static int g_prev_block_all = 0;
+
 static void pctime_loop(struct timer_entry *timer, void *data);
 static void pctime_config(struct timer_entry *timer, void *data);	
 static void pctime_flush(struct timer_entry *timer, void *data);	
@@ -102,18 +105,33 @@ pctime_flush(struct timer_entry *timer, void *data)
 static void
 pctime_loop(struct timer_entry *timer, void *data)
 {
-        if(nvram_get_int("MULTIFILTER_ALL")==0 || mfpc_count==0)
-                goto pctimer;
-        if ((nvram_get_int("ntp_ready") != 1) && (nvram_get_int("qtn_ntp_ready") != 1))
-                goto pctimer;
+	int curr_block_all = nvram_get_int("MULTIFILTER_BLOCK_ALL");
+	// Block all devices enabled clean all conntracks
+	if (g_prev_block_all == 0 && curr_block_all == 1) {
+		eval("conntrack", "-F");
+#ifdef HND_ROUTER
+		eval("fc", "flush");
+#elif defined(RTCONFIG_BCMARM)
+		/* TBD. ctf ipct entries cleanup. */
+#endif
+		g_prev_block_all = curr_block_all;
+		fprintf(stderr, "%s\n", "flush conntrack");
+        goto pctimer;
+	}
+	g_prev_block_all = curr_block_all;
 
-        time_t t = time(NULL);
-        struct tm *pnow = localtime(&t);
+    if(nvram_get_int("MULTIFILTER_ALL")==0 || mfpc_count==0)
+        goto pctimer;
+    if ((nvram_get_int("ntp_ready") != 1) && (nvram_get_int("qtn_ntp_ready") != 1))
+        goto pctimer;
+
+    time_t t = time(NULL);
+    struct tm *pnow = localtime(&t);
 
 #ifdef RTCONFIG_PC_SCHED_V3
-        cleantrack_daytime_pc_list(mfpc_list, pnow->tm_wday, pnow->tm_hour, pnow->tm_min, pcdbg);
+    cleantrack_daytime_pc_list(mfpc_list, pnow->tm_wday, pnow->tm_hour, pnow->tm_min, pcdbg);
 #else
-        cleantrack_daytime_pc_list(mfpc_list, pnow->tm_wday, pnow->tm_hour, pcdbg);
+    cleantrack_daytime_pc_list(mfpc_list, pnow->tm_wday, pnow->tm_hour, pcdbg);
 #endif
 
 pctimer:

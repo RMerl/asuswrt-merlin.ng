@@ -1,0 +1,409 @@
+#!/usr/bin/perl
+#
+# This script checks that the ROM image does not violate the following constrains:
+#   - no static variables are allowed in functions
+#
+# It takes the following information from STDIN:
+#   - Concatenation of 'nm -n roml' and 'objdump -t roml' outputs and in that order
+#
+# It returns 0 if succeeded, 255(-1) otherwise.
+#
+# $Id: check-rommap,v 1.10 2010-08-16 17:09:17 lut Exp $
+#
+
+use warnings;
+use strict;
+use File::Basename;
+use Getopt::Std;
+
+# Name of this script.
+my $g_script = basename($0);
+
+# Display usage info.
+sub usage {
+	print STDERR "\nUsage: $g_script romtable.S [-d chkrommap_config_file] < concat 'nm -n roml' and 'objdump -t roml'\n";
+	exit 1;
+}
+
+my $g_romfn_id    = "__bcmromfn";
+my $g_ramfnptr_id = "__ramfnptr_";
+
+
+my $idre    = '([\w.$]+)';
+my $fnre    = '([\w.-]+)';
+my $addr_re = '([0-9a-fA-F]{8})';
+
+
+# List of symbols to exclude from verification that checks for arrays or structs in the ROM/RAM
+# shared data section (shdat).
+my %g_shdat_verify_exclude_list;
+
+my %opts;
+getopts('d:', \%opts);
+
+if ($opts{d}) {
+   my $fname_chkrom_config = $opts{d};
+   my ($fd, $line);
+
+   # Open map file.
+   open($fd, "<$fname_chkrom_config") or
+      die "Could not open $fname_chkrom_config for reading: $!\n";
+
+   # Iterate the file, and parse symbols.
+   foreach $line (<$fd>) {
+      if ($line =~ /${idre}$/) {
+         $g_shdat_verify_exclude_list{$1} = 1;
+      }
+   }
+
+   # Clean up.
+   close $fd;
+}
+
+my ($fname_romtable, $fname_rom_elf, $gdb, $shdat_types_err);
+usage() if (@ARGV != 4);
+($fname_romtable  = shift @ARGV);
+($fname_rom_elf   = shift @ARGV);
+($gdb             = shift @ARGV);
+($shdat_types_err = shift @ARGV);
+
+# Parse command line arguments.
+# Utility function to convert a globalized symbol to GDB format.
+# e.g. wlc$foo ==> 'wlc.c'::foo
+#      bar     ==> bar
+#
+# Params:  sym IN  Globalized symbol name.
+#
+# Returns: GDB symbol name.
+sub symbol_globalized_to_gdb {
+	my ($sym) = @_;
+
+	$sym =~ s/(\w+)\$(\w+)/'$1.c'::$2/;
+	return ($sym);
+}
+
+# Utility function to convert a GDB symbol to globalized format.
+# e.g. 'wlc.c'::foo ==> wlc$foo
+#      bar          ==> bar
+#
+# Params:  sym IN  GDB symbol name.
+#
+# Returns: Globalized symbol name.
+sub symbol_gdb_to_globalized {
+	my ($sym) = @_;
+
+	$sym =~ s/'//;
+	$sym =~ s/\.c'::/\$/;
+	return ($sym);
+}
+
+
+# read all lines from STDIN (redirected from nm -n and objdump -t outputs)
+# and break them into nm -n and objdump -t portions.
+my @parts = split(/SYMBOL TABLE:\n/, join('', <STDIN>));
+my @nm = split(/\n/, $parts[0]);
+my @objdump = split(/\n/, $parts[1]);
+
+my %g_objtbl = ();
+map {
+	$g_objtbl{$1} = $_ if /\b${idre}$/;
+} @objdump;
+
+# Find all symbols with .extern keyword in the ROM table
+my $fd_romtable;
+my %romtable_syms;
+open($fd_romtable, "<$fname_romtable") or die "Unable to open file $fname_romtable: $!\n";
+map {
+	if (/^\s*\.extern\s+${idre}\b/) {
+		$romtable_syms{$1} = 1;
+	}
+} <$fd_romtable>;
+close($fd_romtable);
+
+
+# check and exit with error code if the ROM image is not "right"
+# find shdat_start/shdat_end in nm file
+my $shdat_start = -1;
+my $shdat_end = -1;
+my $extra_start = -1;
+my $extra_end = -1;
+my @words;
+my $skip_shdat_check = 0;
+for (my $s = 0; $s < @nm; $s ++) {
+	if ($nm[$s] =~ /\bshdat_start\b/) {
+		@words = split(" ", $nm[$s]);
+		$shdat_start = hex($words[0]);
+	}
+	elsif ($nm[$s] =~ /\bshdat_end\b/) {
+		@words = split(" ", $nm[$s]);
+		$shdat_end = hex($words[0]);
+	}
+	elsif ($nm[$s] =~ /\bextra_start\b/) {
+		@words = split(" ", $nm[$s]);
+		$extra_start = hex($words[0]);
+	}
+	elsif ($nm[$s] =~ /\bextra_end\b/) {
+	@words = split(" ", $nm[$s]);
+	$extra_end = hex($words[0]);
+	}
+
+	last if ($shdat_start != -1 && $shdat_end != -1 && $extra_start != -1 && $extra_end != -1);
+}
+if ($shdat_start == -1 || $shdat_end == -1 || $shdat_start == $shdat_end) {
+	$skip_shdat_check = 1;
+}
+
+
+# Verify that every symbol in ROM (from the map file) is listed in the ROM table.
+my ($offset, $type, $symbol);
+my $rc = 0;
+for (my $s = 0; $s < @nm; $s ++) {
+	# nm format: offset type symbol
+	@words = split(" ", $nm[$s]);
+	if (@words != 3) {
+		next;
+	}
+
+	$offset = hex($words[0]);
+	$type   = $words[1];
+	$symbol = $words[2];
+
+
+	# Only check global text and read-only symbols.
+	if (($type !~ /\bT\b/) && ($type !~ /\bR\b/)) {
+		next;
+	}
+
+	# Skip ROM function labels (e.g. foobar__bcmromfn).
+	if ($symbol =~ /$g_romfn_id/) {
+		next;
+	}
+
+	# Ignore these symbols.
+	if ($symbol =~ /\b((rodata_start|rodata_end|extra_end)\b|cstr_)/) {
+		next;
+	}
+
+	# Ignore RAM function stubs.
+	if (($offset >= $extra_start) && ($offset < $extra_end)) {
+		next;
+	}
+
+
+	# Verify ROM symbols exists in ROM table.
+	if (!$romtable_syms{$symbol}) {
+		printf STDERR ("$g_script: Error: $symbol exists in ROM binary but not in romtable!\n");
+		$rc = -1;
+	}
+}
+
+if ($skip_shdat_check) {
+	goto done;
+}
+
+
+# Validate that every symbol in ROM is located in a known section. Ensure that symbols are not
+# added to unexpected sections.
+my %valid_sects = (
+	".text"        => 1,
+	".rodata"      => 1,
+	".data"        => 1,
+	".bss"         => 1,
+	".extra"       => 1,
+	".romlogstrs"  => 1,
+	".romlognums"  => 1
+);
+foreach my $sym (keys %g_objtbl) {
+	# Symbol table format:
+	#    00851c79 g      F .text       00000020 wlc_bmac_mctrl
+	@words = split(" ", $g_objtbl{$sym});
+	if (@words >= 4) {
+		my $addr  = $words[0];
+		my $size  = $words[$#words - 1];
+		my $sect  = $words[$#words - 2];
+
+		if (($addr =~ /$addr_re/) && ($size =~ /$addr_re/) &&
+		    (hex($size) != 0) && (!$valid_sects{$sect})) {
+			printf STDERR ("$g_script: Error: '$sym' in unknown section type '$sect'!\n");
+			$rc = -1;
+		}
+	}
+}
+
+
+# Open GDB script for writing. This will be used to validate the data types included in the
+# shdat section.
+my $fd_gdb_script;
+my $gdb_script = ".tmp.$g_script.gdb_script";
+open($fd_gdb_script, ">$gdb_script") or
+	die "$g_script: Could not open $gdb_script for writing: $!\n";
+
+for (my $s = 0; $s < @nm; $s ++) {
+	# nm format: offset type symbol
+	@words = split(" ", $nm[$s]);
+	if (@words != 3) {
+	next;
+	}
+	$offset = hex($words[0]);
+	$symbol = $words[2];
+	if ($offset < $shdat_start || $offset >= $shdat_end) {
+		# Special handling: check for C.mmm.nnnn in .text
+		if (!($symbol =~ /C\.[0-9]+/)) {
+			next;
+		}
+	}
+	# ignore these symbols
+	if ($symbol =~ /(shdat|ramfnptr|jmptblrom|datblrom)_(start|end)|fmtnum\.\d+|logstr\.\d+/) {
+		next;
+	}
+
+	# Generate GDB script used to validate the data types included in the shdat section.
+	if ($offset >= $shdat_start && $offset <= $shdat_end) {
+		my $gdb_symbol = symbol_globalized_to_gdb($symbol);
+		if (($gdb_symbol !~ /$g_ramfnptr_id/) && (!$g_shdat_verify_exclude_list{$symbol})) {
+			printf $fd_gdb_script ("echo ptype $gdb_symbol\\n\n");
+			printf $fd_gdb_script ("ptype $gdb_symbol\n");
+		}
+	}
+
+	# find the symbol in symtbl and print it as an input section
+	if (!$g_objtbl{$symbol}) {
+		printf STDERR ("Warning: Symbol $symbol not found!\n");
+		next;
+	}
+
+	# symtbl format 1: offset x y section size symbol
+	# symtbl format 2: offset x section size symbol
+	@words = split(" ", $g_objtbl{$symbol});
+	if (@words < 2 || !($words[1] =~ /^l\b/)) {
+		next;
+	}
+
+	# format 2
+	my $sectpos;
+	my $sizepos;
+	my $sympos;
+	if ($words[2] =~ /^\.bss|\.data\b/) {
+		$sectpos = 2;
+		$sizepos = 3;
+		$sympos = 4;
+	}
+	# format 1
+	elsif ($words[3] =~ /^\.bss|\.data|\.text|\.rodata\b/) {
+		$sectpos = 3;
+		$sizepos = 4;
+		$sympos = 5;
+	}
+
+	# static variables/symbols
+	# use the last file name seen before the symbol as the file name
+	if (hex($words[0]) == $offset && $words[$sectpos] =~ /^\.bss|\.data|\.text|\.rodata\b/ &&
+	    $words[$sympos] =~ /^\Q$symbol\E\b/) {
+		# automatic initializer struct s = {0, 0} is rodata which is bad for ROM
+		if ($words[$sympos] =~ /C\.[0-9]+/) {
+			# printf STDERR ("Error: found unexpected variable $symbol in ROM image\n");
+			# $rc = -1;
+		# static variables in functions
+		} elsif ($words[$sympos] =~ /\.[0-9]+/) {
+		printf STDERR ("Error: found static variable $symbol in ROM image\n");
+		$rc = -1;
+		}
+	}
+}
+close($fd_gdb_script);
+
+
+# Run GDB script used to validate the data types included in the shdat section.
+my @gdb_script_output = `$gdb --batch -nx -nw -x $gdb_script $fname_rom_elf`;
+die "$g_script: GDB failed extracting shdat types" if $?;
+
+# Verify that shdat section does not contain any arrays or structs. (The memory layout of the
+# shared data section is determined at the time of ROM generation. Increases to the size of
+# arrays or structs post tapeout would be problematic since the shdat memory layout cannot
+# be changed).
+#
+# Parse the output of the GDB script. For each data symbol in shdat, the GDB script
+# contains GDB commands similar to the following:
+#
+#    echo ptype wl_msg_level
+#    ptype wl_msg_level
+#
+# For a native C type, GDB 'ptype' will return:
+#
+#    (gdb) ptype wl_msg_level
+#    type = unsigned int
+#
+# For a struct:
+#
+#    (gdb) ptype bcm_hs_qualifier
+#    type = struct {
+#        uByte bLength;
+#        ...
+#        uByte bReserved;
+#    }
+#
+# For an array:
+#
+#    (gdb) ptype g_pktpools_array
+#    type = int [2]
+#
+my $gdb_symbol   = "nil";
+my $parse_struct = 0;
+my $invalid_shdat_type = 0;
+my $shdat_types_err_str = "Warning";
+if ($shdat_types_err) {
+	$shdat_types_err_str = "Error";
+}
+foreach my $line (@gdb_script_output) {
+	if ($line =~ /^ptype (.*)/) {
+		# Found next shdat symbol.
+		$gdb_symbol = symbol_gdb_to_globalized($1);
+	}
+	else {
+		# Parse shdat symbol type.
+		if ($parse_struct && ($line =~ /^}/)) {
+			# Found the end of a struct type. Pointers to structs are ok, everything
+			# else is an error. e.g. this pointer to a struct is ok:
+			#
+			#    type = struct hndrte_irq_action {
+			#        hndrte_irq_action_t *next;
+			#        isr_fun_t isr;
+			#        void *cbdata;
+			#        uint32 sbtpsflag;
+			#    } *
+			if ($line !~ /^}\s+\*+\s*$/) {
+				printf STDERR ("$g_script: %s: struct in shdat '$gdb_symbol'!\n",
+				               $shdat_types_err_str);
+				$invalid_shdat_type = 1;
+			}
+			$parse_struct = 0;
+		}
+		elsif ($line =~ /^type\s+=\s+.*\[/) {
+			# Error if data type is an array.
+			printf STDERR ("$g_script: %s: array  in shdat '$gdb_symbol'!\n",
+			                $shdat_types_err_str);
+			$invalid_shdat_type = 1;
+		}
+		elsif ($line =~ /^type\s+=\s+struct/) {
+			# Data type is a struct. Parse the entire struct since pointers to structs
+			# are ok, everything else is an error.
+			$parse_struct = 1;
+		}
+	}
+}
+
+if ($invalid_shdat_type) {
+	printf STDERR ("\n$g_script: %s: Add accessor functions for arrays/structs in shdat,\n",
+	               $shdat_types_err_str);
+	printf STDERR ("$g_script:        and exclude the accessor functions from ROM (prefered).\n");
+	printf STDERR ("$g_script:        Alternatively, exclude functions that access arrays/structs\n");
+	printf STDERR ("$g_script:        from ROM.\n");
+
+	# Override that allows shdat errors to be logged, but not return a build error.
+	if ($shdat_types_err) {
+		$rc = -1;
+	}
+}
+
+done:
+exit $rc;

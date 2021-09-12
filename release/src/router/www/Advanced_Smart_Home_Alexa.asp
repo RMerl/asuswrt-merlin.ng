@@ -470,10 +470,10 @@ function show_account_state(){
 														<p id="alexa_ex2" style="font-size:13px;padding-left: 20px;font-style:italic;">“<#Alexa_Example2#>”</p>
 														<p id="alexa_ex3" style="font-size:13px;padding-left: 20px;font-style:italic;">“<#Alexa_Example3#>”</p>
 														<a id="faq" href="" style="font-family:Arial, Helvetica, sans-serif;font-size:13px;padding-top: 2px;padding-left: 20px;font-style:italic;text-decoration: underline;cursor:pointer;" target="_blank"><#Alexa_More_Skill#></a>
-														<p id="network_services_Remind" style="font-size:13px;padding-top: 10px;font-style:italic;color:#FFCC00;font-size:13px;display: none;">WARNING: The current network service filter policy for firewall will be overwritten once you say “Alexa, ask ASUS Router to pause the Internet</p>
+														<p id="network_services_Remind" class="hint-color" style="font-size:13px;padding-top: 10px;font-style:italic;font-size:13px;display: none;">WARNING: The current network service filter policy for firewall will be overwritten once you say “Alexa, ask ASUS Router to pause the Internet</p>
 													</div>
 													<div style="text-align:center;padding-top:35px;font-family:Arial, Helvetica, sans-serif;font-style:italic;font-weight:lighter;font-size:18px;"><#Alexa_Register0#></div>
-													<div id="acc_link_status" style="text-align:center;padding-top:10px;font-size:15px;color:#FFCC00;font-weight:bolder; height:20px;"></div>
+													<div id="acc_link_status" class="hint-color" style="text-align:center;padding-top:10px;font-size:15px;font-weight:bolder; height:20px;"></div>
 													<div class="div_img">
 														<table style="width:99%">
 															<div id="guideline_1" class="div_td" style="padding-top:20px; width:45%; display: none;">
@@ -518,9 +518,9 @@ function show_account_state(){
 																	</div>
 																	<div class="div_td step_div">
 																		<div>Open ASUS Router App and go to “Settings.”</div>
-																		<div style="color: #FFCC00; margin-top: 10px; display: flex">
+																		<div class="hint-color" style="margin-top: 10px; display: flex">
 																			<div>*</div>
-																			<div style="margin-left: 3px; font-size: 15px;">Please make sure your device connect to ASUS router’s Wi-Fi SSID.</div>
+																			<div style="margin-left: 3px; font-size: 15px;">Please make sure your device connect to ASUS router’s WiFi SSID.</div>
 																		</div>
 																	</div>
 																</div>

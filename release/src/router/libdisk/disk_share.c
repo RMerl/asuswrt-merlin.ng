@@ -316,7 +316,7 @@ extern int get_all_folder(const char *const mount_path, int *sh_num, char ***fol
 extern int get_var_file_name(const char *const account, const char *const path, char **file_name, const int is_group){
 	int len;
 	char *var_file;
-	char ascii_user[64];
+	char ascii_user[128];
 
 	if(path == NULL)
 		return -1;
@@ -523,7 +523,7 @@ int initial_all_var_file(const char *const mount_path)
 	PMS_ACCOUNT_INFO_T *account_list, *follow_account;
 	int group_num;
 	PMS_ACCOUNT_GROUP_INFO_T *group_list, *follow_group;
-	char char_user[64];
+	char char_user[128];
 	DIR *opened_dir;
 	struct dirent *dp;
 
@@ -664,7 +664,7 @@ int create_if_no_var_files(const char *const mount_path)
 	PMS_ACCOUNT_INFO_T *account_list, *follow_account;
 	int group_num;
 	PMS_ACCOUNT_GROUP_INFO_T *group_list, *follow_group;
-	char char_user[64];
+	char char_user[128];
 
 	// 1. get the var_file for the share mode.
 	if (get_var_file_name(NULL, mount_path, &var_file, 0)) {	// share mode.
@@ -1667,7 +1667,7 @@ extern int add_folder(const char *const account, const char *const mount_path, c
 	PMS_ACCOUNT_INFO_T *account_list, *follow_account;
 	int group_num;
 	PMS_ACCOUNT_GROUP_INFO_T *group_list, *follow_group;
-	char char_user[64];
+	char char_user[128];
 #else
 	int i;
 	char **account_list;
@@ -1847,7 +1847,7 @@ extern int del_folder(const char *const mount_path, const char *const folder){
 	PMS_ACCOUNT_INFO_T *account_list, *follow_account;
 	int group_num;
 	PMS_ACCOUNT_GROUP_INFO_T *group_list, *follow_group;
-	char char_user[64];
+	char char_user[128];
 #else
 	int i;
 	char **account_list;
@@ -2046,7 +2046,7 @@ extern int mod_folder(const char *const mount_path, const char *const folder, co
 	PMS_ACCOUNT_INFO_T *account_list, *follow_account;
 	int group_num;
 	PMS_ACCOUNT_GROUP_INFO_T *group_list, *follow_group;
-	char char_user[64];
+	char char_user[128];
 #else
 	int i;
 	char **account_list;
@@ -2243,7 +2243,7 @@ int add_account(const char *const account, const char *const password)
 {
 	disk_info_t *disk_list, *follow_disk;
 	partition_info_t *follow_partition;
-	char ascii_user[64], ascii_passwd[64];
+	char ascii_user[128], ascii_passwd[128];
 	int acc_num;
 	PMS_ACCOUNT_INFO_T *account_list, *follow_account;
 	int group_num;
@@ -2323,7 +2323,7 @@ extern int add_account(const char *const account, const char *const password){
 	int acc_num;
 	int len;
 	char nvram_value[PATH_MAX], *ptr;
-	char ascii_user[64], ascii_passwd[84];
+	char ascii_user[128], ascii_passwd[128];
 	int lock;
 
 	if(account == NULL || strlen(account) <= 0){
@@ -2345,7 +2345,7 @@ extern int add_account(const char *const account, const char *const password){
 	memset(ascii_passwd, 0, sizeof(ascii_passwd));
 	char_to_ascii_safe(ascii_passwd, password, sizeof(ascii_passwd));
 #ifdef RTCONFIG_NVRAM_ENCRYPT
-	int enclen = pw_enc_blen(ascii_passwd);
+	int enclen = pw_enc_blen(ascii_passwd) + 1;
 	char enc_passwd[enclen];
 	char passwdbuf[NVRAM_ENC_MAXLEN];
 
@@ -2423,7 +2423,7 @@ int del_account(const char *const account)
 	PMS_ACCOUNT_INFO_T *account_list, *follow_account;
 	int group_num;
 	PMS_ACCOUNT_GROUP_INFO_T *group_list;
-	char ascii_user[64];
+	char ascii_user[128];
 
 	if (account == NULL || strlen(account) <= 0) {
 		usb_dbg("No input, \"account\".\n");
@@ -2545,7 +2545,7 @@ extern int del_account(const char *const account){
 	char nvram_value[PATH_MAX], *ptr;
 	char *var_file;
 	char *nv, *nvp, *b;
-	char *tmp_ascii_user, *tmp_ascii_passwd, char_user[64];
+	char *tmp_ascii_user, *tmp_ascii_passwd, char_user[128];
 	DIR *opened_dir;
 	struct dirent *dp;
 	int lock;
@@ -2678,7 +2678,7 @@ extern int mod_account(const char *const account, const char *const new_account,
 	char *var_file, *new_var_file;
 	unsigned long file_size;
 	char file1[PATH_MAX], file2[PATH_MAX];
-	char ascii_user[64], ascii_newuser[64], ascii_passwd[64];
+	char ascii_user[128], ascii_newuser[128], ascii_passwd[128];
 	int acc_num;
 	PMS_ACCOUNT_INFO_T *account_list, *follow_account;
 	int group_num;
@@ -2811,7 +2811,7 @@ extern int mod_account(const char *const account, const char *const new_account,
 	char nvram_value[PATH_MAX], *ptr;
 	char *var_file, *new_var_file;
 	char *nv, *nvp, *b;
-	char *tmp_ascii_user, *tmp_ascii_passwd, char_user[64];
+	char *tmp_ascii_user, *tmp_ascii_passwd, char_user[128];
 	unsigned long file_size;
 	char file1[PATH_MAX], file2[PATH_MAX];
 	int lock;
@@ -2846,7 +2846,7 @@ extern int mod_account(const char *const account, const char *const new_account,
 				continue;
 
 			char *set_passwd;
-			char ascii_user[64], ascii_passwd[64];
+			char ascii_user[128], ascii_passwd[128];
 
 			memset(ascii_user, 0, sizeof(ascii_user));
 			if(new_account != NULL && strlen(new_account) > 0)
@@ -2859,7 +2859,7 @@ extern int mod_account(const char *const account, const char *const new_account,
 				char_to_ascii_safe(ascii_passwd, new_password, sizeof(ascii_passwd));
 
 #ifdef RTCONFIG_NVRAM_ENCRYPT
-				char enc_passwd[64];
+				char enc_passwd[256] = {0};
 
 				memset(enc_passwd, 0, sizeof(enc_passwd));
 				pw_enc(ascii_passwd, enc_passwd);
@@ -2897,6 +2897,7 @@ extern int mod_account(const char *const account, const char *const new_account,
 	}
 	if(nv)
 		free(nv);
+
 	nvram_set("acc_list", nvram_value);
 
 	lock = file_lock("nvramcommit");
@@ -2976,7 +2977,7 @@ extern int test_if_exist_account(const char *const account){
 	PMS_ACCOUNT_INFO_T *account_list, *follow_account;
 	int group_num;
 	PMS_ACCOUNT_GROUP_INFO_T *group_list;
-	char char_user[64];
+	char char_user[128];
 #else
 	int i;
 	char **account_list;
@@ -3028,7 +3029,7 @@ extern int test_if_exist_account(const char *const account){
 extern int add_group(const char *const group){
 	disk_info_t *disk_list, *follow_disk;
 	partition_info_t *follow_partition;
-	char ascii_user[64];
+	char ascii_user[128];
 	int acc_num;
 	PMS_ACCOUNT_INFO_T *account_list;
 	int group_num;
@@ -3098,7 +3099,7 @@ extern int del_group(const char *const group){
 	int lock;
 	int len;
 	char *ptr;
-	char ascii_user[64];
+	char ascii_user[128];
 	int acc_num;
 	PMS_ACCOUNT_INFO_T *account_list;
 	int group_num;
@@ -3211,7 +3212,7 @@ extern int mod_group(const char *const group, const char *const new_group){
 	char *var_file, *new_var_file;
 	unsigned long file_size;
 	char file1[PATH_MAX], file2[PATH_MAX];
-	char ascii_user[64], ascii_newuser[64];
+	char ascii_user[128], ascii_newuser[128];
 	int acc_num;
 	PMS_ACCOUNT_INFO_T *account_list;
 	int group_num;
@@ -3325,7 +3326,7 @@ extern int test_if_exist_group(const char *const group){
 	int group_num;
 	PMS_ACCOUNT_GROUP_INFO_T *group_list, *follow_group;
 	int result;
-	char char_user[64];
+	char char_user[128];
 	
 	if(group == NULL)
 		return -1;
@@ -3358,7 +3359,7 @@ extern int get_account_list(int *acc_num, char ***account_list)
 	int len, i, j;
 	char *nv, *nvp, *b;
 	char *tmp_ascii_user, *tmp_ascii_passwd;
-	char char_user[64];
+	char char_user[128];
 
 	*acc_num = nvram_get_int("acc_num");
 	if(*acc_num <= 0)

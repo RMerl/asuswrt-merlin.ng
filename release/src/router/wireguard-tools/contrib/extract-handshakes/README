@@ -1,0 +1,20 @@
+Handshake Extractor
+===================
+
+This will extract private keys from outgoing handshake sessions, prior
+to them being sent, via kprobes. It exports the bare minimum to be
+able to then decrypt all packets in the handshake and in the subsequent
+transport data session.
+
+Build:
+
+    $ make
+
+Run (as root):
+
+    # ./extract-handshakes.sh
+    New handshake session:
+      LOCAL_STATIC_PRIVATE_KEY = QChaGDXeH3eQsbFAhueUNWFdq9KfpF3yl+eITjZbXEk=
+      REMOTE_STATIC_PUBLIC_KEY = HzgTY6aWXtuSyW/PUquZtg8LB/DyMwEXGkPiEmdSsUU=
+      LOCAL_EPHEMERAL_PRIVATE_KEY = UNGdRHuKDeqbFvmiV5FD4wP7a8PqI6v3Xnnz6Jc6NXQ=
+      PRESHARED_KEY = AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=

@@ -21,6 +21,10 @@ var scheme_item_post = {
 	"Direction" : 0
 };
 function initial_led_control() {
+	var productid = httpApi.nvramGet(["productid"], true).productid;
+	if(productid != "GT-AC2900")
+		$("#event").remove();
+
 	$light_effect_bg = $("#light_effect_bg");
 	$hue_bar = $("#hue_bar");
 	$hue_slider = $("#hue_slider");

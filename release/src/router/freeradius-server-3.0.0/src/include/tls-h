@@ -104,6 +104,12 @@ typedef struct _tls_info_t {
 	char		initialized;
 } tls_info_t;
 
+#if OPENSSL_VERSION_NUMBER < 0x10001000L
+#define ssl_session ssl->session
+#else
+#define ssl_session session
+#endif
+
 /*
  * tls_session_t Structure gets stored as opaque in eap_handler_t
  * This contains EAP-REQUEST specific data
@@ -122,6 +128,9 @@ typedef struct _tls_info_t {
 typedef struct _tls_session_t {
 	SSL_CTX		*ctx;
 	SSL 		*ssl;
+#if OPENSSL_VERSION_NUMBER >= 0x10001000L
+	SSL_SESSION	*session;
+#endif
 	tls_info_t	info;
 
 	BIO 		*into_ssl;

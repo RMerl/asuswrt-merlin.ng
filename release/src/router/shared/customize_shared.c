@@ -110,13 +110,13 @@ char *find_customize_setting_by_name(const char *name)
 			value = line_start;
 			key_name = strsep(&value,"=");
 			if (!strcmp(key_name, name)) {
-				_dprintf("name=%s. FOUND: value=%s\n", name, value);
+				//_dprintf("name=%s. FOUND: value=%s\n", name, value);
 				return trimNL(value);
 			}
 		}
 		fclose(fp);
 	}
-	_dprintf("name=%s. NOT FOUND\n", name);
+	//_dprintf("name=%s. NOT FOUND\n", name);
 	return NULL;
 }
 #endif

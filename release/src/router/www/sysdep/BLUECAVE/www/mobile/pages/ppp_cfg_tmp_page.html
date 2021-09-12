@@ -431,6 +431,11 @@ function showMAC(){
 		else{
 			$('#mac_addr').hide();	
 		}
+
+		if ((country_str == "United Kingdom" || country_str == "Ireland" || country_str == "Scotland") && ispname_str.search("BT") >= 0){
+			$('#dsltmp_qis_pppoe_username').val("bthomehub@btbroadband.com");
+			$('#dsltmp_qis_pppoe_passwd').val("bt");
+		}
 	}
 
 	//-------------------------------------------- initial -------

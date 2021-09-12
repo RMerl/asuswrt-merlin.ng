@@ -1,0 +1,8 @@
+wg-json
+=======
+
+This will dump all current WireGuard status as JSON output.
+
+Usage:
+
+    # wg-json

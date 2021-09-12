@@ -1,0 +1,23 @@
+Key Extractor
+=============
+
+This will extract the symmetric ChaCha20Poly1305 session keys from the kernel
+for a WireGuard interface, for use in making packet dissectors.
+
+
+Build:
+    $ make
+
+Run (as root):
+    # ./extract-keys INTERFACE
+
+Output:
+    REMOTE_KEY_ID SENDING_KEY
+    LOCAL_KEY_ID RECEIVING_KEY
+
+Example:
+    # ./extract-keys wg0
+    0x57b56068 tMTSEOJpEYFAQV2UviDiYooX0A1AD/ONqrzoQVHa1rQ=
+    0xa182fd19 xvQSkQ5HTX5RUeJ74eAAb/xfNhdrDThxG91GXZIPKmY=
+    0x01662508 LbMc84JULzXJiHotSkdSOPZ0bHh6IDwOrbxWLfwosTs=
+    0xbd819021 4VA8lZ3I1HjnJcWTmhEzBdC92W1Aag9Lnyy2GkroOYI=

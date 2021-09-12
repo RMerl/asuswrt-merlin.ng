@@ -27,30 +27,10 @@
 
 	<script>
 		$("#tm_eula_content").html($("#tm_eula_content").html().replace(/\\'/g, "'"))
-		$("#eula_url").attr("href", "https://www.asus.com/Microsite/networks/Trend_Micro_EULA/");
-		$("#tm_eula_url").attr("href", "http://nw-dlcdnet.asus.com/trend/tm_privacy");
-		$("#tm_disclosure_url").attr("href", "http://nw-dlcdnet.asus.com/trend/tm_pdcd");
+		$("#tm_eula_url").attr("href", "https://nw-dlcdnet.asus.com/trend/tm_privacy");
+		$("#tm_disclosure_url").attr("href", "https://nw-dlcdnet.asus.com/trend/tm_pdcd");
 
-		httpApi.nvramGetAsync({
-			data: ["preferred_lang"],
-			success: function(resp){
-				var preferredLang = resp.preferred_lang;
-				var lang_str = (preferredLang == "EN") ? "" : preferredLang.toLowerCase();
-				var tm_url = "";
+		var TM_eula_href = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=TMeula&lang="+ui_lang+"&kw=&num=";
+		$("#eula_url").attr("href", TM_eula_href);
 
-				if(preferredLang == "BR")
-					lang_str = "pt";
-
-				tm_url = "https://www.asus.com/Microsite/networks/Trend_Micro_EULA/" + lang_str;
-				$.ajax({
-					url: tm_url,
-					dataType: "jsonp",
-					statusCode: {
-						200: function(response) {
-							$("#eula_url").attr("href", tm_url);
-						}
-					}
-				});
-			}
-		})
 	</script>

@@ -20,6 +20,8 @@ ifneq ($(findstring $(_BUILD_NAME_),$(SPF8_MODEL_LIST)),)
 SRCFILE = qca_ipq807x.spf8
 else ifneq ($(findstring $(_BUILD_NAME_),$(SPF11.0_MODEL_LIST)),)
 SRCFILE = qca_ipq807x.spf11.0
+else ifneq ($(findstring $(_BUILD_NAME_),$(SPF11.1_MODEL_LIST)),)
+SRCFILE = qca_ipq807x.spf11.1
 else ifneq ($(findstring $(_BUILD_NAME_),$(IPQ807X_MODEL_LIST)),)
 SRCFILE = $(if $(RTCONFIG_MUSL_LIBC),qca_ipq807x.musl64,qca_ipq807x)
 endif
@@ -69,14 +71,14 @@ endif # RTCONFIG_BCM_7114
 endif # RTCONFIG_BCM7
 
 ifeq ($(RTCONFIG_HND_ROUTER_AX),y)
-ifeq ($(HND_ROUTER_AX_675X),y)
+ifeq ($(RTCONFIG_HND_ROUTER_AX_675X)$(RTCONFIG_HND_ROUTER_AX_6756),y)
 ifneq ($(BCM_CHIP),)
 SRCFILE = broadcom_arm_ax_$(BCM_CHIP)
 endif
 else
 SRCFILE = broadcom_arm_ax
 endif
-ifeq ($(HND_ROUTER_AX_675X),y)
+ifeq ($(RTCONFIG_HND_ROUTER_AX_675X)$(RTCONFIG_HND_ROUTER_AX_6756),y)
 DSTDIR = $(INSTALLDIR)/lib/modules/$(LINUX_KERNEL)/kernel/fs
 else
 DSTDIR = $(INSTALLDIR)/lib/modules/4.1.51/kernel/fs
@@ -150,6 +152,10 @@ ifeq ($(RTCONFIG_BCM_7114),y)
 	install -D $(SRCFILE)/samba/smbd $(INSTALLDIR)/usr/bin/smbd
 endif
 endif
+endif
+ifeq ($(RTCONFIG_TUXERA_APFS),y)
+	@cp -f $(SRCFILE)/tapfs/fuse/tapfs-u $(INSTALLDIR)/usr/sbin/tapfs-u
+	install -D $(SRCFILE)/tapfs/tools/apfsinfo $(INSTALLDIR)/usr/sbin/apfsinfo
 endif
 ifneq ($(TNSA_SMBD),)
 	# NOTE: Destination path of smbd is different from Broadcom platform!

@@ -1,0 +1,81 @@
+------------------------------
+LICENSING Tuxera APFS
+------------------------------
+
+This APFS driver along with any associated tools and documentation ("Software") is licensed to 
+the recipient, whether a legal entity or natural person ("You"), by Tuxera Inc. ("Tuxera"). To have a 
+valid license to this Software, You must have executed a Software License Agreement or Evaluation 
+License Agreement ("License") with Tuxera. In this case, use of this Software is governed by the 
+terms and conditions provided in the License.
+
+For binaries that you receive from Tuxera that are licensed under any version of the GNU LGPL license, you can receive a complete object code copy of the work by sending a written request to: 
+
+Tuxera Inc
+
+ATTN: Legal
+
+Westendintie 1
+02160 Espoo
+Finland
+
+Please include the specific details of the covered binary and the Tuxera work in question as well as your name (or company name) and address details. We may charge a nominal fee for the costs of the distribution. Your request must be sent within three (3) years of the date you received the LGPL covered code.
+
+------------------------------------
+THIRD-PARTY LICENSES
+------------------------------------
+
+The Software contains third-party components, which are governed by their respective licenses. Such 
+third-party licenses are listed below.
+
+Note that each third-party license only governs the portion of this Software created by the third party 
+in question. None of the third-party licenses apply to this Software as a whole, even if the third-party 
+license uses expressions such as "product", "program", or other similar expressions. This Software as 
+a whole is governed by the License (as defined above) concluded between Tuxera and You.
+
+***
+
+libfuse
+
+The following files may be used under the terms of the GNU Lesser
+General Public License, version 2.1 ("LGPL"):
+
+- All files in the include/ directory.
+- All files in the lib/ directory.
+- meson.build
+
+The full terms of the LGPL can be found in the LGPL2.txt file.
+
+All other files may be used only under the terms of the GNU General
+Public License, version 2 ("GPL"). The full text of this license can
+be found in the GPL2.txt file.
+
+***
+
+lzfse
+
+Copyright (c) 2015-2016, Apple Inc. All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+1.  Redistributions of source code must retain the above copyright notice,
+    this list of conditions and the following disclaimer.
+
+2.  Redistributions in binary form must reproduce the above copyright notice,
+    this list of conditions and the following disclaimer in the documentation
+    and/or other materials provided with the distribution.
+
+3.  Neither the name of the copyright holder(s) nor the names of any
+    contributors may be used to endorse or promote products derived from this
+    software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.

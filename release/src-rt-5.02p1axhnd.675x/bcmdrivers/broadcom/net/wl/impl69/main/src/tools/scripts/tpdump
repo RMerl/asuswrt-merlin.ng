@@ -1,0 +1,225 @@
+#!/bin/sh
+# This is a script to dump various information that will be helpful to
+#   debugging throughput problems, hence the name tpdump
+
+# Note: the pktq_stats command is unique -- the first invocation will
+#   only setup the queues.  If you wish this part of the output to
+#   have meaning, then run the tpdump command twice or use the
+#   periodic version of the command
+
+# Constants used by this script that can be changed as necessary
+
+# $ Copyright Broadcom Corporation $
+#
+#
+#  <<Broadcom-WL-IPTag/Proprietary:>>
+
+filedir="/tmp"
+maxinterval=3600
+mininterval=2
+maxcount=100
+mincount=2
+maxparams=4
+minparams=2
+intfwl1="eth1"
+intfwl2="eth2"
+
+usage () {
+	echo " "
+	echo "Usage: tpdump <outputfile> <intf> [<num_seconds> [<count>]]"
+	echo "         -- intf: must be a legal wireless interface, currently $intfwl1 or $intfwl2"
+	echo "         -- num_seconds: $mininterval-$maxinterval; count: $mincount-$maxcount; outputfile must not already exist"
+}
+
+# Check if argument is numeric (integer only)
+# Parameter 1 is argument to check
+
+testint () {
+	retval=2
+	if expr "$1" : '[0-9][0-9]*$'>/dev/null; then
+		retval=1
+	else
+		retval=0
+	fi
+	return $retval
+}
+
+# Check if argument is numeric and within limits
+# Parameter 1 is the argument to check
+# Parameter 2 is the max value
+# Parameter 3 is the min value
+# Parameter 4 is the message for error printout
+
+check_numeric () {
+	testint $1
+	funcval=$?
+	if [ $funcval -eq 0 ];
+	then
+		echo "$4: \"$1\" not numeric"
+		usage
+		exit 1
+	fi
+	if [ $1 -gt $3 ];
+	then
+		echo "$4: $1 greater than max: $3"
+		usage
+		exit 1
+	fi
+	if [ $1 -lt $2 ];
+	then
+		echo "$4: $1 less than min: $2"
+		usage
+		exit 1
+	fi
+}
+
+# Run a command and send the output to a file in the configured directory (constant)
+# Parameter 1 is the output file
+# Parameter 2 is the command to run
+# Parameter 3 is number of the current run
+# Parameter 4 is the total number of runs
+
+cmd () {
+	echo "$2, run #$3 of $4" >> $filedir/$1
+	echo " " >> $filedir/$1
+	$2 >> $filedir/$1
+	echo " " >> $filedir/$1
+	echo " " >> $filedir/$1
+	echo "--------------------------------------------------------" >> $filedir/$1
+}
+
+# The part of the tpdump output that is done only once
+# Parameter 1 is the output file
+# Parameter 2 is the total number of runs
+# Parameter 3 is the interface
+
+tpdump_once () {
+	echo "Sending output to file $filedir/$1"
+	echo " " > $filedir/$1
+	echo "--------------------------------------------------------" >> $filedir/$1
+	cmd $1 "date" 1 $2
+	cmd $1 "ifconfig" 1 $2
+	cmd $1 "wl -i $3 dump wlc" 1 $2
+}
+
+# The part of the tpdump output done multiple times
+# Parameter 1 is the output file
+# Parameter 2 is the interface
+# Parameter 3 is the number of the current run
+# Parameter 4 is the total number of runs
+
+tpdump () {
+	cmd $1 "wl -i $2 counters" $3 $4
+	cmd $1 "wl -i $2 ent_ap_counters" $3 $4
+	cmd $1 "et counters" $3 $4
+	cmd $1 "wl -i $2 status" $3 $4
+	cmd $1 "wl -i $2 dump scb" $3 $4
+	cmd $1 "wl -i $2 dump amsdu" $3 $4
+	cmd $1 "wl -i $2 dump ampdu" $3 $4
+	cmd $1 "wl -i $2 dump rssi" $3 $4
+	cmd $1 "wl -i $2 dump ctf" $3 $4
+	cmd $1 "et dump ctf" $3 $4
+	cmd $1 "wl -i $2 nrate" $3 $4
+	cmd $1 "wl -i $2 curpower" $3 $4
+	#cmd $1 "wl -i $2 phy_rssi_ant" $3 $4
+	cmd $1 "wl -i $2 pktq_stats C:+" $3 $4
+	cmd $1 "wl -i $2 pktq_stats N:+" $3 $4
+	cmd $1 "wl -i $2 pktq_stats P:+" $3 $4
+	cmd $1 "wl -i $2 pktq_stats A:+" $3 $4
+	cmd $1 "cat /proc/meminfo" $3 $4
+	cmd $1 "cat /proc/interrupts" $3 $4
+	cmd $1 "mpstat -A" $3 $4
+	cmd $1 "vmstat" $3 $4
+	cmd $1 "vmstat -m" $3 $4
+	cmd $1 "vmstat -s" $3 $4
+}
+
+# Function to run tpdump multiple times
+# Parameter 1 is the output file
+# Parameter 2 is number of seconds between runs
+# Parameter 3 is the total number of runs
+# Parameter 4 is the interface
+
+tpdump_multiple () {
+	loop_count=2
+	tpdump_once $1 $3 $4
+	tpdump $1 $4 1 $3
+	while [ $loop_count -le $3 ]
+	do
+		echo "********************************************************" >> $filedir/$1
+		echo "********************************************************" >> $filedir/$1
+		echo "Sleeping $2 seconds before run #$loop_count of $3..."
+		sleep $2
+		echo "Run #$loop_count of $3, $2 seconds later" >> $filedir/$1
+		echo "********************************************************" >> $filedir/$1
+		echo "********************************************************" >> $filedir/$1
+		cmd $1 "date" $loop_count $3
+		tpdump $1 $4 $loop_count $3
+		if [ $loop_count -eq $3 ];
+		then
+			echo "********************************************************" >> $filedir/$1
+			echo "Completed $loop_count runs.  Output in file: $1." >> $filedir/$1
+			date >> $filedir/$1
+			echo "********************************************************" >> $filedir/$1
+			echo "Completed $loop_count runs on interface $4.  Output in file: $1."
+			date
+		fi
+		loop_count=`expr $loop_count + 1`
+	done
+}
+
+# Function to handle bad call parameters
+# Parameter 1 is the error message
+
+param_exit () {
+	echo "$1, exiting..."
+	usage
+	exit 1
+}
+
+# Main part of the tpdump script
+
+if [ $# -lt $minparams ];
+then
+	param_exit "Too few parameters"
+fi
+
+if [ $# -gt $maxparams ];
+then
+	param_exit "Too many parameters"
+fi
+
+if [ $2 != $intfwl1 ] && [ $2 != $intfwl2 ];
+then
+	param_exit "Bad interface parameter: $2"
+fi
+
+if [ -e $filedir/$1 ];
+then
+	param_exit "File: $filedir/$1 already exists"
+fi
+
+# 2 runs with time-delay version
+
+if [ $# -eq 3 ];
+then
+	check_numeric $3 $mininterval $maxinterval "Number of seconds"
+	tpdump_multiple $1 $3 2 $2
+	exit 0
+fi
+
+# Periodic version with count
+
+if [ $# -eq 4 ];
+then
+	check_numeric $3 $mininterval $maxinterval "Number of seconds"
+	check_numeric $4 $mincount $maxcount "Count"
+	tpdump_multiple $1 $3 $4 $2
+	exit 0
+fi
+
+# One shot version of tpdump command
+
+tpdump_once $1 1 $2
+tpdump $1 $2 1 1
+exit 0

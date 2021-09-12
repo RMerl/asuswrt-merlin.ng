@@ -3131,8 +3131,6 @@ wl_pktfwd_pktlist_xmit(struct net_device * net_device,
 
     wl = WL_INFO_GET(net_device);
 
-    WL_LOCK(wl);  // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
     wlif = WL_DEV_IF(net_device);
     d3fwd_wlif = __wlif_2_d3fwd_wlif(wlif);
 
@@ -3202,8 +3200,6 @@ wl_pktfwd_pktlist_xmit(struct net_device * net_device,
 
     /* All packets from pktlist are dispatched, RESET len = 0U */
     wl_pktfwd_pktlist->len = 0;
-
-    WL_UNLOCK(wl); // ---------------------------------------------------------
 
     return;
 
@@ -3389,6 +3385,8 @@ wl_pktfwd_dnstream(wl_info_t * wl)
     d3fwd_wlif_t     * d3fwd_wlif;
     wl_pktfwd_runq_t * runq = WL_RUNQ_P(wl->unit);
 
+    WL_LOCK(wl);
+
     runq->credits = WL_PKTFWD_RUNQ; /* pktlists xmit credits (tunable?) */
 
     /* Supply credits to run queue: to be used across all wlif */
@@ -3413,6 +3411,8 @@ wl_pktfwd_dnstream(wl_info_t * wl)
 #else  /* ! WL_PKTFWD_RUNQ */
     wl_if_t * wlif_iter  = wl->if_list;
 
+    WL_LOCK(wl);
+
     while (wlif_iter != NULL)
     {
         d3fwd_wlif_t * d3fwd_wlif = (d3fwd_wlif_t *) wlif_iter->d3fwd_wlif;
@@ -3422,6 +3422,8 @@ wl_pktfwd_dnstream(wl_info_t * wl)
         wlif_iter = wlif_iter->next;
     }
 #endif /* ! WL_PKTFWD_RUNQ */
+
+    WL_UNLOCK(wl);
 }   /* wl_pktfwd_dnstream() */
 
 
@@ -3534,14 +3536,10 @@ wl_pktfwd_dispatch_pktlist(wl_info_t * wl, wl_if_t * wlif,
 
     if (wl_pktfwd_pktlist.len != 0)
     {
-        WL_UNLOCK(wl); // -----------------------------------------------------
-
         /* "Now lockless: xmit accumulated packets via CFP or as pkt_chaining */
         wl_pktfwd_pktlist_xmit(d3fwd_wlif->net_device, &wl_pktfwd_pktlist);
 
         wl_pktfwd_g.stats.txeval_xmit++;
-
-        WL_LOCK(wl);  // ++++++++++++++++++++++++++++++++++++++++++++++++++++++
     }
 
 wl_pktfwd_dispatch_pktlist_done:

@@ -1,0 +1,36 @@
+name: cacophony-wg
+version: 0.1.0
+license: PublicDomain
+maintainer: John Galt <jgalt@centromere.net>
+category: Cryptography
+ghc-options: -Wall
+
+executables:
+  cacophony-wg:
+    main: Main.hs
+    source-dirs: src
+
+    dependencies:
+      - base
+      - base16-bytestring
+      - base64-bytestring
+      - blake2
+      - bytestring
+      - cacophony >= 0.10
+      - cereal
+      - cryptonite
+      - memory
+      - network
+      - time
+
+    ghc-options:
+      - -O2
+      - -rtsopts
+      - -threaded
+      - -with-rtsopts=-N
+
+    other-modules:
+      - Data.Time.TAI64
+
+    default-extensions:
+      - OverloadedStrings

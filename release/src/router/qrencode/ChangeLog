@@ -1,0 +1,1730 @@
+2020.09.28 Kentaro Fukuchi <kentaro@fukuchi.org>
+	[hotfix]
+	* qrinput.c, tests/test_estimatebit.c:
+	  - Fixed a bug in the estimation of the Micro QR Code's data length
+	    in QRinput_estimateBitStreamSizeOfEntry() has been fixed.
+	  - Fixed a bug in the calculation of the Micro QR Code's data capacity in
+	    QRinput_encodeBitStream().
+	  - A test case to test the bugs above has been added.
+	  - Level check failure in QRinput_new2() on Windows has been fixed.
+	* Bumped version to 4.1.1.
+
+2020.08.29 Kentaro Fukuchi <kentaro@fukuchi.org>
+	[release-4.1.0]
+	* .github/workflows/{cmake,configure,cmake-windows}.yml:
+	  - Github actions CI scripts have been added.
+	* tests/test_bitstream.c:
+	  - Fixed memory leak.
+	* configure.ac, tests/{prof,pthread}_qrencode.c:
+	  - Make configure to define HAVE_SYS_TIME_H in config.h.
+	* CMakeLists.txt:
+	  - 'wingetopt' has been replaced to 'getopt'.
+	* qrencode.c, tests/test_qrencode.c:
+	  - ECLEVEL check has been improved.
+	* .gitignore:
+	  - Added 'use/test-driver'.
+
+2020.08.28 Kentaro Fukuchi <kentaro@fukuchi.org>
+	[develop]
+	* Made a develoment branch.
+	* test_qrspec.c:
+	  - Typo fixes.
+	* qrinput.[ch], tests/{test_qrencode.c, test_qrinput.c}:
+	  - A precise boundary check has been introduced to
+	    QRinput_estimateVersion(). (closes #160)
+	* qrinput.c, qrencode.c, tests/test_qrencode.c, qrenc.c, qrencode.1.in:
+	  - QRinput_encodeMode*() now throws ERANGE when encoding Micro QR Code
+	    and an appropriate version number was not specified.
+	  - Now Micro QR Code also allows auto version adjustment.
+	* qrenc.c, qrencode.1.in:
+	  - The synopsis has been improved. (Thanks to @jidanni) (closes #155)
+	  - A new option '--strict-version' has been introduced.
+	* split.c:
+	  - A tail recursion has been eliminated. (Thanks to @4061N) (closes #144)
+	* tests/*:
+	  - All test programs are now TAP-ready. Now you can run all test programs
+	    by 'make check'.(Thanks to @jtojnar) (closes #117)
+	* qrinput.c:
+	  - Return value was ignored. (Thanks to @xiaoyur347) (closed #143)
+	* README.md, NEWS:
+	  - Various documentation improvements and updates.
+	[release-4.1.0]
+	* Bumped version to 4.1.0.
+	* qrencode.h:
+	  - Document improvements.
+	* qrenc.c, qrencode.1.in:
+	  - Added 'UTF8i' and 'ANSIUTF8i' to the descriptions of the corresponding
+	    options. (Thanks to @Khoyo) (merged #138)
+
+2020.02.23 Kentaro Fukuchi <kentaro@fukuchi.org>
+	[master]
+	* CMakeLists.txt, README.md:
+	  - Merged #158 (Thanks to @neheb):
+	    - Fixed the compile-time issue of the environment without libpng.
+
+2020.02.23 Kentaro Fukuchi <kentaro@fukuchi.org>
+	[master]
+	* README.md:
+	  - Merged #151 (Thanks to @NancyLi1013):
+	    - Added vcpkg installation instructions.
+
+2018.11.09 Kentaro Fukuchi <kentaro@fukuchi.org>
+	[master]
+	* configure.ac, README.md:
+	  - Merged #137 (Thanks to @abelbeck and @charmander):
+	    - 'too many arguments' bug has been fixed.
+
+2018.07.28 Kentaro Fukuchi <kentaro@fukuchi.org>
+	[master]
+	* CMakeLists.txt:
+	  - Merged #133 (Thanks to @sdf5):
+	    - Change CMAKE_SORUCE_DIR to CMAKE_CURRENT_SORUCE_DIR in
+		  CMAKE_MODULE_PATH
+
+2018.06.14 Kentaro Fukuchi <kentaro@fukuchi.org>
+	[master]
+	* qrenc.c, qrencode.1.in, README.md, NEWS:
+	  - UTF8 mode now supports ANSI256 color. (Thanks to András Veres-
+	    Szentkirályi)
+
+2018.06.07 Kentaro Fukuchi <kentaro@fukuchi.org>
+	[master]
+	* CMakeLists.txt, tests/CMakeLists.txt:
+	  - Merged #131 (Thanks to @mgorny):
+	    - Update paths inside the pkg-config file to respect GNUInstallDirs.
+	    - Improve pthread support for the main library when building via CMake.
+	    - Always build libdecoder as static library.
+
+2018.06.06 Kentaro Fukuchi <kentaro@fukuchi.org>
+	[master, 4.0]
+	* tests/Makefile.am:
+	  - Add missing test_basic.sh to EXTRA_DIST. (merged #127) (Thanks to
+	    @mgorny)
+	* CMakeLists.txt:
+	  - Use CMake GNUInstallDirs module to provide variables for configurable
+	    install directories. (merged #128) (Thanks to @mgorny)
+	[4.0]
+	* configure.ac, CMakeLists.txt, README.md:
+	  - Bumped version to 4.0.2.
+	[master]
+	* tests/{Makefile.am, CMakeLists.txt, test_qrspec.c}:
+	  - Fix running test_qrspec when building out-of-source. (merged #129)
+	    (Thanks to @mgorny)
+
+2018.06.04 Kentaro Fukuchi <kentaro@fukuchi.org>
+	[master, 4.0]
+	* CMakeLists.txt:
+	  - STATIC_IN_RELEASE is now set to "static" when WITH_TESTS is disabled.
+	    (closes #126)
+	  - Tabs expaned.
+	[4.0]
+	* configure.ac, CMakeLists.txt, README.md:
+	  - Bumped version to 4.0.1.
+
+2018.06.02 Kentaro Fukuchi <kentaro@fukuchi.org>
+	[master, 4.0]
+	* CMakeLists.txt:
+	  - Added "WITHOUT_PNG" option that builds qrencode without PNG support.
+	    (closes #125)
+
+2018.06.01 Kentaro Fukuchi <kentaro@fukuchi.org>
+	[master, 4.0]
+	* README.md:
+	  - Added some notes of how to use autogen.sh. (closes #122) (Thanks to
+	    @thebunnyrules)
+
+2017.10.20 Kentaro Fukuchi <kentaro@fukuchi.org>
+	[master]
+	* qrenc.c:
+	  - Adds the --inline option, which omits the xml tag for SVG output.
+	    (merged #110) (Thanks to @jp-bennett)
+	  - Short option '-I' for '--inline' disabled.
+	* qrencode.1.in:
+	  - Added some missing descriptions.
+	* README.md:
+	  - Acknowledgments updated.
+
+2017.10.13 Kentaro Fukuchi <kentaro@fukuchi.org>
+	[master, 4.0]
+	* qrencode.h:
+	  - Fix build on windows with Visual Studio. (merged #108) (Thanks to
+	    @Ation)
+	[master]
+	* README.md:
+	  - libqrencode now advertised as a "fast and compact" library.
+
+2017.10.08 Kentaro Fukuchi <kentaro@fukuchi.org>
+	[master]
+	* qrenc.c, qrinput.c, rsecc.c, tests/common.c, tests/decoder.c:
+	  - Fixed some warnings. (closing #89 and #102)
+
+2017.10.06 Kentaro Fukuchi <kentaro@fukuchi.org>
+	[master]
+	* tests/test_{all,basic}.sh:
+	  - All tests except test_configure.sh can be run by test_basic.sh now.
+	  - test_all.sh activates test_basic.sh + test_configure.sh.
+	  - test_basic.sh is better during active development, especially when you
+	    gave additional options to configure script.
+	* split.c, qrspec.c, mqrspec.c, mask.c, mmask.c, qrencode.c, qrinput.c,
+	  rsecc.c, qrencode.c:
+	  - Fixed some warnings. (closing #89 and #102)
+
+2017.10.05 Kentaro Fukuchi <kentaro@fukuchi.org>
+	[4.0]
+	* tests/test_{mask,mmask,qrspec,mqrspec,split_urls,qrencode}.c:
+	  - Removed or commented out unused functions.
+	  - Command line option introduced for verbose debug information.
+
+2017.10.02 Kentaro Fukuchi <kentaro@fukuchi.org>
+	[4.0]
+	* bitstream.h, qrencode.c, qrencode_inner.h:
+	  - Memory alignment improved.
+	* tests/test_qrencode.c:
+	  - Error messages improved.
+	* tests/{common.h datachunk.h, decoder.h, rscode.h, rsecc_decoder.h}:
+	  - Reserved macro names are replaced.
+	* bitstream.[ch]:
+	  - Some variables' type changed from int to size_t. (closing #89 and
+	    #102)
+	* tests/common.[ch], tests/test_split_url.c:
+	  - Fixed some warnings.
+	* NEWS:
+	  - Format fixes.
+	* tests/test_mask.c:
+	  - Fixed some warnings.
+	* qrencode.h, qrinput.h, mqrspec.c:
+	  - Comment format fixes.
+	* various files in tests:
+	  - Fixed some warnings.
+	* tests/test_qrencode.c:
+	  - Removed unused function.
+	* tests/test_qrinput.c:
+	  - Added a new test function.
+
+2017.09.29 Kentaro Fukuchi <kentaro@fukuchi.org>
+	[4.0]
+	* README.md:
+	  - Format fixes.
+	* rsecc.[ch]:
+	  - Some variables' type changed from int to size_t. (closing #89 and
+	    #102)
+
+2017.09.21 Kentaro Fukuchi <kentaro@fukuchi.org>
+	[4.0]
+	* qrencode.1.in, NEWS:
+	  - Release date has been updated.
+	  - Documentation updated.
+	* Version 4.0.0 has ben released.
+
+2017.09.11 Kentaro Fukuchi <kentaro@fukuchi.org>
+	* qrenc.c:
+	  - Read buffer is now allocated as a static array to avoid malloc().
+	    Suppresses memory leak warnings. (Thanks to @c-273)
+	* README.md:
+	  - INSTALL and ACKNOWLEDGMENTS sections are updated.
+	* makeREADME.sh:
+	  - Now it removes the attention line for github.com users.
+	* tests/test_qrenc.sh:
+	  - Experimental test script for the command 'qrencode'.
+	  - Dedicated to @c-273, who warned the possible memory leaks of qrencode.
+	    (See #102)
+	* qrencode.spec.in, Makefile.am, configure.ac:
+	  - SPEC file has been removed. (closes #105)
+	* Makefile.am:
+	  - The generation rule for README has been improved.
+	[4.0]
+	* 4.0 branch has been started.
+	* README.md:
+	  - Version number added to the 1st line.
+	  - Fixed the URL to the badge of Travis CI.
+	[master]
+	* qrencode.[ch]:
+	  - Symbol data representation of QRcode object has been slightly changed.
+	    This change does not affect to most applications.
+	  - If your application uses bits other than the LSB, read the comments of
+	    QRCode class carefully.
+	* tests/test_qrencode.c:
+	  - Modified correct pattern of a test referring non-LSB bits of QRCode.
+	* tests/view_qrcode.c:
+	  - Now you can identify the feature of modules by color.
+
+2017.09.07 Kentaro Fukuchi <kentaro@fukuchi.org>
+	* *.[ch]:
+	  - Copyright year updated for the next major update.
+	* tests/test_configure.sh:
+	  - Added some progress messages.
+	* tests/test_all.sh:
+	  - Added test_configure.sh to the list.
+	* Makefile.am, tests/Makefile.am:
+	  - Added some EXTRA_DIST files.
+	  - Moved some EXTRA_DIST files from Makefile.am to tests/Makefile.am.
+	* makeREADME.sh:
+	  - Newly added.
+	* configure.ac, CMakeLists.txt, README, README.md:
+	  - Bumped version to 4.0.0, preparing for major update.
+	* .travis.yml:
+	  - Configuration improved.
+	* Makefile.am, README:
+	  - Added a new rule to generate README from README.md.
+	  - README is no longer needed in the source tree.
+	* .gitignore:
+	  - Added 'CTestTestfile.cmake'.
+	  - Added 'README'
+	* README.md:
+	  - Added Katsumi Saito, the contributor of SPEC file, has been added to
+	    the section of ACKNOWLEDGMENTS. We apologize for this lack of
+		acknowledgment.
+
+2017.09.06 Kentaro Fukuchi <kentaro@fukuchi.org>
+	* mqrspec.h:
+	  - Documentation update.
+	* qrencode.[ch]:
+	  - QRcode_clearCache() has been defined as a deprecated function for
+	    backward compatibility.
+	* qrenc.c:
+	  - Copyright year updated.
+	* NEWS, README, README.md:
+	  - Documentation update.
+	* use/config.rpath:
+	  - Updated to the newer version bundled with gettext-0.19.8.1.
+	* qrencode.1.in:
+	  - Copyright year updated.
+
+2017.09.02 Kentaro Fukuchi <kentaro@fukuchi.org>
+	* configure.ac:
+	  - Replaced AC_PROG_RANLIB with LT_INIT.
+
+2017.08.04 Kentaro Fukuchi <kentaro@fukuchi.org>
+	* CMakeLists.txt:
+	  - Getopt.h is checked only by WITH_TOOLS. (merged #101) (Thanks to
+	    @KangLin)
+	* README, README.md:
+	  - ACKNOWLEDGMENTS has been updated.
+
+2017.03.15 Kentaro Fukuchi <kentaro@fukuchi.org>
+	* ChangeLog, NEWS, TODO:
+	  - Typos fixed. (merged #95) (Thanks to @jwilk)
+	* README, README.md:
+	  - ACKNOWLEDGMENTS has been updated.
+	* README, README.md, qrenc.c, qrencode.1.in, qrencode.spec.in:
+	  - The URI to the primary site has been updated. (http->https)
+	* CMakeLists.txt:
+	  - Add version of shared library. (merged #96) (Thanks to @vanillahsu)
+
+2017.02.05 Kentaro Fukuchi <kentaro@fukuchi.org>
+	* README, README.md:
+	  - Added some notes to compile test programs. (closes #93)
+	* CMakeList.txt:
+	  - Added BUILD_SHARED_LIBS option with MSVC export all. (merged #92)
+	    (Thanks to @vilppuvuorinen)
+
+2017.02.03 Kentaro Fukuchi <kentaro@fukuchi.org>
+	* CMakeLists.txt, cmake/FIND*.cmake, tests/CMakeLists.txt:
+	  - Merged #91. (Thanks to @aleksey-nikolaev)
+	  - CMake support has been improved greatly.
+	* README, README.md:
+	  - ACKNOWLEDGMENTS has been updated.
+	  - Some text cleanups.
+	* tests/frame, .gitignore:
+	  - Empty frame data "tests/frame" has been included in the source tree.
+	* .travis.yml
+	  - Stopped creating empty frame data.
+	  - Bug fix.
+
+2016.11.20 Kentaro Fukuchi <kentaro@fukuchi.org>
+	* tests/test_qrinput.c, tests/test_qrspec.c:
+	  - Some warnings suppresed.
+
+2016.11.17 Kentaro Fukuchi <kentaro@fukuchi.org>
+	* CMakeLists.txt, tests/CMakeLists.txt, travis.yml, tests/common.h,
+	  tests/decoder.c, .gitignore:
+	  - Merged #85. (Thanks to @misery)
+	* NEWS:
+	  - Release note for version 4 has been updated.
+
+2016.09.19 Kentaro Fukuchi <kentaro@fukuchi.org>
+	* qrenc.c, qrencode.c, split.c:
+	  - Merged #82. (Thanks to @UniQP)
+	  - Various code cleanups.
+	* *.h:
+	  - Removed double underscores (__) from macro names in include guards.
+	    (follows C99 standard)
+	* configure.ac, *.c:
+	  - Renamed __STATIC macro to STATIC_IN_RELEASE. (follows C99 standard)
+	* qrencode.c:
+	  - Removed unnecessary 'extern' from some functions.
+
+2016.09.18 Kentaro Fukuchi <kentaro@fukuchi.org>
+	* CMakeLists.txt:
+	  - Merged #83. (Thanks to @misery)
+	  - This allows CMake users building the library without configure script.
+	    IF you are using incomplete UNIX-like environment and configure script
+		does not work as expected, try CMake.
+	* README, README.md:
+	  - Added some notes about CMake.
+
+2016.05.18 Kentaro Fukuchi <kentaro@fukuchi.org>
+	* acinclude.m4:
+	  - iconv.m4 has been updated to serial 19.
+	* configure.ac, Makefile.am, tests/Makefile.am:
+	  - MinGW support has been improved.
+	* README, README.md:
+	  - ACKNOWLEDGMENTS has been updated.
+	* qrencode.c:
+	  - Memory leak bug fixed. (Closes #81. Thanks to @win32asm)
+	* Various code cleanups. (Merged #72. Thanks to @UniQP)
+
+2016.05.15 Kentaro Fukuchi <kentaro@fukuchi.org>
+	* configure.ac:
+	  - Merged pull-request #80. (Thanks to @EckoEdc)
+	  - Add LDFLAGS for mingw compilation.
+
+2016.04.02 Kentaro Fukuchi <kentaro@fukuchi.org>
+	* tests/common.h:
+	  - Code refactoring.
+	  - New debug functions have been added.
+	* tests/decoder.[ch], tests/test_monkey.c:
+	  - QRcode_extractBits() has been extended. This will be used later.
+	* tests/decoder.[ch]:
+	  - eccResult has been added to QRdata.
+	  - Code refactoring.
+	* tests/decoder.[ch], tests/datachunk.[ch], tests/Makefile.am:
+	  - Code refactoring.
+
+2016.03.30 Kentaro Fukuchi <kentaro@fukuchi.org>
+	* bitstream.[ch], tests/test_bitstream.c:
+	  - Added new function BitStream_newWithBits() and tests for it.
+	* tests/decoder.[ch], tests/test_monkey.c:
+	  - Code refactoring.
+
+2016.03.29 Kentaro Fukuchi <kentaro@fukuchi.org>
+	* tests/view_qrcode.c:
+	  - Added mask=-2 mode for debug purpose.
+	* bitstream.c, qrencode.c:
+	  - Incorrect bit padding has been fixed. (Thanks to Yuji Ueno)
+	* tests/test_bitstream.c, tests/test_qrencode.c:
+	  - Incorrect bit padding has been fixed.
+	* README:
+	  - ACKNOWLEDGMENTS has been updated.
+	* README.md:
+	  - ACKNOWLEDGMENTS has been updated.
+	  - Some missed contributors have been added to README.md.
+
+2016.02.21 Kentaro Fukuchi <kentaro@fukuchi.org>
+	* configure.ac, tests/common.h, tests/view_qrcode.c:
+	  - Migrated from SDL 1.2 to 2.0.
+	* README, README.md:
+	  - Improved the install instruction. (Thanks to Ronald Michaels)
+
+2015.11.04 Kentaro Fukuchi <kentaro@fukuchi.org>
+	* qrspec.h, mqrspec.h:
+	  - Typo fix. (Thanks to @qianchenglenger)
+	* qrenc.c:
+	  - Merged pull-request #74. (Thanks to @mgorny)
+	  - Added support for UTF8i and ANSIUTF8i formats that provide reverse
+	    mappings of UTF8 and ANSIUTF8 formats respective. This is useful for
+		black-on-white media.
+	* configure.ac, Makefile.am, qrenc.c, rsecc.c:
+	  - Added new configure option "--without-png". (closes #70)
+
+2015.05.13 Kentaro Fukuchi <kentaro@fukuchi.org>
+	* mqrspec.c:
+	  - Typo fix.
+	* README, README.md:
+	  - Text format improved.
+	* NEWS:
+	  - Slightly updated.
+
+2015.05.06 Kentaro Fukuchi <kentaro@fukuchi.org>
+	* qrenc.c:
+	  - New option "--svg-path" has been added, that uses a single path
+	    instead of multiple rectangles to draw the modules.
+		(cherry-picked from #41) (Thanks to @Oblomov)
+	* tests/test_qrenc.sh, tests/test_images/.gitignore:
+	  - Added an unfinished test script for qrencode has been added.
+
+2015.05.05 Kentaro Fukuchi <kentaro@fukuchi.org>
+	* qrencode.1.in, qrenc.c:
+	  - Usage improved. (closes #62) (Thanks to @minus7)
+	  - Typo fix. (Thanks to Ian Sweet (@Isweet))
+	* README, README.md:
+	  - The list of contributors updated: '@' prefix added for github
+	    usernames.
+	* qrenc.c:
+	  - X Pixmap (XPM) support has been added. (closes #52)
+	    (Thanks to @tklauser)
+	* qrspec.h, mqrspec.h, qrencode.h:
+	  - empty descriptions of some @params are filled.
+	* rsecc.[ch], README:
+	  - Short note about the credit has been improved.
+	* Some code cleanups.
+
+2015.05.04 Kentaro Fukuchi <kentaro@fukuchi.org>
+	* qrenc.c:
+	  - Merge pull request #63 from tklauser/qrenc-array-overflow-fix
+	  - qrenc: Fix array overrun in color_set (Thanks to @tklauser and
+	    @win32asm)
+	* split.c:
+	  - Merge pull request #67 from siggi-heltau/patch-1
+	  - The variable name "new" has been renamed to "newstring" because "new"
+	    is a reserved word in C++. (Thanks to @siggi-heltau)
+	* qrenc.c:
+	  - Added -r option to read input data from a file in addition to STDIN
+	    and the command line. (cherry-picked from #68)
+		(Thanks to Robert Petersen)
+	  - Typo fix. (cherry-picked from #68) (Thanks to Robert Petersen)
+	  - long option "readin" has been changed to "read-from".
+	* qrencode.1.in:
+	  - Updated the usage.
+	* README:
+	  - Updated the list of contributors.
+	* tests/Makefile.am
+	  - Added URI_testset.inc to EXTRA_DIST.
+	* .gitignore
+	  - Added some patterns to ignore some generated files. (Thanks to
+	    @tklauser, closes #64)
+
+2014.09.23 Kentaro FUKUCHI <kentaro@fukuchi.org>
+	* README, README.md:
+	  - Some typo fixes. (Thanks to Danomi Manchego)
+
+2014.09.18 Kentaro FUKUCHI <kentaro@fukuchi.org>
+	* tests/view_qrcode.c:
+	  - Rollbacked the previous change (6a4b2e3710b) around the main part.
+	* rsecc.c:
+	  - Some code cleanups.
+	* tests/rsecc_decoder.[ch], tests/test_rs.c, Makefile.am:
+	  - Syndrome checker has been added.
+
+2014.09.17 Kentaro FUKUCHI <kentaro@fukuchi.org>
+	* configure.ac:
+	  - Added "-pthread" option to CFLAGS. (Thanks to Danomi Manchego)
+	* tests/Makefile.am:
+	  - Removed explicit "-lpthread" which is not required anymore.
+
+2014.09.09 Kentaro FUKUCHI <kentaro@fukuchi.org>
+	* NEWS:
+	  - Added an entry about 4.0.0. (not released yet)
+	* mask.[ch], tests/test_mask.c:
+	  - Run length calculation has been slightly improved.
+	  - Reduce malloc calls.
+	* qrspec.[ch], mqrspec.[ch]:
+	  - Frame caches have been eliminated. It improves both memory efficiency
+	    and performance... Wait, caches were completely meaningless? orz...
+	* qrencode.[ch]:
+	  - QRcode_clearCache() has been eliminated.
+	* tests/prof_qrencode.c, tests/pthread_qrencode.c, tests/test_mask.c,
+	  tests/test_mmask.c, tests/test_monkey.c, tests/test_mqrspec.c,
+	  tests/test_qrencode.c, tests/test_qrspec.c:
+	  - Removed cache clearing calls.
+	* qrencode.c:
+	  - FrameFiller now allocated in stack, not heap.
+	* rsecc.c:
+	  - Introduced mutex to avoid race condition.
+
+2014.09.08 Kentaro FUKUCHI <kentaro@fukuchi.org>
+	* qrenc.c:
+	  - Added color support for EPS output.
+
+2014.08.18 Kentaro FUKUCHI <kentaro@fukuchi.org>
+	* configure.ac:
+	  - Added new option "--enable-asan" that enables AddressSanitizer.
+
+2014.08.15 Kentaro FUKUCHI <kentaro@fukuchi.org>
+	* tests/view_qrcode.c:
+	  - Version number check improved for Micro QR Code.
+
+2014.08.05 Kentaro FUKUCHI <kentaro@fukuchi.org>
+	* configure.ac, Makefile.am, tests/Makefile.am:
+	  - Added some conditional flags for configuration/building process.
+	  - HAVE_PNG and HAVE_SDL can be referred from both Makefile and program
+	    code.
+	* tests/view_qrcode.c:
+	  - Use SDL_WaitEvent() instead of SDL_PollEvent().
+	* tests/common.h:
+	  - Added show_QRcode() for testing purposes. (Thanks to Sunil Maganally)
+	* tests/*.c:
+	  - main()'s arguments now correctly declared.
+
+2014.07.25 Kentaro FUKUCHI <kentaro@fukuchi.org>
+	* tests/URI_testset.inc, tests/test_split_urls.c, tests/Makefile.am,
+	  .gitignore:
+	  - A new test suite evaluating splitting efficiency has been added.
+	  - Still undertrial.
+
+2014.07.24 Kentaro FUKUCHI <kentaro@fukuchi.org>
+	* qrinput.c:
+	  - Code refactoring (QRinput_Struct_count has been added).
+	  - And more code cleanups.
+	  - Avoid to add a Structued-append chunk when only one symbol is
+	    generated. (Thanks to Yoshimichi Inoue)
+	* tests/test_qrinput.c:
+	  - New test has been added.
+	* qrinput.c, qrencode.1.in:
+	  - Added new option, "verbose".
+	* tests/common.h:
+	  - printQRinputStruct() has been added.
+	* rsecc.{c,h}:
+	  - Copyright notice and credit has been corrected.
+	* README, README.md:
+	  - ACKNOWLEDGMENTS updates.
+	[3.4]
+	  - Bumped version to 3.4.4.
+	* Version 3.4.4 has ben released.
+
+2014.07.08 Kentaro FUKUCHI <kentaro@fukuchi.org>
+	* qrenc.c, qrinput.c, tests/test_qrinput.c:
+	  - Code cleanups.
+	  - Some possible minor bugs has been fixed.
+
+2014.07.07 Kentaro FUKUCHI <kentaro@fukuchi.org>
+	* qrenc.c:
+	  - Serious typo fix.
+
+2014.07.06 Kentaro FUKUCHI <kentaro@fukuchi.org>
+	* qrenc.c, qrencode.1.in:
+	  - Added a new image type PNG32 (direct color mode). (Thanks to Greg Hart)
+
+2014.07.04 Kentaro FUKUCHI <kentaro@fukuchi.org>
+	* use/config.rpath:
+	  - Updated to the newer version bundled with gettext-0.18.3.2.
+	* acinclude.m4:
+	  - Added iconv.m4, lib-{link,ld,prefix}.m4 for Mac OS.
+	* autogen.sh:
+	  - mkdir m4 if not exist.
+	* qrencode.h:
+	  - Fixed some doxygen commands.
+
+2014.06.27 Kentaro FUKUCHI <kentaro@fukuchi.org>
+	* qrenc.c, qrencode.1.in:
+	  - Merged pull-request #44. (Thanks to Antenore)
+	  - Fixed some format issues.
+
+2014.06.22 Kentaro FUKUCHI <kentaro@fukuchi.org>
+	* qrencode.c:
+	  - A memory leak bug has been fixed. (Thanks to @win32asm)
+	* bitstream.c:
+	  - Check return value of BitStream_expand. (PR #46, Thanks to @tklauser)
+
+2014.02.14 Kentaro FUKUCHI <kentaro@fukuchi.org>
+	* qrinput.c:
+	  - Minor documentation fix.
+	* qrenc.c:
+	  - Error message improved.
+
+2014.02.09 Kentaro FUKUCHI <kentaro@fukuchi.org>
+	* .travis.yaml:
+	  - Configuration file for Travis CI. (Thanks to Danil Dörrhöfer)
+	* configure.ac:
+	  - Fixed some warnings.
+
+2014.01.15 Kentaro FUKUCHI <kentaro@fukuchi.org>
+	* qrenc.c:
+	  - Merged pull request 78d44fd - commandline argument --help and -V is
+	    printed to stdout, instead of stderr.
+
+2014.01.04 Kentaro FUKUCHI <kentaro@fukuchi.org>
+	* rsecc.[ch]:
+	  - Code cleanups.
+
+2013.10.27 Kentaro FUKUCHI <kentaro@fukuchi.org>
+	* qrinput.c:
+	  - Bug in QRinput_insertFNC1Header() has been fixed. (Thanks to David
+	    Binderman)
+	* qrinput.c, test/decoder.[ch]:
+	  - Code cleanup.
+
+2013.09.08 Kentaro FUKUCHI <kentaro@fukuchi.org>
+	* tests/test_qrencode.c:
+	  - Small bug fix.
+
+2013.09.06 Kentaro FUKUCHI <kentaro@fukuchi.org>
+	* qrenc.c:
+	  - bzero() has been replaced with memset(). (Thanks to Gavin Andresen)
+	* qrspec.c, qrinput.c:
+	  - QRspec_getMinimumVersion() now returns maximum version number for
+	    excessive input, instead of -1. Closes #31. (Thanks to Danil
+		Dörrhöfer)
+	* tests/test_qrencode.c:
+	  - New tests for excessive or maximum input have been added.
+	* tests/test_qrinput.c:
+	  - A deprecatd test has been removed.
+	[reduce_malloc]
+	* bitstream.c:
+	  - Minimum length of bit buffer has been extended to 128. In many cases
+	    the library needs 128 bits at least to generate a symbol.
+	[master]
+	* merged reduce_malloc branch.
+
+2013.08.22 Kentaro FUKUCHI <kentaro@fukuchi.org>
+	* configure.ac:
+	  - Avoid to use sdl-config. (Thanks to Heiko Becker)
+
+2013.08.15 Kentaro FUKUCHI <kentaro@fukuchi.org>
+	* rsecc.[ch], qrencode.c, tests/test_rc.c:
+	  - Code cleanups and refactoring.
+	  - Bug fix.
+	* configure.ac:
+	  - Bumped version to 3.9.0, preparing for major update.
+	* qrenc.c:
+	  - Copyright year in usage has been updated.
+	  - Help message improved.
+
+2013.08.15 Kentaro FUKUCHI <kentaro@fukuchi.org>
+	* rsecc.[ch], rscode.[ch], Makefile.am, qrencode.c:
+	  - Reed-Solomon error correction code has been completely rewritten.
+	  - Phil Karn's code has been removed (moved to tests).
+	* tests/test_rs.c, tests/test_qrencode.c, tests/rscode.[ch], tests/Makefile.am:
+	  - Test codes related to ECC have been updated.
+	  - Phil Karn's code has been moved to tests, just for test purpose.
+	* tests/test_mqrspec.c:
+	  - Code cleanup.
+
+2013.07.29 Kentaro FUKUCHI <kentaro@fukuchi.org>
+	[3.4]
+	* configure.ac, README, NEWS:
+	  - Bumped version to 3.4.3.
+
+2013.07.16 Kentaro FUKUCHI <kentaro@fukuchi.org>
+	* qrenc.c:
+	  - missing break in switch. (Thanks to ßlúèÇhîp)
+	* qrinput.c:
+	  - missing/redundant breaks in some switch statements.
+
+2013.06.17 Kentaro FUKUCHI <kentaro@fukuchi.org>
+	* qrenc.c:
+	  - Merged pull request #29. (Thanks to Daniel Dörrhöfer)
+	    - Run length encoding has been made non-default.
+	    - New option "--rle" has been instroduced to enable run length encoding
+	      for SVG format.
+
+2013.03.30 Kentaro FUKUCHI <kentaro@fukuchi.org>
+	* qrinput.c:
+	  - Renamed a variable ("index") to avoid compile-time warning. (Thanks to
+	    Emmanuel Blot)
+	  - Range check improved.
+	* autogen.sh:
+	  - bug fix.(Thanks to Emmanuel Blot)
+
+2013.03.26 Kentaro FUKUCHI <kentaro@fukuchi.org>
+	* qrenc.c:
+	  - Memory leak bug has been fixed. (Thanks to Hassan Hajji)
+	  - Buffer overrun bug has been fixed.
+	  - Code cleanups.
+
+2013.03.01 Kentaro FUKUCHI <kentaro@fukuchi.org>
+	* README, NEWS:
+	  - Documentation update.
+	* Version 3.4.2 has been released.
+
+2013.02.26 Kentaro FUKUCHI <kentaro@fukuchi.org>
+	* split.c, tests/test_split.c:
+	  - Applied Viona's bug fix patch. (Thanks to Viona)
+	  - Additional switching cost between AN and Num mode has been included
+	    correctly.
+	  - Additional switching cost between 8 and AN/Num mode has been included
+	    correctly.
+	  - New test case has been added.
+
+2013.02.16 Kentaro FUKUCHI <kentaro@fukuchi.org>
+	[3.4, master]
+	* configure.ac, README, NEWS:
+	  - Bumped version to 3.4.2.
+
+2013.02.16 Kentaro FUKUCHI <kentaro@fukuchi.org>
+	* qrenc.c:
+	  - Now it includes "string.h" by itself for libpng16. (Thanks to Petr)
+
+2012.11.30 Kentaro FUKUCHI <kentaro@fukuchi.org>
+	* qrencode.h
+	  - Doxygen documents improved.
+
+2012.11.09 Kentaro FUKUCHI <kentaro@fukuchi.org>
+	* qrinput.c:
+	  - Code cleanup.
+
+2012.11.08 Kentaro FUKUCHI <kentaro@fukuchi.org>
+	* qrinput.c:
+	  - Memory leak bug has been fixed. (issue #24) (Thanks to chisj)
+	* qrencode.c:
+	  - Incorrect bit extraction bug in QRcode_encodeMaskMQR() has been fixed.
+	    (issue #25) (Thanks to vlad417)
+	* tests/test_qrencode.c:
+	  - Added NUL checks for malloc-related bugs using failmalloc.
+	  - Added a new test for issue #25. (Thanks to vlad417)
+
+2012.10.21 Kentaro FUKUCHI <kentaro@fukuchi.org>
+	* qrinput.c:
+	  - Unnecessary "goto ABORT" eliminated.
+
+2012.10.17 Kentaro FUKUCHI <kentaro@fukuchi.org>
+	[3.4]
+	* NEWS:
+	  - Release note has been written.
+	* Version 3.4.1 has been released.
+
+2012.10.15 Kentaro FUKUCHI <kentaro@fukuchi.org>
+	[3.4]
+	* configure.ac:
+	  - HAVE_LIBPTHREAD was not correctly defined in config.h.in.
+	* tests/test_configure.sh:
+	  - New test script checking autoconf-related scripts has been added.
+	* configure.ac, README, NEWS:
+	  - Bumped version to 3.4.1.
+
+2012.10.15 Kentaro FUKUCHI <kentaro@fukuchi.org>
+	[3.4]
+	* Version 3.4.0 has been released.
+	[master]
+	* Merged 3.4.0.
+
+2012.10.13 Kentaro FUKUCHI <kentaro@fukuchi.org>
+	[3.4]
+	* qrencode.h:
+	  - Documentation improved.
+	  - Copyright year has been updated.
+	* Doxyfile:
+	  - Rebased on a template from Doxygen 1.7.6.1.
+
+2012.10.09 Kentaro FUKUCHI <kentaro@fukuchi.org>
+	[3.4]
+	* configure.ac, README, NEWS:
+	  - Bumped version to 3.4.0.
+	* qrencode.1.in:
+	  - Added SVG option to --type.
+	* qrenc.c:
+	  - Usage improved.
+	  - Inkscape-friendly SVG output.
+
+2012.09.29 Kentaro FUKUCHI <kentaro@fukuchi.org>
+	[reduce_malloc]
+	* bstream.h:
+	  - Added a new function "BitStream_reset()".
+	* qrinput.c:
+	  - Reduced the use of dynamic memory allocation.
+	  - Performance improved.
+	  - Interfaces of QRinput_getBitStream() and QRinput_mergeBitStream() have
+	    been changed.
+
+2012.09.25 Kentaro FUKUCHI <kentaro@fukuchi.org>
+	[reduce_malloc]
+	* qrinput.c, tests/qrinput.c:
+	  - Reduced the use of dynamic memory allocation.
+
+2012.09.25 Kentaro FUKUCHI <kentaro@fukuchi.org>
+	* qrenc.c:
+	  - Input validation improved. (Thanks to Yann Droneaud)
+	* README:
+	  - Contributors list has been updated.
+	  - Added a note about autogen.sh.
+
+2012.09.24 Kentaro FUKUCHI <kentaro@fukuchi.org>
+	* tests/test_bitstream.c:
+	  - Added new test.
+	* tests/test_{monkey,qrspec}.c:
+	  - Warnings suppressed.
+	[reduce_malloc]
+	* bitstream.[ch]:
+	  - Reduced the use of dynamic memory allocation.
+
+2012.09.22 Kentaro FUKUCHI <kentaro@fukuchi.org>
+	* qrenc.c:
+	  - Color palette support has been added. Currently PNG and SVG are
+	    supported
+	* qrencode.1.in:
+	  - "--foreground" and "--background" options have been added.
+
+2012.09.19 Kentaro FUKUCHI <kentaro@fukuchi.org>
+	* README:
+	  - Contributors list has been updated.
+	* qrencode.1.in:
+	  - Followed Unicode block elements patch.
+
+2012.09.18 Kentaro FUKUCHI <kentaro@fukuchi.org>
+	* qrenc.c:
+	  - Merge pull request #19 from mezcalero/master (Unicode block elements
+	    support).
+
+2012.09.13 Kentaro FUKUCHI <kentaro@fukuchi.org>
+	* qrenc.c:
+	  - Set XML(SVG) declaration's 'standalone' to 'yes'.
+
+2012.09.03 Kentaro FUKUCHI <kentaro@fukuchi.org>
+	* qrenc.c:
+	  - A bug introduced in 'b3d5f7' has been reverted. (Thanks to Terry)
+
+2012.09.03 Kentaro FUKUCHI <kentaro@fukuchi.org>
+	* qrenc.c:
+	  - Integrated David's SVG patch.
+
+2012.04.21 Kentaro FUKUCHI <kentaro@fukuchi.org>
+	* qrenc.c:
+	  - Incorrect arguments order has been fixed. (Thank to Fred Steinhaeuser)
+
+2012.04.18 Kentaro FUKUCHI <kentaro@fukuchi.org>
+	[3.3]
+	* qrenc.c:
+	  - EPS dot size bug has been fixed (closes: #12).
+	* Version 3.3.1 has been released.
+
+2012.04.11 Kentaro FUKUCHI <kentaro@fukuchi.org>
+	[master]
+	* qrenc.c:
+	  - Paper size and margin are now set properly in SVG output.
+
+2012.04.10 Kentaro FUKUCHI <kentaro@fukuchi.org>
+	[master]
+	* Following fixes have been contributed by Yutaka Niibe.
+	* qrencode.1.in:
+	  - "Hyphen-used-as-minus-sign" error has been fixed.
+	* configure.ac, libqrencode.pc.in, tests/Makefile.am:
+	  - Explicit link to libpthread has been eliminated.
+	* qrenc.c:
+	  - Pulled Repox's SVG patch (Pull request #10).
+	  - Slightly simplified.
+	[3.3]
+	* README, configure.ac:
+	  - Bumped version to 3.3.1.
+
+2012.04.01 Kentaro FUKUCHI <kentaro@fukuchi.org>
+	[3.3]
+	* qrenc.c:
+	  - ASCII mode has been added. (Thanks to Ralf Ertzinger)
+	  - Small code cleanups.
+	  - ASCII mode now handles ".txt" suffix correctly.
+	* NEWS, README:
+	  - Documentation updates.
+	* Version 3.3.0 has been released.
+	[master]
+	* Merged to 3.3.0.
+
+2012.03.31 Kentaro FUKUCHI <kentaro@fukuchi.org>
+	[3.2]
+	* README, NEWS, configure.ac:
+	  - Bumped version to 3.2.1.
+	* Version 3.2.1 has been released.
+	[3.3]
+	* qrenc.c:
+	  - Copyright year has been updated.
+
+2012.03.30 Kentaro FUKUCHI <kentaro@fukuchi.org>
+	* libqrencode.pc.in :
+	  - Replaced obsolete macro LIBPTHREAD with LIBS. (thx to gniibe)
+	* configure.ac:
+	  - Checks $ac_cv_lib_pthread_pthread_mutex_init instead of
+	    HAVE_LIBPTHREAD. (thx to gniibe)
+
+2012.02.28 Kentaro FUKUCHI <kentaro@fukuchi.org>
+	[master, 3.2.1]
+	* .gitignore:
+	  - Added "tests/pthread_qrencode".
+	[3.3]
+	* 3.3 branch has been started.
+	  - 3.2.1 has been canceled.
+	* configure.ac, README, NEWS:
+	  - Version number changes.
+
+2012.01.31 Kentaro FUKUCHI <kentaro@fukuchi.org>
+	[master]
+	* Recent 3.2 branch has been merged into the master.
+	* qrenc.c:
+	  - Quick bug fix introduced in 09b72eb3070a36461eb83c1ec5237e4855ee515b.
+
+2012.01.19 Kentaro FUKUCHI <kentaro@fukuchi.org>
+	[3.2.1]
+	* configure.ac, qrencode.[hc], qrenc.c, tests/test_qrencode.c:
+	  - QRcode_APIVersion() and QRcode_APIVersionString() have been added.
+	  - New macro values {MAJOR,MINOR,MICRO}_VERSION have been introduced.
+	  - New tests have been added.
+	* qrenc.c:
+	  - Removed a useless storage class specifier from enum imageType.
+	[master, 3.2.1]
+	* Pulled moshen:write_ansi.
+	[3.2.1]
+	* tests/decoder.c:
+	  - Bug fix.
+	* qrenc.c:
+	  - Code refactoring.
+	  - Now you can omit "-o -" for EPS and ANSI output.
+	  - Default margin size has been rollbacked to 4 for ANSI(256).
+	* README:
+	  - Added Colin (moshen@github) to ACKNOWLEDGMENTS.
+	  - Added zapster's real name to ACKNOWLEDGMENTS.
+
+2011.12.12 Kentaro FUKUCHI <kentaro@fukuchi.org>
+	[3.2.1]
+	* configure.ac, README:
+	  - Bumped version to 3.2.1.
+
+2011.12.12 Kentaro FUKUCHI <kentaro@fukuchi.org>
+	* qrenc.c, qrencode.1.in:
+	  - Usage updates.
+
+2011.12.11 Kentaro FUKUCHI <kentaro@fukuchi.org>
+	* qrenc.c:
+	  - Pulled Zapster's EPS support patch.
+	  - Some code cleanups.
+
+2011.11.26 Kentaro FUKUCHI <kentaro@fukuchi.org>
+	[3.2.0]
+	* qrencode.1.in:
+	  - "RESOURCES" section has been added.
+	* README:
+	  - URL to the main web site updated.
+	* Version 3.2.0 has been released.
+
+2011.11.23 Kentaro FUKUCHI <kentaro@fukuchi.org>
+	[3.2.0]
+	* qrencode.1.in:
+	  - Added descriptions of "-d" and "-M".
+
+2011.11.3 Kentaro FUKUCHI <kentaro@fukuchi.org>
+	[3.2.0]
+	* tests/view_qrcode.c:
+	  - Messages improved.
+	* mmask.c:
+	  - A bug in mask evaluation function has been eliminatd.
+	* tests/test_mmask.c:
+	  - New test case has been added.
+	* qrenc.c:
+	  - Micro QR Code support is now marked as "experimental" explicitly.
+	* tests/test_qrinput.c, tests/test_qrencode.c:
+	  - Added some test cases.
+
+2011.10.23 Kentaro FUKUCHI <kentaro@fukuchi.org>
+	[3.2.0]
+	* 3.2 branch has been started.
+	* README, NEWS, configure.ac:
+	  - Version number changes.
+	  - Micro QR Code support is now marked as "experimental" explicitly.
+
+2011.10.23 Kentaro FUKUCHI <kentaro@fukuchi.org>
+	* mask.c, mmask.c, tests/common.h:
+	  - Eliminated unused valiables.
+	* tests/test_qrencode.c:
+	  - Some assertions added.
+
+2011.10.18 Kentaro FUKUCHI <kentaro@fukuchi.org>
+	* test/test_mask.c:
+	  - To call QRspec_clearCache() at exit.
+
+2011.10.17 Kentaro FUKUCHI <kentaro@fukuchi.org>
+	* configure.ac:
+	  - Now the latest PNG library is chosen when the configure script is
+	    executed.
+	* Copyright year has been updated.
+
+2011.10.17 Kentaro FUKUCHI <kentaro@fukuchi.org>
+	* mask.c:
+	  - Unneeded zero-clear has been eliminated from Mask_calcRunLength().
+	  - A rounding-down error in N4 calculation has been fixed.
+	    (Thanks to Adam Shepherd)
+	* tests/test_mask.c:
+	  - Fixed some test cases.
+
+2011.10.17 Kentaro FUKUCHI <kentaro@fukuchi.org>
+	* mask.c:
+	  - A bug in N3 penalty calculation functoin has been fixed.
+	    (Thanks to Adam Shepherd)
+	* mask.h, tests/test_mask.c:
+	  - Test cases for Mask_calcN1N3() have been added.
+	  - Wrong test cases have been corrected.
+
+2011.10.16 Kentaro FUKUCHI <kentaro@fukuchi.org>
+	* mask.[ch]:
+	  - Mask_calcRunLength() has been refactored out from Mask_evaluateSymbol().
+	* test/test_mask.c:
+	  - New test code for Mask_calcRunLength has been added.
+
+2011.10.13 Kentaro FUKUCHI <kentaro@fukuchi.org>
+	* mask.[ch]:
+	  - Mask_calcN2() has been refactored out from Mask_evaluateSymbol().
+	* test/test_mask.c:
+	  - New test code for Mask_calcN2 has been added.
+	* README:
+	  - Added a URL to the git repository.
+
+2011.08.13 Kentaro FUKUCHI <kentaro@fukuchi.org>
+	* configure.ac:
+	  - Added "AC_PROG_RANLIB" (bug report from dev66)
+
+2011.08.07 Kentaro FUKUCHI <kentaro@fukuchi.org>
+	* libqrencode.pc.in:
+	  - Cflags has been set. (issue #2)(Thanks to ryo-on)
+
+2011.05.05 Kentaro FUKUCHI <kentaro@fukuchi.org>
+	* split.c:
+	  - strdup() code has been added for non-POSIX environments. (Thanks to
+	    Seth Sims)
+	* configure.ac:
+	  - Added AC_CHECK_FUNC([strdup]) for non-POSIX environments.
+	  - Now mudflapth is used instead of mudflap when pthread is enabled.
+	* *.c:
+	  - '#include "config.h"' has been moved to the top of the code and
+	    wrapped with #if HAVE_CONFIG_H - #endif.
+
+2011.04.06 Kentaro FUKUCHI <kentaro@fukuchi.org>
+	* qrinput.c:
+	  - Initializaion was missed in QRinput_insertFNC1Header().
+
+2011.02.09 Kentaro FUKUCHI <kentaro@fukuchi.org>
+	* tests/view_qrcode.c:
+	  - "-h" had required an argument.
+
+2010.10.09 Kentaro FUKUCHI <kentaro@fukuchi.org>
+	* Copyright year and mail address were updated.
+	* README, qrencode.spec.in:
+	  - The URL of qrencode's page has been updated.
+	* Makefile.am:
+	  - Added ACLOCAL_AMFLAGS.
+	* use/config.rpath:
+	  - Now explicitly included because required by AM_ICONV_LINK in
+	    configure.ac.
+
+2010.02.03 Kentaro FUKUCHI <fukuchi@megaui.net>
+	[3.1.1]
+	* qrencode.c, README:
+	  - Copyright year updates.
+	* Bumped version to 3.1.1.
+	* Version 3.1.1 has been released.
+
+2010.01.27 Kentaro FUKUCHI <fukuchi@megaui.net>
+	* qrinput.c, qrencode.h:
+	  - 8bit encoding improved.
+	  - QRinput_encodeModeECI(), QRinput_appendECIheader(),
+		QRinput_estimateBitsModeECI() have been added.
+	* tests/test_qrinput.c:
+	  - Some tests for ECI header have been added.
+	* qrinput.[ch]:
+	  - STRUCTURE_HEADER_BITS was renamed to STRUCTURE_HEADER_SIZE.
+	  - MODE_INDICATOR_SIZE has been added.
+	  - QRinput_isSplittableMode() has been added.
+	* qrspec.c:
+	  - QRspec_maximumWords() now returns 0 if the entry cannot be split.
+	  - Now includes "qrinput.h" for QRinput_isSplittableMode().
+
+2010.01.25 Kentaro FUKUCHI <fukuchi@megaui.net>
+	* qrencode.h:
+	  - QR_MODE_{ECI,FNC1A,FNC1B} have been added to QRencodeMode.
+	* qrspec.h, mqrspec.h, qrinput.c:
+	  - QRSPEC_MODEID_* and MQRSPEC_MODEID_* have been added, and hard coded
+	    numbers were replaced with them.
+	* qrenc.c:
+	  - Modified usage.
+	* qrinput.h:
+	  - Added a new field to QRinput for FNC1 support.
+	* qrinput.c, qrencode.h:
+	  - Added new functions to set FNC1 flag.
+	  - FNC1 second position encoding now supported.
+
+2010.01.22 Kentaro FUKUCHI <fukuchi@megaui.net>
+	* tests/test_qrspec.c:
+	  - Code cleanup.
+	* tests/decoder.[ch], tests/test_qrencode.c:
+	  - Added tests for Micro QR Code.
+
+2010.01.20 Kentaro FUKUCHI <fukuchi@megaui.net>
+	* qrencode.c:
+	  - Bug fix.
+	* tests/decoder.[ch]:
+	  - Code refactoring.
+	* tests/test_{qrencode,mask,monkey}.c, Makefile.am:
+	  - New tests added.
+	* qrencode_inner.h:
+	  - Typo fix.
+	* NEWS:
+	  - Updated.
+	* qrinput.c:
+	  - Possible memory errors fixed.
+	* configure.ac, tests/Makefile.am:
+	  - Added iconv checks.
+
+2010.01.18 Kentaro FUKUCHI <fukuchi@megaui.net>
+	* configure.ac:
+	  - Configuration cleanups.
+	* tests/Makefile.am:
+	  - Wrong conditional branch fixed.
+	* tests/decoder.[ch], tests/Makefile.am:
+	  - Decoding function has been added.
+	* tests/test_{qrinput,qrspec,qrencode}.c:
+	  - New tests added.
+
+2010.01.16 Kentaro FUKUCHI <fukuchi@megaui.net>
+	* qrencode.[ch]:
+	  - QRcode_encodeData{,MQR,Structured}() have been added.
+	* tests/test_qrencode.c:
+	  - New test has been added.
+
+2009.11.27 Kentaro FUKUCHI <fukuchi@megaui.net>
+	* qrencode.h:
+	  - Typo fixes.
+
+2009.11.06 Kentaro FUKUCHI <fukuchi@megaui.net>
+	* NEWS, README:
+	  - Documents updated.
+	* qrspec.[ch], mqrspec.[ch]:
+	  - *_clearCache were not thread safe.
+	  - "Thread unsafe" warnings were removed.
+	* rscode.[ch]
+	  - free_rs_cache was not thread safe.
+	  - "Thread unsafe" warnings were removed.
+
+2009.09.28 Kentaro FUKUCHI <fukuchi@megaui.net>
+	* qrenc.c:
+	  - David's patch has been applied. (Thanks to David)
+	  - New options '-d' and '--dpi' have been added.
+	  - Typo fixes.
+	* tests/view_qrcode.c:
+	  - Typo fixes.
+
+2009.06.08 Kentaro FUKUCHI <fukuchi@megaui.net>
+	* qrencode.c:
+	  - FrameFiller_nextMQR() has integrated to FrameFiller_next().
+	  - FrameFiller_new() now requires mqr flag.
+	* qrencode.[ch], tests/prof_qrencode.c, tests/test_{qrencode,monkey}.c:
+	  - QRcode_clearCache() has been added.
+	* configure.ac, qrencode_inner.h, qrencode.c, mask.[ch], mmask.[ch],
+	  qrinput.h, qrspec.c, tests/common.h:
+	  - A macro WITH_TESTS has been introduced.
+	  - "#ifdef __STATIC" has been replaced with "#ifdef __WITH_TESTS".
+	  - Some definitions in qrencode_inner.h have been moved to appropriate
+	    header files.
+	  - Including config.h became mandatory for test programs.
+	* tests/pthread_qrencode.c, tests/Makefile.am:
+	  - New test program has been added.
+	* rscode.c:
+	  - config.h was not included.
+	* mask.c:
+	  - Race condition problem has been solved.
+
+2009.06.06 Kentaro FUKUCHI <fukuchi@megaui.net>
+	* qrenc.c, tests/view_qrcode.c:
+	  - Experimental support of Micro QR Code has been implemented.
+	* qrencode.[ch]:
+	  - QRinput_setVersionAndErrorCorrectionLevel() has been added.
+	* tests/common.h, tests/test_split.c:
+	  - Code cleanups.
+	  - printFrame() and printQRcode() have been added.
+	* tests/test_qrencode.c:
+	  - Some tests have been added.
+	* qrspec.h, mqrspec.h, qrencode.h:
+	  - Definitions of {MQR,QR}SPEC_VERSION_MAX are moved to qrencode.h.
+	* qrinput.c, qrencode.h, tests/test_qrencode.c:
+	  - Size check has been removed from QRinput_convertData() for MQR.
+	  - QRinput_convertData() throws ERANGE when the input is too large.
+	  - QRinput_appendPadding*() throws ERANGE when the input is too large.
+	  - As a result, QRencode_encodeString*() throws ERANGE in that cases.
+	  - Some assertion checks of errno added to test_qrencode.
+	* Bumped version to 3.9.0.
+	  - Next public release will be 4.0.0.
+
+2009.06.06 Kentaro FUKUCHI <fukuchi@megaui.net>
+	[3.1.0]
+	* Version 3.1.0 has been released.
+
+2009.06.05 Kentaro FUKUCHI <fukuchi@megaui.net>
+	* qrencode.h, qrencode_inner.h, tests/test_qrencode.c:
+	  - FrameFiller_next() has improved.
+	  - FrameFiller_nextMQR() has been added.
+	  - FrameFiller_test() FrameFiller_testMQR() have been added.
+	  - Tests of FrameFiller added and improved.
+
+2009.06.04 Kentaro FUKUCHI <fukuchi@megaui.net>
+	* Makefile.am:
+	  - Dependency check was incorrect because of misconfiguration.
+	* mask.c, mmask.c:
+	  - Error check has been added to {Mask,MMask}_makeMask().
+	* mqrspec.[ch], qrinput.c:
+	  - MQRspec_getDataLength() now returns in byte.
+	  - MQRspec_getDataLengthBit() returns in bit instead.
+	* qrencode.[ch], qrencode_inner.h:
+	  - QRencode_encodeStringMQR() and its 8bit version are added.
+	  - QRcode_encodeMaskMQR() has been added.
+
+2009.06.01 Kentaro FUKUCHI <fukuchi@megaui.net>
+	* tests/prof_qrencode.c:
+	  - Error check has been added.
+	* tests/common.h:
+	  - Bug fixed.
+	* qrinput.c, qrencode.h:
+	  - QRinput_Struct_appendInput() and QRinput_splitQRinputToStruct() now
+	    checks mqr flag.
+	* tests/test_bitstream.c:
+	  - New test of 4bit padding of _toByte().
+
+2009.05.30 Kentaro FUKUCHI <fukuchi@megaui.net>
+	* configure.ac, libqrencode.pc.in:
+	  - New option "--enable-thread-safety" has been added. This option is
+	    enabled by default.
+	* rscode.c, qrspec.c:
+	  - libqrencode has become thread-safe! (probably)
+	* tests/common.h:
+	  - sprintfBin() removed, printBstream() added.
+	* qrinput.[ch], qrencode.[ch], mqrspec.c:
+	  - Functions for Micro QR Code encoding have been added.
+	* tests/common.h:
+	  - Utility functions improved.
+	* tests/*.c:
+	  - Code cleanups.
+	  - Tests for Micro QR Code added.
+
+2009.05.30 Kentaro FUKUCHI <fukuchi@megaui.net>
+	* qrinput.c:
+	  - padlen check was wrong in QRinput_appendPaddingBit().
+	* tests/test_qrinput.c:
+	  - Stop printing bstream->data.
+	  - test_padding2() has been added.
+
+2009.05.21 Kentaro FUKUCHI <fukuchi@megaui.net>
+	* qrencode.c, qrencode_inner.h:
+	  - MQRraw_* has been implemented.
+	  - Code cleanups. Struct QRRaw_code is slightly changed.
+	* tests/test_qrencode.c:
+	  - Added new test.
+
+2009.05.20 Kentaro FUKUCHI <fukuchi@megaui.net>
+	* Merged from 3.1.0 branch. (rev 2248:HEAD)
+	* mqrspec.[ch], tests/create_mqr_frame_pattern.c:
+	  - MQRspec_getEccSpec() has been deleted.
+	* tests/create_mqr_frame_pattern.c, tests/Makefile.am:
+	  - Newly added.
+	* mask.[ch], tests/test_mask.c, qrencode_inner.h:
+	  - Code cleanups.
+	  - Unnecessary memcpy has been eliminated.
+	  - New test program has been added.
+	* mmask.[ch], qrencode_inner.h, tests/test_mmask.c, Makefile.am, tests/Makefile.am:
+	  - Mask module for Micro QR Code has been added.
+
+2009.05.20 Kentaro FUKUCHI <fukuchi@megaui.net>
+	* qrenc.c, qrinput.c, qrencode.c:
+	  - Some compile warnings cleared.
+	* qrencode.c, tests/test_qrencode.c:
+	  - NULL check of an input arg has been added to
+	    QRcode_encodeString8bit().
+	  - NULL check test and empty string test have been added for
+	    QRcode_encodeString8bit().
+	* qrinput.h, qrencode_inner.h, split.c:
+	  - Copyright year updates.
+	* split.[ch]:
+	  - Split_splitStringToQRinput() set errno EINVAL if input string is
+	    NULL or empty.
+	  - Documentation improved.
+	* qrenc.c:
+	  - perror() is now used to show the details of some errors.
+	* qrencode.[ch]:
+	  - Some functions now set errno appropriately.
+	  - Typo fixes.
+
+2009.05.20 Kentaro FUKUCHI <fukuchi@megaui.net>
+	* tests/create_frame_pattern.c, tests/Makefile.am:
+	  - New test tool "create_frame_pattern" has been added.
+	* tests/test_qrspec.c:
+	  - test_alignment1() has been replaced with test_newframe().
+	    test_newframe() compares newly created frames with frame pattern
+		data created by create_frame_pattern.
+	* tests/frame, tests/Makefile.am:
+	  - Pattern file "frame" has been added to EXTRA_DIST.
+	* mask.c:
+	  - Very small improvement. Unnecessary malloc()s are reduced.
+	* tests/test_qrencode.c:
+	  - Two new tests have been added.
+	* split.c:
+	  - NULL check and string length check have been added.
+	* qrspec.c, tests/test_qrinput.c:
+	  - Forgotten padding bits bug has been fixed. (enbugged at 2009.5.18)
+	  - New test for the bug above has been added.
+	* qrspec.[ch], qrencode_inner.h:
+	  - Some function becomes __STATIC and their declarations have been
+	    moved to qrencode_inner.h.
+	* tests/prof_qrencode.c:
+	  - Now liberates all heap at the end of the program.
+
+2009.05.19 Kentaro FUKUCHI <fukuchi@megaui.net>
+	* qrencode.c, qrencode_inner.h:
+	  - calloc() is now used to initialize rsblock.
+	  - Number of malloc()s in RSblock_initBlock() has been integrated to
+	    one malloc() in QRraw_new().
+	* rscode.c:
+	  - A very small code improvement.
+	* qrinput.[ch]:
+	  - More return value checks.
+	  - Code cleanups.
+	* tests/common.h, tests/test_{split,monkey,qrinput}.c:
+	  - Tests improved.
+	* qrspec.[ch], tests/test_qrspec.c:
+	  - Code cleanups.
+	  - QRspec_rs{Data,Ecc}Length() have been added.
+	* tests/view_qrcode.c:
+	  - Code cleanups.
+	  - Disabled mask setting in structured mode.
+	* tests/common.h:
+	  - assert_nothing() has been added.
+	* qrinput.c, qrencode.c, tests/test_*.c:
+	  - Various *_free() now allow NULL pointer. (nothing performed)
+	* qrspec.[ch]:
+	  - Alignment pattern is now put by QRspec_putAlignmentPattern().
+	    QRspec_getAlignmentPattern() and QRspec_freeAlignment() have been
+		removed.
+
+2009.05.18 Kentaro FUKUCHI <fukuchi@megaui.net>
+	* qrencode.c:
+	  - More return value checks.
+	* bitstream.c:
+	  - BitStream_free() allows NULL pointer (nothing performed).
+	* qrinput.c:
+	  - QRinput_List_freeEntry() and QRinput_free() allow NULL pointer.
+	  - QRinput_createPaddingBit() has been replaced with
+	    QRinput_appendPaddingBit().
+	  - QRinput_convertData() now sets errno to EINVAL when input is too
+	    large.
+	  - More return value checks. Mainly for ENOMEM error.
+
+2009.05.18 Kentaro FUKUCHI <fukuchi@megaui.net>
+	* Merged from 3.1.0 branch.
+
+2009.05.16 Kentaro FUKUCHI <fukuchi@megaui.net>
+	* qrencode.h:
+	  - Indent improvement.
+	* Makefile.am:
+	  - qrencode.spec has been added to EXTRA_DIST.
+
+2009.05.14 Kentaro FUKUCHI <fukuchi@megaui.net>
+	* qrinput.c, qrencode.c, qrspe.c:
+	  - More return value checks. Mainly for ENOMEM error.
+	* qrspec.[ch], qrencode.c, tests/test_qrspec.c:
+	  - QRspec_getEccSpec() now accepts an int array instead to return
+	    multiple values instead of returning dynamic allocated array.
+	* mask.c, rscode.c:
+	  - More return value checks from malloc().
+	* configure.ac:
+	  - Added "--enable-mudflap" option.
+	* rscode.[ch]:
+	  - Added free_rs_cache() for debug purpose.
+	* tests/test_{monkey,qrencode,rs}.c:
+	  - Call free_rs_cache() at the end of the tests.
+	* qrencode.c:
+	  - QRraw_new() and RSblock_init() have been improved.
+	  - Eliminated unnecessary calls of init_rs().
+	* autogen.sh, configure.ac:
+	  - Darwin workarounds.
+	* tests/common.h, tests/test_bitstream.c:
+	  - New tests have been added.
+
+2009.05.12 Kentaro FUKUCHI <fukuchi@megaui.net>
+	* bitstream.c:
+	  - BitStream_toByte() had returned non-NULL for an empty BitStream.
+	* tests/test_bitstream.c:
+	  - test_null() has been added.
+	* qrinput.c:
+	  - A possible memory leak has been eliminated. It happened when a wrong
+	    version number was given.
+	* tests/test_qriput.c:
+	  - Memory leaks have been eliminated.
+
+2009.05.01 Kentaro FUKUCHI <fukuchi@megaui.net>
+	* Bumped version to 3.1.0.
+
+2009.04.30 Kentaro FUKUCHI <fukuchi@megaui.net>
+	* bitstream.[ch]:
+	  - Internal representation of BitStream has been changed from
+	    NUL-terminated string to unsigned char array.
+	* tests/common.h, tests/test_{bitstream,qrinput}.c:
+	  - Some test sequences have been updated (see above).
+
+2009.03.25 Kentaro FUKUCHI <fukuchi@megaui.net>
+	* configure.ac:
+	  - "--without-tests" has become default setting.
+	* bitstream.[ch]:
+	  - Now functions strictly check return value from malloc() and return
+	    error if it fails.
+
+2008.10.31 Kentaro FUKUCHI <fukuchi@megaui.net>
+	* tests/commo.h:
+	  - __FUNCTION__ has been replaced with __func__, to follow the C99
+	    standard.
+	  - The way of variadic macros has been changed, to follow the C99
+	    standard.
+
+2008.10.11 Kentaro FUKUCHI <fukuchi@megaui.net>
+	* qrencode_inner.h:
+	  - Now this header is called only by test programs.
+	* qrencode.c, qrencode_inner.h:
+	  - Some definitions and declares written in qrencode_inner.h have been
+	    moved into qrencode.c:
+	  - QRraw_*() have been declared as __STATIC.
+	* mask.[ch], qrencode.c, qrencode_inner.h:
+	  - Mask_makeMask() now requires QRecLevel.
+	  - QRencode_writeFormatInformation() has been renamed and moved to
+	    Mask_writeFormatInformation(), and become __STATIC.
+	* tests/*.c:
+	  - Unneeded #include "qrencode_inner.h" have been removed.
+
+2008.10.11 Kentaro FUKUCHI <fukuchi@megaui.net>
+	* autogen.sh:
+	  - Darwin workaround.
+	* configure.ac:
+	  - Now config.h offers "__STATIC" macro becomes "static" when
+	    "--without-tests" is specified. This macro is useful for functions
+		called from test programs but not from other library codes.
+	* qrinput.c:
+	  - Very little performance improvement.
+	* mask.c:
+	  - Code cleanups.
+
+2008.09.12 Kentaro FUKUCHI <fukuchi@megaui.net>
+	* tests/view_qrcode.c:
+	  - Unused variable 'pitch' has been removed from draw_QRcode().
+
+2008.06.03 Kentaro FUKUCHI <fukuchi@megaui.net>
+	* Merged to the main trunk.
+
+2008.06.01 Kentaro FUKUCHI <fukuchi@megaui.net>
+	* qrenc.c:
+	  - Now it does not show the full usage when unrecognized options are
+	    given.
+	  - When "--help" is given, it displays the long usage.
+	* Version 3.0.3 has been released.
+
+2008.05.26 Kentaro FUKUCHI <fukuchi@megaui.net>
+	* qrenc.c, tests/view_qrcode.c:
+	  - getopt_long_only() has been replaced with getopt_long() which is
+	    widely available. (Thanks to Gavan Fantom)
+	  - Now it accepts long options.
+	* qrencode.1.in:
+	  - followed the above changes.
+	* Bumped version to 3.0.3.
+
+2008.05.18 Kentaro FUKUCHI <fukuchi@megaui.net>
+	* qrspec.c:
+	  - The bit order of "Version information" has been corrected.
+	    (Thanks to Paul Janssesn)
+	* configure.ac, Makefile.am:
+	  - The "--without-tests" has been added to the configure script.
+	* qrencode.spec.in:
+	  - Uses "--without-tests".
+	* Version 3.0.2 has been released.
+
+2008.05.14 Kentaro FUKUCHI <fukuchi@megaui.net>
+	* various files:
+	  - Some compile-time warnings/erros with g++ have been fixed.
+	    (Thanks to wangsai)
+
+2008.05.09 Kentaro FUKUCHI <fukuchi@megaui.net>
+	* qrenc.c:
+	  - Now qrencode writes an image file in binary mode for non-POSIX
+	    platform, such as MS-Windows. (bug report from Paul Janssens)
+	* Makefile.am:
+	  - tests/test_all.sh has been added.
+	* tests/test_all.sh:
+	  - Now it exits immediately if any test fails.
+	* Version 3.0.1 has been released.
+
+2008.05.01 Kentaro FUKUCHI <fukuchi@megaui.net>
+	* qrencode.spec.in:
+	  - Added the man page to the files section.
+
+2008.04.30 Kentaro FUKUCHI <fukuchi@megaui.net>
+	* Version 3.0.0 has been released.
+
+2008.04.23 Kentaro FUKUCHI <fukuchi@megaui.net>
+	* Version 3.0.0rc3 has been released.
+	  - This will probably be the final release candidate, if all goes well.
+
+2008.04.23 Kentaro FUKUCHI <fukuchi@megaui.net>
+	* split.c:
+	  - Split_identifyMode() now uses isdigit() and isalnum() macros.
+	* qrinput.c:
+	  - Error checks have been improved.
+	* qrenc.c, tests/view_qrcode.c:
+	  - Return value checks have been added.
+	  - Structured-append encode with version 0 now returns error.
+	* qrencode.[ch]:
+	  - QRencode_encodeStructuredInput() -> QRencode_encodeInputStructured()
+	    (for consistency with other QRencode_encode*Structured() functions)
+	* mask.c:
+	  - A code block never called has been eliminated.
+
+2008.04.14 Kentaro FUKUCHI <fukuchi@megaui.net>
+	* Version 3.0.0rc2 has been released.
+
+2008.04.20 Kentaro FUKUCHI <fukuchi@megaui.net>
+	* qrencode.h:
+	  - QR_MODE_NUL has been added to QRencodeMode. Basically it is used
+	    only by Split_identifyMode().
+	* qrinput.[ch], split.c:
+	  - QRinput_identifyMode() has been moved to split.c, changed to static
+	    and now needs a hint.
+	* split.c:
+	  - Auto-splitting has been improved.
+	* qrinput.c:
+	  - A memory leak has been fixed.
+	* configure.ac:
+	  - The "--enable-gprof" and "--enable-gcov" options have been added.
+	* Makefile.am:
+	  - man1_MANS has been moved into the "if BUILD_TOOLS - endif" block.
+
+2008.04.14 Kentaro FUKUCHI <fukuchi@megaui.net>
+	* Version 3.0.0rc1 has been released.
+
+2008.04.14 Kentaro FUKUCHI <fukuchi@megaui.net>
+	* Bumped version to 3.0.0.
+	* qrencode.[ch]:
+	  - QRcode_encodeInput() has changed the API. Previously it takes a
+	    QRinput, version and level, but now it takes only a QRinput, because
+	    QRinput holds the version and level in it. From 3.0.0, you should
+	    set them by calling QRinput_setVersion() and
+	    QRinput_setErrorCorrectionLevel(), or use QRinput_new2() to
+	    instantiate a QRinput object.
+
+2008.04.14 Kentaro FUKUCHI <fukuchi@megaui.net>
+	* qrspe.c:
+	  - NULL check has been added.
+	* split.[ch]:
+	  - API changed.
+	* qrencode.c:
+	  - Arguments (version and level) are now checked in QRcode_encodeMask().
+	    Internal functions trust the arguments are valid.
+	  - Error checks improved.
+	* qrinput.c:
+	  - Error checks improved.
+	* qrencode.h:
+	  - Documentation improvements.
+
+2008.04.13 Kentaro FUKUCHI <fukuchi@megaui.net>
+	* qrencode.c, qrencode_inner.h, tests/view_qrcode.c:
+	  - Changed API of QRcode_encodeMask().
+	* qrencode.[ch], qrinput.[ch], split.[ch]:
+	  - Some functions now set errno appropriately.
+
+2008.04.09 Kentaro FUKUCHI <fukuchi@megaui.net>
+	* qrencode.h, qrinput.c:
+	  - QRinput_Struct_insertStructuredAppendHeaders() and
+	    QRinput_insertStructuredAppendHeader now returns error, when the
+	    input contains too many structured inputs.
+	* qrencode.c:
+	  - QRcode_encodeInputToStructured() now returns NULL when
+	    QRinput_splitQRinputToStruct() fails.
+	* tests/view_qrcode.c:
+	  - Segmentation fault bug has been fixed. (see previous memo)
+
+2008.04.08 Kentaro FUKUCHI <fukuchi@megaui.net>
+	* qrinput.c:
+	  - Fixed a bug in QRinput_estimateBitStreamSizeOfEntry(). It could
+	    overestimate the size.
+	* rscode.c:
+	  - Optimized the order of the parameters equality test in init_rs().
+	* qrspec.c, qrspec.h:
+	  - Added QRspec_clearCache().
+	* tests/test_estimatebit.c:
+	  - Bug fixed in test_numbit3().
+
+2008.04.07 Kentaro FUKUCHI <fukuchi@megaui.net>
+	* Bumped version to 2.1.0.
+	* Structured append is now supported (patches from Yusuke Mihara):
+	  - Two new types, QRcode_List and QRinput_Struct, have been added.
+	  - Following functions have been added:
+	    - QRcode_encodeStructuredInput()
+	    - QRcode_encodeStringStructured()
+	    - QRcode_encodeString8bitStructured()
+	  - Some functions to handle structured append symbols have been added.
+	    See Doxygen-ized descriptions for the details.
+	* qrenc.c:
+	  - "-S" option has been added for structured append.
+	* split.h:
+	  - "extern" was dropped.
+	* qrinput.h, qrencode.h:
+	  - Moved declarations of QRinput_{get,set}{Version,ErrorCorrectionLevel}
+	    from qrinput.h to qrencode.h. Now they are publicly accessible.
+	* qrencode.h, qrinput.h, qrinput.c:
+	  - Added QRinput_new2().
+	  - QRinput_newEntry(), QRinput_freeEntry have been renamed to
+	    QRinput_List_newEntry(), QRinput_List_freeEntry().
+	* split.c:
+	  - Bug fix: Split_eat8() now eats at least 1 byte. Previously it could
+	    produce a 0-length input entry.
+
+2008.01.23 Kentaro FUKUCHI <fukuchi@megaui.net>
+	* qrencode.1.in, Makefile.am, configure.ac:
+	  - Manpage of qrencode has been added.
+	* qrenc.c, tests/view_qrcode.c:
+	  - Usage message has been updated.
+
+2008.01.18 Kentaro FUKUCHI <fukuchi@megaui.net>
+	* split.c:
+	  - Bug fixes.
+	* tests/test_split.c:
+	  - Followed recent API changes.
+	  - Added new test "test_toupper()".
+	* qrenc.c, tests/view_qrcode.c:
+	  - Source-level compatibility has been improved.
+	  - view_qrcode now accepts stdin like qrencode.
+	  - Usage message has been updated/fixed.
+	* Copyright year has been updated.
+
+2008.01.16 Kentaro FUKUCHI <fukuchi@megaui.net>
+	* qrinput.c, split.c:
+	  - Case-sensitive mode becomes now default mode.
+	  - Alphabet-Numeric mode now encodes only upper-case alphabet and
+	    numeric characters. If "-i" option is given, split.c converts
+	    lower-case characters to upper-case characters at first.
+	* qrenc.c, tests/view_qrcode.c:
+	  - Case-sensitive mode becomes now default mode.
+	  - Option "-i" has been added.
+
+2007.12.14 Kentaro FUKUCHI <fukuchi@megaui.net>
+	* tests/test_qrencode.c:
+	  - New test has been added.
+	* tests/view_qrcode.c:
+	  - Options supported.
+	  - Default mask is now -1 (auto).
+
+2007.12.13 Kentaro FUKUCHI <fukuchi@megaui.net>
+	* qrencode.[ch]:
+	  - QRcode_writeFormatInformation now returns a number of dark modules.
+	* mask.c:
+	  - The mask evaluation function now writes format information before
+	    evaluation. (Philippe Delcroix)
+	* split.[ch]:
+	  - Case-sensitive mode has been added to QRcode_encodeString().
+	  - "-8" option has been added to qrenc.c.
+	  - "-c" now encodes in improved case-sensitive mode.
+	* tests/test_{split,qrencode}.c:
+	  - test_split*() have been moved to test_split.c.
+
+2007.12.10 Kentaro FUKUCHI <fukuchi@megaui.net>
+	* Bumped version to 2.0.0.
+	* Merged to main trunk.
+	* mask.[ch], split.[ch]:
+	  - Masking functions and splitString functions are separated from
+	    qrencode.c.
+	* mqrspec.[ch]:
+	  - Specification of Micro QR code has been added, but not used yet.
+
+2007.03.24 Kentaro FUKUCHI <fukuchi@megaui.net>
+	* Bumped version to 1.0.2.
+
+2007.03.24 Kentaro FUKUCHI <fukuchi@megaui.net>
+	* qrencode.c (QRcode_splitStringToQRinput):
+	  - a small bug fix. (Thanks to NANKI Haruo)
+	* qrencode.h:
+	  - "extern "C"" barrier has been added for C++.
+	* test/view_qrcode.c:
+	  - a typo fix.
+
+2006.12.27 Kentaro FUKUCHI <fukuchi@megaui.net>
+	* Bumped version to 1.0.1.
+
+2006.12.27 Kentaro FUKUCHI <fukuchi@megaui.net>
+	* qrenc.c, qrencode.[ch]:
+	  - Added force 8-bit encoding mode.
+	* Makefile.am :
+	  - Automake/Autoconf files have been added to dist-package.
+
+2006.12.17 Kentaro FUKUCHI <fukuchi@megaui.net>
+	* qrencode_inner.h, qrencode.c:
+	  - Removed unused member variable "b2" from QRRawCode.
+	* configure.ac, Makefile.am, acinclude.m4:
+	  - Better configuration of libpng. (now uses pkg-config correctly)
+
+2006.12.02 Kentaro FUKUCHI <fukuchi@megaui.net>
+	* Bumped version to 1.0.0.

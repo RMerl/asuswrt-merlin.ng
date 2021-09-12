@@ -135,6 +135,58 @@ int get_list_strings_count(char **list, int size, char *str)
 	return count;
 }
 
+int get_string_in_list(char *in_list, int idx, char *out, int out_len)
+{
+	int find_idx = 0;
+	char *buf, *g, *p;
+
+	if((in_list) && (strlen(in_list) > 0) && (out) && (out_len > 0))
+	{
+		g = buf = strdup(in_list);
+
+		while ((p = strchr(g, '>')) != NULL) {
+			if(find_idx == idx)
+			{
+				g[(int)(p - g)] = '\0';
+				strlcpy(out, g, out_len);
+				break;
+			}
+			else{
+				g = p + 1;
+				find_idx++;
+			}
+		}
+
+		free(buf);
+	}
+	return 0;
+}
+
+int get_ipsec_subnet(char *buf, int len)
+{
+	int i = 1;
+	char name[] = "ipsec_profile_1";
+	char ipsec_profile_buf[1024] = {0};
+	char virtual_subnet[32] = {0};
+
+	for(i = 1; i < 6; i++)
+	{
+		snprintf(name, sizeof(name), "ipsec_profile_%d", i);
+		snprintf(ipsec_profile_buf, sizeof(ipsec_profile_buf), "%s", nvram_safe_get(name));
+		memset(virtual_subnet, 0, sizeof(virtual_subnet));
+		get_string_in_list(ipsec_profile_buf, 14, virtual_subnet, sizeof(virtual_subnet));
+		if(strlen(virtual_subnet) > 0)
+		{
+			if(!strstr(buf, virtual_subnet))
+			{
+				snprintf(buf + strlen(buf), len - strlen(buf), "%s.0/24 ", virtual_subnet);
+			}
+		}
+	}
+
+	return 0;
+}
+
 int main(int argc, char *argv[])
 {
 	FILE *fp;
@@ -157,7 +209,7 @@ int main(int argc, char *argv[])
 	PMS_OWNED_INFO_T *owned_group;
 	PMS_ACCOUNT_GROUP_INFO_T *group_member;
 	int samba_right_group;
-	char char_user[64];
+	char char_user[128];
 #else
 	char **account_list;
 	int i;
@@ -292,10 +344,11 @@ int main(int argc, char *argv[])
 	fprintf(fp, "bind interfaces only = yes\n");	// ASUS add
 	fprintf(fp, "interfaces = lo br0 %s/%s %s\n", nvram_safe_get("lan_ipaddr"), nvram_safe_get("lan_netmask"), (is_routing_enabled() && nvram_get_int("smbd_wanac")) ? nvram_safe_get("wan0_ifname") : "");
 #if 0
-#if defined(RTCONFIG_PPTPD) || defined(RTCONFIG_ACCEL_PPTPD) || defined(RTCONFIG_OPENVPN)
+#if defined(RTCONFIG_PPTPD) || defined(RTCONFIG_ACCEL_PPTPD) || defined(RTCONFIG_OPENVPN) || defined(RTCONFIG_IPSEC)
 	int ip[5];
 	char pptpd_subnet[16];
 	char openvpn_subnet[32];
+	char ipsec_subnet[180] = {0};
 
 	memset(pptpd_subnet, 0, sizeof(pptpd_subnet));
 	memset(openvpn_subnet, 0, sizeof(openvpn_subnet));
@@ -310,12 +363,20 @@ int main(int argc, char *argv[])
 		if (nvram_get_int("VPNServer_enable") && strstr(nvram_safe_get("vpn_server1_if"), "tun") && nvram_get_int("vpn_server1_plan"))
 			snprintf(openvpn_subnet, sizeof(openvpn_subnet), "%s/%s", nvram_safe_get("vpn_server1_sn"), nvram_safe_get("vpn_server1_nm"));
 #endif
+#ifdef RTCONFIG_IPSEC
+		if (nvram_match("ipsec_server_enable", "1") || nvram_match("ipsec_ig_enable", "1")) {
+			get_ipsec_subnet(ipsec_subnet, sizeof(ipsec_subnet));
+		}
+#endif /* RTCONFIG_IPSEC */
 	}
-	fprintf(fp, "hosts allow = 127.0.0.1 %s/%s %s %s\n", nvram_safe_get("lan_ipaddr"), nvram_safe_get("lan_netmask"), pptpd_subnet, openvpn_subnet);
+	if(nvram_invmatch("re_mode", "1"))
+	{
+		fprintf(fp, "hosts allow = 127.0.0.1 %s/%s %s %s %s\n", nvram_safe_get("lan_ipaddr"), nvram_safe_get("lan_netmask"), pptpd_subnet, openvpn_subnet, ipsec_subnet);
 #else
-	fprintf(fp, "hosts allow = 127.0.0.1 %s/%s\n", nvram_safe_get("lan_ipaddr"), nvram_safe_get("lan_netmask"));
+		fprintf(fp, "hosts allow = 127.0.0.1 %s/%s\n", nvram_safe_get("lan_ipaddr"), nvram_safe_get("lan_netmask"));
 #endif
-	fprintf(fp, "hosts deny = 0.0.0.0/0\n");
+		fprintf(fp, "hosts deny = 0.0.0.0/0\n");
+	}
 #endif //#if 0
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,36)
 	fprintf(fp, "use sendfile = no\n");
@@ -347,15 +408,18 @@ int main(int argc, char *argv[])
 	fprintf(fp, "kernel oplocks = no\n");
 
 #if 0	// Conflicts with openvpn clients
+	if(nvram_invmatch("re_mode", "1"))
+	{
 #if !defined(RTCONFIG_SAMBA36X)
-	fprintf(fp, "[ipc$]\n");
-#if defined(RTCONFIG_PPTPD) || defined(RTCONFIG_ACCEL_PPTPD) || defined(RTCONFIG_OPENVPN)
-	fprintf(fp, "hosts allow = 127.0.0.1 %s/%s %s %s\n", nvram_safe_get("lan_ipaddr"), nvram_safe_get("lan_netmask"), pptpd_subnet, openvpn_subnet);
+		fprintf(fp, "[ipc$]\n");
+#if defined(RTCONFIG_PPTPD) || defined(RTCONFIG_ACCEL_PPTPD) || defined(RTCONFIG_OPENVPN) || defined(RTCONFIG_IPSEC)
+		fprintf(fp, "hosts allow = 127.0.0.1 %s/%s %s %s %s\n", nvram_safe_get("lan_ipaddr"), nvram_safe_get("lan_netmask"), pptpd_subnet, openvpn_subnet, ipsec_subnet);
 #else
-	fprintf(fp, "hosts allow = 127.0.0.1 %s/%s\n", nvram_safe_get("lan_ipaddr"), nvram_safe_get("lan_netmask"));
+		fprintf(fp, "hosts allow = 127.0.0.1 %s/%s\n", nvram_safe_get("lan_ipaddr"), nvram_safe_get("lan_netmask"));
 #endif
-	fprintf(fp, "hosts deny = 0.0.0.0/0\n");
+		fprintf(fp, "hosts deny = 0.0.0.0/0\n");
 #endif
+	}
 #endif	// if 0
 
 	if (nvram_get_int("smbd_wins"))

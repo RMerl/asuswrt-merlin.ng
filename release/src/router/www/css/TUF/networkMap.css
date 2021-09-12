@@ -29,7 +29,7 @@ body{
 	font-size: 14px;
 	font-weight: 700;
 	margin: 8px 0;
-	border-left: 5px solid #D0982C;
+	border-left: 5px solid rgb(255,165,35);
 	padding-left: 10px;
 }
 .tab-block{
@@ -43,7 +43,8 @@ body{
 	cursor: pointer;
 }
 .tab-click{
-	background-color: #92650F;
+	/* background-color: #92650F; */
+	border-bottom: 3px solid rgb(255,165,35);
 }
 .tab-click, .tab-block:hover{	
 	/*border-bottom: 2px solid transparent;*/
@@ -52,7 +53,7 @@ body{
 	background-color: #D0982C;
 }
 .unit-block{
-	background-color: rgba(146, 101, 15, 0.7);
+	background-color: rgb(25, 25, 25);
 	padding: 8px 12px;
 	margin-bottom: 4px;
 }	
@@ -60,7 +61,7 @@ body{
 	margin: 4px 0;
 }
 .info-content{
-	background-color: #3E2902;
+	background-color: rgb(76,76,76);
 	padding: 4px 4px 4px 6px;
 	font-size: 13px;
 }
@@ -107,19 +108,19 @@ body{
 	transition: all 0.5s ease-in-out;
 }
 .core-color-0{
-	background-color:#FF9000;
+	background: linear-gradient(to right, #0bc8ff 0%, #0039ff 100%);
 }
 .core-color-1{
-	background-color:#33CFCF;
+	background: linear-gradient(to right, #0bc8ff 0%, #0039ff 100%);
 }
 .core-color-2{
-	background-color:#FFCC00;
+	background: linear-gradient(to right, #0bc8ff 0%, #0039ff 100%);
 }
 .core-color-3{
-	background-color:#FF44FF;
+	background: linear-gradient(to right, #0bc8ff 0%, #0039ff 100%);
 }
 .ram-color{
-	background-color:#0096FF;
+	background: linear-gradient(to right, #0bc8ff 0%, #0039ff 100%);
 }
 .bar-text-width{
 	width: 50px;
@@ -135,21 +136,12 @@ body{
 .svg-block{
 	background-color:#000000;
 }
-.core-fill-color-0{
-	stroke:#FF9000;
-}
-.core-fill-color-1{
-	stroke:#33CFCF;
-}
-.core-fill-color-2{
-	stroke:#FFCC00;;
-}
-.core-fill-color-3{
-	stroke:#FF44FF;
+.core-fill-color-0, .core-fill-color-1, .core-fill-color-2, .core-fill-color-3{
+	stroke:#0bc8ff;
 }
 /* RAM */
 .ram-fill-color{
-	stroke:#0096FF;
+	stroke:#0bc8ff;
 }
 .ram-text-width{
 	width: 90px;
@@ -157,18 +149,18 @@ body{
 
 /* Ports */
 .table-header{
-	background-color:#000;
+	background-color:rgb(33,33,33);
 }
 .table-body{
-	background-color: #3E2902;
+	background-color: rgb(55,55,55);
 }
 .table-content, .table-content-first{
 	padding: 4px 0;
-	border-right: 1px solid #222;
-	border-bottom: 1px solid #222;
+	border-right: 1px solid rgb(76,76,76);
+	border-bottom: 1px solid rgb(76,76,76);
 }
 .table-content-first{
-	border-left: 1px solid #222;
+	border-left: 1px solid rgb(76,76,76);
 }
 .port-block-width{
 	width: 50%;
@@ -183,8 +175,8 @@ input[type="text"]{
 	height: 28px; 
 }
 input[type="text"], .input_option{
-	border: 1px solid #92650F;
-	background-color: #3E2902;
+	border: 1px solid rgb(76,76,76);
+	background-color: rgb(55,55,55);
 	color:#FFFFFF;
 	font-size: 13px;
 }

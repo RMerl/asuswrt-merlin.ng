@@ -121,7 +121,7 @@
 </style>
 <script>
 function initial() {
-	var odm_support = ('<% nvram_get("rc_support"); %>'.indexOf('odm') != -1) ? true : false;
+	var odm_support = ('<% nvram_get("rc_support"); %>'.indexOf(' odm') != -1) ? true : false;
 	if(odm_support)
 		document.body.className = "bg-odm";
 	else

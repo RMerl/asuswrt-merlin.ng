@@ -119,7 +119,7 @@ enum {
 //#define DHCP_TIME_SERVER      0x04 /* RFC 868 time server (32-bit, 0 = 1.1.1900) */
 //#define DHCP_NAME_SERVER      0x05 /* IEN 116 _really_ ancient kind of NS */
 //#define DHCP_DNS_SERVER       0x06
-//#define DHCP_LOG_SERVER       0x07 /* port 704 UDP log (not syslog)
+//#define DHCP_LOG_SERVER       0x07 /* port 704 UDP log (not syslog) */
 //#define DHCP_COOKIE_SERVER    0x08 /* "quote of the day" server */
 //#define DHCP_LPR_SERVER       0x09
 #define DHCP_HOST_NAME          0x0c /* either client informs server or server gives name to client */
@@ -198,6 +198,10 @@ extern const uint8_t dhcp_option_lengths[] ALIGN1;
 unsigned FAST_FUNC udhcp_option_idx(const char *name);
 
 uint8_t *udhcp_get_option(struct dhcp_packet *packet, int code) FAST_FUNC;
+/* Same as above + ensures that option length is 4 bytes
+ * (returns NULL if size is different)
+ */
+uint8_t *udhcp_get_option32(struct dhcp_packet *packet, int code) FAST_FUNC;
 int udhcp_end_option(uint8_t *optionptr) FAST_FUNC;
 void udhcp_add_binary_option(struct dhcp_packet *packet, uint8_t *addopt) FAST_FUNC;
 void udhcp_add_simple_option(struct dhcp_packet *packet, uint8_t code, uint32_t data) FAST_FUNC;

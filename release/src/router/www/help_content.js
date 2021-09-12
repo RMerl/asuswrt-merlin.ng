@@ -28,6 +28,8 @@ helpcontent[0] = new Array("",
 			"<#Access_Intranet_desc#>",
 			"Smart Connect is the feature which could automatically steer clients to the most appropriate band (2.4GHz, 5GHz-1 and 5GHz-2)." /*untranslated*/
 			 );
+if ("<% nvram_get("wl2_band"); %>".length == 0)
+	helpcontent[0][27] = "Smart Connect is the feature which could automatically steer clients to the most appropriate band (2.4GHz and 5GHz)."; /*untranslated*/
 helpcontent[1] = new Array("",
 						   "<#WLANConfig11b_x_APMode_itemdesc#>",
 						   "<#WLANConfig11b_Channel_itemdesc#>",
@@ -138,7 +140,7 @@ helpcontent[7] = new Array("",
 							 "<#qis_pppoe_help1#>",
 							 "<#isp_profile#>",
 							 "<#PPPConnection_Authentication_itemdesc#>",
-							 "<#PPPConnection_Authentication_itemdesc2#>",
+							 "<#PPPConnection_Authentication_itemdesc2#>", //30
 							 "<b>PPP Echo:</b> Use Echo-Request and Echo-Reply message defined in PPP Link Control Protocol (LCP) to test the PPP connection. <b>DNS Probe:</b> Performs a DNS lookup request and resolved IP address to test DNS connection",	//31
 							 "Send an LCP Echo-Request frame to the peer every n seconds.",
 							 "Presume the peer to be dead if n LCP Echo-Requests are sent without receiving a valid LCP Echo-Reply. Use of this option requires a non-zero value for the Echo Interval parameter.",
@@ -183,7 +185,8 @@ helpcontent[11] = new Array("",
 							"<#System_Allow_Specified_IP#>",
 							"<#usb_HDD_Hibernation_Desc#>",
 							"If there is no client connection for more than 1 minute, the PLC will enter sleep mode (power saving). The PLC will not wake up until the client connects. (It takes about ten seconds to wake up the PLC)", /* untranslated */
-							"Enable Login CAPTCHA is to ensure only human users to pass through and prevent brute force login attack."); /* untranslated */
+							"Enable Login CAPTCHA is to ensure only human users to pass through and prevent brute force login attack.", /* untranslated */
+							"<#FW_auto_upgrade_desc#>");
 //Log
 helpcontent[12] = new Array("",
 							"<#General_x_SystemUpTime_itemdesc#>",
@@ -290,7 +293,7 @@ helpcontent[25] = new Array("",
 							"<#DSL_Stab_Adjustment#>",
 							"<#DSL_SRA_itemdesc#>",
 							"<#DSL_Bitswap_id#>",
-							"This item allows you to tweak the target SNR Margin of VDSL. For instance with a downstream SNR Margin at 8dB, you could set to 7dB or lower value to maximize the downstream performance, 2dB (Max.performance) but please note that the lower the value, DSL modem router will be weaker to defend the line noise, thus sync lost might occur, so please adjust with proper value. However if your VDSL connection is unstable or not able to establish a connection, for this case then set to a higher value such as 9dB ~ 30dB.",
+							"This item allows you to tweak the target SNR Margin of VDSL. For instance with a downstream SNR Margin at 8dB, you could set to 7dB or lower value to maximize the downstream performance, 2dB (Max.performance) but please note that the lower the value, DSL modem router will be weaker to defend the line noise, thus sync loss might occur, so please adjust with proper value. However, if your VDSL connection is unstable or not able to establish a connection, for this case then set to a higher value such as 9dB ~ 30dB.",
 							"This item allows you to tweak the Tx Power of VDSL. Reduce Tx Power(-1 dB ~ -7 dB) would increase the downstream performance(reduce more Tx Power leads to higher downstream data rate), but will impact upstream and vice versa.",
 							"This item configures Rx AGC(Auto Gain Control) GAIN for VDSL, if tweak the Stability Adjustment (VDSL) setting still could not get desired downstream speed, then could try to set Rx AGC GAIN Adjustment to High Performance mode. However if your VDSL connection is unstable and has some CRC then could set to Stable mode.",
 							"This item allows you to control whether to Enable/Disable UPBO(Upstream Power Back Off) for VDSL. DSLAM could use UPBO to reduce the Tx Power of your xDSL modem router, in some cases abnormal UPBO control from DSLAM could leads to sync up issue(such as not enough Tx Power to sync with minimum rate). Thus with this feature now you could disable UPBO and will not get affected by DSLAM setting.",
@@ -303,7 +306,9 @@ helpcontent[25] = new Array("",
 							"This item supports G.vector. With G.vector crosstalk among the signals in the same cable could be canceled, such as far-end crosstalk (FEXT). Which would significantly improve Signal-to-Noise Ratio (SNR) that leads to higher achievable bit rates. However CO must deploy Vectored VDSL2 DSLAM in order for this feature to work. If you find it doesn't work well or you know the G.vector of your ISP is non-standard, please enable both of this option and Non-standard G.vector.",
 							"This item supports Non-standard G.vector for specific countries. Please note that if your G.vector is standard, please do not enable this option for optimized performance.",
 							"This command is  helpful for some impulse noise environment to enhance line stability.",
-							"Enhancing the detection of impulse noise may improve certain lines with frequent noise fluctuations. If your DSL line supports G.INP and your connection is often unstable, then you can try to enable it."
+							"Enhancing the detection of impulse noise may improve certain lines with frequent noise fluctuations. If your DSL line supports G.INP and your connection is often unstable, then you can try to enable it.",
+							"This item allows you to tweak the target SNR Margin. You could set to negative value to maximize the downstream performance. But please note that the lower the value, DSL modem router will be weaker to defend the line noise. Sync loss might occur. So please adjust with proper value. However, if your xDSL connection is unstable or not able to establish a connection, setting to a postive value.",
+							""
 							);
 							
 //DualWAN
@@ -325,13 +330,9 @@ if('<% nvram_default_get("lan_ipaddr"); %>' != "192.168.1.1"){
 	helpcontent[24][5] = "<#LANHostConfig_IPRouters_itemdesc#>".replace("192.168.1.1", '<% nvram_default_get("lan_ipaddr"); %>');
 }
 
-//Mobile Broadband
-helpcontent[28] = new Array("",
-							"<#Mobile_StartDay_Desc#>",
-							"<#Mobile_Usage_Limit_Desc#>",
-							"<#Mobile_Usage_Alert_Desc#>",
-							"<#Mobile_SMS_Noti_Desc#>");
-						
+//28 is used by WAN Aggregation unexpectedly. Move help content of mobile broadband to 35.
+helpcontent[28] = new Array("");
+
 //Switch Control
 helpcontent[29] = new Array("",
 							"<#NAT_lacpDesc#>",
@@ -343,9 +344,9 @@ helpcontent[30] = new Array("",
 
 //Captive portal
 helpcontent[31] = new Array("",
-							"The Wi-Fi and authentication session will be disconnected if user does not process within the defined Idle time.",/*untranslated*/
-							"The Wi-Fi and Internet connection will be disconnected after a specified period of inactivity.",/*untranslated*/
-							"The Wi-Fi and Internet connection will be disconnected if the defined Internet session time expired.",/*untranslated*/
+							"The WiFi and authentication session will be disconnected if user does not process within the defined Idle time.",/*untranslated*/
+							"The WiFi and Internet connection will be disconnected after a specified period of inactivity.",/*untranslated*/
+							"The WiFi and Internet connection will be disconnected if the defined Internet session time expired.",/*untranslated*/
 							"The NAS ID is string on RADIUS attribute 32, which allows captive portal to send authentication request to RADIUS server for applying different policy of user group.Then, the RADIUS server can send a customized authentication response base on the received NAS ID for the captive portal. To enable the features, you must configure NAS ID policy on RADIUS server correspondingly.",/*untranslated*/
 							"Enter a whitelist URL, also known as walled garden.\nNote: Guest user can fetch the whitelist web content under the domain name without any authentication."/*untranslated*/
 							);
@@ -394,6 +395,12 @@ helpcontent[34] = new Array("",
 							"This feature allows system to capture diagnostic System debug log in the background, duration depends on the “Diagnostic debug log capture duration” option, depends on the option selected, system might transmit single debug log automatically to ASUS Support Team for analysis after capture completed or transmit multiple debug logs over a period of time. Click on the yellow System icon could cancel the debug log capture.",/*untranslated*/
 							"<#Feedback_case_No_desc#>"
 							);
+
+helpcontent[35] = new Array("",
+							"<#Mobile_StartDay_Desc#>",
+							"<#Mobile_Usage_Limit_Desc#>",
+							"<#Mobile_Usage_Alert_Desc#>",
+							"<#Mobile_SMS_Noti_Desc#>");
 
 helpcontent[50] = new Array("",
 				"<#IPConnection_LocalIP_itemdesc#> or fixed Interface (Device) ID starting with ::<br/>A fixed Interface ID is commonly an EUI-64 address.",

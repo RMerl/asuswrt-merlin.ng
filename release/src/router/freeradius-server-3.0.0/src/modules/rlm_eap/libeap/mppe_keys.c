@@ -28,6 +28,41 @@ USES_APPLE_DEPRECATED_API	/* OpenSSL API has been deprecated by Apple */
 #include "eap_tls.h"
 #include <openssl/hmac.h>
 
+#if OPENSSL_VERSION_NUMBER < 0x10100000L || defined(LIBRESSL_VERSION_NUMBER)
+/*
+ *	OpenSSL compatibility, to avoid ifdef's through the rest of the code.
+ */
+static size_t SSL_get_client_random(const SSL *s, unsigned char *out, size_t outlen)
+{
+	if (!outlen) return sizeof(s->s3->client_random);
+
+	if (outlen > sizeof(s->s3->client_random)) outlen = sizeof(s->s3->client_random);
+
+	memcpy(out, s->s3->client_random, outlen);
+	return outlen;
+}
+
+static size_t SSL_get_server_random(const SSL *s, unsigned char *out, size_t outlen)
+{
+	if (!outlen) return sizeof(s->s3->server_random);
+
+	if (outlen > sizeof(s->s3->server_random)) outlen = sizeof(s->s3->server_random);
+
+	memcpy(out, s->s3->server_random, outlen);
+	return outlen;
+}
+
+static size_t SSL_SESSION_get_master_key(const SSL_SESSION *s, unsigned char *out, size_t outlen)
+{
+	if (!outlen) return s->master_key_length;
+
+	if (outlen > (size_t)s->master_key_length) outlen = (size_t)s->master_key_length;
+
+	memcpy(out, s->master_key, outlen);
+	return outlen;
+}
+#endif
+
 /*
  * TLS PRF from RFC 2246
  */
@@ -36,47 +71,47 @@ static void P_hash(EVP_MD const *evp_md,
 		   unsigned char const *seed,   unsigned int seed_len,
 		   unsigned char *out, unsigned int out_len)
 {
-	HMAC_CTX ctx_a, ctx_out;
+	HMAC_CTX *ctx_a, *ctx_out;
 	unsigned char a[HMAC_MAX_MD_CBLOCK];
 	unsigned int size;
 
-	HMAC_CTX_init(&ctx_a);
-	HMAC_CTX_init(&ctx_out);
-	HMAC_Init_ex(&ctx_a, secret, secret_len, evp_md, NULL);
-	HMAC_Init_ex(&ctx_out, secret, secret_len, evp_md, NULL);
+	ctx_a = HMAC_CTX_new();
+	ctx_out = HMAC_CTX_new();
+	HMAC_Init_ex(ctx_a, secret, secret_len, evp_md, NULL);
+	HMAC_Init_ex(ctx_out, secret, secret_len, evp_md, NULL);
 
-	size = HMAC_size(&ctx_out);
+	size = HMAC_size(ctx_out);
 
 	/* Calculate A(1) */
-	HMAC_Update(&ctx_a, seed, seed_len);
-	HMAC_Final(&ctx_a, a, NULL);
+	HMAC_Update(ctx_a, seed, seed_len);
+	HMAC_Final(ctx_a, a, NULL);
 
 	while (1) {
 		/* Calculate next part of output */
-		HMAC_Update(&ctx_out, a, size);
-		HMAC_Update(&ctx_out, seed, seed_len);
+		HMAC_Update(ctx_out, a, size);
+		HMAC_Update(ctx_out, seed, seed_len);
 
 		/* Check if last part */
 		if (out_len < size) {
-			HMAC_Final(&ctx_out, a, NULL);
+			HMAC_Final(ctx_out, a, NULL);
 			memcpy(out, a, out_len);
 			break;
 		}
 
 		/* Place digest in output buffer */
-		HMAC_Final(&ctx_out, out, NULL);
-		HMAC_Init_ex(&ctx_out, NULL, 0, NULL, NULL);
+		HMAC_Final(ctx_out, out, NULL);
+		HMAC_Init_ex(ctx_out, NULL, 0, NULL, NULL);
 		out += size;
 		out_len -= size;
 
 		/* Calculate next A(i) */
-		HMAC_Init_ex(&ctx_a, NULL, 0, NULL, NULL);
-		HMAC_Update(&ctx_a, a, size);
-		HMAC_Final(&ctx_a, a, NULL);
+		HMAC_Init_ex(ctx_a, NULL, 0, NULL, NULL);
+		HMAC_Update(ctx_a, a, size);
+		HMAC_Final(ctx_a, a, NULL);
 	}
 
-	HMAC_CTX_cleanup(&ctx_a);
-	HMAC_CTX_cleanup(&ctx_out);
+	HMAC_CTX_free(ctx_a);
+	HMAC_CTX_free(ctx_out);
 	memset(a, 0, sizeof(a));
 }
 
@@ -107,31 +142,39 @@ static void PRF(unsigned char const *secret, unsigned int secret_len,
 void eaptls_gen_mppe_keys(REQUEST *request, SSL *s,
 			  char const *prf_label)
 {
-	unsigned char out[4*EAPTLS_MPPE_KEY_LEN], buf[4*EAPTLS_MPPE_KEY_LEN];
-	unsigned char seed[64 + 2*SSL3_RANDOM_SIZE];
-	unsigned char *p = seed;
+	unsigned char out[4*EAPTLS_MPPE_KEY_LEN];
+	unsigned char *p;
 	size_t prf_size;
-
-	if (!s->s3) {
-		EDEBUG("No SSLv3 information");
-		return;
-	}
 
 	prf_size = strlen(prf_label);
 
-	memcpy(p, prf_label, prf_size);
-	p += prf_size;
+#if OPENSSL_VERSION_NUMBER >= 0x10001000L
+	if (SSL_export_keying_material(s, out, sizeof(out), prf_label, prf_size, NULL, 0, 0) != 1) /* Fallback */
+#endif
 
-	memcpy(p, s->s3->client_random, SSL3_RANDOM_SIZE);
-	p += SSL3_RANDOM_SIZE;
-	prf_size += SSL3_RANDOM_SIZE;
+	{
+		size_t master_key_len;
+		uint8_t seed[64 + (2 * SSL3_RANDOM_SIZE)];
+		uint8_t buf[4 * EAPTLS_MPPE_KEY_LEN];
+		uint8_t master_key[SSL_MAX_MASTER_KEY_LENGTH];
 
-	memcpy(p, s->s3->server_random, SSL3_RANDOM_SIZE);
-	prf_size += SSL3_RANDOM_SIZE;
+		p = seed;
 
-	PRF(s->session->master_key, s->session->master_key_length,
-	    seed, prf_size, out, buf, sizeof(out));
+		memcpy(p, prf_label, prf_size);
+		p += prf_size;
 
+		SSL_get_client_random(s, p, SSL3_RANDOM_SIZE);
+		p += SSL3_RANDOM_SIZE;
+		prf_size += SSL3_RANDOM_SIZE;
+
+		SSL_get_server_random(s, p, SSL3_RANDOM_SIZE);
+		prf_size += SSL3_RANDOM_SIZE;
+
+		master_key_len = SSL_SESSION_get_master_key(SSL_get_session(s), master_key, sizeof(master_key));
+		PRF(master_key, master_key_len, seed, prf_size, out, buf, sizeof(out));
+	}
+
+	RDEBUG2("Adding session keys");
 	p = out;
 	eap_add_reply(request, "MS-MPPE-Recv-Key", p, EAPTLS_MPPE_KEY_LEN);
 	p += EAPTLS_MPPE_KEY_LEN;
@@ -155,21 +198,17 @@ void eapttls_gen_challenge(SSL *s, uint8_t *buffer, size_t size)
 	uint8_t out[32], buf[32];
 	uint8_t seed[sizeof(FR_TLS_PRF_CHALLENGE)-1 + 2*SSL3_RANDOM_SIZE];
 	uint8_t *p = seed;
-
-	if (!s->s3) {
-		EDEBUG("No SSLv3 information");
-		return;
-	}
+	size_t master_key_len;
+	uint8_t master_key[SSL_MAX_MASTER_KEY_LENGTH];
 
 	memcpy(p, FR_TLS_PRF_CHALLENGE, sizeof(FR_TLS_PRF_CHALLENGE)-1);
 	p += sizeof(FR_TLS_PRF_CHALLENGE)-1;
-	memcpy(p, s->s3->client_random, SSL3_RANDOM_SIZE);
+	SSL_get_client_random(s, p, SSL3_RANDOM_SIZE);
 	p += SSL3_RANDOM_SIZE;
-	memcpy(p, s->s3->server_random, SSL3_RANDOM_SIZE);
+	SSL_get_client_random(s, p, SSL3_RANDOM_SIZE);
 
-	PRF(s->session->master_key, s->session->master_key_length,
-	    seed, sizeof(seed), out, buf, sizeof(out));
-
+	master_key_len = SSL_SESSION_get_master_key(SSL_get_session(s), master_key, sizeof(master_key));
+	PRF(master_key, master_key_len, seed, sizeof(seed), out, buf, sizeof(out));
 	memcpy(buffer, out, size);
 }
 
@@ -177,26 +216,23 @@ void eapttls_gen_challenge(SSL *s, uint8_t *buffer, size_t size)
  *	Actually generates EAP-Session-Id, which is an internal server
  *	attribute.  Not all systems want to send EAP-Key-Nam
  */
-void eaptls_gen_eap_key(RADIUS_PACKET *packet, SSL *s, uint32_t header)
+void eaptls_gen_eap_key(RADIUS_PACKET *packet, SSL *ssl, uint32_t header)
 {
 	VALUE_PAIR *vp;
-	uint8_t *p;
-
-	if (!s->s3) {
-		EDEBUG("No SSLv3 information");
-		return;
-	}
+	uint8_t *buff, *p;
 
 	vp = paircreate(packet, PW_EAP_SESSION_ID, 0);
 	if (!vp) return;
 
 	vp->length = 1 + 2 * SSL3_RANDOM_SIZE;
-	p = talloc_array(vp, uint8_t, vp->length);
+	buff = p = talloc_array(vp, uint8_t, vp->length);
 
-	p[0] = header & 0xff;
-	memcpy(p + 1, s->s3->client_random, SSL3_RANDOM_SIZE);
-	memcpy(p + 1 + SSL3_RANDOM_SIZE,
-	       s->s3->server_random, SSL3_RANDOM_SIZE);
-	vp->vp_octets = p;
+	*p++ = header & 0xff;
+
+	SSL_get_client_random(ssl, p, SSL3_RANDOM_SIZE);
+	p += SSL3_RANDOM_SIZE;
+	SSL_get_server_random(ssl, p, SSL3_RANDOM_SIZE);
+
+	vp->vp_octets = buff;
 	pairadd(&packet->vps, vp);
 }

@@ -19,10 +19,23 @@
 #include <linux/ip.h>
 #include <linux/if_tunnel.h>
 #include <linux/ip6_tunnel.h>
+//#include <linux/net/ip6_tunnel.h>
 #include "rt_names.h"
 #include "utils.h"
 #include "ip_common.h"
 #include "tunnel.h"
+
+/* IPv6 tunnel FMR */
+struct __ip6_tnl_fmr {
+	struct __ip6_tnl_fmr *next; /* next fmr in list */
+	struct in6_addr ip6_prefix;
+	struct in_addr ip4_prefix;
+
+	__u8 ip6_prefix_len;
+	__u8 ip4_prefix_len;
+	__u8 ea_len;
+	__u8 offset;
+};
 
 #define IP6_FLOWINFO_TCLASS	htonl(0x0FF00000)
 #define IP6_FLOWINFO_FLOWLABEL	htonl(0x000FFFFF)
@@ -36,7 +49,7 @@ static void print_usage(FILE *f)
 	fprintf(f, "          type ip6tnl [ remote ADDR ] [ local ADDR ]\n");
 	fprintf(f, "          [ dev PHYS_DEV ] [ encaplimit ELIM ]\n");
 	fprintf(f ,"          [ hoplimit HLIM ] [ tclass TCLASS ] [ flowlabel FLOWLABEL ]\n");
-	fprintf(f, "          [ dscp inherit ] [ fwmark inherit ]\n");
+	fprintf(f, "          [ dscp inherit ] [ fwmark inherit ] [fmrs filepath] [draft ON|OFF]\n");
 	fprintf(f, "\n");
 	fprintf(f, "Where: NAME      := STRING\n");
 	fprintf(f, "       ADDR      := IPV6_ADDRESS\n");
@@ -76,6 +89,15 @@ static int ip6tunnel_parse_opt(struct link_util *lu, int argc, char **argv,
 	__u32 flags = 0;
 	__u32 link = 0;
 	__u8 proto = 0;
+
+	//RTCONFIG_SOFTWIRE46
+	FILE *fp = NULL;
+	struct __ip6_tnl_fmr *fmr = NULL;
+	struct rtattr *nest, *nest_rule;
+	int i, fmr_cnt, ip6_prefix_len, ip4_prefix_len, offset, ea_len;
+	long int sz;
+	char *b, *p, str[256], ip6_prefix[256], ip4_prefix[16];
+	int debug = 0;
 
 	memset(&laddr, 0, sizeof(laddr));
 	memset(&raddr, 0, sizeof(raddr));
@@ -235,6 +257,89 @@ get_failed:
 			if (strcmp(*argv, "inherit") != 0)
 				invarg("not inherit", *argv);
 			flags |= IP6_TNL_F_USE_ORIG_FWMARK;
+		} else if (strcmp(*argv, "fmrs") == 0) {
+			NEXT_ARG();
+			fp = fopen(*argv, "r");
+			if(fp)
+			{
+				//get rule count.
+				fseek(fp, 0L, SEEK_END);
+				sz = ftell(fp);
+				rewind(fp);
+				b = calloc(sz + 1, 1);
+				if(!b)
+				{
+					fprintf(stderr,	"Cannot alloc memory.\n");
+					return -1;
+				}
+				if(fread(b, 1, sz, fp) > 0)
+				{
+					p = b;
+					fmr_cnt = 0;
+					while(p)
+					{
+						p = strchr(p, '\n');
+						if(p)
+						{
+							++fmr_cnt;
+							++p;
+							if(*(p + 1) == '\0')
+								break;
+						}
+					}
+				}
+				free(b);
+				fmr = calloc(fmr_cnt, sizeof(struct __ip6_tnl_fmr));
+				if(!fmr)
+				{
+					fprintf(stderr,	"Cannot alloc memory.\n");
+					return -1;
+				}
+				rewind(fp);
+				i = 0;
+				while(fgets(str, sizeof(str), fp))
+				{
+					if(str[strlen(str) - 1] == '\n')
+						str[strlen(str) - 1] = '\0';
+					if(sscanf(str, "%[^/]/%d %[^/]/%d %d %d", ip4_prefix, &ip4_prefix_len, ip6_prefix, &ip6_prefix_len, &ea_len, &offset))
+					{
+						if (debug) {
+							printf("[%s, %d]ip4_prefix=%s\n", __FUNCTION__, __LINE__, ip4_prefix);
+							printf("[%s, %d]ip4_prefix_len=%d\n", __FUNCTION__, __LINE__, ip4_prefix_len);
+							printf("[%s, %d]ip6_prefix=%s\n", __FUNCTION__, __LINE__, ip6_prefix);
+							printf("[%s, %d]ip6_prefix_len=%d\n", __FUNCTION__, __LINE__, ip6_prefix_len);
+							printf("[%s, %d]ea_len=%d\n", __FUNCTION__, __LINE__, ea_len);
+							printf("[%s, %d]offset=%d\n", __FUNCTION__, __LINE__, offset);
+						}
+						//ip6 address
+						inet_prefix addr;
+						get_prefix(&addr, ip6_prefix, preferred_family);
+						if (addr.family == AF_UNSPEC)
+							invarg("\"local\" address family is AF_UNSPEC", ip6_prefix);
+						memcpy(&(fmr[i].ip6_prefix), addr.data, addr.bytelen);
+
+						//ip4 address
+						__u32 v4addr = get_addr32(ip4_prefix);
+						memcpy(&(fmr[i].ip4_prefix.s_addr), &v4addr, sizeof(v4addr));
+						fmr[i].ip6_prefix_len = ip6_prefix_len;
+						fmr[i].ip4_prefix_len = ip4_prefix_len;
+						fmr[i].ea_len = ea_len;
+						fmr[i].offset = offset;
+						++i;
+					}
+				}
+				fmr_cnt = i;
+				fclose(fp);
+			}
+			else
+				invarg("can not open file", *argv);
+		} else if (strcmp(*argv, "draft") == 0) {
+			NEXT_ARG();
+			if (strcmp(*argv, "ON") == 0) {
+				flags |= IP6_TNL_F_USE_FMR_DRAFT;
+			} else {
+				flags &= ~IP6_TNL_F_USE_FMR_DRAFT;
+			}
 		} else
 			usage();
 		argc--, argv++;
@@ -248,7 +353,42 @@ get_failed:
 	addattr32(n, 1024, IFLA_IPTUN_FLOWINFO, flowinfo);
 	addattr32(n, 1024, IFLA_IPTUN_FLAGS, flags);
 	addattr32(n, 1024, IFLA_IPTUN_LINK, link);
+	nest = addattr_nest(n, 1024, IFLA_IPTUN_FMRS);
 
+	for(i = 0; i < fmr_cnt; ++i)
+	{
+		nest_rule = addattr_nest(n, 1024, 0);
+
+		if (debug) {
+			memset(str, 0, sizeof(str));
+			inet_ntop(AF_INET6, &((fmr + i)->ip6_prefix), str, INET6_ADDRSTRLEN);
+			printf("[%s, %d]%d<%s>\n", __FUNCTION__, __LINE__, sizeof((fmr + i)->ip6_prefix), str);
+		}
+		addattr_l(n, 1024, IFLA_IPTUN_FMR_IP6_PREFIX, &((fmr + i)->ip6_prefix), sizeof((fmr + i)->ip6_prefix));
+		if (debug) {
+			memset(str, 0, sizeof(str));
+			inet_ntop(AF_INET, &((fmr + i)->ip4_prefix), str, INET_ADDRSTRLEN);
+			printf("[%s, %d]%d<%s>\n", __FUNCTION__, __LINE__, sizeof((fmr + i)->ip4_prefix), str);
+		}
+		addattr_l(n, 1024, IFLA_IPTUN_FMR_IP4_PREFIX, &((fmr + i)->ip4_prefix), sizeof((fmr + i)->ip4_prefix));
+		if (debug)
+			printf("[%s, %d]%d\n", __FUNCTION__, __LINE__, (fmr + i)->ip6_prefix_len);
+		addattr8(n, 1024, IFLA_IPTUN_FMR_IP6_PREFIX_LEN, (fmr + i)->ip6_prefix_len);
+		if (debug)
+			printf("[%s, %d]%d\n", __FUNCTION__, __LINE__, (fmr + i)->ip4_prefix_len);
+		addattr8(n, 1024, IFLA_IPTUN_FMR_IP4_PREFIX_LEN, (fmr + i)->ip4_prefix_len);
+		if (debug)
+			printf("[%s, %d]%d\n", __FUNCTION__, __LINE__, (fmr + i)->ea_len);
+		addattr8(n, 1024, IFLA_IPTUN_FMR_EA_LEN, (fmr + i)->ea_len);
+		if (debug)
+			printf("[%s, %d]%d\n", __FUNCTION__, __LINE__, (fmr + i)->offset);
+		addattr8(n, 1024, IFLA_IPTUN_FMR_OFFSET, (fmr + i)->offset);
+
+		addattr_nest_end(n, nest_rule);
+	}
+	addattr_nest_end(n, nest);
+	if(fmr)
+		free(fmr);
 	return 0;
 }
 

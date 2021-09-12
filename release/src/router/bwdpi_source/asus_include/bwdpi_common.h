@@ -97,7 +97,7 @@
 	Now, new module only uses /dev/idp. Old platforms / models use old node /dev/detector.
 	Add compile flag to make these platform use old node, others are considered as new models to make sure module could untar and load signature.
 */
-#if defined(RTCONFIG_SOC_IPQ8064) || defined(RTCONFIG_QCA956X) || (defined(RTCONFIG_RALINK) && !defined(RTCONFIG_RALINK_MT7622)) \
+#if defined(RTCONFIG_SOC_IPQ8064) || defined(RTCONFIG_QCA956X) || (defined(RTCONFIG_RALINK) && !defined(RTCONFIG_RALINK_MT7622) && !defined(RTCONFIG_RALINK_MT7621)) \
 	|| defined(RTCONFIG_LANTIQ) || defined(RTCONFIG_BCM7)
 #define DEVNODE         "/dev/detector" // old node
 #else
@@ -194,6 +194,7 @@ extern void sqlite_db_check();
 extern void tm_eula_check();
 
 //dpi_support.c
+extern int check_tcode_blacklist();
 extern int dump_dpi_support(int index);
 extern void setup_dpi_support_bitmap();
 extern int model_protection();

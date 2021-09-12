@@ -40,7 +40,8 @@
 var wl_maclist_x_array = '<% nvram_get("wl_maclist_x"); %>';
 
 var manually_maclist_list_array = new Array();
-
+var manually_maclist_list_ori_array = new Array();
+var wl_macmode_ori = ('<% nvram_get("wl_macmode"); %>' == "disabled") ? "allow" : '<% nvram_get("wl_macmode"); %>';
 function initial(){
 	if(isSwMode("re") && concurrep_support){
 		document.form.wl_subunit.value = 1;
@@ -68,6 +69,7 @@ function initial(){
 		}
 
 		manually_maclist_list_array[_index] = clientName;
+		manually_maclist_list_ori_array[_index] = clientName;
 	}
 
 	if((sw_mode == 2 || sw_mode == 4) && document.form.wl_unit.value == '<% nvram_get("wlc_band"); %>' && !concurrep_support){
@@ -171,7 +173,7 @@ function addRow(obj, upper){
 	var mac = obj.value.toUpperCase();
 
 	if(rule_num >= upper){
-		alert("<#JS_itemlimit1#> " + upper + " <#JS_itemlimit2#>");
+		alert("<#AiMesh_Binding_Rule_Maxi#>\n<#AiMesh_Delete_Unused_Rule#>");
 		return false;	
 	}	
 	
@@ -195,53 +197,59 @@ function addRow(obj, upper){
 			}	
 		}		
 	}		
-	
-	if(isSupport("amas") && isSupport("force_roaming") && isSupport("sta_ap_bind")) {
-		var client_bind_count_status = function(){
-			var status = {"wl_maclist_max_count":0, "sta_binding_count":0, "allow_maximum":64};
-			var sta_binding_list = decodeURIComponent(httpApi.nvramCharToAscii(["sta_binding_list"], true).sta_binding_list);
-			var each_node_rule = sta_binding_list.split("<");
-			$.each(each_node_rule, function(index, value){
-				if(value != ""){
-					var node_client_rule = value.split(">");
-					var node_mac = "";
-					$.each(node_client_rule, function(index, value){
-						switch(index){
-							case 2://client list
-								var each_client = value.split("|");
-								$.each(each_client, function(index, value){
-									status.sta_binding_count++;
-								});
-								break;
-						}
-					});
-				}
-			});
-			for(var i = 0; i < wl_info.wl_if_total; i += 1) {
-				var wl_maclist_x = httpApi.nvramGet(["wl" + i + "_maclist_x"])["wl" + i + "_maclist_x"];
-				status["wl" + i + "_count"] = 0;
-				if(wl_maclist_x != "") {
-					var temp_count = (wl_maclist_x.split('&#60').length) - 1;
-					status.wl_maclist_max_count = Math.max(temp_count, status.wl_maclist_max_count);
-					status["wl" + i + "_count"] = temp_count;
+
+	if(document.form.enable_mac[0].checked){
+		if(isSupport("amas") && isSupport("force_roaming") && isSupport("sta_ap_bind")){
+			var rule_hint = "";
+			var acl_and_client_bind_allow_maximum = 0;
+			if(isSupport("acl96") && document.form.wl_macmode_show.value == "deny")
+				acl_and_client_bind_allow_maximum = 96;
+			else if(!isSupport("acl96")){
+				var cfg_re_maxnum = httpApi.hookGet("get_onboardingstatus").cfg_re_maxnum;
+				acl_and_client_bind_allow_maximum = 64 - (cfg_re_maxnum * 2);
+			}
+
+			if(acl_and_client_bind_allow_maximum > 0){
+				var sta_binding_count = 0;
+				var sta_binding_list = decodeURIComponent(httpApi.nvramCharToAscii(["sta_binding_list"], true).sta_binding_list);
+				var each_node_rule = sta_binding_list.split("<");
+				$.each(each_node_rule, function(index, value){
+					if(value != ""){
+						var node_client_rule = value.split(">");
+						var node_mac = "";
+						$.each(node_client_rule, function(index, value){
+							switch(index){
+								case 2://client list
+									var each_client = value.split("|");
+									$.each(each_client, function(index, value){
+										sta_binding_count++;
+									});
+									break;
+							}
+						});
+					}
+				});
+
+				var current_rule_count = Object.keys(manually_maclist_list_array).length;
+				if((sta_binding_count + current_rule_count) >= acl_and_client_bind_allow_maximum) {
+					rule_hint = "<#AiMesh_Binding_Rule_Maxi#>";
+					rule_hint += "\n";
+					rule_hint += "<#AiMesh_Delete_Unused_Rule#>";
+					if(sta_binding_count != 0){
+						rule_hint += "\n";
+						rule_hint += "- AiMesh client binding rule";/* untranslated */
+					}
+					if(current_rule_count != 0){
+						rule_hint += "\n";
+						rule_hint += "- <#FirewallConfig_MFList_groupitemname#>";
+					}
 				}
 			}
-			var cfg_re_maxnum = httpApi.hookGet("get_onboardingstatus", true).cfg_re_maxnum;
-			if(cfg_re_maxnum != undefined)
-				status.allow_maximum = status.allow_maximum - (cfg_re_maxnum * 2);//bcm need double.
 
-			return status;
-		};
-		var client_bind_status = client_bind_count_status();
-		var current_rule_count = Object.keys(manually_maclist_list_array).length;
-		if((client_bind_status.sta_binding_count + current_rule_count) >= client_bind_status.allow_maximum) {
-			var hint = "<#AiMesh_Binding_Rule_Maxi#>";
-			hint += "\n";
-			hint += "<#AiMesh_Binding_Rule_Count#>".replace("#RULECOUNT", client_bind_status.sta_binding_count);
-			hint += "\n";
-			hint += "<#AiMesh_Delete_Unused_Rule#>";
-			alert(hint);
-			return false;
+			if(rule_hint != ""){
+				alert(rule_hint);
+				return false;
+			}
 		}
 	}
 
@@ -252,7 +260,7 @@ function addRow(obj, upper){
 		manually_maclist_list_array[mac] = "New device";
 	}
 
-	obj.value = ""
+	obj.value = "";
 	show_wl_maclist_x();
 }
 
@@ -396,6 +404,23 @@ function checkWLReady(){
 	    }
   	});
 }
+function change_wl_macmode(){
+	if(wl_macmode_ori != document.form.wl_macmode_show.value){
+		manually_maclist_list_array = [];
+		$("#change_filter_mode_hint").css("display", "flex");
+	}
+	else{
+		manually_maclist_list_array = [];
+		Object.keys(manually_maclist_list_ori_array).forEach(function(key) {
+			var clientMac = key.toUpperCase();
+			var clientName = manually_maclist_list_ori_array[key];
+			manually_maclist_list_array[clientMac] = clientName;
+		});
+		$("#change_filter_mode_hint").css("display", "none");
+	}
+
+	show_wl_maclist_x();
+}
 </script>
 </head>
 
@@ -471,10 +496,11 @@ function checkWLReady(){
 								<a class="hintstyle" href="javascript:void(0);" onClick="openHint(18,1);"><#FirewallConfig_MFMethod_itemname#></a>
 							</th>
 							<td>
-								<select name="wl_macmode_show" class="input_option">
+								<select name="wl_macmode_show" class="input_option" onChange="change_wl_macmode();">
 									<option class="content_input_fd" value="allow" <% nvram_match("wl_macmode", "allow","selected"); %>><#FirewallConfig_MFMethod_item1#></option>
 									<option class="content_input_fd" value="deny" <% nvram_match("wl_macmode", "deny","selected"); %>><#FirewallConfig_MFMethod_item2#></option>
 								</select>
+								<span id="change_filter_mode_hint" style="margin-top:4px;display:none;">The "MAC filter list" will be removed when you switch the "MAC Filter Mode".</span>
 							</td>
 						</tr>
 					</table>

@@ -116,6 +116,13 @@ static int load_next_chunk(server *srv, connection *con, chunkqueue *cq, off_t m
 				return -1;
 			}
 			
+			// close file
+			if( c->file.length == (offset + toSend)) {
+				smbc_wrapper_close(con, c->file.fd);
+				c->file.fd = -1;
+			}
+
+
 			*data = local_send_buffer;
 			*data_len = toSend;
 		}

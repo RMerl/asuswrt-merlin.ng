@@ -8,6 +8,8 @@
 <meta HTTP-EQUIV="Expires" CONTENT="-1">
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
 <link rel="icon" href="images/favicon.png">
+<script type="text/javascript" src="/js/jquery.js"></script>
+<script type="text/javascript" src="/js/https_redirect/https_redirect.js"></script>
 <title>ASUS Login</title>
 <style>
 body{
@@ -292,6 +294,64 @@ function tryParseJSON (jsonString){
     return false;
 };
 
+var htmlEnDeCode = (function() {
+	var charToEntityRegex,
+		entityToCharRegex,
+		charToEntity,
+		entityToChar;
+
+	function resetCharacterEntities() {
+		charToEntity = {};
+		entityToChar = {};
+		// add the default set
+		addCharacterEntities({
+			'&amp;'	 :   '&',
+			'&gt;'	  :   '>',
+			'&lt;'	  :   '<',
+			'&quot;'	:   '"',
+			'&#39;'	 :   "'"
+		});
+	}
+
+	function addCharacterEntities(newEntities) {
+		var charKeys = [],
+			entityKeys = [],
+			key, echar;
+		for (key in newEntities) {
+			echar = newEntities[key];
+			entityToChar[key] = echar;
+			charToEntity[echar] = key;
+			charKeys.push(echar);
+			entityKeys.push(key);
+		}
+		charToEntityRegex = new RegExp('(' + charKeys.join('|') + ')', 'g');
+		entityToCharRegex = new RegExp('(' + entityKeys.join('|') + '|&#[0-9]{1,5};' + ')', 'g');
+	}
+
+	function htmlEncode(value){
+		var htmlEncodeReplaceFn = function(match, capture) {
+			return charToEntity[capture];
+		};
+
+		return (!value) ? value : String(value).replace(charToEntityRegex, htmlEncodeReplaceFn);
+	}
+
+	function htmlDecode(value) {
+		var htmlDecodeReplaceFn = function(match, capture) {
+			return (capture in entityToChar) ? entityToChar[capture] : String.fromCharCode(parseInt(capture.substr(2), 10));
+		};
+
+		return (!value) ? value : String(value).replace(entityToCharRegex, htmlDecodeReplaceFn);
+	}
+
+	resetCharacterEntities();
+
+	return {
+		htmlEncode: htmlEncode,
+		htmlDecode: htmlDecode
+	};
+})();
+
 var login_info =  tryParseJSON('<% login_error_info(); %>');
 var isIE8 = navigator.userAgent.search("MSIE 8") > -1; 
 var isIE9 = navigator.userAgent.search("MSIE 9") > -1; 
@@ -303,10 +363,10 @@ var countdownid, rtime_obj;
 var redirect_page = login_info.page;
 
 if ('<% nvram_get("http_dut_redir"); %>' == '1') {
-var isRouterMode = ('<% nvram_get("sw_mode"); %>' == '1') ? true : false;
+var isRouterMode = (htmlEnDeCode.htmlEncode(decodeURIComponent('<% nvram_char_to_ascii("","sw_mode"); %>')) == '1') ? true : false;
 
 var header_info = [<% get_header_info(); %>][0];
-var ROUTERHOSTNAME = '<% nvram_get("local_domain"); %>';
+var ROUTERHOSTNAME = htmlEnDeCode.htmlEncode(decodeURIComponent('<% nvram_char_to_ascii("","local_domain"); %>'));
 var domainNameUrl = header_info.protocol+"://"+ROUTERHOSTNAME+":"+header_info.port;
 var chdom = function(){window.location.href=domainNameUrl};
 (function(){
@@ -323,7 +383,7 @@ function isSupport(_ptn){
 	return (ui_support[_ptn]) ? ui_support[_ptn] : 0;
 }
 var captcha_support = isSupport("captcha");
-var captcha_enable = '<% nvram_get("captcha_enable"); %>';
+var captcha_enable = htmlEnDeCode.htmlEncode(decodeURIComponent('<% nvram_char_to_ascii("", "captcha_enable"); %>'));
 if(captcha_support && captcha_enable != "0")
 	var captcha_on = (login_info.error_num >= 2 && login_info.error_status != "7")? true : false;
 else
@@ -589,11 +649,11 @@ function regen_captcha(){
 
 			<div id="name_title_ie" style="display:none;margin:20px 0 -10px 78px;" class="p1 title_gap"><#Username#></div>
 			<div class="title_gap">
-				<input type="text" id="login_username" name="login_username" tabindex="1" class="form_input" maxlength="20" autocapitalize="off" autocomplete="off" placeholder="<#Username#>">
+				<input type="text" id="login_username" name="login_username" tabindex="1" class="form_input" maxlength="128" autocapitalize="off" autocomplete="off" placeholder="<#Username#>">
 			</div>
 			<div id="password_title_ie" style="display:none;margin:20px 0 -20px 78px;" class="p1 title_gap"><#HSDPAConfig_Password_itemname#></div>
 			<div class="password_gap">
-				<input type="password" name="login_passwd" tabindex="2" class="form_input" maxlength="16" placeholder="<#HSDPAConfig_Password_itemname#>" autocapitalize="off" autocomplete="off">
+				<input type="password" name="login_passwd" tabindex="2" class="form_input" maxlength="128" placeholder="<#HSDPAConfig_Password_itemname#>" autocapitalize="off" autocomplete="off">
 			</div>
 			<div class="error_hint" style="display:none;" id="error_status_field"></div>
 			<div id="captcha_field" style="display: none;">

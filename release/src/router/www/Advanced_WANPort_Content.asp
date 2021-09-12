@@ -81,7 +81,7 @@
 
 
 var wans_caps = '<% nvram_get("wans_cap"); %>';
-if(based_modelid == "GT-AX11000" || based_modelid == "RT-AX86U" || based_modelid == "GT-AXE11000")
+if(based_modelid == "GT-AX11000" || productid == "RT-AX86U" || based_modelid == "GT-AXE11000")
 	wans_caps = wans_caps + " lan2";
 var wans_routing_rulelist_array = [];
 var wans_flag;
@@ -118,6 +118,8 @@ var wanports_bond = '<% nvram_get("wanports_bond"); %>';
 if(wan_bonding_support)
 	var orig_bond_wan = httpApi.nvramGet(["bond_wan"], true).bond_wan;
 
+var faq_href1 = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=129";
+var faq_href2 = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=130";
 
 function initial(){
 	show_menu();
@@ -139,8 +141,8 @@ function initial(){
 	addWANOption(document.form.wans_primary, wans_caps_primary.split(" "));
 	addWANOption(document.form.wans_second, wans_caps_secondary.split(" "));
 
-	httpApi.faqURL("1011719", function(url){document.getElementById("dualwan_faq").href=url;});
-	httpApi.faqURL("1037368", function(url){document.getElementById("network_detect_faq").href=url;});
+	document.getElementById("dualwan_faq").href=faq_href1;
+	document.getElementById("network_detect_faq").href=faq_href2;
 
    	document.form.wans_mode.value = wans_mode_orig;
 
@@ -163,18 +165,18 @@ function initial(){
 	};
 
 	wans_routing_rulelist_array = parseNvramToArray();
-	form_show(wans_flag);		
+	form_show(wans_flag);
 	setTimeout("showLANIPList();", 1000);
 
 	if(based_modelid == "RT-AC87U"){ //MODELDEP: RT-AC87 : Quantenna port
                 document.form.wans_lanport1.remove(0);   //Primary LAN1
                 document.form.wans_lanport2.remove(0);   //Secondary LAN1
-	}else if(based_modelid == "RT-N19"){
+	}else if(based_modelid == "RT-N19" || based_modelid =="PL-AX56_XP4"){
 		document.form.wans_lanport1.remove(3);
 		document.form.wans_lanport1.remove(2);
 		document.form.wans_lanport2.remove(3);
 		document.form.wans_lanport2.remove(2);
-	}else if(based_modelid == "RT-AC95U" || based_modelid == "RT-AX95Q" || based_modelid == "RT-AXE95Q" || based_modelid == "RT-AX82_XD6"){
+	}else if(based_modelid == "RT-AC95U" || based_modelid == "RT-AX95Q" || based_modelid == "XT8PRO" || based_modelid == "RT-AXE95Q" || based_modelid == "ET8PRO" || based_modelid == "RT-AX82_XD6"){
 		document.form.wans_lanport1.remove(3);
 		document.form.wans_lanport2.remove(3);
 	}
@@ -214,13 +216,12 @@ function form_show(v){
 		inputCtrl(document.form.wan0_isp_country, 0);
 		inputCtrl(document.form.wan0_isp_list, 0);
 		inputCtrl(document.form.wan1_isp_country, 0);
-		inputCtrl(document.form.wan1_isp_list, 0);		
-		document.form.wans_routing_enable[1].checked = true;		
+		inputCtrl(document.form.wan1_isp_list, 0);
+		document.form.wans_routing_enable[1].checked = true;
 		document.form.wans_routing_enable[0].disabled = true;
 		document.form.wans_routing_enable[1].disabled = true;
-		document.getElementById('watchdog_table').style.display = "none";
 		document.getElementById('Routing_rules_table').style.display = "none";
-		if(based_modelid == "GT-AX11000" || based_modelid == "RT-AX86U" || based_modelid == "GT-AXE11000"){
+		if(based_modelid == "GT-AX11000" || productid == "RT-AX86U" || based_modelid == "GT-AXE11000"){
 			if( wans_dualwan_array[0] == "wan" && document.form.wans_extwan.value == "1"){
 				document.form.wans_primary.value = "lan2";
 			}
@@ -234,18 +235,16 @@ function form_show(v){
 			
 		appendLANoption1(document.form.wans_primary);
 		document.getElementById("wans_mode_tr").style.display = "none";
-		document.getElementById("wandog_fb_count_tr").style.display = "none";	
+		document.getElementById("wandog_fb_count_tr").style.display = "none";
 		document.getElementById("routing_table").style.display = "none";
 		document.getElementById("wans_standby_tr").style.display = "none";
 		inputCtrl(document.form.wans_standby, 0);
+		show_watchdog_table();
 	}
 	else{ //DualWAN enabled
-		if(based_modelid == "GT-AX11000" || based_modelid == "RT-AX86U" || based_modelid == "GT-AXE11000"){
+		if(based_modelid == "GT-AX11000" || productid == "RT-AX86U" || based_modelid == "GT-AXE11000"){
 			if( (wans_dualwan_array[0] == "wan" && document.form.wans_extwan.value == "1") ||
-				(wans_dualwan_array[0] == "lan" && document.form.wans_lanport.value == "5" && document.form.wans_extwan.value == "0") ){
-				var wans_caps_tmp = wans_caps_secondary.split(" ");
-				wans_caps_tmp = wans_caps_tmp.slice(1);
-				addWANOption(document.form.wans_second, wans_caps_tmp);
+				(wans_dualwan_array[0] == "lan" && document.form.wans_lanport.value == "5") ){
 				document.form.wans_primary.value = "lan2";
 			}
 			else{
@@ -283,7 +282,7 @@ function form_show(v){
 					document.form.wans_second.value = "lan";
 			}
 			else if((wans_dualwan_array[0] == "wan" && document.form.wans_extwan.value == "1") ||
-					(wans_dualwan_array[0] == "lan" && document.form.wans_lanport.value == "5" && document.form.wans_extwan.value == "0")){
+					(wans_dualwan_array[0] == "lan" && document.form.wans_lanport.value == "5")){
 
 				if(wans_caps.search("usb") >= 0)
 					document.form.wans_second.value = "usb";
@@ -296,9 +295,9 @@ function form_show(v){
 			}
 		}	
 		else{
-			if(based_modelid == "GT-AX11000" || based_modelid == "RT-AX86U" || based_modelid == "GT-AXE11000"){
+			if(based_modelid == "GT-AX11000" || productid == "RT-AX86U" || based_modelid == "GT-AXE11000"){
 				if( (wans_dualwan_array[1] == "wan" && document.form.wans_extwan.value == "1") ||
-					(wans_dualwan_array[1] == "lan" && document.form.wans_lanport.value == "5" && document.form.wans_extwan.value == "0"))
+					(wans_dualwan_array[1] == "lan" && document.form.wans_lanport.value == "5"))
 					document.form.wans_second.value = "lan2";
 				else{
 					document.form.wans_second.value = wans_dualwan_array[1];
@@ -312,16 +311,8 @@ function form_show(v){
 		appendLANoption1(document.form.wans_primary);
 		appendLANoption2(document.form.wans_second);
 
-		var replace_html = '<input type="text" name="wandog_interval" class="input_3_table" maxlength="2" value="<% nvram_get("wandog_interval"); %>" onblur="update_consume_bytes();" onKeyPress="return validator.isNumber(this, event);" placeholder="5" autocorrect="off" autocapitalize="off">';
-		var new_html_str = document.getElementById("retry_intervale_setting").innerHTML.replace("$INPUT_INTERVAL", replace_html);
-		document.getElementById("retry_intervale_setting").innerHTML = new_html_str;
-
-		replace_html = '<input type="text" name="wandog_maxfail" class="input_3_table" maxlength="2" value="<% nvram_get("wandog_maxfail"); %>" onKeyPress="return validator.isNumber(this, event);" placeholder="5" autocorrect="off" autocapitalize="off">';
-		new_html_str = document.getElementById("wandog_maxfail_setting").innerHTML.replace("$WANDOG_MAXFAIL", replace_html);
-		document.getElementById("wandog_maxfail_setting").innerHTML = new_html_str;
-
-		replace_html = '<input type="text" name="wandog_fb_count" class="input_3_table" maxlength="2" value="<% nvram_get("wandog_fb_count"); %>" onKeyPress="return validator.isNumber(this, event);" placeholder="5" autocorrect="off" autocapitalize="off">';
-		new_html_str = document.getElementById("wandog_fbcount_setting").innerHTML.replace("$WANDOG_FB_COUNT", replace_html);
+		var replace_html = '<input type="text" name="wandog_fb_count" class="input_3_table" maxlength="2" value="<% nvram_get("wandog_fb_count"); %>" onKeyPress="return validator.isNumber(this, event);" placeholder="5" autocorrect="off" autocapitalize="off">';
+		var new_html_str = document.getElementById("wandog_fbcount_setting").innerHTML.replace("$WANDOG_FB_COUNT", replace_html);
 		document.getElementById("wandog_fbcount_setting").innerHTML = new_html_str;
 
 		if(gobi_support){
@@ -338,9 +329,7 @@ function form_show(v){
 		appendModeOption(document.form.wans_mode_option.value);
 		show_wans_rules();
 		document.getElementById("wans_mode_tr").style.display = "";
-		appendMonitorOption(document.form.dns_probe_chk);
-		appendMonitorOption(document.form.wandog_enable_chk);
-	}		
+	}
 }
 
 function applyRule(){
@@ -368,13 +357,8 @@ function applyRule(){
 			return confirm("Enable the LAN as WAN setting will cause (LAN > Switch Control > bonding) feature will be disabled, Are you sure to continue?");/*untranslated*/
 		};
 		if(wans_flag == 1) {
-			if( (primary_wan_type == "lan" || secondary_wan_type == "lan") && lan_trunk_type != "0" ) {
-				if(!confirmAction())
-					return false;
-			}
-		}
-		else {
-			if(primary_wan_type == "lan" && lan_trunk_type != "0") {
+			if ((primary_wan_type == "lan" || secondary_wan_type == "lan") && lan_trunk_type != "0"
+			 && (primary_wan_type == "wan" || primary_wan_type == "wan2" || secondary_wan_type == "wan" || secondary_wan_type == "wan2")) {
 				if(!confirmAction())
 					return false;
 			}
@@ -382,17 +366,17 @@ function applyRule(){
 	}
 
 	if(wans_flag == 1){
-		document.form.wans_extwan.value = 0;
+		document.form.wans_extwan.value = "0";
 		if(document.form.wans_primary.value == "lan2"){
 			if(document.form.wans_second.value == "wan"){
-				document.form.wans_dualwan.value = "wan lan";
+				document.form.wans_dualwan.value = "lan wan";
 				document.form.wans_lanport.value = "5";
+				document.form.wans_extwan.value = "0";
 			}
 			else{
 				document.form.wans_dualwan.value = "wan " + document.form.wans_second.value;
+				document.form.wans_extwan.value = "1";
 			}
-			
-			document.form.wans_extwan.value = 1;
 		}
 		else if(document.form.wans_second.value == "lan2"){
 			if(document.form.wans_primary.value == "wan"){
@@ -409,7 +393,7 @@ function applyRule(){
 			document.form.wans_dualwan.value = document.form.wans_primary.value +" "+ document.form.wans_second.value;
 		}
 
-		if(!dsl_support && (document.form.wans_dualwan.value == "usb lan" || document.form.wans_dualwan.value == "lan usb") && based_modelid != "GT-AX11000" && based_modelid != "RT-AX86U" && based_modelid != "GT-AXE11000"){
+		if(!dsl_support && based_modelid != "BRT-AC828" && (document.form.wans_dualwan.value == "usb lan" || document.form.wans_dualwan.value == "lan usb") && based_modelid != "GT-AX11000" && productid != "RT-AX86U" && based_modelid != "GT-AXE11000"){
 			alert("WAN port should be selected in Dual WAN.");
 			document.form.wans_primary.focus();
 			return;
@@ -435,7 +419,6 @@ function applyRule(){
 
 			document.form.wans_lb_ratio.value = document.form.wans_lb_ratio_0.value + ":" + document.form.wans_lb_ratio_1.value;
 			
-			
 			if(document.form.wan0_isp_country.options[0].selected == true){
 					document.form.wan0_routing_isp.value = country[document.form.wan0_isp_country.value];
 			}else{
@@ -457,24 +440,10 @@ function applyRule(){
 			document.form.wan1_routing_isp_enable.disabled = true;
 			document.form.wan1_routing_isp.disabled = true;
 			document.form.wans_routing_rulelist.disabled =true;
-
-			if(document.form.wandog_enable_chk.checked)
-				document.form.wandog_enable.value = "1";
-			else
-				document.form.wandog_enable.value = "0";
-
-			if(document.form.dns_probe_chk.checked)
-				document.form.dns_probe.value = "1";
-			else
-				document.form.dns_probe.value = "0";
-
-			if(!validator.range(document.form.wandog_interval, dns_probe_timeout_threshold, 99))
-				return false;
 		}
 	}
 	else{
 		document.form.wans_mode.value = "fo";
-		appendModeOption("fo");
 		document.form.wans_lb_ratio.disabled = true;
 		document.form.wan0_routing_isp_enable.disabled = true;
 		document.form.wan0_routing_isp.disabled = true;	
@@ -491,14 +460,27 @@ function applyRule(){
 		}
 		document.form.wan_unit.value = 0;
 		document.form.wandog_enable.value = "0";
-	}	
+	}
+
+	if(document.form.wandog_enable_chk.checked)
+		document.form.wandog_enable.value = "1";
+	else
+		document.form.wandog_enable.value = "0";
+
+	if(document.form.dns_probe_chk.checked)
+		document.form.dns_probe.value = "1";
+	else
+		document.form.dns_probe.value = "0";
+
+	if(!validator.range(document.form.wandog_interval, dns_probe_timeout_threshold, 99))
+		return false;
 
 	if(document.form.wans_primary.value == "lan")
 		document.form.wans_lanport.value = document.form.wans_lanport1.value;
 	else if(document.form.wans_second.value =="lan")
 		document.form.wans_lanport.value = document.form.wans_lanport2.value;
 	else{
-		if(based_modelid != "GT-AX11000" && based_modelid != "RT-AX86U" && based_modelid != "GT-AXE11000"){
+		if(based_modelid != "GT-AX11000" && productid != "RT-AX86U" && based_modelid != "GT-AXE11000"){
 			document.form.wans_lanport.disabled = true;
 		}
 	}
@@ -644,14 +626,6 @@ function addWANOption(obj, wanscapItem){
 
 function changeWANProto(obj){
 	if(wans_flag == 1){	//dual WAN on
-		if(obj.name == "wans_primary" && (based_modelid == "RT-AX86U" || based_modelid == "GT-AX11000" || based_modelid == "GT-AXE11000")){
-			var wans_caps_tmp = wans_caps_secondary.split(" ");
-			if(obj.value == "lan2"){
-				wans_caps_tmp = wans_caps_tmp.slice(1);
-			}
-			addWANOption(document.form.wans_second, wans_caps_tmp);
-		}
-
 		if(document.form.wans_primary.value == document.form.wans_second.value){
 			if(obj.name == "wans_primary"){
 				if (obj.value == "dsl"){
@@ -882,7 +856,6 @@ function appendModeOption(v){
 			inputCtrl(document.form.wans_routing_enable[0], 1);
 			inputCtrl(document.form.wans_routing_enable[1], 1);
 			
-			document.getElementById('watchdog_table').style.display = "none";
 			if('<% nvram_get("wans_routing_enable"); %>' == 1){
 				document.form.wans_routing_enable[0].checked = true;				
 				document.getElementById('Routing_rules_table').style.display = "";
@@ -892,7 +865,7 @@ function appendModeOption(v){
 				document.getElementById('Routing_rules_table').style.display = "none";
 			}
 
-			document.getElementById("wandog_fb_count_tr").style.display = "none";			
+			document.getElementById("wandog_fb_count_tr").style.display = "none";
 			document.getElementById("routing_table").style.display = "";
 			document.getElementById("fb_span").style.display = "none";
 			document.form.wans_mode.value = "lb";
@@ -906,15 +879,14 @@ function appendModeOption(v){
 			inputCtrl(document.form.wans_isp_unit[1], 0);
 			inputCtrl(document.form.wans_isp_unit[2], 0);
 			inputCtrl(document.form.wan0_isp_country, 0);
-			inputCtrl(document.form.wan0_isp_list, 0);				
+			inputCtrl(document.form.wan0_isp_list, 0);
 			inputCtrl(document.form.wan1_isp_country, 0);
-			inputCtrl(document.form.wan1_isp_list, 0);				
-			document.form.wans_routing_enable[1].checked = true;				
+			inputCtrl(document.form.wan1_isp_list, 0);
+			document.form.wans_routing_enable[1].checked = true;
 			document.form.wans_routing_enable[0].disabled = true;
 			document.form.wans_routing_enable[1].disabled = true;
 			document.getElementById('watchdog_table').style.display = "";
 			document.getElementById('Routing_rules_table').style.display = "none";
-			document.getElementById("wandog_fb_count_tr").style.display = "none";
 			document.getElementById("routing_table").style.display = "none";
 			document.getElementById("fb_span").style.display = "";
 
@@ -931,6 +903,33 @@ function appendModeOption(v){
 				document.form.wans_mode.value = "fo";
 			}
 		}
+
+		show_watchdog_table();
+}
+
+function show_watchdog_table(){
+	var replace_html = "";
+	var new_html_str = "";
+
+	replace_html = '<input type="text" name="wandog_interval" class="input_3_table" maxlength="2" value="<% nvram_get("wandog_interval"); %>" onblur="update_consume_bytes();" onKeyPress="return validator.isNumber(this, event);" placeholder="5" autocorrect="off" autocapitalize="off">';
+	new_html_str = document.getElementById("retry_intervale_setting").innerHTML.replace("$INPUT_INTERVAL", replace_html);
+	document.getElementById("retry_intervale_setting").innerHTML = new_html_str;
+
+	replace_html = '<input type="text" name="wandog_maxfail" class="input_3_table" maxlength="2" value="<% nvram_get("wandog_maxfail"); %>" onKeyPress="return validator.isNumber(this, event);" placeholder="5" autocorrect="off" autocapitalize="off">';
+	if(wans_flag && (document.form.wans_mode.value == "fo" || document.form.wans_mode.value == "fb")){
+		$("#fo_detection_count_hd").html("<#dualwan_failover_trigger#>");
+		new_html_str = "<#dualwan_failover_desc#>".replace("$WANDOG_MAXFAIL", replace_html);
+		$("#wandog_maxfail_setting").html(new_html_str);
+	}
+	else{
+		var new_str = "When the current WAN fails $WANDOG_MAXFAIL continuous times, it is deemed a disconnection.";//untranslated
+		new_html_str = new_str.replace("$WANDOG_MAXFAIL", replace_html);
+		$("#fo_detection_count_hd").html("Internet Connection Diagnosis");//untranslated
+		$("#wandog_maxfail_setting").html(new_html_str);
+	}
+
+	appendMonitorOption(document.form.dns_probe_chk);
+	appendMonitorOption(document.form.wandog_enable_chk);
 }
 
 function appendMonitorOption(obj){
@@ -986,14 +985,14 @@ function show_wans_rules(){
 					"title" : "<#FirewallConfig_LanWanSrcIP_itemname#>",
 					"maxlength" : "18",
 					"validator" : "dualWanRoutingRules",
-					"placeholder" : "Please input IP Address or IP Address/Netmask or all."
+					"placeholder" : "Please input IP Address or IP Address/Netmask or all." //untranslated
 				},
 				{
 					"editMode" : "text",
 					"title" : "<#FirewallConfig_LanWanDstIP_itemname#>",
 					"maxlength" : "18",
 					"validator" : "dualWanRoutingRules",
-					"placeholder" : "Please input IP Address or IP Address/Netmask or all."
+					"placeholder" : "Please input IP Address or IP Address/Netmask or all." //untranslated
 				},
 				{
 					"editMode" : "select",
@@ -1527,7 +1526,7 @@ function remain_origins(){
 
 					<tr>
 						<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(26,5);"><div id="fo_detection_count_hd"><#dualwan_failover_trigger#></div></a></th>
-						<td id="wandog_maxfail_setting"><#dualwan_failover_desc#></td>
+						<td id="wandog_maxfail_setting"></td>
 					</tr>
 
 					<tr id="wandog_fb_count_tr">

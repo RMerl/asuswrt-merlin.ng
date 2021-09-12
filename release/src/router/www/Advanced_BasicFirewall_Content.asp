@@ -37,10 +37,11 @@ var overlib_str1 = new Array();
 var overlib_str2 = new Array();
 var overlib_str3 = new Array();
 
+var faq_href = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=104";
+
 function initial(){
 	show_menu();
-	//	https://www.asus.com/support/FAQ/1031610/
-	httpApi.faqURL("1031610", function(url){document.getElementById("faq").href=url;});
+	document.getElementById("faq").href=faq_href;
 	loadAppOptions();
 	showipv6_fw_rulelist();
 	change_firewall(firewall_enable);

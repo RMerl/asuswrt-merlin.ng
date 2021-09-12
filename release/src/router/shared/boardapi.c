@@ -29,9 +29,7 @@
 #endif
 #endif
 #ifdef HND_ROUTER
-#include "ethswctl.h"
-#include "ethctl.h"
-#ifdef RTCONFIG_HND_ROUTER_AX_675X
+#if defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(RTCONFIG_HND_ROUTER_AX_6756)
 #include "bcmnet.h"
 #endif
 #endif
@@ -143,11 +141,6 @@ static const struct led_btn_table_s {
 #ifdef RTCONFIG_LOGO_LED
 	{ "led_logo_gpio",	&led_gpio_table[LED_LOGO] },
 #endif
-#ifdef TUFAX5400
-	{ "led_logo1_gpio",	&led_gpio_table[LED_LOGO1] },
-	{ "led_logo2_gpio",	&led_gpio_table[LED_LOGO2] },
-	{ "led_logo3_gpio",	&led_gpio_table[LED_LOGO3] },
-#endif
 	{ "led_wan_red_gpio",	&led_gpio_table[LED_WAN_RED] },
 #if defined(RTCONFIG_WANLEDX2) && defined(RTCONFIG_WANRED_LED)
 	{ "led_wan2_red_gpio",	&led_gpio_table[LED_WAN2_RED] },
@@ -206,26 +199,35 @@ static const struct led_btn_table_s {
 	{ "led_white_gpio",	&led_gpio_table[LED_WHITE] },
 #endif
 #endif
-#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400)
+#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX6000)
 	{ "led_group1_red_gpio",	&led_gpio_table[LED_GROUP1_RED] },
 	{ "led_group1_green_gpio",	&led_gpio_table[LED_GROUP1_GREEN] },
 	{ "led_group1_blue_gpio",	&led_gpio_table[LED_GROUP1_BLUE] },
+#ifndef TUFAX5400
 	{ "led_group2_red_gpio",	&led_gpio_table[LED_GROUP2_RED] },
 	{ "led_group2_green_gpio",	&led_gpio_table[LED_GROUP2_GREEN] },
 	{ "led_group2_blue_gpio",	&led_gpio_table[LED_GROUP2_BLUE] },
 	{ "led_group3_red_gpio",	&led_gpio_table[LED_GROUP3_RED] },
 	{ "led_group3_green_gpio",	&led_gpio_table[LED_GROUP3_GREEN] },
 	{ "led_group3_blue_gpio",	&led_gpio_table[LED_GROUP3_BLUE] },
+#if !defined(GTAXE11000_PRO) && !defined(GTAXE16000) && !defined(GTAX6000)
 	{ "led_group4_red_gpio",	&led_gpio_table[LED_GROUP4_RED] },
 	{ "led_group4_green_gpio",	&led_gpio_table[LED_GROUP4_GREEN] },
 	{ "led_group4_blue_gpio",	&led_gpio_table[LED_GROUP4_BLUE] },
+#endif
+#endif
 #endif
 #if defined(GSAX3000) || defined(GSAX5400)
 	{ "led_group5_red_gpio",	&led_gpio_table[LED_GROUP5_RED] },
 	{ "led_group5_green_gpio",	&led_gpio_table[LED_GROUP5_GREEN] },
 	{ "led_group5_blue_gpio",	&led_gpio_table[LED_GROUP5_BLUE] },
 #endif
-
+#ifdef GTAX6000
+	{ "led_group_ant1_gpio",	&led_gpio_table[LED_GROUP_ANT1] },
+	{ "led_group_ant2_gpio",	&led_gpio_table[LED_GROUP_ANT2] },
+	{ "led_group_ant3_gpio",	&led_gpio_table[LED_GROUP_ANT3] },
+	{ "led_group_ant4_gpio",	&led_gpio_table[LED_GROUP_ANT4] },
+#endif
 #ifdef RPAC53
 	{ "led_pwr_red_gpio",	&led_gpio_table[LED_POWER_RED] },
 	{ "led_2g_orange_gpio",	&led_gpio_table[LED_2G_ORANGE] },
@@ -274,7 +276,7 @@ static const struct led_btn_table_s {
 	{ "led_sig2_gpio",		&led_gpio_table[LED_SIG2] },
 	{ "led_purple_gpio",		&led_gpio_table[LED_PURPLE] },
 #endif		
-#ifdef RPAX56
+#if defined(RPAX56) || defined(RPAX58)
 	{ "led_red_gpio",       &led_gpio_table[LED_RED_GPIO] },
 	{ "led_green_gpio",     &led_gpio_table[LED_GREEN_GPIO] },
 	{ "led_blue_gpio",      &led_gpio_table[LED_BLUE_GPIO] },
@@ -282,26 +284,47 @@ static const struct led_btn_table_s {
 	{ "led_yellow_gpio",    &led_gpio_table[LED_YELLOW_GPIO] },
 	{ "led_purple_gpio",    &led_gpio_table[LED_PURPLE_GPIO] },
 #endif
-#if defined(RTAX95Q) || defined(RTAXE95Q) || defined(RTAX56_XD4) || defined(RTAX82_XD6)
+#if defined(RTAX95Q) || defined(XT8PRO) || defined(RTAXE95Q) || defined(ET8PRO) || defined(RTAX56_XD4) || defined(XD4PRO) || defined(RTAX82_XD6) || defined(ET12) || defined(XT12)
 	{ "bt_rst_gpio",        &led_gpio_table[BT_RESET] },
 	{ "bt_disable_gpio",    &led_gpio_table[BT_DISABLE] },
 	{ "led_rgb1_red_gpio",  &led_gpio_table[LED_RGB1_RED] },
 	{ "led_rgb1_green_gpio",        &led_gpio_table[LED_RGB1_GREEN] },
 	{ "led_rgb1_blue_gpio", &led_gpio_table[LED_RGB1_BLUE] },
 #endif
+#if defined(ET12) || defined(XT12)
+	{ "led_rgb2_red_gpio",		&led_gpio_table[LED_RGB2_RED] },
+	{ "led_rgb2_green_gpio",	&led_gpio_table[LED_RGB2_GREEN] },
+	{ "led_rgb2_blue_gpio",		&led_gpio_table[LED_RGB2_BLUE] },
+	{ "led_rgb3_red_gpio",		&led_gpio_table[LED_RGB3_RED] },
+	{ "led_rgb3_green_gpio",	&led_gpio_table[LED_RGB3_GREEN] },
+	{ "led_rgb3_blue_gpio",		&led_gpio_table[LED_RGB3_BLUE] },
+	{ "led_side1_white_gpio", 	&led_gpio_table[LED_SIDE1_WHITE] },
+	{ "led_side2_white_gpio",       &led_gpio_table[LED_SIDE2_WHITE] },
+	{ "led_side3_white_gpio", 	&led_gpio_table[LED_SIDE3_WHITE] },
+#endif
 #if defined(CTAX56_XD4)
 	{ "led_rgb1_red_gpio",  &led_gpio_table[LED_RGB1_RED] },
 	{ "led_rgb1_green_gpio",        &led_gpio_table[LED_RGB1_GREEN] },
 	{ "led_rgb1_blue_gpio", &led_gpio_table[LED_RGB1_BLUE] },
 #endif
-#if defined(RTAX56_XD4)
+#if defined(RTAX56_XD4) || defined(XD4PRO)
 	{ "btn_bt_indicator_gpio",        &led_gpio_table[IND_BT] },
 	{ "btn_pa_indicator_gpio",    &led_gpio_table[IND_PA] },
 #endif
 #if defined(DSL_AX82U)
 	{ "led_wifi_gpio",		&led_gpio_table[LED_WIFI] },
 #endif
-
+#ifdef RTAX58U_V2
+	{ "switch_rst_gpio",		&led_gpio_table[SWITCH_RESET] },
+#endif
+#if defined(GTAXE16000) || defined(GTAX11000_PRO)
+	{ "led_wan_red_gpio",		&led_gpio_table[LED_WAN_RGB_RED] },
+	{ "led_wan_green_gpio",		&led_gpio_table[LED_WAN_RGB_GREEN] },
+	{ "led_wan_blue_gpio",		&led_gpio_table[LED_WAN_RGB_BLUE] },
+	{ "led_10g_red_gpio",		&led_gpio_table[LED_10G_RGB_RED] },
+	{ "led_10g_green_gpio",		&led_gpio_table[LED_10G_RGB_GREEN] },
+	{ "led_10g_blue_gpio",		&led_gpio_table[LED_10G_RGB_BLUE] },
+#endif
 	{ NULL, NULL },
 };
 
@@ -451,7 +474,7 @@ int init_gpio(void)
 		, "led_pwr_red_gpio"
 		, "led_wifi_gpio", "led_sig1_gpio", "led_sig2_gpio", "led_purple_gpio"
 #endif
-#ifdef RPAX56
+#if defined(RPAX56) || defined(RPAX58)
 		, "led_red_gpio", "led_green_gpio", "led_blue_gpio", "led_white_gpio", "led_yellow_gpio", "led_purple_gpio"
 #endif
 #ifdef BLUECAVE
@@ -543,6 +566,12 @@ int init_gpio(void)
 #endif
 		}
 #endif
+#endif
+
+#if defined(RTCONFIG_SW_CTRL_ALLLED)
+		/* LED may be turn on by U-boot or kernel. Turn if off if AllLED=0 */
+		if (inhibit_led_on())
+			disable = (use_gpio & GPIO_ACTIVE_LOW)? 1 : 0;
 #endif
 
 #if !defined(RTCONFIG_CONCURRENTREPEATER)
@@ -923,47 +952,7 @@ int get_port_status(int unit)
 	int mask = 0;
 
 #ifdef HND_ROUTER
-	int i, ret = 0;
-#ifndef RTCONFIG_HND_ROUTER_AX_675X
-	int extra_p0 = 0;
-	unsigned int regv=0, pmdv=0;
-
-#ifdef RTCONFIG_EXT_BCM53134
-	regv = hnd_ethswctl(REGACCESS, 0x0100, 2, 0, 0);
-	pmdv = hnd_ethswctl(PMDIOACCESS, 0x0100, 2, 0, 0);
-#else
-	regv = hnd_ethswctl(REGACCESS, 0x0100, 2, 0, 0) & 0xf;
-#endif
-
-#ifdef RTCONFIG_EXT_BCM53134
-	switch(get_model()) {
-		case MODEL_GTAC5300:
-			extra_p0 = S_53134;
-			break;
-	}
-#endif
-#endif
-
-#if defined(RTCONFIG_HND_ROUTER_AX_6710)
-	char word[100], *next;
-
-	foreach(word, nvram_safe_get("wan_ifnames"), next)
-		ret |= hnd_get_phy_status(word);
-
-	foreach(word, nvram_safe_get("lan_ifnames"), next)
-		ret |= hnd_get_phy_status(word);
-#else
-	for(i = 0; i < 9; ++i){
-		if(mask & 1<<i) {
-#ifdef RTCONFIG_HND_ROUTER_AX_675X
-			ret |= hnd_get_phy_status(i);
-#else
-			ret |= hnd_get_phy_status(i, extra_p0, regv, pmdv);
-#endif
-		}
-	}
-#endif
-	return ret;
+	return get_port_status_hnd(unit);
 #else
 	mask |= (0x0001<<unit);
 
@@ -984,124 +973,7 @@ int wanport_status(int wan_unit)
 #endif	
 	return get_phy_status(wan_unit);
 #else // Broadcom
-#if defined(RTCONFIG_HND_ROUTER_AX_6710)
-	if(!is_router_mode())
-		return hnd_get_phy_status(nvram_safe_get("eth_ifnames"));
-	else
-		return hnd_get_phy_status(get_wanx_ifname(wan_unit));
-#elif defined(RTCONFIG_HND_ROUTER_AX_675X)
-	int i = 0;
-	char word[100], *next;
-
-	foreach(word, nvram_safe_get("wanports"), next) {
-		if (i == wan_unit)
-			return hnd_get_phy_status(atoi(word));
-
-		i++;
-	}
-
-	return 0;
-#else // RTCONFIG_HND_ROUTER_AX_675X
-	char word[100], *next;
-	int mask;
-	char wan_ports[16];
-#ifdef HND_ROUTER
-	int i, ret = 0, extra_p0 = 0;
-	unsigned int regv=0, pmdv=0;
-	char word2[100], *next2;
-#endif
-
-	memset(wan_ports, 0, 16);
-	mask = 0;
-
-#ifdef HND_ROUTER
-	if(sw_mode() == SW_MODE_AP && nvram_get_int("re_mode") == 0){
-		strcpy(wan_ports, "lanports");
-
-		foreach(word, nvram_safe_get(wan_ports), next) {
-			mask |= (0x0001<<atoi(word));
-			if(sw_mode() == SW_MODE_AP)
-				break;
-		}
-	}
-	else{
-		strcpy(wan_ports, "wanports");
-		i = 0;
-		foreach(word2, nvram_safe_get(wan_ports), next2){
-			if(i == wan_unit)
-				break;
-
-			++i;
-		}
-
-		mask |= (0x0001<<atoi(word2));
-#ifdef RTCONFIG_BONDING_WAN
-		if (nvram_match("bond_wan", "1")){
-			memset(wan_ports, 0, 16);
-			mask = 0;
-			strcpy(wan_ports, "wanports_bond");
-			foreach(word2, nvram_safe_get(wan_ports), next2){
-				mask |= (0x0001<<atoi(word2));
-				// _dprintf("wan_bond: port mask[%08X]\n", mask);
-			}
-		}
-#endif
-	}
-#else // HND_ROUTER
-#ifndef RTN53
-	if(sw_mode() == SW_MODE_AP && nvram_get_int("re_mode") == 0)
-		strcpy(wan_ports, "lanports");
-	else
-#endif
-	if(wan_unit == 1)
-		strcpy(wan_ports, "wan1ports");
-	else
-		strcpy(wan_ports, "wanports");
-
-	foreach(word, nvram_safe_get(wan_ports), next) {
-		mask |= (0x0001<<atoi(word));
-		if(sw_mode() == SW_MODE_AP)
-			break;
-	}
-#endif // HND_ROUTER
-
-#ifdef RTCONFIG_WIRELESSWAN
-	// to do for report wireless connection status
-	if(is_wirelesswan_enabled())
-		return 1;
-#endif
-
-#ifdef HND_ROUTER
-#ifdef RTCONFIG_EXT_BCM53134
-	regv = hnd_ethswctl(REGACCESS, 0x0100, 2, 0, 0);
-	pmdv = hnd_ethswctl(PMDIOACCESS, 0x0100, 2, 0, 0);
-#else
-	regv = hnd_ethswctl(REGACCESS, 0x0100, 2, 0, 0) & 0xf;
-#endif
-
-#ifdef RTCONFIG_EXT_BCM53134
-	switch(get_model()) {
-		case MODEL_GTAC5300:
-		case MODEL_RTAX88U:
-		case MODEL_RTAX95Q:
-		case MODEL_RTAXE95Q:
-		case MODEL_GTAX11000:
-		case MODEL_GTAXE11000:
-			extra_p0 = S_53134;
-			break;
-	}
-#endif
-
-	for(i = 0; i < 9; ++i){
-		if(mask & 1<<i) {
-			ret |= hnd_get_phy_status(i, extra_p0, regv, pmdv);
-		}
-	}
-	return ret;
-#else // HND_ROUTER
-	return get_phy_status(mask);
-#endif // HND_ROUTER
-#endif	/* RTCONFIG_HND_ROUTER_AX_675X */
+	return wanport_status_brcm(wan_unit);
 #endif
 }
 
@@ -1123,7 +995,7 @@ int wanport_speed(void)
 	return get_phy_speed(mask);
 }
 
-#ifdef RTCONFIG_HND_ROUTER_AX_675X
+#if defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(RTCONFIG_HND_ROUTER_AX_6756)
 int ethctl_set_phy(char *ifname, int ctrl)
 {
 	struct ifreq ifr;
@@ -1156,7 +1028,7 @@ int ethctl_set_phy(char *ifname, int ctrl)
 
 int wanport_ctrl(int ctrl)
 {
-#ifdef RPAX56
+#if defined(RPAX56) || defined(RPAX58)
 	return ethctl_set_phy("eth0", ctrl);
 #endif
 #ifdef RTCONFIG_RALINK
@@ -1208,7 +1080,7 @@ int lanport_status(void)
 
 #elif defined(RTCONFIG_QCA)
 	return rtkswitch_lanPorts_phyStatus();
-#elif defined(RTAX55) || defined(RTAX1800)
+#elif defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2)
 	return rtkswitch_lanPorts_phyStatus();
 #elif defined(RTCONFIG_HND_ROUTER_AX_675X)
 	int status = 0;
@@ -1252,7 +1124,7 @@ int lanport_speed(void)
 
 int lanport_ctrl(int ctrl)
 {
-#ifdef RPAX56
+#if defined(RPAX56) || defined(RPAX58)
 	return ethctl_set_phy("eth0", ctrl);
 #endif
 	// no general way for ralink platform, so individual api for each kind of switch are used
@@ -1315,7 +1187,7 @@ int lanport_ctrl(int ctrl)
 		system("/usr/bin/switch_cli GSW_MDIO_DATA_WRITE nAddressDev=5 nAddressReg=0 nData=0x1c00");
 	}
 	return 1;
-#elif defined(RTAX55) || defined(RTAX1800)
+#elif defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2)
 	if (ctrl)
 		rtkswitch_LanPort_linkUp();
 	else
@@ -1345,8 +1217,16 @@ int lanport_ctrl(int ctrl)
 #endif
 
 	foreach(word, nvram_safe_get("lanports"), next) {
+#ifdef BCM6750
+		doSystem("ethctl eth%d phy-power %s", atoi(word), ctrl ? "up" : "down");
+#else
 		mask |= (0x0001<<atoi(word));
+#endif
 	}
+#ifdef BCM6750
+	return 1;
+#else
 	return set_phy_ctrl(mask, ctrl);
+#endif
 #endif
 }

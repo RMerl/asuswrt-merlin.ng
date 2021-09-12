@@ -1,0 +1,19 @@
+WireGuard Key Generation in JavaScript
+======================================
+
+Various people believe in JavaScript crypto, unfortunately. This small
+example helps them fuel their poor taste.
+
+It's possible to generate WireGuard keys (and thus configurations) in the
+browser. The webpage here simulates talking to a server to exchange keys
+and then generates a configuration file for the user to download.
+
+Bugs
+----
+
+Who knows how emscripten actually compiles this and whether or not it
+introduces interesting side-channel attacks.
+
+Secrets aren't zerored after use. Maybe you can get around this with
+some tricks taking advantage of browser allocator behavior and different
+processes, but it seems pretty hard.

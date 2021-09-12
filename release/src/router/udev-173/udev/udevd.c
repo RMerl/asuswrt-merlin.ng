@@ -43,6 +43,9 @@
 #include <sys/ioctl.h>
 #include <sys/inotify.h>
 #include <sys/utsname.h>
+#if defined(RTCONFIG_HND_ROUTER_AX_6756)
+#include <sys/sysmacros.h>
+#endif
 
 #include "udev.h"
 #include "sd-daemon.h"

@@ -137,6 +137,7 @@ function initial(){
 			gen_country_list();
 			reloadProfile();
 			inputCtrl(document.form.modem_autoapn, 1);
+			inputCtrl(document.form.modem_enable_option, 1);
 			change_apn_mode();
 		}
 		else{
@@ -165,6 +166,7 @@ function initial(){
 				reloadProfile();
 				inputCtrl(document.form.modem_autoapn, 1);
 				inputCtrl(document.form.modem_authmode, 1);
+				inputCtrl(document.form.modem_enable_option, 1);
 				change_apn_mode();
 			}
 			else{
@@ -355,7 +357,6 @@ function switch_modem_mode(mode){
 	}
 	else{	// Disable (mode == 0)
 		inputCtrl(document.form.Dev3G, 0);
-		inputCtrl(document.form.modem_enable_option, 0);
 		inputCtrl(document.form.modem_country, 0);
 		inputCtrl(document.form.modem_isp, 0);
 		inputCtrl(document.form.modem_apn, 0);
@@ -418,11 +419,9 @@ function show_APN_list(){
 	/* use manual or location */
 	if(document.form.modem_country.value == ""){
 		inputCtrl(document.form.modem_isp, 0);
-		inputCtrl(document.form.modem_enable_option, 1);
 	}
 	else{
 		inputHideCtrl(document.form.modem_isp, 1);
-		inputHideCtrl(document.form.modem_enable_option, 0);
 		if(protolist[isp_order] == "")
 			protolist[isp_order] = 1;
 	}
@@ -627,7 +626,6 @@ function hide_usb_settings(_flag){
 	inputCtrl(document.form.modem_ttlsid, 0);
 	inputCtrl(document.form.Dev3G, 0);
 	inputCtrl(document.form.modem_mtu, (typeof(_flag) != 'undefined' && _flag) ? 1 : 0);
-	document.getElementById("modem_enable_div_tr").style.display = "none";
 	document.getElementById("modem_apn_div_tr").style.display = "none";
 	document.getElementById("modem_dialnum_div_tr").style.display = "none";
 	document.getElementById("modem_user_div_tr").style.display = "none";
@@ -638,6 +636,7 @@ function select_usb_device(obj){
 	if(obj.selectedIndex == 0){
 		inputCtrl(document.form.modem_autoapn, 1);
 		inputCtrl(document.form.modem_authmode, 1);
+		inputCtrl(document.form.modem_enable_option, 1);
 		switch_modem_mode(document.form.modem_enable_option.value);
 		gen_country_list();
 		reloadProfile();
@@ -656,12 +655,10 @@ function change_apn_mode(){
 		var modem_enable_str = "";
 		inputCtrl(document.form.modem_country, 0);
 		inputCtrl(document.form.modem_isp, 0);
-		inputCtrl(document.form.modem_enable_option, 0);
 		inputCtrl(document.form.modem_apn, 0);
 		inputCtrl(document.form.modem_dialnum, 0);
 		inputCtrl(document.form.modem_user, 0);
 		inputCtrl(document.form.modem_pass, 0);
-		document.getElementById("modem_enable_div_tr").style.display = "";
 		document.getElementById("modem_apn_div_tr").style.display = "";
 		document.getElementById("modem_dialnum_div_tr").style.display = "";
 		document.getElementById("modem_user_div_tr").style.display = "";
@@ -674,7 +671,6 @@ function change_apn_mode(){
 			mdoem_enable_str = "TD-SCDMA";
 		else if(document.form.modem_enable.value == "4")
 			mdoem_enable_str = "WiMAX";
-		document.getElementById("modem_enable_div").innerHTML = mdoem_enable_str;
 		document.getElementById("modem_apn_div").innerHTML = apn;
 		document.getElementById("modem_dialnum_div").innerHTML = dialnum;
 		document.getElementById("modem_user_div").innerHTML = user;
@@ -684,17 +680,14 @@ function change_apn_mode(){
 		inputCtrl(document.form.modem_country, 1);
 		if(document.form.modem_country.value == ""){
 			inputCtrl(document.form.modem_isp, 0);
-			inputCtrl(document.form.modem_enable_option, 1);			
 		}
 		else{
 			inputCtrl(document.form.modem_isp, 1);
-			inputCtrl(document.form.modem_enable_option, 0);
 		}
 		inputCtrl(document.form.modem_apn, 1);
 		inputCtrl(document.form.modem_dialnum, 1);
 		inputCtrl(document.form.modem_user, 1);
 		inputCtrl(document.form.modem_pass, 1);
-		document.getElementById("modem_enable_div_tr").style.display = "none";
 		document.getElementById("modem_apn_div_tr").style.display = "none";
 		document.getElementById("modem_dialnum_div_tr").style.display = "none";
 		document.getElementById("modem_user_div_tr").style.display = "none";
@@ -862,15 +855,7 @@ function change_apn_mode(){
 							
 							<br/><span id="hsdpa_hint" style="display:none;"><#HSDPAConfig_hsdpa_enable_hint2#></span>
 						</td>
-					</tr>
-
-          			<tr id="modem_enable_div_tr" style="display:none;">
-						<th><#Tele_Standards#></th>
-	            		<td>
-							<div id="modem_enable_div" style="color:#FFFFFF; margin-left:1px;"></div>
-						</td>
 					</tr>					
-
           			<tr>
 						<th><a class="hintstyle"  href="javascript:void(0);" onClick="openHint(21,3);"><#HSDPAConfig_private_apn_itemname#></a></th>
             			<td>

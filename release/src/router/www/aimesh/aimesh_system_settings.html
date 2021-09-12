@@ -7,8 +7,62 @@ jQuery.fn.showTextHint = function(hintStr){
 		.appendTo(this.parent());
 }
 
+var faq_href = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=136";
+
 function initial_system_settings() {
 	popupHint.init();
+
+	if(isSupport("qca_plc2")){
+		var gen_option = function(_node_info){
+			var mac = _node_info.mac;
+			var model_name = _node_info.model_name;
+			if(_node_info.ui_model_name != undefined && _node_info.ui_model_name != "")
+				model_name = _node_info.ui_model_name;
+			var display_text = htmlEnDeCode.htmlEncode(model_name) + " (" + mac + ")";
+			return $("<option/>").attr({"value": mac}).text(display_text);
+		};
+		$("#sel_plc_master").append($('<option>', {value: "", text: "<#Auto#>"}));
+		var get_cfg_clientlist = httpApi.hookGet("get_cfg_clientlist");
+		get_cfg_clientlist.forEach(function(item, index, array){
+			var isReNode = (index == 0) ? false : true;
+			if(isReNode){
+				if("capability" in item){
+					if("21" in item.capability) {
+						var multiple_uplink_port = item.capability["21"];
+						if(multiple_uplink_port["Ports"] != undefined){
+							$.each(multiple_uplink_port["Ports"], function(index, value){
+								if(value.Type == "3"){//plc
+									if($('#sel_plc_master option[value="' + item.mac + '"]').length == 0)
+										$("#sel_plc_master").append(gen_option(item));
+								}
+							});
+						}
+					}
+				}
+			}
+			else{
+				$("#sel_plc_master").append(gen_option(item));
+			}
+		});
+		var cfg_plc_master = httpApi.nvramGet(["cfg_plc_master"]).cfg_plc_master;
+		if($('#sel_plc_master option[value="' + cfg_plc_master + '"]').length == 0){
+			$("#sel_plc_master").append($("<option/>").attr({"value": cfg_plc_master}).text(htmlEnDeCode.htmlEncode(cfg_plc_master)));
+		}
+		$("#sel_plc_master option[value='" + cfg_plc_master + "']").attr("selected","selected");
+		$("#sel_plc_master").unbind("change").change(function(){
+			httpApi.nvramSet({
+				"action_mode" : "apply",
+				"cfg_plc_master" : $(this).val(),
+				"rc_service" : "restart_plc_master"
+			}, function(){
+				setTimeout(function(){
+					httpApi.nvramGet(["cfg_plc_master"], true);
+				},1000);
+			}());
+		});
+	}
+	else
+		$(".system_settings_bg.plc_master").hide();
 
 	if(isSupport("amas_eap")){
 		var amas_eap_bhmode = httpApi.nvramGet(["amas_eap_bhmode"]).amas_eap_bhmode;
@@ -228,15 +282,15 @@ function initial_system_settings() {
 						var sc_array = [];
 						if(wl_info.band2g_support && wl_info.band5g_support && (wl_info.band5g_2_support || wl_info.band6g_support)){
 							if(isSupport("wifi6e")){
-								sc_array.push({"text":"Tri-Band Smart Connect (2.4 GHz, 5 GHz and 6 GHz)", "value":"1"});
+								sc_array.push({"text":"<#smart_connect_tri#> (2.4 GHz, 5 GHz and 6 GHz)", "value":"1"});
 							}
 							else{
-								sc_array.push({"text":"Tri-Band Smart Connect (2.4 GHz, 5 GHz-1 and 5 GHz-2)", "value":"1"});
+								sc_array.push({"text":"<#smart_connect_tri#> (2.4 GHz, 5 GHz-1 and 5 GHz-2)", "value":"1"});
 								sc_array.push({"text":"5 GHz Smart Connect (5 GHz-1 and 5 GHz-2)", "value":"2"});
 							}
 						}
 						else if(wl_info.band2g_support && wl_info.band5g_support)
-							sc_array.push({"text":"Dual-Band Smart Connect (2.4 GHz and 5 GHz)", "value":"1"});
+							sc_array.push({"text":"<#smart_connect_dual#> (2.4 GHz and 5 GHz)", "value":"1"});
 
 						var $sc_item_list_bg = $("<div>").addClass("sc_item_list_bg");
 						$sc_item_list_bg.appendTo($hint_bg);
@@ -398,7 +452,7 @@ function initial_system_settings() {
 					}, false);
 					popupHint.set_btn_cancel();
 				}
-				httpApi.faqURL("1044184", function(url){$(".popup_hint_component #eap_faq").find("#wpa3FaqLink").attr("href", url);});
+				$(".popup_hint_component #eap_faq").find("#wpa3FaqLink").attr("href", faq_href);
 			}
 		});
 	}
@@ -626,7 +680,7 @@ function node_location_translate(_node_info, _isReNode){
 	else{
 		result = location;
 	}
-	return result;
+	return htmlEnDeCode.htmlEncode(result);
 }
 function handle_re_path(_re_path){
 	var result = parseInt(_re_path);
@@ -634,6 +688,17 @@ function handle_re_path(_re_path){
 }
 $(document).ready(initial_system_settings);
 </script>
+<div class="system_settings_bg plc_master">
+	<div class="system_icon"></div>
+	<div class="system_text">
+		<span>Powerline Master</span><!-- untranslated -->
+		<div class="bubble_icon info plc_master hover_pop_hint"></div>
+		<div class="hover_pop_hint_bg plc_master">
+			In a Powerline mesh network, we need one of the powerline devices to work as a Powerline Master, which can be a AiMesh router or a AiMesh node with a solid backhaul network to allow another mesh node to connect with it using powerline backhaul. In default , the mesh system select AiMesh router as Powerline Master. You can select another PLC capable node as Powerline Master if the PLC performance on AiMesh router not good enough.<!-- untranslated -->
+		</div>
+	</div>
+	<div class="select_option_bg"><select id="sel_plc_master"></select></select></div>
+</div>
 <div class="system_settings_bg eap">
 	<div class="system_icon"></div>
 	<div class="system_text">

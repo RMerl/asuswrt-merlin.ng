@@ -648,7 +648,7 @@ var download = function(content, fileName, mimeType) {
 													<div id="bar_shade" style="position:absolute;width:330px;height:330px;background-color:#505050;opacity:0.6;margin:5px;display:none"></div>
 													<div>
 														<div style="display:table-cell;width:50px;padding: 10px;">
-															<div style="width:35px;height:35px;background:url('images/New_ui/infected.svg');margin: 0 auto;"></div>
+															<div style="width:35px;height:35px;background:url('images/New_ui/infected.svg');margin: 0 auto;background-size: 100%;"></div>
 
 														</div>	
 														<div style="display:table-cell;width:200px;padding: 10px;vertical-align:middle;text-align:center;">

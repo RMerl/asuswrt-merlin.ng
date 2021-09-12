@@ -15,6 +15,9 @@
 #define PROTO_L2TP "L2TP"
 #define PROTO_OVPN "OpenVPN"
 #define PROTO_IPSec "IPSec"
+#define PROTO_WG "WireGuard"
+#define PROTO_HMA "HMA"
+#define PROTO_NORDVPN "NordVPN"
 
 #define MAX_VPNC_DATA_LEN	68
 #define MAX_VPNC_PROFILE	16
@@ -26,7 +29,10 @@ typedef enum{
 	VPNC_PROTO_PPTP,
 	VPNC_PROTO_L2TP,
 	VPNC_PROTO_OVPN,
-	VPNC_PROTO_IPSEC
+	VPNC_PROTO_IPSEC,
+	VPNC_PROTO_WG,
+	VPNC_PROTO_HMA,
+	VPNC_PROTO_NORDVPN,
 }VPNC_PROTO;
 
 typedef enum{
@@ -52,6 +58,16 @@ typedef struct _vpnc_ovpn{
 	int ovpn_idx; // 1~5
 }VPNC_OVPN;
 
+typedef struct _vpnc_wg{
+	int wg_idx;
+}VPNC_WG;
+
+typedef struct _vpnc_tp{
+	int tpvpn_idx;
+	char region[48];
+	char conntype[8];
+}VPNC_TPVPN;
+
 typedef struct _vpnc_profile{
 	int active;	//0: inactive, 1:active
 	int vpnc_idx;	// 1 ~ MAX_VPNC_PROFILE
@@ -60,6 +76,8 @@ typedef struct _vpnc_profile{
 	union {
 		VPNC_PPTP pptp;
 		VPNC_OVPN ovpn;
+		VPNC_WG wg;
+		VPNC_TPVPN tpvpn;
 	}config;	
 }VPNC_PROFILE;
 

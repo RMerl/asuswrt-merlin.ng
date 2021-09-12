@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd";>
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.wireguard.wg0</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/usr/local/bin/wg-quick</string>
+    <string>up</string>
+    <string>/usr/local/etc/wireguard/wg0.conf</string>
+  </array>
+  <key>OnDemand</key>
+  <false/>
+  <key>RunAtLoad</key>
+  <true/>
+  <key>TimeOut</key>
+  <integer>90</integer>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PATH</key>
+    <string>/usr/local/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+  </dict>
+</dict>
+</plist>

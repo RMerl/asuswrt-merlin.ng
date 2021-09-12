@@ -14,6 +14,7 @@ enum {
 #ifdef BCM_KF_NETFILTER
 	O_MODE,
 #endif
+	O_PSID,
 };
 
 static void MASQUERADE_help(void)
@@ -22,6 +23,8 @@ static void MASQUERADE_help(void)
 "MASQUERADE target options:\n"
 " --to-ports <port>[-<port>]\n"
 "				Port (range) to map to.\n"
+" --psid <offset,length,psid>\n"
+"				Port Set to map to.\n"
 " --random\n"
 #ifndef BCM_KF_NETFILTER
 "				Randomize source port.\n");
@@ -38,6 +41,7 @@ static const struct xt_option_entry MASQUERADE_opts[] = {
 #ifdef BCM_KF_NETFILTER
 	{.name = "mode", .id = O_MODE, .type = XTTYPE_STRING},
 #endif
+	{.name = "psid", .id = O_PSID, .type = XTTYPE_STRING},
 	XTOPT_TABLEEND,
 };
 
@@ -83,6 +87,33 @@ parse_ports(const char *arg, struct nf_nat_multi_range *mr)
 	xtables_param_act(XTF_BAD_VALUE, "MASQUERADE", "--to-ports", arg);
 }
 
+static void
+parse_psid(const char *arg, int portok, struct nf_nat_multi_range *mr)
+{
+	char *end;
+	unsigned int offset, length, psid;
+
+	if (!portok)
+		xtables_error(PARAMETER_PROBLEM,
+			   "Need TCP, UDP, ICMP, SCTP or DCCP with port specification");
+
+	if (!xtables_strtoui(arg, &end, &offset, 0, 16) || *end++ != ',' ||
+	    !xtables_strtoui(end, &end, &length, 0, 16) || *end++ != ',' ||
+	    !xtables_strtoui(end, &end, &psid, 0, UINT16_MAX))
+		xtables_error(PARAMETER_PROBLEM,
+			   "Invalid --psid syntax\n");
+
+	if (offset + length > 16 ||
+	    (1 << (16 - length)) - (!!offset << (16 - offset - length)) <= 0)
+		xtables_error(PARAMETER_PROBLEM,
+			   "Invalid --psid range\n");
+
+	mr->range[0].flags |= IP_NAT_RANGE_PROTO_PSID;
+	mr->range[0].min.psid.offset = offset;
+	mr->range[0].min.psid.length = length;
+	mr->range[0].max.psid.psid = psid & ((1 << length) - 1);
+}
+
 static void MASQUERADE_parse(struct xt_option_call *cb)
 {
 	const struct ipt_entry *entry = cb->xt_entry;
@@ -125,6 +156,9 @@ static void MASQUERADE_parse(struct xt_option_call *cb)
 				   "Unknown mode %s", cb->arg);
       break;
 #endif
+	case O_PSID:
+		parse_psid(cb->arg, portok, mr);
+		break;
 	}
 }
 
@@ -140,6 +174,13 @@ MASQUERADE_print(const void *ip, const struct xt_entry_target *target,
 		printf("%hu", ntohs(r->min.tcp.port));
 		if (r->max.tcp.port != r->min.tcp.port)
 			printf("-%hu", ntohs(r->max.tcp.port));
+	}
+
+	if (r->flags & IP_NAT_RANGE_PROTO_PSID) {
+		printf(" psid: offset %d, length %d, 0x%x",
+			    r->min.psid.offset,
+			    r->min.psid.length,
+			    r->max.psid.psid);
 	}
 
 	if (r->flags & IP_NAT_RANGE_PROTO_RANDOM)
@@ -160,6 +201,13 @@ MASQUERADE_save(const void *ip, const struct xt_entry_target *target)
 		printf(" --to-ports %hu", ntohs(r->min.tcp.port));
 		if (r->max.tcp.port != r->min.tcp.port)
 			printf("-%hu", ntohs(r->max.tcp.port));
+	}
+
+	if (r->flags & IP_NAT_RANGE_PROTO_PSID) {
+		printf(" --psid %d,%d,0x%x",
+			    r->min.psid.offset,
+			    r->min.psid.length,
+			    r->max.psid.psid);
 	}
 
 	if (r->flags & IP_NAT_RANGE_PROTO_RANDOM)

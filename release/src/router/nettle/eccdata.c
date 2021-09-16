@@ -2,7 +2,9 @@
 
    Generate compile time constant (but machine dependent) tables.
 
-   Copyright (C) 2013, 2014 Niels Möller
+   Copyright (C) 2013, 2014, 2017 Niels Möller
+   Copyright (C) 2017 Daiki Ueno
+   Copyright (C) 2017 Red Hat, Inc.
 
    This file is part of GNU Nettle.
 
@@ -53,8 +55,10 @@ enum ecc_type
   {
     /* y^2 = x^3 - 3x + b (mod p) */
     ECC_TYPE_WEIERSTRASS,
-    /* y^2 = x^3 + b x^2 + x */
-    ECC_TYPE_MONTGOMERY
+    /* x^2 + y^2 = 1 - d x^2 y^2 */
+    ECC_TYPE_EDWARDS,
+    /* -x^2 + y^2 = 1 - d x^2 y^2 */
+    ECC_TYPE_TWISTED_EDWARDS,
   };
 
 struct ecc_curve
@@ -72,16 +76,6 @@ struct ecc_curve
   /* Curve order */
   mpz_t q;
   struct ecc_point g;
-
-  /* Non-zero if we want elements represented as point s(u, v) on an
-     equivalent Edwards curve, using
-
-      u = t x / y
-      v = (x-1) / (x+1)
-  */
-  int use_edwards;
-  mpz_t d;
-  mpz_t t;
 
   /* Table for pippenger's algorithm.
      Element
@@ -127,9 +121,11 @@ ecc_equal_p (const struct ecc_point *p, const struct ecc_point *q)
 }
 
 static void
-ecc_set_zero (struct ecc_point *r)
+ecc_set_zero (const struct ecc_curve *ecc, struct ecc_point *r)
 {
   r->is_zero = 1;
+  mpz_set_ui (r->x, 0);
+  mpz_set_ui (r->y, ecc->type != ECC_TYPE_WEIERSTRASS);
 }
 
 static void
@@ -140,13 +136,22 @@ ecc_set (struct ecc_point *r, const struct ecc_point *p)
   mpz_set (r->y, p->y);
 }
 
+static void
+ecc_add (const struct ecc_curve *ecc, struct ecc_point *r,
+	 const struct ecc_point *p, const struct ecc_point *q);
+
 /* Needs to support in-place operation. */
 static void
 ecc_dup (const struct ecc_curve *ecc,
 	 struct ecc_point *r, const struct ecc_point *p)
 {
+  if (ecc->type != ECC_TYPE_WEIERSTRASS)
+    {
+      ecc_add (ecc, r, p, p);
+      return;
+    }
   if (ecc_zero_p (p))
-    ecc_set_zero (r);
+    ecc_set_zero (ecc, r);
 
   else
     {
@@ -161,32 +166,18 @@ ecc_dup (const struct ecc_curve *ecc,
       mpz_mul_ui (m, p->y, 2);
       mpz_invert (m, m, ecc->p);
 
-      switch (ecc->type)
-	{
-	case ECC_TYPE_WEIERSTRASS:
-	  /* t = 3 (x^2 - 1) * m */
-	  mpz_mul (t, p->x, p->x);
-	  mpz_mod (t, t, ecc->p);
-	  mpz_sub_ui (t, t, 1);
-	  mpz_mul_ui (t, t, 3);
-	  break;
-	case ECC_TYPE_MONTGOMERY:
-	  /* t = (3 x^2 + 2 b x + 1) m = [x(3x+2b)+1] m */
-	  mpz_mul_ui (t, ecc->b, 2);
-	  mpz_addmul_ui (t, p->x, 3);
-	  mpz_mul (t, t, p->x);
-	  mpz_mod (t, t, ecc->p);
-	  mpz_add_ui (t, t, 1);
-	  break;
-	}
+      /* t = 3 (x^2 - 1) * m */
+      mpz_mul (t, p->x, p->x);
+      mpz_mod (t, t, ecc->p);
+      mpz_sub_ui (t, t, 1);
+      mpz_mul_ui (t, t, 3);
+
       mpz_mul (t, t, m);
       mpz_mod (t, t, ecc->p);
 
       /* x' = t^2 - 2 x */
       mpz_mul (x, t, t);
       mpz_submul_ui (x, p->x, 2);
-      if (ecc->type == ECC_TYPE_MONTGOMERY)
-	mpz_sub (x, x, ecc->b);
 
       mpz_mod (x, x, ecc->p);
 
@@ -208,23 +199,62 @@ ecc_dup (const struct ecc_curve *ecc,
 }
 
 static void
-ecc_add (const struct ecc_curve *ecc,
-	 struct ecc_point *r, const struct ecc_point *p, const struct ecc_point *q)
+ecc_add (const struct ecc_curve *ecc, struct ecc_point *r,
+	 const struct ecc_point *p, const struct ecc_point *q)
 {
-  if (ecc_zero_p (p))
-    ecc_set (r, q);
-
-  else if (ecc_zero_p (q))
-    ecc_set (r, p);
-
-  else if (mpz_cmp (p->x, q->x) == 0)
+  if (ecc->type == ECC_TYPE_WEIERSTRASS)
     {
-      if (mpz_cmp (p->y, q->y) == 0)
-	ecc_dup (ecc, r, p);
+      if (ecc_zero_p (p))
+	ecc_set (r, q);
+
+      else if (ecc_zero_p (q))
+	ecc_set (r, p);
+
+      else if (mpz_cmp (p->x, q->x) == 0)
+	{
+	  if (mpz_cmp (p->y, q->y) == 0)
+	    ecc_dup (ecc, r, p);
+	  else
+	    ecc_set_zero (ecc, r);
+	}
       else
-	ecc_set_zero (r);
+	{
+	  mpz_t s, t, x, y;
+	  mpz_init (s);
+	  mpz_init (t);
+	  mpz_init (x);
+	  mpz_init (y);
+
+	  /* t = (q_y - p_y) / (q_x - p_x) */
+	  mpz_sub (t, q->x, p->x);
+	  mpz_invert (t, t, ecc->p);
+	  mpz_sub (s, q->y, p->y);
+	  mpz_mul (t, t, s);
+	  mpz_mod (t, t, ecc->p);
+
+	  /* x' = t^2 - p_x - q_x */
+	  mpz_mul (x, t, t);
+	  mpz_sub (x, x, p->x);
+	  mpz_sub (x, x, q->x);
+	  mpz_mod (x, x, ecc->p);
+
+	  /* y' = (x - x') * t - y */
+	  mpz_sub (y, p->x, x);
+	  mpz_mul (y, y, t);
+	  mpz_sub (y, y, p->y);
+	  mpz_mod (y, y, ecc->p);
+
+	  r->is_zero = 0;
+	  mpz_swap (x, r->x);
+	  mpz_swap (y, r->y);
+
+	  mpz_clear (s);
+	  mpz_clear (t);
+	  mpz_clear (x);
+	  mpz_clear (y);
+	}
     }
-  else
+  else if (ecc->type == ECC_TYPE_EDWARDS)
     {
       mpz_t s, t, x, y;
       mpz_init (s);
@@ -232,31 +262,99 @@ ecc_add (const struct ecc_curve *ecc,
       mpz_init (x);
       mpz_init (y);
 
-      /* t = (q_y - p_y) / (q_x - p_x) */
-      mpz_sub (t, q->x, p->x);
-      mpz_invert (t, t, ecc->p);
-      mpz_sub (s, q->y, p->y);
-      mpz_mul (t, t, s);
+      /* t = d p_x p_y q_x q_y */
+      mpz_mul (t, ecc->b, p->x);
+      mpz_mod (t, t, ecc->p);
+      mpz_mul (t, t, p->y);
+      mpz_mod (t, t, ecc->p);
+      mpz_mul (t, t, q->x);
+      mpz_mod (t, t, ecc->p);
+      mpz_mul (t, t, q->y);
       mpz_mod (t, t, ecc->p);
 
-      /* x' = t^2 - p_x - q_x */
-      mpz_mul (x, t, t);
-      mpz_sub (x, x, p->x);
-      mpz_sub (x, x, q->x);
-      /* This appears to be the only difference between formulas. */
-      if (ecc->type == ECC_TYPE_MONTGOMERY)
-	mpz_sub (x, x, ecc->b);
+      /* x' = (p_x q_y + q_x p_y) / (1 + t) */
+      mpz_mul (x, p->x, q->y);
+      mpz_mod (x, x, ecc->p);
+      mpz_addmul (x, q->x, p->y);
+      mpz_mod (x, x, ecc->p);
+      mpz_add_ui (s, t, 1);
+      mpz_invert (s, s, ecc->p);
+      mpz_mul (x, x, s);
       mpz_mod (x, x, ecc->p);
 
-      /* y' = (x - x') * t - y */
-      mpz_sub (y, p->x, x);
-      mpz_mul (y, y, t);
-      mpz_sub (y, y, p->y);
+      /* y' = (p_y q_y - p_x q_x) / (1 - t) */
+      mpz_mul (y, p->y, q->y);
+      mpz_mod (y, y, ecc->p);
+      mpz_submul (y, p->x, q->x);
+      mpz_mod (y, y, ecc->p);
+      mpz_set_ui (s, 1);
+      mpz_sub (s, s, t);
+      mpz_invert (s, s, ecc->p);
+      mpz_mul (y, y, s);
       mpz_mod (y, y, ecc->p);
 
-      r->is_zero = 0;
       mpz_swap (x, r->x);
       mpz_swap (y, r->y);
+      r->is_zero = mpz_cmp_ui (r->x, 0) == 0 && mpz_cmp_ui (r->y, 1) == 0;
+
+      mpz_clear (s);
+      mpz_clear (t);
+      mpz_clear (x);
+      mpz_clear (y);
+    }
+  else
+    {
+      /* Untwisted:
+	 x = (p_x q_y + p_y q_x) / (1 - d p_x p_y q_x q_y)
+	 y = (p_y q_y - p_x q_x) / (1 + d p_x p_y q_x q_y)
+
+	 Twisted:
+	 x = (p_x q_y + p_y q_x) / (1 - d p_x p_y q_x q_y)
+	 y = (p_y q_y + p_x q_x) / (1 + d p_x p_y q_x q_y)
+
+	 So they differ only by a sign in the expression for the new y
+	 coordinate.
+      */
+
+      mpz_t s, t, x, y;
+      mpz_init (s);
+      mpz_init (t);
+      mpz_init (x);
+      mpz_init (y);
+
+      /* t = d p_x p_y q_x q_y */
+      mpz_mul (t, ecc->b, p->x);
+      mpz_mod (t, t, ecc->p);
+      mpz_mul (t, t, p->y);
+      mpz_mod (t, t, ecc->p);
+      mpz_mul (t, t, q->x);
+      mpz_mod (t, t, ecc->p);
+      mpz_mul (t, t, q->y);
+      mpz_mod (t, t, ecc->p);
+
+      /* x' = (p_x q_y + q_x p_y) / (1 - t) */
+      mpz_mul (x, p->x, q->y);
+      mpz_mod (x, x, ecc->p);
+      mpz_addmul (x, q->x, p->y);
+      mpz_mod (x, x, ecc->p);
+      mpz_ui_sub (s, 1, t);
+      mpz_invert (s, s, ecc->p);
+      mpz_mul (x, x, s);
+      mpz_mod (x, x, ecc->p);
+
+      /* y' = (p_y q_y - p_x q_x) / (1 + t) */
+      mpz_mul (y, p->y, q->y);
+      mpz_mod (y, y, ecc->p);
+      mpz_addmul (y, p->x, q->x);
+      mpz_mod (y, y, ecc->p);
+      mpz_add_ui (s, t, 1);
+      mpz_invert (s, s, ecc->p);
+      mpz_mul (y, y, s);
+      mpz_mod (y, y, ecc->p);
+
+      mpz_swap (x, r->x);
+      mpz_swap (y, r->y);
+      r->is_zero = (mpz_cmp_ui (r->x, 0) == 0 && mpz_cmp_ui (r->y, 1) == 0);
 
       mpz_clear (s);
       mpz_clear (t);
@@ -316,8 +414,7 @@ ecc_set_str (struct ecc_point *p,
 static void
 ecc_curve_init_str (struct ecc_curve *ecc, enum ecc_type type,
 		    const char *p, const char *b, const char *q,
-		    const char *gx, const char *gy,
-		    const char *d, const char *t)
+		    const char *gx, const char *gy)
 {
   ecc->type = type;
 
@@ -332,24 +429,13 @@ ecc_curve_init_str (struct ecc_curve *ecc, enum ecc_type type,
   ecc->table = NULL;
 
   ecc->ref = NULL;
-
-  mpz_init (ecc->d);
-  mpz_init (ecc->t);
-
-  ecc->use_edwards = (t != NULL);
-  if (ecc->use_edwards)
-    {
-      mpz_set_str (ecc->t, t, 16);
-      mpz_set_str (ecc->d, d, 16);
-    }
 }
 
 static void
-ecc_curve_init (struct ecc_curve *ecc, unsigned bit_size)
+ecc_curve_init (struct ecc_curve *ecc, const char *curve)
 {
-  switch (bit_size)
+  if (!strcmp (curve, "secp192r1"))
     {
-    case 192:      
       ecc_curve_init_str (ecc, ECC_TYPE_WEIERSTRASS,
 			  /* p = 2^{192} - 2^{64} - 1 */
 			  "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFE"
@@ -365,8 +451,7 @@ ecc_curve_init (struct ecc_curve *ecc, unsigned bit_size)
 			  "f4ff0afd82ff1012",
 
 			  "07192b95ffc8da78631011ed6b24cdd5"
-			  "73f977a11e794811",
-			  NULL, NULL);
+			  "73f977a11e794811");
       ecc->ref = ecc_alloc (3);
       ecc_set_str (&ecc->ref[0], /* 2 g */
 		   "dafebf5828783f2ad35534631588a3f629a70fb16982a888",
@@ -380,8 +465,9 @@ ecc_curve_init (struct ecc_curve *ecc, unsigned bit_size)
 		   "35433907297cc378b0015703374729d7a4fe46647084e4ba",
 		   "a2649984f2135c301ea3acb0776cd4f125389b311db3be32");
 
-      break;
-    case 224:
+    }
+  else if (!strcmp (curve, "secp224r1"))
+    {
       ecc_curve_init_str (ecc, ECC_TYPE_WEIERSTRASS,
 			  /* p = 2^{224} - 2^{96} + 1 */
 			  "ffffffffffffffffffffffffffffffff"
@@ -397,8 +483,7 @@ ecc_curve_init (struct ecc_curve *ecc, unsigned bit_size)
 			  "56c21122343280d6115c1d21",
 
 			  "bd376388b5f723fb4c22dfe6cd4375a0"
-			  "5a07476444d5819985007e34",
-			  NULL, NULL);
+			  "5a07476444d5819985007e34");
 
       ecc->ref = ecc_alloc (3);
       ecc_set_str (&ecc->ref[0], /* 2 g */
@@ -413,8 +498,9 @@ ecc_curve_init (struct ecc_curve *ecc, unsigned bit_size)
 		   "ae99feebb5d26945b54892092a8aee02912930fa41cd114e40447301",
 		   "482580a0ec5bc47e88bc8c378632cd196cb3fa058a7114eb03054c9");
 
-      break;
-    case 256:
+    }
+  else if (!strcmp (curve, "secp256r1"))
+    {
       ecc_curve_init_str (ecc, ECC_TYPE_WEIERSTRASS,
 			  /* p = 2^{256} - 2^{224} + 2^{192} + 2^{96} - 1 */
 			  "FFFFFFFF000000010000000000000000"
@@ -430,8 +516,7 @@ ecc_curve_init (struct ecc_curve *ecc, unsigned bit_size)
 			  "77037D812DEB33A0F4A13945D898C296",
 
 			  "4FE342E2FE1A7F9B8EE7EB4A7C0F9E16"
-			  "2BCE33576B315ECECBB6406837BF51F5",
-			  NULL, NULL);
+			  "2BCE33576B315ECECBB6406837BF51F5");
 
       ecc->ref = ecc_alloc (3);
       ecc_set_str (&ecc->ref[0], /* 2 g */
@@ -446,8 +531,9 @@ ecc_curve_init (struct ecc_curve *ecc, unsigned bit_size)
 		   "e2534a3532d08fbba02dde659ee62bd0031fe2db785596ef509302446b030852",
 		   "e0f1575a4c633cc719dfee5fda862d764efc96c3f30ee0055c42c23f184ed8c6");
 
-      break;
-    case 384:
+    }
+  else if (!strcmp (curve, "secp384r1"))
+    {
       ecc_curve_init_str (ecc, ECC_TYPE_WEIERSTRASS,
 			  /* p = 2^{384} - 2^{128} - 2^{96} + 2^{32} - 1 */
 			  "ffffffffffffffffffffffffffffffff"
@@ -468,8 +554,7 @@ ecc_curve_init (struct ecc_curve *ecc, unsigned bit_size)
 			  
 			  "3617de4a96262c6f5d9e98bf9292dc29"
 			  "f8f41dbd289a147ce9da3113b5f0b8c0"
-			  "0a60b1ce1d7e819d7a431d7c90ea0e5f",
-			  NULL, NULL);
+			  "0a60b1ce1d7e819d7a431d7c90ea0e5f");
 
       ecc->ref = ecc_alloc (3);
       ecc_set_str (&ecc->ref[0], /* 2 g */
@@ -484,8 +569,9 @@ ecc_curve_init (struct ecc_curve *ecc, unsigned bit_size)
 		   "138251cd52ac9298c1c8aad977321deb97e709bd0b4ca0aca55dc8ad51dcfc9d1589a1597e3a5120e1efd631c63e1835",
 		   "cacae29869a62e1631e8a28181ab56616dc45d918abc09f3ab0e63cf792aa4dced7387be37bba569549f1c02b270ed67");
 
-      break;
-    case 521:
+    }
+  else if (!strcmp (curve, "secp521r1"))
+    {
       ecc_curve_init_str (ecc, ECC_TYPE_WEIERSTRASS,
 			  "1ff" /* p = 2^{521} - 1 */
 			  "ffffffffffffffffffffffffffffffff"
@@ -515,8 +601,7 @@ ecc_curve_init (struct ecc_curve *ecc, unsigned bit_size)
 			  "39296a789a3bc0045c8a5fb42c7d1bd9"
 			  "98f54449579b446817afbd17273e662c"
 			  "97ee72995ef42640c550b9013fad0761"
-			  "353c7086a272c24088be94769fd16650",
-			  NULL, NULL);
+			  "353c7086a272c24088be94769fd16650");
 
       ecc->ref = ecc_alloc (3);
       ecc_set_str (&ecc->ref[0], /* 2 g */
@@ -531,8 +616,9 @@ ecc_curve_init (struct ecc_curve *ecc, unsigned bit_size)
 		   "35b5df64ae2ac204c354b483487c9070cdc61c891c5ff39afc06c5d55541d3ceac8659e24afe3d0750e8b88e9f078af066a1d5025b08e5a5e2fbc87412871902f3",
 		   "82096f84261279d2b673e0178eb0b4abb65521aef6e6e32e1b5ae63fe2f19907f279f283e54ba385405224f750a95b85eebb7faef04699d1d9e21f47fc346e4d0d");
 
-      break;
-    case 255:
+    }
+  else if (!strcmp (curve, "curve25519"))
+    {
       /* curve25519, y^2 = x^3 + 486662 x^2 + x (mod p), with p = 2^{255} - 19.
 
 	 According to http://cr.yp.to/papers.html#newelliptic, this
@@ -540,102 +626,284 @@ ecc_curve_init (struct ecc_curve *ecc, unsigned bit_size)
 
 	   x^2 + y^2 = 1 + (121665/121666) x^2 y^2 (mod p).
 
-	 And since the constant is not a square, the Edwards formulas
-	 should be "complete", with no special cases needed for
-	 doubling, neutral element, negatives, etc.
+	   -x^2 + y^2 = 1 - (121665/121666) x^2 y^2, with p = 2^{255} - 19.
 
-	 Generator is x = 9, with y coordinate
-	 14781619447589544791020593568409986887264606134616475288964881837755586237401,
-	 according to
+	 The generator is
+	   x = 0x216936d3cd6e53fec0a4e231fdd6dc5c692cc7609525a7b2c9562d608f25d51a
+           y = 0x6666666666666666666666666666666666666666666666666666666666666658
 
-	   x = Mod(9, 2^255-19); sqrt(x^3 + 486662*x^2 + x)
+	 Also birationally equivalent to the curve25519 Montgomery curve,
 
-	 in PARI/GP. Also, in PARI notation,
-
-	   curve25519 = Mod([0, 486662, 0, 1, 0], 2^255-19)
-       */
-      ecc_curve_init_str (ecc, ECC_TYPE_MONTGOMERY,
+	   y^2 = x^3 + 486662 x^2 + x (mod p)
+      */
+      ecc_curve_init_str (ecc, ECC_TYPE_TWISTED_EDWARDS,
 			  "7fffffffffffffffffffffffffffffff"
 			  "ffffffffffffffffffffffffffffffed",
-			  "76d06",
+			  /* (121665/121666) mod p, from PARI/GP
+			     c = Mod(121665, p); c / (c+1)
+			  */
+			  "2dfc9311d490018c7338bf8688861767"
+			  "ff8ff5b2bebe27548a14b235eca6874a",
 			  /* Order of the subgroup is 2^252 + q_0, where
 			     q_0 = 27742317777372353535851937790883648493,
 			     125 bits.
 			  */
 			  "10000000000000000000000000000000"
 			  "14def9dea2f79cd65812631a5cf5d3ed",
-			  "9",
-			  /* y coordinate from PARI/GP
-			     x = Mod(9, 2^255-19); sqrt(x^3 + 486662*x^2 + x)
-			  */
-			  "20ae19a1b8a086b4e01edd2c7748d14c"
-			  "923d4d7e6d7c61b229e9c5a27eced3d9",
-			  /* (121665/121666) mod p, from PARI/GP
-			     c = Mod(121665, p); c / (c+1)
-			  */
-			  "2dfc9311d490018c7338bf8688861767"
-			  "ff8ff5b2bebe27548a14b235eca6874a",
-			  /* A square root of -486664 mod p, PARI/GP
-			     -sqrt(Mod(-486664, p)) in PARI/GP.
+			  /* Generator */
+			  "216936d3cd6e53fec0a4e231fdd6dc5c"
+			  "692cc7609525a7b2c9562d608f25d51a",
+			  "66666666666666666666666666666666"
+			  "66666666666666666666666666666658");
 
-			     Sign is important to map to the right
-			     generator on the twisted edwards curve
-			     used for EdDSA. */
-			  "70d9120b9f5ff9442d84f723fc03b081"
-			  "3a5e2c2eb482e57d3391fb5500ba81e7"
-			  );
       ecc->ref = ecc_alloc (3);
       ecc_set_str (&ecc->ref[0], /* 2 g */
-		   "20d342d51873f1b7d9750c687d157114"
-		   "8f3f5ced1e350b5c5cae469cdd684efb",
-		   "13b57e011700e8ae050a00945d2ba2f3"
-		   "77659eb28d8d391ebcd70465c72df563");
+		   "36ab384c9f5a046c3d043b7d1833e7ac"
+		   "080d8e4515d7a45f83c5a14e2843ce0e",
+		   "2260cdf3092329c21da25ee8c9a21f56"
+		   "97390f51643851560e5f46ae6af8a3c9");
       ecc_set_str (&ecc->ref[1], /* 3 g */
-		   "1c12bc1a6d57abe645534d91c21bba64"
-		   "f8824e67621c0859c00a03affb713c12",
-		   "2986855cbe387eaeaceea446532c338c"
-		   "536af570f71ef7cf75c665019c41222b");
+		   "67ae9c4a22928f491ff4ae743edac83a"
+		   "6343981981624886ac62485fd3f8e25c",
+		   "1267b1d177ee69aba126a18e60269ef7"
+		   "9f16ec176724030402c3684878f5b4d4");
 
       ecc_set_str (&ecc->ref[2], /* 4 g */
-		   "79ce98b7e0689d7de7d1d074a15b315f"
-		   "fe1805dfcd5d2a230fee85e4550013ef",
-		   "75af5bf4ebdc75c8fe26873427d275d7"
-		   "3c0fb13da361077a565539f46de1c30");
-
-      break;
-
-    default:
-      fprintf (stderr, "No known curve for size %d\n", bit_size);
-      exit(EXIT_FAILURE);     
+		   "203da8db56cff1468325d4b87a3520f9"
+		   "1a739ec193ce1547493aa657c4c9f870",
+		   "47d0e827cb1595e1470eb88580d5716c"
+		   "4cf22832ea2f0ff0df38ab61ca32112f");
     }
-  ecc->bit_size = bit_size;
+  else if (!strcmp (curve, "gost_gc256b"))
+    {
+      ecc_curve_init_str (ecc, ECC_TYPE_WEIERSTRASS,
+			  "ffffffffffffffffffffffffffffffff"
+			  "fffffffffffffffffffffffffffffd97",
+
+			  "00000000000000000000000000000000"
+			  "000000000000000000000000000000a6",
+
+			  "ffffffffffffffffffffffffffffffff"
+			  "6c611070995ad10045841b09b761b893",
+
+			  "00000000000000000000000000000000"
+			  "00000000000000000000000000000001",
+
+			  "8d91e471e0989cda27df505a453f2b76"
+			  "35294f2ddf23e3b122acc99c9e9f1e14");
+
+      ecc->ref = ecc_alloc (3);
+      ecc_set_str (&ecc->ref[0], /* 2 g */
+		   "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffd95",
+		   "726e1b8e1f676325d820afa5bac0d489cad6b0d220dc1c4edd5336636160df83");
+
+      ecc_set_str (&ecc->ref[1], /* 3 g */
+		   "8e38e38e38e38e38e38e38e38e38e38e38e38e38e38e38e38e38e38e38e38d2c",
+		   "76bcd1ca9a23b041d4d9baf507a6cd821267a94c838768e8486117796b788a51");
+
+      ecc_set_str (&ecc->ref[2], /* 4 g */
+		   "f7063e7063e7063e7063e7063e7063e7063e7063e7063e7063e7063e7063e4b7",
+		   "83ccf17ba6706d73625cc3534c7a2b9d6ec1ee6a9a7e07c10d84b388de59f741");
+
+    }
+  else if (!strcmp (curve, "gost_gc512a"))
+    {
+      ecc_curve_init_str (ecc, ECC_TYPE_WEIERSTRASS,
+			  "ffffffffffffffffffffffffffffffff"
+			  "ffffffffffffffffffffffffffffffff"
+			  "ffffffffffffffffffffffffffffffff"
+			  "fffffffffffffffffffffffffffffdc7",
+			  "e8c2505dedfc86ddc1bd0b2b6667f1da"
+			  "34b82574761cb0e879bd081cfd0b6265"
+			  "ee3cb090f30d27614cb4574010da90dd"
+			  "862ef9d4ebee4761503190785a71c760",
+			  "ffffffffffffffffffffffffffffffff"
+			  "ffffffffffffffffffffffffffffffff"
+			  "27e69532f48d89116ff22b8d4e056060"
+			  "9b4b38abfad2b85dcacdb1411f10b275",
+			  "00000000000000000000000000000000"
+			  "00000000000000000000000000000000"
+			  "00000000000000000000000000000000"
+			  "00000000000000000000000000000003",
+			  "7503cfe87a836ae3a61b8816e25450e6"
+			  "ce5e1c93acf1abc1778064fdcbefa921"
+			  "df1626be4fd036e93d75e6a50e3a41e9"
+			  "8028fe5fc235f5b889a589cb5215f2a4");
+
+      ecc->ref = ecc_alloc (3);
+      ecc_set_str (&ecc->ref[0], /* 2 g */
+		   "3b89dcfc622996ab97a5869dbff15cf51db00954f43a58a5e5f6b0470a132b2f4434bbcd405d2a9516151d2a6a04f2e4375bf48de1fdb21fb982afd9d2ea137c",
+		   "c813c4e2e2e0a8a391774c7903da7a6f14686e98e183e670ee6fb784809a3e92ca209dc631d85b1c7534ed3b37fddf64d854d7e01f91f18bb3fd307591afc051");
+
+      ecc_set_str (&ecc->ref[1], /* 3 g */
+		   "a1ff1ab2712a267eb53935ddb5a567f84db156cc096168a1174291d5f488fba543d2840b4d2dd35d764b2f57b308907aec55cfba10544e8416e134687ccb87c3",
+		   "3cb5c4417ec4637f30374f189bb5b984c41e3a48d7f84fbfa3819e3f333f7eb311d3af7e67c4c16eeacfac2fe94c6dd4c6366f711a4fb6c7125cd7ec518d90d6");
+
+      ecc_set_str (&ecc->ref[2], /* 4 g */
+		   "b7bfb80956c8670031ba191929f64e301d681634236d47a60e571a4bedc0ef257452ef78b5b98dbb3d9f3129d9349433ce2a3a35cb519c91e2d633d7b373ae16",
+		   "3bee95e29eecc5d5ad2beba941abcbf9f1cad478df0fecf614f63aeebef77850da7efdb93de8f3df80bc25eac09239c14175f5c29704ce9a3e383f1b3ec0e929");
+
+    }
+  else if (!strcmp (curve, "curve448"))
+    {
+      /* curve448, y^2 = x^3 + 156326 x^2 + x (mod p), with p = 2^{448} - 2^{224} - 1.
+
+	 According to RFC 7748, this is 4-isogenious to the Edwards
+	 curve called "edwards448"
+
+	   x^2 + y^2 = 1 - 39081 x^2 y^2 (mod p).
+
+	 And since the constant is not a square, the Edwards formulas
+	 should be "complete", with no special cases needed for
+	 doubling, neutral element, negatives, etc.
+
+	 Generator is x = 5, with y coordinate
+	 355293926785568175264127502063783334808976399387714271831880898435169088786967410002932673765864550910142774147268105838985595290606362,
+	 according to
+
+	   x = Mod(5, 2^448-2^224-1); sqrt(x^3 + 156326*x^2 + x)
+
+	 in PARI/GP. Also, in PARI notation,
+
+	   curve448 = Mod([0, 156326, 0, 1, 0], 2^448-2^224-1)
+       */
+      ecc_curve_init_str (ecc, ECC_TYPE_EDWARDS,
+			  "fffffffffffffffffffffffffffffff"
+			  "ffffffffffffffffffffffffeffffff"
+			  "fffffffffffffffffffffffffffffff"
+			  "fffffffffffffffffff",
+			  /* -39081 mod p, from PARI/GP
+			     c = Mod(-39081, p)
+			  */
+			  "fffffffffffffffffffffffffffffff"
+			  "ffffffffffffffffffffffffeffffff"
+			  "fffffffffffffffffffffffffffffff"
+			  "fffffffffffffff6756",
+			  /* Order of the subgroup is 2^446 - q_0, where
+			     q_0 = 13818066809895115352007386748515426880336692474882178609894547503885,
+			     224 bits.
+			  */
+			  "3ffffffffffffffffffffffffffffff"
+			  "fffffffffffffffffffffffff7cca23"
+			  "e9c44edb49aed63690216cc2728dc58"
+			  "f552378c292ab5844f3",
+			  "4f1970c66bed0ded221d15a622bf36d"
+			  "a9e146570470f1767ea6de324a3d3a4"
+			  "6412ae1af72ab66511433b80e18b009"
+			  "38e2626a82bc70cc05e",
+			  "693f46716eb6bc248876203756c9c76"
+			  "24bea73736ca3984087789c1e05a0c2"
+			  "d73ad3ff1ce67c39c4fdbd132c4ed7c"
+			  "8ad9808795bf230fa14");
+      ecc->ref = ecc_alloc (3);
+      ecc_set_str (&ecc->ref[0], /* 2 g */
+		   "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+		   "aaaaaaaaaaaaaaaaaaaaaaa955555555"
+		   "55555555555555555555555555555555"
+		   "5555555555555555",
+		   "ae05e9634ad7048db359d6205086c2b0"
+		   "036ed7a035884dd7b7e36d728ad8c4b8"
+		   "0d6565833a2a3098bbbcb2bed1cda06b"
+		   "daeafbcdea9386ed");
+      ecc_set_str (&ecc->ref[1], /* 3 g */
+		   "865886b9108af6455bd64316cb694333"
+		   "2241b8b8cda82c7e2ba077a4a3fcfe8d"
+		   "aa9cbf7f6271fd6e862b769465da8575"
+		   "728173286ff2f8f",
+		   "e005a8dbd5125cf706cbda7ad43aa644"
+		   "9a4a8d952356c3b9fce43c82ec4e1d58"
+		   "bb3a331bdb6767f0bffa9a68fed02daf"
+		   "b822ac13588ed6fc");
+
+      ecc_set_str (&ecc->ref[2], /* 4 g */
+		   "49dcbc5c6c0cce2c1419a17226f929ea"
+		   "255a09cf4e0891c693fda4be70c74cc3"
+		   "01b7bdf1515dd8ba21aee1798949e120"
+		   "e2ce42ac48ba7f30",
+		   "d49077e4accde527164b33a5de021b97"
+		   "9cb7c02f0457d845c90dc3227b8a5bc1"
+		   "c0d8f97ea1ca9472b5d444285d0d4f5b"
+		   "32e236f86de51839");
+    }
+  else
+    {
+      fprintf (stderr, "No known curve with name %s\n", curve);
+      exit(EXIT_FAILURE);
+    }
+  ecc->bit_size = mpz_sizeinbase (ecc->p, 2);
+}
+
+static void
+ecc_curve_clear (struct ecc_curve *ecc)
+{
+  mpz_clear (ecc->p);
+  mpz_clear (ecc->b);
+  mpz_clear (ecc->q);
+  ecc_clear (&ecc->g);
+  if (ecc->table)
+    {
+      size_t i;
+      for (i = 0; i < ecc->table_size; i++)
+	ecc_clear (&ecc->table[i]);
+      free (ecc->table);
+    }
+  if (ecc->ref)
+    {
+      size_t i;
+      for (i = 0; i < 3; i++)
+	ecc_clear (&ecc->ref[i]);
+      free (ecc->ref);
+    }
+}
+
+static unsigned
+ecc_table_size(unsigned bits, unsigned k, unsigned c)
+{
+  unsigned p = (bits + k-1) / k;
+  unsigned M = (p + c-1)/c;
+  return M;
 }
 
 static void
 ecc_pippenger_precompute (struct ecc_curve *ecc, unsigned k, unsigned c)
 {
-  unsigned p = (ecc->bit_size + k-1) / k;
-  unsigned M = (p + c-1)/c;
+  unsigned M = ecc_table_size (ecc->bit_size, k, c);
   unsigned i, j;
+
+  if (M < 2)
+    {
+      fprintf (stderr, "Invalid parameters, implies M = %u\n", M);
+      exit (EXIT_FAILURE);
+    }
+
+  if (M == ecc_table_size (ecc->bit_size, k-1, c))
+    fprintf(stderr,
+	    "warn: Parameters k = %u, c = %d are suboptimal, could use smaller k\n",
+	    k, c);
 
   ecc->pippenger_k = k;
   ecc->pippenger_c = c;
   ecc->table_size = M << c;
+  assert (ecc->table_size >= 2);
   ecc->table = ecc_alloc (ecc->table_size);
-  
+
   /* Compute the first 2^c entries */
-  ecc_set_zero (&ecc->table[0]);
+  ecc_set_zero (ecc, &ecc->table[0]);
   ecc_set (&ecc->table[1], &ecc->g);
 
   for (j = 2; j < (1U<<c); j <<= 1)
     {
       /* T[j] = 2^k T[j/2] */
+      assert (j < ecc->table_size);
       ecc_dup (ecc, &ecc->table[j], &ecc->table[j/2]);
       for (i = 1; i < k; i++)
 	ecc_dup (ecc, &ecc->table[j], &ecc->table[j]);
 
       for (i = 1; i < j; i++)
-	ecc_add (ecc, &ecc->table[j + i], &ecc->table[j], &ecc->table[i]);
+	{
+	  assert (j + i < ecc->table_size);
+	  ecc_add (ecc, &ecc->table[j + i], &ecc->table[j], &ecc->table[i]);
+	}
     }
   for (j = 1<<c; j < ecc->table_size; j++)
     {
@@ -658,7 +926,7 @@ ecc_mul_pippenger (const struct ecc_curve *ecc,
   mpz_init (n);
   
   mpz_mod (n, n_input, ecc->q);
-  ecc_set_zero (r);
+  ecc_set_zero (ecc, r);
 
   k = ecc->pippenger_k;
   c = ecc->pippenger_c;
@@ -843,7 +1111,7 @@ output_bignum (const char *name, const mpz_t x,
 }
 
 static void
-output_point (const char *name, const struct ecc_curve *ecc,
+output_point (const struct ecc_curve *ecc,
 	      const struct ecc_point *p, int use_redc,
 	      unsigned size, unsigned bits_per_limb)
 {
@@ -853,41 +1121,9 @@ output_point (const char *name, const struct ecc_curve *ecc,
   mpz_init (y);
   mpz_init (t);
  
-  if (name)
-    printf("static const mp_limb_t %s[%u] = {", name, 2*size);
+  mpz_set (x, p->x);
+  mpz_set (y, p->y);
 
-  if (ecc->use_edwards)
-    {
-      if (ecc_zero_p (p))
-	{
-	  mpz_set_si (x, 0);
-	  mpz_set_si (y, 1);
-	}
-      else if (!mpz_sgn (p->y))
-	{
-	  assert (!mpz_sgn (p->x));
-	  mpz_set_si (x, 0);
-	  mpz_set_si (y, -1);
-	}
-      else
-	{
-	  mpz_invert (x, p->y, ecc->p);
-	  mpz_mul (x, x, p->x);
-	  mpz_mul (x, x, ecc->t);	 
-	  mpz_mod (x, x, ecc->p);
-
-	  mpz_sub_ui (y, p->x, 1);
-	  mpz_add_ui (t, p->x, 1);
-	  mpz_invert (t, t, ecc->p);
-	  mpz_mul (y, y, t);
-	  mpz_mod (y, y, ecc->p);
-	}
-    }
-  else
-    {
-      mpz_set (x, p->x);
-      mpz_set (y, p->y);
-    }
   if (use_redc)
     {
       mpz_mul_2exp (x, x, size * bits_per_limb);
@@ -898,9 +1134,6 @@ output_point (const char *name, const struct ecc_curve *ecc,
       
   output_digits (x, size, bits_per_limb);
   output_digits (y, size, bits_per_limb);
-
-  if (name)
-    printf("\n};\n");
 
   mpz_clear (x);
   mpz_clear (y);
@@ -945,10 +1178,7 @@ output_curve (const struct ecc_curve *ecc, unsigned bits_per_limb)
 
   output_bignum ("ecc_p", ecc->p, limb_size, bits_per_limb);
   output_bignum ("ecc_b", ecc->b, limb_size, bits_per_limb);
-  if (ecc->use_edwards)
-    output_bignum ("ecc_d", ecc->d, limb_size, bits_per_limb);
   output_bignum ("ecc_q", ecc->q, limb_size, bits_per_limb);
-  output_point ("ecc_g", ecc, &ecc->g, 0, limb_size, bits_per_limb);
   
   bits = output_modulo ("ecc_Bmodp", ecc->p, limb_size, bits_per_limb);
   printf ("#define ECC_BMODP_SIZE %u\n",
@@ -1036,9 +1266,6 @@ output_curve (const struct ecc_curve *ecc, unsigned bits_per_limb)
   mpz_fdiv_q_2exp (t, t, 1);
   output_bignum ("ecc_qp1h", t, limb_size, bits_per_limb);  
 
-  if (ecc->use_edwards)
-    output_bignum ("ecc_edwards", ecc->t, limb_size, bits_per_limb);
-
   /* Trailing zeros in p+1 correspond to trailing ones in p. */
   redc_limbs = mpz_scan0 (ecc->p, 0) / bits_per_limb;
   if (redc_limbs > 0)
@@ -1125,19 +1352,19 @@ output_curve (const struct ecc_curve *ecc, unsigned bits_per_limb)
   printf ("static const mp_limb_t ecc_table[%lu] = {",
 	 (unsigned long) (2*ecc->table_size * limb_size));
   for (i = 0; i < ecc->table_size; i++)
-    output_point (NULL, ecc, &ecc->table[i], 1, limb_size, bits_per_limb);
+    output_point (ecc, &ecc->table[i], 1, limb_size, bits_per_limb);
 
   printf("\n};\n");
 
   printf ("#else\n");
 
-  mpz_init_set_ui (t, 1);
+  mpz_set_ui (t, 1);
   output_bignum ("ecc_unit", t, limb_size, bits_per_limb);
   
   printf ("static const mp_limb_t ecc_table[%lu] = {",
 	 (unsigned long) (2*ecc->table_size * limb_size));
   for (i = 0; i < ecc->table_size; i++)
-    output_point (NULL, ecc, &ecc->table[i], 0, limb_size, bits_per_limb);
+    output_point (ecc, &ecc->table[i], 0, limb_size, bits_per_limb);
 
   printf("\n};\n");
   printf ("#endif\n");
@@ -1152,11 +1379,11 @@ main (int argc, char **argv)
 
   if (argc < 4)
     {
-      fprintf (stderr, "Usage: %s CURVE-BITS K C [BITS-PER-LIMB]\n", argv[0]);
+      fprintf (stderr, "Usage: %s CURVE K C [BITS-PER-LIMB]\n", argv[0]);
       return EXIT_FAILURE;
     }
 
-  ecc_curve_init (&ecc, atoi(argv[1]));
+  ecc_curve_init (&ecc, argv[1]);
 
   ecc_pippenger_precompute (&ecc, atoi(argv[2]), atoi(argv[3]));
 
@@ -1168,5 +1395,6 @@ main (int argc, char **argv)
   if (argc > 4)
     output_curve (&ecc, atoi(argv[4]));
 
+  ecc_curve_clear (&ecc);
   return EXIT_SUCCESS;
 }

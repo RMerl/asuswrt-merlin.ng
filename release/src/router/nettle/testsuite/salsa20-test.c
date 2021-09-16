@@ -118,6 +118,74 @@ test_salsa20_stream(const struct tstring *key,
     }
 }
 
+/* Test with simple structure of the salsa20 input, to aid
+   debugging. */
+static void
+test_salsa20_core(void)
+{
+  const uint32_t input[16] =
+    {
+     0, 1, 2, 3,
+     4, 5, 6, 7,
+     /* Second block will have carry from first counter word propagate
+	to next word. */
+     0xffffffff, 9, 10, 11,
+     12, 13, 14, 15
+    };
+
+  const struct tstring *expected_12
+    = SHEX("c456dd00835121fa 2f3f818adea91c66"
+	   "c024ec78191dbef8 4e828fde71420f4f"
+	   "2edb91cc7ae72fe6 1c6d96d1169241f5"
+	   "8d34bec538389247 1b2f71089992fd2b"
+	   "a1194b4875788ee5 731f27c32481450b"
+	   "4cc7b2a3f8ac7f43 6f42bd16a71cb721"
+	   "299f6d9481e4bc87 23b5c0a2f142e507"
+	   "34b7fe35fe292f2f 1bf9ae5296afdbeb");
+
+  const struct tstring *expected_20
+    = SHEX(
+	   "02e02587e69cd380 3e5f3c53f0c29173"
+	   "d3becef2da8da494 e8d1d4294270fc5e"
+	   "a2c2001a6a45dc71 a3699e6594af795f"
+	   "299814ae4f73650b e1d13040031dbfef"
+	   "46b5b8ce5dc5b255 78b2695eb61fa816"
+	   "7e22958311e2d585 826f4ebf1c7b3c98"
+	   "a2857c3e4edc6f9e ed4312d698ddad55"
+	   "57d13942292f8713 63eb7a5ab07a707e");
+
+  struct salsa20_ctx ctx;
+  uint8_t output[128];
+
+  ASSERT (expected_12->length == 128);
+  ASSERT (expected_20->length == 128);
+
+  /* Two blocks, to exercises _salsa20_2core, if available. */
+  memcpy (&ctx, input, sizeof(ctx));
+  salsa20r12_crypt (&ctx, 128, output, expected_12->data);
+
+  if (!memzero_p (output, 128))
+    {
+      fprintf(stderr, "salsa20r12_crypt failed:\n");
+      fprintf(stderr, "\nOutput: ");
+      print_hex(128, output);
+      fprintf(stderr, "\n");
+      FAIL();
+    }
+
+  memcpy (&ctx, input, sizeof(ctx));
+  salsa20_crypt (&ctx, 128, output, expected_20->data);
+
+  if (!memzero_p (output, 128))
+    {
+      fprintf(stderr, "salsa20_crypt failed:\n");
+      fprintf(stderr, "\nOutput: ");
+      print_hex(128, output);
+      fprintf(stderr, "\n");
+      FAIL();
+    }
+}
+
 typedef void salsa20_func(struct salsa20_ctx *ctx,
 			  size_t length, uint8_t *dst,
 			  const uint8_t *src);
@@ -191,6 +259,8 @@ _test_salsa20(salsa20_func *crypt,
 void
 test_main(void)
 {
+  test_salsa20_core();
+
   /* http://www.ecrypt.eu.org/stream/svn/viewcvs.cgi/ecrypt/trunk/submissions/salsa20/reduced/12-rounds/verified.test-vectors?logsort=rev&rev=210&view=markup */
   test_salsa20r12(SHEX("80000000 00000000 00000000 00000000"),
 		  SHEX("00000000 00000000"),

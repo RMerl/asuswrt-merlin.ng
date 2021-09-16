@@ -41,8 +41,8 @@
 do { uint64_t t_swap = (a); (a) = (b); (b) = t_swap; } while(0)
 
 void
-_camellia_invert_key(unsigned nkeys,
-		     uint64_t *dst, const uint64_t *src)
+_nettle_camellia_invert_key(unsigned nkeys,
+			    uint64_t *dst, const uint64_t *src)
 {
   unsigned i;
   if (dst == src)

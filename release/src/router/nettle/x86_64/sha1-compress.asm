@@ -1,6 +1,6 @@
 C x86_64/sha1-compress.asm
 
-ifelse(<
+ifelse(`
    Copyright (C) 2004, 2008, 2013 Niels Möller
 
    This file is part of GNU Nettle.
@@ -28,36 +28,36 @@ ifelse(<
    You should have received copies of the GNU General Public License and
    the GNU Lesser General Public License along with this program.  If
    not, see http://www.gnu.org/licenses/.
->)
+')
 
 C Register usage. KVALUE and INPUT share a register.
-define(<SA>,<%eax>)dnl
-define(<SB>,<%r8d>)dnl
-define(<SC>,<%ecx>)dnl
-define(<SD>,<%edx>)dnl
-define(<SE>,<%r9d>)dnl
-define(<DATA>,<%rsp>)dnl
-define(<T1>,<%r10d>)dnl
-define(<T2>,<%r11d>)dnl
-define(<KVALUE>, <%esi>)dnl			
+define(`SA',`%eax')dnl
+define(`SB',`%r8d')dnl
+define(`SC',`%ecx')dnl
+define(`SD',`%edx')dnl
+define(`SE',`%r9d')dnl
+define(`DATA',`%rsp')dnl
+define(`T1',`%r10d')dnl
+define(`T2',`%r11d')dnl
+define(`KVALUE', `%esi')dnl
 
 C Arguments
-define(<STATE>,<%rdi>)dnl
-define(<INPUT>,<%rsi>)dnl
+define(`STATE',`%rdi')dnl
+define(`INPUT',`%rsi')dnl
 
 C Constants
-define(<K1VALUE>, <<$>0x5A827999>)dnl		C  Rounds  0-19
-define(<K2VALUE>, <<$>0x6ED9EBA1>)dnl		C  Rounds 20-39
-define(<K3VALUE>, <<$>0x8F1BBCDC>)dnl		C  Rounds 40-59
-define(<K4VALUE>, <<$>0xCA62C1D6>)dnl		C  Rounds 60-79
+define(`K1VALUE', ``$'0x5A827999')dnl		C  Rounds  0-19
+define(`K2VALUE', ``$'0x6ED9EBA1')dnl		C  Rounds 20-39
+define(`K3VALUE', ``$'0x8F1BBCDC')dnl		C  Rounds 40-59
+define(`K4VALUE', ``$'0xCA62C1D6')dnl		C  Rounds 60-79
 	
 C Reads the input into register, byteswaps it, and stores it in the DATA array.
 C SWAP(index, register)
-define(<SWAP>, <
+define(`SWAP', `
 	movl	OFFSET($1)(INPUT), $2
 	bswap	$2
 	movl	$2, OFFSET($1) (DATA)
->)dnl
+')dnl
 
 C The f functions,
 C
@@ -91,28 +91,28 @@ C   e += a <<< 5 + f( b, c, d ) + k + w;
 C   b <<<= 30
 
 dnl ROUND_F1(a, b, c, d, e, i)
-define(<ROUND_F1>, <
+define(`ROUND_F1', `
 	movl	OFFSET(eval($6 % 16)) (DATA), T1
 	xorl	OFFSET(eval(($6 +  2) % 16)) (DATA), T1
 	xorl	OFFSET(eval(($6 +  8) % 16)) (DATA), T1
 	xorl	OFFSET(eval(($6 + 13) % 16)) (DATA), T1
-	roll	<$>1, T1
+	roll	`$'1, T1
 	movl	T1, OFFSET(eval($6 % 16)) (DATA)
 	movl	$4, T2
 	xorl	$3, T2
 	andl	$2, T2
 	xorl	$4, T2
-	roll	<$>30, $2
+	roll	`$'30, $2
 	addl	T1, $5
 	addl	KVALUE, $5
 	movl	$1, T1
-	roll	<$>5, T1
+	roll	`$'5, T1
 	addl	T1, $5
 	addl	T2, $5
->)
+')
 
 dnl ROUND_F1_NOEXP(a, b, c, d, e, i)
-define(<ROUND_F1_NOEXP>, <
+define(`ROUND_F1_NOEXP', `
 	movl	$4, T2
 	xorl	$3, T2
 	movl	$1, T1
@@ -120,39 +120,39 @@ define(<ROUND_F1_NOEXP>, <
 	addl	OFFSET($6) (DATA), $5
 	xorl	$4, T2
 	addl	T2, $5
-	roll	<$>30, $2
-	roll	<$>5, T1
+	roll	`$'30, $2
+	roll	`$'5, T1
 	addl	T1, $5
 	addl	KVALUE, $5
->)
+')
 
 dnl ROUND_F2(a, b, c, d, e, i)
-define(<ROUND_F2>, <
+define(`ROUND_F2', `
 	movl	OFFSET(eval($6 % 16)) (DATA), T1
 	xorl	OFFSET(eval(($6 +  2) % 16)) (DATA), T1
 	xorl	OFFSET(eval(($6 +  8) % 16)) (DATA), T1
 	xorl	OFFSET(eval(($6 + 13) % 16)) (DATA), T1
-	roll	<$>1, T1
+	roll	`$'1, T1
 	movl	T1, OFFSET(eval($6 % 16)) (DATA)
 	movl	$4, T2
 	xorl	$3, T2
 	xorl	$2, T2
-	roll	<$>30, $2
+	roll	`$'30, $2
 	addl	T1, $5
 	addl	KVALUE, $5
 	movl	$1, T1
-	roll	<$>5, T1
+	roll	`$'5, T1
 	addl	T1, $5
 	addl	T2, $5
->)
+')
 
 dnl ROUND_F3(a, b, c, d, e, i)
-define(<ROUND_F3>, <
+define(`ROUND_F3', `
 	movl	OFFSET(eval($6 % 16)) (DATA), T1
 	xorl	OFFSET(eval(($6 +  2) % 16)) (DATA), T1
 	xorl	OFFSET(eval(($6 +  8) % 16)) (DATA), T1
 	xorl	OFFSET(eval(($6 + 13) % 16)) (DATA), T1
-	roll	<$>1, T1
+	roll	`$'1, T1
 	movl	T1, OFFSET(eval($6 % 16)) (DATA)
 	movl	$4, T2
 	andl	$3, T2
@@ -162,20 +162,20 @@ define(<ROUND_F3>, <
 	xorl	$3, T1
 	andl	$2, T1
 	addl	T2, $5
-	roll	<$>30, $2
+	roll	`$'30, $2
 	movl	$1, T2
-	roll	<$>5, T2
+	roll	`$'5, T2
 	addl	T1, $5
 	addl	T2, $5
->)
+')
 
 	.file "sha1-compress.asm"
 
-	C _nettle_sha1_compress(uint32_t *state, uint8_t *input)
+	C nettle_sha1_compress(uint32_t *state, uint8_t *input)
 	
 	.text
 	ALIGN(16)
-PROLOGUE(_nettle_sha1_compress)
+PROLOGUE(nettle_sha1_compress)
 	C save all registers that need to be saved
 	W64_ENTRY(2, 0)
 	
@@ -304,4 +304,4 @@ PROLOGUE(_nettle_sha1_compress)
 	add	$64, %rsp
 	W64_EXIT(2, 0)
 	ret
-EPILOGUE(_nettle_sha1_compress)
+EPILOGUE(nettle_sha1_compress)

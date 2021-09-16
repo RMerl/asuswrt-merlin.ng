@@ -139,7 +139,7 @@ _camellia256_set_encrypt_key (struct camellia256_ctx *ctx,
   subkey[32] = k2; subkey[33] = k3;
 
   /* Common final processing */
-  _camellia_absorb (_CAMELLIA256_NKEYS, ctx->keys, subkey);
+  _nettle_camellia_absorb (_CAMELLIA256_NKEYS, ctx->keys, subkey);
 }
 
 void

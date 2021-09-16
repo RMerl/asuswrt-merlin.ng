@@ -1,6 +1,6 @@
 C x86_64/sha3-permute.asm
 
-ifelse(<
+ifelse(`
    Copyright (C) 2012 Niels Möller
 
    This file is part of GNU Nettle.
@@ -28,80 +28,80 @@ ifelse(<
    You should have received copies of the GNU General Public License and
    the GNU Lesser General Public License along with this program.  If
    not, see http://www.gnu.org/licenses/.
->)
+')
 
-define(<CTX>, <%rdi>)		C 25 64-bit values, 200 bytes.
-define(<COUNT>, <%r8>)		C Avoid clobbering %rsi, for W64.
+define(`CTX', `%rdi')		C 25 64-bit values, 200 bytes.
+define(`COUNT', `%r8')		C Avoid clobbering %rsi, for W64.
 
-define(<A00>,  <%rax>)
-define(<A0102>, <%xmm0>)
-define(<A0304>, <%xmm1>)
+define(`A00',  `%rax')
+define(`A0102', `%xmm0')
+define(`A0304', `%xmm1')
 
-define(<A05>,  <%rcx>)
-define(<A0607>, <%xmm2>)
-define(<A0809>, <%xmm3>)
+define(`A05',  `%rcx')
+define(`A0607', `%xmm2')
+define(`A0809', `%xmm3')
 	
-define(<A10>,  <%rdx>)
-define(<A1112>, <%xmm4>)
-define(<A1314>, <%xmm5>)
+define(`A10',  `%rdx')
+define(`A1112', `%xmm4')
+define(`A1314', `%xmm5')
 
-define(<A15>,  <%rbp>)
-define(<A1617>, <%xmm6>)
-define(<A1819>, <%xmm7>)
+define(`A15',  `%rbp')
+define(`A1617', `%xmm6')
+define(`A1819', `%xmm7')
 	
-define(<A20>,  <%r9>)
-define(<A2122>, <%xmm8>)
-define(<A2324>, <%xmm9>)
+define(`A20',  `%r9')
+define(`A2122', `%xmm8')
+define(`A2324', `%xmm9')
 
-define(<C0>, <%r10>)
-define(<C12>, <%xmm10>)
-define(<C34>, <%xmm11>)
+define(`C0', `%r10')
+define(`C12', `%xmm10')
+define(`C34', `%xmm11')
 
-define(<D0>, <%r11>)
-define(<D12>, <%xmm12>)
-define(<D34>, <%xmm13>)
+define(`D0', `%r11')
+define(`D12', `%xmm12')
+define(`D34', `%xmm13')
 
 C Wide temporaries
-define(<W0>, <%xmm14>)
-define(<W1>, <%xmm15>)
-define(<W2>, <%xmm12>)		C Overlap D12
-define(<W3>, <%xmm13>)		C Overlap D34
+define(`W0', `%xmm14')
+define(`W1', `%xmm15')
+define(`W2', `%xmm12')		C Overlap D12
+define(`W3', `%xmm13')		C Overlap D34
 
-define(<T0>, <%r12>)
-define(<T1>, <%r13>)
-define(<T2>, <%r11>)		C Overlap D0
-define(<T3>, <%r10>)		C Overlap C0
+define(`T0', `%r12')
+define(`T1', `%r13')
+define(`T2', `%r11')		C Overlap D0
+define(`T3', `%r10')		C Overlap C0
 
-define(<RC>, <%r14>)
+define(`RC', `%r14')
 
-define(<OFFSET>, <ifelse($1,0,,eval(8*$1))>)
-define(<STATE>, <OFFSET($1)(CTX)>)
+define(`OFFSET', `ifelse($1,0,,eval(8*$1))')
+define(`STATE', `OFFSET($1)(CTX)')
 
-define(<SWAP64>, <pshufd	<$>0x4e,>)
+define(`SWAP64', `pshufd	`$'0x4e,')
 
-define(<DIRECT_MOVQ>, <no>)
+define(`DIRECT_MOVQ', `no')
 
 C MOVQ(src, dst), for moves between a general register and an xmm
 C register.
 
-ifelse(DIRECT_MOVQ, yes, <
+ifelse(DIRECT_MOVQ, yes, `
 C movq calls that are equal to the corresponding movd,
 C where the Apple assembler requires them to be written as movd.
-define(<MOVQ>, <movd	$1, $2>)
->, <
+define(`MOVQ', `movd	$1, $2')
+', `
 C Moving via (cached) memory is generally faster.
-define(<MOVQ>, <
+define(`MOVQ', `
 	movq	$1, (CTX)
 	movq	(CTX), $2
->)>)
+')')
 
 C ROTL64(rot, register, temp)
 C Caller needs to or together the result.
-define(<ROTL64>, <
+define(`ROTL64', `
 	movdqa	$2, $3
-	psllq	<$>$1, $2
-	psrlq	<$>eval(64-$1), $3
->)
+	psllq	`$'$1, $2
+	psrlq	`$'eval(64-$1), $3
+')
 
 	.file "sha3-permute.asm"
 	

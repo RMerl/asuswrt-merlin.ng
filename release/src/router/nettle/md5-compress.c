@@ -79,7 +79,7 @@
  * (_MD5_DIGEST_LENGTH) words. */
 
 void
-_nettle_md5_compress(uint32_t *digest, const uint8_t *input)
+nettle_md5_compress(uint32_t *digest, const uint8_t *input)
 {
   uint32_t data[MD5_DATA_LENGTH];
   uint32_t a, b, c, d;

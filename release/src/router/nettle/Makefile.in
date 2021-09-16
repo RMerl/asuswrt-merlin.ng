@@ -17,6 +17,8 @@ OPT_HOGWEED_OBJS = @OPT_HOGWEED_OBJS@
 
 OPT_NETTLE_SOURCES = @OPT_NETTLE_SOURCES@
 
+FAT_TEST_LIST = @FAT_TEST_LIST@
+
 SUBDIRS = tools testsuite examples
 
 include config.make
@@ -34,10 +36,7 @@ getopt_TARGETS = $(getopt_SOURCES:.c=.$(OBJEXT))
 internal_SOURCES = nettle-internal.c
 internal_TARGETS = $(internal_SOURCES:.c=.$(OBJEXT))
 
-TARGETS = aesdata$(EXEEXT_FOR_BUILD) desdata$(EXEEXT_FOR_BUILD) \
-          twofishdata$(EXEEXT_FOR_BUILD) shadata$(EXEEXT_FOR_BUILD) \
-          gcmdata$(EXEEXT_FOR_BUILD) \
-	  $(getopt_TARGETS) $(internal_TARGETS) \
+TARGETS = $(getopt_TARGETS) $(internal_TARGETS) \
 	  $(LIBTARGETS) $(SHLIBTARGETS)
 
 DOCTARGETS = @IF_DOCUMENTATION@ nettle.info nettle.html nettle.pdf
@@ -58,6 +57,16 @@ clean distclean mostlyclean maintainer-clean tags:
 check-here:
 	true
 
+# Tries different settings of NETTLE_FAT_OVERRIDE. Note that this
+# requires that corresponding processor features are available on the
+# test machine.
+check-fat:
+	[ -z "$(FAT_TEST_LIST)" ] || \
+	  set -e; cd testsuite && for f in $(FAT_TEST_LIST) ; do \
+	    echo NETTLE_FAT_OVERRIDE=$$f ; \
+	    NETTLE_FAT_OVERRIDE=$$f $(MAKE) check ; \
+	  done
+
 # FIXME: Remove. These targets aren't supported, but they are expected by the
 # automake generated Makefiles in the lsh build.
 dvi installcheck uninstallcheck:
@@ -76,7 +85,7 @@ nettle_SOURCES = aes-decrypt-internal.c aes-decrypt.c \
 		 aes256-set-encrypt-key.c aes256-set-decrypt-key.c \
 		 aes256-meta.c \
 		 arcfour.c arcfour-crypt.c \
-		 arctwo.c arctwo-meta.c blowfish.c \
+		 arctwo.c arctwo-meta.c blowfish.c blowfish-bcrypt.c \
 		 base16-encode.c base16-decode.c base16-meta.c \
 		 base64-encode.c base64-decode.c base64-meta.c \
 		 base64url-encode.c base64url-decode.c base64url-meta.c \
@@ -92,10 +101,12 @@ nettle_SOURCES = aes-decrypt-internal.c aes-decrypt.c \
 		 camellia256-meta.c \
 		 cast128.c cast128-meta.c cbc.c \
 		 ccm.c ccm-aes128.c ccm-aes192.c ccm-aes256.c cfb.c \
+		 siv-cmac.c siv-cmac-aes128.c siv-cmac-aes256.c \
+		 cnd-memcpy.c \
 		 chacha-crypt.c chacha-core-internal.c \
 		 chacha-poly1305.c chacha-poly1305-meta.c \
 		 chacha-set-key.c chacha-set-nonce.c \
-		 ctr.c des.c des3.c des-compat.c \
+		 ctr.c ctr16.c des.c des3.c \
 		 eax.c eax-aes128.c eax-aes128-meta.c \
 		 gcm.c gcm-aes.c \
 		 gcm-aes128.c gcm-aes128-meta.c \
@@ -103,21 +114,28 @@ nettle_SOURCES = aes-decrypt-internal.c aes-decrypt.c \
 		 gcm-aes256.c gcm-aes256-meta.c \
 		 gcm-camellia128.c gcm-camellia128-meta.c \
 		 gcm-camellia256.c gcm-camellia256-meta.c \
-		 gosthash94.c gosthash94-meta.c \
-		 hmac.c hmac-md5.c hmac-ripemd160.c hmac-sha1.c \
-		 hmac-sha224.c hmac-sha256.c hmac-sha384.c hmac-sha512.c \
+		 cmac.c cmac64.c cmac-aes128.c cmac-aes256.c cmac-des3.c \
+		 cmac-aes128-meta.c cmac-aes256-meta.c cmac-des3-meta.c \
+		 gost28147.c gosthash94.c gosthash94-meta.c \
+		 hmac.c hmac-gosthash94.c hmac-md5.c hmac-ripemd160.c \
+		 hmac-sha1.c hmac-sha224.c hmac-sha256.c hmac-sha384.c \
+		 hmac-sha512.c hmac-streebog.c \
+		 hmac-md5-meta.c hmac-ripemd160-meta.c hmac-sha1-meta.c \
+		 hmac-sha224-meta.c hmac-sha256-meta.c hmac-sha384-meta.c \
+		 hmac-sha512-meta.c hmac-streebog-meta.c \
 		 knuth-lfib.c hkdf.c \
 		 md2.c md2-meta.c md4.c md4-meta.c \
 		 md5.c md5-compress.c md5-compat.c md5-meta.c \
 		 memeql-sec.c memxor.c memxor3.c \
 		 nettle-lookup-hash.c \
 		 nettle-meta-aeads.c nettle-meta-armors.c \
-		 nettle-meta-ciphers.c nettle-meta-hashes.c \
-		 pbkdf2.c pbkdf2-hmac-sha1.c pbkdf2-hmac-sha256.c \
+		 nettle-meta-ciphers.c nettle-meta-hashes.c nettle-meta-macs.c \
+		 pbkdf2.c pbkdf2-hmac-gosthash94.c pbkdf2-hmac-sha1.c \
+		 pbkdf2-hmac-sha256.c pbkdf2-hmac-sha384.c pbkdf2-hmac-sha512.c \
 		 poly1305-aes.c poly1305-internal.c \
 		 realloc.c \
 		 ripemd160.c ripemd160-compress.c ripemd160-meta.c \
-		 salsa20-core-internal.c \
+		 salsa20-core-internal.c salsa20-crypt-internal.c \
 		 salsa20-crypt.c salsa20r12-crypt.c salsa20-set-key.c \
 		 salsa20-set-nonce.c \
 		 salsa20-128-set-key.c salsa20-256-set-key.c \
@@ -127,26 +145,31 @@ nettle_SOURCES = aes-decrypt-internal.c aes-decrypt.c \
 		 sha512-224-meta.c sha512-256-meta.c \
 		 sha3.c sha3-permute.c \
 		 sha3-224.c sha3-224-meta.c sha3-256.c sha3-256-meta.c \
-		 sha3-384.c sha3-384-meta.c sha3-512.c sha3-512-meta.c\
+		 sha3-384.c sha3-384-meta.c sha3-512.c sha3-512-meta.c \
+		 shake256.c \
 		 serpent-set-key.c serpent-encrypt.c serpent-decrypt.c \
 		 serpent-meta.c \
+		 streebog.c streebog-meta.c \
 		 twofish.c twofish-meta.c \
 		 umac-nh.c umac-nh-n.c umac-l2.c umac-l3.c \
 		 umac-poly64.c umac-poly128.c umac-set-key.c \
 		 umac32.c umac64.c umac96.c umac128.c \
 		 version.c \
 		 write-be32.c write-le32.c write-le64.c \
-		 yarrow256.c yarrow_key_event.c
+		 yarrow256.c yarrow_key_event.c \
+		 xts.c xts-aes128.c xts-aes256.c
 
 hogweed_SOURCES = sexp.c sexp-format.c \
 		  sexp-transport.c sexp-transport-format.c \
 		  bignum.c bignum-random.c bignum-random-prime.c \
 		  sexp2bignum.c \
 		  pkcs1.c pkcs1-encrypt.c pkcs1-decrypt.c \
+		  pkcs1-sec-decrypt.c \
 		  pkcs1-rsa-digest.c pkcs1-rsa-md5.c pkcs1-rsa-sha1.c \
 		  pkcs1-rsa-sha256.c pkcs1-rsa-sha512.c \
 		  pss.c pss-mgf1.c \
 		  rsa.c rsa-sign.c rsa-sign-tr.c rsa-verify.c \
+		  rsa-sec-compute-root.c \
 		  rsa-pkcs1-sign.c rsa-pkcs1-sign-tr.c rsa-pkcs1-verify.c \
 		  rsa-md5-sign.c rsa-md5-sign-tr.c rsa-md5-verify.c \
 		  rsa-sha1-sign.c rsa-sha1-sign-tr.c rsa-sha1-verify.c \
@@ -154,7 +177,8 @@ hogweed_SOURCES = sexp.c sexp-format.c \
 		  rsa-sha512-sign.c rsa-sha512-sign-tr.c rsa-sha512-verify.c \
 		  rsa-pss-sha256-sign-tr.c rsa-pss-sha256-verify.c \
 		  rsa-pss-sha512-sign-tr.c rsa-pss-sha512-verify.c \
-		  rsa-encrypt.c rsa-decrypt.c rsa-decrypt-tr.c \
+		  rsa-encrypt.c rsa-decrypt.c \
+		  rsa-sec-decrypt.c rsa-decrypt-tr.c \
 		  rsa-keygen.c rsa-blind.c \
 		  rsa2sexp.c sexp2rsa.c \
 		  dsa.c dsa-compat.c dsa-compat-keygen.c dsa-gen-params.c \
@@ -168,33 +192,42 @@ hogweed_SOURCES = sexp.c sexp-format.c \
 		  gmp-glue.c cnd-copy.c \
 		  ecc-mod.c ecc-mod-inv.c \
 		  ecc-mod-arith.c ecc-pp1-redc.c ecc-pm1-redc.c \
-		  ecc-192.c ecc-224.c ecc-256.c ecc-384.c ecc-521.c \
-		  ecc-25519.c \
+		  ecc-curve25519.c ecc-curve448.c \
+		  ecc-gost-gc256b.c ecc-gost-gc512a.c \
+		  ecc-secp192r1.c ecc-secp224r1.c ecc-secp256r1.c \
+		  ecc-secp384r1.c ecc-secp521r1.c \
 		  ecc-size.c ecc-j-to-a.c ecc-a-to-j.c \
 		  ecc-dup-jj.c ecc-add-jja.c ecc-add-jjj.c \
 		  ecc-eh-to-a.c \
 		  ecc-dup-eh.c ecc-add-eh.c ecc-add-ehh.c \
-		  ecc-mul-g-eh.c ecc-mul-a-eh.c \
+		  ecc-dup-th.c ecc-add-th.c ecc-add-thh.c \
+		  ecc-mul-g-eh.c ecc-mul-a-eh.c ecc-mul-m.c \
 		  ecc-mul-g.c ecc-mul-a.c ecc-hash.c ecc-random.c \
 		  ecc-point.c ecc-scalar.c ecc-point-mul.c ecc-point-mul-g.c \
 		  ecc-ecdsa-sign.c ecdsa-sign.c \
 		  ecc-ecdsa-verify.c ecdsa-verify.c ecdsa-keygen.c \
+		  ecc-gostdsa-sign.c gostdsa-sign.c \
+		  ecc-gostdsa-verify.c gostdsa-verify.c gostdsa-vko.c \
 		  curve25519-mul-g.c curve25519-mul.c curve25519-eh-to-x.c \
+		  curve448-mul-g.c curve448-mul.c curve448-eh-to-x.c \
 		  eddsa-compress.c eddsa-decompress.c eddsa-expand.c \
 		  eddsa-hash.c eddsa-pubkey.c eddsa-sign.c eddsa-verify.c \
-		  ed25519-sha512-pubkey.c \
-		  ed25519-sha512-sign.c ed25519-sha512-verify.c
+		  ed25519-sha512.c ed25519-sha512-pubkey.c \
+		  ed25519-sha512-sign.c ed25519-sha512-verify.c \
+		  ed448-shake256.c ed448-shake256-pubkey.c \
+		  ed448-shake256-sign.c ed448-shake256-verify.c
 
-OPT_SOURCES = fat-x86_64.c fat-arm.c mini-gmp.c
+OPT_SOURCES = fat-arm.c fat-ppc.c fat-x86_64.c mini-gmp.c
 
 HEADERS = aes.h arcfour.h arctwo.h asn1.h blowfish.h \
 	  base16.h base64.h bignum.h buffer.h camellia.h cast128.h \
 	  cbc.h ccm.h cfb.h chacha.h chacha-poly1305.h ctr.h \
-	  curve25519.h des.h des-compat.h dsa.h dsa-compat.h eax.h \
+	  curve25519.h curve448.h des.h dsa.h dsa-compat.h eax.h \
 	  ecc-curve.h ecc.h ecdsa.h eddsa.h \
-	  gcm.h gosthash94.h hmac.h \
+	  gcm.h gostdsa.h gosthash94.h hmac.h \
 	  knuth-lfib.h hkdf.h \
 	  macros.h \
+	  cmac.h siv-cmac.h \
 	  md2.h md4.h \
 	  md5.h md5-compat.h \
 	  memops.h memxor.h \
@@ -202,10 +235,10 @@ HEADERS = aes.h arcfour.h arctwo.h asn1.h blowfish.h \
 	  pbkdf2.h \
 	  pgp.h pkcs1.h pss.h pss-mgf1.h realloc.h ripemd160.h rsa.h \
 	  salsa20.h sexp.h \
-	  serpent.h sha.h sha1.h sha2.h sha3.h twofish.h \
-	  umac.h yarrow.h poly1305.h
+	  serpent.h sha.h sha1.h sha2.h sha3.h streebog.h twofish.h \
+	  umac.h yarrow.h xts.h poly1305.h
 
-INSTALL_HEADERS = $(HEADERS) nettle-stdint.h version.h @IF_MINI_GMP@ mini-gmp.h
+INSTALL_HEADERS = $(HEADERS) version.h @IF_MINI_GMP@ mini-gmp.h
 
 SOURCES = $(nettle_SOURCES) $(hogweed_SOURCES) \
 	  $(getopt_SOURCES) $(internal_SOURCES) \
@@ -222,14 +255,19 @@ DISTFILES = $(SOURCES) $(HEADERS) getopt.h getopt_int.h \
 	config.guess config.sub install-sh texinfo.tex \
 	config.h.in config.m4.in config.make.in	Makefile.in \
 	README CONTRIBUTING.md AUTHORS COPYING.LESSERv3 COPYINGv2 COPYINGv3 \
-	INSTALL NEWS TODO ChangeLog \
+	INSTALL NEWS ChangeLog \
 	nettle.pc.in hogweed.pc.in \
-	$(des_headers) descore.README \
-	aes-internal.h camellia-internal.h serpent-internal.h \
-	cast128_sboxes.h desinfo.h desCode.h \
+	desdata.stamp $(des_headers) descore.README \
+	aes-internal.h block-internal.h blowfish-internal.h camellia-internal.h \
+	gcm-internal.h gost28147-internal.h poly1305-internal.h \
+	serpent-internal.h cast128_sboxes.h desinfo.h desCode.h \
+	ripemd160-internal.h sha2-internal.h \
 	memxor-internal.h nettle-internal.h nettle-write.h \
+	ctr-internal.h chacha-internal.h sha3-internal.h \
+	salsa20-internal.h umac-internal.h hogweed-internal.h \
+	rsa-internal.h pkcs1-internal.h dsa-internal.h eddsa-internal.h \
 	gmp-glue.h ecc-internal.h fat-setup.h \
-	mini-gmp.h asm.m4 \
+	mini-gmp.h asm.m4 m4-utils.m4 \
 	nettle.texinfo nettle.info nettle.html nettle.pdf sha-example.c
 
 # Rules building static libraries
@@ -251,7 +289,11 @@ libhogweed.a: $(hogweed_OBJS)
 	$(RANLIB) $@
 	echo hogweed > libhogweed.stamp
 
-.c.$(OBJEXT):
+%.$(OBJEXT): %.asm $(srcdir)/m4-utils.m4 $(srcdir)/asm.m4 config.m4 machine.m4
+	$(M4) $(srcdir)/m4-utils.m4 $(srcdir)/asm.m4 config.m4 machine.m4 $< >$*.s
+	$(COMPILE) -c $*.s
+
+%.$(OBJEXT): %.c
 	$(COMPILE) -c $< \
 	&& $(DEP_PROCESS)
 
@@ -278,32 +320,12 @@ $(LIBHOGWEED_FORLINK): $(hogweed_OBJS) $(LIBNETTLE_FORLINK)
 	       && $(LN_S) $(LIBHOGWEED_FORLINK) $(LIBHOGWEED_SONAME) ; } )
 	echo hogweed > libhogweed.stamp
 
-# For Solaris and BSD make, we have to use an explicit rule for each
-# executable. Avoid object file targets to make it easy to run the
-# right compiler.
-aesdata$(EXEEXT_FOR_BUILD): aesdata.c
-	$(CC_FOR_BUILD) `test -f aesdata.c || echo '$(srcdir)/'`aesdata.c \
-	-o aesdata$(EXEEXT_FOR_BUILD)
+# For building the various *data.c programs. -lm needed for shadata.
+%$(EXEEXT_FOR_BUILD): %.c
+	$(CC_FOR_BUILD) $< -lm -o $@
 
-desdata$(EXEEXT_FOR_BUILD): desdata.c
-	$(CC_FOR_BUILD) `test -f desdata.c || echo '$(srcdir)/'`desdata.c \
-	-o desdata$(EXEEXT_FOR_BUILD)
-
-twofishdata$(EXEEXT_FOR_BUILD): twofishdata.c
-	$(CC_FOR_BUILD) `test -f twofishdata.c || echo '$(srcdir)/'`twofishdata.c \
-	-o twofishdata$(EXEEXT_FOR_BUILD)
-
-shadata$(EXEEXT_FOR_BUILD): shadata.c
-	$(CC_FOR_BUILD) `test -f shadata.c || echo '$(srcdir)/'`shadata.c -lm \
-	-o shadata$(EXEEXT_FOR_BUILD)
-
-gcmdata$(EXEEXT_FOR_BUILD): gcmdata.c
-	$(CC_FOR_BUILD) `test -f gcmdata.c || echo '$(srcdir)/'`gcmdata.c \
-	-o gcmdata$(EXEEXT_FOR_BUILD)
-
-eccdata$(EXEEXT_FOR_BUILD): eccdata.c mini-gmp.c mini-gmp.h
-	$(CC_FOR_BUILD) `test -f eccdata.c || echo '$(srcdir)/'`eccdata.c \
-	-o eccdata$(EXEEXT_FOR_BUILD)
+# Explicit dependency.
+eccdata$(EXEEXT_FOR_BUILD): mini-gmp.c mini-gmp.h
 
 # desCore rules
 # It seems using $(srcdir)/ doesn't work with GNU make 3.79.1
@@ -311,93 +333,118 @@ eccdata$(EXEEXT_FOR_BUILD): eccdata.c mini-gmp.c mini-gmp.h
 des_headers = rotors.h keymap.h 
 
 # Generate DES headers.
-$(des_headers): desdata.c
-	$(MAKE) desdata$(EXEEXT_FOR_BUILD)
+$(des_headers): desdata.stamp
 	f="$(srcdir)/`basename $@`"; \
 	  ./desdata$(EXEEXT_FOR_BUILD) $(@F) > $${f}T; \
 	  test -s $${f}T && mv -f $${f}T $$f
 
+desdata.stamp: desdata.c
+	$(MAKE) desdata$(EXEEXT_FOR_BUILD)
+	echo stamp > desdata.stamp
+
 des.$(OBJEXT): des.c des.h $(des_headers)
 
-# Generate ECC files.
-# Some possible choices for 192:
-#	k = 15, c = 4,  64 entries,  ~3 KB
-#	k = 20, c = 6, 128 entries,  ~6 KB
-#	k = 10, c = 6, 256 entries, ~12 KB
-#	k =  7, c = 6, 320 entries, ~15 KB
-#	k =  9, c = 7, 512 entries, ~24 KB
-ecc-192.h: eccdata.stamp
-	./eccdata$(EXEEXT_FOR_BUILD) 192 7 6 $(NUMB_BITS) > $@T && mv $@T $@
-# Some possible choices for 224:
-#	k = 18, c = 4,  64 entries,  ~4 KB
-#	k = 24, c = 6, 128 entries,  ~8 KB
-#	k = 12, c = 6, 256 entries, ~16 KB
-#	k =  8, c = 6, 320 entries, ~20 KB
-#	k = 10, c = 7, 512 entries, ~32 KB
-ecc-224.h: eccdata.stamp
-	./eccdata$(EXEEXT_FOR_BUILD) 224 12 6 $(NUMB_BITS) > $@T && mv $@T $@
-# Some possible choices for 256:
-#	k = 20, c = 4,  64 entries,  ~4 KB
-#	k = 27, c = 6, 128 entries,  ~8 KB
-#	k = 14, c = 6, 256 entries, ~16 KB
-#	k =  9, c = 6, 320 entries, ~20 KB
-#	k = 12, c = 7, 512 entries, ~32 KB
-ecc-256.h: eccdata.stamp
-	./eccdata$(EXEEXT_FOR_BUILD) 256 14 6 $(NUMB_BITS) > $@T && mv $@T $@
-# Some possible choices for 384:
-#	k = 31, c = 4,  64 entries,  ~6 KB
-#	k = 41, c = 6, 128 entries, ~12 KB
-#	k = 20, c = 6, 256 entries, ~24 KB
-#	k = 14, c = 6, 320 entries, ~30 KB
-#	k = 18, c = 7, 512 entries, ~48 KB
-ecc-384.h: eccdata.stamp
-	./eccdata$(EXEEXT_FOR_BUILD) 384 41 6 $(NUMB_BITS) > $@T && mv $@T $@
-# Some possible choices for 521:
-#	k = 42, c = 4,  64 entries,  ~9 KB
-#	k = 56, c = 6, 128 entries, ~18 KB
-#	k = 28, c = 6, 256 entries, ~35 KB
-#	k = 19, c = 6, 320 entries, ~44 KB
-#	k = 24, c = 7, 512 entries, ~70 KB
-ecc-521.h: eccdata.stamp
-	./eccdata$(EXEEXT_FOR_BUILD) 521 56 6 $(NUMB_BITS) > $@T && mv $@T $@
+# Generate ECC files, with roughly 16 KB of tables per curve.
 
-ecc-25519.h: eccdata.stamp
-	./eccdata$(EXEEXT_FOR_BUILD) 255 14 6 $(NUMB_BITS) > $@T && mv $@T $@
+# Some reasonable choices for 192:
+# k =  8, c =  6, S = 256, T =  40 ( 32 A +  8 D) 12 KB
+# k = 14, c =  7, S = 256, T =  42 ( 28 A + 14 D) 12 KB
+# k = 11, c =  6, S = 192, T =  44 ( 33 A + 11 D)  9 KB
+# k = 16, c =  6, S = 128, T =  48 ( 32 A + 16 D)  6 KB
+ecc-secp192r1.h: eccdata.stamp
+	./eccdata$(EXEEXT_FOR_BUILD) secp192r1 8 6 $(NUMB_BITS) > $@T && mv $@T $@
+
+# Some reasonable choices for 224:
+# k = 16, c =  7, S = 256, T =  48 ( 32 A + 16 D) ~16 KB
+# k = 10, c =  6, S = 256, T =  50 ( 40 A + 10 D) ~16 KB
+# k = 13, c =  6, S = 192, T =  52 ( 39 A + 13 D) ~12 KB
+# k =  9, c =  5, S = 160, T =  54 ( 45 A +  9 D) ~10 KB
+ecc-secp224r1.h: eccdata.stamp
+	./eccdata$(EXEEXT_FOR_BUILD) secp224r1 16 7 $(NUMB_BITS) > $@T && mv $@T $@
+
+# Some reasonable choices for 256:
+# k =  9, c =  6, S = 320, T =  54 ( 45 A +  9 D) 20 KB
+# k = 11, c =  6, S = 256, T =  55 ( 44 A + 11 D) 16 KB
+# k = 19, c =  7, S = 256, T =  57 ( 38 A + 19 D) 16 KB
+# k = 15, c =  6, S = 192, T =  60 ( 45 A + 15 D) 12 KB
+ecc-secp256r1.h: eccdata.stamp
+	./eccdata$(EXEEXT_FOR_BUILD) secp256r1 11 6 $(NUMB_BITS) > $@T && mv $@T $@
+
+# Some reasonable choices for 384:
+# k = 16, c =  6, S = 256, T =  80 ( 64 A + 16 D) 24 KB
+# k = 28, c =  7, S = 256, T =  84 ( 56 A + 28 D) 24 KB
+# k = 11, c =  5, S = 224, T =  88 ( 77 A + 11 D) 21 KB
+# k = 22, c =  6, S = 192, T =  88 ( 66 A + 22 D) 18 KB
+# k = 13, c =  5, S = 192, T =  91 ( 78 A + 13 D) 18 KB
+# k = 16, c =  5, S = 160, T =  96 ( 80 A + 16 D) 15 KB
+# k = 32, c =  6, S = 128, T =  96 ( 64 A + 32 D) 12 KB
+ecc-secp384r1.h: eccdata.stamp
+	./eccdata$(EXEEXT_FOR_BUILD) secp384r1 32 6 $(NUMB_BITS) > $@T && mv $@T $@
+
+# Some reasonable choices for 521:
+# k = 29, c =  6, S = 192, T = 116 ( 87 A + 29 D) ~27 KB
+# k = 21, c =  5, S = 160, T = 126 (105 A + 21 D) ~23 KB
+# k = 44, c =  6, S = 128, T = 132 ( 88 A + 44 D) ~18 KB
+# k = 35, c =  5, S =  96, T = 140 (105 A + 35 D) ~14 KB
+ecc-secp521r1.h: eccdata.stamp
+	./eccdata$(EXEEXT_FOR_BUILD) secp521r1 44 6 $(NUMB_BITS) > $@T && mv $@T $@
+
+# Parameter choices mostly the same as for ecc-secp256r1.h.
+ecc-curve25519.h: eccdata.stamp
+	./eccdata$(EXEEXT_FOR_BUILD) curve25519 11 6 $(NUMB_BITS) > $@T && mv $@T $@
+
+ecc-curve448.h: eccdata.stamp
+	./eccdata$(EXEEXT_FOR_BUILD) curve448 38 6 $(NUMB_BITS) > $@T && mv $@T $@
+
+# Some reasonable choices for 256:
+# k =  9, c =  6, S = 320, T =  54 ( 45 A +  9 D) 20 KB
+# k = 11, c =  6, S = 256, T =  55 ( 44 A + 11 D) 16 KB
+# k = 19, c =  7, S = 256, T =  57 ( 38 A + 19 D) 16 KB
+# k = 15, c =  6, S = 192, T =  60 ( 45 A + 15 D) 12 KB
+ecc-gost-gc256b.h: eccdata.stamp
+	./eccdata$(EXEEXT_FOR_BUILD) gost_gc256b 11 6 $(NUMB_BITS) > $@T && mv $@T $@
+
+# Some reasonable choices for 512:
+# k = 22, c =  6, S = 256, T = 110 ( 88 A + 22 D) 32 KB
+# k = 29, c =  6, S = 192, T = 116 ( 87 A + 29 D) 24 KB
+# k = 21, c =  5, S = 160, T = 126 (105 A + 21 D) 20 KB
+# k = 43, c =  6, S = 128, T = 129 ( 86 A + 43 D) 16 KB
+# k = 35, c =  5, S =  96, T = 140 (105 A + 35 D) 12 KB
+ecc-gost-gc512a.h: eccdata.stamp
+	./eccdata$(EXEEXT_FOR_BUILD) gost_gc512a 43 6 $(NUMB_BITS) > $@T && mv $@T $@
 
 eccdata.stamp: eccdata.c
 	$(MAKE) eccdata$(EXEEXT_FOR_BUILD)
 	echo stamp > eccdata.stamp
 
-ecc-192.$(OBJEXT): ecc-192.h
-ecc-224.$(OBJEXT): ecc-224.h
-ecc-256.$(OBJEXT): ecc-256.h
-ecc-384.$(OBJEXT): ecc-384.h
-ecc-521.$(OBJEXT): ecc-521.h
-ecc-25519.$(OBJEXT): ecc-25519.h
-
-.asm.$(OBJEXT): $(srcdir)/asm.m4 machine.m4 config.m4
-	$(M4) $(srcdir)/asm.m4 machine.m4 config.m4 $< >$*.s
-	$(COMPILE) -c $*.s
-	@echo "$@ : $< $(srcdir)/asm.m4 machine.m4 config.m4" >$@.d 
+ecc-curve25519.$(OBJEXT): ecc-curve25519.h
+ecc-curve448.$(OBJEXT): ecc-curve448.h
+ecc-gost-gc256b.$(OBJEXT): ecc-gost-gc256b.h
+ecc-gost-gc512a.$(OBJEXT): ecc-gost-gc512a.h
+ecc-secp192r1.$(OBJEXT): ecc-secp192r1.h
+ecc-secp224r1.$(OBJEXT): ecc-secp224r1.h
+ecc-secp256r1.$(OBJEXT): ecc-secp256r1.h
+ecc-secp384r1.$(OBJEXT): ecc-secp384r1.h
+ecc-secp521r1.$(OBJEXT): ecc-secp521r1.h
 
 # Texinfo rules
-.texinfo.info:
+%.info: %.texinfo
 	cd $(srcdir) && $(MAKEINFO) --output $@ `basename "$<"`
 
-.texinfo.html:
+%.html: %.texinfo
 	cd $(srcdir) && $(MAKEINFO) --html --no-split \
 	  --output $@T `basename "$<"` \
 	  && test -s $@T && mv -f $@T $@
 
-.texinfo.dvi:
+%.dvi: %.texinfo
 	cd $(srcdir) && texi2dvi -b `basename "$<"`
 
-.dvi.ps:
+%.ps: %.dvi
 	cd $(srcdir) && dvips -Ppdf -G0 -o `basename "$<" .dvi`.ps `basename "$<"`
 
 # Avoid rebuilding .dvi and .ps files when the .texinfo source is unchanged.
 PS2PDFFLAGS=-dCompatibilityLevel=1.3 -dMAxSubsetPct=100 -dSubsetFonts=true -dEmbedAllFonts=true
-.texinfo.pdf:
+%.pdf: %.texinfo
 	$(MAKE) `basename "$<" .texinfo`.ps
 	cd $(srcdir) && ps2pdf $(PS2PDFFLAGS) `basename "$<" .texinfo`.ps
 
@@ -567,10 +614,11 @@ distdir: $(DISTFILES)
 	  fi ; \
 	done
 	set -e; for d in sparc32 sparc64 x86 \
-		x86_64 x86_64/aesni x86_64/fat \
-		arm arm/neon arm/v6 arm/fat ; do \
+		x86_64 x86_64/aesni x86_64/sha_ni x86_64/fat \
+		arm arm/neon arm/v6 arm/fat \
+		powerpc64 powerpc64/p7 powerpc64/p8 powerpc64/fat ; do \
 	  mkdir "$(distdir)/$$d" ; \
-	  find "$(srcdir)/$$d" -maxdepth 1 '(' -name '*.asm' -o -name '*.m4' ')' \
+	  find "$(srcdir)/$$d" -maxdepth 1 '(' -name '*.asm' -o -name '*.m4' -o -name README ')' \
 	    -exec cp '{}' "$(distdir)/$$d" ';' ; \
 	done
 	set -e; for d in $(SUBDIRS); do \
@@ -625,14 +673,22 @@ distcheck: dist
 	$(rm_distcheck)
 
 clean-here:
-	-rm -f $(TARGETS) *.$(OBJEXT) *.s *.so *.dll *.a \
-		ecc-192.h ecc-224.h ecc-256.h ecc-384.h ecc-521.h ecc-25519.h \
+	-rm -f $(TARGETS) *.$(OBJEXT) *.$(OBJEXT).d *.s *.so *.dll *.a \
+		ecc-curve25519.h ecc-curve448.h \
+		ecc-gost-gc256b.h ecc-gost-gc512a.h \
+		ecc-secp192r1.h ecc-secp224r1.h ecc-secp256r1.h \
+		ecc-secp384r1.h ecc-secp521r1.h \
+		aesdata$(EXEEXT_FOR_BUILD) \
+		desdata$(EXEEXT_FOR_BUILD) \
+		twofishdata$(EXEEXT_FOR_BUILD) \
+		shadata$(EXEEXT_FOR_BUILD) \
+		gcmdata$(EXEEXT_FOR_BUILD) \
 		eccdata$(EXEEXT_FOR_BUILD) eccdata.stamp
 	-rm -rf .lib libnettle.stamp libhogweed.stamp
 
 distclean-here: clean-here
 	-rm -f config.h stamp-h config.log config.status machine.m4 \
-	config.make config.m4 Makefile nettle-stdint.h version.h \
+	config.make config.m4 Makefile version.h \
 	nettle.pc hogweed.pc libnettle.map libhogweed.map \
 	*.asm *.d
 
@@ -643,4 +699,4 @@ tags-here:
 	etags -o $(srcdir)/TAGS $(srcdir)/*.c $(srcdir)/*.h
 
 DEP_FILES = $(SOURCES:.c=.$(OBJEXT).d)
-@DEP_INCLUDE@ $(DEP_FILES)
+-include $(DEP_FILES)

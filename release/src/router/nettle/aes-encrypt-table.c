@@ -49,7 +49,7 @@
  * consistent with the row numbering. */
 
 const struct aes_table
-_aes_encrypt_table =
+_nettle_aes_encrypt_table =
   { /* sbox */
     {
       0x63,0x7c,0x77,0x7b,0xf2,0x6b,0x6f,0xc5,

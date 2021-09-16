@@ -6,6 +6,7 @@
 /* Test with more data and inplace decryption, to check that the
  * cfb_decrypt buffering works. */
 #define CFB_BULK_DATA 10000
+#define CFB8_BULK_DATA CFB_BULK_DATA
 
 static void
 test_cfb_bulk(void)
@@ -22,7 +23,7 @@ test_cfb_bulk(void)
   const uint8_t *start_iv = H("11adbff119749103 207619cfa0e8d13a");
   const uint8_t *end_iv = H("1fd0a9189b8480b7 b06a2b36ef5943ba");
 
-  struct CFB_CTX(struct aes_ctx, AES_BLOCK_SIZE) aes;
+  struct CFB_CTX(struct aes256_ctx, AES_BLOCK_SIZE) aes;
 
   knuth_lfib_init(&random, CFB_BULK_DATA);
   knuth_lfib_random(&random, CFB_BULK_DATA, clear);
@@ -30,10 +31,10 @@ test_cfb_bulk(void)
   /* Byte that should not be overwritten */
   cipher[CFB_BULK_DATA] = 17;
 
-  aes_set_encrypt_key(&aes.ctx, 32, key);
+  aes256_set_encrypt_key(&aes.ctx, key);
   CFB_SET_IV(&aes, start_iv);
 
-  CFB_ENCRYPT(&aes, aes_encrypt, CFB_BULK_DATA, cipher, clear);
+  CFB_ENCRYPT(&aes, aes256_encrypt, CFB_BULK_DATA, cipher, clear);
 
   ASSERT(cipher[CFB_BULK_DATA] == 17);
 
@@ -47,9 +48,9 @@ test_cfb_bulk(void)
   ASSERT(MEMEQ(AES_BLOCK_SIZE, aes.iv, end_iv));
 
   /* Decrypt, in place */
-  aes_set_encrypt_key(&aes.ctx, 32, key);
+  aes256_set_encrypt_key(&aes.ctx, key);
   CFB_SET_IV(&aes, start_iv);
-  CFB_DECRYPT(&aes, aes_encrypt, CFB_BULK_DATA, cipher, cipher);
+  CFB_DECRYPT(&aes, aes256_encrypt, CFB_BULK_DATA, cipher, cipher);
 
   ASSERT(cipher[CFB_BULK_DATA] == 17);
 
@@ -64,9 +65,110 @@ test_cfb_bulk(void)
   ASSERT (MEMEQ(CFB_BULK_DATA, clear, cipher));
 }
 
+static void
+test_cfb8_bulk(void)
+{
+  struct knuth_lfib_ctx random;
+
+  uint8_t clear[CFB8_BULK_DATA];
+
+  uint8_t cipher[CFB8_BULK_DATA + 1];
+
+  const uint8_t *key = H("966c7bf00bebe6dc 8abd37912384958a"
+			 "743008105a08657d dcaad4128eee38b3");
+
+  const uint8_t *start_iv = H("11adbff119749103 207619cfa0e8d13a");
+  const uint8_t *end_iv = H("f84bfd48206f5803 6ef86f4e69e9aec0");
+
+  struct CFB8_CTX(struct aes256_ctx, AES_BLOCK_SIZE) aes;
+
+  knuth_lfib_init(&random, CFB8_BULK_DATA);
+  knuth_lfib_random(&random, CFB8_BULK_DATA, clear);
+
+  /* Byte that should not be overwritten */
+  cipher[CFB8_BULK_DATA] = 17;
+
+  aes256_set_encrypt_key(&aes.ctx, key);
+  CFB8_SET_IV(&aes, start_iv);
+
+  CFB8_ENCRYPT(&aes, aes256_encrypt, CFB8_BULK_DATA, cipher, clear);
+
+  ASSERT(cipher[CFB8_BULK_DATA] == 17);
+
+  if (verbose)
+    {
+      printf("IV after bulk encryption: ");
+      print_hex(AES_BLOCK_SIZE, aes.iv);
+      printf("\n");
+    }
+
+  ASSERT(MEMEQ(AES_BLOCK_SIZE, aes.iv, end_iv));
+
+  /* Decrypt, in place */
+  aes256_set_encrypt_key(&aes.ctx, key);
+  CFB8_SET_IV(&aes, start_iv);
+  CFB8_DECRYPT(&aes, aes256_encrypt, CFB8_BULK_DATA, cipher, cipher);
+
+  ASSERT(cipher[CFB8_BULK_DATA] == 17);
+
+  if (verbose)
+    {
+      printf("IV after bulk decryption: ");
+      print_hex(AES_BLOCK_SIZE, aes.iv);
+      printf("\n");
+    }
+
+  ASSERT (MEMEQ(AES_BLOCK_SIZE, aes.iv, end_iv));
+  ASSERT (MEMEQ(CFB8_BULK_DATA, clear, cipher));
+}
+
 void
 test_main(void)
 {
+  /* From NIST spec 800-38a on AES modes.
+   *
+   * F.3  CFB Example Vectors
+   * F.3.7 CFB8-AES128.Encrypt
+   */
+
+  test_cipher_cfb8(&nettle_aes128,
+		   SHEX("2b7e151628aed2a6abf7158809cf4f3c"),
+		   SHEX("6bc1bee22e409f96e93d7e117393172a"
+		        "ae2d"),
+		   SHEX("3b79424c9c0dd436bace9e0ed4586a4f"
+		        "32b9"),
+		   SHEX("000102030405060708090a0b0c0d0e0f"));
+
+  /* From NIST spec 800-38a on AES modes.
+   *
+   * F.3  CFB Example Vectors
+   * F.3.9 CFB8-AES192.Encrypt
+   */
+
+  test_cipher_cfb8(&nettle_aes192,
+		   SHEX("8e73b0f7da0e6452c810f32b809079e5"
+			"62f8ead2522c6b7b"),
+		   SHEX("6bc1bee22e409f96e93d7e117393172a"
+		        "ae2d"),
+		   SHEX("cda2521ef0a905ca44cd057cbf0d47a0"
+			"678a"),
+		   SHEX("000102030405060708090a0b0c0d0e0f"));
+
+  /* From NIST spec 800-38a on AES modes.
+   *
+   * F.3  CFB Example Vectors
+   * F.3.11 CFB8-AES256.Encrypt
+   */
+
+  test_cipher_cfb8(&nettle_aes256,
+		   SHEX("603deb1015ca71be2b73aef0857d7781"
+                        "1f352c073b6108d72d9810a30914dff4"),
+		   SHEX("6bc1bee22e409f96e93d7e117393172a"
+		        "ae2d"),
+		   SHEX("dc1f1a8520a64db55fcc8ac554844e88"
+			"9700"),
+		   SHEX("000102030405060708090a0b0c0d0e0f"));
+
   /* From NIST spec 800-38a on AES modes.
    *
    * F.3  CFB Example Vectors
@@ -139,6 +241,7 @@ test_main(void)
 		  SHEX("000102030405060708090a0b0c0d0e0f"));
 
   test_cfb_bulk();
+  test_cfb8_bulk();
 }
 
 /*

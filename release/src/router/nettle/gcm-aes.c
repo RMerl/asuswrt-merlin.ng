@@ -35,6 +35,9 @@
 # include "config.h"
 #endif
 
+/* This file implements and uses deprecated functions */
+#define _NETTLE_ATTRIBUTE_DEPRECATED
+
 #include "gcm.h"
 
 void

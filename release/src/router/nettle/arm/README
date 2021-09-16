@@ -1,0 +1,126 @@
+Currently, code in this directory is written for arm cortex-a9.
+
+For efficient loads and stores, use ldmia, stmia and friends. Can do
+two loads or stores per cycle with 8-byte aligned addresses, or three
+loads or stores in two cycles, regardless of alignment.
+
+12 usable registers (if we exclude r9).
+
+ABI gnueabi(hf) (not depending on the floating point conventions)
+
+Registers	May be		Argument
+		clobbered	number
+
+r0		Y		1
+r1		Y		2
+r2		Y		3
+r3		Y		4
+r4		N
+r5		N
+r6		N
+r7		N
+r8		N
+r9 (sl)
+r10		N
+r11		N
+r12 (ip)	Y
+r13 (sp)
+r14 (lr)        N
+r15 (pc)
+
+q0 (d0, d1)	Y		1 (for "hf" abi)
+q1 (d2, d3)	Y		2
+q2 (d4, d5)	Y		3
+q3 (d6, d7)	Y		4
+q4 (d8, d9)	N
+q5 (d10, d11)	N
+q6 (d12, d13)	N
+q7 (d14, d15)	N
+q8 (d16, d17)	Y
+q9 (d18, d19)	Y
+q10 (d20, d21)	Y
+q11 (d22, d23)	Y
+q12 (d24, d25)	Y
+q13 (d26, d27)	Y
+q14 (d28, d29)	Y
+q15 (d30, d31)	Y
+
+Endianness
+
+ARM supports big- and little-endian memory access modes. Representation in
+registers stays the same but loads and stores switch bytes. This has to be
+taken into account in various cases.
+
+Two m4 macros are provided to handle these special cases in assembly source:
+IF_LE(<if-true>,<if-false>)
+IF_BE(<if-true>,<if-false>)
+respectively expand to <if-true> if the target system's endianness is
+little-endian or big-endian. Otherwise they expand to <if-false>.
+
+1. ldr/str
+
+Loading and storing 32-bit words will reverse the words' bytes in little-endian
+mode. If the handled data is actually a byte sequence or data in network byte
+order (big-endian), the loaded word needs to be reversed after load to get it
+back into correct sequence. See v6/sha1-compress.asm LOAD macro for example.
+
+2. shifts
+
+If data is to be processed with bit operations only, endianness can be ignored
+because byte-swapping on load and store will cancel each other out. Shifts
+however have to be inverted. See arm/memxor.asm for an example.
+
+3. v{ld,st}1.{8,32}
+
+NEON's vld instruction can be used to produce endianness-neutral code. vld1.8
+will load a byte sequence into a register regardless of memory endianness. This
+can be used to process byte sequences. See arm/neon/umac-nh.asm for example.
+
+In the same fashion, vst1.8 can be used do a little-endian store. See
+arm/neon/salsa and chacha routines for examples.
+
+NOTE: vst1.x (at least on the Allwinner A20 Cortex-A7 implementation) seems to
+interfer with itself on subsequent calls, slowing it down. This can be avoided
+by putting calculcations or loads inbetween two vld1.x stores.
+
+Similarly, vld1.32 is used in chacha and salsa routines where 32-bit operands
+are stored in host-endianness in RAM but need to be loaded sequentially without
+the distortion introduced by vldm/vstm. Consecutive vld1.x instructions do not
+seem to suffer from slowdown similar to vst1.x.
+
+4. vldm/vstm
+
+Care has to be taken when using vldm/vstm because they have two non-obvious
+characteristics:
+
+a. vldm/vstm do normal byte-swapping on each value they load. When loading into
+   d (doubleword) registers, this means that bytes, halfwords and words of the
+   doubleword get swapped. When the data loaded actually represents e.g.
+   vectors of 32-bit words this will swap columns.
+a. vldm/vstm on q (quadword) registers get translated into lvdm/vstm on the
+   equivalent number of d (doubleword) registers. Instead of a 128-bit load it
+   does two 64-bit loads. When again handling vectors of 32-bit words this will
+   still swap adjacent columns but will not reverse all four columns.
+
+memory adr0: w0 w1 w2 w3
+register q0: w1 w0 w3 w2
+
+See arm/neon/chacha-core-internal.asm for an example.
+
+5. simple byte store
+
+Sometimes it is necessary to store remaining single bytes to memory. A simple
+logic will store the lowest byte from a register, then do a right shift and
+start over until all bytes are stored. Since this constitutes a
+least-significant-byte-first store, the data to be stored needs to be reversed
+first on a big-endian system. See arm/memxor.asm Lmemxor_leftover for an
+example.
+
+6. Function parameters/return values
+
+AAPCS requires 64-bit parameters to be passed to and returned from functions
+"in two consecutive registers [...] as if the value had been loaded from memory
+representation with a single LDM instruction." Since loading a big-endian
+doubleword using ldm transposes its words, the same has to be done when e.g.
+returning a 64-bit value from an assembler routine. See arm/neon/umac-nh.asm
+for an example.

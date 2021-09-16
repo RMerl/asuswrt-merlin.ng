@@ -48,12 +48,6 @@
 
 #include "camellia.h"
 
-/* Name mangling */
-#define _camellia_crypt _nettle_camellia_crypt
-#define _camellia_absorb _nettle_camellia_absorb
-#define _camellia_invert_key _nettle_camellia_invert_key
-#define _camellia_table _nettle_camellia_table
-
 /*
  *  macros
  */
@@ -117,21 +111,21 @@ struct camellia_table
 #endif
 
 void
-_camellia_crypt(unsigned nkeys, const uint64_t *keys,
-		const struct camellia_table *T,
-		size_t length, uint8_t *dst,
-		const uint8_t *src);
+_nettle_camellia_crypt(unsigned nkeys, const uint64_t *keys,
+		       const struct camellia_table *T,
+		       size_t length, uint8_t *dst,
+		       const uint8_t *src);
 
 /* The initial NKEYS + 2 subkeys in SUBKEY are reduced to the final
    NKEYS subkeys stored in DST. SUBKEY data is modified in the
    process. */
 void
-_camellia_absorb(unsigned nkeys, uint64_t *dst, uint64_t *subkey);
+_nettle_camellia_absorb(unsigned nkeys, uint64_t *dst, uint64_t *subkey);
 
 void
-_camellia_invert_key(unsigned nkeys,
-		     uint64_t *dst, const uint64_t *src);
+_nettle_camellia_invert_key(unsigned nkeys,
+			    uint64_t *dst, const uint64_t *src);
 
-extern const struct camellia_table _camellia_table;
+extern const struct camellia_table _nettle_camellia_table;
 
 #endif /* NETTLE_CAMELLIA_INTERNAL_H_INCLUDED */

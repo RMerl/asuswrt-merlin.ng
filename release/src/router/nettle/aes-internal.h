@@ -36,13 +36,6 @@
 
 #include "aes.h"
 
-/* Name mangling */
-#define _aes_set_key _nettle_aes_set_key
-#define _aes_invert _nettle_aes_invert
-#define _aes_encrypt _nettle_aes_encrypt
-#define _aes_decrypt _nettle_aes_decrypt
-#define _aes_encrypt_table _nettle_aes_encrypt_table
-
 /* Define to use only small tables. */
 #ifndef AES_SMALL
 # define AES_SMALL 0
@@ -61,23 +54,23 @@ struct aes_table
 };
 
 void
-_aes_set_key(unsigned nr, unsigned nk,
-	     uint32_t *subkeys, const uint8_t *key);
+_nettle_aes_set_key(unsigned nr, unsigned nk,
+		    uint32_t *subkeys, const uint8_t *key);
 
 void
-_aes_invert(unsigned rounds, uint32_t *dst, const uint32_t *src);
+_nettle_aes_invert(unsigned rounds, uint32_t *dst, const uint32_t *src);
 
 void
-_aes_encrypt(unsigned rounds, const uint32_t *keys,
-	     const struct aes_table *T,
-	     size_t length, uint8_t *dst,
-	     const uint8_t *src);
+_nettle_aes_encrypt(unsigned rounds, const uint32_t *keys,
+		    const struct aes_table *T,
+		    size_t length, uint8_t *dst,
+		    const uint8_t *src);
 
 void
-_aes_decrypt(unsigned rounds, const uint32_t *keys,
-	     const struct aes_table *T,
-	     size_t length, uint8_t *dst,
-	     const uint8_t *src);
+_nettle_aes_decrypt(unsigned rounds, const uint32_t *keys,
+		    const struct aes_table *T,
+		    size_t length, uint8_t *dst,
+		    const uint8_t *src);
 
 /* Macros */
 /* Get the byte with index 0, 1, 2 and 3 */
@@ -105,7 +98,7 @@ _aes_decrypt(unsigned rounds, const uint32_t *keys,
      
 /* Globally visible so that the same sbox table can be used by aes_set_encrypt_key */
 
-extern const struct aes_table _aes_encrypt_table;
-#define aes_sbox (_aes_encrypt_table.sbox)
+extern const struct aes_table _nettle_aes_encrypt_table;
+#define aes_sbox (_nettle_aes_encrypt_table.sbox)
 
 #endif /* NETTLE_AES_INTERNAL_H_INCLUDED */

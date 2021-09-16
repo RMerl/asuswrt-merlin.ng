@@ -58,9 +58,22 @@ test_ecdsa (const struct ecc_curve *ecc,
 void
 test_main (void)
 {
+  /* Producing the signature for corresponding test in
+     ecdsa-verify-test.c, with special u1 and u2. */
+  test_ecdsa (&_nettle_secp_224r1,
+	      "99b5b787484def12894ca507058b3bf5"
+	      "43d72d82fa7721d2e805e5e6",
+	      "2",
+	      SHEX("cdb887ac805a3b42e22d224c85482053"
+		   "16c755d4a736bb2032c92553"),
+	      "706a46dc76dcb76798e60e6d89474788"
+	      "d16dc18032d268fd1a704fa6", /* r */
+	      "3a41e1423b1853e8aa89747b1f987364"
+	      "44705d6d6d8371ea1f578f2e"); /* s */
+
   /* Test cases for the smaller groups, verified with a
      proof-of-concept implementation done for Yubico AB. */
-  test_ecdsa (&nettle_secp_192r1,
+  test_ecdsa (&_nettle_secp_192r1,
 	      "DC51D3866A15BACDE33D96F992FCA99D"
 	      "A7E6EF0934E70975", /* z */
 
@@ -76,7 +89,7 @@ test_main (void)
 	      "a91fb738f9f175d72f9c98527e881c36"
 	      "8de68cb55ffe589"); /* s */
 
-  test_ecdsa (&nettle_secp_224r1,
+  test_ecdsa (&_nettle_secp_224r1,
 	      "446df0a771ed58403ca9cb316e617f6b"
 	      "158420465d00a69601e22858",  /* z */
 
@@ -93,7 +106,7 @@ test_main (void)
 	      "f2715c38a95c31a2b486995f"); /* s */
 
   /* From RFC 4754 */
-  test_ecdsa (&nettle_secp_256r1,
+  test_ecdsa (&_nettle_secp_256r1,
 	      "DC51D386 6A15BACD E33D96F9 92FCA99D"
 	      "A7E6EF09 34E70975 59C27F16 14C88A7F",  /* z */
 
@@ -108,7 +121,7 @@ test_main (void)
 	      "86FA3BB4 E26CAD5B F90B7F81 899256CE"
 	      "7594BB1E A0C89212 748BFF3B 3D5B0315"); /* s */
 
-  test_ecdsa (&nettle_secp_384r1,
+  test_ecdsa (&_nettle_secp_384r1,
 	      "0BEB6466 34BA8773 5D77AE48 09A0EBEA"
 	      "865535DE 4C1E1DCB 692E8470 8E81A5AF"
 	      "62E528C3 8B2A81B3 5309668D 73524D9F",  /* z */
@@ -128,7 +141,7 @@ test_main (void)
 	      "09F417BC A112674C 528262A4 0A629AF1"
 	      "CBB9F516 CE0FA7D2 FF630863 A00E8B9F"); /* s*/
 
-  test_ecdsa (&nettle_secp_521r1,
+  test_ecdsa (&_nettle_secp_521r1,
 	      "0065FDA3 409451DC AB0A0EAD 45495112"
 	      "A3D813C1 7BFD34BD F8C1209D 7DF58491"
 	      "20597779 060A7FF9 D704ADF7 8B570FFA"
@@ -156,18 +169,4 @@ test_main (void)
 	      "97536710 1F67D1CF 9BCCBF2F 3D239534"
 	      "FA509E70 AAC851AE 01AAC68D 62F86647"
 	      "2660"); /* s */
-
-  /* Non-standard ecdsa using curve25519. Not interop-tested with
-     anything else. */
-  test_ecdsa (&_nettle_curve25519,
-	      "1db511101b8fd16f e0212c5679ef53f3"
-	      "323bde77f9efa442 617314d576d1dbcb", /* z */
-	      "aa2fa8facfdc3a99 ec466d41a2c9211c"
-	      "e62e1706f54037ff 8486e26153b0fa79", /* k */
-	      SHEX("e99df2a098c3c590 ea1e1db6d9547339"
-		   "ae760d5331496119 5d967fd881e3b0f5"), /* h */
-	      " 515c3a485f57432 0daf3353a0d08110"
-	      "64157c556296de09 4132f74865961b37", /* r */
-	      "  78f23367291b01 3fc430fb09322d95"
-	      "4384723649868d8e 88effc7ac8b141d7"); /* s */
 }

@@ -67,12 +67,12 @@ pss_encode_mgf1(mpz_t m, size_t bits,
 		const uint8_t *digest)
 {
   TMP_GMP_DECL(em, uint8_t);
-  TMP_DECL(state, uint8_t, NETTLE_MAX_HASH_CONTEXT_SIZE);
+  TMP_DECL_ALIGN(state, NETTLE_MAX_HASH_CONTEXT_SIZE);
   size_t key_size = (bits + 7) / 8;
   size_t j;
 
   TMP_GMP_ALLOC(em, key_size);
-  TMP_ALLOC(state, hash->context_size);
+  TMP_ALLOC_ALIGN(state, hash->context_size);
 
   if (key_size < hash->digest_size + salt_length + 2)
     {
@@ -127,7 +127,7 @@ pss_verify_mgf1(const mpz_t m, size_t bits,
 {
   TMP_GMP_DECL(em, uint8_t);
   TMP_DECL(h2, uint8_t, NETTLE_MAX_HASH_DIGEST_SIZE);
-  TMP_DECL(state, uint8_t, NETTLE_MAX_HASH_CONTEXT_SIZE);
+  TMP_DECL_ALIGN(state, NETTLE_MAX_HASH_CONTEXT_SIZE);
   uint8_t *h, *db, *salt;
   size_t key_size = (bits + 7) / 8;
   size_t j;
@@ -138,7 +138,7 @@ pss_verify_mgf1(const mpz_t m, size_t bits,
   TMP_GMP_ALLOC(em, key_size * 2);
 
   TMP_ALLOC(h2, hash->digest_size);
-  TMP_ALLOC(state, hash->context_size);
+  TMP_ALLOC_ALIGN(state, hash->context_size);
 
   if (key_size < hash->digest_size + salt_length + 2)
     goto cleanup;

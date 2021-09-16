@@ -109,23 +109,22 @@ cbc_decrypt(const void *ctx, nettle_cipher_func *f,
       TMP_ALLOC(buffer, buffer_size);
       TMP_ALLOC(initial_iv, block_size);
 
-      for ( ; length > buffer_size;
-	    length -= buffer_size, src += buffer_size, dst += buffer_size)
+      for ( ; length > buffer_size; length -= buffer_size, dst += buffer_size)
 	{
-	  f(ctx, buffer_size, buffer, src);
+	  f(ctx, buffer_size, buffer, dst);
 	  memcpy(initial_iv, iv, block_size);
-	  memcpy(iv, src + buffer_size - block_size, block_size);
-	  memxor3(dst + block_size, buffer + block_size, src,
+	  memcpy(iv, dst + buffer_size - block_size, block_size);
+	  memxor3(dst + block_size, buffer + block_size, dst,
 		  buffer_size - block_size);
 	  memxor3(dst, buffer, initial_iv, block_size);
 	}
 
-      f(ctx, length, buffer, src);
+      f(ctx, length, buffer, dst);
       memcpy(initial_iv, iv, block_size);
       /* Copies last block */
-      memcpy(iv, src + length - block_size, block_size);
+      memcpy(iv, dst + length - block_size, block_size);
       /* Writes all but first block, reads all but last block. */
-      memxor3(dst + block_size, buffer + block_size, src,
+      memxor3(dst + block_size, buffer + block_size, dst,
 	      length - block_size);
       /* Writes first block. */
       memxor3(dst, buffer, initial_iv, block_size);

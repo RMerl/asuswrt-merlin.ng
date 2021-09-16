@@ -39,3 +39,6 @@
 
 const struct nettle_hash nettle_gosthash94
 = _NETTLE_HASH(gosthash94, GOSTHASH94);
+
+const struct nettle_hash nettle_gosthash94cp
+= _NETTLE_HASH(gosthash94cp, GOSTHASH94CP);

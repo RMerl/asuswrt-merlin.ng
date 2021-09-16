@@ -37,6 +37,7 @@
 #include <string.h>
 
 #include "umac.h"
+#include "umac-internal.h"
 
 #include "macros.h"
 
@@ -52,7 +53,7 @@
 #endif
 
 void
-_umac_l2_init (unsigned size, uint32_t *k)
+_nettle_umac_l2_init (unsigned size, uint32_t *k)
 {
   unsigned i;
   for (i = 0; i < size; i++)
@@ -64,8 +65,8 @@ _umac_l2_init (unsigned size, uint32_t *k)
 }
 
 void
-_umac_l2(const uint32_t *key, uint64_t *state, unsigned n,
-	 uint64_t count, const uint64_t *m)
+_nettle_umac_l2(const uint32_t *key, uint64_t *state, unsigned n,
+		uint64_t count, const uint64_t *m)
 {
   uint64_t *prev = state + 2*n;
   unsigned i;
@@ -75,12 +76,12 @@ _umac_l2(const uint32_t *key, uint64_t *state, unsigned n,
   else if (count == 1)
     for (i = 0; i < n; i++, key += 6)
       {
-	uint64_t y = _umac_poly64 (key[0], key[1], 1, prev[i]);
-	state[2*i+1] = _umac_poly64 (key[0], key[1], y, m[i]);
+	uint64_t y = _nettle_umac_poly64 (key[0], key[1], 1, prev[i]);
+	state[2*i+1] = _nettle_umac_poly64 (key[0], key[1], y, m[i]);
       }
   else if (count < UMAC_POLY64_BLOCKS)
     for (i = 0; i < n; i++, key += 6)
-      state[2*i+1] = _umac_poly64 (key[0], key[1], state[2*i+1], m[i]);
+      state[2*i+1] = _nettle_umac_poly64 (key[0], key[1], state[2*i+1], m[i]);
   else if (count % 2 == 0)
     {
       if (count == UMAC_POLY64_BLOCKS)
@@ -92,18 +93,18 @@ _umac_l2(const uint32_t *key, uint64_t *state, unsigned n,
 	    state[2*i] = 0;
 	    state[2*i+1] = 1;
 
-	    _umac_poly128 (key, state + 2*i, 0, y);
+	    _nettle_umac_poly128 (key, state + 2*i, 0, y);
 	  }
       memcpy (prev, m, n * sizeof(*m));
     }
   else
     for (i = 0, key += 2; i < n; i++, key += 6)
-      _umac_poly128 (key, state + 2*i, prev[i], m[i]);
+      _nettle_umac_poly128 (key, state + 2*i, prev[i], m[i]);
 }
 
 void
-_umac_l2_final(const uint32_t *key, uint64_t *state, unsigned n,
-	       uint64_t count)
+_nettle_umac_l2_final(const uint32_t *key, uint64_t *state, unsigned n,
+		      uint64_t count)
 {
   uint64_t *prev = state + 2*n;
   unsigned i;
@@ -131,10 +132,10 @@ _umac_l2_final(const uint32_t *key, uint64_t *state, unsigned n,
       uint64_t pad = (uint64_t) 1 << 63;
       if (count % 2 == 1)
 	for (i = 0, key += 2; i < n; i++, key += 6)
-	  _umac_poly128 (key, state + 2*i, prev[i], pad);
+	  _nettle_umac_poly128 (key, state + 2*i, prev[i], pad);
       else
 	for (i = 0, key += 2; i < n; i++, key += 6)
-	  _umac_poly128 (key, state + 2*i, pad, 0);
+	  _nettle_umac_poly128 (key, state + 2*i, pad, 0);
 
       for (i = 0; i < n; i++, state += 2)
 	{

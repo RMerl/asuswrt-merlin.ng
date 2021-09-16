@@ -1,6 +1,6 @@
 C arm/neon/sha512-compress.asm
 
-ifelse(<
+ifelse(`
    Copyright (C) 2013 Niels Möller
 
    This file is part of GNU Nettle.
@@ -28,73 +28,73 @@ ifelse(<
    You should have received copies of the GNU General Public License and
    the GNU Lesser General Public License along with this program.  If
    not, see http://www.gnu.org/licenses/.
->) 
+')
 
 	.file "sha512-compress.asm"
 	.fpu	neon
 
-define(<STATE>, <r0>)
-define(<INPUT>, <r1>)
-define(<K>, <r2>)
-define(<COUNT>, <r3>)
-define(<SHIFT>, <r12>)
+define(`STATE', `r0')
+define(`INPUT', `r1')
+define(`K', `r2')
+define(`COUNT', `r3')
+define(`SHIFT', `r12')
 
-define(<SA>, <d0>)
-define(<SB>, <d1>)
-define(<SC>, <d2>)
-define(<SD>, <d3>)
-define(<SE>, <d4>)
-define(<SF>, <d5>)
-define(<SG>, <d6>)
-define(<SH>, <d7>)
-define(<QSAB>, <q0>)
-define(<QSCD>, <q1>)
-define(<QSEF>, <q2>)
-define(<QSGH>, <q3>)
+define(`SA', `d0')
+define(`SB', `d1')
+define(`SC', `d2')
+define(`SD', `d3')
+define(`SE', `d4')
+define(`SF', `d5')
+define(`SG', `d6')
+define(`SH', `d7')
+define(`QSAB', `q0')
+define(`QSCD', `q1')
+define(`QSEF', `q2')
+define(`QSGH', `q3')
 
 C d8-d15 are callee-save	
-define(<DT0>, <d8>)
-define(<DT1>, <d9>)
-define(<QT01>, <q4>)
-define(<DT2>, <d10>)
-define(<DT3>, <d11>)
-define(<QT23>, <q5>)
-define(<DT4>, <d12>)
-define(<DT5>, <d13>)
-define(<QT45>, <q6>)
+define(`DT0', `d8')
+define(`DT1', `d9')
+define(`QT01', `q4')
+define(`DT2', `d10')
+define(`DT3', `d11')
+define(`QT23', `q5')
+define(`DT4', `d12')
+define(`DT5', `d13')
+define(`QT45', `q6')
 
 C Used only when reading the input, can overlap with state
-define(<DT6>, <d0>)
-define(<DT7>, <d1>)
-define(<QT67>, <q0>)
+define(`DT6', `d0')
+define(`DT7', `d1')
+define(`QT67', `q0')
 
-define(<DW0>, <d16>)
-define(<DW1>, <d17>)
-define(<DW2>, <d18>)
-define(<DW3>, <d19>)
-define(<DW4>, <d20>)
-define(<DW5>, <d21>)
-define(<DW6>, <d22>)
-define(<DW7>, <d23>)
-define(<DW8>, <d24>)
-define(<DW9>, <d25>)
-define(<DW10>, <d26>)
-define(<DW11>, <d27>)
-define(<DW12>, <d28>)
-define(<DW13>, <d29>)
-define(<DW14>, <d30>)
-define(<DW15>, <d31>)
-define(<QW0001>, <q8>)
-define(<QW0203>, <q9>)
-define(<QW0405>, <q10>)
-define(<QW0607>, <q11>)
-define(<QW0809>, <q12>)
-define(<QW1011>, <q13>)
-define(<QW1213>, <q14>)
-define(<QW1415>, <q15>)
+define(`DW0', `d16')
+define(`DW1', `d17')
+define(`DW2', `d18')
+define(`DW3', `d19')
+define(`DW4', `d20')
+define(`DW5', `d21')
+define(`DW6', `d22')
+define(`DW7', `d23')
+define(`DW8', `d24')
+define(`DW9', `d25')
+define(`DW10', `d26')
+define(`DW11', `d27')
+define(`DW12', `d28')
+define(`DW13', `d29')
+define(`DW14', `d30')
+define(`DW15', `d31')
+define(`QW0001', `q8')
+define(`QW0203', `q9')
+define(`QW0405', `q10')
+define(`QW0607', `q11')
+define(`QW0809', `q12')
+define(`QW1011', `q13')
+define(`QW1213', `q14')
+define(`QW1415', `q15')
 
-define(<EXPAND_ME>, <$1>)
-define(<W>, <EXPAND_ME(<DW>eval(($1) % 16))>)
+define(`EXPAND_ME', `$1')
+define(`W', `EXPAND_ME(`DW'eval(($1) % 16))')
 
 C If x = W(i+14), y = w(i+1), we xor in parallel
 C
@@ -105,7 +105,7 @@ C	x >> 61		y >> 8
 C  xor	x >> 6		y >> 7
 C  -----------------------------
 C	DT0		DT1
-define(<EXPN>, <
+define(`EXPN', `
 	vshl.i64	DT0, W($1+14), #45
 	vshl.i64	DT1, W($1 + 1), #63
 	vshr.u64	DT2, W($1+14), #19
@@ -123,7 +123,7 @@ define(<EXPN>, <
 	veor.i64	QT01, QT01, QT45
 	vadd.i64	W($1), W($1), DT0
 	vadd.i64	W($1), W($1), DT1
->)
+')
 
 C ROUND(A,B,C,D,E,F,G,H,i)
 C
@@ -148,7 +148,7 @@ C	e << 23		a << 25
 C  xor	e >> 41		a >> 39
 C  ----------------------------
 C	DT0		DT1
-define(<ROUND>, <
+define(`ROUND', `
 	vshl.i64	DT0, $5, #50
 	vshl.i64	DT1, $1, #36
 	vshr.u64	DT2, $5, #14
@@ -180,7 +180,7 @@ define(<ROUND>, <
 	vadd.i64	DT1, DT1, DT2
 	vadd.i64	$4, $4, $8
 	vadd.i64	$8, $8, DT1
->)
+')
 
 	C void
 	C _nettle_sha512_compress(uint64_t *state, const uint8_t *input, const uint64_t *k)

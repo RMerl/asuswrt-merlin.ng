@@ -1,6 +1,6 @@
 C x86_64/serpent-encrypt.asm
 
-ifelse(<
+ifelse(`
    Copyright (C) 2011 Niels Möller
 
    This file is part of GNU Nettle.
@@ -28,52 +28,52 @@ ifelse(<
    You should have received copies of the GNU General Public License and
    the GNU Lesser General Public License along with this program.  If
    not, see http://www.gnu.org/licenses/.
->)
+')
 
-include_src(<x86_64/serpent.m4>)
+include_src(`x86_64/serpent.m4')
 
 C Register usage:
 
 C Single block serpent state, two copies
-define(<x0>, <%eax>)
-define(<x1>, <%ebx>)
-define(<x2>, <%ebp>)
-define(<x3>, <%r8d>)
+define(`x0', `%eax')
+define(`x1', `%ebx')
+define(`x2', `%ebp')
+define(`x3', `%r8d')
 
-define(<y0>, <%r9d>)
-define(<y1>, <%r10d>)
-define(<y2>, <%r11d>)
-define(<y3>, <%r12d>)
+define(`y0', `%r9d')
+define(`y1', `%r10d')
+define(`y2', `%r11d')
+define(`y3', `%r12d')
 
 C Quadruple block serpent state, two copies
-define(<X0>, <%xmm0>)
-define(<X1>, <%xmm1>)
-define(<X2>, <%xmm2>)
-define(<X3>, <%xmm3>)
+define(`X0', `%xmm0')
+define(`X1', `%xmm1')
+define(`X2', `%xmm2')
+define(`X3', `%xmm3')
 
-define(<Y0>, <%xmm4>)
-define(<Y1>, <%xmm5>)
-define(<Y2>, <%xmm6>)
-define(<Y3>, <%xmm7>)
+define(`Y0', `%xmm4')
+define(`Y1', `%xmm5')
+define(`Y2', `%xmm6')
+define(`Y3', `%xmm7')
 
-define(<MINUS1>, <%xmm8>)
-define(<T0>, <%xmm9>)
-define(<T1>, <%xmm10>)
-define(<T2>, <%xmm11>)
-define(<T3>, <%xmm12>)
+define(`MINUS1', `%xmm8')
+define(`T0', `%xmm9')
+define(`T1', `%xmm10')
+define(`T2', `%xmm11')
+define(`T3', `%xmm12')
 
 C Arguments
-define(<CTX>, <%rdi>)
-define(<N>, <%rsi>)
-define(<DST>, <%rdx>)
-define(<SRC>, <%rcx>)
+define(`CTX', `%rdi')
+define(`N', `%rsi')
+define(`DST', `%rdx')
+define(`SRC', `%rcx')
 
-define(<CNT>, <%r13>)
-define(<TMP32>, <%r14d>)
+define(`CNT', `%r13')
+define(`TMP32', `%r14d')
 
 C SBOX macros. Inputs $1 - $4 (destroyed), outputs $5 - $8
 
-define(<SBOX0>, <
+define(`SBOX0', `
 	mov	$2, $8	C y3  = x1 ^ x2
 	xor 	$3, $8
 	mov	$1, $5	C y0  = x0 | x3
@@ -98,9 +98,9 @@ define(<SBOX0>, <
 	mov	$5, $6	C y1  = y0 ^ x1
 	xor	$2, $6
 	xor	$4, $6	C y1 ^= x3
->)
+')
 
-define(<SBOX1>, <
+define(`SBOX1', `
 	mov	$1, $6	C y1  = x0 | x3
 	or	$4, $6 
 	mov	$3, $7	C y2  = x2 ^ x3
@@ -127,9 +127,9 @@ define(<SBOX1>, <
 	not	$8	C y3  = ~y3
 	and 	$4, $5	C y0 &= x3
 	xor	$3, $5	C y0 ^= x2
->)
+')
 
-define(<SBOX2>, <
+define(`SBOX2', `
 	mov	$1, $7	C y2 = x1 | x2
 	or	$3, $7
 	mov	$1, $6
@@ -152,9 +152,9 @@ define(<SBOX2>, <
 	xor	$2, $7
 	not	$8
 	xor	$4, $7
->)
+')
 
-define(<SBOX3>, <
+define(`SBOX3', `
 	mov	$1, $6
 	xor	$3, $6
 	mov	$1, $5
@@ -180,9 +180,9 @@ define(<SBOX3>, <
 	and	$4, $2
 	mov	$1, $5
 	xor	$2, $5
->)
+')
 
-define(<SBOX4>, <
+define(`SBOX4', `
 	mov	$1, $8
 	or	$2, $8
 	mov	$2, $7
@@ -206,9 +206,9 @@ define(<SBOX4>, <
 	and	$4, $5
 	xor	$3, $5
 	not	$5
->)
+')
 
-define(<SBOX5>, <
+define(`SBOX5', `
 	mov	$2, $5
 	or	$4, $5
 	xor	$3, $5
@@ -231,9 +231,9 @@ define(<SBOX5>, <
 	xor	$7, $6
 	or	$4, $7
 	xor	$2, $7
->)
+')
 
-define(<SBOX6>, <
+define(`SBOX6', `
 	mov	$1, $5
 	xor	$4, $5
 	mov	$1, $6
@@ -257,9 +257,9 @@ define(<SBOX6>, <
 	not	$7
 	xor	$7, $5
 	xor	$1, $5
->)
+')
 
-define(<SBOX7>, <
+define(`SBOX7', `
 	mov	$1, $5
 	and	$3, $5
 	mov	$2, $8
@@ -287,39 +287,39 @@ define(<SBOX7>, <
 	not	$4	C t02
 	or	$4, $5
 	xor	$3, $5
->)
+')
 
-define(<LT>, <
-	rol	<$>13, $1
-	rol	<$>3, $3
+define(`LT', `
+	rol	`$'13, $1
+	rol	`$'3, $3
 	xor	$1, $2
 	xor	$3, $2
 	mov	$1, TMP32
-	shl	<$>3, TMP32
+	shl	`$'3, TMP32
 	xor	$3, $4
 	xor	TMP32, $4
 	rol	$2
-	rol	<$>7, $4
+	rol	`$'7, $4
 	xor	$2, $1
 	xor	$4, $1
 	mov	$2, TMP32
-	shl	<$>7, TMP32
+	shl	`$'7, TMP32
 	xor	$4, $3
 	xor	TMP32, $3
-	rol	<$>5, $1
-	rol	<$>22, $3
->)
+	rol	`$'5, $1
+	rol	`$'22, $3
+')
 
 C Parallel operation on four blocks at a time.
 
 C pnot instruction is missing. For lack of a spare register, XOR with
 C constant in memory.
 	
-define(<PNOT>, <
+define(`PNOT', `
 	pxor	MINUS1, $1
->)
+')
 
-define(<WSBOX0>, <
+define(`WSBOX0', `
 	movdqa	$2, $8	C y3  = x1 ^ x2
 	pxor 	$3, $8
 	movdqa	$1, $5	C y0  = x0 | x3
@@ -344,9 +344,9 @@ define(<WSBOX0>, <
 	movdqa	$5, $6	C y1  = y0 ^ x1
 	pxor	$2, $6
 	pxor	$4, $6	C y1 ^= x3
->)
+')
 
-define(<WSBOX1>, <
+define(`WSBOX1', `
 	movdqa	$1, $6	C y1  = x0 | x3
 	por	$4, $6 
 	movdqa	$3, $7	C y2  = x2 ^ x3
@@ -373,9 +373,9 @@ define(<WSBOX1>, <
 	PNOT($8)	C y3  = ~y3
 	pand 	$4, $5	C y0 &= x3
 	pxor	$3, $5	C y0 ^= x2
->)
+')
 
-define(<WSBOX2>, <
+define(`WSBOX2', `
 	movdqa	$1, $7	C y2 = x1 | x2
 	por	$3, $7
 	movdqa	$1, $6
@@ -398,9 +398,9 @@ define(<WSBOX2>, <
 	pxor	$2, $7
 	PNOT($8)
 	pxor	$4, $7
->)
+')
 
-define(<WSBOX3>, <
+define(`WSBOX3', `
 	movdqa	$1, $6
 	pxor	$3, $6
 	movdqa	$1, $5
@@ -426,9 +426,9 @@ define(<WSBOX3>, <
 	pand	$4, $2
 	movdqa	$1, $5
 	pxor	$2, $5
->)
+')
 
-define(<WSBOX4>, <
+define(`WSBOX4', `
 	movdqa	$1, $8
 	por	$2, $8
 	movdqa	$2, $7
@@ -452,9 +452,9 @@ define(<WSBOX4>, <
 	pand	$4, $5
 	pxor	$3, $5
 	PNOT($5)
->)
+')
 
-define(<WSBOX5>, <
+define(`WSBOX5', `
 	movdqa	$2, $5
 	por	$4, $5
 	pxor	$3, $5
@@ -477,9 +477,9 @@ define(<WSBOX5>, <
 	pxor	$7, $6
 	por	$4, $7
 	pxor	$2, $7
->)
+')
 
-define(<WSBOX6>, <
+define(`WSBOX6', `
 	movdqa	$1, $5
 	pxor	$4, $5
 	movdqa	$1, $6
@@ -503,9 +503,9 @@ define(<WSBOX6>, <
 	PNOT($7)
 	pxor	$7, $5
 	pxor	$1, $5
->)
+')
 
-define(<WSBOX7>, <
+define(`WSBOX7', `
 	movdqa	$1, $5
 	pand	$3, $5
 	movdqa	$2, $8
@@ -532,16 +532,16 @@ define(<WSBOX7>, <
 	PNOT($4)	C t02
 	por	$4, $5
 	pxor	$3, $5
->)
+')
 
 C WLT(x0, x1, x2, x3)
-define(<WLT>, <
+define(`WLT', `
 	WROL(13, $1)
 	WROL(3, $3)
 	pxor	$1, $2
 	pxor	$3, $2
 	movdqa	$1, T0
-	pslld	<$>3, T0
+	pslld	`$'3, T0
 	pxor	$3, $4
 	pxor	T0, $4
 	WROL(1, $2)
@@ -549,12 +549,12 @@ define(<WLT>, <
 	pxor	$2, $1
 	pxor	$4, $1
 	movdqa	$2, T0
-	pslld	<$>7, T0
+	pslld	`$'7, T0
 	pxor	$4, $3
 	pxor	T0, $3
 	WROL(5, $1)
 	WROL(22, $3)
->)
+')
 
 	.file "serpent-encrypt.asm"
 	
@@ -748,3 +748,4 @@ C parallell.
 	pop	%rbx
 	W64_EXIT(4, 13)
 	ret
+EPILOGUE(nettle_serpent_encrypt)

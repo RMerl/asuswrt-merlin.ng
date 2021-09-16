@@ -36,6 +36,7 @@
 #include <assert.h>
 
 #include "umac.h"
+#include "umac-internal.h"
 
 #define HI(x) (x >> 32)
 #define LO(x) (x & 0xffffffffUL)
@@ -104,7 +105,7 @@ poly128_mul (const uint32_t *k, uint64_t *y)
 }
 
 void
-_umac_poly128 (const uint32_t *k, uint64_t *y, uint64_t mh, uint64_t ml)
+_nettle_umac_poly128 (const uint32_t *k, uint64_t *y, uint64_t mh, uint64_t ml)
 {
   uint64_t yh, yl, cy;
 

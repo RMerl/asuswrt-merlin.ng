@@ -34,6 +34,7 @@
 #endif
 
 #include "eddsa.h"
+#include "eddsa-internal.h"
 
 #include "ecc-internal.h"
 #include "gmp-glue.h"
@@ -52,11 +53,11 @@ _eddsa_compress (const struct ecc_curve *ecc, uint8_t *r, mp_limb_t *p,
 #define yp (scratch + ecc->p.size)
 #define scratch_out (scratch + 2*ecc->p.size)
 
+  size_t nbytes = 1 + ecc->p.bit_size / 8;
   ecc->h_to_a (ecc, 0, xp, p, scratch_out);
   /* Encoding is the y coordinate and an appended "sign" bit, which is
-     the low bit of x. Bit order is not specified explicitly, but for
-     little-endian encoding, it makes most sense to append the bit
-     after the most significant bit of y. */
-  mpn_get_base256_le (r, 1 + ecc->p.bit_size / 8, yp, ecc->p.size);
-  r[ecc->p.bit_size / 8] += (xp[0] & 1) << (ecc->p.bit_size & 7);
+     the low bit of x. The sign bit is stored as the most significant
+     bit of the last byte. */
+  mpn_get_base256_le (r, nbytes, yp, ecc->p.size);
+  r[nbytes - 1] += (xp[0] & 1) << 7;
 }

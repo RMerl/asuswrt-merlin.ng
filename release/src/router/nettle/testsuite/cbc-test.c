@@ -22,7 +22,7 @@ test_cbc_bulk(void)
   const uint8_t *start_iv = H("11adbff119749103 207619cfa0e8d13a");
   const uint8_t *end_iv = H("c7a42a569b421224 d0c23e52f46f97f5");
   
-  struct CBC_CTX(struct aes_ctx, AES_BLOCK_SIZE) aes;
+  struct CBC_CTX(struct aes256_ctx, AES_BLOCK_SIZE) aes;
   
   knuth_lfib_init(&random, CBC_BULK_DATA);
   knuth_lfib_random(&random, CBC_BULK_DATA, clear);
@@ -30,10 +30,10 @@ test_cbc_bulk(void)
   /* Byte that should not be overwritten */
   cipher[CBC_BULK_DATA] = 17;
   
-  aes_set_encrypt_key(&aes.ctx, 32, key);
+  aes256_set_encrypt_key(&aes.ctx, key);
   CBC_SET_IV(&aes, start_iv);
 
-  CBC_ENCRYPT(&aes, aes_encrypt, CBC_BULK_DATA, cipher, clear);
+  CBC_ENCRYPT(&aes, aes256_encrypt, CBC_BULK_DATA, cipher, clear);
 
   ASSERT(cipher[CBC_BULK_DATA] == 17);
 
@@ -47,9 +47,9 @@ test_cbc_bulk(void)
   ASSERT(MEMEQ(AES_BLOCK_SIZE, aes.iv, end_iv));
   
   /* Decrypt, in place */
-  aes_set_decrypt_key(&aes.ctx, 32, key);
+  aes256_set_decrypt_key(&aes.ctx, key);
   CBC_SET_IV(&aes, start_iv);
-  CBC_DECRYPT(&aes, aes_decrypt, CBC_BULK_DATA, cipher, cipher);
+  CBC_DECRYPT(&aes, aes256_decrypt, CBC_BULK_DATA, cipher, cipher);
 
   ASSERT(cipher[CBC_BULK_DATA] == 17);
 

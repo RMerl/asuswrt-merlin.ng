@@ -18,6 +18,9 @@
    */
 #undef HAVE_ALLOCA_H
 
+/* Define if __builtin_bswap64 is available */
+#undef HAVE_BUILTIN_BSWAP64
+
 /* Define if clock_gettime is available */
 #undef HAVE_CLOCK_GETTIME
 
@@ -53,19 +56,35 @@
 
 /* Define to 1 each of the following for which a native (ie. CPU specific)
     implementation of the corresponding routine exists.  */
-#undef HAVE_NATIVE_ecc_192_modp
-#undef HAVE_NATIVE_ecc_192_redc
-#undef HAVE_NATIVE_ecc_224_modp
-#undef HAVE_NATIVE_ecc_224_redc
-#undef HAVE_NATIVE_ecc_25519_modp
-#undef HAVE_NATIVE_ecc_256_modp
-#undef HAVE_NATIVE_ecc_256_redc
-#undef HAVE_NATIVE_ecc_384_modp
-#undef HAVE_NATIVE_ecc_384_redc
-#undef HAVE_NATIVE_ecc_521_modp
-#undef HAVE_NATIVE_ecc_521_redc
+#undef HAVE_NATIVE_aes_decrypt
+#undef HAVE_NATIVE_aes_encrypt
+#undef HAVE_NATIVE_chacha_core
+#undef HAVE_NATIVE_chacha_2core
+#undef HAVE_NATIVE_chacha_3core
+#undef HAVE_NATIVE_chacha_4core
+#undef HAVE_NATIVE_fat_chacha_2core
+#undef HAVE_NATIVE_fat_chacha_3core
+#undef HAVE_NATIVE_fat_chacha_4core
+#undef HAVE_NATIVE_ecc_curve25519_modp
+#undef HAVE_NATIVE_ecc_curve448_modp
+#undef HAVE_NATIVE_ecc_secp192r1_modp
+#undef HAVE_NATIVE_ecc_secp192r1_redc
+#undef HAVE_NATIVE_ecc_secp224r1_modp
+#undef HAVE_NATIVE_ecc_secp224r1_redc
+#undef HAVE_NATIVE_ecc_secp256r1_modp
+#undef HAVE_NATIVE_ecc_secp256r1_redc
+#undef HAVE_NATIVE_ecc_secp384r1_modp
+#undef HAVE_NATIVE_ecc_secp384r1_redc
+#undef HAVE_NATIVE_ecc_secp521r1_modp
+#undef HAVE_NATIVE_ecc_secp521r1_redc
+#undef HAVE_NATIVE_gcm_init_key
+#undef HAVE_NATIVE_fat_gcm_init_key
+#undef HAVE_NATIVE_gcm_hash
+#undef HAVE_NATIVE_fat_gcm_hash
 #undef HAVE_NATIVE_gcm_hash8
 #undef HAVE_NATIVE_salsa20_core
+#undef HAVE_NATIVE_salsa20_2core
+#undef HAVE_NATIVE_fat_salsa20_2core
 #undef HAVE_NATIVE_sha1_compress
 #undef HAVE_NATIVE_sha256_compress
 #undef HAVE_NATIVE_sha512_compress
@@ -127,23 +146,11 @@
 /* Define to the version of this package. */
 #undef PACKAGE_VERSION
 
-/* The size of `char', as computed by sizeof. */
-#undef SIZEOF_CHAR
-
-/* The size of `int', as computed by sizeof. */
-#undef SIZEOF_INT
-
 /* The size of `long', as computed by sizeof. */
 #undef SIZEOF_LONG
 
-/* The size of `short', as computed by sizeof. */
-#undef SIZEOF_SHORT
-
 /* The size of `size_t', as computed by sizeof. */
 #undef SIZEOF_SIZE_T
-
-/* The size of `void*', as computed by sizeof. */
-#undef SIZEOF_VOIDP
 
 /* If using the C implementation of alloca, define if you know the
    direction of stack growth for your system; otherwise it will be

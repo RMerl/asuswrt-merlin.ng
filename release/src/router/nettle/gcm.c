@@ -6,8 +6,9 @@
    See also the gcm paper at
    http://www.cryptobarn.com/papers/gcm-spec.pdf.
 
-   Copyright (C) 2011, 2013 Niels Möller
    Copyright (C) 2011 Katholieke Universiteit Leuven
+   Copyright (C) 2011, 2013, 2018 Niels Möller
+   Copyright (C) 2018 Red Hat, Inc.
    
    Contributed by Nikos Mavrogiannopoulos
 
@@ -48,71 +49,24 @@
 
 #include "gcm.h"
 
+#include "gcm-internal.h"
 #include "memxor.h"
 #include "nettle-internal.h"
 #include "macros.h"
+#include "ctr-internal.h"
+#include "block-internal.h"
 
-#define GHASH_POLYNOMIAL 0xE1UL
-
-static void
-gcm_gf_add (union nettle_block16 *r,
-	    const union nettle_block16 *x, const union nettle_block16 *y)
-{
-  r->w[0] = x->w[0] ^ y->w[0];
-  r->w[1] = x->w[1] ^ y->w[1];
-#if SIZEOF_LONG == 4
-  r->w[2] = x->w[2] ^ y->w[2];
-  r->w[3] = x->w[3] ^ y->w[3];
-#endif      
-}
-/* Multiplication by 010...0; a big-endian shift right. If the bit
-   shifted out is one, the defining polynomial is added to cancel it
-   out. r == x is allowed. */
-static void
-gcm_gf_shift (union nettle_block16 *r, const union nettle_block16 *x)
-{
-  long mask;
-
-  /* Shift uses big-endian representation. */
-#if WORDS_BIGENDIAN
-# if SIZEOF_LONG == 4
-  mask = - (x->w[3] & 1);
-  r->w[3] = (x->w[3] >> 1) | ((x->w[2] & 1) << 31);
-  r->w[2] = (x->w[2] >> 1) | ((x->w[1] & 1) << 31);
-  r->w[1] = (x->w[1] >> 1) | ((x->w[0] & 1) << 31);
-  r->w[0] = (x->w[0] >> 1) ^ (mask & (GHASH_POLYNOMIAL << 24)); 
-# elif SIZEOF_LONG == 8
-  mask = - (x->w[1] & 1);
-  r->w[1] = (x->w[1] >> 1) | ((x->w[0] & 1) << 63);
-  r->w[0] = (x->w[0] >> 1) ^ (mask & (GHASH_POLYNOMIAL << 56));
-# else
-#  error Unsupported word size. */
+#if GCM_TABLE_BITS != 8
+/* The native implementations (currently ppc64 only) depend on the
+   GCM_TABLE_BITS == 8 layout */
+#undef HAVE_NATIVE_gcm_hash
+#undef HAVE_NATIVE_gcm_init_key
+#undef HAVE_NATIVE_fat_gcm_hash
+#undef HAVE_NATIVE_fat_gcm_init_key
 #endif
-#else /* ! WORDS_BIGENDIAN */
-# if SIZEOF_LONG == 4
-#define RSHIFT_WORD(x) \
-  ((((x) & 0xfefefefeUL) >> 1) \
-   | (((x) & 0x00010101) << 15))
-  mask = - ((x->w[3] >> 24) & 1);
-  r->w[3] = RSHIFT_WORD(x->w[3]) | ((x->w[2] >> 17) & 0x80);
-  r->w[2] = RSHIFT_WORD(x->w[2]) | ((x->w[1] >> 17) & 0x80);
-  r->w[1] = RSHIFT_WORD(x->w[1]) | ((x->w[0] >> 17) & 0x80);
-  r->w[0] = RSHIFT_WORD(x->w[0]) ^ (mask & GHASH_POLYNOMIAL);
-# elif SIZEOF_LONG == 8
-#define RSHIFT_WORD(x) \
-  ((((x) & 0xfefefefefefefefeUL) >> 1) \
-   | (((x) & 0x0001010101010101UL) << 15))
-  mask = - ((x->w[1] >> 56) & 1);
-  r->w[1] = RSHIFT_WORD(x->w[1]) | ((x->w[0] >> 49) & 0x80);
-  r->w[0] = RSHIFT_WORD(x->w[0]) ^ (mask & GHASH_POLYNOMIAL);
-# else
-#  error Unsupported word size. */
-# endif
-# undef RSHIFT_WORD
-#endif /* ! WORDS_BIGENDIAN */
-}
 
-#if GCM_TABLE_BITS == 0
+#if !HAVE_NATIVE_gcm_hash
+# if GCM_TABLE_BITS == 0
 /* Sets x <- x * y mod r, using the plain bitwise algorithm from the
    specification. y may be shorter than a full block, missing bytes
    are assumed zero. */
@@ -133,22 +87,22 @@ gcm_gf_mul (union nettle_block16 *x, const union nettle_block16 *y)
       for (j = 0; j < 8; j++, b <<= 1)
 	{
 	  if (b & 0x80)
-	    gcm_gf_add(&Z, &Z, &V);
+	    block16_xor(&Z, &V);
 	  
-	  gcm_gf_shift(&V, &V);
+	  block16_mulx_ghash(&V, &V);
 	}
     }
   memcpy (x->b, Z.b, sizeof(Z));
 }
-#else /* GCM_TABLE_BITS != 0 */
+# else /* GCM_TABLE_BITS != 0 */
 
-# if WORDS_BIGENDIAN
-#  define W(left,right) (0x##left##right)
-# else
-#  define W(left,right) (0x##right##left)
-# endif
+#  if WORDS_BIGENDIAN
+#   define W(left,right) (0x##left##right)
+#  else
+#   define W(left,right) (0x##right##left)
+#  endif
 
-# if GCM_TABLE_BITS == 4
+#  if GCM_TABLE_BITS == 4
 static const uint16_t
 shift_table[0x10] = {
   W(00,00),W(1c,20),W(38,40),W(24,60),W(70,80),W(6c,a0),W(48,c0),W(54,e0),
@@ -158,45 +112,22 @@ shift_table[0x10] = {
 static void
 gcm_gf_shift_4(union nettle_block16 *x)
 {
-  unsigned long *w = x->w;
-  unsigned long reduce;
+  uint64_t *u64 = x->u64;
+  uint64_t reduce;
 
   /* Shift uses big-endian representation. */
 #if WORDS_BIGENDIAN
-# if SIZEOF_LONG == 4
-  reduce = shift_table[w[3] & 0xf];
-  w[3] = (w[3] >> 4) | ((w[2] & 0xf) << 28);
-  w[2] = (w[2] >> 4) | ((w[1] & 0xf) << 28);
-  w[1] = (w[1] >> 4) | ((w[0] & 0xf) << 28);
-  w[0] = (w[0] >> 4) ^ (reduce << 16);
-# elif SIZEOF_LONG == 8
-  reduce = shift_table[w[1] & 0xf];
-  w[1] = (w[1] >> 4) | ((w[0] & 0xf) << 60);
-  w[0] = (w[0] >> 4) ^ (reduce << 48);
-# else
-#  error Unsupported word size. */
-#endif
+  reduce = shift_table[u64[1] & 0xf];
+  u64[1] = (u64[1] >> 4) | ((u64[0] & 0xf) << 60);
+  u64[0] = (u64[0] >> 4) ^ (reduce << 48);
 #else /* ! WORDS_BIGENDIAN */
-# if SIZEOF_LONG == 4
-#define RSHIFT_WORD(x) \
-  ((((x) & 0xf0f0f0f0UL) >> 4)			\
-   | (((x) & 0x000f0f0f) << 12))
-  reduce = shift_table[(w[3] >> 24) & 0xf];
-  w[3] = RSHIFT_WORD(w[3]) | ((w[2] >> 20) & 0xf0);
-  w[2] = RSHIFT_WORD(w[2]) | ((w[1] >> 20) & 0xf0);
-  w[1] = RSHIFT_WORD(w[1]) | ((w[0] >> 20) & 0xf0);
-  w[0] = RSHIFT_WORD(w[0]) ^ reduce;
-# elif SIZEOF_LONG == 8
-#define RSHIFT_WORD(x) \
-  ((((x) & 0xf0f0f0f0f0f0f0f0UL) >> 4) \
-   | (((x) & 0x000f0f0f0f0f0f0fUL) << 12))
-  reduce = shift_table[(w[1] >> 56) & 0xf];
-  w[1] = RSHIFT_WORD(w[1]) | ((w[0] >> 52) & 0xf0);
-  w[0] = RSHIFT_WORD(w[0]) ^ reduce;
-# else
-#  error Unsupported word size. */
-# endif
-# undef RSHIFT_WORD
+# define RSHIFT_WORD_4(x) \
+  ((((x) & UINT64_C(0xf0f0f0f0f0f0f0f0)) >> 4) \
+   | (((x) & UINT64_C(0x000f0f0f0f0f0f0f)) << 12))
+  reduce = shift_table[(u64[1] >> 56) & 0xf];
+  u64[1] = RSHIFT_WORD_4(u64[1]) | ((u64[0] >> 52) & 0xf0);
+  u64[0] = RSHIFT_WORD_4(u64[0]) ^ reduce;
+# undef RSHIFT_WORD_4
 #endif /* ! WORDS_BIGENDIAN */
 }
 
@@ -213,20 +144,20 @@ gcm_gf_mul (union nettle_block16 *x, const union nettle_block16 *table)
       uint8_t b = x->b[i];
 
       gcm_gf_shift_4(&Z);
-      gcm_gf_add(&Z, &Z, &table[b & 0xf]);
+      block16_xor(&Z, &table[b & 0xf]);
       gcm_gf_shift_4(&Z);
-      gcm_gf_add(&Z, &Z, &table[b >> 4]);
+      block16_xor(&Z, &table[b >> 4]);
     }
   memcpy (x->b, Z.b, sizeof(Z));
 }
-# elif GCM_TABLE_BITS == 8
-#  if HAVE_NATIVE_gcm_hash8
+#  elif GCM_TABLE_BITS == 8
+#   if HAVE_NATIVE_gcm_hash8
 
-#define gcm_hash _nettle_gcm_hash8
+#define _nettle_gcm_hash _nettle_gcm_hash8
 void
 _nettle_gcm_hash8 (const struct gcm_key *key, union nettle_block16 *x,
 		   size_t length, const uint8_t *data);
-#  else /* !HAVE_NATIVE_gcm_hash8 */
+#   else /* !HAVE_NATIVE_gcm_hash8 */
 static const uint16_t
 shift_table[0x100] = {
   W(00,00),W(01,c2),W(03,84),W(02,46),W(07,08),W(06,ca),W(04,8c),W(05,4e),
@@ -266,38 +197,17 @@ shift_table[0x100] = {
 static void
 gcm_gf_shift_8(union nettle_block16 *x)
 {
-  unsigned long *w = x->w;
-  unsigned long reduce;
+  uint64_t reduce;
 
   /* Shift uses big-endian representation. */
 #if WORDS_BIGENDIAN
-# if SIZEOF_LONG == 4
-  reduce = shift_table[w[3] & 0xff];
-  w[3] = (w[3] >> 8) | ((w[2] & 0xff) << 24);
-  w[2] = (w[2] >> 8) | ((w[1] & 0xff) << 24);
-  w[1] = (w[1] >> 8) | ((w[0] & 0xff) << 24);
-  w[0] = (w[0] >> 8) ^ (reduce << 16);
-# elif SIZEOF_LONG == 8
-  reduce = shift_table[w[1] & 0xff];
-  w[1] = (w[1] >> 8) | ((w[0] & 0xff) << 56);
-  w[0] = (w[0] >> 8) ^ (reduce << 48);
-# else
-#  error Unsupported word size. */
-#endif
+  reduce = shift_table[x->u64[1] & 0xff];
+  x->u64[1] = (x->u64[1] >> 8) | ((x->u64[0] & 0xff) << 56);
+  x->u64[0] = (x->u64[0] >> 8) ^ (reduce << 48);
 #else /* ! WORDS_BIGENDIAN */
-# if SIZEOF_LONG == 4
-  reduce = shift_table[(w[3] >> 24) & 0xff];
-  w[3] = (w[3] << 8) | (w[2] >> 24);
-  w[2] = (w[2] << 8) | (w[1] >> 24);
-  w[1] = (w[1] << 8) | (w[0] >> 24);
-  w[0] = (w[0] << 8) ^ reduce;
-# elif SIZEOF_LONG == 8
-  reduce = shift_table[(w[1] >> 56) & 0xff];
-  w[1] = (w[1] << 8) | (w[0] >> 56);
-  w[0] = (w[0] << 8) ^ reduce;
-# else
-#  error Unsupported word size. */
-# endif
+  reduce = shift_table[(x->u64[1] >> 56) & 0xff];
+  x->u64[1] = (x->u64[1] << 8) | (x->u64[0] >> 56);
+  x->u64[0] = (x->u64[0] << 8) ^ reduce;
 #endif /* ! WORDS_BIGENDIAN */
 }
 
@@ -312,22 +222,50 @@ gcm_gf_mul (union nettle_block16 *x, const union nettle_block16 *table)
   for (i = GCM_BLOCK_SIZE-2; i > 0; i--)
     {
       gcm_gf_shift_8(&Z);
-      gcm_gf_add(&Z, &Z, &table[x->b[i]]);
+      block16_xor(&Z, &table[x->b[i]]);
     }
   gcm_gf_shift_8(&Z);
-  gcm_gf_add(x, &Z, &table[x->b[0]]);
+  block16_xor3(x, &Z, &table[x->b[0]]);
 }
-#  endif /* ! HAVE_NATIVE_gcm_hash8 */
-# else /* GCM_TABLE_BITS != 8 */
-#  error Unsupported table size. 
-# endif /* GCM_TABLE_BITS != 8 */
+#   endif /* ! HAVE_NATIVE_gcm_hash8 */
+#  else /* GCM_TABLE_BITS != 8 */
+#   error Unsupported table size.
+#  endif /* GCM_TABLE_BITS != 8 */
 
-#undef W
+#  undef W
+# endif /* GCM_TABLE_BITS != 0 */
+#endif /* !HAVE_NATIVE_gcm_hash */
 
-#endif /* GCM_TABLE_BITS */
 
 /* Increment the rightmost 32 bits. */
 #define INC32(block) INCREMENT(4, (block.b) + GCM_BLOCK_SIZE - 4)
+
+#if !HAVE_NATIVE_gcm_init_key
+# if !HAVE_NATIVE_fat_gcm_hash
+#  define _nettle_gcm_init_key _nettle_gcm_init_key_c
+static
+# endif
+void
+_nettle_gcm_init_key_c(union nettle_block16 *table)
+{
+#if GCM_TABLE_BITS
+  /* Middle element if GCM_TABLE_BITS > 0, otherwise the first
+     element */
+  unsigned i = (1<<GCM_TABLE_BITS)/2;
+
+  /* Algorithm 3 from the gcm paper. First do powers of two, then do
+     the rest by adding. */
+  while (i /= 2)
+    block16_mulx_ghash(&table[i], &table[2*i]);
+  for (i = 2; i < 1<<GCM_TABLE_BITS; i *= 2)
+    {
+      unsigned j;
+      for (j = 1; j < i; j++)
+	block16_xor3(&table[i+j], &table[i], &table[j]);
+    }
+#endif
+}
+#endif /* !HAVE_NATIVE_gcm_init_key */
 
 /* Initialization of GCM.
  * @ctx: The context of GCM
@@ -345,25 +283,18 @@ gcm_set_key(struct gcm_key *key,
   /* H */  
   memset(key->h[0].b, 0, GCM_BLOCK_SIZE);
   f (cipher, GCM_BLOCK_SIZE, key->h[i].b, key->h[0].b);
-  
-#if GCM_TABLE_BITS
-  /* Algorithm 3 from the gcm paper. First do powers of two, then do
-     the rest by adding. */
-  while (i /= 2)
-    gcm_gf_shift(&key->h[i], &key->h[2*i]);
-  for (i = 2; i < 1<<GCM_TABLE_BITS; i *= 2)
-    {
-      unsigned j;
-      for (j = 1; j < i; j++)
-	gcm_gf_add(&key->h[i+j], &key->h[i],&key->h[j]);
-    }
-#endif
+
+  _nettle_gcm_init_key(key->h);
 }
 
-#ifndef gcm_hash
-static void
-gcm_hash(const struct gcm_key *key, union nettle_block16 *x,
-	 size_t length, const uint8_t *data)
+#if !(HAVE_NATIVE_gcm_hash || HAVE_NATIVE_gcm_hash8)
+# if !HAVE_NATIVE_fat_gcm_hash
+#  define _nettle_gcm_hash _nettle_gcm_hash_c
+static
+# endif
+void
+_nettle_gcm_hash_c(const struct gcm_key *key, union nettle_block16 *x,
+		   size_t length, const uint8_t *data)
 {
   for (; length >= GCM_BLOCK_SIZE;
        length -= GCM_BLOCK_SIZE, data += GCM_BLOCK_SIZE)
@@ -377,7 +308,7 @@ gcm_hash(const struct gcm_key *key, union nettle_block16 *x,
       gcm_gf_mul (x, key->h);
     }
 }
-#endif /* !gcm_hash */
+#endif /* !(HAVE_NATIVE_gcm_hash || HAVE_NATIVE_gcm_hash8) */
 
 static void
 gcm_hash_sizes(const struct gcm_key *key, union nettle_block16 *x,
@@ -391,7 +322,7 @@ gcm_hash_sizes(const struct gcm_key *key, union nettle_block16 *x,
   WRITE_UINT64 (buffer, auth_size);
   WRITE_UINT64 (buffer + 8, data_size);
 
-  gcm_hash(key, x, GCM_BLOCK_SIZE, buffer);
+  _nettle_gcm_hash(key, x, GCM_BLOCK_SIZE, buffer);
 }
 
 /* NOTE: The key is needed only if length != GCM_IV_SIZE */
@@ -410,7 +341,7 @@ gcm_set_iv(struct gcm_ctx *ctx, const struct gcm_key *key,
   else
     {
       memset(ctx->iv.b, 0, GCM_BLOCK_SIZE);
-      gcm_hash(key, &ctx->iv, length, iv);
+      _nettle_gcm_hash(key, &ctx->iv, length, iv);
       gcm_hash_sizes(key, &ctx->iv, 0, length);
     }
 
@@ -429,47 +360,68 @@ gcm_update(struct gcm_ctx *ctx, const struct gcm_key *key,
   assert(ctx->auth_size % GCM_BLOCK_SIZE == 0);
   assert(ctx->data_size == 0);
 
-  gcm_hash(key, &ctx->x, length, data);
+  _nettle_gcm_hash(key, &ctx->x, length, data);
 
   ctx->auth_size += length;
 }
 
+static nettle_fill16_func gcm_fill;
+#if WORDS_BIGENDIAN
 static void
-gcm_crypt(struct gcm_ctx *ctx, const void *cipher, nettle_cipher_func *f,
-	  size_t length, uint8_t *dst, const uint8_t *src)
+gcm_fill(uint8_t *ctr, size_t blocks, union nettle_block16 *buffer)
 {
-  uint8_t buffer[GCM_BLOCK_SIZE];
+  uint64_t hi, mid;
+  uint32_t lo;
+  size_t i;
+  hi = READ_UINT64(ctr);
+  mid = (uint64_t) READ_UINT32(ctr + 8) << 32;
+  lo = READ_UINT32(ctr + 12);
 
-  if (src != dst)
+  for (i = 0; i < blocks; i++)
     {
-      for (; length >= GCM_BLOCK_SIZE;
-           (length -= GCM_BLOCK_SIZE,
-	    src += GCM_BLOCK_SIZE, dst += GCM_BLOCK_SIZE))
-        {
-          f (cipher, GCM_BLOCK_SIZE, dst, ctx->ctr.b);
-          memxor (dst, src, GCM_BLOCK_SIZE);
-          INC32 (ctx->ctr);
-        }
+      buffer[i].u64[0] = hi;
+      buffer[i].u64[1] = mid + lo++;
     }
-  else
-    {
-      for (; length >= GCM_BLOCK_SIZE;
-           (length -= GCM_BLOCK_SIZE,
-	    src += GCM_BLOCK_SIZE, dst += GCM_BLOCK_SIZE))
-        {
-          f (cipher, GCM_BLOCK_SIZE, buffer, ctx->ctr.b);
-          memxor3 (dst, src, buffer, GCM_BLOCK_SIZE);
-          INC32 (ctx->ctr);
-        }
-    }
-  if (length > 0)
-    {
-      /* A final partial block */
-      f (cipher, GCM_BLOCK_SIZE, buffer, ctx->ctr.b);
-      memxor3 (dst, src, buffer, length);
-      INC32 (ctx->ctr);
-    }
+  WRITE_UINT32(ctr + 12, lo);
+
 }
+#elif HAVE_BUILTIN_BSWAP64
+/* Assume __builtin_bswap32 is also available */
+static void
+gcm_fill(uint8_t *ctr, size_t blocks, union nettle_block16 *buffer)
+{
+  uint64_t hi, mid;
+  uint32_t lo;
+  size_t i;
+  hi = LE_READ_UINT64(ctr);
+  mid = LE_READ_UINT32(ctr + 8);
+  lo = READ_UINT32(ctr + 12);
+
+  for (i = 0; i < blocks; i++)
+    {
+      buffer[i].u64[0] = hi;
+      buffer[i].u64[1] = mid + ((uint64_t)__builtin_bswap32(lo) << 32);
+      lo++;
+    }
+  WRITE_UINT32(ctr + 12, lo);
+}
+#else
+static void
+gcm_fill(uint8_t *ctr, size_t blocks, union nettle_block16 *buffer)
+{
+  uint32_t c;
+
+  c = READ_UINT32(ctr + GCM_BLOCK_SIZE - 4);
+
+  for (; blocks-- > 0; buffer++, c++)
+    {
+      memcpy(buffer->b, ctr, GCM_BLOCK_SIZE - 4);
+      WRITE_UINT32(buffer->b + GCM_BLOCK_SIZE - 4, c);
+    }
+
+  WRITE_UINT32(ctr + GCM_BLOCK_SIZE - 4, c);
+}
+#endif
 
 void
 gcm_encrypt (struct gcm_ctx *ctx, const struct gcm_key *key,
@@ -478,8 +430,8 @@ gcm_encrypt (struct gcm_ctx *ctx, const struct gcm_key *key,
 {
   assert(ctx->data_size % GCM_BLOCK_SIZE == 0);
 
-  gcm_crypt(ctx, cipher, f, length, dst, src);
-  gcm_hash(key, &ctx->x, length, dst);
+  _nettle_ctr_crypt16(cipher, f, gcm_fill, ctx->ctr.b, length, dst, src);
+  _nettle_gcm_hash(key, &ctx->x, length, dst);
 
   ctx->data_size += length;
 }
@@ -491,8 +443,8 @@ gcm_decrypt(struct gcm_ctx *ctx, const struct gcm_key *key,
 {
   assert(ctx->data_size % GCM_BLOCK_SIZE == 0);
 
-  gcm_hash(key, &ctx->x, length, src);
-  gcm_crypt(ctx, cipher, f, length, dst, src);
+  _nettle_gcm_hash(key, &ctx->x, length, src);
+  _nettle_ctr_crypt16(cipher, f, gcm_fill, ctx->ctr.b, length, dst, src);
 
   ctx->data_size += length;
 }

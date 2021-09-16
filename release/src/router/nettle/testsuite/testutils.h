@@ -79,35 +79,6 @@ test_main(void);
 
 extern int verbose;
 
-/* FIXME: When interface stabilizes, move to nettle-meta.h */
-struct nettle_mac
-{
-  const char *name;
-
-  /* Size of the context struct */
-  unsigned context_size;
-
-  /* Size of digests */
-  unsigned digest_size;
-
-  /* Suggested key size; other sizes are sometimes possible. */
-  unsigned key_size;
-  
-  nettle_set_key_func *set_key;
-  nettle_hash_update_func *update;
-  nettle_hash_digest_func *digest;
-};
-
-#define _NETTLE_HMAC(name, NAME, keysize) {	\
-  #name,					\
-  sizeof(struct hmac_##name##_ctx),		\
-  NAME##_DIGEST_SIZE,				\
-  NAME##_DIGEST_SIZE,				\
-  hmac_##name##_set_key,			\
-  hmac_##name##_update,				\
-  hmac_##name##_digest,				\
-}
-
 /* Test functions deallocate their inputs when finished.*/
 void
 test_cipher(const struct nettle_cipher *cipher,
@@ -128,6 +99,13 @@ test_cipher_cfb(const struct nettle_cipher *cipher,
 		const struct tstring *cleartext,
 		const struct tstring *ciphertext,
 		const struct tstring *iv);
+
+void
+test_cipher_cfb8(const struct nettle_cipher *cipher,
+		 const struct tstring *key,
+		 const struct tstring *cleartext,
+		 const struct tstring *ciphertext,
+		 const struct tstring *iv);
 
 void
 test_cipher_ctr(const struct nettle_cipher *cipher,
@@ -164,6 +142,12 @@ test_hash_large(const struct nettle_hash *hash,
 		const struct tstring *digest);
 
 void
+test_mac(const struct nettle_mac *mac,
+	 const struct tstring *key,
+	 const struct tstring *msg,
+	 const struct tstring *digest);
+
+void
 test_armor(const struct nettle_armor *armor,
            size_t data_length,
            const uint8_t *data,
@@ -180,16 +164,7 @@ void mpz_urandomb (mpz_t r, struct knuth_lfib_ctx *ctx, mp_bitcnt_t bits);
 /* This is cheating */
 #define mpz_rrandomb mpz_urandomb
 
-/* mini-gmp defines this function (in the GMP library, it was added in
-   gmp in version 6.1.0). */
-#define mpn_zero_p mpn_zero_p
-
 #endif /* NETTLE_USE_MINI_GMP */
-
-#ifndef mpn_zero_p
-int
-mpn_zero_p (mp_srcptr ap, mp_size_t n);
-#endif
 
 void
 mpn_out_str (FILE *f, int base, const mp_limb_t *xp, mp_size_t xn);
@@ -277,6 +252,19 @@ test_ecc_mul_a (unsigned curve, unsigned n, const mp_limb_t *p);
 
 void
 test_ecc_mul_h (unsigned curve, unsigned n, const mp_limb_t *p);
+
+/* Checks that p == g (affine coordinates) */
+void
+test_ecc_ga (unsigned curve, const mp_limb_t *p);
+
+/* Gets the curve generator, with coordinates in redc form, if
+   appropriate, and with an appended z = 1 coordinate. */
+void
+test_ecc_get_g (unsigned curve, mp_limb_t *rp);
+
+/* Variant with only two coordinates, and no redc. */
+void
+test_ecc_get_ga (unsigned curve, mp_limb_t *rp);
 
 #endif /* WITH_HOGWEED */
 

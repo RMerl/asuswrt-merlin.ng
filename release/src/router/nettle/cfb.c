@@ -147,12 +147,11 @@ cfb_decrypt(const void *ctx, nettle_cipher_func *f,
 	   * not less than block_size. So does part */
 
 	  f(ctx, block_size, buffer, iv);
-	  f(ctx, part - block_size, buffer + block_size, src);
-	  memcpy(iv, src + part - block_size, block_size);
+	  f(ctx, part - block_size, buffer + block_size, dst);
+	  memcpy(iv, dst + part - block_size, block_size);
 	  memxor(dst, buffer, part);
 
 	  length -= part;
-	  src += part;
 	  dst += part;
 	}
 
@@ -162,4 +161,78 @@ cfb_decrypt(const void *ctx, nettle_cipher_func *f,
 	  memxor(dst, buffer, left);
 	}
     }
+}
+
+/* CFB-8 uses slight optimization: it encrypts or decrypts up to block_size
+ * bytes and does memcpy/memxor afterwards */
+void
+cfb8_encrypt(const void *ctx, nettle_cipher_func *f,
+	     size_t block_size, uint8_t *iv,
+	     size_t length, uint8_t *dst,
+	     const uint8_t *src)
+{
+  TMP_DECL(buffer, uint8_t, NETTLE_MAX_CIPHER_BLOCK_SIZE * 2);
+  TMP_DECL(outbuf, uint8_t, NETTLE_MAX_CIPHER_BLOCK_SIZE);
+  TMP_ALLOC(buffer, block_size * 2);
+  TMP_ALLOC(outbuf, block_size);
+  uint8_t pos;
+
+  memcpy(buffer, iv, block_size);
+  pos = 0;
+  while (length)
+    {
+      uint8_t t;
+
+      if (pos == block_size)
+	{
+	  memcpy(buffer, buffer + block_size, block_size);
+	  pos = 0;
+	}
+
+      f(ctx, block_size, outbuf, buffer + pos);
+      t = *(dst++) = *(src++) ^ outbuf[0];
+      buffer[pos + block_size] = t;
+      length--;
+      pos ++;
+    }
+  memcpy(iv, buffer + pos, block_size);
+}
+
+void
+cfb8_decrypt(const void *ctx, nettle_cipher_func *f,
+	     size_t block_size, uint8_t *iv,
+	     size_t length, uint8_t *dst,
+	     const uint8_t *src)
+{
+  TMP_DECL(buffer, uint8_t, NETTLE_MAX_CIPHER_BLOCK_SIZE * 2);
+  TMP_DECL(outbuf, uint8_t, NETTLE_MAX_CIPHER_BLOCK_SIZE * 2);
+  TMP_ALLOC(buffer, block_size * 2);
+  TMP_ALLOC(outbuf, block_size * 2);
+  uint8_t i = 0;
+
+  memcpy(buffer, iv, block_size);
+  memcpy(buffer + block_size, src,
+	 length < block_size ? length : block_size);
+
+  while (length)
+    {
+
+      for (i = 0; i < length && i < block_size; i++)
+	f(ctx, block_size, outbuf + i, buffer + i);
+
+      memxor3(dst, src, outbuf, i);
+
+      length -= i;
+      src += i;
+      dst += i;
+
+      if (i == block_size)
+	{
+	  memcpy(buffer, buffer + block_size, block_size);
+	  memcpy(buffer + block_size, src,
+		 length < block_size ? length : block_size);
+	}
+    }
+
+  memcpy(iv, buffer + i, block_size);
 }

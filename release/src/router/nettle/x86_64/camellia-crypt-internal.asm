@@ -1,6 +1,6 @@
 C x86_64/camellia-crypt-internal.asm
 
-ifelse(<
+ifelse(`
    Copyright (C) 2010, Niels Möller
 
    This file is part of GNU Nettle.
@@ -28,7 +28,7 @@ ifelse(<
    You should have received copies of the GNU General Public License and
    the GNU Lesser General Public License along with this program.  If
    not, see http://www.gnu.org/licenses/.
->)
+')
 
 C Performance, cycles per block
 C
@@ -39,94 +39,94 @@ C Camellia-256  543  461
 
 C Register usage:
 
-define(<NKEYS>, <%rdi>)
-define(<KEYS>, <%rsi>)
-define(<TABLE>, <%rdx>)
-define(<LENGTH>, <%rcx>)
-define(<DST>, <%r8>)
-define(<SRC>, <%r9>)
+define(`NKEYS', `%rdi')
+define(`KEYS', `%rsi')
+define(`TABLE', `%rdx')
+define(`LENGTH', `%rcx')
+define(`DST', `%r8')
+define(`SRC', `%r9')
 
 C Camellia state
-define(<I0>, <%rax>)
-define(<I1>, <%rbx>) C callee-save
-define(<KEY>, <%r13>) C callee-save
-define(<TMP>, <%rbp>) C callee-save
-define(<CNT>, <%r10>)
-define(<IL>,  <%r11>)
-define(<IR>,  <%r12>) C callee-save
+define(`I0', `%rax')
+define(`I1', `%rbx') C callee-save
+define(`KEY', `%r13') C callee-save
+define(`TMP', `%rbp') C callee-save
+define(`CNT', `%r10')
+define(`IL',  `%r11')
+define(`IR',  `%r12') C callee-save
 
-define(<SP1110>, <(TABLE,$1,4)>)
-define(<SP0222>, <1024(TABLE,$1,4)>)
-define(<SP3033>, <2048(TABLE,$1,4)>)
-define(<SP4404>, <3072(TABLE,$1,4)>)
+define(`SP1110', `(TABLE,$1,4)')
+define(`SP0222', `1024(TABLE,$1,4)')
+define(`SP3033', `2048(TABLE,$1,4)')
+define(`SP4404', `3072(TABLE,$1,4)')
 
 C ROUND(x, y, key-offset)
-define(<ROUND>, <
+define(`ROUND', `
 	C Byte 0,1
 	movzbl	LREG($1), XREG(TMP)
 	movl	SP1110(TMP), XREG(IR)
 	movzbl	HREG($1), XREG(TMP)
 	xorl	SP4404(TMP), XREG(IR)
-	ror	<$>32, $1
+	ror	`$'32, $1
 
 	C Byte 4,5
 	movzbl	LREG($1), XREG(TMP)
 	movl	SP4404(TMP), XREG(IL)
 	movzbl	HREG($1), XREG(TMP)
 	xorl	SP3033(TMP), XREG(IL)
-	rol	<$>16, $1
+	rol	`$'16, $1
 
 	C Byte 2,3
 	movzbl	LREG($1), XREG(TMP)
 	xorl	SP3033(TMP), XREG(IR)
 	movzbl	HREG($1), XREG(TMP)
 	xorl	SP0222(TMP), XREG(IR)
-	ror	<$>32, $1
+	ror	`$'32, $1
 
 	C Byte 6,7
 	movzbl	LREG($1), XREG(TMP)
 	xorl	SP0222(TMP), XREG(IL)
 	movzbl	HREG($1), XREG(TMP)
 	xorl	SP1110(TMP), XREG(IL)
-	ror	<$>16, $1
+	ror	`$'16, $1
 
 	C 76543210
 	
 	xorl	XREG(IL), XREG(IR)
-	rorl	<$>8, XREG(IL)
+	rorl	`$'8, XREG(IL)
 	xorl	XREG(IR), XREG(IL)
-	shl	<$>32, IR
+	shl	`$'32, IR
 	or	IL, IR
 	xor	$3(KEY), $2
 	xor	IR, $2
->)
+')
 
 C FL(x, key-offset)
-define(<FL>, <
+define(`FL', `
 	mov	$1, TMP
-	shr	<$>32, TMP
+	shr	`$'32, TMP
 	andl	$2 + 4(KEY), XREG(TMP)
-	roll	<$>1, XREG(TMP)
+	roll	`$'1, XREG(TMP)
 C 	xorl	XREG(TMP), XREG($1)
 	xor	TMP, $1
 	movl	$2(KEY), XREG(TMP)
 	orl	XREG($1), XREG(TMP)
-	shl	<$>32, TMP
+	shl	`$'32, TMP
 	xor	TMP, $1
->)
+')
 C FLINV(x0, key-offset)
-define(<FLINV>, <
+define(`FLINV', `
 	movl	$2(KEY), XREG(TMP)
 	orl	XREG($1), XREG(TMP)
-	shl	<$>32, TMP
+	shl	`$'32, TMP
 	xor	TMP, $1
 	mov	$1, TMP
-	shr	<$>32, TMP
+	shr	`$'32, TMP
 	andl	$2 + 4(KEY), XREG(TMP)
-	roll	<$>1, XREG(TMP)
+	roll	`$'1, XREG(TMP)
 C	xorl	XREG(TMP), XREG($1)
 	xor	TMP, $1	
->)
+')
 
 	.file "camellia-crypt-internal.asm"
 	

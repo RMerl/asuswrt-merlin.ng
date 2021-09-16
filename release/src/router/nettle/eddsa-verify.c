@@ -36,6 +36,7 @@
 #include <assert.h>
 
 #include "eddsa.h"
+#include "eddsa-internal.h"
 
 #include "ecc.h"
 #include "ecc-internal.h"
@@ -52,13 +53,8 @@ equal_h (const struct ecc_modulo *p,
 #define t0 scratch
 #define t1 (scratch + p->size)
 
-  ecc_mod_mul (p, t0, x1, z2);
-  if (mpn_cmp (t0, p->m, p->size) >= 0)
-    mpn_sub_n (t0, t0, p->m, p->size);
-
-  ecc_mod_mul (p, t1, x2, z1);
-  if (mpn_cmp (t1, p->m, p->size) >= 0)
-    mpn_sub_n (t1, t1, p->m, p->size);
+  ecc_mod_mul_canonical (p, t0, x1, z2, t0);
+  ecc_mod_mul_canonical (p, t1, x2, z1, t1);
 
   return mpn_cmp (t0, t1, p->size) == 0;
 
@@ -69,12 +65,13 @@ equal_h (const struct ecc_modulo *p,
 mp_size_t
 _eddsa_verify_itch (const struct ecc_curve *ecc)
 {
+  assert (_eddsa_decompress_itch (ecc) <= ecc->mul_itch);
   return 8*ecc->p.size + ecc->mul_itch;
 }
 
 int
 _eddsa_verify (const struct ecc_curve *ecc,
-	       const struct nettle_hash *H,
+	       const struct ecc_eddsa *eddsa,
 	       const uint8_t *pub,
 	       const mp_limb_t *A,
 	       void *ctx,
@@ -104,16 +101,16 @@ _eddsa_verify (const struct ecc_curve *ecc,
   if (mpn_cmp (sp, ecc->q.m, ecc->q.size) >= 0)
     return 0;
 
-  H->init (ctx);
-  H->update (ctx, nbytes, signature);
-  H->update (ctx, nbytes, pub);
-  H->update (ctx, length, msg);
-  H->digest (ctx, 2*nbytes, hash);
-  _eddsa_hash (&ecc->q, hp, hash);
+  eddsa->dom (ctx);
+  eddsa->update (ctx, nbytes, signature);
+  eddsa->update (ctx, nbytes, pub);
+  eddsa->update (ctx, length, msg);
+  eddsa->digest (ctx, 2*nbytes, hash);
+  _eddsa_hash (&ecc->q, hp, 2*nbytes, hash);
 
   /* Compute h A + R - s G, which should be the neutral point */
   ecc->mul (ecc, P, hp, A, scratch_out);
-  ecc_add_eh (ecc, P, P, R, scratch_out);
+  ecc->add_hh (ecc, P, P, R, scratch_out);
   /* Move out of the way. */
   mpn_copyi (hp, sp, ecc->q.size);
   ecc->mul_g (ecc, S, hp, scratch_out);

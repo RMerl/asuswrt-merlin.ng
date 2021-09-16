@@ -48,6 +48,16 @@ rsa_decrypt(const struct rsa_private_key *key,
   int res;
 
   mpz_init(m);
+
+  /* First check that input is in range. Since we don't have the
+     public key available here, we need to reconstruct n. */
+  mpz_mul (m, key->p, key->q);
+  if (mpz_sgn (gibberish) < 0 || mpz_cmp (gibberish, m) >= 0)
+    {
+      mpz_clear (m);
+      return 0;
+    }
+
   rsa_compute_root(key, m, gibberish);
 
   res = pkcs1_decrypt (key->size, m, length, message);

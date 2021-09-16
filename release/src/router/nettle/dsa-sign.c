@@ -39,6 +39,7 @@
 #include <stdlib.h>
 
 #include "dsa.h"
+#include "dsa-internal.h"
 
 #include "bignum.h"
 
@@ -75,7 +76,7 @@ dsa_sign(const struct dsa_params *params,
 
   /* Compute hash */
   mpz_init(h);
-  _dsa_hash (h, mpz_sizeinbase(params->q, 2), digest_size, digest);
+  _nettle_dsa_hash (h, mpz_sizeinbase(params->q, 2), digest_size, digest);
 
   /* Compute k^-1 (mod q) */
   if (mpz_invert(k, k, params->q))

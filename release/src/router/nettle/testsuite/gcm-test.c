@@ -1,3 +1,6 @@
+/* This file tests deprecated functions */
+#define _NETTLE_ATTRIBUTE_DEPRECATED
+
 #include "testutils.h"
 #include "nettle-internal.h"
 #include "gcm.h"
@@ -166,6 +169,29 @@ test_main(void)
 		 "c3c0c95156809539fcf0e2429a6b5254"
 		 "16aedbf5a0de6a57a637b39b"),
 	    SHEX("619cc5aefffe0bfa462af43c1699d050"));
+
+  /* Test 128 bytes */
+  test_aead(&nettle_gcm_aes128, NULL,
+	    SHEX("feffe9928665731c6d6a8f9467308308"),
+	    SHEX(""),
+	    SHEX("d9313225f88406e5a55909c5aff5269a"
+		 "86a7a9531534f7da2e4c303d8a318a72"
+		 "1c3c0c95956809532fcf0e2449a6b525"
+		 "b16aedf5aa0de657ba637b391aafd255"
+		 "5ae376bc5e9f6a1b08e34db7a6ee0736"
+		 "9ba662ea12f6f197e6bc3ed69d2480f3"
+		 "ea5691347f2ba69113eb37910ebc18c8"
+		 "0f697234582016fa956ca8f63ae6b473"),
+	    SHEX("42831ec2217774244b7221b784d0d49c"
+		 "e3aa212f2c02a4e035c17e2329aca12e"
+		 "21d514b25466931c7d8f6a5aac84aa05"
+		 "1ba30b396a0aac973d58e091473f5985"
+		 "874b1178906ddbeab04ab2fe6cce8c57"
+		 "8d7e961bd13fd6a8c56b66ca5e576492"
+		 "1a48cd8bda04e66343e73055118b69b9"
+		 "ced486813846958a11e602c03cfc232b"),
+	    SHEX("cafebabefacedbaddecaf888"),
+	    SHEX("796836f1246c9d735c5e1be0a715ccc3"));
 
   /* Test case 7 */
   test_aead(&nettle_gcm_aes192, NULL,

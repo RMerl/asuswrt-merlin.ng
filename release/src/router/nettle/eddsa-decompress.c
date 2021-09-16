@@ -33,7 +33,10 @@
 # include "config.h"
 #endif
 
+#include <assert.h>
+
 #include "eddsa.h"
+#include "eddsa-internal.h"
 
 #include "ecc-internal.h"
 #include "gmp-glue.h"
@@ -50,6 +53,8 @@ _eddsa_decompress (const struct ecc_curve *ecc, mp_limb_t *p,
 		   mp_limb_t *scratch)
 {
   mp_limb_t sign, cy;
+  mp_size_t nlimbs;
+  size_t nbytes;
   int res;
 
 #define xp p
@@ -61,23 +66,46 @@ _eddsa_decompress (const struct ecc_curve *ecc, mp_limb_t *p,
 #define tp (scratch + 2*ecc->p.size)
 #define scratch_out (scratch + 4*ecc->p.size)
 
-  sign = cp[ecc->p.bit_size / 8] >> (ecc->p.bit_size & 7);
-  if (sign > 1)
-    return 0;
-  mpn_set_base256_le (yp, ecc->p.size, cp, 1 + ecc->p.bit_size / 8);
-  /* Clear out the sign bit (if it fits) */
-  yp[ecc->p.size - 1] &= ~(mp_limb_t) 0
-    >> (ecc->p.size * GMP_NUMB_BITS - ecc->p.bit_size);
-  ecc_modp_sqr (ecc, y2, yp);
-  ecc_modp_mul (ecc, vp, y2, ecc->b);
-  ecc_modp_sub (ecc, vp, vp, ecc->unit);
-  ecc_modp_sub (ecc, up, ecc->unit, y2);
-  res = ecc->p.sqrt (&ecc->p, tp, up, vp, scratch_out);
+  nbytes = 1 + ecc->p.bit_size / 8;
+  /* By RFC 8032, sign bit is always the most significant bit of the
+     last byte. */
+  sign = cp[nbytes-1] >> 7;
+
+  /* May need an extra limb. */
+  nlimbs = (nbytes * 8 + GMP_NUMB_BITS - 1) / GMP_NUMB_BITS;
+  assert (nlimbs <= ecc->p.size + 1);
+  mpn_set_base256_le (scratch, nlimbs, cp, nbytes);
+
+  /* Clear out the sign bit */
+  scratch[nlimbs - 1] &=
+    ((mp_limb_t) 1 << ((nbytes * 8 - 1) % GMP_NUMB_BITS)) - 1;
+  mpn_copyi (yp, scratch, ecc->p.size);
+
+  /* Check range. */
+  if (nlimbs > ecc->p.size)
+    res = (scratch[nlimbs - 1] == 0);
+  else
+    res = 1;
+
+  /* For a valid input, y < p, so subtraction should underflow. */
+  res &= mpn_sub_n (scratch, scratch, ecc->p.m, ecc->p.size);
+
+  ecc_mod_sqr (&ecc->p, y2, yp, y2);
+  ecc_mod_mul (&ecc->p, vp, y2, ecc->b, vp);
+  ecc_mod_sub (&ecc->p, vp, vp, ecc->unit);
+  /* The sign is different between curve25519 and curve448.  */
+  if (ecc->p.bit_size == 255)
+    ecc_mod_sub (&ecc->p, up, ecc->unit, y2);
+  else
+    ecc_mod_sub (&ecc->p, up, y2, ecc->unit);
+  res &= ecc->p.sqrt (&ecc->p, tp, up, vp, scratch_out);
 
   cy = mpn_sub_n (xp, tp, ecc->p.m, ecc->p.size);
   cnd_copy (cy, xp, tp, ecc->p.size);
   sign ^= xp[0] & 1;
   mpn_sub_n (tp, ecc->p.m, xp, ecc->p.size);
   cnd_copy (sign, xp, tp, ecc->p.size);
+  /* Fails if the square root is zero but (original) sign was 1 */
+  res &= mpn_sub_n (tp, xp, ecc->p.m, ecc->p.size);
   return res;
 }

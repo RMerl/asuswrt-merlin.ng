@@ -1,6 +1,6 @@
 C x86_64/umac-nh.asm
 
-ifelse(<
+ifelse(`
    Copyright (C) 2013 Niels Möller
 
    This file is part of GNU Nettle.
@@ -28,19 +28,19 @@ ifelse(<
    You should have received copies of the GNU General Public License and
    the GNU Lesser General Public License along with this program.  If
    not, see http://www.gnu.org/licenses/.
->)
+')
 
-define(<KEY>, <%rdi>)
-define(<LENGTH>, <%rsi>)
-define(<MSG>, <%rdx>)
+define(`KEY', `%rdi')
+define(`LENGTH', `%rsi')
+define(`MSG', `%rdx')
 
-define(<XA>, <%xmm0>)
-define(<XB>, <%xmm1>)
-define(<XK0>, <%xmm2>)
-define(<XK1>, <%xmm3>)
-define(<XY>, <%xmm4>)
-define(<XT0>, <%xmm5>)
-define(<XT1>, <%xmm6>)
+define(`XA', `%xmm0')
+define(`XB', `%xmm1')
+define(`XK0', `%xmm2')
+define(`XK1', `%xmm3')
+define(`XY', `%xmm4')
+define(`XT0', `%xmm5')
+define(`XT1', `%xmm6')
 
 C FIXME: Would be nice if we could force the key array to be 16-byte
 C aligned.

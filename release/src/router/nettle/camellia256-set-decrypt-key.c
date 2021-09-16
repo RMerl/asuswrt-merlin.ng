@@ -41,7 +41,7 @@ void
 camellia256_invert_key(struct camellia256_ctx *dst,
 		       const struct camellia256_ctx *src)
 {
-  _camellia_invert_key (_CAMELLIA256_NKEYS, dst->keys, src->keys);
+  _nettle_camellia_invert_key (_CAMELLIA256_NKEYS, dst->keys, src->keys);
 }
 
 void

@@ -85,6 +85,21 @@ ecc_point_set (struct ecc_point *p, const mpz_t x, const mpz_t y)
       mpz_mul_ui (rhs, rhs, 121665);
       mpz_clear (x2);
     }
+  else if (p->ecc->p.bit_size == 448)
+    {
+      /* curve448 special case. FIXME: Do in some cleaner way? */
+      mpz_t x2, d;
+      mpz_init (x2);
+      mpz_init_set_ui (d, 39081);
+      mpz_mul (x2, x, x); /* x^2 */
+      mpz_mul (d, d, x2); /* 39081 x^2 */
+      mpz_set_ui (rhs, 1);
+      mpz_submul (rhs, d, lhs); /* 1 - 39081 x^2 y^2 */
+      /* Check that x^2 + y^2 = 1 - 39081 x^2 y^2 */
+      mpz_add (lhs, x2, lhs);	/* x^2 + y^2 */
+      mpz_clear (d);
+      mpz_clear (x2);
+    }
   else
     {
       /* Check that y^2 = x^3 - 3*x + b (mod p) */

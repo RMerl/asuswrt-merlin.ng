@@ -7648,7 +7648,8 @@ nettle/stamp-h1:
 	CPPFLAGS="-I$(TOP)/gmp" \
 	CFLAGS="-O2 -Wall $(EXTRACFLAGS) -fPIC -ffunction-sections -fdata-sections" \
 	LDFLAGS="-L$(TOP)/gmp/.libs -ffunction-sections -fdata-sections -Wl,--gc-sections -fPIC" \
-	$(CONFIGURE) prefix=$(TOP)/nettle --enable-mini-gmp --disable-documentation --disable-shared
+	$(CONFIGURE) prefix=$(TOP)/nettle --enable-mini-gmp --disable-documentation --disable-shared \
+		--disable-fat --disable-openssl
 	@touch nettle/stamp-h1
 
 nettle: nettle/stamp-h1

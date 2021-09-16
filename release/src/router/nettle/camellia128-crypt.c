@@ -48,7 +48,7 @@ camellia128_crypt(const struct camellia128_ctx *ctx,
 		  const uint8_t *src)
 {
   assert(!(length % CAMELLIA_BLOCK_SIZE) );
-  _camellia_crypt(_CAMELLIA128_NKEYS, ctx->keys,
-		  &_camellia_table,
-		  length, dst, src);
+  _nettle_camellia_crypt(_CAMELLIA128_NKEYS, ctx->keys,
+			 &_nettle_camellia_table,
+			 length, dst, src);
 }

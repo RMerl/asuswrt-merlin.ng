@@ -58,7 +58,7 @@ cnd_neg (int cnd, mp_limb_t *rp, const mp_limb_t *ap, mp_size_t n)
    Returns zero if a == 0 (mod m), to be consistent with a^{phi(m)-1}.
    Also needs (m+1)/2, and m must be odd.
 
-   Needs 2n limbs available at rp, and 2n additional scratch limbs.
+   Needs 3n limbs of scratch space.
 */
 
 /* FIXME: Could use mpn_sec_invert (in GMP-6), but with a bit more
@@ -70,7 +70,7 @@ ecc_mod_inv (const struct ecc_modulo *m,
 {
 #define ap scratch
 #define bp (scratch + n)
-#define up (vp + n)
+#define up (scratch + 2*n)
 
   mp_size_t n = m->size;
   /* Avoid the mp_bitcnt_t type for compatibility with older GMP
@@ -138,19 +138,19 @@ ecc_mod_inv (const struct ecc_modulo *m,
       assert (bp[0] & 1);
       odd = ap[0] & 1;
 
-      swap = cnd_sub_n (odd, ap, bp, n);
-      cnd_add_n (swap, bp, ap, n);
+      swap = mpn_cnd_sub_n (odd, ap, ap, bp, n);
+      mpn_cnd_add_n (swap, bp, bp, ap, n);
       cnd_neg (swap, ap, ap, n);
 
-      cnd_swap (swap, up, vp, n);
-      cy = cnd_sub_n (odd, up, vp, n);
-      cy -= cnd_add_n (cy, up, m->m, n);
+      mpn_cnd_swap (swap, up, vp, n);
+      cy = mpn_cnd_sub_n (odd, up, up, vp, n);
+      cy -= mpn_cnd_add_n (cy, up, up, m->m, n);
       assert (cy == 0);
 
       cy = mpn_rshift (ap, ap, n, 1);
       assert (cy == 0);
       cy = mpn_rshift (up, up, n, 1);
-      cy = cnd_add_n (cy, up, m->mp1h, n);
+      cy = mpn_cnd_add_n (cy, up, up, m->mp1h, n);
       assert (cy == 0);
     }
   assert ( (ap[0] | ap[n-1]) == 0);

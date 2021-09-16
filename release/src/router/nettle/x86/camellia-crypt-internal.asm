@@ -1,6 +1,6 @@
 C x86/camellia-crypt-internal.asm
 
-ifelse(<
+ifelse(`
    Copyright (C) 2010, Niels Möller
 
    This file is part of GNU Nettle.
@@ -28,58 +28,58 @@ ifelse(<
    You should have received copies of the GNU General Public License and
    the GNU Lesser General Public License along with this program.  If
    not, see http://www.gnu.org/licenses/.
->)
+')
 
 C Register usage:
 
 C Camellia state, 128-bit value in little endian order.
 C L0, H0 corresponds to D1 in the spec and i0 in the C implementation.
 C while L1, H1 corresponds to D2/i1.
-define(<L0>,<%eax>)
-define(<H0>,<%ebx>)
-define(<L1>,<%ecx>)
-define(<H1>,<%edx>)
+define(`L0',`%eax')
+define(`H0',`%ebx')
+define(`L1',`%ecx')
+define(`H1',`%edx')
 
-define(<TMP>,<%ebp>)
-define(<KEY>,<%esi>)
-define(<T>,<%edi>)
+define(`TMP',`%ebp')
+define(`KEY',`%esi')
+define(`T',`%edi')
 
 C Locals on the stack
 
-define(<FRAME_L0>,	<(%esp)>)
-define(<FRAME_H0>,	<4(%esp)>)
-define(<FRAME_L1>,	<8(%esp)>)
-define(<FRAME_H1>,	<12(%esp)>)
-define(<FRAME_CNT>,	<16(%esp)>)
+define(`FRAME_L0',	`(%esp)')
+define(`FRAME_H0',	`4(%esp)')
+define(`FRAME_L1',	`8(%esp)')
+define(`FRAME_H1',	`12(%esp)')
+define(`FRAME_CNT',	`16(%esp)')
 	
 C Arguments on stack.
-define(<FRAME_NKEYS>,	<40(%esp)>)
-define(<FRAME_KEYS>,	<44(%esp)>)
-define(<FRAME_TABLE>,	<48(%esp)>)
-define(<FRAME_LENGTH>,	<52(%esp)>)
-define(<FRAME_DST>,	<56(%esp)>)
-define(<FRAME_SRC>,	<60(%esp)>)
+define(`FRAME_NKEYS',	`40(%esp)')
+define(`FRAME_KEYS',	`44(%esp)')
+define(`FRAME_TABLE',	`48(%esp)')
+define(`FRAME_LENGTH',	`52(%esp)')
+define(`FRAME_DST',	`56(%esp)')
+define(`FRAME_SRC',	`60(%esp)')
 
-define(<SP1110>, <(T,$1,4)>)
-define(<SP0222>, <1024(T,$1,4)>)
-define(<SP3033>, <2048(T,$1,4)>)
-define(<SP4404>, <3072(T,$1,4)>)
+define(`SP1110', `(T,$1,4)')
+define(`SP0222', `1024(T,$1,4)')
+define(`SP3033', `2048(T,$1,4)')
+define(`SP4404', `3072(T,$1,4)')
 
 C ROUND(xl, xh, yl, yh, key-offset)
 C xl and xh are rotated 16 bits at the end
 C yl and yh are read from stack, and left in registers
-define(<ROUND>, <
+define(`ROUND', `
 	movzbl	LREG($1), TMP
 	movl	SP1110(TMP), $4
 	movzbl	HREG($1), TMP
 	xorl	SP4404(TMP), $4
-	roll	<$>16, $1
+	roll	`$'16, $1
 
 	movzbl	LREG($2), TMP
 	movl	SP4404(TMP), $3
 	movzbl	HREG($2), TMP
 	xorl	SP3033(TMP), $3
-	roll	<$>16, $2
+	roll	`$'16, $2
 
 	movzbl	LREG($1), TMP
 	xorl	SP3033(TMP), $4
@@ -95,58 +95,58 @@ define(<ROUND>, <
 	xorl	$5 + 4(KEY), $3
 
 	xorl	$3, $4
-	rorl	<$>8, $3
+	rorl	`$'8, $3
 	xorl	$4, $3
 
 	xorl	FRAME_$3, $3
 	xorl	FRAME_$4, $4
->)
+')
 
 C Six rounds, with inputs and outputs in registers.
-define(<ROUND6>, <
+define(`ROUND6', `
 	movl	L0, FRAME_L0
 	movl	H0, FRAME_H0
 	movl	L1, FRAME_L1
 	movl	H1, FRAME_H1
 
-	ROUND(L0,H0,<L1>,<H1>,0)
+	ROUND(L0,H0,`L1',`H1',0)
 	movl	L1, FRAME_L1
 	movl	H1, FRAME_H1
-	ROUND(L1,H1,<L0>,<H0>,8)
+	ROUND(L1,H1,`L0',`H0',8)
 	movl	L0, FRAME_L0
 	movl	H0, FRAME_H0
-	ROUND(L0,H0,<L1>,<H1>,16)
+	ROUND(L0,H0,`L1',`H1',16)
 	movl	L1, FRAME_L1
 	movl	H1, FRAME_H1
-	ROUND(L1,H1,<L0>,<H0>,24)
+	ROUND(L1,H1,`L0',`H0',24)
 	movl	L0, FRAME_L0
 	movl	H0, FRAME_H0
-	ROUND(L0,H0,<L1>,<H1>,32)
-	ROUND(L1,H1,<L0>,<H0>,40)
-	roll	<$>16, L1
-	roll	<$>16, H1
->)
+	ROUND(L0,H0,`L1',`H1',32)
+	ROUND(L1,H1,`L0',`H0',40)
+	roll	`$'16, L1
+	roll	`$'16, H1
+')
 
 C FL(x0, x1, key-offset)
-define(<FL>, <
+define(`FL', `
 	movl	$3 + 4(KEY), TMP
 	andl	$2, TMP
-	roll	<$>1, TMP
+	roll	`$'1, TMP
 	xorl	TMP, $1
 	movl	$3(KEY), TMP
 	orl	$1, TMP
 	xorl	TMP, $2
->)
+')
 C FLINV(x0, x1, key-offset)
-define(<FLINV>, <
+define(`FLINV', `
 	movl	$3(KEY), TMP
 	orl	$1, TMP
 	xorl	TMP, $2
 	movl	$3 + 4(KEY), TMP
 	andl	$2, TMP
-	roll	<$>1, TMP
+	roll	`$'1, TMP
 	xorl	TMP, $1
->)
+')
 
 .file "camellia-crypt-internal.asm"
 	

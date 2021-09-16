@@ -1,6 +1,5 @@
 #include "testutils.h"
-#include "aes.h"
-#include "ctr.h"
+#include "nettle-internal.h"
 
 void
 test_main(void)
@@ -58,6 +57,95 @@ test_main(void)
 		       "2b0930daa23de94ce87017ba2d84988d"
 		       "dfc9c58db67aada613c2dd08457941a6"),
 		  SHEX("f0f1f2f3f4f5f6f7f8f9fafbfcfdfeff"));
+
+  /* Test carry propagation in the counter. Unofficial test vectors. */
+  test_cipher_ctr(&nettle_aes128, /* 2 */
+		  SHEX("2b7e151628aed2a6abf7158809cf4f3c"),
+		  SHEX("6bc1bee22e409f96e93d7e117393172a"
+		       "ae2d8a571e03ac9c9eb76fac45af8e51"
+		       "30c81c46a35ce411e5fbc1191a0a52ef"
+		       "f69f2445df4f9b17ad2b417be66c3710"),
+		  SHEX("fc5a51074aa08a8a 8fce0373557c8de7"
+		       "b2ddc0e45c6e15d3 7d7e2b238a7d200c"
+		       "d108ffc93fd4e2ef 0ee447dd77a891f4"
+		       "a12bf17ea1f0be04 75908308a585d9bd"),
+		  SHEX("0102030405060708090a0b0c0d0efffe"));
+
+  test_cipher_ctr(&nettle_aes128, /* 7 */
+		  SHEX("2b7e151628aed2a6abf7158809cf4f3c"),
+		  SHEX("6bc1bee22e409f96e93d7e117393172a"
+		       "ae2d8a571e03ac9c9eb76fac45af8e51"
+		       "30c81c46a35ce411e5fbc1191a0a52ef"
+		       "f69f2445df4f9b17ad2b417be66c3710"),
+		  SHEX("afaf63875aae5fb4 49e39377c8b972ed"
+		       "f55c5da552429ba8 b30fa1b1edd18269"
+		       "d6cc0ca8a964504c 9519f11ab462985b"
+		       "16e3c7c12cf4a556 d28433500e07ab7b"),
+		  SHEX("010203040506070809fffffffffffffe"));
+
+  test_cipher_ctr(&nettle_aes128, /* 8 */
+		  SHEX("2b7e151628aed2a6abf7158809cf4f3c"),
+		  SHEX("6bc1bee22e409f96e93d7e117393172a"
+		       "ae2d8a571e03ac9c9eb76fac45af8e51"
+		       "30c81c46a35ce411e5fbc1191a0a52ef"
+		       "f69f2445df4f9b17ad2b417be66c3710"),
+		  SHEX("b34ceeb036a0a71f eabd6bf64e2f70f8"
+		       "35eb1751c4989fa9 71d747e18a45c0c6"
+		       "2379e536ccfbdecd 0a26af9640a73e10"
+		       "19626834910ff917 eb05a8f1a33b6d4a"),
+		  SHEX("0102030405060708fffffffffffffffe"));
+
+  test_cipher_ctr(&nettle_aes128, /* 9 */
+		  SHEX("2b7e151628aed2a6abf7158809cf4f3c"),
+		  SHEX("6bc1bee22e409f96e93d7e117393172a"
+		       "ae2d8a571e03ac9c9eb76fac45af8e51"
+		       "30c81c46a35ce411e5fbc1191a0a52ef"
+		       "f69f2445df4f9b17ad2b417be66c3710"),
+		  SHEX("3891a1de2c0f71b9 b90a1f84a1d712bf"
+		       "0ca6339a5839385f 170784fb612f15a5"
+		       "6593433e1c21191c e042c7a695a7f65a"
+		       "f4334fafdb372b64 0862ebb1b6bbcc7a"),
+		  SHEX("01020304050607fffffffffffffffffe"));
+
+  test_cipher_ctr(&nettle_aes128, /* 15 */
+		  SHEX("2b7e151628aed2a6abf7158809cf4f3c"),
+		  SHEX("6bc1bee22e409f96e93d7e117393172a"
+		       "ae2d8a571e03ac9c9eb76fac45af8e51"
+		       "30c81c46a35ce411e5fbc1191a0a52ef"
+		       "f69f2445df4f9b17ad2b417be66c3710"),
+		  SHEX("91e64f693763258a aae861412d4250e2"
+		       "963b5b8d4ccea79e ac2558295268de85"
+		       "2f78de7d71554880 fb186a93378fb922"
+		       "8c05c84f8d4f3edd a40a43bcc1c474db"),
+		  SHEX("01fffffffffffffffffffffffffffffe"));
+
+  test_cipher_ctr(&nettle_aes128, /* 16 */
+		  SHEX("2b7e151628aed2a6abf7158809cf4f3c"),
+		  SHEX("6bc1bee22e409f96e93d7e117393172a"
+		       "ae2d8a571e03ac9c9eb76fac45af8e51"
+		       "30c81c46a35ce411e5fbc1191a0a52ef"
+		       "f69f2445df4f9b17ad2b417be66c3710"),
+		  SHEX("ba76aa54d5b56067 c1a7903b3fddfa89"
+		       "24df0c565cf42a68 978713b67ad124fd"
+		       "4d3f774ab9e47da2 dbb9315ea3110680"
+		       "a18d5905ebfe25a8 03df27c2211e58d6"),
+		  SHEX("fffffffffffffffffffffffffffffffe"));
+
+  /* Unofficial test vector for CTR mode with triple-des, to exercise
+     block size different from 16. */
+  test_cipher_ctr(&nettle_des3,
+		  SHEX("3e 0b 10 b0 5d 49 c2 54"
+		       "6b 46 e0 75 8a 91 61 85"
+		       "cb 04 07 d3 20 16 cb a2"),
+		  SHEX("6bc1bee22e409f96e93d7e117393172a"
+		       "ae2d8a571e03ac9c9eb76fac45af8e51"
+		       "30c81c46a35ce411e5fbc1191a0a52ef"
+		       "f69f2445df4f9b17ad2b417be66c3710"),
+		  SHEX("bb41303df94d0bca b881fb57e7132271"
+		       "820f70c0d53b3f5a 686943680303b37d"
+		       "5bbcfbd4fb283ef3 8078d0660c60121f"
+		       "41e0f1e4c2a4fe12 a676ec05b7fc4d8f"),
+		  SHEX("f8f9fafbfcfdfeff"));
 }
 
 /*

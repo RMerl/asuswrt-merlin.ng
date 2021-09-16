@@ -63,7 +63,7 @@ rsa_session_set_encrypt_key(struct rsa_session *ctx,
   const uint8_t *iv = SESSION_IV(key);
   const uint8_t *hmac_key = SESSION_HMAC_KEY(key);
   
-  aes_set_encrypt_key(&ctx->aes.ctx, AES_KEY_SIZE, aes_key);
+  aes256_set_encrypt_key(&ctx->aes.ctx, aes_key);
   CBC_SET_IV(&ctx->aes, iv);
   hmac_sha1_set_key(&ctx->hmac, SHA1_DIGEST_SIZE, hmac_key);
 }
@@ -136,7 +136,7 @@ process_file(struct rsa_session *ctx,
 	  size += padding;
 
 	  buffer[size - 1] = padding;
-	  CBC_ENCRYPT(&ctx->aes, aes_encrypt, size, buffer, buffer);
+	  CBC_ENCRYPT(&ctx->aes, aes256_encrypt, size, buffer, buffer);
 
 	  assert (size + SHA1_DIGEST_SIZE <= sizeof(buffer));
 
@@ -151,7 +151,7 @@ process_file(struct rsa_session *ctx,
 	  return 1;
 	}
 
-      CBC_ENCRYPT(&ctx->aes, aes_encrypt, size, buffer, buffer);
+      CBC_ENCRYPT(&ctx->aes, aes256_encrypt, size, buffer, buffer);
       if (!write_data(out, size, buffer))
 	{
 	  werror("Writing output failed: %s\n", strerror(errno));

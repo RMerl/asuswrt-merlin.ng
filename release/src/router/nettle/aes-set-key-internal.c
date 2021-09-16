@@ -43,8 +43,8 @@
 #include "macros.h"
 
 void
-_aes_set_key(unsigned nr, unsigned nk,
-	     uint32_t *subkeys, const uint8_t *key)
+_nettle_aes_set_key(unsigned nr, unsigned nk,
+		    uint32_t *subkeys, const uint8_t *key)
 {
   static const uint8_t rcon[10] = {
     0x01,0x02,0x04,0x08,0x10,0x20,0x40,0x80,0x1b,0x36,

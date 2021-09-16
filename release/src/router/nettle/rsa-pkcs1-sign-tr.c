@@ -35,6 +35,7 @@
 # include "config.h"
 #endif
 #include "rsa.h"
+#include "rsa-internal.h"
 
 #include "pkcs1.h"
 

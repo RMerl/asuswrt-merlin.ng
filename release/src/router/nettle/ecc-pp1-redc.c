@@ -42,7 +42,7 @@
 /* Use that 1 = p + 1 (mod p), and that at least one low limb of p + 1
    is zero. */
 void
-ecc_pp1_redc (const struct ecc_modulo *m, mp_limb_t *rp)
+ecc_pp1_redc (const struct ecc_modulo *m, mp_limb_t *rp, mp_limb_t *xp)
 {
   unsigned i;
   mp_limb_t hi, cy;
@@ -50,9 +50,9 @@ ecc_pp1_redc (const struct ecc_modulo *m, mp_limb_t *rp)
   mp_size_t k = m->redc_size;
   
   for (i = 0; i < m->size; i++)
-    rp[i] = mpn_addmul_1 (rp + i + k,
-			  m->redc_mpm1, m->size - k, rp[i]);
-  hi = mpn_add_n (rp, rp, rp + m->size, m->size);
+    xp[i] = mpn_addmul_1 (xp + i + k,
+			  m->redc_mpm1, m->size - k, xp[i]);
+  hi = mpn_add_n (rp, xp, xp + m->size, m->size);
   if (shift > 0)
     {
       hi = (hi << shift) | (rp[m->size - 1] >> (GMP_NUMB_BITS - shift));
@@ -63,7 +63,7 @@ ecc_pp1_redc (const struct ecc_modulo *m, mp_limb_t *rp)
     }
   else
     {
-      cy = cnd_sub_n (hi, rp, m->m, m->size);
+      cy = mpn_cnd_sub_n (hi, rp, rp, m->m, m->size);
       assert (cy == hi);      
     }
 }

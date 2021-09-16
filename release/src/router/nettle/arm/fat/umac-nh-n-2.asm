@@ -1,7 +1,7 @@
 C arm/fat/umac-nh-n-2.asm
 
 
-ifelse(<
+ifelse(`
    Copyright (C) 2015 Niels Möller
 
    This file is part of GNU Nettle.
@@ -29,9 +29,9 @@ ifelse(<
    You should have received copies of the GNU General Public License and
    the GNU Lesser General Public License along with this program.  If
    not, see http://www.gnu.org/licenses/.
->)
+')
 
 dnl PROLOGUE(_nettle_umac_nh_n) picked up by configure
 
-define(<fat_transform>, <$1_neon>)
-include_src(<arm/neon/umac-nh-n.asm>)
+define(`fat_transform', `$1_neon')
+include_src(`arm/neon/umac-nh-n.asm')

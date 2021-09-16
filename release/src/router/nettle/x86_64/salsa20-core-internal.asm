@@ -1,6 +1,6 @@
 C x86_64/salsa20-core-internal.asm
 
-ifelse(<
+ifelse(`
    Copyright (C) 2012 Niels Möller
 
    This file is part of GNU Nettle.
@@ -28,22 +28,22 @@ ifelse(<
    You should have received copies of the GNU General Public License and
    the GNU Lesser General Public License along with this program.  If
    not, see http://www.gnu.org/licenses/.
->)
+')
 
-define(<DST>, <%rdi>)
-define(<SRC>, <%rsi>)
-define(<COUNT>, <%rdx>)
-define(<X0>, <%xmm0>)
-define(<X1>, <%xmm1>)
-define(<X2>, <%xmm2>)
-define(<X3>, <%xmm3>)
-define(<T0>, <%xmm4>)
-define(<T1>, <%xmm5>)
-define(<M0101>, <%xmm6>)
-define(<M0110>, <%xmm7>)
-define(<M0011>, <%xmm8>)
+define(`DST', `%rdi')
+define(`SRC', `%rsi')
+define(`COUNT', `%rdx')
+define(`X0', `%xmm0')
+define(`X1', `%xmm1')
+define(`X2', `%xmm2')
+define(`X3', `%xmm3')
+define(`T0', `%xmm4')
+define(`T1', `%xmm5')
+define(`M0101', `%xmm6')
+define(`M0110', `%xmm7')
+define(`M0011', `%xmm8')
 
-include_src(<x86_64/salsa20.m4>)
+include_src(`x86_64/salsa20.m4')
 
 	C _salsa20_core(uint32_t *dst, const uint32_t *src, unsigned rounds)
 	.text

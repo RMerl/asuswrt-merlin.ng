@@ -37,14 +37,15 @@
 #include <string.h>
 
 #include "umac.h"
+#include "umac-internal.h"
 
 #include "macros.h"
 
 void
 umac32_set_key (struct umac32_ctx *ctx, const uint8_t *key)
 {
-  _umac_set_key (ctx->l1_key, ctx->l2_key, ctx->l3_key1, ctx->l3_key2,
-		 &ctx->pdf_key, key, 1);
+  _nettle_umac_set_key (ctx->l1_key, ctx->l2_key, ctx->l3_key1, ctx->l3_key2,
+			&ctx->pdf_key, key, 1);
 
   /* Clear nonce */
   memset (ctx->nonce, 0, sizeof(ctx->nonce));
@@ -72,9 +73,9 @@ umac32_set_nonce (struct umac32_ctx *ctx,
 
 #define UMAC32_BLOCK(ctx, block) do {					\
     uint64_t __umac32_y							\
-      = _umac_nh (ctx->l1_key, UMAC_BLOCK_SIZE, block)			\
+      = _nettle_umac_nh (ctx->l1_key, UMAC_BLOCK_SIZE, block)		\
       + 8*UMAC_BLOCK_SIZE ;						\
-    _umac_l2 (ctx->l2_key, ctx->l2_state, 1, ctx->count++, &__umac32_y); \
+    _nettle_umac_l2 (ctx->l2_key, ctx->l2_state, 1, ctx->count++, &__umac32_y); \
   } while (0)
 
 void
@@ -101,9 +102,9 @@ umac32_digest (struct umac32_ctx *ctx,
       unsigned pad = (ctx->index > 0) ? 31 & - ctx->index : 32;
       memset (ctx->block + ctx->index, 0, pad);
 
-      y = _umac_nh (ctx->l1_key, ctx->index + pad, ctx->block)
+      y = _nettle_umac_nh (ctx->l1_key, ctx->index + pad, ctx->block)
 	+ 8 * ctx->index;
-      _umac_l2 (ctx->l2_key, ctx->l2_state, 1, ctx->count++, &y);
+      _nettle_umac_l2 (ctx->l2_key, ctx->l2_state, 1, ctx->count++, &y);
     }
   assert (ctx->count > 0);
   if ( !(ctx->nonce_low & _UMAC_NONCE_CACHED))
@@ -128,8 +129,8 @@ umac32_digest (struct umac32_ctx *ctx,
 	INCREMENT (i, ctx->nonce);
     }
 
-  _umac_l2_final (ctx->l2_key, ctx->l2_state, 1, ctx->count);
-  pad ^= ctx->l3_key2[0] ^ _umac_l3 (ctx->l3_key1, ctx->l2_state);
+  _nettle_umac_l2_final (ctx->l2_key, ctx->l2_state, 1, ctx->count);
+  pad ^= ctx->l3_key2[0] ^ _nettle_umac_l3 (ctx->l3_key1, ctx->l2_state);
   memcpy (digest, &pad, length);
 
   /* Reinitialize */

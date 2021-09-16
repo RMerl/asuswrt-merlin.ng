@@ -47,7 +47,8 @@ mp_size_t
 ecc_ecdsa_sign_itch (const struct ecc_curve *ecc)
 {
   /* Needs 3*ecc->p.size + scratch for ecc->mul_g. Currently same for
-     ecc_mul_g and ecc_mul_g_eh. */
+     ecc_mul_g. */
+  assert (ecc->p.size + ecc->p.invert_itch <= 3*ecc->p.size + ecc->mul_g_itch);
   return ECC_ECDSA_SIGN_ITCH (ecc->p.size);
 }
 
@@ -63,7 +64,7 @@ ecc_ecdsa_sign (const struct ecc_curve *ecc,
 		mp_limb_t *scratch)
 {
 #define P	    scratch
-#define kinv	    scratch                /* Needs 5*ecc->p.size for computation */
+#define kinv	    scratch
 #define hp	    (scratch  + ecc->p.size) /* NOTE: ecc->p.size + 1 limbs! */
 #define tp	    (scratch + 2*ecc->p.size)
   /* Procedure, according to RFC 6090, "KT-I". q denotes the group
@@ -82,17 +83,16 @@ ecc_ecdsa_sign (const struct ecc_curve *ecc,
   /* x coordinate only, modulo q */
   ecc->h_to_a (ecc, 2, rp, P, P + 3*ecc->p.size);
 
-  /* Invert k, uses 4 * ecc->p.size including scratch */
-  ecc->q.invert (&ecc->q, kinv, kp, tp); /* NOTE: Also clobbers hp */
+  /* Invert k, uses up to 7 * ecc->p.size including scratch (for secp384). */
+  ecc->q.invert (&ecc->q, kinv, kp, tp);
   
   /* Process hash digest */
   ecc_hash (&ecc->q, hp, length, digest);
 
-  ecc_modq_mul (ecc, tp, zp, rp);
-  ecc_modq_add (ecc, hp, hp, tp);
-  ecc_modq_mul (ecc, tp, hp, kinv);
+  ecc_mod_mul (&ecc->q, tp, zp, rp, tp);
+  ecc_mod_add (&ecc->q, hp, hp, tp);
+  ecc_mod_mul_canonical (&ecc->q, sp, hp, kinv, tp);
 
-  mpn_copyi (sp, tp, ecc->p.size);
 #undef P
 #undef hp
 #undef kinv

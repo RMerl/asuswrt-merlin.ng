@@ -1,4 +1,4 @@
-define(<QREG>, <ifelse(
+define(`QREG', `ifelse(
 	$1, d0, q0,
 	$1, d2, q1,
 	$1, d4, q2,
@@ -15,9 +15,9 @@ define(<QREG>, <ifelse(
 	$1, d26, q13,
 	$1, d28, q14,
 	$1, d30, q15,
-	<NO REGISTER>)>)dnl
+	`NO REGISTER')')dnl
 
-define(<D0REG>, <ifelse(
+define(`D0REG', `ifelse(
 	$1, q0, d0,
 	$1, q1, d2,
 	$1, q2, d4,
@@ -34,9 +34,9 @@ define(<D0REG>, <ifelse(
 	$1, q13, d26,
 	$1, q14, d28,
 	$1, q15, d30,
-	<NO REGISTER>)>)dnl
+	`NO REGISTER')')dnl
 
-define(<D1REG>, <ifelse(
+define(`D1REG', `ifelse(
 	$1, q0, d1,
 	$1, q1, d3,
 	$1, q2, d5,
@@ -53,4 +53,4 @@ define(<D1REG>, <ifelse(
 	$1, q13, d27,
 	$1, q14, d29,
 	$1, q15, d31,
-	<NO REGISTER>)>)dnl
+	`NO REGISTER')')dnl

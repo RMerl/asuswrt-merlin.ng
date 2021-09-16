@@ -132,7 +132,7 @@ static const uint32_t mtable[0x100] =
 do { uint32_t t_swap = (a); (a) = (b); (b) = t_swap; } while(0)
 
 void
-_aes_invert(unsigned rounds, uint32_t *dst, const uint32_t *src)
+_nettle_aes_invert(unsigned rounds, uint32_t *dst, const uint32_t *src)
 {
   unsigned i;
 

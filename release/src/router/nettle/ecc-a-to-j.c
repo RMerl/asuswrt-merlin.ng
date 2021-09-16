@@ -47,10 +47,10 @@ ecc_a_to_j (const struct ecc_curve *ecc,
       mpn_copyd (r + ecc->p.size, p, 2*ecc->p.size);
 
       mpn_zero (r, ecc->p.size);
-      ecc->p.mod (&ecc->p, r);
+      ecc->p.mod (&ecc->p, r, r);
 
       mpn_zero (r + ecc->p.size, ecc->p.size);
-      ecc->p.mod (&ecc->p, r + ecc->p.size);
+      ecc->p.mod (&ecc->p, r + ecc->p.size, r + ecc->p.size);
     }
   else if (r != p)
     mpn_copyi (r, p, 2*ecc->p.size);

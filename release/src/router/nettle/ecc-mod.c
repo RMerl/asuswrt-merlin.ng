@@ -39,9 +39,11 @@
 
 #include "ecc-internal.h"
 
-/* Computes r mod m, input 2*m->size, output m->size. */
+/* Computes r <-- x mod m, input 2*m->size, output m->size. It's
+ * allowed to have rp == xp or rp == xp + m->size, but no other kind
+ * of overlap is allowed. */
 void
-ecc_mod (const struct ecc_modulo *m, mp_limb_t *rp)
+ecc_mod (const struct ecc_modulo *m, mp_limb_t *rp, mp_limb_t *xp)
 {
   mp_limb_t hi;
   mp_size_t mn = m->size;
@@ -64,56 +66,51 @@ ecc_mod (const struct ecc_modulo *m, mp_limb_t *rp)
 	  rn -= sn;
 
 	  for (i = 0; i <= sn; i++)
-	    rp[rn+i-1] = mpn_addmul_1 (rp + rn - mn - 1 + i, m->B, bn, rp[rn+i-1]);
-	  rp[rn-1] = rp[rn+sn-1]
-	    + mpn_add_n (rp + rn - sn - 1, rp + rn - sn - 1, rp + rn - 1, sn);
+	    xp[rn+i-1] = mpn_addmul_1 (xp + rn - mn - 1 + i, m->B, bn, xp[rn+i-1]);
+	  xp[rn-1] = xp[rn+sn-1]
+	    + mpn_add_n (xp + rn - sn - 1, xp + rn - sn - 1, xp + rn - 1, sn);
 	}
-      goto final_limbs;
     }
   else
     {
-      /* The loop below always runs at least once. But the analyzer
-	 doesn't realize that, and complains about hi being used later
-	 on without a well defined value. */
-#ifdef __clang_analyzer__
-      hi = 0;
-#endif
-      while (rn >= 2 * mn - bn)
+      while (rn > 2 * mn - bn)
 	{
 	  rn -= sn;
 
 	  for (i = 0; i < sn; i++)
-	    rp[rn+i] = mpn_addmul_1 (rp + rn - mn + i, m->B, bn, rp[rn+i]);
+	    xp[rn+i] = mpn_addmul_1 (xp + rn - mn + i, m->B, bn, xp[rn+i]);
 				     
-	  hi = mpn_add_n (rp + rn - sn, rp + rn - sn, rp + rn, sn);
-	  hi = cnd_add_n (hi, rp + rn - mn, m->B, mn);
+	  hi = mpn_add_n (xp + rn - sn, xp + rn - sn, xp + rn, sn);
+	  hi = mpn_cnd_add_n (hi, xp + rn - mn, xp + rn - mn, m->B, mn);
 	  assert (hi == 0);
 	}
     }
 
-  if (rn > mn)
-    {
-    final_limbs:
-      sn = rn - mn;
-      
-      for (i = 0; i < sn; i++)
-	rp[mn+i] = mpn_addmul_1 (rp + i, m->B, bn, rp[mn+i]);
+  assert (rn > mn);
+  rn -= mn;
+  assert (rn <= sn);
 
-      hi = mpn_add_n (rp + bn, rp + bn, rp + mn, sn);
-      hi = sec_add_1 (rp + bn + sn, rp + bn + sn, mn - bn - sn, hi);
-    }
+  for (i = 0; i < rn; i++)
+    xp[mn+i] = mpn_addmul_1 (xp + i, m->B, bn, xp[mn+i]);
+
+  hi = mpn_add_n (xp + bn, xp + bn, xp + mn, rn);
+  if (rn < sn)
+    hi = sec_add_1 (xp + bn + rn, xp + bn + rn, sn - rn, hi);
 
   shift = m->size * GMP_NUMB_BITS - m->bit_size;
   if (shift > 0)
     {
       /* Combine hi with top bits, add in */
-      hi = (hi << shift) | (rp[mn-1] >> (GMP_NUMB_BITS - shift));
-      rp[mn-1] = (rp[mn-1] & (((mp_limb_t) 1 << (GMP_NUMB_BITS - shift)) - 1))
-	+ mpn_addmul_1 (rp, m->B_shifted, mn-1, hi);
+      hi = (hi << shift) | (xp[mn-1] >> (GMP_NUMB_BITS - shift));
+      xp[mn-1] = (xp[mn-1] & (((mp_limb_t) 1 << (GMP_NUMB_BITS - shift)) - 1))
+	+ mpn_addmul_1 (xp, m->B_shifted, mn-1, hi);
+      /* FIXME: Can this copying be eliminated? */
+      if (rp != xp)
+	mpn_copyi (rp, xp, mn);
     }
   else
     {
-      hi = cnd_add_n (hi, rp, m->B_shifted, mn);
+      hi = mpn_cnd_add_n (hi, rp, xp, m->B, mn);
       assert (hi == 0);
     }
 }

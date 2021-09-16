@@ -1,6 +1,6 @@
 C x86/sha1-compress.asm
 
-ifelse(<
+ifelse(`
    Copyright (C) 2004, 2009 Niels Möller
 
    This file is part of GNU Nettle.
@@ -28,31 +28,31 @@ ifelse(<
    You should have received copies of the GNU General Public License and
    the GNU Lesser General Public License along with this program.  If
    not, see http://www.gnu.org/licenses/.
->)
+')
 
 C Register usage
-define(<SA>,<%eax>)
-define(<SB>,<%ebx>)
-define(<SC>,<%ecx>)
-define(<SD>,<%edx>)
-define(<SE>,<%ebp>)
-define(<DATA>,<%esp>)
-define(<T1>,<%edi>)
-define(<T2>,<%esi>)
+define(`SA',`%eax')
+define(`SB',`%ebx')
+define(`SC',`%ecx')
+define(`SD',`%edx')
+define(`SE',`%ebp')
+define(`DATA',`%esp')
+define(`T1',`%edi')
+define(`T2',`%esi')
 	
 C Constants
-define(<K1VALUE>, <0x5A827999>)		C  Rounds  0-19
-define(<K2VALUE>, <0x6ED9EBA1>)		C  Rounds 20-39
-define(<K3VALUE>, <0x8F1BBCDC>)		C  Rounds 40-59
-define(<K4VALUE>, <0xCA62C1D6>)		C  Rounds 60-79
+define(`K1VALUE', `0x5A827999')		C  Rounds  0-19
+define(`K2VALUE', `0x6ED9EBA1')		C  Rounds 20-39
+define(`K3VALUE', `0x8F1BBCDC')		C  Rounds 40-59
+define(`K4VALUE', `0xCA62C1D6')		C  Rounds 60-79
 	
 C Reads the input via T2 into register, byteswaps it, and stores it in the DATA array.
 C SWAP(index, register)
-define(<SWAP>, <
+define(`SWAP', `
 	movl	OFFSET($1)(T2), $2
 	bswap	$2
 	movl	$2, OFFSET($1) (DATA)
->)dnl
+')dnl
 
 C The f functions,
 C
@@ -79,27 +79,27 @@ C   e += a <<< 5 + f( b, c, d ) + k + w;
 C   b <<<= 30
 
 dnl ROUND_F1(a, b, c, d, e, i)
-define(<ROUND_F1>, <
+define(`ROUND_F1', `
 	mov	OFFSET(eval($6 % 16)) (DATA), T1
 	xor	OFFSET(eval(($6 +  2) % 16)) (DATA), T1
 	xor	OFFSET(eval(($6 +  8) % 16)) (DATA), T1
 	xor	OFFSET(eval(($6 + 13) % 16)) (DATA), T1
-	rol	<$>1, T1
+	rol	`$'1, T1
 	mov	T1, OFFSET(eval($6 % 16)) (DATA)
 	mov	$4, T2
 	xor	$3, T2
 	and	$2, T2
 	xor	$4, T2
-	rol	<$>30, $2
+	rol	`$'30, $2
 	lea	K1VALUE (T1, $5), $5
 	mov	$1, T1
-	rol	<$>5, T1
+	rol	`$'5, T1
 	add	T1, $5
 	add	T2, $5
->)
+')
 
 dnl ROUND_F1_NOEXP(a, b, c, d, e, i)
-define(<ROUND_F1_NOEXP>, <
+define(`ROUND_F1_NOEXP', `
 	mov	$4, T2
 	xor	$3, T2
 	mov	$1, T1
@@ -107,37 +107,37 @@ define(<ROUND_F1_NOEXP>, <
 	add	OFFSET($6) (DATA), $5
 	xor	$4, T2
 	add	T2, $5
-	rol	<$>30, $2
-	rol	<$>5, T1
+	rol	`$'30, $2
+	rol	`$'5, T1
 	lea	K1VALUE (T1, $5), $5
->)
+')
 
 dnl ROUND_F2(a, b, c, d, e, i, k)
-define(<ROUND_F2>, <
+define(`ROUND_F2', `
 	mov	OFFSET(eval($6 % 16)) (DATA), T1
 	xor	OFFSET(eval(($6 +  2) % 16)) (DATA), T1
 	xor	OFFSET(eval(($6 +  8) % 16)) (DATA), T1
 	xor	OFFSET(eval(($6 + 13) % 16)) (DATA), T1
-	rol	<$>1, T1
+	rol	`$'1, T1
 	mov	T1, OFFSET(eval($6 % 16)) (DATA)
 	mov	$4, T2
 	xor	$3, T2
 	xor	$2, T2
-	rol	<$>30, $2
+	rol	`$'30, $2
 	lea	$7 (T1, $5), $5
 	mov	$1, T1
-	rol	<$>5, T1
+	rol	`$'5, T1
 	add	T1, $5
 	add	T2, $5
->)
+')
 
 dnl ROUND_F3(a, b, c, d, e, i)
-define(<ROUND_F3>, <
+define(`ROUND_F3', `
 	mov	OFFSET(eval($6 % 16)) (DATA), T1
 	xor	OFFSET(eval(($6 +  2) % 16)) (DATA), T1
 	xor	OFFSET(eval(($6 +  8) % 16)) (DATA), T1
 	xor	OFFSET(eval(($6 + 13) % 16)) (DATA), T1
-	rol	<$>1, T1
+	rol	`$'1, T1
 	mov	T1, OFFSET(eval($6 % 16)) (DATA)
 	mov	$4, T2
 	and	$3, T2
@@ -146,20 +146,20 @@ define(<ROUND_F3>, <
 	xor	$3, T1
 	and	$2, T1
 	add	T2, $5
-	rol	<$>30, $2
+	rol	`$'30, $2
 	mov	$1, T2
-	rol	<$>5, T2
+	rol	`$'5, T2
 	add	T1, $5
 	add	T2, $5
->)
+')
 
 	.file "sha1-compress.asm"
 
-	C _nettle_sha1_compress(uint32_t *state, uint8_t *data)
+	C nettle_sha1_compress(uint32_t *state, uint8_t *data)
 	
 	.text
 
-PROLOGUE(_nettle_sha1_compress)
+PROLOGUE(nettle_sha1_compress)
 	C save all registers that need to be saved
 	C 			   88(%esp)  data
 	C 			   84(%esp)  state
@@ -1540,7 +1540,7 @@ C 	ROUND_F2(SB, SC, SD, SE, SA, 79, K4VALUE)
 	popl	%ebp
 	popl	%ebx
 	ret
-EPILOGUE(_nettle_sha1_compress)
+EPILOGUE(nettle_sha1_compress)
 
 C TODO:
 

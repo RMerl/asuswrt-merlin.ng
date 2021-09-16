@@ -37,15 +37,14 @@
 #include <string.h>
 
 #include "nettle-meta.h"
-
-#undef nettle_hashes
+#include "nettle-internal.h"
 
 const struct nettle_hash *
 nettle_lookup_hash (const char *name)
 {
   unsigned i;
-  for (i = 0; nettle_hashes[i]; i++)
-    if (!strcmp (name, nettle_hashes[i]->name))
-      return nettle_hashes[i];
+  for (i = 0; _nettle_hashes[i]; i++)
+    if (!strcmp (name, _nettle_hashes[i]->name))
+      return _nettle_hashes[i];
   return NULL;
 }

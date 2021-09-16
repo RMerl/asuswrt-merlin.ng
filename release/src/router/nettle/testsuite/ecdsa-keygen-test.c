@@ -40,6 +40,22 @@ ecc_valid_p (struct ecc_point *pub)
 
       mpz_clear (x2);
     }
+  else if (pub->ecc->p.bit_size == 448)
+    {
+      /* Check that
+	 x^2 + y^2 = 1 - 39081 x^2 y^2 */
+      mpz_t x2, d;
+      mpz_init (x2);
+      mpz_init_set_ui (d, 39081);
+      mpz_mul (x2, x, x); /* x^2 */
+      mpz_mul (d, d, x2); /* 39081 x^2 */
+      mpz_set_ui (rhs, 1);
+      mpz_submul (rhs, d, lhs); /* 1 - 39081 x^2 y^2 */
+      mpz_add (lhs, x2, lhs);	/* x^2 + y^2 */
+
+      mpz_clear (d);
+      mpz_clear (x2);
+    }
   else
     {
       /* Check y^2 = x^3 - 3 x + b */
@@ -77,6 +93,10 @@ test_main (void)
       const struct ecc_curve *ecc = ecc_curves[i];
       struct ecc_point pub;
       struct ecc_scalar key;
+
+      if (ecc->p.bit_size == 255 || ecc->p.bit_size == 448)
+	/* Exclude curve25519 and curve448, not supported with ECDSA. */
+	continue;
 
       if (verbose)
 	fprintf (stderr, "Curve %d\n", ecc->p.bit_size);

@@ -24,11 +24,10 @@ test_main(void)
   /* Test vectors for md5, from RFC-2202 */
 
   /* md5 - 1 */
-  HMAC_TEST(md5,
+  test_mac (&nettle_hmac_md5,
 	    SHEX("0b0b0b0b0b0b0b0b 0b0b0b0b0b0b0b0b"),
 	    SDATA("Hi There"),
 	    SHEX("9294727a3638bb1c 13f48ef8158bfc9d"));
-
 
   /* md5 - 2 */
   HMAC_TEST(md5,
@@ -37,7 +36,7 @@ test_main(void)
 	    SHEX("750c783e6ab0b503 eaa86e310a5db738"));	    
 
   /* md5 - 3 */
-  HMAC_TEST(md5,
+  test_mac(&nettle_hmac_md5,
 	    SHEX("aaaaaaaaaaaaaaaa aaaaaaaaaaaaaaaa"),
 	    SHEX("dddddddddddddddd dddddddddddddddd"
 		 "dddddddddddddddd dddddddddddddddd"
@@ -56,7 +55,7 @@ test_main(void)
 	    SHEX("697eaf0aca3a3aea 3a75164746ffaa79"));
 
   /* md5 - 5 */
-  HMAC_TEST(md5,
+  test_mac(&nettle_hmac_md5,
 	    SHEX("0c0c0c0c0c0c0c0c 0c0c0c0c0c0c0c0c"),
 	    SDATA("Test With Truncation"),
 	    SHEX("56461ef2342edc00 f9bab995"));
@@ -125,73 +124,73 @@ test_main(void)
 
   /* Test vectors for ripemd160, from
      http://homes.esat.kuleuven.be/~bosselae/ripemd160.html */
-  HMAC_TEST(ripemd160,
+  test_mac(&nettle_hmac_ripemd160,
 	    SHEX("00112233445566778899aabbccddeeff01234567"),
 	    SDATA(""),
 	    SHEX("cf387677bfda8483e63b57e06c3b5ecd8b7fc055"));
 
-  HMAC_TEST(ripemd160,
+  test_mac(&nettle_hmac_ripemd160,
 	    SHEX("00112233445566778899aabbccddeeff01234567"),
 	    SDATA("a"),
 	    SHEX("0d351d71b78e36dbb7391c810a0d2b6240ddbafc"));
 
-  HMAC_TEST(ripemd160,
+  test_mac(&nettle_hmac_ripemd160,
 	    SHEX("00112233445566778899aabbccddeeff01234567"),
 	    SDATA("abc"),
 	    SHEX("f7ef288cb1bbcc6160d76507e0a3bbf712fb67d6"));
 
-  HMAC_TEST(ripemd160,
+  test_mac(&nettle_hmac_ripemd160,
 	    SHEX("00112233445566778899aabbccddeeff01234567"),
 	    SDATA("message digest"),
 	    SHEX("f83662cc8d339c227e600fcd636c57d2571b1c34"));
 
-  HMAC_TEST(ripemd160,
+  test_mac(&nettle_hmac_ripemd160,
 	    SHEX("00112233445566778899aabbccddeeff01234567"),
 	    SDATA("abcdefghijklmnopqrstuvwxyz"),
 	    SHEX("843d1c4eb880ac8ac0c9c95696507957d0155ddb"));
 
-  HMAC_TEST(ripemd160,
+  test_mac(&nettle_hmac_ripemd160,
 	    SHEX("00112233445566778899aabbccddeeff01234567"),
 	    SDATA("abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq"),
 	    SHEX("60f5ef198a2dd5745545c1f0c47aa3fb5776f881"));
 
-  HMAC_TEST(ripemd160,
+  test_mac(&nettle_hmac_ripemd160,
 	    SHEX("00112233445566778899aabbccddeeff01234567"),
 	    SDATA("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"),
 	    SHEX("e49c136a9e5627e0681b808a3b97e6a6e661ae79"));
 
   /* Other key */
-  HMAC_TEST(ripemd160,
+  test_mac(&nettle_hmac_ripemd160,
 	    SHEX("0123456789abcdeffedcba987654321000112233"),
 	    SDATA(""),
 	    SHEX("fe69a66c7423eea9c8fa2eff8d9dafb4f17a62f5"));
 
-  HMAC_TEST(ripemd160,
+  test_mac(&nettle_hmac_ripemd160,
 	    SHEX("0123456789abcdeffedcba987654321000112233"),
 	    SDATA("a"),
 	    SHEX("85743e899bc82dbfa36faaa7a25b7cfd372432cd"));
 
-  HMAC_TEST(ripemd160,
+  test_mac(&nettle_hmac_ripemd160,
 	    SHEX("0123456789abcdeffedcba987654321000112233"),
 	    SDATA("abc"),
 	    SHEX("6e4afd501fa6b4a1823ca3b10bd9aa0ba97ba182"));
 
-  HMAC_TEST(ripemd160,
+  test_mac(&nettle_hmac_ripemd160,
 	    SHEX("0123456789abcdeffedcba987654321000112233"),
 	    SDATA("message digest"),
 	    SHEX("2e066e624badb76a184c8f90fba053330e650e92"));
 
-  HMAC_TEST(ripemd160,
+  test_mac(&nettle_hmac_ripemd160,
 	    SHEX("0123456789abcdeffedcba987654321000112233"),
 	    SDATA("abcdefghijklmnopqrstuvwxyz"),
 	    SHEX("07e942aa4e3cd7c04dedc1d46e2e8cc4c741b3d9"));
 
-  HMAC_TEST(ripemd160,
+  test_mac(&nettle_hmac_ripemd160,
 	    SHEX("0123456789abcdeffedcba987654321000112233"),
 	    SDATA("abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq"),
 	    SHEX("b6582318ddcfb67a53a67d676b8ad869aded629a"));
 
-  HMAC_TEST(ripemd160,
+  test_mac(&nettle_hmac_ripemd160,
 	    SHEX("0123456789abcdeffedcba987654321000112233"),
 	    SDATA("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"),
 	    SHEX("f1be3ee877703140d34f97ea1ab3a07c141333e2"));
@@ -199,7 +198,7 @@ test_main(void)
   /* Test vectors for sha1, from RFC-2202 */
 
   /* sha1 - 1 */
-  HMAC_TEST(sha1,
+  test_mac(&nettle_hmac_sha1,
 	    SHEX("0b0b0b0b0b0b0b0b 0b0b0b0b0b0b0b0b 0b0b0b0b"),
 	    SDATA("Hi There"),
 	    SHEX("b617318655057264 e28bc0b6fb378c8e f146be00"));
@@ -211,7 +210,7 @@ test_main(void)
 	    SHEX("effcdf6ae5eb2fa2 d27416d5f184df9c 259a7c79"));
 
   /* sha1 - 3 */
-  HMAC_TEST(sha1,
+  test_mac(&nettle_hmac_sha1,
 	    SHEX("aaaaaaaaaaaaaaaa aaaaaaaaaaaaaaaa aaaaaaaa"),
 	    SHEX("dddddddddddddddd dddddddddddddddd"
 		 "dddddddddddddddd dddddddddddddddd"
@@ -230,7 +229,7 @@ test_main(void)
 	    SHEX("4c9007f4026250c6 bc8414f9bf50c86c 2d7235da"));
 
   /* sha1 - 5 */
-  HMAC_TEST(sha1,
+  test_mac(&nettle_hmac_sha1,
 	    SHEX("0c0c0c0c0c0c0c0c 0c0c0c0c0c0c0c0c 0c0c0c0c"),
 	    SDATA("Test With Truncation"),
 	    SHEX("4c1a03424b55e07f e7f27be1"));
@@ -255,47 +254,6 @@ test_main(void)
 	    SDATA("Test Using Larger Than Block-Size Key and Larger "
 		  "Than One Block-Size Data"),
 	    SHEX("e8e99d0f45237d78 6d6bbaa7965c7808 bbff1a91"));
-
-  /* Additional test vectors, from Daniel Kahn Gillmor */
-  HMAC_TEST(md5,
-	    SDATA("monkey monkey monkey monkey"),
-	    SDATA(""),
-	    SHEX("e84db42a188813f30a15e611d64c7869"));
-  
-  HMAC_TEST(md5,
-	    SDATA("monkey monkey monkey monkey"),
-	    SDATA("a"),
-	    SHEX("123662062e67c2aab371cc49db0df134"));
-  
-  HMAC_TEST(md5,
-	    SDATA("monkey monkey monkey monkey"),
-	    SDATA("38"),
-	    SHEX("0a46cc10a49d4b7025c040c597bf5d76"));
-  
-  HMAC_TEST(md5,
-	    SDATA("monkey monkey monkey monkey"),
-	    SDATA("abc"),
-	    SHEX("d1f4d89f0e8b2b6ed0623c99ec298310"));
-  
-  HMAC_TEST(md5,
-	    SDATA("monkey monkey monkey monkey"),
-	    SDATA("message digest"),
-	    SHEX("1627207b9bed5009a4f6e9ca8d2ca01e"));
-  
-  HMAC_TEST(md5,
-	    SDATA("monkey monkey monkey monkey"),
-	    SDATA("abcdefghijklmnopqrstuvwxyz"),
-	    SHEX("922aae6ab3b3a29202e21ce5f916ae9a"));
-
-  HMAC_TEST(md5,
-	    SDATA("monkey monkey monkey monkey"),
-	    SDATA("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"),
-	    SHEX("ede9cb83679ba82d88fbeae865b3f8fc"));
-
-  HMAC_TEST(md5,
-	    SDATA("monkey monkey monkey monkey"),
-	    SDATA("12345678901234567890123456789012345678901234567890123456789012345678901234567890"),
-	    SHEX("939dd45512ee3a594b6654f6b8de27f7"));
 
   /* Test vectors for sha224, from RFC 4231 */
   HMAC_TEST(sha224,
@@ -490,7 +448,7 @@ test_main(void)
      draft-ietf-ipsec-ciph-sha-256-01.txt */
 
   /* Test Case #1: HMAC-SHA-256 with 3-byte input and 32-byte key */
-  HMAC_TEST(sha256,
+  test_mac(&nettle_hmac_sha256,
 	    SHEX("0102030405060708 090a0b0c0d0e0f10"
 		 "1112131415161718 191a1b1c1d1e1f20"),
 	    SDATA("abc"),
@@ -498,7 +456,7 @@ test_main(void)
 		 "7f98cc131cb16a66 92759021cfab8181"));
 
   /* Test Case #2: HMAC-SHA-256 with 56-byte input and 32-byte key */
-  HMAC_TEST(sha256,
+  test_mac(&nettle_hmac_sha256,
 	    SHEX("0102030405060708 090a0b0c0d0e0f10"
 		 "1112131415161718 191a1b1c1d1e1f20"),
 	    SDATA("abcdbcdecdefdefgefghfghighijhijk"
@@ -508,7 +466,7 @@ test_main(void)
 
   /* Test Case #3: HMAC-SHA-256 with 112-byte (multi-block) input
      and 32-byte key */
-  HMAC_TEST(sha256,
+  test_mac(&nettle_hmac_sha256,
 	    SHEX("0102030405060708 090a0b0c0d0e0f10"
 		 "1112131415161718 191a1b1c1d1e1f20"),
 	    SDATA("abcdbcdecdefdefgefghfghighijhijk"
@@ -519,7 +477,7 @@ test_main(void)
 		 "73acf0fd060447a5 eb4595bf33a9d1a3"));
 
   /* Test Case #4:  HMAC-SHA-256 with 8-byte input and 32-byte key */
-  HMAC_TEST(sha256,
+  test_mac(&nettle_hmac_sha256,
 	    SHEX("0b0b0b0b0b0b0b0b 0b0b0b0b0b0b0b0b"
 		 "0b0b0b0b0b0b0b0b 0b0b0b0b0b0b0b0b"),
 	    SDATA("Hi There"),
@@ -527,7 +485,7 @@ test_main(void)
 		 "ba0aa3f3d9ae3c1c 7a3b1696a0b68cf7"));
 
   /* Test Case #6: HMAC-SHA-256 with 50-byte input and 32-byte key */
-  HMAC_TEST(sha256,
+  test_mac(&nettle_hmac_sha256,
 	    SHEX("aaaaaaaaaaaaaaaa aaaaaaaaaaaaaaaa"
 		 "aaaaaaaaaaaaaaaa aaaaaaaaaaaaaaaa"),
 	    SHEX("dddddddddddddddd dddddddddddddddd"
@@ -550,7 +508,7 @@ test_main(void)
 		 "6ec4af55ef079985 41468eb49bd2e917"));
 
   /* Test Case #8: HMAC-SHA-256 with 20-byte input and 32-byte key */
-  HMAC_TEST(sha256,
+  test_mac(&nettle_hmac_sha256,
 	    SHEX("0c0c0c0c0c0c0c0c 0c0c0c0c0c0c0c0c"
 		 "0c0c0c0c0c0c0c0c 0c0c0c0c0c0c0c0c"),
 	    SDATA("Test With Truncation"),
@@ -855,7 +813,7 @@ test_main(void)
      draft-kelly-ipsec-ciph-sha2-01.txt */
 
   /* Test case AUTH512-1: */
-  HMAC_TEST(sha512,
+  test_mac(&nettle_hmac_sha512,
 	    SHEX("0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b"
 		 "0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b"
 		 "0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b"
@@ -879,7 +837,7 @@ test_main(void)
 		 "fa0ffb93466cfcceaae38c833b7dba38"));
 
   /* Test case AUTH512-3: */
-  HMAC_TEST(sha512,
+  test_mac(&nettle_hmac_sha512,
 	    SHEX("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 		 "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 		 "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
@@ -894,4 +852,35 @@ test_main(void)
 		 "b1ff68a1de45509fbe4da9a433922655"));
 
   /* Test case AUTH512-3 from same document seems broken. */
+
+  HMAC_TEST(gosthash94,
+	    SHEX("000102030405060708090a0b0c0d0e0f"
+		 "101112131415161718191a1b1c1d1e1f"),
+	    SHEX("0126bdb87800af214341456563780100"),
+	    SHEX("bfebe25f051bfef6ac858babb0abc409"
+		 "bfd2e334ab847bc0b0d056517c7d94c5"));
+
+  HMAC_TEST(gosthash94cp,
+	    SHEX("000102030405060708090a0b0c0d0e0f"
+		 "101112131415161718191a1b1c1d1e1f"),
+	    SHEX("0126bdb87800af214341456563780100"),
+	    SHEX("bad70b61c41095bc47e1141cfaed4272"
+		 "6a5ceebd62ce75dbbb9ad76cda9f72f7"));
+
+  /* RFC 7836 */
+  HMAC_TEST(streebog512,
+	    SHEX("000102030405060708090a0b0c0d0e0f"
+		 "101112131415161718191a1b1c1d1e1f"),
+	    SHEX("0126bdb87800af214341456563780100"),
+	    SHEX("a59bab22ecae19c65fbde6e5f4e9f5d8"
+	         "549d31f037f9df9b905500e171923a77"
+		 "3d5f1530f2ed7e964cb2eedc29e9ad2f"
+		 "3afe93b2814f79f5000ffc0366c251e6"));
+
+  HMAC_TEST(streebog256,
+	    SHEX("000102030405060708090a0b0c0d0e0f"
+		 "101112131415161718191a1b1c1d1e1f"),
+	    SHEX("0126bdb87800af214341456563780100"),
+	    SHEX("a1aa5f7de402d7b3d323f2991c8d4534"
+	         "013137010a83754fd0af6d7cd4922ed9"));
 }

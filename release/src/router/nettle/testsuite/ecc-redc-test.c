@@ -27,6 +27,15 @@ ref_redc (mp_limb_t *rp, const mp_limb_t *ap, const mp_limb_t *mp, mp_size_t mn)
   mpz_clear (t);
 }
 
+/* Destructively normalize tp, then compare */
+static int
+mod_equal(const struct ecc_modulo *m, const mp_limb_t *ref, mp_limb_t *tp)
+{
+  if (mpn_cmp (tp, m->m, m->size) >= 0)
+    mpn_sub_n (tp, tp, m->m, m->size);
+  return mpn_cmp (ref, tp, m->size) == 0;
+}
+
 #define MAX_ECC_SIZE (1 + 521 / GMP_NUMB_BITS)
 #define MAX_SIZE (2*MAX_ECC_SIZE)
 #define COUNT 50000
@@ -64,13 +73,10 @@ test_main (void)
 	  if (ecc->p.reduce != ecc->p.mod)
 	    {
 	      mpn_copyi (m, a, 2*ecc->p.size);
-	      ecc->p.reduce (&ecc->p, m);
-	      if (mpn_cmp (m, ecc->p.m, ecc->p.size) >= 0)
-		mpn_sub_n (m, m, ecc->p.m, ecc->p.size);
-
-	      if (mpn_cmp (m, ref, ecc->p.size))
+	      ecc->p.reduce (&ecc->p, m, m);
+	      if (!mod_equal (&ecc->p, ref, m))
 		{
-		  fprintf (stderr, "ecc->p.reduce failed: bit_size = %u\n",
+		  fprintf (stderr, "ecc->p.reduce failed: bit_size = %u, rp == xp\n",
 			   ecc->p.bit_size);
 		  fprintf (stderr, "a   = ");
 		  mpn_out_str (stderr, 16, a, 2*ecc->p.size);
@@ -81,19 +87,31 @@ test_main (void)
 		  fprintf (stderr, "\n");
 		  abort ();
 		}
+	      mpn_copyi (m, a, 2*ecc->p.size);
+	      ecc->p.reduce (&ecc->p, m + ecc->p.size, m);
+	      if (!mod_equal (&ecc->p, ref, m + ecc->p.size))
+		{
+		  fprintf (stderr, "ecc->p.reduce failed: bit_size = %u, rp == xp + size\n",
+			   ecc->p.bit_size);
+		  fprintf (stderr, "a   = ");
+		  mpn_out_str (stderr, 16, a, 2*ecc->p.size);
+		  fprintf (stderr, "\nm   = ");
+		  mpn_out_str (stderr, 16, m + ecc->p.size, ecc->p.size);
+		  fprintf (stderr, " (bad)\nref   = ");
+		  mpn_out_str (stderr, 16, ref, ecc->p.size);
+		  fprintf (stderr, "\n");
+		  abort ();
+		}
 	    }
 	  if (ecc->p.redc_size != 0)
 	    {	  
 	      mpn_copyi (m, a, 2*ecc->p.size);
 	      if (ecc->p.m[0] == 1)
-		ecc_pm1_redc (&ecc->p, m);
+		ecc_pm1_redc (&ecc->p, m, m);
 	      else
-		ecc_pp1_redc (&ecc->p, m);
+		ecc_pp1_redc (&ecc->p, m, m);
 
-	      if (mpn_cmp (m, ecc->p.m, ecc->p.size) >= 0)
-		mpn_sub_n (m, m, ecc->p.m, ecc->p.size);
-
-	      if (mpn_cmp (m, ref, ecc->p.size))
+	      if (!mod_equal (&ecc->p, ref, m))
 		{
 		  fprintf (stderr, "ecc_p%c1_redc failed: bit_size = %u\n",
 			   (ecc->p.m[0] == 1) ? 'm' : 'p', ecc->p.bit_size);
@@ -101,6 +119,26 @@ test_main (void)
 		  mpn_out_str (stderr, 16, a, 2*ecc->p.size);
 		  fprintf (stderr, "\nm   = ");
 		  mpn_out_str (stderr, 16, m, ecc->p.size);
+		  fprintf (stderr, " (bad)\nref = ");
+		  mpn_out_str (stderr, 16, ref, ecc->p.size);
+		  fprintf (stderr, "\n");
+		  abort ();
+		}
+
+	      mpn_copyi (m, a, 2*ecc->p.size);
+	      if (ecc->p.m[0] == 1)
+		ecc_pm1_redc (&ecc->p, m + ecc->p.size, m);
+	      else
+		ecc_pp1_redc (&ecc->p, m + ecc->p.size, m);
+
+	      if (!mod_equal (&ecc->p, ref, m + ecc->p.size))
+		{
+		  fprintf (stderr, "ecc_p%c1_redc failed: bit_size = %u\n",
+			   (ecc->p.m[0] == 1) ? 'm' : 'p', ecc->p.bit_size);
+		  fprintf (stderr, "a   = ");
+		  mpn_out_str (stderr, 16, a, 2*ecc->p.size);
+		  fprintf (stderr, "\nm   = ");
+		  mpn_out_str (stderr, 16, m + ecc->p.size, ecc->p.size);
 		  fprintf (stderr, " (bad)\nref = ");
 		  mpn_out_str (stderr, 16, ref, ecc->p.size);
 		  fprintf (stderr, "\n");

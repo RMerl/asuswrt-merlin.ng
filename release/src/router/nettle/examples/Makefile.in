@@ -20,11 +20,11 @@ HOGWEED_TARGETS = rsa-keygen$(EXEEXT) rsa-sign$(EXEEXT) \
 
 ENC_TARGETS = base16enc$(EXEEXT) base16dec$(EXEEXT) \
 	      base64enc$(EXEEXT) base64dec$(EXEEXT)
-TARGETS = nettle-benchmark$(EXEEXT) eratosthenes$(EXEEXT) \
+TARGETS = nettle-benchmark$(EXEEXT) \
 	  $(ENC_TARGETS) @IF_HOGWEED@ $(HOGWEED_TARGETS)
 
 SOURCES = nettle-benchmark.c hogweed-benchmark.c ecc-benchmark.c \
-	eratosthenes.c random-prime.c \
+	random-prime.c \
 	nettle-openssl.c \
 	io.c read_rsa_key.c \
 	rsa-encrypt.c rsa-decrypt.c rsa-keygen.c rsa-sign.c rsa-verify.c \
@@ -40,7 +40,7 @@ DISTFILES= $(SOURCES) Makefile.in $(TS_ALL) setup-env teardown-env \
 
 all: $(TARGETS)
 
-.c.$(OBJEXT):
+%.$(OBJEXT): %.c
 	$(COMPILE) -c $< && $(DEP_PROCESS)
 
 # NOTE: If we required GNU make, we could use a single rule with $(@F)
@@ -94,9 +94,6 @@ base64dec$(EXEEXT): base64dec.$(OBJEXT) io.$(OBJEXT)
 	$(LINK) base64dec.$(OBJEXT) io.$(OBJEXT) \
 	-lnettle $(LIBS) -o base64dec$(EXEEXT)
 
-eratosthenes$(EXEEXT): eratosthenes.$(OBJEXT) $(GETOPT_OBJS)
-	$(LINK) eratosthenes.$(OBJEXT) $(GETOPT_OBJS) -o eratosthenes$(EXEEXT)
-
 BENCH_OBJS = nettle-benchmark.$(OBJEXT) nettle-openssl.$(OBJEXT) \
 	$(GETOPT_OBJS) ../nettle-internal.$(OBJEXT) timing.$(OBJEXT)
 nettle-benchmark$(EXEEXT): $(BENCH_OBJS)
@@ -116,9 +113,8 @@ hogweed-benchmark$(EXEEXT): $(HOGWEED_BENCH_OBJS)
 $(TARGETS) : io.$(OBJEXT) ../libnettle.stamp
 $(HOGWEED_TARGETS): ../libhogweed.stamp
 
-# The PATH update is for windows dlls, DYLD_LIBRARY_PATH is for OSX.
 check: $(TS_ALL)
-	LD_LIBRARY_PATH=../.lib PATH="../.lib:$$PATH" DYLD_LIBRARY_PATH=../.lib \
+	TEST_SHLIB_DIR="$(TEST_SHLIB_DIR)" \
 	  srcdir="$(srcdir)" EMULATOR="$(EMULATOR)" EXEEXT="$(EXEEXT)" \
           "$(top_srcdir)"/run-tests $(TS_ALL)
 
@@ -134,7 +130,7 @@ distdir: $(DISTFILES)
 	cp $? $(distdir)
 
 clean:
-	-rm -f $(TARGETS) *.$(OBJEXT)
+	-rm -f $(TARGETS) *.$(OBJEXT) *.$(OBJEXT).d
 
 distclean: clean
 	-rm -f Makefile *.d
@@ -142,4 +138,4 @@ distclean: clean
 tags:
 	etags -o $(srcdir)/TAGS --include $(top_srcdir) $(srcdir)/*.c $(srcdir)/*.h
 
-@DEP_INCLUDE@ $(SOURCES:.c=.$(OBJEXT).d)
+-include $(SOURCES:.c=.$(OBJEXT).d)

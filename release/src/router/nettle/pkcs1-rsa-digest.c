@@ -34,10 +34,10 @@
 #endif
 
 #include "pkcs1.h"
-
 #include "bignum.h"
 #include "gmp-glue.h"
 #include "nettle-internal.h"
+#include "hogweed-internal.h"
 
 int
 pkcs1_rsa_digest_encode(mpz_t m, size_t key_size,

@@ -1,6 +1,6 @@
 C sparc64/aes-decrypt-internal.asm
 
-ifelse(<
+ifelse(`
    Copyright (C) 2002, 2005, 2013 Niels Möller
 
    This file is part of GNU Nettle.
@@ -28,7 +28,7 @@ ifelse(<
    You should have received copies of the GNU General Public License and
    the GNU Lesser General Public License along with this program.  If
    not, see http://www.gnu.org/licenses/.
->)
+')
 
 C The only difference between this code and the sparc32 code is the
 C frame offsets, and the magic BIAS when accessing the stack (which
@@ -36,31 +36,31 @@ C doesn't matter, since we don't access any data on the stack).
 
 
 C Use the same AES macros as on sparc32.
-include_src(<sparc32/aes.m4>)
+include_src(`sparc32/aes.m4')
 
 C	Arguments
-define(<ROUNDS>,<%i0>)
-define(<KEYS>,	<%i1>)
-define(<T>,	<%i2>)
-define(<LENGTH>,<%i3>)
-define(<DST>,	<%i4>)
-define(<SRC>,	<%i5>)
+define(`ROUNDS',`%i0')
+define(`KEYS',	`%i1')
+define(`T',	`%i2')
+define(`LENGTH',`%i3')
+define(`DST',	`%i4')
+define(`SRC',	`%i5')
 
 C	AES state, two copies for unrolling
 
-define(<W0>,	<%l0>)
-define(<W1>,	<%l1>)
-define(<W2>,	<%l2>)
-define(<W3>,	<%l3>)
+define(`W0',	`%l0')
+define(`W1',	`%l1')
+define(`W2',	`%l2')
+define(`W3',	`%l3')
 
-define(<X0>,	<%l4>)
-define(<X1>,	<%l5>)
-define(<X2>,	<%l6>)
-define(<X3>,	<%l7>)
+define(`X0',	`%l4')
+define(`X1',	`%l5')
+define(`X2',	`%l6')
+define(`X3',	`%l7')
 
 C	%o0-%03 are used for loop invariants T0-T3
-define(<KEY>,	<%o4>)
-define(<COUNT>, <%o5>)
+define(`KEY',	`%o4')
+define(`COUNT', `%o5')
 
 C %g1, %g2, %g3 are TMP1, TMP2 and TMP3
 
@@ -69,7 +69,7 @@ C
 C %fp -   8: OS-dependent link field
 C %fp -  16: OS-dependent link field
 C %fp - 192: OS register save area (22*8 == 176 bytes) 
-define(<FRAME_SIZE>, 192)
+define(`FRAME_SIZE', 192)
 
 	.file "aes-decrypt-internal.asm"
 

@@ -1,6 +1,6 @@
 C sparc32/arcfour-crypt.asm
 
-ifelse(<
+ifelse(`
    Copyright (C) 2002, 2005 Niels Möller
 
    This file is part of GNU Nettle.
@@ -28,36 +28,36 @@ ifelse(<
    You should have received copies of the GNU General Public License and
    the GNU Lesser General Public License along with this program.  If
    not, see http://www.gnu.org/licenses/.
->)
+')
 
 C	Define to YES, to enable the complex code to special case SRC
 C	and DST with compatible alignment.
 	
-define(<WITH_ALIGN>, <YES>)
+define(`WITH_ALIGN', `YES')
 
 C	Registers
 
-define(<CTX>,	<%i0>)
-define(<LENGTH>,<%i1>)
-define(<DST>,	<%i2>)
-define(<SRC>,	<%i3>)
+define(`CTX',	`%i0')
+define(`LENGTH',`%i1')
+define(`DST',	`%i2')
+define(`SRC',	`%i3')
 
-define(<I1>,	<%i4>)
-define(<I2>,	<%i5>)
-define(<J>,	<%g1>)
-define(<SI>,	<%g2>)
-define(<SJ>,	<%g3>)
-define(<TMP>,	<%o0>)
-define(<TMP2>,	<%o1>)
-define(<N>,	<%o2>)
-define(<DATA>,	<%o3>)
+define(`I1',	`%i4')
+define(`I2',	`%i5')
+define(`J',	`%g1')
+define(`SI',	`%g2')
+define(`SJ',	`%g3')
+define(`TMP',	`%o0')
+define(`TMP2',	`%o1')
+define(`N',	`%o2')
+define(`DATA',	`%o3')
 
 C	Computes the next byte of the key stream. As input, i must
 C	already point to the index for the current access, the index
 C	for the next access is stored in ni. The resulting key byte is
 C	stored in res.
 C	ARCFOUR_BYTE(i, ni, res)
-define(<ARCFOUR_BYTE>, <
+define(`ARCFOUR_BYTE', `
 	ldub	[CTX + $1], SI
 	add	$1, 1, $2
 	add	J, SI, J
@@ -69,10 +69,10 @@ define(<ARCFOUR_BYTE>, <
 	and	SI, 0xff, SI
 	stb	SJ, [CTX + $1]
 	ldub	[CTX + SI], $3
->)dnl
+')dnl
 			
 C	FIXME: Consider using the callers window
-define(<FRAME_SIZE>, 104)
+define(`FRAME_SIZE', 104)
 
 	.file "arcfour-crypt.asm"
 

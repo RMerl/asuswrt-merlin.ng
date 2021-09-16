@@ -68,3 +68,16 @@ chacha_set_nonce96(struct chacha_ctx *ctx, const uint8_t *nonce)
   ctx->state[14] = LE_READ_UINT32(nonce + 4);
   ctx->state[15] = LE_READ_UINT32(nonce + 8);
 }
+
+void
+chacha_set_counter(struct chacha_ctx *ctx, const uint8_t *counter)
+{
+  ctx->state[12] = LE_READ_UINT32(counter + 0);
+  ctx->state[13] = LE_READ_UINT32(counter + 4);
+}
+
+void
+chacha_set_counter32(struct chacha_ctx *ctx, const uint8_t *counter)
+{
+  ctx->state[12] = LE_READ_UINT32(counter + 0);
+}

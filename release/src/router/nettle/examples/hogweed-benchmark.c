@@ -47,7 +47,10 @@
 
 #include "dsa.h"
 #include "rsa.h"
+#include "eddsa.h"
+#include "gostdsa.h"
 #include "curve25519.h"
+#include "curve448.h"
 
 #include "nettle-meta.h"
 #include "sexp.h"
@@ -59,6 +62,7 @@
 
 #if WITH_OPENSSL
 #include <openssl/rsa.h>
+#include <openssl/bn.h>
 #include <openssl/ec.h>
 #include <openssl/ecdsa.h>
 #include <openssl/objects.h>
@@ -148,7 +152,7 @@ bench_alg (const struct alg *alg)
   ctx = alg->init(alg->size);
   if (ctx == NULL)
     {
-      printf("%15s %4d N/A\n", alg->name, alg->size);
+      printf("%16s %4d N/A\n", alg->name, alg->size);
       return;
     }
 
@@ -157,7 +161,7 @@ bench_alg (const struct alg *alg)
 
   alg->clear (ctx);
 
-  printf("%15s %4d %9.4f %9.4f\n",
+  printf("%16s %4d %9.4f %9.4f\n",
 	 alg->name, alg->size, 1e-3/sign, 1e-3/verify);
 }
 
@@ -165,6 +169,7 @@ struct rsa_ctx
 {
   struct rsa_public_key pub;
   struct rsa_private_key key;
+  struct knuth_lfib_ctx lfib;
   uint8_t *digest;
   mpz_t s;
 };
@@ -223,6 +228,7 @@ bench_rsa_init (unsigned size)
   rsa_public_key_init (&ctx->pub);
   rsa_private_key_init (&ctx->key);
   mpz_init (ctx->s);
+  knuth_lfib_init (&ctx->lfib, 1);
 
   /* NOTE: Base64-decodes the strings in-place */
   if (size == 1024)
@@ -253,6 +259,19 @@ bench_rsa_sign (void *p)
   mpz_t s;
   mpz_init (s);
   rsa_sha256_sign_digest (&ctx->key, ctx->digest, s);
+  mpz_clear (s);
+}
+
+static void
+bench_rsa_sign_tr (void *p)
+{
+  struct rsa_ctx *ctx = p;
+
+  mpz_t s;
+  mpz_init (s);
+  rsa_sha256_sign_digest_tr (&ctx->pub, &ctx->key,
+			     &ctx->lfib, (nettle_random_func *)knuth_lfib_random,
+			     ctx->digest, s);
   mpz_clear (s);
 }
 
@@ -369,7 +388,7 @@ struct ecdsa_ctx
 {
   struct ecc_point pub;
   struct ecc_scalar key;
-  struct knuth_lfib_ctx rctx;
+  struct knuth_lfib_ctx lfib;
   unsigned digest_size;
   uint8_t *digest;
   struct dsa_signature s;
@@ -389,12 +408,12 @@ bench_ecdsa_init (unsigned size)
   ctx = xalloc (sizeof(*ctx));
 
   dsa_signature_init (&ctx->s);  
-  knuth_lfib_init (&ctx->rctx, 17);
+  knuth_lfib_init (&ctx->lfib, 17);
 
   switch (size)
     {
     case 192:
-      ecc = &nettle_secp_192r1;
+      ecc = &_nettle_secp_192r1;
       xs = "8e8e07360350fb6b7ad8370cfd32fa8c6bba785e6e200599";
       ys = "7f82ddb58a43d59ff8dc66053002b918b99bd01bd68d6736";
       zs = "f2e620e086d658b4b507996988480917640e4dc107808bdd";
@@ -402,7 +421,7 @@ bench_ecdsa_init (unsigned size)
       ctx->digest_size = 20;
       break;
     case 224:
-      ecc = &nettle_secp_224r1;
+      ecc = &_nettle_secp_224r1;
       xs = "993bf363f4f2bc0f255f22563980449164e9c894d9efd088d7b77334";
       ys = "b75fff9849997d02d135140e4d0030944589586e22df1fc4b629082a";
       zs = "cdfd01838247f5de3cc70b688418046f10a2bfaca6de9ec836d48c27";
@@ -412,7 +431,7 @@ bench_ecdsa_init (unsigned size)
 
       /* From RFC 4754 */
     case 256:
-      ecc = &nettle_secp_256r1;
+      ecc = &_nettle_secp_256r1;
       xs = "2442A5CC 0ECD015F A3CA31DC 8E2BBC70 BF42D60C BCA20085 E0822CB0 4235E970";
       ys = "6FC98BD7 E50211A4 A27102FA 3549DF79 EBCB4BF2 46B80945 CDDFE7D5 09BBFD7D";
       zs = "DC51D386 6A15BACD E33D96F9 92FCA99D A7E6EF09 34E70975 59C27F16 14C88A7F";
@@ -420,7 +439,7 @@ bench_ecdsa_init (unsigned size)
       ctx->digest_size = 32;
       break;
     case 384:
-      ecc = &nettle_secp_384r1;
+      ecc = &_nettle_secp_384r1;
       xs = "96281BF8 DD5E0525 CA049C04 8D345D30 82968D10 FEDF5C5A CA0C64E6 465A97EA"
 	"5CE10C9D FEC21797 41571072 1F437922";
       ys = "447688BA 94708EB6 E2E4D59F 6AB6D7ED FF9301D2 49FE49C3 3096655F 5D502FAD"
@@ -431,7 +450,7 @@ bench_ecdsa_init (unsigned size)
       ctx->digest_size = 48;
       break;
     case 521:
-      ecc = &nettle_secp_521r1;
+      ecc = &_nettle_secp_521r1;
       xs = "0151518F 1AF0F563 517EDD54 85190DF9 5A4BF57B 5CBA4CF2 A9A3F647 4725A35F"
 	"7AFE0A6D DEB8BEDB CD6A197E 592D4018 8901CECD 650699C9 B5E456AE A5ADD190"
 	"52A8";
@@ -463,7 +482,7 @@ bench_ecdsa_init (unsigned size)
   mpz_clear (z);
 
   ecdsa_sign (&ctx->key,
-	      &ctx->rctx, (nettle_random_func *) knuth_lfib_random,
+	      &ctx->lfib, (nettle_random_func *) knuth_lfib_random,
 	      ctx->digest_size, ctx->digest,
 	      &ctx->s);
 
@@ -478,7 +497,7 @@ bench_ecdsa_sign (void *p)
 
   dsa_signature_init (&s);
   ecdsa_sign (&ctx->key,
-	      &ctx->rctx, (nettle_random_func *) knuth_lfib_random,
+	      &ctx->lfib, (nettle_random_func *) knuth_lfib_random,
 	      ctx->digest_size, ctx->digest,
 	      &s);
   dsa_signature_clear (&s);
@@ -491,11 +510,178 @@ bench_ecdsa_verify (void *p)
   if (! ecdsa_verify (&ctx->pub, 
 		      ctx->digest_size, ctx->digest,
 		      &ctx->s))
-    die ("Internal error, _ecdsa_verify failed.\n");    
+    die ("Internal error, ecdsa_verify failed.\n");
 }
 
 static void
 bench_ecdsa_clear (void *p)
+{
+  struct ecdsa_ctx *ctx = p;
+
+  ecc_point_clear (&ctx->pub);
+  ecc_scalar_clear (&ctx->key);
+  dsa_signature_clear (&ctx->s);
+  free (ctx->digest);
+
+  free (ctx);
+}
+
+struct eddsa_ctx
+{
+  uint8_t pub[ED448_KEY_SIZE];
+  uint8_t key[ED448_KEY_SIZE];
+  uint8_t signature[ED448_SIGNATURE_SIZE];
+  void (*sign)(const uint8_t *pub,
+	       const uint8_t *priv,
+	       size_t length, const uint8_t *msg,
+	       uint8_t *signature);
+  int (*verify)(const uint8_t *pub,
+		 size_t length, const uint8_t *msg,
+		 const uint8_t *signature);
+};
+
+static void *
+bench_eddsa_init (unsigned size)
+{
+  struct knuth_lfib_ctx lfib;
+  struct eddsa_ctx *ctx;
+  knuth_lfib_init (&lfib, 17);
+
+  ctx = xalloc (sizeof(*ctx));
+  switch (size) {
+  case 255:
+    ctx->sign = ed25519_sha512_sign;
+    ctx->verify = ed25519_sha512_verify;
+
+    knuth_lfib_random (&lfib, ED25519_KEY_SIZE, ctx->key);
+    ed25519_sha512_public_key (ctx->pub, ctx->key);
+    break;
+  case 448:
+    ctx->sign = ed448_shake256_sign;
+    ctx->verify = ed448_shake256_verify;
+
+    knuth_lfib_random (&lfib, ED448_KEY_SIZE, ctx->key);
+    ed448_shake256_public_key (ctx->pub, ctx->key);
+    break;
+  default:
+    abort ();
+  }
+  ctx->sign (ctx->pub, ctx->key, 3, (const uint8_t *) "abc", ctx->signature);
+
+  return ctx;
+}
+
+static void
+bench_eddsa_sign (void *p)
+{
+  struct eddsa_ctx *ctx = p;
+  ctx->sign (ctx->pub, ctx->key, 3, (const uint8_t *) "abc", ctx->signature);
+}
+
+static void
+bench_eddsa_verify (void *p)
+{
+  struct eddsa_ctx *ctx = p;
+  if (!ctx->verify (ctx->pub, 3, (const uint8_t *) "abc", ctx->signature))
+    die ("Internal error, eddsa_verify failed.\n");
+}
+
+static void
+bench_eddsa_clear (void *p)
+{
+  free (p);
+}
+
+static void *
+bench_gostdsa_init (unsigned size)
+{
+  struct ecdsa_ctx *ctx;
+  const struct ecc_curve *ecc;
+
+  const char *xs;
+  const char *ys;
+  const char *zs;
+  mpz_t x, y, z;
+
+  ctx = xalloc (sizeof(*ctx));
+
+  dsa_signature_init (&ctx->s);
+  knuth_lfib_init (&ctx->lfib, 17);
+
+  switch (size)
+    {
+    case 256:
+      ecc = &_nettle_gost_gc256b;
+      xs = "971566ceda436ee7678f7e07e84ebb7217406c0b4747aa8fd2ab1453c3d0dfba";
+      ys = "ad58736965949f8e59830f8de20fc6c0d177f6ab599874f1e2e24ff71f9ce643";
+      zs = "bfcf1d623e5cdd3032a7c6eabb4a923c46e43d640ffeaaf2c3ed39a8fa399924";
+      ctx->digest = hash_string (&nettle_sha256, "abc");
+      ctx->digest_size = 32;
+      break;
+
+    case 512:
+      ecc = &_nettle_gost_gc512a;
+      xs = "03A36340A95BB5F93D131961B5B1C1B3213DF7FF3B5A30376407E2A65C441BC6"
+	   "D1B34662317083243F007B15A8512B526606D3B172B606DCE86DBD6F82DA3D40";
+      ys = "DEAD76318012FED79507809C89CC44848743640EAC9A3C847DA9082E050760A1"
+	   "0679F4B707ABC1872640AD20D7441F66C7A8B3BFF1B8E11B4A076F0A86749F73";
+      zs = "3FC01CDCD4EC5F972EB482774C41E66DB7F380528DFE9E67992BA05AEE462435"
+	   "757530E641077CE587B976C8EEB48C48FD33FD175F0C7DE6A44E014E6BCB074B";
+      ctx->digest = hash_string (&nettle_sha512, "abc");
+      ctx->digest_size = 64;
+      break;
+
+    default:
+      die ("Internal error.\n");
+    }
+  ecc_point_init (&ctx->pub, ecc);
+  ecc_scalar_init (&ctx->key, ecc);
+
+  mpz_init_set_str (x, xs, 16);
+  mpz_init_set_str (y, ys, 16);
+  mpz_init_set_str (z, zs, 16);
+
+  ecc_point_set (&ctx->pub, x, y);
+  ecc_scalar_set (&ctx->key, z);
+
+  mpz_clear (x);
+  mpz_clear (y);
+  mpz_clear (z);
+
+  gostdsa_sign (&ctx->key,
+		&ctx->lfib, (nettle_random_func *) knuth_lfib_random,
+		ctx->digest_size, ctx->digest,
+		&ctx->s);
+
+  return ctx;
+}
+
+static void
+bench_gostdsa_sign (void *p)
+{
+  struct ecdsa_ctx *ctx = p;
+  struct dsa_signature s;
+
+  dsa_signature_init (&s);
+  gostdsa_sign (&ctx->key,
+		&ctx->lfib, (nettle_random_func *) knuth_lfib_random,
+		ctx->digest_size, ctx->digest,
+		&s);
+  dsa_signature_clear (&s);
+}
+
+static void
+bench_gostdsa_verify (void *p)
+{
+  struct ecdsa_ctx *ctx = p;
+  if (! gostdsa_verify (&ctx->pub,
+			ctx->digest_size, ctx->digest,
+			&ctx->s))
+    die ("Internal error, _gostdsa_verify failed.\n");
+}
+
+static void
+bench_gostdsa_clear (void *p)
 {
   struct ecdsa_ctx *ctx = p;
 
@@ -517,22 +703,38 @@ struct openssl_rsa_ctx
   uint8_t *digest;
 };
 
-static void *
-bench_openssl_rsa_init (unsigned size)
+static struct openssl_rsa_ctx*
+make_openssl_rsa_ctx (unsigned size)
 {
   struct openssl_rsa_ctx *ctx = xalloc (sizeof (*ctx));
-
-  ctx->key = RSA_generate_key (size, 65537, NULL, NULL);
+  BIGNUM *e = BN_new();
+  BN_set_word(e, 65537);
+  ctx->key = RSA_new();
+  RSA_generate_key_ex (ctx->key, size, e, NULL);
   ctx->ref = xalloc (RSA_size (ctx->key));
   ctx->signature = xalloc (RSA_size (ctx->key));
   ctx->digest = hash_string (&nettle_sha1, "foo");
-  RSA_blinding_off(ctx->key);
 
   if (! RSA_sign (NID_sha1, ctx->digest, SHA1_DIGEST_SIZE,
 		  ctx->ref, &ctx->siglen, ctx->key))
     die ("OpenSSL RSA_sign failed.\n");
 
+  BN_free(e);
   return ctx;
+}
+
+static void *
+bench_openssl_rsa_init (unsigned size)
+{
+  struct openssl_rsa_ctx *ctx = make_openssl_rsa_ctx (size);
+  RSA_blinding_off(ctx->key);
+  return ctx;
+}
+
+static void *
+bench_openssl_rsa_tr_init (unsigned size)
+{
+  return make_openssl_rsa_ctx (size);
 }
 
 static void
@@ -652,53 +854,71 @@ bench_openssl_ecdsa_clear (void *p)
 }
 #endif
 
-struct curve25519_ctx
+struct curve_ctx
 {
-  uint8_t x[CURVE25519_SIZE];
-  uint8_t s[CURVE25519_SIZE];
+  uint8_t x[CURVE448_SIZE];
+  uint8_t s[CURVE448_SIZE];
+  void (*mul_g)(uint8_t *q, const uint8_t *n);
+  void (*mul)(uint8_t *q, const uint8_t *n, const uint8_t *p);
 };
 
-static void
-bench_curve25519_mul_g (void *p)
+static void *
+bench_curve_init (unsigned size)
 {
-  struct curve25519_ctx *ctx = p;
-  uint8_t q[CURVE25519_SIZE];
-  curve25519_mul_g (q, ctx->s);
-}
-
-static void
-bench_curve25519_mul (void *p)
-{
-  struct curve25519_ctx *ctx = p;
-  uint8_t q[CURVE25519_SIZE];
-  curve25519_mul (q, ctx->s, ctx->x);
-}
-
-static void
-bench_curve25519 (void)
-{
-  double mul_g;
-  double mul;
   struct knuth_lfib_ctx lfib;
-  struct curve25519_ctx ctx;
-  knuth_lfib_init (&lfib, 2);
+  struct curve_ctx *ctx = xalloc (sizeof (*ctx));
+  knuth_lfib_init (&lfib, 17);
+  switch (size)
+    {
+    case 255:
+      ctx->mul = curve25519_mul;
+      ctx->mul_g = curve25519_mul_g;
+      knuth_lfib_random (&lfib, CURVE25519_SIZE, ctx->s);
+      break;
+    case 448:
+      ctx->mul = curve448_mul;
+      ctx->mul_g = curve448_mul_g;
+      knuth_lfib_random (&lfib, CURVE448_SIZE, ctx->s);
+      break;
+    default:
+      abort ();
+    }
+  ctx->mul_g (ctx->x, ctx->s);
+  return ctx;
+}
 
-  knuth_lfib_random (&lfib, sizeof(ctx.s), ctx.s);
-  curve25519_mul_g (ctx.x, ctx.s);
+static void
+bench_curve_mul_g (void *p)
+{
+  struct curve_ctx *ctx = p;
+  uint8_t q[CURVE448_SIZE];
+  ctx->mul_g (q, ctx->s);
+}
 
-  mul_g = time_function (bench_curve25519_mul_g, &ctx);
-  mul = time_function (bench_curve25519_mul, &ctx);
+static void
+bench_curve_mul (void *p)
+{
+  struct curve_ctx *ctx = p;
+  uint8_t q[CURVE448_SIZE];
+  ctx->mul (q, ctx->s, ctx->x);
+}
 
-  printf("%15s %4d %9.4f %9.4f\n",
-	 "curve25519", 255, 1e-3/mul_g, 1e-3/mul);
+static void
+bench_curve_clear (void *p)
+{
+  free (p);
 }
 
 struct alg alg_list[] = {
   { "rsa",   1024, bench_rsa_init,   bench_rsa_sign,   bench_rsa_verify,   bench_rsa_clear },
   { "rsa",   2048, bench_rsa_init,   bench_rsa_sign,   bench_rsa_verify,   bench_rsa_clear },
+  { "rsa-tr",   1024, bench_rsa_init,   bench_rsa_sign_tr,   bench_rsa_verify,   bench_rsa_clear },
+  { "rsa-tr",   2048, bench_rsa_init,   bench_rsa_sign_tr,   bench_rsa_verify,   bench_rsa_clear },
 #if WITH_OPENSSL
   { "rsa (openssl)",  1024, bench_openssl_rsa_init, bench_openssl_rsa_sign, bench_openssl_rsa_verify, bench_openssl_rsa_clear },
   { "rsa (openssl)",  2048, bench_openssl_rsa_init, bench_openssl_rsa_sign, bench_openssl_rsa_verify, bench_openssl_rsa_clear },
+  { "rsa-tr (openssl)",  1024, bench_openssl_rsa_tr_init, bench_openssl_rsa_sign, bench_openssl_rsa_verify, bench_openssl_rsa_clear },
+  { "rsa-tr (openssl)",  2048, bench_openssl_rsa_tr_init, bench_openssl_rsa_sign, bench_openssl_rsa_verify, bench_openssl_rsa_clear },
 #endif
   { "dsa",   1024, bench_dsa_init,   bench_dsa_sign,   bench_dsa_verify,   bench_dsa_clear },
 #if 0
@@ -716,6 +936,12 @@ struct alg alg_list[] = {
   { "ecdsa (openssl)",  384, bench_openssl_ecdsa_init, bench_openssl_ecdsa_sign, bench_openssl_ecdsa_verify, bench_openssl_ecdsa_clear },
   { "ecdsa (openssl)",  521, bench_openssl_ecdsa_init, bench_openssl_ecdsa_sign, bench_openssl_ecdsa_verify, bench_openssl_ecdsa_clear },
 #endif
+  { "eddsa", 255, bench_eddsa_init, bench_eddsa_sign, bench_eddsa_verify, bench_eddsa_clear },
+  { "eddsa", 448, bench_eddsa_init, bench_eddsa_sign, bench_eddsa_verify, bench_eddsa_clear },
+  { "curve", 255, bench_curve_init, bench_curve_mul_g, bench_curve_mul, bench_curve_clear},
+  { "curve", 448, bench_curve_init, bench_curve_mul_g, bench_curve_mul, bench_curve_clear },
+  { "gostdsa",  256, bench_gostdsa_init, bench_gostdsa_sign, bench_gostdsa_verify, bench_gostdsa_clear },
+  { "gostdsa",  512, bench_gostdsa_init, bench_gostdsa_sign, bench_gostdsa_verify, bench_gostdsa_clear },
 };
 
 #define numberof(x)  (sizeof (x) / sizeof ((x)[0]))
@@ -730,15 +956,12 @@ main (int argc, char **argv)
     filter = argv[1];
 
   time_init();
-  printf ("%15s %4s %9s %9s\n",
+  printf ("%16s %4s %9s %9s\n",
 	  "name", "size", "sign/ms", "verify/ms");
 
   for (i = 0; i < numberof(alg_list); i++)
     if (!filter || strstr (alg_list[i].name, filter))
       bench_alg (&alg_list[i]);
-
-  if (!filter || strstr("curve25519", filter))
-    bench_curve25519();
 
   return EXIT_SUCCESS;
 }

@@ -1,6 +1,6 @@
 C arm/v6/sha1-compress.asm
 
-ifelse(<
+ifelse(`
    Copyright (C) 2013 Niels Möller
 
    This file is part of GNU Nettle.
@@ -28,34 +28,34 @@ ifelse(<
    You should have received copies of the GNU General Public License and
    the GNU Lesser General Public License along with this program.  If
    not, see http://www.gnu.org/licenses/.
->) 
+')
 
 	.file "sha1-compress.asm"
 	.arch armv6
 
-define(<STATE>, <r0>)
-define(<INPUT>, <r1>)
-define(<SA>, <r2>)
-define(<SB>, <r3>)
-define(<SC>, <r4>)
-define(<SD>, <r5>)
-define(<SE>, <r6>)
-define(<T0>, <r7>)
-define(<SHIFT>, <r8>)
-define(<WPREV>, <r10>)
-define(<W>, <r12>)
-define(<K>, <lr>)
+define(`STATE', `r0')
+define(`INPUT', `r1')
+define(`SA', `r2')
+define(`SB', `r3')
+define(`SC', `r4')
+define(`SD', `r5')
+define(`SE', `r6')
+define(`T0', `r7')
+define(`SHIFT', `r8')
+define(`WPREV', `r10')
+define(`W', `r12')
+define(`K', `lr')
 
 C FIXME: Could avoid a mov with even and odd variants.
-define(<LOAD>, <
+define(`LOAD', `
 	ldr	T0, [INPUT], #+4
 	sel	W, WPREV, T0
 	ror	W, W, SHIFT
 	mov	WPREV, T0
-	rev	W, W
+IF_LE(`	rev	W, W')
 	str	W, [SP,#eval(4*$1)]
->)
-define(<EXPN>, <
+')
+define(`EXPN', `
 	ldr	W, [sp, #+eval(4*$1)]
 	ldr	T0, [sp, #+eval(4*(($1 + 2) % 16))]
 	eor	W, W, T0
@@ -65,11 +65,11 @@ define(<EXPN>, <
 	eor	W, W, T0
 	ror	W, W, #31
 	str	W, [sp, #+eval(4*$1)]
->)
+')
 
 C F1(B,C,D) = D^(B&(C^D))
 C ROUND1(A,B,C,D,E)
-define(<ROUND1>, <
+define(`ROUND1', `
 	eor	T0, $3, $4
 	add	$5, $5, K
 	and	T0, T0, $2
@@ -78,9 +78,9 @@ define(<ROUND1>, <
 	add	$5, $5, W
 	ror	$2, $2, #2
 	add	$5, $5, T0
->)
+')
 C F2(B,C,D) = B^C^D
-define(<ROUND2>, <
+define(`ROUND2', `
 	eor	T0, $2, $4
 	add	$5, $5, K
 	eor	T0, T0, $3
@@ -88,9 +88,9 @@ define(<ROUND2>, <
 	add	$5, $5, W
 	ror	$2, $2, #2
 	add	$5, $5, T0
->)
+')
 C F3(B,C,D) = (B&C) | (D & (B|C)) = (B & (C ^ D)) + (C & D)
-define(<ROUND3>, <
+define(`ROUND3', `
 	eor	T0, $3, $4
 	add	$5, $5, K
 	and	T0, T0, $2
@@ -100,8 +100,8 @@ define(<ROUND3>, <
 	and	T0, $3, $4
 	ror	$2, $2, #2
 	add	$5, $5, T0
->)
-	C void _nettle_sha1_compress(uint32_t *state, const uint8_t *input)
+')
+	C void nettle_sha1_compress(uint32_t *state, const uint8_t *input)
 	
 	.text
 	.align 2
@@ -112,7 +112,7 @@ define(<ROUND3>, <
 .LK3:
 	.int	0x8F1BBCDC
 
-PROLOGUE(_nettle_sha1_compress)
+PROLOGUE(nettle_sha1_compress)
 	push	{r4,r5,r6,r7,r8,r10,lr}
 	sub	sp, sp, #64
 
@@ -127,8 +127,12 @@ PROLOGUE(_nettle_sha1_compress)
 	lsl	SHIFT, SHIFT, #3
 	mov	T0, #0
 	movne	T0, #-1
-	lsl	W, T0, SHIFT
+IF_LE(`	lsl	W, T0, SHIFT')
+IF_BE(`	lsr	W, T0, SHIFT')
 	uadd8	T0, T0, W		C Sets APSR.GE bits
+	C on BE rotate right by 32-SHIFT bits
+	C because there is no rotate left
+IF_BE(`	rsb     SHIFT, SHIFT, #32')
 	
 	ldr	K, .LK1
 	ldm	STATE, {SA,SB,SC,SD,SE}
@@ -242,7 +246,7 @@ PROLOGUE(_nettle_sha1_compress)
 	add	sp, sp, #64
 	stm	STATE, {SA,SB,SC,SD,SE}
 	pop	{r4,r5,r6,r7,r8,r10,pc}	
-EPILOGUE(_nettle_sha1_compress)
+EPILOGUE(nettle_sha1_compress)
 
 .LK4:
 	.int	0xCA62C1D6

@@ -217,6 +217,7 @@ static int
 match_argument(const char *given, const char *name)
 {
   /* FIXME: Allow abbreviations */
+  assert(given != NULL && name != NULL);
   return !strcmp(given, name);
 }
 
@@ -279,7 +280,10 @@ parse_options(struct conv_options *o,
 	case 'w':
 	  {
 	    char *end;
-	    int width = strtol(optarg, &end , 0);
+	    int width;
+	    assert(optarg != NULL);
+
+	    width = strtol(optarg, &end , 0);
 	    if (!*optarg || *end || width < 0)
 	      die("sexp-conv: Invalid width `%s'.\n", optarg);
 

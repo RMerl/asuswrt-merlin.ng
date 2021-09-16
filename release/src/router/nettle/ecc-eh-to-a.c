@@ -49,39 +49,15 @@ ecc_eh_to_a (const struct ecc_curve *ecc,
 #define izp scratch
 #define tp (scratch + ecc->p.size)
 
-
 #define xp p
 #define yp (p + ecc->p.size)
 #define zp (p + 2*ecc->p.size)
 
-  mp_limb_t cy;
+  assert(op == 0);
 
-  /* Needs 2*size + scratch for the invert call. */
-  ecc->p.invert (&ecc->p, izp, zp, tp + ecc->p.size);
+  /* Needs size + scratch for the invert call. */
+  ecc->p.invert (&ecc->p, izp, zp, tp);
 
-  ecc_modp_mul (ecc, tp, xp, izp);
-  cy = mpn_sub_n (r, tp, ecc->p.m, ecc->p.size);
-  cnd_copy (cy, r, tp, ecc->p.size);
-
-  if (op)
-    {
-      /* Skip y coordinate */
-      if (op > 1)
-	{
-	  /* Reduce modulo q. FIXME: Hardcoded for curve25519,
-	     duplicates end of ecc_25519_modq. FIXME: Is this needed
-	     at all? Full reduction mod p is maybe sufficient. */
-	  unsigned shift;
-	  assert (ecc->p.bit_size == 255);
-	  shift = 252 - GMP_NUMB_BITS * (ecc->p.size - 1);
-	  cy = mpn_submul_1 (r, ecc->q.m, ecc->p.size,
-			     r[ecc->p.size-1] >> shift);
-	  assert (cy < 2);
-	  cnd_add_n (cy, r, ecc->q.m, ecc->p.size);
-	}
-      return;
-    }
-  ecc_modp_mul (ecc, tp, yp, izp);
-  cy = mpn_sub_n (r + ecc->p.size, tp, ecc->p.m, ecc->p.size);
-  cnd_copy (cy, r + ecc->p.size, tp, ecc->p.size);
+  ecc_mod_mul_canonical (&ecc->p, r, xp, izp, tp);
+  ecc_mod_mul_canonical (&ecc->p, r + ecc->p.size, yp, izp, tp);
 }

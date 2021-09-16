@@ -1,3 +1,6 @@
+/* This file tests deprecated functions */
+#define _NETTLE_ATTRIBUTE_DEPRECATED
+
 #include "testutils.h"
 #include "aes.h"
 #include "nettle-internal.h"

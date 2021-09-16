@@ -1,6 +1,6 @@
 C arm/v6/sha256-compress.asm
 
-ifelse(<
+ifelse(`
    Copyright (C) 2013 Niels Möller
 
    This file is part of GNU Nettle.
@@ -28,38 +28,38 @@ ifelse(<
    You should have received copies of the GNU General Public License and
    the GNU Lesser General Public License along with this program.  If
    not, see http://www.gnu.org/licenses/.
->) 
+')
 
 	.file "sha256-compress.asm"
 	.arch armv6
 
-define(<STATE>, <r0>)
-define(<INPUT>, <r1>)
-define(<K>, <r2>)
-define(<SA>, <r3>)
-define(<SB>, <r4>)
-define(<SC>, <r5>)
-define(<SD>, <r6>)
-define(<SE>, <r7>)
-define(<SF>, <r8>)
-define(<SG>, <r10>)
-define(<SH>, <r11>)
-define(<T0>, <r12>)
-define(<T1>, <r1>)	C Overlap INPUT
-define(<COUNT>, <r0>)	C Overlap STATE
-define(<W>, <r14>)
+define(`STATE', `r0')
+define(`INPUT', `r1')
+define(`K', `r2')
+define(`SA', `r3')
+define(`SB', `r4')
+define(`SC', `r5')
+define(`SD', `r6')
+define(`SE', `r7')
+define(`SF', `r8')
+define(`SG', `r10')
+define(`SH', `r11')
+define(`T0', `r12')
+define(`T1', `r1')	C Overlap INPUT
+define(`COUNT', `r0')	C Overlap STATE
+define(`W', `r14')
 
 C Used for data load
-define(<I0>, <r3>)
-define(<I1>, <r4>)
-define(<I2>, <r5>)
-define(<I3>, <r6>)
-define(<I4>, <r7>)
-define(<DST>, <r8>)
-define(<SHIFT>, <r10>)
-define(<ILEFT>, <r11>)
+define(`I0', `r3')
+define(`I1', `r4')
+define(`I2', `r5')
+define(`I3', `r6')
+define(`I4', `r7')
+define(`DST', `r8')
+define(`SHIFT', `r10')
+define(`ILEFT', `r11')
 
-define(<EXPN>, <
+define(`EXPN', `
 	ldr	W, [sp, #+eval(4*$1)]
 	ldr	T0, [sp, #+eval(4*(($1 + 14) % 16))]
 	ror	T1, T0, #17
@@ -74,7 +74,7 @@ define(<EXPN>, <
 	eor	T1, T1, T0, lsr #3
 	add	W, W, T1
 	str	W, [sp, #+eval(4*$1)]
->)
+')
 
 C ROUND(A,B,C,D,E,F,G,H)
 C
@@ -89,7 +89,7 @@ C S0(A) = A<<<30 ^ A<<<19 ^ A<<<10
 C Choice (E, F, G) = G^(E&(F^G))
 C Majority (A,B,C) = (A&B) + (C&(A^B))
 	
-define(<ROUND>, <
+define(`ROUND', `
 	ror	T0, $5, #6
 	eor	T0, T0, $5, ror #11
 	eor	T0, T0, $5, ror #25
@@ -111,12 +111,12 @@ define(<ROUND>, <
 	eor	T0, $1, $2
 	and	T0, T0, $3
 	add	$8, $8, T0
->)
+')
 
-define(<NOEXPN>, <
+define(`NOEXPN', `
 	ldr	W, [sp, + $1]
 	add	$1, $1, #4
->)
+')
 	C void
 	C _nettle_sha256_compress(uint32_t *state, const uint8_t *input, const uint32_t *k)
 
@@ -137,8 +137,12 @@ PROLOGUE(_nettle_sha256_compress)
 	lsl	SHIFT, SHIFT, #3
 	mov	T0, #0
 	movne	T0, #-1
-	lsl	I1, T0, SHIFT
+IF_LE(`	lsl	I1, T0, SHIFT')
+IF_BE(`	lsr	I1, T0, SHIFT')
 	uadd8	T0, T0, I1		C Sets APSR.GE bits
+	C on BE rotate right by 32-SHIFT bits
+	C because there is no rotate left
+IF_BE(`	rsb	SHIFT, SHIFT, #32')
 
 	mov	DST, sp
 	mov	ILEFT, #4
@@ -146,16 +150,16 @@ PROLOGUE(_nettle_sha256_compress)
 	ldm	INPUT!, {I1,I2,I3,I4}
 	sel	I0, I0, I1
 	ror	I0, I0, SHIFT
-	rev	I0, I0
+IF_LE(`	rev	I0, I0')
 	sel	I1, I1, I2
 	ror	I1, I1, SHIFT
-	rev	I1, I1
+IF_LE(`	rev	I1, I1')
 	sel	I2, I2, I3
 	ror	I2, I2, SHIFT
-	rev	I2, I2
+IF_LE(`	rev	I2, I2')
 	sel	I3, I3, I4
 	ror	I3, I3, SHIFT
-	rev	I3, I3
+IF_LE(`	rev	I3, I3')
 	subs	ILEFT, ILEFT, #1
 	stm	DST!, {I0,I1,I2,I3}
 	mov	I0, I4	

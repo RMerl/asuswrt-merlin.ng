@@ -39,10 +39,16 @@ extern "C" {
 #endif
 
 /* Name mangling */
+#define cnd_memcpy nettle_cnd_memcpy
 #define memeql_sec nettle_memeql_sec
 
 int
 memeql_sec (const void *a, const void *b, size_t n);
+
+/* Side-channel silent conditional memcpy. cnd must be 0 (nop) or 1
+   (copy). */
+void
+cnd_memcpy(int cnd, volatile void *dst, const volatile void *src, size_t n);
 
 #ifdef __cplusplus
 }

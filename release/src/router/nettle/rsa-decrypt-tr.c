@@ -36,10 +36,9 @@
 # include "config.h"
 #endif
 
-#include "rsa.h"
-
-#include "bignum.h"
-#include "pkcs1.h"
+#include "rsa-internal.h"
+#include "pkcs1-internal.h"
+#include "gmp-glue.h"
 
 int
 rsa_decrypt_tr(const struct rsa_public_key *pub,
@@ -48,14 +47,28 @@ rsa_decrypt_tr(const struct rsa_public_key *pub,
 	       size_t *length, uint8_t *message,
 	       const mpz_t gibberish)
 {
-  mpz_t m;
+  TMP_GMP_DECL (m, mp_limb_t);
+  TMP_GMP_DECL (em, uint8_t);
+  mp_size_t key_limb_size;
   int res;
 
-  mpz_init_set(m, gibberish);
+  /* First check that input is in range. */
+  if (mpz_sgn (gibberish) < 0 || mpz_cmp (gibberish, pub->n) >= 0)
+    return 0;
 
-  res = (rsa_compute_root_tr (pub, key, random_ctx, random, m, gibberish)
-	 && pkcs1_decrypt (key->size, m, length, message));
+  key_limb_size = mpz_size(pub->n);
 
-  mpz_clear(m);
+  TMP_GMP_ALLOC (m, key_limb_size);
+  TMP_GMP_ALLOC (em, key->size);
+  mpz_limbs_copy(m, gibberish, key_limb_size);
+
+  res = _rsa_sec_compute_root_tr (pub, key, random_ctx, random, m, m);
+
+  mpn_get_base256 (em, key->size, m, key_limb_size);
+
+  res &= _pkcs1_sec_decrypt_variable (length, message, key->size, em);
+
+  TMP_GMP_FREE (em);
+  TMP_GMP_FREE (m);
   return res;
 }

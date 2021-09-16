@@ -563,28 +563,20 @@ convert_file(struct nettle_buffer *buffer,
 	    {
 	    case 10:
 	      if (memcmp(marker, "PUBLIC KEY", 10) == 0)
-		{
-		  type = GENERAL_PUBLIC_KEY;
-		  break;
-		}
+		type = GENERAL_PUBLIC_KEY;
+	      break;
+
 	    case 14:
 	      if (memcmp(marker, "RSA PUBLIC KEY", 14) == 0)
-		{
-		  type = RSA_PUBLIC_KEY;
-		  break;
-		}
+		type = RSA_PUBLIC_KEY;
+	      break;
 
 	    case 15:
 	      if (memcmp(marker, "RSA PRIVATE KEY", 15) == 0)
-		{
-		  type = RSA_PRIVATE_KEY;
-		  break;
-		}
-	      if (memcmp(marker, "DSA PRIVATE KEY", 15) == 0)
-		{
-		  type = DSA_PRIVATE_KEY;
-		  break;
-		}
+		type = RSA_PRIVATE_KEY;
+	      else if (memcmp(marker, "DSA PRIVATE KEY", 15) == 0)
+		type = DSA_PRIVATE_KEY;
+	      break;
 	    }
 	  
 	  if (!type)

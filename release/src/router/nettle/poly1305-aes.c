@@ -38,13 +38,14 @@
 #include <string.h>
 
 #include "poly1305.h"
+#include "poly1305-internal.h"
 #include "macros.h"
 
 void
 poly1305_aes_set_key (struct poly1305_aes_ctx *ctx, const uint8_t * key)
 {
   aes128_set_encrypt_key(&ctx->aes, (key));
-  poly1305_set_key(&ctx->pctx, (key+16));
+  _nettle_poly1305_set_key(&ctx->pctx, (key+16));
   ctx->index = 0;
 }
 
@@ -55,7 +56,7 @@ poly1305_aes_set_nonce (struct poly1305_aes_ctx *ctx,
   memcpy (ctx->nonce, nonce, POLY1305_AES_NONCE_SIZE);
 }
 
-#define COMPRESS(ctx, data) _poly1305_block(&(ctx)->pctx, (data), 1)
+#define COMPRESS(ctx, data) _nettle_poly1305_block(&(ctx)->pctx, (data), 1)
 
 void
 poly1305_aes_update (struct poly1305_aes_ctx *ctx,
@@ -78,11 +79,11 @@ poly1305_aes_digest (struct poly1305_aes_ctx *ctx,
       memset (ctx->block + ctx->index + 1,
 	      0, POLY1305_BLOCK_SIZE - 1 - ctx->index);
 
-      _poly1305_block (&ctx->pctx, ctx->block, 0);
+      _nettle_poly1305_block (&ctx->pctx, ctx->block, 0);
     }
   aes128_encrypt(&ctx->aes, POLY1305_BLOCK_SIZE, s.b, ctx->nonce);
   
-  poly1305_digest (&ctx->pctx, &s);
+  _nettle_poly1305_digest (&ctx->pctx, &s);
   memcpy (digest, s.b, length);
 
   INCREMENT (16, ctx->nonce);

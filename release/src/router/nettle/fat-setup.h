@@ -93,6 +93,9 @@
 #define ENV_VERBOSE "NETTLE_FAT_VERBOSE"
 #define ENV_OVERRIDE "NETTLE_FAT_OVERRIDE"
 
+struct chacha_ctx;
+struct salsa20_ctx;
+
 /* DECLARE_FAT_FUNC(name, ftype)
  *
  *   name is the public function, e.g., _nettle_aes_encrypt.
@@ -159,9 +162,18 @@ typedef void aes_crypt_internal_func (unsigned rounds, const uint32_t *keys,
 				      size_t length, uint8_t *dst,
 				      const uint8_t *src);
 
+struct gcm_key;
+typedef void gcm_init_key_func (union nettle_block16 *table);
+
+typedef void gcm_hash_func (const struct gcm_key *key, union nettle_block16 *x,
+			    size_t length, const uint8_t *data);
+
 typedef void *(memxor_func)(void *dst, const void *src, size_t n);
 
 typedef void salsa20_core_func (uint32_t *dst, const uint32_t *src, unsigned rounds);
+typedef void salsa20_crypt_func (struct salsa20_ctx *ctx, unsigned rounds,
+				 size_t length, uint8_t *dst,
+				 const uint8_t *src);
 
 typedef void sha1_compress_func(uint32_t *state, const uint8_t *input);
 typedef void sha256_compress_func(uint32_t *state, const uint8_t *input, const uint32_t *k);
@@ -174,3 +186,10 @@ typedef void sha512_compress_func (uint64_t *state, const uint8_t *input, const 
 typedef uint64_t umac_nh_func (const uint32_t *key, unsigned length, const uint8_t *msg);
 typedef void umac_nh_n_func (uint64_t *out, unsigned n, const uint32_t *key,
 			     unsigned length, const uint8_t *msg);
+
+typedef void chacha_core_func(uint32_t *dst, const uint32_t *src, unsigned rounds);
+
+typedef void chacha_crypt_func(struct chacha_ctx *ctx,
+			       size_t length,
+			       uint8_t *dst,
+			       const uint8_t *src);

@@ -34,6 +34,7 @@
 #endif
 
 #include "eddsa.h"
+#include "eddsa-internal.h"
 
 #include "ecc-internal.h"
 #include "sha2.h"
@@ -51,14 +52,13 @@ ed25519_sha512_sign (const uint8_t *pub,
 #define scratch_out (scratch + ecc->q.size)
   struct sha512_ctx ctx;
   uint8_t digest[SHA512_DIGEST_SIZE];
-#define k1 (digest + ED25519_KEY_SIZE)
 
-  _eddsa_expand_key (ecc, &nettle_sha512, &ctx, priv, digest, k2);
+  sha512_init (&ctx);
+  _eddsa_expand_key (ecc, &_nettle_ed25519_sha512, &ctx, priv, digest, k2);
 
-  sha512_update (&ctx, ED25519_KEY_SIZE, k1);
-  _eddsa_sign (ecc, &nettle_sha512, pub,
-	       &ctx,
-	       k2, length, msg, signature, scratch_out);
+  _eddsa_sign (ecc, &_nettle_ed25519_sha512, &ctx,
+	       pub, digest + ED25519_KEY_SIZE, k2,
+	       length, msg, signature, scratch_out);
 
   gmp_free_limbs (scratch, itch);
 #undef k1

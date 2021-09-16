@@ -25,10 +25,10 @@
      uint8_t iv[AES_BLOCK_SIZE];
      uint8_t hmac_key[SHA1_DIGEST_SIZE];
 
-   of size (4 + AES_KEY_SIZE + AES_BLOCK_SIZE + SHA1_DIGEST_SIZE) = 72
+   of size (4 + AES256_KEY_SIZE + AES_BLOCK_SIZE + SHA1_DIGEST_SIZE) = 72
    bytes, encrypted using rsa-pkcs1.
 
-   The cleartext input is encrypted using aes-cbc. The final block is
+   The cleartext input is encrypted using aes256-cbc. The final block is
    padded as
 
      | data | random octets | padding length |
@@ -39,7 +39,7 @@
 
 struct rsa_session
 {
-  struct CBC_CTX(struct aes_ctx, AES_BLOCK_SIZE) aes;
+  struct CBC_CTX(struct aes256_ctx, AES_BLOCK_SIZE) aes;
   struct hmac_sha1_ctx hmac;
   struct yarrow256_ctx yarrow;
 };
@@ -47,13 +47,13 @@ struct rsa_session
 struct rsa_session_info
 {
   /* Version followed by aes key, iv and mac key */
-  uint8_t key[4 + AES_KEY_SIZE + AES_BLOCK_SIZE + SHA1_DIGEST_SIZE];
+  uint8_t key[4 + AES256_KEY_SIZE + AES_BLOCK_SIZE + SHA1_DIGEST_SIZE];
 };
 
 #define SESSION_VERSION(s) ((s)->key)
 #define SESSION_AES_KEY(s) ((s)->key + 4)
-#define SESSION_IV(s) ((s)->key + 4 + AES_KEY_SIZE)
-#define SESSION_HMAC_KEY(s) ((s)->key + 4 + AES_KEY_SIZE + AES_BLOCK_SIZE)
+#define SESSION_IV(s) ((s)->key + 4 + AES256_KEY_SIZE)
+#define SESSION_HMAC_KEY(s) ((s)->key + 4 + AES256_KEY_SIZE + AES_BLOCK_SIZE)
 
 void
 rsa_session_set_encrypt_key(struct rsa_session *ctx,

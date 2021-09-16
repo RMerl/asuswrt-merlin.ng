@@ -36,9 +36,7 @@
 #include <stddef.h>
 #include "nettle-meta.h"
 
-#undef nettle_ciphers
-
-const struct nettle_cipher * const nettle_ciphers[] = {
+const struct nettle_cipher * const _nettle_ciphers[] = {
   &nettle_aes128,
   &nettle_aes192,
   &nettle_aes256,
@@ -62,5 +60,5 @@ const struct nettle_cipher * const nettle_ciphers[] = {
 const struct nettle_cipher * const *
 nettle_get_ciphers (void)
 {
-  return nettle_ciphers;
+  return _nettle_ciphers;
 }

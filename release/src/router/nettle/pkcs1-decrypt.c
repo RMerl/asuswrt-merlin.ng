@@ -38,6 +38,7 @@
 #include <string.h>
 
 #include "pkcs1.h"
+#include "pkcs1-internal.h"
 
 #include "bignum.h"
 #include "gmp-glue.h"
@@ -48,49 +49,13 @@ pkcs1_decrypt (size_t key_size,
 	       size_t *length, uint8_t *message)
 {
   TMP_GMP_DECL(em, uint8_t);
-  uint8_t *terminator;
-  size_t padding;
-  size_t message_length;
   int ret;
 
   TMP_GMP_ALLOC(em, key_size);
   nettle_mpz_get_str_256(key_size, em, m);
 
-  /* Check format */
-  if (em[0] || em[1] != 2)
-    {
-      ret = 0;
-      goto cleanup;
-    }
+  ret = _pkcs1_sec_decrypt_variable (length, message, key_size, em);
 
-  terminator = memchr(em + 2, 0, key_size - 2);
-
-  if (!terminator)
-    {
-      ret = 0;
-      goto cleanup;
-    }
-  
-  padding = terminator - (em + 2);
-  if (padding < 8)
-    {
-      ret = 0;
-      goto cleanup;
-    }
-
-  message_length = key_size - 3 - padding;
-
-  if (*length < message_length)
-    {
-      ret = 0;
-      goto cleanup;
-    }
-  
-  memcpy(message, terminator + 1, message_length);
-  *length = message_length;
-
-  ret = 1;
-cleanup:
   TMP_GMP_FREE(em);
   return ret;
 }

@@ -36,6 +36,7 @@
 #endif
 
 #include "sha3.h"
+#include "sha3-internal.h"
 
 #include "macros.h"
 

@@ -36,14 +36,32 @@
 # include "config.h"
 #endif
 
-#include "aes-internal.h"
+#include <stdlib.h>
+
+/* This file implements and uses deprecated functions */
+#define _NETTLE_ATTRIBUTE_DEPRECATED
+
+#include "aes.h"
 
 void
 aes_invert_key(struct aes_ctx *dst,
 	       const struct aes_ctx *src)
 {
-  _aes_invert (src->rounds, dst->keys, src->keys);
-  dst->rounds = src->rounds;
+  switch (src->key_size)
+    {
+    default: abort();
+    case AES128_KEY_SIZE:
+      aes128_invert_key(&dst->u.ctx128, &src->u.ctx128);
+      break;
+    case AES192_KEY_SIZE:
+      aes192_invert_key(&dst->u.ctx192, &src->u.ctx192);
+      break;
+    case AES256_KEY_SIZE:
+      aes256_invert_key(&dst->u.ctx256, &src->u.ctx256);
+      break;
+    }
+
+  dst->key_size = src->key_size;
 }
 
 void

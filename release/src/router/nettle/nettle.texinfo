@@ -62,6 +62,7 @@ object-oriented wrapper for your favorite language or application.
 * Conventions::                 General interface conventions.
 * Example::                     An example program.
 * Linking::                     Linking with libnettle and libhogweed.
+* Compatibility::               On API and ABI compatibility between versions.
 * Reference::                   All Nettle functions and features.
 * Nettle soup::                 For the serious nettle hacker.
 * Installation::                How to install Nettle.
@@ -86,21 +87,32 @@ Reference
 Hash functions
 
 * Recommended hash functions::
+* Miscellaneous hash functions::
 * Legacy hash functions::
 * nettle_hash abstraction::
 
 Cipher modes
 
-* CBC::                         
-* CTR::                         
-* CFB::
+* CBC::
+* CTR::
+* CFB and CFB8::
+* XTS::
+
+Authenticated encryption with associated data
+
+* EAX::
 * GCM::                         
 * CCM::                         
+* ChaCha-Poly1305::
+* SIV-CMAC::
+* nettle_aead abstraction::
 
 Keyed Hash Functions
 
 * HMAC::
 * UMAC::
+* CMAC::
+* Poly1305::
 
 Public-key algorithms
 
@@ -112,7 +124,8 @@ Public-key algorithms
 
 * Side-channel silence::
 * ECDSA::
-* Curve 25519::
+* GOSTDSA::
+* Curve 25519 and Curve 448::
 
 @end detailmenu
 @end menu
@@ -271,6 +284,9 @@ The implementation of the TWOFISH cipher is written by Ruud de Rooij.
 @item UMAC
 Written by @value{AUTHOR}.
 
+@item CMAC
+Written by Nikos Mavrogiannopoulos, @value{AUTHOR}, Jeremy Allison, Michael Adam and Stefan Metzmacher.
+
 @item RSA
 Written by @value{AUTHOR}. Uses the GMP library for bignum operations.
 
@@ -344,7 +360,7 @@ the command line
 gcc sha-example.c -o sha-example -lnettle
 @end example
 
-@node Linking, Reference, Example, Top
+@node Linking, Compatibility, Example, Top
 @comment  node-name,  next,  previous,  up
 @chapter Linking
 
@@ -362,7 +378,72 @@ algorithms, the recommended linker flags are @code{-lhogweed -lnettle
 may be sufficient to link with just @code{-lhogweed}, and the loader
 will resolve the dependencies automatically.
 
-@node Reference, Nettle soup, Linking, Top
+@node Compatibility, Reference, Linking, Top
+@comment  node-name,  next,  previous,  up
+@chapter Compatibility
+@cindex ABI compatibility
+@cindex API compatibility
+@cindex Binary compatibility
+
+When you write a program using the Nettle library, it's desirable to
+have it work together not only with exactly the same version of Nettle
+you had at hand, but with other current and future versions. If a
+different version of Nettle is used at compile time, i.e., you recompile
+it using the header and library files belonging to a different version,
+we talk about API compatibility (for Application Programming Interface).
+If a different version of Nettle isn't used until link time, we talk
+about ABI compatibility (Application Binary Interface) or binary
+compatibility. ABI compatibility matters mainly when using dynamic
+linking with a shared library. E.g., a user has an executable linking at
+run-time with @file{libnettle.so}, and then updates to a later version
+of the shared library, without updating or recompiling the executable.
+
+Nettle aims to provide backwards compatibility, i.e., a program written
+for a particular version of the Nettle library should usually work fine
+with later version of the library. Note that the opposite is not
+supported: The program should @emph{not} be expected to work with older
+versions of the Nettle library; and ABI breakage can be unobvious. E.g,
+the later version may define a new library symbol, and let header files
+redefine an old API name as an alias for the new symbol. If the later
+version ensures that the old symbol is still defined in the library,
+this change is backwards compatible: A program compiled using headers
+from the older version can be successfully linked with either version of
+the library. But if you compile the same program using headers from the
+later version of the library, and attempt to link with the older
+version, you'll get an undefined reference to the new symbol.
+
+API compatibility is rarely broken; exceptions are noted in the NEWS
+file. For example, the key size argument to the function
+@code{cast128_set_key} was dropped in the Nettle-3.0 release, and all
+programs using that function had to be updated to work with the new
+version.
+
+ABI compatibility is broken occasionally. This is also noted in the NEWS
+file, and the name of the shared library is updated to prevent
+accidental run-time linking with the wrong version. All programs have to
+be recompiled before they can link with the new version. Since names are
+different, multiple versions can be installed on the same system, with a
+mix of programs linking to one version or the other.
+
+Under some circumstances, it is possible to have a single program
+linking dynamically with two binary incompatible versions of the Nettle
+library, thanks to the use of symbol versioning. Consider a program
+calling functions in both Nettle and GnuTLS. For the direct dependency
+on Nettle, the program is linked with a particular version of the Nettle
+shared library. GnuTLS uses Nettle internally, but does not expose any
+Nettle data structures or the like in its own ABI. In this situation,
+the GnuTLS shared library may link with a different version of the
+Nettle library. Then both versions of the Nettle library will be loaded
+into the program's address space, and each reference to a symbol will be
+resolved to the correct version.
+
+Finally, some of Nettle's symbols are internal. They carry a leading
+underscore, and are not declared in installed header files. They can be
+used for local or experimental purposes, but programs referring directly
+to those symbols get neither API nor ABI compatibility, not even between
+minor versions.
+
+@node Reference, Nettle soup, Compatibility, Top
 @comment  node-name,  next,  previous,  up
 @chapter Reference
 
@@ -422,11 +503,12 @@ reasonable alternatives.
 
 @menu
 * Recommended hash functions::
+* Miscellaneous hash functions::
 * Legacy hash functions::
 * nettle_hash abstraction::
 @end menu
 
-@node Recommended hash functions, Legacy hash functions,, Hash functions
+@node Recommended hash functions, Miscellaneous hash functions,, Hash functions
 @comment  node-name,  next,  previous,  up
 @subsection Recommended hash functions
 
@@ -763,7 +845,106 @@ octets of the digest are written.
 This function also resets the context.
 @end deftypefun
 
-@node Legacy hash functions, nettle_hash abstraction, Recommended hash functions, Hash functions
+@subsubsection @acronym{SHAKE-256}
+@cindex SHAKE
+
+In addition to those SHA-3 hash functions, Nettle also provides a SHA-3
+extendable-output function (XOF), SHAKE-256. Unlike SHA-3 hash functions,
+SHAKE can produce an output digest of any desired length.
+
+To use SHAKE256, the context struct, init and update functions are the
+same as for SHA3-256. To get a SHAKE256 digest, the following function
+is used instead of @code{sha3_256_digest}. For an output size of
+@code{SHA3_256_DIGEST_SIZE}, security is equivalent to SHA3-256 (but the
+digest is different). Increasing output size further does not increase
+security in terms of collision or preimage resistance. It can be seen as
+a built in pseudorandomness generator.
+
+@deftypefun void sha3_256_shake (struct shake256_ctx *@var{ctx}, size_t @var{length}, uint8_t *@var{digest})
+Performs final processing and produces a SHAKE256 digest, writing it
+to @var{digest}. @var{length} can be of arbitrary size.
+
+This function also resets the context.
+@end deftypefun
+
+@node Miscellaneous hash functions, Legacy hash functions, Recommended hash functions, Hash functions
+@comment  node-name,  next,  previous,  up
+@subsection Miscellaneous hash functions
+
+@subsubsection @acronym{STREEBOG512}
+
+STREEBOG512 is a member of the Streebog (GOST R 34.11-2012) family.  It outputs
+hash values of 512 bits, or 64 octets. Nettle defines STREEBOG512 in
+@file{<nettle/streebog.h>}.
+
+@deftp {Context struct} {struct streebog512_ctx}
+@end deftp
+
+@defvr Constant STREEBOG512_DIGEST_SIZE
+The size of a STREEBOG512 digest, i.e. 64.
+@end defvr
+
+@defvr Constant STREEBOG512_BLOCK_SIZE
+The internal block size of STREEBOG512. Useful for some special constructions,
+in particular HMAC-STREEBOG512.
+@end defvr
+
+@deftypefun void streebog512_init (struct streebog512_ctx *@var{ctx})
+Initialize the STREEBOG512 state.
+@end deftypefun
+
+@deftypefun void streebog512_update (struct streebog512_ctx *@var{ctx}, size_t @var{length}, const uint8_t *@var{data})
+Hash some more data.
+@end deftypefun
+
+@deftypefun void streebog512_digest (struct streebog512_ctx *@var{ctx}, size_t @var{length}, uint8_t *@var{digest})
+Performs final processing and extracts the message digest, writing it
+to @var{digest}. @var{length} may be smaller than
+@code{STREEBOG512_DIGEST_SIZE}, in which case only the first @var{length}
+octets of the digest are written.
+
+This function also resets the context in the same way as
+@code{streebog512_init}.
+@end deftypefun
+
+@subsubsection @acronym{STREEBOG256}
+
+STREEBOG256 is a variant of STREEBOG512, with a different initial state, and with
+the output truncated to 256 bits, or 32 octets. Nettle defines STREEBOG256 in
+@file{<nettle/streebog.h>}.
+
+@deftp {Context struct} {struct streebog256_ctx}
+@end deftp
+
+@defvr Constant STREEBOG256_DIGEST_SIZE
+The size of a STREEBOG256 digest, i.e. 32.
+@end defvr
+
+@defvr Constant STREEBOG256_BLOCK_SIZE
+The internal block size of STREEBOG256. Useful for some special constructions,
+in particular HMAC-STREEBOG256.
+@end defvr
+
+@deftypefun void streebog256_init (struct streebog256_ctx *@var{ctx})
+Initialize the STREEBOG256 state.
+@end deftypefun
+
+@deftypefun void streebog256_update (struct streebog256_ctx *@var{ctx}, size_t @var{length}, const uint8_t *@var{data})
+Hash some more data.
+@end deftypefun
+
+@deftypefun void streebog256_digest (struct streebog256_ctx *@var{ctx}, size_t @var{length}, uint8_t *@var{digest})
+Performs final processing and extracts the message digest, writing it
+to @var{digest}. @var{length} may be smaller than
+@code{STREEBOG256_DIGEST_SIZE}, in which case only the first @var{length}
+octets of the digest are written.
+
+This function also resets the context in the same way as
+@code{streebog256_init}.
+@end deftypefun
+
+
+@node Legacy hash functions, nettle_hash abstraction, Miscellaneous hash functions, Hash functions
 @comment  node-name,  next,  previous,  up
 @subsection Legacy hash functions
 
@@ -968,12 +1149,19 @@ This function also resets the context in the same way as
 @end deftypefun
 
 
-@subsubsection @acronym{GOSTHASH94}
+@subsubsection @acronym{GOSTHASH94 and GOSTHASH94CP}
+@cindex GOST hash
 
+@anchor{GOSTHASH94CP}
 The GOST94 or GOST R 34.11-94 hash algorithm is a Soviet-era algorithm 
 used in Russian government standards (see @cite{RFC 4357}).
-It outputs message digests of 256 bits, or 32 octets.
-Nettle defines GOSTHASH94 in @file{<nettle/gosthash94.h>}.
+It outputs message digests of 256 bits, or 32 octets. The standard itself
+does not fix the S-box used by the hash algorith, so there are two popular
+variants (the testing S-box from the standard itself and the S-box defined
+by CryptoPro company, see RFC 4357). Nettle provides support for the former
+S-box in the form of GOSTHASH94 hash algorithm and for the latter in the
+form of GOSTHASH94CP hash algorithm.
+Nettle defines GOSTHASH94 and GOSTHASH94CP in @file{<nettle/gosthash94.h>}.
 
 @deftp {Context struct} {struct gosthash94_ctx}
 @end deftp
@@ -1004,12 +1192,39 @@ This function also resets the context in the same way as
 @code{gosthash94_init}.
 @end deftypefun
 
+@deftp {Context struct} {struct gosthash94cp_ctx}
+@end deftp
+
+@defvr Constant GOSTHASH94CP_DIGEST_SIZE
+The size of a GOSTHASH94CP digest, i.e. 32.
+@end defvr
+
+@defvr Constant GOSTHASH94CP_BLOCK_SIZE
+The internal block size of GOSTHASH94CP, i.e., 32.
+@end defvr
+
+@deftypefun void gosthash94cp_init (struct gosthash94cp_ctx *@var{ctx})
+Initialize the GOSTHASH94CP state.
+@end deftypefun
+
+@deftypefun void gosthash94cp_update (struct gosthash94cp_ctx *@var{ctx}, size_t @var{length}, const uint8_t *@var{data})
+Hash some more data.
+@end deftypefun
+
+@deftypefun void gosthash94cp_digest (struct gosthash94cp_ctx *@var{ctx}, size_t @var{length}, uint8_t *@var{digest})
+Performs final processing and extracts the message digest, writing it
+to @var{digest}. @var{length} may be smaller than
+@code{GOSTHASH94CP_DIGEST_SIZE}, in which case only the first @var{length}
+octets of the digest are written.
+
+This function also resets the context in the same way as
+@code{gosthash94cp_init}.
+@end deftypefun
+
 @node nettle_hash abstraction,, Legacy hash functions, Hash functions
 @comment  node-name,  next,  previous,  up
 @subsection The @code{struct nettle_hash} abstraction
 @cindex nettle_hash
-@cindex nettle_hashes
-@cindex nettle_get_hashes
 
 Nettle includes a struct including information about the supported hash
 functions. It is defined in @file{<nettle/nettle-meta.h>}, and is used
@@ -1035,12 +1250,13 @@ The last three attributes are function pointers, of types
 @deftypevrx {Constant Struct} {struct nettle_hash} nettle_sha512
 @deftypevrx {Constant Struct} {struct nettle_hash} nettle_sha3_256
 @deftypevrx {Constant Struct} {struct nettle_hash} nettle_gosthash94
+@deftypevrx {Constant Struct} {struct nettle_hash} nettle_gosthash94cp
 These are all the hash functions that Nettle implements.
 @end deftypevr
 
 Nettle also exports a list of all these hashes.
 
-@deftypefun const struct nettle_hash **nettle_get_hashes(void)
+@deftypefun {const struct nettle_hash **} nettle_get_hashes (void)
 Returns a NULL-terminated list of pointers to supported hash functions.
 This list can be used to dynamically enumerate or search the supported
 algorithms.
@@ -1131,6 +1347,8 @@ single key setup function that can be used for both encryption and
 decryption.
 
 @subsection AES
+@cindex AES
+
 AES is a block cipher, specified by NIST as a replacement for
 the older DES standard. The standard is the result of a competition
 between cipher designers. The winning design, also known as RIJNDAEL,
@@ -1211,6 +1429,8 @@ Analogous to the encryption functions above.
 @end deftypefun
 
 @subsection ARCFOUR
+@cindex Arcfour
+@cindex RC4
 ARCFOUR is a stream cipher, also known under the trade marked name RC4,
 and it is one of the fastest ciphers around. A problem is that the key
 setup of ARCFOUR is quite weak, you should never use keys with
@@ -1271,6 +1491,8 @@ them one after another. The result is the same as if you had called
 @end deftypefun
 
 @subsection ARCTWO
+@cindex Arctwo
+@cindex RC2
 ARCTWO (also known as the trade marked name RC2) is a block cipher
 specified in RFC 2268. Nettle also include a variation of the ARCTWO
 set key operation that lack one step, to be compatible with the
@@ -1332,6 +1554,7 @@ Analogous to @code{arctwo_encrypt}
 @end deftypefun
 
 @subsection BLOWFISH
+@cindex Blowfish
 
 BLOWFISH is a block cipher designed by Bruce Schneier. It uses a block
 size of 64 bits (8 octets), and a variable key size, up to 448 bits. It
@@ -1377,7 +1600,78 @@ in any other way.
 Analogous to @code{blowfish_encrypt}
 @end deftypefun
 
+@deftypefun int blowfish_bcrypt_hash (char *@var{dst}, size_t @var{lenkey}, const char *@var{key}, size_t @var{lenscheme}, const char *@var{scheme}, int @var{log2rounds}, const uint8_t *@var{salt})
+Compute the bcrypt password hash.
+The function will return @code{0} if the hash cannot be computed
+due to invalid input.
+The function will return @code{1} and store the computed hash
+in the array pointed to by @var{dst}.  The hash is computed based
+on the chosen @var{scheme}, number of rounds @var{log2rounds} and
+specified @var{salt}.
+
+@var{dst} must point to a character array of at least
+ @code{BLOWFISH_BCRYPT_HASH_SIZE} bytes.
+
+@var{key} contains the plaintext password string of size @var{lenkey}.
+
+@var{scheme} is of size @var{lenscheme} and contains either just the
+chosen scheme (valid schemes
+are: @code{2a}, @code{2b}, @code{2x} or @code{2y}), or
+(the prefix of) an existing hashed password (typically @code{$2b$10$...}).
+
+@var{log2rounds} contains the log2 of the number of encryption rounds
+that must be used to compute the hash.  If it is @code{-1} the value
+will be extracted from @var{scheme}.
+
+@var{salt} should point to an array of @code{BLOWFISH_BCRYPT_BINSALT_SIZE}
+random bytes to be used to perturb the hash computation.  If it is @code{NULL}
+the salt will be extracted from @var{scheme}.
+
+Sample code to generate a bcrypt hash:
+@example
+char cleartxtpassword[] = "ExamplePassword";
+char scheme[] = "2b";
+uint8_t salt[BLOWFISH_BCRYPT_BINSALT_SIZE];
+@dots{}
+/* Make sure that salt is filled with random bytes */
+@dots{}
+char hashedresult[BLOWFISH_BCRYPT_HASH_SIZE];
+int result = blowfish_bcrypt(hashedresult,
+                             sizeof(cleartxtpassword) - 1, cleartxtpassword,
+                             sizeof(scheme) - 1, scheme, 10, salt);
+if (result)
+  printf("%s\n", hashedresult);
+@end example
+@end deftypefun
+
+@deftypefun int blowfish_bcrypt_verify (size_t @var{lenkey}, const char *@var{key}, size_t @var{lenhashed}, const char *@var{hashed})
+Verifies the bcrypt password hash against the supplied plaintext password.
+The function will return @code{0} if the password does not match.
+The function will return @code{1} if the password matches.
+
+@var{key} contains the plaintext password string of size @var{lenkey}.
+
+@var{hashed} contains the hashed string of size @var{lenhashed} to compare with.
+
+Sample code to verify a bcrypt hash:
+@example
+char cleartxtpassword[] = "ExamplePassword";
+char existinghashed[] =
+           "$2y$"  /* Hash algorithm version */
+           "10"   /* 2^10 hash rounds (strength) */
+           "$"   /* separator */
+           "1b2lPgo4XumibnJGN3r3sO" /* base64 encoded 16-byte salt */
+           "u7wE7xNfYDKlAxZffJDCJdVfFTAyevu"; /* Hashedpart */
+if (blowfish_bcrypt_verify(sizeof(cleartxtpassword) - 1, cleartxtpassword,
+                           sizeof(existinghashed) - 1, existinghashed))
+  printf("Password is correct.");
+else
+  printf("Password is incorrect.");
+@end example
+@end deftypefun
+
 @subsection Camellia
+@cindex Camellia
 
 Camellia is a block cipher developed by Mitsubishi and Nippon Telegraph
 and Telephone Corporation, described in @cite{RFC3713}. It is
@@ -1459,10 +1753,15 @@ more than one block, the data is processed in ECB mode. @code{src} and
 @end deftypefun
 
 @subsection CAST128
+@cindex CAST
 
 CAST-128 is a block cipher, specified in @cite{RFC 2144}. It uses a 64
-bit (8 octets) block size, and a variable key size of up to 128 bits.
-Nettle defines cast128 in @file{<nettle/cast128.h>}.
+bit (8 octets) block size, and a key size of 128 bits. It is possible,
+but discouraged, to use the same algorithm with shorter keys. Nettle
+refers to the variant with variable key size as CAST-5. Keys for CAST-5
+are zero padded to 128 bits, and with very short keys, less than 80
+bits, encryption also uses fewer rounds than CAST128. Nettle defines
+cast128 in @file{<nettle/cast128.h>}.
 
 @deftp {Context struct} {struct cast128_ctx}
 @end deftp
@@ -1471,19 +1770,20 @@ Nettle defines cast128 in @file{<nettle/cast128.h>}.
 The CAST128 block-size, 8.
 @end defvr
 
-@defvr Constant CAST128_MIN_KEY_SIZE
-Minimum CAST128 key size, 5.
-@end defvr
-
-@defvr Constant CAST128_MAX_KEY_SIZE
-Maximum CAST128 key size, 16.
-@end defvr
-
 @defvr Constant CAST128_KEY_SIZE
-Default CAST128 key size, 16.
+The CAST128 key size, 16.
 @end defvr
 
-@deftypefun void cast128_set_key (struct cast128_ctx *@var{ctx}, size_t @var{length}, const uint8_t *@var{key})
+@defvr Constant CAST5_MIN_KEY_SIZE
+Minimum CAST5 key size, 5.
+@end defvr
+
+@defvr Constant CAST5_MAX_KEY_SIZE
+Maximum CAST5 key size, 16. With 16 octets key (128 bits), CAST-5 is the
+same as CAST-128.
+@end defvr
+
+@deftypefun void cast128_set_key (struct cast128_ctx *@var{ctx}, const uint8_t *@var{key})
 Initialize the cipher. The same function is used for both encryption and
 decryption. 
 @end deftypefun
@@ -1499,7 +1799,14 @@ in any other way.
 Analogous to @code{cast128_encrypt}
 @end deftypefun
 
+@deftypefun void cast5_set_key (struct cast128_ctx *@var{ctx}, size_t @var{length}, const uint8_t *@var{key})
+Initialize the cipher. This variant of the key setup takes the key size
+as argument. The same function is used for both encryption and
+decryption.
+@end deftypefun
+
 @subsection ChaCha
+@cindex ChaCha
 
 ChaCha is a variant of the stream cipher Salsa20, also designed by D. J.
 Bernstein. For more information on Salsa20, see below. Nettle defines
@@ -1520,6 +1827,10 @@ ChaCha block size, 64.
 Size of the nonce, 8.
 @end defvr
 
+@defvr Constant CHACHA_COUNTER_SIZE
+Size of the counter, 8.
+@end defvr
+
 @deftypefun void chacha_set_key (struct chacha_ctx *@var{ctx}, const uint8_t *@var{key})
 Initialize the cipher. The same function is used for both encryption and
 decryption. Before using the cipher,
@@ -1532,6 +1843,14 @@ octets. This function also initializes the block counter, setting it to
 zero.
 @end deftypefun
 
+@deftypefun void chacha_set_counter (struct chacha_ctx *@var{ctx}, const uint8_t *@var{counter})
+Sets the block counter. It is always of size @code{CHACHA_COUNTER_SIZE},
+8 octets. This is rarely needed since @code{chacha_set_nonce}
+initializes the block counter to zero. When it is still necessary, this
+function must be called after @code{chacha_set_nonce}.
+
+@end deftypefun
+
 @deftypefun void chacha_crypt (struct chacha_ctx *@var{ctx}, size_t @var{length}, uint8_t *@var{dst}, const uint8_t *@var{src})
 Encrypts or decrypts the data of a message, using ChaCha. When a
 message is encrypted using a sequence of calls to @code{chacha_crypt},
@@ -1539,7 +1858,39 @@ all but the last call @emph{must} use a length that is a multiple of
 @code{CHACHA_BLOCK_SIZE}.
 @end deftypefun
 
+@subsubsection 32-bit counter variant
+
+While the original paper uses 64-bit counter value, the variant defined
+in @cite{RFC 8439} uses 32-bit counter value. This variant is
+particularly useful for @pxref{ChaCha-Poly1305} AEAD construction, which
+supports 12-octet nonces.
+
+@defvr Constant CHACHA_NONCE96_SIZE
+Size of the nonce, 12.
+@end defvr
+
+@defvr Constant CHACHA_COUNTER32_SIZE
+Size of the counter, 4.
+@end defvr
+
+@deftypefun void chacha_set_nonce96 (struct chacha_ctx *@var{ctx}, const uint8_t *@var{nonce})
+Sets the nonce. This is similar to the above @code{chacha_set_nonce},
+but the input is always of size @code{CHACHA_NONCE96_SIZE}, 12 octets.
+@end deftypefun
+
+@deftypefun void chacha_set_counter32 (struct chacha_ctx *@var{ctx}, const uint8_t *@var{counter})
+Sets the block counter. This is similar to the above @code{chacha_set_counter},
+but the input is always of size @code{CHACHA_COUNTER32_SIZE}, 4 octets.
+@end deftypefun
+
+@deftypefun void chacha_crypt32 (struct chacha_ctx *@var{ctx}, size_t @var{length}, uint8_t *@var{dst}, const uint8_t *@var{src})
+Encrypts or decrypts the data of a message, using ChaCha. This is similar to the
+above @code{chacha_crypt}, but it assumes the internal counter value is 32-bit
+long and the nonce is 96-bit long.
+@end deftypefun
+
 @subsection DES
+@cindex DES
 DES is the old Data Encryption Standard, specified by NIST. It uses a
 block size of 64 bits (8 octets), and a key size of 56 bits. However,
 the key bits are distributed over 8 octets, where the least significant
@@ -1597,6 +1948,10 @@ be equal.
 @end deftypefun
 
 @subsection DES3
+@cindex DES3
+@cindex 3DES
+@cindex Triple-DES
+
 The inadequate key size of DES has already been mentioned. One way to
 increase the key size is to pipe together several DES boxes with
 independent keys. It turns out that using two DES ciphers is not as
@@ -1664,6 +2019,7 @@ Analogous to @code{des_encrypt}
 @end deftypefun
 
 @subsection Salsa20
+@cindex Salsa20
 Salsa20 is a fairly recent stream cipher designed by D. J. Bernstein. It
 is built on the observation that a cryptographic hash function can be
 used for encryption: Form the hash input from the secret key and a
@@ -1750,6 +2106,8 @@ rounds.
 @end deftypefun
 
 @subsection SERPENT
+@cindex Serpent
+
 SERPENT is one of the AES finalists, designed by Ross Anderson, Eli
 Biham and Lars Knudsen. Thus, the interface and properties are similar
 to AES'. One peculiarity is that it is quite pointless to use it with
@@ -1793,6 +2151,8 @@ Analogous to @code{serpent_encrypt}
 
 
 @subsection TWOFISH
+@cindex Twofish
+
 Another AES finalist, this one designed by Bruce Schneier and others.
 Nettle defines it in @file{<nettle/twofish.h>}.
 
@@ -1831,12 +2191,10 @@ in any other way.
 Analogous to @code{twofish_encrypt}
 @end deftypefun
 
-@c @node nettle_cipher, Cipher Block Chaining, Cipher functions, Reference
+@c @node nettle_cipher abstraction,  , Cipher functions, Cipher functions
 @c @comment  node-name,  next,  previous,  up
 @subsection The @code{struct nettle_cipher} abstraction
 @cindex nettle_cipher
-@cindex nettle_ciphers
-@cindex nettle_get_ciphers
 
 Nettle includes a struct including information about some of the more
 regular cipher functions. It can be useful for applications that need a
@@ -1881,7 +2239,7 @@ ones without weak keys or other oddities.
 Nettle also exports a list of all these ciphers without weak keys or
 other oddities.
 
-@deftypefun const struct nettle_cipher **nettle_get_ciphers(void)
+@deftypefun {const struct nettle_cipher **} nettle_get_ciphers (void)
 Returns a NULL-terminated list of pointers to supported block ciphers.
 This list can be used to dynamically enumerate or search the supported
 algorithms.
@@ -1904,21 +2262,23 @@ Book mode, @acronym{ECB}), leaks information.
 
 Besides @acronym{ECB}, Nettle provides several other modes of operation:
 Cipher Block Chaining (@acronym{CBC}), Counter mode (@acronym{CTR}), Cipher
-Feedback (@acronym{CFB}) and a couple of @acronym{AEAD} modes
-(@pxref{Authenticated encryption}).  @acronym{CBC} is widely used, but
+Feedback (@acronym{CFB} and @acronym{CFB8}), XEX-based tweaked-codebook mode
+with ciphertext stealing (@acronym{XTS}) and a couple of @acronym{AEAD}
+modes (@pxref{Authenticated encryption}).  @acronym{CBC} is widely used, but
 there are a few subtle issues of information leakage, see, e.g.,
 @uref{http://www.kb.cert.org/vuls/id/958563, @acronym{SSH} @acronym{CBC}
 vulnerability}. Today, @acronym{CTR} is usually preferred over @acronym{CBC}.
 
-Modes like @acronym{CBC}, @acronym{CTR} and @acronym{CFB} provide @emph{no}
-message authentication, and should always be used together with a
-@acronym{MAC} (@pxref{Keyed hash functions}) or signature to authenticate
-the message.
+Modes like @acronym{CBC}, @acronym{CTR}, @acronym{CFB} and @acronym{CFB8}
+provide @emph{no} message authentication, and should always be used together
+with a @acronym{MAC} (@pxref{Keyed hash functions}) or signature to
+authenticate the message.
 
 @menu
 * CBC::                         
 * CTR::                         
-* CFB::
+* CFB and CFB8::
+* XTS::
 @end menu
 
 @node CBC, CTR, Cipher modes, Cipher modes
@@ -2014,7 +2374,7 @@ These macros use some tricks to make the compiler display a warning if
 the types of @var{f} and @var{ctx} don't match, e.g. if you try to use
 an @code{struct aes_ctx} context with the @code{des_encrypt} function.
 
-@node CTR, CFB, CBC, Cipher modes
+@node CTR, CFB and CFB8, CBC, Cipher modes
 @comment  node-name,  next,  previous,  up
 @subsection Counter mode
 
@@ -2090,18 +2450,21 @@ last three arguments define the source and destination area for the
 operation.
 @end deffn
 
-@node CFB, , CTR, Cipher modes
+@node CFB and CFB8, XTS, CTR, Cipher modes
 @comment  node-name,  next,  previous,  up
 @subsection Cipher Feedback mode
 
 @cindex Cipher Feedback Mode
-@cindex CFB Mode
+@cindex Cipher Feedback 8-bit Mode
+@cindex CFB Modes
+@cindex CFB8 Mode
 
-Cipher Feedback mode (@acronym{CFB}) being a close relative to both
-@acronym{CBC} mode and @acronym{CTR} mode borrows some characteristics
-from stream ciphers.
 
-The message is divided into @code{n} blocks @code{M_1},@dots{}
+Cipher Feedback mode (@acronym{CFB}) and Cipher Feedback 8-bit mode
+(@acronym{CFB8}) being close relatives to both @acronym{CBC} mode and
+@acronym{CTR} mode borrow some characteristics from stream ciphers.
+
+For CFB the message is divided into @code{n} blocks @code{M_1},@dots{}
 @code{M_n}, where @code{M_n} is of size @code{m} which may be smaller
 than the block size. Except for the last block, all the message blocks
 must be of size equal to the cipher's block size.
@@ -2121,10 +2484,31 @@ C_(n-1) = E_k(C_(n - 2)) XOR M_(n-1)
 C_n = E_k(C_(n - 1)) [1..m] XOR M_n
 @end example
 
-Nettle's includes two functions for applying a block cipher in Cipher
-Feedback (@acronym{CFB}) mode, one for encryption and one for
-decryption. These functions uses @code{void *} to pass cipher contexts
-around.
+Cipher Feedback 8-bit mode (@acronym{CFB8}) transforms block cipher into a stream
+cipher. The message is encrypted byte after byte, not requiring any padding.
+
+If @code{E_k} is the encryption function of a block cipher, @code{b} is
+@code{E_k} block size, @code{IV} is the initialization vector, then the
+@code{n} plaintext bytes are transformed into @code{n} ciphertext bytes
+@code{C_1},@dots{} @code{C_n} as follows:
+
+@example
+I_1 = IV
+C_1 = E_k(I_1) [1..8] XOR M_1
+I_2 = I_1 [9..b] << 8 | C_1
+C_2 = E_k(I_2) [1..8] XOR M_2
+
+@dots{}
+
+I_(n-1) = I_(n-2) [9..b] << 8 | C_(n-2)
+C_(n-1) = E_k(I_(n-1)) [1..8] XOR M_(n-1)
+I_n = I_(n-1) [9..b] << 8 | C_(n-1)
+C_n = E_k(I_n) [1..8] XOR M_n
+@end example
+
+Nettle's includes functions for applying a block cipher in Cipher
+Feedback (@acronym{CFB}) and Cipher Feedback 8-bit (@acronym{CFB8})
+modes. These functions uses @code{void *} to pass cipher contexts around.
 
 @deftypefun {void} cfb_encrypt (const void *@var{ctx}, nettle_cipher_func *@var{f}, size_t @var{block_size}, uint8_t *@var{iv}, size_t @var{length}, uint8_t *@var{dst}, const uint8_t *@var{src})
 @deftypefunx {void} cfb_decrypt (const void *@var{ctx}, nettle_cipher_func *@var{f}, size_t @var{block_size}, uint8_t *@var{iv}, size_t @var{length}, uint8_t *@var{dst}, const uint8_t *@var{src})
@@ -2139,6 +2523,18 @@ be the encryption function for the underlying block cipher.
 When a message is encrypted using a sequence of calls to
 @code{cfb_encrypt}, all but the last call @emph{must} use a length that
 is a multiple of the block size.
+@end deftypefun
+
+@deftypefun {void} cfb8_encrypt (const void *@var{ctx}, nettle_cipher_func *@var{f}, size_t @var{block_size}, uint8_t *@var{iv}, size_t @var{length}, uint8_t *@var{dst}, const uint8_t *@var{src})
+@deftypefunx {void} cfb8_decrypt (const void *@var{ctx}, nettle_cipher_func *@var{f}, size_t @var{block_size}, uint8_t *@var{iv}, size_t @var{length}, uint8_t *@var{dst}, const uint8_t *@var{src})
+
+Applies the encryption or decryption function @var{f} in @acronym{CFB8}
+mode. The final IV block processed is copied into @var{iv}
+before returning, so that a large message can be processed by a sequence of
+calls to @code{cfb8_encrypt}. Note that for @acronym{CFB8} mode internally
+uses encryption only function and hence @var{f} should always be the
+encryption function for the underlying block cipher.
+
 @end deftypefun
 
 Like for @acronym{CBC}, there are also a couple of helper macros.
@@ -2174,6 +2570,179 @@ argument is an encryption function following Nettle's conventions. The
 last three arguments define the source and destination area for the
 operation.
 @end deffn
+
+@deffn Macro CFB8_CTX (@var{context_type}, @var{block_size})
+Expands to
+@example
+@{
+   context_type ctx;
+   uint8_t iv[block_size];
+@}
+@end example
+@end deffn
+
+@deffn Macro CFB8_SET_IV (@var{ctx}, @var{iv})
+First argument is a pointer to a context struct as defined by
+@code{CFB8_CTX}, and the second is a pointer to an initialization vector
+that is copied into that context.
+@end deffn
+
+@deffn Macro CFB8_ENCRYPT (@var{ctx}, @var{f}, @var{length}, @var{dst}, @var{src})
+A simpler way to invoke @code{cfb8_encrypt}. The first argument is a
+pointer to a context struct as defined by @code{CFB8_CTX}, and the
+second argument is an encryption function following Nettle's
+conventions. The last three arguments define the source and destination
+area for the operation.
+@end deffn
+
+@deffn Macro CFB8_DECRYPT (@var{ctx}, @var{f}, @var{length}, @var{dst}, @var{src})
+A simpler way to invoke @code{cfb8_decrypt}. The first argument is a
+pointer to a context struct as defined by @code{CFB8_CTX}, and the
+second argument is an encryption function following Nettle's
+conventions. The last three arguments define the source and destination
+area for the operation.
+@end deffn
+
+@node XTS, , CFB and CFB8, Cipher modes
+@comment  node-name,  next,  previous,  up
+@subsection XEX-based tweaked-codebook mode with ciphertext stealing
+
+@cindex XEX-based tweaked-codebook mode with ciphertext stealing
+@cindex XTS Mode
+
+
+XEX-based tweaked-codebook mode with ciphertext stealing (@acronym{XTS}) is
+a block mode like (@acronym{CBC}) but tweaked to be able to encrypt partial
+blocks via a technique called ciphertext stealing, where the last complete
+block of ciphertext is split and part returned as the last block and part
+used as plaintext for the second to last block.
+This mode is principally used to encrypt data at rest where it is not possible
+to store additional metadata or blocks larger than the plain text. The most
+common usage is for disk encryption. Due to the fact that ciphertext expansion
+is not possible, data is not authenticated. This mode should not be used where
+authentication is critical.
+
+The message is divided into @code{n} blocks @code{M_1},@dots{} @code{M_n},
+where @code{M_n} is of size @code{m} which may be smaller than the block size.
+XTS always uses a fixed blocksize of 128 bit (16 bytes) length.
+
+Unlike other modes, the key is double the size of that for the used cipher mode
+(for example 256bit for AES-128 and 512bit for AES-256).
+
+@acronym{XTS} encryption mode operates given:
+@itemize
+@item A multiplication by a primitive element alpha.
+@code{MUL a^j} here represents the multiplication, where @code{j} is the power
+of alpha, and the input value is converted into a 16 bytes array
+@code{a_0[k], k = 0,1,..,15}. The multiplication is calculated as
+@code{a_(j+1)[0] = (2(a_j[0] mod 128)) XOR (135 * floor(a_j[15]/128)}
+@code{a_(j+1)[k] = (2(a_j[k] mod 128)) XOR (floor(a_j[k-1]/128), k = 1,2,..15}
+Note that this operation is practically a 1 bit left shift operation with carry
+propagating from one byte to the next, and if the last bit shift results in a
+carry the decimal value 135 is XORed into the first byte.
+
+@item The encryption key is provided as the @code{Key = K1 | K2}, where @code{|}
+denotes string concatenation.
+@code{E_k1} is the encryption function of the block cipher using @code{K1} as
+the key, and @code{E_k2} is the same encryption function using @code{K2}
+
+@item A 128 bit tweak value is provided as input and is denoted as @code{IV}
+@end itemize
+
+The @code{n} plaintext blocks are transformed into @code{n} ciphertext blocks
+@code{C_1},@dots{} @code{C_n} as follows.
+
+For a plaintext length that is a perfect multiple of the XTS block size:
+@example
+T_1 = E_k2(IV)
+C_1 = E_k1(P_1 XOR T_1) XOR T_1
+
+@dots{}
+
+T_n = T_(n-1) MUL a
+C_n = E_k1(P_n XOR T_n) XOR T_n
+@end example
+
+For any other plaintext lengths:
+@example
+T_1 = E_k2(IV)
+C_1 = E_k1(P_1 XOR T_1) XOR T_1
+
+@dots{}
+
+T_(n-2) = T_(n-3) MUL a
+C_(n-2) = E_k1(P_(n-2) XOR T_(n-2)) XOR T_(n-2)
+
+T_(n-1) = T_(n-2) MUL a
+CC_(n-1) = E_k1(P_(n-1) XOR T_(n-1)) XOR T_(n-1)
+
+T_n = T_(n-1) MUL a
+PP = [1..m]Pn | [m+1..128]CC_(n-1)
+C_(n-1) = E_k1(PP XOR T_n) XOR T_n
+
+C_n = [1..m]CC_(n-1)
+@end example
+
+@subsubsection General (@acronym{XTS}) interface.
+
+The two general functions to encrypt and decrypt using the @acronym{XTS} block
+cipher mode are the following:
+
+@deftypefun void xts_encrypt_message (const void *@var{enc_ctx}, const void *@var{twk_ctx}, nettle_cipher_func *@var{encf}, const uint8_t *@var{tweak}, size_t @var{length}, uint8_t *@var{dst}, const uint8_t *@var{src})
+@deftypefunx void xts_decrypt_message (const void *@var{dec_ctx}, const void *@var{twk_ctx}, nettle_cipher_func *@var{decf}, nettle_cipher_func *@var{encf}, const uint8_t *@var{tweak}, size_t @var{length}, uint8_t *@var{dst}, const uint8_t *@var{src})
+
+Applies the encryption function @var{encf} or the decryption function
+@var{decf} in @acronym{XTS} mode. At least one block (16 bytes) worth
+of data must be available therefore specifying a length less than 16
+bytes is illegal.
+
+The functions @var{encf} @var{decf} are of type
+
+@code{void f (const void *@var{ctx}, size_t @var{length}, uint8_t *@var{dst},
+const uint8_t *@var{src})},
+
+@noindent and the @code{xts_encrypt_message} and @code{xts_decrypt_message}
+functions pass their arguments @var{enc_ctx}, @var{twk_ctx} and @var{dec_ctx}
+to the functions @var{encf}, @var{decf} as @var{ctx}.
+@end deftypefun
+
+@subsubsection @acronym{XTS}-@acronym{AES} interface
+
+The @acronym{AES} @acronym{XTS} functions provide an API for using the
+@acronym{XTS} mode with the @acronym{AES} block ciphers. The parameters
+all have the same meaning as the general interface, except that the
+@var{enc_ctx}, @var{dec_ctx}, @var{twk_ctx}, @var{encf} and @var{decf} are
+replaced with an @acronym{AES} context structure called @var{ctx}, and a
+appropriate set-key function must be called before using any of the encryption
+or decryption functions in this interface.
+
+@deftp {Context struct} {struct xts_aes128_key}
+Holds state corresponding to the AES-128 block cipher.
+@end deftp
+
+@deftp {Context struct} {struct xts_aes256_key}
+Holds state corresponding to the AES-256 block cipher.
+@end deftp
+
+@deftypefun void xts_aes128_set_encrypt_key (struct xts_aes128_key *@var{ctx}, const uint8_t *@var{key})
+@deftypefunx void xts_aes256_set_encrypt_key (struct xts_aes256_key *@var{ctx}, const uint8_t *@var{key})
+@deftypefunx void xts_aes128_set_decrypt_key (struct xts_aes128_key *@var{ctx}, const uint8_t *@var{key})
+@deftypefunx void xts_aes256_set_decrypt_key (struct xts_aes256_key *@var{ctx}, const uint8_t *@var{key})
+Initializes the encryption or decryption key for the AES block cipher. The
+length of the key must be double the size of the key for the corresponding
+cipher (256 bits for AES-128 and 512 bits for AES-256). One of
+these functions must be called before any of the other functions.
+@end deftypefun
+
+@deftypefun void xts_aes128_encrypt_message(struct xts_aes128_key *@var{ctx}, uint8_t *@var{tweak}, size_t @var{length}, uint8_t *@var{dst}, const uint8_t *@var{src})
+@deftypefunx void xts_aes256_encrypt_message(struct xts_aes256_key *@var{ctx}, uint8_t *@var{tweak}, size_t @var{length}, uint8_t *@var{dst}, const uint8_t *@var{src})
+@deftypefunx void xts_aes128_decrypt_message(struct xts_aes128_key *@var{ctx}, uint8_t *@var{tweak}, size_t @var{length}, uint8_t *@var{dst}, const uint8_t *@var{src})
+@deftypefunx void xts_aes256_decrypt_message(struct xts_aes256_key *@var{ctx}, uint8_t *@var{tweak}, size_t @var{length}, uint8_t *@var{dst}, const uint8_t *@var{src})
+These are identical to @code{xts_encrypt_message} and
+@code{xts_decrypt_message}, except that @var{enc_ctx}, @var{dec_ctx},
+@var{twk_ctx}, @var{encf} and @var{decf} are replaced by the @var{ctx} context
+structure.
+@end deftypefun
 
 @node Authenticated encryption, Keyed hash functions, Cipher modes, Reference
 @comment  node-name,  next,  previous,  up
@@ -2257,6 +2826,7 @@ more adventurous alternative, in particular if performance is important.
 * GCM::                         
 * CCM::                         
 * ChaCha-Poly1305::
+* SIV-CMAC::
 * nettle_aead abstraction::
 @end menu
 
@@ -2264,7 +2834,7 @@ more adventurous alternative, in particular if performance is important.
 @comment  node-name,  next,  previous,  up
 @subsection EAX
 
-The @acronym{EAX} mode is an @acronym{AEAD} mode whichcombines
+The @acronym{EAX} mode is an @acronym{AEAD} mode which combines
 @acronym{CTR} mode encryption, @xref{CTR}, with a message authentication
 based on @acronym{CBC}, @xref{CBC}. The implementation in Nettle is
 restricted to ciphers with a block size of 128 bits (16 octets).
@@ -2374,7 +2944,7 @@ Process message data for encryption or decryption.
 @end deffn
 
 @deffn Macro EAX_DIGEST (@var{ctx}, @var{encrypt}, @var{length}, @var{digest})
-Extract te authentication tag for the message.
+Extract the authentication tag for the message.
 @end deffn
 
 
@@ -2574,7 +3144,7 @@ Context structs, defined using @code{GCM_CTX}.
 @end deftp
 
 @deftp {Context struct} {struct gcm_aes_ctx}
-Alternative context struct, usign the old @acronym{AES} interface.
+Alternative context struct, using the old @acronym{AES} interface.
 @end deftp
 
 @deftypefun void gcm_aes128_set_key (struct gcm_aes128_ctx *@var{ctx}, const uint8_t *@var{key})
@@ -2730,8 +3300,8 @@ initial counter of @code{IC+1}.
 
 @acronym{CCM} mode decryption operates similarly, except that the
 ciphertext and @acronym{MAC} are first decrypted using CTR mode to
-retreive the plaintext and authentication tag. The authentication tag
-can then be recalucated from the authenticated data and plantext, and
+retrieve the plaintext and authentication tag. The authentication tag
+can then be recalculated from the authenticated data and plaintext, and
 compared to the value in the message to check for authenticity.
 
 @subsubsection General @acronym{CCM} interface
@@ -2904,24 +3474,19 @@ These are identical to @code{ccm_encrypt_message} and @code{ccm_decrypt_message}
 except that @var{cipher} and @var{f} are replaced with a context structure.
 @end deftypefun
 
-@node ChaCha-Poly1305, nettle_aead abstraction, CCM, Authenticated encryption
+@node ChaCha-Poly1305, SIV-CMAC, CCM, Authenticated encryption
 @comment  node-name,  next,  previous,  up
 @subsection ChaCha-Poly1305
 
 ChaCha-Poly1305 is a combination of the ChaCha stream cipher and the
 poly1305 message authentication code (@pxref{Poly1305}). It originates
 from the NaCl cryptographic library by D. J. Bernstein et al, which
-defines a similar construction but with Salsa20 instead of ChaCha. 
+defines a similar construction but with Salsa20 instead of ChaCha.
 
-Nettle's implementation ChaCha-Poly1305 should be considered
-@strong{experimental}. At the time of this writing, there is no
-authoritative specification for ChaCha-Poly1305, and a couple of
-different incompatible variants. Nettle implements it using the original
-definition of ChaCha, with 64 bits (8 octets) each for the nonce and the
-block counter. Some protocols prefer to use nonces of 12 bytes, and it's
-a small change to ChaCha to use the upper 32 bits of the block counter
-as a nonce, instead limiting message size to @math{2^32} blocks or 256
-GBytes, but that variant is currently not supported.
+Nettle's implementation of ChaCha-Poly1305 follows @cite{RFC 8439},
+where the ChaCha cipher is initialized with a 12-byte nonce and a 4-byte
+block counter. This allows up to 256 gigabytes of data to be encrypted
+using the same key and nonce.
 
 For ChaCha-Poly1305, the ChaCha cipher is initialized with a key, of 256
 bits, and a per-message nonce. The first block of the key stream
@@ -2950,7 +3515,7 @@ ChaCha-Poly1305 key size, 32.
 @end defvr
 
 @defvr Constant CHACHA_POLY1305_NONCE_SIZE
-Same as the ChaCha nonce size, 16.
+ChaCha-Poly1305 nonce size, 12.
 @end defvr
 
 @defvr Constant CHACHA_POLY1305_DIGEST_SIZE
@@ -2987,12 +3552,105 @@ smaller than @code{CHACHA_POLY1305_DIGEST_SIZE}, only the first
 @var{length} octets of the digest are written.
 @end deftypefun
 
+@node SIV-CMAC, nettle_aead abstraction, ChaCha-Poly1305, Authenticated encryption
+@comment  node-name,  next,  previous,  up
+@subsection Synthetic Initialization Vector AEAD
+
+@cindex SIV mode
+@cindex SIV-CMAC mode
+
+@acronym{SIV-CMAC} mode is a combination of counter mode with message
+authentication based on @acronym{CMAC}. Unlike other counter @acronym{AEAD}
+modes, it provides protection against accidental nonce misuse, making it
+a good choice for stateless-servers that cannot ensure nonce uniqueness.
+It is constructed on top of a block cipher which must have a block size of
+128 bits. Nettle's support for @acronym{SIV-CMAC} consists of
+a message encryption and authentication interface, for
+@acronym{SIV-CMAC} using AES as the underlying block cipher.
+When a nonce is re-used with this mode, message authenticity is retained
+however an attacker can determine whether the same plaintext was protected
+with the two messages sharing the nonce.
+These interfaces are defined in @file{<nettle/siv-cmac.h>}.
+
+Unlike other @acronym{AEAD} mode in @acronym{SIV-CMAC} the initialization
+vector serves as the tag. That means that in the generated ciphertext
+the tag precedes the ciphertext.
+
+Note also, that the @acronym{SIV-CMAC} algorithm, as specified in
+@cite{RFC 5297}, introduces the notion of authenticated data which
+consist of multiple components. For example with @acronym{SIV-CMAC} the
+authentication tag of data @code{X} followed by @code{Y}, is different
+than the concatenated data @code{X || Y}. The interfaces described below
+follow the @acronym{AEAD} paradigm and do not allow access to this
+feature and also require the use of a non-empty nonce. In the
+terminology of the RFC, the input to the S2V function is always a vector
+of three elements, where S1 is the authenticated data, S2 is the nonce,
+and S3 is the plaintext.
+
+
+@subsubsection General interface
+
+@defvr Constant SIV_BLOCK_SIZE
+@acronym{SIV-CMAC}'s block size, 16.
+@end defvr
+
+@defvr Constant SIV_DIGEST_SIZE
+Size of the @acronym{SIV-CMAC} digest or initialization vector, 16.
+@end defvr
+
+@defvr Constant SIV_MIN_NONCE_SIZE
+The the minimum size for an @acronym{SIV-CMAC} nonce, 1.
+@end defvr
+
+@subsubsection @acronym{SIV-CMAC}-@acronym{AES} interface
+
+The @acronym{AES} @acronym{SIV-CMAC} functions provide an API for using
+@acronym{SIV-CMAC} mode with the @acronym{AES} block ciphers. The parameters
+all have the same meaning as the general and message interfaces, except
+that the @var{cipher}, @var{f}, and @var{ctx} parameters are replaced
+with an @acronym{AES} context structure, and a set-key function must be
+called before using any of the other functions in this interface.
+
+@deftp {Context struct} {struct siv_cmac_aes128_ctx}
+Holds state corresponding to a particular message encrypted using the
+AES-128 block cipher.
+@end deftp
+
+@deftp {Context struct} {struct siv_cmac_aes256_ctx}
+Holds state corresponding to a particular message encrypted using the
+AES-256 block cipher.
+@end deftp
+
+@deftypefun void siv_cmac_aes128_set_key (struct siv_cmac_aes128_ctx *@var{ctx}, const uint8_t *@var{key})
+@deftypefunx void siv_cmac_aes256_set_key (struct siv_cmac_aes256_ctx *@var{ctx}, const uint8_t *@var{key})
+Initializes the encryption key for the AES block cipher. One of these
+functions must be called before any of the other functions in the
+@acronym{AES} @acronym{SIV-CMAC} interface.
+@end deftypefun
+
+@deftypefun void siv_cmac_aes128_encrypt_message (struct siv_cmac_aes128_ctx *@var{ctx}, size_t @var{nlength}, const uint8_t *@var{nonce}, size_t @var{alength}, const uint8_t *@var{adata}, size_t @var{clength}, uint8_t *@var{dst}, const uint8_t *@var{src})
+@deftypefunx void siv_cmac_aes256_encrypt_message (struct siv_cmac_aes256_ctx *@var{ctx}, size_t @var{nlength}, const uint8_t *@var{nonce}, size_t @var{alength}, const uint8_t *@var{adata}, size_t @var{clength}, uint8_t *@var{dst}, const uint8_t *@var{src})
+Computes the message digest from the @var{adata} and @var{src}
+parameters, encrypts the plaintext from @var{src}, prepends the
+initialization vector to the ciphertext and outputs it to @var{dst}.
+The @var{clength} variable must be equal to the length of @var{src}
+plus @code{SIV_DIGEST_SIZE}.
+
+@end deftypefun
+
+@deftypefun int siv_cmac_aes128_decrypt_message (struct siv_cmac_aes128_ctx *@var{ctx}, size_t @var{nlength}, const uint8_t *@var{nonce}, size_t @var{alength}, const uint8_t *@var{adata}, size_t @var{mlength}, uint8_t *@var{dst}, const uint8_t *@var{src})
+@deftypefunx int siv_cmac_aes256_decrypt_message (struct siv_cmac_aes128_ctx *@var{ctx}, size_t @var{nlength}, const uint8_t *@var{nonce}, size_t @var{alength}, const uint8_t *@var{adata}, size_t @var{mlength}, uint8_t *@var{dst}, const uint8_t *@var{src})
+Decrypts the ciphertext from @var{src}, outputs the plaintext to
+@var{dst}, recalculates the initialization vector from @var{adata} and the
+plaintext. If the values of the received and calculated initialization vector
+are equal, this will return 1 indicating a valid and authenticated
+message. Otherwise, this function will return zero.
+@end deftypefun
+
 @node nettle_aead abstraction, , ChaCha-Poly1305, Authenticated encryption
 @comment  node-name,  next,  previous,  up
 @subsection The @code{struct nettle_aead} abstraction
 @cindex nettle_aead
-@cindex nettle_aeads
-@cindex nettle_get_aeads
 
 Nettle includes a struct including information about the supported hash
 functions. It is defined in @file{<nettle/nettle-meta.h>}.
@@ -3016,7 +3674,7 @@ message size is specified in advance makes it incompatible with the
 
 Nettle also exports a list of all these constructions.
 
-@deftypefun const struct nettle_aead **nettle_get_aeads(void)
+@deftypefun {const struct nettle_aead **} nettle_get_aeads (void)
 Returns a NULL-terminated list of pointers to supported algorithms.This
 list can be used to dynamically enumerate or search the supported
 algorithms.
@@ -3066,6 +3724,7 @@ as well.
 @menu
 * HMAC::
 * UMAC::
+* CMAC::
 * Poly1305::
 @end menu
 
@@ -3408,7 +4067,91 @@ as described above, the new value is used unless you call the
 @code{_set_nonce} function explicitly for each message.
 @end deftypefun
 
-@node Poly1305,, UMAC, Keyed hash functions
+@node CMAC,, UMAC, Keyed hash functions
+@subsection @acronym{CMAC}
+@cindex CMAC
+@cindex CMAC-128
+@cindex CMAC-64
+
+@acronym{CMAC} is a message authentication code based on CBC encryption
+mode. It is suitable for systems where block ciphers are preferrable
+and perform better than hash functions. @acronym{CMAC-128} is specified in
+@cite{RFC4493}. The block size is always 128 bits (16 octets).
+@acronym{CMAC-64} is specified by
+@uref{https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-38B.pdf,
+NIST Special Publication 800-38B}. The block size is always 64 bits
+(8 octets).
+
+Nettle provides helper functions for @acronym{CMAC-128} with
+the @acronym{AES} block cipher and for @acronym{CMAC-64} with
+the @acronym{Tripple-DES} block cipher.
+
+Nettle defines @acronym{CMAC} in @file{<nettle/cmac.h>}.
+
+@deftp {Context struct} {struct cmac_aes128_ctx}
+@deftpx {Context struct} {struct cmac_aes256_ctx}
+@end deftp
+
+@defvr Constant CMAC128_DIGEST_SIZE
+The size of an CMAC-128 digest, 16.
+@end defvr
+
+@deftypefun void cmac_aes128_set_key (struct cmac_aes128_ctx *@var{ctx}, const uint8_t *@var{key})
+This function initializes the @acronym{CMAC} context struct for AES-128.
+@end deftypefun
+
+@deftypefun void cmac_aes128_update (struct cmac_aes128_ctx *@var{ctx}, size_t @var{length}, const uint8_t *@var{data})
+This function is called zero or more times to process the message.
+@end deftypefun
+
+@deftypefun void cmac_aes128_digest (struct cmac_aes128_ctx *@var{ctx}, size_t @var{length}, uint8_t *@var{digest})
+Extracts the @acronym{MAC} of the message, writing it to @var{digest}.
+@var{length} is usually equal to the specified output size, but if you
+provide a smaller value, only the first @var{length} octets of the
+@acronym{MAC} are written. This function resets the context for
+processing of a new message with the same key.
+@end deftypefun
+
+@deftypefun void cmac_aes256_set_key (struct cmac_aes256_ctx *@var{ctx}, const uint8_t *@var{key})
+This function initializes the @acronym{CMAC} context struct for AES-256.
+@end deftypefun
+
+@deftypefun void cmac_aes256_update (struct cmac_aes256_ctx *@var{ctx}, size_t @var{length}, const uint8_t *@var{data})
+This function is called zero or more times to process the message.
+@end deftypefun
+
+@deftypefun void cmac_aes256_digest (struct cmac_aes256_ctx *@var{ctx}, size_t @var{length}, uint8_t *@var{digest})
+Extracts the @acronym{MAC} of the message, writing it to @var{digest}.
+@var{length} is usually equal to the specified output size, but if you
+provide a smaller value, only the first @var{length} octets of the
+@acronym{MAC} are written. This function resets the context for
+processing of a new message with the same key.
+@end deftypefun
+
+@deftp {Context struct} {struct cmac_des3_ctx}
+@end deftp
+
+@defvr Constant CMAC64_DIGEST_SIZE
+The size of an CMAC-64 digest, 8.
+@end defvr
+
+@deftypefun void cmac_des3_set_key (struct cmac_des3_ctx *@var{ctx}, const uint8_t *@var{key})
+This function initializes the @acronym{CMAC} context struct for @acronym{Tripple-DES}.
+@end deftypefun
+
+@deftypefun void cmac_des3_update (struct cmac_des3_ctx *@var{ctx},size_t @var{length}, const uint8_t *@var{data})
+This function is called zero or more times to process the message.
+@end deftypefun
+
+@deftypefun void cmac_des3_digest (struct cmac_des3_ctx *@var{ctx}, size_t @var{length}, uint8_t *@var{digest})
+Extracts the @acronym{MAC} of the message, writing it to @var{digest}.
+@var{length} is usually equal to the specified output size, but if you
+provide a smaller value, only the first @var{length} octets of the
+@acronym{MAC} are written. This function resets the context for
+processing of a new message with the same key.
+@end deftypefun
+
+@node Poly1305,, CMAC, Keyed hash functions
 @comment  node-name,  next,  previous,  up
 @subsection Poly1305
 
@@ -3540,8 +4283,8 @@ Nettle's @acronym{PBKDF2} functions are defined in
 @file{<nettle/pbkdf2.h>}.  There is an abstract function that operate on
 any PRF implemented via the @code{nettle_hash_update_func},
 @code{nettle_hash_digest_func} interfaces.  There is also helper macros
-and concrete functions PBKDF2-HMAC-SHA1 and PBKDF2-HMAC-SHA256.  First,
-the abstract function:
+and concrete functions PBKDF2-HMAC-SHA1, PBKDF2-HMAC-SHA256, PBKDF2-HMAC-SHA384
+and PBKDF2-HMAC-SHA512.  First, the abstract function:
 
 @deftypefun void pbkdf2 (void *mac_ctx, nettle_hash_update_func *update, nettle_hash_digest_func *digest, size_t digest_size, unsigned iterations, size_t salt_length, const uint8_t *salt, size_t length, uint8_t *dst)
 Derive symmetric key from a password according to PKCS #5 PBKDF2.  The
@@ -3586,6 +4329,26 @@ room for at least @var{length} octets.
 
 @deftypefun void pbkdf2_hmac_sha256 (size_t @var{key_length}, const uint8_t *@var{key}, unsigned @var{iterations}, size_t @var{salt_length}, const uint8_t *@var{salt}, size_t @var{length}, uint8_t *@var{dst})
 PBKDF2 with HMAC-SHA256.  Derive @var{length} bytes of key into buffer
+@var{dst} using the password @var{key} of length @var{key_length} and
+salt @var{salt} of length @var{salt_length}, with iteration counter
+@var{iterations} (> 0).  The output buffer is @var{dst} which must have
+room for at least @var{length} octets.
+@end deftypefun
+
+@subsubsection @acronym{PBKDF2-HMAC-SHA384}
+
+@deftypefun void pbkdf2_hmac_sha384 (size_t @var{key_length}, const uint8_t *@var{key}, unsigned @var{iterations}, size_t @var{salt_length}, const uint8_t *@var{salt}, size_t @var{length}, uint8_t *@var{dst})
+PBKDF2 with HMAC-SHA384.  Derive @var{length} bytes of key into buffer
+@var{dst} using the password @var{key} of length @var{key_length} and
+salt @var{salt} of length @var{salt_length}, with iteration counter
+@var{iterations} (> 0).  The output buffer is @var{dst} which must have
+room for at least @var{length} octets.
+@end deftypefun
+
+@subsubsection @acronym{PBKDF2-HMAC-SHA512}
+
+@deftypefun void pbkdf2_hmac_sha512 (size_t @var{key_length}, const uint8_t *@var{key}, unsigned @var{iterations}, size_t @var{salt_length}, const uint8_t *@var{salt}, size_t @var{length}, uint8_t *@var{dst})
+PBKDF2 with HMAC-SHA512.  Derive @var{length} bytes of key into buffer
 @var{dst} using the password @var{key} of length @var{key_length} and
 salt @var{salt} of length @var{salt_length}, with iteration counter
 @var{iterations} (> 0).  The output buffer is @var{dst} which must have
@@ -4171,7 +4934,7 @@ Calls @code{mpz_clear} on all numbers in the struct.
 @end deftypefun
 
 @deftypefun int dsa_generate_params (struct dsa_params *@var{params}, void *@var{random_ctx}, nettle_random_func *@var{random}, void *@var{progress_ctx}, nettle_progress_func *@var{progress}, unsigned @var{p_bits}, unsigned @var{q_bits})
-Generates paramaters of a new group. The @var{params} struct should be
+Generates parameters of a new group. The @var{params} struct should be
 initialized before you call this function.
 
 @var{random_ctx} and @var{random} is a randomness generator.
@@ -4214,8 +4977,8 @@ signature, and call @code{dsa_signature_clear} when you are finished
 with it.
 @end deftypefun
 
-Keys are represented as bignums, of type @code{mpz_t}. A public keys
-represent a group element, and is of the same size as @code{p}, while a
+Keys are represented as bignums, of type @code{mpz_t}. A public key
+represents a group element, and is of the same size as @code{p}, while a
 private key is an exponent, of the same size as @code{q}.
 
 @deftypefun int dsa_sign (const struct dsa_params *@var{params}, const mpz_t @var{x}, void *@var{random_ctx}, nettle_random_func *@var{random}, size_t @var{digest_size}, const uint8_t *@var{digest}, struct dsa_signature *@var{signature})
@@ -4371,7 +5134,8 @@ curve'' is used as a shorthand for the bitsize of the curve's prime
 @menu
 * Side-channel silence::
 * ECDSA::
-* Curve 25519::
+* GOSTDSA::
+* Curve 25519 and Curve 448::
 @end menu
 
 @node Side-channel silence, ECDSA, , Elliptic curves
@@ -4405,7 +5169,7 @@ accesses depend only on the size of the input data and its location in
 memory, not on the actual data bits. This implies a performance penalty
 in several of the building blocks.
 
-@node ECDSA, Curve 25519, Side-channel silence, Elliptic curves
+@node ECDSA, GOSTDSA, Side-channel silence, Elliptic curves
 @comment  node-name,  next,  previous,  up
 @subsubsection ECDSA
 
@@ -4509,10 +5273,87 @@ random octets and store them at @code{dst}. For advice, see
 @xref{Randomness}.
 @end deftypefun
 
-@node Curve 25519, , ECDSA, Elliptic curves
+@node GOSTDSA, Curve 25519 and Curve 448, ECDSA, Elliptic curves
 @comment  node-name,  next,  previous,  up
-@subsubsection Curve25519
+@subsubsection GOSTDSA
+@cindex GOST DSA
+
+GOSTDSA (GOST R 34.10-2001, GOST R 34.10-2012) is a variant of the DSA
+(@pxref{DSA}) and ECDSA (@pxref{ECDSA}) digital signature schemes, which works
+over an elliptic curve group. Original documents are written in Russian.
+English translations are provided in @cite{RFC 5832} and @cite{RFC 7091}.
+While technically nothing stops one from using GOSTDSA over any curve, it
+is defined only over several 256 and 512-bit curves.  Like DSA and ECDSA,
+creating a signature requires a unique random nonce (repeating the nonce
+with two different messages reveals the private key, and any leak or bias
+in the generation of the nonce also leaks information about the key).
+
+GOST R 34.10-2001 was defined to use GOST R 34.11-94 hash function
+(GOSTHASH94 and GOSTHASH94CP, @cite{RFC 5831}).  GOST R 34.10-2012 is
+defined to use GOST R 34.11-2012 hash function (Streebog, @cite{RFC
+6986}) of corresponding size (256 or 512) depending on curve size.
+
+Nettle defines GOSTDSA in @file{<nettle/gostdsa.h>}. GOSTDSA reuses ECDSA
+data types (@code{struct ecc_point}, @code{struct ecc_scalar}) to
+represent public and private keys.  Also to generate a new GOSTDSA key
+pair one has to use @code{ecdsa_generate_keypair()} function.
+
+To create and verify GOSTDSA signatures, the following functions are used.
+
+@deftypefun void gostdsa_sign (const struct ecc_scalar *@var{key}, void *@var{random_ctx}, nettle_random_func *@var{random}, size_t @var{digest_length}, const uint8_t *@var{digest}, struct dsa_signature *@var{signature})
+Uses the private key @var{key} to create a signature on @var{digest}.
+@var{random_ctx} and @var{random} is a randomness generator.
+@code{random(random_ctx, length, dst)} should generate @code{length}
+random octets and store them at @code{dst}. The signature is stored in
+@var{signature}, in the same was as for plain DSA.
+@end deftypefun
+
+@deftypefun int gostdsa_verify (const struct ecc_point *@var{pub}, size_t @var{length}, const uint8_t *@var{digest}, const struct dsa_signature *@var{signature})
+Uses the public key @var{pub} to verify that @var{signature} is a valid
+signature for the message digest @var{digest} (of @var{length} octets).
+Returns 1 if the signature is valid, otherwise 0.
+@end deftypefun
+
+For historical reason several curve IDs (OIDs) may correspond to a single
+curve/generator combination. Following list defines correspondence
+between nettle's view on curves and actual identifiers defined in @cite{RFC
+4357} and @cite{RFC 7836}.
+
+@deftypefun {const struct ecc_curve} nettle_get_gost_gc256b(void)
+Returns curve corresponding to following identifiers:
+@itemize
+@item id-GostR3410-2001-CryptoPro-A-ParamSet (@cite{RFC 4357})
+@item id-GostR3410-2001-CryptoPro-XchA-ParamSet (@cite{RFC 4357})
+@item id-tc26-gost-3410-12-256-paramSetB
+@end itemize
+@end deftypefun
+
+@deftypefun {const struct ecc_curve} nettle_get_gost_gc512a(void)
+Returns curve corresponding to following identifiers:
+@itemize
+@item id-tc26-gost-3410-12-512-paramSetA (@cite{RFC 7836})
+@end itemize
+@end deftypefun
+
+For GOST key pairs key derivation/key agreement function (VKO) is defined in
+@cite{RFC 4357} and @cite{RFC 7836}.  Basically shared key is equal to
+hash(cofactor * ukm * priv * pub). Nettle library provides a function that does
+multiplication. Caller should do hashing on his own (it will be either
+GOST R 34.11-94 (@pxref{GOSTHASH94CP}) or GOST R 34.11-2012, Streebog, which nor part of the library yet).
+
+@deftypefun void gostdsa_vko (const struct ecc_scalar *@var{priv}, const struct ecc_point *@var{pub}, size_t @var{ukm_length}, const uint8_t *@var{ukm}, uint8_t *@var{out})
+Uses private key @var{priv}, public ket @var{pub} and shared key material
+@var{ukm} to generate shared secret, written to buffer @var{out}. The buffer
+should be of the size equal to 2 private key lengths: 64 bytes for 256 bit
+curves and 128 bytes for 512 bit ones. UKM is a shared key material, usually
+transferred in cleartext. It does not have to be secret.
+@end deftypefun
+
+@node Curve 25519 and Curve 448, , ECDSA, Elliptic curves
+@comment  node-name,  next,  previous,  up
+@subsubsection Curve25519 and Curve448
 @cindex Curve 25519
+@cindex Curve 448
 
 @c FIXME: Make 2^255 pretty in all output formats. Use @sup?
 @c There are other places too (2^32, 2^130).
@@ -4587,6 +5428,40 @@ This function is intended to be compatible with the function
 @code{crypto_scalar_mult} in the NaCl library.
 @end deftypefun
 
+Similarly, Nettle also implements Curve448, an elliptic curve of
+Montgomery type, @math{y^2 = x^3 + 156326 x^2 + x @pmod{p}}, with
+@math{p = 2^448 - 2^224 - 1}.  This particular curve was proposed by
+Mike Hamburg in 2015, for fast Diffie-Hellman key exchange, and is also
+described in @cite{RFC 7748}.
+
+Nettle defines Curve 448 in @file{<nettle/curve448.h>}.
+
+@defvr Constant CURVE448_SIZE
+The octet length of the strings representing curve448 points and scalars, 56.
+@end defvr
+
+@deftypefun void curve448_mul_g (uint8_t *@var{q}, const uint8_t *@var{n})
+Computes @math{Q = N G}, where @math{G} is the group generator and
+@math{N} is an integer. The input argument @var{n} and the output
+argument @var{q} use a little-endian representation of the scalar and
+the x-coordinate, respectively. They are both of size
+@code{CURVE448_SIZE}.
+
+This function is intended to be compatible with the function
+@code{crypto_scalar_mult_base} in the NaCl library.
+@end deftypefun
+
+@deftypefun void curve448_mul (uint8_t *@var{q}, const uint8_t *@var{n}, const uint8_t *@var{p})
+Computes @math{Q = N P}, where @math{P} is an input point and @math{N}
+is an integer. The input arguments @var{n} and @var{p} and the output
+argument @var{q} use a little-endian representation of the scalar and
+the x-coordinates, respectively. They are all of size
+@code{CURVE448_SIZE}.
+
+This function is intended to be compatible with the function
+@code{crypto_scalar_mult} in the NaCl library.
+@end deftypefun
+
 @subsubsection EdDSA
 @cindex eddsa
 
@@ -4629,6 +5504,31 @@ Signs a message using the provided key pair.
 @end deftypefun
 
 @deftypefun int ed25519_sha512_verify (const uint8_t *@var{pub}, size_t @var{length}, const uint8_t *@var{msg}, const uint8_t *@var{signature})
+Verifies a message using the provided public key. Returns 1 if the
+signature is valid, otherwise 0.
+@end deftypefun
+
+Nettle also provides Ed448, an EdDSA signature scheme based on an
+Edwards curve equivalent to curve448.
+
+@defvr Constant ED448_KEY_SIZE
+The size of a private or public Ed448 key, 57 octets.
+@end defvr
+
+@defvr Constant ED448_SIGNATURE_SIZE
+The size of an Ed448 signature, 114 octets.
+@end defvr
+
+@deftypefun void ed448_shake256_public_key (uint8_t *@var{pub}, const uint8_t *@var{priv})
+Computes the public key corresponding to the given private key. Both
+input and output are of size @code{ED448_KEY_SIZE}.
+@end deftypefun
+
+@deftypefun void ed448_shake256_sign (const uint8_t *@var{pub}, const uint8_t *@var{priv}, size_t @var{length}, const uint8_t *@var{msg}, uint8_t *@var{signature})
+Signs a message using the provided key pair.
+@end deftypefun
+
+@deftypefun int ed448_shake256_verify (const uint8_t *@var{pub}, size_t @var{length}, const uint8_t *@var{msg}, const uint8_t *@var{signature})
 Verifies a message using the provided public key. Returns 1 if the
 signature is valid, otherwise 0.
 @end deftypefun
@@ -5151,18 +6051,6 @@ Nettle defines a compatible interface to MD5 in
 @file{<nettle/md5-compat.h>}. This file defines the typedef
 @code{MD5_CTX}, and declares the functions @code{MD5Init}, @code{MD5Update} and
 @code{MD5Final}.
-
-Eric Young's ``libdes'' (also part of OpenSSL) is a quite popular DES
-implementation. Nettle includes a subset if its interface in
-@file{<nettle/des-compat.h>}. This file defines the typedefs
-@code{des_key_schedule} and @code{des_cblock}, two constants
-@code{DES_ENCRYPT} and @code{DES_DECRYPT}, and declares one global
-variable @code{des_check_key}, and the functions @code{des_cbc_cksum}
-@code{des_cbc_encrypt}, @code{des_ecb2_encrypt},
-@code{des_ecb3_encrypt}, @code{des_ecb_encrypt},
-@code{des_ede2_cbc_encrypt}, @code{des_ede3_cbc_encrypt},
-@code{des_is_weak_key}, @code{des_key_sched}, @code{des_ncbc_encrypt}
-@code{des_set_key}, and @code{des_set_odd_parity}.
 
 @node Nettle soup, Installation, Reference, Top
 @comment  node-name,  next,  previous,  up

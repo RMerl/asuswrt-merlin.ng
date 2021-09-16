@@ -32,81 +32,91 @@
 #include "testutils.h"
 
 #include "eddsa.h"
+#include "eddsa-internal.h"
 
 #define COUNT 1000
 
 void test_main (void)
 {
-  const struct ecc_curve *ecc = &_nettle_curve25519;
   gmp_randstate_t rands;
-  mp_size_t size, itch;
-  mpz_t zp, t;
-  mp_limb_t *s;
-  mp_limb_t *p;
-  mp_limb_t *pa1;
-  mp_limb_t *pa2;
-  mp_limb_t *scratch;
-  size_t clen;
-  uint8_t *c;
-  unsigned j;
+  unsigned i;
 
   gmp_randinit_default (rands);
 
-  size = ecc_size (ecc);
-  clen = 1 + ecc->p.bit_size / 8;
-
-  mpz_roinit_n (zp, ecc->p.m, size);
-
-  mpz_init (t);
-  s = xalloc_limbs (size);
-  p = xalloc_limbs (ecc_size_j (ecc));
-  pa1 = xalloc_limbs (ecc_size_a (ecc));
-  pa2 = xalloc_limbs (ecc_size_a (ecc));
-  c = xalloc (clen);
-
-  itch = _eddsa_decompress_itch (ecc);
-  if (itch < ecc->mul_g_itch)
-    itch = ecc->mul_g_itch;
-
-  scratch = xalloc_limbs (itch);
-
-  for (j = 0; j < COUNT; j++)
+  for (i = 0; ecc_curves[i]; i++)
     {
-      mpz_t x1, y1, x2, y2;
+      const struct ecc_curve *ecc = ecc_curves[i];
+      mp_size_t size, itch;
+      mpz_t zp, t;
+      mp_limb_t *s;
+      mp_limb_t *p;
+      mp_limb_t *pa1;
+      mp_limb_t *pa2;
+      mp_limb_t *scratch;
+      size_t clen;
+      uint8_t *c;
+      unsigned j;
 
-      mpz_urandomb (t, rands, ecc->q.bit_size);
-      mpz_limbs_copy (s, t, ecc->q.size);
-      ecc->mul_g (ecc, p, s, scratch);
-      _eddsa_compress (ecc, c, p, scratch);
-      ecc->h_to_a (ecc, 0, pa1, p, scratch);
-      _eddsa_decompress (ecc, pa2, c, scratch);
-      mpz_roinit_n (x1, pa1, size);
-      mpz_roinit_n (y1, pa1 + size, size);
-      mpz_roinit_n (x2, pa2, size);
-      mpz_roinit_n (y2, pa2 + size, size);
-      if (!(mpz_congruent_p (x1, x2, zp)
-	    && mpz_congruent_p (y1, y2, zp)))
+      if (!(ecc->p.bit_size == 255 || ecc->p.bit_size == 448))
+	continue;
+  
+      size = ecc_size (ecc);
+      clen = 1 + ecc->p.bit_size / 8;
+
+      mpz_roinit_n (zp, ecc->p.m, size);
+
+      mpz_init (t);
+      s = xalloc_limbs (size);
+      p = xalloc_limbs (ecc_size_j (ecc));
+      pa1 = xalloc_limbs (ecc_size_a (ecc));
+      pa2 = xalloc_limbs (ecc_size_a (ecc));
+      c = xalloc (clen);
+
+      itch = _eddsa_decompress_itch (ecc);
+      if (itch < ecc->mul_g_itch)
+	itch = ecc->mul_g_itch;
+      ASSERT (_eddsa_compress_itch (ecc) <= itch);
+
+      scratch = xalloc_limbs (itch);
+
+      for (j = 0; j < COUNT; j++)
 	{
-	  fprintf (stderr, "eddsa compression failed:\nc = ");
-	  print_hex (clen, c);
-	  fprintf (stderr, "\np1 = 0x");
-	  mpz_out_str (stderr, 16, x1);
-	  fprintf (stderr, ",\n     0x");
-	  mpz_out_str (stderr, 16, y1);
-	  fprintf (stderr, "\np2 = 0x");
-	  mpz_out_str (stderr, 16, x2);
-	  fprintf (stderr, ",\n     0x");
-	  mpz_out_str (stderr, 16, y2);
-	  fprintf (stderr, "\n");
-	  abort ();
+	  mpz_t x1, y1, x2, y2;
+
+	  mpz_urandomb (t, rands, ecc->q.bit_size);
+	  mpz_limbs_copy (s, t, ecc->q.size);
+	  ecc->mul_g (ecc, p, s, scratch);
+	  _eddsa_compress (ecc, c, p, scratch);
+	  ecc->h_to_a (ecc, 0, pa1, p, scratch);
+	  _eddsa_decompress (ecc, pa2, c, scratch);
+	  mpz_roinit_n (x1, pa1, size);
+	  mpz_roinit_n (y1, pa1 + size, size);
+	  mpz_roinit_n (x2, pa2, size);
+	  mpz_roinit_n (y2, pa2 + size, size);
+	  if (!(mpz_congruent_p (x1, x2, zp)
+		&& mpz_congruent_p (y1, y2, zp)))
+	    {
+	      fprintf (stderr, "eddsa compression failed:\nc = ");
+	      print_hex (clen, c);
+	      fprintf (stderr, "\np1 = 0x");
+	      mpz_out_str (stderr, 16, x1);
+	      fprintf (stderr, ",\n     0x");
+	      mpz_out_str (stderr, 16, y1);
+	      fprintf (stderr, "\np2 = 0x");
+	      mpz_out_str (stderr, 16, x2);
+	      fprintf (stderr, ",\n     0x");
+	      mpz_out_str (stderr, 16, y2);
+	      fprintf (stderr, "\n");
+	      FAIL();
+	    }
 	}
+      mpz_clear (t);
+      free (s);
+      free (p);
+      free (c);
+      free (pa1);
+      free (pa2);
+      free (scratch);
     }
-  mpz_clear (t);
-  free (s);
-  free (p);
-  free (c);
-  free (pa1);
-  free (pa2);
-  free (scratch);
   gmp_randclear (rands);
 }

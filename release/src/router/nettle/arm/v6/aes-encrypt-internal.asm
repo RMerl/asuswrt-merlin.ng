@@ -1,6 +1,6 @@
 C arm/v6/aes-encrypt-internal.asm
 
-ifelse(<
+ifelse(`
    Copyright (C) 2013 Niels Möller
 
    This file is part of GNU Nettle.
@@ -28,11 +28,11 @@ ifelse(<
    You should have received copies of the GNU General Public License and
    the GNU Lesser General Public License along with this program.  If
    not, see http://www.gnu.org/licenses/.
->) 
+')
 
 	.arch armv6
 
-include_src(<arm/aes.m4>)
+include_src(`arm/aes.m4')
 
 C	Benchmarked at at 706, 870, 963 cycles/block on cortex A9,
 C	for 128, 192 and 256 bit key sizes.
@@ -40,38 +40,38 @@ C	for 128, 192 and 256 bit key sizes.
 C	Possible improvements: More efficient load and store with
 C	aligned accesses. Better scheduling.
 
-define(<PARAM_ROUNDS>, <r0>)
-define(<PARAM_KEYS>, <r1>)
-define(<TABLE>, <r2>)
-define(<LENGTH>, <r3>)
+define(`PARAM_ROUNDS', `r0')
+define(`PARAM_KEYS', `r1')
+define(`TABLE', `r2')
+define(`LENGTH', `r3')
 C On stack: DST, SRC
 
-define(<W0>, <r4>)
-define(<W1>, <r5>)
-define(<W2>, <r6>)
-define(<W3>, <r7>)
-define(<T0>, <r8>)
-define(<COUNT>, <r10>)
-define(<KEY>, <r11>)
+define(`W0', `r4')
+define(`W1', `r5')
+define(`W2', `r6')
+define(`W3', `r7')
+define(`T0', `r8')
+define(`COUNT', `r10')
+define(`KEY', `r11')
 
-define(<X0>, <r0>)	C Overlaps PARAM_ROUNDS and PARAM_KEYS
-define(<X1>, <r1>)
-define(<X2>, <r12>)
-define(<X3>, <r14>)	C lr
+define(`X0', `r0')	C Overlaps PARAM_ROUNDS and PARAM_KEYS
+define(`X1', `r1')
+define(`X2', `r12')
+define(`X3', `r14')	C lr
 
-define(<FRAME_ROUNDS>>,  <[sp]>)
-define(<FRAME_KEYS>,  <[sp, #+4]>)
+define(`FRAME_ROUNDS',  `[sp]')
+define(`FRAME_KEYS',  `[sp, #+4]')
 C 8 saved registers
-define(<FRAME_DST>,  <[sp, #+40]>)
-define(<FRAME_SRC>,  <[sp, #+44]>)
+define(`FRAME_DST',  `[sp, #+40]')
+define(`FRAME_SRC',  `[sp, #+44]')
 
-define(<SRC>, <r12>)	C Overlap registers used in inner loop.
-define(<DST>, <COUNT>)
+define(`SRC', `r12')	C Overlap registers used in inner loop.
+define(`DST', `COUNT')
 
 C 53 instr.
 C It's tempting to use eor with rotation, but that's slower.
 C AES_ENCRYPT_ROUND(x0,x1,x2,x3,w0,w1,w2,w3,key)
-define(<AES_ENCRYPT_ROUND>, <
+define(`AES_ENCRYPT_ROUND', `
 	uxtb	T0, $1 
 	ldr	$5, [TABLE, T0, lsl #2]
 	uxtb	T0, $2
@@ -129,7 +129,7 @@ define(<AES_ENCRYPT_ROUND>, <
 	eor	$6, $6, $2
 	eor	$7, $7, $3
 	eor	$8, $8, $4
->)
+')
 
 	.file "aes-encrypt-internal.asm"
 	

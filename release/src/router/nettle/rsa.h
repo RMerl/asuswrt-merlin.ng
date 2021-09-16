@@ -88,6 +88,7 @@ extern "C" {
 #define rsa_encrypt nettle_rsa_encrypt
 #define rsa_decrypt nettle_rsa_decrypt
 #define rsa_decrypt_tr nettle_rsa_decrypt_tr
+#define rsa_sec_decrypt nettle_rsa_sec_decrypt
 #define rsa_compute_root nettle_rsa_compute_root
 #define rsa_compute_root_tr nettle_rsa_compute_root_tr
 #define rsa_generate_keypair nettle_rsa_generate_keypair
@@ -98,11 +99,6 @@ extern "C" {
 #define rsa_private_key_from_der_iterator nettle_rsa_private_key_from_der_iterator
 #define rsa_keypair_from_der nettle_rsa_keypair_from_der
 #define rsa_keypair_to_openpgp nettle_rsa_keypair_to_openpgp
-#define _rsa_verify _nettle_rsa_verify
-#define _rsa_verify_recover _nettle_rsa_verify_recover
-#define _rsa_check_size _nettle_rsa_check_size
-#define _rsa_blind _nettle_rsa_blind
-#define _rsa_unblind _nettle_rsa_unblind
 
 /* This limit is somewhat arbitrary. Technically, the smallest modulo
    which makes sense at all is 15 = 3*5, phi(15) = 8, size 4 bits. But
@@ -423,13 +419,23 @@ rsa_decrypt_tr(const struct rsa_public_key *pub,
 	       size_t *length, uint8_t *message,
 	       const mpz_t gibberish);
 
-/* Compute x, the e:th root of m. Calling it with x == m is allowed. */
+/* like rsa_decrypt_tr but with additional side-channel resistance.
+ * NOTE: the length of the final message must be known in advance. */
+int
+rsa_sec_decrypt(const struct rsa_public_key *pub,
+	        const struct rsa_private_key *key,
+	        void *random_ctx, nettle_random_func *random,
+	        size_t length, uint8_t *message,
+	        const mpz_t gibberish);
+
+/* Compute x, the e:th root of m. Calling it with x == m is allowed.
+   It is required that 0 <= m < n. */
 void
 rsa_compute_root(const struct rsa_private_key *key,
 		 mpz_t x, const mpz_t m);
 
 /* Safer variant, using RSA blinding, and checking the result after
-   CRT. */
+   CRT. It is required that 0 <= m < n. */
 int
 rsa_compute_root_tr(const struct rsa_public_key *pub,
 		    const struct rsa_private_key *key,
@@ -524,28 +530,6 @@ rsa_keypair_to_openpgp(struct nettle_buffer *buffer,
 		       /* A single user id. NUL-terminated utf8. */
 		       const char *userid);
 
-/* Internal functions. */
-int
-_rsa_verify(const struct rsa_public_key *key,
-	    const mpz_t m,
-	    const mpz_t s);
-
-int
-_rsa_verify_recover(const struct rsa_public_key *key,
-		    mpz_t m,
-		    const mpz_t s);
-
-size_t
-_rsa_check_size(mpz_t n);
-
-/* _rsa_blind and _rsa_unblind are deprecated, unused in the library,
-   and will likely be removed with the next ABI break. */
-void
-_rsa_blind (const struct rsa_public_key *pub,
-	    void *random_ctx, nettle_random_func *random,
-	    mpz_t c, mpz_t ri);
-void
-_rsa_unblind (const struct rsa_public_key *pub, mpz_t c, const mpz_t ri);
 
 #ifdef __cplusplus
 }

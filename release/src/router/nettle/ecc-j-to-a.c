@@ -45,58 +45,29 @@ ecc_j_to_a (const struct ecc_curve *ecc,
 	    mp_limb_t *scratch)
 {
 #define izp   scratch
-#define up   (scratch + 2*ecc->p.size)
 #define iz2p (scratch + ecc->p.size)
 #define iz3p (scratch + 2*ecc->p.size)
-#define izBp (scratch + 3*ecc->p.size)
 #define tp    scratch
 
-  mp_limb_t cy;
+  ecc->p.invert (&ecc->p, izp, p+2*ecc->p.size, izp + ecc->p.size);
+  ecc_mod_sqr (&ecc->p, iz2p, izp, iz2p);
 
   if (ecc->use_redc)
     {
-      /* Set v = (r_z / B^2)^-1,
-
-	 r_x = p_x v^2 / B^3 =  ((v/B * v)/B * p_x)/B
-	 r_y = p_y v^3 / B^4 = (((v/B * v)/B * v)/B * p_y)/B
-      */
-
-      mpn_copyi (up, p + 2*ecc->p.size, ecc->p.size);
-      mpn_zero (up + ecc->p.size, ecc->p.size);
-      ecc->p.reduce (&ecc->p, up);
-      mpn_zero (up + ecc->p.size, ecc->p.size);
-      ecc->p.reduce (&ecc->p, up);
-
-      ecc->p.invert (&ecc->p, izp, up, up + ecc->p.size);
-
-      /* Divide this common factor by B */
-      mpn_copyi (izBp, izp, ecc->p.size);
-      mpn_zero (izBp + ecc->p.size, ecc->p.size);
-      ecc->p.reduce (&ecc->p, izBp);
-
-      ecc_modp_mul (ecc, iz2p, izp, izBp);
-    }
-  else
-    {
-      /* Set s = p_z^{-1}, r_x = p_x s^2, r_y = p_y s^3 */
-
-      mpn_copyi (up, p+2*ecc->p.size, ecc->p.size); /* p_z */
-      ecc->p.invert (&ecc->p, izp, up, up + ecc->p.size);
-
-      ecc_modp_sqr (ecc, iz2p, izp);
+      /* Divide this common factor by B, instead of applying redc to
+	 both x and y outputs. */
+      mpn_zero (iz2p + ecc->p.size, ecc->p.size);
+      ecc->p.reduce (&ecc->p, iz2p, iz2p);
     }
 
-  ecc_modp_mul (ecc, iz3p, iz2p, p);
-  /* ecc_modp (and ecc_modp_mul) may return a value up to 2p - 1, so
-     do a conditional subtraction. */
-  cy = mpn_sub_n (r, iz3p, ecc->p.m, ecc->p.size);
-  cnd_copy (cy, r, iz3p, ecc->p.size);
-
+  /* r_x <-- x / z^2 */
+  ecc_mod_mul_canonical (&ecc->p, r, iz2p, p, iz3p);
   if (op)
     {
       /* Skip y coordinate */
       if (op > 1)
 	{
+	  mp_limb_t cy;
 	  /* Also reduce the x coordinate mod ecc->q. It should
 	     already be < 2*ecc->q, so one subtraction should
 	     suffice. */
@@ -105,14 +76,10 @@ ecc_j_to_a (const struct ecc_curve *ecc,
 	}
       return;
     }
-  ecc_modp_mul (ecc, iz3p, iz2p, izp);
-  ecc_modp_mul (ecc, tp, iz3p, p + ecc->p.size);
-  /* And a similar subtraction. */
-  cy = mpn_sub_n (r + ecc->p.size, tp, ecc->p.m, ecc->p.size);
-  cnd_copy (cy, r + ecc->p.size, tp, ecc->p.size);
+  ecc_mod_mul (&ecc->p, iz3p, iz2p, izp, iz3p);
+  ecc_mod_mul_canonical (&ecc->p, r + ecc->p.size, iz3p, p + ecc->p.size, tp);
 
 #undef izp
-#undef up
 #undef iz2p
 #undef iz3p
 #undef tp

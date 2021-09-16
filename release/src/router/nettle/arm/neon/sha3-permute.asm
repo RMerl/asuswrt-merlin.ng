@@ -1,6 +1,6 @@
 C arm/neon/sha3-permute.asm
 
-ifelse(<
+ifelse(`
    Copyright (C) 2013 Niels Möller
 
    This file is part of GNU Nettle.
@@ -28,62 +28,62 @@ ifelse(<
    You should have received copies of the GNU General Public License and
    the GNU Lesser General Public License along with this program.  If
    not, see http://www.gnu.org/licenses/.
->) 
+')
 
 	.file "sha3-permute.asm"
 	.fpu	neon
 
-define(<CTX>, <r0>)
-define(<COUNT>, <r1>)
-define(<RC>, <r2>)
+define(`CTX', `r0')
+define(`COUNT', `r1')
+define(`RC', `r2')
 C First column
-define(<A0>, <d0>)
-define(<A5>, <d2>)
-define(<A10>, <d3>)
-define(<A15>, <d4>)
-define(<A20>, <d5>)
+define(`A0', `d0')
+define(`A5', `d2')
+define(`A10', `d3')
+define(`A15', `d4')
+define(`A20', `d5')
 
-define(<A1>, <d6>)
-define(<A2>, <d7>)
-define(<A3>, <d8>)
-define(<A4>, <d9>)
+define(`A1', `d6')
+define(`A2', `d7')
+define(`A3', `d8')
+define(`A4', `d9')
 
-define(<A6>, <d16>)
-define(<A7>, <d17>)
-define(<A8>, <d18>)
-define(<A9>, <d19>)
+define(`A6', `d16')
+define(`A7', `d17')
+define(`A8', `d18')
+define(`A9', `d19')
 
-define(<A11>, <d20>)
-define(<A12>, <d21>)
-define(<A13>, <d22>)
-define(<A14>, <d23>)
+define(`A11', `d20')
+define(`A12', `d21')
+define(`A13', `d22')
+define(`A14', `d23')
 
-define(<A16>, <d24>)
-define(<A17>, <d25>)
-define(<A18>, <d26>)
-define(<A19>, <d27>)
+define(`A16', `d24')
+define(`A17', `d25')
+define(`A18', `d26')
+define(`A19', `d27')
 
-define(<A21>, <d28>)
-define(<A22>, <d29>)
-define(<A23>, <d30>)
-define(<A24>, <d31>)
+define(`A21', `d28')
+define(`A22', `d29')
+define(`A23', `d30')
+define(`A24', `d31')
 
-define(<T0>, <d10>)
-define(<T1>, <d11>)
+define(`T0', `d10')
+define(`T1', `d11')
 
-define(<C0>, <d1>)
-define(<C1>, <d12>)
-define(<C2>, <d13>)
-define(<C3>, <d14>)
-define(<C4>, <d15>)
+define(`C0', `d1')
+define(`C1', `d12')
+define(`C2', `d13')
+define(`C3', `d14')
+define(`C4', `d15')
 
 
 C ROL(DST, SRC, COUNT)
 C Must have SRC != DST
-define(<ROL>, <
+define(`ROL', `
 	vshr.u64	$1, $2, #eval(64-$3)
 	vsli.i64	$1, $2, #$3
-	>)
+	')
 C sha3_permute(struct sha3_ctx *ctx)
 
 	.text

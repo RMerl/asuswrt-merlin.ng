@@ -1,6 +1,6 @@
 C x86/arcfour-crypt.asm
 
-ifelse(<
+ifelse(`
    Copyright (C) 2004, Niels Möller
 
    This file is part of GNU Nettle.
@@ -28,7 +28,7 @@ ifelse(<
    You should have received copies of the GNU General Public License and
    the GNU Lesser General Public License along with this program.  If
    not, see http://www.gnu.org/licenses/.
->)
+')
 
 	.file "arcfour-crypt.asm"
 

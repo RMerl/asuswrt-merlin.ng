@@ -40,6 +40,16 @@
 #include "aes-internal.h"
 #include "macros.h"
 
+/* For fat builds */
+#if HAVE_NATIVE_aes_encrypt
+void
+_nettle_aes_encrypt_c(unsigned rounds, const uint32_t *keys,
+    const struct aes_table *T,
+    size_t length, uint8_t *dst,
+    const uint8_t *src);
+#define _nettle_aes_encrypt _nettle_aes_encrypt_c
+#endif
+
 void
 _nettle_aes_encrypt(unsigned rounds, const uint32_t *keys,
 		    const struct aes_table *T,

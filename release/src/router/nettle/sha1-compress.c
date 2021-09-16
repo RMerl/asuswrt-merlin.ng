@@ -133,7 +133,7 @@
 #if HAVE_NATIVE_sha1_compress
 void
 _nettle_sha1_compress_c(uint32_t *state, const uint8_t *input);
-#define _nettle_sha1_compress _nettle_sha1_compress_c
+#define nettle_sha1_compress _nettle_sha1_compress_c
 #endif
 
 /* Perform the SHA transformation.  Note that this code, like MD5, seems to
@@ -142,7 +142,7 @@ _nettle_sha1_compress_c(uint32_t *state, const uint8_t *input);
    sections, e.g. based on the four subrounds. */
 
 void
-_nettle_sha1_compress(uint32_t *state, const uint8_t *input)
+nettle_sha1_compress(uint32_t *state, const uint8_t *input)
 {
   uint32_t data[SHA1_DATA_LENGTH];
   uint32_t A, B, C, D, E;     /* Local vars */

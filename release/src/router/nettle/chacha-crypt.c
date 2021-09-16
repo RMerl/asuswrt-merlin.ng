@@ -47,17 +47,119 @@
 #include <string.h>
 
 #include "chacha.h"
+#include "chacha-internal.h"
 
 #include "macros.h"
 #include "memxor.h"
 
 #define CHACHA_ROUNDS 20
 
+#if HAVE_NATIVE_chacha_4core
+#define _nettle_chacha_crypt_4core chacha_crypt
+#define _nettle_chacha_crypt32_4core chacha_crypt32
+#elif HAVE_NATIVE_chacha_3core
+#define _nettle_chacha_crypt_3core chacha_crypt
+#define _nettle_chacha_crypt32_3core chacha_crypt32
+#elif !(HAVE_NATIVE_fat_chacha_4core || HAVE_NATIVE_fat_chacha_3core)
+#define _nettle_chacha_crypt_1core chacha_crypt
+#define _nettle_chacha_crypt32_1core chacha_crypt32
+#endif
+
+#if HAVE_NATIVE_chacha_4core || HAVE_NATIVE_fat_chacha_4core
 void
-chacha_crypt(struct chacha_ctx *ctx,
-	      size_t length,
-	      uint8_t *c,
-	      const uint8_t *m)
+_nettle_chacha_crypt_4core(struct chacha_ctx *ctx,
+			   size_t length,
+			   uint8_t *dst,
+			   const uint8_t *src)
+{
+  uint32_t x[4*_CHACHA_STATE_LENGTH];
+
+  if (!length)
+    return;
+
+  while (length > 2*CHACHA_BLOCK_SIZE)
+    {
+      _nettle_chacha_4core (x, ctx->state, CHACHA_ROUNDS);
+      if (length <= 4*CHACHA_BLOCK_SIZE)
+	{
+	  uint32_t incr = 3 + (length > 3*CHACHA_BLOCK_SIZE);
+	  ctx->state[12] += incr;
+	  ctx->state[13] += (ctx->state[12] < incr);
+	  memxor3 (dst, src, x, length);
+	  return;
+	}
+      ctx->state[12] += 4;
+      ctx->state[13] += (ctx->state[12] < 4);
+      memxor3 (dst, src, x, 4*CHACHA_BLOCK_SIZE);
+
+      length -= 4*CHACHA_BLOCK_SIZE;
+      dst += 4*CHACHA_BLOCK_SIZE;
+      src += 4*CHACHA_BLOCK_SIZE;
+    }
+  if (length > CHACHA_BLOCK_SIZE)
+    {
+      _nettle_chacha_2core (x, ctx->state, CHACHA_ROUNDS);
+      ctx->state[12] += 2;
+      ctx->state[13] += (ctx->state[12] < 2);
+    }
+  else
+    {
+      _nettle_chacha_core (x, ctx->state, CHACHA_ROUNDS);
+      ctx->state[13] += (++ctx->state[12] == 0);
+    }
+  memxor3 (dst, src, x, length);
+}
+#endif
+
+#if HAVE_NATIVE_chacha_3core || HAVE_NATIVE_fat_chacha_3core
+void
+_nettle_chacha_crypt_3core(struct chacha_ctx *ctx,
+			   size_t length,
+			   uint8_t *dst,
+			   const uint8_t *src)
+{
+  uint32_t x[3*_CHACHA_STATE_LENGTH];
+
+  if (!length)
+    return;
+
+  while (length > 2*CHACHA_BLOCK_SIZE)
+    {
+      _nettle_chacha_3core (x, ctx->state, CHACHA_ROUNDS);
+      ctx->state[12] += 3;
+      ctx->state[13] += (ctx->state[12] < 3);
+      if (length <= 3*CHACHA_BLOCK_SIZE)
+	{
+	  memxor3 (dst, src, x, length);
+	  return;
+	}
+      memxor3 (dst, src, x, 3*CHACHA_BLOCK_SIZE);
+
+      length -= 3*CHACHA_BLOCK_SIZE;
+      dst += 3*CHACHA_BLOCK_SIZE;
+      src += 3*CHACHA_BLOCK_SIZE;
+    }
+  if (length <= CHACHA_BLOCK_SIZE)
+    {
+      _nettle_chacha_core (x, ctx->state, CHACHA_ROUNDS);
+      ctx->state[13] += (++ctx->state[12] == 0);
+    }
+  else
+    {
+      _nettle_chacha_3core (x, ctx->state, CHACHA_ROUNDS);
+      ctx->state[12] += 2;
+      ctx->state[13] += (ctx->state[12] < 2);
+    }
+  memxor3 (dst, src, x, length);
+}
+#endif
+
+#if !(HAVE_NATIVE_chacha_4core || HAVE_NATIVE_chacha_3core)
+void
+_nettle_chacha_crypt_1core(struct chacha_ctx *ctx,
+			   size_t length,
+			   uint8_t *dst,
+			   const uint8_t *src)
 {
   if (!length)
     return;
@@ -66,7 +168,7 @@ chacha_crypt(struct chacha_ctx *ctx,
     {
       uint32_t x[_CHACHA_STATE_LENGTH];
 
-      _chacha_core (x, ctx->state, CHACHA_ROUNDS);
+      _nettle_chacha_core (x, ctx->state, CHACHA_ROUNDS);
 
       ctx->state[13] += (++ctx->state[12] == 0);
 
@@ -74,13 +176,131 @@ chacha_crypt(struct chacha_ctx *ctx,
       
       if (length <= CHACHA_BLOCK_SIZE)
 	{
-	  memxor3 (c, m, x, length);
+	  memxor3 (dst, src, x, length);
 	  return;
 	}
-      memxor3 (c, m, x, CHACHA_BLOCK_SIZE);
+      memxor3 (dst, src, x, CHACHA_BLOCK_SIZE);
 
       length -= CHACHA_BLOCK_SIZE;
-      c += CHACHA_BLOCK_SIZE;
-      m += CHACHA_BLOCK_SIZE;
+      dst += CHACHA_BLOCK_SIZE;
+      src += CHACHA_BLOCK_SIZE;
   }
 }
+#endif
+
+#if HAVE_NATIVE_chacha_4core || HAVE_NATIVE_fat_chacha_4core
+void
+_nettle_chacha_crypt32_4core(struct chacha_ctx *ctx,
+			     size_t length,
+			     uint8_t *dst,
+			     const uint8_t *src)
+{
+  uint32_t x[4*_CHACHA_STATE_LENGTH];
+
+  if (!length)
+    return;
+
+  while (length > 2*CHACHA_BLOCK_SIZE)
+    {
+      _nettle_chacha_4core32 (x, ctx->state, CHACHA_ROUNDS);
+      if (length <= 4*CHACHA_BLOCK_SIZE)
+	{
+	  ctx->state[12] += 3 + (length > 3*CHACHA_BLOCK_SIZE);
+	  memxor3 (dst, src, x, length);
+	  return;
+	}
+      ctx->state[12] += 4;
+      memxor3 (dst, src, x, 4*CHACHA_BLOCK_SIZE);
+
+      length -= 4*CHACHA_BLOCK_SIZE;
+      dst += 4*CHACHA_BLOCK_SIZE;
+      src += 4*CHACHA_BLOCK_SIZE;
+    }
+  if (length > CHACHA_BLOCK_SIZE)
+    {
+      _nettle_chacha_2core32 (x, ctx->state, CHACHA_ROUNDS);
+      ctx->state[12] += 2;
+    }
+  else
+    {
+      _nettle_chacha_core (x, ctx->state, CHACHA_ROUNDS);
+      ++ctx->state[12];
+    }
+  memxor3 (dst, src, x, length);
+}
+#endif
+
+#if HAVE_NATIVE_chacha_3core || HAVE_NATIVE_fat_chacha_3core
+void
+_nettle_chacha_crypt32_3core(struct chacha_ctx *ctx,
+			     size_t length,
+			     uint8_t *dst,
+			     const uint8_t *src)
+{
+  uint32_t x[3*_CHACHA_STATE_LENGTH];
+
+  if (!length)
+    return;
+
+  while (length > 2*CHACHA_BLOCK_SIZE)
+    {
+      _nettle_chacha_3core32 (x, ctx->state, CHACHA_ROUNDS);
+      ctx->state[12] += 3;
+      if (length <= 3*CHACHA_BLOCK_SIZE)
+	{
+	  memxor3 (dst, src, x, length);
+	  return;
+	}
+      memxor3 (dst, src, x, 3*CHACHA_BLOCK_SIZE);
+
+      length -= 3*CHACHA_BLOCK_SIZE;
+      dst += 3*CHACHA_BLOCK_SIZE;
+      src += 3*CHACHA_BLOCK_SIZE;
+    }
+  if (length <= CHACHA_BLOCK_SIZE)
+    {
+      _nettle_chacha_core (x, ctx->state, CHACHA_ROUNDS);
+      ++ctx->state[12];
+    }
+  else
+    {
+      _nettle_chacha_3core32 (x, ctx->state, CHACHA_ROUNDS);
+      ctx->state[12] += 2;
+    }
+  memxor3 (dst, src, x, length);
+}
+#endif
+
+#if !(HAVE_NATIVE_chacha_4core || HAVE_NATIVE_chacha_3core)
+void
+_nettle_chacha_crypt32_1core(struct chacha_ctx *ctx,
+			     size_t length,
+			     uint8_t *dst,
+			     const uint8_t *src)
+{
+  if (!length)
+    return;
+
+  for (;;)
+    {
+      uint32_t x[_CHACHA_STATE_LENGTH];
+
+      _nettle_chacha_core (x, ctx->state, CHACHA_ROUNDS);
+
+      ++ctx->state[12];
+
+      /* stopping at 2^38 length per nonce is user's responsibility */
+
+      if (length <= CHACHA_BLOCK_SIZE)
+	{
+	  memxor3 (dst, src, x, length);
+	  return;
+	}
+      memxor3 (dst, src, x, CHACHA_BLOCK_SIZE);
+
+      length -= CHACHA_BLOCK_SIZE;
+      dst += CHACHA_BLOCK_SIZE;
+      src += CHACHA_BLOCK_SIZE;
+  }
+}
+#endif

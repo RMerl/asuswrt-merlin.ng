@@ -64,6 +64,10 @@ bindir =	@bindir@
 libdir =	@libdir@
 includedir =	@includedir@
 infodir =	@infodir@
+abs_top_builddir = @abs_top_builddir@
+
+# Absolute name, since some systems require that for LD_LIBRARY_PATH.
+TEST_SHLIB_DIR = ${abs_top_builddir}/.lib
 
 # PRE_CPPFLAGS and PRE_LDFLAGS lets each Makefile.in prepend its own
 # flags before CPPFLAGS and LDFLAGS. While EXTRA_CFLAGS are added at the end.
@@ -77,17 +81,11 @@ LINK_CXX = $(CXX) $(CXXFLAGS) $(PRE_LDFLAGS) $(LDFLAGS)
 # usual targets.
 default: all
 
-# For some reason the suffixes list must be set before the rules.
-# Otherwise BSD make won't build binaries e.g. aesdata. On the other
-# hand, AIX make has the opposite idiosyncrasies to BSD, and the AIX
-# compile was broken when .SUFFIXES was moved here from Makefile.in.
-
+# Don't use any old-fashioned suffix rules.
 .SUFFIXES:
-.SUFFIXES: .asm .c .$(OBJEXT) .html .dvi .info .exe .pdf .ps .texinfo
 
 # Disable builtin rule
 %$(EXEEXT) : %.c
-.c:
 
 # Keep object files
 .PRECIOUS: %.o

@@ -1,6 +1,6 @@
 C x86_64/gcm-hash8.asm
 
-ifelse(<
+ifelse(`
    Copyright (C) 2013 Niels Möller
 
    This file is part of GNU Nettle.
@@ -28,23 +28,23 @@ ifelse(<
    You should have received copies of the GNU General Public License and
    the GNU Lesser General Public License along with this program.  If
    not, see http://www.gnu.org/licenses/.
->)
+')
 
 C Register usage:
 
-define(<KEY>, <%rdi>)
-define(<XP>, <%rsi>)
-define(<LENGTH>, <%rdx>)
-define(<SRC>, <%rcx>)
-define(<X0>, <%rax>)
-define(<X1>, <%rbx>)
-define(<CNT>, <%ebp>)
-define(<T0>, <%r8>)
-define(<T1>, <%r9>)
-define(<T2>, <%r10>)
-define(<Z0>, <%r11>)
-define(<Z1>, <%r12>)
-define(<SHIFT_TABLE>, <%r13>)
+define(`KEY', `%rdi')
+define(`XP', `%rsi')
+define(`LENGTH', `%rdx')
+define(`SRC', `%rcx')
+define(`X0', `%rax')
+define(`X1', `%rbx')
+define(`CNT', `%ebp')
+define(`T0', `%r8')
+define(`T1', `%r9')
+define(`T2', `%r10')
+define(`Z0', `%r11')
+define(`Z1', `%r12')
+define(`SHIFT_TABLE', `%r13')
 
 	.file "gcm-hash8.asm"
 
@@ -200,7 +200,7 @@ ALIGN(16)
 	ret
 EPILOGUE(_nettle_gcm_hash8)
 
-define(<W>, <0x$2$1>)
+define(`W', `0x$2$1')
 	RODATA
 	ALIGN(2)
 C NOTE: Sun/Oracle assembler doesn't support ".short".

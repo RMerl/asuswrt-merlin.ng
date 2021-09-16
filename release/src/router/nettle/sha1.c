@@ -68,7 +68,7 @@ sha1_init(struct sha1_ctx *ctx)
   ctx->index = 0;
 }
 
-#define COMPRESS(ctx, data) (_nettle_sha1_compress((ctx)->state, data))
+#define COMPRESS(ctx, data) (nettle_sha1_compress((ctx)->state, data))
 
 void
 sha1_update(struct sha1_ctx *ctx,
@@ -93,7 +93,7 @@ sha1_digest(struct sha1_ctx *ctx,
 
   /* append the 64 bit count */
   WRITE_UINT64(ctx->block + (SHA1_BLOCK_SIZE - 8), bit_count);
-  _nettle_sha1_compress(ctx->state, ctx->block);
+  nettle_sha1_compress(ctx->state, ctx->block);
 
   _nettle_write_be32(length, digest, ctx->state);
   sha1_init(ctx);

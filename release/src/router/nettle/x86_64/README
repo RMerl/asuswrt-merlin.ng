@@ -1,0 +1,71 @@
+ABI, according to http://www.x86-64.org/documentation/abi-0.99.pdf:
+
+Up to 6 integer and pointer arguments are passed in registers. Nine
+registers, %rax, %rcx, %rdx, %rsi, %rdi and %r8-%r11 can be used
+freely. Integers and pointers are returned in %rax.
+
+At entry, it is required that %rsp == 8 (mod 16).
+
+Registers	May be		Argument
+		clobbered	number
+
+%rax 		Y
+%rbx		
+%rcx		Y		4
+%rdx		Y		3
+%rbp		
+%rsi		Y		2
+%rdi		Y		1 
+%rsp		(SP)
+%r8		Y		5
+%r9		Y		6
+%r10		Y
+%r11		Y
+%r12		
+%r13		
+%r14		
+%r15		
+
+W64 ABI, according to
+http://msdn.microsoft.com/en-us/library/9z1stfyw.aspx:
+
+Registers	May be		Argument
+		clobbered	number
+
+%rax 		Y
+%rbx		
+%rcx		Y		1
+%rdx		Y		2
+%rbp		
+%rsi
+%rdi
+%rsp		(SP)
+%r8		Y		3
+%r9		Y		4
+%r10		Y
+%r11		Y
+%r12		
+%r13		
+%r14		
+%r15		
+
+Additional arguments are passed on the stack. "backing store" on the
+stack for the four register arguments is also required. %xmm6 to
+%xmm15 are callee-saved. The "long" type is just 32 bits.
+
+If we have six arguments, and push the additional callee-save
+registers %rdi and %rsi on the stack, we get a stack frame like
+
+64(%rsp): Sixth argument
+56(%rsp): Fifth argument
+48(%rsp): Space for fourth argument
+40(%rsp): Space for third argument
+32(%rsp): Space for second argument
+24(%rsp): Space for first argument
+16(%rsp): Return address
+8(%rsp) : Saved %rdi
+(%rsp): Saved %rsi
+
+If, in addition, we use more than 6 %xmm registers, we push them 
+*after* %rdi (but before %rsi), so that they are stored at 16-byte
+aligned addresses.

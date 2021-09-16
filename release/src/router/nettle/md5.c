@@ -61,7 +61,7 @@ md5_init(struct md5_ctx *ctx)
   ctx->index = 0;
 }
 
-#define COMPRESS(ctx, data) (_nettle_md5_compress((ctx)->state, (data)))
+#define COMPRESS(ctx, data) (nettle_md5_compress((ctx)->state, (data)))
 
 void
 md5_update(struct md5_ctx *ctx,
@@ -86,7 +86,7 @@ md5_digest(struct md5_ctx *ctx,
   bit_count = (ctx->count << 9) | (ctx->index << 3);
 
   LE_WRITE_UINT64(ctx->block + (MD5_BLOCK_SIZE - 8), bit_count);
-  _nettle_md5_compress(ctx->state, ctx->block);
+  nettle_md5_compress(ctx->state, ctx->block);
 
   _nettle_write_le32(length, digest, ctx->state);
   md5_init(ctx);

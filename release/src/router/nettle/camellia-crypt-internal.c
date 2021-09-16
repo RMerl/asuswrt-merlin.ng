@@ -135,11 +135,11 @@
 #endif
 
 void
-_camellia_crypt(unsigned nkeys,
-		const uint64_t *keys,
-		const struct camellia_table *T,
-		size_t length, uint8_t *dst,
-		const uint8_t *src)
+_nettle_camellia_crypt(unsigned nkeys,
+		       const uint64_t *keys,
+		       const struct camellia_table *T,
+		       size_t length, uint8_t *dst,
+		       const uint8_t *src)
 {
   FOR_BLOCKS(length, dst, src, CAMELLIA_BLOCK_SIZE)
     {

@@ -1,6 +1,6 @@
 C x86_64/serpent-decrypt.asm
 
-ifelse(<
+ifelse(`
    Copyright (C) 2011 Niels Möller
 
    This file is part of GNU Nettle.
@@ -28,52 +28,52 @@ ifelse(<
    You should have received copies of the GNU General Public License and
    the GNU Lesser General Public License along with this program.  If
    not, see http://www.gnu.org/licenses/.
->)
+')
 
-include_src(<x86_64/serpent.m4>)
+include_src(`x86_64/serpent.m4')
 
 C Register usage:
 
 C Single block serpent state, two copies
-define(<x0>, <%eax>)
-define(<x1>, <%ebx>)
-define(<x2>, <%ebp>)
-define(<x3>, <%r8d>)
+define(`x0', `%eax')
+define(`x1', `%ebx')
+define(`x2', `%ebp')
+define(`x3', `%r8d')
 
-define(<y0>, <%r9d>)
-define(<y1>, <%r10d>)
-define(<y2>, <%r11d>)
-define(<y3>, <%r12d>)
+define(`y0', `%r9d')
+define(`y1', `%r10d')
+define(`y2', `%r11d')
+define(`y3', `%r12d')
 
 C Quadruple block serpent state, two copies
-define(<X0>, <%xmm0>)
-define(<X1>, <%xmm1>)
-define(<X2>, <%xmm2>)
-define(<X3>, <%xmm3>)
+define(`X0', `%xmm0')
+define(`X1', `%xmm1')
+define(`X2', `%xmm2')
+define(`X3', `%xmm3')
 
-define(<Y0>, <%xmm4>)
-define(<Y1>, <%xmm5>)
-define(<Y2>, <%xmm6>)
-define(<Y3>, <%xmm7>)
+define(`Y0', `%xmm4')
+define(`Y1', `%xmm5')
+define(`Y2', `%xmm6')
+define(`Y3', `%xmm7')
 
-define(<MINUS1>, <%xmm8>)
-define(<T0>, <%xmm9>)
-define(<T1>, <%xmm10>)
-define(<T2>, <%xmm11>)
-define(<T3>, <%xmm12>)
+define(`MINUS1', `%xmm8')
+define(`T0', `%xmm9')
+define(`T1', `%xmm10')
+define(`T2', `%xmm11')
+define(`T3', `%xmm12')
 
 C Arguments
-define(<CTX>, <%rdi>)
-define(<N>, <%rsi>)
-define(<DST>, <%rdx>)
-define(<SRC>, <%rcx>)
+define(`CTX', `%rdi')
+define(`N', `%rsi')
+define(`DST', `%rdx')
+define(`SRC', `%rcx')
 
-define(<CNT>, <%r13>)
-define(<TMP32>, <%r14d>)
+define(`CNT', `%r13')
+define(`TMP32', `%r14d')
 
 C SBOX macros. Inputs $1 - $4 (destroyed), outputs $5 - $8
 
-define(<SBOX0I>, <
+define(`SBOX0I', `
 	mov	$1, $5
 	xor	$3, $5
 	mov	$1, $7
@@ -98,9 +98,9 @@ define(<SBOX0I>, <
 	xor	$4, $8
 	or	$4, $2
 	xor	$2, $5
->)
+')
 
-define(<SBOX1I>, <
+define(`SBOX1I', `
 	mov	$2, $6
 	or	$4, $6
 	xor	$3, $6
@@ -123,9 +123,9 @@ define(<SBOX1I>, <
 	xor	$3, $5
 	or	$7, $1
 	xor	$1, $5
->)
+')
 
-define(<SBOX2I>, <
+define(`SBOX2I', `
 	mov	$1, $5
 	xor	$4, $5
 	mov	$3, $7
@@ -150,9 +150,9 @@ define(<SBOX2I>, <
 	mov	$5, $7
 	xor	$6, $7
 	xor	$3, $7
->)
+')
 
-define(<SBOX3I>, <
+define(`SBOX3I', `
 	mov	$3, $8
 	or	$4, $8
 	mov	$2, $5
@@ -174,9 +174,9 @@ define(<SBOX3I>, <
 	and	$7, $1
 	or	$2, $1
 	xor	$1, $8
->)
+')
 
-define(<SBOX4I>, <
+define(`SBOX4I', `
 	mov	$3, $6
 	xor	$4, $6
 	mov	$3, $7
@@ -198,9 +198,9 @@ define(<SBOX4I>, <
 	xor	$1, $5
 	xor	$2, $1
 	xor	$1, $7
->)
+')
 
-define(<SBOX5I>, <
+define(`SBOX5I', `
 	mov	$1, $6
 	and	$4, $6
 	mov	$3, $8
@@ -223,9 +223,9 @@ define(<SBOX5I>, <
 	not	$2
 	or	$1, $2
 	xor	$2, $8
->)
+')
 
-define(<SBOX6I>, <
+define(`SBOX6I', `
 	mov	$1, $7
 	xor	$3, $7
 	not	$3
@@ -250,9 +250,9 @@ define(<SBOX6I>, <
 	and	$5, $2
 	xor	$2, $7
 	xor	$4, $7
->)
+')
 
-define(<SBOX7I>, <
+define(`SBOX7I', `
 	mov	$1, $8
 	and	$2, $8
 	mov	$2, $7
@@ -276,34 +276,34 @@ define(<SBOX7I>, <
 	xor	$1, $6
 	or	$6, $4
 	xor	$4, $5
->)
+')
 
-define(<LTI>, <
-	rol	<$>10, $3
-	rol	<$>27, $1
+define(`LTI', `
+	rol	`$'10, $3
+	rol	`$'27, $1
 	mov	$2, TMP32
-	shl	<$>7, TMP32
+	shl	`$'7, TMP32
 	xor	$4, $3
 	xor	TMP32, $3
 	xor	$2, $1
 	xor	$4, $1
-	rol	<$>25, $4
-	rol	<$>31, $2
+	rol	`$'25, $4
+	rol	`$'31, $2
 	mov	$1, TMP32
-	shl	<$>3, TMP32
+	shl	`$'3, TMP32
 	xor	$3, $4
 	xor	TMP32, $4
 	xor	$1, $2
 	xor	$3, $2
-	rol	<$>29, $3
-	rol	<$>19, $1
->)
+	rol	`$'29, $3
+	rol	`$'19, $1
+')
 
-define(<PNOT>, <
+define(`PNOT', `
 	pxor	MINUS1, $1
->)
+')
 
-define(<WSBOX0I>, <
+define(`WSBOX0I', `
 	movdqa	$1, $5
 	pxor	$3, $5
 	movdqa	$1, $7
@@ -328,9 +328,9 @@ define(<WSBOX0I>, <
 	pxor	$4, $8
 	por	$4, $2
 	pxor	$2, $5
->)
+')
 
-define(<WSBOX1I>, <
+define(`WSBOX1I', `
 	movdqa	$2, $6
 	por	$4, $6
 	pxor	$3, $6
@@ -353,9 +353,9 @@ define(<WSBOX1I>, <
 	pxor	$3, $5
 	por	$7, $1
 	pxor	$1, $5
->)
+')
 
-define(<WSBOX2I>, <
+define(`WSBOX2I', `
 	movdqa	$1, $5
 	pxor	$4, $5
 	movdqa	$3, $7
@@ -380,9 +380,9 @@ define(<WSBOX2I>, <
 	movdqa	$5, $7
 	pxor	$6, $7
 	pxor	$3, $7
->)
+')
 
-define(<WSBOX3I>, <
+define(`WSBOX3I', `
 	movdqa	$3, $8
 	por	$4, $8
 	movdqa	$2, $5
@@ -404,9 +404,9 @@ define(<WSBOX3I>, <
 	pand	$7, $1
 	por	$2, $1
 	pxor	$1, $8
->)
+')
 
-define(<WSBOX4I>, <
+define(`WSBOX4I', `
 	movdqa	$3, $6
 	pxor	$4, $6
 	movdqa	$3, $7
@@ -428,9 +428,9 @@ define(<WSBOX4I>, <
 	pxor	$1, $5
 	pxor	$2, $1
 	pxor	$1, $7
->)
+')
 
-define(<WSBOX5I>, <
+define(`WSBOX5I', `
 	movdqa	$1, $6
 	pand	$4, $6
 	movdqa	$3, $8
@@ -453,9 +453,9 @@ define(<WSBOX5I>, <
 	PNOT($2)
 	por	$1, $2
 	pxor	$2, $8
->)
+')
 
-define(<WSBOX6I>, <
+define(`WSBOX6I', `
 	movdqa	$1, $7
 	pxor	$3, $7
 	PNOT($3)
@@ -480,9 +480,9 @@ define(<WSBOX6I>, <
 	pand	$5, $2
 	pxor	$2, $7
 	pxor	$4, $7
->)
+')
 
-define(<WSBOX7I>, <
+define(`WSBOX7I', `
 	movdqa	$1, $8
 	pand	$2, $8
 	movdqa	$2, $7
@@ -506,13 +506,13 @@ define(<WSBOX7I>, <
 	pxor	$1, $6
 	por	$6, $4
 	pxor	$4, $5
->)
+')
 
-define(<WLTI>, <
+define(`WLTI', `
 	WROL(10, $3)
 	WROL(27, $1)
 	movdqa	$2, T0
-	pslld	<$>7, T0
+	pslld	`$'7, T0
 	pxor	$4, $3
 	pxor	T0, $3
 	pxor	$2, $1
@@ -520,14 +520,14 @@ define(<WLTI>, <
 	WROL(25, $4)
 	WROL(31, $2)
 	movdqa	$1, T0
-	pslld	<$>3, T0
+	pslld	`$'3, T0
 	pxor	$3, $4
 	pxor	T0, $4
 	pxor	$1, $2
 	pxor	$3, $2
 	WROL(29, $3)
 	WROL(19, $1)
->)
+')
 
 	.file "serpent-decrypt.asm"
 	
@@ -713,3 +713,4 @@ PROLOGUE(nettle_serpent_decrypt)
 	pop	%rbx
 	W64_EXIT(4, 13)
 	ret
+EPILOGUE(nettle_serpent_decrypt)

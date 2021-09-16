@@ -1,6 +1,6 @@
 C x86_64/sha512-compress.asm
 
-ifelse(<
+ifelse(`
    Copyright (C) 2013 Niels Möller
 
    This file is part of GNU Nettle.
@@ -28,46 +28,46 @@ ifelse(<
    You should have received copies of the GNU General Public License and
    the GNU Lesser General Public License along with this program.  If
    not, see http://www.gnu.org/licenses/.
->)
+')
 
 	.file "sha512-compress.asm"
-define(<STATE>, <%rdi>)
-define(<INPUT>, <%rsi>)
-define(<K>, <%rdx>)
-define(<SA>, <%rax>)
-define(<SB>, <%rbx>)
-define(<SC>, <%rcx>)
-define(<SD>, <%r8>)
-define(<SE>, <%r9>)
-define(<SF>, <%r10>)
-define(<SG>, <%r11>)
-define(<SH>, <%r12>)
-define(<T0>, <%r13>)
-define(<T1>, <%rdi>)	C Overlap STATE
-define(<COUNT>, <%r14>)
-define(<W>, <%r15>)
+define(`STATE', `%rdi')
+define(`INPUT', `%rsi')
+define(`K', `%rdx')
+define(`SA', `%rax')
+define(`SB', `%rbx')
+define(`SC', `%rcx')
+define(`SD', `%r8')
+define(`SE', `%r9')
+define(`SF', `%r10')
+define(`SG', `%r11')
+define(`SH', `%r12')
+define(`T0', `%r13')
+define(`T1', `%rdi')	C Overlap STATE
+define(`COUNT', `%r14')
+define(`W', `%r15')
 
-define(<EXPN>, <
+define(`EXPN', `
 	mov	OFFSET64($1)(%rsp), W
 	mov	OFFSET64(eval(($1 + 14) % 16))(%rsp), T0
 	mov	T0, T1
-	shr	<$>6, T0
-	rol	<$>3, T1
+	shr	`$'6, T0
+	rol	`$'3, T1
 	xor	T1, T0
-	rol	<$>42, T1
+	rol	`$'42, T1
 	xor	T1, T0
 	add	T0, W
 	mov	OFFSET64(eval(($1 + 1) % 16))(%rsp), T0
 	mov	T0, T1
-	shr	<$>7, T0
-	rol	<$>56, T1
+	shr	`$'7, T0
+	rol	`$'56, T1
 	xor	T1, T0
-	rol	<$>7, T1
+	rol	`$'7, T1
 	xor	T1, T0
 	add	T0, W
 	add	OFFSET64(eval(($1 + 9) % 16))(%rsp), W
 	mov	W, OFFSET64($1)(%rsp)
->)
+')
 
 C ROUND(A,B,C,D,E,F,G,H,K)
 C
@@ -82,13 +82,13 @@ C S0(A) = A<<<36 ^ A<<<30 ^ A<<<25
 C Choice (E, F, G) = G^(E&(F^G))
 C Majority (A,B,C) = (A&B) + (C&(A^B))
 
-define(<ROUND>, <
+define(`ROUND', `
 	mov	$5, T0
 	mov	$5, T1
-	rol	<$>23, T0
-	rol	<$>46, T1
+	rol	`$'23, T0
+	rol	`$'46, T1
 	xor	T0, T1
-	rol	<$>27, T0
+	rol	`$'27, T0
 	xor	T0, T1
 	add	W, $8
 	add	T1, $8
@@ -102,10 +102,10 @@ define(<ROUND>, <
 
 	mov	$1, T0
 	mov	$1, T1
-	rol	<$>25, T0
-	rol	<$>30, T1
+	rol	`$'25, T0
+	rol	`$'30, T1
 	xor	T0, T1
-	rol	<$>11, T0
+	rol	`$'11, T0
 	xor	T0, T1
 	add	T1, $8
 	mov	$1, T0
@@ -115,13 +115,13 @@ define(<ROUND>, <
 	add	T0, $8
 	and	$3, T1
 	add	T1, $8
->)
+')
 
-define(<NOEXPN>, <
+define(`NOEXPN', `
 	mov	OFFSET64($1)(INPUT, COUNT, 8), W
 	bswap	W
 	mov	W, OFFSET64($1)(%rsp, COUNT, 8)
->)
+')
 
 	C void
 	C _nettle_sha512_compress(uint64_t *state, const uint8_t *input, const uint64_t *k)

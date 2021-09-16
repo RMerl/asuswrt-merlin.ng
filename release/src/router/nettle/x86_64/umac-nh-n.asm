@@ -1,6 +1,6 @@
 C x86_64/umac-nh-n.asm
 
-ifelse(<
+ifelse(`
    Copyright (C) 2013 Niels Möller
 
    This file is part of GNU Nettle.
@@ -28,31 +28,31 @@ ifelse(<
    You should have received copies of the GNU General Public License and
    the GNU Lesser General Public License along with this program.  If
    not, see http://www.gnu.org/licenses/.
->)
+')
 
-define(<OUT>, <%rdi>)
-define(<ITERS>, <%rsi>)
-define(<KEY>, <%rdx>)
-define(<LENGTH>, <%rcx>)
-define(<MSG>, <%r8>)
+define(`OUT', `%rdi')
+define(`ITERS', `%rsi')
+define(`KEY', `%rdx')
+define(`LENGTH', `%rcx')
+define(`MSG', `%r8')
 
-define(<XM0>, <%xmm0>)
-define(<XM1>, <%xmm1>)
-define(<XM2>, <%xmm2>)
-define(<XM3>, <%xmm3>)
-define(<XK0>, <%xmm4>)
-define(<XK1>, <%xmm5>)
-define(<XK2>, <%xmm6>)
-define(<XK3>, <%xmm7>)
-define(<XT0>, <%xmm8>)
-define(<XT1>, <%xmm9>)
-define(<XT2>, <%xmm10>)
-define(<XT3>, <%xmm11>)
-define(<XY0>, <%xmm12>)
-define(<XY1>, <%xmm13>)
+define(`XM0', `%xmm0')
+define(`XM1', `%xmm1')
+define(`XM2', `%xmm2')
+define(`XM3', `%xmm3')
+define(`XK0', `%xmm4')
+define(`XK1', `%xmm5')
+define(`XK2', `%xmm6')
+define(`XK3', `%xmm7')
+define(`XT0', `%xmm8')
+define(`XT1', `%xmm9')
+define(`XT2', `%xmm10')
+define(`XT3', `%xmm11')
+define(`XY0', `%xmm12')
+define(`XY1', `%xmm13')
 
 C Copy [0,1,2,3] to [1,1,3,3]
-define(<HI2LO>, <pshufd	<$>0xf5,>)
+define(`HI2LO', `pshufd	`$'0xf5,')
 
 C FIXME: Would be nice if we could force the key array to be 16-byte
 C aligned.

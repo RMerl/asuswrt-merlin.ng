@@ -33,14 +33,18 @@
 # include "config.h"
 #endif
 
+#include <assert.h>
+
 #include "eddsa.h"
+#include "eddsa-internal.h"
 
 #include "ecc-internal.h"
 
 mp_size_t
 _eddsa_public_key_itch (const struct ecc_curve *ecc)
 {
-  return 3*ecc->p.size + ecc->mul_g_itch;
+  assert (ecc->mul_g_itch <= _eddsa_compress_itch (ecc));
+  return 3*ecc->p.size + _eddsa_compress_itch (ecc);
 }
 
 void

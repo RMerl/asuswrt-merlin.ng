@@ -1,6 +1,6 @@
 C x86/aes-encrypt-internal.asm
 
-ifelse(<
+ifelse(`
    Copyright (C) 2001, 2002, 2005, Rafael R. Sevilla, Niels Möller
    Copyright (C) 2008, 2013 Niels Möller
 
@@ -29,35 +29,35 @@ ifelse(<
    You should have received copies of the GNU General Public License and
    the GNU Lesser General Public License along with this program.  If
    not, see http://www.gnu.org/licenses/.
->)
+')
 
-include_src(<x86/aes.m4>)
+include_src(`x86/aes.m4')
 
 C Register usage:
 
 C AES state
-define(<SA>,<%eax>)
-define(<SB>,<%ebx>)
-define(<SC>,<%ecx>)
-define(<SD>,<%edx>)
+define(`SA',`%eax')
+define(`SB',`%ebx')
+define(`SC',`%ecx')
+define(`SD',`%edx')
 
 C Primary use of these registers. They're also used temporarily for other things.
-define(<T>,<%ebp>)
-define(<TMP>,<%edi>)
-define(<KEY>,<%esi>)
+define(`T',`%ebp')
+define(`TMP',`%edi')
+define(`KEY',`%esi')
 
-define(<PARAM_ROUNDS>,	<40(%esp)>)
-define(<PARAM_KEYS>,	<44(%esp)>)
-define(<PARAM_TABLE>,	<48(%esp)>)
-define(<PARAM_LENGTH>,	<52(%esp)>)
-define(<PARAM_DST>,	<56(%esp)>)
-define(<PARAM_SRC>,	<60(%esp)>)
+define(`PARAM_ROUNDS',	`40(%esp)')
+define(`PARAM_KEYS',	`44(%esp)')
+define(`PARAM_TABLE',	`48(%esp)')
+define(`PARAM_LENGTH',	`52(%esp)')
+define(`PARAM_DST',	`56(%esp)')
+define(`PARAM_SRC',	`60(%esp)')
 
-define(<FRAME_KEY>,	<16(%esp)>)
-define(<FRAME_COUNT>,	<12(%esp)>)
-define(<TA>,		<8(%esp)>)
-define(<TB>,		<4(%esp)>)
-define(<TC>,		<(%esp)>)
+define(`FRAME_KEY',	`16(%esp)')
+define(`FRAME_COUNT',	`12(%esp)')
+define(`TA',		`8(%esp)')
+define(`TB',		`4(%esp)')
+define(`TC',		`(%esp)')
 
 C The aes state is kept in %eax, %ebx, %ecx and %edx
 C

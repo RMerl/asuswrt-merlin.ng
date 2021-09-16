@@ -46,14 +46,32 @@
 #include "chacha.h"
 #include "salsa20.h"
 
-/* NOTE: A bit ugly. Ignores weak keys, and pretends the set_key
-   functions have no return value. */
+/* Wrapper functions discarding the return value. Needed for the
+   ciphers with weak keys. */
+static void
+des_set_key_wrapper (void *ctx, const uint8_t *key)
+{
+  des_set_key (ctx, key);
+}
+
+static void
+des3_set_key_wrapper (void *ctx, const uint8_t *key)
+{
+  des3_set_key (ctx, key);
+}
+
+static void
+blowfish128_set_key_wrapper (void *ctx, const uint8_t *key)
+{
+  blowfish128_set_key (ctx, key);
+}
+
 const struct nettle_cipher
 nettle_des = {
   "des", sizeof(struct des_ctx),
   DES_BLOCK_SIZE, DES_KEY_SIZE,
-  (nettle_set_key_func *) des_set_key,
-  (nettle_set_key_func *) des_set_key,
+  des_set_key_wrapper,
+  des_set_key_wrapper,
   (nettle_cipher_func *) des_encrypt,
   (nettle_cipher_func *) des_decrypt
 };
@@ -62,20 +80,18 @@ const struct nettle_cipher
 nettle_des3 = {
  "des3", sizeof(struct des3_ctx),
  DES3_BLOCK_SIZE, DES3_KEY_SIZE,
- (nettle_set_key_func *) des3_set_key,
- (nettle_set_key_func *) des3_set_key,
+ des3_set_key_wrapper,
+ des3_set_key_wrapper,
  (nettle_cipher_func *) des3_encrypt,
  (nettle_cipher_func *) des3_decrypt
 };
 
-/* NOTE: This is not as nice as one might think, as we pretend
-   blowfish_set_key has no return value. */
 const struct nettle_cipher
 nettle_blowfish128 =
   { "blowfish128", sizeof(struct blowfish_ctx),
     BLOWFISH_BLOCK_SIZE, BLOWFISH128_KEY_SIZE,
-    (nettle_set_key_func *) blowfish128_set_key,
-    (nettle_set_key_func *) blowfish128_set_key,
+    blowfish128_set_key_wrapper,
+    blowfish128_set_key_wrapper,
     (nettle_cipher_func *) blowfish_encrypt,
     (nettle_cipher_func *) blowfish_decrypt
   };

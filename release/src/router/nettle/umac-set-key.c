@@ -36,6 +36,7 @@
 #include <string.h>
 
 #include "umac.h"
+#include "umac-internal.h"
 
 #include "macros.h"
 
@@ -77,9 +78,9 @@ umac_kdf (struct aes128_ctx *aes, unsigned index, unsigned length, uint8_t *dst)
 #endif
 
 void
-_umac_set_key (uint32_t *l1_key, uint32_t *l2_key,
-	       uint64_t *l3_key1, uint32_t *l3_key2,
-	       struct aes128_ctx *aes, const uint8_t *key, unsigned n)
+_nettle_umac_set_key (uint32_t *l1_key, uint32_t *l2_key,
+		      uint64_t *l3_key1, uint32_t *l3_key2,
+		      struct aes128_ctx *aes, const uint8_t *key, unsigned n)
 {
   unsigned size;
   uint8_t buffer[UMAC_KEY_SIZE];
@@ -92,11 +93,11 @@ _umac_set_key (uint32_t *l1_key, uint32_t *l2_key,
 
   size = 6*n;
   umac_kdf (aes, 2, size * sizeof(uint32_t), (uint8_t *) l2_key);
-  _umac_l2_init (size, l2_key);
+  _nettle_umac_l2_init (size, l2_key);
 
   size = 8*n;
   umac_kdf (aes, 3, size * sizeof(uint64_t), (uint8_t *) l3_key1);
-  _umac_l3_init (size, l3_key1);
+  _nettle_umac_l3_init (size, l3_key1);
 
   /* No need to byteswap these subkeys. */
   umac_kdf (aes, 4, n * sizeof(uint32_t), (uint8_t *) l3_key2);

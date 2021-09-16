@@ -39,87 +39,54 @@
 
 #include "gmp-glue.h"
 
-#if !GMP_HAVE_mpz_limbs_read
-
-/* This implementation tries to make a minimal use of GMP internals.
-   We access and _mp_size and _mp_d, but not _mp_alloc. */
-
-/* Use macros compatible with gmp-impl.h. */
-#define ABS(x) ((x) >= 0 ? (x) : -(x))
-#define PTR(x) ((x)->_mp_d)
-#define SIZ(x) ((x)->_mp_size)
-#define ABSIZ(x) ABS (SIZ (x))
-
-#define MPN_NORMALIZE(xp, xn) do {		\
-    while ( (xn) > 0 && (xp)[xn-1] == 0)	\
-      (xn)--;					\
-  }  while (0)
-
-/* NOTE: Makes an unnecessary realloc if allocation is already large
-   enough, but looking at _mp_alloc may break in future GMP
-   versions. */
-#define MPZ_REALLOC(x, n) \
-  (ABSIZ(x) >= (n) ? PTR(x) : (_mpz_realloc ((x),(n)), PTR (x)))
-
-#define MPZ_NEWALLOC MPZ_REALLOC
-
-/* Read access to mpz numbers. */
-
-/* Return limb pointer, for read-only operations. Use mpz_size to get
-   the number of limbs. */
-const mp_limb_t *
-mpz_limbs_read (mpz_srcptr x)
+#if NETTLE_USE_MINI_GMP
+mp_limb_t
+mpn_cnd_add_n (mp_limb_t cnd, mp_limb_t *rp,
+	       const mp_limb_t *ap, const mp_limb_t *bp, mp_size_t n)
 {
-  return PTR (x);
+  mp_limb_t cy, mask;
+  mp_size_t  i;
+
+  mask = -(mp_limb_t) (cnd != 0);
+
+  for (i = 0, cy = 0; i < n; i++)
+    {
+      mp_limb_t rl = ap[i] + cy;
+      mp_limb_t bl = bp[i] & mask;
+      cy = (rl < cy);
+      rl += bl;
+      cy += (rl < bl);
+      rp[i] = rl;
+    }
+  return cy;
 }
 
-/* Write access to mpz numbers. */
-
-/* Get a limb pointer for writing, previous contents may be
-   destroyed. */
-mp_limb_t *
-mpz_limbs_write (mpz_ptr x, mp_size_t n)
+mp_limb_t
+mpn_cnd_sub_n (mp_limb_t cnd, mp_limb_t *rp,
+	       const mp_limb_t *ap, const mp_limb_t *bp, mp_size_t n)
 {
-  assert (n > 0);
-  return MPZ_NEWALLOC (x, n);
-}
+  mp_limb_t cy, mask;
+  mp_size_t  i;
 
-/* Get a limb pointer for writing, previous contents is intact. */
-mp_limb_t *
-mpz_limbs_modify (mpz_ptr x, mp_size_t n)
-{
-  assert (n > 0);
-  return MPZ_REALLOC (x, n);
+  mask = -(mp_limb_t) (cnd != 0);
+
+  for (i = 0, cy = 0; i < n; i++)
+    {
+      mp_limb_t al = ap[i];
+      mp_limb_t bl = bp[i] & mask;
+      mp_limb_t sl;
+      sl = al - cy;
+      cy = (al < cy) + (sl < bl);
+      sl -= bl;
+      rp[i] = sl;
+    }
+  return cy;
 }
 
 void
-mpz_limbs_finish (mpz_ptr x, mp_size_t n)
+mpn_cnd_swap (mp_limb_t cnd, volatile mp_limb_t *ap, volatile mp_limb_t *bp, mp_size_t n)
 {
-  assert (n >= 0);
-  MPN_NORMALIZE (PTR(x), n);
-
-  SIZ (x) = n;
-}
-
-/* Needs some ugly casts. */
-mpz_srcptr
-mpz_roinit_n (mpz_ptr x, const mp_limb_t *xp, mp_size_t xs)
-{
-  mp_size_t xn = ABS (xs);
-  
-  MPN_NORMALIZE (xp, xn);
-
-  x->_mp_size = xs < 0 ? -xn : xn;
-  x->_mp_alloc = 0;
-  x->_mp_d = (mp_limb_t *) xp;
-  return x;
-}
-#endif /* !GMP_HAVE_mpz_limbs_read */
-
-void
-cnd_swap (mp_limb_t cnd, mp_limb_t *ap, mp_limb_t *bp, mp_size_t n)
-{
-  mp_limb_t mask = - (mp_limb_t) (cnd != 0);
+  volatile mp_limb_t mask = - (mp_limb_t) (cnd != 0);
   mp_size_t i;
   for (i = 0; i < n; i++)
     {
@@ -131,6 +98,8 @@ cnd_swap (mp_limb_t cnd, mp_limb_t *ap, mp_limb_t *bp, mp_size_t n)
       bp[i] = b ^ t;
     }
 }
+
+#endif /* NETTLE_USE_MINI_GMP */
 
 /* Additional convenience functions. */
 
@@ -243,6 +212,37 @@ mpn_set_base256_le (mp_limb_t *rp, mp_size_t rn,
       *rp++ = out;
       if (--rn > 0)
 	mpn_zero (rp, rn);
+    }
+}
+
+void
+mpn_get_base256 (uint8_t *rp, size_t rn,
+		 const mp_limb_t *xp, mp_size_t xn)
+{
+  unsigned bits;
+  mp_limb_t in;
+  for (bits = in = 0; xn > 0 && rn > 0; )
+    {
+      if (bits >= 8)
+	{
+	  rp[--rn] = in;
+	  in >>= 8;
+	  bits -= 8;
+	}
+      else
+	{
+	  uint8_t old = in;
+	  in = *xp++;
+	  xn--;
+	  rp[--rn] = old | (in << bits);
+	  in >>= (8 - bits);
+	  bits += GMP_NUMB_BITS - 8;
+	}
+    }
+  while (rn > 0)
+    {
+      rp[--rn] = in;
+      in >>= 8;
     }
 }
 

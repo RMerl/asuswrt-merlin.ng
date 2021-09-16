@@ -43,7 +43,7 @@
 void
 aes128_invert_key (struct aes128_ctx *dst, const struct aes128_ctx *src)
 {
-  _aes_invert (_AES128_ROUNDS, dst->keys, src->keys); 
+  _nettle_aes_invert (_AES128_ROUNDS, dst->keys, src->keys);
 }
 
 void

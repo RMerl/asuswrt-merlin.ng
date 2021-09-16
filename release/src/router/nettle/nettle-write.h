@@ -36,8 +36,7 @@
 
 /* For size_t */
 #include <stddef.h>
-
-#include "nettle-stdint.h"
+#include <stdint.h>
 
 /* Write the word array at SRC to the byte array at DST, using little
    endian (le) or big endian (be) byte order, and truncating the

@@ -55,7 +55,7 @@
 #include "macros.h"
 
 void
-_camellia_absorb(unsigned nkeys, uint64_t *dst, uint64_t *subkey)
+_nettle_camellia_absorb(unsigned nkeys, uint64_t *dst, uint64_t *subkey)
 {
   uint64_t kw2, kw4;
   uint32_t dw, tl, tr;

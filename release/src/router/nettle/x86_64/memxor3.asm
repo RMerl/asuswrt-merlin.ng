@@ -1,6 +1,6 @@
 C x86_64/memxor3.asm
 
-ifelse(<
+ifelse(`
    Copyright (C) 2010, 2014 Niels Möller
 
    This file is part of GNU Nettle.
@@ -28,20 +28,20 @@ ifelse(<
    You should have received copies of the GNU General Public License and
    the GNU Lesser General Public License along with this program.  If
    not, see http://www.gnu.org/licenses/.
->)
+')
 
 C Register usage:
-define(<DST>, <%rax>) C Originally in %rdi
-define(<AP>, <%rsi>)
-define(<BP>, <%rdx>)
-define(<N>, <%r10>)
-define(<TMP>, <%r8>)
-define(<TMP2>, <%r9>)
-define(<CNT>, <%rdi>)
-define(<S0>, <%r11>)
-define(<S1>, <%rdi>) C Overlaps with CNT 
+define(`DST', `%rax') C Originally in %rdi
+define(`AP', `%rsi')
+define(`BP', `%rdx')
+define(`N', `%r10')
+define(`TMP', `%r8')
+define(`TMP2', `%r9')
+define(`CNT', `%rdi')
+define(`S0', `%r11')
+define(`S1', `%rdi') C Overlaps with CNT
 
-define(<USE_SSE2>, <no>)
+define(`USE_SSE2', `no')
 
 	.file "memxor3.asm"
 
@@ -83,10 +83,10 @@ PROLOGUE(nettle_memxor3)
 	jnz	.Lalign_loop
 
 .Laligned:
-ifelse(USE_SSE2, yes, <
+ifelse(USE_SSE2, yes, `
 	cmp	$16, N
 	jnc	.Lsse2_case
->)
+')
 	C Check for the case that AP and BP have the same alignment,
 	C but different from DST.
 	mov	AP, TMP
@@ -223,7 +223,7 @@ C 	jz	.Ldone
 	W64_EXIT(4, 0)
 	ret
 
-ifelse(USE_SSE2, yes, <
+ifelse(USE_SSE2, yes, `
 
 .Lsse2_case:
 	lea	(DST, N), TMP
@@ -257,7 +257,7 @@ ifelse(USE_SSE2, yes, <
 	C ENTRY might have been 3 args, too, but it doesn't matter for the exit
 	W64_EXIT(4, 0)
 	ret
->)	
+')
 	
 
 EPILOGUE(nettle_memxor3)

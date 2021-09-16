@@ -41,7 +41,7 @@
 void
 aes256_invert_key (struct aes256_ctx *dst, const struct aes256_ctx *src)
 {
-  _aes_invert (_AES256_ROUNDS, dst->keys, src->keys); 
+  _nettle_aes_invert (_AES256_ROUNDS, dst->keys, src->keys);
 }
 
 void

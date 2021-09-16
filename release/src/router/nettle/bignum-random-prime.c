@@ -50,7 +50,7 @@
 #endif
 
 #include "bignum.h"
-
+#include "hogweed-internal.h"
 #include "macros.h"
 
 /* Use a table of p_2 = 3 to p_{172} = 1021, used for sieving numbers

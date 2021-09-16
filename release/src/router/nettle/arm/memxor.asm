@@ -1,6 +1,6 @@
 C arm/memxor.asm
 
-ifelse(<
+ifelse(`
    Copyright (C) 2013 Niels Möller
 
    This file is part of GNU Nettle.
@@ -28,7 +28,7 @@ ifelse(<
    You should have received copies of the GNU General Public License and
    the GNU Lesser General Public License along with this program.  If
    not, see http://www.gnu.org/licenses/.
->) 
+')
 
 C Possible speedups:
 C
@@ -38,11 +38,16 @@ C cycles, regardless of alignment.
 
 C Register usage:
 
-define(<DST>, <r0>)
-define(<SRC>, <r1>)
-define(<N>, <r2>)
-define(<CNT>, <r6>)
-define(<TNC>, <r12>)
+define(`DST', `r0')
+define(`SRC', `r1')
+define(`N', `r2')
+define(`CNT', `r6')
+define(`TNC', `r12')
+
+C little-endian and big-endian need to shift in different directions for
+C alignment correction
+define(`S0ADJ', IF_LE(`lsr', `lsl'))
+define(`S1ADJ', IF_LE(`lsl', `lsr'))
 
 	.syntax unified
 
@@ -99,6 +104,8 @@ PROLOGUE(nettle_memxor)
 	C
 	C With little-endian, we need to do
 	C DST[i] ^= (SRC[i] >> CNT) ^ (SRC[i+1] << TNC)
+	C With big-endian, we need to do
+	C DST[i] ^= (SRC[i] << CNT) ^ (SRC[i+1] >> TNC)
 
 	push	{r4,r5,r6}
 	
@@ -117,22 +124,24 @@ PROLOGUE(nettle_memxor)
 .Lmemxor_word_loop:
 	ldr	r5, [SRC], #+4
 	ldr	r3, [DST]
-	eor	r3, r3, r4, lsr CNT
-	eor	r3, r3, r5, lsl TNC
+	eor	r3, r3, r4, S0ADJ CNT
+	eor	r3, r3, r5, S1ADJ TNC
 	str	r3, [DST], #+4
 .Lmemxor_odd:
 	ldr	r4, [SRC], #+4
 	ldr	r3, [DST]
-	eor	r3, r3, r5, lsr CNT
-	eor	r3, r3, r4, lsl TNC
+	eor	r3, r3, r5, S0ADJ CNT
+	eor	r3, r3, r4, S1ADJ TNC
 	str	r3, [DST], #+4
 	subs	N, #8
 	bcs	.Lmemxor_word_loop
 	adds	N, #8
 	beq	.Lmemxor_odd_done
 
-	C We have TNC/8 left-over bytes in r4, high end
-	lsr	r4, CNT
+	C We have TNC/8 left-over bytes in r4, high end on LE and low end on
+	C BE, excess bits to be discarded by alignment adjustment at the other
+	S0ADJ	r4, CNT
+	C now byte-aligned at low end on LE and high end on BE
 	ldr	r3, [DST]
 	eor	r3, r4
 
@@ -140,11 +149,14 @@ PROLOGUE(nettle_memxor)
 
 	C Store bytes, one by one.
 .Lmemxor_leftover:
+	C bring uppermost byte down for saving while preserving lower ones
+IF_BE(`	ror	r3, #24')
 	strb	r3, [DST], #+1
 	subs	N, #1
 	beq	.Lmemxor_done
 	subs	TNC, #8
-	lsr	r3, #8
+	C bring down next byte, no need to preserve
+IF_LE(`	lsr	r3, #8')
 	bne	.Lmemxor_leftover
 	b	.Lmemxor_bytes
 .Lmemxor_odd_done:

@@ -47,6 +47,14 @@ ecc_dup_jj (const struct ecc_curve *ecc,
 	    mp_limb_t *r, const mp_limb_t *p,
 	    mp_limb_t *scratch)
 {
+#define x1 p
+#define y1 (p + ecc->p.size)
+#define z1 (p + 2*ecc->p.size)
+
+#define x2 r
+#define y2 (r + ecc->p.size)
+#define z2 (r + 2*ecc->p.size)
+
   /* Formulas (from djb,
      http://www.hyperelliptic.org/EFD/g1p/auto-shortw-jacobian-3.html#doubling-dbl-2001-b):
 
@@ -60,51 +68,37 @@ ecc_dup_jj (const struct ecc_curve *ecc,
      y' = alpha*(4*beta-x')-8*gamma^2	mul, sqr
   */
 
-#define delta  scratch
-#define gamma (scratch + ecc->p.size)
-#define beta  (scratch + 2*ecc->p.size)
-#define g2    (scratch + 3*ecc->p.size)
-#define sum   (scratch + 4*ecc->p.size)
-#define alpha  scratch /* Overlap delta */
-  
-#define xp p
-#define yp (p + ecc->p.size)
-#define zp (p + 2*ecc->p.size)
-  
-  /* delta */
-  ecc_modp_sqr (ecc, delta, zp);
+#define gamma scratch
+#define delta (scratch + ecc->p.size)
+#define alpha delta
 
-  /* gamma */
-  ecc_modp_sqr (ecc, gamma, yp);
+#define beta (scratch + 2*ecc->p.size)
+#define sum  (scratch + 3*ecc->p.size)
 
-  /* z'. Can use beta area as scratch. */
-  ecc_modp_add (ecc, r + 2*ecc->p.size, yp, zp);
-  ecc_modp_sqr (ecc, beta, r + 2*ecc->p.size);
-  ecc_modp_sub (ecc, beta, beta, gamma);
-  ecc_modp_sub (ecc, r + 2*ecc->p.size, beta, delta);
-  
-  /* alpha. Can use beta area as scratch, and overwrite delta. */
-  ecc_modp_add (ecc, sum, xp, delta);
-  ecc_modp_sub (ecc, delta, xp, delta);
-  ecc_modp_mul (ecc, beta, sum, delta);
-  ecc_modp_mul_1 (ecc, alpha, beta, 3);
+  ecc_mod_sqr (&ecc->p, gamma, y1, gamma);	/* x, y, z, gamma */
+  ecc_mod_sqr (&ecc->p, delta, z1, delta);	/* x, y, z, gamma, delta */
 
-  /* beta */
-  ecc_modp_mul (ecc, beta, xp, gamma);
+  ecc_mod_add (&ecc->p, sum, z1, y1);		/* x, gamma, delta, s */
+  ecc_mod_sqr (&ecc->p, sum, sum, y2);		/* Can use y-z as scratch */
+  ecc_mod_sub (&ecc->p, z2, sum, delta);	/* x, z, gamma, delta */
+  ecc_mod_sub (&ecc->p, z2, z2, gamma);
 
-  /* Do gamma^2 and 4*beta early, to get them out of the way. We can
-     then use the old area at gamma as scratch. */
-  ecc_modp_sqr (ecc, g2, gamma);
-  ecc_modp_mul_1 (ecc, sum, beta, 4);
-  
-  /* x' */
-  ecc_modp_sqr (ecc, gamma, alpha);   /* Overwrites gamma and beta */
-  ecc_modp_submul_1 (ecc, gamma, sum, 2);
-  mpn_copyi (r, gamma, ecc->p.size);
+  ecc_mod_mul (&ecc->p, beta, x1, gamma, beta);	/* x, z, gamma, delta, beta */
 
-  /* y' */
-  ecc_modp_sub (ecc, sum, sum, r);
-  ecc_modp_mul (ecc, gamma, sum, alpha);
-  ecc_modp_submul_1 (ecc, gamma, g2, 8);
-  mpn_copyi (r + ecc->p.size, gamma, ecc->p.size);
+  ecc_mod_add (&ecc->p, sum, x1, delta);	/* x, sum, z', gamma, delta, beta */
+  ecc_mod_sub (&ecc->p, delta, x1, delta);	/* sum, z', gamma, delta, beta */
+  /* This multiplication peaks the storage need; can use x-y for scratch. */
+  ecc_mod_mul (&ecc->p, alpha, sum, delta, x2);	/* z', gamma, alpha, beta */
+  ecc_mod_mul_1 (&ecc->p, alpha, alpha, 3);
+
+  ecc_mod_mul_1 (&ecc->p, y2, beta, 4);
+
+  /* From now on, can use beta as scratch. */
+  ecc_mod_sqr (&ecc->p, x2, alpha, beta);	/* alpha^2 */
+  ecc_mod_submul_1 (&ecc->p, x2, y2, 2);	/*  alpha^2 - 8 beta */
+
+  ecc_mod_sub (&ecc->p, y2, y2, x2);		/* 4 beta - x' */
+  ecc_mod_mul (&ecc->p, y2, y2, alpha, beta);
+  ecc_mod_sqr (&ecc->p, gamma, gamma, beta);
+  ecc_mod_submul_1 (&ecc->p, y2, gamma, 8);
 }

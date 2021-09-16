@@ -1,16 +1,16 @@
 C Used as temporaries by the AES macros
-define(<TMP1>, <%g1>)
-define(<TMP2>, <%g2>)
-define(<TMP3>, <%g3>)
+define(`TMP1', `%g1')
+define(`TMP2', `%g2')
+define(`TMP3', `%g3')
 
 C Loop invariants used by AES_ROUND
-define(<T0>,	<%o0>)
-define(<T1>,	<%o1>)
-define(<T2>,	<%o2>)
-define(<T3>,	<%o3>)
+define(`T0',	`%o0')
+define(`T1',	`%o1')
+define(`T2',	`%o2')
+define(`T3',	`%o3')
 
 C AES_LOAD(i, src, key, res)
-define(<AES_LOAD>, <
+define(`AES_LOAD', `
 	ldub	[$2 + 4*$1], $4
 	ldub	[$2 + 4*$1 + 1], TMP1
 	ldub	[$2 + 4*$1 + 2], TMP2
@@ -25,14 +25,14 @@ define(<AES_LOAD>, <
 	C	Get subkey
 	ld	[$3 + 4*$1], TMP2
 	or	$4, TMP1, $4
-	xor	$4, TMP2, $4>)dnl
+	xor	$4, TMP2, $4')dnl
 
 C AES_ROUND(i, a, b, c, d, key, res)
 C Computes one word of the AES round
 C FIXME: Could use registers pointing directly to the four tables
 C FIXME: Needs better instruction scheduling, and perhaps more temporaries
 C Alternatively, we can use a single table and some rotations
-define(<AES_ROUND>, <
+define(`AES_ROUND', `
 	and	$2, 0xff, TMP1		C  0
 	srl	$3, 6, TMP2		C  1
 	sll	TMP1, 2, TMP1		C  0
@@ -50,12 +50,12 @@ define(<AES_ROUND>, <
 	ld	[T3 + TMP2], TMP2	C  3
 	xor	$7, TMP1, $7		C  4	E4
 	xor	$7, TMP2, $7		C  3	E3
->)dnl
+')dnl
 
 C AES_FINAL_ROUND(i, T, a, b, c, d, key, dst)
 C Compute one word in the final round function. Output is converted to
 C octets and stored at dst. Relies on AES_SBOX being zero.
-define(<AES_FINAL_ROUND>, <
+define(`AES_FINAL_ROUND', `
 	C	Load subkey
 	ld	[$7 + 4*$1], TMP3
 
@@ -80,4 +80,4 @@ define(<AES_FINAL_ROUND>, <
 	stb	TMP1, [$8 + 4*$1 + 2]	C  2	E2
 	xor	TMP3, TMP2, TMP2	C  3
 	stb	TMP2, [$8 + 4*$1 + 3]	C  3	E3
->)
+')

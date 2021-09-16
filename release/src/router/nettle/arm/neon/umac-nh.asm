@@ -1,6 +1,6 @@
 C arm/neon/umac-nh.asm
 
-ifelse(<
+ifelse(`
    Copyright (C) 2013 Niels Möller
 
    This file is part of GNU Nettle.
@@ -28,26 +28,26 @@ ifelse(<
    You should have received copies of the GNU General Public License and
    the GNU Lesser General Public License along with this program.  If
    not, see http://www.gnu.org/licenses/.
->) 
+')
 
 	.file "umac-nh.asm"
 	.fpu	neon
 
-define(<KEY>, <r0>)
-define(<LENGTH>, <r1>)
-define(<MSG>, <r2>)
-define(<SHIFT>, <r3>)
+define(`KEY', `r0')
+define(`LENGTH', `r1')
+define(`MSG', `r2')
+define(`SHIFT', `r3')
 
-define(<QA>, <q0>)
-define(<QB>, <q1>)
-define(<DM>, <d16>)
-define(<QLEFT>, <q9>)
-define(<QRIGHT>, <q10>)
-define(<QY>, <q11>)
-define(<QT0>, <q12>)
-define(<QT1>, <q13>)
-define(<QK0>, <q14>)
-define(<QK1>, <q15>)
+define(`QA', `q0')
+define(`QB', `q1')
+define(`DM', `d16')
+define(`QLEFT', `q9')
+define(`QRIGHT', `q10')
+define(`QY', `q11')
+define(`QT0', `q12')
+define(`QT1', `q13')
+define(`QK0', `q14')
+define(`QK1', `q15')
 
 	.text
 	.align	3
@@ -97,6 +97,8 @@ PROLOGUE(_nettle_umac_nh)
 	bhi	.Loop
 
 	vadd.i64 D0REG(QY), D0REG(QY), D1REG(QY)
-	vmov	r0, r1, D0REG(QY)
+	C return value needs to respect word order mandated by AAPCS
+IF_LE(`	vmov	r0, r1, D0REG(QY)')
+IF_BE(`	vmov	r1, r0, D0REG(QY)')
 	bx	lr
 EPILOGUE(_nettle_umac_nh)

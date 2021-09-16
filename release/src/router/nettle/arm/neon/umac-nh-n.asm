@@ -1,6 +1,6 @@
 C arm/neon/umac-nh-n.asm
 
-ifelse(<
+ifelse(`
    Copyright (C) 2013 Niels Möller
 
    This file is part of GNU Nettle.
@@ -28,33 +28,33 @@ ifelse(<
    You should have received copies of the GNU General Public License and
    the GNU Lesser General Public License along with this program.  If
    not, see http://www.gnu.org/licenses/.
->) 
+')
 
 	.file "umac-nh.asm"
 	.fpu	neon
 
-define(<OUT>, <r0>)
-define(<ITERS>, <r1>)
-define(<KEY>, <r2>)
-define(<LENGTH>, <r3>)
-define(<MSG>, <r12>)
-define(<SHIFT>, <r14>)
+define(`OUT', `r0')
+define(`ITERS', `r1')
+define(`KEY', `r2')
+define(`LENGTH', `r3')
+define(`MSG', `r12')
+define(`SHIFT', `r14')
 
-define(<QA>, <q0>)
-define(<QB>, <q1>)
-define(<QY0>, <q3>)	C Accumulates for the first two operations.
-define(<DM>, <d4>)
-define(<QY1>, <q4>)	C Used for 3 and 4 iterations.
-define(<QC>, <q5>)
-define(<QD>, <q6>)
-define(<QLEFT>, <q8>)
-define(<QRIGHT>, <q9>)
-define(<QT0>, <q10>)
-define(<QT1>, <q11>)
-define(<QT2>, <q12>)
-define(<QK0>, <q13>)
-define(<QK1>, <q14>)
-define(<QK2>, <q15>)
+define(`QA', `q0')
+define(`QB', `q1')
+define(`QY0', `q3')	C Accumulates for the first two operations.
+define(`DM', `d4')
+define(`QY1', `q4')	C Used for 3 and 4 iterations.
+define(`QC', `q5')
+define(`QD', `q6')
+define(`QLEFT', `q8')
+define(`QRIGHT', `q9')
+define(`QT0', `q10')
+define(`QT1', `q11')
+define(`QT2', `q12')
+define(`QK0', `q13')
+define(`QK1', `q14')
+define(`QK2', `q15')
 
 C FIXME: Try permuting subkeys using vld4, vzip or similar.
 

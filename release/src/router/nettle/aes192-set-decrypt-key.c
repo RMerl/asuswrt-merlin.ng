@@ -41,7 +41,7 @@
 void
 aes192_invert_key (struct aes192_ctx *dst, const struct aes192_ctx *src)
 {
-  _aes_invert (_AES192_ROUNDS, dst->keys, src->keys); 
+  _nettle_aes_invert (_AES192_ROUNDS, dst->keys, src->keys);
 }
 
 void

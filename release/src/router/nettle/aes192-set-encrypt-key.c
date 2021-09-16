@@ -40,5 +40,5 @@
 void
 aes192_set_encrypt_key(struct aes192_ctx *ctx, const uint8_t *key)
 {
-  _aes_set_key (_AES192_ROUNDS, AES192_KEY_SIZE / 4, ctx->keys, key);
+  _nettle_aes_set_key (_AES192_ROUNDS, AES192_KEY_SIZE / 4, ctx->keys, key);
 }

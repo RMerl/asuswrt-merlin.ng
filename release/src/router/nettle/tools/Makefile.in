@@ -56,7 +56,7 @@ nettle-pbkdf2$(EXEEXT): $(nettle_pbkdf2_OBJS) ../libnettle.stamp
 	$(LINK) $(nettle_pbkdf2_OBJS) -lnettle -o $@
 
 
-.c.$(OBJEXT):
+%.$(OBJEXT): %.c
 	$(COMPILE) -c $< && $(DEP_PROCESS)
 
 # NOTE: If we required GNU make, we could use a single rule with $(@F)
@@ -89,7 +89,7 @@ distdir: $(DISTFILES)
 	cp $? $(distdir)
 
 clean:
-	-rm -f $(TARGETS) *.o
+	-rm -f $(TARGETS) *.$(OBJEXT) *.$(OBJEXT).d
 
 distclean: clean
 	-rm -f Makefile *.d
@@ -97,4 +97,4 @@ distclean: clean
 tags:
 	etags -o $(srcdir)/TAGS --include $(top_srcdir) $(srcdir)/*.c $(srcdir)/*.h
 
-@DEP_INCLUDE@ $(SOURCES:.c=.$(OBJEXT).d)
+-include $(SOURCES:.c=.$(OBJEXT).d)

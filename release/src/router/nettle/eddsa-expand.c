@@ -37,16 +37,16 @@
 #include <string.h>
 
 #include "eddsa.h"
+#include "eddsa-internal.h"
 
 #include "ecc.h"
 #include "ecc-internal.h"
-#include "nettle-meta.h"
 
 /* Expands a private key, generating the secret scalar K2 and leaving
    the key K1 for nonce generation, at the end of the digest. */
 void
 _eddsa_expand_key (const struct ecc_curve *ecc,
-		   const struct nettle_hash *H,
+		   const struct ecc_eddsa *eddsa,
 		   void *ctx,
 		   const uint8_t *key,
 		   uint8_t *digest,
@@ -54,19 +54,19 @@ _eddsa_expand_key (const struct ecc_curve *ecc,
 {
   size_t nbytes = 1 + ecc->p.bit_size / 8;
 
-  assert (H->digest_size >= 2*nbytes);
+  eddsa->update (ctx, nbytes, key);
+  eddsa->digest (ctx, 2*nbytes, digest);
 
-  H->init (ctx);
-  H->update (ctx, nbytes, key);
-  H->digest (ctx, 2*nbytes, digest);
+  /* For ed448, ignores the most significant byte. */
+  mpn_set_base256_le (k2, ecc->p.size, digest, (ecc->p.bit_size + 7) / 8);
 
-  mpn_set_base256_le (k2, ecc->p.size, digest, nbytes);
-  /* Clear low 3 bits */
-  k2[0] &= ~(mp_limb_t) 7;
-  /* Set bit number bit_size - 1 (bit 254 for curve25519) */
-  k2[(ecc->p.bit_size - 1) / GMP_NUMB_BITS]
-    |= (mp_limb_t) 1 << ((ecc->p.bit_size - 1) % GMP_NUMB_BITS);
-  /* Clear any higher bits. */
-  k2[ecc->p.size - 1] &= ~(mp_limb_t) 0
-    >> (GMP_NUMB_BITS * ecc->p.size - ecc->p.bit_size);
+  /* Clear low c bits */
+  k2[0] &= eddsa->low_mask;
+
+  /* Clear higher bits. */
+  k2[ecc->p.size - 1] &= eddsa->high_bit - 1;
+
+  /* Set bit number bit_size - 1 (bit 254 for curve25519, bit 447 for
+     curve448) */
+  k2[ecc->p.size - 1] |= eddsa->high_bit;
 }

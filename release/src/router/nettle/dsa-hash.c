@@ -34,6 +34,7 @@
 #endif
 
 #include "dsa.h"
+#include "dsa-internal.h"
 
 #include "bignum.h"
 
@@ -41,8 +42,8 @@
    FIPS186-3 allows both larger and smaller q; in the the latter case,
    the hash must be truncated to the right number of bits. */
 void
-_dsa_hash (mpz_t h, unsigned bit_size,
-	   size_t length, const uint8_t *digest)
+_nettle_dsa_hash (mpz_t h, unsigned bit_size,
+		  size_t length, const uint8_t *digest)
 {
   
   if (length > (bit_size + 7) / 8)

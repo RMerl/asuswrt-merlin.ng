@@ -1,0 +1,73 @@
+General-Purpose Register Conventions
+
+Register Status Use
+
+GPR0 volatile In function prologs.
+GPR1 dedicated Stack pointer.
+GPR2 dedicated Table of Contents (TOC) pointer.
+GPR3 volatile First word of a function's argument list;
+ first word of a scalar function return.
+GPR4 volatile Second word of a function's argument list;
+ second word of a scalar function return.
+GPR5 volatile Third word of a function's argument list.
+GPR6 volatile Fourth word of a function's argument list.
+GPR7 volatile Fifth word of a function's argument list.
+GPR8 volatile Sixth word of a function's argument list.
+GPR9 volatile Seventh word of a function's argument list.
+GPR10 volatile Eighth word of a function's argument list.
+GPR11 volatile In calls by pointer and as an environment pointer
+ for languages that require it (for example, PASCAL).
+GPR12 volatile For special exception handling required by certain
+ languages and in glink code.
+GPR13 reserved Reserved under 64-bit environment;
+ not restored across system calls.
+GPR14:GPR31 nonvolatile These registers must be preserved across
+ a function call.
+
+Vector Register Conventions
+
+Register Status
+
+VR0:V19 Volatile
+VR20:VR31 Nonvolatile (extended ABI mode) their values are preserved
+ across function calls
+
+Addressing memory
+
+There are many ways to reference data, to maintain support of
+position-independent code the current implementations use GOT-indirect
+addressing (Accessing data through the global offset table):
+1. Define data in .data section
+2. Load the address of data into register from the global offset table
+   Use 32-bit offset (medium or large code model) to get maximum addressing 
+   reach of 4 GB e.g. addis r7, r2, my_var@got@ha
+                      ld r7, my_var@got@l(r7)
+3. Use the address to load the value of data into register
+   e.g. ld r3, 0(r7)
+Refer to [2] for more information about referencing data
+
+VSX instructions "lxvd2x/stxvd2x" are used to load and store data to
+memory instead of VR instructions "lvx/stvx" as it produces a fewer
+instructions "lvx/stvx" can be used to load/store data into storage
+operands but additional instructions are needed to access unaligned
+storage operands, refer to "6.4.1 Accessing Unaligned Storage Operands"
+in [3] to see an example of accessing unaligned storage operands.
+"lxvd2x/stxvd2x" can be used to load/store data into unaligned storage
+operands but permuting is needed for loading and storing data in
+little-endian mode VSX registers are defined with "X" suffix
+
+Function Prologue
+
+Big-endian systems only support ELFv1 ABI which requires the following
+steps in the function prologue:
+1. Write the "official procedure descriptor" in ".opd","aw" section
+2. Write procedure description for .my_func in my_func label
+3. Switch back to ".text" section for program code
+4. Label the beginning of the code .my_func
+Refer to [1] for more information
+Little-endian systems are compatible with ELFv2 ABI, an example of
+function prologue for ELFv2 ABI can be seen in [2]
+
+[1] http://www.ibm.com/developerworks/linux/library/l-powasm1.html
+[2] https://openpowerfoundation.org/?resource_lib=64-bit-elf-v2-abi-specification-power-architecture
+[3] https://openpowerfoundation.org/?resource_lib=ibm-power-isa-version-2-07-b

@@ -1,7 +1,7 @@
 C x86_64/aes-encrypt-internal.asm
 
 
-ifelse(<
+ifelse(`
    Copyright (C) 2001, 2002, 2005, Rafael R. Sevilla, Niels Möller
    Copyright (C) 2008, 2013 Niels Möller
 
@@ -30,37 +30,37 @@ ifelse(<
    You should have received copies of the GNU General Public License and
    the GNU Lesser General Public License along with this program.  If
    not, see http://www.gnu.org/licenses/.
->)
+')
 
-include_src(<x86_64/aes.m4>)
+include_src(`x86_64/aes.m4')
 
 C Register usage:
 
 C AES state, use two of them
-define(<SA>,<%eax>)
-define(<SB>,<%ebx>)
-define(<SC>,<%ecx>)
-define(<SD>,<%edx>)
+define(`SA',`%eax')
+define(`SB',`%ebx')
+define(`SC',`%ecx')
+define(`SD',`%edx')
 
-define(<TA>,<%r10d>)
-define(<TB>,<%r11d>)
-define(<TC>,<%r12d>)
+define(`TA',`%r10d')
+define(`TB',`%r11d')
+define(`TC',`%r12d')
 
 C Input argument
-define(<ROUNDS>, <%rdi>)
-define(<KEYS>,	<%rsi>)
-define(<PARAM_TABLE>,	<%rdx>)
-define(<PARAM_LENGTH>,<%rcx>)
-define(<DST>,	<%r8>)
-define(<SRC>,	<%r9>)
+define(`ROUNDS', `%rdi')
+define(`KEYS',	`%rsi')
+define(`PARAM_TABLE',	`%rdx')
+define(`PARAM_LENGTH',`%rcx')
+define(`DST',	`%r8')
+define(`SRC',	`%r9')
 
-define(<TABLE>, <%r13>) 
-define(<LENGTH>,<%r14>)
-define(<KEY>,	<%r15>)
+define(`TABLE', `%r13')
+define(`LENGTH',`%r14')
+define(`KEY',	`%r15')
 
 C Must correspond to an old-style register, for movzb from %ah--%dh to
 C work.
-define(<TMP>,<%rbp>)
+define(`TMP',`%rbp')
 
 	.file "aes-encrypt-internal.asm"
 	

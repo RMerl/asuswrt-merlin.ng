@@ -44,6 +44,7 @@
 #include <string.h>
 
 #include "sha2.h"
+#include "sha2-internal.h"
 
 #include "macros.h"
 

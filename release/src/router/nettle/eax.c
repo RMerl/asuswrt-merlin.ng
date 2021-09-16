@@ -40,6 +40,7 @@
 
 #include "eax.h"
 
+#include "block-internal.h"
 #include "ctr.h"
 #include "memxor.h"
 
@@ -48,18 +49,6 @@ omac_init (union nettle_block16 *state, unsigned t)
 {
   memset (state->b, 0, EAX_BLOCK_SIZE - 1);
   state->b[EAX_BLOCK_SIZE - 1] = t;
-}
-
-/* Almost the same as gcm_gf_add */
-static void
-block16_xor (union nettle_block16 *dst, const union nettle_block16 *src)
-{
-  dst->w[0] ^= src->w[0];
-  dst->w[1] ^= src->w[1];
-#if SIZEOF_LONG == 4
-  dst->w[2] ^= src->w[2];
-  dst->w[3] ^= src->w[3];
-#endif
 }
 
 static void
@@ -93,27 +82,13 @@ omac_final (union nettle_block16 *state, const struct eax_key *key,
   f (cipher, EAX_BLOCK_SIZE, state->b, state->b);
 }
 
-/* Allows r == a */
-static void
-gf2_double (uint8_t *r, const uint8_t *a)
-{
-  unsigned high = - (a[0] >> 7);
-  unsigned i;
-  /* Shift left */
-  for (i = 0; i < EAX_BLOCK_SIZE - 1; i++)
-    r[i] = (a[i] << 1) + (a[i+1] >> 7);
-
-  /* Wrap around for x^{128} = x^7 + x^2 + x + 1 */
-  r[EAX_BLOCK_SIZE - 1] = (a[EAX_BLOCK_SIZE - 1] << 1) ^ (high & 0x87);
-}
-
 void
 eax_set_key (struct eax_key *key, const void *cipher, nettle_cipher_func *f)
 {
   static const union nettle_block16 zero_block;
   f (cipher, EAX_BLOCK_SIZE, key->pad_block.b, zero_block.b);
-  gf2_double (key->pad_block.b, key->pad_block.b);
-  gf2_double (key->pad_partial.b, key->pad_block.b);
+  block16_mulx_be (&key->pad_block, &key->pad_block);
+  block16_mulx_be (&key->pad_partial, &key->pad_block);
   block16_xor (&key->pad_partial, &key->pad_block);
 }
 

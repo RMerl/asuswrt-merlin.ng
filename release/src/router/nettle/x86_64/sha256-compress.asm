@@ -1,6 +1,6 @@
 C x86_64/sha256-compress.asm
 
-ifelse(<
+ifelse(`
    Copyright (C) 2013 Niels Möller
 
    This file is part of GNU Nettle.
@@ -28,46 +28,46 @@ ifelse(<
    You should have received copies of the GNU General Public License and
    the GNU Lesser General Public License along with this program.  If
    not, see http://www.gnu.org/licenses/.
->)
+')
 
 	.file "sha256-compress.asm"
-define(<STATE>, <%rdi>)
-define(<INPUT>, <%rsi>)
-define(<K>, <%rdx>)
-define(<SA>, <%eax>)
-define(<SB>, <%ebx>)
-define(<SC>, <%ecx>)
-define(<SD>, <%r8d>)
-define(<SE>, <%r9d>)
-define(<SF>, <%r10d>)
-define(<SG>, <%r11d>)
-define(<SH>, <%r12d>)
-define(<T0>, <%r13d>)
-define(<T1>, <%edi>)	C Overlap STATE
-define(<COUNT>, <%r14>)
-define(<W>, <%r15d>)
+define(`STATE', `%rdi')
+define(`INPUT', `%rsi')
+define(`K', `%rdx')
+define(`SA', `%eax')
+define(`SB', `%ebx')
+define(`SC', `%ecx')
+define(`SD', `%r8d')
+define(`SE', `%r9d')
+define(`SF', `%r10d')
+define(`SG', `%r11d')
+define(`SH', `%r12d')
+define(`T0', `%r13d')
+define(`T1', `%edi')	C Overlap STATE
+define(`COUNT', `%r14')
+define(`W', `%r15d')
 
-define(<EXPN>, <
+define(`EXPN', `
 	movl	OFFSET($1)(%rsp), W
 	movl	OFFSET(eval(($1 + 14) % 16))(%rsp), T0
 	movl	T0, T1
-	shrl	<$>10, T0
-	roll	<$>13, T1
+	shrl	`$'10, T0
+	roll	`$'13, T1
 	xorl	T1, T0
-	roll	<$>2, T1
+	roll	`$'2, T1
 	xorl	T1, T0
 	addl	T0, W
 	movl	OFFSET(eval(($1 + 1) % 16))(%rsp), T0
 	movl	T0, T1
-	shrl	<$>3, T0
-	roll	<$>14, T1
+	shrl	`$'3, T0
+	roll	`$'14, T1
 	xorl	T1, T0
-	roll	<$>11, T1
+	roll	`$'11, T1
 	xorl	T1, T0
 	addl	T0, W
 	addl	OFFSET(eval(($1 + 9) % 16))(%rsp), W
 	movl	W, OFFSET($1)(%rsp)
->)
+')
 
 C ROUND(A,B,C,D,E,F,G,H,K)
 C
@@ -82,13 +82,13 @@ C S0(A) = A<<<30 ^ A<<<19 ^ A<<<10
 C Choice (E, F, G) = G^(E&(F^G))
 C Majority (A,B,C) = (A&B) + (C&(A^B))
 
-define(<ROUND>, <
+define(`ROUND', `
 	movl	$5, T0
 	movl	$5, T1
-	roll	<$>7, T0
-	roll	<$>21, T1
+	roll	`$'7, T0
+	roll	`$'21, T1
 	xorl	T0, T1
-	roll	<$>19, T0
+	roll	`$'19, T0
 	xorl	T0, T1
 	addl	W, $8
 	addl	T1, $8
@@ -102,10 +102,10 @@ define(<ROUND>, <
 
 	movl	$1, T0
 	movl	$1, T1
-	roll	<$>10, T0
-	roll	<$>19, T1
+	roll	`$'10, T0
+	roll	`$'19, T1
 	xorl	T0, T1
-	roll	<$>20, T0
+	roll	`$'20, T0
 	xorl	T0, T1
 	addl	T1, $8
 	movl	$1, T0
@@ -115,13 +115,13 @@ define(<ROUND>, <
 	addl	T0, $8
 	andl	$3, T1
 	addl	T1, $8
->)
+')
 
-define(<NOEXPN>, <
+define(`NOEXPN', `
 	movl	OFFSET($1)(INPUT, COUNT, 4), W
 	bswapl	W
 	movl	W, OFFSET($1)(%rsp, COUNT, 4)
->)
+')
 
 	C void
 	C _nettle_sha256_compress(uint32_t *state, const uint8_t *input, const uint32_t *k)

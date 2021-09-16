@@ -37,14 +37,15 @@
 #include <string.h>
 
 #include "umac.h"
+#include "umac-internal.h"
 
 #include "macros.h"
 
 void
 umac128_set_key (struct umac128_ctx *ctx, const uint8_t *key)
 {
-  _umac_set_key (ctx->l1_key, ctx->l2_key, ctx->l3_key1, ctx->l3_key2,
-		 &ctx->pdf_key, key, 4);
+  _nettle_umac_set_key (ctx->l1_key, ctx->l2_key, ctx->l3_key1, ctx->l3_key2,
+			&ctx->pdf_key, key, 4);
 
   /* Clear nonce */
   memset (ctx->nonce, 0, sizeof(ctx->nonce));
@@ -69,12 +70,12 @@ umac128_set_nonce (struct umac128_ctx *ctx,
 
 #define UMAC128_BLOCK(ctx, block) do {					\
     uint64_t __umac128_y[4];						\
-    _umac_nh_n (__umac128_y, 4, ctx->l1_key, UMAC_BLOCK_SIZE, block);	\
+    _nettle_umac_nh_n (__umac128_y, 4, ctx->l1_key, UMAC_BLOCK_SIZE, block); \
     __umac128_y[0] += 8*UMAC_BLOCK_SIZE;				\
     __umac128_y[1] += 8*UMAC_BLOCK_SIZE;				\
     __umac128_y[2] += 8*UMAC_BLOCK_SIZE;				\
     __umac128_y[3] += 8*UMAC_BLOCK_SIZE;				\
-    _umac_l2 (ctx->l2_key, ctx->l2_state, 4, ctx->count++, __umac128_y); \
+    _nettle_umac_l2 (ctx->l2_key, ctx->l2_state, 4, ctx->count++, __umac128_y); \
   } while (0)
 
 void
@@ -102,12 +103,12 @@ umac128_digest (struct umac128_ctx *ctx,
       unsigned pad = (ctx->index > 0) ? 31 & - ctx->index : 32;
       memset (ctx->block + ctx->index, 0, pad);
 
-      _umac_nh_n (y, 4, ctx->l1_key, ctx->index + pad, ctx->block);
+      _nettle_umac_nh_n (y, 4, ctx->l1_key, ctx->index + pad, ctx->block);
       y[0] += 8 * ctx->index;
       y[1] += 8 * ctx->index;
       y[2] += 8 * ctx->index;
       y[3] += 8 * ctx->index;
-      _umac_l2 (ctx->l2_key, ctx->l2_state, 4, ctx->count++, y);
+      _nettle_umac_l2 (ctx->l2_key, ctx->l2_state, 4, ctx->count++, y);
     }
   assert (ctx->count > 0);
 
@@ -116,10 +117,10 @@ umac128_digest (struct umac128_ctx *ctx,
 
   INCREMENT (ctx->nonce_length, ctx->nonce);
 
-  _umac_l2_final (ctx->l2_key, ctx->l2_state, 4, ctx->count);
+  _nettle_umac_l2_final (ctx->l2_key, ctx->l2_state, 4, ctx->count);
   for (i = 0; i < 4; i++)
-    tag[i] ^= ctx->l3_key2[i] ^ _umac_l3 (ctx->l3_key1 + 8*i,
-					  ctx->l2_state + 2*i);
+    tag[i] ^= ctx->l3_key2[i] ^ _nettle_umac_l3 (ctx->l3_key1 + 8*i,
+						 ctx->l2_state + 2*i);
 
   memcpy (digest, tag, length);
 

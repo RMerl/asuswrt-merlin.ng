@@ -5,11 +5,17 @@
 #include <dlfcn.h>
 #endif
 
+#ifdef __APPLE__
+#define SO_EXT "dylib"
+#else
+#define SO_EXT "so"
+#endif
+
 int
 main (int argc UNUSED, char **argv UNUSED)
 {
 #if HAVE_LIBDL
-  void *handle = dlopen ("../libnettle.so", RTLD_NOW);
+  void *handle = dlopen ("../libnettle." SO_EXT, RTLD_NOW);
   int (*get_version)(void);
   if (!handle)
     {

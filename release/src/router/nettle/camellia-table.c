@@ -49,7 +49,7 @@
 
 #include "camellia-internal.h"
 
-const struct camellia_table _camellia_table = {
+const struct camellia_table _nettle_camellia_table = {
   /* sp1110 */
   {
     0x70707000,0x82828200,0x2c2c2c00,0xececec00,

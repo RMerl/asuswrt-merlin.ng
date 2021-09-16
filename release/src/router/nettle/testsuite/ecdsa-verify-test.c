@@ -46,7 +46,7 @@ test_ecdsa (const struct ecc_curve *ecc,
   mpz_combit (signature.r, ecc->p.bit_size / 3);
   if (ecdsa_verify (&pub, h->length, h->data, &signature))
     {
-      fprintf (stderr, "ecdsa_verify unexpectedly succeeded with invalid signature.\n");
+      fprintf (stderr, "ecdsa_verify unexpectedly succeeded with invalid signature (r modified).\n");
       goto fail;
     }
   mpz_combit (signature.r, ecc->p.bit_size / 3);
@@ -54,7 +54,7 @@ test_ecdsa (const struct ecc_curve *ecc,
   mpz_combit (signature.s, 4*ecc->p.bit_size / 5);
   if (ecdsa_verify (&pub, h->length, h->data, &signature))
     {
-      fprintf (stderr, "ecdsa_verify unexpectedly succeeded with invalid signature.\n");
+      fprintf (stderr, "ecdsa_verify unexpectedly succeeded with invalid signature (s modified).\n");
       goto fail;
     }
   mpz_combit (signature.s, 4*ecc->p.bit_size / 5);
@@ -62,7 +62,7 @@ test_ecdsa (const struct ecc_curve *ecc,
   h->data[2*h->length / 3] ^= 0x40;
   if (ecdsa_verify (&pub, h->length, h->data, &signature))
     {
-      fprintf (stderr, "ecdsa_verify unexpectedly succeeded with invalid signature.\n");
+      fprintf (stderr, "ecdsa_verify unexpectedly succeeded with invalid signature (h modified).\n");
       goto fail;
     }
   h->data[2*h->length / 3] ^= 0x40;
@@ -81,8 +81,36 @@ test_ecdsa (const struct ecc_curve *ecc,
 void
 test_main (void)
 {
+  /* Corresponds to nonce k = 2 and private key z =
+     0x99b5b787484def12894ca507058b3bf543d72d82fa7721d2e805e5e6. z and
+     hash are chosen so that intermediate scalars in the verify
+     equations are u1 = 0x6b245680e700, u2 =
+     259da6542d4ba7d21ad916c3bd57f811. These values require canonical
+     reduction of the scalars. Bug caused by missing canonical
+     reduction reported by Guido Vranken. */
+  test_ecdsa (&_nettle_secp_224r1,
+	      "9e7e6cc6b1bdfa8ee039b66ad85e5490"
+	      "7be706a900a3cba1c8fdd014", /* x */
+	      "74855db3f7c1b4097ae095745fc915e3"
+	      "8a79d2a1de28f282eafb22ba", /* y */
+
+	      SHEX("cdb887ac805a3b42e22d224c85482053"
+		   "16c755d4a736bb2032c92553"),
+	      "706a46dc76dcb76798e60e6d89474788"
+	      "d16dc18032d268fd1a704fa6", /* r */
+	      "3a41e1423b1853e8aa89747b1f987364"
+	      "44705d6d6d8371ea1f578f2e"); /* s */
+
+  /* Test case provided by Guido Vranken, from oss-fuzz */
+  test_ecdsa (&_nettle_secp_192r1,
+	      "14683086 f1734c6d e68743a6 48181b54 a74d4c5b 383eb6a8", /* x */
+	      "  1e2584 2ab8b2b0 4017f655 1b5e4058 a2aa0612 2dae9344", /* y */
+	      SHEX("00"), /* h == 0 corner case*/
+	      "952800792ed19341fdeeec047f2514f3b0f150d6066151fb", /* r */
+	      "ec5971222014878b50d7a19d8954bc871e7e65b00b860ffb"); /* s */
+
   /* From RFC 4754 */
-  test_ecdsa (&nettle_secp_256r1,
+  test_ecdsa (&_nettle_secp_256r1,
 	      "2442A5CC 0ECD015F A3CA31DC 8E2BBC70"
 	      "BF42D60C BCA20085 E0822CB0 4235E970",  /* x */
 
@@ -97,7 +125,7 @@ test_main (void)
 	      "86FA3BB4 E26CAD5B F90B7F81 899256CE"
 	      "7594BB1E A0C89212 748BFF3B 3D5B0315"); /* s */
 
-  test_ecdsa (&nettle_secp_384r1,
+  test_ecdsa (&_nettle_secp_384r1,
 	      "96281BF8 DD5E0525 CA049C04 8D345D30"
 	      "82968D10 FEDF5C5A CA0C64E6 465A97EA"
 	      "5CE10C9D FEC21797 41571072 1F437922",  /* x */
@@ -117,7 +145,7 @@ test_main (void)
 	      "09F417BC A112674C 528262A4 0A629AF1"
 	      "CBB9F516 CE0FA7D2 FF630863 A00E8B9F"); /* s*/
 
-  test_ecdsa (&nettle_secp_521r1,
+  test_ecdsa (&_nettle_secp_521r1,
 	      "0151518F 1AF0F563 517EDD54 85190DF9"
 	      "5A4BF57B 5CBA4CF2 A9A3F647 4725A35F"
 	      "7AFE0A6D DEB8BEDB CD6A197E 592D4018"
@@ -145,17 +173,4 @@ test_main (void)
 	      "97536710 1F67D1CF 9BCCBF2F 3D239534" 
 	      "FA509E70 AAC851AE 01AAC68D 62F86647"
 	      "2660"); /* s */
-
-  test_ecdsa (&_nettle_curve25519,
-	      /* Public key corresponding to the key in ecdsa-sign-test */
-	      "59f8f317fd5f4e82 c02f8d4dec665fe1"
-	      "230f83b8572638e1 b2ac34a30028e24d", /* x */
-	      "1902a72dc1a6525a 811b9c1845978d56"
-	      "fd97dce5e278ebdd ec695349d7e41498", /* y */
-	      SHEX("e99df2a098c3c590 ea1e1db6d9547339"
-		   "ae760d5331496119 5d967fd881e3b0f5"), /* h */
-	      " 515c3a485f57432 0daf3353a0d08110"
-	      "64157c556296de09 4132f74865961b37", /* r */
-	      "  78f23367291b01 3fc430fb09322d95"
-	      "4384723649868d8e 88effc7ac8b141d7"); /* s */
 }

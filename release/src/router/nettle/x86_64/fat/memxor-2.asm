@@ -1,7 +1,7 @@
 C x86_64/fat/memxor-2.asm
 
 
-ifelse(<
+ifelse(`
    Copyright (C) 2015 Niels Möller
 
    This file is part of GNU Nettle.
@@ -29,8 +29,8 @@ ifelse(<
    You should have received copies of the GNU General Public License and
    the GNU Lesser General Public License along with this program.  If
    not, see http://www.gnu.org/licenses/.
->)
+')
 
-define(<fat_transform>, <_$1_sse2>)
-define(<USE_SSE2>, <yes>)	
-include_src(<x86_64/memxor.asm>)
+define(`fat_transform', `_$1_sse2')
+define(`USE_SSE2', `yes')
+include_src(`x86_64/memxor.asm')

@@ -1,6 +1,6 @@
 C x86_64/chacha-core-internal.asm
 
-ifelse(<
+ifelse(`
    Copyright (C) 2012, 2014 Niels Möller
 
    This file is part of GNU Nettle.
@@ -28,60 +28,60 @@ ifelse(<
    You should have received copies of the GNU General Public License and
    the GNU Lesser General Public License along with this program.  If
    not, see http://www.gnu.org/licenses/.
->)
+')
 
-define(<DST>, <%rdi>)
-define(<SRC>, <%rsi>)
-define(<COUNT>, <%rdx>)
-define(<X0>, <%xmm0>)
-define(<X1>, <%xmm1>)
-define(<X2>, <%xmm2>)
-define(<X3>, <%xmm3>)
-define(<T0>, <%xmm4>)
-define(<T1>, <%xmm5>)
+define(`DST', `%rdi')
+define(`SRC', `%rsi')
+define(`COUNT', `%rdx')
+define(`X0', `%xmm0')
+define(`X1', `%xmm1')
+define(`X2', `%xmm2')
+define(`X3', `%xmm3')
+define(`T0', `%xmm4')
+define(`T1', `%xmm5')
 
-define(<USE_PSHUFW>, <yes>)
+define(`USE_PSHUFW', `yes')
 
 C ROTL_BY_16(REG, TMP)
-ifelse(USE_PSHUFW, <yes>, <
-define(<ROTL_BY_16>, <
-	pshufhw	<$>0xb1, $1, $1
-	pshuflw	<$>0xb1, $1, $1
->)>, <
-define(<ROTL_BY_16>, <
-	pslld	<$>16, $1
-	psrld	<$>16, $2
+ifelse(USE_PSHUFW, `yes', `
+define(`ROTL_BY_16', `
+	pshufhw	`$'0xb1, $1, $1
+	pshuflw	`$'0xb1, $1, $1
+')', `
+define(`ROTL_BY_16', `
+	pslld	`$'16, $1
+	psrld	`$'16, $2
 	por	$2, $1
->)
->)
-C QROUND
-define(<QROUND>, <
-	paddd	X1, X0
-	pxor	X0, X3
-	movaps	X3, T0
-	ROTL_BY_16(X3, T0)
+')
+')
+C QROUND(x0, x1, x2, x3)
+define(`QROUND', `
+	paddd	$2, $1
+	pxor	$1, $4
+	movaps	$4, T0
+	ROTL_BY_16($4, T0)
 
-	paddd	X3, X2
-	pxor	X2, X1
-	movaps	X1, T0
-	pslld	<$>12, X1
-	psrld	<$>20, T0
-	por	T0, X1
+	paddd	$4, $3
+	pxor	$3, $2
+	movaps	$2, T0
+	pslld	`$'12, $2
+	psrld	`$'20, T0
+	por	T0, $2
 
-	paddd	X1, X0
-	pxor	X0, X3
-	movaps	X3, T0
-	pslld	<$>8, X3
-	psrld	<$>24, T0
-	por	T0, X3
+	paddd	$2, $1
+	pxor	$1, $4
+	movaps	$4, T0
+	pslld	`$'8, $4
+	psrld	`$'24, T0
+	por	T0, $4
 		
-	paddd	X3, X2
-	pxor	X2, X1
-	movaps	X1, T0
-	pslld	<$>7, X1
-	psrld	<$>25, T0
-	por	T0, X1
->)
+	paddd	$4, $3
+	pxor	$3, $2
+	movaps	$2, T0
+	pslld	`$'7, $2
+	psrld	`$'25, T0
+	por	T0, $2
+')
 	
 	C _chacha_core(uint32_t *dst, const uint32_t *src, unsigned rounds)
 	.text

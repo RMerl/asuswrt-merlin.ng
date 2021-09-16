@@ -48,12 +48,12 @@ pss_mgf1(const void *seed, const struct nettle_hash *hash,
 	 size_t length, uint8_t *mask)
 {
   TMP_DECL(h, uint8_t, NETTLE_MAX_HASH_DIGEST_SIZE);
-  TMP_DECL(state, uint8_t, NETTLE_MAX_HASH_CONTEXT_SIZE);
+  TMP_DECL_ALIGN(state, NETTLE_MAX_HASH_CONTEXT_SIZE);
   size_t i;
   uint8_t c[4];
 
   TMP_ALLOC(h, hash->digest_size);
-  TMP_ALLOC(state, hash->context_size);
+  TMP_ALLOC_ALIGN(state, hash->context_size);
 
   for (i = 0;;
        i++, mask += hash->digest_size, length -= hash->digest_size)

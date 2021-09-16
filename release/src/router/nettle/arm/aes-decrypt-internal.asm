@@ -1,6 +1,6 @@
 C arm/aes-decrypt-internal.asm
 
-ifelse(<
+ifelse(`
    Copyright (C) 2013 Niels Möller
 
    This file is part of GNU Nettle.
@@ -28,39 +28,39 @@ ifelse(<
    You should have received copies of the GNU General Public License and
    the GNU Lesser General Public License along with this program.  If
    not, see http://www.gnu.org/licenses/.
->) 
+')
 
-include_src(<arm/aes.m4>)
+include_src(`arm/aes.m4')
 
-define(<PARAM_ROUNDS>, <r0>)
-define(<PARAM_KEYS>, <r1>)
-define(<TABLE>, <r2>)
-define(<PARAM_LENGTH>, <r3>)
+define(`PARAM_ROUNDS', `r0')
+define(`PARAM_KEYS', `r1')
+define(`TABLE', `r2')
+define(`PARAM_LENGTH', `r3')
 C On stack: DST, SRC
 	
-define(<W0>, <r4>)
-define(<W1>, <r5>)
-define(<W2>, <r6>)
-define(<W3>, <r7>)
-define(<T0>, <r8>)
-define(<COUNT>, <r10>)
-define(<KEY>, <r11>)
+define(`W0', `r4')
+define(`W1', `r5')
+define(`W2', `r6')
+define(`W3', `r7')
+define(`T0', `r8')
+define(`COUNT', `r10')
+define(`KEY', `r11')
 
-define(<MASK>, <r0>)	C Overlaps inputs, except TABLE
-define(<X0>, <r1>)
-define(<X1>, <r3>)
-define(<X2>, <r12>)
-define(<X3>, <r14>)	C lr
+define(`MASK', `r0')	C Overlaps inputs, except TABLE
+define(`X0', `r1')
+define(`X1', `r3')
+define(`X2', `r12')
+define(`X3', `r14')	C lr
 
-define(<FRAME_ROUNDS>,  <[sp]>)
-define(<FRAME_KEYS>,  <[sp, #+4]>)
-define(<FRAME_LENGTH>,  <[sp, #+8]>)
+define(`FRAME_ROUNDS',  `[sp]')
+define(`FRAME_KEYS',  `[sp, #+4]')
+define(`FRAME_LENGTH',  `[sp, #+8]')
 C 8 saved registers
-define(<FRAME_DST>,  <[sp, #+44]>)
-define(<FRAME_SRC>,  <[sp, #+48]>)
+define(`FRAME_DST',  `[sp, #+44]')
+define(`FRAME_SRC',  `[sp, #+48]')
 
 
-define(<AES_DECRYPT_ROUND>, <
+define(`AES_DECRYPT_ROUND', `
 	and	T0, MASK, $1, lsl #2
 	ldr	$5, [TABLE, T0]
 	and	T0, MASK, $2, lsl #2
@@ -118,7 +118,7 @@ define(<AES_DECRYPT_ROUND>, <
 	eor	$6, $6, $2
 	eor	$7, $7, $3
 	eor	$8, $8, $4
->)
+')
 
 	.file "aes-decrypt-internal.asm"
 	

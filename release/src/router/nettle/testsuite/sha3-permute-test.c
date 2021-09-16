@@ -1,6 +1,7 @@
 #include "testutils.h"
 
 #include "sha3.h"
+#include "sha3-internal.h"
 
 static void
 display (const struct sha3_state *state)

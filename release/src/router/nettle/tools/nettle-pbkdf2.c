@@ -31,6 +31,8 @@
    not, see http://www.gnu.org/licenses/.
 */
 
+#define _GNU_SOURCE
+
 #if HAVE_CONFIG_H
 # include "config.h"
 #endif
@@ -142,6 +144,9 @@ main (int argc, char **argv)
     }
 
   salt = strdup (argv[0]);
+  if (!salt)
+    die ("strdup failed: Virtual memory exhausted.\n");
+
   salt_length = strlen(argv[0]);
   
   if (hex_salt)

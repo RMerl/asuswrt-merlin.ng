@@ -1,6 +1,7 @@
 #include "testutils.h"
 
 #include "pkcs1.h"
+#include "hogweed-internal.h"
 
 void
 test_main(void)

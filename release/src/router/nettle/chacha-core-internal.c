@@ -47,8 +47,16 @@
 #include <string.h>
 
 #include "chacha.h"
+#include "chacha-internal.h"
 
 #include "macros.h"
+
+/* For fat builds */
+#if HAVE_NATIVE_chacha_core
+void
+_nettle_chacha_core_c(uint32_t *dst, const uint32_t *src, unsigned rounds);
+#define _nettle_chacha_core  _nettle_chacha_core_c
+#endif
 
 #ifndef CHACHA_DEBUG
 # define CHACHA_DEBUG 0
@@ -88,7 +96,7 @@
   } while(0)
 
 void
-_chacha_core(uint32_t *dst, const uint32_t *src, unsigned rounds)
+_nettle_chacha_core(uint32_t *dst, const uint32_t *src, unsigned rounds)
 {
   uint32_t x[_CHACHA_STATE_LENGTH];
   unsigned i;

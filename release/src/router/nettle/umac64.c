@@ -37,14 +37,15 @@
 #include <string.h>
 
 #include "umac.h"
+#include "umac-internal.h"
 
 #include "macros.h"
 
 void
 umac64_set_key (struct umac64_ctx *ctx, const uint8_t *key)
 {
-  _umac_set_key (ctx->l1_key, ctx->l2_key, ctx->l3_key1, ctx->l3_key2,
-		 &ctx->pdf_key, key, 2);
+  _nettle_umac_set_key (ctx->l1_key, ctx->l2_key, ctx->l3_key1, ctx->l3_key2,
+			&ctx->pdf_key, key, 2);
 
   /* Clear nonce */
   memset (ctx->nonce, 0, sizeof(ctx->nonce));
@@ -72,10 +73,10 @@ umac64_set_nonce (struct umac64_ctx *ctx,
 
 #define UMAC64_BLOCK(ctx, block) do {					\
     uint64_t __umac64_y[2];						\
-    _umac_nh_n (__umac64_y, 2, ctx->l1_key, UMAC_BLOCK_SIZE, block);	\
+    _nettle_umac_nh_n (__umac64_y, 2, ctx->l1_key, UMAC_BLOCK_SIZE, block); \
     __umac64_y[0] += 8*UMAC_BLOCK_SIZE;					\
     __umac64_y[1] += 8*UMAC_BLOCK_SIZE;					\
-    _umac_l2 (ctx->l2_key, ctx->l2_state, 2, ctx->count++, __umac64_y);	\
+    _nettle_umac_l2 (ctx->l2_key, ctx->l2_state, 2, ctx->count++, __umac64_y); \
   } while (0)
 
 void
@@ -103,10 +104,10 @@ umac64_digest (struct umac64_ctx *ctx,
       unsigned pad = (ctx->index > 0) ? 31 & - ctx->index : 32;
       memset (ctx->block + ctx->index, 0, pad);
 
-      _umac_nh_n (y, 2, ctx->l1_key, ctx->index + pad, ctx->block);
+      _nettle_umac_nh_n (y, 2, ctx->l1_key, ctx->index + pad, ctx->block);
       y[0] += 8 * ctx->index;
       y[1] += 8 * ctx->index;
-      _umac_l2 (ctx->l2_key, ctx->l2_state, 2, ctx->count++, y);
+      _nettle_umac_l2 (ctx->l2_key, ctx->l2_state, 2, ctx->count++, y);
     }
   assert (ctx->count > 0);
   if ( !(ctx->nonce_low & _UMAC_NONCE_CACHED))
@@ -130,11 +131,11 @@ umac64_digest (struct umac64_ctx *ctx,
 	INCREMENT (i, ctx->nonce);
     }
 
-  _umac_l2_final (ctx->l2_key, ctx->l2_state, 2, ctx->count);
-  tag[0] = pad[0] ^ ctx->l3_key2[0] ^ _umac_l3 (ctx->l3_key1,
-						ctx->l2_state);
-  tag[1] = pad[1] ^ ctx->l3_key2[1] ^ _umac_l3 (ctx->l3_key1 + 8,
-						ctx->l2_state + 2);
+  _nettle_umac_l2_final (ctx->l2_key, ctx->l2_state, 2, ctx->count);
+  tag[0] = pad[0] ^ ctx->l3_key2[0] ^ _nettle_umac_l3 (ctx->l3_key1,
+						       ctx->l2_state);
+  tag[1] = pad[1] ^ ctx->l3_key2[1] ^ _nettle_umac_l3 (ctx->l3_key1 + 8,
+						       ctx->l2_state + 2);
   memcpy (digest, tag, length);
 
   /* Reinitialize */

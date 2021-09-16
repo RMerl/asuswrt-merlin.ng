@@ -5,6 +5,8 @@
 #include "sha3.h"
 
 const char* hashes[] = {
+  "gosthash94",
+  "gosthash94cp",
   "md2",
   "md4",
   "md5",
@@ -18,6 +20,8 @@ const char* hashes[] = {
   "sha3_256",
   "sha3_384",
   "sha3_512",
+  "streebog256",
+  "streebog512"
 };
 
 void

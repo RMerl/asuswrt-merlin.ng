@@ -35,28 +35,13 @@
 
 #include "bignum.h"
 
-#ifdef mpz_limbs_read
-#define GMP_HAVE_mpz_limbs_read 1
-#else
-#define GMP_HAVE_mpz_limbs_read 0
-#endif
-
-/* Name mangling. */
-#if !GMP_HAVE_mpz_limbs_read
-#define mpz_limbs_read _nettle_mpz_limbs_read
-#define mpz_limbs_write _nettle_mpz_limbs_write
-#define mpz_limbs_modify _nettle_mpz_limbs_modify
-#define mpz_limbs_finish _nettle_mpz_limbs_finish
-#define mpz_roinit_n _nettle_mpz_roinit_n
-#endif
-
-#define cnd_swap _nettle_cnd_swap
 #define mpz_limbs_cmp _nettle_mpz_limbs_cmp
 #define mpz_limbs_read_n _nettle_mpz_limbs_read_n
 #define mpz_limbs_copy _nettle_mpz_limbs_copy
 #define mpz_set_n _nettle_mpz_set_n
 #define mpn_set_base256 _nettle_mpn_set_base256
 #define mpn_set_base256_le _nettle_mpn_set_base256_le
+#define mpn_get_base256 _nettle_mpn_get_base256
 #define mpn_get_base256_le _nettle_mpn_get_base256_le
 #define gmp_alloc_limbs _nettle_gmp_alloc_limbs
 #define gmp_free_limbs _nettle_gmp_free_limbs
@@ -71,51 +56,21 @@
   } while (0)
 #define TMP_GMP_FREE(name) (gmp_free(name, tmp_##name##_size))
 
+#if NETTLE_USE_MINI_GMP
+mp_limb_t
+mpn_cnd_add_n (mp_limb_t cnd, mp_limb_t *rp,
+	       const mp_limb_t *ap, const mp_limb_t *bp, mp_size_t n);
 
-/* Use only in-place operations, so we can fall back to addmul_1/submul_1 */
-#ifdef mpn_cnd_add_n
-# define cnd_add_n(cnd, rp, ap, n) mpn_cnd_add_n ((cnd), (rp), (rp), (ap), (n))
-# define cnd_sub_n(cnd, rp, ap, n) mpn_cnd_sub_n ((cnd), (rp), (rp), (ap), (n))
-#else
-# define cnd_add_n(cnd, rp, ap, n) mpn_addmul_1 ((rp), (ap), (n), (cnd) != 0)
-# define cnd_sub_n(cnd, rp, ap, n) mpn_submul_1 ((rp), (ap), (n), (cnd) != 0)
+mp_limb_t
+mpn_cnd_sub_n (mp_limb_t cnd, mp_limb_t *rp,
+	       const mp_limb_t *ap, const mp_limb_t *bp, mp_size_t n);
+
+void
+mpn_cnd_swap (mp_limb_t cnd, volatile mp_limb_t *ap, volatile mp_limb_t *bp, mp_size_t n);
 #endif
 
-/* Some functions for interfacing between mpz and mpn code. Signs of
-   the mpz numbers are generally ignored. */
-
-#if !GMP_HAVE_mpz_limbs_read
-/* Read access to mpz numbers. */
-
-/* Return limb pointer, for read-only operations. Use mpz_size to get
-   the number of limbs. */
-const mp_limb_t *
-mpz_limbs_read (const mpz_srcptr x);
-
-/* Write access to mpz numbers. */
-
-/* Get a limb pointer for writing, previous contents may be
-   destroyed. */
-mp_limb_t *
-mpz_limbs_write (mpz_ptr x, mp_size_t n);
-
-/* Get a limb pointer for writing, previous contents is intact. */
-mp_limb_t *
-mpz_limbs_modify (mpz_ptr x, mp_size_t n);
-
-/* Update size. */
-void
-mpz_limbs_finish (mpz_ptr x, mp_size_t n);
-
-/* Using an mpn number as an mpz. Can be used for read-only access
-   only. x must not be cleared or reallocated. */
-mpz_srcptr
-mpz_roinit_n (mpz_ptr x, const mp_limb_t *xp, mp_size_t xs);
-
-#endif /* !GMP_HAVE_mpz_limbs_read */
-
-void
-cnd_swap (mp_limb_t cnd, mp_limb_t *ap, mp_limb_t *bp, mp_size_t n);
+#define NETTLE_OCTET_SIZE_TO_LIMB_SIZE(n) \
+  (((n) * 8 + GMP_NUMB_BITS - 1) / GMP_NUMB_BITS)
 
 /* Convenience functions */
 int
@@ -146,6 +101,10 @@ mpn_set_base256 (mp_limb_t *rp, mp_size_t rn,
 void
 mpn_set_base256_le (mp_limb_t *rp, mp_size_t rn,
 		    const uint8_t *xp, size_t xn);
+
+void
+mpn_get_base256 (uint8_t *rp, size_t rn,
+	         const mp_limb_t *xp, mp_size_t xn);
 
 void
 mpn_get_base256_le (uint8_t *rp, size_t rn,

@@ -39,7 +39,7 @@
 #include "ecc-internal.h"
 
 /* Binary algorithm needs 6*ecc->p.size + scratch for ecc_add_ehh,
-   total 13 ecc->p.size
+   total 10 ecc->p.size
 
    Window algorithm needs (3<<w) * ecc->p.size for the table,
    3*ecc->p.size for a temporary point, and scratch for
@@ -75,8 +75,8 @@ ecc_mul_a_eh (const struct ecc_curve *ecc,
 	{
 	  int digit;
 
-	  ecc_dup_eh (ecc, r, r, scratch_out);
-	  ecc_add_ehh (ecc, tp, r, pe, scratch_out);
+	  ecc->dup (ecc, r, r, scratch_out);
+	  ecc->add_hh (ecc, tp, r, pe, scratch_out);
 
 	  digit = (w & bit) > 0;
 	  /* If we had a one-bit, use the sum. */
@@ -107,8 +107,8 @@ table_init (const struct ecc_curve *ecc,
 
   for (j = 2; j < size; j += 2)
     {
-      ecc_dup_eh (ecc, TABLE(j), TABLE(j/2), scratch);
-      ecc_add_ehh (ecc, TABLE(j+1), TABLE(j), TABLE(1), scratch);
+      ecc->dup (ecc, TABLE(j), TABLE(j/2), scratch);
+      ecc->add_hh (ecc, TABLE(j+1), TABLE(j), TABLE(1), scratch);
     }
 }
 
@@ -163,11 +163,11 @@ ecc_mul_a_eh (const struct ecc_curve *ecc,
 	  bits |= w >> shift;
 	}
       for (j = 0; j < ECC_MUL_A_EH_WBITS; j++)
-	ecc_dup_eh (ecc, r, r, scratch_out);
+	ecc->dup (ecc, r, r, scratch_out);
 
       bits &= TABLE_MASK;
       sec_tabselect (tp, 3*ecc->p.size, table, TABLE_SIZE, bits);
-      ecc_add_ehh (ecc, r, tp, r, scratch_out);
+      ecc->add_hhh (ecc, r, r, tp, scratch_out);
     }
 #undef table
 #undef tp

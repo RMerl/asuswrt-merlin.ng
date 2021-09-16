@@ -1,6 +1,6 @@
 C x86_64/memxor.asm
 
-ifelse(<
+ifelse(`
    Copyright (C) 2010, 2014, Niels Möller
 
    This file is part of GNU Nettle.
@@ -28,19 +28,19 @@ ifelse(<
    You should have received copies of the GNU General Public License and
    the GNU Lesser General Public License along with this program.  If
    not, see http://www.gnu.org/licenses/.
->)
+')
 
 C Register usage:
-define(<DST>, <%rax>) C Originally in %rdi
-define(<SRC>, <%rsi>)
-define(<N>, <%rdx>)
-define(<TMP>, <%r8>)
-define(<TMP2>, <%r9>)
-define(<CNT>, <%rdi>)
-define(<S0>, <%r11>)
-define(<S1>, <%rdi>) C Overlaps with CNT 
+define(`DST', `%rax') C Originally in %rdi
+define(`SRC', `%rsi')
+define(`N', `%rdx')
+define(`TMP', `%r8')
+define(`TMP2', `%r9')
+define(`CNT', `%rdi')
+define(`S0', `%r11')
+define(`S1', `%rdi') C Overlaps with CNT
 
-define(<USE_SSE2>, <no>)
+define(`USE_SSE2', `no')
 
 	.file "memxor.asm"
 
@@ -79,10 +79,10 @@ PROLOGUE(nettle_memxor)
 	jnz	.Lalign_loop
 
 .Laligned:
-ifdef(<USE_SSE2>, <
+ifdef(`USE_SSE2', `
 	cmp	$16, N
 	jnc	.Lsse2_case
->)
+')
 
 	C Next destination word is -8(DST, N)
 	C Setup for unrolling
@@ -135,7 +135,7 @@ ifdef(<USE_SSE2>, <
 	W64_EXIT(3, 0)
 	ret
 
-ifdef(<USE_SSE2>, <
+ifdef(`USE_SSE2', `
 
 .Lsse2_case:
 	lea	(DST, N), TMP
@@ -168,6 +168,6 @@ ifdef(<USE_SSE2>, <
 
 	W64_EXIT(3, 0)
 	ret
->)	
+')
 
 EPILOGUE(nettle_memxor)

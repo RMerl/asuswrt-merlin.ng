@@ -79,13 +79,46 @@ ssize_t recv_dhcp_packet(int fd, struct msghdr *msg)
   return (msg->msg_flags & MSG_TRUNC) ? -1 : new_sz;
 }
 
+/* like match_netid() except that the check can have a trailing * for wildcard */
+/* started as a direct copy of match_netid() */
+int match_netid_wild(struct dhcp_netid *check, struct dhcp_netid *pool)
+{
+  struct dhcp_netid *tmp1;
+  
+  for (; check; check = check->next)
+    {
+      const int check_len = strlen(check->net);
+      const int is_wc = (check->net[check_len - 1] == '*');
+      
+      /* '#' for not is for backwards compat. */
+      if (check->net[0] != '!' && check->net[0] != '#')
+	{
+	  for (tmp1 = pool; tmp1; tmp1 = tmp1->next)
+	    if (is_wc ? (strncmp(check->net, tmp1->net, check_len-1) == 0) :
+		(strcmp(check->net, tmp1->net) == 0))
+	      break;
+	  if (!tmp1)
+	    return 0;
+	}
+      else
+	for (tmp1 = pool; tmp1; tmp1 = tmp1->next)
+	  if (is_wc ? (strncmp((check->net)+1, tmp1->net, check_len-2) == 0) :
+	      (strcmp((check->net)+1, tmp1->net) == 0))
+	    return 0;
+    }
+  return 1;
+}
+
 struct dhcp_netid *run_tag_if(struct dhcp_netid *tags)
 {
   struct tag_if *exprs;
   struct dhcp_netid_list *list;
 
+  /* this now uses match_netid_wild() above so that tag_if can
+   * be used to set a 'group of interfaces' tag.
+   */
   for (exprs = daemon->tag_if; exprs; exprs = exprs->next)
-    if (match_netid(exprs->tag, tags, 1))
+    if (match_netid_wild(exprs->tag, tags))
       for (list = exprs->set; list; list = list->next)
 	{
 	  list->list->next = tags;
@@ -620,6 +653,8 @@ static const struct opttab_t {
   { "client-arch", 93, 2 | OT_DEC },
   { "client-interface-id", 94, 0 },
   { "client-machine-id", 97, 0 },
+  { "posix-timezone", 100, OT_NAME }, /* RFC 4833, Sec. 2 */
+  { "tzdb-timezone", 101, OT_NAME }, /* RFC 4833, Sec. 2 */
   { "subnet-select", 118, OT_INTERNAL },
   { "domain-search", 119, OT_RFC1035_NAME },
   { "sip-server", 120, 0 },

@@ -30,7 +30,7 @@
 
 #if defined(HAVE_DNSSEC) || defined(HAVE_CRYPTOHASH)
 
-static const void *hash;
+static const struct nettle_hash *hash;
 static void *ctx;
 static unsigned char *digest;
 
@@ -39,8 +39,8 @@ void hash_questions_init(void)
   if (!(hash = hash_find("sha256")))
     die(_("Failed to create SHA-256 hash object"), NULL, EC_MISC);
 
-  if (!hash_init(hash, &ctx, &digest))
-    die(_("Failed to create SHA-256 hash object"), NULL, EC_MISC);
+  ctx = safe_malloc(hash->context_size);
+  digest = safe_malloc(hash->digest_size);
 }
 
 unsigned char *hash_questions(struct dns_header *header, size_t plen, char *name)
@@ -48,7 +48,7 @@ unsigned char *hash_questions(struct dns_header *header, size_t plen, char *name
   int q;
   unsigned char *p = (unsigned char *)(header+1);
 
-  hash_init(hash, &ctx, &digest);
+  hash->init(ctx);
 
   for (q = ntohs(header->qdcount); q != 0; q--) 
     {
@@ -61,24 +61,24 @@ unsigned char *hash_questions(struct dns_header *header, size_t plen, char *name
 	 if (c >= 'A' && c <= 'Z')
 	   *cp += 'a' - 'A';
 
-      hash_update(hash, ctx, cp - name, (unsigned char *)name);
+      hash->update(ctx, cp - name, (unsigned char *)name);
       /* CRC the class and type as well */
-      hash_update(hash, ctx, 4, p);
+      hash->update(ctx, 4, p);
 
       p += 4;
       if (!CHECK_LEN(header, p, plen, 0))
 	break; /* bad packet */
     }
   
-  hash_digest(hash, ctx, hash_length(hash), digest);
+  hash->digest(ctx, hash->digest_size, digest);
   return digest;
 }
 
 #else /* HAVE_DNSSEC  || HAVE_CRYPTOHASH */
 
-#define SHA256_BLOCK_SIZE 32            // SHA256 outputs a 32 byte digest
-typedef unsigned char BYTE;             // 8-bit byte
-typedef unsigned int  WORD;             // 32-bit word, change to "long" for 16-bit machines
+#define SHA256_BLOCK_SIZE 32            /* SHA256 outputs a 32 byte digest */
+typedef unsigned char BYTE;             /* 8-bit byte */
+typedef unsigned int  WORD;             /* 32-bit word, change to "long" for 16-bit machines */
 
 typedef struct {
   BYTE data[64];
@@ -238,7 +238,7 @@ static void sha256_final(SHA256_CTX *ctx, BYTE hash[])
   
   i = ctx->datalen;
 
-  // Pad whatever data is left in the buffer.
+  /* Pad whatever data is left in the buffer. */
   if (ctx->datalen < 56)
     {
       ctx->data[i++] = 0x80;
@@ -254,7 +254,7 @@ static void sha256_final(SHA256_CTX *ctx, BYTE hash[])
       memset(ctx->data, 0, 56);
     }
   
-  // Append to the padding the total message's length in bits and transform.
+  /* Append to the padding the total message's length in bits and transform. */
   ctx->bitlen += ctx->datalen * 8;
   ctx->data[63] = ctx->bitlen;
   ctx->data[62] = ctx->bitlen >> 8;
@@ -266,8 +266,8 @@ static void sha256_final(SHA256_CTX *ctx, BYTE hash[])
   ctx->data[56] = ctx->bitlen >> 56;
   sha256_transform(ctx, ctx->data);
   
-  // Since this implementation uses little endian byte ordering and SHA uses big endian,
-  // reverse all the bytes when copying the final state to the output hash.
+  /* Since this implementation uses little endian byte ordering and SHA uses big endian,
+     reverse all the bytes when copying the final state to the output hash. */
   for (i = 0; i < 4; ++i)
     {
       hash[i]      = (ctx->state[0] >> (24 - i * 8)) & 0x000000ff;

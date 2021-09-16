@@ -649,6 +649,26 @@ struct dhcp_lease *lease_find_by_client(unsigned char *hwaddr, int hw_len, int h
   return NULL;
 }
 
+struct dhcp_lease *lease_find_by_hwaddr(unsigned char *hwaddr, int hw_len, int hw_type)
+{
+  struct dhcp_lease *lease;
+
+  for (lease = leases; lease; lease = lease->next)
+    {
+#ifdef HAVE_DHCP6
+      if (lease->flags & (LEASE_TA | LEASE_NA))
+	continue;
+#endif
+      if (hw_len != 0 &&
+	  lease->hwaddr_len == hw_len &&
+	  lease->hwaddr_type == hw_type &&
+	  memcmp(hwaddr, lease->hwaddr, hw_len) == 0)
+	return lease;
+    }
+
+  return NULL;
+}
+
 struct dhcp_lease *lease_find_by_addr(struct in_addr addr)
 {
   struct dhcp_lease *lease;
@@ -986,7 +1006,7 @@ void lease_set_hostname(struct dhcp_lease *lease, const char *name, int auth, ch
   char *new_name = NULL, *new_fqdn = NULL;
 
   if (config_domain && (!domain || !hostname_isequal(domain, config_domain)))
-    my_syslog(MS_DHCP | LOG_WARNING, _("Ignoring domain %s for DHCP host name %s"), config_domain, name);
+    my_syslog(MS_DHCP | LOG_INFO, _("Ignoring domain %s for DHCP host name %s"), config_domain, name);
   
   if (lease->hostname && name && hostname_isequal(lease->hostname, name))
     {
@@ -1055,6 +1075,7 @@ void lease_set_hostname(struct dhcp_lease *lease, const char *name, int auth, ch
 	    }
 	
 	  kill_name(lease_tmp);
+	  lease_tmp->flags |= LEASE_CHANGED; /* run script on change */
 	  break;
 	}
     }

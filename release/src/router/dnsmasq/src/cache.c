@@ -488,8 +488,6 @@ struct crec *cache_insert(char *name, union all_addr *addr, unsigned short class
   else
 #endif
     {
-      /* Don't log DNSSEC records here, done elsewhere */
-      log_query(flags | F_UPSTREAM, name, addr, NULL);
       if (daemon->max_cache_ttl != 0 && daemon->max_cache_ttl < ttl)
 	ttl = daemon->max_cache_ttl;
       if (daemon->min_cache_ttl != 0 && daemon->min_cache_ttl > ttl)
@@ -1602,21 +1600,18 @@ int cache_make_stat(struct txt_record *t)
     case TXT_STAT_SERVERS:
       /* sum counts from different records for same server */
       for (serv = daemon->servers; serv; serv = serv->next)
-	serv->flags &= ~SERV_COUNTED;
+	serv->flags &= ~SERV_MARK;
       
       for (serv = daemon->servers; serv; serv = serv->next)
-	if (!(serv->flags & 
-	      (SERV_NO_ADDR | SERV_LITERAL_ADDRESS | SERV_COUNTED | SERV_USE_RESOLV | SERV_NO_REBIND)))
+	if (!(serv->flags & SERV_MARK))
 	  {
 	    char *new, *lenp;
 	    int port, newlen, bytes_avail, bytes_needed;
 	    unsigned int queries = 0, failed_queries = 0;
 	    for (serv1 = serv; serv1; serv1 = serv1->next)
-	      if (!(serv1->flags & 
-		    (SERV_NO_ADDR | SERV_LITERAL_ADDRESS | SERV_COUNTED | SERV_USE_RESOLV | SERV_NO_REBIND)) && 
-		  sockaddr_isequal(&serv->addr, &serv1->addr))
+	      if (!(serv1->flags & SERV_MARK) && sockaddr_isequal(&serv->addr, &serv1->addr))
 		{
-		  serv1->flags |= SERV_COUNTED;
+		  serv1->flags |= SERV_MARK;
 		  queries += serv1->queries;
 		  failed_queries += serv1->failed_queries;
 		}
@@ -1644,6 +1639,7 @@ int cache_make_stat(struct txt_record *t)
 	  }
       t->txt = (unsigned char *)buff;
       t->len = p - buff;
+
       return 1;
     }
   
@@ -1686,27 +1682,24 @@ void dump_cache(time_t now)
 
   /* sum counts from different records for same server */
   for (serv = daemon->servers; serv; serv = serv->next)
-    serv->flags &= ~SERV_COUNTED;
+    serv->flags &= ~SERV_MARK;
   
   for (serv = daemon->servers; serv; serv = serv->next)
-    if (!(serv->flags & 
-	  (SERV_NO_ADDR | SERV_LITERAL_ADDRESS | SERV_COUNTED | SERV_USE_RESOLV | SERV_NO_REBIND)))
+    if (!(serv->flags & SERV_MARK))
       {
 	int port;
 	unsigned int queries = 0, failed_queries = 0;
 	for (serv1 = serv; serv1; serv1 = serv1->next)
-	  if (!(serv1->flags & 
-		(SERV_NO_ADDR | SERV_LITERAL_ADDRESS | SERV_COUNTED | SERV_USE_RESOLV | SERV_NO_REBIND)) && 
-	      sockaddr_isequal(&serv->addr, &serv1->addr))
+	  if (!(serv1->flags & SERV_MARK) && sockaddr_isequal(&serv->addr, &serv1->addr))
 	    {
-	      serv1->flags |= SERV_COUNTED;
+	      serv1->flags |= SERV_MARK;
 	      queries += serv1->queries;
 	      failed_queries += serv1->failed_queries;
 	    }
 	port = prettyprint_addr(&serv->addr, daemon->addrbuff);
 	my_syslog(LOG_INFO, _("server %s#%d: queries sent %u, retried or failed %u"), daemon->addrbuff, port, queries, failed_queries);
       }
-  
+
   if (option_bool(OPT_DEBUG) || option_bool(OPT_LOG))
     {
       struct crec *cache ;
@@ -1860,47 +1853,93 @@ char *querystr(char *desc, unsigned short type)
 	  if (types)
 	    sprintf(buff, "<%s>", types);
 	  else
-	    sprintf(buff, "type=%d", type);
+	    sprintf(buff, "<type=%d>", type);
 	}
     }
   
   return buff ? buff : "";
 }
 
+static char *edestr(int ede)
+{
+  switch (ede)
+    {
+    case EDE_OTHER:                       return "other";
+    case EDE_USUPDNSKEY:                  return "unsupported DNSKEY algorithm";
+    case EDE_USUPDS:                      return "unsupported DS digest";
+    case EDE_STALE:                       return "stale answer";
+    case EDE_FORGED:                      return "forged";
+    case EDE_DNSSEC_IND:                  return "DNSSEC indeterminate";
+    case EDE_DNSSEC_BOGUS:                return "DNSSEC bogus";
+    case EDE_SIG_EXP:                     return "DNSSEC signature expired";
+    case EDE_SIG_NYV:                     return "DNSSEC sig not yet valid";
+    case EDE_NO_DNSKEY:                   return "DNSKEY missing";
+    case EDE_NO_RRSIG:                    return "RRSIG missing";
+    case EDE_NO_ZONEKEY:                  return "no zone key bit set";
+    case EDE_NO_NSEC:                     return "NSEC(3) missing";
+    case EDE_CACHED_ERR:                  return "cached error";
+    case EDE_NOT_READY:                   return "not ready";
+    case EDE_BLOCKED:                     return "blocked";
+    case EDE_CENSORED:                    return "censored";
+    case EDE_FILTERED:                    return "filtered";
+    case EDE_PROHIBITED:                  return "prohibited";
+    case EDE_STALE_NXD:                   return "stale NXDOMAIN";
+    case EDE_NOT_AUTH:                    return "not authoritative";
+    case EDE_NOT_SUP:                     return "not supported";
+    case EDE_NO_AUTH:                     return "no reachable authority";
+    case EDE_NETERR:                      return "network error";
+    case EDE_INVALID_DATA:                return "invalid data";
+    default:                              return "unknown";
+    }
+}
+
 void log_query(unsigned int flags, char *name, union all_addr *addr, char *arg)
 {
-  char *source, *dest = daemon->addrbuff;
+  char *source, *dest = arg;
   char *verb = "is";
+  char *extra = "";
   
   if (!option_bool(OPT_LOG))
     return;
+  
+#ifdef HAVE_DNSSEC
+  if ((flags & F_DNSSECOK) && option_bool(OPT_EXTRALOG))
+    extra = " (DNSSEC signed)";
+#endif
 
   name = sanitise(name);
 
   if (addr)
     {
+      dest = daemon->addrbuff;
+
       if (flags & F_KEYTAG)
 	sprintf(daemon->addrbuff, arg, addr->log.keytag, addr->log.algo, addr->log.digest);
       else if (flags & F_RCODE)
 	{
 	  unsigned int rcode = addr->log.rcode;
 
-	   if (rcode == SERVFAIL)
-	     dest = "SERVFAIL";
-	   else if (rcode == REFUSED)
-	     dest = "REFUSED";
-	   else if (rcode == NOTIMP)
-	     dest = "not implemented";
-	   else
-	     sprintf(daemon->addrbuff, "%u", rcode);
+	  if (rcode == SERVFAIL)
+	    dest = "SERVFAIL";
+	  else if (rcode == REFUSED)
+	    dest = "REFUSED";
+	  else if (rcode == NOTIMP)
+	    dest = "not implemented";
+	  else
+	    sprintf(daemon->addrbuff, "%u", rcode);
+
+	  if (addr->log.ede != EDE_UNSET)
+	    {
+	      extra = daemon->addrbuff;
+	      sprintf(extra, " (EDE: %s)", edestr(addr->log.ede));
+	    }
 	}
-      else
+      else if (flags & (F_IPV4 | F_IPV6))
 	inet_ntop(flags & F_IPV4 ? AF_INET : AF_INET6,
 		  addr, daemon->addrbuff, ADDRSTRLEN);
-      
+      else
+	dest = arg;
     }
-  else
-    dest = arg;
 
   if (flags & F_REVERSE)
     {
@@ -1938,7 +1977,15 @@ void log_query(unsigned int flags, char *name, union all_addr *addr, char *arg)
   else if (flags & F_UPSTREAM)
     source = "reply";
   else if (flags & F_SECSTAT)
-    source = "validation";
+    {
+      if (addr && addr->log.ede != EDE_UNSET && option_bool(OPT_EXTRALOG))
+	{
+	  extra = daemon->addrbuff;
+	  sprintf(extra, " (EDE: %s)", edestr(addr->log.ede));
+	}
+      source = "validation";
+      dest = arg;
+    }
   else if (flags & F_AUTH)
     source = "auth";
   else if (flags & F_SERVER)
@@ -1971,12 +2018,14 @@ void log_query(unsigned int flags, char *name, union all_addr *addr, char *arg)
 
   if (option_bool(OPT_EXTRALOG))
     {
-      int port = prettyprint_addr(daemon->log_source_addr, daemon->addrbuff2);
       if (flags & F_NOEXTRA)
-	my_syslog(LOG_INFO, "* %s/%u %s %s %s %s", daemon->addrbuff2, port, source, name, verb, dest);
+	my_syslog(LOG_INFO, "%u %s %s %s %s%s", daemon->log_display_id, source, name, verb, dest, extra);
       else
-	my_syslog(LOG_INFO, "%u %s/%u %s %s %s %s", daemon->log_display_id, daemon->addrbuff2, port, source, name, verb, dest);
+	{
+	   int port = prettyprint_addr(daemon->log_source_addr, daemon->addrbuff2);
+	   my_syslog(LOG_INFO, "%u %s/%u %s %s %s %s%s", daemon->log_display_id, daemon->addrbuff2, port, source, name, verb, dest, extra);
+	}
     }
   else
-    my_syslog(LOG_INFO, "%s %s %s %s", source, name, verb, dest);
+    my_syslog(LOG_INFO, "%s %s %s %s%s", source, name, verb, dest, extra);
 }

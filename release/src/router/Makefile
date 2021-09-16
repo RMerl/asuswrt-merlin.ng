@@ -3277,14 +3277,14 @@ endif
 dnsmasq:  $(if $(RTCONFIG_DNSSEC_OPENSSL),openssl,) $(if $(RTCONFIG_DNSSEC_NETTLE),nettle,)
 	@$(SEP)
 	$(MAKE) -C dnsmasq \
-	COPTS="-DHAVE_BROKEN_RTC -DHAVE_LEASEFILE_EXPIRE -DEDNS_PKTSZ=1280 \
+	COPTS="-DHAVE_BROKEN_RTC -DHAVE_LEASEFILE_EXPIRE \
 		-DNO_ID -DNO_AUTH -DNO_INOTIFY -DNO_DUMPFILE -DNO_GMP \
 		$(if $(RTCONFIG_IPV6),-DUSE_IPV6,-DNO_IPV6) \
 		$(if $(RTCONFIG_USB_EXTRAS)||$(RTCONFIG_TR069),,-DNO_SCRIPT) \
 		$(if $(RTCONFIG_USB_EXTRAS),,-DNO_TFTP) \
 		$(if $(RTCONFIG_DNSSEC_OPENSSL),-I$(TOP)/openssl/include -DHAVE_DNSSEC,) \
 		$(if $(RTCONFIG_DNSSEC_NETTLE),-I$(TOP)/nettle/include -I$(TOP)/gmp -DHAVE_DNSSEC -DHAVE_DNSSEC_STATIC -DNO_GOST,)" \
-	CFLAGS="-Os -ffunction-sections -fdata-sections $(EXTRACFLAGS)" \
+	CFLAGS="-Os -ffunction-sections -fdata-sections $(EXTRACFLAGS) -std=gnu99" \
 	LDFLAGS="-ffunction-sections -fdata-sections -Wl,--gc-sections $(EXTRALDFLAGS) \
 		$(if $(RTCONFIG_DNSSEC_OPENSSL),-pthread -L$(TOP)/openssl,) \
 		$(if $(RTCONFIG_DNSSEC_NETTLE),-L$(TOP)/nettle/lib -L$(TOP)/gmp/.libs,)" \

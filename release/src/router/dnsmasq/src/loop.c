@@ -30,12 +30,14 @@ void loop_send_probes()
    /* Loop through all upstream servers not for particular domains, and send a query to that server which is
       identifiable, via the uid. If we see that query back again, then the server is looping, and we should not use it. */
    for (serv = daemon->servers; serv; serv = serv->next)
-     if (!(serv->flags & 
-	   (SERV_LITERAL_ADDRESS | SERV_NO_ADDR | SERV_USE_RESOLV | SERV_NO_REBIND | SERV_HAS_DOMAIN | SERV_FOR_NODOTS | SERV_LOOP)))
+     if (strlen(serv->domain) == 0 &&
+	 !(serv->flags & (SERV_FOR_NODOTS)))
        {
 	 ssize_t len = loop_make_probe(serv->uid);
 	 int fd;
 	 
+	 serv->flags &= ~SERV_LOOP;
+
 	 if ((fd = allocate_rfd(&rfds, serv)) == -1)
 	   continue;
 	 
@@ -96,15 +98,15 @@ int detect_loop(char *query, int type)
   uid = strtol(query, NULL, 16);
 
   for (serv = daemon->servers; serv; serv = serv->next)
-     if (!(serv->flags & 
-	   (SERV_LITERAL_ADDRESS | SERV_NO_ADDR | SERV_USE_RESOLV | SERV_NO_REBIND | SERV_HAS_DOMAIN | SERV_FOR_NODOTS | SERV_LOOP)) &&
-	 uid == serv->uid)
-       {
-	 serv->flags |= SERV_LOOP;
-	 check_servers(); /* log new state */
-	 return 1;
-       }
-
+    if (strlen(serv->domain) == 0 &&
+	!(serv->flags & SERV_LOOP) &&
+	uid == serv->uid)
+      {
+	serv->flags |= SERV_LOOP;
+	check_servers(1); /* log new state - don't send more probes. */
+	return 1;
+      }
+  
   return 0;
 }
 

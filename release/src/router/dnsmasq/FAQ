@@ -236,7 +236,7 @@ Q: What network types are supported by the DHCP server?
 A: Ethernet (and 802.11 wireless) are supported on all platforms. On
    Linux all network types (including FireWire) are supported.
 
-Q: What are these strange "bind-interface" and "bind-dynamic" options?
+Q: What are these strange "bind-interfaces" and "bind-dynamic" options?
 
 A: Dnsmasq from v2.63 can operate in one of three different "networking
    modes". This is unfortunate as it requires users configuring dnsmasq

@@ -215,7 +215,7 @@ static void dbus_read_servers(DBusMessage *message)
 	  domain = NULL;
 	
 	if (!skip)
-	  add_update_server(SERV_FROM_DBUS, &addr, &source_addr, NULL, domain);
+	  add_update_server(SERV_FROM_DBUS, &addr, &source_addr, NULL, domain, NULL);
      
       } while (dbus_message_iter_get_arg_type(&iter) == DBUS_TYPE_STRING); 
     }
@@ -276,7 +276,7 @@ static DBusMessage* dbus_read_servers_ex(DBusMessage *message, int strings)
     {
       const char *str = NULL;
       union  mysockaddr addr, source_addr;
-      int flags = 0;
+      u16 flags = 0;
       char interface[IF_NAMESIZE];
       char *str_addr, *str_domain = NULL;
 
@@ -361,10 +361,6 @@ static DBusMessage* dbus_read_servers_ex(DBusMessage *message, int strings)
 	  strcpy(str_addr, str);
 	}
 
-      memset(&addr, 0, sizeof(addr));
-      memset(&source_addr, 0, sizeof(source_addr));
-      memset(&interface, 0, sizeof(interface));
-
       /* parse the IP address */
       if ((addr_err = parse_server(str_addr, &addr, &source_addr, (char *) &interface, &flags)))
 	{
@@ -377,7 +373,7 @@ static DBusMessage* dbus_read_servers_ex(DBusMessage *message, int strings)
       /* 0.0.0.0 for server address == NULL, for Dbus */
       if (addr.in.sin_family == AF_INET &&
           addr.in.sin_addr.s_addr == 0)
-        flags |= SERV_NO_ADDR;
+        flags |= SERV_LITERAL_ADDRESS;
       
       if (strings)
 	{
@@ -392,7 +388,7 @@ static DBusMessage* dbus_read_servers_ex(DBusMessage *message, int strings)
 	    else 
 	      p = NULL;
 	    
-	    add_update_server(flags | SERV_FROM_DBUS, &addr, &source_addr, interface, str_domain);
+	    add_update_server(flags | SERV_FROM_DBUS, &addr, &source_addr, interface, str_domain, NULL);
 	  } while ((str_domain = p));
 	}
       else
@@ -407,7 +403,7 @@ static DBusMessage* dbus_read_servers_ex(DBusMessage *message, int strings)
 	      dbus_message_iter_get_basic(&string_iter, &str);
 	    dbus_message_iter_next (&string_iter);
 	    
-	    add_update_server(flags | SERV_FROM_DBUS, &addr, &source_addr, interface, str);
+	    add_update_server(flags | SERV_FROM_DBUS, &addr, &source_addr, interface, str, NULL);
 	  } while (dbus_message_iter_get_arg_type(&string_iter) == DBUS_TYPE_STRING);
 	}
 	 
@@ -416,7 +412,7 @@ static DBusMessage* dbus_read_servers_ex(DBusMessage *message, int strings)
     }
 
   cleanup_servers();
-
+    
   if (dup)
     free(dup);
 
@@ -715,7 +711,7 @@ DBusHandlerResult message_handler(DBusConnection *connection,
   if (new_servers)
     {
       my_syslog(LOG_INFO, _("setting upstream servers from DBus"));
-      check_servers();
+      check_servers(0);
       if (option_bool(OPT_RELOAD))
 	clear_cache = 1;
     }

@@ -761,7 +761,8 @@ static ssize_t tftp_err(int err, char *packet, char *message, char *file)
   len = snprintf(mess->message, MAXMESSAGE,  message, file, errstr);
   ret += (len < MAXMESSAGE) ? len + 1 : MAXMESSAGE; /* include terminating zero */
   
-  my_syslog(MS_TFTP | LOG_ERR, "%s", mess->message);
+  if (err != ERR_FNF || !option_bool(OPT_QUIET_TFTP))
+    my_syslog(MS_TFTP | LOG_ERR, "%s", mess->message);
   
   return  ret;
 }

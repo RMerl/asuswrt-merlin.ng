@@ -473,7 +473,17 @@ int netmask_length(struct in_addr mask)
 int is_same_net(struct in_addr a, struct in_addr b, struct in_addr mask)
 {
   return (a.s_addr & mask.s_addr) == (b.s_addr & mask.s_addr);
-} 
+}
+
+int is_same_net_prefix(struct in_addr a, struct in_addr b, int prefix)
+{
+  struct in_addr mask;
+
+  mask.s_addr = htonl(~((1 << (32 - prefix)) - 1));
+
+  return is_same_net(a, b, mask);
+}
+
 
 int is_same_net6(struct in6_addr *a, struct in6_addr *b, int prefixlen)
 {

@@ -24,7 +24,7 @@ struct daemon *daemon;
 static volatile pid_t pid = 0;
 static volatile int pipewrite;
 
-static int set_dns_listeners(time_t now);
+static void set_dns_listeners(void);
 static void check_dns_listeners(time_t now);
 static void sig_handler(int sig);
 static void async_event(int pipe, time_t now);
@@ -109,7 +109,6 @@ int main (int argc, char **argv)
   daemon->packet_buff_sz = daemon->edns_pktsz + MAXDNAME + RRFIXEDSZ;
   daemon->packet = safe_malloc(daemon->packet_buff_sz);
   
-  daemon->addrbuff = safe_malloc(ADDRSTRLEN);
   if (option_bool(OPT_EXTRALOG))
     daemon->addrbuff2 = safe_malloc(ADDRSTRLEN);
   
@@ -135,6 +134,13 @@ int main (int argc, char **argv)
     }
 #endif
 
+#if defined(HAVE_CONNTRACK) && defined(HAVE_UBUS)
+  /* CONNTRACK UBUS code uses this buffer, so if not allocated above,
+     we need to allocate it here. */
+  if (option_bool(OPT_CMARK_ALST_EN) && !daemon->workspacename)
+    daemon->workspacename = safe_malloc(MAXDNAME);
+#endif
+  
 #ifdef HAVE_DHCP
   if (!daemon->lease_file)
     {
@@ -205,8 +211,13 @@ int main (int argc, char **argv)
 #endif
 
 #ifdef HAVE_CONNTRACK
-  if (option_bool(OPT_CONNTRACK) && (daemon->query_port != 0 || daemon->osport))
-    die (_("cannot use --conntrack AND --query-port"), NULL, EC_BADCONF); 
+  if (option_bool(OPT_CONNTRACK))
+    {
+      if (daemon->query_port != 0 || daemon->osport)
+	die (_("cannot use --conntrack AND --query-port"), NULL, EC_BADCONF);
+
+      need_cap_net_admin = 1;
+    }
 #else
   if (option_bool(OPT_CONNTRACK))
     die(_("conntrack support not available: set HAVE_CONNTRACK in src/config.h"), NULL, EC_BADCONF);
@@ -398,9 +409,6 @@ int main (int argc, char **argv)
     {
       cache_init();
       blockdata_init();
-#if defined(HAVE_DNSSEC) || defined(HAVE_CRYPTOHASH)
-      crypto_init();
-#endif
       hash_questions_init();
 
       /* Scale random socket pool by ftabsize, but
@@ -433,8 +441,6 @@ int main (int argc, char **argv)
 #ifdef HAVE_DBUS
     {
       char *err;
-      daemon->dbus = NULL;
-      daemon->watches = NULL;
       if ((err = dbus_init()))
 	die(_("DBus error: %s"), err, EC_MISC);
     }
@@ -445,8 +451,9 @@ int main (int argc, char **argv)
   if (option_bool(OPT_UBUS))
 #ifdef HAVE_UBUS
     {
-      daemon->ubus = NULL;
-      ubus_init();
+      char *err;
+      if ((err = ubus_init()))
+	die(_("UBus error: %s"), err, EC_MISC);
     }
 #else
   die(_("UBus not available: set HAVE_UBUS in src/config.h"), NULL, EC_BADCONF);
@@ -1028,7 +1035,7 @@ int main (int argc, char **argv)
     close(err_pipe[1]);
   
   if (daemon->port != 0)
-    check_servers();
+    check_servers(0);
   
   pid = getpid();
 
@@ -1043,16 +1050,10 @@ int main (int argc, char **argv)
   
   while (1)
     {
-      int t, timeout = -1;
+      int timeout = -1;
       
       poll_reset();
       
-      /* if we are out of resources, find how long we have to wait
-	 for some to come free, we'll loop around then and restart
-	 listening for queries */
-      if ((t = set_dns_listeners(now)) != 0)
-	timeout = t * 1000;
-
       /* Whilst polling for the dbus, or doing a tftp transfer, wake every quarter second */
       if (daemon->tftp_trans ||
 	  (option_bool(OPT_DBUS) && !daemon->dbus))
@@ -1062,15 +1063,18 @@ int main (int argc, char **argv)
       else if (is_dad_listeners())
 	timeout = 1000;
 
-#ifdef HAVE_DBUS
-      set_dbus_listeners();
-#endif
+      set_dns_listeners();
 
+#ifdef HAVE_DBUS
+      if (option_bool(OPT_DBUS))
+	set_dbus_listeners();
+#endif
+      
 #ifdef HAVE_UBUS
       if (option_bool(OPT_UBUS))
         set_ubus_listeners();
 #endif
-	  
+      
 #ifdef HAVE_DHCP
       if (daemon->dhcp || daemon->relay4)
 	{
@@ -1190,28 +1194,44 @@ int main (int argc, char **argv)
       
 #ifdef HAVE_DBUS
       /* if we didn't create a DBus connection, retry now. */ 
-     if (option_bool(OPT_DBUS) && !daemon->dbus)
+      if (option_bool(OPT_DBUS))
 	{
-	  char *err;
-	  if ((err = dbus_init()))
-	    my_syslog(LOG_WARNING, _("DBus error: %s"), err);
-	  if (daemon->dbus)
-	    my_syslog(LOG_INFO, _("connected to system DBus"));
+	  if (!daemon->dbus)
+	    {
+	      char *err  = dbus_init();
+
+	      if (daemon->dbus)
+		my_syslog(LOG_INFO, _("connected to system DBus"));
+	      else if (err)
+		{
+		  my_syslog(LOG_ERR, _("DBus error: %s"), err);
+		  reset_option_bool(OPT_DBUS); /* fatal error, stop trying. */
+		}
+	    }
+	  
+	  check_dbus_listeners();
 	}
-      check_dbus_listeners();
 #endif
 
 #ifdef HAVE_UBUS
+      /* if we didn't create a UBus connection, retry now. */
       if (option_bool(OPT_UBUS))
-        {
-          /* if we didn't create a UBus connection, retry now. */
-          if (!daemon->ubus)
-            {
-              ubus_init();
-            }
+	{
+	  if (!daemon->ubus)
+	    {
+	      char *err = ubus_init();
 
-          check_ubus_listeners();
-        }
+	      if (daemon->ubus)
+		my_syslog(LOG_INFO, _("connected to system UBus"));
+	      else if (err)
+		{
+		  my_syslog(LOG_ERR, _("UBus error: %s"), err);
+		  reset_option_bool(OPT_UBUS); /* fatal error, stop trying. */
+		}
+	    }
+	  
+	  check_ubus_listeners();
+	}
 #endif
 
       check_dns_listeners(now);
@@ -1444,7 +1464,7 @@ static void async_event(int pipe, time_t now)
 	      }
 
 	    if (check)
-	      check_servers();
+	      check_servers(0);
 	  }
 
 #ifdef HAVE_DHCP
@@ -1651,7 +1671,7 @@ static void poll_resolv(int force, int do_reload, time_t now)
 	{
 	  my_syslog(LOG_INFO, _("reading %s"), latest->name);
 	  warned = 0;
-	  check_servers();
+	  check_servers(0);
 	  if (option_bool(OPT_RELOAD) && do_reload)
 	    clear_cache_and_reload(now);
 	}
@@ -1694,12 +1714,12 @@ void clear_cache_and_reload(time_t now)
 #endif
 }
 
-static int set_dns_listeners(time_t now)
+static void set_dns_listeners(void)
 {
   struct serverfd *serverfdp;
   struct listener *listener;
   struct randfd_list *rfl;
-  int wait = 0, i;
+  int i;
   
 #ifdef HAVE_TFTP
   int  tftp = 0;
@@ -1711,10 +1731,6 @@ static int set_dns_listeners(time_t now)
 	poll_listen(transfer->sockfd, POLLIN);
       }
 #endif
-  
-  /* will we be able to get memory? */
-  if (daemon->port != 0)
-    get_new_frec(now, &wait, NULL);
   
   for (serverfdp = daemon->sfds; serverfdp; serverfdp = serverfdp->next)
     poll_listen(serverfdp->fd, POLLIN);
@@ -1734,10 +1750,9 @@ static int set_dns_listeners(time_t now)
 
   for (listener = daemon->listeners; listener; listener = listener->next)
     {
-      /* only listen for queries if we have resources */
-      if (listener->fd != -1 && wait == 0)
+      if (listener->fd != -1)
 	poll_listen(listener->fd, POLLIN);
-	
+      
       /* Only listen for TCP connections when a process slot
 	 is available. Death of a child goes through the select loop, so
 	 we don't need to explicitly arrange to wake up here,
@@ -1750,15 +1765,12 @@ static int set_dns_listeners(time_t now)
       if (tftp <= daemon->tftp_max && listener->tftpfd != -1)
 	poll_listen(listener->tftpfd, POLLIN);
 #endif
-
     }
   
   if (!option_bool(OPT_DEBUG))
     for (i = 0; i < MAX_PROCS; i++)
       if (daemon->tcp_pipes[i] != -1)
 	poll_listen(daemon->tcp_pipes[i], POLLIN);
-  
-  return wait;
 }
 
 static void check_dns_listeners(time_t now)
@@ -2109,7 +2121,7 @@ int delay_dhcp(time_t start, int sec, int fd, uint32_t addr, unsigned short id)
       poll_reset();
       if (fd != -1)
         poll_listen(fd, POLLIN);
-      set_dns_listeners(now);
+      set_dns_listeners();
       set_log_writer();
       
 #ifdef HAVE_DHCP6

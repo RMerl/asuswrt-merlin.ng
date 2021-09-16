@@ -427,6 +427,66 @@ int check_source(struct dns_header *header, size_t plen, unsigned char *pseudohe
    return 1;
 }
 
+/* See https://docs.umbrella.com/umbrella-api/docs/identifying-dns-traffic for
+ * detailed information on packet formating.
+ */
+#define UMBRELLA_VERSION    1
+#define UMBRELLA_TYPESZ     2
+
+#define UMBRELLA_ASSET      0x0004
+#define UMBRELLA_ASSETSZ    sizeof(daemon->umbrella_asset)
+#define UMBRELLA_ORG        0x0008
+#define UMBRELLA_ORGSZ      sizeof(daemon->umbrella_org)
+#define UMBRELLA_IPV4       0x0010
+#define UMBRELLA_IPV6       0x0020
+#define UMBRELLA_DEVICE     0x0040
+#define UMBRELLA_DEVICESZ   sizeof(daemon->umbrella_device)
+
+struct umbrella_opt {
+  u8 magic[4];
+  u8 version;
+  u8 flags;
+  /* We have 4 possible fields since we'll never send both IPv4 and
+   * IPv6, so using the larger of the two to calculate max buffer size.
+   * Each field also has a type header.  So the following accounts for
+   * the type headers and each field size to get a max buffer size.
+   */
+  u8 fields[4 * UMBRELLA_TYPESZ + UMBRELLA_ORGSZ + IN6ADDRSZ + UMBRELLA_DEVICESZ + UMBRELLA_ASSETSZ];
+};
+
+static size_t add_umbrella_opt(struct dns_header *header, size_t plen, unsigned char *limit, union mysockaddr *source, int *cacheable)
+{
+  *cacheable = 0;
+
+  struct umbrella_opt opt = {{"ODNS"}, UMBRELLA_VERSION, 0, {}};
+  u8 *u = &opt.fields[0];
+
+  if (daemon->umbrella_org) {
+    PUTSHORT(UMBRELLA_ORG, u);
+    PUTLONG(daemon->umbrella_org, u);
+  }
+
+  int family = source->sa.sa_family;
+  PUTSHORT(family == AF_INET ? UMBRELLA_IPV4 : UMBRELLA_IPV6, u);
+  int size = family == AF_INET ? INADDRSZ : IN6ADDRSZ;
+  memcpy(u, get_addrp(source, family), size);
+  u += size;
+
+  if (option_bool(OPT_UMBRELLA_DEVID)) {
+    PUTSHORT(UMBRELLA_DEVICE, u);
+    memcpy(u, (char *)&daemon->umbrella_device, UMBRELLA_DEVICESZ);
+    u += UMBRELLA_DEVICESZ;
+  }
+
+  if (daemon->umbrella_asset) {
+    PUTSHORT(UMBRELLA_ASSET, u);
+    PUTLONG(daemon->umbrella_asset, u);
+  }
+
+  int len = u - &opt.magic[0];
+  return add_pseudoheader(header, plen, (unsigned char *)limit, PACKETSZ, EDNS0_OPTION_UMBRELLA, (unsigned char *)&opt, len, 0, 1);
+}
+
 /* Set *check_subnet if we add a client subnet option, which needs to checked 
    in the reply. Set *cacheable to zero if we add an option which the answer
    may depend on. */
@@ -445,6 +505,9 @@ size_t add_edns0_config(struct dns_header *header, size_t plen, unsigned char *l
   if (daemon->dns_client_id)
     plen = add_pseudoheader(header, plen, limit, PACKETSZ, EDNS0_OPTION_NOMCPEID, 
 			    (unsigned char *)daemon->dns_client_id, strlen(daemon->dns_client_id), 0, 1);
+
+  if (option_bool(OPT_UMBRELLA))
+    plen = add_umbrella_opt(header, plen, limit, source, cacheable);
   
   if (option_bool(OPT_CLIENT_SUBNET))
     {

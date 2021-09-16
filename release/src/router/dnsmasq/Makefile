@@ -51,18 +51,6 @@ top!=pwd
 # GNU make way.
 top?=$(CURDIR)
 
-ifeq ($(CRYPTO),openssl)
-crypto_pkgs = libcrypto
-crypto_pkg  = libcrypto
-crypto_opt  = -DHAVE_OPENSSL
-crypto_lgmp =
-else
-crypto_pkgs = nettle hogweed
-crypto_pkg  = nettle
-crypto_opt  = -DHAVE_NETTLE
-crypto_lgmp = -lgmp
-endif
-
 dbus_cflags =   `echo $(COPTS) | $(top)/bld/pkg-wrapper HAVE_DBUS $(PKG_CONFIG) --cflags dbus-1` 
 dbus_libs =     `echo $(COPTS) | $(top)/bld/pkg-wrapper HAVE_DBUS $(PKG_CONFIG) --libs dbus-1` 
 ubus_libs =     `echo $(COPTS) | $(top)/bld/pkg-wrapper HAVE_UBUS "" --copy '-lubox -lubus'`
@@ -74,16 +62,13 @@ ct_cflags =     `echo $(COPTS) | $(top)/bld/pkg-wrapper HAVE_CONNTRACK $(PKG_CON
 ct_libs =       `echo $(COPTS) | $(top)/bld/pkg-wrapper HAVE_CONNTRACK $(PKG_CONFIG) --libs libnetfilter_conntrack`
 lua_cflags =    `echo $(COPTS) | $(top)/bld/pkg-wrapper HAVE_LUASCRIPT $(PKG_CONFIG) --cflags lua5.2` 
 lua_libs =      `echo $(COPTS) | $(top)/bld/pkg-wrapper HAVE_LUASCRIPT $(PKG_CONFIG) --libs lua5.2` 
-crypto_cflags = `echo $(COPTS) | $(top)/bld/pkg-wrapper HAVE_DNSSEC     $(PKG_CONFIG) --cflags '$(crypto_pkgs)' \
-                                                        HAVE_CRYPTOHASH $(PKG_CONFIG) --cflags $(crypto_pkg) \
-                                                        HAVE_NETTLEHASH $(PKG_CONFIG) --cflags $(crypto_pkg)` \
-                `echo $(COPTS) | $(top)/bld/pkg-wrapper HAVE_DNSSEC "" --copy $(crypto_opt)` \
-                `echo $(COPTS) | $(top)/bld/pkg-wrapper HAVE_NETTLEHASH "" --copy $(crypto_opt)` \
-                `echo $(COPTS) | $(top)/bld/pkg-wrapper HAVE_CRYPTOHASH "" --copy $(crypto_opt)`
-crypto_libs =   `echo $(COPTS) | $(top)/bld/pkg-wrapper HAVE_DNSSEC     $(PKG_CONFIG) --libs '$(crypto_pkgs)' \
-                                                        HAVE_CRYPTOHASH $(PKG_CONFIG) --libs $(crypto_pkg) \
-                                                        HAVE_NETTLEHASH $(PKG_CONFIG) --libs $(crypto_pkg)`
-gmp_libs =      `echo $(COPTS) | $(top)/bld/pkg-wrapper HAVE_DNSSEC NO_GMP --copy '$(crypto_lgmp)'`
+nettle_cflags = `echo $(COPTS) | $(top)/bld/pkg-wrapper HAVE_DNSSEC     $(PKG_CONFIG) --cflags 'nettle hogweed' \
+                                                        HAVE_CRYPTOHASH $(PKG_CONFIG) --cflags nettle \
+                                                        HAVE_NETTLEHASH $(PKG_CONFIG) --cflags nettle`
+nettle_libs =   `echo $(COPTS) | $(top)/bld/pkg-wrapper HAVE_DNSSEC     $(PKG_CONFIG) --libs 'nettle hogweed' \
+                                                        HAVE_CRYPTOHASH $(PKG_CONFIG) --libs nettle \
+                                                        HAVE_NETTLEHASH $(PKG_CONFIG) --libs nettle`
+gmp_libs =      `echo $(COPTS) | $(top)/bld/pkg-wrapper HAVE_DNSSEC NO_GMP --copy -lgmp`
 sunos_libs =    `if uname | grep SunOS >/dev/null 2>&1; then echo -lsocket -lnsl -lposix4; fi`
 version =     -DVERSION='\"`$(top)/bld/get-version $(top)`\"'
 
@@ -94,10 +79,10 @@ copts_conf = .copts_$(sum)
 objs = cache.o rfc1035.o util.o option.o forward.o network.o \
        dnsmasq.o dhcp.o lease.o rfc2131.o netlink.o dbus.o bpf.o \
        helper.o tftp.o log.o conntrack.o dhcp6.o rfc3315.o \
-       dhcp-common.o outpacket.o radv.o slaac.o auth.o ipset.o \
+       dhcp-common.o outpacket.o radv.o slaac.o auth.o ipset.o pattern.o \
        domain.o dnssec.o blockdata.o tables.o loop.o inotify.o \
-       poll.o rrfilter.o edns0.o arp.o crypto.o crypto-openssl.o dump.o ubus.o \
-       metrics.o hash_questions.o
+       poll.o rrfilter.o edns0.o arp.o crypto.o dump.o ubus.o \
+       metrics.o hash-questions.o domain-match.o
 
 hdrs = dnsmasq.h config.h dhcp-protocol.h dhcp6-protocol.h \
        dns-protocol.h radv-protocol.h ip6addr.h metrics.h
@@ -105,8 +90,8 @@ hdrs = dnsmasq.h config.h dhcp-protocol.h dhcp6-protocol.h \
 all : $(BUILDDIR)
 	@cd $(BUILDDIR) && $(MAKE) \
  top="$(top)" \
- build_cflags="$(version) $(dbus_cflags) $(idn2_cflags) $(idn_cflags) $(ct_cflags) $(lua_cflags) $(crypto_cflags)" \
- build_libs="$(dbus_libs) $(idn2_libs) $(idn_libs) $(ct_libs) $(lua_libs) $(sunos_libs) $(crypto_libs) $(gmp_libs) $(ubus_libs)" \
+ build_cflags="$(version) $(dbus_cflags) $(idn2_cflags) $(idn_cflags) $(ct_cflags) $(lua_cflags) $(nettle_cflags)" \
+ build_libs="$(dbus_libs) $(idn2_libs) $(idn_libs) $(ct_libs) $(lua_libs) $(sunos_libs) $(nettle_libs) $(gmp_libs) $(ubus_libs)" \
  -f $(top)/Makefile dnsmasq 
 
 mostly_clean :
@@ -130,8 +115,8 @@ all-i18n : $(BUILDDIR)
 	@cd $(BUILDDIR) && $(MAKE) \
  top="$(top)" \
  i18n=-DLOCALEDIR=\'\"$(LOCALEDIR)\"\' \
- build_cflags="$(version) $(dbus_cflags) $(idn2_cflags) $(idn_cflags) $(ct_cflags) $(lua_cflags) $(crypto_cflags)" \
- build_libs="$(dbus_libs) $(idn2_libs) $(idn_libs) $(ct_libs) $(lua_libs) $(sunos_libs) $(crypto_libs) $(gmp_libs) $(ubus_libs)"  \
+ build_cflags="$(version) $(dbus_cflags) $(idn2_cflags) $(idn_cflags) $(ct_cflags) $(lua_cflags) $(nettle_cflags)" \
+ build_libs="$(dbus_libs) $(idn2_libs) $(idn_libs) $(ct_libs) $(lua_libs) $(sunos_libs) $(nettle_libs) $(gmp_libs) $(ubus_libs)"  \
  -f $(top)/Makefile dnsmasq
 	for f in `cd $(PO); echo *.po`; do \
 		cd $(top) && cd $(BUILDDIR) && $(MAKE) top="$(top)" -f $(top)/Makefile $${f%.po}.mo; \

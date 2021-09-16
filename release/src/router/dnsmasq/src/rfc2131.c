@@ -244,7 +244,11 @@ size_t dhcp_reply(struct dhcp_context *context, char *iface_name, int int_index,
 	}
 
       /* do we have a lease in store? */
+#if 1
+      lease = lease_find_by_hwaddr(mess->chaddr, mess->hlen, mess->htype);
+#else
       lease = lease_find_by_client(mess->chaddr, mess->hlen, mess->htype, clid, clid_len);
+#endif
 
       /* If this request is missing a clid, but we've seen one before, 
 	 use it again for option matching etc. */
@@ -372,9 +376,22 @@ size_t dhcp_reply(struct dhcp_context *context, char *iface_name, int int_index,
   
   if (!context)
     {
-      my_syslog(MS_DHCP | LOG_WARNING, _("no address range available for DHCP request %s %s"), 
-		subnet_addr.s_addr ? _("with subnet selector") : _("via"),
-		subnet_addr.s_addr ? inet_ntoa(subnet_addr) : (mess->giaddr.s_addr ? inet_ntoa(mess->giaddr) : iface_name));
+      const char *via;
+      if (subnet_addr.s_addr)
+	{
+	  via = _("with subnet selector");
+	  inet_ntop(AF_INET, &subnet_addr, daemon->addrbuff, ADDRSTRLEN);
+	}
+      else
+	{
+	  via = _("via");
+	  if (mess->giaddr.s_addr)
+	    inet_ntop(AF_INET, &mess->giaddr, daemon->addrbuff, ADDRSTRLEN);
+	  else
+	    safe_strncpy(daemon->addrbuff, iface_name, ADDRSTRLEN);
+	}
+      my_syslog(MS_DHCP | LOG_WARNING, _("no address range available for DHCP request %s %s"),
+		via, daemon->addrbuff);
       return 0;
     }
 
@@ -383,13 +400,19 @@ size_t dhcp_reply(struct dhcp_context *context, char *iface_name, int int_index,
       struct dhcp_context *context_tmp;
       for (context_tmp = context; context_tmp; context_tmp = context_tmp->current)
 	{
-	  strcpy(daemon->namebuff, inet_ntoa(context_tmp->start));
+	  inet_ntop(AF_INET, &context_tmp->start, daemon->namebuff, MAXDNAME);
 	  if (context_tmp->flags & (CONTEXT_STATIC | CONTEXT_PROXY))
-	    my_syslog(MS_DHCP | LOG_INFO, _("%u available DHCP subnet: %s/%s"),
-		      ntohl(mess->xid), daemon->namebuff, inet_ntoa(context_tmp->netmask));
+	    {
+	      inet_ntop(AF_INET, &context_tmp->netmask, daemon->addrbuff, ADDRSTRLEN);
+	      my_syslog(MS_DHCP | LOG_INFO, _("%u available DHCP subnet: %s/%s"),
+			ntohl(mess->xid), daemon->namebuff, daemon->addrbuff);
+	    }
 	  else
-	    my_syslog(MS_DHCP | LOG_INFO, _("%u available DHCP range: %s -- %s"), 
-		      ntohl(mess->xid), daemon->namebuff, inet_ntoa(context_tmp->end));
+	    {
+	      inet_ntop(AF_INET, &context_tmp->end, daemon->addrbuff, ADDRSTRLEN);
+	      my_syslog(MS_DHCP | LOG_INFO, _("%u available DHCP range: %s -- %s"),
+			ntohl(mess->xid), daemon->namebuff, daemon->addrbuff);
+	    }
 	}
     }
   
@@ -1031,8 +1054,9 @@ size_t dhcp_reply(struct dhcp_context *context, char *iface_name, int int_index,
 	  config->addr.s_addr == option_addr(opt).s_addr)
 	{
 	  prettyprint_time(daemon->dhcp_buff, DECLINE_BACKOFF);
+	  inet_ntop(AF_INET, &config->addr, daemon->addrbuff, ADDRSTRLEN);
 	  my_syslog(MS_DHCP | LOG_WARNING, _("disabling DHCP static address %s for %s"), 
-		    inet_ntoa(config->addr), daemon->dhcp_buff);
+		    daemon->addrbuff, daemon->dhcp_buff);
 	  config->flags |= CONFIG_DECLINED;
 	  config->decline_time = now;
 	}
@@ -1078,7 +1102,7 @@ size_t dhcp_reply(struct dhcp_context *context, char *iface_name, int int_index,
 	  
 	  if (have_config(config, CONFIG_ADDR))
 	    {
-	      char *addrs = inet_ntoa(config->addr);
+	      inet_ntop(AF_INET, &config->addr, daemon->addrbuff, ADDRSTRLEN);
 	      
 	      if ((ltmp = lease_find_by_addr(config->addr)) && 
 		  ltmp != lease &&
@@ -1088,7 +1112,7 @@ size_t dhcp_reply(struct dhcp_context *context, char *iface_name, int int_index,
 		  unsigned char *mac = extended_hwaddr(ltmp->hwaddr_type, ltmp->hwaddr_len,
 						       ltmp->hwaddr, ltmp->clid_len, ltmp->clid, &len);
 		  my_syslog(MS_DHCP | LOG_WARNING, _("not using configured address %s because it is leased to %s"),
-			    addrs, print_mac(daemon->namebuff, mac, len));
+			    daemon->addrbuff, print_mac(daemon->namebuff, mac, len));
 		}
 	      else
 		{
@@ -1097,10 +1121,10 @@ size_t dhcp_reply(struct dhcp_context *context, char *iface_name, int int_index,
 		    if (context->router.s_addr == config->addr.s_addr)
 		      break;
 		  if (tmp)
-		    my_syslog(MS_DHCP | LOG_WARNING, _("not using configured address %s because it is in use by the server or relay"), addrs);
+		    my_syslog(MS_DHCP | LOG_WARNING, _("not using configured address %s because it is in use by the server or relay"), daemon->addrbuff);
 		  else if (have_config(config, CONFIG_DECLINED) &&
 			   difftime(now, config->decline_time) < (float)DECLINE_BACKOFF)
-		    my_syslog(MS_DHCP | LOG_WARNING, _("not using configured address %s because it was previously declined"), addrs);
+		    my_syslog(MS_DHCP | LOG_WARNING, _("not using configured address %s because it was previously declined"), daemon->addrbuff);
 		  else
 		    conf = config->addr;
 		}
@@ -1303,9 +1327,10 @@ size_t dhcp_reply(struct dhcp_context *context, char *iface_name, int int_index,
 		 a lease from one of it's MACs to give the address to another. */
 	      if (config && config_has_mac(config, ltmp->hwaddr, ltmp->hwaddr_len, ltmp->hwaddr_type))
 		{
+		  inet_ntop(AF_INET, &ltmp->addr, daemon->addrbuff, ADDRSTRLEN);
 		  my_syslog(MS_DHCP | LOG_INFO, _("abandoning lease to %s of %s"),
 			    print_mac(daemon->namebuff, ltmp->hwaddr, ltmp->hwaddr_len), 
-			    inet_ntoa(ltmp->addr));
+			    daemon->addrbuff);
 		  lease = ltmp;
 		}
 	      else
@@ -1674,42 +1699,40 @@ static void add_extradata_opt(struct dhcp_lease *lease, unsigned char *opt)
 static void log_packet(char *type, void *addr, unsigned char *ext_mac, 
 		       int mac_len, char *interface, char *string, char *err, u32 xid)
 {
-  struct in_addr a;
- 
   if (!err && !option_bool(OPT_LOG_OPTS) && option_bool(OPT_QUIET_DHCP))
     return;
   
-  /* addr may be misaligned */
+  daemon->addrbuff[0] = 0;
   if (addr)
-    memcpy(&a, addr, sizeof(a));
+    inet_ntop(AF_INET, addr, daemon->addrbuff, ADDRSTRLEN);
   
   print_mac(daemon->namebuff, ext_mac, mac_len);
   
-  if(option_bool(OPT_LOG_OPTS))
-     my_syslog(MS_DHCP | LOG_INFO, "%u %s(%s) %s%s%s %s%s",
-	       ntohl(xid), 
-	       type,
-	       interface, 
-	       addr ? inet_ntoa(a) : "",
-	       addr ? " " : "",
-	       daemon->namebuff,
-	       string ? string : "",
-	       err ? err : "");
-  else
-    my_syslog(MS_DHCP | LOG_INFO, "%s(%s) %s%s%s %s%s",
+  if (option_bool(OPT_LOG_OPTS))
+    my_syslog(MS_DHCP | LOG_INFO, "%u %s(%s) %s%s%s %s%s",
+	      ntohl(xid), 
 	      type,
 	      interface, 
-	      addr ? inet_ntoa(a) : "",
+	      daemon->addrbuff,
 	      addr ? " " : "",
 	      daemon->namebuff,
 	      string ? string : "",
 	      err ? err : "");
-
+  else
+    my_syslog(MS_DHCP | LOG_INFO, "%s(%s) %s%s%s %s%s",
+	      type,
+	      interface, 
+	      daemon->addrbuff,
+	      addr ? " " : "",
+	      daemon->namebuff,
+	      string ? string : "",
+	      err ? err : "");
+  
 #ifdef HAVE_UBUS
-	if (!strcmp(type, "DHCPACK"))
-		ubus_event_bcast("dhcp.ack", daemon->namebuff, addr ? inet_ntoa(a) : NULL, string ? string : NULL, interface);
-	else if (!strcmp(type, "DHCPRELEASE"))
-		ubus_event_bcast("dhcp.release", daemon->namebuff, addr ? inet_ntoa(a) : NULL, string ? string : NULL, interface);
+  if (!strcmp(type, "DHCPACK"))
+    ubus_event_bcast("dhcp.ack", daemon->namebuff, addr ? daemon->addrbuff : NULL, string, interface);
+  else if (!strcmp(type, "DHCPRELEASE"))
+    ubus_event_bcast("dhcp.release", daemon->namebuff, addr ? daemon->addrbuff : NULL, string, interface);
 #endif
 }
 
@@ -1861,7 +1884,10 @@ static size_t dhcp_packet_size(struct dhcp_packet *mess, unsigned char *agent_id
   if (option_bool(OPT_LOG_OPTS))
     {
       if (mess->siaddr.s_addr != 0)
-	my_syslog(MS_DHCP | LOG_INFO, _("%u next server: %s"), ntohl(mess->xid), inet_ntoa(mess->siaddr));
+	{
+	  inet_ntop(AF_INET, &mess->siaddr, daemon->addrbuff, ADDRSTRLEN);
+	  my_syslog(MS_DHCP | LOG_INFO, _("%u next server: %s"), ntohl(mess->xid), daemon->addrbuff);
+	}
       
       if ((mess->flags & htons(0x8000)) && mess->ciaddr.s_addr == 0)
 	my_syslog(MS_DHCP | LOG_INFO, _("%u broadcast response"), ntohl(mess->xid));

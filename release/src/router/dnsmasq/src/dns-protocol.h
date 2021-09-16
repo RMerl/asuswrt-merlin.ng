@@ -80,8 +80,41 @@
 
 #define EDNS0_OPTION_MAC            65001 /* dyndns.org temporary assignment */
 #define EDNS0_OPTION_CLIENT_SUBNET  8     /* IANA */
+#define EDNS0_OPTION_EDE            15    /* IANA - RFC 8914 */
 #define EDNS0_OPTION_NOMDEVICEID    65073 /* Nominum temporary assignment */
 #define EDNS0_OPTION_NOMCPEID       65074 /* Nominum temporary assignment */
+#define EDNS0_OPTION_UMBRELLA       20292 /* Cisco Umbrella temporary assignment */
+
+/* RFC-8914 extended errors, negative values are our definitions */
+#define EDE_UNSET          -1  /* No extended DNS error available */
+#define EDE_OTHER           0  /* Other */
+#define EDE_USUPDNSKEY      1  /* Unsupported DNSKEY algo */
+#define EDE_USUPDS          2  /* Unsupported DS Digest */
+#define EDE_STALE           3  /* Stale answer */
+#define EDE_FORGED          4  /* Forged answer */
+#define EDE_DNSSEC_IND      5  /* DNSSEC Indeterminate  */
+#define EDE_DNSSEC_BOGUS    6  /* DNSSEC Bogus */
+#define EDE_SIG_EXP         7  /* Signature Expired */
+#define EDE_SIG_NYV         8  /* Signature Not Yet Valid  */
+#define EDE_NO_DNSKEY       9  /* DNSKEY missing */
+#define EDE_NO_RRSIG       10  /* RRSIGs missing */
+#define EDE_NO_ZONEKEY     11  /* No Zone Key Bit Set */
+#define EDE_NO_NSEC        12  /* NSEC Missing  */
+#define EDE_CACHED_ERR     13  /* Cached Error */
+#define EDE_NOT_READY      14  /* Not Ready */
+#define EDE_BLOCKED        15  /* Blocked */
+#define EDE_CENSORED       16  /* Censored */
+#define EDE_FILTERED       17  /* Filtered */
+#define EDE_PROHIBITED     18  /* Prohibited */
+#define EDE_STALE_NXD      19  /* Stale NXDOMAIN */
+#define EDE_NOT_AUTH       20  /* Not Authoritative */
+#define EDE_NOT_SUP        21  /* Not Supported */
+#define EDE_NO_AUTH        22  /* No Reachable Authority */
+#define EDE_NETERR         23  /* Network error */
+#define EDE_INVALID_DATA   24  /* Invalid Data */
+
+
+
 
 struct dns_header {
   u16 id;

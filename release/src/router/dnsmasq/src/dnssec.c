@@ -215,14 +215,6 @@ static int is_check_date(unsigned long curtime)
     return !daemon->dnssec_no_time_check;
 }
 
-/* Check whether today/now is between date_start and date_end */
-static int check_date_range(unsigned long curtime, u32 date_start, u32 date_end)
-{
-  /* We must explicitly check against wanted values, because of SERIAL_UNDEF */
-  return serial_compare_32(curtime, date_start) == SERIAL_GT
-    && serial_compare_32(curtime, date_end) == SERIAL_LT;
-}
-
 /* Return bytes of canonicalised rrdata one by one.
    Init state->ip with the RR, and state->end with the end of same.
    Init state->op to NULL.
@@ -534,7 +526,8 @@ static int validate_rrset(time_t now, struct dns_header *header, size_t plen, in
   struct crec *crecp = NULL;
   u16 *rr_desc = rrfilter_desc(type);
   u32 sig_expiration, sig_inception;
-
+  int failflags = DNSSEC_FAIL_NOSIG | DNSSEC_FAIL_NYV | DNSSEC_FAIL_EXP | DNSSEC_FAIL_NOKEYSUP;
+  
   unsigned long curtime = time(0);
   int time_check = is_check_date(curtime);
   
@@ -553,10 +546,12 @@ static int validate_rrset(time_t now, struct dns_header *header, size_t plen, in
     {
       unsigned char *psav, *sig, *digest;
       int i, wire_len, sig_len;
-      const void *hash;
+      const struct nettle_hash *hash;
       void *ctx;
       char *name_start;
       u32 nsigttl, ttl, orig_ttl;
+
+      failflags &= ~DNSSEC_FAIL_NOSIG;
       
       p = sigs[j];
       GETLONG(ttl, p);
@@ -574,12 +569,31 @@ static int validate_rrset(time_t now, struct dns_header *header, size_t plen, in
       if (!extract_name(header, plen, &p, keyname, 1, 0))
 	return STAT_BOGUS;
 
-      if ((time_check && !check_date_range(curtime, sig_inception, sig_expiration)) ||
-	  labels > name_labels ||
-	  !(hash = hash_find(algo_digest_name(algo))) ||
+      if (!time_check)
+	failflags &= ~(DNSSEC_FAIL_NYV | DNSSEC_FAIL_EXP);
+      else
+	{
+	  /* We must explicitly check against wanted values, because of SERIAL_UNDEF */
+	  if (serial_compare_32(curtime, sig_inception) == SERIAL_LT)
+	    continue;
+	  else
+	    failflags &= ~DNSSEC_FAIL_NYV;
+	  
+	  if (serial_compare_32(curtime, sig_expiration) == SERIAL_GT)
+	    continue;
+	  else
+	    failflags &= ~DNSSEC_FAIL_EXP;
+	}
+
+      if (!(hash = hash_find(algo_digest_name(algo))))
+	continue;
+      else
+	failflags &= ~DNSSEC_FAIL_NOKEYSUP;
+      
+      if (labels > name_labels ||
 	  !hash_init(hash, &ctx, &digest))
 	continue;
-
+      
       /* OK, we have the signature record, see if the relevant DNSKEY is in the cache. */
       if (!key && !(crecp = cache_find_by_name(NULL, keyname, now, F_DNSKEY)))
 	return STAT_NEED_KEY;
@@ -601,9 +615,9 @@ static int validate_rrset(time_t now, struct dns_header *header, size_t plen, in
               
       nsigttl = htonl(orig_ttl);
       
-      hash_update(hash, ctx, 18, psav);
+      hash->update(ctx, 18, psav);
       wire_len = to_wire(keyname);
-      hash_update(hash, ctx, (unsigned int)wire_len, (unsigned char*)keyname);
+      hash->update(ctx, (unsigned int)wire_len, (unsigned char*)keyname);
       from_wire(keyname);
 
 #define RRBUFLEN 128 /* Most RRs are smaller than this. */
@@ -641,9 +655,9 @@ static int validate_rrset(time_t now, struct dns_header *header, size_t plen, in
 	    }
 	  
 	  wire_len = to_wire(name_start);
-	  hash_update(hash, ctx, (unsigned int)wire_len, (unsigned char *)name_start);
-	  hash_update(hash, ctx, 4, p); /* class and type */
-	  hash_update(hash, ctx, 4, (unsigned char *)&nsigttl);
+	  hash->update(ctx, (unsigned int)wire_len, (unsigned char *)name_start);
+	  hash->update(ctx, 4, p); /* class and type */
+	  hash->update(ctx, 4, (unsigned char *)&nsigttl);
 
 	  p += 8; /* skip type, class, ttl */
 	  GETSHORT(rdlen, p);
@@ -660,8 +674,8 @@ static int validate_rrset(time_t now, struct dns_header *header, size_t plen, in
 	  if (*rr_desc == (u16)-1)
 	    {
 	      len = htons(rdlen);
-	      hash_update(hash, ctx, 2, (unsigned char *)&len);
-	      hash_update(hash, ctx, rdlen, p);
+	      hash->update(ctx, 2, (unsigned char *)&len);
+	      hash->update(ctx, rdlen, p);
 	    }
 	  else
 	    {
@@ -678,7 +692,7 @@ static int validate_rrset(time_t now, struct dns_header *header, size_t plen, in
 		  rrbuf[j] = *state.op;
 	      
 	      len = htons((u16)j);
-	      hash_update(hash, ctx, 2, (unsigned char *)&len); 
+	      hash->update(ctx, 2, (unsigned char *)&len); 
 	      
 	      /* If the RR is shorter than RRBUFLEN (most of them, in practice)
 		 then we can just digest it now. If it exceeds RRBUFLEN we have to
@@ -695,18 +709,18 @@ static int validate_rrset(time_t now, struct dns_header *header, size_t plen, in
 		      
 		      if (j == RRBUFLEN - 1)
 			{
-			  hash_update(hash, ctx, RRBUFLEN, rrbuf);
+			  hash->update(ctx, RRBUFLEN, rrbuf);
 			  j = -1;
 			}
 		    }
 		}
 	      
 	      if (j != 0)
-		hash_update(hash, ctx, j, rrbuf);
+		hash->update(ctx, j, rrbuf);
 	    }
 	}
      
-      hash_digest(hash, ctx, hash_length(hash), digest);
+      hash->digest(ctx, hash->digest_size, digest);
       
       /* namebuff used for workspace above, restore to leave unchanged on exit */
       p = (unsigned char*)(rrset[0]);
@@ -715,7 +729,7 @@ static int validate_rrset(time_t now, struct dns_header *header, size_t plen, in
       if (key)
 	{
 	  if (algo_in == algo && keytag_in == key_tag &&
-	      verify(key, keylen, sig, sig_len, digest, hash_length(hash), algo))
+	      verify(key, keylen, sig, sig_len, digest, hash->digest_size, algo))
 	    return STAT_SECURE;
 	}
       else
@@ -725,12 +739,13 @@ static int validate_rrset(time_t now, struct dns_header *header, size_t plen, in
 	    if (crecp->addr.key.algo == algo && 
 		crecp->addr.key.keytag == key_tag &&
 		crecp->uid == (unsigned int)class &&
-		verify(crecp->addr.key.keydata, crecp->addr.key.keylen, sig, sig_len, digest, hash_length(hash), algo))
+		verify(crecp->addr.key.keydata, crecp->addr.key.keylen, sig, sig_len, digest, hash->digest_size, algo))
 	      return (labels < name_labels) ? STAT_SECURE_WILDCARD : STAT_SECURE;
 	}
     }
 
-  return STAT_BOGUS;
+  /* If we reach this point, no verifying key was found */
+  return STAT_BOGUS | failflags | DNSSEC_FAIL_NOKEY;
 }
  
 
@@ -751,17 +766,18 @@ int dnssec_validate_by_ds(time_t now, struct dns_header *header, size_t plen, ch
   unsigned long ttl, sig_ttl;
   struct blockdata *key;
   union all_addr a;
+  int failflags = DNSSEC_FAIL_NOSIG | DNSSEC_FAIL_NODSSUP | DNSSEC_FAIL_NOZONE | DNSSEC_FAIL_NOKEY;
 
   if (ntohs(header->qdcount) != 1 ||
       RCODE(header) == SERVFAIL || RCODE(header) == REFUSED ||
       !extract_name(header, plen, &p, name, 1, 4))
-    return STAT_BOGUS;
+    return STAT_BOGUS | DNSSEC_FAIL_NOKEY;
 
   GETSHORT(qtype, p);
   GETSHORT(qclass, p);
   
   if (qtype != T_DNSKEY || qclass != class || ntohs(header->ancount) == 0)
-    return STAT_BOGUS;
+    return STAT_BOGUS | DNSSEC_FAIL_NOKEY;
 
   /* See if we have cached a DS record which validates this key */
   if (!(crecp = cache_find_by_name(NULL, name, now, F_DS)))
@@ -795,14 +811,17 @@ int dnssec_validate_by_ds(time_t now, struct dns_header *header, size_t plen, ch
       
       GETSHORT(flags, p);
       if (*p++ != 3)
-	return STAT_BOGUS;
+	return STAT_BOGUS | DNSSEC_FAIL_NOKEY;
       algo = *p++;
       keytag = dnskey_keytag(algo, flags, p, rdlen - 4);
       key = NULL;
       
       /* key must have zone key flag set */
       if (flags & 0x100)
-	key = blockdata_alloc((char*)p, rdlen - 4);
+	{
+	  key = blockdata_alloc((char*)p, rdlen - 4);
+	  failflags &= ~DNSSEC_FAIL_NOZONE;
+	}
       
       p = psave;
       
@@ -821,36 +840,56 @@ int dnssec_validate_by_ds(time_t now, struct dns_header *header, size_t plen, ch
 	{
 	  void *ctx;
 	  unsigned char *digest, *ds_digest;
-	  const void *hash;
+	  const struct nettle_hash *hash;
 	  int sigcnt, rrcnt;
-
+	  int wire_len;
+	  
 	  if (recp1->addr.ds.algo == algo && 
 	      recp1->addr.ds.keytag == keytag &&
-	      recp1->uid == (unsigned int)class &&
-	      (hash = hash_find(ds_digest_name(recp1->addr.ds.digest))) &&
-	      hash_init(hash, &ctx, &digest))
+	      recp1->uid == (unsigned int)class)
 	    {
-	      int wire_len = to_wire(name);
+	      failflags &= ~DNSSEC_FAIL_NOKEY;
+	      
+	      if (!(hash = hash_find(ds_digest_name(recp1->addr.ds.digest))))
+		continue;
+	      else
+		failflags &= ~DNSSEC_FAIL_NODSSUP;
+
+	      if (!hash_init(hash, &ctx, &digest))
+		continue;
+	      
+	      wire_len = to_wire(name);
 	      
 	      /* Note that digest may be different between DSs, so 
 		 we can't move this outside the loop. */
-	      hash_update(hash, ctx, (unsigned int)wire_len, (unsigned char *)name);
-	      hash_update(hash, ctx, (unsigned int)rdlen, psave);
-	      hash_digest(hash, ctx, hash_length(hash), digest);
+	      hash->update(ctx, (unsigned int)wire_len, (unsigned char *)name);
+	      hash->update(ctx, (unsigned int)rdlen, psave);
+	      hash->digest(ctx, hash->digest_size, digest);
 	      
 	      from_wire(name);
 	      
 	      if (!(recp1->flags & F_NEG) &&
-		  recp1->addr.ds.keylen == (int)hash_length(hash) &&
+		  recp1->addr.ds.keylen == (int)hash->digest_size &&
 		  (ds_digest = blockdata_retrieve(recp1->addr.ds.keydata, recp1->addr.ds.keylen, NULL)) &&
 		  memcmp(ds_digest, digest, recp1->addr.ds.keylen) == 0 &&
 		  explore_rrset(header, plen, class, T_DNSKEY, name, keyname, &sigcnt, &rrcnt) &&
-		  sigcnt != 0 && rrcnt != 0 &&
-		  validate_rrset(now, header, plen, class, T_DNSKEY, sigcnt, rrcnt, name, keyname, 
-				 NULL, key, rdlen - 4, algo, keytag, &sig_ttl) == STAT_SECURE)
+		  rrcnt != 0)
 		{
-		  valid = 1;
-		  break;
+		  if (sigcnt == 0)
+		    continue;
+		  else
+		    failflags &= ~DNSSEC_FAIL_NOSIG;
+		  
+		  rc = validate_rrset(now, header, plen, class, T_DNSKEY, sigcnt, rrcnt, name, keyname, 
+				      NULL, key, rdlen - 4, algo, keytag, &sig_ttl);
+
+		  failflags &= rc;
+		  
+		  if (STAT_ISEQUAL(rc, STAT_SECURE))
+		    {
+		      valid = 1;
+		      break;
+		    }
 		}
 	    }
 	}
@@ -935,7 +974,7 @@ int dnssec_validate_by_ds(time_t now, struct dns_header *header, size_t plen, ch
     }
 
   log_query(F_NOEXTRA | F_UPSTREAM, name, NULL, "BOGUS DNSKEY");
-  return STAT_BOGUS;
+  return STAT_BOGUS | failflags;
 }
 
 /* The DNS packet is expected to contain the answer to a DS query
@@ -970,10 +1009,11 @@ int dnssec_validate_ds(time_t now, struct dns_header *header, size_t plen, char 
   else
     rc = dnssec_validate_reply(now, header, plen, name, keyname, NULL, 0, &neganswer, &nons, &neg_ttl);
   
-  if (rc == STAT_INSECURE)
+  if (STAT_ISEQUAL(rc, STAT_INSECURE))
     {
       my_syslog(LOG_WARNING, _("Insecure DS reply received for %s, check domain configuration and upstream DNS server DNSSEC support"), name);
-      rc = STAT_BOGUS;
+      log_query(F_NOEXTRA | F_UPSTREAM, name, NULL, "BOGUS DS - not secure");
+      return STAT_BOGUS | DNSSEC_FAIL_INDET;
     }
   
   p = (unsigned char *)(header+1);
@@ -983,13 +1023,13 @@ int dnssec_validate_ds(time_t now, struct dns_header *header, size_t plen, char 
   /* If the key needed to validate the DS is on the same domain as the DS, we'll
      loop getting nowhere. Stop that now. This can happen of the DS answer comes
      from the DS's zone, and not the parent zone. */
-  if (rc == STAT_BOGUS || (rc == STAT_NEED_KEY && hostname_isequal(name, keyname)))
+  if (STAT_ISEQUAL(rc, STAT_NEED_KEY) && hostname_isequal(name, keyname))
     {
       log_query(F_NOEXTRA | F_UPSTREAM, name, NULL, "BOGUS DS");
       return STAT_BOGUS;
     }
   
-  if (rc != STAT_SECURE)
+  if (!STAT_ISEQUAL(rc, STAT_SECURE))
     return rc;
    
   if (!neganswer)
@@ -1263,7 +1303,7 @@ static int prove_non_existence_nsec(struct dns_header *header, size_t plen, unsi
 }
 
 /* return digest length, or zero on error */
-static int hash_name(char *in, unsigned char **out, const void *hash, 
+static int hash_name(char *in, unsigned char **out, struct nettle_hash const *hash, 
 		     unsigned char *salt, int salt_len, int iterations)
 {
   void *ctx;
@@ -1273,21 +1313,21 @@ static int hash_name(char *in, unsigned char **out, const void *hash,
   if (!hash_init(hash, &ctx, &digest))
     return 0;
  
-  hash_update(hash, ctx, to_wire(in), (unsigned char *)in);
-  hash_update(hash, ctx, salt_len, salt);
-  hash_digest(hash, ctx, hash_length(hash), digest);
+  hash->update(ctx, to_wire(in), (unsigned char *)in);
+  hash->update(ctx, salt_len, salt);
+  hash->digest(ctx, hash->digest_size, digest);
 
   for(i = 0; i < iterations; i++)
     {
-      hash_update(hash, ctx, hash_length(hash), digest);
-      hash_update(hash, ctx, salt_len, salt);
-      hash_digest(hash, ctx, hash_length(hash), digest);
+      hash->update(ctx, hash->digest_size, digest);
+      hash->update(ctx, salt_len, salt);
+      hash->digest(ctx, hash->digest_size, digest);
     }
    
   from_wire(in);
 
   *out = digest;
-  return hash_length(hash);
+  return hash->digest_size;
 }
 
 /* Decode base32 to first "." or end of string */
@@ -1437,7 +1477,7 @@ static int prove_non_existence_nsec3(struct dns_header *header, size_t plen, uns
 {
   unsigned char *salt, *p, *digest;
   int digest_len, i, iterations, salt_len, base32_len, algo = 0;
-  const void *hash;
+  struct nettle_hash const *hash;
   char *closest_encloser, *next_closest, *wildcard;
   
   if (nons)
@@ -1455,7 +1495,7 @@ static int prove_non_existence_nsec3(struct dns_header *header, size_t plen, uns
       if (!(p = skip_name(nsecs[i], header, plen, 15)))
 	return 0; /* bad packet */
       
-      p += 10; /* type, class, TTL, rdlen */
+     p += 10; /* type, class, TTL, rdlen */
       algo = *p++;
       
       if ((hash = hash_find(nsec3_digest_name(algo))))
@@ -1853,7 +1893,7 @@ int dnssec_validate_reply(time_t now, struct dns_header *header, size_t plen, ch
   
    /* Find all the targets we're looking for answers to.
      The zeroth array element is for the query, subsequent ones
-     for CNAME targets, unless the query is for a CNAME. */
+     for CNAME targets, unless the query is for a CNAME or ANY. */
 
   if (!expand_workspace(&targets, &target_sz, 0))
     return STAT_BOGUS;
@@ -1872,7 +1912,7 @@ int dnssec_validate_reply(time_t now, struct dns_header *header, size_t plen, ch
   if (qtype == T_RRSIG)
     return STAT_INSECURE;
   
-  if (qtype != T_CNAME)
+  if (qtype != T_CNAME && qtype != T_ANY)
     for (j = ntohs(header->ancount); j != 0; j--) 
       {
 	if (!(p1 = skip_name(p1, header, plen, 10)))
@@ -1958,15 +1998,15 @@ int dnssec_validate_reply(time_t now, struct dns_header *header, size_t plen, ch
 		  if (check_unsigned && i < ntohs(header->ancount))
 		    {
 		      rc = zone_status(name, class1, keyname, now);
-		      if (rc == STAT_SECURE)
-			rc = STAT_BOGUS;
+		      if (STAT_ISEQUAL(rc, STAT_SECURE))
+			rc = STAT_BOGUS | DNSSEC_FAIL_NOSIG;
 		      if (class)
 			*class = class1; /* Class for NEED_DS or NEED_KEY */
 		    }
 		  else 
 		    rc = STAT_INSECURE; 
 		  
-		  if (rc != STAT_INSECURE)
+		  if (!STAT_ISEQUAL(rc, STAT_INSECURE))
 		    return rc;
 		}
 	    }
@@ -1977,7 +2017,7 @@ int dnssec_validate_reply(time_t now, struct dns_header *header, size_t plen, ch
 	      strcpy(daemon->workspacename, keyname);
 	      rc = zone_status(daemon->workspacename, class1, keyname, now);
 	      
-	      if (rc == STAT_BOGUS || rc == STAT_NEED_KEY || rc == STAT_NEED_DS)
+	      if (STAT_ISEQUAL(rc, STAT_BOGUS) || STAT_ISEQUAL(rc, STAT_NEED_KEY) || STAT_ISEQUAL(rc, STAT_NEED_DS))
 		{
 		  if (class)
 		    *class = class1; /* Class for NEED_DS or NEED_KEY */
@@ -1985,13 +2025,13 @@ int dnssec_validate_reply(time_t now, struct dns_header *header, size_t plen, ch
 		}
 	      
 	      /* Zone is insecure, don't need to validate RRset */
-	      if (rc == STAT_SECURE)
+	      if (STAT_ISEQUAL(rc, STAT_SECURE))
 		{
 		  unsigned long sig_ttl;
 		  rc = validate_rrset(now, header, plen, class1, type1, sigcnt,
 				      rrcnt, name, keyname, &wildname, NULL, 0, 0, 0, &sig_ttl);
 		  
-		  if (rc == STAT_BOGUS || rc == STAT_NEED_KEY || rc == STAT_NEED_DS)
+		  if (STAT_ISEQUAL(rc, STAT_BOGUS) || STAT_ISEQUAL(rc, STAT_NEED_KEY) || STAT_ISEQUAL(rc, STAT_NEED_DS))
 		    {
 		      if (class)
 			*class = class1; /* Class for DS or DNSKEY */
@@ -2024,21 +2064,21 @@ int dnssec_validate_reply(time_t now, struct dns_header *header, size_t plen, ch
 		     Note that we may not yet have validated the NSEC/NSEC3 RRsets. 
 		     That's not a problem since if the RRsets later fail
 		     we'll return BOGUS then. */
-		  if (rc == STAT_SECURE_WILDCARD &&
+		  if (STAT_ISEQUAL(rc, STAT_SECURE_WILDCARD) &&
 		      !prove_non_existence(header, plen, keyname, name, type1, class1, wildname, NULL, NULL))
-		    return STAT_BOGUS;
+		    return STAT_BOGUS | DNSSEC_FAIL_NONSEC;
 
 		  rc = STAT_SECURE;
 		}
 	    }
 	}
 
-      if (rc == STAT_INSECURE)
+      if (STAT_ISEQUAL(rc, STAT_INSECURE))
 	secure = STAT_INSECURE;
     }
 
   /* OK, all the RRsets validate, now see if we have a missing answer or CNAME target. */
-  if (secure == STAT_SECURE)
+  if (STAT_ISEQUAL(secure, STAT_SECURE))
     for (j = 0; j <targetidx; j++)
       if ((p2 = targets[j]))
 	{
@@ -2056,16 +2096,16 @@ int dnssec_validate_reply(time_t now, struct dns_header *header, size_t plen, ch
 	    {
 	      /* Empty DS without NSECS */
 	      if (qtype == T_DS)
-		return STAT_BOGUS;
+		return STAT_BOGUS | DNSSEC_FAIL_NONSEC;
 	      
-	      if ((rc = zone_status(name, qclass, keyname, now)) != STAT_SECURE)
+	      if (STAT_ISEQUAL((rc = zone_status(name, qclass, keyname, now)), STAT_SECURE))
 		{
 		  if (class)
 		    *class = qclass; /* Class for NEED_DS or NEED_KEY */
 		  return rc;
 		} 
 	      
-	      return STAT_BOGUS; /* signed zone, no NSECs */
+	      return STAT_BOGUS | DNSSEC_FAIL_NONSEC; /* signed zone, no NSECs */
 	    }
 	}
   
@@ -2129,4 +2169,31 @@ size_t dnssec_generate_query(struct dns_header *header, unsigned char *end, char
   return ret;
 }
 
+int errflags_to_ede(int status)
+{
+  /* We can end up with more than one flag set for some errors,
+     so this encodes a rough priority so the (eg) No sig is reported
+     before no-unexpired-sig. */
+
+  if (status & DNSSEC_FAIL_NYV)
+    return EDE_SIG_NYV;
+  else if (status & DNSSEC_FAIL_EXP)
+    return EDE_SIG_EXP;
+  else if (status & DNSSEC_FAIL_NOKEYSUP)
+    return EDE_USUPDNSKEY;
+  else if (status & DNSSEC_FAIL_NOZONE)
+    return EDE_NO_ZONEKEY;
+  else if (status & DNSSEC_FAIL_NOKEY)
+    return EDE_NO_DNSKEY;
+  else if (status & DNSSEC_FAIL_NODSSUP)
+    return EDE_USUPDS;
+  else if (status & DNSSEC_FAIL_NONSEC)
+    return EDE_NO_NSEC;
+  else if (status & DNSSEC_FAIL_INDET)
+    return EDE_DNSSEC_IND;
+  else if (status & DNSSEC_FAIL_NOSIG)
+    return EDE_NO_RRSIG;
+  else
+    return EDE_UNSET;
+}
 #endif /* HAVE_DNSSEC */

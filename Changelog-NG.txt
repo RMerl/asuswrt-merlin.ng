@@ -5,13 +5,19 @@ Asuswrt-Merlin 386/NG Changelog
   - UPDATED: wsdd2 to 1.8.6, and rewrote Asuswrt patches for it.
   - UPDATED: curl to 7.78.0.
   - UPDATED: vsftpd to 3.0.5.
+  - UPDATED: openssl to 1.1.1l.
+  - UPDATED: wget to 1.21.1.
+  - UPDATED: nettle to 3.7.3.
+  - UPDATED: dnsmasq to 2.86.
   - CHANGED: replaced jitterentropy-rngd with haveged.
              It uses more flash and memory, but it
              works properly on older platforms, and is
              generally less CPU intensive in regular
              use.  This is enabled for all router
              models.
-  - CHANGED: No longer restart nasapps/wsdd2 on WAN start.
+  - CHANGED: Switched dnsmasq crypto backend to nettle.
+  - FIXED: Wrong interface might be used for the default
+           gateway in an openvpn client routing table.
   - REMOVED: jitterentropy-rngd (replaced with haveged)
 
 

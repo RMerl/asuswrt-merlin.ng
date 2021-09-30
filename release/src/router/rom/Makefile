@@ -89,7 +89,7 @@ install:
 
 	$(MAKE) certs-install
 ifeq ($(RTCONFIG_LETSENCRYPT),y)
-	install -m 0644 certs/DST_Root_CA_X3.pem $(INSTALLDIR)/rom/etc/ssl/certs/letsencrypt.pem
+	install -m 0644 certs/ISRG_Root_X1.pem $(INSTALLDIR)/rom/etc/ssl/certs/letsencrypt.pem
 endif
 ifeq ($(RTCONFIG_APP_FILEFLEX),y)
 	install -m 0644 ipkg.conf $(INSTALLDIR)/rom/ipkg.conf

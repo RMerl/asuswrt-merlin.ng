@@ -1588,6 +1588,7 @@ add_route(struct route_ipv4 *r,
 
     if (!(r->flags & RT_DEFINED))
     {
+        argv_free(&argv);
         return;
     }
 
@@ -1895,6 +1896,7 @@ add_route_ipv6(struct route_ipv6 *r6, const struct tuntap *tt,
 
     if (!(r6->flags & RT_DEFINED) )
     {
+        argv_free(&argv);
         return;
     }
 
@@ -3382,7 +3384,7 @@ get_default_gateway_ipv6(struct route_ipv6_gateway_info *rgi6,
     if (net_route_v6_best_gw(ctx, dest, &rgi6->gateway.addr_ipv6,
                              rgi6->iface) == 0)
     {
-        if (!IN6_IS_ADDR_UNSPECIFIED(rgi6->gateway.addr_ipv6.s6_addr))
+        if (!IN6_IS_ADDR_UNSPECIFIED(&rgi6->gateway.addr_ipv6))
         {
             rgi6->flags |= RGI_ADDR_DEFINED;
         }

@@ -35,6 +35,7 @@ problems may have been fixed or changed somewhat since this was written!
  2.11 Schannel TLS 1.2 handshake bug in old Windows versions
  2.12 FTPS with Schannel times out file list operation
  2.14 Secure Transport disabling hostname validation also disables SNI
+ 2.15 Renegotiate from server may cause hang for OpenSSL backend
 
  3. Email protocols
  3.1 IMAP SEARCH ALL truncated response
@@ -72,6 +73,7 @@ problems may have been fixed or changed somewhat since this was written!
  6.9 SHA-256 digest not supported in Windows SSPI builds
  6.10 curl never completes Negotiate over HTTP
  6.11 Negotiate on Windows fails
+ 6.12 Can't use Secure Transport with Crypto Token Kit
 
  7. FTP
  7.1 FTP without or slow 220 response
@@ -84,6 +86,7 @@ problems may have been fixed or changed somewhat since this was written!
  7.8 Premature transfer end but healthy control channel
  7.9 Passive transfer tries only one IP address
  7.10 FTPS needs session reuse
+ 7.11 FTPS upload data loss with TLS 1.3
 
  8. TELNET
  8.1 TELNET and time limitations don't work
@@ -101,7 +104,7 @@ problems may have been fixed or changed somewhat since this was written!
  11. Internals
  11.1 Curl leaks .onion hostnames in DNS
  11.2 error buffer not set if connection to multiple addresses fails
- 11.3 c-ares deviates from stock resolver on http://1346569778
+ 11.3 Disconnects don't do verbose
  11.4 HTTP test server 'connection-monitor' problems
  11.5 Connection information when using TCP Fast Open
  11.6 slow connect to localhost on Windows
@@ -141,6 +144,7 @@ problems may have been fixed or changed somewhat since this was written!
  15.10 libspsl is not supported
  15.11 ExternalProject_Add does not set CURL_CA_PATH
  15.12 cannot enable LDAPS on Windows
+ 15.13 CMake build with MIT Kerberos does not work
 
  16. Applications
  16.1 pulseUI VPN client
@@ -155,6 +159,12 @@ problems may have been fixed or changed somewhat since this was written!
  18.1 If the HTTP/3 server closes connection during upload curl hangs
  18.2 Uploading HTTP/3 files gets interrupted at certain file sizes
  18.3 HTTP/3 download is 5x times slower than HTTP/2
+ 18.4 Downloading with HTTP/3 produces broken files
+ 18.5 HTTP/3 download with quiche halts after a while
+ 18.6 HTTP/3 multipart POST with quiche fails
+ 18.7 HTTP/3 quiche upload large file fails
+ 18.8 HTTP/3 doesn't support client certs
+ 18.9 connection migration doesn't work
 
 ==============================================================================
 
@@ -338,6 +348,17 @@ problems may have been fixed or changed somewhat since this was written!
  In this case the error may also have been caused by lack of SNI.
 
  https://github.com/curl/curl/issues/6347
+
+2.15 Renegotiate from server may cause hang for OpenSSL backend
+
+ A race condition has been observed when, immediately after the initial
+ handshake, curl has sent an HTTP request to the server and at the same time
+ the server has sent a TLS hello request (renegotiate) to curl. Both are
+ waiting for the other to respond. OpenSSL is supposed to send a handshake
+ response but doesn't.
+
+ https://github.com/curl/curl/issues/6785
+ https://github.com/openssl/openssl/issues/14722
 
 3. Email protocols
 
@@ -604,6 +625,9 @@ problems may have been fixed or changed somewhat since this was written!
 
  https://github.com/curl/curl/issues/5881
 
+6.12 Can't use Secure Transport with Crypto Token Kit
+
+ https://github.com/curl/curl/issues/7048
 
 7. FTP
 
@@ -702,6 +726,23 @@ problems may have been fixed or changed somewhat since this was written!
 
  https://github.com/curl/curl/issues/4654
 
+7.11 FTPS upload data loss with TLS 1.3
+
+ During FTPS upload curl does not attempt to read TLS handshake messages sent
+ after the initial handshake. OpenSSL servers running TLS 1.3 may send such a
+ message. When curl closes the upload connection if unread data has been
+ received (such as a TLS handshake message) then the TCP protocol sends an
+ RST to the server, which may cause the server to discard or truncate the
+ upload if it hasn't read all sent data yet, and then return an error to curl
+ on the control channel connection.
+
+ Since 7.78.0 this is mostly fixed. curl will do a single read before closing
+ TLS connections (which causes the TLS library to read handshake messages),
+ however there is still possibility of an RST if more messages need to be read
+ or a message arrives after the read but before close (network race condition).
+
+ https://github.com/curl/curl/issues/6149
+
 8. TELNET
 
 8.1 TELNET and time limitations don't work
@@ -770,17 +811,23 @@ problems may have been fixed or changed somewhat since this was written!
  CURLE_COULDNT_CONNECT. But the error buffer set by CURLOPT_ERRORBUFFER
  remains empty. Issue: https://github.com/curl/curl/issues/544
 
-11.3 c-ares deviates from stock resolver on http://1346569778
+11.3 Disconnects don't do verbose
 
- When using the socket resolvers, that URL becomes:
+ Due to how libcurl keeps connections alive in the "connection pool" after use
+ to potentially transcend the life-time of the initial easy handle that was
+ used to drive the transfer over that connection, it uses a *separate* and
+ internal easy handle when it shuts down the connection. That separate
+ connection might not have the exact same settings as the original easy
+ handle, and in particular it is often note-worthy that it doesn't have the
+ same VERBOSE and debug callbacks setup so that an application will not get
+ the protocol data for the disconnect phase of a transfer the same way it got
+ all the other data.
 
-     * Rebuilt URL to: http://1346569778/
-     *   Trying 80.67.6.50...
+ This is because the original easy handle might have already been freed at that
+ point and the application might not at all be prepared that the callback
+ would get called again long after the handle was freed.
 
- but with c-ares it instead says "Could not resolve: 1346569778 (Domain name
- not found)"
-
- See https://github.com/curl/curl/issues/893
+ See for example https://github.com/curl/curl/issues/6995
 
 11.4 HTTP test server 'connection-monitor' problems
 
@@ -1022,6 +1069,17 @@ problems may have been fixed or changed somewhat since this was written!
 
  See https://github.com/curl/curl/issues/6284
 
+15.13 CMake build with MIT Kerberos does not work
+
+ Minimum CMake version was bumped in curl 7.71.0 (#5358) Since CMake 3.2
+ try_compile started respecting the CMAKE_EXE_FLAGS.  The code dealing with
+ MIT Kerberos detection sets few variables to potentially weird mix of space,
+ and ;-separated flags. It had to blow up at some point. All the CMake checks
+ that involve compilation are doomed from that point, the configured tree
+ cannot be built.
+
+ https://github.com/curl/curl/issues/6904
+
 16. Applications
 
 16.1 pulseUI VPN client
@@ -1084,3 +1142,29 @@ problems may have been fixed or changed somewhat since this was written!
 18.3 HTTP/3 download is 5x times slower than HTTP/2
 
  See https://github.com/curl/curl/issues/6494
+
+18.4 Downloading with HTTP/3 produces broken files
+
+ See https://github.com/curl/curl/issues/7351
+
+18.5 HTTP/3 download with quiche halts after a while
+
+ See https://github.com/curl/curl/issues/7339
+
+18.6 HTTP/3 multipart POST with quiche fails
+
+ https://github.com/curl/curl/issues/7125
+
+18.7 HTTP/3 quiche upload large file fails
+
+ https://github.com/curl/curl/issues/7532
+
+18.8 HTTP/3 doesn't support client certs
+
+ aka "mutual authentication".
+
+ https://github.com/curl/curl/issues/7625
+
+18.9 connection migration doesn't work
+
+ https://github.com/curl/curl/issues/7695

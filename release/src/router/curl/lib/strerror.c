@@ -735,7 +735,7 @@ const char *Curl_strerror(int err, char *buf, size_t buflen)
 #if defined(WIN32)
   /* 'sys_nerr' is the maximum errno number, it is not widely portable */
   if(err >= 0 && err < sys_nerr)
-    strncpy(buf, strerror(err), max);
+    strncpy(buf, sys_errlist[err], max);
   else
 #endif
   {
@@ -786,6 +786,7 @@ const char *Curl_strerror(int err, char *buf, size_t buflen)
   }
 #else
   {
+    /* !checksrc! disable STRERROR 1 */
     const char *msg = strerror(err);
     if(msg)
       strncpy(buf, msg, max);

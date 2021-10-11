@@ -5,7 +5,7 @@
 .\" *                            | (__| |_| |  _ <| |___
 .\" *                             \___|\___/|_| \_\_____|
 .\" *
-.\" * Copyright (C) 1998 - 2019, Daniel Stenberg, <daniel@haxx.se>, et al.
+.\" * Copyright (C) 1998 - 2021, Daniel Stenberg, <daniel@haxx.se>, et al.
 .\" *
 .\" * This software is licensed as described in the file COPYING, which
 .\" * you should have received as part of this distribution. The terms
@@ -20,10 +20,10 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLMOPT_TIMERFUNCTION 3 "November 04, 2020" "libcurl 7.78.0" "curl_multi_setopt options"
+.TH CURLMOPT_TIMERFUNCTION 3 "September 08, 2021" "libcurl 7.79.1" "curl_multi_setopt options"
 
 .SH NAME
-CURLMOPT_TIMERFUNCTION \- set callback to receive timeout values
+CURLMOPT_TIMERFUNCTION \- callback to receive timeout values
 .SH SYNOPSIS
 .nf
 #include <curl/curl.h>
@@ -41,7 +41,7 @@ Certain features, such as timeouts and retries, require you to call libcurl
 even when there is no activity on the file descriptors.
 
 Your callback function \fBtimer_callback\fP should install a non-repeating
-timer with an interval of \fBtimeout_ms\fP. When time that timer fires, call
+timer with an interval of \fBtimeout_ms\fP. When that timer fires, call
 either \fIcurl_multi_socket_action(3)\fP or \fIcurl_multi_perform(3)\fP,
 depending on which interface you use.
 

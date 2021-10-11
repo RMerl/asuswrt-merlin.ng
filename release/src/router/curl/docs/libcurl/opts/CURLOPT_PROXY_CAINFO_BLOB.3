@@ -20,7 +20,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_PROXY_CAINFO_BLOB 3 "July 13, 2020" "libcurl 7.78.0" "curl_easy_setopt options"
+.TH CURLOPT_PROXY_CAINFO_BLOB 3 "August 21, 2021" "libcurl 7.79.1" "curl_easy_setopt options"
 
 .SH NAME
 CURLOPT_PROXY_CAINFO_BLOB \- proxy Certificate Authority (CA) bundle in PEM format
@@ -54,7 +54,7 @@ if(curl) {
   curl_easy_setopt(curl, CURLOPT_PROXY, "https://localhost:443");
   blob.data = strpem;
   blob.len = strlen(strpem);
-  blob.flags = CURL_BLOB_COPY;  
+  blob.flags = CURL_BLOB_COPY;
   curl_easy_setopt(curl, CURLOPT_PROXY_CAINFO_BLOB, &blob);
   ret = curl_easy_perform(curl);
   curl_easy_cleanup(curl);

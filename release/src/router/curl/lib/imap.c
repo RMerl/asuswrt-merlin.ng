@@ -74,7 +74,6 @@
 #include "strcase.h"
 #include "vtls/vtls.h"
 #include "connect.h"
-#include "strerror.h"
 #include "select.h"
 #include "multiif.h"
 #include "url.h"
@@ -935,22 +934,18 @@ static CURLcode imap_state_capability_resp(struct Curl_easy *data,
       line += wordlen;
     }
   }
-  else if(imapcode == IMAP_RESP_OK) {
-    if(data->set.use_ssl && !conn->ssl[FIRSTSOCKET].use) {
-      /* We don't have a SSL/TLS connection yet, but SSL is requested */
-      if(imapc->tls_supported)
-        /* Switch to TLS connection now */
-        result = imap_perform_starttls(data, conn);
-      else if(data->set.use_ssl == CURLUSESSL_TRY)
-        /* Fallback and carry on with authentication */
-        result = imap_perform_authentication(data, conn);
-      else {
-        failf(data, "STARTTLS not supported.");
-        result = CURLE_USE_SSL_FAILED;
-      }
+  else if(data->set.use_ssl && !conn->ssl[FIRSTSOCKET].use) {
+    /* PREAUTH is not compatible with STARTTLS. */
+    if(imapcode == IMAP_RESP_OK && imapc->tls_supported && !imapc->preauth) {
+      /* Switch to TLS connection now */
+      result = imap_perform_starttls(data, conn);
     }
-    else
+    else if(data->set.use_ssl <= CURLUSESSL_TRY)
       result = imap_perform_authentication(data, conn);
+    else {
+      failf(data, "STARTTLS not available.");
+      result = CURLE_USE_SSL_FAILED;
+    }
   }
   else
     result = imap_perform_authentication(data, conn);
@@ -967,6 +962,10 @@ static CURLcode imap_state_starttls_resp(struct Curl_easy *data,
   struct connectdata *conn = data->conn;
 
   (void)instate; /* no use for this yet */
+
+  /* Pipelining in response is forbidden. */
+  if(data->conn->proto.imapc.pp.cache_size)
+    return CURLE_WEIRD_SERVER_REPLY;
 
   if(imapcode != IMAP_RESP_OK) {
     if(data->set.use_ssl != CURLUSESSL_TRY) {

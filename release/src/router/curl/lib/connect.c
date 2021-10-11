@@ -589,12 +589,10 @@ static CURLcode trynextip(struct Curl_easy *data,
     struct Curl_addrinfo *ai = conn->tempaddr[tempindex];
 
     while(ai) {
-      if(ai) {
-        result = singleipconnect(data, conn, ai, tempindex);
-        if(result == CURLE_COULDNT_CONNECT) {
-          ai = ainext(conn, tempindex, TRUE);
-          continue;
-        }
+      result = singleipconnect(data, conn, ai, tempindex);
+      if(result == CURLE_COULDNT_CONNECT) {
+        ai = ainext(conn, tempindex, TRUE);
+        continue;
       }
       break;
     }
@@ -753,10 +751,9 @@ void Curl_updateconninfo(struct Curl_easy *data, struct connectdata *conn,
   int local_port = -1;
 
   if(conn->transport == TRNSPRT_TCP) {
-    if(!conn->bits.reuse && !conn->bits.tcp_fastopen) {
+    if(!conn->bits.reuse && !conn->bits.tcp_fastopen)
       Curl_conninfo_remote(data, conn, sockfd);
-      Curl_conninfo_local(data, sockfd, local_ip, &local_port);
-    }
+    Curl_conninfo_local(data, sockfd, local_ip, &local_port);
   } /* end of TCP-only section */
 
   /* persist connection info in session handle */

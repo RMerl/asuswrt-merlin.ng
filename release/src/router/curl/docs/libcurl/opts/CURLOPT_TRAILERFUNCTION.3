@@ -5,7 +5,7 @@
 .\" *                            | (__| |_| |  _ <| |___
 .\" *                             \___|\___/|_| \_\_____|
 .\" *
-.\" * Copyright (C) 1998 - 2019, Daniel Stenberg, <daniel@haxx.se>, et al.
+.\" * Copyright (C) 1998 - 2021, Daniel Stenberg, <daniel@haxx.se>, et al.
 .\" *
 .\" * This software is licensed as described in the file COPYING, which
 .\" * you should have received as part of this distribution. The terms
@@ -20,10 +20,10 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_TRAILERFUNCTION 3 "November 04, 2020" "libcurl 7.78.0" "curl_easy_setopt options"
+.TH CURLOPT_TRAILERFUNCTION 3 "September 08, 2021" "libcurl 7.79.1" "curl_easy_setopt options"
 
 .SH NAME
-CURLOPT_TRAILERFUNCTION \- Set callback for sending trailing headers
+CURLOPT_TRAILERFUNCTION \- callback for sending trailing headers
 .SH SYNOPSIS
 #include <curl.h>
 
@@ -98,5 +98,7 @@ if(curl) {
 }
 .SH AVAILABILITY
 This option was added in curl 7.64.0 and is present if HTTP support is enabled
+.SH RETURN VALUE
+Returns CURLE_OK.
 .SH "SEE ALSO"
 .BR CURLOPT_TRAILERDATA "(3), "

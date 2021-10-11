@@ -4,6 +4,10 @@ Short: o
 Help: Write to file instead of stdout
 See-also: remote-name remote-name-all remote-header-name
 Category: important curl
+Example: -o file $URL
+Example: "http://{one,two}.example.com" -o "file_#1.txt"
+Example: "http://{site,host}.host[1-5].com" -o "#1_#2"
+Example: -o file $URL -o file2 https://example.net
 ---
 Write output to <file> instead of stdout. If you are using {} or [] to fetch
 multiple documents, you should quote the URL and you can use '#' followed by a
@@ -31,3 +35,11 @@ written as
 See also the --create-dirs option to create the local directories
 dynamically. Specifying the output as '-' (a single dash) will force the
 output to be done to stdout.
+
+To suppress response bodies, you can redirect output to /dev/null:
+
+  curl example.com -o /dev/null
+
+Or for Windows use nul:
+
+  curl example.com -o nul

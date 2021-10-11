@@ -47,7 +47,7 @@ if(something_is_true) {
 ## Comments
 
 Since we write C89 code, **//** comments are not allowed. They weren't
-introduced in the C standard until C99. We use only **/* comments */**.
+introduced in the C standard until C99. We use only __/* comments */__.
 
 ```c
 /* this is a comment */
@@ -174,7 +174,7 @@ else if(b) return FALSE;
 ## Space around operators
 
 Please use spaces on both sides of operators in C expressions.  Postfix **(),
-[], ->, ., ++, --** and Unary **+, - !, ~, &** operators excluded they should
+[], ->, ., ++, --** and Unary **+, -, !, ~, &** operators excluded they should
 have no space.
 
 Examples:

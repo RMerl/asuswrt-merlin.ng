@@ -20,7 +20,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_CAINFO_BLOB 3 "July 13, 2020" "libcurl 7.78.0" "curl_easy_setopt options"
+.TH CURLOPT_CAINFO_BLOB 3 "July 21, 2021" "libcurl 7.79.1" "curl_easy_setopt options"
 
 .SH NAME
 CURLOPT_CAINFO_BLOB \- Certificate Authority (CA) bundle in PEM format
@@ -59,8 +59,8 @@ if(curl) {
 .SH AVAILABILITY
 Added in 7.77.0.
 
-This option is supported by the OpenSSL, Secure
-Transport and Schannel backends.
+This option is supported by the BearSSL (since 7.79.0),
+OpenSSL, Secure Transport and Schannel backends.
 .SH RETURN VALUE
 Returns CURLE_OK if the option is supported, CURLE_UNKNOWN_OPTION if not, or
 CURLE_OUT_OF_MEMORY if there was insufficient heap space.

@@ -5,7 +5,7 @@
 .\" *                            | (__| |_| |  _ <| |___
 .\" *                             \___|\___/|_| \_\_____|
 .\" *
-.\" * Copyright (C) 1998 - 2016, Daniel Stenberg, <daniel@haxx.se>, et al.
+.\" * Copyright (C) 1998 - 2021, Daniel Stenberg, <daniel@haxx.se>, et al.
 .\" *
 .\" * This software is licensed as described in the file COPYING, which
 .\" * you should have received as part of this distribution. The terms
@@ -20,7 +20,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_PIPEWAIT 3 "November 04, 2020" "libcurl 7.78.0" "curl_easy_setopt options"
+.TH CURLOPT_PIPEWAIT 3 "September 01, 2021" "libcurl 7.79.1" "curl_easy_setopt options"
 
 .SH NAME
 CURLOPT_PIPEWAIT \- wait for pipelining/multiplexing
@@ -55,6 +55,15 @@ and support level.
 .SH PROTOCOLS
 HTTP(S)
 .SH EXAMPLE
+.nf
+CURL *curl = curl_easy_init();
+if(curl) {
+  curl_easy_setopt(curl, CURLOPT_URL, "https://example.com/");
+  curl_easy_setopt(curl, CURLOPT_PIPEWAIT, 1L);
+
+  /* now add this easy handle to the multi handle */
+}
+.fi
 .SH AVAILABILITY
 Added in 7.43.0
 .SH RETURN VALUE

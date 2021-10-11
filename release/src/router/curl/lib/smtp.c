@@ -78,7 +78,6 @@
 #include "strcase.h"
 #include "vtls/vtls.h"
 #include "connect.h"
-#include "strerror.h"
 #include "select.h"
 #include "multiif.h"
 #include "url.h"
@@ -834,6 +833,10 @@ static CURLcode smtp_state_starttls_resp(struct Curl_easy *data,
 {
   CURLcode result = CURLE_OK;
   (void)instate; /* no use for this yet */
+
+  /* Pipelining in response is forbidden. */
+  if(data->conn->proto.smtpc.pp.cache_size)
+    return CURLE_WEIRD_SERVER_REPLY;
 
   if(smtpcode != 220) {
     if(data->set.use_ssl != CURLUSESSL_TRY) {

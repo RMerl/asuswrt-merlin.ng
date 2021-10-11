@@ -20,7 +20,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH curl_easy_setopt 3 "July 16, 2021" "libcurl 7.78.0" "libcurl Manual"
+.TH curl_easy_setopt 3 "August 26, 2021" "libcurl 7.79.1" "libcurl Manual"
 
 .SH NAME
 curl_easy_setopt \- set options for a curl easy handle
@@ -45,11 +45,11 @@ you must change them between the transfers. You can optionally reset all
 options back to internal default with \fIcurl_easy_reset(3)\fP.
 
 Strings passed to libcurl as 'char *' arguments, are copied by the library;
-thus the string storage associated to the pointer argument may be overwritten
-after \fIcurl_easy_setopt(3)\fP returns. The only exception to this rule is
-really \fICURLOPT_POSTFIELDS(3)\fP, but the alternative that copies the string
-\fICURLOPT_COPYPOSTFIELDS(3)\fP has some usage characteristics you need to
-read up on. This function does not accept input strings longer than
+the string storage associated to the pointer argument may be discarded or
+reused after \fIcurl_easy_setopt(3)\fP returns. The only exception to this
+rule is really \fICURLOPT_POSTFIELDS(3)\fP, but the alternative that copies
+the string \fICURLOPT_COPYPOSTFIELDS(3)\fP has some usage characteristics you
+need to read up on. This function does not accept input strings longer than
 \fBCURL_MAX_INPUT_LENGTH\fP (8 MB).
 
 The order in which the options are set does not matter.

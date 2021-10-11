@@ -4,12 +4,10 @@ Help: Mail to this address
 Protocols: SMTP
 Added: 7.20.0
 Category: smtp
+Example: --mail-rcpt user@example.net smtp://example.com
 ---
-Specify a single address, user name or mailing list name. Repeat this
+Specify a single e-mail address, user name or mailing list name. Repeat this
 option several times to send to multiple recipients.
-
-When performing a mail transfer, the recipient should specify a valid email
-address to send the mail to.
 
 When performing an address verification (VRFY command), the recipient should be
 specified as the user name or user name and domain (as per Section 3.5 of

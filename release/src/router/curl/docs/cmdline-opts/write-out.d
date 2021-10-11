@@ -3,6 +3,7 @@ Short: w
 Arg: <format>
 Help: Use output FORMAT after completion
 Category: verbose
+Example: -w '%{http_code}\\n' $URL
 ---
 Make curl display information on stdout after a completed transfer. The format
 is a string that may contain plain text mixed with any number of
@@ -111,7 +112,8 @@ known as "http_code"). (Added in 7.18.2)
 The URL scheme (sometimes called protocol) that was effectively used. (Added in 7.52.0)
 .TP
 .B size_download
-The total amount of bytes that were downloaded.
+The total amount of bytes that were downloaded. This is the size of the
+body/data that was transfered, excluding headers.
 .TP
 .B size_header
 The total amount of bytes of the downloaded headers.
@@ -120,7 +122,8 @@ The total amount of bytes of the downloaded headers.
 The total amount of bytes that were sent in the HTTP request.
 .TP
 .B size_upload
-The total amount of bytes that were uploaded.
+The total amount of bytes that were uploaded. This is the size of the
+body/data that was transfered, excluding headers.
 .TP
 .B speed_download
 The average download speed that curl measured for the complete download. Bytes

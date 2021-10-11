@@ -172,7 +172,7 @@ curl_verbose_msg="enabled (--disable-verbose)"
      curl_h3_msg="no      (--with-ngtcp2, --with-quiche)"
 
 enable_altsvc="yes"
-enable_hsts="yes"
+hsts="yes"
 
 dnl
 dnl Save some initial values the user might have provided
@@ -446,6 +446,32 @@ else
 fi
 AM_CONDITIONAL(BUILD_UNITTESTS, test x$want_unittests = xyes)
 
+# For original MinGW (ie not MinGW-w64) define the Windows minimum supported OS
+# version to Windows XP (0x501) if it hasn't already been defined by the user.
+# Without this override original MinGW defaults the version to Windows NT 4.0.
+# Note original MinGW sets _WIN32_WINNT if not defined to whatever WINVER is.
+case $host in
+  *-*-mingw32*)
+    AC_MSG_CHECKING([if MinGW minimum supported OS should be set to XP])
+    AC_COMPILE_IFELSE([
+      AC_LANG_PROGRAM([[
+#include <_mingw.h>
+      ]],[[
+#if defined(__MINGW64_VERSION_MAJOR) || \
+    defined(WINVER) || \
+    defined(_WIN32_WINNT)
+#error
+#endif
+      ]])
+    ],[
+      CPPFLAGS="$CPPFLAGS -DWINVER=0x501"
+      AC_MSG_RESULT([yes])
+    ],[
+      AC_MSG_RESULT([no])
+    ])
+    ;;
+esac
+
 dnl **********************************************************************
 dnl Compilation based checks should not be done before this point.
 dnl **********************************************************************
@@ -508,7 +534,7 @@ AS_HELP_STRING([--disable-http],[Disable HTTP support]),
        curl_altsvc_msg="no";
        curl_hsts_msg="no      (--enable-hsts)";
        enable_altsvc="no"
-       enable_hsts="no"
+       hsts="no"
        ;;
   *)   AC_MSG_RESULT(yes)
        ;;
@@ -2309,11 +2335,12 @@ esac
 
 if test "$want_winidn" = "yes"; then
   dnl winidn library support has been requested
+  clean_CFLAGS="$CFLAGS"
   clean_CPPFLAGS="$CPPFLAGS"
   clean_LDFLAGS="$LDFLAGS"
   clean_LIBS="$LIBS"
   WINIDN_LIBS="-lnormaliz"
-  WINIDN_CPPFLAGS="-DWINVER=0x0600"
+  WINIDN_CPPFLAGS=""
   #
   if test "$want_winidn_path" != "default"; then
     dnl path has been specified
@@ -2322,6 +2349,24 @@ if test "$want_winidn" = "yes"; then
     WINIDN_CPPFLAGS="-I$want_winidn_path/include"
     WINIDN_DIR="$want_winidn_path/lib$libsuff"
   fi
+  #
+  dnl WinIDN requires a minimum supported OS version of at least Vista (0x0600)
+  AC_COMPILE_IFELSE([
+    AC_LANG_PROGRAM([[
+      #include <windows.h>
+    ]],[[
+      #if (WINVER < 0x600) && (_WIN32_WINNT < 0x600)
+      #error
+      #endif
+    ]])
+  ],[
+  ],[
+     CFLAGS=`echo $CFLAGS | $SED -e 's/-DWINVER=[[^ ]]*//g'`
+     CFLAGS=`echo $CFLAGS | $SED -e 's/-D_WIN32_WINNT=[[^ ]]*//g'`
+     CPPFLAGS=`echo $CPPFLAGS | $SED -e 's/-DWINVER=[[^ ]]*//g'`
+     CPPFLAGS=`echo $CPPFLAGS | $SED -e 's/-D_WIN32_WINNT=[[^ ]]*//g'`
+     WINIDN_CPPFLAGS="$WINIDN_CPPFLAGS -DWINVER=0x0600"
+  ])
   #
   CPPFLAGS="$CPPFLAGS $WINIDN_CPPFLAGS"
   LDFLAGS="$LDFLAGS $WINIDN_LDFLAGS"
@@ -2349,6 +2394,7 @@ if test "$want_winidn" = "yes"; then
     curl_idn_msg="enabled (Windows-native)"
   else
     AC_MSG_WARN([Cannot find libraries for IDN support: IDN disabled])
+    CFLAGS="$clean_CFLAGS"
     CPPFLAGS="$clean_CPPFLAGS"
     LDFLAGS="$clean_LDFLAGS"
     LIBS="$clean_LIBS"
@@ -2541,11 +2587,10 @@ if test X"$want_h2" != Xno; then
     LDFLAGS="$LDFLAGS $LD_H2"
     CPPFLAGS="$CPPFLAGS $CPP_H2"
     LIBS="$LIB_H2 $LIBS"
-    LIB_H2_NAME=${LIB_H2#"-l"}
 
     # use nghttp2_session_set_local_window_size to require nghttp2
     # >= 1.12.0
-    AC_CHECK_LIB($LIB_H2_NAME, nghttp2_session_set_local_window_size,
+    AC_CHECK_LIB(nghttp2, nghttp2_session_set_local_window_size,
       [
        AC_CHECK_HEADERS(nghttp2/nghttp2.h,
           curl_h2_msg="enabled (nghttp2)"
@@ -2632,7 +2677,7 @@ if test X"$want_tcp2" != Xno; then
     if test "x$cross_compiling" != "xyes"; then
       DIR_TCP2=`echo $LD_TCP2 | $SED -e 's/^-L//'`
     fi
-    AC_CHECK_LIB(ngtcp2, ngtcp2_conn_client_new,
+    AC_CHECK_LIB(ngtcp2, ngtcp2_conn_client_new_versioned,
       [
        AC_CHECK_HEADERS(ngtcp2/ngtcp2.h,
           NGTCP2_ENABLED=1
@@ -2831,7 +2876,7 @@ if test X"$want_nghttp3" != Xno; then
     if test "x$cross_compiling" != "xyes"; then
       DIR_NGHTTP3=`echo $LD_NGHTTP3 | $SED -e 's/^-L//'`
     fi
-    AC_CHECK_LIB(nghttp3, nghttp3_conn_client_new,
+    AC_CHECK_LIB(nghttp3, nghttp3_conn_client_new_versioned,
       [
        AC_CHECK_HEADERS(nghttp3/nghttp3.h,
           curl_h3_msg="enabled (ngtcp2 + nghttp3)"
@@ -2894,6 +2939,11 @@ case "$OPT_QUICHE" in
 esac
 
 if test X"$want_quiche" != Xno; then
+
+  if test "$NGHTTP3_ENABLED" = 1; then
+    AC_MSG_ERROR([--with-quiche and --with-ngtcp2 are mutually exclusive])
+  fi
+
   dnl backup the pre-quiche variables
   CLEANLDFLAGS="$LDFLAGS"
   CLEANCPPFLAGS="$CPPFLAGS"
@@ -3204,8 +3254,6 @@ CURL_CONFIGURE_PULL_SYS_POLL
 TYPE_IN_ADDR_T
 
 TYPE_SOCKADDR_STORAGE
-
-TYPE_SIG_ATOMIC_T
 
 CURL_CHECK_FUNC_SELECT
 
@@ -3853,19 +3901,19 @@ if test -n "$SSL_ENABLED"; then
   [ case "$enableval" in
     no)
        AC_MSG_RESULT(no)
-       enable_hsts="no"
+       hsts="no"
        ;;
     *) AC_MSG_RESULT(yes)
        ;;
     esac ],
-       AC_MSG_RESULT(no)
+       AC_MSG_RESULT($hsts)
   )
 else
   AC_MSG_NOTICE([disables HSTS due to lack of SSL])
-  enable_hsts="no"
+  hsts="no"
 fi
 
-if test "x$enable_hsts" != "xyes"; then
+if test "x$hsts" != "xyes"; then
   curl_hsts_msg="no      (--enable-hsts)";
   AC_DEFINE(CURL_DISABLE_HSTS, 1, [disable alt-svc])
 fi
@@ -3990,7 +4038,7 @@ fi
 if test "x$enable_altsvc" = "xyes"; then
   SUPPORT_FEATURES="$SUPPORT_FEATURES alt-svc"
 fi
-if test "x$enable_hsts" = "xyes"; then
+if test "x$hsts" = "xyes"; then
   SUPPORT_FEATURES="$SUPPORT_FEATURES HSTS"
 fi
 

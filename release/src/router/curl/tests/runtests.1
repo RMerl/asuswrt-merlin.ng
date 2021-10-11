@@ -20,7 +20,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH runtests.pl 1 "June 08, 2021" "Curl 7.78.0" "runtests"
+.TH runtests.pl 1 "June 02, 2021" "Curl 7.79.1" "runtests"
 
 .SH NAME
 runtests.pl \- run one or more test cases
@@ -148,6 +148,8 @@ to fail until all allocs have been tested. By setting \fInum\fP you can force
 the allocation with that number to be set to fail at once instead of looping
 through everyone, which is very handy when debugging and then often in
 combination with \fI-g\fP.
+.IP "-u"
+Error instead of warning on server unexpectedly alive.
 .IP "-v"
 Enable verbose output. Speaks more than default.
 .IP "-vc <curl>"

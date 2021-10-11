@@ -4,8 +4,8 @@ Arg: <name>
 Help: Send User-Agent <name> to server
 Protocols: HTTP
 Category: important http
+Example: -A "Agent 007" $URL
 ---
-
 Specify the User-Agent string to send to the HTTP server. To encode blanks in
 the string, surround the string with single quote marks. This header can also
 be set with the --header or the --proxy-header options.

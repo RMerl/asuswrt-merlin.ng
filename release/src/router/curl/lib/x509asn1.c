@@ -23,7 +23,7 @@
 #include "curl_setup.h"
 
 #if defined(USE_GSKIT) || defined(USE_NSS) || defined(USE_GNUTLS) || \
-    defined(USE_WOLFSSL) || defined(USE_SCHANNEL)
+    defined(USE_WOLFSSL) || defined(USE_SCHANNEL) || defined(USE_SECTRANSP)
 
 #include <curl/curl.h>
 #include "urldata.h"
@@ -34,6 +34,7 @@
 #include "inet_pton.h"
 #include "curl_base64.h"
 #include "x509asn1.h"
+#include "dynbuf.h"
 
 /* The last 3 #include files should be in this order */
 #include "curl_printf.h"
@@ -205,16 +206,16 @@ static const char *bool2str(const char *beg, const char *end)
  */
 static const char *octet2str(const char *beg, const char *end)
 {
-  size_t n = end - beg;
-  char *buf = NULL;
+  struct dynbuf buf;
+  CURLcode result;
 
-  if(n <= (SIZE_T_MAX - 1) / 3) {
-    buf = malloc(3 * n + 1);
-    if(buf)
-      for(n = 0; beg < end; n += 3)
-        msnprintf(buf + n, 4, "%02x:", *(const unsigned char *) beg++);
-  }
-  return buf;
+  Curl_dyn_init(&buf, 3 * CURL_ASN1_MAX + 1);
+  result = Curl_dyn_addn(&buf, "", 0);
+
+  while(!result && beg < end)
+    result = Curl_dyn_addf(&buf, "%02x:", (unsigned char) *beg++);
+
+  return Curl_dyn_ptr(&buf);
 }
 
 static const char *bit2str(const char *beg, const char *end)
@@ -1103,7 +1104,8 @@ CURLcode Curl_extract_certinfo(struct Curl_easy *data,
   return CURLE_OK;
 }
 
-#endif /* USE_GSKIT or USE_NSS or USE_GNUTLS or USE_WOLFSSL or USE_SCHANNEL */
+#endif /* USE_GSKIT or USE_NSS or USE_GNUTLS or USE_WOLFSSL or USE_SCHANNEL
+        * or USE_SECTRANSP */
 
 #if defined(USE_GSKIT)
 

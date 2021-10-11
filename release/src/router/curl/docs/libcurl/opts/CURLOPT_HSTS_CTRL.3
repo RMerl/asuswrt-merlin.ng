@@ -5,7 +5,7 @@
 .\" *                            | (__| |_| |  _ <| |___
 .\" *                             \___|\___/|_| \_\_____|
 .\" *
-.\" * Copyright (C) 2020, Daniel Stenberg, <daniel@haxx.se>, et al.
+.\" * Copyright (C) 2020, 2021, Daniel Stenberg, <daniel@haxx.se>, et al.
 .\" *
 .\" * This software is licensed as described in the file COPYING, which
 .\" * you should have received as part of this distribution. The terms
@@ -20,7 +20,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_HSTS_CTRL 3 "November 04, 2020" "libcurl 7.78.0" "curl_easy_setopt options"
+.TH CURLOPT_HSTS_CTRL 3 "September 06, 2021" "libcurl 7.79.1" "curl_easy_setopt options"
 
 .SH NAME
 CURLOPT_HSTS_CTRL \- control HSTS behavior
@@ -33,11 +33,6 @@ CURLOPT_HSTS_CTRL \- control HSTS behavior
 
 CURLcode curl_easy_setopt(CURL *handle, CURLOPT_HSTS_CTRL, long bitmask);
 .fi
-.SH EXPERIMENTAL
-Warning: this feature is early code and is marked as experimental. It can only
-be enabled by explicitly telling configure with \fB--enable-hsts\fP. You are
-advised to not ship this in production before the experimental label is
-removed.
 .SH DESCRIPTION
 HSTS (HTTP Strict Transport Security) means that an HTTPS server can instruct
 the client to not contact it again over clear-text HTTP for a certain period

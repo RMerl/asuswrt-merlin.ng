@@ -15,7 +15,7 @@
  */
 
 /*
- * Copyright (C) 2005 - 2020, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 2005 - 2021, Daniel Stenberg, <daniel@haxx.se>, et al.
  * Copyright (c) 1983, Regents of the University of California.
  * All rights reserved.
  *
@@ -212,9 +212,10 @@ static const char *ipv_inuse = "IPv4";
 
 const  char *serverlogfile = DEFAULT_LOGFILE;
 static const char *pidname = ".tftpd.pid";
-static const char *portfile = NULL;
+static const char *portname = NULL; /* none by default */
 static int serverlogslocked = 0;
 static int wrotepidfile = 0;
+static int wroteportfile = 0;
 
 #ifdef HAVE_SIGSETJMP
 static sigjmp_buf timeoutbuf;
@@ -288,6 +289,10 @@ static void timer(int signum)
     if(wrotepidfile) {
       wrotepidfile = 0;
       unlink(pidname);
+    }
+    if(wroteportfile) {
+      wroteportfile = 0;
+      unlink(portname);
     }
     if(serverlogslocked) {
       serverlogslocked = 0;
@@ -555,7 +560,6 @@ int main(int argc, char **argv)
   int flag;
   int rc;
   int error;
-  long pid;
   struct testcase test;
   int result = 0;
 
@@ -580,7 +584,7 @@ int main(int argc, char **argv)
     else if(!strcmp("--portfile", argv[arg])) {
       arg++;
       if(argc>arg)
-        portfile = argv[arg++];
+        portname = argv[arg++];
     }
     else if(!strcmp("--logfile", argv[arg])) {
       arg++;
@@ -622,6 +626,7 @@ int main(int argc, char **argv)
            " --version\n"
            " --logfile [file]\n"
            " --pidfile [file]\n"
+           " --portfile [file]\n"
            " --ipv4\n"
            " --ipv6\n"
            " --port [port]\n"
@@ -636,8 +641,6 @@ int main(int argc, char **argv)
 #endif
 
   install_signal_handlers(true);
-
-  pid = (long)getpid();
 
 #ifdef ENABLE_IPV6
   if(!use_ipv6)
@@ -742,9 +745,9 @@ int main(int argc, char **argv)
     goto tftpd_cleanup;
   }
 
-  if(portfile) {
-    wrotepidfile = write_portfile(portfile, port);
-    if(!wrotepidfile) {
+  if(portname) {
+    wroteportfile = write_portfile(portname, port);
+    if(!wroteportfile) {
       result = 1;
       goto tftpd_cleanup;
     }
@@ -849,8 +852,8 @@ tftpd_cleanup:
 
   if(wrotepidfile)
     unlink(pidname);
-  if(portfile)
-    unlink(portfile);
+  if(wroteportfile)
+    unlink(portname);
 
   if(serverlogslocked) {
     serverlogslocked = 0;
@@ -861,7 +864,7 @@ tftpd_cleanup:
 
   if(got_exit_signal) {
     logmsg("========> %s tftpd (port: %d pid: %ld) exits with signal (%d)",
-           ipv_inuse, (int)port, pid, exit_signal);
+           ipv_inuse, (int)port, (long)getpid(), exit_signal);
     /*
      * To properly set the return status of the process we
      * must raise the same signal SIGINT or SIGTERM that we
@@ -899,7 +902,7 @@ static int do_tftp(struct testcase *test, struct tftphdr *tp, ssize_t size)
   }
 
   /* store input protocol */
-  fprintf(server, "opcode: %x\n", tp->th_opcode);
+  fprintf(server, "opcode = %x\n", tp->th_opcode);
 
   cp = (char *)&tp->th_stuff;
   filename = cp;
@@ -927,7 +930,7 @@ static int do_tftp(struct testcase *test, struct tftphdr *tp, ssize_t size)
       }
       if(toggle)
         /* name/value pair: */
-        fprintf(server, "%s: %s\n", option, cp);
+        fprintf(server, "%s = %s\n", option, cp);
       else {
         /* store the name pointer */
         option = cp;
@@ -946,7 +949,7 @@ static int do_tftp(struct testcase *test, struct tftphdr *tp, ssize_t size)
   }
 
   /* store input protocol */
-  fprintf(server, "filename: %s\n", filename);
+  fprintf(server, "filename = %s\n", filename);
 
   for(cp = mode; cp && *cp; cp++)
     if(ISUPPER(*cp))
@@ -1065,8 +1068,8 @@ static int validate_access(struct testcase *test,
 
   if(!strncmp("verifiedserver", filename, 14)) {
     char weare[128];
-    size_t count = msnprintf(weare, sizeof(weare),
-                             "WE ROOLZ: %ld\r\n", (long)getpid());
+    size_t count = msnprintf(weare, sizeof(weare), "WE ROOLZ: %"
+                             CURL_FORMAT_CURL_OFF_T "\r\n", our_getpid());
 
     logmsg("Are-we-friendly question received");
     test->buffer = strdup(weare);

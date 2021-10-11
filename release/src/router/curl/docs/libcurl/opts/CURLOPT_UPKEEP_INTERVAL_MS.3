@@ -5,7 +5,7 @@
 .\" *                            | (__| |_| |  _ <| |___
 .\" *                             \___|\___/|_| \_\_____|
 .\" *
-.\" * Copyright (C) 1998 - 2018, Daniel Stenberg, <daniel@haxx.se>, et al.
+.\" * Copyright (C) 1998 - 2021, Daniel Stenberg, <daniel@haxx.se>, et al.
 .\" *
 .\" * This software is licensed as described in the file COPYING, which
 .\" * you should have received as part of this distribution. The terms
@@ -20,7 +20,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_UPKEEP_INTERVAL_MS 3 "November 04, 2020" "libcurl 7.78.0" "curl_easy_setopt options"
+.TH CURLOPT_UPKEEP_INTERVAL_MS 3 "September 01, 2021" "libcurl 7.79.1" "curl_easy_setopt options"
 
 .SH NAME
 CURLOPT_UPKEEP_INTERVAL_MS \- connection upkeep interval
@@ -43,6 +43,8 @@ is called, an HTTP/2 PING frame is sent on the connection.
 
 .SH DEFAULT
 CURL_UPKEEP_INTERVAL_DEFAULT (currently defined as 60000L, which is 60 seconds)
+.SH PROTOCOLS
+All
 .SH EXAMPLE
 .nf
 CURL *curl = curl_easy_init();
@@ -72,3 +74,6 @@ if(curl) {
 Added in 7.62.0
 .SH RETURN VALUE
 Returns CURLE_OK
+.SH SEE ALSO
+.BR CURLOPT_TCP_KEEPALIVE "(3), "
+

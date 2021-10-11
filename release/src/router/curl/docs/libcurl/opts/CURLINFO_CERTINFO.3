@@ -20,7 +20,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLINFO_CERTINFO 3 "November 04, 2020" "libcurl 7.78.0" "curl_easy_getinfo options"
+.TH CURLINFO_CERTINFO 3 "July 09, 2021" "libcurl 7.79.1" "curl_easy_getinfo options"
 
 .SH NAME
 CURLINFO_CERTINFO \- get the TLS certificate chain
@@ -72,8 +72,9 @@ if(curl) {
 }
 .fi
 .SH AVAILABILITY
-This option is only working in libcurl built with OpenSSL, NSS, Schannel or
-GSKit support. Schannel support added in 7.50.0
+This option is only working in libcurl built with OpenSSL, NSS, Schannel, GSKit
+or Secure Transport support. Schannel support added in 7.50.0. Secure Transport
+support added in 7.79.0.
 
 Added in 7.19.1
 .SH RETURN VALUE

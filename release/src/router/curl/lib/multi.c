@@ -1052,11 +1052,17 @@ CURLMcode curl_multi_fdset(struct Curl_multi *multi,
     for(i = 0; i< MAX_SOCKSPEREASYHANDLE; i++) {
       curl_socket_t s = CURL_SOCKET_BAD;
 
-      if((bitmap & GETSOCK_READSOCK(i)) && VALID_SOCK((sockbunch[i]))) {
+      if((bitmap & GETSOCK_READSOCK(i)) && VALID_SOCK(sockbunch[i])) {
+        if(!FDSET_SOCK(sockbunch[i]))
+          /* pretend it doesn't exist */
+          continue;
         FD_SET(sockbunch[i], read_fd_set);
         s = sockbunch[i];
       }
-      if((bitmap & GETSOCK_WRITESOCK(i)) && VALID_SOCK((sockbunch[i]))) {
+      if((bitmap & GETSOCK_WRITESOCK(i)) && VALID_SOCK(sockbunch[i])) {
+        if(!FDSET_SOCK(sockbunch[i]))
+          /* pretend it doesn't exist */
+          continue;
         FD_SET(sockbunch[i], write_fd_set);
         s = sockbunch[i];
       }
@@ -1099,6 +1105,9 @@ static CURLMcode multi_wait(struct Curl_multi *multi,
 #ifdef USE_WINSOCK
   WSANETWORKEVENTS wsa_events;
   DEBUGASSERT(multi->wsa_event != WSA_INVALID_EVENT);
+#endif
+#ifndef ENABLE_WAKEUP
+  (void)use_wakeup;
 #endif
 
   if(!GOOD_MULTI_HANDLE(multi))

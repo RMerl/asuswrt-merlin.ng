@@ -88,7 +88,7 @@ Dependencies
  - GnuTLS       3.1.10
  - zlib         1.1.4
  - libssh2      1.0
- - c-ares       1.6.0
+ - c-ares       1.16.0
  - libidn2      2.0.0
  - wolfSSL      2.0.0
  - openldap     2.0
@@ -1092,7 +1092,7 @@ for older and later versions as things don't change drastically that often.
 
 [1]: https://curl.se/libcurl/c/curl_easy_setopt.html
 [2]: https://curl.se/libcurl/c/curl_easy_init.html
-[3]: https://c-ares.haxx.se/
+[3]: https://c-ares.org/
 [4]: https://tools.ietf.org/html/rfc7230 "RFC 7230"
 [5]: https://curl.se/libcurl/c/CURLOPT_ACCEPT_ENCODING.html
 [6]: https://curl.se/docs/manpage.html#--compressed

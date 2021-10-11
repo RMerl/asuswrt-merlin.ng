@@ -994,7 +994,8 @@ static int send_doc(curl_socket_t sock, struct httprequest *req)
     case DOCNUMBER_WERULEZ:
       /* we got a "friends?" question, reply back that we sure are */
       logmsg("Identifying ourselves as friends");
-      msnprintf(msgbuf, sizeof(msgbuf), "WE ROOLZ: %ld\r\n", (long)getpid());
+      msnprintf(msgbuf, sizeof(msgbuf), "WE ROOLZ: %"
+                CURL_FORMAT_CURL_OFF_T "\r\n", our_getpid());
       msglen = strlen(msgbuf);
       if(use_gopher)
         msnprintf(weare, sizeof(weare), "%s", msgbuf);
@@ -1868,6 +1869,7 @@ int main(int argc, char *argv[])
   srvr_sockaddr_union_t me;
   curl_socket_t sock = CURL_SOCKET_BAD;
   int wrotepidfile = 0;
+  int wroteportfile = 0;
   int flag;
   unsigned short port = DEFAULT_PORT;
 #ifdef USE_UNIX_SOCKETS
@@ -1880,7 +1882,6 @@ int main(int argc, char *argv[])
   int rc = 0;
   int error;
   int arg = 1;
-  long pid;
   const char *connecthost = "127.0.0.1";
   const char *socket_type = "IPv4";
   char port_str[11];
@@ -2018,8 +2019,6 @@ int main(int argc, char *argv[])
 #endif
 
   install_signal_handlers(false);
-
-  pid = (long)getpid();
 
   sock = socket(socket_domain, SOCK_STREAM, 0);
 
@@ -2202,8 +2201,8 @@ int main(int argc, char *argv[])
   if(!wrotepidfile)
     goto sws_cleanup;
 
-  wrotepidfile = write_portfile(portname, port);
-  if(!wrotepidfile)
+  wroteportfile = write_portfile(portname, port);
+  if(!wroteportfile)
     goto sws_cleanup;
 
   /* initialization of httprequest struct is done before get_request(), but
@@ -2355,6 +2354,8 @@ sws_cleanup:
 
   if(wrotepidfile)
     unlink(pidname);
+  if(wroteportfile)
+    unlink(portname);
 
   if(serverlogslocked) {
     serverlogslocked = 0;
@@ -2365,7 +2366,7 @@ sws_cleanup:
 
   if(got_exit_signal) {
     logmsg("========> %s sws (%s pid: %ld) exits with signal (%d)",
-           socket_type, location_str, pid, exit_signal);
+           socket_type, location_str, (long)getpid(), exit_signal);
     /*
      * To properly set the return status of the process we
      * must raise the same signal SIGINT or SIGTERM that we

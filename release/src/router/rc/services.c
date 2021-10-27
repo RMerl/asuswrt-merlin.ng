@@ -17404,6 +17404,8 @@ void setup_leds()
 			eval("wl", "-i", "eth6", "ledbh", "7", "7");
 #elif defined(RTAX68U)
 			eval("wl", "-i", "eth5", "ledbh", "7", "7");
+#elif defined(RTAC68U_V4)
+			eval("wl", "-i", "eth5", "ledbh", "10", "7");
 #elif defined(GTAC2900)
 			eval("wl", "ledbh", "9", "1");
 #endif
@@ -17427,6 +17429,8 @@ void setup_leds()
 			eval("wl", "-i", "eth7", "ledbh", "15", "7");
 #elif defined(RTAX68U)
 			eval("wl", "-i", "eth6", "ledbh", "7", "7");
+#elif defined(RTAC68U_V4)
+			eval("wl", "-i", "eth6", "ledbh", "10", "7");
 #elif defined(RTAX58U)
 			eval("wl", "-i", "eth6", "ledbh", "15", "7");
 #elif defined(RTAX56U)

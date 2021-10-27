@@ -1,0 +1,1650 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html lang="en">
+<head>
+<title>MDK 2.8.0 Release Notes</title>
+
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+
+<style type="text/css">
+<!--
+body {
+	font-family: verdana, arial, helvetica, sans-serif;
+}
+pre.code {
+        background: #eaeaea;
+        color: black;
+        width: auto;
+        margin-left: 0em;
+        margin-right: 1em;
+        border: solid 1px black;
+        white-space: pre;
+        padding: 4px;
+        font-family: courier new, courier, monospace;
+        font-weight: normal;
+        font-size: 80%;
+}
+tt {
+        font-family: courier new, courier, monospace;
+}
+a:link, a:visited {
+        text-decoration: none;
+}
+-->
+</style>
+</head>
+
+<body bgcolor="#ffffff">
+<table><tr><td width="20">&nbsp;</td><td width="700"><h2>MDK 2.8.0 Release Notes</h2>
+<h3>Section Reference</h3>
+<table cellpadding=0 cellspacing=2 border=0 summary="reference" >
+<tr><td><a href="#section_about">1.  About This Document
+</a></td>
+<tr><td><a href="#section_docs">2.  Product Documentation
+</a></td>
+<tr><td><a href="#section_media">3.  Release Media
+</a></td>
+<tr><td><a href="#section_support">4.  Support
+</a></td>
+<tr><td><a href="#section_new">5.  New in this Release
+</a></td>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;<a href="#major_changes">5.1.  New Features in MDK 2.8.0
+</a></td>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="#cdk_changes">5.1.1.  CDK Changes
+</a></td>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="#bmd_changes">5.1.2.  BMD Changes
+</a></td>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="#phy_changes">5.1.3.  PHY Changes
+</a></td>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;<a href="#new-hardware">5.2.  New Devices
+</a></td>
+<tr><td><a href="#section_resolved2.8.0">6.  Resolved Issues for 2.8.0
+</a></td>
+<tr><td><a href="#section_device_support">7.  MDK Device Support
+</a></td>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;<a href="#cdk_device_support">7.1.  CDK Device Support
+</a></td>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;<a href="#bmd_base_driver_support">7.2.  BMD Base Driver Packages
+</a></td>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;<a href="#bmd_device_support">7.3.  BMD Device Support
+</a></td>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;<a href="#phy_device_support">7.4.  PHY Device Support
+</a></td>
+</table>
+<br><br><hr noshade><br><br>
+<a name=section_about>
+<h2>1.  About This Document
+</h2>
+<p>These are the Release Notes for the Broadcom Network Switching
+Minidriver Development Kit, Release 2.8.0. 
+<p>This document provides a general description of the release
+and its new features, the chips supported by the release,
+API additions or changes, resolved issues and any
+relevant open issues. 
+<br><br><hr noshade><br><br>
+<a name=section_docs>
+<h2>2.  Product Documentation
+</h2>
+<p>The following documents are available through Broadcom's
+Customer Support Portal, http://support.broadcom.com. They are
+the primary source of information and should be referenced 
+when using this release:
+<p><br><br><b>Table 1:   Product Documentation</b>
+<table cellpadding="4" cellspacing="0" border="1" summary="section"><tbody><tr><td><b>  Document</b></td><td><b> Description
+</b></td></tr><tr><td>  MDK-PG-101-R</td><td> MDK Programmer's Guide
+<p>This manual describes the theory of operations of the MDK and all existing BMD 
+APIs for this release. 
+</td></tr></tbody></table><br><br><br><hr noshade><br><br>
+<a name=section_media>
+<h2>3.  Release Media
+</h2>
+<p>The Minidriver Development Kit is released as a gzipped tar file
+on Broadcom's Customer Support Portal, http://support.broadcom.com.
+<br><br><hr noshade><br><br>
+<a name=section_support>
+<h2>4.  Support
+</h2>
+<p>Questions, feedback, and/or suggestions should be sent to your Broadcom FAE.
+<br><br><hr noshade><br><br>
+<a name=section_new>
+<h2>5.  New in this Release
+</h2>
+<p>The following section describes changes, features,  and new device support that is introduced in this release. 
+<a name="major_changes"></a>
+<h3>5.1.   New Features in MDK 2.8.0</h3>
+<p> The following section describes several new features and
+organizational changes introduced in the MDK 2.8.0 Release.
+<a name="cdk_changes"></a>
+<h4>5.1.1.   CDK Changes</h4>
+<ul><li> Some of the CDK chip definition files (e.g. <tt>bcm56640_a0_defs</tt>.h)
+have been split into multiple pieces to reduce overall file size. The
+contents remain unchanged, and binary objects based on these files are
+unaffected.
+</li></ul><p><a name="bmd_changes"></a>
+<h4>5.1.2.   BMD Changes</h4>
+<ul><li> The BMD support for BCM5675x and BCM5685x devices is PREVIEW
+ONLY. The source files compile, but the driver is not yet functional.
+</li></ul>There are NO changes to the BMD API signatures in this release. 
+<p><a name="phy_changes"></a>
+<h4>5.1.3.   PHY Changes</h4>
+<ul><li> Support for the internal QSGMII SerDes (<tt>bcm_qsgmii_serdes</tt>) adds
+proper SerDes support for the following existing device families:
+BCM5331x, BCM5332x and BCM5614x.
+</li><li> The PHY library support for TSC SerDes PHYs (<tt>bcmi_tsc_xgxs</tt>) is
+PREVIEW ONLY. The source files compile, but the driver is not yet
+functional. The TSC SerDes is used by BCM5675x and BCM5685x switch
+devices.
+</li></ul><p><p><a name="new-hardware"></a>
+<h3>5.2.   New Devices</h3>
+<p>Support for the following devices has been introduced in this release
+of the MDK:
+<p>
+<a name=cdk_new_devlist_table></a>
+<br><br><b>Table 2:   New CDK Device Support</b>
+<table cellpadding="4" cellspacing="0" border="1" summary="section"><tbody><tr><td><b>  Family</b></td><td><b>  Devices</b></td><td><b> Description
+</b></td></tr><tr><td>  BCM56540</td><td>  BCM56540 B0</td><td> High-Bandwidth 1/10/40-GbE Multilayer Ethernet Switch
+</td></tr><tr><td></td><td>  BCM56541 B0</td><td> High-Bandwidth 1/10/40-GbE Multilayer Ethernet Switch
+</td></tr><tr><td></td><td>  BCM56542 B0</td><td> High-Bandwidth 1/10/40-GbE Multilayer Ethernet Switch
+</td></tr><tr><td></td><td>  BCM56544 B0</td><td> High-Bandwidth 1/10/40-GbE Multilayer Ethernet Switch
+</td></tr><tr><td></td><td>  BCM56545 B0</td><td> High-Bandwidth 1/10/40-GbE Multilayer Ethernet Switch
+</td></tr><tr><td></td><td>  BCM56546 B0</td><td> High-Bandwidth 1/10/40-GbE Multilayer Ethernet Switch
+</td></tr><tr><td>  BCM56640</td><td>  BCM56045 B0</td><td> Extensible 1/10/40-GbE Multilayer Ethernet Switch
+</td></tr><tr><td></td><td>  BCM56046 B0</td><td> Extensible 1/10/40-GbE Multilayer Ethernet Switch
+</td></tr><tr><td>  BCM56850</td><td>  BCM56750 A0</td><td> 1280 Gbps Switch Fabric
+</td></tr><tr><td></td><td>  BCM56750 A1</td><td></td></tr><tr><td></td><td>  BCM56750 A2</td><td></td></tr><tr><td></td><td>  BCM56850 A0</td><td> 96x10G/32x40G/8x100G Ethernet Multilayer Switch
+</td></tr><tr><td></td><td>  BCM56850 A1</td><td></td></tr><tr><td></td><td>  BCM56850 A2</td><td></td></tr><tr><td></td><td>  BCM56851 A0</td><td> 96x10G/32x40G Ethernet Multilayer Switch
+</td></tr><tr><td></td><td>  BCM56851 A1</td><td></td></tr><tr><td></td><td>  BCM56851 A2</td><td></td></tr><tr><td></td><td>  BCM56852 A0</td><td> 96x10G/24x40G/8x100G Ethernet Multilayer Switch
+</td></tr><tr><td></td><td>  BCM56852 A1</td><td></td></tr><tr><td></td><td>  BCM56852 A2</td><td></td></tr><tr><td></td><td>  BCM56855 A0</td><td> 72x10G/18x40G Ethernet Multilayer Switch
+</td></tr><tr><td></td><td>  BCM56855 A1</td><td></td></tr><tr><td></td><td>  BCM56855 A2</td><td></td></tr></tbody></table><br><p>
+<a name=bmd_new_devlist_table></a>
+<br><br><b>Table 3:   New BMD Device Support</b>
+<table cellpadding="4" cellspacing="0" border="1" summary="section"><tbody><tr><td><b>  Family</b></td><td><b>  Device</b></td><td><b> BMD Base Driver
+</b></td></tr><tr><td>  BCM56850</td><td>  BCM56750 A0</td><td> <tt>bcm56850_a0</tt>
+</td></tr><tr><td></td><td>  BCM56750 A1</td><td> <tt>bcm56850_a0</tt>
+</td></tr><tr><td></td><td>  BCM56750 A2</td><td> <tt>bcm56850_a0</tt>
+</td></tr><tr><td></td><td>  BCM56850 A0</td><td> <tt>bcm56850_a0</tt>
+</td></tr><tr><td></td><td>  BCM56850 A1</td><td> <tt>bcm56850_a0</tt>
+</td></tr><tr><td></td><td>  BCM56850 A2</td><td> <tt>bcm56850_a0</tt>
+</td></tr><tr><td></td><td>  BCM56851 A0</td><td> <tt>bcm56850_a0</tt>
+</td></tr><tr><td></td><td>  BCM56851 A1</td><td> <tt>bcm56850_a0</tt>
+</td></tr><tr><td></td><td>  BCM56851 A2</td><td> <tt>bcm56850_a0</tt>
+</td></tr><tr><td></td><td>  BCM56852 A0</td><td> <tt>bcm56850_a0</tt>
+</td></tr><tr><td></td><td>  BCM56852 A1</td><td> <tt>bcm56850_a0</tt>
+</td></tr><tr><td></td><td>  BCM56852 A2</td><td> <tt>bcm56850_a0</tt>
+</td></tr><tr><td></td><td>  BCM56855 A0</td><td> <tt>bcm56850_a0</tt>
+</td></tr><tr><td></td><td>  BCM56855 A1</td><td> <tt>bcm56850_a0</tt>
+</td></tr><tr><td></td><td>  BCM56855 A2</td><td> <tt>bcm56850_a0</tt>
+</td></tr></tbody></table><br><p>
+<a name=bmd_new_base_table></a>
+<br><br><b>Table 4:   New BMD Base Driver Packages</b>
+<table cellpadding="4" cellspacing="0" border="1" summary="section"><tbody><tr><td><b>  BMD Base Driver Package</b></td><td><b>  Codename</b></td><td><b>  Product Family</b></td><td><b> Arch
+</b></td></tr><tr><td>  <tt>bcm56850_a0</tt></td><td>  Trident2</td><td>  BCM56850</td><td> StrataXGS
+</td></tr></tbody></table><br><p>
+<a name=phy_new_int_devtable></a>
+<br><br><b>Table 5:   New Integrated PHY Drivers</b>
+<table cellpadding="4" cellspacing="0" border="1" summary="section"><tbody><tr><td><b>  Internal PHY Driver</b></td><td><b> Description
+</b></td></tr><tr><td><tt>bcmi_qsgmii_serdes</tt></td><td> Internal Octal QSGMII 2.5G SerDes PHY Driver
+</td></tr><tr><td><tt>bcmi_tsc_xgxs</tt></td><td> Internal TSC 120G SerDes PHY Driver
+</td></tr></tbody></table><br><p><p><br><br><hr noshade><br><br>
+<a name=section_resolved2.8.0>
+<h2>6.  Resolved Issues for 2.8.0
+</h2>
+<p>The following issues are resolved in version 2.8.0 of the MDK.
+<p><table cellpadding="4" cellspacing="0" border="1" summary="section"><tbody><tr><td><b> Number
+ </b></td><td><b> Release Notes For 2.8.0
+</b></td></tr><tr><td> MDK-495 
+ </td><td> Fix basic 2-lane SerDes access for BCM5614x devices.
+</td></tr><tr><td> MDK-555 
+ </td><td> Fix HGLITE mode for ports 25 and 26 on BCM56440.
+</td></tr><tr><td> MDK-559 
+ </td><td> In order to support newer devices like BCM5684x and BCM5664x with default settings, <tt>CDK_CONFIG_INCLUDE_DYN_CONFIG</tt> is now enabled by default in <tt>cdk_config</tt>.h.
+</td></tr><tr><td> MDK-563 
+ </td><td> Fix issue with BCM8754 PHY not forwarding traffic on certain ports.
+</td></tr><tr><td> MDK-564 
+ </td><td> Update Warpcore SerDes firmware for BCM5674x and BCM5684x devices.
+</td></tr><tr><td> MDK-565 
+ </td><td> Fix XAUI lane remapping support for BCM5662x, BCM5663x, BCM5672x and BCM5682x families of devices.
+</td></tr><tr><td> MDK-567 
+ </td><td> Print warning message from <tt>bmd_reset</tt> if PLLs are not locked on BCM5644x devices.
+</td></tr><tr><td> MDK-568 
+ </td><td> Fix <tt>bmd_vlan_port_remove</tt> API for BCM5674x and BCM5684x devices. The previous implementation would sometimes incorrectly affect multiple ports.
+</td></tr><tr><td> MDK-571 
+ </td><td> Update Warpcore firmware for BCM5664x devices.
+</td></tr><tr><td> MDK-589 
+ </td><td> Fixed 10 Gbps SFI/XFI mode (single lane) and 2.5 Gbps mode on BCM5664x devices.
+</td></tr><tr><td> MDK-590 
+ </td><td> Fix occasional MAC loopback errors on 4-lane ports on BCM5664x devices.
+</td></tr><tr><td> MDK-591 
+ </td><td> Fix port configuration for BCM56648.
+</td></tr><tr><td> MDK-592 
+ </td><td> Add minor optimizations for BCM5664x Warpcore PHY driver.
+</td></tr><tr><td> MDK-594 
+ </td><td> Fix port configuration for BCM56649.
+</td></tr><tr><td> MDK-595 
+ </td><td> Fix occasional MAC loopback failures on BCM5664x HiGig ports.
+</td></tr><tr><td> MDK-596 
+ </td><td> Fix jumbo packet support for BCM5664x devices.
+</td></tr><tr><td> MDK-599 
+ </td><td> Ensure that VLAN tag is properly removed for packets egressing on HiGig ports.
+</td></tr><tr><td> MDK-600 
+ </td><td> Fix ISM configuration (L2 address table) for BCM5654x devices.
+</td></tr><tr><td> MDK-601 
+ </td><td> Fix Tx pre-emphasis and I-driver programming for BCM5644x XGXS SerDes PHY.
+</td></tr><tr><td> MDK-603 
+ </td><td> Fix GE/FE speed operation on BCM5684x devices.
+</td></tr></tbody></table><br><br><br><hr noshade><br><br>
+<a name=section_device_support>
+<h2>7.  MDK Device Support
+</h2>
+<p><a name="cdk_device_support"></a>
+<h3>7.1.   CDK Device Support</h3>
+<p>The CDK contains support for the following devices:
+
+<a name=cdk_devlist_table></a>
+<br><br><b>Table 7:   CDK Device Support</b>
+<table cellpadding="4" cellspacing="0" border="1" summary="section"><tbody><tr><td><b>  Family</b></td><td><b>  Devices</b></td><td><b> Description
+</b></td></tr><tr><td>  BCM53010</td><td>  BCM53010 A0</td><td> 8-Port GE Switch With 5-Port Integrated PHY
+</td></tr><tr><td></td><td>  BCM53010 A2</td><td></td></tr><tr><td></td><td>  BCM53011 A0</td><td> 8-Port GE Switch With 5-Port Integrated PHY
+</td></tr><tr><td></td><td>  BCM53011 A2</td><td></td></tr><tr><td></td><td>  BCM53012 A0</td><td> 8-Port GE Switch With 5-Port Integrated PHY
+</td></tr><tr><td></td><td>  BCM53012 A2</td><td></td></tr><tr><td></td><td>  BCM53017 A0</td><td> 5-Port GE Switch With 2-Port Integrated PHY
+</td></tr><tr><td></td><td>  BCM53018 A0</td><td> 8-Port GE Switch With 5-port Integrated PHY
+</td></tr><tr><td></td><td>  BCM53019 A0</td><td> 8-Port GE Switch With 5-Port Integrated PHY
+</td></tr><tr><td>  BCM53084</td><td>  BCM53084 A0</td><td> 2-Port GE Switch With Integrated PHYs
+</td></tr><tr><td>  BCM53101</td><td>  BCM53101 A0</td><td> 6-Port FE Switch With 5 Integrated PHYs
+</td></tr><tr><td></td><td>  BCM53101 B0</td><td></td></tr><tr><td>  BCM53115</td><td>  BCM53115 A0</td><td> 6-Port GbE Switch With 5 Integrated PHYs
+</td></tr><tr><td>  BCM53118</td><td>  BCM53118 A0</td><td> 9-Port GbE Switch With 8 Integrated PHYs
+</td></tr><tr><td>  BCM53125</td><td>  BCM53125 A0</td><td> 6-Port GE Switch With 5 Integrated PHYs
+</td></tr><tr><td></td><td>  BCM53125 B0</td><td></td></tr><tr><td>  BCM53128</td><td>  BCM53128 A0</td><td> 8-Port GbE Switch With 7 Integrated PHYs
+</td></tr><tr><td></td><td>  BCM53128 B0</td><td></td></tr><tr><td>  BCM53280</td><td>  BCM53280 A0</td><td> 24 FE + 4 GE
+</td></tr><tr><td></td><td>  BCM53280 B0</td><td></td></tr><tr><td></td><td>  BCM53280 B1</td><td></td></tr><tr><td></td><td>  BCM53280 B2</td><td></td></tr><tr><td></td><td>  BCM53282 A0</td><td> Managed Switch with 8 FE ports + 2 GbE Interfaces
+</td></tr><tr><td></td><td>  BCM53282 B0</td><td></td></tr><tr><td></td><td>  BCM53282 B1</td><td></td></tr><tr><td></td><td>  BCM53282 B2</td><td></td></tr><tr><td></td><td>  BCM53283 A0</td><td> Managed Switch with 16 FE ports + 2 GbE Interfaces
+</td></tr><tr><td></td><td>  BCM53283 B0</td><td></td></tr><tr><td></td><td>  BCM53283 B1</td><td></td></tr><tr><td></td><td>  BCM53283 B2</td><td></td></tr><tr><td></td><td>  BCM53284 A0</td><td> Managed Switch with 24 FE ports + 2 GbE Interfaces
+</td></tr><tr><td></td><td>  BCM53284 B0</td><td></td></tr><tr><td></td><td>  BCM53284 B1</td><td></td></tr><tr><td></td><td>  BCM53284 B2</td><td></td></tr><tr><td></td><td>  BCM53286 A0</td><td> Managed Switch with 24 FE ports + 4 GbE SerDes Interfaces
+</td></tr><tr><td></td><td>  BCM53286 B0</td><td></td></tr><tr><td></td><td>  BCM53286 B1</td><td></td></tr><tr><td></td><td>  BCM53286 B2</td><td></td></tr><tr><td>  BCM53600</td><td>  BCM53600 A0</td><td> Managed Switch with 24 FE ports + 2 GbE Interfaces
+</td></tr><tr><td></td><td>  BCM53604 A0</td><td> Managed Switch with 24 FE ports + 2 GbE Interfaces
+</td></tr><tr><td>  BCM89500</td><td>  BCM89200 A0</td><td> 3-Port GE Switch With 1 intergrated Qual PHY and 1 Single PHY
+</td></tr><tr><td></td><td>  BCM89500 A0</td><td> 6-Port GE Switch With 1 intergrated Qual PHY
+</td></tr><tr><td></td><td>  BCM89501 A0</td><td> 6-Port GE Switch With 1 intergrated Qual PHY and 1 Single PHY
+</td></tr><tr><td>  BCM53310</td><td>  BCM53312 A0</td><td> 8-Port GbE Highly-Integrated Multilayer Switch
+</td></tr><tr><td></td><td>  BCM53313 A0</td><td> 16-Port GbE Highly-Integrated Multilayer Switch
+</td></tr><tr><td></td><td>  BCM53314 A0</td><td> 24-Port GbE Highly-Integrated Multilayer Switch
+</td></tr><tr><td>  BCM53324</td><td>  BCM53322 A0</td><td> 8-Port GbE Highly-Integrated Multilayer Switch
+</td></tr><tr><td></td><td>  BCM53323 A0</td><td> 16-Port GbE Highly-Integrated Multilayer Switch
+</td></tr><tr><td></td><td>  BCM53324 A0</td><td> 24-Port GbE Highly-Integrated Multilayer Switch
+</td></tr><tr><td>  BCM53710</td><td>  BCM53714 A0</td><td> Integrated Multilayer Switch and CPU
+</td></tr><tr><td></td><td>  BCM53714 A1</td><td></td></tr><tr><td></td><td>  BCM53714 A2</td><td></td></tr><tr><td></td><td>  BCM53716 A0</td><td> Integrated Multilayer Switch and CPU
+</td></tr><tr><td></td><td>  BCM53716 A1</td><td></td></tr><tr><td></td><td>  BCM53716 A2</td><td></td></tr><tr><td></td><td>  BCM53718 A0</td><td> Integrated Multilayer Switch and CPU
+</td></tr><tr><td></td><td>  BCM53718 A1</td><td></td></tr><tr><td></td><td>  BCM53718 A2</td><td></td></tr><tr><td>  BCM53720</td><td>  BCM53724 A0</td><td> Integrated Multilayer Switch and CPU
+</td></tr><tr><td></td><td>  BCM53724 B0</td><td></td></tr><tr><td></td><td>  BCM53726 A0</td><td> Integrated Multilayer Switch and CPU
+</td></tr><tr><td></td><td>  BCM53726 B0</td><td></td></tr><tr><td>  BCM56010</td><td>  BCM56014 A0</td><td> Integrated Multilayer Switch and CPU
+</td></tr><tr><td></td><td>  BCM56014 A1</td><td></td></tr><tr><td></td><td>  BCM56014 A2</td><td></td></tr><tr><td></td><td>  BCM56018 A0</td><td> 48-Port Integrated Multilayer Switch and CPU
+</td></tr><tr><td></td><td>  BCM56018 A1</td><td></td></tr><tr><td></td><td>  BCM56018 A2</td><td></td></tr><tr><td>  BCM56020</td><td>  BCM56024 A0</td><td> 24-Port Integrated Multilayer Switch and CPU
+</td></tr><tr><td></td><td>  BCM56024 B0</td><td></td></tr><tr><td></td><td>  BCM56025 A0</td><td> 24-Port Integrated L2 Switch and CPU
+</td></tr><tr><td></td><td>  BCM56025 B0</td><td></td></tr><tr><td>  BCM56110</td><td>  BCM56110 A0</td><td> 24-Port Fast Ethernet and 2-Port Gigabit Ethernet Multilayer Switch
+</td></tr><tr><td></td><td>  BCM56111 A0</td><td> 24-Port Fast Ethernet and 2-Port Gigabit Ethernet Multilayer Switch with One 10-Gigabit Ethernet/HiGig Port
+</td></tr><tr><td></td><td>  BCM56112 A0</td><td> 24-Port Fast Ethernet and 2-Port Gigabit Ethernet Multilayer Switch with Two 10-Gigabit Ethernet/HiGig Ports
+</td></tr><tr><td></td><td>  BCM56115 A0</td><td> 24-Port Fast Ethernet and 2-Port Gigabit Ethernet Layer 2 Switch
+</td></tr><tr><td></td><td>  BCM56116 A0</td><td> 24-Port Fast Ethernet and 2-Port Gigabit Ethernet Layer 2 Switch with One 10-Gigabit Ethernet/HiGig Port
+</td></tr><tr><td></td><td>  BCM56117 A0</td><td> 24-Port Fast Ethernet and 2-Port Gigabit Ethernet Layer 2 Switch with Two 10-Gigabit Ethernet/HiGig Ports
+</td></tr><tr><td>  BCM56142</td><td>  BCM56142 A0</td><td> 24-Port GbE Multilayer Switch with Two 10-GbE/HiGig2 Uplink Ports
+</td></tr><tr><td>  BCM56143</td><td>  BCM56143 A0</td><td> 24-Port GbE Multilayer Switch with Two 1/2.5G and Two HiGig-Duo Uplink Ports
+</td></tr><tr><td>  BCM56144</td><td>  BCM56144 A0</td><td> 16-Port GbE Multilayer Switch with Four 1G/2.5G Uplink Ports
+</td></tr><tr><td>  BCM56146</td><td>  BCM56146 A0</td><td> 24-Port FE Multilayer Switch with Four 1G/2.5G Uplink Ports
+</td></tr><tr><td>  BCM56147</td><td>  BCM56147 A0</td><td> 24-Port FE Multilayer Switch with Four 1G/2.5G Uplink Ports
+</td></tr><tr><td>  BCM56210</td><td>  BCM56214 A0</td><td> Integrated Multilayer Switch and CPU
+</td></tr><tr><td></td><td>  BCM56214 A1</td><td></td></tr><tr><td></td><td>  BCM56214 A2</td><td></td></tr><tr><td></td><td>  BCM56216 A0</td><td> Integrated Multilayer Switch and CPU
+</td></tr><tr><td></td><td>  BCM56216 A1</td><td></td></tr><tr><td></td><td>  BCM56216 A2</td><td></td></tr><tr><td></td><td>  BCM56218 A0</td><td> Integrated Multilayer Switch and CPU
+</td></tr><tr><td></td><td>  BCM56218 A1</td><td></td></tr><tr><td></td><td>  BCM56218 A2</td><td></td></tr><tr><td>  BCM56220</td><td>  BCM56224 A0</td><td> 24 GbE + 4 x 1 Gb/2.5 Gb, L3/L2+
+</td></tr><tr><td></td><td>  BCM56224 B0</td><td></td></tr><tr><td></td><td>  BCM56225 A0</td><td> 24 GbE + 4 x 1 Gb/2.5 Gb, L2+
+</td></tr><tr><td></td><td>  BCM56225 B0</td><td></td></tr><tr><td></td><td>  BCM56226 A0</td><td> 16 GbE + 4 x 1 Gb/2.5 Gb, L3/L2+
+</td></tr><tr><td></td><td>  BCM56226 B0</td><td></td></tr><tr><td></td><td>  BCM56227 A0</td><td> 16 GbE + 4 x 1 Gb/2.5 Gb, L2+
+</td></tr><tr><td></td><td>  BCM56227 B0</td><td></td></tr><tr><td></td><td>  BCM56228 A0</td><td> 8 GbE + 4 x 1 Gb/2.5 Gb, L3/L2+
+</td></tr><tr><td></td><td>  BCM56228 B0</td><td></td></tr><tr><td></td><td>  BCM56229 A0</td><td> 16 GbE + 4 x 1 Gb/2.5 Gb, L2+
+</td></tr><tr><td></td><td>  BCM56229 B0</td><td></td></tr><tr><td>  BCM56300</td><td>  BCM56300 A0</td><td> 24-Port Gigabit Ethernet Multilayer Switch
+</td></tr><tr><td></td><td>  BCM56300 A1</td><td></td></tr><tr><td></td><td>  BCM56300 B0</td><td></td></tr><tr><td></td><td>  BCM56300 B1</td><td></td></tr><tr><td></td><td>  BCM56301 A0</td><td> Four 10-Gigabit Ethernet/HiGig+ Ports
+</td></tr><tr><td></td><td>  BCM56301 A1</td><td></td></tr><tr><td></td><td>  BCM56301 B0</td><td></td></tr><tr><td></td><td>  BCM56301 B1</td><td></td></tr><tr><td></td><td>  BCM56302 A0</td><td> 24-Port Gigabit Ethernet Multilayer Switch with Two 10-Gigabit Ethernet/HiGig+ Ports
+</td></tr><tr><td></td><td>  BCM56302 A1</td><td></td></tr><tr><td></td><td>  BCM56302 B0</td><td></td></tr><tr><td></td><td>  BCM56302 B1</td><td></td></tr><tr><td></td><td>  BCM56303 A0</td><td> 24-Port Gigabit Ethernet Multilayer Switch with Three 10 Gigabit Ethernet/HiGig+ Ports
+</td></tr><tr><td></td><td>  BCM56303 A1</td><td></td></tr><tr><td></td><td>  BCM56303 B0</td><td></td></tr><tr><td></td><td>  BCM56303 B1</td><td></td></tr><tr><td></td><td>  BCM56304 A0</td><td> 24-Port Gigabit Ethernet Multilayer Switch with Four 10-Gigabit Ethernet/HiGig+ Ports
+</td></tr><tr><td></td><td>  BCM56304 A1</td><td></td></tr><tr><td></td><td>  BCM56304 B0</td><td></td></tr><tr><td></td><td>  BCM56304 B1</td><td></td></tr><tr><td></td><td>  BCM56305 A0</td><td> 24-Port Gigabit Ethernet Multilayer Switch
+</td></tr><tr><td></td><td>  BCM56305 A1</td><td></td></tr><tr><td></td><td>  BCM56305 B0</td><td></td></tr><tr><td></td><td>  BCM56305 B1</td><td></td></tr><tr><td></td><td>  BCM56306 A0</td><td> Four 10-Gigabit Ethernet/HiGig+ Ports
+</td></tr><tr><td></td><td>  BCM56306 A1</td><td></td></tr><tr><td></td><td>  BCM56306 B0</td><td></td></tr><tr><td></td><td>  BCM56306 B1</td><td></td></tr><tr><td></td><td>  BCM56307 A0</td><td> 24-Port GE L2 Switch with Two 10 GE/HiGig+ Ports
+</td></tr><tr><td></td><td>  BCM56307 A1</td><td></td></tr><tr><td></td><td>  BCM56307 B0</td><td></td></tr><tr><td></td><td>  BCM56307 B1</td><td></td></tr><tr><td></td><td>  BCM56308 A0</td><td> 24-Port GE L2 Switch with Three 10 GE/HiGig+ Ports
+</td></tr><tr><td></td><td>  BCM56308 A1</td><td></td></tr><tr><td></td><td>  BCM56308 B0</td><td></td></tr><tr><td></td><td>  BCM56308 B1</td><td></td></tr><tr><td></td><td>  BCM56309 A0</td><td> 24-Port GE L2 Switch with Four 10 GE/HiGig+ Ports
+</td></tr><tr><td></td><td>  BCM56309 A1</td><td></td></tr><tr><td></td><td>  BCM56309 B0</td><td></td></tr><tr><td></td><td>  BCM56309 B1</td><td></td></tr><tr><td>  BCM56310</td><td>  BCM56310 A0</td><td> 24-Port GbE Multilayer Switch with Four 10-GbE/HiGig+ Uplink Ports
+</td></tr><tr><td></td><td>  BCM56311 A0</td><td> Four 10-Gigabit Ethernet/HiGig+ Ports
+</td></tr><tr><td></td><td>  BCM56312 A0</td><td> 24-Port Gigabit Ethernet Multilayer Switch with Two 10-Gigabit Ethernet/HiGig+ Ports
+</td></tr><tr><td></td><td>  BCM56313 A0</td><td> 24-Port Gigabit Ethernet Multilayer Switch with Three 10-Gigabit Ethernet/HiGig+ Ports
+</td></tr><tr><td></td><td>  BCM56314 A0</td><td> 24-Port Gigabit Ethernet Multilayer Switch with Four 10-Gigabit Ethernet/HiGig+ Ports
+</td></tr><tr><td></td><td>  BCM56315 A0</td><td> 24-Port Gigabit Ethernet Multilayer Switch
+</td></tr><tr><td></td><td>  BCM56316 A0</td><td> Four 10-Gigabit Ethernet/HiGig+ Ports
+</td></tr><tr><td></td><td>  BCM56317 A0</td><td> 24-Port Gigabit Ethernet Layer 2 Switch with Two 10-Gigabit Ethernet/HiGig+ Ports
+</td></tr><tr><td></td><td>  BCM56318 A0</td><td> 24-Port Gigabit Ethernet Layer 2 Switch with Three 10-Gigabit Ethernet/HiGig+ Ports
+</td></tr><tr><td></td><td>  BCM56319 A0</td><td> 24-Port Gigabit Ethernet Layer 2 Switch with Four 10-Gigabit Ethernet/HiGig+ Ports
+</td></tr><tr><td>  BCM56334</td><td>  BCM56132 A0</td><td> 24-Port GbE Multilayer Switch with 2 10-GbE/HiGig2 Uplink Ports and 2 HG lite
+</td></tr><tr><td></td><td>  BCM56132 B0</td><td></td></tr><tr><td></td><td>  BCM56132 B1</td><td></td></tr><tr><td></td><td>  BCM56134 A0</td><td> 24-Port GbE Multilayer Switch with 4 HG lite
+</td></tr><tr><td></td><td>  BCM56134 B0</td><td></td></tr><tr><td></td><td>  BCM56134 B1</td><td></td></tr><tr><td></td><td>  BCM56320 A0</td><td> 24-Port GbE Multilayer Switch with Four 10-GbE/HiGig2 Uplink Ports
+</td></tr><tr><td></td><td>  BCM56320 B0</td><td></td></tr><tr><td></td><td>  BCM56320 B1</td><td></td></tr><tr><td></td><td>  BCM56321 A0</td><td> 24-Port GbE Multilayer Switch with Four 10-GbE/HiGig2 Uplink Ports
+</td></tr><tr><td></td><td>  BCM56321 B0</td><td></td></tr><tr><td></td><td>  BCM56321 B1</td><td></td></tr><tr><td></td><td>  BCM56331 A0</td><td> 24-Port GbE Multilayer Switch with Four 2.5-GbE Uplink Ports
+</td></tr><tr><td></td><td>  BCM56331 B0</td><td></td></tr><tr><td></td><td>  BCM56331 B1</td><td></td></tr><tr><td></td><td>  BCM56333 A0</td><td> 16-Port GbE Multilayer Switch
+</td></tr><tr><td></td><td>  BCM56333 B0</td><td></td></tr><tr><td></td><td>  BCM56333 B1</td><td></td></tr><tr><td></td><td>  BCM56334 A0</td><td> 24-Port GbE Multilayer Switch with Four 10-GbE/HiGig2 Uplink Ports
+</td></tr><tr><td></td><td>  BCM56334 B0</td><td></td></tr><tr><td></td><td>  BCM56334 B1</td><td></td></tr><tr><td></td><td>  BCM56338 A0</td><td> 8-Port GbE Multilayer Switch with 2 10-GbE/HiGig2 Uplink Ports
+</td></tr><tr><td></td><td>  BCM56338 B0</td><td></td></tr><tr><td></td><td>  BCM56338 B1</td><td></td></tr><tr><td>  BCM56500</td><td>  BCM56500 A0</td><td> 24-Port Gigabit Ethernet Multilayer Switch
+</td></tr><tr><td></td><td>  BCM56500 A1</td><td></td></tr><tr><td></td><td>  BCM56500 B0</td><td></td></tr><tr><td></td><td>  BCM56500 B1</td><td></td></tr><tr><td></td><td>  BCM56500 B2</td><td></td></tr><tr><td></td><td>  BCM56501 A0</td><td> Four 10-Gigabit Ethernet/HiGig+ Ports
+</td></tr><tr><td></td><td>  BCM56501 A1</td><td></td></tr><tr><td></td><td>  BCM56501 B0</td><td></td></tr><tr><td></td><td>  BCM56501 B1</td><td></td></tr><tr><td></td><td>  BCM56501 B2</td><td></td></tr><tr><td></td><td>  BCM56502 A0</td><td> 24-Port GbE Multilayer Switch with Two 10-GbE/HiGig+ Ports
+</td></tr><tr><td></td><td>  BCM56502 A1</td><td></td></tr><tr><td></td><td>  BCM56502 B0</td><td></td></tr><tr><td></td><td>  BCM56502 B1</td><td></td></tr><tr><td></td><td>  BCM56502 B2</td><td></td></tr><tr><td></td><td>  BCM56503 A0</td><td> 24-Port GbE Multilayer Switch with Three 10-GbE/HiGig+ Ports
+</td></tr><tr><td></td><td>  BCM56503 A1</td><td></td></tr><tr><td></td><td>  BCM56503 B0</td><td></td></tr><tr><td></td><td>  BCM56503 B1</td><td></td></tr><tr><td></td><td>  BCM56503 B2</td><td></td></tr><tr><td></td><td>  BCM56504 A0</td><td> 24-Port GbE Multilayer Switch with Four 10-GbE/HiGig+ Ports
+</td></tr><tr><td></td><td>  BCM56504 A1</td><td></td></tr><tr><td></td><td>  BCM56504 B0</td><td></td></tr><tr><td></td><td>  BCM56504 B1</td><td></td></tr><tr><td></td><td>  BCM56504 B2</td><td></td></tr><tr><td></td><td>  BCM56505 A0</td><td> 24-Port GbE Layer 2 Switch
+</td></tr><tr><td></td><td>  BCM56505 A1</td><td></td></tr><tr><td></td><td>  BCM56505 B0</td><td></td></tr><tr><td></td><td>  BCM56505 B1</td><td></td></tr><tr><td></td><td>  BCM56505 B2</td><td></td></tr><tr><td></td><td>  BCM56506 A0</td><td> Four 10-Gigabit Ethernet/HiGig+ Ports
+</td></tr><tr><td></td><td>  BCM56506 A1</td><td></td></tr><tr><td></td><td>  BCM56506 B0</td><td></td></tr><tr><td></td><td>  BCM56506 B1</td><td></td></tr><tr><td></td><td>  BCM56506 B2</td><td></td></tr><tr><td></td><td>  BCM56507 A0</td><td> 24-Port GbE Layer 2 Switch with Two 10-GbE/HiGig+ Ports
+</td></tr><tr><td></td><td>  BCM56507 A1</td><td></td></tr><tr><td></td><td>  BCM56507 B0</td><td></td></tr><tr><td></td><td>  BCM56507 B1</td><td></td></tr><tr><td></td><td>  BCM56507 B2</td><td></td></tr><tr><td></td><td>  BCM56508 A0</td><td> 24-Port GbE Layer 2 Switch with Three 10-GbE/HiGig+ Ports
+</td></tr><tr><td></td><td>  BCM56508 A1</td><td></td></tr><tr><td></td><td>  BCM56508 B0</td><td></td></tr><tr><td></td><td>  BCM56508 B1</td><td></td></tr><tr><td></td><td>  BCM56508 B2</td><td></td></tr><tr><td></td><td>  BCM56509 A0</td><td> 24-Port GbE Layer 2 Switch with Four 10-GbE/HiGig+ Ports
+</td></tr><tr><td></td><td>  BCM56509 A1</td><td></td></tr><tr><td></td><td>  BCM56509 B0</td><td></td></tr><tr><td></td><td>  BCM56509 B1</td><td></td></tr><tr><td></td><td>  BCM56509 B2</td><td></td></tr><tr><td>  BCM56510</td><td>  BCM56510 A0</td><td> 24-Port Gigabit Ethernet Multilayer Switch
+</td></tr><tr><td></td><td>  BCM56511 A0</td><td> Four-Port 10-GbE/HIGIG+ Multilayer Switch
+</td></tr><tr><td></td><td>  BCM56512 A0</td><td> 24-Port GbE Multilayer Switch With Two 10-GbE/HiGig+ Ports
+</td></tr><tr><td></td><td>  BCM56513 A0</td><td> 24-Port GbE Multilayer Switch With Three 10-GbE/HiGig+ Ports
+</td></tr><tr><td></td><td>  BCM56514 A0</td><td> 24-Port GbE Multilayer Switch With Four 10-GbE/HiGig+ Ports
+</td></tr><tr><td></td><td>  BCM56515 A0</td><td> 24-Port GbE Multilayer Switch
+</td></tr><tr><td></td><td>  BCM56516 A0</td><td> Four-Port 10-GbE/HIGIG+ Multilayer Switch
+</td></tr><tr><td></td><td>  BCM56517 A0</td><td> 24-Port GbE Multilayer Switch
+</td></tr><tr><td></td><td>  BCM56518 A0</td><td> 24-Port GbE Multilayer Switch
+</td></tr><tr><td></td><td>  BCM56519 A0</td><td> 24-Port GbE Multilayer Switch
+</td></tr><tr><td>  BCM56520</td><td>  BCM56520 A0</td><td> 24-Port GbE Multilayer Switch
+</td></tr><tr><td></td><td>  BCM56520 B0</td><td></td></tr><tr><td></td><td>  BCM56521 A0</td><td> 24-Port GbE Multilayer Switch
+</td></tr><tr><td></td><td>  BCM56521 B0</td><td></td></tr><tr><td></td><td>  BCM56522 A0</td><td> 24-Port GbE Multilayer Switch with Two 10-GbE/HiGig2 Uplink Ports
+</td></tr><tr><td></td><td>  BCM56522 B0</td><td></td></tr><tr><td></td><td>  BCM56524 A0</td><td> 24-Port GbE Multilayer Switch with Four 10-GbE/HiGig2 Uplink Ports
+</td></tr><tr><td></td><td>  BCM56524 B0</td><td></td></tr><tr><td></td><td>  BCM56526 A0</td><td> 28-Port GbE Multilayer Switch with Six 10-GbE/HiGig2 Uplink Ports
+</td></tr><tr><td></td><td>  BCM56526 B0</td><td></td></tr><tr><td>  BCM56580</td><td>  BCM56580 A0</td><td> 16 x 2.5 GbE + 4 x 10 GbE Ethernet Multilayer Switch
+</td></tr><tr><td>  BCM56610</td><td>  BCM56613 A0</td><td> Queueing Engine with Integrated Traffic Management
+</td></tr><tr><td>  BCM56620</td><td>  BCM56620 A0</td><td> 24-Port GbE Multilayer Switch with Four 10-GbE/HiGig2 Uplink Ports
+</td></tr><tr><td></td><td>  BCM56620 A1</td><td></td></tr><tr><td></td><td>  BCM56620 B0</td><td></td></tr><tr><td></td><td>  BCM56620 B1</td><td></td></tr><tr><td></td><td>  BCM56624 A0</td><td> 48-Port GbE Multilayer Switch with Four 10-GbE/HiGig2 Uplink Ports
+</td></tr><tr><td></td><td>  BCM56624 A1</td><td></td></tr><tr><td></td><td>  BCM56624 B0</td><td></td></tr><tr><td></td><td>  BCM56624 B1</td><td></td></tr><tr><td></td><td>  BCM56626 A0</td><td> 24-Port GbE + 2-Port 10-GbE Multilayer Switch with Four 10-GbE/HiGig2 Uplink Ports
+</td></tr><tr><td></td><td>  BCM56626 A1</td><td></td></tr><tr><td></td><td>  BCM56626 B0</td><td></td></tr><tr><td></td><td>  BCM56626 B1</td><td></td></tr><tr><td></td><td>  BCM56628 A0</td><td> 4-Port 10-GbE Multilayer Switch with Four 10-GbE/HiGig2 Uplink Ports
+</td></tr><tr><td></td><td>  BCM56628 A1</td><td></td></tr><tr><td></td><td>  BCM56628 B0</td><td></td></tr><tr><td></td><td>  BCM56628 B1</td><td></td></tr><tr><td>  BCM56629</td><td>  BCM56629 A0</td><td> 24-Port GbE + 4-Port 10-GbE Multilayer Switch with Four 10-GbE/HiGig2 Uplink Ports
+</td></tr><tr><td></td><td>  BCM56629 A1</td><td></td></tr><tr><td></td><td>  BCM56629 B0</td><td></td></tr><tr><td></td><td>  BCM56629 B1</td><td></td></tr><tr><td>  BCM56630</td><td>  BCM56630 A0</td><td> 24-Port GbE Multilayer Switch with Four 10-GbE/HiGig2 Uplink Ports
+</td></tr><tr><td></td><td>  BCM56630 B0</td><td></td></tr><tr><td></td><td>  BCM56634 A0</td><td> 48-Port GbE Multilayer Switch with Four 10-GbE/HiGig2 Uplink Ports
+</td></tr><tr><td></td><td>  BCM56634 B0</td><td></td></tr><tr><td></td><td>  BCM56636 A0</td><td> 24-Port GbE + 2-Port 10-GbE Multilayer Switch with Four 10-GbE/HiGig2 Uplink Ports
+</td></tr><tr><td></td><td>  BCM56636 B0</td><td></td></tr><tr><td></td><td>  BCM56638 A0</td><td> 4-Port 10-GbE Multilayer Switch with Four 10-GbE/HiGig2 Uplink Ports
+</td></tr><tr><td></td><td>  BCM56638 B0</td><td></td></tr><tr><td></td><td>  BCM56639 A0</td><td> 24-Port GbE + 4-Port 10-GbE Multilayer Switch with Four 10-GbE/HiGig2 Uplink Ports
+</td></tr><tr><td></td><td>  BCM56639 B0</td><td></td></tr><tr><td>  BCM56680</td><td>  BCM56680 A0</td><td> 24-Port GbE Multilayer Switch with Four 10-GbE/HiGig2 Uplink Ports
+</td></tr><tr><td></td><td>  BCM56680 A1</td><td></td></tr><tr><td></td><td>  BCM56680 B0</td><td></td></tr><tr><td></td><td>  BCM56680 B1</td><td></td></tr><tr><td></td><td>  BCM56684 A0</td><td> 24-Port GbE Multilayer Switch with Four 10-GbE/HiGig2 Uplink Ports
+</td></tr><tr><td></td><td>  BCM56684 A1</td><td></td></tr><tr><td></td><td>  BCM56684 B0</td><td></td></tr><tr><td></td><td>  BCM56684 B1</td><td></td></tr><tr><td></td><td>  BCM56686 B0</td><td> 6-Port, 144-Gbps Lossless Switch Fabric
+</td></tr><tr><td></td><td>  BCM56686 B1</td><td></td></tr><tr><td>  BCM56685</td><td>  BCM56685 A0</td><td> 24-Port GbE Multilayer Switch with Four 10-GbE/HiGig2 Uplink Ports
+</td></tr><tr><td></td><td>  BCM56685 B0</td><td></td></tr><tr><td></td><td>  BCM56689 A0</td><td> 24-Port GbE Multilayer Switch with Four 10-GbE/HiGig2 Uplink Ports
+</td></tr><tr><td></td><td>  BCM56689 B0</td><td></td></tr><tr><td>  BCM56700</td><td>  BCM56700 A0</td><td> 16-Port, 192-Gbps Lossless Switch Fabric
+</td></tr><tr><td></td><td>  BCM56701 A0</td><td> 12-Port, 144-Gbps Lossless Switch Fabric
+</td></tr><tr><td>  BCM56720</td><td>  BCM56720 A0</td><td> 16-Port, 16-Gbps, HiGig2 Switch Fabric
+</td></tr><tr><td></td><td>  BCM56721 A0</td><td> 12-Port, 16-Gbps, HiGig2 Switch Fabric
+</td></tr><tr><td>  BCM56725</td><td>  BCM56725 A0</td><td> 8-Port 20-Gbps + 4-Port 16-Gbps, HiGig2 Switch Fabric
+</td></tr><tr><td>  BCM56800</td><td>  BCM56800 A0</td><td> 20-Port 10-Gigabit Ethernet Multilayer Switch
+</td></tr><tr><td></td><td>  BCM56801 A0</td><td> 10-Port 10-Gigabit Ethernet and 8-Port HiGig2/10GbE Multilayer Switch
+</td></tr><tr><td></td><td>  BCM56802 A0</td><td> 16-Port 10-GbE/HiGig2 Multilayer Switch
+</td></tr><tr><td></td><td>  BCM56803 A0</td><td> 12-Port 10-GbE/HiGig2 Multilayer Switch
+</td></tr><tr><td>  BCM56820</td><td>  BCM56820 A0</td><td> 24 x 10-GbE + 4 x 1-GbE Ethernet Multilayer Switch
+</td></tr><tr><td></td><td>  BCM56820 B0</td><td></td></tr><tr><td></td><td>  BCM56821 A0</td><td> 12 x 10-GbE + 8 x HG[16] + 4 x 1-GbE Ethernet Multilayer Switch
+</td></tr><tr><td></td><td>  BCM56821 B0</td><td></td></tr><tr><td></td><td>  BCM56822 A0</td><td> 12 x 10-GbE + 4 x HG[20] + 4 x 1-GbE Ethernet Multilayer Switch
+</td></tr><tr><td></td><td>  BCM56822 B0</td><td></td></tr><tr><td></td><td>  BCM56823 A0</td><td> 8 x HG[20] + 4 x HG[16] + 4 x 1-GbE Ethernet Multilayer Switch
+</td></tr><tr><td></td><td>  BCM56823 B0</td><td></td></tr><tr><td>  BCM56840</td><td>  BCM56743 A0</td><td> 480 Gbps Switch Fabric
+</td></tr><tr><td></td><td>  BCM56743 A1</td><td></td></tr><tr><td></td><td>  BCM56743 A2</td><td></td></tr><tr><td></td><td>  BCM56743 A3</td><td></td></tr><tr><td></td><td>  BCM56743 A4</td><td></td></tr><tr><td></td><td>  BCM56743 B0</td><td></td></tr><tr><td></td><td>  BCM56743 B1</td><td></td></tr><tr><td></td><td>  BCM56744 A0</td><td> 480 Gbps Switch Fabric
+</td></tr><tr><td></td><td>  BCM56744 A1</td><td></td></tr><tr><td></td><td>  BCM56745 A0</td><td> 640 Gbps Switch Fabric
+</td></tr><tr><td></td><td>  BCM56745 A1</td><td></td></tr><tr><td></td><td>  BCM56745 A2</td><td></td></tr><tr><td></td><td>  BCM56745 A3</td><td></td></tr><tr><td></td><td>  BCM56745 A4</td><td></td></tr><tr><td></td><td>  BCM56745 B0</td><td></td></tr><tr><td></td><td>  BCM56745 B1</td><td></td></tr><tr><td></td><td>  BCM56746 A0</td><td> 640 Gbps Switch Fabric
+</td></tr><tr><td></td><td>  BCM56746 A1</td><td></td></tr><tr><td></td><td>  BCM56840 A0</td><td> 480 Gbps Ethernet Multilayer Switch
+</td></tr><tr><td></td><td>  BCM56840 A1</td><td></td></tr><tr><td></td><td>  BCM56840 A2</td><td></td></tr><tr><td></td><td>  BCM56840 A3</td><td></td></tr><tr><td></td><td>  BCM56840 A4</td><td></td></tr><tr><td></td><td>  BCM56840 B0</td><td></td></tr><tr><td></td><td>  BCM56840 B1</td><td></td></tr><tr><td></td><td>  BCM56841 A0</td><td> 320 Gbps Ethernet Multilayer Switch
+</td></tr><tr><td></td><td>  BCM56841 A1</td><td></td></tr><tr><td></td><td>  BCM56841 A2</td><td></td></tr><tr><td></td><td>  BCM56841 A3</td><td></td></tr><tr><td></td><td>  BCM56841 A4</td><td></td></tr><tr><td></td><td>  BCM56841 B0</td><td></td></tr><tr><td></td><td>  BCM56841 B1</td><td></td></tr><tr><td></td><td>  BCM56842 A0</td><td> 320 Gbps Ethernet Multilayer Switch
+</td></tr><tr><td></td><td>  BCM56842 A1</td><td></td></tr><tr><td></td><td>  BCM56843 A0</td><td> 480 Gbps Ethernet Multilayer Switch
+</td></tr><tr><td></td><td>  BCM56843 A1</td><td></td></tr><tr><td></td><td>  BCM56843 A2</td><td></td></tr><tr><td></td><td>  BCM56843 A3</td><td></td></tr><tr><td></td><td>  BCM56843 A4</td><td></td></tr><tr><td></td><td>  BCM56843 B0</td><td></td></tr><tr><td></td><td>  BCM56843 B1</td><td></td></tr><tr><td></td><td>  BCM56844 A0</td><td> 480 Gbps Ethernet Multilayer Switch
+</td></tr><tr><td></td><td>  BCM56844 A1</td><td></td></tr><tr><td></td><td>  BCM56845 A0</td><td> 640 Gbps Ethernet Multilayer Switch
+</td></tr><tr><td></td><td>  BCM56845 A1</td><td></td></tr><tr><td></td><td>  BCM56845 A2</td><td></td></tr><tr><td></td><td>  BCM56845 A3</td><td></td></tr><tr><td></td><td>  BCM56845 A4</td><td></td></tr><tr><td></td><td>  BCM56845 B0</td><td></td></tr><tr><td></td><td>  BCM56845 B1</td><td></td></tr><tr><td></td><td>  BCM56846 A0</td><td> 640 Gbps Ethernet Multilayer Switch
+</td></tr><tr><td></td><td>  BCM56846 A1</td><td></td></tr><tr><td>  BCM56930</td><td>  BCM56931 A0</td><td> XGS pass-through and standalone Traffic Manager, 50Gbps
+</td></tr><tr><td></td><td>  BCM56936 A0</td><td> XGS pass-through and standalone Traffic Manager, 80Gbps
+</td></tr><tr><td>  BCM88230</td><td>  BCM88230 A0</td><td> Queueing Engine with Integrated Traffic Management
+</td></tr><tr><td></td><td>  BCM88231 A0</td><td> Queueing Engine with Integrated Traffic Management
+</td></tr><tr><td></td><td>  BCM88235 A0</td><td> Queueing Engine with Integrated Traffic Management
+</td></tr><tr><td></td><td>  BCM88236 A0</td><td> Queueing Engine with Integrated Traffic Management
+</td></tr><tr><td>  BCM56440</td><td>  BCM56241 A0</td><td> 6-Port FE Multilayer Switch with Two 2.5G Uplink Ports
+</td></tr><tr><td></td><td>  BCM56241 B0</td><td></td></tr><tr><td></td><td>  BCM56249 A0</td><td> 24-Port FE Multilayer Switch with Two 2.5HGL and Two 10-GbE/HiGig2 Uplink Ports
+</td></tr><tr><td></td><td>  BCM56249 B0</td><td></td></tr><tr><td></td><td>  BCM56440 A0</td><td> 24-Port GbE Multilayer Switch with Four 10-GbE/HiGig2 Ports
+</td></tr><tr><td></td><td>  BCM56440 B0</td><td></td></tr><tr><td></td><td>  BCM56441 A0</td><td> 8-Port GbE Multilayer Switch with Two 10-GbE/HiGig2 Uplink Ports
+</td></tr><tr><td></td><td>  BCM56441 B0</td><td></td></tr><tr><td></td><td>  BCM56442 A0</td><td> 16-Port GbE Multilayer Switch
+</td></tr><tr><td></td><td>  BCM56442 B0</td><td></td></tr><tr><td></td><td>  BCM56443 A0</td><td> 8-Port 2.5G Multilayer Switch with Two 10-GbE/HiGig2 Uplink Ports
+</td></tr><tr><td></td><td>  BCM56443 B0</td><td></td></tr><tr><td></td><td>  BCM56444 A0</td><td> 24-Port FE Multilayer Switch with Two 2.5HGL and Two 10-GbE/HiGig2 Uplink Ports
+</td></tr><tr><td></td><td>  BCM56444 B0</td><td></td></tr><tr><td></td><td>  BCM56445 A0</td><td> 24-Port GbE Multilayer Switch with Four 10-GbE/HiGig2 Ports
+</td></tr><tr><td></td><td>  BCM56445 B0</td><td></td></tr><tr><td></td><td>  BCM56446 A0</td><td> 8-Port GbE Multilayer Switch with Two 10-GbE/HiGig2 Uplink Ports
+</td></tr><tr><td></td><td>  BCM56446 B0</td><td></td></tr><tr><td></td><td>  BCM56447 A0</td><td> 16-Port GbE Multilayer Switch
+</td></tr><tr><td></td><td>  BCM56447 B0</td><td></td></tr><tr><td></td><td>  BCM56448 A0</td><td> 24-Port GbE Multilayer Switch with Four 2.5G uplink Ports
+</td></tr><tr><td></td><td>  BCM56448 B0</td><td></td></tr><tr><td></td><td>  BCM56449 A0</td><td> Multilayer Switch with Two 2.5HGL and Two 10-GbE/HiGig2 Uplink Ports
+</td></tr><tr><td></td><td>  BCM56449 B0</td><td></td></tr><tr><td>  BCM56540</td><td>  BCM56540 A0</td><td> High-Bandwidth 1/10/40-GbE Multilayer Ethernet Switch
+</td></tr><tr><td></td><td>  BCM56540 A1</td><td></td></tr><tr><td></td><td>  BCM56540 B0</td><td></td></tr><tr><td></td><td>  BCM56541 A0</td><td> High-Bandwidth 1/10/40-GbE Multilayer Ethernet Switch
+</td></tr><tr><td></td><td>  BCM56541 A1</td><td></td></tr><tr><td></td><td>  BCM56541 B0</td><td></td></tr><tr><td></td><td>  BCM56542 A0</td><td> High-Bandwidth 1/10/40-GbE Multilayer Ethernet Switch
+</td></tr><tr><td></td><td>  BCM56542 A1</td><td></td></tr><tr><td></td><td>  BCM56542 B0</td><td></td></tr><tr><td></td><td>  BCM56544 A0</td><td> High-Bandwidth 1/10/40-GbE Multilayer Ethernet Switch
+</td></tr><tr><td></td><td>  BCM56544 A1</td><td></td></tr><tr><td></td><td>  BCM56544 B0</td><td></td></tr><tr><td></td><td>  BCM56545 A0</td><td> High-Bandwidth 1/10/40-GbE Multilayer Ethernet Switch
+</td></tr><tr><td></td><td>  BCM56545 A1</td><td></td></tr><tr><td></td><td>  BCM56545 B0</td><td></td></tr><tr><td></td><td>  BCM56546 A0</td><td> High-Bandwidth 1/10/40-GbE Multilayer Ethernet Switch
+</td></tr><tr><td></td><td>  BCM56546 A1</td><td></td></tr><tr><td></td><td>  BCM56546 B0</td><td></td></tr><tr><td>  BCM56640</td><td>  BCM56045 B0</td><td> Extensible 1/10/40-GbE Multilayer Ethernet Switch
+</td></tr><tr><td></td><td>  BCM56046 B0</td><td> Extensible 1/10/40-GbE Multilayer Ethernet Switch
+</td></tr><tr><td></td><td>  BCM56640 A0</td><td> Extensible 1/10/40/100-GbE Multilayer Ethernet Switch
+</td></tr><tr><td></td><td>  BCM56640 A1</td><td></td></tr><tr><td></td><td>  BCM56640 B0</td><td></td></tr><tr><td></td><td>  BCM56643 A0</td><td> Extensible 1/10/40-GbE Multilayer Ethernet Switch
+</td></tr><tr><td></td><td>  BCM56643 A1</td><td></td></tr><tr><td></td><td>  BCM56643 B0</td><td></td></tr><tr><td></td><td>  BCM56644 A0</td><td> Extensible 1/10/40-GbE Multilayer Ethernet Switch
+</td></tr><tr><td></td><td>  BCM56644 A1</td><td></td></tr><tr><td></td><td>  BCM56644 B0</td><td></td></tr><tr><td></td><td>  BCM56648 A0</td><td> Extensible 1/10/40-GbE Multilayer Ethernet Switch
+</td></tr><tr><td></td><td>  BCM56648 A1</td><td></td></tr><tr><td></td><td>  BCM56648 B0</td><td></td></tr><tr><td></td><td>  BCM56649 A0</td><td> Extensible 1/10/40-GbE Multilayer Ethernet Switch
+</td></tr><tr><td></td><td>  BCM56649 A1</td><td></td></tr><tr><td></td><td>  BCM56649 B0</td><td></td></tr><tr><td>  BCM56850</td><td>  BCM56750 A0</td><td> 1280 Gbps Switch Fabric
+</td></tr><tr><td></td><td>  BCM56750 A1</td><td></td></tr><tr><td></td><td>  BCM56750 A2</td><td></td></tr><tr><td></td><td>  BCM56850 A0</td><td> 96x10G/32x40G/8x100G Ethernet Multilayer Switch
+</td></tr><tr><td></td><td>  BCM56850 A1</td><td></td></tr><tr><td></td><td>  BCM56850 A2</td><td></td></tr><tr><td></td><td>  BCM56851 A0</td><td> 96x10G/32x40G Ethernet Multilayer Switch
+</td></tr><tr><td></td><td>  BCM56851 A1</td><td></td></tr><tr><td></td><td>  BCM56851 A2</td><td></td></tr><tr><td></td><td>  BCM56852 A0</td><td> 96x10G/24x40G/8x100G Ethernet Multilayer Switch
+</td></tr><tr><td></td><td>  BCM56852 A1</td><td></td></tr><tr><td></td><td>  BCM56852 A2</td><td></td></tr><tr><td></td><td>  BCM56855 A0</td><td> 72x10G/18x40G Ethernet Multilayer Switch
+</td></tr><tr><td></td><td>  BCM56855 A1</td><td></td></tr><tr><td></td><td>  BCM56855 A2</td><td></td></tr></tbody></table><br><p><a name="bmd_base_driver_support"></a>
+<h3>7.2.   BMD Base Driver Packages</h3>
+<p>The following BMD Base Driver Packages are supported:
+
+<a name=bmd_base_table></a>
+<br><br><b>Table 8:   BMD Base Driver Packages</b>
+<table cellpadding="4" cellspacing="0" border="1" summary="section"><tbody><tr><td><b>  BMD Base Driver Package</b></td><td><b>  Codename</b></td><td><b>  Product Family</b></td><td><b> Arch
+</b></td></tr><tr><td>  <tt>bcm53010_a0</tt></td><td>  Northstar</td><td>  BCM53010</td><td> RoboSwitch
+</td></tr><tr><td>  <tt>bcm53084_a0</tt></td><td>  Navigator</td><td>  BCM53084</td><td> RoboSwitch
+</td></tr><tr><td>  <tt>bcm53101_a0</tt></td><td>  Lotus</td><td>  BCM53101</td><td> RoboSwitch
+</td></tr><tr><td>  <tt>bcm53115_a0</tt></td><td>  Vulcan</td><td>  BCM53115</td><td> RoboSwitch
+</td></tr><tr><td>  <tt>bcm53118_a0</tt></td><td>  Blackbird</td><td>  BCM53118</td><td> RoboSwitch
+</td></tr><tr><td>  <tt>bcm53125_a0</tt></td><td>  Starfighter</td><td>  BCM53125</td><td> RoboSwitch
+</td></tr><tr><td>  <tt>bcm53128_a0</tt></td><td>  Blackbird2</td><td>  BCM53128</td><td> RoboSwitch
+</td></tr><tr><td>  <tt>bcm53280_a0</tt></td><td>  Thunderbolt</td><td>  BCM53280</td><td> RoboSwitch
+</td></tr><tr><td>  <tt>bcm53280_b0</tt></td><td>  Thunderbolt</td><td>  BCM53280</td><td> RoboSwitch
+</td></tr><tr><td>  <tt>bcm53600_a0</tt></td><td>  Voyager</td><td>  BCM53600</td><td> RoboSwitch
+</td></tr><tr><td>  <tt>bcm89500_a0</tt></td><td>  Polar</td><td>  BCM89500</td><td> RoboSwitch
+</td></tr><tr><td>  <tt>bcm53314_a0</tt></td><td>  Hawkeye</td><td>  BCM53310</td><td> StrataXGS
+</td></tr><tr><td>  <tt>bcm53324_a0</tt></td><td>  Hawkeye EEE</td><td>  BCM53324</td><td> StrataXGS
+</td></tr><tr><td>  <tt>bcm56112_a0</tt></td><td>  Felix+</td><td>  BCM56110</td><td> StrataXGS
+</td></tr><tr><td>  <tt>bcm56142_a0</tt></td><td>  Hurricane</td><td>  BCM56142</td><td> StrataXGS
+</td></tr><tr><td>  <tt>bcm56218_a0</tt></td><td>  Raptor</td><td>  BCM56210</td><td> StrataXGS
+</td></tr><tr><td>  <tt>bcm56224_a0</tt></td><td>  Raven</td><td>  BCM56220</td><td> StrataXGS
+</td></tr><tr><td>  <tt>bcm56224_b0</tt></td><td>  Raven</td><td>  BCM56220</td><td> StrataXGS
+</td></tr><tr><td>  <tt>bcm56304_b0</tt></td><td>  Helix</td><td>  BCM56300</td><td> StrataXGS
+</td></tr><tr><td>  <tt>bcm56314_a0</tt></td><td>  Helix+</td><td>  BCM56310</td><td> StrataXGS
+</td></tr><tr><td>  <tt>bcm56334_a0</tt></td><td>  Enduro</td><td>  BCM56334</td><td> StrataXGS
+</td></tr><tr><td>  <tt>bcm56334_b0</tt></td><td>  Enduro</td><td>  BCM56334</td><td> StrataXGS
+</td></tr><tr><td>  <tt>bcm56504_b0</tt></td><td>  Firebolt</td><td>  BCM56500</td><td> StrataXGS
+</td></tr><tr><td>  <tt>bcm56514_a0</tt></td><td>  Firebolt2</td><td>  BCM56510</td><td> StrataXGS
+</td></tr><tr><td>  <tt>bcm56524_a0</tt></td><td>  Apollo</td><td>  BCM56520</td><td> StrataXGS
+</td></tr><tr><td>  <tt>bcm56524_b0</tt></td><td>  Apollo</td><td>  BCM56520</td><td> StrataXGS
+</td></tr><tr><td>  <tt>bcm56624_a0</tt></td><td>  Triumph</td><td>  BCM56620</td><td> StrataXGS
+</td></tr><tr><td>  <tt>bcm56624_b0</tt></td><td>  Triumph</td><td>  BCM56620</td><td> StrataXGS
+</td></tr><tr><td>  <tt>bcm56634_a0</tt></td><td>  Triumph2</td><td>  BCM56630</td><td> StrataXGS
+</td></tr><tr><td>  <tt>bcm56634_b0</tt></td><td>  Triumph2</td><td>  BCM56630</td><td> StrataXGS
+</td></tr><tr><td>  <tt>bcm56680_a0</tt></td><td>  Valkyrie</td><td>  BCM56680</td><td> StrataXGS
+</td></tr><tr><td>  <tt>bcm56680_b0</tt></td><td>  Valkyrie</td><td>  BCM56680</td><td> StrataXGS
+</td></tr><tr><td>  <tt>bcm56685_a0</tt></td><td>  Valkyrie2</td><td>  BCM56685</td><td> StrataXGS
+</td></tr><tr><td>  <tt>bcm56685_b0</tt></td><td>  Valkyrie2</td><td>  BCM56685</td><td> StrataXGS
+</td></tr><tr><td>  <tt>bcm56725_a0</tt></td><td>  Conqueror</td><td>  BCM56725</td><td> StrataXGS
+</td></tr><tr><td>  <tt>bcm56800_a0</tt></td><td>  Bradley</td><td>  BCM56800</td><td> StrataXGS
+</td></tr><tr><td>  <tt>bcm56820_a0</tt></td><td>  Scorpion</td><td>  BCM56820</td><td> StrataXGS
+</td></tr><tr><td>  <tt>bcm56840_a0</tt></td><td>  Trident</td><td>  BCM56840</td><td> StrataXGS
+</td></tr><tr><td>  <tt>bcm56840_b0</tt></td><td>  Trident</td><td>  BCM56840</td><td> StrataXGS
+</td></tr><tr><td>  <tt>bcm56440_a0</tt></td><td>  Katana</td><td>  BCM56440</td><td> StrataXGS
+</td></tr><tr><td>  <tt>bcm56440_b0</tt></td><td>  Katana</td><td>  BCM56440</td><td> StrataXGS
+</td></tr><tr><td>  <tt>bcm56640_a0</tt></td><td>  Triumph3</td><td>  BCM56640</td><td> StrataXGS
+</td></tr><tr><td>  <tt>bcm56640_b0</tt></td><td>  Triumph3</td><td>  BCM56640</td><td> StrataXGS
+</td></tr><tr><td>  <tt>bcm56850_a0</tt></td><td>  Trident2</td><td>  BCM56850</td><td> StrataXGS
+</td></tr></tbody></table><br><p><a name="bmd_device_support"></a>
+<h3>7.3.   BMD Device Support</h3>
+<p>The BMD API is supported on the following devices using the listed Base Driver package. 
+
+<a name=bmd_devlist_table></a>
+<br><br><b>Table 9:   BMD Device Support</b>
+<table cellpadding="4" cellspacing="0" border="1" summary="section"><tbody><tr><td><b>  Family</b></td><td><b>  Device</b></td><td><b> BMD Base Driver
+</b></td></tr><tr><td>  BCM53010</td><td>  BCM53010 A0</td><td> <tt>bcm53010_a0</tt>
+</td></tr><tr><td></td><td>  BCM53010 A2</td><td> <tt>bcm53010_a0</tt>
+</td></tr><tr><td></td><td>  BCM53011 A0</td><td> <tt>bcm53010_a0</tt>
+</td></tr><tr><td></td><td>  BCM53011 A2</td><td> <tt>bcm53010_a0</tt>
+</td></tr><tr><td></td><td>  BCM53012 A0</td><td> <tt>bcm53010_a0</tt>
+</td></tr><tr><td></td><td>  BCM53012 A2</td><td> <tt>bcm53010_a0</tt>
+</td></tr><tr><td></td><td>  BCM53017 A0</td><td> <tt>bcm53010_a0</tt>
+</td></tr><tr><td></td><td>  BCM53018 A0</td><td> <tt>bcm53010_a0</tt>
+</td></tr><tr><td></td><td>  BCM53019 A0</td><td> <tt>bcm53010_a0</tt>
+</td></tr><tr><td>  BCM53084</td><td>  BCM53084 A0</td><td> <tt>bcm53084_a0</tt>
+</td></tr><tr><td>  BCM53101</td><td>  BCM53101 A0</td><td> <tt>bcm53101_a0</tt>
+</td></tr><tr><td></td><td>  BCM53101 B0</td><td> <tt>bcm53101_a0</tt>
+</td></tr><tr><td>  BCM53115</td><td>  BCM53115 A0</td><td> <tt>bcm53115_a0</tt>
+</td></tr><tr><td>  BCM53118</td><td>  BCM53118 A0</td><td> <tt>bcm53118_a0</tt>
+</td></tr><tr><td>  BCM53125</td><td>  BCM53125 A0</td><td> <tt>bcm53125_a0</tt>
+</td></tr><tr><td></td><td>  BCM53125 B0</td><td> <tt>bcm53125_a0</tt>
+</td></tr><tr><td>  BCM53128</td><td>  BCM53128 A0</td><td> <tt>bcm53128_a0</tt>
+</td></tr><tr><td></td><td>  BCM53128 B0</td><td> <tt>bcm53128_a0</tt>
+</td></tr><tr><td>  BCM53280</td><td>  BCM53280 A0</td><td> <tt>bcm53280_a0</tt>
+</td></tr><tr><td></td><td>  BCM53280 B0</td><td> <tt>bcm53280_b0</tt>
+</td></tr><tr><td></td><td>  BCM53280 B1</td><td> <tt>bcm53280_b0</tt>
+</td></tr><tr><td></td><td>  BCM53280 B2</td><td> <tt>bcm53280_b0</tt>
+</td></tr><tr><td></td><td>  BCM53282 A0</td><td> <tt>bcm53280_a0</tt>
+</td></tr><tr><td></td><td>  BCM53282 B0</td><td> <tt>bcm53280_b0</tt>
+</td></tr><tr><td></td><td>  BCM53282 B1</td><td> <tt>bcm53280_b0</tt>
+</td></tr><tr><td></td><td>  BCM53282 B2</td><td> <tt>bcm53280_b0</tt>
+</td></tr><tr><td></td><td>  BCM53283 A0</td><td> <tt>bcm53280_a0</tt>
+</td></tr><tr><td></td><td>  BCM53283 B0</td><td> <tt>bcm53280_b0</tt>
+</td></tr><tr><td></td><td>  BCM53283 B1</td><td> <tt>bcm53280_b0</tt>
+</td></tr><tr><td></td><td>  BCM53283 B2</td><td> <tt>bcm53280_b0</tt>
+</td></tr><tr><td></td><td>  BCM53284 A0</td><td> <tt>bcm53280_a0</tt>
+</td></tr><tr><td></td><td>  BCM53284 B0</td><td> <tt>bcm53280_b0</tt>
+</td></tr><tr><td></td><td>  BCM53284 B1</td><td> <tt>bcm53280_b0</tt>
+</td></tr><tr><td></td><td>  BCM53284 B2</td><td> <tt>bcm53280_b0</tt>
+</td></tr><tr><td></td><td>  BCM53286 A0</td><td> <tt>bcm53280_a0</tt>
+</td></tr><tr><td></td><td>  BCM53286 B0</td><td> <tt>bcm53280_b0</tt>
+</td></tr><tr><td></td><td>  BCM53286 B1</td><td> <tt>bcm53280_b0</tt>
+</td></tr><tr><td></td><td>  BCM53286 B2</td><td> <tt>bcm53280_b0</tt>
+</td></tr><tr><td>  BCM53600</td><td>  BCM53600 A0</td><td> <tt>bcm53600_a0</tt>
+</td></tr><tr><td></td><td>  BCM53604 A0</td><td> <tt>bcm53600_a0</tt>
+</td></tr><tr><td>  BCM89500</td><td>  BCM89200 A0</td><td> <tt>bcm89500_a0</tt>
+</td></tr><tr><td></td><td>  BCM89500 A0</td><td> <tt>bcm89500_a0</tt>
+</td></tr><tr><td></td><td>  BCM89501 A0</td><td> <tt>bcm89500_a0</tt>
+</td></tr><tr><td>  BCM53310</td><td>  BCM53312 A0</td><td> <tt>bcm53314_a0</tt>
+</td></tr><tr><td></td><td>  BCM53313 A0</td><td> <tt>bcm53314_a0</tt>
+</td></tr><tr><td></td><td>  BCM53314 A0</td><td> <tt>bcm53314_a0</tt>
+</td></tr><tr><td>  BCM53324</td><td>  BCM53322 A0</td><td> <tt>bcm53324_a0</tt>
+</td></tr><tr><td></td><td>  BCM53323 A0</td><td> <tt>bcm53324_a0</tt>
+</td></tr><tr><td></td><td>  BCM53324 A0</td><td> <tt>bcm53324_a0</tt>
+</td></tr><tr><td>  BCM53710</td><td>  BCM53714 A0</td><td> <tt>bcm56218_a0</tt>
+</td></tr><tr><td></td><td>  BCM53714 A1</td><td> <tt>bcm56218_a0</tt>
+</td></tr><tr><td></td><td>  BCM53714 A2</td><td> <tt>bcm56218_a0</tt>
+</td></tr><tr><td></td><td>  BCM53716 A0</td><td> <tt>bcm56218_a0</tt>
+</td></tr><tr><td></td><td>  BCM53716 A1</td><td> <tt>bcm56218_a0</tt>
+</td></tr><tr><td></td><td>  BCM53716 A2</td><td> <tt>bcm56218_a0</tt>
+</td></tr><tr><td></td><td>  BCM53718 A0</td><td> <tt>bcm56218_a0</tt>
+</td></tr><tr><td></td><td>  BCM53718 A1</td><td> <tt>bcm56218_a0</tt>
+</td></tr><tr><td></td><td>  BCM53718 A2</td><td> <tt>bcm56218_a0</tt>
+</td></tr><tr><td>  BCM53720</td><td>  BCM53724 A0</td><td> <tt>bcm56224_a0</tt>
+</td></tr><tr><td></td><td>  BCM53724 B0</td><td> <tt>bcm56224_b0</tt>
+</td></tr><tr><td></td><td>  BCM53726 A0</td><td> <tt>bcm56224_a0</tt>
+</td></tr><tr><td></td><td>  BCM53726 B0</td><td> <tt>bcm56224_b0</tt>
+</td></tr><tr><td>  BCM56010</td><td>  BCM56014 A0</td><td> <tt>bcm56218_a0</tt>
+</td></tr><tr><td></td><td>  BCM56014 A1</td><td> <tt>bcm56218_a0</tt>
+</td></tr><tr><td></td><td>  BCM56014 A2</td><td> <tt>bcm56218_a0</tt>
+</td></tr><tr><td></td><td>  BCM56018 A0</td><td> <tt>bcm56218_a0</tt>
+</td></tr><tr><td></td><td>  BCM56018 A1</td><td> <tt>bcm56218_a0</tt>
+</td></tr><tr><td></td><td>  BCM56018 A2</td><td> <tt>bcm56218_a0</tt>
+</td></tr><tr><td>  BCM56020</td><td>  BCM56024 A0</td><td> <tt>bcm56224_a0</tt>
+</td></tr><tr><td></td><td>  BCM56024 B0</td><td> <tt>bcm56224_b0</tt>
+</td></tr><tr><td></td><td>  BCM56025 A0</td><td> <tt>bcm56224_a0</tt>
+</td></tr><tr><td></td><td>  BCM56025 B0</td><td> <tt>bcm56224_b0</tt>
+</td></tr><tr><td>  BCM56110</td><td>  BCM56110 A0</td><td> <tt>bcm56112_a0</tt>
+</td></tr><tr><td></td><td>  BCM56111 A0</td><td> <tt>bcm56112_a0</tt>
+</td></tr><tr><td></td><td>  BCM56112 A0</td><td> <tt>bcm56112_a0</tt>
+</td></tr><tr><td></td><td>  BCM56115 A0</td><td> <tt>bcm56112_a0</tt>
+</td></tr><tr><td></td><td>  BCM56116 A0</td><td> <tt>bcm56112_a0</tt>
+</td></tr><tr><td></td><td>  BCM56117 A0</td><td> <tt>bcm56112_a0</tt>
+</td></tr><tr><td>  BCM56142</td><td>  BCM56142 A0</td><td> <tt>bcm56142_a0</tt>
+</td></tr><tr><td>  BCM56143</td><td>  BCM56143 A0</td><td> <tt>bcm56142_a0</tt>
+</td></tr><tr><td>  BCM56144</td><td>  BCM56144 A0</td><td> <tt>bcm56142_a0</tt>
+</td></tr><tr><td>  BCM56146</td><td>  BCM56146 A0</td><td> <tt>bcm56142_a0</tt>
+</td></tr><tr><td>  BCM56147</td><td>  BCM56147 A0</td><td> <tt>bcm56142_a0</tt>
+</td></tr><tr><td>  BCM56210</td><td>  BCM56214 A0</td><td> <tt>bcm56218_a0</tt>
+</td></tr><tr><td></td><td>  BCM56214 A1</td><td> <tt>bcm56218_a0</tt>
+</td></tr><tr><td></td><td>  BCM56214 A2</td><td> <tt>bcm56218_a0</tt>
+</td></tr><tr><td></td><td>  BCM56216 A0</td><td> <tt>bcm56218_a0</tt>
+</td></tr><tr><td></td><td>  BCM56216 A1</td><td> <tt>bcm56218_a0</tt>
+</td></tr><tr><td></td><td>  BCM56216 A2</td><td> <tt>bcm56218_a0</tt>
+</td></tr><tr><td></td><td>  BCM56218 A0</td><td> <tt>bcm56218_a0</tt>
+</td></tr><tr><td></td><td>  BCM56218 A1</td><td> <tt>bcm56218_a0</tt>
+</td></tr><tr><td></td><td>  BCM56218 A2</td><td> <tt>bcm56218_a0</tt>
+</td></tr><tr><td>  BCM56220</td><td>  BCM56224 A0</td><td> <tt>bcm56224_a0</tt>
+</td></tr><tr><td></td><td>  BCM56224 B0</td><td> <tt>bcm56224_b0</tt>
+</td></tr><tr><td></td><td>  BCM56225 A0</td><td> <tt>bcm56224_a0</tt>
+</td></tr><tr><td></td><td>  BCM56225 B0</td><td> <tt>bcm56224_b0</tt>
+</td></tr><tr><td></td><td>  BCM56226 A0</td><td> <tt>bcm56224_a0</tt>
+</td></tr><tr><td></td><td>  BCM56226 B0</td><td> <tt>bcm56224_b0</tt>
+</td></tr><tr><td></td><td>  BCM56227 A0</td><td> <tt>bcm56224_a0</tt>
+</td></tr><tr><td></td><td>  BCM56227 B0</td><td> <tt>bcm56224_b0</tt>
+</td></tr><tr><td></td><td>  BCM56228 A0</td><td> <tt>bcm56224_a0</tt>
+</td></tr><tr><td></td><td>  BCM56228 B0</td><td> <tt>bcm56224_b0</tt>
+</td></tr><tr><td></td><td>  BCM56229 A0</td><td> <tt>bcm56224_a0</tt>
+</td></tr><tr><td></td><td>  BCM56229 B0</td><td> <tt>bcm56224_b0</tt>
+</td></tr><tr><td>  BCM56300</td><td>  BCM56300 B0</td><td> <tt>bcm56304_b0</tt>
+</td></tr><tr><td></td><td>  BCM56300 B1</td><td> <tt>bcm56304_b0</tt>
+</td></tr><tr><td></td><td>  BCM56301 B0</td><td> <tt>bcm56304_b0</tt>
+</td></tr><tr><td></td><td>  BCM56301 B1</td><td> <tt>bcm56304_b0</tt>
+</td></tr><tr><td></td><td>  BCM56302 B0</td><td> <tt>bcm56304_b0</tt>
+</td></tr><tr><td></td><td>  BCM56302 B1</td><td> <tt>bcm56304_b0</tt>
+</td></tr><tr><td></td><td>  BCM56303 B0</td><td> <tt>bcm56304_b0</tt>
+</td></tr><tr><td></td><td>  BCM56303 B1</td><td> <tt>bcm56304_b0</tt>
+</td></tr><tr><td></td><td>  BCM56304 B0</td><td> <tt>bcm56304_b0</tt>
+</td></tr><tr><td></td><td>  BCM56304 B1</td><td> <tt>bcm56304_b0</tt>
+</td></tr><tr><td></td><td>  BCM56305 B0</td><td> <tt>bcm56304_b0</tt>
+</td></tr><tr><td></td><td>  BCM56305 B1</td><td> <tt>bcm56304_b0</tt>
+</td></tr><tr><td></td><td>  BCM56306 B0</td><td> <tt>bcm56304_b0</tt>
+</td></tr><tr><td></td><td>  BCM56306 B1</td><td> <tt>bcm56304_b0</tt>
+</td></tr><tr><td></td><td>  BCM56307 B0</td><td> <tt>bcm56304_b0</tt>
+</td></tr><tr><td></td><td>  BCM56307 B1</td><td> <tt>bcm56304_b0</tt>
+</td></tr><tr><td></td><td>  BCM56308 B0</td><td> <tt>bcm56304_b0</tt>
+</td></tr><tr><td></td><td>  BCM56308 B1</td><td> <tt>bcm56304_b0</tt>
+</td></tr><tr><td></td><td>  BCM56309 B0</td><td> <tt>bcm56304_b0</tt>
+</td></tr><tr><td></td><td>  BCM56309 B1</td><td> <tt>bcm56304_b0</tt>
+</td></tr><tr><td>  BCM56310</td><td>  BCM56310 A0</td><td> <tt>bcm56314_a0</tt>
+</td></tr><tr><td></td><td>  BCM56311 A0</td><td> <tt>bcm56314_a0</tt>
+</td></tr><tr><td></td><td>  BCM56312 A0</td><td> <tt>bcm56314_a0</tt>
+</td></tr><tr><td></td><td>  BCM56313 A0</td><td> <tt>bcm56314_a0</tt>
+</td></tr><tr><td></td><td>  BCM56314 A0</td><td> <tt>bcm56314_a0</tt>
+</td></tr><tr><td></td><td>  BCM56315 A0</td><td> <tt>bcm56314_a0</tt>
+</td></tr><tr><td></td><td>  BCM56316 A0</td><td> <tt>bcm56314_a0</tt>
+</td></tr><tr><td></td><td>  BCM56317 A0</td><td> <tt>bcm56314_a0</tt>
+</td></tr><tr><td></td><td>  BCM56318 A0</td><td> <tt>bcm56314_a0</tt>
+</td></tr><tr><td></td><td>  BCM56319 A0</td><td> <tt>bcm56314_a0</tt>
+</td></tr><tr><td>  BCM56334</td><td>  BCM56132 A0</td><td> <tt>bcm56334_a0</tt>
+</td></tr><tr><td></td><td>  BCM56132 B0</td><td> <tt>bcm56334_b0</tt>
+</td></tr><tr><td></td><td>  BCM56132 B1</td><td> <tt>bcm56334_b0</tt>
+</td></tr><tr><td></td><td>  BCM56134 A0</td><td> <tt>bcm56334_a0</tt>
+</td></tr><tr><td></td><td>  BCM56134 B0</td><td> <tt>bcm56334_b0</tt>
+</td></tr><tr><td></td><td>  BCM56134 B1</td><td> <tt>bcm56334_b0</tt>
+</td></tr><tr><td></td><td>  BCM56320 A0</td><td> <tt>bcm56334_a0</tt>
+</td></tr><tr><td></td><td>  BCM56320 B0</td><td> <tt>bcm56334_b0</tt>
+</td></tr><tr><td></td><td>  BCM56320 B1</td><td> <tt>bcm56334_b0</tt>
+</td></tr><tr><td></td><td>  BCM56321 A0</td><td> <tt>bcm56334_a0</tt>
+</td></tr><tr><td></td><td>  BCM56321 B0</td><td> <tt>bcm56334_b0</tt>
+</td></tr><tr><td></td><td>  BCM56321 B1</td><td> <tt>bcm56334_b0</tt>
+</td></tr><tr><td></td><td>  BCM56331 A0</td><td> <tt>bcm56334_a0</tt>
+</td></tr><tr><td></td><td>  BCM56331 B0</td><td> <tt>bcm56334_b0</tt>
+</td></tr><tr><td></td><td>  BCM56331 B1</td><td> <tt>bcm56334_b0</tt>
+</td></tr><tr><td></td><td>  BCM56333 A0</td><td> <tt>bcm56334_a0</tt>
+</td></tr><tr><td></td><td>  BCM56333 B0</td><td> <tt>bcm56334_b0</tt>
+</td></tr><tr><td></td><td>  BCM56333 B1</td><td> <tt>bcm56334_b0</tt>
+</td></tr><tr><td></td><td>  BCM56334 A0</td><td> <tt>bcm56334_a0</tt>
+</td></tr><tr><td></td><td>  BCM56334 B0</td><td> <tt>bcm56334_b0</tt>
+</td></tr><tr><td></td><td>  BCM56334 B1</td><td> <tt>bcm56334_b0</tt>
+</td></tr><tr><td></td><td>  BCM56338 A0</td><td> <tt>bcm56334_a0</tt>
+</td></tr><tr><td></td><td>  BCM56338 B0</td><td> <tt>bcm56334_b0</tt>
+</td></tr><tr><td></td><td>  BCM56338 B1</td><td> <tt>bcm56334_b0</tt>
+</td></tr><tr><td>  BCM56500</td><td>  BCM56500 B0</td><td> <tt>bcm56504_b0</tt>
+</td></tr><tr><td></td><td>  BCM56500 B1</td><td> <tt>bcm56504_b0</tt>
+</td></tr><tr><td></td><td>  BCM56500 B2</td><td> <tt>bcm56504_b0</tt>
+</td></tr><tr><td></td><td>  BCM56501 B0</td><td> <tt>bcm56504_b0</tt>
+</td></tr><tr><td></td><td>  BCM56501 B1</td><td> <tt>bcm56504_b0</tt>
+</td></tr><tr><td></td><td>  BCM56501 B2</td><td> <tt>bcm56504_b0</tt>
+</td></tr><tr><td></td><td>  BCM56502 B0</td><td> <tt>bcm56504_b0</tt>
+</td></tr><tr><td></td><td>  BCM56502 B1</td><td> <tt>bcm56504_b0</tt>
+</td></tr><tr><td></td><td>  BCM56502 B2</td><td> <tt>bcm56504_b0</tt>
+</td></tr><tr><td></td><td>  BCM56503 B0</td><td> <tt>bcm56504_b0</tt>
+</td></tr><tr><td></td><td>  BCM56503 B1</td><td> <tt>bcm56504_b0</tt>
+</td></tr><tr><td></td><td>  BCM56503 B2</td><td> <tt>bcm56504_b0</tt>
+</td></tr><tr><td></td><td>  BCM56504 B0</td><td> <tt>bcm56504_b0</tt>
+</td></tr><tr><td></td><td>  BCM56504 B1</td><td> <tt>bcm56504_b0</tt>
+</td></tr><tr><td></td><td>  BCM56504 B2</td><td> <tt>bcm56504_b0</tt>
+</td></tr><tr><td></td><td>  BCM56505 B0</td><td> <tt>bcm56504_b0</tt>
+</td></tr><tr><td></td><td>  BCM56505 B1</td><td> <tt>bcm56504_b0</tt>
+</td></tr><tr><td></td><td>  BCM56505 B2</td><td> <tt>bcm56504_b0</tt>
+</td></tr><tr><td></td><td>  BCM56506 B0</td><td> <tt>bcm56504_b0</tt>
+</td></tr><tr><td></td><td>  BCM56506 B1</td><td> <tt>bcm56504_b0</tt>
+</td></tr><tr><td></td><td>  BCM56506 B2</td><td> <tt>bcm56504_b0</tt>
+</td></tr><tr><td></td><td>  BCM56507 B0</td><td> <tt>bcm56504_b0</tt>
+</td></tr><tr><td></td><td>  BCM56507 B1</td><td> <tt>bcm56504_b0</tt>
+</td></tr><tr><td></td><td>  BCM56507 B2</td><td> <tt>bcm56504_b0</tt>
+</td></tr><tr><td></td><td>  BCM56508 B0</td><td> <tt>bcm56504_b0</tt>
+</td></tr><tr><td></td><td>  BCM56508 B1</td><td> <tt>bcm56504_b0</tt>
+</td></tr><tr><td></td><td>  BCM56508 B2</td><td> <tt>bcm56504_b0</tt>
+</td></tr><tr><td></td><td>  BCM56509 B0</td><td> <tt>bcm56504_b0</tt>
+</td></tr><tr><td></td><td>  BCM56509 B1</td><td> <tt>bcm56504_b0</tt>
+</td></tr><tr><td></td><td>  BCM56509 B2</td><td> <tt>bcm56504_b0</tt>
+</td></tr><tr><td>  BCM56510</td><td>  BCM56510 A0</td><td> <tt>bcm56514_a0</tt>
+</td></tr><tr><td></td><td>  BCM56511 A0</td><td> <tt>bcm56514_a0</tt>
+</td></tr><tr><td></td><td>  BCM56512 A0</td><td> <tt>bcm56514_a0</tt>
+</td></tr><tr><td></td><td>  BCM56513 A0</td><td> <tt>bcm56514_a0</tt>
+</td></tr><tr><td></td><td>  BCM56514 A0</td><td> <tt>bcm56514_a0</tt>
+</td></tr><tr><td></td><td>  BCM56515 A0</td><td> <tt>bcm56514_a0</tt>
+</td></tr><tr><td></td><td>  BCM56516 A0</td><td> <tt>bcm56514_a0</tt>
+</td></tr><tr><td></td><td>  BCM56517 A0</td><td> <tt>bcm56514_a0</tt>
+</td></tr><tr><td></td><td>  BCM56518 A0</td><td> <tt>bcm56514_a0</tt>
+</td></tr><tr><td></td><td>  BCM56519 A0</td><td> <tt>bcm56514_a0</tt>
+</td></tr><tr><td>  BCM56520</td><td>  BCM56520 A0</td><td> <tt>bcm56524_a0</tt>
+</td></tr><tr><td></td><td>  BCM56520 B0</td><td> <tt>bcm56524_b0</tt>
+</td></tr><tr><td></td><td>  BCM56521 A0</td><td> <tt>bcm56634_a0</tt>
+</td></tr><tr><td></td><td>  BCM56521 B0</td><td> <tt>bcm56634_b0</tt>
+</td></tr><tr><td></td><td>  BCM56522 A0</td><td> <tt>bcm56524_a0</tt>
+</td></tr><tr><td></td><td>  BCM56522 B0</td><td> <tt>bcm56524_b0</tt>
+</td></tr><tr><td></td><td>  BCM56524 A0</td><td> <tt>bcm56524_a0</tt>
+</td></tr><tr><td></td><td>  BCM56524 B0</td><td> <tt>bcm56524_b0</tt>
+</td></tr><tr><td></td><td>  BCM56526 A0</td><td> <tt>bcm56634_a0</tt>
+</td></tr><tr><td></td><td>  BCM56526 B0</td><td> <tt>bcm56634_b0</tt>
+</td></tr><tr><td>  BCM56580</td><td>  BCM56580 A0</td><td> <tt>bcm56800_a0</tt>
+</td></tr><tr><td>  BCM56620</td><td>  BCM56620 A0</td><td> <tt>bcm56624_a0</tt>
+</td></tr><tr><td></td><td>  BCM56620 A1</td><td> <tt>bcm56624_a0</tt>
+</td></tr><tr><td></td><td>  BCM56620 B0</td><td> <tt>bcm56624_b0</tt>
+</td></tr><tr><td></td><td>  BCM56620 B1</td><td> <tt>bcm56624_b0</tt>
+</td></tr><tr><td></td><td>  BCM56624 A0</td><td> <tt>bcm56624_a0</tt>
+</td></tr><tr><td></td><td>  BCM56624 A1</td><td> <tt>bcm56624_a0</tt>
+</td></tr><tr><td></td><td>  BCM56624 B0</td><td> <tt>bcm56624_b0</tt>
+</td></tr><tr><td></td><td>  BCM56624 B1</td><td> <tt>bcm56624_b0</tt>
+</td></tr><tr><td></td><td>  BCM56626 A0</td><td> <tt>bcm56624_a0</tt>
+</td></tr><tr><td></td><td>  BCM56626 A1</td><td> <tt>bcm56624_a0</tt>
+</td></tr><tr><td></td><td>  BCM56626 B0</td><td> <tt>bcm56624_b0</tt>
+</td></tr><tr><td></td><td>  BCM56626 B1</td><td> <tt>bcm56624_b0</tt>
+</td></tr><tr><td></td><td>  BCM56628 A0</td><td> <tt>bcm56624_a0</tt>
+</td></tr><tr><td></td><td>  BCM56628 A1</td><td> <tt>bcm56624_a0</tt>
+</td></tr><tr><td></td><td>  BCM56628 B0</td><td> <tt>bcm56624_b0</tt>
+</td></tr><tr><td></td><td>  BCM56628 B1</td><td> <tt>bcm56624_b0</tt>
+</td></tr><tr><td>  BCM56629</td><td>  BCM56629 A0</td><td> <tt>bcm56624_a0</tt>
+</td></tr><tr><td></td><td>  BCM56629 A1</td><td> <tt>bcm56624_a0</tt>
+</td></tr><tr><td></td><td>  BCM56629 B0</td><td> <tt>bcm56624_b0</tt>
+</td></tr><tr><td></td><td>  BCM56629 B1</td><td> <tt>bcm56624_b0</tt>
+</td></tr><tr><td>  BCM56630</td><td>  BCM56630 A0</td><td> <tt>bcm56634_a0</tt>
+</td></tr><tr><td></td><td>  BCM56630 B0</td><td> <tt>bcm56634_b0</tt>
+</td></tr><tr><td></td><td>  BCM56634 A0</td><td> <tt>bcm56634_a0</tt>
+</td></tr><tr><td></td><td>  BCM56634 B0</td><td> <tt>bcm56634_b0</tt>
+</td></tr><tr><td></td><td>  BCM56636 A0</td><td> <tt>bcm56634_a0</tt>
+</td></tr><tr><td></td><td>  BCM56636 B0</td><td> <tt>bcm56634_b0</tt>
+</td></tr><tr><td></td><td>  BCM56638 A0</td><td> <tt>bcm56634_a0</tt>
+</td></tr><tr><td></td><td>  BCM56638 B0</td><td> <tt>bcm56634_b0</tt>
+</td></tr><tr><td></td><td>  BCM56639 A0</td><td> <tt>bcm56634_a0</tt>
+</td></tr><tr><td></td><td>  BCM56639 B0</td><td> <tt>bcm56634_b0</tt>
+</td></tr><tr><td>  BCM56680</td><td>  BCM56680 A0</td><td> <tt>bcm56680_a0</tt>
+</td></tr><tr><td></td><td>  BCM56680 A1</td><td> <tt>bcm56680_a0</tt>
+</td></tr><tr><td></td><td>  BCM56680 B0</td><td> <tt>bcm56680_b0</tt>
+</td></tr><tr><td></td><td>  BCM56680 B1</td><td> <tt>bcm56680_b0</tt>
+</td></tr><tr><td></td><td>  BCM56684 A0</td><td> <tt>bcm56680_a0</tt>
+</td></tr><tr><td></td><td>  BCM56684 A1</td><td> <tt>bcm56680_a0</tt>
+</td></tr><tr><td></td><td>  BCM56684 B0</td><td> <tt>bcm56680_b0</tt>
+</td></tr><tr><td></td><td>  BCM56684 B1</td><td> <tt>bcm56680_b0</tt>
+</td></tr><tr><td></td><td>  BCM56686 B0</td><td> <tt>bcm56680_b0</tt>
+</td></tr><tr><td></td><td>  BCM56686 B1</td><td> <tt>bcm56680_b0</tt>
+</td></tr><tr><td>  BCM56685</td><td>  BCM56685 A0</td><td> <tt>bcm56685_a0</tt>
+</td></tr><tr><td></td><td>  BCM56685 B0</td><td> <tt>bcm56685_b0</tt>
+</td></tr><tr><td></td><td>  BCM56689 A0</td><td> <tt>bcm56685_a0</tt>
+</td></tr><tr><td></td><td>  BCM56689 B0</td><td> <tt>bcm56685_b0</tt>
+</td></tr><tr><td>  BCM56700</td><td>  BCM56700 A0</td><td> <tt>bcm56800_a0</tt>
+</td></tr><tr><td></td><td>  BCM56701 A0</td><td> <tt>bcm56800_a0</tt>
+</td></tr><tr><td>  BCM56720</td><td>  BCM56720 A0</td><td> <tt>bcm56725_a0</tt>
+</td></tr><tr><td></td><td>  BCM56721 A0</td><td> <tt>bcm56725_a0</tt>
+</td></tr><tr><td>  BCM56725</td><td>  BCM56725 A0</td><td> <tt>bcm56725_a0</tt>
+</td></tr><tr><td>  BCM56800</td><td>  BCM56800 A0</td><td> <tt>bcm56800_a0</tt>
+</td></tr><tr><td></td><td>  BCM56801 A0</td><td> <tt>bcm56800_a0</tt>
+</td></tr><tr><td></td><td>  BCM56802 A0</td><td> <tt>bcm56800_a0</tt>
+</td></tr><tr><td></td><td>  BCM56803 A0</td><td> <tt>bcm56800_a0</tt>
+</td></tr><tr><td>  BCM56820</td><td>  BCM56820 A0</td><td> <tt>bcm56820_a0</tt>
+</td></tr><tr><td></td><td>  BCM56820 B0</td><td> <tt>bcm56820_a0</tt>
+</td></tr><tr><td></td><td>  BCM56821 A0</td><td> <tt>bcm56820_a0</tt>
+</td></tr><tr><td></td><td>  BCM56821 B0</td><td> <tt>bcm56820_a0</tt>
+</td></tr><tr><td></td><td>  BCM56822 A0</td><td> <tt>bcm56820_a0</tt>
+</td></tr><tr><td></td><td>  BCM56822 B0</td><td> <tt>bcm56820_a0</tt>
+</td></tr><tr><td></td><td>  BCM56823 A0</td><td> <tt>bcm56820_a0</tt>
+</td></tr><tr><td></td><td>  BCM56823 B0</td><td> <tt>bcm56820_a0</tt>
+</td></tr><tr><td>  BCM56840</td><td>  BCM56743 A0</td><td> <tt>bcm56840_a0</tt>
+</td></tr><tr><td></td><td>  BCM56743 A1</td><td> <tt>bcm56840_a0</tt>
+</td></tr><tr><td></td><td>  BCM56743 A2</td><td> <tt>bcm56840_a0</tt>
+</td></tr><tr><td></td><td>  BCM56743 A3</td><td> <tt>bcm56840_a0</tt>
+</td></tr><tr><td></td><td>  BCM56743 A4</td><td> <tt>bcm56840_a0</tt>
+</td></tr><tr><td></td><td>  BCM56743 B0</td><td> <tt>bcm56840_b0</tt>
+</td></tr><tr><td></td><td>  BCM56743 B1</td><td> <tt>bcm56840_b0</tt>
+</td></tr><tr><td></td><td>  BCM56744 A0</td><td> <tt>bcm56840_b0</tt>
+</td></tr><tr><td></td><td>  BCM56744 A1</td><td> <tt>bcm56840_b0</tt>
+</td></tr><tr><td></td><td>  BCM56745 A0</td><td> <tt>bcm56840_a0</tt>
+</td></tr><tr><td></td><td>  BCM56745 A1</td><td> <tt>bcm56840_a0</tt>
+</td></tr><tr><td></td><td>  BCM56745 A2</td><td> <tt>bcm56840_a0</tt>
+</td></tr><tr><td></td><td>  BCM56745 A3</td><td> <tt>bcm56840_a0</tt>
+</td></tr><tr><td></td><td>  BCM56745 A4</td><td> <tt>bcm56840_a0</tt>
+</td></tr><tr><td></td><td>  BCM56745 B0</td><td> <tt>bcm56840_b0</tt>
+</td></tr><tr><td></td><td>  BCM56745 B1</td><td> <tt>bcm56840_b0</tt>
+</td></tr><tr><td></td><td>  BCM56746 A0</td><td> <tt>bcm56840_b0</tt>
+</td></tr><tr><td></td><td>  BCM56746 A1</td><td> <tt>bcm56840_b0</tt>
+</td></tr><tr><td></td><td>  BCM56840 A0</td><td> <tt>bcm56840_a0</tt>
+</td></tr><tr><td></td><td>  BCM56840 A1</td><td> <tt>bcm56840_a0</tt>
+</td></tr><tr><td></td><td>  BCM56840 A2</td><td> <tt>bcm56840_a0</tt>
+</td></tr><tr><td></td><td>  BCM56840 A3</td><td> <tt>bcm56840_a0</tt>
+</td></tr><tr><td></td><td>  BCM56840 A4</td><td> <tt>bcm56840_a0</tt>
+</td></tr><tr><td></td><td>  BCM56840 B0</td><td> <tt>bcm56840_b0</tt>
+</td></tr><tr><td></td><td>  BCM56840 B1</td><td> <tt>bcm56840_b0</tt>
+</td></tr><tr><td></td><td>  BCM56841 A0</td><td> <tt>bcm56840_a0</tt>
+</td></tr><tr><td></td><td>  BCM56841 A1</td><td> <tt>bcm56840_a0</tt>
+</td></tr><tr><td></td><td>  BCM56841 A2</td><td> <tt>bcm56840_a0</tt>
+</td></tr><tr><td></td><td>  BCM56841 A3</td><td> <tt>bcm56840_a0</tt>
+</td></tr><tr><td></td><td>  BCM56841 A4</td><td> <tt>bcm56840_a0</tt>
+</td></tr><tr><td></td><td>  BCM56841 B0</td><td> <tt>bcm56840_b0</tt>
+</td></tr><tr><td></td><td>  BCM56841 B1</td><td> <tt>bcm56840_b0</tt>
+</td></tr><tr><td></td><td>  BCM56842 A0</td><td> <tt>bcm56840_b0</tt>
+</td></tr><tr><td></td><td>  BCM56842 A1</td><td> <tt>bcm56840_b0</tt>
+</td></tr><tr><td></td><td>  BCM56843 A0</td><td> <tt>bcm56840_a0</tt>
+</td></tr><tr><td></td><td>  BCM56843 A1</td><td> <tt>bcm56840_a0</tt>
+</td></tr><tr><td></td><td>  BCM56843 A2</td><td> <tt>bcm56840_a0</tt>
+</td></tr><tr><td></td><td>  BCM56843 A3</td><td> <tt>bcm56840_a0</tt>
+</td></tr><tr><td></td><td>  BCM56843 A4</td><td> <tt>bcm56840_a0</tt>
+</td></tr><tr><td></td><td>  BCM56843 B0</td><td> <tt>bcm56840_b0</tt>
+</td></tr><tr><td></td><td>  BCM56843 B1</td><td> <tt>bcm56840_b0</tt>
+</td></tr><tr><td></td><td>  BCM56844 A0</td><td> <tt>bcm56840_b0</tt>
+</td></tr><tr><td></td><td>  BCM56844 A1</td><td> <tt>bcm56840_b0</tt>
+</td></tr><tr><td></td><td>  BCM56845 A0</td><td> <tt>bcm56840_a0</tt>
+</td></tr><tr><td></td><td>  BCM56845 A1</td><td> <tt>bcm56840_a0</tt>
+</td></tr><tr><td></td><td>  BCM56845 A2</td><td> <tt>bcm56840_a0</tt>
+</td></tr><tr><td></td><td>  BCM56845 A3</td><td> <tt>bcm56840_a0</tt>
+</td></tr><tr><td></td><td>  BCM56845 A4</td><td> <tt>bcm56840_a0</tt>
+</td></tr><tr><td></td><td>  BCM56845 B0</td><td> <tt>bcm56840_b0</tt>
+</td></tr><tr><td></td><td>  BCM56845 B1</td><td> <tt>bcm56840_b0</tt>
+</td></tr><tr><td></td><td>  BCM56846 A0</td><td> <tt>bcm56840_b0</tt>
+</td></tr><tr><td></td><td>  BCM56846 A1</td><td> <tt>bcm56840_b0</tt>
+</td></tr><tr><td>  BCM56440</td><td>  BCM56241 A0</td><td> <tt>bcm56440_a0</tt>
+</td></tr><tr><td></td><td>  BCM56241 B0</td><td> <tt>bcm56440_b0</tt>
+</td></tr><tr><td></td><td>  BCM56249 A0</td><td> <tt>bcm56440_a0</tt>
+</td></tr><tr><td></td><td>  BCM56249 B0</td><td> <tt>bcm56440_b0</tt>
+</td></tr><tr><td></td><td>  BCM56440 A0</td><td> <tt>bcm56440_a0</tt>
+</td></tr><tr><td></td><td>  BCM56440 B0</td><td> <tt>bcm56440_b0</tt>
+</td></tr><tr><td></td><td>  BCM56441 A0</td><td> <tt>bcm56440_a0</tt>
+</td></tr><tr><td></td><td>  BCM56441 B0</td><td> <tt>bcm56440_b0</tt>
+</td></tr><tr><td></td><td>  BCM56442 A0</td><td> <tt>bcm56440_a0</tt>
+</td></tr><tr><td></td><td>  BCM56442 B0</td><td> <tt>bcm56440_b0</tt>
+</td></tr><tr><td></td><td>  BCM56443 A0</td><td> <tt>bcm56440_a0</tt>
+</td></tr><tr><td></td><td>  BCM56443 B0</td><td> <tt>bcm56440_b0</tt>
+</td></tr><tr><td></td><td>  BCM56444 A0</td><td> <tt>bcm56440_a0</tt>
+</td></tr><tr><td></td><td>  BCM56444 B0</td><td> <tt>bcm56440_b0</tt>
+</td></tr><tr><td></td><td>  BCM56445 A0</td><td> <tt>bcm56440_a0</tt>
+</td></tr><tr><td></td><td>  BCM56445 B0</td><td> <tt>bcm56440_b0</tt>
+</td></tr><tr><td></td><td>  BCM56446 A0</td><td> <tt>bcm56440_a0</tt>
+</td></tr><tr><td></td><td>  BCM56446 B0</td><td> <tt>bcm56440_b0</tt>
+</td></tr><tr><td></td><td>  BCM56447 A0</td><td> <tt>bcm56440_a0</tt>
+</td></tr><tr><td></td><td>  BCM56447 B0</td><td> <tt>bcm56440_b0</tt>
+</td></tr><tr><td></td><td>  BCM56448 A0</td><td> <tt>bcm56440_a0</tt>
+</td></tr><tr><td></td><td>  BCM56448 B0</td><td> <tt>bcm56440_b0</tt>
+</td></tr><tr><td></td><td>  BCM56449 A0</td><td> <tt>bcm56440_a0</tt>
+</td></tr><tr><td></td><td>  BCM56449 B0</td><td> <tt>bcm56440_b0</tt>
+</td></tr><tr><td>  BCM56540</td><td>  BCM56540 A0</td><td> <tt>bcm56640_a0</tt>
+</td></tr><tr><td></td><td>  BCM56540 A1</td><td> <tt>bcm56640_a0</tt>
+</td></tr><tr><td></td><td>  BCM56540 B0</td><td> <tt>bcm56640_b0</tt>
+</td></tr><tr><td></td><td>  BCM56541 A0</td><td> <tt>bcm56640_a0</tt>
+</td></tr><tr><td></td><td>  BCM56541 A1</td><td> <tt>bcm56640_a0</tt>
+</td></tr><tr><td></td><td>  BCM56541 B0</td><td> <tt>bcm56640_b0</tt>
+</td></tr><tr><td></td><td>  BCM56542 A0</td><td> <tt>bcm56640_a0</tt>
+</td></tr><tr><td></td><td>  BCM56542 A1</td><td> <tt>bcm56640_a0</tt>
+</td></tr><tr><td></td><td>  BCM56542 B0</td><td> <tt>bcm56640_b0</tt>
+</td></tr><tr><td></td><td>  BCM56544 A0</td><td> <tt>bcm56640_a0</tt>
+</td></tr><tr><td></td><td>  BCM56544 A1</td><td> <tt>bcm56640_a0</tt>
+</td></tr><tr><td></td><td>  BCM56544 B0</td><td> <tt>bcm56640_b0</tt>
+</td></tr><tr><td></td><td>  BCM56545 A0</td><td> <tt>bcm56640_a0</tt>
+</td></tr><tr><td></td><td>  BCM56545 A1</td><td> <tt>bcm56640_a0</tt>
+</td></tr><tr><td></td><td>  BCM56545 B0</td><td> <tt>bcm56640_b0</tt>
+</td></tr><tr><td></td><td>  BCM56546 A0</td><td> <tt>bcm56640_a0</tt>
+</td></tr><tr><td></td><td>  BCM56546 A1</td><td> <tt>bcm56640_a0</tt>
+</td></tr><tr><td></td><td>  BCM56546 B0</td><td> <tt>bcm56640_b0</tt>
+</td></tr><tr><td>  BCM56640</td><td>  BCM56045 B0</td><td> <tt>bcm56640_b0</tt>
+</td></tr><tr><td></td><td>  BCM56046 B0</td><td> <tt>bcm56640_b0</tt>
+</td></tr><tr><td></td><td>  BCM56640 A0</td><td> <tt>bcm56640_a0</tt>
+</td></tr><tr><td></td><td>  BCM56640 A1</td><td> <tt>bcm56640_a0</tt>
+</td></tr><tr><td></td><td>  BCM56640 B0</td><td> <tt>bcm56640_b0</tt>
+</td></tr><tr><td></td><td>  BCM56643 A0</td><td> <tt>bcm56640_a0</tt>
+</td></tr><tr><td></td><td>  BCM56643 A1</td><td> <tt>bcm56640_a0</tt>
+</td></tr><tr><td></td><td>  BCM56643 B0</td><td> <tt>bcm56640_b0</tt>
+</td></tr><tr><td></td><td>  BCM56644 A0</td><td> <tt>bcm56640_a0</tt>
+</td></tr><tr><td></td><td>  BCM56644 A1</td><td> <tt>bcm56640_a0</tt>
+</td></tr><tr><td></td><td>  BCM56644 B0</td><td> <tt>bcm56640_b0</tt>
+</td></tr><tr><td></td><td>  BCM56648 A0</td><td> <tt>bcm56640_a0</tt>
+</td></tr><tr><td></td><td>  BCM56648 A1</td><td> <tt>bcm56640_a0</tt>
+</td></tr><tr><td></td><td>  BCM56648 B0</td><td> <tt>bcm56640_b0</tt>
+</td></tr><tr><td></td><td>  BCM56649 A0</td><td> <tt>bcm56640_a0</tt>
+</td></tr><tr><td></td><td>  BCM56649 A1</td><td> <tt>bcm56640_a0</tt>
+</td></tr><tr><td></td><td>  BCM56649 B0</td><td> <tt>bcm56640_b0</tt>
+</td></tr><tr><td>  BCM56850</td><td>  BCM56750 A0</td><td> <tt>bcm56850_a0</tt>
+</td></tr><tr><td></td><td>  BCM56750 A1</td><td> <tt>bcm56850_a0</tt>
+</td></tr><tr><td></td><td>  BCM56750 A2</td><td> <tt>bcm56850_a0</tt>
+</td></tr><tr><td></td><td>  BCM56850 A0</td><td> <tt>bcm56850_a0</tt>
+</td></tr><tr><td></td><td>  BCM56850 A1</td><td> <tt>bcm56850_a0</tt>
+</td></tr><tr><td></td><td>  BCM56850 A2</td><td> <tt>bcm56850_a0</tt>
+</td></tr><tr><td></td><td>  BCM56851 A0</td><td> <tt>bcm56850_a0</tt>
+</td></tr><tr><td></td><td>  BCM56851 A1</td><td> <tt>bcm56850_a0</tt>
+</td></tr><tr><td></td><td>  BCM56851 A2</td><td> <tt>bcm56850_a0</tt>
+</td></tr><tr><td></td><td>  BCM56852 A0</td><td> <tt>bcm56850_a0</tt>
+</td></tr><tr><td></td><td>  BCM56852 A1</td><td> <tt>bcm56850_a0</tt>
+</td></tr><tr><td></td><td>  BCM56852 A2</td><td> <tt>bcm56850_a0</tt>
+</td></tr><tr><td></td><td>  BCM56855 A0</td><td> <tt>bcm56850_a0</tt>
+</td></tr><tr><td></td><td>  BCM56855 A1</td><td> <tt>bcm56850_a0</tt>
+</td></tr><tr><td></td><td>  BCM56855 A2</td><td> <tt>bcm56850_a0</tt>
+</td></tr></tbody></table><br><p><a name="phy_device_support"></a>
+<h3>7.4.   PHY Device Support</h3>
+<p>The PHY library contains support for the following PHY devices:
+
+<a name=phy_ext_devtable></a>
+<br><br><b>Table 10:   PHY Device Support</b>
+<table cellpadding="4" cellspacing="0" border="1" summary="section"><tbody><tr><td><b>  Device</b></td><td><b> Description
+</b></td></tr><tr><td>  BCM5221</td><td> 10/100BASE-TX/FX Octal-F(tm) Transceiver
+</td></tr><tr><td>  BCM5228</td><td> 10/100BASE-TX/FX Octal-F(tm) Transceiver
+</td></tr><tr><td>  BCM5238</td><td> 10/100BASE-TX Octal-f(tm) Transceiver
+</td></tr><tr><td>  BCM5248</td><td> 10/100BASE-TX Octal-F(tm) Transceiver
+</td></tr><tr><td>  BCM5421</td><td> 10/100/1000BASE-T Gigabit Copper Transceiver
+</td></tr><tr><td>  BCM54380</td><td> Octal Gigabit Ethernet Transceiver (EEE)
+</td></tr><tr><td>  BCM5461</td><td> 10/100/1000BASE-T Gigabit Ethernet Transceiver
+</td></tr><tr><td>  BCM54616</td><td> Octal 1000/100/10BASE-T Gigabit Ethernet Transceiver
+</td></tr><tr><td>  BCM5464</td><td> Quad-Port 10/100/1000BASE-T Gigabit Copper Transceiver
+</td></tr><tr><td>  BCM54640</td><td> Quad Gigabit Ethernet Transceiver
+</td></tr><tr><td>  BCM54640E</td><td> Quad Gigabit Ethernet Transceiver (EEE)
+</td></tr><tr><td>  BCM54680</td><td> Octal-Port 10/100/1000BASE-T Gigabit Ethernet Transceiver
+</td></tr><tr><td>  BCM54680E</td><td> Octal Gigabit Ethernet Transceiver (EEE)
+</td></tr><tr><td>  BCM54682E</td><td> Octal Gigabit Ethernet Transceiver (EEE)
+</td></tr><tr><td>  BCM54684</td><td> Octal-Port 10/100/1000BASE-T Gigabit Ethernet Transceiver
+</td></tr><tr><td>  BCM54684E</td><td> Octal Gigabit Ethernet Transceiver (EEE)
+</td></tr><tr><td>  BCM54685</td><td> Octal Gigabit Ethernet Transceiver
+</td></tr><tr><td>  BCM54685E</td><td> Octal Gigabit Ethernet Transceiver (EEE)
+</td></tr><tr><td>  BCM5481</td><td> Single-Port 10/100/1000BASE-T Gigabit Ethernet Transceiver
+</td></tr><tr><td>  BCM5482</td><td> Dual-Port 10/100/1000BASE-T Gigabit Ethernet Transceiver
+</td></tr><tr><td>  BCM5488</td><td> Octal 1000/100/10BASE-T Gigabit Ethernet Transceiver
+</td></tr><tr><td>  BCM54880E</td><td> Octal Gigabit Ethernet Transceiver (EEE)
+</td></tr><tr><td>  BCM54980</td><td> Octal 1000/100/10BASE-T Gigabit Ethernet Transceiver
+</td></tr><tr><td>  BCM8073</td><td> Dual-Channel Serial 10-GbE BASE-KR to XAUI Transceiver
+</td></tr><tr><td>  BCM8074</td><td> Quad-Channel Serial 10-GbE BASE-KR to XAUI Transceiver
+</td></tr><tr><td>  BCM84740</td><td> 40GbE PPI to XLAUI Transceiver with EDC
+</td></tr><tr><td>  BCM84834</td><td> Four-Port 10GBASE-T Transceiver
+</td></tr><tr><td>  BCM8705</td><td> Serial 10-Gigabit Ethernet/Fibre Channel Transceiver with WIS Layer and XAUI Interface
+</td></tr><tr><td>  BCM8706</td><td> XAUI to Serial 10G BASE-LRM Transceiver
+</td></tr><tr><td>  BCM8727</td><td> Dual-Channel 10-GbE SFI-to-XAUI Transceiver with EDC
+</td></tr><tr><td>  BCM8747</td><td> Quad-Channel 10-GbE SFI-to-XAUI Transceiver with EDC
+</td></tr><tr><td>  BCM8752</td><td> Dual-Channel 10-GbE SFI-to-XFI Transceiver with EDC
+</td></tr><tr><td>  BCM8754</td><td> Quad-Channel 10-GbE SFI-to-XFI Transceiver with EDC
+</td></tr></tbody></table><br><p>The following PHY driver packages for integrated PHY cores are supported:
+
+<a name=phy_int_devtable></a>
+<br><br><b>Table 11:   Integrated PHY Drivers</b>
+<table cellpadding="4" cellspacing="0" border="1" summary="section"><tbody><tr><td><b>  Internal PHY Driver</b></td><td><b> Description
+</b></td></tr><tr><td><tt>bcm53010</tt></td><td> Internal BCM53010 GE PHY Driver
+</td></tr><tr><td><tt>bcm53084</tt></td><td> Internal BCM53084 GE PHY Driver
+</td></tr><tr><td><tt>bcm53101</tt></td><td> Internal BCM53101 FE PHY Driver
+</td></tr><tr><td><tt>bcm53115</tt></td><td> Internal BCM53115 Gigabit PHY Driver
+</td></tr><tr><td><tt>bcm53118</tt></td><td> Internal BCM53118 Gigabit PHY Driver
+</td></tr><tr><td><tt>bcm53125</tt></td><td> Internal BCM53125 FE PHY Driver
+</td></tr><tr><td><tt>bcm53128</tt></td><td> Internal BCM53128 FE PHY Driver
+</td></tr><tr><td><tt>bcm53280</tt></td><td> Internal BCM53280 FE PHY Driver
+</td></tr><tr><td><tt>bcm53314</tt></td><td> Internal BCM53314 Gigabit PHY Driver
+</td></tr><tr><td><tt>bcm53324</tt></td><td> Internal BCM53324 Gigabit PHY Driver
+</td></tr><tr><td><tt>bcm53600</tt></td><td> Internal BCM53600 FE PHY Driver
+</td></tr><tr><td><tt>bcm89500</tt></td><td> Internal BCM89500 Gigabit PHY Driver
+</td></tr><tr><td><tt>bcmi_combo65_serdes</tt></td><td> Internal 65nm Combo 2.5G/1.25G SerDes PHY Driver
+</td></tr><tr><td><tt>bcmi_combo_serdes</tt></td><td> Internal Combo 2.5G/1.25G SerDes PHY Driver
+</td></tr><tr><td><tt>bcmi_fusioncore12g_xgxs</tt></td><td> Internal Fusioncore 12G XGXS PHY Driver
+</td></tr><tr><td><tt>bcmi_hypercore_serdes</tt></td><td> Internal Hypercore 2.5G/1.25G SerDes PHY Driver
+</td></tr><tr><td><tt>bcmi_hypercore_xgxs</tt></td><td> Internal Hypercore 21G XGXS PHY Driver
+</td></tr><tr><td><tt>bcmi_hyperlite_serdes</tt></td><td> Internal Hyperlite 2.5G/1.25G SerDes PHY Driver
+</td></tr><tr><td><tt>bcmi_hyperlite_xgxs</tt></td><td> Internal Hyperlite 21G XGXS PHY Driver
+</td></tr><tr><td><tt>bcmi_nextgen65_serdes</tt></td><td> Internal 65nm NextGen 1.25G SerDes PHY Driver
+</td></tr><tr><td><tt>bcmi_nextgen_serdes</tt></td><td> Internal NextGen 1.25G SerDes PHY Driver
+</td></tr><tr><td><tt>bcmi_qsgmii_serdes</tt></td><td> Internal Octal QSGMII 2.5G SerDes PHY Driver
+</td></tr><tr><td><tt>bcmi_quadsgmii_serdes</tt></td><td> Internal Unicore16 2.5G SerDes PHY Driver
+</td></tr><tr><td><tt>bcmi_tsc_xgxs</tt></td><td> Internal TSC 120G SerDes PHY Driver
+</td></tr><tr><td><tt>bcmi_unicore13g_serdes</tt></td><td> Internal Unicore16 2.5G SerDes PHY Driver
+</td></tr><tr><td><tt>bcmi_unicore13g_xgxs</tt></td><td> Internal Unicore 13G XGXS PHY Driver
+</td></tr><tr><td><tt>bcmi_unicore16g_serdes</tt></td><td> Internal Unicore16 1.25G SerDes PHY Driver
+</td></tr><tr><td><tt>bcmi_unicore16g_xgxs</tt></td><td> Internal Unicore 16G XGXS PHY Driver
+</td></tr><tr><td><tt>bcmi_unicore_xgxs</tt></td><td> Internal Unicore 13G XGXS PHY Driver
+</td></tr><tr><td><tt>bcmi_warpcore3_xgxs</tt></td><td> Internal Warpcore 40G XGXS PHY Driver
+</td></tr><tr><td><tt>bcmi_warpcore_xgxs</tt></td><td> Internal Warpcore 40G XGXS PHY Driver
+</td></tr></tbody></table><br><p>The following table describes the required internal PHY driver packages that must
+be used with each device and the port interfaces to which they apply. 
+<p>This is for informational purposes only. The PHY and CDK library config headers contain these
+dependencies and will automatically include the correct PHY drivers for a given CDK device
+configuration when you use the <tt>PHY_CONFIG_INCLUDE_CHIP_AUTO</tt> option.  
+
+<a name=phy_int_mapping></a>
+<br><br><b>Table 12:   PHY Drivers for all Devices</b>
+<table cellpadding="4" cellspacing="0" border="1" summary="section"><tbody><tr><td><b>  Device</b></td><td><b>  Port Interface</b></td><td><b> Required Integrated PHY Driver
+</b></td></tr><tr><td>  BCM53010</td><td>  0-4</td><td> bcm53010
+</td></tr><tr><td></td><td>  5</td><td> none
+</td></tr><tr><td></td><td>  7-8</td><td> none
+</td></tr><tr><td>  BCM53011</td><td>  0-4</td><td> bcm53010
+</td></tr><tr><td></td><td>  5</td><td> none
+</td></tr><tr><td></td><td>  7-8</td><td> none
+</td></tr><tr><td>  BCM53012</td><td>  0-4</td><td> bcm53010
+</td></tr><tr><td></td><td>  5</td><td> none
+</td></tr><tr><td></td><td>  7-8</td><td> none
+</td></tr><tr><td>  BCM53017</td><td>  0-1</td><td> bcm53010
+</td></tr><tr><td></td><td>  5</td><td> none
+</td></tr><tr><td></td><td>  7-8</td><td> none
+</td></tr><tr><td>  BCM53018</td><td>  0-1</td><td> bcm53010
+</td></tr><tr><td></td><td>  5</td><td> none
+</td></tr><tr><td></td><td>  7-8</td><td> none
+</td></tr><tr><td>  BCM53019</td><td>  0-1</td><td> bcm53010
+</td></tr><tr><td></td><td>  5</td><td> none
+</td></tr><tr><td></td><td>  7-8</td><td> none
+</td></tr><tr><td>  BCM53084</td><td>  0-1</td><td> bcm53084
+</td></tr><tr><td></td><td>  5</td><td> none
+</td></tr><tr><td></td><td>  8</td><td> none
+</td></tr><tr><td>  BCM53101</td><td>  0-4</td><td> bcm53101
+</td></tr><tr><td></td><td>  5</td><td> none
+</td></tr><tr><td></td><td>  8</td><td> none
+</td></tr><tr><td>  BCM53115</td><td>  0-4</td><td> bcm53115
+</td></tr><tr><td></td><td>  5</td><td> <tt>bcmi_nextgen65_serdes</tt>
+</td></tr><tr><td></td><td>  8</td><td> none
+</td></tr><tr><td>  BCM53118</td><td>  0-7</td><td> bcm53118
+</td></tr><tr><td></td><td>  8</td><td> none
+</td></tr><tr><td>  BCM53125</td><td>  0-4</td><td> bcm53125
+</td></tr><tr><td></td><td>  5</td><td> none
+</td></tr><tr><td></td><td>  8</td><td> none
+</td></tr><tr><td>  BCM53128</td><td>  0-6</td><td> bcm53128
+</td></tr><tr><td></td><td>  7-8</td><td> none
+</td></tr><tr><td>  BCM53280</td><td>  0-23</td><td> bcm53280
+</td></tr><tr><td></td><td>  25</td><td> none
+</td></tr><tr><td></td><td>  28</td><td> none
+</td></tr><tr><td>  BCM53282</td><td>  0-23</td><td> bcm53280
+</td></tr><tr><td></td><td>  25</td><td> none
+</td></tr><tr><td></td><td>  28</td><td> none
+</td></tr><tr><td>  BCM53283</td><td>  0-23</td><td> bcm53280
+</td></tr><tr><td></td><td>  25</td><td> none
+</td></tr><tr><td></td><td>  28</td><td> none
+</td></tr><tr><td>  BCM53284</td><td>  0-23</td><td> bcm53280
+</td></tr><tr><td></td><td>  25</td><td> none
+</td></tr><tr><td></td><td>  28</td><td> none
+</td></tr><tr><td>  BCM53286</td><td>  0-23</td><td> bcm53280
+</td></tr><tr><td></td><td>  25</td><td> none
+</td></tr><tr><td></td><td>  28</td><td> none
+</td></tr><tr><td>  BCM53600</td><td>  0-23</td><td> bcm53600
+</td></tr><tr><td></td><td>  24-26</td><td> none
+</td></tr><tr><td>  BCM53604</td><td>  0-23</td><td> bcm53600
+</td></tr><tr><td></td><td>  24-26</td><td> none
+</td></tr><tr><td>  BCM89200</td><td>  0</td><td> bcm89500
+</td></tr><tr><td></td><td>  4-5</td><td> bcm89500
+</td></tr><tr><td></td><td>  8</td><td> none
+</td></tr><tr><td>  BCM89500</td><td>  0</td><td> bcm89500
+</td></tr><tr><td></td><td>  4-5</td><td> bcm89500
+</td></tr><tr><td></td><td>  8</td><td> none
+</td></tr><tr><td>  BCM89501</td><td>  0</td><td> bcm89500
+</td></tr><tr><td></td><td>  4-5</td><td> bcm89500
+</td></tr><tr><td></td><td>  8</td><td> none
+</td></tr><tr><td>  BCM53312</td><td>  0</td><td> none
+</td></tr><tr><td></td><td>  1-8</td><td> bcm53314
+</td></tr><tr><td>  BCM53313</td><td>  0</td><td> none
+</td></tr><tr><td></td><td>  1-8</td><td> bcm53314
+</td></tr><tr><td></td><td>  9-16</td><td> <tt>bcmi_qsgmii_serdes</tt>
+</td></tr><tr><td>  BCM53314</td><td>  0</td><td> none
+</td></tr><tr><td></td><td>  1-8</td><td> bcm53314
+</td></tr><tr><td></td><td>  9-24</td><td> <tt>bcmi_qsgmii_serdes</tt>
+</td></tr><tr><td>  BCM53322</td><td>  0</td><td> none
+</td></tr><tr><td></td><td>  1-8</td><td> bcm53324
+</td></tr><tr><td>  BCM53323</td><td>  0</td><td> none
+</td></tr><tr><td></td><td>  1-8</td><td> bcm53324
+</td></tr><tr><td></td><td>  9-16</td><td> <tt>bcmi_qsgmii_serdes</tt>
+</td></tr><tr><td>  BCM53324</td><td>  0</td><td> none
+</td></tr><tr><td></td><td>  1-8</td><td> bcm53324
+</td></tr><tr><td></td><td>  9-24</td><td> <tt>bcmi_qsgmii_serdes</tt>
+</td></tr><tr><td>  BCM53714</td><td>  0</td><td> none
+</td></tr><tr><td></td><td>  3</td><td> none
+</td></tr><tr><td></td><td>  4-29</td><td> <tt>bcmi_nextgen65_serdes</tt>
+</td></tr><tr><td>  BCM53716</td><td>  0</td><td> none
+</td></tr><tr><td></td><td>  3</td><td> none
+</td></tr><tr><td></td><td>  6-21</td><td> <tt>bcmi_nextgen65_serdes</tt>
+</td></tr><tr><td>  BCM53718</td><td>  0</td><td> none
+</td></tr><tr><td></td><td>  3</td><td> none
+</td></tr><tr><td></td><td>  4-53</td><td> <tt>bcmi_nextgen65_serdes</tt>
+</td></tr><tr><td>  BCM53724</td><td>  0</td><td> none
+</td></tr><tr><td></td><td>  3</td><td> none
+</td></tr><tr><td></td><td>  4-5</td><td> <tt>bcmi_combo65_serdes</tt>
+</td></tr><tr><td></td><td>  6-29</td><td> <tt>bcmi_nextgen65_serdes</tt>
+</td></tr><tr><td>  BCM53726</td><td>  0</td><td> none
+</td></tr><tr><td></td><td>  3</td><td> none
+</td></tr><tr><td></td><td>  4-5</td><td> <tt>bcmi_combo65_serdes</tt>
+</td></tr><tr><td></td><td>  6-21</td><td> <tt>bcmi_nextgen65_serdes</tt>
+</td></tr><tr><td>  BCM56014</td><td>  0</td><td> none
+</td></tr><tr><td></td><td>  1-2</td><td> <tt>bcmi_combo_serdes</tt>
+</td></tr><tr><td></td><td>  3</td><td> none
+</td></tr><tr><td></td><td>  4-29</td><td> <tt>bcmi_nextgen_serdes</tt>
+</td></tr><tr><td>  BCM56018</td><td>  0</td><td> none
+</td></tr><tr><td></td><td>  1-2</td><td> <tt>bcmi_combo_serdes</tt>
+</td></tr><tr><td></td><td>  3</td><td> none
+</td></tr><tr><td></td><td>  4-53</td><td> <tt>bcmi_nextgen_serdes</tt>
+</td></tr><tr><td>  BCM56024</td><td>  0</td><td> none
+</td></tr><tr><td></td><td>  1-2</td><td> <tt>bcmi_combo65_serdes</tt>
+</td></tr><tr><td></td><td>  3</td><td> none
+</td></tr><tr><td></td><td>  4-5</td><td> <tt>bcmi_combo65_serdes</tt>
+</td></tr><tr><td></td><td>  6-29</td><td> <tt>bcmi_nextgen65_serdes</tt>
+</td></tr><tr><td>  BCM56025</td><td>  0</td><td> none
+</td></tr><tr><td></td><td>  1-2</td><td> <tt>bcmi_combo65_serdes</tt>
+</td></tr><tr><td></td><td>  3</td><td> none
+</td></tr><tr><td></td><td>  4-5</td><td> <tt>bcmi_combo65_serdes</tt>
+</td></tr><tr><td></td><td>  6-29</td><td> <tt>bcmi_nextgen65_serdes</tt>
+</td></tr><tr><td>  BCM56110</td><td>  0-23</td><td> none
+</td></tr><tr><td></td><td>  24-25</td><td> <tt>bcmi_nextgen_serdes</tt>
+</td></tr><tr><td></td><td>  28</td><td> none
+</td></tr><tr><td>  BCM56111</td><td>  0-23</td><td> none
+</td></tr><tr><td></td><td>  24-25</td><td> <tt>bcmi_nextgen_serdes</tt>
+</td></tr><tr><td></td><td>  26</td><td> <tt>bcmi_fusioncore12g_xgxs</tt>
+</td></tr><tr><td></td><td>  28</td><td> none
+</td></tr><tr><td>  BCM56112</td><td>  0-23</td><td> none
+</td></tr><tr><td></td><td>  24-25</td><td> <tt>bcmi_nextgen_serdes</tt>
+</td></tr><tr><td></td><td>  26-27</td><td> <tt>bcmi_fusioncore12g_xgxs</tt>
+</td></tr><tr><td></td><td>  28</td><td> none
+</td></tr><tr><td>  BCM56115</td><td>  0-23</td><td> none
+</td></tr><tr><td></td><td>  24-25</td><td> <tt>bcmi_nextgen_serdes</tt>
+</td></tr><tr><td></td><td>  28</td><td> none
+</td></tr><tr><td>  BCM56116</td><td>  0-23</td><td> none
+</td></tr><tr><td></td><td>  24-25</td><td> <tt>bcmi_nextgen_serdes</tt>
+</td></tr><tr><td></td><td>  26</td><td> <tt>bcmi_fusioncore12g_xgxs</tt>
+</td></tr><tr><td></td><td>  28</td><td> none
+</td></tr><tr><td>  BCM56117</td><td>  0-23</td><td> none
+</td></tr><tr><td></td><td>  24-25</td><td> <tt>bcmi_nextgen_serdes</tt>
+</td></tr><tr><td></td><td>  26-27</td><td> <tt>bcmi_fusioncore12g_xgxs</tt>
+</td></tr><tr><td></td><td>  28</td><td> none
+</td></tr><tr><td>  BCM56142</td><td>  0-1</td><td> none
+</td></tr><tr><td></td><td>  2-25</td><td> <tt>bcmi_qsgmii_serdes</tt>
+</td></tr><tr><td></td><td>  26</td><td> <tt>bcmi_hypercore_xgxs</tt>
+</td></tr><tr><td></td><td>  27</td><td> none
+</td></tr><tr><td></td><td>  28-29</td><td> <tt>bcmi_hypercore_serdes</tt>
+</td></tr><tr><td>  BCM56143</td><td>  0-1</td><td> none
+</td></tr><tr><td></td><td>  2-25</td><td> <tt>bcmi_qsgmii_serdes</tt>
+</td></tr><tr><td></td><td>  26-29</td><td> <tt>bcmi_hypercore_serdes</tt>
+</td></tr><tr><td>  BCM56144</td><td>  0-1</td><td> none
+</td></tr><tr><td></td><td>  2-25</td><td> <tt>bcmi_qsgmii_serdes</tt>
+</td></tr><tr><td></td><td>  26</td><td> <tt>bcmi_hypercore_xgxs</tt>
+</td></tr><tr><td></td><td>  27</td><td> none
+</td></tr><tr><td></td><td>  28-29</td><td> <tt>bcmi_hypercore_serdes</tt>
+</td></tr><tr><td>  BCM56146</td><td>  0-1</td><td> none
+</td></tr><tr><td></td><td>  2-25</td><td> <tt>bcmi_qsgmii_serdes</tt>
+</td></tr><tr><td></td><td>  26-29</td><td> <tt>bcmi_hypercore_serdes</tt>
+</td></tr><tr><td>  BCM56147</td><td>  0-1</td><td> none
+</td></tr><tr><td></td><td>  2-25</td><td> <tt>bcmi_qsgmii_serdes</tt>
+</td></tr><tr><td></td><td>  26-29</td><td> <tt>bcmi_hypercore_serdes</tt>
+</td></tr><tr><td>  BCM56214</td><td>  0</td><td> none
+</td></tr><tr><td></td><td>  1-2</td><td> <tt>bcmi_combo_serdes</tt>
+</td></tr><tr><td></td><td>  3</td><td> none
+</td></tr><tr><td></td><td>  4-29</td><td> <tt>bcmi_nextgen_serdes</tt>
+</td></tr><tr><td>  BCM56216</td><td>  0</td><td> none
+</td></tr><tr><td></td><td>  1-2</td><td> <tt>bcmi_combo_serdes</tt>
+</td></tr><tr><td></td><td>  3</td><td> none
+</td></tr><tr><td></td><td>  4-21</td><td> <tt>bcmi_nextgen_serdes</tt>
+</td></tr><tr><td>  BCM56218</td><td>  0</td><td> none
+</td></tr><tr><td></td><td>  1-2</td><td> <tt>bcmi_combo_serdes</tt>
+</td></tr><tr><td></td><td>  3</td><td> none
+</td></tr><tr><td></td><td>  4-53</td><td> <tt>bcmi_nextgen_serdes</tt>
+</td></tr><tr><td>  BCM56224</td><td>  0</td><td> none
+</td></tr><tr><td></td><td>  1-2</td><td> <tt>bcmi_combo65_serdes</tt>
+</td></tr><tr><td></td><td>  3</td><td> none
+</td></tr><tr><td></td><td>  4-5</td><td> <tt>bcmi_combo65_serdes</tt>
+</td></tr><tr><td></td><td>  6-29</td><td> <tt>bcmi_nextgen65_serdes</tt>
+</td></tr><tr><td>  BCM56225</td><td>  0</td><td> none
+</td></tr><tr><td></td><td>  1-2</td><td> <tt>bcmi_combo65_serdes</tt>
+</td></tr><tr><td></td><td>  3</td><td> none
+</td></tr><tr><td></td><td>  4-5</td><td> <tt>bcmi_combo65_serdes</tt>
+</td></tr><tr><td></td><td>  6-29</td><td> <tt>bcmi_nextgen65_serdes</tt>
+</td></tr><tr><td>  BCM56226</td><td>  0</td><td> none
+</td></tr><tr><td></td><td>  1-2</td><td> <tt>bcmi_combo65_serdes</tt>
+</td></tr><tr><td></td><td>  3</td><td> none
+</td></tr><tr><td></td><td>  4-5</td><td> <tt>bcmi_combo65_serdes</tt>
+</td></tr><tr><td></td><td>  6-21</td><td> <tt>bcmi_nextgen65_serdes</tt>
+</td></tr><tr><td>  BCM56227</td><td>  0</td><td> none
+</td></tr><tr><td></td><td>  1-2</td><td> <tt>bcmi_combo65_serdes</tt>
+</td></tr><tr><td></td><td>  3</td><td> none
+</td></tr><tr><td></td><td>  4-5</td><td> <tt>bcmi_combo65_serdes</tt>
+</td></tr><tr><td></td><td>  6-21</td><td> <tt>bcmi_nextgen65_serdes</tt>
+</td></tr><tr><td>  BCM56228</td><td>  0</td><td> none
+</td></tr><tr><td></td><td>  1-2</td><td> <tt>bcmi_combo65_serdes</tt>
+</td></tr><tr><td></td><td>  3</td><td> none
+</td></tr><tr><td></td><td>  4-5</td><td> <tt>bcmi_combo65_serdes</tt>
+</td></tr><tr><td></td><td>  6-13</td><td> <tt>bcmi_nextgen65_serdes</tt>
+</td></tr><tr><td>  BCM56229</td><td>  0</td><td> none
+</td></tr><tr><td></td><td>  1-2</td><td> <tt>bcmi_combo65_serdes</tt>
+</td></tr><tr><td></td><td>  3</td><td> none
+</td></tr><tr><td></td><td>  4-5</td><td> <tt>bcmi_combo65_serdes</tt>
+</td></tr><tr><td></td><td>  6-21</td><td> <tt>bcmi_nextgen65_serdes</tt>
+</td></tr><tr><td>  BCM56300</td><td>  0-23</td><td> <tt>bcmi_nextgen_serdes</tt>
+</td></tr><tr><td></td><td>  28</td><td> none
+</td></tr><tr><td>  BCM56301</td><td>  24-27</td><td> <tt>bcmi_fusioncore12g_xgxs</tt>
+</td></tr><tr><td></td><td>  28</td><td> none
+</td></tr><tr><td>  BCM56302</td><td>  0-23</td><td> <tt>bcmi_nextgen_serdes</tt>
+</td></tr><tr><td></td><td>  24-25</td><td> <tt>bcmi_fusioncore12g_xgxs</tt>
+</td></tr><tr><td></td><td>  28</td><td> none
+</td></tr><tr><td>  BCM56303</td><td>  0-23</td><td> <tt>bcmi_nextgen_serdes</tt>
+</td></tr><tr><td></td><td>  24-26</td><td> <tt>bcmi_fusioncore12g_xgxs</tt>
+</td></tr><tr><td></td><td>  28</td><td> none
+</td></tr><tr><td>  BCM56304</td><td>  0-23</td><td> <tt>bcmi_nextgen_serdes</tt>
+</td></tr><tr><td></td><td>  24-27</td><td> <tt>bcmi_fusioncore12g_xgxs</tt>
+</td></tr><tr><td></td><td>  28</td><td> none
+</td></tr><tr><td>  BCM56305</td><td>  0-23</td><td> <tt>bcmi_nextgen_serdes</tt>
+</td></tr><tr><td></td><td>  28</td><td> none
+</td></tr><tr><td>  BCM56306</td><td>  24-27</td><td> <tt>bcmi_fusioncore12g_xgxs</tt>
+</td></tr><tr><td></td><td>  28</td><td> none
+</td></tr><tr><td>  BCM56307</td><td>  0-23</td><td> <tt>bcmi_nextgen_serdes</tt>
+</td></tr><tr><td></td><td>  24-25</td><td> <tt>bcmi_fusioncore12g_xgxs</tt>
+</td></tr><tr><td></td><td>  28</td><td> none
+</td></tr><tr><td>  BCM56308</td><td>  0-23</td><td> <tt>bcmi_nextgen_serdes</tt>
+</td></tr><tr><td></td><td>  24-26</td><td> <tt>bcmi_fusioncore12g_xgxs</tt>
+</td></tr><tr><td></td><td>  28</td><td> none
+</td></tr><tr><td>  BCM56309</td><td>  0-23</td><td> <tt>bcmi_nextgen_serdes</tt>
+</td></tr><tr><td></td><td>  24-27</td><td> <tt>bcmi_fusioncore12g_xgxs</tt>
+</td></tr><tr><td></td><td>  28</td><td> none
+</td></tr><tr><td>  BCM56310</td><td>  0-23</td><td> <tt>bcmi_nextgen_serdes</tt>
+</td></tr><tr><td></td><td>  24-27</td><td> <tt>bcmi_fusioncore12g_xgxs</tt>
+</td></tr><tr><td></td><td>  28</td><td> none
+</td></tr><tr><td>  BCM56311</td><td>  24-27</td><td> <tt>bcmi_fusioncore12g_xgxs</tt>
+</td></tr><tr><td></td><td>  28</td><td> none
+</td></tr><tr><td>  BCM56312</td><td>  0-23</td><td> <tt>bcmi_nextgen_serdes</tt>
+</td></tr><tr><td></td><td>  24-25</td><td> <tt>bcmi_fusioncore12g_xgxs</tt>
+</td></tr><tr><td></td><td>  28</td><td> none
+</td></tr><tr><td>  BCM56313</td><td>  0-23</td><td> <tt>bcmi_nextgen_serdes</tt>
+</td></tr><tr><td></td><td>  24-26</td><td> <tt>bcmi_fusioncore12g_xgxs</tt>
+</td></tr><tr><td></td><td>  28</td><td> none
+</td></tr><tr><td>  BCM56314</td><td>  0-23</td><td> <tt>bcmi_nextgen_serdes</tt>
+</td></tr><tr><td></td><td>  24-27</td><td> <tt>bcmi_fusioncore12g_xgxs</tt>
+</td></tr><tr><td></td><td>  28</td><td> none
+</td></tr><tr><td>  BCM56315</td><td>  0-23</td><td> <tt>bcmi_nextgen_serdes</tt>
+</td></tr><tr><td></td><td>  28</td><td> none
+</td></tr><tr><td>  BCM56316</td><td>  24-27</td><td> <tt>bcmi_fusioncore12g_xgxs</tt>
+</td></tr><tr><td></td><td>  28</td><td> none
+</td></tr><tr><td>  BCM56317</td><td>  0-23</td><td> <tt>bcmi_nextgen_serdes</tt>
+</td></tr><tr><td></td><td>  24-25</td><td> <tt>bcmi_fusioncore12g_xgxs</tt>
+</td></tr><tr><td></td><td>  28</td><td> none
+</td></tr><tr><td>  BCM56318</td><td>  0-23</td><td> <tt>bcmi_nextgen_serdes</tt>
+</td></tr><tr><td></td><td>  24-26</td><td> <tt>bcmi_fusioncore12g_xgxs</tt>
+</td></tr><tr><td></td><td>  28</td><td> none
+</td></tr><tr><td>  BCM56319</td><td>  0-23</td><td> <tt>bcmi_nextgen_serdes</tt>
+</td></tr><tr><td></td><td>  24-27</td><td> <tt>bcmi_fusioncore12g_xgxs</tt>
+</td></tr><tr><td></td><td>  28</td><td> none
+</td></tr><tr><td>  BCM56132</td><td>  All</td><td> No Internal PHYs
+</td></tr><tr><td>  BCM56134</td><td>  All</td><td> No Internal PHYs
+</td></tr><tr><td>  BCM56320</td><td>  0-1</td><td> none
+</td></tr><tr><td></td><td>  2-25</td><td> <tt>bcmi_nextgen65_serdes</tt>
+</td></tr><tr><td></td><td>  26-29</td><td> <tt>bcmi_unicore16g_xgxs</tt>
+</td></tr><tr><td>  BCM56321</td><td>  0-1</td><td> none
+</td></tr><tr><td></td><td>  2-25</td><td> <tt>bcmi_nextgen65_serdes</tt>
+</td></tr><tr><td></td><td>  26-29</td><td> <tt>bcmi_unicore16g_xgxs</tt>
+</td></tr><tr><td>  BCM56331</td><td>  0-1</td><td> none
+</td></tr><tr><td></td><td>  2-25</td><td> <tt>bcmi_nextgen65_serdes</tt>
+</td></tr><tr><td></td><td>  26-29</td><td> <tt>bcmi_unicore16g_xgxs</tt>
+</td></tr><tr><td>  BCM56333</td><td>  All</td><td> No Internal PHYs
+</td></tr><tr><td>  BCM56334</td><td>  0-1</td><td> none
+</td></tr><tr><td></td><td>  2-25</td><td> <tt>bcmi_nextgen65_serdes</tt>
+</td></tr><tr><td></td><td>  26-29</td><td> <tt>bcmi_unicore16g_xgxs</tt>
+</td></tr><tr><td>  BCM56338</td><td>  All</td><td> No Internal PHYs
+</td></tr><tr><td>  BCM56500</td><td>  0-23</td><td> <tt>bcmi_nextgen_serdes</tt>
+</td></tr><tr><td></td><td>  28</td><td> none
+</td></tr><tr><td>  BCM56501</td><td>  24-27</td><td> <tt>bcmi_fusioncore12g_xgxs</tt>
+</td></tr><tr><td></td><td>  28</td><td> none
+</td></tr><tr><td>  BCM56502</td><td>  0-23</td><td> <tt>bcmi_nextgen_serdes</tt>
+</td></tr><tr><td></td><td>  24-25</td><td> <tt>bcmi_fusioncore12g_xgxs</tt>
+</td></tr><tr><td></td><td>  28</td><td> none
+</td></tr><tr><td>  BCM56503</td><td>  0-23</td><td> <tt>bcmi_nextgen_serdes</tt>
+</td></tr><tr><td></td><td>  24-26</td><td> <tt>bcmi_fusioncore12g_xgxs</tt>
+</td></tr><tr><td></td><td>  28</td><td> none
+</td></tr><tr><td>  BCM56504</td><td>  0-23</td><td> <tt>bcmi_nextgen_serdes</tt>
+</td></tr><tr><td></td><td>  24-27</td><td> <tt>bcmi_fusioncore12g_xgxs</tt>
+</td></tr><tr><td></td><td>  28</td><td> none
+</td></tr><tr><td>  BCM56505</td><td>  0-23</td><td> <tt>bcmi_nextgen_serdes</tt>
+</td></tr><tr><td></td><td>  28</td><td> none
+</td></tr><tr><td>  BCM56506</td><td>  24-27</td><td> <tt>bcmi_fusioncore12g_xgxs</tt>
+</td></tr><tr><td></td><td>  28</td><td> none
+</td></tr><tr><td>  BCM56507</td><td>  0-23</td><td> <tt>bcmi_nextgen_serdes</tt>
+</td></tr><tr><td></td><td>  24-25</td><td> <tt>bcmi_fusioncore12g_xgxs</tt>
+</td></tr><tr><td></td><td>  28</td><td> none
+</td></tr><tr><td>  BCM56508</td><td>  0-23</td><td> <tt>bcmi_nextgen_serdes</tt>
+</td></tr><tr><td></td><td>  24-26</td><td> <tt>bcmi_fusioncore12g_xgxs</tt>
+</td></tr><tr><td></td><td>  28</td><td> none
+</td></tr><tr><td>  BCM56509</td><td>  0-23</td><td> <tt>bcmi_nextgen_serdes</tt>
+</td></tr><tr><td></td><td>  24-27</td><td> <tt>bcmi_fusioncore12g_xgxs</tt>
+</td></tr><tr><td></td><td>  28</td><td> none
+</td></tr><tr><td>  BCM56510</td><td>  0-23</td><td> <tt>bcmi_nextgen_serdes</tt>
+</td></tr><tr><td></td><td>  28</td><td> none
+</td></tr><tr><td>  BCM56511</td><td>  24-27</td><td> <tt>bcmi_fusioncore12g_xgxs</tt>
+</td></tr><tr><td></td><td>  28</td><td> none
+</td></tr><tr><td>  BCM56512</td><td>  0-23</td><td> <tt>bcmi_nextgen_serdes</tt>
+</td></tr><tr><td></td><td>  24-25</td><td> <tt>bcmi_fusioncore12g_xgxs</tt>
+</td></tr><tr><td></td><td>  28</td><td> none
+</td></tr><tr><td>  BCM56513</td><td>  0-23</td><td> <tt>bcmi_nextgen_serdes</tt>
+</td></tr><tr><td></td><td>  24-26</td><td> <tt>bcmi_fusioncore12g_xgxs</tt>
+</td></tr><tr><td></td><td>  28</td><td> none
+</td></tr><tr><td>  BCM56514</td><td>  0-23</td><td> <tt>bcmi_nextgen_serdes</tt>
+</td></tr><tr><td></td><td>  24-27</td><td> <tt>bcmi_fusioncore12g_xgxs</tt>
+</td></tr><tr><td></td><td>  28</td><td> none
+</td></tr><tr><td>  BCM56515</td><td>  0-23</td><td> <tt>bcmi_nextgen_serdes</tt>
+</td></tr><tr><td></td><td>  28</td><td> none
+</td></tr><tr><td>  BCM56516</td><td>  24-27</td><td> <tt>bcmi_fusioncore12g_xgxs</tt>
+</td></tr><tr><td></td><td>  28</td><td> none
+</td></tr><tr><td>  BCM56517</td><td>  0-23</td><td> <tt>bcmi_nextgen_serdes</tt>
+</td></tr><tr><td></td><td>  24-25</td><td> <tt>bcmi_fusioncore12g_xgxs</tt>
+</td></tr><tr><td></td><td>  28</td><td> none
+</td></tr><tr><td>  BCM56518</td><td>  0-23</td><td> <tt>bcmi_nextgen_serdes</tt>
+</td></tr><tr><td></td><td>  24-26</td><td> <tt>bcmi_fusioncore12g_xgxs</tt>
+</td></tr><tr><td></td><td>  28</td><td> none
+</td></tr><tr><td>  BCM56519</td><td>  0-23</td><td> <tt>bcmi_nextgen_serdes</tt>
+</td></tr><tr><td></td><td>  24-27</td><td> <tt>bcmi_fusioncore12g_xgxs</tt>
+</td></tr><tr><td></td><td>  28</td><td> none
+</td></tr><tr><td>  BCM56520</td><td>  0</td><td> none
+</td></tr><tr><td></td><td>  30-53</td><td> <tt>bcmi_hyperlite_serdes</tt>
+</td></tr><tr><td></td><td>  54-56</td><td> none
+</td></tr><tr><td>  BCM56521</td><td>  0</td><td> none
+</td></tr><tr><td></td><td>  2-25</td><td> <tt>bcmi_nextgen65_serdes</tt>
+</td></tr><tr><td></td><td>  26-29</td><td> <tt>bcmi_hypercore_xgxs</tt>
+</td></tr><tr><td></td><td>  54-56</td><td> none
+</td></tr><tr><td>  BCM56522</td><td>  0</td><td> none
+</td></tr><tr><td></td><td>  26-27</td><td> <tt>bcmi_hypercore_xgxs</tt>
+</td></tr><tr><td></td><td>  30-53</td><td> <tt>bcmi_hyperlite_serdes</tt>
+</td></tr><tr><td></td><td>  54-56</td><td> none
+</td></tr><tr><td>  BCM56524</td><td>  0</td><td> none
+</td></tr><tr><td></td><td>  26-29</td><td> <tt>bcmi_hypercore_xgxs</tt>
+</td></tr><tr><td></td><td>  30-53</td><td> <tt>bcmi_hyperlite_serdes</tt>
+</td></tr><tr><td></td><td>  54-56</td><td> none
+</td></tr><tr><td>  BCM56526</td><td>  0</td><td> none
+</td></tr><tr><td></td><td>  1-25</td><td> <tt>bcmi_nextgen65_serdes</tt>
+</td></tr><tr><td></td><td>  26-29</td><td> <tt>bcmi_hypercore_xgxs</tt>
+</td></tr><tr><td></td><td>  38-41</td><td> <tt>bcmi_hyperlite_serdes</tt>
+</td></tr><tr><td></td><td>  46</td><td> <tt>bcmi_hyperlite_xgxs</tt>
+</td></tr><tr><td></td><td>  50</td><td> <tt>bcmi_hyperlite_xgxs</tt>
+</td></tr><tr><td></td><td>  54-56</td><td> none
+</td></tr><tr><td>  BCM56580</td><td>  0-19</td><td> <tt>bcmi_unicore_xgxs</tt>
+</td></tr><tr><td></td><td>  20</td><td> none
+</td></tr><tr><td>  BCM56613</td><td>  All</td><td> No Internal PHYs
+</td></tr><tr><td>  BCM56620</td><td>  0</td><td> none
+</td></tr><tr><td></td><td>  2-7</td><td> <tt>bcmi_hyperlite_serdes</tt>
+</td></tr><tr><td></td><td>  14-19</td><td> <tt>bcmi_hyperlite_serdes</tt>
+</td></tr><tr><td></td><td>  26-27</td><td> <tt>bcmi_hyperlite_serdes</tt>
+</td></tr><tr><td></td><td>  28-31</td><td> <tt>bcmi_unicore16g_xgxs</tt>
+</td></tr><tr><td></td><td>  32-36</td><td> <tt>bcmi_hyperlite_serdes</tt>
+</td></tr><tr><td></td><td>  43-47</td><td> <tt>bcmi_hyperlite_serdes</tt>
+</td></tr><tr><td>  BCM56624</td><td>  0</td><td> none
+</td></tr><tr><td></td><td>  1</td><td> <tt>bcmi_nextgen65_serdes</tt>
+</td></tr><tr><td></td><td>  2-7</td><td> <tt>bcmi_hyperlite_serdes</tt>
+</td></tr><tr><td></td><td>  8-13</td><td> <tt>bcmi_nextgen65_serdes</tt>
+</td></tr><tr><td></td><td>  14-19</td><td> <tt>bcmi_hyperlite_serdes</tt>
+</td></tr><tr><td></td><td>  20-25</td><td> <tt>bcmi_nextgen65_serdes</tt>
+</td></tr><tr><td></td><td>  26-27</td><td> <tt>bcmi_hyperlite_serdes</tt>
+</td></tr><tr><td></td><td>  28-31</td><td> <tt>bcmi_unicore16g_xgxs</tt>
+</td></tr><tr><td></td><td>  32-36</td><td> <tt>bcmi_hyperlite_serdes</tt>
+</td></tr><tr><td></td><td>  37-42</td><td> <tt>bcmi_nextgen65_serdes</tt>
+</td></tr><tr><td></td><td>  43-47</td><td> <tt>bcmi_hyperlite_serdes</tt>
+</td></tr><tr><td></td><td>  48-53</td><td> <tt>bcmi_nextgen65_serdes</tt>
+</td></tr><tr><td>  BCM56626</td><td>  0</td><td> none
+</td></tr><tr><td></td><td>  1</td><td> <tt>bcmi_nextgen65_serdes</tt>
+</td></tr><tr><td></td><td>  2-7</td><td> <tt>bcmi_hyperlite_serdes</tt>
+</td></tr><tr><td></td><td>  8-13</td><td> <tt>bcmi_nextgen65_serdes</tt>
+</td></tr><tr><td></td><td>  14-19</td><td> <tt>bcmi_hyperlite_serdes</tt>
+</td></tr><tr><td></td><td>  20-25</td><td> <tt>bcmi_nextgen65_serdes</tt>
+</td></tr><tr><td></td><td>  26-27</td><td> <tt>bcmi_hyperlite_xgxs</tt>
+</td></tr><tr><td></td><td>  28-31</td><td> <tt>bcmi_unicore16g_xgxs</tt>
+</td></tr><tr><td>  BCM56628</td><td>  0</td><td> none
+</td></tr><tr><td></td><td>  1</td><td> <tt>bcmi_nextgen65_serdes</tt>
+</td></tr><tr><td></td><td>  2</td><td> <tt>bcmi_hyperlite_xgxs</tt>
+</td></tr><tr><td></td><td>  14</td><td> <tt>bcmi_hyperlite_xgxs</tt>
+</td></tr><tr><td></td><td>  26-27</td><td> <tt>bcmi_hyperlite_xgxs</tt>
+</td></tr><tr><td></td><td>  28-31</td><td> <tt>bcmi_unicore16g_xgxs</tt>
+</td></tr><tr><td>  BCM56629</td><td>  0</td><td> none
+</td></tr><tr><td></td><td>  1</td><td> <tt>bcmi_nextgen65_serdes</tt>
+</td></tr><tr><td></td><td>  2</td><td> <tt>bcmi_hyperlite_xgxs</tt>
+</td></tr><tr><td></td><td>  8-13</td><td> <tt>bcmi_nextgen65_serdes</tt>
+</td></tr><tr><td></td><td>  14</td><td> <tt>bcmi_hyperlite_xgxs</tt>
+</td></tr><tr><td></td><td>  20-25</td><td> <tt>bcmi_nextgen65_serdes</tt>
+</td></tr><tr><td></td><td>  26-27</td><td> <tt>bcmi_hyperlite_xgxs</tt>
+</td></tr><tr><td></td><td>  28-31</td><td> <tt>bcmi_unicore16g_xgxs</tt>
+</td></tr><tr><td></td><td>  37-42</td><td> <tt>bcmi_nextgen65_serdes</tt>
+</td></tr><tr><td></td><td>  48-53</td><td> <tt>bcmi_nextgen65_serdes</tt>
+</td></tr><tr><td>  BCM56630</td><td>  0</td><td> none
+</td></tr><tr><td></td><td>  26-29</td><td> <tt>bcmi_hypercore_xgxs</tt>
+</td></tr><tr><td></td><td>  30-53</td><td> <tt>bcmi_hyperlite_serdes</tt>
+</td></tr><tr><td></td><td>  54-56</td><td> none
+</td></tr><tr><td>  BCM56634</td><td>  0</td><td> none
+</td></tr><tr><td></td><td>  1-25</td><td> <tt>bcmi_nextgen65_serdes</tt>
+</td></tr><tr><td></td><td>  26-29</td><td> <tt>bcmi_hypercore_xgxs</tt>
+</td></tr><tr><td></td><td>  30-53</td><td> <tt>bcmi_hyperlite_serdes</tt>
+</td></tr><tr><td></td><td>  54-56</td><td> none
+</td></tr><tr><td>  BCM56636</td><td>  0</td><td> none
+</td></tr><tr><td></td><td>  1-13</td><td> <tt>bcmi_nextgen65_serdes</tt>
+</td></tr><tr><td></td><td>  26-29</td><td> <tt>bcmi_hypercore_xgxs</tt>
+</td></tr><tr><td></td><td>  30-41</td><td> <tt>bcmi_hyperlite_serdes</tt>
+</td></tr><tr><td></td><td>  42</td><td> <tt>bcmi_hyperlite_xgxs</tt>
+</td></tr><tr><td></td><td>  50</td><td> <tt>bcmi_hyperlite_xgxs</tt>
+</td></tr><tr><td></td><td>  54-56</td><td> none
+</td></tr><tr><td>  BCM56638</td><td>  0</td><td> none
+</td></tr><tr><td></td><td>  1</td><td> <tt>bcmi_nextgen65_serdes</tt>
+</td></tr><tr><td></td><td>  26-29</td><td> <tt>bcmi_hypercore_xgxs</tt>
+</td></tr><tr><td></td><td>  30</td><td> <tt>bcmi_hyperlite_xgxs</tt>
+</td></tr><tr><td></td><td>  38</td><td> <tt>bcmi_hyperlite_xgxs</tt>
+</td></tr><tr><td></td><td>  42</td><td> <tt>bcmi_hyperlite_xgxs</tt>
+</td></tr><tr><td></td><td>  50</td><td> <tt>bcmi_hyperlite_xgxs</tt>
+</td></tr><tr><td></td><td>  54-56</td><td> none
+</td></tr><tr><td>  BCM56639</td><td>  0</td><td> none
+</td></tr><tr><td></td><td>  1-25</td><td> <tt>bcmi_nextgen65_serdes</tt>
+</td></tr><tr><td></td><td>  26-29</td><td> <tt>bcmi_hypercore_xgxs</tt>
+</td></tr><tr><td></td><td>  30</td><td> <tt>bcmi_hyperlite_xgxs</tt>
+</td></tr><tr><td></td><td>  38</td><td> <tt>bcmi_hyperlite_xgxs</tt>
+</td></tr><tr><td></td><td>  42</td><td> <tt>bcmi_hyperlite_xgxs</tt>
+</td></tr><tr><td></td><td>  50</td><td> <tt>bcmi_hyperlite_xgxs</tt>
+</td></tr><tr><td></td><td>  54-56</td><td> none
+</td></tr><tr><td>  BCM56680</td><td>  0</td><td> none
+</td></tr><tr><td></td><td>  1</td><td> <tt>bcmi_nextgen65_serdes</tt>
+</td></tr><tr><td></td><td>  2-7</td><td> <tt>bcmi_hyperlite_serdes</tt>
+</td></tr><tr><td></td><td>  14-19</td><td> <tt>bcmi_hyperlite_serdes</tt>
+</td></tr><tr><td></td><td>  26-27</td><td> <tt>bcmi_hyperlite_serdes</tt>
+</td></tr><tr><td></td><td>  28-31</td><td> <tt>bcmi_unicore16g_xgxs</tt>
+</td></tr><tr><td></td><td>  32-36</td><td> <tt>bcmi_hyperlite_serdes</tt>
+</td></tr><tr><td></td><td>  43-47</td><td> <tt>bcmi_hyperlite_serdes</tt>
+</td></tr><tr><td>  BCM56684</td><td>  0</td><td> none
+</td></tr><tr><td></td><td>  2-7</td><td> <tt>bcmi_hyperlite_serdes</tt>
+</td></tr><tr><td></td><td>  14-19</td><td> <tt>bcmi_hyperlite_serdes</tt>
+</td></tr><tr><td></td><td>  26-27</td><td> <tt>bcmi_hyperlite_serdes</tt>
+</td></tr><tr><td></td><td>  28-31</td><td> <tt>bcmi_unicore16g_xgxs</tt>
+</td></tr><tr><td></td><td>  32-36</td><td> <tt>bcmi_hyperlite_serdes</tt>
+</td></tr><tr><td></td><td>  43-47</td><td> <tt>bcmi_hyperlite_serdes</tt>
+</td></tr><tr><td>  BCM56686</td><td>  0</td><td> none
+</td></tr><tr><td></td><td>  2</td><td> <tt>bcmi_hyperlite_xgxs</tt>
+</td></tr><tr><td></td><td>  27</td><td> <tt>bcmi_hyperlite_xgxs</tt>
+</td></tr><tr><td></td><td>  28-31</td><td> <tt>bcmi_unicore16g_xgxs</tt>
+</td></tr><tr><td>  BCM56685</td><td>  0</td><td> none
+</td></tr><tr><td></td><td>  1</td><td> <tt>bcmi_nextgen65_serdes</tt>
+</td></tr><tr><td></td><td>  26-29</td><td> <tt>bcmi_hypercore_xgxs</tt>
+</td></tr><tr><td></td><td>  30-53</td><td> <tt>bcmi_hyperlite_serdes</tt>
+</td></tr><tr><td></td><td>  54-56</td><td> none
+</td></tr><tr><td>  BCM56689</td><td>  0</td><td> none
+</td></tr><tr><td></td><td>  26-29</td><td> <tt>bcmi_hypercore_xgxs</tt>
+</td></tr><tr><td></td><td>  30-53</td><td> <tt>bcmi_hyperlite_serdes</tt>
+</td></tr><tr><td></td><td>  54-56</td><td> none
+</td></tr><tr><td>  BCM56700</td><td>  0-7</td><td> <tt>bcmi_unicore_xgxs</tt>
+</td></tr><tr><td></td><td>  10-17</td><td> <tt>bcmi_unicore_xgxs</tt>
+</td></tr><tr><td></td><td>  20</td><td> none
+</td></tr><tr><td>  BCM56701</td><td>  0-7</td><td> <tt>bcmi_unicore_xgxs</tt>
+</td></tr><tr><td></td><td>  10-13</td><td> <tt>bcmi_unicore_xgxs</tt>
+</td></tr><tr><td></td><td>  20</td><td> none
+</td></tr><tr><td>  BCM56720</td><td>  0</td><td> none
+</td></tr><tr><td></td><td>  5-8</td><td> <tt>bcmi_unicore16g_xgxs</tt>
+</td></tr><tr><td></td><td>  9-16</td><td> <tt>bcmi_hyperlite_xgxs</tt>
+</td></tr><tr><td></td><td>  17-20</td><td> <tt>bcmi_unicore16g_xgxs</tt>
+</td></tr><tr><td>  BCM56721</td><td>  0</td><td> none
+</td></tr><tr><td></td><td>  7-8</td><td> <tt>bcmi_unicore16g_xgxs</tt>
+</td></tr><tr><td></td><td>  9-16</td><td> <tt>bcmi_hyperlite_xgxs</tt>
+</td></tr><tr><td></td><td>  17-18</td><td> <tt>bcmi_unicore16g_xgxs</tt>
+</td></tr><tr><td>  BCM56725</td><td>  0</td><td> none
+</td></tr><tr><td></td><td>  7-8</td><td> <tt>bcmi_unicore16g_xgxs</tt>
+</td></tr><tr><td></td><td>  9-16</td><td> <tt>bcmi_hyperlite_xgxs</tt>
+</td></tr><tr><td></td><td>  17-18</td><td> <tt>bcmi_unicore16g_xgxs</tt>
+</td></tr><tr><td>  BCM56800</td><td>  0-19</td><td> <tt>bcmi_unicore_xgxs</tt>
+</td></tr><tr><td></td><td>  20</td><td> none
+</td></tr><tr><td>  BCM56801</td><td>  0-7</td><td> <tt>bcmi_unicore_xgxs</tt>
+</td></tr><tr><td></td><td>  10-19</td><td> <tt>bcmi_unicore_xgxs</tt>
+</td></tr><tr><td></td><td>  20</td><td> none
+</td></tr><tr><td>  BCM56802</td><td>  0-7</td><td> <tt>bcmi_unicore_xgxs</tt>
+</td></tr><tr><td></td><td>  10-17</td><td> <tt>bcmi_unicore_xgxs</tt>
+</td></tr><tr><td></td><td>  20</td><td> none
+</td></tr><tr><td>  BCM56803</td><td>  0-7</td><td> <tt>bcmi_unicore_xgxs</tt>
+</td></tr><tr><td></td><td>  10-13</td><td> <tt>bcmi_unicore_xgxs</tt>
+</td></tr><tr><td></td><td>  20</td><td> none
+</td></tr><tr><td>  BCM56820</td><td>  0</td><td> none
+</td></tr><tr><td></td><td>  1-8</td><td> <tt>bcmi_unicore16g_xgxs</tt>
+</td></tr><tr><td></td><td>  9-16</td><td> <tt>bcmi_hyperlite_xgxs</tt>
+</td></tr><tr><td></td><td>  17-24</td><td> <tt>bcmi_unicore16g_xgxs</tt>
+</td></tr><tr><td></td><td>  25-28</td><td> <tt>bcmi_unicore16g_serdes</tt>
+</td></tr><tr><td>  BCM56821</td><td>  0</td><td> none
+</td></tr><tr><td></td><td>  1-8</td><td> <tt>bcmi_unicore16g_xgxs</tt>
+</td></tr><tr><td></td><td>  9-10</td><td> <tt>bcmi_hyperlite_xgxs</tt>
+</td></tr><tr><td></td><td>  15-16</td><td> <tt>bcmi_hyperlite_xgxs</tt>
+</td></tr><tr><td></td><td>  17-24</td><td> <tt>bcmi_unicore16g_xgxs</tt>
+</td></tr><tr><td></td><td>  25-28</td><td> <tt>bcmi_unicore16g_serdes</tt>
+</td></tr><tr><td>  BCM56822</td><td>  0</td><td> none
+</td></tr><tr><td></td><td>  9-16</td><td> <tt>bcmi_hyperlite_xgxs</tt>
+</td></tr><tr><td></td><td>  17-24</td><td> <tt>bcmi_unicore16g_xgxs</tt>
+</td></tr><tr><td></td><td>  25-28</td><td> <tt>bcmi_unicore16g_serdes</tt>
+</td></tr><tr><td>  BCM56823</td><td>  0</td><td> none
+</td></tr><tr><td></td><td>  7-8</td><td> <tt>bcmi_unicore16g_xgxs</tt>
+</td></tr><tr><td></td><td>  9-16</td><td> <tt>bcmi_hyperlite_xgxs</tt>
+</td></tr><tr><td></td><td>  17-18</td><td> <tt>bcmi_unicore16g_xgxs</tt>
+</td></tr><tr><td></td><td>  25-28</td><td> <tt>bcmi_unicore16g_serdes</tt>
+</td></tr><tr><td>  BCM56743</td><td>  0</td><td> none
+</td></tr><tr><td></td><td>  1-72</td><td> <tt>bcmi_warpcore_xgxs</tt>
+</td></tr><tr><td>  BCM56744</td><td>  0</td><td> none
+</td></tr><tr><td></td><td>  1-72</td><td> <tt>bcmi_warpcore_xgxs</tt>
+</td></tr><tr><td>  BCM56745</td><td>  0</td><td> none
+</td></tr><tr><td></td><td>  1-72</td><td> <tt>bcmi_warpcore_xgxs</tt>
+</td></tr><tr><td>  BCM56746</td><td>  0</td><td> none
+</td></tr><tr><td></td><td>  1-72</td><td> <tt>bcmi_warpcore_xgxs</tt>
+</td></tr><tr><td>  BCM56840</td><td>  0</td><td> none
+</td></tr><tr><td></td><td>  1-72</td><td> <tt>bcmi_warpcore_xgxs</tt>
+</td></tr><tr><td>  BCM56841</td><td>  0</td><td> none
+</td></tr><tr><td></td><td>  1-72</td><td> <tt>bcmi_warpcore_xgxs</tt>
+</td></tr><tr><td>  BCM56842</td><td>  0</td><td> none
+</td></tr><tr><td></td><td>  1-72</td><td> <tt>bcmi_warpcore_xgxs</tt>
+</td></tr><tr><td>  BCM56843</td><td>  0</td><td> none
+</td></tr><tr><td></td><td>  1-72</td><td> <tt>bcmi_warpcore_xgxs</tt>
+</td></tr><tr><td>  BCM56844</td><td>  0</td><td> none
+</td></tr><tr><td></td><td>  1-72</td><td> <tt>bcmi_warpcore_xgxs</tt>
+</td></tr><tr><td>  BCM56845</td><td>  0</td><td> none
+</td></tr><tr><td></td><td>  1-72</td><td> <tt>bcmi_warpcore_xgxs</tt>
+</td></tr><tr><td>  BCM56846</td><td>  0</td><td> none
+</td></tr><tr><td></td><td>  1-72</td><td> <tt>bcmi_warpcore_xgxs</tt>
+</td></tr><tr><td>  BCM56931</td><td>  All</td><td> No Internal PHYs
+</td></tr><tr><td>  BCM56936</td><td>  All</td><td> No Internal PHYs
+</td></tr><tr><td>  BCM88230</td><td>  All</td><td> No Internal PHYs
+</td></tr><tr><td>  BCM88231</td><td>  All</td><td> No Internal PHYs
+</td></tr><tr><td>  BCM88235</td><td>  All</td><td> No Internal PHYs
+</td></tr><tr><td>  BCM88236</td><td>  All</td><td> No Internal PHYs
+</td></tr><tr><td>  BCM56241</td><td>  0-26</td><td> none
+</td></tr><tr><td></td><td>  27-34</td><td> <tt>bcmi_unicore13g_xgxs</tt>
+</td></tr><tr><td></td><td>  35</td><td> none
+</td></tr><tr><td>  BCM56249</td><td>  0-24</td><td> none
+</td></tr><tr><td></td><td>  25-28</td><td> <tt>bcmi_unicore13g_xgxs</tt>
+</td></tr><tr><td></td><td>  35</td><td> none
+</td></tr><tr><td>  BCM56440</td><td>  0</td><td> none
+</td></tr><tr><td></td><td>  1-24</td><td> <tt>bcmi_quadsgmii_serdes</tt>
+</td></tr><tr><td></td><td>  25-28</td><td> <tt>bcmi_unicore13g_xgxs</tt>
+</td></tr><tr><td></td><td>  35</td><td> none
+</td></tr><tr><td>  BCM56441</td><td>  0-8</td><td> none
+</td></tr><tr><td></td><td>  9-16</td><td> <tt>bcmi_quadsgmii_serdes</tt>
+</td></tr><tr><td></td><td>  17-26</td><td> none
+</td></tr><tr><td></td><td>  27-28</td><td> <tt>bcmi_unicore13g_xgxs</tt>
+</td></tr><tr><td></td><td>  35</td><td> none
+</td></tr><tr><td>  BCM56442</td><td>  0-8</td><td> none
+</td></tr><tr><td></td><td>  9-24</td><td> <tt>bcmi_quadsgmii_serdes</tt>
+</td></tr><tr><td></td><td>  25-28</td><td> none
+</td></tr><tr><td></td><td>  35</td><td> none
+</td></tr><tr><td>  BCM56443</td><td>  0-24</td><td> none
+</td></tr><tr><td></td><td>  25-34</td><td> <tt>bcmi_unicore13g_xgxs</tt>
+</td></tr><tr><td></td><td>  35</td><td> none
+</td></tr><tr><td>  BCM56444</td><td>  0-24</td><td> none
+</td></tr><tr><td></td><td>  25-28</td><td> <tt>bcmi_unicore13g_xgxs</tt>
+</td></tr><tr><td></td><td>  35</td><td> none
+</td></tr><tr><td>  BCM56445</td><td>  0</td><td> none
+</td></tr><tr><td></td><td>  1-24</td><td> <tt>bcmi_quadsgmii_serdes</tt>
+</td></tr><tr><td></td><td>  25-28</td><td> <tt>bcmi_unicore13g_xgxs</tt>
+</td></tr><tr><td></td><td>  35</td><td> none
+</td></tr><tr><td>  BCM56446</td><td>  0</td><td> none
+</td></tr><tr><td></td><td>  1-8</td><td> <tt>bcmi_quadsgmii_serdes</tt>
+</td></tr><tr><td></td><td>  9-26</td><td> none
+</td></tr><tr><td></td><td>  27-28</td><td> <tt>bcmi_unicore13g_xgxs</tt>
+</td></tr><tr><td></td><td>  35</td><td> none
+</td></tr><tr><td>  BCM56447</td><td>  0</td><td> none
+</td></tr><tr><td></td><td>  1-16</td><td> <tt>bcmi_quadsgmii_serdes</tt>
+</td></tr><tr><td></td><td>  17-28</td><td> none
+</td></tr><tr><td></td><td>  35</td><td> none
+</td></tr><tr><td>  BCM56448</td><td>  0</td><td> none
+</td></tr><tr><td></td><td>  1-24</td><td> <tt>bcmi_quadsgmii_serdes</tt>
+</td></tr><tr><td></td><td>  25-28</td><td> <tt>bcmi_unicore13g_xgxs</tt>
+</td></tr><tr><td></td><td>  35</td><td> none
+</td></tr><tr><td>  BCM56449</td><td>  0-24</td><td> none
+</td></tr><tr><td></td><td>  25-28</td><td> <tt>bcmi_unicore13g_xgxs</tt>
+</td></tr><tr><td></td><td>  35</td><td> none
+</td></tr><tr><td>  BCM56540</td><td>  0</td><td> none
+</td></tr><tr><td></td><td>  1-37</td><td> <tt>bcmi_unicore13g_serdes</tt>
+</td></tr><tr><td></td><td>  41-52</td><td> <tt>bcmi_unicore13g_serdes</tt>
+</td></tr><tr><td></td><td>  57</td><td> <tt>bcmi_warpcore3_xgxs</tt>
+</td></tr><tr><td></td><td>  61</td><td> <tt>bcmi_warpcore3_xgxs</tt>
+</td></tr><tr><td></td><td>  73</td><td> <tt>bcmi_warpcore3_xgxs</tt>
+</td></tr><tr><td></td><td>  77</td><td> <tt>bcmi_warpcore3_xgxs</tt>
+</td></tr><tr><td></td><td>  81-85</td><td> none
+</td></tr><tr><td>  BCM56541</td><td>  0</td><td> none
+</td></tr><tr><td></td><td>  9-37</td><td> <tt>bcmi_unicore13g_serdes</tt>
+</td></tr><tr><td></td><td>  57</td><td> <tt>bcmi_warpcore3_xgxs</tt>
+</td></tr><tr><td></td><td>  61</td><td> <tt>bcmi_warpcore3_xgxs</tt>
+</td></tr><tr><td></td><td>  73</td><td> <tt>bcmi_warpcore3_xgxs</tt>
+</td></tr><tr><td></td><td>  77</td><td> <tt>bcmi_warpcore3_xgxs</tt>
+</td></tr><tr><td></td><td>  81-85</td><td> none
+</td></tr><tr><td>  BCM56542</td><td>  0</td><td> none
+</td></tr><tr><td></td><td>  9-27</td><td> <tt>bcmi_unicore13g_serdes</tt>
+</td></tr><tr><td></td><td>  32-37</td><td> <tt>bcmi_unicore13g_serdes</tt>
+</td></tr><tr><td></td><td>  41-52</td><td> <tt>bcmi_unicore13g_serdes</tt>
+</td></tr><tr><td></td><td>  57-64</td><td> <tt>bcmi_warpcore3_xgxs</tt>
+</td></tr><tr><td></td><td>  73-80</td><td> <tt>bcmi_warpcore3_xgxs</tt>
+</td></tr><tr><td></td><td>  81-85</td><td> none
+</td></tr><tr><td>  BCM56544</td><td>  0</td><td> none
+</td></tr><tr><td></td><td>  1-37</td><td> <tt>bcmi_unicore13g_serdes</tt>
+</td></tr><tr><td></td><td>  49-52</td><td> <tt>bcmi_unicore13g_serdes</tt>
+</td></tr><tr><td></td><td>  57-61</td><td> <tt>bcmi_warpcore3_xgxs</tt>
+</td></tr><tr><td></td><td>  73-80</td><td> <tt>bcmi_warpcore3_xgxs</tt>
+</td></tr><tr><td></td><td>  81-85</td><td> none
+</td></tr><tr><td>  BCM56545</td><td>  0</td><td> none
+</td></tr><tr><td></td><td>  1-37</td><td> <tt>bcmi_unicore13g_serdes</tt>
+</td></tr><tr><td></td><td>  41-52</td><td> <tt>bcmi_unicore13g_serdes</tt>
+</td></tr><tr><td></td><td>  57</td><td> <tt>bcmi_warpcore3_xgxs</tt>
+</td></tr><tr><td></td><td>  61</td><td> <tt>bcmi_warpcore3_xgxs</tt>
+</td></tr><tr><td></td><td>  73</td><td> <tt>bcmi_warpcore3_xgxs</tt>
+</td></tr><tr><td></td><td>  77</td><td> <tt>bcmi_warpcore3_xgxs</tt>
+</td></tr><tr><td></td><td>  81-85</td><td> none
+</td></tr><tr><td>  BCM56546</td><td>  0</td><td> none
+</td></tr><tr><td></td><td>  9-37</td><td> <tt>bcmi_unicore13g_serdes</tt>
+</td></tr><tr><td></td><td>  57</td><td> <tt>bcmi_warpcore3_xgxs</tt>
+</td></tr><tr><td></td><td>  61</td><td> <tt>bcmi_warpcore3_xgxs</tt>
+</td></tr><tr><td></td><td>  73</td><td> <tt>bcmi_warpcore3_xgxs</tt>
+</td></tr><tr><td></td><td>  77</td><td> <tt>bcmi_warpcore3_xgxs</tt>
+</td></tr><tr><td></td><td>  81-85</td><td> none
+</td></tr><tr><td>  BCM56045</td><td>  0</td><td> none
+</td></tr><tr><td></td><td>  37</td><td> <tt>bcmi_unicore13g_serdes</tt>
+</td></tr><tr><td></td><td>  53-64</td><td> <tt>bcmi_warpcore3_xgxs</tt>
+</td></tr><tr><td></td><td>  69-80</td><td> <tt>bcmi_warpcore3_xgxs</tt>
+</td></tr><tr><td></td><td>  81-85</td><td> none
+</td></tr><tr><td>  BCM56046</td><td>  0</td><td> none
+</td></tr><tr><td></td><td>  37</td><td> <tt>bcmi_unicore13g_serdes</tt>
+</td></tr><tr><td></td><td>  53-64</td><td> <tt>bcmi_warpcore3_xgxs</tt>
+</td></tr><tr><td></td><td>  69-76</td><td> <tt>bcmi_warpcore3_xgxs</tt>
+</td></tr><tr><td></td><td>  81-85</td><td> none
+</td></tr><tr><td>  BCM56640</td><td>  0</td><td> none
+</td></tr><tr><td></td><td>  37</td><td> <tt>bcmi_unicore13g_serdes</tt>
+</td></tr><tr><td></td><td>  53-64</td><td> <tt>bcmi_warpcore3_xgxs</tt>
+</td></tr><tr><td></td><td>  69-80</td><td> <tt>bcmi_warpcore3_xgxs</tt>
+</td></tr><tr><td></td><td>  81-85</td><td> none
+</td></tr><tr><td>  BCM56643</td><td>  0</td><td> none
+</td></tr><tr><td></td><td>  1-37</td><td> <tt>bcmi_unicore13g_serdes</tt>
+</td></tr><tr><td></td><td>  41-52</td><td> <tt>bcmi_unicore13g_serdes</tt>
+</td></tr><tr><td></td><td>  57-60</td><td> <tt>bcmi_warpcore3_xgxs</tt>
+</td></tr><tr><td></td><td>  65</td><td> <tt>bcmi_warpcore3_xgxs</tt>
+</td></tr><tr><td></td><td>  69</td><td> <tt>bcmi_warpcore3_xgxs</tt>
+</td></tr><tr><td></td><td>  73</td><td> <tt>bcmi_warpcore3_xgxs</tt>
+</td></tr><tr><td></td><td>  77</td><td> <tt>bcmi_warpcore3_xgxs</tt>
+</td></tr><tr><td></td><td>  81-85</td><td> none
+</td></tr><tr><td>  BCM56644</td><td>  0</td><td> none
+</td></tr><tr><td></td><td>  1-37</td><td> <tt>bcmi_unicore13g_serdes</tt>
+</td></tr><tr><td></td><td>  41-52</td><td> <tt>bcmi_unicore13g_serdes</tt>
+</td></tr><tr><td></td><td>  57</td><td> <tt>bcmi_warpcore3_xgxs</tt>
+</td></tr><tr><td></td><td>  61</td><td> <tt>bcmi_warpcore3_xgxs</tt>
+</td></tr><tr><td></td><td>  73</td><td> <tt>bcmi_warpcore3_xgxs</tt>
+</td></tr><tr><td></td><td>  77</td><td> <tt>bcmi_warpcore3_xgxs</tt>
+</td></tr><tr><td></td><td>  81-85</td><td> none
+</td></tr><tr><td>  BCM56648</td><td>  0</td><td> none
+</td></tr><tr><td></td><td>  1-37</td><td> <tt>bcmi_unicore13g_serdes</tt>
+</td></tr><tr><td></td><td>  41-52</td><td> <tt>bcmi_unicore13g_serdes</tt>
+</td></tr><tr><td></td><td>  57-60</td><td> <tt>bcmi_warpcore3_xgxs</tt>
+</td></tr><tr><td></td><td>  65</td><td> <tt>bcmi_warpcore3_xgxs</tt>
+</td></tr><tr><td></td><td>  69</td><td> <tt>bcmi_warpcore3_xgxs</tt>
+</td></tr><tr><td></td><td>  73</td><td> <tt>bcmi_warpcore3_xgxs</tt>
+</td></tr><tr><td></td><td>  77</td><td> <tt>bcmi_warpcore3_xgxs</tt>
+</td></tr><tr><td></td><td>  81-85</td><td> none
+</td></tr><tr><td>  BCM56649</td><td>  0</td><td> none
+</td></tr><tr><td></td><td>  9-37</td><td> <tt>bcmi_unicore13g_serdes</tt>
+</td></tr><tr><td></td><td>  57-60</td><td> <tt>bcmi_warpcore3_xgxs</tt>
+</td></tr><tr><td></td><td>  65</td><td> <tt>bcmi_warpcore3_xgxs</tt>
+</td></tr><tr><td></td><td>  69</td><td> <tt>bcmi_warpcore3_xgxs</tt>
+</td></tr><tr><td></td><td>  73</td><td> <tt>bcmi_warpcore3_xgxs</tt>
+</td></tr><tr><td></td><td>  77</td><td> <tt>bcmi_warpcore3_xgxs</tt>
+</td></tr><tr><td></td><td>  81-85</td><td> none
+</td></tr><tr><td>  BCM56750</td><td>  0</td><td> none
+</td></tr><tr><td></td><td>  1-128</td><td> <tt>bcmi_tsc_xgxs</tt>
+</td></tr><tr><td>  BCM56850</td><td>  0</td><td> none
+</td></tr><tr><td></td><td>  1-128</td><td> <tt>bcmi_tsc_xgxs</tt>
+</td></tr><tr><td>  BCM56851</td><td>  0</td><td> none
+</td></tr><tr><td></td><td>  1-128</td><td> <tt>bcmi_tsc_xgxs</tt>
+</td></tr><tr><td>  BCM56852</td><td>  0</td><td> none
+</td></tr><tr><td></td><td>  1-12</td><td> <tt>bcmi_tsc_xgxs</tt>
+</td></tr><tr><td></td><td>  21-44</td><td> <tt>bcmi_tsc_xgxs</tt>
+</td></tr><tr><td></td><td>  53-76</td><td> <tt>bcmi_tsc_xgxs</tt>
+</td></tr><tr><td></td><td>  85-108</td><td> <tt>bcmi_tsc_xgxs</tt>
+</td></tr><tr><td></td><td>  117-128</td><td> <tt>bcmi_tsc_xgxs</tt>
+</td></tr><tr><td>  BCM56855</td><td>  0</td><td> none
+</td></tr><tr><td></td><td>  1-20</td><td> <tt>bcmi_tsc_xgxs</tt>
+</td></tr><tr><td></td><td>  45-76</td><td> <tt>bcmi_tsc_xgxs</tt>
+</td></tr><tr><td></td><td>  81-84</td><td> <tt>bcmi_tsc_xgxs</tt>
+</td></tr><tr><td></td><td>  109-128</td><td> <tt>bcmi_tsc_xgxs</tt>
+</td></tr></tbody></table><br><p>
+</table>
+</body>
+</html>

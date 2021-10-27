@@ -1,0 +1,2 @@
+dependson: private/libs/xdslctl public/libs/bcm_flashutil public/libs/bcm_boardctl
+condition: ifneq ($(strip $(BUILD_XDSLCTL)),)

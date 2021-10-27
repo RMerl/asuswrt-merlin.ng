@@ -1,0 +1,374 @@
+.\" Man page generated from reStructuredText.
+.
+.TH OPENVPN EXAMPLES 5 "" "" "Configuration files"
+.SH NAME
+openvpn examples \- Secure IP tunnel daemon
+.
+.nr rst2man-indent-level 0
+.
+.de1 rstReportMargin
+\\$1 \\n[an-margin]
+level \\n[rst2man-indent-level]
+level margin: \\n[rst2man-indent\\n[rst2man-indent-level]]
+-
+\\n[rst2man-indent0]
+\\n[rst2man-indent1]
+\\n[rst2man-indent2]
+..
+.de1 INDENT
+.\" .rstReportMargin pre:
+. RS \\$1
+. nr rst2man-indent\\n[rst2man-indent-level] \\n[an-margin]
+. nr rst2man-indent-level +1
+.\" .rstReportMargin post:
+..
+.de UNINDENT
+. RE
+.\" indent \\n[an-margin]
+.\" old: \\n[rst2man-indent\\n[rst2man-indent-level]]
+.nr rst2man-indent-level -1
+.\" new: \\n[rst2man-indent\\n[rst2man-indent-level]]
+.in \\n[rst2man-indent\\n[rst2man-indent-level]]u
+..
+.SH INTRODUCTION
+.sp
+This man page gives a few simple examples to create OpenVPN setups and configuration files.
+.SH EXAMPLES
+.sp
+Prior to running these examples, you should have OpenVPN installed on
+two machines with network connectivity between them. If you have not yet
+installed OpenVPN, consult the INSTALL file included in the OpenVPN
+distribution.
+.SS Firewall Setup:
+.sp
+If firewalls exist between the two machines, they should be set to
+forward the port OpenVPN is configured to use, in both directions.
+The default for OpenVPN is 1194/udp.  If you do not have control
+over the firewalls between the two machines, you may still be able to
+use OpenVPN by adding \fB\-\-ping 15\fP to each of the \fBopenvpn\fP commands
+used below in the examples (this will cause each peer to send out a UDP
+ping to its remote peer once every 15 seconds which will cause many
+stateful firewalls to forward packets in both directions without an
+explicit firewall rule).
+.sp
+Please see your operating system guides for how to configure the firewall
+on your systems.
+.SS VPN Address Setup:
+.sp
+For purposes of our example, our two machines will be called
+\fBbob.example.com\fP and \fBalice.example.com\fP\&. If you are constructing a
+VPN over the internet, then replace \fBbob.example.com\fP and
+\fBalice.example.com\fP with the internet hostname or IP address that each
+machine will use to contact the other over the internet.
+.sp
+Now we will choose the tunnel endpoints. Tunnel endpoints are private IP
+addresses that only have meaning in the context of the VPN. Each machine
+will use the tunnel endpoint of the other machine to access it over the
+VPN. In our example, the tunnel endpoint for bob.example.com will be
+10.4.0.1 and for alice.example.com, 10.4.0.2.
+.sp
+Once the VPN is established, you have essentially created a secure
+alternate path between the two hosts which is addressed by using the
+tunnel endpoints. You can control which network traffic passes between
+the hosts (a) over the VPN or (b) independently of the VPN, by choosing
+whether to use (a) the VPN endpoint address or (b) the public internet
+address, to access the remote host. For example if you are on
+bob.example.com and you wish to connect to \fBalice.example.com\fP via
+\fBssh\fP without using the VPN (since \fBssh\fP has its own built\-in security)
+you would use the command \fBssh alice.example.com\fP\&. However in the same
+scenario, you could also use the command \fBtelnet 10.4.0.2\fP to create a
+telnet session with alice.example.com over the VPN, that would use the
+VPN to secure the session rather than \fBssh\fP\&.
+.sp
+You can use any address you wish for the tunnel endpoints but make sure
+that they are private addresses (such as those that begin with 10 or
+192.168) and that they are not part of any existing subnet on the
+networks of either peer, unless you are bridging. If you use an address
+that is part of your local subnet for either of the tunnel endpoints,
+you will get a weird feedback loop.
+.SS Example 1: A simple tunnel without security
+.sp
+On bob:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+openvpn \-\-remote alice.example.com \-\-dev tun1 \e
+         \-\-ifconfig 10.4.0.1 10.4.0.2 \-\-verb 9
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+On alice:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+openvpn \-\-remote bob.example.com \-\-dev tun1 \e
+         \-\-ifconfig 10.4.0.2 10.4.0.1 \-\-verb 9
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+Now verify the tunnel is working by pinging across the tunnel.
+.sp
+On bob:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+ping 10.4.0.2
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+On alice:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+ping 10.4.0.1
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+The \fB\-\-verb 9\fP option will produce verbose output, similar to the
+\fBtcpdump\fP(8) program. Omit the \fB\-\-verb 9\fP option to have OpenVPN run
+quietly.
+.SS Example 2: A tunnel with static\-key security (i.e. using a pre\-shared secret)
+.sp
+First build a static key on bob.
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+openvpn \-\-genkey \-\-secret key
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+This command will build a key file called \fBkey\fP (in ascii format). Now
+copy \fBkey\fP to \fBalice.example.com\fP over a secure medium such as by using
+the \fBscp\fP(1) program.
+.sp
+On bob:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+openvpn \-\-remote alice.example.com \-\-dev tun1  \e
+         \-\-ifconfig 10.4.0.1 10.4.0.2 \-\-verb 5 \e
+         \-\-secret key
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+On alice:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+openvpn \-\-remote bob.example.com \-\-dev tun1   \e
+        \-\-ifconfig 10.4.0.2 10.4.0.1 \-\-verb 5 \e
+        \-\-secret key
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+Now verify the tunnel is working by pinging across the tunnel.
+.sp
+On bob:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+ping 10.4.0.2
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+On alice:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+ping 10.4.0.1
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.SS Example 3: A tunnel with full TLS\-based security
+.sp
+For this test, we will designate \fBbob\fP as the TLS client and \fBalice\fP
+as the TLS server.
+.INDENT 0.0
+.TP
+.B \fINote:\fP
+The client or server designation only has
+meaning for the TLS subsystem. It has no bearing on OpenVPN\(aqs
+peer\-to\-peer, UDP\-based communication model.*
+.UNINDENT
+.sp
+First, build a separate certificate/key pair for both bob and alice (see
+above where \fB\-\-cert\fP is discussed for more info). Then construct
+Diffie Hellman parameters (see above where \fB\-\-dh\fP is discussed for
+more info). You can also use the included test files \fBclient.crt\fP,
+\fBclient.key\fP, \fBserver.crt\fP, \fBserver.key\fP and
+\fBca.crt\fP\&. The \fB\&.crt\fP files are certificates/public\-keys, the
+\fB\&.key\fP files are private keys, and \fBca.crt\fP is a certification
+authority who has signed both \fBclient.crt\fP and \fBserver.crt\fP\&.
+For Diffie Hellman parameters you can use the included file
+\fBdh2048.pem\fP\&.
+.INDENT 0.0
+.TP
+.B \fIWARNING:\fP
+All client, server, and certificate authority certificates
+and keys included in the OpenVPN distribution are totally
+insecure and should be used for testing only.
+.UNINDENT
+.sp
+On bob:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+openvpn \-\-remote alice.example.com \-\-dev tun1    \e
+        \-\-ifconfig 10.4.0.1 10.4.0.2             \e
+        \-\-tls\-client \-\-ca ca.crt                 \e
+        \-\-cert client.crt \-\-key client.key       \e
+        \-\-reneg\-sec 60 \-\-verb 5
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+On alice:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+openvpn \-\-remote bob.example.com \-\-dev tun1      \e
+        \-\-ifconfig 10.4.0.2 10.4.0.1             \e
+        \-\-tls\-server \-\-dh dh1024.pem \-\-ca ca.crt \e
+        \-\-cert server.crt \-\-key server.key       \e
+        \-\-reneg\-sec 60 \-\-verb 5
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+Now verify the tunnel is working by pinging across the tunnel.
+.sp
+On bob:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+ping 10.4.0.2
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+On alice:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+ping 10.4.0.1
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+Notice the \fB\-\-reneg\-sec 60\fP option we used above. That tells OpenVPN
+to renegotiate the data channel keys every minute. Since we used
+\fB\-\-verb 5\fP above, you will see status information on each new key
+negotiation.
+.sp
+For production operations, a key renegotiation interval of 60 seconds is
+probably too frequent. Omit the \fB\-\-reneg\-sec 60\fP option to use
+OpenVPN\(aqs default key renegotiation interval of one hour.
+.SS Routing:
+.sp
+Assuming you can ping across the tunnel, the next step is to route a
+real subnet over the secure tunnel. Suppose that bob and alice have two
+network interfaces each, one connected to the internet, and the other to
+a private network. Our goal is to securely connect both private
+networks. We will assume that bob\(aqs private subnet is \fI10.0.0.0/24\fP and
+alice\(aqs is \fI10.0.1.0/24\fP\&.
+.sp
+First, ensure that IP forwarding is enabled on both peers. On Linux,
+enable routing:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+echo 1 > /proc/sys/net/ipv4/ip_forward
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+This setting is not persistent.  Please see your operating systems
+documentation how to properly configure IP forwarding, which is also
+persistent through system boots.
+.sp
+If your system is configured with a firewall.  Please see your operating
+systems guide on how to configure the firewall.  You typically want to
+allow traffic coming from and going to the tun/tap adapter OpenVPN is
+configured to use.
+.sp
+On bob:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+route add \-net 10.0.1.0 netmask 255.255.255.0 gw 10.4.0.2
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+On alice:
+.INDENT 0.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+route add \-net 10.0.0.0 netmask 255.255.255.0 gw 10.4.0.1
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+Now any machine on the \fI10.0.0.0/24\fP subnet can access any machine on the
+\fI10.0.1.0/24\fP subnet over the secure tunnel (or vice versa).
+.sp
+In a production environment, you could put the route command(s) in a
+script and execute with the \fB\-\-up\fP option.
+.\" Generated by docutils manpage writer.
+.

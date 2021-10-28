@@ -22,12 +22,6 @@ then
 	cp release/src/router/envram_bin/envram$ARCH$SDK/* $REPO/release/src/router/envram_bin/envram$ARCH$SDK/
 	cp release/src-rt-7.14.114.x/src/wl/exe/prebuilt/* $REPO/release/src-rt-7.14.114.x/src/wl/exe/prebuilt/$BUILD_NAME/
 	cp -a release/src/router/tuxera/broadcom$ARCH$SDK/* $REPO/release/src/router/tuxera/broadcom$ARCH$SDK/
-	if [ -d "release/src/router/ookla_speedtest/prebuild/" ]
-	then
-		cp release/src/router/ookla_speedtest/prebuild/ookla $REPO/release/src/router/ookla_speedtest/OOKLA-36521/ookla-BCM7.x-6.x
-	else
-		cp release/src/router/ookla_speedtest/OOKLA-36521/ookla-BCM7.x-6.x $REPO/release/src/router/ookla_speedtest/OOKLA-36521/
-	fi
 
 elif [ "$BUILD_NAME" == "RT-AC3200" ]
 then
@@ -39,7 +33,6 @@ then
 	cp release/src/router/wl_arm_7/prebuilt/* $REPO/release/src/router/wl_arm_7/prebuilt/
 	cp release/src-rt-7.x.main/src/wl/exe/prebuilt/* $REPO/release/src-rt-7.x.main/src/wl/exe/prebuilt/
 	cp -a release/src/router/tuxera/broadcom$ARCH$SDK/* $REPO/release/src/router/tuxera/broadcom$ARCH$SDK/
-	cp release/src/router/ookla_speedtest/OOKLA-36521/ookla-BCM7.x-6.x $REPO/release/src/router/ookla_speedtest/OOKLA-36521/
 
 elif [ "$BUILD_NAME" == "RT-AC56U" ] || [ "$BUILD_NAME" == "RT-AC68U" ] || [ "$BUILD_NAME" == "RT-AC87U" ]
 then
@@ -51,12 +44,6 @@ then
 	cp release/src/router/wl_arm/prebuilt/* $REPO/release/src/router/wl_arm/prebuilt/$BUILD_NAME/
 	cp release/src-rt-6.x.4708/wl/exe/prebuilt/* $REPO/release/src-rt-6.x.4708/wl/exe/prebuilt/
 	cp -a release/src/router/tuxera/broadcom$ARCH$SDK/* $REPO/release/src/router/tuxera/broadcom$ARCH$SDK/
-	if [ -d "release/src/router/ookla_speedtest/prebuild/" ]
-	then
-		cp release/src/router/ookla_speedtest/prebuild/ookla $REPO/release/src/router/ookla_speedtest/OOKLA-36521/ookla-BCM7.x-6.x
-	else
-		cp release/src/router/ookla_speedtest/OOKLA-36521/ookla-BCM7.x-6.x $REPO/release/src/router/ookla_speedtest/OOKLA-36521/
-	fi
 
 elif [ "$BUILD_NAME" == "RT-AC86U" ] || [ "$BUILD_NAME" == "GT-AC2900" ]
 then
@@ -106,12 +93,6 @@ then
 	cp release/src/router/tmctl_lib/prebuilt/* $REPO/release/src/router/tmctl_lib/prebuilt/
 	cp release/src/router/bridgeutil/prebuilt/* $REPO/release/src/router/bridgeutil/prebuilt/
 	cp -a release/src/router/tuxera/broadcom$ARCH$HND/* $REPO/release/src/router/tuxera/broadcom$ARCH$HND/
-	if [ -d "release/src/router/ookla_speedtest/prebuild/" ]
-	then
-		cp release/src/router/ookla_speedtest/prebuild/ookla $REPO/release/src/router/ookla_speedtest/OOKLA-36521/ookla-HND
-	else
-		cp release/src/router/ookla_speedtest/OOKLA-36521/ookla-HND $REPO/release/src/router/ookla_speedtest/OOKLA-36521/
-	fi
 
 elif [ "$BUILD_NAME" == "RT-AX88U" ] || [ "$BUILD_NAME" == "RT-AX92U" ] || [ "$BUILD_NAME" == "GT-AX11000" ]
 then
@@ -122,12 +103,6 @@ then
 	cp release/src-rt-5.02axhnd/hostTools/prebuilt/addvtoken $REPO/release/src-rt-5.02axhnd/hostTools/prebuilt/$BUILD_NAME/
 	cp release/src-rt-5.02axhnd/wl/exe/prebuilt/* $REPO/release/src-rt-5.02axhnd/wl/exe/prebuilt/
 	cp -a release/src/router/tuxera/broadcom_arm_ax/* $REPO/release/src/router/tuxera/broadcom_arm_ax/
-	if [ -d "release/src/router/ookla_speedtest/prebuild/" ]
-	then
-		cp release/src/router/ookla_speedtest/prebuild/ookla $REPO/release/src/router/ookla_speedtest/OOKLA-36521/ookla-AXHND
-	else
-		cp release/src/router/ookla_speedtest/OOKLA-36521/ookla-AXHND $REPO/release/src/router/ookla_speedtest/OOKLA-36521/
-	fi
 
 elif [ "$BUILD_NAME" == "RT-AX56U" ] || [ "$BUILD_NAME" == "RT-AX58U" ]
 then
@@ -138,12 +113,6 @@ then
 	cp release/src-rt-5.02axhnd.675x/wl/exe/prebuilt/* $REPO/release/src-rt-5.02axhnd.675x/wl/exe/prebuilt/
 	cp release/src-rt-5.02axhnd.675x/hostTools/prebuilt/addvtoken $REPO/release/src-rt-5.02axhnd.675x/hostTools/prebuilt/$BUILD_NAME/
 	cp -a release/src/router/tuxera/broadcom_arm_ax_6750/* $REPO/release/src/router/tuxera/broadcom_arm_ax_6750/
-	if [ -d "release/src/router/ookla_speedtest/prebuild/" ]
-	then
-		cp release/src/router/ookla_speedtest/prebuild/ookla $REPO/release/src/router/ookla_speedtest/OOKLA-36521/ookla-AXHND
-	else
-		cp release/src/router/ookla_speedtest/OOKLA-36521/ookla-AXHND $REPO/release/src/router/ookla_speedtest/OOKLA-36521/
-	fi
 
 elif [ "$BUILD_NAME" == "RT-AX86U" ] || [ "$BUILD_NAME" == "RT-AX68U" ]
 then
@@ -152,14 +121,9 @@ then
 	HND="_axhnd"
 
 	cp release/src-rt-5.02p1axhnd.675x/hostTools/prebuilt/addvtoken $REPO/release/src-rt-5.02p1axhnd.675x/hostTools/prebuilt/$BUILD_NAME/
-	cp release/src-rt-5.02p1axhnd.675x/wl/exe/prebuilt/* $REPO/release/src-rt-5.02p1axhnd.675x/wl/exe/prebuilt/
+	cp release/src-rt-5.02p1axhnd.675x/hostTools/prebuilt/cmplzma $REPO/release/src-rt-5.02p1axhnd.675x/hostTools/prebuilt/
+	cp release/src-rt-5.02p1axhnd.675x/hostTools/prebuilt/lzmacmd $REPO/release/src-rt-5.02p1axhnd.675x/hostTools/prebuilt/
 	cp -a release/src/router/tuxera/broadcom_arm_ax/* $REPO/release/src/router/tuxera/broadcom_arm_ax/
-	if [ -d "release/src/router/ookla_speedtest/prebuild/" ]
-	then
-		cp release/src/router/ookla_speedtest/prebuild/ookla $REPO/release/src/router/ookla_speedtest/OOKLA-36521/ookla-AXHND
-	else
-		cp release/src/router/ookla_speedtest/OOKLA-36521/ookla-AXHND $REPO/release/src/router/ookla_speedtest/OOKLA-36521/
-	fi
 
 else
 	echo "Unrecognized BUILD_NAME!"
@@ -195,6 +159,8 @@ cp release/src/router/asuswebstorage/prebuild/* $REPO/release/src/router/asusweb
 cp release/src/router/inotify/prebuild/* $REPO/release/src/router/inotify/prebuild/$BUILD_NAME/
 cp release/src/router/libletsencrypt/prebuild/* $REPO/release/src/router/libletsencrypt/prebuild/$BUILD_NAME/
 cp release/src/router/libbcm/prebuilt/* $REPO/release/src/router/libbcm/prebuilt/$BUILD_NAME/
+cp release/src/router/infosvr/prebuild/* $REPO/release/src/router/infosvr/prebuild/$BUILD_NAME/
+cp -ar release/src/router/ookla_speedtest/OOKLA-* $REPO/release/src/router/ookla_speedtest/
 
 # Common to most
 echo "*** Copying optional files - ignore errors"
@@ -225,7 +191,7 @@ then
 fi
 
 # On AX these are in router-sysdep
-if [ "$BUILD_NAME" != "RT-AX88U" ] && [ "$BUILD_NAME" != "RT-AX92U" ] && [ "$BUILD_NAME" != "RT-AX56U" ] && [ "$BUILD_NAME" != "RT-AX58U" ] && [ "$BUILD_NAME" != "RT-AX86U" ] || [ "$BUILD_NAME" == "GT-AX11000" ] || [ "$BUILD_NAME" == "RT-AX68U" ]
+if [ "$BUILD_NAME" != "RT-AX88U" ] && [ "$BUILD_NAME" != "RT-AX92U" ] && [ "$BUILD_NAME" != "RT-AX56U" ] && [ "$BUILD_NAME" != "RT-AX58U" ] && [ "$BUILD_NAME" != "RT-AX86U" ] && [ "$BUILD_NAME" == "GT-AX11000" ] && [ "$BUILD_NAME" == "RT-AX68U" ]
 then
 	cp release/src/router/acsd$ARCH$SDK/prebuilt/* $REPO/release/src/router/acsd$ARCH$SDK/prebuilt/
 	cp release/src/router/eapd$ARCH$SDK/linux/prebuilt/* $REPO/release/src/router/eapd$ARCH$SDK/linux/prebuilt/
@@ -257,5 +223,6 @@ fi
 
 # Cleanup
 rm $REPO/release/src/router/rc/prebuild/$BUILD_NAME/init-broadcom.o
+rm $REPO/release/src/router/shared/prebuild/$BUILD_NAME/api-broadcom.o
 rm $REPO/release/src/router/bwdpi_source/prebuild/$BUILD_NAME/*.pem
 rm $REPO/release/src/router/bwdpi_source/prebuild/$BUILD_NAME/*.enc

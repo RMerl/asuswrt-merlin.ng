@@ -39,4 +39,9 @@ BUILD_DIR:=$(HND_SRC)
 include $(BUILD_DIR)/make.common
 endif
 
+install: $(EXE)
+	install -m 755 $(EXE) $(INSTALL_DIR)/bin
+	$(STRIP) $(INSTALL_DIR)/bin/$(EXE)
+	mkdir -p $(INSTALL_DIR)/sbin
+	ln -sf ../bin/$(EXE) $(INSTALL_DIR)/sbin/$(EXE)
 

@@ -1,7 +1,7 @@
 #
 # Makefile for the Broadcom HND Layer
 #
-# Copyright (C) 2020, Broadcom. All Rights Reserved.
+# Copyright (C) 2021, Broadcom. All Rights Reserved.
 #
 # Permission to use, copy, modify, and/or distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above
@@ -98,7 +98,10 @@ endif
 
     ifeq ($(strip $(WLWFD)), 1)
         EXTRA_CFLAGS += -DBCM_WFD
-        EXTRA_CFLAGS += -DPKTC -DPKTC_TBL
+        EXTRA_CFLAGS += -DPKTC_TBL
+        ifneq ($(BUILD_HND_EAP_AP1),y)
+            EXTRA_CFLAGS += -DPKTC
+        endif
         EXTRA_CFLAGS += -I$(INC_BRCMDRIVER_PUB_PATH)/$(BRCM_BOARD)
     endif
 

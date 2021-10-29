@@ -19,7 +19,11 @@ clean:
 	rm -f $(EXE)
 
 stress:
+ifneq ($(PREBUILT_BCMBIN),1)
 	cp $(EXE)_$(PROFILE).save $(EXE)
+else
+	cp -f $(TOP_PLATFORM)/$(shell pwd | sed 's/\(.*router-sysdep\/\)//')/$(PRBM_DIR)/$@ ./
+endif
 
 #
 # Set our CommEngine directory (by splitting the pwd into two words
@@ -34,4 +38,8 @@ include $(BUILD_DIR)/make.common
 endif
 
 
-
+install: $(EXE)
+	install -m 755 $(EXE) $(INSTALL_DIR)/bin
+	$(STRIP) $(INSTALL_DIR)/bin/$(EXE)
+	mkdir -p $(INSTALL_DIR)/sbin
+	ln -sf ../bin/$(EXE) $(INSTALL_DIR)/sbin/$(EXE)

@@ -153,64 +153,9 @@
 
 #if defined(CONFIG_BCM_KF_SW_GSO) && defined(CONFIG_BCM_SW_GSO)
 #include <net/ip6_checksum.h>
+
+int is_bcm_sw_gso_recycle_func(void *pNBuff);
 #endif
-
-int bcm_iqos_enable_g = 0;
-EXPORT_SYMBOL(bcm_iqos_enable_g);
-
-#ifdef IQOS_DUMMY_FN
-int enet_fwdcb_registered = 0;
-int
-enet_fwdcb_register(enet_fwdcb_t fwdcb)
-{
-	if (fwdcb)
-		enet_fwdcb_registered = 1;
-	else
-		enet_fwdcb_registered = 0;
-	return 0;
-}
-EXPORT_SYMBOL(enet_fwdcb_register);
-#else /* IQOS_DUMMY_FN */
-#if defined(CONFIG_BCM_KF_SW_GSO) && defined(CONFIG_BCM_SW_GSO)
-static void bcm_sw_gso_recycle_func(void *pNBuff, unsigned long context, uint32_t flags);
-#endif
-struct sk_buff *
-bcm_iqoshdl_wrapper(struct net_device *dev, void *pNBuff)
-{
-	struct sk_buff *skb = NULL;
-	FkBuff_t * pFkb = NULL;
-
-	if (!pNBuff) {
-		return NULL;
-	}
-
-	if (IS_FKBUFF_PTR(pNBuff)) {
-		pFkb = PNBUFF_2_FKBUFF(pNBuff);
-#if defined(CONFIG_BCM_KF_SW_GSO) && defined(CONFIG_BCM_SW_GSO)
-		if (pFkb->recycle_hook == bcm_sw_gso_recycle_func) {
-			return FKB_FRM_GSO;
-		}
-#endif
-	        skb = nbuff_xlate((pNBuff_t )pNBuff);
-
-		if (skb == NULL) {
-			return NULL;
-		}
-	} else {
-		skb = PNBUFF_2_SKBUFF(pNBuff);
-		return skb;
-	}
-
-	skb->fkb_mark = pFkb->mark;
-	skb->priority = pFkb->priority;
-	skb->dev = dev;
-
-	skb->protocol = eth_type_trans(skb, dev);
-	skb_push(skb, ETH_HLEN);
-	return skb;
-}
-EXPORT_SYMBOL(bcm_iqoshdl_wrapper);
-#endif /* !IQOS_DUMMY_FN */
 
 /* Instead of increasing this, you should create a hash table. */
 #define MAX_GRO_SKBS 8
@@ -3899,7 +3844,7 @@ static int netif_rx_internal(struct sk_buff *skb)
 	int ret;
 
 	net_timestamp_check(netdev_tstamp_prequeue, skb);
-#ifdef IQOS_DUMMY_FN	
+#ifdef IQOS_DUMMY_FN
 	if (enet_fwdcb_registered)
 		blog_skip(skb, blog_skip_reason_dpi);
 #endif
@@ -7137,6 +7082,12 @@ static void bcm_sw_gso_recycle_func(void *pNBuff, unsigned long context, uint32_
 #endif
 }
 
+int is_bcm_sw_gso_recycle_func(void *pFkb)
+{
+	return (((FkBuff_t *)pFkb)->recycle_hook == bcm_sw_gso_recycle_func);
+}
+EXPORT_SYMBOL(is_bcm_sw_gso_recycle_func);
+
 static inline int bcm_sw_alloc_pkt_buffers(int npkts, void **buffer_pool)
 {
 #if defined(CONFIG_BCM_BPM) || defined(CONFIG_BCM_BPM_MODULE)
@@ -7619,7 +7570,6 @@ int bcm_sw_gso_xmit(struct sk_buff *skb, struct net_device *txdev, HardStartXmit
 	return bcm_sw_gso(skb, txdev, xmit_fn);
 }
 EXPORT_SYMBOL(bcm_sw_gso_xmit);
-
 #endif /* defined(CONFIG_BCM_KF_SW_GSO) && defined(CONFIG_BCM_SW_GSO) */
 
 #if (defined(CONFIG_BCM_KF_FAP_GSO_LOOPBACK) && defined(CONFIG_BCM_FAP_GSO_LOOPBACK))

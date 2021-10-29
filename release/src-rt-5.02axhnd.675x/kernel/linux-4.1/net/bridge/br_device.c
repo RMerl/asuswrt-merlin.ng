@@ -27,11 +27,11 @@
 #include <linux/blog.h>
 #endif
 #if defined(CONFIG_BCM_KF_WL)
-#if defined(PKTC)
+#if defined(PKTC) || defined(PKTC_TBL)
 #include <osl.h>
 #include <wl_pktc.h>
 extern unsigned long (*wl_pktc_req_hook)(int req_id, unsigned long param0, unsigned long param1, unsigned long param2);
-#endif /* PKTC */
+#endif /* PKTC || PKTC_TBL */
 #include <linux/bcm_skb_defines.h>
 #endif
 
@@ -146,19 +146,15 @@ netdev_tx_t br_dev_xmit(struct sk_buff *skb, struct net_device *dev)
 		blog_link(BRIDGEFDB, blog_ptr(skb), (void*)dst, BLOG_PARAM1_DSTFDB, 0);
 		blog_unlock();
 #if defined(CONFIG_BCM_KF_WL)
-#if defined(PKTC)
+#if defined(PKTC) || defined(PKTC_TBL)
 		if (wl_pktc_req_hook && (dst->dst != NULL) &&
 			(BLOG_GET_PHYTYPE(dst->dst->dev->path.hw_port_type) == BLOG_WLANPHY) && 
 			wl_pktc_req_hook(PKTC_TBL_GET_TX_MODE, 0, 0, 0))
 		{
-			struct net_device *root_dst_dev_p = dst->dst->dev;
+			struct net_device *dst_dev_p = dst->dst->dev;
 			unsigned long chainIdx;
 
-			/* Get the root destination device */
-			while (!netdev_path_is_root(root_dst_dev_p)) {
-				  root_dst_dev_p = netdev_path_next_dev(root_dst_dev_p);
-			}
-			chainIdx = wl_pktc_req_hook(PKTC_TBL_UPDATE, (unsigned long)&(dst->addr.addr[0]), (unsigned long)root_dst_dev_p, 0);
+			chainIdx = wl_pktc_req_hook(PKTC_TBL_UPDATE, (unsigned long)&(dst->addr.addr[0]), (unsigned long)dst_dev_p, 0);
 			if (chainIdx != PKTC_INVALID_CHAIN_IDX)
 			{
 				// Update chainIdx in blog
@@ -177,8 +173,8 @@ netdev_tx_t br_dev_xmit(struct sk_buff *skb, struct net_device *dev)
 				}
 			}
 		}
-#endif
-#endif
+#endif /* defined(PKTC) || defined(PKTC_TBL) */
+#endif /* defined(CONFIG_BCM_KF_WL) */
 		if (BROADSTREAM_IQOS_ENABLE()) {
 			if (blog_ptr(skb) && DEV_ISWAN(((struct net_device *)(blog_ptr(skb)->rx_dev_p)))) {
 	       		blog_emit(skb, dev, TYPE_ETH, 0, BLOG_ENETPHY); /* CONFIG_BLOG */

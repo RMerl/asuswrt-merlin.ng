@@ -44,6 +44,10 @@ include $(WLCFGDIR)/$(WLSHARED)
 include $(WLCFGDIR)/wl.mk
 endif
 
+include $(SRCBASE)/.config
+MODEL = $(subst -,,$(BUILD_NAME))
+EXTRA_CFLAGS += -D$(MODEL)
+
 REBUILD_HND_MODULE=$(shell if [ -d "$(src)/$(HND_DIR)" -a "$(REUSE_PREBUILT_HND)" != "1" ]; then echo 1; else echo 0; fi)
 
 ifneq ($(wildcard $(src)/$(HND_DIR)/prebuilt/hnd.o),)
@@ -58,10 +62,6 @@ HND_OBJS := $(addprefix $(src)/$(HNDFILES_SRC)/, $(sort $(WLFILES:.c=.o)))
 
 HND_OBJS += $(src)/$(HNDFILES_SRC)/nvram_ext.o
 HND_OBJS += $(COMPONENTSBASE)/math/src/bcm_math.o
-
-ifeq ($(CONFIG_BUZZZ_FUNC),y)
-subdir-ccflags-y += -O0 -fno-inline -finstrument-functions
-endif # CONFIG_BUZZZ_FUNC
 
 # Search for sources under src/router/hnd/
 ifneq ($(wildcard $(src)/$(HND_DIR)),)
@@ -80,7 +80,7 @@ ifneq ($(strip $(BUILD_HND_NIC)),)
     EXTRA_CFLAGS += -DBCA_HNDNIC
 endif
     EXTRA_CFLAGS += -I$(COMMON_SHARED_DIR)
-ifneq (,$(filter $(MODEL),RTAX58U TUFAX3000 TUFAX5400 RTAX82U RTAX82_XD6 GSAX3000 GSAX5400 RTAX55 RTAX1800))
+ifneq (,$(filter $(MODEL),RTAX58U TUFAX3000 TUFAX5400 RTAX82U RTAX82_XD6 GSAX3000 GSAX5400))
     EXTRA_CFLAGS += -g -DBCMDBG -DWLMSG_ASSOC
 endif
 
@@ -100,7 +100,10 @@ endif
 
     ifeq ($(strip $(WLWFD)), 1)
         EXTRA_CFLAGS += -DBCM_WFD
-        EXTRA_CFLAGS += -DPKTC -DPKTC_TBL
+        EXTRA_CFLAGS += -DPKTC_TBL
+        ifneq ($(BUILD_HND_EAP_AP1),y)
+            EXTRA_CFLAGS += -DPKTC
+        endif
         EXTRA_CFLAGS += -I$(INC_BRCMDRIVER_PUB_PATH)/$(BRCM_BOARD)
     endif
 
@@ -130,11 +133,20 @@ endif
         EXTRA_CFLAGS += -DBCM_PKTFWD
     endif
 
+    ifneq ($(strip $(CONFIG_BCM_WLAN_64BITPHYSADDR)),)
+        EXTRA_CFLAGS += -DBCMDMA64OSL
+    endif
+
     EXTRA_CFLAGS += -DSTS_FIFO_RXEN
 
-	ifeq ($(CONFIG_BCM_HND_EAP), y)
-		EXTRA_CFLAGS += -DBCM_SKB_FREE_OFFLOAD
-	endif
+    ifneq ($(strip $(CONFIG_BCM_BPM_BULK_FREE)),)
+        EXTRA_CFLAGS += -DBPM_BULK_FREE
+        EXTRA_CFLAGS += -DBCM_SKB_FREE_OFFLOAD
+    endif
+
+    ifeq ($(CONFIG_BCM_HND_EAP), y)
+        EXTRA_CFLAGS += -DBCM_SKB_FREE_OFFLOAD
+    endif
 
     hnd-objs += $(subst $(src)/,,$(HND_OBJS))
 
@@ -145,10 +157,6 @@ endif
 
     EXTRA_CFLAGS += $(WLAN_ComponentIncPathA) $(WLAN_IncPathA)
 endif
-
-include $(SRCBASE)/.config
-MODEL = $(subst -,,$(BUILD_NAME))
-EXTRA_CFLAGS += -D$(MODEL)
 
 -include $(SRCBASE_ROUTER)/hnd/Makefile.shared
 

@@ -3,27 +3,21 @@
    All Rights Reserved
 
     <:label-BRCM:2015:DUAL/GPL:standard
-
-    Unless you and Broadcom execute a separate written software license
-    agreement governing use of this software, this software is licensed
-    to you under the terms of the GNU General Public License version 2
-    (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-    with the following added to such license:
-
-       As a special exception, the copyright holders of this software give
-       you permission to link this software with independent modules, and
-       to copy and distribute the resulting executable under terms of your
-       choice, provided that you also meet, for each linked independent
-       module, the terms and conditions of the license of that module.
-       An independent module is a module which is not derived from this
-       software.  The special exception does not apply to any modifications
-       of the software.
-
-    Not withstanding the above, under no circumstances may you combine
-    this software in any way with any other Broadcom software provided
-    under a license other than the GPL, without Broadcom's express prior
-    written consent.
-
+    
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License, version 2, as published by
+    the Free Software Foundation (the "GPL").
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    
+    
+    A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+    writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+    Boston, MA 02111-1307, USA.
+    
 :>
 */
 
@@ -68,7 +62,7 @@ static int load_mako(firmware_t *firmware);
 #if defined(_ORCA_A0_) || defined(_ORCA_B0_)
 static int load_orca(firmware_t *firmware);
 #endif
-#if defined(_BLACKFIN_A0_) || defined(_BLACKFIN_B0_) || defined(_LONGFIN_A0_)
+#if defined(_BLACKFIN_A0_) || defined(_BLACKFIN_B0_) || defined(_LONGFIN_A0_) || defined(_LONGFIN_B0_)
 static int load_blackfin(firmware_t *firmware);
 #endif
 
@@ -92,9 +86,9 @@ firmware_t blackfin_a0 = { blackfin_a0_version, blackfin_a0_firmware, sizeof(bla
 #include "blackfin_b0_firmware.h"
 firmware_t blackfin_b0 = { blackfin_b0_version, blackfin_b0_firmware, sizeof(blackfin_b0_firmware), &load_blackfin, 0, 0 };
 #endif
-#ifdef _LONGFIN_A0_
+#if defined(_LONGFIN_A0_) || defined(_LONGFIN_B0_)
 #include "longfin_a0_firmware.h"
-firmware_t longfin_a0 = { longfin_a0_version, longfin_a0_firmware, sizeof(longfin_a0_firmware), &load_blackfin, 0, 1 };
+firmware_t longfin_a0 = { longfin_b0_version, longfin_b0_firmware, sizeof(longfin_b0_firmware), &load_blackfin, 0, 1 };
 #endif
 
 static firmware_t *firmware_list[] = {
@@ -113,7 +107,7 @@ static firmware_t *firmware_list[] = {
 #ifdef _BLACKFIN_B0_ 
     &blackfin_b0,
 #endif
-#ifdef _LONGFIN_A0_
+#if defined(_LONGFIN_A0_) || defined(_LONGFIN_B0_)
     &longfin_a0,
 #endif
 };
@@ -170,6 +164,7 @@ static phy_desc_t phy_desc[] = {
     { 0x3590, 0x5081, "84891L   B0", &blackfin_b0 },
     { 0x3590, 0x5085, "54991L   B0", &blackfin_b0 },
     { 0x3590, 0x5089, "54991EL  B0", &blackfin_b0 },
+    { 0x3590, 0x50c9, "50991EL  B0", &blackfin_b0 },
     { 0x3590, 0x50a1, "84892    B0", &blackfin_b0 },
     { 0x3590, 0x50a5, "54992    B0", &blackfin_b0 },
     { 0x3590, 0x50a9, "54992E   B0", &blackfin_b0 },
@@ -185,6 +180,9 @@ static phy_desc_t phy_desc[] = {
     { 0x3590, 0x5194, "54991M   A0", &longfin_a0 },
     { 0x3590, 0x5198, "54991EM  A0", &longfin_a0 },
     { 0x3590, 0x5188, "54991ELM A0", &longfin_a0 },
+#endif
+#ifdef _LONGFIN_B0_
+    { 0x3590, 0x518d, "50991ELM  B0", &longfin_a0 },
 #endif
 };
 
@@ -1630,7 +1628,7 @@ Exit:
 }
 #endif
 
-#if defined(_BLACKFIN_A0_) || defined(_BLACKFIN_B0_) || defined(_LONGFIN_A0_)
+#if defined(_BLACKFIN_A0_) || defined(_BLACKFIN_B0_) || defined(_LONGFIN_A0_) || defined(_LONGFIN_B0_)
 static int load_blackfin(firmware_t *firmware)
 {
     int i, cnt, step, ret, base_phy_addr, phy_cnt;

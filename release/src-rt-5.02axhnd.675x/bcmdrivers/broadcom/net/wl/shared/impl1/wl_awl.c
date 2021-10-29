@@ -3,27 +3,21 @@
     All Rights Reserved
 
     <:label-BRCM:2017:DUAL/GPL:standard
-
-    Unless you and Broadcom execute a separate written software license
-    agreement governing use of this software, this software is licensed
-    to you under the terms of the GNU General Public License version 2
-    (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-    with the following added to such license:
-
-       As a special exception, the copyright holders of this software give
-       you permission to link this software with independent modules, and
-       to copy and distribute the resulting executable under terms of your
-       choice, provided that you also meet, for each linked independent
-       module, the terms and conditions of the license of that module.
-       An independent module is a module which is not derived from this
-       software.  The special exception does not apply to any modifications
-       of the software.
-
-    Not withstanding the above, under no circumstances may you combine
-    this software in any way with any other Broadcom software provided
-    under a license other than the GPL, without Broadcom's express prior
-    written consent.
-
+    
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License, version 2, as published by
+    the Free Software Foundation (the "GPL").
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    
+    
+    A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+    writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+    Boston, MA 02111-1307, USA.
+    
     :>
 */
 
@@ -418,6 +412,38 @@ wl_awl_pktlist_free(struct wl_info *wl, pktlist_t *pktlist)
 	}
 
 	return;
+}
+
+/**
+ * -----------------------------------------------------------------------------
+ * Function : free skb's from SLL by the given net_device
+ *            unlink and free the packets
+ *
+ * -----------------------------------------------------------------------------
+ */
+void
+wl_awl_pktlist_flush(pktlist_t *pktlist, struct net_device *dev)
+{
+	struct sk_buff *skb;
+	int pkts;
+
+	pkts = pktlist->len;
+	if (pkts != 0) {
+		skb = (struct sk_buff*)pktlist->head;
+		PKTLIST_RESET(pktlist);
+
+		while (pkts--) {
+			struct sk_buff* nskb = skb->prev;
+			skb->next = skb->prev = NULL;
+
+			if (skb->dev == dev) {
+				PKTFREE(PKT_OSH_NA, skb, FALSE);
+			} else {
+				wl_awl_pktlist_add(pktlist, skb);
+			}
+			skb = nskb;
+		}
+	}
 }
 
 /**
@@ -1148,4 +1174,45 @@ wl_awl_detach(struct wl_info *wl, void *ctxt)
 	WL_AWL_LOG("wl%d_awl detach complete", wl->unit);
 
 	return;
+}
+
+/**
+ * -----------------------------------------------------------------------------
+ * Function : Function to register net device
+ * -----------------------------------------------------------------------------
+ */
+void
+wl_awl_register_dev(struct net_device *dev)
+{
+}
+
+/**
+ * -----------------------------------------------------------------------------
+ * Function : Function to unregister net device
+ * -----------------------------------------------------------------------------
+ */
+void
+wl_awl_unregister_dev(struct net_device *dev)
+{
+	wl_if_t *wlif;
+	wl_awl_t *awl;
+
+	if (dev && is_netdev_wlan(dev)) {
+		WL_AWL_LOG("Flushing net_device %s.\n", dev->name);
+
+		wlif = WL_DEV_IF(dev);
+		if (wlif && wlif->wl) {
+			awl = WL_AWL_CB(wlif->wl);
+
+			/* Flush A2W packet SLL under lock */
+			WL_AWL_PKTLIST_LOCK(awl->rx.a2w_pktl_lock);
+			wl_awl_pktlist_flush(WL_AWL_RX_A2W_PKTL(awl), dev);
+			WL_AWL_PKTLIST_UNLK(awl->rx.a2w_pktl_lock);
+
+			/* Flush W2A packet SLL */
+			WL_LOCK(wlif->wl);
+			wl_awl_pktlist_flush(WL_AWL_RX_W2A_PKTL(awl), dev);
+			WL_UNLOCK(wlif->wl);
+		}
+	}
 }

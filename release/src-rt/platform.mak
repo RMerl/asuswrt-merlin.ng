@@ -468,8 +468,10 @@ define platformKernelConfig
 				mkdir -p $(HND_SRC)/rdp/projects/WL4908/target/bdmf ; \
 				mkdir -p $(HND_SRC)/rdp/projects/WL4908/target/rdpa ; \
 				mkdir -p $(HND_SRC)/rdp/projects/WL4908/target/rdpa_gpl ; \
-				mkdir -p $(HND_SRC)/rdp/projects/WL4908/target/rdpa_user ; \
+        			(cd rdp/projects/WL4908/target/bdmf; rm -f Makefile; ln -sf ../../../../drivers/bdmf/Makefile Makefile); \
 				(cd rdp/projects/WL4908/target/rdpa_gpl; rm -rf include; ln -sf ../../../../../rdp/drivers/rdpa_gpl/include include); \
+				(cd rdp/projects/WL4908/target/bdmf; rm -rf framework; ln -sf ../../../../../rdp/drivers/bdmf/framework framework); \
+				(cd rdp/projects/WL4908/target/bdmf; rm -rf system; ln -sf ../../../../../rdp/drivers/bdmf/system system); \
 				if [ "$(HND_ROUTER_AX)" = "y" ]; then \
 					cp $(TOP_PLATFORM)/hnd_extra/prebuilt/bcm_enet.o $(HND_SRC)/bcmdrivers/opensource/net/enet/impl7/bcm_enet$(PRBM_EXT).o ; \
 				else \
@@ -483,10 +485,6 @@ define platformKernelConfig
 				cp $(TOP_PLATFORM)/hnd_extra/prebuilt/bdmf.o $(HND_SRC)/rdp/projects/WL4908/target/bdmf/bdmf$(PRBM_EXT).o ; \
 				cp $(TOP_PLATFORM)/hnd_extra/prebuilt/rdpa.o $(HND_SRC)/rdp/projects/WL4908/target/rdpa/rdpa$(PRBM_EXT).o ; \
 				cp $(TOP_PLATFORM)/hnd_extra/prebuilt/rdpa_gpl.o $(HND_SRC)/rdp/projects/WL4908/target/rdpa_gpl/rdpa_gpl$(PRBM_EXT).o ; \
-				cp $(TOP_PLATFORM)/hnd_extra/prebuilt/rdpa_usr.o $(HND_SRC)/rdp/projects/WL4908/target/rdpa_user/rdpa_usr$(PRBM_EXT).o ; \
-				cp $(TOP_PLATFORM)/hnd_extra/prebuilt/unimac_drv_impl1.o $(HND_SRC)/shared/opensource/drv/unimac/ ; \
-				cp $(TOP_PLATFORM)/hnd_extra/prebuilt/mac_drv_unimac.o $(HND_SRC)/shared/opensource/drv/phys/ ; \
-				cp $(TOP_PLATFORM)/hnd_extra/prebuilt/bcm_misc_hw_init_impl6.o $(HND_SRC)/shared/opensource/drivers/ ; \
 				cp $(HND_SRC)/bcmdrivers/broadcom/net/wl/bcm9$(BCM_CHIP)/main/src/wl/linux/prebuilt/wl.o $(HND_SRC)/bcmdrivers/broadcom/net/wl/bcm9$(BCM_CHIP)/main/src/wl/linux/prebuilt/wl_apsta.o ; \
 				cp $(TOP_PLATFORM)/hnd_extra/prebuilt/wl $(HND_SRC)/bcmdrivers/broadcom/net/wl/bcm9$(BCM_CHIP)/main/src/wl/exe/prebuilt/ ; \
 				cp $(TOP_PLATFORM)/hnd_extra/prebuilt/wl_server_socket $(HND_SRC)/bcmdrivers/broadcom/net/wl/bcm9$(BCM_CHIP)/main/src/wl/exe/prebuilt/ ; \
@@ -540,6 +538,7 @@ define platformKernelConfig
 				cp $(TOP_PLATFORM)/hnd_extra/prebuilt/rdpa_mw.o $(HND_SRC)/bcmdrivers/opensource/char/rdpa_mw/impl1/rdpa_mw$(PRBM_EXT).o ; \
 				cp $(TOP_PLATFORM)/hnd_extra/prebuilt/bcm63xx_cons.o $(HND_SRC)/bcmdrivers/opensource/char/serial/impl1/bcm63xx_cons$(PRBM_EXT).o ; \
 				cp $(TOP_PLATFORM)/hnd_extra/prebuilt/bcmspu.o $(HND_SRC)/bcmdrivers/opensource/char/spudd/impl4/bcmspu$(PRBM_EXT).o ; \
+				cp $(TOP_PLATFORM)/hnd_extra/prebuilt/bcm_misc_hw_init_impl6.o $(HND_SRC)/shared/opensource/drivers/ ; \
 				cp $(TOP_PLATFORM)/hnd_extra/prebuilt/clk_rst.o $(HND_SRC)/shared/opensource/pmc/impl1/ ; \
 				cp $(TOP_PLATFORM)/hnd_extra/prebuilt/pmc_drv.o $(HND_SRC)/shared/opensource/pmc/impl1/ ; \
 				cp $(TOP_PLATFORM)/hnd_extra/prebuilt/pmc_fpm.o $(HND_SRC)/shared/opensource/pmc/impl1/ ; \
@@ -570,6 +569,7 @@ define platformKernelConfig
 					cp $(TOP_PLATFORM)/hnd_extra/prebuilt/bcmsfp_i2c.o $(HND_SRC)/bcmdrivers/opensource/char/i2c/chips/impl1/ ; \
 					cp $(TOP_PLATFORM)/hnd_extra/prebuilt/opticaldet.o $(HND_SRC)/bcmdrivers/opensource/char/opticaldet/impl1/opticaldet$(PRBM_EXT).o ; \
 					cp $(TOP_PLATFORM)/hnd_extra/prebuilt/ext_timer.o $(HND_SRC)/bcmdrivers/opensource/char/timer/impl1/ext_timer$(PRBM_EXT).o ; \
+					cp $(TOP_PLATFORM)/hnd_extra/prebuilt/bcm_cleds.o $(HND_SRC)/bcmdrivers/broadcom/char/cleds/impl1/ ; \
 				else \
 					cp $(TOP_PLATFORM)/hnd_extra/prebuilt/bpm.o $(HND_SRC)/bcmdrivers/broadcom/char/bpm/impl1/bpm.o ; \
 					cp $(TOP_PLATFORM)/hnd_extra/prebuilt/bcm963xx_timer.o $(HND_SRC)/bcmdrivers/opensource/char/timer/impl1/bcm963xx_timer.o ; \

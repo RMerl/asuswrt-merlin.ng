@@ -22,9 +22,11 @@
 static bool
 icmpv6_in_range(const struct nf_conntrack_tuple *tuple,
 		enum nf_nat_manip_type maniptype,
-		const union nf_conntrack_man_proto *min,
-		const union nf_conntrack_man_proto *max)
+		const struct nf_nat_range *range)
 {
+	const union nf_conntrack_man_proto *min = &range->min_proto;
+	const union nf_conntrack_man_proto *max = &range->max_proto;
+
 	return ntohs(tuple->src.u.icmp.id) >= ntohs(min->icmp.id) &&
 	       ntohs(tuple->src.u.icmp.id) <= ntohs(max->icmp.id);
 }

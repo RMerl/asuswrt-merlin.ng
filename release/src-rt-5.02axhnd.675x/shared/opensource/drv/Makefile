@@ -173,7 +173,7 @@ ifeq ($(strip ${BRCM_CHIP}),63158)
     EXTRA_CFLAGS += -DMAC_UNIMAC -DMAC_SF2 -DPHY_SF2 -DPHY_SF2_SERDES -DPHY_M2M -DDSL_DEVICES
     EXTRA_CFLAGS += -DMAC_XPORT
     EXTRA_CFLAGS += -DPHY_SERDES_2P5G_CAPABLE -DPHY_SERDES_10G_CAPABLE -DPHY_EXT3
-    EXTRA_CFLAGS += -D_MAKO_A0_ -D_ORCA_A0_ -D_ORCA_B0_ -D_BLACKFIN_A0_ -D_BLACKFIN_B0_ -D_LONGFIN_A0_
+    EXTRA_CFLAGS += -D_MAKO_A0_ -D_ORCA_A0_ -D_ORCA_B0_ -D_BLACKFIN_A0_ -D_BLACKFIN_B0_ -D_LONGFIN_A0_ -D_LONGFIN_B0_
 ifeq ($(CONFIG_BRCM_CHIP_REV),0x63158A0)
     DRV_OBJS += $(patsubst %.c, %.o, $(shell cd $(src) && find xport/impl1/ag/63158A0  -type f -name '*.c')) 
     EXTRA_CFLAGS += -I$(SHARED_DIR)/opensource/drv/xport/impl1 -I$(SHARED_DIR)/opensource/drv/xport/impl1/ag/63158A0
@@ -197,7 +197,7 @@ ifeq ($(strip ${BRCM_CHIP}),4908)
     DRV_OBJS += ../drivers/bcm_ethsw_impl1.o
     EXTRA_CFLAGS += -DMAC_UNIMAC -DMAC_SF2 -DPHY_SF2 -DPHY_SF2_SERDES -DPHY_M2M -DDSL_DEVICES
     EXTRA_CFLAGS += -DPHY_SERDES_2P5G_CAPABLE -DPHY_EXT3
-    EXTRA_CFLAGS += -D_MAKO_A0_ -D_ORCA_A0_ -D_ORCA_B0_ -D_BLACKFIN_A0_ -D_BLACKFIN_B0_ -D_LONGFIN_A0_
+    EXTRA_CFLAGS += -D_MAKO_A0_ -D_ORCA_A0_ -D_ORCA_B0_ -D_BLACKFIN_A0_ -D_BLACKFIN_B0_ -D_LONGFIN_A0_ -D_LONGFIN_B0_
 endif
 ifeq ($(strip ${BRCM_CHIP}),63178)
     DRV_OBJS += phys/bus_drv_sf2.o
@@ -221,7 +221,7 @@ ifeq ($(strip ${BRCM_CHIP}),47622)
     DRV_OBJS += phys/phy_bp_parsing_47622.o
     DRV_OBJS += phys/phy_drv_sf2.o
     DRV_OBJS += phys/phy_drv_ext3.o
-ifeq ($(strip ${MODEL}),RTAX95Q)
+ifneq ($(findstring $(strip ${MODEL}),RTAX95Q RTAXE95Q),)
     DRV_OBJS += phys/nic_rtl8226b_init.o
     DRV_OBJS += phys/nic_rtl8226.o
     DRV_OBJS += phys/rtl8226.o
@@ -235,7 +235,7 @@ endif
 
     EXTRA_CFLAGS += -I$(BRCMDRIVERS_DIR)/broadcom/include/bcm963xx
     EXTRA_CFLAGS += -I$(SHARED_DIR)/opensource/include/rdp
-    EXTRA_CFLAGS += -D_MAKO_A0_ -D_ORCA_A0_ -D_ORCA_B0_ -D_BLACKFIN_A0_ -D_BLACKFIN_B0_ -D_LONGFIN_A0_
+    EXTRA_CFLAGS += -D_MAKO_A0_ -D_ORCA_A0_ -D_ORCA_B0_ -D_BLACKFIN_A0_ -D_BLACKFIN_B0_ -D_LONGFIN_A0_ -D_LONGFIN_B0_
 endif
 endif
 

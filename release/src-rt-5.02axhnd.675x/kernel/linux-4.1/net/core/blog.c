@@ -6,25 +6,19 @@
 *
 <:label-BRCM:2012:DUAL/GPL:standard
 
-Unless you and Broadcom execute a separate written software license
-agreement governing use of this software, this software is licensed
-to you under the terms of the GNU General Public License version 2
-(the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-with the following added to such license:
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License, version 2, as published by
+the Free Software Foundation (the "GPL").
 
-   As a special exception, the copyright holders of this software give
-   you permission to link this software with independent modules, and
-   to copy and distribute the resulting executable under terms of your
-   choice, provided that you also meet, for each linked independent
-   module, the terms and conditions of the license of that module.
-   An independent module is a module which is not derived from this
-   software.  The special exception does not apply to any modifications
-   of the software.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-Not withstanding the above, under no circumstances may you combine
-this software in any way with any other Broadcom software provided
-under a license other than the GPL, without Broadcom's express prior
-written consent.
+
+A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+Boston, MA 02111-1307, USA.
 
 :>
 */
@@ -77,6 +71,101 @@ written consent.
 
 /*--- globals ---*/
 
+int bcm_iqos_enable_g = 0;
+EXPORT_SYMBOL(bcm_iqos_enable_g);
+
+#ifdef IQOS_DUMMY_FN
+int enet_fwdcb_registered = 0;
+int
+enet_fwdcb_register(enet_fwdcb_t fwdcb)
+{
+	if (fwdcb)
+		enet_fwdcb_registered = 1;
+	else
+		enet_fwdcb_registered = 0;
+	return 0;
+}
+EXPORT_SYMBOL(enet_fwdcb_register);
+#else /* IQOS_DUMMY_FN */
+struct sk_buff *
+bcm_iqoshdl_wrapper(struct net_device *dev, void *pNBuff)
+{
+	struct sk_buff *skb = NULL;
+	FkBuff_t * pFkb = NULL;
+
+	if (!pNBuff) {
+		return NULL;
+	}
+
+	if (IS_FKBUFF_PTR(pNBuff)) {
+		pFkb = PNBUFF_2_FKBUFF(pNBuff);
+		if (IS_BCM_SW_GSO_RECYCLE(pFkb)) {
+			return FKB_FRM_GSO;
+		}
+	        skb = nbuff_xlate((pNBuff_t )pNBuff);
+
+		if (skb == NULL) {
+			return NULL;
+		}
+	} else {
+		skb = PNBUFF_2_SKBUFF(pNBuff);
+		return skb;
+	}
+
+	skb->fkb_mark = pFkb->mark;
+	skb->priority = pFkb->priority;
+	skb->dev = dev;
+
+	skb->protocol = eth_type_trans(skb, dev);
+	skb_push(skb, ETH_HLEN);
+	return skb;
+}
+EXPORT_SYMBOL(bcm_iqoshdl_wrapper);
+#endif /* !IQOS_DUMMY_FN */
+
+#ifdef CONFIG_PROC_FS
+struct proc_dir_entry *proc_fs;
+static void biqos_procfs_init(void);
+#define PROCFS_BIQOS	"biqos"
+
+static ssize_t biqos_proc_enable_read(struct file *file, char __user *buf,
+    size_t cnt, loff_t *offset);
+static ssize_t biqos_proc_enable_write(struct file *file, const char __user *buf,
+    size_t cnt, loff_t *data);
+
+static const struct file_operations biqos_proc_fops = {
+   .read  = biqos_proc_enable_read,
+   .write = biqos_proc_enable_write,
+};
+
+static void
+biqos_procfs_init(void)
+{
+	proc_fs = proc_create(PROCFS_BIQOS, S_IRUGO, init_net.proc_net, &biqos_proc_fops);
+}
+
+static ssize_t 
+biqos_proc_enable_read(struct file *file, char __user *buf, size_t cnt,
+	loff_t *offset) {
+	int len = 0;
+	if(*offset != 0)
+		return 0;
+	len = sprintf(buf + len, "%d\n", bcm_iqos_enable_g);
+	*offset = len;
+	return len;
+}
+
+static ssize_t
+biqos_proc_enable_write(struct file *file, const char __user *buf, size_t cnt,
+	loff_t *data) {
+
+	if(buf && *buf >= '0' && *buf <= '9' )
+		bcm_iqos_enable_g = *buf - '0';
+
+	return cnt;
+}
+
+#endif
 /* RFC4008 */
 
 /* Debug macros */
@@ -756,7 +845,7 @@ static void blog_put_dev_stats(struct net_device *dev_p,
  */
 static void blog_notify_callback(void *data)
 {
-    BLOG_WAKEUP_WORKER_THREAD((wq_info_t *)data, BLOG_WORK_AVAIL);
+    BLOG_WAKEUP_WORKER_THREAD_NO_PREEMPT((wq_info_t *)data, BLOG_WORK_AVAIL);
 }
 
 int blog_preemptible_task(void)
@@ -788,6 +877,8 @@ void blog_notify_async_wait(BlogNotify_t event, void *net_p,
     int ret_val;
     wq_info_t   blog_notify_thread; /* blog_notify_async() caller thread */
     blog_notify_thread.work_avail = 0;
+    blog_notify_thread.wakeup_done = false;
+    spin_lock_init(&blog_notify_thread.wakeup_lock);
     init_waitqueue_head(&blog_notify_thread.wqh);
 
     if (blog_preemptible_task())
@@ -803,7 +894,14 @@ void blog_notify_async_wait(BlogNotify_t event, void *net_p,
                 wait_event_interruptible(blog_notify_thread.wqh,
                         blog_notify_thread.work_avail);
             } while (!(blog_notify_thread.work_avail & BLOG_WORK_AVAIL));
-            blog_notify_thread.work_avail &= (~BLOG_WORK_AVAIL);
+
+            /* here spinlock ensures no race condition on wait_event, 
+             * in between setting work_avail and wakeup
+             */
+            spin_lock_bh(&blog_notify_thread.wakeup_lock);
+            if(blog_notify_thread.wakeup_done == false)
+                WARN(1, "blog_notify_async improrper wakeup\n");
+            spin_unlock_bh(&blog_notify_thread.wakeup_lock);
         }
     }
     else
@@ -4824,6 +4922,9 @@ static int __init __init_blog( void )
     register_netevent_notifier(&net_nb);
 
     printk( CLRb "BLOG %s Initialized" CLRnl, BLOG_VERSION );
+#ifdef CONFIG_PROC_FS
+	biqos_procfs_init();
+#endif
     return 0;
 }
 

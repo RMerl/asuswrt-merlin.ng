@@ -1322,13 +1322,157 @@ static bp_elem_t g_rp_ax56[] = {
     {bp_last}
 };
 
+static bp_elem_t g_bcm96755map_rt_axe95q[] = {
+    {bp_cpBoardId,               .u.cp = "RTAXE95Q"},
+    {bp_ulCompatChipId,          .u.ul = 0x6755},
+
+    /* Button */
+	{bp_usButtonIdx,             .u.us = 0},
+    {bp_usButtonExtIntr,         .u.us = BP_EXT_INTR_0|BP_EXT_INTR_TYPE_IRQ_SENSE_EDGE|BP_EXT_INTR_TYPE_IRQ_LOW_LEVEL},
+    {bp_usGpio_Intr,             .u.us = BP_GPIO_9_AL},
+#if defined(_CFE_)
+    {bp_usButtonAction,          .u.us = BP_BTN_ACTION_PRINT | BP_BTN_TRIG_PRESS },
+    {bp_ulButtonActionParm,      .u.ptr = (void*)"Button Press -- Hold for 5s to do restore to default" },
+    {bp_usButtonAction,          .u.us = BP_BTN_ACTION_RESET | BP_BTN_TRIG_RELEASE | BP_BTN_TRIG_0S  },
+    {bp_usButtonAction,          .u.us = BP_BTN_ACTION_RESTORE_DEFAULTS | BP_BTN_TRIG_HOLD | BP_BTN_TRIG_5S},
+#endif
+    {bp_usButtonIdx,             .u.us = 1},
+    {bp_usButtonExtIntr,         .u.us = BP_EXT_INTR_1|BP_EXT_INTR_TYPE_IRQ_SENSE_EDGE|BP_EXT_INTR_TYPE_IRQ_LOW_LEVEL},
+    {bp_usGpio_Intr,             .u.us = BP_GPIO_8_AL},
+#if defined(_CFE_)
+    {bp_usButtonAction,          .u.us = BP_BTN_ACTION_SES | BP_BTN_TRIG_PRESS  },
+#endif
+
+    {bp_usGphyBaseAddress,       .u.us = BCM947622_PHY_BASE}, 
+    {bp_ucPhyType0,              .u.uc = BP_ENET_NO_PHY},
+    {bp_usConfigType,            .u.us = BP_ENET_CONFIG_MMAP}, // Cross bar switch
+    {bp_ulPortMap,               .u.ul = 0x3},
+	/* 53134 */
+    {bp_ulPhyId0,                .u.ul = RGMII_DIRECT_3P3V | EXTSW_CONNECTED},
+    {bp_ulPortFlags,             .u.ul = PORT_FLAG_TX_INTERNAL_DELAY | PORT_FLAG_RX_INTERNAL_DELAY},
+	/* 54991 (phy addr 0x7) */
+    {bp_ulPhyId1,                .u.ul = 6 |  PHY_INTEGRATED_VALID | MAC_IF_SERDES | PHY_EXTERNAL},
+    {bp_ulPhyId1,                .u.ul = 0x7 | PHY_EXTERNAL | PHY_TYPE_CL45GPHY},
+	/* 53134 */
+    {bp_ucPhyType1,              .u.uc = BP_ENET_EXTERNAL_SWITCH},
+    {bp_ucPhyAddress,            .u.uc = 0},
+    {bp_usConfigType,            .u.us = BP_ENET_CONFIG_MDIO},
+    {bp_ulPortMap,               .u.ul = 0x07},
+    {bp_ulPhyId0,                .u.ul = BP_PHY_ID_0 | CONNECTED_TO_EXTERN_SW},
+    {bp_ulPhyId1,                .u.ul = BP_PHY_ID_1 | CONNECTED_TO_EXTERN_SW},
+    {bp_ulPhyId2,                .u.ul = BP_PHY_ID_2 | CONNECTED_TO_EXTERN_SW},
+
+    {bp_usIntfId,                .u.us = 1},
+    {bp_usIntfType,              .u.us = BP_INTF_TYPE_UART},
+    {bp_usPortNum,               .u.us = 1},
+    {bp_usUartSdin,              .u.us = BP_GPIO_5_AH},
+    {bp_usUartSdout,             .u.us = BP_GPIO_6_AH},
+    {bp_usUartCts,               .u.us = BP_GPIO_3_AH}, 
+    {bp_usUartRts,               .u.us = BP_GPIO_4_AH},
+    {bp_usIntfEnd},
+
+    {bp_usUsbPwrOn0,             .u.us = BP_GPIO_80_AH},
+    {bp_usUsbPwrFlt0,            .u.us = BP_GPIO_79_AL},
+    {bp_usUsbPwrOn1,             .u.us = BP_GPIO_82_AH},
+    {bp_usUsbPwrFlt1,            .u.us = BP_GPIO_81_AL},
+
+    {bp_usGpioLedReserved,       .u.us = BP_GPIO_14_AL},
+    {bp_usGpioLedReserved,       .u.us = BP_GPIO_15_AL},
+    {bp_usGpioLedReserved,       .u.us = BP_GPIO_16_AL},
+    {bp_usGpioLedReserved,       .u.us = BP_GPIO_29_AL},
+    {bp_usGpioLedReserved,       .u.us = BP_GPIO_33_AL},
+
+#if 0
+    {bp_usGpioLedWL1Act,         .u.us = BP_GPIO_26_AL | BP_LED_USE_GPIO},	/* WLAN_5G_ACT */
+    {bp_usGpioLedWL0Act,         .u.us = BP_GPIO_39_AL | BP_LED_USE_GPIO},	/* WLAN_2G_ACT, must use BP_LED_USE_GPIO */
+#endif
+
+    /* reset-gpio for th external switch. */
+    {bp_usGpioInitState,         .u.us = BP_GPIO_10_AH},
+
+    {bp_ulMemoryConfig,          .u.ul = BP_DDR_SPEED_800_11_11_11 | BP_DDR_TOTAL_SIZE_512MB| BP_DDR_DEVICE_WIDTH_16 | BP_DDR_TOTAL_WIDTH_16BIT | BP_DDR_SSC_CONFIG_1},
+    {bp_last}
+};
+
+static bp_elem_t g_bcm96755map_rt_ax95q_2[] = {
+    {bp_cpBoardId,               .u.cp = "RTAX95Q_2"},
+    {bp_ulCompatChipId,          .u.ul = 0x6755},
+
+    /* Button */
+	{bp_usButtonIdx,             .u.us = 0},
+    {bp_usButtonExtIntr,         .u.us = BP_EXT_INTR_0|BP_EXT_INTR_TYPE_IRQ_SENSE_EDGE|BP_EXT_INTR_TYPE_IRQ_LOW_LEVEL},
+    {bp_usGpio_Intr,             .u.us = BP_GPIO_9_AL},
+#if defined(_CFE_)
+    {bp_usButtonAction,          .u.us = BP_BTN_ACTION_PRINT | BP_BTN_TRIG_PRESS },
+    {bp_ulButtonActionParm,      .u.ptr = (void*)"Button Press -- Hold for 5s to do restore to default" },
+    {bp_usButtonAction,          .u.us = BP_BTN_ACTION_RESET | BP_BTN_TRIG_RELEASE | BP_BTN_TRIG_0S  },
+    {bp_usButtonAction,          .u.us = BP_BTN_ACTION_RESTORE_DEFAULTS | BP_BTN_TRIG_HOLD | BP_BTN_TRIG_5S},
+#endif
+    {bp_usButtonIdx,             .u.us = 1},
+    {bp_usButtonExtIntr,         .u.us = BP_EXT_INTR_1|BP_EXT_INTR_TYPE_IRQ_SENSE_EDGE|BP_EXT_INTR_TYPE_IRQ_LOW_LEVEL},
+    {bp_usGpio_Intr,             .u.us = BP_GPIO_8_AL},
+#if defined(_CFE_)
+    {bp_usButtonAction,          .u.us = BP_BTN_ACTION_SES | BP_BTN_TRIG_PRESS  },
+#endif
+
+    {bp_usGphyBaseAddress,       .u.us = BCM947622_PHY_BASE}, 
+    {bp_ucPhyType0,              .u.uc = BP_ENET_NO_PHY},
+    {bp_usConfigType,            .u.us = BP_ENET_CONFIG_MMAP}, // Cross bar switch
+    {bp_ulPortMap,               .u.ul = 0x3},
+	/* 53134 */
+    {bp_ulPhyId0,                .u.ul = RGMII_DIRECT_3P3V | EXTSW_CONNECTED},
+    {bp_ulPortFlags,             .u.ul = PORT_FLAG_TX_INTERNAL_DELAY | PORT_FLAG_RX_INTERNAL_DELAY},
+	/* 54991 (phy addr 0x7) */
+    {bp_ulPhyId1,                .u.ul = 6 |  PHY_INTEGRATED_VALID | MAC_IF_SERDES | PHY_EXTERNAL},
+    {bp_ulPhyId1,                .u.ul = 0x7 | PHY_EXTERNAL | PHY_TYPE_CL45GPHY},
+	/* 53134 */
+    {bp_ucPhyType1,              .u.uc = BP_ENET_EXTERNAL_SWITCH},
+    {bp_ucPhyAddress,            .u.uc = 0},
+    {bp_usConfigType,            .u.us = BP_ENET_CONFIG_MDIO},
+    {bp_ulPortMap,               .u.ul = 0x07},
+    {bp_ulPhyId0,                .u.ul = BP_PHY_ID_0 | CONNECTED_TO_EXTERN_SW},
+    {bp_ulPhyId1,                .u.ul = BP_PHY_ID_1 | CONNECTED_TO_EXTERN_SW},
+    {bp_ulPhyId2,                .u.ul = BP_PHY_ID_2 | CONNECTED_TO_EXTERN_SW},
+
+    {bp_usIntfId,                .u.us = 1},
+    {bp_usIntfType,              .u.us = BP_INTF_TYPE_UART},
+    {bp_usPortNum,               .u.us = 1},
+    {bp_usUartSdin,              .u.us = BP_GPIO_5_AH},
+    {bp_usUartSdout,             .u.us = BP_GPIO_6_AH},
+    {bp_usUartCts,               .u.us = BP_GPIO_3_AH}, 
+    {bp_usUartRts,               .u.us = BP_GPIO_4_AH},
+    {bp_usIntfEnd},
+
+    {bp_usUsbPwrOn0,             .u.us = BP_GPIO_80_AH},
+    {bp_usUsbPwrFlt0,            .u.us = BP_GPIO_79_AL},
+    {bp_usUsbPwrOn1,             .u.us = BP_GPIO_82_AH},
+    {bp_usUsbPwrFlt1,            .u.us = BP_GPIO_81_AL},
+
+    {bp_usGpioLedReserved,       .u.us = BP_GPIO_14_AL},
+    {bp_usGpioLedReserved,       .u.us = BP_GPIO_15_AL},
+    {bp_usGpioLedReserved,       .u.us = BP_GPIO_16_AL},
+    {bp_usGpioLedReserved,       .u.us = BP_GPIO_29_AL},
+    {bp_usGpioLedReserved,       .u.us = BP_GPIO_33_AL},
+
+#if 0
+    {bp_usGpioLedWL1Act,         .u.us = BP_GPIO_26_AL | BP_LED_USE_GPIO},	/* WLAN_5G_ACT */
+    {bp_usGpioLedWL0Act,         .u.us = BP_GPIO_39_AL | BP_LED_USE_GPIO},	/* WLAN_2G_ACT, must use BP_LED_USE_GPIO */
+#endif
+
+    /* reset-gpio for th external switch. */
+    {bp_usGpioInitState,         .u.us = BP_GPIO_10_AH},
+
+    {bp_ulMemoryConfig,          .u.ul = BP_DDR_SPEED_800_11_11_11 | BP_DDR_TOTAL_SIZE_512MB| BP_DDR_DEVICE_WIDTH_16 | BP_DDR_TOTAL_WIDTH_16BIT | BP_DDR_SSC_CONFIG_1},
+    {bp_last}
+};
+
 bp_elem_t * g_BoardParms[] = {g_bcm947622sv, g_bcm947622rfdvt, g_bcm947622rfdvt2, g_bcm947622ref1, g_bcm96755ref1, g_bcm947622eap, g_bcm947622eap2, g_bcm947622eaps, g_bcm947622sv_serdes, g_bcm947622ref1_sg, g_bcm96755ref1_sg, g_bcm96755tbrhx, \
     g_bcm947622ref1_p250, g_bcm947622ref1_sg_p250, g_bcm96755ref1_p200, g_bcm96755ref1_sg_p200, g_bcm96755ref2,
 	g_bcm96755map_ax6600,
 	g_rt_ax56u,
 	g_xd4, g_xd4_slave, g_xd4_256m, g_xd4_slave_256m,
 	g_rtax55,
-	g_rp_ax56, g_bcm96755map_ax66001, g_ct_xd4,
+	g_rp_ax56, g_bcm96755map_ax66001, g_ct_xd4, g_bcm96755map_rt_axe95q, g_bcm96755map_rt_ax95q_2,
 	0};
 
 

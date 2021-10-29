@@ -17,6 +17,7 @@ enum nf_nat_manip_type {
 #define IP_NAT_RANGE_PROTO_SPECIFIED 2
 #define IP_NAT_RANGE_PROTO_RANDOM 4
 #define IP_NAT_RANGE_PERSISTENT 8
+#define IP_NAT_RANGE_PROTO_PSID (1 << 7)
 
 #include <linux/list.h>
 #include <linux/netfilter/nf_conntrack_pptp.h>

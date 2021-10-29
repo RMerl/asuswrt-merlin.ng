@@ -557,7 +557,11 @@ endif
 
 data-model:  cms2bbf_build
 ifeq ($(strip $(BUILD_BRCM_HNDROUTER_ALONE)),)
+ifneq ($(wildcard data-model),)
 	$(MAKE) -C data-model
+else
+	@true
+endif
 else
 	# skip for HND router builds
 	@true
@@ -847,27 +851,16 @@ $(if $(findstring L_y, $(1)), \
 $(if $(findstring uy, $(7)), \
        $(HOSTTOOLS_DIR)/scripts/bcmImageMaker --cferom $(2) --blocksize $(FLASH_NAND_BLOCK_$(3)KB) --bootofs $(4) --bootsize $(FLASH_NAND_BLOCK_$(3)KB)  --rootfs ubi_rootfs$(3)kb_pureubi.img --image $(FLASH_NAND_CFEROM_FS_IMAGE_NAME_$(3))_pureubi --fsonly $(FLASH_NAND_FS_IMAGE_NAME_$(3))_pureubi --ubionlyimage $(IMG_DDR_TYPE_OPT) $(6) $(5);)\
        md5sum $(HND_SRC)/targets/$(PROFILE)/$(FLASH_NAND_CFEROM_FS_IMAGE_NAME_$(3))_pureubi.w > $(HND_SRC)/targets/$(PROFILE)/$(FLASH_NAND_CFEROM_FS_IMAGE_NAME_$(3))_pureubi.md5; \
-$(if $(LIVE_UPDATE_RSA_VER), \
-$(if $(wildcard $(KEY_PATH)/private*.pem), \
-       for f in $(KEY_PATH)/private*.pem; do \
-              rsa_idx=$$(echo $${f} | sed "s/.*\///" | sed "s/private//" | sed "s/.pem//"); \
-              $$(openssl sha1 -sign $(KEY_PATH)/private$${rsa_idx}.pem -out $(HND_SRC)/targets/$(PROFILE)/$(FLASH_NAND_CFEROM_FS_IMAGE_NAME_$(3))_pureubi_rsa$${rsa_idx}.zip $(HND_SRC)/targets/$(PROFILE)/$(FLASH_NAND_CFEROM_FS_IMAGE_NAME_$(3))_pureubi.w); \
-       done \
-, \
-       if [ -f $(HND_SRC)/../../buildtools/private.pem ] ; then \
-       openssl sha1 -sign $(HND_SRC)/../../buildtools/private.pem -out $(HND_SRC)/targets/$(PROFILE)/$(FLASH_NAND_CFEROM_FS_IMAGE_NAME_$(3))_pureubi_rsa.zip $(HND_SRC)/targets/$(PROFILE)/$(FLASH_NAND_CFEROM_FS_IMAGE_NAME_$(3))_pureubi.w; \
-       fi \
-)
-, \
-       if [ -f $(HND_SRC)/../../buildtools/private.pem ] ; then \
-       openssl sha1 -sign $(HND_SRC)/../../buildtools/private.pem -out $(HND_SRC)/targets/$(PROFILE)/$(FLASH_NAND_CFEROM_FS_IMAGE_NAME_$(3))_pureubi_rsa.zip $(HND_SRC)/targets/$(PROFILE)/$(FLASH_NAND_CFEROM_FS_IMAGE_NAME_$(3))_pureubi.w; \
-       fi \
-)
 $(if $(findstring sy, $(8)), \
        $(HOSTTOOLS_DIR)/scripts/bcmImageMaker --cferom $(2) --blocksize $(FLASH_NAND_BLOCK_$(3)KB) --bootofs $(4) --bootsize $(FLASH_NAND_BLOCK_$(3)KB)  --rootfs squbi_rootfs$(3)kb_pureubi.img --image $(FLASH_NAND_CFEROM_FS_IMAGE_NAME_$(3))_puresqubi --fsonly $(FLASH_NAND_FS_IMAGE_NAME_$(3))_puresqubi --ubionlyimage $(IMG_DDR_TYPE_OPT) $(6) $(5);)\
-       [ ! -f $(HND_SRC)/targets/$(PROFILE)/$(FLASH_NAND_FS_IMAGE_NAME_$(3))_puresqubi.w ] || md5sum $(HND_SRC)/targets/$(PROFILE)/$(FLASH_NAND_FS_IMAGE_NAME_$(3))_puresqubi.w > $(HND_SRC)/targets/$(PROFILE)/$(FLASH_NAND_FS_IMAGE_NAME_$(3))_puresqubi.md5; \
-       [ ! -f $(HND_SRC)/targets/$(PROFILE)/$(FLASH_NAND_FS_IMAGE_NAME_$(3))_puresqubi.w ] || [ ! -f $(HND_SRC)/../../buildtools/private.pem ] || openssl sha1 -sign $(HND_SRC)/../../buildtools/private.pem -out $(HND_SRC)/targets/$(PROFILE)/$(FLASH_NAND_FS_IMAGE_NAME_$(3))_puresqubi_rsa.zip $(HND_SRC)/targets/$(PROFILE)/$(FLASH_NAND_FS_IMAGE_NAME_$(3))_puresqubi.w; \
+       [ ! -f $(HND_SRC)/targets/$(PROFILE)/$(FLASH_NAND_CFEROM_FS_IMAGE_NAME_$(3))_puresqubi.w ] || md5sum $(HND_SRC)/targets/$(PROFILE)/$(FLASH_NAND_CFEROM_FS_IMAGE_NAME_$(3))_puresqubi.w > $(HND_SRC)/targets/$(PROFILE)/$(FLASH_NAND_CFEROM_FS_IMAGE_NAME_$(3))_puresqubi.md5; \
+       [ ! -f $(HND_SRC)/targets/$(PROFILE)/$(FLASH_NAND_CFEROM_FS_IMAGE_NAME_$(3))_puresqubi.w ] || \
+       [ ! -f $(HND_SRC)/targets/$(PROFILE)/$(FLASH_NAND_CFEROM_FS_IMAGE_NAME_$(3))_puresqubi.w ] || rm -rf $(HND_SRC)/targets/$(PROFILE)/$(FLASH_NAND_FS_IMAGE_NAME_$(3))_pureubi*; \
+       [ ! -f $(HND_SRC)/targets/$(PROFILE)/$(FLASH_NAND_CFEROM_FS_IMAGE_NAME_$(3))_puresqubi.w ] || rm -rf $(HND_SRC)/targets/$(PROFILE)/$(FLASH_NAND_CFEROM_FS_IMAGE_NAME_$(3))_pureubi*; \
+       [ ! -f $(HND_SRC)/targets/$(PROFILE)/$(FLASH_NAND_CFEROM_FS_IMAGE_NAME_$(3))_puresqubi.w ] || rm -rf $(HND_SRC)/targets/$(PROFILE)/$(FLASH_NAND_FS_IMAGE_NAME_$(3))*_squbi*; \
+       [ ! -f $(HND_SRC)/targets/$(PROFILE)/$(FLASH_NAND_CFEROM_FS_IMAGE_NAME_$(3))_puresqubi.w ] || rm -rf $(HND_SRC)/targets/$(PROFILE)/$(FLASH_NAND__FS_IMAGE_NAME_$(3))*_ubi*; \
   )
+
 endef
 
 define build_images_secure

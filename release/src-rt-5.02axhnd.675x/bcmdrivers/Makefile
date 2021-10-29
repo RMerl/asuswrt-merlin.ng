@@ -252,7 +252,7 @@ $(eval $(call LN_RULE_DEP, $(CONFIG_BCM_WLAN), broadcom/net/wl/$(LN_NAME)/$(HNDD
 
 ifneq (,$(firstword $(wildcard ./broadcom/net/wl/$(LN_NAME)/$(HNDDRIVER_BASE)/hnd_dpsta \
    $(src)/broadcom/net/wl/$(LN_NAME)/$(HNDDRIVER_BASE)/hnd_dpsta)))
-$(eval $(call LN_RULE_DEP, $(CONFIG_BCM_WLAN), broadcom/net/wl/$(LN_NAME)/$(HNDDRIVER_BASE)/hnd_dpsta,,, $(WLLINK)))
+$(eval $(call LN_RULE, $(CONFIG_BCM_WLAN), broadcom/net/wl/$(LN_NAME)/$(HNDDRIVER_BASE)/hnd_dpsta,,))
 endif
 
 ifeq ($(strip $(BUILD_HND_NIC)),)

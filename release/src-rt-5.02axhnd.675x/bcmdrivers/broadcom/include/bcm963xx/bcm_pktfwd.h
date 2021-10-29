@@ -3,27 +3,21 @@
     All Rights Reserved
 
     <:label-BRCM:2017:DUAL/GPL:standard
-
-    Unless you and Broadcom execute a separate written software license
-    agreement governing use of this software, this software is licensed
-    to you under the terms of the GNU General Public License version 2
-    (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-    with the following added to such license:
-
-       As a special exception, the copyright holders of this software give
-       you permission to link this software with independent modules, and
-       to copy and distribute the resulting executable under terms of your
-       choice, provided that you also meet, for each linked independent
-       module, the terms and conditions of the license of that module.
-       An independent module is a module which is not derived from this
-       software.  The special exception does not apply to any modifications
-       of the software.
-
-    Not withstanding the above, under no circumstances may you combine
-    this software in any way with any other Broadcom software provided
-    under a license other than the GPL, without Broadcom's express prior
-    written consent.
-
+    
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License, version 2, as published by
+    the Free Software Foundation (the "GPL").
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    
+    
+    A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+    writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+    Boston, MA 02111-1307, USA.
+    
     :>
 */
 
@@ -1961,6 +1955,14 @@ typedef struct d3fwd_ext            d3fwd_ext_t;
 #error "ucast_pktlist supports 8 unicast packet priorities"
 #endif
 
+/* each station structure */
+typedef struct d3lut_sta
+{
+    dll_t       node;
+    uint8_t     mac[6]; /*ETHER_ADDR_LEN*/
+    uint16_t    flag;                   /* flag for this sta */
+    struct d3lut_elem *d3lut_elem;      /* associated d3lut_elem */
+} d3lut_sta_t;
 
 /**
  * -----------------------------------------------------------------------------
@@ -1977,6 +1979,8 @@ typedef struct d3fwd_wlif_stats
     uint32_t   cfp_fwds;    /* xfer count - bypass via WLCFP */
     uint32_t   chn_pkts;    /* pkts count - WLCFP miss use native chain_node */
     uint32_t   chn_fwds;    /* xfer count - WLCFP miss use native chain_node */
+    uint32_t   slow_pkts;   /* xfer count - WLCFP miss, no PKTC, fwd one pkt at
+                             * a time */
     uint32_t   tx_drops;    /* dropped packets */
     uint32_t   schedule;    /* wlan thread: wlif net device dispatch requests */
     uint32_t   complete;    /* wlan thread: wlif net device scheduled */
@@ -2036,6 +2040,9 @@ struct d3fwd_wlif                       /* d3fwd_wlif_t */
     /* flags for each netdevice/wlif */
     uint32_t            flags;
 
+    /* sta free list per intf */
+    dll_t               sta_free_list;
+    d3lut_sta_t         *sta_pool;
 };
 
 extern void d3fwd_wlif_stats_dump(d3fwd_wlif_stats_t * d3fwd_wlif_stats,
@@ -2075,6 +2082,7 @@ struct d3fwd_ext                        /* d3fwd_ext_t */
     };
     uint16_t            ssid;           /* WLAN interface index */
     uint16_t            rsvd16;         /* pad a D3LUT element to 16 B */
+    struct net_device * virt_net_device; /* virtual interface's net_device */
 };
 
 void d3fwd_ext_dump(d3fwd_ext_t *d3fwd_ext);
@@ -2483,6 +2491,9 @@ struct d3lut_elem                   /* d3lut_elem_t */
      * See d3lut_elem_init() and Element Free Pool Management in d3lut_t.
      */
     d3fwd_ext_t     ext;
+
+    /* station list associated with this d3lut_elem */
+    dll_t           sta_list;
 
 } __attribute__ ((packed));
 

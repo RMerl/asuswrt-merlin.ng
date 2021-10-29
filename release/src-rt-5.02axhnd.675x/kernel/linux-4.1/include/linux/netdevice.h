@@ -116,6 +116,26 @@ extern struct sk_buff *bcm_iqoshdl_wrapper(struct net_device *dev, void *pNBuff)
     (((struct sk_buff*)(skb))->pktc_flags &= (~FC_PKTDONE)); \
     })
 
+#define FKBTOQMIT (1 << 13)
+#define PKTISFKBTOQMIT(skb) \
+    ({ \
+        (((struct sk_buff*)(skb))->pktc_flags & FKBTOQMIT); \
+    })
+#define PKTSETFKBTOQMIT(skb)  \
+   ({ \
+    (((struct sk_buff*)(skb))->pktc_flags |= FKBTOQMIT); \
+    })
+#define PKTCLRFKBTOQMIT(skb)  \
+   ({ \
+    (((struct sk_buff*)(skb))->pktc_flags &= (~FKBTOQMIT)); \
+    })
+
+#if defined(CONFIG_BCM_KF_SW_GSO) && defined(CONFIG_BCM_SW_GSO)
+extern int is_bcm_sw_gso_recycle_func(void *pFkb);
+#define IS_BCM_SW_GSO_RECYCLE(pFkb)	is_bcm_sw_gso_recycle_func(pFkb)
+#else
+#define IS_BCM_SW_GSO_RECYCLE(pFkb)	0
+#endif
 void netdev_set_default_ethtool_ops(struct net_device *dev,
 				    const struct ethtool_ops *ops);
 

@@ -21,6 +21,12 @@
 #
 include ../../.config
 
+ifeq ($(strip $(USE_WLAN_SHARED)), 1)
+ifneq ($(strip $(WLAN_SHARED_DIR)),)
+-include $(WLAN_SHARED_DIR)/wifi_cfg_common.mk
+endif
+endif
+
 obj-${CONFIG_BCM_WLAN} := dpsta.o
 
 DPSTA_BASE_DIR := $(firstword $(wildcard ../../../../components/router-sysdep/dpsta	\
@@ -36,10 +42,6 @@ COMPONENTSBASE := $(src)/$(COMPONENTSBASE_OFFSET)
 
 # Search for sources under src/router/dpsta
 ifneq (,$(wildcard $(src)/$(DPSTASRC)/*.c))
-  ifeq ($(CONFIG_BUZZZ_FUNC),y)
-  subdir-ccflags-y += -O0 -fno-inline -finstrument-functions
-  endif # CONFIG_BUZZZ_FUNC
-
   EXTRA_CFLAGS += -I$(src)/$(DPSTASRC)/../../router-sysdep/dpsta
   EXTRA_CFLAGS += -I$(SRCBASE)/include -I$(SRCBASE)/common/include
   EXTRA_CFLAGS += -I$(COMPONENTSBASE)/proto/include

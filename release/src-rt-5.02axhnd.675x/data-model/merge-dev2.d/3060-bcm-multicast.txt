@@ -1,8 +1,0 @@
-#
-# Add the objects in cms-dm-bcm-multicast.xml below X_BROADCOM_COM_EthernetOam.
-#
-# See 0000-README.txt for more details
-#
-
-addObjBelowObj cms-dm-bcm-multicast.xml Device.X_BROADCOM_COM_EthernetOam.
-

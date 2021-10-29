@@ -226,10 +226,12 @@ int rtk_ext_swctl_init(void)
 
     rtk_port_mac_ability_t mac_cfg;
     rtk_mode_ext_t mode ;
-	int ret;
+    int ret;
     rtk_port_t cpuport;
     rtk_cpu_insert_t cpumode;
     int i = 0;
+    rtk_port_phy_ability_t phy_ability;
+    int port;
     
     kerSysSetGpioState(10, 0);
     udelay(50);
@@ -253,7 +255,22 @@ int rtk_ext_swctl_init(void)
     rtk_stat_port_reset(UTP_PORT1);
     rtk_stat_port_reset(UTP_PORT2);
     rtk_stat_port_reset(UTP_PORT3);
-	memset(&mac_cfg, 0x00, sizeof(rtk_port_mac_ability_t));
+
+    /* only disable Full_1000 capability but enable others */
+    memset(&phy_ability, 0, sizeof(rtk_port_phy_ability_t));
+    phy_ability.AutoNegotiation = 1;
+    phy_ability.Half_10 = 1;
+    phy_ability.Full_10 = 1;
+    phy_ability.Half_100 = 1;
+    phy_ability.Full_100 = 1;
+    phy_ability.Full_1000 = 1;
+    phy_ability.FC = 1;
+    phy_ability.AsyFC = 1;
+
+    for (port = 0; port < 4; port++)
+    {
+        rtk_port_phyAutoNegoAbility_set(port, &phy_ability);
+    }
 
     /* Enable LED Group 0&1 from P0 to P4 */
   //  portmask.bits[0]=0x1F;
@@ -265,6 +282,8 @@ int rtk_ext_swctl_init(void)
     rtk_led_enable_set(LED_GROUP_1, &portmask);
 
     mode = MODE_EXT_RGMII; 
+
+    memset(&mac_cfg, 0x00, sizeof(rtk_port_mac_ability_t));
     mac_cfg.forcemode = MAC_FORCE; 
     mac_cfg.speed = PORT_SPEED_1000M; 
     mac_cfg.duplex = PORT_FULL_DUPLEX; 

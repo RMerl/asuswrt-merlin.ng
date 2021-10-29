@@ -447,13 +447,14 @@ extern int panic_on_io_nmi;
 extern int panic_on_warn;
 extern int sysctl_panic_on_stackoverflow;
 #define CRASHLOG 1
-
 #ifdef CRASHLOG
 #define SYSCTL_CRASHLOG_FILENAME_LEN (256)
 #define SYSCTL_CRASHLOG_MTD_LEN (10)
-
+extern int crashlog_enable;
 extern char crashlog_filename[SYSCTL_CRASHLOG_FILENAME_LEN];
 extern char crashlog_mtd[SYSCTL_CRASHLOG_MTD_LEN];
+extern void crashLogText(const char *buffer, unsigned int len);
+extern int crashLogCommit(void);
 extern int crashFileSet(const char* filename);
 #endif /* CRASHLOG */
 /*

@@ -3,27 +3,21 @@
     All Rights Reserved
 
     <:label-BRCM:2017:DUAL/GPL:standard
-
-    Unless you and Broadcom execute a separate written software license
-    agreement governing use of this software, this software is licensed
-    to you under the terms of the GNU General Public License version 2
-    (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-    with the following added to such license:
-
-       As a special exception, the copyright holders of this software give
-       you permission to link this software with independent modules, and
-       to copy and distribute the resulting executable under terms of your
-       choice, provided that you also meet, for each linked independent
-       module, the terms and conditions of the license of that module.
-       An independent module is a module which is not derived from this
-       software.  The special exception does not apply to any modifications
-       of the software.
-
-    Not withstanding the above, under no circumstances may you combine
-    this software in any way with any other Broadcom software provided
-    under a license other than the GPL, without Broadcom's express prior
-    written consent.
-
+    
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License, version 2, as published by
+    the Free Software Foundation (the "GPL").
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    
+    
+    A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+    writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+    Boston, MA 02111-1307, USA.
+    
     :>
 */
 
@@ -42,6 +36,9 @@
 #include <wl_pktc.h>
 
 #include <wl_blog.h>
+#if defined(BCM_PKTFWD)
+#include <wlc_scb.h>
+#endif
 
 struct sk_buff *wl_xlate_to_skb(struct wl_info *wl, struct sk_buff *s)
 {
@@ -127,7 +124,21 @@ int wl_handle_blog_emit(struct wl_info *wl, struct wl_if *wlif, struct sk_buff *
 			}
 #else
 			skb->blog_p->dev_xmit_blog = NULL;
-#endif
+#if defined(CONFIG_BCM_OVS)
+#if defined(PKTC_TBL)
+			{
+			uint32_t chainIdx = PKTC_INVALID_CHAIN_IDX;
+			chainIdx = wl_pktc_req(PKTC_TBL_UPDATE, (unsigned long)eh->ether_dhost, (unsigned long)skb->dev, 0);
+			if (chainIdx != PKTC_INVALID_CHAIN_IDX) {
+				skb->blog_p->wfd.nic_ucast.is_tx_hw_acc_en = 1;
+				skb->blog_p->wfd.nic_ucast.is_chain = 1;
+				skb->blog_p->wfd.nic_ucast.wfd_idx = ((chainIdx & PKTC_WFD_IDX_BITMASK) >> PKTC_WFD_IDX_BITPOS);
+				skb->blog_p->wfd.nic_ucast.chain_idx = chainIdx;
+			}
+			}
+#endif /* PKTC_TBL */
+#endif /* CONFIG_BCM_OVS */
+#endif /* BCM_WFD && CONFIG_BCM_FC_BASED_WFD */
 		}
 #endif
 
@@ -209,9 +220,7 @@ void wl_handle_blog_event(wl_info_t *wl, wlc_event_t *e)
                         0, e->event.event_type);
 
             if (wl_pktc_del_hook != NULL) {
-                blog_lock(); /* blog_notify is called inside del_hook */
                 wl_pktc_del_hook((unsigned long)e->event.addr.octet, dev);
-                blog_unlock();
             }
 #endif /* PKTC_TBL */
 			break;
@@ -238,16 +247,22 @@ void wl_handle_blog_event(wl_info_t *wl, wlc_event_t *e)
 				e->event.addr.octet[2], e->event.addr.octet[3],
 				e->event.addr.octet[4], e->event.addr.octet[5]));
 #if defined(BCM_PKTFWD)
-            wl_pktc_req(PKTC_TBL_SET_STA_ASSOC, (unsigned long)e->event.addr.octet,
-                        1, e->event.event_type);
-            wl_pktc_req(PKTC_TBL_UPDATE, (unsigned long)e->event.addr.octet,
-                        (unsigned long)dev, 0);
-#else /* ! BCM_PKTFWD */
-			wl_pktc_req(PKTC_TBL_UPDATE, (unsigned long)e->event.addr.octet,
-                        (unsigned long)dev, 0);
+			/* setting dwds client properly before d3lut_elem insertion */
+			{
+				wl_if_t *wlif = WL_DEV_IF(dev);
+				struct scb *scb = wlc_scbfind_from_wlcif(wl->wlc, wlif->wlcif, e->event.addr.octet);
+				wlc_bsscfg_t *bsscfg = wl_bsscfg_find(wlif);
+				netdev_wlan_unset_dwds_client(wlif->d3fwd_wlif); /* reset first */
+				if (BSSCFG_STA(bsscfg) && SCB_DWDS(scb)) {
+					netdev_wlan_set_dwds_client(wlif->d3fwd_wlif);
+				}
+			}
+#endif /* BCM_PKTFWD */
 			wl_pktc_req(PKTC_TBL_SET_STA_ASSOC, (unsigned long)e->event.addr.octet,
-                        1, e->event.event_type);
-#endif /* ! BCM_PKTFWD */
+				1, e->event.event_type);
+			wl_pktc_req(PKTC_TBL_UPDATE, (unsigned long)e->event.addr.octet,
+				(unsigned long)dev, 0);
+
 #endif /* PKTC_TBL */
 			break;
 

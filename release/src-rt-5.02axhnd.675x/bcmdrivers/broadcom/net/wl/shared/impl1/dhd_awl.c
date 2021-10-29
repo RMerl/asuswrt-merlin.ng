@@ -3,27 +3,21 @@
     All Rights Reserved
 
     <:label-BRCM:2017:DUAL/GPL:standard
-
-    Unless you and Broadcom execute a separate written software license
-    agreement governing use of this software, this software is licensed
-    to you under the terms of the GNU General Public License version 2
-    (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-    with the following added to such license:
-
-       As a special exception, the copyright holders of this software give
-       you permission to link this software with independent modules, and
-       to copy and distribute the resulting executable under terms of your
-       choice, provided that you also meet, for each linked independent
-       module, the terms and conditions of the license of that module.
-       An independent module is a module which is not derived from this
-       software.  The special exception does not apply to any modifications
-       of the software.
-
-    Not withstanding the above, under no circumstances may you combine
-    this software in any way with any other Broadcom software provided
-    under a license other than the GPL, without Broadcom's express prior
-    written consent.
-
+    
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License, version 2, as published by
+    the Free Software Foundation (the "GPL").
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    
+    
+    A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+    writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+    Boston, MA 02111-1307, USA.
+    
     :>
 */
 
@@ -477,11 +471,11 @@ dhd_awl_rx_flow_miss_handler_archer_dhd_sll(void *ctxt, pktlist_t *misspktl)
 	    awl->rx.a2w_rx_packets++;
 
 	    /* Call DHD Rx handler */
-	    DHD_PERIM_LOCK_ALL((dhdp->fwder_unit % FWDER_MAX_UNIT));
+	    DHD_LOCK(dhdp);
 
 	    dhd_bus_rx_frame(dhdp->bus, skb, ARCHER_WLAN_INTF_IDX(skb), 1);
 
-	    DHD_PERIM_UNLOCK_ALL((dhdp->fwder_unit % FWDER_MAX_UNIT));
+	    DHD_UNLOCK(dhdp);
 
 	    /* Update stats */
 	    awl = DHD_AWL_CB(dhdp);
@@ -656,7 +650,7 @@ dhd_awl_process_slowpath_rxpkts(dhd_pub_t *dhdp, int rxbound)
 	DHD_AWL_PKTLIST_UNLK(awl->rx.a2w_pktl_lock);
 
 	/* Let dhd_bus process the packets */
-	DHD_PERIM_LOCK_ALL((dhdp->fwder_unit % FWDER_MAX_UNIT));
+	DHD_LOCK(dhdp);
 
 	do {
 	    struct sk_buff* nskb = skb->prev;
@@ -667,7 +661,7 @@ dhd_awl_process_slowpath_rxpkts(dhd_pub_t *dhdp, int rxbound)
 	    skb = nskb;
 	} while (--npkts);
 
-	DHD_PERIM_UNLOCK_ALL((dhdp->fwder_unit % FWDER_MAX_UNIT));
+	DHD_UNLOCK(dhdp);
 
 	if (pktlist->len != 0) {
 	    more = true;

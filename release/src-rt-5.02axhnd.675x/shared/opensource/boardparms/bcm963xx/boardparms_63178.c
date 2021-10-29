@@ -983,9 +983,9 @@ static bp_elem_t g_bcm96750ref4[] = {
   {bp_usGpioLedReserved,       .u.us = BP_GPIO_33_AL},	// BT DISABLE
 #else
 #ifdef TUFAX5400
-  {bp_usGpioLedReserved,       .u.us = BP_GPIO_13_AL},	// LOGO LED
-  {bp_usGpioLedReserved,       .u.us = BP_GPIO_14_AL},	// LOGO LED
-  {bp_usGpioLedReserved,       .u.us = BP_GPIO_15_AL},	// LOGO LED
+  {bp_usGpioLedReserved,       .u.us = BP_GPIO_13_AH},	// LOGO LED
+  {bp_usGpioLedReserved,       .u.us = BP_GPIO_14_AH},	// LOGO LED
+  {bp_usGpioLedReserved,       .u.us = BP_GPIO_15_AH},	// LOGO LED
   {bp_usGpioLedReserved,       .u.us = BP_GPIO_53_AL},	// WAN RED LED
   {bp_usGpioLedBlPowerOn,      .u.us = BP_GPIO_57_AL},
 #else
@@ -1052,7 +1052,7 @@ static bp_elem_t g_bcm96750ref4[] = {
   {bp_usIntfType,              .u.us = BP_INTF_TYPE_GPHY},
   {bp_usPortNum,               .u.us = 1},
 #ifdef TUFAX5400
-  {bp_usNetLed3,               .u.us = BP_GPIO_50_AL},	// P1
+  {bp_usNetLed3,               .u.us = BP_GPIO_51_AL},	// P1
 #else
   {bp_usNetLed3,               .u.us = BP_GPIO_25_AL},	// P1
 #endif
@@ -1062,7 +1062,7 @@ static bp_elem_t g_bcm96750ref4[] = {
   {bp_usIntfType,              .u.us = BP_INTF_TYPE_GPHY},
   {bp_usPortNum,               .u.us = 2},
 #ifdef TUFAX5400
-  {bp_usNetLed3,               .u.us = BP_GPIO_51_AL},	// P2
+  {bp_usNetLed3,               .u.us = BP_GPIO_50_AL},	// P2
 #else
   {bp_usNetLed3,               .u.us = BP_GPIO_29_AL},	// P2
 #endif
@@ -1083,7 +1083,7 @@ static bp_elem_t g_bcm96750ref4[] = {
   {bp_usIntfType,              .u.us = BP_INTF_TYPE_GPHY},
   {bp_usPortNum,               .u.us = 4},
 #ifdef TUFAX5400
-  {bp_usNetLed3,               .u.us = BP_GPIO_49_AL},	// WAN
+  {bp_usNetLed3,               .u.us = BP_GPIO_56_AL},	// WAN
 #else
   {bp_usNetLed3,               .u.us = BP_GPIO_21_AL},	// WAN
 #endif
@@ -1133,9 +1133,9 @@ static bp_elem_t g_bcm96750ref4[] = {
   {bp_usGpioLedReserved,       .u.us = BP_GPIO_33_AL},	// BT DISABLE
 #else
 #ifdef TUFAX5400
-  {bp_usGpioLedReserved,       .u.us = BP_GPIO_13_AL},	// LOGO LED
-  {bp_usGpioLedReserved,       .u.us = BP_GPIO_14_AL},	// LOGO LED
-  {bp_usGpioLedReserved,       .u.us = BP_GPIO_15_AL},	// LOGO LED
+  {bp_usGpioLedReserved,       .u.us = BP_GPIO_13_AH},	// LOGO LED
+  {bp_usGpioLedReserved,       .u.us = BP_GPIO_14_AH},	// LOGO LED
+  {bp_usGpioLedReserved,       .u.us = BP_GPIO_15_AH},	// LOGO LED
   {bp_usGpioLedReserved,       .u.us = BP_GPIO_53_AL},	// WAN RED LED
   {bp_usGpioLedBlPowerOn,      .u.us = BP_GPIO_57_AL},
 #else
@@ -1208,7 +1208,7 @@ static bp_elem_t g_bcm96750ref4[] = {
   {bp_usIntfType,              .u.us = BP_INTF_TYPE_GPHY},
   {bp_usPortNum,               .u.us = 1},
 #ifdef TUFAX5400
-  {bp_usNetLed3,               .u.us = BP_GPIO_50_AL},	// P1
+  {bp_usNetLed3,               .u.us = BP_GPIO_51_AL},	// P1
 #else
   {bp_usNetLed3,               .u.us = BP_GPIO_25_AL},	// P1
 #endif
@@ -1218,7 +1218,7 @@ static bp_elem_t g_bcm96750ref4[] = {
   {bp_usIntfType,              .u.us = BP_INTF_TYPE_GPHY},
   {bp_usPortNum,               .u.us = 2},
 #ifdef TUFAX5400
-  {bp_usNetLed3,               .u.us = BP_GPIO_51_AL},	// P2
+  {bp_usNetLed3,               .u.us = BP_GPIO_50_AL},	// P2
 #else
   {bp_usNetLed3,               .u.us = BP_GPIO_29_AL},	// P2
 #endif
@@ -1240,7 +1240,7 @@ static bp_elem_t g_bcm96750ref4[] = {
   {bp_usPortNum,               .u.us = 4},
 #if !defined(RTAX82U) && !defined(RTAX82_XD6)
 #ifdef TUFAX5400
-  {bp_usNetLed3,               .u.us = BP_GPIO_49_AL},	// WAN
+  {bp_usNetLed3,               .u.us = BP_GPIO_56_AL},	// WAN
 #else
   {bp_usNetLed3,               .u.us = BP_GPIO_21_AL},	// WAN
 #endif

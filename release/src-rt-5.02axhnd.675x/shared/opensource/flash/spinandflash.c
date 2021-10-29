@@ -4,25 +4,19 @@
       Copyright (c) 2012 Broadcom 
       All Rights Reserved
    
-   Unless you and Broadcom execute a separate written software license
-   agreement governing use of this software, this software is licensed
-   to you under the terms of the GNU General Public License version 2
-   (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-   with the following added to such license:
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License, version 2, as published by
+   the Free Software Foundation (the "GPL").
    
-      As a special exception, the copyright holders of this software give
-      you permission to link this software with independent modules, and
-      to copy and distribute the resulting executable under terms of your
-      choice, provided that you also meet, for each linked independent
-      module, the terms and conditions of the license of that module.
-      An independent module is a module which is not derived from this
-      software.  The special exception does not apply to any modifications
-      of the software.
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
    
-   Not withstanding the above, under no circumstances may you combine
-   this software in any way with any other Broadcom software provided
-   under a license other than the GPL, without Broadcom's express prior
-   written consent.
+   
+   A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+   writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+   Boston, MA 02111-1307, USA.
    
    :> 
 */                       
@@ -153,12 +147,16 @@
 #define ID_W25N01GV_2       0x21
 #define ID_W25M02GV_1       0xAB
 #define ID_W25M02GV_2       0x21
+#define ID_W25N02KV_1       0xAA
 #define ID_W25N02KV_2       0x22
 
 /* MXIC Macronix manufacturer ID */
 #define MACRONIXPART        0xC2
 #define ID_MX35LF1GE4       0x12
 #define ID_MX35LF2GE4       0x22
+#define ID_MX35LF2GE4AD_1   0x26
+#define ID_MX35LF2GE4AD_2   0x03
+
 //#define ID_MX35LF2G14       0x20 // do not support, requires external 4-bit ECC
 
 /* Toshiba manufacturer ID */
@@ -177,7 +175,8 @@
 #define FMPART              0xA1
 //#define ID_FM25G01B         0xD1 // do not support, has ECC enable in wrong location
 #define ID_FM25S01          0xA1
-#define ID_FM25S01A         0xE4 // (DID) Device ID
+#define ID_FM25S01A         0xE4  // (DID) Device ID
+#define ID_DS35         0xE4  // (DID) Device ID
 
 /* XTX manufacturer ID
    XTX parts have a few incompatibilities with other SPI NAND parts,
@@ -192,6 +191,10 @@
 /* Paragon manufacturer ID */
 //#define PARAGONPART         0xA1
 
+//add for DS flash
+#define DOSILICON           0xE5
+#define ID_DS35Q2GB         0xF2
+#define ID_DS35X1GB         0x71
 
 #define SPI_BUILD_ID(A,B)   \
     ( (A & 0xFFFF0000) | ((B & 0xFF00) ? (A & 0xFF00) : 0) | ((B & 0xFF) ? (A & 0xFF) : 0) )
@@ -227,8 +230,10 @@
      {SPI_MAKE_ID_3_BYTE(WINBONDPART,  ID_W25N512GV_1, ID_W25N512GV_2), "Winbond W25N512GV"},     \
      {SPI_MAKE_ID_3_BYTE(WINBONDPART,  ID_W25N01GV_1,  ID_W25N01GV_2),  "Winbond W25N01GV"},      \
      {SPI_MAKE_ID_3_BYTE(WINBONDPART,  ID_W25M02GV_1,  ID_W25M02GV_2),  "Winbond W25M02GV"},      \
+     {SPI_MAKE_ID_3_BYTE(WINBONDPART,  ID_W25N02KV_1,  ID_W25N02KV_2),  "Winbond W25N02KV"},      \
      {SPI_MAKE_ID(MACRONIXPART, ID_MX35LF1GE4),  "Macronix MX35LF1GE4"},    \
      {SPI_MAKE_ID(MACRONIXPART, ID_MX35LF2GE4),  "Macronix MX35LF2GE4"},    \
+     {SPI_MAKE_ID_3_BYTE(MACRONIXPART,  ID_MX35LF2GE4AD_1,  ID_MX35LF2GE4AD_2),  "Macronix MX35LF2GE4AD"},      \
      {SPI_MAKE_ID(TOSHIBAPART,  ID_TC58CVG0S),   "Toshiba TC58CVG0S"},      \
      {SPI_MAKE_ID(TOSHIBAPART,  ID_TC58CVG1S),   "Toshiba TC58CVG1S"},      \
      {SPI_MAKE_ID(ETRONPART,    ID_EM73C044SNB), "Etron EM73C044SNB"},      \
@@ -238,7 +243,9 @@
      {SPI_MAKE_ID(XTXPART,      ID_XT26G01A),    "XTX XT26G01A"},           \
      {SPI_MAKE_ID(XTXPART,      ID_XT26G02A),    "XTX XT26G02A"},           \
      {SPI_MAKE_ID(FMPART,       ID_FM25S01),     "FM 25S01"},               \
-     {SPI_MAKE_ID(FMPART,       ID_FM25S01A),    "FM 25S01A"},              \
+     {SPI_MAKE_ID(FMPART,       ID_FM25S01A),     "FM 25S01A"},             \
+     {SPI_MAKE_ID(DOSILICON,    ID_DS35Q2GB),    "DS DS35Q2GB"},            \
+     {SPI_MAKE_ID(DOSILICON,    ID_DS35X1GB),    "DS DS35X1GB"},            \
      {0,""}                                                                 \
     }
 
@@ -592,6 +599,35 @@ static struct nand_ecclayout spinand_oob_mxic =
 #endif
 };
 
+
+static struct nand_ecclayout spinand_oob_mxic_ad =
+{
+    .eccbytes = 72,
+    .eccpos = { // for ease of use, call the bad block marker an ECC byte as well
+        0, 1, 8, 9, 16, 17, 24, 25, // these must be in numerical order
+
+
+
+       64,  65,  66,  67,  68,  69,  70,  71,  72,  73,  74,  75,  76,  77,  78,  79,
+       80,  81,  82,  83,  84,  85,  86,  87,  88,  89,  90,  91,  92,  93,  94,  95,
+       96,  97,  98,  99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111,
+      112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127
+    },
+#ifndef _CFE_
+    .oobavail = 56,
+    .oobfree = {
+        {.offset = 2,
+         .length = 6},
+        {.offset = 10,
+         .length = 6},
+        {.offset = 18,
+         .length = 6},
+        {.offset = 26,
+         .length = 6}
+    }
+#endif
+};
+
 static struct nand_ecclayout spinand_oob_etron =
 {
     .eccbytes = 62,
@@ -819,13 +855,35 @@ static int spi_nand_read_cfg(PCFE_SPI_NAND_CHIP pchip)
     case SPI_MAKE_ID_3_BYTE(WINBONDPART, ID_W25N01GV_1, ID_W25N01GV_2): // 1Gb, 128MB, default part
         break;
 
-    case SPI_MAKE_ID_3_BYTE(WINBONDPART, ID_W25N01GV_1, ID_W25N02KV_2): // 2Gb, 256MB
-        pchip->chip_num_blocks = 0x800;  // 2048 blocks total
-        break;
-
     case SPI_MAKE_ID_3_BYTE(WINBONDPART, ID_W25M02GV_1, ID_W25M02GV_2): // 2Gb, 256MB
         pchip->chip_num_blocks = 0x800;  // 2048 blocks total
         pchip->chip_die_sel = 0x8000000; // 1Gb cutoff
+        break;
+
+    case SPI_MAKE_ID_3_BYTE(WINBONDPART, ID_W25N02KV_1, ID_W25N02KV_2): // 2Gb, 256MB
+        pchip->chip_num_blocks = 0x800;	// 2048 blocks total
+#if defined(CFG_RAMAPP)
+        pchip->chip_ecc_offset = 0x840; // location of ECC bytes, explicit read at this address to get ECC bytes
+        pchip->chip_flash_clock = 104000000; // 104 MHz
+        pchip->chip_spare_size = 0x80; // 128, encompasses whole OOB and (hidden) ECC
+        pchip->ecclayout = &spinand_oob_toshiba_micron_ab;
+        pchip->chip_ecc = 8; // correctable amount of bits
+//        pchip->chip_ecc_corr = 6; // bad bit threshold to mark page bad (6/8), don't need to set when using enhanced
+        pchip->chip_ecc_enh = 0x60; // enhanced bad bit detection by chip (6/8)
+#endif
+        break;
+
+    case SPI_MAKE_ID_3_BYTE(MACRONIXPART,  ID_MX35LF2GE4AD_1,  ID_MX35LF2GE4AD_2): // 2Gb, 256MB
+        pchip->chip_num_blocks = 0x800; // 2048 blocks total
+#if defined(CFG_RAMAPP)
+        pchip->chip_ecc_offset = 0x840; // location of ECC bytes, explicit read at this address to get ECC bytes
+        pchip->chip_flash_clock = 104000000; // 104
+        pchip->chip_spare_size = 0x80; // 128, encompasses whole OOB and (hidden) ECC
+        pchip->ecclayout = &spinand_oob_mxic_ad;
+        pchip->chip_ecc = 8; // correctable amount of bits
+//        pchip->chip_ecc_corr = 6; // bad bit threshold to mark page bad (6/8), don't need to set when using enhanced
+        pchip->chip_ecc_enh = 0x60; // enhanced bad bit detection by chip (6/8)
+#endif
         break;
 
     default:
@@ -1099,7 +1157,27 @@ static int spi_nand_read_cfg(PCFE_SPI_NAND_CHIP pchip)
         break;
 
     case SPI_MAKE_ID(FMPART, ID_FM25S01A): // 1Gb, 128MB
+#if defined(CFG_RAMAPP)
+        pchip->chip_spare_size = 0x80; // 128, encompasses whole OOB and ECC
+        pchip->ecclayout = &spinand_oob_toshiba_micron_ab;
+#endif
         break;
+
+    case SPI_MAKE_ID(DOSILICON, ID_DS35Q2GB): // 2Gb, 256MB
+        pchip->chip_num_blocks = 0x800;  // 2048 blocks total
+        pchip->chip_num_planes = 2;
+#if defined(CFG_RAMAPP)
+        pchip->chip_ecc_offset = 0x840; // location of ECC bytes, explicit read at this address to get ECC bytes
+        pchip->chip_flash_clock = 104000000; // 104 MHz
+        pchip->chip_spare_size = 0x80; // 128, encompasses whole OOB and ECC
+        pchip->ecclayout = &spinand_oob_toshiba_micron_ab;
+        pchip->chip_ecc = 8; // correctable amount of bits
+        pchip->chip_ecc_corr = 6; // bad bit threshold to mark page bad (3/4)
+#endif
+        break;
+
+    case SPI_MAKE_ID(DOSILICON, ID_DS35X1GB): // 1Gb, 128MB
+	break;
 
     default: // 1Gb, 128MB
 #if defined(CFG_RAMAPP)
@@ -1459,7 +1537,8 @@ static int spi_nand_read_page(unsigned long page_addr, unsigned int page_offset,
                 if (
                      ( (SPI_MANU_ID(pchip->chip_device_id) == GIGADEVPART) && ( (spi_nand_get_cmd(FLASH_GFEAT, FEATURE_STAT_AUX) & STAT_ECC_MASK1) < pchip->chip_ecc_enh) ) || 
                      ( (SPI_MANU_ID(pchip->chip_device_id) == MACRONIXPART) && ( (spi_nand_get_cmd(FLASH_SREAD, 0) & STAT_ECC_MASK2) < pchip->chip_ecc_enh) ) ||
-                     ( (SPI_MANU_ID(pchip->chip_device_id) == TOSHIBAPART) && ( (spi_nand_get_cmd(FLASH_GFEAT, FEATURE_STAT_ENH) & STAT_ECC_MASK3) < pchip->chip_ecc_enh) )
+                     ( (SPI_MANU_ID(pchip->chip_device_id) == TOSHIBAPART) && ( (spi_nand_get_cmd(FLASH_GFEAT, FEATURE_STAT_ENH) & STAT_ECC_MASK3) < pchip->chip_ecc_enh) ) ||
+                     ((pchip->chip_device_id == SPI_MAKE_ID_3_BYTE(WINBONDPART, ID_W25N02KV_1, ID_W25N02KV_2)) && ( (spi_nand_get_cmd(FLASH_GFEAT, FEATURE_STAT_ENH) & STAT_ECC_MASK3) < pchip->chip_ecc_enh))
                    )
                     status = FLASH_API_OK;
             }
@@ -2033,6 +2112,7 @@ static int spi_nand_write_page(unsigned long page_addr, unsigned int page_offset
     PCFE_SPI_NAND_CHIP pchip = &g_spinand_chip;
     int maxwrite, status;
     int verify;
+    int count = 0;  //add it
 
     if (!len)
     {
@@ -2116,6 +2196,13 @@ static int spi_nand_write_page(unsigned long page_addr, unsigned int page_offset
          * 12-bit column address, then the data bytes to be programmed. */
         if(g_no_ecc && ((SPI_MANU_ID(pchip->chip_device_id) == XTXPART))) // XTX parts are very strange in that when writing with ECC off you MUST use FLASH_PROG to do a random data write and not disturb the ECC, also it seems they treat this as a page copy routine so the data must be loaded from the page into cache first?
             spi_buf[0] = FLASH_PROG;
+        else if(SPI_MANU_ID(pchip->chip_device_id) == DOSILICON)  //DOS parts are starnge in that it must reset cache before writing.
+        {
+            if(count == 0)
+                spi_buf[0] = FLASH_PROG;
+            else
+                spi_buf[0] = FLASH_PROG_RAN;
+        }
         else
             spi_buf[0] = FLASH_PROG_RAN;
 
@@ -2139,6 +2226,7 @@ static int spi_nand_write_page(unsigned long page_addr, unsigned int page_offset
         len -= maxwrite;
         page_offset += maxwrite;
 
+	count++;
         while(!spi_nand_ready()); // do we need this here??
     }
 

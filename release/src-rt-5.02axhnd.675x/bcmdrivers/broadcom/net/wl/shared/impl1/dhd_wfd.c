@@ -3,27 +3,21 @@
     All Rights Reserved
 
     <:label-BRCM:2017:DUAL/GPL:standard
-
-    Unless you and Broadcom execute a separate written software license
-    agreement governing use of this software, this software is licensed
-    to you under the terms of the GNU General Public License version 2
-    (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-    with the following added to such license:
-
-       As a special exception, the copyright holders of this software give
-       you permission to link this software with independent modules, and
-       to copy and distribute the resulting executable under terms of your
-       choice, provided that you also meet, for each linked independent
-       module, the terms and conditions of the license of that module.
-       An independent module is a module which is not derived from this
-       software.  The special exception does not apply to any modifications
-       of the software.
-
-    Not withstanding the above, under no circumstances may you combine
-    this software in any way with any other Broadcom software provided
-    under a license other than the GPL, without Broadcom's express prior
-    written consent.
-
+    
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License, version 2, as published by
+    the Free Software Foundation (the "GPL").
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    
+    
+    A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+    writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+    Boston, MA 02111-1307, USA.
+    
     :>
 */
 
@@ -202,7 +196,7 @@ dhd_handle_wfd_blog(dhd_pub_t *dhdp, struct net_device *net, int ifidx,
 #endif
             }
 
-            DHD_PERIM_UNLOCK(dhdp);
+            DHD_UNLOCK(dhdp);
 
             blog_emit(pktbuf, dhd_idx2net(dhdp, ifidx), TYPE_ETH, 0, BLOG_WLANPHY);
 
@@ -215,7 +209,7 @@ dhd_handle_wfd_blog(dhd_pub_t *dhdp, struct net_device *net, int ifidx,
             blog_link(IF_DEVICE, blog_p, (void*)net, DIR_TX, PKTLEN(dhdp->osh, pktbuf));
             blog_unlock();
 #endif /* BCM_DHD_RUNNER */
-            DHD_PERIM_LOCK(dhdp);
+            DHD_LOCK(dhdp);
         }
     }
 
@@ -242,8 +236,8 @@ dhd_wfd_forward(unsigned int pkt_cnt, void **pkts, unsigned long wl_radio_idx, u
     int ret;
     flow_ring_node_t *flow_ring_node;
 
-    DHD_PERIM_LOCK_ALL(wl_radio_idx % FWDER_MAX_UNIT);
     dhdp = g_dhd_info[wl_radio_idx];
+    DHD_LOCK(dhdp);
 
     for (cnt = 0; cnt < pkt_cnt; cnt++) { /* Process the array of packets */
 
@@ -330,7 +324,7 @@ dhd_wfd_forward(unsigned int pkt_cnt, void **pkts, unsigned long wl_radio_idx, u
     /* Flush all pending tx queued packets in bus(s) managed on this CPU core */
     dhd_wfd_invoke_func(wl_radio_idx, dhd_bus_txqueue_flush);
 
-    DHD_PERIM_UNLOCK_ALL(wl_radio_idx % FWDER_MAX_UNIT);
+    DHD_UNLOCK(dhdp);
 
     return 0;
 }
@@ -355,8 +349,8 @@ _dhd_wfd_mcasthandler(uint32_t wl_radio_idx, uint32_t ifidx, void *fkb)
     int pktlen;
 #endif
 
-    DHD_PERIM_LOCK_ALL(wl_radio_idx % FWDER_MAX_UNIT);
     dhdp = g_dhd_info[wl_radio_idx];
+    DHD_LOCK(dhdp);
     if(dhd_idx2net(dhdp,ifidx)==NULL)
        goto free_drop;
 #if (defined(DSLCPE) && defined(BCM_NBUFF))|| defined(BCM_NBUFF_WLMCAST)
@@ -423,7 +417,7 @@ succ_count:
 mcast_count:
     dhdp->tx_packets_wfd_mcast++;
 unlock:
-    DHD_PERIM_UNLOCK_ALL( wl_radio_idx % FWDER_MAX_UNIT);
+    DHD_UNLOCK(dhdp);
     return;
 }
 

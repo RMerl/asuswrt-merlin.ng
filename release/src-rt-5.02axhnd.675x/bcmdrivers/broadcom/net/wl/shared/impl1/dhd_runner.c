@@ -3,27 +3,21 @@
     All Rights Reserved
 
     <:label-BRCM:2017:DUAL/GPL:standard
-
-    Unless you and Broadcom execute a separate written software license
-    agreement governing use of this software, this software is licensed
-    to you under the terms of the GNU General Public License version 2
-    (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
-    with the following added to such license:
-
-       As a special exception, the copyright holders of this software give
-       you permission to link this software with independent modules, and
-       to copy and distribute the resulting executable under terms of your
-       choice, provided that you also meet, for each linked independent
-       module, the terms and conditions of the license of that module.
-       An independent module is a module which is not derived from this
-       software.  The special exception does not apply to any modifications
-       of the software.
-
-    Not withstanding the above, under no circumstances may you combine
-    this software in any way with any other Broadcom software provided
-    under a license other than the GPL, without Broadcom's express prior
-    written consent.
-
+    
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License, version 2, as published by
+    the Free Software Foundation (the "GPL").
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    
+    
+    A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+    writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+    Boston, MA 02111-1307, USA.
+    
     :>
 */
 
@@ -223,8 +217,8 @@ extern char * nvram_get(const char *name);
 #else /* !DOR_NPM_DEFAULT */
 #define DHD_RNR_BCMC_TXOFFL_PRIORITY        1                /* Normal */
 #endif /* !DOR_NPM_DEFAULT */
-#define DHD_RNR_INIT_PERIM_UNLOCK(dhdp)     DHD_PERIM_UNLOCK(dhdp)
-#define DHD_RNR_INIT_PERIM_LOCK(dhdp)       DHD_PERIM_LOCK(dhdp)
+#define DHD_RNR_INIT_PERIM_UNLOCK(dhdp)     DHD_UNLOCK(dhdp)
+#define DHD_RNR_INIT_PERIM_LOCK(dhdp)       DHD_LOCK(dhdp)
 #else /* !BCA_HNDROUTER */
 /* N+M feature default, disabled from REL_5.04L.01 and REL_5.02L.07P1 */
 #define DOR_NPM_DEFAULT                     0
@@ -3572,10 +3566,10 @@ dhd_runner_request(struct dhd_runner_hlp *dhd_hlp,
 	            (void*)arg1, (int)arg2));
 	        if (DHD_RNR_RX_OFFLOAD(dhd_hlp)) {
 	            RPR1("dhd_bus_rx_frame pkt<0x%p> if<%d>", (void*)arg1, (int)arg2);
-	            DHD_PERIM_LOCK_ALL((dhd->fwder_unit % FWDER_MAX_UNIT));
+	            DHD_LOCK(dhd);
 	            dhd_hlp->r2h_rx_compl_req++;
 	            dhd_bus_rx_frame(dhd->bus, (void *)arg1, (int)arg2, 1);
-	            DHD_PERIM_UNLOCK_ALL((dhd->fwder_unit % FWDER_MAX_UNIT));
+	            DHD_UNLOCK(dhd);
 	        } else {
 	            DHD_ERROR(("dhd%d: unexpected R2H_RX_COMPL_REQUEST <0x%lx> <0x%lx>\n",
 	                  dhd->unit, arg1, arg2));

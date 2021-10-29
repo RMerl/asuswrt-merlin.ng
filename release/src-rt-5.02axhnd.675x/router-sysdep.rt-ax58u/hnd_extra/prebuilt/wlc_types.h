@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: wlc_types.h 784470 2020-02-27 20:11:47Z $
+ * $Id: wlc_types.h 788937 2020-07-14 22:42:05Z $
  */
 
 #ifndef _wlc_types_h_
@@ -37,6 +37,7 @@
 typedef struct scb_cfp scb_cfp_t;
 
 typedef struct wlc_info wlc_info_t;
+typedef struct wlc_tx_runtime_context wlc_tx_rtc_t;
 typedef struct wlcband wlcband_t;
 typedef struct wlc_cmn_info wlc_cmn_info_t;
 typedef struct wlc_assoc_info wlc_assoc_info_t;
@@ -77,7 +78,6 @@ typedef struct wlc_ap_info wlc_ap_info_t;
 typedef struct cs_info cs_info_t;
 typedef struct wlc_scan_info wlc_scan_info_t;
 typedef struct wlc_scan_cmn_info wlc_scan_cmn_t;
-typedef struct wlc_slotted_bss_info wlc_slotted_bss_info_t;
 typedef struct wl_bcn_report_cfg wl_bcn_report_cfg_t;
 typedef struct tdls_info tdls_info_t;
 typedef struct dls_info dls_info_t;
@@ -94,14 +94,13 @@ typedef struct wlc_cxnoa_info wlc_cxnoa_info_t;
 typedef struct mchan_info mchan_info_t;
 typedef struct wowl_info wowl_info_t;
 typedef struct wowlpf_info wowlpf_info_t;
-typedef struct antsel_info antsel_info_t;
 typedef struct wmf_info wmf_info_t;
 typedef struct wlc_rrm_info wlc_rrm_info_t;
 typedef struct rm_info rm_info_t;
 
 struct d11init;
 
-typedef struct wlc_dpc_info wlc_dpc_info_t;
+typedef struct wlc_worklet_info wlc_worklet_info_t;
 typedef struct wlc_txs_dyntxc_info wlc_txs_dyntxc_info_t;
 typedef struct wlc_11h_info wlc_11h_info_t;
 typedef struct wlc_tpc_info wlc_tpc_info_t;
@@ -152,12 +151,11 @@ typedef struct wlc_pktc_info wlc_pktc_info_t;
 
 typedef struct wlc_mfp_info wlc_mfp_info_t;
 
-typedef struct wlc_mdns_info wlc_mdns_info_t;
-
 typedef struct wlc_macfltr_info wlc_macfltr_info_t;
 
 typedef struct wlc_nar_info wlc_nar_info_t;
 typedef struct wlc_bs_data_info wlc_bs_data_info_t;
+typedef struct wlc_bs_data_counters wlc_bs_data_counters_t;
 
 typedef struct wlc_keymgmt wlc_keymgmt_t;
 typedef struct wlc_key	wlc_key_t;
@@ -188,6 +186,8 @@ typedef struct wlc_srvsdb_info wlc_srvsdb_info_t;
 
 typedef struct wlc_bss_info wlc_bss_info_t;
 
+typedef struct wlc_multibssid_info wlc_multibssid_info_t;
+
 typedef struct wlc_hs20_info wlc_hs20_info_t;
 typedef struct wlc_hs20_cmn wlc_hs20_cmn_t;
 typedef struct wlc_pmkid_info	wlc_pmkid_info_t;
@@ -200,10 +200,9 @@ typedef struct wlc_stamon_info wlc_stamon_info_t;
 typedef struct wlc_monitor_info wlc_monitor_info_t;
 
 typedef struct wlc_csimon_info wlc_csimon_info_t;
+typedef struct wlc_csimon_sta wlc_csimon_sta_t;
 
 typedef struct wlc_debug_crash_info wlc_debug_crash_info_t;
-
-typedef struct wlc_nan_info wlc_nan_info_t;
 
 typedef struct wlc_wds_info wlc_wds_info_t;
 typedef struct okc_info okc_info_t;
@@ -220,8 +219,6 @@ typedef struct wlc_pdsvc_info wlc_pdsvc_info_t;
 typedef struct wlc_swdiv_info wlc_swdiv_info_t;
 
 typedef struct wlc_supp_channels wlc_supp_channels_t;
-
-typedef struct wlc_assoc_oui wlc_assoc_oui_t;
 
 /* For LTE Coex */
 typedef struct wlc_ltecx_info wlc_ltecx_info_t;
@@ -299,13 +296,6 @@ typedef struct wlc_wme wlc_wme_t;
 
 typedef struct wlc_link_qual wlc_link_qual_t;
 
-typedef struct wlc_rsdb_info wlc_rsdb_info_t;
-
-typedef struct wlc_asdb wlc_asdb_t;
-
-typedef struct rsdb_common_info rsdb_cmn_info_t;
-typedef struct rsdb_chan_sw_info rsdb_chan_sw_info_t;
-
 typedef struct wlc_macdbg_info wlc_macdbg_info_t;
 typedef struct wlc_rspec_info wlc_rspec_info_t;
 typedef struct wlc_ndis_info wlc_ndis_info_t;
@@ -323,8 +313,7 @@ typedef struct wlc_test_info wlc_test_info_t;
 typedef struct chanswitch_times chanswitch_times_t;
 typedef struct wlc_dump_info wlc_dump_info_t;
 
-typedef struct wlc_stf wlc_stf_t;
-typedef struct wlc_rsdb_policymgr_info wlc_rsdb_policymgr_info_t;
+typedef struct wlc_stf wlc_stf_info_t;
 
 typedef struct wlc_he_info wlc_he_info_t;
 typedef struct wlc_twt_info wlc_twt_info_t;
@@ -337,8 +326,6 @@ typedef struct wlc_ulmu_info wlc_ulmu_info_t;
 
 typedef struct resv_info resv_info_t;
 
-typedef struct wl_scan_summary wl_scan_summary_t;
-
 typedef struct wlc_stf_arb wlc_stf_arb_t;
 
 typedef struct wlc_stf_nss_request_st wlc_stf_nss_request_t;
@@ -350,8 +337,6 @@ typedef struct wlc_mimo_ps_cfg wlc_mimo_ps_cfg_t;
 typedef struct wlc_hw_config wlc_hw_config_t;
 
 typedef struct wlc_stf_arb_mps_info wlc_stf_arb_mps_info_t;
-
-typedef struct wlc_tsync wlc_tsync_t;
 
 typedef struct wlc_mbo_info wlc_mbo_info_t;
 
@@ -368,6 +353,14 @@ typedef struct wlc_mbo_oce_info wlc_mbo_oce_info_t;
 typedef struct wlc_esp_info wlc_esp_info_t;
 
 typedef sta_info_v8_t sta_info_t;
+
+#if defined(WL_BSS_STATS) || defined(BCM_CPEROUTER_EXTSTATS)
+typedef wl_if_stats_v2_t wl_if_stats_t;
+#define WL_IF_STATS_T_VERSION WL_IF_STATS_VER_2
+#else
+typedef wl_if_stats_v1_t wl_if_stats_t;
+#define WL_IF_STATS_T_VERSION WL_IF_STATS_VER_1
+#endif // endif
 
 typedef struct wl_roam_prof_band_v2 wl_roam_prof_band_t;
 typedef struct wl_roam_prof_v2 wl_roam_prof_t;
@@ -435,7 +428,6 @@ typedef rmc_bss_info_v1_t rmc_bss_info_t;
 typedef rmc_candidate_info_v1_t rmc_candidate_info_t;
 
 typedef struct wlc_adps_info wlc_adps_info_t;
-typedef event_ecounters_config_request_v2_t ecounters_event_based_config_t;
 
 #define WL_BAM_CMD_ENABLE	WL_BAM_CMD_ENABLE_V1
 #define WL_BAM_CMD_DISABLE	WL_BAM_CMD_DISABLE_V1
@@ -503,7 +495,9 @@ typedef struct wl_gas_info wl_gas_info_t;
 typedef struct wl_eventq_info wl_eventq_info_t;
 
 typedef struct bme_info_s bme_info_t;
-typedef struct wlc_offload_s wlc_offload_t;
+typedef struct wlc_offload wlc_offload_t;
+
+typedef struct wlc_sts_xfer_info wlc_sts_xfer_info_t;
 
 typedef struct wlc_deauth_send_cbargs wlc_deauth_send_cbargs_t;
 typedef struct wlc_macreq_info wlc_macreq_info_t;
@@ -513,10 +507,6 @@ typedef struct wlc_fifo_info wlc_fifo_info_t;
 typedef struct wlc_dtpc_info wlc_dtpc_info_t;
 
 typedef struct taf_scheduler_public taf_scheduler_public_t;
-
-#ifndef BAND6G
-#define BAND6G	0
-#endif // endif
 
 /* indices to use on the bandstate array (wlc->bandstate[index]) */
 enum wlc_bandunit {

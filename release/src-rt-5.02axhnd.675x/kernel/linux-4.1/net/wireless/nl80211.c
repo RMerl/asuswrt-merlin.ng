@@ -826,7 +826,7 @@ static int nl80211_parse_key(struct genl_info *info, struct key_parse *k)
 		if (k->defmgmt) {
 			if (k->idx < 4 || k->idx > 5)
 				return -EINVAL;
-#ifdef CONFIG_BCM_KF_CFG80211_BACKPORT 
+#ifdef CONFIG_BCM_KF_CFG80211_BACKPORT
 		} else if (k->defbeacon) {
 			if (k->idx < 6 || k->idx > 7)
 				return -EINVAL;
@@ -835,7 +835,7 @@ static int nl80211_parse_key(struct genl_info *info, struct key_parse *k)
 			if (k->idx < 0 || k->idx > 3)
 				return -EINVAL;
 		} else {
-#ifndef CONFIG_BCM_KF_CFG80211_BACKPORT 
+#ifndef CONFIG_BCM_KF_CFG80211_BACKPORT
 			if (k->idx < 0 || k->idx > 5)
 #else
 			if (k->idx < 0 || k->idx > 7)
@@ -2974,6 +2974,10 @@ static int nl80211_set_key(struct sk_buff *skb, struct genl_info *info)
 #ifndef CONFIG_BCM_KF_CFG80211_BACKPORT
 	if (!key.def && !key.defmgmt)
 #else
+	if (WARN(!dev->ieee80211_ptr, "ndev %s (%s) has no wdev",
+		 netdev_name(dev), netdev_reg_state(dev)))
+		return -ENODEV;
+
 	if (!key.def && !key.defmgmt && !key.defbeacon)
 #endif /* CONFIG_BCM_KF_CFG80211_BACKPORT */
 		return -EINVAL;

@@ -3,7 +3,7 @@
  * Contents are wifi-specific, used by any kernel or app-level
  * software that might want wifi things as it grows.
  *
- * Copyright (C) 2020, Broadcom. All Rights Reserved.
+ * Copyright (C) 2021, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -20,7 +20,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: bcmwifi_channels.c 780103 2019-10-15 14:54:25Z $
+ * $Id: bcmwifi_channels.c 791000 2020-09-11 11:15:45Z $
  */
 
 #include <bcm_cfg.h>
@@ -145,19 +145,19 @@ static const uint16 wf_chspec_bw_half_mhz[] = {
 
 /* 40MHz channels in 5GHz band */
 static const uint8 wf_5g_40m_chans[] =
-{38, 46, 54, 62, 102, 110, 118, 126, 134, 142, 151, 159, 167};
+{38, 46, 54, 62, 102, 110, 118, 126, 134, 142, 151, 159, 167, 175};
 #define WF_NUM_5G_40M_CHANS \
 	(sizeof(wf_5g_40m_chans)/sizeof(uint8))
 
 /* 80MHz channels in 5GHz band */
 static const uint8 wf_5g_80m_chans[] =
-{42, 58, 106, 122, 138, 155};
+{42, 58, 106, 122, 138, 155, 171};
 #define WF_NUM_5G_80M_CHANS \
 	(sizeof(wf_5g_80m_chans)/sizeof(uint8))
 
 /* 160MHz channels in 5GHz band */
 static const uint8 wf_5g_160m_chans[] =
-{50, 114};
+{50, 114, 163};
 #define WF_NUM_5G_160M_CHANS \
 	(sizeof(wf_5g_160m_chans)/sizeof(uint8))
 

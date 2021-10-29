@@ -1,7 +1,7 @@
 /*
  * Broadcom device-specific manifest constants.
  *
- * Copyright (C) 2020, Broadcom. All Rights Reserved.
+ * Copyright (C) 2021, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: bcmdevs.h 787019 2020-05-14 03:53:09Z $
+ * $Id: bcmdevs.h 792354 2020-10-23 21:04:19Z $
  */
 
 #ifndef	_BCMDEVS_H
@@ -859,6 +859,8 @@
 #define BFL4_SROM18_ELNABYP_ON_W0_2G (1 << 19)  /* Bypass elna based on w0 (high-pwr signals) */
 #define BFL4_SROM18_ELNABYP_ON_W0_5G (1 << 20)  /* Bypass elna based on w0 (high-pwr signals) */
 #define BFL4_SROM18_PAPDCCK_DISABLE (1 << 21)  /* Bypass CCKPAPD compensation */
+/* Apply wider CCK digital filter, it only takes effect under EU and country ALL */
+#define BFL4_SROM18_CCK_DIG_FILT_EU (1 << 22)
 
 #define BFL4_4364_HARPOON 0x0100   /* Harpoon module 4364 */
 #define BFL4_4364_GODZILLA 0x0200   /* Godzilla module 4364 */

@@ -130,6 +130,19 @@ int hostapd_notif_assoc(struct hostapd_data *hapd, const u8 *addr,
 			   "hostapd_notif_assoc: Skip event with no address");
 		return -1;
 	}
+
+	if (is_multicast_ether_addr(addr) ||
+	    is_zero_ether_addr(addr) ||
+	    os_memcmp(addr, hapd->own_addr, ETH_ALEN) == 0) {
+		/* Do not process any frames with unexpected/invalid SA so that
+		 * we do not add any state for unexpected STA addresses or end
+		 * up sending out frames to unexpected destination. */
+		wpa_printf(MSG_DEBUG, "%s: Invalid SA=" MACSTR
+			   " in received indication - ignore this indication silently",
+			   __func__, MAC2STR(addr));
+		return 0;
+	}
+
 	random_add_randomness(addr, ETH_ALEN);
 
 	hostapd_logger(hapd, addr, HOSTAPD_MODULE_IEEE80211,

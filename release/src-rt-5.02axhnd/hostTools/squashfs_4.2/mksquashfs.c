@@ -32,7 +32,6 @@
 #include <stdio.h>
 #include <stddef.h>
 #include <sys/time.h>
-#include <sys/sysmacros.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <errno.h>

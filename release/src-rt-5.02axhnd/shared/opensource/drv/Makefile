@@ -154,6 +154,7 @@ ifeq ($(strip ${BRCM_CHIP}),4908)
     DRV_OBJS += phys/phy_bp_parsing_4908.o
     DRV_OBJS += phys/phy_drv_sf2.o
     DRV_OBJS += phys/phy_drv_ext3.o
+    DRV_OBJS += phys/gpy211.o
     DRV_OBJS += ../drivers/bcm_ethsw_impl1.o
     EXTRA_CFLAGS += -DMAC_UNIMAC -DMAC_SF2 -DPHY_SF2 -DPHY_M2M -DSF2_DEVICE -DDSL_RUNNER_DEVICE
     EXTRA_CFLAGS += -DPHY_SERDES_2P5G_CAPABLE -DPHY_EXT3

@@ -236,6 +236,9 @@ int pkcs1_v15_sig_ver(struct crypto_public_key *pk,
 		return -1;
 	}
 
+	wpa_hexdump(MSG_MSGDUMP, "PKCS #1: DigestInfo",
+		hdr.payload, hdr.length);
+
 	pos = hdr.payload;
 	end = pos + hdr.length;
 
@@ -256,11 +259,31 @@ int pkcs1_v15_sig_ver(struct crypto_public_key *pk,
 		os_free(decrypted);
 		return -1;
 	}
+	wpa_hexdump(MSG_MSGDUMP, "PKCS #1: DigestAlgorithmIdentifier",
+		hdr.payload, hdr.length);
 	da_end = hdr.payload + hdr.length;
 
 	if (asn1_get_oid(hdr.payload, hdr.length, &oid, &next)) {
 		wpa_printf(MSG_DEBUG,
 			   "PKCS #1: Failed to parse digestAlgorithm");
+		os_free(decrypted);
+		return -1;
+	}
+
+	wpa_hexdump(MSG_MSGDUMP, "PKCS #1: Digest algorithm parameters",
+		next, da_end - next);
+
+	/*
+	 * RFC 5754: The correct encoding for the SHA2 algorithms would be to
+	 * omit the parameters, but there are implementation that encode these
+	 * as a NULL element. Allow these two cases and reject anything else.
+	 */
+	if (da_end > next &&
+	    (asn1_get_next(next, da_end - next, &hdr) < 0 ||
+	     !asn1_is_null(&hdr) ||
+	     hdr.payload + hdr.length != da_end)) {
+		wpa_printf(MSG_DEBUG,
+			   "PKCS #1: Unexpected digest algorithm parameters");
 		os_free(decrypted);
 		return -1;
 	}

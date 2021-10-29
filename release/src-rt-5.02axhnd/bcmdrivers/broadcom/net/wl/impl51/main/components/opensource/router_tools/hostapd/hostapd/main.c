@@ -31,6 +31,8 @@
 #include "eap_register.h"
 #include "ctrl_iface.h"
 
+extern void dm_register_app_restart_info(int pid, int argc, char **argv, char *dependent_services);
+
 struct hapd_global {
 	void **drv_priv;
 	size_t drv_count;
@@ -401,7 +403,7 @@ static void hostapd_global_deinit(const char *pid_file, int eloop_initialized)
 }
 
 static int hostapd_global_run(struct hapd_interfaces *ifaces, int daemonize,
-			      const char *pid_file)
+			      const char *pid_file, int argc, char *argv[])
 {
 #ifdef EAP_SERVER_TNC
 	int tnc = 0;
@@ -427,6 +429,10 @@ static int hostapd_global_run(struct hapd_interfaces *ifaces, int daemonize,
 			wpa_printf(MSG_ERROR, "daemon: %s", strerror(errno));
 			return -1;
 		}
+
+		/* Provide necessary info to debug_monitor for service restart */
+		dm_register_app_restart_info(getpid(), argc, argv, NULL);
+
 		if (eloop_sock_requeue()) {
 			wpa_printf(MSG_ERROR, "eloop_sock_requeue: %s",
 				   strerror(errno));
@@ -873,7 +879,7 @@ int main(int argc, char *argv[])
 
 	hostapd_global_ctrl_iface_init(&interfaces);
 
-	if (hostapd_global_run(&interfaces, daemonize, pid_file)) {
+	if (hostapd_global_run(&interfaces, daemonize, pid_file, argc, argv)) {
 		wpa_printf(MSG_ERROR, "Failed to start eloop");
 		goto out;
 	}

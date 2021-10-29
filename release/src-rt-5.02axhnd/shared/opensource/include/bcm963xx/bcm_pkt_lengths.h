@@ -132,7 +132,7 @@
 
 /* ############ Tailroom needed in the packet ############ */
 
-#define BCM_SKB_TAILROOM	32
+#define BCM_SKB_TAILROOM	BCM_DCACHE_ALIGN(32)
 
 
 

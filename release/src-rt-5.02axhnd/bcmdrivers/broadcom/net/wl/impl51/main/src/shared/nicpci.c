@@ -4,7 +4,7 @@
  * Code to operate on PCI/E core, in NIC or BMAC high driver mode. Note that this file is not used
  * in firmware builds.
  *
- * Copyright (C) 2020, Broadcom. All Rights Reserved.
+ * Copyright (C) 2021, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -21,7 +21,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: nicpci.c 778660 2019-09-06 12:21:21Z $
+ * $Id: nicpci.c 790301 2020-08-21 03:33:17Z $
  */
 
 #include <bcm_cfg.h>
@@ -1232,7 +1232,7 @@ pciedev_crwlpciegen2_180(void *pch)
 	osl_t *osh = si_osh(sih);
 	sbpcieregs_t *pcieregs = pi->regs.pcieregs;
 
-	if (PCIE_GEN2(pi->sih) && sih->buscorerev >= 2) {
+	if (PCIE_GEN2(pi->sih) && sih->buscorerev >= 2 && sih->buscorerev < 24) {
 		W_REG(osh, &pcieregs->configaddr, PCI_PMCR_REFUP);
 		OR_REG(osh, &pcieregs->configdata, 0x1f);
 		PCI_ERROR(("%s:Reg:0x%x ::0x%x\n", __FUNCTION__,

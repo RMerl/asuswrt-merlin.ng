@@ -1,10 +1,4 @@
-#
-# Linux acsdv2 Makefile
-#
-
-all:
-	-cp -f prebuilt/acsd2 acsd2
-	-cp -f prebuilt/acs_cli2 acs_cli2
+all: acsd2 acs_cli2
 
 install: all
 	install -d $(INSTALLDIR)/usr/sbin/
@@ -14,4 +8,9 @@ install: all
 	$(STRIP) $(INSTALLDIR)/usr/sbin/acs_cli2
 
 clean:
-	rm -f acsd2 acs_cli2
+	rm -f *.o *.a *.so acsd2 acs_cli2
+
+acsd2:
+	cp -f $(SRCBASE)/../components/apps/acsdv2/$(PRBM_DIR)/$@ ./
+acs_cli2:
+	cp -f $(SRCBASE)/../components/apps/acsdv2/$(PRBM_DIR)/$@ ./

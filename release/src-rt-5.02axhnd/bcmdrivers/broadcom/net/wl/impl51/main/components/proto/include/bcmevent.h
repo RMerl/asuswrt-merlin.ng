@@ -3,7 +3,7 @@
  *
  * Dependencies: bcmeth.h
  *
- * Copyright (C) 2020, Broadcom. All Rights Reserved.
+ * Copyright (C) 2021, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -20,7 +20,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: bcmevent.h 780537 2019-10-29 08:58:49Z $
+ * $Id: bcmevent.h 792588 2020-10-30 04:37:45Z $
  *
  */
 
@@ -672,7 +672,7 @@ typedef struct wl_event_data_rssi {
 /* WLC_E_IF flag */
 #define WLC_E_IF_FLAGS_BSSCFG_NOIF	0x1	/* no host I/F creation needed */
 #define WLC_E_IF_FLAGS_WDS_STA		0x2	/* WDS supplicant interface */
-#define WLC_E_IF_FLAGS_WDS_AP		0x4	/* WDS Authenticator or DWDD client interface */
+#define WLC_E_IF_FLAGS_WDS_AP		0x4	/* WDS Authenticator or DWDS client interface */
 
 #define WLC_E_IF_FLAGS_LEGACY_WDS_STA	WLC_E_IF_FLAGS_WDS_STA
 #define WLC_E_IF_FLAGS_LEGACY_WDS_AP	WLC_E_IF_FLAGS_WDS_AP

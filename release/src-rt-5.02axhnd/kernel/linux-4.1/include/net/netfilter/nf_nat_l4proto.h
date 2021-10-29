@@ -23,8 +23,7 @@ struct nf_nat_l4proto {
 	/* Is the manipable part of the tuple between min and max incl? */
 	bool (*in_range)(const struct nf_conntrack_tuple *tuple,
 			 enum nf_nat_manip_type maniptype,
-			 const union nf_conntrack_man_proto *min,
-			 const union nf_conntrack_man_proto *max);
+			 const struct nf_nat_range *range);
 
 	/* Alter the per-proto part of the tuple (depending on
 	 * maniptype), to give a unique tuple in the given range if
@@ -57,8 +56,7 @@ extern const struct nf_nat_l4proto nf_nat_l4proto_unknown;
 
 bool nf_nat_l4proto_in_range(const struct nf_conntrack_tuple *tuple,
 			     enum nf_nat_manip_type maniptype,
-			     const union nf_conntrack_man_proto *min,
-			     const union nf_conntrack_man_proto *max);
+			     const struct nf_nat_range *range);
 
 void nf_nat_l4proto_unique_tuple(const struct nf_nat_l3proto *l3proto,
 				 struct nf_conntrack_tuple *tuple,

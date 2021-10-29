@@ -38,6 +38,13 @@ union nf_conntrack_man_proto {
 		__be16 spi;
 	} esp;
 #endif
+	union {
+		struct {
+			__u8 offset;
+			__u8 length;
+		};
+		__be16 id;
+	} psid;
 };
 
 #define CTINFO2DIR(ctinfo) ((ctinfo) >= IP_CT_IS_REPLY ? IP_CT_DIR_REPLY : IP_CT_DIR_ORIGINAL)

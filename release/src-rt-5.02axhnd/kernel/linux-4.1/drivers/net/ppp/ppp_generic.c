@@ -3019,6 +3019,9 @@ ppp_create_interface(struct net *net, int unit, int *retp)
 	/* Initialize the new ppp unit */
 	ppp->file.index = unit;
 
+        /* remove restrictions of BRCM's logic (only 4 bits) */
+	sprintf(dev->name, "ppp%d", unit);
+#if 0
 #if defined(CONFIG_BCM_KF_PPP)
    if (unit >= 0)
    {
@@ -3054,6 +3057,7 @@ ppp_create_interface(struct net *net, int unit, int *retp)
    }
 #else
 	sprintf(dev->name, "ppp%d", unit);
+#endif
 #endif
 
 	ret = register_netdev(dev);

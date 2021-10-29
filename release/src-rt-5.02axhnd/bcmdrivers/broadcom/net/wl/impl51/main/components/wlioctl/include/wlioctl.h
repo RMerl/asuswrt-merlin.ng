@@ -6,7 +6,7 @@
  *
  * Definitions subject to change without notice.
  *
- * Copyright (C) 2020, Broadcom. All Rights Reserved.
+ * Copyright (C) 2021, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -21,7 +21,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: wlioctl.h 787840 2020-06-12 22:59:01Z $
+ * $Id: wlioctl.h 796088 2021-02-23 09:22:40Z $
  */
 
 #ifndef _wlioctl_h_
@@ -7878,7 +7878,7 @@ typedef BWL_PRE_PACKED_STRUCT struct {
 /*
  * SCB_RX_REPORT iovar definitions start.
  */
-#define SCB_RX_REPORT_DATA_STRUCT_VERSION	2
+#define SCB_RX_REPORT_DATA_STRUCT_VERSION	3
 
 /** The actual counters maintained for each station */
 typedef struct {
@@ -7893,7 +7893,7 @@ typedef struct {
 	uint32 rxbw;
 	uint32 rxmcs;
 	uint32 rxnss;
-	uint32 rxampdu_ofdma;
+	uint32 rxmpdu_ofdma;
 	uint32 rxtones;
 } iov_rx_report_counters_t;
 
@@ -16606,7 +16606,7 @@ typedef struct {
 enum {
 	WL_HE_CMD_ENAB = 0,
 	WL_HE_CMD_FEATURES = 1,
-	WL_HE_CMD_RESERVED1 = 2, // available
+	WL_HE_CMD_SR = 2,
 	WL_HE_CMD_TESTBED = 3,
 	WL_HE_CMD_BSR_SUPPORT = 4,
 	WL_HE_CMD_BSSCOLOR = 5,
@@ -16661,6 +16661,26 @@ typedef struct wl_he_muedca_v1 {
 	wl_he_edca_v1_t ac_param_ap[AC_COUNT];
 	wl_he_edca_v1_t ac_param_sta[AC_COUNT];
 } wl_he_muedca_v1_t;
+
+#define WL_HE_SR_VER_1			1
+
+#define SRC_PSR_DIS					0x01
+#define SRC_NON_SRG_OBSS_PD_SR_DIS			0x02
+#define SRC_NON_SRG_OFFSET_PRESENT			0x04
+#define SRC_SRG_INFORMATION_PRESENT			0x08
+#define SRC_HESIGA_SPATIAL_REUSE_VALUE15_ALLOWED	0x10
+
+#define HE_SR_SRG_INFO_LEN		18
+
+typedef struct wl_he_sr_v1 {
+	/* structure control */
+	uint16 version;		/* structure version */
+	uint16 length;		/* data length (starting after this field) */
+	uint8 enabled;
+	uint8 src;		/* SR control, see above defines. */
+	uint8 non_srg_offset;	/* Non-SRG Offset */
+	uint8 srg[HE_SR_SRG_INFO_LEN];	/* SRG Information */
+} wl_he_sr_v1_t;
 
 /* Muscheduler iovar defs */
 #define WL_MUSCHED_CMD_KEYSTR_MAXLEN	20

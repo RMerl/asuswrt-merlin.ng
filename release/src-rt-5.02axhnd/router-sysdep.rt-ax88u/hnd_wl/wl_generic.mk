@@ -233,7 +233,10 @@ endif
 
         ifeq ($(strip $(WLWFD)), 1)
 		EXTRA_CFLAGS += -DBCM_WFD
-		EXTRA_CFLAGS += -DPKTC -DPKTC_TBL
+		EXTRA_CFLAGS += -DPKTC_TBL
+		ifneq ($(BUILD_HND_EAP_AP1),y)
+			EXTRA_CFLAGS += -DPKTC
+		endif
 
 		# Enable Fcache based WFD for 47189
 		ifeq ($(BRCM_CHIP),47189)
@@ -243,7 +246,10 @@ endif
 		endif
 
 		ifneq ($(strip $(CONFIG_BCM_PKTFWD)),)
-			EXTRA_CFLAGS += -DBCM_PKTFWD -DWL_PKTQUEUE_RXCHAIN
+			EXTRA_CFLAGS += -DBCM_PKTFWD
+			ifneq ($(BUILD_HND_EAP_AP1),y)
+				EXTRA_CFLAGS += -DWL_PKTQUEUE_RXCHAIN
+			endif
 			EXTRA_CFLAGS += -DWL_PKTFWD_INTRABSS
 
 			# Enable credit based Host Flow Control
@@ -256,9 +262,9 @@ endif
 			WLFILES_SRC += ../../shared/impl1/wl_pktc.c
 		endif
 
-        	ifneq ($(strip $(CONFIG_BCM_EAPFWD)),)
+		ifneq ($(strip $(CONFIG_BCM_EAPFWD)),)
 			EXTRA_CFLAGS += -DBCM_EAPFWD
-        	endif
+		endif
 
 		WLFILES_SRC += ../../shared/impl1/wl_wfd.c
 		WLFILES_SRC += ../../shared/impl1/wl_thread.c

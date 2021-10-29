@@ -12,7 +12,7 @@ endif
 
 CFLAGS += -I$(TOOLCHAIN)/include
 
-all:
+all: $(PROGRAM_NAME)
 
 install: $(PROGRAM_NAME)
 	install -m 755  $(PROGRAM_NAME) $(INSTALL_DIR)/bin
@@ -21,6 +21,17 @@ install: $(PROGRAM_NAME)
 dynamic: $(PROGRAM_NAME) install
 
 static: $(PROGRAM_NAME).a
+
+ifneq ($(PREBUILT_BCMBIN),1)
+$(PROGRAM_NAME): $(PROGRAM_NAME).o
+	$(CC) $(LDFLAGS) -o $(PROGRAM_NAME)  $(PROGRAM_NAME).o
+else
+$(PROGRAM_NAME):
+	-cp -f $(TOP_PLATFORM)/wlan/epittcp/$(PRBM_DIR)/epi_ttcp ./
+endif
+
+$(PROGRAM_NAME).a: $(PROGRAM_NAME).o
+	$(AR) rcs $(PROGRAM_NAME).a  $(PROGRAM_NAME).o
 
 clean:
 	-rm -f $(PROGRAM_NAME) $(PROGRAM_NAME).a  $(PROGRAM_NAME).o

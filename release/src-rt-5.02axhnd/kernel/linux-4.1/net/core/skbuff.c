@@ -281,12 +281,9 @@ void skb_headerinit(unsigned int headroom, unsigned int datalen,
 	skb->head = data - headroom;
 	skb->data = data;
 	skb_set_tail_pointer(skb, datalen);
-	/* FIXME!! check if this alignment is to ensure cache line aligned?
-	 * make sure skb buf ends at 16 bytes boudary */
-
-	bcm_skb_set_end_pointer(skb, SKB_DATA_ALIGN(headroom + datalen));
-
 	skb->len = datalen;
+	bcm_skb_set_end_pointer(skb, SKB_DATA_ALIGN(headroom + datalen));
+	skb->truesize = SKB_TRUESIZE(skb_end_offset(skb));
 
 #if defined (CONFIG_BCM_KF_BPM_BUF_TRACKING)
 	GBPM_INC_REF(data);
@@ -1160,15 +1157,9 @@ struct sk_buff *skb_xlate_dp(struct fkbuff * fkb_p, uint8_t *dirty_p)
 	skb_set_tail_pointer(skb_p, fkb_p->len);
 	/* FIXME!! check whether this has to do with the cache line size
 	 * make sure skb buf ends at 16 bytes boudary */
-
 	bcm_skb_set_end_pointer(skb_p, SKB_DATA_ALIGN((skb_p->data -skb_p->head) +
-		fkb_p->len + BCM_SKB_TAILROOM));
-
-#ifdef NET_SKBUFF_DATA_USES_OFFSET
-	skb_p->end = (skb_p->data - skb_p->head) + datalen;
-#else
-	skb_p->end = skb_p->data + datalen;
-#endif
+				fkb_p->len + BCM_SKB_TAILROOM));
+	skb_p->truesize = SKB_TRUESIZE(skb_end_offset(skb_p));
 
 #if defined (CONFIG_BCM_KF_BPM_BUF_TRACKING)
 	GBPM_INC_REF(skb_p->data);

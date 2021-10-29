@@ -19,15 +19,27 @@
 
 bool nf_nat_l4proto_in_range(const struct nf_conntrack_tuple *tuple,
 			     enum nf_nat_manip_type maniptype,
-			     const union nf_conntrack_man_proto *min,
-			     const union nf_conntrack_man_proto *max)
+			     const struct nf_nat_range *range)
 {
+	const union nf_conntrack_man_proto *min = &range->min_proto;
+	const union nf_conntrack_man_proto *max = &range->max_proto;
 	__be16 port;
 
 	if (maniptype == NF_NAT_MANIP_SRC)
 		port = tuple->src.u.all;
 	else
 		port = tuple->dst.u.all;
+
+	if (range->flags & NF_NAT_RANGE_PROTO_PSID) {
+		unsigned int a = range->min_proto.psid.offset;
+		unsigned int k = range->min_proto.psid.length;
+		unsigned int m = 16 - a - k;
+		u_int16_t psid = range->max_proto.psid.id;
+		u_int16_t id = ntohs(port);
+
+		return (a == 0 || (id >> (16 - a))) &&
+		       !(((id >> m) ^ psid) & ~(~0U << k));
+	}
 
 	return ntohs(port) >= ntohs(min->all) &&
 	       ntohs(port) <= ntohs(max->all);
@@ -49,6 +61,39 @@ void nf_nat_l4proto_unique_tuple(const struct nf_nat_l3proto *l3proto,
 		portptr = &tuple->src.u.all;
 	else
 		portptr = &tuple->dst.u.all;
+
+	if (range->flags & NF_NAT_RANGE_PROTO_PSID) {
+		unsigned int a = range->min_proto.psid.offset;
+		unsigned int k = range->min_proto.psid.length;
+		unsigned int m = 16 - a - k;
+		u_int16_t psid = range->max_proto.psid.id << m;
+
+		range_size = (1 << (16 - k)) - (!!a << m);
+		if (range_size == 0)
+			return;
+
+		if (range->flags & NF_NAT_RANGE_PROTO_RANDOM) {
+			off = l3proto->secure_port(tuple, maniptype == NF_NAT_MANIP_SRC
+							  ? tuple->dst.u.all
+							  : tuple->src.u.all);
+		} else if (range->flags & NF_NAT_RANGE_PROTO_RANDOM_FULLY) {
+			off = prandom_u32();
+		} else {
+			off = *rover;
+		}
+
+		for (i = 0; ; ++off) {
+			unsigned int n = off % range_size;
+			*portptr = htons((((n >> m) + !!a) << (16 - a)) |
+					 psid | (n & ~(~0U << m)));
+			if (++i != range_size && nf_nat_used_tuple(tuple, ct))
+				continue;
+			if (!(range->flags & NF_NAT_RANGE_PROTO_RANDOM_ALL))
+				*rover = off;
+			return;
+		}
+		return;
+	}
 
 	/* If no range specified... */
 	if (!(range->flags & NF_NAT_RANGE_PROTO_SPECIFIED)) {

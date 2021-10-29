@@ -4565,6 +4565,18 @@ int ieee802_11_mgmt(struct hostapd_data *hapd, const u8 *buf, size_t len,
 	fc = le_to_host16(mgmt->frame_control);
 	stype = WLAN_FC_GET_STYPE(fc);
 
+	if (is_multicast_ether_addr(mgmt->sa) ||
+	    is_zero_ether_addr(mgmt->sa) ||
+	    os_memcmp(mgmt->sa, hapd->own_addr, ETH_ALEN) == 0) {
+		/* Do not process any frames with unexpected/invalid SA so that
+		 * we do not add any state for unexpected STA addresses or end
+		 * up sending out frames to unexpected destination. */
+		wpa_printf(MSG_DEBUG, "MGMT: Invalid SA=" MACSTR
+			   " in received frame - ignore this frame silently",
+			   MAC2STR(mgmt->sa));
+		return 0;
+	}
+
 	if (stype == WLAN_FC_STYPE_BEACON) {
 		handle_beacon(hapd, mgmt, len, fi);
 		return 1;

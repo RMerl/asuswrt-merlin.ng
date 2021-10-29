@@ -25,6 +25,7 @@ CFLAGS += $(EXTRA_CFLAGS)
 CFLAGS += -I$(abspath ../src)
 CFLAGS += -I$(abspath ../src/utils)
 LDFLAGS += -L$(TOP)/openssl -lcrypto -lm -lssl -lpthread -L$(TOP)/libnl/lib/.libs
+LDFLAGS += -L$(TOP_PLATFORM)/nvram$(BCMEX)$(EX7) -lnvram -L$(TOP)/shared -lshared -L$(TOP_PLATFORM)/wlcsm -lwlcsm
 
 export BINDIR ?= /usr/local/bin/
 

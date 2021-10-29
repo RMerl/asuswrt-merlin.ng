@@ -2,7 +2,7 @@
  * Basic types and constants relating to 802.11ax/HE STA
  * This is a portion of 802.11ax definition. The rest are in 802.11.h.
  *
- * Copyright (C) 2020, Broadcom. All Rights Reserved.
+ * Copyright (C) 2021, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: 802.11ax.h 787811 2020-06-12 08:11:34Z $
+ * $Id: 802.11ax.h 796087 2021-02-23 08:40:23Z $
  */
 
 #ifndef _802_11ax_h_
@@ -383,6 +383,12 @@ BWL_PRE_PACKED_STRUCT struct he_spatial_reuse_ie {
 } BWL_POST_PACKED_STRUCT;
 
 typedef struct he_spatial_reuse_ie he_spatial_reuse_ie_t;
+
+/* To append to spatial_reuse IE: */
+#define HE_NON_SRG_INFO_SIZE		1	/* Non-SRG OBSS PD Max Offset, 1 octet */
+typedef uint8 he_non_srg_t[HE_NON_SRG_INFO_SIZE];
+#define HE_SRG_INFO_SIZE		18	/* SRG Information, 1+1+8+8 = 18 octets */
+typedef uint8 he_srg_t[HE_SRG_INFO_SIZE];
 
 /* After HE Spatial reuse two sub parameters can be added. first type for Non-SRG Offset Present: */
 typedef uint8 non_srg_obss_pd_max_offset_t;

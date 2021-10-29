@@ -2,7 +2,7 @@
  * Misc utility routines for accessing PMU corerev specific features
  * of the SiliconBackplane-based Broadcom chips.
  *
- * Copyright (C) 2020, Broadcom. All Rights Reserved.
+ * Copyright (C) 2021, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -19,7 +19,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: hndpmu.c 788587 2020-07-06 01:46:22Z $
+ * $Id: hndpmu.c 790158 2020-08-18 07:45:24Z $
  */
 
 /**
@@ -6520,10 +6520,13 @@ BCMATTACHFN(si_pmu_chip_init)(si_t *sih, osl_t *osh)
 		break;
 	CASE_BCM6710_CHIP:
 #ifdef BCA_HNDROUTER
-		/* XXX try to WAR BCAWLAN-217960 with the way below
-		 * change the reset option to Reset the backplane, PMU to Power Up state.
+		/* XXX BCAWLAN-219841: the reset option PCTL_RESETCTL_PU (Reset the backplane,
+		 * PMU to Power Up state) touched the PCIE LDO, it sometimes causes the pcie
+		 * configuration register read problem after watchdog reset.
+		 * So revert the reset option to PCTL_RESETCTL_BP_ONLY (Reset backplane,
+		 * PMU state untouched).
 		 */
-		si_pmu_set_resetcontrol(sih, PCTL_RESETCTL_PU);
+		si_pmu_set_resetcontrol(sih, PCTL_RESETCTL_BP_ONLY);
 #endif /* BCA_HNDROUTER */
 		break;
 

@@ -249,7 +249,7 @@ function show_vpn_summary(refresh) {
 }
 
 function stop_client(unit, _this) {
-	_this.outerHTML = "stopping...";
+	_this.outerHTML = '<img id="SearchingIcon" src="/images/InternetScan.gif">';
 	var obj = {
 		"action_mode": "apply",
 	}
@@ -261,7 +261,7 @@ function stop_client(unit, _this) {
 }
 
 function start_client(unit, _this) {
-	_this.outerHTML = "starting...";
+	_this.outerHTML = '<img id="SearchingIcon" src="/images/InternetScan.gif">';
 	var obj = {
 		"action_mode": "apply",
 	}

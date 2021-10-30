@@ -1379,7 +1379,7 @@ get_portmappings_in_range(unsigned short startport, unsigned short endport,
 	return array;
 }
 
-/* update the port mapping internal port, decription and timestamp */
+/* update the port mapping internal port, description and timestamp */
 int
 update_portmapping(const char * ifname, unsigned short eport, int proto,
                    unsigned short iport, const char * desc,
@@ -1406,7 +1406,7 @@ update_portmapping(const char * ifname, unsigned short eport, int proto,
 	return 0;
 }
 
-/* update the port mapping decription and timestamp */
+/* update the port mapping description and timestamp */
 int
 update_portmapping_desc_timestamp(const char * ifname,
                    unsigned short eport, int proto,

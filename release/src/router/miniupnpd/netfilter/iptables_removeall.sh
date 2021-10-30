@@ -18,7 +18,7 @@ fi
 #removing the MINIUPNPD chain for mangle
 if [ "$MDIRTY" = "${CHAIN}Chain" ]; then
 	$IPTABLES -t mangle -F $CHAIN
-	$IPTABLES -t mangle -D FORWARD -i $EXTIF -j $CHAIN
+	$IPTABLES -t mangle -D PREROUTING -i $EXTIF -j $CHAIN
 	$IPTABLES -t mangle -X $CHAIN
 elif [ "$MDIRTY" = "Chain" ]; then
 	$IPTABLES -t mangle -F $CHAIN

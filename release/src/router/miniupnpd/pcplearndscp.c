@@ -40,6 +40,7 @@ POSSIBILITY OF SUCH DAMAGE.
 
 #include "upnpglobalvars.h"
 #include "pcplearndscp.h"
+#include "macros.h"
 
 #ifdef PCP_SADSCP
 
@@ -58,7 +59,7 @@ print_dscp(void) {
 }
 
 int
-read_learn_dscp_line(struct dscp_values *dscpvalues, char *p)
+read_learn_dscp_line(struct dscp_values *dscpvalues, char *p, int debug_flag)
 {
 	char * q;
 	size_t len;
@@ -106,8 +107,8 @@ read_learn_dscp_line(struct dscp_values *dscpvalues, char *p)
 		*q = '\0';
 		dscpvalues->delay = (unsigned char)atoi(p);
 		if (dscpvalues->delay >= 3) {
-			fprintf(stderr, "Wrong delay value %d in \n", dscpvalues->delay);
-			fprintf(stderr, "Delay can be from set {0,1,2} 0=low delay, 1=medium delay, 2=high delay\n");
+			INIT_PRINT_ERR("Wrong delay value %d in \n", dscpvalues->delay);
+			INIT_PRINT_ERR("Delay can be from set {0,1,2} 0=low delay, 1=medium delay, 2=high delay\n");
 			goto exit_err_and_cleanup;
 		}
 	}
@@ -129,8 +130,8 @@ read_learn_dscp_line(struct dscp_values *dscpvalues, char *p)
 		*q = '\0';
 		dscpvalues->loss = (unsigned char)atoi(p);
 		if (dscpvalues->loss >= 3) {
-			fprintf(stderr, "Wrong loss value %d \n", dscpvalues->loss);
-			fprintf(stderr, "Delay can be from set {0,1,2} 0=low loss, 1=medium loss, 2=high loss\n");
+			INIT_PRINT_ERR("Wrong loss value %d \n", dscpvalues->loss);
+			INIT_PRINT_ERR("Delay can be from set {0,1,2} 0=low loss, 1=medium loss, 2=high loss\n");
 			goto exit_err_and_cleanup;
 		}
 	}
@@ -151,9 +152,9 @@ read_learn_dscp_line(struct dscp_values *dscpvalues, char *p)
 		*q = '\0';
 		dscpvalues->jitter = (unsigned char)atoi(p);
 		if (dscpvalues->jitter >= 3) {
-			fprintf(stderr, "Wrong jitter value %d \n", dscpvalues->jitter);
-			fprintf(stderr, "Delay can be from set {0,1,2} 0=low jitter, 1=medium jitter, 2=high jitter \n");
-					goto exit_err_and_cleanup;
+			INIT_PRINT_ERR("Wrong jitter value %d \n", dscpvalues->jitter);
+			INIT_PRINT_ERR("Delay can be from set {0,1,2} 0=low jitter, 1=medium jitter, 2=high jitter \n");
+			goto exit_err_and_cleanup;
 		}
 	}
 	else
@@ -228,7 +229,7 @@ read_learn_dscp_line(struct dscp_values *dscpvalues, char *p)
 				dscpvalues->dscp_value = 38;
 				break;
 			default:
-				fprintf(stderr, "Unknown AF value %d \n", af_value);
+				INIT_PRINT_ERR("Unknown AF value %d \n", af_value);
 				goto exit_err_and_cleanup;
 			}
 			}
@@ -239,7 +240,7 @@ read_learn_dscp_line(struct dscp_values *dscpvalues, char *p)
 				dscpvalues->dscp_value = 0;
 			}
 			else if (!isdigit(*p)) {
-				fprintf(stderr, "Not digit after CS but %c \n", *p);
+				INIT_PRINT_ERR("Not digit after CS but %c \n", *p);
 				goto exit_err_and_cleanup;
 			}
 			else {
@@ -267,7 +268,7 @@ read_learn_dscp_line(struct dscp_values *dscpvalues, char *p)
 					dscpvalues->dscp_value = 56;
 					break;
 				default:
-					fprintf(stderr, "Unknown CS value %d \n", cs_value);
+					INIT_PRINT_ERR("Unknown CS value %d \n", cs_value);
 					goto exit_err_and_cleanup;
 				}
 			}

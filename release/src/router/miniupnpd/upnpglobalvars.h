@@ -1,8 +1,8 @@
-/* $Id: upnpglobalvars.h,v 1.48 2019/05/21 08:39:45 nanard Exp $ */
+/* $Id: upnpglobalvars.h,v 1.51 2021/05/21 22:03:38 nanard Exp $ */
 /* vim: tabstop=4 shiftwidth=4 noexpandtab
  * MiniUPnP project
  * http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
- * (c) 2006-2020 Thomas Bernard
+ * (c) 2006-2021 Thomas Bernard
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
 
@@ -29,6 +29,9 @@ extern uint16_t ext_stun_port;
 /* file to store all leases */
 #ifdef ENABLE_LEASEFILE
 extern const char * lease_file;
+#ifdef ENABLE_UPNPPINHOLE
+extern const char * lease_file6;
+#endif
 #endif
 
 /* forced ip address to use for this interface
@@ -198,5 +201,9 @@ extern unsigned int upnp_configid;
 #define RANDOM_URL_MAX_LEN (16)
 extern char random_url[];
 #endif /* RANDOMIZE_URLS */
+
+#ifdef DYNAMIC_OS_VERSION
+extern char * os_version;
+#endif
 
 #endif /* UPNPGLOBALVARS_H_INCLUDED */

@@ -1,6 +1,6 @@
 # $Id: Makefile.linux,v 1.95 2017/12/12 11:40:14 nanard Exp $
 # MiniUPnP project
-# (c) 2006-2020 Thomas Bernard
+# (c) 2006-2021 Thomas Bernard
 # http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
 # Author : Thomas Bernard
 # for use with GNU Make
@@ -33,7 +33,6 @@ CPPFLAGS += -D_GNU_SOURCE
 CFLAGS += -Wall
 CFLAGS += -Wextra -Wstrict-prototypes -Wdeclaration-after-statement
 CFLAGS += $(EXTRACFLAGS)
-
 #CFLAGS += -Wno-missing-field-initializers
 #CFLAGS += -ansi	# iptables headers does use typeof which is a gcc extension
 LDFLAGS += -Wl,-z,now -Wl,-z,relro -pie
@@ -54,7 +53,7 @@ ETCINSTALLDIR = $(PREFIX)/etc/miniupnpd
 MANINSTALLDIR = $(INSTALLPREFIX)/share/man/man8
 
 include config.mk
-#include $(SRCDIR)/gitrev.mk
+include $(SRCDIR)/gitrev.mk
 include $(SRCDIR)/objects.mk
 
 # sources in netfilter/ directory
@@ -97,6 +96,7 @@ $(info please install uuid-dev package / libuuid)
 endif # ($(TEST),1)
 endif # ($(TARGET_OPENWRT,)
 
+ifneq ($(shell ldd --version | grep GLIBC),)
 GLIBC_VERSION := $(shell ldd --version | head -n 1 | sed 's/^.* //')
 GLIBC_VERSION_MAJOR = $(shell echo $(GLIBC_VERSION) | cut -f 1 -d . )
 GLIBC_VERSION_MINOR = $(shell echo $(GLIBC_VERSION) | cut -f 2 -d . )
@@ -104,11 +104,12 @@ GLIBC_VERSION_MINOR = $(shell echo $(GLIBC_VERSION) | cut -f 2 -d . )
 LDLIBS += $(shell if [ $(GLIBC_VERSION_MAJOR) -lt 2 ] \
   || [ \( $(GLIBC_VERSION_MAJOR) -eq 2 \) -a \( $(GLIBC_VERSION_MINOR) -lt 17 \) ] ; \
   then echo "-lrt" ; fi )
+endif
 
 TESTUPNPDESCGENOBJS = testupnpdescgen.o upnpdescgen.o
 
 EXECUTABLES = miniupnpd
-#EXECUTABLES = miniupnpd testupnpdescgen testgetifstats \
+# testupnpdescgen testgetifstats \
 #              testupnppermissions miniupnpdctl testgetifaddr \
 #              testgetroute testasyncsendto testportinuse \
 #              testssdppktgen testminissdp
@@ -132,7 +133,7 @@ clean:
 	$(RM) validateupnppermissions validategetifaddr validatessdppktgen
 	$(RM) -r dox/
 
-install:	miniupnpd $(SRCDIR)/miniupnpd.8 miniupnpd.conf \
+install:	miniupnpd $(SRCDIR)/miniupnpd.8 $(SRCDIR)/miniupnpd.conf \
 	$(NETFILTER_SCRIPTS) \
 	$(SRCDIR)/linux/miniupnpd.init.d.script
 	$(STRIP) miniupnpd

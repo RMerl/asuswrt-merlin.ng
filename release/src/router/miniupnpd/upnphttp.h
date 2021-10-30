@@ -2,7 +2,7 @@
 /* vim: tabstop=4 shiftwidth=4 noexpandtab
  * MiniUPnP project
  * http://miniupnp.free.fr/ or http://miniupnp.tuxfamily.org/
- * (c) 2006-2020 Thomas Bernard
+ * (c) 2006-2021 Thomas Bernard
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
 
@@ -105,6 +105,9 @@ struct upnphttp {
 /* If set, the corresponding Allow: header is set */
 #define FLAG_ALLOW_POST			0x100
 #define FLAG_ALLOW_SUB_UNSUB	0x200
+
+/* If set, the User-Agent: contains "microsoft" */
+#define FLAG_MS_CLIENT	0x400
 
 #ifdef ENABLE_HTTPS
 int init_ssl(void);

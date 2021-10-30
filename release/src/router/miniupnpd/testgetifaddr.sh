@@ -4,15 +4,16 @@
 OS=`uname -s`
 case $OS in
 	*BSD | Darwin | SunOS)
-	NS="`which netstat`" || exit 1
-	IFCONFIG="`which ifconfig`" || exit 1
+	NS="`command -v netstat`" || exit 1
+	IFCONFIG="`command -v ifconfig`" || exit 1
 	EXTIF="`$NS -r -f inet | grep 'default' | awk '{ print $NF  }' `" || exit 1
 	EXTIP="`$IFCONFIG $EXTIF | awk '/inet / { print $2 }' `"
 	;;
 	*)
-	IP="`which ip`" || exit 1
+	IP="`command -v ip`" || exit 1
 	EXTIF="`LC_ALL=C $IP -4 route | grep 'default' | sed -e 's/.*dev[[:space:]]*//' -e 's/[[:space:]].*//'`" || exit 1
-	EXTIP="`LC_ALL=C $IP -4 addr show $EXTIF | awk '/inet/ { print $2 }' | cut -d "/" -f 1`"
+	EXTIF="`LC_ALL=C $IP -4 addr show $EXTIF | awk '/[0-9]+:/ { print $2; exit 0 }' | cut -d ":" -f 1`"
+	EXTIP="`LC_ALL=C $IP -4 addr show $EXTIF | awk '/inet/ { print $2; exit 0 }' | cut -d "/" -f 1`"
 	;;
 esac
 

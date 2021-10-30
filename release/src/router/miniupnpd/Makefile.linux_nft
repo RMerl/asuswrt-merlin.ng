@@ -1,5 +1,5 @@
 # MiniUPnP project
-# (c) 2018-2020 Thomas Bernard
+# (c) 2018-2021 Thomas Bernard
 # (c) 2015 Tomofumi Hayashi
 # http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
 # Author : Tomofumi Hayashi
@@ -38,6 +38,8 @@ PKG_CONFIG ?= pkg-config
 CP = cp
 DOXYGEN ?= doxygen
 
+DEPFLAGS = -MM -MG -MT $(patsubst %.d,%.o,$@) -MT $@
+# -M : with system headers, -MM : without
 
 INSTALLPREFIX ?= $(PREFIX)/usr
 SBININSTALLDIR = $(INSTALLPREFIX)/sbin
@@ -53,7 +55,7 @@ NETFILTEROBJS = nftnlrdr.o nftpinhole.o nfct_get.o nftnlrdr_misc.o
 
 ALLOBJS = $(BASEOBJS) $(LNXOBJS) $(NETFILTEROBJS)
 
-DEP = $(ALLOBJS:o=.d)
+DEP = $(ALLOBJS:.o=.d)
 
 NFT_SCRIPTS = $(addprefix $(SRCDIR)/netfilter_nft/scripts/, \
 	nft_init.sh nft_removeall.sh nft_flush.sh nft_delete_chain.sh)
@@ -132,7 +134,7 @@ install:	miniupnpd $(SRCDIR)/miniupnpd.8 $(SRCDIR)/miniupnpd.conf \
 	$(INSTALL) -d $(DESTDIR)$(PREFIX)/etc/init.d
 	$(INSTALL) $(SRCDIR)/linux/miniupnpd.init.d.script $(DESTDIR)$(PREFIX)/etc/init.d/miniupnpd
 	$(INSTALL) -d $(DESTDIR)$(MANINSTALLDIR)
-	$(INSTALL) --mode=0644 miniupnpd.8 $(DESTDIR)$(MANINSTALLDIR)
+	$(INSTALL) --mode=0644 $(SRCDIR)/miniupnpd.8 $(DESTDIR)$(MANINSTALLDIR)
 	gzip -f $(DESTDIR)$(MANINSTALLDIR)/miniupnpd.8
 
 include $(SRCDIR)/check.mk

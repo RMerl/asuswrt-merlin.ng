@@ -1,4 +1,34 @@
-$Id: Changelog.txt,v 1.472 2020/10/31 09:16:14 nanard Exp $
+$Id: Changelog.txt,v 1.480 2021/08/21 08:34:57 nanard Exp $
+
+VERSION 2.2.3 : released on 2021/08/21
+
+2021/08/18:
+  lease file for IPv6 pinholes
+
+2021/08/11:
+  Detect Microsoft User-Agent: and force IGDv1 in that case
+
+2021/06/18:
+  Fails on config parsing and init errors.
+  print errors during init to both syslog and stderr.
+
+2021/05/22:
+  dynamically retrieve `uname -r`
+
+VERSION 2.2.2 : released on 2021/05/13
+
+2021/04/22:
+  Add SO_REUSEPORT option for SSDP receive sockets
+
+2021/03/31:
+  GetExternalIPAddress returns empty string when the External IP address can
+    not be retrieved.
+
+2021/02/26:
+  iptables_removeall.sh: fix the cleanup of PREROUTING mangle chain
+
+VERSION 2.2.1 : released on 2020/12/20
+ (only minor build corrections)
 
 VERSION 2.2.0 : released on 2020/10/31
 

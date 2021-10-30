@@ -1,8 +1,8 @@
-/* $Id: upnppinhole.h,v 1.2 2012/09/18 08:29:49 nanard Exp $ */
+/* $Id: upnppinhole.h,v 1.7 2021/08/21 08:12:49 nanard Exp $ */
 /* vim: tabstop=4 shiftwidth=4 noexpandtab
  * MiniUPnP project
  * http://miniupnp.free.fr/ or http://miniupnp.tuxfamily.org/
- * (c) 2006-2016 Thomas Bernard
+ * (c) 2006-2021 Thomas Bernard
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
 
@@ -12,6 +12,11 @@
 #include "config.h"
 
 #ifdef ENABLE_UPNPPINHOLE
+
+#ifdef ENABLE_LEASEFILE
+int reload_from_lease_file6(void);
+int lease_file6_expire(void);
+#endif
 
 /* functions to be used by WANIPv6_FirewallControl implementation
  * and PCP (IPv6) */

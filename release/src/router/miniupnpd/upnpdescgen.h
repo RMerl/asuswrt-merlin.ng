@@ -1,7 +1,7 @@
 /* $Id: upnpdescgen.h,v 1.22 2011/05/18 22:22:24 nanard Exp $ */
 /* MiniUPnP project
  * http://miniupnp.free.fr/ or http://miniupnp.tuxfamily.org/
- * (c) 2006-2011 Thomas Bernard
+ * (c) 2006-2021 Thomas Bernard
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
 
@@ -53,38 +53,38 @@ struct stateVar {
 /* char * genRootDesc(int *);
  * returns: NULL on error, string allocated on the heap */
 char *
-genRootDesc(int * len);
+genRootDesc(int * len, int force_igd1);
 
 /* for the two following functions */
 char *
-genWANIPCn(int * len);
+genWANIPCn(int * len, int force_igd1);
 
 char *
-genWANCfg(int * len);
+genWANCfg(int * len, int force_igd1);
 
 #ifdef ENABLE_L3F_SERVICE
 char *
-genL3F(int * len);
+genL3F(int * len, int force_igd1);
 #endif
 
 #ifdef ENABLE_6FC_SERVICE
 char *
-gen6FC(int * len);
+gen6FC(int * len, int force_igd1);
 #endif
 
 #ifdef ENABLE_DP_SERVICE
 char *
-genDP(int * len);
+genDP(int * len, int force_igd1);
 #endif
 
 #ifdef ENABLE_AURASYNC
 char *
-genAS(int * len);
+genAS(int * len, int force_igd1);
 #endif
 
 #ifdef ENABLE_NVGFN
 char *
-genNVGFN(int * len);
+genNVGFN(int * len, int force_igd1);
 #endif
 
 #ifdef ENABLE_EVENTS

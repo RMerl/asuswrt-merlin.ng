@@ -61,6 +61,7 @@ CPPFLAGS += -DMINIUPNPD_GIT_REF=\"$(GITREF)\"
 STDOBJS = miniupnpd.o upnphttp.o upnpdescgen.o upnpsoap.o \
           upnpredirect.o getifaddr.o daemonize.o upnpglobalvars.o \
           options.o upnppermissions.o minissdp.o natpmp.o pcpserver.o \
+		  pcplearndscp.o \
           upnpevents.o upnputils.o getconnstatus.o \
           upnpstun.o \
           upnppinhole.o asyncsendto.o portinuse.o
@@ -229,7 +230,7 @@ testssdppktgen:	testssdppktgen.o
 # BSDmake :
 #	$(CC) $(CFLAGS) -o $@ $>
 
-config.h:	$(SRCDIR)/configure $(SRCDIR)/VERSION
+config.h:	$(SRCDIR)/configure $(SRCDIR)/VERSION $(SRCDIR)/Makefile.bsd
 	$(SRCDIR)/configure $(CONFIG_OPTIONS)
 
 $(STDOBJS) $(MISCOBJS):	$(SRCDIR)/$(@:.o=.c)

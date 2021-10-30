@@ -1,12 +1,12 @@
 MiniUPnP project.
-(c) 2006-2020 Thomas Bernard
+(c) 2006-2021 Thomas Bernard
 Homepage : http://miniupnp.free.fr/
 Mirror: https://miniupnp.tuxfamily.org/
 github: https://github.com/miniupnp/miniupnp
 
-miniupnpd is still under developpement. This documentation is
-likely to be a little outdated when you read it. So please go on the
-web forum https://miniupnp.tuxfamily.org/ if you need more information.
+If you find some outdated information in this documentation, please fix
+or report the issue on https://github.com/miniupnp/miniupnp or the web
+forum https://miniupnp.tuxfamily.org/
 
 ================================ *BSD/pf =================================
 To Build and Install :
@@ -114,15 +114,12 @@ How to get libiptc with its headers on debian :
 
 ======================== Linux/netfilter nftables =========================
 
-work is in progress.
 install the required development libraries. For debian :
  > apt-get install libnftnl-dev libmnl-dev
 
 To build :
  > ./configure --firewall=nftables
  > make
-(first clean any old config if you built the netfilter/iptables version
-previoulsy)
 
 see :
 https://miniupnp.tuxfamily.org/forum/viewtopic.php?p=4370
@@ -215,4 +212,4 @@ SIGPIPE: Ignore
 
 There is code to detect change in network interfaces bsd/ifacewatcher.c and
 linux/ifacewatcher.c, but if that code doesn't work for you, you may want to
-send SIGUSR1 to miniupnpd if you public IP address changed.
+send SIGUSR1 to miniupnpd if your public IP address changed.

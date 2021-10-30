@@ -393,9 +393,9 @@ static int parse_stun_response(unsigned char *buffer, size_t len, struct sockadd
 }
 
 /* Perform main STUN operation, return external IP address and check
- * if host is behind restrictive NAT.
+ * if host is behind restrictive, symmetric NAT or behind firewall.
  * Restrictive NAT means any NAT which do some filtering and
- * which is not static 1:1, basically NAT which is not usable
+ * which is not static full-cone NAT 1:1, basically NAT which is not usable
  * for port forwarding */
 int perform_stun(const char *if_name, const char *if_addr, const char *stun_host, unsigned short stun_port, struct in_addr *ext_addr, int *restrictive_nat)
 {
@@ -524,7 +524,7 @@ int perform_stun(const char *if_name, const char *if_addr, const char *stun_host
 		}
 	}
 
-	/* Otherwise we are either directly connected or behind unrestricted NAT 1:1 */
+	/* Otherwise we are either directly connected or behind unrestricted full-cone NAT 1:1 without filtering */
 	/* There is no filtering, so port forwarding would work fine */
 	return 0;
 }

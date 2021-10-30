@@ -1,8 +1,8 @@
-/* $Id: minissdp.c,v 1.99 2020/05/10 17:55:32 nanard Exp $ */
+/* $Id: minissdp.c,v 1.103 2021/05/21 22:05:17 nanard Exp $ */
 /* vim: tabstop=4 shiftwidth=4 noexpandtab
  * MiniUPnP project
  * http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
- * (c) 2006-2020 Thomas Bernard
+ * (c) 2006-2021 Thomas Bernard
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
 
@@ -196,6 +196,10 @@ OpenAndConfSSDPReceiveSocket(int ipv6)
 	if(setsockopt(s, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on)) < 0)
 	{
 		syslog(LOG_WARNING, "setsockopt(udp, SO_REUSEADDR): %m");
+	}
+	if (setsockopt(s, SOL_SOCKET, SO_REUSEPORT, &on, sizeof(on)) < 0)
+	{
+		syslog(LOG_WARNING, "setsockopt(udp, SO_REUSEPORT): %m");
 	}
 #ifdef IP_RECVIF
 	/* BSD */
@@ -549,22 +553,27 @@ SendSSDPResponse(int s, const struct sockaddr * addr,
 		"CONFIGID.UPNP.ORG: %u\r\n" /* UDA v1.1 */
 		"\r\n",
 #ifdef ENABLE_HTTP_DATE
-		http_date,
+		http_date,								/* DATE: */
 #endif
-		st_len, st, suffix,
-		uuidvalue, st_is_uuid ? "" : "::",
-		st_is_uuid ? 0 : st_len, st, suffix,
-		host, (unsigned int)http_port,
+		st_len, st, suffix,						/* ST: */
+		uuidvalue, st_is_uuid ? "" : "::",		/* USN: 2/5 */
+		st_is_uuid ? 0 : st_len, st, suffix,	/* USN: 3/5 */
+#ifdef DYNAMIC_OS_VERSION
+		os_version,								/* SERVER: */
+#endif
+		host, (unsigned int)http_port,			/* LOCATION: */
 #ifdef RANDOMIZE_URLS
-		random_url,
+		random_url,								/* LOCATION: 3/3 */
 #endif	/* RANDOMIZE_URLS */
 #ifdef ENABLE_HTTPS
-		host, (unsigned int)https_port,
+		host, (unsigned int)https_port,			/* SECURELOCATION.UPNP.ORG */
 #ifdef RANDOMIZE_URLS
-		random_url,
+		random_url,								/* SECURELOCATION.UPNP.ORG 3/3 */
 #endif	/* RANDOMIZE_URLS */
 #endif	/* ENABLE_HTTPS */
-		upnp_bootid, upnp_bootid, upnp_configid);
+		upnp_bootid,							/* 01-NLS: */
+		upnp_bootid,							/* BOOTID.UPNP.ORG: */
+		upnp_configid);							/* CONFIGID.UPNP.ORG: */
 	if(l<0)
 	{
 		syslog(LOG_ERR, "%s: snprintf failed %m",
@@ -686,6 +695,9 @@ SendSSDPNotify(int s, const struct sockaddr * dest, socklen_t dest_len,
 		random_url,
 #endif	/* RANDOMIZE_URLS */
 #endif	/* ENABLE_HTTPS */
+#ifdef DYNAMIC_OS_VERSION
+		os_version,						/* SERVER: */
+#endif
 		nt, suffix,						/* NT: */
 		usn1, usn2, usn3, suffix,		/* USN: */
 		upnp_bootid,					/* 01-NLS: */
@@ -1377,7 +1389,9 @@ SendSSDPbyebye(int s, const struct sockaddr * dest, socklen_t destlen,
 	             dest_str, SSDP_PORT,		/* HOST : */
 	             nt, suffix,				/* NT: */
 	             usn1, usn2, usn3, suffix,	/* USN: */
-	             upnp_bootid, upnp_bootid, upnp_configid);
+	             upnp_bootid,				/* 01-NLS: */
+	             upnp_bootid,				/* BOOTID.UPNP.ORG: */
+	             upnp_configid);			/* CONFIGID.UPNP.ORG: */
 	if(l<0)
 	{
 		syslog(LOG_ERR, "%s: snprintf error", "SendSSDPbyebye()");
@@ -1540,9 +1554,22 @@ SubmitServicesToMiniSSDPD(const char * host, unsigned short port) {
 		CODELENGTH(l, p);
 		memcpy(p, strbuf, l);
 		p += l;
+#ifdef DYNAMIC_OS_VERSION
+		l = snprintf(strbuf, sizeof(strbuf), MINIUPNPD_SERVER_STRING,
+		             os_version);
+		if(l<0) {
+			syslog(LOG_WARNING, "SubmitServicesToMiniSSDPD: snprintf %m");
+			continue;
+		} else if((unsigned)l>=sizeof(strbuf)) {
+			l = sizeof(strbuf) - 1;
+		}
+		CODELENGTH(l, p);
+		memcpy(p, strbuf, l);
+#else
 		l = (int)strlen(MINIUPNPD_SERVER_STRING);
 		CODELENGTH(l, p);
 		memcpy(p, MINIUPNPD_SERVER_STRING, l);
+#endif
 		p += l;
 		l = snprintf(strbuf, sizeof(strbuf), "http://%s:%u" ROOTDESC_PATH,
 		             host, (unsigned int)port);

@@ -1,18 +1,25 @@
-/* $Id: $ */
+/* $Id: testssdppktgen.c,v 1.2 2021/05/21 22:05:17 nanard Exp $ */
 #include <stdio.h>
 #include <syslog.h>
 #include <time.h>
-
 #include "config.h"
+#ifdef DYNAMIC_OS_VERSION
+#include <string.h>
+#include <sys/utsname.h>
+#endif
+
 #include "miniupnpdpath.h"
 #include "upnphttp.h"
 #include "macros.h"
 
 #define SSDP_PORT 1900
 
-char uuidvalue_igd[] = "uuid:12345678-0000-0000-0000-000000abcd01";
+const char uuidvalue_igd[] = "uuid:12345678-0000-0000-0000-000000abcd01";
 unsigned upnp_bootid;
 unsigned upnp_configid;
+#ifdef DYNAMIC_OS_VERSION
+char * os_version;
+#endif
 
 static int
 MakeSSDPPacket(const char * dest_str,
@@ -50,6 +57,9 @@ MakeSSDPPacket(const char * dest_str,
 #ifdef ENABLE_HTTPS
 		host, (unsigned int)https_port,	/* SECURE-LOCATION: */
 #endif
+#ifdef DYNAMIC_OS_VERSION
+		os_version,
+#endif
 		nt, suffix,						/* NT: */
 		usn1, usn2, usn3, suffix,		/* USN: */
 		upnp_bootid,					/* 01-NLS: */
@@ -64,6 +74,7 @@ MakeSSDPPacket(const char * dest_str,
 		l = sizeof(bufr) - 1;
 		return -1;
 	}
+	syslog(LOG_DEBUG, "%s", bufr);
 	return 0;
 }
 
@@ -71,9 +82,21 @@ MakeSSDPPacket(const char * dest_str,
 int main(int argc, char * * argv)
 {
 	int r;
+#ifdef DYNAMIC_OS_VERSION
+	struct utsname utsname;
+#endif
 	UNUSED(argc); UNUSED(argv);
 
 	openlog("testssdppktgen", LOG_CONS|LOG_PERROR, LOG_USER);
+#ifdef DYNAMIC_OS_VERSION
+	if (uname(&utsname) < 0) {
+		syslog(LOG_ERR, "uname(): %m");
+		os_version = strdup("unknown");
+	} else {
+		os_version = strdup(utsname.release);
+		syslog(LOG_INFO, "OS_VERSION : %s", os_version);
+	}
+#endif
 	upnp_bootid = (unsigned)time(NULL);
 	upnp_configid = 1234567890;
 	r = MakeSSDPPacket("123.456.789.123", "222.222.222.222", 12345,

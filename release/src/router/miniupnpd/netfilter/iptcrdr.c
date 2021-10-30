@@ -14,7 +14,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <dlfcn.h>
-#include <xtables.h>
+#include <iptables.h>
 #include <linux/netfilter/xt_DSCP.h>
 #include <libiptc/libiptc.h>
 
@@ -23,7 +23,6 @@
 #include "../config.h"
 
 #ifdef IPTABLES_143
-#pragma "1.4.3 found"
 /* IPTABLES API version >= 1.4.3 */
 
 /* added in order to compile on gentoo :
@@ -43,7 +42,6 @@
 #define ip_nat_range		nf_nat_range
 #define IPTC_HANDLE		struct iptc_handle *
 #else
-#pragma "1.4.3 NOT found"
 /* IPTABLES API version < 1.4.3 */
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,22)
 #include <linux/netfilter_ipv4/ip_nat.h>
@@ -70,7 +68,7 @@
 
 /* iptables -t nat -N MINIUPNPD
  * iptables -t nat -A PREROUTING -i <ext_if_name> -j MINIUPNPD */
-static const char * miniupnpd_nat_chain = "UPNP";
+static const char * miniupnpd_nat_chain = "MINIUPNPD";
 
 /* iptables -t nat -N MINIUPNPD-POSTROUTING
  * iptables -t nat -A POSTROUTING -o <ext_if_name> -j MINIUPNPD-POSTROUTING */
@@ -629,7 +627,8 @@ get_peer_rule_by_index(int index,
 }
 
 /* delete_rule_and_commit() :
- * subfunction used in delete_redirect_and_filter_rules() */
+ * subfunction used in delete_redirect_and_filter_rules()
+ * always call iptc_free(h) */
 static int
 delete_rule_and_commit(unsigned int index, IPTC_HANDLE h,
                        const char * miniupnpd_chain,
@@ -855,13 +854,15 @@ delete_redirect_and_filter_rules(unsigned short eport, int proto)
 					break;
 				}
 			}
-		}
-		if(h)
+			/* in case the filter rule has not been found, delete_rule_and_commit() is not called
+			 * so we neet to free h */
+			if(h)
 #ifdef IPTABLES_143
-			iptc_free(h);
+				iptc_free(h);
 #else
-			iptc_free(&h);
+				iptc_free(&h);
 #endif
+		}
 	}
 
 	/*delete PEER rule*/
@@ -963,12 +964,12 @@ delete_redirect_and_filter_rules(unsigned short eport, int proto)
 				break;
 			}
 		}
-	if (h)
-	#ifdef IPTABLES_143
-		iptc_free(h);
-	#else
-		iptc_free(&h);
-	#endif
+		if (h)
+#ifdef IPTABLES_143
+			iptc_free(h);
+#else
+			iptc_free(&h);
+#endif
 	}
 
 	del_redirect_desc(eport, proto);

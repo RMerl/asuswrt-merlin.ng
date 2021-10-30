@@ -11,6 +11,7 @@
 <title><#Web_Title#> - OpenVPN Client Settings</title>
 <link rel="stylesheet" type="text/css" href="index_style.css">
 <link rel="stylesheet" type="text/css" href="form_style.css">
+<link rel="stylesheet" type="text/css" href="css/icon.css">
 <script language="JavaScript" type="text/javascript" src="/state.js"></script>
 <script language="JavaScript" type="text/javascript" src="/general.js"></script>
 <script language="JavaScript" type="text/javascript" src="/popup.js"></script>
@@ -83,6 +84,17 @@
 	font-weight:bold;
 	line-height:140%;
 	color:#ffffff;
+}
+.icon_eye_open{
+	width: 40px;
+	height: 27px;
+	background-size: 50%;
+}
+
+.icon_eye_close{
+	width: 40px;
+	height: 27px;
+	background-size: 50%;
 }
 </style>
 <script>
@@ -545,7 +557,8 @@ function change_vpn_unit(val){
 
 /* password item show or not */
 function pass_checked(obj){
-	switchType(obj, document.form.show_pass_1.checked, true);
+	obj.toggleClass("icon_eye_close").toggleClass("icon_eye_open");
+	$("#vpn_client_password").prop("type", (function(){return obj.hasClass("icon_eye_close") ? "password" : "text";}));
 }
 
 function ImportOvpn(){
@@ -1115,8 +1128,10 @@ function refreshVPNIP() {
 					<tr id="client_password">
 						<th>Password</th>
 						<td>
-							<input type="password" autocomplete="new-password" maxlength="64" class="input_25_table" name="vpn_client_password" value="<% nvram_clean_get("vpn_client_password"); %>">
-							<input type="checkbox" name="show_pass_1" onclick="pass_checked(document.form.vpn_client_password)"><#QIS_show_pass#>
+							<div style="display:flex; align-items:center;">
+								<input type="password" autocomplete="new-password" maxlength="64" class="input_25_table" id="vpn_client_password" name="vpn_client_password" value="<% nvram_clean_get("vpn_client_password"); %>">
+								<div class="icon_eye_close" id="show_pass_1" type="password"  onclick="pass_checked($('#show_pass_1'));"></div>
+							</div>
 						</td>
 					</tr>
 					<tr id="client_useronly">

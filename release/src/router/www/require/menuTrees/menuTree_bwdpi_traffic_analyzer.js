@@ -291,8 +291,8 @@ define(function(){
 					{url: "Advanced_VPNClient_Content.asp", tabName: "__INHERIT__"},
 					{url: "Advanced_TOR_Content.asp", tabName: "TOR"},
 					{url: "Advanced_Instant_Guard.asp", tabName: "<#Instant_Guard_title#>"},
-					{url: "Advanced_WireguardServer_Content.asp", tabName: "WireGuard Server"},/*untranslated*/
-					{url: "Advanced_WireguardClient_Content.asp", tabName: "WireGuard Client"},/*untranslated*/
+					{url: "Advanced_WireguardServer_Content.asp", tabName: "__INHERIT__"},
+					{url: "Advanced_WireguardClient_Content.asp", tabName: "__INHERIT__"},
 					{url: "NULL", tabName: "__INHERIT__"}
 				]
 			},		
@@ -801,12 +801,12 @@ define(function(){
 
 				if(!fileflex_support)
 					retArray.push("fileflex.asp");
-
+/*
 				if(!wireguard_support) {
 					retArray.push("Advanced_WireguardServer_Content.asp");
 					retArray.push("Advanced_WireguardClient_Content.asp");
 				}
-
+*/
 				if(SG_mode)
 					retArray.push("Advanced_WWPS_Content.asp");
 

@@ -45,6 +45,22 @@ var wgsc_enable = '<% nvram_get("wgsc_enable"); %>';
 function initial(){
 	show_menu();
 
+	var vpn_server_array = { "PPTP" : ["PPTP", "Advanced_VPN_PPTP.asp"], "OpenVPN" : ["OpenVPN", "Advanced_VPN_OpenVPN.asp"], "IPSEC" : ["IPSec VPN", "Advanced_VPN_IPSec.asp"], "Wireguard" : ["Wireguard VPN", "Advanced_WireguardServer_Content.asp"]};
+	if(!pptpd_support) {
+		delete vpn_server_array.PPTP;
+	}
+	if(!openvpnd_support) {
+		delete vpn_server_array.OpenVPN;
+	}
+	if(!ipsec_srv_support) {
+		delete vpn_server_array.IPSEC;
+	}
+	if(!wireguard_support) {
+		delete vpn_server_array.Wireguard;
+	}
+
+	$('#divSwitchMenu').html(gen_switch_menu(vpn_server_array, "Wireguard"));
+
 	if (wgs_enable == '1') {
 		document.getElementById("WgsLogTable").style.display = "";
 		if (wgsc_enable == '1')
@@ -132,6 +148,7 @@ function hideQRCode(){
 				<td bgcolor="#4D595D" valign="top"  >
 					<div>&nbsp;</div>
 					<div class="formfonttitle">VPN - WireGuard Server</div>
+					<div id="divSwitchMenu" style="margin-top:-40px;float:right;"></div
 					<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 					<div id="titl_desc" class="formfontdesc">WireGuard Server</div>
 

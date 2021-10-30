@@ -175,7 +175,7 @@ function initial(){
 	check_vpn_conflict();
 	/* Advanced Setting end */
 
-	var vpn_server_array = { "PPTP" : ["PPTP", "Advanced_VPN_PPTP.asp"], "OpenVPN" : ["OpenVPN", "Advanced_VPN_OpenVPN.asp"], "IPSEC" : ["IPSec VPN", "Advanced_VPN_IPSec.asp"]};
+	var vpn_server_array = { "PPTP" : ["PPTP", "Advanced_VPN_PPTP.asp"], "OpenVPN" : ["OpenVPN", "Advanced_VPN_OpenVPN.asp"], "IPSEC" : ["IPSec VPN", "Advanced_VPN_IPSec.asp"], "Wireguard" : ["Wireguard VPN", "Advanced_WireguardServer_Content.asp"]};
 	if(!pptpd_support) {
 		delete vpn_server_array.PPTP;
 	}
@@ -185,12 +185,9 @@ function initial(){
 	if(!ipsec_srv_support) {
 		delete vpn_server_array.IPSEC;
 	}
-
-	// Models with encrypted passwords
-	if (based_modelid == "RT-AX88U") {
-		showhide("show_pass_div", 0);
+	if(!wireguard_support) {
+		delete vpn_server_array.Wireguard;
 	}
-
 	$('#divSwitchMenu').html(gen_switch_menu(vpn_server_array, "PPTP"));
 
 	$("#client_pwd_strength").append(Get_Component_PWD_Strength_Meter());

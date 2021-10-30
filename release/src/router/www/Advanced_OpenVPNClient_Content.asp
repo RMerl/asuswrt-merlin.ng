@@ -183,11 +183,19 @@ function initial()
 {
 	show_menu();
 
-	if(vpnc_support) {
-		var vpn_client_array = {"OpenVPN" : ["OpenVPN", "Advanced_OpenVPNClient_Content.asp"], "PPTP" : ["PPTP/L2TP", "Advanced_VPNClient_Content.asp"]};
-		$('#divSwitchMenu').html(gen_switch_menu(vpn_client_array, "OpenVPN"));
-		document.getElementById("divSwitchMenu").style.display = "";
-	}
+	var vpn_client_array = {"OpenVPN" : ["OpenVPN", "Advanced_OpenVPNClient_Content.asp"], "PPTP" : ["PPTP/L2TP", "Advanced_VPNClient_Content.asp"], "Wireguard" : ["Wireguard", "Advanced_WireguardClient_Content.asp"]};
+
+        if(!wireguard_support) {
+                delete vpn_server_array.Wireguard;
+        }
+        if(!vpnc_support) {
+                delete vpn_server_array.PPTP;
+        }
+        if(!openvpnd_support) {
+                delete vpn_server_array.OpenVPN;
+        }
+
+	$('#divSwitchMenu').html(gen_switch_menu(vpn_client_array, "OpenVPN"));
 
 	showclientlist();
 

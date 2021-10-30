@@ -27,6 +27,20 @@ var wgc_enable = '<% nvram_get("wgc_enable"); %>';
 function initial(){
 	show_menu();
 
+	var vpn_client_array = {"OpenVPN" : ["OpenVPN", "Advanced_OpenVPNClient_Content.asp"], "PPTP" : ["PPTP/L2TP", "Advanced_VPNClient_Content.asp"], "Wireguard" : ["Wireguard", "Advanced_WireguardClient_Content.asp"]};
+
+	if(!wireguard_support) {
+		delete vpn_server_array.Wireguard;
+	}
+	if(!vpnc_support) {
+		delete vpn_server_array.PPTP;
+	}
+	if(!openvpnd_support) {
+		delete vpn_server_array.OpenVPN;
+	}
+
+	$('#divSwitchMenu').html(gen_switch_menu(vpn_client_array, "Wireguard"));
+
 	if (wgc_enable == '1') {
 		document.getElementById("WgcLogTable").style.display = "";
 	}
@@ -94,6 +108,7 @@ function change_wgc_unit(unit){
 				<td bgcolor="#4D595D" valign="top"  >
 					<div>&nbsp;</div>
 					<div class="formfonttitle">VPN - WireGuard Client</div>
+					<div id="divSwitchMenu" style="margin-top:-40px;float:right;"></div
 					<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 					<div id="titl_desc" class="formfontdesc">WireGuard Client</div>
 

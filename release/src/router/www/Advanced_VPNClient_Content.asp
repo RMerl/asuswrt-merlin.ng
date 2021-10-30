@@ -150,11 +150,17 @@ function parseNvramToArray(_oriNvram, _arrayLength) {
 function initial(){
 	show_menu();
 
-	if(openvpnd_support) {
-		var vpn_client_array = {"OpenVPN" : ["OpenVPN", "Advanced_OpenVPNClient_Content.asp"], "PPTP" : ["PPTP/L2TP", "Advanced_VPNClient_Content.asp"]};
-		$('#divSwitchMenu').html(gen_switch_menu(vpn_client_array, "PPTP"));
-		document.getElementById("divSwitchMenu").style.display = "";
-	}
+	var vpn_client_array = {"OpenVPN" : ["OpenVPN", "Advanced_OpenVPNClient_Content.asp"], "PPTP" : ["PPTP/L2TP", "Advanced_VPNClient_Content.asp"], "Wireguard" : ["Wireguard", "Advanced_WireguardClient_Content.asp"]};
+        if(!wireguard_support) {
+                delete vpn_server_array.Wireguard;
+        }
+        if(!vpnc_support) {
+                delete vpn_server_array.PPTP;
+        }
+        if(!openvpnd_support) {
+                delete vpn_server_array.OpenVPN;
+        }
+	$('#divSwitchMenu').html(gen_switch_menu(vpn_client_array, "PPTP"));
 
 	vpnc_clientlist_array = parseNvramToArray('<% nvram_char_to_ascii("","vpnc_clientlist"); %>', 5);
 	vpnc_pptp_options_x_list_array = parseNvramToArray('<% nvram_char_to_ascii("","vpnc_pptp_options_x_list"); %>', 1);

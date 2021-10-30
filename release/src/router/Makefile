@@ -929,10 +929,10 @@ ifeq ($(RTCONFIG_DSL),y)
 obj-y += spectrum
 endif
 ifeq ($(RTCONFIG_RALINK),y)
-ifeq ($(RTCONFIG_MTK_8021X3000),y)	
+ifeq ($(RTCONFIG_MTK_8021X3000),y)
 obj-y += 802.1x-3.0.0.0
 else
-ifeq ($(RTCONFIG_MTK_8021XD3000),y)	
+ifeq ($(RTCONFIG_MTK_8021XD3000),y)
 obj-y += 8021xd
 endif
 ifneq ($(RTCONFIG_WLMODULE_MT7615E_AP), y)
@@ -1734,7 +1734,7 @@ else
 endif
 endif
 ifeq ($(RTCONFIG_REALTEK),y)
-	@echo "-------- cp kernel_header --------" >> $(SRCBASE)/build.log	
+	@echo "-------- cp kernel_header --------" >> $(SRCBASE)/build.log
 ifeq ($(RPAC92),y)
 	cp -fr $(LINUXDIR)/include/uapi/* $@/include/uapi/
 else
@@ -2771,7 +2771,7 @@ libnfnetlink-1.0.1-clean:
 	@rm -f libnfnetlink-1.0.1/Makefile
 
 libmnl-1.0.4: libmnl-1.0.4/Makefile
-	$(MAKE) -C $@ && $(MAKE) $@-stage
+	$(MAKE) -C $@ && $(MAKE) $@-stage && sed 's|/usr/lib|$(STAGEDIR)/usr/lib|g' -i $(STAGEDIR)/usr/lib/libmnl.la
 
 libmnl-1.0.4/Makefile:
 	(cd libmnl-1.0.4 && autoreconf -i -f)
@@ -2861,7 +2861,7 @@ ipset-7.6/Makefile: ipset-7.6/configure
 		--with-kmod=no --with-kbuild=$(LINUXDIR)
 
 ipset-7.6: libmnl-1.0.4 ipset-7.6/Makefile
-	$(MAKE) -C $@ && $(MAKE) $@-stage
+	$(MAKE) -C $@ && $(MAKE) $@-stage && sed 's|/usr/lib|$(STAGEDIR)/usr/lib|g' -i $(STAGEDIR)/usr/lib/libipset.la
 
 ipset-7.6-install:
 	install -D ipset-7.6/src/ipset $(INSTALLDIR)/ipset-7.6/usr/sbin/ipset
@@ -3306,7 +3306,7 @@ libyaml-configure: libyaml/configure
 		LDFLAGS="$(EXTRALDFLAGS)"
 
 libyaml: libyaml/Makefile
-	$(MAKE) -C $@ && $(MAKE) $@-stage
+	$(MAKE) -C $@ && $(MAKE) $@-stage && sed 's|/usr/lib|$(STAGEDIR)/usr/lib|g' -i $(STAGEDIR)/usr/lib/libyaml.la
 
 libyaml-install:
 	@true
@@ -3870,7 +3870,7 @@ libdaemon/stamp-h1:
 	touch $@
 
 libdaemon: libdaemon/stamp-h1
-	$(MAKE) -C $@ && $(MAKE) $@-stage
+	$(MAKE) -C $@ && $(MAKE) $@-stage && sed 's|/usr/lib|$(STAGEDIR)/usr/lib|g' -i $(STAGEDIR)/usr/lib/libdaemon.la
 
 libdaemon-install: libdaemon
 	install -D libdaemon/libdaemon/.libs/libdaemon.so.0.5.0 $(INSTALLDIR)/libdaemon/usr/lib/libdaemon.so.0.5.0
@@ -4258,7 +4258,7 @@ libconfuse/Makefile:
 		LDFLAGS="-Wl,--gc-sections $(LDFLAGS)"
 
 libconfuse: libconfuse/Makefile
-	$(MAKE) -C $@ && $(MAKE) $@-stage
+	$(MAKE) -C $@ && $(MAKE) $@-stage && sed 's|/usr/lib|$(STAGEDIR)/usr/lib|g' -i $(STAGEDIR)/usr/lib/libconfuse.la
 
 libconfuse-install:
 	@true
@@ -4679,7 +4679,11 @@ lldpd-0.9.8-clean:
 	@rm -f lldpd-0.9.8/libevent/Makefile
 
 libevent-2.0.21: libevent-2.0.21/Makefile
-	$(MAKE) -C $@ $(PARALLEL_BUILD) && $(MAKE) $@-stage && sed 's|/usr/lib|$(STAGEDIR)/usr/lib|g' -i $(STAGEDIR)/usr/lib/libevent.la
+	$(MAKE) -C $@ $(PARALLEL_BUILD) && $(MAKE) $@-stage
+	sed 's|/usr/lib|$(STAGEDIR)/usr/lib|g' -i $(STAGEDIR)/usr/lib/libevent.la
+	sed 's|/usr/lib|$(STAGEDIR)/usr/lib|g' -i $(STAGEDIR)/usr/lib/libevent_core.la
+	sed 's|/usr/lib|$(STAGEDIR)/usr/lib|g' -i $(STAGEDIR)/usr/lib/libevent_extra.la
+	sed 's|/usr/lib|$(STAGEDIR)/usr/lib|g' -i $(STAGEDIR)/usr/lib/libevent_pthreads.la
 
 libevent-2.0.21/Makefile:
 	( cd libevent-2.0.21 && autoreconf -i -f ; \
@@ -5767,7 +5771,7 @@ lzo/stamp-h1:
 	touch $@
 
 lzo: lzo/stamp-h1
-	$(MAKE) -C lzo $(PARALLEL_BUILD) && $(MAKE) $@-stage
+	$(MAKE) -C lzo $(PARALLEL_BUILD) && $(MAKE) $@-stage && sed 's|/usr/lib|$(STAGEDIR)/usr/lib|g' -i $(STAGEDIR)/usr/lib/liblzo2.la
 
 lzo-clean:
 	-@$(MAKE) -C lzo clean
@@ -6054,7 +6058,7 @@ libxml2/stamp-h1:
 	touch $@
 
 libxml2: libxml2/stamp-h1
-	$(MAKE) -C libxml2 all $(PARALLEL_BUILD) && $(MAKE) $@-stage
+	$(MAKE) -C libxml2 all $(PARALLEL_BUILD) && $(MAKE) $@-stage && sed 's|/usr/lib|$(STAGEDIR)/usr/lib|g' -i $(STAGEDIR)/usr/lib/libxml2.la
 
 libxml2-install:
 	@$(SEP)
@@ -6074,6 +6078,8 @@ libiconv-1.14/stamp-h1:
 
 libiconv-1.14:libiconv-1.14/stamp-h1
 	@$(MAKE) -C $@ CFLAGS="$(CFLAGS) $(if $(filter y,$(HND_ROUTER)),-DHND_ROUTER,)" && $(MAKE) $@-stage
+	sed 's|/usr/lib|$(STAGEDIR)/usr/lib|g' -i $(STAGEDIR)/usr/lib/libiconv.la
+	sed 's|/usr/lib|$(STAGEDIR)/usr/lib|g' -i $(STAGEDIR)/usr/lib/libcharset.la
 
 libiconv-1.14-install:
 	@$(SEP)
@@ -6245,7 +6251,7 @@ neon/Makefile neon/config.h:
 	touch $@
 
 neon: libxml2 openssl neon/Makefile neon/config.h
-	$(MAKE) -C neon && $(MAKE) $@-stage
+	$(MAKE) -C neon && $(MAKE) $@-stage && sed 's|/usr/lib|$(STAGEDIR)/usr/lib|g' -i $(STAGEDIR)/usr/lib/libneon.la
 
 neon-install:
 	@$(SEP)
@@ -7369,7 +7375,7 @@ hostapd-2.6-install:
 	install -D hostapd-2.6/wpa_supplicant/wpa_cli $(TARGETDIR)/bin/
 
 hostapd-2.6-clean:
-	cd hostapd-2.6/hostapd;	make clean	
+	cd hostapd-2.6/hostapd;	make clean
 	cd hostapd-2.6/wpa_supplicant; make clean
 
 btconfig:
@@ -8051,7 +8057,7 @@ else
 endif
 
 json-c: json-c/stamp-h1
-	$(MAKE) -C $@ && $(MAKE) $@-stage
+	$(MAKE) -C $@ && $(MAKE) $@-stage && sed 's|/usr/lib|$(STAGEDIR)/usr/lib|g' -i $(STAGEDIR)/usr/lib/libjson-c.la
 
 json-c-install:
 	install -D json-c/.libs/libjson-c.so.2.0.2 $(INSTALLDIR)/json-c/usr/lib/libjson-c.so.2.0.2
@@ -8607,7 +8613,7 @@ bdmf_shell-install:
 
 .PHONY : bdmf_shell
 
-bdmf_lib: 
+bdmf_lib:
 	@$(eval TOPX_DIR:=$(firstword $(wildcard $(TOP_PLATFORM)/$@) $(wildcard $@)))
 ifeq ($(HND_ROUTER_AX),y)
 	$(MAKE) -C $(TOPX_DIR)
@@ -8998,7 +9004,7 @@ lite-auth-3rd-install:
 
 %-build:
 	@$(eval TOPX_DIR:=$(firstword $(wildcard $(TOP_PLATFORM)/$*) $(wildcard $*)))
-	@$(MAKE) $*-clean 
+	@$(MAKE) $*-clean
 	@$(MAKE) -C $(TOPX_DIR)
 
 %/Makefile:
@@ -9039,5 +9045,3 @@ $(obj-y) $(obj-n) $(obj-clean) $(obj-install): dummy
 .PHONY: all clean distclean mrproper install package image
 .PHONY: conf mconf oldconf kconf kmconf config menuconfig oldconfig
 .PHONY: dummy libnet libpcap
-
-

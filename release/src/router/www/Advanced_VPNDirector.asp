@@ -224,9 +224,9 @@ function show_vpn_summary(refresh) {
 					routing += ' + killswitch';
 				break;
 			case "2":
-				var routing = '<span style="#FC0;">VPN Director</span>';
+				var routing = '<span class="hint-color">VPN Director</span>';
 				if (ovpn_info.enforce == 1)
-					routing += ' + <span style="#FC0;">killswitch</span>';
+					routing += ' + <span class="hint-color" ">killswitch</span>';
 				break;
 			default:
 				var routing = "unknown";
@@ -234,7 +234,7 @@ function show_vpn_summary(refresh) {
 		}
 
 		code += '<tr><th style="text-align:left; padding-left:10px;">OVPN' + i + ': ' + ovpn_info.desc + '</th>';
-		code += '<td style="text-align:left; padding-left:10px;">' + ( ovpn_info.state == 2 ? '<span style="color:#FC0;">Connected</span>' : 'Disconnected') + '</td>';
+		code += '<td style="text-align:left; padding-left:10px;">' + ( ovpn_info.state == 2 ? '<span class="hint-color">Connected</span>' : 'Disconnected') + '</td>';
 		code +=	'<td style="text-align:left; padding-left:10px;">' + routing + '</td>';
 		if (ovpn_info.state == 2)
 			code += '<td style="text-align:left; padding-left:10px;"><span onclick="stop_client(\''+i+'\', this);" style="text-decoration:underline; cursor:pointer;">Stop Client</span></td></tr>';
@@ -278,7 +278,7 @@ function show_vpndirector_rulelist() {
 	var code = "";
 	code += '<table width="100%" cellspacing="0" cellpadding="1" align="center" class="list_table" style="word-break:break-word;">';
 	if (vpndirector_rulelist_array.length == 0)
-		code += '<tr><td style="color:#FC0;" colspan="6">No rules</td></tr>';
+		code += '<tr><td class="hint-color" colspan="6">No rules</td></tr>';
 	else {
 		vpndirector_rulelist_array.sort(sort_by_interface);
 
@@ -582,7 +582,7 @@ function applyRule() {
 			</td>
 		</tr>
 	</table>
-	<div style="color:#FC0;margin:10px 0px;">
+	<div class="hint-color" style="margin:10px 0px;">
 		* IP addresses can be entered in CIDR format (for example, 192.168.1.0/24).
 		<br>
 	</div>

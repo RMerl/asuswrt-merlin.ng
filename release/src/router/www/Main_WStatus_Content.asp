@@ -189,9 +189,9 @@ function display_clients(clientsarray, obj, unit) {
 					if (guestheader < ii) {
 						guestheader = ii;
 						if (sw_mode == "2")
-							code += '<tr><th colspan="6" style="color:white;height:20px;"><span style="color:#FFCC00;font-weight:bolder;">Local Clients:</span> ' + guestnames[unit][ii-1] + '</th></tr>';
+							code += '<tr><th colspan="6" style="color:white;height:20px;"><span class="hint-color" style="font-weight:bolder;">Local Clients:</span> ' + guestnames[unit][ii-1] + '</th></tr>';
 						else
-							code += '<tr><th colspan="6" style="color:white;height:20px;"><span style="color:#FFCC00;font-weight:bolder;">Guest Network ' + guestheader +':</span> ' + guestnames[unit][ii-1] + '</th></tr>';
+							code += '<tr><th colspan="6" style="color:white;height:20px;"><span class="hint-color" style="font-weight:bolder;">Guest Network ' + guestheader +':</span> ' + guestnames[unit][ii-1] + '</th></tr>';
 						ii = 5;
 					}
 				}

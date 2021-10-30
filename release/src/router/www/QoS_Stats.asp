@@ -561,24 +561,24 @@ function draw_chart(data_array, ctx, pie) {
 							<option value="5">5 seconds</option>
 							<option value="10">10 seconds</option>
 						</select>
-						<span id="toomanyconns" style="display:none; color:#FFCC00;">Disabled - too many tracked connections.</span>
+						<span id="toomanyconns" class="hint-color" style="display:none;">Disabled - too many tracked connections.</span>
 					</td>
 				</tr>
 			</table>
 			<br>
 
-			<div id="limiter_notice" style="display:none;font-size:125%;color:#FFCC00;">Note: Statistics not available in Bandwidth Limiter mode.</div>
-			<div id="no_qos_notice" style="display:none;font-size:125%;color:#FFCC00;">Note: QoS is not enabled.</div>
-			<div id="cake_notice" style="display:none;font-size:125%;color:#FFCC00;">Note: Statistics not available in Cake mode.</div>
-			<div id="tqos_notice" style="display:none;font-size:125%;color:#FFCC00;">Note: Traditional QoS only classifies uploaded traffic.</div>
+			<div id="limiter_notice" class="hint-color" style="display:none;font-size:125%;;">Note: Statistics not available in Bandwidth Limiter mode.</div>
+			<div id="no_qos_notice" class="hint-color" style="display:none;font-size:125%;">Note: QoS is not enabled.</div>
+			<div id="cake_notice" class="hint-color" style="display:none;font-size:125%;">Note: Statistics not available in Cake mode.</div>
+			<div id="tqos_notice" class="hint-color" style="display:none;font-size:125%;">Note: Traditional QoS only classifies uploaded traffic.</div>
 			<table>
 				<tr id="dl_tr">
-					<td style="padding-right:50px;font-size:125%;color:#FFCC00;"><div>Download</div><canvas id="pie_chart_dl" width="200" height="200"></canvas></td>
+					<td class="hint-color" style="padding-right:50px;font-size:125%;"><div>Download</div><canvas id="pie_chart_dl" width="200" height="200"></canvas></td>
 					<td><span id="legend_dl"></span></td>
 				</tr>
 				<tr style="height:50px;"><td colspan="2">&nbsp;</td></tr>
                                 <tr id="ul_tr">
-                                        <td style="padding-right:50px;font-size:125%;color:#FFCC00;"><div>Upload</div><canvas id="pie_chart_ul" width="200" height="200"></canvas></td>
+                                        <td class="hint-color" style="padding-right:50px;font-size:125%;"><div>Upload</div><canvas id="pie_chart_ul" width="200" height="200"></canvas></td>
                                         <td><span id="legend_ul"></span></td>
                                 </tr>
 			</table>

@@ -1109,13 +1109,13 @@ function refreshVPNIP() {
 					<tr id="client_username">
 						<th>Username</th>
 						<td>
-							<input type="text" maxlength="255" class="input_25_table" name="vpn_client_username" value="<% nvram_clean_get("vpn_client_username"); %>" autocorrect="off" autocapitalize="off" spellcheck="false">
+							<input type="text" maxlength="64" class="input_25_table" name="vpn_client_username" value="<% nvram_clean_get("vpn_client_username"); %>" autocorrect="off" autocapitalize="off" spellcheck="false">
 						</td>
 					</tr>
 					<tr id="client_password">
 						<th>Password</th>
 						<td>
-							<input type="password" autocomplete="new-password" maxlength="255" class="input_25_table" name="vpn_client_password" value="<% nvram_clean_get("vpn_client_password"); %>">
+							<input type="password" autocomplete="new-password" maxlength="64" class="input_25_table" name="vpn_client_password" value="<% nvram_clean_get("vpn_client_password"); %>">
 							<input type="checkbox" name="show_pass_1" onclick="pass_checked(document.form.vpn_client_password)"><#QIS_show_pass#>
 						</td>
 					</tr>

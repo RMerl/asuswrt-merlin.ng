@@ -412,7 +412,10 @@ add_option (char *p[], int line, int unit)
 	}
 	else if  (streq (p[0], "proto") && p[1])
 	{
-		nvram_pf_set(prefix, "proto", p[1]);
+		if(!strncmp(p[1], "tcp", 3))
+			nvram_pf_set(prefix, "proto", "tcp-client");
+		else if(!strncmp(p[1], "udp", 3))
+			nvram_pf_set(prefix,  "proto", "udp");
 	}
 	else if  (streq (p[0], "remote") && p[1])
 	{
@@ -424,7 +427,7 @@ add_option (char *p[], int line, int unit)
 		{
 			if(!strncmp(p[3], "tcp", 3))
 				nvram_pf_set(prefix, "proto", "tcp-client");
-			else if(!strncmp(p[1], "udp", 3))
+			else if(!strncmp(p[3], "udp", 3))
 				nvram_pf_set(prefix,  "proto", "udp");
 		}
 	}

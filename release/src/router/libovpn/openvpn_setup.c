@@ -370,6 +370,8 @@ int ovpn_write_server_config(ovpn_sconf_t *sconf, int unit) {
 			fprintf(fp_client, "cipher %s\n", sconf->cipher);
 		}
 	}
+	// Fallback to silence logged warning
+	fprintf(fp, "data-ciphers-fallback AES-128-CBC\n");
 
 	// Digest
 	if (strcmp(sconf->digest, "default")) {

@@ -31,12 +31,20 @@ Asuswrt-Merlin 386/NG Changelog
   - CHANGED: miniupnpd will now be supplied the public WAN
              IP to improve compatibility with dual NAT
              setups.
+  - CHANGEED: Disabling Auto DoH will now also disable
+              Windows' new Discovery of Designated
+              Resolvers (DDR) feature.
+  - CHANGED: Explicitely bind OpenVPN to IPV4 sockets,
+             fixing mtu-disc support.
   - FIXED: Wrong interface might be used for the default
            gateway in an openvpn client routing table.
   - FIXED: Generated OpenVPN certs used SHA1 signatures
            instead of SHA256 (regression from 386.1)
   - FIXED: Various issues with importing the protocol
            when importing an ovpn client file.
+  - FIXED: IPv6 not working while in Dual WAN mode.
+  - FIXED: Failed OpenVPN client connections might sometime
+           be stuck with a "Connecting" state.
   - REMOVED: jitterentropy-rngd (replaced with haveged).
 
 

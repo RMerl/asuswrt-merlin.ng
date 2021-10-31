@@ -2028,7 +2028,7 @@ genRootDesc(int * len, int force_igd1)
 		else
 			str = genXML(str, len, &tmplen, rootDesc_aura_nonvgfn, force_igd1);
 #else
-		str = genXML(str, len, &tmplen, rootDesc_aura_nonvgfn);
+		str = genXML(str, len, &tmplen, rootDesc_aura_nonvgfn, force_igd1);
 #endif
 	}
 	else

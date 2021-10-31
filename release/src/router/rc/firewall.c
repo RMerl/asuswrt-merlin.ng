@@ -4709,6 +4709,8 @@ filter_setting2(char *lan_if, char *lan_ip, char *logaccept, char *logdrop)
 		    ":WGNPControls - [0:0]\n"
 		    ":PControls - [0:0]\n"
 #endif
+		    ":ICMP_V6 - [0:0]\n"
+		    ":ICMP_V6_LOCAL - [0:0]\n"
 		    ":logaccept - [0:0]\n"
 		    ":logdrop - [0:0]\n",
 		nvram_match("ipv6_fw_enable", "1") ? "DROP" : "ACCEPT");

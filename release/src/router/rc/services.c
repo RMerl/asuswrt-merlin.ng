@@ -1982,6 +1982,7 @@ void start_dnsmasq(void)
 	) {
 
 		fprintf(fp, "address=/use-application-dns.net/\n");
+		fprintf(fp, "address=/_dns.resolver.arpa/\n");
 	}
 
 	/* Protect against VU#598349 */

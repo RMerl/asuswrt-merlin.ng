@@ -382,6 +382,7 @@ x_msg_va(const unsigned int flags, const char *format, va_list arglist)
     if (flags & M_FATAL)
     {
         msg(M_INFO, "Exiting due to fatal error");
+        update_nvram_status(EVENT_CONF_ERROR);	/* for missed events */
     }
 
     if (flags & M_FATAL)

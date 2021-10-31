@@ -1959,8 +1959,7 @@ dir_client_decompress_response_body(char **bodyp, size_t *bodylenp,
   /* If we're pretty sure that we have a compressed directory, and
    * we didn't manage to uncompress it, then warn and bail. */
   if (!plausible && !new_body) {
-    const int LOG_INTERVAL = 3600;
-    static ratelim_t warning_limit = RATELIM_INIT(LOG_INTERVAL);
+    static ratelim_t warning_limit = RATELIM_INIT(60 * 60);
     log_fn_ratelim(&warning_limit, LOG_WARN, LD_HTTP,
            "Unable to decompress HTTP body (tried %s%s%s, on %s).",
            description1,

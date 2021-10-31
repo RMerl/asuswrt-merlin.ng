@@ -211,20 +211,11 @@ evdns_log_cb(int warn, const char *msg)
   tor_log(severity, LD_EXIT, "eventdns: %s", msg);
 }
 
-/** Helper: passed to eventdns.c as a callback so it can generate random
- * numbers for transaction IDs and 0x20-hack coding. */
-static void
-dns_randfn_(char *b, size_t n)
-{
-  crypto_rand(b,n);
-}
-
 /** Initialize the DNS subsystem; called by the OR process. */
 int
 dns_init(void)
 {
   init_cache_map();
-  evdns_set_random_bytes_fn(dns_randfn_);
   if (server_mode(get_options())) {
     int r = configure_nameservers(1);
     return r;

@@ -646,13 +646,6 @@ tor_tls_block_renegotiation(tor_tls_t *tls)
   /* We don't support renegotiation with NSS. */
 }
 
-void
-tor_tls_assert_renegotiation_unblocked(tor_tls_t *tls)
-{
-  tor_assert(tls);
-  /* We don't support renegotiation with NSS. */
-}
-
 int
 tor_tls_get_pending_bytes(tor_tls_t *tls)
 {

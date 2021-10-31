@@ -4606,9 +4606,6 @@ am__define_uniq_tagged_files = \
   unique=`for i in $$list; do \
     if test -f "$$i"; then echo $$i; else echo $(srcdir)/$$i; fi; \
   done | $(am__uniquify_input)`
-ETAGS = etags
-CTAGS = ctags
-CSCOPE = cscope
 AM_RECURSIVE_TARGETS = cscope check recheck
 am__tty_colors_dummy = \
   mgn= red= grn= lgn= blu= brg= std=; \
@@ -4765,6 +4762,7 @@ am__set_TESTS_bases = \
   bases='$(TEST_LOGS)'; \
   bases=`for i in $$bases; do echo $$i; done | sed 's/\.log$$//'`; \
   bases=`echo $$bases`
+AM_TESTSUITE_SUMMARY_HEADER = ' for $(PACKAGE_STRING)'
 RECHECK_LOGS = $(TEST_LOGS)
 TEST_SUITE_LOG = test-suite.log
 TEST_EXTENSIONS = @EXEEXT@ .test
@@ -4886,6 +4884,8 @@ am__post_remove_distdir = $(am__remove_distdir)
 DIST_ARCHIVES = $(distdir).tar.gz
 GZIP_ENV = --best
 DIST_TARGETS = dist-gzip
+# Exists only to be overridden by the user if desired.
+AM_DISTCHECK_DVI_TARGET = dvi
 distuninstallcheck_listfiles = find . -type f -print
 am__distuninstallcheck_listfiles = $(distuninstallcheck_listfiles) \
   | sed 's|^\./|$(prefix)/|' | grep -v '$(infodir)/dir$$'
@@ -4912,6 +4912,8 @@ CFLAGS_CONSTTIME = @CFLAGS_CONSTTIME@
 CONFDIR = @CONFDIR@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
+CSCOPE = @CSCOPE@
+CTAGS = @CTAGS@
 CURVE25519_LIBS = @CURVE25519_LIBS@
 CYGPATH_W = @CYGPATH_W@
 DEFS = @DEFS@
@@ -4922,6 +4924,7 @@ ECHO_C = @ECHO_C@
 ECHO_N = @ECHO_N@
 ECHO_T = @ECHO_T@
 EGREP = @EGREP@
+ETAGS = @ETAGS@
 EXEEXT = @EXEEXT@
 F_OMIT_FRAME_POINTER = @F_OMIT_FRAME_POINTER@
 GREP = @GREP@
@@ -6720,23 +6723,21 @@ TESTSCRIPTS = src/test/fuzz_static_testcases.sh \
 
 # run a quick test or two
 # this test only uses IPv4
-TEST_CHUTNEY_FLAVOR_QUICK = bridges+hs-v23
+TEST_CHUTNEY_FLAVOR_QUICK = bridges+hs-v3
 # only run if we can ping6 ::1 (localhost)
-TEST_CHUTNEY_FLAVOR_QUICK_IPV6 = single-onion-v23-ipv6-md
+TEST_CHUTNEY_FLAVOR_QUICK_IPV6 = single-onion-v3-ipv6-md
 
 # run a basic set of tests, which only use IPv4
-TEST_CHUTNEY_FLAVORS = basic-min bridges-min hs-v23-min single-onion-v23
+TEST_CHUTNEY_FLAVORS = basic-min bridges-min hs-v3-min single-onion-v3
 
 # only run if we can ping ::1 (localhost)
-TEST_CHUTNEY_FLAVORS_IPV6 = bridges+ipv6-min ipv6-exit-min hs-v23-ipv6-md \
-	single-onion-v23-ipv6-md
-
+TEST_CHUTNEY_FLAVORS_IPV6 = bridges+ipv6-min ipv6-exit-min hs-v3-ipv6 single-onion-v3-ipv6-md
 
 # only run if we can find a stable (or simply another) version of tor
-TEST_CHUTNEY_FLAVORS_MIXED = mixed+hs-v23
+TEST_CHUTNEY_FLAVORS_MIXED = mixed+hs-v3
 
 # only run if IPv6 and mixed networks are run
-TEST_CHUTNEY_FLAVORS_IPV6_MIXED = mixed+hs-v23-ipv6
+TEST_CHUTNEY_FLAVORS_IPV6_MIXED = mixed+hs-v3-ipv6
 src_test_AM_CPPFLAGS = -DSHARE_DATADIR="\"$(datadir)\"" \
 	-DLOCALSTATEDIR="\"$(localstatedir)\"" \
 	-DBINDIR="\"$(bindir)\""	       \
@@ -22384,7 +22385,7 @@ $(TEST_SUITE_LOG): $(TEST_LOGS)
 	  test x"$$VERBOSE" = x || cat $(TEST_SUITE_LOG);		\
 	fi;								\
 	echo "$${col}$$br$${std}"; 					\
-	echo "$${col}Testsuite summary for $(PACKAGE_STRING)$${std}";	\
+	echo "$${col}Testsuite summary"$(AM_TESTSUITE_SUMMARY_HEADER)"$${std}";	\
 	echo "$${col}$$br$${std}"; 					\
 	create_testsuite_report --maybe-color;				\
 	echo "$$col$$br$$std";						\
@@ -22670,7 +22671,6 @@ scripts/maint/checkSpaceTest.sh.log: scripts/maint/checkSpaceTest.sh
 @am__EXEEXT_TRUE@	--log-file $$b.log --trs-file $$b.trs \
 @am__EXEEXT_TRUE@	$(am__common_driver_flags) $(AM_TEST_LOG_DRIVER_FLAGS) $(TEST_LOG_DRIVER_FLAGS) -- $(TEST_LOG_COMPILE) \
 @am__EXEEXT_TRUE@	"$$tst" $(AM_TESTS_FD_REDIRECT)
-
 distdir: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) distdir-am
 
@@ -22786,7 +22786,7 @@ distcheck: dist
 	    $(DISTCHECK_CONFIGURE_FLAGS) \
 	    --srcdir=../.. --prefix="$$dc_install_base" \
 	  && $(MAKE) $(AM_MAKEFLAGS) \
-	  && $(MAKE) $(AM_MAKEFLAGS) dvi \
+	  && $(MAKE) $(AM_MAKEFLAGS) $(AM_DISTCHECK_DVI_TARGET) \
 	  && $(MAKE) $(AM_MAKEFLAGS) check \
 	  && $(MAKE) $(AM_MAKEFLAGS) install \
 	  && $(MAKE) $(AM_MAKEFLAGS) installcheck \

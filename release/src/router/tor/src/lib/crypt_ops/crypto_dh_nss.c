@@ -17,9 +17,11 @@
 #include "lib/log/util_bug.h"
 #include "lib/malloc/malloc.h"
 
+DISABLE_GCC_WARNING("-Wstrict-prototypes")
 #include <cryptohi.h>
 #include <keyhi.h>
 #include <pk11pub.h>
+ENABLE_GCC_WARNING("-Wstrict-prototypes")
 
 static int dh_initialized = 0;
 static SECKEYDHParams tls_dh_param, circuit_dh_param;

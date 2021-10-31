@@ -50,9 +50,11 @@ ENABLE_GCC_WARNING("-Wredundant-decls")
 #endif /* defined(ENABLE_OPENSSL) */
 
 #ifdef ENABLE_NSS
+DISABLE_GCC_WARNING("-Wstrict-prototypes")
 #include <pk11pub.h>
 #include <secerr.h>
 #include <prerror.h>
+ENABLE_GCC_WARNING("-Wstrict-prototypes")
 #endif
 
 #if __GNUC__ && GCC_VERSION >= 402
@@ -525,8 +527,8 @@ crypto_rand_unmocked(char *to, size_t n)
   /* We consider a PRNG failure non-survivable. Let's assert so that we get a
    * stack trace about where it happened.
    */
-  tor_assert(r >= 0);
-#endif /* defined(ENABLE_NSS) */
+  tor_assert(r == 1);
+#endif
 }
 
 /**

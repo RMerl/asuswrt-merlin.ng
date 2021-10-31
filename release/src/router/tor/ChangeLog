@@ -1,3 +1,196 @@
+Changes in version 0.4.5.11 - 2021-10-26
+  The major change in this version is that v2 onion services are now
+  disabled at the client, service, and relay: any Tor nodes running this
+  version and onward will stop supporting v2 onion services. This is the
+  last step in the long deprecation process of v2 onion services.
+  Everyone running an earlier version, whether as a client, a relay, or
+  an onion service, should upgrade to Tor 0.3.5.17, 0.4.5.11,
+  or 0.4.6.8.
+
+  o Major feature (onion service v2):
+    - See https://blog.torproject.org/v2-deprecation-timeline for
+      details on how to transition from v2 to v3.
+    - The control port commands HSFETCH and HSPOST no longer allow
+      version 2, and it is no longer possible to create a v2 service
+      with ADD_ONION.
+    - Tor no longer allows creating v2 services, or connecting as a
+      client to a v2 service. Relays will decline to be a v2 HSDir or
+      introduction point. This effectively disables onion service
+      version 2 Tor-wide. Closes ticket 40476.
+
+  o Minor features (bridge, backport from 0.4.6.8):
+    - We now announce the URL to Tor's new bridge status at
+      https://bridges.torproject.org/ when Tor is configured to run as a
+      bridge relay. Closes ticket 30477.
+
+  o Minor features (fallbackdir):
+    - Regenerate fallback directories for October 2021. Closes
+      ticket 40493.
+
+  o Minor features (logging, diagnostic, backport from 0.4.6.5):
+    - Log decompression failures at a higher severity level, since they
+      can help provide missing context for other warning messages. We
+      rate-limit these messages, to avoid flooding the logs if they
+      begin to occur frequently. Closes ticket 40175.
+
+  o Minor features (testing, backport from 0.4.6.8):
+    - On a testing network, relays can now use the
+      TestingMinTimeToReportBandwidth option to change the smallest
+      amount of time over which they're willing to report their observed
+      maximum bandwidth. Previously, this was fixed at 1 day. For
+      safety, values under 2 hours are only supported on testing
+      networks. Part of a fix for ticket 40337.
+    - Relays on testing networks no longer rate-limit how frequently
+      they are willing to report new bandwidth measurements. Part of a
+      fix for ticket 40337.
+    - Relays on testing networks now report their observed bandwidths
+      immediately from startup. Previously, they waited until they had
+      been running for a full day. Closes ticket 40337.
+
+  o Minor bugfix (CI, onion service):
+    - Exclude onion service version 2 Stem tests in our CI. Fixes bug 40500;
+      bugfix on 0.3.2.1-alpha.
+
+  o Minor bugfix (onion service, backport from 0.4.6.8):
+    - Do not flag an HSDir as non-running in case the descriptor upload
+      or fetch fails. An onion service closes pending directory
+      connections before uploading a new descriptor which can thus lead
+      to wrongly flagging many relays and thus affecting circuit building
+      path selection. Fixes bug 40434; bugfix on 0.2.0.13-alpha.
+
+  o Minor bugfixes (compatibility, backport from 0.4.6.8):
+    - Fix compatibility with the most recent Libevent versions, which no
+      longer have an evdns_set_random_bytes() function. Because this
+      function has been a no-op since Libevent 2.0.4-alpha, it is safe
+      for us to just stop calling it. Fixes bug 40371; bugfix
+      on 0.2.1.7-alpha.
+
+  o Minor bugfixes (consensus handling, backport from 0.4.6.4-rc):
+    - Avoid a set of bugs that could be caused by inconsistently
+      preferring an out-of-date consensus stored in a stale directory
+      cache over a more recent one stored on disk as the latest
+      consensus. Fixes bug 40375; bugfix on 0.3.1.1-alpha.
+
+  o Minor bugfixes (onion service, TROVE-2021-008, backport from 0.4.6.8):
+    - Only log v2 access attempts once total, in order to not pollute
+      the logs with warnings and to avoid recording the times on disk
+      when v2 access was attempted. Note that the onion address was
+      _never_ logged. This counts as a Low-severity security issue.
+      Fixes bug 40474; bugfix on 0.4.5.8.
+
+
+Changes in version 0.4.5.10 - 2021-08-16
+  This version fixes several bugs from earlier versions of Tor,
+  including one that could lead to a denial-of-service attack. Everyone
+  running an earlier version, whether as a client, a relay, or an onion
+  service, should upgrade to Tor 0.3.5.16, 0.4.5.10, or 0.4.6.7.
+
+  o Major bugfixes (cryptography, security):
+    - Resolve an assertion failure caused by a behavior mismatch between
+      our batch-signature verification code and our single-signature
+      verification code. This assertion failure could be triggered
+      remotely, leading to a denial of service attack. We fix this issue
+      by disabling batch verification. Fixes bug 40078; bugfix on
+      0.2.6.1-alpha. This issue is also tracked as TROVE-2021-007 and
+      CVE-2021-38385. Found by Henry de Valence.
+
+  o Minor feature (fallbackdir):
+    - Regenerate fallback directories list. Closes ticket 40447.
+
+  o Minor features (geoip data):
+    - Update the geoip files to match the IPFire Location Database, as
+      retrieved on 2021/08/12.
+
+  o Minor features (testing):
+    - Enable the deterministic RNG for unit tests that covers the
+      address set bloomfilter-based API's. Fixes bug 40419; bugfix
+      on 0.3.3.2-alpha.
+
+  o Minor bugfix (crypto, backport from 0.4.6.7):
+    - Disable the unused batch verification feature of ed25519-donna.
+      Fixes bug 40078; bugfix on 0.2.6.1-alpha. Found by Henry
+      de Valence.
+
+  o Minor bugfixes (relay, backport from 0.4.6.7):
+    - Reduce the compression level for data streaming from HIGH to LOW.
+      Fixes bug 40301; bugfix on 0.3.5.1-alpha.
+
+  o Minor bugfixes (timekeeping, backport from 0.4.6.7):
+    - Calculate the time of day correctly on systems where the time_t
+      type includes leap seconds. (This is not the case on most
+      operating systems, but on those where it occurs, our tor_timegm
+      function did not correctly invert the system's gmtime function,
+      which could result in assertion failures when calculating voting
+      schedules.) Fixes bug 40383; bugfix on 0.2.0.3-alpha.
+
+  o Minor bugfixes (warnings, portability, backport from 0.4.6.6):
+    - Suppress a strict-prototype warning when building with some
+      versions of NSS. Fixes bug 40409; bugfix on 0.3.5.1-alpha.
+
+
+Changes in version 0.4.5.9 - 2021-06-14
+  Tor 0.4.5.9 fixes several security issues, including a
+  denial-of-service attack against onion service clients, and another
+  denial-of-service attack against relays. Everybody should upgrade to
+  one of 0.3.5.15, 0.4.4.9, 0.4.5.9, or 0.4.6.5.
+
+  o Major bugfixes (security, backport from 0.4.6.5):
+    - Don't allow relays to spoof RELAY_END or RELAY_RESOLVED cell on
+      half-closed streams. Previously, clients failed to validate which
+      hop sent these cells: this would allow a relay on a circuit to end
+      a stream that wasn't actually built with it. Fixes bug 40389;
+      bugfix on 0.3.5.1-alpha. This issue is also tracked as TROVE-2021-
+      003 and CVE-2021-34548.
+
+  o Major bugfixes (security, defense-in-depth, backport from 0.4.6.5):
+    - Detect more failure conditions from the OpenSSL RNG code.
+      Previously, we would detect errors from a missing RNG
+      implementation, but not failures from the RNG code itself.
+      Fortunately, it appears those failures do not happen in practice
+      when Tor is using OpenSSL's default RNG implementation. Fixes bug
+      40390; bugfix on 0.2.8.1-alpha. This issue is also tracked as
+      TROVE-2021-004. Reported by Jann Horn at Google's Project Zero.
+
+  o Major bugfixes (security, denial of service, backport from 0.4.6.5):
+    - Resist a hashtable-based CPU denial-of-service attack against
+      relays. Previously we used a naive unkeyed hash function to look
+      up circuits in a circuitmux object. An attacker could exploit this
+      to construct circuits with chosen circuit IDs, to create
+      collisions and make the hash table inefficient. Now we use a
+      SipHash construction here instead. Fixes bug 40391; bugfix on
+      0.2.4.4-alpha. This issue is also tracked as TROVE-2021-005 and
+      CVE-2021-34549. Reported by Jann Horn from Google's Project Zero.
+    - Fix an out-of-bounds memory access in v3 onion service descriptor
+      parsing. An attacker could exploit this bug by crafting an onion
+      service descriptor that would crash any client that tried to visit
+      it. Fixes bug 40392; bugfix on 0.3.0.1-alpha. This issue is also
+      tracked as TROVE-2021-006 and CVE-2021-34550. Reported by Sergei
+      Glazunov from Google's Project Zero.
+
+  o Minor features (compatibility, backport from 0.4.6.4-rc):
+    - Remove an assertion function related to TLS renegotiation. It was
+      used nowhere outside the unit tests, and it was breaking
+      compilation with recent alpha releases of OpenSSL 3.0.0. Closes
+      ticket 40399.
+
+  o Minor features (geoip data):
+    - Update the geoip files to match the IPFire Location Database, as
+      retrieved on 2021/06/10.
+
+  o Minor bugfixes (control, sandbox, backport from 0.4.6.4-rc):
+    - Allow the control command SAVECONF to succeed when the seccomp
+      sandbox is enabled, and make SAVECONF keep only one backup file to
+      simplify implementation. Previously SAVECONF allowed a large
+      number of backup files, which made it incompatible with the
+      sandbox. Fixes bug 40317; bugfix on 0.2.5.4-alpha. Patch by
+      Daniel Pinto.
+
+  o Minor bugfixes (metrics port, backport from 0.4.6.4-rc):
+    - Fix a bug that made tor try to re-bind() on an already open
+      MetricsPort every 60 seconds. Fixes bug 40370; bugfix
+      on 0.4.5.1-alpha.
+
+
 Changes in version 0.4.5.8 - 2021-05-10
   Tor 0.4.5.8 fixes several bugs in earlier version, backporting fixes
   from the 0.4.6.x series.

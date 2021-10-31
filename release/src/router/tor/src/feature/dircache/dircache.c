@@ -296,19 +296,22 @@ client_likes_consensus(const struct consensus_cache_entry_t *ent,
 /** Return the compression level we should use for sending a compressed
  * response of size <b>n_bytes</b>. */
 STATIC compression_level_t
-choose_compression_level(ssize_t n_bytes)
+choose_compression_level(void)
 {
-  if (! have_been_under_memory_pressure()) {
-    return HIGH_COMPRESSION; /* we have plenty of RAM. */
-  } else if (n_bytes < 0) {
-    return HIGH_COMPRESSION; /* unknown; might be big. */
-  } else if (n_bytes < 1024) {
-    return LOW_COMPRESSION;
-  } else if (n_bytes < 2048) {
-    return MEDIUM_COMPRESSION;
-  } else {
-    return HIGH_COMPRESSION;
-  }
+  /* This is the compression level choice for a stream.
+   *
+   * We always return LOW because this compression is done in the main thread
+   * thus we save CPU time as much as possible, and it is also done more than
+   * background compression for document we serve pre-compressed.
+   *
+   * GZip highest compression level (9) gives us a ratio of 49.72%
+   * Zstd lowest compression level (1) gives us a ratio of 47.38%
+   *
+   * Thus, as the network moves more and more to use Zstd when requesting
+   * directory documents that are not pre-cached, even at the
+   * lowest level, we still gain over GZip and thus help with load and CPU
+   * time on the network. */
+  return LOW_COMPRESSION;
 }
 
 /** Information passed to handle a GET request. */
@@ -353,8 +356,6 @@ static int handle_get_descriptor(dir_connection_t *conn,
                                 const get_handler_args_t *args);
 static int handle_get_keys(dir_connection_t *conn,
                                 const get_handler_args_t *args);
-static int handle_get_hs_descriptor_v2(dir_connection_t *conn,
-                                       const get_handler_args_t *args);
 static int handle_get_robots(dir_connection_t *conn,
                                 const get_handler_args_t *args);
 static int handle_get_networkstatus_bridges(dir_connection_t *conn,
@@ -373,7 +374,6 @@ static const url_table_ent_t url_table[] = {
   { "/tor/server/", 1, handle_get_descriptor },
   { "/tor/extra/", 1, handle_get_descriptor },
   { "/tor/keys/", 1, handle_get_keys },
-  { "/tor/rendezvous2/", 1, handle_get_hs_descriptor_v2 },
   { "/tor/hs/3/", 1, handle_get_hs_descriptor_v3 },
   { "/tor/robots.txt", 0, handle_get_robots },
   { "/tor/networkstatus-bridges", 0, handle_get_networkstatus_bridges },
@@ -1078,7 +1078,7 @@ handle_get_status_vote(dir_connection_t *conn, const get_handler_args_t *args)
     if (smartlist_len(items)) {
       if (compress_method != NO_METHOD) {
         conn->compress_state = tor_compress_new(1, compress_method,
-                           choose_compression_level(estimated_len));
+                           choose_compression_level());
       }
 
       SMARTLIST_FOREACH(items, const char *, c,
@@ -1141,7 +1141,7 @@ handle_get_microdesc(dir_connection_t *conn, const get_handler_args_t *args)
 
     if (compress_method != NO_METHOD)
       conn->compress_state = tor_compress_new(1, compress_method,
-                                      choose_compression_level(size_guess));
+                                      choose_compression_level());
 
     const int initial_flush_result = connection_dirserv_flushed_some(conn);
     tor_assert_nonfatal(initial_flush_result == 0);
@@ -1236,7 +1236,7 @@ handle_get_descriptor(dir_connection_t *conn, const get_handler_args_t *args)
       write_http_response_header(conn, -1, compress_method, cache_lifetime);
       if (compress_method != NO_METHOD)
         conn->compress_state = tor_compress_new(1, compress_method,
-                                        choose_compression_level(size_guess));
+                                        choose_compression_level());
       clear_spool = 0;
       /* Prime the connection with some data. */
       int initial_flush_result = connection_dirserv_flushed_some(conn);
@@ -1332,7 +1332,7 @@ handle_get_keys(dir_connection_t *conn, const get_handler_args_t *args)
                                60*60);
     if (compress_method != NO_METHOD) {
       conn->compress_state = tor_compress_new(1, compress_method,
-                                              choose_compression_level(len));
+                                              choose_compression_level());
     }
 
     SMARTLIST_FOREACH(certs, authority_cert_t *, c,
@@ -1347,45 +1347,7 @@ handle_get_keys(dir_connection_t *conn, const get_handler_args_t *args)
   return 0;
 }
 
-/** Helper function for GET /tor/rendezvous2/
- */
-static int
-handle_get_hs_descriptor_v2(dir_connection_t *conn,
-                            const get_handler_args_t *args)
-{
-  const char *url = args->url;
-  if (connection_dir_is_encrypted(conn)) {
-    /* Handle v2 rendezvous descriptor fetch request. */
-    const char *descp;
-    const char *query = url + strlen("/tor/rendezvous2/");
-    if (rend_valid_descriptor_id(query)) {
-      log_info(LD_REND, "Got a v2 rendezvous descriptor request for ID '%s'",
-               safe_str(escaped(query)));
-      switch (rend_cache_lookup_v2_desc_as_dir(query, &descp)) {
-        case 1: /* valid */
-          write_http_response_header(conn, strlen(descp), NO_METHOD, 0);
-          connection_buf_add(descp, strlen(descp), TO_CONN(conn));
-          break;
-        case 0: /* well-formed but not present */
-          write_short_http_response(conn, 404, "Not found");
-          break;
-        case -1: /* not well-formed */
-          write_short_http_response(conn, 400, "Bad request");
-          break;
-      }
-    } else { /* not well-formed */
-      write_short_http_response(conn, 400, "Bad request");
-    }
-    goto done;
-  } else {
-    /* Not encrypted! */
-    write_short_http_response(conn, 404, "Not found");
-  }
- done:
-  return 0;
-}
-
-/** Helper function for GET `/tor/hs/3/...`. Only for version 3.
+/** Helper function for GET /tor/hs/3/... Only for version 3.
  */
 STATIC int
 handle_get_hs_descriptor_v3(dir_connection_t *conn,
@@ -1484,7 +1446,7 @@ handle_get_next_bandwidth(dir_connection_t *conn,
                                  compress_method, BANDWIDTH_CACHE_LIFETIME);
       if (compress_method != NO_METHOD) {
         conn->compress_state = tor_compress_new(1, compress_method,
-                                        choose_compression_level(len/2));
+                                        choose_compression_level());
         log_debug(LD_DIR, "Compressing bandwidth file.");
       } else {
         log_debug(LD_DIR, "Not compressing bandwidth file.");
@@ -1608,6 +1570,8 @@ directory_handle_command_post,(dir_connection_t *conn, const char *headers,
   char *url = NULL;
   const or_options_t *options = get_options();
 
+  (void) body_len;
+
   log_debug(LD_DIRSERV,"Received POST command.");
 
   conn->base_.state = DIR_CONN_STATE_SERVER_WRITING;
@@ -1625,22 +1589,6 @@ directory_handle_command_post,(dir_connection_t *conn, const char *headers,
     return 0;
   }
   log_debug(LD_DIRSERV,"rewritten url as '%s'.", escaped(url));
-
-  /* Handle v2 rendezvous service publish request. */
-  if (connection_dir_is_encrypted(conn) &&
-      !strcmpstart(url,"/tor/rendezvous2/publish")) {
-    if (rend_cache_store_v2_desc_as_dir(body) < 0) {
-      log_warn(LD_REND, "Rejected v2 rend descriptor (body size %d) from %s.",
-               (int)body_len,
-               connection_describe_peer(TO_CONN(conn)));
-      write_short_http_response(conn, 400,
-                             "Invalid v2 service descriptor rejected");
-    } else {
-      write_short_http_response(conn, 200, "Service descriptor (v2) stored");
-      log_info(LD_REND, "Handled v2 rendezvous descriptor post: accepted");
-    }
-    goto done;
-  }
 
   /* Handle HS descriptor publish request. We force an anonymous connection
    * (which also tests for encrypted). We do not allow single-hop client to

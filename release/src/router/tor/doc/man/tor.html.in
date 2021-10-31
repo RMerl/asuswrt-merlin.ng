@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
 <head>
 <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8" />
-<meta name="generator" content="AsciiDoc 9.1.0" />
+<meta name="generator" content="AsciiDoc 9.0.0rc2" />
 <title>TOR(1)</title>
 <style type="text/css">
 /* Shared CSS for AsciiDoc xhtml11 and html5 backends */
@@ -6320,6 +6320,16 @@ RendPostPeriod 2 minutes</code></pre>
 </p>
 </dd>
 <dt class="hdlist1">
+<a id="TestingMinTimeToReportBandwidth"></a> <strong>TestingMinTimeToReportBandwidth</strong> <em>N</em> <strong>seconds</strong>|<strong>minutes</strong>|<strong>hours</strong>
+</dt>
+<dd>
+<p>
+    Do not report our measurements for our maximum observed bandwidth for any
+    time period that has lasted for less than this amount of time.
+    Values over 1 day have no effect. (Default: 1 day)
+</p>
+</dd>
+<dt class="hdlist1">
 <a id="TestingServerConsensusDownloadInitialDelay"></a> <strong>TestingServerConsensusDownloadInitialDelay</strong> <em>N</em>
 </dt>
 <dd>
@@ -7009,7 +7019,7 @@ report them at <a href="https://bugs.torproject.org/">https://bugs.torproject.or
 <div id="footer">
 <div id="footer-text">
 Last updated
- 2021-03-10 20:27:13 UTC
+ 2021-10-21 12:58:25 UTC
 </div>
 </div>
 </body>

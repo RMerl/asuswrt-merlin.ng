@@ -1143,25 +1143,6 @@ test_tortls_unblock_renegotiation(void *ignored)
 }
 #endif /* !defined(OPENSSL_OPAQUE) */
 
-#ifndef OPENSSL_OPAQUE
-static void
-test_tortls_assert_renegotiation_unblocked(void *ignored)
-{
-  (void)ignored;
-  tor_tls_t *tls;
-
-  tls = tor_malloc_zero(sizeof(tor_tls_t));
-  tls->ssl = tor_malloc_zero(sizeof(SSL));
-  tor_tls_unblock_renegotiation(tls);
-  tor_tls_assert_renegotiation_unblocked(tls);
-  /* No assertion here - this test will fail if tor_assert is turned on
-   * and things are bad. */
-
-  tor_free(tls->ssl);
-  tor_free(tls);
-}
-#endif /* !defined(OPENSSL_OPAQUE) */
-
 static void
 test_tortls_set_logged_address(void *ignored)
 {
@@ -2224,7 +2205,6 @@ struct testcase_t tortls_openssl_tests[] = {
   INTRUSIVE_TEST_CASE(server_info_callback, 0),
   LOCAL_TEST_CASE(get_write_overhead_ratio, TT_FORK),
   LOCAL_TEST_CASE(is_server, 0),
-  INTRUSIVE_TEST_CASE(assert_renegotiation_unblocked, 0),
   INTRUSIVE_TEST_CASE(block_renegotiation, 0),
   INTRUSIVE_TEST_CASE(unblock_renegotiation, 0),
   INTRUSIVE_TEST_CASE(set_renegotiate_callback, 0),

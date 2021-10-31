@@ -23,9 +23,11 @@
 
 #include <string.h>
 
+DISABLE_GCC_WARNING("-Wstrict-prototypes")
 #include <keyhi.h>
 #include <pk11pub.h>
 #include <secder.h>
+ENABLE_GCC_WARNING("-Wstrict-prototypes")
 
 #ifdef ENABLE_OPENSSL
 #include <openssl/rsa.h>

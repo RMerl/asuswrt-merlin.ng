@@ -738,7 +738,22 @@ connection_dir_client_request_failed(dir_connection_t *conn)
     return; /* this was a test fetch. don't retry. */
   }
   if (!entry_list_is_constrained(get_options()))
-    router_set_status(conn->identity_digest, 0); /* don't try this one again */
+    /* We must not set a directory to non-running for HS purposes else we end
+     * up flagging nodes from the hashring has unusable. It doesn't have direct
+     * effect on the HS subsystem because the nodes are selected regardless of
+     * their status but still, we shouldn't flag them as non running.
+     *
+     * One example where this can go bad is if a tor instance gets added a lot
+     * of ephemeral services and with a network with problem then many nodes in
+     * the consenus ends up unusable.
+     *
+     * Furthermore, a service does close any pending directory connections
+     * before uploading a descriptor and thus we can end up here in a natural
+     * way since closing a pending directory connection leads to this code
+     * path. */
+    if (!DIR_PURPOSE_IS_HS(TO_CONN(conn)->purpose)) {
+      router_set_status(conn->identity_digest, 0);
+    }
   if (conn->base_.purpose == DIR_PURPOSE_FETCH_SERVERDESC ||
              conn->base_.purpose == DIR_PURPOSE_FETCH_EXTRAINFO) {
     log_info(LD_DIR, "Giving up on serverdesc/extrainfo fetch from "
@@ -1944,7 +1959,9 @@ dir_client_decompress_response_body(char **bodyp, size_t *bodylenp,
   /* If we're pretty sure that we have a compressed directory, and
    * we didn't manage to uncompress it, then warn and bail. */
   if (!plausible && !new_body) {
-    log_fn(LOG_PROTOCOL_WARN, LD_HTTP,
+    const int LOG_INTERVAL = 3600;
+    static ratelim_t warning_limit = RATELIM_INIT(LOG_INTERVAL);
+    log_fn_ratelim(&warning_limit, LOG_WARN, LD_HTTP,
            "Unable to decompress HTTP body (tried %s%s%s, on %s).",
            description1,
            tried_both?" and ":"",
@@ -2263,18 +2280,23 @@ handle_response_fetch_consensus(dir_connection_t *conn,
 
   if (looks_like_a_consensus_diff(body, body_len)) {
     /* First find our previous consensus. Maybe it's in ram, maybe not. */
-    cached_dir_t *cd = dirserv_get_consensus(flavname);
+    cached_dir_t *cd = NULL;
     const char *consensus_body = NULL;
     size_t consensus_body_len;
     tor_mmap_t *mapped_consensus = NULL;
-    if (cd) {
-      consensus_body = cd->dir;
-      consensus_body_len = cd->dir_len;
+
+    /* We prefer the mmap'd version over the cached_dir_t version,
+     * since that matches the logic we used when we picked a consensus
+     * back in dir_consensus_request_set_additional_headers. */
+    mapped_consensus = networkstatus_map_cached_consensus(flavname);
+    if (mapped_consensus) {
+      consensus_body = mapped_consensus->data;
+      consensus_body_len = mapped_consensus->size;
     } else {
-      mapped_consensus = networkstatus_map_cached_consensus(flavname);
-      if (mapped_consensus) {
-        consensus_body = mapped_consensus->data;
-        consensus_body_len = mapped_consensus->size;
+      cd = dirserv_get_consensus(flavname);
+      if (cd) {
+        consensus_body = cd->dir;
+        consensus_body_len = cd->dir_len;
       }
     }
     if (!consensus_body) {

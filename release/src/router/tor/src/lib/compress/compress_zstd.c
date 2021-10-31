@@ -49,8 +49,8 @@ memory_level(compression_level_t level)
     default:
     case BEST_COMPRESSION:
     case HIGH_COMPRESSION: return 9;
-    case MEDIUM_COMPRESSION: return 8;
-    case LOW_COMPRESSION: return 7;
+    case MEDIUM_COMPRESSION: return 3;
+    case LOW_COMPRESSION: return 1;
   }
 }
 #endif /* defined(HAVE_ZSTD) */

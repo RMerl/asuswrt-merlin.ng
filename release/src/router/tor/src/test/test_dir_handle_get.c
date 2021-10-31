@@ -309,7 +309,7 @@ test_dir_handle_get_rendezvous2_on_encrypted_conn_with_invalid_desc_id(
   fetch_from_buf_http(TO_CONN(conn)->outbuf, &header, MAX_HEADERS_SIZE,
                       NULL, NULL, 1, 0);
 
-  tt_str_op(header, OP_EQ, BAD_REQUEST);
+  tt_str_op(header, OP_EQ, NOT_FOUND);
 
   done:
     UNMOCK(connection_write_to_buf_impl_);
@@ -342,7 +342,7 @@ test_dir_handle_get_rendezvous2_on_encrypted_conn_not_well_formed(void *data)
   fetch_from_buf_http(TO_CONN(conn)->outbuf, &header, MAX_HEADERS_SIZE,
                       NULL, NULL, 1, 0);
 
-  tt_str_op(header, OP_EQ, BAD_REQUEST);
+  tt_str_op(header, OP_EQ, NOT_FOUND);
 
   done:
     UNMOCK(connection_write_to_buf_impl_);
@@ -393,76 +393,6 @@ dhg_tests_router_get_my_routerinfo(void)
   }
 
   return mock_routerinfo;
-}
-
-static void
-test_dir_handle_get_rendezvous2_on_encrypted_conn_success(void *data)
-{
-  dir_connection_t *conn = NULL;
-  char *header = NULL;
-  char *body = NULL;
-  size_t body_used = 0;
-  char buff[30];
-  char req[70];
-  rend_encoded_v2_service_descriptor_t *desc_holder = NULL;
-  char *service_id = NULL;
-  char desc_id_base32[REND_DESC_ID_V2_LEN_BASE32 + 1];
-  size_t body_len = 0;
-  (void) data;
-
-  MOCK(connection_write_to_buf_impl_, connection_write_to_buf_mock);
-  MOCK(router_get_my_routerinfo,
-       dhg_tests_router_get_my_routerinfo);
-
-  rend_cache_init();
-
-  /* create a valid rend service descriptor */
-  #define RECENT_TIME -10
-  generate_desc(RECENT_TIME, &desc_holder, &service_id, 3);
-
-  tt_int_op(rend_cache_store_v2_desc_as_dir(desc_holder->desc_str),
-            OP_EQ, 0);
-
-  base32_encode(desc_id_base32, sizeof(desc_id_base32), desc_holder->desc_id,
-                DIGEST_LEN);
-
-  conn = new_dir_conn();
-
-  // connection is encrypted
-  TO_CONN(conn)->linked = 1;
-  tt_assert(connection_dir_is_encrypted(conn));
-
-  tor_snprintf(req, sizeof(req), RENDEZVOUS2_GET("%s"), desc_id_base32);
-
-  tt_int_op(directory_handle_command_get(conn, req, NULL, 0), OP_EQ, 0);
-
-  body_len = strlen(desc_holder->desc_str);
-  fetch_from_buf_http(TO_CONN(conn)->outbuf, &header, MAX_HEADERS_SIZE,
-                      &body, &body_used, body_len+1, 0);
-
-  tt_assert(header);
-  tt_assert(body);
-
-  tt_ptr_op(strstr(header, "HTTP/1.0 200 OK\r\n"), OP_EQ, header);
-  tt_assert(strstr(header, "Content-Type: text/plain\r\n"));
-  tt_assert(strstr(header, "Content-Encoding: identity\r\n"));
-  tt_assert(strstr(header, "Pragma: no-cache\r\n"));
-  tor_snprintf(buff, sizeof(buff), "Content-Length: %ld\r\n", (long) body_len);
-  tt_assert(strstr(header, buff));
-
-  tt_int_op(body_used, OP_EQ, strlen(body));
-  tt_str_op(body, OP_EQ, desc_holder->desc_str);
-
-  done:
-    UNMOCK(connection_write_to_buf_impl_);
-    UNMOCK(router_get_my_routerinfo);
-
-    connection_free_minimal(TO_CONN(conn));
-    tor_free(header);
-    tor_free(body);
-    rend_encoded_v2_service_descriptor_free(desc_holder);
-    tor_free(service_id);
-    rend_cache_free_all();
 }
 
 #define MICRODESC_GET(digest) GET("/tor/micro/d/" digest)
@@ -2938,7 +2868,6 @@ struct testcase_t dir_handle_get_tests[] = {
   DIR_HANDLE_CMD(rendezvous2_not_found, 0),
   DIR_HANDLE_CMD(rendezvous2_on_encrypted_conn_with_invalid_desc_id, 0),
   DIR_HANDLE_CMD(rendezvous2_on_encrypted_conn_not_well_formed, 0),
-  DIR_HANDLE_CMD(rendezvous2_on_encrypted_conn_success, 0),
   DIR_HANDLE_CMD(micro_d_not_found, 0),
   DIR_HANDLE_CMD(micro_d_server_busy, 0),
   DIR_HANDLE_CMD(micro_d, 0),

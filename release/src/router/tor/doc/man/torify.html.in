@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
 <head>
 <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8" />
-<meta name="generator" content="AsciiDoc 9.0.2" />
+<meta name="generator" content="AsciiDoc 9.0.0rc2" />
 <title>torify(1)</title>
 <style type="text/css">
 /* Shared CSS for AsciiDoc xhtml11 and html5 backends */
@@ -779,7 +779,7 @@ different circuits.</p></div>
 <div id="footer">
 <div id="footer-text">
 Last updated
- 2020-11-17 13:04:37 UTC
+ 2020-11-17 14:33:24 UTC
 </div>
 </div>
 </body>

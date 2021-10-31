@@ -831,7 +831,6 @@ sandbox_init_filter(void)
 {
   const or_options_t *options = get_options();
   sandbox_cfg_t *cfg = sandbox_cfg_new();
-  int i;
 
   sandbox_cfg_allow_openat_filename(&cfg,
       get_cachedir_fname("cached-status"));
@@ -917,10 +916,23 @@ sandbox_init_filter(void)
   else
     sandbox_cfg_allow_open_filename(&cfg, tor_strdup("/etc/resolv.conf"));
 
-  for (i = 0; i < 2; ++i) {
-    if (get_torrc_fname(i)) {
-      sandbox_cfg_allow_open_filename(&cfg, tor_strdup(get_torrc_fname(i)));
-    }
+  const char *torrc_defaults_fname = get_torrc_fname(1);
+  if (torrc_defaults_fname) {
+    sandbox_cfg_allow_open_filename(&cfg, tor_strdup(torrc_defaults_fname));
+  }
+  const char *torrc_fname = get_torrc_fname(0);
+  if (torrc_fname) {
+    sandbox_cfg_allow_open_filename(&cfg, tor_strdup(torrc_fname));
+    // allow torrc backup and torrc.tmp to make SAVECONF work
+    char *torrc_bck = NULL;
+    tor_asprintf(&torrc_bck, CONFIG_BACKUP_PATTERN, torrc_fname);
+    sandbox_cfg_allow_rename(&cfg, tor_strdup(torrc_fname), torrc_bck);
+    char *torrc_tmp = NULL;
+    tor_asprintf(&torrc_tmp, "%s.tmp", torrc_fname);
+    sandbox_cfg_allow_rename(&cfg, torrc_tmp, tor_strdup(torrc_fname));
+    sandbox_cfg_allow_open_filename(&cfg, tor_strdup(torrc_tmp));
+    // we need to stat the existing backup file
+    sandbox_cfg_allow_stat_filename(&cfg, tor_strdup(torrc_bck));
   }
 
   SMARTLIST_FOREACH(options->FilesOpenedByIncludes, char *, f, {

@@ -17,6 +17,7 @@
 #include "feature/nodelist/routerstatus_st.h"
 
 #include "test/test.h"
+#include "test/rng_test_helpers.h"
 
 static networkstatus_t *dummy_ns = NULL;
 static networkstatus_t *
@@ -62,6 +63,10 @@ test_contains(void *arg)
   tor_addr_parse(&addr_v4, "42.42.42.42");
   uint32_t ipv4h = tor_addr_to_ipv4h(&addr_v4);
 
+  /* Use our deterministic RNG since the address set uses a bloom filter
+   * internally. */
+  testing_enable_deterministic_rng();
+
   /* Make it very big so the chance of failing the contain test will be
    * extremely rare. */
   set = address_set_new(1024);
@@ -89,6 +94,8 @@ test_contains(void *arg)
 
  done:
   address_set_free(set);
+
+  testing_disable_deterministic_rng();
 }
 
 static void
@@ -107,6 +114,10 @@ test_nodelist(void *arg)
        mock_get_estimated_address_per_node);
   MOCK(dirlist_add_trusted_dir_addresses,
        mock_dirlist_add_trusted_dir_addresses);
+
+  /* Use our deterministic RNG since the address set, used for
+   * nodelist_probably_contains_address() uses a bloom filter internally. */
+  testing_enable_deterministic_rng();
 
   dummy_ns = tor_malloc_zero(sizeof(*dummy_ns));
   dummy_ns->flavor = FLAV_MICRODESC;
@@ -179,6 +190,8 @@ test_nodelist(void *arg)
   UNMOCK(networkstatus_get_latest_consensus_by_flavor);
   UNMOCK(get_estimated_address_per_node);
   UNMOCK(dirlist_add_trusted_dir_addresses);
+
+  testing_disable_deterministic_rng();
 }
 
 /** Test that the no-reentry exit filter works as intended */

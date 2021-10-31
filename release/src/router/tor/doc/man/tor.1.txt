@@ -3595,6 +3595,11 @@ The following options are used for running a testing Tor network.
     Minimum value for the Fast flag.  Overrides the ordinary minimum taken
     from the consensus when TestingTorNetwork is set. (Default: 0.)
 
+[[TestingMinTimeToReportBandwidth]] **TestingMinTimeToReportBandwidth** __N__ **seconds**|**minutes**|**hours**::
+    Do not report our measurements for our maximum observed bandwidth for any
+    time period that has lasted for less than this amount of time.
+    Values over 1 day have no effect. (Default: 1 day)
+
 [[TestingServerConsensusDownloadInitialDelay]] **TestingServerConsensusDownloadInitialDelay** __N__::
     Initial delay in seconds for when servers should download consensuses. Changing this
     requires that **TestingTorNetwork** is set. (Default: 0)

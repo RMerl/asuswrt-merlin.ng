@@ -1082,6 +1082,10 @@ struct or_options_t {
   /** List of policy allowed to query the Metrics port. */
   struct config_line_t *MetricsPortPolicy;
 
+  /** How far must we be into the current bandwidth-measurement period to
+   * report bandwidth observations from this period? */
+  int TestingMinTimeToReportBandwidth;
+
   /**
    * Configuration objects for individual modules.
    *

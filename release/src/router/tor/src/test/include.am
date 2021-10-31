@@ -74,22 +74,21 @@ TESTS += src/test/test-slow src/test/test-memwipe \
 
 # run a quick test or two
 # this test only uses IPv4
-TEST_CHUTNEY_FLAVOR_QUICK = bridges+hs-v23
+TEST_CHUTNEY_FLAVOR_QUICK = bridges+hs-v3
 # only run if we can ping6 ::1 (localhost)
-TEST_CHUTNEY_FLAVOR_QUICK_IPV6 = single-onion-v23-ipv6-md
+TEST_CHUTNEY_FLAVOR_QUICK_IPV6 = single-onion-v3-ipv6-md
 
 # run a basic set of tests, which only use IPv4
-TEST_CHUTNEY_FLAVORS = basic-min bridges-min hs-v23-min single-onion-v23
+TEST_CHUTNEY_FLAVORS = basic-min bridges-min hs-v3-min single-onion-v3
 
 # only run if we can ping ::1 (localhost)
-TEST_CHUTNEY_FLAVORS_IPV6 = bridges+ipv6-min ipv6-exit-min hs-v23-ipv6-md \
-	single-onion-v23-ipv6-md
+TEST_CHUTNEY_FLAVORS_IPV6 = bridges+ipv6-min ipv6-exit-min hs-v3-ipv6 single-onion-v3-ipv6-md
 
 # only run if we can find a stable (or simply another) version of tor
-TEST_CHUTNEY_FLAVORS_MIXED = mixed+hs-v23
+TEST_CHUTNEY_FLAVORS_MIXED = mixed+hs-v3
 
 # only run if IPv6 and mixed networks are run
-TEST_CHUTNEY_FLAVORS_IPV6_MIXED = mixed+hs-v23-ipv6
+TEST_CHUTNEY_FLAVORS_IPV6_MIXED = mixed+hs-v3-ipv6
 
 ### This is a lovely feature, but it requires automake >= 1.12, and Tor
 ###  doesn't require that yet.

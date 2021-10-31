@@ -25,7 +25,7 @@ struct ed25519_keypair_t;
 /** Version 3 of the protocol (prop224). */
 #define HS_VERSION_THREE 3
 /** Earliest version we support. */
-#define HS_VERSION_MIN HS_VERSION_TWO
+#define HS_VERSION_MIN HS_VERSION_THREE
 /** Latest version we support. */
 #define HS_VERSION_MAX HS_VERSION_THREE
 

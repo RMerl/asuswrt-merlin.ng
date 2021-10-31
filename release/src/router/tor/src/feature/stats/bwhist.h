@@ -28,7 +28,7 @@ int bwhist_load_state(struct or_state_t *state, char **err);
 
 #ifdef BWHIST_PRIVATE
 typedef struct bw_array_t bw_array_t;
-STATIC uint64_t find_largest_max(bw_array_t *b);
+STATIC uint64_t find_largest_max(bw_array_t *b, int min_observation_time);
 STATIC void commit_max(bw_array_t *b);
 STATIC void advance_obs(bw_array_t *b);
 STATIC bw_array_t *bw_array_new(void);

@@ -26,7 +26,9 @@
 #include <openssl/evp.h>
 #endif
 #ifdef ENABLE_NSS
+DISABLE_GCC_WARNING("-Wstrict-prototypes")
 #include <pk11pub.h>
+ENABLE_GCC_WARNING("-Wstrict-prototypes")
 #endif
 
 #if defined(HAVE_LIBSCRYPT_H) && defined(HAVE_LIBSCRYPT_SCRYPT)

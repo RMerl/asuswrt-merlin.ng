@@ -169,9 +169,10 @@ chanid_circid_entries_eq(chanid_circid_muxinfo_t *a,
 static inline unsigned int
 chanid_circid_entry_hash(chanid_circid_muxinfo_t *a)
 {
-    return (((unsigned int)(a->circ_id) << 8) ^
-            ((unsigned int)((a->chan_id >> 32) & 0xffffffff)) ^
-            ((unsigned int)(a->chan_id & 0xffffffff)));
+  uint8_t data[8 + 4];
+  set_uint64(data, a->chan_id);
+  set_uint32(data + 8, a->circ_id);
+  return (unsigned) siphash24g(data, sizeof(data));
 }
 
 /* Emit a bunch of hash table stuff */

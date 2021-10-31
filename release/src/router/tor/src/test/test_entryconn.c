@@ -728,46 +728,6 @@ test_entryconn_rewrite_mapaddress_automap_onion4(void *arg)
   test_entryconn_rewrite_mapaddress_automap_onion_common(arg, 0, 1);
 }
 
-/** Test that rewrite functions can handle v2 addresses */
-static void
-test_entryconn_rewrite_onion_v2(void *arg)
-{
-  int retval;
-  entry_connection_t *conn = arg;
-
-  (void) arg;
-
-  rend_cache_init();
-
-  /* Make a SOCKS request */
-  conn->socks_request->command = SOCKS_COMMAND_CONNECT;
-  strlcpy(conn->socks_request->address,
-          "pqeed46efnwmfuid.onion",
-          sizeof(conn->socks_request->address));
-
-  /* Make an onion connection using the SOCKS request */
-  conn->entry_cfg.onion_traffic = 1;
-  ENTRY_TO_CONN(conn)->state = AP_CONN_STATE_SOCKS_WAIT;
-  tt_assert(!ENTRY_TO_EDGE_CONN(conn)->rend_data);
-
-  /* Handle SOCKS and rewrite! */
-  retval = connection_ap_handshake_rewrite_and_attach(conn, NULL, NULL);
-  tt_int_op(retval, OP_EQ, 0);
-
-  /* Check connection state after rewrite */
-  tt_int_op(ENTRY_TO_CONN(conn)->state, OP_EQ, AP_CONN_STATE_RENDDESC_WAIT);
-  /* check that the address got rewritten */
-  tt_str_op(conn->socks_request->address, OP_EQ,
-            "pqeed46efnwmfuid");
-  /* check that HS information got attached to the connection */
-  tt_assert(ENTRY_TO_EDGE_CONN(conn)->rend_data);
-  tt_assert(!ENTRY_TO_EDGE_CONN(conn)->hs_ident);
-
- done:
-  rend_cache_free_all();
-  /* 'conn' is cleaned by handler */
-}
-
 /** Test that rewrite functions can handle v3 onion addresses */
 static void
 test_entryconn_rewrite_onion_v3(void *arg)
@@ -830,7 +790,6 @@ struct testcase_t entryconn_tests[] = {
   REWRITE(rewrite_mapaddress_automap_onion2),
   REWRITE(rewrite_mapaddress_automap_onion3),
   REWRITE(rewrite_mapaddress_automap_onion4),
-  REWRITE(rewrite_onion_v2),
   REWRITE(rewrite_onion_v3),
 
   END_OF_TESTCASES

@@ -843,6 +843,25 @@ router_initialize_tls_context(void)
                               (unsigned int)lifetime);
 }
 
+/** Announce URL to bridge status page. */
+STATIC void
+router_announce_bridge_status_page(void)
+{
+  char fingerprint[FINGERPRINT_LEN + 1];
+
+  if (crypto_pk_get_hashed_fingerprint(get_server_identity_key(),
+                                       fingerprint) < 0) {
+    // LCOV_EXCL_START
+    log_err(LD_GENERAL, "Unable to compute bridge fingerprint");
+    return;
+    // LCOV_EXCL_STOP
+  }
+
+  log_notice(LD_GENERAL, "You can check the status of your bridge relay at "
+                         "https://bridges.torproject.org/status?id=%s",
+                         fingerprint);
+}
+
 /** Compute fingerprint (or hashed fingerprint if hashed is 1) and write
  * it to 'fingerprint' (or 'hashed-fingerprint'). Return 0 on success, or
  * -1 if Tor should die,
@@ -1144,6 +1163,10 @@ init_keys(void)
     log_err(LD_FS, "Error writing ed25519 identity to file");
     return -1;
   }
+
+  /* Display URL to bridge status page. */
+  if (! public_server_mode(options))
+    router_announce_bridge_status_page();
 
   if (!authdir_mode(options))
     return 0;
@@ -2599,7 +2622,10 @@ check_descriptor_bandwidth_changed(time_t now)
   if ((prev != cur && (!prev || !cur)) ||
       cur > (prev * BANDWIDTH_CHANGE_FACTOR) ||
       cur < (prev / BANDWIDTH_CHANGE_FACTOR) ) {
-    if (last_changed+MAX_BANDWIDTH_CHANGE_FREQ < now || !prev) {
+    const bool change_recent_enough =
+      last_changed+MAX_BANDWIDTH_CHANGE_FREQ < now;
+    const bool testing_network = get_options()->TestingTorNetwork;
+    if (change_recent_enough || testing_network || !prev) {
       log_info(LD_GENERAL,
                "Measured bandwidth has changed; rebuilding descriptor.");
       mark_my_descriptor_dirty("bandwidth has changed");

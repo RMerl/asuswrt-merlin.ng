@@ -6,7 +6,7 @@
 /* All assert failures are fatal */
 #undef ALL_BUGS_ARE_FATAL
 
-/* # for 0.4.5.8 Approximate date when this software was released. (Updated
+/* # for 0.4.5.11 Approximate date when this software was released. (Updated
    when the version changes.) */
 #undef APPROX_RELEASE_DATE
 
@@ -590,6 +590,9 @@
 
 /* Define to 1 if you have the <sys/wait.h> header file. */
 #undef HAVE_SYS_WAIT_H
+
+/* Define to 1 if you have the `timegm' function. */
+#undef HAVE_TIMEGM
 
 /* Define to 1 if you have the <time.h> header file. */
 #undef HAVE_TIME_H

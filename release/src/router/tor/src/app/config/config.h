@@ -44,6 +44,9 @@ int get_protocol_warning_severity_level(void);
 
 #define LOG_PROTOCOL_WARN (get_protocol_warning_severity_level())
 
+/** Pattern for backing up configuration files */
+#define CONFIG_BACKUP_PATTERN "%s.orig.1"
+
 /** An error from options_trial_assign() or options_init_from_string(). */
 typedef enum setopt_err_t {
   SETOPT_OK = 0,

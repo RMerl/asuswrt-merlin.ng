@@ -2135,8 +2135,8 @@ test_dir_measured_bw_kb(void *arg)
     /* Test that a line with vote=0 will fail too, so that it is ignored. */
     "node_id=$557365204145532d32353620696e73746561642e bw=1024 vote=0\n",
     /* Test that a line with vote=0 will fail even if unmeasured=0. */
-    "node_id=$557365204145532d32353620696e73746561642e bw=1024 vote=0 "
-    "unmeasured=0\n",
+    ("node_id=$557365204145532d32353620696e73746561642e bw=1024 vote=0 "
+     "unmeasured=0\n"),
     "end"
   };
 
@@ -5495,31 +5495,6 @@ dir_tests_directory_initiate_request(directory_request_t *req)
   dir_tests_directory_initiate_request_called++;
 }
 
-static void
-test_dir_choose_compression_level(void* data)
-{
-  (void)data;
-
-  /* It starts under_memory_pressure */
-  tt_int_op(have_been_under_memory_pressure(), OP_EQ, 1);
-
-  tt_assert(HIGH_COMPRESSION == choose_compression_level(-1));
-  tt_assert(LOW_COMPRESSION == choose_compression_level(1024-1));
-  tt_assert(MEDIUM_COMPRESSION == choose_compression_level(2048-1));
-  tt_assert(HIGH_COMPRESSION == choose_compression_level(2048));
-
-  /* Reset under_memory_pressure timer */
-  cell_queues_check_size();
-  tt_int_op(have_been_under_memory_pressure(), OP_EQ, 0);
-
-  tt_assert(HIGH_COMPRESSION == choose_compression_level(-1));
-  tt_assert(HIGH_COMPRESSION == choose_compression_level(1024-1));
-  tt_assert(HIGH_COMPRESSION == choose_compression_level(2048-1));
-  tt_assert(HIGH_COMPRESSION == choose_compression_level(2048));
-
-  done: ;
-}
-
 /*
  * Mock check_private_dir(), and always succeed - no need to actually
  * look at or create anything on the filesystem.
@@ -7325,7 +7300,6 @@ struct testcase_t dir_tests[] = {
   DIR(should_not_init_request_to_ourselves, TT_FORK),
   DIR(should_not_init_request_to_dir_auths_without_v3_info, 0),
   DIR(should_init_request_to_dir_auths, 0),
-  DIR(choose_compression_level, 0),
   DIR(dump_unparseable_descriptors, 0),
   DIR(populate_dump_desc_fifo, 0),
   DIR(populate_dump_desc_fifo_2, 0),

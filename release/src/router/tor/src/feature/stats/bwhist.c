@@ -206,16 +206,24 @@ bwhist_note_dir_bytes_read(uint64_t num_bytes, time_t when)
   add_obs(dir_read_array, when, num_bytes);
 }
 
-/** Helper: Return the largest value in b->maxima.  (This is equal to the
+/**
+ * Helper: Return the largest value in b->maxima.  (This is equal to the
  * most bandwidth used in any NUM_SECS_ROLLING_MEASURE period for the last
  * NUM_SECS_BW_SUM_IS_VALID seconds.)
+ *
+ * Also include the current period if we have been observing it for
+ * at least min_observation_time seconds.
  */
 STATIC uint64_t
-find_largest_max(bw_array_t *b)
+find_largest_max(bw_array_t *b, int min_observation_time)
 {
   int i;
   uint64_t max;
-  max=0;
+  time_t period_start = b->next_period - NUM_SECS_BW_SUM_INTERVAL;
+  if (b->cur_obs_time > period_start + min_observation_time)
+    max = b->max_total;
+  else
+    max = 0;
   for (i=0; i<NUM_TOTALS; ++i) {
     if (b->maxima[i]>max)
       max = b->maxima[i];
@@ -233,8 +241,9 @@ MOCK_IMPL(int,
 bwhist_bandwidth_assess,(void))
 {
   uint64_t w,r;
-  r = find_largest_max(read_array);
-  w = find_largest_max(write_array);
+  int min_obs_time = get_options()->TestingMinTimeToReportBandwidth;
+  r = find_largest_max(read_array, min_obs_time);
+  w = find_largest_max(write_array, min_obs_time);
   if (r>w)
     return (int)(((double)w)/NUM_SECS_ROLLING_MEASURE);
   else

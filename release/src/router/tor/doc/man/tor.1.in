@@ -2,12 +2,12 @@
 .\"     Title: tor
 .\"    Author: [FIXME: author] [see http://www.docbook.org/tdg5/en/html/author]
 .\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
-.\"      Date: 03/15/2021
+.\"      Date: 10/26/2021
 .\"    Manual: Tor Manual
 .\"    Source: Tor
 .\"  Language: English
 .\"
-.TH "TOR" "1" "03/15/2021" "Tor" "Tor Manual"
+.TH "TOR" "1" "10/26/2021" "Tor" "Tor Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -3513,6 +3513,11 @@ Sets a lower\-bound for assigning an exit flag when running as an authority on a
 \fBTestingMinFastFlagThreshold\fR \fIN\fR \fBbytes\fR|\fBKBytes\fR|\fBMBytes\fR|\fBGBytes\fR|\fBTBytes\fR|\fBKBits\fR|\fBMBits\fR|\fBGBits\fR|\fBTBits\fR
 .RS 4
 Minimum value for the Fast flag\&. Overrides the ordinary minimum taken from the consensus when TestingTorNetwork is set\&. (Default: 0\&.)
+.RE
+.PP
+\fBTestingMinTimeToReportBandwidth\fR \fIN\fR \fBseconds\fR|\fBminutes\fR|\fBhours\fR
+.RS 4
+Do not report our measurements for our maximum observed bandwidth for any time period that has lasted for less than this amount of time\&. Values over 1 day have no effect\&. (Default: 1 day)
 .RE
 .PP
 \fBTestingServerConsensusDownloadInitialDelay\fR \fIN\fR

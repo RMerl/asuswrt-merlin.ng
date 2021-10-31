@@ -1505,6 +1505,25 @@ connection_edge_process_relay_cell_not_open(
 //  return -1;
 }
 
+/**
+ * Return true iff our decryption layer_hint is from the last hop
+ * in a circuit.
+ */
+static bool
+relay_crypt_from_last_hop(origin_circuit_t *circ, crypt_path_t *layer_hint)
+{
+  tor_assert(circ);
+  tor_assert(layer_hint);
+  tor_assert(circ->cpath);
+
+  if (layer_hint != circ->cpath->prev) {
+    log_fn(LOG_PROTOCOL_WARN, LD_CIRC,
+           "Got unexpected relay data from intermediate hop");
+    return false;
+  }
+  return true;
+}
+
 /** Process a SENDME cell that arrived on <b>circ</b>. If it is a stream level
  * cell, it is destined for the given <b>conn</b>. If it is a circuit level
  * cell, it is destined for the <b>layer_hint</b>. The <b>domain</b> is the
@@ -1725,7 +1744,8 @@ handle_relay_cell_command(cell_t *cell, circuit_t *circ,
       if (!conn) {
         if (CIRCUIT_IS_ORIGIN(circ)) {
           origin_circuit_t *ocirc = TO_ORIGIN_CIRCUIT(circ);
-          if (connection_half_edge_is_valid_end(ocirc->half_streams,
+          if (relay_crypt_from_last_hop(ocirc, layer_hint) &&
+              connection_half_edge_is_valid_end(ocirc->half_streams,
                                                 rh->stream_id)) {
 
             circuit_read_valid_data(ocirc, rh->length);
@@ -1935,7 +1955,8 @@ handle_relay_cell_command(cell_t *cell, circuit_t *circ,
 
       if (CIRCUIT_IS_ORIGIN(circ)) {
         origin_circuit_t *ocirc = TO_ORIGIN_CIRCUIT(circ);
-        if (connection_half_edge_is_valid_resolved(ocirc->half_streams,
+        if (relay_crypt_from_last_hop(ocirc, layer_hint) &&
+            connection_half_edge_is_valid_resolved(ocirc->half_streams,
                                                     rh->stream_id)) {
           circuit_read_valid_data(ocirc, rh->length);
           log_info(domain,

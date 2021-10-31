@@ -353,25 +353,23 @@ getinfo_helper_current_consensus(consensus_flavor_t flavor,
     *errmsg = "Internal error: unrecognized flavor name.";
     return -1;
   }
-  if (we_want_to_fetch_flavor(get_options(), flavor)) {
-    /** Check from the cache */
-    const cached_dir_t *consensus = dirserv_get_consensus(flavor_name);
-    if (consensus) {
-      *answer = tor_strdup(consensus->dir);
+  tor_mmap_t *mapped = networkstatus_map_cached_consensus(flavor_name);
+  if (mapped) {
+    *answer = tor_memdup_nulterm(mapped->data, mapped->size);
+    tor_munmap_file(mapped);
+  }
+  if (!*answer) { /* Maybe it's in the cache? */
+    if (we_want_to_fetch_flavor(get_options(), flavor)) {
+      const cached_dir_t *consensus = dirserv_get_consensus(flavor_name);
+      if (consensus) {
+        *answer = tor_strdup(consensus->dir);
+      }
     }
   }
-  if (!*answer) { /* try loading it from disk */
-
-    tor_mmap_t *mapped = networkstatus_map_cached_consensus(flavor_name);
-    if (mapped) {
-      *answer = tor_memdup_nulterm(mapped->data, mapped->size);
-      tor_munmap_file(mapped);
-    }
-    if (!*answer) { /* generate an error */
-      *errmsg = "Could not open cached consensus. "
-        "Make sure FetchUselessDescriptors is set to 1.";
-      return -1;
-    }
+  if (!*answer) { /* generate an error */
+    *errmsg = "Could not open cached consensus. "
+      "Make sure FetchUselessDescriptors is set to 1.";
+    return -1;
   }
   return 0;
 }

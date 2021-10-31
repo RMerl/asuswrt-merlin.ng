@@ -1443,10 +1443,8 @@ handle_control_hsfetch(control_connection_t *conn,
                        const control_cmd_args_t *args)
 
 {
-  char digest[DIGEST_LEN], *desc_id = NULL;
+  char *desc_id = NULL;
   smartlist_t *hsdirs = NULL;
-  static const char *v2_str = "v2-";
-  const size_t v2_str_len = strlen(v2_str);
   rend_data_t *rend_query = NULL;
   ed25519_public_key_t v3_pk;
   uint32_t version;
@@ -1454,20 +1452,7 @@ handle_control_hsfetch(control_connection_t *conn,
 
   /* Extract the first argument (either HSAddress or DescID). */
   const char *arg1 = smartlist_get(args->args, 0);
-  /* Test if it's an HS address without the .onion part. */
-  if (rend_valid_v2_service_id(arg1)) {
-    hsaddress = arg1;
-    version = HS_VERSION_TWO;
-  } else if (strcmpstart(arg1, v2_str) == 0 &&
-             rend_valid_descriptor_id(arg1 + v2_str_len) &&
-             base32_decode(digest, sizeof(digest), arg1 + v2_str_len,
-                           REND_DESC_ID_V2_LEN_BASE32) ==
-                sizeof(digest)) {
-    /* We have a well formed version 2 descriptor ID. Keep the decoded value
-     * of the id. */
-    desc_id = digest;
-    version = HS_VERSION_TWO;
-  } else if (hs_address_is_valid(arg1)) {
+  if (hs_address_is_valid(arg1)) {
     hsaddress = arg1;
     version = HS_VERSION_THREE;
     hs_parse_address(hsaddress, &v3_pk, NULL, NULL);
@@ -1590,6 +1575,11 @@ handle_control_hspost(control_connection_t *conn,
     goto done;
   }
 
+  /* As for HSFETCH, we no longer support v2 on the network and so we stop
+   * right now. Code is not removed in order to minimize the merge forward
+   * conflicts. */
+  goto done;
+
   /* From this point on, it is only v2. */
 
   /*  parse it. */
@@ -1662,11 +1652,13 @@ add_onion_helper_add_service(int hs_version,
   tor_assert(port_cfgs);
   tor_assert(address_out);
 
+  /* Version 2 is disabled. */
+  (void) auth_type;
+  (void) auth_clients;
+
   switch (hs_version) {
   case HS_VERSION_TWO:
-    ret = rend_service_add_ephemeral(pk->v2, port_cfgs, max_streams,
-                                     max_streams_close_circuit, auth_type,
-                                     auth_clients, address_out);
+    ret = RSAE_INTERNAL;
     break;
   case HS_VERSION_THREE:
     ret = hs_service_add_ephemeral(pk->v3, port_cfgs, max_streams,

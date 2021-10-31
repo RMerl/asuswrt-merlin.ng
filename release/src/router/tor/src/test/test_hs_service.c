@@ -403,10 +403,7 @@ test_load_keys(void *arg)
   tor_asprintf(&conf, conf_fmt, hsdir_v2, HS_VERSION_TWO);
   ret = helper_config_service(conf);
   tor_free(conf);
-  tt_int_op(ret, OP_EQ, 0);
-  /* This one should now be registered into the v2 list. */
-  tt_int_op(get_hs_service_staging_list_size(), OP_EQ, 0);
-  tt_int_op(rend_num_services(), OP_EQ, 1);
+  tt_int_op(ret, OP_EQ, -1);
 
   /* v3 service. */
   tor_asprintf(&conf, conf_fmt, hsdir_v3, HS_VERSION_THREE);

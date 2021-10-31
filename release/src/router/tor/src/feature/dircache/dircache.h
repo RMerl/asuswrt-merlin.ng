@@ -26,7 +26,7 @@ MOCK_DECL(STATIC int, directory_handle_command_post,(dir_connection_t *conn,
 
 STATIC int handle_post_hs_descriptor(const char *url, const char *body);
 enum compression_level_t;
-STATIC enum compression_level_t choose_compression_level(ssize_t n_bytes);
+STATIC enum compression_level_t choose_compression_level(void);
 
 struct get_handler_args_t;
 STATIC int handle_get_hs_descriptor_v3(dir_connection_t *conn,

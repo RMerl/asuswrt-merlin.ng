@@ -13,6 +13,7 @@
  * and handles a larger variety of types.  It converts between different time
  * formats, and encodes and decodes them from strings.
  **/
+#define TIME_FMT_PRIVATE
 
 #include "lib/encoding/time_fmt.h"
 #include "lib/log/log.h"
@@ -25,6 +26,7 @@
 
 #include <string.h>
 #include <time.h>
+#include <errno.h>
 
 #ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>
@@ -92,8 +94,8 @@ static const int days_per_month[] =
 /** Compute a time_t given a struct tm.  The result is given in UTC, and
  * does not account for leap seconds.  Return 0 on success, -1 on failure.
  */
-int
-tor_timegm(const struct tm *tm, time_t *time_out)
+ATTR_UNUSED STATIC int
+tor_timegm_impl(const struct tm *tm, time_t *time_out)
 {
   /* This is a pretty ironclad timegm implementation, snarfed from Python2.2.
    * It's way more brute-force than fiddling with tzset().
@@ -160,6 +162,35 @@ tor_timegm(const struct tm *tm, time_t *time_out)
 #endif /* SIZEOF_TIME_T < 8 */
   *time_out = (time_t)seconds;
   return 0;
+}
+
+/** Compute a time_t given a struct tm.  The result here should be an inverse
+ * of the system's gmtime() function.  Return 0 on success, -1 on failure.
+ */
+int
+tor_timegm(const struct tm *tm, time_t *time_out)
+{
+#ifdef HAVE_TIMEGM
+  /* If the system gives us a timegm(), use it: if the system's time_t
+   * includes leap seconds, then we can hope that its timegm() knows too.
+   *
+   * https://k5wiki.kerberos.org/wiki/Leap_second_handling says the in
+   * general we can rely on any system with leap seconds also having a
+   * timegm implementation.  Let's hope it's right!
+   * */
+  time_t result = timegm((struct tm *) tm);
+  if (result == -1) {
+    log_warn(LD_BUG, "timegm() could not convert time: %s", strerror(errno));
+    *time_out = 0;
+    return -1;
+  } else {
+    *time_out = result;
+    return 0;
+  }
+#else
+  /* The system doesn't have timegm; we'll have to use our own. */
+  return tor_timegm_impl(tm, time_out);
+#endif
 }
 
 /* strftime is locale-specific, so we need to replace those parts */

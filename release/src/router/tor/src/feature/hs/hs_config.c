@@ -179,8 +179,12 @@ static bool
 check_value_oob(int i, const char *name, int low, int high)
 {
   if (i < low || i > high) {
-    log_warn(LD_CONFIG, "%s must be between %d and %d, not %d.",
-             name, low, high, i);
+    if (low == high) {
+      log_warn(LD_CONFIG, "%s must be %d, not %d.", name, low, i);
+    } else {
+      log_warn(LD_CONFIG, "%s must be between %d and %d, not %d.",
+               name, low, high, i);
+    }
     return true;
   }
   return false;

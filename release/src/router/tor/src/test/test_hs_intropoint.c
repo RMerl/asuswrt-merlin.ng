@@ -517,42 +517,6 @@ helper_establish_intro_v3(or_circuit_t *intro_circ)
   return cell;
 }
 
-/* Helper function: Send a well-formed v2 ESTABLISH_INTRO cell to
- * <b>intro_circ</b>. Return the public key advertised in the cell. */
-static crypto_pk_t *
-helper_establish_intro_v2(or_circuit_t *intro_circ)
-{
-  crypto_pk_t *key1 = NULL;
-  int retval;
-  uint8_t cell_body[RELAY_PAYLOAD_SIZE];
-  ssize_t cell_len = 0;
-  char circ_nonce[DIGEST_LEN] = {0};
-
-  tt_assert(intro_circ);
-
-  /* Prepare the circuit for the incoming ESTABLISH_INTRO */
-  crypto_rand(circ_nonce, sizeof(circ_nonce));
-  helper_prepare_circ_for_intro(intro_circ, circ_nonce);
-
-  /* Send legacy establish_intro */
-  key1 = pk_generate(0);
-
-  /* Use old circ_nonce why not */
-  cell_len = rend_service_encode_establish_intro_cell(
-                                           (char*)cell_body,
-                                           sizeof(cell_body), key1,
-                                           circ_nonce);
-  tt_int_op(cell_len, OP_GT, 0);
-
-  /* Receive legacy establish_intro */
-  retval = hs_intro_received_establish_intro(intro_circ,
-                                             cell_body, (size_t) cell_len);
-  tt_int_op(retval, OP_EQ, 0);
-
- done:
-  return key1;
-}
-
 /* Helper function: test circuitmap free_all function outside of
  * test_intro_point_registration to prevent Coverity from seeing a
  * double free if the assertion hypothetically fails.
@@ -576,15 +540,11 @@ test_circuitmap_free_all(void)
 static void
 test_intro_point_registration(void *arg)
 {
-  int retval;
   hs_circuitmap_ht *the_hs_circuitmap = NULL;
 
   or_circuit_t *intro_circ = NULL;
   trn_cell_establish_intro_t *establish_intro_cell = NULL;
   ed25519_public_key_t auth_key;
-
-  crypto_pk_t *legacy_auth_key = NULL;
-  or_circuit_t *legacy_intro_circ = NULL;
 
   or_circuit_t *returned_intro_circ = NULL;
 
@@ -621,35 +581,11 @@ test_intro_point_registration(void *arg)
     tt_ptr_op(intro_circ, OP_EQ, returned_intro_circ);
   }
 
-  /* Create a v2 intro point */
-  {
-    char key_digest[DIGEST_LEN];
-
-    legacy_intro_circ = or_circuit_new(1, NULL);
-    tt_assert(legacy_intro_circ);
-    legacy_auth_key = helper_establish_intro_v2(legacy_intro_circ);
-    tt_assert(legacy_auth_key);
-
-    /* Check that the circuitmap now has two elements */
-    the_hs_circuitmap = get_hs_circuitmap();
-    tt_assert(the_hs_circuitmap);
-    tt_int_op(2, OP_EQ, HT_SIZE(the_hs_circuitmap));
-
-    /* Check that the new element is our legacy intro circuit. */
-    retval = crypto_pk_get_digest(legacy_auth_key, key_digest);
-    tt_int_op(retval, OP_EQ, 0);
-    returned_intro_circ =
-      hs_circuitmap_get_intro_circ_v2_relay_side((uint8_t*)key_digest);
-    tt_ptr_op(legacy_intro_circ, OP_EQ, returned_intro_circ);
-  }
-
   /* XXX Continue test and try to register a second v3 intro point with the
    * same auth key. Make sure that old intro circuit gets closed. */
 
  done:
-  crypto_pk_free(legacy_auth_key);
   circuit_free_(TO_CIRCUIT(intro_circ));
-  circuit_free_(TO_CIRCUIT(legacy_intro_circ));
   trn_cell_establish_intro_free(establish_intro_cell);
   test_circuitmap_free_all();
 

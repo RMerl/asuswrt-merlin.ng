@@ -7,6 +7,7 @@
 #define COMPAT_TIME_PRIVATE
 #define UTIL_MALLOC_PRIVATE
 #define PROCESS_WIN32_PRIVATE
+#define TIME_FMT_PRIVATE
 #include "lib/testsupport/testsupport.h"
 #include "core/or/or.h"
 #include "lib/buf/buffers.h"
@@ -111,7 +112,7 @@ static time_t
 tor_timegm_wrapper(const struct tm *tm)
 {
   time_t t;
-  if (tor_timegm(tm, &t) < 0)
+  if (tor_timegm_impl(tm, &t) < 0)
     return -1;
   return t;
 }
@@ -804,7 +805,7 @@ test_util_time(void *arg)
 #if SIZEOF_TIME_T == 4
   setup_full_capture_of_logs(LOG_WARN);
   tt_int_op((time_t) -1,OP_EQ, tor_timegm(&a_time));
-  expect_single_log_msg_containing("Result does not fit in tor_timegm");
+  //expect_single_log_msg_containing("Result does not fit in tor_timegm");
   teardown_capture_of_logs();
 #elif SIZEOF_TIME_T == 8
   t_res = 2178252895UL;
@@ -818,17 +819,16 @@ test_util_time(void *arg)
   /* The below tests will all cause a BUG message, so we capture, suppress,
    * and detect. */
 #define CAPTURE() do {                                          \
+    teardown_capture_of_logs();                                 \
     setup_full_capture_of_logs(LOG_WARN);                       \
   } while (0)
 #define CHECK_TIMEGM_WARNING(msg) do { \
     expect_single_log_msg_containing(msg);                              \
-    teardown_capture_of_logs();                                         \
   } while (0)
 #define CHECK_POSSIBLE_EINVAL() do {                            \
     if (mock_saved_log_n_entries()) {                           \
       expect_single_log_msg_containing("Invalid argument");     \
     }                                                           \
-    teardown_capture_of_logs();                                 \
   } while (0)
 
 #define CHECK_TIMEGM_ARG_OUT_OF_RANGE(msg) \
@@ -1217,7 +1217,7 @@ test_util_time(void *arg)
   t_res = 0;
   CAPTURE();
   i = parse_rfc1123_time(timestr, &t_res);
-  CHECK_TIMEGM_WARNING("does not fit in tor_timegm");
+  // CHECK_TIMEGM_WARNING("does not fit in tor_timegm");
   tt_int_op(-1,OP_EQ, i);
 #elif SIZEOF_TIME_T == 8
   tt_str_op("Wed, 17 Feb 2038 06:13:20 GMT",OP_EQ, timestr);
@@ -1296,7 +1296,7 @@ test_util_time(void *arg)
   CAPTURE();
   i = parse_iso_time("2038-02-17 06:13:20", &t_res);
   tt_int_op(-1,OP_EQ, i);
-  CHECK_TIMEGM_WARNING("does not fit in tor_timegm");
+  //CHECK_TIMEGM_WARNING("does not fit in tor_timegm");
 #elif SIZEOF_TIME_T == 8
   i = parse_iso_time("2038-02-17 06:13:20", &t_res);
   tt_int_op(0,OP_EQ, i);
@@ -1479,7 +1479,7 @@ test_util_parse_http_time(void *arg)
   setup_full_capture_of_logs(LOG_WARN);
   tt_int_op(0,OP_EQ,parse_http_time("Wed, 17 Feb 2038 06:13:20 GMT", &a_time));
   tt_int_op((time_t)-1,OP_EQ, tor_timegm(&a_time));
-  expect_single_log_msg_containing("does not fit in tor_timegm");
+  //expect_single_log_msg_containing("does not fit in tor_timegm");
   teardown_capture_of_logs();
 #elif SIZEOF_TIME_T == 8
   tt_int_op(0,OP_EQ,parse_http_time("Wed, 17 Feb 2038 06:13:20 GMT", &a_time));
@@ -1499,6 +1499,28 @@ test_util_parse_http_time(void *arg)
 #undef T
  done:
   teardown_capture_of_logs();
+}
+
+static void
+test_util_timegm_real(void *arg)
+{
+  (void)arg;
+  /* Get the real timegm again!  We're not testing our impl; we want the
+   * one that will actually get called. */
+#undef tor_timegm
+
+  /* Now check: is timegm the real inverse of gmtime? */
+  time_t now = time(NULL), time2=0;
+  struct tm tm, *p;
+  p = tor_gmtime_r(&now, &tm);
+  tt_ptr_op(p, OP_NE, NULL);
+
+  int r = tor_timegm(&tm, &time2);
+  tt_int_op(r, OP_EQ, 0);
+  tt_i64_op((int64_t) now, OP_EQ, (int64_t) time2);
+
+ done:
+  ;
 }
 
 static void
@@ -7043,6 +7065,7 @@ struct testcase_t util_tests[] = {
   UTIL_TEST(monotonic_time_ratchet, TT_FORK),
   UTIL_TEST(monotonic_time_zero, 0),
   UTIL_TEST(monotonic_time_add_msec, 0),
+  UTIL_TEST(timegm_real, 0),
   UTIL_TEST(htonll, 0),
   UTIL_TEST(get_unquoted_path, 0),
   UTIL_TEST(map_anon, 0),

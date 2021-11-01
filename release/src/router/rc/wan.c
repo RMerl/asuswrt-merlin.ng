@@ -1788,7 +1788,7 @@ TRACE_PT("3g begin with %s.\n", wan_ifname);
 			ifconfig(wan_ifname, IFUP, ipaddr, netmask);
 
 			/* Increase WAN interface's MTU to allow pppoe MTU/MRU over 1492 (with 8 byte overhead) */
-			if (strcmp(wan_proto, "pppoe") == 0) {
+			if (wan_proto == WAN_PPPOE) {
 				/* Compute maximum required MTU by taking the maximum of the pppoe MRU and MTU values */
 				int mru = nvram_get_int(strcat_r(prefix, "pppoe_mru", tmp));
 				mtu = nvram_get_int(strcat_r(prefix, "pppoe_mtu", tmp));

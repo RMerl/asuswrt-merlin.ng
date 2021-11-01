@@ -1995,6 +1995,8 @@ void start_dnsmasq(void)
 	fprintf(fp, "script-arp\n");
 #endif
 
+	fprintf(fp, "edns-packet-max=1280\n");
+
 	/* close fp move to the last */
 	append_custom_config("dnsmasq.conf",fp);
 	fclose(fp);

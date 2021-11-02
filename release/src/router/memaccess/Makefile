@@ -11,7 +11,7 @@
 EXE = memaccess
 OBJS = memaccess.o
 LIBS = 
-LINKS=dw dh db sw sh.bcm sb fw fh fb
+LINKS=dw dh db sw sh sb fw fh fb
 SCRIPTS=dumpmem setmem
 
 all dynamic install: conditional_build
@@ -37,7 +37,7 @@ BUILD_DIR:=$(HND_SRC)
 include $(BUILD_DIR)/make.common
 
 
-conditional_build: sanity_check $(EXE) generic_exe_install install_links install_scripts
+conditional_build: sanity_check $(EXE) generic_exe_install install_links #install_scripts
 
 
 #

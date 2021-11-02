@@ -59,10 +59,6 @@ ifeq ($(BUILD_NBUFF_WLMCAST_IPV6),y)
 EMF_OBJS += $(EMFCSRCDIR)/emfc_ipv6.o
 endif
 
-ifeq ($(CONFIG_BUZZZ_FUNC),y)
-subdir-ccflags-y += -O0 -fno-inline -finstrument-functions
-endif # CONFIG_BUZZZ_FUNC
-
 # Search for sources under src/router-sysdep/emf/emf
 ifneq ($(wildcard $(src)/$(EMFSRCDIR)),)
     EXTRA_CFLAGS += -I$(SRCBASE_ROUTER)/emf/emf  -I$(SRCBASE_ROUTER)/emf/igs

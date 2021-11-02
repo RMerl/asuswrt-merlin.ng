@@ -21,6 +21,7 @@
 #
 
 include $(SRCBASE)/.config
+HND_SRC := $(shell pwd | sed 's/\(.*src-rt-.*hnd.*\).*/\1/' | sed 's|\/kernel||g' | sed 's|\/linux-*.*||g')
 include $(HND_SRC)/router/.config
 
 TARGET := dhd
@@ -60,10 +61,6 @@ WL_MONITOR=$(shell if [ -f "$(SRCBASE)/../../$(SRCBASE_DHD)/include/hndd11.h" ];
 # If source directory (dhd/src/dhd/sys) exists then build dhd, otherwise use pre-builts
 ifeq ($(REBUILD_DHD_MODULE),1)
 
-    ifeq ($(CONFIG_BUZZZ_FUNC),y)
-        subdir-ccflags-y += -O0 -fno-inline -finstrument-functions
-    endif # CONFIG_BUZZZ_FUNC
-
     ifneq ($(BUILD_HND_MFG),)
         export BUILD_MFG := 1
         export WLTEST := 1
@@ -93,18 +90,6 @@ ifeq ($(REBUILD_DHD_MODULE),1)
 
     # dhd-objs is for linking to dhd.o
     $(TARGET)-objs := $(DHD_OBJS)
-
-ifeq ($(CONFIG_ARM64),)
-# 32 bits NIC driver size reduction, makes use of gcc/ld unused symbol collect capability
-KBUILD_CFLAGS += -fdata-sections -ffunction-sections
-TMP_STR := --gc-sections --print-gc-sections --entry=fake_main --script=$(SRCBASE)/shared/linux.module.arm.lds
-ifeq ($(CMWIFI),)
-LDFLAGS += $(TMP_STR)
-else
-# CMWIFI builds use a later Linux kernel (4.9) than DSL builds (4.1)
-KBUILD_LDFLAGS_MODULE += $(TMP_STR)
-endif
-endif
 
     MODEL = $(subst -,,$(BUILD_NAME))
     KBUILD_CFLAGS += -D$(MODEL)

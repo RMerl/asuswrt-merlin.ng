@@ -73,10 +73,6 @@ endif
 
 obj-$(CONFIG_BCM_WLAN) := igs.o
 
-ifeq ($(CONFIG_BUZZZ_FUNC),y)
-subdir-ccflags-y += -O0 -fno-inline -finstrument-functions
-endif # CONFIG_BUZZZ_FUNC
-
 else # IGSSRCDIR doesn't exist
     # Otherwise, assume prebuilt object module(s) in src/igs/linux directory
     prebuilt := igs.o

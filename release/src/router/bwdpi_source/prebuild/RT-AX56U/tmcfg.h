@@ -26,13 +26,13 @@
 
 /*
  * Automatically generated make config: don't edit
- * Date: Sun Oct 11 13:22:43 2020
+ * Date: Sun Jul  4 10:58:18 2021
  */
 #ifndef __TMCFG__AUTOCONF_OUTPUT_H_
 #define __TMCFG__AUTOCONF_OUTPUT_H_
 
 #define TMCFG_BRAND "asus"
-#define TMCFG_MODEL "rt-ax56u"
+#define TMCFG_MODEL "rt-ax95q"
 
 /*
  * Target device information
@@ -47,7 +47,7 @@
 #define TMCFG_ARCH_POWERPC 0 // n
 #define TMCFG_CPU_BIG_ENDIAN 0 // n
 #define TMCFG_CPU_LITTLE_ENDIAN 1 // y
-#define TMCFG_KERN_DIR "/opt/ASUS/asuswrt_AX56U_GPL_384_9424/release/src-rt-5.02axhnd.675x/kernel/linux-4.1"
+#define TMCFG_KERN_DIR "/opt/ASUS/asuswrt_AX95Q_GPL_386_43170_sharon/release/src-rt-5.02axhnd.675x/kernel/linux-4.1/"
 #define TMCFG_KERN_ARCH "arm"
 #define TMCFG_CPU_32BITS 1 // y
 #define TMCFG_CPU_64BITS 0 // n
@@ -60,7 +60,7 @@
 /*
  * Target device toolchain (cross utilities)
  */
-#define TMCFG_TC_PFX "/opt/ASUS/toolchains/asus-toolchain-arm-rt_ax88u_u/usr/bin/arm-buildroot-linux-gnueabi-"
+#define TMCFG_TC_PFX "/opt/ASUS/toolchains/crosstools-arm-gcc-5.5-linux-4.1-glibc-2.26-binutils-2.28.1//usr/bin/arm-buildroot-linux-gnueabi-"
 #define TMCFG_TC_BIT_FIELD_ORDER_LITTLE_ENDIAN 1 // y
 #define TMCFG_TC_BIT_FIELD_ORDER_BIG_ENDIAN 0 // n
 #define TMCFG_TC_CC "$(TMCFG_TC_PFX)gcc"
@@ -222,7 +222,7 @@
  * DevID
  */
 #define TMCFG_E_CORE_DEVID_UA 1 // y
-#define TMCFG_E_CORE_DEVID_COLLECT_UN 0 // n
+#define TMCFG_E_CORE_DEVID_COLLECT_UN 1 // y
 
 /*
  * Engine shell

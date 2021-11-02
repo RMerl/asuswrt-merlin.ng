@@ -12,13 +12,26 @@ endif
 
 CFLAGS += -I$(TOOLCHAIN)/include
 
+ifeq ($(wildcard *.c),)
+all:
+else
 all: $(PROGRAM_NAME)
+endif
 
+ifeq ($(wildcard *.c),)
+install:
+	-cp -f prebuilt/$(PROGRAM_NAME) $(PROGRAM_NAME)
+else
 install: $(PROGRAM_NAME)
+endif
 	install -m 755  $(PROGRAM_NAME) $(INSTALL_DIR)/bin
 	$(STRIP) $(INSTALL_DIR)/bin/$(PROGRAM_NAME)
 
+ifeq ($(wildcard *.c),)
+dynamic: install
+else
 dynamic: $(PROGRAM_NAME) install
+endif
 
 static: $(PROGRAM_NAME).a
 

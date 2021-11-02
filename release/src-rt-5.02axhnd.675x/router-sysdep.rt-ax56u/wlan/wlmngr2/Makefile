@@ -67,6 +67,11 @@ CFLAGS += -DBUILD_BCM_WLAN_DPDCTL
 endif
 endif
 
+
+ifeq ($(WLTEST),1)
+CFLAGS += -DWLTEST
+endif
+
 ifeq ($(CONFIG_AIRIQ),y)
 CFLAGS += -DWL_AIR_IQ
 endif

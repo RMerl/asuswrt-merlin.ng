@@ -47,12 +47,12 @@ install: all
 	install debug_monitor $(INSTALLDIR)/usr/sbin
 	$(STRIP) $(INSTALLDIR)/usr/sbin/debug_monitor
 
-ifneq ($(PREBUILT_BCMBIN),1)
+ifneq ($(wildcard *.c),)
 debug_monitor: $(OBJS)
 	$(CC) -o $@ $(OBJS) $(LDFLAGS)
 else
 debug_monitor:
-	cp -f $(TOP_PLATFORM)/$(shell pwd | sed 's/\(.*router-sysdep\/\)//')/$(PRBM_DIR)/$@ ./
+	-cp -f prebuilt/$@ .
 endif
 
 %.o: .%.depend

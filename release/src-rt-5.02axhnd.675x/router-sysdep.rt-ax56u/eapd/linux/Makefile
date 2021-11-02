@@ -47,6 +47,12 @@ vpath %.c $(TOP_PLATFORM)/eapd${BCMEX}$(EX7) $(TOP)/shared
 OBJS = eapd.o eapd_linux.o
 OBJS += nas_eap.o wps_eap.o
 
+#ifdef BCMWAPI_WAI
+ifeq ($(CONFIG_WAPI),y)
+OBJS += wai_eap.o
+endif
+#endif // endif
+
 #ifdef BCM_CUSTOM_EVENT
 ifeq ($(CONFIG_BCM_CUSTOM_EVENT),y)
 OBJS +=  custom_eventd_eap.o
@@ -123,6 +129,9 @@ CFLAGS += -DBCM_CEVENT
 endif
 #endif // endif
 
+OBJS += rgd_eap.o
+CFLAGS += -DBCM_RGD
+
 #ifdef BCM_WBD
 ifeq ($(CONFIG_WBD),y)
 OBJS += wbd_eap.o
@@ -138,8 +147,13 @@ CFLAGS += -DBCM_WLCEVENTD
 all: eapd
 
 ifneq ($(PREBUILT_BCMBIN),1)
+ifneq ($(wildcard ./prebuilt/eapd),)
+eapd:
+	cp ./prebuilt/eapd .
+else
 eapd: $(OBJS)
 	$(CC) -o $@ $^ $(LDFLAGS)
+endif
 else
 eapd:
 	cp -f $(TOP_PLATFORM)/$(shell pwd | sed 's/\(.*router-sysdep\/\)//')/$(PRBM_DIR)/$@ ./

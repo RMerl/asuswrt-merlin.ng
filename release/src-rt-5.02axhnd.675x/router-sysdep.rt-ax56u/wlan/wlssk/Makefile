@@ -21,7 +21,7 @@ INC_WIRELESS_DRIVER_PATH=$(WIRELESS_DRIVER_PATH)/include
 COMM_WIRELESS_DRIVER_PATH=$(WIRELESS_DRIVER_PATH)/common/include
 
 EXE := wlssk
-OBJS = main.o debug.o wlssk.o service.o event.o wlsyscall.o
+OBJS = main.o debug.o wlssk.o service.o event.o wlsyscall.o defaults.o
 
 LIBS = -L$(INSTALL_DIR)/lib -L$(INSTALL_DIR)/usr/lib -ldl
 
@@ -44,6 +44,10 @@ endif
 
 ifneq ($(strip $(BUILD_HND_EAP)),)
 CFLAGS += -DBUILD_HND_EAP
+endif
+
+ifeq ($(WLTEST),1)
+CFLAGS += -DWLTEST
 endif
 
 ifeq ($(strip $(BCA_CPEROUTER)),)

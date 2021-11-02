@@ -1066,8 +1066,8 @@ endif
 endif
 else
 ifeq ($(HTTPS),y)
-ifneq (,$(wildcard $(SRC_ROOT)/../../../buildtools/private.pem))
-	openssl sha1 -sign $(SRC_ROOT)/../../../buildtools/private.pem -out image/$(DSLIMGNAME)_rsa.zip image/$(DSLIMGNAME).trx
+ifneq (,$(wildcard $(SRC_ROOT)/../../buildtools/private.pem))
+	openssl sha1 -sign $(SRC_ROOT)/../../buildtools/private.pem -out image/$(DSLIMGNAME)_rsa.zip image/$(DSLIMGNAME).trx
 endif
 endif
 endif

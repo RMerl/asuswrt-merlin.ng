@@ -281,7 +281,7 @@ void start_jffs2(void)
 	const char *p;
 	int i = 0;
 
-        while(1) {
+	while(1) {
 		if (wait_action_idle(10)) break;
 		else i++;
 
@@ -471,6 +471,14 @@ void start_jffs2(void)
 	if (!check_if_dir_exist("/jffs/configs/")) mkdir("/jffs/configs/", 0755);
 	if (!check_if_dir_exist("/jffs/addons/")) mkdir("/jffs/addons/", 0755);
 	if (!check_if_dir_exist(UPLOAD_CERT_FOLDER)) mkdir(UPLOAD_CERT_FOLDER, 0600);
+
+	_dprintf("%s: create jffs2 successfully\n", __func__);
+	logmessage("jffs2", "create jffs2 successfully");
+	nvram_set_int("jffs2_state", JFFS2_END);
+#ifdef RTCONFIG_BCMARM
+	nvram_set_int("jffs2_auto_erase", 0);
+#endif
+	nvram_commit();
 }
 
 void stop_jffs2(int stop)
@@ -482,7 +490,7 @@ void stop_jffs2(int stop)
 
 	if (!wait_action_idle(10)) return;
 
-	if ((statfs("/jffs", &sf) == 0) && (sf.f_type != 0x73717368) && (sf.f_type != 0x71736873)) {
+	if ((statfs("/jffs", &sf) == 0) && (sf.f_type != 0x73717368)) {
 		// is mounted
 #if 0 /* disable legacy & asus autoexec */
 		run_userfile("/jffs", ".autostop", "/jffs", 5);
@@ -514,12 +522,4 @@ void stop_jffs2(int stop)
 	if (restart_syslogd)
 		start_syslogd();
 #endif
-
-	_dprintf("%s: create jffs2 successfully\n", __func__);
-	logmessage("jffs2", "create jffs2 successfully");
-	nvram_set_int("jffs2_state", JFFS2_END);
-#ifdef RTCONFIG_BCMARM
-	nvram_set_int("jffs2_auto_erase", 0);
-#endif
-	nvram_commit();
 }

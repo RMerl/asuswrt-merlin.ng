@@ -116,7 +116,7 @@ OBJS = httpd.o cgi.o ej.o
 OBJS += web.o common.o nvram_f.o 
 OBJS += aspbw.o initial_web_hook.o
 OBJS += apps.o
-OBJS += sysinfo.o data_arrays.o
+OBJS += sysinfo.o data_arrays.o web-broadcom-am.o
 
 ifeq ($(CONFIG_REALTEK),y)
 OBJS += web-realtek.o

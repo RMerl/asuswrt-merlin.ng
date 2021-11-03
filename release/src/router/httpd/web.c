@@ -31255,7 +31255,7 @@ struct ej_handler ej_handlers[] = {
 	{ "get_connlist_array", ej_connlist_array},
 	{ "get_custom_settings", ej_get_custom_settings},
 #ifdef RTCONFIG_BCMWL6
-	{ "get_wl_status", ej_wl_status_2g_array},
+	{ "get_wl_status", ej_wl_status_array},
 #endif
 	{ "radio_status", ej_radio_status},
 	{ "asus_sysinfo", ej_sysinfo},

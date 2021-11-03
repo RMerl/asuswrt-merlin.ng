@@ -467,8 +467,8 @@ extern int ej_wl_status(int eid, webs_t wp, int argc, char_t **argv, int unit);
 extern int ej_wl_status_2g(int eid, webs_t wp, int argc, char_t **argv);
 extern int ej_wps_info_2g(int eid, webs_t wp, int argc, char_t **argv);
 extern int ej_wps_info(int eid, webs_t wp, int argc, char_t **argv);
-extern int ej_wl_status_array(int eid, webs_t wp, int argc, char_t **argv, int unit);
-extern int ej_wl_status_2g_array(int eid, webs_t wp, int argc, char_t **argv);
+extern int ej_wl_unit_status_array(int eid, webs_t wp, int argc, char_t **argv, int unit);
+extern int ej_wl_status_array(int eid, webs_t wp, int argc, char_t **argv);
 extern const char *syslog_msg_filter[];
 
 /* web.c/web-*.c */

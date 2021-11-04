@@ -121,7 +121,7 @@ var filter = [
     "not exist in UDB, can't update it"
 ]
 
-$.getJSON("https://nw-dlcdnet.asus.com/plugin/js/logFilter.json", function(data){
+$.getJSON("/ajax/logFilter.json", function(data){
 	filter = data.filter;
 })
 

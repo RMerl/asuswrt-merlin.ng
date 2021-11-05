@@ -1099,6 +1099,7 @@ int ej_connlist_array(int eid, webs_t wp, int argc, char **argv) {
 		                      proto, address, port1, dest, port2, state);
 	}
 	fclose(fp);
+	unlink("/tmp/connect.log");
 
 	ret += websWrite(wp, "[]];\n");
 

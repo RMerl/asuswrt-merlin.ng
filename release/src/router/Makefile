@@ -7194,7 +7194,7 @@ wget/Makefile: wget/Makefile.in
 		OPENSSL_CFLAGS="-I$(TOP)/openssl/include" \
 		ZLIB_CFLAGS="-I$(TOP)zlib" \
 		ZLIB_LIBS="-L$(TOP)/zlib -lz "\
-		CFLAGS="-Os -Wall $(EXTRACFLAGS) -ffunction-sections -fdata-sections -I$(STAGEDIR)/usr/include $(if $(RTCONFIG_PIPEFW),-I$(TOP)/shared -DHAVE_PIPEFW) -std=gnu99" \
+		CFLAGS="-Os -Wall $(EXTRACFLAGS) -ffunction-sections -fdata-sections -I$(STAGEDIR)/usr/include $(if $(RTCONFIG_PIPEFW),-I$(TOP)/shared -DHAVE_PIPEFW) -std=gnu99 -DASUSWRT" \
 		LDFLAGS="$(EXTRALDFLAGS) -Wl,--gc-sections -L$(STAGEDIR)/usr/lib -pthread" \
 
 wget: openssl zlib wget/Makefile

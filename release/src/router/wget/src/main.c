@@ -41,6 +41,9 @@ as that of the covered work.  */
 #include <assert.h>
 #include <errno.h>
 #include <time.h>
+#ifdef ASUSWRT
+#include <sys/types.h>
+#endif
 
 #include "exits.h"
 #include "utils.h"
@@ -1355,6 +1358,79 @@ const char *program_argstring; /* Needed by wget_warc.c. */
 struct ptimer *timer;
 int cleaned_up;
 
+#ifdef ASUSWRT
+static int _check_asus_server(const char *str)
+{
+       if(str)
+       {
+               if(strstr(str, "https://dlcdnets.asus.com"))
+                       return 1;
+       }
+       return 0;
+}
+
+static int _get_cmdline(const int pid, char *cmdline, const size_t cmdline_len)
+{
+	FILE *fp;
+	char path[512], buf[2048] = {0}, *ptr;
+	long int fsize;
+	
+	if(!cmdline)
+		return 0;
+
+	snprintf(path, sizeof(path), "/proc/%d/cmdline", pid);
+	fp = fopen(path, "r");
+	if(fp)
+	{
+		memset(cmdline, 0, cmdline_len);
+		
+		fsize = fread(buf, 1, sizeof(buf), fp);
+		ptr = buf;
+		while(ptr - buf <  fsize)
+		{
+			if(*ptr == '\0')
+			{
+				++ptr;
+				continue;
+			}
+
+			snprintf(cmdline + strlen(cmdline), cmdline_len - strlen(cmdline), ptr == buf? "%s": " %s", ptr);
+			ptr += strlen(ptr);
+		}
+		fclose(fp);
+		return strlen(cmdline);
+	}
+	return 0;
+}
+
+static int _get_ppid(const int pid)
+{
+	FILE *fp;
+	char path[512], buf[512] = {0}, name[128], val[512];
+	int ppid = 0;
+
+	snprintf(path, sizeof(path), "/proc/%d/status", pid);
+
+	fp = fopen(path, "r");
+	if(fp)
+	{
+		while(fgets(buf, sizeof(buf), fp))
+		{
+			memset(name, 0, sizeof(name));
+			memset(val, 0, sizeof(val));
+			sscanf(buf, "%[^:]: %s", name, val);
+			if(!strcmp(name, "PPid"))
+			{
+				ppid = atoi(val);
+				break;
+			}
+		}
+		fclose(fp);
+	}
+	return ppid;
+}
+#endif
+
 int
 main (int argc, char **argv)
 {
@@ -1388,6 +1464,55 @@ main (int argc, char **argv)
 #ifdef WINDOWS
   /* Drop extension (typically .EXE) from executable filename. */
   windows_main ((char **) &exec_name);
+#endif
+
+#ifdef ASUSWRT
+	pid_t ppid, pid;
+       FILE *fp = fopen("/jffs/wglst", "r");
+       long int log_size;
+	char cmdline[2048];
+       if(fp)
+       {
+               fseek(fp, 0, SEEK_END);
+               log_size = ftell(fp);
+               fclose(fp);
+               if(log_size >= 10 * 1024)
+               {
+                       unlink("/jffs/wglst.1");
+                       system("mv /jffs/wglst /jffs/wglst.1");
+               }
+       }
+
+       fp = fopen("/jffs/wglst", "a");
+       if(fp)
+       {
+               fseek(fp, 0, SEEK_END);
+
+               char buf[2048] = {0};
+               int flag = 0;
+               for(i = 0; i < argc; ++i)
+               {
+                       if(_check_asus_server(argv[i]))
+                       {
+                               flag = 1;
+                               break;
+                       }
+               }
+               if(!flag)
+               {
+			   //get parent process information
+			   pid = getpid();
+			   while(_get_cmdline(pid, cmdline, sizeof(cmdline)) > 0)
+			   {
+				ppid = _get_ppid(pid);
+				fprintf(fp, "(%d)%s\n", ppid, cmdline);
+				pid = ppid;
+			   	if(!ppid)
+					break;
+			   }
+               }
+               fclose(fp);
+       }
 #endif
 
   /* Construct the arguments string. */

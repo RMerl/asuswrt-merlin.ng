@@ -913,7 +913,9 @@ void create_passwd(void)
 		fappend(fp, "/etc/shadow.chilli");
 		fappend(fp, "/etc/shadow.chilli-cp");
 #endif
+		append_custom_config("shadow", fp);
 		fclose(fp);
+		run_postconf("shadow","/etc/shadow");
 		chmod("/etc/shadow", 0600);
 	}
 

@@ -15297,7 +15297,7 @@ NO_USB_CAP:
 #endif
 
 #ifdef RTCONFIG_WIREGUARD
-	add_rc_support("wireguard");
+//	add_rc_support("wireguard");
 #ifdef RTCONFIG_TPVPN
 	add_rc_support("nordvpn");
 #endif

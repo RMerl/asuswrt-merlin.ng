@@ -16583,6 +16583,7 @@ start_write_smb_conf();
 		}
 	}
 #endif	/* RTCONFIG_QCA_PLC_UTILS || RTCONFIG_QCA_PLC2 */
+#if 0
 #ifdef RTCONFIG_WIREGUARD
 	else if (strcmp(script, "wgs") == 0) {
 		if (cmd[1]) {
@@ -16619,6 +16620,7 @@ start_write_smb_conf();
 			if (action & RC_SERVICE_START) start_wgcall();
 		}
 	}
+#endif
 #endif
 #ifdef RTCONFIG_CFGSYNC
 	else if (strcmp(script, "firmware_webs_update") == 0)

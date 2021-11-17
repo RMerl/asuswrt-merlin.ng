@@ -136,14 +136,20 @@
 </style>
 <script>
 window.onresize = function() {
-	if(document.getElementById("cloudAddTable_div").style.display == "block") {
-		cal_panel_block("cloudAddTable_div", 0.2);
+	if(document.getElementById("cloudAddTable_div") != null){
+		if(document.getElementById("cloudAddTable_div").style.display == "block") {
+			cal_panel_block("cloudAddTable_div", 0.2);
+		}
 	}
-	if(document.getElementById("folderTree_panel").style.display == "block") {
-		cal_panel_block("folderTree_panel", 0.25);
+	if(document.getElementById("folderTree_panel") != null){
+		if(document.getElementById("folderTree_panel").style.display == "block") {
+			cal_panel_block("folderTree_panel", 0.25);
+		}
 	}
-	if(document.getElementById("invitation").style.display == "block") {
-		cal_panel_block("invitation", 0.25);
+	if(document.getElementById("invitation") != null){
+		if(document.getElementById("invitation").style.display == "block") {
+			cal_panel_block("invitation", 0.25);
+		}
 	}
 }
 <% get_AiDisk_status(); %>

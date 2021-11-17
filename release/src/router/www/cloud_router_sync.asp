@@ -144,11 +144,15 @@ var _layer_order = "";
 var isNotIE = (navigator.userAgent.search("MSIE") == -1); 
 var PROTOCOL = "cifs";
 window.onresize = function() {
-	if(document.getElementById("folderTree_panel").style.display == "block") {
-		cal_panel_block("folderTree_panel", 0.25);
+	if(document.getElementById("folderTree_panel") != null){
+		if(document.getElementById("folderTree_panel").style.display == "block") {
+			cal_panel_block("folderTree_panel", 0.25);
+		}
 	}
-	if(document.getElementById("invitation_block").style.display == "block") {
-		cal_panel_block("invitation_block", 0.25);
+	if(document.getElementById("invitation_block") != null){
+		if(document.getElementById("invitation_block").style.display == "block") {
+			cal_panel_block("invitation_block", 0.25);
+		}
 	}
 } 
 //var router_sync = '<% nvram_show_chinese_char("share_link_host"); %>';

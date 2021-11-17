@@ -89,6 +89,21 @@ function initial(){
 	show_menu();
 	$("#faq").attr('target','_blank')
 		 .attr("href", faq_href);
+	if(wan_proto=="v6plus" && array_ipv6_s46_ports.length > 1){
+
+		$("#v6plus_port_range_note").show();
+		$(".setup_info_icon_game").show();
+		$(".setup_info_icon_game").click(
+			function() {				
+				if($("#s46_ports_content").is(':visible'))
+					$("#s46_ports_content").fadeOut();
+				else{
+					var position = $(".setup_info_icon_game").position();
+					pop_s46_ports(position, "game");
+				}
+			}
+		);
+	}
 
 	(nvram.vts_enable_x == '1') ? $('#PF_switch').prop('checked', true) :  $('#PF_switch').prop('checked', false);
 	collectGameList();
@@ -323,66 +338,24 @@ function hideClients_Block(){
 }
 /*----------} Mouse event of fake LAN IP select menu-----------------*/
 
-function validForm(){
-	if(!Block_chars(document.form.vts_desc_x_0, ["<" ,">" ,"'" ,"%"])){
-				return false;		
-	}	
-	if(!Block_chars(document.form.vts_port_x_0, ["<" ,">"])){
-				return false;		
-	}	
-
-	if(document.form.vts_proto_x_0.value=="OTHER"){
-		document.form.vts_lport_x_0.value = "";
-		if (!check_multi_range(document.form.vts_port_x_0, 1, 255, false))
-			return false;
-	}
-
-	if(!check_multi_range(document.form.vts_port_x_0, 1, 65535, true)){
-		return false;
-	}
-	
-	if(document.form.vts_lport_x_0.value.length > 0
-			&& !validator.numberRange(document.form.vts_lport_x_0, 1, 65535)){
-		return false;	
-	}
-	
-	if(document.form.vts_ipaddr_x_0.value==""){
-		alert("<#JS_fieldblank#>");
-		document.form.vts_ipaddr_x_0.focus();
-		document.form.vts_ipaddr_x_0.select();		
-		return false;
-	}
-	if(document.form.vts_port_x_0.value==""){
-		alert("<#JS_fieldblank#>");
-		document.form.vts_port_x_0.focus();
-		document.form.vts_port_x_0.select();		
-		return false;
-	}
-	if(!validate_multi_range(document.form.vts_port_x_0, 1, 65535)
-		|| !validator.validIPForm(document.form.vts_ipaddr_x_0, 0)){			
-		return false;	
-	}			
-	
-	return true;
-}
-
 function validate_multi_range(val, mini, maxi){
 	var rangere=new RegExp("^([0-9]{1,5})\:([0-9]{1,5})$", "gi");
 	if(rangere.test(val)){
 		
-		if(!validator.eachPort(document.form.vts_port_x_0, RegExp.$1, mini, maxi) || !validator.eachPort(document.form.vts_port_x_0, RegExp.$2, mini, maxi)){
+		if(!validator.eachPort(document.getElementById("new_profile_externalPort"), RegExp.$1, mini, maxi) || !validator.eachPort(document.getElementById("new_profile_externalPort"), RegExp.$2, mini, maxi)){
 				return false;								
 		}else if(parseInt(RegExp.$1) >= parseInt(RegExp.$2)){
 				alert("<#JS_validport#>");	
 				return false;												
 		}else				
-			return true;	
-	}else{
-		if(!validate_single_range(val, mini, maxi)){	
-					return false;											
-				}
-				return true;								
-			}	
+			return true;
+	}
+	else{
+		if(!validate_single_range(val, mini, maxi)){
+			return false;					
+		}
+		return true;
+	}
 }
 function validate_single_range(val, min, max) {
 	for(j=0; j<val.length; j++){		//is_number
@@ -398,10 +371,10 @@ function validate_single_range(val, min, max) {
 	}else	
 		return true;
 }	
-var parse_port="";
+
 function check_multi_range(obj, mini, maxi, allow_range){
-	obj.value = document.form.vts_port_x_0.value.replace(/[-~]/gi,":");	// "~-" to ":"
-	var PortSplit = obj.value.split(",");
+	var _objValue = obj.value.replace(/[-~]/gi,":");	// "~-" to ":"
+	var PortSplit = _objValue.split(/,|:/);
 	for(i=0;i<PortSplit.length;i++){
 		PortSplit[i] = PortSplit[i].replace(/(^\s*)|(\s*$)/g, ""); 		// "\space" to ""
 		PortSplit[i] = PortSplit[i].replace(/(^0*)/g, ""); 		// "^0" to ""	
@@ -414,24 +387,38 @@ function check_multi_range(obj, mini, maxi, allow_range){
 		}
 		if(allow_range)
 			res = validate_multi_range(PortSplit[i], mini, maxi);
-		else	res = validate_single_range(PortSplit[i], mini, maxi);
+		else	
+			res = validate_single_range(PortSplit[i], mini, maxi);
 		if(!res){
 			obj.focus();
 			obj.select();
 			return false;
-		}						
-		
-		if(i ==PortSplit.length -1)
-			parse_port = parse_port + PortSplit[i];
-		else
-			parse_port = parse_port + PortSplit[i] + ",";
-			
+		}
 	}
-	document.form.vts_port_x_0.value = parse_port;
-	parse_port ="";
+	
 	return true;	
 }
 
+function check_multi_range_s46_ports(obj){
+	_objValue = obj.value.replace(/[-~]/gi,":");	// "~-" to ":"
+	var PortSplit = _objValue.split(/,|:/);
+	var res=false;
+	var res_result=0;
+	for(i=0;i<PortSplit.length;i++){
+		PortSplit[i] = PortSplit[i].replace(/(^\s*)|(\s*$)/g, ""); 		// "\space" to ""
+		PortSplit[i] = PortSplit[i].replace(/(^0*)/g, ""); 		// "^0" to ""
+
+		res = validator.range_s46_ports(obj, PortSplit[i]);
+		if(res)
+			res_result++;
+	}
+
+	if(res_result != PortSplit.length){
+		return false;
+	}
+
+	return true;
+}
 function switchPortForward(obj){
 	nvram.vts_enable_x = (obj.checked)?"1":"0";
 
@@ -505,6 +492,11 @@ function addNewProfile(target){
 }
 
 function cancelNewProfile(){
+	if($("#s46_ports_content").is(':visible'))
+		$("#s46_ports_content").fadeOut();
+	if($("#ClientList_Block_PC").is(':visible'))
+		$("#ClientList_Block_PC").fadeOut();
+
 	$('#addRuleField').hide();
 	if(vts_rulelist_array != ''){
 		$('#listTable').show();
@@ -569,6 +561,11 @@ function newProfileOK(){
 	// valid input
 	var new_rule_num=0;
 	var _platformArray = ['PC', 'XBOXSerX', 'XBOXONE', 'XBOX360', 'PS5', 'PS4', 'PS3', 'STEAM', 'SWITCH'];
+	if($("#s46_ports_content").is(':visible'))
+		$("#s46_ports_content").fadeOut();
+	if($("#ClientList_Block_PC").is(':visible'))
+		$("#ClientList_Block_PC").fadeOut();
+
 	var _manual = $('#protocol_field').is(':visible');
 	if(!_manual){		// quick add
 		var _platformCheck = false;
@@ -594,6 +591,31 @@ function newProfileOK(){
 		return false;
 	}
 	if(!Block_chars(document.getElementById("new_profile_localPort"), ["<" ,">"])){
+		return false;
+	}
+
+	if($("#default_game").hasClass("game-selected")){
+		if(document.getElementById("new_profile_externalPort").value == "OTHER") {
+			document.getElementById("new_profile_localPort").value = "";
+			if (!validator.numberRange(document.getElementById("new_profile_externalPort"), 1, 255, false))
+				return false;
+		}
+		else{
+			if(!check_multi_range(document.getElementById("new_profile_externalPort"), 1, 65535, true))
+				return false;
+			if(wan_proto=="v6plus" && array_ipv6_s46_ports.length > 1){
+				if (!check_multi_range_s46_ports(document.getElementById("new_profile_externalPort"))){
+					if(!confirm("The following port related settings may not work properly since the port is not available in current v6plus usable port range. Do you want to continue?"))
+					{
+						document.getElementById("new_profile_externalPort").focus();
+						return false;
+					}
+				}
+			}
+		}
+	}
+	if(document.getElementById("new_profile_localPort").value.length > 0
+			&& !validator.numberRange(document.getElementById("new_profile_localPort"), 1, 65535)) {
 		return false;
 	}
 
@@ -667,7 +689,6 @@ function newProfileOK(){
 <input type="hidden" name="preferred_lang" id="preferred_lang" value="<% nvram_get("preferred_lang"); %>">
 <input type="hidden" name="firmver" value="<% nvram_get("firmver"); %>">
 <input type="hidden" name="game_vts_rulelist" value=''>
-<input type="hidden" name="vts_enable_x" value='<% nvram_get("vts_enable_x"); %>'>
 
 <table class="content" align="center" cellpadding="0" cellspacing="0" >
 	<tr>
@@ -692,6 +713,7 @@ function newProfileOK(){
 
 				<!-- Content field -->
 				<div class="description-container"><#OpenNAT_desc#></div>
+				<div class="description-container" id="v6plus_port_range_note" style="color:#FFCC00;display:none;">* When using v6plus, the number of available assigned ports is limited. Kindly understand that this may result in an interruption of this services and functions.</div>		<!-- Untranslated -->
 				<div class="description-container" style="color:#FFCC00;position:relative;z-index:9;"><#OpenNAT_note#></div>
 				<div class="world-map">
 					<div class="map-connection-line"></div>
@@ -889,13 +911,13 @@ function newProfileOK(){
 							</div>	
 						</div>
 						<div id="externalPort_field" class="game-p-s-field">
-							<div class="settings-filed-title"><#IPConnection_VSList_External_Port#></div>
+							<div class="settings-filed-title"><#IPConnection_VSList_External_Port#><div class="setup_info_icon_game" style="display:none;"></div></div>
 							<input id="new_profile_externalPort" type="text" class="input-container" value="" maxlength="60" onkeypress="return validator.isPortRange(this, event);" autocomplete="off" autocorrect="off" autocapitalize="off" >
 						</div>
 
 						<div id="localPort_field" class="game-p-s-field">
 							<div class="settings-filed-title"><#IPConnection_VSList_Internal_Port#></div>
-							<input id="new_profile_localPort" type="text" class="input-container" value="" maxlength="60" onkeypress="return validator.isNumber(this,event);" autocomplete="off" autocorrect="off" autocapitalize="off" >
+							<input id="new_profile_localPort" type="text" class="input-container" style="width:80px;" value="" maxlength="5" onkeypress="return validator.isNumber(this,event);" autocomplete="off" autocorrect="off" autocapitalize="off" >
 							<div class="hint"><#feedback_optional#></div>
 						</div>
 

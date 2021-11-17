@@ -2005,6 +2005,7 @@ feedback_conn_rra=Routerul repornește automat
 feedback_conn_ucp=Problemă de conexiune instabilă
 feedback_conn_wdc=Unable to connect to wireless network
 feedback_connection_type=Alegeți opțiunea care descrie cel mai bine funcționarea serviciului dvs. DSL
+feedback_contact_info=Metoda de contact
 feedback_country=Țara / regiunea dvs.
 feedback_cancel_capturing=Anulare captură depanare
 feedback_current_capturing=Captură jurnal diagnosticare depanare în curs
@@ -2030,6 +2031,7 @@ feedback_fail1=<span style="color:#FC0;">Sistemul nu s-a putut conecta la server
 feedback_fail2=Copiaţi doar conţinutul de mai josşi lipiţi-l ca fiind conţinutul e-mailului dvs.
 feedback_fail3=Descărcați următoarele fișiere de depanare și adăugați-le ca atașament la e-mail:
 feedback_fail_BindGoogle=Sau puteți să <a id="bind_google">asociați contul dvs. Google</a> pentru a trimite feedback prin e-mail.
+feedback_format_alert=The format is not valid.
 feedback_Frequent_interrupt=Întreruperi frecvente
 feedback_iptable_setting=Setare iptables
 feedback_isp=Furnizorul dvs. de servicii Internet (ISP)
@@ -3711,6 +3713,7 @@ WANAggregation_help_step4=Reporniți ruterul
 WANAggregation_help_final=Dacă pașii de mai sus eșuează, raportați problema pe <a href='https://www.asus.com/support/' target='_blank' style='color:#000;text-decoration:underline;'>site-ul de asistență ASUS</a>.
 WANAggregation_wanType_hint=Agregarea WAN nu acceptă tipuri WAN cum ar fi PPPoE, PPTP și L2TP. Dacă tipul WAN se modifică la PPPoE, PPTP sau L2TP, agregarea WAN va fi dezactivată automat. Sigur doriţi să continuaţi?
 WebGUI_issue=Nu poate accesa pagina firmware
+wechat=WeChat
 WhiteList=Lista de alb
 WiFi_Proxy_desc=Enable this feature in Repeater mode to successfully extend certain hotspot (public WiFi) network.
 WiFi_Proxy_enable=Enable WiFi Proxy

@@ -36,8 +36,10 @@ var captive_portal_enable = '<% nvram_get("captive_portal_enable"); %>';
 var faq_href = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=144";
 
 window.onresize = function() {
-	if(document.getElementById("guestnetwork_wl").style.display == "block") {
-		cal_panel_block("guestnetwork_wl", 0.25);
+	if(document.getElementById("guestnetwork_wl") != null){
+		if(document.getElementById("guestnetwork_wl").style.display == "block") {
+			cal_panel_block("guestnetwork_wl", 0.25);
+		}
 	}
 }
 

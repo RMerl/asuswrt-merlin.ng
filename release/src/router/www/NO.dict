@@ -2005,6 +2005,7 @@ feedback_conn_rra=Automatisk omstart av ruter
 feedback_conn_ucp=Problemer med ustabil tilkobling
 feedback_conn_wdc=Unable to connect to wireless network
 feedback_connection_type=Velg hvilket alternativ som best beskriver ytelsen til din DSL-tjeneste
+feedback_contact_info=Kontaktmetode
 feedback_country=Ditt land / region
 feedback_cancel_capturing=Avbryt feilsøkingsopptak
 feedback_current_capturing=Diagnostisk feilsøkingsloggopptak pågår
@@ -2030,6 +2031,7 @@ feedback_fail1=<span style="color:#FC0;">Systemet kan ikke koble til e-postserve
 feedback_fail2=Bare kopier innholdet under, og lim inn som e-postinnhold.
 feedback_fail3=Last ned følgende feilsøkingsfiler og legg dem til som et e-postvedlegg:
 feedback_fail_BindGoogle=Eller du kan <a id="bind_google">binde Google-kontoen</a> til å sende tilbakemeldinger via e-post.
+feedback_format_alert=The format is not valid.
 feedback_Frequent_interrupt=Hyppige avbrytelser
 feedback_iptable_setting=Iptables innstilling
 feedback_isp=Din ISP / Internetleverandør
@@ -3711,6 +3713,7 @@ WANAggregation_help_step4=Start om ruteren
 WANAggregation_help_final=Hvis trinnene nevnt over, ikke lykkes, rapporter problemet til <a href='https://www.asus.com/support/' target='_blank' style='color:#000;text-decoration:underline;'>ASUS-kundestøtteside</a>.
 WANAggregation_wanType_hint=WAN-aggregering støtter ikke WAN-typer som PPPoE, PPTP og L2TP. Hvis WAN-typen endres til PPPoE, PPTP eller L2TP, deaktiveres WAN-aggregering automatisk. Er du sikker på at du vil fortsette?
 WebGUI_issue=Ingen tilgang til fastvareside
+wechat=WeChat
 WhiteList=Hvit liste
 WiFi_Proxy_desc=Enable this feature in Repeater mode to successfully extend certain hotspot (public WiFi) network.
 WiFi_Proxy_enable=Enable WiFi Proxy

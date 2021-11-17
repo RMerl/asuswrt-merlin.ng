@@ -10,6 +10,7 @@
 <link rel="icon" href="images/favicon.png">
 <title><#Web_Title#></title>
 <script language="JavaScript" type="text/javascript" src="/js/jquery.js"></script>
+<script type="text/javascript" src="/js/https_redirect/https_redirect.js"></script>
 <script type="text/javascript" src="/js/httpApi.js"></script>
 <style>
 body, .p1, .form-input{

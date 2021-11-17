@@ -2005,6 +2005,7 @@ feedback_conn_rra=Restartovat router automaticky
 feedback_conn_ucp=Problém s nestabilním připojením
 feedback_conn_wdc=Unable to connect to wireless network
 feedback_connection_type=Zvolte popis, který nejlépe vyjadřuje výkon vaší služby DSL
+feedback_contact_info=Kontaktní Metoda
 feedback_country=Vaše země / oblast
 feedback_cancel_capturing=Zrušte záznam ladění
 feedback_current_capturing=Diagnostika vyladí probíhající záznam protokolu
@@ -2030,6 +2031,7 @@ feedback_fail1=<span style="color:#FC0;">Systém se nemohl připojit k poštovn�
 feedback_fail2=Jednoduše zkopírujte obsah níže a vložte jej do obsahu vašeho e-mailu.
 feedback_fail3=Stáhněte si následující ladící soubory a přidejte jako přílohu k e-mailu:
 feedback_fail_BindGoogle=Nebo můžete <a id="bind_google">vytvořit vazbu se svým účtem Google</a> a odeslat zpětnou vazbu e-mailem.
+feedback_format_alert=The format is not valid.
 feedback_Frequent_interrupt=Častá přerušení
 feedback_iptable_setting=Nastavení iptables
 feedback_isp=Váš poskytovatel internetových služeb (ISP)
@@ -3711,6 +3713,7 @@ WANAggregation_help_step4=Restartujte svůj router
 WANAggregation_help_final=Pokud výše uvedené kroky nejsou úspěšné, ohlaste tento problém na <a href='https://www.asus.com/support/' target='_blank' style='color:#000;text-decoration:underline;'>webu podpory ASUS</a>.
 WANAggregation_wanType_hint=Agregace WAN nepodporuje typy sítí WAN, například PPPoE, PPTP a L2TP. Chcete-li změnit typ své sítě WAN na PPPoE, PPTP nebo L2TP, bude agregace WAN automaticky deaktivována. Opravdu chcete pokračovat?
 WebGUI_issue=Přístup ke stránce firmwaru nefunguje
+wechat=WeChat
 WhiteList=Bílá listina
 WiFi_Proxy_desc=Enable this feature in Repeater mode to successfully extend certain hotspot (public WiFi) network.
 WiFi_Proxy_enable=Enable WiFi Proxy

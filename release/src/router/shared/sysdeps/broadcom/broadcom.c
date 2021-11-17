@@ -1418,12 +1418,12 @@ void update_macfilter_relist()
 	char wl_ifnames[32] = { 0 };
 	int nband = 0;
 
-	if (nvram_get("cfg_relist"))
+	if (is_cfg_relist_exist())
 	{
 #ifdef RTCONFIG_AMAS
 		if (nvram_get_int("re_mode") == 1) {
 			/* in cfg_relist */
-			nv = nvp = strdup(nvram_safe_get("cfg_relist"));
+			nv = nvp = get_cfg_relist(0);
 			if (nv) {
 				while ((b = strsep(&nvp, "<")) != NULL) {
 					if ((vstrsep(b, ">", &reMac, &maclist2g, &maclist5g, &timestamp) != 4))
@@ -1447,7 +1447,7 @@ void update_macfilter_relist()
 			}
 
 			/* in cfg_relist_x */
-			nv = nvp = strdup(nvram_safe_get("cfg_relist_x"));
+			nv = nvp = get_cfg_relist(1);
 			if (nv) {
 				while ((b = strsep(&nvp, "<")) != NULL) {
 					if ((vstrsep(b, ">", &reMac, &maclist6g, &reserved1, &reserved2) != 4))
@@ -1464,6 +1464,7 @@ void update_macfilter_relist()
 						}
 					}
 				}
+				free(nv);
 			}
 		}
 #endif
@@ -1511,7 +1512,7 @@ void update_macfilter_relist()
 				nband = nvram_get_int(strcat_r(prefix, "nband", tmp));
 
 				/* in cfg_relist */
-				nv = nvp = strdup(nvram_safe_get("cfg_relist"));
+				nv = nvp = get_cfg_relist(0);
 				if (nv) {
 					while ((b = strsep(&nvp, "<")) != NULL) {
 						if ((vstrsep(b, ">", &reMac, &maclist2g, &maclist5g, &timestamp) != 4))
@@ -1548,7 +1549,7 @@ void update_macfilter_relist()
 				}
 
 				/* in cfg_relist_x */
-				nv = nvp = strdup(nvram_safe_get("cfg_relist_x"));
+				nv = nvp = get_cfg_relist(1);
 				if (nv) {
 					while ((b = strsep(&nvp, "<")) != NULL) {
 						if ((vstrsep(b, ">", &reMac, &maclist6g, &reserved1, &reserved2) != 4))
@@ -1569,6 +1570,7 @@ void update_macfilter_relist()
 							}
 						}
 					}
+					free(nv);
 				}
 
 				dbg("maclist count[%d]\n", maclist->count);

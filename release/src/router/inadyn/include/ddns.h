@@ -118,6 +118,9 @@ typedef struct {
 	time_t         last_update;
 #ifdef ASUSWRT
 	int            script_called;
+#ifdef USE_IPV6
+	char           ipv6_address[INET6_ADDRSTRLEN];
+#endif
 #endif
 } ddns_alias_t;
 

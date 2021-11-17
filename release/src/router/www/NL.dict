@@ -2005,6 +2005,7 @@ feedback_conn_rra=Router start automatisch opnieuw op
 feedback_conn_ucp=Probleem met instabiele verbinding
 feedback_conn_wdc=Unable to connect to wireless network
 feedback_connection_type=Kies welke optie het best de prestaties van uw DSL-service beschrijft
+feedback_contact_info=Contact methode
 feedback_country=Uw land / regio
 feedback_cancel_capturing=Debuglog anuleren
 feedback_current_capturing=Diagnostische debuglog wordt gemaakt
@@ -2030,6 +2031,7 @@ feedback_fail1=<span style="color:#FC0;">Het systeem kan geen verbinding maken m
 feedback_fail2=Kopieer gewoon de onderstaande inhoud en plak deze als uw e-mailinhoud.
 feedback_fail3=Download de volgende foutopsporingsbestanden en voeg ze toe als een e-mailbijlage:
 feedback_fail_BindGoogle=U kunt ook <a id="bind_google">uw Google-account verbinden</a> om feedback via e-mail te verzenden.
+feedback_format_alert=The format is not valid.
 feedback_Frequent_interrupt=Frequente storingen
 feedback_iptable_setting=iptable-instelling
 feedback_isp=Uw ISP / Internetprovider
@@ -3711,6 +3713,7 @@ WANAggregation_help_step4=Start uw router opnieuw op
 WANAggregation_help_final=Als de bovenstaande stappen mislukken, moet u dit probleem melden op de <a href='https://www.asus.com/support/' target='_blank' style='color:#000;text-decoration:underline;'>ASUS-ondersteuningssite</a>.
 WANAggregation_wanType_hint=WAN-aggregatie biedt geen ondersteuning voor WAN-types, zoals PPPoE, PPTP en L2TP. Als uw WAN-type wijzigt naar PPPoE, PPTP of L2TP, wordt de WAN-aggregatie automatisch uitgeschakeld. Weet u zeker dat u wilt doorgaan?
 WebGUI_issue=De firmwarepagina kan niet worden geopend
+wechat=WeChat
 WhiteList=Witte lijst
 WiFi_Proxy_desc=Enable this feature in Repeater mode to successfully extend certain hotspot (public WiFi) network.
 WiFi_Proxy_enable=Enable WiFi Proxy

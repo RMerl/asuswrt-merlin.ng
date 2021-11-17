@@ -112,7 +112,7 @@ function Get_Component_Http_Desc(){
 		if($(this).closest(".popup_component").find("#https_redirect_hint").prop("checked"))
 			cookie.set("not_show_https_redirect", "1", 365);
 
-		cookie.set("from_https_redirect", "1", 1);
+		// cookie.set("from_https_redirect", "1", 1);
 		location.reload();
 	});
 	return $popup_component;
@@ -152,7 +152,7 @@ function Get_Component_Https_Desc(){
 		$("body").find(".popup_component").remove();
 		$("body").find("#https_redirect_component").remove();
 
-		cookie.set("from_https_redirect", "1", 1);
+		// cookie.set("from_https_redirect", "1", 1);
 		if(location.protocol != 'https:'){
 			var https_lanport = '<% nvram_get("https_lanport"); %>';
 			var https_lanip = '<% nvram_get("lan_ipaddr"); %>';
@@ -164,6 +164,7 @@ function Get_Component_Https_Desc(){
 	return $popup_component;
 }
 $(document).ready(function(){
+/*
 	if($(location).attr("pathname").indexOf("Main_Login.asp") > -1){
 		var referrer = document.referrer;
 		if(referrer.indexOf("login.cgi") > -1){
@@ -172,7 +173,7 @@ $(document).ready(function(){
 	}
 	if($(location).attr("pathname").indexOf("QIS_wizard.htm") > -1)
 		return;
-
+*/
 	if(Check_Https_Redirect_Status())
 		Initial_Https_Redirect();
 });

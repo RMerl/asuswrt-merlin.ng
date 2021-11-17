@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019, Broadcom. All Rights Reserved.
+ * Copyright (C) 2021, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -28,16 +28,19 @@
 
 /* ANSI headers */
 #include <time.h>
+#include "rtconfig.h"
 #ifdef RTCONFIG_HND_ROUTER_AX
 #include <inttypes.h>
+#else
+typedef unsigned int uintptr_t;
 #endif
 
 /* timer ID */
-typedef unsigned long bcm_timer_module_id;
-typedef unsigned long bcm_timer_id;
+typedef uintptr_t bcm_timer_module_id;
+typedef uintptr_t bcm_timer_id;
 
 /* timer callback */
-typedef void (*bcm_timer_cb)(bcm_timer_id id, unsigned int data);
+typedef void (*bcm_timer_cb)(bcm_timer_id id, uintptr_t data);
 
 /* OS-independant interfaces, applications should call these functions only */
 int bcm_timer_module_init(int timer_entries, bcm_timer_module_id *module_id);

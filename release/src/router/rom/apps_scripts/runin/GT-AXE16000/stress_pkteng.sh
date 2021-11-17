@@ -94,7 +94,7 @@ wl -i eth8 frameburst 1
 wl -i eth8 spatial_policy 1
 wl -i eth8 txcore  -s 1 -c 15
 wl -i eth8 band a
-wl -i eth8 chanspec 36/80
+wl -i eth8 chanspec 149/80
 wl -i eth8 he features 3
 wl -i eth8 up
 wl -i eth8 phy_forcecal 1

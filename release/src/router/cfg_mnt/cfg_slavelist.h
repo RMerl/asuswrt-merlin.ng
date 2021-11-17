@@ -8,7 +8,6 @@
 
 #define CFG_FILE_LOCK		"cfg_mnt"
 #define KEY_SHM_CFG		2001
-#define CFG_CLIENT_NUM		16
 #define MAC_LIST_JSON_FILE	"/tmp/maclist.json"
 #define ALIAS_LEN			33
 #define IP_LEN				4
@@ -17,11 +16,12 @@
 #define MODEL_NAME_LEN		33
 #define TERRITORY_CODE_LEN	33
 #define RE_LIST_JSON_FILE	"/tmp/relist.json"
-#ifdef RTCONFIG_MAX_RE_32
-#define MAX_RELIST_COUNT	32
+#ifdef RTCONFIG_MAX_RE
+#define MAX_RELIST_COUNT	RTCONFIG_MAX_RE
 #else
-#define MAX_RELIST_COUNT	9
+#define MAX_RELIST_COUNT	MAX_RELIST_NUM
 #endif
+#define CFG_CLIENT_NUM		(MAX_RELIST_COUNT + 1)
 #define SSID_LEN				33
 #define LLDP_STAT_LEN       128
 #define RE_LIST_MAX_LEN		(MAX_RELIST_COUNT * 128)

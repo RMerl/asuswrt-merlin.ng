@@ -647,9 +647,6 @@ define(function(){
 				if(!dnsfilter_support)
 					retArray.push("DNSFilter.asp");
 
-				if(SG_mode)
-					retArray.push("Advanced_WWPS_Content.asp");
-
 				/* Operation Mode */
 				if(isSwMode("re")){
 					retArray.push("GameBoost.asp");
@@ -739,7 +736,7 @@ define(function(){
 					retArray.push("Advanced_Smart_Connect.asp");
 				}
 
-				if(!internetSpeed_support){
+				if(!internetSpeed_support && !internetSpeed_lite_support){
 					retArray.push("AdaptiveQoS_InternetSpeed.asp");
 				}
 

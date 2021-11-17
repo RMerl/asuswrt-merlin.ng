@@ -746,6 +746,37 @@ function initial(){
 		}
 			
 		document.getElementById("wl_gmode_checkbox").style.display = "";
+
+		if(document.form.wl_rateset.value == "ofdm"){
+			document.form.wl_rateset.checked = true;
+		}
+		else{
+			document.form.wl_rateset.checked = false;
+		}
+
+		wl_mode_change(document.form.wl_nmode_x.value);	
+	}
+}
+
+function wl_mode_change(mode){
+	if(wl_unit_value == '0'){
+		if(mode == '0'){
+			document.form.wl_rateset.disabled = false;
+			document.getElementById("wl_rateset_checkbox").style.display = "";
+		}
+		else{
+			document.form.wl_rateset.disabled = true;
+			document.getElementById("wl_rateset_checkbox").style.display = "none";
+		}
+	}
+}
+
+function wl_disable11b(obj){
+	if(obj.checked){
+		document.form.wl_rateset.value = 'ofdm';
+	}
+	else{
+		document.form.wl_rateset.value = 'default';
 	}
 }
 
@@ -1422,13 +1453,14 @@ function regen_mode(){	//please sync to initial() : //Change wireless mode help 
 					<tr>
 						<th><a id="wl_mode_desc" class="hintstyle" href="javascript:void(0);" onClick="openHint(0, 4);"><#WLANConfig11b_x_Mode_itemname#></a></th>
 						<td>									
-							<select name="wl_nmode_x" class="input_option" onChange="">
+							<select name="wl_nmode_x" class="input_option" onChange="wl_mode_change(this.value);">
 								<option value="0" <% nvram_match("wl_nmode_x", "0","selected"); %>><#Auto#></option>
 								<option value="1" <% nvram_match("wl_nmode_x", "1","selected"); %>>N Only</option>
 								<option value="2" <% nvram_match("wl_nmode_x", "2","selected"); %>>Legacy</option>
 							</select>
 							<span id="wl_optimizexbox_span" style="display:none"><input type="checkbox" name="wl_optimizexbox_ckb" id="wl_optimizexbox_ckb" value="<% nvram_get("wl_optimizexbox"); %>" onclick="document.form.wl_optimizexbox.value=(this.checked==true)?1:0;"> <#WLANConfig11b_x_Mode_xbox#></span>
 							<span id="wl_gmode_checkbox" style="display:none;"><input type="checkbox" name="wl_gmode_check" id="wl_gmode_check" value="" onClick="wl_gmode_protection_check();"> <#WLANConfig11b_x_Mode_protectbg#></span>
+							<span id="wl_rateset_checkbox" style="display:none;"><input type="checkbox" name="wl_rateset" id="wl_rateset" value="<% nvram_get("wl_rateset"); %>" onClick="wl_disable11b(this)">Disable 11b </span>
 							<span id="wl_nmode_x_hint" style="display:none;"><br><#WLANConfig11n_automode_limition_hint#><br></span>
 							<span id="wl_NOnly_note" style="display:none;"></span>
 							<br>

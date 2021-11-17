@@ -736,8 +736,8 @@ function initial(){
 		}
 
 		if(ofdma_onlyDL_support){
-			var value = ['0', '1'];
-			var desc = ['<#WLANConfig11b_WirelessCtrl_buttonname#>', 'DL OFDMA only'];
+			var value = ['0', '1', '3'];
+			var desc = ['<#WLANConfig11b_WirelessCtrl_buttonname#>', 'DL OFDMA only', 'DL OFDMA + MU-MIMO'];
 			add_options_x2(document.form.wl_ofdma, desc, value, document.form.wl_ofdma.value);
 
 		}

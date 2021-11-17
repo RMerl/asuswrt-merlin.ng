@@ -18,9 +18,10 @@
 <script language="JavaScript" type="text/javascript" src="/popup.js"></script>
 <script type="text/javascript" language="JavaScript" src="/help.js"></script>
 <script type="text/javascript" language="JavaScript" src="/validator.js"></script>
+<script type="text/javascript" language="JavaScript" src="/form.js"></script>
 <script type="text/javascript" language="JavaScript" src="/js/table/table.js"></script>
 <script type="text/javascript" language="JavaScript" src="/js/jquery.js"></script>
-<script type="text/javascript" src="/js/httpApi.js"></script>
+<script type="text/javascript" language="JavaScript" src="/js/httpApi.js"></script>
 <script>
 var autofw_rulelist_array = [];
 var wans_mode ='<% nvram_get("wans_mode"); %>';
@@ -174,9 +175,9 @@ function showautofw_rulelist(){
 				},
 				{
 					"editMode" : "text",
-					"title" : "<#IPConnection_autofwInPort_itemname#>",
+					"title" : "<#IPConnection_autofwInPort_itemname#><div class=\"setup_info_icon\" style=\"display:none;margin-left:185px;\"></div>",
 					"maxlength" : "11",
-					"validator" : "portRange"
+					"validator" : "portRangeS46"
 				},
 				{
 					"editMode" : "select",

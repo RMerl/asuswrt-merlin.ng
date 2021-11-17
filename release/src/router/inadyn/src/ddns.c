@@ -45,6 +45,9 @@
 #ifdef BCMARM
 #include "ifaddrs.c"
 #endif
+#ifdef ASUSWRT
+#include <bcmnvram.h>
+#endif
 
 /* Conversation with the checkip server */
 #define DYNDNS_CHECKIP_HTTP_REQUEST  					\
@@ -753,7 +756,7 @@ static int update_alias_table(ddns_t *ctx)
 			script_exec:
 				alias->script_called = 1;
 #endif
-				os_shell_execute(script_exec, alias->address, alias->name, event, rc);
+				os_shell_execute(script_exec, alias->address, alias->ipv6_address, alias->name, event, rc);
 			}
 		}
 
@@ -762,7 +765,46 @@ static int update_alias_table(ddns_t *ctx)
 
 		if (RC_DDNS_RSP_RETRY_LATER == rc && !remember)
 			remember = rc;
-
+#ifdef ASUSWRT
+		if(nvram_match("ddns_return_code", "ddns_query"))
+		{
+			switch (rc) {
+				/* Return these cases (define in check_error()) will retry again in Inadyn,
+				 * so set the error code and retry in watchdog */
+				/* defined in check_error() */
+				case RC_TCP_INVALID_REMOTE_ADDR: /* Probably temporary DNS error. */
+				case RC_TCP_CONNECT_FAILED:      /* Cannot connect to DDNS server atm. */
+				case RC_TCP_SEND_ERROR:
+				case RC_TCP_RECV_ERROR:
+				case RC_OS_INVALID_IP_ADDRESS:
+				case RC_DDNS_RSP_RETRY_LATER:
+				case RC_DDNS_INVALID_CHECKIP_RSP:
+					logit(LOG_WARNING, "Will retry again ...");
+					nvram_set ("ddns_return_code", "Time-out");
+					nvram_set ("ddns_return_code_chk", "Time-out");
+					break;
+				case RC_HTTPS_FAILED_CONNECT:
+				case RC_HTTPS_FAILED_GETTING_CERT:
+					logit(LOG_WARNING, "Will retry again ...");
+					nvram_set ("ddns_return_code", "connect_fail");
+					nvram_set ("ddns_return_code_chk", "connect_fail");
+					break;
+				case RC_DDNS_RSP_NOHOST:
+				case RC_DDNS_RSP_NOTOK:
+					nvram_set("ddns_return_code", "Update failed");
+					nvram_set("ddns_return_code_chk", "Update failed");
+					break;
+				case RC_DDNS_RSP_AUTH_FAIL:
+					nvram_set("ddns_return_code", "auth_fail");
+					nvram_set("ddns_return_code_chk", "auth_fail");
+					break;
+				default:
+					nvram_set("ddns_return_code", "unknown_error");
+					nvram_set("ddns_return_code_chk", "unknown_error");
+					break;
+			}
+		}
+#endif
 		info = conf_info_iterator(0);
 	}
 

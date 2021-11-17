@@ -28,6 +28,7 @@ extern unsigned char label_mac[];
 extern unsigned char cfg_group_g[];
 extern char productid_g[];
 extern char mac[];
+extern int cfg_groupid_is_null;
 #endif
 
 int getStorageStatus(STORAGE_INFO_T *st)
@@ -148,13 +149,19 @@ int storage_setbuf(int type, unsigned char *dst, unsigned char *data)
 		memcpy(dst+1, &c, 1);
 		memcpy(dst+2, data, len);
 	}
+	printf("[%s %d] type=%d\n", __FUNCTION__, __LINE__, type);
 
 	return len + 2;
 }
+
 int getStorageStatusFindCap(STORAGE_INFO_FINDCAP_T *st)
 {
 	unsigned char value[256];
 	unsigned char *p = NULL;
+	char vsie_id_str[41] = {0};
+	char *tmp = NULL;
+	size_t cfg_group_len = 0;
+	int ts = time((time_t *)NULL);
 
 	memset(st, 0, sizeof(*st));
 
@@ -203,13 +210,26 @@ int getStorageStatusFindCap(STORAGE_INFO_FINDCAP_T *st)
 	}
 #endif
 
-	char vsie_id_str[41] = {0};
+	if(cfg_groupid_is_null == 1)
+	{
+		tmp = gen_vsie_id(ts, &cfg_group_len);
+		if (tmp != NULL)
+		{
+			str2hex(tmp, cfg_group_g, cfg_group_len);
+			cfg_groupid_is_null = 0;
+			free(tmp);
+		}
+	}
+
 	hex2str(cfg_group_g, &vsie_id_str[0], sizeof(vsie_id_str)/2);
 	printf("CfgGroup IDstr : %s\n", vsie_id_str);
 
 	memset(value, 0, sizeof(value));
 	p = value;
-	p += storage_setbuf(INFO_TYPE_GROUPID, p, (unsigned char*)cfg_group_g);
+	if(cfg_groupid_is_null != 1)
+	{
+		p += storage_setbuf(INFO_TYPE_GROUPID, p, (unsigned char*)cfg_group_g);
+	}
 	p += storage_setbuf(INFO_TYPE_PRODUCT_NAME, p, (unsigned char*)productid_g);
 	p += storage_setbuf(INFO_TYPE_MAC, p, (unsigned char*)mac);
 	memcpy(st->Info, value, p-value);

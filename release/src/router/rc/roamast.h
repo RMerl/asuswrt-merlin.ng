@@ -238,7 +238,7 @@ typedef struct rast_sta_info {
 	uint64 rx_byte;
 #if defined(RTCONFIG_BCMARM)
 	uint64 rx_bytes;
-#if defined(RTCONFIG_HND_ROUTER_AX) || defined(RTCONFIG_HND_ROUTER_AX_675X)
+#if defined(RTCONFIG_HND_ROUTER_AX)
 	char tx_nrate[64];
 	char rx_nrate[64];
 #endif

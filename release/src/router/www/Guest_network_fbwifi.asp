@@ -92,8 +92,10 @@ if(fbwifi_5g_2_index == "")
 var fbwifi_id = '<% nvram_get("fbwifi_id"); %>';
 var fbwifi_wl_idx = "";
 window.onresize = function() {
-	if(document.getElementById("fbwifi_page_setting").style.display == "block") {
-		cal_panel_block("fbwifi_page_setting", 0.35);
+	if(document.getElementById("fbwifi_page_setting") != null){
+		if(document.getElementById("fbwifi_page_setting").style.display == "block") {
+			cal_panel_block("fbwifi_page_setting", 0.35);
+		}
 	}
 } 
 function initial(){

@@ -904,44 +904,54 @@ var httpApi ={
 		return specified_profile;
 	},
 
-	"checkCloudModelIcon": function(model_info, callBackSuccess, callBackError){
+	"transformCloudModelName": function(model_info){
 		var modelName = (model_info.model_name != undefined) ? model_info.model_name : "";
 		var tcode = (model_info.tcode != undefined) ? model_info.tcode : "";
 		var cobrand = (model_info.cobrand != undefined) ? model_info.cobrand : "";
-		var getCloudModelIconSrc = function(){
-			var transformName = modelName;
-			if(transformName == "RT-AC66U_B1" || transformName == "RT-AC1750_B1" || transformName == "RT-N66U_C1" || transformName == "RT-AC1900U" || transformName == "RT-AC67U")
-				transformName = "RT-AC66U_V2";
-			else if(transformName == "BLUE_CAVE")
-				transformName = "BLUECAVE";
-			else if(transformName == "Lyra")
-				transformName = "MAP-AC2200";
-			else if(transformName == "Lyra_Mini" || transformName == "LyraMini")
-				transformName = "MAP-AC1300";
-			else if(transformName == "Lyra_Trio")
-				transformName = "MAP-AC1750";
-			else if(transformName == "LYRA_VOICE")
-				transformName = "MAP-AC2200V";
+		var icon_model_name = (model_info.icon_model_name != undefined) ? model_info.icon_model_name : "";
 
-			if(cobrand != undefined && cobrand != ""){
-				transformName = transformName + "_CB_" + cobrand;
-			}
-			else if(tcode != undefined && tcode != ""){
-				if(transformName == "RT-AX86U" && tcode == "GD/01")
-					transformName = "RT-AX86U_GD01";
-				else if(transformName == "RT-AX82U" && tcode == "GD/01")
-					transformName = "RT-AX82U_GD01";
-			}
+		var transformName = modelName;
+		if(transformName == "RT-AC66U_B1" || transformName == "RT-AC1750_B1" || transformName == "RT-N66U_C1" || transformName == "RT-AC1900U" || transformName == "RT-AC67U")
+			transformName = "RT-AC66U_V2";
+		else if(transformName == "BLUE_CAVE")
+			transformName = "BLUECAVE";
+		else if(transformName == "Lyra")
+			transformName = "MAP-AC2200";
+		else if(transformName == "Lyra_Mini" || transformName == "LyraMini")
+			transformName = "MAP-AC1300";
+		else if(transformName == "Lyra_Trio")
+			transformName = "MAP-AC1750";
+		else if(transformName == "LYRA_VOICE")
+			transformName = "MAP-AC2200V";
 
-			var server = "https://nw-dlcdnet.asus.com";
-			var fileName = "/plugin/productIcons/" + transformName + ".png";
+		if(icon_model_name != undefined && icon_model_name != ""){
+			transformName = icon_model_name;
+		}
+		else if(cobrand != undefined && cobrand != ""){
+			transformName = transformName + "_CB_" + cobrand;
+		}
+		else if(tcode != undefined && tcode != ""){
+			if(transformName == "RT-AX86U" && tcode == "GD/01")
+				transformName = "RT-AX86U_GD01";
+			else if(transformName == "RT-AX82U" && tcode == "GD/01")
+				transformName = "RT-AX82U_GD01";
+		}
+		return transformName;
+	},
 
-			return server + fileName;
-		};
+	"checkCloudModelIcon": function(model_info, callBackSuccess, callBackError){
+		var server = "https://nw-dlcdnet.asus.com";
+		var cloudModelName = "";
+		if(model_info.cloudModelName != undefined && model_info.cloudModelName != "")
+			cloudModelName = model_info.cloudModelName;
+		else
+			cloudModelName = httpApi.transformCloudModelName(model_info);
 
-		if(modelName != ""){
+		var fileName = "/plugin/productIcons/" + cloudModelName + ".png";
+		var img_src = server + fileName;
+		if(cloudModelName != ""){
 			$("<img>")
-				.attr('src', getCloudModelIconSrc())
+				.attr('src', img_src)
 				.on("load", function(e){
 					if(callBackSuccess) callBackSuccess($(this).attr("src"));
 					$(this).remove();
@@ -1381,6 +1391,17 @@ var httpApi ={
 			}
 		}
 		return misc_info_status;
+	},
+	"aimesh_get_win_open_url" : function(_node_info, _page){
+		var node_capability = httpApi.aimesh_get_node_capability(_node_info);
+		var url = "http://" + _node_info.ip + "/" + _page;
+		if(node_capability.local_access){
+			var header_info = httpApi.hookGet("get_header_info");
+			if(header_info.protocol == "https"){
+				url = "https://" + _node_info.ip + ":" + header_info.port + "/" + _page;
+			}
+		}
+		return url;
 	},
 	"get_ipsec_cert_info": function(callBack){
 		$.ajax({

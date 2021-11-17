@@ -8,6 +8,8 @@
 <meta HTTP-EQUIV="Expires" CONTENT="-1">
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
 <link rel="icon" href="images/favicon.png">
+<script type="text/javascript" src="/js/jquery.js"></script>
+<script type="text/javascript" src="/js/https_redirect/https_redirect.js"></script>
 <title><#Web_Title#></title>
 <style>
 @font-face{

@@ -728,6 +728,17 @@ struct vlan_rules_s {
 };
 #endif
 
+#if defined(RTCONFIG_BT_CONN)
+#define BASE_UUID "FB 34 9B 5F 80 00 00 80 00 10 00 00 %s AB 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"
+#if defined(XT12)
+#define UUID_AMAP "8B"
+#elif defined(ET12)
+#define UUID_AMAP "8C"
+#else
+#define UUID_AMAP "00"
+#endif
+#endif
+
 extern char *read_whole_file(const char *target);
 extern char *get_line_from_buffer(const char *buf, char *line, const int line_size);
 #if defined(HND_ROUTER)
@@ -1274,9 +1285,6 @@ enum led_id {
 #if defined(DSL_AX82U)
 	LED_WIFI,
 #endif
-#ifdef RTAX58U_V2
-	SWITCH_RESET,
-#endif
 #if defined(GTAXE16000) || defined(GTAX11000_PRO)
 	LED_WAN_RGB_RED,
 	LED_WAN_RGB_GREEN,
@@ -1284,6 +1292,7 @@ enum led_id {
 	LED_10G_RGB_RED,
 	LED_10G_RGB_GREEN,
 	LED_10G_RGB_BLUE,
+	LED_10G_WHITE,
 #endif
 	LED_ID_MAX,	/* last item */
 };
@@ -1307,6 +1316,7 @@ static inline int have_usb3_led(int model)
 		case MODEL_RTAC56U:
 		case MODEL_RTAC56S:
 		case MODEL_RTAC68U:
+		case MODEL_RTAC68U_V4:
 #ifndef RTCONFIG_ETRON_XHCI_USB3_LED
 		case MODEL_RTAC58U:
 		case MODEL_RTAC82U:
@@ -3102,7 +3112,7 @@ static inline int turbo_led_control(int onoff)
 
 static inline int boost_led_control(int onoff)
 {
-#if defined(GTAX11000) || defined(GTAXE11000) || defined(GTAX11000_PRO) || defined(GTAXE16000)
+#if defined(GTAX11000) || defined(GTAXE11000)
 	return led_control(LED_LOGO, onoff);
 #else
 	return turbo_led_control(onoff);
@@ -3539,12 +3549,17 @@ extern void deauth_guest_sta(char *, char *);
 #endif
 
 #ifdef RTCONFIG_CFGSYNC
+#define MAX_RELIST_NUM	9
 #define	CFGSYNC_GROUPID_LEN	CKN_STR32
 #define CLIENT_STALIST_JSON_PATH	"/tmp/stalist.json"
+#define CFG_RELIST_FILE		"/tmp/cfg_relist"
+#define CFG_RELIST_X_FILE		"/tmp/cfg_relist_x"
 extern int is_valid_group_id(const char *);
 extern char *if_nametoalias(char *name, char *alias, int alias_len);
 extern int check_re_in_macfilter(int unit, char *mac);
 extern void update_macfilter_relist();
+extern char *get_cfg_relist(int xfile);
+extern int is_cfg_relist_exist();
 #endif
 
 #if defined(RTCONFIG_DETWAN) && (defined(RTCONFIG_SOC_IPQ40XX))
@@ -3790,5 +3805,14 @@ int is_passwd_default(void);
 #define SMRTCONN_5G_ONLY	2
 #define SMRTCONN_2G_AND_5G	3
 #endif
+
+#ifdef CONFIG_BCMWL5
+#define WL_NBAND_2G 2
+#define WL_NBAND_5G 1
+#define WL_NBAND_6G 4
+#endif
+
+#define GENERIC_LANGS	"BR CN CZ DE EN ES FR HU IT JP KR MS NL PL RU RO SL TH TR TW UK"
+#define ALL_LANGS 		"BR CN CZ DE EN ES FR HU IT JP KR MS NL PL RU RO SL TH TR TW UK DA FI NO SV"
 
 #endif	/* !__SHARED_H__ */

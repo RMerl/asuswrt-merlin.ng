@@ -12,7 +12,7 @@ install: all
 ifneq ($(HND_ROUTER),y)
 	install lld2d $(INSTALLDIR)/usr/sbin
 else
-ifeq ($(HND_ROUTER_AX_675X),y)
+ifeq ($(or $(HND_ROUTER_AX_675X),$(RTCONFIG_BCM_502L07P2)),y)
 	install lld2d.6755axhnd $(INSTALLDIR)/usr/sbin/lld2d
 else
 	install lld2d.hnd $(INSTALLDIR)/usr/sbin/lld2d

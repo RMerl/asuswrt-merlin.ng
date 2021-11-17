@@ -231,9 +231,8 @@ extern int ssl_stream_fd;
 #include "bcm_flashutil.h"
 #include "bcm_imgutil_api.h"
 #include "cms_retcodes.h"
-
-#define BOOT_SET_NEW_IMAGE          '0'
-
+//#include "bcm_hwdefs.h"
+#define BOOT_SET_NEW_IMAGE_ONCE     '2'
 #endif
 
 #ifdef RTCONFIG_COMFW
@@ -280,9 +279,11 @@ extern int ej_wl_channel_list_5g_80m(int eid, webs_t wp, int argc, char_t **argv
 extern int ej_wl_channel_list_5g_2(int eid, webs_t wp, int argc, char_t **argv);
 extern int ej_wl_channel_list_60g(int eid, webs_t wp, int argc, char_t **argv);
 #ifdef CONFIG_BCMWL5
+extern int ej_wl_chanspecs(int eid, webs_t wp, int argc, char_t **argv, int unit);
 extern int ej_wl_chanspecs_2g(int eid, webs_t wp, int argc, char_t **argv);
 extern int ej_wl_chanspecs_5g(int eid, webs_t wp, int argc, char_t **argv);
 extern int ej_wl_chanspecs_5g_2(int eid, webs_t wp, int argc, char_t **argv);
+extern int ej_wl_chanspecs_6g(int eid, webs_t wp, int argc, char_t **argv);
 #endif
 #if defined(CONFIG_BCMWL5) || defined(RTCONFIG_REALTEK)
 extern int ej_wl_rssi_2g(int eid, webs_t wp, int argc, char_t **argv);
@@ -359,6 +360,9 @@ extern void do_captcha_file(char *url, FILE *stream);
 
 #if defined(CONFIG_BCMWL5)
 extern int dfs_time_remaining(int *dfs_rts, int size);
+#endif
+#if defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(RTCONFIG_HND_ROUTER_AX_6710) ||  defined(RTCONFIG_HND_ROUTER_AX_6756)
+extern int ej_cable_diag(int eid, webs_t wp, int argc, char_t **argv);
 #endif
 
 #if 0
@@ -524,7 +528,7 @@ int get_fronthaul_network_capability_val();
 
 static int get_client_detail_info(struct json_object *clients, struct json_object *macArray, key_t shmkey);
 static int get_custom_clientlist_info(struct json_object *json_object_ptr);
-#define CLIENTAPILEVEL "4"
+#define CLIENTAPILEVEL "5"
 
 #ifdef RTCONFIG_USB
 char SambaVersion[64] = {0};
@@ -612,7 +616,7 @@ void HTTPD_SEND_NT_EVENT(int NT_EVENT_FLAG, char *sub_event)
 #endif
 
 #if 0	// Moved to shared/strings.c
-static void replace_char(char *str, char find, char replace) {
+void replace_char(char *str, char find, char replace) {
 	char *p;
 
 	for(p = str; *p != '\0'; p++)
@@ -4289,6 +4293,7 @@ int validate_apply(webs_t wp, json_object *root) {
 			if(current_page != NULL){
 				if(!strstr(current_page, "QIS_"))
 				{
+					reg_default_final_token();
 					nvram_set("x_Setting", "1");
 					notify_rc("restart_firewall");
 #ifdef RTCONFIG_EXTPHY_BCM84880
@@ -5034,7 +5039,9 @@ static int ej_update_variables(int eid, webs_t wp, int argc, char_t **argv)
 #if defined(RTCONFIG_QCA)
 		{ "Guest_network.asp",			10 },
 		{ "Advanced_Wireless_Content.asp",	19 },
+#ifndef RTCONFIG_AMAS
 		{ "Advanced_WWPS_Content.asp",		19 },
+#endif
 		{ "Advanced_WMode_Content.asp",		19 },
 		{ "Advanced_ACL_Content.asp",		25 },
 		{ "Advanced_WSecurity_Content.asp",	20 },
@@ -13213,6 +13220,7 @@ do_lang_post(char *url, FILE *stream, int len, char *boundary)
 		nvram_set_x ("", "preferred_lang", new_lang);
 		if (is_firsttime ()){
 			cprintf ("set x_Setting --> 1\n");
+			reg_default_final_token();
 			nvram_set("x_Setting", "1");
 			notify_rc("restart_firewall");
 		}
@@ -14161,9 +14169,8 @@ do_upgrade_post(char *url, FILE *stream, int len, char *boundary)
 
 	_dprintf("FirmwareSelect: COMMIT the NEW_IMAGE (in partition %s)\n",
 		((getBootPartition() == 1) ? "2" : "1"));
-	_dprintf("chk BOOT_SET_NEW_IMAGE=%d\n", BOOT_SET_NEW_IMAGE);
-	if (setBootImageState(BOOT_SET_NEW_IMAGE) != 0) {
-		_dprintf("setBootImageState(BOOT_SET_NEW_IMAGE) failed");
+	if (setBootImageState(BOOT_SET_NEW_IMAGE_ONCE) != 0) {
+		_dprintf("setBootImageState(BOOT_SET_NEW_IMAGE_ONCE) failed");
 		if(nvram_match(ATE_FACTORY_MODE_STR(), "1") || nvram_match(ATE_UPGRADE_MODE_STR(), "1"))
 			nvram_set_int("ate_upgrade_state", _ATE_FW_FAILURE);
 
@@ -20330,7 +20337,7 @@ FINISH:
 }
 #endif
 
-#ifdef RTCONFIG_OOKLA
+#if defined(RTCONFIG_OOKLA) || defined(RTCONFIG_OOKLA_LITE)
 static void do_ookla_speedtest_exe_cgi(char *url, FILE *stream);
 static void do_ookla_speedtest_write_history_cgi(char *url, FILE *stream);
 static void set_ookla_speedtest_state_cgi(char *url, FILE *stream);
@@ -21124,6 +21131,7 @@ do_chpass_cgi(char *url, FILE *stream)
 			notify_rc_and_wait(real_action_script);
 
 		if(is_def_pwd){
+			reg_default_final_token();
 			nvram_set("x_Setting", "1");
 			notify_rc("restart_firewall");
 #ifdef RTCONFIG_EXTPHY_BCM84880
@@ -21417,7 +21425,7 @@ struct mime_handler mime_handlers[] = {
 	{ "get_wl_sched.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_get_wl_sched_cgi, do_auth },
 	{ "set_wl_sched.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_set_wl_sched_cgi, do_auth },
 #endif
-#ifdef RTCONFIG_OOKLA
+#if defined(RTCONFIG_OOKLA) || defined(RTCONFIG_OOKLA_LITE)
 	{ "ookla_speedtest_exe.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_ookla_speedtest_exe_cgi, do_auth },
 	{ "ookla_speedtest_write_history.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_ookla_speedtest_write_history_cgi, do_auth },
 	{ "set_ookla_speedtest_state.cgi", "text/html", no_cache_IE7, do_html_post_and_get, set_ookla_speedtest_state_cgi, do_auth },
@@ -21472,6 +21480,19 @@ struct except_mime_handler except_mime_handlers[] = {
 	{ "detwan.cgi", MIME_EXCEPTION_NOAUTH_FIRST},
 #endif
 	{ "athX_state.cgi", MIME_EXCEPTION_NOAUTH_FIRST},
+#endif
+	{ "login.cgi", MIME_EXCEPTION_NOPASS},
+#if defined(RTCONFIG_IFTTT) || defined(RTCONFIG_ALEXA) || defined(RTCONFIG_GOOGLE_ASST)
+	{ "get_IFTTTtoken.cgi", MIME_EXCEPTION_NOPASS},
+#endif
+#ifdef RTCONFIG_INSTANT_GUARD
+	{ "enable_ig_guest.cgi", MIME_EXCEPTION_NOPASS},
+#endif
+#ifdef RTCONFIG_ACCOUNT_BINDING
+	{ "get_eptoken.cgi", MIME_EXCEPTION_NOPASS},
+	{ "asusrouter_request_token.cgi", MIME_EXCEPTION_NOPASS},
+	{ "asusrouter_request_access_token.cgi", MIME_EXCEPTION_NOPASS},
+	{ "endpoint_request_token.cgi", MIME_EXCEPTION_NOPASS},
 #endif
 	{ NULL, 0 }
 };
@@ -25557,7 +25578,9 @@ ej_bwdpi_engine_status(int eid, webs_t wp, int argc, char_t **argv)
 	int retval = 0;
 
 	retval += websWrite(wp, "{");
-	retval += websWrite(wp, "\"DpiEngine\":%d", check_bwdpi_nvram_setting());
+	retval += websWrite(wp, "\"DpiEngine\":\"%d\",", check_tdts_module_exist());
+	retval += websWrite(wp, "\"bwdpi_sig_ver\":\"%s\",", nvram_safe_get("bwdpi_sig_ver"));
+	retval += websWrite(wp, "\"sig_update_t\":\"%s\"", nvram_safe_get("sig_update_t"));
 	retval += websWrite(wp, "}");
 
 	return retval;
@@ -25640,9 +25663,13 @@ ej_bwdpi_engine_status(int eid, webs_t wp, int argc, char_t **argv)
 }
 #endif
 
-#if defined(RTCONFIG_OOKLA)
+#if defined(RTCONFIG_OOKLA) || defined(RTCONFIG_OOKLA_LITE)
 /* define */
+#if defined(RTCONFIG_OOKLA_LITE)
+#define OOKLA_FOLDER      "/tmp/OOKLA/"
+#else
 #define OOKLA_FOLDER      "/jffs/.sys/OOKLA/"
+#endif
 #define OOKLA_RESULT      OOKLA_FOLDER"ookla_result"
 #define OOKLA_HISTORY     OOKLA_FOLDER"ookla_history"
 #define OOKLA_HISTORY_T   OOKLA_FOLDER"ookla_history_t"
@@ -27005,6 +27032,25 @@ ej_check_asus_model(int eid, webs_t wp, int argc, char **argv)
 	return websWrite(wp, "\"1\"");
 }
 
+static char* find_nickName_in_custom_clientlist(char *custom_clientlist, char *rmac_buf, char *icon_model_name_buf, int icon_model_name_len)
+{
+	memset(icon_model_name_buf, 0, icon_model_name_len);
+	char word[1024]={0}, *word_next=NULL;
+	char nickName[33] = {0}, mac[18] = {0};
+	if(strstr(custom_clientlist, rmac_buf) != NULL) {
+		foreach_60(word, custom_clientlist, word_next) {
+			get_string_in_62(word, 1, mac, sizeof(mac));
+			if(!strcmp(mac, rmac_buf)) {
+				get_string_in_62(word, 0, nickName, sizeof(nickName));
+				strncpy(icon_model_name_buf ,nickName, icon_model_name_len);
+				break;
+			}
+		}
+    }
+
+	return icon_model_name_buf;
+}
+
 #ifdef RTCONFIG_IPSEC
 
 #define PROFILE_NUM 5
@@ -27406,8 +27452,6 @@ static int ej_chksta(int eid, webs_t wp, int argc, char **argv){
 }
 
 #define LOG_DIR "/tmp/asusdebuglog"
-#define WL_NBAND_2G 2
-#define WL_NBAND_5G 1
 
 // node number is 0: cap, 1: re1, 2: re2, ...etc.
 char *convert_nodenum_to_str(int node, char *str, int len){
@@ -27507,7 +27551,7 @@ static int ej_show_info_between_nodes(int eid, webs_t wp, int argc, char **argv)
 #ifdef RTCONFIG_CFGSYNC
 int is_cfg_server_ready()
 {
-	if (nvram_match("x_Setting", "1") && (nvram_get_int("cfg_recount") > 0) &&
+	if (nvram_match("x_Setting", "1") &&
 		pids("cfg_server") && check_if_file_exist(CFG_SERVER_PID))
 		return 1;
 
@@ -27800,6 +27844,7 @@ char *get_fh_ap_ssid_by_unit(int unit)
 	char prefix[sizeof("wlXXXXX_")], tmp[32];
 	static char ssid[33];
 #if defined(RTCONFIG_DWB) && defined(RTCONFIG_FRONTHAUL_DWB)
+	int dwb_mode = nvram_get_int("dwb_mode");
 	int dwb_band = nvram_get_int("dwb_band");
 	int fh_ap_enabled = nvram_get_int("fh_ap_enabled");
 	int fh_ap_subunit = nvram_get_int("fh_cap_mssid_subunit");
@@ -27808,7 +27853,7 @@ char *get_fh_ap_ssid_by_unit(int unit)
 	memset(ssid, 0, sizeof(ssid));
 
 #if defined(RTCONFIG_DWB) && defined(RTCONFIG_FRONTHAUL_DWB)
-	if (fh_ap_enabled > 0 && unit == dwb_band)
+	if ((dwb_mode == 1 || dwb_mode == 3) && fh_ap_enabled > 0 && unit == dwb_band)
 		snprintf(prefix, sizeof(prefix), "wl%d.%d_", unit, fh_ap_subunit);
 	else
 #endif
@@ -27871,6 +27916,7 @@ ej_get_cfg_clientlist(int eid, webs_t wp, int argc, char **argv){
 	char ap2g_fh_buf[32], ap5g_fh_buf[32], ap5g1_fh_buf[32], ap6g_fh_buf[32];
 	char ap2g_ssid_fh_buf[33], ap5g_ssid_fh_buf[33], ap5g1_ssid_fh_buf[33], ap6g_ssid_fh_buf[33];
 	char ap2g_ssid_fh_conv_buf[65], ap5g_ssid_fh_conv_buf[65], ap5g1_ssid_fh_conv_buf[65], ap6g_ssid_fh_conv_buf[65];
+	char custom_clientlist[65535] = {0}, icon_model_name_buf[33] = {0};
 
 	lock = file_lock(CFG_FILE_LOCK);
 	shm_client_tbl_id = shmget((key_t)KEY_SHM_CFG, sizeof(CM_CLIENT_TABLE), 0666|IPC_CREAT);
@@ -27887,6 +27933,7 @@ ej_get_cfg_clientlist(int eid, webs_t wp, int argc, char **argv){
 		return 0;
 	}
 
+	strlcpy(custom_clientlist, nvram_safe_get("custom_clientlist"), sizeof(custom_clientlist));
 	allBrMacListObj = json_object_from_file(MAC_LIST_JSON_FILE);
 
 	websWrite(wp, "[");
@@ -28248,6 +28295,7 @@ ej_get_cfg_clientlist(int eid, webs_t wp, int argc, char **argv){
 		websWrite(wp, "\"alias\":\"%s\",", strlen(alias_conv_buf) ? alias_conv_buf : rmac_buf);
 		websWrite(wp, "\"model_name\":\"%s\",", model_name_buf);
 		websWrite(wp, "\"ui_model_name\":\"%s\",", ui_model_name_buf);
+		websWrite(wp, "\"icon_model_name\":\"%s\",", find_nickName_in_custom_clientlist(custom_clientlist, rmac_buf, icon_model_name_buf, sizeof(icon_model_name_buf)));
 		websWrite(wp, "\"product_id\":\"%s\",", product_id_buf);
 		websWrite(wp, "\"frs_model_name\":\"%s\",", frs_model_name_buf);
 		websWrite(wp, "\"fwver\":\"%s\",", fwver_buf);
@@ -30579,8 +30627,15 @@ static int
 ej_get_wl_channel_list_2g(int eid, webs_t wp, int argc, char **argv)
 {
 #ifdef CONFIG_BCMWL5
-	ej_wl_chanspecs_2g(0, NULL, 1, NULL);
-	return ej_get_wl_channel_list(eid, wp, argc, argv, 0);
+	char prefix[16], tmp[32];
+	int unit;
+	for(unit = 0; unit < num_of_wl_if(); unit++) {
+		snprintf(prefix, sizeof(prefix), "wl%d_", unit);
+		if(WL_NBAND_2G == nvram_get_int(strcat_r(prefix, "nband", tmp))) {
+			ej_wl_chanspecs(0, NULL, 1, NULL, unit);
+			return ej_get_wl_channel_list(eid, wp, argc, argv, unit);
+		}
+	}
 #else
 	return 0;
 #endif
@@ -30589,8 +30644,15 @@ ej_get_wl_channel_list_2g(int eid, webs_t wp, int argc, char **argv)
 static int
 ej_get_wl_channel_list_5g(int eid, webs_t wp, int argc, char **argv) {
 #ifdef CONFIG_BCMWL5
-	ej_wl_chanspecs_5g(0, NULL, 1, NULL);
-	return ej_get_wl_channel_list(eid, wp, argc, argv, 1);
+	char prefix[16], tmp[32];
+	int unit;
+	for(unit = 0; unit < num_of_wl_if(); unit++) {
+		snprintf(prefix, sizeof(prefix), "wl%d_", unit);
+		if(WL_NBAND_5G == nvram_get_int(strcat_r(prefix, "nband", tmp))) {
+			ej_wl_chanspecs(0, NULL, 1, NULL, unit);
+			return ej_get_wl_channel_list(eid, wp, argc, argv, unit);
+		}
+	}
 #else
 	return 0;
 #endif
@@ -30599,8 +30661,37 @@ ej_get_wl_channel_list_5g(int eid, webs_t wp, int argc, char **argv) {
 static int
 ej_get_wl_channel_list_5g_2(int eid, webs_t wp, int argc, char **argv) {
 #ifdef CONFIG_BCMWL5
-	ej_wl_chanspecs_5g_2(0, NULL, 1, NULL);
-	return ej_get_wl_channel_list(eid, wp, argc, argv, 2);
+	char prefix[16], tmp[32];
+	int unit, count = 0;
+	for(unit = 0; unit < num_of_wl_if(); unit++) {
+		snprintf(prefix, sizeof(prefix), "wl%d_", unit);
+		if(WL_NBAND_5G == nvram_get_int(strcat_r(prefix, "nband", tmp)) ||
+		   WL_NBAND_6G == nvram_get_int(strcat_r(prefix, "nband", tmp))) {
+			if(!count) {
+				count++;
+				continue;
+			}
+			ej_wl_chanspecs(0, NULL, 1, NULL, unit);
+			return ej_get_wl_channel_list(eid, wp, argc, argv, unit);
+		}
+	}
+#else
+	return 0;
+#endif
+}
+
+static int
+ej_get_wl_channel_list_6g(int eid, webs_t wp, int argc, char **argv) {
+#ifdef CONFIG_BCMWL5
+	char prefix[16], tmp[32];
+	int unit;
+	for(unit = 0; unit < num_of_wl_if(); unit++) {
+		snprintf(prefix, sizeof(prefix), "wl%d_", unit);
+		if(WL_NBAND_6G == nvram_get_int(strcat_r(prefix, "nband", tmp))) {
+			ej_wl_chanspecs(0, NULL, 1, NULL, unit);
+			return ej_get_wl_channel_list(eid, wp, argc, argv, unit);
+		}
+	}
 #else
 	return 0;
 #endif
@@ -30651,7 +30742,11 @@ static int ej_wan_bonding_p1_status(int eid, webs_t wp, int argc, char **argv)
 
 static int ej_wan_bonding_p2_status(int eid, webs_t wp, int argc, char **argv)
 {
+#if defined(ET12) || defined(XT12)
+	int p2_port = BS_LAN3_PORT_ID;
+#else
 	int p2_port = BS_LAN4_PORT_ID;
+#endif
 
 #if defined(RTCONFIG_SWITCH_QCA8075_QCA8337_PHY_AQR107_AR8035_QCA8033)
 	int i = 0;
@@ -30914,6 +31009,171 @@ static int ej_get_wgsc_parameter(int eid, webs_t wp, int argc, char **argv)
 	int c_unit = nvram_get_int("wgsc_unit");
 	copy_index_to_unindex("wgsc_", s_unit, c_unit);
 	return (websWrite(wp,"%s",""));
+}
+#endif
+
+#ifdef RTCONFIG_SOFTWIRE46
+static int chk_pf_in_s46(char *config, uint16_t range_port[][2], int size) {
+
+	char *proto, *port, *lport, *srcip, *dstip, *desc;
+	char *nv, *nvp, *b;
+	uint16_t startp = 0, endp = 0;
+	int  i, cnt;
+	int  ret = 0;
+
+	/*
+	for (i = 0; i < size; i++)
+		_dprintf("[%d]range:[%hu-%hu]\n", i, range_port[i][0],  range_port[i][1]);
+	*/
+
+	if (!(is_nat_enabled() && nvram_match("vts_enable_x", "1")))
+		return ret;
+
+	nvp = nv = strdup(nvram_safe_get(config));
+	while (nv && (b = strsep(&nvp, "<")) != NULL) {
+		char *portv, *portp, *c;
+
+		if ((cnt = vstrsep(b, ">", &desc, &port, &dstip, &lport, &proto, &srcip)) < 5)
+			continue;
+		else if (cnt < 6)
+			srcip = "";
+		else if (!strcmp(proto, "OTHER"))
+			continue;
+		portp = portv = strdup(port);
+		while (portv && (c = strsep(&portp, ",")) != NULL) {
+			char *p;
+			if ((p = strchr(c, '-')) != NULL)
+				*p = ':';
+			if (strchr(c, ':')) {
+				if (sscanf(c, "%hu:%hu", &startp, &endp) != 2)
+					continue;
+				for (i = 0; i < size; i++) {
+					if ((startp >= range_port[i][0] && startp <= range_port[i][1]) &&
+					    (endp   >= range_port[i][0] && endp   <= range_port[i][1])) {
+						ret = 0;
+						break;
+					} else
+						ret = 1;
+				}
+			} else {
+				for (i = 0; i < size; i++) {
+					if ((strtol(c, NULL, 10) >= range_port[i][0] &&
+					     strtol(c, NULL, 10) <= range_port[i][1])) {
+						ret = 0;
+						break;
+					} else
+						ret = 1;
+				}
+			}
+			if (ret)
+				break;
+		}
+		free(portv);
+		if (ret)
+			break;
+	}
+	free(nv);
+	return ret;
+
+}
+
+static int chk_pt_in_s46(char *config, uint16_t range_port[][2], int size) {
+
+	char *nv, *nvp, *b;
+	char *out_proto, *in_proto, *out_port, *in_port, *desc;
+	uint16_t in_startp = 0, in_endp = 0;
+	int  i, ret = 0;
+
+	if (!(is_nat_enabled() && nvram_match("autofw_enable_x", "1")))
+		return ret;
+
+	nvp = nv = strdup(nvram_safe_get(config));
+	while (nv && (b = strsep(&nvp, "<")) != NULL) {
+
+		if ((vstrsep(b, ">", &desc, &out_port, &out_proto, &in_port, &in_proto) != 5))
+			continue;
+		if (strchr(in_port, ':')) {
+			if (sscanf(in_port, "%hu:%hu", &in_startp, &in_endp) != 2)
+				continue;
+			for (i = 0; i < size; i++) {
+				if ((in_startp >= range_port[i][0] && in_startp <= range_port[i][1]) &&
+				    (in_endp   >= range_port[i][0] && in_endp   <= range_port[i][1])) {
+					ret = 0;
+					break;
+				} else
+					ret = 1;
+			}
+		} else {
+			for (i = 0; i < size; i++) {
+				if ((strtol(in_port, NULL, 10) >= range_port[i][0] &&
+				     strtol(in_port, NULL, 10) <= range_port[i][1])) {
+					ret = 0;
+					break;
+				} else
+					ret = 1;
+			}
+		}
+		if (ret)
+			break;
+	}
+	free(nv);
+	return ret;
+
+}
+
+static int chk_srv_port_in_s46(char *type, uint16_t range_port[][2], int size) {
+
+	int i, srv_port, ret = 0;
+
+	if (!strcmp(type, "https")) {
+		if (nvram_match("misc_http_x", "0"))
+			return ret;
+		srv_port = nvram_get_int("misc_httpsport_x");
+	} else if (!strcmp(type, "ssh")) {
+		if (!nvram_match("sshd_enable", "1"))
+			return ret;
+		srv_port = nvram_get_int("sshd_port");
+	} else if (!strcmp(type, "openvpn")) {
+		if (nvram_match("VPNServer_enable", "0"))
+			return ret;
+		srv_port = nvram_get_int("vpn_server1_port");
+	} else if (!strcmp(type, "ftp")) {
+		srv_port = nvram_get_int("vts_ftpport");
+	} else
+		return ret;
+
+	for (i = 0; i < size; i++) {
+		if ((srv_port >= range_port[i][0] &&
+		     srv_port <= range_port[i][1])) {
+			ret = 0;
+			break;
+		} else
+			ret = 1;
+	}
+	return ret;
+}
+
+static int ej_chk_s46_port_range(int eid, webs_t wp, int argc, char **argv)
+{
+
+	int i, max = 15;
+	char *nv, *nvp, *item, *nextp;
+	uint16_t range_port[max][2];
+
+	nvp = nv = strdup(nvram_safe_get("ipv6_s46_ports"));
+	for (i = 0, item = strtok_r(nvp, " ", &nextp); item; i++, item = strtok_r(NULL, " ", &nextp)) {
+		if (sscanf(item, "%hu-%hu", &range_port[i][0], &range_port[i][1]) != 2)
+			continue;
+	}
+	free(nv);
+	websWrite(wp, "{\"pf\":\"%d\",\"open_nat\":\"%d\",\"pt\":\"%d\",\"https\":\"%d\",\"ssh\":\"%d\",\"openvpn\":\"%d\",\"ftp\":\"%d\"}",
+			chk_pf_in_s46("vts_rulelist", range_port, (i>15) ? max : i),
+			chk_pf_in_s46("game_vts_rulelist", range_port, (i>15) ? max : i),
+			chk_pt_in_s46("autofw_rulelist", range_port, (i>15) ? max : i),
+			chk_srv_port_in_s46("https", range_port, (i>15) ? max : i),
+			chk_srv_port_in_s46("ssh", range_port, (i>15) ? max : i),
+			chk_srv_port_in_s46("openvpn", range_port, (i>15) ? max : i),
+			chk_srv_port_in_s46("ftp", range_port, (i>15) ? max : i));
 }
 #endif
 
@@ -31200,6 +31460,7 @@ struct ej_handler ej_handlers[] = {
 	{ "chanspecs_2g", ej_wl_chanspecs_2g},
 	{ "chanspecs_5g", ej_wl_chanspecs_5g},
 	{ "chanspecs_5g_2", ej_wl_chanspecs_5g_2},
+	{ "chanspecs_6g", ej_wl_chanspecs_6g},
 #endif
 #if defined(CONFIG_BCMWL5) || defined(RTCONFIG_REALTEK)
 	{ "wl_rssi_2g", ej_wl_rssi_2g},
@@ -31289,7 +31550,7 @@ struct ej_handler ej_handlers[] = {
 #else
 	{ "bwdpi_engine_status", ej_bwdpi_engine_status},
 #endif
-#if defined(RTCONFIG_OOKLA)
+#if defined(RTCONFIG_OOKLA) || defined(RTCONFIG_OOKLA_LITE)
 	{ "ookla_speedtest_get_result", ej_ookla_speedtest_get_result},
 	{ "ookla_speedtest_get_servers", ej_ookla_speedtest_get_servers},
 	{ "ookla_speedtest_get_history", ej_ookla_speedtest_get_history},
@@ -31410,8 +31671,13 @@ struct ej_handler ej_handlers[] = {
 	{ "get_wgsc_parameter", ej_get_wgsc_parameter},
 	{ "get_wgc_parameter", ej_get_wgc_parameter},
 #endif
+#ifdef RTCONFIG_SOFTWIRE46
+	{ "chk_s46_port_range", ej_chk_s46_port_range},
+#endif
 	{ "dfs_remaining_time", ej_dfs_remaining_time},
-
+#if defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(RTCONFIG_HND_ROUTER_AX_6710) ||  defined(RTCONFIG_HND_ROUTER_AX_6756)
+	{ "cable_diag", ej_cable_diag },
+#endif
 	{ NULL, NULL }
 };
 

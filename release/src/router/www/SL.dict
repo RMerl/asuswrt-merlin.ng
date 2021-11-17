@@ -2005,6 +2005,7 @@ feedback_conn_rra=Samodejni vnovični zagon usmerjevalnika
 feedback_conn_ucp=Težava zaradi nestabilne povezave
 feedback_conn_wdc=Unable to connect to wireless network
 feedback_connection_type=Izberite možnost, ki najbolje opisuje učinkovitost delovanja storitve DSL
+feedback_contact_info=Kontaktna metoda
 feedback_country=Vaša država / regija
 feedback_cancel_capturing=Prekliči zajem iskanja napak
 feedback_current_capturing=V teku je beleženje diagnostičnega dnevnika iskanja napak
@@ -2030,6 +2031,7 @@ feedback_fail1=<span style="color:#FC0;">Sistem ni mogel vzpostaviti povezave z 
 feedback_fail2=Preprosto kopirajte spodnjo vsebino in jo prilepite kot vsebino e-poštnega sporočila.
 feedback_fail3=Prenesite naslednje datoteke za iskanje in odpravljanje napak in jih dodajte kot prilogo e-poštnega sporočila:
 feedback_fail_BindGoogle=ali pa <a id="bind_google">povežite svoj račun Google</a> in pošljite povratne informacije prek e-pošte.
+feedback_format_alert=The format is not valid.
 feedback_Frequent_interrupt=Pogoste prekinitve
 feedback_iptable_setting=Nastavitev aplikacije iptables
 feedback_isp=Vaš ponudnik internetnih storitev (ISP)
@@ -3711,6 +3713,7 @@ WANAggregation_help_step4=Ponovno zaženite usmerjevalnik
 WANAggregation_help_final=Če ste upoštevali ta navodila, a težave še vedno niste odpravili, jo sporočite osebju na <a href='https://www.asus.com/support/' target='_blank' style='color:#000;text-decoration:underline;'>strani za podporo družbe ASUS</a>.
 WANAggregation_wanType_hint=Združevanje WAN ne podpira tipov WAN,  kot so PPPoE, PPTP in L2TP. Če se vaš tip WAN spremeni v PPPoE, PPTP ali L2TP, bo združevanje WAN samodejno onemogočeno. Ste prepričani, da želite nadaljevati?
 WebGUI_issue=Do strani z vdelano programsko opremo ni mogoče dostopiti
+wechat=WeChat
 WhiteList=Seznam dovoljenih
 WiFi_Proxy_desc=Enable this feature in Repeater mode to successfully extend certain hotspot (public WiFi) network.
 WiFi_Proxy_enable=Enable WiFi Proxy

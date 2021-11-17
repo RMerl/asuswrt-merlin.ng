@@ -197,9 +197,9 @@ int write_cache_file(ddns_alias_t *alias)
 int remove_cache_file_with_hostname(ddns_alias_t *alias)
 {
 	char buf[512] = {0};
+#if 0
 	char old_domain_name[512] = {0};
 
-#if 0
 	if(!alias || !cache_dir)
 		return 0;
 
@@ -211,7 +211,6 @@ int remove_cache_file_with_hostname(ddns_alias_t *alias)
 		snprintf(buf, sizeof(buf),  "%s/%s.cache", cache_dir, old_domain_name);
 		unlink(buf);
 	}
-	return 1;
 #else
 	if(!cache_dir)
 		return 0;
@@ -221,6 +220,7 @@ int remove_cache_file_with_hostname(ddns_alias_t *alias)
 	system(buf);
 
 #endif
+	return 1;
 }
 #endif
 

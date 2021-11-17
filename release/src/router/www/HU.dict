@@ -2005,6 +2005,7 @@ feedback_conn_rra=A router automatikusan újraindul
 feedback_conn_ucp=Instabil csatlakozási probléma
 feedback_conn_wdc=Unable to connect to wireless network
 feedback_connection_type=Válassza ki azt a lehetőséget, amely leginkább jellemzi DSL eszköze teljesítményét
+feedback_contact_info=Kapcsolattartási módszer
 feedback_country=Az Ön országa / régiója
 feedback_cancel_capturing=Hibakeresés rögzítésének visszavonása
 feedback_current_capturing=A diagnosztikai hibakeresési napló rögzítése folyamatban van
@@ -2030,6 +2031,7 @@ feedback_fail1=<span style="color:#FC0;">A rendszer nem tudott csatlakozni a fő
 feedback_fail2=Egyszerűen csak másolja ki az alábbi tartalmat, és illessze be az e-mail üzenet tartalmába.
 feedback_fail3=Töltse le az alábbi javító fájlokat és adja hozzá mint e-mail csatolmányt:
 feedback_fail_BindGoogle=Vagy <a id="bind_google">hozzácsatolhatja a Google fiókját</a> a visszajelzés e-mailen való elküldéséhez.
+feedback_format_alert=The format is not valid.
 feedback_Frequent_interrupt=Gyakori megszakítások
 feedback_iptable_setting=iptables beállítása
 feedback_isp=Az Ön ISP-je / Internetszolgáltatója
@@ -3711,6 +3713,7 @@ WANAggregation_help_step4=Indítsa újra aroutert
 WANAggregation_help_final=Ha a fenti lépések sikertelenek, kérjük jelezze a problémát az <a href='https://www.asus.com/support/' target='_blank' style='color:#000;text-decoration:underline;'>ASUS támogatási oldalon</a>.
 WANAggregation_wanType_hint=A WAN aggregáció nem támogatja az olyan WAN típusokat, mint PPPoE, PPTP és L2TP. Ha a WAN típusa PPPoE, PPTP vagy L2TP típusra vált, a WAN aggregáció automatikusan kikapcsol. Biztosan akarja folytatni?
 WebGUI_issue=Nem nyitható meg a firmware oldala
+wechat=WeChat
 WhiteList=Fehér lista
 WiFi_Proxy_desc=Enable this feature in Repeater mode to successfully extend certain hotspot (public WiFi) network.
 WiFi_Proxy_enable=Enable WiFi Proxy

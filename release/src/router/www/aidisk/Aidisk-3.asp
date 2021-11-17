@@ -87,7 +87,7 @@ function check_return_code(){
 	if(this.ddns_return_code != 'no_change'){
 		var ddnsHint = getDDNSState(this.ddns_return_code, this.ddns_hostname_x, this.ddns_old_name);
 		if(ddnsHint != ""){
-			if(this.ddns_return_code == 'Time_out')
+			if(this.ddns_return_code == 'Time-out')
 				show_alert_block("<#LANHostConfig_x_DDNS_alarm_12#>");
 			else
 				show_alert_block(ddnsHint);

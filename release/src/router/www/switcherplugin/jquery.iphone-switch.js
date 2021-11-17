@@ -52,6 +52,7 @@ jQuery.fn.iphoneSwitch = function(start_state, switched_on_callback, switched_of
 				this.id == "nm_radio_dualwan_enable" ||  //Internet
 				this.id == "simdetect_switch" ||  //Advanced_MobileBroadband_Content
 				this.id == "dns_switch" ||   //Advanced_IPTV_Content
+				this.id == "radio_anonymous_enable" ||  //Advanced_AiDisk_ftp
 				this.id == "radio_fbwifi_enable" ||   //Guest_network_fbwifi
 				this.id == "vlan_enable" ||  //Advanced_TagBasedVLAN_Content
 				this.id == "ad_radio_dualwan_enable" ||

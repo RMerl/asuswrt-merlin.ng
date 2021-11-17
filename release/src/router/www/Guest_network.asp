@@ -1057,7 +1057,7 @@ function change_guest_unit(_unit, _subunit){
 	}
 
 	var interface_support =  decodeURIComponent(gn_array[idx][24]);
-	if(amesh_support && amesh_wgn_support && interface_support == "1"){
+	if(amesh_support && ameshRouter_support && amesh_wgn_support && interface_support == "1"){
 		$("#aimesh_sync_field").show();
 		$("#aimesh_sync_field select[name='wl_sync_node']").attr("disabled", false);
 		if(gn_array[idx][23] == undefined || gn_array[idx][23] == "")

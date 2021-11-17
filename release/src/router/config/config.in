@@ -2350,6 +2350,10 @@ config RTCONFIG_OOKLA
 	bool "speedtest function powered by Ookla"
 	default n
 
+config RTCONFIG_OOKLA_LITE
+	bool "speedtest function powered by Ookla - lite version to store in memory"
+	default n
+
 config RTCONFIG_QCA_MCSD
 	bool "Use qca-mcs for multicast packets"
 	default n
@@ -2477,9 +2481,9 @@ config RTCONFIG_PREFERAP_RE_SELFOPT
 config RTCONFIG_FRONTHAUL_DBG
 	bool "enable AiMesh RE fronthaul for debug purpose"
 
-config RTCONFIG_MAX_RE_32
-	bool "max number of RE is 32"
-	default n
+config RTCONFIG_MAX_RE
+	int "Support the maximum number of RE"
+	default 9
 
 config RTCONFIG_SPF11_3_QSDK
 	bool "SPF11.3 QSDK"

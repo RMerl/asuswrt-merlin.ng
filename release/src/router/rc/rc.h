@@ -395,7 +395,7 @@ extern int isValidMacAddr(const char* mac);
 extern int isValidCountryCode(const char *Ccode);
 extern int isValidRegrev(const char *regrev);
 extern int isValidSN(const char *sn);
-extern int isResetSN(const char *sn);
+extern int isResetFactory(const char *str);
 extern int isNumber(const char *num);
 extern int pincheck(const char *a);
 extern int isValidChannel(int is_2G, char *channel);
@@ -3186,6 +3186,8 @@ static inline int asus_ctrl_sku_write(char *asusctrl_sku) { return 0; }
 extern void asus_ctrl_sku_check();
 extern void asus_ctrl_sku_update();
 extern int asus_ctrl_nv(char *asusctrl);
+extern int asus_ctrl_nv_restore();
+extern int setting_SG_mode_wps();
 #endif
 
 #ifdef RTCONFIG_BCMARM

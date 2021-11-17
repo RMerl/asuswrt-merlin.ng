@@ -2005,6 +2005,7 @@ feedback_conn_rra=Le routeur redémarre automatiquement
 feedback_conn_ucp=Problème de connexion instable
 feedback_conn_wdc=Unable to connect to wireless network
 feedback_connection_type=Description de votre connexion DSL
+feedback_contact_info=Méthode de contact
 feedback_country=Votre pays / région
 feedback_cancel_capturing=Annuler la capture de débogage
 feedback_current_capturing=Capture du journal de débogage de diagnostic en cours
@@ -2030,6 +2031,7 @@ feedback_fail1=<span style="color:#FC0;">Le système n'a pas réussi à se conne
 feedback_fail2=Il vous suffit de copier le contenu ci-dessous et de le coller dans le corps de votre email.
 feedback_fail3=Téléchargez les fichiers de débogage suivants et ajoutez-les en tant que pièce jointe d’un e-mail :
 feedback_fail_BindGoogle=Ou vous pouvez <a id="bind_google">lier votre compte Google</a> pour envoyer vos commentaires par e-mail.
+feedback_format_alert=The format is not valid.
 feedback_Frequent_interrupt=Interruptions fréquentes
 feedback_iptable_setting=Configuration iptables
 feedback_isp=FAI (Fournisseur d'accès à Internet)
@@ -3711,6 +3713,7 @@ WANAggregation_help_step4=Redémarrez votre routeur
 WANAggregation_help_final=Si les étapes ci-dessus échouent, veuillez signaler ce problème sur <a href='https://www.asus.com/support/' target='_blank' style='color:#000;text-decoration:underline;'>le site de support ASUS</a>.
 WANAggregation_wanType_hint=L’agrégation WAN ne prend pas en charge les types WAN tels que PPPoE, PPTP et L2TP. Si votre type de WAN passe à PPPoE, PPTP ou L2TP, l’agrégation WAN sera désactivée automatiquement. Êtes-vous sûr de vouloir continuer ?
 WebGUI_issue=Impossible d'accéder à la page du firmware
+wechat=WeChat
 WhiteList=Liste blanche
 WiFi_Proxy_desc=Enable this feature in Repeater mode to successfully extend certain hotspot (public WiFi) network.
 WiFi_Proxy_enable=Enable WiFi Proxy

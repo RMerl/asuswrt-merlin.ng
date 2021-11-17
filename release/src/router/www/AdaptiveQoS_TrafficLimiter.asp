@@ -24,8 +24,10 @@
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
 <script>
 window.onresize = function() {
-	if(document.getElementById("alert_preference").style.display == "block") {
-		cal_panel_block("alert_preference", 0.25);
+	if(document.getElementById("alert_preference") != null){
+		if(document.getElementById("alert_preference").style.display == "block") {
+			cal_panel_block("alert_preference", 0.25);
+		}
 	}
 } 
 var wans_caps = '<% nvram_get("wans_cap"); %>';

@@ -188,6 +188,11 @@
 	margin: 5px 0;
 }
 
+.confirm {
+	color: #00b0ff;
+	margin: 5px 0;
+}
+
 .fullScreen {
 	position:fixed;
 	width: 100%;

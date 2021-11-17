@@ -19,18 +19,20 @@
                 system(info); \
         }
 
-#define ASUSDDNS_IP_SERVER	"https://ns1.asuscomm.com"
-#define ASUSDDNS_REQ_TOKEN_PATH	"/ddnsv2/acquireToken.php"
-#define ASUSDDNS_REQ_TOKEN_RES	"/tmp/asusddns_res"
+#define ASUSDDNS_IP_SERVER          "https://ns1.asuscomm.com"
+#define ASUSDDNS_IP_SERVER_CN       "https://ns1.asuscomm.cn"
+#define ASUSDDNS_REQ_TOKEN_PATH     "/ddnsv2/acquireToken.php"
+#define ASUSDDNS_REQ_TOKEN_RES      "/tmp/asusddns_res"
 
-#define ASUSDDNS_ERR_INIT_STATE	0
-#define ASUSDDNS_ERR_SUCCESS	1
-#define ASUSDDNS_ERR_NO_DM_REFRESH_TICKET	-1
-#define ASUSDDNS_ERR_NO_USER_TICKET		-2
-#define ASUSDDNS_ERR_NO_DDNS_TOKEN		-3
-#define ASUSDDNS_ERR_CURL_ERR		-4
-#define ASUSDDNS_ERR_OPEN_FILE_FAIL	-5
-#define ASUSDDNS_ERR_JSON_ERR	-6
+#define ASUSDDNS_ERR_INIT_STATE             0
+#define ASUSDDNS_ERR_SUCCESS                1
+#define ASUSDDNS_ERR_NO_DM_REFRESH_TICKET   -1
+#define ASUSDDNS_ERR_NO_USER_TICKET         -2
+#define ASUSDDNS_ERR_NO_DDNS_TOKEN          -3
+#define ASUSDDNS_ERR_CURL_ERR               -4
+#define ASUSDDNS_ERR_OPEN_FILE_FAIL         -5
+#define ASUSDDNS_ERR_JSON_ERR               -6
+#define ASUSDDNS_ERR_NO_SID                 -7
 
 #define MD5_DIGEST_BYTES 16
 
@@ -102,9 +104,9 @@ static int _acquire_token(const char *res_path, const int check_CA)
 {
 	CURL *curl;
 	CURLcode res;
-	char *cusid = NULL, *userticket = NULL;
+	char *cusid = NULL, *userticket = NULL, *auth_status = NULL;
 	char ddns_url[256];
-	json_object *obj = NULL, *cusid_obj = NULL, *userticket_obj = NULL, *devicemd5mac_obj = NULL;
+	json_object *obj = NULL, *cusid_obj = NULL, *userticket_obj = NULL, *devicemd5mac_obj = NULL, *sid_obj = NULL;
 	unsigned char digest[MD5_DIGEST_BYTES]={0};
 	char md_label_mac[MD5_DIGEST_BYTES * 2 + 1]={0};
 	char *label_mac_str=NULL;
@@ -129,12 +131,19 @@ static int _acquire_token(const char *res_path, const int check_CA)
 	
 	cusid = nvram_safe_get("oauth_dm_cusid");
 	userticket = nvram_safe_get("oauth_dm_user_ticket");
+	auth_status = nvram_safe_get("oauth_auth_status");
 
 	if(cusid[0] == '\0' || userticket[0] == '\0')
 	{
 		ASUSDDNS_DBG("No userticket.\n");
 		fclose(fp_res);
 		return ASUSDDNS_ERR_NO_USER_TICKET;
+	}
+	if (auth_status[0] == '\0' || (strncmp(auth_status, "0", 1) != 0 && strncmp(auth_status, "2", 1) != 0))
+	{
+		ASUSDDNS_DBG("No sid (service id).\n");
+		fclose(fp_res);
+		return ASUSDDNS_ERR_NO_SID;
 	}
 
 
@@ -182,15 +191,39 @@ static int _acquire_token(const char *res_path, const int check_CA)
 		ASUSDDNS_DBG("Cannot add json object, devicemd5mac!\n");
 		ret = ASUSDDNS_ERR_JSON_ERR;
 		goto Err;
-	}	
+	}
+
+	if (strncmp(auth_status, "0", 1) == 0) {
+		sid_obj = json_object_new_string("1001");
+	} else if (strncmp(auth_status, "2", 1) == 0) {
+		sid_obj = json_object_new_string("1004");
+	}
+	if(sid_obj)
+		json_object_object_add(obj, "sid", sid_obj);
+	else
+	{
+		ASUSDDNS_DBG("Cannot add json object, sid!\n");
+		ret = ASUSDDNS_ERR_JSON_ERR;
+		goto Err;
+	}
 
 	auth_string = json_object_to_json_string(obj);
 	//ASUSDDNS_DBG("auth_string=%s\n", auth_string);
 	curl = curl_easy_init();
 
 	if(curl)
-	{	
-		snprintf(ddns_url, sizeof(ddns_url), "%s%s",  ASUSDDNS_IP_SERVER, ASUSDDNS_REQ_TOKEN_PATH);
+	{
+#ifdef RTCONFIG_ASUSDDNS_ACCOUNT_BASE
+		if (nvram_get_int("oauth_auth_status") == 2) {
+			snprintf(ddns_url, sizeof(ddns_url), "https://%s%s",  nvram_safe_get("aae_ddnsinfo"), ASUSDDNS_REQ_TOKEN_PATH);
+		} else
+#endif
+		if(nvram_match("ddns_server_x", "WWW.ASUS.COM.CN")) {
+			snprintf(ddns_url, sizeof(ddns_url), "%s%s",  ASUSDDNS_IP_SERVER_CN, ASUSDDNS_REQ_TOKEN_PATH);
+		} else {
+			snprintf(ddns_url, sizeof(ddns_url), "%s%s",  ASUSDDNS_IP_SERVER, ASUSDDNS_REQ_TOKEN_PATH);
+		}
+
 		curl_easy_setopt(curl, CURLOPT_URL, ddns_url);
 
 		curl_easy_setopt(curl, CURLOPT_PROTOCOLS, CURLPROTO_HTTPS);

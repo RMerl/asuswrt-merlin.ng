@@ -264,6 +264,18 @@
 	background-size: contain;
 	background-position: 50%;
 }
+.model_icon_exchange{
+	background-image: url(/images/New_ui/amesh/icon_exchange.svg);
+	background-repeat: no-repeat;
+	background-size: contain;
+	background-position: 50%;
+	position: absolute;
+	bottom: -8px;
+	right: 0px;
+	width: 30px;
+	height: 30px;
+	cursor: pointer;
+}
 .location_dropdown_icon:before{
 	background-image: url('/images/New_ui/amesh/location_dropdown.svg');
 	background-size: 850%;

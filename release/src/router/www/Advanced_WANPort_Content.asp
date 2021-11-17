@@ -561,7 +561,7 @@ function applyRule(){
 
 	if(wans_dualwan_orig != document.form.wans_dualwan.value &&　qos_enable_orig == 1){
 		if(qos_type_orig == 1 || qos_type_orig == 0 || qos_type_orig == 3){		//(qos_type_orig == 1 && document.form.bw_setting_name[1].checked == true ) || 
-			if( !confirm("After applying settings, please double check your download/upload bandwidth configurations in QoS page.")){	/*Untranslated*/
+			if( !confirm("<#dualwan_qos_hint#>")){
 				return false;
 			}
 		}

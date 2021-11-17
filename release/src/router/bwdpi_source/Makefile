@@ -26,7 +26,7 @@ export BWDPI_BCM4912 := y
 endif
 
 # MTK7621A + RTCONFIG_WLMODULE_MT7915D_AP
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),4G-AX56))
+ifeq ($(RTCONFIG_WLMODULE_MT7915D_AP),y)
 export BWDPI_MTK7621_NEW := y
 endif
 
@@ -39,7 +39,7 @@ ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-AX56_XD4 CT-AX56_XD4 RT-AX55 XD4PR
 export LITE_VERSION := y
 else ifeq ($(or $(RTCONFIG_QCA956X),$(RTCONFIG_QCN550X)),y)
 export LITE_VERSION := y
-else ifeq ($(or $(BWDPI_MTK7621_NEW),$(BWDPI_MTK7621_AX53U)),y)
+else ifeq ($(or $(BWDPI_MTK7621_NEW)),y)
 export LITE_VERSION := y
 else ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-AC85U RT-AC65U RT-AC56S RT-N18U))
 export PART_VERSION := y
@@ -80,7 +80,7 @@ ifeq ($(RTCONFIG_RALINK_MT7622),y)
 	@cp include/udb/sysdeps/mtk7622-tmcfg_udb.h include/udb/tmcfg_udb.h -f               # mtk7622
 	@cp bin/mtk7622/* bin/ -rf                                                           # mtk7622
 else
-ifeq ($(or $(BWDPI_MTK7621_NEW),$(BWDPI_MTK7621_AX53U)),y)
+ifeq ($(BWDPI_MTK7621_NEW),y)
 	@cp include/tdts/sysdeps/mtk7621-tmcfg.h include/tdts/tmcfg.h -f                     # mtk7621 new
 	@cp include/udb/sysdeps/mtk7621-tmcfg_udb.h include/udb/tmcfg_udb.h -f               # mtk7621 new
 	@cp bin/mtk7621/* bin/ -rf                                                           # mtk7621 new
@@ -180,7 +180,7 @@ ifeq ($(RTCONFIG_RALINK_MT7622),y)
 	@cp include/tdts/sysdeps/mtk7622-tmcfg.h include/tdts/tmcfg.h -f                     # mtk7622
 	@cp include/udb/sysdeps/mtk7622-tmcfg_udb.h include/udb/tmcfg_udb.h -f               # mtk7622
 else
-ifeq ($(or $(BWDPI_MTK7621_NEW),$(BWDPI_MTK7621_AX53U)),y)
+ifeq ($(BWDPI_MTK7621_NEW),y)
 	@cp include/tdts/sysdeps/mtk7621-tmcfg.h include/tdts/tmcfg.h -f                     # mtk7621 new
 	@cp include/udb/sysdeps/mtk7621-tmcfg_udb.h include/udb/tmcfg_udb.h -f               # mtk7621 new
 else
@@ -290,8 +290,6 @@ ifeq ($(RTCONFIG_RALINK_MT7622),y)
 else
 ifeq ($(BWDPI_MTK7621_NEW),y)
 	@cp -f modules/mtk7621/* RC_INDEP/
-else ifeq ($(BWDPI_MTK7621_AX53U),y)
-	@cp -f modules/mtk7621_ax53u/* RC_INDEP/
 else
 	@cp -f modules/mtk/* RC_INDEP/
 endif # BWDPI_MTK7621_NEW

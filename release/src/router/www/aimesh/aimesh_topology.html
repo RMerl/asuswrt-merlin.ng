@@ -176,6 +176,18 @@ var faq_href2 = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Fa
 var aimesh_data = {
 	cfg_clientlist : "", wired_clientlist : "", wireless_clientlist : "", sta_binding_list_json : {}
 }
+var multi_model_icon_array = "";
+$.getJSON("https://nw-dlcdnet.asus.com/plugin/js/extend_model_icon.json", {_: new Date().getTime()},
+	function(data){
+		multi_model_icon_array = data;
+		var specific_node_data = aimesh_data.cfg_clientlist.filter(function(item, index, _array){
+			return (item.mac == current_click_mac);
+		})[0];
+		if(specific_node_data != undefined){
+			set_change_model_icon(specific_node_data);
+		}
+	}
+);
 var aimesh_node_client_upload_icon = new Array();
 function control_category_block(_category){
 	current_click_tab = _category;
@@ -1834,11 +1846,20 @@ function network_set_fronthaul_info(_node_info){
 		else{
 			var ap_info = {"name":"", "mac":"", "ssid":"", "type":"", "is_dwb":false};
 			ap_info["name"] = item;
-			ap_info["mac"] = _node_info[item];
+			ap_info["mac"] = function(){
+				var mac = "";
+				if(_node_info[item + "_fh"] != undefined && _node_info[item + "_fh"] != "")
+					mac = _node_info[item + "_fh"];
+				else
+					mac = _node_info[item];
+				return mac;
+			}();
 			ap_info["type"] = item.substr(2,2);
 			ap_info["ssid"] = function(){
 				var ssid = "";
-				if(_node_info[item + "_ssid"] != undefined && _node_info[item + "_ssid"] != "")
+				if(_node_info[item + "_ssid_fh"] != undefined && _node_info[item + "_ssid_fh"] != "")
+					ssid = _node_info[item + "_ssid_fh"];
+				else if(_node_info[item + "_ssid"] != undefined && _node_info[item + "_ssid"] != "")
 					ssid = _node_info[item + "_ssid"];
 				return htmlEnDeCode.htmlEncode(ssid);
 			}();
@@ -2185,13 +2206,7 @@ function display_manage_block(){
 					closeAllSelect();
 					e = e || event;
 					e.stopPropagation();
-					var url = "http://" + specific_node_data.ip + "/APP_Installation.asp";
-					if(select_node_capability.local_access){
-						var header_info = httpApi.hookGet("get_header_info");
-						if(header_info.protocol == "https"){
-							url = "https://" + specific_node_data.ip + ":" + header_info.port + "/APP_Installation.asp";
-						}
-					}
+					var url = httpApi.aimesh_get_win_open_url(specific_node_data, "APP_Installation.asp");
 					var window_width = 780;
 					var window_height = 650;
 					var window_top = screen.availHeight / 2 - window_height / 2;
@@ -2209,7 +2224,7 @@ function display_manage_block(){
 					closeAllSelect();
 					e = e || event;
 					e.stopPropagation();
-					var url = "http://" + specific_node_data.ip + "/Advanced_SwitchCtrl_Content.asp";
+					var url = httpApi.aimesh_get_win_open_url(specific_node_data, "Advanced_SwitchCtrl_Content.asp");
 					var window_width = 780;
 					var window_height = 440;
 					var window_top = screen.availHeight / 2 - window_height / 2;
@@ -2909,17 +2924,21 @@ function cloud_router_icon_set(_image_url){
 	else
 		$(".primary_info_bg").find(".model_icon").css("background-image", "");
 }
-function cloud_router_icon_get(_model_name, _tcode, _cobrand) {
-	if(httpApi.nvramGet(["x_Setting"]).x_Setting == '1' && parent.wanConnectStatus && !cloudRouterIconCheckCache[_model_name]) {
-		var model_info = {"model_name": _model_name, "tcode": _tcode, "cobrand": _cobrand};
+function cloud_router_icon_get(_model_info) {
+	var cloudModelName = "";
+	if(_model_info.cloudModelName != undefined && _model_info.cloudModelName != "")
+		cloudModelName = _model_info.cloudModelName;
+	else
+		cloudModelName = httpApi.transformCloudModelName(_model_info);
+	if(httpApi.nvramGet(["x_Setting"]).x_Setting == '1' && parent.wanConnectStatus && !cloudRouterIconCheckCache[cloudModelName]) {
 		httpApi.checkCloudModelIcon(
-			model_info,
+			_model_info,
 			function(src){
-				cloudRouterIconCheckCache[_model_name] = src;
+				cloudRouterIconCheckCache[cloudModelName] = src;
 				cloud_router_icon_set(src);
 			},
 			function(){
-				cloudRouterIconCheckCache[_model_name] = false;
+				cloudRouterIconCheckCache[cloudModelName] = false;
 				cloud_router_icon_set("");
 			}
 		);
@@ -3064,17 +3083,111 @@ function set_primary_info(_node_info){
 		$(".primary_info_bg").find(".custom_select #input_location").attr("disabled", true);
 	}
 }
+function set_change_model_icon(_node_info){
+	var model_name = _node_info.model_name;
+	var $model_icon = $(".primary_info_bg").find(".model_icon");
+	if(multi_model_icon_array.hasOwnProperty(model_name)){
+		var mac = _node_info.mac;
+		var tcode = _node_info.tcode;
+		var cobrand = httpApi.aimesh_get_misc_info(_node_info).cobrand;
+		var model_icon_list = multi_model_icon_array[model_name];
+
+		$model_icon.attr("idx", 0);
+		var current_model_icon = _node_info.icon_model_name;
+		$.each(model_icon_list, function(index, value){
+			if(current_model_icon == value){
+				$model_icon.attr("idx", index);
+				return false;
+			}
+		});
+		$model_icon.find(".model_icon_exchange").show();
+		$model_icon.find(".model_icon_exchange").unbind("click").click(function(e){
+			e = e || event;
+			e.stopPropagation();
+			var next_idx =  parseInt($model_icon.attr("idx")) + 1;
+			if(next_idx == model_icon_list.length)
+				next_idx = 0;
+
+			$.each(model_icon_list, function(index, value){
+				if(next_idx == index){
+					if(cloudRouterIconCheckCache[value] == undefined)
+						cloudRouterIconCheckCache[value] = false;
+
+					if(cloudRouterIconCheckCache[value])
+						cloud_router_icon_set(cloudRouterIconCheckCache[value]);
+					else{
+						var model_info = {"model_name": value, "tcode": tcode, "cobrand": cobrand, "icon_model_name": value};
+						model_info.cloudModelName = value;
+						cloud_router_icon_get(model_info);
+					}
+
+					$model_icon.attr("idx", index);
+					model_name = value;
+					return false;
+				}
+			});
+
+			var custom_clientlist = decodeURIComponent(httpApi.nvramCharToAscii(["custom_clientlist"]).custom_clientlist);
+			var originalCustomListArray = new Array();
+			var onEditClient = new Array();
+			originalCustomListArray = custom_clientlist.split('<');
+			onEditClient[0] = model_name;
+			onEditClient[1] = mac.toUpperCase();
+			onEditClient[2] = 0;
+			onEditClient[3] = 0;
+			onEditClient[4] = "";
+			onEditClient[5] = "";
+			for(var i = 0; i < originalCustomListArray.length; i += 1) {
+				if(originalCustomListArray[i].split('>')[1] != undefined) {
+					if(originalCustomListArray[i].split('>')[1].toUpperCase() == onEditClient[1].toUpperCase()){
+						onEditClient[4] = originalCustomListArray[i].split('>')[4]; // set back callback for ROG device
+						onEditClient[5] = originalCustomListArray[i].split('>')[5]; // set back keeparp for ROG device
+						var app_group_tag = originalCustomListArray[i].split('>')[6]; // for app group tag
+						if(typeof app_group_tag != "undefined")	onEditClient[6] = app_group_tag;
+						var app_age_tag = originalCustomListArray[i].split('>')[7]; // for app age tag
+						if(typeof app_age_tag != "undefined")	onEditClient[7] = app_age_tag;
+						originalCustomListArray.splice(i, 1); // remove the selected client from original list
+					}
+				}
+			}
+			originalCustomListArray.push(onEditClient.join('>'));
+			custom_clientlist = originalCustomListArray.join('<');
+			httpApi.nvramSet({
+				"custom_clientlist" : custom_clientlist,
+				"action_mode": "apply"
+			},  function(){
+				setTimeout(function(){
+					jstree_refresh();
+				},1000);
+			}());
+		});
+	}
+	else{
+		$model_icon.removeAttr("idx");
+		$model_icon.find(".model_icon_exchange").hide();
+	}
+}
 function update_model_icon(_node_info){
 	var model_name = _node_info.model_name;
 	var tcode = _node_info.tcode;
 	var cobrand = httpApi.aimesh_get_misc_info(_node_info).cobrand;
-	if(cloudRouterIconCheckCache[model_name] == undefined)
-		cloudRouterIconCheckCache[model_name] = false;
+	var icon_model_name = "";
+	if(_node_info.icon_model_name != undefined && _node_info.icon_model_name != "")
+		icon_model_name = _node_info.icon_model_name;
 
-	if(cloudRouterIconCheckCache[model_name])
-		cloud_router_icon_set(cloudRouterIconCheckCache[model_name]);
+	var model_info = {"model_name": model_name, "tcode": tcode, "cobrand": cobrand, "icon_model_name": icon_model_name};
+	var cloudModelName = httpApi.transformCloudModelName(model_info);
+	model_info.cloudModelName = cloudModelName;
+
+	if(cloudRouterIconCheckCache[cloudModelName] == undefined)
+		cloudRouterIconCheckCache[cloudModelName] = false;
+
+	if(cloudRouterIconCheckCache[cloudModelName])
+		cloud_router_icon_set(cloudRouterIconCheckCache[cloudModelName]);
 	else
-		cloud_router_icon_get(model_name, tcode, cobrand);
+		cloud_router_icon_get(model_info);
+
+	set_change_model_icon(_node_info);
 }
 var transform_band_index = function(_bandNum){
 	return ((Math.pow(2,_bandNum)) - 1).toString();
@@ -3823,7 +3936,7 @@ $(document).ready(initial_AiMesh);
 					<div class="mac_info"><span>MAC</span><span id="mac"></span></div>
 				</div>
 				
-				<div class="model_icon"></div>
+				<div class="model_icon"><div title="<#CTL_Change#>" class="model_icon_exchange"></div></div>
 			</div>
 		</div>
 		<div class="item_space"></div>

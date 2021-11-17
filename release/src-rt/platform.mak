@@ -570,6 +570,9 @@ define platformKernelConfig
 					cp $(TOP_PLATFORM)/hnd_extra/prebuilt/bcmsfp_i2c.o $(HND_SRC)/bcmdrivers/opensource/char/i2c/chips/impl1/ ; \
 					cp $(TOP_PLATFORM)/hnd_extra/prebuilt/opticaldet.o $(HND_SRC)/bcmdrivers/opensource/char/opticaldet/impl1/opticaldet$(PRBM_EXT).o ; \
 					cp $(TOP_PLATFORM)/hnd_extra/prebuilt/ext_timer.o $(HND_SRC)/bcmdrivers/opensource/char/timer/impl1/ext_timer$(PRBM_EXT).o ; \
+					if [ "$(HND_ROUTER_AX_675X)" = "y" ] ; then \
+						cp $(TOP_PLATFORM)/hnd_extra/prebuilt/bcm_cleds.o $(HND_SRC)/bcmdrivers/broadcom/char/cleds/impl1/ ; \
+					fi; \
 				else \
 					cp $(TOP_PLATFORM)/hnd_extra/prebuilt/bpm.o $(HND_SRC)/bcmdrivers/broadcom/char/bpm/impl1/bpm.o ; \
 					cp $(TOP_PLATFORM)/hnd_extra/prebuilt/bcm963xx_timer.o $(HND_SRC)/bcmdrivers/opensource/char/timer/impl1/bcm963xx_timer.o ; \

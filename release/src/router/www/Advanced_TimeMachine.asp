@@ -31,8 +31,10 @@
 </style>
 <script>
 window.onresize = function() {
-	if(document.getElementById("folderTree_panel").style.display == "block") {
-		cal_panel_block("folderTree_panel", 0.25);
+	if(document.getElementById("folderTree_panel") != null){
+		if(document.getElementById("folderTree_panel").style.display == "block") {
+			cal_panel_block("folderTree_panel", 0.25);
+		}
 	}
 } 
 

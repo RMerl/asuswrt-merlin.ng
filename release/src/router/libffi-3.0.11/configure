@@ -649,6 +649,8 @@ AVR32_FALSE
 AVR32_TRUE
 ARM_FALSE
 ARM_TRUE
+AARCH64_FALSE
+AARCH64_TRUE
 POWERPC_FREEBSD_FALSE
 POWERPC_FREEBSD_TRUE
 POWERPC_DARWIN_FALSE
@@ -13128,6 +13130,10 @@ fi
 
 TARGETDIR="unknown"
 case "$host" in
+  aarch64*-*-*)
+	TARGET=AARCH64; TARGETDIR=aarch64
+	;;
+
   alpha*-*-*)
 	TARGET=ALPHA; TARGETDIR=alpha;
 	# Support 128-bit long double, changeable via command-line switch.
@@ -13413,6 +13419,14 @@ fi
 else
   POWERPC_FREEBSD_TRUE='#'
   POWERPC_FREEBSD_FALSE=
+fi
+
+ if test x$TARGET = xAARCH64; then
+  AARCH64_TRUE=
+  AARCH64_FALSE='#'
+else
+  AARCH64_TRUE='#'
+  AARCH64_FALSE=
 fi
 
  if test x$TARGET = xARM; then
@@ -14797,6 +14811,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${POWERPC_FREEBSD_TRUE}" && test -z "${POWERPC_FREEBSD_FALSE}"; then
   as_fn_error $? "conditional \"POWERPC_FREEBSD\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${AARCH64_TRUE}" && test -z "${AARCH64_FALSE}"; then
+  as_fn_error $? "conditional \"AARCH64\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${ARM_TRUE}" && test -z "${ARM_FALSE}"; then

@@ -535,6 +535,7 @@ var diskUtility_support = isSupport("diskutility");
 var networkTool_support = isSupport("nwtool");
 var band5g_11ac_support = isSupport("11AC");
 var band5g_11ax_support = isSupport("11AX");
+var disable11b_support = isSupport("dis11b");
 var no_vht_support = isSupport("no_vht");	//Hide 11AC/80MHz from GUI
 var optimizeXbox_support = isSupport("optimize_xbox");
 var spectrum_support = isSupport("spectrum");
@@ -620,6 +621,7 @@ var wpa3_support = isSupport('wpa3');
 var owe_trans_support = isSupport('owe_trans');
 var uu_support = isSupport('uu_accel');
 var internetSpeed_support = isSupport("ookla");
+var internetSpeed_lite_support = isSupport("ookla_lite");
 var gameMode_support = isSupport('gameMode');
 var oam_support = isSupport('oam');
 var hnd_ax_675x_support = isSupport('hnd_ax_675x');
@@ -738,7 +740,7 @@ if(based_modelid != "BRT-AC828"){
 var notice_pw_is_default = '<% check_pw(); %>';
 if(notice_pw_is_default == 1 && window.location.pathname.toUpperCase().search("QIS_") < 0)	//force to change http_passwd / http_username & except QIS settings
 		location.href = 'Main_Password.asp?nextPage=' + window.location.pathname.substring(1 ,window.location.pathname.length);
-else if('<% nvram_get("w_Setting"); %>' == '0' && sw_mode != 2)
+else if('<% nvram_get("w_Setting"); %>' == '0' && sw_mode != 2 && window.location.pathname.toUpperCase().search("QIS_") < 0)
 	location.href = '/QIS_wizard.htm?flag=wireless';
 
 var allUsbStatus = "";

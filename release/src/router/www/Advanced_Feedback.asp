@@ -82,8 +82,9 @@ function initial(){
 	gen_ptype_list(orig_page);
 	Reload_pdesc(document.form.fb_ptype,orig_page);
 
-	if(is_CN_sku && support_site_modelid == "RT-AX89X"){
+	if(is_CN_sku){
 		inputCtrl(document.form.fb_phone, 1);
+		gen_contact_sel();
 	}
 	else{
 		inputCtrl(document.form.fb_phone, 0);
@@ -150,6 +151,18 @@ function initial(){
 	$("#eula_content").find($("a")).attr({"href": policy_href});
 	var call_href = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Call&lang="+ui_lang+"&kw=&num=";
 	$("#call_link").attr({"href": call_href});
+}
+
+function gen_contact_sel(){
+	infolist = new Array();
+	infolist.push(["<#Select_menu_default#> ...","No_selected"]);
+	infolist.push(["<#feedback_phone#>","phone"]);
+	infolist.push(["QQ","qq"]);
+	infolist.push(["<#wechat#>","wechat"]);
+
+	for(var i = 0; i < infolist.length; i++){
+		document.form.fb_contact_type.options[i] = new Option(infolist[i][0], infolist[i][1]);
+	}
 }
 
 function check_wan_state(){
@@ -588,7 +601,7 @@ function applyRule(){
 				document.form.fb_attach_iptables.value = 0;
 
 			document.form.fb_availability.value = (document.form.fb_availability.value=="No_selected")?"":document.form.fb_availability.value;
-		}	
+		}
                 
 		if(document.form.fb_email.value == ""){
 			if(!confirm("<#feedback_email_confirm#>")){
@@ -604,11 +617,37 @@ function applyRule(){
 			}
 		}
 		
-		//validate phone
-		if(document.form.fb_phone.value.length > 0 && (document.form.fb_phone.value.length < 9 || !validator.integer(document.form.fb_phone.value)) ){
-			alert("<#feedback_phone_alert#>");		
-			document.form.fb_phone.focus();
-			return false;
+		//validate contact info
+		if(is_CN_sku){
+			if(document.form.fb_contact_type.value != "No_selected" && document.form.fb_phone.value.length == 0){
+				alert("<#JS_fieldblank#>");
+				document.form.fb_phone.focus();
+				return false;
+			}
+
+			if(document.form.fb_contact_type.value == "phone"){
+				if(!validator.phone_CN(document.form.fb_phone, "both"))
+				{
+					alert("<#feedback_phone_alert#>");
+					document.form.fb_phone.focus();
+					return false;
+				}
+			}
+			else if(document.form.fb_contact_type.value == "qq"){
+				if(!validator.qq(document.form.fb_phone))
+				{
+					alert("<#feedback_format_alert#>");
+					document.form.fb_phone.focus();
+					return false;
+				}
+			}
+			else{
+				if(!validator.string(document.form.fb_phone)){
+					document.form.fb_phone.focus();
+					return false;
+				}
+			}
+			document.form.fb_contact_type.value = (document.form.fb_contact_type.value=="No_selected")?"":document.form.fb_contact_type.value;
 		}
 
 		if(document.form.fb_pdesc.value == "tech_ASUS"){
@@ -711,9 +750,7 @@ function applyRule(){
 			httpApi.update_wlanlog();
 
 		document.form.fb_browserInfo.value = navigator.userAgent;
-
 		startLogPrep();
-
 		document.form.submit();
 }
 
@@ -1265,9 +1302,10 @@ function CheckFBSize(){
 </td>
 </tr>
 
-<th><#feedback_phone#></th>
+<th><#feedback_contact_info#> *</th>
 <td>
-	<input type="text" name="fb_phone" maxlength="12" class="input_15_table" onKeyPress="return validator.isNumber(this,event);" value="" autocorrect="off" autocapitalize="off">	
+	<select class="input_option" name="fb_contact_type"></select>
+	<input type="text" name="fb_phone" maxlength="50" class="input_25_table" value="" autocorrect="off" autocapitalize="off">	
 </td>
 </tr>
 <tr>

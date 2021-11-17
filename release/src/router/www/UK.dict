@@ -2005,6 +2005,7 @@ feedback_conn_rra=Маршрутизатор автоматично переза
 feedback_conn_ucp=Нестабільне з’єднання
 feedback_conn_wdc=Unable to connect to wireless network
 feedback_connection_type=Виберіть, який пункт найкраще описує роботу послуги DSL
+feedback_contact_info=Контактний метод
 feedback_country=Ваша країна / регіон
 feedback_cancel_capturing=Скасувати зйомку налагодження
 feedback_current_capturing=У процесі зйомка журналу діагностики і налагодження
@@ -2030,6 +2031,7 @@ feedback_fail1=<span style="color:#FC0;">Система не підключил�
 feedback_fail2=Просто скопіюйте змістівставте його у поле електронного листа.
 feedback_fail3=Завантажте наступні файли налагодження і додайте їх як вкладення електронної пошти:
 feedback_fail_BindGoogle=Або можна <a id="bind_google">поєднати обліковий запис Google</a>, щоб надіслати відгук електронною поштою.
+feedback_format_alert=The format is not valid.
 feedback_Frequent_interrupt=Часті переривання
 feedback_iptable_setting=Налаштування iptables
 feedback_isp=Ваш ISP / Провайдер інтернет-послуг
@@ -3711,6 +3713,7 @@ WANAggregation_help_step4=Перезавантажте маршрутизато�
 WANAggregation_help_final=Якщо всі ці кроки виявилися безрезультатними, сповістіть про проблему на <a href='https://www.asus.com/support/' target='_blank' style='color:#000;text-decoration:underline;'>сайті підтримки ASUS</a>.
 WANAggregation_wanType_hint=Агрегація WAN не підтримує типи WAN, як-от PPPoE, PPTP і L2TP. Якщо тип WAN змінюється на PPPoE, PPTP або L2TP, агрегація WAN автоматично вимкнеться. Ви справді бажаєте продовжити?
 WebGUI_issue=Не вдалося відкрити сторінку мікропрограми
+wechat=WeChat
 WhiteList=Білий список
 WiFi_Proxy_desc=Enable this feature in Repeater mode to successfully extend certain hotspot (public WiFi) network.
 WiFi_Proxy_enable=Enable WiFi Proxy

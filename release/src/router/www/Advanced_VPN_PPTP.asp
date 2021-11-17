@@ -49,8 +49,10 @@
 <% wanlink(); %>
 <% secondary_wanlink(); %>
 window.onresize = function() {
-	if(document.getElementById("edit_sr_block").style.display == "block") {
-		cal_panel_block("edit_sr_block", 0.35);
+	if(document.getElementById("edit_sr_block") != null){
+		if(document.getElementById("edit_sr_block").style.display == "block") {
+			cal_panel_block("edit_sr_block", 0.35);
+		}
 	}
 }
 var pptpd_clientlist_array_ori = '<% nvram_char_to_ascii("","pptpd_clientlist"); %>';

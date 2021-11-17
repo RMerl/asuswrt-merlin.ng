@@ -2005,6 +2005,7 @@ feedback_conn_rra=Router genstarter automatisk
 feedback_conn_ucp=Problem med ustabil forbindelse
 feedback_conn_wdc=Unable to connect to wireless network
 feedback_connection_type=Hvilken af følgende beskriver bedst ydelsen af din DSL-tjeneste
+feedback_contact_info=Kontaktmetode
 feedback_country=Dit land / område
 feedback_cancel_capturing=Annuller fejlfinding
 feedback_current_capturing=Diagnostisk fejlsøgning af logfiler er i gang
@@ -2030,6 +2031,7 @@ feedback_fail1=<span style="color:#FC0;">Systemet kunne ikke oprette forbindelse
 feedback_fail2=Du skal blot kopiere indholdet nedenfor, og indsætte det i din e-mail.
 feedback_fail3=Download følgende fejlfindingsfiler, og tilføj dem som vedhæftet fil i en e-mail:
 feedback_fail_BindGoogle=Eller du kan <a id="bind_google">binde din Google-konto</a> for at sende feedback via e-mail.
+feedback_format_alert=The format is not valid.
 feedback_Frequent_interrupt=Hyppige afbrydelser
 feedback_iptable_setting=Iptabes lindstillingen
 feedback_isp=Din internetudbyder
@@ -3711,6 +3713,7 @@ WANAggregation_help_step4=Genstart din router
 WANAggregation_help_final=Hvis de ovenstående trin ikke afhjælper problemet, skal du rapportere problemet på <a href='https://www.asus.com/support/' target='_blank' style='color:#000;text-decoration:underline;'>ASUS' supportside</a>.
 WANAggregation_wanType_hint=WAN Aggregation understøtter ikke WAN-typer såsom PPPoE, PPTP og L2TP. Hvis din WAN-type ændres til PPPoE, PPTP eller L2TP, deaktiveres WAN Aggregation automatisk. Er du sikker på, at du vil fortsætte?
 WebGUI_issue=Kan ikke få adgang til firmwareside
+wechat=WeChat
 WhiteList=Hvidliste
 WiFi_Proxy_desc=Enable this feature in Repeater mode to successfully extend certain hotspot (public WiFi) network.
 WiFi_Proxy_enable=Enable WiFi Proxy

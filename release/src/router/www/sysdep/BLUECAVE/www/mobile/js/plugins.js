@@ -246,6 +246,7 @@ function getAiMeshOnboardinglist(_onboardingList){
 		this.id = "";
 		this.tcode = "";
 		this.type = "";
+		this.cobrand = "";
 	};
 	var convRSSI = function(val) {
 		var result = 1;
@@ -275,6 +276,7 @@ function getAiMeshOnboardinglist(_onboardingList){
 			node_info.id = newReMac.replace(/:/g, "");
 			node_info.tcode = newReMacArray[newReMac].tcode;
 			node_info.type = newReMacArray[newReMac].type;
+			node_info.cobrand = httpApi.aimesh_get_misc_info(newReMacArray[newReMac]).cobrand;
 			jsonArray.push(node_info);
 		});
 	});
@@ -709,13 +711,15 @@ var Get_Component_AiMeshOnboarding_List = function(nodeInfo) {
 	var nodeContainer = $("<div>").attr({"id" : nodeInfo.id}).addClass("apListContainer apProfile");
 	var nodeDiv = $("<div>").addClass("apListDiv");
 	nodeContainer.append(nodeDiv);
+	var model_info = {"model_name": nodeInfo.name, "tcode": nodeInfo.tcode, "cobrand": nodeInfo.cobrand, "icon_model_name": ""};
+	var cloudModelName = httpApi.transformCloudModelName(model_info);
 
 	var model_icon_container = $("<div>").addClass("ap_icon_container middle");
 	nodeDiv.append(model_icon_container);
 
-	var model_icon = $("<div>").addClass("aimesh_icon").attr("model_name", nodeInfo.name);
-	if(systemVariable.modelCloudIcon[nodeInfo.name])
-		model_icon.css("background-image", "url(" + systemVariable.modelCloudIcon[nodeInfo.name] + ")");
+	var model_icon = $("<div>").addClass("aimesh_icon").attr("model_name", cloudModelName);
+	if(systemVariable.modelCloudIcon[cloudModelName])
+		model_icon.css("background-image", "url(" + systemVariable.modelCloudIcon[cloudModelName] + ")");
 	model_icon.appendTo(model_icon_container);
 
 	var node_name_container = $("<div>").addClass("ap_ssid");
@@ -1341,11 +1345,6 @@ var getRestartService = function(){
 		return "restart_all";
 	}
 
-	/*if(current_webs_SG_mode){
-		actionScript.push("restart_wireless");
-		actionScript.push("stop_upnp");
-	}*/
-
 	if(isSupport("2p5G_LWAN") || isSupport("10G_LWAN") || isSupport("10GS_LWAN")){
 		if(isWANLANChange())
 			return "reboot";
@@ -1640,21 +1639,28 @@ function startDetectLinkInternet(){
 }
 
 function startLiveUpdate(){
+	var CheckTime = "";
+	var TimeDiff = "";
 	if(!systemVariable.linkInternet){
 		setTimeout(arguments.callee, 1000);
 	}
 	else{
+		var NowTime = Math.ceil(Date.now() / 1000);
 		httpApi.nvramSet({"action_mode":"apply", "webs_update_trigger":"QIS", "rc_service":"start_webs_update"}, function(){
 			setTimeout(function(){
-				var fwInfo = httpApi.nvramGet(["webs_state_update", "webs_state_info_am", "webs_state_flag", "webs_state_level"], true);
+				var fwInfo = httpApi.nvramGet(["webs_state_update", "webs_state_info_am", "webs_state_flag", "webs_state_level", "webs_update_ts"], true);
+				CheckTime = (fwInfo.webs_update_ts == "")? 0:fwInfo.webs_update_ts.split("&#62")[0];
+				TimeDiff = NowTime-CheckTime;
 
 				if(fwInfo.webs_state_flag == "1" || fwInfo.webs_state_flag == "2"){
 					systemVariable.isNewFw = fwInfo.webs_state_flag;
 					systemVariable.newFwVersion = fwInfo.webs_state_info;
 					systemVariable.forceLevel = fwInfo.webs_state_level;
 				}
-				setTimeout(arguments.callee, 1000);
-			}, 1000);
+				if(TimeDiff > 1800 || fwInfo.webs_state_update != "1"){
+					setTimeout(arguments.callee, 1000);
+				}
+			}, 2000);
 		});
 	}
 }

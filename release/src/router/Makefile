@@ -18,7 +18,6 @@ endif
 ifeq ($(origin HND_ROUTER_AX_675X), undefined)
 export HND_ROUTER_AX_675X := $(if $(shell pwd | grep -e 'src-rt-5.02[^/]*axhnd.675x'),y,)
 endif
-
 ifeq ($(origin HND_ROUTER_AX_6756), undefined)
 export HND_ROUTER_AX_6756 := $(if $(shell pwd | grep -e 'src-rt-5.04[^/]*axhnd.675x'),y,)
 endif
@@ -321,11 +320,13 @@ endif
 ifeq ($(HND_ROUTER_AX),y)
 ifeq ($(BRCM_CHIP),4908)
 export CROSS_COMPILE_64 := /opt/toolchains/crosstools-aarch64-gcc-5.5-linux-4.1-glibc-2.26-binutils-2.28.1/usr/bin/aarch64-buildroot-linux-gnu-
+else ifeq ($(BRCM_CHIP),4912)
+export CROSS_COMPILE_64 := /opt/toolchains/crosstools-aarch64-gcc-9.2-linux-4.19-glibc-2.30-binutils-2.32/usr/bin/aarch64-buildroot-linux-gnu-
 endif
 else
 export CROSS_COMPILE_64 := /opt/toolchains/crosstools-aarch64-gcc-5.3-linux-4.1-glibc-2.22-binutils-2.25/usr/bin/aarch64-buildroot-linux-gnu-
 endif
-ifeq ($(BRCM_CHIP),4908)
+ifeq ($(BRCM_CHIP),$(filter $(BRCM_CHIP),4908 4912))
 export STRIP_64 := $(CROSS_COMPILE_64)strip
 export TOOLCHAIN_64 := $(shell cd $(dir $(shell which $(CROSS_COMPILE_64)gcc))/.. && pwd -P)
 export TOOL_SYS_INCLUDE_64=$(TOOLCHAIN_64)/aarch64-buildroot-linux-gnu/sysroot/usr/include
@@ -891,6 +892,7 @@ obj-$(RTCONFIG_TRAFFIC_LIMITER) += sqlite
 obj-$(RTCONFIG_TRAFFIC_LIMITER) += traffic_limiter
 
 obj-$(RTCONFIG_OOKLA) += ookla_speedtest
+obj-$(RTCONFIG_OOKLA_LITE) += ookla_speedtest
 
 obj-$(RTCONFIG_LETSENCRYPT) += openssl
 obj-$(RTCONFIG_LETSENCRYPT) += acme.sh
@@ -1348,7 +1350,6 @@ obj-$(RTCONFIG_HTTPS) += zlib
 obj-$(RTCONFIG_HTTPS) += curl
 obj-$(RTCONFIG_SSH) += dropbear
 obj-$(RTCONFIG_WTFAST) += wtfast
-obj-$(RTCONFIG_TCPLUGIN) += qmacc
 #obj-$(RTCONFIG_ZEBRA) += zebra
 obj-$(RTCONFIG_QUAGGA) += quagga
 #obj-$(RTCONFIG_IPP2P) += ipp2p
@@ -1737,17 +1738,17 @@ ifneq ($(RTCONFIG_HND_ROUTER_AX_675X),y)
 version: $(SRCBASE)/include/epivers.h
 	$(SEP)
 endif
-endif
 
 EPIVERS_OPTION =
 
-ifeq ($(RTCONFIG_HND_ROUTER_AX_6710)$(RTCONFIG_HND_ROUTER_AX_675X),y)
+ifeq ($(RTCONFIG_HND_ROUTER_AX_675X),y)
 version:  $(SRCBASE)/include/epivers.h
 #	$(MAKE) -C $(SRCBASE)/include $(EPIVERS_OPTION) REUSE_VERSION=1
 ifeq ($(RTCONFIG_DHDAP),y)
 	$(MAKE) pciefd-version
 endif
 endif
+endif # RTCONFIG_HND_ROUTER_AX_6710
 
 $(SRCBASE)/include/epivers.h:
 #	$(MAKE) -C $(SRCBASE)/include $(EPIVERS_OPTION)
@@ -1755,14 +1756,8 @@ ifeq ($(RTCONFIG_DHDAP),y)
 #	$(MAKE) -C $(SRCBASE_DHD)/include
 #	$(MAKE) -C $(SRCBASE_FW)/include
 endif
-endif
-
-
-ifeq ($(RTCONFIG_BCMARM),y)
 	+$(MAKE) $(MAKE_ARGS) post_preplibs
-endif
 
-ifeq ($(RTCONFIG_BCMARM),y)
 list_obj_prelibs:
 	@echo obj-prelibs:
 	@( \
@@ -1984,7 +1979,7 @@ endif
 	install -D $(TOOLCHAIN)/arm-buildroot-linux-gnueabi/sysroot/lib/libpthread.so.0 $(INSTALLDIR)/lib/libpthread.so.0
 	install -D $(TOOLCHAIN)/arm-buildroot-linux-gnueabi/sysroot/lib/libdl.so.2 $(INSTALLDIR)/lib/libdl.so.2
 	install -D $(TOOLCHAIN)/arm-buildroot-linux-gnueabi/sysroot/lib/libgcc_s.so.1 $(INSTALLDIR)/lib/libgcc_s.so.1
-ifeq ($(BRCM_CHIP),4908)
+ifeq ($(BRCM_CHIP),$(filter $(BRCM_CHIP),4908 4912))
 	install -D $(TOOLCHAIN_64)/aarch64-buildroot-linux-gnu/sysroot/lib/ld-linux-aarch64.so.1 $(INSTALLDIR)/lib/ld-linux-aarch64.so.1
 	install -D $(TOOLCHAIN_64)/aarch64-buildroot-linux-gnu/sysroot/lib/libc.so.6 $(INSTALLDIR)/lib/aarch64/libc.so.6
 	install -D $(TOOLCHAIN_64)/aarch64-buildroot-linux-gnu/sysroot/lib/libnss_dns.so.2 $(INSTALLDIR)/lib/aarch64/libnss_dns.so.2
@@ -5709,13 +5704,12 @@ endif
 .PHONY: wlexe-install
 wlexe-install:
 ifeq ($(RTCONFIG_WLEXE),y)
-ifneq ($(wildcard $(SRC_WLEXE)/GNUmakefile),)
 	[ ! -d wlexe ] || install -D -m 755 wlexe/wl $(INSTALLDIR)/wlexe/usr/sbin/wl
-	[ ! -d wlexe ] || install -D -m 755 wlexe/wl_server_socket $(INSTALLDIR)/wlexe/usr/sbin/wl_server_socket
+	#[ ! -d wlexe ] || install -D -m 755 wlexe/wl_server_socket $(INSTALLDIR)/wlexe/usr/sbin/wl_server_socket
 	[ ! -d wlexe ] || $(STRIP) $(INSTALLDIR)/wlexe/usr/sbin/wl
-	[ ! -d wlexe ] || $(STRIP) $(INSTALLDIR)/wlexe/usr/sbin/wl_server_socket
+	#[ ! -d wlexe ] || $(STRIP) $(INSTALLDIR)/wlexe/usr/sbin/wl_server_socket
 endif
-endif
+	@true
 
 ifeq ($(RTCONFIG_BRCM_HOSTAPD),y)
 .PHONY: libnl libnl-install libnl-clean
@@ -5764,11 +5758,7 @@ hostapd-clean:
 $(WPA_SUPPLICANT_DIR)/wpa_supplicant/.config: $(WPA_SUPPLICANT_DIR)/wpa_supplicant/brcm.config
 	cp $(WPA_SUPPLICANT_DIR)/wpa_supplicant/brcm.config $(WPA_SUPPLICANT_DIR)/wpa_supplicant/.config;
 
-ifeq ($(HND_ROUTER_AX_6756),y)
-wpa_supplicant-2.7: libnl $(WPA_SUPPLICANT_DIR)/wpa_supplicant/.config cevent_app
-else
-wpa_supplicant-2.7: libnl $(WPA_SUPPLICANT_DIR)/wpa_supplicant/.config
-endif
+wpa_supplicant-2.7: libnl $(WPA_SUPPLICANT_DIR)/wpa_supplicant/.config $(if $(or $(HND_ROUTER_AX_6756),$(BCM_502L07P2)),cevent_app)
 	+$(MAKE) $(PARALLEL_BUILD) -C $(WPA_SUPPLICANT_DIR)/wpa_supplicant
 
 wpa_supplicant-2.7-install:
@@ -5871,7 +5861,7 @@ igs$(BCMEX)$(EX7)-clean:
 	-@$(MAKE) -C $(TOPX_DIR)/igsconf clean
 
 ifeq ($(HND_ROUTER),y)
-ifeq ($(BRCM_CHIP),4908)
+ifeq ($(BRCM_CHIP),$(filter $(BRCM_CHIP),4908 4912))
 EBK_INC=$(TOOL_SYS_INCLUDE_64)
 else
 EBK_INC=$(KERNEL_HEADER_DIR)
@@ -5881,7 +5871,7 @@ EBK_INC=$(TOP)/kernel_header/include
 endif
 
 ebtables: kernel_header dummy
-	$(MAKE) -C ebtables $(PARALLEL_BUILD) $(if $(filter 4908,$(BRCM_CHIP)),CC=$(CROSS_COMPILE_64)gcc LD=$(CROSS_COMPILE_64)ld CURRENT_ARCH=aarch64,CC=$(CC) LD=$(LD)) \
+	$(MAKE) -C ebtables $(PARALLEL_BUILD) $(if $(filter 4908 4912,$(BRCM_CHIP)),CC=$(CROSS_COMPILE_64)gcc LD=$(CROSS_COMPILE_64)ld CURRENT_ARCH=aarch64,CC=$(CC) LD=$(LD)) \
 	CFLAGS="-Os -Wall -Wunused $(if $(RTCONFIG_HND_ROUTER),-DHND_ROUTER,)" \
 	BINDIR="/usr/sbin" LIBDIR="/usr/lib/ebtables" KERNEL_INCLUDES=$(EBK_INC) $(if $(RTCONFIG_IPV6),DO_IPV6=1,) $(if $(OLD_QCA),USE_ARPNAT=1,)
 
@@ -5894,7 +5884,7 @@ ebtables-install: ebtables
 	install -D ebtables/extensions/*.so $(INSTALLDIR)/ebtables/usr/lib/ebtables/
 
 ifeq ($(HND_ROUTER),y)
-ifeq ($(BRCM_CHIP),4908)
+ifeq ($(BRCM_CHIP),$(filter $(BRCM_CHIP),4908 4912))
 	$(STRIP_64) $(INSTALLDIR)/ebtables/usr/sbin/ebtables
 	$(STRIP_64) $(INSTALLDIR)/ebtables/usr/lib/ebtables/*.so
 	$(STRIP_64) $(INSTALLDIR)/ebtables/usr/lib/libebt*.so
@@ -7588,6 +7578,10 @@ libical-2.0.0/Makefile: libical-2.0.0/CMakeLists.txt
 
 libical-2.0.0: libical-2.0.0/Makefile
 	$(MAKE) -C $@ && $(MAKE) $@-stage
+ifeq ($(MUSL64),y)
+	@install -d $(STAGEDIR)/usr/lib
+	@cp -af $(STAGEDIR)/usr/lib64/* $(STAGEDIR)/usr/lib
+endif
 
 libical-2.0.0-clean:
 	[ ! -f libical-2.0.0/Makefile ] || $(MAKE) -C libical-2.0.0 clean
@@ -8261,22 +8255,20 @@ acsdv2-clean:
 
 ifeq ($(RTCONFIG_BCM_CEVENTD),y)
 cevent_app:
-	@true
 ifneq ($(HND_ROUTER_AX_6756),y)
-ifeq ($(wildcard $(CEVENT_APP_DIR)/prebuilt/ceventd),)
+ifneq ($(wildcard $(CEVENT_APP_DIR)/prebuilt/ceventd),)
+	cp -f $(CEVENT_APP_DIR)/prebuilt/ceventd $(CEVENT_APP_DIR)/
+	cp -f $(CEVENT_APP_DIR)/prebuilt/ceventc $(CEVENT_APP_DIR)/
+else
 	+$(MAKE) -C $(CEVENT_APP_DIR) all EXTRA_LDFLAGS=$(EXTRA_LDFLAGS)
 endif
 else
 	+$(MAKE) -C $(CEVENT_APP_DIR) all EXTRA_LDFLAGS=$(EXTRA_LDFLAGS)
 endif
+
 cevent_app-install: cevent_app
-ifneq ($(HND_ROUTER_AX_6756),y)
-ifneq ($(wildcard $(CEVENT_APP_DIR)/prebuilt/ceventd),)
-	cp -f $(CEVENT_APP_DIR)/prebuilt/ceventd $(CEVENT_APP_DIR)/
-	cp -f $(CEVENT_APP_DIR)/prebuilt/ceventc $(CEVENT_APP_DIR)/
-endif
-endif
 	+$(MAKE) -C $(CEVENT_APP_DIR) install EXTRA_LDFLAGS=$(EXTRA_LDFLAGS) INSTALLDIR=$(INSTALLDIR)/cevent_app
+
 cevent_app-clean:
 	+$(MAKE) -C $(CEVENT_APP_DIR) clean EXTRA_LDFLAGS=$(EXTRA_LDFLAGS)
 endif
@@ -8363,11 +8355,7 @@ fdt-install: fdt
 
 # .PHONY : fdt
 
-ifeq ($(HND_ROUTER_AX_6756),y)
-bcm_flashutil: bcm_util fdt
-else
-bcm_flashutil: bcm_util
-endif
+bcm_flashutil: bcm_util $(if $(HND_ROUTER_AX_6756),fdt)
 	@$(eval TOPX_DIR:=$(firstword $(wildcard $(TOP_PLATFORM)/$@) $(wildcard $@)))
 	$(MAKE) -C $(TOPX_DIR)
 

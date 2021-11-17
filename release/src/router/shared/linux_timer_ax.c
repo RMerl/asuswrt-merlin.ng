@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020, Broadcom. All Rights Reserved.
+ * Copyright (C) 2021, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -53,8 +53,6 @@
 #include <typedefs.h>
 #include <pthread.h>
 
-#include <rtconfig.h>
-
 /* define TIMER_PROFILE to enable code which guages how accurate the timer functions are.
  * For each expiring timer the code will print the expected time interval and the actual time
  * interval.
@@ -78,7 +76,7 @@ nanosleep( ) - suspend the current task until the time interval elapses (POSIX)
 #define US_PER_MS  1000		/* 1000us per ms */
 #define UCLOCKS_PER_SEC 1000000 /* Clock ticks per second */
 
-typedef void (*event_callback_t)(timer_t, int);
+typedef void (*event_callback_t)(timer_t, uintptr_t);
 
 #ifdef BCMQT
 uint htclkratio = 50;
@@ -312,7 +310,7 @@ int timer_delete(
 int timer_connect
 (
 	timer_t     timerid, /* timer ID */
-	void (*routine)(timer_t, int), /* user routine */
+	void (*routine)(timer_t, uintptr_t), /* user routine */
 	uintptr_t         arg      /* user argument */
 )
 {
@@ -519,7 +517,7 @@ static void print_event_queue()
 
 	for (event = event_queue; event; event = event->next) {
 		printf("#%d (0x%x)->0x%x: \t%d sec %d usec\t%p\n",
-		       i++, (unsigned int) event, (unsigned int) event->next, (int)
+		       i++, (uintptr_t) event, (uintptr_t) event->next, (int)
 		       event->it_value.tv_sec,
 		       (int) event->it_value.tv_usec, event->func);
 		if (i > g_maxevents) {
@@ -546,7 +544,7 @@ static void event_callback_handler()
 	block_timer();
 
 	/* Loop through the event queue and remove the first event plus any */
-	/* subsequent events that will expire very soon thereafter (within 'small_interval'}. */
+	/* subsequent events that will expire very soon thereafter (within 'small_interval'). */
 	/* */
 	if (!event_queue) {
 		unblock_timer();

@@ -481,7 +481,7 @@ void start_wl(void)
 #ifdef RTCONFIG_WIFI_SON
 		!nvram_match("wifison_ready", "1") &&
 #endif /* WIFI_SON */
-		(nvram_get("cfg_relist") && strlen(nvram_safe_get("cfg_relist"))))
+		is_cfg_relist_exist())
 		update_macfilter_relist();
 #endif
 }
@@ -1986,7 +1986,7 @@ void start_lan(void)
 							eval("brctl", "addif", BR_GUEST, ifname);
 						else
 #endif
-#ifdef RTCONFIG_EXTPHY_BCM84880
+#if defined(RTCONFIG_EXTPHY_BCM84880) && !defined(GTAX6000)
 						if(nvram_match("x_Setting", "0") && !strcmp(ifname, "eth5"))
 							;
 						else
@@ -5200,8 +5200,7 @@ void restart_wl(void)
 #ifdef RTCONFIG_WIFI_SON
 		!nvram_match("wifison_ready", "1") &&
 #endif /* WIFI_SON */
-		(nvram_get("cfg_relist") && strlen(nvram_safe_get("cfg_relist"))))
-
+		is_cfg_relist_exist())
 		update_macfilter_relist();
 #endif
 }
@@ -5598,7 +5597,11 @@ void restart_wireless(void)
 		start_firewall(wan_primary_ifunit(), 0);
 	}
 #endif
-
+#if defined(RTCONFIG_ASUSCTRL)
+#if defined(RTCONFIG_BCMARM) ||  defined(RTCONFIG_QCA)
+	setting_SG_mode_wps();
+#endif
+#endif
 #ifdef RTCONFIG_NBR_RPT
 	nvram_unset("channel_2g");
 	nvram_unset("channelclass_2g");

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"> 
 <html xmlns:v>
 <head>
@@ -18,10 +18,26 @@
 <script language="JavaScript" type="text/javascript" src="/validator.js"></script>
 <script language="JavaScript" type="text/javascript" src="js/jquery.js"></script>
 <script language="JavaScript" type="text/javascript" src="js/httpApi.js"></script>
-<script>function initial(){
+<script>
+
+function initial(){
 	show_menu();
 	update_pppoerelay_option();
 	update_sip_alg_mode_option();
+
+	if(wan_proto=="v6plus" && array_ipv6_s46_ports.length > 1){
+		$(".setup_info_icon").show();
+		$(".setup_info_icon").click(
+			function() {				
+				if($("#s46_ports_content").is(':visible'))
+					$("#s46_ports_content").fadeOut();
+				else{
+					var position = $(".setup_info_icon").position();
+					pop_s46_ports(position);
+				}
+			}
+		);
+	}
 }
 
 function update_pppoerelay_option(){
@@ -52,6 +68,14 @@ function applyRule(){
 	if(usb_support){
 		if(!validator.numberRange(document.form.vts_ftpport, 1, 65535))
 			return false;
+		if(wan_proto=="v6plus" && array_ipv6_s46_ports.length > 1){
+			if (!validator.range_s46_ports(document.form.vts_ftpport, "none")){
+				if(!confirm("The following port related settings may not work properly since the port is not available in current v6plus usable port range. Do you want to continue?")){
+					document.form.vts_ftpport.focus();
+					return false;
+				}
+			}
+		}
 	}
 	if(document.form.fw_pt_sip.value == "1" && httpApi.nvramGet(["fw_pt_sip"], true).fw_pt_sip == "0") {
 		document.form.action_script.value = "restart_net_and_phy";
@@ -193,7 +217,7 @@ function applyRule(){
 										</td>
 										</tr>
 										<tr>
-											<th><#FTP_ALG_port#></th>
+											<th><#FTP_ALG_port#><div class="setup_info_icon" style="display:none;"></div></th>
 											<td>
 												<input type="text" maxlength="5" name="vts_ftpport" class="input_6_table" value="<% nvram_get("vts_ftpport"); %>" onkeypress="return validator.isNumber(this,event);" autocorrect="off" autocapitalize="off">
 											</td>

@@ -571,24 +571,31 @@ send_login_page(int fromapp_flag, int error_status, char* url, char* file, int l
 char
 *get_referrer(char *referer, char *auth_referer, size_t length)
 {
-	char *cp1=NULL, *cp2=NULL, *location_cp=NULL, *location_cp1=NULL;
+	char *referer_t = NULL;
+	char ip_addr[100] = {0}, path[100] = {0};
+
+	if(referer == NULL)
+		goto Error;
 
 	if(strstr(referer,"\r") != (char*) 0)
-		location_cp1 = strtok(referer, "\r");
+		referer_t = strtok(referer, "\r");
 	else
-		location_cp1 = referer;
+		referer_t = referer;
 
-	location_cp = strstr(location_cp1,"//");
-	if(location_cp != (char*) 0){
-		cp1 = &location_cp[2];
-		if(strstr(cp1,"/") != (char*) 0){
-			cp2 = strtok(cp1, "/");
-			strlcpy(auth_referer , cp2, length);
-		}else
-			strlcpy(auth_referer , cp1, length);
-	}else
-		strlcpy(auth_referer , location_cp1, length);
+	if(referer_t == NULL)
+		goto Error;
 
+	int uri_scan_status = sscanf(referer_t, "%*[^:]%*[:/]%99[^/]%99s", ip_addr, path);
+
+	if(uri_scan_status <= 0)
+		strlcpy(auth_referer, referer_t, length);
+	else
+		strlcpy(auth_referer, ip_addr, length);
+
+	return auth_referer;
+
+Error:
+	*auth_referer = '\0';
 	return auth_referer;
 }
 
@@ -1176,6 +1183,14 @@ handle_request(void)
 				return;
 			}
 		}
+		else if (strncasecmp( cur, "Transfer-Encoding:", 18 ) == 0) {
+			cp = &cur[18];
+			cp += strspn( cp, " \t" );
+			if(strstr( cp, "chunked" )){
+				send_error( 400, "Bad Request", (char*) 0, "Illegal HTTP Format." );
+				return;
+			}
+		}
 		else if ((cp = strstr( cur, "boundary=" ))) {
 			boundary = &cp[9];
 			for ( cp = cp + 9; *cp && *cp != '\r' && *cp != '\n'; cp++ );
@@ -1377,7 +1392,8 @@ handle_request(void)
 			nvram_set("httpd_handle_request", url);
 			nvram_set_int("httpd_handle_request_fromapp", fromapp);
 			if(login_state==3 && !fromapp) { // few pages can be shown even someone else login
-				if(!(mime_exception&MIME_EXCEPTION_MAINPAGE || (strncmp(file, "Main_Login.asp", 14)==0 && login_error_status == 9) || ((!handler->auth) && strncmp(file, "Main_Login.asp", 14) != 0))) {
+				 if(handler->auth || (!strncmp(file, "Main_Login.asp", 14) && login_error_status != 9) || mime_exception&MIME_EXCEPTION_NOPASS)
+				{
 					if(strcasecmp(method, "post") == 0 && handler->input)	//response post request
 						while (cl--) (void)fgetc(conn_fp);
 
@@ -1911,7 +1927,7 @@ load_dictionary (char *lang, pkw_t pkw)
 //printf ("lang=%s\n", lang);
 
 //	gettimeofday (&tv1, NULL);
-	if (lang == NULL || (lang != NULL && strlen (lang) == 0)) {
+	if(lang == NULL || strlen(lang) != 2 || !strstr(ALL_LANGS, lang)){
 		// if "lang" is invalid, use English as default
 		snprintf (dfn, sizeof (dfn), eng_dict);
 	} else {

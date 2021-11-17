@@ -47,7 +47,7 @@ static void *param = NULL;
  * Returns:
  * Posix %OK(0), or %RC_OS_FORK_FAILURE on vfork() failure
  */
-int os_shell_execute(char *cmd, char *ip, char *name, char *event, int error)
+int os_shell_execute(char *cmd, char *ip, char *ipv6, char *name, char *event, int error)
 {
 	int rc = 0;
 	int child;
@@ -58,6 +58,11 @@ int os_shell_execute(char *cmd, char *ip, char *name, char *event, int error)
 	case 0:
 		snprintf(errbuf, sizeof(errbuf), "%d", error);
 		setenv("INADYN_IP", ip, 1);
+#ifdef ASUSWRT
+#ifdef USE_IPV6
+		setenv("INADYN_IPv6", ipv6, 1);
+#endif
+#endif
 		setenv("INADYN_HOSTNAME", name, 1);
 		setenv("INADYN_EVENT", event, 1);
 		setenv("INADYN_ERROR", errbuf, 1);

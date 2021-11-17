@@ -2005,6 +2005,7 @@ feedback_conn_rra=ルーターは自動的に再起動
 feedback_conn_ucp=接続が不安定
 feedback_conn_wdc=Unable to connect to wireless network
 feedback_connection_type=DSL サービスへの評価として最も適切なものを選択してください
+feedback_contact_info=連絡方法
 feedback_country=お住まいの国/地域
 feedback_cancel_capturing=デバッグ取得をキャンセルする
 feedback_current_capturing=診断デバッグログの取得中です
@@ -2030,6 +2031,7 @@ feedback_fail1=<span style="color:#FC0;">サーバーへの接続に失敗しま
 feedback_fail2=下のフォームの内容をコピーし、メールの本文部分に貼り付けてメールを送信してください。
 feedback_fail3=Debug ファイルをダウンロードしていただき、Eメールに添付して送信してください。
 feedback_fail_BindGoogle=また、<a id="bind_google">Google アカウントとリンクし</a>た上でフィードバックの送信を行ってください。
+feedback_format_alert=The format is not valid.
 feedback_Frequent_interrupt=頻繁な中断
 feedback_iptable_setting=iptables ファイル
 feedback_isp=ご契約の ISP（Internet Service Provider）
@@ -3711,6 +3713,7 @@ WANAggregation_help_step4=ルーターを再起動します。
 WANAggregation_help_final=以上の解決策を試しても問題が解決しない場合は、お手数ですが、<a href='https://www.asus.com/support/' target='_blank' style='color:#000;text-decoration:underline;'>弊社サポートサイト</a>にて問題をご報告ください。
 WANAggregation_wanType_hint=WANアグリゲーションは、PPPoE、PPTP、L2TPなどのWANタイプに対応していません。 WANタイプをPPPoE、PPTP、L2TPに変更すると、WANアグリゲーションは自動的に無効になります。続行しますか？
 WebGUI_issue=ファームウェアページにアクセスできません
+wechat=WeChat
 WhiteList=ホワイトリスト
 WiFi_Proxy_desc=リピーターモード時に特定のホットスポット（パブリック WiFi）を拡張する場合、この機能を有効にします。
 WiFi_Proxy_enable=WiFi プロキシを有効にする

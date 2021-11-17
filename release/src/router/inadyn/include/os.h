@@ -60,7 +60,7 @@
 
 int os_install_signal_handler (void *ctx);
 int os_check_perms            (void);
-int os_shell_execute          (char *cmd, char *ip, char *hostname, char *event, int error);
+int os_shell_execute          (char *cmd, char *ip, char *ipv6, char *hostname, char *event, int error);
 
 #endif /* INADYN_OS_H_ */
 

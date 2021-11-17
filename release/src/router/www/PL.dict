@@ -2005,6 +2005,7 @@ feedback_conn_rra=Automatyczne ponowne uruchomienie routera
 feedback_conn_ucp=Problem z niestabilnym połączeniem
 feedback_conn_wdc=Unable to connect to wireless network
 feedback_connection_type=Wybierz opcję, która najlepiej opisuje wydajność usługi DSL
+feedback_contact_info=Metoda kontaktu
 feedback_country=Twój kraj / region
 feedback_cancel_capturing=Anuluj przechwytywanie dziennika usuwania usterek
 feedback_current_capturing=Trwa przechwytywanie dziennika usuwania usterek podczas diagnostyki
@@ -2030,6 +2031,7 @@ feedback_fail1=<span style="color:#FC0;">Nie powiodło się połączenie systemu
 feedback_fail2=Wystarczy skopiowaćtreśćponiżej i wkleićjąjako treśće-mail.
 feedback_fail3=Pobierz poniższe pliki debugowania i dodaj je jako załącznik wiadomości e-mail:
 feedback_fail_BindGoogle=Możesz też <a id="bind_google">powiązać konto Google</a> w celu wysłania raportu pocztą e-mail.
+feedback_format_alert=The format is not valid.
 feedback_Frequent_interrupt=Częste przerwy
 feedback_iptable_setting=Ustawienie iptables
 feedback_isp=Twój usługodawca internetowy (ISP)
@@ -3711,6 +3713,7 @@ WANAggregation_help_step4=Uruchom ponownie router.
 WANAggregation_help_final=Jeśli powyższe czynności zakończą się niepowodzeniem, należy zgłosić problem na <a href='https://www.asus.com/support/' target='_blank' style='color:#000;text-decoration:underline;'>stronie pomocy technicznej firmy ASUS</a>.
 WANAggregation_wanType_hint=Funkcja WAN Aggregation (Agregacja WAN) nie obsługuje takich typów sieci WAN, jak PPPoE, PPTP i L2TP. Zmiana typu sieci WAN na PPPoE, PPTP lub L2TP spowoduje automatyczne wyłączenie agregacji WAN. Czy na pewno chcesz kontynuować?
 WebGUI_issue=Nie można uzyskać dostępu do strony oprogramowania układowego
+wechat=WeChat
 WhiteList=biała Lista
 WiFi_Proxy_desc=Enable this feature in Repeater mode to successfully extend certain hotspot (public WiFi) network.
 WiFi_Proxy_enable=Enable WiFi Proxy

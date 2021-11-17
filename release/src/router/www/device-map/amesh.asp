@@ -353,15 +353,19 @@ function gen_ready_onboardinglist(_onboardingList) {
 			var newReMac = key;
 			var model_name = newReMacArray[newReMac].model_name;
 			var ui_model_name = newReMacArray[newReMac].ui_model_name;
+			var icon_model_name = "";
 			var rssi = newReMacArray[newReMac].rssi;
 			var onboarding_device_id = newReMac.replace(/:/g, "");
 			var source = newReMacArray[newReMac].source;
 			var tcode = newReMacArray[newReMac].tcode;
 			var type = newReMacArray[newReMac].type;
 			var cobrand = httpApi.aimesh_get_misc_info(newReMacArray[newReMac]).cobrand;
+			var model_info = {"model_name": model_name, "tcode": tcode, "cobrand": cobrand, "icon_model_name": icon_model_name};
+			var cloudModelName = httpApi.transformCloudModelName(model_info);
+			model_info.cloudModelName = cloudModelName;
 			if($('#ready_onBoarding_block').find('#' + onboarding_device_id + '').length == 0) {
-				if(checkCloudIconExist[model_name] == undefined)
-					checkCloudIconExist[model_name] = false;
+				if(checkCloudIconExist[cloudModelName] == undefined)
+					checkCloudIconExist[cloudModelName] = false;
 
 				var code = "";
 				code += "<div id='" + onboarding_device_id + "'>";
@@ -372,7 +376,7 @@ function gen_ready_onboardinglist(_onboardingList) {
 					code += "<div class='amesh_line'><i class='amesh_line_run'></i></div>";
 					code += "<div class='amesh_router_icon_bg'>";
 						code += "<div class='amesh_each_router_icon_bg'></div>";
-						if(checkCloudIconExist[model_name])
+						if(checkCloudIconExist[cloudModelName])
 							code += "<div class='amesh_each_router_icon_bg amesh_router_image_web'></div>";
 						else
 							code += "<div class='amesh_each_router_icon_bg amesh_router_icon'></div>";
@@ -422,7 +426,7 @@ function gen_ready_onboardinglist(_onboardingList) {
 
 				if(isNaN(parseInt(checkCloudIconErrorTimes[model_name])))
 					checkCloudIconErrorTimes[model_name] = 0;
-				download_cloud_icon(model_name, onboarding_device_id, "ready_onBoarding_block", tcode, cobrand);
+				download_cloud_icon(model_info, onboarding_device_id, "ready_onBoarding_block");
 
 				if(typeof parent.show_AMesh_status !== 'undefined' && $.isFunction(parent.show_AMesh_status))
 					parent.show_AMesh_status($('#ready_onBoarding_block').children().length, 0);
@@ -446,9 +450,9 @@ function gen_ready_onboardinglist(_onboardingList) {
 				}
 				$('#ready_onBoarding_block').find('#' + onboarding_device_id + '').children().find('.amesh_router_info_text.model_name').html(handle_ui_model_name(model_name, ui_model_name));
 
-				if(isNaN(parseInt(checkCloudIconErrorTimes[model_name])))
-					checkCloudIconErrorTimes[model_name] = 0;
-				download_cloud_icon(model_name, onboarding_device_id, "ready_onBoarding_block", tcode, cobrand);
+				if(isNaN(parseInt(checkCloudIconErrorTimes[cloudModelName])))
+					checkCloudIconErrorTimes[cloudModelName] = 0;
+				download_cloud_icon(model_info, onboarding_device_id, "ready_onBoarding_block");
 			}
 		});
 	});
@@ -469,6 +473,7 @@ function gen_current_onboardinglist(_onboardingList, _wclientlist, _wiredclientl
 			if(idx != 0) {
 				var model_name = _onboardingList[idx].model_name;
 				var ui_model_name = _onboardingList[idx].ui_model_name;
+				var icon_model_name = _onboardingList[idx].icon_model_name;
 				var fwver = _onboardingList[idx].fwver;
 				var mac = _onboardingList[idx].mac.toUpperCase();
 				var device_id = mac.replace(/:/g, "");
@@ -486,6 +491,10 @@ function gen_current_onboardinglist(_onboardingList, _wclientlist, _wiredclientl
 				var wireless_band_array = ["2.4G", "5G", "6G"];
 				var wireless_rssi = 4;
 				var alias = "Home";
+				var model_info = {"model_name": model_name, "tcode": tcode, "cobrand": cobrand, "icon_model_name": icon_model_name};
+				var cloudModelName = httpApi.transformCloudModelName(model_info);
+				model_info.cloudModelName = cloudModelName;
+
 				if("config" in _onboardingList[idx]) {
 					if("misc" in _onboardingList[idx].config) {
 						if("cfg_alias" in _onboardingList[idx].config.misc) {
@@ -543,14 +552,14 @@ function gen_current_onboardinglist(_onboardingList, _wclientlist, _wiredclientl
 				if($('#ready_onBoarding_block').find('#' + device_id + '').length == 0 && 
 					$('#onBoarding_block').find('#' + device_id + '').length == 0
 				) {
-					if(checkCloudIconExist[model_name] == undefined)
-						checkCloudIconExist[model_name] = false;
+					if(checkCloudIconExist[cloudModelName] == undefined)
+						checkCloudIconExist[cloudModelName] = false;
 
 					var code = "";
 					code += "<div id='" + device_id + "' class='amesh_pairing_bg' >";
 						code += "<div class='amesh_router_icon_bg pairing'>";
-							if(checkCloudIconExist[model_name])
-								code += "<div class='amesh_each_router_icon_bg amesh_router_image_web' style='background-image:url(\"" + checkCloudIconExist[model_name]  + "\");'></div>";
+							if(checkCloudIconExist[cloudModelName])
+								code += "<div class='amesh_each_router_icon_bg amesh_router_image_web' style='background-image:url(\"" + checkCloudIconExist[cloudModelName]  + "\");'></div>";
 							else
 								code += "<div class='amesh_each_router_icon_bg amesh_router_icon'></div>";
 						code += "</div>";
@@ -598,10 +607,10 @@ function gen_current_onboardinglist(_onboardingList, _wclientlist, _wiredclientl
 						{"node_info" : _onboardingList[idx], "wl_client" : _wclientlist[mac], "wired_client" :  _wiredclientlist[mac]},
 						popAMeshClientListEditTable);
 
-					if(isNaN(parseInt(checkCloudIconErrorTimes[model_name])))
-						checkCloudIconErrorTimes[model_name] = 0;
-					if(!checkCloudIconExist[model_name])
-						download_cloud_icon(model_name, device_id, "onBoarding_block", tcode, cobrand);
+					if(isNaN(parseInt(checkCloudIconErrorTimes[cloudModelName])))
+						checkCloudIconErrorTimes[cloudModelName] = 0;
+					if(!checkCloudIconExist[cloudModelName])
+						download_cloud_icon(model_info, device_id, "onBoarding_block");
 				}
 			}
 		}
@@ -1027,6 +1036,20 @@ function show_connect_msg(_reMac, _newReMac, _model_name, _ui_model_name, _rssi,
 				$amesh_wait_search_text.find("#newReMac").html(labelMac);
 				$amesh_action_bg.append($amesh_wait_search_text);
 
+				var enable_wps_flag = false;
+				var wps_enable = httpApi.nvramGet(["wps_enable"])["wps_enable"];
+				if(_ob_path == "1" && wps_enable == "0"){
+					if(isSupport("wps_method_ob")){
+						var $amesh_wps_text = $('<div>');
+						$amesh_wps_text.addClass("amesh_hint_text");
+						var hint_text = "<#WiFi_temp_unavailable#>";
+						$amesh_wps_text.html(hint_text);
+						$connectHtml.find(".amesh_action_bg").before($amesh_wps_text);
+					}
+					else
+						enable_wps_flag = true;
+				}
+
 				var $amesh_cancel = $('<input/>');
 				$amesh_cancel.addClass("button_gen quality_ok cancel");
 				$amesh_cancel.css("margin-right", "5px");
@@ -1050,7 +1073,6 @@ function show_connect_msg(_reMac, _newReMac, _model_name, _ui_model_name, _rssi,
 					function() {
 						var re_isAX_model = (_model_name.toUpperCase().indexOf("AX") >= 0 || _model_name.toUpperCase().indexOf("ZENWIFI_X") >= 0 || _model_name.toUpperCase().indexOf("ZENWIFI_E") >= 0);
 						var auth_flag = false;
-						var wps_flag = false;
 						var postData = {};
 						var band6g = 4;
 						var auth_list = [];
@@ -1091,10 +1113,8 @@ function show_connect_msg(_reMac, _newReMac, _model_name, _ui_model_name, _rssi,
 							}
 						});
 
-						var wps_enable = httpApi.nvramGet(["wps_enable"])["wps_enable"];
-						if(_ob_path == "1" && wps_enable == "0"){
+						if(enable_wps_flag){
 							postData["wps_enable"] = "1";
-							wps_flag = true;
 						}
 
 						if(Object.keys(postData).length){
@@ -1109,7 +1129,7 @@ function show_connect_msg(_reMac, _newReMac, _model_name, _ui_model_name, _rssi,
 								$connectHtml.find(".amesh_action_bg").before($amesh_wpa3_text);
 							}
 
-							if(wps_flag){
+							if(enable_wps_flag){
 								var $amesh_wps_text = $('<div>');
 								$amesh_wps_text.addClass("amesh_hint_text");
 								var hint_text = "<#AiMesh_FindNode_confirm_WPS#>";
@@ -1407,7 +1427,13 @@ function show_search_fail_result() {
 	parent.cal_panel_block("amesh_search_fail_result", 0.2);
 	parent.adjust_panel_block_top("amesh_search_fail_result", 170);
 }
-function download_cloud_icon(model_name, device_id, parent_bg_id, tcode, cobrand) {
+function download_cloud_icon(model_info, device_id, parent_bg_id) {
+	var cloudModelName = "";
+	if(model_info.cloudModelName != undefined && model_info.cloudModelName != "")
+		cloudModelName = model_info.cloudModelName;
+	else
+		cloudModelName = httpApi.transformCloudModelName(model_info);
+
 	var set_default_router_icon = function(_parent_bg_id, _device_id) {
 		if($('#' + _parent_bg_id + '').find('#' + _device_id + '').length != 0) {
 			$ ('#' + _parent_bg_id + '').find('#' + _device_id + '').children().find('.amesh_each_router_icon_bg').addClass('amesh_router_icon');
@@ -1415,30 +1441,29 @@ function download_cloud_icon(model_name, device_id, parent_bg_id, tcode, cobrand
 	};
 	var set_cloud_router_icon = function(_parent_bg_id, _device_id) {
 		if($('#' + _parent_bg_id + '').find('#' + _device_id + '').length != 0) {
-			$('#' + _parent_bg_id + '').find('#' + _device_id + '').children().find('.amesh_each_router_icon_bg').css('background-image', 'url(' + checkCloudIconExist[model_name] + ')');
+			$('#' + _parent_bg_id + '').find('#' + _device_id + '').children().find('.amesh_each_router_icon_bg').css('background-image', 'url(' + checkCloudIconExist[cloudModelName] + ')');
 			$('#' + _parent_bg_id + '').find('#' + _device_id + '').children().find('.amesh_each_router_icon_bg').addClass('amesh_router_image_web');
 			$('#' + _parent_bg_id + '').find('#' + _device_id + '').children().find('.amesh_each_router_icon_bg').removeClass('amesh_router_icon');
 		}
 	};
 
-	if('<% nvram_get("x_Setting"); %>' == '1' && parent.wanConnectStatus && checkCloudIconErrorTimes[model_name] < 5 && !checkCloudIconExist[model_name]) {
-		var model_info = {"model_name": model_name, "tcode": tcode, "cobrand": cobrand};
+	if('<% nvram_get("x_Setting"); %>' == '1' && parent.wanConnectStatus && checkCloudIconErrorTimes[cloudModelName] < 5 && !checkCloudIconExist[cloudModelName]) {
 		httpApi.checkCloudModelIcon(
 			model_info,
 			function(src){
-				checkCloudIconExist[model_name] = src;
+				checkCloudIconExist[cloudModelName] = src;
 				set_cloud_router_icon(parent_bg_id, device_id);
-				checkCloudIconErrorTimes[model_name] = 0;
+				checkCloudIconErrorTimes[cloudModelName] = 0;
 			},
 			function(){
-				checkCloudIconExist[model_name] = false;
+				checkCloudIconExist[cloudModelName] = false;
 				set_default_router_icon(parent_bg_id, device_id);
-				checkCloudIconErrorTimes[model_name] = parseInt(checkCloudIconErrorTimes[model_name]) + 1;
+				checkCloudIconErrorTimes[cloudModelName] = parseInt(checkCloudIconErrorTimes[cloudModelName]) + 1;
 			}
 		);
 	}
 	else {
-		if(checkCloudIconExist[model_name])
+		if(checkCloudIconExist[cloudModelName])
 			set_cloud_router_icon(parent_bg_id, device_id);
 		else
 			set_default_router_icon(parent_bg_id, device_id);
@@ -1596,8 +1621,8 @@ function searchReadyOnBoarding() {
 	}
 }
 
-function open_AiMesh_node_usb_app(_ip) {
-	var url = "http://" + _ip + "/APP_Installation.asp";
+function open_AiMesh_node_usb_app(_node_info) {
+	var url = httpApi.aimesh_get_win_open_url(_node_info, "APP_Installation.asp");
 	var window_width = 780;
 	var window_height = 650;
 	var window_top = screen.availHeight / 2 - window_height / 2;
@@ -1622,9 +1647,11 @@ function popAMeshClientListEditTable(event) {
 	var wl_client = event.data.wl_client;
 	var wired_client = event.data.wired_client;
 	var re_path = handle_re_path(node_info.re_path);
+	var cobrand = httpApi.aimesh_get_misc_info(event.data.node_info).cobrand;
 	var node_capability = httpApi.aimesh_get_node_capability(node_info);
 	initial_amesh_obj();
-
+	var model_info = {"model_name": node_info.model_name, "tcode": node_info.tcode, "cobrand": cobrand, "icon_model_name": node_info.icon_model_name};
+	var cloudModelName = httpApi.transformCloudModelName(model_info);
 	var $popupBgHtml = $('<div>');
 	$popupBgHtml.attr({"id" : "edit_amesh_client_block"});
 	$popupBgHtml.addClass("amesh_popup_bg");
@@ -1639,7 +1666,7 @@ function popAMeshClientListEditTable(event) {
 	code += "<div class='aimesh_node_info_bg'>";
 	code += "<div style='float:left;width:30%;height:92px;position:relative;'>";
 	code += "<div class='amesh_router_icon_bg card'>";
-	if(checkCloudIconExist[node_info.model_name])
+	if(checkCloudIconExist[cloudModelName])
 		code += "<div class='amesh_router_image_web card'></div>";
 	else
 		code += "<div class='amesh_router_icon card'></div>";
@@ -1759,8 +1786,8 @@ function popAMeshClientListEditTable(event) {
 	var title_name = handle_ui_model_name(node_info.model_name, node_info.ui_model_name) + " in " +  location_text;
 	$popupBgHtml.find("#aimesh_node_title_name").html(htmlEnDeCode.htmlEncode(title_name));
 
-	if(checkCloudIconExist[node_info.model_name])
-		$popupBgHtml.find(".amesh_router_image_web").css('background-image', 'url(' + checkCloudIconExist[node_info.model_name] + ')');
+	if(checkCloudIconExist[cloudModelName])
+		$popupBgHtml.find(".amesh_router_image_web").css('background-image', 'url(' + checkCloudIconExist[cloudModelName] + ')');
 
 	$popupBgHtml.find("#aimesh_node_ipaddr").html(node_info.ip);
 	var labelMac = node_info.mac;
@@ -2011,7 +2038,7 @@ function popAMeshClientListEditTable(event) {
 	if(node_capability.usb){
 		$popupBgHtml.find("#aimesh_node_usb_app").click(
 			function() {
-				open_AiMesh_node_usb_app(node_info.ip);
+				open_AiMesh_node_usb_app(node_info);
 			}
 		);
 	}
@@ -2330,8 +2357,10 @@ function ajax_AiMesh_node_clients(_nodeMac){
 				aimesh_node_client_list = sorterApi.sortJson(aimesh_node_client_list, sorterApi.key, sorterApi.type);
 				parent.$("#edit_amesh_client_block").children().find("#aimesh_node_client_header_tr").after(gen_AiMesh_node_client(aimesh_node_client_list));
 
-				if(checkCloudIconExist[node_info.model_name]) {
-					parent.$("#edit_amesh_client_block .amesh_router_icon.card").css('background-image', 'url(' + checkCloudIconExist[node_info.model_name] + ')');
+				var model_info = {"model_name": node_info.model_name, "tcode": node_info.tcode, "cobrand": node_info.cobrand, "icon_model_name":  node_info.icon_model_name};
+				var cloudModelName = httpApi.transformCloudModelName(model_info);
+				if(checkCloudIconExist[cloudModelName]) {
+					parent.$("#edit_amesh_client_block .amesh_router_icon.card").css('background-image', 'url(' + checkCloudIconExist[cloudModelName] + ')');
 					parent.$("#edit_amesh_client_block .amesh_router_icon.card").addClass('amesh_router_image_web');
 					parent.$("#edit_amesh_client_block .amesh_router_icon.card").removeClass('amesh_router_icon');
 				}

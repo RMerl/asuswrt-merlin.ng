@@ -1927,7 +1927,7 @@ dualwan_pingtime_wd=Ping-Zeit-Watchdog
 dualwan_pingtime_wd2=Automatische Netzwerkerkennung
 dualwan_primary=Primäres WAN
 dualwan_primary_hint=Aktuelles primäres WAN
-dualwan_qos_hint=Nachdem Sie die Einstellungen übernommen haben, überprüfen Sie die Konfigurationen für die Download/Upload-Bandbreite auf der Seite "QoS".
+dualwan_qos_hint=Nachdem Sie die Einstellungen übernommen haben, überprüfen Sie die Konfigurationen für die Download/Upload-Bandbreite auf der Seite QoS.
 dualwan_ethernet_lan=Ethernet-LAN
 dualwan_routing_rule=Routing-Regel für duales WAN
 dualwan_routing_rule_enable=Routing-Regeln aktivieren
@@ -2005,6 +2005,7 @@ feedback_conn_rra=Router wird automatisch neu gestartet
 feedback_conn_ucp=Problem mit instabiler Verbindung
 feedback_conn_wdc=Unable to connect to wireless network
 feedback_connection_type=Wählen Sie die Option, welche die Leistung Ihres DSL-Services am besten beschreibt
+feedback_contact_info=Kontaktmöglichkeit
 feedback_country=Ihr Land / Ihre Region
 feedback_cancel_capturing=Fehlererfassung abbrechen
 feedback_current_capturing=Erfassung des Fehlerprotokolls bei der Diagnose wird durchgeführt
@@ -2030,6 +2031,7 @@ feedback_fail1=<span style="color:#FC0;">Das System konnte sich nicht mit dem Ma
 feedback_fail2=Kopieren Sie einfach unten den Inhalt und fügen ihn in Ihre Email ein.
 feedback_fail3=Laden Sie die folgenden Dateien zur Fehlerbehebung (Debug) herunter und fügen Sie sie als E-Mail-Anhang hinzu:
 feedback_fail_BindGoogle=Alternativ können Sie Ihr <a id="bind_google">Google-Konto verknüpfen</a>, um Feedback per E-Mail zu versenden.
+feedback_format_alert=The format is not valid.
 feedback_Frequent_interrupt=Häufige Unterbrechungen
 feedback_iptable_setting=Iptables Einstellung
 feedback_isp=Ihr ISP/Internetanbieter
@@ -3711,6 +3713,7 @@ WANAggregation_help_step4=Starten Sie Ihren Router neu.
 WANAggregation_help_final=Wenn Sie mit dieser Hilfestellung das Problem nicht lösen konnten, erhalten Sie zusätzliche Unterstützung über die  <a href='https://www.asus.com/support/' target='_blank' style='color:#000;text-decoration:underline;'>ASUS Support-Website</a>. 
 WANAggregation_wanType_hint=WAN-Aggregation unterstützt keine WAN-Typen wie PPPoE, PPTP und L2TP. Wenn Sie den WAN-Typ zu PPPoE, PPTP oder L2TP ändern wird die WAN-Aggregation automatisch deaktiviert. Möchten Sie fortfahren?
 WebGUI_issue=Zugriff auf Firmware-Seite nicht möglich
+wechat=WeChat
 WhiteList=Weiße Liste
 WiFi_Proxy_desc=Enable this feature in Repeater mode to successfully extend certain hotspot (public WiFi) network.
 WiFi_Proxy_enable=Enable WiFi Proxy

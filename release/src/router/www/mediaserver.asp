@@ -102,8 +102,10 @@ var lastClickedObj = 0;
 var disk_flag=0;
 var PROTOCOL = "cifs";
 window.onresize = function() {
-	if(document.getElementById("folderTree_panel").style.display == "block") {
-		cal_panel_block("folderTree_panel", 0.25);
+	if(document.getElementById("folderTree_panel") != null){
+		if(document.getElementById("folderTree_panel").style.display == "block") {
+			cal_panel_block("folderTree_panel", 0.25);
+		}
 	}
 } 
 

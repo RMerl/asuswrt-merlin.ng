@@ -101,11 +101,15 @@
 <script>
 if(usb_support) addNewScript("/disk_functions.js");
 window.onresize = function() {
-	if(document.getElementById("weakness_div").style.display == "block") {
-		cal_panel_block("weakness_div", 0.25);
+	if(document.getElementById("weakness_div") != null){
+		if(document.getElementById("weakness_div").style.display == "block") {
+			cal_panel_block("weakness_div", 0.25);
+		}
 	}
-	if(document.getElementById("alert_preference").style.display == "block") {
-		cal_panel_block("alert_preference", 0.25);
+	if(document.getElementById("alert_preference") != null){
+		if(document.getElementById("alert_preference").style.display == "block") {
+			cal_panel_block("alert_preference", 0.25);
+		}
 	}
 }
 
@@ -236,10 +240,7 @@ function check_weakness(){
 	check_login_name_password();
 	check_wireless_password();
 	check_wireless_encryption();
-	if(!SG_mode) {
-		$(".wps_tr").show();
-		check_WPS();
-	}
+	check_WPS();
 	check_upnp();
 	check_wan_access();
 	check_ping_form_wan();
@@ -915,7 +916,7 @@ function shadeHandle(flag){
 								<div id="wireless_encryption"></div>
 							</td>
 						</tr>
-						<tr class="wps_tr" style="display:none;">
+						<tr>
 							<th>WPS disabled -</th>
 							<td>
 								<div id="wps_status"></div>

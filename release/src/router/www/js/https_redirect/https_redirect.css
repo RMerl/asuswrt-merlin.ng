@@ -157,6 +157,7 @@
 	letter-spacing: 0.67px;
 	margin-top: 40px;
 	cursor: pointer;
+	display: none;
 }
 .access_http_link > span{
 	text-decoration: underline;
@@ -276,6 +277,7 @@
 }
 .popup_component .action_bg .cb_text_bg{
 	align-items: center;
+	color: #FFF;
 }
 .popup_component .action_bg .cb_text_bg > input{
 	width: 20px;
@@ -288,6 +290,10 @@
 	font-weight: 500;
 	letter-spacing: 0.47px;
 }
+#https_redirect_hint{
+	display: none;
+}
+
 @media (max-width: 375px) {
 	.popup_component .action_bg .btn_bg{
 		justify-content: space-between !important;

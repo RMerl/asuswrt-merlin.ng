@@ -5189,7 +5189,7 @@ unsigned long get_etlan_count()
 #endif
 #ifdef RTCONFIG_EXT_BCM53134
  			&& strcmp(ifname, "eth5")
-#elif defined(RTCONFIG_EXTPHY_BCM84880)
+#elif defined(RTCONFIG_EXTPHY_BCM84880) && !defined(GTAX6000)
 			&& (strcmp(ifname, "eth5") && !nvram_get_int("wans_extwan"))
 #endif
 		) continue;
@@ -6478,7 +6478,7 @@ void regular_ddns_check(void)
 #ifndef RTCONFIG_INADYN
 		unlink("/tmp/ddns.cache");
 #else
-		eval("rm", "-f", "/var/cache/inadyn/*.cache");
+		system("rm -f /var/cache/inadyn/*.cache");
 #endif
 	}
 	logmessage("watchdog", "Hostname/IP mapping error! Restart ddns.");
@@ -6544,7 +6544,7 @@ void ddns_check(void)
 			return;
 	}
 
-	if (nvram_match("ddns_regular_check", "1")&& !nvram_match("ddns_server_x", "WWW.ASUS.COM")) {
+	if (nvram_match("ddns_regular_check", "1")&& !nvram_match("ddns_server_x", "WWW.ASUS.COM") && !nvram_match("ddns_server_x", "WWW.ASUS.COM.CN")) {
 		int period = nvram_get_int("ddns_regular_period");
 		if (period < 30) period = 60;
 		if (ddns_check_count >= (period*2)) {
@@ -6559,7 +6559,7 @@ void ddns_check(void)
 		return;
 
 	if (wan_unit == last_unit) {
-		if ( nvram_match("ddns_server_x", "WWW.ASUS.COM") ) {
+		if ( nvram_match("ddns_server_x", "WWW.ASUS.COM") || nvram_match("ddns_server_x", "WWW.ASUS.COM.CN")) {
 			if ( !( !strcmp(nvram_safe_get("ddns_return_code_chk"),"Time-out") ||
 				!strcmp(nvram_safe_get("ddns_return_code_chk"),"connect_fail") ||
 				strstr(nvram_safe_get("ddns_return_code_chk"), "-1") ) )
@@ -6579,7 +6579,7 @@ void ddns_check(void)
 #ifndef RTCONFIG_INADYN
 		unlink("/tmp/ddns.cache");
 #else
-		eval("rm", "-f", "/var/cache/inadyn/*.cache");
+		system("rm -f /var/cache/inadyn/*.cache");
 #endif
 	}
 	logmessage("watchdog", "start ddns.");
@@ -7356,14 +7356,17 @@ static void auto_firmware_check()
 	}
 	if( update_enable == 1 && local.tm_hour == update_time_hr && local.tm_min == update_time_min){ //at user defined time to check
 		periodic_check = 1;
+		period_retry = 0;
 		FAUPGRADE_DBG("update_enable : %d , update_time : %d:%d", update_enable, update_time_hr, update_time_min);
 	}
 	else if( update_enable == 0 && local.tm_hour == (2 + rand_hr) && local.tm_min == rand_min ){ //at 2 am + random offset to check
 		periodic_check = 1;
+		period_retry = 0;
 	}
 #else
 	if(local.tm_hour == (2 + rand_hr) && local.tm_min == rand_min) //at 2 am + random offset to check
 		periodic_check = 1;
+		period_retry = 0;
 #endif
 	//FAUPGRADE_DBG("periodic_check = %d, period_retry = %d, bootup_check = %d", periodic_check, period_retry, bootup_check);
 #ifndef RTCONFIG_FW_JUMP
@@ -7376,13 +7379,14 @@ static void auto_firmware_check()
 #endif
 #ifdef RTCONFIG_ASD
 		//notify asd to download version file
-		if (pids("asd"))
+		if (pids("asd") && (bootup_check || (periodic_check && period_retry == 0)))
 		{
 			killall("asd", SIGUSR1);
 		}
 #endif
 #ifdef RTCONFIG_TPVPN
-		system("hmavpn update &");
+		if (bootup_check || (periodic_check && period_retry == 0))
+			system("hmavpn update &");
 #endif
 #ifndef RTCONFIG_FW_JUMP
 		if(nvram_get_int("webs_state_dl_error")){
@@ -8014,6 +8018,9 @@ void onboarding_check()
 {
 	static int bh_selected = 0;
 	static int onboarding_count = 0;
+#ifdef GTAX6000
+	static int war_once = 0;
+#endif
 
 	if (!nvram_match("start_service_ready", "1"))
 		return;
@@ -8044,6 +8051,15 @@ void onboarding_check()
 #endif
 	}
 
+#ifdef GTAX6000
+	if (onboarding_count == 0 && !war_once)
+	{
+		war_once = 1;
+		dbg("ETH WAR...\n");
+		system("ethctl eth0 phy-power down");
+		system("ethctl eth0 phy-power up");
+	}
+#endif
 	onboarding_count++;
 
 	if ((!bh_selected && onboarding_count > time_mapping.connection_timeout) || 

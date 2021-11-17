@@ -861,6 +861,13 @@ EOF
     i*86:Minix:*:*)
 	echo ${UNAME_MACHINE}-pc-minix
 	exit ;;
+    aarch64:Linux:*:*)
+	echo ${UNAME_MACHINE}-unknown-linux-gnu
+	exit ;;
+    aarch64_be:Linux:*:*)
+	UNAME_MACHINE=aarch64_be
+	echo ${UNAME_MACHINE}-unknown-linux-gnu
+	exit ;;
     alpha:Linux:*:*)
 	case `sed -n '/^cpu model/s/^.*: \(.*\)/\1/p' < /proc/cpuinfo` in
 	  EV5)   UNAME_MACHINE=alphaev5 ;;

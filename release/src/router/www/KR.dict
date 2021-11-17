@@ -1605,7 +1605,7 @@ Captcha_note=그림모드로들어가십시오.
 Check_cable=이더넷/네트워크케이블이제대로연결되었는지확인하십시오
 check_proceeding=라우터가 ASUS 서버에서 펌웨어 업데이트를 확인 합니다.
 Client_Name=클라이언트 이름
-Client_Icon=상
+Client_Icon=아이콘
 Clientlist_block_internet=인터넷 액세스 차단
 Clientlist_device=장치
 Clientlist_IPMAC_Binding=MAC 및 IP 주소 바인딩
@@ -2005,6 +2005,7 @@ feedback_conn_rra=자동으로 라우터 재부팅
 feedback_conn_ucp=불안정한 연결 문제
 feedback_conn_wdc=Unable to connect to wireless network
 feedback_connection_type=DSL 서비스의 성능을 가장 잘 설명하는 옵션을 선택하십시오
+feedback_contact_info=연락 방법
 feedback_country=국가 / 지역
 feedback_cancel_capturing=디버그 캡처 취소
 feedback_current_capturing=진단 디버그 로그 캡처가 진행 중
@@ -2030,6 +2031,7 @@ feedback_fail1=<span style="color:#FC0;">시스템이 메일 서버에 연결하
 feedback_fail2=간단히아래의내용을복사하여이를이메일내용으로붙여넣으면됩니다.
 feedback_fail3=다음 디버그 파일들을 다운로드하여 이들을 이메일 첨부 파일로서 추가하십시오.
 feedback_fail_BindGoogle=또는 <a id="bind_google">Google 계정을 바인딩하여</a> 이메일을 통해 피드백을 보내십시오.
+feedback_format_alert=The format is not valid.
 feedback_Frequent_interrupt=자주 연결 끊김
 feedback_iptable_setting=Iptables 설정
 feedback_isp=ISP / 인터넷 서비스 공급업체
@@ -3711,6 +3713,7 @@ WANAggregation_help_step4=라우터를 재부팅합니다.
 WANAggregation_help_final=위의 단계대로 수행해도 실패할 경우 이 문제를 <a href='https://www.asus.com/support/' target='_blank' style='color:#000;text-decoration:underline;'>ASUS 지원 사이트에</a> 보고하십시오.
 WANAggregation_wanType_hint=WAN 어그리게이션은 PPPoE, PPTP 및 L2TP와 같은 WAN 유형을 지원하지 않습니다. WAN 유형이 PPPoE, PPTP 또는 L2TP로 변경되면 WAN 어그리게이션이 자동으로 비활성화됩니다. 계속하시겠습니까?
 WebGUI_issue=펌웨어 페이지에 액세스할 수 없습니다.
+wechat=WeChat
 WhiteList=화이트 리스트
 WiFi_Proxy_desc=Enable this feature in Repeater mode to successfully extend certain hotspot (public WiFi) network.
 WiFi_Proxy_enable=Enable WiFi Proxy

@@ -129,6 +129,9 @@ OBJS += web-alpine.o
 else ifeq ($(CONFIG_LANTIQ),y)
 OBJS += $(if $(wildcard sysdeps/web-lantiq.c),web-lantiq.o,prebuild/web-lantiq.o)
 else
+ifeq ($(or $(RTCONFIG_HND_ROUTER_AX_675X),$(RTCONFIG_HND_ROUTER_AX_6710),$(RTCONFIG_HND_ROUTER_AX_6756)),y)
+OBJS += $(if $(wildcard sysdeps/web-broadcom_private.c),web-broadcom_private.o,prebuild/web-broadcom_private.o)
+endif
 OBJS += web-broadcom.o
 ifeq ($(RTCONFIG_QTN),y)
 OBJS += find_host_addr.o

@@ -2612,10 +2612,10 @@ void retrieve_static_maclist_from_nvram(int idx,struct maclist *maclist,int macl
 	snprintf(prefix,16,"wl%d_",idx);
 
 #ifdef RTCONFIG_AMAS
-	if (nvram_get("cfg_relist"))
+	if (is_cfg_relist_exist())
 	{
 		if (nvram_get_int("re_mode") == 1) {
-			nv = nvp = strdup(nvram_safe_get("cfg_relist"));
+			nv = nvp = get_cfg_relist(0);
 			if (nv) {
 				while ((b = strsep(&nvp, "<")) != NULL) {
 					if ((vstrsep(b, ">", &reMac, &maclist2g, &maclist5g, &timestamp) != 4))
@@ -2671,7 +2671,7 @@ void retrieve_static_maclist_from_nvram(int idx,struct maclist *maclist,int macl
 #ifdef RTCONFIG_AMAS
 		if (nvram_match(strcat_r(prefix, "macmode", tmp), "allow"))
 		{
-			nv = nvp = strdup(nvram_safe_get("cfg_relist"));
+			nv = nvp = get_cfg_relist(0);
 			if (nv) {
 				while ((b = strsep(&nvp, "<")) != NULL) {
 					if ((vstrsep(b, ">", &reMac, &maclist2g, &maclist5g, &timestamp) != 4))

@@ -26,8 +26,8 @@ AiMesh_Node_desc2=请至现有路由器的 AiMesh 设置页面添加 AiMesh 节�
 AiMesh_Notice1=请注意，更改无线设置将会影响您的 Mesh 网络！
 AiMesh_Add_Another_Node_confirm=您想要添加其它节点吗？
 AiMesh_Add_Another_Node=添加其它节点
-AiMesh_backhaul_band_5GHz-2_desc1=is now used as dedicated WiFi backhaul under AiMesh mode.
-AiMesh_backhaul_band_5GHz-2_desc2=If you want to change wireless settings, please go to <span class="faq-link" onclick="parent.location.href=\'/Advanced_Wireless_Content.asp\'">here</span>.
+AiMesh_backhaul_band_5GHz-2_desc1=在 AiMesh 模式下正作为专用无线回传使用。
+AiMesh_backhaul_band_5GHz-2_desc2=若您想要更改无线设定，请参考<span class="faq-link" onclick="parent.location.href=\'/Advanced_Wireless_Content.asp\'">此连结</span>内容。
 AiMesh_Choose_Another_Node=选择其它节点
 AiMesh_Find_Router=搜索到附近的路由器
 AiMesh_connect_AiMesh_WiFi=连接至 AiMesh WiFi 网络
@@ -2005,6 +2005,7 @@ feedback_conn_rra=路由器自动重启
 feedback_conn_ucp=连接不稳定问题
 feedback_conn_wdc=Unable to connect to wireless network
 feedback_connection_type=选择最能描述您的 DSL 服务性能的项目
+feedback_contact_info=联系方式
 feedback_country=您的国家 / 地区
 feedback_cancel_capturing=取消获取侦错记录
 feedback_current_capturing=正在获取系统侦错诊断记录
@@ -2030,6 +2031,7 @@ feedback_fail1=<span style="color:#FC0;">系统无法连接至邮箱服务器</s
 feedback_fail2=只需复制下面的内容，并将其粘贴于您的电子邮件正文中。
 feedback_fail3=下载下方侦错文件并新增至 E-mail 附件：
 feedback_fail_BindGoogle=或者您可以 <a id="bind_google">绑定您的 Google 帐号</a> 以通过 E-mail 发送您的反馈。
+feedback_format_alert=格式不正确。
 feedback_Frequent_interrupt=频繁中断
 feedback_iptable_setting=iptables 设置
 feedback_isp=您的互联网服务供应商（ISP）
@@ -3711,6 +3713,7 @@ WANAggregation_help_step4=重启路由器。
 WANAggregation_help_final=若以上步骤皆失败，请将此问题反馈至<a href='https://www.asus.com/support/' target='_blank' style='color:#000;text-decoration:underline;'>华硕支持网站</a>
 WANAggregation_wanType_hint=WAN 聚合不支持诸如 PPPoE、PPTP 和 L2TP 之类的 WAN 类型。若您的 WAN 类型更改为 PPPoE、PPTP 或 L2TP，WAN 聚合将会自动关闭。确定继续？
 WebGUI_issue=无法访问固件页面
+wechat=微信
 WhiteList=白名单
 WiFi_Proxy_desc=Enable this feature in Repeater mode to successfully extend certain hotspot (public WiFi) network.
 WiFi_Proxy_enable=Enable WiFi Proxy

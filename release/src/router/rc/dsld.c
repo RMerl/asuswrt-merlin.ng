@@ -23,10 +23,12 @@ static unsigned int log_tail = 0;
 #define DSLD_ALARM_SECS    5
 #define LOG_RECORD_MAX     6000
 #define LOG_RECORD_PERIOD  6 //6 x 5 sec
+#define DSL_RECOVER_SHORT  60
 
 static void log_sync_time(long uptime, time_t secs, int xdsl_link_status)
 {
 	FILE *fp = NULL;
+	static long loss_time = 0;
 	static long last_loss_time = 0;
 	static long pre_uptime = 0;
 	unsigned long diff_time = 0;
@@ -39,6 +41,17 @@ static void log_sync_time(long uptime, time_t secs, int xdsl_link_status)
 	snprintf(timestamp, sizeof(timestamp), "%s", asctime(localtime(&secs)));
 	timestamp[strlen(timestamp)-1] = '\0';
 
+	// short disconnection case
+	if(xdsl_link_status == DSL_LINK_UP)
+	{
+		if(loss_time && uptime - loss_time < DSL_RECOVER_SHORT)
+			nvram_set("dsltmp_syncup_short", "1");
+	}
+	else
+		loss_time = uptime;
+
+
+	// notification
 	if(setting_apply)
 	{
 		last_loss_time = 0;
@@ -64,6 +77,7 @@ static void log_sync_time(long uptime, time_t secs, int xdsl_link_status)
 		}
 	}
 
+	// link history
 	fp = fopen(SYNC_LOG_FILE, "a");
 	if(fp)
 	{

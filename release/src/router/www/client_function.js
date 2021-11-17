@@ -1905,12 +1905,17 @@ var sorter = {
 			b_num = b[sorter.indexFlag].replace(/:/g, "");
 			return parseInt(a_num) - parseInt(b_num);
 		}
+		else if(sorter.indexFlag == 8){//Access time
+			var a_num = 0, b_num = 0;
+			a_num = sorter.convert_time_to_num(a[sorter.indexFlag]);
+			b_num = sorter.convert_time_to_num(b[sorter.indexFlag]);
+			return parseInt(a_num) - parseInt(b_num);
+		}
 		else {
 			return parseInt(a[sorter.indexFlag]) - parseInt(b[sorter.indexFlag]);
 		}
 	},
 	"num_decrease" : function(a, b) {
-		var a_num = 0, b_num = 0;
 		if(sorter.indexFlag == 3) { //IP
 			var a_num = 0, b_num = 0;
 			a_num = inet_network(a[sorter.indexFlag]);
@@ -1927,6 +1932,12 @@ var sorter = {
 			var a_num = 0, b_num = 0;
 			a_num = a[sorter.indexFlag].replace(/:/g, "");
 			b_num = b[sorter.indexFlag].replace(/:/g, "");
+			return parseInt(b_num) - parseInt(a_num);
+		}
+		else if(sorter.indexFlag == 8){//Access time
+			var a_num = 0, b_num = 0;
+			a_num = sorter.convert_time_to_num(a[sorter.indexFlag]);
+			b_num = sorter.convert_time_to_num(b[sorter.indexFlag]);
 			return parseInt(b_num) - parseInt(a_num);
 		}
 		else {
@@ -1968,8 +1979,7 @@ var sorter = {
 			sorter[""+clickItem+"_index"] = sorterClickIndex;
 			sorter["sortingMethod_"+clickItem+""] = (sorter["sortingMethod_"+clickItem+""] == "increase") ? "decrease" : "increase";
 		}
-		obj.parentNode.childNodes[sorterLastIndex].style.borderTop = '1px solid #222';
-		obj.parentNode.childNodes[sorterLastIndex].style.borderBottom = '1px solid #222';	
+		obj.parentNode.childNodes[sorterLastIndex].style.boxShadow = "";
 	},
 	"drawBorder" : function(_arrayName) {
 		var clickItem = _arrayName.split("_")[0];
@@ -1989,28 +1999,12 @@ var sorter = {
 			clickIndex = sorter[""+_arrayName.substr(0,3)+"_index"];
 			clickSortingMethod = sorter["sortingMethod_"+_arrayName.substr(0,3)+""];
 		}
-		var borderTopCss = "";
-		var borderBottomCss = "";
-		if(getBrowser_info().ie != undefined || getBrowser_info().ie != null) {
-			borderTopCss = "3px solid #FC0";
-			borderBottomCss = "1px solid #FC0";
-		}
-		else if(getBrowser_info().firefox != undefined || getBrowser_info().firefox != null) {
-			borderTopCss = "2px solid #FC0";
-			borderBottomCss = "1px solid #FC0";
-		}
-		else {
-			borderTopCss = "2px solid #FC0";
-			borderBottomCss = "2px solid #FC0";
-		}
-		if(clickSortingMethod == "increase") {
-			document.getElementById("tr_"+clickItem+"_title").childNodes[clickIndex].style.borderTop = borderTopCss;
-			document.getElementById("tr_"+clickItem+"_title").childNodes[clickIndex].style.borderBottom = '1px solid #222';
-		}
-		else {
-			document.getElementById("tr_"+clickItem+"_title").childNodes[clickIndex].style.borderTop = '1px solid #222';
-			document.getElementById("tr_"+clickItem+"_title").childNodes[clickIndex].style.borderBottom = borderBottomCss;
-		}
+		var boxShadowTopCss = "0 1px 0 #FC0 inset";
+		var boxShadowBottomCss = "0 -1px 0 #FC0 inset";
+		if(clickSortingMethod == "increase")
+			document.getElementById("tr_"+clickItem+"_title").childNodes[clickIndex].style.boxShadow = boxShadowTopCss;
+		else
+			document.getElementById("tr_"+clickItem+"_title").childNodes[clickIndex].style.boxShadow = boxShadowBottomCss;
 	},
 	"doSorter" : function(_flag, _Method, _arrayName) {	
 		// update variables
@@ -2030,6 +2024,22 @@ var sorter = {
 		}
 		drawClientListBlock(_arrayName);
 		sorter.drawBorder(_arrayName);
+	},
+	"convert_time_to_num" : function(_time) {
+		var num = 0;
+		var array = _time.split(":");
+		var hour = parseInt(array[0], 10) * 60 * 60;
+		if(isNaN(hour))
+			hour = 0;
+		var min = parseInt(array[1], 10) * 60;
+		if(isNaN(min))
+			min = 0;
+		var sec = parseInt(array[2], 10);
+		if(isNaN(sec))
+			sec = 0;
+
+		num = hour + min + sec;
+		return num;
 	}
 }
 var wired_list = new Array();
@@ -2244,7 +2254,7 @@ function exportClientListLog() {
 
 function sorterClientList() {
 	//initial sort ip
-	var indexMapType = ["", "", "str", "num", "str", "num", "num", "num", "str"];
+	var indexMapType = ["", "", "str", "num", "str", "num", "num", "num", "num"];
 	switch (clienlistViewMode) {
 		case "All" :
 			sorter.doSorter(sorter.all_index, indexMapType[sorter.all_index], 'all_list');
@@ -2340,7 +2350,7 @@ function create_clientlist_listview() {
 			if(stainfo_support && !(isSwMode('mb') || isSwMode('ew'))) {
 				code += "<th width=" + obj_width[6] + " onclick='sorter.addBorder(this);sorter.doSorter(6, \"num\", \"all_list\");' style='cursor:pointer;' title='The transmission rates of your wireless device'>Tx Rate (Mbps)</th>";/*untranslated*/
 				code += "<th width=" + obj_width[7] + " onclick='sorter.addBorder(this);sorter.doSorter(7, \"num\", \"all_list\");' style='cursor:pointer;' title='The receive rates of your wireless device'>Rx Rate (Mbps)</th>";/*untranslated*/
-				code += "<th width=" + obj_width[8] + " onclick='sorter.addBorder(this);sorter.doSorter(8, \"str\", \"all_list\");' style='cursor:pointer;'><#Access_Time#></th>";
+				code += "<th width=" + obj_width[8] + " onclick='sorter.addBorder(this);sorter.doSorter(8, \"num\", \"all_list\");' style='cursor:pointer;'><#Access_Time#></th>";
 			}
 			code += "</tr>";
 			code += "</table>";
@@ -2386,7 +2396,7 @@ function create_clientlist_listview() {
 				if(stainfo_support && !(isSwMode('mb') || isSwMode('ew'))) {
 					code += "<th width=" + obj_width[6] + " onclick='sorter.addBorder(this);sorter.doSorter(6, \"num\", \"wl"+wl_map[wl_nband_title[i]]+"_list\");' style='cursor:pointer;' title='The transmission rates of your wireless device'>Tx Rate (Mbps)</th>";/*untranslated*/
 					code += "<th width=" + obj_width[7] + " onclick='sorter.addBorder(this);sorter.doSorter(7, \"num\", \"wl"+wl_map[wl_nband_title[i]]+"_list\");' style='cursor:pointer;' title='The receive rates of your wireless device'>Rx Rate (Mbps)</th>";/*untranslated*/
-					code += "<th width=" + obj_width[8] + " onclick='sorter.addBorder(this);sorter.doSorter(8, \"str\", \"wl"+wl_map[wl_nband_title[i]]+"_list\");' style='cursor:pointer;'><#Access_Time#></th>";
+					code += "<th width=" + obj_width[8] + " onclick='sorter.addBorder(this);sorter.doSorter(8, \"num\", \"wl"+wl_map[wl_nband_title[i]]+"_list\");' style='cursor:pointer;'><#Access_Time#></th>";
 				}
 				code += "</tr>";
 				code += "</table>";
@@ -2409,7 +2419,7 @@ function create_clientlist_listview() {
 					if(stainfo_support && !(isSwMode('mb') || isSwMode('ew'))) {
 						code += "<th width=" + obj_width[6] + " onclick='sorter.addBorder(this);sorter.doSorter(6, \"num\", \"gn"+i+"_list\");' style='cursor:pointer;' title='The transmission rates of your wireless device'>Tx Rate (Mbps)</th>";/*untranslated*/
 						code += "<th width=" + obj_width[7] + " onclick='sorter.addBorder(this);sorter.doSorter(7, \"num\", \"gn"+i+"_list\");' style='cursor:pointer;' title='The receive rates of your wireless device'>Rx Rate (Mbps)</th>";/*untranslated*/
-						code += "<th width=" + obj_width[8] + " onclick='sorter.addBorder(this);sorter.doSorter(8, \"str\", \"gn"+i+"_list\");' style='cursor:pointer;'><#Access_Time#></th>";
+						code += "<th width=" + obj_width[8] + " onclick='sorter.addBorder(this);sorter.doSorter(8, \"num\", \"gn"+i+"_list\");' style='cursor:pointer;'><#Access_Time#></th>";
 					}
 					code += "</tr>";
 					code += "</table>";
@@ -3113,10 +3123,14 @@ function showDropdownClientList(_callBackFun, _callBackFunParam, _interfaceMode,
 		}
 	}
 
-	if(document.getElementById(_containerID).childNodes.length == "0")
-		document.getElementById(_pullArrowID).style.display = "none";
-	else
-		document.getElementById(_pullArrowID).style.display = "";
+	if(document.getElementById(_containerID).childNodes.length == "0"){
+		if(document.getElementById(_pullArrowID) != null)
+			document.getElementById(_pullArrowID).style.display = "none";
+	}
+	else{
+		if(document.getElementById(_pullArrowID) != null)
+			document.getElementById(_pullArrowID).style.display = "";
+	}
 }
 
 function redirectTimeScheduling(_mac) {

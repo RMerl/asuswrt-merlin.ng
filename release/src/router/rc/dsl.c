@@ -877,8 +877,10 @@ void config_xtm()
 
 	set_xtm_intf();
 
-	if(!nvram_match("dsltmp_adslsyncsts", "up"))
+	if(!nvram_match("dsltmp_adslsyncsts", "up")) {
+		nvram_set("dsltmp_config_xtm", "1");
 		return;
+	}
 
 	memset(&mparam, 0, sizeof(mparam));
 

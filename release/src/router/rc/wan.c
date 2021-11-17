@@ -3521,6 +3521,17 @@ NOIP:
 	stop_upnp();
 	start_upnp();
 
+#ifdef RTCONFIG_IPSEC
+	if (nvram_get_int("ipsec_server_enable") || nvram_get_int("ipsec_client_enable")
+#ifdef RTCONFIG_INSTANT_GUARD
+		 || nvram_get_int("ipsec_ig_enable")
+#endif
+		) {
+		rc_ipsec_config_init();
+		start_dnsmasq();
+	}
+#endif
+
 	/* ntp is set, but it didn't just get set, so ntp_synced didn't already did these */
 	if (nvram_get_int("ntp_ready") && !first_ntp_sync) {
 		stop_ddns();
@@ -3541,17 +3552,6 @@ NOIP:
 	if (nvram_get_int("pptpd_enable")) {
 		stop_pptpd();
 		start_pptpd();
-	}
-#endif
-
-#ifdef RTCONFIG_IPSEC
-	if (nvram_get_int("ipsec_server_enable") || nvram_get_int("ipsec_client_enable")
-#ifdef RTCONFIG_INSTANT_GUARD
-		 || nvram_get_int("ipsec_ig_enable")
-#endif
-		) {
-		rc_ipsec_config_init();
-		start_dnsmasq();
 	}
 #endif
 

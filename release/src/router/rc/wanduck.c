@@ -1059,11 +1059,11 @@ int detect_internet(int wan_unit)
 #ifdef DETECT_INTERNET_MORE
 	else if(!get_packets_of_net_dev(wan_ifname, &rx_packets, &tx_packets) || rx_packets <= RX_THRESHOLD)
 		link_internet = DISCONN;
-	else if(!isFirstUse && (!dns_ret && !do_tcp_dns_detect(wan_unit) && !wanduck_ping_detect(wan_unit)))
+	else if(!isFirstUse && (dns_ret <= 0 && !do_tcp_dns_detect(wan_unit) && !wanduck_ping_detect(wan_unit)))
 		link_internet = DISCONN;
 #endif
 #if defined(RTCONFIG_IPV6) && defined(RTCONFIG_INTERNAL_GOBI)
-	else if(dualwan_unit__usbif(wan_unit) && modem_pdp == 2 && !ping_ret)
+	else if(dualwan_unit__usbif(wan_unit) && modem_pdp == 2 && ping_ret <= 0)
 		link_internet = DISCONN;
 #endif
 #ifdef RTCONFIG_DUALWAN
@@ -1077,9 +1077,9 @@ int detect_internet(int wan_unit)
 			nat_state = stop_nat_rules();
 	}
 #else
-	else if((wandog_enable && !ping_ret && !dnsprobe_enable)
-			|| (dnsprobe_enable && !dns_ret && !wandog_enable)
-			|| (wandog_enable && !ping_ret && dnsprobe_enable && !dns_ret)
+	else if((wandog_enable && ping_ret <= 0 && !dnsprobe_enable)
+			|| (dnsprobe_enable && dns_ret <= 0 && !wandog_enable)
+			|| (wandog_enable && ping_ret <= 0 && dnsprobe_enable && dns_ret <= 0)
 			){
 		link_internet = DISCONN;
 
@@ -1089,14 +1089,14 @@ int detect_internet(int wan_unit)
 	}
 #endif
 #endif
-	else if(!dns_ret && /* PPP connections with DNS detection */
+	else if(dns_ret <= 0 && /* PPP connections with DNS detection */
 			wan_ppp && nvram_get_int(strcat_r(prefix, "ppp_echo", tmp)) == 2)
 		link_internet = DISCONN;
 	else
 		link_internet = CONNED;
 
 	/* Set no DNS state even if connected for WEB UI */
-	if(link_internet == DISCONN || !dns_ret){
+	if(link_internet == DISCONN || dns_ret <= 0){
 		if(nvram_get_int("web_redirect") & WEBREDIRECT_FLAG_NOINTERNET)
 			set_link_internet(wan_unit, 1);
 		else{
@@ -1882,15 +1882,33 @@ _dprintf("# wanduck(%d): if_wan_phyconnected: x_Setting=%d, link_modem=%d, sim_s
 	sw_led_ctrl();
 #endif
 
-#ifdef RTCONFIG_DSL_BCM
+#ifdef RTCONFIG_DSL
 	if (get_dualwan_by_unit(wan_unit) == WANS_DUALWAN_IF_DSL) {
-		static int first_up = 1;
 		if (link_changed[wan_unit] && link_wan[wan_unit]) {
 			_dprintf("\n=====\nwan[%d] down->up\n=====\n", wan_unit);
-			dsl_wan_config(2);
-			if (first_up) {
-				handle_wan_line(wan_unit, 0);
-				first_up = 0;
+#ifdef RTCONFIG_DSL_BCM
+			if (nvram_get_int("dsltmp_config_xtm")) {
+				static int first_up = 1;
+				nvram_set("dsltmp_config_xtm", "0");
+				dsl_wan_config(2);
+				if (first_up) {
+					handle_wan_line(wan_unit, 0);
+					first_up = 0;
+				}
+			}
+			else
+#endif
+			if (nvram_get_int("dsltmp_syncup_short")
+#ifdef RTCONFIG_DUALWAN
+			  && (strstr(dualwan_wans, "none") || strcmp(dualwan_mode, "lb")) //not loadbalance
+#endif
+			) {
+				// to skip restart wan if
+				_dprintf("set connected\n");
+				nvram_set("dsltmp_syncup_short", "0");
+				link_setup[wan_unit] = 0;
+				record_wan_state_nvram(wan_unit, WAN_STATE_CONNECTED, WAN_STOPPED_REASON_NONE, WAN_AUXSTATE_NONE);
+				return CONNED;
 			}
 		}
 	}
@@ -1978,6 +1996,9 @@ _dprintf("# wanduck(%d): if_wan_phyconnected: x_Setting=%d, link_modem=%d, sim_s
 				disconn_case[wan_unit] = CASE_DISWAN;
 			}
 
+#ifdef RTCONFIG_DSL
+			if (get_dualwan_by_unit(wan_unit) != WANS_DUALWAN_IF_DSL)
+#endif
 			max_disconn_count[wan_unit] = max_disconn_count[wan_unit]/2;
 			if(max_disconn_count[wan_unit] < 1)
 				max_disconn_count[wan_unit] = 1;

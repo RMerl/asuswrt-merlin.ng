@@ -360,6 +360,7 @@ function check_bonding_policy(obj){
 													<select name="sfpp_max_speed" class="input_option" disabled>
 														<option value="0" <% nvram_match("sfpp_max_speed", "0","selected"); %>><#Auto#></option>
 														<option value="1000" <% nvram_match("sfpp_max_speed", "1000","selected"); %>>1Gbps</option>
+														<option value="10000" <% nvram_match("sfpp_max_speed", "10000","selected"); %>>10Gbps</option>
 													</select>
 												</td>
 											</tr>

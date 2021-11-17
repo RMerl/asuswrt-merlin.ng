@@ -34,6 +34,7 @@ var FTP_status = get_ftp_status(); // FTP
 var FTP_WAN_status = <% nvram_get("ftp_wanac"); %>;
 var AM_to_cifs = get_share_management_status("cifs");  // Account Management for Network-Neighborhood
 var AM_to_ftp = get_share_management_status("ftp");  // Account Management for FTP
+var ftp_tls_orig = httpApi.nvramGet(["ftp_tls"]).ftp_tls;
 
 var accounts = [<% get_all_accounts(); %>][0];
 var groups = [<% get_all_groups(); %>];
@@ -72,6 +73,9 @@ function initial(){
 
 	if(!isSupport("ftp_ssl"))
 		document.getElementById("radio_ftp_tls_enable_tr").style.display = "none";
+
+	// ftp_tls
+	secure_check(ftp_tls_orig);
 	
 	// show accounts
 	showAccountGroupMenu(select_flag);
@@ -870,7 +874,14 @@ function secure_check(flag){
 							<script type="text/javascript">
 								$('#radio_anonymous_enable').iphoneSwitch(!get_manage_type(PROTOCOL), 
 									function() {
-										switchAccount(PROTOCOL);
+										if(!document.form.ftp_tls[0].checked){
+											switchAccount(PROTOCOL);
+										}
+										else{
+											alert("Allow anonymous login is in conflict with TLS settings.");       /* Untranslated */
+											refreshpage();
+										}
+
 									},
 									function() {
 										switchAccount(PROTOCOL);
@@ -884,8 +895,9 @@ function secure_check(flag){
 				<tr id="radio_ftp_tls_enable_tr">
 					<th><#AiDisk_Enable_TLS#></th>
 					<td>
-						<input type="radio" name="ftp_tls" class="input" value="1" <% nvram_match_x("", "ftp_tls", "1", "checked"); %>><#checkbox_Yes#>
-						<input type="radio" name="ftp_tls" class="input" value="0" <% nvram_match_x("", "ftp_tls", "0", "checked"); %>><#checkbox_No#>
+						<input type="radio" name="ftp_tls" class="input" value="1" <% nvram_match_x("", "ftp_tls", "1", "checked"); %> onChange="secure_check(1);"><#checkbox_Yes#>
+						<input type="radio" name="ftp_tls" class="input" value="0" <% nvram_match_x("", "ftp_tls", "0", "checked"); %> onChange="secure_check(0);"><#checkbox_No#>
+						<span id="TLS_disabled" style="color:#FC0;margin-left:10px;"></span>
 					</td>
 				</tr>
 				<tr>

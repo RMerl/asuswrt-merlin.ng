@@ -2005,6 +2005,7 @@ feedback_conn_rra=Otomatik yönlendirici yeniden başlatması
 feedback_conn_ucp=Kararsız bağlantı problemi
 feedback_conn_wdc=Unable to connect to wireless network
 feedback_connection_type=DSL hizmetinizin performansını en iyi açıklayan seçeneği belirtin
+feedback_contact_info=Iletişim yöntemi
 feedback_country=Ülkeniz / Bölgeniz
 feedback_cancel_capturing=Hata ayıklama yakalamayı iptal et
 feedback_current_capturing=Tanılayıcı hata ayıklama günlüğü yakalama devam ediyor
@@ -2030,6 +2031,7 @@ feedback_fail1=<span style="color:#FC0;">Sistem, posta sunucusuna bağlanamadı.
 feedback_fail2=Aşağıdaki içerikleri kopyalayıp, e-posta içeriğiniz olarak yapıştırmanız yeterlidir.
 feedback_fail3=Aşağıdaki hata ayıklama dosyalarını indirin ve bunları bir e-posta eki olarak ekleyin:
 feedback_fail_BindGoogle=Veya e-posta üzerinden geribildirim göndermek için <a id="bind_google">Google hesabınızı bağlayabilirsiniz</a>.
+feedback_format_alert=The format is not valid.
 feedback_Frequent_interrupt=Sık kesintiler
 feedback_iptable_setting=Iptables ayarı
 feedback_isp=Internet Servis Sağlayıcınız (ISS)
@@ -3711,6 +3713,7 @@ WANAggregation_help_step4=Yönlendiricinizi yeniden başlatın
 WANAggregation_help_final=Yukarıdaki adımlar başarısız olursa, lütfen bu sorunu <a href='https://www.asus.com/support/' target='_blank' style='color:#000;text-decoration:underline;'>ASUS Destek Sitesinde</a> bildirin.
 WANAggregation_wanType_hint=WAN Toplaması PPPoE, PPTP ve L2TP gibi WAN türlerini desteklemez. WAN türünüz PPPoE, PPTP veya L2TP olarak değişirse, WAN toplaması otomatik olarak devre dışı bırakılır. Devam etmek istediğinize emin misiniz?
 WebGUI_issue=Üretici yazılımı sayfasına erişilemiyor
+wechat=WeChat
 WhiteList=Beyaz Liste
 WiFi_Proxy_desc=Enable this feature in Repeater mode to successfully extend certain hotspot (public WiFi) network.
 WiFi_Proxy_enable=Enable WiFi Proxy

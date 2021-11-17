@@ -139,6 +139,7 @@ struct REPLACE_PRODUCTID_S {
 #define MIME_EXCEPTION_NOAUTH_FIRST	1<<1
 #define MIME_EXCEPTION_NORESETTIME	1<<2
 #define MIME_EXCEPTION_MAINPAGE 	1<<3
+#define MIME_EXCEPTION_NOPASS           1<<4
 #define CHECK_REFERER	1
 
 #define SERVER_NAME "httpd/2.0"
@@ -567,4 +568,5 @@ extern int filter_ban_ip();
 extern void slowloris_check();
 extern void slow_post_read_check();
 extern int check_chpass_auth(char *cur_username, char *cur_passwd);
+extern void reg_default_final_token();
 #endif /* _httpd_h_ */

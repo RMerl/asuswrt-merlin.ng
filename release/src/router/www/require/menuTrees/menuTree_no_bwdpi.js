@@ -74,6 +74,7 @@ define(function(){
 					{url: "Main_TrafficMonitor_devrealtime.asp", tabName: "__INHERIT__"},
 					{url: "Main_TrafficMonitor_devdaily.asp", tabName: "__INHERIT__"},
 					{url: "Main_TrafficMonitor_devmonthly.asp", tabName: "__INHERIT__"},
+					{url: "AdaptiveQoS_InternetSpeed.asp", tabName: "<#InternetSpeed#>"},
 					{url: "AdaptiveQoS_ROG.asp", tabName: "<table style='margin-top:-7px;'><tr><td><img src='/images/ROG_Logo.png' style='border:0px;width:32px;'></td><td>ROG First</td></tr></table>"}, 
 					{url: "Main_Spectrum_Content.asp", tabName: "<#Spectrum_title#>"},
 					{url: "AdaptiveQoS_TrafficLimiter.asp", tabName: "Traffic Limiter"},
@@ -183,7 +184,7 @@ define(function(){
 				tab: [
 					{url: "Advanced_LAN_Content.asp", tabName: "<#menu5_2_1#>"},
 					{url: "Advanced_DHCP_Content.asp", tabName: "<#menu5_2_2#>"},
-					{url: "DNSFilter.asp", tabName: "DNSFilter"},
+					//{url: "DNSFilter.asp", tabName: "DNSFilter"},
 					{url: "Advanced_MultiSubnet_Content.asp", tabName: "<#menu5_2_2#>"},
 					{url: "Advanced_GWStaticRoute_Content.asp", tabName: "<#menu5_2_3#>"},
 					{url: "Advanced_IPTV_Content.asp", tabName: "IPTV"},
@@ -652,9 +653,6 @@ define(function(){
 				if(!dnsfilter_support)
 					retArray.push("DNSFilter.asp");
 
-				if(SG_mode)
-					retArray.push("Advanced_WWPS_Content.asp");
-
 				/* Operation Mode */
 				if(isSwMode("re") || isSwMode("ew")){
 					retArray.push("GameBoost.asp");
@@ -736,6 +734,10 @@ define(function(){
 				else if(based_modelid == "RT-N300"){
 					retArray.push("Advanced_WMode_Content.asp");
 					retArray.push("Advanced_IPTV_Content.asp");
+				}
+
+				if(!internetSpeed_support && !internetSpeed_lite_support){
+					retArray.push("AdaptiveQoS_InternetSpeed.asp");
 				}
 
 				return retArray;

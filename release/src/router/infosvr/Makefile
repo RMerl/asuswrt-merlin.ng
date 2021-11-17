@@ -42,8 +42,8 @@ LLDPD_DIR = $(TOP)/lldpd-1.0.11
 else
 LLDPD_DIR = $(TOP)/lldpd-0.9.8
 endif
-CFLAGS += -I$(TOP)/amas-utils -I$(TOP)/shared/sysdeps/amas
-LDFLAGS += -L$(TOP)/amas-utils -lamas-utils
+CFLAGS += -I$(TOP)/amas-utils -I$(TOP)/shared/sysdeps/amas -pthread
+LDFLAGS += -L$(TOP)/amas-utils -lamas-utils -lpthread
 LDFLAGS += -L$(LLDPD_DIR)/src/lib/.libs -llldpctl -L$(STAGEDIR)/usr/lib/ -ljansson
 endif
 

@@ -4909,6 +4909,33 @@ int check_re_in_macfilter(int unit, char *mac)
 
 	return exist;
 }
+
+char *get_cfg_relist(int xfile)
+{
+	char path[32] = {0}, buf[8192] = {0};
+
+	if (nvram_get_int("re_mode") == 1) {
+		snprintf(path, sizeof(path), CFG_RELIST_FILE"%s", xfile ? "_x": "");
+
+		if (f_exists(path))
+			f_read_string(path, buf, sizeof(buf));
+	}
+	else
+		strlcpy(buf, xfile ? nvram_safe_get("cfg_relist_x"): nvram_safe_get("cfg_relist"), sizeof(buf));
+
+	return strdup(buf);
+}
+
+int is_cfg_relist_exist()
+{
+	int ret = 0;
+
+	if ((nvram_get_int("re_mode") == 0 && nvram_get("cfg_relist") && strlen(nvram_safe_get("cfg_relist"))) ||
+		((nvram_get_int("re_mode") == 1 && f_exists(CFG_RELIST_FILE))))
+		ret = 1;
+
+	return ret;
+}
 #endif /* RTCONFIG_CFGSYNC */
 
 #ifdef RTCONFIG_BONDING

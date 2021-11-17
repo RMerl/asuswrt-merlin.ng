@@ -1,5 +1,6 @@
 ﻿
 var HINTPASS = "PASS"; 
+var CONFIRMPASS = "PASS";
 
 //function keycode for Firefox/Opera
 function tableValid_isFunctionButton(e) {
@@ -236,6 +237,123 @@ var tableValidator = {
 				_$obj.focus();
 				return false;
 			}
+			return true;
+		}
+	},
+
+	portRangeS46 : {
+		keyPress : function($obj,event) {
+			var objValue = $obj.val();
+			var keyPressed = event.keyCode ? event.keyCode : event.which;
+			if (tableValid_isFunctionButton(event)) {
+				return true;
+			}
+
+			if ((keyPressed > 47 && keyPressed < 58)) {	//0~9
+				return true;
+			}
+			else if (keyPressed == 58 && objValue.length > 0) {
+				for(var i = 0; i < objValue.length; i++) {
+					var c = objValue.charAt(i);
+					if (c == ':' || c == '>' || c == '<' || c == '=')
+						return false;
+				}
+				return true;
+			}
+
+			return false;
+		},
+		blur : function(_$obj) {
+			var eachPort = function(num, min, max) {	
+				if(num < min || num > max) {
+					return false;
+				}
+				return true;
+			};
+			var hintMsg = "";
+			var confirmMsg = "";
+			var _value = _$obj.val();
+			_value = $.trim(_value);
+			_$obj.val(_value);
+
+			if(_value == "") {
+				if(_$obj.hasClass("valueMust"))
+					hintMsg = "<#JS_fieldblank#>";
+				else 
+					hintMsg = HINTPASS;
+			}
+			else {
+				var mini = 1;
+				var maxi = 65535;
+				var PortRange = _value;
+				var rangere = new RegExp("^([0-9]{1,5})\:([0-9]{1,5})$", "gi");
+
+				if(rangere.test(PortRange)) {
+					if(parseInt(RegExp.$1) >= parseInt(RegExp.$2)) {
+						hintMsg = _value + " <#JS_validportrange#>";
+					}
+					else{
+						if(!eachPort(RegExp.$1, mini, maxi) || !eachPort(RegExp.$2, mini, maxi)) {
+							hintMsg = "<#JS_validrange#> " + mini + " <#JS_validrange_to#> " + maxi;
+						}
+						else 
+							hintMsg =  HINTPASS;
+					}
+				}
+				else{
+					if(!tableValid_range(_value, mini, maxi)) {
+						hintMsg = "<#JS_validrange#> " + mini + " <#JS_validrange_to#> " + maxi;
+					}
+					else 
+						hintMsg =  HINTPASS;
+				}
+			}
+
+			if(wan_proto=="v6plus" && array_ipv6_s46_ports.length > 1 && hintMsg == HINTPASS){
+				var PortSplit = PortRange.split(/,|:/);
+				var res=false;
+				var res_result=0;
+				
+				for(i=0;i<PortSplit.length;i++){
+					PortSplit[i] = PortSplit[i].replace(/(^\s*)|(\s*$)/g, ""); 		// "\space" to ""
+					PortSplit[i] = PortSplit[i].replace(/(^0*)/g, ""); 		// "^0" to ""	
+
+					res = validator.range_s46_ports(_$obj, PortSplit[i]);
+					if(res)
+						res_result++;
+				}
+
+				if(res_result != PortSplit.length){
+					confirmMsg ="The following port related settings may not work properly since the port is not available in current v6plus usable port range. Do you want to continue?";
+				}
+				else{
+					confirmMsg =  CONFIRMPASS;
+				}
+			}
+
+			if(_$obj.next().closest(".hint").length) {
+				_$obj.next().closest(".hint").remove();
+			}
+			if(_$obj.next().closest(".confirm").length) {
+				_$obj.next().closest(".confirm").remove();
+			}
+
+			if(hintMsg != HINTPASS) {
+				var $hintHtml = $('<div>');
+				$hintHtml.addClass("hint");
+				$hintHtml.html(hintMsg);
+				_$obj.after($hintHtml);
+				_$obj.focus();
+				return false;
+			}
+
+			if(confirmMsg != CONFIRMPASS) {
+				var $confirmHtml = $('<div>');
+				$confirmHtml.addClass("confirm");
+				$confirmHtml.html(confirmMsg);
+				_$obj.after($confirmHtml);
+			}
+
 			return true;
 		}
 	},

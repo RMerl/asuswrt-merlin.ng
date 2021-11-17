@@ -790,7 +790,7 @@
 						<!-- Action Button -->
 						<div class="footer_desktop">
 							<div class="desktop_abortBtn" onclick="abort.nowan()"><#CTL_prev#></div>
-							<div id="desktop_manual_applyBtn" class="desktop_applyBtn" onclick="goTo.WAN()"><#Manual_Setting_btn#></div>
+							<div id="desktop_manual_applyBtn" class="desktop_applyBtn" onclick=""><#Manual_Setting_btn#></div>
 						</div>
 						<div class="footer_mobile">
 							<table style="width:100%;" cellpadding="0" cellspacing="0">
@@ -798,7 +798,7 @@
 									<td class="mobileAbort" style="width:50%" onclick='abort.nowan()'>
 										<div class="mobile_abortBtn"><#CTL_prev#></div>
 									</td>
-									<td class="mobileApply" onclick="goTo.WAN()">
+									<td class="mobileApply" onclick="">
 										<div id="mobile_manual_applyBtn" class="mobile_applyBtn"><#Manual_Setting_btn#></div>
 									</td>
 								</tr>
@@ -2327,7 +2327,7 @@
 					<!-- Action Button -->
 					<div class="footer_desktop">
 						<div class="desktop_abortBtn" id="desktop_abortBtn_update" onclick='abort.update();'><#CTL_Cancel#></div>
-						<div class="desktop_applyBtn" id="desktop_applyBtn_update" onclick="apply.update();"><#CTL_upgrade#></div>
+						<div class="desktop_applyBtn btn_upgrade_apply" id="desktop_applyBtn_update" onclick="apply.update();"><#CTL_upgrade#></div>
 					</div>
 					<div class="footer_mobile">
 						<table style="width:100%;" cellpadding="0" cellspacing="0">
@@ -2336,7 +2336,7 @@
 									<div class="mobile_abortBtn" id="mobile_abortBtn_update"><#CTL_Cancel#></div>
 								</td>
 								<td class="mobileApply" onclick="apply.update();">
-									<div class="mobile_applyBtn" id="mobile_applyBtn_update"><#CTL_upgrade#></div>
+									<div class="mobile_applyBtn btn_upgrade_apply" id="mobile_applyBtn_update"><#CTL_upgrade#></div>
 								</td>
 							</tr>
 						</table>

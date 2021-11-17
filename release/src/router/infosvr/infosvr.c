@@ -65,136 +65,18 @@ unsigned char mac[6] = { 0x00, 0x0c, 0x6e, 0xbd, 0xf3, 0xc5};
 unsigned char label_mac[6] = { 0x00, 0x0c, 0x6e, 0xbd, 0xf3, 0xc5};
 #if defined(RTCONFIG_AMAS)
 unsigned char cfg_group_g[20];
+int cfg_groupid_is_null;
 #define ID_LEN		20
-#define SHAR256_KEY_LEN	16
-#ifndef IsNULL_PTR
-#define IsNULL_PTR(__PTR) ((__PTR == NULL))
-#endif  /* !IsNULL_PTR */
-#ifndef MALLOC
-#define MALLOC(__PTR, __VARTYPE, __ALLOCSIZE) do {\
-	__PTR = NULL; \
-	__PTR = (__VARTYPE *)malloc(__ALLOCSIZE); \
-	if (__PTR != NULL) \
-	{ \
-		memset(__PTR, 0, __ALLOCSIZE); \
-	} \
-}while(0)
-#endif	/* !MALLOC */
-#define HTOB(i, c) do {\
-	if ('0' <= c && c <= '9') \
-		*i = c - '0'; \
-	else if ('a' <= c && c <= 'f') \
-		*i = c - 'a' + 10; \
-	else if ('A' <= c && c <= 'F') \
-		*i = c - 'A' + 10; \
-	else \
-		*i = 0; \
-} while(0)
 #endif
 
 void sig_do_nothing(int sig)
 {
 }
-
-#if defined(RTCONFIG_AMAS)
-void str2hex_x(
-	char *szString,
-	unsigned char *hex)
-{
-	int i, j, k, len;
-	unsigned char *p = NULL;
-
-	if (szString == NULL) return;
-	if (hex == NULL) return;
-	len = strlen(szString);
-	p = hex;
-
-	for (k = 0; k < len; k+=2) {
-		i = j = 0;
-		HTOB(&i, szString[k]);
-		HTOB(&j, szString[k+1]);
-		*p = (i << 4) | j;
-		p++;
-	}
-
-	return;
-}
-int hex2str_x(unsigned char *hex, char *str, int hex_len)
-{
-        int i = 0;
-        char *d = NULL;
-        unsigned char *s = NULL;
-        const static char hexdig[] = "0123456789ABCDEF";
-        if(hex == NULL||str == NULL)
-                return 0;
-        d = str;
-        s = hex;
-
-        for (i = 0; i < hex_len; i++,s++){
-                *d++ = hexdig[(*s >> 4) & 0xf];
-                *d++ = hexdig[*s & 0xf];
-        }
-        *d = 0;
-        return 1;
-} /* End of hex2str */
-char* gen_group_id(int ts,size_t *out_len)
-{
-	char id[33], sha256KeyStr[65], *outId = NULL, *cfg_group = NULL;
-	unsigned char hexId[16], *sha256Key = NULL;
-	size_t sha256KeyLen = 0;
-	int i = 0;
-	size_t alloc_out_len = 41;
-
-	cfg_group = nvram_safe_get("cfg_group");
-	if (IsNULL_PTR(cfg_group) || strlen(cfg_group) <= 0)
-	{
-		printf("cfg_group is empty !!");
-		return NULL;
-	}
-	printf("cfg_group : %s", cfg_group);
-
-	memset(id, 0, sizeof(id));
-	snprintf(id, sizeof(id), "%s", cfg_group);
-	memset(hexId, 0, sizeof(hexId));
-	str2hex_x(id, hexId);
-	/* each 4 bytes of hexId & (And) timestamp */
-	for (i=0; i<sizeof(hexId); i+=4)
-	{
-		hexId[i] = hexId[i] & ts >> 24;
-		hexId[i+1] = hexId[i+1] & ts >> 16;
-		hexId[i+2] = hexId[i+2] & ts >> 8;
-		hexId[i+3] = hexId[i+3] & ts;
-	}
-
-	/* generate sha256's key */
-	sha256Key = gen_sha256_key(hexId, sizeof(hexId), &sha256KeyLen);
-	if (IsNULL_PTR(sha256Key) || sha256KeyLen <= 0)
-	{
-		printf("gen_sha256_key() failed ...");
-		return NULL;
-	}
-	if ((outId = (unsigned char *)malloc(ID_LEN)) == NULL) {
-		printf("malloc failed\n");
-		free(sha256Key);
-		return NULL;
-	}
-
-	memcpy(outId, sha256Key, SHAR256_KEY_LEN);
-	outId[SHAR256_KEY_LEN] = (unsigned char)(ts >> 24);
-	outId[SHAR256_KEY_LEN + 1] = (unsigned char)(ts >> 16);
-	outId[SHAR256_KEY_LEN + 2] = (unsigned char)(ts >> 8);
-	outId[SHAR256_KEY_LEN + 3] = (unsigned char)ts;
-
-	free(sha256Key);
-	return outId;
-}
-#endif
-
 void load_sysparam(void)
 {
 	char macstr[32], label_macstr[32];
 #if defined(RTCONFIG_AMAS)
-	char *tmp=NULL;
+	char *tmp = NULL;
 	size_t cfg_group_len = 0;
 	int ts = time((time_t *)NULL);
 #endif
@@ -212,8 +94,15 @@ void load_sysparam(void)
 //	printf("label_mac: %d\n", strlen(label_macstr));
 	if (strlen(label_macstr)!=0) ether_atoe(label_macstr, label_mac);
 #if defined(RTCONFIG_AMAS)
-	tmp = gen_group_id(ts, cfg_group_len);
-	memcpy(cfg_group_g, tmp, ID_LEN);
+	tmp = gen_vsie_id(ts, &cfg_group_len);
+	if (tmp){
+		str2hex(tmp, cfg_group_g, cfg_group_len);
+		cfg_groupid_is_null = 0;
+		free(tmp);
+	}
+	else{
+		cfg_groupid_is_null = 1;
+	}
 #endif
 }
 

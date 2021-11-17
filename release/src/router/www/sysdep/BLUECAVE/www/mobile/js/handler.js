@@ -1195,6 +1195,7 @@ apply.submitQIS = function(){
 }
 
 apply.update = function(){
+	$(".btn_upgrade_apply").html(Get_Component_btnLoading);
 	httpApi.nvramSet({"action_mode": "apply", "rc_service":"stop_upgrade;start_webs_upgrade"}, goTo.Upgrading);
 };
 
@@ -3736,7 +3737,9 @@ goTo.NoWan = function(){
 
 		$('#noWan_desc').html("<#QIS_desc_3#>");
 		$('#desktop_manual_applyBtn').html("<#CTL_Skip#>");
+		$('#desktop_manual_applyBtn').on("click", function() { goTo.Wireless(); });
 		$('#mobile_manual_applyBtn').html("<#CTL_Skip#>");
+		$('#mobile_manual_applyBtn').on("click", function() { goTo.Wireless(); });
 
 		setTimeout(function(){
 			systemVariable.detwanResult = httpApi.detDSLwanGetRet();
@@ -3800,6 +3803,9 @@ goTo.NoWan = function(){
 		}, 1000);
 	}
 	else{
+
+		$('#desktop_manual_applyBtn').on("click", function() { goTo.WAN(); });
+		$('#mobile_manual_applyBtn').on("click", function() { goTo.WAN(); });
 
 		setTimeout(function(){
 			systemVariable.detwanResult = httpApi.detwanGetRet();		
@@ -4061,11 +4067,15 @@ goTo.amasearch = function(){
 		var gen_onboardinglist = function(){
 			var onboardinglist_array = getAiMeshOnboardinglist(get_onboardinglist);
 			onboardinglist_array.forEach(function(nodeInfo){
+				var model_info = {"model_name": nodeInfo.name, "tcode": nodeInfo.tcode, "cobrand": nodeInfo.cobrand, "icon_model_name": ""};
+				var cloudModelName = httpApi.transformCloudModelName(model_info);
+				model_info.cloudModelName = cloudModelName;
 				if($('#onboardinglist').find('#' + nodeInfo.id + '').length == 0){
 					$('#onboardinglist').append(Get_Component_AiMeshOnboarding_List(nodeInfo));
 					$('#onboardinglist').find('#' + nodeInfo.id + '').unbind('click');
 					$('#onboardinglist').find('#' + nodeInfo.id + '').click(function(){
 						systemVariable.onboardingInfo = nodeInfo;
+						systemVariable.onboardingInfo.cloudModelName = cloudModelName;
 						goTo.amasOnboarding();
 					});
 				}
@@ -4079,24 +4089,24 @@ goTo.amasearch = function(){
 					else
 						$('#onboardinglist').find('#' + nodeInfo.id + '').find(".aimesh_band_icon").removeClass().addClass('icon_wifi_' + nodeInfo.signal + ' aimesh_band_icon');
 
-					if(systemVariable.modelCloudIcon[nodeInfo.name] == undefined){
-						systemVariable.modelCloudIcon[nodeInfo.name] = false;
+					if(systemVariable.modelCloudIcon[cloudModelName] == undefined){
+						systemVariable.modelCloudIcon[cloudModelName] = false;
 						httpApi.checkCloudModelIcon(
-							nodeInfo.name,
+							model_info,
 							function(src){
-								systemVariable.modelCloudIcon[nodeInfo.name] = src;
-								$('#onboardinglist').find('[model_name="' + nodeInfo.name + '"]').css("background-image", "url(" + src + ")");
+								systemVariable.modelCloudIcon[cloudModelName] = src;
+								$('#onboardinglist').find('[model_name="' + cloudModelName + '"]').css("background-image", "url(" + src + ")");
 							},
-							function(){},
-							nodeInfo.tcode
+							function(){}
 						);
 					}
-					else if(systemVariable.modelCloudIcon[nodeInfo.name])
-						$('#onboardinglist').find('[model_name="' + nodeInfo.name + '"]').css("background-image", "url(" + systemVariable.modelCloudIcon[nodeInfo.name] + ")");
+					else if(systemVariable.modelCloudIcon[cloudModelName])
+						$('#onboardinglist').find('[model_name="' + cloudModelName + '"]').css("background-image", "url(" + systemVariable.modelCloudIcon[cloudModelName] + ")");
 
 					$('#onboardinglist').find('#' + nodeInfo.id + '').unbind('click');
 					$('#onboardinglist').find('#' + nodeInfo.id + '').click(function(){
 						systemVariable.onboardingInfo = nodeInfo;
+						systemVariable.onboardingInfo.cloudModelName = cloudModelName;
 						goTo.amasOnboarding();
 					});
 				}
@@ -4186,8 +4196,8 @@ goTo.amasOnboarding = function(){
 	$("#amasonboarding_page").find(".onboarding_unit").hide();
 	$("#amasonboarding_page").find("#title").show();
 
-	if(systemVariable.modelCloudIcon[systemVariable.onboardingInfo.name])
-		$("#amasonboarding_page").find(".aimesh_icon").css("background-image", "url(" + systemVariable.modelCloudIcon[systemVariable.onboardingInfo.name] + ")");
+	if(systemVariable.modelCloudIcon[systemVariable.onboardingInfo.cloudModelName])
+		$("#amasonboarding_page").find(".aimesh_icon").css("background-image", "url(" + systemVariable.modelCloudIcon[systemVariable.onboardingInfo.cloudModelName] + ")");
 
 	var labelMac = systemVariable.onboardingInfo.mac;
 	httpApi.getAiMeshLabelMac(systemVariable.onboardingInfo.name, systemVariable.onboardingInfo.mac,
@@ -4254,8 +4264,14 @@ goTo.amasOnboarding = function(){
 
 		var wps_enable = httpApi.nvramGet(["wps_enable"])["wps_enable"];
 		if(systemVariable.onboardingInfo.source == "1" && wps_enable == "0"){
-			systemVariable.authModePostData["wps_enable"] = "1";
-			wps_flag = true;
+			if(isSupport("wps_method_ob")){
+				$("#amasonboarding_page").find("#wps_hint").show();
+				$("#amasonboarding_page").find("#wps_hint #wps_enable_hint").hide();
+			}
+			else{
+				systemVariable.authModePostData["wps_enable"] = "1";
+				wps_flag = true;
+			}
 		}
 
 		var ui_lang = httpApi.nvramGet(["preferred_lang"], true).preferred_lang;

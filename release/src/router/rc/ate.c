@@ -18,6 +18,9 @@
 #ifdef RTCONFIG_QCA_PLC_UTILS
 #include <plc_utils.h>
 #endif
+#if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_HAS_5G_2)
+#include <wlioctl.h>
+#endif
 
 #define MULTICAST_BIT  0x0001
 #define UNIQUE_OUI_BIT 0x0002
@@ -461,32 +464,36 @@ static int setAllSpecificColorLedOn(enum ate_led_color color)
 			static enum led_id white_led[] = {
 				LED_POWER,
 				LED_LAN,
+				LED_10G_WHITE,
+				LED_WAN_NORMAL,
                                 LED_ID_MAX
                         };
 			static enum led_id red_led[] = {
+				LED_WAN,
 				LED_ID_MAX
 			};
 			static enum led_id green_led[] = {
+				LED_WAN_RGB_GREEN,
 				LED_ID_MAX
 			};
 			static enum led_id blue_led[] = {
+				LED_WAN_RGB_BLUE,
 				LED_ID_MAX
 			};
 			all_led[LED_COLOR_WHITE] = white_led;
-			if(color != LED_COLOR_WHITE) {
-				all_led[LED_COLOR_RED] = red_led;
-				all_led[LED_COLOR_GREEN] = green_led;
-				all_led[LED_COLOR_BLUE] = blue_led;
-			}
-			LEDGroupColor(color);
+			all_led[LED_COLOR_RED] = red_led;
+			all_led[LED_COLOR_GREEN] = green_led;
+			all_led[LED_COLOR_BLUE] = blue_led;
 
 			if(color == LED_COLOR_WHITE) {
+				LEDGroupReset(LED_OFF);
 				eval("wl", "-i", "eth7", "ledbh", "13", "1"); // wl 5GL
 				eval("wl", "-i", "eth8", "ledbh", "13", "1"); // wl 5GH
 				eval("wl", "-i", "eth9", "ledbh", "13", "1"); // wl 6G
 				eval("wl", "-i", "eth10", "ledbh", "13", "1"); // wl 2.4G
 			}
 			else {
+				LEDGroupColor(color);
 				eval("wl", "-i", "eth7", "ledbh", "13", "0"); // wl 5GL
 				eval("wl", "-i", "eth8", "ledbh", "13", "0"); // wl 5GH
 				eval("wl", "-i", "eth9", "ledbh", "13", "0"); // wl 6G
@@ -1162,11 +1169,11 @@ int isValidSN(const char *sn)
 
 	return 1;
 }
-int isResetSN(const char *sn)
+int isResetFactory(const char *str)
 {
 	char reset[] = "NONE";
 
-	if (strlen(sn)==strlen(reset) && !strncmp(sn, reset, strlen(reset)))
+	if (strlen(str)==strlen(reset) && !strncmp(str, reset, strlen(reset)))
 		return 1;
 
 	return 0;
@@ -3691,6 +3698,9 @@ int ate_dev_status(void)
 #ifdef RTCONFIG_BT_CONN
 	int have_bt_device = 1;
 #endif
+#if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_HAS_5G_2)
+	int count_5g = 0;
+#endif
 
 	memset(dev_chk_buf, 0, sizeof(dev_chk_buf));
 	snprintf(wl_dev_name, sizeof(wl_dev_name), nvram_safe_get("wl_ifnames"));
@@ -3713,7 +3723,13 @@ int ate_dev_status(void)
 			ate_wl_band++;
 			continue;
 		}
-
+#if defined(GTAXE16000)
+		// override ate_wl_band since wifi radio sequence is not habitual
+		if (wl_get_band(word) == WLC_BAND_2G)
+			ate_wl_band = 1;
+		else 
+			ate_wl_band = 2;
+#endif
 		if(wl_exist(word, ate_wl_band)){
 			result = 'O';
 		}
@@ -3722,6 +3738,26 @@ int ate_dev_status(void)
 			ret = 0;
 		}
 
+#if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_HAS_5G_2)
+		switch(wl_get_band(word)) {
+			case WLC_BAND_2G:
+			    	len = snprintf(p, remain, ",2G=%c", result);
+		    		break;
+			case WLC_BAND_5G:
+				if(!count_5g) {
+					len = snprintf(p, remain, ",5G=%c", result);
+					count_5g++;
+				}
+				else
+					len = snprintf(p, remain, ",5G2=%c", result);
+				break;
+#if defined(RTCONFIG_WIFI6E)
+		    	case WLC_BAND_6G:
+				len = snprintf(p, remain, ",6G=%c", result);
+				break;
+#endif
+		}
+#else
 		if(ate_wl_band == 1)
 			len = snprintf(p, remain, ",2G=%c", result);
 		else if(ate_wl_band == 2)
@@ -3734,7 +3770,7 @@ int ate_dev_status(void)
 #endif
 		else
 			len = snprintf(p, remain, ",60G=%c", result);
-
+#endif
 		p += len;
 		remain -= len;
 		ate_wl_band++;
@@ -3806,6 +3842,8 @@ int ate_dev_status(void)
 			ethctl_get_link_status("eth3") == -1
 #elif defined(GTAX6000)
 			ethctl_get_link_status("eth5") == -1
+#elif defined(GTAXE16000)
+			ethctl_get_link_status("eth5") == -1 || ethctl_get_link_status("eth6") == -1
 #else
 			ethctl_get_link_status("eth5") == -1 || (nvram_get_int("ext_phy_model") == EXT_PHY_BCM54991 && ethctl_phy_op("ext", EXTPHY_ADDR, 0x1e4037, 0, 0) == -1)
 #endif

@@ -70,10 +70,11 @@
 </style>
 <script>
 window.onresize = function() {
-	if(document.getElementById("tlsKey_panel").style.display == "block") {
-		cal_panel_block("tlsKey_panel", 0.15);
+	if(document.getElementById("tlsKey_panel") != null){
+		if(document.getElementById("tlsKey_panel").style.display == "block")
+			cal_panel_block("tlsKey_panel", 0.15);
 	}
-} 
+}
 
 <% wanlink(); %>
 <% vpn_server_get_parameter(); %>;
@@ -196,6 +197,34 @@ function initial(){
 	document.getElementById("faq_macOS").href=faq_href_macOS;
 	document.getElementById("faq_iPhone").href=faq_href_iPhone;
 	document.getElementById("faq_android").href=faq_href_android;
+
+	if(wan_proto=="v6plus" && array_ipv6_s46_ports.length > 1){
+		$(".setup_info_icon.basic").click(
+			function() {				
+				if($("#s46_ports_content").is(':visible'))
+					$("#s46_ports_content").fadeOut();
+				else{
+					var position = $(".setup_info_icon.basic").position();
+					pop_s46_ports(position);
+				}
+			}
+		);
+		$(".setup_info_icon.adv").click(
+			function() {				
+				if($("#s46_ports_content").is(':visible'))
+					$("#s46_ports_content").fadeOut();
+				else{
+					var position = $(".setup_info_icon.adv").position();
+					pop_s46_ports(position);
+				}
+			}
+		);
+		$(".setup_info_icon.basic").show();
+		$("#portSuggestionBasic").hide();
+		$(".setup_info_icon.adv").hide();
+		$("#portSuggestionAdvanced").hide();
+	}
+
 
 	$("#client_pwd_strength").append(Get_Component_PWD_Strength_Meter());
 	if($("[name='vpn_server_clientlist_password']").val() == "")
@@ -333,6 +362,15 @@ function applyRule(){
 		    !validator.numberRange(document.form.vpn_server_verb, 0, 6))
 		{
 			return false;
+		}
+
+		if(wan_proto=="v6plus" && array_ipv6_s46_ports.length > 1){
+			if (!validator.range_s46_ports(document.form.vpn_server_port, "none")){
+				if(!confirm("The following port related settings may not work properly since the port is not available in current v6plus usable port range. Do you want to continue?")){
+						document.form.vpn_server_port_adv.focus();
+						return false;
+					}
+				}
 		}
 		return true;
 	};
@@ -837,6 +875,14 @@ function switchMode(mode){
 			document.getElementById('openvpn_import_cert').style.display = "";
 		}
 		document.getElementById("divAdvanced").style.display = "none";
+
+		if(wan_proto=="v6plus" && array_ipv6_s46_ports.length > 1){
+			if($("#s46_ports_content").is(':visible'))
+				$("#s46_ports_content").fadeOut();
+
+			$(".setup_info_icon.basic").show();
+			$(".setup_info_icon.adv").hide();
+		}
 	}	
 	else{
 		document.getElementById("trRSAEncryptionBasic").style.display = "none";
@@ -846,6 +892,14 @@ function switchMode(mode){
 		document.getElementById('openvpn_export_cert').style.display = "none";
 		document.getElementById('openvpn_import_cert').style.display = "none";
 		document.getElementById("divAdvanced").style.display = "";
+
+		if(wan_proto=="v6plus" && array_ipv6_s46_ports.length > 1){
+			if($("#s46_ports_content").is(':visible'))
+				$("#s46_ports_content").fadeOut();
+			
+			$(".setup_info_icon.basic").hide();
+			$(".setup_info_icon.adv").show();
+		}
 	}
 }
 
@@ -1530,7 +1584,9 @@ function callback_upload_cert(_flag) {
 												</td>
 											</tr>
 											<tr>
-												<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,6);">Server Port</a></th>
+												<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,6);">Server Port</a>
+												<div class="setup_info_icon basic" style="display:none;"></div>
+												</th>
 												<td>
 													<input type="text" maxlength="5" class="input_6_table" name="vpn_server_port" onKeyPress="return validator.isNumber(this,event);" value="<% nvram_get("vpn_server_port"); %>" autocorrect="off" autocapitalize="off">
 													<span class="hint-color">(<#Setting_factorydefault_value#> : 1194)</span>

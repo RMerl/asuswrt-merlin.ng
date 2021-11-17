@@ -2005,6 +2005,7 @@ feedback_conn_rra=Автоматическая перезагрузка марш
 feedback_conn_ucp=Нестабильное подключение
 feedback_conn_wdc=Unable to connect to wireless network
 feedback_connection_type=Выберите вариант, который соответствует производительности службы DSL
+feedback_contact_info=Контактный метод
 feedback_country=Ваша страна / регион
 feedback_cancel_capturing=Отменить запись отладочной информации
 feedback_current_capturing=Выполняется запись отладочной информации в диагностический журнал
@@ -2030,6 +2031,7 @@ feedback_fail1=<span style="color:#FC0;">Ошибка подключения к 
 feedback_fail2=Просто скопируйте содержимое ниже и вставьте его в ваше письмо.
 feedback_fail3=Скачайте следующие отладочные файлы и вложите их в письмо:
 feedback_fail_BindGoogle=Или можно <a id="bind_google">использовать учетную запись Google</a> для отправки отзыва по электронной почте.
+feedback_format_alert=The format is not valid.
 feedback_Frequent_interrupt=Частые прерывания
 feedback_iptable_setting=Настройки iptables
 feedback_isp=Ваш провайдер / Интернет-провайдер
@@ -3711,6 +3713,7 @@ WANAggregation_help_step4=Перезагрузите роутер
 WANAggregation_help_final=Если описанные выше инструкции не помогли, сообщите об этом на <a href='https://www.asus.com/support/' target='_blank' style='color:#000;text-decoration:underline;'>сайте поддержки ASUS</a>
 WANAggregation_wanType_hint=Агрегация интернет каналов не поддерживает подключение PPPoE, PPTP и L2TP. При смене подключения на PPPoE, PPTP или L2TP агрегация интернет каналов будет отключена автоматически. Продолжить?
 WebGUI_issue=Нет доступа к странице микропрограммного обеспечения
+wechat=WeChat
 WhiteList=Белый список
 WiFi_Proxy_desc=Включите эту функцию в режиме повторителя, чтобы успешно расширить определенную точку доступа (общедоступная сеть WiFi).
 WiFi_Proxy_enable=Включить WiFi Proxy

@@ -2005,6 +2005,7 @@ feedback_conn_rra=Penghala but semula secara automatik
 feedback_conn_ucp=Masalah sambungan yang tidak stabil
 feedback_conn_wdc=Unable to connect to wireless network
 feedback_connection_type=Pilih pilihan mana yang terbaik menerangkan prestasi perkhidmatan DSL anda
+feedback_contact_info=Kaedah hubungan
 feedback_country=Negara / Wilayah anda
 feedback_cancel_capturing=Batalkan tangkapan nyahpepijat
 feedback_current_capturing=Tangkapan log nyahpepijat diagnostik sedang berjalan
@@ -2030,6 +2031,7 @@ feedback_fail1=<span style="color:#FC0;">Sistem gagal untuk menyambung ke pelaya
 feedback_fail2=Hanya salin kandungan di bawah dan tampalkannya sebagai kandungan e-mel anda.
 feedback_fail3=Muat turun fail nyahpepijat berikut dan tambahkannya sebagai lampiran e-mel.
 feedback_fail_BindGoogle=Atau anda boleh <a id="bind_google">mengikat akaun Google anda</a> untuk menghantar maklum balas melalui e-mel.
+feedback_format_alert=The format is not valid.
 feedback_Frequent_interrupt=Gangguan yang kerap
 feedback_iptable_setting=Tetapan iptables
 feedback_isp=ISP / Pembekal Khidmat Internet Anda
@@ -3711,6 +3713,7 @@ WANAggregation_help_step4=But semula penghala anda
 WANAggregation_help_final=Jika langkah-langkah di atas tidak berjaya, sila laporkan isu ini di <a href='https://www.asus.com/support/' target='_blank' style='color:#000;text-decoration:underline;'>Laman Sokongan ASUS</a>.
 WANAggregation_wanType_hint=Pengagregatan WAN tidak menyokong jenis WAN seperti PPPoE, PPTP dan L2TP. Jika jenis WAN anda berubah kepada PPPoE, PPTP atau L2TP, pengagregatan WAN akan dinyahdayakan secara automatik. Adakah anda pasti ingin teruskan?
 WebGUI_issue=Tidak dapat mengakses halaman perisian tegar
+wechat=WeChat
 WhiteList=Senarai Putih
 WiFi_Proxy_desc=Enable this feature in Repeater mode to successfully extend certain hotspot (public WiFi) network.
 WiFi_Proxy_enable=Enable WiFi Proxy

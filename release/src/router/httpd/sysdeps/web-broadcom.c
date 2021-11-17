@@ -36,9 +36,6 @@
 #include <shared.h>
 #include <typedefs.h>
 #include <proto/ethernet.h>
-#ifdef RTCONFIG_BCMWL6
-#include <proto/wps.h>
-#endif
 #include <bcmnvram.h>
 #include <bcmutils.h>
 #include <shutils.h>
@@ -130,6 +127,28 @@ typedef u_int8_t u8;
 #include <linux/ethtool.h>
 #include <linux/sockios.h>
 #include <net/if_arp.h>
+
+#ifdef RTCONFIG_BCMWL6
+/* WSC 2.0, WFA Vendor Extension Subelements */
+#define WFA_VENDOR_EXT_ID                 "\x00\x37\x2A"
+#define WPS_WFA_SUBID_VERSION2            0x00
+
+/* Data Element Definitions */
+#define WPS_ID_SC_STATE           0x1044
+#define WPS_ID_VENDOR_EXT         0x1049
+
+/* Simple Config state */
+#define WPS_SCSTATE_UNCONFIGURED    0x01
+#define WPS_SCSTATE_CONFIGURED      0x02
+#define WPS_SCSTATE_OFF 11
+
+/* WPS Vendor extension key */
+#define WPS_OUI_HEADER_LEN 2
+#define WPS_OUI_HEADER_SIZE 4
+#define WPS_OUI_FIXED_HEADER_OFF 16
+#define WPS_WFA_SUBID_V2_OFF 3
+#define WPS_WFA_V2_OFF 5
+#endif
 
 #define sys_restart() kill(1, SIGHUP)
 #define sys_reboot() kill(1, SIGTERM)
@@ -2956,7 +2975,8 @@ ERROR:
 	return retval;
 }
 
-static int ej_wl_chanspecs(int eid, webs_t wp, int argc, char_t **argv, int unit)
+int
+ej_wl_chanspecs(int eid, webs_t wp, int argc, char_t **argv, int unit)
 {
 	int i, retval = 0;
 	char tmp[TMPBUFSIZ], tmp1[TMPBUFSIZ], tmp2[TMPBUFSIZ], tmpx[TMPBUFSIZ];
@@ -2978,6 +2998,9 @@ static int ej_wl_chanspecs(int eid, webs_t wp, int argc, char_t **argv, int unit
 	 if (unit) goto ERROR;
 #endif
 
+#ifdef CONFIG_BCMWL5
+	if (unit == -1) goto ERROR;
+#endif
 	strlcpy(wl_ifnames, nvram_safe_get("wl_ifnames"), sizeof(wl_ifnames));
 	foreach (word, wl_ifnames, next)
 		unit_max++;
@@ -3093,21 +3116,64 @@ ej_wl_channel_list_5g_2(int eid, webs_t wp, int argc, char_t **argv)
 int
 ej_wl_chanspecs_2g(int eid, webs_t wp, int argc, char_t **argv)
 {
-	return ej_wl_chanspecs(eid, wp, argc, argv, 0);
+	char prefix[16], tmp[32];
+	int unit;
+	for(unit = 0; unit < num_of_wl_if(); unit++) {
+		snprintf(prefix, sizeof(prefix), "wl%d_", unit);
+		if(WL_NBAND_2G == nvram_get_int(strcat_r(prefix, "nband", tmp)))
+			return ej_wl_chanspecs(eid, wp, argc, argv, unit);
+	}
+
+	return ej_wl_chanspecs(eid, wp, argc, argv, -1);
 }
 
 int
 ej_wl_chanspecs_5g(int eid, webs_t wp, int argc, char_t **argv)
 {
-	return ej_wl_chanspecs(eid, wp, argc, argv, 1);
+	char prefix[16], tmp[32];
+	int unit;
+	for(unit = 0; unit < num_of_wl_if(); unit++) {
+		snprintf(prefix, sizeof(prefix), "wl%d_", unit);
+		if(WL_NBAND_5G == nvram_get_int(strcat_r(prefix, "nband", tmp)))
+			return ej_wl_chanspecs(eid, wp, argc, argv, unit);
+	}
+
+	return ej_wl_chanspecs(eid, wp, argc, argv, -1);
 }
 
 int
 ej_wl_chanspecs_5g_2(int eid, webs_t wp, int argc, char_t **argv)
 {
-	return ej_wl_chanspecs(eid, wp, argc, argv, 2);
+	char prefix[16], tmp[32];
+	int unit, count = 0;
+	for(unit = 0; unit < num_of_wl_if(); unit++) {
+		snprintf(prefix, sizeof(prefix), "wl%d_", unit);
+		if( WL_NBAND_5G == nvram_get_int(strcat_r(prefix, "nband", tmp)) ||
+		    WL_NBAND_6G == nvram_get_int(strcat_r(prefix, "nband", tmp))) {
+			if(!count) {
+				count++;
+				continue;
+			}
+			return ej_wl_chanspecs(eid, wp, argc, argv, unit);
+		}
+	}
+
+	return ej_wl_chanspecs(eid, wp, argc, argv, -1);
 }
 
+int
+ej_wl_chanspecs_6g(int eid, webs_t wp, int argc, char_t **argv)
+{
+	char prefix[16], tmp[32];
+	int unit;
+	for(unit = 0; unit < num_of_wl_if(); unit++) {
+		snprintf(prefix, sizeof(prefix), "wl%d_", unit);
+		if(WL_NBAND_6G == nvram_get_int(strcat_r(prefix, "nband", tmp)))
+			return ej_wl_chanspecs(eid, wp, argc, argv, unit);
+	}
+
+	return ej_wl_chanspecs(eid, wp, argc, argv, -1);
+}
 #define	WL_IW_RSSI_NO_SIGNAL	-91	/* NDIS RSSI link quality cutoffs */
 
 static int ej_wl_rssi(int eid, webs_t wp, int argc, char_t **argv, int unit)

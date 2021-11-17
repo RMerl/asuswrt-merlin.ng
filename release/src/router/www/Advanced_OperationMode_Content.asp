@@ -103,10 +103,12 @@ if( ((sw_mode_orig == 2 || sw_mode_orig == 3) && '<% nvram_get("wlc_psta"); %>' 
 }
 
 var tcode = '<% nvram_get("territory_code"); %>';
-	
+
 window.onresize = function() {
-	if(document.getElementById("routerSSID").style.display == "block") {
-		cal_panel_block("routerSSID", 0.25);
+	if(document.getElementById("routerSSID") != null){
+		if(document.getElementById("routerSSID").style.display == "block") {
+			cal_panel_block("routerSSID", 0.25);
+		}
 	}
 } 
 if(sw_mode_orig == 3 && '<% nvram_get("wlc_psta"); %>' == 2)

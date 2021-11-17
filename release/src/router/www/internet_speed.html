@@ -28,6 +28,12 @@ $(function(){
 	else if(rog_support || tuf_support){
 		$('link').last().after('<link rel="stylesheet" type="text/css" href="css/internetSpeed_customize.css">');
 	}
+
+	if(internetSpeed_lite_support){
+		$("#history_desc").hide();
+		$("#speedTest_history_div").hide();
+		$("#packet_loss_div").hide();
+	}
 });
 
 var speedTest_result = [];
@@ -73,7 +79,9 @@ function init(){
 	build_interface_list();
 	customize_speedTestBtn();
 	get_speedTest_history();
-	show_history_results();
+	if(!internetSpeed_lite_support)
+		show_history_results();
+
 	if(ookla_state != "1")
 		do_speedTest_exe("list");
 
@@ -342,22 +350,33 @@ function get_speedTest_result(){
 				$("#ping_result_jitter").text(speedTest_result[i].ping.jitter.toFixed(2));
 				$("#download_test_result2").text(convert_Bps_to_Mbps(speedTest_result[i].download.bandwidth));
 				$("#upload_test_result2").text(convert_Bps_to_Mbps(speedTest_result[i].upload.bandwidth));
-				if(typeof speedTest_result[i].packetLoss != "undefined")
-					$("#packet_loss_result").text(speedTest_result[i].packetLoss.toFixed(2));
-				else
-					$("#packet_loss_result").text("0.00");
+				if(!internetSpeed_lite_support){
+					if(typeof speedTest_result[i].packetLoss != "undefined")
+						$("#packet_loss_result").text(speedTest_result[i].packetLoss.toFixed(2));
+					else
+						$("#packet_loss_result").text("0.00");
+				}
 				change_speed_level(convert_Bps_to_Mbps(speedTest_result[i].download.bandwidth));
 
 				$("#speedtest_result_timestamp").text(result_time.date+" "+result_time.time);
 
-				if(!check_duplicate_result(speedTest_result[i])){
-					if(speedTest_history.length == 51){
-						speedTest_history.splice(49, 1);
-					}
-					speedTest_history.splice(0, 0, speedTest_result[i]);
-					update_history_inform();
-					show_history_results();
+				if(internetSpeed_lite_support){
+					if(speedTest_history.length == 2)
+						speedTest_history.splice(0, 1, speedTest_result[i]);
+					else
+						speedTest_history.splice(0, 0, speedTest_result[i]);
 					save_speedTest_history();
+				}
+				else{
+					if(!check_duplicate_result(speedTest_result[i])){
+						if(speedTest_history.length == 51){
+							speedTest_history.splice(49, 1);
+						}
+						speedTest_history.splice(0, 0, speedTest_result[i]);
+						update_history_inform();
+						show_history_results();
+						save_speedTest_history();
+					}
 				}
 
 				if(speedTest_servers.length < 2)
@@ -853,10 +872,13 @@ function show_latest_record(){
 	$("#upload_test_result2").text(upload_result);
 	$("#ping_result_latency").text(latest_record.ping.latency.toFixed(2));
 	$("#ping_result_jitter").text(latest_record.ping.jitter.toFixed(2));
-	if(typeof latest_record.packetLoss != "undefined")
-		$("#packet_loss_result").text(latest_record.packetLoss.toFixed(2));
-	else
-		$("#packet_loss_result").text("0.00");
+	if(!internetSpeed_lite_support){
+		if(typeof latest_record.packetLoss != "undefined")
+			$("#packet_loss_result").text(latest_record.packetLoss.toFixed(2));
+		else
+			$("#packet_loss_result").text("0.00");
+	}
+
 	change_speed_level(convert_Bps_to_Mbps(latest_record.download.bandwidth));
 }
 
@@ -1172,7 +1194,7 @@ function build_interface_list(){
 					<div class="ping_result_sub_div">
 						<div class="ping_result_title"><div><#InternetSpeed_Jitter#></div></div><div class="ping_value_container"><div id="ping_result_jitter" class="ping_result_value">--</div></div><div class="ping_result_unit"><div><#InternetSpeed_ms#></div></div>
 					</div>
-					<div class="ping_result_sub_div">
+					<div id="packet_loss_div" class="ping_result_sub_div">
 						<div class="ping_result_title"><div><#InternetSpeed_Loss#></div></div><div class="ping_value_container"><div id="packet_loss_result" class="ping_result_value">--</div></div><div class="ping_result_unit">%</div>
 					</div>
 				</div>
@@ -1302,7 +1324,7 @@ function build_interface_list(){
 				</div>
 			</div>
 		</div>
-		<div class="history_desc"><div class="history_icon"></div><div style="height: 30px; line-height: 30px; margin-left: 10px;"><#InternetSpeed_History#></div></div>
+		<div id="history_desc" class="history_desc"><div class="history_icon"></div><div style="height: 30px; line-height: 30px; margin-left: 10px;"><#InternetSpeed_History#></div></div>
 		<div  id="speedTest_history_div" class="speedTest_div">
 			<div id="function_row">
 				<div id="history_delete" class="history_delete" onclick="delete_history();"></div>

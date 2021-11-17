@@ -59,8 +59,10 @@ var jscolor_attr = "{closable:true, closeText:\"<#CTL_close#>\", onFineChange:\"
 var faq_href = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=143";
 
 window.onresize = function() {
-	if(document.getElementById("captive_portal_adv_log_panel").style.display == "block") {
-		cal_panel_block("captive_portal_adv_log_panel", 0.05);
+	if(document.getElementById("captive_portal_adv_log_panel") != null){
+		if(document.getElementById("captive_portal_adv_log_panel").style.display == "block") {
+			cal_panel_block("captive_portal_adv_log_panel", 0.05);
+		}
 	}
 };
 function initial(){

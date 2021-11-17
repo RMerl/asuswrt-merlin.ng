@@ -206,7 +206,10 @@ function applyRule(){
 }
 
 function enableWPS(){
-	document.form.action_script.value = "restart_wireless";
+	if(Qcawifi_support && amesh_support)
+		document.form.action_script.value = "restart_wpsie";
+	else
+		document.form.action_script.value = "restart_wireless";
 	document.form.action_mode.value = "apply_new";
 	document.form.action_wait.value = "3";
 	applyRule();

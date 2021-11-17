@@ -91,8 +91,10 @@
 </style>
 <script>
 window.onresize = function() {
-	if(document.getElementById("erase_confirm").style.display == "block") {
-		cal_panel_block("erase_confirm", 0.25);
+	if(document.getElementById("erase_confirm") != null){
+		if(document.getElementById("erase_confirm").style.display == "block") {
+			cal_panel_block("erase_confirm", 0.25);
+		}
 	}
 }
 

@@ -448,6 +448,24 @@ var tableApi = {
 					var scrollTop = $(document).scrollTop();
 					$(".createNewRule").css({ top: (scrollTop + 200) + "px" });
 					//$(".createNewRule").children().find(".inputText").first().focus();
+
+
+					if(wan_proto=="v6plus" && array_ipv6_s46_ports.length > 1){
+						if($(".setup_info_icon").length >= 1){
+							$(".setup_info_icon").show();
+							$(".setup_info_icon").click(
+								function() {				
+									if($("#s46_ports_content").is(':visible'))
+										$("#s46_ports_content").fadeOut();
+									else{
+										var position = $(".setup_info_icon").position();
+										pop_s46_ports(position, "table");
+									}
+								}
+							);
+						}
+					}
+
 				}
 			);
 		}
@@ -621,6 +639,7 @@ var tableApi = {
 	},
 
 	closeRuleFrame : function() {
+		$("body").find("#s46_ports_content").fadeOut();
 		$("body").find(".fullScreen").fadeOut(function() { tableApi.removeElement("fullScreen"); });
 		$("body").find(".createNewRule").fadeOut(function() { tableApi.removeElement("createNewRule"); });
 	},

@@ -2005,6 +2005,7 @@ feedback_conn_rra=Reititin käynnistyy automaattisesti uudelleen
 feedback_conn_ucp=Epävakaa yhteysongelma
 feedback_conn_wdc=Unable to connect to wireless network
 feedback_connection_type=Valitse mikä vaihtoehto kuvaa parhaiten DSL-laitteesi suorituskykyä
+feedback_contact_info=Yhteydenottotapa
 feedback_country=Maa / alue
 feedback_cancel_capturing=Peruuta virheenkorjauksen sieppaus
 feedback_current_capturing=Diagnostiikka-virheenkorjauslokin sieppaus käynnissä
@@ -2030,6 +2031,7 @@ feedback_fail1=<span style="color:#FC0;">Järjestelmä epäonnistui yhteyden muo
 feedback_fail2=Kopioi vain alla oleva sisältö ja liitä se sähköpostisi sisältöön.
 feedback_fail3=Lataa seuraavat virheenkorjaustiedostot ja lisää ne liitteinä sähköpostiin:
 feedback_fail_BindGoogle=Jos haluat lähettää palautetta sähköpostitse, voit myös <a id="bind_google">yhdistää Google-tilisi</a>.
+feedback_format_alert=The format is not valid.
 feedback_Frequent_interrupt=Usein toistuvat keskeytykset
 feedback_iptable_setting=Iptables asetus
 feedback_isp=ISP / Internet-palveluntarjoajasi
@@ -3711,6 +3713,7 @@ WANAggregation_help_step4=Käynnistä reititin uudelleen
 WANAggregation_help_final=Jos yllä olevat vaiheet eivät auta ongelmaan, ilmoita siitä <a href='https://www.asus.com/support/' target='_blank' style='color:#000;text-decoration:underline;'>ASUSin tukisivulla</a>.
 WANAggregation_wanType_hint=WAN-aggregaatio ei tue WAN-tyyppejä (esimerkiksi PPPoE, PPTP ja L2TP). Jos WAN-tyypiksi vaihtuu PPPoE, PPTP tai L2TP, WAN-aggregaatio poistetaan käytöstä automaattisesti. Haluatko varmasti jatkaa?
 WebGUI_issue=Laiteohjelmistosivulle ei ole pääsyä
+wechat=WeChat
 WhiteList=Sallitut-luettelo
 WiFi_Proxy_desc=Enable this feature in Repeater mode to successfully extend certain hotspot (public WiFi) network.
 WiFi_Proxy_enable=Enable WiFi Proxy

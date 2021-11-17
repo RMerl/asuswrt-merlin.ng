@@ -192,15 +192,20 @@ var usbPorts = new Array();
 
 // Wireless
 window.onresize = function() {
-	if(document.getElementById("edit_client_block").style.display == "block") {
-		cal_panel_block("edit_client_block", 0.23);
+	if(document.getElementById("edit_client_block") != null){
+		if(document.getElementById("edit_client_block").style.display == "block") {
+			cal_panel_block("edit_client_block", 0.23);
+		}
 	}
-	if(document.getElementById("edit_usericon_block").style.display == "block") {
-		cal_panel_block("edit_usericon_block", 0.15);
+	if(document.getElementById("edit_usericon_block") != null){
+		if(document.getElementById("edit_usericon_block").style.display == "block") {
+			cal_panel_block("edit_usericon_block", 0.15);
+		}
 	}
-
-	if(document.getElementById("notice_div").style.display == "block" || document.getElementById("notice_div").style.display == "") {
-		cal_panel_block("notice_div", 0.2);
+	if(document.getElementById("notice_div") != null){
+		if(document.getElementById("notice_div").style.display == "block" || document.getElementById("notice_div").style.display == "") {
+			cal_panel_block("notice_div", 0.2);
+		}
 	}
 } 
 

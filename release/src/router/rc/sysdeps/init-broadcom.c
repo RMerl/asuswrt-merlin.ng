@@ -1743,6 +1743,7 @@ void ether_led()
 #if defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(RTCONFIG_HND_ROUTER_AX_6756)
 #define ETHCTL_CABLE_DIAG	0x0010
 #endif
+#define ETHCTL_PWRDOWNUP	0x0020
 #define PHYMODE_AUTO		0
 #define PHYMODE_10HD		1
 #define PHYMODE_10FD		2
@@ -1830,9 +1831,12 @@ void init_switch_pre()
 #endif
 	foreach(word, ifnames, next) {
 		ethctl = !strncmp(word, WAN_IF_ETH, strlen(WAN_IF_ETH)) ? ethctl_wan : ethctl_lan;
-		if (ethctl & ETHCTL_PHYRESET)
-			doSystem("ethctl %s phy-reset", WAN_IF_ETH);
-		else {
+		{
+			if (ethctl & ETHCTL_PHYRESET) {
+				dbg("%s: phy-reset\n", word);
+				doSystem("ethctl %s phy-reset", word);
+			}
+
 #ifdef RTCONFIG_HND_ROUTER_AX
 			dbg("%s: EEE %s\n", word, (ethctl & ETHCTL_EEE_ON) ? "on" : "off");
 			if (!(ethctl & ETHCTL_EEE_ON)) {
@@ -1855,17 +1859,26 @@ void init_switch_pre()
 				eval("pwr", "config", "--apd", "off");
 				eval("pwr", "config", "--dgm", "off");
 #endif
-
 				doSystem("ethctl %s apd off", word);
 			}
 #endif
-			dbg("%s: ethernet@wirespeed %s\n", word, (ethctl & ETHCTL_WIRESPEED_OFF) ? "disabled" : "enabled");
-			if (!(ethctl & ETHCTL_WIRESPEED_OFF))
-				doSystem("ethctl %s ethernet@wirespeed enable", word);
+#ifdef GTAX6000
+			if (strcmp(word, "eth0") && strcmp(word, "eth5"))
+#endif
+			{
+				dbg("%s: ethernet@wirespeed %s\n", word, (ethctl & ETHCTL_WIRESPEED_OFF) ? "disabled" : "enabled");
+				if (!(ethctl & ETHCTL_WIRESPEED_OFF))
+					doSystem("ethctl %s ethernet@wirespeed enable", word);
+			}
 #if defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(RTCONFIG_HND_ROUTER_AX_6756)
 			if (ethctl & ETHCTL_CABLE_DIAG)
 				doSystem("ethctl %s cable-diag enable", word);
 #endif
+			if (ethctl & ETHCTL_PWRDOWNUP) {
+				dbg("%s: power down & up\n", word);
+				doSystem("ethctl %s phy-power down", word);
+				doSystem("ethctl %s phy-power up", word);
+			}
 		}
 
 		phymode = !strncmp(word, WAN_IF_ETH, strlen(WAN_IF_ETH)) ? phymode_wan : phymode_lan;
@@ -1947,8 +1960,6 @@ void init_switch_pre()
 		}
 	}
 #endif
-	/* add war for 2500BaseX speed issue */
-	GPY211_INIT_SPEED();
 }
 
 #define ARRAYSIZE(a)	(sizeof(a)/sizeof(a[0]))
@@ -2210,11 +2221,6 @@ void init_switch()
 			int tmp_type;
 #if defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2)
 			eval("mknod", "/dev/rtkswitch", "c", "206", "0");
-#ifdef RTAX58U_V2
-			led_control(SWITCH_RESET, LED_OFF);
-			sleep(1);
-			led_control(SWITCH_RESET, LED_ON);
-#endif
 			eval("insmod", "rtl8367s");
 #ifndef RTAX58U_V2
 			eval("ethswctl", "-c", "setlinkstatus", "-n", "0", "-p", "1", "-x", "1", "-y", "1000", "-z", "1");
@@ -2272,17 +2278,195 @@ void init_switch()
 		}
 
 		case MODEL_GTAX6000:
+		{
+			/* set wanports in init_nvram for dualwan */
+			/* WAN L1 L2 L3 L4 L5 */
+			int ports[6] = { 0, 1, 2, 3, 4, 5 };
+			char buf[64], *ptr;
+			int i, len, wancfg;
+			int tmp_type;
+
+			if (get_wans_dualwan() & WANSCAP_LAN) {
+				wancfg = nvram_get_int("wans_lanport");
+
+				memset(buf, 0, sizeof(buf));
+				ptr = buf;
+				for (i = 1; i < ARRAYSIZE(ports); ++i) {
+					if (i == wancfg)
+						continue;
+
+					len = strlen(buf);
+					snprintf(ptr, sizeof(buf)-len, "%s%d", (len > 0)?" ":"", ports[i]);
+					ptr = buf+strlen(buf);
+				}
+
+				nvram_set("lanports", buf);
+			}
+			else {
+				wancfg = 0;
+				nvram_set("lanports", "1 2 3 4 5");
+			}
+
+			memset(buf, 0, sizeof(buf));
+			for (i = WAN_UNIT_FIRST, ptr = buf; ((tmp_type = get_dualwan_by_unit(i)) != WANS_DUALWAN_IF_NONE) && (i < WAN_UNIT_MAX) && (wancfg < ARRAYSIZE(ports)); ++i) {
+				len = strlen(buf);
+				if (tmp_type == WANS_DUALWAN_IF_WAN)
+					snprintf(ptr, sizeof(buf)-len, "%s%d", (len > 0)?" ":"", ports[0]);
+				else if (tmp_type == WANS_DUALWAN_IF_LAN)
+					snprintf(ptr, sizeof(buf)-len, "%s%d", (len > 0)?" ":"", ports[wancfg]);
+				else if (tmp_type == WANS_DUALWAN_IF_DSL)
+					snprintf(ptr, sizeof(buf)-len, "%s-1", (len > 0)?" ":"");
+				else // USB
+					snprintf(ptr, sizeof(buf)-len, "%s%d", (len > 0)?" ":"", -1);
+				ptr = buf+strlen(buf);
+			}
+			nvram_set("wanports", buf);
+
 			break;
+		}
+
 		case MODEL_GTAX11000_PRO:
-			//TBD
+		{
+			/* set wanports in init_nvram for dualwan */
+			/* WAN L1 L2 L3 L4 L5 */
+			int ports[6] = { 0, 1, 2, 3, 4, 5 };
+			char buf[64], *ptr;
+			int i, len, wancfg;
+			int tmp_type;
+
+			if (get_wans_dualwan() & WANSCAP_LAN) {
+				wancfg = nvram_get_int("wans_lanport");
+
+				memset(buf, 0, sizeof(buf));
+				ptr = buf;
+				for (i = 1; i < ARRAYSIZE(ports); ++i) {
+					if (i == wancfg)
+						continue;
+
+					len = strlen(buf);
+					snprintf(ptr, sizeof(buf)-len, "%s%d", (len > 0)?" ":"", ports[i]);
+					ptr = buf+strlen(buf);
+				}
+
+				nvram_set("lanports", buf);
+			}
+			else {
+				wancfg = 0;
+				nvram_set("lanports", "1 2 3 4 5");
+			}
+
+			memset(buf, 0, sizeof(buf));
+			for (i = WAN_UNIT_FIRST, ptr = buf; ((tmp_type = get_dualwan_by_unit(i)) != WANS_DUALWAN_IF_NONE) && (i < WAN_UNIT_MAX) && (wancfg < ARRAYSIZE(ports)); ++i) {
+				len = strlen(buf);
+				if (tmp_type == WANS_DUALWAN_IF_WAN)
+					snprintf(ptr, sizeof(buf)-len, "%s%d", (len > 0)?" ":"", ports[0]);
+				else if (tmp_type == WANS_DUALWAN_IF_LAN)
+					snprintf(ptr, sizeof(buf)-len, "%s%d", (len > 0)?" ":"", ports[wancfg]);
+				else if (tmp_type == WANS_DUALWAN_IF_DSL)
+					snprintf(ptr, sizeof(buf)-len, "%s-1", (len > 0)?" ":"");
+				else // USB
+					snprintf(ptr, sizeof(buf)-len, "%s%d", (len > 0)?" ":"", -1);
+				ptr = buf+strlen(buf);
+			}
+			nvram_set("wanports", buf);
+
 			break;
+		}
 		case MODEL_GTAXE16000:
-			//TBD
+		{
+			/* set wanports in init_nvram for dualwan */
+			/* WAN L1 L2 L3 L4 L5 L6 */
+			int ports[6] = { 0, 1, 2, 3, 4, 5, 6};
+			char buf[64], *ptr;
+			int i, len, wancfg;
+			int tmp_type;
+
+			if (get_wans_dualwan() & WANSCAP_LAN) {
+				wancfg = nvram_get_int("wans_lanport");
+
+				memset(buf, 0, sizeof(buf));
+				ptr = buf;
+				for (i = 1; i < ARRAYSIZE(ports); ++i) {
+					if (i == wancfg)
+						continue;
+
+					len = strlen(buf);
+					snprintf(ptr, sizeof(buf)-len, "%s%d", (len > 0)?" ":"", ports[i]);
+					ptr = buf+strlen(buf);
+				}
+
+				nvram_set("lanports", buf);
+			}
+			else {
+				wancfg = 0;
+				nvram_set("lanports", "1 2 3 4 5 6");
+			}
+
+			memset(buf, 0, sizeof(buf));
+			for (i = WAN_UNIT_FIRST, ptr = buf; ((tmp_type = get_dualwan_by_unit(i)) != WANS_DUALWAN_IF_NONE) && (i < WAN_UNIT_MAX) && (wancfg < ARRAYSIZE(ports)); ++i) {
+				len = strlen(buf);
+				if (tmp_type == WANS_DUALWAN_IF_WAN)
+					snprintf(ptr, sizeof(buf)-len, "%s%d", (len > 0)?" ":"", ports[0]);
+				else if (tmp_type == WANS_DUALWAN_IF_LAN)
+					snprintf(ptr, sizeof(buf)-len, "%s%d", (len > 0)?" ":"", ports[wancfg]);
+				else if (tmp_type == WANS_DUALWAN_IF_DSL)
+					snprintf(ptr, sizeof(buf)-len, "%s-1", (len > 0)?" ":"");
+				else // USB
+					snprintf(ptr, sizeof(buf)-len, "%s%d", (len > 0)?" ":"", -1);
+				ptr = buf+strlen(buf);
+			}
+			nvram_set("wanports", buf);
+
 			break;
+		}
 		case MODEL_ET12:
 		case MODEL_XT12:
-			//TBD
+		{
+			/* set wanports in init_nvram for dualwan */
+			/* WAN L1 L2 L3 */
+			int ports[6] = { 0, 1, 2, 3 };
+			char buf[64], *ptr;
+			int i, len, wancfg;
+			int tmp_type;
+
+			if (get_wans_dualwan() & WANSCAP_LAN) {
+				wancfg = nvram_get_int("wans_lanport");
+
+				memset(buf, 0, sizeof(buf));
+				ptr = buf;
+				for (i = 1; i < ARRAYSIZE(ports); ++i) {
+					if (i == wancfg)
+						continue;
+
+					len = strlen(buf);
+					snprintf(ptr, sizeof(buf)-len, "%s%d", (len > 0)?" ":"", ports[i]);
+					ptr = buf+strlen(buf);
+				}
+
+				nvram_set("lanports", buf);
+			}
+			else {
+				wancfg = 0;
+				nvram_set("lanports", "1 2 3");
+			}
+
+			memset(buf, 0, sizeof(buf));
+			for (i = WAN_UNIT_FIRST, ptr = buf; ((tmp_type = get_dualwan_by_unit(i)) != WANS_DUALWAN_IF_NONE) && (i < WAN_UNIT_MAX) && (wancfg < ARRAYSIZE(ports)); ++i) {
+				len = strlen(buf);
+				if (tmp_type == WANS_DUALWAN_IF_WAN)
+					snprintf(ptr, sizeof(buf)-len, "%s%d", (len > 0)?" ":"", ports[0]);
+				else if (tmp_type == WANS_DUALWAN_IF_LAN)
+					snprintf(ptr, sizeof(buf)-len, "%s%d", (len > 0)?" ":"", ports[wancfg]);
+				else if (tmp_type == WANS_DUALWAN_IF_DSL)
+					snprintf(ptr, sizeof(buf)-len, "%s-1", (len > 0)?" ":"");
+				else // USB
+					snprintf(ptr, sizeof(buf)-len, "%s%d", (len > 0)?" ":"", -1);
+				ptr = buf+strlen(buf);
+			}
+			nvram_set("wanports", buf);
+
 			break;
+		}
 	}
 
 #ifdef RTCONFIG_EMF
@@ -3354,7 +3538,7 @@ void init_wl(void)
 #if defined(RTAC3200) || defined(RTAC68U) || defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER) || defined(DSL_AC68U)
 	wl_disband5grp();
 #endif
-#if !(defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(RTCONFIG_HND_ROUTER_AX))
+#if !defined(RTCONFIG_HND_ROUTER_AX)
 	set_wltxpower();
 #endif
 #ifdef RTCONFIG_BRCM_HOSTAPD
@@ -3374,7 +3558,7 @@ void init_wl(void)
 #else
 	eval("insmod", "wl");
 #endif
-#if defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(RTCONFIG_HND_ROUTER_AX)
+#if defined(RTCONFIG_HND_ROUTER_AX)
 	set_wltxpower();
 #endif
 #if !defined(RTCONFIG_BCMARM) && defined(NAS_GTK_PER_STA) && defined(PROXYARP)
@@ -3499,7 +3683,7 @@ void init_wl_compact(void)
 #if defined(RTAC3200) || defined(RTAC68U) || defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER) || defined(DSL_AC68U)
 	wl_disband5grp();
 #endif
-#if !(defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(RTCONFIG_HND_ROUTER_AX))
+#if !defined(RTCONFIG_HND_ROUTER_AX)
 	set_wltxpower();
 #endif
 #ifdef RTCONFIG_DHDAP
@@ -3507,7 +3691,7 @@ void init_wl_compact(void)
 #else
 	eval("insmod", "wl");
 #endif
-#if defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(RTCONFIG_HND_ROUTER_AX)
+#if defined(RTCONFIG_HND_ROUTER_AX)
 	set_wltxpower();
 #endif
 #ifndef RTCONFIG_BCMARM
@@ -3876,7 +4060,7 @@ void wl_thread_affinity_update(void)
 				}
 #endif
 				system(affinity_cmd);
-#if defined(RTAXE95Q) || defined(ET8PRO)
+#if defined(RTAX95Q) || defined(RTAXE95Q)
 				system("echo 2 > /proc/irq/67/smp_affinity");
 #endif
 			}
@@ -4046,6 +4230,14 @@ void init_others(void)
 #endif
 #if defined(ET12) || defined(XT12)
 	setAllLedOn();
+#endif
+#ifdef RTAX58U_V2
+	/* set pinmux of GPIO 80 as 4 to enable GPIO mode */
+	system("sw 0xff800554 0");
+	system("sw 0xff800558 0x4050");
+	system("sw 0xff80055c 0x21");
+	/* restore USB power */
+	f_write_string("/sys/class/leds/led_gpio_80/brightness", "255", 0, 0);
 #endif
 }
 #else // HND_ROUTER
@@ -9716,7 +9908,7 @@ void set_acs_ifnames()
 			/* exclude acsd from selecting chanspec 100, 100l, 100/80, 100/160, 104, 104u, 104/80, 104/160, 108, 108l, 108/80, 108/160, 112, 112u, 112/80, 112/160, 116, 116l, 116/80, 116/160, 120, 120u, 120/80, 120/160, 124, 124l, 124/80, 124/160, 128, 128u, 128/80, 128/160, 132, 132l, 136, 136u, 140 */
 			nvram_set(strcat_r(prefix_5g, "acs_excl_chans", tmp), nvram_match("acs_dfs", "1") ? (nvram_match("acs_band3", "1") ? "" : list_5g_band3_chans) : list);
 		else {
-#if defined(RTAX55) || defined(RTAX1800) || defined(RTAX86U)
+#if defined(RTAX55) || defined(RTAX1800) || defined(RTAX86U) || defined(TUFAX5400) || defined(GTAX6000)
 			if (!strncmp(nvram_safe_get("territory_code"), "JP", 2))
 				/* exclude acsd from selecting chanspec 32/80 136/80 140l 140/80 144 144u 144/80 by default */
 				nvram_set(strcat_r(prefix_5g, "acs_excl_chans", tmp), nvram_match("acs_dfs", "1") ? (nvram_match("acs_dfs_144", "1") ? "" :  "0xe08a,0xe18a,0xe28a,0xd88e,0xd090,0xe38a,0xd98e") : list);

@@ -185,7 +185,7 @@ define(function(){
 				tab: [
 					{url: "Advanced_LAN_Content.asp", tabName: "<#menu5_2_1#>"},
 					{url: "Advanced_DHCP_Content.asp", tabName: "<#menu5_2_2#>"},
-					{url: "DNSFilter.asp", tabName: "DNSFilter"},
+					//{url: "DNSFilter.asp", tabName: "DNSFilter"},
 					{url: "Advanced_MultiSubnet_Content.asp", tabName: "<#menu5_2_2#>"},
 					{url: "Advanced_GWStaticRoute_Content.asp", tabName: "<#menu5_2_3#>"},
 					{url: "Advanced_IPTV_Content.asp", tabName: "IPTV"},
@@ -670,9 +670,6 @@ define(function(){
 				if(!dnsfilter_support)
 					retArray.push("DNSFilter.asp");
 
-				if(SG_mode)
-					retArray.push("Advanced_WWPS_Content.asp");
-
 				/* Operation Mode */
 				if(isSwMode("re")){
 					retArray.push("GameBoost.asp");
@@ -751,7 +748,7 @@ define(function(){
 					retArray.push("Advanced_IPTV_Content.asp");
 				}
 
-				if(!internetSpeed_support){
+				if(!internetSpeed_support && !internetSpeed_lite_support){
 					retArray.push("AdaptiveQoS_InternetSpeed.asp");
 				}
 

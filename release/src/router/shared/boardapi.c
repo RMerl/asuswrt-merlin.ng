@@ -314,9 +314,6 @@ static const struct led_btn_table_s {
 #if defined(DSL_AX82U)
 	{ "led_wifi_gpio",		&led_gpio_table[LED_WIFI] },
 #endif
-#ifdef RTAX58U_V2
-	{ "switch_rst_gpio",		&led_gpio_table[SWITCH_RESET] },
-#endif
 #if defined(GTAXE16000) || defined(GTAX11000_PRO)
 	{ "led_wan_red_gpio",		&led_gpio_table[LED_WAN_RGB_RED] },
 	{ "led_wan_green_gpio",		&led_gpio_table[LED_WAN_RGB_GREEN] },
@@ -324,6 +321,7 @@ static const struct led_btn_table_s {
 	{ "led_10g_red_gpio",		&led_gpio_table[LED_10G_RGB_RED] },
 	{ "led_10g_green_gpio",		&led_gpio_table[LED_10G_RGB_GREEN] },
 	{ "led_10g_blue_gpio",		&led_gpio_table[LED_10G_RGB_BLUE] },
+	{ "led_10g_white_gpio",		&led_gpio_table[LED_10G_WHITE] },
 #endif
 	{ NULL, NULL },
 };
@@ -671,6 +669,9 @@ dump_ledtable()
 #ifdef RTCONFIG_BCMARM
 int set_pwr_usb(int boolOn) {
 	int use_gpio, gpio_pin;
+#ifdef RTCONFIG_HND_ROUTER_AX_6756
+	unsigned int enable;
+#endif
 
 #ifdef RTAC68U
 	switch(get_model()) {
@@ -694,17 +695,33 @@ int set_pwr_usb(int boolOn) {
 #endif
 
 	if ((gpio_pin = (use_gpio = nvram_get_int("pwr_usb_gpio"))&0xff) != 0xff) {
+#ifdef RTCONFIG_HND_ROUTER_AX_6756
+		enable = ((use_gpio&GPIO_ACTIVE_LOW) == 0 ? 0 : 1);
+		if (boolOn)
+			set_gpio(gpio_pin, enable);
+		else
+			set_gpio(gpio_pin, !enable);
+#else
 		if (boolOn)
 			set_gpio(gpio_pin, 1);
 		else
 			set_gpio(gpio_pin, 0);
+#endif
 	}
 
 	if ((gpio_pin = (use_gpio = nvram_get_int("pwr_usb_gpio2"))&0xff) != 0xff) {
+#ifdef RTCONFIG_HND_ROUTER_AX_6756
+		enable = ((use_gpio&GPIO_ACTIVE_LOW) == 0 ? 0 : 1);
+		if (boolOn)
+			set_gpio(gpio_pin, enable);
+		else
+			set_gpio(gpio_pin, !enable);
+#else
 		if (boolOn)
 			set_gpio(gpio_pin, 1);
 		else
 			set_gpio(gpio_pin, 0);
+#endif
 	}
 
 	return 0;
@@ -1217,13 +1234,13 @@ int lanport_ctrl(int ctrl)
 #endif
 
 	foreach(word, nvram_safe_get("lanports"), next) {
-#ifdef BCM6750
+#if defined(BCM6750) || defined(BCM4912)
 		doSystem("ethctl eth%d phy-power %s", atoi(word), ctrl ? "up" : "down");
 #else
 		mask |= (0x0001<<atoi(word));
 #endif
 	}
-#ifdef BCM6750
+#if defined(BCM6750) || defined(BCM4912)
 	return 1;
 #else
 	return set_phy_ctrl(mask, ctrl);

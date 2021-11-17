@@ -40,16 +40,23 @@
 #include <bcmutils.h>
 #include <wlutils.h>
 #include <wlscan.h>
-#ifdef RTCONFIG_WPS
-#if defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_HND_ROUTER_AX_675X)
-#if defined(RTCONFIG_SDK502L07P1_121_37)
-#include <wps_ui.h>
-#else
-#include <wpsdefs.h>
-#endif
-#else
-#include <wps_ui.h>
-#endif
+
+#if defined(RTCONFIG_WPS) || defined(RTCONFIG_BRCM_HOSTAPD)
+#define WPS_UI_PORT                     40500
+
+/* WPS_UI definitions */
+#define WPS_UI_CMD_NONE			0
+#define WPS_UI_CMD_START		1
+#define WPS_UI_CMD_STOP			2
+
+#define WPS_UI_METHOD_PIN		1
+#define WPS_UI_METHOD_PBC		2
+
+#define WPS_UI_ACT_NONE			0
+#define WPS_UI_ACT_ENROLL		1
+#define WPS_UI_ACT_ADDENROLLEE		3
+
+#define WPS_UI_PBC_SW			2
 #endif
 
 #ifdef RTCONFIG_QTN
@@ -61,15 +68,6 @@
 #endif
 
 #ifdef RTCONFIG_BRCM_HOSTAPD
-#if defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_HND_ROUTER_AX_675X)
-#if defined(RTCONFIG_SDK502L07P1_121_37)
-#include <wps_ui.h>
-#else
-#include <wpsdefs.h>
-#endif
-#else
-#include <wps_ui.h>
-#endif
 #include <wlif_utils.h>
 #define HAPD_DIR	"/var/run/hostapd"
 #define HAPD_CMD_BUF	256
@@ -126,29 +124,28 @@ exit:
 }
 
 #ifdef RTCONFIG_BRCM_HOSTAPD
+#define HAPD_TIMEOUT	5
+#define HAPD_RETRY	5
 #define HAPD_ON_PRIMARY_IFACE           0x0     /* run hostapd on primary interface */
 #define HAPD_ON_VIRTUAL_IFACE           0x1     /* run hostapd on virtual interface */
-extern int hapd_get_config_filename(char *nv_ifname, char *o_fname, int sz, uint32 *o_flgs, int mode);
-extern int hapd_create_config_file(char *nv_ifname, char *filename, uint32 flags);
-extern void stop_hostapd_per_radio(int radio_idx);
+extern int stop_hostapd_per_radio(int radio_idx);
 extern int start_hostapd_per_radio(int radio_idx);
 #endif
 
 int
 start_wps_method_ob(void)
 {
+#ifdef RTCONFIG_BRCM_HOSTAPD
 	int wps_band;
 	char prefix[] = "wlXXXXXX_";
-#ifdef RTCONFIG_BRCM_HOSTAPD
 	FILE *fp = NULL;
 	char tmp[100];
-	char filename[128];
 	char cmd[64], buf[256];
-	int mode;
-	int wait_hapd = 20;
-	int hapd_is_ready = 0;
+	char hapd_ctrl[64];
+	int wait_hapd = HAPD_TIMEOUT;
+	int hapd_is_ready = 1;
+	int try = 0;
 	uint32 flags = 0;
-#endif
 
 #if defined(RTCONFIG_AMAS) && defined(RTCONFIG_CFGSYNC)
 	if (nvram_get_int("cfg_obstatus") == OB_TYPE_LOCKED) {
@@ -157,45 +154,56 @@ start_wps_method_ob(void)
 	else
 #endif
 	wps_band = nvram_get_int("wps_band_x");
-	snprintf(prefix, sizeof(prefix), "wl%d", wps_band);
 
-#ifdef RTCONFIG_BRCM_HOSTAPD
 	if(!HAPD_DISABLED() && !nvram_get_int("wps_enable_x")) {
-		_dprintf("Prepare to trigger WPS upon radio [%d]...\n", wps_band);
-		nvram_set(strcat_r(prefix, "_wps_mode", tmp), "enabled");
 #if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
 		if (is_dpsr(wps_band)
 #ifdef RTCONFIG_DPSTA
 			|| is_dpsta(wps_band)
 #endif
 		)
-			mode = HAPD_ON_VIRTUAL_IFACE;
+			snprintf(prefix, sizeof(prefix), "wl%d.1", wps_band);
 		else
-			mode = HAPD_ON_PRIMARY_IFACE;
 #endif
-		if (hapd_get_config_filename(prefix, filename, sizeof(filename), &flags, mode) < 0) {
-			_dprintf("Error to get hostapd config filename\n");
-			return -1;
+			snprintf(prefix, sizeof(prefix), "wl%d", wps_band);
+#ifdef RTCONFIG_VIF_ONBOARDING
+		if (nvram_get_int("wps_via_vif")) {
+			snprintf(prefix, sizeof(prefix), "wl%d.%d", wps_band,
+				(!nvram_get_int("re_mode")) ? nvram_get_int("obvif_cap_subunit"): nvram_get_int("obvif_re_subunit"));
+			nvram_unset("wps_via_vif");
 		}
+#endif
+		_dprintf("Prepare to trigger WPS upon radio [%d][%s]\n", wps_band, prefix);
+		nvram_set(strcat_r(prefix, "_wps_mode", tmp), "enabled");
 
-		if (hapd_create_config_file(prefix, filename, flags) < 0) {
-			_dprintf("Error to get hostapd config filename\n");
-			return -1;
-		}
-		else {
-			_dprintf("restart hostapd upon radio [%d]\n", wps_band);
-			stop_hostapd_per_radio(wps_band);
-			start_hostapd_per_radio(wps_band);
+		_dprintf("restart hostapd upon radio [%d]\n", wps_band);
+		for (try = 0; try < HAPD_RETRY; try++) {
+			hapd_is_ready = 0;
+			_dprintf("hostapd[%d] stop ... %d\n", wps_band, try);
+			if (stop_hostapd_per_radio(wps_band) == -1) {
+				sleep(1);
+				continue;
+			}
 
+			_dprintf("hostapd[%d] start ... %d\n", wps_band, try);
+			if (start_hostapd_per_radio(wps_band) == -1) {
+				sleep(1);
+				continue;
+			}
+
+			wait_hapd = nvram_get_int("hapd_ob_timeout") ? nvram_get_int("hapd_ob_timeout") : HAPD_TIMEOUT;
+			snprintf(hapd_ctrl, sizeof(hapd_ctrl), "%s/%s", HAPD_DIR, nvram_safe_get(strcat_r(prefix, "_ifname", tmp)));
 			snprintf(cmd, sizeof(cmd), "hostapd_cli -i %s ping", nvram_safe_get(strcat_r(prefix, "_ifname", tmp)));
-
 			while(wait_hapd) {
-				if (wait_hapd != 20)
-				    sleep(1);
-
+				sleep(1);
 				if ((--wait_hapd) == 0) {
-					_dprintf("restart hostapd upon radio [%d] - FAILED\n", wps_band);
+					_dprintf("restart hostapd upon radio [%d][%s] - FAILED\n", wps_band, prefix);
 					break;
+				}
+
+				if(!f_exists(hapd_ctrl)) {
+					_dprintf("check %s error\n", hapd_ctrl);
+					continue;
 				}
 
 				fp = popen(cmd, "r");
@@ -204,8 +212,7 @@ start_wps_method_ob(void)
 						if(strstr(buf, "PONG") != NULL)
 						{
 							hapd_is_ready = 1;
-							_dprintf("restart hostapd upon radio [%d] - DONE\n");
-							start_wps_pbcd();
+							_dprintf("restart hostapd upon radio [%d][%s] - DONE\n", wps_band, prefix);
 							sleep(1);
 							break;
 						}
@@ -215,13 +222,22 @@ start_wps_method_ob(void)
 
 				if(!hapd_is_ready)
 					continue;
+				else
+					break;
+			}
 
+			if(hapd_is_ready) {
+				start_wps_pbcd();
 				break;
 			}
 		}
 	}
+
+	if(hapd_is_ready)
 #endif
-	start_wps_method();
+		start_wps_method();
+
+	return 0;
 }
 
 int
@@ -232,79 +248,93 @@ stop_wps_method_ob(void)
 	char prefix[] = "wlXXXXXX_";
 	char word[256], *next;
 	char tmp[100], cmd[64], buf[256];
-	char filename[128];
+	char hapd_ctrl[64];
 	int unit;
-	int mode;
-	int wait_hapd = 20;
+	int wait_hapd = HAPD_TIMEOUT;
 	int hapd_is_ready = 0;
 	uint32 flags = 0;
+	int wps_band;
+	int try = 0;
 #endif
 
 	stop_wps_method();
 #ifdef RTCONFIG_BRCM_HOSTAPD
 	if(!HAPD_DISABLED() && !nvram_get_int("wps_enable_x")) {
 		stop_wps_pbcd();
-		foreach (word, nvram_safe_get("wl_ifnames"), next) {
-			if (wl_ioctl(word, WLC_GET_INSTANCE, &unit, sizeof(unit)))
-				continue;
-
-			snprintf(prefix, sizeof(prefix), "wl%d", unit);
-			if(nvram_match(strcat_r(prefix, "_wps_mode", tmp), "enabled")) {
-				nvram_set(strcat_r(prefix, "_wps_mode", tmp), "disabled");
+		wps_band = nvram_get_int("wps_band_x");
 #if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
-				if (is_dpsr(unit)
+		if (is_dpsr(wps_band)
 #ifdef RTCONFIG_DPSTA
-					|| is_dpsta(unit)
+			|| is_dpsta(wps_band)
 #endif
-				)
-					mode = HAPD_ON_VIRTUAL_IFACE;
-				else
-					mode = HAPD_ON_PRIMARY_IFACE;
+		)
+			snprintf(prefix, sizeof(prefix), "wl%d.1", wps_band);
+		else
 #endif
-				if (hapd_get_config_filename(prefix, filename, sizeof(filename), &flags, mode) < 0) {
-					_dprintf("Error to get hostapd config filename\n");
-					return -1;
+			snprintf(prefix, sizeof(prefix), "wl%d", wps_band);
+#ifdef RTCONFIG_VIF_ONBOARDING
+		if (nvram_get_int("wps_via_vif")) {
+			snprintf(prefix, sizeof(prefix), "wl%d.%d", wps_band,
+				(!nvram_get_int("re_mode")) ? nvram_get_int("obvif_cap_subunit"): nvram_get_int("obvif_re_subunit"));
+			nvram_unset("wps_via_vif");
+		}
+#endif
+		if(nvram_match(strcat_r(prefix, "_wps_mode", tmp), "enabled")) {
+			nvram_set(strcat_r(prefix, "_wps_mode", tmp), "disabled");
+			_dprintf("restart hostapd upon radio [%d]\n", wps_band);
+			for (try = 0; try < HAPD_RETRY; try++) {
+				hapd_is_ready = 0;
+				_dprintf("hostapd[%d] stop ... %d\n", wps_band, try);
+				if (stop_hostapd_per_radio(wps_band) == -1) {
+					sleep(1);
+					continue;
 				}
 
-				if (hapd_create_config_file(prefix, filename, flags) < 0) {
-					_dprintf("Error to get hostapd config filename\n");
-					return -1;
+				_dprintf("hostapd[%d] start ... %d\n", wps_band, try);
+				if (start_hostapd_per_radio(wps_band) == -1) {
+					sleep(1);
+					continue;
 				}
-				else {
-					_dprintf("restart hostapd upon radio [%d]\n", unit);
-					stop_hostapd_per_radio(unit);
-					start_hostapd_per_radio(unit);
 
-					snprintf(cmd, sizeof(cmd), "hostapd_cli -i %s ping", nvram_safe_get(strcat_r(prefix, "_ifname", tmp)));
-					while(wait_hapd) {
-						if (wait_hapd != 20)
-							sleep(1);
-
-						if ((--wait_hapd) == 0) {
-							_dprintf("restart hostapd upon radio [%d] - FAILED\n", unit);
-							break;
-						}
-
-						fp = popen(cmd, "r");
-						if(fp) {
-							while (fgets(buf, sizeof(buf), fp) != NULL) {
-								if(strstr(buf, "PONG") != NULL)
-								{
-									hapd_is_ready = 1;
-									_dprintf("restart hostapd upon radio [%d] - DONE\n", unit);
-									break;
-								}
-							}
-							pclose(fp);
-						}
-
-						if(!hapd_is_ready)
-							continue;
-
+				wait_hapd = nvram_get_int("hapd_ob_timeout") ? nvram_get_int("hapd_ob_timeout") : HAPD_TIMEOUT;
+				snprintf(hapd_ctrl, sizeof(hapd_ctrl), "%s/%s", HAPD_DIR, nvram_safe_get(strcat_r(prefix, "_ifname", tmp)));
+				snprintf(cmd, sizeof(cmd), "hostapd_cli -i %s ping", nvram_safe_get(strcat_r(prefix, "_ifname", tmp)));
+				while(wait_hapd) {
+					sleep(1);
+					if ((--wait_hapd) == 0) {
+						_dprintf("restart hostapd upon radio [%d][%s] - FAILED\n", wps_band, prefix);
 						break;
 					}
+
+					if(!f_exists(hapd_ctrl)) {
+						_dprintf("check %s error\n", hapd_ctrl);
+						continue;
+					}
+
+					fp = popen(cmd, "r");
+					if(fp) {
+						while (fgets(buf, sizeof(buf), fp) != NULL) {
+							if(strstr(buf, "PONG") != NULL)
+							{
+								hapd_is_ready = 1;
+								_dprintf("restart hostapd upon radio [%d][%s] - DONE\n", wps_band, prefix);
+								sleep(1);
+								break;
+							}
+						}
+						pclose(fp);
+					}
+
+					if(!hapd_is_ready)
+						continue;
+					else
+						break;
 				}
+
+				if(hapd_is_ready)
+					break;
 			}
+			start_eapd();
 		}
 	}
 #endif
@@ -412,7 +442,7 @@ start_wps_method(void)
 					" %s -i %s wps_pbc", HAPD_DIR, word);
 
 				if (cmd[0] != '\0') {
-					if (system(cmd) == 0) {
+					if (hapd_cmd_chk_status(cmd)) {
 						wps_config_command = WPS_UI_CMD_START;
 						wl_wlif_update_wps_ui(WLIF_WPS_UI_FINDING_PBC_STA);
 					} else {
@@ -432,7 +462,7 @@ start_wps_method(void)
 					" %s -i %s wps_pbc", HAPD_DIR, ifname);
 			}
 			if (cmd[0] != '\0') {
-				if (system(cmd) == 0) {
+				if (hapd_cmd_chk_status(cmd)) {
 					wps_config_command = WPS_UI_CMD_START;
 					wl_wlif_update_wps_ui(WLIF_WPS_UI_FINDING_PBC_STA);
 				} else {
@@ -811,3 +841,37 @@ int is_wps_success(void)
 	int wps_proc_status = nvram_get_int("wps_proc_status_x");
 	return (wps_proc_status == 2 || wps_proc_status == 7);
 }
+
+#ifdef RTCONFIG_BRCM_HOSTAPD
+#define HAPD_CMD_WAIT 5
+int hapd_cmd_chk_status(char* cmd) {
+	FILE *fp = NULL;
+	char buf[128];
+	int success = 0;
+	int wait = HAPD_CMD_WAIT;
+
+	fp = popen(cmd, "r");
+	if (fp) {
+		while(wait) {
+			if (wait != HAPD_CMD_WAIT)
+				sleep(1);
+
+			if ((--wait) == 0) {
+				_dprintf("hostapd command [%s] execute failed\n", cmd);
+				break;
+			}
+			memset(buf, 0, sizeof(buf));
+			while(fgets(buf, sizeof(buf), fp) != NULL) {
+				if (strstr(buf, "OK") != NULL) {
+					success = 1;
+					break;
+				}
+			}
+			if(success)
+				break;
+		}
+		pclose(fp);
+	}
+	return success;
+}
+#endif

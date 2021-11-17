@@ -586,7 +586,6 @@ function newProfileOK(){
 <input type="hidden" name="preferred_lang" id="preferred_lang" value="<% nvram_get("preferred_lang"); %>">
 <input type="hidden" name="firmver" value="<% nvram_get("firmver"); %>">
 <input type="hidden" name="game_vts_rulelist" value=''>
-<input type="hidden" name="vts_enable_x" value='<% nvram_get("vts_enable_x"); %>'>
 
 <table class="content" align="center" cellpadding="0" cellspacing="0" >
 	<tr>

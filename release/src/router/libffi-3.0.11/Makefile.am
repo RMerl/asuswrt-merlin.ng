@@ -5,6 +5,8 @@ AUTOMAKE_OPTIONS = foreign subdir-objects
 SUBDIRS = include testsuite man
 
 EXTRA_DIST = LICENSE ChangeLog.v1 ChangeLog.libgcj configure.host \
+	src/aarch64/ffi.c src/aarch64/ffitarget.h		\
+	src/aarch64/sysv.S build-ios.sh				\
 	src/alpha/ffi.c src/alpha/osf.S src/alpha/ffitarget.h \
 	src/arm/ffi.c src/arm/sysv.S src/arm/ffitarget.h \
 	src/avr32/ffi.c src/avr32/sysv.S src/avr32/ffitarget.h \
@@ -182,6 +184,9 @@ nodist_libffi_la_SOURCES += src/pa/linux.S src/pa/ffi.c
 endif
 if PA_HPUX
 nodist_libffi_la_SOURCES += src/pa/hpux32.S src/pa/ffi.c
+endif
+if AARCH64
+nodist_libffi_la_SOURCES += src/aarch64/sysv.S src/aarch64/ffi.c
 endif
 
 libffi_convenience_la_SOURCES = $(libffi_la_SOURCES)

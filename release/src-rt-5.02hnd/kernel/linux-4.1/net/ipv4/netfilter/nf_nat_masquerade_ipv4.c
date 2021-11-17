@@ -193,7 +193,8 @@ nf_nat_masquerade_ipv4(struct sk_buff *skb, unsigned int hooknum,
 	nat->masq_index = out->ifindex;
 
 #if defined(CONFIG_BCM_KF_NETFILTER)
-	if (range->min_addr.ip != 0 /* nat_mode == full cone */
+	if (!(range->flags & NF_NAT_RANGE_PROTO_PSID) &&
+	    range->min_addr.ip != 0 /* nat_mode == full cone */
 	    && (nfct_help(ct) == NULL || nfct_help(ct)->helper == NULL)
 	    && nf_ct_protonum(ct) == IPPROTO_UDP) {
 		unsigned int ret;

@@ -79,6 +79,7 @@ void show_pte(struct mm_struct *mm, unsigned long addr)
 	printk("\n");
 }
 
+extern void dump_debug_lock_info(void);
 /*
  * The kernel tried to access some page that wasn't present.
  */
@@ -90,6 +91,8 @@ static void __do_kernel_fault(struct mm_struct *mm, unsigned long addr,
 	 */
 	if (fixup_exception(regs))
 		return;
+
+	dump_debug_lock_info();
 
 	/*
 	 * No handler, we'll have to terminate things with extreme prejudice.

@@ -1,4 +1,0 @@
-H add options to aplay to avoid xrun using arecord | aplay
-M Rewrite aplay/arecord tool and separate the experimental stuff
-M Write a *good* mixer
-L Add support for OSS setups to alsactl

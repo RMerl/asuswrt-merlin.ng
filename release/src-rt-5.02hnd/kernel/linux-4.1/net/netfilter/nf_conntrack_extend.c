@@ -95,6 +95,12 @@ nf_ct_ext_create(struct nf_ct_ext **ext, enum nf_ct_ext_id id,
 	(*ext)->offset[id] = off;
 	(*ext)->len = len;
 
+#ifdef CATHY_DEBUG_NAT_EXT
+	if (id == NF_CT_EXT_HELPER) {
+		debug_log("%s: ext data %px id %d ret_ip %pS\n",
+			__FUNCTION__, (void *)(*ext) + off, id, (void *)_RET_IP_);
+	}
+#endif /* CATHY_DEBUG_NAT_EXT */
 	return (void *)(*ext) + off;
 }
 
@@ -146,6 +152,12 @@ void *__nf_ct_ext_add_length(struct nf_conn *ct, enum nf_ct_ext_id id,
 	new->offset[id] = newoff;
 	new->len = newlen;
 	memset((void *)new + newoff, 0, newlen - newoff);
+#ifdef CATHY_DEBUG_NAT_EXT
+	if (id == NF_CT_EXT_HELPER) {
+		debug_log("%s: ext data %px id %d ret_ip %pS\n",
+			__FUNCTION__, (void *)new + newoff, id, (void *)_RET_IP_);
+	}
+#endif /* CATHY_DEBUG_NAT_EXT */
 	return (void *)new + newoff;
 }
 EXPORT_SYMBOL(__nf_ct_ext_add_length);

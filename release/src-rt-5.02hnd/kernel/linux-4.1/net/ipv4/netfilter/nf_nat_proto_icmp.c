@@ -20,9 +20,22 @@
 static bool
 icmp_in_range(const struct nf_conntrack_tuple *tuple,
 	      enum nf_nat_manip_type maniptype,
-	      const union nf_conntrack_man_proto *min,
-	      const union nf_conntrack_man_proto *max)
+	      const struct nf_nat_range *range)
 {
+	const union nf_conntrack_man_proto *min = &range->min_proto;
+	const union nf_conntrack_man_proto *max = &range->max_proto;
+
+	if (range->flags & NF_NAT_RANGE_PROTO_PSID) {
+		unsigned int a = range->min_proto.psid.offset;
+		unsigned int k = range->min_proto.psid.length;
+		unsigned int m = 16 - a - k;
+		u_int16_t psid = range->max_proto.psid.id;
+		u_int16_t id = ntohs(tuple->src.u.icmp.id);
+
+		return (a == 0 || (id >> (16 - a))) &&
+		       !(((id >> m) ^ psid) & ~(~0U << k));
+	}
+
 	return ntohs(tuple->src.u.icmp.id) >= ntohs(min->icmp.id) &&
 	       ntohs(tuple->src.u.icmp.id) <= ntohs(max->icmp.id);
 }
@@ -37,6 +50,26 @@ icmp_unique_tuple(const struct nf_nat_l3proto *l3proto,
 	static u_int16_t id;
 	unsigned int range_size;
 	unsigned int i;
+
+	if (range->flags & NF_NAT_RANGE_PROTO_PSID) {
+		unsigned int a = range->min_proto.psid.offset;
+		unsigned int k = range->min_proto.psid.length;
+		unsigned int m = 16 - a - k;
+		u_int16_t psid = range->max_proto.psid.id << m;
+
+		range_size = (1 << (16 - k)) - (!!a << m);
+		if (range_size == 0)
+			return;
+
+		for (i = 0; ; ++id) {
+			unsigned int n = id % range_size;
+			tuple->src.u.icmp.id = htons((((n >> m) + !!a) << (16 - a)) |
+						     psid | (n & ~(~0U << m)));
+			if (++i >= range_size || !nf_nat_used_tuple(tuple, ct))
+				return;
+		}
+		return;
+	};
 
 	range_size = ntohs(range->max_proto.icmp.id) -
 		     ntohs(range->min_proto.icmp.id) + 1;

@@ -1,1 +1,0 @@
---full_set --max_chains 4 --txbf --max_bandwidth 80 --include RT-AC88U --include RT-AC5300 --include BCM4709_BCM4366 --include BCM4908_BCM4366E --ccrev "all/0" --1024_qam

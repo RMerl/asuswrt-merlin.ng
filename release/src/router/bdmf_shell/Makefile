@@ -27,8 +27,13 @@ build:
 	@echo "skipping $@ (not configured)"
 endif
 
+ifneq ($(wildcard ./prebuilt/$(EXE)),)
+$(EXE):
+	@-cp -f ./prebuilt/$@ .
+else
 $(EXE): $(OBJS)
 	$(CC) -o $@ $(OBJS) $(LIBS)
+endif
 
 clean: generic_clean
 	rm -f $(INSTALL_DIR)/bin/$(EXE)

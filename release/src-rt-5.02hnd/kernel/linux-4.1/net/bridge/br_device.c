@@ -166,6 +166,7 @@ netdev_tx_t br_dev_xmit(struct sk_buff *skb, struct net_device *dev)
 		if (skb == NULL) {
 			return NETDEV_TX_OK;
 		}
+		skb_reset_network_header(skb);
 		blog_unlock();
 		/* For broadstream iqos cb function */
 		if (br_fwdcb && (br_fwdcb(skb, dev) == PKT_DROP)) {

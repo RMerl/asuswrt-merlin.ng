@@ -162,9 +162,14 @@ mkjffs2:
 	$(MAKE) -C $(JFFS2_DIR)
 	mv jffs2/mkfs.jffs2 .
 
+ifneq ($(wildcard ./prebuilt/cmplzma),)
+build_cmplzma: mklzma_cmd
+	cp -f ./prebuilt/cmplzma .
+else
 build_cmplzma: mklzma_cmd cmplzma.cpp
 	g++ $(CFLAGS) -c cmplzma.cpp
 	g++  -o cmplzma cmplzma.o -lm
+endif
 
 untar_lz4hc: 
 	if [ ! -e $(LZ4_DIR) ]; then \

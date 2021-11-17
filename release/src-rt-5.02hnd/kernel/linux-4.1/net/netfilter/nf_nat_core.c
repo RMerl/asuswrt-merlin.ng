@@ -30,6 +30,130 @@
 #include <net/netfilter/nf_conntrack_zones.h>
 #include <linux/netfilter/nf_nat.h>
 
+#ifdef CATHY_DEBUG_LOG
+#define MAX_LOG_IDX (512)
+#define LOG_LINE_LEN (128)
+
+static char *debug_log_buf = NULL;
+static atomic_t log_idx = ATOMIC_INIT(0);
+static int stop_log = 0;
+static int log_printed = 0;
+static int cathy_test = 0;
+
+#define NEXT_LOG_IDX(idx) ((idx) == (MAX_LOG_IDX - 1) ? 0 : ((idx) + 1))
+#define PREV_LOG_IDX(idx) ((idx) == 0 ? (MAX_LOG_IDX - 1) : ((idx) - 1))
+
+static void
+debug_log_init(void)
+{
+	int sz;
+
+	if (debug_log_buf) {
+		printk("%s: debug_log_buf %px already existed!\n",
+			__FUNCTION__, debug_log_buf);
+	}
+
+	sz = LOG_LINE_LEN * MAX_LOG_IDX;
+	debug_log_buf = kmalloc(sz, GFP_KERNEL);
+	memset(debug_log_buf, 0, sz);
+	printk("%s: debug_log_buf %px cathy_test %px stop_log %px\n",
+		__FUNCTION__, debug_log_buf, &cathy_test, &stop_log);
+}
+
+static void
+debug_log_deinit(void)
+{
+	void *buf;
+
+	if (!debug_log_buf) {
+		printk("%s: debug_log_buf already being freed!\n",
+			__FUNCTION__);
+	}
+
+	buf = (void *)debug_log_buf;
+	debug_log_buf = NULL;
+	kfree(buf);
+}
+
+static void
+print_debug_log(void)
+{
+	int idx;
+	int i;
+	char *buf;
+
+	if (!debug_log_buf || log_printed)
+		return;
+
+	log_printed = 1;
+	stop_log = 1;
+	printk("%s: === log_idx %d ===\n", __FUNCTION__,  atomic_read(&log_idx));
+	for (i = 0, idx = atomic_read(&log_idx); i < MAX_LOG_IDX;
+		i++, idx = NEXT_LOG_IDX(idx)) {
+		buf = (char *)(debug_log_buf + (idx * LOG_LINE_LEN));
+		printk("%s", buf);
+	}
+	printk("%s: === end ===\n", __FUNCTION__);
+}
+
+void
+cdebug_log(const char *fmt, ...)
+{
+	char *buf;
+	int idx = atomic_read(&log_idx);
+	int next_idx = NEXT_LOG_IDX(idx);
+	va_list args;
+
+	if (cathy_test == 1) {
+		print_debug_log();
+		cathy_test = 0;
+	}
+
+	if (!debug_log_buf || stop_log)
+		return;
+
+	atomic_set(&log_idx, next_idx);
+
+	buf = debug_log_buf + (idx * LOG_LINE_LEN);
+	va_start(args, fmt);
+	vsnprintf(buf, LOG_LINE_LEN, fmt, args);
+	va_end(args);
+}
+EXPORT_SYMBOL(cdebug_log);
+#endif /* CATHY_DEBUG_LOG */
+
+#ifdef CATHY_DEBUG_NAT_EXT
+static void
+__show_hnode(bool print2mem, const char *str, struct hlist_node *n)
+{
+#ifdef CATHY_DEBUG_LOG
+	if (stop_log && print2mem)
+		return;
+
+	if (!virt_addr_valid(n)) {
+		debug_log2(print2mem, "%4d  %s: n (v 0 %px)\n",
+			atomic_read(&log_idx), str, n);
+	} else {
+		debug_log2(print2mem, "%4d  %s: n (v 1 %px) next %px prev (v %d %px %lx)\n",
+			atomic_read(&log_idx), str, n, n->next,
+			virt_addr_valid(n->pprev), n->pprev,
+			virt_addr_valid(n->pprev) ? *(unsigned long *)(n->pprev) : 0);
+	}
+#else
+	if (!virt_addr_valid(n)) {
+		debug_log2(print2mem, "%s: n (v 0 %px)\n", str, n);
+	} else {
+		debug_log2(print2mem, "%s: n (v 1 %px) next %px prev (v %d %px %lx)\n",
+			str, n, n->next, virt_addr_valid(n->pprev), n->pprev,
+			virt_addr_valid(n->pprev) ? *(unsigned long *)(n->pprev) : 0);
+	}
+#endif /* CATHY_DEBUG_LOG */
+}
+#define show_hnode(str, n)		__show_hnode(true, (str), (n))
+#define show_hnode2(str, n)		__show_hnode(false, (str), (n))
+#endif /* CATHY_DEBUG_NAT_EXT */
+
+
 static DEFINE_SPINLOCK(nf_nat_lock);
 
 static DEFINE_MUTEX(nf_nat_proto_mutex);
@@ -163,9 +287,11 @@ static int in_range(const struct nf_nat_l3proto *l3proto,
 	    !l3proto->in_range(tuple, range))
 		return 0;
 
+	if (range->flags & NF_NAT_RANGE_PROTO_PSID)
+		return l4proto->in_range(tuple, NF_NAT_MANIP_SRC, range);
+
 	if (!(range->flags & NF_NAT_RANGE_PROTO_SPECIFIED) ||
-	    l4proto->in_range(tuple, NF_NAT_MANIP_SRC,
-			      &range->min_proto, &range->max_proto))
+	    l4proto->in_range(tuple, NF_NAT_MANIP_SRC, range))
 		return 1;
 
 	return 0;
@@ -188,7 +314,7 @@ static noinline void dump_pkt_nat(void *data, int len)
 {
 	unsigned int ii;
 
-	printk("data %p len %d ", data, len);
+	printk("data %px len %d ", data, len);
 	for (ii = 0; ii < len; ii++) {
 		if (!(ii & 0xf))
 			printk("\n");
@@ -205,7 +331,7 @@ noinline void print_nat_table_by_hash(struct net *net, unsigned int h)
 	struct nf_conn *ct;
 	int loop = 0;
 
-	printk("%s: h %d htable sz %d init_net %p net %p ext tot_size %d\n",
+	printk("%s: h %d htable sz %d init_net %px net %px ext tot_size %d\n",
 		__FUNCTION__, h, net->ct.nat_htable_size, &init_net, net, tot_size);
 
 	/* first is the first nat (address of bysource in nat is same as nat's address) */
@@ -239,6 +365,8 @@ noinline void print_nat_table_by_hash(struct net *net, unsigned int h)
 			printk("%s %d: invalid nat %p\n", __FUNCTION__, __LINE__, nat);
 		}
 		loop++;
+		if (loop >= 3)
+			break;
 		printk("%s %d: next loop %d\n", __FUNCTION__, __LINE__, loop);
 	}
 }
@@ -266,21 +394,25 @@ find_appropriate_src(struct net *net, u16 zone,
 		if (!virt_addr_valid(nat) || !virt_addr_valid(nat->ct)) {
 			struct hlist_head *head;
 
-			printk("%s %d: loop_cnt %d h %d htable sz %d init_net %p net %p nat %p prev_nat %p\n",
+			printk("%s %d: loop_cnt %d h %d htable sz %d init_net %px net %px nat %px prev_nat %p\n",
 				__FUNCTION__, __LINE__, loop_cnt, h, net->ct.nat_htable_size,
 				&init_net, net, nat, prev_nat);
 
+			if (h > 4)
+				dump_pkt_nat(&net->ct.nat_bysource[h-4], 64);
+			else
+				dump_pkt_nat(&net->ct.nat_bysource[0], 64);
+
+#ifdef CATHY_DEBUG_LOG
+			print_debug_log();
+#endif /* CATHY_DEBUG_LOG */
+
 			print_nat_table_by_hash(net, h);
 
-			/* remove the abnormal node */
+			/* reinit the head */
 			spin_lock_bh(&nf_nat_lock);
 			head = &net->ct.nat_bysource[h];
-			if (prev_nat) {
-				rcu_assign_pointer(hlist_next_rcu(&prev_nat->bysource), NULL);
-			}
-			else {
-				rcu_assign_pointer(hlist_first_rcu(head), NULL);
-			}
+			rcu_assign_pointer(hlist_first_rcu(head), NULL);
 			spin_unlock_bh(&nf_nat_lock);
 
 			break;
@@ -408,6 +540,10 @@ get_unique_tuple(struct nf_conntrack_tuple *tuple,
 	 */
 	if (maniptype == NF_NAT_MANIP_SRC &&
 	    !(range->flags & NF_NAT_RANGE_PROTO_RANDOM_ALL)) {
+#ifdef CATHY_DEBUG_NAT_EXT
+		debug_log("%s: ct %px ext %px nfct_nat %px\n",
+			__FUNCTION__, ct, ct->ext, nfct_nat(ct));
+#endif /* CATHY_DEBUG_NAT_EXT */
 		/* try the original tuple first */
 		if (in_range(l3proto, l4proto, orig_tuple, range)) {
 			if (!nf_nat_used_tuple(orig_tuple, ct)) {
@@ -432,10 +568,12 @@ get_unique_tuple(struct nf_conntrack_tuple *tuple,
 
 	/* Only bother mapping if it's not already in range and unique */
 	if (!(range->flags & NF_NAT_RANGE_PROTO_RANDOM_ALL)) {
-		if (range->flags & NF_NAT_RANGE_PROTO_SPECIFIED) {
-			if (l4proto->in_range(tuple, maniptype,
-					      &range->min_proto,
-					      &range->max_proto) &&
+		if (range->flags & NF_NAT_RANGE_PROTO_PSID) {
+			if (l4proto->in_range(tuple, maniptype, range) &&
+			    !nf_nat_used_tuple(tuple, ct))
+				goto out;
+		} else if (range->flags & NF_NAT_RANGE_PROTO_SPECIFIED) {
+			if (l4proto->in_range(tuple, maniptype, range) &&
 			    (range->min_proto.all == range->max_proto.all ||
 			     !nf_nat_used_tuple(tuple, ct)))
 				goto out;
@@ -517,8 +655,23 @@ nf_nat_setup_info(struct nf_conn *ct,
 		/* nf_conntrack_alter_reply might re-allocate extension aera */
 		nat = nfct_nat(ct);
 		nat->ct = ct;
+#ifdef CATHY_DEBUG_NAT_EXT
+		debug_log("%s: srchash %x ct %px nat %px nat_bysource %px\n",
+			__FUNCTION__, srchash, ct, nat, &net->ct.nat_bysource[srchash]);
+		show_hnode("   n1", &nat->bysource);
+		show_hnode(" head", net->ct.nat_bysource[srchash].first);
+		if (nat->bysource.pprev != NULL &&
+			nat->bysource.pprev != LIST_POISON2) {
+			printk("%s bysource pprev maybe not correct ct %px nat %px\n",
+				__FUNCTION__, ct, nat);
+			show_hnode2("   n2", &nat->bysource);
+		}
+#endif /* CATHY_DEBUG_NAT_EXT */
 		hlist_add_head_rcu(&nat->bysource,
 				   &net->ct.nat_bysource[srchash]);
+#ifdef CATHY_DEBUG_NAT_EXT
+		show_hnode("   n2", &nat->bysource);
+#endif /* CATHY_DEBUG_NAT_EXT */
 		spin_unlock_bh(&nf_nat_lock);
 	}
 
@@ -637,6 +790,11 @@ static int nf_nat_proto_clean(struct nf_conn *ct, void *data)
 		return 1;
 
 	spin_lock_bh(&nf_nat_lock);
+#ifdef CATHY_DEBUG_NAT_EXT
+	debug_log("%s: ct %px nat %px\n",
+		__FUNCTION__, ct, nat);
+	show_hnode(" node", &nat->bysource);
+#endif /* CATHY_DEBUG_NAT_EXT */
 	hlist_del_rcu(&nat->bysource);
 	ct->status &= ~IPS_NAT_DONE_MASK;
 	nat->ct = NULL;
@@ -775,6 +933,11 @@ static void nf_nat_cleanup_conntrack(struct nf_conn *ct)
 	NF_CT_ASSERT(nat->ct->status & IPS_SRC_NAT_DONE);
 
 	spin_lock_bh(&nf_nat_lock);
+#ifdef CATHY_DEBUG_NAT_EXT
+	debug_log("%s: ct %px nat %px\n",
+		__FUNCTION__, ct, nat);
+	show_hnode(" node", &nat->bysource);
+#endif /* CATHY_DEBUG_NAT_EXT */
 	hlist_del_rcu(&nat->bysource);
 	spin_unlock_bh(&nf_nat_lock);
 }
@@ -789,7 +952,17 @@ static void nf_nat_move_storage(void *new, void *old)
 		return;
 
 	spin_lock_bh(&nf_nat_lock);
+#ifdef CATHY_DEBUG_NAT_EXT
+	debug_log("%s: ct %px old_nat %px\n",
+		__FUNCTION__, ct, old_nat);
+	show_hnode("  old", &old_nat->bysource);
+#endif /* CATHY_DEBUG_NAT_EXT */
 	hlist_replace_rcu(&old_nat->bysource, &new_nat->bysource);
+#ifdef CATHY_DEBUG_NAT_EXT
+	debug_log("%s: ct %px new_nat %px\n",
+		__FUNCTION__, ct, new_nat);
+	show_hnode("  new", &new_nat->bysource);
+#endif /* CATHY_DEBUG_NAT_EXT */
 	spin_unlock_bh(&nf_nat_lock);
 }
 
@@ -913,6 +1086,9 @@ static int __net_init nf_nat_net_init(struct net *net)
 	net->ct.nat_bysource = nf_ct_alloc_hashtable(&net->ct.nat_htable_size, 0);
 	if (!net->ct.nat_bysource)
 		return -ENOMEM;
+#ifdef CATHY_DEBUG_LOG
+	debug_log_init();
+#endif /* CATHY_DEBUG_LOG */
 	return 0;
 }
 
@@ -923,6 +1099,9 @@ static void __net_exit nf_nat_net_exit(struct net *net)
 	nf_ct_iterate_cleanup(net, nf_nat_proto_clean, &clean, 0, 0);
 	synchronize_rcu();
 	nf_ct_free_hashtable(net->ct.nat_bysource, net->ct.nat_htable_size);
+#ifdef CATHY_DEBUG_LOG
+	debug_log_deinit();
+#endif /* CATHY_DEBUG_LOG */
 }
 
 static struct pernet_operations nf_nat_net_ops = {

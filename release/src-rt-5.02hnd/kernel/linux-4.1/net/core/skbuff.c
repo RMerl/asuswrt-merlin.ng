@@ -1818,6 +1818,16 @@ struct sk_buff *skb_morph(struct sk_buff *dst, struct sk_buff *src)
 	recycle_hook = dst->recycle_hook;
 	recycle_context = dst->recycle_context;
 
+	if (unlikely((src->recycle_flags & SKB_DATA_RECYCLE) &&
+	   ((recycle_hook != src->recycle_hook) ||
+	    (recycle_context != src->recycle_context))))
+	{
+	    /* free the skb->head from src and reallocate from kernel 
+	     * if pskb_expand_head returns fail, unhandled error will be triggered.
+	     * so BUG_ON here. */
+	    BUG_ON(pskb_expand_head(src, 0, 0, GFP_ATOMIC));
+	}
+
 	skb = __skb_clone(dst, src);
 
 	dst->recycle_flags |= recycle_flags;

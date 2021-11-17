@@ -1,0 +1,105 @@
+EXE  = stress
+OBJS = stress.o stress_mem.o stress_cpu.o
+LIBS = -lpthread
+
+
+all install: $(EXE) generic_exe_install
+#	install -m 777 -d $(INSTALL_DIR)/opt/scripts
+#	install -m 755 scripts/stress-xdslupdown.sh $(INSTALL_DIR)/opt/scripts
+#	install -m 755 scripts/stress-proc.sh $(INSTALL_DIR)/opt/scripts
+#	install -m 755 scripts/stress-fs.sh $(INSTALL_DIR)/opt/scripts
+#	install -m 755 scripts/stress-fs-flist.txt $(INSTALL_DIR)/opt/scripts
+	install -m 777 -d $(INSTALL_DIR)/rom/rom/scripts
+	install -m 755 scripts/stress-xdslupdown.sh $(INSTALL_DIR)/rom/rom/scripts
+	install -m 755 scripts/stress-proc.sh $(INSTALL_DIR)/rom/rom/scripts
+	install -m 755 scripts/stress-fs.sh $(INSTALL_DIR)/rom/rom/scripts
+	install -m 755 scripts/stress-fs-flist.txt $(INSTALL_DIR)/rom/rom/scripts
+
+clean: generic_clean
+	rm -f $(INSTALL_DIR)/bin/$(EXE)
+#	rm -f $(INSTALL_DIR)/opt/scripts/stress-xdslupdown.sh
+#	rm -f $(INSTALL_DIR)/opt/scripts/stress-proc.sh
+#	rm -f $(INSTALL_DIR)/opt/scripts/stress-fs.sh
+#	rm -f $(INSTALL_DIR)/opt/scripts/stress-fs-flist.txt
+	rm -f $(INSTALL_DIR)/rom/rom/scripts/stress-xdslupdown.sh
+	rm -f $(INSTALL_DIR)/rom/rom/scripts/stress-proc.sh
+	rm -f $(INSTALL_DIR)/rom/rom/scripts/stress-fs.sh
+	rm -f $(INSTALL_DIR)/rom/rom/scripts/stress-fs-flist.txt
+
+binaryonly_dist_clean: clean generic_binaryonly_dist_clean
+	rm -f Makefile.fullsrc
+	rm -rf scripts
+
+
+#
+# Set our CommEngine directory (by splitting the pwd into two words
+# at /userspace and taking the first word only).
+# Then include the common defines under CommEngine.
+#
+CURR_DIR := $(shell pwd)
+BUILD_DIR:=$(HND_SRC)
+
+include $(BUILD_DIR)/make.common
+
+ifneq ($(strip $(BRCM_VOICE_SUPPORT)),)
+include $(BUILD_DIR)/make.voice
+endif
+
+
+
+#
+# Private apps and libs are allowed to include header files from the
+# private and public directories.
+#
+# WARNING: Do not modify this section unless you understand the
+# license implications of what you are doing.
+#
+ALLOWED_INCLUDE_PATHS := -I.\
+                         -I$(BUILD_DIR)/userspace/public/include  \
+                         -I$(BUILD_DIR)/userspace/public/include/$(OALDIR) \
+                         -I$(BUILD_DIR)/userspace/private/include  \
+                         -I$(BUILD_DIR)/userspace/private/include/$(OALDIR)
+
+
+
+#
+# Private apps and libs are allowed to link with libraries from the
+# private and public directories.
+#
+# WARNING: Do not modify this section unless you understand the
+# license implications of what you are doing.
+#
+ALLOWED_LIB_DIRS := /lib:/lib/private:/lib/public
+
+# treat all warnings as errors
+CUSTOM_CFLAGS += -Werror -Wfatal-errors
+
+
+#
+# Implicit rule will make the .c into a .o
+# Implicit rule is $(CC) -c $(CPPFLAGS) $(CFLAGS)
+# See Section 10.2 of Gnu Make manual
+# 
+ifneq ($(PREBUILT_BCMBIN),1)
+$(EXE): $(OBJS)
+	$(CC) -o $@ $(OBJS) -Wl,-rpath,$(CMS_LIB_RPATH) $(CMS_LIB_PATH) $(LIBS)
+else
+$(EXE): 
+	-cp -f $(TOP)/$(shell pwd | sed 's/\(.*router\/\)//')/$(PRBM_DIR)/$@ ./
+endif
+
+
+
+#
+# Include the rule for making dependency files.
+# The '-' in front of the second include suppresses
+# error messages when make cannot find the .d files.
+# It will just regenerate them.
+# See Section 4.14 of Gnu Make.
+#
+
+include $(BUILD_DIR)/make.deprules
+
+-include $(OBJS:.o=.d)
+
+

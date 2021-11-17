@@ -135,6 +135,7 @@ config BLOG_L2TP
 	  Say N unless you wish to debug l2TP in networking stack.
 
 if INET
+source "net/wireguard/Kconfig"
 source "net/ipv4/Kconfig"
 source "net/ipv6/Kconfig"
 source "net/netlabel/Kconfig"

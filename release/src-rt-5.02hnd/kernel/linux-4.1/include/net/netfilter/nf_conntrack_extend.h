@@ -7,6 +7,17 @@
 
 #define CATHY_DEBUG_NAT_EXT
 
+#define CATHY_DEBUG_LOG
+
+#ifdef CATHY_DEBUG_LOG
+extern void cdebug_log(const char *fmt, ...);
+#define debug_log(fmt, arg...)			cdebug_log(fmt, ##arg)
+#define debug_log2(print2mem, fmt, arg...)	((print2mem) ? cdebug_log(fmt, ##arg) : printk(fmt, ##arg))
+#else
+#define debug_log(fmt, arg...)			printk(fmt, ##arg)
+#define debug_log2(print2mem, fmt, arg...)	printk(fmt, ##arg)
+#endif /* CATHY_DEBUG_LOG */
+
 enum nf_ct_ext_id {
 	NF_CT_EXT_HELPER,
 #if defined(CONFIG_NF_NAT) || defined(CONFIG_NF_NAT_MODULE)
@@ -75,7 +86,14 @@ static inline void *__nf_ct_ext_find(const struct nf_conn *ct, u8 id)
 {
 	if (!nf_ct_ext_exist(ct, id))
 		return NULL;
-
+#ifdef CATHY_DEBUG_NAT_EXT
+	if (id == NF_CT_EXT_HELPER) {
+		debug_log("%s: ct %px id %d ext %px data %px ret_ip %pS\n",
+			__FUNCTION__, ct, id, ct->ext,
+			(void *)ct->ext + ct->ext->offset[id],
+			(void *)_RET_IP_);
+	}
+#endif /* CATHY_DEBUG_NAT_EXT */
 	return (void *)ct->ext + ct->ext->offset[id];
 }
 #define nf_ct_ext_find(ext, id)	\

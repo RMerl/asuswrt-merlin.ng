@@ -3730,7 +3730,7 @@ define RouterOptions
 		sed -i "/RTCONFIG_GAME_MODE/d" $(1); \
 		echo "RTCONFIG_GAME_MODE=y" >>$(1); \
 	fi; \
-	if [ "$(WIREGUARD)" = "y" ]; then \
+	if [ "$(TEMPOWIREGUARD)" = "y" ]; then \
 		sed -i "/RTCONFIG_WIREGUARD/d" $(1); \
 		echo "RTCONFIG_WIREGUARD=y" >>$(1); \
 	fi; \

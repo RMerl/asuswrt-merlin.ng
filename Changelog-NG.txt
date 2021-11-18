@@ -6,8 +6,8 @@ Asuswrt-Merlin 386/NG Changelog
          as the RT-AX86U).
   - NEW: Added support for the RT-AC68_V4.
   - NEW: Added wireguard kernel module + userspace tool to
-         HMD models.
-  - UPDATED: Merged with GPL 386_45581 (not all models supported
+         HND models.
+  - UPDATED: Merged with GPL 386_45958 (not all models supported
              yet).
   - UPDATED: wsdd2 to 1.8.6, and rewrote Asuswrt patches for it.
   - UPDATED: curl to 7.79.1.

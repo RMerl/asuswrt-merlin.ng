@@ -3389,7 +3389,8 @@ wl_pktfwd_dnstream(wl_info_t * wl)
         wl_pktfwd_d3fwd_wlif_xmit(wl, d3fwd_wlif);
 
         if (runq->credits <= 0) {
-			wl->txq_txchain_dispatched = true; /* re-enter wl_thread loop */
+            wl->txq_txchain_dispatched = true; /* re-enter wl_thread loop */
+            WL_UNLOCK(wl);
             return;
         }
     }

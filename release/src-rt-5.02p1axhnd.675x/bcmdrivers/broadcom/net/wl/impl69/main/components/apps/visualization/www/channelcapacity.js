@@ -11,6 +11,7 @@
 
 var timers = [];
 var allchnls = [36,40,44,48,52,56,60,64,'.',100,104,108,112,116,120,124,128,132,136,140,144,'.',149,153,157,161,165];
+var allchnls6g = [1,5,9,13,17,21,25,29,33,37,41,45,49,53,57,61,65,69,73,77,81,85,89,93,97,101,105,109,113,117,121,125,129,133,137,141,145,149,153,157,161,165,169,173,177,181,185,189,193,197,201,205,209,213,217,221,225,229];
 var reftwogchnl20 = [1,2,3,4,5,6,7,8,9,10,11];
 var reftwogchnl40 = ['','',3,4,5,6,7,8,9,'',''];
 var adjacentchnlsxaxislbls = [];
@@ -145,6 +146,69 @@ function drawchnldistribution(chnldata, freqband, indx)
 	}
 	content += '<tr><td class="apnames"></td>'; // Add one empty row for the gap between table and the x axis labels
 	for (i = 0; i < allchnls.length; i++) { // Add the xaxis labels. i.e channel numbers
+		content += '<td class="chnls">'+allchnls[i]+'</td>';
+	}
+	content += '</tr>';
+	grcontent += '<tr><td class="apnames"></td></tr>';
+
+	grcontent += content;
+	grcontent += '</table>';
+	grcontent += '<div class="xaxislabel">Channels</div>';
+	$('#chnldistributiondiv').empty();
+	$('#chnldistributiondiv').css('height',height+'px');
+	$('#chnldistributiondiv').append(grcontent);
+
+	outer = [];
+	content = [];
+}
+
+function drawchnldistribution6g(chnldata, freqband, indx)
+{
+	var outer = [];
+	var content = [];
+	var grcontent = '<div class="chmaplegend"><font color="#C46618">C - Control Channel</font></br><font color="#396B98">E - Extension Channel</font>';
+	var height = 0;
+
+	grcontent += '<table class="chnldisttb">';
+	height = (chnldata[1][indx].XValue.length+3) * 35; // Calculate the height of the table
+
+	for (idx = 0; idx < chnldata[1][indx].XValue.length; idx++) { // For each adjacent AP
+		outer = chnldata[1][indx].XValue[idx];
+		content += '<tr>'; // For each AP add one row. i.e. tr in HTML
+		// Add one column and fill the SSID of the AP in that place
+		if (outer[0].IsCurrent == 0) // If it is not the AP on which visualization is running, use same color and font
+			content += '<td class="apnames">'+outer[0].ssid+'</td>';
+		else // If it is not the AP on which visualization is running, use different color and font
+			content += '<td class="apnames currentap">'+outer[0].ssid+'</td>';
+		for (i = 0; i < allchnls6g.length; i++) { // For all the channels
+			var found = 0;
+			if (outer[0].ctrlch == allchnls6g[i]) { // For control channel add the column
+				if (outer[0].IsCurrent == 0) // If it is not the AP on which visualization is running
+					content += '<td class="apchnlbox ctrl">C</td>';
+				else
+					content += '<td class="apchnlbox currentctrl">C</td>';
+				found = 1;
+			} else { // For extension channels add the columns
+				for (eidx = 0; eidx < outer[0].extch.length; eidx++) { // For all extension channels
+					if (outer[0].extch[eidx] == allchnls6g[i]) {
+						if (outer[0].IsCurrent == 0) // If it is not the AP on which visualization is running
+							content += '<td class="apchnlbox ext">E</td>';
+						else
+							content += '<td class="apchnlbox currentext">E</td>';
+						found = 1;
+						break;
+					}
+				}
+			}
+			if (found == 0) // If there is no control and extension channel for that channel number add empty column
+			{
+				content += '<td class="apchnlbox empty"></td>';
+			}
+		}
+		content += '</tr>'; //End of one AP
+	}
+	content += '<tr><td class="apnames"></td>'; // Add one empty row for the gap between table and the x axis labels
+	for (i = 0; i < allchnls6g.length; i++) { // Add the xaxis labels. i.e channel numbers
 		content += '<td class="chnls">'+allchnls[i]+'</td>';
 	}
 	content += '</tr>';
@@ -663,7 +727,10 @@ function drawchnlcapacitygraphs(chnldata, selectedBand) {
 		if (chnldata[1][indx].Heading == 'ChannelMap') { // If it is channel Map
 			if (selectedBand.band == 2) // No channel map graph in 2.4 GHz band
 				continue;
+			if (selectedBand.band == 5)
 			drawchnldistribution(chnldata, selectedBand.band, indx);
+			else if (selectedBand.band == 6)
+			drawchnldistribution6g(chnldata, selectedBand.band, indx);
 			continue;
 		} else if (chnldata[1][indx].CHStatType == 'AdjacentChannels') { // If it is adjacent channel graphs
 			drawadjacentchannelsgraphs(chnldata, selectedBand.band, indx);

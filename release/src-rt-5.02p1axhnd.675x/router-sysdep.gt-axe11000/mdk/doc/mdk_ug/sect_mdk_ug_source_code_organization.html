@@ -1,0 +1,89 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<title>Broadcom MDK Programmer's Reference, mdk_ug_source_code_organization</title>
+
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+
+<style type="text/css">
+<!--
+body {
+	font-family: verdana, arial, helvetica, sans-serif;
+}
+pre.code {
+        background: #eaeaea;
+        color: black;
+        width: auto;
+        margin-left: 0em;
+        margin-right: 1em;
+        border: solid 1px black;
+        white-space: pre;
+        padding: 4px;
+        font-family: courier new, courier, monospace;
+        font-weight: normal;
+        font-size: 80%;
+}
+tt {
+        font-family: courier new, courier, monospace;
+}
+a:link, a:visited {
+        text-decoration: none;
+}
+-->
+</style>
+</head>
+
+<body bgcolor="#ffffff">
+<table><tr><td width="20">&nbsp;</td><td width="700">
+    <h2><a href="index.html">Broadcom MDK Programmer's Reference</a></h2>
+    <h2>3.  Source Code Organization
+</h2>
+<p>The CDK, BMD and PHY libraries are organized 
+into a modular structure that separates chip-specific source files
+from the core libraries. With this structure, support for a new chip
+can be added without modifying any existing source files. Furthermore
+it significantly reduces compilation time as you only need to compile
+source files that are relevant to a specific project.
+<a name="mdk_ug_common_pkg_infrastructure"></a>
+<h3>3.1.   Common Package Infrastructure</h3>
+<p>Each of the CDK, BMD and PHY libraries implement a similar framework
+for package distribution and installation.
+<p>Within each library, packages reside in a directory named PKG and the
+perl-based package installation tools reside in the tools directory,
+e.g. for the BMD those directories would be $MDK/bmd/PKG and
+$MDK/bmd/tools.
+<p>All packages must include a PKGINFO file, which carries information
+about package version and dependencies. A typical PKGINFO file looks
+like this:
+<pre class="code">
+VERSION:2.1
+NAME:bcm56502
+ARCH:xgs
+DEPEND:bcm56504
+</pre>
+Before a library can be compiled, the available packages must be
+installed into the primary source tree. Most package files will be
+copied to the a directory named pkgsrc, while some package stub files
+are combined into a single source file, typically in the include
+directory or the sym directory.
+<p>A library's main makefile includes targets for installing and removing
+packages, and the main make target will ensure that packages are
+installed before the library is compiled. After all package files have
+been installed, the package installer will create the file
+pkgsrc/installed-chips which contains names and versions of currently
+installed packages. This file is used to check if packages need to be
+reinstalled, e.g. if a package is updated or a new package is added to
+the PKG directory.
+<p><a name="mdk_ug_pkg_versioning"></a>
+<h3>3.2.   Package Versioning</h3>
+<p>The MDK libraries use a major and minor version number X.Y and package
+compatibility is only guaranteed for base libraries and packages with
+the same version number.
+<p>As a general rule, the package installer will refuse to install
+mismatching package versions, however patch releases with version
+numbers X.Y.Z should be compatible X.Y package versions and will be
+accepted by the installer.
+<p>
+</table>
+</body>
+</html>

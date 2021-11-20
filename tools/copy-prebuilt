@@ -8,6 +8,7 @@
 #        REPO will contain the location of your local repository
 
 BUILD_NAME=$1
+BUILD_NAME_LC=$(echo $BUILD_NAME | tr "[:upper:]" "[:lower:]")
 REPO=/home/merlin/amng
 
 echo "*** Copying platform-specific files..."
@@ -21,20 +22,8 @@ then
 	cp release/src/router/wl_arm_7114/prebuilt/* $REPO/release/src/router/wl_arm_7114/prebuilt/$BUILD_NAME/
 	cp release/src/router/envram_bin/envram$ARCH$SDK/* $REPO/release/src/router/envram_bin/envram$ARCH$SDK/
 	cp release/src-rt-7.14.114.x/src/wl/exe/prebuilt/* $REPO/release/src-rt-7.14.114.x/src/wl/exe/prebuilt/$BUILD_NAME/
-	cp -a release/src/router/tuxera/broadcom$ARCH$SDK/* $REPO/release/src/router/tuxera/broadcom$ARCH$SDK/
 
-elif [ "$BUILD_NAME" == "RT-AC3200" ]
-then
-	SDK="_7"
-	ARCH="_arm"
-	HND=""
-
-	cp release/src/router/ctf_arm/bcm7/* $REPO/release/src/router/ctf_arm/bcm7/
-	cp release/src/router/wl_arm_7/prebuilt/* $REPO/release/src/router/wl_arm_7/prebuilt/
-	cp release/src-rt-7.x.main/src/wl/exe/prebuilt/* $REPO/release/src-rt-7.x.main/src/wl/exe/prebuilt/
-	cp -a release/src/router/tuxera/broadcom$ARCH$SDK/* $REPO/release/src/router/tuxera/broadcom$ARCH$SDK/
-
-elif [ "$BUILD_NAME" == "RT-AC56U" ] || [ "$BUILD_NAME" == "RT-AC68U" ] || [ "$BUILD_NAME" == "RT-AC87U" ]
+elif [ "$BUILD_NAME" == "RT-AC68U" ]
 then
 	SDK=""
 	ARCH="_arm"
@@ -92,7 +81,6 @@ then
 	cp release/src/router/fcctl/prebuilt/* $REPO/release/src/router/fcctl/prebuilt/
 	cp release/src/router/tmctl_lib/prebuilt/* $REPO/release/src/router/tmctl_lib/prebuilt/
 	cp release/src/router/bridgeutil/prebuilt/* $REPO/release/src/router/bridgeutil/prebuilt/
-	cp -a release/src/router/tuxera/broadcom$ARCH$HND/* $REPO/release/src/router/tuxera/broadcom$ARCH$HND/
 
 elif [ "$BUILD_NAME" == "RT-AX88U" ] || [ "$BUILD_NAME" == "RT-AX92U" ] || [ "$BUILD_NAME" == "GT-AX11000" ]
 then
@@ -102,7 +90,9 @@ then
 
 	cp release/src-rt-5.02axhnd/hostTools/prebuilt/addvtoken $REPO/release/src-rt-5.02axhnd/hostTools/prebuilt/$BUILD_NAME/
 	cp release/src-rt-5.02axhnd/wl/exe/prebuilt/* $REPO/release/src-rt-5.02axhnd/wl/exe/prebuilt/
-	cp -a release/src/router/tuxera/broadcom_arm_ax/* $REPO/release/src/router/tuxera/broadcom_arm_ax/
+	cp release/src-rt-5.02axhnd/hostTools/prebuilt/cmplzma $REPO/release/src-rt-5.02axhnd/hostTools/prebuilt/
+	cp release/src-rt-5.02axhnd/hostTools/prebuilt/lzmacmd $REPO/release/src-rt-5.02axhnd/hostTools/prebuilt/
+	rsync -a --del release/src-rt-5.02axhnd/router-sysdep/ $REPO/release/src-rt-5.02axhnd/router-sysdep.$BUILD_NAME_LC
 
 elif [ "$BUILD_NAME" == "RT-AX56U" ] || [ "$BUILD_NAME" == "RT-AX58U" ]
 then
@@ -112,9 +102,11 @@ then
 
 	cp release/src-rt-5.02axhnd.675x/wl/exe/prebuilt/* $REPO/release/src-rt-5.02axhnd.675x/wl/exe/prebuilt/
 	cp release/src-rt-5.02axhnd.675x/hostTools/prebuilt/addvtoken $REPO/release/src-rt-5.02axhnd.675x/hostTools/prebuilt/$BUILD_NAME/
-	cp -a release/src/router/tuxera/broadcom_arm_ax_6750/* $REPO/release/src/router/tuxera/broadcom_arm_ax_6750/
+	cp release/src-rt-5.02axhnd.675x/hostTools/prebuilt/cmplzma $REPO/release/src-rt-5.02axhnd.675x/hostTools/prebuilt/
+	cp release/src-rt-5.02axhnd.675x/hostTools/prebuilt/lzmacmd $REPO/release/src-rt-5.02axhnd.675x/hostTools/prebuilt/
+	rsync -a --del release/src-rt-5.02axhnd.675x/router-sysdep/ $REPO/release/src-rt-5.02axhnd.675x/router-sysdep.$BUILD_NAME_LC
 
-elif [ "$BUILD_NAME" == "RT-AX86U" ] || [ "$BUILD_NAME" == "RT-AX68U" ]
+elif [ "$BUILD_NAME" == "RT-AX86U" ] || [ "$BUILD_NAME" == "RT-AX68U" ] || [ "$BUILD_NAME" == "RT-AC68U_V4" ] || [ "$BUILD_NAME" == "GT-AXE11000" ]
 then
 	SDK="_axhnd"
 	ARCH="_arm"
@@ -123,8 +115,7 @@ then
 	cp release/src-rt-5.02p1axhnd.675x/hostTools/prebuilt/addvtoken $REPO/release/src-rt-5.02p1axhnd.675x/hostTools/prebuilt/$BUILD_NAME/
 	cp release/src-rt-5.02p1axhnd.675x/hostTools/prebuilt/cmplzma $REPO/release/src-rt-5.02p1axhnd.675x/hostTools/prebuilt/
 	cp release/src-rt-5.02p1axhnd.675x/hostTools/prebuilt/lzmacmd $REPO/release/src-rt-5.02p1axhnd.675x/hostTools/prebuilt/
-	cp -a release/src/router/tuxera/broadcom_arm_ax/* $REPO/release/src/router/tuxera/broadcom_arm_ax/
-
+	rsync -a --del release/src-rt-5.02p1axhnd.675x/router-sysdep/ $REPO/release/src-rt-5.02p1axhnd.675x/router-sysdep.$BUILD_NAME_LC
 else
 	echo "Unrecognized BUILD_NAME!"
 	exit
@@ -134,10 +125,11 @@ fi
 # Common to all
 
 echo "*** Copying common files..."
+cp -ar release/src/router/tuxera/broadcom* $REPO/release/src/router/tuxera/
 cp release/src/router/lighttpd-1.4.39/prebuild/* $REPO/release/src/router/lighttpd-1.4.39/prebuild/$BUILD_NAME/
-cp release/src/router/httpd/prebuild/* $REPO/release/src/router/httpd/prebuild/$BUILD_NAME/
-cp release/src/router/rc/prebuild/* $REPO/release/src/router/rc/prebuild/$BUILD_NAME/
-cp release/src/router/shared/prebuild/* $REPO/release/src/router/shared/prebuild/$BUILD_NAME/
+rsync -a --del release/src/router/httpd/prebuild/ $REPO/release/src/router/httpd/prebuild/$BUILD_NAME
+rsync -a --del release/src/router/rc/prebuild/ $REPO/release/src/router/rc/prebuild/$BUILD_NAME
+rsync -a --del release/src/router/shared/prebuild/ $REPO/release/src/router/shared/prebuild/$BUILD_NAME
 cp release/src/router/sw-hw-auth/prebuild/* $REPO/release/src/router/sw-hw-auth/prebuild/$BUILD_NAME/
 cp release/src/router/bwdpi_source/asus/prebuild/* $REPO/release/src/router/bwdpi_source/asus/prebuild/$BUILD_NAME/
 cp release/src/router/bwdpi_source/asus_sql/prebuild/* $REPO/release/src/router/bwdpi_source/asus_sql/prebuild/$BUILD_NAME/
@@ -181,7 +173,7 @@ cp release/src/router/eventd/prebuilt/* $REPO/release/src/router/eventd/prebuilt
 
 echo "*** Copying exceptions and special cases..."
 
-# HND exceptions
+# Pre-HND
 if [ "$HND" == "" ]
 then
 	cp release/src/router/et$ARCH$SDK/prebuilt/* $REPO/release/src/router/et$ARCH$SDK/prebuilt/
@@ -191,7 +183,7 @@ then
 fi
 
 # On AX these are in router-sysdep
-if [ "$BUILD_NAME" != "RT-AX88U" ] && [ "$BUILD_NAME" != "RT-AX92U" ] && [ "$BUILD_NAME" != "RT-AX56U" ] && [ "$BUILD_NAME" != "RT-AX58U" ] && [ "$BUILD_NAME" != "RT-AX86U" ] && [ "$BUILD_NAME" == "GT-AX11000" ] && [ "$BUILD_NAME" == "RT-AX68U" ]
+if [ "$HND" == "" ] || [ "$HND" == "_hnd" ]
 then
 	cp release/src/router/acsd$ARCH$SDK/prebuilt/* $REPO/release/src/router/acsd$ARCH$SDK/prebuilt/
 	cp release/src/router/eapd$ARCH$SDK/linux/prebuilt/* $REPO/release/src/router/eapd$ARCH$SDK/linux/prebuilt/
@@ -209,7 +201,7 @@ if [ "$BUILD_NAME" == "RT-AC88U" ]
 then
 	cp release/src/router/rtl_bin/prebuilt/* $REPO/release/src/router/rtl_bin/prebuilt/
 fi
-if [ "$BUILD_NAME" == "GT-AC2900" ] || [ "$BUILD_NAME" == "GT-AX11000" ]
+if [ "$BUILD_NAME" == "GT-AC2900" ] || [ "$BUILD_NAME" == "GT-AX11000" ] || [ "$BUILD_NAME" == "GT-AXE11000" ]
 then
         cp release/src/router/aura_sw/prebuild/* $REPO/release/src/router/aura_sw/prebuild/$BUILD_NAME/
 fi
@@ -217,12 +209,10 @@ fi
 # Anything newer than SDK6
 if [ "$SDK" != "" ]
 then
-		cp release/src/router/bsd/prebuilt/* $REPO/release/src/router/bsd/prebuilt/$BUILD_NAME/
-		cp release/src/router/dhd/prebuilt/* $REPO/release/src/router/dhd/prebuilt/$BUILD_NAME/
+	cp release/src/router/bsd/prebuilt/* $REPO/release/src/router/bsd/prebuilt/$BUILD_NAME/
+	cp release/src/router/dhd/prebuilt/* $REPO/release/src/router/dhd/prebuilt/$BUILD_NAME/
 fi
 
 # Cleanup
-rm $REPO/release/src/router/rc/prebuild/$BUILD_NAME/init-broadcom.o
-rm $REPO/release/src/router/shared/prebuild/$BUILD_NAME/api-broadcom.o
 rm $REPO/release/src/router/bwdpi_source/prebuild/$BUILD_NAME/*.pem
 rm $REPO/release/src/router/bwdpi_source/prebuild/$BUILD_NAME/*.enc

@@ -40,42 +40,40 @@
 /* Globals */
 static int nvram_fd = -1;
 static char *nvram_buf = NULL;
-static int lock_fd = -1;
-
 
 #define LOCK_FILE	"/var/nvram.lock"
 #define MAX_LOCK_WAIT	10
 
-static int _lock()
+static int _lock(int* fd)
 {
-	lock_fd = open(LOCK_FILE,O_WRONLY|O_CREAT,0644);
-	if (lock_fd < 0){
+	*fd = open(LOCK_FILE,O_WRONLY|O_CREAT,0644);
+	if (*fd < 0){
 		perror("open");
 		return 0;
 	}
-	if (flock(lock_fd, LOCK_EX) < 0) {
+	if (flock(*fd, LOCK_EX) < 0) {
 		perror("flock");
-		close(lock_fd);
+		close(*fd);
 		return 0;
 	}
 	return 1;
 }
 
-static int _unlock()
+static int _unlock(int* fd)
 {
-	if (close(lock_fd) < 0) {
+	if (close(*fd) < 0) {
 		perror("close");
 		return 0;
 	}
 	return 1;
 }
 
-static int _nvram_lock()
+static int _nvram_lock(int* fd)
 {
 	int i=0;
 
 	while (i++ < MAX_LOCK_WAIT) {
-		if(_lock())
+		if(_lock(fd))
 			return 1;
 		else
 			usleep(500000);
@@ -83,12 +81,12 @@ static int _nvram_lock()
 	return 0;
 }
 
-static int _nvram_unlock()
+static int _nvram_unlock(int* fd)
 {
 	int i=0;
 
 	while (i++ < MAX_LOCK_WAIT) {
-		if(_unlock())
+		if(_unlock(fd))
 			return 1;
 		else
 			usleep(500000);
@@ -162,13 +160,15 @@ nvram_get(const char *name)
 #ifdef RTCONFIG_JFFS_NVRAM
 	if (large_nvram(name)) {
 		char *ret = NULL;
+		int fd;
 
-		if (!_nvram_lock())
+		if (!_nvram_lock(&fd))
 			return NULL;
 
+		fdatasync(fd);
 		ret = jffs_nvram_get(name);
 
-		_nvram_unlock();
+		_nvram_unlock(&fd);
 
 		return ret;
 	}
@@ -176,13 +176,15 @@ nvram_get(const char *name)
 #ifdef RTCONFIG_VAR_NVRAM
 	if (is_var_nvram(name)) {
 		char *ret = NULL;
+		int fd;
 
-		if (!_nvram_lock())
+		if (!_nvram_lock(&fd))
 			return NULL;
 
+		fdatasync(fd);
 		ret = var_nvram_get(name);
 
-		_nvram_unlock();
+		_nvram_unlock(&fd);
 
 		return ret;
 	}
@@ -219,6 +221,7 @@ nvram_getall(char *buf, int count)
 #ifdef RTCONFIG_JFFS_NVRAM
 	int len;
 	char *name;
+	int fd;
 
 	if(count < MAX_NVRAM_SPACE)
 		return -1;
@@ -229,7 +232,7 @@ nvram_getall(char *buf, int count)
 		;
 	len = name - buf;
 
-	if (!_nvram_lock())
+	if (!_nvram_lock(&fd))
 		return -1;
 
 	len = jffs_nvram_getall(len, buf, count);
@@ -238,7 +241,7 @@ nvram_getall(char *buf, int count)
 	len += var_nvram_getall(buf + len, count - len);
 #endif
 
-	_nvram_unlock();
+	_nvram_unlock(&fd);
 
 	return len;
 #else
@@ -323,15 +326,13 @@ nvram_set(const char *name, const char *value)
 #ifdef RTCONFIG_JFFS_NVRAM
 	if (large_nvram(name)) {
 		int ret = 0;
-		if (!_nvram_lock()) {
-			ret = -1;
-			goto fail_set;
-		}
+		int fd;
+		if (!_nvram_lock(&fd))
+			return -1;
 
 		ret = jffs_nvram_set(name, value);
 
-fail_set:
-		_nvram_unlock();
+		_nvram_unlock(&fd);
 
 		return ret;
 	}
@@ -339,15 +340,13 @@ fail_set:
 #ifdef RTCONFIG_VAR_NVRAM
 	if (is_var_nvram(name)) {
 		int ret = 0;
-		if (!_nvram_lock()) {
-			ret = -1;
-			goto fail_var_set;
-		}
+		int fd;
+		if (!_nvram_lock(&fd))
+			return -1;
 
 		ret = var_nvram_set(name, value);
 
-fail_var_set:
-		_nvram_unlock();
+		_nvram_unlock(&fd);
 
 		return ret;
 	}
@@ -361,15 +360,13 @@ nvram_unset(const char *name)
 #ifdef RTCONFIG_VAR_NVRAM
 	if (is_var_nvram(name)) {
 		int ret = 0;
-		if (!_nvram_lock()) {
-			ret = -1;
-			goto fail_var_unset;
-		}
+		int fd;
+		if (!_nvram_lock(&fd))
+			return -1;
 
 		ret = var_nvram_unset(name);
 
-fail_var_unset:
-		_nvram_unlock();
+		_nvram_unlock(&fd);
 
 		return ret;
 	}

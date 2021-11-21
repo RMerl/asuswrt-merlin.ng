@@ -48,7 +48,7 @@
 #include <stdlib.h>
 #include <signal.h>
 
-#include "config.h"
+#include "../config.h"
 #include "../macros.h"
 
 #ifdef USE_IFACEWATCHER

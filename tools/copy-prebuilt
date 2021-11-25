@@ -216,3 +216,6 @@ fi
 # Cleanup
 rm $REPO/release/src/router/bwdpi_source/prebuild/$BUILD_NAME/*.pem
 rm $REPO/release/src/router/bwdpi_source/prebuild/$BUILD_NAME/*.enc
+rm $REPO/release/src/router/rc/prebuild/$BUILD_NAME/init-broadcom.o
+rm $REPO/release/src/router/shared/prebuild/$BUILD_NAME/api-broadcom.o
+

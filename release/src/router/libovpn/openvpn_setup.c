@@ -339,11 +339,21 @@ int ovpn_write_server_config(ovpn_sconf_t *sconf, int unit) {
 	// Proto
 	fprintf(fp, "proto %s\n", sconf->proto);
 	if (!strcmp(sconf->proto, "udp")) {
-		fprintf(fp, "proto udp4\n");
+#ifdef RTCONFIG_IPV6
+		if (ipv6_enabled())
+			fprintf(fp, "proto udp\n");
+		else
+#endif
+			fprintf(fp, "proto udp4\n");
 		fprintf(fp, "multihome\n");
 		fprintf(fp_client, "proto udp\n");
 	} else {
-		fprintf(fp, "proto tcp4\n");
+#ifdef RTCONFIG_IPV6
+		if (ipv6_enabled())
+			fprintf(fp, "proto tcp\n");
+		else
+#endif
+			fprintf(fp, "proto tcp4\n");
 		fprintf(fp_client, "proto tcp-client\n");
 	}
 
@@ -572,9 +582,19 @@ int ovpn_write_client_config(ovpn_cconf_t *cconf, int unit) {
 	fprintf(fp, "txqueuelen 1000\n");
 
 	if (!strcmp(cconf->proto, "udp"))
-		fprintf(fp, "proto udp4\n");
+#ifdef RTCONFIG_IPV6
+		if (ipv6_enabled())
+			fprintf(fp, "proto udp\n");
+		else
+#endif
+			fprintf(fp, "proto udp4\n");
 	else
-		fprintf(fp, "proto tcp4\n");
+#ifdef RTCONFIG_IPV6
+		if (ipv6_enabled())
+			fprintf(fp, "proto tcp\n");
+		else
+#endif
+			fprintf(fp, "proto tcp4\n");
 
 	fprintf(fp, "remote %s %d\n", cconf->addr, cconf->port);
 	if (cconf->auth_mode == OVPN_AUTH_STATIC) {

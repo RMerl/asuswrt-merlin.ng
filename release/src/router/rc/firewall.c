@@ -3376,6 +3376,9 @@ filter_setting(int wan_unit, char *lan_if, char *lan_ip, char *logaccept, char *
 		    ":IControls - [0:0]\n"
 #endif
 		    ":UPNP - [0:0]\n"
+#ifdef RTCONFIG_OPENVPN
+		    ":OVPN - [0:0]\n"
+#endif
 #ifdef RTCONFIG_PARENTALCTRL
 		    ":PControls - [0:0]\n"
 #endif
@@ -3676,6 +3679,9 @@ TRACE_PT("writing Parental Control\n");
 			fprintf(fp_ipv6, "-A INPUT -m state --state RELATED,ESTABLISHED -j %s\n", logaccept);
 			fprintf(fp_ipv6, "-A INPUT -i %s -m state --state NEW -j %s\n", lan_if, "ACCEPT");
 			fprintf(fp_ipv6, "-A INPUT -i %s -m state --state NEW -j %s\n", "lo", "ACCEPT");
+#ifdef RTCONFIG_OPENVPN
+			fprintf(fp_ipv6, "-A INPUT -m state --state NEW -j OVPN\n");
+#endif
 			fprintf(fp_ipv6, "-A INPUT -m state --state INVALID -j %s\n", logdrop);
 		}
 #endif
@@ -4450,6 +4456,10 @@ TRACE_PT("write wl filter\n");
 
 #ifdef RTCONFIG_OPENVPN
 	fprintf(fp, "-A FORWARD -m state --state NEW -j OVPN\n");
+#ifdef RTCONFIG_IPV6
+	if (ipv6_enabled())
+		fprintf(fp_ipv6, "-A FORWARD -m state --state NEW -j OVPN\n");
+#endif
 #endif
 	/* SECURITY chain */
 	/* Skip DMZ */
@@ -4708,6 +4718,9 @@ filter_setting2(char *lan_if, char *lan_ip, char *logaccept, char *logdrop)
 #ifdef RTCONFIG_PARENTALCTRL
 		    ":WGNPControls - [0:0]\n"
 		    ":PControls - [0:0]\n"
+#endif
+#ifdef RTCONFIG_OPENVPN
+		    ":OVPN - [0:0]\n"
 #endif
 		    ":ICMP_V6 - [0:0]\n"
 		    ":ICMP_V6_LOCAL - [0:0]\n"
@@ -4997,6 +5010,9 @@ TRACE_PT("writing Parental Control\n");
 			fprintf(fp_ipv6, "-A INPUT -m state --state RELATED,ESTABLISHED -j %s\n", logaccept);
 			fprintf(fp_ipv6, "-A INPUT -i %s -m state --state NEW -j %s\n", lan_if, "ACCEPT");
 			fprintf(fp_ipv6, "-A INPUT -i %s -m state --state NEW -j %s\n", "lo", "ACCEPT");
+#ifdef RTCONFIG_OPENVPN
+			fprintf(fp_ipv6, "-A INPUT -m state --state NEW -j OVPN\n");
+#endif
 			fprintf(fp_ipv6, "-A INPUT -m state --state INVALID -j %s\n", logdrop);
 		}
 #endif
@@ -5832,6 +5848,10 @@ TRACE_PT("write wl filter\n");
 
 #ifdef RTCONFIG_OPENVPN
 	fprintf(fp, "-A FORWARD -m state --state NEW -j OVPN\n");
+#ifdef RTCONFIG_IPV6
+	if (ipv6_enabled())
+		fprintf(fp_ipv6, "-A FORWARD -m state --state NEW -j OVPN\n");
+#endif
 #endif
 
 	/* SECURITY chain */

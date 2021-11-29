@@ -444,6 +444,10 @@ function applyRule(){
 				vpnSubnet.select();
 				return false;
 			}
+
+			if(!validator.isLegal_ipv6(document.form.vpn_server_sn6)) return false;
+			if(!validator.range(document.form.vpn_server_nm6, 64, 126)) return false;
+
 		}
 		else if(document.form.vpn_server_if.value == 'tap' && document.form.vpn_server_dhcp.value == '0'){
 			if(!validator.isLegalIP(document.form.vpn_server_r1, "")){		
@@ -1647,6 +1651,13 @@ function callback_upload_cert(_flag) {
 												<td>
 													<input type="text" maxlength="15" class="input_15_table" name="vpn_server_sn" onkeypress="return validator.isIPAddr(this, event);" value="<% nvram_get("vpn_server_sn"); %>" autocorrect="off" autocapitalize="off">
 													<input type="text" maxlength="15" class="input_15_table" name="vpn_server_nm" onkeypress="return validator.isIPAddr(this, event);" value="<% nvram_get("vpn_server_nm"); %>" autocorrect="off" autocapitalize="off">
+												</td>
+											</tr>
+											<tr id="server_snnm6">
+												<th>VPN IPv6 prefix/length</th>
+												<td>
+													<input type="text" maxlength="39" class="input_25_table" name="vpn_server_sn6" value="<% nvram_get("vpn_server_sn6"); %>" autocorrect="off" autocapitalize="off">
+													<input type="text" maxlength="4" class="input_6_table" name="vpn_server_nm6" value="<% nvram_get("vpn_server_nm6"); %>" autocorrect="off" autocapitalize="off">
 												</td>
 											</tr>
 											<tr id="server_dhcp">

@@ -151,6 +151,8 @@ typedef struct ovpn_sconf {
 //Server mode
 	char network[16];
 	char netmask[16];
+	char prefix_ipv6[40];
+	int  prefix_len_ipv6;
 	int dhcp;	//DHCP-proxy mode
 	char pool_start[16];	//--server-bridge gateway netmask pool-start-IP pool-end-IP
 	char pool_end[16];

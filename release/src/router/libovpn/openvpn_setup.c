@@ -305,7 +305,7 @@ int ovpn_write_server_config(ovpn_sconf_t *sconf, int unit) {
 #ifdef RTCONFIG_IPV6
 			if (ipv6_enabled()) {
 				fprintf(fp, "push \"route-ipv6 %s/%s\"\n", nvram_safe_get(ipv6_nvname("ipv6_prefix")), nvram_safe_get(ipv6_nvname("ipv6_prefix_length")));
-				fprintf(fp, "server-ipv6 %s/%d\n", "fd00:ac68::", 64);
+				fprintf(fp, "server-ipv6 %s/%d\n", sconf->prefix_ipv6, sconf->prefix_len_ipv6);
 			}
 #endif
 			fprintf(fp_client, "dev tun\n");

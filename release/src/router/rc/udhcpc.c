@@ -1878,6 +1878,12 @@ skip:
 	}
 #endif
 
+#ifdef RTCONFIG_NTPD
+	if (!nvram_get_int("ntp_ready")) {
+#endif
+		refresh_ntpc();
+	}
+
 #ifdef RTCONFIG_INADYN
 	notify_rc("restart_ddns");
 #endif

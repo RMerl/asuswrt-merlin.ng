@@ -25,6 +25,7 @@
 #include "md5.h"
 #include "base64.h"
 #include "plugin.h"
+#include <openssl/md5.h>
 
 #include <ctype.h>
 #include <stdio.h>
@@ -176,7 +177,7 @@ static void
 hmac_md5( const unsigned char *input, size_t ilen, const unsigned char *key, size_t klen, unsigned char output[MD5_DIGEST_BYTES] )
 {
 	int i;
-	md5_context ctx;
+	MD5_CTX ctx;
 	unsigned char k_ipad[64], k_opad[64], tk[MD5_DIGEST_BYTES];
 
 	/* if key is longer than 64 bytes reset it to key=MD5(key) */
@@ -199,18 +200,18 @@ hmac_md5( const unsigned char *input, size_t ilen, const unsigned char *key, siz
 	}
 
 	/* inner MD5 */
-	md5_starts( &ctx );
-	md5_update( &ctx, k_ipad, 64 );
-	md5_update( &ctx, input, ilen );
-	md5_finish( &ctx, output );
+	MD5_Init( &ctx );
+	MD5_Update( &ctx, k_ipad, 64 );
+	MD5_Update( &ctx, input, ilen );
+	MD5_Final( output, &ctx);
 
 	/* outter MD5 */
-	md5_starts( &ctx );
-	md5_update( &ctx, k_opad, 64 );
-	md5_update( &ctx, output, MD5_DIGEST_BYTES );
-	md5_finish( &ctx, output );
+	MD5_Init( &ctx );
+	MD5_Update( &ctx, k_opad, 64 );
+	MD5_Update( &ctx, output, MD5_DIGEST_BYTES );
+	MD5_Final( output, &ctx);
 
-	memset( &ctx, 0, sizeof( md5_context ) );
+	memset( &ctx, 0, sizeof( MD5_CTX ) );
 }
 
 #ifdef ASUSWRT

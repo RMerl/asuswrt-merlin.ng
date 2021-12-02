@@ -29,6 +29,8 @@ ifeq ($(CONFIG_BUZZZ_FUNC),y)
 subdir-ccflags-y += -O0 -fno-inline -finstrument-functions
 endif # CONFIG_BUZZZ_FUNC
 
+ifneq ($(wildcard $(WLSYSDIR)),)
+
 ifneq ($(wildcard $(WLCFGDIR)),)
 include $(WLCFGDIR)/$(WLSHARED)
 include $(WLCFGDIR)/wl.mk
@@ -76,6 +78,10 @@ EXTRA_CFLAGS += -DBCMDBG_MEM
 endif
 
 obj-$(CONFIG_HND) := hnd.o shared_ksyms.o
+
+else
+obj-$(CONFIG_HND) := prebuilt/hnd.o prebuilt/shared_ksyms.o
+endif
 
 ifeq ($(wildcard $(src)/$(SHARED)/bcmutils.c),)
 $(src)/$(SHARED)/bcmutils.o: $(src)/$(SHARED)/linux/bcmutils.o

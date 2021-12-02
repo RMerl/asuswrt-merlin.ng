@@ -25,7 +25,7 @@
 
 /*
  * Automatically generated make config: don't edit
- * Date: Fri Sep 25 21:10:07 2020
+ * Date: Wed Mar  3 15:27:05 2021
  */
 #ifndef __TMCFG__UDB_AUTOCONF_OUTPUT_H_
 #define __TMCFG__UDB_AUTOCONF_OUTPUT_H_
@@ -109,7 +109,7 @@
 #define TMCFG_CPU_64BITS 0 // n
 #define TMCFG_CPU_BIG_ENDIAN 0 // n
 #define TMCFG_CPU_LITTLE_ENDIAN 1 // y
-#define TMCFG_KERN_DIR "/opt/ASUS/asuswrt_AC68U_GPL_385_20633/release/src-rt-6.x.4708/linux/linux-2.6.36"
+#define TMCFG_KERN_DIR "/opt/ASUS/asuswrt_AC68U_GPL_386.41700/release/src-rt-6.x.4708/linux/linux-2.6.36"
 #define TMCFG_KERN_ARCH "arm"
 
 /*
@@ -152,7 +152,7 @@
 #define TMCFG_E_UDB_CORE 1 // y
 #define TMCFG_E_UDB_CORE_MAJ_VER 0
 #define TMCFG_E_UDB_CORE_MIN_VER 2
-#define TMCFG_E_UDB_CORE_REV_VER 18
+#define TMCFG_E_UDB_CORE_REV_VER 20
 #define TMCFG_E_UDB_CORE_SHN_REV_NUM 0
 #define TMCFG_E_UDB_CORE_USE_KBUILD 1 // y
 #define TMCFG_E_UDB_CORE_EXTRA_CFLAGS ""
@@ -209,7 +209,7 @@
 #define TMCFG_E_REL_PKG_MAJ_VER 2
 #define TMCFG_E_REL_PKG_MIN_VER 0
 #define TMCFG_E_REL_PKG_REV_VER 1
-#define TMCFG_E_REL_PKG_LOCAL_VER "7812743e"
+#define TMCFG_E_REL_PKG_LOCAL_VER "a1864ea2"
 
 /*
  * Accompany applications or modules
@@ -218,7 +218,7 @@
 /*
  * Kernel
  */
-#define TMCFG_APP_K_EXTRA_CFLAGS "-I/opt/ASUS/asuswrt_AC68U_GPL_385_20633/release/src-rt-6.x.4708/include -I/opt/ASUS/asuswrt_AC68U_GPL_385_20633/release/src-rt-6.x.4708/common/include"
+#define TMCFG_APP_K_EXTRA_CFLAGS "-I/opt/ASUS/asuswrt_AC68U_GPL_386.41700/release/src-rt-6.x.4708/include -I/opt/ASUS/asuswrt_AC68U_GPL_385_20633/release/src-rt-6.x.4708/common/include"
 #define TMCFG_APP_K_TDTS_NFFW 0 // n
 #define TMCFG_APP_K_TDTS_UDBFW 1 // y
 #define TMCFG_APP_K_TDTS_UDBFW_EXTRA_SYMBOLS ""

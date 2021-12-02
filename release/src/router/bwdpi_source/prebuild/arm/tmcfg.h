@@ -26,7 +26,7 @@
 
 /*
  * Automatically generated make config: don't edit
- * Date: Fri Sep 25 20:09:01 2020
+ * Date: Wed Mar  3 15:10:45 2021
  */
 #ifndef __TMCFG__AUTOCONF_OUTPUT_H_
 #define __TMCFG__AUTOCONF_OUTPUT_H_
@@ -47,7 +47,7 @@
 #define TMCFG_ARCH_POWERPC 0 // n
 #define TMCFG_CPU_BIG_ENDIAN 0 // n
 #define TMCFG_CPU_LITTLE_ENDIAN 1 // y
-#define TMCFG_KERN_DIR "/opt/ASUS/asuswrt_AC68U_GPL_385_20633/release/src-rt-6.x.4708/linux/linux-2.6.36"
+#define TMCFG_KERN_DIR "/opt/ASUS/asuswrt_AC68U_GPL_386.41700/release/src-rt-6.x.4708/linux/linux-2.6.36"
 #define TMCFG_KERN_ARCH "arm"
 #define TMCFG_CPU_32BITS 1 // y
 #define TMCFG_CPU_64BITS 0 // n

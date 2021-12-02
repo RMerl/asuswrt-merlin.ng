@@ -4,7 +4,7 @@
 .\" groff -man -Tascii foo.1
 .\"
 .\" Copyright 2005, by Shaul Karl.
-.\" Copyright 2010-2020, by Joachim Nilsson.
+.\" Copyright 2010-2020, by Joachim Wiberg.
 .\"
 .\" You may modify and distribute this document for any purpose, as
 .\" long as this copyright notice remains intact.
@@ -154,6 +154,11 @@ unique.
 Common settings in custom{} and provider{} sections are:
 .Pp
 .Bl -tag -width TERM
+.It Cm include("/path/to/file")
+Include settings from another file, supports tilde expansion, e.g.
+.Pa ~/.freedns.pw .
+Any custom{} or provider{} setting can be included, and any amount of
+include statements may be used.
 .It Cm ssl = <true | false>
 Use HTTPS, both when checking for IP changes and updating the DNS
 record.  Default is to use HTTPS (true).
@@ -402,6 +407,7 @@ provider freedns {
 }
 
 # No-IP.com #1
+# With multiple usernames at the same provider, index with :#
 provider no-ip.com:1 {
     checkip-server = "dynamic.zoneedit.com"
     checkip-path   = "/checkip.html"
@@ -419,8 +425,14 @@ provider no-ip.com:2 {
 }
 
 # Google Domains - notice use of '@' to update root entry
-provider domains.google.com {
+provider domains.google.com:1 {
     hostname = @.mydomain.com
+    username = your_username
+    password = your_password
+}
+# Wildcard subdomains - notice the quoutes (required!)
+provider domains.google.com:2 {
+    hostname = "*.mydomain.com"
     username = your_username
     password = your_password
 }
@@ -497,6 +509,15 @@ provider cloudflare.com {
     proxied = false # optional.
 }
 
+# www.namecheap.com
+custom namecheap {
+    username    = YOURDOMAIN.TLD
+    password    = mypass
+    ddns-server = dynamicdns.park-your-domain.com
+    ddns-path   = "/update?domain=%u&password=%p&host=%h"
+    hostname    = { "@", "www", "test" }
+}
+
 # Generic example, check all details for your provider!
 custom example {
     username       = myuser
@@ -562,4 +583,4 @@ system by
 .An Shaul Karl Aq mailto:shaul@debian.org .
 Currently maintained by
 .An -nosplit
-.An Joachim Nilsson Aq mailto:troglobit@gmail.com .
+.An Joachim Wiberg Aq mailto:troglobit@gmail.com .

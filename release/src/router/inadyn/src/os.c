@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2003-2004  Narcis Ilisei
  * Copyright (C) 2006       Steve Horbachuk
- * Copyright (C) 2010-2020  Joachim Nilsson <troglobit@gmail.com>
+ * Copyright (C) 2010-2021  Joachim Wiberg <troglobit@gmail.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -127,6 +127,20 @@ static void unix_signal_handler(int signo)
 	}
 }
 
+static int signal_ignore(int signo)
+{
+	struct sigaction sa = { 0 };
+
+#ifdef SA_RESTART
+	sa.sa_flags |= SA_RESTART;
+#endif
+	sa.sa_handler = SIG_IGN;
+
+	return (sigemptyset(&sa.sa_mask)      ||
+		sigaddset(&sa.sa_mask, signo) ||
+		sigaction(signo, &sa, NULL));
+}
+
 /*
  * Set SIGCHLD to 'ignore', i.e., children are automatically reaped,
  * as of POSIX.1-2001.  This is fine since we are (currently) not
@@ -138,18 +152,7 @@ static int os_install_child_handler(void)
 	int rc = 0;
 
 	if (!installed) {
-		struct sigaction sa;
-
-		memset(&sa, 0, sizeof(sa));
-#ifdef SA_RESTART
-		sa.sa_flags |= SA_RESTART;
-#endif
-		sa.sa_handler = SIG_IGN;
-
-		rc = (sigemptyset(&sa.sa_mask)        ||
-		      sigaddset(&sa.sa_mask, SIGCHLD) ||
-		      sigaction(SIGCHLD, &sa, NULL));
-
+		rc = signal_ignore(SIGCHLD);
 		installed = 1;
 	}
 
@@ -187,11 +190,12 @@ int os_install_signal_handler(void *ctx)
 		      sigaddset(&sa.sa_mask, SIGTERM) ||
 		      sigaddset(&sa.sa_mask, SIGUSR1) ||
 		      sigaddset(&sa.sa_mask, SIGUSR2) ||
-		      sigaction(SIGHUP, &sa, NULL)    ||
-		      sigaction(SIGINT, &sa, NULL)    ||
+		      sigaction(SIGHUP,  &sa, NULL)   ||
+		      sigaction(SIGINT,  &sa, NULL)   ||
 		      sigaction(SIGUSR1, &sa, NULL)   ||
 		      sigaction(SIGUSR2, &sa, NULL)   ||
-		      sigaction(SIGTERM, &sa, NULL));
+		      sigaction(SIGTERM, &sa, NULL)   ||
+		      signal_ignore(SIGPIPE)); /* get EPIPE instead in read() */
 
 		installed = 1;
 	}

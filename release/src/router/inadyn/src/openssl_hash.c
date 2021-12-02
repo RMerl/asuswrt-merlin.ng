@@ -1,6 +1,6 @@
-/* Interface to file chache API
+/* OpenSSL interface for hash functions
  *
- * Copyright (C) 2014-2021  Joachim Wiberg <troglobit@gmail.com>
+ * Copyright (C) 2021  Dan Fandrich <dan@coneharvesters.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -16,25 +16,30 @@
  * along with this program; if not, visit the Free Software Foundation
  * website at http://www.gnu.org/licenses/gpl-2.0.html or write to the
  * Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
- * Boston, MA  02110-1301, USA.
-*/
-
-#ifndef INADYN_CACHE_H_
-#define INADYN_CACHE_H_
-
-#include "ddns.h"
-
-extern char *cache_dir;
-
-char *cache_file       (char *name, char *buf, size_t len);
-int   read_cache_file  (ddns_t *ctx);
-int   write_cache_file (ddns_alias_t *alias);
-
-#endif /* INADYN_CACHE_H_ */
-
-/**
- * Local Variables:
- *  indent-tabs-mode: t
- *  c-file-style: "linux"
- * End:
+ * Boston, MA 02110-1301, USA.
  */
+
+#include "md5.h"
+#include "sha1.h"
+#include <openssl/md5.h>
+#include <openssl/sha.h>
+
+/* Calculate the MD5 hash checksum of the given input */
+void md5(const unsigned char *input, size_t ilen, unsigned char output[16])
+{
+	MD5_CTX ctx;
+
+	MD5_Init(&ctx);
+	MD5_Update(&ctx, input, ilen);
+	MD5_Final(output, &ctx);
+}
+
+/* Calculate the SHA-1 hash checksum of the given input */
+void sha1(const unsigned char *input, size_t ilen, unsigned char output[20])
+{
+	SHA_CTX ctx;
+
+	SHA1_Init(&ctx);
+	SHA1_Update(&ctx, input, ilen);
+	SHA1_Final(output, &ctx);
+}

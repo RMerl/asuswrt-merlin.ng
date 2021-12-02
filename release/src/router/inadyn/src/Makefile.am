@@ -8,19 +8,20 @@ sbin_PROGRAMS	 = inadyn
 inadyn_SOURCES	 = main.c	ddns.c		cache.c		\
 		   error.c	conf.c		os.c		\
 		   http.c	plugin.c	tcp.c		\
-		   		sha1.c		base64.c	\
 		   json.c	jsmn.c		log.c		\
-		   makepath.c	md5.c
+		   makepath.c
 inadyn_CFLAGS    = $(confuse_CFLAGS) $(OpenSSL_CFLAGS) $(GnuTLS_CFLAGS)
 inadyn_LDADD     = $(confuse_LIBS)   $(OpenSSL_LIBS)   $(GnuTLS_LIBS)
 inadyn_LDADD    += $(LIBS) $(LIBOBJS)
 
 if ENABLE_SSL
 if ENABLE_OPENSSL
-inadyn_SOURCES  += openssl.c
+inadyn_SOURCES  += openssl.c openssl_base64.c openssl_hash.c
 else
-inadyn_SOURCES  += gnutls.c
+inadyn_SOURCES  += gnutls.c gnutls_base64.c gnutls_hash.c
 endif
+else
+inadyn_SOURCES  += base64.c md5.c sha1.c
 endif
 
 ## Plugins are currently built-in, and built from this directory instead

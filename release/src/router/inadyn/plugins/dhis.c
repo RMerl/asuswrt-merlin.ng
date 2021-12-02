@@ -1,7 +1,7 @@
 /* Plugin for DHIS.org
  *
  * Copyright (C) 2011       Bryan Hoover <bhoover@wecs.com>
- * Copyright (C) 2014-2020  Joachim Nilsson <troglobit@gmail.com>
+ * Copyright (C) 2014-2021  Joachim Wiberg <troglobit@gmail.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

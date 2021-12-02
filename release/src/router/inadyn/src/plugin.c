@@ -1,6 +1,6 @@
 /* Simplistic plugin support for DDNS service providers
  *
- * Copyright (c) 2012-2020  Joachim Nilsson <troglobit@gmail.com>
+ * Copyright (c) 2012-2021  Joachim Wiberg <troglobit@gmail.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,14 +22,10 @@
  */
 
 #include "config.h"
+#include <assert.h>
 #include <errno.h>
-#include <dlfcn.h>		/* dlopen() et al */
 #include <dirent.h>		/* readdir() et al */
 #include <string.h>
-#ifdef __CYGWIN__
-#include <windows.h>
-#include <sys/cygwin.h>
-#endif
 
 #include "ddns.h"
 
@@ -43,29 +39,7 @@ int plugin_register(ddns_system_t *plugin)
 		return 1;
 	}
 
-	if (!plugin->name) {
-		char *dli_fname = NULL;
-#ifdef __CYGWIN__
-		char posix_path[MAX_PATH];
-		char path[MAX_PATH];
-		MEMORY_BASIC_INFORMATION mbi;
-
-		VirtualQuery((void*)&plugin, &mbi, sizeof(mbi));
-		GetModuleFileNameA((HINSTANCE)mbi.AllocationBase, path, MAX_PATH);
-		cygwin_conv_path(CCP_WIN_A_TO_POSIX | CCP_RELATIVE, path, posix_path, MAX_PATH);
-		dli_fname = posix_path;
-#else
-		Dl_info info;
-
-		if (dladdr(plugin, &info))
-			dli_fname = (char *)info.dli_fname;
-#endif
-
-		if (!dli_fname)
-			plugin->name = "unknown";
-		else
-			plugin->name = (char *)dli_fname;
-	}
+	assert(plugin->name);
 
 	/* Already registered? */
 	if (plugin_find(plugin->name, 0)) {

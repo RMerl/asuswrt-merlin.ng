@@ -4,7 +4,7 @@
 .\" groff -man -Tascii foo.1
 .\"
 .\" Copyright (C) 2004       Shaul Karl.
-.\" Copyright (C) 2010-2020  Joachim Nilsson.
+.\" Copyright (C) 2010-2021  Joachim Wiberg.
 .\"
 .\" You may modify and distribute this document for any purpose, as
 .\" long as this copyright notice remains intact.
@@ -53,7 +53,8 @@ domain names to choose from.
 defaults to HTTPS for all providers, some may however not support this
 so try disabling SSL for your provider in case of problems.  Providers
 known to support SSL updates are listed below with
-.Sy https :
+.Sy https .
+The list is ordered by the plugin that support the service:
 .Pp
 .Bl -bullet -compact
 .It
@@ -65,20 +66,34 @@ known to support SSL updates are listed below with
 .It
 .Aq https://freemyip.com
 .It
-.Aq https://www.loopia.com
-.It
 .Aq http://www.dyndns.org ,
 .Aq http://dyn.com
-.It
-.Aq http://www.noip.com
-.It
-.Aq http://www.easydns.com
+.Bl -bullet -compact
 .It
 .Aq http://dns.he.net
 .It
-.Aq http://www.tunnelbroker.net
-.It
 .Aq https://www.dnsomatic.com
+.It
+.Aq https://domains.google
+.It
+.Aq https://www.dynu.com
+.It
+.Aq https://www.loopia.com
+.It
+.Aq http://www.noip.com
+.It
+.Aq https://www.pubyun.com ,
+formerly
+.Aq http://www.3322.org
+.It
+.Aq https://www.selfhost.de
+.It
+.Aq https://spdyn.de
+.El
+.It
+.Aq http://www.easydns.com
+.It
+.Aq http://www.tunnelbroker.net
 .It
 .Aq http://www.sitelutions.com
 .It
@@ -87,16 +102,17 @@ parent of
 .Aq https://zoneedit.com
 .It
 .Aq http://www.changeip.com
-.It
-.Aq http://www.dhis.org
-.It
-.Aq https://www.namecheap.com
-.It
-.Aq https://domains.google
+.Bl -bullet -compact
 .It
 .Aq https://www.ovh.com
 .It
-.Aq http://giradns.com
+.Aq https://www.strato.com
+.El
+.It
+.Aq http://www.dhis.org
+.It
+.Aq http://giradns.com ,
+.Aq https://gira.de
 .It
 .Aq https://www.duiadns.net
 .It
@@ -106,27 +122,18 @@ parent of
 .It
 .Aq http://ipv4.dynv6.com
 .It
-.Aq https://spdyn.de
-.It
 .Aq https://www.cloudxns.net
 .It
-.Aq https://www.pubyun.com ,
-formerly
-.Aq http://www.3322.org
-.It
 .Aq https://www.dnspod.cn
-.It
-.Aq https://www.dynu.com
-.It
-.Aq https://www.selfhost.de
 .It
 .Aq https://connect.yandex.ru
 .It
 .Aq https://www.cloudflare.com
 .El
 .Pp
-DDNS providers not listed here can often be configured using the
-generic/custom DDNS provider plugin.  See
+DDNS providers not listed here, e.g.
+.Aq https://www.namecheap.com ,
+can often be configured using the custom DDNS provider plugin.  See
 .Xr inadyn.conf 5
 for examples.
 .Sh OPTIONS
@@ -390,7 +397,7 @@ home page is at GitHub:
 .Nm
 was originally written by Narcis Ilisei
 .Aq mailto:inarcis2002@hotpop.com
-and Steve Horbachuk.  Current patch monkey is Joachim Nilsson
+and Steve Horbachuk.  Current patch monkey is Joachim Wiberg
 .Aq mailto:troglobit@gmail.com
 with a lot of help from Andrey Tikhomirov and Mike Fleetwood.
 .Pp
@@ -398,4 +405,4 @@ This manual page was originally written for the
 .Em Debian GNU/Linux
 project by Shaul Karl
 .Aq mailto:shaul@debian.org ,
-and is currently maintained by Joachim Nilsson.
+and is currently maintained by Joachim Wiberg.

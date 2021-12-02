@@ -2,7 +2,7 @@
  *
  * Copyright (C) 2003-2004  Narcis Ilisei <inarcis2002@hotpop.com>
  * Copyright (C) 2006       Steve Horbachuk
- * Copyright (C) 2010-2020  Joachim Nilsson <troglobit@gmail.com>
+ * Copyright (C) 2010-2021  Joachim Wiberg <troglobit@gmail.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -224,7 +224,7 @@ extern char *user_agent;
 extern char *script_cmd;
 extern char *script_exec;
 extern char *pidfile_name;
-extern char *generic_responses[];
+extern const char * const generic_responses[];
 extern uid_t uid;
 extern gid_t gid;
 

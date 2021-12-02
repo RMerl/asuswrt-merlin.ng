@@ -1,13 +1,19 @@
 AC_PREREQ(2.61)
-AC_INIT([In-a-dyn], [2.8.1], [https://github.com/troglobit/inadyn/issues],
+AC_INIT([In-a-dyn], [2.9.0], [https://github.com/troglobit/inadyn/issues],
 	[inadyn], [https://troglobit.com/projects/inadyn/])
 AC_CONFIG_AUX_DIR(aux)
 AM_INIT_AUTOMAKE([1.11 foreign dist-xz])
 AM_SILENT_RULES([yes])
 
 AC_CONFIG_SRCDIR([src/main.c])
-AC_CONFIG_HEADER([include/config.h])
-AC_CONFIG_FILES([Makefile inadyn.service src/Makefile include/Makefile man/Makefile examples/Makefile])
+AC_CONFIG_HEADERS([include/config.h])
+AC_CONFIG_FILES([Makefile
+		 inadyn.service
+		 src/Makefile
+		 test/Makefile
+		 include/Makefile
+		 man/Makefile
+		 examples/Makefile])
 AC_CONFIG_MACRO_DIR([m4])
 
 AC_ARG_ENABLE(ssl,
@@ -22,10 +28,23 @@ AC_ARG_ENABLE(openssl,
         [ac_enable_openssl="no"]
 )
 
+AC_ARG_ENABLE(reduced,
+        [AS_HELP_STRING([--enable-reduced], [Drop some features to reduce the binary size, default: disabled])],
+        [ac_enable_reduced="$enableval"],
+        [ac_enable_reduced="no"]
+)
+
+
 AC_ARG_ENABLE(simulation,
         [AS_HELP_STRING([--enable-simulation], [Developer simulation mode, do not use!])],
         [ac_enable_simulation="$enableval"],
         [ac_enable_simulation="no"]
+)
+
+AC_ARG_ENABLE(test,
+        [AS_HELP_STRING([--enable-test], [Enable tests, requries ~/.config/inadyn/*.conf!])],
+        [ac_enable_test="$enableval"],
+        [ac_enable_test="no"]
 )
 
 AC_ARG_WITH([systemd],
@@ -34,18 +53,15 @@ AC_ARG_WITH([systemd],
 )
 
 # Define necessary build flags
-AC_GNU_SOURCE
 AC_USE_SYSTEM_EXTENSIONS
 
 # Checks for programs.
 AC_PROG_CC
-AC_PROG_CC_C99
 AM_PROG_CC_C_O
 AC_PROG_GCC_TRADITIONAL
 AC_PROG_INSTALL
 
 # Checks for header files.
-AC_HEADER_STDC
 AC_CHECK_HEADERS([arpa/inet.h arpa/nameser.h netinet/in.h stdlib.h stdint.h \
 	          string.h sys/ioctl.h sys/socket.h sys/types.h syslog.h unistd.h],
                   [], [],
@@ -116,6 +132,10 @@ if test "x$ac_enable_ssl" = "xyes"; then
       CPPFLAGS="$CPPFLAGS $GnuTLS_CFLAGS"
       AC_CHECK_LIB([gnutls], [gnutls_init], [],
                           AC_MSG_ERROR([*** SSL library (GnuTLS) not found!]))
+      dnl GnuTLS uses nettle, so this doesn't really add a new dependency. It must
+      dnl be made explicit to avoid underlinking.
+      AC_CHECK_LIB([nettle], [nettle_md5_init], [],
+                          AC_MSG_ERROR([*** Crypto library (nettle) not found!]))
       AC_CHECK_HEADERS([gnutls/gnutls.h gnutls/x509.h], [],
 			  AC_MSG_ERROR([*** Cannot find required header files!]))
       AC_DEFINE([CONFIG_GNUTLS], [], [Enable HTTPS support using GnuTLS library])
@@ -134,6 +154,10 @@ fi
 CAFILE1="/etc/ssl/certs/ca-certificates.crt"
 CAFILE2="/etc/pki/tls/certs/ca-bundle.trust.crt"
 
+if test "x$ac_enable_reduced" = "xyes"; then
+      CPPFLAGS="$CPPFLAGS -DMAX_LOG_LEVEL=LOG_ERR -DDROP_VERBOSE_STRINGS -DDROP_CHECK_CONFIG"
+fi
+
 # Add OS-specific flags
 case "$host_os" in
 darwin*)
@@ -148,9 +172,10 @@ AC_DEFINE_UNQUOTED([CAFILE2], "$CAFILE2", [Second location for Open/LibreSSL and
 AM_CONDITIONAL([ENABLE_SSL], test "x$ac_enable_ssl" = "xyes")
 AM_CONDITIONAL([ENABLE_OPENSSL], test "x$ac_enable_openssl" = "xyes")
 
-if test "x$ac_enable_simulation" = "xyes"; then
-   AC_DEFINE([ENABLE_SIMULATION], [], [Enable developer-only simulation mode])
-fi
+AS_IF([test "x$ac_enable_simulation" = "xyes"], [
+   AC_DEFINE([ENABLE_SIMULATION], [], [Enable developer-only simulation mode])])
+
+AM_CONDITIONAL([ENABLE_TEST], [test "x$ac_enable_test" != "xno"])
 
 # Check where to install the systemd .service file
 AS_IF([test "x$with_systemd" = "xyes" -o "x$with_systemd" = "xauto"], [
@@ -206,6 +231,7 @@ cat <<EOF
     GnuTLS.......: $ac_enable_gnutls
     Open/LibreSSL: $ac_enable_openssl
   systemd........: $with_systemd
+  Unit tests.....: $ac_enable_test
 
 ------------- Compiler version --------------
 $($CC --version || true)

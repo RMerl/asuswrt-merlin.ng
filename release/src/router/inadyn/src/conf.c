@@ -1,6 +1,6 @@
 /* libConfuse interface to parse inadyn.conf v2 format
  *
- * Copyright (C) 2014-2020  Joachim Nilsson <troglobit@gmail.com>
+ * Copyright (C) 2014-2021  Joachim Wiberg <troglobit@gmail.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -59,6 +59,7 @@ static void conf_errfunc(cfg_t *cfg, const char *format, va_list args)
 	vlogit(LOG_ERR, fmt, args);
 }
 
+#ifdef DROP_CHECK_CONFIG
 /*
  * Convert deprecated 'alias' setting to new 'hostname',
  * same functionality with new name.
@@ -189,6 +190,7 @@ static int validate_custom(cfg_t *cfg, cfg_opt_t *opt)
 
 	return validate_common(cfg, "custom", 1);
 }
+#endif
 
 /* server:port => server:80 if port is not given */
 static int getserver(const char *server, ddns_name_t *name)
@@ -533,6 +535,7 @@ cfg_t *conf_parse_file(char *file, ddns_t *ctx)
 	int ret = 0;
 	size_t i;
 	cfg_opt_t provider_opts[] = {
+		CFG_FUNC    ("include",      &cfg_include),
 		CFG_STR     ("username",     NULL, CFGF_NONE),
 		CFG_STR     ("password",     NULL, CFGF_NONE),
 		CFG_STR_LIST("hostname",     NULL, CFGF_NONE),
@@ -551,6 +554,7 @@ cfg_t *conf_parse_file(char *file, ddns_t *ctx)
 	};
 	cfg_opt_t custom_opts[] = {
 		/* Same as a general provider */
+		CFG_FUNC    ("include",      &cfg_include),
 		CFG_STR     ("username",     NULL, CFGF_NONE),
 		CFG_STR     ("password",     NULL, CFGF_NONE),
 		CFG_STR_LIST("hostname",     NULL, CFGF_NONE),
@@ -600,10 +604,12 @@ cfg_t *conf_parse_file(char *file, ddns_t *ctx)
 	/* Custom logging, rather than default Confuse stderr logging */
 	cfg_set_error_function(cfg, conf_errfunc);
 
+#ifdef DROP_CHECK_CONFIG
 	/* Validators */
 	cfg_set_validate_func(cfg, "period", validate_period);
 	cfg_set_validate_func(cfg, "provider", validate_provider);
 	cfg_set_validate_func(cfg, "custom", validate_custom);
+#endif
 
 	switch (cfg_parse(cfg, file)) {
 	case CFG_FILE_ERROR:

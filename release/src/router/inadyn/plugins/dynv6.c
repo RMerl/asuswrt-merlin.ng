@@ -1,7 +1,7 @@
 /* Plugin for dynv6.com
  *
  * Copyright (C) 2016  Sven Hoefer <sven@svenhoefer.com>
- * Copyright (C) 2020  Joachim Nilsson <troglobit@gmail.com>
+ * Copyright (C) 2021  Joachim Wiberg <troglobit@gmail.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

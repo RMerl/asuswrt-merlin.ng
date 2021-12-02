@@ -1,6 +1,6 @@
 Internet Automated Dynamic DNS Client
 =====================================
-[![License Badge][]][License] [![Travis Status][]][Travis] [![Coverity Status][]][Coverity Scan]
+[![License Badge][]][License] [![GitHub Status][]][GitHub] [![Coverity Status][]][Coverity Scan]
 
 The latest release is always available from GitHub at  
 > https://github.com/troglobit/inadyn/releases
@@ -52,41 +52,46 @@ Supported Providers
 -------------------
 
 Some of these services are free of charge for non-commercial use, some
-take a small fee, but also provide more domains to choose from:
+take a small fee, but also provide more domains to choose from.
+
+The following tier-one providers have dedicated "plugins", even though
+many share the original DynDNS plugin.  Below is a list of known DDNS
+providers, ordered by the plugin that support them:
 
    * <https://freedns.afraid.org>
    * <https://www.nsupdate.info>
    * <https://duckdns.org>
    * <https://freemyip.com>
-   * <https://www.loopia.com>
    * <https://www.dyndns.org>, <https://dyn.com>
-   * <https://www.noip.com>
+     * <https://dns.he.net>
+     * <https://www.dnsomatic.com>
+     * <https://domains.google>
+     * <https://www.dynu.com>
+     * <https://www.loopia.com>
+     * <https://www.noip.com>
+     * <https://www.pubyun.com>, formerly <http://www.3322.org>
+     * <https://www.selfhost.de>
+     * <https://spdyn.de>
    * <https://www.easydns.com>
-   * <https://www.dnsomatic.com>
-   * <https://dns.he.net>
    * <https://www.tunnelbroker.net>
    * <https://www.sitelutions.com>
    * <https://www.dnsexit.com>, parent of <https://www.zoneedit.com>
    * <https://www.changeip.com>
+     * <https://www.ovh.com>
+     * <https://www.strato.com>
    * <https://www.dhis.org>
-   * <https://www.namecheap.com>
-   * <https://domains.google>
-   * <https://www.ovh.com>
-   * <https://giradns.com>
+   * <https://giradns.com>, <https://gira.de>
    * <https://www.duiadns.net>
    * <https://ddnss.de>
    * <https://dynv6.com>
-   * <https://spdyn.de>
    * <https://www.cloudxns.net>
-   * <https://www.pubyun.com>, formerly <http://www.3322.org>
    * <https://www.dnspod.cn>
-   * <https://www.dynu.com>
-   * <https://www.selfhost.de>
    * <https://connect.yandex.ru>
    * <https://www.cloudflare.com>
 
-DDNS providers not supported natively can be enabled using the generic
-DDNS plugin.  See below for configuration examples.
+DDNS providers not supported natively can be enabled using the custom,
+or generic, DDNS plugin.  E.g. <https://www.namecheap.com>.  See below
+for configuration examples.
 
 In-A-Dyn defaults to HTTPS, but not all providers may support this, so
 try disabling SSL for the update (`ssl = false`) or the checkip phase
@@ -141,13 +146,6 @@ This looks for the default `.conf` file, to check any file, use:
         user-agent  = Mozilla/4.0
     }
 
-    # Google Domains - notice use of '@' to update root entry
-    provider domains.google.com {
-        hostname = @.mydomain.com
-        username = your_username
-        password = your_password
-    }
-
     provider duckdns.org {
         username         = YOUR_TOKEN
         password         = noPasswordForDuckdns
@@ -177,6 +175,19 @@ This looks for the default `.conf` file, to check any file, use:
         password        = bowie
         hostname        = spaceman.no-ip.com
         checkip-command = "/sbin/ifconfig eth0 | grep 'inet6 addr'"
+    }
+
+    # Google Domains - notice use of '@' to update root entry
+    provider domains.google.com:1 {
+        hostname = @.mydomain.com
+        username = your_username
+        password = your_password
+    }
+    # Wildcard subdomains - notice the quotes (required!)
+    provider domains.google.com:2 {
+        hostname = "*.mydomain.com"
+        username = your_username
+        password = your_password
     }
 
     # Note: hostname == update-key from Advanced tab in the Web UI
@@ -276,41 +287,24 @@ A custom DDNS provider can be setup like this:
         hostname       = myhostname.example.net
 	}
 
-You can even override existing plugin support for known DDNS providers,
-e.g., for <https://www.namecheap.com> it can look as follows.  Notice
-how the hostname syntax differs between these two examples.  You need to
-investigate details like this yourself when using the generic/custom
-DDNS plugin:
+For <https://www.namecheap.com> it can look as follows.  Notice how the
+hostname syntax differs from above:
 
     custom namecheap {
-        username    = myuser
+        username    = YOURDOMAIN.TLD
         password    = mypass
         ddns-server = dynamicdns.park-your-domain.com
-        ddns-path   = "/update?domain=YOURDOMAIN.TLD&password=mypass&host="
-        hostname    = { "alpha", "beta", "gamma" }
+        ddns-path   = "/update?domain=%u&password=%p&host=%h"
+        hostname    = { "@", "www", "test" }
 	}
 
 Here three hostnames are updated, one HTTP GET update request for every
-DDNS provider is performed, for every listed hostname.  Some providers,
-like FreeDNS, support setting up CNAME records (aliases) to reduce the
-amount of records you need to update.  FreeDNS even default to linking
-multiple records to the same update, which may be very confusing if you
-want each DNS record to be updated from a unique IP address -- make sure
-to *check your settings at the DDNS provider*!
-
-Your hostname is automatically appended to the end of the `ddns-path`,
-as is customary, before it is communicated to the server.  Username is
-your Namecheap username, and password would be the one given to you in
-the Dynamic DNS panel from Namecheap.  Here is an alternative config to
-illustrate how the `hostname` setting works:
-
-    custom kruskakli {
-        username    = myuser
-        password    = mypass
-        ddns-server = dynamicdns.park-your-domain.com
-        ddns-path   = "/update?password=mypass&domain="
-        hostname    = YOURDOMAIN.TLD
-	}
+listed hostname.  Some providers, like FreeDNS, support setting up CNAME
+records (aliases) to reduce the amount of records you need to update.
+FreeDNS even default to linking multiple records to the same update,
+which may be very confusing if you want each DNS record to be updated
+from a unique IP address -- make sure to *check your settings at the
+DDNS provider*!
 
 The generic plugin can also be used with providers that require the
 client's new IP address in the update request.  Here is an example of
@@ -353,10 +347,10 @@ These two settings can also be used in standard `provider{}` sections.
 
 **Note:** `hostname` is required, even if everything is encoded in the
 `ddns-path`!  The given hostname is appended to the `ddns-path` used for
-updates, unless you use `append-myip` in which case your IP address will
-be appended instead.  When using `append-myip` you probably need to
-encode your DNS hostname in the `ddns-path` instead, as is done in the
-last example above.
+updates, unless you use the `append-myip` setting, in which case your IP
+address will be appended instead.  When using `append-myip` you probably
+need to encode your DNS hostname in the `ddns-path` instead, as is done
+in the last example above.
 
 
 Build & Install
@@ -480,6 +474,13 @@ Check that it started properly by inspecting the system log, or:
 
     $ sudo systemctl status inadyn.service
 
+### Embedded applications
+
+When built into a router, some features aren't usually used and can be disabled
+to save space. The configure option `--enable-reduced` will build such a
+reduced-functionality binary. Currently, this disables verbose log messages and
+error strings and eliminates config file checking & some backward compatibility.
+
 
 Building from GIT
 -----------------
@@ -517,14 +518,14 @@ Origin & References
 -------------------
 
 This is the continuation of Narcis Ilisei's [original][] INADYN.  Now
-maintained by [Joachim Nilsson][].  Please file bug reports, or send
+maintained by [Joachim Wiberg][].  Please file bug reports, or send
 pull requests for bug fixes and proposed extensions at [GitHub][].
 
 [original]:         http://www.inatech.eu/inadyn/
 [DDNS]:             http://en.wikipedia.org/wiki/Dynamic_DNS
 [tunnelbroker]:     https://tunnelbroker.net/
 [Christian Eyrich]: http://eyrich-net.org/programmiertes.html
-[Joachim Nilsson]:  http://troglobit.com
+[Joachim Wiberg]:   http://troglobit.com
 [libConfuse]:       https://github.com/martinh/libconfuse
 [LibreSSL]:         http://www.libressl.org/
 [OpenSSL]:          https://www.openssl.org/
@@ -533,7 +534,7 @@ pull requests for bug fixes and proposed extensions at [GitHub][].
 [buildsystem]:      https://airs.com/ian/configure/
 [License]:          https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 [License Badge]:    https://img.shields.io/badge/License-GPL%20v2-blue.svg
-[Travis]:           https://travis-ci.org/troglobit/inadyn
-[Travis Status]:    https://travis-ci.org/troglobit/inadyn.png?branch=master
+[GitHub]:           https://github.com/troglobit/inadyn/actions/workflows/build.yml/
+[GitHub Status]:    https://github.com/troglobit/inadyn/actions/workflows/build.yml/badge.svg
 [Coverity Scan]:    https://scan.coverity.com/projects/2981
 [Coverity Status]:  https://scan.coverity.com/projects/2981/badge.svg

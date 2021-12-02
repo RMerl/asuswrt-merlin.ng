@@ -174,9 +174,9 @@ static int setup(ddns_t *ctx, ddns_info_t *info, ddns_alias_t *alias)
 
 	logit(LOG_DEBUG, "DNSPod Record: '%s' ID: %u", prefix, record_id);
 	len = snprintf(buffer, sizeof(buffer),
-		       "login_token=%s%%2C%s&format=json&domain=%s&record_id=%d&record_line=%s&value=%s",
+		       "login_token=%s%%2C%s&format=json&domain=%s&record_id=%d&record_line=%s&value=%s&sub_domain=%s",
 		       info->creds.username, info->creds.password,
-		       domain, record_id, "%E9%BB%98%E8%AE%A4", alias->address);
+		       domain, record_id, "%E9%BB%98%E8%AE%A4", alias->address, prefix);
 	if (len >= (int)sizeof(buffer))
 		return RC_BUFFER_OVERFLOW;
 

@@ -1,6 +1,6 @@
 /* Plugin for DuckDNS
  *
- * Copyright (C) 2010-2020  Joachim Nilsson <troglobit@gmail.com>
+ * Copyright (C) 2010-2021  Joachim Wiberg <troglobit@gmail.com>
  * Copyright (C) 2014       Andy Padavan <andy.padavan@gmail.com>
  *
  * This program is free software; you can redistribute it and/or
@@ -44,7 +44,7 @@ static ddns_system_t plugin = {
 	.request      = (req_fn_t)request,
 	.response     = (rsp_fn_t)response,
 
-	.checkip_name = "ipv4.wtfismyip.com",
+	.checkip_name = "wtfismyip.com",
 	.checkip_url  = "/text",
 
 	.server_name  = "www.duckdns.org",

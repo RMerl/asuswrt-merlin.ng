@@ -1,6 +1,6 @@
 /* OpenSSL interface for optional HTTPS functions
  *
- * Copyright (C) 2014-2020  Joachim Nilsson <troglobit@gmail.com>
+ * Copyright (C) 2014-2021  Joachim Wiberg <troglobit@gmail.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -132,6 +132,19 @@ static void ssl_check_error(void)
 	ERR_print_errors_cb(ssl_error_cb, NULL);
 }
 
+static int ssl_fail(http_t *client, int rc)
+{
+	if (!client)
+		return rc;
+
+	if (!client->ssl_ctx)
+		tcp_exit(&client->tcp);
+	else
+		ssl_close(client);
+
+	return rc;
+}
+
 int ssl_open(http_t *client, char *msg)
 {
 	const char *sn;
@@ -148,7 +161,7 @@ int ssl_open(http_t *client, char *msg)
 	logit(LOG_INFO, "%s, initiating HTTPS ...", msg);
 	client->ssl_ctx = SSL_CTX_new(SSLv23_client_method());
 	if (!client->ssl_ctx)
-		return RC_HTTPS_OUT_OF_MEMORY;
+		return ssl_fail(client, RC_HTTPS_OUT_OF_MEMORY);
 
 	/* POODLE, only allow TLSv1.x or later */
 #ifndef OPENSSL_NO_EC
@@ -161,29 +174,30 @@ int ssl_open(http_t *client, char *msg)
 
 	/* Try to figure out location of trusted CA certs on system */
 	if (ssl_set_ca_location(client))
-		return RC_HTTPS_NO_TRUSTED_CA_STORE;
+		return ssl_fail(client, RC_HTTPS_NO_TRUSTED_CA_STORE);
 
 	client->ssl = SSL_new(client->ssl_ctx);
 	if (!client->ssl)
-		return RC_HTTPS_OUT_OF_MEMORY;
+		return ssl_fail(client, RC_HTTPS_OUT_OF_MEMORY);
 
 	/* SSL SNI support: tell the servername we want to speak to */
 	http_get_remote_name(client, &sn);
 	if (!SSL_set_tlsext_host_name(client->ssl, sn))
-		return RC_HTTPS_SNI_ERROR;
+		return ssl_fail(client, RC_HTTPS_SNI_ERROR);
 
 	SSL_set_fd(client->ssl, client->tcp.socket);
 	rc = SSL_connect(client->ssl);
 	if (rc < 0) {
 		ssl_check_error();
-		return RC_HTTPS_FAILED_CONNECT;
+		return ssl_fail(client, RC_HTTPS_FAILED_CONNECT);
 	}
 
+	client->connected = 1;
 	logit(LOG_INFO, "SSL connection using %s", SSL_get_cipher(client->ssl));
 
 	cert = SSL_get_peer_certificate(client->ssl);
 	if (!cert)
-		return RC_HTTPS_FAILED_GETTING_CERT;
+		return ssl_fail(client, RC_HTTPS_FAILED_GETTING_CERT);
 
 	if (SSL_get_verify_result(client->ssl) == X509_V_OK)
 		logit(LOG_DEBUG, "Certificate OK");
@@ -203,7 +217,8 @@ int ssl_close(http_t *client)
 	if (client->ssl_enabled) {
 		if (client->ssl) {
 			/* SSL/TLS close_notify */
-			SSL_shutdown(client->ssl);
+			if (client->connected)
+				SSL_shutdown(client->ssl);
 
 			/* Clean up. */
 			SSL_free(client->ssl);
@@ -214,6 +229,7 @@ int ssl_close(http_t *client)
 			client->ssl_ctx = NULL;
 		}
 	}
+	client->connected = 0;
 
 	return tcp_exit(&client->tcp);
 }

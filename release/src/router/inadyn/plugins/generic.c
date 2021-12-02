@@ -2,7 +2,7 @@
  *
  * Copyright (C) 2003-2004  Narcis Ilisei <inarcis2002@hotpop.com>
  * Copyright (C) 2006       Steve Horbachuk
- * Copyright (C) 2010-2020  Joachim Nilsson <troglobit@gmail.com>
+ * Copyright (C) 2010-2021  Joachim Wiberg <troglobit@gmail.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -39,7 +39,8 @@
 	"Authorization: Basic %s\r\n"					\
 	"User-Agent: %s\r\n\r\n"
 
-char *generic_responses[] = { "OK", "good", "true", "updated", "nochg", NULL };
+const char * const generic_responses[] =
+    { "OK", "good", "true", "updated", "nochg", NULL };
 
 static int request  (ddns_t       *ctx,   ddns_info_t *info, ddns_alias_t *alias);
 static int response (http_trans_t *trans, ddns_info_t *info, ddns_alias_t *alias);
@@ -139,7 +140,7 @@ static int custom_server_url(ddns_info_t *info, ddns_alias_t *alias)
 
 static char tohex(char code)
 {
-	static char hex[] = "0123456789abcdef";
+	static const char hex[] = "0123456789abcdef";
 
 	return hex[code & 15];
 }

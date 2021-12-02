@@ -1,6 +1,6 @@
 /* GnuTLS interface for optional HTTPS functions
  *
- * Copyright (C) 2014-2020  Joachim Nilsson <troglobit@gmail.com>
+ * Copyright (C) 2014-2021  Joachim Wiberg <troglobit@gmail.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -240,6 +240,7 @@ int ssl_open(http_t *client, char *msg)
 		return RC_HTTPS_FAILED_CONNECT;
 	}
 
+	client->connected = 1;
 	ssl_get_info(client);
 
 	/* Get server's certificate (note: beware of dynamic allocation) - opt */
@@ -267,9 +268,11 @@ int ssl_open(http_t *client, char *msg)
 int ssl_close(http_t *client)
 {
 	if (client->ssl_enabled) {
-		gnutls_bye(client->ssl, GNUTLS_SHUT_WR);
+		if (client->connected)
+			gnutls_bye(client->ssl, GNUTLS_SHUT_WR);
 		gnutls_deinit(client->ssl);
 	}
+	client->connected = 0;
 
 	return tcp_exit(&client->tcp);
 }

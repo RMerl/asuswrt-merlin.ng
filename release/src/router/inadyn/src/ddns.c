@@ -726,12 +726,6 @@ static int update_alias_table(ddns_t *ctx)
 			rc = 0;
 
 			if (!alias->update_required) {
-#ifdef ASUSWRT
-                                if (script_exec && !alias->script_called)
-                                {
-                                        goto script_exec;
-                                }
-#endif
 				if (exec_mode == EXEC_MODE_COMPAT)
 					continue;
 				event = "nochg";
@@ -743,21 +737,13 @@ static int update_alias_table(ddns_t *ctx)
 				/* Only reset if send_update() succeeds. */
 				alias->update_required = 0;
 				alias->last_update = time(NULL);
-#ifdef ASUSWRT
-				remove_cache_file_with_hostname(alias);
-#endif
 				/* Update cache file for this entry */
 				write_cache_file(alias);
 			}
 
 			/* Run command or script on successful update. */
-			if (script_exec) {
-#ifdef ASUSWRT
-			script_exec:
-				alias->script_called = 1;
-#endif
+			if (script_exec)
 				os_shell_execute(script_exec, alias->address, alias->ipv6_address, alias->name, event, rc);
-			}
 		}
 
 		if (RC_DDNS_RSP_NOTOK == rc || RC_DDNS_RSP_AUTH_FAIL == rc || RC_DDNS_RSP_NOHOST == rc)
@@ -772,6 +758,10 @@ static int update_alias_table(ddns_t *ctx)
 				/* Return these cases (define in check_error()) will retry again in Inadyn,
 				 * so set the error code and retry in watchdog */
 				/* defined in check_error() */
+				case RC_OK:
+					nvram_set("ddns_return_code", "200");
+					nvram_set("ddns_return_code_chk", "200");
+					break;
 				case RC_TCP_INVALID_REMOTE_ADDR: /* Probably temporary DNS error. */
 				case RC_TCP_CONNECT_FAILED:      /* Cannot connect to DDNS server atm. */
 				case RC_TCP_SEND_ERROR:

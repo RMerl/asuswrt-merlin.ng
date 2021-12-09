@@ -1,14 +1,14 @@
 
 EXE = tmctl
-#ifneq ($(strip $(BUILD_TMCTL)),)
+ifneq ($(strip $(BUILD_TMCTL)),)
 all:
 	@cp -f prebuilt/$(EXE) .
 
 install: generic_exe_install
-#else
-#all:
-#install:
-#endif
+else
+all:
+install:
+endif
 clean:
 
 dynamic: all install

@@ -30,10 +30,6 @@ release-hook:
 		echo;									\
 	fi
 
-## Generate .deb package
-package:
-	@debuild -uc -us -B --lintian-opts --profile debian -i -I --show-overrides
-
 ## Target to run when building a release
 release: release-hook distcheck
 	@for file in $(DIST_ARCHIVES); do		\

@@ -1,5 +1,5 @@
 AC_PREREQ(2.61)
-AC_INIT([In-a-dyn], [2.9.0], [https://github.com/troglobit/inadyn/issues],
+AC_INIT([In-a-dyn], [2.9.1], [https://github.com/troglobit/inadyn/issues],
 	[inadyn], [https://troglobit.com/projects/inadyn/])
 AC_CONFIG_AUX_DIR(aux)
 AM_INIT_AUTOMAKE([1.11 foreign dist-xz])
@@ -200,6 +200,9 @@ AC_SUBST(SYSCONFDIR)
 SBINDIR=`eval echo $sbindir`
 SBINDIR=`eval echo $SBINDIR`
 AC_SUBST(SBINDIR)
+DOCDIR=`eval echo $docdir`
+DOCDIR=`eval echo $DOCDIR`
+AC_SUBST(DOCDIR)
 
 # Workaround for as-of-yet unreleased runstatedir support, planned for
 # autoconf 2.70, which some major distros have backported.

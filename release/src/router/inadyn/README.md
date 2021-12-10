@@ -395,7 +395,7 @@ In-A-Dyn requires a few libraries to build.  The build system searches
 for them, in their required versions, using the `pkg-config` tool:
 
 * [libConfuse][] (3.0+)
-* [LibreSSL][], [OpenSSL][], or [GnuTLS][]
+* [LibreSSL][], [OpenSSL][], or [GnuTLS][] (which require libnettle)
 
 They are available from most UNIX distributions as pre-built packages.
 Make sure to install the `-dev` or `-devel` package of the distribution

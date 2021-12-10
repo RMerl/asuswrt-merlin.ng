@@ -131,7 +131,9 @@ static int check_response_code(int status)
 
 static int check_success(const char *json, const jsmntok_t tokens[], const int num_tokens)
 {
-	for (int i = 1; i < num_tokens; i++) {
+	int i;
+
+	for (i = 1; i < num_tokens; i++) {
 		int set;
 
 		if (jsoneq(json, tokens + i, KEY_SUCCESS) != 0)
@@ -165,7 +167,7 @@ static int check_success_only(const char *json)
 static int get_result_value(const char *json, const char *key, jsmntok_t *out_result)
 {
 	jsmntok_t *tokens;
-	int num_tokens;
+	int i, num_tokens;
 	
 	num_tokens = parse_json(json, &tokens);
 	if (num_tokens < 0)
@@ -181,7 +183,7 @@ static int get_result_value(const char *json, const char *key, jsmntok_t *out_re
 		goto cleanup;
 	}
 	
-	for (int i = 1; i < num_tokens; i++) {
+	for (i = 1; i < num_tokens; i++) {
 		if (jsoneq(json, tokens + i, key) != 0)
 			continue;
 

@@ -4,6 +4,23 @@ Change Log
 All notable changes to the project are documented in this file.
 
 
+[v2.9.1][] - 2021-12-09
+-----------------------
+
+### Changes
+- `debian/` directory and packaging dropped in favor of downstream
+  official packaging.  Too difficult to support different versions and
+  derivatives, not just Debian but also Ubuntu, etc.
+- Source `$INADYN_ARGS`, or `$INADYN_OPTS`, for the command line from an
+  `EnvironmentFile` in the systemd unit file
+- Reference the README in the systemd unit file instead of home page
+
+### Fixes
+- Issue #367: fix multiple hostname composition in custom providers when
+  using `printf(3)` style format specifiers in `ddns-path`
+- Issue #368: fix build with GCC 4.8, by Fabrice Fontaine
+
+
 [v2.9.0][] - 2021-11-21
 -----------------------
 
@@ -30,6 +47,7 @@ All notable changes to the project are documented in this file.
 - Issue #356: handle FreeDNS authentication errors and improve logging
 - Issue #361: unclear example for NameCheap DDNS
 - Issue #365: memory leak in OpenSSL backend when connection fails
+
 
 [v2.8.1][] - 2021-01-31
 -----------------------
@@ -878,7 +896,8 @@ First stable version.
 - port to pSOS
 
 
-[UNRELEASED]: https://github.com/troglobit/inadyn/compare/v2.8.1...HEAD
+[UNRELEASED]: https://github.com/troglobit/inadyn/compare/v2.9.1...HEAD
+[v2.9.1]: https://github.com/troglobit/inadyn/compare/v2.9.0...v2.9.1
 [v2.9.0]: https://github.com/troglobit/inadyn/compare/v2.8.1...v2.9.0
 [v2.8.1]: https://github.com/troglobit/inadyn/compare/v2.8...v2.8.1
 [v2.8]:   https://github.com/troglobit/inadyn/compare/v2.7...v2.8

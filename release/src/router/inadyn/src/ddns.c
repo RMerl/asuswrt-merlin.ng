@@ -196,8 +196,9 @@ static int is_address_valid(int family, const char *host)
 		"2606:4700:4700::64",
 		"2606:4700:4700::6400"
 	};
+	size_t i;
 
-	for (size_t i = 0; i < NELEMS(except); i++) {
+	for (i = 0; i < NELEMS(except); i++) {
 		if (!strncmp(host, except[i], strlen(host))) {
 			return 0;
 		}
@@ -639,14 +640,13 @@ static int send_update(ddns_t *ctx, ddns_info_t *info, ddns_alias_t *alias, int 
 		goto exit;
 	}
 
+	ctx->request_buf[trans.req_len] = 0;
+	logit(LOG_DEBUG, "Sending alias table update to DDNS server: %s", ctx->request_buf);
+
 #ifdef ENABLE_SIMULATION
 	logit(LOG_WARNING, "In simulation, skipping update to server ...");
 	goto exit;
 #endif
-
-	ctx->request_buf[trans.req_len] = 0;
-	logit(LOG_DEBUG, "Sending alias table update to DDNS server: %s", ctx->request_buf);
-
 	rc = http_transaction(client, &trans);
 	if (rc) {
 		/* Update failed, force update again in ctx->cmd_check_period seconds */

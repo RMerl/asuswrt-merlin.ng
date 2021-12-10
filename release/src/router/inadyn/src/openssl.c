@@ -115,9 +115,10 @@ done:
 
 static int ssl_error_cb(const char *str, size_t len, void *data)
 {
-	size_t sz;
 	char buf[512];
+	size_t sz;
 
+	(void)data;
 	memset(buf, 0, sizeof(buf));
 	sz = len < sizeof(buf) ? len : sizeof(buf) - 1;
 	memcpy(buf, str, sz);

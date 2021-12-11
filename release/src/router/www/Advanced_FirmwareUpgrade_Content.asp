@@ -1142,8 +1142,8 @@ function show_fw_release_note(event) {
 	document.amas_release_note.model.value = event.data.model_name;
 	if (event.data.isMerlin) {
 		document.amas_release_note.version.value = event.data.newfwver.replace("3.0.0.4.","");
-		if (event.data.model_name == based_modelid)
-			siteurl = download_url_redir;
+		if (event.data.model_name)
+			siteurl = "https://fwupdate.asuswrt-merlin.net/" + event.data.model_name;
 		else
 			siteurl = download_url;
 	} else {

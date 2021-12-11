@@ -291,6 +291,7 @@ function initial(){
 					continue;//filter CAP
 				var frs_model_name = get_cfg_clientlist[idx].frs_model_name;
 				var model_name = get_cfg_clientlist[idx].model_name;
+				if (frs_model_name == "") frs_model_name = model_name;
 				var ui_model_name = get_cfg_clientlist[idx].ui_model_name;
 				var fwver = get_cfg_clientlist[idx].fwver;
 				var online = get_cfg_clientlist[idx].online;
@@ -1049,6 +1050,7 @@ function show_amas_fw_result() {
 			for (var idx in get_cfg_clientlist) {
 				if(get_cfg_clientlist.hasOwnProperty(idx)) {
 					var frs_model_name = get_cfg_clientlist[idx].frs_model_name;
+					if (frs_model_name == "") frs_model_name = get_cfg_clientlist[idx].model_name;
 					var mac = get_cfg_clientlist[idx].mac;
 					var newfwver = get_cfg_clientlist[idx].newfwver;
 					var mac_id = mac.replace(/:/g, "");

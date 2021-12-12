@@ -406,7 +406,7 @@ function gen_ready_onboardinglist(_onboardingList) {
 								if(type != undefined && type == "65536")
 									code += "<div class='radioIcon radio_plc'></div>";
 								else
-								code += "<div class='radioIcon radio_wired'></div>";
+									code += "<div class='radioIcon radio_wired'></div>";
 							}
 							else
 								code += "<div class='radioIcon radio_" + client_convRSSI(rssi) + "'></div>";
@@ -443,7 +443,7 @@ function gen_ready_onboardinglist(_onboardingList) {
 						if(type != undefined && type == "65536")
 							$('#ready_onBoarding_block').find('#' + onboarding_device_id + '').children().find('.radioIcon').removeClass().addClass('radioIcon radio_plc');
 						else
-						$('#ready_onBoarding_block').find('#' + onboarding_device_id + '').children().find('.radioIcon').removeClass().addClass('radioIcon radio_wired');
+							$('#ready_onBoarding_block').find('#' + onboarding_device_id + '').children().find('.radioIcon').removeClass().addClass('radioIcon radio_wired');
 					}
 					else
 						$('#ready_onBoarding_block').find('#' + onboarding_device_id + '').children().find('.radioIcon').removeClass().addClass('radioIcon radio_' + client_convRSSI(rssi) + '');

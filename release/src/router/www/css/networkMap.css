@@ -276,3 +276,4 @@ input[type="text"], input[type="password"], .input_option{
 	border-bottom-left-radius: 3px;
 	border-bottom-right-radius: 1px;
 }
+#slider .ui-slider-handle { border-color: #3367d6; }

@@ -605,7 +605,7 @@ function client_gen_client_component(_dataArray, _node_info){
 				if(aimesh_node_client_upload_icon[nodeClientObj.mac] == undefined) {
 					var clientMac = nodeClientObj.mac.replace(/\:/g, "");
 					userIconBase64 = getUploadIcon(clientMac);
-						aimesh_node_client_upload_icon[nodeClientObj.mac] = userIconBase64;
+					aimesh_node_client_upload_icon[nodeClientObj.mac] = userIconBase64;
 				}
 				else
 					userIconBase64 = aimesh_node_client_upload_icon[nodeClientObj.mac];
@@ -662,7 +662,7 @@ function client_gen_client_component(_dataArray, _node_info){
 				$clientConnect.addClass("client_connect_icon");
 				switch(nodeClientObj.isWL){
 					case 0:
-					$clientConnect.addClass("wired");
+						$clientConnect.addClass("wired");
 						break;
 					case 1:
 						$clientConnect.addClass("wl_2g");
@@ -1727,16 +1727,7 @@ function network_set_backhaul_info(_node_info, _signal_quality){
 				_obj.find(".bubble_icon").css("display", "inline-block");
 			}
 		}
-		if(_ap_info.is_dwb){
-			_obj.find(".as_backhaul_info").show();
-			_obj.find(".fronthaul_info").hide();
-			var dwb_hint = "* "+ band_text + ' <#AiMesh_backhaul_band_5GHz-2_desc1#> <#AiMesh_backhaul_band_5GHz-2_desc2#>';
-			_obj.find(".as_backhaul_info #dwb_hint").html(dwb_hint);
-		}
-		else{
-			_obj.find(".as_backhaul_info").hide();
-			_obj.find(".fronthaul_info").show();
-		}
+
 		if(conndiag_support){
 			var set_backhaul_traffic = function(_data){
 				var traffic_data_rate = "";
@@ -1896,22 +1887,32 @@ function network_set_fronthaul_info(_node_info){
 		if(_ap_info.ssid != ""){
 			_obj.find("#fronthaul_ssid").html(_ap_info.ssid);
 			_obj.find("#fronthaul_ssid").attr("title", _ap_info.ssid);
-				_obj.find(".bubble_icon").hide();
-			}
-			else{
-				_obj.find("#fronthaul_ssid").html("N/A");
-				_obj.find(".bubble_icon").parent().find(".hover_pop_hint_bg").remove();
-				var hint_parm = {
-					"text": "<#AiMesh_Update_Latest_FW#>",
-					"css": "ssid_icon"
-				};
-				_obj.find(".bubble_icon").removeClass("hover_pop_hint").addClass("hover_pop_hint");
-				_obj.find(".bubble_icon").after(gen_hint_component(hint_parm));
-				_obj.find(".bubble_icon").css("display", "inline-block");
-			}
-			if(!conndiag_support)
-				_obj.find(".conndiag_data").hide();
-		};
+			_obj.find(".bubble_icon").hide();
+		}
+		else{
+			_obj.find("#fronthaul_ssid").html("N/A");
+			_obj.find(".bubble_icon").parent().find(".hover_pop_hint_bg").remove();
+			var hint_parm = {
+				"text": "<#AiMesh_Update_Latest_FW#>",
+				"css": "ssid_icon"
+			};
+			_obj.find(".bubble_icon").removeClass("hover_pop_hint").addClass("hover_pop_hint");
+			_obj.find(".bubble_icon").after(gen_hint_component(hint_parm));
+			_obj.find(".bubble_icon").css("display", "inline-block");
+		}
+		if(_ap_info.is_dwb){
+			_obj.find(".as_backhaul_info").show();
+			_obj.find(".fronthaul_info").hide();
+			var dwb_hint = "* "+ band_text + ' <#AiMesh_backhaul_band_5GHz-2_desc1#> <#AiMesh_backhaul_band_5GHz-2_desc2#>';
+			_obj.find(".as_backhaul_info #dwb_hint").html(dwb_hint);
+		}
+		else{
+			_obj.find(".as_backhaul_info").hide();
+			_obj.find(".fronthaul_info").show();
+		}
+		if(!conndiag_support)
+			_obj.find(".conndiag_data").hide();
+	};
 	$.each(ap_info_list, function(index, value){
 		var ap_info = value;
 		var $fronthaul_wl_obj = $("#network_block .fronthaul_content").find("#fronthaul_wl_" + ap_info.name + "");
@@ -2877,12 +2878,12 @@ function manage_set_preferable_backhaul(_node_info, _pref_info){
 			}());
 		}
 		else{
-		var data = new Object();
-		data.amas_wlc_target_bssid = ((target_mac == "") ? "" : ("<" + target_mac));
-		data.amas_wlc0_target_bssid = ((target_ap2g == "") ? "" : ("<" + target_ap2g));
-		data.amas_wlc1_target_bssid = ((target_ap5g == "") ? "" : ("<" + target_ap5g));
-		data.amas_wlc2_target_bssid = ((target_ap5g1 == "") ? "" : ("<" + target_ap5g1));
-		manage_set_config(data, current_node_mac);
+			var data = new Object();
+			data.amas_wlc_target_bssid = ((target_mac == "") ? "" : ("<" + target_mac));
+			data.amas_wlc0_target_bssid = ((target_ap2g == "") ? "" : ("<" + target_ap2g));
+			data.amas_wlc1_target_bssid = ((target_ap5g == "") ? "" : ("<" + target_ap5g));
+			data.amas_wlc2_target_bssid = ((target_ap5g1 == "") ? "" : ("<" + target_ap5g1));
+			manage_set_config(data, current_node_mac);
 		}
 
 		setTimeout(function(){
@@ -3298,9 +3299,9 @@ function change_node(_node_info){
 
 	select_node_capability = httpApi.aimesh_get_node_capability(_node_info);
 	set_primary_info(_node_info);
-		if(!isReNode && (current_click_tab == "manage"))
-			current_click_tab = "client";
-		control_category_block(current_click_tab);
+	if(!isReNode && (current_click_tab == "manage"))
+		current_click_tab = "client";
+	control_category_block(current_click_tab);
 }
 function jstree_re_draw_connect_line(){
 	var $jstree_leaves = $('#jstree').find(".jstree-node");
@@ -3449,7 +3450,7 @@ function initial_AiMesh(){
 					$node_connect_type.addClass(quality_css);//node connect line
 					$(el).attr("custom_connect_quality", quality_css);//add custom attr for quality, used at re_draw_connect_line()
 				}
-				
+
 				if(re_path == "1" || re_path == "16" || re_path == "32" || re_path == "64"){//node connect type
 					$node_connect_type.addClass(_signal_quality.type);
 					$(el).attr("custom_connect_type", (_signal_quality.type));

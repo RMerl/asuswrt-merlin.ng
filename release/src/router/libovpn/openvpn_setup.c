@@ -354,6 +354,7 @@ int ovpn_write_server_config(ovpn_sconf_t *sconf, int unit) {
 #endif
 			fprintf(fp, "proto udp4\n");
 		fprintf(fp, "multihome\n");
+		fprintf(fp_client, "proto udp\n");
 	} else {
 #ifdef RTCONFIG_IPV6
 		if (ipv6_enabled())

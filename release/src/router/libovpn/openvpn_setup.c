@@ -618,21 +618,7 @@ int ovpn_write_client_config(ovpn_cconf_t *cconf, int unit) {
 		fprintf(fp, "client\n");
 	fprintf(fp, "dev %s\n", cconf->if_name);
 	fprintf(fp, "txqueuelen 1000\n");
-
-	if (!strcmp(cconf->proto, "udp"))
-#ifdef RTCONFIG_IPV6
-		if (ipv6_enabled())
-			fprintf(fp, "proto udp6\n");
-		else
-#endif
-			fprintf(fp, "proto udp4\n");
-	else
-#ifdef RTCONFIG_IPV6
-		if (ipv6_enabled())
-			fprintf(fp, "proto tcp6\n");
-		else
-#endif
-			fprintf(fp, "proto tcp4\n");
+	fprintf(fp, "proto %s\n", cconf->proto);
 
 	fprintf(fp, "remote %s %d\n", cconf->addr, cconf->port);
 	if (cconf->auth_mode == OVPN_AUTH_STATIC) {

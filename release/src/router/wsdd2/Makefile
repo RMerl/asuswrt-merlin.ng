@@ -6,36 +6,33 @@
 #
 include ../common.mak
 
-CFLAGS        ?= -Wall -Wextra -g -O0
-LDFLAGS       ?= -g
-OBJFILES      = wsdd2.o wsd.o llmnr.o
+OBJFILES	= wsdd2.o wsd.o llmnr.o
+
 ifeq ($(RTCONFIG_BCMARM),y)
 ifneq ($(HND_ROUTER),y)
 	OBJFILES += ifaddrs.o
 endif
 endif
-HEADERS       = wsdd.h wsd.h
 
-PREFIX  ?= /usr
-SBINDIR ?= $(PREFIX)/sbin
-MANDIR  ?= $(PREFIX)/share/man
-LIBDIR  ?= $(PREFIX)/lib
+HEADERS		= wsdd.h wsd.h
+
+INSTALLPREFIX ?= $(PREFIX)/usr
+SBININSTALLDIR = $(INSTALLPREFIX)/sbin
+MANINSTALLDIR = $(INSTALLPREFIX)/share/man
 
 all: wsdd2
 
-nl_debug: CPPFLAGS+=-DMAIN
-nl_debug: nl_debug.c; $(LINK.c) $^ $(LOADLIBES) $(LDLIBS) -o $@
-
 wsdd2: $(OBJFILES)
-$(OBJFILES): $(HEADERS) Makefile
 
-install: wsdd2
-	install -d $(DESTDIR)$(SBINDIR)
-	install wsdd2 $(DESTDIR)$(SBINDIR)
-	install -d $(DESTDIR)$(MANDIR)/man8
-	install -m 0644 wsdd2.8 $(DESTDIR)$(MANDIR)/man8
-	install -d $(DESTDIR)$(LIBDIR)/systemd/system
-	install -m 0644 wsdd2.service $(DESTDIR)$(LIBDIR)/systemd/system
+$(OBJFILES) : $(HEADERS) Makefile
+
+install:	wsdd2
+	install -d $(DESTDIR)/$(SBININSTALLDIR)
+	install wsdd2 $(DESTDIR)/$(SBININSTALLDIR)
+	install -d $(DESTDIR)/$(MANINSTALLDIR)/man8
+	install wsdd2.8 $(DESTDIR)/$(MANINSTALLDIR)/man8/wsdd2.8
+	install -d $(DESTDIR)/lib/systemd/system
+	install -m 0644 wsdd2.service $(DESTDIR)/lib/systemd/system
 
 clean:
-	rm -f wsdd2 nl_debug $(OBJFILES)
+	rm -f wsdd2 $(OBJFILES)

@@ -1,17 +1,8 @@
 [Unit]
 Description=WSD/LLMNR Discovery/Name Service Daemon
-BindsTo=smbd.service
+BindsTo=smb.service
 
 [Service]
 ExecStart=/usr/sbin/wsdd2
 ExecReload=/bin/kill -HUP $MAINPID
 Restart=on-failure
-DynamicUser=true
-AmbientCapabilities=CAP_NET_RAW CAP_NET_ADMIN
-PrivateTmp=true
-PrivateDevices=true
-ProtectSystem=full
-ProtectHome=true
-
-[Install]
-WantedBy=multi-user.target

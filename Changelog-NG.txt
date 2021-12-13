@@ -4,14 +4,12 @@ Asuswrt-Merlin 386/NG Changelog
 386.4 (xx-xxx-2021)
   - NEW: Added support for the RT-AX86S (uses the same firmware
          as the RT-AX86U).
-  - NEW: Added support for the RT-AC68_V4 and GT-AXE11000.
   - NEW: Added wireguard kernel module + userspace tool to
          HND models.
   - NEW: IPv6 support for OpenVPN server.  Allows connecting over
          your WAN's IPv6, and also reach LAN clients over their
-         IPv6.  Internet traffic over IPv6 does NOT work.
+         IPv6 (redirecting IPv6 Internet traffic does not work).
   - UPDATED: Merged with GPL 386_45958.
-  - UPDATED: wsdd2 to 1.8.6, and rewrote Asuswrt patches for it.
   - UPDATED: curl to 7.79.1.
   - UPDATED: vsftpd to 3.0.5.
   - UPDATED: openssl to 1.1.1l.
@@ -21,13 +19,13 @@ Asuswrt-Merlin 386/NG Changelog
   - UPDATED: openvpn to 2.5.4.
   - UPDATED: tor to 0.4.5.11.
   - UPDATED: miniupnpd to 2.2.3-git 20211017.
-  - UPDATED: inadyn to 2.9.0.
-  - UPDATED: CA bundle to 2021-10-31.
+  - UPDATED: inadyn to 2.9.1.
+  - UPDATED: CA bundle to 2021-12-13.
   - CHANGED: replaced jitterentropy-rngd with haveged.
-             It uses more flash and memory, but it
-             works properly on older platforms, and is
+             It uses more resources, but it works
+             properly on older platforms, and is
              generally less CPU intensive in regular
-             use.  This is enabled for all router
+             use.  This is implemented for all router
              models.
   - CHANGED: Switched dnsmasq crypto backend to nettle.
   - CHANGED: Switched to Asus's own dhcp hostname support.
@@ -43,14 +41,13 @@ Asuswrt-Merlin 386/NG Changelog
            gateway in an openvpn client routing table.
   - FIXED: Generated OpenVPN certs used SHA1 signatures
            instead of SHA256 (regression from 386.1)
-  - FIXED: Various issues with importing the protocol
-           when importing an ovpn client file.
+  - FIXED: Various issues with protocol handling when
+           importing an ovpn client file.
   - FIXED: IPv6 not working while in Dual WAN mode.
   - FIXED: Failed OpenVPN client connections might sometime
            be stuck with a "Connecting" state.
   - FIXED: NTP sometimes failing to update at boot time
            when using IPv6.
-  - REMOVED: jitterentropy-rngd (replaced with haveged).
 
 
 386.3_2 (6-Aug-2021)

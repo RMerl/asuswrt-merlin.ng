@@ -209,19 +209,19 @@ int ej_show_sysinfo(int eid, webs_t wp, int argc, char_t ** argv)
 			}
 		} else if(strcmp(type,"memory.total") == 0) {
 			sysinfo(&sys);
-			sprintf(result,"%.2f",(sys.totalram/(float)MBYTES));
+			sprintf(result,"%.2f",(sys.totalram * sys.mem_unit / (float)MBYTES));
 		} else if(strcmp(type,"memory.free") == 0) {
 			sysinfo(&sys);
-			sprintf(result,"%.2f",(sys.freeram/(float)MBYTES));
+			sprintf(result,"%.2f",(sys.freeram * sys.mem_unit / (float)MBYTES));
 		} else if(strcmp(type,"memory.buffer") == 0) {
 			sysinfo(&sys);
-			sprintf(result,"%.2f",(sys.bufferram/(float)MBYTES));
+			sprintf(result,"%.2f",(sys.bufferram * sys.mem_unit / (float)MBYTES));
 		} else if(strcmp(type,"memory.swap.total") == 0) {
 			sysinfo(&sys);
-			sprintf(result,"%.2f",(sys.totalswap/(float)MBYTES));
+			sprintf(result,"%.2f",(sys.totalswap * sys.mem_unit / (float)MBYTES));
 		} else if(strcmp(type,"memory.swap.used") == 0) {
 			sysinfo(&sys);
-			sprintf(result,"%.2f",((sys.totalswap - sys.freeswap) / (float)MBYTES));
+			sprintf(result,"%.2f",((sys.totalswap - sys.freeswap) * sys.mem_unit / (float)MBYTES));
 		} else if(strcmp(type,"memory.cache") == 0) {
 			int size = 0;
 			char *buffer = read_whole_file("/proc/meminfo");

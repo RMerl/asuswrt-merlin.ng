@@ -360,20 +360,29 @@ int ej_show_sysinfo(int eid, webs_t wp, int argc, char_t ** argv)
 			else
 				sprintf(result,"%d",count);
 
-		} else if(strcmp(type,"driver_version") == 0 ) {
-			system("/usr/sbin/wl ver >/tmp/output.txt");
+		} else if(strncmp(type,"driver_version",14) == 0 ) {
+			int radio = 0;
+			char buf[32], buf2[64];
 
-			char *buffer = read_whole_file("/tmp/output.txt");
+			sscanf(type,"driver_version.%d", &radio);
+			sprintf(buf, "wl%d_ifname", radio);
+			tmp = nvram_safe_get(buf);
+			if (*tmp) {
+				snprintf(buf2, sizeof (buf2), "/usr/sbin/wl -i %s ver >/tmp/output.txt", tmp);
+				system(buf2);
 
-			if (buffer) {
-				if ((tmp = strstr(buffer, "\n")))
-					strlcpy(result, tmp+1, sizeof result);
-				else
-					strlcpy(result, buffer, sizeof result);
+				char *buffer = read_whole_file("/tmp/output.txt");
 
-				free(buffer);
+				if (buffer) {
+					if ((tmp = strstr(buffer, "\n")))
+						strlcpy(result, tmp+1, sizeof result);
+					else
+						strlcpy(result, buffer, sizeof result);
+					replace_char(result, '\n', ' ');
+					free(buffer);
+				}
+				unlink("/tmp/output.txt");
 			}
-			unlink("/tmp/output.txt");
 #ifdef RTCONFIG_QTN
                 } else if(strcmp(type,"qtn_version") == 0 ) {
 

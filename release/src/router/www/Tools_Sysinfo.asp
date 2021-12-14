@@ -97,6 +97,7 @@ function initial(){
 	update_temperatures();
 	updateClientList();
 	update_sysinfo();
+	show_wifi_version();
 }
 
 function update_temperatures(){
@@ -449,6 +450,20 @@ function update_sysinfo(e){
 	});
 }
 
+function show_wifi_version() {
+	var buf = "<td>";
+
+	buf += "<% sysinfo("driver_version.0"); %>";
+	if (band5g_support)
+		buf += "<br><% sysinfo("driver_version.1"); %>";
+	if (wl_info.band5g_2_support || wl_info.band6g_support)
+		buf += "<br><% sysinfo("driver_version.2"); %>";
+
+	buf += "</td>";
+
+	document.getElementById("wifi_version_td").innerHTML = buf;
+}
+
 </script>
 </head>
 
@@ -520,8 +535,8 @@ function update_sysinfo(e){
 						<td><% sysinfo("cfe_version"); %></td>
 					</tr>
 					<tr>
-						<th>Driver version</th>
-						<td><% sysinfo("driver_version"); %></td>
+						<th>Wireless Driver Version</th>
+						<td id="wifi_version_td"></td>
 					</tr>
 					<tr id="qtn_version" style="display:none;">
 						<th>Quantenna Firmware</th>

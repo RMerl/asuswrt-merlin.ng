@@ -225,6 +225,8 @@ function initial(){
 		$("#portSuggestionAdvanced").hide();
 	}
 
+	if(!IPv6_support)
+		$("#server_snnm6").css("display", "none");
 
 	$("#client_pwd_strength").append(Get_Component_PWD_Strength_Meter());
 	if($("[name='vpn_server_clientlist_password']").val() == "")
@@ -445,9 +447,10 @@ function applyRule(){
 				return false;
 			}
 
-			if(!validator.isLegal_ipv6(document.form.vpn_server_sn6)) return false;
-			if(!validator.range(document.form.vpn_server_nm6, 64, 126)) return false;
-
+			if(IPv6_support) {
+				if(!validator.isLegal_ipv6(document.form.vpn_server_sn6)) return false;
+				if(!validator.range(document.form.vpn_server_nm6, 64, 126)) return false;
+			}
 		}
 		else if(document.form.vpn_server_if.value == 'tap' && document.form.vpn_server_dhcp.value == '0'){
 			if(!validator.isLegalIP(document.form.vpn_server_r1, "")){		

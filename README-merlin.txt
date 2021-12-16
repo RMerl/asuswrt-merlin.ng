@@ -45,8 +45,6 @@ Fully supported devices:
  * GT-AC2900
  * GT-AX11000
  * RT-AX68U
- * RT-AC68U_V4
- * GT-AXE11000
 
 No longer supported:
  * RT-N16

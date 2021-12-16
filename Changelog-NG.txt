@@ -5,7 +5,7 @@ Asuswrt-Merlin 386/NG Changelog
   - NEW: Added support for the RT-AX86S (uses the same firmware
          as the RT-AX86U).
   - NEW: Added wireguard kernel module + userspace tool to
-         HND models.
+         HND models firmware images.
   - NEW: IPv6 support for OpenVPN server.  Allows connecting over
          your WAN's IPv6, and also reach LAN clients over their
          IPv6 (redirecting IPv6 Internet traffic does not work).

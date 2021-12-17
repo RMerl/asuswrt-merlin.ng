@@ -156,13 +156,13 @@ int wanlink_hook_dsl(int eid, webs_t wp, int argc, char_t **argv){
 	type = nvram_safe_get(nvram_safe_get("dsl_proto"));
 
 	if(status != 0){
-		ip = nvram_safe_get(strcat_r(prefix, "ipaddr", tmp));
-		netmask = nvram_safe_get(strcat_r(prefix, "netmask", tmp));
-		gateway = nvram_safe_get(strcat_r(prefix, "gateway", tmp));
-		dns = nvram_safe_get(strcat_r(prefix, "dns", tmp));
-		lease = nvram_get_int(strcat_r(prefix, "lease", tmp));
+		ip = nvram_safe_get(strlcat_r(prefix, "ipaddr", tmp, sizeof(tmp)));
+		netmask = nvram_safe_get(strlcat_r(prefix, "netmask", tmp, sizeof(tmp)));
+		gateway = nvram_safe_get(strlcat_r(prefix, "gateway", tmp, sizeof(tmp)));
+		dns = nvram_safe_get(strlcat_r(prefix, "dns", tmp, sizeof(tmp)));
+		lease = nvram_get_int(strlcat_r(prefix, "lease", tmp, sizeof(tmp)));
 		if (lease > 0)
-			expires = nvram_get_int(strcat_r(prefix, "expires", tmp)) - uptime();
+			expires = nvram_get_int(strlcat_r(prefix, "expires", tmp, sizeof(tmp))) - uptime();
 	}
 
 	websWrite(wp, "function wanlink_status() { return %d;}\n", status);
@@ -171,26 +171,26 @@ int wanlink_hook_dsl(int eid, webs_t wp, int argc, char_t **argv){
 	websWrite(wp, "function wanlink_ipaddr() { return '%s';}\n", ip);
 	websWrite(wp, "function wanlink_netmask() { return '%s';}\n", netmask);
 	websWrite(wp, "function wanlink_gateway() { return '%s';}\n", gateway);
-	websWrite(wp, "function wanlink_dns() { return '%s';}\n", nvram_safe_get(strcat_r(prefix, "dns", tmp)));
+	websWrite(wp, "function wanlink_dns() { return '%s';}\n", nvram_safe_get(strlcat_r(prefix, "dns", tmp, sizeof(tmp))));
 	websWrite(wp, "function wanlink_lease() { return %d;}\n", lease);
 	websWrite(wp, "function wanlink_expires() { return %d;}\n", expires);
-	websWrite(wp, "function is_private_subnet() { return '%d';}\n", is_private_subnet(nvram_safe_get(strcat_r(prefix, "ipaddr", tmp))));
+	websWrite(wp, "function is_private_subnet() { return '%d';}\n", is_private_subnet(nvram_safe_get(strlcat_r(prefix, "ipaddr", tmp, sizeof(tmp)))));
 
 /* TODO: implement WANX */
 //	if (strcmp(wan_proto, "pppoe") == 0 ||
 //	    strcmp(wan_proto, "pptp") == 0 ||
 //	    strcmp(wan_proto, "l2tp") == 0) {
-//		int dhcpenable = nvram_get_int(strcat_r(prefix, "dhcpenable_x", tmp));
+//		int dhcpenable = nvram_get_int(strlcat_r(prefix, "dhcpenable_x", tmp, sizeof(tmp)));
 //		xtype = (dhcpenable == 0) ? "static" :
-//			(strcmp(wan_proto, "pppoe") == 0 && nvram_match(strcat_r(prefix, "vpndhcp", tmp), "0")) ? "" : /* zeroconf */
+//			(strcmp(wan_proto, "pppoe") == 0 && nvram_match(strlcat_r(prefix, "vpndhcp", tmp, sizeof(tmp)), "0")) ? "" : /* zeroconf */
 //			"dhcp";
-//		xip = nvram_safe_get(strcat_r(prefix, "xipaddr", tmp));
-//		xnetmask = nvram_safe_get(strcat_r(prefix, "xnetmask", tmp));
-//		xgateway = nvram_safe_get(strcat_r(prefix, "xgateway", tmp));
-//		xdns = nvram_safe_get(strcat_r(prefix, "xdns", tmp));
-//		xlease = nvram_get_int(strcat_r(prefix, "xlease", tmp));
+//		xip = nvram_safe_get(strlcat_r(prefix, "xipaddr", tmp, sizeof(tmp)));
+//		xnetmask = nvram_safe_get(strlcat_r(prefix, "xnetmask", tmp, sizeof(tmp)));
+//		xgateway = nvram_safe_get(strlcat_r(prefix, "xgateway", tmp, sizeof(tmp)));
+//		xdns = nvram_safe_get(strlcat_r(prefix, "xdns", tmp, sizeof(tmp)));
+//		xlease = nvram_get_int(strlcat_r(prefix, "xlease", tmp, sizeof(tmp)));
 //		if (xlease > 0)
-//			xexpires = nvram_get_int(strcat_r(prefix, "xexpires", tmp)) - uptime();
+//			xexpires = nvram_get_int(strlcat_r(prefix, "xexpires", tmp, sizeof(tmp))) - uptime();
 //	}
 
 	websWrite(wp, "function wanlink_xtype() { return '%s';}\n", xtype);
@@ -306,7 +306,7 @@ int ej_get_DSL_WAN_list(int eid, webs_t wp, int argc, char_t **argv){
 				else {
 					websWrite(wp, ", ");
 				}
-				strlcpy(buf,nvram_safe_get(strcat_r(prefix, &display_items[j][4], tmp)), sizeof(buf));
+				strlcpy(buf,nvram_safe_get(strlcat_r(prefix, &display_items[j][4], tmp, sizeof(tmp))), sizeof(buf));
 				if (strcmp(buf,"")==0) {
 					strlcpy(buf2,"\"0\"", sizeof(buf2));
 				}
@@ -341,7 +341,7 @@ int ej_get_DSL_WAN_list(int eid, webs_t wp, int argc, char_t **argv){
 				else {
 					websWrite(wp, ", ");
 				}
-				strlcpy(buf,nvram_safe_get(strcat_r(prefix, &display_items[j][4], tmp)), sizeof(buf));
+				strlcpy(buf,nvram_safe_get(strlcat_r(prefix, &display_items[j][4], tmp, sizeof(tmp))), sizeof(buf));
 				if (strcmp(buf,"")==0) {
 					strlcpy(buf2,"\"0\"", sizeof(buf2));
 				}
@@ -405,18 +405,18 @@ int update_dsl_iptv_variables()
 		}
 		else {
 			snprintf(prefix, sizeof(prefix), "dsl%d_", unit);
-			nvram_set(strcat_r(prefix, "vpi", tmp), vpi);
-			nvram_set(strcat_r(prefix, "vci", tmp), vci);
-			nvram_set(strcat_r(prefix, "encap", tmp), encap);
+			nvram_set(strlcat_r(prefix, "vpi", tmp, sizeof(tmp)), vpi);
+			nvram_set(strlcat_r(prefix, "vci", tmp, sizeof(tmp)), vci);
+			nvram_set(strlcat_r(prefix, "encap", tmp, sizeof(tmp)), encap);
 			nvram_set("dsltmp_transmode", "atm");
 		}
 #else
 		if(nvram_match("dsltmp_transmode", "atm")) {
 			snprintf(prefix, sizeof(prefix), "dsl%d_", unit);
 
-			nvram_set(strcat_r(prefix, "vpi", tmp), vpi);
-			nvram_set(strcat_r(prefix, "vci", tmp), vci);
-			nvram_set(strcat_r(prefix, "encap", tmp), encap);
+			nvram_set(strlcat_r(prefix, "vpi", tmp, sizeof(tmp)), vpi);
+			nvram_set(strlcat_r(prefix, "vci", tmp, sizeof(tmp)), vci);
+			nvram_set(strlcat_r(prefix, "encap", tmp, sizeof(tmp)), encap);
 		}
 		else {	//ptm
 			snprintf(prefix, sizeof(prefix), "dsl8.%d_", unit);
@@ -426,45 +426,45 @@ int update_dsl_iptv_variables()
 		}
 #endif
 
-		nvram_set(strcat_r(prefix, "enable", tmp), "1");
+		nvram_set(strlcat_r(prefix, "enable", tmp, sizeof(tmp)), "1");
 
 		if(!strcmp(proto, "0")) {
-			nvram_set(strcat_r(prefix, "proto", tmp), "pppoe");
-			nvram_set(strcat_r(prefix, "nat", tmp), "1");
-			nvram_set(strcat_r(prefix, "dnsenable", tmp), "1");
+			nvram_set(strlcat_r(prefix, "proto", tmp, sizeof(tmp)), "pppoe");
+			nvram_set(strlcat_r(prefix, "nat", tmp, sizeof(tmp)), "1");
+			nvram_set(strlcat_r(prefix, "dnsenable", tmp, sizeof(tmp)), "1");
 		}
 		else if(!strcmp(proto, "1")) {
-			nvram_set(strcat_r(prefix, "proto", tmp), "pppoa");
-			nvram_set(strcat_r(prefix, "nat", tmp), "1");
-			nvram_set(strcat_r(prefix, "dnsenable", tmp), "1");
+			nvram_set(strlcat_r(prefix, "proto", tmp, sizeof(tmp)), "pppoa");
+			nvram_set(strlcat_r(prefix, "nat", tmp, sizeof(tmp)), "1");
+			nvram_set(strlcat_r(prefix, "dnsenable", tmp, sizeof(tmp)), "1");
 		}
 		else if(!strcmp(proto, "2")) {
 			if(nvram_match("dsltmp_transmode", "atm"))
-				nvram_set(strcat_r(prefix, "proto", tmp), "mer");
+				nvram_set(strlcat_r(prefix, "proto", tmp, sizeof(tmp)), "mer");
 			else
-				nvram_set(strcat_r(prefix, "proto", tmp), "dhcp");
-			nvram_set(strcat_r(prefix, "DHCPClient", tmp), "1");
-			nvram_set(strcat_r(prefix, "nat", tmp), "1");
-			nvram_set(strcat_r(prefix, "dnsenable", tmp), "1");
+				nvram_set(strlcat_r(prefix, "proto", tmp, sizeof(tmp)), "dhcp");
+			nvram_set(strlcat_r(prefix, "DHCPClient", tmp, sizeof(tmp)), "1");
+			nvram_set(strlcat_r(prefix, "nat", tmp, sizeof(tmp)), "1");
+			nvram_set(strlcat_r(prefix, "dnsenable", tmp, sizeof(tmp)), "1");
 			is_dhcp = 1;
 		}
 		else if(!strcmp(proto, "3")) {
-			nvram_set(strcat_r(prefix, "proto", tmp), "bridge");
+			nvram_set(strlcat_r(prefix, "proto", tmp, sizeof(tmp)), "bridge");
 			is_stb_bridge = 1;
 		}
 		else if(!strcmp(proto, "4")) {
-			nvram_set(strcat_r(prefix, "proto", tmp), "ipoa");
-			nvram_set(strcat_r(prefix, "nat", tmp), "1");
-			nvram_set(strcat_r(prefix, "dnsenable", tmp), "1");
+			nvram_set(strlcat_r(prefix, "proto", tmp, sizeof(tmp)), "ipoa");
+			nvram_set(strlcat_r(prefix, "nat", tmp, sizeof(tmp)), "1");
+			nvram_set(strlcat_r(prefix, "dnsenable", tmp, sizeof(tmp)), "1");
 		}
 		else {
-			nvram_set(strcat_r(prefix, "proto", tmp), "bridge");
+			nvram_set(strlcat_r(prefix, "proto", tmp, sizeof(tmp)), "bridge");
 			is_stb_bridge = 1;
 		}
 
 		if(strlen(vid)) {
-			nvram_set(strcat_r(prefix, "dot1q", tmp), "1");
-			nvram_set(strcat_r(prefix, "vid", tmp), vid);
+			nvram_set(strlcat_r(prefix, "dot1q", tmp, sizeof(tmp)), "1");
+			nvram_set(strlcat_r(prefix, "vid", tmp, sizeof(tmp)), vid);
 		}
 	}
 	free(nv);

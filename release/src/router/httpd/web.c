@@ -2488,60 +2488,60 @@ ej_wl_get_guestnetwork(int eid, webs_t wp, int argc, char_t **argv)
 	ret += websWrite(wp, "[");
 
 	subunit = 0;
-	foreach(word2, nvram_safe_get(strcat_r(prefix, "vifnames", tmp)), next2) {
+	foreach(word2, nvram_safe_get(strlcat_r(prefix, "vifnames", tmp, sizeof(tmp))), next2) {
 		if(subunit>0) websWrite(wp, ", ");
 
 		subunit++;
 
 		ret += websWrite(wp, "[\"");
-		ret += webWriteNvram(wp, strcat_r(word2, "_bss_enabled", tmp));
+		ret += webWriteNvram(wp, strlcat_r(word2, "_bss_enabled", tmp, sizeof(tmp)));
 		ret += websWrite(wp, "\", \"");
-		ret += webWriteUTF8Nvram(wp, strcat_r(word2, "_ssid", tmp));
+		ret += webWriteUTF8Nvram(wp, strlcat_r(word2, "_ssid", tmp, sizeof(tmp)));
 		ret += websWrite(wp, "\", \"");
-		ret += webWriteNvram(wp, strcat_r(word2, "_auth_mode_x", tmp));
+		ret += webWriteNvram(wp, strlcat_r(word2, "_auth_mode_x", tmp, sizeof(tmp)));
 		ret += websWrite(wp, "\", \"");
-		ret += webWriteNvram(wp, strcat_r(word2, "_crypto", tmp));
+		ret += webWriteNvram(wp, strlcat_r(word2, "_crypto", tmp, sizeof(tmp)));
 		ret += websWrite(wp, "\", \"");
-		ret += webWriteNvram(wp, strcat_r(word2, "_wpa_psk", tmp));
+		ret += webWriteNvram(wp, strlcat_r(word2, "_wpa_psk", tmp, sizeof(tmp)));
 		ret += websWrite(wp, "\", \"");
-		ret += webWriteNvram(wp, strcat_r(word2, "_wep_x", tmp));
+		ret += webWriteNvram(wp, strlcat_r(word2, "_wep_x", tmp, sizeof(tmp)));
 		ret += websWrite(wp, "\", \"");
-		ret += webWriteNvram(wp, strcat_r(word2, "_key", tmp));
+		ret += webWriteNvram(wp, strlcat_r(word2, "_key", tmp, sizeof(tmp)));
 		ret += websWrite(wp, "\", \"");
-		ret += webWriteNvram(wp, strcat_r(word2, "_key1", tmp));
+		ret += webWriteNvram(wp, strlcat_r(word2, "_key1", tmp, sizeof(tmp)));
 		ret += websWrite(wp, "\", \"");
-		ret += webWriteNvram(wp, strcat_r(word2, "_key2", tmp));
+		ret += webWriteNvram(wp, strlcat_r(word2, "_key2", tmp, sizeof(tmp)));
 		ret += websWrite(wp, "\", \"");
-		ret += webWriteNvram(wp, strcat_r(word2, "_key3", tmp));
+		ret += webWriteNvram(wp, strlcat_r(word2, "_key3", tmp, sizeof(tmp)));
 		ret += websWrite(wp, "\", \"");
-		ret += webWriteNvram(wp, strcat_r(word2, "_key4", tmp));
+		ret += webWriteNvram(wp, strlcat_r(word2, "_key4", tmp, sizeof(tmp)));
 		ret += websWrite(wp, "\", \"");
-		ret += webWriteNvram(wp, strcat_r(word2, "_expire", tmp));
+		ret += webWriteNvram(wp, strlcat_r(word2, "_expire", tmp, sizeof(tmp)));
 		ret += websWrite(wp, "\", \"");
-		ret += webWriteNvram(wp, strcat_r(word2, "_lanaccess", tmp));
+		ret += webWriteNvram(wp, strlcat_r(word2, "_lanaccess", tmp, sizeof(tmp)));
 		ret += websWrite(wp, "\", \"");
-		ret += webWriteNvram(wp, strcat_r(word2, "_expire_tmp", tmp));
+		ret += webWriteNvram(wp, strlcat_r(word2, "_expire_tmp", tmp, sizeof(tmp)));
 		ret += websWrite(wp, "\", \"");
-		ret += webWriteNvram(wp, strcat_r(word2, "_macmode", tmp));	// gn_array[][14]
+		ret += webWriteNvram(wp, strlcat_r(word2, "_macmode", tmp, sizeof(tmp)));	// gn_array[][14]
 		ret += websWrite(wp, "\", \"");
-		ret += webWriteNvram(wp, strcat_r(word2, "_mbss", tmp));	// gn_array[][15]
+		ret += webWriteNvram(wp, strlcat_r(word2, "_mbss", tmp, sizeof(tmp)));	// gn_array[][15]
 		ret += websWrite(wp, "\", \"");
-		ret += webWriteNvram2(wp, strcat_r(word2, "_maclist_x", tmp));	// gn_array[][16]
+		ret += webWriteNvram2(wp, strlcat_r(word2, "_maclist_x", tmp, sizeof(tmp)));	// gn_array[][16]
 		ret += websWrite(wp, "\", \"");
-		ret += webWriteNvram2(wp, strcat_r(word2, "_phrase_x", tmp));	// gn_array[][17]
+		ret += webWriteNvram2(wp, strlcat_r(word2, "_phrase_x", tmp, sizeof(tmp)));	// gn_array[][17]
 		ret += websWrite(wp, "\", \"");
-		ret += webWriteNvram2(wp, strcat_r(word2, "_bw_enabled", tmp));	// gn_array[][18]
+		ret += webWriteNvram2(wp, strlcat_r(word2, "_bw_enabled", tmp, sizeof(tmp)));	// gn_array[][18]
 		ret += websWrite(wp, "\", \"");
-		ret += webWriteNvram2(wp, strcat_r(word2, "_bw_dl", tmp));	// gn_array[][19]
+		ret += webWriteNvram2(wp, strlcat_r(word2, "_bw_dl", tmp, sizeof(tmp)));	// gn_array[][19]
 		ret += websWrite(wp, "\", \"");
-		ret += webWriteNvram2(wp, strcat_r(word2, "_bw_ul", tmp));	// gn_array[][20]
+		ret += webWriteNvram2(wp, strlcat_r(word2, "_bw_ul", tmp, sizeof(tmp)));	// gn_array[][20]
 		ret += websWrite(wp, "\", \"");
-		ret += webWriteNvram2(wp, strcat_r(word2, "_guest_num", tmp));	// gn_array[][21], original 18 in ac88q branch
+		ret += webWriteNvram2(wp, strlcat_r(word2, "_guest_num", tmp, sizeof(tmp)));	// gn_array[][21], original 18 in ac88q branch
 		ret += websWrite(wp, "\", \"");
-		ret += webWriteNvram2(wp, strcat_r(word2, "_closed", tmp));	// gn_array[][22]
+		ret += webWriteNvram2(wp, strlcat_r(word2, "_closed", tmp, sizeof(tmp)));	// gn_array[][22]
 #ifdef RTCONFIG_AMAS_WGN
 		ret += websWrite(wp, "\", \"");
-		ret += webWriteNvram2(wp, strcat_r(word2, "_sync_node", tmp)); // gn_array[][23], amas wgn sync node type, 0:router only, 1:all
+		ret += webWriteNvram2(wp, strlcat_r(word2, "_sync_node", tmp, sizeof(tmp))); // gn_array[][23], amas wgn sync node type, 0:router only, 1:all
 		ret += websWrite(wp, "\", \"");
 		if(subunit <= wgn_guest_count)
 			ret += websWrite(wp, "1"); // gn_array[][24], amas wgn sync node interface support
@@ -2812,7 +2812,7 @@ void copy_index_to_unindex(char *prefix, int unit, int subunit)
 
 		if(!strncmp(name, prefix, strlen(prefix)))
 		{
-			(void)strcat_r(unitprefix, &name[strlen(prefix)], unitname);
+			(void)strlcat_r(unitprefix, &name[strlen(prefix)], unitname, sizeof(unitname));
 
 			if((value=nvram_get(unitname))!=NULL)
 			{
@@ -2863,8 +2863,8 @@ void save_index_to_interface(){//Cherry Cho added for exchanging settings of dua
 			if(!strncmp(name, wan_prefix, strlen(wan_prefix))){
 				memset(tmp, 0, sizeof(tmp));
 				memset(unitname, 0, sizeof(unitname));
-				(void)strcat_r(prefix, name, tmp);
-				(void)strcat_r(unitprefix, &name[strlen(wan_prefix)], unitname);
+				(void)strlcat_r(prefix, name, tmp, sizeof(tmp));
+				(void)strlcat_r(unitprefix, &name[strlen(wan_prefix)], unitname, sizeof(unitname));
 				if((value = nvram_get(unitname)) != NULL){
 					nvram_set(tmp, value);
 				}
@@ -2902,8 +2902,8 @@ void save_interface_to_index(char *wans_dualwan){
 			if(!strncmp(name, wan_prefix, strlen(wan_prefix))){
 				memset(tmp, 0, sizeof(tmp));
 				memset(unitname, 0, sizeof(unitname));
-				(void)strcat_r(prefix, name, tmp);
-				(void)strcat_r(unitprefix, &name[strlen(wan_prefix)], unitname);
+				(void)strlcat_r(prefix, name, tmp, sizeof(tmp));
+				(void)strlcat_r(unitprefix, &name[strlen(wan_prefix)], unitname, sizeof(unitname));
 				if((value = nvram_get(tmp)) != NULL){
 					nvram_set(unitname, value);
 					nvram_unset(tmp);
@@ -2997,7 +2997,7 @@ void handle_upload_icon(char *value, char *usericon_mac) {
 				MD5_Final(key,&mdContext);
 
 				for(i = 0; i < 16; ++i)
-					sprintf(&md5string[i*2], "%02x", (unsigned int)key[i]);
+					snprintf(&md5string[i*2], 3, "%02x", (unsigned int)key[i]);
 
 				if((md5_obj = json_object_from_file(USERICON_MD5_FILE)) == NULL)
 					md5_obj = json_object_new_object();
@@ -3159,12 +3159,12 @@ int validate_instance(webs_t wp, char *name, json_object *root)
 		foreach(word, nvram_safe_get("wl_ifnames"), next) {
 			SKIP_ABSENT_BAND_AND_INC_UNIT(i);
 			snprintf(prefix, sizeof(prefix), "wl%d_", i++);
-			value = get_cgi_json(strcat_r(prefix, name+3, tmp),root);
+			value = get_cgi_json(strlcat_r(prefix, name+3, tmp, sizeof(tmp)),root);
 			if(!value) {
 				// find variable with subunit
-				foreach(word1, nvram_safe_get(strcat_r(prefix, "vifnames", tmp)), next1) {
+				foreach(word1, nvram_safe_get(strlcat_r(prefix, "vifnames", tmp, sizeof(tmp))), next1) {
 					snprintf(prefix1, sizeof(prefix1), "%s_", word1);
-					value = get_cgi_json(strcat_r(prefix1, name+3, tmp),root);
+					value = get_cgi_json(strlcat_r(prefix1, name+3, tmp, sizeof(tmp)),root);
 					//printf("find %s\n", tmp);
 					if(value)
 					{
@@ -3181,7 +3181,7 @@ int validate_instance(webs_t wp, char *name, json_object *root)
 				{//set root ap info
 					snprintf(prefix1, sizeof(prefix1), "wl%d.1_", *(prefix+2)-'0');
 
-                    value = get_cgi_json(strcat_r(prefix1, name+3, tmp),root);
+                    value = get_cgi_json(strlcat_r(prefix1, name+3, tmp, sizeof(tmp)),root);
 					if(value)cprintf("%s:%d find %s value=%s\n",__FUNCTION__,__LINE__, tmp,value);
 					if(value&& strcmp(nvram_safe_get(tmp), value))
 					{
@@ -3192,7 +3192,7 @@ int validate_instance(webs_t wp, char *name, json_object *root)
 						//nvram_set(tmp, value);
 						found = NVRAM_MODIFIED_BIT|NVRAM_MODIFIED_WL_BIT;
 					}
-					strcpy(tmp+3,tmp+5);
+					memmove(tmp + 3, tmp + 5, strlen(tmp + 5) + 1);
 					if(value)cprintf("%s:%d find %s value=%s\n",__FUNCTION__,__LINE__, tmp,value);
 				}
 #endif /* RTCONFIG_REALTEK */
@@ -3242,7 +3242,7 @@ int validate_instance(webs_t wp, char *name, json_object *root)
 	else if(strncmp(name, "wan", 3)==0) {
 		foreach(word, nvram_safe_get("wan_ifnames"), next) {
 			snprintf(prefix, sizeof(prefix), "wan%d_", i++);
-			value = get_cgi_json(strcat_r(prefix, name+4, tmp),root);
+			value = get_cgi_json(strlcat_r(prefix, name+4, tmp, sizeof(tmp)),root);
 			if(value && strcmp(nvram_safe_get(tmp), value)) {
 				dbG("nvram set %s = %s\n", tmp, value);
 				nvram_check_and_set_for_prefix(name, tmp, value);
@@ -3254,7 +3254,7 @@ int validate_instance(webs_t wp, char *name, json_object *root)
 #ifdef RTCONFIG_MULTICAST_IPTV
 		if(nvram_match("switch_wantag", "movistar")){
 			strlcpy(prefix, "wan10_", sizeof(prefix));//IPTV
-			value = get_cgi_json(strcat_r(prefix, name+4, tmp), root);
+			value = get_cgi_json(strlcat_r(prefix, name+4, tmp, sizeof(tmp)), root);
 			if(value && strcmp(nvram_safe_get(tmp), value)) {
 				//dbG("nvram set %s = %s\n", tmp, value);
 				nvram_check_and_set_for_prefix(name, tmp, value);
@@ -3262,7 +3262,7 @@ int validate_instance(webs_t wp, char *name, json_object *root)
 			}
 
 			strlcpy(prefix, "wan11_", sizeof(prefix));//VoIP
-			value = get_cgi_json(strcat_r(prefix, name+4, tmp), root);
+			value = get_cgi_json(strlcat_r(prefix, name+4, tmp, sizeof(tmp)), root);
 			if(value && strcmp(nvram_safe_get(tmp), value)) {
 				//dbG("nvram set %s = %s\n", tmp, value);
 				nvram_check_and_set_for_prefix(name, tmp, value);
@@ -3275,7 +3275,7 @@ int validate_instance(webs_t wp, char *name, json_object *root)
 				if(unit != -1){
 					value = get_cgi_json(name, root);
 					snprintf(prefix, sizeof(prefix), "wan%d_", unit);
-					(void)strcat_r(prefix, name+4, tmp);
+					(void)strlcat_r(prefix, name+4, tmp, sizeof(tmp));
 					if(value && strcmp(nvram_safe_get(tmp), value)){
 						//dbG("nvram set %s = %s\n", tmp, value);
 						nvram_check_and_set_for_prefix(name, tmp, value);
@@ -3291,7 +3291,7 @@ int validate_instance(webs_t wp, char *name, json_object *root)
 				if(unit != -1){
 					value = get_cgi_json(name, root);
 					snprintf(prefix, sizeof(prefix), "wan%d_", unit);
-					(void)strcat_r(prefix, name+4, tmp);
+					(void)strlcat_r(prefix, name+4, tmp, sizeof(tmp));
 					if(value && strcmp(nvram_safe_get(tmp), value)){
 						dbG("nvram set %s = %s\n", tmp, value);
 						nvram_check_and_set_for_prefix(name, tmp, value);
@@ -3300,7 +3300,7 @@ int validate_instance(webs_t wp, char *name, json_object *root)
 				}
 			}
 			strlcpy(prefix, "wan10_", sizeof(prefix));//IPTV
-			value = get_cgi_json(strcat_r(prefix, name+4, tmp), root);
+			value = get_cgi_json(strlcat_r(prefix, name+4, tmp, sizeof(tmp)), root);
 			if(value && strcmp(nvram_safe_get(tmp), value)) {
 				dbG("nvram set %s = %s\n", tmp, value);
 				nvram_check_and_set_for_prefix(name, tmp, value);
@@ -3313,7 +3313,7 @@ int validate_instance(webs_t wp, char *name, json_object *root)
 	else if(strncmp(name, "dsl", 3)==0) {
 		for(i=0;i<8;i++) {
 			snprintf(prefix, sizeof(prefix), "dsl%d_", i++);
-			value = get_cgi_json(strcat_r(prefix, name+4, tmp),root);
+			value = get_cgi_json(strlcat_r(prefix, name+4, tmp, sizeof(tmp)),root);
 			if(value && strcmp(nvram_safe_get(tmp), value)) {
 				dbG("nvram set %s = %s\n", tmp, value);
 				nvram_check_and_set_for_prefix(name, tmp, value);
@@ -3327,7 +3327,7 @@ int validate_instance(webs_t wp, char *name, json_object *root)
 				snprintf(prefix, sizeof(prefix), "dsl8.%d_", i);
 			else
 				snprintf(prefix, sizeof(prefix), "dsl8_");
-			value = get_cgi_json(strcat_r(prefix, name+4, tmp),root);
+			value = get_cgi_json(strlcat_r(prefix, name+4, tmp, sizeof(tmp)),root);
 			if(value && strcmp(nvram_safe_get(tmp), value)) {
 				dbG("nvram set %s = %s\n", tmp, value);
 				nvram_check_and_set_for_prefix(name, tmp, value);
@@ -3346,7 +3346,7 @@ int validate_instance(webs_t wp, char *name, json_object *root)
 	else if(strncmp(name, "vpn_server_", 11)==0) {
 		for(i=1;i<=OVPN_SERVER_MAX;i++) {
 			snprintf(prefix, sizeof(prefix), "vpn_server%d_", i);
-			value = get_cgi_json(strcat_r(prefix, name+11, tmp),root);
+			value = get_cgi_json(strlcat_r(prefix, name+11, tmp, sizeof(tmp)),root);
 			if(value && strcmp(nvram_safe_get(tmp), value)) {
 				dbG("nvram set %s = %s\n", tmp, value);
 				nvram_check_and_set_for_prefix(name, tmp, value);
@@ -3358,7 +3358,7 @@ int validate_instance(webs_t wp, char *name, json_object *root)
 	else if(strncmp(name, "vpn_crt_server_", 15)==0) {
 		for(i=1;i<=OVPN_SERVER_MAX;i++) {
 			snprintf(prefix, sizeof(prefix), "vpn_crt_server%d_", i);
-			value = get_cgi_json(strcat_r(prefix, name+15, tmp),root);
+			value = get_cgi_json(strlcat_r(prefix, name+15, tmp, sizeof(tmp)),root);
 			if(value) {
 				ovpn_key_t key_type;
 				char buf[8000];
@@ -3401,7 +3401,7 @@ int validate_instance(webs_t wp, char *name, json_object *root)
 	else if(strncmp(name, "vpn_client_", 11)==0) {
 		for(i=1;i<=OVPN_CLIENT_MAX;i++) {
 			snprintf(prefix, sizeof(prefix), "vpn_client%d_", i);
-			value = get_cgi_json(strcat_r(prefix, name+11, tmp),root);
+			value = get_cgi_json(strlcat_r(prefix, name+11, tmp, sizeof(tmp)),root);
 			if(value && strcmp(nvram_safe_get(tmp), value)) {
 				dbG("nvram set %s = %s\n", tmp, value);
 				nvram_check_and_set_for_prefix(name, tmp, value);
@@ -3413,7 +3413,7 @@ int validate_instance(webs_t wp, char *name, json_object *root)
 	else if(strncmp(name, "vpn_crt_client_", 15)==0) {
 		for(i=1;i<=OVPN_CLIENT_MAX;i++) {
 			snprintf(prefix, sizeof(prefix), "vpn_crt_client%d_", i);
-			value = get_cgi_json(strcat_r(prefix, name+15, tmp),root);
+			value = get_cgi_json(strlcat_r(prefix, name+15, tmp, sizeof(tmp)),root);
 			if(value) {
 				ovpn_key_t key_type;
 				char buf[8000];
@@ -3682,7 +3682,7 @@ int validate_apply(webs_t wp, json_object *root) {
 				if(subunit==-1||subunit==0)
 					snprintf(prefix, sizeof(prefix), "wl%d_", unit);
 				else snprintf(prefix, sizeof(prefix), "wl%d.%d_", unit, subunit);
-				(void)strcat_r(prefix, name+3, tmp);
+				(void)strlcat_r(prefix, name+3, tmp, sizeof(tmp));
 				if(strcmp(nvram_safe_get(tmp), value))
 				{
 #ifdef RTCONFIG_LANTIQ
@@ -3733,7 +3733,7 @@ int validate_apply(webs_t wp, json_object *root) {
 						foreach (word, nvram_safe_get("wl_ifnames"), next) {
 							if((other_unit != unit) && (subunit == -1 || subunit == 0)){
 								snprintf(prefix, sizeof(prefix), "wl%d_", other_unit);
-								(void)strcat_r(prefix, name+3, tmp);
+								(void)strlcat_r(prefix, name+3, tmp, sizeof(tmp));
 								if(strcmp(nvram_safe_get(tmp), value))
 								{
 									nvram_set(tmp, value);
@@ -3752,7 +3752,7 @@ int validate_apply(webs_t wp, json_object *root) {
 #ifdef RTCONFIG_REALTEK
 					if(sw_mode() == SW_MODE_REPEATER && strstr(prefix,".1_"))
 					{//set root ap info
-						strcpy(tmp+3,tmp+5);
+						memmove(tmp + 3, tmp + 5, strlen(tmp + 5) + 1);
 						if(strcmp(nvram_safe_get(tmp), value))
 						{
 							nvram_set(tmp, value);
@@ -3782,7 +3782,7 @@ int validate_apply(webs_t wp, json_object *root) {
 			}
 			else if(!strncmp(name, "wan_", 4) && unit != -1) {
 				snprintf(prefix, sizeof(prefix), "wan%d_", unit);
-				(void)strcat_r(prefix, name+4, tmp);
+				(void)strlcat_r(prefix, name+4, tmp, sizeof(tmp));
 
 				if(strcmp(nvram_safe_get(tmp), value)) {
 					nvram_set(tmp, value);
@@ -3796,7 +3796,7 @@ int validate_apply(webs_t wp, json_object *root) {
 			}
 			else if(!strncmp(name, "lan_", 4) && unit != -1) {
 				snprintf(prefix, sizeof(prefix), "lan%d_", unit);
-				(void)strcat_r(prefix, name+4, tmp);
+				(void)strlcat_r(prefix, name+4, tmp, sizeof(tmp));
 
 				if(strcmp(nvram_safe_get(tmp), value)) {
 					nvram_set(tmp, value);
@@ -3821,7 +3821,7 @@ int validate_apply(webs_t wp, json_object *root) {
 					snprintf(prefix, sizeof(prefix), "dsl%d_", unit);
 				else
 					snprintf(prefix, sizeof(prefix), "dsl%d.%d_", unit, subunit);
-				(void)strcat_r(prefix, name+4, tmp);
+				(void)strlcat_r(prefix, name+4, tmp, sizeof(tmp));
 
 				if(strcmp(nvram_safe_get(tmp), value)) {
 					nvram_set(tmp, value);
@@ -3836,7 +3836,7 @@ int validate_apply(webs_t wp, json_object *root) {
 				char buf[8000];
 
 				snprintf(prefix, sizeof(prefix), "vpn_crt_server%d_", unit);
-				(void)strcat_r(prefix, name+15, tmp);
+				(void)strlcat_r(prefix, name+15, tmp, sizeof(tmp));
 
 				if(!strcmp(name+15, "static")) {
 					key_type = OVPN_SERVER_STATIC;
@@ -3877,7 +3877,7 @@ int validate_apply(webs_t wp, json_object *root) {
 				char buf[8000];
 
 				snprintf(prefix, sizeof(prefix), "vpn_crt_client%d_", unit);
-				(void)strcat_r(prefix, name+15, tmp);
+				(void)strlcat_r(prefix, name+15, tmp, sizeof(tmp));
 
 				if(!strcmp(name+15, "static")) {
 					key_type = OVPN_CLIENT_STATIC;
@@ -3912,7 +3912,7 @@ int validate_apply(webs_t wp, json_object *root) {
 			}
 			else if(!strncmp(name, "vpn_server_", 11) && unit!=-1) {
 				snprintf(prefix, sizeof(prefix), "vpn_server%d_", unit);
-				(void)strcat_r(prefix, name+11, tmp);
+				(void)strlcat_r(prefix, name+11, tmp, sizeof(tmp));
 
 				if (!strcmp(name, "vpn_server_custom3")) {
 					set_ovpn_custom(OVPN_TYPE_SERVER, unit, value);
@@ -3928,7 +3928,7 @@ int validate_apply(webs_t wp, json_object *root) {
 			}
 			else if(!strncmp(name, "vpn_client_", 11) && unit!=-1) {
 				snprintf(prefix, sizeof(prefix), "vpn_client%d_", unit);
-				(void)strcat_r(prefix, name+11, tmp);
+				(void)strlcat_r(prefix, name+11, tmp, sizeof(tmp));
 
 				if (!strcmp(name, "vpn_client_custom3")) {
 					set_ovpn_custom(OVPN_TYPE_CLIENT, unit, value);
@@ -3959,7 +3959,7 @@ int validate_apply(webs_t wp, json_object *root) {
 #ifdef RTCONFIG_DISK_MONITOR
 			else if(!strncmp(name, "diskmon_", 8)) {
 				snprintf(prefix, sizeof(prefix), "usb_path%s_diskmon_", nvram_safe_get("diskmon_usbport"));
-				(void)strcat_r(prefix, name+8, tmp);
+				(void)strlcat_r(prefix, name+8, tmp, sizeof(tmp));
 
 				if(strcmp(nvram_safe_get(tmp), value)) {
 					nvram_set(tmp, value);
@@ -3984,7 +3984,7 @@ int validate_apply(webs_t wp, json_object *root) {
 #ifdef RTCONFIG_WIREGUARD
 			else if(!strncmp(name, "wgs_", 4) && unit > 0) {
 				snprintf(prefix, sizeof(prefix), "wgs%d_", unit);
-				(void)strcat_r(prefix, name+4, tmp);
+				(void)strlcat_r(prefix, name+4, tmp, sizeof(tmp));
 
 				if(strcmp(nvram_safe_get(tmp), value)) {
 					nvram_set(tmp, value);
@@ -3994,7 +3994,7 @@ int validate_apply(webs_t wp, json_object *root) {
 			}
 			else if(!strncmp(name, "wgsc_", 5) && unit > 0 && subunit > 0) {
 				snprintf(prefix, sizeof(prefix), "wgs%d_c%d_", unit, subunit);
-				(void)strcat_r(prefix, name+5, tmp);
+				(void)strlcat_r(prefix, name+5, tmp, sizeof(tmp));
 
 				if(strcmp(nvram_safe_get(tmp), value)) {
 					nvram_set(tmp, value);
@@ -4004,7 +4004,7 @@ int validate_apply(webs_t wp, json_object *root) {
 			}
 			else if(!strncmp(name, "wgc_", 4) && unit > 0) {
 				snprintf(prefix, sizeof(prefix), "wgc%d_", unit);
-				(void)strcat_r(prefix, name+4, tmp);
+				(void)strlcat_r(prefix, name+4, tmp, sizeof(tmp));
 
 				if(strcmp(nvram_safe_get(tmp), value)) {
 					nvram_set(tmp, value);
@@ -4115,7 +4115,7 @@ int validate_apply(webs_t wp, json_object *root) {
 							snprintf(ssid2, sizeof(ssid2), "%s_Guest%d", ssid, subidx);
 							strlcpy(ssid, ssid2, sizeof(ssid));
 							snprintf(prefix, sizeof(prefix), "wl%d.%d_", idx, subidx);
-							nvram_set(strcat_r(prefix, "ssid", tmp), ssid);
+							nvram_set(strlcat_r(prefix, "ssid", tmp, sizeof(tmp)), ssid);
 						}
 				}
 #endif
@@ -4484,19 +4484,19 @@ static int ej_set_variables(int eid, webs_t wp, int argc, char_t **argv) {
 					retStatus = 4;
 
 				if(retStatus == 0){
-					strcat(nvramTmp, "<");
-					strcat(nvramTmp, webVar_1);
-					strcat(nvramTmp, ">");
-					strcat(nvramTmp, webVar_2);
-					strcat(nvramTmp, ">");
-					strcat(nvramTmp, webVar_3);
-					strcat(nvramTmp, ">");
-					strcat(nvramTmp, webVar_4);
-					strcat(nvramTmp, ">");
-					strcat(nvramTmp, webVar_5);
-					strcat(nvramTmp, ">");
-					strcat(nvramTmp, webVar_6);
-					strcat(nvramTmp, nvram_safe_get("custom_clientlist"));
+					strlcat(nvramTmp, "<", sizeof(nvramTmp));
+					strlcat(nvramTmp, webVar_1, sizeof(nvramTmp));
+					strlcat(nvramTmp, ">", sizeof(nvramTmp));
+					strlcat(nvramTmp, webVar_2, sizeof(nvramTmp));
+					strlcat(nvramTmp, ">", sizeof(nvramTmp));
+					strlcat(nvramTmp, webVar_3, sizeof(nvramTmp));
+					strlcat(nvramTmp, ">", sizeof(nvramTmp));
+					strlcat(nvramTmp, webVar_4, sizeof(nvramTmp));
+					strlcat(nvramTmp, ">", sizeof(nvramTmp));
+					strlcat(nvramTmp, webVar_5, sizeof(nvramTmp));
+					strlcat(nvramTmp, ">", sizeof(nvramTmp));
+					strlcat(nvramTmp, webVar_6, sizeof(nvramTmp));
+					strlcat(nvramTmp, nvram_safe_get("custom_clientlist"), sizeof(nvramTmp));
 
 					nvram_set("custom_clientlist", nvramTmp);
 					nvram_commit();
@@ -4521,18 +4521,18 @@ static int ej_set_variables(int eid, webs_t wp, int argc, char_t **argv) {
 						continue;
 					}
 					else{
-						strcat(nvramTmp, "<");
-						strcat(nvramTmp, name);
-						strcat(nvramTmp, ">");
-						strcat(nvramTmp, mac);
-						strcat(nvramTmp, ">");
-						strcat(nvramTmp, group);
-						strcat(nvramTmp, ">");
-						strcat(nvramTmp, type);
-						strcat(nvramTmp, ">");
-						strcat(nvramTmp, callback);
-						strcat(nvramTmp, ">");
-						strcat(nvramTmp, keeparp);
+						strlcat(nvramTmp, "<", sizeof(nvramTmp));
+						strlcat(nvramTmp, name, sizeof(nvramTmp));
+						strlcat(nvramTmp, ">", sizeof(nvramTmp));
+						strlcat(nvramTmp, mac, sizeof(nvramTmp));
+						strlcat(nvramTmp, ">", sizeof(nvramTmp));
+						strlcat(nvramTmp, group, sizeof(nvramTmp));
+						strlcat(nvramTmp, ">", sizeof(nvramTmp));
+						strlcat(nvramTmp, type, sizeof(nvramTmp));
+						strlcat(nvramTmp, ">", sizeof(nvramTmp));
+						strlcat(nvramTmp, callback, sizeof(nvramTmp));
+						strlcat(nvramTmp, ">", sizeof(nvramTmp));
+						strlcat(nvramTmp, keeparp, sizeof(nvramTmp));
 					}
 				}
 				free(buf);
@@ -4545,7 +4545,7 @@ static int ej_set_variables(int eid, webs_t wp, int argc, char_t **argv) {
 		}
 		else if(!strcmp(apiAction, "list")){
 			g = buf = strdup(nvram_safe_get("custom_clientlist"));
-			strcat(retList, "<list>\n");
+			strlcat(retList, "<list>\n", sizeof(retList));
 			while (buf) {
 				if ((p = strsep(&g, "<")) == NULL) break;
 				if((vstrsep(p, ">", &name, &mac, &group, &type, &callback, &keeparp)) != 6) continue;
@@ -4645,19 +4645,19 @@ static int ej_set_variables(int eid, webs_t wp, int argc, char_t **argv) {
 					retStatus = 4;
 
 				if(retStatus == 0){
-					strcat(nvramTmp, "<");
-					strcat(nvramTmp, webVar_1);
-					strcat(nvramTmp, ">");
-					strcat(nvramTmp, webVar_2);
-					strcat(nvramTmp, ">");
-					strcat(nvramTmp, webVar_3);
-					strcat(nvramTmp, ">");
-					strcat(nvramTmp, webVar_4);
-					strcat(nvramTmp, ">");
-					strcat(nvramTmp, webVar_5);
-					strcat(nvramTmp, ">");
-					strcat(nvramTmp, webVar_6);
-					strcat(nvramTmp, nvram_safe_get("vts_rulelist"));
+					strlcat(nvramTmp, "<", sizeof(nvramTmp));
+					strlcat(nvramTmp, webVar_1, sizeof(nvramTmp));
+					strlcat(nvramTmp, ">", sizeof(nvramTmp));
+					strlcat(nvramTmp, webVar_2, sizeof(nvramTmp));
+					strlcat(nvramTmp, ">", sizeof(nvramTmp));
+					strlcat(nvramTmp, webVar_3, sizeof(nvramTmp));
+					strlcat(nvramTmp, ">", sizeof(nvramTmp));
+					strlcat(nvramTmp, webVar_4, sizeof(nvramTmp));
+					strlcat(nvramTmp, ">", sizeof(nvramTmp));
+					strlcat(nvramTmp, webVar_5, sizeof(nvramTmp));
+					strlcat(nvramTmp, ">", sizeof(nvramTmp));
+					strlcat(nvramTmp, webVar_6, sizeof(nvramTmp));
+					strlcat(nvramTmp, nvram_safe_get("vts_rulelist"), sizeof(nvramTmp));
 
 					nvram_set("vts_rulelist", nvramTmp);
 					nvram_commit();
@@ -4695,18 +4695,18 @@ static int ej_set_variables(int eid, webs_t wp, int argc, char_t **argv) {
 						continue;
 					}
 					else{
-						strcat(nvramTmp, "<");
-						strcat(nvramTmp, name);
-						strcat(nvramTmp, ">");
-						strcat(nvramTmp, rport);
-						strcat(nvramTmp, ">");
-						strcat(nvramTmp, lip);
-						strcat(nvramTmp, ">");
-						strcat(nvramTmp, lport);
-						strcat(nvramTmp, ">");
-						strcat(nvramTmp, proto);
-						strcat(nvramTmp, ">");
-						strcat(nvramTmp, srcip);
+						strlcat(nvramTmp, "<", sizeof(nvramTmp));
+						strlcat(nvramTmp, name, sizeof(nvramTmp));
+						strlcat(nvramTmp, ">", sizeof(nvramTmp));
+						strlcat(nvramTmp, rport, sizeof(nvramTmp));
+						strlcat(nvramTmp, ">", sizeof(nvramTmp));
+						strlcat(nvramTmp, lip, sizeof(nvramTmp));
+						strlcat(nvramTmp, ">", sizeof(nvramTmp));
+						strlcat(nvramTmp, lport, sizeof(nvramTmp));
+						strlcat(nvramTmp, ">", sizeof(nvramTmp));
+						strlcat(nvramTmp, proto, sizeof(nvramTmp));
+						strlcat(nvramTmp, ">", sizeof(nvramTmp));
+						strlcat(nvramTmp, srcip, sizeof(nvramTmp));
 					}
 				}
 				free(buf);
@@ -4720,7 +4720,7 @@ static int ej_set_variables(int eid, webs_t wp, int argc, char_t **argv) {
 		}
 		else if(!strcmp(apiAction, "list")){
 			g = buf = strdup(nvram_safe_get("vts_rulelist"));
-			strcat(retList, "<list>\n");
+			strlcat(retList, "<list>\n", sizeof(retList));
 			while (buf) {
 				if ((p = strsep(&g, "<")) == NULL) break;
 				if ((cnt = vstrsep(p, ">", &name, &rport, &lip, &lport, &proto, &srcip)) < 5)
@@ -5454,9 +5454,9 @@ static int wanstate_hook(int eid, webs_t wp, int argc, char_t **argv){
 		unit = wan_primary_ifunit();
 	wan_prefix(unit, prefix);
 
-	wan_state = nvram_get_int(strcat_r(prefix, "state_t", tmp));
-	wan_sbstate = nvram_get_int(strcat_r(prefix, "sbstate_t", tmp));
-	wan_auxstate = nvram_get_int(strcat_r(prefix, "auxstate_t", tmp));
+	wan_state = nvram_get_int(strlcat_r(prefix, "state_t", tmp, sizeof(tmp)));
+	wan_sbstate = nvram_get_int(strlcat_r(prefix, "sbstate_t", tmp, sizeof(tmp)));
+	wan_auxstate = nvram_get_int(strlcat_r(prefix, "auxstate_t", tmp, sizeof(tmp)));
 
 	websWrite(wp, "wanstate = %d;\n", wan_state);
 	websWrite(wp, "wansbstate = %d;\n", wan_sbstate);
@@ -5474,9 +5474,9 @@ static int dual_wanstate_hook(int eid, webs_t wp, int argc, char_t **argv){
 	unit = WAN_UNIT_FIRST;
 	wan_prefix(unit, prefix);
 
-	wan_state = nvram_get_int(strcat_r(prefix, "state_t", tmp));
-	wan_sbstate = nvram_get_int(strcat_r(prefix, "sbstate_t", tmp));
-	wan_auxstate = nvram_get_int(strcat_r(prefix, "auxstate_t", tmp));
+	wan_state = nvram_get_int(strlcat_r(prefix, "state_t", tmp, sizeof(tmp)));
+	wan_sbstate = nvram_get_int(strlcat_r(prefix, "sbstate_t", tmp, sizeof(tmp)));
+	wan_auxstate = nvram_get_int(strlcat_r(prefix, "auxstate_t", tmp, sizeof(tmp)));
 
 	websWrite(wp, "first_wanstate = %d;\n", wan_state);
 	websWrite(wp, "first_wansbstate = %d;\n", wan_sbstate);
@@ -5487,9 +5487,9 @@ static int dual_wanstate_hook(int eid, webs_t wp, int argc, char_t **argv){
 	wan_prefix(unit, prefix);
 
 	memset(tmp, 0, 100);
-	wan_state = nvram_get_int(strcat_r(prefix, "state_t", tmp));
-	wan_sbstate = nvram_get_int(strcat_r(prefix, "sbstate_t", tmp));
-	wan_auxstate = nvram_get_int(strcat_r(prefix, "auxstate_t", tmp));
+	wan_state = nvram_get_int(strlcat_r(prefix, "state_t", tmp, sizeof(tmp)));
+	wan_sbstate = nvram_get_int(strlcat_r(prefix, "sbstate_t", tmp, sizeof(tmp)));
+	wan_auxstate = nvram_get_int(strlcat_r(prefix, "auxstate_t", tmp, sizeof(tmp)));
 
 	websWrite(wp, "second_wanstate = %d;\n", wan_state);
 	websWrite(wp, "second_wansbstate = %d;\n", wan_sbstate);
@@ -5515,9 +5515,9 @@ static int ajax_dualwanstate_hook(int eid, webs_t wp, int argc, char_t **argv){
 	unit = WAN_UNIT_FIRST;
 	wan_prefix(unit, prefix);
 
-	wan_state = nvram_get_int(strcat_r(prefix, "state_t", tmp));
-	wan_sbstate = nvram_get_int(strcat_r(prefix, "sbstate_t", tmp));
-	wan_auxstate = nvram_get_int(strcat_r(prefix, "auxstate_t", tmp));
+	wan_state = nvram_get_int(strlcat_r(prefix, "state_t", tmp, sizeof(tmp)));
+	wan_sbstate = nvram_get_int(strlcat_r(prefix, "sbstate_t", tmp, sizeof(tmp)));
+	wan_auxstate = nvram_get_int(strlcat_r(prefix, "auxstate_t", tmp, sizeof(tmp)));
 
 	websWrite(wp, "<first_wan>%d</first_wan>\n", wan_state);
 	websWrite(wp, "<first_wan>%d</first_wan>\n", wan_sbstate);
@@ -5528,9 +5528,9 @@ static int ajax_dualwanstate_hook(int eid, webs_t wp, int argc, char_t **argv){
 	wan_prefix(unit, prefix);
 
 	memset(tmp, 0, 100);
-	wan_state = nvram_get_int(strcat_r(prefix, "state_t", tmp));
-	wan_sbstate = nvram_get_int(strcat_r(prefix, "sbstate_t", tmp));
-	wan_auxstate = nvram_get_int(strcat_r(prefix, "auxstate_t", tmp));
+	wan_state = nvram_get_int(strlcat_r(prefix, "state_t", tmp, sizeof(tmp)));
+	wan_sbstate = nvram_get_int(strlcat_r(prefix, "sbstate_t", tmp, sizeof(tmp)));
+	wan_auxstate = nvram_get_int(strlcat_r(prefix, "auxstate_t", tmp, sizeof(tmp)));
 
 	websWrite(wp, "<second_wan>%d</second_wan>\n", wan_state);
 	websWrite(wp, "<second_wan>%d</second_wan>\n", wan_sbstate);
@@ -5562,9 +5562,9 @@ static int ajax_wanstate_hook(int eid, webs_t wp, int argc, char_t **argv){
 		unit = wan_primary_ifunit();
 	wan_prefix(unit, prefix);
 
-	wan_state = nvram_get_int(strcat_r(prefix, "state_t", tmp));
-	wan_sbstate = nvram_get_int(strcat_r(prefix, "sbstate_t", tmp));
-	wan_auxstate = nvram_get_int(strcat_r(prefix, "auxstate_t", tmp));
+	wan_state = nvram_get_int(strlcat_r(prefix, "state_t", tmp, sizeof(tmp)));
+	wan_sbstate = nvram_get_int(strlcat_r(prefix, "sbstate_t", tmp, sizeof(tmp)));
+	wan_auxstate = nvram_get_int(strlcat_r(prefix, "auxstate_t", tmp, sizeof(tmp)));
 
 	websWrite(wp, "<wan>%d</wan>\n", wan_state);
 	websWrite(wp, "<wan>%d</wan>\n", wan_sbstate);
@@ -5583,9 +5583,9 @@ static int secondary_ajax_wanstate_hook(int eid, webs_t wp, int argc, char_t **a
 	unit = WAN_UNIT_SECOND;
 	wan_prefix(unit, prefix);
 
-	wan_state = nvram_get_int(strcat_r(prefix, "state_t", tmp));
-	wan_sbstate = nvram_get_int(strcat_r(prefix, "sbstate_t", tmp));
-	wan_auxstate = nvram_get_int(strcat_r(prefix, "auxstate_t", tmp));
+	wan_state = nvram_get_int(strlcat_r(prefix, "state_t", tmp, sizeof(tmp)));
+	wan_sbstate = nvram_get_int(strlcat_r(prefix, "sbstate_t", tmp, sizeof(tmp)));
+	wan_auxstate = nvram_get_int(strlcat_r(prefix, "auxstate_t", tmp, sizeof(tmp)));
 
 	websWrite(wp, "<secondary_wan>%d</secondary_wan>\n", wan_state);
 	websWrite(wp, "<secondary_wan>%d</secondary_wan>\n", wan_sbstate);
@@ -5632,11 +5632,11 @@ static int wanlink_hook(int eid, webs_t wp, int argc, char_t **argv){
 
 	wan_prefix(unit, prefix);
 
-	wan_state = nvram_get_int(strcat_r(prefix, "state_t", tmp));
-	wan_sbstate = nvram_get_int(strcat_r(prefix, "sbstate_t", tmp));
-	wan_auxstate = nvram_get_int(strcat_r(prefix, "auxstate_t", tmp));
+	wan_state = nvram_get_int(strlcat_r(prefix, "state_t", tmp, sizeof(tmp)));
+	wan_sbstate = nvram_get_int(strlcat_r(prefix, "sbstate_t", tmp, sizeof(tmp)));
+	wan_auxstate = nvram_get_int(strlcat_r(prefix, "auxstate_t", tmp, sizeof(tmp)));
 
-	wan_proto = nvram_safe_get(strcat_r(prefix, "proto", tmp));
+	wan_proto = nvram_safe_get(strlcat_r(prefix, "proto", tmp, sizeof(tmp)));
 
 	if (dualwan_unit__usbif(unit)) {
 		if(wan_state == WAN_STATE_CONNECTED){
@@ -5706,8 +5706,8 @@ static int wanlink_hook(int eid, webs_t wp, int argc, char_t **argv){
 		else {
 			// treat short lease time as disconnected
 			if(!strcmp(wan_proto, "dhcp") &&
-			  nvram_get_int(strcat_r(prefix, "lease", tmp)) <= 60 &&
-			  is_private_subnet(nvram_safe_get(strcat_r(prefix, "ipaddr", tmp)))
+			  nvram_get_int(strlcat_r(prefix, "lease", tmp, sizeof(tmp))) <= 60 &&
+			  is_private_subnet(nvram_safe_get(strlcat_r(prefix, "ipaddr", tmp, sizeof(tmp))))
 			) {
 				status = 0;
 			}
@@ -5725,13 +5725,13 @@ static int wanlink_hook(int eid, webs_t wp, int argc, char_t **argv){
 		type = wan_proto;
 
 	if(status != 0){
-		ip = nvram_safe_get(strcat_r(prefix, "ipaddr", tmp));
-		netmask = nvram_safe_get(strcat_r(prefix, "netmask", tmp));
-		gateway = nvram_safe_get(strcat_r(prefix, "gateway", tmp));
-		dns = nvram_safe_get(strcat_r(prefix, "dns", tmp));
-		lease = nvram_get_int(strcat_r(prefix, "lease", tmp));
+		ip = nvram_safe_get(strlcat_r(prefix, "ipaddr", tmp, sizeof(tmp)));
+		netmask = nvram_safe_get(strlcat_r(prefix, "netmask", tmp, sizeof(tmp)));
+		gateway = nvram_safe_get(strlcat_r(prefix, "gateway", tmp, sizeof(tmp)));
+		dns = nvram_safe_get(strlcat_r(prefix, "dns", tmp, sizeof(tmp)));
+		lease = nvram_get_int(strlcat_r(prefix, "lease", tmp, sizeof(tmp)));
 		if (lease > 0)
-			expires = nvram_get_int(strcat_r(prefix, "expires", tmp)) - uptime();
+			expires = nvram_get_int(strlcat_r(prefix, "expires", tmp, sizeof(tmp))) - uptime();
 	}
 
 	if(name == NULL){
@@ -5744,7 +5744,7 @@ static int wanlink_hook(int eid, webs_t wp, int argc, char_t **argv){
 		websWrite(wp, "function wanlink_dns() { return '%s';}\n", dns);
 		websWrite(wp, "function wanlink_lease() { return %d;}\n", lease);
 		websWrite(wp, "function wanlink_expires() { return %d;}\n", expires);
-		websWrite(wp, "function is_private_subnet() { return '%d';}\n", is_private_subnet(nvram_safe_get(strcat_r(prefix, "ipaddr", tmp))));
+		websWrite(wp, "function is_private_subnet() { return '%d';}\n", is_private_subnet(nvram_safe_get(strlcat_r(prefix, "ipaddr", tmp, sizeof(tmp)))));
 	}else if(!strcmp(name,"status"))
 		websWrite(wp, "\"%d\"", status);
 	else if(!strcmp(name,"statusstr"))
@@ -5764,22 +5764,22 @@ static int wanlink_hook(int eid, webs_t wp, int argc, char_t **argv){
 	else if(!strcmp(name,"expires"))
 		websWrite(wp, "\"%d\"", expires);
 	else if(!strcmp(name,"private_subnet"))
-		websWrite(wp, "\"%d\"", is_private_subnet(nvram_safe_get(strcat_r(prefix, "ipaddr", tmp))));
+		websWrite(wp, "\"%d\"", is_private_subnet(nvram_safe_get(strlcat_r(prefix, "ipaddr", tmp, sizeof(tmp)))));
 
 	if (strcmp(wan_proto, "pppoe") == 0 ||
 	    strcmp(wan_proto, "pptp") == 0 ||
 	    strcmp(wan_proto, "l2tp") == 0) {
-		int dhcpenable = nvram_get_int(strcat_r(prefix, "dhcpenable_x", tmp));
+		int dhcpenable = nvram_get_int(strlcat_r(prefix, "dhcpenable_x", tmp, sizeof(tmp)));
 		xtype = (dhcpenable == 0) ? "static" :
-			(strcmp(wan_proto, "pppoe") == 0 && nvram_match(strcat_r(prefix, "vpndhcp", tmp), "0")) ? "" : /* zeroconf */
+			(strcmp(wan_proto, "pppoe") == 0 && nvram_match(strlcat_r(prefix, "vpndhcp", tmp, sizeof(tmp)), "0")) ? "" : /* zeroconf */
 			"dhcp";
-		xip = nvram_safe_get(strcat_r(prefix, "xipaddr", tmp));
-		xnetmask = nvram_safe_get(strcat_r(prefix, "xnetmask", tmp));
-		xgateway = nvram_safe_get(strcat_r(prefix, "xgateway", tmp));
-		xdns = nvram_safe_get(strcat_r(prefix, "xdns", tmp));
-		xlease = nvram_get_int(strcat_r(prefix, "xlease", tmp));
+		xip = nvram_safe_get(strlcat_r(prefix, "xipaddr", tmp, sizeof(tmp)));
+		xnetmask = nvram_safe_get(strlcat_r(prefix, "xnetmask", tmp, sizeof(tmp)));
+		xgateway = nvram_safe_get(strlcat_r(prefix, "xgateway", tmp, sizeof(tmp)));
+		xdns = nvram_safe_get(strlcat_r(prefix, "xdns", tmp, sizeof(tmp)));
+		xlease = nvram_get_int(strlcat_r(prefix, "xlease", tmp, sizeof(tmp)));
 		if (xlease > 0)
-			xexpires = nvram_get_int(strcat_r(prefix, "xexpires", tmp)) - uptime();
+			xexpires = nvram_get_int(strlcat_r(prefix, "xexpires", tmp, sizeof(tmp))) - uptime();
 	}
 
 	if(name == NULL){
@@ -5829,11 +5829,11 @@ static int first_wanlink_hook(int eid, webs_t wp, int argc, char_t **argv){
 	unit = WAN_UNIT_FIRST;
 	wan_prefix(unit, prefix);
 
-	wan_state = nvram_get_int(strcat_r(prefix, "state_t", tmp));
-	wan_sbstate = nvram_get_int(strcat_r(prefix, "sbstate_t", tmp));
-	wan_auxstate = nvram_get_int(strcat_r(prefix, "auxstate_t", tmp));
+	wan_state = nvram_get_int(strlcat_r(prefix, "state_t", tmp, sizeof(tmp)));
+	wan_sbstate = nvram_get_int(strlcat_r(prefix, "sbstate_t", tmp, sizeof(tmp)));
+	wan_auxstate = nvram_get_int(strlcat_r(prefix, "auxstate_t", tmp, sizeof(tmp)));
 
-	wan_proto = nvram_safe_get(strcat_r(prefix, "proto", tmp));
+	wan_proto = nvram_safe_get(strlcat_r(prefix, "proto", tmp, sizeof(tmp)));
 
 	if (dualwan_unit__usbif(unit)) {
 		if(wan_state == WAN_STATE_CONNECTED){
@@ -5903,8 +5903,8 @@ static int first_wanlink_hook(int eid, webs_t wp, int argc, char_t **argv){
 		else {
 			// treat short lease time as disconnected
 			if(!strcmp(wan_proto, "dhcp") &&
-			  nvram_get_int(strcat_r(prefix, "lease", tmp)) <= 60 &&
-			  is_private_subnet(nvram_safe_get(strcat_r(prefix, "ipaddr", tmp)))
+			  nvram_get_int(strlcat_r(prefix, "lease", tmp, sizeof(tmp))) <= 60 &&
+			  is_private_subnet(nvram_safe_get(strlcat_r(prefix, "ipaddr", tmp, sizeof(tmp))))
 			) {
 				status = 0;
 			}
@@ -5922,13 +5922,13 @@ static int first_wanlink_hook(int eid, webs_t wp, int argc, char_t **argv){
 		type = wan_proto;
 
 	if(status != 0){
-		ip = nvram_safe_get(strcat_r(prefix, "ipaddr", tmp));
-		netmask = nvram_safe_get(strcat_r(prefix, "netmask", tmp));
-		gateway = nvram_safe_get(strcat_r(prefix, "gateway", tmp));
-		dns = nvram_safe_get(strcat_r(prefix, "dns", tmp));
-		lease = nvram_get_int(strcat_r(prefix, "lease", tmp));
+		ip = nvram_safe_get(strlcat_r(prefix, "ipaddr", tmp, sizeof(tmp)));
+		netmask = nvram_safe_get(strlcat_r(prefix, "netmask", tmp, sizeof(tmp)));
+		gateway = nvram_safe_get(strlcat_r(prefix, "gateway", tmp, sizeof(tmp)));
+		dns = nvram_safe_get(strlcat_r(prefix, "dns", tmp, sizeof(tmp)));
+		lease = nvram_get_int(strlcat_r(prefix, "lease", tmp, sizeof(tmp)));
 		if (lease > 0)
-			expires = nvram_get_int(strcat_r(prefix, "expires", tmp)) - uptime();
+			expires = nvram_get_int(strlcat_r(prefix, "expires", tmp, sizeof(tmp))) - uptime();
 	}
 
 	websWrite(wp, "function first_wanlink_status() { return %d;}\n", status);
@@ -5944,17 +5944,17 @@ static int first_wanlink_hook(int eid, webs_t wp, int argc, char_t **argv){
 	if (strcmp(wan_proto, "pppoe") == 0 ||
 	    strcmp(wan_proto, "pptp") == 0 ||
 	    strcmp(wan_proto, "l2tp") == 0) {
-		int dhcpenable = nvram_get_int(strcat_r(prefix, "dhcpenable_x", tmp));
+		int dhcpenable = nvram_get_int(strlcat_r(prefix, "dhcpenable_x", tmp, sizeof(tmp)));
 		xtype = (dhcpenable == 0) ? "static" :
-			(strcmp(wan_proto, "pppoe") == 0 && nvram_match(strcat_r(prefix, "vpndhcp", tmp), "0")) ? "" : /* zeroconf */
+			(strcmp(wan_proto, "pppoe") == 0 && nvram_match(strlcat_r(prefix, "vpndhcp", tmp, sizeof(tmp)), "0")) ? "" : /* zeroconf */
 			"dhcp";
-		xip = nvram_safe_get(strcat_r(prefix, "xipaddr", tmp));
-		xnetmask = nvram_safe_get(strcat_r(prefix, "xnetmask", tmp));
-		xgateway = nvram_safe_get(strcat_r(prefix, "xgateway", tmp));
-		xdns = nvram_safe_get(strcat_r(prefix, "xdns", tmp));
-		xlease = nvram_get_int(strcat_r(prefix, "xlease", tmp));
+		xip = nvram_safe_get(strlcat_r(prefix, "xipaddr", tmp, sizeof(tmp)));
+		xnetmask = nvram_safe_get(strlcat_r(prefix, "xnetmask", tmp, sizeof(tmp)));
+		xgateway = nvram_safe_get(strlcat_r(prefix, "xgateway", tmp, sizeof(tmp)));
+		xdns = nvram_safe_get(strlcat_r(prefix, "xdns", tmp, sizeof(tmp)));
+		xlease = nvram_get_int(strlcat_r(prefix, "xlease", tmp, sizeof(tmp)));
 		if (xlease > 0)
-			xexpires = nvram_get_int(strcat_r(prefix, "xexpires", tmp)) - uptime();
+			xexpires = nvram_get_int(strlcat_r(prefix, "xexpires", tmp, sizeof(tmp))) - uptime();
 	}
 
 	websWrite(wp, "function first_wanlink_xtype() { return '%s';}\n", xtype);
@@ -5991,11 +5991,11 @@ static int secondary_wanlink_hook(int eid, webs_t wp, int argc, char_t **argv){
 	unit = WAN_UNIT_SECOND;
 	wan_prefix(unit, prefix);
 
-	wan_state = nvram_get_int(strcat_r(prefix, "state_t", tmp));
-	wan_sbstate = nvram_get_int(strcat_r(prefix, "sbstate_t", tmp));
-	wan_auxstate = nvram_get_int(strcat_r(prefix, "auxstate_t", tmp));
+	wan_state = nvram_get_int(strlcat_r(prefix, "state_t", tmp, sizeof(tmp)));
+	wan_sbstate = nvram_get_int(strlcat_r(prefix, "sbstate_t", tmp, sizeof(tmp)));
+	wan_auxstate = nvram_get_int(strlcat_r(prefix, "auxstate_t", tmp, sizeof(tmp)));
 
-	wan_proto = nvram_safe_get(strcat_r(prefix, "proto", tmp));
+	wan_proto = nvram_safe_get(strlcat_r(prefix, "proto", tmp, sizeof(tmp)));
 	if (dualwan_unit__usbif(unit)) {
 		if(wan_state == WAN_STATE_CONNECTED){
 			status = 1;
@@ -6063,8 +6063,8 @@ static int secondary_wanlink_hook(int eid, webs_t wp, int argc, char_t **argv){
 		else {
 			// treat short lease time as disconnected
 			if(!strcmp(wan_proto, "dhcp") &&
-			  nvram_get_int(strcat_r(prefix, "lease", tmp)) <= 60 &&
-			  is_private_subnet(nvram_safe_get(strcat_r(prefix, "ipaddr", tmp)))
+			  nvram_get_int(strlcat_r(prefix, "lease", tmp, sizeof(tmp))) <= 60 &&
+			  is_private_subnet(nvram_safe_get(strlcat_r(prefix, "ipaddr", tmp, sizeof(tmp))))
 			) {
 				status = 0;
 			}
@@ -6080,13 +6080,13 @@ static int secondary_wanlink_hook(int eid, webs_t wp, int argc, char_t **argv){
 		type = wan_proto;
 
 	if(status != 0){
-		ip = nvram_safe_get(strcat_r(prefix, "ipaddr", tmp));
-		netmask = nvram_safe_get(strcat_r(prefix, "netmask", tmp));
-		gateway = nvram_safe_get(strcat_r(prefix, "gateway", tmp));
-		dns = nvram_safe_get(strcat_r(prefix, "dns", tmp));
-		lease = nvram_get_int(strcat_r(prefix, "lease", tmp));
+		ip = nvram_safe_get(strlcat_r(prefix, "ipaddr", tmp, sizeof(tmp)));
+		netmask = nvram_safe_get(strlcat_r(prefix, "netmask", tmp, sizeof(tmp)));
+		gateway = nvram_safe_get(strlcat_r(prefix, "gateway", tmp, sizeof(tmp)));
+		dns = nvram_safe_get(strlcat_r(prefix, "dns", tmp, sizeof(tmp)));
+		lease = nvram_get_int(strlcat_r(prefix, "lease", tmp, sizeof(tmp)));
 		if (lease > 0)
-			expires = nvram_get_int(strcat_r(prefix, "expires", tmp)) - uptime();
+			expires = nvram_get_int(strlcat_r(prefix, "expires", tmp, sizeof(tmp))) - uptime();
 	}
 
 	websWrite(wp, "function secondary_wanlink_status() { return %d;}\n", status);
@@ -6102,17 +6102,17 @@ static int secondary_wanlink_hook(int eid, webs_t wp, int argc, char_t **argv){
 	if (strcmp(wan_proto, "pppoe") == 0 ||
 	    strcmp(wan_proto, "pptp") == 0 ||
 	    strcmp(wan_proto, "l2tp") == 0) {
-		int dhcpenable = nvram_get_int(strcat_r(prefix, "dhcpenable_x", tmp));
+		int dhcpenable = nvram_get_int(strlcat_r(prefix, "dhcpenable_x", tmp, sizeof(tmp)));
 		xtype = (dhcpenable == 0) ? "static" :
-			(strcmp(wan_proto, "pppoe") == 0 && nvram_match(strcat_r(prefix, "vpndhcp", tmp), "0")) ? "" : /* zeroconf */
+			(strcmp(wan_proto, "pppoe") == 0 && nvram_match(strlcat_r(prefix, "vpndhcp", tmp, sizeof(tmp)), "0")) ? "" : /* zeroconf */
 			"dhcp";
-		xip = nvram_safe_get(strcat_r(prefix, "xipaddr", tmp));
-		xnetmask = nvram_safe_get(strcat_r(prefix, "xnetmask", tmp));
-		xgateway = nvram_safe_get(strcat_r(prefix, "xgateway", tmp));
-		xdns = nvram_safe_get(strcat_r(prefix, "xdns", tmp));
-		xlease = nvram_get_int(strcat_r(prefix, "xlease", tmp));
+		xip = nvram_safe_get(strlcat_r(prefix, "xipaddr", tmp, sizeof(tmp)));
+		xnetmask = nvram_safe_get(strlcat_r(prefix, "xnetmask", tmp, sizeof(tmp)));
+		xgateway = nvram_safe_get(strlcat_r(prefix, "xgateway", tmp, sizeof(tmp)));
+		xdns = nvram_safe_get(strlcat_r(prefix, "xdns", tmp, sizeof(tmp)));
+		xlease = nvram_get_int(strlcat_r(prefix, "xlease", tmp, sizeof(tmp)));
 		if (xlease > 0)
-			xexpires = nvram_get_int(strcat_r(prefix, "xexpires", tmp)) - uptime();
+			xexpires = nvram_get_int(strlcat_r(prefix, "xexpires", tmp, sizeof(tmp))) - uptime();
 	}
 
 	websWrite(wp, "function secondary_wanlink_xtype() { return '%s';}\n", xtype);
@@ -6154,7 +6154,7 @@ static int wan_action_hook(int eid, webs_t wp, int argc, char_t **argv){
 	unit = wan_primary_ifunit();
 	wan_prefix(unit, prefix);
 	memset(wan_enable, 0, 16);
-	strlcpy(wan_enable, strcat_r(prefix, "enable", tmp), sizeof(wan_enable));
+	strlcpy(wan_enable, strlcat_r(prefix, "enable", tmp, sizeof(tmp)), sizeof(wan_enable));
 
 	// assign control variables
 	action = websGetVar(wp, "wanaction", "");
@@ -6240,9 +6240,9 @@ static int wanlink_state_hook(int eid, webs_t wp, int argc, char_t **argv){
 		unit = wan_primary_ifunit();
 	wan_prefix(unit, prefix);
 
-	wan_state = nvram_get_int(strcat_r(prefix, "state_t", tmp));
-	wan_sbstate = nvram_get_int(strcat_r(prefix, "sbstate_t", tmp));
-	wan_auxstate = nvram_get_int(strcat_r(prefix, "auxstate_t", tmp));
+	wan_state = nvram_get_int(strlcat_r(prefix, "state_t", tmp, sizeof(tmp)));
+	wan_sbstate = nvram_get_int(strlcat_r(prefix, "sbstate_t", tmp, sizeof(tmp)));
+	wan_auxstate = nvram_get_int(strlcat_r(prefix, "auxstate_t", tmp, sizeof(tmp)));
 
 	websWrite(wp, "\"wanstate\":\"%d\",\n", wan_state);
 	websWrite(wp, "\"wansbstate\":\"%d\",\n", wan_sbstate);
@@ -6250,7 +6250,7 @@ static int wanlink_state_hook(int eid, webs_t wp, int argc, char_t **argv){
 	websWrite(wp, "\"autodet_state\":\"%d\",\n", nvram_get_int("autodet_state"));
 	websWrite(wp, "\"autodet_auxstate\":\"%d\",\n", nvram_get_int("autodet_auxstate"));
 
-	wan_proto = nvram_safe_get(strcat_r(prefix, "proto", tmp));
+	wan_proto = nvram_safe_get(strlcat_r(prefix, "proto", tmp, sizeof(tmp)));
 
 	if (dualwan_unit__usbif(unit)) {
 		if(wan_state == WAN_STATE_CONNECTED){
@@ -6320,8 +6320,8 @@ static int wanlink_state_hook(int eid, webs_t wp, int argc, char_t **argv){
 		else {
 			// treat short lease time as disconnected
 			if(!strcmp(wan_proto, "dhcp") &&
-			  nvram_get_int(strcat_r(prefix, "lease", tmp)) <= 60 &&
-			  is_private_subnet(nvram_safe_get(strcat_r(prefix, "ipaddr", tmp)))
+			  nvram_get_int(strlcat_r(prefix, "lease", tmp, sizeof(tmp))) <= 60 &&
+			  is_private_subnet(nvram_safe_get(strlcat_r(prefix, "ipaddr", tmp, sizeof(tmp))))
 			) {
 				status = 0;
 			}
@@ -6339,13 +6339,13 @@ static int wanlink_state_hook(int eid, webs_t wp, int argc, char_t **argv){
 		type = wan_proto;
 
 	if(status != 0){
-		ip = nvram_safe_get(strcat_r(prefix, "ipaddr", tmp));
-		netmask = nvram_safe_get(strcat_r(prefix, "netmask", tmp));
-		gateway = nvram_safe_get(strcat_r(prefix, "gateway", tmp));
-		dns = nvram_safe_get(strcat_r(prefix, "dns", tmp));
-		lease = nvram_get_int(strcat_r(prefix, "lease", tmp));
+		ip = nvram_safe_get(strlcat_r(prefix, "ipaddr", tmp, sizeof(tmp)));
+		netmask = nvram_safe_get(strlcat_r(prefix, "netmask", tmp, sizeof(tmp)));
+		gateway = nvram_safe_get(strlcat_r(prefix, "gateway", tmp, sizeof(tmp)));
+		dns = nvram_safe_get(strlcat_r(prefix, "dns", tmp, sizeof(tmp)));
+		lease = nvram_get_int(strlcat_r(prefix, "lease", tmp, sizeof(tmp)));
 		if (lease > 0)
-			expires = nvram_get_int(strcat_r(prefix, "expires", tmp)) - uptime();
+			expires = nvram_get_int(strlcat_r(prefix, "expires", tmp, sizeof(tmp))) - uptime();
 	}
 
 	if(!strcmp(name,"appobj")){
@@ -6358,7 +6358,7 @@ static int wanlink_state_hook(int eid, webs_t wp, int argc, char_t **argv){
 		websWrite(wp, "\"wanlink_dns\":\"%s\",\n", dns);
 		websWrite(wp, "\"wanlink_lease\":\"%d\",\n", lease);
 		websWrite(wp, "\"wanlink_expires\":\"%d\",\n", expires);
-		websWrite(wp, "\"is_private_subnet\":\"%d\",\n", is_private_subnet(nvram_safe_get(strcat_r(prefix, "ipaddr", tmp))));
+		websWrite(wp, "\"is_private_subnet\":\"%d\",\n", is_private_subnet(nvram_safe_get(strlcat_r(prefix, "ipaddr", tmp, sizeof(tmp)))));
 	}else if(!strcmp(name,"status"))
 		websWrite(wp, "%d", status);
 	else if(!strcmp(name,"statusstr"))
@@ -6378,22 +6378,22 @@ static int wanlink_state_hook(int eid, webs_t wp, int argc, char_t **argv){
 	else if(!strcmp(name,"expires"))
 		websWrite(wp, "%d", expires);
 	else if(!strcmp(name,"private_subnet"))
-		websWrite(wp, "%d", is_private_subnet(nvram_safe_get(strcat_r(prefix, "ipaddr", tmp))));
+		websWrite(wp, "%d", is_private_subnet(nvram_safe_get(strlcat_r(prefix, "ipaddr", tmp, sizeof(tmp)))));
 
 	if (strcmp(wan_proto, "pppoe") == 0 ||
 	    strcmp(wan_proto, "pptp") == 0 ||
 	    strcmp(wan_proto, "l2tp") == 0) {
-		int dhcpenable = nvram_get_int(strcat_r(prefix, "dhcpenable_x", tmp));
+		int dhcpenable = nvram_get_int(strlcat_r(prefix, "dhcpenable_x", tmp, sizeof(tmp)));
 		xtype = (dhcpenable == 0) ? "static" :
-			(strcmp(wan_proto, "pppoe") == 0 && nvram_match(strcat_r(prefix, "vpndhcp", tmp), "0")) ? "" : /* zeroconf */
+			(strcmp(wan_proto, "pppoe") == 0 && nvram_match(strlcat_r(prefix, "vpndhcp", tmp, sizeof(tmp)), "0")) ? "" : /* zeroconf */
 			"dhcp";
-		xip = nvram_safe_get(strcat_r(prefix, "xipaddr", tmp));
-		xnetmask = nvram_safe_get(strcat_r(prefix, "xnetmask", tmp));
-		xgateway = nvram_safe_get(strcat_r(prefix, "xgateway", tmp));
-		xdns = nvram_safe_get(strcat_r(prefix, "xdns", tmp));
-		xlease = nvram_get_int(strcat_r(prefix, "xlease", tmp));
+		xip = nvram_safe_get(strlcat_r(prefix, "xipaddr", tmp, sizeof(tmp)));
+		xnetmask = nvram_safe_get(strlcat_r(prefix, "xnetmask", tmp, sizeof(tmp)));
+		xgateway = nvram_safe_get(strlcat_r(prefix, "xgateway", tmp, sizeof(tmp)));
+		xdns = nvram_safe_get(strlcat_r(prefix, "xdns", tmp, sizeof(tmp)));
+		xlease = nvram_get_int(strlcat_r(prefix, "xlease", tmp, sizeof(tmp)));
 		if (xlease > 0)
-			xexpires = nvram_get_int(strcat_r(prefix, "xexpires", tmp)) - uptime();
+			xexpires = nvram_get_int(strlcat_r(prefix, "xexpires", tmp, sizeof(tmp))) - uptime();
 	}
 
 	if(!strcmp(name,"appobj")){
@@ -6853,8 +6853,8 @@ ej_lan_leases(int eid, webs_t wp, int argc, char_t **argv)
 		name = strsep(&next, " ") ? : "";
 
 		if (strlen(name) > 32)
-		{
-			strcpy(name + 29, "...");
+		{			
+			strlcpy(name + 29, "...", sizeof(name) - 29);
 			name[32] = '\0';
 		}
 
@@ -6934,7 +6934,7 @@ ej_IP_dhcpLeaseInfo(int eid, webs_t wp, int argc, char_t **argv)
 #define	IPV6_ADDRESS		3
 #define BUFSIZE			8192
 
-static int compare_back(FILE *fp, int current_line, char *buffer);
+static int compare_back(FILE *fp, int current_line, char *buffer, const size_t len);
 static int check_mac_previous(char *mac);
 static char *value(FILE *fp, int line, int token);
 static void find_hostname_by_mac(char *mac, char *hostname, int hostname_len);
@@ -6974,7 +6974,7 @@ void save_file(const char *file, const char *fmt, ...)
 	fclose(fp);
 }
 
-static char *get_stok(char *str, char *dest, char delimiter)
+static char *get_stok(char *str, char *dest, char delimiter, const size_t dest_sz)
 {
 	char *p;
 
@@ -6987,7 +6987,7 @@ static char *get_stok(char *str, char *dest, char delimiter)
 
 		p++;
 	} else
-		strcpy(dest, str);
+		strlcpy(dest, str, dest_sz);
 
 	return p;
 }
@@ -7010,19 +7010,19 @@ static char *value(FILE *fp, int line, int token)
 	memset(buffer, 0, sizeof(buffer));
 	switch (token) {
 		case HOSTNAME:
-			get_stok(temp, buffer, ' ');
+			get_stok(temp, buffer, ' ', sizeof(buffer));
 			break;
 		case MAC:
-			ptr = get_stok(temp, buffer, ' ');
+			ptr = get_stok(temp, buffer, ' ', sizeof(buffer));
 			if (ptr)
-				get_stok(ptr, buffer, ' ');
+				get_stok(ptr, buffer, ' ', sizeof(buffer));
 			break;
 		case IPV6_ADDRESS:
-			ptr = get_stok(temp, buffer, ' ');
+			ptr = get_stok(temp, buffer, ' ', sizeof(buffer));
 			if (ptr) {
-				ptr = get_stok(ptr, buffer, ' ');
+				ptr = get_stok(ptr, buffer, ' ', sizeof(buffer));
 				if (ptr)
-					ptr = get_stok(ptr, buffer, ' ');
+					ptr = get_stok(ptr, buffer, ' ', sizeof(buffer));
 			}
 			break;
 		default:
@@ -7059,7 +7059,7 @@ static int check_mac_previous(char *mac)
 	return 0;
 }
 
-static int compare_back(FILE *fp, int current_line, char *buffer)
+static int compare_back(FILE *fp, int current_line, char *buffer, const size_t len)
 {
 	int i = 0;
 	char mac[32], compare_mac[32];
@@ -7073,8 +7073,8 @@ static int compare_back(FILE *fp, int current_line, char *buffer)
 	for(i = 0; i<(total_lines - current_line); i++) {
 		strlcpy(compare_mac, value(fp, current_line + 1 + i, MAC), sizeof(compare_mac));
 		if (strcmp(mac, compare_mac) == 0) {
-			strcat(buffer, ",");
-			strcat(buffer, value(fp, current_line + 1 + i, IPV6_ADDRESS));
+			strlcat(buffer, ",", len);
+			strlcat(buffer, value(fp, current_line + 1 + i, IPV6_ADDRESS), len);
 		}
 	}
 	save_file(IPV6_CLIENT_LIST, "%s\n", buffer);
@@ -7119,7 +7119,7 @@ static void find_hostname_by_mac(char *mac, char *hostname, int hostname_len)
 	}
 	fclose(fp);
 END:
-	strcpy(hostname, "<unknown>");
+	strlcpy(hostname, "<unknown>", hostname_len);
 }
 
 void get_ipv6_client_info()
@@ -7186,7 +7186,7 @@ void get_ipv6_client_list(void)
 	memset(temp, 0, sizeof(temp));
 
 	while (fgets(temp, BUFSIZE, fp)) {
-		compare_back(fp, line_index, temp);
+		compare_back(fp, line_index, temp, sizeof(temp));
 		value(fp, line_index, MAC);
 		line_index++;
 	}
@@ -7294,7 +7294,8 @@ ej_lan_ipv6_network(int eid, webs_t wp, int argc, char_t **argv)
 		}
 		/* fall through */
 	default:
-		next = strcpy(dnsbuf, "");
+		dnsbuf[0] = '\0';
+		next = dnsbuf;
 		for (i = 1; i <= 3; i++) {
 			char tmp[sizeof("ipv6_dnsXXX")];
 			snprintf(tmp, sizeof(tmp), "ipv6_dns%d", i);
@@ -7366,7 +7367,7 @@ ej_lan_ipv6_network(int eid, webs_t wp, int argc, char_t **argv)
 			continue;
 
 		if (strlen(hostname) > 32)
-			sprintf(hostname + 29, "...");
+			snprintf(hostname + 29, 4, "...");
 
 		ipaddrs[0] = '\0';
 		p = ipaddrs;
@@ -7594,12 +7595,12 @@ static int ipv4_route_table(webs_t wp)
 			/* Tricky, it's better to move wan_ifunit/wanx_ifunit to shared instead */
 			for (unit = WAN_UNIT_FIRST; unit < WAN_UNIT_MAX; unit++) {
 				wan_prefix(unit, prefix);
-				if (nvram_match(strcat_r(prefix, "pppoe_ifname", tmp), ifname)) {
+				if (nvram_match(strlcat_r(prefix, "pppoe_ifname", tmp, sizeof(tmp)), ifname)) {
 					dev = "WAN";
 					break;
 				}
-				if (nvram_match(strcat_r(prefix, "ifname", tmp), ifname)) {
-					char *wan_proto = nvram_safe_get(strcat_r(prefix, "proto", tmp));
+				if (nvram_match(strlcat_r(prefix, "ifname", tmp, sizeof(tmp)), ifname)) {
+					char *wan_proto = nvram_safe_get(strlcat_r(prefix, "proto", tmp, sizeof(tmp)));
 					dev = (strcmp(wan_proto, "dhcp") == 0 ||
 					       strcmp(wan_proto, "static") == 0 ) ? "WAN" : "MAN";
 					break;
@@ -9775,7 +9776,7 @@ static int ej_show_usb_path(int eid, webs_t wp, int argc, char_t **argv){
 		strncpy(all_usb_path[port_order][hub_order][0], port_path, 16);
 		snprintf(prefix, 32, "usb_path%s", port_path);
 		strncpy(all_usb_path[port_order][hub_order][1], nvram_safe_get(prefix), 16);
-		strncpy(all_usb_path[port_order][hub_order][2], nvram_safe_get(strcat_r(prefix, "_speed", tmp)), 16);
+		strncpy(all_usb_path[port_order][hub_order][2], nvram_safe_get(strlcat_r(prefix, "_speed", tmp, sizeof(tmp))), 16);
 	}
 
 	closedir(bus_usb);
@@ -10268,7 +10269,7 @@ static int ej_get_usb_info(int eid, webs_t wp, int argc, char_t **argv){
 		strncpy(all_usb_path[port_order][hub_order][0], port_path, 16);
 		snprintf(prefix, 32, "usb_path%s", port_path);
 		strncpy(all_usb_path[port_order][hub_order][1], nvram_safe_get(prefix), 16);
-		strncpy(all_usb_path[port_order][hub_order][2], nvram_safe_get(strcat_r(prefix, "_speed", tmp)), 16);
+		strncpy(all_usb_path[port_order][hub_order][2], nvram_safe_get(strlcat_r(prefix, "_speed", tmp, sizeof(tmp))), 16);
 	}
 	closedir(bus_usb);
 	/*** show_usb_path end ***/
@@ -10286,9 +10287,9 @@ static int ej_get_usb_info(int eid, webs_t wp, int argc, char_t **argv){
 			if(get_path_by_node(usb_node, port_path, 8) != NULL){
 				snprintf(prefix, sizeof(prefix), "usb_path%s", port_path);
 
-				strncpy(printer_array[got_printer][0], nvram_safe_get(strcat_r(prefix, "_manufacturer", tmp)), 64);
-				strncpy(printer_array[got_printer][1], nvram_safe_get(strcat_r(prefix, "_product", tmp)), 64);
-				strncpy(printer_array[got_printer][2], nvram_safe_get(strcat_r(prefix, "_serial", tmp)), 64);
+				strncpy(printer_array[got_printer][0], nvram_safe_get(strlcat_r(prefix, "_manufacturer", tmp, sizeof(tmp))), 64);
+				strncpy(printer_array[got_printer][1], nvram_safe_get(strlcat_r(prefix, "_product", tmp, sizeof(tmp))), 64);
+				strncpy(printer_array[got_printer][2], nvram_safe_get(strlcat_r(prefix, "_serial", tmp, sizeof(tmp))), 64);
 				strncpy(printer_array[got_printer][3], port_path, 64);
 
 				++got_printer;
@@ -10314,21 +10315,21 @@ static int ej_get_usb_info(int eid, webs_t wp, int argc, char_t **argv){
 		if(!strcmp(nvram_safe_get(prefix), "modem")){
 			snprintf(port_path, 8, "%d", i);
 
-			strncpy(modem_array[got_modem][0], nvram_safe_get(strcat_r(prefix, "_manufacturer", tmp)), 64);
-			strncpy(modem_array[got_modem][1], nvram_safe_get(strcat_r(prefix, "_product", tmp)), 64);
-			strncpy(modem_array[got_modem][2], nvram_safe_get(strcat_r(prefix, "_serial", tmp)), 64);
+			strncpy(modem_array[got_modem][0], nvram_safe_get(strlcat_r(prefix, "_manufacturer", tmp, sizeof(tmp))), 64);
+			strncpy(modem_array[got_modem][1], nvram_safe_get(strlcat_r(prefix, "_product", tmp, sizeof(tmp))), 64);
+			strncpy(modem_array[got_modem][2], nvram_safe_get(strlcat_r(prefix, "_serial", tmp, sizeof(tmp))), 64);
 			strncpy(modem_array[got_modem][3], port_path, 64);
 #ifdef RTCONFIG_INTERNAL_GOBI
 			for(modem_unit = MODEM_UNIT_FIRST; modem_unit < MODEM_UNIT_MAX; ++modem_unit){
 				usb_modem_prefix(modem_unit, prefix2, sizeof(prefix2));
 
-				snprintf(act_node, 32, "%s", nvram_safe_get(strcat_r(prefix2, "act_path", tmp2)));
+				snprintf(act_node, 32, "%s", nvram_safe_get(strlcat_r(prefix2, "act_path", tmp2, sizeof(tmp2))));
 				if(strlen(act_node) <= 0 || get_path_by_node(act_node, act_port_path, 8) == NULL)
 					memset(act_port_path, 0, 8);
 
 				if(!strcmp(port_path, act_port_path)){
-					strncpy(modem_array[got_modem][4], nvram_safe_get(strcat_r(prefix2, "act_signal", tmp2)), 64);
-					strncpy(modem_array[got_modem][5], nvram_safe_get(strcat_r(prefix2, "act_operation", tmp2)), 64);
+					strncpy(modem_array[got_modem][4], nvram_safe_get(strlcat_r(prefix2, "act_signal", tmp2, sizeof(tmp2))), 64);
+					strncpy(modem_array[got_modem][5], nvram_safe_get(strlcat_r(prefix2, "act_operation", tmp2, sizeof(tmp2))), 64);
 				}
 				else{
 					memset(modem_array[got_modem][4], 0, 64);
@@ -10346,21 +10347,21 @@ static int ej_get_usb_info(int eid, webs_t wp, int argc, char_t **argv){
 				if(!strcmp(nvram_safe_get(prefix), "modem")){
 					snprintf(port_path, 8, "%d.%d", i, j);
 
-					strncpy(modem_array[got_modem][0], nvram_safe_get(strcat_r(prefix, "_manufacturer", tmp)), 64);
-					strncpy(modem_array[got_modem][1], nvram_safe_get(strcat_r(prefix, "_product", tmp)), 64);
-					strncpy(modem_array[got_modem][2], nvram_safe_get(strcat_r(prefix, "_serial", tmp)), 64);
+					strncpy(modem_array[got_modem][0], nvram_safe_get(strlcat_r(prefix, "_manufacturer", tmp, sizeof(tmp))), 64);
+					strncpy(modem_array[got_modem][1], nvram_safe_get(strlcat_r(prefix, "_product", tmp, sizeof(tmp))), 64);
+					strncpy(modem_array[got_modem][2], nvram_safe_get(strlcat_r(prefix, "_serial", tmp, sizeof(tmp))), 64);
 					strncpy(modem_array[got_modem][3], port_path, 64);
 #ifdef RTCONFIG_INTERNAL_GOBI
 					for(modem_unit = MODEM_UNIT_FIRST; modem_unit < MODEM_UNIT_MAX; ++modem_unit){
 						usb_modem_prefix(modem_unit, prefix2, sizeof(prefix2));
 
-						snprintf(act_node, 32, "%s", nvram_safe_get(strcat_r(prefix2, "act_path", tmp2)));
+						snprintf(act_node, 32, "%s", nvram_safe_get(strlcat_r(prefix2, "act_path", tmp2, sizeof(tmp2))));
 						if(strlen(act_node) <= 0 || get_path_by_node(act_node, act_port_path, 8) == NULL)
 							memset(act_port_path, 0, 8);
 
 						if(!strcmp(port_path, act_port_path)){
-							strncpy(modem_array[got_modem][4], nvram_safe_get(strcat_r(prefix2, "act_signal", tmp2)), 64);
-							strncpy(modem_array[got_modem][5], nvram_safe_get(strcat_r(prefix2, "act_operation", tmp2)), 64);
+							strncpy(modem_array[got_modem][4], nvram_safe_get(strlcat_r(prefix2, "act_signal", tmp2, sizeof(tmp2))), 64);
+							strncpy(modem_array[got_modem][5], nvram_safe_get(strlcat_r(prefix2, "act_operation", tmp2, sizeof(tmp2))), 64);
 						}
 						else{
 							memset(modem_array[got_modem][4], 0, 64);
@@ -10631,9 +10632,9 @@ static int ej_get_printer_info(int eid, webs_t wp, int argc, char_t **argv){
 			if(get_path_by_node(usb_node, port_path, 8) != NULL){
 				snprintf(prefix, sizeof(prefix), "usb_path%s", port_path);
 
-				strncpy(printer_array[got_printer][0], nvram_safe_get(strcat_r(prefix, "_manufacturer", tmp)), 64);
-				strncpy(printer_array[got_printer][1], nvram_safe_get(strcat_r(prefix, "_product", tmp)), 64);
-				strncpy(printer_array[got_printer][2], nvram_safe_get(strcat_r(prefix, "_serial", tmp)), 64);
+				strncpy(printer_array[got_printer][0], nvram_safe_get(strlcat_r(prefix, "_manufacturer", tmp, sizeof(tmp))), 64);
+				strncpy(printer_array[got_printer][1], nvram_safe_get(strlcat_r(prefix, "_product", tmp, sizeof(tmp))), 64);
+				strncpy(printer_array[got_printer][2], nvram_safe_get(strlcat_r(prefix, "_serial", tmp, sizeof(tmp))), 64);
 				strncpy(printer_array[got_printer][3], port_path, 64);
 
 				++got_printer;
@@ -10727,21 +10728,21 @@ static int ej_get_modem_info(int eid, webs_t wp, int argc, char_t **argv){
 		if(!strcmp(nvram_safe_get(prefix), "modem")){
 			snprintf(port_path, 8, "%d", i);
 
-			strncpy(modem_array[got_modem][0], nvram_safe_get(strcat_r(prefix, "_manufacturer", tmp)), 64);
-			strncpy(modem_array[got_modem][1], nvram_safe_get(strcat_r(prefix, "_product", tmp)), 64);
-			strncpy(modem_array[got_modem][2], nvram_safe_get(strcat_r(prefix, "_serial", tmp)), 64);
+			strncpy(modem_array[got_modem][0], nvram_safe_get(strlcat_r(prefix, "_manufacturer", tmp, sizeof(tmp))), 64);
+			strncpy(modem_array[got_modem][1], nvram_safe_get(strlcat_r(prefix, "_product", tmp, sizeof(tmp))), 64);
+			strncpy(modem_array[got_modem][2], nvram_safe_get(strlcat_r(prefix, "_serial", tmp, sizeof(tmp))), 64);
 			strncpy(modem_array[got_modem][3], port_path, 64);
 #ifdef RTCONFIG_INTERNAL_GOBI
 			for(modem_unit = MODEM_UNIT_FIRST; modem_unit < MODEM_UNIT_MAX; ++modem_unit){
 				usb_modem_prefix(modem_unit, prefix2, sizeof(prefix2));
 
-				snprintf(act_node, 32, "%s", nvram_safe_get(strcat_r(prefix2, "act_path", tmp2)));
+				snprintf(act_node, 32, "%s", nvram_safe_get(strlcat_r(prefix2, "act_path", tmp2, sizeof(tmp2))));
 				if(strlen(act_node) <= 0 || get_path_by_node(act_node, act_port_path, 8) == NULL)
 					memset(act_port_path, 0, 8);
 
 				if(!strcmp(port_path, act_port_path)){
-					strncpy(modem_array[got_modem][4], nvram_safe_get(strcat_r(prefix2, "act_signal", tmp2)), 64);
-					strncpy(modem_array[got_modem][5], nvram_safe_get(strcat_r(prefix2, "act_operation", tmp2)), 64);
+					strncpy(modem_array[got_modem][4], nvram_safe_get(strlcat_r(prefix2, "act_signal", tmp2, sizeof(tmp2))), 64);
+					strncpy(modem_array[got_modem][5], nvram_safe_get(strlcat_r(prefix2, "act_operation", tmp2, sizeof(tmp2))), 64);
 				}
 				else{
 					memset(modem_array[got_modem][4], 0, 64);
@@ -10759,21 +10760,21 @@ static int ej_get_modem_info(int eid, webs_t wp, int argc, char_t **argv){
 				if(!strcmp(nvram_safe_get(prefix), "modem")){
 					snprintf(port_path, 8, "%d.%d", i, j);
 
-					strncpy(modem_array[got_modem][0], nvram_safe_get(strcat_r(prefix, "_manufacturer", tmp)), 64);
-					strncpy(modem_array[got_modem][1], nvram_safe_get(strcat_r(prefix, "_product", tmp)), 64);
-					strncpy(modem_array[got_modem][2], nvram_safe_get(strcat_r(prefix, "_serial", tmp)), 64);
+					strncpy(modem_array[got_modem][0], nvram_safe_get(strlcat_r(prefix, "_manufacturer", tmp, sizeof(tmp))), 64);
+					strncpy(modem_array[got_modem][1], nvram_safe_get(strlcat_r(prefix, "_product", tmp, sizeof(tmp))), 64);
+					strncpy(modem_array[got_modem][2], nvram_safe_get(strlcat_r(prefix, "_serial", tmp, sizeof(tmp))), 64);
 					strncpy(modem_array[got_modem][3], port_path, 64);
 #ifdef RTCONFIG_INTERNAL_GOBI
 					for(modem_unit = MODEM_UNIT_FIRST; modem_unit < MODEM_UNIT_MAX; ++modem_unit){
 						usb_modem_prefix(modem_unit, prefix2, sizeof(prefix2));
 
-						snprintf(act_node, 32, "%s", nvram_safe_get(strcat_r(prefix2, "act_path", tmp2)));
+						snprintf(act_node, 32, "%s", nvram_safe_get(strlcat_r(prefix2, "act_path", tmp2, sizeof(tmp2))));
 						if(strlen(act_node) <= 0 || get_path_by_node(act_node, act_port_path, 8) == NULL)
 							memset(act_port_path, 0, 8);
 
 						if(!strcmp(port_path, act_port_path)){
-							strncpy(modem_array[got_modem][4], nvram_safe_get(strcat_r(prefix2, "act_signal", tmp2)), 64);
-							strncpy(modem_array[got_modem][5], nvram_safe_get(strcat_r(prefix2, "act_operation", tmp2)), 64);
+							strncpy(modem_array[got_modem][4], nvram_safe_get(strlcat_r(prefix2, "act_signal", tmp2, sizeof(tmp2))), 64);
+							strncpy(modem_array[got_modem][5], nvram_safe_get(strlcat_r(prefix2, "act_operation", tmp2, sizeof(tmp2))), 64);
 						}
 						else{
 							memset(modem_array[got_modem][4], 0, 64);
@@ -12255,7 +12256,7 @@ wps_finish:
 	{
 		char act_node[32], act_port_path[8];
 
-		snprintf(act_node, 32, "%s", nvram_safe_get(strcat_r(prefix2, "act_path", tmp2)));
+		snprintf(act_node, 32, "%s", nvram_safe_get(strlcat_r(prefix2, "act_path", tmp2, sizeof(tmp2))));
 		if(strlen(act_node) <= 0 || get_path_by_node(act_node, act_port_path, 8) == NULL){
 			goto APPLY_FINISH;
 		}
@@ -12273,7 +12274,7 @@ wps_finish:
 		save_pin = get_cgi_json("save_pin", root);
 		g3err_pin = get_cgi_json("g3err_pin", root);
 
-		snprintf(act_node, 32, "%s", nvram_safe_get(strcat_r(prefix2, "act_path", tmp2)));
+		snprintf(act_node, 32, "%s", nvram_safe_get(strlcat_r(prefix2, "act_path", tmp2, sizeof(tmp2))));
 		if(strlen(act_node) <= 0 || get_path_by_node(act_node, act_port_path, 8) == NULL){
 			goto APPLY_FINISH;
 		}
@@ -12306,7 +12307,7 @@ wps_finish:
 		newpin = get_cgi_json("sim_newpin", root);
 		g3err_pin = get_cgi_json("g3err_pin", root);
 
-		snprintf(act_node, 32, "%s", nvram_safe_get(strcat_r(prefix2, "act_path", tmp2)));
+		snprintf(act_node, 32, "%s", nvram_safe_get(strlcat_r(prefix2, "act_path", tmp2, sizeof(tmp2))));
 		if(strlen(act_node) <= 0 || get_path_by_node(act_node, act_port_path, 8) == NULL){
 			goto APPLY_FINISH;
 		}
@@ -12323,7 +12324,7 @@ wps_finish:
 
 		pincode = get_cgi_json("sim_pincode", root);
 
-		snprintf(act_node, 32, "%s", nvram_safe_get(strcat_r(prefix2, "act_path", tmp2)));
+		snprintf(act_node, 32, "%s", nvram_safe_get(strlcat_r(prefix2, "act_path", tmp2, sizeof(tmp2))));
 		if(strlen(act_node) <= 0 || get_path_by_node(act_node, act_port_path, 8) == NULL){
 			goto APPLY_FINISH;
 		}
@@ -12339,7 +12340,7 @@ wps_finish:
 		pincode = get_cgi_json("sim_pincode", root);
 		newpin = get_cgi_json("sim_newpin", root);
 
-		snprintf(act_node, 32, "%s", nvram_safe_get(strcat_r(prefix2, "act_path", tmp2)));
+		snprintf(act_node, 32, "%s", nvram_safe_get(strlcat_r(prefix2, "act_path", tmp2, sizeof(tmp2))));
 		if(strlen(act_node) <= 0 || get_path_by_node(act_node, act_port_path, 8) == NULL){
 			goto APPLY_FINISH;
 		}
@@ -12351,7 +12352,7 @@ wps_finish:
 	{
 		char act_node[32], act_port_path[8];
 
-		snprintf(act_node, 32, "%s", nvram_safe_get(strcat_r(prefix2, "act_path", tmp2)));
+		snprintf(act_node, 32, "%s", nvram_safe_get(strlcat_r(prefix2, "act_path", tmp2, sizeof(tmp2))));
 		if(strlen(act_node) <= 0 || get_path_by_node(act_node, act_port_path, 8) == NULL){
 			goto APPLY_FINISH;
 		}
@@ -14853,20 +14854,33 @@ do_vpnupload_post(char *url, FILE *stream, int len, char *boundary)
 				break;
 			else if(strstr(post_buf, "name=\"")) {
 				offset = strlen(post_buf);
-				fgets(post_buf+offset, MIN(len + 1, sizeof(post_buf)-offset), stream);
-				len -= strlen(post_buf) - offset;
-				offset = strlen(post_buf);
-				fgets(post_buf+offset, MIN(len + 1, sizeof(post_buf)-offset), stream);
-				len -= strlen(post_buf) - offset;
-				p = post_buf;
-				name = strstr(p, "\"") + 1;
-				p = strstr(name, "\"");
-				strcpy(p++, "\0");
-				value = strstr(p, "\r\n\r\n") + 4;
-				p = strstr(value, "\r");
-				strcpy(p, "\0");
-				//printf("%s=%s\n", name, value);
-				nvram_set(name, value);
+				if(fgets(post_buf+offset, MIN(len + 1, sizeof(post_buf)-offset), stream))
+				{
+					len -= strlen(post_buf) - offset;
+					offset = strlen(post_buf);
+				}
+				if(fgets(post_buf+offset, MIN(len + 1, sizeof(post_buf)-offset), stream))
+				{
+					len -= strlen(post_buf) - offset;
+					p = post_buf;
+					name = strstr(p, "\"") + 1;
+					if(name)
+					{
+						p = strstr(name, "\"");
+						if(p)
+						{
+							*(p++) = '\0';
+							value = strstr(p, "\r\n\r\n") + 4;
+							if(value)
+							{
+								p = strstr(value, "\r");
+								*p = '\0';
+							}
+						}
+						//printf("%s=%s\n", name, value);
+						nvram_set(name, value);
+					}
+				}
 			}
 		}
 	}
@@ -15214,7 +15228,10 @@ do_upload_cert_key(char *url, FILE *stream, int len, char *boundary)
 	if(p != NULL && (filename = strstr(p, "filename=\"")) != NULL){
 		filename = filename + strlen("filename=\"");
 		p = strstr(filename, "\"");
-		strcpy(p, "\0");
+		if(p)
+		{
+			*p = '\0';
+		}
 	}else
 		goto err;
 	//_dprintf("key filename = %s\n", filename);
@@ -15279,7 +15296,10 @@ do_upload_cert_key(char *url, FILE *stream, int len, char *boundary)
 	if(p != NULL && (filename = strstr(p, "filename=\"")) != NULL){
 		filename = filename + strlen("filename=\"");
 		p = strstr(filename, "\"");
-		strcpy(p, "\0");
+		if(p)
+		{
+			*p = '\0';
+		}
 	}else
 		goto err;
 	//_dprintf("cert filename = %s\n", filename);
@@ -15665,19 +15685,35 @@ do_caupload_post(char *url, FILE *stream, int len, char *boundary)
 			}
 			else if(strstr(post_buf, "name=\"ca_manage_upload_type\"")) {
 				offset = strlen(post_buf);
-				fgets(post_buf+offset, MIN(len + 1, sizeof(post_buf)-offset), stream);
-				len -= strlen(post_buf) - offset;
-				offset = strlen(post_buf);
-				fgets(post_buf+offset, MIN(len + 1, sizeof(post_buf)-offset), stream);
-				len -= strlen(post_buf) - offset;
-				p = post_buf;
-				name = strstr(p, "\"") + 1;
-				p = strstr(name, "\"");
-				strcpy(p++, "\0");
-				value = strstr(p, "\r\n\r\n") + 4;
-				p = strstr(value, "\r");
-				strcpy(p, "\0");
-				snprintf(upload_value, sizeof(upload_value), "%s", value);
+				if(fgets(post_buf+offset, MIN(len + 1, sizeof(post_buf)-offset), stream))
+				{
+					len -= strlen(post_buf) - offset;
+					offset = strlen(post_buf);
+				}
+				if(fgets(post_buf+offset, MIN(len + 1, sizeof(post_buf)-offset), stream))
+				{
+					len -= strlen(post_buf) - offset;
+					p = post_buf;
+					name = strstr(p, "\"") + 1;
+					if(name)
+					{
+						p = strstr(name, "\"");
+						if(p)
+						{
+							*(p++) = '\0';
+							value = strstr(p, "\r\n\r\n") + 4;
+							if(value)
+							{
+								p = strstr(value, "\r");
+								if(p)
+								{
+									*p = '\0';
+								}
+								snprintf(upload_value, sizeof(upload_value), "%s", value);
+							}
+						}						
+					}
+				}
 			}
 		}
 	}
@@ -15764,21 +15800,37 @@ do_ipsecupload_post(char *url, FILE *stream, int len, char *boundary)
 				break;
 			else if(strstr(post_buf, "name=\"ipsec_profile_item\"")) {
 				offset = strlen(post_buf);
-				fgets(post_buf+offset, MIN(len + 1, sizeof(post_buf)-offset), stream);
-				len -= strlen(post_buf) - offset;
-				offset = strlen(post_buf);
-				fgets(post_buf+offset, MIN(len + 1, sizeof(post_buf)-offset), stream);
-				len -= strlen(post_buf) - offset;
-				p = post_buf;
-				name = strstr(p, "\"") + 1;
-				p = strstr(name, "\"");
-				strcpy(p++, "\0");
-				value = strstr(p, "\r\n\r\n") + 4;
-				p = strstr(value, "\r");
-				strcpy(p, "\0");
-				_dprintf("%s=%s\n", name, value);
-				nvram_set(name, value);
-				snprintf(upload_fifo, sizeof(upload_fifo), "/jffs/ipsec/%s.crt", value);
+				if(fgets(post_buf+offset, MIN(len + 1, sizeof(post_buf)-offset), stream))
+				{
+					len -= strlen(post_buf) - offset;
+					offset = strlen(post_buf);
+				}
+				if(fgets(post_buf+offset, MIN(len + 1, sizeof(post_buf)-offset), stream))
+				{
+					len -= strlen(post_buf) - offset;
+					p = post_buf;
+					name = strstr(p, "\"") + 1;
+					if(name)
+					{
+						p = strstr(name, "\"");
+						if(p)
+						{
+							*(p++) = '\0';
+							value = strstr(p, "\r\n\r\n") + 4;
+							if(value)
+							{
+								p = strstr(value, "\r");
+								if(p)
+								{
+									*p = '\0';
+								}
+								_dprintf("%s=%s\n", name, value);
+								nvram_set(name, value);
+								snprintf(upload_fifo, sizeof(upload_fifo), "/jffs/ipsec/%s.crt", value);
+							}
+						}
+					}
+				}
 			}
 		}
 	}
@@ -17220,37 +17272,37 @@ static void GetWanStatus(char *state)
 		else
 			snprintf(prefix2, sizeof(prefix2), "autodet%d_", unit);
 
-		if (nvram_get_int(strcat_r(prefix2, "state", tmp2)) == AUTODET_STATE_FINISHED_NOLINK) {
+		if (nvram_get_int(strlcat_r(prefix2, "state", tmp2, sizeof(tmp2))) == AUTODET_STATE_FINISHED_NOLINK) {
 			wanstatus = BLE_WAN_STATUS_ALL_DISCONN;
 		}
-		else if (nvram_get_int(strcat_r(prefix2, "state", tmp2)) == AUTODET_STATE_FINISHED_WITHPPPOE
-			|| nvram_get_int(strcat_r(prefix2, "auxstate", tmp2)) == AUTODET_STATE_FINISHED_WITHPPPOE) {
-			if( ( nvram_get_int(strcat_r(prefix, "state_t", tmp))==2
-				&& nvram_get_int(strcat_r(prefix, "sbstate_t", tmp))==0
-				&& nvram_get_int(strcat_r(prefix, "auxstate_t", tmp))==0 ) 
+		else if (nvram_get_int(strlcat_r(prefix2, "state", tmp2, sizeof(tmp2))) == AUTODET_STATE_FINISHED_WITHPPPOE
+			|| nvram_get_int(strlcat_r(prefix2, "auxstate", tmp2, sizeof(tmp2))) == AUTODET_STATE_FINISHED_WITHPPPOE) {
+			if( ( nvram_get_int(strlcat_r(prefix, "state_t", tmp, sizeof(tmp)))==2
+				&& nvram_get_int(strlcat_r(prefix, "sbstate_t", tmp, sizeof(tmp)))==0
+				&& nvram_get_int(strlcat_r(prefix, "auxstate_t", tmp, sizeof(tmp)))==0 ) 
 			    &&
 			    ( nvram_get_int("link_internet")==2
-				|| nvram_get_int(strcat_r(prefix, "realip_state", tmp))==2 )
+				|| nvram_get_int(strlcat_r(prefix, "realip_state", tmp, sizeof(tmp)))==2 )
 			   ) {
 				wanstatus = BLE_WAN_STATUS_PORT0_DHCP;
 			}
 			else
 				wanstatus = BLE_WAN_STATUS_PORT0_PPPOE;
 		}
-		else if( nvram_get_int(strcat_r(prefix, "state_t", tmp))==2
-			&& nvram_get_int(strcat_r(prefix, "sbstate_t", tmp))==0
-			&& nvram_get_int(strcat_r(prefix, "auxstate_t", tmp))==0 ) 
+		else if( nvram_get_int(strlcat_r(prefix, "state_t", tmp, sizeof(tmp)))==2
+			&& nvram_get_int(strlcat_r(prefix, "sbstate_t", tmp, sizeof(tmp)))==0
+			&& nvram_get_int(strlcat_r(prefix, "auxstate_t", tmp, sizeof(tmp)))==0 ) 
 			wanstatus = BLE_WAN_STATUS_PORT0_DHCP;
-		else if( nvram_get_int(strcat_r(prefix2, "state", tmp2))==2) {
-			if ( nvram_get_int(strcat_r(prefix, "auxstate_t", tmp))!=1)
+		else if( nvram_get_int(strlcat_r(prefix2, "state", tmp2, sizeof(tmp2)))==2) {
+			if ( nvram_get_int(strlcat_r(prefix, "auxstate_t", tmp, sizeof(tmp)))!=1)
 				wanstatus = BLE_WAN_STATUS_PORT0_DHCP;
-			else if( nvram_get_int(strcat_r(prefix, "state_t", tmp))==4
-				&& nvram_get_int(strcat_r(prefix, "sbstate_t", tmp))==4
-				&& nvram_get_int(strcat_r(prefix, "auxstate_t", tmp))==0 ) 
+			else if( nvram_get_int(strlcat_r(prefix, "state_t", tmp, sizeof(tmp)))==4
+				&& nvram_get_int(strlcat_r(prefix, "sbstate_t", tmp, sizeof(tmp)))==4
+				&& nvram_get_int(strlcat_r(prefix, "auxstate_t", tmp, sizeof(tmp)))==0 ) 
 				wanstatus = BLE_WAN_STATUS_PORT0_UNKNOWN;
 		}
-		else if( nvram_get_int(strcat_r(prefix, "state_t", tmp))==4
-			&& nvram_get_int(strcat_r(prefix, "sbstate_t", tmp))==4 )
+		else if( nvram_get_int(strlcat_r(prefix, "state_t", tmp, sizeof(tmp)))==4
+			&& nvram_get_int(strlcat_r(prefix, "sbstate_t", tmp, sizeof(tmp)))==4 )
 			wanstatus = BLE_WAN_STATUS_PORT0_DHCP;
 		else
 			wanstatus = BLE_WAN_STATUS_PORT0_UNKNOWN;
@@ -17261,13 +17313,13 @@ static void GetWanStatus(char *state)
 			"%s, %s[%d], %s[%d]\n"
 			"%s, %s[%d]\n",
 				prefix,
-				"state", nvram_get_int(strcat_r(prefix, "state_t", tmp)),
-				"sbstate", nvram_get_int(strcat_r(prefix, "sbstate_t", tmp)),
-				"auxstate", nvram_get_int(strcat_r(prefix, "auxstate_t", tmp)),
-				"realip_state", nvram_get_int(strcat_r(prefix, "realip_state", tmp)),
+				"state", nvram_get_int(strlcat_r(prefix, "state_t", tmp, sizeof(tmp))),
+				"sbstate", nvram_get_int(strlcat_r(prefix, "sbstate_t", tmp, sizeof(tmp))),
+				"auxstate", nvram_get_int(strlcat_r(prefix, "auxstate_t", tmp, sizeof(tmp))),
+				"realip_state", nvram_get_int(strlcat_r(prefix, "realip_state", tmp, sizeof(tmp))),
 				prefix2,
-				"state", nvram_get_int(strcat_r(prefix2, "state", tmp2)),
-				"auxstate", nvram_get_int(strcat_r(prefix2, "auxstate", tmp2)),
+				"state", nvram_get_int(strlcat_r(prefix2, "state", tmp2, sizeof(tmp2))),
+				"auxstate", nvram_get_int(strlcat_r(prefix2, "auxstate", tmp2, sizeof(tmp2))),
 				"None",
 				"link_internet", nvram_get_int("link_internet")
 		);
@@ -17387,7 +17439,7 @@ static void SetAthXStatus(int band, char *param, char *value)
 		int list=0;
 
 		memset(countryCode, 0, sizeof(countryCode));
-		strncpy(countryCode, nvram_safe_get(strcat_r(prefix, "country_code", tmp)), 2);
+		strncpy(countryCode, nvram_safe_get(strlcat_r(prefix, "country_code", tmp, sizeof(tmp))), 2);
 	 
 		list = get_channel_list_via_driver(band, chList, sizeof(chList));
 		if (list<=0 && countryCode[0] != 0xff && countryCode[1] != 0xff) {   // 0xffff is default
@@ -17407,7 +17459,7 @@ static void SetAthXStatus(int band, char *param, char *value)
 
 			if (list) {
 				success=1;
-				nvram_set(strcat_r(prefix, param, tmp), value);
+				nvram_set(strlcat_r(prefix, param, tmp, sizeof(tmp)), value);
 				eval("iwconfig", ifname, param, value);
 			}
 		}
@@ -18089,21 +18141,37 @@ do_splash_page_post(char *url, FILE *stream, int len, char *boundary) {
 			}
 			else if(strstr(post_buf, "name=\"splash_page_id\"")) {
 				offset = strlen(post_buf);
-				fgets(post_buf+offset, MIN(len + 1, sizeof(post_buf)-offset), stream);
-				len -= strlen(post_buf) - offset;
-				offset = strlen(post_buf);
-				fgets(post_buf+offset, MIN(len + 1, sizeof(post_buf)-offset), stream);
-				len -= strlen(post_buf) - offset;
-				p = post_buf;
-				name = strstr(p, "\"") + 1;
-				p = strstr(name, "\"");
-				strcpy(p++, "\0");
-				value = strstr(p, "\r\n\r\n") + 4;
-				p = strstr(value, "\r");
-				strcpy(p, "\0");
-				snprintf(upload_fifo, sizeof(upload_fifo), "/jffs/customized_splash/%s.json", value);
-				snprintf(upload_html, sizeof(upload_html), "/jffs/customized_splash/%s.html", value);
-				snprintf(upload_css, sizeof(upload_css), "/jffs/customized_splash/%s.css", value);
+				if(fgets(post_buf+offset, MIN(len + 1, sizeof(post_buf)-offset), stream))
+				{
+					len -= strlen(post_buf) - offset;
+					offset = strlen(post_buf);
+				}
+				if(fgets(post_buf+offset, MIN(len + 1, sizeof(post_buf)-offset), stream))
+				{
+					len -= strlen(post_buf) - offset;
+					p = post_buf;
+					name = strstr(p, "\"") + 1;
+					if(name)
+					{
+						p = strstr(name, "\"");
+						if(p)
+						{
+							*(p++) = '\0';
+							value = strstr(p, "\r\n\r\n") + 4;
+							if(value)
+							{
+								p = strstr(value, "\r");
+								if(p)
+								{
+									*p = '\0';
+								}
+								snprintf(upload_fifo, sizeof(upload_fifo), "/jffs/customized_splash/%s.json", value);
+								snprintf(upload_html, sizeof(upload_html), "/jffs/customized_splash/%s.html", value);
+								snprintf(upload_css, sizeof(upload_css), "/jffs/customized_splash/%s.css", value);
+							}
+						}
+					}
+				}
 			}
 		}
 	}
@@ -18155,26 +18223,42 @@ do_splash_page_del(char *url, FILE *stream, int len, char *boundary) {
 		if (!strncasecmp(post_buf, "Content-Disposition:", 20)) {
 			if(strstr(post_buf, "name=\"splash_page_id_del\"")) {
 				offset = strlen(post_buf);
-				fgets(post_buf+offset, MIN(len + 1, sizeof(post_buf)-offset), stream);
-				len -= strlen(post_buf) - offset;
-				offset = strlen(post_buf);
-				fgets(post_buf+offset, MIN(len + 1, sizeof(post_buf)-offset), stream);
-				len -= strlen(post_buf) - offset;
-				p = post_buf;
-				name = strstr(p, "\"") + 1;
-				p = strstr(name, "\"");
-				strcpy(p++, "\0");
-				value = strstr(p, "\r\n\r\n") + 4;
-				p = strstr(value, "\r");
-				strcpy(p, "\0");
-				snprintf(del_fifo, sizeof(del_fifo), "/jffs/customized_splash/%s.html", value);
-				eval("rm", "-rf", del_fifo);
-				memset(del_fifo, 0, sizeof(del_fifo));
-				snprintf(del_fifo, sizeof(del_fifo), "/jffs/customized_splash/%s.json", value);
-				eval("rm", "-rf", del_fifo);
-				memset(del_fifo, 0, sizeof(del_fifo));
-				snprintf(del_fifo, sizeof(del_fifo), "/jffs/customized_splash/%s.css", value);
-				eval("rm", "-rf", del_fifo);
+				if(fgets(post_buf+offset, MIN(len + 1, sizeof(post_buf)-offset), stream))
+				{
+					len -= strlen(post_buf) - offset;
+					offset = strlen(post_buf);
+				}
+				if(fgets(post_buf+offset, MIN(len + 1, sizeof(post_buf)-offset), stream))
+				{
+					len -= strlen(post_buf) - offset;
+					p = post_buf;
+					name = strstr(p, "\"") + 1;
+					if(name)
+					{
+						p = strstr(name, "\"");
+						if(p)
+						{
+							*p = '\0';
+							value = strstr(p, "\r\n\r\n") + 4;
+							if(value)
+							{
+								p = strstr(value, "\r");
+								if(p)
+								{
+									*p = '\0';
+								}
+								snprintf(del_fifo, sizeof(del_fifo), "/jffs/customized_splash/%s.html", value);
+								eval("rm", "-rf", del_fifo);
+								memset(del_fifo, 0, sizeof(del_fifo));
+								snprintf(del_fifo, sizeof(del_fifo), "/jffs/customized_splash/%s.json", value);
+								eval("rm", "-rf", del_fifo);
+								memset(del_fifo, 0, sizeof(del_fifo));
+								snprintf(del_fifo, sizeof(del_fifo), "/jffs/customized_splash/%s.css", value);
+								eval("rm", "-rf", del_fifo);
+							}
+						}
+					}
+				}
 			}
 		}
 	}
@@ -19278,7 +19362,7 @@ enable_nc_notice(int event_id, int enable, int service_bit)
 			}
 			else
 				snprintf(tmp, sizeof(tmp), "<%s>%s>%s", eInfo_value, eInfo_action, eInfo_eType);
-			strcat(setConf, tmp);
+			strlcat(setConf, tmp, sizeof(setConf));
 		}
 		free(nv);
 		if(find == 0){
@@ -19736,20 +19820,20 @@ do_auto_guestnetwork_cgi(char *url, FILE *stream)
 		else if(from_app == FROM_ALEXA)
 			snprintf(ssid, sizeof(ssid), "%s%s_Guest%d", SSID_PREFIX, unit ? (unit == 2 ? "_5G-2" : (band_num > 2 ? "_5G-1" : "_5G")) : "", subunit);
 
-		nvram_set(strcat_r(prefix, "ssid", tmp), ssid);
-		nvram_set(strcat_r(prefix, "wpa_psk", tmp), key);
-		nvram_set(strcat_r(prefix, "auth_mode_x", tmp), "pskpsk2");
-		nvram_set(strcat_r(prefix, "crypto", tmp), "aes");
-		nvram_set(strcat_r(prefix, "wpa_gtk_rekey", tmp), "3600");
-		nvram_set(strcat_r(prefix, "lanaccess", tmp), "off");
-		nvram_set(strcat_r(prefix, "macmode", tmp), "disabled");
+		nvram_set(strlcat_r(prefix, "ssid", tmp, sizeof(tmp)), ssid);
+		nvram_set(strlcat_r(prefix, "wpa_psk", tmp, sizeof(tmp)), key);
+		nvram_set(strlcat_r(prefix, "auth_mode_x", tmp, sizeof(tmp)), "pskpsk2");
+		nvram_set(strlcat_r(prefix, "crypto", tmp, sizeof(tmp)), "aes");
+		nvram_set(strlcat_r(prefix, "wpa_gtk_rekey", tmp, sizeof(tmp)), "3600");
+		nvram_set(strlcat_r(prefix, "lanaccess", tmp, sizeof(tmp)), "off");
+		nvram_set(strlcat_r(prefix, "macmode", tmp, sizeof(tmp)), "disabled");
 		if(!isValid_digit_string(wl_expire)){
-			nvram_set(strcat_r(prefix, "expire", tmp), "10800");
-			nvram_set(strcat_r(prefix, "expire_tmp", tmp), "10800");
+			nvram_set(strlcat_r(prefix, "expire", tmp, sizeof(tmp)), "10800");
+			nvram_set(strlcat_r(prefix, "expire_tmp", tmp, sizeof(tmp)), "10800");
 		}
 		else{
-			nvram_set(strcat_r(prefix, "expire", tmp), wl_expire);
-			nvram_set(strcat_r(prefix, "expire_tmp", tmp), wl_expire);
+			nvram_set(strlcat_r(prefix, "expire", tmp, sizeof(tmp)), wl_expire);
+			nvram_set(strlcat_r(prefix, "expire_tmp", tmp, sizeof(tmp)), wl_expire);
 		}
 
 		if(!strcmp(wl_bss_enabled, "")){
@@ -19757,14 +19841,14 @@ do_auto_guestnetwork_cgi(char *url, FILE *stream)
 			if(strcmp(nvram_pf_safe_get(prefix, "bss_enabled"), "1"))
 				notify_nt = 1;
 #endif
-			nvram_set(strcat_r(prefix, "bss_enabled", tmp), "1");
+			nvram_set(strlcat_r(prefix, "bss_enabled", tmp, sizeof(tmp)), "1");
 		}
 		else if(isValidEnableOption(wl_bss_enabled, 1)){
 #if defined(RTCONFIG_NOTIFICATION_CENTER)
 			if(strcmp(nvram_pf_safe_get(prefix, "bss_enabled"), wl_bss_enabled))
 				notify_nt = 1;
 #endif
-			nvram_set(strcat_r(prefix, "bss_enabled", tmp), wl_bss_enabled);
+			nvram_set(strlcat_r(prefix, "bss_enabled", tmp, sizeof(tmp)), wl_bss_enabled);
 		}
 
 		unit++;
@@ -19813,7 +19897,7 @@ response_nvram_config(webs_t wp, char *config_name, json_object *res, json_objec
 			snprintf(prefix, sizeof(prefix), "wl%d.%d_", unit, subunit);
 			for (t=guestnetwork_conf; t->name; t++){
 				if(!strncmp(t->name, "wl_", 3))
-					strcat_r(prefix, t->name+3, tmp);
+					strlcat_r(prefix, t->name+3, tmp, sizeof(tmp));
 				else
 					strlcpy(tmp, t->name, sizeof(tmp));
 				value = nvram_safe_get(tmp);
@@ -20488,9 +20572,9 @@ do_set_wl_sched_cgi(char *url, FILE *stream) {
 				memset(wl_sched_buf, 0, sizeof(wl_sched_buf));
 				if(json_object_object_get_ex(val, "wl_timesched", &timesched)){
 #ifdef RTCONFIG_CFGSYNC
-					if (strcmp(nvram_safe_get(strcat_r(prefix, "_timesched", tmp)), (char *)json_object_get_string(timesched)) != 0 && cfg_root)
+					if (strcmp(nvram_safe_get(strlcat_r(prefix, "_timesched", tmp, sizeof(tmp))), (char *)json_object_get_string(timesched)) != 0 && cfg_root)
 					{
-						if (save_changed_param(cfg_root, strcat_r(prefix, "_timesched", tmp)))
+						if (save_changed_param(cfg_root, strlcat_r(prefix, "_timesched", tmp, sizeof(tmp))))
 							cfg_update = 1;
 					}
 #endif
@@ -20529,9 +20613,9 @@ do_set_wl_sched_cgi(char *url, FILE *stream) {
 					}
 				}
 #ifdef RTCONFIG_CFGSYNC
-				if (strcmp(nvram_safe_get(strcat_r(prefix, "_sched_v2", tmp)), (char *)json_object_get_string(timesched)) != 0 && cfg_root)
+				if (strcmp(nvram_safe_get(strlcat_r(prefix, "_sched_v2", tmp, sizeof(tmp))), (char *)json_object_get_string(timesched)) != 0 && cfg_root)
 				{
-					if (save_changed_param(cfg_root, strcat_r(prefix, "_sched_v2", tmp)))
+					if (save_changed_param(cfg_root, strlcat_r(prefix, "_sched_v2", tmp, sizeof(tmp))))
 						cfg_update = 1;
 				}
 #endif
@@ -20815,7 +20899,7 @@ do_del_client_data_cgi(char *url, FILE *stream) {
 			nvram_set(wl_maclist_name, wl_maclist_buf);
 			wl_maclist_ret++;
 		}
-		foreach(word1, nvram_safe_get(strcat_r(prefix, "vifnames", tmp)), word_next1) {
+		foreach(word1, nvram_safe_get(strlcat_r(prefix, "vifnames", tmp, sizeof(tmp))), word_next1) {
 			wl_maclist_tmp_ret=0;
 			memset(wl_maclist, 0, sizeof(wl_maclist));
 			memset(wl_maclist_buf, 0, sizeof(wl_maclist_buf));
@@ -24468,7 +24552,7 @@ int ej_plc_status(int eid, webs_t wp, int argc, char **argv)
 	for (i = 0; i < cnt1; i++) {
 		for (j = 0; j < cnt2; j++) {
 			if (plc2[j].status == 2 && strcmp(plc1[i].mac, plc2[j].mac) == 0) {
-				strcpy(plc1[i].pwd, plc2[j].pwd);
+				strlcpy(plc1[i].pwd, plc2[j].pwd, sizeof(plc1[i].pwd));
 				plc1[i].status = 1;
 				plc2[j].status = 1;
 				break;
@@ -24647,7 +24731,7 @@ int ej_qos_packet(int eid, webs_t wp, int argc, char_t **argv)
 	unit = wan_primary_ifunit();
 	wan_prefix(unit, prefix);
 	memset(wan_ifname, 0, 16);
-	strlcpy(wan_ifname, strcat_r(prefix, "ifname", tmp), sizeof(wan_ifname));
+	strlcpy(wan_ifname, strlcat_r(prefix, "ifname", tmp, sizeof(tmp)), sizeof(wan_ifname));
 
 	a[0] = "1";
 	asp_ctcount(wp, 1, a);
@@ -25955,7 +26039,7 @@ ej_wl_nband_info(int eid, webs_t wp, int argc, char_t **argv)
 		else
 			ret += websWrite(wp, ", ");
 		snprintf(prefix, sizeof(prefix), "wl%d_", unit);
-		band = nvram_safe_get(strcat_r(prefix, "nband", tmp));
+		band = nvram_safe_get(strlcat_r(prefix, "nband", tmp, sizeof(tmp)));
 	
 		ret += websWrite(wp, "'%s'", band);
 
@@ -25975,7 +26059,7 @@ ej_geoiplookup(int eid, webs_t wp, int argc, char_t **argv)
 
 	unit = wan_primary_ifunit();
 	wan_prefix(unit, prefix);
-	wanip = nvram_safe_get(strcat_r(prefix, "ipaddr", tmp));
+	wanip = nvram_safe_get(strlcat_r(prefix, "ipaddr", tmp, sizeof(tmp)));
 
 	return websWrite(wp, "%s", geoiplookup_by_ip(wanip));
 }
@@ -26331,7 +26415,7 @@ ej_geoiplookup_eg(int eid, webs_t wp, int argc, char_t **argv)
 
 	unit = wan_primary_ifunit();
 	wan_prefix(unit, prefix);
-	wanip = nvram_safe_get(strcat_r(prefix, "ipaddr", tmp));
+	wanip = nvram_safe_get(strlcat_r(prefix, "ipaddr", tmp, sizeof(tmp)));
 
 	return websWrite(wp, "%d", geoip_match(wanip));
 }
@@ -26434,8 +26518,8 @@ ej_get_upload_icon_count_list(int eid, webs_t wp, int argc, char **argv) {
 			if(strlen(entry->d_name) == 16){
 				strncpy(filename, entry->d_name, 12);
 				if(isValidMacAddress(filename)){
-					strcat(allMacList, entry->d_name);
-					strcat(allMacList, ">");
+					strlcat(allMacList, entry->d_name, sizeof(allMacList));
+					strlcat(allMacList, ">", sizeof(allMacList));
 					file_count++;
 				}
 			}
@@ -26464,7 +26548,7 @@ ej_findasus(int eid, webs_t wp, int argc, char **argv) {
 	eval("asusdiscovery");	//find asus device
 
 	g = buf = strdup(nvram_safe_get("asus_device_list"));
-	strcat(retList, "[\n");
+	strlcat(retList, "[\n", sizeof(retList));
    	if(strcmp(buf, "") != 0){
 		while (buf) {
 			if ((p = strsep(&g, "<")) == NULL) break;
@@ -26474,12 +26558,12 @@ ej_findasus(int eid, webs_t wp, int argc, char **argv) {
 			if(isfirst == 0){
 				isfirst = 1;
 			}else{
-				strcat(retList, ",\n");
+				strlcat(retList, ",\n", sizeof(retList));
 			}
 
-			strcat(retList, "{");
+			strlcat(retList, "{", sizeof(retList));
 			snprintf(strTmp, sizeof(strTmp), "modelName:\"%s\",", name);
-			strcat(retList, strTmp);
+			strlcat(retList, strTmp, sizeof(retList));
 			if(check_xss_blacklist(ssid, 0))
 				strlcpy(strTmp, "ssid:\"\",", sizeof(strTmp));
 			else
@@ -26508,7 +26592,7 @@ ej_wtfast_status(int eid, webs_t wp, int argc, char **argv) {
 		char tmp[1024] = {0};
 		char val[512] = {0};
 
-		strcat(wtfast_status, "{");
+		strlcpy(wtfast_status, "{", sizeof(wtfast_status));
 
 		snprintf(tmp, sizeof(tmp), "\"eMail\":\"\",");
 		strlcat(wtfast_status, tmp, sizeof(wtfast_status));
@@ -26627,8 +26711,8 @@ ej_check_passwd_strength(int eid, webs_t wp, int argc, char **argv){
 		foreach (word, nvram_safe_get("wl_ifnames"), next) {
 			SKIP_ABSENT_BAND_AND_INC_UNIT(unit);
 			snprintf(prefix, sizeof(prefix), "wl%d_", unit);
-			pwd = nvram_safe_get(strcat_r(prefix, "wpa_psk", tmp));
-			auth_mode = nvram_safe_get(strcat_r(prefix, "auth_mode_x", tmp));
+			pwd = nvram_safe_get(strlcat_r(prefix, "wpa_psk", tmp, sizeof(tmp)));
+			auth_mode = nvram_safe_get(strlcat_r(prefix, "auth_mode_x", tmp, sizeof(tmp)));
 			nLength=0; nConsecAlphaUC=0; nConsecCharType=0; nAlphaUC=0; nConsecAlphaLC=0; nAlphaLC=0; nMidChar=0; nConsecNumber=0; nNumber=0; nConsecSymbol=0; nSymbol=0; nRepChar=0; nUnqChar=0; nSeqAlpha=0; nSeqNumber=0; nSeqChar = 0; nSeqSymbol=0;
 			nTmpAlphaUC = -1; nTmpAlphaLC = -1; nTmpNumber = -1; nTmpSymbol = -1;
 		   if(pwd != NULL && (!strcmp(auth_mode,"psk2") || !strcmp(auth_mode,"pskpsk2") || !strcmp(auth_mode,"wpa2") || !strcmp(auth_mode,"wpawpa2") || !strcmp(auth_mode,"psk2sae") || !strcmp(auth_mode,"sae"))){
@@ -26839,7 +26923,7 @@ ej_check_wireless_encryption(int eid, webs_t wp, int argc, char **argv){
 	foreach (word, nvram_safe_get("wl_ifnames"), next) {
 		SKIP_ABSENT_BAND_AND_INC_UNIT(unit);
 		snprintf(prefix, sizeof(prefix), "wl%d_", unit);
-		auth_mode = nvram_safe_get(strcat_r(prefix, "auth_mode_x", tmp));
+		auth_mode = nvram_safe_get(strlcat_r(prefix, "auth_mode_x", tmp, sizeof(tmp)));
 		if(!strcmp(auth_mode,"psk2") || !strcmp(auth_mode,"pskpsk2") || !strcmp(auth_mode,"sae") || !strcmp(auth_mode,"psk2sae") || !strcmp(auth_mode,"wpa2") || !strcmp(auth_mode,"wpawpa2"))
 			;
 		else
@@ -26913,8 +26997,8 @@ ej_get_next_lanip(int eid, webs_t wp, int argc, char **argv)
 		for(unit = WAN_UNIT_FIRST; unit < WAN_UNIT_MAX; ++unit){
 			if (!dualwan_unit__usbif(unit)) {
 				snprintf(prefix, sizeof(prefix), "wan%d_", unit);
-				wan_ipaddr = nvram_safe_get(strcat_r(prefix, "ipaddr", tmp));
-				wan_netmask = nvram_safe_get(strcat_r(prefix, "netmask", tmp));
+				wan_ipaddr = nvram_safe_get(strlcat_r(prefix, "ipaddr", tmp, sizeof(tmp)));
+				wan_netmask = nvram_safe_get(strlcat_r(prefix, "netmask", tmp, sizeof(tmp)));
 			}
 			else{
 				/* force conflict per original design */
@@ -26933,8 +27017,8 @@ ej_get_next_lanip(int eid, webs_t wp, int argc, char **argv)
 
 		if (!dualwan_unit__usbif(unit)) {
 			snprintf(prefix, sizeof(prefix), "wan%d_", unit);
-			wan_ipaddr = nvram_safe_get(strcat_r(prefix, "ipaddr", tmp));
-			wan_netmask = nvram_safe_get(strcat_r(prefix, "netmask", tmp));
+			wan_ipaddr = nvram_safe_get(strlcat_r(prefix, "ipaddr", tmp, sizeof(tmp)));
+			wan_netmask = nvram_safe_get(strlcat_r(prefix, "netmask", tmp, sizeof(tmp)));
 		} else {
 			/* force conflict per original design */
 			wan_ipaddr = lan_ipaddr;
@@ -27106,7 +27190,7 @@ get_ipsec_conn_info(struct json_object *ipsec_conn_obj)
 	struct json_object *ipsec_profile_h2nv2_array = json_object_new_array();
 	struct json_object *ipsec_profile_other_array = json_object_new_array();
 
-	sprintf(cmd, "%s", "ipsec statusall");
+	snprintf(cmd, sizeof(cmd), "%s", "ipsec statusall");
 	
 	if ((p_fp = popen(cmd, "r")) != NULL) {
 		while (1) 
@@ -27236,11 +27320,10 @@ get_ipsec_conn_info(struct json_object *ipsec_conn_obj)
 					strlcpy(dest_ip,dest_ip+4, sizeof(dest_ip));
 					strlcpy(ipaddr,dest_ip, sizeof(ipaddr));
 
-					strcpy(conn_period,"");
-					strcpy(xauth_account,"");
-					strcpy(eap_account,"");
-					strcpy(psk_reauth_time,"");
-					
+					conn_period[0] = '\0';
+					xauth_account[0] = '0';
+					eap_account[0] = '\0';
+					psk_reauth_time[0] = '\0';				
 
 					while (fgets(line, sizeof(line), p_fp)) {
 						if(!(strstr(line,profile_name) != NULL)){
@@ -27861,7 +27944,7 @@ char *get_fh_ap_ssid_by_unit(int unit)
 		snprintf(prefix, sizeof(prefix), "wl%d_", unit);
 	}
 
-	strlcpy(ssid, nvram_safe_get(strcat_r(prefix, "ssid", tmp)), sizeof(ssid));
+	strlcpy(ssid, nvram_safe_get(strlcat_r(prefix, "ssid", tmp, sizeof(tmp))), sizeof(ssid));
 
 	return ssid;
 }
@@ -27995,9 +28078,9 @@ ej_get_cfg_clientlist(int eid, webs_t wp, int argc, char **argv){
 			foreach (word, nvram_safe_get("wl_ifnames"), next) {
 				SKIP_ABSENT_BAND_AND_INC_UNIT(unit);
 				snprintf(prefix, sizeof(prefix), "wl%d_", unit);
-				nband = nvram_get_int(strcat_r(prefix, "nband", tmp));
+				nband = nvram_get_int(strlcat_r(prefix, "nband", tmp, sizeof(tmp)));
 				if (nband == 2) {
-					strlcpy(ap2g_ssid_buf, nvram_safe_get(strcat_r(prefix, "ssid", tmp)),
+					strlcpy(ap2g_ssid_buf, nvram_safe_get(strlcat_r(prefix, "ssid", tmp, sizeof(tmp))),
 						sizeof(ap2g_ssid_buf));
 					strlcpy(ap2g_ssid_fh_buf, get_fh_ap_ssid_by_unit(unit),
 						sizeof(ap2g_ssid_fh_buf));
@@ -28005,14 +28088,14 @@ ej_get_cfg_clientlist(int eid, webs_t wp, int argc, char **argv){
 				else if (nband == 1)
 				{
 					if (unit == 1) {
-						strlcpy(ap5g_ssid_buf, nvram_safe_get(strcat_r(prefix, "ssid", tmp)),
+						strlcpy(ap5g_ssid_buf, nvram_safe_get(strlcat_r(prefix, "ssid", tmp, sizeof(tmp))),
 							sizeof(ap5g_ssid_buf));
 						strlcpy(ap5g_ssid_fh_buf, get_fh_ap_ssid_by_unit(unit),
 							sizeof(ap5g_ssid_fh_buf));
 					}
 					else if (unit == 2)
 					{
-						strlcpy(ap5g1_ssid_buf, nvram_safe_get(strcat_r(prefix, "ssid", tmp)),
+						strlcpy(ap5g1_ssid_buf, nvram_safe_get(strlcat_r(prefix, "ssid", tmp, sizeof(tmp))),
 							sizeof(ap5g1_ssid_buf));
 						strlcpy(ap5g1_ssid_fh_buf, get_fh_ap_ssid_by_unit(unit),
 							sizeof(ap5g1_ssid_fh_buf));
@@ -28020,7 +28103,7 @@ ej_get_cfg_clientlist(int eid, webs_t wp, int argc, char **argv){
 				}
 				else if (nband == 4)
 				{
-					strlcpy(ap6g_ssid_buf, nvram_safe_get(strcat_r(prefix, "ssid", tmp)),
+					strlcpy(ap6g_ssid_buf, nvram_safe_get(strlcat_r(prefix, "ssid", tmp, sizeof(tmp))),
 						sizeof(ap6g_ssid_buf));
 					strlcpy(ap6g_ssid_fh_buf, get_fh_ap_ssid_by_unit(unit),
 						sizeof(ap6g_ssid_fh_buf));
@@ -30631,7 +30714,7 @@ ej_get_wl_channel_list_2g(int eid, webs_t wp, int argc, char **argv)
 	int unit;
 	for(unit = 0; unit < num_of_wl_if(); unit++) {
 		snprintf(prefix, sizeof(prefix), "wl%d_", unit);
-		if(WL_NBAND_2G == nvram_get_int(strcat_r(prefix, "nband", tmp))) {
+		if(WL_NBAND_2G == nvram_get_int(strlcat_r(prefix, "nband", tmp, sizeof(tmp)))) {
 			ej_wl_chanspecs(0, NULL, 1, NULL, unit);
 			return ej_get_wl_channel_list(eid, wp, argc, argv, unit);
 		}
@@ -30648,7 +30731,7 @@ ej_get_wl_channel_list_5g(int eid, webs_t wp, int argc, char **argv) {
 	int unit;
 	for(unit = 0; unit < num_of_wl_if(); unit++) {
 		snprintf(prefix, sizeof(prefix), "wl%d_", unit);
-		if(WL_NBAND_5G == nvram_get_int(strcat_r(prefix, "nband", tmp))) {
+		if(WL_NBAND_5G == nvram_get_int(strlcat_r(prefix, "nband", tmp, sizeof(tmp)))) {
 			ej_wl_chanspecs(0, NULL, 1, NULL, unit);
 			return ej_get_wl_channel_list(eid, wp, argc, argv, unit);
 		}
@@ -30665,8 +30748,8 @@ ej_get_wl_channel_list_5g_2(int eid, webs_t wp, int argc, char **argv) {
 	int unit, count = 0;
 	for(unit = 0; unit < num_of_wl_if(); unit++) {
 		snprintf(prefix, sizeof(prefix), "wl%d_", unit);
-		if(WL_NBAND_5G == nvram_get_int(strcat_r(prefix, "nband", tmp)) ||
-		   WL_NBAND_6G == nvram_get_int(strcat_r(prefix, "nband", tmp))) {
+		if(WL_NBAND_5G == nvram_get_int(strlcat_r(prefix, "nband", tmp, sizeof(tmp))) ||
+		   WL_NBAND_6G == nvram_get_int(strlcat_r(prefix, "nband", tmp, sizeof(tmp)))) {
 			if(!count) {
 				count++;
 				continue;
@@ -30687,7 +30770,7 @@ ej_get_wl_channel_list_6g(int eid, webs_t wp, int argc, char **argv) {
 	int unit;
 	for(unit = 0; unit < num_of_wl_if(); unit++) {
 		snprintf(prefix, sizeof(prefix), "wl%d_", unit);
-		if(WL_NBAND_6G == nvram_get_int(strcat_r(prefix, "nband", tmp))) {
+		if(WL_NBAND_6G == nvram_get_int(strlcat_r(prefix, "nband", tmp, sizeof(tmp)))) {
 			ej_wl_chanspecs(0, NULL, 1, NULL, unit);
 			return ej_get_wl_channel_list(eid, wp, argc, argv, unit);
 		}
@@ -30915,7 +30998,7 @@ static int ej_get_MS_WAN_list(int eid, webs_t wp, int argc, char_t **argv)
 			if (k) {
 				websWrite(wp, ", ");
 			}
-			strlcpy(buf, nvram_safe_get(strcat_r(prefix, &display_items[k][4], tmp)), sizeof(buf));
+			strlcpy(buf, nvram_safe_get(strlcat_r(prefix, &display_items[k][4], tmp, sizeof(tmp))), sizeof(buf));
 			if (strcmp(buf,"") == 0) {
 				strlcpy(buf2,"\"0\"", sizeof(buf2));
 			}

@@ -697,7 +697,7 @@ int wl_wps_info(int eid, webs_t wp, int argc, char_t **argv, int unit)
 	retval += websWrite(wp, "<wps>\n");
 
 	//0. WSC Status
-	if (!strcmp(nvram_safe_get(strcat_r(prefix, "wps_mode", tmp)), "enabled"))
+	if (!strcmp(nvram_safe_get(strlcat_r(prefix, "wps_mode", tmp, sizeof(tmp))), "enabled"))
 	{
 		if (!rpc_qtn_ready())
 			retval += websWrite(wp, "<wps_info>%s radio is not ready</wps_info>\n", wl_ifname_qtn_by_unit(unit));
@@ -828,21 +828,21 @@ int wl_wps_info(int eid, webs_t wp, int argc, char_t **argv, int unit)
 		}
 	}
 	else
-	if (!strlen(nvram_safe_get(strcat_r(prefix, "wpa_psk", tmp))))
+	if (!strlen(nvram_safe_get(strlcat_r(prefix, "wpa_psk", tmp, sizeof(tmp)))))
 	{
 		retval += websWrite(wp, "<wps_info>None</wps_info>\n");
 	}
 	else
 	{
 		memset(tmpstr, 0, sizeof(tmpstr));
-		char_to_ascii(tmpstr, nvram_safe_get(strcat_r(prefix, "wpa_psk", tmp)));
+		char_to_ascii(tmpstr, nvram_safe_get(strlcat_r(prefix, "wpa_psk", tmp, sizeof(tmp))));
 		retval += websWrite(wp, "<wps_info>%s</wps_info>\n", tmpstr);
 	}
 #else
 	retval += websWrite(wp, "<wps_info></wps_info>\n");
 #endif
 	//9. WPS enable?
-	if (!strcmp(nvram_safe_get(strcat_r(prefix, "wps_mode", tmp)), "enabled"))
+	if (!strcmp(nvram_safe_get(strlcat_r(prefix, "wps_mode", tmp, sizeof(tmp))), "enabled"))
 		retval += websWrite(wp, "<wps_info>%s</wps_info>\n", "1");
 	else
 		retval += websWrite(wp, "<wps_info>%s</wps_info>\n", "0");
@@ -855,7 +855,7 @@ int wl_wps_info(int eid, webs_t wp, int argc, char_t **argv, int unit)
 		retval += websWrite(wp, "<wps_info>%s</wps_info>\n", "2");
 
 	//B. current auth mode
-	retval += websWrite(wp, "<wps_info>%s</wps_info>\n", nvram_safe_get(strcat_r(prefix, "auth_mode_x", tmp)));
+	retval += websWrite(wp, "<wps_info>%s</wps_info>\n", nvram_safe_get(strlcat_r(prefix, "auth_mode_x", tmp, sizeof(tmp))));
 
 	//C. WPS band
 	retval += websWrite(wp, "<wps_info>%d</wps_info>\n", nvram_get_int("wps_band_x"));
@@ -1270,7 +1270,7 @@ ej_wl_sta_list_qtn_core(int eid, webs_t wp, int argc, char_t **argv, int unit)
 				else
 					retval += websWrite(wp, "\"%s\"", "Yes");
 				if(from_app == 0)
-					retval += websWrite(wp, ", \"%s\"", !(nvram_match(strcat_r(prefix, "auth_mode_x", tmp), "open")) ? "Yes" : "No");
+					retval += websWrite(wp, ", \"%s\"", !(nvram_match(strlcat_r(prefix, "auth_mode_x", tmp, sizeof(tmp)), "open")) ? "Yes" : "No");
 				if(from_app == 1){
 					ret += websWrite(wp, ",\"rssi\":");
 				}
@@ -1382,7 +1382,7 @@ ej_wl_sta_list_qtn(int eid, webs_t wp, int argc, char_t **argv, int unit)
 
 	for (i = 1; i < 4; i++) {
 		snprintf(prefix, sizeof(prefix), "wl%d.%d_", unit, i);
-		if (nvram_match(strcat_r(prefix, "bss_enabled", tmp), "1")){
+		if (nvram_match(strlcat_r(prefix, "bss_enabled", tmp, sizeof(tmp)), "1")){
 			if (ret_t != ret)
 				retval += websWrite(wp, ", ");
 			ret += ej_wl_sta_list_qtn_core(eid, wp, argc, argv, unit);
@@ -1411,7 +1411,7 @@ ej_wl_stainfo_list_2g(int eid, webs_t wp, int argc, char_t **argv)
 
 	for (i = 1; i < 4; i++) {
 		snprintf(prefix, sizeof(prefix), "wl%d.%d_", unit, i);
-		if (nvram_match(strcat_r(prefix, "bss_enabled", tmp), "1")){
+		if (nvram_match(strlcat_r(prefix, "bss_enabled", tmp, sizeof(tmp)), "1")){
 			if (ret_t != ret)
 				retval += websWrite(wp, ", ");
 			ret += ej_wl_stainfo_list_qtn(eid, wp, argc, argv, wl_vifname_qtn(unit, i));
@@ -1439,7 +1439,7 @@ ej_wl_stainfo_list_5g(int eid, webs_t wp, int argc, char_t **argv)
 
 	for (i = 1; i < 4; i++) {
 		snprintf(prefix, sizeof(prefix), "wl%d.%d_", unit, i);
-		if (nvram_match(strcat_r(prefix, "bss_enabled", tmp), "1")){
+		if (nvram_match(strlcat_r(prefix, "bss_enabled", tmp, sizeof(tmp)), "1")){
 			if (ret_t != ret)
 				retval += websWrite(wp, ", ");
 			ret += ej_wl_stainfo_list_qtn(eid, wp, argc, argv, wl_vifname_qtn(unit, i));
@@ -1672,7 +1672,7 @@ ej_wl_status_qtn(int eid, webs_t wp, int argc, char_t **argv, int unit)
 
 	for (i = 1; i < 4; i++) {
 		snprintf(prefix, sizeof(prefix), "wl%d.%d_", unit, i);
-		if (nvram_match(strcat_r(prefix, "bss_enabled", tmp), "1"))
+		if (nvram_match(strlcat_r(prefix, "bss_enabled", tmp, sizeof(tmp)), "1"))
 			ret += ej_wl_status_qtn_core(eid, wp, argc, argv, unit);
 	}
 
@@ -1700,11 +1700,11 @@ ej_wl_status(int eid, webs_t wp, int argc, char_t **argv, int unit)
 		ret += websWrite(wp, "%s radio is disabled\n",
 			(channel > 0) ?
 			((channel > 14 /* CH_MAX_2G_CHANNEL */) ? "5 GHz" : "2.4 GHz") :
-			(nvram_match(strcat_r(prefix, "nband", tmp), "1") ? "5 GHz" : "2.4 GHz"));
+			(nvram_match(strlcat_r(prefix, "nband", tmp, sizeof(tmp)), "1") ? "5 GHz" : "2.4 GHz"));
 		return ret;
 	}
 #endif
-	name = nvram_safe_get(strcat_r(prefix, "ifname", tmp));
+	name = nvram_safe_get(strlcat_r(prefix, "ifname", tmp, sizeof(tmp)));
 	if (unit && rpc_qtn_ready())
 	{
 		ret = qcsapi_wifi_rfstatus((qcsapi_unsigned_int *) &val);
@@ -1725,13 +1725,13 @@ ej_wl_status(int eid, webs_t wp, int argc, char_t **argv, int unit)
 		ret += websWrite(wp, "%s radio is disabled\n",
 			(channel > 0) ?
 			((channel > 14 /* CH_MAX_2G_CHANNEL */) ? "5 GHz" : "2.4 GHz") :
-			(nvram_match(strcat_r(prefix, "nband", tmp), "1") ? "5 GHz" : "2.4 GHz"));
+			(nvram_match(strlcat_r(prefix, "nband", tmp, sizeof(tmp)), "1") ? "5 GHz" : "2.4 GHz"));
 		return ret;
 	}
 
-	if (nvram_match(strcat_r(prefix, "mode", tmp), "wds")) {
+	if (nvram_match(strlcat_r(prefix, "mode", tmp, sizeof(tmp)), "wds")) {
 		// dump static info only for wds mode:
-		// ret += websWrite(wp, "SSID: %s\n", nvram_safe_get(strcat_r(prefix, "ssid", tmp)));
+		// ret += websWrite(wp, "SSID: %s\n", nvram_safe_get(strlcat_r(prefix, "ssid", tmp, sizeof(tmp))));
 		ret += websWrite(wp, "Channel: %d\n", channel);
 	}
 	else {
@@ -1741,25 +1741,25 @@ ej_wl_status(int eid, webs_t wp, int argc, char_t **argv, int unit)
 			ret += wl_status_2g(eid, wp, argc, argv);
 	}
 
-	if (nvram_match(strcat_r(prefix, "mode", tmp), "ap"))
+	if (nvram_match(strlcat_r(prefix, "mode", tmp, sizeof(tmp)), "ap"))
 	{
-		if (nvram_match(strcat_r(prefix, "lazywds", tmp), "1") ||
-			nvram_invmatch(strcat_r(prefix, "wds", tmp), ""))
+		if (nvram_match(strlcat_r(prefix, "lazywds", tmp, sizeof(tmp)), "1") ||
+			nvram_invmatch(strlcat_r(prefix, "wds", tmp, sizeof(tmp)), ""))
 			ret += websWrite(wp, "Mode	: Hybrid\n");
 		else	ret += websWrite(wp, "Mode	: AP Only\n");
 	}
-	else if (nvram_match(strcat_r(prefix, "mode", tmp), "wds"))
+	else if (nvram_match(strlcat_r(prefix, "mode", tmp, sizeof(tmp)), "wds"))
 	{
 		ret += websWrite(wp, "Mode	: WDS Only\n");
 		return ret;
 	}
-	else if (nvram_match(strcat_r(prefix, "mode", tmp), "sta"))
+	else if (nvram_match(strlcat_r(prefix, "mode", tmp, sizeof(tmp)), "sta"))
 	{
 		ret += websWrite(wp, "Mode	: Stations\n");
 		ret += ej_wl_sta_status(eid, wp, name);
 		return ret;
 	}
-	else if (nvram_match(strcat_r(prefix, "mode", tmp), "wet"))
+	else if (nvram_match(strlcat_r(prefix, "mode", tmp, sizeof(tmp)), "wet"))
 	{
 //		ret += websWrite(wp, "Mode	: Ethernet Bridge\n");
 #ifdef RTCONFIG_WIRELESSREPEATER
@@ -1767,12 +1767,12 @@ ej_wl_status(int eid, webs_t wp, int argc, char_t **argv, int unit)
 			&& (nvram_get_int("wlc_band") == unit))
 			snprintf(prefix, sizeof(prefix), "wl%d.%d_", unit, 1);
 #endif
-		ret += websWrite(wp, "Mode	: Repeater [ SSID local: \"%s\" ]\n", nvram_safe_get(strcat_r(prefix, "ssid", tmp)));
+		ret += websWrite(wp, "Mode	: Repeater [ SSID local: \"%s\" ]\n", nvram_safe_get(strlcat_r(prefix, "ssid", tmp, sizeof(tmp))));
 //		ret += ej_wl_sta_status(eid, wp, name);
 //		return ret;
 	}
 #ifdef RTCONFIG_PROXYSTA
-	else if (nvram_match(strcat_r(prefix, "mode", tmp), "psta"))
+	else if (nvram_match(strlcat_r(prefix, "mode", tmp, sizeof(tmp)), "psta"))
 	{
 		if ((nvram_get_int("sw_mode") == SW_MODE_AP) &&
 			(nvram_get_int("wlc_psta") == 1) &&

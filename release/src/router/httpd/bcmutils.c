@@ -135,9 +135,9 @@ deadbeef(char *p, uint len)
 }
 
 uchar*
-bcm_ether_ntoa(char *ea, char *buf)
+bcm_ether_ntoa(char *ea, char *buf, const size_t buf_sz)
 {
-	sprintf(buf,"%x:%x:%x:%x:%x:%x",
+	snprintf(buf, buf_sz, "%x:%x:%x:%x:%x:%x",
 		ea[0]&0xff, ea[1]&0xff, ea[2]&0xff, ea[3]&0xff, ea[4]&0xff, ea[5]&0xff);
 	return (buf);
 }

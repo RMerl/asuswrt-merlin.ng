@@ -340,6 +340,7 @@ Main_alert_proceeding_desc2=Il se peut que votre connexion Internet soit interro
 Main_alert_proceeding_desc3=Terminé
 Main_alert_proceeding_desc4=Veuillez patienter,
 Main_alert_proceeding_desc5=Ne pas éteindre ZVMODELVZ pendant le processus de mise à jour du firmware.
+Main_alert_processing=Traitement en cours
 Main_content_Login_Item7=Rebooting the router will cause all connected devices to lose the Internet connectivity and may take a few minutes. All devices will be reconnected again while the reboot completed. Are you sure you want to reboot ?
 Manual_Setting_btn=Config manuelle
 menu_dsl_log=Journal DSL

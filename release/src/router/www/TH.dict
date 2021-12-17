@@ -340,6 +340,7 @@ Main_alert_proceeding_desc2=ซึ่งอาจจะขัดจังหว�
 Main_alert_proceeding_desc3=สมบูรณ์
 Main_alert_proceeding_desc4=โปรดรอสักครู่
 Main_alert_proceeding_desc5=ห้ามปิด ZVMODELVZ ในระหว่างขั้นตอนการอัปเดตเฟิร์มแวร์
+Main_alert_processing=กำลังดำเนินการ
 Main_content_Login_Item7=Rebooting the router will cause all connected devices to lose the Internet connectivity and may take a few minutes. All devices will be reconnected again while the reboot completed. Are you sure you want to reboot ?
 Manual_Setting_btn=ตั้งค่าแมนนวล
 menu_dsl_log=บันทึก DSL

@@ -585,13 +585,11 @@ leave:
 				nvram_set("ddns_return_code_chk", "200");
 				break;
 			case RC_TCP_CONNECT_FAILED:
-				nvram_set ("ddns_return_code", "Time-out");
-				nvram_set ("ddns_return_code_chk", "Time-out");
+				nvram_set ("ddns_return_code_chk", "Time-out"); /* not set ddns_return_code for Retry mechanism */
 				break;
 			case RC_HTTPS_FAILED_CONNECT:
 			case RC_HTTPS_FAILED_GETTING_CERT:
-				nvram_set ("ddns_return_code", "connect_fail");
-				nvram_set ("ddns_return_code_chk", "connect_fail");
+				nvram_set ("ddns_return_code_chk", "connect_fail"); /* not set ddns_return_code for Retry mechanism */
 				break;
 			case RC_DDNS_RSP_NOHOST:
 			case RC_DDNS_RSP_NOTOK:

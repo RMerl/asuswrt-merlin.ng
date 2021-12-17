@@ -449,7 +449,7 @@ function subnetPostfix(ip, num, count){		//Change subnet postfix .xxx
 function openLink(s){
 	if (s == 'x_DDNSServer'){
 		if (document.form.ddns_server_x.value.indexOf("WWW.DYNDNS.ORG")!=-1)
-			tourl = "https://account.dyn.com/services/zones/svc/add.html?_add_dns=c&trial=standarddns";
+			tourl = "https://account.dyn.com/";
 		else if (document.form.ddns_server_x.value == 'WWW.ZONEEDIT.COM')
 			tourl = "https://www.zoneedit.com/";
 		else if (document.form.ddns_server_x.value == 'WWW.SELFHOST.DE')
@@ -1909,8 +1909,8 @@ function getDDNSState(ddns_return_code, ddns_hostname, ddns_old_hostname)
 		ddnsStateHint = "<#qis_fail_desc7#>";
 	else if(ddns_return_code =='no_change')
 		ddnsStateHint = "<#LANHostConfig_x_DDNS_alarm_nochange#>";
-	/*else if(ddns_return_code =='ddns_query')
-		ddnsStateHint = "<#LANHostConfig_x_DDNSHostnameCheck_buttonname#>";*/
+	else if(ddns_return_code =='ddns_query')
+		ddnsStateHint = "<#Main_alert_processing#>";
 	else if(ddns_return_code =='auth_fail')
 		ddnsStateHint = "<#qis_fail_desc1#>";
 	else if(ddns_return_code !='')

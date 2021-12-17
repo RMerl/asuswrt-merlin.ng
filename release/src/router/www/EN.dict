@@ -340,6 +340,7 @@ Main_alert_proceeding_desc2=This may interrupt your internet connection.
 Main_alert_proceeding_desc3=Complete
 Main_alert_proceeding_desc4=Please wait,
 Main_alert_proceeding_desc5=Please do not power off your ZVMODELVZ while upgrade in progress.
+Main_alert_processing=Processing
 Main_content_Login_Item7=Rebooting the router will cause all connected devices to lose the Internet connectivity and may take a few minutes. All devices will be reconnected again while the reboot completed. Are you sure you want to reboot ?
 Manual_Setting_btn=Manual Setting
 menu_dsl_log=DSL Log

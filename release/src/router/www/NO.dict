@@ -340,6 +340,7 @@ Main_alert_proceeding_desc2=Dette kan avbryte Internett-forbindelsen.
 Main_alert_proceeding_desc3=Fullført
 Main_alert_proceeding_desc4=Vent litt,
 Main_alert_proceeding_desc5=Ikke slå av ZVMODELVZ under fastvareoppdateringen.
+Main_alert_processing=Fortsetter
 Main_content_Login_Item7=Rebooting the router will cause all connected devices to lose the Internet connectivity and may take a few minutes. All devices will be reconnected again while the reboot completed. Are you sure you want to reboot ?
 Manual_Setting_btn=Manuell innst.
 menu_dsl_log=DSL-logg

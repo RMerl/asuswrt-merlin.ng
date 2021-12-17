@@ -120,7 +120,7 @@ int ntpd_synced_main(int argc, char *argv[])
 #endif
 
 		stop_ddns();
-		start_ddns();
+		start_ddns(NULL);
 #ifdef RTCONFIG_OPENVPN
 		start_ovpn_eas();
 #endif

@@ -340,6 +340,7 @@ Main_alert_proceeding_desc2=S tem boste morda prekinili internetno povezavo.
 Main_alert_proceeding_desc3=Dokončano
 Main_alert_proceeding_desc4=Počakajte.
 Main_alert_proceeding_desc5=Med nadgradnjo ne izklopite usmerjevalnika ZVMODELVZ.
+Main_alert_processing=Uporaba nastavitev
 Main_content_Login_Item7=Rebooting the router will cause all connected devices to lose the Internet connectivity and may take a few minutes. All devices will be reconnected again while the reboot completed. Are you sure you want to reboot ?
 Manual_Setting_btn=Ročna nastavitev
 menu_dsl_log=Dnevnik modema DSL

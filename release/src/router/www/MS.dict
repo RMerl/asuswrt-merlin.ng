@@ -340,6 +340,7 @@ Main_alert_proceeding_desc2=Ini boleh mengganggu sambungan Internet anda.
 Main_alert_proceeding_desc3=Selesai
 Main_alert_proceeding_desc4=Sila tunggu,
 Main_alert_proceeding_desc5=Jangan matikan kuasa ZVMODELVZ semasa proses kemas kini perisian tegar.
+Main_alert_processing=Meneruskan
 Main_content_Login_Item7=Rebooting the router will cause all connected devices to lose the Internet connectivity and may take a few minutes. All devices will be reconnected again while the reboot completed. Are you sure you want to reboot ?
 Manual_Setting_btn=Tetapan Manual
 menu_dsl_log=Log DSL

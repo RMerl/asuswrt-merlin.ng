@@ -340,6 +340,7 @@ Main_alert_proceeding_desc2=Dit kan uw internetverbinding storen.
 Main_alert_proceeding_desc3=Voltooid
 Main_alert_proceeding_desc4=Een ogenblik geduld,
 Main_alert_proceeding_desc5=Schakel ZVMODELVZ niet uit terwijl de upgrade bezig is.
+Main_alert_processing=Instellingen toepassen
 Main_content_Login_Item7=Rebooting the router will cause all connected devices to lose the Internet connectivity and may take a few minutes. All devices will be reconnected again while the reboot completed. Are you sure you want to reboot ?
 Manual_Setting_btn=Handmatige instelling
 menu_dsl_log=DSL-logboek

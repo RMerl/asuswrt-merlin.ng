@@ -88,6 +88,7 @@ var inadyn = isSupport("inadyn");
 
 var le_sbstate_t = '<% nvram_get("le_sbstate_t"); %>';
 var le_auxstate_t = '<% nvram_get("le_auxstate_t"); %>';
+var le_re_ddns = '<% nvram_get("le_re_ddns"); %>';
 var faq_href = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=105";
 
 function init(){
@@ -275,7 +276,7 @@ function ddns_load_body(){
 	{
 		var ddnsHint = getDDNSState(ddns_return_code, ddns_hostname_x_t, ddns_old_name);
 
-		if(ddnsHint != ""){
+		if(ddnsHint != "" && le_re_ddns != "1"){
 			document.getElementById("ddns_result").innerHTML = ddnsHint;
 			document.getElementById('ddns_result_tr').style.display = "";
 		}
@@ -296,6 +297,9 @@ function ddns_load_body(){
 				if(ddnsStatus != "")
 					$("#ddns_status_detail").css("display", "inline");
 			}
+
+			if((ddns_return_code == "ddns_query" || ddns_return_code_chk == "Time-out" || ddns_return_code_chk == "connect_fail" || ddns_return_code_chk.indexOf('-1') != -1) && le_re_ddns != "1")
+				checkDDNSReturnCode_noRefresh();
 		}
 	}
 }
@@ -424,6 +428,47 @@ function checkDDNSReturnCode(){
                 refreshpage(); 
        }
    });
+}
+
+function checkDDNSReturnCode_noRefresh(){
+	$.ajax({
+		url: '/ajax_ddnscode.asp',
+		dataType: 'script',
+		error: function(xhr){
+			checkDDNSReturnCode_noRefresh();
+		},
+		success: function(response){
+			var ddnsHint = getDDNSState(ddns_return_code, ddns_hostname_x_t, ddns_old_name);
+
+			if(ddns_return_code == 'ddns_query')
+				setTimeout("checkDDNSReturnCode_noRefresh();", 500);
+			else if(ddns_return_code_chk == 'Time-out' || ddns_return_code_chk == 'connect_fail' || ddns_return_code_chk.indexOf('-1') != -1)
+				setTimeout("checkDDNSReturnCode_noRefresh();", 3000);
+
+			if(ddnsHint != ""){
+				document.getElementById("ddns_result").innerHTML = ddnsHint;
+				document.getElementById('ddns_result_tr').style.display = "";
+			}
+
+			if((ddns_return_code.indexOf('200')!=-1 || ddns_return_code.indexOf('220')!=-1 || ddns_return_code == 'register,230') ||
+			   (ddns_return_code_chk.indexOf('200')!=-1 || ddns_return_code_chk.indexOf('220')!=-1 || ddns_return_code_chk == 'register,230')){
+				showhide("wan_ip_hide2", 0);
+				if(ddns_server_x == "WWW.ASUS.COM"){
+					showhide("wan_ip_hide3", 1);
+					document.getElementById("ddns_status").innerHTML = "<#Status_Active#>";
+					if(inadyn)
+						$("#deregister_btn").css("display", "inline");
+				}
+			}
+			else{
+				if(ddns_server_x == "WWW.ASUS.COM"){
+					document.getElementById("ddns_status").innerHTML = "<#Status_Inactive#>";
+					if(ddnsStatus != "")
+						$("#ddns_status_detail").css("display", "inline");
+				}
+			}
+		}
+	});
 }
 
 function validate_ddns_hostname(o){
@@ -722,7 +767,6 @@ function show_cert_details(){
 	}
 	else{
 		if(le_auxstate_t == "5" && le_sbstate_t == "7"){
-			console.log("show alert msg")
 			var ddnsHint = "<#DDNS_Auth_Fail_Hint#>";
 			$("#cert_status").text(ddnsHint);
 			$("#cert_status").css("color", "#FFCC00")

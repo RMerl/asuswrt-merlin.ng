@@ -340,6 +340,7 @@ Main_alert_proceeding_desc2=Це може перервати ваше підкл
 Main_alert_proceeding_desc3=Виконано
 Main_alert_proceeding_desc4=Будь ласка, почекайте,
 Main_alert_proceeding_desc5=Не відключайте ZVMODELVZ від мережі електроживлення.
+Main_alert_processing=застосування налаштувань
 Main_content_Login_Item7=Rebooting the router will cause all connected devices to lose the Internet connectivity and may take a few minutes. All devices will be reconnected again while the reboot completed. Are you sure you want to reboot ?
 Manual_Setting_btn=Налаштування вручну
 menu_dsl_log=Журнал DSL

@@ -340,6 +340,7 @@ Main_alert_proceeding_desc2=Bu, Internet bağlantınızı kesintiye uğratabilir
 Main_alert_proceeding_desc3=Tamamlandı
 Main_alert_proceeding_desc4=Lütfen bekleyin,
 Main_alert_proceeding_desc5=Aygıt yazılımı güncelleme işlemi sırasında ZVMODELVZ aygıtını kapatmayın.
+Main_alert_processing=İşlem Devam Ediyor
 Main_content_Login_Item7=Rebooting the router will cause all connected devices to lose the Internet connectivity and may take a few minutes. All devices will be reconnected again while the reboot completed. Are you sure you want to reboot ?
 Manual_Setting_btn=Manüel Ayar
 menu_dsl_log=DSL günlüğü

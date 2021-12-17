@@ -669,7 +669,7 @@ function initial(){
 	else if(action_script.indexOf("aidisk_asusddns_register") != -1){
 		setTimeout("parent.checkDDNSReturnCode();", 1000);
 	}
-	else if(action_script.indexOf("restart_ddns") != -1 && action_script.indexOf("restart_httpd") == -1 && action_script.indexOf("restart_ddns_le") == -1) {
+	else if(action_script.indexOf("restart_ddns") != -1 && action_script.indexOf("restart_httpd") == -1) {
   		setTimeout("parent.parent.checkDDNSReturnCode();", 1000);
 	}
 	else if(action_script.indexOf("start_webs_upgrade") != -1) {

@@ -47,7 +47,11 @@ static void *param = NULL;
  * Returns:
  * Posix %OK(0), or %RC_OS_FORK_FAILURE on vfork() failure
  */
-int os_shell_execute(char *cmd, char *ip, char *ipv6, char *name, char *event, int error)
+int os_shell_execute(char *cmd, char *ip,
+#ifdef USE_IPV6
+	char *ipv6,
+#endif
+	char *name, char *event, int error)
 {
 	int rc = 0;
 	int child;

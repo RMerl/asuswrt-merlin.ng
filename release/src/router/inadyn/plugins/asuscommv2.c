@@ -458,8 +458,19 @@ static int response_register(http_trans_t *trans, ddns_info_t *info, ddns_alias_
 	if (info->system == &asus_unregister) {
 		snprintf(ret_buf, sizeof(ret_buf), "%s,%d", "unregister", trans->status);
 		nvram_set("asusddns_reg_result", ret_buf);
-		if(trans->status == 200)
+		if(trans->status == 200) {
 			nvram_set("ddns_enable_x", "0");
+			nvram_set("ddns_server_x", "");
+			nvram_set("ddns_server_x_old", "");
+			nvram_set("ddns_hostname_x", "");
+			nvram_set("ddns_hostname_old", "");
+			nvram_set("ddns_cache", "");
+			nvram_set("ddns_ipaddr", "");
+#ifdef RTCONFIG_IPV6
+			nvram_set("ddns_ipv6_ipaddr", "");
+#endif
+			nvram_commit();
+		}
 	} else {
 		snprintf(ret_buf, sizeof(ret_buf), "%s,%d", "register", trans->status);
 		nvram_set("ddns_return_code", ret_buf);

@@ -2353,7 +2353,7 @@ extern int update_asus_ddns_token();
 extern int update_asus_ddns_token_main(int argc, char *argv[]);
 #endif
 extern void stop_ddns(void);
-extern int start_ddns(void);
+extern int start_ddns(char *caller);
 extern void refresh_ntpc(void);
 extern void start_hotplug2(void);
 extern void stop_hotplug2(void);

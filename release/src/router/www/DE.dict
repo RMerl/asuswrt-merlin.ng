@@ -340,6 +340,7 @@ Main_alert_proceeding_desc2=Diese Aktion unterbricht die Verbindung zum Internet
 Main_alert_proceeding_desc3=Abgeschlossen
 Main_alert_proceeding_desc4=Bitte warten,
 Main_alert_proceeding_desc5=Schalten Sie das ZVMODELVZ während des Firmware Aktualisierungsvorgangs nicht aus.
+Main_alert_processing=Fortfahren
 Main_content_Login_Item7=Rebooting the router will cause all connected devices to lose the Internet connectivity and may take a few minutes. All devices will be reconnected again while the reboot completed. Are you sure you want to reboot ?
 Manual_Setting_btn=Man. Einstlg.
 menu_dsl_log=DSL-Report

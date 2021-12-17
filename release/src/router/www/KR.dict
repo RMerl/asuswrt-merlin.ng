@@ -340,6 +340,7 @@ Main_alert_proceeding_desc2=이는 사용자의 인터넷 연결을 방해할 �
 Main_alert_proceeding_desc3=완료
 Main_alert_proceeding_desc4=기다려주십시오
 Main_alert_proceeding_desc5=펌웨어가 업데이트되는 동안 ZVMODELVZ 를 끄지 마십시오.
+Main_alert_processing=처리중
 Main_content_Login_Item7=Rebooting the router will cause all connected devices to lose the Internet connectivity and may take a few minutes. All devices will be reconnected again while the reboot completed. Are you sure you want to reboot ?
 Manual_Setting_btn=수동 설정
 menu_dsl_log=ADSL로그

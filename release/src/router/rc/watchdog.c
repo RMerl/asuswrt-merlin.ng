@@ -261,6 +261,7 @@ static void *fn_acts[_NSIG];
 #define REGULAR_DDNS_CHECK	10 //10x30 sec
 static int ddns_check_count = 0;
 static int freeze_duck_count = 0;
+static int ddns_recover_min = 0;
 
 static char time_zone_t[32]={0};
 
@@ -6574,6 +6575,28 @@ void ddns_check(void)
 	if (nvram_get_int("ntp_ready") != 1)
 		return;
 
+	/* MAX Retry Count mechanism */
+	int ddns_check_retry = nvram_get_int("ddns_check_retry");
+	//logmessage("watchdog", "ddns_check_retry=%d, ddns_recover_min=%d\n", ddns_check_retry, (ddns_recover_min/2));
+	ddns_check_retry--;
+	/* Stop retry and show the return code to UI */
+	if (ddns_check_retry <= 0) {
+		if (nvram_match("ddns_return_code", "ddns_query")) {
+			nvram_set("ddns_return_code", nvram_safe_get("ddns_return_code_chk"));
+			ddns_recover_min = ((30 + rand_seed_by_time() % 30)*2);
+			logmessage("watchdog", "DDNS Retry reach MAX.(%d), DDNS Recover Time set %d\n", ddns_check_retry, (ddns_recover_min/2));
+		}
+		if (ddns_recover_min > 0) {
+			ddns_recover_min--;
+			return;
+		}
+		else {
+			logmessage("watchdog", "DDNS Recover Time reached, recover DDNS Retry.\n");
+			ddns_check_retry = 10;
+		}
+	}
+	nvram_set_int("ddns_check_retry", ddns_check_retry);
+
 	nvram_set("ddns_update_by_wdog", "1");
 	if (wan_unit != last_unit) {
 #ifndef RTCONFIG_INADYN
@@ -6584,9 +6607,9 @@ void ddns_check(void)
 	}
 	logmessage("watchdog", "start ddns.");
 	if (last_unit != wan_unit)
-		r = notify_rc("restart_ddns");
+		r = notify_rc("restart_ddns watchdog");
 	else
-		r = notify_rc("start_ddns");
+		r = notify_rc("start_ddns watchdog");
 
 	if (!r)
 		nvram_set_int("ddns_last_wan_unit", wan_unit);

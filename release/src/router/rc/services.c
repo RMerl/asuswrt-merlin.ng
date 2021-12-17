@@ -3981,7 +3981,7 @@ static char *get_ddns_macaddr(void)
 
 // TODO: handle wan0 only now
 int
-start_ddns(void)
+start_ddns(char *caller)
 {
 	FILE *fp;
 	char tmp[100], prefix[sizeof("wanXXXXXXXXXX_")];
@@ -4003,8 +4003,13 @@ start_ddns(void)
 	if (!is_routing_enabled())
 		return 0;
 
-	if (!nvram_get_int("ddns_enable_x"))
+	if (!nvram_get_int("ddns_enable_x")) {
+		/* Show the Return Code in UI */
+		if (nvram_match("ddns_return_code", "ddns_query")) {
+			nvram_set("ddns_return_code", nvram_safe_get("ddns_return_code_chk"));
+		}
 		return 0;
+	}
 
 	unit = wan_primary_ifunit();
 #if defined(RTCONFIG_DUALWAN)
@@ -4166,6 +4171,12 @@ start_ddns(void)
 	/* Show WAN unit used by ddns client to console and syslog. */
 	_dprintf("start_ddns update %s %s, wan_unit %d\n", server, service, unit);
 	logmessage("start_ddns", "update %s %s, wan_unit %d\n", server, service, unit);
+
+	/* MAX Retry Count mechanism */
+	if (caller == NULL) { // not from watchdog
+		//logmessage("start_ddns", "Reset DDNS Retry.\n");
+		nvram_set("ddns_check_retry", "10");
+	}
 
 	nvram_set("ddns_return_code", "ddns_query");
 
@@ -14353,7 +14364,7 @@ check_ddr_done:
 #endif
 		start_firewall(wan_primary_ifunit(), 0);
 		start_webdav();
-		start_ddns();
+		start_ddns(NULL);
 		start_upnp();
 
 	}
@@ -14939,13 +14950,18 @@ check_ddr_done:
 		nvram_set("le_rc_notify", "1");
 		system("rm -f /var/cache/inadyn/*.cache");
 		if(action & RC_SERVICE_STOP) stop_ddns();
-		if(action & RC_SERVICE_START) start_ddns();
+		if(action & RC_SERVICE_START) start_ddns(NULL);
 	}
 #endif
 	else if (strcmp(script, "ddns") == 0)
 	{
 		if(action & RC_SERVICE_STOP) stop_ddns();
-		if(action & RC_SERVICE_START) start_ddns();
+		if(action & RC_SERVICE_START) {
+			if (cmd[1])
+				start_ddns(cmd[1]);
+			else
+				start_ddns(NULL);
+		}
 	}
 	else if (strcmp(script, "aidisk_asusddns_register") == 0)
 	{

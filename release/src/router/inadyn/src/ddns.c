@@ -758,10 +758,6 @@ static int update_alias_table(ddns_t *ctx)
 				/* Return these cases (define in check_error()) will retry again in Inadyn,
 				 * so set the error code and retry in watchdog */
 				/* defined in check_error() */
-				case RC_OK:
-					nvram_set("ddns_return_code", "200");
-					nvram_set("ddns_return_code_chk", "200");
-					break;
 				case RC_TCP_INVALID_REMOTE_ADDR: /* Probably temporary DNS error. */
 				case RC_TCP_CONNECT_FAILED:      /* Cannot connect to DDNS server atm. */
 				case RC_TCP_SEND_ERROR:

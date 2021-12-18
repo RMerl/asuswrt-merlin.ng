@@ -14875,10 +14875,11 @@ do_vpnupload_post(char *url, FILE *stream, int len, char *boundary)
 							{
 								p = strstr(value, "\r");
 								*p = '\0';
+								//printf("%s=%s\n", name, value);
+								nvram_set(name, value);
+
 							}
 						}
-						//printf("%s=%s\n", name, value);
-						nvram_set(name, value);
 					}
 				}
 			}

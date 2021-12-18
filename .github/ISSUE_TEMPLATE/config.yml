@@ -1,9 +1,0 @@
-# Ref: https://help.github.com/en/github/building-a-strong-community/configuring-issue-templates-for-your-repository#configuring-the-template-chooser
-blank_issues_enabled: false   # default: true
-contact_links:
-- name: Asuswrt-Merlin Community Support
-  url: https://www.snbforums.com/forums/asuswrt-merlin.42/
-  about: Please ask and answer questions in the SNB forums.
-- name: Asuswrt-Merlin Add-ons Community Support
-  url: https://www.snbforums.com/forums/asuswrt-merlin-addons.60/
-  about: Discuss add-ons here.

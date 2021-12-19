@@ -10,7 +10,7 @@
 
 add=/jffs/addons/amtm
 amtmURL=https://fwupdate.asuswrt-merlin.net/amtm_fw
-amtmRev=5
+amtmRev=6
 
 a_m(){ [ -z "$am" ] && am=$1 || am="$am\\n$1";}
 c_nl(){ [ -n "$(tail -c2 "$1")" ] && echo >> "$1";}
@@ -200,6 +200,12 @@ run_amtm(){
 	elif [ "$1" = tpu ]; then
 		su=1;suUpd=0;updErr=;tpu=1
 		> /tmp/amtm-tpu-check
+		show_amtm >/dev/null 2>&1
+	elif [ "$1" = updcheck ]; then
+		su=1;suUpd=0;updErr=;tpu=1;updcheck=1
+		echo "Available updates:" > /tmp/amtm-tpu-check
+		update_firmware
+		update_amtm
 		show_amtm >/dev/null 2>&1
 	else
 		show_amtm "$1"

@@ -6315,9 +6315,11 @@ void start_upnp(void)
 
 				/* Provide real IP when in dual NAT situation */
 #ifdef RTCONFIG_GETREALIP
-				if (nvram_get_int(strcat_r(prefix, "realip_state", tmp)) == 2) {
+				strcat_r(prefix, "realip_state", tmp);
+				if (nvram_get_int(tmp) != 2)
+					sleep(5);
+				if (nvram_get_int(tmp) == 2)
 					fprintf(f, "ext_ip=%s\n", nvram_safe_get(strcat_r(prefix, "realip_ip", tmp)));
-				}
 #endif
 
 				fappend(f, "/etc/upnp/config.custom");

@@ -3518,9 +3518,6 @@ NOIP:
 		start_igmpproxy(wan_ifname);
 #endif
 
-	stop_upnp();
-	start_upnp();
-
 #ifdef RTCONFIG_IPSEC
 	if (nvram_get_int("ipsec_server_enable") || nvram_get_int("ipsec_client_enable")
 #ifdef RTCONFIG_INSTANT_GUARD
@@ -3589,6 +3586,10 @@ NOIP:
 		eval("killall", "tcpdump");
 #endif
 	}
+
+/* Need to be done after getrealip */
+	stop_upnp();
+	start_upnp();
 
 #ifdef RTCONFIG_LANTIQ
 	disable_ppa_wan(wan_ifname);

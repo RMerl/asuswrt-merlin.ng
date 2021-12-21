@@ -843,6 +843,10 @@ int do_dns_detect(int wan_unit)
 
 	snprintf(host, sizeof(host), "%s", nvram_safe_get("dns_probe_host"));
 	snprintf(content, sizeof(content), "%s", nvram_safe_get("dns_probe_content"));
+	if (*content == '\0' || *host == '\0') {
+		snprintf(content, sizeof(content), "%s", nvram_default_get("dns_probe_content"));
+		snprintf(host, sizeof(host), "%s", nvram_default_get("dns_probe_host"));
+	}
 	if (debug)
 		_dprintf("%s: %s %s %s\n", __FUNCTION__, "check", host, content);
 

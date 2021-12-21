@@ -1377,7 +1377,7 @@ void start_dnsmasq(void)
 
 			if(ip && *ip != '\0' && hostname && *hostname != '\0')
 			{
-				fprintf(fp, "%s %s.%s\n", ip, hostname, lan_domain);
+				fprintf(fp, "%s %s.%s %s\n", ip, hostname, lan_domain, hostname);
 			}	
 		}
 		free(nv);	

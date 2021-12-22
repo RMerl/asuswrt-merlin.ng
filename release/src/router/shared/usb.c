@@ -163,7 +163,7 @@ int exec_for_host(int host, int obsolete, uint flags, host_exec func)
 	 * 4. If yes, DIR would be sda, sdb, etc.
 	 * 5. Search DIR in /proc/partitions.
 	 */
-	sprintf(hostbuf, "%d:", host);
+	snprintf(hostbuf, sizeof(hostbuf), "%d:", host);
 	if (!(usb_dev_disc = opendir("/sys/block")))
 		return 0;
 	while ((dp = readdir(usb_dev_disc))) {
@@ -205,7 +205,7 @@ int exec_for_host(int host, int obsolete, uint flags, host_exec func)
 			if (!strncmp(ptname, dsname, siz)) {
 				if (!strcmp(ptname, dsname) && !is_no_partition(dsname))
 					continue;
-				sprintf(line, "/dev/%s", ptname);
+				snprintf(line, sizeof(line), "/dev/%s", ptname);
 				result = (*func)(line, host_no, dsname, ptname, flags) || result;
 				flags &= ~(EFH_1ST_HOST | EFH_1ST_DISC);
 			}
@@ -218,7 +218,7 @@ int exec_for_host(int host, int obsolete, uint flags, host_exec func)
 
 	if ((usb_dev_disc = opendir(DEV_DISCS_ROOT))) {
 		while ((dp = readdir(usb_dev_disc))) {
-			sprintf(bfr, "%s/%s", DEV_DISCS_ROOT, dp->d_name);
+			snprintf(bfr, sizeof(bfr), "%s/%s", DEV_DISCS_ROOT, dp->d_name);
 			if (strncmp(dp->d_name, "disc", 4) != 0)
 				continue;
 
@@ -253,17 +253,17 @@ int exec_for_host(int host, int obsolete, uint flags, host_exec func)
 					{
 						if ((cp = strstr(bfr2, "/part"))) {
 							part_num = atoi(cp + 5);
-							sprintf(line, "%s/part%d", bfr, part_num);
-							sprintf(dsname, "disc%d", disc_num);
-							sprintf(ptname, "disc%d_%d", disc_num, part_num);
+							snprintf(line, sizeof(line), "%s/part%d", bfr, part_num);
+							snprintf(dsname, sizeof(dsname), "disc%d", disc_num);
+							snprintf(ptname, sizeof(ptname), "disc%d_%d", disc_num, part_num);
 						}
 						else if ((cp = strstr(bfr2, "/disc"))) {
 							*(++cp) = 0;
 							if (!is_no_partition(bfr2))
 								continue;
-							sprintf(line, "%s/disc", bfr);
-							sprintf(dsname, "disc%d", disc_num);
-							strcpy(ptname, dsname);
+							snprintf(line, sizeof(line), "%s/disc", bfr);
+							snprintf(dsname, sizeof(dsname), "disc%d", disc_num);
+							strlcpy(ptname, dsname, sizeof(ptname));
 						}
 						else {
 							continue;
@@ -376,7 +376,7 @@ void add_remove_usbhost(char *host, int add)
 		if (read(fd, pgm, sizeof(pgm) - 5) >= 0) {
 			if ((p = strchr(pgm, '\n')) != NULL)
 				*p = 0;
-			strcat(pgm, " usb");
+			strlcat(pgm, " usb", sizeof(pgm));
 		}
 		close(fd);
 	}

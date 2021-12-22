@@ -36,6 +36,7 @@
 #include <shutils.h>
 #include <nvparse.h>
 #include <bcmconfig.h>
+#include <shared.h>
 
 char *
 safe_snprintf(char *str, int *len, const char *fmt, ...)
@@ -1734,30 +1735,30 @@ convert_wsec(void)
 	int i;
 
 	for (i = 0; i < MAX_NVPARSE; i ++) {
-		sprintf(prefix, "wl%d_", i);
-		wep = nvram_get(strcat_r(prefix, "wep", tmp));
+		snprintf(prefix, sizeof(prefix), "wl%d_", i);
+		wep = nvram_get(strlcat_r(prefix, "wep", tmp, sizeof(tmp)));
 		if (!wep)
 			continue;
 		/* 3.60.xx */
 		/* convert wep, restricted, or on to enabled */
 		if (!strcmp(wep, "wep") || !strcmp(wep, "restricted") ||
 		    !strcmp(wep, "on"))
-			nvram_set(strcat_r(prefix, "wep", tmp), "enabled");
+			nvram_set(strlcat_r(prefix, "wep", tmp, sizeof(tmp)), "enabled");
 		/* split wep and wpa to wl_wep and wl_crypto */
 		else if (!strcmp(wep, "tkip") || !strcmp(wep, "aes") ||
 		         !strcmp(wep, "tkip+aes")) {
-			nvram_set(strcat_r(prefix, "crypto", tmp), wep);
-			nvram_set(strcat_r(prefix, "wep", tmp), "disabled");
+			nvram_set(strlcat_r(prefix, "crypto", tmp, sizeof(tmp)), wep);
+			nvram_set(strlcat_r(prefix, "wep", tmp, sizeof(tmp)), "disabled");
 		}
 		/* treat everything else as disabled */
 		else if (strcmp(wep, "enabled"))
-			nvram_set(strcat_r(prefix, "wep", tmp), "disabled");
+			nvram_set(strlcat_r(prefix, "wep", tmp, sizeof(tmp)), "disabled");
 		/* combine 802.11 open/shared authentication mode with WPA to wl_auth_mode */
-		if (nvram_match(strcat_r(prefix, "auth_mode", tmp), "disabled")) {
-			if (nvram_match(strcat_r(prefix, "auth", tmp), "1"))
-				nvram_set(strcat_r(prefix, "auth_mode", tmp), "shared");
+		if (nvram_match(strlcat_r(prefix, "auth_mode", tmp, sizeof(tmp)), "disabled")) {
+			if (nvram_match(strlcat_r(prefix, "auth", tmp, sizeof(tmp)), "1"))
+				nvram_set(strlcat_r(prefix, "auth_mode", tmp, sizeof(tmp)), "shared");
 			else
-				nvram_set(strcat_r(prefix, "auth_mode", tmp), "open");
+				nvram_set(strlcat_r(prefix, "auth_mode", tmp, sizeof(tmp)), "open");
 		}
 		/* 3.80.xx
 		 *
@@ -1765,16 +1766,16 @@ convert_wsec(void)
 		 * wl_auth_carries a default value of "0"
 		 */
 		/* split 802.11 auth from wl_auth_mode */
-		if (nvram_match(strcat_r(prefix, "auth_mode", tmp), "shared"))
-			nvram_set(strcat_r(prefix, "auth", tmp), "1");
+		if (nvram_match(strlcat_r(prefix, "auth_mode", tmp, sizeof(tmp)), "shared"))
+			nvram_set(strlcat_r(prefix, "auth", tmp, sizeof(tmp)), "1");
 		/* split wpa akm from wl_auth_mode */
-		if (nvram_match(strcat_r(prefix, "auth_mode", tmp), "wpa"))
-			nvram_set(strcat_r(prefix, "akm", tmp), "wpa");
-		else if (nvram_match(strcat_r(prefix, "auth_mode", tmp), "psk"))
-			nvram_set(strcat_r(prefix, "akm", tmp), "psk");
+		if (nvram_match(strlcat_r(prefix, "auth_mode", tmp, sizeof(tmp)), "wpa"))
+			nvram_set(strlcat_r(prefix, "akm", tmp, sizeof(tmp)), "wpa");
+		else if (nvram_match(strlcat_r(prefix, "auth_mode", tmp, sizeof(tmp)), "psk"))
+			nvram_set(strlcat_r(prefix, "akm", tmp, sizeof(tmp)), "psk");
 		/* preserve radius only in wl_auth_mode */
-		if (nvram_invmatch(strcat_r(prefix, "auth_mode", tmp), "radius"))
-			nvram_set(strcat_r(prefix, "auth_mode", tmp), "none");
+		if (nvram_invmatch(strlcat_r(prefix, "auth_mode", tmp, sizeof(tmp)), "radius"))
+			nvram_set(strlcat_r(prefix, "auth_mode", tmp, sizeof(tmp)), "none");
 	}
 }
 

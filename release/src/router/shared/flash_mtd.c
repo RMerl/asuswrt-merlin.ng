@@ -108,7 +108,7 @@ static int get_mtd_info(const char *mtd_name, struct mtd_info *mi)
 			continue;
 		}
 
-		sprintf(mi->dev, "mtd%d", i);
+		snprintf(mi->dev, sizeof(mi->dev), "mtd%d", i);
 		mi->size = sz;
 		mi->erasesize = esz;
 		snprintf(mi->name, sizeof(mi->name), "%s", mtd_name);
@@ -138,11 +138,11 @@ int flash_mtd_init_info(void)
 				if (i >= NUM_INFO)
 					printf("please enlarge 'NUM_INFO'\n");
 				else {
-					sprintf(info[i].dev, "mtd%d", i);
+					snprintf(info[i].dev, sizeof(info[i].dev), "mtd%d", i);
 					info[i].size = sz;
 					info[i].erasesize = esz;
 					nm[strlen((char *)nm)-1] = '\0'; //FIXME: sscanf
-					sprintf(info[i].name, "%s", nm);
+					snprintf(info[i].name, sizeof(info[i].name), "%s", nm);
 				}
 			}
 		}
@@ -305,7 +305,7 @@ int VVPartitionRead(const char *mtd_name, const unsigned char *buf, int offset, 
 		return -2;
 	}
 
-	sprintf(cmd,"cat /dev/%s > %s", mi->dev, tmpfile);
+	snprintf(cmd,sizeof(cmd), "cat /dev/%s > %s", mi->dev, tmpfile);
 	system(cmd);
 	if ((fd = open(tmpfile, O_RDONLY)) < 0) {
 		fprintf(stderr, "failed to open %s. (errno %d (%s))\n",

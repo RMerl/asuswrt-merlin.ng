@@ -8,6 +8,7 @@
 #include <sys/ioctl.h>
 #include <netinet/in.h>
 #include <net/if.h>
+#include <shared.h>
 
 int bit_count(in_addr_t i)
 {

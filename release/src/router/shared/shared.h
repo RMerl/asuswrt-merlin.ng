@@ -1707,7 +1707,7 @@ static inline int dpsta_mode()
 	if(ret) {
 		for(unit = 0; unit < max_units; ++unit) {
 			snprintf(prefix, sizeof(prefix), "wlc%d_", unit);
-			if(!*nvram_safe_get(strcat_r(prefix, "ssid", tmp))) {
+			if(!*nvram_safe_get(strlcat_r(prefix, "ssid", tmp, sizeof(tmp)))) {
 				ret = 0;
 				break;
 			}
@@ -1736,7 +1736,7 @@ static inline int is_rp_unit(int unit)
 		return 0;
 
 	snprintf(prefix, sizeof(prefix), "wlc%d_", unit);
-	if(!*nvram_safe_get(strcat_r(prefix, "ssid", tmp)))
+	if(!*nvram_safe_get(strlcat_r(prefix, "ssid", tmp, sizeof(tmp))))
 		return 0;
 
 	return 1;

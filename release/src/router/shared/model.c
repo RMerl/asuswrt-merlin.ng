@@ -220,7 +220,7 @@ int get_blver(char *bls)
 
 	memset(buf, 0, sizeof(buf));
 	if(bls)
-		strcpy(buf, bls);
+		strlcpy(buf, bls, sizeof(buf));
 	bp = buf;
 	while((tok = strsep((char**)&bp, delim)))
 		if(i < BLV_MAX)

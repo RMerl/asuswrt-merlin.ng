@@ -58,13 +58,18 @@
 char *
 strDup(char const *str)
 {
-    char *copy = malloc(strlen(str)+1);
+    char *copy = NULL;
+    size_t len = 0;
+    if(!str)
+		return NULL;
+    len = strlen(str)+1;
+    copy = malloc(len);
     if (!copy) {
 	//rp_fatal("strdup failed");
 	fprintf(stderr, "strdup failed\n");
 	return (char*)0;
     }
-    strcpy(copy, str);
+    strlcpy(copy, str, len);
     return copy;
 }
 
@@ -102,7 +107,7 @@ openInterface(char const *ifname, UINT16_t type, unsigned char *hwaddr)
 
 	/* Fill in hardware address */
 	if (hwaddr) {
-		strcpy(ifr.ifr_name, ifname);
+		strlcpy(ifr.ifr_name, ifname, sizeof(ifr.ifr_name));
 		if (ioctl(fd, SIOCGIFHWADDR, &ifr) < 0)
 			perror("SIOCGIFHWADDR");
 
@@ -110,7 +115,7 @@ openInterface(char const *ifname, UINT16_t type, unsigned char *hwaddr)
 		if (NOT_UNICAST(hwaddr)) {
 			char buffer[256];
 
-			sprintf(buffer, "Interface %.16s has broadcast/multicast MAC address??", ifname);
+			snprintf(buffer, sizeof(buffer), "Interface %.16s has broadcast/multicast MAC address??", ifname);
 			//rp_fatal(buffer);
 			fprintf(stderr, buffer);
 			return -1;
@@ -118,7 +123,7 @@ openInterface(char const *ifname, UINT16_t type, unsigned char *hwaddr)
 	}
 
 	/* Sanity check on MTU */
-	strcpy(sa.sa_data, ifname);
+	strlcpy(sa.sa_data, ifname, sizeof(sa.sa_data));
 
 	/* Bind to device */
 	strncpy(ifr.ifr_name, ifname, IFNAMSIZ-1);
@@ -260,9 +265,9 @@ void dump(const char *title, unsigned char *data, int len)
 	char buf[512], *p = buf;
 	eprintf("## %s len(%d) ##\n", title, len);
 	for (i = 0 ; i < len; i++) {
-		if((i&0xf) == 0) 	p += sprintf(p, "%04x: %02x", i, data[i]);
-		else if((i&0xf) == 8) 	p += sprintf(p, " - %02x", data[i]);
-		else 			p += sprintf(p, " %02x", data[i]);
+		if((i&0xf) == 0) 	p += snprintf(p, sizeof(buf) - (p - buf), "%04x: %02x", i, data[i]);
+		else if((i&0xf) == 8) 	p += snprintf(p, sizeof(buf) - (p - buf), " - %02x", data[i]);
+		else 			p += snprintf(p, sizeof(buf) - (p - buf), " %02x", data[i]);
 
 		if((i&0xf) == 0xf) {
 			eprintf("%s\n", buf);
@@ -298,7 +303,7 @@ sendPacket(PPPoEConnection *conn, int sock, PPPoEPacket *pkt, int size)
 		fprintf(stderr, "relay and server not supported on Linux 2.0 kernels\n");
 		return -1;
 	}
-	strcpy(sa.sa_data, conn->ifName);
+	strlcpy(sa.sa_data, conn->ifName, sizeof(sa.sa_data));
 	if (sendto(sock, pkt, size, 0, &sa, sizeof(sa)) < 0) {
 		perror("sendPacket sendto");
 		return -1;
@@ -933,7 +938,7 @@ int read_interface(char *interface, int *ifindex, u_int32_t *addr, unsigned char
 	memset(&ifr, 0, sizeof(struct ifreq));
 	if ((fd = socket(AF_INET, SOCK_RAW, IPPROTO_RAW)) >= 0) {
 		ifr.ifr_addr.sa_family = AF_INET;
-		strcpy(ifr.ifr_name, interface);
+		strlcpy(ifr.ifr_name, interface, sizeof(ifr.ifr_name));
 
 		// test
 		//fprintf(stderr, "read interface, socket is %d\n", fd);
@@ -1074,7 +1079,7 @@ int discover_interfaces(int num, const char **current_wan_ifnames, int dhcp_det,
 	wan_ifNames[0] = '\0';
 	p = wan_ifNames;
 	for(idx = 0; idx < num && (sizeof(wan_ifNames) > p - wan_ifNames + strlen(current_wan_ifnames[idx])); idx++) {
-		p += sprintf(p, "%s ", current_wan_ifnames[idx]);
+		p += snprintf(p, sizeof(wan_ifNames) - (p - wan_ifNames), "%s ", current_wan_ifnames[idx]);
 	}
 
 	get_proto_via_br(1);

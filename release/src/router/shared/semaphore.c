@@ -233,7 +233,7 @@ int spinlock_init(int idx)
 	if (idx < 0 || idx >= SPINLOCK_SPIN_MAX)
 		return -1;
 
-	sprintf(sem_name, "%s%d", SEM_NAME, idx);
+	snprintf(sem_name, sizeof(sem_name), "%s%d", SEM_NAME, idx);
 	semaphore_unlink(sem_name);
 	
 	if (spinlock_open(idx, sem_name, flag_sem, FILE_MODE, init_value) == -1)

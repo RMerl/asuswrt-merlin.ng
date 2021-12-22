@@ -1419,7 +1419,7 @@ int get_wan_proto(char *prefix)
 	char proto[8] = { 0 };
 	int i;
 
-	strlcpy(proto, nvram_safe_get(strcat_r(prefix, "proto", tmp)), sizeof(proto));
+	strlcpy(proto, nvram_safe_get(strlcat_r(prefix, "proto", tmp, sizeof(tmp))), sizeof(proto));
 	for (i = 0; services[i].name; i++) {
 		if (strcmp(proto, services[i].name) == 0)
 			return services[i].service;
@@ -1860,7 +1860,7 @@ const char *get_wanip(void)
 
 	snprintf(prefix, sizeof(prefix), "wan%d_", wan_primary_ifunit());
 
-	return nvram_safe_get(strcat_r(prefix, "ipaddr", tmp));
+	return nvram_safe_get(strlcat_r(prefix, "ipaddr", tmp, sizeof(tmp)));
 }
 
 int get_wanstate(void)
@@ -1869,7 +1869,7 @@ int get_wanstate(void)
 
 	snprintf(prefix, sizeof(prefix), "wan%d_", wan_primary_ifunit());
 
-	return nvram_get_int(strcat_r(prefix, "state_t", tmp));
+	return nvram_get_int(strlcat_r(prefix, "state_t", tmp, sizeof(tmp)));
 }
 
 const char *get_wanface(void)
@@ -1894,15 +1894,15 @@ int update_6rd_info(void)
 
 	snprintf(prefix, sizeof(prefix), "wan%d_", wan_primary_ifunit_ipv6());
 
-	value = nvram_safe_get(strcat_r(prefix, "6rd_prefix", tmp));
+	value = nvram_safe_get(strlcat_r(prefix, "6rd_prefix", tmp, sizeof(tmp)));
 	if (*value ) {
 		/* try to compact IPv6 prefix */
 		if (inet_pton(AF_INET6, value, &addr) > 0)
 			value = (char *) inet_ntop(AF_INET6, &addr, addr6, sizeof(addr6));
 		nvram_set(ipv6_nvname("ipv6_6rd_prefix"), value);
-		nvram_set(ipv6_nvname("ipv6_6rd_router"), nvram_safe_get(strcat_r(prefix, "6rd_router", tmp)));
-		nvram_set(ipv6_nvname("ipv6_6rd_prefixlen"), nvram_safe_get(strcat_r(prefix, "6rd_prefixlen", tmp)));
-		nvram_set(ipv6_nvname("ipv6_6rd_ip4size"), nvram_safe_get(strcat_r(prefix, "6rd_ip4size", tmp)));
+		nvram_set(ipv6_nvname("ipv6_6rd_router"), nvram_safe_get(strlcat_r(prefix, "6rd_router", tmp, sizeof(tmp))));
+		nvram_set(ipv6_nvname("ipv6_6rd_prefixlen"), nvram_safe_get(strlcat_r(prefix, "6rd_prefixlen", tmp, sizeof(tmp))));
+		nvram_set(ipv6_nvname("ipv6_6rd_ip4size"), nvram_safe_get(strlcat_r(prefix, "6rd_ip4size", tmp, sizeof(tmp))));
 		return 1;
 	}
 
@@ -2008,7 +2008,7 @@ int is_intf_up(const char* ifname)
 
 	if (!((sfd = socket(AF_INET, SOCK_RAW, IPPROTO_RAW)) < 0))
 	{
-		strcpy(ifr.ifr_name, ifname);
+		strlcpy(ifr.ifr_name, ifname, sizeof(ifr.ifr_name));
 		if (ioctl(sfd, SIOCGIFFLAGS, &ifr))
 			ret = -1;			/* interface not exist */
 		else if((ifr.ifr_flags & IFF_UP))
@@ -2032,7 +2032,7 @@ int aimesh_re_mode(void)
 char *wl_nvprefix(char *prefix, int prefix_size, int unit, int subunit)
 {
 	if(unit < 0)
-		strcpy(prefix, "wl_");
+		strlcpy(prefix, "wl_", prefix_size);
 #ifdef RTCONFIG_LANTIQ
 	else if(client_mode() && unit == nvram_get_int("wlc_band"))
 		snprintf(prefix, prefix_size, "wl%d.%d_", unit, 1);
@@ -2054,7 +2054,7 @@ char *wl_nvname(const char *nv, int unit, int subunit)
 
 	wl_nvprefix(prefix, sizeof(prefix), unit, subunit);
 
-	return strcat_r(prefix, nv, tmp);
+	return strlcat_r(prefix, nv, tmp, sizeof(tmp));
 }
 
 char *wl_nband_name(const char *nband)
@@ -2087,7 +2087,7 @@ int mtd_getinfo(const char *mtdname, int *part, int *size)
 
 	r = 0;
 	if ((strlen(mtdname) < 128)) { // && (strcmp(mtdname, "pmon") != 0)) { //Yau dbg
-		sprintf(t, "\"%s\"", mtdname);
+		snprintf(t, sizeof(t), "\"%s\"", mtdname);
 		if ((f = fopen("/proc/mtd", "r")) != NULL) {
 			while (fgets(s, sizeof(s), f) != NULL) {
 				if ((sscanf(s, "mtd%d: %x", part, size) == 2) && (strstr(s, t) != NULL)) {
@@ -2206,7 +2206,7 @@ char *nvram_pf_get(const char *prefix, const char *name)
 			return NULL;
 	}
 
-	v = nvram_get(strcat_r(prefix, name, tmp));
+	v = nvram_get(strlcat_r(prefix, name, tmp, sizeof(tmp)));
 
 	if (t != tmp)
 		free(t);
@@ -2237,7 +2237,7 @@ int nvram_pf_set(const char *prefix, const char *name, const char *value)
 			return -ENOMEM;
 	}
 
-	r = nvram_set(strcat_r(prefix, name, tmp), value);
+	r = nvram_set(strlcat_r(prefix, name, tmp, sizeof(tmp)), value);
 
 	if (t != tmp)
 		free(t);
@@ -2837,7 +2837,7 @@ unsigned int netdev_calc(char *ifname, char *ifname_desc, unsigned long long *rx
 				return 0;
 #endif
 
-			sprintf(tmp, "wl%d_vifnames", i);
+			snprintf(tmp, sizeof(tmp), "wl%d_vifnames", i);
 			j = 0;
 			foreach(word1, nvram_safe_get(tmp), next1) {
 				if(strcmp(word1, wif_to_vif(ifname))==0)
@@ -2859,10 +2859,10 @@ unsigned int netdev_calc(char *ifname, char *ifname_desc, unsigned long long *rx
 			foreach(word, nvram_safe_get("nic_lan_ifnames"), next) {
 				if(strcmp(word, ifname)==0)
 				{
-					sprintf(tmp, "wl%d_vifnames", 0);
+					snprintf(tmp, sizeof(tmp), "wl%d_vifnames", 0);
 					foreach(word1, nvram_safe_get(tmp), next1) {
 						char vifname[32];
-						sprintf(vifname, "%s_ifname", word1);
+						snprintf(vifname, sizeof(vifname), "%s_ifname", word1);
 						if(strlen(nvram_safe_get(vifname)) > 0)
 						{
 							if(i-- == 0)
@@ -3087,13 +3087,13 @@ char *get_logfile_path(void)
 	static char prefix[] = "/jffsXXXXXX";
 
 #if defined(RTCONFIG_PSISTLOG)
-	strcpy(prefix, "/jffs");
+	strlcpy(prefix, "/jffs", sizeof(prefix));
 	if (!check_if_dir_writable(prefix)) {
 		_dprintf("logfile output directory: /tmp.\n");
-		strcpy(prefix, "/tmp");
+		strlcpy(prefix, "/tmp", sizeof(prefix));
 	}
 #else
-	strcpy(prefix, "/tmp");
+	strlcpy(prefix, "/tmp", sizeof(prefix));
 #endif
 
 	return prefix;
@@ -3105,19 +3105,19 @@ char *get_syslog_fname(unsigned int idx)
 	static char buf[PATH_MAX];
 
 #if defined(RTCONFIG_PSISTLOG)
-	strcpy(prefix, "/jffs");
+	strlcpy(prefix, "/jffs", sizeof(prefix));
 	if (!check_if_dir_writable(prefix)) {
 		_dprintf("syslog output directory: /tmp.\n");
-		strcpy(prefix, "/tmp");
+		strlcpy(prefix, "/tmp", sizeof(prefix));
 	}
 #else
-	strcpy(prefix, "/tmp");
+	strlcpy(prefix, "/tmp", sizeof(prefix));
 #endif
 
 	if (!idx)
-		sprintf(buf, "%s/syslog.log", prefix);
+		snprintf(buf, sizeof(buf), "%s/syslog.log", prefix);
 	else
-		sprintf(buf, "%s/syslog.log-%d", prefix, idx);
+		snprintf(buf, sizeof(buf), "%s/syslog.log-%d", prefix, idx);
 
 	return buf;
 }
@@ -3127,8 +3127,8 @@ char *get_modemlog_fname(void){
 	char prefix[] = "/tmpXXXXXX";
 	static char buf[PATH_MAX];
 
-	strcpy(prefix, "/tmp");
-	sprintf(buf, "%s/3ginfo.txt", prefix);
+	strlcpy(prefix, "/tmp", sizeof(prefix));
+	snprintf(buf, sizeof(buf), "%s/3ginfo.txt", prefix);
 
 	return buf;
 }
@@ -3211,7 +3211,7 @@ int dpsr_main(char *nif)
 		snprintf(wl_prefix, sizeof(wl_prefix), "wl%d_", idx);
 		snprintf(wlc_prefix, sizeof(wlc_prefix), "wlc%d_", idx);
 
-		if(nvram_match(strcat_r(wl_prefix, "mode", tmp), "wet") && *nvram_safe_get(strcat_r(wlc_prefix, "ssid", tmp))) {
+		if(nvram_match(strlcat_r(wl_prefix, "mode", tmp, sizeof(tmp)), "wet") && *nvram_safe_get(strlcat_r(wlc_prefix, "ssid", tmp, sizeof(tmp)))) {
 			wlc_valid |= 1<<idx;
 			valid_num++;
 		}
@@ -3514,7 +3514,7 @@ int get_wifi_unit(char *wif)
 #endif
 		for (i = 0; i <= MAX_NR_WL_IF; ++i) {
 			SKIP_ABSENT_BAND(i);
-			sprintf(nv, "wl%d_ifname", i);
+			snprintf(nv, sizeof(nv), "wl%d_ifname", i);
 			ifn = nvram_get(nv);
 			if (ifn != NULL && !strncmp(word, ifn, strlen(word)))
 				return i;
@@ -3692,7 +3692,7 @@ int ctrl_gro(char *iface, int onoff)
 	eval.cmd = ETHTOOL_SGRO;
 	eval.data = !!onoff;
 	ifr.ifr_data = (caddr_t) &eval;
-	strcpy(ifr.ifr_name, iface);
+	strlcpy(ifr.ifr_name, iface, sizeof(ifr.ifr_name));
 	err = ioctl(fd, SIOCETHTOOL, &ifr);
 	if (err) {
 		dbg("Can't %s GRO on %s. errno %d (%s)\n",
@@ -4778,7 +4778,7 @@ void deauth_guest_sta(char *wlif_name, char *mac_addr)
 #if (defined(RTCONFIG_RALINK) || defined(RTCONFIG_QCA))
         char cmd[128];
 #if defined(RTCONFIG_RALINK)
-		sprintf(cmd,"iwpriv %s set DisConnectSta="MAC_FMT, wlif_name, MAC_ARG((unsigned char *)mac_addr));
+		snrintf(cmd, sizeof(cmd), "iwpriv %s set DisConnectSta="MAC_FMT, wlif_name, MAC_ARG((unsigned char *)mac_addr));
 		system(cmd);
 		memset(cmd, 0, sizeof(cmd));
 		snprintf(cmd, sizeof(cmd), "iwpriv %s set AccessPolicy=2", wlif_name);
@@ -4789,13 +4789,13 @@ void deauth_guest_sta(char *wlif_name, char *mac_addr)
 		memset(cmd, 0, sizeof(cmd));
 		snprintf(cmd, sizeof(cmd), "iwpriv %s set ACLShowAll=1", wlif_name);
 #elif defined(RTCONFIG_QCA)
-	sprintf(cmd, IWPRIV " %s maccmd 2", wlif_name);
+	snprintf(cmd, sizeof(cmd), IWPRIV " %s maccmd 2", wlif_name);
         system(cmd);
 	memset(cmd, 0, sizeof(cmd));
-	sprintf(cmd, IWPRIV " %s addmac "MAC_FMT, wlif_name, MAC_ARG(mac_addr));
+	snprintf(cmd, sizeof(cmd), IWPRIV " %s addmac "MAC_FMT, wlif_name, MAC_ARG(mac_addr));
         system(cmd);
 	memset(cmd, 0, sizeof(cmd));
-        sprintf(cmd, IWPRIV " %s kickmac "MAC_FMT, wlif_name, MAC_ARG(mac_addr));
+        snprintf(cmd, sizeof(cmd), IWPRIV " %s kickmac "MAC_FMT, wlif_name, MAC_ARG(mac_addr));
 #endif
         system(cmd);
 #else /* BCM */
@@ -4882,9 +4882,9 @@ char *if_nametoalias(char *name, char *alias, int alias_len)
 		max_mssid = num_of_mssid_support(unit);
 		memset(prefix, 0, sizeof(prefix));
 		snprintf(prefix, sizeof(prefix), "wl%d_", unit);
-		strlcpy(ifname, nvram_safe_get(strcat_r(prefix, "ifname", tmp)), sizeof(ifname));
+		strlcpy(ifname, nvram_safe_get(strlcat_r(prefix, "ifname", tmp, sizeof(tmp))), sizeof(ifname));
 		subunit = 0;
-		nband = nvram_get_int(strcat_r(prefix, "nband", tmp));
+		nband = nvram_get_int(strlcat_r(prefix, "nband", tmp, sizeof(tmp)));
 
 		if (nband == 2)
 			strlcpy(band_prefix, CFG_WL_STR_2G, sizeof(band_prefix));
@@ -4906,7 +4906,7 @@ char *if_nametoalias(char *name, char *alias, int alias_len)
 		for (subunit = 1; subunit < max_mssid+1; subunit++) {
 			memset(prefix, 0, sizeof(prefix));
                         snprintf(prefix, sizeof(prefix), "wl%d.%d_", unit, subunit);
-			strlcpy(ifname, nvram_safe_get(strcat_r(prefix, "ifname", tmp)), sizeof(ifname));
+			strlcpy(ifname, nvram_safe_get(strlcat_r(prefix, "ifname", tmp, sizeof(tmp))), sizeof(ifname));
 
 			if (!strcmp(ifname, name)) {
 #if defined(CONFIG_BCMWL5) || defined(RTCONFIG_BCMARM)
@@ -4961,7 +4961,7 @@ int check_re_in_macfilter(int unit, char *mac)
 #endif
 		snprintf(prefix, sizeof(prefix), "wl%d_", unit);
 
-	nv = nvp = strdup(nvram_safe_get(strcat_r(prefix, "maclist_x", tmp)));
+	nv = nvp = strdup(nvram_safe_get(strlcat_r(prefix, "maclist_x", tmp, sizeof(tmp))));
 	if (nv) {
 		while ((b = strsep(&nvp, "<")) != NULL) {
 			if (strlen(b) == 0) continue;
@@ -5090,7 +5090,7 @@ int ppa_support(int wan_unit)
 		modem_unit = 0;
 
 	usb_modem_prefix(modem_unit, prefix2, sizeof(prefix2));
-	snprintf(modem_type, sizeof(modem_type), "%s", nvram_safe_get(strcat_r(prefix2, "act_type", tmp2)));
+	snprintf(modem_type, sizeof(modem_type), "%s", nvram_safe_get(strlcat_r(prefix2, "act_type", tmp2, sizeof(tmp2))));
 
 	if((wan_type == WANS_DUALWAN_IF_USB || wan_type == WANS_DUALWAN_IF_USB2)
 			&& (!strcmp(modem_type, "tty") || !strcmp(modem_type, "mbim"))
@@ -5114,11 +5114,11 @@ int ppa_support(int wan_unit)
 	if (nvram_match("stop_ppa_wan", "1")) ret = 0;
 
 	snprintf(prefix, sizeof(prefix), "wan%d_", wan_unit);
-	snprintf(wan_proto, sizeof(wan_proto), "%s", nvram_safe_get(strcat_r(prefix, "proto", tmp)));
+	snprintf(wan_proto, sizeof(wan_proto), "%s", nvram_safe_get(strlcat_r(prefix, "proto", tmp, sizeof(tmp))));
 
 	if(strcmp(wan_proto, "pptp") == 0) ret = 0;
 	if(strcmp(wan_proto, "l2tp") == 0) ret = 0;
-	if(strcmp(nvram_safe_get(strcat_r(prefix, "hwaddr_x", tmp)), "")) ret = 0;
+	if(strcmp(nvram_safe_get(strlcat_r(prefix, "hwaddr_x", tmp, sizeof(tmp))), "")) ret = 0;
 
 	return ret;
 }
@@ -5426,7 +5426,7 @@ int get_discovery_ssid(char *ssid_g, int size)
 		else
 #endif
 			snprintf(prefix, sizeof(prefix), "wl%d.1_", nvram_get_int("wlc_band"));
-		strlcpy(ssid_g, nvram_safe_get(strcat_r(prefix, "ssid", tmp)), size);
+		strlcpy(ssid_g, nvram_safe_get(strlcat_r(prefix, "ssid", tmp, sizeof(tmp))), size);
 	}
 	else
 #ifdef RTCONFIG_REALTEK
@@ -5437,7 +5437,7 @@ int get_discovery_ssid(char *ssid_g, int size)
 #else
 			snprintf(prefix, sizeof(prefix), "wl%d.1_", nvram_get_int("wlc_band"));
 #endif
-			strlcpy(ssid_g, nvram_safe_get(strcat_r(prefix, "ssid", tmp)), size);
+			strlcpy(ssid_g, nvram_safe_get(strlcat_r(prefix, "ssid", tmp, sizeof(tmp))), size);
 		}
 		else
 #endif
@@ -5453,10 +5453,10 @@ int get_discovery_ssid(char *ssid_g, int size)
 			foreach(word, dpsta_ifnames, next) {
 				wl_ioctl(word, WLC_GET_INSTANCE, &unit, sizeof(unit));
 				snprintf(prefix, sizeof(prefix), "wlc%d_", unit == 0 ? 0 : 1);
-				if (nvram_get_int(strcat_r(prefix, "state", tmp)) == 2) {
+				if (nvram_get_int(strlcat_r(prefix, "state", tmp, sizeof(tmp))) == 2) {
 					connected = 1;
 					snprintf(prefix, sizeof(prefix), "wl%d.1_", unit);
-					strncpy(ssid_g, nvram_safe_get(strcat_r(prefix, "ssid", tmp)), size);
+					strncpy(ssid_g, nvram_safe_get(strlcat_r(prefix, "ssid", tmp, sizeof(tmp))), size);
 					break;
 				}
 			}
@@ -5468,12 +5468,12 @@ int get_discovery_ssid(char *ssid_g, int size)
 		if (is_psta(nvram_get_int("wlc_band")))
 		{
 			snprintf(prefix, sizeof(prefix), "wl%d_", nvram_get_int("wlc_band"));
-			strncpy(ssid_g, nvram_safe_get(strcat_r(prefix, "ssid", tmp)), size);
+			strncpy(ssid_g, nvram_safe_get(strlcat_r(prefix, "ssid", tmp, sizeof(tmp))), size);
 		}
 		else if (is_psr(nvram_get_int("wlc_band")))
 		{
 			snprintf(prefix, sizeof(prefix), "wl%d.1_", nvram_get_int("wlc_band"));
-			strlcpy(ssid_g, nvram_safe_get(strcat_r(prefix, "ssid", tmp)), size);
+			strlcpy(ssid_g, nvram_safe_get(strlcat_r(prefix, "ssid", tmp, sizeof(tmp))), size);
 		}
 		else
 #endif

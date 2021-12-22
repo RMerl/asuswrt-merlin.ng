@@ -839,14 +839,14 @@ void convert_wl_sched_v1_to_sched_v2() {
 		{
 			/*transfer wl_sched NULL value to 000000 value, because
 			of old version firmware with wrong default value*/
-			if (!nvram_get(strcat_r(prefix, "sched", tmp)))
-				nvram_set(strcat_r(prefix, "sched", tmp), "000000");
+			if (!nvram_get(strlcat_r(prefix, "sched", tmp, sizeof(tmp))))
+				nvram_set(strlcat_r(prefix, "sched", tmp, sizeof(tmp)), "000000");
 
 			snprintf(str_sched_v2, sizeof(str_sched_v2), "%s", "");
-			if (convert_to_str_sched_v2(nvram_safe_get(strcat_r(prefix, "sched", tmp)), 0, str_sched_v2, sizeof(str_sched_v2))) {
-				if (strcmp(str_sched_v2, nvram_safe_get(strcat_r(prefix, "sched_v2", tmp)))) { // Changed
-					nvram_set(strcat_r(prefix, "sched_v2", tmp), str_sched_v2);
-					//nvram_unset(strcat_r(prefix, "sched", tmp));
+			if (convert_to_str_sched_v2(nvram_safe_get(strlcat_r(prefix, "sched", tmp, sizeof(tmp))), 0, str_sched_v2, sizeof(str_sched_v2))) {
+				if (strcmp(str_sched_v2, nvram_safe_get(strlcat_r(prefix, "sched_v2", tmp, sizeof(tmp))))) { // Changed
+					nvram_set(strlcat_r(prefix, "sched_v2", tmp, sizeof(tmp)), str_sched_v2);
+					//nvram_unset(strlcat_r(prefix, "sched", tmp, sizeof(tmp)));
 					SCHED_DBG("str_sched_v2 : %s", str_sched_v2);
 					changed = 1;
 				}
@@ -854,18 +854,18 @@ void convert_wl_sched_v1_to_sched_v2() {
 		} else
 #endif
 		{
-			//if (nvram_get(strcat_r(prefix, "sched", tmp)) || !nvram_get(strcat_r(prefix, "sched_v2", tmp))) {
-			//fprintf((stderr), "[SCHED] %s=%s\n", strcat_r(prefix, "sched_v2_converted", tmp), nvram_get(strcat_r(prefix, "sched_v2_converted", tmp)));
-			if (!nvram_match(strcat_r(prefix, "sched_v2_converted", tmp), "1")) {
+			//if (nvram_get(strlcat_r(prefix, "sched", tmp, sizeof(tmp))) || !nvram_get(strlcat_r(prefix, "sched_v2", tmp, sizeof(tmp)))) {
+			//fprintf((stderr), "[SCHED] %s=%s\n", strlcat_r(prefix, "sched_v2_converted", tmp, sizeof(tmp)), nvram_get(strlcat_r(prefix, "sched_v2_converted", tmp, sizeof(tmp))));
+			if (!nvram_match(strlcat_r(prefix, "sched_v2_converted", tmp, sizeof(tmp)), "1")) {
 				snprintf(str_sched_v2, sizeof(str_sched_v2), "%s", "");
-				if (convert_to_str_sched_v2(nvram_safe_get(strcat_r(prefix, "sched", tmp)), 0, str_sched_v2, sizeof(str_sched_v2))) {
+				if (convert_to_str_sched_v2(nvram_safe_get(strlcat_r(prefix, "sched", tmp, sizeof(tmp))), 0, str_sched_v2, sizeof(str_sched_v2))) {
 					//if (strcmp(str_sched_v2, nvram_safe_get(strcat_r(prefix, "sched_v2", tmp)))) { // Changed
-						nvram_set(strcat_r(prefix, "sched_v2", tmp), str_sched_v2);
-						nvram_set(strcat_r(prefix, "sched_v2_converted", tmp), "1");
+						nvram_set(strlcat_r(prefix, "sched_v2", tmp, sizeof(tmp)), str_sched_v2);
+						nvram_set(strlcat_r(prefix, "sched_v2_converted", tmp, sizeof(tmp)), "1");
 #ifdef RTCONFIG_AMAS
 						if (!nvram_match("re_mode", "1"))
 #endif
-						nvram_set(strcat_r(prefix, "sched", tmp), "000000");
+						nvram_set(strlcat_r(prefix, "sched", tmp, sizeof(tmp)), "000000");
 						SCHED_DBG("str_sched_v2 : %s", str_sched_v2);
 						changed = 1;
 					//}

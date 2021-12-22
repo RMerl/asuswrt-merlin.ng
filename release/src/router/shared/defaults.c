@@ -5577,7 +5577,7 @@ nvram_validate_all(char *prefix, bool restore)
 
 	for (t = router_defaults; t->name; t++) {
 		if (!strncmp(t->name, "wl_", 3)) {
-			strcat_r(prefix, &t->name[3], tmp);
+			strlcat_r(prefix, &t->name[3], tmp, sizeof(tmp));
 			if (!restore && nvram_get(tmp))
 				continue;
 			v = nvram_get(t->name);
@@ -5590,7 +5590,7 @@ nvram_validate_all(char *prefix, bool restore)
 	if (!strcmp(nvram_safe_get("devicemode"), "1")) {
 		for (t = router_defaults_override_type1; t->name; t++) {
 			if (!strncmp(t->name, "wl_", 3)) {
-				strcat_r(prefix, &t->name[3], tmp);
+				strlcat_r(prefix, &t->name[3], tmp, sizeof(tmp));
 				if (!restore && nvram_get(tmp))
 					continue;
 				v = nvram_get(t->name);
@@ -5610,7 +5610,7 @@ nvram_restore_var(char *prefix, char *name)
 
 	for (t = router_defaults; t->name; t++) {
 		if (!strncmp(t->name, "wl_", 3) && !strcmp(&t->name[3], name)) {
-			nvram_set(strcat_r(prefix, name, tmp), t->value);
+			nvram_set(strlcat_r(prefix, name, tmp, sizeof(tmp)), t->value);
 			break;
 		}
 	}
@@ -5620,7 +5620,7 @@ nvram_restore_var(char *prefix, char *name)
 	if (!strcmp(nvram_safe_get("devicemode"), "1")) {
 		for (t = router_defaults_override_type1; t->name; t++) {
 			if (!strncmp(t->name, "wl_", 3) && !strcmp(&t->name[3], name)) {
-				nvram_set(strcat_r(prefix, name, tmp), t->value);
+				nvram_set(strlcat_r(prefix, name, tmp, sizeof(tmp)), t->value);
 				break;
 			}
 		}

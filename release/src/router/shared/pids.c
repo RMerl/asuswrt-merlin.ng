@@ -238,7 +238,7 @@ procps_status_t* procps_scan(procps_status_t* sp, int flags)
 		sp->pid = pid;
 		if (!(flags & ~PSSCAN_PID)) break;
 
-		filename_tail = filename + sprintf(filename, "/proc/%d", pid);
+		filename_tail = filename + snprintf(filename, sizeof(filename), "/proc/%d", pid);
 
 		if (flags & PSSCAN_UIDGID) {
 			if (stat(filename, &sb))

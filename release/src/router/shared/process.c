@@ -26,7 +26,7 @@ char *psname(int pid, char *buffer, int maxlen)
 
 	if (maxlen <= 0) return NULL;
 	*buffer = 0;
-	sprintf(path, "/proc/%d/stat", pid);
+	snprintf(path, sizeof(path), "/proc/%d/stat", pid);
 	if (((fn=f_read_string(path, buf, sizeof(buf))) > 4) && ((p = strrchr(buf, ')')) != NULL)) {
 		*p = 0;
 		if (((p = strchr(buf, '(')) != NULL) && (atoi(buf) == pid)) {
@@ -201,7 +201,7 @@ static int un_tcpsock_connect(char *path, int nodelay)
 	}
 
 	uaddr.sun_family = AF_LOCAL;
-	strcpy(uaddr.sun_path, path);
+	strlcpy(uaddr.sun_path, path, sizeof(uaddr.sun_path));
 
 	if ( connect(sock, (struct sockaddr*)(&uaddr), sizeof(uaddr)) == -1 ) {
 		close(sock);

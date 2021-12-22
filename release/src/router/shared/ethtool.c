@@ -38,7 +38,7 @@ int ethtool_glink(char *iface)
 	memset(&ifr, 0, sizeof(ifr));
 	eval.cmd = ETHTOOL_GLINK;
 	ifr.ifr_data = (caddr_t) &eval;
-	strcpy(ifr.ifr_name, iface);
+	strlcpy(ifr.ifr_name, iface, sizeof(ifr.ifr_name));
 	err = ioctl(fd, SIOCETHTOOL, &ifr);
 	close(fd);
 	if (err) {
@@ -87,7 +87,7 @@ int ethtool_gset(char *iface, uint32_t *speed, int *duplex)
 	memset(&ifr, 0, sizeof(ifr));
 	ecmd.cmd = ETHTOOL_GSET;
 	ifr.ifr_data = (caddr_t) &ecmd;
-	strcpy(ifr.ifr_name, iface);
+	strlcpy(ifr.ifr_name, iface, sizeof(ifr.ifr_name));
 	err = ioctl(fd, SIOCETHTOOL, &ifr);
 	close(fd);
 	if (err) {

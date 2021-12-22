@@ -45,17 +45,17 @@ static inline int Gobi_AtCommand(int unit, const char *cmd, const char *file)
 		cprintf("# %s wait process(%d): fd(%d) pid(%d)!\n", __func__, owner, fd, getpid());
 		sleep(1);
 	}
-	sprintf(buf, "%d", getpid());
+	snprintf(buf, sizeof(buf), "%d", getpid());
 	write(fd, buf, strlen(buf));
 
 	unlink(file);
 
 	usb_modem_prefix(unit, prefix, sizeof(prefix));
 
-	if (nvram_match(strcat_r(prefix, "act_type", tmp), "tty"))
-		modem_act_node = nvram_get(strcat_r(prefix, "act_bulk", tmp));
+	if (nvram_match(strlcat_r(prefix, "act_type", tmp, sizeof(tmp)), "tty"))
+		modem_act_node = nvram_get(strlcat_r(prefix, "act_bulk", tmp, sizeof(tmp)));
 	else
-		modem_act_node = nvram_get(strcat_r(prefix, "act_int", tmp));
+		modem_act_node = nvram_get(strlcat_r(prefix, "act_int", tmp, sizeof(tmp)));
 
 	if (modem_act_node != NULL)
 	{
@@ -355,7 +355,7 @@ char * Gobi_FwVersion(int unit, char *line, int size)
 		char *ptr = NULL;
 		if ((ptr = strstr(p, " [")))
 			*ptr = '\0';
-		sprintf(line, "WWHC%s", p);
+		snprintf(line, size, "WWHC%s", p);
 #endif
 	}
 	return p;

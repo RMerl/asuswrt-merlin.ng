@@ -202,7 +202,7 @@ void lp55xx_set_pattern_led(int col_mode, int beh_mode)
 
 				brightness = nvram_get_int("lp55xx_lp5523_user_brightness");
 				memset(lp55xx_lp5523_manual, '\0', sizeof(lp55xx_lp5523_manual));
-				strcpy(lp55xx_lp5523_manual, nvram_safe_get("lp55xx_lp5523_manual"));
+				strlcpy(lp55xx_lp5523_manual, nvram_safe_get("lp55xx_lp5523_manual"), sizeof(lp55xx_lp5523_manual));
 				split(current, lp55xx_lp5523_manual, "_");
 				set = 1;
 			}

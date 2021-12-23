@@ -151,7 +151,7 @@ function get_log_data(){
 					}
 				}
 
-				document.getElementById("textarea").innerHTML = htmlEnDeCode.htmlEncode(_log);
+				document.getElementById("textarea").innerHTML = _log;
 				$("#textarea").animate({ scrollTop: 9999999 }, "slow");
 				setTimeout('height = $("#textarea").scrollTop();', 500);
 			}

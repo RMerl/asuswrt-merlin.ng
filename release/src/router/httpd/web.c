@@ -23719,73 +23719,48 @@ int ej_apps_state_info(int eid, webs_t wp, int argc, char **argv){
 
 int ej_apps_action(int eid, webs_t wp, int argc, char **argv){
 
-	struct json_object *root=NULL;
+	char command[128] = {0};
+	struct json_object *root = NULL;
 
 	do_json_decode(&root);
 
-	char *apps_action = get_cgi_json("apps_action", root);
-	char *apps_name = get_cgi_json("apps_name", root);
-	char *apps_flag = get_cgi_json("apps_flag", root);
-	char command[128];
-
-	if(!apps_action || strlen(apps_action) <= 0)
-		goto SET_APPS_ACTION_FINISH;
-
-	nvram_set("apps_state_action", apps_action);
+	char *apps_action = safe_get_cgi_json("apps_action", root);
+	char *apps_name = safe_get_cgi_json("apps_name", root);
+	char *apps_flag = safe_get_cgi_json("apps_flag", root);
 
 	memset(command, 0, sizeof(command));
 
-	if(!strcmp(apps_action, "install")){
-		if(strlen(apps_name) <= 0 || strlen(apps_flag) <= 0)
+	if(!strcmp(apps_action, "update") || !strcmp(apps_action, "stop") || !strcmp(apps_action, "cancel")){
+		snprintf(command, sizeof(command), "start_apps_%s", apps_action);
+	}
+	else if(!strcmp(apps_action, "upgrade") || !strcmp(apps_action, "remove")){
+		if(check_cmd_whitelist(apps_name))
 			goto SET_APPS_ACTION_FINISH;
-
-		snprintf(command, sizeof(command), "start_apps_install %s %s", apps_name, apps_flag);
+		else
+			snprintf(command, sizeof(command), "start_apps_%s %s", apps_action, apps_name);
 	}
-	else if(!strcmp(apps_action, "stop")){
-		snprintf(command, sizeof(command), "start_apps_stop");
-	}
-	else if(!strcmp(apps_action, "update")){
-		snprintf(command, sizeof(command), "start_apps_update");
-	}
-	else if(!strcmp(apps_action, "upgrade")){
-		if(strlen(apps_name) <= 0)
+	else if(!strcmp(apps_action, "install") || !strcmp(apps_action, "switch")){
+		if(check_cmd_whitelist(apps_name) || check_cmd_whitelist(apps_flag))
 			goto SET_APPS_ACTION_FINISH;
-
-		snprintf(command, sizeof(command), "start_apps_upgrade %s", apps_name);
-	}
-	else if(!strcmp(apps_action, "remove")){
-		if(strlen(apps_name) <= 0)
-			goto SET_APPS_ACTION_FINISH;
-
-		snprintf(command, sizeof(command), "start_apps_remove %s", apps_name);
+		else
+			snprintf(command, sizeof(command), "start_apps_%s %s %s", apps_action, apps_name, apps_flag);
 	}
 	else if(!strcmp(apps_action, "enable")){
-		if(strlen(apps_name) <= 0 || strlen(apps_flag) <= 0)
+		if(check_cmd_whitelist(apps_name) || (strcmp(apps_flag, "yes") && strcmp(apps_flag, "no")))
 			goto SET_APPS_ACTION_FINISH;
-
-		if(strcmp(apps_flag, "yes") && strcmp(apps_flag, "no"))
-			goto SET_APPS_ACTION_FINISH;
-
-		snprintf(command, sizeof(command), "start_apps_enable %s %s", apps_name, apps_flag);
+		else
+			snprintf(command, sizeof(command), "start_apps_%s %s %s", apps_action, apps_name, apps_flag);
 	}
-	else if(!strcmp(apps_action, "switch")){
-		if(strlen(apps_name) <= 0 || strlen(apps_flag) <= 0)
-			goto SET_APPS_ACTION_FINISH;
 
-		snprintf(command, sizeof(command), "start_apps_switch %s %s", apps_name, apps_flag);
-	}
-	else if(!strcmp(apps_action, "cancel")){
-		snprintf(command, sizeof(command), "start_apps_cancel");
-	}
+	nvram_set("apps_state_action", apps_action);
 
 	if(strlen(command) > 0)
 		notify_rc(command);
 
-	goto SET_APPS_ACTION_FINISH;
-
 SET_APPS_ACTION_FINISH:
-	json_object_put(root);
- 	return 0;
+	if(root)
+		json_object_put(root);
+	return 0;
 
 }
 

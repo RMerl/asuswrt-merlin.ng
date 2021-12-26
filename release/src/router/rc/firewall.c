@@ -3380,6 +3380,7 @@ filter_setting(int wan_unit, char *lan_if, char *lan_ip, char *logaccept, char *
 		    ":OVPN - [0:0]\n"
 #endif
 #ifdef RTCONFIG_PARENTALCTRL
+		    ":WGNPControls - [0:0]\n"
 		    ":PControls - [0:0]\n"
 #endif
 		    ":NSFW - [0:0]\n"

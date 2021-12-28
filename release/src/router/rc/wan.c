@@ -2478,106 +2478,108 @@ int update_resolvconf(void)
 		nvram_match(ipv6_nvname("ipv6_only"), "1"))
 		goto NOIP;
 #endif
-	for (unit = WAN_UNIT_FIRST; unit < WAN_UNIT_MAX; unit++) {
-		snprintf(prefix, sizeof(prefix), "wan%d_", unit);
-		wan_dns = nvram_safe_get_r(strcat_r(prefix, "dns", tmp), wan_dns_buf, sizeof(wan_dns_buf));
-		wan_xdns = nvram_safe_get_r(strcat_r(prefix, "xdns", tmp), wan_xdns_buf, sizeof(wan_xdns_buf));
+	{
+		for (unit = WAN_UNIT_FIRST; unit < WAN_UNIT_MAX; unit++) {
+			snprintf(prefix, sizeof(prefix), "wan%d_", unit);
+			wan_dns = nvram_safe_get_r(strcat_r(prefix, "dns", tmp), wan_dns_buf, sizeof(wan_dns_buf));
+			wan_xdns = nvram_safe_get_r(strcat_r(prefix, "xdns", tmp), wan_xdns_buf, sizeof(wan_xdns_buf));
 
-		if (!*wan_dns && !*wan_xdns)
-			continue;
+			if (!*wan_dns && !*wan_xdns)
+				continue;
 
 #ifdef RTCONFIG_DUALWAN
-		/* skip disconnected WANs in LB mode */
-		if (nvram_match("wans_mode", "lb")) {
-			if (!is_phy_connect(unit))
-				continue;
-		} else
-		/* skip non-primary WANs except not fully connected in FB mode */
-		if (nvram_match("wans_mode", "fb")) {
-			if (unit != primary_unit && *wan_dns)
-				continue;
-		} else
+			/* skip disconnected WANs in LB mode */
+			if (nvram_match("wans_mode", "lb")) {
+				if (!is_phy_connect(unit))
+					continue;
+			} else
+			/* skip non-primary WANs except not fully connected in FB mode */
+			if (nvram_match("wans_mode", "fb")) {
+				if (unit != primary_unit && *wan_dns)
+					continue;
+			} else
 #endif
-		/* skip non-primary WANs */
-		if (unit != primary_unit)
-				continue;
+			/* skip non-primary WANs */
+			if (unit != primary_unit)
+					continue;
 
-		foreach(tmp, (*wan_dns ? wan_dns : wan_xdns), next)
-			fprintf(fp, "nameserver %s\n", tmp);
+			foreach(tmp, (*wan_dns ? wan_dns : wan_xdns), next)
+				fprintf(fp, "nameserver %s\n", tmp);
 
-		do {
+			do {
 #ifdef RTCONFIG_YANDEXDNS
-			if (yadns_mode != YADNS_DISABLED)
-				break;
+				if (yadns_mode != YADNS_DISABLED)
+					break;
 #endif
 #ifdef RTCONFIG_DNSPRIVACY
-			if (dnspriv_enable)
-				break;
+				if (dnspriv_enable)
+					break;
 #endif
 #if defined(RTCONFIG_WIREGUARD) && !defined(RTCONFIG_VPN_FUSION)
 				if (write_wgc_resolv_dnsmasq(fp_servers))
 					break;
 #endif
 #ifdef RTCONFIG_DUALWAN
-			/* Skip not fully connected WANs in LB mode */
-			if (nvram_match("wans_mode", "lb") && !*wan_dns)
-				break;
+				/* Skip not fully connected WANs in LB mode */
+				if (nvram_match("wans_mode", "lb") && !*wan_dns)
+					break;
 #endif
 #ifdef RTCONFIG_OPENVPN
-			/* We have a client with DNS set to Exclusive and routing set to All */
-			if (ovpn_skip_dnsmasq())
-				break;
+				/* We have a client with DNS set to Exclusive and routing set to All */
+				if (ovpn_skip_dnsmasq())
+					break;
 #endif
 
-			foreach(tmp, (*wan_dns ? wan_dns : wan_xdns), next)
-			{
-				fprintf(fp_servers, "server=%s\n", tmp);
-			}
-		} while (0);
+				foreach(tmp, (*wan_dns ? wan_dns : wan_xdns), next)
+				{
+					fprintf(fp_servers, "server=%s\n", tmp);
+				}
+			} while (0);
 
-		wan_domain = nvram_safe_get_r(strcat_r(prefix, "domain", tmp), wan_domain_buf, sizeof(wan_domain_buf));
-		foreach (tmp, wan_dns, next) {
-			foreach(domain, wan_domain, next_domain)
-				fprintf(fp_servers, "server=/%s/%s\n", domain, tmp);
-#ifdef RTCONFIG_YANDEXDNS
-			if (yadns_mode != YADNS_DISABLED)
-				fprintf(fp_servers, "server=/%s/%s\n", "local", tmp);
-#endif
-		}
-
-		wan_xdomain = nvram_safe_get_r(strcat_r(prefix, "xdomain", tmp), wan_xdomain_buf, sizeof(wan_xdomain_buf));
-		foreach (tmp, wan_xdns, next) {
-			int new = (find_word(wan_dns, tmp) == NULL);
-			foreach (domain, wan_xdomain, next_domain) {
-				if (new || find_word(wan_domain, domain) == NULL)
+			wan_domain = nvram_safe_get_r(strcat_r(prefix, "domain", tmp), wan_domain_buf, sizeof(wan_domain_buf));
+			foreach (tmp, wan_dns, next) {
+				foreach(domain, wan_domain, next_domain)
 					fprintf(fp_servers, "server=/%s/%s\n", domain, tmp);
-			}
 #ifdef RTCONFIG_YANDEXDNS
-			if (yadns_mode != YADNS_DISABLED && new)
-				fprintf(fp_servers, "server=/%s/%s\n", "local", tmp);
+				if (yadns_mode != YADNS_DISABLED)
+					fprintf(fp_servers, "server=/%s/%s\n", "local", tmp);
 #endif
+			}
+
+			wan_xdomain = nvram_safe_get_r(strcat_r(prefix, "xdomain", tmp), wan_xdomain_buf, sizeof(wan_xdomain_buf));
+			foreach (tmp, wan_xdns, next) {
+				int new = (find_word(wan_dns, tmp) == NULL);
+				foreach (domain, wan_xdomain, next_domain) {
+					if (new || find_word(wan_domain, domain) == NULL)
+						fprintf(fp_servers, "server=/%s/%s\n", domain, tmp);
+				}
+#ifdef RTCONFIG_YANDEXDNS
+				if (yadns_mode != YADNS_DISABLED && new)
+					fprintf(fp_servers, "server=/%s/%s\n", "local", tmp);
+#endif
+			}
 		}
-	}
 
 #ifdef RTCONFIG_MULTISERVICE_WAN
-	for (unit = 1; unit < WAN_MULTISRV_MAX; unit++) {
-		snprintf(prefix, sizeof(prefix), "wan%d_", get_ms_wan_unit(primary_unit, unit));
-		wan_dns = nvram_safe_get_r(strcat_r(prefix, "dns", tmp), wan_dns_buf, sizeof(wan_dns_buf));
-		wan_xdns = nvram_safe_get_r(strcat_r(prefix, "xdns", tmp), wan_xdns_buf, sizeof(wan_xdns_buf));
+		for (unit = 1; unit < WAN_MULTISRV_MAX; unit++) {
+			snprintf(prefix, sizeof(prefix), "wan%d_", get_ms_wan_unit(primary_unit, unit));
+			wan_dns = nvram_safe_get_r(strcat_r(prefix, "dns", tmp), wan_dns_buf, sizeof(wan_dns_buf));
+			wan_xdns = nvram_safe_get_r(strcat_r(prefix, "xdns", tmp), wan_xdns_buf, sizeof(wan_xdns_buf));
 
-		if (!*wan_dns && !*wan_xdns)
-			continue;
+			if (!*wan_dns && !*wan_xdns)
+				continue;
 
-		foreach(tmp, (*wan_dns ? wan_dns : wan_xdns), next) {
-			fprintf(fp, "nameserver %s\n", tmp);
-			fprintf(fp_servers, "server=%s\n", tmp);
+			foreach(tmp, (*wan_dns ? wan_dns : wan_xdns), next) {
+				fprintf(fp, "nameserver %s\n", tmp);
+				fprintf(fp_servers, "server=%s\n", tmp);
 #ifdef RTCONFIG_YANDEXDNS
-			if (yadns_mode != YADNS_DISABLED)
-				fprintf(fp_servers, "server=/%s/%s\n", "local", tmp);
+				if (yadns_mode != YADNS_DISABLED)
+					fprintf(fp_servers, "server=/%s/%s\n", "local", tmp);
 #endif
+			}
 		}
-	}
 #endif
+	}
 
 /* Add DNS from VPN clients - add at the end since config is read backward by dnsmasq */
 #if defined(RTCONFIG_OPENVPN) && !defined(RTCONFIG_VPN_FUSION)
@@ -3285,11 +3287,11 @@ wan_up(const char *pwan_ifname)
 		break;
 	}
 
- 	/* add wan dns route via wan interface */
- 	addr = inet_addr(nvram_safe_get(strcat_r(prefix, "ipaddr", tmp)));
- 	mask = inet_addr(nvram_safe_get(strcat_r(prefix, "netmask", tmp)));
- 	nvram_safe_get_r(strcat_r(prefix, "dns", tmp), dns, sizeof(dns));
- 	foreach(word, dns, next) {
+	/* add wan dns route via wan interface */
+	addr = inet_addr(nvram_safe_get(strcat_r(prefix, "ipaddr", tmp)));
+	mask = inet_addr(nvram_safe_get(strcat_r(prefix, "netmask", tmp)));
+	nvram_safe_get_r(strcat_r(prefix, "dns", tmp), dns, sizeof(dns));
+	foreach(word, dns, next) {
 		// skip if is 1. WAN gateway, 2. in WAN subnet 3. in LAN subnet
 		if ((inet_addr(word) != inet_addr(gateway)) &&
 			(inet_addr(word) & mask) != (addr & mask)

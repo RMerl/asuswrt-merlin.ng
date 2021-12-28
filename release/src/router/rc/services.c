@@ -220,9 +220,9 @@ int jffs2_fail;
 void
 sanity_logs()
 {
-//#if defined(RTAC56U) || defined(RTAC56S)
-//	logmessage("ATE", "valid user mode(%d)", !nvram_get_int(ATE_BRCM_FACTORY_MODE_STR()));
-//#endif
+#if defined(RTAC56U) || defined(RTAC56S)
+	logmessage("ATE", "valid user mode(%d)", !nvram_get_int(ATE_BRCM_FACTORY_MODE_STR()));
+#endif
 #if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_JFFSV1) || defined(RTCONFIG_BRCM_NAND_JFFS2)
 	logmessage("jffs2", "valid logs(%d)", !jffs2_fail);
 #endif
@@ -1475,14 +1475,13 @@ void start_dnsmasq(void)
 			eval("dnsmasq", "--log-async");
 	}
 #endif
-	if (!is_routing_enabled()
-		&& (repeater_mode()
+        if (!is_routing_enabled()
+		&& !repeater_mode()
 #if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
-		|| psr_mode() || mediabridge_mode()
+		&& !psr_mode() && !mediabridge_mode()
 #elif defined(RTCONFIG_REALTEK) || defined(RTCONFIG_QCA)
-		|| mediabridge_mode()
+		&& !mediabridge_mode()
 #endif
-		)
 #ifdef RTCONFIG_DPSTA
 		&& !((dpsta_mode()||rp_mode()) && nvram_get_int("re_mode") == 0)
 #endif

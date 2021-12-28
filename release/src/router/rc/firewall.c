@@ -4597,7 +4597,7 @@ TRACE_PT("write wl filter\n");
 #endif
 
 	// extra filter
-	//write_extra_filter(fp);
+	write_extra_filter(fp);
 
 	fprintf(fp, "COMMIT\n\n");
 	if (fp) fclose(fp);
@@ -4612,7 +4612,7 @@ TRACE_PT("write wl filter\n");
 	if (ipv6_enabled())
 	{
 		// extra filter
-		//write_extra_filter6(fp_ipv6);
+		write_extra_filter6(fp_ipv6);
 
 		fprintf(fp_ipv6, "COMMIT\n\n");
 		if (fp_ipv6) fclose(fp_ipv6);
@@ -5962,7 +5962,7 @@ TRACE_PT("write wl filter\n");
 #endif
 
 	// extra filter
-	//write_extra_filter(fp);
+	write_extra_filter(fp);
 
 	fprintf(fp, "COMMIT\n\n");
 	if (fp) fclose(fp);
@@ -5977,7 +5977,7 @@ TRACE_PT("write wl filter\n");
 	if (ipv6_enabled())
 	{
 		// extra filter
-		//write_extra_filter6(fp_ipv6);
+		write_extra_filter6(fp_ipv6);
 
 		fprintf(fp_ipv6, "COMMIT\n\n");
 		if (fp_ipv6) fclose(fp_ipv6);

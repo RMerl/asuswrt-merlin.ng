@@ -2787,9 +2787,11 @@ void write_ftpd_conf()
 	fprintf(fp, "listen=YES\n");
 #endif
 	fprintf(fp, "pasv_enable=YES\n");
-	if (nvram_get_int("ftp_wanac")) {
+	if (nvram_get_int("ftp_wanac"))
+	{
 		passive_port = nvram_get_int("ftp_pasvport");
-		if (passive_port > 0) {
+		if (passive_port > 0)
+		{
 			if (passive_port > 65505)
 				nvram_set_int("ftp_pasvport", 65505);
 			fprintf(fp, "pasv_min_port=%d\n", passive_port);

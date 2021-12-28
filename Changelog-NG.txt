@@ -9,7 +9,8 @@ Asuswrt-Merlin 386/NG Changelog
   - NEW: IPv6 support for OpenVPN server.  Allows connecting over
          your WAN's IPv6, and also reach LAN clients over their
          IPv6 (redirecting IPv6 Internet traffic does not work).
-  - UPDATED: Merged with GPL 386_45958.
+  - UPDATED: Merged with GPL 386_45958 + a few newer patches
+             from Asus.
   - UPDATED: curl to 7.79.1.
   - UPDATED: vsftpd to 3.0.5.
   - UPDATED: openssl to 1.1.1m.

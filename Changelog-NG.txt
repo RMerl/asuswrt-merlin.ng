@@ -1,14 +1,15 @@
 Asuswrt-Merlin 386/NG Changelog
 ===============================
 
-386.4 (xx-xxx-2021)
+386.4 (1-Jan-2022)
   - NEW: Added support for the RT-AX86S (uses the same firmware
          as the RT-AX86U).
   - NEW: Added wireguard kernel module + userspace tool to
          HND models firmware images.
-  - NEW: IPv6 support for OpenVPN server.  Allows connecting over
-         your WAN's IPv6, and also reach LAN clients over their
-         IPv6 (redirecting IPv6 Internet traffic does not work).
+  - NEW: IPv6 support for OpenVPN server.  Allows to remotely
+         connect to your router's OpenVPN server over IPv6, and
+         reach LAN clients over their IPv6 (redirecting IPv6
+         Internet traffic does not work).
   - UPDATED: Merged with GPL 386_45958 + a few newer patches
              from Asus.
   - UPDATED: curl to 7.79.1.
@@ -22,7 +23,7 @@ Asuswrt-Merlin 386/NG Changelog
   - UPDATED: miniupnpd to 2.2.3-git 20211017.
   - UPDATED: inadyn to 2.9.1.
   - UPDATED: CA bundle to 2021-12-13.
-  - UPDATED: amtm to 3.2.1 (thelonelycoder)
+  - UPDATED: amtm to 3.2.2 (thelonelycoder)
   - CHANGED: replaced jitterentropy-rngd with haveged.
              It uses more resources, but it works
              properly on older platforms, and is

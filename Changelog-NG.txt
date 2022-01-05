@@ -37,9 +37,9 @@ Asuswrt-Merlin 386/NG Changelog
   - CHANGED: miniupnpd will now be supplied the public WAN
              IP to improve compatibility with dual NAT
              setups.
-  - CHANGEED: Disabling Auto DoH will now also disable
-              Windows' new Discovery of Designated
-              Resolvers (DDR) feature.
+  - CHANGED: Disabling Auto DoH will now also disable
+             Windows' new Discovery of Designated
+             Resolvers (DDR) feature.
   - FIXED: Wrong interface might be used for the default
            gateway in an openvpn client routing table.
   - FIXED: Generated OpenVPN certs used SHA1 signatures

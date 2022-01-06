@@ -847,14 +847,12 @@ static int add_qos_rules(char *pcWANIF)
 				sprintf(conn, "%s", "");
 			}
 			else{
-				sprintf(tmp, "%s", q_min);
-				min = atol(tmp);
+				min = atol(q_min);
 
 				if(strcmp(q_max,"") == 0) // q_max == NULL
 					sprintf(conn, "-m connbytes --connbytes %ld:%s --connbytes-dir both --connbytes-mode bytes", min*1024, q_max);
 				else{// q_max != NULL
-					sprintf(tmp, "%s", q_max);
-					max = atol(tmp);
+					max = atol(q_max);
 					sprintf(conn, "-m connbytes --connbytes %ld:%ld --connbytes-dir both --connbytes-mode bytes", min*1024, max*1024-1);
 				}
 			}

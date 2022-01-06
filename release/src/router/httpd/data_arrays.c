@@ -693,8 +693,9 @@ int ej_tcclass_dump_array(int eid, webs_t wp, int argc, char_t **argv) {
 		return ret;
 	}
 
-	if (qos_type == 1 || qos_type == 3) {	// Adaptive or Geforce Now
+	if (qos_type == 0 || qos_type == 1 || qos_type == 3) {	// Traditional, Adaptive or Geforce Now
 		system("tc -s class show dev br0 > /tmp/tcclass.txt");
+		system("tc -s class show dev imq0 >> /tmp/tcclass.txt");
 
 		ret += websWrite(wp, "var tcdata_lan_array = [\n");
 
@@ -735,8 +736,9 @@ int tcclass_dump(FILE *fp, webs_t wp) {
 	unsigned long long traffic;
 	int ret = 0;
 	const char *class_template;
+	int qos_type = nvram_get_int("qos_type");
 
-	if (nvram_get_int("qos_type") == 3) {	//geforce now, has both 1:* and 2:*
+	if (qos_type == 0 || qos_type == 3) {	//Traditional and geforce now, have both 1:* and 2:*
 		class_template = "class htb %*c:%d %*s";
 	} else {
 		class_template = "class htb 1:%d %*s";
@@ -747,7 +749,7 @@ int tcclass_dump(FILE *fp, webs_t wp) {
 			case 0:	// class
 				if (sscanf(buf, class_template, &tcclass) == 1) {
 					// Skip roots 1:1 and 1:2, and skip 1:60 in tQoS since it's BCM's download class
-					if ( (tcclass < 10) || ((nvram_get_int("qos_type") == 0) && (tcclass == 60))) {
+					if ( (tcclass < 10) || ((qos_type == 0) && (tcclass == 60))) {
 						continue;
 					}
 					ret += websWrite(wp, "[\"%d\",", tcclass);

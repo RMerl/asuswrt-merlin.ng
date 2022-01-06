@@ -375,9 +375,6 @@ function redraw(){
 			document.getElementById('limiter_notice').style.display = "";
 			return;
 		case 0:         // Traditional
-			document.getElementById('dl_tr').style.display = "none";
-			document.getElementById('tqos_notice').style.display = "";
-			break;
 		case 1:		// Adaptive
 		case 3:		// GeForce Now
 			if (pie_obj_dl != undefined) pie_obj_dl.destroy();
@@ -570,7 +567,6 @@ function draw_chart(data_array, ctx, pie) {
 			<div id="limiter_notice" class="hint-color" style="display:none;font-size:125%;;">Note: Statistics not available in Bandwidth Limiter mode.</div>
 			<div id="no_qos_notice" class="hint-color" style="display:none;font-size:125%;">Note: QoS is not enabled.</div>
 			<div id="cake_notice" class="hint-color" style="display:none;font-size:125%;">Note: Statistics not available in Cake mode.</div>
-			<div id="tqos_notice" class="hint-color" style="display:none;font-size:125%;">Note: Traditional QoS only classifies uploaded traffic.</div>
 			<table>
 				<tr id="dl_tr">
 					<td class="hint-color" style="padding-right:50px;font-size:125%;"><div>Download</div><canvas id="pie_chart_dl" width="200" height="200"></canvas></td>

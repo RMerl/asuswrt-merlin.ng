@@ -1071,8 +1071,9 @@ static int start_tqos(void)
 	char burst_root[32];
 	char burst_leaf[32];
 	char *qsched;
-	int overhead = 0;
+	int overhead = 0, overheaddl = 0;
 	char overheadstr[sizeof("overhead 128 linklayer ethernet")];
+	char overheaddlstr[sizeof("overhead 128 linklayer ethernet")];
 	char nvmtu[sizeof("wan0_mtu")];
 
 	// judge interface by get_wan_ifname
@@ -1097,6 +1098,16 @@ static int start_tqos(void)
 	if(i > 0) snprintf(burst_leaf, sizeof(burst_leaf), "burst %dk", i);
 		else burst_leaf[0] = 0;
 
+	const char *mode;
+	switch (nvram_get_int("qos_atm")) {
+	    default:
+		mode = "";
+		break;
+	    case 1:
+		mode = " linklayer atm";
+		break;
+	}
+
 	/* Egress OBW  -- set the HTB shaper (Classful Qdisc)
 	* the BW is set here for each class
 	*/
@@ -1109,19 +1120,42 @@ static int start_tqos(void)
 	else
 		qsched = "fq_codel noecn";
 
-	overhead = nvram_get_int("qos_overhead");
+	overhead = overheaddl = nvram_get_int("qos_overhead");
 #else
 	qsched = "sfq perturb 10";
 #endif
 
-	if (overhead > 0)
-		snprintf(overheadstr, sizeof(overheadstr),"overhead %d %s",
-		         overhead, nvram_get_int("qos_atm") ? "linklayer atm" : "linklayer ethernet");
-	else
-		strcpy(overheadstr, "");
-
 	const char *wan_ifname = get_wan_ifname(wan_primary_ifunit());
 	const char *lan_ifname = nvram_safe_get("lan_ifname");
+
+	if(strncmp(wan_ifname, "ppp", 3)==0) {
+		// No adjustment required
+	} else {
+		// Adjust from Cake-like IP overhead as seen in GUI to what htb uses
+		// (it already counts the Ethernet header, so it's not part of its overhead)
+		overhead -= 14;
+	}
+	if (overhead < 0)
+		overhead = 0;
+
+#ifdef CLS_ACT
+	// No adjustment required for imq0
+#else
+	// Again, adjust for the Ethernet header on the LAN interface
+	overheaddl -= 14;
+#endif
+	if (overheaddl < 0)
+		overheaddl = 0;
+
+#ifdef RTCONFIG_BCMARM
+	snprintf(overheadstr, sizeof(overheadstr),"overhead %d %s",
+		 overhead, mode);
+	snprintf(overheaddlstr, sizeof(overheaddlstr),"overhead %d %s",
+		 overheaddl, mode);
+#else
+	strcpy(overheadstr, "");
+	strcpy(overheaddlstr, "");
+#endif
 
 	snprintf(nvmtu, sizeof (nvmtu), "wan%d_mtu", wan_primary_ifunit());
 	mtu = nvram_get_int(nvmtu);
@@ -1288,7 +1322,7 @@ static int start_tqos(void)
 					"\t$TQADL parent 2:60 handle 60: pfifo\n"
 					"\t$TFADL parent 2: prio 6 u32 match mark 6 7 flowid 2:60\n",
 						(nvram_get_int("qos_default") + 1) * 10,
-						bw, bw, burst_root, overheadstr
+						bw, bw, burst_root, overheaddlstr
 					);
 			}
 
@@ -1306,7 +1340,7 @@ static int start_tqos(void)
 				"\t$TQADL parent 2:%d handle %d: $SCH\n"
 				"\t$TFADL parent 2: prio %d u32 match mark %d 7 flowid 2:%d\n",
 					i, rate,
-					x, calc(bw, rate), burst_leaf, (i >= 6) ? 7 : (i + 1), mtu, overheadstr,
+					x, calc(bw, rate), burst_leaf, (i >= 6) ? 7 : (i + 1), mtu, overheaddlstr,
 					x, x,
 					x, i + 1, x);
 		}

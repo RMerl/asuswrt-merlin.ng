@@ -955,10 +955,8 @@ static int add_qos_rules(char *pcWANIF)
 	}
 #endif
 		fprintf(fn,
-			"-A QOSO -m connmark ! --mark 0x0/0x%x -j RETURN\n"
 			"-A QOSO -j CONNMARK %s 0x%x/0x%x\n"
 			"-A POSTROUTING -o %s -j QOSO\n",
-				class_mask,
 				action, class_num|class_gum, class_mask|class_gum,
 				pcWANIF
 			);
@@ -980,10 +978,8 @@ static int add_qos_rules(char *pcWANIF)
 		}
 #endif
 		fprintf(fn_ipv6,
-			"-A QOSO -m connmark ! --mark 0x0/0x%x -j RETURN\n"
 			"-A QOSO -j CONNMARK %s 0x%x/0x%x\n"
 			"-A POSTROUTING -o %s -j QOSO\n",
-				class_mask,
 				action, class_num|class_gum, class_mask|class_gum,
 				wan6face
 			);

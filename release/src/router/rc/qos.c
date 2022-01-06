@@ -1106,6 +1106,11 @@ static int start_tqos(void)
 	    case 1:
 		mode = " linklayer atm";
 		break;
+	    case 2:
+		mode = "";
+		obw = obw * 64 / 65;
+		ibw = ibw * 64 / 65;
+		break;
 	}
 
 	/* Egress OBW  -- set the HTB shaper (Classful Qdisc)

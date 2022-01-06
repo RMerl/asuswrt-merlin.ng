@@ -962,8 +962,6 @@ static int add_qos_rules(char *pcWANIF)
 				action, class_num|class_gum, class_mask|class_gum,
 				pcWANIF
 			);
-		if(manual_return)
-			fprintf(fn , "-A QOSO -j RETURN\n");
 
 #ifdef RTCONFIG_IPV6
 	if (fn_ipv6 && ipv6_enabled() && *wan6face) {
@@ -989,8 +987,6 @@ static int add_qos_rules(char *pcWANIF)
 				action, class_num|class_gum, class_mask|class_gum,
 				wan6face
 			);
-		if(manual_return)
-			fprintf(fn_ipv6, "-A QOSO -j RETURN\n");
 	}
 #endif
 

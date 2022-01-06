@@ -1016,8 +1016,6 @@ static int add_qos_rules(char *pcWANIF)
 		}
 #endif
 			fprintf(fn, "-A %s -j CONNMARK %s 0x%x/0x%x\n", chain, action, class_num, QOS_MASK);
-			if(manual_return)
-				fprintf(fn , "-A %s -j RETURN\n", chain);
 			fprintf(fn, "-A FORWARD -o %s -j %s\n", wan, chain);
 			fprintf(fn, "-A OUTPUT -o %s -j %s\n", wan, chain);
 
@@ -1050,8 +1048,6 @@ static int add_qos_rules(char *pcWANIF)
 			}
 #endif
 			fprintf(fn_ipv6, "-A %s -j CONNMARK %s 0x%x/0x%x\n", chain, action, class_num, QOS_MASK);
-			if(manual_return)
-				fprintf(fn_ipv6, "-A %s -j RETURN\n", chain);
 			fprintf(fn_ipv6, "-A FORWARD -o %s -j %s\n", wan6face, chain);
 			fprintf(fn_ipv6, "-A OUTPUT -o %s -j %s\n", wan6face, chain);
 		}

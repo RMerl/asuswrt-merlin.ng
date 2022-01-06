@@ -1203,7 +1203,7 @@ static int start_tqos(void)
 			"# upload 1:%d: %u-%u%%\n"
 			"\t$TCAUL parent 1:1 classid 1:%d htb rate %ukbit %s %s prio %d quantum %u %s\n"
 			"\t$TQAUL parent 1:%d handle %d: $SCH\n"
-			"\t$TFAUL parent 1: prio %d protocol ip handle %d fw flowid 1:%d\n",
+			"\t$TFAUL parent 1: prio %d protocol ip u32 match mark %d 7 flowid 1:%d\n",
 				i, rate, ceil,
 				x, calc(bw, rate), s, burst_leaf, (i >= 6) ? 7 : (i + 1), mtu, overheadstr,
 				x, x,
@@ -1286,7 +1286,7 @@ static int start_tqos(void)
 					"# download 2:60: LAN-to-LAN\n"
 					"\t$TCADL parent 2:2 classid 2:60 htb rate 10240000kbit ceil 10240000kbit burst 10000 cburst 10000 prio 6\n"
 					"\t$TQADL parent 2:60 handle 60: pfifo\n"
-					"\t$TFADL parent 2: prio 6 protocol ip handle 6 fw flowid 2:60\n",
+					"\t$TFADL parent 2: prio 6 protocol ip u32 match mark 6 7 flowid 2:60\n",
 						(nvram_get_int("qos_default") + 1) * 10,
 						bw, bw, burst_root, overheadstr
 					);
@@ -1304,7 +1304,7 @@ static int start_tqos(void)
 				"# download 2:%d: %u%%\n"
 				"\t$TCADL parent 2:1 classid 2:%d htb rate %ukbit %s prio %d quantum %u %s\n"
 				"\t$TQADL parent 2:%d handle %d: $SCH\n"
-				"\t$TFADL parent 2: prio %d protocol ip handle %d fw flowid 2:%d\n",
+				"\t$TFADL parent 2: prio %d protocol ip u32 match mark %d 7 flowid 2:%d\n",
 					i, rate,
 					x, calc(bw, rate), burst_leaf, (i >= 6) ? 7 : (i + 1), mtu, overheadstr,
 					x, x,

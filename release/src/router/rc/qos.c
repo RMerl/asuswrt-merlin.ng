@@ -997,11 +997,13 @@ static int add_qos_rules(char *pcWANIF)
 		if ((!g) || ((p = strsep(&g, ",")) == NULL)) continue;
 		if ((inuse & (1 << i)) == 0) continue;
 		if (safe_atoi(p) > 0) {
+			fprintf(fn, "-A PREROUTING -i %s -j CONNMARK --restore-mark --mask 0x%x\n", pcWANIF, class_mask);
 #ifdef CLS_ACT
 			fprintf(fn, "-A PREROUTING -i %s -j IMQ --todev 0\n", pcWANIF);
 #endif
 #ifdef RTCONFIG_IPV6
 			if (fn_ipv6 && ipv6_enabled() && *wan6face) {
+				fprintf(fn_ipv6, "-A PREROUTING -i %s -j CONNMARK --restore-mark --mask 0x%x\n", wan6face, class_mask);
 #ifdef CLS_ACT
 				fprintf(fn_ipv6, "-A PREROUTING -i %s -j IMQ --todev 0\n", wan6face);
 #endif

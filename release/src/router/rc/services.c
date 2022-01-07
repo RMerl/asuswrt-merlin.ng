@@ -1968,8 +1968,10 @@ void start_dnsmasq(void)
 			fprintf(fp, "dnssec-check-unsigned=no\n");
 	}
 #endif
-	if (nvram_match("dns_norebind", "1"))
+	if (nvram_match("dns_norebind", "1")) {
 		fprintf(fp, "stop-dns-rebind\n");
+		fprintf(fp, "rebind-domain-ok=dns.msftncsi.com\n");
+	}
 
 	/* Instruct clients like Firefox to not auto-enable DoH */
 	n = nvram_get_int("dns_priv_override");

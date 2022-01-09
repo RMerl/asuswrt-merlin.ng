@@ -847,14 +847,12 @@ static int add_qos_rules(char *pcWANIF)
 				sprintf(conn, "%s", "");
 			}
 			else{
-				sprintf(tmp, "%s", q_min);
-				min = atol(tmp);
+				min = atol(q_min);
 
 				if(strcmp(q_max,"") == 0) // q_max == NULL
 					sprintf(conn, "-m connbytes --connbytes %ld:%s --connbytes-dir both --connbytes-mode bytes", min*1024, q_max);
 				else{// q_max != NULL
-					sprintf(tmp, "%s", q_max);
-					max = atol(tmp);
+					max = atol(q_max);
 					sprintf(conn, "-m connbytes --connbytes %ld:%ld --connbytes-dir both --connbytes-mode bytes", min*1024, max*1024-1);
 				}
 			}
@@ -1018,8 +1016,6 @@ static int add_qos_rules(char *pcWANIF)
 		}
 #endif
 			fprintf(fn, "-A %s -j CONNMARK %s 0x%x/0x%x\n", chain, action, class_num, QOS_MASK);
-			if(manual_return)
-				fprintf(fn , "-A %s -j RETURN\n", chain);
 			fprintf(fn, "-A FORWARD -o %s -j %s\n", wan, chain);
 			fprintf(fn, "-A OUTPUT -o %s -j %s\n", wan, chain);
 
@@ -1052,8 +1048,6 @@ static int add_qos_rules(char *pcWANIF)
 			}
 #endif
 			fprintf(fn_ipv6, "-A %s -j CONNMARK %s 0x%x/0x%x\n", chain, action, class_num, QOS_MASK);
-			if(manual_return)
-				fprintf(fn_ipv6, "-A %s -j RETURN\n", chain);
 			fprintf(fn_ipv6, "-A FORWARD -o %s -j %s\n", wan6face, chain);
 			fprintf(fn_ipv6, "-A OUTPUT -o %s -j %s\n", wan6face, chain);
 		}
@@ -1335,7 +1329,7 @@ static int start_tqos(void)
 			fprintf(f, "# egress %d: %u-%u%%\n", i, rate, ceil);
 			fprintf(f, "\t$TCA parent 1:1 classid 1:%d htb rate %ukbit %s %s prio %d quantum %u\n", x, calc(bw, rate), s, burst_leaf, (i >= 6) ? 7 : (i + 1), mtu);
 			fprintf(f, "\t$TQA parent 1:%d handle %d: $SCH\n", x, x);
-			fprintf(f, "\t$TFA parent 1: prio %d protocol ip u32 match mark %d 0x%x flowid 1:%d\n", x, i + 1, QOS_MASK, x);
+			fprintf(f, "\t$TFA parent 1: prio %d u32 match mark %d 0x%x flowid 1:%d\n", x, i + 1, QOS_MASK, x);
 		}
 		free(buf);
 
@@ -1424,7 +1418,7 @@ static int start_tqos(void)
 				fprintf(f, "# ingress %d: %u%%\n", i, rate);
 				fprintf(f,"\t$TCADL parent 2:1 classid 2:%d htb rate %ukbit %s prio %d quantum %u\n", x, calc(bw, rate), burst_leaf, (i >= 6) ? 7 : (i + 1), mtu);
 				fprintf(f,"\t$TQADL parent 2:%d handle %d: $SCH\n", x, x);
-				fprintf(f,"\t$TFADL parent 2: prio %d protocol ip u32 match mark %d 0x%x flowid 2:%d\n", x, i + 1, QOS_MASK, x);
+				fprintf(f,"\t$TFADL parent 2: prio %d u32 match mark %d 0x%x flowid 2:%d\n", x, i + 1, QOS_MASK, x);
 #else
 				x = i + 1;
 				fprintf(f,

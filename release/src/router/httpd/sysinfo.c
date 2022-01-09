@@ -101,7 +101,7 @@ void GetPhyStatus_rtk(int *states);
 #endif
 
 
-#define MBYTES 1024 / 1024
+#define MBYTES (1024 * 1024)
 #define KBYTES 1024
 
 #define SI_WL_QUERY_ASSOC 1
@@ -209,19 +209,19 @@ int ej_show_sysinfo(int eid, webs_t wp, int argc, char_t ** argv)
 			}
 		} else if(strcmp(type,"memory.total") == 0) {
 			sysinfo(&sys);
-			sprintf(result,"%.2f",(sys.totalram * sys.mem_unit / (float)MBYTES));
+			sprintf(result,"%.2f",(float) sys.totalram * sys.mem_unit / MBYTES);
 		} else if(strcmp(type,"memory.free") == 0) {
 			sysinfo(&sys);
-			sprintf(result,"%.2f",(sys.freeram * sys.mem_unit / (float)MBYTES));
+			sprintf(result,"%.2f",(float) sys.freeram * sys.mem_unit / MBYTES);
 		} else if(strcmp(type,"memory.buffer") == 0) {
 			sysinfo(&sys);
-			sprintf(result,"%.2f",(sys.bufferram * sys.mem_unit / (float)MBYTES));
+			sprintf(result,"%.2f",(float) sys.bufferram * sys.mem_unit / MBYTES);
 		} else if(strcmp(type,"memory.swap.total") == 0) {
 			sysinfo(&sys);
-			sprintf(result,"%.2f",(sys.totalswap * sys.mem_unit / (float)MBYTES));
+			sprintf(result,"%.2f",(float) sys.totalswap * sys.mem_unit / MBYTES);
 		} else if(strcmp(type,"memory.swap.used") == 0) {
 			sysinfo(&sys);
-			sprintf(result,"%.2f",((sys.totalswap - sys.freeswap) * sys.mem_unit / (float)MBYTES));
+			sprintf(result,"%.2f",(float) (sys.totalswap - sys.freeswap) * sys.mem_unit / MBYTES);
 		} else if(strcmp(type,"memory.cache") == 0) {
 			int size = 0;
 			char *buffer = read_whole_file("/proc/meminfo");
@@ -267,7 +267,7 @@ int ej_show_sysinfo(int eid, webs_t wp, int argc, char_t ** argv)
 			char *mount_info = read_whole_file("/proc/mounts");
 
 			if ((mount_info) && (strstr(mount_info, "/jffs")) && (statvfs("/jffs",&fiData) == 0 )) {
-				sprintf(result,"%.2f / %.2f MB",((fiData.f_blocks-fiData.f_bfree) * fiData.f_frsize / (float)MBYTES) ,(fiData.f_blocks * fiData.f_frsize / (float)MBYTES));
+				sprintf(result,"%.2f / %.2f MB",((float) (fiData.f_blocks-fiData.f_bfree) * fiData.f_frsize / MBYTES) ,((float) fiData.f_blocks * fiData.f_frsize / MBYTES));
 			} else {
 				strcpy(result,"<i>Unmounted</i>");
 			}
@@ -278,7 +278,7 @@ int ej_show_sysinfo(int eid, webs_t wp, int argc, char_t ** argv)
 			struct statvfs fiData;
 
 			if (statvfs("/jffs",&fiData) == 0 ) {
-				sprintf(result,"%ld",(fiData.f_bfree * fiData.f_frsize / MBYTES));
+				sprintf(result,"%llu",((unsigned long long) fiData.f_bfree * fiData.f_frsize / MBYTES));
 			} else {
 				strcpy(result,"-1");
 			}

@@ -409,6 +409,8 @@ function show_connstate(){
 function show_memcpu(){
 	document.getElementById("cpu_stats_td").innerHTML = cpu_stats_arr[0] + ", " + cpu_stats_arr[1] + ", " + cpu_stats_arr[2];
 	document.getElementById("mem_total_td").innerHTML = mem_stats_arr[0] + " MB";
+	document.getElementById("mem_used_td").innerHTML = mem_stats_arr[8] + " MB";
+	document.getElementById("mem_available_td").innerHTML = mem_stats_arr[9] + " MB";
 	document.getElementById("mem_free_td").innerHTML = mem_stats_arr[1] + " MB";
 	document.getElementById("mem_buffer_td").innerHTML = mem_stats_arr[2] + " MB";
 	document.getElementById("mem_cache_td").innerHTML = mem_stats_arr[3] + " MB";
@@ -588,6 +590,16 @@ function show_wifi_version() {
 					<tr>
 						<th>Total</th>
 						<td id="mem_total_td"></td>
+					</tr>
+
+					<tr>
+						<th>Used</th>
+						<td id="mem_used_td"></td>
+					</tr>
+
+					<tr>
+						<th>Available</th>
+						<td id="mem_available_td"></td>
 					</tr>
 
 					<tr>

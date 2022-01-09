@@ -108,6 +108,66 @@ void GetPhyStatus_rtk(int *states);
 #define SI_WL_QUERY_AUTHE 2
 #define SI_WL_QUERY_AUTHO 3
 
+static const char * const meminfo_name[MI_MAX] =
+{
+	[MI_MemTotal] = "MemTotal",
+	[MI_MemFree] = "MemFree",
+	[MI_MemAvailable] = "MemAvailable",
+	[MI_Buffers] = "Buffers",
+	[MI_Cached] = "Cached",
+	[MI_SwapCached] = "SwapCached",
+	[MI_SwapTotal] = "SwapTotal",
+	[MI_SwapFree] = "SwapFree",
+	[MI_Shmem] = "Shmem",
+	[MI_SReclaimable] = "SReclaimable"
+};
+
+void read_meminfo(meminfo_t *m)
+{
+	FILE *f;
+	char field[64];
+	int i, size;
+
+	for (i = 0; i < MI_MAX; i++) {
+		(*m)[i] = -1;
+	}
+
+	f = fopen("/proc/meminfo", "r");
+	if (!f)
+		return;
+
+	while (fscanf(f, " %63[^:]: %d kB", field, &size) == 2) {
+		for (i = 0; i < MI_MAX; i++) {
+			if (strcmp(field, meminfo_name[i]) == 0) {
+				(*m)[i] = size;
+				break;
+			}
+		}
+	}
+
+	fclose(f);
+}
+
+int meminfo_compute_simple_free(const meminfo_t *m)
+{
+	// Compute a simple free memory number similarly to htop -
+	// this corresponds to its "cached" + "buffered" + "free"
+	// Total minus this is then its "used" + "shared"
+	int mfree = (*m)[MI_MemFree] + (*m)[MI_Cached] - (*m)[MI_Shmem] + (*m)[MI_SReclaimable] + (*m)[MI_Buffers];
+	// In case something goes out-of-range with that calculation, use the basic free number
+	if (mfree < 0 || mfree > (*m)[MI_MemTotal])
+		mfree = (*m)[MI_MemFree];
+	return mfree;
+}
+
+static void write_kb_or_qq(char *result, int size)
+{
+	if (size >= 0) {
+		sprintf(result, "%.2f", (size / (float)KBYTES));
+	} else {
+		strcpy(result, "??");
+	}
+}
 
 int ej_show_sysinfo(int eid, webs_t wp, int argc, char_t ** argv)
 {
@@ -115,6 +175,7 @@ int ej_show_sysinfo(int eid, webs_t wp, int argc, char_t ** argv)
 	char result[2048];
 	int retval = 0;
 	struct sysinfo sys;
+	meminfo_t mem;
 	char *tmp;
 
 	strcpy(result,"None");
@@ -223,18 +284,17 @@ int ej_show_sysinfo(int eid, webs_t wp, int argc, char_t ** argv)
 			sysinfo(&sys);
 			sprintf(result,"%.2f",((sys.totalswap - sys.freeswap) * sys.mem_unit / (float)MBYTES));
 		} else if(strcmp(type,"memory.cache") == 0) {
-			int size = 0;
-			char *buffer = read_whole_file("/proc/meminfo");
-
-			if (buffer) {
-				tmp = strstr(buffer, "Cached");
-				if (tmp)
-					sscanf(tmp, "Cached:            %d kB\n", &size);
-				free(buffer);
-				sprintf(result,"%.2f", (size / (float)KBYTES));
-			} else {
-				strcpy(result,"??");
-			}
+			read_meminfo(&mem);
+			write_kb_or_qq(result, mem[MI_Cached]);
+		} else if(strcmp(type,"memory.available") == 0) {
+			read_meminfo(&mem);
+			write_kb_or_qq(result, mem[MI_MemAvailable]);
+		} else if(strcmp(type,"memory.simple.free") == 0) {
+			read_meminfo(&mem);
+			write_kb_or_qq(result, meminfo_compute_simple_free(&mem));
+		} else if(strcmp(type,"memory.simple.used") == 0) {
+			read_meminfo(&mem);
+			write_kb_or_qq(result, mem[MI_MemTotal] - meminfo_compute_simple_free(&mem));
 		} else if(strcmp(type,"cpu.load.1") == 0) {
 			sysinfo(&sys);
 			sprintf(result,"%.2f",(sys.loads[0] / (float)(1<<SI_LOAD_SHIFT)));

@@ -16,34 +16,30 @@
 
 #include "dnsmasq.h"
 
-#if defined(HAVE_DNSSEC) || defined(HAVE_CRYPTOHASH)
+#ifdef HAVE_DNSSEC
 
 /* Minimal version of nettle */
+#define MIN_VERSION(major, minor) (NETTLE_VERSION_MAJOR == (major) && NETTLE_VERSION_MINOR >= (minor)) || \
+				  (NETTLE_VERSION_MAJOR > (major))
 
-/* bignum.h includes version.h and works on
-   earlier releases of nettle which don't have version.h */
-#include <nettle/bignum.h>
-#if !defined(NETTLE_VERSION_MAJOR)
-#  define NETTLE_VERSION_MAJOR 2
-#  define NETTLE_VERSION_MINOR 0
-#endif
-#define MIN_VERSION(major, minor) ((NETTLE_VERSION_MAJOR == (major) && NETTLE_VERSION_MINOR >= (minor)) || \
-				   (NETTLE_VERSION_MAJOR > (major)))
-
-#endif /* defined(HAVE_DNSSEC) || defined(HAVE_CRYPTOHASH) */
-
-#if defined(HAVE_DNSSEC)
 #include <nettle/rsa.h>
 #include <nettle/ecdsa.h>
 #include <nettle/ecc-curve.h>
+#if !defined(NETTLE_VERSION_MAJOR)
+#define NETTLE_VERSION_MAJOR 2
+#endif
 #if MIN_VERSION(3, 1)
 #include <nettle/eddsa.h>
 #endif
 #if MIN_VERSION(3, 6)
 #  include <nettle/gostdsa.h>
 #endif
+#endif
 
-#if MIN_VERSION(3, 1)
+#if defined(HAVE_DNSSEC) || defined(HAVE_CRYPTOHASH)
+#include <nettle/nettle-meta.h>
+#include <nettle/bignum.h>
+
 /* Implement a "hash-function" to the nettle API, which simply returns
    the input data, concatenated into a single, statically maintained, buffer.
 
@@ -97,6 +93,7 @@ static void null_hash_update(void *ctxv, size_t length, const uint8_t *src)
   ctx->len += length;
 }
  
+
 static void null_hash_digest(void *ctx, size_t length, uint8_t *dst)
 {
   (void)length;
@@ -115,7 +112,33 @@ static struct nettle_hash null_hash = {
   (nettle_hash_digest_func *) null_hash_digest
 };
 
-#endif /* MIN_VERSION(3, 1) */
+/* Find pointer to correct hash function in nettle library */
+const struct nettle_hash *hash_find(char *name)
+{
+  if (!name)
+    return NULL;
+  
+  /* We provide a "null" hash which returns the input data as digest. */
+  if (strcmp(null_hash.name, name) == 0)
+    return &null_hash;
+
+  /* libnettle >= 3.4 provides nettle_lookup_hash() which avoids nasty ABI
+     incompatibilities if sizeof(nettle_hashes) changes between library
+     versions. */
+#if MIN_VERSION(3, 4)
+  return nettle_lookup_hash(name);
+#else
+  {
+    int i;
+
+    for (i = 0; nettle_hashes[i]; i++)
+      if (strcmp(nettle_hashes[i]->name, name) == 0)
+	return nettle_hashes[i];
+  }
+  
+  return NULL;
+#endif
+}
 
 /* expand ctx and digest memory allocations if necessary and init hash function */
 int hash_init(const struct nettle_hash *hash, void **ctxp, unsigned char **digestp)
@@ -155,6 +178,10 @@ int hash_init(const struct nettle_hash *hash, void **ctxp, unsigned char **diges
   return 1;
 }
 
+#endif /* defined(HAVE_DNSSEC) || defined(HAVE_CRYPTOHASH) */
+
+#ifdef HAVE_DNSSEC
+  
 static int dnsmasq_rsa_verify(struct blockdata *key_data, unsigned int key_len, unsigned char *sig, size_t sig_len,
 			      unsigned char *digest, size_t digest_len, int algo)
 {
@@ -388,7 +415,6 @@ static int (*verify_func(int algo))(struct blockdata *key_data, unsigned int key
       
     case 13: case 14:
       return dnsmasq_ecdsa_verify;
-      
 #if MIN_VERSION(3, 1)
     case 15: case 16:
       return dnsmasq_eddsa_verify;
@@ -463,37 +489,4 @@ char *nsec3_digest_name(int digest)
     }
 }
 
-#endif /* defined(HAVE_DNSSEC) */
-
-#if defined(HAVE_DNSSEC) || defined(HAVE_CRYPTOHASH)
-/* Find pointer to correct hash function in nettle library */
-const struct nettle_hash *hash_find(char *name)
-{
-  if (!name)
-    return NULL;
-  
-#if MIN_VERSION(3,1) && defined(HAVE_DNSSEC)
-  /* We provide a "null" hash which returns the input data as digest. */
-  if (strcmp(null_hash.name, name) == 0)
-    return &null_hash;
 #endif
-  
-  /* libnettle >= 3.4 provides nettle_lookup_hash() which avoids nasty ABI
-     incompatibilities if sizeof(nettle_hashes) changes between library
-     versions. */
-#if MIN_VERSION(3, 4)
-  return nettle_lookup_hash(name);
-#else
-  {
-    int i;
-
-    for (i = 0; nettle_hashes[i]; i++)
-      if (strcmp(nettle_hashes[i]->name, name) == 0)
-	return nettle_hashes[i];
-  }
-  
-  return NULL;
-#endif
-}
-
-#endif /* defined(HAVE_DNSSEC) || defined(HAVE_CRYPTOHASH) */

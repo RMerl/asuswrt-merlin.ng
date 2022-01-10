@@ -1075,7 +1075,6 @@ void lease_set_hostname(struct dhcp_lease *lease, const char *name, int auth, ch
 	    }
 	
 	  kill_name(lease_tmp);
-	  lease_tmp->flags |= LEASE_CHANGED; /* run script on change */
 	  break;
 	}
     }
@@ -1256,4 +1255,8 @@ void lease_add_extradata(struct dhcp_lease *lease, unsigned char *data, unsigned
 }
 #endif
 
-#endif /* HAVE_DHCP */
+#endif
+	  
+
+      
+

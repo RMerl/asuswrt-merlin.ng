@@ -825,4 +825,6 @@ void dhcp_construct_contexts(time_t now)
     }
 }
 
-#endif /* HAVE_DHCP6 */
+#endif
+
+

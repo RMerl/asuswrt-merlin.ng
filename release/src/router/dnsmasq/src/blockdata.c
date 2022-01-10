@@ -174,3 +174,4 @@ struct blockdata *blockdata_read(int fd, size_t len)
 {
   return blockdata_alloc_real(fd, NULL, len);
 }
+

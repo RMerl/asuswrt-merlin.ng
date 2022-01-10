@@ -235,6 +235,7 @@ int create_helper(int event_fd, int err_fd, uid_t uid, gid_t gid, long max_fd)
 	}
        else 
 	continue;
+
       	
       /* stringify MAC into dhcp_buff */
       p = daemon->dhcp_buff;
@@ -432,8 +433,7 @@ int create_helper(int event_fd, int err_fd, uid_t uid, gid_t gid, long max_fd)
 		buf = grab_extradata_lua(buf, end, "relay_address");
 	      else if (data.giaddr.s_addr != 0)
 		{
-		  inet_ntop(AF_INET, &data.giaddr, daemon->addrbuff, ADDRSTRLEN);
-		  lua_pushstring(lua, daemon->addrbuff);
+		  lua_pushstring(lua, inet_ntoa(data.giaddr));
 		  lua_setfield(lua, -2, "relay_address");
 		}
 	      
@@ -611,13 +611,8 @@ int create_helper(int event_fd, int err_fd, uid_t uid, gid_t gid, long max_fd)
 
 	  if (is6)
 	    buf = grab_extradata(buf, end, "DNSMASQ_RELAY_ADDRESS", &err);
-	  else
-	    {
-	      const char *giaddr = NULL;
-	      if (data.giaddr.s_addr != 0)
-		  giaddr = inet_ntop(AF_INET, &data.giaddr, daemon->addrbuff, ADDRSTRLEN);
-	      my_setenv("DNSMASQ_RELAY_ADDRESS", giaddr, &err);
-	    }
+	  else 
+	    my_setenv("DNSMASQ_RELAY_ADDRESS", data.giaddr.s_addr != 0 ? inet_ntoa(data.giaddr) : NULL, &err); 
 	  
 	  for (i = 0; buf; i++)
 	    {
@@ -887,4 +882,7 @@ void helper_write(void)
     }
 }
 
-#endif /* HAVE_SCRIPT */
+#endif
+
+
+

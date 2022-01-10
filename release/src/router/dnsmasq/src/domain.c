@@ -18,9 +18,8 @@
 
 
 static struct cond_domain *search_domain(struct in_addr addr, struct cond_domain *c);
-static int match_domain(struct in_addr addr, struct cond_domain *c);
 static struct cond_domain *search_domain6(struct in6_addr *addr, struct cond_domain *c);
-static int match_domain6(struct in6_addr *addr, struct cond_domain *c);
+
 
 int is_name_synthetic(int flags, char *name, union all_addr *addr)
 {
@@ -136,9 +135,28 @@ int is_name_synthetic(int flags, char *name, union all_addr *addr)
 	    }
 	  
 	  if (hostname_isequal(c->domain, p+1) && inet_pton(prot, tail, addr))
-	    found = (prot == AF_INET) ? match_domain(addr->addr4, c) : match_domain6(&addr->addr6, c);
+	    {
+	      if (prot == AF_INET)
+		{
+		  if (!c->is6 &&
+		      ntohl(addr->addr4.s_addr) >= ntohl(c->start.s_addr) &&
+		      ntohl(addr->addr4.s_addr) <= ntohl(c->end.s_addr))
+		    found = 1;
+		}
+	      else
+		{
+		  u64 addrpart = addr6part(&addr->addr6);
+		  
+		  if (c->is6 &&
+		      is_same_net6(&addr->addr6, &c->start6, 64) &&
+		      addrpart >= addr6part(&c->start6) &&
+		      addrpart <= addr6part(&c->end6))
+		    found = 1;
+		}
+	    }
+
 	}
-      
+
       /* restore name */
       for (p = tail; *p; p++)
 	if (*p == '.' || *p == ':')
@@ -228,22 +246,14 @@ int is_rev_synth(int flag, union all_addr *addr, char *name)
 }
 
 
-static int match_domain(struct in_addr addr, struct cond_domain *c)
-{
-  if (!c->is6 &&
-      ntohl(addr.s_addr) >= ntohl(c->start.s_addr) &&
-      ntohl(addr.s_addr) <= ntohl(c->end.s_addr))
-    return 1;
-
-  return 0;
-}
-
 static struct cond_domain *search_domain(struct in_addr addr, struct cond_domain *c)
 {
   for (; c; c = c->next)
-    if (match_domain(addr, c))
+    if (!c->is6 &&
+	ntohl(addr.s_addr) >= ntohl(c->start.s_addr) &&
+        ntohl(addr.s_addr) <= ntohl(c->end.s_addr))
       return c;
-  
+
   return NULL;
 }
 
@@ -257,30 +267,16 @@ char *get_domain(struct in_addr addr)
   return daemon->domain_suffix;
 } 
 
-static int match_domain6(struct in6_addr *addr, struct cond_domain *c)
-{
-  u64 addrpart = addr6part(addr);
-  
-  if (c->is6)
-    {
-      if (c->prefixlen >= 64)
-	{
-	  if (is_same_net6(addr, &c->start6, 64) &&
-	      addrpart >= addr6part(&c->start6) &&
-	      addrpart <= addr6part(&c->end6))
-	    return 1;
-	}
-      else if (is_same_net6(addr, &c->start6, c->prefixlen))
-	return 1;
-    }
-
-  return 0;
-}
 
 static struct cond_domain *search_domain6(struct in6_addr *addr, struct cond_domain *c)
 {
+  u64 addrpart = addr6part(addr);
+  
   for (; c; c = c->next)
-    if (match_domain6(addr, c))
+    if (c->is6 &&
+	is_same_net6(addr, &c->start6, 64) &&
+	addrpart >= addr6part(&c->start6) &&
+        addrpart <= addr6part(&c->end6))
       return c;
   
   return NULL;

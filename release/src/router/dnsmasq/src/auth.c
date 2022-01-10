@@ -105,7 +105,7 @@ size_t answer_auth(struct dns_header *header, char *limit, size_t qlen, time_t n
   int nameoffset, axfroffset = 0;
   int q, anscount = 0, authcount = 0;
   struct crec *crecp;
-  int  auth = !local_query, trunc = 0, nxdomain = 1, soa = 0, ns = 0, axfr = 0, out_of_zone = 0;
+  int  auth = !local_query, trunc = 0, nxdomain = 1, soa = 0, ns = 0, axfr = 0;
   struct auth_zone *zone = NULL;
   struct addrlist *subnet = NULL;
   char *cut;
@@ -146,7 +146,6 @@ size_t answer_auth(struct dns_header *header, char *limit, size_t qlen, time_t n
       if (qclass != C_IN)
 	{
 	  auth = 0;
-	  out_of_zone = 1;
 	  continue;
 	}
 
@@ -160,7 +159,6 @@ size_t answer_auth(struct dns_header *header, char *limit, size_t qlen, time_t n
 	  
 	  if (!zone)
 	    {
-	      out_of_zone = 1;
 	      auth = 0;
 	      continue;
 	    }
@@ -255,17 +253,6 @@ size_t answer_auth(struct dns_header *header, char *limit, size_t qlen, time_t n
 		    
 	    } while ((crecp = cache_find_by_addr(crecp, &addr, now, flag)));
 
-	  if (!found && is_rev_synth(flag, &addr, name) && (local_query || in_zone(zone, name, NULL)))
-	    {
-	      log_query(F_CONFIG | F_REVERSE | flag, name, &addr, NULL); 
-	      found = 1;
-	      
-	      if (add_resource_record(header, limit, &trunc, nameoffset, &ansp, 
-				      daemon->auth_ttl, NULL,
-				      T_PTR, C_IN, "d", name))
-		anscount++;
-	    }
-
 	  if (found)
 	    nxdomain = 0;
 	  else
@@ -286,7 +273,6 @@ size_t answer_auth(struct dns_header *header, char *limit, size_t qlen, time_t n
 	  
 	  if (!zone)
 	    {
-	      out_of_zone = 1;
 	      auth = 0;
 	      continue;
 	    }
@@ -414,17 +400,6 @@ size_t answer_auth(struct dns_header *header, char *limit, size_t qlen, time_t n
 		       anscount++;
 		   }
 	     }
-
-       if (!found && is_name_synthetic(flag, name, &addr) )
-	 {
-	   found = 1;
-	   nxdomain = 0;
-	   
-	   log_query(F_FORWARD | F_CONFIG | flag, name, &addr, NULL);
-	   if (add_resource_record(header, limit, &trunc, nameoffset, &ansp, 
-				   daemon->auth_ttl, NULL, qtype, C_IN, qtype == T_A ? "4" : "6", &addr))
-	     anscount++;
-	 }
        
       if (!cut)
 	{
@@ -880,22 +855,10 @@ size_t answer_auth(struct dns_header *header, char *limit, size_t qlen, time_t n
     SET_RCODE(header, NXDOMAIN);
   else
     SET_RCODE(header, NOERROR); /* no error */
-  
   header->ancount = htons(anscount);
   header->nscount = htons(authcount);
   header->arcount = htons(0);
 
-  if (!local_query && out_of_zone)
-    {
-      SET_RCODE(header, REFUSED); 
-      header->ancount = htons(0);
-      header->nscount = htons(0);
-      addr.log.rcode = REFUSED;
-      addr.log.ede = EDE_NOT_AUTH;
-      log_query(F_UPSTREAM | F_RCODE, "error", &addr, NULL);
-      return resize_packet(header,  ansp - (unsigned char *)header, NULL, 0);
-    }
-  
   /* Advertise our packet size limit in our reply */
   if (have_pseudoheader)
     return add_pseudoheader(header,  ansp - (unsigned char *)header, (unsigned char *)limit, daemon->edns_pktsz, 0, NULL, 0, do_bit, 0);
@@ -904,3 +867,6 @@ size_t answer_auth(struct dns_header *header, char *limit, size_t qlen, time_t n
 }
   
 #endif  
+  
+
+

@@ -288,12 +288,13 @@ int main(int argc, char **argv)
       exit(1);
     }
   
-  if (inet_pton(AF_INET, argv[2], &lease.s_addr) < 1)
+  if (inet_addr(argv[2]) == INADDR_NONE)
     {
       perror("invalid ip address");
       exit(1);
     }
   
+  lease.s_addr = inet_addr(argv[2]);
   server = find_interface(lease, nl, if_nametoindex(argv[1]), fd, &ifr);
   
   memset(&packet, 0, sizeof(packet));

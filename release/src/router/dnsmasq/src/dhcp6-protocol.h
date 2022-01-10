@@ -72,3 +72,4 @@
 #define DHCP6NOBINDING   3
 #define DHCP6NOTONLINK   4
 #define DHCP6USEMULTI    5
+

@@ -1,5 +1,5 @@
  /*
- * Copyright 2020, ASUSTeK Inc.
+ * Copyright 2022, ASUSTeK Inc.
  * All Rights Reserved.
  *
  * THIS SOFTWARE IS OFFERED "AS IS", AND ASUS GRANTS NO WARRANTIES OF ANY
@@ -27,9 +27,6 @@
 #include "rc.h"
 #include <arpa/inet.h>
 #include <sys/socket.h>
-#ifdef RTCONFIG_FBWIFI
-#include <fbwifi.h>
-#endif
 #ifdef RTCONFIG_BWDPI
 #include <bwdpi.h>
 #endif
@@ -368,7 +365,7 @@ void del_EbtablesRules(void)
 
 #ifdef CONFIG_BCMWL5 // TODO: it is only for the case, eth0 as wan, vlanx as lan
 
-#ifdef RTCONFIG_FBWIFI
+#if defined(RTCONFIG_FBWIFI)
 static void set_fbwifi_mark(void)
 {
 	int band, j, max_mssid;
@@ -381,12 +378,9 @@ static void set_fbwifi_mark(void)
 
 	snprintf(mark, sizeof(mark), "0x%x", FBWIFI_MARK_SET(1));
 	snprintf(inv_mask, sizeof(inv_mask), "0x%x", FBWIFI_MARK_INV_MASK);
-	for (band = 0; band < ARRAYSIZE(fbwifi_iface); ++band) {
-#ifndef RTCONFIG_HAS_5G_2
-		/* Skip band 2, 5G-2, if DUT not support 2-nd 5G band. */
-		if (band == 2)
-			continue;
-#endif
+
+	for (band = 0; band < min(MAX_NR_WL_IF, (sizeof(fbwifi_iface)/sizeof(fbwifi_iface[0]))); ++band) {
+		SKIP_ABSENT_BAND(band);
 
 		if (nvram_match(fbwifi_iface[band], "off"))
 			continue;
@@ -406,6 +400,8 @@ static void set_fbwifi_mark(void)
 		eval("ebtables", "-A", "INPUT", "-i", wl_if, "-j", "mark", "--mark-or", mark, "--mark-target", "ACCEPT");
 	}
 }
+#else
+static inline void set_fbwifi_mark(void) { };
 #endif
 
 void add_EbtablesRules(void)
@@ -415,6 +411,7 @@ void add_EbtablesRules(void)
 	nv = g = strdup(nvram_safe_get("wl_ifnames"));
 	if(nv){
 		while ((p = strsep(&g, " ")) != NULL){
+			SKIP_ABSENT_FAKE_IFACE(p);
 			QOSLOG("p=%s", p);
 			eval("ebtables", "-t", "nat", "-A", "PREROUTING", "-i", p, "-j", "mark", "--mark-or", "6", "--mark-target", "ACCEPT");
 			eval("ebtables", "-t", "nat", "-A", "POSTROUTING", "-o", p, "-j", "mark", "--mark-or", "6", "--mark-target", "ACCEPT");
@@ -423,8 +420,8 @@ void add_EbtablesRules(void)
 	}
 
 	// for MultiSSID
-	int UnitNum = 2; 	// wl0.x, wl1.x
-	int GuestNum = 3;	// wlx.0, wlx.1, wlx.2
+	int UnitNum = 2; 			// wl0.x, wl1.x
+	int GuestNum = MAX_NO_MSSID - 1;	// wlx.0, wlx.1, wlx.2
 	char mssid_if[32];
 	char mssid_enable[32];
 	int i, j;
@@ -802,7 +799,7 @@ static int add_qos_rules(char *pcWANIF)
 		char *tmp_trans, *q_min, *q_max;
 		long min = 0, max =0;
 
-		snprintf(tmp, sizeof(tmp), "%s", transferred);
+		strlcpy(tmp, transferred, sizeof (tmp));
 		tmp_trans = tmp;
 		q_min = strsep(&tmp_trans, "~");
 		q_max = tmp_trans;
@@ -813,14 +810,14 @@ static int add_qos_rules(char *pcWANIF)
 		else{
 			min = atol(q_min);
 
-			if(strcmp(q_max,"") == 0) // q_max == NULL
+			if (strcmp(q_max,"") == 0) // q_max == NULL
 				snprintf(conn, sizeof(conn), "-m connbytes --connbytes %ld:%s --connbytes-dir both --connbytes-mode bytes", min*1024, q_max);
 			else{// q_max != NULL
 				max = atol(q_max);
 				snprintf(conn, sizeof(conn), "-m connbytes --connbytes %ld:%ld --connbytes-dir both --connbytes-mode bytes", min*1024, max*1024-1);
 			}
 		}
-		QOSLOG("[qos] tmp=%s, transferred=%s, min=%ld, max=%ld, q_max=%s, conn=%s", tmp, transferred, min*1024, max*1024-1, q_max, conn);
+		QOSLOG("[qos] transferred=%s, min=%ld, max=%ld, q_max=%s, conn=%s", transferred, min*1024, max*1024-1, q_max, conn);
 
 		/*************************************************/
 		/*                      proto                    */
@@ -1211,9 +1208,10 @@ static int start_tqos(void)
 		"# upload 1:60: LAN-to-LAN (vlan@%s)\n"
 		"\t$TCAUL parent 1:2 classid 1:60 htb rate 1000000kbit ceil 1000000kbit burst 10000 cburst 10000 prio 6\n"
 		"\t$TQAUL parent 1:60 handle 60: pfifo\n"
-		"\t$TFAUL parent 1: prio 6 protocol 802.1q u32 match u32 0 0 flowid 1:60\n",
+		"\t$TFAUL parent 1: prio 6 protocol 802.1q u32 match mark 6 0x%x flowid 1:60\n",
 			wan_ifname,
-			wan_ifname
+			wan_ifname,
+			QOS_MASK
 		);
 #endif
 
@@ -1238,15 +1236,10 @@ static int start_tqos(void)
 			else s[0] = 0;
 		x = (i + 1) * 10;
 
-		fprintf(f,
-			"# upload 1:%d: %u-%u%%\n"
-			"\t$TCAUL parent 1:1 classid 1:%d htb rate %ukbit %s %s prio %d quantum %u %s\n"
-			"\t$TQAUL parent 1:%d handle %d: $SCH\n"
-			"\t$TFAUL parent 1: prio %d u32 match mark %d 7 flowid 1:%d\n",
-				i, rate, ceil,
-				x, calc(bw, rate), s, burst_leaf, (i >= 6) ? 7 : (i + 1), mtu, overheadstr,
-				x, x,
-				x, i + 1, x);
+		fprintf(f, "# egress %d: %u-%u%%\n", i, rate, ceil);
+		fprintf(f, "\t$TCAUL parent 1:1 classid 1:%d htb rate %ukbit %s %s prio %d quantum %u %s\n", x, calc(bw, rate), s, burst_leaf, (i >= 6) ? 7 : (i + 1), mtu, overheadstr);
+		fprintf(f, "\t$TQAUL parent 1:%d handle %d: $SCH\n", x, x);
+		fprintf(f, "\t$TFAUL parent 1: prio %d u32 match mark %d 0x%x flowid 1:%d\n", x, i + 1, QOS_MASK, x);
 	}
 	free(buf);
 

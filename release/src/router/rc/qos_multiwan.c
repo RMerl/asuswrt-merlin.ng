@@ -1,31 +1,30 @@
  /*
- * Copyright 2020, ASUSTeK Inc.
+ * Copyright 2022, ASUSTeK Inc.
  * All Rights Reserved.
  *
  * THIS SOFTWARE IS OFFERED "AS IS", AND ASUS GRANTS NO WARRANTIES OF ANY
- * KIND, EXPRESS OR IMPLIED, BY STATUTE, COMMUNICATION OR OTHERWISE. BROADCOM
+ * KIND, EXPRESS OR IMPLIED, BY STATUTE, COMMUNICATION OR OTHERWISE. ASUS
  * SPECIFICALLY DISCLAIMS ANY IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS
  * FOR A SPECIFIC PURPOSE OR NONINFRINGEMENT CONCERNING THIS SOFTWARE.
  *
  */
- 
+
 /*
 	feature implement:
 	1. traditaional qos
 	2. bandwdith limiter (also for guest network)
 	3. facebook wifi     (already EOL in the end of 2017)
+	4. GeForceNow qos
 
 	NOTE:
 	qos mark bit 8~31 : TrendMicro adaptive qos usage, so ASUS only can use bit 0~7 for different applications
-	ex. Traditional qos / bandwidth limiter / Facebook wifi
+	ex. Traditional qos / bandwidth limiter / Facebook wifi / GeForceNow QoS
 */
 
 #include "rc.h"
 #include <arpa/inet.h>
 #include <sys/socket.h>
-#ifdef RTCONFIG_FBWIFI
-#include <fbwifi.h>
-#endif
+#include <sys/stat.h>
 #ifdef RTCONFIG_BWDPI
 #include <bwdpi.h>
 #endif
@@ -344,6 +343,14 @@ static void address_format_checker(int *type, char *old, char *new, int len)
 	// mac format
 	g = buf = strdup(old);
 	if (sscanf(g, "%02X:%02X:%02X:%02X:%02X:%02X",&s[0],&s[1],&s[2],&s[3],&s[4],&s[5]) == 6) {
+#ifdef RTCONFIG_AMAS
+		QOSLOG("address_format_checker");
+		if (amas_lib_device_ip_query(old, new)) {
+			*type = TYPE_IP;
+			QOSLOG("is_ip=%d, is_mac=%d, is_range=%d, type=%d, new=%s", is_ip, is_mac, is_range, *type, new);
+			return;
+		} else
+#endif
 		is_mac = 1;
 		goto end;
 	}
@@ -414,7 +421,7 @@ static void set_fbwifi_mark(void)
 
 	snprintf(mark, sizeof(mark), "0x%x", FBWIFI_MARK_SET(1));
 	snprintf(inv_mask, sizeof(inv_mask), "0x%x", FBWIFI_MARK_INV_MASK);
-	for (band = 0; band < min(MAX_NR_WL_IF, ARRAYSIZE(fbwifi_iface)); ++band) {
+	for (band = 0; band < min(MAX_NR_WL_IF, (sizeof(fbwifi_iface)/sizeof(fbwifi_iface[0]))); ++band) {
 		SKIP_ABSENT_BAND(band);
 
 		if (nvram_match(fbwifi_iface[band], "off"))
@@ -455,7 +462,7 @@ void add_EbtablesRules(void)
 	}
 
 	// for MultiSSID
-	int UnitNum = 2; 	// wl0.x, wl1.x
+	int UnitNum = 2; 			// wl0.x, wl1.x
 	int GuestNum = MAX_NO_MSSID - 1;	// wlx.0, wlx.1, wlx.2
 	char mssid_if[32];
 	char mssid_enable[32];
@@ -472,11 +479,11 @@ void add_EbtablesRules(void)
 		}
 	}
 
- #ifdef RTCONFIG_FBWIFI
-	if(sw_mode() == SW_MODE_AP){
+#ifdef RTCONFIG_FBWIFI
+	if(sw_mode() == SW_MODE_ROUTER){
 		set_fbwifi_mark();
 	}
- #endif
+#endif
 
 	etable_flag = 1;
 }
@@ -849,14 +856,14 @@ static int add_qos_rules(char *pcWANIF)
 			else{
 				min = atol(q_min);
 
-				if(strcmp(q_max,"") == 0) // q_max == NULL
+				if (strcmp(q_max,"") == 0) // q_max == NULL
 					sprintf(conn, "-m connbytes --connbytes %ld:%s --connbytes-dir both --connbytes-mode bytes", min*1024, q_max);
-				else{// q_max != NULL
+				else {// q_max != NULL
 					max = atol(q_max);
 					sprintf(conn, "-m connbytes --connbytes %ld:%ld --connbytes-dir both --connbytes-mode bytes", min*1024, max*1024-1);
 				}
 			}
-			QOSLOG("[qos] tmp=%s, transferred=%s, min=%ld, max=%ld, q_max=%s, conn=%s", tmp, transferred, min*1024, max*1024-1, q_max, conn);
+			QOSLOG("[qos] transferred=%s, min=%ld, max=%ld, q_max=%s, conn=%s", transferred, min*1024, max*1024-1, q_max, conn);
 
 			/*************************************************/
 			/*                      proto                    */

@@ -206,7 +206,6 @@ endif
 endif
 
 ifeq ($(RTCONFIG_FBWIFI),y)
-CFLAGS  += -I$(TOP)/fb_wifi
 LDFLAGS += -L$(TOP)/fb_wifi -lfbwifi
 endif
 

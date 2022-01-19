@@ -336,6 +336,15 @@ function applyRule(){
 }
 
 function validForm(){
+
+	if ($("input[name='le_enable']:checked").val() == "0") {
+		if (!validator.safeName(document.form.https_crt_cn))
+			return false;
+	} else {
+		if (!validator.safeName(document.form.https_crt_cn, "noalert"))
+			document.form.https_crt_cn.value = "";
+	}
+
 	if(document.form.ddns_enable_x[0].checked){		//ddns enable
 		if(document.form.ddns_server_x.selectedIndex == 0){		//WWW.ASUS.COM	
 			if(document.form.DDNSName.value == ""){

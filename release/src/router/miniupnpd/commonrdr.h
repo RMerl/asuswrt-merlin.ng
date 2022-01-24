@@ -1,6 +1,6 @@
-/* $Id: commonrdr.h,v 1.11 2019/10/02 22:12:02 nanard Exp $ */
+/* $Id: commonrdr.h,v 1.15 2021/12/01 22:50:09 nanard Exp $ */
 /* MiniUPnP project
- * (c) 2006-2020 Thomas Bernard
+ * (c) 2006-2021 Thomas Bernard
  * http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
@@ -77,6 +77,7 @@ update_portmapping_desc_timestamp(const char * ifname,
 
 typedef enum {
 	RDR_TABLE_NAME,
+	RDR_NAT_TABLE_NAME,
 	RDR_NAT_PREROUTING_CHAIN_NAME,
 	RDR_NAT_POSTROUTING_CHAIN_NAME,
 	RDR_FORWARD_CHAIN_NAME,

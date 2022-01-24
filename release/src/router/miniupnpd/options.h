@@ -57,6 +57,8 @@ enum upnpconfigoptions {
 	UPNPPCPMAXLIFETIME,		/* maximum lifetime for PCP mapping */
 	UPNPPCPALLOWTHIRDPARTY,		/* allow third-party requests */
 #ifdef USE_NETFILTER
+	UPNPTABLENAME,
+	UPNPNATTABLENAME,
 	UPNPFORWARDCHAIN,
 	UPNPNATCHAIN,
 	UPNPNATPOSTCHAIN,

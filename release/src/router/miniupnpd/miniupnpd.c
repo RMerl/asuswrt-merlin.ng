@@ -1342,6 +1342,12 @@ init(int argc, char * * argv, struct runtime_vars * v)
 				break;
 #endif	/* ENABLE_MANUFACTURER_INFO_CONFIGURATION */
 #ifdef USE_NETFILTER
+			case UPNPTABLENAME:
+				set_rdr_name(RDR_TABLE_NAME, ary_options[i].value);
+				break;
+			case UPNPNATTABLENAME:
+				set_rdr_name(RDR_NAT_TABLE_NAME, ary_options[i].value);
+				break;
 			case UPNPFORWARDCHAIN:
 				set_rdr_name(RDR_FORWARD_CHAIN_NAME, ary_options[i].value);
 				break;

@@ -1,8 +1,10 @@
 #!/bin/sh
 
+. $(dirname "$0")/miniupnpd_functions.sh
+
 # Prerouting
-nft list chain ip nat MINIUPNPD
+$NFT list chain inet $NAT_TABLE $PREROUTING_CHAIN
 # Postrouting
-nft list chain ip nat MINIUPNPD-POSTROUTING
+$NFT list chain inet $NAT_TABLE $POSTROUTING_CHAIN
 # Filter
-nft list chain inet filter MINIUPNPD
+$NFT list chain inet $TABLE $CHAIN

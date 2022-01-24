@@ -63,10 +63,11 @@
 #define RULE_CACHE_INVALID  0
 #define RULE_CACHE_VALID    1
 
-const char * nft_table = "miniupnpd";
-const char * nft_prerouting_chain = "prerouting";
-const char * nft_postrouting_chain = "postrouting";
-const char * nft_forward_chain = "forward";
+const char * nft_table = "filter";
+const char * nft_nat_table = "filter";
+const char * nft_prerouting_chain = "prerouting_miniupnpd";
+const char * nft_postrouting_chain = "postrouting_miniupnpd";
+const char * nft_forward_chain = "miniupnpd";
 
 static struct mnl_socket *mnl_sock = NULL;
 static uint32_t mnl_portid = 0;
@@ -629,7 +630,7 @@ int
 refresh_nft_cache_peer(void)
 {
 	if (rule_list_peer_validate != RULE_CACHE_VALID) {
-		if (refresh_nft_cache(&head_peer, nft_table, nft_postrouting_chain, NFPROTO_IPV4, RULE_NAT) < 0)
+		if (refresh_nft_cache(&head_peer, nft_nat_table, nft_postrouting_chain, NFPROTO_INET, RULE_NAT) < 0)
 			return -1;
 		rule_list_peer_validate = RULE_CACHE_VALID;
 	}
@@ -640,7 +641,7 @@ int
 refresh_nft_cache_redirect(void)
 {
 	if (rule_list_redirect_validate != RULE_CACHE_VALID) {
-		if (refresh_nft_cache(&head_redirect, nft_table, nft_prerouting_chain, NFPROTO_IPV4, RULE_NAT) < 0)
+		if (refresh_nft_cache(&head_redirect, nft_nat_table, nft_prerouting_chain, NFPROTO_INET, RULE_NAT) < 0)
 			return -1;
 		rule_list_redirect_validate = RULE_CACHE_VALID;
 	}
@@ -877,7 +878,7 @@ rule_set_snat(uint8_t family, uint8_t proto,
 	}
 
 	nftnl_rule_set_u32(r, NFTNL_RULE_FAMILY, family);
-	nftnl_rule_set_str(r, NFTNL_RULE_TABLE, nft_table);
+	nftnl_rule_set_str(r, NFTNL_RULE_TABLE, nft_nat_table);
 	nftnl_rule_set_str(r, NFTNL_RULE_CHAIN, nft_postrouting_chain);
 
 	if (descr != NULL && *descr != '\0') {
@@ -927,7 +928,7 @@ rule_set_snat(uint8_t family, uint8_t proto,
 		expr_add_cmp(r, NFT_REG_1, NFT_CMP_EQ, &sport, sizeof(uint16_t));
 	}
 
-	expr_add_nat(r, NFT_NAT_SNAT, family, ehost, htons(eport), 0);
+	expr_add_nat(r, NFT_NAT_SNAT, NFPROTO_IPV4, ehost, htons(eport), 0);
 
 	debug_rule(r);
 
@@ -955,7 +956,7 @@ rule_set_dnat(uint8_t family, const char * ifname, uint8_t proto,
 	}
 
 	nftnl_rule_set_u32(r, NFTNL_RULE_FAMILY, family);
-	nftnl_rule_set_str(r, NFTNL_RULE_TABLE, nft_table);
+	nftnl_rule_set_str(r, NFTNL_RULE_TABLE, nft_nat_table);
 	nftnl_rule_set_str(r, NFTNL_RULE_CHAIN, nft_prerouting_chain);
 
 	if (descr != NULL && *descr != '\0') {
@@ -999,7 +1000,7 @@ rule_set_dnat(uint8_t family, const char * ifname, uint8_t proto,
 		expr_add_cmp(r, NFT_REG_1, NFT_CMP_EQ, &dport, sizeof(uint16_t));
 	}
 
-	expr_add_nat(r, NFT_NAT_DNAT, family, ihost, htons(iport), 0);
+	expr_add_nat(r, NFT_NAT_DNAT, NFPROTO_IPV4, ihost, htons(iport), 0);
 
 	debug_rule(r);
 
@@ -1158,9 +1159,15 @@ rule_del_handle(rule_t *rule)
 		return NULL;
 	}
 
+	if (rule->type == RULE_NAT) {
+		// NAT Family is not chain/rule family
+		nftnl_rule_set_u32(r, NFTNL_RULE_FAMILY, NFPROTO_INET);
+	} else {
+		nftnl_rule_set_u32(r, NFTNL_RULE_FAMILY, rule->family);
+	}
+
 	nftnl_rule_set_str(r, NFTNL_RULE_TABLE, rule->table);
 	nftnl_rule_set_str(r, NFTNL_RULE_CHAIN, rule->chain);
-	nftnl_rule_set_u32(r, NFTNL_RULE_FAMILY, rule->family);
 	nftnl_rule_set_u64(r, NFTNL_RULE_HANDLE, rule->handle);
 
 	return r;

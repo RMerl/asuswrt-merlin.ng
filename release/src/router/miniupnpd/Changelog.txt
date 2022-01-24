@@ -1,4 +1,14 @@
-$Id: Changelog.txt,v 1.480 2021/08/21 08:34:57 nanard Exp $
+$Id: Changelog.txt,v 1.484 2022/01/23 00:14:39 nanard Exp $
+
+VERSION 2.3.0 : released on 2022/01/23
+
+2021/12/01:
+  NFTables : use scripts to create table and chains
+  (see https://github.com/miniupnp/miniupnp/pull/584)
+
+2021/11/17:
+  NFTables : use the nat chain for inet rules (Sven Auhagen)
+  (see https://github.com/miniupnp/miniupnp/pull/562)
 
 VERSION 2.2.3 : released on 2021/08/21
 
@@ -810,7 +820,7 @@ VERSION 1.6 : released the 2011/07/25
   preparing SSDP stuff for IP v6. Trying to conform to UDA v1.1
 
 2011/03/09:
-  Some modifications thanks to Daniel Dickinson to improve OpenWRT
+  Some modifications thanks to Daniel Dickinson to improve OpenWrt
   build.
   Fixed some warnings.
 
@@ -1309,7 +1319,7 @@ VERSION 1.0 :
 2006/11/23:
   now handling signal SIGINT
   setting HTTP socket with REUSEADDR thanks to Ryan Wagoner
-  daemon now tested on a Linksys WRT54G device running OpenWRT !
+  daemon now tested on a Linksys WRT54G device running OpenWrt !
 
 2006/11/21:
   disabling rtableid in pf code.

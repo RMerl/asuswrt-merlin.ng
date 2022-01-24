@@ -68,6 +68,8 @@ static const struct {
 	{ UPNPCLEANTHRESHOLD, "clean_ruleset_threshold"},
 	{ UPNPCLEANINTERVAL, "clean_ruleset_interval"},
 #ifdef USE_NETFILTER
+	{ UPNPTABLENAME, "upnp_table_name"},
+	{ UPNPNATTABLENAME, "upnp_nat_table_name"},
 	{ UPNPFORWARDCHAIN, "upnp_forward_chain"},
 	{ UPNPNATCHAIN, "upnp_nat_chain"},
 	{ UPNPNATPOSTCHAIN, "upnp_nat_postrouting_chain"},

@@ -38,7 +38,7 @@
 #include <asm/system_misc.h>
 #include <asm/opcodes.h>
 
-#define CATHY_DUMP_MEM_AROUND_REGS
+//#define CATHY_DUMP_MEM_AROUND_REGS
 
 static const char *handler[]= {
 	"prefetch abort",

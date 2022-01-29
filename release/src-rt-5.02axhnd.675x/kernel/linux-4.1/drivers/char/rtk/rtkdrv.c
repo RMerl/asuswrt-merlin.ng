@@ -250,9 +250,11 @@ void createVlan(u32 portinfo)
 	u32 laninfo = 0;
 
 	memset(&vlan_t, 0x00, sizeof(rtk_vlan_cfg_t));
-	vlan_t.mbr.bits[0] = (portinfo & 0x0000FFFF) | 0x00020000; //add CPU port to member
-	laninfo = (portinfo & 0x0000FFFF) | 0x00020000; //add CPU port to portPvid set
+	vlan_t.mbr.bits[0] = (portinfo & 0x0000FFFF) | LAN_PORT_EXT_MASK; // add CPU port to member
+	laninfo = (portinfo & 0x0000FFFF) | LAN_PORT_EXT_MASK; // add CPU port to portPvid set
 	vlan_t.untag.bits[0] = portinfo >> 16; // CPU port leave tag
+	if (!vlan_vid)
+		vlan_t.untag.bits[0] |= LAN_PORT_EXT_MASK;
 	printk("createVlan - vid = %d prio = %d mbrmsk = 0x%X untagmsk = 0x%X\n", vlan_vid, vlan_prio, vlan_t.mbr.bits[0], vlan_t.untag.bits[0]);	
 	ret_t = rtk_vlan_set(vlan_vid, &vlan_t);
 	if(ret_t != RT_ERR_OK)

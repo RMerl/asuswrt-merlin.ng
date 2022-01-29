@@ -137,9 +137,7 @@ __do_kernel_fault(struct mm_struct *mm, unsigned long addr, unsigned int fsr,
 	 */
 	if (fixup_exception(regs))
 		return;
-#ifdef CRASHLOG
-	crashlog_enable = 1;
-#endif
+
 	/*
 	 * No handler, we'll have to terminate things with extreme prejudice.
 	 */
@@ -560,10 +558,6 @@ do_DataAbort(unsigned long addr, unsigned int fsr, struct pt_regs *regs)
 	if (!inf->fn(addr, fsr & ~FSR_LNX_PF, regs))
 		return;
 
-#ifdef CRASHLOG
-	crashlog_enable = 1;
-#endif
-
 	pr_alert("Unhandled fault: %s (0x%03x) at 0x%08lx\n",
 		inf->name, fsr, addr);
 	show_pte(current->mm, addr);
@@ -596,10 +590,6 @@ do_PrefetchAbort(unsigned long addr, unsigned int ifsr, struct pt_regs *regs)
 
 	if (!inf->fn(addr, ifsr | FSR_LNX_PF, regs))
 		return;
-
-#ifdef CRASHLOG
-	crashlog_enable = 1;
-#endif
 
 	pr_alert("Unhandled prefetch abort: %s (0x%03x) at 0x%08lx\n",
 		inf->name, ifsr, addr);

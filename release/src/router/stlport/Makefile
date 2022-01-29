@@ -54,9 +54,11 @@ unexport CXX
 PATH := $(TOOLCHAIN)/bin:$(PATH)
 
 clean: generic_clean
+ifneq ($(PREBUILT_BCMBIN),1)
 	@if [ -e $(LIB-SRC)/Makefile ]; then \
 	cd $(LIB-SRC); $(MAKE) clean; \
 	fi
+endif
 	#rm -rf $(LIB-SRC)
 	rm -rf lib
 	rm -rf include

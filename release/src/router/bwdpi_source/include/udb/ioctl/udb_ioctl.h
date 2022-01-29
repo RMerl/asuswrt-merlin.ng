@@ -46,6 +46,7 @@ enum
 };
 
 #ifdef __KERNEL__
+int udb_verify_ioctl_entries(void);
 int udb_ioctl_copy_out(uint8_t nr, uint8_t op, void *buf, uint32_t buf_len, uint32_t *buf_used_len);
 int udb_ioctl_copy_in(uint8_t nr, uint8_t op, void *buf, uint32_t buf_len);
 int udb_ioctl_copy_none(uint8_t nr, uint8_t op);

@@ -83,7 +83,7 @@ CFLAGS += -I$(SRCBASE)/include
 CFLAGS += $(ASUSNATNL_CFLAGS)
 CFLAGS += $(AICAM_CFLAGS)
 CFLAGS += $(ROUTER_CFLAGS)
-CFLAGS += -DPTHREAD_STACK_SIZE=0x51200
+CFLAGS += -DPTHREAD_STACK_SIZE=0xa240
 
 LIBS = -lcurl -lssl -lcrypto -lxml2 -ljson-c -ldl -pthread -lrt $(ROUTER_LIBS) -lws -lgcc_s
 LDFLAGS = -L$(OPENSSL_DIR) -L$(CURL_DIR)/lib/.libs -L$(XML2_DIR)/.libs -L$(JSON_C_DIR)/.libs -L. $(ROUTER_LDFLAGS) -L$(WS_SRC) -L$(WB_DIR) -L$(WB_DIR)/output

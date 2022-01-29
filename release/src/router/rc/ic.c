@@ -481,14 +481,16 @@ void config_ic_rule_string(ic_s *ic_list, FILE *fp, char *logaccept, char *logdr
 #ifdef RTCONFIG_AMAS
 		if (strlen(follow_ic->mac) && amas_lib_device_ip_query(follow_ic->mac, follow_addr)) {
 			chk_type = iptables_chk_ip;
+			if (illegal_ipv4_address(follow_addr))
+				continue;
 		} else
 #endif
 		{
 			chk_type = iptables_chk_mac;
 			snprintf(follow_addr, sizeof(follow_addr), "%s", follow_ic->mac);
+			if (!isValidMacAddress(follow_addr))
+				continue;
 		}
-		if(!follow_addr[0])
-			chk_type = "";
 
 //_dprintf("[PC] mac=%s\n", follow_ic->mac);
 #ifdef RTCONFIG_PERMISSION_MANAGEMENT

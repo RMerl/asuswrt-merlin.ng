@@ -6243,7 +6243,7 @@ int start_qtn(void)
 void set_onboarding_vif_status()
 {
 	char prefix[] = "wlXXXXXXXXXX_", tmp[64];
-	int unit = 0;
+	int unit = WL_2G_BAND;
 	char wl_radio[] = "wlXXXX_radio";
 
 	if (nvram_get_int("re_mode") == 1)

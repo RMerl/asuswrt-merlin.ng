@@ -370,7 +370,7 @@ export SRCBASE_FW := $(SRCBASE)/../../43684/src
 export SRCBASE_SYS := $(SRCBASE_DHD)
 export DHDAP_BUILD_TYPE := ram
 export CONFIG_MBO_AP=y
-ifeq ($(BUILD_NAME), $(filter $(BUILD_NAME), GT-AX11000 GT-AXE11000))
+ifeq ($(BUILD_NAME), $(filter $(BUILD_NAME), GT-AX11000 GT-AXE11000 RT-AX95Q))
 export BUILD_43684_COMBO := y
 else ifeq ($(BUILD_NAME), $(filter $(BUILD_NAME), RT-AX86U))
 export BUILD_43684b0 := y
@@ -5638,14 +5638,14 @@ endif
 
 else
 	[ -d wlexe ] || install -d wlexe
-ifneq ($(wildcard $(SRC_PRE_WLEXE)/prebuilt/$(BUILD_NAME)/wl),)
-	install $(SRC_PRE_WLEXE)/prebuilt/$(BUILD_NAME)/wl wlexe
-else
 	install $(SRC_PRE_WLEXE)/prebuilt/wl wlexe
-endif
-ifeq ($(HND_ROUTER_AX_675X),y)
+	-install $(SRC_PRE_WLEXE)/prebuilt/wl_server_socket wlexe
+ifeq ($(or $(HND_ROUTER_AX_675X),$(HND_ROUTER_AX_6710),$(BCM_502L07P2)),y)
 	install $(SRCBASE)/router-sysdep/hnd_extra/prebuilt/wl_server_socket wlexe
+else
+	-install $(SRCBASE)/router/hnd_extra/prebuilt/wl_server_socket wlexe
 endif
+
 endif
 endif
 	@true

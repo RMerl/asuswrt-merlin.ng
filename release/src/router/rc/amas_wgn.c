@@ -1733,6 +1733,30 @@ char *get_wl_bh_ifnames(
 }
 
 char *get_eth_bh_ifnames(
+	char *buffer,
+	size_t buffer_size)
+{
+	char *ptr = NULL;
+	char *end = NULL;
+
+	if (!buffer || buffer_size <= 0)
+		return NULL;
+
+	memset(buffer, 0, buffer_size);
+	ptr = &buffer[0];
+	end = ptr + buffer_size;
+
+	if (buffer_size > (strlen(nvram_safe_get("eth_ifnames"))+1)) {
+		ptr += snprintf(ptr, end-ptr, "%s ", nvram_safe_get("eth_ifnames"));
+	}
+
+    if (strlen(buffer) > 0)
+        buffer[strlen(buffer)-1] = '\0';
+
+	return (strlen(buffer) > 0) ? buffer : NULL;
+}
+
+char *get_eth_lan_ifnames(
 	char *buffer, 
 	size_t buffer_size)
 {
@@ -1741,6 +1765,7 @@ char *get_eth_bh_ifnames(
 	char *lan_ifnames = NULL;
 	char word[64];
 	char *next = NULL;
+	char *eth_ifnames = NULL;
 	size_t size = 0;
 	int get_lan_ifnames = 0;
 
@@ -1751,48 +1776,31 @@ char *get_eth_bh_ifnames(
 	ptr = &buffer[0];
 	end = ptr + buffer_size;
 
-	if (!IS_RE()) 
-	{
-		if (!nvram_get("wired_ifnames"))
-			get_lan_ifnames = 1; 	
-	}
-	else 
-	{
-		if (!nvram_get("wired_ifnames") || !nvram_get("eth_ifnames"))
-			get_lan_ifnames = 1;
-	}
+	if (!nvram_get("wired_ifnames"))
+		get_lan_ifnames = 1;
 
-	if (get_lan_ifnames == 0) 
-	{
-		if (buffer_size > (strlen(nvram_safe_get("wired_ifnames"))+1)) 
-		{
-			if (!IS_RE()) 
-				ptr += snprintf(ptr, end-ptr, "%s ", nvram_safe_get("wired_ifnames"));
-			else
-				ptr += snprintf(ptr, end-ptr, "%s %s ", nvram_safe_get("wired_ifnames"), nvram_safe_get("eth_ifnames"));
-		}	
-	}
-	else 
-	{
-		if ((lan_ifnames = nvram_get("lan_ifnames"))) 
-		{
-			foreach(word, lan_ifnames, next) 
-			{
-				if (is_wlif(word) || guest_wlif(word)) 
-					continue;
-				
-				if (size >= buffer_size || (size + strlen(word) + 1) >= buffer_size)
-				{
-					memset(buffer, 0, buffer_size);
-					break;
-				}
+	if (get_lan_ifnames == 0)
+		lan_ifnames = nvram_safe_get("wired_ifnames");
+	else
+		lan_ifnames = nvram_safe_get("lan_ifnames");
 
-				ptr += snprintf(ptr, end-ptr, "%s ", word);
-				size += strlen(word) + 1;				
-			}
+	eth_ifnames = nvram_safe_get("eth_ifnames");
+	foreach(word, lan_ifnames, next) {
+		if (is_wlif(word) || guest_wlif(word))
+			continue;
+
+		if (strstr(eth_ifnames, word))
+			continue;
+
+		if (size >= buffer_size || (size + strlen(word) + 1) >= buffer_size) {
+			memset(buffer, 0, buffer_size);
+			break;
 		}
+
+		ptr += snprintf(ptr, end-ptr, "%s ", word);
+		size += strlen(word) + 1;
 	}
-	
+
     if (strlen(buffer) > 0)
         buffer[strlen(buffer)-1] = '\0';    
 
@@ -1809,10 +1817,13 @@ void destory_vlan(
 	int i;
 
 #if defined(HND_ROUTER)
-	char wl_bh_ifnames[2048];
-	char sta_bh_ifnames[2048];
-	char *bh_ifnames = NULL;
+	//char wl_bh_ifnames[2048];
+	//char sta_bh_ifnames[2048];
+	//char *bh_ifnames = NULL;
 #if defined(WGN_HAVE_VLAN0)	
+    char wl_bh_ifnames[2048];
+    char sta_bh_ifnames[2048];
+    char *bh_ifnames = NULL;
 	char vif0[64];
 #endif	// defined(WGN_HAVE_VLAN0)
 #endif	// HND_ROUTER	
@@ -1896,7 +1907,7 @@ char *create_vlan(
 	char *ret_ifnames,
 	size_t ifnames_bsize)
 {
-// type 0:ethernet, 1:wlan, 2:sta
+// type 0:eth backhaul(WAN), 1: ethernet LAN 2:wlan, 3:sta
 	char vid[16];
 	char vif[64];
 	char b[2048];
@@ -1924,13 +1935,16 @@ char *create_vlan(
 	memset(b, 0, sizeof(b));
 	switch (type)
 	{
-		case 0:
+		case 0:	// eth bh ifnames
 			bh_ifnames = get_eth_bh_ifnames(b, sizeof(b));
 			break;
-		case 1:
-			bh_ifnames = get_wl_bh_ifnames(b, sizeof(b));
+		case 1:	// eth lan ifnames
+			bh_ifnames = get_eth_lan_ifnames(b, sizeof(b));
 			break;
 		case 2:
+			bh_ifnames = get_wl_bh_ifnames(b, sizeof(b));
+			break;
+		case 3:
 			bh_ifnames = get_sta_bh_ifnames(b, sizeof(b));
 			break;
 		default:
@@ -1947,7 +1961,7 @@ char *create_vlan(
 	snprintf(vid, sizeof(vid)-1, "%d", vlan_id);
 
 #if defined(HND_ROUTER)
-	if (type != 0)	// wl & sta
+	if (type == 2 || type == 3)	// wl & sta
 	{
 #if defined(WGN_HAVE_VLAN0)			
 		foreach (word, bh_ifnames, next)
@@ -1990,7 +2004,7 @@ char *create_vlan(
 			ifconfig(vif, IFUP | IFF_ALLMULTI | IFF_MULTICAST, NULL, NULL);
 			// brctl addif br0 eth6.0;
 			// if (find_br0_ifnames_by_ifname(word)) exec_cmd("brctl", "addif", "br0", vif0);
-			if (type == 1) exec_cmd("brctl", "addif", "br0", vif0);
+			if (type == 2) exec_cmd("brctl", "addif", "br0", vif0);
 			if (ret == 0) ioctl_bridge(ARG_ADDIF, "br0", word);
 		}
 #else	// defined(WGN_HAVE_VLAN0)
@@ -2031,6 +2045,7 @@ char *create_vlan(
 				snprintf(vif, sizeof(vif)-1, "%s.%s", iface, vid);
 			else
 				snprintf(vif, sizeof(vif)-1, "%s.%s", word, vid);
+
 			if (size > ifnames_bsize || (size + strlen(vif) + 1) > ifnames_bsize)
 				goto create_vlan_failed;
 
@@ -2139,6 +2154,8 @@ int create_guest_bridge(
 	char *eth_vifnames = NULL;
 	char sta_ifnames[2048];
 	char *sta_vifnames = NULL;
+	char eth_bh_ifnames[2048];
+	char *eth_bh_vifnames = NULL;
 
 	char word[64];
 	char *next = NULL;
@@ -2156,18 +2173,20 @@ int create_guest_bridge(
 	if (!guest_ifnames)
 		goto create_guest_bridge_failed;
 
+	memset(eth_bh_ifnames, 0, sizeof(eth_bh_ifnames));
+	eth_bh_vifnames = create_vlan(vlan_id, 0, eth_bh_ifnames, sizeof(eth_bh_ifnames));
 	memset(eth_ifnames, 0, sizeof(eth_ifnames));
-	eth_vifnames = create_vlan(vlan_id, 0, eth_ifnames, sizeof(eth_ifnames));
+	eth_vifnames = create_vlan(vlan_id, 1, eth_ifnames, sizeof(eth_ifnames));
 	memset(wl_ifnames, 0, sizeof(wl_ifnames));
-	wl_vifnames = create_vlan(vlan_id, 1, wl_ifnames, sizeof(wl_ifnames));
+	wl_vifnames = create_vlan(vlan_id, 2, wl_ifnames, sizeof(wl_ifnames));
 	memset(sta_ifnames, 0, sizeof(sta_ifnames));
-	sta_vifnames = create_vlan(vlan_id, 2, sta_ifnames, sizeof(sta_ifnames));
+	sta_vifnames = create_vlan(vlan_id, 3, sta_ifnames, sizeof(sta_ifnames));
 
 	if (!eth_vifnames && !wl_vifnames)
 		goto create_guest_bridge_failed;
 
 	if (IS_RE())
-		if (!sta_vifnames)
+		if (!sta_vifnames || !eth_bh_vifnames)
 			goto create_guest_bridge_failed;
 
 	memset(nvram_val, 0, sizeof(nvram_val));
@@ -2184,36 +2203,23 @@ int create_guest_bridge(
 	strlcat(nvram_val, guest_ifnames, sizeof(nvram_val));
 	strlcat(nvram_val, " ", sizeof(nvram_val));
 
-	if (!IS_RE())
+	// add eth vlan to bridge
+	if (eth_vifnames)
 	{
-		// add eth vlan to bridge
-		if (eth_vifnames)
-		{
-			foreach (word, eth_vifnames, next)
-				exec_cmd("brctl", "addif", br_ifname, word);
-			strlcat(nvram_val, eth_vifnames, sizeof(nvram_val));
-			strlcat(nvram_val, " ", sizeof(nvram_val));
-		}
-		// add wl vlan to bridge
-		if (wl_vifnames)
-		{
-			foreach (word, wl_vifnames, next)
-				exec_cmd("brctl", "addif", br_ifname, word);
-			strlcat(nvram_val, wl_vifnames, sizeof(nvram_val));
-			strlcat(nvram_val, " ", sizeof(nvram_val));
-		}
+		foreach (word, eth_vifnames, next)
+			exec_cmd("brctl", "addif", br_ifname, word);
+		strlcat(nvram_val, eth_vifnames, sizeof(nvram_val));
+		strlcat(nvram_val, " ", sizeof(nvram_val));
 	}
-	else
+	// add wl vlan to bridge
+	if (wl_vifnames)
 	{
-		// add wl vlan to bridge
-		if (wl_vifnames)
-		{
-			foreach (word, wl_vifnames, next)
-				exec_cmd("brctl", "addif", br_ifname, word);
-			strlcat(nvram_val, wl_vifnames, sizeof(nvram_val));
-			strlcat(nvram_val, " ", sizeof(nvram_val));
-		}				
+		foreach (word, wl_vifnames, next)
+			exec_cmd("brctl", "addif", br_ifname, word);
+		strlcat(nvram_val, wl_vifnames, sizeof(nvram_val));
+		strlcat(nvram_val, " ", sizeof(nvram_val));
 	}
+
 	// ifconfig brX up
 	ifconfig(br_ifname, IFUP | IFF_ALLMULTI | IFF_MULTICAST, br_ipaddr, br_ipmask);
 	// assign brX mac address ref guest mac (ifconfig brX hw ether XX:XX:XX:XX:XX:XX)
@@ -2243,6 +2249,13 @@ int create_guest_bridge(
 
 	// set ethernet switch 
 	wgn_sysdep_swtich_set(vlan_id);
+	// nvram_set wgn_brX_eth_ifnames
+	if (eth_bh_vifnames) {
+		memset(nvram_name, 0, sizeof(nvram_name));
+		snprintf(nvram_name, sizeof(nvram_name), "wgn_br%d_eth_ifnames", br_idx);
+		nvram_set(nvram_name, eth_bh_vifnames);
+	}
+
 	// nvram_set wgn_brX_lan_ifnames
 	if (eth_vifnames)
 	{

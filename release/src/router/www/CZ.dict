@@ -1989,7 +1989,7 @@ fan_tuning_temperature=System Temperature
 FAQ_Desc=Podrobná vysvětlení jsou k dispozici v <a id="network_detect_faq" href="" target="_blank" style="margin-left:5px; text-decoration: underline;">častých dotazech na webu podpory ASUS</a>, které vám mohou pomoci při efektivním používání této funkce.
 FAQ_Find=Najít časté dotazy
 feedback_3G_log=Protokol 3G/4G
-Feedback_case_No_desc=Please fill in this column with your ASUS service number or case number provided by the ASUS Call Center or CRS(Customer Review Support) ID provided by ASUS Customer Support(on Amazon site). If you do not remember your service number, please check your e-mail and search for an email from ASUS Technical Service.<br>This column only accepts either one English letter and 8~11 digits(for example: E1234567890). Or for CRS ID, 5 digits(such as 10688).
+Feedback_case_No_desc=Please fill in this column with your ASUS service number or case number provided by the ASUS Call Center or CRS(Customer Review Support) ID provided by ASUS Customer Support(on Amazon site). If you do not remember your service number, please check your e-mail and search for an email from ASUS Technical Service.<br>This column only accepts either one English letter with case number 8~11 digits and - (hyphen) second case number 4 digits (for example: E1234567890-1234). Or for CRS ID, 5 digits(such as 10688).
 feedback_comments=Připomínky / návrhy
 feedback_compat_problem=Problém s kompatibilitou
 feedback_compat_oooa=V operačním systému nebo v aplikaci

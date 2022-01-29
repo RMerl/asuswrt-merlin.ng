@@ -176,6 +176,7 @@ typedef struct redir_param {
 
 	uint16_t gid;
 	uint16_t pid;
+	uint8_t vid;
 
 	uint8_t *mac;
 
@@ -314,6 +315,14 @@ extern int udb_core_ioctl_op_get_core_ver(char *buf, uint32_t tbl_len, uint32_t 
 extern int tdts_core_ioctl_op_set_wpr_conf(char *buf, uint32_t tbl_len);
 extern int tdts_core_ioctl_op_wpr_switch(uint32_t flag);
 extern int udb_core_wan_detection(uint8_t *dev_name, uint32_t len);
+
+#if TMCFG_E_UDB_CORE_DNS_BASE_URL
+extern int udb_core_register_dns_response(int (*cb)(void *, uint8_t *));
+extern void udb_core_unregister_dns_response(void);
+extern int udb_core_register_wrs_query_to_user(int (*cb)(usr_msg_hdr_t *m, uint8_t *));
+extern void udb_core_unregister_wrs_query_to_user(void);
+#endif
+
 #if TMCFG_E_UDB_CORE_WBL
 extern int tdts_core_udb_wbl_proc_read(void *buff, int *eof);
 #endif

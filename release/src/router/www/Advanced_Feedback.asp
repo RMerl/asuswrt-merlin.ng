@@ -652,7 +652,7 @@ function applyRule(){
 
 		if(document.form.fb_pdesc.value == "tech_ASUS"){
 
-			var re_asus = new RegExp("^[a-zA-Z][0-9]{8,11}","gi");
+			var re_asus = new RegExp(/^[A-Za-z][A-Za-z0-9\-]+$/i);
 			var re_crs = new RegExp("^[0-9]{5}","gi");
 			var re_valid = 0;
 			document.form.fb_tech_account.disabled = "";
@@ -1446,7 +1446,7 @@ function CheckFBSize(){
 <tr style="display:none;">
 <th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(34,2);"><#ASUS_Service_No#></a></th>
 <td>
-	<input type="text" name="fb_serviceno" maxlength="11" class="input_15_table" value="" autocorrect="off" autocapitalize="off">
+	<input type="text" name="fb_serviceno" maxlength="32" class="input_20_table" value="" autocorrect="off" autocapitalize="off">
 </td>
 </tr>
 

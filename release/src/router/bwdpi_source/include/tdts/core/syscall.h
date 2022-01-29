@@ -106,8 +106,8 @@ typedef int (*snprintf_t)(char *str, unsigned long size, const char *format, ...
 			typedef __gnuc_va_list va_list;
 			#define _VA_LIST_DEFINED		
 		#else
-			#error "No __GNUC_VA_LIST"
-			// typedef char* va_list;
+			//#error "No __GNUC_VA_LIST"
+			typedef __builtin_va_list va_list; //for musl toolchain
 		#endif /* __GNUC_VA_LIST */	
 	#else
 		//"Here is an va_list."
@@ -184,6 +184,7 @@ typedef void (*atomic_dec_t)(void *v);
 
 //----------------------------------------------------------------------------
 typedef unsigned long (*get_seconds_t)(void);
+typedef unsigned long (*ktime_get_seconds_t)(void);
 typedef void* (*timer_alloc_t)(void);
 typedef void  (*timer_free_t)(void *);
 typedef void (*timer_setup_t)(void *timer_list_ptr, void (*function)(unsigned long),
@@ -276,6 +277,7 @@ extern int tdts_core_syscall_set_atomic(
 //----------------------------------------------------------------------------
 extern int tdts_core_syscall_set_time(
 	get_seconds_t get_seconds,
+	ktime_get_seconds_t ktime_get_seconds,
 	timer_alloc_t timer_alloc,
 	timer_free_t timer_free,
 	timer_setup_t timer_setup,

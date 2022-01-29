@@ -57,11 +57,20 @@ int udb_shell_update_devid_un_bootp(uint8_t uid, uint8_t ip_ver, uint8_t *data);
 int udb_shell_update_dns_reply(uint8_t uid, uint8_t ip_ver, uint8_t *data);
 int udb_shell_update_upnp_data(uint8_t *data, uint32_t index, void *cb);
 
+int udb_shell_call_wrs(tdts_udb_param_t *fw_param, uint8_t *data, uint16_t tid);
+
 int udb_shell_wan_detection(uint8_t *dev_name, uint32_t len);
 
 int udb_shell_anomaly_init(void);
 void udb_shell_anomaly_exit(void);
 int udb_shell_anomaly_setup(tdts_pkt_parameter_t *param);
+
+#if TMCFG_E_UDB_CORE_DNS_BASE_URL
+int udb_shell_register_dns_response(int (void *, uint8_t *));
+void udb_shell_unregister_dns_response(void);
+int udb_shell_register_wrs_query_to_user(int (*cb)(usr_msg_hdr_t *m, uint8_t *));
+void udb_shell_unregister_wrs_query_to_user(void);
+#endif
 
 int udb_shell_memtrack_init(void);
 void udb_shell_memtrack_exit(void);

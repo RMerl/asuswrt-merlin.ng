@@ -823,7 +823,7 @@ apply.wlcKey = function(){
 	if(isManual)
 		systemVariable.multiPAP.wlcStatus["wlc" + unit + "_manual"] = true;
 
-	if(isSupport("concurrep")){
+	if(isSupport("concurrep") && isSupport("pre_auth_PAP")){
 		if(isManual){
 			systemVariable.selectedAP = {}
 			systemVariable.selectedAP.unit = $("#wlc_band_manual").val().toString()
@@ -1824,78 +1824,76 @@ abort.papList = function(){
 }
 
 abort.wireless = function(){
+	postDataModel.remove(generalObj);
+	postDataModel.remove(wirelessObj.wl0);
+	postDataModel.remove(wirelessObj.wl1);
+	postDataModel.remove(wirelessObj.wl2);
+	postDataModel.remove(smartConnectObj);
+	postDataModel.remove(fronthaulNetworkObj);
 
-postDataModel.remove(generalObj);
-postDataModel.remove(wirelessObj.wl0);
-postDataModel.remove(wirelessObj.wl1);
-postDataModel.remove(wirelessObj.wl2);
-postDataModel.remove(smartConnectObj);
-postDataModel.remove(fronthaulNetworkObj);
+	if(isSupport("dsl")){
 
-if(isSupport("dsl")){
-
-	postDataModel.remove(dsltmpQISObj);
-	postDataModel.remove(dslIPTVObj);
-	apply.welcome();
-}
-else{
-
-	if(isSupport("gobi")){
-		if(httpApi.nvramGet(["usb_modem_act_sim"]).usb_modem_act_sim == "1"){
-			if(systemVariable.historyPage[systemVariable.historyPage.length-2] == "simpin_setting" ||
-				systemVariable.historyPage[systemVariable.historyPage.length-2] == "simpuk_setting")
-				goTo.loadPage("simpin_setting", true);
-			else
-				abort.backToStartQIS();
-		}
-		else
-			goTo.loadPage(systemVariable.historyPage[systemVariable.historyPage.length-2], true);
-	}
-	else if(qisPostData.wan_proto == "dhcp" && $("#wan_dhcp_option_checkbox").is(":checked")){
-		goTo.loadPage("wan_dhcp_option_setting", true);
-	}
-	else if($("#iptv_checkbox").is(":checked")){
-		goTo.loadPage("iptv_setting", true);
-	}
-	else if(qisPostData.hasOwnProperty("modem_enable")){
-		goTo.loadPage("modem_setting", true);
-	}
-	else if(qisPostData.hasOwnProperty("wan_heartbeat_x")){
-		goTo.loadPage("getIp_setting", true);
-	}
-	else if(qisPostData.hasOwnProperty("wan_pppoe_username")){
-		goTo.loadPage("pppoe_setting", true);
-	}
-	else if(qisPostData.hasOwnProperty("wan_ipaddr_x")){
-		goTo.loadPage("static_setting", true);
-	}
-	else if(qisPostData.hasOwnProperty("lan_proto")){
-		if(qisPostData.lan_proto === "dhcp")
-			goTo.loadPage("getLanIp_setting", true);
-		else
-			goTo.loadPage("lanStatic_setting", true);
-	}
-	else if(systemVariable.manualWanType == "DHCP" || systemVariable.manualWanType == "V6PLUS"){
-		goTo.loadPage("wan_setting", true);
-	}
-	else if(systemVariable.detwanResult.wanType == "DHCP" || systemVariable.detwanResult.wanType == "CONNECTED"){
-		if(systemVariable.meshRole == "meshRouter")
-			goTo.loadPage("amasrole_page", true);
-		else if(systemVariable.forceChangePw)
-			goTo.loadPage("login_name", true);
-		else if(isSupport("prelink"))
-			goTo.loadPage("prelink_desc", true);
-		else
-			goTo.loadPage(systemVariable.historyPage[systemVariable.historyPage.length-2], true);
-	}
-	else if(systemVariable.detwanResult.wanType == "DHCPSPECIALISP"){
-		goTo.loadPage(systemVariable.historyPage[systemVariable.historyPage.length-2], true);
+		postDataModel.remove(dsltmpQISObj);
+		postDataModel.remove(dslIPTVObj);
+		apply.welcome();
 	}
 	else{
-		goTo.loadPage("wan_setting", true);
-	}
-}
 
+		if(isSupport("gobi")){
+			if(httpApi.nvramGet(["usb_modem_act_sim"]).usb_modem_act_sim == "1"){
+				if(systemVariable.historyPage[systemVariable.historyPage.length-2] == "simpin_setting" ||
+					systemVariable.historyPage[systemVariable.historyPage.length-2] == "simpuk_setting")
+					goTo.loadPage("simpin_setting", true);
+				else
+					abort.backToStartQIS();
+			}
+			else
+				goTo.loadPage(systemVariable.historyPage[systemVariable.historyPage.length-2], true);
+		}
+		else if(qisPostData.wan_proto == "dhcp" && $("#wan_dhcp_option_checkbox").is(":checked")){
+			goTo.loadPage("wan_dhcp_option_setting", true);
+		}
+		else if($("#iptv_checkbox").is(":checked")){
+			goTo.loadPage("iptv_setting", true);
+		}
+		else if(qisPostData.hasOwnProperty("modem_enable")){
+			goTo.loadPage("modem_setting", true);
+		}
+		else if(qisPostData.hasOwnProperty("wan_heartbeat_x")){
+			goTo.loadPage("getIp_setting", true);
+		}
+		else if(qisPostData.hasOwnProperty("wan_pppoe_username")){
+			goTo.loadPage("pppoe_setting", true);
+		}
+		else if(qisPostData.hasOwnProperty("wan_ipaddr_x")){
+			goTo.loadPage("static_setting", true);
+		}
+		else if(qisPostData.hasOwnProperty("lan_proto")){
+			if(qisPostData.lan_proto === "dhcp")
+				goTo.loadPage("getLanIp_setting", true);
+			else
+				goTo.loadPage("lanStatic_setting", true);
+		}
+		else if(systemVariable.manualWanType == "DHCP" || systemVariable.manualWanType == "V6PLUS"){
+			goTo.loadPage("wan_setting", true);
+		}
+		else if(systemVariable.detwanResult.wanType == "DHCP" || systemVariable.detwanResult.wanType == "CONNECTED"){
+			if(systemVariable.meshRole == "meshRouter")
+				goTo.loadPage("amasrole_page", true);
+			else if(systemVariable.forceChangePw)
+				goTo.loadPage("login_name", true);
+			else if(isSupport("prelink"))
+				goTo.loadPage("prelink_desc", true);
+			else
+				goTo.loadPage(systemVariable.historyPage[systemVariable.historyPage.length-2], true);
+		}
+		else if(systemVariable.detwanResult.wanType == "DHCPSPECIALISP"){
+			goTo.loadPage(systemVariable.historyPage[systemVariable.historyPage.length-2], true);
+		}
+		else{
+			goTo.loadPage("wan_setting", true);
+		}
+	}
 };
 
 abort.update = function(){
@@ -2536,7 +2534,6 @@ goTo.autoIP = function(){
 }
 
 goTo.DHCP = function(){
-
 	if(systemVariable.originWanType.toLowerCase() !== "dhcp"){
 		postDataModel.remove(wanObj.all);
 
@@ -2548,6 +2545,13 @@ goTo.DHCP = function(){
 	if(systemVariable.manualWanSetup){
 		systemVariable.manualWanType = 'DHCP';
 	}
+	
+/*
+	if(isSupport("ENABLE_IPv6")){
+		postDataModel.insert(wanObj.v6plus);
+		qisPostData.ipv6_service = "ipv6pt";
+	}
+*/
 
 	apply.dhcp();
 };
@@ -2557,6 +2561,11 @@ goTo.PPPoE = function(){
 	postDataModel.insert(wanObj.general);
 	postDataModel.insert(wanObj.pppoe);
 	qisPostData.wan_proto = "pppoe";
+
+	if(isSupport("ENABLE_IPv6")){
+		postDataModel.insert(wanObj.v6plus);
+		qisPostData.ipv6_service = "dhcp6";	
+	}
 
 	if(systemVariable.manualWanSetup){
 		systemVariable.manualWanType = 'PPPoE';
@@ -3324,6 +3333,13 @@ goTo.Wireless = function(){
 		$("#wireless_mobile_abortBtn").hide();
 	}
 
+/*	
+	if(isSupport("ENABLE_IPv6") && systemVariable.isDefault && !qisPostData.hasOwnProperty("ipv6_service")){
+		postDataModel.insert(wanObj.v6plus);
+		qisPostData.ipv6_service = "ipv6pt";
+	}
+*/
+
 	goTo.loadPage("wireless_setting", false);
 };
 
@@ -3501,6 +3517,7 @@ goTo.Finish = function(){
 	if(
 		!(restartService.indexOf("restart_wireless") != -1 && isWlUser) &&
 		restartService.indexOf("restart_subnet") == -1 &&
+		restartService.indexOf("restart_net") == -1 &&
 		restartService.indexOf("reboot") == -1 &&
 		restartService.indexOf("restart_all") == -1 &&
 		systemVariable.isNewFw == 0 &&
@@ -3812,7 +3829,7 @@ goTo.NoWan = function(){
 			if(systemVariable.manualWanSetup) return false;
 
 			switch(systemVariable.detwanResult.wanType){
-					case "CONNECTED":
+				case "CONNECTED":
 					goTo.Wireless();
 					break;
 				case "DHCP":

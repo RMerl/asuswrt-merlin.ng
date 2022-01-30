@@ -406,7 +406,7 @@ ej_wl_unit_status_array(int eid, webs_t wp, int argc, char_t **argv, int unit)
 
 // DFS status
 #ifdef RTCONFIG_BCMWL6
-	if (unit != 1)
+	if (unit == 0)
 		goto sta_list;
 
 	if (nvram_match(strcat_r(prefix, "reg_mode", tmp), "off"))

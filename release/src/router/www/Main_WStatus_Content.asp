@@ -149,7 +149,7 @@ function redraw(){
 			if (dataarray52.length == 0) {
 				document.getElementById('wifi52headerblock').innerHTML='<span class="wifiheader" style="font-size: 125%;">Wireless 5 GHz-2 is disabled.</span>';
 			} else {
-				display_header(dataarray52, 'Wireless 5 GHz-2', document.getElementById('wifi52headerblock'), false);
+				display_header(dataarray52, 'Wireless 5 GHz-2', document.getElementById('wifi52headerblock'), true);
 				display_clients(wificlients52, document.getElementById('wifi52block'), 2);
 			}
 		} else {

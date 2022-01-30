@@ -1,6 +1,13 @@
 Asuswrt-Merlin 386/NG Changelog
 ===============================
 
+386.5 (xx-xxx-2022)
+  - UPDATED: Merged with GPL 386_46065.
+  - UPDATED: Reverted dnsmasq from 2.86 to 2.85.
+  - UPDATED: miniupnpd to 2.3.0.
+  - UPDATED: avahi to 0.8.
+
+
 386.4 (1-Jan-2022)
   - NEW: Added support for the RT-AX86S (uses the same firmware
          as the RT-AX86U).

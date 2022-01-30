@@ -29,6 +29,7 @@ AVAHI_C_DECL_BEGIN
 
 #define AVAHI_DBUS_NAME "org.freedesktop.Avahi"
 #define AVAHI_DBUS_INTERFACE_SERVER AVAHI_DBUS_NAME".Server"
+#define AVAHI_DBUS_INTERFACE_SERVER2 AVAHI_DBUS_NAME".Server2"
 #define AVAHI_DBUS_PATH_SERVER "/"
 #define AVAHI_DBUS_INTERFACE_ENTRY_GROUP AVAHI_DBUS_NAME".EntryGroup"
 #define AVAHI_DBUS_INTERFACE_DOMAIN_BROWSER AVAHI_DBUS_NAME".DomainBrowser"
@@ -45,8 +46,9 @@ number is increased the API has been extended but is downwards
 compatible. If the release changes compatibility is lost.
 
 Avahi 0.6 implements API version 0x0201;
-Avahi 0.6.1 implements API version 0x0202 */
-#define AVAHI_DBUS_API_VERSION ((uint32_t) 0x0203)
+Avahi 0.6.1 implements API version 0x0202
+Avahi 0.7 implements API version 0x0203 */
+#define AVAHI_DBUS_API_VERSION ((uint32_t) 0x0204)
 
 #define AVAHI_DBUS_ERR_OK "org.freedesktop.Avahi.Success"
 #define AVAHI_DBUS_ERR_FAILURE "org.freedesktop.Avahi.Failure"

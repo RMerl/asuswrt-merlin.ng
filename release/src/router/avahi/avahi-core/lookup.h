@@ -72,8 +72,21 @@ AvahiSRecordBrowser *avahi_s_record_browser_new(
     AvahiSRecordBrowserCallback callback,   /**< The callback to call on browsing events */
     void* userdata                          /**< Arbitrary use suppliable data which is passed to the callback */);
 
+/** Prepare a new browsing object for arbitrary RRs */
+AvahiSRecordBrowser *avahi_s_record_browser_prepare(
+    AvahiServer *server,                    /**< The server object to which attach this query */
+    AvahiIfIndex interface,                 /**< Logical OS interface number where to look for the records, or AVAHI_IF_UNSPEC to look on interfaces */
+    AvahiProtocol protocol,                 /**< Protocol number to use when looking for the record, or AVAHI_PROTO_UNSPEC to look on all protocols */
+    AvahiKey *key,                          /**< The search key */
+    AvahiLookupFlags flags,                 /**< Lookup flags. Must have set either AVAHI_LOOKUP_FORCE_WIDE_AREA or AVAHI_LOOKUP_FORCE_MULTICAST, since domain based detection is not available here. */
+    AvahiSRecordBrowserCallback callback,   /**< The callback to call on browsing events */
+    void* userdata                          /**< Arbitrary use suppliable data which is passed to the callback */);
+
 /** Free an AvahiSRecordBrowser object */
 void avahi_s_record_browser_free(AvahiSRecordBrowser *b);
+
+/** Start querying on an AvahiSRecordBrowser object */
+void avahi_s_record_browser_start_query(AvahiSRecordBrowser *b);
 
 /** Callback prototype for AvahiSHostNameResolver events */
 typedef void (*AvahiSHostNameResolverCallback)(
@@ -96,6 +109,20 @@ AvahiSHostNameResolver *avahi_s_host_name_resolver_new(
     AvahiLookupFlags flags,                 /**< Lookup flags. */
     AvahiSHostNameResolverCallback calback,
     void* userdata);
+
+/** Prepare an AvahiSHostNameResolver object for resolving a host name to an adddress. See AvahiSRecordBrowser for more info on the paramters. */
+AvahiSHostNameResolver *avahi_s_host_name_resolver_prepare(
+    AvahiServer *server,
+    AvahiIfIndex interface,
+    AvahiProtocol protocol,
+    const char *host_name,                  /**< The host name to look for */
+    AvahiProtocol aprotocol,                /**< The address family of the desired address or AVAHI_PROTO_UNSPEC if doesn't matter. */
+    AvahiLookupFlags flags,                 /**< Lookup flags. */
+    AvahiSHostNameResolverCallback calback,
+    void* userdata);
+
+/** Start querying on an AvahiSHostNameResolver object */
+void avahi_s_host_name_resolver_start(AvahiSHostNameResolver *r);
 
 /** Free a AvahiSHostNameResolver object */
 void avahi_s_host_name_resolver_free(AvahiSHostNameResolver *r);
@@ -121,6 +148,19 @@ AvahiSAddressResolver *avahi_s_address_resolver_new(
     AvahiSAddressResolverCallback calback,
     void* userdata);
 
+/** Prepare an AvahiSAddressResolver object. See AvahiSRecordBrowser for more info on the paramters. */
+AvahiSAddressResolver *avahi_s_address_resolver_prepare(
+    AvahiServer *server,
+    AvahiIfIndex interface,
+    AvahiProtocol protocol,
+    const AvahiAddress *address,
+    AvahiLookupFlags flags,                 /**< Lookup flags. */
+    AvahiSAddressResolverCallback calback,
+    void* userdata);
+
+/** Start querying on an AvahiSAddressResolver object */
+void avahi_s_address_resolver_start(AvahiSAddressResolver *r);
+
 /** Free an AvahiSAddressResolver object */
 void avahi_s_address_resolver_free(AvahiSAddressResolver *r);
 
@@ -145,6 +185,20 @@ AvahiSDomainBrowser *avahi_s_domain_browser_new(
     AvahiSDomainBrowserCallback callback,
     void* userdata);
 
+/** Prepare a new AvahiSDomainBrowser object */
+AvahiSDomainBrowser *avahi_s_domain_browser_prepare(
+    AvahiServer *server,
+    AvahiIfIndex interface,
+    AvahiProtocol protocol,
+    const char *domain,
+    AvahiDomainBrowserType type,
+    AvahiLookupFlags flags,                 /**< Lookup flags. */
+    AvahiSDomainBrowserCallback callback,
+    void* userdata);
+
+/** Start querying on an AvahiSDomainBrowser object */
+void avahi_s_domain_browser_start(AvahiSDomainBrowser *b);
+
 /** Free an AvahiSDomainBrowser object */
 void avahi_s_domain_browser_free(AvahiSDomainBrowser *b);
 
@@ -168,6 +222,19 @@ AvahiSServiceTypeBrowser *avahi_s_service_type_browser_new(
     AvahiLookupFlags flags,                 /**< Lookup flags. */
     AvahiSServiceTypeBrowserCallback callback,
     void* userdata);
+
+/** Prepare a new AvahiSServiceTypeBrowser object. */
+AvahiSServiceTypeBrowser *avahi_s_service_type_browser_prepare(
+    AvahiServer *server,
+    AvahiIfIndex interface,
+    AvahiProtocol protocol,
+    const char *domain,
+    AvahiLookupFlags flags,                 /**< Lookup flags. */
+    AvahiSServiceTypeBrowserCallback callback,
+    void* userdata);
+
+/** Start querying on an AvahiSServiceTypeBrowser object */
+void avahi_s_service_type_browser_start(AvahiSServiceTypeBrowser *b);
 
 /** Free an AvahiSServiceTypeBrowser object */
 void avahi_s_service_type_browser_free(AvahiSServiceTypeBrowser *b);
@@ -194,6 +261,20 @@ AvahiSServiceBrowser *avahi_s_service_browser_new(
     AvahiLookupFlags flags,                 /**< Lookup flags. */
     AvahiSServiceBrowserCallback callback,
     void* userdata);
+
+/** Prepare a new AvahiSServiceBrowser object. */
+AvahiSServiceBrowser *avahi_s_service_browser_prepare(
+    AvahiServer *server,
+    AvahiIfIndex interface,
+    AvahiProtocol protocol,
+    const char *service_type /** DNS-SD service type, e.g. "_http._tcp" */,
+    const char *domain,
+    AvahiLookupFlags flags,                 /**< Lookup flags. */
+    AvahiSServiceBrowserCallback callback,
+    void* userdata);
+
+/** Start querying on an AvahiSServiceBrowser object */
+void avahi_s_service_browser_start(AvahiSServiceBrowser *b);
 
 /** Free an AvahiSServiceBrowser object */
 void avahi_s_service_browser_free(AvahiSServiceBrowser *b);
@@ -226,6 +307,22 @@ AvahiSServiceResolver *avahi_s_service_resolver_new(
     AvahiLookupFlags flags,                 /**< Lookup flags. */
     AvahiSServiceResolverCallback calback,
     void* userdata);
+
+/** Prepare a new AvahiSServiceResolver object. The specified callback function will be called with the resolved service data. */
+AvahiSServiceResolver *avahi_s_service_resolver_prepare(
+    AvahiServer *server,
+    AvahiIfIndex interface,
+    AvahiProtocol protocol,
+    const char *name,
+    const char *type,
+    const char *domain,
+    AvahiProtocol aprotocol,    /**< Address family of the desired service address. Use AVAHI_PROTO_UNSPEC if you don't care */
+    AvahiLookupFlags flags,                 /**< Lookup flags. */
+    AvahiSServiceResolverCallback calback,
+    void* userdata);
+
+/** Start querying on an AvahiSServiceResolver object */
+void avahi_s_service_resolver_start(AvahiSServiceResolver *r);
 
 /** Free an AvahiSServiceResolver object */
 void avahi_s_service_resolver_free(AvahiSServiceResolver *r);

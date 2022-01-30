@@ -15,7 +15,7 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 # USA.
 
-EXTRA_DIST=build-db.in service-types
+EXTRA_DIST=service-types
 
 pkglibdatadir=$(libdir)/avahi
 
@@ -27,27 +27,17 @@ if HAVE_GDBM
 noinst_SCRIPTS=build-db
 pkglibdata_DATA+=service-types.db
 
-build-db: build-db.in
-	$(AM_V_GEN)sed -e 's,@PYTHON\@,$(PYTHON),g' \
-	    -e 's,@DBM\@,gdbm,g' $< > $@ && \
-	chmod +x $@
-
-service-types.db: service-types build-db
+service-types.db: service-types
 	$(AM_V_GEN)$(PYTHON) build-db $< $@.coming && \
 	mv $@.coming $@
 
-CLEANFILES = service-types.db build-db
+CLEANFILES = service-types.db
 
 endif
 if HAVE_DBM
 
 noinst_SCRIPTS=build-db
 pkglibdata_DATA+=service-types.db.pag service-types.db.dir
-
-build-db: build-db.in
-	$(AM_V_GEN)sed -e 's,@PYTHON\@,$(PYTHON),g' \
-	    -e 's,@DBM\@,dbm,g' $< > $@ && \
-	chmod +x $@
 
 service-types.db.pag: service-types.db
 	$(AM_V_GEN)mv service-types.db.coming.pag service-types.db.pag
@@ -57,7 +47,7 @@ service-types.db: service-types build-db
 	$(AM_V_GEN)$(PYTHON) build-db $< $@.coming && \
 	if test -f "$@.coming"; then mv $@.coming $@; fi
 
-CLEANFILES = service-types.db* build-db
+CLEANFILES = service-types.db*
 
 endif
 endif

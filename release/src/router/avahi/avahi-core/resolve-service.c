@@ -223,13 +223,17 @@ static void record_browser_callback(
 
                             if (r->address_protocol == AVAHI_PROTO_INET || r->address_protocol == AVAHI_PROTO_UNSPEC) {
                                 AvahiKey *k = avahi_key_new(r->srv_record->data.srv.name, AVAHI_DNS_CLASS_IN, AVAHI_DNS_TYPE_A);
-                                r->record_browser_a = avahi_s_record_browser_new(r->server, r->interface, r->protocol, k, r->user_flags & ~(AVAHI_LOOKUP_NO_TXT|AVAHI_LOOKUP_NO_ADDRESS), record_browser_callback, r);
+                                r->record_browser_a = avahi_s_record_browser_prepare(r->server, r->interface, r->protocol, k, r->user_flags & ~(AVAHI_LOOKUP_NO_TXT|AVAHI_LOOKUP_NO_ADDRESS), record_browser_callback, r);
+                                if(r->record_browser_a)
+                                    avahi_s_record_browser_start_query(r->record_browser_a);
                                 avahi_key_unref(k);
                             }
 
                             if (r->address_protocol == AVAHI_PROTO_INET6 || r->address_protocol == AVAHI_PROTO_UNSPEC) {
                                 AvahiKey *k = avahi_key_new(r->srv_record->data.srv.name, AVAHI_DNS_CLASS_IN, AVAHI_DNS_TYPE_AAAA);
-                                r->record_browser_aaaa = avahi_s_record_browser_new(r->server, r->interface, r->protocol, k, r->user_flags & ~(AVAHI_LOOKUP_NO_TXT|AVAHI_LOOKUP_NO_ADDRESS), record_browser_callback, r);
+                                r->record_browser_aaaa = avahi_s_record_browser_prepare(r->server, r->interface, r->protocol, k, r->user_flags & ~(AVAHI_LOOKUP_NO_TXT|AVAHI_LOOKUP_NO_ADDRESS), record_browser_callback, r);
+                                if(r->record_browser_aaaa)
+                                    avahi_s_record_browser_start_query(r->record_browser_aaaa);
                                 avahi_key_unref(k);
                             }
                         }
@@ -376,7 +380,7 @@ static void record_browser_callback(
     }
 }
 
-AvahiSServiceResolver *avahi_s_service_resolver_new(
+AvahiSServiceResolver *avahi_s_service_resolver_prepare(
     AvahiServer *server,
     AvahiIfIndex interface,
     AvahiProtocol protocol,
@@ -459,6 +463,19 @@ AvahiSServiceResolver *avahi_s_service_resolver_new(
     return r;
 }
 
+void avahi_s_service_resolver_start(AvahiSServiceResolver *r) {
+    assert(r);
+
+    if (r->record_browser_srv)
+        avahi_s_record_browser_start_query(r->record_browser_srv);
+    if (r->record_browser_txt)
+        avahi_s_record_browser_start_query(r->record_browser_txt);
+    if (r->record_browser_a)
+        avahi_s_record_browser_start_query(r->record_browser_a);
+    if (r->record_browser_aaaa)
+        avahi_s_record_browser_start_query(r->record_browser_aaaa);
+}
+
 void avahi_s_service_resolver_free(AvahiSServiceResolver *r) {
     assert(r);
 
@@ -487,4 +504,23 @@ void avahi_s_service_resolver_free(AvahiSServiceResolver *r) {
     avahi_free(r->service_type);
     avahi_free(r->domain_name);
     avahi_free(r);
+}
+
+AvahiSServiceResolver *avahi_s_service_resolver_new(
+    AvahiServer *server,
+    AvahiIfIndex interface,
+    AvahiProtocol protocol,
+    const char *name,
+    const char *type,
+    const char *domain,
+    AvahiProtocol aprotocol,
+    AvahiLookupFlags flags,
+    AvahiSServiceResolverCallback callback,
+    void* userdata) {
+        AvahiSServiceResolver *b;
+
+        b = avahi_s_service_resolver_prepare(server, interface, protocol, name, type, domain, aprotocol, flags, callback, userdata);
+        avahi_s_service_resolver_start(b);
+
+        return b;
 }

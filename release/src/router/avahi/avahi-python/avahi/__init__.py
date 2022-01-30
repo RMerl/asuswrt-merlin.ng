@@ -17,6 +17,8 @@
 
 # Some definitions matching those in avahi-common/defs.h
 
+import sys
+
 import dbus
 
 SERVER_INVALID, SERVER_REGISTERING, SERVER_RUNNING, SERVER_COLLISION, SERVER_FAILURE = range(0, 5)
@@ -66,6 +68,9 @@ DBUS_INTERFACE_HOST_NAME_RESOLVER = DBUS_NAME + ".HostNameResolver"
 DBUS_INTERFACE_SERVICE_RESOLVER = DBUS_NAME + ".ServiceResolver"
 DBUS_INTERFACE_RECORD_BROWSER = DBUS_NAME + ".RecordBrowser"
 
+if sys.version_info[0] >= 3:
+    unicode = str
+
 def byte_array_to_string(s):
     r = ""
     
@@ -86,12 +91,19 @@ def txt_array_to_string_array(t):
 
     return l
 
-
 def string_to_byte_array(s):
+    if isinstance(s, unicode):
+        s = s.encode('utf-8')
+
     r = []
 
     for c in s:
-        r.append(dbus.Byte(ord(c)))
+        if isinstance(c, int):
+            # Python 3: iterating over bytes yields ints
+            r.append(dbus.Byte(c))
+        else:
+            # Python 2: iterating over str yields str
+            r.append(dbus.Byte(ord(c)))
 
     return r
 
@@ -107,6 +119,12 @@ def dict_to_txt_array(txt_dict):
     l = []
 
     for k,v in txt_dict.items():
-        l.append(string_to_byte_array("%s=%s" % (k,v)))
+        if isinstance(k, unicode):
+            k = k.encode('utf-8')
+
+        if isinstance(v, unicode):
+            v = v.encode('utf-8')
+
+        l.append(string_to_byte_array(b"%s=%s" % (k,v)))
 
     return l

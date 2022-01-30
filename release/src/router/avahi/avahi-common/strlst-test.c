@@ -48,6 +48,7 @@ int main(AVAHI_GCC_UNUSED int argc, AVAHI_GCC_UNUSED char *argv[]) {
     a = avahi_string_list_add_pair(a, "blubb", "blaa");
     a = avahi_string_list_add_pair(a, "uxknurz", NULL);
     a = avahi_string_list_add_pair_arbitrary(a, "uxknurz2", (const uint8_t*) "blafasel\0oerks", 14);
+    a = avahi_string_list_add(a, "i am a \"string\" with embedded double-quotes (\\\")\nand newlines (\\n).");
 
     a = avahi_string_list_add(a, "end");
 

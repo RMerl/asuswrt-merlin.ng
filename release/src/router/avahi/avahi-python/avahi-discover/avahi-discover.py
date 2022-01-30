@@ -42,7 +42,8 @@ except Exception as e:
 ##
 try:
     from dbus import DBusException
-    import dbus.glib
+    from dbus.mainloop.glib import DBusGMainLoop
+    DBusGMainLoop(set_as_default=True)
 except ImportError as e:
     pass
 
@@ -209,10 +210,10 @@ class Main_window:
             self.new_service_type(interface, protocol, self.stype, domain)
 
     def new_domain(self,interface, protocol, domain, flags):
-        if self.zc_ifaces.has_key((interface,protocol)) == False:
+        if (interface,protocol) not in self.zc_ifaces:
             ifn = self.get_interface_name(interface, protocol)
             self.zc_ifaces[(interface,protocol)] = self.insert_row(self.treemodel, None, ifn,None,interface,protocol,None,domain)
-        if self.zc_domains.has_key((interface,protocol,domain)) == False:
+        if (interface,protocol,domain) not in self.zc_domains:
             self.zc_domains[(interface,protocol,domain)] = self.insert_row(self.treemodel, self.zc_ifaces[(interface,protocol)], domain,None,interface,protocol,None,domain)
         if domain != "local":
             self.browse_domain(interface, protocol, domain)

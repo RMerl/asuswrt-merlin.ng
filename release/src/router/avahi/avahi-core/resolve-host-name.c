@@ -201,7 +201,7 @@ static void record_browser_callback(
     }
 }
 
-AvahiSHostNameResolver *avahi_s_host_name_resolver_new(
+AvahiSHostNameResolver *avahi_s_host_name_resolver_prepare(
     AvahiServer *server,
     AvahiIfIndex interface,
     AvahiProtocol protocol,
@@ -248,7 +248,7 @@ AvahiSHostNameResolver *avahi_s_host_name_resolver_new(
 
     if (aprotocol == AVAHI_PROTO_INET || aprotocol == AVAHI_PROTO_UNSPEC) {
         k = avahi_key_new(host_name, AVAHI_DNS_CLASS_IN, AVAHI_DNS_TYPE_A);
-        r->record_browser_a = avahi_s_record_browser_new(server, interface, protocol, k, flags, record_browser_callback, r);
+        r->record_browser_a = avahi_s_record_browser_prepare(server, interface, protocol, k, flags, record_browser_callback, r);
         avahi_key_unref(k);
 
         if (!r->record_browser_a)
@@ -257,7 +257,7 @@ AvahiSHostNameResolver *avahi_s_host_name_resolver_new(
 
     if (aprotocol == AVAHI_PROTO_INET6 || aprotocol == AVAHI_PROTO_UNSPEC) {
         k = avahi_key_new(host_name, AVAHI_DNS_CLASS_IN, AVAHI_DNS_TYPE_AAAA);
-        r->record_browser_aaaa = avahi_s_record_browser_new(server, interface, protocol, k, flags, record_browser_callback, r);
+        r->record_browser_aaaa = avahi_s_record_browser_prepare(server, interface, protocol, k, flags, record_browser_callback, r);
         avahi_key_unref(k);
 
         if (!r->record_browser_aaaa)
@@ -273,6 +273,16 @@ AvahiSHostNameResolver *avahi_s_host_name_resolver_new(
 fail:
     avahi_s_host_name_resolver_free(r);
     return NULL;
+}
+
+void avahi_s_host_name_resolver_start(AvahiSHostNameResolver *r) {
+    assert(r);
+
+    if(r->record_browser_a)
+        avahi_s_record_browser_start_query(r->record_browser_a);
+
+    if(r->record_browser_aaaa)
+        avahi_s_record_browser_start_query(r->record_browser_aaaa);
 }
 
 void avahi_s_host_name_resolver_free(AvahiSHostNameResolver *r) {
@@ -294,4 +304,21 @@ void avahi_s_host_name_resolver_free(AvahiSHostNameResolver *r) {
 
     avahi_free(r->host_name);
     avahi_free(r);
+}
+
+AvahiSHostNameResolver *avahi_s_host_name_resolver_new(
+    AvahiServer *server,
+    AvahiIfIndex interface,
+    AvahiProtocol protocol,
+    const char *host_name,
+    AvahiProtocol aprotocol,
+    AvahiLookupFlags flags,
+    AvahiSHostNameResolverCallback callback,
+    void* userdata) {
+        AvahiSHostNameResolver *b;
+
+        b = avahi_s_host_name_resolver_prepare(server, interface, protocol, host_name, aprotocol, flags, callback, userdata);
+        avahi_s_host_name_resolver_start(b);
+
+        return b;
 }

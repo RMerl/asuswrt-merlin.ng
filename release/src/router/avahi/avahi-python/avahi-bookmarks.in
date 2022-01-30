@@ -20,9 +20,10 @@
 import sys, getopt, os
 
 try:
-    import avahi, gobject, dbus
+    from gi.repository import GObject
+    import avahi, dbus
 except ImportError:
-    print "Sorry, to use this tool you need to install Avahi and python-dbus."
+    print("Sorry, to use this tool you need to install Avahi and python-dbus.")
     sys.exit(1)
 
 try:
@@ -95,7 +96,7 @@ class AvahiBookmarks:
         else:
             t += '<ul style="padding: 0px; margin: 20px; list-style-type: none">'
 
-            for k, v in self.services.iteritems():
+            for k, v in self.services.items():
             
                 if v[3] == 80:
                     port = ''
@@ -109,7 +110,7 @@ class AvahiBookmarks:
         
         t += '<hr noshade/><p style="font-size: 8; font-family: sans-serif">Served by %s</p></body></html>' % self.version_string
 
-        return str(t)
+        return str(t).encode('utf-8')
 
 
     def new_service(self, interface, protocol, name, type, domain, flags):
@@ -138,16 +139,16 @@ class AvahiBookmarks:
 
 def usage(retval = 0):
 
-    print "%s [options]\n" % sys.argv[0]
-    print "   -h --help             Show this help"
-    print "   -c --cgi              Run as a CGI instead of as a server (default to server"
-    print "                         unless environment variable GATEWAY_INTERFACE is set)"
-    print "   -t --timeout MS       Specify the max time for CGI browsing (default %u)" % timeout
-    print "   -p --port PORT        Specify the port to use (default %u)" % port
-    print "   -a --address ADDRESS  Specify the address to bind to (default %s)" % address
-    print "   -H --host-names       Show links with real hostnames"
-    print "   -A --addresses        Show links with numeric IP addresses"
-    print "   -d --domain DOMAIN    Specify the domain to browse" 
+    print("%s [options]\n" % sys.argv[0])
+    print("   -h --help             Show this help")
+    print("   -c --cgi              Run as a CGI instead of as a server (default to server")
+    print("                         unless environment variable GATEWAY_INTERFACE is set)")
+    print("   -t --timeout MS       Specify the max time for CGI browsing (default %u)" % timeout)
+    print("   -p --port PORT        Specify the port to use (default %u)" % port)
+    print("   -a --address ADDRESS  Specify the address to bind to (default %s)" % address)
+    print("   -H --host-names       Show links with real hostnames")
+    print("   -A --addresses        Show links with numeric IP addresses")
+    print("   -d --domain DOMAIN    Specify the domain to browse" )
     sys.exit(retval)
 
 try:
@@ -181,30 +182,31 @@ for o, a in opts:
         domain = a
 
 if use_CGI is None:
-    use_CGI = os.environ.has_key("GATEWAY_INTERFACE")
+    use_CGI = "GATEWAY_INTERFACE" in os.environ
 
 if use_CGI:
     cgi = AvahiBookmarks(use_host_names)
 
-    mainloop = gobject.MainLoop()
-    gobject.timeout_add(timeout, mainloop.quit)
+    mainloop = GObject.MainLoop()
+    GObject.timeout_add(timeout, mainloop.quit)
 
     try:
         mainloop.run()
     except KeyboardInterrupt:
         pass
         
-    print 'Content-type: text/html\n\n' + cgi.render_html()
+    print('Content-type: text/html\n\n' + cgi.render_html())
 
 else:
     try:
-        from twisted.internet import glib2reactor
-        glib2reactor.install()
+        from twisted.internet import gireactor
+        gireactor.install()
         from twisted.internet import reactor
         from twisted.web import server, resource
     except ImportError:
-        print "Sorry, to use this tool as a server you need to install twisted and twisted.web.\n"
-	sys.exit(1)
+        raise
+        print("Sorry, to use this tool as a server you need to install twisted and twisted.web.\n")
+        sys.exit(1)
 
     class AvahiBookmarksServer(AvahiBookmarks, resource.Resource):
         isLeaf = True
@@ -219,7 +221,7 @@ else:
     site = server.Site(AvahiBookmarksServer(use_host_names))
     reactor.listenTCP(port, site, interface=address)
 
-    print "Now point your web browser to http://%s:%u/!" % (address, port)
+    print("Now point your web browser to http://%s:%u/!" % (address, port))
 
     try:
         reactor.run()

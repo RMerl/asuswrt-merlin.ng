@@ -1115,7 +1115,7 @@ static int loop(int iface, uint32_t addr) {
         uint32_t a = 1;
 
         for (i = 0; i < ETHER_ADDRLEN; i++)
-            a += hw_address[i]*i;
+            a += hw_address[i]*(i+1);
 
         a = (a % 0xFE00) + 0x0100;
 

@@ -33,6 +33,8 @@
 
     <method name="Free"/>
 
+    <method name="Start"/>
+
     <signal name="Found">
       <arg name="interface" type="i" direction="out"/>
       <arg name="protocol" type="i" direction="out"/>

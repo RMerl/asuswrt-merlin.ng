@@ -172,20 +172,30 @@ typedef void (*AvahiServiceResolverCallback) (
     AvahiLookupResultFlags flags,
     void *userdata);
 
-/** Create a new service resolver object. Please make sure to pass all
- * the service data you received via avahi_service_browser_new()'s
- * callback function, especially interface and protocol. The protocol
- * argument specifies the protocol (IPv4 or IPv6) to use as transport
- * for the queries which are sent out by this resolver. The
- * aprotocol argument specifies the adress family (IPv4 or IPv6) of
- * the address of the service we are looking for. Generally, on
- * "protocol" you should only pass what was supplied to you as
- * parameter to your AvahiServiceBrowserCallback. In "aprotocol" you
- * should pass what your application code can deal with when
- * connecting to the service. Or, more technically speaking: protocol
- * specifies if the mDNS queries should be sent as UDP/IPv4
- * resp. UDP/IPv6 packets. aprotocol specifies whether the query is for a A
- * resp. AAAA resource record. */
+/** Create a new service resolver object. Please make sure to pass all the
+ * service data you received via avahi_service_browser_new()'s callback
+ * function, especially interface and protocol. The protocol argument specifies
+ * the protocol (IPv4 or IPv6) to use as transport for the queries which are
+ * sent out by this resolver. The aprotocol argument specifies the adress
+ * family (IPv4 or IPv6) of the address of the service we are looking for.
+ * Generally, on "protocol" you should only pass what was supplied to you as
+ * parameter to your AvahiServiceBrowserCallback. In "aprotocol" you should
+ * pass what your application code can deal with when connecting to the
+ * service. Or, more technically speaking: protocol specifies if the mDNS
+ * queries should be sent as UDP/IPv4 resp. UDP/IPv6 packets. aprotocol
+ * specifies whether the query is for a A resp. AAAA resource record.
+ *
+ * Avahi browser and resolver callbacks only receive a concrete protocol;
+ * always AVAHI_PROTO_INET or AVAHI_PROTO_INET6 and never AVAHI_PROTO_UNSPEC. A
+ * new browser given UNSPEC will receive both (separate) INET and INET6 events.
+ * A new resolver given a query protocol of UNSPEC will default to querying
+ * with INET6. A new resolver given an address protocol of UNSPEC will always
+ * resolve a service to an address matching the query protocol. So a resolver
+ * with UNSPEC/UNSPEC is equivalent to INET6/INET6. By default the avahi daemon
+ * publishes AAAA (IPv6) records over IPv4, but not A (IPv4) records over IPv6
+ * (see 'publish-aaaa-on-ipv4' and 'publish-a-on-ipv6' in 'avahi-daemon.conf').
+ * That's why, given most daemons, all four combinations of concrete query and
+ * address protocols resolve except INET addresses via INET6 queries. */
 AvahiServiceResolver * avahi_service_resolver_new(
     AvahiClient *client,
     AvahiIfIndex interface,   /**< Pass the interface argument you received in AvahiServiceBrowserCallback here. */

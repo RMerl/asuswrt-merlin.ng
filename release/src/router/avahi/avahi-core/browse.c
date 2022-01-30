@@ -519,7 +519,7 @@ void avahi_s_record_browser_restart(AvahiSRecordBrowser *b) {
     }
 }
 
-AvahiSRecordBrowser *avahi_s_record_browser_new(
+AvahiSRecordBrowser *avahi_s_record_browser_prepare(
     AvahiServer *server,
     AvahiIfIndex interface,
     AvahiProtocol protocol,
@@ -547,6 +547,7 @@ AvahiSRecordBrowser *avahi_s_record_browser_new(
     }
 
     b->dead = 0;
+    b->defer_time_event = NULL;
     b->server = server;
     b->interface = interface;
     b->protocol = protocol;
@@ -560,12 +561,23 @@ AvahiSRecordBrowser *avahi_s_record_browser_new(
 
     AVAHI_LLIST_PREPEND(AvahiSRecordBrowser, browser, server->record_browsers, b);
 
-    /* The currently cached entries are scanned a bit later, and than we will start querying, too */
-    b->defer_time_event = avahi_time_event_new(server->time_event_queue, NULL, defer_callback, b);
-    assert(b->defer_time_event);
-
     return b;
 }
+
+
+void avahi_s_record_browser_start_query(AvahiSRecordBrowser *b) {
+    assert(b);
+    assert(!b->dead);
+
+    /* If the number of lookups greater than zero, the object has already been used.
+     * To restart querying, call only avahi_s_record_browser_restart */
+    if(b->n_lookups > 0)
+        return;
+
+    /* The currently cached entries are scanned a bit later, and than we will start querying, too */
+    avahi_s_record_browser_restart(b);
+}
+
 
 void avahi_s_record_browser_free(AvahiSRecordBrowser *b) {
     assert(b);
@@ -611,3 +623,18 @@ void avahi_browser_cleanup(AvahiServer *server) {
     avahi_multicast_lookup_engine_cleanup(server->multicast_lookup_engine);
 }
 
+AvahiSRecordBrowser *avahi_s_record_browser_new(
+    AvahiServer *server,
+    AvahiIfIndex interface,
+    AvahiProtocol protocol,
+    AvahiKey *key,
+    AvahiLookupFlags flags,
+    AvahiSRecordBrowserCallback callback,
+    void* userdata) {
+        AvahiSRecordBrowser *b;
+
+        b = avahi_s_record_browser_prepare(server, interface, protocol, key, flags, callback, userdata);
+        avahi_s_record_browser_start_query(b);
+
+        return b;
+}

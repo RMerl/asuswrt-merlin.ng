@@ -19,7 +19,7 @@ ACLOCAL_AMFLAGS = -I common
 
 include $(srcdir)/common/doxygen.mk
 
-EXTRA_DIST = \
+EXTRA_DIST = config.rpath  \
 	autogen.sh \
 	bootstrap.sh \
 	LICENSE \
@@ -40,9 +40,11 @@ EXTRA_DIST = \
 	avahi-core.pc.in \
 	avahi-client.pc.in \
 	avahi-glib.pc.in \
+	avahi-libevent.pc.in \
 	avahi-gobject.pc.in \
 	avahi-qt3.pc.in \
 	avahi-qt4.pc.in \
+	avahi-qt5.pc.in \
 	avahi-sharp.pc.in \
 	avahi-ui-sharp.pc.in \
 	avahi-compat-libdns_sd.pc.in \
@@ -76,6 +78,7 @@ SUBDIRS = \
 	avahi-autoipd \
 	avahi-ui \
 	avahi-ui-sharp \
+	avahi-libevent \
 	po
 
 DX_INPUT = \
@@ -98,6 +101,10 @@ DX_INPUT += \
 	$(srcdir)/avahi-qt/qt-watch.h
 else
 if HAVE_QT4
+DX_INPUT += \
+	$(srcdir)/avahi-qt/qt-watch.h
+endif
+if HAVE_QT5
 DX_INPUT += \
 	$(srcdir)/avahi-qt/qt-watch.h
 endif
@@ -148,6 +155,11 @@ endif
 if HAVE_GTK
 DX_INPUT += \
 	$(srcdir)/avahi-ui/avahi-ui.h
+endif
+
+if HAVE_LIBEVENT
+DX_INPUT += \
+	$(srcdir)/avahi-libevent/libevent-watch.h
 endif
 
 pkgconfigdir = $(libdir)/pkgconfig
@@ -216,6 +228,16 @@ pkgconfig_DATA += avahi-qt4.pc
 CLEANFILES += avahi-qt4.pc
 endif
 
+if HAVE_QT5
+pkgconfig_DATA += avahi-qt5.pc
+CLEANFILES += avahi-qt5.pc
+endif
+
+if HAVE_LIBEVENT
+pkgconfig_DATA += avahi-libevent.pc
+CLEANFILES += avahi-libevent.pc
+endif
+
 CLEANFILES += avahi.devhelp
 
 avahi.devhelp: doxygen-run
@@ -238,6 +260,3 @@ homepage:
 	$(MAKE) doxygen-run
 	ssh tango rm -rf www/avahi.org/tree/download/doxygen
 	scp -r doxygen/html tango:www/avahi.org/tree/download/doxygen
-
-DISTCLEANFILES = \
-	po/.intltool-merge-cache

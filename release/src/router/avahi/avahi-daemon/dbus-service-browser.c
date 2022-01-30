@@ -30,9 +30,17 @@
 
 #include "dbus-util.h"
 #include "dbus-internal.h"
+#include "main.h"
 
 void avahi_dbus_service_browser_free(ServiceBrowserInfo *i) {
+    const AvahiPoll *poll_api = NULL;
+
     assert(i);
+
+    poll_api = avahi_simple_poll_get(simple_poll_api);
+
+    if (i->delay_timeout)
+        poll_api->timeout_free(i->delay_timeout);
 
     if (i->service_browser)
         avahi_s_service_browser_free(i->service_browser);
@@ -48,6 +56,13 @@ void avahi_dbus_service_browser_free(ServiceBrowserInfo *i) {
     i->client->n_objects--;
 
     avahi_free(i);
+}
+
+void avahi_dbus_service_browser_start(ServiceBrowserInfo *i) {
+    assert(i);
+
+    if(i->service_browser)
+        avahi_s_service_browser_start(i->service_browser);
 }
 
 DBusHandlerResult avahi_dbus_msg_service_browser_impl(DBusConnection *c, DBusMessage *m, void *userdata) {
@@ -81,6 +96,18 @@ DBusHandlerResult avahi_dbus_msg_service_browser_impl(DBusConnection *c, DBusMes
         }
 
         avahi_dbus_service_browser_free(i);
+        return avahi_dbus_respond_ok(c, m);
+
+    }
+
+    if (dbus_message_is_method_call(m, AVAHI_DBUS_INTERFACE_SERVICE_BROWSER, "Start")) {
+
+        if (!dbus_message_get_args(m, &error, DBUS_TYPE_INVALID)) {
+            avahi_log_warn("Error parsing ServiceBrowser::Start message");
+            goto fail;
+        }
+
+        avahi_dbus_service_browser_start(i);
         return avahi_dbus_respond_ok(c, m);
 
     }

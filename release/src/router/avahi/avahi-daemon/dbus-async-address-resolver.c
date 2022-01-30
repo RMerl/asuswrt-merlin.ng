@@ -30,9 +30,17 @@
 
 #include "dbus-util.h"
 #include "dbus-internal.h"
+#include "main.h"
 
 void avahi_dbus_async_address_resolver_free(AsyncAddressResolverInfo *i) {
+    const AvahiPoll *poll_api = NULL;
+
     assert(i);
+
+    poll_api = avahi_simple_poll_get(simple_poll_api);
+
+    if (i->delay_timeout)
+        poll_api->timeout_free(i->delay_timeout);
 
     if (i->address_resolver)
         avahi_s_address_resolver_free(i->address_resolver);
@@ -48,6 +56,13 @@ void avahi_dbus_async_address_resolver_free(AsyncAddressResolverInfo *i) {
     i->client->n_objects--;
 
     avahi_free(i);
+}
+
+void avahi_dbus_async_address_resolver_start(AsyncAddressResolverInfo *i) {
+    assert(i);
+
+    if(i->address_resolver)
+        avahi_s_address_resolver_start(i->address_resolver);
 }
 
 void avahi_dbus_async_address_resolver_callback(AvahiSAddressResolver *r, AvahiIfIndex interface, AvahiProtocol protocol, AvahiResolverEvent event, const AvahiAddress *address, const char *host_name, AvahiLookupResultFlags flags, void* userdata) {
@@ -131,6 +146,18 @@ DBusHandlerResult avahi_dbus_msg_async_address_resolver_impl(DBusConnection *c, 
         avahi_dbus_async_address_resolver_free(i);
         return avahi_dbus_respond_ok(c, m);
     }
+
+    if (dbus_message_is_method_call(m, AVAHI_DBUS_INTERFACE_ADDRESS_RESOLVER, "Start")) {
+
+        if (!dbus_message_get_args(m, &error, DBUS_TYPE_INVALID)) {
+            avahi_log_warn("Error parsing AddressResolver::Start message");
+            goto fail;
+        }
+
+        avahi_dbus_async_address_resolver_start(i);
+        return avahi_dbus_respond_ok(c, m);
+    }
+
 
     avahi_log_warn("Missed message %s::%s()", dbus_message_get_interface(m), dbus_message_get_member(m));
 

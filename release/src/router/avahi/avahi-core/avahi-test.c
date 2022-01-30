@@ -353,22 +353,30 @@ int main(AVAHI_GCC_UNUSED int argc, AVAHI_GCC_UNUSED char *argv[]) {
     avahi_server_config_free(&config);
 
     k = avahi_key_new("_http._tcp.0pointer.de", AVAHI_DNS_CLASS_IN, AVAHI_DNS_TYPE_PTR);
-    r = avahi_s_record_browser_new(server, AVAHI_IF_UNSPEC, AVAHI_PROTO_UNSPEC, k, 0, record_browser_callback, NULL);
+    r = avahi_s_record_browser_prepare(server, AVAHI_IF_UNSPEC, AVAHI_PROTO_UNSPEC, k, 0, record_browser_callback, NULL);
+    avahi_s_record_browser_start_query(r);
     avahi_key_unref(k);
 
-    hnr = avahi_s_host_name_resolver_new(server, AVAHI_IF_UNSPEC, AVAHI_PROTO_UNSPEC, "cname.local", AVAHI_PROTO_UNSPEC, 0, hnr_callback, NULL);
+    hnr = avahi_s_host_name_resolver_prepare(server, AVAHI_IF_UNSPEC, AVAHI_PROTO_UNSPEC, "cname.local", AVAHI_PROTO_UNSPEC, 0, hnr_callback, NULL);
+    avahi_s_host_name_resolver_start(hnr);
 
-    ar = avahi_s_address_resolver_new(server, AVAHI_IF_UNSPEC, AVAHI_PROTO_UNSPEC, avahi_address_parse("192.168.50.1", AVAHI_PROTO_INET, &a), 0, ar_callback, NULL);
+    ar = avahi_s_address_resolver_prepare(server, AVAHI_IF_UNSPEC, AVAHI_PROTO_UNSPEC, avahi_address_parse("192.168.50.1", AVAHI_PROTO_INET, &a), 0, ar_callback, NULL);
+    avahi_s_address_resolver_start(ar);
 
-    db = avahi_s_domain_browser_new(server, AVAHI_IF_UNSPEC, AVAHI_PROTO_UNSPEC, NULL, AVAHI_DOMAIN_BROWSER_BROWSE, 0, db_callback, NULL);
+    db = avahi_s_domain_browser_prepare(server, AVAHI_IF_UNSPEC, AVAHI_PROTO_UNSPEC, NULL, AVAHI_DOMAIN_BROWSER_BROWSE, 0, db_callback, NULL);
+    avahi_s_domain_browser_start(db);
 
-    stb = avahi_s_service_type_browser_new(server, AVAHI_IF_UNSPEC, AVAHI_PROTO_UNSPEC, NULL, 0, stb_callback, NULL);
+    stb = avahi_s_service_type_browser_prepare(server, AVAHI_IF_UNSPEC, AVAHI_PROTO_UNSPEC, NULL, 0, stb_callback, NULL);
+    avahi_s_service_type_browser_start(stb);
 
-    sb = avahi_s_service_browser_new(server, AVAHI_IF_UNSPEC, AVAHI_PROTO_UNSPEC, "_http._tcp", NULL, 0, sb_callback, NULL);
+    sb = avahi_s_service_browser_prepare(server, AVAHI_IF_UNSPEC, AVAHI_PROTO_UNSPEC, "_http._tcp", NULL, 0, sb_callback, NULL);
+    avahi_s_service_browser_start(sb);
 
-    sr = avahi_s_service_resolver_new(server, AVAHI_IF_UNSPEC, AVAHI_PROTO_UNSPEC, "Ecstasy HTTP", "_http._tcp", "local", AVAHI_PROTO_UNSPEC, 0, sr_callback, NULL);
+    sr = avahi_s_service_resolver_prepare(server, AVAHI_IF_UNSPEC, AVAHI_PROTO_UNSPEC, "Ecstasy HTTP", "_http._tcp", "local", AVAHI_PROTO_UNSPEC, 0, sr_callback, NULL);
+    avahi_s_service_resolver_start(sr);
 
-    dsb = avahi_s_dns_server_browser_new(server, AVAHI_IF_UNSPEC, AVAHI_PROTO_UNSPEC, "local", AVAHI_DNS_SERVER_RESOLVE, AVAHI_PROTO_UNSPEC, 0, dsb_callback, NULL);
+    dsb = avahi_s_dns_server_browser_prepare(server, AVAHI_IF_UNSPEC, AVAHI_PROTO_UNSPEC, "local", AVAHI_DNS_SERVER_RESOLVE, AVAHI_PROTO_UNSPEC, 0, dsb_callback, NULL);
+    avahi_s_dns_server_browser_start(dsb);
 
     avahi_elapse_time(&tv, 1000*5, 0);
     poll_api->timeout_new(poll_api, &tv, dump_timeout_callback, server);

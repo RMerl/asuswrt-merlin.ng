@@ -79,6 +79,21 @@ AvahiSDNSServerBrowser *avahi_s_dns_server_browser_new(
     AvahiSDNSServerBrowserCallback callback,
     void* userdata);
 
+/** Prepare a new AvahiSDNSServerBrowser object */
+AvahiSDNSServerBrowser *avahi_s_dns_server_browser_prepare(
+    AvahiServer *server,
+    AvahiIfIndex interface,
+    AvahiProtocol protocol,
+    const char *domain,
+    AvahiDNSServerType type,
+    AvahiProtocol aprotocol,  /**< Address protocol for the DNS server */
+    AvahiLookupFlags flags,                 /**< Lookup flags. */
+    AvahiSDNSServerBrowserCallback callback,
+    void* userdata);
+
+/** Start querying on an AvahiSDNSBrowser object */
+void avahi_s_dns_server_browser_start(AvahiSDNSServerBrowser *b);
+
 /** Free an AvahiSDNSServerBrowser object */
 void avahi_s_dns_server_browser_free(AvahiSDNSServerBrowser *b);
 

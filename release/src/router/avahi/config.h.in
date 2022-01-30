@@ -18,7 +18,8 @@
 /* Enable chroot() usage */
 #undef ENABLE_CHROOT
 
-/* always defined to indicate that i18n is enabled */
+/* Define to 1 if translation of program messages to the user's native
+   language is requested. */
 #undef ENABLE_NLS
 
 /* Define if SSP C support is enabled. */
@@ -33,11 +34,16 @@
 /* Define to 1 if you have the <arpa/inet.h> header file. */
 #undef HAVE_ARPA_INET_H
 
-/* Define to 1 if you have the `bind_textdomain_codeset' function. */
-#undef HAVE_BIND_TEXTDOMAIN_CODESET
-
 /* Define to 1 if you have the <bsdxml.h> header file. */
 #undef HAVE_BSDXML_H
+
+/* Define to 1 if you have the Mac OS X function CFLocaleCopyCurrent in the
+   CoreFoundation framework. */
+#undef HAVE_CFLOCALECOPYCURRENT
+
+/* Define to 1 if you have the Mac OS X function CFPreferencesCopyAppValue in
+   the CoreFoundation framework. */
+#undef HAVE_CFPREFERENCESCOPYAPPVALUE
 
 /* Define to 1 if your system has a working `chown' function. */
 #undef HAVE_CHOWN
@@ -57,7 +63,8 @@
 /* Define to 1 if you have the `dbus_connection_close' function. */
 #undef HAVE_DBUS_CONNECTION_CLOSE
 
-/* Define to 1 if you have the `dcgettext' function. */
+/* Define if the GNU dcgettext() function is already present or preinstalled.
+   */
 #undef HAVE_DCGETTEXT
 
 /* Define to 1 if you have the declaration of `environ', and to 0 if you
@@ -100,6 +107,9 @@
 /* Define to 1 if you have the `gettimeofday' function. */
 #undef HAVE_GETTIMEOFDAY
 
+/* Define if you have the iconv() function and it works. */
+#undef HAVE_ICONV
+
 /* Enable Linux inotify() usage */
 #undef HAVE_INOTIFY
 
@@ -109,14 +119,8 @@
 /* Enable BSD kqueue() usage */
 #undef HAVE_KQUEUE
 
-/* Define if your <locale.h> file defines LC_MESSAGES. */
-#undef HAVE_LC_MESSAGES
-
 /* Define to 1 if you have the <limits.h> header file. */
 #undef HAVE_LIMITS_H
-
-/* Define to 1 if you have the <locale.h> header file. */
-#undef HAVE_LOCALE_H
 
 /* Define to 1 if you have the `memchr' function. */
 #undef HAVE_MEMCHR
@@ -294,12 +298,8 @@
    slash. */
 #undef LSTAT_FOLLOWS_SLASHED_SYMLINK
 
-/* Define to the sub-directory in which libtool stores uninstalled libraries.
-   */
+/* Define to the sub-directory where libtool stores uninstalled libraries. */
 #undef LT_OBJDIR
-
-/* Define to 1 if your C compiler doesn't accept -c and -o together. */
-#undef NO_MINUS_C_MINUS_O
 
 /* Name of package */
 #undef PACKAGE

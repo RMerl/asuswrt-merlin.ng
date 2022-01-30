@@ -160,9 +160,10 @@ static void record_browser_callback(
                 r->retry_with_multicast = 0;
 
                 avahi_s_record_browser_free(r->record_browser);
-                r->record_browser = avahi_s_record_browser_new(r->server, r->interface, r->protocol, r->key, AVAHI_LOOKUP_USE_MULTICAST, record_browser_callback, r);
+                r->record_browser = avahi_s_record_browser_prepare(r->server, r->interface, r->protocol, r->key, AVAHI_LOOKUP_USE_MULTICAST, record_browser_callback, r);
 
                 if (r->record_browser) {
+                    avahi_s_record_browser_start_query(r->record_browser);
                     start_timeout(r);
                     break;
                 }
@@ -174,7 +175,7 @@ static void record_browser_callback(
     }
 }
 
-AvahiSAddressResolver *avahi_s_address_resolver_new(
+AvahiSAddressResolver *avahi_s_address_resolver_prepare(
     AvahiServer *server,
     AvahiIfIndex interface,
     AvahiProtocol protocol,
@@ -235,7 +236,7 @@ AvahiSAddressResolver *avahi_s_address_resolver_new(
         }
     }
 
-    r->record_browser = avahi_s_record_browser_new(server, interface, protocol, k, flags, record_browser_callback, r);
+    r->record_browser = avahi_s_record_browser_prepare(server, interface, protocol, k, flags, record_browser_callback, r);
 
     if (!r->record_browser) {
         avahi_s_address_resolver_free(r);
@@ -245,6 +246,13 @@ AvahiSAddressResolver *avahi_s_address_resolver_new(
     start_timeout(r);
 
     return r;
+}
+
+void avahi_s_address_resolver_start(AvahiSAddressResolver *r) {
+    assert(r);
+
+    if(r->record_browser)
+        avahi_s_record_browser_start_query(r->record_browser);
 }
 
 void avahi_s_address_resolver_free(AvahiSAddressResolver *r) {
@@ -265,4 +273,20 @@ void avahi_s_address_resolver_free(AvahiSAddressResolver *r) {
         avahi_key_unref(r->key);
 
     avahi_free(r);
+}
+
+AvahiSAddressResolver *avahi_s_address_resolver_new(
+    AvahiServer *server,
+    AvahiIfIndex interface,
+    AvahiProtocol protocol,
+    const AvahiAddress *address,
+    AvahiLookupFlags flags,
+    AvahiSAddressResolverCallback callback,
+    void* userdata) {
+        AvahiSAddressResolver *b;
+
+        b = avahi_s_address_resolver_prepare(server, interface, protocol, address, flags, callback, userdata);
+        avahi_s_address_resolver_start(b);
+
+        return b;
 }

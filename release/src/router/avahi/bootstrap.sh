@@ -36,14 +36,14 @@ case `uname -s` in
     export CFLAGS="-I/usr/local/include"
     export LDFLAGS="-L/usr/local/lib"
     export PKG_CONFIG_PATH="/usr/local/lib/pkgconfig"
-    FLAGS="$FLAGS --prefix=/opt/ --with-distro=none --disable-python --disable-dbus --disable-glib --disable-gtk"
+    FLAGS="$FLAGS --prefix=/opt/ --with-distro=none --disable-python --disable-dbus --disable-glib --disable-gtk --disable-libevent"
     ;;
     NetBSD)
     export LIBTOOLIZE=libtoolize
     export CFLAGS="-I/usr/pkg/include"
     export LDFLAGS="-L/usr/pkg/lib"
     export PKG_CONFIG_PATH="/usr/local/lib/pkgconfig"
-    FLAGS="$FLAGS --disable-monodoc --disable-mono --disable-qt3 --disable-qt4 --disable-xmltoman --prefix=/opt --with-distro=none --disable-python --disable-glib --disable-gtk --disable-manpages"
+    FLAGS="$FLAGS --disable-monodoc --disable-mono --disable-qt4 --disable-xmltoman --prefix=/opt --with-distro=none --disable-python --disable-glib --disable-gtk --disable-manpages --disable-libevent"
     ;;
     Linux)
     ;;
@@ -51,11 +51,11 @@ esac
 
 case "$USER" in
     lathiat|trentl)
-    FLAGS="$FLAGS --disable-qt4"
+    FLAGS="$FLAGS"
     ;;
     sebest)
-    FLAGS="$FLAGS --disable-monodoc --enable-dbus=no --enable-mono=no --enable-qt3=no --enable-qt4=no  --sysconfdir=/etc --localstatedir=/var --prefix=/usr  --disable-manpages --disable-xmltoman"
+    FLAGS="$FLAGS --disable-monodoc --enable-dbus=no --enable-mono=no --enable-qt4=no --sysconfdir=/etc --localstatedir=/var --prefix=/usr  --disable-manpages --disable-xmltoman"
     ;;
 esac
 
-CFLAGS="$CFLAGS -g -O0" exec ./autogen.sh $FLAGS "$@" --enable-qt3=no
+CFLAGS="$CFLAGS -g -O0" exec ./autogen.sh $FLAGS "$@"

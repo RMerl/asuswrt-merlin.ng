@@ -135,7 +135,7 @@ static void defer_callback(AvahiTimeEvent *e, void *userdata) {
     avahi_s_domain_browser_free(b);
 }
 
-AvahiSDomainBrowser *avahi_s_domain_browser_new(
+AvahiSDomainBrowser *avahi_s_domain_browser_prepare(
     AvahiServer *server,
     AvahiIfIndex interface,
     AvahiProtocol protocol,
@@ -196,7 +196,7 @@ AvahiSDomainBrowser *avahi_s_domain_browser_new(
         goto fail;
     }
 
-    if (!(b->record_browser = avahi_s_record_browser_new(server, interface, protocol, k, flags, record_browser_callback, b)))
+    if (!(b->record_browser = avahi_s_record_browser_prepare(server, interface, protocol, k, flags, record_browser_callback, b)))
         goto fail;
 
     avahi_key_unref(k);
@@ -216,6 +216,13 @@ fail:
     return NULL;
 }
 
+void avahi_s_domain_browser_start(AvahiSDomainBrowser *b) {
+    assert(b);
+
+    if(b->record_browser)
+        avahi_s_record_browser_start_query(b->record_browser);
+}
+
 void avahi_s_domain_browser_free(AvahiSDomainBrowser *b) {
     assert(b);
 
@@ -232,4 +239,21 @@ void avahi_s_domain_browser_free(AvahiSDomainBrowser *b) {
         avahi_time_event_free(b->defer_event);
 
     avahi_free(b);
+}
+
+AvahiSDomainBrowser *avahi_s_domain_browser_new(
+    AvahiServer *server,
+    AvahiIfIndex interface,
+    AvahiProtocol protocol,
+    const char *domain,
+    AvahiDomainBrowserType type,
+    AvahiLookupFlags flags,
+    AvahiSDomainBrowserCallback callback,
+    void* userdata) {
+        AvahiSDomainBrowser *b;
+
+        b = avahi_s_domain_browser_prepare(server, interface, protocol, domain, type, flags, callback, userdata);
+        avahi_s_domain_browser_start(b);
+
+        return b;
 }

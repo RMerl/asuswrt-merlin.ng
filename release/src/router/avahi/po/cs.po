@@ -567,7 +567,7 @@ msgstr ""
 #, c-format
 msgid ": Cache exhausted\n"
 msgstr ""
-": Cache vačerpána\n"
+": Cache vyčerpána\n"
 "\n"
 
 #: ../avahi-utils/avahi-browse.c:239 ../avahi-utils/avahi-browse.c:261

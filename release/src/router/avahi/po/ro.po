@@ -4,21 +4,22 @@
 #
 # Translators:
 # Arthur Țițeică <arthur.titeica@gmail.com>, 2014
+# Daniel Șerbănescu <daniel [at] serbanescu [dot] dk>, 2017.
 msgid ""
 msgstr ""
-"Project-Id-Version: Avahi\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-10-10 13:24+0200\n"
-"PO-Revision-Date: 2014-03-15 19:22+0000\n"
-"Last-Translator: Arthur Țițeică <arthur.titeica@gmail.com>\n"
-"Language-Team: Romanian (http://www.transifex.com/lennart/avahi/language/"
-"ro/)\n"
+"Project-Id-Version: Fedora 10\n"
+"Report-Msgid-Bugs-To: https://github.com/lathiat/avahi/issues\n"
+"POT-Creation-Date: 2017-08-12 15:24+0000\n"
+"PO-Revision-Date: 2017-08-26 21:44+0200\n"
+"Last-Translator: Daniel Șerbănescu <daniel [at] serbanescu [dot] dk>\n"
+"Language-Team: Gnome Romanian Translation Team\n"
 "Language: ro\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=(n==1?0:(((n%100>19)||((n%100==0)&&(n!=0)))?"
-"2:1));\n"
+"Plural-Forms: nplurals=3; plural=(n==1 ? 0 : (n==0 || (n%100 > 0 && n%100 < "
+"20)) ? 1 : 2);;\n"
+"X-Generator: Virtaal 0.7.1\n"
 
 #: ../avahi-common/error.c:30
 msgid "OK"
@@ -34,15 +35,15 @@ msgstr "Stare greșită"
 
 #: ../avahi-common/error.c:33
 msgid "Invalid host name"
-msgstr "Nume de gazdă nevalid"
+msgstr "Nume gazdă nevalid"
 
 #: ../avahi-common/error.c:34
 msgid "Invalid domain name"
-msgstr "Nume de domeniu nevalid"
+msgstr "Nume domeniu nevalid"
 
 #: ../avahi-common/error.c:35
 msgid "No suitable network protocol available"
-msgstr "Nu este disponibil niciun protocol de rețea"
+msgstr "Nu este disponibil nici un protocol de rețea"
 
 #: ../avahi-common/error.c:36
 msgid "Invalid DNS TTL"
@@ -50,7 +51,7 @@ msgstr "DNS TTL nevalid"
 
 #: ../avahi-common/error.c:37
 msgid "Resource record key is pattern"
-msgstr "Înregistrarea cheie resursă este model"
+msgstr "Cheia înregistrării resursă este mostră"
 
 #: ../avahi-common/error.c:38
 msgid "Local name collision"
@@ -110,11 +111,11 @@ msgstr "Operație nevalidă"
 
 #: ../avahi-common/error.c:54
 msgid "An unexpected D-Bus error occurred"
-msgstr "S-a produs o eroare D-Bus"
+msgstr "S-a produs o eroare D-Bus neașteptată"
 
 #: ../avahi-common/error.c:55
 msgid "Daemon connection failed"
-msgstr "Conexiune serviciu eșuată"
+msgstr "Conxiunea la serviciu a eșuat"
 
 #: ../avahi-common/error.c:56
 msgid "Memory exhausted"
@@ -126,15 +127,15 @@ msgstr "Obiectul trimis nu este valid"
 
 #: ../avahi-common/error.c:58
 msgid "Daemon not running"
-msgstr "Serviciul nu funcționează"
+msgstr "Serviciul nu rulează"
 
 #: ../avahi-common/error.c:59
 msgid "Invalid interface index"
-msgstr "Index interfață nevalid"
+msgstr "Index interfeță nevalid"
 
 #: ../avahi-common/error.c:60
 msgid "Invalid protocol specification"
-msgstr "Specificație de protocol nevalidă"
+msgstr "Specificație de protocol nevalid"
 
 #: ../avahi-common/error.c:61
 msgid "Invalid flags"
@@ -142,7 +143,7 @@ msgstr "Marcaje nevalide"
 
 #: ../avahi-common/error.c:63
 msgid "Not found"
-msgstr "Nu a fost găsit"
+msgstr "Negăsit"
 
 #: ../avahi-common/error.c:64
 msgid "Invalid configuration"
@@ -154,7 +155,7 @@ msgstr "Versiunea nu corespunde"
 
 #: ../avahi-common/error.c:66
 msgid "Invalid service subtype"
-msgstr "Subtip serviciu nevalid"
+msgstr "Subtip de serviciu nevalid"
 
 #: ../avahi-common/error.c:67
 msgid "Invalid packet"
@@ -162,47 +163,47 @@ msgstr "Pachet nevalid"
 
 #: ../avahi-common/error.c:68
 msgid "Invalid DNS return code"
-msgstr "Cod DNS returnat nevalid"
+msgstr "Cod returnat DNS nevalid"
 
 #: ../avahi-common/error.c:69
 msgid "DNS failure: FORMERR"
-msgstr "Eroare DNS: FORMERR"
+msgstr "DNS eșuat: FORMERR"
 
 #: ../avahi-common/error.c:70
 msgid "DNS failure: SERVFAIL"
-msgstr "Eroare DNS: SERVFAIL"
+msgstr "DNS eșuat: SERVFAIL"
 
 #: ../avahi-common/error.c:71
 msgid "DNS failure: NXDOMAIN"
-msgstr "Eroare DNS: NXDOMAIN"
+msgstr "DNS eșuat: NXDOMAIN"
 
 #: ../avahi-common/error.c:72
 msgid "DNS failure: NOTIMP"
-msgstr "Eroare DNS: NOTIMP"
+msgstr "DNS eșuat: NOTIMP"
 
 #: ../avahi-common/error.c:74
 msgid "DNS failure: REFUSED"
-msgstr "Eroare DNS: REFUSED"
+msgstr "DNS eșuat: REFUSED"
 
 #: ../avahi-common/error.c:75
 msgid "DNS failure: YXDOMAIN"
-msgstr "Eroare DNS: YXDMAIN"
+msgstr "DNS eșuat: YXDMAIN"
 
 #: ../avahi-common/error.c:76
 msgid "DNS failure: YXRRSET"
-msgstr "Eroare DNS: YXRRSET"
+msgstr "DNS eșuat: YXRRSET"
 
 #: ../avahi-common/error.c:77
 msgid "DNS failure: NXRRSET"
-msgstr "Eroare DNS: NXRRSET"
+msgstr "DNS eșuat: NXRRSET"
 
 #: ../avahi-common/error.c:78
 msgid "DNS failure: NOTAUTH"
-msgstr "Eroare DNS: NOTAUTH"
+msgstr "DNS eșuat: NOTAUTH"
 
 #: ../avahi-common/error.c:79
 msgid "DNS failure: NOTZONE"
-msgstr "Eroare DNS: NOTZONE"
+msgstr "DNS eșuat: NOTZONE"
 
 #: ../avahi-common/error.c:80
 msgid "Invalid RDATA"
@@ -218,11 +219,11 @@ msgstr "Clasă DNS nevalidă"
 
 #: ../avahi-common/error.c:83
 msgid "Not supported"
-msgstr "Nu este suportat"
+msgstr "Nesuportat"
 
 #: ../avahi-common/error.c:85
 msgid "Not permitted"
-msgstr "Nu este permis"
+msgstr "Nepermis"
 
 #: ../avahi-common/error.c:86
 msgid "Invalid argument"
@@ -245,9 +246,9 @@ msgid "Avahi Discovery"
 msgstr "Descoperire Avahi"
 
 #: ../avahi-discover-standalone/avahi-discover.ui.h:2
-#: ../avahi-python/avahi-discover/avahi-discover.py:76
+#: ../avahi-python/avahi-discover/avahi-discover.py:82
 msgid "<i>No service currently selected.</i>"
-msgstr "<i>Niciun serviciu selectat.</i>"
+msgstr "<i>Niciun serviciu selectat curent.</i>"
 
 #: ../avahi-python/avahi-discover/avahi-discover.desktop.in.in.h:1
 msgid "Avahi Zeroconf Browser"
@@ -255,37 +256,37 @@ msgstr "Navigator Avahi Zeroconf"
 
 #: ../avahi-python/avahi-discover/avahi-discover.desktop.in.in.h:2
 msgid "Browse for Zeroconf services available on your network"
-msgstr "Descoperă serviciile Zeroconf disponibile în rețeaua ta"
+msgstr "Descoperă serviciile Zeroconf disponibile în rețeaua dumneavoastră."
 
-#: ../avahi-python/avahi-discover/avahi-discover.py:224
+#: ../avahi-python/avahi-discover/avahi-discover.py:237
 msgid "TXT"
 msgstr "TXT"
 
-#: ../avahi-python/avahi-discover/avahi-discover.py:226
+#: ../avahi-python/avahi-discover/avahi-discover.py:239
 msgid "TXT Data:"
 msgstr "Date TXT:"
 
-#: ../avahi-python/avahi-discover/avahi-discover.py:226
+#: ../avahi-python/avahi-discover/avahi-discover.py:239
 msgid "empty"
 msgstr "gol"
 
-#: ../avahi-python/avahi-discover/avahi-discover.py:228
+#: ../avahi-python/avahi-discover/avahi-discover.py:241
 msgid "Service Type:"
 msgstr "Tip serviciu:"
 
-#: ../avahi-python/avahi-discover/avahi-discover.py:229
+#: ../avahi-python/avahi-discover/avahi-discover.py:242
 msgid "Service Name:"
 msgstr "Nume serviciu:"
 
-#: ../avahi-python/avahi-discover/avahi-discover.py:230
+#: ../avahi-python/avahi-discover/avahi-discover.py:243
 msgid "Domain Name:"
 msgstr "Nume domeniu:"
 
-#: ../avahi-python/avahi-discover/avahi-discover.py:231
+#: ../avahi-python/avahi-discover/avahi-discover.py:244
 msgid "Interface:"
 msgstr "Interfață:"
 
-#: ../avahi-python/avahi-discover/avahi-discover.py:232
+#: ../avahi-python/avahi-discover/avahi-discover.py:245
 msgid "Address:"
 msgstr "Adresă:"
 
@@ -319,7 +320,7 @@ msgstr "Nume serviciu"
 
 #: ../avahi-ui/avahi-ui.c:202
 msgid "The service name of the selected service"
-msgstr "Numele serviciului selectat"
+msgstr "Numele serviciului al serviciului selectat"
 
 #: ../avahi-ui/avahi-ui.c:208
 msgid "Address"
@@ -343,7 +344,7 @@ msgstr "Nume gazdă"
 
 #: ../avahi-ui/avahi-ui.c:219
 msgid "The host name of the resolved service"
-msgstr "Numele de gazdă a serviciului rezolvat"
+msgstr "Numele de gazdă al serviciului rezolvat"
 
 #: ../avahi-ui/avahi-ui.c:225
 msgid "TXT Data"
@@ -355,11 +356,11 @@ msgstr "Datele TXT ale serviciului rezolvat"
 
 #: ../avahi-ui/avahi-ui.c:230
 msgid "Resolve Service"
-msgstr "Rezolvă serviciul"
+msgstr "Rezolvă serviciu"
 
 #: ../avahi-ui/avahi-ui.c:230
 msgid "Resolve the selected service automatically before returning"
-msgstr "Rezolvă automat serviciul selectat înainte de a reveni"
+msgstr "Rezolvă automat serviciul selectat înainte de returnare"
 
 #: ../avahi-ui/avahi-ui.c:236
 msgid "Resolve Service Host Name"
@@ -369,15 +370,15 @@ msgstr "Rezolvă numele de gazdă a serviciului"
 msgid ""
 "Resolve the host name of the selected service automatically before returning"
 msgstr ""
-"Rezolvă automat numele de gazdă a serviciului selectat înainte de a reveni"
+"Rezolvă automat numele de gazdă al serviciului selectat înainte de returnare"
 
 #: ../avahi-ui/avahi-ui.c:242
 msgid "Address family"
-msgstr "Familie adresă"
+msgstr "Familie de adrese"
 
 #: ../avahi-ui/avahi-ui.c:242
 msgid "The address family for host name resolution"
-msgstr "Familia adresei pentru rezolvarea numelui de gazdă"
+msgstr "Familia de adrese pentru rezolvarea numelui de gazdă"
 
 #: ../avahi-ui/avahi-ui.c:326
 #, c-format
@@ -387,7 +388,7 @@ msgstr "Clientul Avahi a eșuat: %s"
 #: ../avahi-ui/avahi-ui.c:388
 #, c-format
 msgid "Avahi resolver failure: %s"
-msgstr "Eroare rezolvare Avahi: %s"
+msgstr "Eroare rezolvator Avahi: %s"
 
 #: ../avahi-ui/avahi-ui.c:518
 #, c-format
@@ -412,7 +413,7 @@ msgstr "Încercare de citire domeniu Avahi eșuată: %s"
 
 #: ../avahi-ui/avahi-ui.c:706
 msgid "Browse service type list is empty!"
-msgstr "Lista tipului de serviciu este vidă!"
+msgstr "Lista tipului de servici este vidă!"
 
 #: ../avahi-ui/avahi-ui.c:717
 #, c-format
@@ -421,27 +422,27 @@ msgstr "Conectarea la serverul Avahi a eșuat: %s"
 
 #: ../avahi-ui/avahi-ui.c:735
 msgid "Browsing for services on <b>local network</b>:"
-msgstr "Navigare servicii în <b>rețea locală</b>:"
+msgstr "Navigare după servicii în <b>rețea locală</b>:"
 
 #: ../avahi-ui/avahi-ui.c:737
 #, c-format
 msgid "Browsing for services in domain <b>%s</b>:"
-msgstr "Navigare servicii în domeniu <b>%s</b>:"
+msgstr "Navigare după servicii în domeniul <b>%s</b>:"
 
 #: ../avahi-ui/avahi-ui.c:773
 #, c-format
 msgid "Failed to create browser for %s: %s"
-msgstr "Creare navigator a eșuat pentru %s: %s"
+msgstr "Crearea navigatorului a eșuat pentru %s: %s"
 
 #: ../avahi-ui/avahi-ui.c:907
 #, c-format
 msgid "Failed to create resolver for %s of type %s in domain %s: %s"
-msgstr "A eșuat crearea resolver-ului pentru %s de tipul %s în domeniul %s: %s"
+msgstr "A eșuat crearea rezolvatorului pentru %s de tipul %s în domeniul %s: %s"
 
 #: ../avahi-ui/avahi-ui.c:982
 #, c-format
 msgid "Failed to create domain browser: %s"
-msgstr "Creare navigator domeniu a eșuat: %s"
+msgstr "Crearea navigatorului de domenii a eșuat: %s"
 
 #: ../avahi-ui/avahi-ui.c:993
 msgid "Change domain"
@@ -453,14 +454,12 @@ msgstr "Se descoperă..."
 
 #: ../avahi-ui/avahi-ui.c:1047 ../avahi-ui/bssh.c:149 ../avahi-ui/bssh.c:156
 #: ../avahi-ui/bssh.c:161
-#, fuzzy
 msgid "_Cancel"
-msgstr "Anulat.\n"
+msgstr "_Anulează"
 
 #: ../avahi-ui/avahi-ui.c:1048
-#, fuzzy
 msgid "_OK"
-msgstr "OK"
+msgstr "_OK"
 
 #: ../avahi-ui/avahi-ui.c:1134
 msgid "Initializing..."
@@ -496,10 +495,10 @@ msgstr ""
 "%s [opțiuni]\n"
 "\n"
 "    -h --help            Afișează acest ajutor\n"
-"    -s --ssh             Navigare servere SSH\n"
-"    -v --vnc             Navigare servere VNC\n"
-"    -S --shell           Navigare  SSH și VNC\n"
-"    -d --domain=DOMAIN   Domeniul de navigare\n"
+"    -s --ssh             Navighează servere SSH\n"
+"    -v --vnc             Navighează servere VNC\n"
+"    -S --shell           Navighează SSH și VNC\n"
+"    -d --domain=DOMENIU  Domeniul în care se navighează\n"
 
 #: ../avahi-ui/bssh.c:101 ../avahi-utils/avahi-browse.c:775
 #, c-format
@@ -508,15 +507,15 @@ msgstr "Prea mulți parametri\n"
 
 #: ../avahi-ui/bssh.c:149
 msgid "Choose Shell Server"
-msgstr "Alege consolă server"
+msgstr "Alegeți server Shell"
 
 #: ../avahi-ui/bssh.c:149 ../avahi-ui/bssh.c:156 ../avahi-ui/bssh.c:161
 msgid "C_onnect"
-msgstr ""
+msgstr "C_onectează"
 
 #: ../avahi-ui/bssh.c:151
 msgid "Desktop"
-msgstr "Birou"
+msgstr "Desktop"
 
 #: ../avahi-ui/bssh.c:152
 msgid "Terminal"
@@ -524,16 +523,16 @@ msgstr "Terminal"
 
 #: ../avahi-ui/bssh.c:156
 msgid "Choose VNC server"
-msgstr "Alege server VNC"
+msgstr "Alegeți server VNC"
 
 #: ../avahi-ui/bssh.c:161
 msgid "Choose SSH server"
-msgstr "Alege server SSH"
+msgstr "Alegeți server SSH"
 
 #: ../avahi-ui/bssh.c:185
 #, c-format
 msgid "Connecting to '%s' ...\n"
-msgstr "Se conectează la '%s' ...\n"
+msgstr "Se conectează la „%s” ...\n"
 
 #: ../avahi-ui/bssh.c:240
 #, c-format
@@ -559,7 +558,7 @@ msgstr "Navigator Avahi de server VNC"
 
 #: ../avahi-ui/bvnc.desktop.in.in.h:2
 msgid "Browse for Zeroconf-enabled VNC Servers"
-msgstr "Navighează serverele VNC având activat Zeroconf"
+msgstr "Navigheză serverele VNC având activat Zeroconf"
 
 #: ../avahi-utils/avahi-browse.c:107
 #, c-format
@@ -606,14 +605,14 @@ msgstr "avahi_domain_browser_new() a eșuat: %s\n"
 #: ../avahi-utils/avahi-resolve.c:280 ../avahi-utils/avahi-set-host-name.c:168
 #, c-format
 msgid "Failed to query version string: %s\n"
-msgstr "Interogare șir versiune eșuată: %s\n"
+msgstr "Eșec la interogarea șirului de versiune: %s\n"
 
 #: ../avahi-utils/avahi-browse.c:540 ../avahi-utils/avahi-publish.c:399
 #: ../avahi-utils/avahi-resolve.c:285 ../avahi-utils/avahi-set-host-name.c:173
 #: ../avahi-utils/avahi-set-host-name.c:189
 #, c-format
 msgid "Failed to query host name: %s\n"
-msgstr "Interogare nume gazdă eșuată: %s\n"
+msgstr "Eșec la interogarea numelui de server: %s\n"
 
 #: ../avahi-utils/avahi-browse.c:544 ../avahi-utils/avahi-publish.c:403
 #: ../avahi-utils/avahi-resolve.c:289 ../avahi-utils/avahi-set-host-name.c:177
@@ -639,7 +638,7 @@ msgstr "Domeniu E Ifce Prot %-*s %-20s\n"
 #: ../avahi-utils/avahi-browse.c:585 ../avahi-utils/avahi-publish.c:163
 #, c-format
 msgid "Disconnected, reconnecting ...\n"
-msgstr "Deconectat, se reconectează...\n"
+msgstr "Deconectat, se reconectează ...\n"
 
 #: ../avahi-utils/avahi-browse.c:599 ../avahi-utils/avahi-browse.c:829
 #: ../avahi-utils/avahi-publish.c:170 ../avahi-utils/avahi-publish.c:386
@@ -652,7 +651,7 @@ msgstr "Crearea obiectului client a eșuat: %s\n"
 #: ../avahi-utils/avahi-resolve.c:143 ../avahi-utils/avahi-set-host-name.c:59
 #, c-format
 msgid "Client failure, exiting: %s\n"
-msgstr "Clientul a eșuat, ieșire: %s\n"
+msgstr "Clientul a eșuat, se iese: %s\n"
 
 #: ../avahi-utils/avahi-browse.c:623 ../avahi-utils/avahi-publish.c:206
 #, c-format
@@ -675,27 +674,27 @@ msgid ""
 "    -f --no-fail         Don't fail if the daemon is not available\n"
 "    -p --parsable        Output in parsable format\n"
 msgstr ""
-"    -h --help Afișează acest ajutor\n"
-"    -V --version Afișează versiunia\n"
-"    -D --browse-domains  Navigare domenii de navigare în loc de servicii\n"
-"    -a --all Afișează toate serviciile, indiferent de tip\n"
-"    -d --domain=DOMENIU Domeniul pentru navigare\n"
-"    -v --verbose Activare modul detaliat\n"
-"    -t --terminate Termină după afișarea unei liste mai mult sau mai puțin "
+"    -h --help \t\tAfișează acest ajutor\n"
+"    -V --version \tAfișează versiunia\n"
+"    -D --browse-domains Navighează domenii de navigare în loc de servicii\n"
+"    -a --all \t\tAfișează toate serviciile, indiferent de tip\n"
+"    -d --domain=DOMENIU Domeniul în care se navighează\n"
+"    -v --verbose \tActivează modul detaliat\n"
+"    -t --terminate \tTermină după afișarea unei liste mai mult sau mai puțin "
 "complete\n"
-"    -c --cache Termină după afișarea tuturor întrărilor din cache\n"
-"    -l --ignore-local Ignorare servicii locale\n"
-"    -r --resolve Rezolvă serviciile găsite\n"
-"    -f --no-fail Nu eșua dacă serviciul nu este disponibil\n"
-"    -p --parsable Ieșire în format prelucrabil\n"
+"    -c --cache \t\tTermină după afișarea tuturor întrărilor din cache\n"
+"    -l --ignore-local \tIgnoră serviciile locale\n"
+"    -r --resolve \tRezolvă serviciile găsite\n"
+"    -f --no-fail \tNu eșua dacă serviciul nu este disponibil\n"
+"    -p --parsable \tIeșire în format prelucrabil\n"
 
 #: ../avahi-utils/avahi-browse.c:660
 msgid ""
 "    -k --no-db-lookup    Don't lookup service types\n"
 "    -b --dump-db         Dump service type database\n"
 msgstr ""
-"    -k ---no-db-lookup Nu căuta tipuri de servicii\n"
-"    -b --dump-db Arată baza de date tip serviciu\n"
+"    -k ---no-db-lookup \t Nu căuta tipuri de servicii\n"
+"    -b --dump-db \t Arată baza de date tip serviciu\n"
 
 #: ../avahi-utils/avahi-browse.c:766 ../avahi-utils/avahi-resolve.c:219
 #, c-format
@@ -706,12 +705,12 @@ msgstr "Prea puțini parametrii\n"
 #: ../avahi-utils/avahi-resolve.c:264 ../avahi-utils/avahi-set-host-name.c:152
 #, c-format
 msgid "Failed to create simple poll object.\n"
-msgstr "Creare obiect interogare eșuată.\n"
+msgstr "Eșec la crearea unui simplu obiect poll.\n"
 
 #: ../avahi-utils/avahi-publish.c:76
 #, c-format
 msgid "Established under name '%s'\n"
-msgstr "Sub nume stabilit „%s”\n"
+msgstr "Stabilit sub numele „%s”\n"
 
 #: ../avahi-utils/avahi-publish.c:81
 #, c-format
@@ -721,32 +720,32 @@ msgstr "Înregistrare eșuată: %s\n"
 #: ../avahi-utils/avahi-publish.c:94
 #, c-format
 msgid "Name collision, picking new name '%s'.\n"
-msgstr "Coloziune de nume, se alege nume nou „%s”.\n"
+msgstr "Coloziune de nume, se alege un nume nou „%s”.\n"
 
 #: ../avahi-utils/avahi-publish.c:114
 #, c-format
 msgid "Failed to create entry group: %s\n"
-msgstr "Creare intrare grup eșuată: %s\n"
+msgstr "Eșec la creare grupului de intrări: %s\n"
 
 #: ../avahi-utils/avahi-publish.c:124
 #, c-format
 msgid "Failed to add address: %s\n"
-msgstr "Adăugare adresă eșuată: %s\n"
+msgstr "Eșec la adăugarea adresei: %s\n"
 
 #: ../avahi-utils/avahi-publish.c:134
 #, c-format
 msgid "Failed to add service: %s\n"
-msgstr "Adăugare serviciu eșuată: %s\n"
+msgstr "Eșec la adăugarea serviciului: %s\n"
 
 #: ../avahi-utils/avahi-publish.c:140
 #, c-format
 msgid "Failed to add subtype '%s': %s\n"
-msgstr "Adăugare subtip „%s” eșuată: %s\n"
+msgstr "Eșec la adăugarea subtipului „%s”: %s\n"
 
 #: ../avahi-utils/avahi-publish.c:191
 #, c-format
 msgid "Host name conflict\n"
-msgstr "Conflict nume gazdă\n"
+msgstr "Conflict nume de server\n"
 
 #: ../avahi-utils/avahi-publish.c:216
 #, c-format
@@ -769,18 +768,15 @@ msgstr ""
 "%s [opțiuni] %s <nume> <tip> <port> [<txt ...>]\n"
 "%s [opțiuni] %s <nume-gazdă> <adresă>\n"
 "\n"
-"    -h --help            Afișează acest ajutor\n"
-"    -V --version         Afișează versiunea\n"
-"    -s --service         Publicare serviciu\n"
-"    -a --address         Publicare adresă\n"
-"    -v --verbose         Activează modul detaliat\n"
-"    -d --domain=DOMENIU   Domeniu în care se va publica serviciul\n"
-"    -H --host=DOMENIU     Gazda unde este localizat serviciul\n"
-"       --subtype=SUBTIP Un subtip adițional cu care va fi înregistrat acest "
-"serviciu\n"
-"    -R --no-reverse      Nu publica înregistrarea inversă împreună cu "
-"adresa\n"
-"    -f --no-fail         Nu eșua dacă serviciul nu este disponibil\n"
+"    -h --help \t\t Afișează acest ajutor\n"
+"    -V --version \t Afișează versiunea\n"
+"    -s --service \t Publică serviciu\n"
+"    -a --address \t Publică adresă\n"
+"    -v --verbose \t Activează modul detaliat\n"
+"    -d --domain=DOMENIU  Domeniu în care se publică serviciul\n"
+"    -H --host=DOMENIU  \t Gazda serviciului\n"
+"       --subtype=SUBTIP  Subtip adițional pentru înregistrare serviciului\n"
+"    -f --no-fail  \t Nu eșua dacă serviciul nu este disponibil\n"
 
 #: ../avahi-utils/avahi-publish.c:303 ../avahi-utils/avahi-publish.c:318
 #, c-format
@@ -790,22 +786,22 @@ msgstr "Număr incorect de parametri\n"
 #: ../avahi-utils/avahi-publish.c:329
 #, c-format
 msgid "Failed to parse port number: %s\n"
-msgstr "A eșuat interpretarea numărului de port: %s\n"
+msgstr "Eșec la parsarea numărului de port: %s\n"
 
 #: ../avahi-utils/avahi-publish.c:361 ../avahi-utils/avahi-resolve.c:246
 #, c-format
 msgid "No command specified.\n"
-msgstr "Nicio comandă specificată.\n"
+msgstr "Nici o comandă specificată.\n"
 
 #: ../avahi-utils/avahi-resolve.c:89
 #, c-format
 msgid "Failed to resolve host name '%s': %s\n"
-msgstr "A eșuat rezolvarea numelui de gazdă „%s”: %s\n"
+msgstr "Eșec la rezolvarea numelui de server „%s”: %s\n"
 
 #: ../avahi-utils/avahi-resolve.c:126
 #, c-format
 msgid "Failed to resolve address '%s': %s\n"
-msgstr "A eșuat rezolvarea adresei „%s”: %s\n"
+msgstr "Eșec la rezolvarea adresei „%s”: %s\n"
 
 #: ../avahi-utils/avahi-resolve.c:157
 #, c-format
@@ -824,28 +820,28 @@ msgstr ""
 "%s [opțiuni] %s <nume gazdă ...>\n"
 "%s [opțiuni] %s <adresă ... >\n"
 "\n"
-"    -h --help              Afișează acest ajutor\n"
-"    -V --version         Afișează versiune\n"
-"    -n --name            Rezolvare nume domeniu\n"
-"    -a --address         Rezolvare adresă\n"
-"    -v --verbose         Activare mod detaliat\n"
-"    -6                   Căutare adresă IPv6\n"
-"    -4                   Căutare adresă IPv4\n"
+"    -h --help            Arată acest ajutor\n"
+"    -V --version         Arată versiunea\n"
+"    -n --name            Rezolvă numele de domeniu\n"
+"    -a --address         Rezolvă adresa\n"
+"    -v --verbose         Activează modul detaliat\n"
+"    -6                   Caută adresă IPv6\n"
+"    -4                   Caută adresă IPv4\n"
 
 #: ../avahi-utils/avahi-resolve.c:299 ../avahi-utils/avahi-set-host-name.c:181
 #, c-format
 msgid "Failed to create host name resolver: %s\n"
-msgstr "A eșuat crearea rezolvatorului de nume: %s\n"
+msgstr "Eșec la crearea rezolvatorului de nume de server: %s\n"
 
 #: ../avahi-utils/avahi-resolve.c:309
 #, c-format
 msgid "Failed to parse address '%s'\n"
-msgstr "Prelucrare adresă „%s” eșuată\n"
+msgstr "Eșec la parsarea adresei „%s”\n"
 
 #: ../avahi-utils/avahi-resolve.c:314
 #, c-format
 msgid "Failed to create address resolver: %s\n"
-msgstr "A eșuat crearea rezolvatorului de adresă: %s\n"
+msgstr "Eșec la crearea rezolvatorului de adrese: %s\n"
 
 #: ../avahi-utils/avahi-set-host-name.c:73
 #, c-format
@@ -858,14 +854,14 @@ msgid ""
 msgstr ""
 "%s [opțiuni] <nou nume calculator>\n"
 "\n"
-"    -h --help            Afișează acest ajutor\n"
-"    -V --version         Afișează versiunea\n"
+"    -h --help            Arată acest ajutor\n"
+"    -V --version         Arată versiunea\n"
 "    -v --verbose         Activează modul detaliat\n"
 
 #: ../avahi-utils/avahi-set-host-name.c:114
 #, c-format
 msgid "Invalid number of arguments, expecting exactly one.\n"
-msgstr "Numărul de parametri nu este valid, se așteaptă unul singur.\n"
+msgstr "Numărul de parametri nu este valid, se așteaptă doar unul singur.\n"
 
 #: ../avahi-utils/avahi-set-host-name.c:193
 #, c-format

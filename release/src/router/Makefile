@@ -6850,7 +6850,7 @@ avahi/Makefile: avahi/configure
 		--prefix=/usr --sysconfdir=/tmp localstatedir=/var --with-distro=none \
 		--disable-nls --disable-glib --disable-gobject \
 		--enable-introspection=no \
-		--disable-qt3 --disable-qt4 --disable-gtk --disable-gtk3 \
+		--disable-qt3 --disable-qt4 --disable-qt5 --disable-gtk --disable-gtk3 \
 		--disable-dbus \
 		--disable-gdbm \
 		--disable-python --disable-pygtk --disable-python-dbus \
@@ -6868,13 +6868,13 @@ avahi/Makefile: avahi/configure
 
 avahi-install: avahi
 	install -D avahi/avahi-daemon/.libs/avahi-daemon $(INSTALLDIR)/avahi/usr/sbin/avahi-daemon
-	install -D avahi/avahi-common/.libs/libavahi-common.so.3.5.3 $(INSTALLDIR)/avahi/usr/lib/libavahi-common.so.3.5.3
-	install -D avahi/avahi-core/.libs/libavahi-core.so.7.0.2 $(INSTALLDIR)/avahi/usr/lib/libavahi-core.so.7.0.2
+	install -D avahi/avahi-common/.libs/libavahi-common.so.3.5.4 $(INSTALLDIR)/avahi/usr/lib/libavahi-common.so.3.5.4
+	install -D avahi/avahi-core/.libs/libavahi-core.so.7.1.0 $(INSTALLDIR)/avahi/usr/lib/libavahi-core.so.7.1.0
 	$(STRIP) $(INSTALLDIR)/avahi/usr/sbin/avahi-daemon
-	$(STRIP) $(INSTALLDIR)/avahi/usr/lib/libavahi-common.so.3.5.3
-	$(STRIP) $(INSTALLDIR)/avahi/usr/lib/libavahi-core.so.7.0.2
-	cd $(INSTALLDIR)/avahi/usr/lib && ln -sf libavahi-common.so.3.5.3 libavahi-common.so.3
-	cd $(INSTALLDIR)/avahi/usr/lib && ln -sf libavahi-core.so.7.0.2 libavahi-core.so.7
+	$(STRIP) $(INSTALLDIR)/avahi/usr/lib/libavahi-common.so.3.5.4
+	$(STRIP) $(INSTALLDIR)/avahi/usr/lib/libavahi-core.so.7.1.0
+	cd $(INSTALLDIR)/avahi/usr/lib && ln -sf libavahi-common.so.3.5.4 libavahi-common.so.3
+	cd $(INSTALLDIR)/avahi/usr/lib && ln -sf libavahi-core.so.7.1.0 libavahi-core.so.7
 
 avahi-clean:
 	[ ! -f avahi/Makefile ] || $(MAKE) -C avahi distclean

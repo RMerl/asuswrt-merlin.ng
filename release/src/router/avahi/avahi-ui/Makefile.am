@@ -80,7 +80,6 @@ endif
 
 bin_PROGRAMS = bssh
 desktop_DATA += bssh.desktop bvnc.desktop
-@INTLTOOL_DESKTOP_RULE@
 
 bssh_SOURCES = bssh.c
 
@@ -101,13 +100,17 @@ install-exec-local:
 bssh.desktop.in: bssh.desktop.in.in
 	$(AM_V_GEN)sed -e 's,@bindir\@,$(bindir),g' $< > $@
 
+bssh.desktop: bssh.desktop.in
+	$(AM_V_GEN)$(MSGFMT) --desktop --template $< -d $(top_srcdir)/po -o $@
+
 bvnc.desktop.in: bvnc.desktop.in.in
 	$(AM_V_GEN)sed -e 's,@bindir\@,$(bindir),g' $< > $@
+
+bvnc.desktop: bvnc.desktop.in
+	$(AM_V_GEN)$(MSGFMT) --desktop --template $< -d $(top_srcdir)/po -o $@
 
 endif # HAVE_GLIB
 endif
 endif
-
-@INTLTOOL_DESKTOP_RULE@
 
 CLEANFILES = $(desktop_DATA) $(desktop_DATA_in)

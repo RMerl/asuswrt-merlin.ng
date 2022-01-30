@@ -235,13 +235,13 @@ static int ipv4_pktinfo(int fd) {
 
 #ifdef IP_RECVINTERFACE
     yes = 1;
-    if (setsockopt (fd, IPPROTO_IP, IP_RECVINTERFACE, &yes, sizeof(yes)) < 0) {
+    if (setsockopt(fd, IPPROTO_IP, IP_RECVINTERFACE, &yes, sizeof(yes)) < 0) {
         avahi_log_warn("IP_RECVINTERFACE failed: %s", strerror(errno));
         return -1;
     }
 #elif defined(IP_RECVIF)
     yes = 1;
-    if (setsockopt (fd, IPPROTO_IP, IP_RECVIF, &yes, sizeof(yes)) < 0) {
+    if (setsockopt(fd, IPPROTO_IP, IP_RECVIF, &yes, sizeof(yes)) < 0) {
         avahi_log_warn("IP_RECVIF failed: %s", strerror(errno));
         return -1;
     }
@@ -249,7 +249,7 @@ static int ipv4_pktinfo(int fd) {
 
 #ifdef IP_RECVDSTADDR
     yes = 1;
-    if (setsockopt (fd, IPPROTO_IP, IP_RECVDSTADDR, &yes, sizeof(yes)) < 0) {
+    if (setsockopt(fd, IPPROTO_IP, IP_RECVDSTADDR, &yes, sizeof(yes)) < 0) {
         avahi_log_warn("IP_RECVDSTADDR failed: %s", strerror(errno));
         return -1;
     }
@@ -454,11 +454,20 @@ static int sendmsg_loop(int fd, struct msghdr *msg, int flags) {
 
         if (errno != EAGAIN) {
             char where[64];
-            struct sockaddr_in *sin = msg->msg_name;
+            struct sockaddr_storage *ss = msg->msg_name;
 
-            inet_ntop(sin->sin_family, &sin->sin_addr, where, sizeof(where));
+            if (ss->ss_family == PF_INET) {
+                inet_ntop(ss->ss_family, &((struct sockaddr_in*)ss)->sin_addr, where, sizeof(where));
+            } else if (ss->ss_family == PF_INET6) {
+                inet_ntop(ss->ss_family, &((struct sockaddr_in6*)ss)->sin6_addr, where, sizeof(where));
+            } else {
+                where[0] = '\0';
+            }
+
             avahi_log_debug("sendmsg() to %s failed: %s", where, strerror(errno));
+
             return -1;
+
         }
 
         if (avahi_wait_for_write(fd) < 0)

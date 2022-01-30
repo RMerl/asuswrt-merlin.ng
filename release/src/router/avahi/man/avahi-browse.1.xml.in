@@ -56,7 +56,7 @@
 		<p><opt>-d | --domain=</opt> <arg>DOMAIN</arg></p>
         <optdesc><p>Browse in the specified domain. If omitted
         avahi-browse will browse in the default browsing domain
-        (usually .local)</p></optdesc>
+        (usually: local)</p></optdesc>
 	  </option>
 
       <option>

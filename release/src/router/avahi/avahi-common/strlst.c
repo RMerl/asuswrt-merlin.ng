@@ -128,19 +128,65 @@ AvahiStringList* avahi_string_list_reverse(AvahiStringList *l) {
     return r;
 }
 
+/**
+ * This routine is used for both human- and machine-readable output of
+ * TXT records. As such it must cope with escaping, in order to allow
+ * machines to reconstruct the original data.
+ *
+ * AFAIK no RFC specifies syntax for TXT data other than raw binary,
+ * though presumably zonefile syntax would make sense:
+ *
+ *   - RFC 1035 says that TXT records contain `<character-string>`s, and section
+ *     5 says:
+ *
+ *       <character-string> is expressed in one or two ways: as a contiguous set
+ *       of characters without interior spaces, or as a string beginning with a "
+ *       and ending with a ".  Inside a " delimited string any character can
+ *       occur, except for a " itself, which must be quoted using \ (back slash).
+ *
+ *     This omits escaping of backslashes (!).
+ *
+ *   - RFC 1034 doesn't say anything relevant.
+ *
+ *   - RFC 1464 suggests a specific encoding of information within a TXT
+ *     record but does not discuss formatting of TXT records in
+ *     general.
+ *
+ * In order to also escape newlines, which interfere with line-by-line
+ * machine processing of records, this routine:
+ *
+ *   - escapes >>> " <<< to >>> \" <<<
+ *   - escapes >>> \ <<< to >>> \\ <<<
+ *   - escapes bytes less than 32 to backslash-prefixed 3-digit DECIMAL form
+ */
 char* avahi_string_list_to_string(AvahiStringList *l) {
     AvahiStringList *n;
     size_t s = 0;
-    char *t, *e;
+    char *p, *t, *e;
 
     for (n = l; n; n = n->next) {
         if (n != l)
-            s ++;
+            s ++; /* for the inter-string separating space */
 
-        s += n->size+2;
+        for (p = (char*) n->text; ((size_t) (p - (char*) n->text) < n->size); p++) {
+            switch (*p) {
+              case '"':
+              case '\\':
+                  s += 2;
+                  break;
+              default:
+                  if (*p < 32) {
+                      s += 4;
+                  } else {
+                      s ++;
+                      break;
+                  }
+            }
+        }
+        s += 2; /* for the leading and trailing double-quotes */
     }
 
-    if (!(t = e = avahi_new(char, s+1)))
+    if (!(t = e = avahi_new(char, s+1))) /* plus one for the trailing NUL */
         return NULL;
 
     l = avahi_string_list_reverse(l);
@@ -150,9 +196,23 @@ char* avahi_string_list_to_string(AvahiStringList *l) {
             *(e++) = ' ';
 
         *(e++) = '"';
-        strncpy(e, (char*) n->text, n->size);
-        e[n->size] = 0;
-        e = strchr(e, 0);
+        for (p = (char*) n->text; ((size_t) (p - (char*) n->text) < n->size); p++) {
+            switch (*p) {
+              case '"':
+              case '\\':
+                  *(e++) = '\\';
+                  /* FALL THROUGH */
+              default:
+                  if (*p < 32) {
+                      *(e++) = '\\';
+                      *(e++) = '0' + (char)  ((uint8_t) *p / 100);
+                      *(e++) = '0' + (char) (((uint8_t) *p / 10) % 10);
+                      *(e++) = '0' + (char)  ((uint8_t) *p % 10);
+                  } else {
+                      *(e++) = *p;
+                  }
+            }
+        }
         *(e++) = '"';
 
         assert(e);

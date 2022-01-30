@@ -30,9 +30,17 @@
 
 #include "dbus-util.h"
 #include "dbus-internal.h"
+#include "main.h"
 
 void avahi_dbus_domain_browser_free(DomainBrowserInfo *i) {
+    const AvahiPoll *poll_api = NULL;
+
     assert(i);
+
+    poll_api = avahi_simple_poll_get(simple_poll_api);
+
+    if (i->delay_timeout)
+        poll_api->timeout_free(i->delay_timeout);
 
     if (i->domain_browser)
         avahi_s_domain_browser_free(i->domain_browser);
@@ -48,6 +56,13 @@ void avahi_dbus_domain_browser_free(DomainBrowserInfo *i) {
     i->client->n_objects--;
 
     avahi_free(i);
+}
+
+void avahi_dbus_domain_browser_start(DomainBrowserInfo *i) {
+    assert(i);
+
+    if(i->domain_browser)
+        avahi_s_domain_browser_start(i->domain_browser);
 }
 
 DBusHandlerResult avahi_dbus_msg_domain_browser_impl(DBusConnection *c, DBusMessage *m, void *userdata) {
@@ -84,6 +99,20 @@ DBusHandlerResult avahi_dbus_msg_domain_browser_impl(DBusConnection *c, DBusMess
         return avahi_dbus_respond_ok(c, m);
 
     }
+
+
+    if (dbus_message_is_method_call(m, AVAHI_DBUS_INTERFACE_DOMAIN_BROWSER, "Start")) {
+
+        if (!dbus_message_get_args(m, &error, DBUS_TYPE_INVALID)) {
+            avahi_log_warn("Error parsing DomainBrowser::Start message");
+            goto fail;
+        }
+
+        avahi_dbus_domain_browser_start(i);
+        return avahi_dbus_respond_ok(c, m);
+
+    }
+
 
     avahi_log_warn("Missed message %s::%s()", dbus_message_get_interface(m), dbus_message_get_member(m));
 

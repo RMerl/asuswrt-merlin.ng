@@ -56,6 +56,7 @@ typedef struct AvahiServerConfig {
     int use_iff_running;              /**< Require IFF_RUNNING on local network interfaces. This is the official way to check for link beat. Unfortunately this doesn't work with all drivers. So bettere leave this off. */
     int enable_reflector;             /**< Reflect incoming mDNS traffic to all local networks. This allows mDNS based network browsing beyond ethernet borders */
     int reflect_ipv;                  /**< if enable_reflector is 1, enable/disable reflecting between IPv4 and IPv6 */
+    AvahiStringList *reflect_filters;  /**< if enable_reflector is 1, will only add services containing one of these strings */
     int add_service_cookie;           /**< Add magic service cookie to all locally generated records implicitly */
     int enable_wide_area;             /**< Enable wide area support */
     AvahiAddress wide_area_servers[AVAHI_WIDE_AREA_SERVERS_MAX]; /** Unicast DNS server to use for wide area lookup */

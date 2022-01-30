@@ -333,6 +333,16 @@
       enabled, avahi-daemon will forward mDNS traffic between IPv4
       and IPv6, which is usually not recommended. Defaults to "no".</p>
     </option>
+
+    <option>
+      <p><opt>reflect-filters=</opt> Set a comma separated list of
+      allowed service names to be reflected. Each service that is
+      seen must match an entry in this list to be reflected to other
+      networks. This list can match the type of service or the name
+      of the machine providing the service. Defaults to allowing all
+      services.</p>
+
+    </option>
   </section>
 
   <section name="Section [rlimits]">

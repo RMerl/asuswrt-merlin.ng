@@ -17,7 +17,11 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 # USA.
 
-import @DBM@
+try:
+    import anydbm as dbm
+except ImportError:
+    import dbm
+
 import locale
 import re
 
@@ -28,7 +32,7 @@ class ServiceTypeDatabase:
 
     def __init__(self, filename = "@pkglibdatadir@/service-types.db"):
 
-        self.db = @DBM@.open(filename, "r")
+        self.db = dbm.open(filename, "r")
 
         l = locale.getlocale(locale.LC_MESSAGES)
 
@@ -90,13 +94,24 @@ class ServiceTypeDatabase:
 
     def __iter__(self):
 
-        @FIRST_KEY@
-        @CHECK_KEY@
+        def want_key(key):
+            if not re.search('_[a-zA-Z0-9-]+\._[a-zA-Z0-9-]+', key):
+                return False
+            if re.search('_[a-zA-Z0-9-]+\._[a-zA-Z0-9-]+\[.*\]', key):
+                return False
+            return True
 
-            if re.search('_[a-zA-Z0-9-]+\._[a-zA-Z0-9-]+', key) and not re.search('_[a-zA-Z0-9-]+\._[a-zA-Z0-9-]+\[.*\]', key):
-                yield key
-
-            @NEXT_KEY@
+        try:
+            key = self.db.firstkey()
+        except AttributeError:
+            for key in self.db.keys():
+                if want_key(key):
+                    yield key
+        else:
+            while key is not None:
+                if want_key(key):
+                    yield key
+                key = self.db.nextkey(key)
 
     def __len__(self):
 

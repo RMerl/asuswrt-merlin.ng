@@ -30,9 +30,17 @@
 
 #include "dbus-util.h"
 #include "dbus-internal.h"
+#include "main.h"
 
 void avahi_dbus_async_service_resolver_free(AsyncServiceResolverInfo *i) {
+    const AvahiPoll *poll_api = NULL;
+
     assert(i);
+
+    poll_api = avahi_simple_poll_get(simple_poll_api);
+
+    if (i->delay_timeout)
+        poll_api->timeout_free(i->delay_timeout);
 
     if (i->service_resolver)
         avahi_s_service_resolver_free(i->service_resolver);
@@ -48,6 +56,13 @@ void avahi_dbus_async_service_resolver_free(AsyncServiceResolverInfo *i) {
     i->client->n_objects--;
 
     avahi_free(i);
+}
+
+void avahi_dbus_async_service_resolver_start(AsyncServiceResolverInfo *i) {
+    assert(i);
+
+    if(i->service_resolver)
+        avahi_s_service_resolver_start(i->service_resolver);
 }
 
 void avahi_dbus_async_service_resolver_callback(
@@ -100,10 +115,12 @@ void avahi_dbus_async_service_resolver_callback(
 
         i_interface = (int32_t) interface;
         i_protocol = (int32_t) protocol;
+
         if (a)
-	    i_aprotocol = (int32_t) a->proto;
-	else
-	    i_aprotocol = AVAHI_PROTO_UNSPEC;
+            i_aprotocol = (int32_t) a->proto;
+        else
+            i_aprotocol = AVAHI_PROTO_UNSPEC;
+
         u_flags = (uint32_t) flags;
 
         dbus_message_append_args(
@@ -168,6 +185,18 @@ DBusHandlerResult avahi_dbus_msg_async_service_resolver_impl(DBusConnection *c, 
         avahi_dbus_async_service_resolver_free(i);
         return avahi_dbus_respond_ok(c, m);
     }
+
+    if (dbus_message_is_method_call(m, AVAHI_DBUS_INTERFACE_SERVICE_RESOLVER, "Start")) {
+
+        if (!dbus_message_get_args(m, &error, DBUS_TYPE_INVALID)) {
+            avahi_log_warn("Error parsing ServiceResolver::Start message");
+            goto fail;
+        }
+
+        avahi_dbus_async_service_resolver_start(i);
+        return avahi_dbus_respond_ok(c, m);
+    }
+
 
     avahi_log_warn("Missed message %s::%s()", dbus_message_get_interface(m), dbus_message_get_member(m));
 

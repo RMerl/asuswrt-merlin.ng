@@ -30,9 +30,17 @@
 
 #include "dbus-util.h"
 #include "dbus-internal.h"
+#include "main.h"
 
 void avahi_dbus_async_host_name_resolver_free(AsyncHostNameResolverInfo *i) {
+    const AvahiPoll *poll_api = NULL;
+
     assert(i);
+
+    poll_api = avahi_simple_poll_get(simple_poll_api);
+
+    if (i->delay_timeout)
+        poll_api->timeout_free(i->delay_timeout);
 
     if (i->host_name_resolver)
         avahi_s_host_name_resolver_free(i->host_name_resolver);
@@ -47,6 +55,13 @@ void avahi_dbus_async_host_name_resolver_free(AsyncHostNameResolverInfo *i) {
     i->client->n_objects--;
 
     avahi_free(i);
+}
+
+void avahi_dbus_async_host_name_resolver_start(AsyncHostNameResolverInfo *i) {
+    assert(i);
+
+    if(i->host_name_resolver)
+        avahi_s_host_name_resolver_start(i->host_name_resolver);
 }
 
 void avahi_dbus_async_host_name_resolver_callback(AvahiSHostNameResolver *r, AvahiIfIndex interface, AvahiProtocol protocol, AvahiResolverEvent event, const char *host_name, const AvahiAddress *a, AvahiLookupResultFlags flags, void* userdata) {
@@ -129,6 +144,18 @@ DBusHandlerResult avahi_dbus_msg_async_host_name_resolver_impl(DBusConnection *c
         avahi_dbus_async_host_name_resolver_free(i);
         return avahi_dbus_respond_ok(c, m);
     }
+
+    if (dbus_message_is_method_call(m, AVAHI_DBUS_INTERFACE_HOST_NAME_RESOLVER, "Start")) {
+
+        if (!dbus_message_get_args(m, &error, DBUS_TYPE_INVALID)) {
+            avahi_log_warn("Error parsing HostNameResolver::Start message");
+            goto fail;
+        }
+
+        avahi_dbus_async_host_name_resolver_start(i);
+        return avahi_dbus_respond_ok(c, m);
+    }
+
 
     avahi_log_warn("Missed message %s::%s()", dbus_message_get_interface(m), dbus_message_get_member(m));
 

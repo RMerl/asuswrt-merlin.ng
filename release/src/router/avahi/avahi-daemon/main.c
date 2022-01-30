@@ -855,6 +855,18 @@ static int load_config_file(DaemonConfig *c) {
                     c->server_config.enable_reflector = is_yes(p->value);
                 else if (strcasecmp(p->key, "reflect-ipv") == 0)
                     c->server_config.reflect_ipv = is_yes(p->value);
+                else if (strcasecmp(p->key, "reflect-filters") == 0) {
+                    char **e, **t;
+
+                    avahi_string_list_free(c->server_config.reflect_filters);
+                    c->server_config.reflect_filters = NULL;
+                    e = avahi_split_csv(p->value);
+
+                    for (t = e; *t; t++)
+                        c->server_config.reflect_filters = avahi_string_list_add(c->server_config.reflect_filters, *t);
+
+                    avahi_strfreev(e);
+                }
                 else {
                     avahi_log_error("Invalid configuration key \"%s\" in group \"%s\"\n", p->key, g->name);
                     goto finish;

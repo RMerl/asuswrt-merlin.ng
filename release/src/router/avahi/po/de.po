@@ -1,16 +1,16 @@
-# SOME DESCRIPTIVE TITLE.
+# German translation of Avahi.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the PACKAGE package.
+# This file is distributed under the same license as the avahi package.
 #
 # Translators:
-# Fabian Affolter <fab@fedoraproject.org>, 2011
-# Mario Blättermann <mario.blaettermann@gmail.com>, 2011
+# Fabian Affolter <fab@fedoraproject.org>, 2011.
+# Mario Blättermann <mario.blaettermann@gmail.com>, 2011, 2018.
 msgid ""
 msgstr ""
 "Project-Id-Version: Avahi\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-10-10 13:24+0200\n"
-"PO-Revision-Date: 2013-11-20 09:58+0000\n"
+"Report-Msgid-Bugs-To: https://github.com/lathiat/avahi/issues\n"
+"POT-Creation-Date: 2017-05-20 13:03+0000\n"
+"PO-Revision-Date: 2018-08-18 23:50+0200\n"
 "Last-Translator: Mario Blättermann <mario.blaettermann@gmail.com>\n"
 "Language-Team: German (http://www.transifex.com/lennart/avahi/language/de/)\n"
 "Language: de\n"
@@ -18,6 +18,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Poedit 2.1.1\n"
 
 #: ../avahi-common/error.c:30
 msgid "OK"
@@ -244,7 +245,7 @@ msgid "Avahi Discovery"
 msgstr "Avahi Discovery"
 
 #: ../avahi-discover-standalone/avahi-discover.ui.h:2
-#: ../avahi-python/avahi-discover/avahi-discover.py:76
+#: ../avahi-python/avahi-discover/avahi-discover.py:82
 msgid "<i>No service currently selected.</i>"
 msgstr "<i>Momentan ist kein Dienst ausgewählt.</i>"
 
@@ -256,35 +257,35 @@ msgstr "Avahi Zeroconf Browser"
 msgid "Browse for Zeroconf services available on your network"
 msgstr "Durchsuchen nach Zeroconf-aktivierten Diensten in Ihrem Netzwerk"
 
-#: ../avahi-python/avahi-discover/avahi-discover.py:224
+#: ../avahi-python/avahi-discover/avahi-discover.py:237
 msgid "TXT"
 msgstr "TXT"
 
-#: ../avahi-python/avahi-discover/avahi-discover.py:226
+#: ../avahi-python/avahi-discover/avahi-discover.py:239
 msgid "TXT Data:"
 msgstr "TXT-Daten:"
 
-#: ../avahi-python/avahi-discover/avahi-discover.py:226
+#: ../avahi-python/avahi-discover/avahi-discover.py:239
 msgid "empty"
 msgstr "leer"
 
-#: ../avahi-python/avahi-discover/avahi-discover.py:228
+#: ../avahi-python/avahi-discover/avahi-discover.py:241
 msgid "Service Type:"
 msgstr "Diensttyp:"
 
-#: ../avahi-python/avahi-discover/avahi-discover.py:229
+#: ../avahi-python/avahi-discover/avahi-discover.py:242
 msgid "Service Name:"
 msgstr "Dienstname:"
 
-#: ../avahi-python/avahi-discover/avahi-discover.py:230
+#: ../avahi-python/avahi-discover/avahi-discover.py:243
 msgid "Domain Name:"
 msgstr "Domainname:"
 
-#: ../avahi-python/avahi-discover/avahi-discover.py:231
+#: ../avahi-python/avahi-discover/avahi-discover.py:244
 msgid "Interface:"
 msgstr "Schnittstelle:"
 
-#: ../avahi-python/avahi-discover/avahi-discover.py:232
+#: ../avahi-python/avahi-discover/avahi-discover.py:245
 msgid "Address:"
 msgstr "Adresse:"
 
@@ -454,14 +455,12 @@ msgstr "Durchsuchen …"
 
 #: ../avahi-ui/avahi-ui.c:1047 ../avahi-ui/bssh.c:149 ../avahi-ui/bssh.c:156
 #: ../avahi-ui/bssh.c:161
-#, fuzzy
 msgid "_Cancel"
-msgstr "Abgebrochen.\n"
+msgstr "_Abbrechen"
 
 #: ../avahi-ui/avahi-ui.c:1048
-#, fuzzy
 msgid "_OK"
-msgstr "OK"
+msgstr "_OK"
 
 #: ../avahi-ui/avahi-ui.c:1134
 msgid "Initializing..."
@@ -513,7 +512,7 @@ msgstr "Shell-Server auswählen"
 
 #: ../avahi-ui/bssh.c:149 ../avahi-ui/bssh.c:156 ../avahi-ui/bssh.c:161
 msgid "C_onnect"
-msgstr ""
+msgstr "_Verbinden"
 
 #: ../avahi-ui/bssh.c:151
 msgid "Desktop"

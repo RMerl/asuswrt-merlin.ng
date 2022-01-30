@@ -137,6 +137,9 @@ DBusHandlerResult avahi_dbus_respond_boolean(DBusConnection *c, DBusMessage *m, 
 DBusHandlerResult avahi_dbus_respond_ok(DBusConnection *c, DBusMessage *m) {
     DBusMessage *reply;
 
+    if (dbus_message_get_no_reply(m))
+            return DBUS_HANDLER_RESULT_HANDLED;
+
     reply = dbus_message_new_method_return(m);
 
     if (!reply) {

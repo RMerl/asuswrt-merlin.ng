@@ -30,9 +30,16 @@
 
 #include "dbus-util.h"
 #include "dbus-internal.h"
+#include "main.h"
 
 void avahi_dbus_record_browser_free(RecordBrowserInfo *i) {
+    const AvahiPoll *poll_api = NULL;
+
     assert(i);
+
+    poll_api = avahi_simple_poll_get(simple_poll_api);
+    if (i->delay_timeout)
+        poll_api->timeout_free(i->delay_timeout);
 
     if (i->record_browser)
         avahi_s_record_browser_free(i->record_browser);
@@ -47,6 +54,13 @@ void avahi_dbus_record_browser_free(RecordBrowserInfo *i) {
     i->client->n_objects--;
 
     avahi_free(i);
+}
+
+void avahi_dbus_record_browser_start(RecordBrowserInfo *i) {
+    assert(i);
+
+    if(i->record_browser)
+        avahi_s_record_browser_start_query(i->record_browser);
 }
 
 DBusHandlerResult avahi_dbus_msg_record_browser_impl(DBusConnection *c, DBusMessage *m, void *userdata) {
@@ -83,6 +97,19 @@ DBusHandlerResult avahi_dbus_msg_record_browser_impl(DBusConnection *c, DBusMess
         return avahi_dbus_respond_ok(c, m);
 
     }
+
+    if (dbus_message_is_method_call(m, AVAHI_DBUS_INTERFACE_RECORD_BROWSER, "Start")) {
+
+        if (!dbus_message_get_args(m, &error, DBUS_TYPE_INVALID)) {
+            avahi_log_warn("Error parsing RecordBrowser::Start message");
+            goto fail;
+        }
+
+        avahi_dbus_record_browser_start(i);
+        return avahi_dbus_respond_ok(c, m);
+
+    }
+
 
     avahi_log_warn("Missed message %s::%s()", dbus_message_get_interface(m), dbus_message_get_member(m));
 

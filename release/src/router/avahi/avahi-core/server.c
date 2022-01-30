@@ -674,15 +674,56 @@ static void handle_response_packet(AvahiServer *s, AvahiDnsPacket *p, AvahiInter
         }
 
         if (!avahi_key_is_pattern(record->key)) {
+            /* Filter services that will be cached. Allow all local services */
+            if (!from_local_iface && s->config.enable_reflector && s->config.reflect_filters != NULL) {
+               AvahiStringList *l;
+               int match = 0;
+
+                if (record->key->type == AVAHI_DNS_TYPE_PTR) {
+                    /* Need to match DNS pointer target with filter */
+                    for (l = s->config.reflect_filters; l; l = l->next) {
+                        if (strstr(record->data.ptr.name, (char*) l->text) != NULL) {
+                            match = 1;
+                            break;
+                        }
+                    }
+
+                    if (!match) {
+                        avahi_log_debug("Reject Ptr SRC [%s] Dest [%s]", record->key->name, record->data.ptr.name);
+                        goto unref;
+                    }
+                    else
+                        avahi_log_debug("Match Ptr SRC [%s] Dest [%s]", record->key->name, record->data.ptr.name);
+                }
+                else if (record->key->type == AVAHI_DNS_TYPE_SRV || record->key->type == AVAHI_DNS_TYPE_TXT) {
+                    /* Need to match key name with filter */
+                    for (l = s->config.reflect_filters; l; l = l->next) {
+                        if (strstr(record->key->name, (char*) l->text) != NULL) {
+                            match = 1;
+                            break;
+                        }
+                    }
+
+                    if (!match) {
+                        avahi_log_debug("Reject Key [%s] iface [%d]", record->key->name, from_local_iface);
+                        goto unref;
+                    }
+                    else
+                        avahi_log_debug("Match Key [%s] iface [%d]", record->key->name, from_local_iface);
+                }
+            }
 
             if (handle_conflict(s, i, record, cache_flush)) {
-                if (!from_local_iface && !avahi_record_is_link_local_address(record))
-                    reflect_response(s, i, record, cache_flush);
-                avahi_cache_update(i->cache, record, cache_flush, a);
+                if (!from_local_iface) {
+                    if (!avahi_record_is_link_local_address(record))
+                        reflect_response(s, i, record, cache_flush);
+                    avahi_cache_update(i->cache, record, cache_flush, a);
+                }
                 avahi_response_scheduler_incoming(i->response_scheduler, record, cache_flush);
             }
         }
 
+    unref:
         avahi_record_unref(record);
     }
 
@@ -955,6 +996,13 @@ static void dispatch_packet(AvahiServer *s, AvahiDnsPacket *p, const AvahiAddres
             return;
         }
 
+        if (!is_mdns_mcast_address(dst_address) &&
+            !avahi_interface_address_on_link(i, src_address)) {
+
+            avahi_log_debug("Received non-local unicast query from host %s on interface '%s.%i'.", avahi_address_snprint(t, sizeof(t), src_address), i->hardware->name, i->protocol);
+            return;
+        }
+
         if (legacy_unicast)
             reflect_legacy_unicast_query_packet(s, p, i, src_address, port);
 
@@ -1169,6 +1217,7 @@ static void register_hinfo(AvahiServer *s) {
 
             if (avahi_server_add(s, s->hinfo_entry_group, AVAHI_IF_UNSPEC, AVAHI_PROTO_UNSPEC, AVAHI_PUBLISH_UNIQUE, r) < 0) {
                 avahi_log_warn("Failed to add HINFO RR: %s", avahi_strerror(s->error));
+                avahi_record_unref(r);
                 return;
             }
         }
@@ -1597,6 +1646,7 @@ AvahiServerConfig* avahi_server_config_init(AvahiServerConfig *c) {
     c->use_iff_running = 0;
     c->enable_reflector = 0;
     c->reflect_ipv = 0;
+    c->reflect_filters = NULL;
     c->add_service_cookie = 0;
     c->enable_wide_area = 0;
     c->n_wide_area_servers = 0;
@@ -1619,13 +1669,14 @@ void avahi_server_config_free(AvahiServerConfig *c) {
     avahi_free(c->host_name);
     avahi_free(c->domain_name);
     avahi_string_list_free(c->browse_domains);
+    avahi_string_list_free(c->reflect_filters);
     avahi_string_list_free(c->allow_interfaces);
     avahi_string_list_free(c->deny_interfaces);
 }
 
 AvahiServerConfig* avahi_server_config_copy(AvahiServerConfig *ret, const AvahiServerConfig *c) {
     char *d = NULL, *h = NULL;
-    AvahiStringList *browse = NULL, *allow = NULL, *deny = NULL;
+    AvahiStringList *browse = NULL, *allow = NULL, *deny = NULL, *reflect = NULL ;
     assert(ret);
     assert(c);
 
@@ -1660,12 +1711,22 @@ AvahiServerConfig* avahi_server_config_copy(AvahiServerConfig *ret, const AvahiS
         return NULL;
     }
 
+   if (!(reflect = avahi_string_list_copy(c->reflect_filters)) && c->reflect_filters) {
+        avahi_string_list_free(allow);
+        avahi_string_list_free(browse);
+        avahi_string_list_free(deny);
+        avahi_free(h);
+        avahi_free(d);
+        return NULL;
+    }
+
     *ret = *c;
     ret->host_name = h;
     ret->domain_name = d;
     ret->browse_domains = browse;
     ret->allow_interfaces = allow;
     ret->deny_interfaces = deny;
+    ret->reflect_filters = reflect;
 
     return ret;
 }

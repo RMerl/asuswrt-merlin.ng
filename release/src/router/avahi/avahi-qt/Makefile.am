@@ -65,4 +65,26 @@ libavahi_qt4_la_LIBADD = $(AM_LDADD) ../avahi-common/libavahi-common.la $(QT4_LI
 libavahi_qt4_la_LDFLAGS = $(AM_LDFLAGS) -version-info $(LIBAVAHI_QT4_VERSION_INFO)
 endif
 
+if HAVE_QT5
+
+avahiqt5includedir=$(includedir)/avahi-qt5
+avahiqt5include_HEADERS = \
+	qt-watch.h
+
+lib_LTLIBRARIES += \
+	libavahi-qt5.la
+
+BUILT_SOURCES += qt-watch.moc5
+
+libavahi_qt5_la_SOURCES = \
+	qt-watch.cpp
+
+qt-watch.moc5: qt-watch.cpp
+	$(AM_V_GEN)$(MOC_QT5) $^ > $@
+
+libavahi_qt5_la_CPPFLAGS = $(AM_CFLAGS) --std=gnu++11 $(QT5_CFLAGS) -DQT5 $(VISIBILITY_HIDDEN_CFLAGS)
+libavahi_qt5_la_LIBADD = $(AM_LDADD) ../avahi-common/libavahi-common.la $(QT5_LIBS)
+libavahi_qt5_la_LDFLAGS = $(AM_LDFLAGS) -version-info $(LIBAVAHI_QT5_VERSION_INFO)
+endif
+
 CLEANFILES = $(BUILT_SOURCES)

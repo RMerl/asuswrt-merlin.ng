@@ -1,1 +1,0 @@
-sinclude(common/doxygen.m4)

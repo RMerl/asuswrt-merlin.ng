@@ -1375,7 +1375,7 @@ void start_dnsmasq(void)
 			if (!ether_atoe(mac, ea))
 				continue;
 
-			if(ip && *ip != '\0' && hostname && *hostname != '\0')
+			if(ip && *ip != '\0' && hostname && *hostname != '\0' && is_valid_hostname(hostname))
 			{
 				fprintf(fp, "%s %s.%s %s\n", ip, hostname, lan_domain, hostname);
 			}	
@@ -3799,7 +3799,7 @@ void write_static_leases(FILE *fp)
 		}
 
 		if ((ip1 & lan_mask) == lan_net) {
-			if(hostname && hostname[0] != '\0')
+			if(hostname && hostname[0] != '\0' && is_valid_hostname(hostname))
 				fprintf(fp, "dhcp-host=%s,set:%s,%s,%s\n", mac, mac, hostname, ip);
 			else
 				fprintf(fp, "dhcp-host=%s,set:%s,%s\n", mac, mac, ip);

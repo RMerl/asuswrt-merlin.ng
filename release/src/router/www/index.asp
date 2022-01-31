@@ -1240,6 +1240,8 @@ function edit_confirm(){
 				document.list_form.dhcp_staticlist.value += document.getElementById("ipaddr_field").value;
 				document.list_form.dhcp_staticlist.value += ">";
 				document.list_form.dhcp_staticlist.value += "";//ddns
+				document.list_form.dhcp_staticlist.value += ">";
+				document.list_form.dhcp_staticlist.value += "";//hostname
 			}
 			else{//update
 				var dhcp_staticlist_temp = "";
@@ -1251,7 +1253,8 @@ function edit_confirm(){
 							if(mac == clientMac){
 								var ip = document.getElementById("ipaddr_field").value;
 								var dns = (client_array[2] == undefined) ? "" : client_array[2];
-								dhcp_staticlist_temp += "<" + mac + ">" + ip + ">" + dns;
+								var hostname = (client_array[3] == undefined) ? "" : client_array[3];
+								dhcp_staticlist_temp += "<" + mac + ">" + ip + ">" + dns + ">" + hostname;
 							}
 						}
 						else

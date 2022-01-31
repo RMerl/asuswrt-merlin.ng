@@ -6571,6 +6571,7 @@ net-snmp-5.7.2/stamp-h1:
 		ucd-snmp/pass,\
 		ucd-snmp/proc,\
 		ucd-snmp/vmstat,\
+		ucd-snmp/pass_persist,\
 		util_funcs"
 	@touch net-snmp-5.7.2/stamp-h1
 

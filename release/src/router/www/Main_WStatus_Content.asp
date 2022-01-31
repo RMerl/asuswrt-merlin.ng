@@ -51,7 +51,7 @@ var timedEvent = 0;
 var dataarray24 = [], wificlients24 = [];
 var dataarray5 = [], wificlients5 = [];
 var dataarray52 = [], wificlients52 = [];
-var dfs_statusarray = [];
+var dfs_statusarray1 = [], dfs_statusarray2 = [];
 
 <% get_wl_status(); %>;
 
@@ -125,7 +125,7 @@ function redraw(){
 	if (dataarray24.length == 0) {
 		document.getElementById('wifi24headerblock').innerHTML='<span class="wifiheader" style="font-size: 125%;">Wireless 2.4 GHz is disabled.</span>';
 	} else {
-		display_header(dataarray24, 'Wireless 2.4 GHz', document.getElementById('wifi24headerblock'), false);
+		display_header(dataarray24, 'Wireless 2.4 GHz', document.getElementById('wifi24headerblock'), []);
 		display_clients(wificlients24, document.getElementById('wifi24block'), 0);
 	}
 
@@ -133,7 +133,7 @@ function redraw(){
 		if (dataarray52.length == 0) {
 		        document.getElementById('wifi52headerblock').innerHTML='<span class="wifiheader" style="font-size: 125%;">Wireless 6 GHz is disabled.</span>';
 		} else {
-		        display_header(dataarray52, 'Wireless 6 GHz', document.getElementById('wifi52headerblock'), false);
+		        display_header(dataarray52, 'Wireless 6 GHz', document.getElementById('wifi52headerblock'), []);
 		        display_clients(wificlients52, document.getElementById('wifi52block'), 2);
 		}
 	}
@@ -143,20 +143,20 @@ function redraw(){
 			if (dataarray5.length == 0) {
 				document.getElementById('wifi5headerblock').innerHTML='<span class="wifiheader" style="font-size: 125%;">Wireless 5 GHz-1 is disabled.</span>';
 			} else {
-				display_header(dataarray5, 'Wireless 5 GHz-1', document.getElementById('wifi5headerblock'), true);
+				display_header(dataarray5, 'Wireless 5 GHz-1', document.getElementById('wifi5headerblock'), dfs_statusarray1);
 				display_clients(wificlients5, document.getElementById('wifi5block'), 1);
 			}
 			if (dataarray52.length == 0) {
 				document.getElementById('wifi52headerblock').innerHTML='<span class="wifiheader" style="font-size: 125%;">Wireless 5 GHz-2 is disabled.</span>';
 			} else {
-				display_header(dataarray52, 'Wireless 5 GHz-2', document.getElementById('wifi52headerblock'), true);
+				display_header(dataarray52, 'Wireless 5 GHz-2', document.getElementById('wifi52headerblock'), dfs_statusarray2);
 				display_clients(wificlients52, document.getElementById('wifi52block'), 2);
 			}
 		} else {
 			if (dataarray5.length == 0) {
 				document.getElementById('wifi5headerblock').innerHTML='<span class="wifiheader" style="font-size: 125%;">Wireless 5 GHz is disabled.</span>';
 			} else {
-				display_header(dataarray5, 'Wireless 5 GHz', document.getElementById('wifi5headerblock'), true);
+				display_header(dataarray5, 'Wireless 5 GHz', document.getElementById('wifi5headerblock'), dfs_statusarray1);
 				display_clients(wificlients5, document.getElementById('wifi5block'), 1);
 			}
 		}
@@ -272,7 +272,7 @@ function display_clients(clientsarray, obj, unit) {
 }
 
 
-function display_header(dataarray, title, obj, show_dfs) {
+function display_header(dataarray, title, obj, dfs_statusarray) {
 	var code;
 	var channel, i;
 	var time, formatted_time;
@@ -291,7 +291,7 @@ function display_header(dataarray, title, obj, show_dfs) {
 
 	code += '<td><span class="wifiheader">Channel: </span>'+ dataarray[4] + '</td> <td><span class="wifiheader">BSSID: </span>' + dataarray[5] +'</td></tr>';
 
-	if (show_dfs && dfs_statusarray.length > 1) {
+	if (dfs_statusarray.length > 1) {
 		code += '<tr><td colspan="2"><span class="wifiheader">DFS State: </span>' + dfs_statusarray[0] + '</td>';
 		time = parseInt(dfs_statusarray[1]);
 		formatted_time = Math.floor(time / 3600) + "h " + Math.floor(time / 60) % 60 + "m " + time % 60 + "s";

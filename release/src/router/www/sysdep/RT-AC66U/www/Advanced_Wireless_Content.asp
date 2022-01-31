@@ -173,10 +173,10 @@ function initial(){
 
 		if(disable11b_support){
 			if(document.form.wl_rateset.value == "ofdm"){
-				document.form.wl_rateset.checked = true;
+				document.form.wl_rateset_check.checked = true;
 			}
 			else{
-				document.form.wl_rateset.checked = false;
+				document.form.wl_rateset_check.checked = false;
 			}
 
 			wl_mode_change(document.form.wl_nmode_x.value);
@@ -426,11 +426,11 @@ function initial(){
 function wl_mode_change(mode){
 	if(wl_unit == '0'){
 		if(mode == '0'){
-			document.form.wl_rateset.disabled = false;
+			document.form.wl_rateset_check.disabled = false;
 			document.getElementById("wl_rateset_checkbox").style.display = "";
 		}
 		else{
-			document.form.wl_rateset.disabled = true;
+			document.form.wl_rateset_check.disabled = true;
 			document.getElementById("wl_rateset_checkbox").style.display = "none";
 		}
 	}
@@ -2368,6 +2368,7 @@ function handleMFP(){
 <input type="hidden" name="wps_dualband" value="<% nvram_get("wps_dualband"); %>">
 <input type="hidden" name="smart_connect_x" value="<% nvram_get("smart_connect_x"); %>">
 <input type="hidden" name="wl1_80211h" value="<% nvram_get("wl1_80211h"); %>" >
+<input type="hidden" name="wl_rateset" value="<% nvram_get("wl_rateset"); %>" >
 <input type="hidden" name="w_Setting" value="1">
 <input type="hidden" name="w_apply" value="1">
 <table class="content" align="center" cellpadding="0" cellspacing="0">
@@ -2486,7 +2487,7 @@ function handleMFP(){
 						</select>
 						<span id="wl_optimizexbox_span" style="display:none"><input type="checkbox" name="wl_optimizexbox_ckb" id="wl_optimizexbox_ckb" value="<% nvram_get("wl_optimizexbox"); %>" onclick="document.form.wl_optimizexbox.value=(this.checked==true)?1:0;"> <#WLANConfig11b_x_Mode_xbox#></span>
 						<span id="wl_gmode_checkbox" style="display:none;"><input type="checkbox" name="wl_gmode_check" id="wl_gmode_check" value="" onClick="wl_gmode_protection_check();"> <#WLANConfig11b_x_Mode_protectbg#></span>
-						<span id="wl_rateset_checkbox" style="display:none;"><input type="checkbox" name="wl_rateset" id="wl_rateset" value="<% nvram_get("wl_rateset"); %>" onClick="wl_disable11b(this);">Disable 11b</span>
+						<span id="wl_rateset_checkbox" style="display:none;"><input type="checkbox" name="wl_rateset_check" id="wl_rateset_check" onClick="wl_disable11b(this);">Disable 11b</span>
 						<span id="wl_nmode_x_hint" style="display:none;"><br><#WLANConfig11n_automode_limition_hint#><br></span>
 						<span id="wl_NOnly_note" style="display:none;"></span>
 						<br>

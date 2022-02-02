@@ -634,6 +634,9 @@ AvahiSRecordBrowser *avahi_s_record_browser_new(
         AvahiSRecordBrowser *b;
 
         b = avahi_s_record_browser_prepare(server, interface, protocol, key, flags, callback, userdata);
+        if (!b)
+            return NULL;
+
         avahi_s_record_browser_start_query(b);
 
         return b;

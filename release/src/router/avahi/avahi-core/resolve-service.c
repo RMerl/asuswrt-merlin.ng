@@ -520,6 +520,9 @@ AvahiSServiceResolver *avahi_s_service_resolver_new(
         AvahiSServiceResolver *b;
 
         b = avahi_s_service_resolver_prepare(server, interface, protocol, name, type, domain, aprotocol, flags, callback, userdata);
+        if (!b)
+            return NULL;
+
         avahi_s_service_resolver_start(b);
 
         return b;

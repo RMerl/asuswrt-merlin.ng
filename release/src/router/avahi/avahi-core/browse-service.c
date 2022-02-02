@@ -184,6 +184,9 @@ AvahiSServiceBrowser *avahi_s_service_browser_new(
         AvahiSServiceBrowser *b;
 
         b = avahi_s_service_browser_prepare(server, interface, protocol, service_type, domain, flags, callback, userdata);
+        if (!b)
+            return NULL;
+
         avahi_s_service_browser_start(b);
 
         return b;

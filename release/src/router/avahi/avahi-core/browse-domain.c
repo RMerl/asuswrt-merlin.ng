@@ -253,6 +253,9 @@ AvahiSDomainBrowser *avahi_s_domain_browser_new(
         AvahiSDomainBrowser *b;
 
         b = avahi_s_domain_browser_prepare(server, interface, protocol, domain, type, flags, callback, userdata);
+        if (!b)
+            return NULL;
+
         avahi_s_domain_browser_start(b);
 
         return b;

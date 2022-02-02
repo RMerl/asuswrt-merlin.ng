@@ -343,6 +343,9 @@ AvahiSDNSServerBrowser *avahi_s_dns_server_browser_new(
         AvahiSDNSServerBrowser* b;
 
         b = avahi_s_dns_server_browser_prepare(server, interface, protocol, domain, type, aprotocol, flags, callback, userdata);
+        if (!b)
+            return NULL;
+
         avahi_s_dns_server_browser_start(b);
 
         return b;

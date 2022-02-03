@@ -6767,6 +6767,7 @@ netaconfig netatalk-3.0.5/stamp-h1:
 		--with-dtrace=no \
 		--with-ssl-dir=$(TOP)/openssl \
 		--with-libgcrypt-dir=$(TOP)/libgcrypt-1.5.1 \
+		$(if $(RTCONFIG_HND_ROUTER),,--with-ld-library-path=$(SRCBASE)/toolchains/hndtools-arm-linux-2.6.36-uclibc-4.5.3/lib) \
 		--with-libevent=no \
 		--with-libevent-header=$(TOP)/libevent-2.0.21/include ;\
 		touch stamp-h1 ; \

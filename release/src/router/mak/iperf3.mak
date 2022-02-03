@@ -14,8 +14,8 @@ iperf3/configure:
 
 iperf3-install:
 	$(MAKE) -C iperf3 DESTDIR=$(INSTALLDIR)/iperf3 install
+	$(RM) -fr $(INSTALLDIR)/usr/include $(INSTALLDIR)/iperf3/usr/share $(INSTALLDIR)/iperf3/usr/lib/*.la $(INSTALLDIR)/iperf3/usr/lib/*.a
 ifeq ($(QCA),y)
-	$(RM) -fr $(INSTALLDIR)/usr/include $(INSTALLDIR)/iperf3/usr/share $(INSTALLDIR)/iperf3/usr/lib/*.la
 	install -D $(TOOLCHAIN)/lib/libstdc++.so.6 $(INSTALLDIR)/iperf3/usr/lib/libstdc++.so.6
 endif
 	$(STRIP) $(INSTALLDIR)/iperf3/usr/bin/iperf3

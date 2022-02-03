@@ -6580,6 +6580,9 @@ net-snmp-5.7.2: net-snmp-5.7.2/stamp-h1
 
 net-snmp-5.7.2-install:
 	@$(MAKE) -C net-snmp-5.7.2 install
+	rm -rf $(INSTALLDIR)/net-snmp-5.7.2/usr/lib/*.la
+	$(STRIP) $(INSTALLDIR)/net-snmp-5.7.2/usr/sbin/snmpd
+	$(STRIP) $(INSTALLDIR)/net-snmp-5.7.2/usr/lib/*.so*
 
 net-snmp-5.7.2-clean:
 	@[ ! -f net-snmp-5.7.2/Makefile ] || $(MAKE) -C net-snmp-5.7.2 clean

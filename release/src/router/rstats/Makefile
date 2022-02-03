@@ -40,7 +40,6 @@ install: all
 	@echo " [rstats] Installing..."
 	install -D rstats $(INSTALLDIR)/bin/rstats
 	$(STRIP) $(INSTALLDIR)/bin/rstats
-	chmod 0500 $(INSTALLDIR)/bin/rstats
 
 %.o: %.c .%.depend
 	@echo " [rstats] CC $@"

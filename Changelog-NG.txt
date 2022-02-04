@@ -5,7 +5,16 @@ Asuswrt-Merlin 386/NG Changelog
   - UPDATED: Merged with GPL 386_46065.
   - UPDATED: Reverted dnsmasq from 2.86 to 2.85.
   - UPDATED: miniupnpd to 2.3.0.
-  - UPDATED: avahi to 0.8.
+  - UPDATED: avahi to 0.8 + a few backports.
+  - FIXED: enabling/disabling 802.11b rates wouldn't get saved
+           to nvram.
+  - FIXED: netatalk failing to load extensions, breaking
+           Time Machine.
+  - FIXED: Large swapfiles reported the incorrect size on
+           the Tools page (Kevin Bracey)
+  - FIXED: User accounts would not show as connected on
+           the OpenVPN server username list if a remote
+           client connected over IPv6.
 
 
 386.4 (1-Jan-2022)

@@ -710,9 +710,11 @@ void parse_openvpn_status(int unit)
 {
 	FILE *fpi, *fpo;
 	char buf[512];
+	char *bufPtr;
 	char *token;
 	char nv_name[32] = "";
 	char prefix_vpn[] = "vpn_serverXX_";
+	int field;
 
 	snprintf(buf, sizeof(buf), "/etc/openvpn/server%d/status", unit);
 	fpi = fopen(buf, "r");
@@ -728,37 +730,36 @@ void parse_openvpn_status(int unit)
 			if (!fgets(buf, sizeof(buf), fpi))
 				break;
 			if(!strncmp(buf, "CLIENT_LIST", 11)) {
-				//printf("%s", buf);
-				token = strtok(buf, ",");	//CLIENT_LIST
-				token = strtok(NULL, ",");	//Common Name
-				token = strtok(NULL, ",");	//Real Address
-				if(token)
-					fprintf(fpo, "%s ", token);
-				else
-					fprintf(fpo, "NoRealAddress ");
-				snprintf(nv_name, sizeof(nv_name) -1, "vpn_server%d_if", unit);
+				bufPtr = buf;
+				field = 0;
 
-				if(nvram_match(strcat_r(prefix_vpn, "if", nv_name), "tap")
-					&& nvram_match(strcat_r(prefix_vpn, "dhcp", nv_name), "1")) {
-					fprintf(fpo, "VirtualAddressAssignedByDhcp ");
+				while ((token = strsep(&bufPtr, ","))) {
+					field++;
+					if (field == 3) {		// Real Address
+						if(*token)
+							fprintf(fpo, "%s ", token);
+						else
+							fprintf(fpo, "NoRealAddress ");
+					} else if (field == 4) {	// Virtual Address
+						snprintf(nv_name, sizeof(nv_name) -1, "vpn_server%d_if", unit);
+						if(nvram_match(strcat_r(prefix_vpn, "if", nv_name), "tap") &&
+						   nvram_match(strcat_r(prefix_vpn, "dhcp", nv_name), "1")) {
+							fprintf(fpo, "VirtualAddressAssignedByDhcp ");
+						} else {
+							if(*token)
+								fprintf(fpo, "%s ", token);
+							else
+								fprintf(fpo, "NoVirtualAddress ");
+						}
+					} else if (field == 10) {	// Username
+						if(*token)
+							fprintf(fpo, "%s", token);
+						else
+							fprintf(fpo, "NoUsername");
+						fprintf(fpo, "\n");
+						break;
+					}
 				}
-				else {
-					token = strtok(NULL, ",");	//Virtual Address
-					if(token)
-						fprintf(fpo, "%s ", token);
-					else
-						fprintf(fpo, "NoVirtualAddress ");
-				}
-				token = strtok(NULL, ",");	//Bytes Received
-				token = strtok(NULL, ",");	//Bytes Sent
-				token = strtok(NULL, ",");	//Connected Since
-				token = strtok(NULL, ",");	//Connected Since (time_t)
-				token = strtok(NULL, ",");	//Username
-				if(token)
-					fprintf(fpo, "%s", token);
-				else
-					fprintf(fpo, "NoUsername");
-				fprintf(fpo, "\n");
 			}
 #if 0
 			else if(!strncmp(buf, "REMOTE", 6)) {

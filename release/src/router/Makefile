@@ -5214,8 +5214,8 @@ libexif-clean:
 libexif-install: libexif
 	@$(SEP)
 ifneq ($(MEDIA_SERVER_STATIC),y)
+	$(STRIP) libexif/libexif/.libs/libexif.so.12
 	install -D libexif/libexif/.libs/libexif.so.12 $(INSTALLDIR)/libexif/usr/lib/libexif.so.12
-	$(STRIP) $(INSTALLDIR)/libexif/usr/lib/libexif.so.12
 endif
 
 zlib/stamp-h1:

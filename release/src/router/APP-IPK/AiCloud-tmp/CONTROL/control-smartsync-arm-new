@@ -1,13 +1,14 @@
-Package: aicloud
+Package: smartsync
 Architecture: arm
 Priority: optional
 Section: net
-Version: 2.0.2.20
+Version: 9.1.0.0.15.0.g0bb531f
+OptionalUtility:
 Maintainer: ASUS
 Source: http://nw-dlcdnet.asus.com/asusware/arm/stable
-URL: https://192.168.1.1:443
-Description: webdav server
-Depends: uclibc-opt,pcre,sqlite,libxml2,openssl,smartsync,libcurl
+URL: http://www.asusnetwork.net/cloud_sync.asp
+Description: Cloud client
+Depends: 
 Suggests: 
 Conflicts: 
 Enabled: yes

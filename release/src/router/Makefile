@@ -5638,8 +5638,14 @@ endif
 
 else
 	[ -d wlexe ] || install -d wlexe
+
+ifneq ($(wildcard $(SRCBASE)/wl/exe/prebuilt/$(BUILD_NAME)/wl),)
+	install $(SRC_PRE_WLEXE)/prebuilt/$(BUILD_NAME)/wl wlexe
+	-install $(SRC_PRE_WLEXE)/prebuilt/$(BUILD_NAME)/wl_server_socket wlexe
+else
 	install $(SRC_PRE_WLEXE)/prebuilt/wl wlexe
 	-install $(SRC_PRE_WLEXE)/prebuilt/wl_server_socket wlexe
+endif
 ifeq ($(or $(HND_ROUTER_AX_675X),$(HND_ROUTER_AX_6710),$(BCM_502L07P2)),y)
 	install $(SRCBASE)/router-sysdep/hnd_extra/prebuilt/wl_server_socket wlexe
 else

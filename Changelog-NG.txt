@@ -2,6 +2,7 @@ Asuswrt-Merlin 386/NG Changelog
 ===============================
 
 386.5 (xx-xxx-2022)
+  - NEW: Added support for the RT-AC68U_V4.
   - UPDATED: Merged with GPL 386_46065.
   - UPDATED: Reverted dnsmasq from 2.86 to 2.85.
   - UPDATED: miniupnpd to 2.3.0.

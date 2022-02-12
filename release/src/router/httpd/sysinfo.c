@@ -298,11 +298,14 @@ int ej_show_sysinfo(int eid, webs_t wp, int argc, char_t ** argv)
 #endif
 					temperature = get_phy_temperature(radio);
 			}
+#ifdef RTAC68U_V4	// Broken on 2.4G, potentially bogus on 5G
+			strcpy(result, "<i>N/A</i>");
+#else
 			if (temperature == 0)
 				strcpy(result,"<i>disabled</i>");
 			else
 				sprintf(result,"%u&deg;C", temperature);
-
+#endif
 		} else if(strcmp(type,"conn.total") == 0) {
 			FILE* fp;
 

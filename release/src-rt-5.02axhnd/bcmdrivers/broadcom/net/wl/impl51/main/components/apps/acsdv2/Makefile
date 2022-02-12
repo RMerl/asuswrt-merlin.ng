@@ -11,6 +11,6 @@ clean:
 	rm -f *.o *.a *.so acsd2 acs_cli2
 
 acsd2:
-	cp -f $(SRCBASE)/../components/apps/acsdv2/$(PRBM_DIR)/$@ ./
+	cp -f $(SRCBASE)/../components/apps/acsdv2/prebuilt/$(BUILD_NAME)/$@ ./
 acs_cli2:
-	cp -f $(SRCBASE)/../components/apps/acsdv2/$(PRBM_DIR)/$@ ./
+	cp -f $(SRCBASE)/../components/apps/acsdv2/prebuilt/$(BUILD_NAME)/$@ ./

@@ -25,7 +25,7 @@
 
 /*
  * Automatically generated make config: don't edit
- * Date: Mon Dec 14 14:09:45 2020
+ * Date: Wed Dec  1 17:00:25 2021
  */
 #ifndef __TMCFG__UDB_AUTOCONF_OUTPUT_H_
 #define __TMCFG__UDB_AUTOCONF_OUTPUT_H_
@@ -160,6 +160,7 @@
 #define TMCFG_E_UDB_CORE_RULE_FORMAT_V2 0 // n
 #define TMCFG_E_UDB_CORE_MESH 1 // y
 #define TMCFG_E_UDB_CORE_URL_QUERY 1 // y
+#define TMCFG_E_UDB_CORE_DNS_BASE_URL 0 // n
 #define TMCFG_E_UDB_CORE_SHN_QUERY 0 // n
 #define TMCFG_E_UDB_CORE_WBL 1 // y
 #define TMCFG_E_UDB_CORE_WBL_MAJ_VER 2
@@ -210,8 +211,8 @@
 #define TMCFG_E_UDB_SHELL_PROCFS 1 // y
 #define TMCFG_E_REL_PKG_MAJ_VER 2
 #define TMCFG_E_REL_PKG_MIN_VER 0
-#define TMCFG_E_REL_PKG_REV_VER 1
-#define TMCFG_E_REL_PKG_LOCAL_VER "e146672"
+#define TMCFG_E_REL_PKG_REV_VER 2
+#define TMCFG_E_REL_PKG_LOCAL_VER "4b635f32"
 
 /*
  * Accompany applications or modules
@@ -289,6 +290,7 @@
 #define TMCFG_APP_U_WRED_TMUFE_RS_HOST "rgom10-asus-en.url.trendmicro.com"
 #define TMCFG_APP_U_WRED_TMUFE_CUSTOM 1 // y
 #define TMCFG_APP_U_TDTS_WRED_TMUFE21 0 // n
+#define TMCFG_APP_U_TDTS_WRED_TMUFE50 0 // n
 #define TMCFG_APP_U_WBL 1 // y
 
 /*

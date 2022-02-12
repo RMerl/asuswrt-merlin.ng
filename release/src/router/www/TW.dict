@@ -1989,7 +1989,7 @@ fan_tuning_temperature=System Temperature
 FAQ_Desc=詳細資訊請造訪<a id="network_detect_faq" href="" target="_blank" style="margin-left:5px; text-decoration: underline;">華碩支援網站常見問題解答</a>，幫助您有效使用此功能。
 FAQ_Find=查找疑難排解
 feedback_3G_log=3G/4G 紀錄
-Feedback_case_No_desc=Please fill in this column with your ASUS service number or case number provided by the ASUS Call Center or CRS(Customer Review Support) ID provided by ASUS Customer Support(on Amazon site). If you do not remember your service number, please check your e-mail and search for an email from ASUS Technical Service.<br>This column only accepts either one English letter and 8~11 digits(for example: E1234567890). Or for CRS ID, 5 digits(such as 10688).
+Feedback_case_No_desc=Please fill in this column with your ASUS service number or case number provided by the ASUS Call Center or CRS(Customer Review Support) ID provided by ASUS Customer Support(on Amazon site). If you do not remember your service number, please check your e-mail and search for an email from ASUS Technical Service.<br>This column only accepts either one English letter with case number 8~11 digits and - (hyphen) second case number 4 digits (for example: E1234567890-1234). Or for CRS ID, 5 digits(such as 10688).
 feedback_comments=評論 / 建議
 feedback_compat_problem=相容性問題
 feedback_compat_oooa=作業系統或應用程式

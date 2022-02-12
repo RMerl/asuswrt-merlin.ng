@@ -16723,9 +16723,10 @@ static void sysinit(void)
 		f_write_string("/proc/sys/vm/min_free_kbytes", "40960", 0, 0);
 	else if (model==MODEL_RTAX95Q || model==MODEL_XT8PRO || model==MODEL_RTAXE95Q || model==MODEL_ET8PRO || model==MODEL_RTAX56U || model==MODEL_RPAX56 || model==MODEL_RPAX58)
 		f_write_string("/proc/sys/vm/min_free_kbytes", "61440", 0, 0);
-	else if (model==MODEL_RTAX55)
+	else if (model==MODEL_RTAX55) {
 		f_write_string("/proc/sys/vm/min_free_kbytes", "32768", 0, 0);
-	else	// fix _dma_rxfill error under stress test
+		f_write_string("/proc/sys/vm/overcommit_ratio", "60", 0, 0);
+	} else	// fix _dma_rxfill error under stress test
 		f_write_string("/proc/sys/vm/min_free_kbytes", "20480", 0, 0);
 	min_free_kbytes_check = 1;
 #endif
@@ -18096,7 +18097,7 @@ int reboothalt_main(int argc, char *argv[])
 void set_onboarding_vif_security(void)
 {
 	char prefix[]="wlXXXXXXX_", prefix_obvif[]="wlXXXXXXX_", tmp[64], obvif_ssid[33], obvif_psk[33];
-	int unit = 0, obvif_subunit = nvram_get_int("obvif_cap_subunit");
+	int unit = WL_2G_BAND, obvif_subunit = nvram_get_int("obvif_cap_subunit");
 
 	if (nvram_get_int("re_mode") == 1)
 		obvif_subunit = nvram_get_int("obvif_re_subunit");
@@ -18125,7 +18126,7 @@ void set_onboarding_vif_security(void)
 int set_onboarding_vif_bss_enabled(int unit, int subunit)
 {
 	char prefix[]="wlXXXXXXX_", prefix_obvif[]="wlXXXXXXX_", tmp[64];
-	int ret = 0, obvif_unit = 0, obvif_subunit = nvram_get_int("obvif_cap_subunit");
+	int ret = 0, obvif_unit = WL_2G_BAND, obvif_subunit = nvram_get_int("obvif_cap_subunit");
 
 	if (nvram_get_int("re_mode") == 1) {
 		obvif_subunit = nvram_get_int("obvif_re_subunit");

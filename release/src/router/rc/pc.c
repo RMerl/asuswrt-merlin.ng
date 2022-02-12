@@ -907,15 +907,16 @@ void config_daytime_string(pc_s *pc_list, FILE *fp, char *logaccept, char *logdr
 		_dprintf("config_daytime_string\n");
 		if (strlen(follow_pc->mac) && amas_lib_device_ip_query(follow_pc->mac, follow_addr)) {
 			chk_type = iptables_chk_ip;
+			if (illegal_ipv4_address(follow_addr))
+				continue;
 		} else
 #endif
 		{
 			chk_type = iptables_chk_mac;
 			snprintf(follow_addr, sizeof(follow_addr), "%s", follow_pc->mac);
+			if (!isValidMacAddress(follow_addr))
+				continue;
 		}
-		//_dprintf("config_daytime_string mac=%s\n", follow_addr[0]);
-		if(!follow_addr[0])
-			chk_type = "";
 
 //_dprintf("[PC] mac=%s\n", follow_pc->mac);
 #ifdef RTCONFIG_PERMISSION_MANAGEMENT
@@ -1115,14 +1116,16 @@ void config_daytime_string(pc_s *pc_list, FILE *fp, char *logaccept, char *logdr
 		_dprintf("config_daytime_string\n");
 		if (strlen(follow_pc->mac) && amas_lib_device_ip_query(follow_pc->mac, follow_addr)) {
 			chk_type = iptables_chk_ip;
+			if (illegal_ipv4_address(follow_addr))
+				continue;
 		} else
 #endif
 		{
 			chk_type = iptables_chk_mac;
 			snprintf(follow_addr, sizeof(follow_addr), "%s", follow_pc->mac);
+			if (!isValidMacAddress(follow_addr))
+				continue;
 		}
-		if(!follow_addr[0])
-			chk_type = "";
 
 //_dprintf("[PC] mac=%s\n", follow_pc->mac);
 #ifdef RTCONFIG_PERMISSION_MANAGEMENT
@@ -1254,14 +1257,16 @@ void config_pause_block_string(pc_s *pc_list, FILE *fp, char *logaccept, char *l
 		_dprintf("config_pause_block_string\n");
 		if (strlen(follow_pc->mac) && amas_lib_device_ip_query(follow_pc->mac, follow_addr)) {
 			chk_type = iptables_chk_ip;
+			if (illegal_ipv4_address(follow_addr))
+				continue;
 		} else
 #endif
 		{
 			chk_type = iptables_chk_mac;
 			snprintf(follow_addr, sizeof(follow_addr), "%s", follow_pc->mac);
+			if (!isValidMacAddress(follow_addr))
+				continue;
 		}
-		if(!follow_pc->mac[0])
-			chk_type = "";
 
 //_dprintf("[PC] mac=%s\n", follow_pc->mac);
 #ifdef RTCONFIG_PERMISSION_MANAGEMENT
@@ -1471,14 +1476,16 @@ void op_config_pause_block_string(pc_s *pc_list, FILE *fp, char *logaccept, char
 		_dprintf("config_pause_block_string\n");
 		if (strlen(follow_pc->mac) && amas_lib_device_ip_query(follow_pc->mac, follow_addr)) {
 			chk_type = iptables_chk_ip;
+			if (illegal_ipv4_address(follow_addr))
+				continue;
 		} else
 #endif
 		{
 			chk_type = iptables_chk_mac;
 			snprintf(follow_addr, sizeof(follow_addr), "%s", follow_pc->mac);
+			if (!isValidMacAddress(follow_addr))
+				continue;
 		}
-		if(!follow_pc->mac[0])
-			chk_type = "";
 
 //_dprintf("[PC] mac=%s\n", follow_pc->mac);
 #ifdef RTCONFIG_PERMISSION_MANAGEMENT

@@ -187,4 +187,6 @@
 #define CFG_STR_6G_CTRL_SIDEBAND	"6g_ctrlsb"
 #define CFG_STR_PLC_STATUS		"plc_status"
 #define CFG_STR_MODE			"mode"
+#define CFG_BAND_INDEX_VERSION		"bandindex_version"
+#define CFG_BAND_TYPE		"BAND_TYPE"
 #endif /* __CFG_STRING_H__ */

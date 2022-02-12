@@ -490,7 +490,7 @@ int add_interface_for_acsd(int unit) {
     if (nvram_get_int("re_mode") == 1 && !nvram_get_int("wlready"))
         return 0;
 
-    snprintf(wlc_status, sizeof(wlc_status), "wlc%d_status", unit);
+    snprintf(wlc_status, sizeof(wlc_status), "wlc%d_status", get_wlc_bandindex_by_unit(unit));
     snprintf(amas_wl_noacsd, sizeof(amas_wl_noacsd), "amas_wl%d_noacsd", unit);
     snprintf(wl_chsync, sizeof(wl_chsync), "wl%d_chsync", unit);
 

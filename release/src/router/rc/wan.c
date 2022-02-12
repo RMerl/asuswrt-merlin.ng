@@ -3105,8 +3105,17 @@ wan_up(const char *pwan_ifname)
 	int hgwret;
 	char cmd[2048], tmp1[100];
 	char prc[16] = {0};
+
 	prctl(PR_GET_NAME, prc);
-	_dprintf("[%s(%d)]Callby:[%s]\n", __FUNCTION__, __LINE__, prc);
+	snprintf(prefix, sizeof(prefix), "wan%d_", wan_unit);
+	wan_proto = get_wan_proto(prefix);
+
+	switch (wan_proto) {
+		case WAN_V6PLUS:
+			S46_DBG("Callby:[%s]\n", prc);
+		default:
+			break;
+	}
 #endif
 	in_addr_t addr, mask;
 	int i=0;
@@ -3392,17 +3401,17 @@ NOIP:
 		if (!strcmp(prc, "udhcpc") && nvram_get_int("s46_hgw_case") == S46_CASE_INIT) {
 			if (inet_addr_(nvram_safe_get(strcat_r(prefix, "gateway", tmp))) != INADDR_ANY) {
 				snprintf(cmd, sizeof(cmd), "ip route replace %s dev %s proto kernel", nvram_safe_get(strcat_r(prefix, "gateway", tmp)), wan_ifname);
-				_dprintf("[%s(%d)][Exe][%s]\n", __FUNCTION__, __LINE__, cmd);
+				S46_DBG("[CMD]:[%s]\n", cmd);
 				system(cmd);
 			}
 			snprintf(cmd, sizeof(cmd), "ip route replace default via %s dev %s", nvram_safe_get(strcat_r(prefix, "gateway", tmp)), wan_ifname);
-			_dprintf("[%s(%d)][Exe][%s]\n", __FUNCTION__, __LINE__, cmd);
+			S46_DBG("[CMD][%s]\n", cmd);
 			system(cmd);
 			system("ip route flush cache");
 			hgwret = s46_jpne_hgw();
 			/* Debug only */
 			if (nvram_get("s46_debug_hgwret")) {
-				_dprintf("[%s(%d)] Using nvram s46_debug_hgwret val.\n", __FUNCTION__, __LINE__);
+				S46_DBG("Using nvram s46_debug_hgwret val.\n");
 				hgwret = nvram_get_int("s46_debug_hgwret");
 			}
 			if (hgwret == 1) {
@@ -3410,7 +3419,7 @@ NOIP:
 				nvram_set_int("s46_hgw_case", S46_CASE_MAP_HGW_ON);
 			} else {
 				if (hgwret < 0)
-					_dprintf("[%s(%d)]HGW did not respond[%d].\n", __FUNCTION__, __LINE__, hgwret);
+					S46_DBG("HGW did not respond[%d].\n", hgwret);
 				snprintf(prefix_x, sizeof(prefix_x), "wan%d_x", wan_unit);
 				nvram_set(strcat_r(prefix_x, "ipaddr", tmp), nvram_safe_get(strcat_r(prefix, "ipaddr", tmp1)));
 				nvram_set(strcat_r(prefix_x, "gateway", tmp), nvram_safe_get(strcat_r(prefix, "gateway", tmp1)));
@@ -3419,7 +3428,7 @@ NOIP:
 				nvram_set(strcat_r(prefix, "gateway", tmp), "0.0.0.0");
 				nvram_set(strcat_r(prefix, "dns", tmp), "0.0.0.0");
 				nvram_set_int("s46_hgw_case", S46_CASE_MAP_HGW_OFF);
-				_dprintf("[%s(%d)][%s] done.\n", __FUNCTION__, __LINE__, wan_ifname);
+				S46_DBG("[%s] done.\n", wan_ifname);
 				return;
 			}
 		}

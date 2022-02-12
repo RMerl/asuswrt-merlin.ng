@@ -25,7 +25,7 @@
 
 /*
  * Automatically generated make config: don't edit
- * Date: Sun Jul  4 11:17:21 2021
+ * Date: Tue Nov 30 18:46:32 2021
  */
 #ifndef __TMCFG__UDB_AUTOCONF_OUTPUT_H_
 #define __TMCFG__UDB_AUTOCONF_OUTPUT_H_
@@ -93,8 +93,8 @@
 
 #define TMCFG_BRAND_ASUS 1 // y
 #define TMCFG_BRAND "asus"
-#define TMCFG_MODEL_RT_AX95Q 1 // y
-#define TMCFG_MODEL "rt-ax95q"
+#define TMCFG_MODEL_RT_AX56U 1 // y
+#define TMCFG_MODEL "rt-ax56u"
 #define TMCFG_OEM_SRC 1 // y
 #define TMCFG_OEM_SRC_BRCM_FC_6755 1 // y
 
@@ -109,7 +109,7 @@
 #define TMCFG_CPU_64BITS 0 // n
 #define TMCFG_CPU_BIG_ENDIAN 0 // n
 #define TMCFG_CPU_LITTLE_ENDIAN 1 // y
-#define TMCFG_KERN_DIR "/opt/ASUS/asuswrt_AX95Q_GPL_386_24843/release/src-rt-5.02axhnd.675x/kernel/linux-4.1/"
+#define TMCFG_KERN_DIR "/opt/ASUS/asuswrt_AX56U_GPL_386_41034/release/src-rt-5.02axhnd.675x/kernel/linux-4.1/"
 #define TMCFG_KERN_ARCH "arm"
 
 /*
@@ -160,6 +160,7 @@
 #define TMCFG_E_UDB_CORE_RULE_FORMAT_V2 0 // n
 #define TMCFG_E_UDB_CORE_MESH 1 // y
 #define TMCFG_E_UDB_CORE_URL_QUERY 1 // y
+#define TMCFG_E_UDB_CORE_DNS_BASE_URL 0 // n
 #define TMCFG_E_UDB_CORE_SHN_QUERY 0 // n
 #define TMCFG_E_UDB_CORE_WBL 1 // y
 #define TMCFG_E_UDB_CORE_WBL_MAJ_VER 2
@@ -176,7 +177,7 @@
 #define TMCFG_E_UDB_CORE_WBL_URL_NUM 1024
 #define TMCFG_E_UDB_CORE_WEB_FUNC 1 // y
 #define TMCFG_E_UDB_CORE_DC 1 // y
-#define TMCFG_E_UDB_CORE_DC_UNKNOWN_DEVID 1 // y
+#define TMCFG_E_UDB_CORE_DC_UNKNOWN_DEVID 0 // n
 #define TMCFG_E_UDB_CORE_ANOMALY_PREVENT 1 // y
 #define TMCFG_E_UDB_CORE_VIRTUAL_PATCH 1 // y
 #define TMCFG_E_UDB_CORE_SWNAT 0 // n
@@ -208,8 +209,8 @@
 #define TMCFG_E_UDB_SHELL_PROCFS 1 // y
 #define TMCFG_E_REL_PKG_MAJ_VER 2
 #define TMCFG_E_REL_PKG_MIN_VER 0
-#define TMCFG_E_REL_PKG_REV_VER 1
-#define TMCFG_E_REL_PKG_LOCAL_VER "7812743e"
+#define TMCFG_E_REL_PKG_REV_VER 2
+#define TMCFG_E_REL_PKG_LOCAL_VER "c03f6c5"
 
 /*
  * Accompany applications or modules
@@ -218,7 +219,7 @@
 /*
  * Kernel
  */
-#define TMCFG_APP_K_EXTRA_CFLAGS "-I/opt/ASUS/asuswrt_AX95Q_GPL_386_24843/release/src-rt-5.02axhnd.675x/shared/opensource/include/bcm963xx -I/opt/ASUS/asuswrt_AX95Q_GPL_386_24843/release/src-rt-5.02axhnd.675x/bcmdrivers/broadcom/include/bcm963xx -I/opt/ASUS/asuswrt_AX95Q_GPL_386_24843/release/src-rt-5.02axhnd.675x/bcmdrivers/opensource/include/bcm963xx"
+#define TMCFG_APP_K_EXTRA_CFLAGS "-I/opt/ASUS/asuswrt_AX56U_GPL_386_41034/release/src-rt-5.02axhnd.675x/shared/opensource/include/bcm963xx -I/opt/ASUS/asuswrt_AX56U_GPL_386_41034/release/src-rt-5.02axhnd.675x/bcmdrivers/broadcom/include/bcm963xx -I/opt/ASUS/asuswrt_AX56U_GPL_386_41034/release/src-rt-5.02axhnd.675x/bcmdrivers/opensource/include/bcm963xx"
 #define TMCFG_APP_K_TDTS_NFFW 0 // n
 #define TMCFG_APP_K_TDTS_UDBFW 1 // y
 #define TMCFG_APP_K_TDTS_UDBFW_EXTRA_SYMBOLS ""

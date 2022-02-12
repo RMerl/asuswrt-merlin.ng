@@ -38,11 +38,15 @@ void config_blocking_redirect(FILE *fp){
 		_dprintf("config_blocking_redirect\n");
 		if (strlen(follow_pc->mac) && amas_lib_device_ip_query(follow_pc->mac, follow_addr)) {
 			chk_type = iptables_chk_ip;
+			if (illegal_ipv4_address(follow_addr))
+				continue;
 		} else
 #endif
 		{
 			chk_type = iptables_chk_mac;
 			snprintf(follow_addr, sizeof(follow_addr), "%s", follow_pc->mac);
+			if (!isValidMacAddress(follow_addr))
+				continue;
 		}
 
 #ifdef RTCONFIG_PERMISSION_MANAGEMENT
@@ -414,11 +418,15 @@ void op_check_and_add_rules(void *info) {
 		_dprintf("op_check_and_add_rules\n");
 		if (strlen(follow_pc->mac) && amas_lib_device_ip_query(follow_pc->mac, follow_addr)) {
 			chk_type = iptables_chk_ip;
+			if (illegal_ipv4_address(follow_addr))
+				continue;
 		} else
 #endif
 		{
 			chk_type = iptables_chk_mac;
 			snprintf(follow_addr, sizeof(follow_addr), "%s", follow_pc->mac);
+			if (!isValidMacAddress(follow_addr))
+				continue;
 		}
 		for(p = host_info; p != NULL; p = p->ai_next) {
 			if (p->ai_family == AF_INET) {

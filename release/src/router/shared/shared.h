@@ -2249,6 +2249,8 @@ extern void del_led_ctrl_capability(int val);
 extern void check_mssid_prelink_reset(uint32_t sf);
 #endif
 extern void unset_selected_channel_info();
+extern int get_unit_by_wlc_bandindex(int bandindex);
+extern int get_wlc_bandindex_by_unit(int unit);
 #if defined(RTCONFIG_BCMWL6)
 extern int get_wl_sta_list(void);
 extern int get_maxassoc(char *ifname);

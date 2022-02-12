@@ -1989,7 +1989,7 @@ fan_tuning_temperature=System Temperature
 FAQ_Desc=자세한 설명은 <a id="network_detect_faq" href="" target="_blank" style="margin-left:5px; text-decoration: underline;">ASUS 지원 사이트 FAQ</a>에서 볼 수 있으며 이 기능을 효과적으로 사용하는 데 도움이 될 수 있습니다.
 FAQ_Find=FAQ 찾기
 feedback_3G_log=3G/4G 로그
-Feedback_case_No_desc=Please fill in this column with your ASUS service number or case number provided by the ASUS Call Center or CRS(Customer Review Support) ID provided by ASUS Customer Support(on Amazon site). If you do not remember your service number, please check your e-mail and search for an email from ASUS Technical Service.<br>This column only accepts either one English letter and 8~11 digits(for example: E1234567890). Or for CRS ID, 5 digits(such as 10688).
+Feedback_case_No_desc=Please fill in this column with your ASUS service number or case number provided by the ASUS Call Center or CRS(Customer Review Support) ID provided by ASUS Customer Support(on Amazon site). If you do not remember your service number, please check your e-mail and search for an email from ASUS Technical Service.<br>This column only accepts either one English letter with case number 8~11 digits and - (hyphen) second case number 4 digits (for example: E1234567890-1234). Or for CRS ID, 5 digits(such as 10688).
 feedback_comments=설명 / 제안
 feedback_compat_problem=호환성문제
 feedback_compat_oooa=OS 또는 애플리케이션에서

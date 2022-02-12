@@ -653,20 +653,12 @@ int start_vlan(void)
 #endif
 
 #if defined(HND_ROUTER)
-	if(!nvram_match("switch_wantag", "") && (nvram_get_int("switch_stb_x") > 0 || nvram_match("switch_wantag", "unifi_biz") || 
-		nvram_match("switch_wantag", "stuff_fibre") || nvram_match("switch_wantag", "spark") ||
-		nvram_match("switch_wantag", "2degrees") || nvram_match("switch_wantag", "slingshot") ||
-		nvram_match("switch_wantag", "orcon") || nvram_match("switch_wantag", "voda_nz") ||
-		nvram_match("switch_wantag", "tpg") || nvram_match("switch_wantag", "iinet") ||
-		nvram_match("switch_wantag", "aapt") || nvram_match("switch_wantag", "intronode") ||
-		nvram_match("switch_wantag", "amaysim") || nvram_match("switch_wantag", "dodo") ||
-		nvram_match("switch_wantag", "iprimus") || nvram_match("switch_wantag", "manual") ||
-		nvram_match("switch_wantag", "iprimus") || nvram_match("switch_wantag", "centurylink") ||
-		nvram_match("switch_wantag", "actrix") || nvram_match("switch_wantag", "jastel") ||
-		nvram_match("switch_wantag", "kpn_nl") || nvram_match("switch_wantag", "meo_iptv") ||
-		nvram_match("switch_wantag", "meo_br") ||
-		nvram_match("switch_wantag", "hinet_mesh") ||
-		nvram_match("switch_wantag", "google_fiber"))) {
+	if (!nvram_match("switch_wantag", "")
+		&& (nvram_get_int("switch_stb_x") > 0 || (nvram_get_int("switch_stb_x") == 0 && nvram_get_int("switch_wan0tagid") > 0))) {
+		/*
+			case 1: STB != 0
+			case 2: STB == 0 && wan tag != 0
+		*/
 		ifconfig(WAN_IF_ETH, IFUP, NULL, NULL);
 		set_wan_tag(WAN_IF_ETH);
 	}

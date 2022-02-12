@@ -196,7 +196,7 @@ static int proc_dostring_coredump(struct ctl_table *table, int write,
 #ifdef CRASHLOG
 static int proc_dostring_crashlogsave(struct ctl_table *table, int write,
 		  void __user *buffer, size_t *lenp, loff_t *ppos);
-#endif
+#endif /* CRASHLOG */
 
 #ifdef CONFIG_MAGIC_SYSRQ
 /* Note: sysrq code uses it's own private copy */
@@ -474,13 +474,6 @@ static struct ctl_table kern_table[] = {
 		.proc_handler	= proc_dointvec,
 	},
 #ifdef CRASHLOG
-	{
-		.procname	= "crashlog_enable",
-		.data		= &crashlog_enable,
-		.maxlen		= sizeof(int),
-		.mode		= 0644,
-		.proc_handler	= proc_dointvec,
-	},
 	{
 		.procname	= "crashlog_filename",
 		.data		= crashlog_filename,

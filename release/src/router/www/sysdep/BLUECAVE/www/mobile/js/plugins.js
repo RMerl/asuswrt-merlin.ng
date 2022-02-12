@@ -1487,6 +1487,9 @@ var isSupport = function(_ptn){
 		case "IPTV":
 			matchingResult = (isSku("US") || isSku("CN") || isSku("CT") || isSku("GD") || isSku("TC") || isSku("CA")|| isSku("U2") || isSku("TW")) ? false : true;
 			break;
+		case "ENABLE_IPv6":
+			matchingResult = (isSku("CN") || isSku("GD") || isSku("TC")) ? true : false;
+			break;
 		case "SMARTCONNECT":
 			matchingResult = (ui_support["smart_connect"] == "1" || ui_support["smart_connect"] == "2" || ui_support["bandstr"] == "1") ? true : false;
 			break;

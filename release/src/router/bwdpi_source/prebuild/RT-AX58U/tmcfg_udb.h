@@ -25,7 +25,7 @@
 
 /*
  * Automatically generated make config: don't edit
- * Date: Wed Dec 23 15:17:10 2020
+ * Date: Tue Nov 30 18:59:44 2021
  */
 #ifndef __TMCFG__UDB_AUTOCONF_OUTPUT_H_
 #define __TMCFG__UDB_AUTOCONF_OUTPUT_H_
@@ -96,7 +96,7 @@
 #define TMCFG_MODEL_RT_AX58U 1 // y
 #define TMCFG_MODEL "rt-ax58u"
 #define TMCFG_OEM_SRC 1 // y
-#define TMCFG_OEM_SRC_BRCM_FC_6750 1 // y
+#define TMCFG_OEM_SRC_BRCM_FC_6755 1 // y
 
 /*
  * Target device information
@@ -160,6 +160,7 @@
 #define TMCFG_E_UDB_CORE_RULE_FORMAT_V2 0 // n
 #define TMCFG_E_UDB_CORE_MESH 1 // y
 #define TMCFG_E_UDB_CORE_URL_QUERY 1 // y
+#define TMCFG_E_UDB_CORE_DNS_BASE_URL 0 // n
 #define TMCFG_E_UDB_CORE_SHN_QUERY 0 // n
 #define TMCFG_E_UDB_CORE_WBL 1 // y
 #define TMCFG_E_UDB_CORE_WBL_MAJ_VER 2
@@ -210,8 +211,8 @@
 #define TMCFG_E_UDB_SHELL_PROCFS 1 // y
 #define TMCFG_E_REL_PKG_MAJ_VER 2
 #define TMCFG_E_REL_PKG_MIN_VER 0
-#define TMCFG_E_REL_PKG_REV_VER 1
-#define TMCFG_E_REL_PKG_LOCAL_VER "c03f6c5"
+#define TMCFG_E_REL_PKG_REV_VER 2
+#define TMCFG_E_REL_PKG_LOCAL_VER "d2ff630"
 
 /*
  * Accompany applications or modules

@@ -710,7 +710,7 @@ endif
 		echo "Unknown model! Need define COMBINE_MODEL..."; \
 		exit 1; \
 	fi
-	$(eval IMAGEVER := $(KERNEL_VER).$(FS_VER)_$(SERIALNO)_$(SWPJVER)$(EXTENDNO))
+	$(eval IMAGEVER := $(SERIALNO)_$(SWPJVER)$(EXTENDNO)$(BUILDREV))
 ifeq ($(QCA),y)
 	@rm -f $(IMAGEDIR)/mix.trx
 	@for var in $(COMBINE_MODEL); do \

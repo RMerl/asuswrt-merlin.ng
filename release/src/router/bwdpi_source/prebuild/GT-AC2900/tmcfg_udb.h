@@ -25,7 +25,7 @@
 
 /*
  * Automatically generated make config: don't edit
- * Date: Tue Nov 30 18:04:27 2021
+ * Date: Thu Nov 25 18:25:13 2021
  */
 #ifndef __TMCFG__UDB_AUTOCONF_OUTPUT_H_
 #define __TMCFG__UDB_AUTOCONF_OUTPUT_H_
@@ -93,8 +93,8 @@
 
 #define TMCFG_BRAND_ASUS 1 // y
 #define TMCFG_BRAND "asus"
-#define TMCFG_MODEL_RT_AX88U 1 // y
-#define TMCFG_MODEL "rt-ax88u"
+#define TMCFG_MODEL_RT_AC86U 1 // y
+#define TMCFG_MODEL "rt-ac86u"
 #define TMCFG_OEM_SRC 1 // y
 #define TMCFG_OEM_SRC_BRCM_FC_4908 1 // y
 
@@ -109,7 +109,7 @@
 #define TMCFG_CPU_64BITS 1 // y
 #define TMCFG_CPU_BIG_ENDIAN 0 // n
 #define TMCFG_CPU_LITTLE_ENDIAN 1 // y
-#define TMCFG_KERN_DIR "/opt/ASUS/asuswrt_AX88U_GPL_386_41034/release/src-rt-5.02axhnd/kernel/linux-4.1"
+#define TMCFG_KERN_DIR "/opt/ASUS/asuswrt_AC86U_GPL_384_82180/release/src-rt-5.02hnd/kernel/linux-4.1"
 #define TMCFG_KERN_ARCH "arm64"
 
 /*
@@ -212,7 +212,7 @@
 #define TMCFG_E_REL_PKG_MAJ_VER 2
 #define TMCFG_E_REL_PKG_MIN_VER 0
 #define TMCFG_E_REL_PKG_REV_VER 2
-#define TMCFG_E_REL_PKG_LOCAL_VER "36f59aa"
+#define TMCFG_E_REL_PKG_LOCAL_VER "90120f9"
 
 /*
  * Accompany applications or modules
@@ -221,7 +221,7 @@
 /*
  * Kernel
  */
-#define TMCFG_APP_K_EXTRA_CFLAGS "-I/opt/ASUS/asuswrt_AX88U_GPL_386_41034/release/src-rt-5.02axhnd/shared/opensource/include/bcm963xx -I/opt/ASUS/asuswrt_AX88U_GPL_386_41034/release/src-rt-5.02axhnd/bcmdrivers/broadcom/include/bcm963xx -I/opt/ASUS/asuswrt_AX88U_GPL_386_41034/release/src-rt-5.02axhnd/bcmdrivers/opensource/include/bcm963xx"
+#define TMCFG_APP_K_EXTRA_CFLAGS "-I/opt/ASUS/asuswrt_AC86U_GPL_384_82180/release/src-rt-5.02hnd/shared/opensource/include/bcm963xx -I/opt/ASUS/asuswrt_AC86U_GPL_384_82180/release/src-rt-5.02hnd/bcmdrivers/broadcom/include/bcm963xx -I/opt/ASUS/asuswrt_AC86U_GPL_384_82180/release/src-rt-5.02hnd/bcmdrivers/opensource/include/bcm963xx"
 #define TMCFG_APP_K_TDTS_NFFW 0 // n
 #define TMCFG_APP_K_TDTS_UDBFW 1 // y
 #define TMCFG_APP_K_TDTS_UDBFW_EXTRA_SYMBOLS ""

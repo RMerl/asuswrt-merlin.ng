@@ -26,13 +26,13 @@
 
 /*
  * Automatically generated make config: don't edit
- * Date: Tue Dec  8 14:58:13 2020
+ * Date: Fri Oct 16 18:05:11 2020
  */
 #ifndef __TMCFG__AUTOCONF_OUTPUT_H_
 #define __TMCFG__AUTOCONF_OUTPUT_H_
 
 #define TMCFG_BRAND "asus"
-#define TMCFG_MODEL "rt-ax88u"
+#define TMCFG_MODEL "rt-ac86u"
 
 /*
  * Target device information
@@ -47,7 +47,7 @@
 #define TMCFG_ARCH_POWERPC 0 // n
 #define TMCFG_CPU_BIG_ENDIAN 0 // n
 #define TMCFG_CPU_LITTLE_ENDIAN 1 // y
-#define TMCFG_KERN_DIR "/opt/ASUS/asuswrt_AX88U_GPL_386_41034/release/src-rt-5.02axhnd/kernel/linux-4.1"
+#define TMCFG_KERN_DIR "/opt/ASUS/asuswrt_AC86U_GPL_384_82180/release/src-rt-5.02hnd/kernel/linux-4.1"
 #define TMCFG_KERN_ARCH "arm64"
 #define TMCFG_CPU_32BITS 0 // n
 #define TMCFG_CPU_64BITS 1 // y

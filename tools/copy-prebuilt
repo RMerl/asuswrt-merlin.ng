@@ -40,7 +40,12 @@ then
 	ARCH="_arm"
 	HND="_hnd"
 
-	cp release/src/router/hnd_extra/prebuilt/* $REPO/release/src/router/hnd_extra/prebuilt/$BUILD_NAME/
+	rsync -a --del release/src/router/hnd_extra/prebuilt/ $REPO/release/src/router/hnd_extra/prebuilt/$BUILD_NAME
+	if [ "$BUILD_NAME" == "RT-AC86U" ]
+	then
+		ln -s ../GT-AC2900/vis-dcon $REPO/release/src/router/hnd_extra/prebuilt/RT-AC86U/vis-dcon
+		ln -s ../GT-AC2900/vis-datacollector $REPO/release/src/router/hnd_extra/prebuilt/RT-AC86U/vis-datacollector
+	fi
 	aarch64-buildroot-linux-gnu-strip --strip-unneeded $REPO/release/src/router/hnd_extra/prebuilt/$BUILD_NAME/*.o
 	arm-brcm-linux-uclibcgnueabi-strip $REPO/release/src/router/hnd_extra/prebuilt/$BUILD_NAME/wl
 	cp release/src/router/envram_bin/envram$ARCH$SDK/* $REPO/release/src/router/envram_bin/envram$ARCH$SDK/
@@ -92,6 +97,7 @@ then
 	cp release/src-rt-5.02axhnd/wl/exe/prebuilt/* $REPO/release/src-rt-5.02axhnd/wl/exe/prebuilt/
 	cp release/src-rt-5.02axhnd/hostTools/prebuilt/cmplzma $REPO/release/src-rt-5.02axhnd/hostTools/prebuilt/
 	cp release/src-rt-5.02axhnd/hostTools/prebuilt/lzmacmd $REPO/release/src-rt-5.02axhnd/hostTools/prebuilt/
+	cp release/src-rt-5.02axhnd/bcmdrivers/broadcom/net/wl/impl51/main/components/apps/acsdv2/prebuilt/* $REPO/release/src-rt-5.02axhnd/bcmdrivers/broadcom/net/wl/impl51/main/components/apps/acsdv2/prebuilt/$BUILD_NAME/
 	rsync -a --del release/src-rt-5.02axhnd/router-sysdep/ $REPO/release/src-rt-5.02axhnd/router-sysdep.$BUILD_NAME_LC
 
 elif [ "$BUILD_NAME" == "RT-AX56U" ] || [ "$BUILD_NAME" == "RT-AX58U" ]
@@ -104,6 +110,7 @@ then
 	cp release/src-rt-5.02axhnd.675x/hostTools/prebuilt/addvtoken $REPO/release/src-rt-5.02axhnd.675x/hostTools/prebuilt/$BUILD_NAME/
 	cp release/src-rt-5.02axhnd.675x/hostTools/prebuilt/cmplzma $REPO/release/src-rt-5.02axhnd.675x/hostTools/prebuilt/
 	cp release/src-rt-5.02axhnd.675x/hostTools/prebuilt/lzmacmd $REPO/release/src-rt-5.02axhnd.675x/hostTools/prebuilt/
+	cp release/src-rt-5.02axhnd.675x/bcmdrivers/broadcom/net/wl/impl69/main/components/apps/acsdv2/prebuilt/* $REPO/release/src-rt-5.02axhnd.675x/bcmdrivers/broadcom/net/wl/impl69/main/components/apps/acsdv2/prebuilt/$BUILD_NAME/
 	rsync -a --del release/src-rt-5.02axhnd.675x/router-sysdep/ $REPO/release/src-rt-5.02axhnd.675x/router-sysdep.$BUILD_NAME_LC
 
 elif [ "$BUILD_NAME" == "RT-AX86U" ] || [ "$BUILD_NAME" == "RT-AX68U" ] || [ "$BUILD_NAME" == "RT-AC68U_V4" ] || [ "$BUILD_NAME" == "GT-AXE11000" ]
@@ -115,6 +122,7 @@ then
 	cp release/src-rt-5.02p1axhnd.675x/hostTools/prebuilt/addvtoken $REPO/release/src-rt-5.02p1axhnd.675x/hostTools/prebuilt/$BUILD_NAME/
 	cp release/src-rt-5.02p1axhnd.675x/hostTools/prebuilt/cmplzma $REPO/release/src-rt-5.02p1axhnd.675x/hostTools/prebuilt/
 	cp release/src-rt-5.02p1axhnd.675x/hostTools/prebuilt/lzmacmd $REPO/release/src-rt-5.02p1axhnd.675x/hostTools/prebuilt/
+	cp release/src-rt-5.02p1axhnd.675x/bcmdrivers/broadcom/net/wl/impl69/main/components/apps/acsdv2/prebuilt/* $REPO/release/src-rt-5.02p1axhnd.675x/bcmdrivers/broadcom/net/wl/impl69/main/components/apps/acsdv2/prebuilt/$BUILD_NAME/
 	rsync -a --del release/src-rt-5.02p1axhnd.675x/router-sysdep/ $REPO/release/src-rt-5.02p1axhnd.675x/router-sysdep.$BUILD_NAME_LC
 else
 	echo "Unrecognized BUILD_NAME!"

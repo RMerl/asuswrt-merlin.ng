@@ -17208,9 +17208,6 @@ int init_main(int argc, char *argv[])
 	} else
 #endif
 	{
-#if defined(RTAX86U) || defined(RTAX68U)
-		start_logger();
-#endif
 
 		sysinit();
 
@@ -17424,10 +17421,7 @@ int init_main(int argc, char *argv[])
 			// SIGHUP (RESTART) falls through
 
 		case SIGUSR2:		/* START */
-#if !defined(RTAX86U) && !defined(RTAX68U)
-			stop_logger();
 			start_logger();
-#endif
 #if defined(RTCONFIG_QCA)
 			logmessage("INIT", "firmware version: %s_%s_%s\n", nvram_safe_get("firmver"), nvram_safe_get("buildno"), nvram_safe_get("extendno"));
 			if (!strncmp(nvram_safe_get("firmver"), "7.0", 3)) {

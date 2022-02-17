@@ -22,6 +22,7 @@
 <script language="JavaScript" type="text/javascript" src="/validator.js"></script>
 <script language="JavaScript" type="text/javascript" src="/js/jquery.js"></script>
 <script language="JavaScript" type="text/javascript" src="/md5.js"></script>
+<script language="JavaScript" type="text/javascript" src="/js/asus_eula.js"></script>
 <script type="text/javascript" src="/js/httpApi.js"></script>
 <style>
 .cancel{
@@ -216,6 +217,49 @@ var max_pwd_length = isSupport("MaxLen_http_passwd");
 
 var faq_href1 = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=105";
 var faq_href2 = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=111";
+
+
+function change_boostkey(_id){
+	var _nvram = httpApi.nvramGet(["turbo_mode"], true);
+	var _rcService = 'saveNvram';
+
+	if (_nvram.turbo_mode == _id) {
+		return false;
+	}
+
+	var tm_status = httpApi.nvramGet(["TM_EULA", "TM_EULA_time"], true);
+	if(_id == '3' && (tm_status.TM_EULA == "0" || tm_status.TM_EULA_time == "")){
+		ASUS_EULA.check("tm");
+		document.getElementById("boostkey_modes").value = _nvram.turbo_mode;
+		return false;
+	}
+
+	if(_id == "3"){
+		_boost_key = "3";
+		_rcService += ';restart_wrs;restart_firewall';
+	}
+
+	show_boostkey_desc(_id);
+
+	boost_id = _id;
+	httpApi.nvramSet({
+		"turbo_mode": _id,
+		"action_mode": "apply",
+		"rc_service": _rcService
+	});
+}
+
+function show_boostkey_desc(id) {
+	var desc = [ "<#BoostKey_LED_desc#>",
+		     "<#BoostKey_DFS_desc#>",
+		     "Enable/disable Aura RGB",
+		     "<#BoostKey_Boost_desc#>",
+		     "<#BoostKey_AURA_Shuffle_desc#>",
+		     "<#BoostKey_GeForce_desc#>" ];
+
+	if (desc[id] != undefined)
+		document.getElementById("boostkey_desc").innerHTML = "<span>" + desc[id] + "</span>";
+}
 
 function initial(){	
 	//parse nvram to array
@@ -469,7 +513,21 @@ function initial(){
 	document.getElementById("http_passwd_new").maxLength = max_pwd_length + 1;
 	document.getElementById("http_passwd_re").maxLength = max_pwd_length + 1;
 
+	if (boostKey_support) {
+		document.getElementById("boostkey_tr").style.display = "";
 
+		build_boostkey_options();
+		if (!ASUS_EULA.status("tm") &&
+		    ("<% nvram_get("turbo_mode"); %>" == "3")) {
+			httpApi.nvramSet({
+				"turbo_mode": '0',
+				"action_mode": "apply",
+				"rc_service": "restart_wrs;restart_firewall"
+			});
+			document.getElementById("boostkey_modes").value = "0";
+		}
+		show_boostkey_desc(<% nvram_get("turbo_mode"); %>);
+	}
 }
 
 var time_zone_tmp="";
@@ -2173,6 +2231,34 @@ function check_password_length(obj){
 		showtext(document.getElementById("new_pwd_msg"),"");
 	}
 }
+
+
+function build_boostkey_options() {
+	var obj = document.form.boostkey_modes;
+	var current = "<% nvram_get("turbo_mode"); %>";
+
+	if(based_modelid == "GT-AC2900"){
+		add_option(obj, "<#BoostKey_AURA_Shuffle#>", 4, (current == "4" ? 1 : 0));
+		add_option(obj, "<#BoostKey_GeForce#>", 5, (current == "5" ? 1 : 0));
+	} else {
+		add_option(obj, "<#BoostKey_LED#>", 0, (current == "0" ? 1 : 0));
+		add_option(obj, "<#BoostKey_Aura_RGB#>", 2, (current == "2" ? 1 : 0));
+	}
+
+	var wl1_reg_mode = '<% nvram_get("wl1_reg_mode"); %>';
+
+	if(isSupport("triband")){
+		var wl2_reg_mode = '<% nvram_get("wl2_reg_mode"); %>';
+	}
+
+	if(wl1_reg_mode == 'h' || wl2_reg_mode == 'h'){
+		add_option(obj, "<#BoostKey_DFS#>", 1, (current == "1" ? 1 : 0));
+	}
+
+	if (isSwMode("rt"))
+		add_option(obj, "<#Game_Boost#>", 3, (current == "3" ? 1 : 0));
+}
+
 </script>
 </head>
 
@@ -2593,6 +2679,17 @@ function check_password_length(obj){
 						<input type="radio" name="led_disable" value="0" <% nvram_match_x("", "led_disable", "0", "checked"); %>><#checkbox_No#>
 					</td>
 				</tr>
+
+				<tr id="boostkey_tr" style="display:none;">
+					<th>Boost Key behaviour</th>
+					<td>
+						<select id="boostkey_modes" class="input_option" onchange="change_boostkey(this.value);">
+						</select>
+						<div id="boostkey_desc"></div>
+					</td>
+
+				</tr>
+
 				<tr id="pwrsave_tr">
 					<th align="right"><#usb_Power_Save_Mode#></th>
 					<td>

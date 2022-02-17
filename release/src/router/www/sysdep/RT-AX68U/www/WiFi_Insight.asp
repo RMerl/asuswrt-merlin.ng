@@ -1,1 +1,1 @@
-../../RT-AC86U/www/WiFi_Insight.asp
+../../GT-AC5300/www/WiFi_Insight.asp

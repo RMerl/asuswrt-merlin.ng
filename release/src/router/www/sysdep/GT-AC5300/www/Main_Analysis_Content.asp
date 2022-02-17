@@ -57,6 +57,7 @@
 <script language="JavaScript" type="text/javascript" src="/validator.js"></script>
 <script language="JavaScript" type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" language="JavaScript" src="/js/table/table.js"></script>
+<script type="text/javascript" language="JavaScript" src="/client_function.js"></script>
 <script>
 	//set table Struct
 	var tableStruct = {
@@ -114,6 +115,7 @@ function initial(){
 	show_menu();
 	showLANIPList();
 
+	document.body.addEventListener("click", function(_evt) {control_dropdown_client_block("ClientList_Block_PC", "pull_arrow", _evt);});
 	$("#tableContainer1").empty();
 	tableApi.genTableAPI(tableStruct);
 	hideCNT(1); // default select cmdMethod = 1
@@ -133,6 +135,7 @@ function controlClickEvent(_$this) {
 	targetData[thisTarget].isDoing = true;
 	netoolApi.start({
 		"type": $("#cmdMethod").val(),
+		"ver": ( $("#cmdMethod").val() !=  5 ? document.form.protover.value : ""),
 		"target": thisTarget
 	});
 }
@@ -306,14 +309,22 @@ function hideCNT(_val){
 	if(_val == "3"){
 		document.getElementById("pingCNT_tr").style.display = "";
 		document.getElementById("cmdDesc").innerHTML = "<#NetworkTools_Ping#>";
+		document.getElementById("protover_span").style.display = "";
 	}
 	else if(_val == "4"){
 		document.getElementById("pingCNT_tr").style.display = "none";
 		document.getElementById("cmdDesc").innerHTML = "<#NetworkTools_tr#>";
+		document.getElementById("protover_span").style.display = "";
+	}
+	else if(_val == "1"){
+		document.getElementById("pingCNT_tr").style.display = "none";
+		document.getElementById("cmdDesc").innerHTML = "<#NetworkTools_Ping#>";
+		document.getElementById("protover_span").style.display = "";
 	}
 	else{
 		document.getElementById("pingCNT_tr").style.display = "none";
 		document.getElementById("cmdDesc").innerHTML = "<#NetworkTools_nslookup#>";
+		document.getElementById("protover_span").style.display = "none";
 	}
 
 	if(_val == 1){
@@ -354,19 +365,18 @@ function setClientIP(ipaddr){
 }
 
 var over_var = 0;
-var isMenuopen = 0;
 function hideClients_Block(){
 	document.getElementById("pull_arrow").src = "/images/arrow-down.gif";
 	document.getElementById('ClientList_Block_PC').style.display='none';
-	isMenuopen = 0;
 }
 
 function pullLANIPList(obj){
+	var element = document.getElementById('ClientList_Block_PC');
+	var isMenuopen = element.offsetWidth > 0 || element.offsetHeight > 0;
 	if(isMenuopen == 0){		
 		obj.src = "/images/arrow-top.gif"
 		document.getElementById("ClientList_Block_PC").style.display = 'block';		
 		document.form.destIP.focus();		
-		isMenuopen = 1;
 	}
 	else{
 		hideClients_Block();
@@ -398,7 +408,7 @@ validator.targetDomainName = function($o){
 }
 </script>
 </head>
-<body onload="initial();" class="bg">
+<body onload="initial();">
 <div id="TopBanner"></div>
 <div id="Loading" class="popup_bg"></div>
 <iframe name="hidden_frame" id="hidden_frame" src="" width="0" height="0" frameborder="0"></iframe>
@@ -444,12 +454,16 @@ validator.targetDomainName = function($o){
 													<option value="4">Traceroute</option>
 													<option value="5">Nslookup</option>
  												</select>
-											</td>										
+												<span  style="padding-left:20px;" id="protover_span">
+													<input type="radio" id="protover" name="protover" class="input" value="v4" checked>IPv4
+													<input type="radio" id="protover" name="protover" class="input" value="v6">IPv6
+												</span>
+											</td>
 										</tr>
 										<tr>
 											<th width="20%"><#NetworkTools_target#></th>
 											<td>
-												<input type="text" class="input_32_table" id="destIP" name="destIP" maxlength="100" value="" placeholder="ex: www.google.com" autocorrect="off" autocapitalize="off">
+												<input type="text" class="input_32_table" id="destIP" name="destIP" onClick="hideClients_Block();" maxlength="100" value="" placeholder="ex: www.google.com" autocorrect="off" autocapitalize="off">
 												<img id="pull_arrow" height="14px;" src="/images/arrow-down.gif" style="position:absolute;*margin-left:-3px;*margin-top:1px;" onclick="pullLANIPList(this);" title="<#select_network_host#>" onmouseover="over_var=1;" onmouseout="over_var=0;">
 												<div id="ClientList_Block_PC" class="ClientList_Block_PC"></div>
 												<br/>
@@ -476,9 +490,9 @@ validator.targetDomainName = function($o){
 													var targetObj = {
 														"type": $("#cmdMethod").val(), 
 														"target": $("#destIP").val(),
-														"pcnt": $("#pingCNT").val()
+														"pcnt": $("#pingCNT").val(),
+														"ver": ( $("#cmdMethod").val() !=  5 ? document.form.protover.value : "")
 													}
-
 													if($("#cmdMethod").val() == 1){
 														netoolApi.reset(targetObj);
 														netoolApi.start(targetObj);

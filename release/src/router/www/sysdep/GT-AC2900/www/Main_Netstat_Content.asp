@@ -1,1 +1,1 @@
-../../RT-AC86U/www/Main_Netstat_Content.asp
+../../GT-AC5300/www/Main_Netstat_Content.asp

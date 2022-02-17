@@ -23,7 +23,7 @@ function initial(){
 
 </script>
 </head>
-<body onload="initial();" onunload="unload_body();" class="bg">
+<body onload="initial();" onunload="unload_body();">
 <div id="TopBanner"></div>
 <div id="Loading" class="popup_bg"></div>
 
@@ -46,7 +46,7 @@ function initial(){
 				<div id="subMenu"></div>
 			</td>	
 			<td valign="top">
-				<div id="tabMenu" style="*margin-top: -160px;"></div>
+				<div id="tabMenu" class="submenuBlock"></div>
 				<br>
 		<!--=====Beginning of Main Content=====-->
 				<div class="app_table" id="applist_table" style="margin-top:-10px;">
@@ -65,8 +65,7 @@ function initial(){
 							</td>
 						</tr> 
 						<tr>
-							<td><div class="splitLine"></div></td>
-
+							<td height="5"><div class="splitLine"></div></td>
 						</tr>
 						<tr>
 							<td>

@@ -495,7 +495,7 @@ function overHint(itemNum){
 				if ((extent_chan_arr[1] == 0) || (extent_chan_arr[1] == undefined) || (extent_chan_arr[1] == control_chan_arr[1]))
 					wifiDesc += "Channel " + control_chan_arr[1];
 				else
-					wifiDesc += "Channel "+ control_chan_arr[1] + "/" + extent_chan_arr[1] + " MHz";
+					wifiDesc += "Channel "+ control_chan_arr[1] + "/" + extent_chan_arr[1];
 			} else {
 				wifiDesc += "<#btn_Disabled#>";
 			}
@@ -513,8 +513,22 @@ function overHint(itemNum){
                         }
 
 		}
+
+		if (band6g_support) {
+			wifiDesc += "<br><b>&nbsp;&nbsp;&nbsp;6G:</b> ";
+			if  ("<% nvram_get("wl2_radio"); %>" == 1) {
+				if ((extent_chan_arr[2] == 0) || (extent_chan_arr[2] == undefined) || (extent_chan_arr[2] == control_chan_arr[2]))
+					wifiDesc += "Channel 6g" + control_chan_arr[2];
+				else
+					wifiDesc += "Channel 6g"+ control_chan_arr[2] + "/" + extent_chan_arr[2];
+			} else {
+				wifiDesc += "<#btn_Disabled#>";
+			}
+		}
+
+
 		statusmenu += "<span>" + wifiDesc + "</span>";
-	}	
+	}
 
 	// cooler
 	if(itemNum == 7){

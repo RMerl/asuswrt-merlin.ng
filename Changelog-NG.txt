@@ -2,11 +2,20 @@ Asuswrt-Merlin 386/NG Changelog
 ===============================
 
 386.5 (xx-xxx-2022)
-  - NEW: Added support for the RT-AC68U_V4.
+  - NEW: Added support for the RT-AC68U V4.
+  - NEW: Added support for the GT-AXE11000.
+  - NEW: Added config option for the Boost key on
+         GT models.  The option can be found on the
+         Administration -> System page.
+  - NEW: Basic IPv6 support for TQoS (Kevin Bracey)
   - UPDATED: Merged with GPL 386_46065.
   - UPDATED: Reverted dnsmasq from 2.86 to 2.85.
   - UPDATED: miniupnpd to 2.3.0.
   - UPDATED: avahi to 0.8 + a few backports.
+  - CHANGED: Improved accuracy of overhead parameters
+             in Traditional QoS (Kevin Bracey)
+  - CHANGED: Report download stats for TQoS (Kevin Bracey)
+  - FIXED: Various TQoS issues (Kevin Bracey)
   - FIXED: enabling/disabling 802.11b rates wouldn't get saved
            to nvram.
   - FIXED: netatalk failing to load extensions, breaking
@@ -16,6 +25,11 @@ Asuswrt-Merlin 386/NG Changelog
   - FIXED: User accounts would not show as connected on
            the OpenVPN server username list if a remote
            client connected over IPv6.
+  - FIXED: Earlier syslog content was missing on RT-AX86U
+           and RT-AX68U after a reboot.
+  - FIXED: WAN monitoring could fail if using IPv6 and
+           DNS Rebind protection was enabled.
+  - FIXED: RT-AX86U syslog could be truncated after a reboot.
 
 
 386.4 (1-Jan-2022)

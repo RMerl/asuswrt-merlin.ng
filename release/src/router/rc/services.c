@@ -18544,7 +18544,7 @@ void setup_leds()
 #endif
 		}
 
-#if defined(RTAC3200) || defined(RTAC5300) || defined(GTAX11000)
+#if defined(RTAC3200) || defined(RTAC5300) || defined(GTAX11000) || defined(GTAXE11000)
 		if (nvram_match("wl2_radio", "1")) {
 #if defined(RTAC3200)
 			eval("wl", "-i", "eth3", "ledbh", "10", "7");

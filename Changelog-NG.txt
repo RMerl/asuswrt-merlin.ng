@@ -15,6 +15,9 @@ Asuswrt-Merlin 386/NG Changelog
   - CHANGED: Improved accuracy of overhead parameters
              in Traditional QoS (Kevin Bracey)
   - CHANGED: Report download stats for TQoS (Kevin Bracey)
+  - CHANGED: Report DFS scanning state for both 5 GHz bands
+             if appropriate on tri-band models
+  - CHANGED: Enabled pass_persist support in net-snmp.
   - FIXED: Various TQoS issues (Kevin Bracey)
   - FIXED: enabling/disabling 802.11b rates wouldn't get saved
            to nvram.

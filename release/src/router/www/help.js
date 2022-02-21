@@ -506,7 +506,7 @@ function overHint(itemNum){
 					if ((extent_chan_arr[2] == 0) || (extent_chan_arr[2] == undefined) || (extent_chan_arr[2] == control_chan_arr[2]))
 						wifiDesc += "Channel " + control_chan_arr[2];
 					else
-						wifiDesc += "Channel "+ control_chan_arr[2] + "/" + extent_chan_arr[2] + " MHz";
+						wifiDesc += "Channel "+ control_chan_arr[2] + "/" + extent_chan_arr[2];
 	                        } else {
 					wifiDesc += "<#btn_Disabled#>";
 				}

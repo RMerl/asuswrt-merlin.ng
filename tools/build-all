@@ -17,8 +17,12 @@
 # Enable update server support (don't use if you build a fork!)
 #export MERLINUPDATE=y
 
-# rsync tree from central source tree before build
+# rsync tree from central source tree before build.
+# If set to "btrfs", then "cp --reflink" is used instead of rsync.
 RSYNC_TREE=y
+
+# Combined RT-AC68U image?
+COMBINED=y
 
 ### Uncomment the models you wish to build.
 
@@ -122,7 +126,12 @@ clean_tree()
 	if [ "$RSYNC_TREE" = "y" ]; then
 		echo "*** $(date +%R) - Updating $FWMODEL tree..."
 		rsync -a --del "$SRC_LOC/" "$HOME/$FWPATH"
+	elif [ "$RSYNC_TREE" = "btrfs" ]; then
+		echo "*** $(date +%R) - Copying $FWMODEL tree..."
+		rm -rf "$HOME/$FWPATH"
+		cp -ar --reflink=auto "$SRC_LOC" "$HOME/$FWPATH"
 	fi
+
 	cd "$HOME/$FWPATH" || exit 1
 
 	CURRENT=$(git branch | grep "\*" | cut -d ' ' -f2)
@@ -215,7 +224,7 @@ if [ "$BGTAXE11000" = "y" ]; then
 fi
 
 if [ "$BAC68V4" = "y" ]; then
-	build_fw amng.ac68v4/release/src-rt-5.02p1axhnd.675x rt-ac68u_v4
+	build_fw amng.ac68v4/release/src-rt-5.02p1axhnd.675x rt-ac68u_v4 &
 fi
 
 if [ "$BAX58" = "y" ]; then
@@ -255,6 +264,22 @@ sleep 5\
 echo "--- $(date +%R) - All builds launched, please wait..."
 
 wait
+
+# Build combined image?
+if [ "$BAC68" = "y" ] && [ "$BAC68V4" = "y" ] && [ $"$COMBINED" = "y" ]
+then
+        echo "--- $(date +%R) - Building combined RT-AC68U image..."
+        cd "$HOME/amng.ac68/release/src-rt-6.x.4708"
+        make rt-ac68u-combine_image BCM=y IMAGEDIR=$STAGE_LOC > "output.txt" 2>&1;
+
+	cd "$STAGE_LOC"
+        FWNAME="$(find -- RT-AC68U_*.trx | head -n 1)"
+        ZIPNAME="$(echo "$FWNAME" | sed 's~.trx~~g').zip"
+        sha256sum "$FWNAME" > sha256sum.sha256
+        zip -qj "$ZIPNAME" "$FWNAME" README-merlin.txt Changelog*.txt sha256sum.sha256 2>/dev/null
+	rm RT-AC68U_V4* sha256sum.sha256
+fi
+
 
 echo
 cd "$STAGE_LOC" || exit 1

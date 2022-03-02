@@ -510,7 +510,7 @@ function switchWanStatus(state){
 
 	showLoading();
 	document.form.ftp_wanac.value = state;
-	document.form.action_script.value = "restart_firewall";
+	document.form.action_script.value = "restart_ftpd";
 	document.form.action_wait.value = "5";
 	document.form.flag.value = "nodetect";
 	document.form.action_mode.value = "apply";

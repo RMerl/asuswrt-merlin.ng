@@ -41,7 +41,11 @@ char *server_table[][2] = {
 	{ "9.9.9.9", "" },		/* 13: Quad9 */
 	{ "185.228.168.9", "" },	/* 14: CleanBrowsing Security */
 	{ "185.228.168.10", "" },	/* 15: CleanBrowsing Adult */
-	{ "185.228.168.168", "" }	/* 16: CleanBrowsing Family */
+	{ "185.228.168.168", "" },	/* 16: CleanBrowsing Family */
+	{ "1.1.1.2", "" },	/* 17: Cloudflare Secure Mode */
+	{ "1.1.1.3", "" },	/* 18: Cloudflare Secure and Family */
+	{ "94.140.14.14", "" },	/* 19: ADGUARD AD block mode*/
+	{ "94.140.14.15", "" }	/* 20: ADGUARD AD block and Family mode*/
 };
 
 #ifdef RTCONFIG_IPV6
@@ -62,7 +66,11 @@ char *server6_table[][2] = {
 	{"2620:fe::fe", "2620:fe::9"},	/* 13: Quad9 */
 	{"2a0d:2a00:1::2", "2a0d:2a00:2::2"},	/* 14: CleanBrowsing Security */
 	{"2a0d:2a00:1::1", "2a0d:2a00:2::1"},	/* 15: CleanBrowsing Adult */
-	{"2a0d:2a00:1::", "2a0d:2a00:2::"}	/* 16: CleanBrowsing Family */
+	{"2a0d:2a00:1::", "2a0d:2a00:2::"},	/* 16: CleanBrowsing Family */
+	{"2606:4700:4700::1112", "2606:4700:4700::1002" },	/* 17: Cloudflare Secure Mode */
+	{"2606:4700:4700::1113", "2606:4700:4700::1003" },	/* 18: Cloudflare Secure and Family */
+	{"2a10:50c0::ad1:ff", "2a10:50c0::ad2:ff" },	/* 19: ADGUARD AD block mode*/
+	{"2a10:50c0::bad1:ff", "2a10:50c0::bad2:ff" }	/* 20: ADGUARD AD block and Family mode*/
 };
 #endif
 

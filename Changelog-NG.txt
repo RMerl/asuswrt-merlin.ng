@@ -1,11 +1,16 @@
 Asuswrt-Merlin 386/NG Changelog
 ===============================
 
+386.6 (xx-xxx-2022)
+  - NEW: Added Cloudflare and AdGuard to DNSFilter services.
+  - CHANGED: Reworked DNSFilter page design.
+
+
 386.5 (2-March-2022)
   - NEW: Added support for the RT-AC68U V4.  All
          RT-AC68U models are using a combined
          firmware file (like stock firmware),
-         with both firmwares within the samae file.
+         with both firmwares within the same file.
   - NEW: Added support for the GT-AXE11000.
   - NEW: Added config option for the Boost key on
          GT models.  The option can be found on the

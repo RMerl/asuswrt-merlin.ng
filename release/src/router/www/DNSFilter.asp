@@ -29,21 +29,28 @@
 var dnsfilter_rule_list = '<% nvram_get("dnsfilter_rulelist"); %>'.replace(/&#60/g, "<");
 var dnsfilter_rule_list_row = dnsfilter_rule_list.split('<');
 
-var modes_array = [[ "0", "No Filtering" ],
+var modes_array = [[ "",   "System" ],
+		  [ "0",  "No Filtering" ],
 		  [ "11", "Router" ],
-		  [ "14", "CleanBrowsing Security" ],
-		  [ "15", "CleanBrowsing Adult" ],
-		  [ "16", "CleanBrowsing Family" ],
-		  [ "12", "Comodo Secure DNS" ],
-		  [ "1",  "OpenDNS Home" ],
-		  [ "7",  "OpenDNS Family" ],
-		  [ "13", "Quad9" ],
-		  [ "5",  "Yandex Safe" ],
-		  [ "6",  "Yandex Family" ],
 		  [ "8",  "Custom 1" ],
 		  [ "9",  "Custom 2" ],
-		  [ "10", "Custom 3" ]];
-
+		  [ "10", "Custom 3" ],
+		  [ "",   "Unfiltered" ],
+		  [ "17", "Cloudflare Safe" ],
+		  [ "",   "Security filters" ],
+		  [ "19", "AdGuard Ad block" ],
+		  [ "14", "CleanBrowsing Security" ],
+		  [ "12", "Comodo Secure DNS" ],
+		  [ "1",  "OpenDNS Home" ],
+		  [ "13", "Quad9" ],
+		  [ "5",  "Yandex Safe" ],
+		  [ "",   "Family-friendly filters" ],
+		  [ "20", "AdGuard Family" ],
+		  [ "15", "CleanBrowsing Adult" ],
+		  [ "16", "CleanBrowsing Family" ],
+		  [ "18", "Cloudflare Family" ],
+		  [ "7",  "OpenDNS Family" ],
+		  [ "6",  "Yandex Family" ]];
 
 
 function initial(){
@@ -87,19 +94,38 @@ function hideClients_Block(){
 function gen_modeselect(name, value, onchange){
 	var code = "";
 	var i;
+	var optGroup = "", opt;
+	var obj = document.getElementById(name);
 
 	if ((name == "client_modesel") || (name == "dnsfilter_mode")) {
 		for(i = 0; i < modes_array.length; i++){
-			add_option(document.getElementById(name),
-			           modes_array[i][1], modes_array[i][0],
-			           (value == modes_array[i][0]));
+			if (modes_array[i][0] == "") {
+				if (optGroup != "") obj.appendChild(optGroup);
+				optGroup = document.createElement('optgroup');
+				optGroup.label = modes_array[i][1];
+			} else {
+				if (optGroup == "")
+					optGroup = document.createElement('optgroup');  // No group was initialized, so do one
+				opt = document.createElement('option');
+				opt.innerHTML = modes_array[i][1];
+				opt.value = modes_array[i][0];
+				opt.selected = (value == modes_array[i][0]);
+				optGroup.appendChild(opt);
+			}
 	        }
+		if (optGroup != "") obj.appendChild(optGroup);
 	} else {
 		code = '<select class="input_option" name="'+name+'" value="'+value+'" onchange="'+onchange+'">';
-		for(i = 0; i < modes_array.length; i++){
-			var itemval = modes_array[i][0];
-			code +='<option value="' + itemval + '"' + (value == itemval ? "selected" : "") +'>' + modes_array[i][1] + '</option>';
+		for (i = 0; i < modes_array.length; i++){
+			if (modes_array[i][0] == "") {
+				if (optGroup != "") code += '</optgroup>';
+				code += '<optgroup label="' + modes_array[i][1] + '">';
+			} else {
+				var itemval = modes_array[i][0];
+				code +='<option value="' + itemval + '"' + (value == itemval ? "selected" : "") +'>' + modes_array[i][1] + '</option>';
+			}
 		}
+		if (optGroup != "") code += '</optgroup>';
 		code += '</select>';
 	}
 
@@ -372,30 +398,16 @@ function showhide_settings(state) {
 					<td>&nbsp;&nbsp;</td>
 					<td style="font-style: italic;font-size: 14px;">
 						<div>
-							<p>DNSFilter allows you to protect specific LAN devices
-							against harmful online content by forcing them to use a
-							DNS server that provides filtering services.  The following
-							services are currently supported (you can also manually
-                                                        specify another DNS server through the custom entries):
-							<ul>
-								<li><a target="_blank" style="font-weight: bolder; cursor:pointer;text-decoration: underline;" href="https://cleanbrowsing.org/">CleanBrowsing</a>
-									<ul><li>Security = Malicious content
-									    <li>Adult = Malicious + Sexual content
-									    <li>Family = Malicious + Sexual + proxy/VPN + Mixed content
-									</ul>
-								<li><a target="_blank" style="font-weight: bolder; cursor:pointer;text-decoration: underline;" href="https://www.comodo.com/secure-dns/">Comodo Secure DNS</a>
-								    <ul><li>Protects against malicious content</ul>
-								<li><a target="_blank" style="font-weight: bolder; cursor:pointer;text-decoration: underline;" href="https://www.opendns.com/home-internet-security/">OpenDNS</a>
-								    <ul><li>Home = Regular OpenDNS server (configurable through their portal)
-								        <li>Family = Family Shield (pre-configured to block adult content)
-								    </ul>
-								<li><a target="_blank" style="font-weight: bolder; cursor:pointer;text-decoration: underline;" href="https://www.quad9.net">Quad9</a>
-								    <ul><li>Protects against malicious content</ul>
-								<li><a target="_blank" style="font-weight: bolder; cursor:pointer;text-decoration: underline;" href="https://dns.yandex.com"><#YandexDNS#></a>
-								    <ul><li>Safe = Malicious content<li>Family = Malicious + Sexual content</ul>
-							</ul>
-							<br>"No Filtering" will disable/bypass the filter, and "Router" will force clients to use the DNS provided
-							    by the router's DHCP server (or, the router itself if it's not defined).
+							<p>DNSFilter allows you to force LAN devices to use a
+							   specific DNS server, which can be useful if you want
+                                                           to force them to use a filtering service that would
+                                                           block malicious or adult sites.  You can set a global
+                                                           network-wide server, or client-specific servers.
+							   Beside the available presets you can also define up to three
+							   different custom servers to use.</p>
+							<br>
+							<p>A few special System options are available in the presets.  "No Filtering" will disable/bypass the filter, and "Router" will force clients to use the DNS provided
+							   by the router's DHCP server (or, the router itself if it's not defined).
 						</div>
 					</td>
 				</tr>

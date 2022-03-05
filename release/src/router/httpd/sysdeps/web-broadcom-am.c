@@ -323,6 +323,7 @@ ej_wl_unit_status_array(int eid, webs_t wp, int argc, char_t **argv, int unit)
 	char *line;
 	char hostnameentry[65];
 	char ipentry[42], macentry[18];
+	unsigned int flagentry;
 	int found, foundipv6 = 0, noclients = 0;
 	char rxrate[12], txrate[12];
 	char ea[ETHER_ADDR_STR_LEN];
@@ -508,8 +509,9 @@ sta_list:
 			arplistptr = strdup(arplist);
 			line = strtok(arplistptr, "\n");
 			while (line) {
-				if ( (sscanf(line,"%15s %*s %*s %17s",ipentry,macentry) == 2) &&
-				     (!strcasecmp(macentry, ether_etoa((void *)&auth->ea[i], ea))) ) {
+				if ( (sscanf(line,"%15s %*s %x %17s",ipentry,&flagentry,macentry) == 3) &&
+				     (!strcasecmp(macentry, ether_etoa((void *)&auth->ea[i], ea))) &&
+				     (flagentry != 0) ) {
 					found = 1;
 					break;
 				} else

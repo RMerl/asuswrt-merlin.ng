@@ -489,10 +489,14 @@ function showInputfield2(s, v){
 		inputCtrl(document.form.ipv61_prefix_length, enable);
 
 		if(enable){
+			document.getElementById("ipv61_wan_setting").style.display="none";
+			inputCtrl(document.form.ipv61_prefix_len_wan, enable);
 			document.getElementById("ipv61_ipaddr_r").style.display = "none";
 			document.getElementById("ipv61_prefix_length_r").style.display = "none";
 				
 		}else{
+			document.getElementById("ipv61_wan_setting").style.display="";
+			inputCtrl(document.form.ipv61_prefix_len_wan, !enable);
 			document.getElementById("ipv61_ipaddr_r").style.display = "";
 			document.getElementById("ipv61_prefix_length_r").style.display = "";
 			document.getElementById("ipv61_prefix_length_span").innerHTML = "";

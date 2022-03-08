@@ -1695,12 +1695,15 @@ bound6(char *wan_ifname, int bound)
 			goto skip;
 
 		prefix_changed = (!nvram_match(ipv6_nvname("ipv6_prefix"), addr) ||
-				  nvram_get_int(ipv6_nvname("ipv6_prefix_length")) != size);
+				  nvram_get_int(ipv6_nvname("ipv6_prefix_len_wan")) != size);
 		if (prefix_changed) {
 			eval("ip", "-6", "addr", "flush", "scope", "global", "dev", lan_ifname);
 			nvram_set(ipv6_nvname("ipv6_rtr_addr"), "");
 			nvram_set(ipv6_nvname("ipv6_prefix"), addr);
-			nvram_set_int(ipv6_nvname("ipv6_prefix_length"), size);
+			nvram_set_int(ipv6_nvname("ipv6_prefix_length"), 64);
+			logmessage("dhcp6 client", "WAN Prefix Size Requested:/%d, Received:/%d",
+				 nvram_get_int(ipv6_nvname("ipv6_prefix_len_wan")), size);
+			nvram_set_int(ipv6_nvname("ipv6_prefix_len_wan"), size);
 		}
 		if (*addr)
 			add_ip6_lanaddr();
@@ -1985,7 +1988,7 @@ start_dhcp6c(void)
 	struct duid duid;
 	char duid_arg[sizeof(duid)*2+1];
 	char prefix_arg[sizeof("128:xxxxxxxx")];
-	int service;
+	int service, i;
 #ifdef RTCONFIG_SOFTWIRE46
 	int wan_proto;
 #endif
@@ -2031,7 +2034,10 @@ start_dhcp6c(void)
 			((unsigned long)(duid.ea[3] & 0x0f) << 16) |
 			((unsigned long)(duid.ea[4]) << 8) |
 			((unsigned long)(duid.ea[5])) : 1;
-		snprintf(prefix_arg, sizeof(prefix_arg), "%d:%lx", 0, iaid);
+		i = (nvram_get_int(ipv6_nvname("ipv6_prefix_len_wan")) ? : 64);
+		if ((i < 48) || (i > 64))
+			i = 0;
+		snprintf(prefix_arg, sizeof(prefix_arg), "%d:%lx", i, iaid);
 		dhcp6c_argv[index++] = "-P";
 		dhcp6c_argv[index++] = prefix_arg;
 	}

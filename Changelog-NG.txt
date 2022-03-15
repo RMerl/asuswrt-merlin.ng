@@ -3,7 +3,12 @@ Asuswrt-Merlin 386/NG Changelog
 
 386.6 (xx-xxx-2022)
   - NEW: Added Cloudflare and AdGuard to DNSFilter services.
+  - UPDATED: Openssl to 1.1.1n.
   - CHANGED: Reworked DNSFilter page design.
+  - CHANGED: Allow requesting bigger IPv6 subnets from
+             your ISP (Tvlz)
+  - CHANGED: Added Wireguard module + userspace tool to
+             GT-AXE11000.
 
 
 386.5 (2-March-2022)

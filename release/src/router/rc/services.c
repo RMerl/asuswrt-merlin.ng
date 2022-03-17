@@ -1863,11 +1863,6 @@ void start_dnsmasq(void)
 			dnsfilter_setup_dnsmasq(fp);
 #endif
 
-#ifdef RTCONFIG_DNSFILTER
-		if (nvram_get_int("dnsfilter_enable_x"))
-			dnsfilter_setup_dnsmasq(fp);
-#endif
-
 		/* DNS server */
 		fprintf(fp, "dhcp-option=lan,option6:23,[::]\n");
 
@@ -15813,15 +15808,6 @@ retry_wps_enr:
  			start_dnsmasq();
  		}
 		start_firewall(wan_primary_ifunit(), 0);
-	}
-#endif
-#ifdef RTCONFIG_DNSFILTER
-	else if (strcmp(script, "dnsfilter") == 0)
-	{
-		if(action & RC_SERVICE_START) {
-			start_dnsmasq();
-			start_firewall(wan_primary_ifunit(), 0);
-		}
 	}
 #endif
 #ifdef RTCONFIG_DNSFILTER

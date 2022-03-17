@@ -27,6 +27,14 @@
 <% login_state_hook(); %>
 
 var dnsfilter_rule_list = '<% nvram_get("dnsfilter_rulelist"); %>'.replace(/&#60/g, "<");
+if (isSupport("hnd")) {
+	dnsfilter_rule_list += '<% nvram_get("dnsfilter_rulelist1"); %>'.replace(/&#60/g, "<") +
+		'<% nvram_get("dnsfilter_rulelist2"); %>'.replace(/&#60/g, "<") +
+		'<% nvram_get("dnsfilter_rulelist3"); %>'.replace(/&#60/g, "<") +
+		'<% nvram_get("dnsfilter_rulelist4"); %>'.replace(/&#60/g, "<") +
+		'<% nvram_get("dnsfilter_rulelist5"); %>'.replace(/&#60/g, "<");
+}
+
 var dnsfilter_rule_list_row = dnsfilter_rule_list.split('<');
 
 var modes_array = [[ "0", "No Filtering" ],
@@ -188,7 +196,10 @@ function show_dnsfilter_list(){
 }
 
 function applyRule(){
-	document.form.dnsfilter_rulelist.value = dnsfilter_rule_list.replace(/&#62/g, ">") ;
+	if (isSupport("hnd"))
+		split_clientlist(dnsfilter_rule_list.replace(/&#62/g, ">"));
+	else
+		document.form.dnsfilter_rulelist.value = dnsfilter_rule_list.replace(/&#62/g, ">") ;
 
 	showLoading();
 	document.form.submit();

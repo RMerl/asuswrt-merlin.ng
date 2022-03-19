@@ -1114,7 +1114,7 @@ int ej_bwdpi_conntrack(int eid, webs_t wp, int argc, char **argv_) {
 	char line[256];
 	FILE *fp;
 	static unsigned int count = 0;
-	char src_ip[64], dst_ip[64], prot[4];
+	char src_ip[64], dst_ip[64], prot[8];
 	int dport, sport;
 	int ret;
 	unsigned long mark;
@@ -1186,7 +1186,7 @@ int ej_bwdpi_conntrack(int eid, webs_t wp, int argc, char **argv_) {
 
 	while (fgets(line, sizeof(line), fp)) {
 		// ipv4 tcp src=192.168.10.156 dst=172.217.13.110 sport=8248 dport=443 index=8510 mark=3cd000f
-		if (sscanf(line, "ipv%c %3s src=%63s dst=%63s sport=%d dport=%d index=%*d mark=%lx",
+		if (sscanf(line, "ipv%c %7s src=%63s dst=%63s sport=%d dport=%d index=%*d mark=%lx",
 			          &ipversion, prot, src_ip, dst_ip, &sport, &dport, &mark) != 7 ) continue;
 
 		id = (mark & 0x3F0000)/0xFFFF;
@@ -1207,6 +1207,13 @@ int ej_bwdpi_conntrack(int eid, webs_t wp, int argc, char **argv_) {
 		if (ipversion == '6') {
 			_fix_TM_ipv6(src_ip);
 			_fix_TM_ipv6(dst_ip);
+			if ((strcmp(prot,"unknown") == 0) && ((sport == 65535) && (dport == 65535)))
+				strcpy(prot, "icmp");
+		}
+
+		if (strcmp(prot,"icmp") == 0) {
+			sport = 0;
+			dport = 0;
 		}
 
 		ret += websWrite(wp, "%c[\"%s\", \"%s\", \"%d\", \"%s\", \"%d\", \"%s\", \"%d\", \"%d\"]",

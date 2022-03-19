@@ -289,10 +289,10 @@ function draw_conntrack_table(){
 		code += "<tr><td>" + bwdpi_conntrack[i][0] + "</td>";
 		code += "<td title=\"" + srctitle + "\"" + (srchost.length > 36 ? "style=\"font-size: 80%;\"" : "") +">" +
 	                  srchost + "</td>";
-		code += "<td>" + bwdpi_conntrack[i][2] + "</td>";
+		code += "<td>" + (bwdpi_conntrack[i][0] == "icmp" ? "" : bwdpi_conntrack[i][2]) + "</td>";
 		code += "<td title=\"" + dsttitle + "\"" + (dsthost.length > 36 ? "style=\"font-size: 80%;\"" : "") + ">" +
 		          dsthost + "</td>";
-		code += "<td>" + bwdpi_conntrack[i][4] + "</td>";
+		code += "<td>" + (bwdpi_conntrack[i][0] == "icmp" ? "" : bwdpi_conntrack[i][4]) + "</td>";
 		code += "<td><span title=\"" + label + "\" class=\"catrow cat" +
 	                  qosclass + "\"" + (bwdpi_conntrack[i][5].length > 27 ? "style=\"font-size: 75%;\"" : "") + ">" +
 	                  bwdpi_conntrack[i][5] + "</span></td></tr>";
@@ -593,6 +593,7 @@ function draw_chart(data_array, ctx, pie) {
 						<option value="">any</option>
 						<option value="tcp">tcp</option>
 						<option value="udp">udp</option>
+						<option value="icmp">icmp</option>
 					</select></td>
 					<td><input type="text" class="input_15_table" maxlength="39" oninput="set_filter(1, this);"></input></td>
 					<td><input type="text" class="input_6_table" maxlength="5" oninput="set_filter(2, this);"></input></td>

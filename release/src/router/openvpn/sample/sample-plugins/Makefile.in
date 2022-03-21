@@ -21,12 +21,12 @@
 #             packet encryption, packet authentication, and
 #             packet compression.
 #
-#  Copyright (C) 2002-2021 OpenVPN Inc <sales@openvpn.net>
+#  Copyright (C) 2002-2022 OpenVPN Inc <sales@openvpn.net>
 #
 
 #  SPDX-License-Identifier: GPL-2.0-only
 #
-#  Copyright (C) 2020-2021 OpenVPN Inc <sales@openvpn.net>
+#  Copyright (C) 2020-2022 OpenVPN Inc <sales@openvpn.net>
 #
 VPATH = @srcdir@
 am__is_gnu_make = { \
@@ -336,6 +336,7 @@ AM_CPPFLAGS = -I$(top_srcdir) -I$(top_builddir) \
 #
 PLUGINS = \
 	defer/simple \
+	defer/multi-auth \
 	keying-material-exporter-demo/keyingmaterialexporter \
 	log/log log/log_v3 \
 	simple/base64 \

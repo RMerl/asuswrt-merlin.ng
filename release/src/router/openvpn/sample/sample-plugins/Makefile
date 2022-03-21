@@ -21,12 +21,12 @@
 #             packet encryption, packet authentication, and
 #             packet compression.
 #
-#  Copyright (C) 2002-2021 OpenVPN Inc <sales@openvpn.net>
+#  Copyright (C) 2002-2022 OpenVPN Inc <sales@openvpn.net>
 #
 
 #  SPDX-License-Identifier: GPL-2.0-only
 #
-#  Copyright (C) 2020-2021 OpenVPN Inc <sales@openvpn.net>
+#  Copyright (C) 2020-2022 OpenVPN Inc <sales@openvpn.net>
 #
 
 am__is_gnu_make = { \
@@ -210,7 +210,7 @@ OPENSSL_CFLAGS =
 OPENSSL_LIBS = -lssl -lcrypto 
 OPENVPN_VERSION_MAJOR = 2
 OPENVPN_VERSION_MINOR = 5
-OPENVPN_VERSION_PATCH = .5
+OPENVPN_VERSION_PATCH = .6
 OPTIONAL_CRYPTO_CFLAGS =  
 OPTIONAL_CRYPTO_LIBS =  -lssl -lcrypto 
 OPTIONAL_DL_LIBS = -ldl
@@ -231,10 +231,10 @@ P11KIT_LIBS =
 PACKAGE = openvpn
 PACKAGE_BUGREPORT = openvpn-users@lists.sourceforge.net
 PACKAGE_NAME = OpenVPN
-PACKAGE_STRING = OpenVPN 2.5.5
+PACKAGE_STRING = OpenVPN 2.5.6
 PACKAGE_TARNAME = openvpn
 PACKAGE_URL = 
-PACKAGE_VERSION = 2.5.5
+PACKAGE_VERSION = 2.5.6
 PATH_SEPARATOR = :
 PKCS11_HELPER_CFLAGS = 
 PKCS11_HELPER_LIBS = 
@@ -264,7 +264,7 @@ TAP_WIN_MIN_MINOR = 9
 TEST_CFLAGS =     -I$(top_srcdir)/include 
 TEST_LDFLAGS =  -lssl -lcrypto   -llzo2 
 TMPFILES_DIR = 
-VERSION = 2.5.5
+VERSION = 2.5.6
 abs_builddir = /home/samuli/opt/openvpninc/openvpn-release-scripts/release/openvpn/sample/sample-plugins
 abs_srcdir = /home/samuli/opt/openvpninc/openvpn-release-scripts/release/openvpn/sample/sample-plugins
 abs_top_builddir = /home/samuli/opt/openvpninc/openvpn-release-scripts/release/openvpn
@@ -336,6 +336,7 @@ AM_CPPFLAGS = -I$(top_srcdir) -I$(top_builddir) \
 #
 PLUGINS = \
 	defer/simple \
+	defer/multi-auth \
 	keying-material-exporter-demo/keyingmaterialexporter \
 	log/log log/log_v3 \
 	simple/base64 \

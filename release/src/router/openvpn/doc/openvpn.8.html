@@ -1387,8 +1387,17 @@ an indication of actual user activity.</p>
 <tr><td class="option-group" colspan="2">
 <kbd><span class="option">--proto-force <var>p</var></span></kbd></td>
 </tr>
-<tr><td>&nbsp;</td><td>When iterating through connection profiles, only consider profiles using
-protocol <tt class="docutils literal">p</tt> (<code>tcp</code> | <code>udp</code>).</td></tr>
+<tr><td>&nbsp;</td><td><p class="first">When iterating through connection profiles, only consider profiles using
+protocol <tt class="docutils literal">p</tt> (<code>tcp</code> | <code>udp</code>).</p>
+<p>Note that this specifically only filters by the transport layer
+protocol, i.e. UDP or TCP. This does not affect whether IPv4 or
+IPv6 is used as IP protocol.</p>
+<p class="last">For implementation reasons the option accepts the <code>4</code> and <code>6</code>
+suffixes when specifying the protocol
+(i.e. <code>udp4</code> / <code>udp6</code> / <code>tcp4</code> / <code>tcp6</code>).
+However, these behave the same as without the suffix and should be avoided
+to prevent confusion.</p>
+</td></tr>
 <tr><td class="option-group">
 <kbd><span class="option">--pull</span></kbd></td>
 <td><p class="first">This option must be used on a client which is connecting to a
@@ -3638,7 +3647,10 @@ start clocking timeouts until a remote peer connects.</td></tr>
 <tr><td class="option-group">
 <kbd><span class="option">--proto <var>p</var></span></kbd></td>
 <td><p class="first">Use protocol <tt class="docutils literal">p</tt> for communicating with remote host. <tt class="docutils literal">p</tt> can be
-<code>udp</code>, <code>tcp-client</code>, or <code>tcp-server</code>.</p>
+<code>udp</code>, <code>tcp-client</code>, or <code>tcp-server</code>. You can also
+limit OpenVPN to use only IPv4 or only IPv6 by specifying <tt class="docutils literal">p</tt> as
+<code>udp4</code>, <code>tcp4-client</code>, <code>tcp4-server</code> or <code>udp6</code>,
+<code>tcp6-client</code>, <code>tcp6-server</code>, respectively.</p>
 <p>The default protocol is <code>udp</code> when <tt class="docutils literal"><span class="pre">--proto</span></tt> is not specified.</p>
 <p>For UDP operation, <tt class="docutils literal"><span class="pre">--proto</span> udp</tt> should be specified on both peers.</p>
 <p>For TCP operation, one peer must use <tt class="docutils literal"><span class="pre">--proto</span> <span class="pre">tcp-server</span></tt> and the
@@ -5311,7 +5323,7 @@ source distribution.</p>
 <p>If you are using an RPM install of OpenVPN, see
 <code>/usr/share/openvpn/plugin</code>. The documentation is in <tt class="docutils literal">doc</tt> and
 the actual plugin modules are in <tt class="docutils literal">lib</tt>.</p>
-<p class="last">Multiple plugin modules can be cascaded, and modules can be used in
+<p>Multiple plugin modules can be cascaded, and modules can be used in
 tandem with scripts. The modules will be called by OpenVPN in the order
 that they are declared in the config file. If both a plugin and script
 are configured for the same callback, the script will be called last. If
@@ -5319,6 +5331,16 @@ the return code of the module/script controls an authentication function
 (such as tls-verify, auth-user-pass-verify, or client-connect), then
 every module and script must return success (<code>0</code>) in order for the
 connection to be authenticated.</p>
+<dl class="last docutils">
+<dt><strong>WARNING</strong>:</dt>
+<dd>Plug-ins may do deferred execution, meaning the plug-in will
+return the control back to the main OpenVPN process and provide
+the plug-in result later on via a different thread or process.
+OpenVPN does <strong>NOT</strong> support multiple authentication plug-ins
+<strong>where more than one plugin</strong> tries to do deferred authentication.
+If this behaviour is detected, OpenVPN will shut down upon first
+authentication.</dd>
+</dl>
 </td></tr>
 </tbody>
 </table>

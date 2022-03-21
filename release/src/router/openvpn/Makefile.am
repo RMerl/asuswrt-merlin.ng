@@ -5,8 +5,8 @@
 #             packet encryption, packet authentication, and
 #             packet compression.
 #
-#  Copyright (C) 2002-2021 OpenVPN Inc <sales@openvpn.net>
-#  Copyright (C) 2010-2021 David Sommerseth <dazo@eurephia.org>
+#  Copyright (C) 2002-2022 OpenVPN Inc <sales@openvpn.net>
+#  Copyright (C) 2010-2022 David Sommerseth <dazo@eurephia.org>
 #  Copyright (C) 2006-2012 Alon Bar-Lev <alon.barlev@gmail.com>
 #
 #  This program is free software; you can redistribute it and/or modify
@@ -66,10 +66,7 @@ dist_noinst_DATA = \
 	PORTS \
 	README.IPv6 TODO.IPv6 \
 	README.mbedtls \
-	openvpn.sln \
-	msvc-env.bat \
-	msvc-dev.bat \
-	msvc-build.bat
+	openvpn.sln
 
 dist_noinst_HEADERS = \
 	config-msvc.h \

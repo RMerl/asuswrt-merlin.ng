@@ -49,7 +49,7 @@ extern int pids(char *appname);
 int get_aicloud_permission(const char *const account, const char *const mount_path, const char *const folder, const int is_group);
 int prefix_is(char* source, char* prefix);
 int char_to_ascii_safe(const char *output, const char *input, int outsize);
-int change_port_rule_on_iptable(int toOpen, char* port_number);
+int change_port_rule_on_iptable(int toOpen, int port_number);
 
 #define DBE 0
 #define LIGHTTPD_ARPPING_PID_FILE_PATH	"/tmp/lighttpd/lighttpd-arpping.pid"
@@ -2082,10 +2082,10 @@ int generate_sharelink( server* srv,
 			
 			//- check file is exist.
 			buffer* buffer_file_path = buffer_init();
-                        buffer_copy_buffer(buffer_file_path, buffer_real_url);
-                        buffer_append_string(buffer_file_path, "/");
-                        buffer_append_string(buffer_file_path, pch);
-                        buffer_urldecode_path(buffer_file_path);
+            buffer_copy_buffer(buffer_file_path, buffer_real_url);
+            buffer_append_string(buffer_file_path, "/");
+            buffer_append_string(buffer_file_path, pch);
+            buffer_urldecode_path(buffer_file_path);
 
 			if(con->mode == SMB_BASIC || con->mode == SMB_NTLM){
 				struct stat st;
@@ -4265,9 +4265,9 @@ int write_im_resp_to_shm(char *resp_msg)
 int open_close_streaming_port(server* srv, int toOpen){
 		
 #if EMBEDDED_EANBLE
-	char* port_number = nvram_get_webdav_http_port();
+	int port_number = atoi(nvram_get_webdav_http_port());
 #else
-	char* port_number = "8082";
+	int port_number = 8082;
 #endif
 
 	if(toOpen == srv->is_streaming_port_opend) 
@@ -4288,9 +4288,9 @@ int open_close_network_access_port(server* srv, int toOpen){
 #if IM_MESSGAE_EANBLE
 
 #if EMBEDDED_EANBLE
-	char* port_number = nvram_get_webdav_https_port();
+	int port_number = atoi(nvram_get_webdav_https_port());
 #else
-	char* port_number = "443";
+	int port_number = 443;
 #endif
 	
 	if(toOpen == srv->is_network_access_port_opend) 
@@ -4310,7 +4310,7 @@ int open_close_network_access_port(server* srv, int toOpen){
 	return 1;
 }
 
-int change_port_rule_on_iptable(int toOpen, char* port_number){
+int change_port_rule_on_iptable(int toOpen, int port_number){
 	char cmd[BUFSIZ]="\0";
 	int rc = -1;
 	
@@ -4341,65 +4341,65 @@ int change_port_rule_on_iptable(int toOpen, char* port_number){
         //- open streaming port
 
         //- delete rules in VSERVER CHAIN
-        sprintf(cmd, "%siptables -t nat -D VSERVER -i erouter0 -p tcp --dport %s -j DNAT --to-destination %s:%s", actual_s_system, port_number, lan_ip, port_number);
+        sprintf(cmd, "%siptables -t nat -D VSERVER -i erouter0 -p tcp --dport %s -j DNAT --to-destination %s:%d", actual_s_system, port_number, lan_ip, port_number);
         rc = system(cmd);
-        sprintf(cmd, "%siptables -t nat -D VSERVER -i rndbr1 -s %s -d %s -p tcp --dport %s -j DNAT --to-destination %s:%s", actual_s_system, lan_ip_s_tmp, lan_ip_s, port_number, lan_ip,port_number);
+        sprintf(cmd, "%siptables -t nat -D VSERVER -i rndbr1 -s %s -d %s -p tcp --dport %s -j DNAT --to-destination %s:%d", actual_s_system, lan_ip_s_tmp, lan_ip_s, port_number, lan_ip,port_number);
         rc = system(cmd);
 
         //- delete accept rule       
-        snprintf(cmd, sizeof(cmd), "%siptables -D BASE_FORWARD_CHAIN -i erouter0 -o rndbr1 -p tcp -d %s --dport %s -j ACCEPT", actual_s_system, lan_ip, port_number);
+        snprintf(cmd, sizeof(cmd), "%siptables -D BASE_FORWARD_CHAIN -i erouter0 -o rndbr1 -p tcp -d %s --dport %d -j ACCEPT", actual_s_system, lan_ip, port_number);
         rc = system(cmd);
-        snprintf(cmd, sizeof(cmd), "%siptables -D BASE_FORWARD_CHAIN -i rndbr1 -s %s -d %s -p tcp --dport %s -j ACCEPT", actual_s_system, lan_ip_s_tmp, lan_ip, port_number);
+        snprintf(cmd, sizeof(cmd), "%siptables -D BASE_FORWARD_CHAIN -i rndbr1 -s %s -d %s -p tcp --dport %d -j ACCEPT", actual_s_system, lan_ip_s_tmp, lan_ip, port_number);
         rc = system(cmd);
 		
         //- delete drop rule
-        snprintf(cmd, sizeof(cmd), "%siptables -D BASE_FORWARD_CHAIN -i erouter0 -o rndbr1 -p tcp -d %s --dport %s -j DROP", actual_s_system, lan_ip, port_number);
+        snprintf(cmd, sizeof(cmd), "%siptables -D BASE_FORWARD_CHAIN -i erouter0 -o rndbr1 -p tcp -d %s --dport %d -j DROP", actual_s_system, lan_ip, port_number);
         rc = system(cmd);
-        snprintf(cmd, sizeof(cmd), "%siptables -D BASE_FORWARD_CHAIN -i rndbr1 -s %s -d %s -p tcp --dport %s -j DROP", actual_s_system, lan_ip_s_tmp, lan_ip, port_number);
+        snprintf(cmd, sizeof(cmd), "%siptables -D BASE_FORWARD_CHAIN -i rndbr1 -s %s -d %s -p tcp --dport %d -j DROP", actual_s_system, lan_ip_s_tmp, lan_ip, port_number);
         rc = system(cmd);
 
          //- add rules in VSERVER CHAIN
-        sprintf(cmd, "%siptables -t nat -I VSERVER -i erouter0 -p tcp --dport %s -j DNAT --to-destination %s:%s", actual_s_system, port_number, lan_ip, port_number);
+        sprintf(cmd, "%siptables -t nat -I VSERVER -i erouter0 -p tcp --dport %d -j DNAT --to-destination %s:%d", actual_s_system, port_number, lan_ip, port_number);
         rc = system(cmd);
-        sprintf(cmd, "%siptables -t nat -I VSERVER -i rndbr1 -s %s -d %s -p tcp --dport %s -j DNAT --to-destination %s:%s", actual_s_system, lan_ip_s_tmp, lan_ip_s, port_number, lan_ip, port_number);
+        sprintf(cmd, "%siptables -t nat -I VSERVER -i rndbr1 -s %s -d %s -p tcp --dport %d -j DNAT --to-destination %s:%d", actual_s_system, lan_ip_s_tmp, lan_ip_s, port_number, lan_ip, port_number);
         rc = system(cmd);
 
         //- add accept rule        
-        snprintf(cmd, sizeof(cmd), "%siptables -I BASE_FORWARD_CHAIN -i erouter0 -o rndbr1 -p tcp -d %s --dport %s -j ACCEPT", actual_s_system, lan_ip, port_number);
+        snprintf(cmd, sizeof(cmd), "%siptables -I BASE_FORWARD_CHAIN -i erouter0 -o rndbr1 -p tcp -d %s --dport %d -j ACCEPT", actual_s_system, lan_ip, port_number);
         rc = system(cmd);
-        snprintf(cmd, sizeof(cmd), "%siptables -I BASE_FORWARD_CHAIN -i rndbr1 -s %s -d %s -p tcp --dport %s -j ACCEPT", actual_s_system, lan_ip_s_tmp, lan_ip, port_number);
+        snprintf(cmd, sizeof(cmd), "%siptables -I BASE_FORWARD_CHAIN -i rndbr1 -s %s -d %s -p tcp --dport %d -j ACCEPT", actual_s_system, lan_ip_s_tmp, lan_ip, port_number);
         rc = system(cmd);
     }
     else if(toOpen==0){
         //- close streaming port
 
         //- check rule is existed?
-        //sprintf(cmd, "iptables -C INPUT -p tcp -m tcp --dport %s -j DROP", port_number);
+        //sprintf(cmd, "iptables -C INPUT -p tcp -m tcp --dport %d -j DROP", port_number);
         //Cdbg(DBE, "%s", cmd);
 
         //- delete rules in VSERVER CHAIN
-        sprintf(cmd, "%siptables -t nat -D VSERVER -i erouter0 -p tcp --dport %s -j DNAT --to-destination %s:%s", actual_s_system, port_number, lan_ip, port_number);
+        sprintf(cmd, "%siptables -t nat -D VSERVER -i erouter0 -p tcp --dport %d -j DNAT --to-destination %s:%d", actual_s_system, port_number, lan_ip, port_number);
         rc = system(cmd);
-        sprintf(cmd, "%siptables -t nat -D VSERVER -i rndbr1 -s %s -d %s -p tcp --dport %s -j DNAT --to-destination %s:%s", actual_s_system, lan_ip_s_tmp, lan_ip_s, port_number, lan_ip, port_number);
+        sprintf(cmd, "%siptables -t nat -D VSERVER -i rndbr1 -s %s -d %s -p tcp --dport %d -j DNAT --to-destination %s:%d", actual_s_system, lan_ip_s_tmp, lan_ip_s, port_number, lan_ip, port_number);
         rc = system(cmd);
 
         //- delete accept rule
-        snprintf(cmd, sizeof(cmd), "%siptables -D BASE_FORWARD_CHAIN -i erouter0 -o rndbr1 -p tcp -d %s --dport %s -j ACCEPT", actual_s_system, lan_ip, port_number);     
+        snprintf(cmd, sizeof(cmd), "%siptables -D BASE_FORWARD_CHAIN -i erouter0 -o rndbr1 -p tcp -d %s --dport %d -j ACCEPT", actual_s_system, lan_ip, port_number);     
         rc = system(cmd);
-        snprintf(cmd, sizeof(cmd), "%siptables -D BASE_FORWARD_CHAIN -i rndbr1 -s %s -d %s -p tcp --dport %s -j ACCEPT", actual_s_system, lan_ip_s_tmp, lan_ip, port_number);     
+        snprintf(cmd, sizeof(cmd), "%siptables -D BASE_FORWARD_CHAIN -i rndbr1 -s %s -d %s -p tcp --dport %d -j ACCEPT", actual_s_system, lan_ip_s_tmp, lan_ip, port_number);     
         rc = system(cmd);
 
         //- delete drop rule      
-        snprintf(cmd, sizeof(cmd), "%siptables -D BASE_FORWARD_CHAIN -i erouter0 -o rndbr1 -p tcp -d %s --dport %s -j DROP", actual_s_system, lan_ip, port_number);
+        snprintf(cmd, sizeof(cmd), "%siptables -D BASE_FORWARD_CHAIN -i erouter0 -o rndbr1 -p tcp -d %s --dport %d -j DROP", actual_s_system, lan_ip, port_number);
         rc = system(cmd);
-        snprintf(cmd, sizeof(cmd), "%siptables -D BASE_FORWARD_CHAIN -i rndbr1 -s %s -d %s -p tcp --dport %s -j DROP", actual_s_system, lan_ip_s_tmp, lan_ip, port_number);       
+        snprintf(cmd, sizeof(cmd), "%siptables -D BASE_FORWARD_CHAIN -i rndbr1 -s %s -d %s -p tcp --dport %d -j DROP", actual_s_system, lan_ip_s_tmp, lan_ip, port_number);       
         rc = system(cmd);
 
         //- add drop rule        
-        snprintf(cmd, sizeof(cmd), "%siptables -I BASE_FORWARD_CHAIN -i erouter0 -o rndbr1 -p tcp -d %s --dport %s -j DROP", actual_s_system, lan_ip, port_number);       
+        snprintf(cmd, sizeof(cmd), "%siptables -I BASE_FORWARD_CHAIN -i erouter0 -o rndbr1 -p tcp -d %s --dport %d -j DROP", actual_s_system, lan_ip, port_number);       
         rc = system(cmd);
 		
-        snprintf(cmd, sizeof(cmd), "%siptables -I BASE_FORWARD_CHAIN -i rndbr1 -s %s -d %s -p tcp --dport %s -j DROP", actual_s_system, lan_ip_s_tmp, lan_ip, port_number);
+        snprintf(cmd, sizeof(cmd), "%siptables -I BASE_FORWARD_CHAIN -i rndbr1 -s %s -d %s -p tcp --dport %d -j DROP", actual_s_system, lan_ip_s_tmp, lan_ip, port_number);
         rc = system(cmd);
     }
 	
@@ -4413,15 +4413,15 @@ int change_port_rule_on_iptable(int toOpen, char* port_number){
 		//- open streaming port
 
 		//- delete accept rule
-		snprintf(cmd, sizeof(cmd), "iptables -D INPUT -p tcp -m tcp --dport %s -j ACCEPT", port_number);
+		snprintf(cmd, sizeof(cmd), "iptables -D INPUT -p tcp -m tcp --dport %d -j ACCEPT", port_number);
 		rc = system(cmd);
 
 		//- delete drop rule
-		snprintf(cmd, sizeof(cmd), "iptables -D INPUT -p tcp -m tcp --dport %s -j DROP", port_number);
+		snprintf(cmd, sizeof(cmd), "iptables -D INPUT -p tcp -m tcp --dport %d -j DROP", port_number);
 		rc = system(cmd);
 
 		//- add accept rule
-		snprintf(cmd, sizeof(cmd), "iptables -I INPUT 1 -p tcp -m tcp --dport %s -j ACCEPT", port_number);
+		snprintf(cmd, sizeof(cmd), "iptables -I INPUT 1 -p tcp -m tcp --dport %d -j ACCEPT", port_number);
 		rc = system(cmd);
 		Cdbg(1, "toOpen=1, cmd=%s, rc=%d", cmd, rc);
 	}
@@ -4429,21 +4429,21 @@ int change_port_rule_on_iptable(int toOpen, char* port_number){
 		//- close streaming port
 		
 		//- check rule is existed?
-		//sprintf(cmd, "iptables -C INPUT -p tcp -m tcp --dport %s -j DROP", port_number);
+		//sprintf(cmd, "iptables -C INPUT -p tcp -m tcp --dport %d -j DROP", port_number);
 		//Cdbg(DBE, "%s", cmd);
 
 		//- delete accept rule
-		snprintf(cmd, sizeof(cmd), "iptables -D INPUT -p tcp -m tcp --dport %s -j ACCEPT", port_number);
+		snprintf(cmd, sizeof(cmd), "iptables -D INPUT -p tcp -m tcp --dport %d -j ACCEPT", port_number);
 		rc = system(cmd);
 		Cdbg(1, "cmd=%s, rc=%d", cmd, rc);
 		
 		//- delete drop rule
-		snprintf(cmd, sizeof(cmd), "iptables -D INPUT -p tcp -m tcp --dport %s -j DROP", port_number);
+		snprintf(cmd, sizeof(cmd), "iptables -D INPUT -p tcp -m tcp --dport %d -j DROP", port_number);
 		rc = system(cmd);
 		Cdbg(1, "cmd=%s, rc=%d", cmd, rc);
 		
 		//- add drop rule
-		snprintf(cmd, sizeof(cmd), "iptables -I INPUT 1 -p tcp -m tcp --dport %s -j DROP", port_number);
+		snprintf(cmd, sizeof(cmd), "iptables -I INPUT 1 -p tcp -m tcp --dport %d -j DROP", port_number);
 		rc = system(cmd);
 		Cdbg(1, "toOpen=0, cmd=%s, rc=%d", cmd, rc);
 	}

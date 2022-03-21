@@ -1209,6 +1209,16 @@ an indication of actual user activity.
 .BI \-\-proto\-force \ p
 When iterating through connection profiles, only consider profiles using
 protocol \fBp\fP (\fBtcp\fP | \fBudp\fP).
+.sp
+Note that this specifically only filters by the transport layer
+protocol, i.e. UDP or TCP. This does not affect whether IPv4 or
+IPv6 is used as IP protocol.
+.sp
+For implementation reasons the option accepts the \fB4\fP and \fB6\fP
+suffixes when specifying the protocol
+(i.e. \fBudp4\fP / \fBudp6\fP / \fBtcp4\fP / \fBtcp6\fP).
+However, these behave the same as without the suffix and should be avoided
+to prevent confusion.
 .TP
 .B \-\-pull
 This option must be used on a client which is connecting to a
@@ -4030,7 +4040,10 @@ start clocking timeouts until a remote peer connects.
 .TP
 .BI \-\-proto \ p
 Use protocol \fBp\fP for communicating with remote host. \fBp\fP can be
-\fBudp\fP, \fBtcp\-client\fP, or \fBtcp\-server\fP\&.
+\fBudp\fP, \fBtcp\-client\fP, or \fBtcp\-server\fP\&. You can also
+limit OpenVPN to use only IPv4 or only IPv6 by specifying \fBp\fP as
+\fBudp4\fP, \fBtcp4\-client\fP, \fBtcp4\-server\fP or \fBudp6\fP,
+\fBtcp6\-client\fP, \fBtcp6\-server\fP, respectively.
 .sp
 The default protocol is \fBudp\fP when \fB\-\-proto\fP is not specified.
 .sp
@@ -6083,6 +6096,17 @@ the return code of the module/script controls an authentication function
 (such as tls\-verify, auth\-user\-pass\-verify, or client\-connect), then
 every module and script must return success (\fB0\fP) in order for the
 connection to be authenticated.
+.INDENT 7.0
+.TP
+.B \fBWARNING\fP:
+Plug\-ins may do deferred execution, meaning the plug\-in will
+return the control back to the main OpenVPN process and provide
+the plug\-in result later on via a different thread or process.
+OpenVPN does \fBNOT\fP support multiple authentication plug\-ins
+\fBwhere more than one plugin\fP tries to do deferred authentication.
+If this behaviour is detected, OpenVPN will shut down upon first
+authentication.
+.UNINDENT
 .UNINDENT
 .SS Windows\-Specific Options
 .INDENT 0.0

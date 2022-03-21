@@ -1,6 +1,16 @@
 Asuswrt-Merlin 386/NG Changelog
 ===============================
 
+386.5_2 (xx-xxx-2022)
+  - UPDATED: openssl to 1.1.1n.
+  - UPDATED: openvpn to 2.5.6.
+  - CHANGED: Added Wireguard module + userspace tool to
+             GT-AXE11000.
+  - FIXED: Only a few DNSFilter clients are supported
+           on HND models (entries limited to 255 chars).
+  - FIXED: Security issue in AiCloud (backport from Asus)
+
+
 386.5 (2-March-2022)
   - NEW: Added support for the RT-AC68U V4.  All
          RT-AC68U models are using a combined

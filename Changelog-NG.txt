@@ -9,6 +9,9 @@ Asuswrt-Merlin 386/NG Changelog
              your ISP (Tvlz)
   - CHANGED: Added Wireguard module + userspace tool to
              GT-AXE11000.
+  - FIXED: Only a few DNSFilter clients are supported
+           on HND models (entries limited to 255 chars).
+  - FIXED: Security issue in AiCloud (backport from Asus)
 
 
 386.5 (2-March-2022)

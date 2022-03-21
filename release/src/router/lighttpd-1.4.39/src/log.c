@@ -30,6 +30,8 @@
 # include "nvram_control.h"
 #endif
 
+#define TIME_LEN	64
+#define DEFAULT_FMT "%Y-%m-%d_%H:%M:%S"
 
 /* retry write on EINTR or when not all data was written */
 ssize_t write_all(int fd, const void* buf, size_t count) {
@@ -603,19 +605,145 @@ int log_sys_write(server *srv, const char *fmt, ...) {
 }
 
 #ifndef NDEBUG
-//void dprintf_impl(const char* date,const char* time,const char* file,const char* func, size_t line, int enable, const char* fmt, ...)
+long get_file_size(const char* filename) {
+
+  FILE *fp = fopen(filename,"r"); 
+  if(!fp) {
+  	return -1;
+  }
+
+  fseek(fp,0L,SEEK_END); 
+  long size = ftell(fp); 
+  fclose(fp); 
+  return size; 
+} 
+
+int check_file_exist(char *fname) {
+    struct stat fstat;
+    
+    if (lstat(fname,&fstat)==-1)
+        return 0;
+    if (S_ISREG(fstat.st_mode))
+        return 1;
+    
+    return 0;
+}
+
+void debug_log_downsizing() {
+
+	FILE *fp;
+
+  	char log_line[1023];
+
+  	if ((fp = fopen(LIGHTTPD_DEBUG_LOG_FILE_PATH, "r")) == NULL) {
+    	return;
+  	}
+  
+  	FILE *fpTmp = fopen(LIGHTTPD_DEBUG_TEMP_LOG_FILE_PATH, "a+");
+
+  	if (NULL == fpTmp) {
+    	return;
+  	}
+
+  	int i = 0;
+
+	while (fgets(log_line, 1023, fp) != NULL) {
+		i++;
+
+      	if (i <= 2000) {
+      		//- remove 2000 lines
+        	continue;
+      	} 
+      	else {
+        	fprintf(fpTmp, "%s", log_line);
+      	}
+  	}
+
+	fclose(fpTmp);
+	fclose(fp);
+
+	unlink(LIGHTTPD_DEBUG_LOG_FILE_PATH);
+
+    // move LIGHTTPD_DEBUG_TEMP_LOG_FILE_PATH to LIGHTTPD_DEBUG_LOG_FILE_PATH
+	if (!check_file_exist(LIGHTTPD_DEBUG_LOG_FILE_PATH)) {
+    	char cmd[128];
+    	snprintf(cmd, 128, "mv %s %s", LIGHTTPD_DEBUG_TEMP_LOG_FILE_PATH, LIGHTTPD_DEBUG_LOG_FILE_PATH);
+    	system(cmd);
+  	}
+}
+
+char* alloc_time_string(const char* tf, int is_msec, char** time_string)
+{
+    struct timeval tv;
+    struct tm* ptm;
+    char*  mtf = NULL;
+    if(!tf) mtf = DEFAULT_FMT;
+    else    mtf = (char *)tf;
+    *time_string = (char*) malloc(TIME_LEN);
+    memset(*time_string, 0, TIME_LEN);
+    long milliseconds;
+
+    /* Obtain the time of day, and convert it to a tm struct. */
+    gettimeofday (&tv, NULL);
+    ptm = localtime (&tv.tv_sec);
+    /* Format the date and time, down to a single second. */
+    strftime (*time_string, TIME_LEN, mtf, ptm);
+    /* Compute milliseconds from microseconds. */
+    milliseconds = tv.tv_usec / 1000;
+    /* Print the formatted time, in seconds, followed by a decimal point
+    *    and the milliseconds. */
+    if(is_msec) {
+        char msec [8] ; memset(msec, 0, 8);
+        sprintf (msec, ".%03ld", milliseconds);
+        strcat(*time_string, msec);
+    }
+//  fprintf(stderr, "time string =%s", time_string );
+    return *time_string; 
+}
+
+void dealloc_time_string(char* ts)
+{
+    if (ts) free(ts);
+}
+
 void dprintf_impl(const char* file,const char* func, size_t line, int enable, const char* fmt, ...)
 {
+	if (!enable) {
+		return;
+	}
+
     va_list ap;
-    if (enable) {
-//	   fprintf(stderr, WHERESTR,date, time, file, func, line);
-		fprintf(stderr, WHERESTR, file, func, line);
+
+	char* ts;
+    alloc_time_string(NULL, 1, &ts);
+
+    if (check_file_exist(LIGHTTPD_DEBUG_TO_FILE)) {
+    	long filesize = get_file_size(LIGHTTPD_DEBUG_LOG_FILE_PATH);
+
+	    // if File > 1M
+	    if (filesize > LIGHTTPD_DEBUG_LOG_FILE_MAX_SIZE) {
+	        debug_log_downsizing();
+	    }
+
+        int nfd = open(LIGHTTPD_DEBUG_LOG_FILE_PATH, O_WRONLY | O_APPEND | O_CREAT);
+
+        dprintf(nfd, WHERESTR, ts, file, func, line);
+        va_start(ap, fmt);
+        vdprintf(nfd, fmt, ap);
+        dprintf(nfd, "\n");
+        va_end(ap);
+        close(nfd);
+    }
+    else if (check_file_exist(LIGHTTPD_DEBUG_TO_CONSOLE)) {
+        fprintf(stderr, WHERESTR, ts, file, func, line);
         va_start(ap, fmt);
         vfprintf(stderr, fmt, ap);
         va_end(ap);
         fprintf(stderr, "\n");
         fflush(stderr);
     }
+
+    dealloc_time_string(ts);
 }
 #endif
 

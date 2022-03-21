@@ -501,6 +501,18 @@ char *nvram_safe_get(char *name)
 }
 int nvram_set(const char *name, const char *value)
 {
+    if(name==NULL||value==NULL){
+        return 0;
+    }
+
+    if (strstr((char*)name, ";") != NULL || strstr((char*)name, "\"") != NULL) {
+        return 0;
+    } 
+
+    if (strstr((char*)value, ";") != NULL || strstr((char*)value, "\"") != NULL) {
+        return 0;
+    }
+    
     char *cmd;
 
     if(value == NULL)

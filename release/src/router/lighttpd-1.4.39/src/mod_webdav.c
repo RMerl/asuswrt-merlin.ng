@@ -765,16 +765,27 @@ static int get_thumb_image(char* path, plugin_data *p, char **out){
 		return 0;
 	}
 	
+	if(path==NULL){
+		return 0;
+	}
+
 #if EMBEDDED_EANBLE
 	char* thumb_dir = (char *)malloc(PATH_MAX);
-	if(!thumb_dir) return 0;
+	if(!thumb_dir) {
+		return 0;
+	}
 
 	if (buffer_is_empty(p->minidlna_db_dir))
 		get_minidlna_db_path(p);
 	
-	strcpy(thumb_dir, p->minidlna_db_dir->ptr);
+	strncpy(thumb_dir, p->minidlna_db_dir->ptr, PATH_MAX-15);
 	strcat(thumb_dir, "/art_cache/tmp");
 	
+	if(strlen(path)>PATH_MAX-strlen(thumb_dir)-4){
+		free(thumb_dir);
+		return 0;
+	}
+
 	char* filename = NULL;	
 	extract_filename(path, &filename);
 	const char *dot = strrchr(filename, '.');
@@ -784,20 +795,26 @@ static int get_thumb_image(char* path, plugin_data *p, char **out){
 	extract_filepath(path, &filepath);
 					
 	strcat(thumb_dir, filepath);
-	strncat(thumb_dir, filename, len);
+	strcat(thumb_dir, filename);
 	strcat(thumb_dir, ".jpg");
 	
 	free(filename);
 	free(filepath);
 #else
 	char* db_dir = "/var/lib/minidlna/";
-	char* thumb_dir = (char *)malloc(PATH_MAX);
+	char* thumb_dir = (char *)malloc(1024);
 	
 	if(!thumb_dir){
 		return 0;
-	}	
-	strcpy(thumb_dir, db_dir);
+	}
+
+	strncpy(thumb_dir, db_dir, 1014);
 	strcat(thumb_dir, "art_cache");
+		
+	if(strlen(path)>1024-strlen(thumb_dir)-4){
+		free(thumb_dir);
+		return 0;
+	}
 	
 	char* filename = NULL;	
 	extract_filename(path, &filename);
@@ -811,7 +828,7 @@ static int get_thumb_image(char* path, plugin_data *p, char **out){
 	Cdbg(DBE,"filepath=%s, filename=%s", filepath, filename);
 	
 	strcat(thumb_dir, filepath);
-	strncat(thumb_dir, filename, idx);
+	strcat(thumb_dir, filename);
 	strcat(thumb_dir, ".jpg");
 	
 	free(filename);
@@ -851,7 +868,7 @@ static int get_thumb_image(char* path, plugin_data *p, char **out){
 		}
 	}
 	
-	free(thumb_dir);	
+	free(thumb_dir);
 	return result;
 }
 
@@ -3597,9 +3614,13 @@ propmatch_cleanup:
 			return HANDLER_FINISHED;
 		}
 		
-		char auth[100]="\0";		
+		char auth[100]="\0";	
 		if(con->aidisk_username->used && con->aidisk_passwd->used) {
-			snprintf(auth, sizeof(auth), "%s:%s", con->aidisk_username->ptr, con->aidisk_passwd->ptr);
+			#if NVRAM_ENCRYPT_ENABLE
+				snprintf(auth, sizeof(auth), "%s:%s", con->aidisk_username->ptr, nvram_get_http_passwd());
+			#else	
+				snprintf(auth, sizeof(auth), "%s:%s", con->aidisk_username->ptr, con->aidisk_passwd->ptr);
+			#endif
 		} else {
 			con->http_status = 400;
 			return HANDLER_FINISHED;

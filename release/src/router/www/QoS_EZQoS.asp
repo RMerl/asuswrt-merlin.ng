@@ -935,7 +935,7 @@ function determineActionScript(){
 		document.form.action_script.value = "restart_qos;restart_firewall;";
 		document.form.action_wait.value = "15";
 	}
-	else if(document.form.qos_enable.value == "1" && document.form.qos_type.value == "1" && (fc_disable  != "" && runner_disable != "")){ //HND Router
+	else if(document.form.qos_enable.value == "1" && document.form.qos_type.value == "1" && (fc_disable_orig != "" && runner_disable_orig != "")){ //HND Router
 		document.form.action_script.value = "restart_qos;restart_firewall;";
 		document.form.action_wait.value = "15";
 	}

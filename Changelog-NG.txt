@@ -3,15 +3,21 @@ Asuswrt-Merlin 386/NG Changelog
 
 386.6 (xx-xxx-2022)
   - NEW: Added Cloudflare and AdGuard to DNSFilter services.
-  - UPDATED: Openssl to 1.1.1n.
   - CHANGED: Reworked DNSFilter page design.
   - CHANGED: Allow requesting bigger IPv6 subnets from
              your ISP (Tvlz)
+
+
+386.5_2 (25-March-2022)
+  - UPDATED: openssl to 1.1.1n.
+  - UPDATED: openvpn to 2.5.6.
   - CHANGED: Added Wireguard module + userspace tool to
              GT-AXE11000.
   - FIXED: Only a few DNSFilter clients are supported
            on HND models (entries limited to 255 chars).
   - FIXED: Security issue in AiCloud (backport from Asus)
+  - FIXED: Cannot enable Adaptive QoS under certain scenarios
+           on pre-HND router models.
 
 
 386.5 (2-March-2022)

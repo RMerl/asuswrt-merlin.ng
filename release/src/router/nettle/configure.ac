@@ -447,15 +447,15 @@ if test "x$enable_assembler" = xyes ; then
 	OPT_NETTLE_SOURCES="fat-arm.c $OPT_NETTLE_SOURCES"
 	FAT_TEST_LIST="arch:5 arch:6,neon"
       else
-	case "$host_cpu" in
-	  armv6* | armv7*)
-	    NETTLE_CHECK_ARM_NEON
-
-	    asm_path="arm/v6 arm"
-	    ;;
-	esac
+	NETTLE_CHECK_ARM_NEON
 	if test "x$enable_arm_neon" = xyes ; then
-	  asm_path="arm/neon $asm_path"
+	  asm_path="arm/neon arm/v6 $asm_path"
+	else
+	  case "$host_cpu" in
+	    armv[678]*)
+	      asm_path="arm/v6 arm"
+	      ;;
+	  esac
 	fi
       fi
       ;;

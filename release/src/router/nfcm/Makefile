@@ -3,6 +3,7 @@
 # Makefile
 #
 #***********************************************************************
+include ../common.mak
 
 CFLAGS += -I$(TOP)/libev-4.33 -I$(TOP)/libnfnetlink-1.0.1/include 
 CFLAGS += -I$(TOP)/libmnl-1.0.4/include -I$(TOP)/libnfnetlink-1.0.1/include 
@@ -17,6 +18,9 @@ LDFLAGS += -L$(TOP)/sqlite/.libs -lsqlite3
 LDFLAGS += -L$(TOP)/json-c/.libs -ljson-c
 LDFLAGS += -lm -lpthread -ldl -lnvram
 LDFLAGS += -L$(TOP)/shared -lshared
+ifeq ($(RTCONFIG_BCM_502L07P2),y)
+LDFLAGS += -L$(TOP_PLATFORM)/ethctl_lib -lethctl
+endif
 
 OBJS = log.o nfct.o nfarp.o nfjs.o nfsql.o nfcm.o
 

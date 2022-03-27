@@ -253,10 +253,16 @@ var wansbstate = -1;
 var wanauxstate = -1;
 <% wanstate(); %>
 //2014.05 Viz add for T-MOBILE 
-var isSupport = function(_ptn){return ('<% nvram_get("rc_support"); %>'.search(_ptn) == -1) ? false : true;}
-var tmo_support = isSupport("tmo");
+var isRCSupport = function(_ptn){return ('<% nvram_get("rc_support"); %>'.search(_ptn) == -1) ? false : true;}
+var tmo_support = isRCSupport("tmo");
+
+function isSupport(_ptn){
+	var ui_support = [<% get_ui_support(); %>][0];
+	return (ui_support[_ptn]) ? ui_support[_ptn] : 0;
+}
 var dsl_support = isSupport("dsl");
 var gobi_support = isSupport("gobi");
+var odm_support = isSupport("odm");
 
 //Dual WAN unit
 var wans_dualwan_orig = '<% nvram_get("wans_dualwan"); %>';
@@ -267,7 +273,6 @@ if(wans_dualwan_orig.search(" ") == -1)
 var new_lan_ip = [<% get_next_lanip(); %>][0].next_lanip;
 var header_info = [<% get_header_info(); %>];
 var location_org = header_info[0].protocol + "://" + header_info[0].host + ":" + header_info[0].port;
-var odm_support = ('<% nvram_get("rc_support"); %>'.indexOf(' odm') != -1) ? true : false;
 
 function initial(){
 	var is_logined = [<% is_logined_hook(); %>][0];

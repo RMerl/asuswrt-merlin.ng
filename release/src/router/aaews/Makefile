@@ -3,7 +3,6 @@ WSLIB=libws.so
 DOG=mastiff
 
 include ../common.mak
-include $(TOP)/.config
 
 CURL_DIR=$(TOP)/curl-7.21.7
 XML2_DIR=$(TOP)/libxml2
@@ -51,6 +50,10 @@ ROUTER_LDFLAGS=-L$(NVRAM_DIR) -L$(SHARED_DIR) -L$(QCSAPI_DIR)
 else
 ROUTER_LIBS=-lnvram -lshared
 ROUTER_LDFLAGS=-L$(NVRAM_DIR) -L$(SHARED_DIR)
+ifeq ($(RTCONFIG_BCM_502L07P2),y)
+ROUTER_LIBS += -lethctl
+ROUTER_LDFLAGS += -L$(TOP_PLATFORM)/ethctl_lib
+endif
 endif
 ifeq ($(RTCONFIG_NOTIFICATION_CENTER),y)
 ROUTER_LIBS += -lsqlite3

@@ -1,0 +1,43 @@
+PTS test results for AVCTP
+
+PTS version: 6.1
+Tested: 21-May-2015
+Android version: 5.1
+
+Results:
+PASS	test passed
+FAIL	test failed
+INC	test is inconclusive
+N/A	test is disabled due to PICS setup
+
+		Controller (CT)
+-------------------------------------------------------------------------------
+Test Name		Result	Notes
+-------------------------------------------------------------------------------
+TC_CT_CCM_BV_01_C	N/A
+TC_CT_CCM_BV_02_C	N/A
+TC_CT_CCM_BV_03_C	N/A
+TC_CT_CCM_BV_04_C	N/A
+TC_CT_CCM_BI_01_C	N/A
+TC_CT_NFR_BV_01_C	N/A
+TC_CT_NFR_BV_04_C	PASS	haltest: rc set_volume 5
+				Note: IUT must be connectable and discoverable
+TC_CT_FRA_BV_01_C	N/A
+TC_CT_FRA_BV_04_C	N/A
+-------------------------------------------------------------------------------
+
+
+		Target (TG)
+-------------------------------------------------------------------------------
+Test Name		Result	Notes
+-------------------------------------------------------------------------------
+TC_TG_CCM_BV_01_C	PASS
+TC_TG_CCM_BV_02_C	PASS
+TC_TG_CCM_BV_03_C	PASS
+TC_TG_CCM_BV_04_C	PASS
+TC_TG_NFR_BV_02_C	PASS
+TC_TG_NFR_BV_03_C	PASS
+TC_TG_NFR_BI_01_C	PASS
+TC_TG_FRA_BV_02_C	N/A	Fragmentation not supported
+TC_TG_FRA_BV_03_C	N/A	Fragmentation not supported
+-------------------------------------------------------------------------------

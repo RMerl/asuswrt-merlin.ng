@@ -1,0 +1,409 @@
+HOGP PICS for the PTS tool.
+
+PTS version: 6.1
+
+* - different than PTS defaults
+# - not yet implemented/supported
+
+M - mandatory
+O - optional
+
+		Profile Roles
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_HOGP_1_1	False (*)	HID Device (Server) (C.1)
+TSPC_HOGP_1_2	True		Report Host (Client) (C.1)
+TSPC_HOGP_1_3	False (*)	Boot Host (Client) (C.1)
+-------------------------------------------------------------------------------
+C.1: Mandatory to support at least one of TSPC_HOGP_1_1 or TSPC_HOGP_1_2
+	or TSPC_HOGP_1_3.
+-------------------------------------------------------------------------------
+
+
+		Transport
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_HOGP_2_1	False (*)	Profile supported over BR/EDR (C.1)
+TSPC_HOGP_2_2	True		Profile supported over LE (M)
+-------------------------------------------------------------------------------
+C.1: Excluded for this profile.
+-------------------------------------------------------------------------------
+
+
+		Services - HID Device
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_HOGP_3_1	False (*)	Implements HID Service (M.1)
+TSPC_HOGP_3_2	False (*)	Multiple Service instances - HID Service (O)
+TSPC_HOGP_3_3	False (*)	Implements Battery Service (M.1)
+TSPC_HOGP_3_4	False (*)	Implements Device Information Service (M.1)
+TSPC_HOGP_3_5	False (*)	Implements Scan Parameters Service (O)
+-------------------------------------------------------------------------------
+M.1: Mandatory if TSPC_HOGP_1_1 selected
+-------------------------------------------------------------------------------
+
+
+		Features - HID Device
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_HOGP_4_1	False (*)	Include HID Service UUID in AD in GAP
+					Discoverable Mode (O)
+TSPC_HOGP_4_2	False (*)	Include Local Name in AD or Scan Response Data
+					(O)
+TSPC_HOGP_4_3	False (*)	Include Appearance in AD or Scan Response Data
+					(O)
+TSPC_HOGP_4_4	False (*)	Support Device Information Service
+					characteristic: PnP ID (M)
+TSPC_HOGP_4_5	False (*)	Report characteristic (C.1)
+TSPC_HOGP_4_6	False (*)	Non-HID Service characteristic described within
+					Report Map characteristic (C.1)
+TSPC_HOGP_4_7	False (*)	External Report Reference characteristic
+					descriptor for Report Map characteristic
+					(C.2)
+-------------------------------------------------------------------------------
+C.1: Mandatory to support at least one of these features.
+C.2: Mandatory if TSPC_HOGP_4_6 is supported, else excluded.
+-------------------------------------------------------------------------------
+
+
+		GAP Requirements - HID Device
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_HOGP_5_1	False (*)	Peripheral (M.1)
+TSPC_HOGP_5_2	False (*)	Directed Connectable Mode (O)
+TSPC_HOGP_5_3	False (*)	Undirected Connectable Mode (M.1)
+TSPC_HOGP_5_4	False (*)	Bondable mode (peripheral) (M.1)
+TSPC_HOGP_5_5	False (*)	Bonding procedure (peripheral) (M.1)
+TSPC_HOGP_5_6	False (*)	LE Security Mode 1 (peripheral) (M.1)
+-------------------------------------------------------------------------------
+M.1: Mandatory if TSPC_HOGP_1_1 selected
+-------------------------------------------------------------------------------
+
+
+		SM Requirements - HID Device
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_HOGP_6_1	False (*)	No security
+					(LE Security Level 1) (M.1)
+TSPC_HOGP_6_2	False (*)	Unauthenticated no MITM protection
+					(LE Security Level 2, Just Works) (M.1)
+TSPC_HOGP_6_3	False (*)	Authenticated MITM protection
+					(LE Security Level 3, Passkey) (O)
+-------------------------------------------------------------------------------
+M.1: Mandatory if TSPC_HOGP_1_1 selected
+-------------------------------------------------------------------------------
+
+
+		Client Services Support - Report Host
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_HOGP_7_1	True		HID Service (M.1)
+TSPC_HOGP_7_2	True		Battery Service (M.1)
+TSPC_HOGP_7_3	True		Device Information Service (M.1)
+TSPC_HOGP_7_4	True		Scan Parameters Service (M.1)
+-------------------------------------------------------------------------------
+M.1: Mandatory if TSPC_HOGP_1_2 selected
+-------------------------------------------------------------------------------
+
+
+		GATT based Profile Support - Report Host
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_HOGP_7a_1	True		Scan Parameters Profile (M.1)
+-------------------------------------------------------------------------------
+M.1: Mandatory if TSPC_HOGP_1_2 selected
+-------------------------------------------------------------------------------
+
+
+		Client Service Support - Boot Host
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_HOGP_8_1	False (*)	HID Service (M.1)
+TSPC_HOGP_8_2	False (*)	Battery Service (O)
+TSPC_HOGP_8_3	False (*)	Device Information Service (O)
+-------------------------------------------------------------------------------
+M.1: Mandatory if TSPC_HOGP_1_3 selected
+-------------------------------------------------------------------------------
+
+
+		Discover Services & Characteristics - Report Host
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_HOGP_9_1	True		Discover HID Service (M.1)
+TSPC_HOGP_9_2	True		Discover Battery Service (M.1)
+TSPC_HOGP_9_3	True		Discover Device Information Service (M.1)
+TSPC_HOGP_9_4	True		Discover Scan Parameters Service (M.1)
+TSPC_HOGP_9_5	True		Discover HID Service characteristic: Report Map
+					(M.1)
+TSPC_HOGP_9_6	True		Discover HID Service characteristic: Report Map
+					- External Report Reference
+					characteristic descriptor (M.1)
+TSPC_HOGP_9_7	True		Discover HID Service characteristic: Report
+					(M.1)
+TSPC_HOGP_9_8	True		Discover HID Service characteristic: Report
+					- Client Characteristic Configuration
+					characteristic descriptor (M.1)
+TSPC_HOGP_9_9	True		Discover HID Service characteristic: Report
+					- Report Reference characteristic
+					descriptor (M.1)
+TSPC_HOGP_9_10	True		Discover HID Service characteristic: HID
+					Information (M.1)
+TSPC_HOGP_9_11	True		Discover HID Service characteristic: HID
+					Control Point (M.1)
+TSPC_HOGP_9_12	True		Discover HID Service characteristic: Protocol
+					Mode (O)
+TSPC_HOGP_9_13	True		Discover Battery Service characteristic: Battery
+					Level (M.1)
+TSPC_HOGP_9_14	True		Discover Battery Service characteristic: Battery
+					Level - Client Characteristic
+					Configuration characteristic descriptor
+					(M.1)
+TSPC_HOGP_9_15	True		Discover Device Information Service
+					characteristic: PnP ID (M.1)
+TSPC_HOGP_9_16	True		Discover non-HID Service characteristic: Report
+					Reference characteristic descriptor
+					(M.1)
+-------------------------------------------------------------------------------
+M.1: Mandatory if TSPC_HOGP_1_2 selected
+-------------------------------------------------------------------------------
+
+
+		Discover Services & Characteristics - Boot Host
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_HOGP_10_1	False (*)	Discover HID Service (M.1)
+TSPC_HOGP_10_2	False (*)	Discover Battery Service (O)
+TSPC_HOGP_10_3	False (*)	Discover Device Information Service (O)
+TSPC_HOGP_10_4	False (*)	Discover HID Service characteristic: Protocol
+					Mode (M.1)
+TSPC_HOGP_10_5	False (*)	Discover HID Service characteristic: Boot
+					Keyboard Input Report (C.1, C.2)
+TSPC_HOGP_10_6	False (*)	Discover HID Service characteristic: Boot
+					Keyboard Input Report - Client
+					Characteristic Configuration
+					characteristic descriptor (C.3)
+TSPC_HOGP_10_7	False (*)	Discover HID Service characteristic: Boot
+					Keyboard Output Report (C.1, C.2)
+TSPC_HOGP_10_8	False (*)	Discover HID Service characteristic: Boot
+					Mouse Input Report (C.1)
+TSPC_HOGP_10_9	False (*)	Discover HID Service characteristic: Boot
+					Mouse Input Report - Client
+					Characteristic Configuration
+					characteristic descriptor (C.4)
+TSPC_HOGP_10_10	False (*)	Discover Battery Service characteristic:
+					Battery Level (O)
+TSPC_HOGP_10_11	False (*)	Discover Battery Service characteristic:
+					Battery Level - Client Characteristic
+					Configuration characteristic descriptor
+					(O)
+TSPC_HOGP_10_12	False (*)	Discover Device Information Service
+					characteristic: PnP ID (O)
+-------------------------------------------------------------------------------
+M.1: Mandatory if TSPC_HOGP_1_3 selected
+C.1: Mandatory to support at least one of TSPC_HOGP_10_5, TSPC_HOGP_10_7, or
+	TSPC_HOGP_10_8.
+C.2: If one of TSPC_HOGP_10_5 or TSPC_HOGP_10_7 is supported, both shall be
+	supported.
+C.3: Mandatory to support if TSPC_HOGP_10_5 is supported, else excluded.
+C.4: Mandatory to support if TSPC_HOGP_10_8 is supported, else excluded.
+-------------------------------------------------------------------------------
+
+
+		Features - Report Host
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_HOGP_11_1	True		Read Report Map characteristic (M.1)
+TSPC_HOGP_11_2	True		Read Report Map characteristic: External
+					Report Reference characteristic
+					descriptor (M.1)
+TSPC_HOGP_11_3	True		Read Report characteristic: Report Type:
+					Input Report (M.1)
+TSPC_HOGP_11_4	True		Write Report characteristic: Report Type:
+					Input Report (M.1)
+TSPC_HOGP_11_5	True		Read Report characteristic: Report Type:
+					Output Report (M.1)
+TSPC_HOGP_11_6	True		Write HID Report characteristic: Report Type:
+					Output Report (M.1)
+TSPC_HOGP_11_7	True		Read HID Report characteristic: Report Type:
+					Feature Report (M.1)
+TSPC_HOGP_11_8	True		Write HID Report characteristic: Report Type:
+					Feature Report (M.1)
+TSPC_HOGP_11_9	True		Read Report characteristic: Report Reference
+					characteristic descriptor (M.1)
+TSPC_HOGP_11_10	True		Read Report characteristic: Input Report:
+					Client Characteristic Configuration
+					characteristic descriptor (M.1)
+TSPC_HOGP_11_11	True		Report characteristic configuration with 0x0001
+					(M.1)
+TSPC_HOGP_11_11a True		Report characteristic configuration with 0x0000
+					(O)
+TSPC_HOGP_11_12	True		Read HID Information characteristic (M.1)
+TSPC_HOGP_11_13	False (*)	Suspend State (O)
+TSPC_HOGP_11_14	False (*)	Exit Suspend State (C.1)
+TSPC_HOGP_11_15	False (*)	Write HID Control Point characteristic: Suspend
+					command (C.1)
+TSPC_HOGP_11_16	False (*)	Write HID Control Point characteristic: Exit
+					Suspend command (C.1)
+TSPC_HOGP_11_17	False (*)	Read Protocol Mode characteristic: Get Protocol
+					command (O)
+TSPC_HOGP_11_18	False (*)	Write Protocol Mode characteristic: Set Report
+					Protocol Mode command (O)
+TSPC_HOGP_11_19	True		Read Battery Level characteristic (M.1)
+TSPC_HOGP_11_20	True		Read Battery Level characteristic: Client
+					Characteristic Configuration
+					characteristic descriptor (M.1)
+TSPC_HOGP_11_21	True		Battery Level characteristic configuration with
+					0x0000 0r 0x0001 (M.1)
+TSPC_HOGP_11_22	True		Read non-HID Service characteristic: Report
+					Reference characteristic descriptor
+					(M.1)
+TSPC_HOGP_11_23	True		Read PnP ID characteristic (M.1)
+TSPC_HOGP_11_24	True		Notify Report characteristic (M.1)
+TSPC_HOGP_11_25	True		Notify Battery Level characteristic (M.1)
+-------------------------------------------------------------------------------
+M.1: Mandatory if TSPC_HOGP_1_2 selected
+C.1: Mandatory to support if TSPC_HOGP_11_13 is supported, else excluded.
+-------------------------------------------------------------------------------
+
+
+		Features - Boot Host
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_HOGP_12_1	False (*)	Read Protocol Mode characteristic: Get Protocol
+					Mode command (M.1)
+TSPC_HOGP_12_2	False (*)	Write Protocol Mode characteristic: Set Boot
+					Protocol Mode command (M.1)
+TSPC_HOGP_12_3	False (*)	Read HID Service characteristic: Boot Keyboard
+					Input Report (C.1)
+TSPC_HOGP_12_4	False (*)	Write HID Service characteristic: Boot Keyboard
+					Input Report (C.1)
+TSPC_HOGP_12_5	False (*)	Read Client Characteristic Configuration
+					characteristic descriptor for Boot
+					Keyboard Input Report (C.1)
+TSPC_HOGP_12_6	False (*)	Boot Keyboard Input Report characteristic:
+					configuration with 0x0000 or 0x0001
+					(C.1)
+TSPC_HOGP_12_7	False (*)	Read HID Service characteristic: Boot Keyboard
+					Output Report (C.1)
+TSPC_HOGP_12_8	False (*)	Write HID Service characteristic: Boot Keyboard
+					Output Report (C.1)
+TSPC_HOGP_12_9	False (*)	Read HID Service characteristic: Boot Mouse
+					Input Report (C.2)
+TSPC_HOGP_12_10	False (*)	Write HID Service characteristic: Boot Mouse
+					Input Report (C.2)
+TSPC_HOGP_12_11	False (*)	Read Client Characteristic Configuration
+					characteristic descriptor for Boot
+					Mouse Input Report (C.2)
+TSPC_HOGP_12_12	False (*)	Boot Mouse Input Report characteristic:
+					configuration with 0x0000 or 0x0001
+					(C.2)
+TSPC_HOGP_12_13	False (*)	Notify Boot Keyboard Input Report characteristic
+					(C.1)
+TSPC_HOGP_12_14	False (*)	Notify Boot Mouse Input Report characteristic
+					(C.2)
+TSPC_HOGP_12_15	False (*)	Read Battery Level characteristic (O)
+TSPC_HOGP_12_16	False (*)	Read Battery Level characteristic: Client
+					Characteristic Configuration
+					characteristic descriptor (O)
+TSPC_HOGP_12_17	False (*)	Battery Level characteristic: configuration with
+					0x0000 or 0x0001 (O)
+TSPC_HOGP_12_18	False (*)	Notify Battery Level characteristic (O)
+TSPC_HOGP_12_19	False (*)	Read PnP ID characteristic (O)
+-------------------------------------------------------------------------------
+M.1: Mandatory if TSPC_HOGP_1_3 selected
+C.1: Mandatory to support if TSPC_HOGP_10_5 or TSPC_HOGP_10_7 is supported,
+	else excluded.
+C.2: Mandatory to support if TSPC_HOGP_10_8 is supported, else excluded.
+-------------------------------------------------------------------------------
+
+
+		GATT Requirements - Report Host
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_HOGP_13_1	True		Attribute Protocol supported over LE Transport
+					(M.1)
+TSPC_HOGP_13_2	True		Generic Attribute Profile Client (M.1)
+TSPC_HOGP_13_3	True		Discover All Primary Services (C.1)
+TSPC_HOGP_13_4	False (*)	Discover Primary Services by Service UUID (C.1)
+TSPC_HOGP_13_5	True		Find Included Services (M.1)
+TSPC_HOGP_13_6	True		Discover All Characteristics of a Service (C.2)
+TSPC_HOGP_13_7	False (*)	Discover Characteristics by UUID (C.2)
+TSPC_HOGP_13_8	True		Discover All Characteristic Descriptors (M.1)
+TSPC_HOGP_13_9	True		Read Characteristic Value (M.1)
+TSPC_HOGP_13_10	True		Read using Characteristic UUID (O)
+TSPC_HOGP_13_11	True		Read Long Characteristic Value (M.1)
+TSPC_HOGP_13_12	True		Read Characteristic Descriptors (M.1)
+TSPC_HOGP_13_13	True		Write without Response (M.1)
+TSPC_HOGP_13_14	True		Write Characteristic Value (M.1)
+TSPC_HOGP_13_15	True		Write Characteristic Descriptors (M.1)
+TSPC_HOGP_13_16	True		Notifications (M.1)
+TSPC_HOGP_13_17	True		Exchange MTU (M.1)
+-------------------------------------------------------------------------------
+M.1: Mandatory if TSPC_HOGP_1_2 selected
+C.1: Mandatory to support at least one of these features.
+C.2: Mandatory to support at least one of these features.
+-------------------------------------------------------------------------------
+
+
+		GATT Requirements - Boot Host
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_HOGP_14_1	False (*)	Attribute Protocol supported over LE Transport
+					(M.1)
+TSPC_HOGP_14_2	False (*)	Generic Attribute Profile Client (M.1)
+TSPC_HOGP_14_3	False (*)	Discover All Primary Services (C.1)
+TSPC_HOGP_14_4	False (*)	Discover Primary Services by Service UUID (C.1)
+TSPC_HOGP_14_5	False (*)	Discover All Characteristics of a Service (O)
+TSPC_HOGP_14_6	False (*)	Discover Characteristics by UUID (O)
+TSPC_HOGP_14_7	False (*)	Discover All Characteristic Descriptors (M.1)
+TSPC_HOGP_14_8	False (*)	Read Characteristic Value (M.1)
+TSPC_HOGP_14_9	False (*)	Read using Characteristic UUID (M.1)
+TSPC_HOGP_14_10	False (*)	Read Characteristic Descriptors (M.1)
+TSPC_HOGP_14_11	False (*)	Write without Response (M.1)
+TSPC_HOGP_14_12	False (*)	Write Characteristic Value (M.1)
+TSPC_HOGP_14_13	False (*)	Write Characteristic Descriptors (M.1)
+TSPC_HOGP_14_14	False (*)	Notifications (M.1)
+-------------------------------------------------------------------------------
+M.1: Mandatory if TSPC_HOGP_1_3 selected
+-------------------------------------------------------------------------------
+
+
+		GAP Requirements - HID Host
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_HOGP_15_1	True		Central (M.1)
+TSPC_HOGP_15_2	True		LE Security Mode 1 (central) (M.1)
+-------------------------------------------------------------------------------
+M.1: Mandatory if TSPC_HOGP_1_2 or TSPC_HOGP_1_3 is selected
+-------------------------------------------------------------------------------
+
+
+		SM Requirements - HID Host
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_HOGP_16_1	True		No Security Requirements (LE Security Level 1,
+					No Security) (M.1)
+TSPC_HOGP_16_2	True		Unauthenticated no MITM protection (LE Security
+					Level 2, Just Works) (M.1)
+TSPC_HOGP_16_3	True		Authenticated MITM protection (LE Security
+					Level 3, Passkey) (O)
+-------------------------------------------------------------------------------
+M.1: Mandatory if TSPC_HOGP_1_2 or TSPC_HOGP_1_3 is selected
+-------------------------------------------------------------------------------

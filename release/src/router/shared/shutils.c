@@ -409,13 +409,16 @@ static int get_cmds_size(char *const *cmds)
 int _cpu_eval(int *ppid, char *cmds[])
 {
         int ncmds=0, n=0, i;
+	int ret;
         int maxn = get_cmds_size(cmds)
 #if defined (SMP) || defined(RTCONFIG_ALPINE) || defined(RTCONFIG_LANTIQ)
                 + 4;
 #else
                 +1;
 #endif
-        char *cpucmd[maxn];
+        char **cpucmd = (char **)malloc(maxn * sizeof(char *));
+	if (!cpucmd)
+		return -ENOMEM;
 
         for(i=0; i<maxn; ++i)
                 cpucmd[i]=NULL;
@@ -439,16 +442,23 @@ int _cpu_eval(int *ppid, char *cmds[])
 #endif
         for(; cmds[n]; cpucmd[ncmds++]=cmds[n++]);
 
-        return _eval(cpucmd, NULL, 0, ppid);;
+	ret = _eval(cpucmd, NULL, 0, ppid);;
+	free(cpucmd);
+	return ret;
 }
 
 int _cpu_mask_eval(char *const argv[], const char *path, int timeout, int *ppid, unsigned int mask)
 {
 	int maxn = get_cmds_size(argv) + 3;
-	char *cpuargv[maxn];
+	char **cpuargv;
+	int ret;
 	int argc = 0;
 	int i;
 	char mask_str[16] = {0};
+
+	cpuargv = (char **)malloc(maxn * sizeof(char *));
+	if (!cpuargv)
+		return -ENOMEM;
 
 	for (i = 0;i < maxn; i++)
 		cpuargv[i] = NULL;
@@ -460,7 +470,9 @@ int _cpu_mask_eval(char *const argv[], const char *path, int timeout, int *ppid,
 		cpuargv[argc++] = argv[i];
 
 	//_dprintf("\n=====\n"); for(i = 0; cpuargv[i]; i++) _dprintf("%s ", cpuargv[i]); _dprintf("\n=====\n");
-	return _eval(cpuargv, path, timeout, ppid);
+	ret = _eval(cpuargv, path, timeout, ppid);
+	free(cpuargv);
+	return ret;
 }
 
 /*
@@ -2399,6 +2411,18 @@ int num_of_wl_if()
 
 int num_of_5g_if()
 {
+#if defined(RTCONFIG_QCA)
+	char prefix[] = "wlXXXXXXXXXXXX_";
+	int band, count = 0;
+
+	for (band = WL_2G_BAND; band < MAX_NR_WL_IF; band++) {
+		SKIP_ABSENT_BAND(band);
+		snprintf(prefix, sizeof(prefix), "wl%d_", band);
+		if (nvram_pf_match(prefix, "nband", "1"))
+			count++;
+	}
+
+#else
 	char word[256], *next;
 	int count = 0;
 	char wl_ifnames[32] = { 0 };
@@ -2411,6 +2435,7 @@ int num_of_5g_if()
 			count++;
 	}
 
+#endif
 	return count;
 }
 

@@ -35,6 +35,7 @@
 #define ERP_FOLDER     "/tmp/ERP/"
 #define ERP_GPHY       ERP_FOLDER"ERP_GPHY"       // erp gphy status
 #define ERP_IPV6_ARP   ERP_FOLDER"ERP_IPV6"       // erp ipv6 client status
+#define ERP_IPV4_ARP   ERP_FOLDER"ERP_IPV4"       // erp ipv4 client status
 
 // ErP mode status
 enum {
@@ -140,6 +141,26 @@ static int handle_erp_check_wl_auth_stat(const WLANCONFIG_LIST *src, void *arg)
 }
 #endif
 
+#if defined(RTCONFIG_HND_ROUTER_AX_6756)
+static int is_erp_cled_model()
+{
+	int model;
+	int ret = 0;
+
+	model = get_model();
+	switch (model) {
+		case MODEL_ET12:
+		case MODEL_XT12:
+		{
+			ret = 1;
+			break;
+		}
+	}
+	ERP_DBG("ret = %d\n", ret);
+	return ret;
+}
+#endif
+
 static int erp_check_wl_auth_stat()
 {
 #if defined(RTCONFIG_QCA)
@@ -233,6 +254,11 @@ static int erp_check_arp_stat(int model)
 	int BR_NUM = 0;   // the bridge interface numbers
 	int unit = 0;
 	int wan_conn = 0; // wan connection stat
+#if defined(RTCONFIG_HND_ROUTER_AX_6756)
+	char stat[20];    // ipv4 neigh stat
+	int stale_n = 0;  // ipv4 stale entries
+	int link_n = 0;   // ipv4 link entries
+#endif
 
 	/* check arp table for IPv4 */
 	strlcpy(br_if, nvram_get("lan_ifname")? : "br0", sizeof(br_if));
@@ -277,6 +303,32 @@ static int erp_check_arp_stat(int model)
 		fclose(fp);
 	}
 
+#if defined(RTCONFIG_HND_ROUTER_AX_6756)
+	/* check ipv4 client for IPv4 */
+	doSystem("ip -f inet neigh show dev %s > %s", nvram_safe_get("lan_ifname"), ERP_IPV4_ARP);
+	if ((fp = fopen(ERP_IPV4_ARP, "r")) != NULL)
+	{
+		// while loop
+		while (fgets(buf, sizeof(buf), fp))
+		{
+			memset(stat, 0, sizeof(stat));
+			if (sscanf(buf, "%*s %*s %*s %s", stat) != 1) continue;
+			ERP_DBG("stat=%s\n", stat);
+			if (!strcmp(stat, "STALE"))
+			{
+				stale_n++; // ipv4 clients
+			}
+			else if (!strcmp(stat, "REACHABLE"))
+			{
+				link_n++; // ipv4 clients
+			}
+		}
+
+		fclose(fp);
+	}
+	ERP_DBG("stale=%d, reachable=%d\n", stale_n, link_n);
+#endif
+
 	/* check wan connection stat */
 	for (unit = WAN_UNIT_FIRST; unit < WAN_UNIT_MAX; ++unit){
 		if(is_wan_connect(unit)){
@@ -292,10 +344,21 @@ static int erp_check_arp_stat(int model)
 	}
 
 	/* check bridge interface for WLAN or LAN */
+#if defined(RTCONFIG_HND_ROUTER_AX_6756)
+	if (link_n > BR_NUM) {
+		ret = 1;
+		goto check_end;
+	}
+	else if (link_n == BR_NUM && stale_n < 3) {
+		ret = 0;
+		goto check_end;
+	}
+#else
 	if (br_n > BR_NUM) {
 		ret = 1;
 		goto check_end;
 	}
+#endif
 
 	/* check wan connection for WAN */
 	if (wan_conn > 0) {
@@ -398,6 +461,18 @@ static int erp_check_gphy_stat(int model)
 				sscanf(buf, "W0=%[^;];L1=%[^;];L2=%[^;];L3=%[^;];L4=%[^;];", v0, v1, v2, v3, v4);
 				if ( (!strcmp(v0, "X") || (model==MODEL_DSLAC68U)) /* DSL-AC68U v0 always = "M" */
 					&& !strcmp(v1, "X") && !strcmp(v2, "X") && !strcmp(v3, "X") && !strcmp(v4, "X"))
+				{
+					ret = 0;
+				}
+				else if (strcmp(v0, "X") && (model!=MODEL_DSLAC68U)) /* no DSL-model */
+				{
+					ret = 2;
+				}
+			}
+			else if(len == 21) {
+				sscanf(buf, "W0=%[^;];L1=%[^;];L2=%[^;];L3=%[^;];", v0, v1, v2, v3);
+				if ( (!strcmp(v0, "X") || (model==MODEL_DSLAC68U)) /* DSL-AC68U v0 always = "M" */
+					&& !strcmp(v1, "X") && !strcmp(v2, "X") && !strcmp(v3, "X"))
 				{
 					ret = 0;
 				}
@@ -563,11 +638,14 @@ static void erp_standby_mode(int model)
 			eval("wl", "-i", "wl1", "down"); // turn off 5g radio
 			break;
 		case MODEL_RTAX58U:
+		case MODEL_TUFAX3000_V2:
+		case MODEL_RTAXE7800:
 			eval("wl", "-i", "eth5", "down");
-			eval("wl", "-i", "eth6", "down"); // turn off 5g radio
+			eval("wl", "-i", "eth7", "down"); // turn off 5g radio
 			break;
 		case MODEL_RTAX55:
 		case MODEL_RTAX58U_V2:
+		case MODEL_RTAX82_XD6S:
 			eval("wl", "-i", "eth2", "down");
 			eval("wl", "-i", "eth3", "down"); // turn off 5g radio
 			break;
@@ -637,9 +715,9 @@ static void erp_standby_mode(int model)
 		eval("wl", "-i", "wl0", "down"); // turn off 2g radio
 	}
 
-	if (model == MODEL_RTAX58U) {
+	if (model == MODEL_RTAXE7800) {
 		// triple band
-		eval("wl", "-i", "eth5", "down"); // turn off 2g radio
+		eval("wl", "-i", "eth6", "down"); // turn off 6g radio
 	}
 
 	if (model == MODEL_RTAX56U) {
@@ -649,11 +727,6 @@ static void erp_standby_mode(int model)
 
 	if (model == MODEL_RPAX56 || model == MODEL_RPAX58) {
 		eval("wl", "-i", "eth1", "down"); // turn off 2g radio
-	}
-
-	if (model == MODEL_RTAX55 || model == MODEL_RTAX58U_V2) {
-		// triple band
-		eval("wl", "-i", "eth2", "down"); // turn off 2g radio
 	}
 
 	if (model == MODEL_DSLAC68U) {
@@ -803,6 +876,10 @@ static void erp_wakeup_mode(int model)
 	post_erp_wakeup_mode(model);
 #endif
 
+#if defined(RTCONFIG_HND_ROUTER_AX_6756)
+	if (is_erp_cled_model() == 1) doSystem("rc cled 0 0"); // recover led behavior
+#endif
+
 	/* update status */
 	erp_status = ERP_WAKEUP;
 	erp_count = ERP_DEFAULT_COUNT;
@@ -821,7 +898,7 @@ static void ERP_BTN_WAKEUP()
 
 #if defined(RTCONFIG_LED_BTN) || !defined(RTCONFIG_WIFI_TOG_BTN)
 	if (model != MODEL_RTAC87U) {
-#if defined(RTAX88U) || defined(RTAX92U) || defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(RTCONFIG_QCA)
+#if defined(RTAX88U) || defined(RTAX92U) || defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(RTCONFIG_HND_ROUTER_AX_6710) || defined(RTCONFIG_QCA)
 #ifndef RTCONFIG_WIFI_TOG_BTN
 		if (button_pressed(BTN_WPS) && nvram_match("btn_ez_radiotoggle", "0") && nvram_match("btn_ez_mode", "1"))
 #else
@@ -884,15 +961,22 @@ static void ERP_STANDBY_LED()
 	if (erp_status != ERP_STANDBY || erp_count != -1)
 		return;
 
-	int gpio = nvram_get_int("led_pwr_gpio");
+#if defined(RTCONFIG_HND_ROUTER_AX_6756)
+	if (is_erp_cled_model() == 1)
+		doSystem("rc cled 5 0"); // recover led behavior
+	else
+#endif
+	{
+		int gpio = nvram_get_int("led_pwr_gpio");
 
-	// get the real led_pwr_gpio
-	gpio &= ~GPIO_ACTIVE_LOW;
-	erp_led_switch = !erp_led_switch;
-	ERP_DBG("gpio=%d, erp_led_switch=%d\n", gpio, erp_led_switch);
+		// get the real led_pwr_gpio
+		gpio &= ~GPIO_ACTIVE_LOW;
+		erp_led_switch = !erp_led_switch;
+		ERP_DBG("gpio=%d, erp_led_switch=%d\n", gpio, erp_led_switch);
 
-	// execute the led on or off
-	doSystem("rc gpiow %d %d", gpio, erp_led_switch);
+		// execute the led on or off
+		doSystem("rc gpiow %d %d", gpio, erp_led_switch);
+	}
 }
 
 static void ERP_CHECK_MODE()
@@ -932,7 +1016,10 @@ static void ERP_CHECK_MODE()
 		&& model != MODEL_XD4PRO
 		&& model != MODEL_CTAX56_XD4
 		&& model != MODEL_RTAX58U
+		&& model != MODEL_RTAX82_XD6S
 		&& model != MODEL_RTAX58U_V2
+		&& model != MODEL_RTAXE7800
+		&& model != MODEL_TUFAX3000_V2
 		&& model != MODEL_RTAX55
 		&& model != MODEL_RTAX56U
 		&& model != MODEL_RPAX56
@@ -985,7 +1072,7 @@ static void ERP_CHECK_MODE()
 #if defined(RTCONFIG_QCA)
 	erp_wl_sta_num = erp_check_wl_auth_stat();
 #else
-	if (model == MODEL_GTAC5300 || model == MODEL_RTAX88U || model == MODEL_GTAX11000 || model == MODEL_RTAX92U || model == MODEL_RTAX95Q || model == MODEL_XT8PRO || model == MODEL_RTAXE95Q || model == MODEL_ET8PRO || model == MODEL_RTAX56_XD4 || model == MODEL_XD4PRO || model == MODEL_CTAX56_XD4 || model == MODEL_RTAX58U || model == MODEL_RTAX58U_V2 || model == MODEL_RTAX55 || model == MODEL_RTAX56U || model == MODEL_RPAX56 || model == MODEL_RPAX58 || model == MODEL_GTAXE11000)
+	if (model == MODEL_GTAC5300 || model == MODEL_RTAX88U || model == MODEL_GTAX11000 || model == MODEL_RTAX92U || model == MODEL_RTAX95Q || model == MODEL_XT8PRO || model == MODEL_RTAXE95Q || model == MODEL_ET8PRO || model == MODEL_RTAX56_XD4 || model == MODEL_XD4PRO || model == MODEL_CTAX56_XD4 || model == MODEL_RTAX58U || model == MODEL_RTAX82_XD6S || model == MODEL_RTAX58U_V2 || model == MODEL_TUFAX3000_V2 || model == MODEL_RTAXE7800 || model == MODEL_RTAX55 || model == MODEL_RTAX56U || model == MODEL_RPAX56 || model == MODEL_RPAX58 || model == MODEL_GTAXE11000)
 		erp_wl_sta_num = erp_check_wl_auth_stat();
 #endif
 
@@ -1116,12 +1203,20 @@ int erp_monitor_main(int argc, char **argv)
 		&& model != MODEL_XD4PRO
 		&& model != MODEL_CTAX56_XD4
 		&& model != MODEL_RTAX58U
+		&& model != MODEL_RTAX82_XD6S
 		&& model != MODEL_RTAX58U_V2
+		&& model != MODEL_RTAXE7800
+		&& model != MODEL_TUFAX3000_V2
 		&& model != MODEL_RTAX55
 		&& model != MODEL_RTAX56U
 		&& model != MODEL_RPAX56
 		&& model != MODEL_RPAX58
 		&& model != MODEL_GTAXE11000
+		&& model != MODEL_GTAX6000
+		&& model != MODEL_GTAX11000_PRO
+		&& model != MODEL_GTAXE16000
+		&& model != MODEL_ET12
+		&& model != MODEL_XT12
 #endif
 	   )
 	{

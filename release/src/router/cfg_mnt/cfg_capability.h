@@ -55,6 +55,12 @@ enum capabilityType {
 #ifdef RTCONFIG_BHCOST_OPT
 	CONN_EAP_MODE = 23,
 #endif
+
+#ifdef RTCONFIG_BANDINDEX_NEW
+#ifdef RTCONFIG_AMAS_WGN
+	GUEST_NETWORK_NO_6G = 24, 	
+#endif
+#endif	
 	CAPABILITY_MAX
 };
 
@@ -132,6 +138,7 @@ enum capabilityType {
 #define WIFI_RADIO_2G		BIT(0)
 #define WIFI_RADIO_5G		BIT(1)
 #define WIFI_RADIO_5GH		BIT(2)
+#define WIFI_RADIO_6G		BIT(3)
 
 /* Capability support on role */
 #define CAP_SUPPORT		BIT(0)

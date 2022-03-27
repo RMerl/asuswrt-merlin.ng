@@ -1,0 +1,130 @@
+#!/usr/bin/python
+
+from __future__ import absolute_import, print_function, unicode_literals
+
+from optparse import OptionParser, make_option
+import os
+import sys
+import uuid
+import dbus
+import dbus.service
+import dbus.mainloop.glib
+try:
+  from gi.repository import GObject
+except ImportError:
+  import gobject as GObject
+import bluezutils
+
+BLUEZ_SERVICE_NAME = 'org.bluez'
+GATT_MANAGER_IFACE = 'org.bluez.GattManager1'
+DBUS_OM_IFACE = 'org.freedesktop.DBus.ObjectManager'
+DBUS_PROP_IFACE = 'org.freedesktop.DBus.Properties'
+
+GATT_PROFILE_IFACE = 'org.bluez.GattProfile1'
+
+
+class InvalidArgsException(dbus.exceptions.DBusException):
+    _dbus_error_name = 'org.freedesktop.DBus.Error.InvalidArgs'
+
+
+class Application(dbus.service.Object):
+    def __init__(self, bus):
+        self.path = '/'
+        self.profiles = []
+        dbus.service.Object.__init__(self, bus, self.path)
+
+    def get_path(self):
+        return dbus.ObjectPath(self.path)
+
+    def add_profile(self, profile):
+        self.profiles.append(profile)
+
+    @dbus.service.method(DBUS_OM_IFACE, out_signature='a{oa{sa{sv}}}')
+    def GetManagedObjects(self):
+        response = {}
+        print('GetManagedObjects')
+
+        for profile in self.profiles:
+            response[profile.get_path()] = profile.get_properties()
+
+        return response
+
+
+class Profile(dbus.service.Object):
+    PATH_BASE = '/org/bluez/example/profile'
+
+    def __init__(self, bus, uuids):
+        self.path = self.PATH_BASE
+        self.bus = bus
+        self.uuids = uuids
+        dbus.service.Object.__init__(self, bus, self.path)
+
+    def get_properties(self):
+        return {
+            GATT_PROFILE_IFACE: {
+                'UUIDs': self.uuids,
+            }
+        }
+
+    def get_path(self):
+        return dbus.ObjectPath(self.path)
+
+    @dbus.service.method(GATT_PROFILE_IFACE,
+                        in_signature="",
+                        out_signature="")
+    def Release(self):
+        print("Release")
+        mainloop.quit()
+
+    @dbus.service.method(DBUS_PROP_IFACE,
+                         in_signature='s',
+                         out_signature='a{sv}')
+    def GetAll(self, interface):
+        if interface != GATT_PROFILE_IFACE:
+            raise InvalidArgsException()
+
+        return self.get_properties[GATT_PROFILE_IFACE]
+
+
+def register_app_cb():
+    print('GATT application registered')
+
+
+def register_app_error_cb(error):
+    print('Failed to register application: ' + str(error))
+    mainloop.quit()
+
+if __name__ == '__main__':
+    dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
+
+    bus = dbus.SystemBus()
+
+    path = bluezutils.find_adapter().object_path
+
+    manager = dbus.Interface(bus.get_object("org.bluez", path),
+                            GATT_MANAGER_IFACE)
+
+    option_list = [make_option("-u", "--uuid", action="store",
+                                type="string", dest="uuid",
+                                default=None),
+    ]
+
+    opts = dbus.Dictionary({}, signature='sv')
+
+    parser = OptionParser(option_list=option_list)
+
+    (options, args) = parser.parse_args()
+
+    mainloop = GObject.MainLoop()
+
+    if not options.uuid:
+        options.uuid = str(uuid.uuid4())
+
+    app = Application(bus)
+    profile = Profile(bus, [options.uuid])
+    app.add_profile(profile)
+    manager.RegisterApplication(app.get_path(), {},
+                                reply_handler=register_app_cb,
+                                error_handler=register_app_error_cb)
+
+    mainloop.run()

@@ -103,6 +103,12 @@ function initial(){
 				}
 			}
 		);
+		$("#new_profile_externalPort").focus(
+			function() {
+				var position_text = $("#new_profile_externalPort").position();
+				pop_s46_ports(position_text, "game");
+			}
+		);
 	}
 
 	(nvram.vts_enable_x == '1') ? $('#PF_switch').prop('checked', true) :  $('#PF_switch').prop('checked', false);

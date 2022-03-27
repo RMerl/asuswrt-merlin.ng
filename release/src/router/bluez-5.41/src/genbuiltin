@@ -1,0 +1,17 @@
+#!/bin/sh
+
+for i in $*
+do
+	echo "extern struct bluetooth_plugin_desc __bluetooth_builtin_$i;"
+done
+
+echo
+echo "static struct bluetooth_plugin_desc *__bluetooth_builtin[] = {"
+
+for i in $*
+do
+	echo "  &__bluetooth_builtin_$i,"
+done
+
+echo "  NULL"
+echo "};"

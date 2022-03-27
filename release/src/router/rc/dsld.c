@@ -183,6 +183,9 @@ static void line_monitor(XDSL_INFO* info)
 	static unsigned int uCnt = 0;
 	struct sysinfo sys_info;
 	time_t secs = 0;
+#ifdef RTCONFIG_VDSL
+	static int last_is_vdsl = -1;
+#endif
 
 	sysinfo(&sys_info);
 	time(&secs);
@@ -202,6 +205,25 @@ static void line_monitor(XDSL_INFO* info)
 
 			last_status = DSL_LINK_UP;
 			nvram_set_int("dsltmp_syncup_cnt", ++syncup_counter);
+
+#ifdef RTCONFIG_VDSL
+			if(last_is_vdsl != info->is_vdsl2_gfast
+#ifdef RTCONFIG_DSL_BCM
+			&& nvram_get_int("dslx_transmode_auto")
+#endif
+			) {
+				nvram_set("freeze_duck", "5");
+				nvram_set("dsltmp_syncup_short", "0");
+				nvram_set("dslx_transmode", (info->is_vdsl2_gfast) ? "ptm" : "atm");
+				nvram_set("dsltmp_transmode", (info->is_vdsl2_gfast) ? "ptm" : "atm");
+#ifdef RTCONFIG_DSL_BCM
+				nvram_set("dsltmp_config_xtm", "1");
+#else
+				dsl_wan_config(2);
+#endif
+				last_is_vdsl = info->is_vdsl2_gfast;
+			}
+#endif
 		}
 		else if(!(uCnt % LOG_RECORD_PERIOD))
 		{

@@ -1,0 +1,60 @@
+PTS test results for MPS
+
+PTS version: 6.1
+Tested: 20-May-2015
+Android version: 5.1
+
+Results:
+PASS	test passed
+FAIL	test failed
+INC	test is inconclusive
+N/A	test is disabled due to PICS setup
+NONE	test result is none
+
+Note: Do not use AOSP Music player. Use e.g. MortPlayer or Poweramp.
+For full tests conformance, "Touch sounds" on IUT should be disabled
+(Settings > Sound&notification > Other sounds)
+
+-------------------------------------------------------------------------------
+Test Name				Result	Notes
+-------------------------------------------------------------------------------
+TC_AG_PSE_HFPB_CTH_SD_BV_01_I		PASS
+TC_AG_SRC_HFAV_ACT_SD_BV_01_I		PASS
+TC_AG_SRC_HFAV_ACT_SD_BV_02_I		PASS
+TC_AG_SRC_HFAV_ACT_SD_BV_03_I		PASS
+TC_AG_SRC_HFAV_CLH_SD_BV_01_I		PASS
+TC_AG_SRC_HFAV_CLH_SD_BV_02_I		N/A
+TC_AG_SRC_HFAV_CLH_SD_BV_03_I		PASS
+TC_AG_SRC_HFAV_CLH_SD_BV_04_I		PASS
+TC_AG_SRC_HFAV_CLH_SD_BV_05_I		PASS
+TC_AG_SRC_HFAV_CLH_SD_BV_06_I		PASS	PTS issue #13466
+TC_AVP_CTH_SD_BI_01_I			PASS
+TC_AVP_CTH_SD_BI_02_I			PASS
+TC_HF_SNK_HFAV_ACT_SD_BV_01_I		N/A
+TC_HF_SNK_HFAV_ACT_SD_BV_02_I		N/A
+TC_HF_SNK_HFAV_ACT_SD_BV_03_I		N/A
+TC_HF_SNK_HFAV_CLH_SD_BV_01_I		N/A
+TC_HF_SNK_HFAV_CLH_SD_BV_02_I		N/A
+TC_HF_SNK_HFAV_CLH_SD_BV_03_I		N/A
+TC_HF_SNK_HFAV_CLH_SD_BV_04_I		N/A
+TC_HF_SNK_HFAV_CLH_SD_BV_05_I		N/A
+TC_HF_SNK_HFAV_CLH_SD_BV_06_I		N/A
+TC_HF_SNK_CT_HFAV_ACT_MD_BV_01_I	N/A
+TC_HF_SNK_CT_HFAV_CLH_MD_BV_01_I	N/A
+TC_HF_SNK_CT_HFAV_CLH_MD_BV_02_I	N/A
+TC_HF_SNK_CT_HFAV_CLH_MD_BV_03_I	N/A
+TC_HF_SNK_CT_HFAV_CLH_MD_BV_04_I	N/A
+TC_HF_SNK_CT_HFAV_CLH_MD_BV_05_I	N/A
+TC_HF_SNK_CT_HFAV_CLH_MD_BV_06_I	N/A
+TC_SDP_CTH_SD_BV_01_I			PASS
+TC_SNK_PCE_AVO_ACT_SD_BV_01_I		N/A
+TC_SRC_PSE_AVO_ACT_SD_BV_01_I		PASS
+TC_SRC_TG_HFAV_ACT_MD_BV_01_I		PASS
+TC_SRC_TG_HFAV_CLH_MD_BV_01_I		PASS
+TC_SRC_TG_HFAV_CLH_MD_BV_02_I		PASS
+TC_SRC_TG_HFAV_CLH_MD_BV_03_I		PASS
+TC_SRC_TG_HFAV_CLH_MD_BV_04_I		PASS
+TC_SRC_TG_HFAV_CLH_MD_BV_05_I		PASS
+TC_SRC_TG_HFAV_CLH_MD_BV_06_I		PASS
+TC_PAIRING_HF_SNK_CT			N/A	Pairing helper for MD tests
+-------------------------------------------------------------------------------

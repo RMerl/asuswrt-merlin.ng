@@ -1377,7 +1377,7 @@ function edit_update_content_image(_component_id) {
 		}
 		else {
 			if(!validator.domainName_flag(image_walled_garden)) {
-				add_hint_msg($('input[name="edit_image_walled_garden"]'), "" + image_walled_garden + " is invalid Domain Name");/*untranslated*/
+				add_hint_msg($('input[name="edit_image_walled_garden"]'), "" + image_walled_garden + "<#JS_invalid_domain#>");
 				$("input[name=edit_image_walled_garden]").focus();
 				return;
 			}
@@ -1688,7 +1688,7 @@ function edit_update_content_text(_component_id) {
 		}
 		else {
 			if(!validator.domainName_flag(text_walled_garden)) {
-				add_hint_msg($('input[name="edit_text_walled_garden"]'), "" + text_walled_garden + " is invalid Domain Name");/*untranslated*/
+				add_hint_msg($('input[name="edit_text_walled_garden"]'), "" + text_walled_garden + "<#JS_invalid_domain#>");
 				$("input[name=edit_text_walled_garden]").focus();
 				return;
 			}

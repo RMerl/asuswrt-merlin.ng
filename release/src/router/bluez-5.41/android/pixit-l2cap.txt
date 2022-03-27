@@ -1,0 +1,59 @@
+L2CAP PIXIT for the PTS tool.
+
+PTS version: 6.1
+
+* - different than PTS defaults
+& - should be set to IUT Bluetooth address
+
+               Required PIXIT settings
+-------------------------------------------------------------------------------
+Parameter Name                                         Value
+-------------------------------------------------------------------------------
+TSPX_bd_addr_iut                                       112233445566 (*&)
+TSPX_client_class_of_device                            100104
+TSPX_server_class_of_device                            100104
+TSPX_security_enabled                                  TRUE (*)
+TSPX_delete_link_key                                   FALSE
+TSPX_pin_code                                          0000
+TSPX_flushto                                           FFFF
+TSPX_inmtu                                             02A0
+TSPX_no_fail_verditcs                                  FALSE
+TSPX_oumtu                                             02A0
+TSPX_tester_mps                                        0017
+TSPX_tester_mtu                                        02A0
+TSPX_iut_role_initiator                                TRUE (*)
+TSPX_le_psm                                            0080 (*)
+TSPX_psm                                               1011 (*)
+TSPX_psm_unsupported                                   00F1
+TSPX_psm_authentication_required                       00F2
+TSPX_psm_authorization_required                        00F3
+TSPX_psm_encryption_key_size_required                  00F4
+TSPX_time_guard                                        180000
+TSPX_timer_ertx                                        120000
+TSPX_timer_ertx_max                                    300000
+TSPX_timer_ertx_min                                    60000
+TSPX_timer_rtx                                         10000
+TSPX_timer_rtx_max                                     60000
+TSPX_timer_rtx_min                                     1000
+TSPX_rfc_mode_tx_window_size                           08
+TSPX_rfc_mode_max_transmit                             03
+TSPX_rfc_mode_retransmission_timeout                   07D0
+TSPX_rfc_mode_monitor_timeout                          2EE0
+TSPX_rfc_mode_maximum_pdu_size                         02A0
+TSPX_extended_window_size                              0012
+TSPX_use_implicit_send                                 TRUE
+TSPX_use_dynamic_pin                                   FALSE
+TSPX_iut_SDU_size_in_bytes                             144
+TSPX_secure_simple_pairing_pass_key_confirmation       FALSE
+TSPX_iut_address_type_random                           FALSE
+TSPX_tester_adv_interval_min                           0030
+TSPX_tester_adv_interval_max                           0050
+TSPX_tester_le_scan_interval                           0C80
+TSPX_tester_le_scan_window                             0C80
+TSPX_tester_conn_interval_min                          0028
+TSPX_tester_conn_interval_max                          0050
+TSPX_tester_conn_latency                               0000
+TSPX_tester_supervision_timeout                        0C80
+TSPX_tester_min_CE_length                              0080
+TSPX_tester_max_CE_length                              0C80
+-------------------------------------------------------------------------------

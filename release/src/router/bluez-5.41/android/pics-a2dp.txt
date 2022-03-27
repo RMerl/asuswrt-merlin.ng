@@ -1,0 +1,162 @@
+A2DP PICS for the PTS tool.
+
+PTS version: 6.1
+
+* - different than PTS defaults
+# - not yet implemented/supported
+
+M - mandatory if such role selected
+O - optional
+
+		Profile Version
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_A2DP_0_1	False		A2DP 1.0 (C.1)
+TSPC_A2DP_0_2	False		A2DP 1.2 (C.1)
+TSPC_A2DP_0_3	True (*)	A2DP 1.3 (C.1)
+-------------------------------------------------------------------------------
+C.1: It is mandatory to select one of the profile versions.
+-------------------------------------------------------------------------------
+
+
+		Roles
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_A2DP_1_1	True (*)	Role: Source (C.1)
+TSPC_A2DP_1_2	False		Role: Sink (C.1)
+-------------------------------------------------------------------------------
+C.1: It is mandatory to support at least one of the defined roles.
+-------------------------------------------------------------------------------
+
+
+		A2DP SRC Features
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_A2DP_2_1	True		SRC: Initiate connection establishment (M)
+TSPC_A2DP_2_2	True		SRC: Accept connection establishment (M)
+TSPC_A2DP_2_3	True		SRC: Initiate start streaming (M)
+TSPC_A2DP_2_4	True		SRC: Accept start streaming (M)
+TSPC_A2DP_2_5	True		SRC: Send audio stream (M)
+TSPC_A2DP_2_6	True		SRC: Initiate connection release (M)
+TSPC_A2DP_2_7	True		SRC: Accept connection release (M)
+TSPC_A2DP_2_8	True (*)	SRC: Initiate suspend (O)
+TSPC_A2DP_2_9	True (*)	SRC: Accept suspend (O)
+TSPC_A2DP_2_10	True		SRC: SBC encoder (M)
+TSPC_A2DP_2_10a	False		SRC: Encode and Forward Audio Stream (O)
+TSPC_A2DP_2_11	False		SRC: SBC Configurations in 16 KHz sampling (O)
+TSPC_A2DP_2_12	False		SRC: SBC Configurations in 32 KHz sampling (O)
+TSPC_A2DP_2_13	True (*)	SRC: SBC Configurations in 44.1 KHz sampling
+					(C.1)
+TSPC_A2DP_2_14	True (*)	SRC: SBC Configurations in 48 KHz sampling (C.1)
+TSPC_A2DP_2_15	False		SRC: Delay Reporting (C.2)
+TSPC_A2DP_2_16	False		SRC: SRC video playback via Bluetooth VDP (C.3)
+TSPC_A2DP_2_17	False		SRC: SRC video playback on a local video
+					display (C.3)
+-------------------------------------------------------------------------------
+C.1: At least one of the values shall be supported.
+C.2: Mandatory if A2DP 0/3 AND (2/16 OR 2/17) is supported, otherwise excluded.
+C.3: Optional to support if A2DP 0/3 is supported, otherwise excluded.
+-------------------------------------------------------------------------------
+
+
+		Supported Codecs in SRC
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_A2DP_3_1	True		SRC: SBC encoder (M)
+TSPC_A2DP_3_1a	False		SRC: Encode and Forward SBC Audio Stream (O)
+TSPC_A2DP_3_2	False		SRC: Optional codec (O)
+TSPC_A2DP_3_3	False		SRC: MPEG-1,2 Audio decoder (C.1)
+TSPC_A2DP_3_4	False		SRC: MPEG-1,2 Audio encoder (C.1)
+TSPC_A2DP_3_5	False		SRC: MPEG-2,4 AAC decoder (C.1)
+TSPC_A2DP_3_6	False		SRC: MPEG-2,4 AAC encoder (C.1)
+TSPC_A2DP_3_7	False		SRC: ATRAC family decoder (C.1)
+TSPC_A2DP_3_8	False		SRC: ATRAC family encoder (C.1)
+-------------------------------------------------------------------------------
+C.1: At least one of the implementations shall be supported if 3/2
+	is supported, else excluded.
+-------------------------------------------------------------------------------
+
+
+		Supported Codec Features in SRC
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_A2DP_3a_1	True 		SRC: Channel Mode - Mono (M)
+TSPC_A2DP_3a_2	True (*)	SRC: Channel Mode - Dual Channel (C.1)
+TSPC_A2DP_3a_3	True (*)	SRC: Channel Mode - Stereo (C.1)
+TSPC_A2DP_3a_4	True (*)	SRC: Channel Mode - Joint Stereo (C.1)
+TSPC_A2DP_3a_5	True		SRC: Block Length 4 (M)
+TSPC_A2DP_3a_6	True		SRC: Block Length 8 (M)
+TSPC_A2DP_3a_7	True		SRC: Block Length 12 (M)
+TSPC_A2DP_3a_8	True		SRC: Block Length 16 (M)
+TSPC_A2DP_3a_9	True (*)	SRC: Subbands - 4 (O)
+TSPC_A2DP_3a_10	True		SRC: Subbands - 8 (M)
+TSPC_A2DP_3a_11	True (*)	SRC: Allocation - SNR (O)
+TSPC_A2DP_3a_12	True		SRC: Allocation - Loudness (M)
+-------------------------------------------------------------------------------
+C.1: At least one of the values shall be supported.
+-------------------------------------------------------------------------------
+
+
+		A2DP Sink Features
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_A2DP_4_1	False		SNK: Initiate connection establishment (O)
+TSPC_A2DP_4_2	False (*)	SNK: Accept connection establishment (M)
+TSPC_A2DP_4_3	False		SNK: Initiate start streaming (O)
+TSPC_A2DP_4_4	False (*)	SNK: Accept start streaming (M)
+TSPC_A2DP_4_5	False (*)	SNK: Receive audio stream (M)
+TSPC_A2DP_4_6	False		SNK: Initiate connection release (O)
+TSPC_A2DP_4_7	False (*)	SNK: Accept connection release (M)
+TSPC_A2DP_4_8	False		SNK: Initiate suspend (O)
+TSPC_A2DP_4_9	False		SNK: Accept suspend (O)
+TSPC_A2DP_4_10	False (*)	SNK: SBC decoder (M)
+TSPC_A2DP_4_10a	False		SNK: Decode and Forward Audio Stream (O)
+TSPC_A2DP_4_11	False		SNK: SBC Configurations in 16 KHz sampling (O)
+TSPC_A2DP_4_12	False		SNK: SBC Configurations in 32 KHz sampling (O)
+TSPC_A2DP_4_13	False (*)	SNK: SBC Configurations in 44.1 KHz sampling (M)
+TSPC_A2DP_4_14	False (*)	SNK: SBC Configurations in 48 KHz sampling (M)
+TSPC_A2DP_4_15	False		SNK: Delay Reporting (C.1)
+-------------------------------------------------------------------------------
+C.1: Mandatory to support if A2DP 0/3 is supported, otherwise excluded.
+-------------------------------------------------------------------------------
+
+
+		Supported codecs in SNK
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_A2DP_5_1	False (*)	SNK: SBC decoder (M)
+TSPC_A2DP_5_1a	False		SNK: Decode and Forward SBC Audio Stream (O)
+TSPC_A2DP_5_2	False		SNK: Optional codec decoder (O)
+TSPC_A2DP_5_3	False		SNK: MPEG-1,2 Audio (C.1)
+TSPC_A2DP_5_4	False		SNK: MPEG-2,4 AAC (C.1)
+TSPC_A2DP_5_5	False		SNK: ATRAC family (C.1)
+-------------------------------------------------------------------------------
+C.1: At least one codec shall be supported if Table 5/2 is supported, otherwise
+	excluded.
+-------------------------------------------------------------------------------
+
+
+		Supported Codec Features in SNK
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_A2DP_5a_1	False (*)	SNK: Channel Mode - Mono (M)
+TSPC_A2DP_5a_2	False (*)	SNK: Channel Mode - Dual Channel (M)
+TSPC_A2DP_5a_3	False (*)	SNK: Channel Mode - Stereo (M)
+TSPC_A2DP_5a_4	False (*)	SNK: Channel Mode - Joint Stereo (M)
+TSPC_A2DP_5a_5	False (*)	SNK: Block Length 4 (M)
+TSPC_A2DP_5a_6	False (*)	SNK: Block Length 8 (M)
+TSPC_A2DP_5a_7	False (*)	SNK: Block Length 12 (M)
+TSPC_A2DP_5a_8	False (*)	SNK: Block Length 16 (M)
+TSPC_A2DP_5a_9	False (*)	SNK: Subbands - 4 (M)
+TSPC_A2DP_5a_10	False (*)	SNK: Subbands - 8 (M)
+TSPC_A2DP_5a_11	False (*)	SNK: Allocation - SNR (M)
+TSPC_A2DP_5a_12	False (*)	SNK: Allocation - Loudness (M)
+-------------------------------------------------------------------------------

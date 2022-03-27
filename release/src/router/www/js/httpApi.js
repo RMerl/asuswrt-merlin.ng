@@ -784,25 +784,29 @@ var httpApi ={
 
 	"boostKey_support": function(){
 		var retData = {
-				"GAME_BOOST": {
-					"value": 3,
-					"text": "<#BoostKey_enable#>",
-					"desc": "<#BoostKey_Boost_desc#>"
-				},
-				"ACS_DFS": {
-					"value": 1,
-					"text": "<#WLANConfig11b_EChannel_dfs#>",
-					"desc": "<#BoostKey_DFS_desc#>"
-				},
-				"LED": {
+				"boost_led": {
+					"title": "<#BoostKey_LED#>",
 					"value": 0,
 					"text": "<#BoostKey_LED#>",
 					"desc": "<#BoostKey_LED_desc#>"
 				},
-				"AURA_RGB": {
+				"boost_aura": {
+					"title": "<#BoostKey_Aura_RGB#>",
 					"value": 2,
 					"text": "<#BoostKey_Aura_RGB#>",
 					"desc": "<#BoostKey_Aura_RGB_desc#>"
+				},
+				"boost_dfs": {
+					"title": "<#BoostKey_DFS#>",
+					"value": 1,
+					"text": "<#WLANConfig11b_EChannel_dfs#>",
+					"desc": "<#BoostKey_DFS_desc#>"
+				},
+				"boost_qos": {
+					"title": "<#BoostKey_Boost#>",
+					"value": 3,
+					"text": "<#BoostKey_enable#>",
+					"desc": "<#BoostKey_Boost_desc#>"
 				}
 		};
 
@@ -811,13 +815,15 @@ var httpApi ={
 			delete retData.LED;
 			delete retData.AURA_RGB;
 
-			retData.AURA_SHUFFLE = {
+			retData.boost_shuffle = {
+				"title": "<#BoostKey_AURA_Shuffle#>",
 				"value": 4,
 				"text": "<#BoostKey_AURA_Shuffle#>",
 				"desc": "<#BoostKey_AURA_Shuffle_desc#>"				
 			}
 
-			retData.GEFORCE_NOW = {
+			retData.boost_geforce = {
+				"title": "<#BoostKey_GeForce#>",
 				"value": 5,
 				"text": "<#BoostKey_GeForce#>",
 				"desc": "<#BoostKey_GeForce_desc#>"				
@@ -1339,9 +1345,10 @@ var httpApi ={
 			"wifi_radio_ctl" : {
 				"value" : 22,
 				"def" : {
-					"wifi_radio_0" : {"bit" : 0},
-					"wifi_radio_1" : {"bit" : 1},
-					"wifi_radio_2" : {"bit" : 2}
+					"wifi_radio_0" : {"bit" : 0}, //2G
+					"wifi_radio_1" : {"bit" : 1}, //5G or 5G-1
+					"wifi_radio_2" : {"bit" : 2}, //5G-2
+					"wifi_radio_3" : {"bit" : 3}  //6G
 				}
 			},
 			"conn_eap_mode" : {

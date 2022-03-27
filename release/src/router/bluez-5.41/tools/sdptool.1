@@ -1,0 +1,132 @@
+.\" $Header$
+.\"
+.\"	transcript compatibility for postscript use.
+.\"
+.\"	synopsis:  .P! <file.ps>
+.\"
+.de P!
+.fl
+\!!1 setgray
+.fl
+\\&.\"
+.fl
+\!!0 setgray
+.fl			\" force out current output buffer
+\!!save /psv exch def currentpoint translate 0 0 moveto
+\!!/showpage{}def
+.fl			\" prolog
+.sy sed -e 's/^/!/' \\$1\" bring in postscript file
+\!!psv restore
+.
+.de pF
+.ie     \\*(f1 .ds f1 \\n(.f
+.el .ie \\*(f2 .ds f2 \\n(.f
+.el .ie \\*(f3 .ds f3 \\n(.f
+.el .ie \\*(f4 .ds f4 \\n(.f
+.el .tm ? font overflow
+.ft \\$1
+..
+.de fP
+.ie     !\\*(f4 \{\
+.	ft \\*(f4
+.	ds f4\"
+'	br \}
+.el .ie !\\*(f3 \{\
+.	ft \\*(f3
+.	ds f3\"
+'	br \}
+.el .ie !\\*(f2 \{\
+.	ft \\*(f2
+.	ds f2\"
+'	br \}
+.el .ie !\\*(f1 \{\
+.	ft \\*(f1
+.	ds f1\"
+'	br \}
+.el .tm ? font underflow
+..
+.ds f1\"
+.ds f2\"
+.ds f3\"
+.ds f4\"
+'\" t
+.ta 8n 16n 24n 32n 40n 48n 56n 64n 72n
+.TH "sdptool" "1"
+.SH "NAME"
+sdptool \(em control and interrogate SDP servers
+.SH "SYNOPSIS"
+.PP
+\fBsdptool\fR [\fIoptions\fR]  {\fIcommand\fR}  [\fIcommand parameters\fR \&...]
+.SH "DESCRIPTION"
+.PP
+\fBsdptool\fR provides the interface for
+performing SDP queries on Bluetooth devices, and administering a
+local SDP database.
+.SH "COMMANDS"
+.PP
+The following commands are available.  In all cases \fBbdaddr\fR
+specifies the device to search or browse.  If \fIlocal\fP is used
+for \fBbdaddr\fP, then the local SDP database is searched.
+.PP
+Services are identified and manipulated with a 4-byte \fBrecord_handle\fP
+(NOT the service name).  To find a service's \fBrecord_handle\fP, look for the
+"Service RecHandle" line in the \fBsearch\fP or \fBbrowse\fP results
+.IP "\fBsearch [--bdaddr bdaddr] [--tree] [--raw] [--xml] service_name\fP" 10
+Search for services..
+.IP "" 10
+Known service names are DID, SP, DUN, LAN, FAX, OPUSH,
+FTP, HS, HF, HFAG, SAP, NAP, GN, PANU, HCRP, HID, CIP,
+A2SRC, A2SNK, AVRCT, AVRTG, UDIUE, UDITE and SYNCML.
+.IP "\fBbrowse [--tree] [--raw] [--xml] [bdaddr]\fP" 10
+Browse all available services on the device
+specified by a Bluetooth address as a parameter.
+.IP "\fBrecords [--tree] [--raw] [--xml] bdaddr\fP" 10
+Retrieve all possible service records.
+.IP "\fBadd [ --handle=N --channel=N ]\fP" 10
+Add a service to the local
+SDP database.
+.IP "" 10
+You can specify a handle for this record using
+the \fB--handle\fP option.
+.IP "" 10
+You can specify a channel to add the service on
+using the \fB--channel\fP option.
+.IP "" 10
+NOTE: Local adapters configuration will not be updated and this command should
+be used only for SDP testing.
+.IP "\fBdel record_handle\fP" 10
+Remove a service from the local
+SDP database.
+.IP "" 10
+NOTE: Local adapters configuration will not be updated and this command should
+be used only for SDP testing.
+.IP "\fBget [--tree] [--raw] [--xml] [--bdaddr bdaddr] record_handle\fP" 10
+Retrieve a service from the local
+SDP database.
+.IP "\fBsetattr record_handle attrib_id attrib_value\fP" 10
+Set or add an attribute to an SDP record.
+
+.IP "\fBsetseq record_handle attrib_id attrib_values\fP" 10
+Set or add an attribute sequence to an
+SDP record.
+.SH "OPTIONS"
+.IP "\fB--help\fP" 10
+Displays help on using sdptool.
+
+.SH "EXAMPLES"
+.PP
+sdptool browse 00:80:98:24:15:6D
+.PP
+sdptool browse local
+.PP
+sdptool add DUN
+.PP
+sdptool del 0x10000
+.SH "BUGS"
+.PP
+Documentation needs improving.
+.SH "AUTHOR"
+.PP
+Maxim Krasnyansky <maxk@qualcomm.com>. Man page written
+by Edd Dumbill <ejad@debian.org>.
+.\" created by instant / docbook-to-man, Thu 15 Jan 2004, 21:01

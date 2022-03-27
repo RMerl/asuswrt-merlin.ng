@@ -1,0 +1,4 @@
+[D-BUS Service]
+Name=org.bluez.obex
+Exec=/bin/false
+SystemdService=dbus-org.bluez.obex.service

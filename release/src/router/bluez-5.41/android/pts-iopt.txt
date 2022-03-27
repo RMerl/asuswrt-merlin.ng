@@ -1,0 +1,26 @@
+PTS test results for IOPT
+
+PTS version: 6.1
+Tested: 21-May-2015
+Android version: 5.1
+
+Results:
+PASS	test passed
+FAIL	test failed
+INC	test is inconclusive
+N/A	test is disabled due to PICS setup
+
+-------------------------------------------------------------------------------
+Test Name	Result	Notes
+-------------------------------------------------------------------------------
+TC_COD_BV_01_I	PASS	IUT must be discoverable
+TC_COD_BV_02_I	N/A	PTS issue#13473
+TC_SDSS_BV_02_I	PASS	Note: HDP sink record should be registered before test
+				run, e.g. register health app via HDPSample.apk
+TC_SDAS_BV_03_I	PASS	Note: HDP sink record should be registered before test
+				run, e.g. register health app via HDPSample.apk
+TC_SDR_BV_04_I	PASS	For every asked to check PTS bt profile:
+			haltest: bluetooth get_remote_service_record <PTS addr>
+				<profile uuid>
+			Note: 0000xxxx - acceptable 16bit uuid format
+-------------------------------------------------------------------------------

@@ -6,6 +6,8 @@
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta HTTP-EQUIV="Pragma" CONTENT="no-cache">
 <meta HTTP-EQUIV="Expires" CONTENT="-1">
+<link rel="shortcut icon" href="images/favicon.png">
+<link rel="icon" href="images/favicon.png">
 <title><#Web_Title#> - <#AiProtection_sites_blocking#></title>
 <link rel="stylesheet" type="text/css" href="index_style.css"> 
 <link rel="stylesheet" type="text/css" href="form_style.css">
@@ -495,19 +497,30 @@ function recount(){
 	}
 }
 
+var reboot_confirm=0;
 function applyRule(){
 	if(ctf_disable == 0 && ctf_fa_mode == 2){
-		if(!confirm(Untranslated.ctf_fa_hint)){
+		if(!confirm("<#ctf_fa_hint#>")){
 			return false;
 		}	
 		else{
-			document.form.action_script.value = "reboot";
-			document.form.action_wait.value = "<% nvram_get("reboot_time"); %>";
+			reboot_confirm=1;
 		}	
 	}
 
-	showLoading();	
-	document.form.submit();
+	if(reboot_confirm==1){
+        	
+		if(confirm("<#AiMesh_Node_Reboot#>")){
+			FormActions("start_apply.htm", "apply", "reboot", "<% get_default_reboot_time(); %>");
+			showLoading();
+			document.form.submit();
+		}
+	}
+	else{
+
+		showLoading();	
+		document.form.submit();
+	}
 }
 
 function mals_check(active){

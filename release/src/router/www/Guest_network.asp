@@ -34,7 +34,9 @@ var wl0_nmode_x = '<% nvram_get("wl0_nmode_x"); %>';
 if(wl_info.band5g_2_support || wl_info.band6g_support){
 	var wl2_nmode_x = '<% nvram_get("wl2_nmode_x"); %>';
 }
-
+if(based_modelid === 'GT-AXE16000'){
+	var wl3_nmode_x = '<% nvram_get("wl3_nmode_x"); %>';
+}
 <% wl_get_parameter(); %>
 
 wl_channel_list_2g = '<% channel_list_2g(); %>';
@@ -242,6 +244,8 @@ function load_expire_selection(obj, opt, val){
 function translate_auth(flag){
 	if(flag == "open")
 		return "Open System";
+	else if(flag == "owe")
+		return "<#Wireless_Encryption_OWE#>";	
 	else if(flag == "shared")
 		return "Shared Key";
 	else if(flag == "psk")
@@ -282,6 +286,9 @@ function gen_gntable_tr(unit, gn_array, slicesb){
 	else
 		GN_band = 5;
 	
+	if(based_modelid === 'GT-AXE16000'){
+		unit = (unit+3)%4;
+	}
 	htmlcode += '<table align="left" style="margin-left:-10px;border-collapse:collapse;width:720px;';
 	if(slicesb > 0)
 		htmlcode += 'margin-top:20px;';	
@@ -502,15 +509,24 @@ function gen_gntable(){
 	var htmlcode = ""; 
 	var htmlcode5 = ""; 
 	var htmlcode5_2 = ""; 
-	var htmlcode60 = "";
+	var htmlcode6 = "";
 	var gn_array_2g_tmp = gn_array_2g;
 	var gn_array_5g_tmp = gn_array_5g;
 	var gn_array_5g_2_tmp = gn_array_5g_2;
+	
+	
 	var gn_array_60g_tmp = gn_array_60g;
+	if(based_modelid === 'GT-AXE16000'){
+		gn_array_2g_tmp = gn_array_60g;
+		gn_array_5g_tmp = gn_array_2g;
+		gn_array_5g_2_tmp = gn_array_5g;
+		var gn_array_6g_tmp = gn_array_5g_2;
+	}
 	var band2sb = 0;
 	var band5sb = 0;
 	var band5sb_2 = 0;
 	var band60sb = 0;
+	var band6sb = 0;
 	var gn_bw_enabled = false;
 	var check_bw_status = function(_gn_array){
 		if(!gn_bw_enabled){
@@ -548,7 +564,7 @@ function gen_gntable(){
 		htmlcode5 += '<table style="margin-left:20px;margin-bottom:25px;" width="95%" align="center" cellpadding="4" cellspacing="0" class="gninfo_head_table" id="gninfo_table_5g">';
 		htmlcode5 += '<tr id="5g_title"><td align="left" style="color:#5AD; font-size:16px; border-bottom:1px dashed #AAA;">';
 		if(wl_info.band5g_2_support || wl_info.band6g_support){
-			if(band6g_support){
+			if(band6g_support && based_modelid !== 'GT-AXE16000'){
 				htmlcode5 += '<span>5 GHz</span>';
 			}
 			else{
@@ -578,7 +594,7 @@ function gen_gntable(){
 
   	if((wl_info.band5g_2_support || wl_info.band6g_support)&& gn_array_5g_2_tmp.length > 0){
 		htmlcode5_2 += '<table style="margin-left:20px;margin-bottom:25px;" width="95%" align="center" cellpadding="4" cellspacing="0" class="gninfo_head_table" id="gninfo_table_5g_2">';
-		if(band6g_support){
+		if(band6g_support && based_modelid !== 'GT-AXE16000'){
 			htmlcode5_2 += '<tr id="5g_2_title"><td align="left" style="color:#5AD; font-size:16px; border-bottom:1px dashed #AAA;"><span>6 GHz</span>';
 		}
 		else{
@@ -603,6 +619,33 @@ function gen_gntable(){
 		genQRCodes(gn_array_5g_2_tmp, 2);
 	}
 
+	if(based_modelid === 'GT-AXE16000'){	
+		if(gn_array_6g_tmp.length > 0){
+			htmlcode6 += '<table style="margin-left:20px;margin-bottom:25px;" width="95%" align="center" cellpadding="4" cellspacing="0" class="gninfo_head_table" id="gninfo_table_6g">';
+			htmlcode6 += '<tr id="6g_title"><td align="left" style="color:#5AD; font-size:16px; border-bottom:1px dashed #AAA;">';
+		
+
+			htmlcode6 += '<span>6 GHz</span>';
+
+			htmlcode6 += '<span id="6g_radio_hint" style="font-size: 14px;display:none;color:#FC0;margin-left:17px;">* <#GuestNetwork_Radio_Status#>	<a style="font-family:Lucida Console;color:#FC0;text-decoration:underline;cursor:pointer;" onclick="_change_wl_unit_status(3);"><#btn_go#></a></span></td></tr>';
+
+			while(gn_array_6g_tmp.length > 4){
+				htmlcode6 += '<tr><td >';
+				htmlcode6 += gen_gntable_tr(3, gn_array_6g_tmp.slice(0, 4), band6sb);
+				band5sb++;
+				gn_array_6g_tmp = gn_array_6g_tmp.slice(4);
+				htmlcode6 += '</td></tr>';
+			}
+
+			htmlcode6 += '<tr><td>';
+			htmlcode6 += gen_gntable_tr(3, gn_array_6g_tmp, band6sb);
+			htmlcode6 += '</td></tr>';
+			htmlcode6 += '</table>';
+			document.getElementById("guest_table6").innerHTML = htmlcode6;
+			check_bw_status(gn_array_6g_tmp);
+		}
+	}	
+
 	if(wl_info.band60g_support) {
 		htmlcode60 += '<table style="margin-left:20px;margin-bottom:25px;" width="95%" align="center" cellpadding="4" cellspacing="0" class="gninfo_head_table" id="gninfo_table_60g">';
 		htmlcode60 += '<tr id="60g_title"><td align="left" style="color:#5AD; font-size:16px; border-bottom:1px dashed #AAA;"><span>60 GHz</span></td></tr>';
@@ -621,6 +664,7 @@ function add_options_value(o, arr, orig){
 		add_option(o, "mbss_"+arr, arr, 0);
 }
 
+var reboot_confirm=0;
 function applyRule(){
 	var auth_mode = document.form.wl_auth_mode_x.value;
 	if(document.form.wl_wpa_psk.value == "<#wireless_psk_fillin#>")
@@ -655,8 +699,7 @@ function applyRule(){
 			document.form.qos_enable.value = 1;
 			document.form.qos_type.value = 2;
 			if(ctf_disable_orig == '0' && !lantiq_support){	//brcm NAT Acceleration turned ON
-				document.form.action_script.value = "saveNvram;reboot";
-				document.form.action_wait.value = "<% get_default_reboot_time(); %>";
+				reboot_confirm=1;
 			}
 			else{
 				document.form.action_script.value = "restart_wireless;restart_qos;restart_firewall;";
@@ -668,8 +711,7 @@ function applyRule(){
 				|| (wl_x_y_bss_enabled == 1 && (document.form.bw_enabled_x.value == "1" || document.form.bw_enabled_x[0].checked)))	
 		{	
 			if(ctf_disable_orig == '0' && document.form.wl_bw_enabled.value == 1 && !lantiq_support){
-				document.form.action_script.value = "saveNvram;reboot";
-				document.form.action_wait.value = "<% get_default_reboot_time(); %>";
+				reboot_confirm=1;
 			}
 			else{
 				document.form.action_script.value = "restart_wireless;restart_qos;restart_firewall;";
@@ -754,9 +796,20 @@ function applyRule(){
 		inputCtrl(document.form.wl_key3, 1);
 		inputCtrl(document.form.wl_key4, 1);
 		inputCtrl(document.form.wl_phrase_x, 1);
-		
-		showLoading();
-		document.form.submit();
+
+		if(reboot_confirm==1){
+        	
+			if(confirm("<#AiMesh_Node_Reboot#>")){
+				FormActions("start_apply2.htm", "apply_new", "saveNvram;reboot", "<% get_default_reboot_time(); %>");
+				showLoading();
+				document.form.submit();
+			}
+		}
+		else{
+
+			showLoading();
+			document.form.submit();
+		}
 	}
 }
 
@@ -1086,7 +1139,7 @@ function create_guest_unit(_unit, _subunit){
 			gn_array = gn_array_60g;
 			break;
 	}
-	
+
 	if(gn_array[_subunit-1][15] != "1"){
 		change_guest_unit(_unit, _subunit);
 		document.form.wl_bss_enabled.value = "1";
@@ -1341,7 +1394,7 @@ function show_bandwidth(flag){
 		document.form.bw_enabled_x[0].checked = true;
 		var show_hint_content = "";
 		if(ctf_disable_orig == '0'){	//brcm NAT Acceleration turned ON
-			show_hint_content += "<br>NAT acceleration will be disable for more precise packet inspection.";	/* untranslated */			
+			show_hint_content += "<br><#Guest_Network_disable_NATacc#>";
 		}
 
 		if(QoS_enable_orig == "0"){
@@ -1631,6 +1684,7 @@ function hide_qr_code(unit) {
 						<div id="guest_table2" class="gn_info_table_bg"></div>
 						<div id="guest_table5" class="gn_info_table_bg"></div>
 						<div id="guest_table5_2" class="gn_info_table_bg"></div>
+						<div id="guest_table6" class="gn_info_table_bg"></div>
 						<div id="guest_table60" class="gn_info_table_bg"></div>
 						<div id="guest_tableFBWiFi" class="gn_info_table_bg">
 							<table style="margin-left:20px;margin-bottom:25px;" width="95%" align="center" cellpadding="4" cellspacing="0" class="gninfo_head_table" id="gninfo_table_FBWiFi">
@@ -1880,11 +1934,11 @@ function hide_qr_code(unit) {
 								</td>
 							</tr>
 							<tr id="aimesh_sync_field" class="captive_portal_control_class">
-								<th><#sync_node#></th>
+								<th><#Guest_Network_On_AiMesh#></th>
 								<td>
 									<select name="wl_sync_node" class="input_option">
 										<option class="content_input_fd" value="0" <% nvram_match("wl_sync_node", "0","selected"); %>><#Router_only#></option>
-										<option class="content_input_fd" value="1" <% nvram_match("wl_sync_node", "1","selected"); %>><#All#></option>
+										<option class="content_input_fd" value="1" <% nvram_match("wl_sync_node", "1","selected"); %>><#All_AiMesh_nodes#></option>
 									</select>
 								</td>
 							</tr>

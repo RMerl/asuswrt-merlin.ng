@@ -1,0 +1,272 @@
+.TH HCICONFIG 1 "Nov 11 2002" BlueZ "Linux System Administration"
+.SH NAME
+hciconfig \- configure Bluetooth devices
+.SH SYNOPSIS
+.B hciconfig
+.B \-h
+.br
+.B hciconfig
+.RB [\| \-a \|]
+.br
+.B hciconfig
+.RB [\| \-a \|]
+.B hciX
+.RI [\| command
+.RI [\| "command parameters" \|]\|]
+
+.SH DESCRIPTION
+.LP
+.B hciconfig
+is used to configure Bluetooth devices.
+.I hciX
+is the name of a Bluetooth device installed in the system. If
+.I hciX
+is not given,
+.B hciconfig
+prints name and basic information about all the Bluetooth devices installed in
+the system. If
+.I hciX
+is given but no command is given, it prints basic information on device
+.I hciX
+only. Basic information is
+interface type, BD address, ACL MTU, SCO MTU, flags (up, init, running, raw,
+page scan enabled, inquiry scan enabled, inquiry, authentication enabled,
+encryption enabled).
+.SH OPTIONS
+.TP
+.B \-h, \-\-help
+Gives a list of possible commands.
+.TP
+.B \-a, \-\-all
+Other than the basic info, print features, packet type, link policy, link mode,
+name, class, version.
+.SH COMMANDS
+.TP
+.B up
+Open and initialize HCI device.
+.TP
+.B down
+Close HCI device.
+.TP
+.B reset
+Reset HCI device.
+.TP
+.B rstat
+Reset statistic counters.
+.TP
+.B auth
+Enable authentication (sets device to security mode 3).
+.TP
+.B noauth
+Disable authentication.
+.TP
+.B encrypt
+Enable encryption (sets device to security mode 3).
+.TP
+.B noencrypt
+Disable encryption.
+.TP
+.B secmgr
+Enable security manager (current kernel support is limited).
+.TP
+.B nosecmgr
+Disable security manager.
+.TP
+.B piscan
+Enable page and inquiry scan.
+.TP
+.B noscan
+Disable page and inquiry scan.
+.TP
+.B iscan
+Enable inquiry scan, disable page scan.
+.TP
+.B pscan
+Enable page scan, disable inquiry scan.
+.TP
+\fBptype\fP [\fItype\fP]
+With no
+.I type
+, displays the current packet types. Otherwise, all the packet types specified
+by
+.I type
+are set.
+.I type
+is a comma-separated list of packet types, where the possible packet types are
+.BR DM1 ,
+.BR DM3 ,
+.BR DM5 ,
+.BR DH1 ,
+.BR DH3 ,
+.BR DH5 ,
+.BR HV1 ,
+.BR HV2 ,
+.BR HV3 .
+.TP
+.BI name " [name]"
+With no
+.IR name ,
+prints local name. Otherwise, sets local name to
+.IR name .
+.TP
+.BI class " [class]"
+With no
+.IR class ,
+prints class of device. Otherwise, sets class of device to
+.IR class .
+.I
+class
+is a 24-bit hex number describing the class of device, as specified in section
+1.2 of the Bluetooth Assigned Numers document.
+.TP
+.BI voice " [voice]"
+With no
+.IR voice ,
+prints voice setting. Otherwise, sets voice setting to
+.IR voice .
+.I voice
+is a 16-bit hex number describing the voice setting.
+.TP
+.BI iac " [iac]"
+With no
+.IR iac ,
+prints the current IAC setting. Otherwise, sets the IAC to
+.IR iac .
+.TP
+.BI inqtpl " [level]"
+With no
+.IR level ,
+prints out the current inquiry transmit power level. Otherwise, sets
+inquiry transmit power level to
+.IR level .
+.TP
+.BI inqmode " [mode]"
+With no
+.IR mode ,
+prints out the current inquiry mode. Otherwise, sets inquiry mode to
+.IR mode .
+.TP
+.BI inqdata " [data]"
+With no
+.IR name ,
+prints out the current inquiry data. Otherwise, sets inquiry data to
+.IR data .
+.TP
+.BI inqtype " [type]"
+With no
+.IR type ,
+prints out the current inquiry scan type. Otherwise, sets inquiry scan type to
+.IR type .
+.TP
+\fBinqparams\fP [\fIwin\fP:\fIint\fP]
+With no
+.IR win : int ,
+prints inquiry scan window and interval. Otherwise, sets inquiry scan window
+to
+.I win
+slots and inquiry scan interval to
+.I int
+slots.
+.TP
+\fBpageparms\fP [\fIwin\fP:\fIint\fP]
+With no
+.IR win : int ,
+prints page scan window and interval. Otherwise, sets page scan window to
+.I win
+slots and page scan interval to
+.I int
+slots.
+.TP
+.BI pageto " [to]"
+With no
+.IR to ,
+prints page timeout. Otherwise, sets page timeout
+to .I
+to
+slots.
+.TP
+.BI afhmode " [mode]"
+With no
+.IR mode ,
+prints out the current AFH mode. Otherwise, sets AFH mode to
+.IR mode .
+.TP
+.BI sspmode " [mode]"
+With no
+.IR mode ,
+prints out the current Simple Pairing mode. Otherwise, sets Simple Pairing mode to
+.IR mode .
+.TP
+\fBaclmtu\fP \fImtu\fP:\fIpkt\fP
+Sets ACL MTU to
+to
+.I mtu
+bytes and ACL buffer size to
+.I pkt
+packets.
+.TP
+\fBscomtu\fP \fImtu\fP:\fIpkt\fP
+Sets SCO MTU to
+.I mtu
+bytes and SCO buffer size to
+.I pkt
+packets.
+.TP
+.BI delkey " <bdaddr>"
+This command deletes the stored link key for
+.I bdaddr
+from the device.
+.TP
+.BI oobdata
+Get local OOB data (invalidates previously read data).
+.TP
+.BI commands
+Display supported commands.
+.TP
+.BI features
+Display device features.
+.TP
+.BI version
+Display version information.
+.TP
+.BI revision
+Display revision information.
+.TP
+.BI lm " [mode]"
+With no
+.I mode
+, prints link mode.
+.B MASTER
+or
+.B SLAVE
+mean, respectively, to ask to become master or to remain slave when a
+connection request comes in. The additional keyword
+.B ACCEPT
+means that baseband  connections will be accepted even if there are no
+listening
+.I AF_BLUETOOTH
+sockets.
+.I mode
+is
+.B NONE
+or a comma-separated list of keywords, where possible keywords are
+.B MASTER
+and
+.B "ACCEPT" .
+.B NONE
+sets link policy to the default behaviour of remaining slave and not accepting
+baseband connections when there are no listening
+.I AF_BLUETOOTH
+sockets. If
+.B MASTER
+is present, the device will ask to become master if a connection request comes
+in. If
+.B ACCEPT
+is present, the device will accept baseband connections even when there are no
+listening
+.I AF_BLUETOOTH
+sockets.
+.SH AUTHORS
+Written by Maxim Krasnyansky <maxk@qualcomm.com> and Marcel Holtmann <marcel@holtmann.org>
+.PP
+man page by Fabrizio Gennari <fabrizio.gennari@philips.com>

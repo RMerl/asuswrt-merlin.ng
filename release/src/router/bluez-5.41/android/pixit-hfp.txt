@@ -1,0 +1,41 @@
+HFP PIXIT for the PTS tool.
+
+PTS version: 6.1
+
+* - different than PTS defaults
+& - should be set to IUT Bluetooth address
+# - should be set to the respective phone numbers
+^ - should be set according to the reported phone number's type
+
+		Required PIXIT settings
+-------------------------------------------------------------------------------
+Parameter Name						Value
+-------------------------------------------------------------------------------
+TSPX_security_enabled					TRUE
+TSPX_bd_addr_iut					112233445566 (*&)
+TSPX_hf_class_of_device					200408
+TSPX_ag_class_of_device					400204
+TSPX_packet_type_sco					00A0
+TSPX_phone_number					1234567 (#)
+TSPX_second_phone_number				7654321 (#)
+TSPX_phone_number_type					145 (*^)
+TSPX_second_phone_number_type				145 (*^)
+TSPX_phone_number_memory				1
+TSPX_phone_number_memory_invalid_index			9999
+TSPX_scan_all_memory_dial_locations			FALSE
+TSPX_pin_code						0000
+TSPX_time_guard						300000
+TSPX_use_implicit_send					TRUE
+TSPX_verbose_implicit_send				FALSE
+TSPX_delete_link_key					FALSE
+TSPX_server_channel_tester				01
+TSPX_server_channel_iut					00
+TSPX_verify_CLIP_information				TRUE
+TSPX_no_fail_verdict					FALSE
+TSPX_network_supports_correct_call_and_callstatus	TRUE
+TSPX_secure_simple_pairing_pass_key_confirmation	FALSE
+TSPX_AG_match_tester_BRSF_codec_negotiation_bit		FALSE
+TSPX_HFP_Unsupported_HF_Indicator_1			99
+TSPX_HFP_Supported_HF_Indiccator_1			1
+TSPX_Automation						FALSE
+-------------------------------------------------------------------------------

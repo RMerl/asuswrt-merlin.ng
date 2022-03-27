@@ -325,13 +325,16 @@ enum {
 #endif	// RTCONFIG_USB
 
 #ifdef RTCONFIG_ASUSCTRL
+/* Always append new definition to end of enumeration. */
 enum {
 	ASUSCTRL_DFS_BAND2 = 1,
-	ASUSCTRL_DFS_BAND3,
-	ASUSCTRL_CHG_PWR,
-	ASUSCTRL_CHG_SKU,
-	ASUSCTRL_EG_MODE,
-	ASUSCTRL_SG_MODE,
+	ASUSCTRL_DFS_BAND3 = 2,
+	ASUSCTRL_CHG_PWR = 3,
+	ASUSCTRL_CHG_SKU = 4,
+	ASUSCTRL_EG_MODE = 5,
+	ASUSCTRL_SG_MODE = 6,
+	ASUSCTRL_ACS_IGNORE_BAND2 = 7,
+	ASUSCTRL_ACS_IGNORE_BAND3 = 8,
 	ASUSCTRL_MAX
 };
 #endif
@@ -368,7 +371,7 @@ enum {
 #ifdef RTCONFIG_DEFAULT_REPEATER_MODE
 #define sw_mode()            (nvram_get("sw_mode") ? nvram_get_int("sw_mode") : SW_MODE_REPEATER)
 #else
-#define sw_mode()            (nvram_get("sw_mode") ? nvram_get_int("sw_mode") : SW_MODE_ROUTER)
+#define sw_mode()            (nvram_get("sw_mode") ? nvram_get_int("sw_mode") : atoi(nvram_default_get("sw_mode")))
 #endif
 #define is_routing_enabled() (sw_mode()==SW_MODE_ROUTER||sw_mode()==SW_MODE_HOTSPOT)
 #define is_router_mode()     (sw_mode()==SW_MODE_ROUTER)

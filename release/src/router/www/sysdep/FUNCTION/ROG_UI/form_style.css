@@ -1013,7 +1013,7 @@ color:#FFFFFF;
 	display: block;
 	padding: 5px 5px 0 12px;
 	line-height: 20px;
-	font-family: Arial, Helvetica, MS UI Gothic, MS P Gothic, sans-serif;
+	font-family: Arial, Helvetica, MS UI Gothic, MS P Gothic, Microsoft Yahei UI, sans-serif;
 	font-size: 13px;
 	border-radius: 5px 5px 0 0;
 }
@@ -1026,7 +1026,7 @@ color:#FFFFFF;
 
 .tabclick_NW {
 	font-weight: bolder;
-	font-family: Verdana, MS UI Gothic, MS P Gothic, sans-serif;
+	font-family: Verdana, MS UI Gothic, MS P Gothic, Microsoft Yahei UI, sans-serif;
 	color: White;
 	display: block;
 	float: left;
@@ -1044,7 +1044,7 @@ color:#FFFFFF;
 	font-weight: bolder;
 	white-space:nowrap;
 	font-weight: bolder;
-	font-family: Arial, Helvetica, MS UI Gothic, MS P Gothic, sans-serif;
+	font-family: Arial, Helvetica, MS UI Gothic, MS P Gothic, Microsoft Yahei UI, sans-serif;
 	display: block;
 	padding: 5px 5px 0 12px;
 	line-height: 20px;
@@ -2137,24 +2137,16 @@ padding-top:1px;
 	background-color:transparent !important;
 }
 .eula_panel_container{
-	margin: 20px 0 0 200px;
+	margin: 20px 0 0 210px;
 	display: none;
-	position: absolute;
+	position: fixed;
 	width: 600px;
 	z-index: 10000;
-	border: 3px solid #4D5C63;
+	border: 3px solid #5C0C0B;
 	border-radius: 6px;
 	font-family: monospace;
 	font-size: 14px;
 	text-align: left;
-}
-
-#tm_eula_content{
-	line-height: 20px;
-}
-
-#asus_eula_content{
-	line-height: 20px;
 }
 
 #bottom_border{
@@ -2260,4 +2252,37 @@ padding-top:1px;
 }
 .hint-color{
 	color: #FFCC00;
+}
+.button-text{
+    display: table-cell;
+    vertical-align: middle;
+    font-family: Roboto;
+    font-size: 14px;
+    padding-left: 12px;
+}
+.button-icon{
+    width: 18px;
+    height: 18px;
+    display:table-cell;
+    background-repeat: no-repeat;
+    background-size: 100%;
+}
+.icon-cancel{
+    background-image: url('../images/gameprofile/cancel.svg');
+}
+.button-icon-check{
+    background-image: url('../images/gameprofile/ok.svg');
+}
+.button-container:hover, .button-container:active,
+.icon-button-container:hover, .icon-button-container:active{
+    border: 2px solid #E64100;
+    background-color: #000000;
+}
+.button-container{
+    display: table;
+    border: 2px solid #842500;
+    border-radius: 24px;
+    padding: 12px 24px;
+    background-color: #141618;
+    cursor: pointer;
 }

@@ -1,0 +1,475 @@
+PBAP PICS for the PTS tool.
+
+PTS version: 6.1
+
+* - different than PTS defaults
+# - not yet implemented/supported
+
+M - mandatory
+O - optional
+
+
+		Roles
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_PBAP_1_1	False		Role: PCE (C.1)
+TSPC_PBAP_1_2	True (*)	Role: PSE (C.1)
+-------------------------------------------------------------------------------
+C1: It is mandatory to support at least one of the defined roles.
+-------------------------------------------------------------------------------
+
+
+		Client Major Profile Version (X.Y)
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_PBAP_2a_1	False		PBAP 1.0 (C.1)
+TSPC_PBAP_2a_2	False		PBAP 1.1 (C.1)
+TSPC_PBAP_2a_3	False		PBAP 1.2 (C.1)
+-------------------------------------------------------------------------------
+C.1: Mandatory to support one and only one major profile version.
+-------------------------------------------------------------------------------
+
+
+		Client Minor Profile Version (X.Y)
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_PBAP_2b_1	False		PBAP 1.1.1 (C.1)
+-------------------------------------------------------------------------------
+C.1: Optional if 2a/2 (PBAP 1.1) is supported, otherwise Excluded.
+-------------------------------------------------------------------------------
+
+
+		Supported features (PCE)
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_PBAP_2_1	False (*)	PCE: Phone Book Download (C.1)
+TSPC_PBAP_2_2	False (*)	PCE: Phone Book Browsing (C.1)
+TSPC_PBAP_2_3	False (*)	PCE: Session Management (M)
+TSPC_PBAP_2_4	False		PCE: Able to Request Size of the Phonebook (O)
+TSPC_PBAP_2_5	False		PCE: Database Identifier (C.2)
+TSPC_PBAP_2_6	False		PCE: Folder Version Counters (C.2)
+TSPC_PBAP_2_7	False		PCE: vCard Selecting (C.2)
+TSPC_PBAP_2_7a	False		PCE: Able to send vCardSelector (C.2)
+TSPC_PBAP_2_7b	False		PCE: Able to send vCardSelectorOperator (C.2)
+TSPC_PBAP_2_8	False (*)	PCE: Enhanced Missed Calls (C.4)
+TSPC_PBAP_2_8a	False (*)	PCE: Able to reset the missed Calls (C.2)
+TSPC_PBAP_2_9	False		PCE: X-BT-UCI vCard Field (C.2)
+TSPC_PBAP_2_9a	False		PCE: Able to request X-BT-UCI Field (C.2)
+TSPC_PBAP_2_10	False		PCE: X-BT-UID vCard Field (C.2)
+TSPC_PBAP_2_10a	False		PCE: Referencing Contacts (C.2)
+TSPC_PBAP_2_12	False		PCE: Contact Image Default Format (C.2)
+TSPC_PBAP_2_12a	False		PCE: Able to request Contact Images (C.2)
+TSPC_PBAP_2_13	False		PCE: Supported Phonebook Objects (C.3)
+TSPC_PBAP_2_13a	False (*)	PCE: Telecom/pb (C.3)
+TSPC_PBAP_2_13b	False		PCE: Telecom/ich (C.3)
+TSPC_PBAP_2_13c	False		PCE: Telecom/och (C.3)
+TSPC_PBAP_2_13d	False (*)	PCE: Telecom/mch (C.3)
+TSPC_PBAP_2_13e	False (*)	PCE: Telecom/cch (C.3)
+TSPC_PBAP_2_13f	False		PCE: Telecom/spd (C.3)
+TSPC_PBAP_2_13g	False		PCE: Telecom/fav (C.3)
+TSPC_PBAP_2_13h	False		PCE: SIM1/Telecom/pb (C.3)
+TSPC_PBAP_2_13i	False		PCE: SIM1/Telecom/ich (C.3)
+TSPC_PBAP_2_13j	False		PCE: SIM1/Telecom/och (C.3)
+TSPC_PBAP_2_13k	False		PCE: SIM1/Telecom/mch (C.3)
+TSPC_PBAP_2_13l	False		PCE: SIM1/Telecom/cch (C.3)
+-------------------------------------------------------------------------------
+C.1: It is mandatory to support at least one of the defined features.
+C.2: Optional if TSPC_PBAP_0_3 (PBAP 1.2) is supported, otherwise Excluded.
+C.3: Mandatory to support at least one of the listed phonebook objects .
+C.4: Optional if TSPC_PBAP_0_3 (PBAP 1.2) and any of the mch or cch folders
+	(13d,13e,13k,13l) are supported, otherwise Excluded.
+-------------------------------------------------------------------------------
+
+
+		Supported Phone Book Download functions (PCE)
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_PBAP_3_1	False (*)	PCE: Pull Phone Book (C.1)
+-------------------------------------------------------------------------------
+C1: Mandatory for PCE if Phone Book Download (TSPC_PBAP_2_1) is supported,
+	otherwise excluded.
+-------------------------------------------------------------------------------
+
+
+		Supported Phone Book Browsing functions (PCE)
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_PBAP_4_1	False (*)	PCE: Set Phone Book (C.1)
+TSPC_PBAP_4_2	False (*)	PCE: Pull vCard Listing (C.1)
+TSPC_PBAP_4_3	False (*)	PCE: Pull vCard Entry (C.1)
+-------------------------------------------------------------------------------
+C1: Mandatory for PCE if Phone Book Browsing TSPC_PBAP_2_2 is supported,
+	otherwise excluded.
+-------------------------------------------------------------------------------
+
+
+		Used vCard formats (PCE)
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_PBAP_5_1	False (*)	PCE: vCard 2.1 (C.1)
+TSPC_PBAP_5_2	False (*)	PCE: vCard 3.0 (C.1)
+-------------------------------------------------------------------------------
+C1: It is mandatory to support at least one of the defined versions if PCE
+	supported.
+-------------------------------------------------------------------------------
+
+
+		OBEX Functions for PCE
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_PBAP_6_1	False (*)	PCE: Connect (M)
+TSPC_PBAP_6_2	False (*)	PCE: Disconnect (M)
+TSPC_PBAP_6_3	False (*)	PCE: Get (M)
+TSPC_PBAP_6_4	False		PCE: Abort (O)
+TSPC_PBAP_6_5	False (*)	PCE: SetPath (C.1)
+TSPC_PBAP_6_6	False		PCE: Support for OBEX authentication initiation
+					(C.2)
+-------------------------------------------------------------------------------
+C.1: Mandatory if TSPC_PBAP_2_2 (Phone Book Browsing) is supported,
+	otherwise Excluded.
+C.2: Optional to support initiation if TSPC_PBAP_0_1 (PBAP 1.0) or
+	TSPC_PBAP_0_2 (PBAP 1.1) is supported, otherwise Excluded.
+-------------------------------------------------------------------------------
+
+
+		PCE OBEX Header Support
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_PBAP_7_1	False (*)	PCE: Name (M)
+TSPC_PBAP_7_2	False (*)	PCE: Type (M)
+TSPC_PBAP_7_3	False (*)	PCE: Body (M)
+TSPC_PBAP_7_4	False (*)	PCE: End of Body (M)
+TSPC_PBAP_7_5	False (*)	PCE: Target (M)
+TSPC_PBAP_7_6	False (*)	PCE: Who (M)
+TSPC_PBAP_7_7	False (*)	PCE: Connection ID (M)
+TSPC_PBAP_7_8	False (*)	PCE: Authentication Challenge (M)
+TSPC_PBAP_7_9	False (*)	PCE: Authentication Response (M)
+TSPC_PBAP_7_10	False (*)	PCE: Application Parameters (M)
+TSPC_PBAP_7_11	False		PCE: Single Response Mode (C.1)
+TSPC_PBAP_7_12	False		PCE: Single Response Mode Parameter
+					(ability to parse) (C.1)
+TSPC_PBAP_7_13	False		PCE: Single Response Mode Parameter
+					(ability to send) (C.2)
+-------------------------------------------------------------------------------
+C.1: Mandatory if TSPC_PBAP_0_3 (PBAP 1.2) is supported, otherwise Excluded.
+C.2: Optional if TSPC_PBAP_2a_3 (PBAP 1.2) is supported, otherwise Excluded.
+-------------------------------------------------------------------------------
+
+
+		OBEX Error Codes for PCE
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_PBAP_8_1	False (*)	PCE: Bad Request (M)
+TSPC_PBAP_8_2	False (*)	PCE: Not Implemented (M)
+TSPC_PBAP_8_3	False (*)	PCE: Unauthorized (M)
+TSPC_PBAP_8_4	False (*)	PCE: Precondition Failed (M)
+TSPC_PBAP_8_5	False (*)	PCE: Not Found (M)
+TSPC_PBAP_8_6	False (*)	PCE: Not Acceptable (M)
+TSPC_PBAP_8_7	False (*)	PCE: Service Unavailable (M)
+TSPC_PBAP_8_8	False (*)	PCE: Forbidden (M)
+-------------------------------------------------------------------------------
+
+
+		Server Major Profile Version (X.Y)
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_PBAP_9a_1	False		PBAP 1.0 (C.1)
+TSPC_PBAP_9a_2	True (*)	PBAP 1.1 (C.1)
+TSPC_PBAP_9a_3	False		PBAP 1.2 (C.1)
+-------------------------------------------------------------------------------
+C.1: Mandatory to support one and only one major profile version.
+-------------------------------------------------------------------------------
+
+
+		Server Minor Profile Version (X.Y.Z)
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_PBAP_9b_1	False		PBAP 1.1.1 (C.1)
+-------------------------------------------------------------------------------
+C.1: Optional if 9a/2 (PBAP 1.1) is supported, otherwise Excluded.
+-------------------------------------------------------------------------------
+
+
+		Supported features (PSE)
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_PBAP_9_1	True		PSE: Phone Book Download (M)
+TSPC_PBAP_9_2	True		PSE: Phone Book Browsing (M)
+TSPC_PBAP_9_3	True		PSE: Session Management (M)
+TSPC_PBAP_9_4	True		PSE: Able to request the size of the Phonebook
+					(M)
+TSPC_PBAP_9_5	False		PSE: Database Identifier (C.1)
+TSPC_PBAP_9_5a	False		PSE: Able to keep a persistent Database
+					Identifier (C.2)
+TSPC_PBAP_9_5b	False		PSE: Able to regenerate a Database Identifier
+					(C.2)
+TSPC_PBAP_9_6	False		PSE: Folder Version Counters (C.1)
+TSPC_PBAP_9_6a	False		PSE: Able to Insert or Remove Entries (C.2)
+TSPC_PBAP_9_6b	False		PSE: Able to Modify contact primary Fields (C.2)
+TSPC_PBAP_9_6c	False		PSE: Able to Modify contact secondary Fields
+					(C.2)
+TSPC_PBAP_9_7	False (*)	PSE: vCard Selecting (C.1)
+TSPC_PBAP_9_8	False (*)	PSE: Enhanced Missed Calls (C.4)
+TSPC_PBAP_9_9	False		PSE: X-BT-UCI vCard Field (C.2)
+TSPC_PBAP_9_10	False		PSE: X-BT-UID vCard Field (C.2)
+TSPC_PBAP_9_10a	False		PSE: Referencing Contacts (C.3)
+TSPC_PBAP_9_12	False		PSE: Contact Image Default Format (C.1)
+TSPC_PBAP_9_12a	False		PSE: Able to request Contact Images (C.2)
+TSPC_PBAP_9_13	False		PSE: Supported Phonebook Objects
+TSPC_PBAP_9_13a	True 		PSE: Telecom/pb (M)
+TSPC_PBAP_9_13b	True  (*)	PSE: Telecom/ich (O)
+TSPC_PBAP_9_13c	True  (*)	PSE: Telecom/och (O)
+TSPC_PBAP_9_13d	True  (*)	PSE: Telecom/mch (O)
+TSPC_PBAP_9_13e	True		PSE: Telecom/cch (O)
+TSPC_PBAP_9_13f	False		PSE: Telecom/spd (C.2)
+TSPC_PBAP_9_13g	False		PSE: Telecom/fav (C.2)
+TSPC_PBAP_9_13h	False (*)	PSE: SIM1/Telecom/pb (O)
+TSPC_PBAP_9_13i	False		PSE: SIM1/Telecom/ich (O)
+TSPC_PBAP_9_13j	False		PSE: SIM1/Telecom/och (O)
+TSPC_PBAP_9_13k	False (*)	PSE: SIM1/Telecom/mch (O)
+TSPC_PBAP_9_13l	False		PSE: SIM1/Telecom/cch (O)
+TSPC_PBAP_9_14	False		PSE: Deleted Handles Behavior
+TSPC_PBAP_9_14a	True		PSE: Error reporting (C.5)
+TSPC_PBAP_9_14b	False		PSE: Change tracking (C.5)
+-------------------------------------------------------------------------------
+C.1: Mandatory if TSPC_PBAP_0_3 (PBAP 1.2) is supported, otherwise Excluded.
+C.2: Optional if TSPC_PBAP_0_3 (PBAP 1.2) is supported, otherwise Excluded.
+C.3: Optional if TSPC_PBAP_9_10 (X-BT-UID vCard Property) is supported,
+	otherwise Excluded.
+C.4: Optional if TSPC_PBAP_0_3 (PBAP 1.2) and any of the mch or cch folders
+	(13d,13e,13k,13l) are supported, otherwise Excluded.
+C.5: It is mandatory to support at least one of the defined deleted handles
+	behaviors.
+-------------------------------------------------------------------------------
+
+
+		Supported Phone Book Download functions ( PSE )
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_PBAP_10_1	True		PSE: Pull Phone Book (M)
+TSPC_PBAP_10_2	False		PSE: Call History Function (O)
+-------------------------------------------------------------------------------
+
+
+		Supported Phone Book Browsing functions ( PSE )
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_PBAP_11_1	True		PSE: Set Phone Book (M)
+TSPC_PBAP_11_2	True		PSE: Pull vCard Listing (M)
+TSPC_PBAP_11_3	True		PSE: Pull vCard Entry (M)
+-------------------------------------------------------------------------------
+
+
+		Used vCard formats (PSE)
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_PBAP_12_1	True		PSE: vCard 2.1 (M)
+TSPC_PBAP_12_2	True		PSE: vCard 3.0 (M)
+-------------------------------------------------------------------------------
+
+
+		OBEX Functions for PSE
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_PBAP_13_1	True		PSE: Connect (M)
+TSPC_PBAP_13_2	True		PSE: Disconnect (M)
+TSPC_PBAP_13_3	True		PSE: Get (M)
+TSPC_PBAP_13_4	True		PSE: Abort (M)
+TSPC_PBAP_13_5	True		PSE: SetPath (M)
+TSPC_PBAP_13_6	False		PSE: Support for OBEX authentication initiation
+					(C.1)
+-------------------------------------------------------------------------------
+C.1: Optional to support initiation if TSPC_PBAP_0_1 (PBAP 1.0) or
+	TSPC_PBAP_0_2 (PBAP 1.1) is supported, otherwise Excluded.
+-------------------------------------------------------------------------------
+
+
+		PSE OBEX Header Support
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_PBAP_14_1	True		PSE: Name (M)
+TSPC_PBAP_14_2	True		PSE: Type (M)
+TSPC_PBAP_14_3	True		PSE: Body (M)
+TSPC_PBAP_14_4	True		PSE: End of Body (M)
+TSPC_PBAP_14_5	True		PSE: Target (M)
+TSPC_PBAP_14_6	True		PSE: Who (M)
+TSPC_PBAP_14_7	True		PSE: Connection ID (M)
+TSPC_PBAP_14_8	True		PSE: Authentication Challenge (M)
+TSPC_PBAP_14_9	True		PSE: Authentication Response (M)
+TSPC_PBAP_14_10	True		PSE: Application Parameters (M)
+TSPC_PBAP_14_11	False		PSE: Single Response Mode (C.1)
+TSPC_PBAP_14_12	False		PSE: Single Response Mode Parameter
+					(ability to parse) (C.1)
+TSPC_PBAP_14_13	False		PSE: Single Response Mode Parameter
+					(ability to send) (C.2)
+-------------------------------------------------------------------------------
+C.1: Mandatory if TSPC_PBAP_0_3 (PBAP 1.2) is supported, otherwise Excluded.
+C.2: Optional if TSPC_PBAP_9a_3 (PBAP 1.2) is supported, otherwise Excluded.
+-------------------------------------------------------------------------------
+
+
+		OBEX Error Codes for PSE
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_PBAP_15_1	True		PSE: Bad Request (M)
+TSPC_PBAP_15_2	True		PSE: Not Implemented (M)
+TSPC_PBAP_15_3	True (*)	PSE: Unauthorized (O)
+TSPC_PBAP_15_4	True (*)	PSE: Precondition Failed (C.1)
+TSPC_PBAP_15_5	True		PSE: Not Found (M)
+TSPC_PBAP_15_6	True (*)	PSE: Not Acceptable (O)
+TSPC_PBAP_15_7	True		PSE: Service Unavailable (M)
+TSPC_PBAP_15_8	True (*)	PSE: Forbidden (O)
+-------------------------------------------------------------------------------
+C.1: Mandatory if TSPC_PBAP_9_14a (Error reporting) is supported, otherwise
+	Optional.
+-------------------------------------------------------------------------------
+
+
+		GAP Modes for PCE
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_PBAP_16_1	False (*)	PCE: General discoverable mode (M)
+TSPC_PBAP_16_2	False (*)	PCE: Pairable mode (M)
+-------------------------------------------------------------------------------
+
+
+		GAP Modes for PSE
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_PBAP_17_1	True		PSE: General discoverable mode (M)
+TSPC_PBAP_17_2	True		PSE: Pairable mode (M)
+-------------------------------------------------------------------------------
+
+
+		GAP Security Modes for PCE
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_PBAP_18_1	False (*)	PCE: Authentication Procedure (M)
+TSPC_PBAP_18_2	False (*)	PCE: Initiate LMP-Authentication (M)
+TSPC_PBAP_18_3	False		PCE: Security mode 1 (C.1)
+TSPC_PBAP_18_4	False		PCE: Security mode 2 (C.1)
+TSPC_PBAP_18_5	False		PCE: Security mode 3 (C.1)
+TSPC_PBAP_18_6	False		PCE: Security mode 4 (C.1)
+-------------------------------------------------------------------------------
+C.1: At least one of TSPC_PBAP_18_4, TSPC_PBAP_18_5 or TSPC_PBAP_18_6
+	(security mode 2, 3, or 4) shall be supported.
+-------------------------------------------------------------------------------
+
+
+		GAP Security Modes for PSE
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_PBAP_19_1	True		PSE: Authentication Procedure (M)
+TSPC_PBAP_19_2	True		PSE: Initiate LMP-Authentication (M)
+TSPC_PBAP_19_3	False		PSE: Security mode 1 (C.2)
+TSPC_PBAP_19_4	False		PSE: Security mode 2 (C.1)
+TSPC_PBAP_19_5	False		PSE: Security mode 3 (C.1)
+TSPC_PBAP_19_6	True (*)	PSE: Security mode 4 (C.1)
+-------------------------------------------------------------------------------
+C.1: At least one of TSPC_PBAP_19_3, TSPC_PBAP_19_4, TSPC_PBAP_19_5 or
+	TSPC_PBAP_19_6 (security mode 2, 3, or 4) shall be supported.
+C.2: Excluded in PSE.
+-------------------------------------------------------------------------------
+
+
+		GAP Idle Modes for PSE
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_PBAP_21_1	True		PSE: Initiation of General Inquiry (M)
+TSPC_PBAP_21_2	False		PSE: Initiation of Limited Inquiry (O)
+-------------------------------------------------------------------------------
+
+
+		SDP Attributes (PCE)
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_PBAP_22_1	False (*)	PCE: BluetoothProfileDescriptorList (M)
+-------------------------------------------------------------------------------
+
+		SDP Attributes (PSE)
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_PBAP_23_1	True		PSE: ProtocolDescriptorList (M)
+TSPC_PBAP_23_2	True		PSE: BluetoothProfileDescriptorList (M)
+-------------------------------------------------------------------------------
+
+
+		Additional PBAP Capabilities
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_PBAP_24_1	False		PCE: Retrieve Large Phone Book (C.1)
+TSPC_PBAP_24_2	False		PSE: Transfer Large Phone Book (C.2)
+TSPC_PBAP_24_3	False		PCE: Retrieve Empty Phone Book (C.1)
+TSPC_PBAP_24_4	False		PSE: Transfer Empty Phone Book (C.2)
+TSPC_PBAP_24_5	False		PSE: Return Phonebook – Limit number of entries
+					(C.2)
+TSPC_PBAP_24_6	False		PSE: Return vCard listing – Limit number of
+					entries  (C.2)
+TSPC_PBAP_24_7	False		PSE: Phone Book Order (C.2)
+TSPC_PBAP_24_8	False		PSE: Call stack timestamps (C.3)
+TSPC_PBAP_24_9	False		PSE: No User Interaction (C.2)
+TSPC_PBAP_24_10	False		PSE: Special Character Handling  (C.2)
+-------------------------------------------------------------------------------
+C.1: Optional if TSPC_PBAP_2_1 is supported, otherwise excluded.
+C.2: Optional if TSPC_PBAP_1_2 is supported, otherwise excluded.
+C.3: Optional if TSPC_PBAP_10_2 is supported, otherwise excluded.
+-------------------------------------------------------------------------------
+
+
+		GOEP 2.0 or later Features (PCE)
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_PBAP_25_1	False		PCE: GOEP v2.0 or later (M)
+TSPC_PBAP_25_2	False (*)	PCE: GOEP v2 Backwards Compatibility (M)
+TSPC_PBAP_25_3	False		PCE: OBEX over L2CAP (M)
+TSPC_PBAP_25_4	False		PCE: OBEX SRM (M)
+TSPC_PBAP_25_5	False (*)	PCE: Send OBEX SRMP header (C.1)
+TSPC_PBAP_25_6	False		PCE: Receive OBEX SRMP header (M)
+-------------------------------------------------------------------------------
+C.1: Optional to support if TSPC_PBAP_25_4 (OBEX SRM) is supported,
+	otherwise Excluded.
+-------------------------------------------------------------------------------
+
+
+		GOEP 2.0 or later Features (PSE)
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_PBAP_26_1	False		PSE: GOEP v2.0 or later (M)
+TSPC_PBAP_26_2	False (*)	PSE: GOEP v2 Backwards Compatibility (M)
+TSPC_PBAP_26_3	False		PSE: OBEX over L2CAP (M)
+TSPC_PBAP_26_4	False		PSE: OBEX SRM (M)
+TSPC_PBAP_26_5	False (*)	PSE: Send OBEX SRMP header (C.1)
+TSPC_PBAP_26_6	False		PSE: Receive OBEX SRMP header (M)
+TSPC_ALL	False		Turns on all the test cases
+-------------------------------------------------------------------------------
+C.1: Optional if TSPC_PBAP_26_4 (OBEX SRM) is supported, otherwise Excluded.
+-------------------------------------------------------------------------------

@@ -1,0 +1,23 @@
+PTS test results for GAVDP
+
+PTS version: 6.1
+Tested: 08-May-2015
+Android version: 5.1
+
+Results:
+PASS	test passed
+FAIL	test failed
+INC	test is inconclusive
+N/A	test is disabled due to PICS setup
+NONE	test result is none
+
+-------------------------------------------------------------------------------
+Test Name				Result	Notes
+-------------------------------------------------------------------------------
+TC_ACP_APP_CON_BV_01_C			PASS
+TC_ACP_APP_TRC_BV_01_C			N/A
+TC_ACP_APP_TRC_BV_02_C			PASS
+TC_INT_APP_CON_BV_01_C			PASS
+TC_INT_APP_TRC_BV_01_C			N/A
+TC_INT_APP_TRC_BV_02_C			PASS
+-------------------------------------------------------------------------------

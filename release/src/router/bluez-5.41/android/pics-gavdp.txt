@@ -1,0 +1,38 @@
+GAVDP PICS for the PTS tool.
+
+PTS version: 6.1
+
+* - different than PTS defaults
+# - not yet implemented/supported
+
+M - mandatory
+O - optional
+
+		Role
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_GAVDP_1_1	True (*)	Initiator (C.1)
+TSPC_GAVDP_1_2	True (*)	Initiator (C.1)
+-------------------------------------------------------------------------------
+C.1: Mandatory if Acceptor/Initiator is not supported
+-------------------------------------------------------------------------------
+
+		GAVDP Procedures (Initiator)
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_GAVDP_2_1	True		Connection Establishment (M)
+TSPC_GAVDP_2_2	True (*)	Transfer Control -Suspend (O)
+TSPC_GAVDP_2_3	False		Transfer Control – Change Parameters (O)
+-------------------------------------------------------------------------------
+
+
+		GAVDP Procedures (Acceptor)
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_GAVDP_3_1	True		Connection Establishment (M)
+TSPC_GAVDP_3_2	True (*)	Transfer Control -Suspend (O)
+TSPC_GAVDP_3_3	False		Transfer Control – Change Parameters (O)
+-------------------------------------------------------------------------------

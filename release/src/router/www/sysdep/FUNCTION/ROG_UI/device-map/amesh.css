@@ -127,7 +127,7 @@
 	color: #FFFFFF;
 }
 .amesh_rotate:hover .amesh_router_icon {
-	background-color: #FFFFFF;
+	background-color: #cf0a2c;
 }
 .amesh_rotate .amesh_line {
   width: 100%;
@@ -236,7 +236,7 @@
 	float: left;
 }
 .amesh_router_icon_bg.card {
-	background-color: rgb(104, 5, 22);
+	background-color: #3e030d;
 	border-radius: 10px;
 	height: 85px;
 	margin: auto;
@@ -250,15 +250,15 @@
 .amesh_router_icon {
 	width: 50px;
 	height: 50px;
-	background-color: #798D94;
+	background-color: #680516;
 	-webkit-border-radius: 10px;
 	-moz-border-radius: 10px;
 	border-radius: 10px;
-	box-shadow: 0px 0px 0px 1px #3E4243;
-	background-image:url('/images/New_ui/networkmap/client-list.svg');
+	box-shadow: 0px 0px 0px 1px #740F0F;
+	background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADYAAAA2CAMAAAC7m5rvAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAABFUExURQAAAP///////////////////////////////////////////////////////////////////////////////////////1Kdc8IAAAAWdFJOUwBA8KDfwBCAIOA/0F9vv5+wMGBQr89XZmCpAAAAzklEQVRIx+2VuRKDMAxEwfjmPrL//6kBkxSAJFKkoPAWnrGsB9qRwEWRlfV8OThmIwoAs/kTdiiFx84V85niqzP2DKzpwKhreKyHoJ7DRogaSSzGBRgsPbN2AJYYCSyp5Ga9/GYcoooKUg9Wh+BsjAmA4TEDhDVpvhxUkL5/B1TkgRasJXOaivvdmtfaU+tmzhPYtFtzqdTrupmbCOxjzYfgqZUzJ1tL5l53v7ni54S1461EtWvj6MbciWqrre+ompxz65QEKWfzrZr1XL0BN4YmDXhvMCsAAAAASUVORK5CYII=");
 	background-repeat:no-repeat;
-	background-size: 900%;
-	background-position: 66.5% 50%;
+	background-size: 100%;
+	background-position: 50%;
 	margin: auto;
 	position: absolute;
 	top: 0;
@@ -829,7 +829,7 @@
 	width: 100%;
 }
 .aimesh_node_setting_info_title {
-	width: 35%;
+	width: 45%;
 	float: left;
 }
 .aimesh_node_static_info_content {
@@ -849,7 +849,7 @@
 }
 .aimesh_node_setting_info_content {
 	float: left;
-	width: 65%;
+	width: 55%;
 	color: #569AC7;
 	font-size: 14px;
 	font-weight: bolder;
@@ -863,7 +863,7 @@
 	margin: 10px 15px;
 }
 .aimesh_node_setting_bg {
-	margin: 0px 30px 0px 50px;
+	margin: 0px 30px;
 	display: none;
 }
 .aimesh_node_setting_line {
@@ -959,6 +959,10 @@
 	margin: auto;
 	background-size: 100%;
 	border-radius: 10px;
+	background-color: #680516;
+	box-shadow: 0px 0px 0px 1px #740F0F;
+	background-repeat:no-repeat;
+	background-position: 50%;
 }
 .aimesh_node_client_item {
 	cursor:pointer;

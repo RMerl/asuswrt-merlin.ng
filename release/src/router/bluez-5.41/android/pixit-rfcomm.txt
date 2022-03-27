@@ -1,0 +1,28 @@
+RFCOMM PIXIT for the PTS tool.
+
+PTS version: 6.1
+
+* - different than PTS defaults
+& - should be set to IUT Bluetooth address
+# - should be set to PTS's bin/audio folder
+
+		Required PIXIT settings
+-------------------------------------------------------------------------------
+Parameter Name				Value
+-------------------------------------------------------------------------------
+TSPX_bd_addr_iut			11223344556677 (*&)
+TSPX_delete_link_key			FALSE
+TSPX_pin_code				1234
+TSPX_security_enabled			TRUE
+TSPX_time_guard				300000
+TSPX_use_implicit_send			TRUE
+TSPX_service_name_tester		COM5
+TSPX_class_of_device_tester		200408
+TSPX_server_channel_iut			01 (*)
+TSPX_verification_pattern_length	4
+TSPX_T1_Acknowledgement_Timer		20000
+TSPX_T1_Acknowledgement_Timer_Dlc	300000
+TSPX_T2_Response_Timer			20000
+TSPX_max_frame_size_iut			127
+TSPX_RPN_parameters_iut			0302001113
+-------------------------------------------------------------------------------

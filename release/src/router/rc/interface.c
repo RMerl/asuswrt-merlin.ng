@@ -419,6 +419,45 @@ int route_del(char *name, int metric, char *dst, char *gateway, char *genmask)
 	return route_manip(SIOCDELRT, name, metric, dst, gateway, genmask);
 }
 
+int route_exist(const char *name, int metric, const char *dst, const char *gateway, const char *mask)
+{
+	FILE *fp = fopen("/proc/net/route", "r");
+	in_addr_t addr_dst, addr_gate, addr_mask;
+	in_addr_t rtr_dst, rtr_gate, rtr_mask;
+	int rtr_metric;
+	char buf[256], iface[16];
+	int i;
+	int ret = -1;
+
+	if (!name || !dst || !gateway || !mask)
+		return -1;
+	if (inet_pton(AF_INET, dst, &addr_dst) < 0
+	 || inet_pton(AF_INET, gateway, &addr_gate) < 0
+	 || inet_pton(AF_INET, mask, &addr_mask) < 0)
+		return -1;
+
+	if(fp) {
+		while(fgets(buf, sizeof(buf), fp)) {
+			if(!strncmp(buf, "Iface", 5))
+				continue;
+
+			i = sscanf(buf, "%s %x %x %*s %*s %*s %d %x",
+					iface, &rtr_dst, &rtr_gate, &rtr_metric, &rtr_mask);
+			if (i != 4)
+				break;
+
+			if( !strcmp(name, iface) && rtr_metric == metric && addr_dst == rtr_dst
+			 && addr_gate == rtr_gate && addr_mask == rtr_mask) {
+				ret = 1;
+			}
+		}
+		if (ret != 1)
+			ret = 0;
+		fclose(fp);
+	}
+	return (ret);
+}
+
 /* configure loopback interface */
 void config_loopback(void)
 {
@@ -659,8 +698,8 @@ int start_vlan(void)
 			case 1: STB != 0
 			case 2: STB == 0 && wan tag != 0
 		*/
-		ifconfig(WAN_IF_ETH, IFUP, NULL, NULL);
-		set_wan_tag(WAN_IF_ETH);
+		ifconfig(wan_if_eth(), IFUP, NULL, NULL);
+		set_wan_tag(wan_if_eth());
 	}
 #elif defined(BLUECAVE)
 	if(!nvram_match("switch_wantag", "") && (nvram_get_int("switch_stb_x") > 0 || nvram_match("switch_wantag", "unifi_biz") || 

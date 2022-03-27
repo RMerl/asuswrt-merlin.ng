@@ -29,7 +29,7 @@
 #endif
 #endif
 #ifdef HND_ROUTER
-#if defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(RTCONFIG_HND_ROUTER_AX_6756)
+#if defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_BCM_502L07P2)
 #include "bcmnet.h"
 #endif
 #endif
@@ -112,7 +112,7 @@ static const struct led_btn_table_s {
 #ifdef RTCONFIG_EXTPHY_BCM84880
 	{ "led_extphy_gpio",&led_gpio_table[LED_EXTPHY] },
 #endif
-#if defined(RTCONFIG_WANLEDX2)
+#if defined(RTCONFIG_WANLEDX2) || defined(RTAXE7800)
 	{ "led_wan2_gpio",	&led_gpio_table[LED_WAN2] },
 #endif
 #if defined(RTCONFIG_R10G_LED)
@@ -284,7 +284,7 @@ static const struct led_btn_table_s {
 	{ "led_yellow_gpio",    &led_gpio_table[LED_YELLOW_GPIO] },
 	{ "led_purple_gpio",    &led_gpio_table[LED_PURPLE_GPIO] },
 #endif
-#if defined(RTAX95Q) || defined(XT8PRO) || defined(RTAXE95Q) || defined(ET8PRO) || defined(RTAX56_XD4) || defined(XD4PRO) || defined(RTAX82_XD6) || defined(ET12) || defined(XT12)
+#if defined(RTAX95Q) || defined(XT8PRO) || defined(RTAXE95Q) || defined(ET8PRO) || defined(RTAX56_XD4) || defined(XD4PRO) || defined(RTAX82_XD6) || defined(RTAX82_XD6S)  || defined(ET12) || defined(XT12)
 	{ "bt_rst_gpio",        &led_gpio_table[BT_RESET] },
 	{ "bt_disable_gpio",    &led_gpio_table[BT_DISABLE] },
 	{ "led_rgb1_red_gpio",  &led_gpio_table[LED_RGB1_RED] },
@@ -395,7 +395,7 @@ int init_gpio(void)
 #ifdef RTCONFIG_LED_ALL
 		, "led_all_gpio"
 #endif
-#if defined(RTCONFIG_WANLEDX2)
+#if defined(RTCONFIG_WANLEDX2) || defined(RTAXE7800)
 		, "led_wan2_gpio"
 #endif
 #if defined(RTCONFIG_WANRED_LED)
@@ -1012,7 +1012,7 @@ int wanport_speed(void)
 	return get_phy_speed(mask);
 }
 
-#if defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(RTCONFIG_HND_ROUTER_AX_6756)
+#if defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_BCM_502L07P2)
 int ethctl_set_phy(char *ifname, int ctrl)
 {
 	struct ifreq ifr;
@@ -1099,7 +1099,7 @@ int lanport_status(void)
 	return rtkswitch_lanPorts_phyStatus();
 #elif defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2)
 	return rtkswitch_lanPorts_phyStatus();
-#elif defined(RTCONFIG_HND_ROUTER_AX_675X)
+#elif defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(RTCONFIG_HND_ROUTER_AX_6710) || defined(RTCONFIG_BCM_502L07P2)
 	int status = 0;
 	char word[16] = {0};
 	char *next = NULL;
@@ -1139,6 +1139,9 @@ int lanport_speed(void)
 #endif
 }
 
+#ifdef GTAX6000
+static int bootup_skip = 1;
+#endif
 int lanport_ctrl(int ctrl)
 {
 #if defined(RPAX56) || defined(RPAX58)
@@ -1234,13 +1237,24 @@ int lanport_ctrl(int ctrl)
 #endif
 
 	foreach(word, nvram_safe_get("lanports"), next) {
-#if defined(BCM6750) || defined(BCM4912)
+#if defined(BCM6750) || defined(BCM4912) || defined(BCM6756)
+#ifdef GTAX6000
+		if ((nvram_get_int("ext_phy_model") == EXT_PHY_BCM54991) &&
+			ctrl && (atoi(word) == 5)) {
+			if (bootup_skip)
+				bootup_skip = 0;
+			else {
+				doSystem("ethctl eth%d phy-reset", atoi(word));
+				sleep(5);
+			}
+		}
+#endif
 		doSystem("ethctl eth%d phy-power %s", atoi(word), ctrl ? "up" : "down");
 #else
 		mask |= (0x0001<<atoi(word));
 #endif
 	}
-#if defined(BCM6750) || defined(BCM4912)
+#if defined(BCM6750) || defined(BCM4912) || defined(BCM6756)
 	return 1;
 #else
 	return set_phy_ctrl(mask, ctrl);

@@ -40,11 +40,11 @@ static struct time_mapping_s time_mapping_list[] = {
 	{ "RT-AX89X",	80,	120,	60},
 	{ "Lyra",	80,	60,	60},
 	{ "Lyra_Mini",	80,	60,	60},
-	{ "Lyra_Trio",	80,	120,	60},
-	{ "RT-AC59U_V2",	80,	120,	60},
-	{ "RT-AC58U_V3",	80,	120,	60},
-	{ "RT-AC57U_V3",	80,	120,	60},
-	{ "RT-AC1300G_PLUS_V3",	80,	120,	60},
+	{ "Lyra_Trio",		80,	120,	120},
+	{ "RT-AC59U_V2",	80,	120,	120},
+	{ "RT-AC58U_V3",	80,	120,	120},
+	{ "RT-AC57U_V3",	80,	120,	120},
+	{ "RT-AC1300G_PLUS_V3",	80,	120,	120},
 	{ "ZenWiFi_CD6R",	80,	120,	120},
 	{ "ZenWiFi_CD6N",	80,	120,	120},
 	{ "RT-AX88U",	50,     120,     60},
@@ -61,6 +61,7 @@ static struct time_mapping_s time_mapping_list[] = {
 	{ "RT-AX58U",   50,     120,     60},
 	{ "RT-AX58U_V2",50,     120,     60},
 	{ "TUF-AX3000", 50,     120,     60},
+	{ "TUF-AX3000_V2",50,   120,     60},
 	{ "TUF-AX5400", 50,     120,     60},
 	{ "RT-AX82U",   50,     120,     60},
 	{ "GS-AX3000",  50,     60,     60},
@@ -81,6 +82,7 @@ static struct time_mapping_s time_mapping_list[] = {
 	{ "GT-AXE16000", 50,    120,     60},
 	{ "ET12", 50,    120,     60},
 	{ "XT12", 50,    120,     60},
+	{ "RT-AXE7800",	50,     120,     60},
 	/* END */
 	{ NULL, 0, 0, 0 }
 };

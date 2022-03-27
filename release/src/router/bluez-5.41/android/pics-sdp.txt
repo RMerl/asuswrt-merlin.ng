@@ -1,0 +1,140 @@
+SDP PICS for the PTS tool.
+
+PTS version: 6.1
+
+* - different than PTS defaults
+# - not yet implemented/supported
+
+M - mandatory
+O - optional
+
+
+		Support Different Size Capabilities on UUID
+-------------------------------------------------------------------------------
+Item		Selected	Description
+-------------------------------------------------------------------------------
+TSPC_SDP_1_1	True		Support for 128 bit UUID (M)
+TSPC_SDP_1_2	True		Support for 32 bit UUID	(M)
+TSPC_SDP_1_3	True		Support for 16 bit UUID (M)
+-------------------------------------------------------------------------------
+
+
+		Roles
+-------------------------------------------------------------------------------
+Item		Selected	Description
+-------------------------------------------------------------------------------
+TSPC_SDP_1b_1	True (*)	Support for server role (C.1)
+TSPC_SDP_1b_2	True (*)	Support for client role (C.1)
+-------------------------------------------------------------------------------
+C.1 Mandatory to support at least one of the roles
+-------------------------------------------------------------------------------
+
+
+		Valid Service Search Request
+-------------------------------------------------------------------------------
+Item		Selected	Description
+-------------------------------------------------------------------------------
+TSPC_SDP_2_1	True (*)	Support for respond on search of single
+				Service, using ServiceSearchRequest (C.2)
+TSPC_SDP_2_2	True (*)	Support for respond on search of Service,
+				using continuation state (O)
+TSPC_SDP_2_3	True (*)	Search for services using the continuation
+				state (C.1)
+-------------------------------------------------------------------------------
+C.1 Mandatory to support if the client role is supported TSPC_SDP_1b_2
+C.2 Mandatory to support if the server role is supported TSPC_SDP_1b_1
+-------------------------------------------------------------------------------
+
+
+		Invalid Service Search Request
+-------------------------------------------------------------------------------
+Item		Selected	Description
+-------------------------------------------------------------------------------
+TSPC_SDP_3_1	True		Support for error response on Service search
+				request (M)
+-------------------------------------------------------------------------------
+
+
+		Valid Service Attribute Request
+-------------------------------------------------------------------------------
+Item		Selected	Description
+-------------------------------------------------------------------------------
+TSPC_SDP_4_1	True		Support for respond on search of
+				Attribute(s) (M)
+TSPC_SDP_4_2	True (*)	Support for respond on search of
+				Attribute, using continuation state (O)
+TSPC_SDP_4_3	True (*)	Support for respond on search on
+				attribute AdditionalProtocolDescriptorList (O)
+-------------------------------------------------------------------------------
+
+
+		Invalid Service Attribute Request
+-------------------------------------------------------------------------------
+Item		Selected	Description
+-------------------------------------------------------------------------------
+TSPC_SDP_5_1	True		Support for error response on Attribute
+				search request (M)
+-------------------------------------------------------------------------------
+
+
+		Valid Service Search Attribute Request
+-------------------------------------------------------------------------------
+Item		Selected	Description
+-------------------------------------------------------------------------------
+TSPC_SDP_6_1	True		Support for respond on search for Service(s)
+				and Attribute(s) (M)
+TSPC_SDP_6_2	True (*)	Support for respond on search of Attribute,
+				using continuation state (O)
+TSPC_SDP_6_3	True (*)	Support for respond on search on attribute
+				AdditionalProtocolDescriptorList on existing
+				service (O)
+-------------------------------------------------------------------------------
+
+
+		Invalid Service Search Attribute Request
+-------------------------------------------------------------------------------
+Item		Selected	Description
+-------------------------------------------------------------------------------
+TSPC_SDP_7_1	True		Support for error response on Service and
+				Attribute request (M)
+-------------------------------------------------------------------------------
+
+
+		Service Browsing
+-------------------------------------------------------------------------------
+Item		Selected	Description
+-------------------------------------------------------------------------------
+TSPC_SDP_8_1	True (*)	Support for browsing, using
+				SDP_ServiceSearchRequest and
+				SDP_ServiceAttributeRequest (O)
+TSPC_SDP_8_2	True (*)	Support for browsing, using
+				SDP_ServiceSearchAttributeRequest (O)
+-------------------------------------------------------------------------------
+
+
+		Attributes Present in IUT
+-------------------------------------------------------------------------------
+Item		Selected	Description
+-------------------------------------------------------------------------------
+TSPC_SDP_9_1	True (*)	ServiceID (O)
+TSPC_SDP_9_2	True (*)	ProtocolDescriptorList (O)
+TSPC_SDP_9_3	True (*)	ServiceRecordState (O)
+TSPC_SDP_9_4	True (*)	ServiceInfoTimeToLive (O)
+TSPC_SDP_9_5	True (*)	BrowseGroupList (O)
+TSPC_SDP_9_6	True (*)	LanguageBaseAttributeIdList (O)
+TSPC_SDP_9_7	True (*)	ServiceAvailability (O)
+TSPC_SDP_9_8	True (*)	IconURL (O)
+TSPC_SDP_9_9	True (*)	ServiceName (O)
+TSPC_SDP_9_10	True (*)	ServiceDescription (O)
+TSPC_SDP_9_11	True (*)	ProviderName (O)
+TSPC_SDP_9_12	True (*)	VersionNumberList (O)
+TSPC_SDP_9_13	True (*)	ServiceDataBaseState (O)
+TSPC_SDP_9_14	True (*)	BluetoothProfileDescriptorList (O)
+TSPC_SDP_9_15	True (*)	DocumentationURL (O)
+TSPC_SDP_9_16	True (*)	ClientExecutableURL (O)
+TSPC_SDP_9_17	True (*)	AdditionalProtocolDescriptorList (C.1)
+TSPC_SDP_9_18	True		ServiceRecordHandle (M)
+TSPC_SDP_9_19	True		ServiceClassIDList (M)
+-------------------------------------------------------------------------------
+C.1: Optional if TSPC_SDP_9_2 is supported, otherwise excluded
+-------------------------------------------------------------------------------

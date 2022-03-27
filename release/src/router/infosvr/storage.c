@@ -29,6 +29,9 @@ extern unsigned char cfg_group_g[];
 extern char productid_g[];
 extern char mac[];
 extern int cfg_groupid_is_null;
+char* gen_vsie_id(int, size_t *);
+#include <time.h>
+int str2hex(const char *, unsigned char *, size_t);
 #endif
 
 int getStorageStatus(STORAGE_INFO_T *st)

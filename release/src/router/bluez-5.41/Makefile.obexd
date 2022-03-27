@@ -1,0 +1,110 @@
+
+if SYSTEMD
+systemduserunitdir = @SYSTEMD_USERUNITDIR@
+systemduserunit_DATA = obexd/src/obex.service
+
+dbussessionbusdir = @DBUS_SESSIONBUSDIR@
+dbussessionbus_DATA = obexd/src/org.bluez.obex.service
+endif
+
+EXTRA_DIST += obexd/src/obex.service.in obexd/src/org.bluez.obex.service
+
+obex_plugindir = $(libdir)/obex/plugins
+
+obexd_builtin_modules =
+obexd_builtin_sources =
+obexd_builtin_nodist =
+
+obexd_builtin_modules += filesystem
+obexd_builtin_sources += obexd/plugins/filesystem.c obexd/plugins/filesystem.h
+
+obexd_builtin_modules += bluetooth
+obexd_builtin_sources += obexd/plugins/bluetooth.c
+
+if EXPERIMENTAL
+obexd_builtin_modules += pcsuite
+obexd_builtin_sources += obexd/plugins/pcsuite.c
+endif
+
+obexd_builtin_modules += opp
+obexd_builtin_sources += obexd/plugins/opp.c
+
+obexd_builtin_modules += ftp
+obexd_builtin_sources += obexd/plugins/ftp.c obexd/plugins/ftp.h
+
+if OBEX
+obexd_builtin_modules += irmc
+obexd_builtin_sources += obexd/plugins/irmc.c
+
+obexd_builtin_modules += pbap
+obexd_builtin_sources += obexd/plugins/pbap.c \
+				obexd/plugins/vcard.h obexd/plugins/vcard.c \
+				obexd/plugins/phonebook.h \
+				obexd/plugins/phonebook-dummy.c
+endif
+
+obexd_builtin_modules += mas
+obexd_builtin_sources += obexd/plugins/mas.c obexd/src/map_ap.h \
+				obexd/plugins/messages.h \
+				obexd/plugins/messages-dummy.c
+
+obexd_builtin_modules += mns
+obexd_builtin_sources += obexd/client/mns.c obexd/src/map_ap.h \
+				obexd/client/map-event.h
+
+libexec_PROGRAMS += obexd/src/obexd
+
+obexd_src_obexd_SOURCES = $(btio_sources) $(gobex_sources) \
+			$(obexd_builtin_sources) \
+			obexd/src/main.c obexd/src/obexd.h \
+			obexd/src/plugin.h obexd/src/plugin.c \
+			obexd/src/log.h obexd/src/log.c \
+			obexd/src/manager.h obexd/src/manager.c \
+			obexd/src/obex.h obexd/src/obex.c obexd/src/obex-priv.h \
+			obexd/src/mimetype.h obexd/src/mimetype.c \
+			obexd/src/service.h obexd/src/service.c \
+			obexd/src/transport.h obexd/src/transport.c \
+			obexd/src/server.h obexd/src/server.c \
+			obexd/client/manager.h obexd/client/manager.c \
+			obexd/client/session.h obexd/client/session.c \
+			obexd/client/bluetooth.h obexd/client/bluetooth.c \
+			obexd/client/sync.h obexd/client/sync.c \
+			obexd/client/pbap.h obexd/client/pbap.c \
+			obexd/client/ftp.h obexd/client/ftp.c \
+			obexd/client/opp.h obexd/client/opp.c \
+			obexd/client/map.h obexd/client/map.c \
+			obexd/client/map-event.h obexd/client/map-event.c \
+			obexd/client/transfer.h obexd/client/transfer.c \
+			obexd/client/transport.h obexd/client/transport.c \
+			obexd/client/dbus.h obexd/client/dbus.c \
+			obexd/client/driver.h obexd/client/driver.c \
+			obexd/src/map_ap.h
+obexd_src_obexd_LDADD = lib/libbluetooth-internal.la \
+			gdbus/libgdbus-internal.la \
+			@ICAL_LIBS@ @DBUS_LIBS@ @GLIB_LIBS@ -ldl
+
+obexd_src_obexd_LDFLAGS = -Wl,--export-dynamic
+
+obexd_src_obexd_CFLAGS = $(AM_CFLAGS) @GLIB_CFLAGS@ @DBUS_CFLAGS@ \
+				@ICAL_CFLAGS@ -DOBEX_PLUGIN_BUILTIN \
+				-DPLUGINDIR=\""$(obex_plugindir)"\" \
+				-fPIC -D_FILE_OFFSET_BITS=64
+
+obexd_src_obexd_CPPFLAGS = -I$(builddir)/lib -I$(builddir)/obexd/src
+
+obexd_src_obexd_SHORTNAME = obexd
+
+obexd_builtin_files = obexd/src/builtin.h $(obexd_builtin_nodist)
+
+nodist_obexd_src_obexd_SOURCES = $(obexd_builtin_files)
+
+BUILT_SOURCES += obexd/src/builtin.h
+
+obexd/src/plugin.$(OBJEXT): obexd/src/builtin.h
+
+obexd/src/builtin.h: obexd/src/genbuiltin $(obexd_builtin_sources)
+	$(AM_V_GEN)$(srcdir)/obexd/src/genbuiltin $(obexd_builtin_modules) > $@
+
+CLEANFILES += obexd/src/builtin.h $(builtin_files) obexd/src/obex.service
+
+EXTRA_DIST += obexd/src/genbuiltin

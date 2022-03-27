@@ -1,0 +1,220 @@
+﻿{
+	"IPv4" : [
+		{
+			"dnspriv_label" : "CleanBrowsing 1 (security)",
+			"dnspriv_server" : "185.228.168.9",
+			"dnspriv_port" : "",
+			"dnspriv_hostname" : "security-filter-dns.cleanbrowsing.org",
+			"dnspriv_spkipin" : ""
+		},
+		{
+			"dnspriv_label" : "CleanBrowsing 2 (security)",
+			"dnspriv_server" : "185.228.169.9",
+			"dnspriv_port" : "",
+			"dnspriv_hostname" : "security-filter-dns.cleanbrowsing.org",
+			"dnspriv_spkipin" : ""
+		},
+		{
+			"dnspriv_label" : "CleanBrowsing 1 (family)",
+			"dnspriv_server" : "185.228.168.168",
+			"dnspriv_port" : "",
+			"dnspriv_hostname" : "family-filter-dns.cleanbrowsing.org",
+			"dnspriv_spkipin" : ""
+		},
+		{
+			"dnspriv_label" : "CleanBrowsing 2 (family)",
+			"dnspriv_server" : "185.228.169.168",
+			"dnspriv_port" : "",
+			"dnspriv_hostname" : "family-filter-dns.cleanbrowsing.org",
+			"dnspriv_spkipin" : ""
+		},
+		{
+			"dnspriv_label" : "CleanBrowsing 1 (adult filter)",
+			"dnspriv_server" : "185.228.168.10",
+			"dnspriv_port" : "",
+			"dnspriv_hostname" : "adult-filter-dns.cleanbrowsing.org",
+			"dnspriv_spkipin" : ""
+		},
+		{
+			"dnspriv_label" : "CleanBrowsing 2 (adult filter)",
+			"dnspriv_server" : "185.228.169.11",
+			"dnspriv_port" : "",
+			"dnspriv_hostname" : "adult-filter-dns.cleanbrowsing.org",
+			"dnspriv_spkipin" : ""
+		},
+		{
+			"dnspriv_label" : "Cloudflare 1.1.1.1",
+			"dnspriv_server" : "1.1.1.1",
+			"dnspriv_port" : "",
+			"dnspriv_hostname" : "cloudflare-dns.com",
+			"dnspriv_spkipin" : ""
+		},
+		{
+			"dnspriv_label" : "Cloudflare 1.0.0.1",
+			"dnspriv_server" : "1.0.0.1",
+			"dnspriv_port" : "",
+			"dnspriv_hostname" : "cloudflare-dns.com",
+			"dnspriv_spkipin" : ""
+		},
+		{
+			"dnspriv_label" : "Google 8.8.8.8",
+			"dnspriv_server" : "8.8.8.8",
+			"dnspriv_port" : "",
+			"dnspriv_hostname" : "dns.google",
+			"dnspriv_spkipin" : ""
+		},
+		{
+			"dnspriv_label" : "Google 8.8.4.4",
+			"dnspriv_server" : "8.8.4.4",
+			"dnspriv_port" : "",
+			"dnspriv_hostname" : "dns.google",
+			"dnspriv_spkipin" : ""
+		},
+		{
+			"dnspriv_label" : "Quad9 1",
+			"dnspriv_server" : "9.9.9.9",
+			"dnspriv_port" : "",
+			"dnspriv_hostname" : "dns.quad9.net",
+			"dnspriv_spkipin" : ""
+		},
+		{
+			"dnspriv_label" : "Quad9 2",
+			"dnspriv_server" : "149.112.112.112",
+			"dnspriv_port" : "",
+			"dnspriv_hostname" : "dns.quad9.net",
+			"dnspriv_spkipin" : ""
+		}
+	],
+	"IPv4 (port 443)" : [
+		{
+			"dnspriv_label" : "Neutopia",
+			"dnspriv_server" : "89.234.186.112",
+			"dnspriv_port" : "443",
+			"dnspriv_hostname" : "dns.neutopia.org",
+			"dnspriv_spkipin" : "wTeXHM8aczvhRSi0cv2qOXkXInoDU+2C+M8MpRyT3OI="
+		},
+		{
+			"dnspriv_label" : "Surfnet/Sinodun 1",
+			"dnspriv_server" : "145.100.185.15",
+			"dnspriv_port" : "443",
+			"dnspriv_hostname" : "dnsovertls.sinodun.com",
+			"dnspriv_spkipin" : "62lKu9HsDVbyiPenApnc4sfmSYTHOVfFgL3pyB+cBL4="
+		},
+		{
+			"dnspriv_label" : "Surfnet/Sinodun 2",
+			"dnspriv_server" : "145.100.185.16",
+			"dnspriv_port" : "443",
+			"dnspriv_hostname" : "dnsovertls1.sinodun.com",
+			"dnspriv_spkipin" : "cE2ecALeE5B+urJhDrJlVFmf38cJLAvqekONvjvpqUA="
+		}
+	],
+	"IPv6" : [
+		{
+			"dnspriv_label" : "CleanBrowsing 1 (security)",
+			"dnspriv_server" : "2a0d:2a00:1::2",
+			"dnspriv_port" : "",
+			"dnspriv_hostname" : "security-filter-dns.cleanbrowsing.org",
+			"dnspriv_spkipin" : ""
+		},
+		{
+			"dnspriv_label" : "CleanBrowsing 2 (security)",
+			"dnspriv_server" : "2a0d:2a00:2::2",
+			"dnspriv_port" : "",
+			"dnspriv_hostname" : "security-filter-dns.cleanbrowsing.org",
+			"dnspriv_spkipin" : ""
+		},
+		{
+			"dnspriv_label" : "CleanBrowsing 1 (family)",
+			"dnspriv_server" : "2a0d:2a00:1::0",
+			"dnspriv_port" : "",
+			"dnspriv_hostname" : "family-filter-dns.cleanbrowsing.org",
+			"dnspriv_spkipin" : ""
+		},
+		{
+			"dnspriv_label" : "CleanBrowsing 2 (family)",
+			"dnspriv_server" : "2a0d:2a00:2::0",
+			"dnspriv_port" : "",
+			"dnspriv_hostname" : "family-filter-dns.cleanbrowsing.org",
+			"dnspriv_spkipin" : ""
+		},
+		{
+			"dnspriv_label" : "CleanBrowsing 1 (adult filter)",
+			"dnspriv_server" : "2a0d:2a00:1::1",
+			"dnspriv_port" : "",
+			"dnspriv_hostname" : "adult-filter-dns.cleanbrowsing.org",
+			"dnspriv_spkipin" : ""
+		},
+		{
+			"dnspriv_label" : "CleanBrowsing 2 (adult filter)",
+			"dnspriv_server" : "2a0d:2a00:2::1",
+			"dnspriv_port" : "",
+			"dnspriv_hostname" : "adult-filter-dns.cleanbrowsing.org",
+			"dnspriv_spkipin" : ""
+		},
+		{
+			"dnspriv_label" : "Cloudflare :1111",
+			"dnspriv_server" : "2606:4700:4700::1111",
+			"dnspriv_port" : "",
+			"dnspriv_hostname" : "cloudflare-dns.com",
+			"dnspriv_spkipin" : ""
+		},
+		{
+			"dnspriv_label" : "Cloudflare :1001",
+			"dnspriv_server" : "2606:4700:4700::1001",
+			"dnspriv_port" : "",
+			"dnspriv_hostname" : "cloudflare-dns.com",
+			"dnspriv_spkipin" : ""
+		},
+		{
+			"dnspriv_label" : "Google :8888",
+			"dnspriv_server" : "2001:4860:4860::8888",
+			"dnspriv_port" : "",
+			"dnspriv_hostname" : "dns.google",
+			"dnspriv_spkipin" : ""
+		},
+		{
+			"dnspriv_label" : "Google :8844",
+			"dnspriv_server" : "2001:4860:4860::8844",
+			"dnspriv_port" : "",
+			"dnspriv_hostname" : "dns.google",
+			"dnspriv_spkipin" : ""
+		},
+		{
+			"dnspriv_label" : "Quad9 1",
+			"dnspriv_server" : "2620:fe::fe",
+			"dnspriv_port" : "",
+			"dnspriv_hostname" : "dns.quad9.net",
+			"dnspriv_spkipin" : ""
+		},
+		{
+			"dnspriv_label" : "Quad9 2",
+			"dnspriv_server" : "2620:fe::9",
+			"dnspriv_port" : "",
+			"dnspriv_hostname" : "dns.quad9.net",
+			"dnspriv_spkipin" : ""
+		}
+	],
+	"IPv6 (port 443)" : [
+		{
+			"dnspriv_label" : "Neutopia",
+			"dnspriv_server" : "2a00:5884:8209::2",
+			"dnspriv_port" : "443",
+			"dnspriv_hostname" : "dns.neutopia.org",
+			"dnspriv_spkipin" : "wTeXHM8aczvhRSi0cv2qOXkXInoDU+2C+M8MpRyT3OI="
+		},
+		{
+			"dnspriv_label" : "Surfnet/Sinodun 1",
+			"dnspriv_server" : "2001:610:1:40ba:145:100:185:15",
+			"dnspriv_port" : "443",
+			"dnspriv_hostname" : "dnsovertls.sinodun.com",
+			"dnspriv_spkipin" : "62lKu9HsDVbyiPenApnc4sfmSYTHOVfFgL3pyB+cBL4="
+		},
+		{
+			"dnspriv_label" : "Surfnet/Sinodun 2",
+			"dnspriv_server" : "2001:610:1:40ba:145:100:185:16",
+			"dnspriv_port" : "443",
+			"dnspriv_hostname" : "dnsovertls1.sinodun.com",
+			"dnspriv_spkipin" : "cE2ecALeE5B+urJhDrJlVFmf38cJLAvqekONvjvpqUA="
+		}
+	]
+}

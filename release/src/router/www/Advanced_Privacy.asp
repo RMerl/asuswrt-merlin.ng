@@ -48,6 +48,12 @@ var eula_status = {
 eula_status = httpApi.nvramGet(["ASUS_EULA", "TM_EULA"], true);
 var link_internet = httpApi.nvramGet(["link_internet"], true).link_internet;
 
+var services_array = {
+	"without_alexa_ifttt" : "Account Binding, DDNS",
+	"without_ifttt" : "Account Binding, DDNS, Google Assistant, Alexa™",
+	"within_alexa_ifttt" : "For Account Binding, DDNS, Google Assistant, Alexa™, IFTTT™"
+}
+var services_show = "<#ASUS_eula_withdraw0#>";
 function initial(){
 	var url = "";
 	show_menu();
@@ -60,12 +66,19 @@ function initial(){
 	if(eula_status.ASUS_EULA == "1"){
 		document.getElementById("asus_eula").style.display = "";
 		if(!alexa_support && !ifttt_support){
-			document.getElementById("asus_eula_title").innerHTML = "<#ASUS_eula_withdraw0#>";
+			services_show = services_show.replace('%1$@', services_array.without_alexa_ifttt);
+			document.getElementById("asus_eula_title").innerHTML = services_show;
 			document.getElementById("alexa_ifttt").style.display = "none";
 		}
 		else if(alexa_support && !ifttt_support){
-			document.getElementById("asus_eula_title").innerHTML = "<#ASUS_eula_withdraw0_Alexa#>";
+			services_show = services_show.replace('%1$@', services_array.without_ifttt);
+			document.getElementById("asus_eula_title").innerHTML = services_show;
 			document.getElementById("alexa_ifttt").innerHTML = "<#ASUS_eula_withdraw_desc2_Alexa#>";
+		}
+		else{
+			services_show = services_show.replace('%1$@', services_array.within_alexa_ifttt);
+			document.getElementById("asus_eula_title").innerHTML = services_show;
+			document.getElementById("alexa_ifttt").innerHTML = "<#ASUS_eula_withdraw_desc2_AlexaIFTTT#>";
 		}
 	}
 	else
@@ -209,7 +222,7 @@ function withdraw_eula(eula_type){
 									<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 									<div id="privacy_desc" style="font-size:14px; margin: 20px 10px auto 10px; display:none;"><#ASUS_privacy_desc#></div>
 									<div id="asus_eula" class="eula_withdraw" style="display:none;">
-										<div class="eula_withdraw_title" id="asus_eula_title"><#ASUS_eula_withdraw0_AlexaIFTTT#></div>
+										<div class="eula_withdraw_title" id="asus_eula_title"></div>
 										<div class="eula_withdraw_content">
 											<div><#ASUS_eula_withdraw_desc1#></div>
 											<div><#ASUS_eula_withdraw_desc1_2#></div>
@@ -217,7 +230,7 @@ function withdraw_eula(eula_type){
 											<ol style="margin-top:0px;">
 												<li><#ASUS_eula_withdraw_desc2_1#></li>
 												<li><#ASUS_eula_withdraw_desc2_2#></li>
-												<li id="alexa_ifttt"><#ASUS_eula_withdraw_desc2_AlexaIFTTT#></li>
+												<li id="alexa_ifttt"></li>
 											</ol>
 											</div>
 										</div>

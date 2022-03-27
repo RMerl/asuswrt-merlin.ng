@@ -28,6 +28,7 @@ extern int cm_checkBwCapability(int unit, int *bwCap, int *nctrlsbCap, int *bwRe
 extern int cm_isValidBwNctrlsb(int unit, int channel, int bw, int nctrlsb, int checkBwCap);
 extern int cm_findSuitableBwNctrlsb(int unit, int channel, int *bw, int *nctrlsb);
 extern int cm_getBandTypeMappingByMac(char *mac, int isCap, json_object *indexBandObjint);
+extern void cm_getChannelRangeByBandType(char *mac, char *band, int *startChannel, int *endChannel);
 extern int cm_getMultipleBandListByMac(char *mac, int isCap, json_object *indexBandObj, json_object *multipleBandList);
 extern char *cm_getBandTypeByChannel(char *mac, int channel);
 extern char *cm_findSuitableBandType(json_object *allBandObj, char *bandKey);

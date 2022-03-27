@@ -1,0 +1,130 @@
+.TH BCCMD 1 "Jun 20 2006" BlueZ "Linux System Administration"
+.SH NAME
+bccmd \- Utility for the CSR BCCMD interface
+.SH SYNOPSIS
+.B bccmd
+.br
+.B bccmd [-t <transport>] [-d <device>] <command> [<args>]
+.br
+.B bccmd [-h --help]
+.br
+.SH DESCRIPTION
+.B
+bccmd
+issues BlueCore commands to
+.B
+Cambridge Silicon Radio
+devices. If run without the <command> argument, a short help page will be displayed.
+.SH OPTIONS
+.TP
+.BI -t\ <transport>
+Specify the communication transport. Valid options are:
+.RS
+.TP
+.BI HCI
+Local device with Host Controller Interface (default).
+.TP
+.BI USB
+Direct USB connection.
+.TP
+.BI BCSP
+Blue Core Serial Protocol.
+.TP
+.BI H4
+H4 serial protocol.
+.TP
+.BI 3WIRE
+3WIRE protocol (not implemented).
+.SH
+.TP
+.BI -d\ <dev>
+Specify a particular device to operate on. If not specified, default is the first available HCI device
+or /dev/ttyS0 for serial transports.
+.SH COMMANDS
+.TP
+.BI builddef
+Get build definitions
+.TP
+.BI keylen\ <handle>
+Get current crypt key length
+.TP
+.BI clock
+Get local Bluetooth clock
+.TP
+.BI rand
+Get random number
+.TP
+.BI chiprev
+Get chip revision
+.TP
+.BI buildname
+Get the full build name
+.TP
+.BI panicarg
+Get panic code argument
+.TP
+.BI faultarg
+Get fault code argument
+.TP
+.BI coldreset
+Perform cold reset
+.TP
+.BI warmreset
+Perform warm reset
+.TP
+.BI disabletx
+Disable TX on the device
+.TP
+.BI enabletx
+Enable TX on the device
+.TP
+.BI singlechan\ <channel>
+Lock radio on specific channel
+.TP
+.BI hoppingon
+Revert to channel hopping
+.TP
+.BI rttxdata1\ <decimal\ freq\ MHz>\ <level>
+TXData1 radio test
+.TP
+.BI radiotest\ <decimal\ freq\ MHz>\ <level>\ <id>
+Run radio tests, tests 4, 6 and 7 are transmit tests
+.TP
+.BI memtypes
+Get memory types
+.TP
+.BI psget\ [-r]\ [-s\ <stores>]\ <key>
+Get value for PS key.
+-r sends a warm reset afterwards
+.TP
+.BI psset\ [-r]\ [-s\ <stores>]\ <key>\ <value>
+Set value for PS key.
+-r sends a warm reset afterwards
+.TP
+.BI psclr\ [-r]\ [-s\ <stores>]\ <key>
+Clear value for PS key.
+-r sends a warm reset afterwards
+.TP
+.BI pslist\ [-r]\ [-s\ <stores>]
+List all PS keys.
+-r sends a warm reset afterwards
+.TP
+.BI psread\ [-r]\ [-s\ <stores>]
+Read all PS keys.
+-r sends a warm reset afterwards
+.TP
+.BI psload\ [-r]\ [-s\ <stores>]\ <file>
+Load all PS keys from PSR file.
+-r sends a warm reset afterwards
+.TP
+.BI pscheck\ [-r]\ [-s\ <stores>]\ <file>
+Check syntax of PSR file.
+-r sends a warm reset afterwards
+.SH KEYS
+bdaddr country devclass keymin keymax features commands version
+remver hciextn mapsco baudrate hostintf anafreq anaftrim usbvid
+usbpid dfupid bootmode
+.SH AUTHORS
+Written by Marcel Holtmann <marcel@holtmann.org>,
+man page by Adam Laurie <adam@algroup.co.uk>
+.PP

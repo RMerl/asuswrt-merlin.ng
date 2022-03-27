@@ -1,0 +1,75 @@
+AVCTP PICS for the PTS tool.
+
+PTS version: 6.1
+
+* - different than PTS defaults
+# - not yet implemented/supported
+
+M - mandatory if such role selected
+O - optional
+
+		Protocol Version
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_AVCTP_0_1	False		AVCTP 1.0 (C.1)
+TSPC_AVCTP_0_2	False		AVCTP 1.2 (C.1)
+TSPC_AVCTP_0_3	False		AVCTP 1.3 (C.1)
+TSPC_AVCTP_0_4	True (*)	AVCTP 1.4 (C.1)
+-------------------------------------------------------------------------------
+C.1: Mandatory to support only one Protocol Version.
+-------------------------------------------------------------------------------
+
+
+		Roles
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_AVCTP_1_1	True (*)	Controller (C.1)
+TSPC_AVCTP_1_2	True (*)	Target (C.1)
+-------------------------------------------------------------------------------
+C.1: Mandatory to support at least one of the defined roles.
+-------------------------------------------------------------------------------
+
+
+		Controller Features
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_AVCTP_2_1	False		Message fragmentation (O)
+TSPC_AVCTP_2_2	True		Transaction label management (M)
+TSPC_AVCTP_2_3	True		Packet type field management (M)
+TSPC_AVCTP_2_4	True		Message type field management (M)
+TSPC_AVCTP_2_5	True		PID field management (M)
+TSPC_AVCTP_2_6	True		IPID field mangement (M)
+TSPC_AVCTP_2_7	True		Message information management (M)
+TSPC_AVCTP_2_8	False		Event registration for message reception (O)
+TSPC_AVCTP_2_9	False		Event registration for connection request (O)
+TSPC_AVCTP_2_10	False		Event registration for disconnection (O)
+TSPC_AVCTP_2_11	False		Connect request (O)
+TSPC_AVCTP_2_12	False		Disconnect request (O)
+TSPC_AVCTP_2_13	False		Send message (O)
+TSPC_AVCTP_2_14	False		Support for multiple AVCTP channel establishment
+					(O)
+-------------------------------------------------------------------------------
+
+
+		Target Features
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_AVCTP_3_1	False		Message fragmentation (O)
+TSPC_AVCTP_3_2	True		Transaction label management (M)
+TSPC_AVCTP_3_3	True		Packet type field management (M)
+TSPC_AVCTP_3_4	True		Message type field management (M)
+TSPC_AVCTP_3_5	True		PID field management (M)
+TSPC_AVCTP_3_6	True		IPID field management (M)
+TSPC_AVCTP_3_7	True		Message information management (M)
+TSPC_AVCTP_3_8	True (*)	Event registration for message reception (O)
+TSPC_AVCTP_3_9	True (*)	Event registration for connection request (O)
+TSPC_AVCTP_3_10	True (*)	Event registration for disconnection request (O)
+TSPC_AVCTP_3_11	True (*)	Connect request (O)
+TSPC_AVCTP_3_12	True (*)	Disconnect request (O)
+TSPC_AVCTP_3_13	True (*)	Send message (O)
+TSPC_AVCTP_ALL	False		Enables all test cases when set to TRUE
+-------------------------------------------------------------------------------

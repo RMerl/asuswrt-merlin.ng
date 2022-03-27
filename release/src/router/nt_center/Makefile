@@ -24,6 +24,9 @@ LDFLAGS += -L$(TOP)/sqlite/.libs -lsqlite3 -lm
 LDFLAGS += -L$(TOP)/json-c/.libs -ljson-c
 LDFLAGS += -L$(TOP_PLATFORM)/nvram$(BCMEX)${EX7} ${EXTRA_NV_LDFLAGS} -lnvram
 LDFLAGS += -L$(TOP)/shared -L$(INSTALLDIR)/shared/usr/lib -lshared
+ifeq ($(RTCONFIG_BCM_502L07P2),y)
+LDFLAGS += -L$(TOP_PLATFORM)/ethctl_lib -lethctl
+endif
 
 LIBS = -lpthread -lgcc_s
 

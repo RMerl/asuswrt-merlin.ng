@@ -379,7 +379,7 @@ function initial(){
 		if (ssh_support && ("<% nvram_get("sshd_enable"); %>" == "1"))
 			document.form.sshd_enable.selectedIndex = 1;
 
-		document.getElementById('misc_http_x_tr').style.display = "none";
+		$("#accessfromwan_settings").hide();
 		hideport(0);
 		document.form.misc_http_x.disabled = true;
 		document.form.misc_httpsport_x.disabled = true;
@@ -403,6 +403,12 @@ function initial(){
 					}
 				}
 			);
+			$("#misc_httpsport_x").focus(
+				function() {
+					var position_text = $("#misc_httpsport_x").position();
+					pop_s46_ports(position_text);
+				}
+			);
 		}
 		hideport(document.form.misc_http_x[0].checked);
 	}	
@@ -420,6 +426,12 @@ function initial(){
 						var position = $(".setup_info_icon.ssh").position();
 						pop_s46_ports(position);
 					}
+				}
+			);
+			$("#sshd_port").focus(
+				function() {
+					var position_text = $("#sshd_port").position();
+					pop_s46_ports(position_text);
 				}
 			);
 		}
@@ -677,8 +689,8 @@ function applyRule(){
 			ncb_enable_option_flag = true;
 		}
 
-		if((document.form.sw_mode_radio.value==1 && sw_mode!=3) ||
-			(document.form.sw_mode_radio.value==0 && sw_mode==3) ){
+		if(document.getElementById("sw_mode_radio_tr").style.display != 'none' 
+		&& ((document.form.sw_mode_radio.value==1 && sw_mode!=3) || (document.form.sw_mode_radio.value==0 && sw_mode==3))){
 			if (sw_mode == 1) document.form.sw_mode.value = 3;
 			else if (sw_mode == 3) document.form.sw_mode.value = 1;
 
@@ -774,16 +786,24 @@ function applyRule(){
 		if(pwrsave_support)
 			action_script_tmp += "pwrsave;";
 
-		if(needReboot){
-			action_script_tmp = "reboot";
-			document.form.action_wait.value = httpApi.hookGet("get_default_reboot_time");
-		}
-
+                
 		if (getRadioItemCheck(document.form.ntpd_enable) != '<% nvram_get("ntpd_enable"); %>')
 			action_script_tmp += "restart_dnsmasq;";
 
-		document.form.action_script.value = action_script_tmp;
-		document.form.submit();
+		if(needReboot){
+
+			action_script_tmp = "reboot";
+			document.form.action_wait.value = httpApi.hookGet("get_default_reboot_time");
+			if(confirm("<#AiMesh_Node_Reboot#>")){
+				document.form.action_script.value = action_script_tmp;
+				document.form.submit();
+			}
+		}
+		else{
+			
+			document.form.action_script.value = action_script_tmp;
+			document.form.submit();
+		}
 	}
 }
 
@@ -925,7 +945,7 @@ function validForm(){
 		!document.form.reboot_date_x_Thu.checked && !document.form.reboot_date_x_Fri.checked &&
 		!document.form.reboot_date_x_Sat.checked && document.form.reboot_schedule_enable_x[0].checked)
 		{
-			alert(Untranslated.filter_lw_date_valid);
+			alert("<#FirewallConfig_LanWan_SelectOne#>");
 			document.form.reboot_date_x_Sun.focus();
 			return false;
 		}
@@ -1513,7 +1533,9 @@ function change_url(num, flag){
 	else if(flag == 'https_wan'){
 		var https_wanport = num;
 		var host_addr = "";
-		if(check_ddns_status())
+		var ddns_server_x = httpApi.nvramGet(["ddns_server_x"]).ddns_server_x;
+
+		if(check_ddns_status() && ddns_server_x != "WWW.DNSOMATIC.COM")
 				host_addr = ddns_hostname_x_t;
 		else
 			host_addr = wan_ipaddr;
@@ -2488,7 +2510,6 @@ function build_boostkey_options() {
 						<script>
 							var needReboot = false;
 
-
 							if (isSupport("usb3")) {
 								$("#reduce_usb3_tr").show();
 							}
@@ -2800,7 +2821,7 @@ function build_boostkey_options() {
 					</td>
 				</tr>
 				<tr id="plc_sleep_tr" style="display:none;">
-					<th align="right"><a class="hintstyle" href="javascript:void(0);" onClick="openHint(11,12);">Enable PLC sleep automatically<!--untranslated--></a></th>
+					<th align="right"><a class="hintstyle" href="javascript:void(0);" onClick="openHint(11,12);"><#Powerline_PLCsleep_enable#></a></th>
 					<td>
 						<input type="radio" name="plc_sleep_enabled" value="1" <% nvram_match_x("","plc_sleep_enabled","1", "checked"); %> ><#checkbox_Yes#>
 						<input type="radio" name="plc_sleep_enabled" value="0" <% nvram_match_x("","plc_sleep_enabled","0", "checked"); %> ><#checkbox_No#>
@@ -2909,13 +2930,13 @@ function build_boostkey_options() {
 
 			</table>
 
-			<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable" style="margin-top:8px;">
+			<table id="accessfromwan_settings" width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable" style="margin-top:8px;">
 				<thead>
 					<tr>
 					  <td colspan="2"><#Remote_access_config#></td>
 					</tr>
 				</thead>
-				<tr id="misc_http_x_tr">
+				<tr>
 					<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(8,2);"><#FirewallConfig_x_WanWebEnable_itemname#></a></th>
 					<td>
 						<input type="radio" value="1" name="misc_http_x" onClick="hideport(1);enable_wan_access(1);" <% nvram_match("misc_http_x", "1", "checked"); %>><#checkbox_Yes#>
@@ -2933,7 +2954,7 @@ function build_boostkey_options() {
 					</th>
 					<td>
 						<span style="margin-left:5px; display:none;" id="http_port"><input type="text" maxlength="5" name="misc_httpport_x" class="input_6_table" value="<% nvram_get("misc_httpport_x"); %>" onKeyPress="return validator.isNumber(this,event);" autocorrect="off" autocapitalize="off" disabled/>&nbsp;&nbsp;</span>
-						<span style="margin-left:5px; display:none;" id="https_port"><input type="text" maxlength="5" name="misc_httpsport_x" class="input_6_table" value="<% nvram_get("misc_httpsport_x"); %>" onKeyPress="return validator.isNumber(this,event);" onBlur="change_url(this.value, 'https_wan');" autocorrect="off" autocapitalize="off" disabled/></span>
+						<span style="margin-left:5px; display:none;" id="https_port"><input type="text" maxlength="5" id="misc_httpsport_x" name="misc_httpsport_x" class="input_6_table" value="<% nvram_get("misc_httpsport_x"); %>" onKeyPress="return validator.isNumber(this,event);" onBlur="change_url(this.value, 'https_wan');" autocorrect="off" autocapitalize="off" disabled/></span>
 						<span id="wan_access_url"></span>
 					</td>
 				</tr>

@@ -1,0 +1,1422 @@
+PTS test results for GATT
+
+PTS version: 6.1
+Tested: 24-April-2015
+Android version: 5.1
+
+Results:
+PASS	test passed
+FAIL	test failed
+INC	test is inconclusive
+N/A	test is disabled due to PICS setup
+
+-------------------------------------------------------------------------------
+Test Name		Result	Notes
+-------------------------------------------------------------------------------
+TC_GAC_CL_BV_01_C	PASS	haltest:
+				gattc scan
+				gattc search_service <conn_id>
+				gattc get_characteristic <conn_id> <svc_uuid>
+				gattc write_characteristic: type 3
+TC_GAC_SR_BV_01_C	PASS	PTS issue #13073
+				TSE #6271
+				haltest:
+				gatts add_service
+				gatts add_chaaracteristic:
+					<properties> 10 <permissions> 17
+				gatts start_service
+				gatts send_response:
+					<data> value greater than MTU
+					repeat with correct offset
+				gatts send_response:
+					<data> value greater than MTU
+					repeat with correct offset
+TC_GAD_CL_BV_01_C	PASS	haltest:
+				NOTE: Repeat following steps if asked
+				gattc connect <client_id> <PTS addr>
+				gattc search_service <conn_id>
+				gattc disconnect <client_if> <PTS bdaddr>
+					<conn_id>
+TC_GAD_CL_BV_02_C	PASS	haltest:
+				NOTE: Repeat following steps if asked
+				gattc connect <client_id> <PTS addr>
+				gattc search_service <conn_id> <uuid>
+				gattc disconnect <client_if> <PTS bdaddr>
+					<conn_id>
+TC_GAD_CL_BV_03_C	PASS	haltest:
+				NOTE: Repeat following steps if asked
+				gattc connect <client_id> <PTS addr>
+				gattc test_command 0xe0 <PTS addr> 0x2802 0x08
+					0x0001 0xffff
+				NOTE: Keep on mind MTU size
+					(some att rsp could not fit)
+				gattc_disconnect <client_if> <PTS bdaddr>
+					<conn_id>
+TC_GAD_CL_BV_04_C	PASS	haltest:
+				NOTE: Repeat following steps if asked
+				gattc connect <client id> <PTS addr>
+				gattc search_service <conn_id>
+				gattc get_characteristic <conn_id> <svc uuid>
+TC_GAD_CL_BV_05_C	PASS	haltest:
+				NOTE: Repeat following steps if asked
+				gattc connect <client id> <PTS addr>
+				gattc test_command 0xe0 <PTS addr> 0x2803 0x08
+					<start hdl> <end hdl>
+				gattc disconnect <client_id> <PTS addr>
+					<conn_id>
+TC_GAD_CL_BV_06_C	PASS	haltest:
+				NOTE: Repeat following steps if asked
+				gattc connect <client id> <PTS addr>
+				gattc search_service <conn_id>
+				gattc get_characteristic <conn_id> <svc uuid>
+				gattc get_descriptor <conn_id> <svc_id>
+					<char_id>
+				gattc disconnect <client_id> <PTS addr>
+					<conn_id>
+TC_GAD_CL_BV_07_C	PASS	haltest:
+				NOTE: Repeat following step if asked
+				bluetooth get_remote_services
+TC_GAD_CL_BV_08_C	PASS	haltest:
+				NOTE: Repear following step if asked
+				bluetooth get_remote_services
+TC_GAD_SR_BV_01_C	PASS	haltest:
+				gattc register_client
+				gattc listen
+TC_GAD_SR_BV_02_C	PASS	haltest:
+				gattc register_client
+				gattc listen
+TC_GAD_SR_BV_03_C	PASS	haltest:
+				gattc register_client
+				gattc listen
+				gatts register_server
+				gatts add_service
+				gatts start_service
+				gatts add_service
+				gatts add_included_service
+				gatts start_service
+TC_GAD_SR_BV_04_C	PASS	haltest:
+				gattc register_client
+				gattc listen
+TC_GAD_SR_BV_05_C	PASS	haltest:
+				gattc register_client
+				gattc listen
+TC_GAD_SR_BV_06_C	PASS	haltest:
+				gattc register_client
+				gattc listen
+TC_GAD_SR_BV_07_C	PASS	haltest:
+				when requested:
+				bluetooth get_remote_services
+				NOTE: check if found requested service
+TC_GAD_SR_BV_08_C	PASS	haltest:
+				when requested:
+				bluetooth get_remote_services
+				NOTE: check if found requested service
+TC_GAR_CL_BV_01_C	PASS	haltest:
+				gattc connect <client id> <PTS addr>
+				gattc search_service <conn_id>
+				gattc get_characteristic <conn_id> <svc uuid>
+				gattc read_characteristic <client_id> <svc_id>
+					<char_id>
+				gattc disconnect <client_id> <PTS addr>
+					<conn_id>
+TC_GAR_CL_BI_01_C	PASS	haltest:
+				gattc connect <client id> <PTS addr>
+				gattc test_command 0xe0 <PTS addr> 0x0000
+					0x0a <invalid char hdl>
+				gattc disconnect <client_id> <PTS addr>
+					<conn_id>
+TC_GAR_CL_BI_02_C	PASS	haltest:
+				gattc connect <client id> <PTS addr>
+				gattc search_service <conn_id>
+				gattc get_characteristic <conn_id> <svc uuid>
+				gattc read_characteristic <client_id> <svc_id>
+					<char_id>
+				gattc disconnect <client_id> <PTS addr>
+					<conn_id>
+TC_GAR_CL_BI_03_C	PASS	haltest:
+				gattc connect <client id> <PTS addr>
+				gattc test_command 0xe0 <PTS addr> 0x0000
+					0x0a <inf. auth. att hdl>
+				gattc disconnect <client_id> <PTS addr>
+					<conn_id>
+TC_GAR_CL_BI_04_C	PASS	haltest:
+				gattc connect <client id> <PTS addr>
+				gattc test_command 0xe0 <PTS addr> 0x0000
+					0x0a <inf. auth. att hdl>
+				gattc disconnect <client_id> <PTS addr>
+					<conn_id>
+TC_GAR_CL_BI_05_C	PASS	haltest:
+				gattc connect <client id> <PTS addr>
+				gattc search_service <conn_id>
+				gattc get_characteristic <conn_id> <svc uuid>
+				gattc read_characteristic <client_id> <svc_id>
+					<char_id>
+				gattc disconnect <client_id> <PTS addr>
+					<conn_id>
+TC_GAR_CL_BV_03_C	PASS	haltest:
+				gattc connect <client id> <PTS addr>
+				gattc test_command 0xe0 <PTS addr> <char_uuid>
+					0x08 0x0001 0xffff
+				gattc disconnect <client_id> <PTS addr>
+					<conn_id>
+TC_GAR_CL_BI_06_C	PASS	haltest:
+				gattc connect <client id> <PTS addr>
+				gattc test_command 0xe0 <PTS addr> <char_uuid>
+					0x08 <start_hdl> <end_hdl>
+				gattc disconnect <client_id> <PTS addr>
+					<conn_id>
+TC_GAR_CL_BI_07_C	PASS	haltest:
+				gattc connect <client id> <PTS addr>
+				gattc test_command 0xe0 <PTS addr> <char_uuid>
+					0x08 <start_hdl> <end_hdl>
+				gattc disconnect <client_id> <PTS addr>
+					<conn_id>
+TC_GAR_CL_BI_09_C	PASS	haltest:
+				gattc connect <client id> <PTS addr>
+				gattc test_command 0xe0 <PTS addr> <char_uuid>
+					0x08 <start_hdl> <end_hdl>
+				gattc disconnect <client_id> <PTS addr>
+					<conn_id>
+TC_GAR_CL_BI_10_C	PASS	haltest:
+				gattc connect <client id> <PTS addr>
+				gattc test_command 0xe0 <PTS addr> <char_uuid>
+					0x08 <start_hdl> <end_hdl>
+				gattc disconnect <client_id> <PTS addr>
+					<conn_id>
+TC_GAR_CL_BI_11_C	PASS	haltest:
+				gattc connect <client id> <PTS addr>
+				gattc test_command 0xe0 <PTS addr> <char_uuid>
+					0x08 <start_hdl> <end_hdl>
+				gattc disconnect <client_id> <PTS addr>
+					<conn_id>
+TC_GAR_CL_BV_04_C	PASS	haltest:
+				gattc connect <client id> <PTS addr>
+				gattc search_service <conn_id>
+				NOTE: Repeat following steps if asked
+				gattc get_characteristic <conn_id> <svc uuid>
+				gattc read_characteristic <client_id> <svc_id>
+					<char_id>
+				NOTE: After reading all characteristics
+				gattc disconnect <client_id> <PTS addr>
+					<conn_id>
+TC_GAR_CL_BI_12_C	PASS	haltest:
+				gattc connect <client id> <PTS addr>
+				gattc search_service <conn_id>
+				gattc get_characteristic <conn_id> <svc uuid>
+				gattc read_characteristic <client_id> <svc_id>
+					<char_id>
+				gattc disconnect <client_id> <PTS addr>
+					<conn_id>
+TC_GAR_CL_BI_13_C	PASS	haltest:
+				gattc connect <client id> <PTS addr>
+				gattc test_command 0xe0 <PTS addr> 0x0000
+					0x0c <handle> <offset>
+				gattc disconnect <client_id> <PTS addr>
+					<conn_id>
+TC_GAR_CL_BI_14_C	PASS	haltest:
+				gattc connect <client id> <PTS addr>
+				gattc test_command 0xe0 <PTS addr> 0x0000
+					0x0a <char_hdl>
+				gattc disconnect <client_id> <PTS addr>
+					<conn_id>
+TC_GAR_CL_BI_15_C	PASS	haltest:
+				gattc connect <client id> <PTS addr>
+				gattc search_service <conn_id>
+				gattc get_characteristic <conn_id> <svc uuid>
+				gattc read_characteristic <client_id> <svc_id>
+					<char_id>
+				gattc disconnect <client_id> <PTS addr>
+					<conn_id>
+TC_GAR_CL_BI_16_C	PASS	haltest:
+				gattc connect <client id> <PTS addr>
+				gattc search_service <conn_id>
+				gattc get_characteristic <conn_id> <svc uuid>
+				gattc read_characteristic <client_id> <svc_id>
+					<char_id>
+				gattc disconnect <client_id> <PTS addr>
+					<conn_id>
+TC_GAR_CL_BI_17_C	PASS	haltest:
+				gattc connect <client id> <PTS addr>
+				gattc search_service <conn_id>
+				gattc get_characteristic <conn_id> <svc uuid>
+				gattc read_characteristic <client_id> <svc_id>
+					<char_id>
+				gattc disconnect <client_id> <PTS addr>
+					<conn_id>
+TC_GAR_CL_BV_05_C	N/A
+TC_GAR_CL_BI_18_C	N/A
+TC_GAR_CL_BI_19_C	N/A
+TC_GAR_CL_BI_20_C	N/A
+TC_GAR_CL_BI_21_C	N/A
+TC_GAR_CL_BI_22_C	N/A
+TC_GAR_CL_BV_06_C	PASS	haltest:
+				gattc connect <client id> <PTS addr>
+				gattc search_service <conn_id>
+				gattc get_characteristic <conn_id> <svc uuid>
+				gattc get_descriptor <client_id> <svc_id>
+					<char_id>
+				gattc read_descriptor <client_id> <svc_id>
+					<char_id> <desc_id>
+				gattc disconnect <client_id> <PTS addr>
+					<conn_id>
+TC_GAR_CL_BI_23_C	PASS	haltest:
+				gattc connect <client id> <PTS addr>
+				gattc search_service <conn_id>
+				gattc get_characteristic <conn_id> <svc uuid>
+				gattc get_descriptor <client_id> <svc_id>
+					<char_id>
+				gattc read_descriptor <client_id> <svc_id>
+					<char_id> <desc_id>
+				gattc disconnect <client_id> <PTS addr>
+					<conn_id>
+TC_GAR_CL_BI_24_C	PASS	haltest:
+				gattc connect <client id> <PTS addr>
+				gattc test_command 0xe0 <PTS addr> 0x0000
+					0x0a <desc_hdl>
+				gattc disconnect <client_id> <PTS addr>
+					<conn_id>
+TC_GAR_CL_BI_25_C	PASS	haltest:
+				gattc connect <client id> <PTS addr>
+				gattc search_service <conn_id>
+				gattc get_characteristic <conn_id> <svc uuid>
+				gattc get_descriptor <client_id> <svc_id>
+					<char_id>
+				gattc read_descriptor <client_id> <svc_id>
+					<char_id> <desc_id>
+				gattc disconnect <client_id> <PTS addr>
+					<conn_id>
+TC_GAR_CL_BI_26_C	PASS	haltest:
+				gattc connect <client id> <PTS addr>
+				gattc search_service <conn_id>
+				gattc get_characteristic <conn_id> <svc uuid>
+				gattc get_descriptor <client_id> <svc_id>
+					<char_id>
+				gattc read_descriptor <client_id> <svc_id>
+					<char_id> <desc_id>
+				gattc disconnect <client_id> <PTS addr>
+					<conn_id>
+TC_GAR_CL_BI_27_C	PASS	haltest:
+				gattc connect <client id> <PTS addr>
+				gattc search_service <conn_id>
+				gattc get_characteristic <conn_id> <svc uuid>
+				gattc get_descriptor <client_id> <svc_id>
+					<char_id>
+				gattc read_descriptor <client_id> <svc_id>
+					<char_id> <desc_id>
+				gattc disconnect <client_id> <PTS addr>
+					<conn_id>
+TC_GAR_CL_BV_07_C	PASS	haltest:
+				gattc connect <client id> <PTS addr>
+				gattc search_service <conn_id>
+				NOTE: Repeat following step if asked
+				gattc get_characteristic <conn_id> <svc uuid>
+				gattc get_descriptor <client_id> <svc_id>
+					<char_id>
+				gattc read_descriptor <client_id> <svc_id>
+					<char_id> <desc_id>
+				NOTE: After reading all characteristics
+				gattc disconnect <client_id> <PTS addr>
+					<conn_id>
+TC_GAR_CL_BI_28_C	PASS	haltest:
+				gattc connect <client id> <PTS addr>
+				gattc search_service <conn_id>
+				gattc get_characteristic <conn_id> <svc uuid>
+				gattc get_descriptor <client_id> <svc_id>
+					<char_id>
+				gattc read_descriptor <client_id> <svc_id>
+					<char_id> <desc_id>
+				gattc disconnect <client_id> <PTS addr>
+					<conn_id>
+TC_GAR_CL_BI_29_C	PASS	haltest:
+				gattc connect <client id> <PTS addr>
+				gattc test_command 0xe0 <PTS addr> 0x0000
+					0x0c <handle> <offset>
+				gattc disconnect <client_id> <PTS addr>
+					<conn_id>
+TC_GAR_CL_BI_30_C	PASS	haltest:
+				gattc connect <client id> <PTS addr>
+				gattc test_command 0xe0 <PTS addr> 0x0000
+					0x0a <desc_hdl>
+				gattc disconnect <client_id> <PTS addr>
+					<conn_id>
+TC_GAR_CL_BI_31_C	PASS	haltest:
+				gattc connect <client id> <PTS addr>
+				gattc search_service <conn_id>
+				gattc get_characteristic <conn_id> <svc uuid>
+				gattc get_descriptor <client_id> <svc_id>
+					<char_id>
+				gattc read_descriptor <client_id> <svc_id>
+					<char_id> <desc_id>
+				gattc disconnect <client_id> <PTS addr>
+					<conn_id>
+TC_GAR_CL_BI_32_C	PASS	haltest:
+				gattc connect <client id> <PTS addr>
+				gattc search_service <conn_id>
+				gattc get_characteristic <conn_id> <svc uuid>
+				gattc get_descriptor <client_id> <svc_id>
+					<char_id>
+				gattc read_descriptor <client_id> <svc_id>
+					<char_id> <desc_id>
+				gattc disconnect <client_id> <PTS addr>
+					<conn_id>
+TC_GAR_CL_BI_33_C	PASS	haltest:
+				gattc connect <client id> <PTS addr>
+				gattc search_service <conn_id>
+				gattc get_characteristic <conn_id> <svc uuid>
+				gattc get_descriptor <client_id> <svc_id>
+					<char_id>
+				gattc read_descriptor <client_id> <svc_id>
+					<char_id> <desc_id>
+				gattc disconnect <client_id> <PTS addr>
+					<conn_id>
+TC_GAR_CL_BI_34_C	PASS	haltest:
+				gattc connect
+				gattc test_command 224 <addr> 0 0x0a <handle>
+				gattc disconnect
+TC_GAR_CL_BI_35_C	PASS	haltest:
+				gattc connect <client id> <PTS addr>
+				gattc search_service <conn_id>
+				gattc get_characteristic <conn_id> <svc uuid>
+				gattc read_characteristic <client_id> <svc_id>
+					<char_id>
+				gattc disconnect <client_id> <PTS addr>
+					<conn_id>
+TC_GAR_SR_BV_01_C	PASS
+TC_GAR_SR_BI_01_C	PASS
+TC_GAR_SR_BI_02_C	PASS
+TC_GAR_SR_BI_03_C	PASS	haltest:
+				gatts add_service
+				gatts add_characteristic:
+						 <properties> 2 <permissions> 1
+				gatts start_service
+				gatts send_response: <status> 8
+TC_GAR_SR_BI_04_C	PASS	haltest:
+				gatts add_service
+				gatts add_chaaracteristic:
+						<properties> 2 <permissions> 3
+				gatts start_service
+				gatts send_response
+TC_GAR_SR_BI_05_C	PASS	haltest:
+				gatts add_service
+				gatts add_characteristic:
+						 <properties> 2 <permissions> 1
+				gatts start_service
+				gatts send_response: <status> 12
+TC_GAR_SR_BV_03_C	PASS
+TC_GAR_SR_BI_06_C	PASS	haltest:
+				gatts add_service
+				gatts add_chaaracteristic:
+						<properties> 2 <permissions> 16
+				gatts start_service
+TC_GAR_SR_BI_07_C	PASS
+TC_GAR_SR_BI_08_C	PASS
+TC_GAR_SR_BI_09_C	PASS	haltest:
+				gatts add_service
+				gatts add_chaaracteristic:
+						<properties> 2 <permissions> 1
+				gatts start_service
+				gatts send_response: <status> 8
+TC_GAR_SR_BI_10_C	PASS	haltest:
+				gatts add_service
+				gatts add_chaaracteristic:
+						<properties> 2 <permissions> 1
+				gatts start_service
+				gatts send_response: <status> 5
+TC_GAR_SR_BI_11_C	PASS	haltest:
+				gatts add_service
+				gatts add_chaaracteristic:
+						<properties> 2 <permissions> 1
+				gatts start_service
+				gatts send_response: <status> 12
+TC_GAR_SR_BV_04_C	PASS	haltest:
+				gatts add_service
+				gatts add_chaaracteristic:
+						<properties> 2 <permissions> 1
+				gatts start_service
+				gatts send_response:
+						<data> value greater than MTU
+						repeat with correct offset
+TC_GAR_SR_BI_12_C	PASS	haltest:
+				gatts add_service
+				gatts add_chaaracteristic:
+						<properties> 8 <permissions> 16
+				gatts start_service
+				gatts send_response
+TC_GAR_SR_BI_13_C	PASS	haltest:
+				gatts add_service
+				gatts add_chaaracteristic:
+						<properties> 2 <permissions> 1
+				gatts start_service
+				gatts send_response:
+						<data> value greater than MTU
+						repeat with correct offset
+				gatts send_response: <status> 7
+TC_GAR_SR_BI_14_C	PASS	haltest:
+				gatts add_service
+				gatts add_characteristic:
+						 <properties> 2 <permissions> 1
+				gatts start_service
+				gatts send_response: <status> 1
+TC_GAR_SR_BI_15_C	PASS	haltest:
+				gatts add_service
+				gatts add_characteristic:
+						 <properties> 2 <permissions> 1
+				gatts start_service
+				gatts send_response: <status> 8
+TC_GAR_SR_BI_16_C	PASS	haltest:
+				gatts add_service
+				gatts add_characteristic:
+						 <properties> 2 <permissions> 1
+				gatts start_service
+				gatts send_response: <status> 5
+TC_GAR_SR_BI_17_C	PASS	haltest:
+				gatts add_service
+				gatts add_characteristic:
+						 <properties> 2 <permissions> 1
+				gatts start_service
+				gatts send_response: <status> 12
+TC_GAR_SR_BV_05_C	N/A
+TC_GAR_SR_BI_18_C	N/A
+TC_GAR_SR_BI_19_C	N/A
+TC_GAR_SR_BI_20_C	N/A
+TC_GAR_SR_BI_21_C	N/A
+TC_GAR_SR_BI_22_C	N/A
+TC_GAR_SR_BV_06_C	PASS	haltest:
+				gatts add_service
+				gatts add_characteristic:
+						<properties> 2 <permissions> 1
+				gatts add_descriptor
+				gatts start_service
+				gatts send_response
+TC_GAR_SR_BI_23_C	PASS	haltest:
+				gatts add_service
+				gatts add_chaaracteristic:
+						<properties> 2 <permissions> 1
+				gatts add_descriptor: <permissions> 16
+				gatts start_service
+TC_GAR_SR_BI_24_C	PASS	haltest:
+				gatts add_service
+				gatts add_characteristic:
+						<properties> 2 <permissions> 1
+				gatts add_descriptor
+				gatts start_service
+				gatts send_response: <status> 1
+TC_GAR_SR_BI_25_C	PASS	haltest:
+				gatts add_service
+				gatts add_chaaracteristic:
+						<properties> 2 <permissions> 1
+				gatts add_descriptor: <permissions> 1
+				gatts start_service
+				gatts send_response: <status> 8
+TC_GAR_SR_BI_26_C	PASS	haltest:
+				gatts add_service
+				gatts add_chaaracteristic:
+						<properties> 2 <permissions> 1
+				gatts add_descriptor: <permissions> 1
+				gatts start_service
+				gatts send_response: <status> 5
+TC_GAR_SR_BI_27_C	PASS	haltest:
+				gatts add_service
+				gatts add_chaaracteristic:
+						<properties> 2 <permissions> 1
+				gatts add_descriptor: <permissions> 1
+				gatts start_service
+				gatts send_response: <status> 12
+TC_GAR_SR_BV_07_C	PASS	haltest:
+				gatts add_service
+				gatts add_chaaracteristic:
+						<properties> 2 <permissions> 1
+				gatts add_descriptor: <permissions> 1
+				gatts start_service
+				gatts send_response:
+						<data> value greater than MTU
+						repeat with correct offset
+TC_GAR_SR_BV_08_C	PASS	haltest:
+				gatts add_service
+				gatts add_chaaracteristic:
+						<properties> 2 <permissions> 1
+				gatts add_descriptor: <permissions> 1
+				gatts start_service
+				gatts send_response:
+						<data> value greater than MTU
+						repeat with correct offset
+TC_GAR_SR_BI_28_C	PASS	haltest:
+				gatts add_service
+				gatts add_chaaracteristic:
+						<properties> 2 <permissions> 1
+				gatts add_descriptor: <permissions> 16
+				gatts start_service
+TC_GAR_SR_BI_29_C	PASS	haltest:
+				gatts add_service
+				gatts add_chaaracteristic:
+						<properties> 2 <permissions> 1
+				gatts add_descriptor: <permissions> 1
+				gatts start_service
+				gatts send_response:
+						<data> value greater than MTU
+						repeat with correct offset
+				gatts send_response: <status> 7
+TC_GAR_SR_BI_30_C	PASS	haltest:
+				gatts add_service
+				gatts add_chaaracteristic:
+						<properties> 2 <permissions> 1
+				gatts add_descriptor: <permissions> 1
+				gatts start_service
+				gatts send_response: <status> 1
+TC_GAR_SR_BI_31_C	PASS	haltest:
+				gatts add_service
+				gatts add_chaaracteristic:
+						<properties> 2 <permissions> 1
+				gatts add_descriptor: <permissions> 1
+				gatts start_service
+				gatts send_response: <status> 8
+TC_GAR_SR_BI_32_C	PASS	haltest:
+				gatts add_service
+				gatts add_chaaracteristic:
+						<properties> 2 <permissions> 1
+				gatts add_descriptor: <permissions> 1
+				gatts start_service
+				gatts send_response: <status> 5
+TC_GAR_SR_BI_33_C	PASS	haltest:
+				gatts add_service
+				gatts add_chaaracteristic:
+						<properties> 2 <permissions> 1
+				gatts add_descriptor: <permissions> 1
+				gatts start_service
+				gatts send_response: <status> 12
+TC_GAR_SR_BI_34_C	PASS	haltest:
+				gatts add_service
+				gatts add_characteristic
+				gatts start_service
+				gatts send_response <status> 0x80-0x9F
+TC_GAR_SR_BI_35_C	PASS	haltest:
+				gatts add_service
+				gatts add_characteristic
+				gatts start_service
+				gatts send_response <status> 0x80-0x9F
+TC_GAW_CL_BV_01_C	PASS	haltest:
+				gattc connect <client id> <PTS addr>
+				gattc search_service <conn_id>
+				gattc get_characteristic <conn_id> <svc uuid>
+				gattc write_characteristic <client_id> <svc_id>
+					<char_id> 1 <value>
+				gattc disconnect <client_id> <PTS addr>
+					<conn_id>
+TC_GAW_CL_BV_02_C	PASS	haltest:
+				gattc connect <client id> <PTS addr>
+				gattc search_service <conn_id>
+				gattc get_characteristic <conn_id> <svc uuid>
+				gattc write_characteristic <client_id> <svc_id>
+					<char_id> 4 <value>
+				gattc disconnect <client_id> <PTS addr>
+					<conn_id>
+TC_GAW_CL_BV_03_C	PASS	haltest:
+				gattc connect <client id> <PTS addr>
+				gattc search_service <conn_id>
+				gattc get_characteristic <conn_id> <svc uuid>
+				gattc write_characteristic <client_id> <svc_id>
+					<char_id> 2 <value>
+				gattc disconnect <client_id> <PTS addr>
+					<conn_id>
+TC_GAW_CL_BI_02_C	PASS	haltest:
+				gattc connect <client id> <PTS addr>
+				gattc test_command 0xe1 <PTS addr> 0x0000 0x12
+					<char_hdl> <data>
+				gattc disconnect <client_id> <PTS addr>
+					<conn_id>
+TC_GAW_CL_BI_03_C	PASS	haltest:
+				gattc connect <client id> <PTS addr>
+				gattc search_service <conn_id>
+				gattc get_characteristic <conn_id> <svc uuid>
+				gattc write_characteristic <client_id> <svc_id>
+					<char_id> 2 <value>
+				gattc disconnect <client_id> <PTS addr>
+					<conn_id>
+TC_GAW_CL_BI_04_C	PASS	haltest:
+				gattc connect <client id> <PTS addr>
+				gattc search_service <conn_id>
+				gattc get_characteristic <conn_id> <svc uuid>
+				gattc write_characteristic <client_id> <svc_id>
+					<char_id> 2 <value>
+				gattc disconnect <client_id> <PTS addr>
+					<conn_id>
+TC_GAW_CL_BI_05_C	PASS	haltest:
+				gattc connect <client id> <PTS addr>
+				gattc search_service <conn_id>
+				gattc get_characteristic <conn_id> <svc uuid>
+				gattc write_characteristic <client_id> <svc_id>
+					<char_id> 2 <value>
+				gattc disconnect <client_id> <PTS addr>
+					<conn_id>
+TC_GAW_CL_BI_06_C	PASS	haltest:
+				gattc connect <client id> <PTS addr>
+				gattc search_service <conn_id>
+				gattc get_characteristic <conn_id> <svc uuid>
+				gattc write_characteristic <client_id> <svc_id>
+					<char_id> 2 <value>
+				gattc disconnect <client_id> <PTS addr>
+					<conn_id>
+TC_GAW_CL_BV_05_C	PASS	haltest:
+				gattc connect <client id> <PTS addr>
+				gattc search_service <conn_id>
+				gattc get_characteristic <conn_id> <svc uuid>
+				gattc write_characteristic <client_id> <svc_id>
+					<char_id> 3 <value>
+				gattc execute_write <conn_id> 1
+				gattc disconnect <client_id> <PTS addr>
+					<conn_id>
+TC_GAW_CL_BI_07_C	PASS	haltest:
+				gattc connect <client id> <PTS addr>
+				gattc test_command 0xe1 <PTS addr> 0x0000 0x12
+					<char_hdl> <data>
+				gattc disconnect <client_id> <PTS addr>
+					<conn_id>
+TC_GAW_CL_BI_08_C	PASS	haltest:
+				gattc connect <client id> <PTS addr>
+				gattc search_service <conn_id>
+				gattc get_characteristic <conn_id> <svc uuid>
+				gattc write_characteristic <client_id> <svc_id>
+					<char_id> 3 <value>
+				gattc execute_write <conn_id> 1
+				gattc disconnect <client_id> <PTS addr>
+					<conn_id>
+TC_GAW_CL_BI_09_C	PASS	haltest:
+				gattc connect <client id> <PTS addr>
+				gattc test_command 0xe1 <PTS addr> 0x0000 0x16
+					<char_hdl> <offset> <data>
+				gattc test_command 0xe1 <PTS addr> 0x0000 0x18 1
+				gattc disconnect <client_id> <PTS addr>
+					<conn_id>
+TC_GAW_CL_BI_11_C	PASS	haltest:
+				gattc connect <client id> <PTS addr>
+				gattc search_service <conn_id>
+				gattc get_characteristic <conn_id> <svc uuid>
+				gattc write_characteristic <client_id> <svc_id>
+					<char_id> 3 <value>
+				gattc disconnect <client_id> <PTS addr>
+					<conn_id>
+TC_GAW_CL_BI_12_C	PASS	haltest:
+				gattc connect <client id> <PTS addr>
+				gattc search_service <conn_id>
+				gattc get_characteristic <conn_id> <svc uuid>
+				gattc write_characteristic <client_id> <svc_id>
+					<char_id> 3 <value>
+				gattc disconnect <client_id> <PTS addr>
+					<conn_id>
+TC_GAW_CL_BI_13_C	PASS	haltest:
+				gattc connect <client id> <PTS addr>
+				gattc search_service <conn_id>
+				gattc get_characteristic <conn_id> <svc uuid>
+				gattc write_characteristic <client_id> <svc_id>
+					<char_id> 3 <value>
+				gattc disconnect <client_id> <PTS addr>
+					<conn_id>
+TC_GAW_CL_BV_06_C	PASS	haltest:
+				gattc connect <client id> <PTS addr>
+				gattc search_service <conn_id>
+				gattc get_characteristic <conn_id> <svc uuid>
+				gattc write_characteristic <client_id> <svc_id>
+					<char_id> 3 <value>
+				gattc execute_write <conn_id> 1
+				gattc disconnect <client_id> <PTS addr>
+					<conn_id>
+TC_GAW_CL_BI_14_C	PASS	haltest:
+				gattc connect <client id> <PTS addr>
+				gattc test_command 0xe1 <PTS addr> 0x0000 0x16
+					<char_hdl> <offset> <data>
+				gattc disconnect <client_id> <PTS addr>
+					<conn_id>
+TC_GAW_CL_BI_15_C	PASS	haltest:
+				gattc connect <client id> <PTS addr>
+				gattc search_service <conn_id>
+				gattc get_characteristic <conn_id> <svc uuid>
+				gattc write_characteristic <client_id> <svc_id>
+					<char_id> 3 <value>
+				gattc disconnect <client_id> <PTS addr>
+					<conn_id>
+TC_GAW_CL_BI_17_C	PASS	haltest:
+				gattc connect <client id> <PTS addr>
+				gattc search_service <conn_id>
+				gattc get_characteristic <conn_id> <svc uuid>
+				gattc write_characteristic <client_id> <svc_id>
+					<char_id> 3 <value>
+				gattc disconnect <client_id> <PTS addr>
+					<conn_id>
+TC_GAW_CL_BI_18_C	PASS	haltest:
+				gattc connect <client id> <PTS addr>
+				gattc search_service <conn_id>
+				gattc get_characteristic <conn_id> <svc uuid>
+				gattc write_characteristic <client_id> <svc_id>
+					<char_id> 3 <value>
+				gattc disconnect <client_id> <PTS addr>
+					<conn_id>
+TC_GAW_CL_BI_19_C	PASS	haltest:
+				gattc connect <client id> <PTS addr>
+				gattc search_service <conn_id>
+				gattc get_characteristic <conn_id> <svc uuid>
+				gattc write_characteristic <client_id> <svc_id>
+					<char_id> 3 <value>
+				gattc disconnect <client_id> <PTS addr>
+					<conn_id>
+TC_GAW_CL_BV_08_C	PASS	haltest:
+				gattc connect <client id> <PTS addr>
+				gattc search_service <conn_id>
+				gattc get_characteristic <conn_id> <svc uuid>
+				gattc get_descriptor <client_id> <svc_id>
+					<char_id>
+				gattc write_descriptor <client_id> <svc_id>
+					<desc_id> 2 <data>
+				gattc disconnect <client_id> <PTS addr>
+					<conn_id>
+TC_GAW_CL_BI_20_C	PASS	haltest:
+				gattc connect <client id> <PTS addr>
+				gattc test_command 0xe1 <PTS addr> 0x0000 0x12
+					<char_hdl> <data>
+				gattc disconnect <client_id> <PTS addr>
+					<conn_id>
+TC_GAW_CL_BI_21_C	PASS	haltest:
+				gattc connect <client id> <PTS addr>
+				gattc search_service <conn_id>
+				gattc get_characteristic <conn_id> <svc uuid>
+				gattc get_descriptor <client_id> <svc_id>
+					<char_id>
+				gattc write_descriptor <client_id> <svc_id>
+					<desc_id> 2 <data>
+				gattc disconnect <client_id> <PTS addr>
+					<conn_id>
+TC_GAW_CL_BI_22_C	PASS	haltest:
+				gattc connect <client id> <PTS addr>
+				gattc search_service <conn_id>
+				gattc get_characteristic <conn_id> <svc uuid>
+				gattc get_descriptor <client_id> <svc_id>
+					<char_id>
+				gattc write_descriptor <client_id> <svc_id>
+					<desc_id> 2 <data>
+				gattc disconnect <client_id> <PTS addr>
+					<conn_id>
+TC_GAW_CL_BI_23_C	PASS	haltest:
+				gattc connect <client id> <PTS addr>
+				gattc search_service <conn_id>
+				gattc get_characteristic <conn_id> <svc uuid>
+				gattc get_descriptor <client_id> <svc_id>
+					<char_id>
+				gattc write_descriptor <client_id> <svc_id>
+					<desc_id> 2 <data>
+				gattc disconnect <client_id> <PTS addr>
+					<conn_id>
+TC_GAW_CL_BI_24_C	PASS	haltest:
+				gattc connect <client id> <PTS addr>
+				gattc search_service <conn_id>
+				gattc get_characteristic <conn_id> <svc uuid>
+				gattc get_descriptor <client_id> <svc_id>
+					<char_id>
+				gattc write_descriptor <client_id> <svc_id>
+					<desc_id> 2 <data>
+				gattc disconnect <client_id> <PTS addr>
+					<conn_id>
+TC_GAW_CL_BV_09_C	PASS	haltest:
+				gattc connect <client id> <PTS addr>
+				gattc search_service <conn_id>
+				gattc get_characteristic <conn_id> <svc uuid>
+				gattc get_descriptor <client_id> <svc_id>
+					<char_id>
+				gattc write_descriptor <client_id> <svc_id>
+					<desc_id> 3 <data>
+				gattc execute_write <conn_id> 1
+				gattc disconnect <client_id> <PTS addr>
+					<conn_id>
+TC_GAW_CL_BI_25_C	PASS	haltest:
+				gattc connect <client id> <PTS addr>
+				gattc test_command 0xe1 <PTS addr> 0x0000 0x16
+					<char_hdl> <offset> <data>
+				gattc disconnect <client_id> <PTS addr>
+					<conn_id>
+TC_GAW_CL_BI_26_C	PASS	haltest:
+				gattc connect <client id> <PTS addr>
+				gattc search_service <conn_id>
+				gattc get_characteristic <conn_id> <svc uuid>
+				gattc get_descriptor <client_id> <svc_id>
+					<char_id>
+				gattc write_descriptor <client_id> <svc_id>
+					<desc_id> 3 <data>
+				gattc disconnect <client_id> <PTS addr>
+					<conn_id>
+TC_GAW_CL_BI_27_C	PASS	haltest:
+				gattc connect <client id> <PTS addr>
+				gattc test_command 0xe1 <PTS addr> 0x0000 0x16
+					<char_hdl> <offset> <data>
+				gattc test_command 0xe1 <PTS addr> 0x0000 0x18 1
+				gattc disconnect <client_id> <PTS addr>
+					<conn_id>
+TC_GAW_CL_BI_29_C	PASS	haltest:
+				gattc connect <client id> <PTS addr>
+				gattc search_service <conn_id>
+				gattc get_characteristic <conn_id> <svc uuid>
+				gattc get_descriptor <client_id> <svc_id>
+					<char_id>
+				gattc write_descriptor <client_id> <svc_id>
+					<desc_id> 3 <data>
+				gattc disconnect <client_id> <PTS addr>
+					<conn_id>
+TC_GAW_CL_BI_30_C	PASS	haltest:
+				gattc connect <client id> <PTS addr>
+				gattc search_service <conn_id>
+				gattc get_characteristic <conn_id> <svc uuid>
+				gattc get_descriptor <client_id> <svc_id>
+					<char_id>
+				gattc write_descriptor <client_id> <svc_id>
+					<desc_id> 3 <data>
+				gattc disconnect <client_id> <PTS addr>
+					<conn_id>
+TC_GAW_CL_BI_31_C	PASS	haltest:
+				gattc connect <client id> <PTS addr>
+				gattc test_command 0xe1 <PTS addr> 0x0000 0x16
+					<desc_hdl> 0x0000 <data>
+				gattc disconnect <client_id> <PTS addr>
+					<conn_id>
+TC_GAW_CL_BI_32_C	PASS	haltest:
+				gattc connect <client id> <PTS addr>
+				gattc test_command 0xe1 <PTS addr> 0x0000 0x16
+					<desc_hdl> <offset> <data>
+				gattc test_command 0xe1 <PTS addr> 0x0000 0x18 0
+				gattc disconnect <client_id> <PTS addr>
+					<conn_id>
+TC_GAW_CL_BI_33_C	PASS	haltest:
+				gattc connect <client id> <PTS addr>
+				gattc search_service <conn_id>
+				gattc get_characteristic <conn_id> <svc uuid>
+				gattc write_characteristic <client_id> <svc_id>
+					<char_id> 2 <value>
+				gattc disconnect <client_id> <PTS addr>
+					<conn_id>
+TC_GAW_CL_BI_34_C	PASS	haltest:
+				gattc connect <client id> <PTS addr>
+				gattc search_service <conn_id>
+				gattc get_characteristic <conn_id> <svc uuid>
+				gattc write_characteristic <client_id> <svc_id>
+					<char_id> 2 <value>
+				gattc disconnect <client_id> <PTS addr>
+					<conn_id>
+TC_GAW_CL_BI_35_C	PASS	haltest:
+				gattc connect <client id> <PTS addr>
+				gattc search_service <conn_id>
+				gattc get_characteristic <conn_id> <svc uuid>
+				gattc get_descriptor <client_id> <svc_id>
+					<char_id>
+				gattc write_descriptor <client_id> <svc_id>
+					<desc_id> 2 <data>
+				gattc disconnect <client_id> <PTS addr>
+					<conn_id>
+TC_GAW_CL_BI_36_C	PASS	haltest:
+				gattc connect <client id> <PTS addr>
+				gattc search_service <conn_id>
+				gattc get_characteristic <conn_id> <svc uuid>
+				gattc get_descriptor <client_id> <svc_id>
+					<char_id>
+				gattc write_descriptor <client_id> <svc_id>
+					<desc_id> 2 <data>
+				gattc disconnect <client_id> <PTS addr>
+					<conn_id>
+TC_GAW_SR_BV_01_C	PASS	haltest:
+				gatts add_service
+				gatts add_characteristic:
+						<properties> 4 <permissions> 17
+				gatts start_service
+TC_GAW_SR_BV_02_C	PASS	haltest:
+				gatts add service
+				gatts add_characteristics:
+					<properties> 66 <permisions> 145
+				gatts start_service
+				gattc listen
+				gatts send_response: (twice)
+				NOTE: gatts_request_write_cb shall be called
+								 (verify it)
+TC_GAW_SR_BI_01_C	PASS	haltest:
+				gatts add_service
+				gatts add_characteristic:
+						<properties> 68
+						<permissions> 129
+				gatts start_service
+				gatts send_response: repeat with <data> 1
+TC_GAW_SR_BV_03_C	PASS	haltest:
+				gatts add_service
+				gatts add_characteristic:
+						<properties> 10 <permissions> 17
+TC_GAW_SR_BI_02_C	PASS	haltest:
+				gatts add_service
+				gatts add_characteristic:
+						<properties> 10 <permissions> 17
+				gatts start_service
+				gatts send_response: <status> 1
+TC_GAW_SR_BI_03_C	PASS	haltest:
+				gatts add_service
+				gatts add_characteristic:
+						<properties> 10 <permissions> 1
+				gatts start_service
+TC_GAW_SR_BI_04_C	PASS	haltest:
+				gatts add_service
+				gatts add_characteristic:
+						<properties> 10 <permissions> 17
+				gatts start_service
+				gatts send_response: <status> 8
+TC_GAW_SR_BI_05_C	PASS	haltest:
+				gatts add_service
+				gatts add_characteristic:
+						<properties> 10 <permissions> 17
+				gatts start_service
+				gatts send_response: <status> 5
+TC_GAW_SR_BI_06_C	PASS	haltest:
+				gatts add_service
+				gatts add_characteristic:
+						<properties> 10 <permissions> 17
+				gatts start_service
+				gatts send_response: <status> 12
+TC_GAW_SR_BV_05_C	PASS	haltest:
+				gatts add_service
+				gatts add_characteristic:
+						<properties> 10 <permissions> 17
+				gatts start_service
+				gatts send_response:
+						<data> value greater than MTU
+						repeat with correct offset
+				gatts send_response:
+						repeat with correct value
+TC_GAW_SR_BI_07_C	PASS	haltest:
+				gatts add_service
+				gatts add_characteristic:
+						<properties> 10 <permissions> 17
+				gatts start_service
+				gatts send_response
+TC_GAW_SR_BI_08_C	PASS	haltest:
+				gatts add_service
+				gatts add_characteristic:
+						<properties> 2 <permissions> 1
+				gatts start_service
+TC_GAW_SR_BI_09_C	PASS	haltest:
+				gatts add_service
+				gatts add_characteristic:
+						<properties> 10 <permissions> 17
+				gatts start_service
+				gatts send_response:
+						<data> value greater than MTU
+						repeat with correct offset
+				gatts send_response: <status> 7
+TC_GAW_SR_BI_11_C	PASS	haltest:
+				gatts add_service
+				gatts add_characteristic:
+						<properties> 10 <permissions> 17
+				gatts start_service
+				gatts send_response:
+						<data> value greater than MTU
+						repeat with correct offset
+				gatts send_response: <status> 8
+TC_GAW_SR_BI_12_C	PASS	haltest:
+				gatts add_service
+				gatts add_characteristic:
+						<properties> 10 <permissions> 17
+				gatts start_service
+				gatts send_response:
+						<data> value greater than MTU
+						repeat with correct offset
+				gatts send_response: <status> 5
+TC_GAW_SR_BI_13_C	PASS	haltest:
+				gatts add_service
+				gatts add_characteristic:
+						<properties> 10 <permissions> 17
+				gatts start_service
+				gatts send_response:
+						<data> value greater than MTU
+						repeat with correct offset
+				gatts send_response: <status> 12
+TC_GAW_SR_BV_06_C	PASS	haltest:
+				gatts add_service
+				gatts add_characteristic:
+						<properties> 10 <permissions> 17
+				gatts start_service
+				gatts send_response:
+						repeat with correct value
+TC_GAW_SR_BV_10_C	PASS	haltest:
+				gatts add_service
+				gatts add_characteristic:
+						<properties> 10 <permissions> 17
+				gatts start_service
+				gatts send_response:
+						<data> value greater than MTU
+						repeat with correct offset
+				gatts send_response:
+						repeat with correct value
+TC_GAW_SR_BI_14_C	PASS	haltest:
+				gatts add_service
+				gatts add_characteristic:
+						<properties> 10 <permissions> 17
+				gatts start_service
+				gatts send_response: <status> 1
+TC_GAW_SR_BI_15_C	PASS	haltest:
+				gatts add_service
+				gatts add_characteristic:
+						<properties> 10 <permissions> 17
+				gatts start_service
+				gatts send_response: <status> 3
+TC_GAW_SR_BI_17_C	PASS	haltest:
+				gatts add_service
+				gatts add_characteristic:
+						<properties> 10 <permissions> 17
+				gatts start_service
+				gatts send_response: <status> 8
+TC_GAW_SR_BI_18_C	PASS	haltest:
+				gatts add_service
+				gatts add_characteristic:
+						<properties> 10 <permissions> 17
+				gatts start_service
+				gatts send_response: <status> 5
+TC_GAW_SR_BI_19_C	PASS	haltest:
+				gatts add_service
+				gatts add_characteristic:
+						<properties> 10 <permissions> 17
+				gatts start_service
+				gatts send_response: <status> 12
+TC_GAW_SR_BV_07_C	PASS	haltest:
+				gatts add_service
+				gatts add_characteristic:
+						<properties> 10 <permissions> 17
+				gatts start_service
+				gatts send_response:
+						repeat with correct value
+TC_GAW_CL_BV_08_C	PASS	haltest:
+				gatts add_service
+				gatts add_characteristic:
+						<properties> 10 <permissions> 17
+				gatts add_descriptor: <permmisions> 17
+				gatts start_service
+				gatts send_response
+TC_GAW_SR_BI_20_C	PASS	haltest:
+				gatts add_service
+				gatts add_characteristic:
+						<properties> 10 <permissions> 17
+				gatts add_descriptor: <permmisions> 17
+				gatts start_service
+				gatts send_response: <status> 1
+TC_GAW_SR_BI_21_C	PASS	haltest:
+				gatts add_service
+				gatts add_characteristic:
+						<properties> 2 <permissions> 1
+				gatts add_descriptor: <permmisions> 1
+				gatts start_service
+TC_GAW_SR_BI_22_C	PASS	haltest:
+				gatts add_service
+				gatts add_characteristic:
+						<properties> 10 <permissions> 17
+				gatts add_descriptor: <permmisions> 17
+				gatts start_service
+				gatts send_response: <status> 8
+
+TC_GAW_SR_BI_23_C	PASS	haltest:
+				gatts add_service
+				gatts add_characteristic:
+						<properties> 10 <permissions> 17
+				gatts add_descriptor: <permmisions> 17
+				gatts start_service
+				gatts send_response: <status> 5
+TC_GAW_SR_BI_24_C	PASS	haltest:
+				gatts add_service
+				gatts add_characteristic:
+						<properties> 10 <permissions> 17
+				gatts add_descriptor: <permmisions> 17
+				gatts start_service
+				gatts send_response: <status> 12
+TC_GAW_SR_BV_09_C	PASS	haltest:
+				gatts add_service
+				gatts add_characteristic:
+						<properties> 10 <permissions> 17
+				gatts add_descriptor: <permissions> 17
+				gatts start_service
+				gatts send_response:
+						<data> value greater than MTU
+						repeat with correct offset
+				gatts send_response:
+						repeat with correct value
+TC_GAW_SR_BI_25_C	PASS	haltest:
+				gatts add_service
+				gatts add_characteristic:
+						<properties> 10 <permissions> 17
+				gatts add_descriptor: <permmisions> 17
+				gatts start_service
+				gatts send_response: <status> 1
+TC_GAW_SR_BI_26_C	PASS	haltest:
+				gatts add_service
+				gatts add_characteristic:
+						<properties> 10 <permissions> 17
+				gatts add_descriptor: <permmisions> 1
+				gatts start_service
+TC_GAW_SR_BI_27_C	PASS	haltest:
+				gatts add_service
+				gatts add_characteristic:
+						<properties> 10 <permissions> 17
+				gatts add_descriptor: <permmisions> 1
+				gatts start_service
+				gatts send_response:
+						<data> value greater than MTU
+						repeat with correct offset
+				gatts send_response: <status> 7
+TC_GAW_SR_BI_29_C	PASS	haltest:
+				gatts add_service
+				gatts add_characteristic:
+						<properties> 10 <permissions> 17
+				gatts add_descriptor: <permmisions> 17
+				gatts start_service
+				gatts send_response: <status> 8
+TC_GAW_SR_BI_30_C	PASS	haltest:
+				gatts add_service
+				gatts add_characteristic:
+						<properties> 10 <permissions> 17
+				gatts add_descriptor: <permmisions> 17
+				gatts start_service
+				gatts send_response: <status> 5
+TC_GAW_SR_BI_31_C	PASS	haltest:
+				gatts add_service
+				gatts add_characteristic:
+						<properties> 10 <permissions> 17
+				gatts add_descriptor: <permmisions> 17
+				gatts start_service
+				gatts send_response: <status> 12
+TC_GAW_SR_BI_32_C	PASS	PTS issue #12823
+				haltest:
+				gatts add_service
+				gatts add_characteristic:
+						<properties> 10 <permissions> 17
+				gatts start_service
+				gatts send_response
+				gatts send_response: <status> 13
+TC_GAW_SR_BI_33_C	PASS	haltest:
+				gatts add_service
+				gatts add_characteristic:
+						<properties> 10 <permissions> 17
+				gatts start_service
+				gatts send_response:
+						<data> value greater than MTU
+						repeat with correct offset
+				gatts send_response: <status> 13
+TC_GAW_SR_BI_34_C	PASS	haltest:
+				gatts add_service
+				gatts add_characteristic:
+						<properties> 10 <permissions> 17
+				gatts add_descriptor: <permmisions> 17
+				gatts start_service
+				gatts send_response
+				gatts send_response: <status> 13
+TC_GAW_SR_BI_35_C	PASS	haltest:
+				gatts add_service
+				gatts add_characteristic:
+						<properties> 10 <permissions> 17
+				gatts add_descriptor: <permmisions> 17
+				gatts start_service
+				gatts send_response:
+						<data> value greater than MTU
+						repeat with correct offset
+				gatts send_response: <status> 13
+TC_GAN_CL_BV_01_C	PASS	haltest:
+				gattc connect <client id> <PTS addr>
+				gattc search_service <conn_id>
+				gattc get_characteristic <conn_id> <svc uuid>
+				gattc get_descriptor <client_id> <svc_id>
+					<char_id>
+				gattc write_descriptor <client_id> <svc_id>
+					<desc_id> 2 0x0100
+				gattc disconnect <client_id> <PTS addr>
+					<conn_id>
+TC_GAN_SR_BV_01_C	PASS	haltest:
+				gatts add_service
+				gatts add_chaaracteristic:
+						<properties> 26 <permissions> 17
+				gatts add_descriptor: <uuid> 2902
+					<permission> 11
+				gatts start_service
+				gatts send_response
+				gatts send_response
+				gatts send_indication:
+						<attr_handle> char value handle
+						<confirm> 0
+TC_GAI_CL_BV_01_C	PASS	haltest:
+				gattc connect <client id> <PTS addr>
+				gattc search_service <conn_id>
+				gattc get_characteristic <conn_id> <svc uuid>
+				gattc get_descriptor <client_id> <svc_id>
+					<char_id>
+				gattc write_descriptor <client_id> <svc_id>
+					<desc_id> 2 0x0200
+				gattc disconnect <client_id> <PTS addr>
+					<conn_id>
+TC_GAI_SR_BV_01_C	PASS	haltest:
+				gatts add_service
+				gatts add_chaaracteristic:
+						<properties> 42 <permissions> 17
+				gatts add_descriptor: <permissions> 17
+				gatts start_service
+				gatts add_service
+				gatts start_service
+TC_GAS_CL_BV_01_C	PASS	haltest:
+				gattc connect <client id> <PTS addr>
+				gattc disconnect <client_id> <PTS addr>
+					<conn_id>
+TC_GAS_SR_BV_01_C	PASS	haltest:
+				gatts add_service
+				gatts add_chaaracteristic:
+						<properties> 42 <permissions> 17
+				gatts add_descriptor: <permissions> 17
+				gatts start_service
+				gatts add_service
+				gatts start_service
+TC_GAT_CL_BV_01_C	PASS	haltest:
+				gattc connect <client id> <PTS addr>
+				gattc search_service <conn_id>
+				gattc get_characteristic <conn_id> <svc uuid>
+				gattc read_characteristic <conn_id> <svc_id>
+					<char_id>
+				wait for 30 sec timeout
+TC_GAT_CL_BV_02_C	PASS	haltest:
+				gattc connect <client id> <PTS addr>
+				gattc search_service <conn_id>
+				gattc get_characteristic <conn_id> <svc uuid>
+				gattc write_characteristic <client_id> <svc_id>
+					<char_id> 2 <value>
+				wait for 30 sec timeout
+TC_GAT_SR_BV_01_C	PASS	haltest:
+				gatts add_service
+				gatts add_characteristic:
+						<properties> 42 <permissions> 17
+				gatts add_descriptor: <permissions> 17
+				gatts start_service
+				gatts add_service
+				gatts start_service
+TC_GPA_CL_BV_01_C	PASS	haltest:
+				gattc connect <client id> <PTS addr>
+				gattc test_command 0xe0 <PTS addr> <char_uuid>
+					0x08 <start_hdl> <end_hdl>
+				gattc disconnect <client_id> <PTS addr>
+					<conn_id>
+TC_GPA_CL_BV_02_C	PASS	haltest:
+				gattc connect <client id> <PTS addr>
+				gattc test_command 0xe0 <PTS addr> <char_uuid>
+					0x08 <start_hdl> <end_hdl>
+				gattc disconnect <client_id> <PTS addr>
+					<conn_id>
+TC_GPA_CL_BV_03_C	PASS	haltest:
+				gattc connect <client id> <PTS addr>
+				gattc test_command 0xe0 <PTS addr> <char_uuid>
+					0x08 <start_hdl> <end_hdl>
+				gattc disconnect <client_id> <PTS addr>
+					<conn_id>
+TC_GPA_CL_BV_04_C	PASS	haltest:
+				gattc connect <client id> <PTS addr>
+				gattc test_command 0xe0 <PTS addr> <char_uuid>
+					0x08 <start_hdl> <end_hdl>
+				gattc disconnect <client_id> <PTS addr>
+					<conn_id>
+TC_GPA_CL_BV_05_C	PASS	haltest:
+				gattc connect <client id> <PTS addr>
+				gattc test_command 0xe0 <PTS addr> <char_uuid>
+					0x08 <start_hdl> <end_hdl>
+				gattc disconnect <client_id> <PTS addr>
+					<conn_id>
+TC_GPA_CL_BV_06_C	PASS	haltest:
+				gattc connect <client id> <PTS addr>
+				gattc test_command 0xe0 <PTS addr> <char_uuid>
+					0x08 <start_hdl> <end_hdl>
+				gattc connect <client id> <PTS addr>
+				gattc search_service <conn_id>
+				gattc get_characteristic <conn_id> <svc uuid>
+				gattc read_descriptor <conn_id> <svc_id>
+					<char_id> <desc_id>
+				gattc disconnect <client_id> <PTS addr>
+					<conn_id>
+TC_GPA_CL_BV_07_C	PASS	haltest:
+				gattc connect <client id> <PTS addr>
+				gattc test_command 0xe0 <PTS addr> <char_uuid>
+					0x08 <start_hdl> <end_hdl>
+				gattc disconnect <client_id> <PTS addr>
+					<conn_id>
+TC_GPA_CL_BV_08_C	PASS	haltest:
+				gattc connect <client id> <PTS addr>
+				gattc test_command 0xe0 <PTS addr> <char_uuid>
+					0x08 <start_hdl> <end_hdl>
+				gattc disconnect <client_id> <PTS addr>
+					<conn_id>
+TC_GPA_CL_BV_11_C	PASS	haltest:
+				gattc connect
+				Repeat following steps 5 times:
+				1.Find Characteristic Aggregate Format
+				gattc test_command <cmd> 224 [u1] 8
+				2.Read aggregate descriptor
+				gattc test_command <cmd> 224 [u1] 10
+				3.Read 3 handles from aggregate descriptor
+									value
+				gattc test_command <cmd> 224 [u1] 10
+				4.Compare descriptors values
+				gattc disconnect
+
+TC_GPA_CL_BV_12_C	PASS	haltest:
+				gattc connect
+				Repeat following steps 5 times:
+				1.Find Characteristic Presentation Format
+				gattc test_command <cmd> 224 [u1] 8
+				2.Find characteristic in this range
+				gattc test_command <cmd> 224 <uuid> 2803 [u1] 8
+				3.Read characteristic declaration
+				gattc test_command <cmd> 224 [u1] 10
+				4.Read characteristic value
+				gattc test_command <cmd> 224 [u1] 10
+				5.Compare characteristic value and
+							presentation format
+				gattc disconnect
+TC_GPA_SR_BV_01_C	PASS
+TC_GPA_SR_BV_02_C	PASS	haltest:
+				gatts add_service
+				gatts start_service
+TC_GPA_SR_BV_03_C	PASS	haltest:
+				gatts add_service
+				gatts add_service
+				add_included_service
+				gatts start_service
+				gatts start_service
+TC_GPA_SR_BV_04_C	PASS	haltest:
+				gatts add_service
+				gatts add_chaaracteristic:
+						<properties> 10 <permissions> 17
+				gatts start_service
+TC_GPA_SR_BV_05_C	PASS	haltest:
+				gatts add_service
+				gatts add_chaaracteristic:
+						<properties> 138 <permissions> 17
+				gatts add_descriptor <UUID> 2900
+				gatts start_service
+TC_GPA_SR_BV_06_C	PASS	haltest:
+				gatts add_service
+				gatts add_chaaracteristic:
+						<properties> 138 <permissions> 17
+				gatts add_descriptor <UUID> 2901
+				gatts start_service
+TC_GPA_SR_BV_07_C	PASS
+TC_GPA_SR_BV_08_C	PASS	haltest:
+				gatts add_service
+				gatts add_chaaracteristic:
+						<properties> 138 <permissions> 17
+				gatts add_descriptor <UUID> 2903
+				gatts start_service
+				gatts send_response
+TC_GPA_SR_BV_11_C	INC	PTS issue #13392
+				haltest:
+				gatts add_service
+				gatts add_chaaracteristic:
+						<properties> 138 <permissions> 17
+				gatts add_descriptor <UUID> 2905
+				gatts start_service
+				gatts send_response: repeat with correct offset
+								and data
+TC_GPA_SR_BV_12_C	PASS	haltest:
+				gatts add_service
+				gatts add_chaaracteristic:
+						<properties> 10 <permissions> 17
+				gatts add_descriptor <UUID> 2904
+				gatts start_service
+				gatts send_response: repeat with correct data
+-------------------------------------------------------------------------------

@@ -851,10 +851,24 @@ function insertExtChannelOption_5g(){
     var orig = document.form.wl_channel.value;
     free_options(document.form.wl_channel);
 		if(wl_channel_list_5g != ""){	//With wireless channel 5g hook
-			if('<% nvram_get("wl_unit"); %>' == '1')
+			if('<% nvram_get("wl_unit"); %>' == '1'){
 				wl_channel_list_5g = eval('<% channel_list_5g(); %>');
-			else
+				if(amesh_support && !httpApi.hasAiMeshNode() && !wl_info.band5g_2_support){
+					try{
+						var mesh_5g = JSON.parse('<% get_wl_channel_list_5g(); %>');
+						if(mesh_5g.auto.chanlist[0] === '0'){
+							mesh_5g.auto.chanlist.shift();
+						}
+		
+						wl_channel_list_5g = mesh_5g.auto.chanlist.slice(0);
+					}catch(e){
+						var mesh_5g = {};
+					}            
+				}      
+			}
+			else{
 				wl_channel_list_5g = eval('<% channel_list_5g_2(); %>');
+			}
 
 			if(lantiq_support){
 				if(document.form.wl_bw.value == "0" || document.form.wl_bw.value == "1"	){	// 20MHz, 20/40/80
@@ -1493,17 +1507,28 @@ function wl_auth_mode_change(isload){
 
 		if((mode == 'sae' || mode == 'owe') && document.form.wl_mfp.value != '2'){			
 			$('#mbo_notice_combo').hide();
+			$('#mbo_notice_combo_legacy').hide();
 			$('#mbo_notice_wpa3').show();
 			$('#mbo_notice').hide();
 		}
 		else if(mode == 'psk2sae' && document.form.wl_mfp.value == '0'){
 			$('#mbo_notice_wpa3').hide();
 			$('#mbo_notice_combo').show();
+			$('#mbo_notice_combo_legacy').hide();
+			$('#mbo_notice').hide();
+		}
+		else if(mode == 'pskpsk2' 
+			 && document.form.wl_mfp.value == '2' 
+			 && (band5g_11ax_support || based_modelid == 'RT-AC68U_V4')){
+			$('#mbo_notice_wpa3').hide();
+			$('#mbo_notice_combo').hide();
+			$('#mbo_notice_combo_legacy').show();
 			$('#mbo_notice').hide();
 		}
 		else{
 			$('#mbo_notice_wpa3').hide();
 			$('#mbo_notice_combo').hide();
+			$('#mbo_notice_combo_legacy').hide();
 			$('#mbo_notice').hide();
 		}
 
@@ -1773,16 +1798,29 @@ function limit_auth_method(g_unit){
 
 	if(_current_page == "Guest_network.asp"){
 		if(wpa3_support){
-			if(band6g_support && g_unit == '2'){	// for 6 GHz
-	
-				var auth_array = [["<#Wireless_Encryption_OWE#>", "owe"], ["WPA3-Personal", "sae"]];
-				if(auth_method_array != 'owe' && auth_method_array != 'sae'){
-					auth_method_array = 'owe';
+			if(based_modelid === 'GT-AXE16000'){
+				if(g_unit == '2'){
+					var auth_array = [["<#Wireless_Encryption_OWE#>", "owe"], ["WPA3-Personal", "sae"]];
+					if(auth_method_array != 'owe' && auth_method_array != 'sae'){
+						auth_method_array = 'owe';
+					}
+				}
+				else{
+					var auth_array = [["Open System", "open"], ["WPA2-Personal", "psk2"], ["WPA3-Personal", "sae"], ["WPA/WPA2-Personal", "pskpsk2"], ["WPA2/WPA3-Personal", "psk2sae"]];
 				}
 			}
 			else{
-				var auth_array = [["Open System", "open"], ["WPA2-Personal", "psk2"], ["WPA3-Personal", "sae"], ["WPA/WPA2-Personal", "pskpsk2"], ["WPA2/WPA3-Personal", "psk2sae"]];
+				if(band6g_support && g_unit == '2'){	// for 6 GHz
+					var auth_array = [["<#Wireless_Encryption_OWE#>", "owe"], ["WPA3-Personal", "sae"]];
+					if(auth_method_array != 'owe' && auth_method_array != 'sae'){
+						auth_method_array = 'owe';
+					}
+				}
+				else{
+					var auth_array = [["Open System", "open"], ["WPA2-Personal", "psk2"], ["WPA3-Personal", "sae"], ["WPA/WPA2-Personal", "pskpsk2"], ["WPA2/WPA3-Personal", "psk2sae"]];
+				}
 			}
+			
 		}
 		else{
 			var auth_array = [["Open System", "open"], ["WPA2-Personal", "psk2"], ["WPA-Auto-Personal", "pskpsk2"]];

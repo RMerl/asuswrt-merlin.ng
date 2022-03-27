@@ -85,8 +85,6 @@ ifeq ($(RTCONFIG_5301X),y)
 CFLAGS += -DBCM5301X
 endif
 
-include $(SRCBASE)/.config
-
 ifeq ($(RTCONFIG_4352_5G),y)
 CFLAGS += -DBCM4352
 endif
@@ -433,7 +431,7 @@ ifeq ($(or $(RTCONFIG_JFFS_NVRAM),$(RTCONFIG_VAR_NVRAM)),y)
 OBJS += nvpriv.o
 endif
 
-ifeq ($(HND_ROUTER_AX_675X),y)
+ifeq ($(or $(HND_ROUTER_AX_675X),$(HND_ROUTER_AX_6710),$(BCM_502L07P2)),y)
 ifneq ($(RTCONFIG_SDK502L07P1_121_37),y)
 OBJS += event_utils.o
 endif
@@ -441,6 +439,9 @@ endif
 
 ifeq ($(OPDBG),y)
 CFLAGS += -DOPDBG
+endif
+ifeq ($(TURKT),y)
+CFLAGS += -DTURKT
 endif
 ifneq ($(CUSTOM_MODEL),)
 CFLAGS += -DCUSTOM_MODEL

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<record>
+  <attribute id="0x0001">
+    <sequence>
+      <uuid value="0x1200"/>
+    </sequence>
+  </attribute>
+
+  <attribute id="0x0200">
+    <uint16 value="0x0102" name="id"/>
+  </attribute>
+
+  <attribute id="0x0201">
+    <uint16 value="0x0a12" name="vendor"/>
+  </attribute>
+
+  <attribute id="0x0202">
+    <uint16 value="0x4711" name="product"/>
+  </attribute>
+
+  <attribute id="0x0203">
+    <uint16 value="0x0000" name="version"/>
+  </attribute>
+
+  <attribute id="0x0204">
+    <boolean value="true"/>
+  </attribute>
+
+  <attribute id="0x0205">
+    <uint16 value="0x0002" name="source"/>
+  </attribute>
+</record>

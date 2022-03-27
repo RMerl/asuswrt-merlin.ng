@@ -1,0 +1,77 @@
+Heart Rate API description
+**************************
+
+
+Heart Rate Manager hierarchy
+============================
+
+Service		org.bluez
+Interface	org.bluez.HeartRateManager1
+Object path	[variable prefix]/{hci0,hci1,...}
+
+Methods		RegisterWatcher(object agent)
+
+			Registers a watcher to monitor heart rate measurements.
+
+			Possible Errors: org.bluez.Error.InvalidArguments
+
+		UnregisterWatcher(object agent)
+
+			Unregisters a watcher.
+
+Heart Rate Profile hierarchy
+============================
+
+Service		org.bluez
+Interface	org.bluez.HeartRate1
+Object path	[variable prefix]/{hci0,hci1,...}/dev_XX_XX_XX_XX_XX_XX
+
+Methods		Reset()
+
+			Restart the accumulation of energy expended from zero.
+
+			Possible Errors: org.bluez.Error.NotSupported
+
+Properties	string Location (optional) [readonly]
+
+			Possible values: "other", "chest", "wrist","winger",
+					"hand", "earlobe", "foot"
+
+		boolean ResetSupported [readonly]
+
+			True if energy expended is supported.
+
+Heart Rate Watcher hierarchy
+============================
+
+Service		unique name
+Interface	org.bluez.HeartRateWatcher1
+Object path	freely definable
+
+Methods		void MeasurementReceived(object device, dict measurement)
+
+			This callback is called whenever a heart rate
+			measurement is received from the heart rate device.
+
+			Measurement:
+
+				uint16 Value:
+
+					Measurement value expressed in beats per
+					minute (bpm)
+
+				uint16 Energy (optional):
+
+					Accumulated energy expended in kilo Joules
+
+				boolean Contact (optional):
+
+					true if skin contact is detected by sensor,
+					false otherwise
+
+				array{uint16} Interval (optional):
+
+					RR-Interval values which represent the time
+					between two consecutive R waves in an ECG.
+					Values are ordered starting from oldest to
+					most recent.

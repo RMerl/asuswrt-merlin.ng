@@ -35,10 +35,12 @@ endif
 COPTS = -O2 -pipe -Wall -g
 LIBS =
 
-# Uncomment the next 2 lines to include support for Microsoft's
+# Uncomment the next line to include support for Microsoft's
 # MS-CHAP authentication protocol.  Also, edit plugins/radius/Makefile.linux.
 CHAPMS=y
+ifneq ($(HND_ROUTER_AX_6756),y)
 USE_CRYPT=y
+endif
 # Don't use MSLANMAN unless you really know what you're doing.
 #MSLANMAN=y
 # Uncomment the next line to include support for MPPE.  CHAPMS (above) must
@@ -83,9 +85,6 @@ INCLUDE_DIRS= -I../include
 COMPILE_FLAGS= #-DHAVE_PATHS_H -DIPX_CHANGE -DHAVE_MMAP
 
 CFLAGS= $(COPTS) $(COMPILE_FLAGS) $(EXTRACFLAGS) $(INCLUDE_DIRS) '-DDESTDIR="@DESTDIR@"'
-ifeq ($(HND_ROUTER_AX_6756),y)
-CFLAGS += "-DRTCONFIG_HND_ROUTER_AX_6756"
-endif
 LDFLAGS += $(EXTRA_LDFLAGS)
 
 ifdef CHAPMS
@@ -136,7 +135,8 @@ endif
 
 ifdef NEEDDES
 ifndef USE_CRYPT
-LIBS     += -ldes $(LIBS)
+CFLAGS   += -I$(TOP)/openssl/include/openssl -I$(TOP)/openssl/include
+LIBS     += -L$(TOP)/openssl -lcrypto
 else
 CFLAGS   += -DUSE_CRYPT=1
 endif

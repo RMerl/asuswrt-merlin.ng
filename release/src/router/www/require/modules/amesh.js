@@ -62,7 +62,19 @@ function check_wl_auth_support(_obj, _wl_unit) {
 			}
 		}
 	}
+
 	if(!support_flag) {
+		if(based_modelid === 'GT-AXE16000' 
+		&& auth_text === 'WPA2/WPA3-Personal'
+		&& (_smart_connect_enable && _smart_connect_enable === '1')
+		&& smart_connect_mode[0] === '1'){
+			return support_flag;
+		}
+
+		if(based_modelid === 'GT-AXE16000' && auth_text === 'WPA2-Personal'){
+			return true;
+		}
+
 		var confirm_msg = "<#AiMesh_confirm_msg9#>".replace("#AUTHMODE", auth_text);
 		support_flag = confirm(confirm_msg);
 	}

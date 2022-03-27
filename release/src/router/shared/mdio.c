@@ -175,6 +175,9 @@ int mdio_phy_speed(char *ifname)
 /**
  * Parse ssdk_sh result.
  * NOTE:	Caller have to specify switch id in command-line.
+ * @cmd:	pointer to command
+ * @fmt:	sscanf format string, ignored if cnt == 0
+ * @cnt:	number of parameters that is expected to be parsed by sscanf()
  * @return:
  * 	0:	success
  *  otherwise:	fail
@@ -186,7 +189,7 @@ int parse_ssdk_sh(const char *cmd, const char *fmt, int cnt, ...)
 	FILE *fp;
 	va_list args;
 
-	if (!cmd || cnt <= 0 || !fmt)
+	if (!cmd || (cnt > 0 && !fmt) || cnt < 0)
 		return -1;
 
 	if (!(fp = popen(cmd, "r"))) {
@@ -194,18 +197,26 @@ int parse_ssdk_sh(const char *cmd, const char *fmt, int cnt, ...)
 		return -2;
 	}
 
-	va_start(args, cnt);
-	while (ret && fgets(line, sizeof(line), fp)) {
-		if (!strstr(line, "SSDK Init OK!["))
-			continue;
-		if ((r = vsscanf(line, fmt, args)) != cnt) {
-			dbg("%s: Unknown output: [%s] of cmd [%s], fmt [%s], cnt %d, r %d\n",
-				__func__, line, cmd, fmt, cnt, r);
-			continue;
+	if (cnt > 0) {
+		va_start(args, cnt);
+		while (ret && fgets(line, sizeof(line), fp)) {
+			if (!strstr(line, "SSDK Init OK!["))
+				continue;
+			if ((r = vsscanf(line, fmt, args)) != cnt) {
+				dbg("%s: Unknown output: [%s] of cmd [%s], fmt [%s], cnt %d, r %d\n",
+					__func__, line, cmd, fmt, cnt, r);
+				continue;
+			}
+			ret = 0;
 		}
-		ret = 0;
+		va_end(args);
+	} else if (cnt == 0) {
+		while (ret && fgets(line, sizeof(line), fp)) {
+			if (!strstr(line, "SSDK Init OK!"))
+				continue;
+			ret = 0;
+		}
 	}
-	va_end(args);
 	pclose(fp);
 
 	return ret;

@@ -1,0 +1,31 @@
+AVDTP PIXIT for the PTS tool.
+
+PTS version: 6.1
+
+* - different than PTS defaults
+& - should be set to IUT Bluetooth address
+# - should be set to PTS's bin/audio folder
+
+		Required PIXIT settings
+-------------------------------------------------------------------------------
+Parameter Name			Value
+-------------------------------------------------------------------------------
+TSPX_SNK_class_of_device	04041C
+TSPX_SRC_class_of_device	080418
+TSPX_security_control_data
+TSPX_content_protection_data
+TSPX_content_protection_type
+TSPX_no_avrcp			TRUE
+TSPX_media_directory
+TSPX_bd_addr_iut		11223344556677 (*&)
+TSPX_delete_link_key		FALSE
+TSPX_pin_code			1234
+TSPX_security_enabled		TRUE (*)
+TSPX_time_guard			300000
+TSPX_use_implicit_send		TRUE
+TSPX_auth_password		0000
+TSPX_auth_user_id		PTS
+TSPX_l2cap_psm			1003
+TSPX_rfcomm_channel		8
+TSPX_no_confirmations		FALSE
+-------------------------------------------------------------------------------

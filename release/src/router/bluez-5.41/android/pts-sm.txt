@@ -1,0 +1,102 @@
+PTS test results for SM
+
+PTS version: 6.1
+Tested: 04-May-2015
+Android version: 5.1
+kernel version: 4.1
+
+Results:
+PASS	test passed
+FAIL	test failed
+INC	test is inconclusive
+N/A	test is disabled due to PICS setup
+NONE	test result is none
+
+-------------------------------------------------------------------------------
+Test Name		Result	Notes
+-------------------------------------------------------------------------------
+TC_PROT_BV_01_C		PASS	btmgmt pair -c 0x03 -t 0x01 <addr>
+TC_PROT_BV_02_C		PASS	btmgmt advertising on
+				btmgmt pair -c 0x03 -t 0x01 <addr>
+TC_JW_BV_01_C		PASS	btmgmt pairable off
+				btmgmt pair -c 0x03 -t 0x01 <addr>
+TC_JW_BV_02_C		PASS	btmgmt advertising on
+TC_JW_BV_05_C		PASS	btmgmt pair -c 0x03 -t 0x01 <addr>
+TC_JW_BI_01_C		PASS	btmgmt pair -c 0x03 -t 0x01 <addr>
+TC_JW_BI_02_C		PASS	btmgmt pairable on
+TC_JW_BI_03_C		PASS	btmgmt pairable on
+				btmgmt advertising on
+TC_JW_BI_04_C		PASS	btmgmt pairable off
+				btmgmg pair -c 0x03 -t 0x01 <addr>
+TC_PKE_BV_01_C		PASS	btmgmt pairable off
+				btmgmt pair -c 0x04 -t 0x01 <addr>
+				Note: provide passkey to PTS
+TC_PKE_BV_02_C		PASS	btmgmt pairable off
+				btmgmt io-cap 0x04
+				Note: provide passkey
+TC_PKE_BV_04_C		PASS	btmgmt pair -c 0x04 -t 0x01 <addr>
+TC_PKE_BV_05_C		PASS	btmgmt io-cap 0x04
+				l2test -r -J4 -AES -V le_public
+TC_PKE_BI_01_C		PASS	btmgmt pair -c 0x04 -t 0x01 <addr>
+				Note: Enter invalid passkey in PTS
+TC_PKE_BI_02_C		PASS	btmgmt pair -c 0x04 -t 0x01 <addr>
+				Note: provide passkey
+TC_PKE_BI_03_C		PASS	btmgmt io-cap 0x04
+				btmgmt advertising on
+				Note: Enter invalid passkey in PTS
+TC_OOB_BV_01_C		N/A
+TC_OOB_BV_02_C		N/A
+TC_OOB_BV_03_C		N/A
+TC_OOB_BV_04_C		N/A
+TC_OOB_BV_05_C		PASS	btmgmt pair -c 0x04 -t 0x01 <addr>
+				Note: Enter valid passkey in PTS
+TC_OOB_BV_06_C		PASS	btmgmt advertising on
+				Note: Enter valid passkey in PTS
+TC_OOB_BV_07_C		PASS	btmgmt pair -c 0x04 -t 0x01 <addr>
+TC_OOB_BV_08_C		PASS	btmgmt advertising on
+				Note: Accept pairing in btmgmt
+TC_OOB_BV_09_C		N/A
+TC_OOB_BV_10_C		N/A
+TC_OOB_BI_01_C		N/A
+TC_OOB_BI_02_C		N/A
+TC_EKS_BV_01_C		PASS	btmgmt pair -c 0x04 -t 0x01 <addr>
+				Note: Enter valid passkey in PTS
+TC_EKS_BV_02_C		PASS	btmgmt advertising on
+				Note: Accept pairing in btmgmt
+TC_EKS_BI_01_C		PASS	btmgmt pair -c 0x03 -t 0x01 <addr>
+TC_EKS_BI_02_C		PASS	btmgmt advertising on
+TC_SIGN_BV_01_C		INC	PTS issue #12305
+TC_SIGN_BV_03_C		PASS	haltest:
+				gattc register_client 1234
+				gattc listen 1 1
+				Note: IUT must be connectable and discoverable
+TC_SIGN_BI_01_C		PASS	haltest:
+				gattc register client 1234
+				gattc listen 1 1
+				Note: IUT must be connectable and discoverable
+TC_KDU_BV_01_C		PASS	btmgmt pairable on
+				btmgmt advertising on
+				btmgmt connectable on
+TC_KDU_BV_02_C		PASS	PTS issue #12302
+				Note: Can pass it with following instructions:
+				btmgmt privacy on
+				btmgmt advertising on
+				Check our random address (valid for 15 min)
+				Set PIXIT TSPX_bd_addr_iut to random address
+				Set PIXIT TSPX_peer_type to 01
+TC_KDU_BV_03_C		PASS	btmgmt pairable on
+				btmgmt advertising on
+TC_KDU_BV_04_C		PASS	btmgmt pair -c 0x03 -t 0x01 <addr>
+TC_KDU_BV_05_C		PASS	PTS issue #12302
+				Note: Can pass it with following instructions:
+				btmgmt privacy on
+				Check our random address (valid for 15 min)
+				Set PIXIT TSPX_bd_addr_iut to random address
+				Set PIXIT TSPX_peer_type to 01
+TC_KDU_BV_06_C		PASS	btmgmt pair -c 0x03 -t 0x01 <addr>
+TC_KDU_BV_07_C		PASS	btmgmt pairable on
+TC_SIP_BV_01_C		PASS	btmgmt advertising on
+TC_SIP_BV_02_C		PASS	btmgmt pair -c 0x03 -t 0x01 <addr>
+TC_SIE_BV_01_C		PASS	btmgmt io-cap 0x03
+				btmgmt advertising on
+-------------------------------------------------------------------------------

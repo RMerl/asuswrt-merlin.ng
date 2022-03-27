@@ -9,35 +9,20 @@
 </head>
 <body>
 <script>
+	var knv = "<% get_uname_release(); %>";
+	var knv_threshold = (parseInt(knv[0])=="")?0:parseInt(knv[0]);
 	var reboot_needed_time = eval("<% get_default_reboot_time(); %>");
 	parent.document.getElementById("hiddenMask").style.visibility = "hidden";
 
-	//MODELDEP: 4G-AC55U, RT-AC52U, RT-AC55U, RT-AC55UHP, RT-AC56S, RT-AC56U, RT-AC66U, RT-AC68U, RT-AC3200 2014.06
-	if( parent.based_modelid == "4G-AC55U"
-	 || parent.based_modelid == "DSL-AC68U"
-	 || parent.based_modelid == "RT-AC52U"
-	 || parent.based_modelid == "RT-AC55U" || parent.based_modelid == "RT-AC55UHP"
-	 || parent.based_modelid == "RT-AC56S" || parent.based_modelid == "RT-AC56U"
-	 || parent.based_modelid == "RT-AC66U"
-	 || parent.based_modelid == "RT-AC68U" || parent.based_modelid == "RT-AC68A" || parent.based_modelid == "4G-AC68U"
-	 || parent.based_modelid == "RT-AC3200" 
-	 || parent.based_modelid == "RT-AC5300" || parent.based_modelid == "GT-AC5300"
-	 || parent.based_modelid == "GT-AC9600"
-	 || parent.based_modelid == "RT-AC88U" || parent.based_modelid == "RT-AX88U" || parent.based_modelid == "RT-AC3100"
-	 || parent.based_modelid == "RT-AC86U" || parent.based_modelid == "GT-AC2900" || parent.based_modelid == "GT-AX11000" || parent.based_modelid == "RT-AX92U" || parent.based_modelid == "RT-AX95Q" || parent.based_modelid == "XT8PRO" || parent.based_modelid == "RT-AXE95Q" || parent.based_modelid == "ET8PRO" || parent.based_modelid == "RT-AX56_XD4" || parent.based_modelid == "XD4PRO" || parent.based_modelid == "CT-AX56_XD4" || parent.based_modelid == "RT-AX58U" || parent.based_modelid == "RT-AX58U_V2" || parent.based_modelid == "TUF-AX3000" || parent.based_modelid == "TUF-AX5400" || parent.based_modelid == "RT-AX82U" || parent.based_modelid == "RT-AX56U"
-	 || parent.based_modelid == "RT-AX86U" || parent.based_modelid == "RT-AX68U" || parent.based_modelid == "RT-AC68U_V4"
-	 || parent.based_modelid == "GT-AXE11000"
-	 || parent.based_modelid == "GS-AX3000" || parent.based_modelid == "GS-AX5400" || parent.based_modelid == "GT-AX11000_PRO"
-	 || parent.based_modelid == "ET12" || parent.based_modelid == "XT12" || parent.based_modelid == "GT-AXE16000"
-	){
+	if(parent.Bcmwifi_support && knv_threshold >= 4){
+
 		reboot_needed_time += 40;		
 		parent.showLoadingBar(reboot_needed_time);
-		reboot_needed_time += 2;
-		setTimeout("parent.detect_httpd();", reboot_needed_time*1000);
+		setTimeout("parent.detect_httpd();", (reboot_needed_time+2)*1000);
 	}
 	else if(parent.based_modelid == "RT-N11P"){
 		parent.showLoadingBar(160);
-		setTimeout("parent.detect_httpd();", 160000);
+		setTimeout("parent.detect_httpd();", 162000);
 	}
 	else{
 		parent.showLoadingBar(270);

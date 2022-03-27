@@ -1,0 +1,41 @@
+PTS test results for HSP
+
+PTS version: 6.1
+Tested: 13-May-2015
+Android version: 5.1
+
+Results:
+PASS    test passed
+FAIL    test failed
+INC     test is inconclusive
+N/A     test is disabled due to PICS setup
+
+-------------------------------------------------------------------------------
+Test Name               Result  Notes
+-------------------------------------------------------------------------------
+TC_AG_IAC_BV_01_I	PASS
+TC_AG_IAC_BV_02_I	N/A
+TC_AG_OAC_BV_01_I	PASS
+TC_AG_ACR_BV_01_I	PASS
+TC_AG_ACR_BV_02_I	PASS
+TC_AG_ACT_BV_01_I	PASS
+TC_AG_ACT_BV_02_I	PASS
+TC_AG_RAV_BV_01_I	PASS
+TC_AG_RAV_BV_02_I	PASS
+TC_AG_RAV_BV_03_I	PASS
+TC_AG_RAV_BV_04_I	N/A
+TC_AG_RAV_BV_05_I	N/A
+TC_AG_RAV_BV_06_I	N/A
+TC_HS_IAC_BV_01_I	N/A
+TC_HS_IAC_BV_02_I	N/A
+TC_HS_OAC_BV_01_I	N/A
+TC_HS_ACR_BV_01_I	N/A
+TC_HS_ACR_BV_02_I	N/A
+TC_HS_ACT_BV_01_I	N/A
+TC_HS_ACT_BV_02_I	N/A
+TC_HS_RAV_BV_01_I	N/A
+TC_HS_RAV_BV_02_I	N/A
+TC_HS_RAV_BV_03_I	N/A
+TC_HS_RAV_BV_04_I	N/A
+TC_HS_RAV_BV_05_I	N/A
+TC_HS_RAV_BV_06_I	N/A

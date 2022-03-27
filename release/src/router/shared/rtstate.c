@@ -343,7 +343,7 @@ char *get_wan_ifname(int unit)
 			nvram_safe_get(strlcat_r(prefix, "pppoe_ifname", tmp, sizeof(tmp)));
 	} else
 #endif
-#ifdef RTAX82_XD6
+#if defined(RTAX82_XD6) || defined(RTAX82_XD6S)
 	if (!strncmp(nvram_safe_get("territory_code"), "CH", 2) &&
 		nvram_match(ipv6_nvname("ipv6_only"), "1"))
 		return nvram_safe_get(strlcat_r(prefix, "ifname", tmp, sizeof(tmp)));
@@ -1196,23 +1196,27 @@ char *get_default_ssid(int unit, int subunit)
 	char ssidbase[16], *macp = NULL;
 	unsigned char mac_binary[6];
 	const char *post_5g __attribute__((unused)) = "-1", *post_5g2 __attribute__((unused))= "-2", *post_guest = "_Guest";	/* postfix for RTCONFIG_NEWSSID_REV2 case */
-
-#if defined(RTCONFIG_NEWSSID_REV2) || defined(RTCONFIG_NEWSSID_REV4) || defined(RTCONFIG_NEWSSID_REV5) || defined(RTCONFIG_NEWSSID_REV6)
+#if defined(RTCONFIG_WIFI6E)
+	const char *post_6g __attribute__((unused)) = "6G";
+#endif
+#if defined(RTCONFIG_NEWSSID_REV2) || defined(RTCONFIG_NEWSSID_REV4) || defined(RTCONFIG_NEWSSID_REV5)
 	rev3 = 1;
 #endif
-
 	if (unit < 0 || unit >= WL_NR_BANDS || subunit < 0) {
 		dbg("%s: invalid parameter. (unit %d, subunit %d)\n",
 			__func__, unit, subunit);
 	}
 
 	/* Adjust postfix for different conditions. */
-#if defined(GTAC5300) || defined(GTAX11000) || defined(GTAX11000_PRO) || defined(GTAXE16000)
+#if defined(GTAC5300) || defined(GTAX11000)
 	post_5g = "";
 	post_5g2 = "_Gaming";
-#elif defined(RTCONFIG_NEWSSID_REV6)
+#elif defined(RTCONFIG_NEWSSID_REV4)
 	post_5g = "";
 	post_5g2 = "";
+#if defined(RTCONFIG_WIFI6E)
+	post_6g = "";
+#endif
 #elif !defined(RTCONFIG_NEWSSID_REV2) && !defined(RTCONFIG_NEWSSID_REV4) && !defined(RTCONFIG_SINGLE_SSID)
 	post_5g = "";
 #endif
@@ -1294,7 +1298,15 @@ char *get_default_ssid(int unit, int subunit)
 #elif defined(PLAX56_XP4)
 		strlcat(ssid, "_XP4", sizeof(ssid));
 #elif defined(RTAX82_XD6)
-		strlcat(ssid, "_XD6", sizeof(ssid));
+		if (strstr(nvram_safe_get("odmpid"), "XD6E"))
+			strlcat(ssid, "_XD6E", sizeof(ssid));
+		else
+			strlcat(ssid, "_XD6", sizeof(ssid));
+#elif defined(RTAX82_XD6S)
+		if (strstr(nvram_safe_get("odmpid"), "XD6E"))
+			strlcat(ssid, "_XD6E", sizeof(ssid));
+		else
+	                strlcat(ssid, "_XD6S", sizeof(ssid));
 #elif defined(DSL_AX82U) && !defined(RTCONFIG_BCM_MFG)
 		if (is_ax5400_i1() && unit == WL_5G_BAND)
 			strlcat(ssid, "_5G", sizeof(ssid));
@@ -1307,6 +1319,8 @@ char *get_default_ssid(int unit, int subunit)
 #elif defined(ET12) || defined(XT12)
 		strlcat(ssid, "_", sizeof(ssid));
 		strlcat(ssid, nvram_safe_get("model"), sizeof(ssid));
+#elif defined(XT8PRO)
+		strlcat(ssid, "_XT9", sizeof(ssid));
 #endif
 
 #endif
@@ -1324,12 +1338,12 @@ char *get_default_ssid(int unit, int subunit)
 #endif
 		)
 #endif
-#if !defined(RTCONFIG_NEWSSID_REV6)
+#if !defined(RTCONFIG_NEWSSID_REV4)
 			strlcat(ssid, "_2G", sizeof(ssid));
 #endif
 		break;
 	case WL_5G_BAND:
-#if !defined(RTCONFIG_NEWSSID_REV6)
+#if !defined(RTCONFIG_NEWSSID_REV4)
 		strlcat(ssid, "_5G", sizeof(ssid));
 #endif
 		if (band_num > 2 &&
@@ -1340,11 +1354,16 @@ char *get_default_ssid(int unit, int subunit)
 
 		break;
 	case WL_5G_2_BAND:
-#if !defined(RTCONFIG_NEWSSID_REV6)
+#if !defined(RTCONFIG_NEWSSID_REV4)
 		strlcat(ssid, "_5G", sizeof(ssid));
 #endif
 		strlcat(ssid, post_5g2, sizeof(ssid));
 		break;
+#if defined(RTCONFIG_WIFI6E) && defined(RTCONFIG_QUADBAND)
+	case WL_6G_BAND:
+		strlcat(ssid, post_6g, sizeof(ssid));
+		break;
+#endif
 	case WL_60G_BAND:
 		strlcat(ssid, "_60G", sizeof(ssid));
 		break;
@@ -1369,19 +1388,34 @@ char *get_default_ssid(int unit, int subunit)
 	else
 		strlcat(ssid, post_guest, sizeof(ssid));
 #else
-#if defined(RTCONFIG_NEWSSID_REV6)
+#if defined(RTCONFIG_NEWSSID_REV4)
 	switch (unit) {
 		case WL_2G_BAND:
 			strlcat(ssid, "_2G", sizeof(ssid));
 			break;
 		case WL_5G_BAND:
+#if defined(RTCONFIG_QUADBAND) || (defined(RTCONFIG_HAS_5G_2) && !defined(RTCONFIG_WIFI6E))
+			strlcat(ssid, "_5G-1", sizeof(ssid));
+#else
 			strlcat(ssid, "_5G", sizeof(ssid));
-			break;
-		case WL_5G_2_BAND:
-#if defined(RTCONFIG_WIFI6E)
-			strlcat(ssid, "_6G", sizeof(ssid));
 #endif
 			break;
+		case WL_5G_2_BAND:
+#if defined(RTCONFIG_QUADBAND) || (defined(RTCONFIG_HAS_5G_2) && !defined(RTCONFIG_WIFI6E))
+			strlcat(ssid, "_5G-2", sizeof(ssid));
+#else
+#if defined(RTCONFIG_WIFI6E)
+			strlcat(ssid, "_6G", sizeof(ssid));
+#else
+			strlcat(ssid, "_5G", sizeof(ssid));
+#endif
+#endif
+			break;
+#if defined(RTCONFIG_QUADBAND) && defined(RTCONFIG_WIFI6E)
+		case WL_6G_BAND:
+			strlcat(ssid, "_6G", sizeof(ssid));
+			break;
+#endif
 	}
 #endif
 		strlcat(ssid, post_guest, sizeof(ssid));
@@ -1391,6 +1425,7 @@ char *get_default_ssid(int unit, int subunit)
 			strlcpy(ssid, ssid2, sizeof(ssid));
 		}
 	}
+
 	return ssid;
 }
 

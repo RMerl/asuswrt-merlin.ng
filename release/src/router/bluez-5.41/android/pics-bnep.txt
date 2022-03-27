@@ -1,0 +1,26 @@
+BNEP PICS for the PTS tool.
+
+PTS version: 6.1
+
+* - different than PTS defaults
+# - not yet implemented/supported
+
+M - mandatory if such role selected
+O - optional
+
+		Profile Version
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_BNEP_1_1	True		BNEP Connection Setup (M)
+TSPC_BNEP_1_2	True (*)	BNEP Data Packet Reception (M)
+TSPC_BNEP_1_3	True (*)	BNEP Data Packet Transmission (M)
+TSPC_BNEP_1_3a	True (*)	BNEP Compressed Packet Transmission (O)
+TSPC_BNEP_1_3b	True (*)	BNEP Compressed Packet Transmission Source Only
+				(O)
+TSPC_BNEP_1_4	True		BNEP Control Message Processing (M)
+TSPC_BNEP_1_5	True		BNEP Extension Header Processing (M)
+TSPC_BNEP_1_6	True		Network Protocol Filter Message Transmission (O)
+TSPC_BNEP_1_7	True		Multicast Address Filter Message Transmission
+				(O)
+-------------------------------------------------------------------------------

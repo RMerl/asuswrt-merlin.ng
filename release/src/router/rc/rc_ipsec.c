@@ -1615,6 +1615,9 @@ void rc_ipsec_topology_set()
         	}
 			else	{
 				fprintf(fp,"  ike=%s-%s-%s\n", encryp[ENCRYPTION_TYPE_AES256], hash[HASH_TYPE_SHA1], dh_group[DH_GROUP_2]);
+#ifdef RTCONFIG_HND_ROUTER_AX_6756
+				fprintf(fp,"  esp=%s-%s,%s-%s!\n", encryp[ENCRYPTION_TYPE_AES256], hash[HASH_TYPE_SHA512], encryp[ENCRYPTION_TYPE_AES256], hash[HASH_TYPE_SHA256]);
+#endif
 				fprintf(fp,"  dpdtimeout=30s\n");	
 			}
 			if(DPD_CLEAR == prof[prof_count][i].dead_peer_detection)

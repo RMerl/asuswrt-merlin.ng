@@ -20,6 +20,7 @@
 #
 # These are automatically sedded in by the "configure" script, but you
 # may need to change them if you're on a strange version of UNIX.
+include ../../.config
 
 
 PACKAGE=LPRng
@@ -96,11 +97,13 @@ CFLAGS:= \
 
 USER_OBJS := 
 LDFLAGS   := -L$(TOP)/shared -lshared -L$(TOP_PLATFORM)/nvram${BCMEX}${EX7} -lnvram
+ifeq ($(RTCONFIG_BCM_502L07P2),y)
+LDFLAGS += -L$(TOP_PLATFORM)/ethctl_lib -lethctl
+endif
 ifeq ($(HND_ROUTER),y)
 LDFLAGS += -L$(TOP_PLATFORM)/wlcsm -lwlcsm -lgcc_s
 endif
 
-include ../../common.mak
 ifeq ($(RTCONFIG_QTN),y)
 LDFLAGS += -L$(TOP)/libqcsapi_client -lqcsapi_client
 endif

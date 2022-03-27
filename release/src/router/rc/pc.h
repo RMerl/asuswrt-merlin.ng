@@ -85,15 +85,18 @@ extern int cleantrack_daytime_pc_list(pc_s *pc_list, int target_day, int target_
 #else
 extern int cleantrack_daytime_pc_list(pc_s *pc_list, int target_day, int target_hour, int verb);
 #endif
+#ifdef RTCONFIG_ISP_OPTUS
+extern int op_cleantrack_pc_list(pc_s *pc_list, int verb);
+#endif /* RTCONFIG_ISP_OPTUS */
 #endif
 extern void config_daytime_string(pc_s *pc_list, FILE *fp, char *logaccept, char *logdrop, int temp);
 extern void config_pause_block_string(pc_s *pc_list, FILE *fp, char *logaccept, char *logdrop, int temp);
-#ifdef DSL_AX82U
+#ifdef RTCONFIG_ISP_OPTUS
 // For optus customization
 #define CHAIN_OPTUS_PAUSE "OPTUS_PAUSE"
 extern pc_s *op_get_all_pc_list(pc_s **pc_list);
 extern void op_config_pause_block_string(pc_s *pc_list, FILE *fp, char *logaccept, char *logdrop, int temp);
-#endif
+#endif /* RTCONFIG_ISP_OPTUS */
 extern int count_pc_rules(pc_s *pc_list, int enabled);
 extern int count_event_rules(pc_event_s *event_list);
 #endif // #ifndef __PC_H__

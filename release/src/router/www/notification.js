@@ -89,17 +89,20 @@ if(amesh_support && ameshRouter_support) {
 }
 
 var check_ipv6_s46_ports_hook = (Softwire46_support && wan_proto=="v6plus")? '<%chk_s46_port_range();%>':'0';
+// '{"pf":"1","open_nat":"0","pt":"1","https":"0","ssh":"0","openvpn":"0","ftp":"1","ipsec":"1"}';
 var check_ipv6_s46_ports = "0";
 if(check_ipv6_s46_ports_hook != "" && check_ipv6_s46_ports_hook != "0"){
 	check_ipv6_s46_ports = JSON.parse(check_ipv6_s46_ports_hook);
 }
-
 
 var get_ipv6_s46_ports = (Softwire46_support && wan_proto=="v6plus")? '<%nvram_get("ipv6_s46_ports");%>':'0';
 var array_ipv6_s46_ports = new Array("");
 if(get_ipv6_s46_ports!="0" && get_ipv6_s46_ports!=""){
 	array_ipv6_s46_ports = get_ipv6_s46_ports.split(" ");
 }
+
+var ipsec_server_enable = '<% nvram_get("ipsec_server_enable"); %>'; //higher priority
+var ipsec_ig_enable = '<% nvram_get("ipsec_ig_enable"); %>';
 
 function pop_s46_ports(p, flag){
 	var isMobile = function() {
@@ -258,26 +261,34 @@ function gen_conflict_links(){
     	if(data=='1'){
     		switch(key) {
                 case "pf" :
-                        items += "<li><#menu5_3_4#></li>";
+                        items += "<li><a href='/Advanced_VirtualServer_Content.asp' style='text-decoration:underline;cursor:pointer;'><#menu5_3_4#></a></li>";
                         break;
                 case "open_nat" :
-                        items += "<li>OPEN NAT</li>";
+                        items += "<li><a href='/GameProfile.asp' target='_blank' style='text-decoration:underline;cursor:pointer;'>OPEN NAT</a></li>";
                         break;
                 case "pt" :
-                        items += "<li><#menu5_3_3#></li>";
+                        items += "<li><a href='/Advanced_PortTrigger_Content.asp' target='_blank' style='text-decoration:underline;cursor:pointer;'><#menu5_3_3#></a></li>";
                         break;
                 case "https" :
-                        items += "<li><#FirewallConfig_x_WanWebPort_itemname#></li>";
+                        items += "<li><a href='/Advanced_System_Content.asp' target='_blank' style='text-decoration:underline;cursor:pointer;'><#FirewallConfig_x_WanWebPort_itemname#></a></li>";
                         break;
                 case "ssh" :
-                        items += "<li><#Port_SSH#></li>";
+                        items += "<li><a href='/Advanced_System_Content.asp' target='_blank' style='text-decoration:underline;cursor:pointer;'><#Port_SSH#></a></li>";
                         break;
                 case "openvpn" :
-                        items += "<li>OpenVPN</li>";
+                        items += "<li><a href='/Advanced_VPN_OpenVPN.asp' target='_blank' style='text-decoration:underline;cursor:pointer;'>OpenVPN</a></li>";
                         break;
                 case "ftp" :
-                        items += "<li><#NAT_passthrough_itemname#> - <#FTP_ALG_port#></li>";
+                        items += "<li><a href='/Advanced_AiDisk_ftp.asp' target='_blank' style='text-decoration:underline;cursor:pointer;'><#NAT_passthrough_itemname#> - <#FTP_ALG_port#></a></li>";
                         break;
+		case "ipsec" :
+			if(ipsec_server_enable=='1'){
+				items += "<li><a href='/Advanced_VPN_IPSec.asp' target='_blank' style='text-decoration:underline;cursor:pointer;'>IP Sec</a></li>";
+			}
+			if(ipsec_ig_enable=='1'){
+				items += "<li><a href='/Advanced_Instant_Guard.asp' target='_blank' style='text-decoration:underline;cursor:pointer;'><#Instant_Guard_title#></a></li>";
+			}
+			break;
                 default :
                         break;
         	}
@@ -319,7 +330,7 @@ var notification = {
 		var header_info = [<% get_header_info(); %>];
 		location.href = header_info[0].current_page;
 	},
-	redirectHint:function(){location.href = location.href;},
+	redirectHint:function(){location.reload();},
 	clickCallBack: [],
 	pppoe_tw: 0,
 	ie_legacy: 0,

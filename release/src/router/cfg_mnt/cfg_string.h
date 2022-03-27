@@ -124,6 +124,20 @@
 #define CFG_STR_SYNC_NODE_5G1_G2	"cfg_wl2.2_sync_node"
 #define CFG_STR_SYNC_NODE_5G1_G3	"cfg_wl2.3_sync_node"
 
+#ifdef RTCONFIG_BANDINDEX_NEW
+
+#define CFG_STR_SYNC_NODE_2G        "cfg_sync_node_2g"
+#define CFG_STR_SYNC_NODE_5G        "cfg_sync_node_5g"
+#define CFG_STR_SYNC_NODE_5GH       "cfg_sync_node_5gh"
+#define CFG_STR_SYNC_NODE_6G        "cfg_sync_node_6g"
+
+#define CFG_STR_BSS_ENABLED_2G       "cfg_bss_enabled_2g"
+#define CFG_STR_BSS_ENABLED_5G       "cfg_bss_enabled_5g"
+#define CFG_STR_BSS_ENABLED_5GH      "cfg_bss_enabled_5gh"
+#define CFG_STR_BSS_ENABLED_6G       "cfg_bss_enabled_6g"
+
+#endif	// RTCONFIG_BANDINDEX_NEW
+
 #define CFG_STR_BSS_ONOFF_X_Y		"cfg_wl%d.%d_bss_enabled"
 #define CFG_STR_BSS_ONOFF_2G_G1		"cfg_wl0.1_bss_enabled"
 #define CFG_STR_BSS_ONOFF_2G_G2		"cfg_wl0.2_bss_enabled"
@@ -138,10 +152,16 @@
 #define CFG_STR_GUEST_IFNAMES_2G	"cfg_guest_ifnames_2g"
 #define CFG_STR_GUEST_IFNAMES_5G	"cfg_guest_ifnames_5g"
 #define CFG_STR_GUEST_IFNAMES_5GH	"cfg_guest_ifnames_5gh"
+#ifdef RTCONFIG_BANDINDEX_NEW
+#define CFG_STR_GUEST_IFNAMES_6G	"cfg_guest_ifnames_6g"
+#endif	// RTCONFIG_BANDINDEX_NEW
 
 #define CFG_STR_GUEST_VLANS_2G		"cfg_guest_vlans_2g"
 #define CFG_STR_GUEST_VLANS_5G		"cfg_guest_vlans_5g"
 #define CFG_STR_GUEST_VLANS_5GH		"cfg_guest_vlans_5gh"
+#ifdef RTCONFIG_BANDINDEX_NEW
+#define CFG_STR_GUEST_VLANS_6G		"cfg_guest_vlans_6g"
+#endif // RTCONFIG_BANDINDEX_NEW
 #endif	/* RTCONFIG_AMAS_WGN */
 #define CFG_STR_HASH_BUNDLE_KEY		"hash_bundle_key"
 #define CFG_STR_CHANGED_CONFIG		"changed_config"
@@ -189,4 +209,5 @@
 #define CFG_STR_MODE			"mode"
 #define CFG_BAND_INDEX_VERSION		"bandindex_version"
 #define CFG_BAND_TYPE		"BAND_TYPE"
+#define CFG_STR_UNIT 	"unit"
 #endif /* __CFG_STRING_H__ */

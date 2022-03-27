@@ -1,0 +1,23 @@
+DID PICS for the PTS tool.
+
+PTS version: 6.1
+
+* - different than PTS defaults
+# - not yet implemented/supported
+
+M - mandatory
+O - optional
+
+
+		SDP Requirements
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_DID_1_1	True		Specification ID (M)
+TSPC_DID_1_2	True		Vendor ID (M)
+TSPC_DID_1_3	True		Product ID (M)
+TSPC_DID_1_4	True		Version (M)
+TSPC_DID_1_5	True		Primary Record (M)
+TSPC_DID_1_6	True		Vendor ID Source (M)
+TSPC_ALL	False		Turns on all the test cases
+-------------------------------------------------------------------------------

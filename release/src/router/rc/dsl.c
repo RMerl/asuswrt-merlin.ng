@@ -515,6 +515,9 @@ dsl_defaults(void)
 	fprintf(stderr, "dump trx header..\n");
 	eval("dd", "if=/dev/mtd3", "of=/tmp/trx_hdr.bin", "count=1");
 #endif
+#ifdef RTCONFIG_DSL_BCM
+	dsl_defaults_x();
+#endif
 
 	dsl_wan_config(0);
 }

@@ -693,7 +693,8 @@
 .category_bg.clicked > div.manage:before{
 	background-position: -99px -136.8px;
 }
-.connect_type_status_bg > div, .manage_settings_bg > div{
+.connect_type_status_bg.uplink > div, .manage_settings_bg > div,
+.connect_type_status_bg .fronthaul_title, .connect_type_status_bg .fronthaul_info > div{
 	height: 60px;
 	position: relative;
 }
@@ -705,6 +706,22 @@
 	height: 58px;
 	position: relative;
 }
+.connect_type_status_bg .as_backhaul_info > div{
+	height: auto;
+	min-height: 25px;
+	font-size: 14px;
+	color: #FC0;
+	padding: 0 22px 0px 22px;
+	margin-top: -16px;
+}
+.connect_type_status_bg .as_backhaul_info .faq-link{
+	text-decoration: underline !important;
+	cursor: pointer;
+	color: #33ACFF;
+}
+.wan_status_bg:not(:last-child){
+	margin-bottom: 18px;
+}
 .wan_status_bg > div{
 	height: 60px;
 	position: relative;
@@ -714,12 +731,23 @@
 }
 .connect_type_status_bg .uplink_type_bg{
 	margin-bottom: 6px;
+	min-height: 60px;
+	height: auto;
+	display: flex;
+	align-items: flex-end;
+}
+.uplink_type_bg .uplink_connect_info_bg{
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+	max-width: 245px;
 }
 .connect_type_status_bg .uplink_type_title{
-	line-height: 36px;
+	line-height: 110%;
 	font-family: Roboto-Light, "Microsoft JhengHei";
 	font-size: 24px;
 	margin-left: 22px;
+	margin-bottom: 10px;
 }
 .connect_type_status_bg .uplink_type_title.great, .signal_text_bg.signal.great{
 	color: #4EF81C;
@@ -737,7 +765,6 @@
 	font-family: Roboto-Regular, "Microsoft JhengHei";
 	font-size: 14px;
 	color: #CDEBFF;
-	position: absolute;
 	margin-left: 22px;
 }
 .connect_type_status_bg .uplink_type_mode_title{
@@ -797,6 +824,15 @@
 .connect_type_status_bg .uplink_icon_bg > .uplink_type_icon.wireless.wl_5g_2.weak{
 	background-position: -306px -204px;
 }
+.connect_type_status_bg .uplink_icon_bg > .uplink_type_icon.wireless.wl_6g.great{
+	background-position: -816px 0px;
+}
+.connect_type_status_bg .uplink_icon_bg > .uplink_type_icon.wireless.wl_6g.ok{
+	background-position: -816px -102px;
+}
+.connect_type_status_bg .uplink_icon_bg > .uplink_type_icon.wireless.wl_6g.weak{
+	background-position: -816px -204px;
+}
 .connect_type_status_bg .uplink_icon_bg > .uplink_type_icon.wireless.disconnected{
 	background-position: 0px -306px;
 }
@@ -852,7 +888,7 @@
 	right: 12px;
 	top: 6px;
 }
-.wan_status_bg div.connect_icon_bg.disconnected > .router{
+.wan_status_bg div.connect_icon_bg.disconnected > .router, .wan_status_bg div.connect_icon_bg.standby > .router{
 	background-position: -78px 6px;
 }
 .wan_status_bg div.connect_icon_bg > .connect_line{
@@ -874,6 +910,9 @@
 }
 .wan_status_bg div.connect_icon_bg.disconnected > .connect_status{
 	background-position: 2px -224px;
+}
+.wan_status_bg div.connect_icon_bg.standby > .connect_status{
+	background: initial;
 }
 .wan_status_bg div.connect_icon_bg{
 	position: absolute;
@@ -900,26 +939,11 @@
 	right: 0;
 	height: 100%;
 }
-.card_block_bg span.connect_title.wan:before{
-	border-top: 3px solid #740F0F;
-}
-.card_block_bg span.connect_title.wired:before{
-	border-top: 3px solid #740F0F;
-}
-.card_block_bg span.connect_title.wl_5g_2:before{
-	border-top: 3px solid #740F0F;
-}
-.card_block_bg span.connect_title.wl_5g:before{
-	border-top: 3px solid #740F0F;
-}
-.card_block_bg span.connect_title.wl_2g:before{
+.card_block_bg span.connect_title.horizontal_line:before{
 	border-top: 3px solid #740F0F;
 }
 .card_block_bg span.connect_title.vertical.traffic:before{
 	border-left: 3px solid #740F0F;
-}
-.card_block_bg span.connect_title.manage:before{
-	border-top: 3px solid #740F0F;
 }
 .wan_status_bg span.connect_status{
 	font-size: 20px;
@@ -1204,24 +1228,48 @@
 }
 .manage_common_separate_bg.left{
 	margin-left: 22px;
+	max-width: 265px;
+	word-break: break-word;
 }
 .manage_common_separate_bg.right{
 	margin-right: 22px;
 	right: 0;
 }
-.manage_settings_bg .dropdown_item_bg{
-	height: 92px;
+.manage_settings_bg .dropdown_item_bg, .manage_settings_bg .two_text_item_bg{
+	min-height: 92px;
+	height: auto;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-around;
 }
-.manage_settings_bg .dropdown_item_bg > div{
+.manage_settings_bg .two_text_item_bg{
+	min-height: 70px;
+}
+.manage_settings_bg .dropdown_item_bg > div, .manage_settings_bg .two_text_item_bg > div{
 	margin-left: 22px;
 }
-.manage_settings_bg .dropdown_item_bg > div:nth-child(1){
-	height: 30px;
-	line-height: 42px;
+.manage_settings_bg .dropdown_item_bg > div:nth-child(1), .manage_settings_bg .two_text_item_bg > div:nth-child(1){
+	min-height: 42px;
+	height: auto;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+.manage_settings_bg .dropdown_item_bg .manage_common_title > div:nth-child(1),
+.manage_settings_bg .two_text_item_bg .manage_common_title > div:nth-child(1){
+	width: 85%;
+	display: flex;
+	min-height: 42px;
+	align-items: center;
 }
 .manage_settings_bg .dropdown_item_bg > div:nth-child(2){
-	height: 36px;
-	margin-top: 12px;
+	height: 42px;
+}
+.manage_settings_bg .two_text_item_bg > div:nth-child(2){
+	height: 30px;
+	display: flex;
+	align-items: center;
+	margin-bottom: 2px;
 }
 .manage_settings_bg .dropdown_item_bg .dropdown_select{
 	background: #190809;
@@ -1236,17 +1284,22 @@
 	padding-left: 6px;
 	outline: none;
 }
-.manage_settings_bg .dropdown_item_bg .bubble_icon{
+.manage_settings_bg .dropdown_item_bg .bubble_icon, .manage_settings_bg .two_text_item_bg .bubble_icon{
 	position: relative;
-	top: 7px;
+	right: 16px;
 }
 .manage_settings_bg .sub_item_bg{
 	height: auto;
-	padding: 10px 0px 4px 0px;
 }
 .manage_settings_bg .sub_item_bg > div{
-	margin-left: 22px;
 	position: relative;
+}
+.manage_settings_bg .sub_item_bg > div:nth-child(1){
+	height: 60px;
+}
+.manage_settings_bg .sub_item_bg > div:nth-child(2){
+	margin-left: 22px;
+	padding-bottom: 2px;
 }
 .manage_sub_item_bg .manage_common_title .wifi_title{
 	position: relative;
@@ -1275,7 +1328,6 @@
 .manage_settings_bg .sub_item_bg .manage_sub_item_bg > div{
 	height: 36px;
 	position: relative;
-	margin-top: 8px;
 	line-height: 36px;
 }
 .manage_settings_bg .sub_item_bg .manage_sub_item_bg > div .manage_common_title{
@@ -1285,7 +1337,6 @@
 	content: "";
 	position: absolute;
 	left: 5%;
-	top: -4px;
 	height: 1px;
 	width: 90%;
 	border-top: 1px solid #740F0F;
@@ -1370,29 +1421,42 @@
 .managment_icon.preferable_backhaul_icon{
 	background-position: 2px -206px;
 }
-.managment_icon.preferable_backhaul_icon.float_right{
-	float: right;
-}
 .preferable_backhaul_text{
 	color: #A4B7C3;
 	font-size: 12px;
-	float: left;
-	margin-top: 3px;
-	margin-right: 6px;
+	margin-left: 6px;
 }
-.arrow_right_icon{
+.arrow_icon{
 	position: relative;
 	right: 8px;
 	width: 10px;
 	height: 10px;
 	border-top: 3px solid #ffffff;
 	border-right: 3px solid #ffffff;
+	cursor: pointer;
+}
+.arrow_icon.right{
 	-o-transform: rotate(45deg);
 	-ms-transform: rotate(45deg);
 	-moz-transform: rotate(45deg);
 	-webkit-transform: rotate(45deg);
 	transform: rotate(45deg);
-	cursor: pointer;
+}
+.arrow_icon.down{
+	-o-transform: rotate(135deg);
+	-ms-transform: rotate(135deg);
+	-moz-transform: rotate(135deg);
+	-webkit-transform: rotate(135deg);
+	transform: rotate(135deg);
+	right: 6px;
+}
+.arrow_icon.up{
+	-o-transform: rotate(-45deg);
+	-ms-transform: rotate(-45deg);
+	-moz-transform: rotate(-45deg);
+	-webkit-transform: rotate(-45deg);
+	transform: rotate(-45deg);
+	right: 6px;
 }
 .client_num_bg{
 	font-family: Roboto-Regular, "Microsoft JhengHei";
@@ -1425,8 +1489,9 @@
 	background: #420606;
 	border: 1px solid #740F0F;
 	border-radius: 4px;
-	height: 36px;
 	line-height: 36px;
+	min-height: 36px;
+	height: auto;
 	width: 95%;
 	margin: 0 auto;
 }
@@ -1439,6 +1504,9 @@
 	cursor: pointer;
 	position: relative;
 	width: 33%;
+	display: flex;
+	justify-content: center;
+	align-items: center;
 }
 .client_tab_bg div:nth-child(2){
 	width: 34%;
@@ -1477,22 +1545,19 @@
 	float: left;
 	position: relative;
 }
-.client_list_bg .client_icon_bg.default_icon{
-	background-image: url(/images/New_ui/networkmap/client-list.svg);
+.client_list_bg .client_icon_bg.default_icon, .client_list_bg .client_icon_bg.user_icon{
 	background-repeat: no-repeat;
-	background-size: 900%;
+	background-size: 100%;
 	border-radius: 8px;
 	background-color: #680516;
+	box-shadow: 0px 0px 0px 1px #740F0F;
+	background-position: 50%;
 }
 .client_list_bg .client_icon_bg.vender_icon{
 	background-image: url(/images/New_ui/networkmap/vender-list.png);
 	background-repeat: no-repeat;
 	background-size: 180%;
 	top: 1px;
-}
-.client_list_bg .client_icon_bg.user_icon{
-	background-size: cover;
-	border-radius: 8px;
 }
 .client_list_bg .client_action_bg{
 	right: 0;
@@ -1514,13 +1579,13 @@
 }
 .client_list_bg .client_action_bg > span.unbind{
 	background-color: #FFFFFF;
-	background-position: 4px -103px !important;
+	background-position: -369.5px 1px !important;
 }
 .client_list_bg .client_action_bg > span.reconn{
-	background-position: -37px -73px;
+	background-position: -332.5px 1px;
 }
 .client_list_bg .client_action_bg > span.bind{
-	background-position: 5px -73px;
+	background-position: -295.5px 1px;
 }
 .client_list_bg .client_action_bg > span.bind_notice{
 	background-image: url(/images/New_ui/amesh/bind_notice.png) !important;
@@ -1528,10 +1593,6 @@
 	cursor: initial;
 	background-color: initial;
 	margin-left: initial;
-}
-.type0{
-	background-image:url('/images/New_ui/networkmap/client.svg') !important;
-	background-size: 100% !important;
 }
 .client_list_bg .client_content_bg{
 	float: left;
@@ -1561,14 +1622,26 @@
 	width: 20px;
 	height: 20px;
 	background-image: url(/images/New_ui/amesh/client_control.svg);
-	background-size: 650%;
+	background-size: 345px;
 	background-repeat: no-repeat;
 }
 .client_list_bg .client_content_bg .client_content_mac_ip .client_connect_icon.wired{
-	background-position: 0px -28px;
+	background-position-x: -32px;
 }
-.client_list_bg .client_content_bg .client_content_mac_ip .client_connect_icon.wireless{
-	background-position: -34px -28px;
+.client_list_bg .client_content_bg .client_content_mac_ip .client_connect_icon.wl_2g{
+	background-position-x: -65px;
+}
+.client_list_bg .client_content_bg .client_content_mac_ip .client_connect_icon.wl_5g{
+	background-position-x: -98px;
+}
+.client_list_bg .client_content_bg .client_content_mac_ip .client_connect_icon.wl_5g_2{
+	background-position-x: -164px;
+}
+.client_list_bg .client_content_bg .client_content_mac_ip .client_connect_icon.wl_6g{
+	background-position-x: -197px;
+}
+.client_list_bg .client_content_bg .client_content_mac_ip .client_connect_icon.plc{
+	background-position-x: -230px;
 }
 .client_list_bg .client_content_bg > .client_content_mac_ip{
 	font-size: 13px;
@@ -1731,8 +1804,16 @@
 	z-index: 500;
 	display: none;
 }
-.hover_pop_hint_bg.conn_priority_icon, .hover_pop_hint_bg.lacp_icon{
-	top: 40px;
+.hover_pop_hint_bg.conn_priority_icon{
+	top: -90px;
+	left: -18px;
+}
+.hover_pop_hint_bg.prefer_ap_icon{
+	top: -130px;
+	left: -18px;
+}
+.hover_pop_hint_bg.lacp_icon{
+	top: 43px;
 	left: 16px;
 }
 .hover_pop_hint_bg.conn_priority_icon > span.conn_priority_title{
@@ -1749,7 +1830,7 @@
 	top: 7px;
 	left: 0px;
 }
-.hover_pop_hint_bg.conn_priority_icon > span.conn_priority_content{
+.hover_pop_hint_bg.conn_priority_icon > span.conn_priority_content, .hover_pop_hint_bg.prefer_ap_icon > span.prefer_ap_content{
 	color: #A4B7C3;
 	font-size: 13px;
 	line-height: 140%;
@@ -1757,7 +1838,7 @@
 .hover_pop_hint_bg.conn_priority_icon > span.conn_priority_content.text_yellow{
 	color: #FC0;
 }
-.hover_pop_hint_bg.conn_priority_icon .height_space{
+.hover_pop_hint_bg.conn_priority_icon .height_space, .hover_pop_hint_bg.prefer_ap_icon .height_space{
 	height: 12px;
 }
 .hover_pop_hint_bg.fw_icon{
@@ -1776,10 +1857,15 @@
 	top: 32px;
 	left: 0px;
 }
-.hover_pop_hint_bg.node_feature_notice .list_item{
+.hover_pop_hint_bg.node_feature_notice .list_item, .hover_pop_hint_bg.prefer_ap_icon .list_item{
 	margin: 0;
 	padding: 0 18px;
 	color: #33ACFF;
+}
+.hover_pop_hint_bg.prefer_ap_icon .list_item{
+	color: #A4B7C3;
+	font-size: 13px;
+	line-height: 140%;
 }
 .hover_pop_hint:hover::before{
 	content: '';
@@ -1803,6 +1889,15 @@
 .hover_pop_hint.node_feature_notice:hover::before{
 	right: -27px;
 	left: initial;
+}
+.hover_pop_hint.conn_priority_icon:hover::before, .hover_pop_hint.prefer_ap_icon:hover::before{
+	top: 5px;
+	left: -13px;
+	-o-transform: rotate(45deg);
+	-ms-transform: rotate(45deg);
+	-moz-transform: rotate(45deg);
+	-webkit-transform: rotate(45deg);
+	transform: rotate(45deg);
 }
 .bubble_icon.info:hover + .hover_pop_hint_bg,
 .bubble_icon.fw_icon:hover + .hover_pop_hint_bg,
@@ -2218,7 +2313,7 @@
 	background-color: #ebae04;
 	border-radius: 50%;
 	top: 8px;
-	left: 12px;
+	right: -12px;
 }
 .clientlist_content{
 	z-index: 500 !important;
@@ -2268,7 +2363,7 @@
 	content: "+";
 	position: absolute;
 	left: -18px;
-	top: 1px;
+	top: 0px;
 	font-size: 24px;
 	font-family: none;
 	font-weight: bolder;
@@ -2279,7 +2374,7 @@
 	left: -25px;
 	top: 8px;
 	background: url(/images/New_ui/amesh/client_control.svg) no-repeat;
-	background-size: 700%;
+	background-size: 350px;
 	width: 20px;
 	height: 20px;
 	background-position: 0px 0px;
@@ -2321,7 +2416,7 @@
 	height: 1px;
 }
 .aimesh_intro_text > div:nth-child(2){
-	font-family: Roboto-light, "Microsoft JhengHei";
+	font-family: Roboto-Light, "Microsoft JhengHei";
 	font-size: 12px;
 	position: relative;
 	margin-top: 18px;
@@ -2420,7 +2515,7 @@
 	margin-top: 12px !important;
 	margin-bottom: 12px !important;
 }
-.connect_type_status_bg.backhaul .wired_hide{
+.connect_type_status_bg.backhaul .wired_hide, .connect_type_status_bg.backhaul .phy_rate_bg{
 	height: auto !important;
 }
 .connect_type_status_bg.backhaul .spacing{

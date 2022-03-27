@@ -1,0 +1,32 @@
+HDP PIXIT for the PTS tool.
+
+PTS version: 6.1
+
+* - different than PTS defaults
+& - should be set to IUT Bluetooth address
+
+               Required PIXIT settings
+-------------------------------------------------------------------------------
+Parameter Name						Value
+-------------------------------------------------------------------------------
+TSPX_security_enabled					TRUE
+TSPX_delete_link_key					FALSE
+TSPX_bd_addr_iut					112233445566 (*&)
+TSPX_sink_device_class_of_device			000900
+TSPX_source_device_class_of_device			000900
+TSPX_pin_code						0000
+TSPX_use_dynamic_pin					FALSE
+TSPX_use_implicit_send					TRUE
+TSPX_MCAP_l2cap_psm_control				1001
+TSPX_MCAP_l2cap_psm_data				1003
+TSPX_MCAP_sync_lead_time				0BB8
+TSPX_MCAP_timestamp_native_resolution			2233
+TSPX_MCAP_timestamp_native_accuracy			1400
+TSPX_MCAP_timestamp_required_accuracy			6400
+TSPX_DC_max						1
+TSPX_secure_simple_pairing_pass_key_confirmation	FALSE
+TSPX_time_guard						60000000
+TSPX_ieee_device_specialization				10417
+TSPX_ieee_standard_configuration			TRUE
+TSPX_MCAP_bluetooth_clock_access_resolution		55
+-------------------------------------------------------------------------------

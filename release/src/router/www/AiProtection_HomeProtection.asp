@@ -6,7 +6,9 @@
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta HTTP-EQUIV="Pragma" CONTENT="no-cache">
 <meta HTTP-EQUIV="Expires" CONTENT="-1">
-<title><#Web_Title#> - Home Security</title>
+<link rel="shortcut icon" href="images/favicon.png">
+<link rel="icon" href="images/favicon.png">
+<title><#Web_Title#> - <#AiProtection_Home#></title>
 <link rel="stylesheet" type="text/css" href="index_style.css">
 <link rel="stylesheet" type="text/css" href="form_style.css">
 <script type="text/javascript" src="/state.js"></script>
@@ -260,6 +262,7 @@ function getEventData(type, date, event){
 	});
 }
 
+var reboot_confirm=0;
 function applyRule(){
 	//first time will update to time value
 	var t = new Date();
@@ -276,26 +279,36 @@ function applyRule(){
 	}
 
 	if(ctf_disable == 0 && ctf_fa_mode == 2){
-		if(!confirm(Untranslated.ctf_fa_hint)){
+		if(!confirm("<#ctf_fa_hint#>")){
 			return false;
 		}
 		else{
-			document.form.action_script.value = "reboot";
-			document.form.action_wait.value = "<% nvram_get("reboot_time"); %>";
+			reboot_confirm=1;
 		}
 	}
 
 	/* when qca_sfe = 1, avoid fast-classifier can't be disabled in run-time */
 	if (based_modelid == "MAP-AC1750") {
-		document.form.action_script.value = "reboot";
-		document.form.action_wait.value = "<% nvram_get("reboot_time"); %>";
+		reboot_confirm=1;
 	}
 
 	if(reset_wan_to_fo.change_status)
 		reset_wan_to_fo.change_wan_mode(document.form);
 
-	showLoading();
-	document.form.submit();
+
+	if(reboot_confirm==1){
+        	
+		if(confirm("<#AiMesh_Node_Reboot#>")){
+			FormActions("start_apply.htm", "apply", "reboot", "<% get_default_reboot_time(); %>");
+			showLoading();
+			document.form.submit();
+		}
+	}
+	else{
+
+		showLoading();
+		document.form.submit();
+	}
 }
 
 function showWeaknessTable(){
@@ -586,32 +599,91 @@ function check_WPS(){
 }
 
 function check_upnp(){
+	var risk_upnp = 0;
+	var wanunit = "0";
+	var redirect_page = "";
+
 	var wan0_upnp_enable = document.form.wan0_upnp_enable.value;
 	var wan1_upnp_enable = document.form.wan1_upnp_enable.value;
+	var dslx_transmode = '';
+	var dsl0_upnp_enable = document.form.dsl0_upnp_enable.value;
+	var dsl8_upnp_enable = document.form.dsl8_upnp_enable.value;
+	if(dsl_support){
+		dslx_transmode = '<% nvram_get("dslx_transmode"); %>';
+	}
 
 	if(dualwan_enabled){
-		if(wan0_upnp_enable == 0 && wan1_upnp_enable == 0){
-			safe_count++;
-			document.getElementById('upnp_service').innerHTML = "<#checkbox_Yes#>";
-			document.getElementById('upnp_service').className = "status_yes";
+
+		if(dsl_support){
+
+			if((wans_dualwan_array[0]=="dsl" && dslx_transmode=="atm" && dsl0_upnp_enable == "1")
+				|| (wans_dualwan_array[0]=="dsl" && dslx_transmode=="ptm" && dsl8_upnp_enable == "1")
+				|| (wans_dualwan_array[0]=="wan" && wan0_upnp_enable == "1"))
+			{
+				risk_count++;
+				risk_upnp++;
+				wanunit="0";
+
+				if(wans_dualwan_array[0]=="dsl" && dslx_transmode=="atm" && dsl0_upnp_enable == "1"){
+					redirect_page = "Advanced_DSL_Content.asp";
+				}
+				if(wans_dualwan_array[0]=="dsl" && dslx_transmode=="ptm" && dsl8_upnp_enable == "1"){
+					redirect_page = "Advanced_VDSL_Content.asp";
+				}
+				if(wans_dualwan_array[0]=="wan" && wan0_upnp_enable == "1"){
+					redirect_page = "Advanced_WAN_Content.asp";
+				}
+			}
+			else if((wans_dualwan_array[1]=="dsl" && dslx_transmode=="atm" && dsl0_upnp_enable == "1")
+				|| (wans_dualwan_array[1]=="dsl" && dslx_transmode=="ptm" && dsl8_upnp_enable == "1")
+				|| ((wans_dualwan_array[1]=="wan" || wans_dualwan_array[1]=="lan") && wan1_upnp_enable == "1"))
+			{
+				risk_count++;
+				risk_upnp++;
+				wanunit="1";
+
+				if(wans_dualwan_array[1]=="dsl" && dslx_transmode=="atm" && dsl0_upnp_enable == "1"){
+					redirect_page = "Advanced_DSL_Content.asp";
+				}
+				if(wans_dualwan_array[1]=="dsl" && dslx_transmode=="ptm" && dsl8_upnp_enable == "1"){
+					redirect_page = "Advanced_VDSL_Content.asp";
+				}
+				if((wans_dualwan_array[1]=="wan" || wans_dualwan_array[1]=="lan") && wan1_upnp_enable == "1"){
+					redirect_page = "Advanced_WAN_Content.asp";
+				}
+			}
+			else{
+				safe_count++;
+			}
 		}
 		else{
-			risk_count++;
+
+			if(wan0_upnp_enable == 0 && wan1_upnp_enable == 0){
+				safe_count++;
+			}
+			else{
+				risk_count++;
+				risk_upnp++;
+				redirect_page = "Advanced_WAN_Content.asp";
+				if(wan0_upnp_enable == "1")
+					wanunit="0";
+				else
+					wanunit="1";
+			}
+		}
+
+		if(risk_upnp>0){
 
 			document.getElementById('upnp_service').onclick = function(){
 				function change_wan_unit(unit){
 					FormActions("apply.cgi", "change_wan_unit", "", "");
 					document.form.wan_unit.value = unit;
 					document.form.wan_unit.disabled = false;
-					document.form.current_page.value="Advanced_WAN_Content.asp";
+					document.form.current_page.value=redirect_page;
 					document.form.target = "";
 					document.form.submit();
 				}
-
-				if(wan0_upnp_enable == "1")
-					change_wan_unit(0);
-				else
-					change_wan_unit(1);
+				change_wan_unit(wanunit);
 			}
 
 			document.getElementById('upnp_service').innerHTML = "<a><#checkbox_No#></a>";
@@ -619,21 +691,55 @@ function check_upnp(){
 			document.getElementById('upnp_service').onmouseover = function(){overHint(13);}
 			document.getElementById('upnp_service').onmouseout = function(){nd();}
 		}
-	}
-	else{
-		if(wan0_upnp_enable == 0){
-			safe_count++;
+		else{
 			document.getElementById('upnp_service').innerHTML = "<#checkbox_Yes#>";
 			document.getElementById('upnp_service').className = "status_yes";
 		}
+
+	}
+	else{	//Single WAN
+
+		if(dsl_support){
+			if(wans_dualwan_array[0]=="dsl" && dslx_transmode=="atm" && dsl0_upnp_enable == "1"){
+				risk_count++;
+				risk_upnp++;
+				redirect_page = "Advanced_DSL_Content.asp";
+			}
+			else if(wans_dualwan_array[0]=="dsl" && dslx_transmode=="ptm" && dsl8_upnp_enable == "1"){
+				risk_count++;
+				risk_upnp++;
+				redirect_page = "Advanced_VDSL_Content.asp";
+			}
+			else if(wans_dualwan_array[0]=="wan" && wan0_upnp_enable == "1"){
+				risk_count++;
+				risk_upnp++;
+				redirect_page = "Advanced_WAN_Content.asp";
+			}
+			else{
+				safe_count++;
+			}
+		}
 		else{
-			risk_count++;
-			document.getElementById('upnp_service').innerHTML = "<a href='Advanced_WAN_Content.asp' target='_blank'><#checkbox_No#></a>";
+			if(wans_dualwan_array[0]=="wan" && wan0_upnp_enable == "1"){
+				risk_count++;
+				risk_upnp++;
+				redirect_page = "Advanced_WAN_Content.asp";
+			}
+			else{
+				safe_count++;				
+			}
+		}
+
+		if(risk_upnp>0){
+			document.getElementById('upnp_service').innerHTML = "<a href='"+redirect_page+"' target='_blank'><#checkbox_No#></a>";
 			document.getElementById('upnp_service').className = "status_no_risk";
 			document.getElementById('upnp_service').onmouseover = function(){overHint(13);}
 			document.getElementById('upnp_service').onmouseout = function(){nd();}
 		}
-
+		else{
+			document.getElementById('upnp_service').innerHTML = "<#checkbox_Yes#>";
+			document.getElementById('upnp_service').className = "status_yes";
+		}
 	}
 }
 
@@ -1165,6 +1271,8 @@ function shadeHandle(flag){
 <input type="hidden" name="wrs_vp_enable" value="<% nvram_get("wrs_vp_enable"); %>">
 <input type="hidden" name="wan0_upnp_enable" value="<% nvram_get("wan0_upnp_enable"); %>" disabled>
 <input type="hidden" name="wan1_upnp_enable" value="<% nvram_get("wan1_upnp_enable"); %>" disabled>
+<input type="hidden" name="dsl0_upnp_enable" value="<% nvram_get("dsl0_upnp_enable"); %>" disabled>
+<input type="hidden" name="dsl8_upnp_enable" value="<% nvram_get("dsl8_upnp_enable"); %>" disabled>
 <input type="hidden" name="wan_unit" value="<% nvram_get("wan_unit"); %>" disabled>
 <input type="hidden" name="misc_http_x" value="<% nvram_get("misc_http_x"); %>" disabled>
 <input type="hidden" name="misc_ping_x" value="<% nvram_get("misc_ping_x"); %>" disabled>

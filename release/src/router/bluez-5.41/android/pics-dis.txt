@@ -1,0 +1,59 @@
+DIS PICS for the PTS tool.
+
+PTS version: 6.1
+
+* - different than PTS defaults
+
+M - mandatory
+O - optional
+
+		Transport Requirements
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_DIS_1_1	True		Service supported over BR/EDR (C.1)
+TSPC_DIS_1_2	True		Service supported over LE (C.1)
+-------------------------------------------------------------------------------
+C.1: Mandatory to support at least one of TSPC_DIS_1_1 or TSPC_DIS_1_2.
+-------------------------------------------------------------------------------
+
+
+		Service Requirements
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_DIS_2_1	True		Device Information Service (M)
+TSPC_DIS_2_2	True		Manufacturer Name String Characteristic (O)
+TSPC_DIS_2_3	True		Model Number String Characteristic (O)
+TSPC_DIS_2_4	True		Serial Number String Characteristic (O)
+TSPC_DIS_2_5	True		Hardware Revision String Characteristic (O)
+TSPC_DIS_2_6	True		Firmware Revision String Characteristic (O)
+TSPC_DIS_2_7	True		Software Revision String Characteristic (O)
+TSPC_DIS_2_8	True		System ID Characteristic (O)
+TSPC_DIS_2_9	False (*)	IEEE 11073-20601 Regulatory Certification
+				Data List Characteristic (O)
+TSPC_DIS_2_10	True		SDP Interoperability (C.1)
+TSPC_DIS_2_11	True		PnP ID (O)
+-------------------------------------------------------------------------------
+C.1: Mandatory if TSPC_DIS_1_1 (BR/EDR) is supported, otherwise excluded.
+-------------------------------------------------------------------------------
+
+
+		GATT Requirements
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_DIS_3_1	True		Generic Attribute Profile Server (M)
+-------------------------------------------------------------------------------
+
+
+		SDP Requirements
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_DIS_4_1	True		Support for server role (M)
+TSPC_DIS_4_2	True		ProtocolDescriptorList (M)
+TSPC_DIS_4_3	True		BrowseGroupList (M)
+-------------------------------------------------------------------------------
+Note: Marked as False as TSPC_DIS_1_1 is set to False
+-------------------------------------------------------------------------------

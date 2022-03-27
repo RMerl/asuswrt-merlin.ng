@@ -66,7 +66,7 @@ u_char *des_key;	/* OUT 64 bit DES key with parity bits added */
 	des_key[7] = Get7Bits(key, 49);
 
 #ifndef USE_CRYPT
-	des_set_odd_parity((des_cblock *)des_key);
+	DES_set_odd_parity((DES_cblock *)des_key);
 #endif
 }
 
@@ -121,10 +121,7 @@ u_char *key;
 	MakeKey(key, des_key);
 	Expand(des_key, crypt_key);
 	errno = 0;
-#if defined(RTCONFIG_HND_ROUTER_AX_6756)
-#else
 	setkey((const char *)crypt_key);
-#endif
 	if (errno != 0)
 		return (0);
 	return (1);
@@ -139,10 +136,7 @@ u_char *cipher;	/* OUT 8 octets */
 
 	Expand(clear, des_input);
 	errno = 0;
-#if defined(RTCONFIG_HND_ROUTER_AX_6756)
-#else
 	encrypt((char *)des_input, 0);
-#endif
 	if (errno != 0)
 		return (0);
 	Collapse(des_input, cipher);
@@ -158,10 +152,7 @@ u_char *clear;	/* OUT 8 octets */
 
 	Expand(cipher, des_input);
 	errno = 0;
-#if defined(RTCONFIG_HND_ROUTER_AX_6756)
-#else
 	encrypt((char *)des_input, 1);
-#endif
 	if (errno != 0)
 		return (0);
 	Collapse(des_input, clear);
@@ -169,25 +160,25 @@ u_char *clear;	/* OUT 8 octets */
 }
 
 #else /* USE_CRYPT */
-static des_key_schedule	key_schedule;
+static DES_key_schedule	key_schedule;
 
 bool
 DesSetkey(key)
 u_char *key;
 {
-	des_cblock des_key;
+	DES_cblock des_key;
 	MakeKey(key, des_key);
-	des_set_key(&des_key, key_schedule);
+	DES_set_key(&des_key, &key_schedule);
 	return (1);
 }
 
 bool
-DesEncrypt(clear, key, cipher)
+DesEncrypt(clear, cipher)
 u_char *clear;	/* IN  8 octets */
 u_char *cipher;	/* OUT 8 octets */
 {
-	des_ecb_encrypt((des_cblock *)clear, (des_cblock *)cipher,
-	    key_schedule, 1);
+	DES_ecb_encrypt((DES_cblock *)clear, (DES_cblock *)cipher,
+	    &key_schedule, 1);
 	return (1);
 }
 
@@ -196,8 +187,8 @@ DesDecrypt(cipher, clear)
 u_char *cipher;	/* IN  8 octets */
 u_char *clear;	/* OUT 8 octets */
 {
-	des_ecb_encrypt((des_cblock *)cipher, (des_cblock *)clear,
-	    key_schedule, 0);
+	DES_ecb_encrypt((DES_cblock *)cipher, (DES_cblock *)clear,
+	    &key_schedule, 0);
 	return (1);
 }
 

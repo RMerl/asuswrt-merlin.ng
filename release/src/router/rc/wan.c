@@ -237,7 +237,7 @@ add_routes(char *prefix, char *var, char *ifname)
 	char word[80], *next;
 	char *ipaddr, *netmask, *gateway, *metric;
 	char tmp[100], *buf;
-#if defined(RTCONFIG_IPV6) && defined(RTAX82_XD6)
+#if defined(RTCONFIG_IPV6) && (defined(RTAX82_XD6) || defined(RTAX82_XD6S))
 	if (!strncmp(nvram_safe_get("territory_code"), "CH", 2) &&
 		ipv6_enabled() &&
 		nvram_match(ipv6_nvname("ipv6_only"), "1"))
@@ -529,9 +529,9 @@ start_igmpproxy(char *wan_ifname)
 	stop_igmpproxy();
 
 	if (nvram_get_int("udpxy_enable_x")) {
-		_dprintf("start udpxy [%s]\n", wan_ifname);
+		_dprintf("start udpxy [%s]\n", get_wanface());
 		eval("/usr/sbin/udpxy",
-			"-m", wan_ifname,
+			"-m", get_wanface(),
 			"-p", nvram_safe_get("udpxy_enable_x"),
 			"-B", "65536",
 			"-c", nvram_safe_get("udpxy_clients"),
@@ -1592,7 +1592,7 @@ TRACE_PT("3g begin with %s.\n", wan_ifname);
 		}
 
 #ifdef RTCONFIG_IPV6
-#ifdef RTAX82_XD6
+#if (defined(RTAX82_XD6) || defined(RTAX82_XD6S))
 		if ((wan_proto == WAN_STATIC) &&
 			!strncmp(nvram_safe_get("territory_code"), "CH", 2) &&
 			ipv6_enabled() &&
@@ -1773,7 +1773,7 @@ TRACE_PT("3g begin with %s.\n", wan_ifname);
 			if (!dhcpenable) {
 				snprintf(ip_mask, sizeof(ip_mask), "%s/%s", ipaddr, netmask);
 				if (test_and_get_free_char_network(7, ip_mask, EXCLUDE_NET_ALL_EXCEPT_LAN_VLAN) == 1) {
-					logmessage("start_wan_if", "%d, %s conflicts with known networks", wan_unit, ip_mask);
+					logmessage("start_wan_if", "%d, %s conflicts with known networks", unit, ip_mask);
 					update_wan_state(prefix, WAN_STATE_STOPPED, WAN_STOPPED_REASON_INVALID_IPADDR);
 					return;
 				}
@@ -1936,7 +1936,7 @@ TRACE_PT("3g begin with %s.\n", wan_ifname);
 		 */
 		case WAN_DHCP:
 		{
-#if defined(RTCONFIG_AMAS) && defined(RTCONFIG_ETHOBD)
+#if defined(RTCONFIG_BCM_7114) && defined(RTCONFIG_AMAS) && defined(RTCONFIG_ETHOBD)
 			if (nvram_get_int("x_Setting") == 0) {
 				if(strcmp(wan_ifname, nvram_safe_get("eth_ifnames"))) {
 					dbG("ifup:%s\n", nvram_safe_get("eth_ifnames"));
@@ -1993,7 +1993,7 @@ TRACE_PT("3g begin with %s.\n", wan_ifname);
 			snprintf(ip_mask, sizeof(ip_mask), "%s/%s",
 				nvram_pf_safe_get(prefix, "ipaddr"), nvram_pf_safe_get(prefix, "netmask"));
 			if (test_and_get_free_char_network(7, ip_mask, EXCLUDE_NET_ALL_EXCEPT_LAN_VLAN) == 1) {
-				logmessage("start_wan_if", "%d, %s conflicts with known networks", wan_unit, ip_mask);
+				logmessage("start_wan_if", "%d, %s conflicts with known networks", unit, ip_mask);
 				update_wan_state(prefix, WAN_STATE_STOPPED, WAN_STOPPED_REASON_INVALID_IPADDR);
 				return;
 			}
@@ -2100,14 +2100,6 @@ TRACE_PT("3g begin with %s.\n", wan_ifname);
 			nvram_set_int("s46_hgw_case", S46_CASE_INIT);
 			restart_s46map_rptd();
 
-#if defined(RTCONFIG_AMAS) && defined(RTCONFIG_ETHOBD)
-			if (nvram_get_int("x_Setting") == 0) {
-				if(strcmp(wan_ifname, nvram_safe_get("eth_ifnames"))) {
-					dbG("ifup:%s\n", nvram_safe_get("eth_ifnames"));
-					ifconfig(nvram_safe_get("eth_ifnames"), IFUP, NULL, NULL);
-				}
-			}
-#endif
 			/* Bring up WAN interface */
 			dbG("ifup:%s\n", wan_ifname);
 			ifconfig(wan_ifname, IFUP, NULL, NULL);
@@ -2234,6 +2226,10 @@ stop_wan_if(int unit)
 		stop_igmpproxy();
 	}
 
+#ifdef RTCONFIG_MULTISERVICE_WAN
+	if(unit < WAN_UNIT_MAX && unit > WAN_UNIT_NONE) //GENERIC WAN
+#endif
+	{
 #ifdef RTCONFIG_OPENVPN
 	stop_ovpn_eas();
 #endif
@@ -2242,6 +2238,7 @@ stop_wan_if(int unit)
 	/* Stop VPN client */
 	stop_vpnc();
 #endif
+	}
 
 	switch (get_wan_proto(prefix)) {
 	case WAN_L2TP:
@@ -2322,9 +2319,9 @@ stop_wan_if(int unit)
 			config_wan_bridge(STB_BR_IF, wan_ifname, 0);
 		}
 		else {
-			stop_dhcpfilter(wan_ifname);
 			eval("brctl", "delif", nvram_safe_get("lan_ifname"), wan_ifname);
 		}
+		stop_dhcpfilter(wan_ifname);
 #else
 		if (nvram_get_int("wan2lan")) {
 			config_wan_bridge(nvram_safe_get("lan_ifname"), wan_ifname, 0);
@@ -2472,7 +2469,7 @@ int update_resolvconf(void)
 		fclose(fp);
 		goto error;
 	}
-#if defined(RTCONFIG_IPV6) && defined(RTAX82_XD6)
+#if defined(RTCONFIG_IPV6) && (defined(RTAX82_XD6) || defined(RTAX82_XD6S))
 	if (!strncmp(nvram_safe_get("territory_code"), "CH", 2) &&
 		ipv6_enabled() &&
 		nvram_match(ipv6_nvname("ipv6_only"), "1"))
@@ -2603,7 +2600,7 @@ int update_resolvconf(void)
 		fprintf(fp_servers, "server=%s\n", "127.0.1.1");
 	} else
 #endif
-#ifdef RTAX82_XD6
+#if (defined(RTAX82_XD6) || defined(RTAX82_XD6S))
 NOIP:
 #endif
 #ifdef RTCONFIG_IPV6
@@ -2743,7 +2740,7 @@ void wan6_up(const char *pwan_ifname)
 	char wan_ifname[16];
 	char gateway[INET6_ADDRSTRLEN];
 	int mtu, service, accept_defrtr;
-#if defined(RTCONFIG_SOFTWIRE46) || defined(RTAX82_XD6)
+#if defined(RTCONFIG_SOFTWIRE46) || (defined(RTAX82_XD6) || defined(RTAX82_XD6S))
 	char prefix[sizeof("wanXXXXXXXXXX_")];
 	int wan_unit;
 #endif
@@ -2964,7 +2961,7 @@ void wan6_up(const char *pwan_ifname)
 		sleep(2);
 		break;
 	}
-#ifdef RTAX82_XD6
+#if (defined(RTAX82_XD6) || defined(RTAX82_XD6S))
 	if ((wan_unit = wan_ifunit(wan_ifname)) != -1) {
 		if (!strncmp(nvram_safe_get("territory_code"), "CH", 2) &&
 			ipv6_enabled() &&
@@ -2986,6 +2983,10 @@ void wan6_up(const char *pwan_ifname)
 		start_mldproxy(wan_ifname);
 		break;
 	}
+#ifdef RTCONFIG_OPENVPN
+	stop_ovpn_serverall();
+	start_ovpn_serverall();
+#endif
 }
 
 void wan6_down(const char *wan_ifname)
@@ -3117,7 +3118,11 @@ wan_up(const char *pwan_ifname)
 			break;
 	}
 #endif
+#if defined(BCM4912)
+	uint phy_pwr_skip = 0;
+#endif
 	in_addr_t addr, mask;
+	int is_private_dns = 0;
 	int i=0;
 	int first_ntp_sync = 0;
 
@@ -3165,7 +3170,7 @@ wan_up(const char *pwan_ifname)
 #endif
 
 		start_firewall(wan_unit, 0);
-#if defined(RTCONFIG_IPV6) && defined(RTAX82_XD6)
+#if defined(RTCONFIG_IPV6) && (defined(RTAX82_XD6) || defined(RTAX82_XD6S))
 		if (!strncmp(nvram_safe_get("territory_code"), "CH", 2) &&
 			ipv6_enabled() &&
 			nvram_match(ipv6_nvname("ipv6_only"), "1"))
@@ -3223,7 +3228,7 @@ wan_up(const char *pwan_ifname)
 
 	snprintf(prefix, sizeof(prefix), "wan%d_", wan_unit);
 	wan_proto = get_wan_proto(prefix);
-#if defined(RTCONFIG_IPV6) && defined(RTAX82_XD6)
+#if defined(RTCONFIG_IPV6) && (defined(RTAX82_XD6) || defined(RTAX82_XD6S))
 	if (!strncmp(nvram_safe_get("territory_code"), "CH", 2) &&
 		ipv6_enabled() &&
 		nvram_match(ipv6_nvname("ipv6_only"), "1"))
@@ -3300,16 +3305,19 @@ wan_up(const char *pwan_ifname)
 	addr = inet_addr(nvram_safe_get(strcat_r(prefix, "ipaddr", tmp)));
 	mask = inet_addr(nvram_safe_get(strcat_r(prefix, "netmask", tmp)));
 	nvram_safe_get_r(strcat_r(prefix, "dns", tmp), dns, sizeof(dns));
+	_dprintf("%s, chk wan_dns\n", __func__);
 	foreach(word, dns, next) {
+		is_private_dns = is_private_subnet(word) && strcmp(word, nvram_safe_get("wan0_ipaddr")) && strcmp(word, nvram_safe_get("wan1_ipaddr"));
 		// skip if is 1. WAN gateway, 2. in WAN subnet 3. in LAN subnet
 		if ((inet_addr(word) != inet_addr(gateway)) &&
-			(inet_addr(word) & mask) != (addr & mask)
-			&& ((inet_addr(word) & inet_addr(nvram_safe_get("lan_netmask")))
-				!= (inet_addr(nvram_safe_get("lan_ipaddr")) & inet_addr(nvram_safe_get("lan_netmask"))))
+			(inet_addr(word) & mask) != (addr & mask) && 
+			((inet_addr(word) & inet_addr(nvram_safe_get("lan_netmask")))
+				!= (inet_addr(nvram_safe_get("lan_ipaddr")) & inet_addr(nvram_safe_get("lan_netmask")))) &&
+			!chk_inlan(word)
 		)
-			route_add(wan_ifname, 2, word, gateway, "255.255.255.255");
+			route_add(wan_ifname, is_private_dns?0:2, word, gateway, "255.255.255.255");
 	}
-#ifdef RTAX82_XD6
+#if (defined(RTAX82_XD6) || defined(RTAX82_XD6S))
 NOIP:
 #endif
 #ifdef RTCONFIG_IPV6
@@ -3440,6 +3448,23 @@ NOIP:
 
 	/* Kick syslog to re-resolve remote server */
 	reload_syslogd();
+
+#if defined(BCM4912)
+	if(strlen(wan_ifname) && strstr(wan_ifname, "eth") != NULL) {
+#ifdef RTCONFIG_DUALWAN
+		if(!nvram_contains_word("wans_dualwan", "none") && 
+		   WAN_STATE_CONNECTED == nvram_get_int(strcat_r(prefix, "state_t", tmp))) {
+			phy_pwr_skip = 1;
+		}
+#endif
+		if(!phy_pwr_skip) {
+			nvram_set("freeze_duck", "5");
+			doSystem("ethctl %s phy-power down", wan_ifname);
+			sleep(1);
+			doSystem("ethctl %s phy-power up", wan_ifname);
+		}
+	}
+#endif
 
 #if defined(RTCONFIG_USB_MODEM) && defined(RTCONFIG_INTERNAL_GOBI)
 	if(dualwan_unit__usbif(wan_unit)){
@@ -4285,6 +4310,7 @@ start_wan(void)
 	symlink("/sbin/rc", "/etc/openvpn/ovpnc-up");
 	symlink("/sbin/rc", "/etc/openvpn/ovpnc-down");
 	symlink("/sbin/rc", "/etc/openvpn/ovpnc-route-up");
+	symlink("/sbin/rc", "/etc/openvpn/ovpnc-route-pre-down");
 #endif
 #endif
 	symlink("/sbin/rc", "/tmp/udhcpc");

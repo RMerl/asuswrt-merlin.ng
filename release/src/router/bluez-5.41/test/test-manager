@@ -1,0 +1,41 @@
+#!/usr/bin/python
+
+from __future__ import absolute_import, print_function, unicode_literals
+
+import dbus
+import dbus.mainloop.glib
+try:
+  from gi.repository import GObject
+except ImportError:
+  import gobject as GObject
+import bluezutils
+
+def interfaces_added(path, interfaces):
+	if interfaces.get("org.bluez.Adapter1") != None:
+		print("Adapter with path %s added" % (path))
+
+def interfaces_removed(path, interfaces):
+	if "org.bluez.Adapter1" in interfaces:
+		print("Adapter with path %s removed" % (path))
+
+if __name__ == "__main__":
+	dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
+
+	bus = dbus.SystemBus()
+
+	bus.add_signal_receiver(interfaces_added, bus_name="org.bluez",
+			dbus_interface="org.freedesktop.DBus.ObjectManager",
+			signal_name="InterfacesAdded")
+
+	bus.add_signal_receiver(interfaces_removed, bus_name="org.bluez",
+			dbus_interface="org.freedesktop.DBus.ObjectManager",
+			signal_name="InterfacesRemoved")
+
+	try:
+		path = bluezutils.find_adapter().object_path
+		print("Adapter found at path %s" % (path))
+	except:
+		print("No adapter found")
+
+	mainloop = GObject.MainLoop()
+	mainloop.run()

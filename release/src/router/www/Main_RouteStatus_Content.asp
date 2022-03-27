@@ -148,7 +148,7 @@ function show_routev6() {
 									<div id="routev6block"></div>
 								</div>
 								<div class="apply_gen">
-									<input type="button" onClick="location.href=location.href" value="<#CTL_refresh#>" class="button_gen">
+									<input type="button" onClick="location.reload();" value="<#CTL_refresh#>" class="button_gen">
 								</div>
 							</td>
 						</tr>

@@ -92,6 +92,7 @@ static const struct model_s model_list[] = {
 	{ "GT-AX6000N",		MODEL_GTAX6000N		},
 	{ "RT-AX89U",		MODEL_RTAX89U		},
 	{ "ETJ",		MODEL_ETJ		},
+	{ "RT-AX57",		MODEL_RTAX57		},
 #elif defined(RTCONFIG_ALPINE)
 	{ "GT-AC9600",		MODEL_GTAC9600		},
 #elif defined(RTCONFIG_LANTIQ)
@@ -133,7 +134,10 @@ static const struct model_s model_list[] = {
 	{ "RT-AX82_XD6",	MODEL_RTAX58U		},
 	{ "GS-AX3000",		MODEL_RTAX58U		},
 	{ "GS-AX5400",		MODEL_RTAX58U		},
+	{ "RT-AX82_XD6S",	MODEL_RTAX82_XD6S	},
 	{ "RT-AX58U_V2",	MODEL_RTAX58U_V2	},
+	{ "TUF-AX3000_V2",	MODEL_TUFAX3000_V2	},
+	{ "RT-AXE7800",		MODEL_RTAXE7800		},
 	{ "RT-AX56U",		MODEL_RTAX56U		},
 	{ "RP-AX56",            MODEL_RPAX56            },
 	{ "RP-AX58",            MODEL_RPAX58            },

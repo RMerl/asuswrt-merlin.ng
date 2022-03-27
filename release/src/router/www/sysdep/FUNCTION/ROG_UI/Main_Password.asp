@@ -325,6 +325,12 @@ function validForm(){
 		if(!validator.chkLoginPw_KR(document.form.http_passwd_x)){
 			return false;
 		}
+		if(document.form.http_passwd_x.value == document.form.http_username_x.value){
+			alert("<#JS_validLoginPWD#>");
+			document.form.http_passwd_x.focus();
+			document.form.http_passwd_x.select();
+			return false;
+		}
 	}
 	else{
 		if(!validator.chkLoginPw(document.form.http_passwd_x)){
@@ -364,11 +370,9 @@ function submitForm(){
 		document.getElementById("error_status_field").style.display = "none";
 		document.getElementById('btn_modify').style.display = "none";
 		document.getElementById('loadingIcon').style.display = '';
-
 		setTimeout(function(){
 			httpApi.chpass(postData);
 		}, 100);
-
 		var nextPage = decodeURIComponent('<% get_ascii_parameter("nextPage"); %>');
 		setTimeout(function(){
 			if('<% nvram_get("w_Setting"); %>' == '0' && sw_mode != 2)
@@ -379,7 +383,7 @@ function submitForm(){
 	}
 	else
 		return;
-}	
+}
 
 
 var validator = {
@@ -419,7 +423,7 @@ var validator = {
 	chkLoginPw: function(obj){
 		
 		if(obj.value.length > 0 && obj.value.length < 5){
-			showError("<#JS_short_password#>");
+			showError("<#JS_short_password#> <#JS_password_length#>");
 			obj.value = "";
 			obj.focus();
 			obj.select();
@@ -461,9 +465,7 @@ var validator = {
 		return true;
 	},
 	
-	chkLoginPw_KR: function(obj){		//KR: Alphabets, numbers, specialcharacters mixed. 8 chars at least.
-						//S2: Mixed 2 out of Alphabets(Upper/Lower case), numbers, specialcharacters.
-						//    10 chars at least. Not have consecutive identical characters.
+	chkLoginPw_KR: function(obj){		//Alphabets, numbers, specialcharacters mixed
 		var string_length = obj.value.length;		
 		
 		if(!/[A-Za-z]/.test(obj.value) || !/[0-9]/.test(obj.value) || string_length < 10
@@ -524,8 +526,6 @@ function showError(str){
 <input type="hidden" name="flag" value="">
 <input type="hidden" name="login_authorization" value="">
 <input name="foilautofill" style="display: none;" type="password">
-<input type="hidden" name="http_username" value="">
-<input type="hidden" name="http_passwd" value="">
 <div class="main-field-bg">
 	<div class="main-field-padding">
 		<div class="logo-container">

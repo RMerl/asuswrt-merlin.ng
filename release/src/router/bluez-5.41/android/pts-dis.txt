@@ -1,0 +1,40 @@
+PTS test results for DIS
+
+PTS version: 6.1
+Tested: 11-May-2015
+Android version: 5.1
+
+Results:
+PASS	test passed
+FAIL	test failed
+INC	test is inconclusive
+N/A	test is disabled due to PICS setup
+NONE	test result is none
+
+NOTE: DIS testing might require some extra properties to be set. Please refer
+to the README file in android folder. Section: Customization.
+
+-------------------------------------------------------------------------------
+Test Name		Result	Notes
+-------------------------------------------------------------------------------
+TC_SD_BV_01_C		PASS
+TC_DEC_BV_01_C		PASS
+TC_DEC_BV_02_C		PASS
+TC_DEC_BV_03_C		PASS
+TC_DEC_BV_04_C		PASS
+TC_DEC_BV_05_C		PASS
+TC_DEC_BV_06_C		PASS
+TC_DEC_BV_07_C		PASS
+TC_DEC_BV_08_C		N/A
+TC_DEC_BV_09_C		PASS
+TC_CR_BV_01_C		PASS
+TC_CR_BV_02_C		PASS
+TC_CR_BV_03_C		PASS
+TC_CR_BV_04_C		PASS
+TC_CR_BV_05_C		PASS
+TC_CR_BV_06_C		PASS
+TC_CR_BV_07_C		PASS
+TC_CR_BV_08_C		N/A
+TC_CR_BV_09_C		PASS
+TC_SDP_BV_01_C		PASS
+-------------------------------------------------------------------------------

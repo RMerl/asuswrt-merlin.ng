@@ -847,7 +847,9 @@ void btn_setup_save_setting(PKT_SET_INFO_GW_QUICK *pkt)
 	
 		nvram_set("time_zone", pkt->ISPSetting.TimeZone);
 		time_zone_x_mapping();
+#ifndef RTCONFIG_AVOID_TZ_ENV
 		setenv("TZ", nvram_safe_get("time_zone_x"), 1);
+#endif
 		nvram_set("x_Setting", "1");
 	}		
 	if (pkt->QuickFlag&QFCAP_FINISH)

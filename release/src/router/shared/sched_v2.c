@@ -783,7 +783,9 @@ int check_sched_v2_on_off(const char *sched_str) {
 		struct tm *ptm;
 		sched_v2_t *sched_v2;
 		int start_min, curr_min, end_min;
+#ifndef RTCONFIG_AVOID_TZ_ENV
 		setenv("TZ", nvram_safe_get("time_zone_x"), 1);
+#endif
 		now = time(NULL);
 		ptm = localtime(&now);
 		curr_min = time_to_minute(ptm->tm_hour, ptm->tm_min);

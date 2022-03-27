@@ -361,9 +361,8 @@ start_wps_method(void)
 	char buf[256] = "SET ";
 	int len = 4;
 	char ifname[NVRAM_MAX_PARAM_LEN];
-#ifdef RTCONFIG_BRCM_HOSTAPD
 	char word[256], *next;
-#endif
+	int unit;
 
 	if (getpid()!=1) {
 		notify_rc("start_wps_method");
@@ -373,7 +372,16 @@ start_wps_method(void)
 	wps_band = nvram_get_int("wps_band_x");
 #if defined(RTCONFIG_AMAS) && defined(RTCONFIG_CFGSYNC)
 	if (nvram_get_int("cfg_obstatus") == OB_TYPE_LOCKED) {
+		unit = 0;
 		wps_band = 0;
+		foreach (word, nvram_safe_get("wl_ifnames"), next) {
+			snprintf(tmp, sizeof(tmp), "wl%d_nband", unit);
+			if (nvram_get_int(tmp) == WLC_BAND_2G) {
+				wps_band = unit;
+				break;
+			}
+			unit++;
+		}
 		dbg("wps_band(%d) for wps registrar\n", wps_band);
 	}
 #endif
@@ -699,7 +707,7 @@ int is_wps_stopped(void)
 #if defined(RTCONFIG_DPSTA) && defined(RTAC68U)
 		|| (is_dpsta_repeater() && dpsta_mode() && nvram_get_int("re_mode") == 0)
 #elif defined(RPAX56) || defined(RPAX58)
-		|| ((dpsta_mode()||rp_mode()||dpsr_mode) && nvram_get_int("re_mode") == 0)
+		|| ((dpsta_mode()||rp_mode()||dpsr_mode()) && nvram_get_int("re_mode") == 0)
 #endif
 		) && !nvram_get_int("obd_Setting") && nvram_match("amesh_led", "1"))
 		return 0;

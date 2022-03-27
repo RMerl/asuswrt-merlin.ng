@@ -29,6 +29,8 @@ add_record() {
   _info "Adding record"
 
   rm -f /var/cache/inadyn/*.cache
+  # status check for gui
+  nvram set le_re_ddns=1
   service start_ddns
 
   cnt="20"
@@ -41,9 +43,11 @@ add_record() {
 
   if [ "$cnt" = "0" ]; then
     _debug "DDNS return code `nvram get ddns_return_code`"
+    nvram unset le_re_ddns
     return 1
   else
     _debug "Add DNS record finished"
+    nvram unset le_re_ddns
     return 0
   fi
 }

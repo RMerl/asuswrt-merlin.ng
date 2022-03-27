@@ -1,0 +1,178 @@
+L2CAP PICS for the PTS tool.
+
+PTS version: 6.1
+
+* - different than PTS defaults
+# - not yet implemented/supported
+
+M - mandatory
+O - optional
+
+		Roles
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_L2CAP_1_1	True		Data Channel Initiator (C.3)
+TSPC_L2CAP_1_2	True		Data Channel Acceptor (C.1)
+TSPC_L2CAP_1_3	True		LE Master (C.2)
+TSPC_L2CAP_1_4	True		LE Slave (C.2)
+TSPC_L2CAP_1_5	True		LE Data Channel Initiator (C.4)
+TSPC_L2CAP_1_6	True		LE Data Channel Acceptor (C.5)
+-------------------------------------------------------------------------------
+C.1: Mandatory IF BR/EDR or BR/EDR/LE is supported, otherwise Excluded.
+C.2: Mandatory to support (at least one of TSPC_L2CAP_1_3 or TSPC_L2CAP_1_4)
+	IF LE or BR/EDR/LE is supported, otherwise Excluded.
+C.3: Optional IF BR/EDR or BR/EDR/LE is supported, otherwise Excluded.
+C.4: Optional IF LE or BR/EDR/LE and Core Spec v4.1 or Core Spec v4.1+HS and
+	TSPC_L2CAP_2_46 is supported, otherwise Excluded.
+C.5: Mandatory IF LE or BR/EDR/LE and Core Spec v4.1 or Core Spec v4.1+HS and
+	TSPC_L2CAP_2_46 is supported, otherwise Excluded.
+-------------------------------------------------------------------------------
+
+
+		General Operation
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_L2CAP_2_1	True		Support of L2CAP signaling channel (C.20)
+TSPC_L2CAP_2_2	True		Support of configuration process (C.20)
+TSPC_L2CAP_2_3  True		Support of connection oriented data
+					channel (C.20)
+TSPC_L2CAP_2_4	True		Support of command echo request (C.21)
+TSPC_L2CAP_2_5	True		Support of command echo response (C.20)
+TSPC_L2CAP_2_6	True		Support of command information request (C.21)
+TSPC_L2CAP_2_7	True		Support of command information response (C.20)
+TSPC_L2CAP_2_8	False (*)	Support of a channel group (C.21)
+TSPC_L2CAP_2_9	False (*)	Support of packet for connectionless
+					channel (C.21)
+TSPC_L2CAP_2_10	False (*)	Support retransmission mode (C.21)
+TSPC_L2CAP_2_11	False (*)	Support flow control mode(C.21)
+TSPC_L2CAP_2_12	True		Enhanced Retransmission Mode (C.1, C.13)
+TSPC_L2CAP_2_13	True		Streaming Mode (C.1, C.14)
+TSPC_L2CAP_2_14	True		FCS Option (C.2)
+TSPC_L2CAP_2_15	True		Generate Local Busy Condition (C.3)
+TSPC_L2CAP_2_16	False (*)	Send Reject (C.3)
+TSPC_L2CAP_2_17	True		Send Selective Reject (C.3)
+TSPC_L2CAP_2_18	True		Mandatory use of ERTM (C.4)
+TSPC_L2CAP_2_19	True		Mandatory use of Streaming Mode (C.5)
+TSPC_L2CAP_2_20	True		Optional use of ERTM (C.4)
+TSPC_L2CAP_2_21	True		Optional use of Streaming Mode (C.5)
+TSPC_L2CAP_2_22	True		Send data using SAR in ERTM (C.6)
+TSPC_L2CAP_2_23	True		Send data using SAR in Streaming Mode (C.7)
+TSPC_L2CAP_2_24	True		Actively request Basic Mode for a PSM that
+					supports the use of ERTM or Streaming
+					Mode (C.8)
+TSPC_L2CAP_2_25	True		Supports performing L2CAP channel mode
+					configuration fallback from SM
+					to ERTM (C.9)
+TSPC_L2CAP_2_26	True		Supports sending more than one unacknowledged
+					I-Frame when operating in ERTM (C.10)
+TSPC_L2CAP_2_27	True		Supports sending more than three unacknowledged
+					I-Frame when operating in ERTM (C.10)
+TSPC_L2CAP_2_28	True		Supports configuring the peer TxWindow
+					greater than 1 (C.11)
+TSPC_L2CAP_2_29	False (*)	AMP Support (C.12)
+TSPC_L2CAP_2_30	True		Fixed Channel Support (C.12)
+TSPC_L2CAP_2_31	False (*)	AMP Manager Support (C.12)
+TSPC_L2CAP_2_32	False (*)	ERTM over AMP (C.12)
+TSPC_L2CAP_2_33	False (*)	Streaming Mode Source over AMP Support (C.15)
+TSPC_L2CAP_2_34	False (*)	Streaming Mode Sink over AMP Support (C.15)
+TSPC_L2CAP_2_35	True		Unicast Connectionless Data, Reception
+					(C.1, C.16)
+TSPC_L2CAP_2_36	True		Ability to transmit an unencrypted packet over
+					a Unicast connectionless L2CAP
+					channel (C.16)
+TSPC_L2CAP_2_37	True		Ability to transmit an encrypted packet over
+					a Unicast connectionless L2CAP
+					channel (C.16)
+TSPC_L2CAP_2_38	False (*)	Extended Flow Specification for BR/EDR (C.8)
+TSPC_L2CAP_2_39	False (*)	Extended Window Size (C.8)
+TSPC_L2CAP_2_40	True		Support of Low Energy signaling channel (C.17)
+TSPC_L2CAP_2_41	True		Support of command reject (C.17)
+TSPC_L2CAP_2_42	True		Send Connection Parameter Update Request (C.18)
+TSPC_L2CAP_2_43	True		Send Connection Parameter Update Response (C.19)
+TSPC_L2CAP_2_44	False (*)	Extended Flow Specification for AMP (C.22)
+TSPC_L2CAP_2_45	True		Send disconnect request command (C.21)
+TSCP_L2CAP_2_46	True		Support LE Credit Based Flow Control
+					Mode (C.23)
+TSCP_L2CAP_2_47	True		Support for LE Data Channel (C.24)
+-------------------------------------------------------------------------------
+C.1: Mandatory to support at least one of TSPC_L2CAP_2_12 OR TSPC_L2CAP_2_13 OR
+	TSPC_L2CAP_2_35 IF BR/EDR OR BR/EDR/LE AND SUM_ICS 31/7 (CSA1) OR
+	Core Spec v3.0 or later is supported, ELSE Excluded
+C.2: Optional IF TSPC_L2CAP_2_12 OR TSPC_L2CAP_2_13 is claimed, ELSE Excluded.
+C.3: Optional IF TSPC_L2CAP_2_12 AND TSPC_L2CAP_2_28 is claimed, ELSE Excluded.
+C.4: IF TSPC_L2CAP_2_12 is claimed THEN either TSPC_L2CAP_2_18
+	OR TSPC_L2CAP_2_20 is Mandatory, ELSE Excluded.
+C.5: IF TSPC_L2CAP_2_13 is claimed THEN either TSPC_L2CAP_2_19
+	OR TSPC_L2CAP_2_21 are Mandatory, ELSE Excluded.
+C.6: Optional IF TSPC_L2CAP_2_12 is claimed, ELSE Excluded.
+C.7: Optional IF TSPC_L2CAP_2_13 is claimed, ELSE Excluded.
+C.8: Optional IF TSPC_L2CAP_2_12 OR TSPC_L2CAP_2_13 is claimed, ELSE Excluded.
+C.9: Mandatory IF TSPC_L2CAP_2_12 AND TSPC_L2CAP_2_13 AND TSPC_L2CAP_2_21
+       is claimed, ELSE Excluded.
+C.10: Optional IF TSPC_L2CAP_2_12 is claimed, ELSE Excluded.
+C.11: Optional IF TSPC_L2CAP_2_12 is claimed, ELSE Excluded.
+C.12: Mandatory IF Core Spec v3.0+HS OR Core Spec v4.0+HS OR
+    Core Spec v4.1+HS OR Core Spec v4.2+HS is claimed, ELSE Optional.
+C.13: Mandatory IF Core Spec v3.0+HS OR Core Spec v4.0+HS OR
+    Core Spec v4.1+HS OR Core Spec v4.2+HS is claimed, ELSE Optional.
+C.14: Optional IF Core Spec v3.0 OR or later is claimed, ELSE Excluded.
+C.15: Optional IF TSPC_L2CAP_2_29 is claimed, ELSE Excluded.
+C.16: Optional IF Core Spec v3.0 or later is claimed, ELSE Excluded.
+C.17: Mandatory IF LE OR BR/EDR/LE is claimed, ELSE Excluded.
+C.18: Optional IF Core Spec 4.0 OR TSPC_L2CAP_1_4 is claimed, ELSE Excluded.
+C.19: Mandatory IF Core Spec 4.0 AND TSPC_L2CAP_1_3 is claimed, ELSE Excluded.
+C.20: Mandatory IF BR/EDR OR BR/EDR/LE, is claimed, ELSE Excluded
+C.21: Optional IF BR/EDR OR BR/EDR/LE, is claimed, ELSE Excluded.
+C.22: Mandatory IF TSPC_L2CAP_2_29 is claimed, ELSE Excluded.
+C.23: Optional LE OR BR/EDR/LE AND Core Spec v4.1 OR Core Spec v4.1+HS OR
+    Core Spec v4.2 OR Core Spec v4.2+HS is supported, otherwise Excluded.
+C.24: Mandatory IF TSPC_L2CAP_2_46 is supported, otherwise Excluded.
+-------------------------------------------------------------------------------
+
+
+		Configurable Parameters
+-------------------------------------------------------------------------------
+Parameter	Name Selected	Description
+-------------------------------------------------------------------------------
+TSPC_L2CAP_3_1	True		Support of RTX timer (M)
+TSPC_L2CAP_3_2	True		Support of ERTX timer (C.4)
+TSPC_L2CAP_3_3	True		Support minimum MTU size 48 octets (C.4)
+TSPC_L2CAP_3_4	True		Support MTU size larger than 48 octets (C.5)
+TSPC_L2CAP_3_5	True		Support of flush timeout value for reliable
+					channel (C.4)
+TSPC_L2CAP_3_6	False (*)	Support of flush timeout value for unreliable
+					channel (C.5)
+TSPC_L2CAP_3_7	False (*)	Support of bi-directional quality of service
+					(QoS) option field (C.1)
+TSPC_L2CAP_3_8	False (*)	Negotiate QoS service type (C.5)
+TSPC_L2CAP_3_9	False (*)	Negotiate and support service type ‘No
+					traffic’ (C.2)
+TSPC_L2CAP_3_10	False (*)	Negotiate and support service type ‘Best
+					effort’ (C.3)
+TSPC_L2CAP_3_11	False (*)	Negotiate and support service type
+					‘Guaranteed’ (C.2)
+TSPC_L2CAP_3_12	True		Support minimum MTU size 23 octets (C.6)
+TSPC_L2CAP_3_13	False (*)	Negotiate and support service type ‘No traffic’
+					for Extended Flow Specification (C.7)
+TSPC_L2CAP_3_14	False (*)	Negotiate and support service type ‘Best Effort'
+					for Extended Flow Specification (C.8)
+TSPC_L2CAP_3_15	False (*)	Negotiate and support service type ‘Guaranteed’
+					for Extended Flow Specification (C.9)
+TSPC_L2CAP_3_16	True		Support Multiple Simultaneous LE Data
+					Channels (C.10)
+-------------------------------------------------------------------------------
+C.1: Mandatory if TSPC_L2CAP_3_8 is supported, ELSE Optional.
+C.2: Optional if TSPC_L2CAP_3_8 is supported, ELSE Excluded.
+C.3: Mandatory if TSPC_L2CAP_3_8 is supported, ELSE Excluded.
+C.4: Mandatory IF BR/EDR OR BR/EDR/LE is claimed, ELSE Excluded.
+C.5: Optional IF BR/EDR OR BR/EDR/LE is claimed, ELSE Excluded.
+C.6: Mandatory IF LE OR BR/EDR/LE is claimed, ELSE Excluded.
+C.7: Optional if TSPC_L2CAP_2_44 OR TSPC_L2CAP_2_38 is supported, ELSE Excluded.
+C.8: Mandatory if TSPC_L2CAP_2_44 OR TSPC_L2CAP_2_38 is supported,
+	ELSE Excluded.
+C.9: Optional if TSPC_L2CAP_2_44 OR TSPC_L2CAP_2_38 is supported, ELSE Excluded.
+C.10: Optional IF TSPC_L2CAP_2_47 AND Core Spec 4.1 is supported,
+	otherwise Excluded.
+-------------------------------------------------------------------------------

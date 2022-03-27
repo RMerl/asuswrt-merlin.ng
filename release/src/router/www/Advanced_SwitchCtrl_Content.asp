@@ -44,6 +44,7 @@ var wans_lanport = '<% nvram_get("wans_lanport"); %>';
 var iptv_port_settings_orig = '<%nvram_get("iptv_port_settings"); %>' == ""? "12": '<%nvram_get("iptv_port_settings"); %>';
 var switch_wantag_orig = '<% nvram_get("switch_wantag"); %>';
 var switch_stb_x_orig = '<% nvram_get("switch_stb_x"); %>';
+var no_jumbo_frame_support = isSupport("no_jumbo_frame");
 
 function disable_lacp_if_conflicts_with_iptv(){
 	if((based_modelid == "RT-AX89U" || based_modelid == "GT-AXY16000")){
@@ -60,8 +61,12 @@ function disable_lacp_if_conflicts_with_iptv(){
 
 function initial(){
 	if((based_modelid == "RT-AX89U" || based_modelid == "GT-AXY16000")){
+			document.form.aqr_link_speed.disabled = false;
+			document.form.aqr_ipg.disabled = false;
 			document.form.sfpp_max_speed.disabled = false;
 			document.form.sfpp_force_on.disabled = false;
+			document.getElementById("aqr_link_speed_tr").style.display = "";
+			document.getElementById("aqr_ipg_tr").style.display = "";
 			document.getElementById("sfpp_max_speed_tr").style.display = "";
 			document.getElementById("sfpp_force_on_tr").style.display = "";
 	}
@@ -177,6 +182,8 @@ function initial(){
 	}
 
 	disable_lacp_if_conflicts_with_iptv();
+	if(no_jumbo_frame_support)
+		$("#jumbo_tr").hide();
 }
 
 function applyRule(){
@@ -218,8 +225,18 @@ function applyRule(){
 		}
 	}
 
-	showLoading();
-	document.form.submit();
+	if(document.form.action_script.value == "reboot"){
+
+		if(confirm("<#AiMesh_Node_Reboot#>")){
+        	showLoading();
+			document.form.submit();
+		}
+	}
+	else{
+
+		showLoading();
+		document.form.submit();
+	}
 }
 
 function check_bonding_policy(obj){
@@ -336,6 +353,18 @@ function check_bonding_policy(obj){
 												</td>
 											</tr>
 
+											<tr id="mtk_tr" style="display: none;">
+												<th><#NAT_Acceleration#></th>
+												<td>
+													<select name="hwnat" class="input_option" disabled>
+														<option class="content_input_fd" value="0" <% nvram_match("hwnat", "0","selected"); %>><#WLANConfig11b_WirelessCtrl_buttonname#></option>
+														<option class="content_input_fd" value="1" <% nvram_match("hwnat", "1","selected"); %>><#Auto#></option>
+													</select>
+												&nbsp
+													<span id="natAccelDesc"></span>
+												</td>
+											</tr>
+
 											<tr style="display:none">
 												<th><#SwitchCtrl_Enable_GRO#></th>
 												<td>
@@ -350,6 +379,29 @@ function check_bonding_policy(obj){
 													<select name="lan_stp" class="input_option">
 														<option class="content_input_fd" value="0" <% nvram_match("lan_stp", "0","selected"); %>><#WLANConfig11b_WirelessCtrl_buttonname#></option>
 														<option class="content_input_fd" value="1" <% nvram_match("lan_stp", "1","selected"); %>><#WLANConfig11b_WirelessCtrl_button1name#></option>
+													</select>
+												</td>
+											</tr>
+
+											<tr id="aqr_link_speed_tr" style="display:none">
+												<th>10G base-T port link speed</th><!--untranslated-->
+												<td>
+													<select name="aqr_link_speed" class="input_option" disabled>
+														<option value="0" <% nvram_match("aqr_link_speed", "0","selected"); %>><#Auto#></option>
+														<option value="1000" <% nvram_match("aqr_link_speed", "1000","selected"); %>>1Gbps</option>
+														<option value="2500" <% nvram_match("aqr_link_speed", "2500","selected"); %>>2.5Gbps</option>
+														<option value="5000" <% nvram_match("aqr_link_speed", "5000","selected"); %>>5Gbps</option>
+														<option value="10000" <% nvram_match("aqr_link_speed", "10000","selected"); %>>10Gbps</option>
+													</select>
+												</td>
+											</tr>
+
+											<tr id="aqr_ipg_tr" style="display:none">
+												<th>10G base-T interpacket gap</th><!--untranslated-->
+												<td>
+													<select name="aqr_ipg" class="input_option" disabled>
+														<option value="96" <% nvram_match("aqr_ipg", "96","selected"); %>><#CTL_Default#></option>
+														<option value="128" <% nvram_match("aqr_ipg", "128","selected"); %>>128 bit times</option>
 													</select>
 												</td>
 											</tr>

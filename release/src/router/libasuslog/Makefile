@@ -1,5 +1,4 @@
 include ../common.mak
-include $(SRCBASE)/router/.config
 
 OBJS = libasuslog.o
 PROGS = libasuslog.so
@@ -7,7 +6,10 @@ PROGS = libasuslog.so
 CFLAGS += -fPIC $(EXTRACFLAGS)
 CFLAGS += -I. -I$(TOP)/shared -I$(SRCBASE)/include -I$(KERNEL_HEADER_DIR) -Wall
 #CFLAGS += $(PRIVATE_EXTRACFLAGS)
-LDFLAGS_SO = -L$(TOP_PLATFORM)/nvram${BCMEX}${EX7} -lnvram -L$(TOP)/shared -lshared 
+LDFLAGS_SO = -L$(TOP_PLATFORM)/nvram${BCMEX}${EX7} -lnvram -L$(TOP)/shared -lshared
+ifeq ($(RTCONFIG_BCM_502L07P2),y)
+LDFLAGS_SO += -L$(TOP_PLATFORM)/ethctl_lib -lethctl
+endif
 ifeq ($(HND_ROUTER),y)
 LDFLAGS_SO += -lpthread -lgcc_s
 endif

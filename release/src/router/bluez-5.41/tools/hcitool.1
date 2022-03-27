@@ -1,0 +1,255 @@
+.TH HCITOOL 1 "Nov 12 2002" BlueZ "Linux System Administration"
+.SH NAME
+hcitool \- configure Bluetooth connections
+.SH SYNOPSIS
+.B hcitool [-h]
+.br
+.B hcitool [-i <hciX>] [command [command parameters]]
+
+.SH DESCRIPTION
+.LP
+.B
+hcitool
+is used to configure Bluetooth connections and send some special command to
+Bluetooth devices. If no
+.B
+command
+is given, or if the option
+.B
+-h
+is used,
+.B
+hcitool
+prints some usage information and exits.
+.SH OPTIONS
+.TP
+.BI -h
+Gives a list of possible commands
+.TP
+.BI -i " <hciX>"
+The command is applied to device
+.I
+hciX
+, which must be the name of an installed Bluetooth device. If not specified,
+the command will be sent to the first available Bluetooth device.
+.SH COMMANDS
+.TP
+.BI dev
+Display local devices
+.TP
+.BI inq
+Inquire remote devices. For each discovered device, Bluetooth device address,
+clock offset and class are printed.
+.TP
+.BI scan
+Inquire remote devices. For each discovered device, device name are printed.
+.TP
+.BI name " <bdaddr>"
+Print device name of remote device with Bluetooth address
+.IR bdaddr .
+.TP
+.BI info " <bdaddr>"
+Print device name, version and supported features of remote device with
+Bluetooth address
+.IR bdaddr .
+.TP
+.BI spinq
+Start periodic inquiry process. No inquiry results are printed.
+.TP
+.BI epinq
+Exit periodic inquiry process.
+.TP
+.BI cmd " <ogf> <ocf> [parameters]"
+Submit an arbitrary HCI command to local device.
+.IR ogf ,
+.IR ocf
+and
+.IR parameters
+are hexadecimal bytes.
+.TP
+.BI con
+Display active baseband connections
+.TP
+.BI cc " [--role=m|s] [--pkt-type=<ptype>] <bdaddr>"
+Create baseband connection to remote device with Bluetooth address
+.IR bdaddr .
+Option
+.I
+--pkt-type
+specifies a list of allowed packet types.
+.I
+<ptype>
+is a comma-separated list of packet types, where the possible packet types are
+.BR DM1 ,
+.BR DM3 ,
+.BR DM5 ,
+.BR DH1 ,
+.BR DH3 ,
+.BR DH5 ,
+.BR HV1 ,
+.BR HV2 ,
+.BR HV3 .
+Default is to allow all packet types. Option
+.I
+--role
+can have value
+.I
+m
+(do not allow role switch, stay master) or
+.I
+s
+(allow role switch, become slave if the peer asks to become master). Default is
+.IR m .
+.TP
+.BI dc " <bdaddr> [reason]"
+Delete baseband connection from remote device with Bluetooth address
+.IR bdaddr .
+The reason can be one of the Bluetooth HCI error codes. Default is
+.IR 19
+for user ended connections. The value must be given in decimal.
+.TP
+.BI sr " <bdaddr> <role>"
+Switch role for the baseband connection from the remote device to
+.BR master
+or
+.BR slave .
+.TP
+.BI cpt " <bdaddr> <packet types>"
+Change packet types for baseband connection to device with Bluetooth address
+.IR bdaddr .
+.I
+packet types
+is a comma-separated list of packet types, where the possible packet types are
+.BR DM1 ,
+.BR DM3 ,
+.BR DM5 ,
+.BR DH1 ,
+.BR DH3 ,
+.BR DH5 ,
+.BR HV1 ,
+.BR HV2 ,
+.BR HV3 .
+.TP
+.BI rssi " <bdaddr>"
+Display received signal strength information for the connection to the device
+with Bluetooth address
+.IR bdaddr .
+.TP
+.BI lq " <bdaddr>"
+Display link quality for the connection to the device with Bluetooth address
+.IR bdaddr .
+.TP
+.BI tpl " <bdaddr> [type]"
+Display transmit power level for the connection to the device with Bluetooth address
+.IR bdaddr .
+The type can be
+.BR 0
+for the current transmit power level (which is default) or
+.BR 1
+for the maximum transmit power level.
+.TP
+.BI afh " <bdaddr>"
+Display AFH channel map for the connection to the device with Bluetooth address
+.IR bdaddr .
+.TP
+.BI lp " <bdaddr> [value]"
+With no
+.IR value ,
+displays link policy settings for the connection to the device with Bluetooth address
+.IR bdaddr .
+If
+.IR value
+is given, sets the link policy settings for that connection to
+.IR value .
+Possible values are RSWITCH, HOLD, SNIFF and PARK.
+.TP
+.BI lst " <bdaddr> [value]"
+With no
+.IR value ,
+displays link supervision timeout for the connection to the device with Bluetooth address
+.IR bdaddr .
+If
+.I
+value
+is given, sets the link supervision timeout for that connection to
+.I
+value
+slots, or to infinite if
+.I
+value
+is 0.
+.TP
+.BI auth " <bdaddr>"
+Request authentication for the device with Bluetooth address
+.IR bdaddr .
+.TP
+.BI enc " <bdaddr> [encrypt enable]"
+Enable or disable the encryption for the device with Bluetooth address
+.IR bdaddr .
+.TP
+.BI key " <bdaddr>"
+Change the connection link key for the device with Bluetooth address
+.IR bdaddr .
+.TP
+.BI clkoff " <bdaddr>"
+Read the clock offset for the device with Bluetooth address
+.IR bdaddr .
+.TP
+.BI clock " [bdaddr] [which clock]"
+Read the clock for the device with Bluetooth address
+.IR bdaddr .
+The clock can be
+.BR 0
+for the local clock or
+.BR 1
+for the piconet clock (which is default).
+.TP
+.BI lescan " [--privacy] [--passive] [--whitelist] [--discovery=g|l] \
+[--duplicates]"
+Start LE scan
+.TP
+.BI leinfo " [--static] [--random] <bdaddr>"
+Get LE remote information
+.TP
+.BI lewladd " [--random] <bdaddr>"
+Add device to LE White List
+.TP
+.BI lewlrm " <bdaddr>"
+Remove device from LE White List
+.TP
+.BI lewlsz
+Read size of LE White List
+.TP
+.BI lewlclr
+Clear LE White List
+.TP
+.BI lerladd " [--local irk] [--peer irk] [--random] <bdaddr>"
+Add device to LE Resolving List
+.TP
+.BI lerlrm " <bdaddr>"
+Remove device from LE Resolving List
+.TP
+.BI lerlclr
+Clear LE Resolving List
+.TP
+.BI lerlsz
+Read size of LE Resolving List
+.TP
+.BI lerlon
+Enable LE Address Resolution
+.TP
+.BI lerloff
+Disable LE Address Resolution
+.TP
+.BI lecc " [--static] [--random] <bdaddr> | [--whitelist]"
+Create a LE Connection
+.TP
+.BI ledc " <handle> [reason]"
+Disconnect a LE Connection
+.TP
+.BI lecup " <handle> <min> <max> <latency> <timeout>"
+LE Connection Update
+.SH AUTHORS
+Written by Maxim Krasnyansky <maxk@qualcomm.com> and Marcel Holtmann <marcel@holtmann.org>
+.PP
+man page by Fabrizio Gennari <fabrizio.gennari@philips.com>

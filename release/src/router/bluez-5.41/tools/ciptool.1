@@ -1,0 +1,68 @@
+.\"
+.\"	This program is free software; you can redistribute it and/or modify
+.\"	it under the terms of the GNU General Public License as published by
+.\"	the Free Software Foundation; either version 2 of the License, or
+.\"	(at your option) any later version.
+.\"
+.\"	This program is distributed in the hope that it will be useful,
+.\"	but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\"	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\"	GNU General Public License for more details.
+.\"
+.\"	You should have received a copy of the GNU General Public License
+.\"	along with this program; if not, write to the Free Software
+.\"	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+.\"
+.\"
+.TH CIPTOOL 1 "JUNE 6, 2003" "" ""
+
+.SH NAME
+ciptool \- Bluetooth Common ISDN Access Profile (CIP)
+.SH SYNOPSIS
+.BR "ciptool
+[
+.I options
+] <
+.I command
+>
+.SH DESCRIPTION
+.B ciptool
+is used to set up, maintain, and inspect the CIP configuration
+of the Bluetooth subsystem in the Linux kernel.
+.SH OPTIONS
+.TP
+.BI -h
+Gives a list of possible commands.
+.TP
+.BI -i " <hciX> | <bdaddr>"
+The command is applied to device
+.I
+hciX
+, which must be the name or the address of an installed Bluetooth
+device. If not specified, the command will be use the first
+available Bluetooth device.
+.SH COMMANDS
+.TP
+.BI show
+Display information about the connected devices.
+.TP
+.BI search
+Search for Bluetooth devices and connect to first one that
+offers CIP support.
+.TP
+.BI connect " <bdaddr> [psm]"
+Connect the local device to the remote Bluetooth device on the
+specified PSM number. If no PSM is specified, it will use the
+SDP to retrieve it from the remote device.
+.TP
+.BI release " [bdaddr]"
+Release a connection to the specific device. If no address is
+given and only one device is connected this will be released.
+.TP
+.BI loopback " <bdaddr> [psm]"
+Create a connection to the remote device for Bluetooth testing.
+This command will not provide a CAPI controller, because it is
+only for testing the CAPI Message Transport Protocol.
+.SH AUTHOR
+Written by Marcel Holtmann <marcel@holtmann.org>.
+.br

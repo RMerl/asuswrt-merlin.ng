@@ -1,7 +1,7 @@
 /*
  * Broadcom Router WPS definitions
  *
- * Copyright (C) 2020, Broadcom. All Rights Reserved.
+ * Copyright (C) 2021, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -106,6 +106,26 @@ typedef enum {
 	WPS_UI_NFC_HO_PKH_MISMATCH	= 28,
 	WPS_UI_MAP_TIMEOUT		= 29	/* Multiap timeout occured in WPS sta */
 } WPS_UI_SCSTATE;
+
+typedef enum {
+	DPP_UI_INIT			= 0,
+	DPP_UI_STATUS_NOT_COMPATIBLE	= 1,
+	DPP_UI_STATUS_AUTH_FAILURE	= 2,
+	DPP_UI_STATUS_UNWRAP_FAILURE	= 3,
+	DPP_UI_STATUS_BAD_GROUP		= 4,
+	DPP_UI_STATUS_CONFIGURE_FAILURE = 5,
+	DPP_UI_STATUS_RESPONSE_PENDING  = 6,
+	DPP_UI_STATUS_INVALID_CONNECTOR = 7,
+	DPP_UI_STATUS_NO_MATCH		= 8,
+	DPP_UI_STATUS_CONFIG_REJECTED	= 9,
+	DPP_UI_STATUS_NO_AP		= 10,
+	DPP_UI_STATUS_CONFIGURE_PENDING = 11,
+	DPP_UI_STATUS_CSR_NEEDED	= 12,
+	DPP_UI_STATUS_CSR_BAD		= 13,
+	DPP_UI_STATUS_CONFIG_SUCCESS	= 14,
+	DPP_UI_ASSOCIATED		= 15,
+	DPP_UI_DISASSOCIATED		= 16
+} DPP_UI_SCSTATE;
 
 typedef enum wps_1905_ret_status {
 	WPS_ERROR_1905_SENDFAILURE=200,		/* Failed to send response M1/M2 to 1905 */

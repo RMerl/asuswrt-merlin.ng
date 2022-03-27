@@ -1274,8 +1274,9 @@ void config_pause_block_string(pc_s *pc_list, FILE *fp, char *logaccept, char *l
 #endif
 		// MAC address in list and not in time period -> DROP.
 		if(!temp){
+			char wgn_ifnames[6 * IFNAMSIZ];
 #if defined(RTCONFIG_AMAS_WGN)
-			char *next, iface[IFNAMSIZ], wgn_ifnames[6 * IFNAMSIZ];
+			char *next, iface[IFNAMSIZ];
 #endif
 #ifdef BLOCKLOCAL
 			fprintf(fp, "-A INPUT -i %s %s %s -j DROP\n", lan_if, chk_type, follow_addr);
@@ -1328,7 +1329,7 @@ int count_event_rules(pc_event_s *event_list){
 	return count;
 }
 
-#ifdef DSL_AX82U
+#ifdef RTCONFIG_ISP_OPTUS
 /*
 	For Optus puase customization.
 */
@@ -1350,7 +1351,7 @@ pc_s *op_get_all_pc_list(pc_s **pc_list){
 
 		if(strlen(word) > 0)
 			(*follow_pc_list)->enabled = atoi(word);
-		_dprintf("get_all_pc_list, enabled_str=%s, enabled=%d.\n", word, (*follow_pc_list)->enabled);
+		_dprintf("op_get_all_pc_list, enabled_str=%s, enabled=%d.\n", word, (*follow_pc_list)->enabled);
 
 		while(*follow_pc_list != NULL)
 			follow_pc_list = &((*follow_pc_list)->next);
@@ -1503,10 +1504,51 @@ void op_config_pause_block_string(pc_s *pc_list, FILE *fp, char *logaccept, char
 
 	free_pc_list(&enabled_list);
 }
+
+int op_cleantrack_pc_list(pc_s *pc_list, int verb){
+	pc_s *follow_pc;
+	int fcf = nvram_get_int("forcedcf")? : 0;	/* force delete pclist conntracks */
+
+	if(pc_list == NULL)
+		return -1;
+
+	for(follow_pc = pc_list; follow_pc != NULL; follow_pc = follow_pc->next){
+
+		follow_pc->prev_state = follow_pc->state;
+		if(!follow_pc->enabled) {
+			if (follow_pc->prev_state==BLOCKED) {
+				follow_pc->state = NONBLOCK;
+				_dprintf("\n[pc] (%d)state change to NONBLOCK [%s]\n", fcf, follow_pc->mac);
+			}
+			continue;
+		} else if (follow_pc->enabled == 2) {
+			follow_pc->state = BLOCKED;
+		}
+
+		if(((follow_pc->prev_state==NONBLOCK||follow_pc->prev_state==INITIAL) && follow_pc->state==BLOCKED) ||
+			fcf ) {
+			char tip[16];
+			if(verb)
+				_dprintf("\n[pc] (%d)change to a denial zone [%s]\n", fcf, follow_pc->mac);
+			/* go clean denial-mac's conntracks */
+			if(arpcache(follow_pc->mac, tip)==0) {
+				_dprintf("\n[pc] delete conntracks of %s\n", tip);
+				eval("conntrack", "-D", "-s", tip);
+			}
+#ifdef HND_ROUTER
+			eval("fc", "flush");
+#elif defined(RTCONFIG_BCMARM)
+			/* TBD. ctf ipct entries cleanup. */
+#endif
+		}
+	}
+
+	return 0;
+}
 /*
 	For Optus puase customization.
 */
-#endif
+#endif /* RTCONFIG_ISP_OPTUS */
 
 int pc_main(int argc, char *argv[]){
 	pc_s *pc_list = NULL, *enabled_list = NULL, *daytime_list = NULL;

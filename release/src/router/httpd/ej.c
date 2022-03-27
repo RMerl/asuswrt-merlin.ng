@@ -42,7 +42,7 @@
 #include <json_object.h>
 
 extern char *get_cgi_json(char *name, json_object *root);
-extern void do_json_decode(struct json_object **root);
+extern int do_json_decode(struct json_object *root);
 #endif
 
 struct REPLACE_PRODUCTID_S replace_productid_t[] =
@@ -62,6 +62,10 @@ struct REPLACE_PRODUCTID_S replace_productid_t[] =
 	{"ZenWiFi_CD6N", "ZenWiFi AC Mini", "global"},
 	{"ZenWiFi_XP4", "ZenWiFi AX Hybrid", "global"},
 	{"ZenWiFi_CV4", "ZenWiFi Voice", "global"},
+	{"ZenWiFi_Pro_XT12", "灵耀Pro AX11000", "CN"},
+	{"ZenWiFi_XD5", "灵耀AX魔方 Pro", "CN"},
+	{"ZenWiFi_XT9", "灵耀AX7800", "CN"},
+	{"ZenWiFi_XD6", "灵耀AX5400", "CN"},
 	{NULL, NULL, NULL}
 };
 
@@ -166,6 +170,7 @@ process_asp (char *s, char *e, FILE *f)
 extern void replace_productid(char *GET_PID_STR, char *RP_PID_STR, int len){
 
 	struct REPLACE_PRODUCTID_S *p;
+	char *p_temp;
 
 	for(p = &replace_productid_t[0]; p->org_name; p++){
 		if(!strcmp(GET_PID_STR, p->org_name)){
@@ -180,8 +185,15 @@ extern void replace_productid(char *GET_PID_STR, char *RP_PID_STR, int len){
 	if(strlen(RP_PID_STR))
 		return;
 
+	if ((p_temp = strstr(GET_PID_STR, "ZenWiFi_")) && !strncmp(nvram_safe_get("preferred_lang"), "CN", 2)) {
+		p_temp += strlen("ZenWiFi_");
+		snprintf(RP_PID_STR, len, "灵耀%s", p_temp);
+	}
+	else{
+		strlcpy(RP_PID_STR, GET_PID_STR, len);
+	}
+
 	/* general  replace underscore with space */
-	strlcpy(RP_PID_STR, GET_PID_STR, len);
 	for (; *RP_PID_STR; ++RP_PID_STR)
 	{
 		if (*RP_PID_STR == '_')
@@ -289,8 +301,9 @@ do_ej(char *path, FILE *stream)
 	}
 
 	char *current_lang;
-	struct json_object *root=NULL;
-	do_json_decode(&root);
+	struct json_object *root = json_object_new_object();
+
+	do_json_decode(root);
 	if ((current_lang = get_cgi_json("current_lang", root)) != NULL){
 		if (load_dictionary (current_lang, &kw)){
 			no_translate = 0;

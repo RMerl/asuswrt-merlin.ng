@@ -1,0 +1,80 @@
+PTS test results for MCAP
+
+PTS version: 6.1
+Tested: 19-May-2015
+Android version: 5.1
+
+Results:
+PASS	test passed
+FAIL	test failed
+INC	test is inconclusive
+N/A	test is disabled due to PICS setup
+
+Note: Test were done with ssp enabled and in most of the cases requires pairing
+	confirmation. This can be done easily by using 'btmgmt monitor'.
+
+-------------------------------------------------------------------------------
+Test Name		Result	Notes
+-------------------------------------------------------------------------------
+TC_MCAP_CE_BV_01_C	PASS	mcaptest -C 4099 -D 4101 -f 2 -dc <PTS addr>
+TC_MCAP_CE_BV_02_C	PASS	mcaptest -C 4099 -D 4101 -f 2
+TC_MCAP_CE_BV_03_C	PASS	mcaptest -C 4099 -D 4101 -f 2 -c <PTS addr>
+TC_MCAP_CE_BV_04_C	PASS	mcaptest -C 4099 -D 4101 -f 2 -d
+TC_MCAP_CM_ABT_BV_01_C	N/A
+TC_MCAP_CM_ABT_BV_02_C	PASS	mcaptest -C 4099 -D 4101 -f 2
+TC_MCAP_CM_ABT_BV_03_C	N/A
+TC_MCAP_CM_DEL_BV_01_C	N/A
+TC_MCAP_CM_DEL_BV_02_C	PASS	mcaptest -C 4099 -D 4101 -f 2
+TC_MCAP_CM_DEL_BV_03_C	N/A
+TC_MCAP_CM_DEL_BV_04_C	PASS	mcaptest -C 4099 -D 4101 -f 2
+TC_MCAP_CM_DIS_BV_01_C	PASS	mcaptest -C 4099 -D 4101 -ab -e 2 -f 2
+TC_MCAP_CM_DIS_BV_02_C	PASS	mcaptest -C 4099 -D 4101
+TC_MCAP_CM_DIS_BV_03_C	PASS	mcaptest -C 4099 -D 4101 -n -f 2
+TC_MCAP_CM_DIS_BV_04_C	PASS	mcaptest -C 4099 -D 4101 -ab -e 2 -f 2
+TC_MCAP_CM_DIS_BV_05_C	PASS	mcaptest -C 4099 -D 4101
+TC_MCAP_CM_REC_BV_01_C	N/A
+TC_MCAP_CM_REC_BV_02_C	PASS	mcaptest -C 4099 -D 4101 -n -f 2
+TC_MCAP_CM_REC_BV_03_C	N/A
+TC_MCAP_CM_REC_BV_04_C	PASS	mcaptest -C 4099 -D 4101 -n -f 2
+TC_MCAP_CM_REC_BV_05_C	N/A
+TC_MCAP_CM_REC_BV_06_C	PASS	mcaptest -C 4099 -D 4101 -f 2
+TC_MCAP_CS_ERR_BI_01_C	N/A
+TC_MCAP_CS_ERR_BI_02_C	N/A
+TC_MCAP_CS_ERR_BI_03_C	N/A
+TC_MCAP_CS_ERR_BI_04_C	N/A
+TC_MCAP_CS_I_BV_01_I	N/A
+TC_MCAP_CS_I_BV_02_I	N/A
+TC_MCAP_CS_I_BV_03_C	N/A
+TC_MCAP_CS_I_BV_04_C	N/A
+TC_MCAP_CS_R_BV_01_I	N/A
+TC_MCAP_CS_R_BV_02_I	N/A
+TC_MCAP_CS_R_BV_03_C	N/A
+TC_MCAP_CS_T_BV_04_C	N/A
+TC_MCAP_ERR_BI_01_C	PASS	mcaptest -C 4099 -D 4101 -f 2
+TC_MCAP_ERR_BI_02_C	PASS	mcaptest -C 4099 -D 4101 -dn -f 2
+TC_MCAP_ERR_BI_03_C	PASS	mcaptest -C 4099 -D 4101 -f 2
+TC_MCAP_ERR_BI_04_C	PASS	mcaptest -C 4099 -D 4101 -dn -f 2
+TC_MCAP_ERR_BI_05_C	PASS	mcaptest -C 4099 -D 4101 -f 2
+TC_MCAP_ERR_BI_06_C	PASS	mcaptest -C 4099 -D 4101 -dn -f 2
+TC_MCAP_ERR_BI_07_C	PASS	mcaptest -C 4099 -D 4101 -f 2
+TC_MCAP_ERR_BI_08_C	PASS	mcaptest -C 4099 -D 4101 -dn -f 2
+TC_MCAP_ERR_BI_09_C	PASS	mcaptest -C 4099 -D 4101 -f 2
+TC_MCAP_ERR_BI_10_C	PASS	mcaptest -C 4099 -D 4101 -f 2
+TC_MCAP_ERR_BI_11_C	PASS	mcaptest -C 4099 -D 4101 -dn -f 2
+TC_MCAP_ERR_BI_12_C	PASS	mcaptest -C 4099 -D 4101 -dn -f 2
+TC_MCAP_ERR_BI_13_C	PASS	mcaptest -C 4099 -D 4101 -f 2
+TC_MCAP_ERR_BI_14_C	PASS	mcaptest -C 4099 -D 4101 -f 2
+TC_MCAP_ERR_BI_15_C	PASS	mcaptest -C 4099 -D 4101 -dn -f 2
+TC_MCAP_ERR_BI_16_C	PASS	mcaptest -C 4099 -D 4101 -u -f 2
+TC_MCAP_ERR_BI_17_C	PASS	mcaptest -C 4099 -D 4101 -dn -f 2
+TC_MCAP_ERR_BI_18_C	PASS	mcaptest -C 4099 -D 4101 -dn -f 2
+TC_MCAP_ERR_BI_19_C	N/A
+TC_MCAP_ERR_BI_20_C	PASS	mcaptest -C 4099 -D 4101 -g -f 2
+TC_MCAP_INV_BI_01_C	PASS	mcaptest -C 4099 -D 4101 -dc <PTS addr>
+TC_MCAP_INV_BI_02_C	PASS	mcaptest -C 4099 -D 4101 -dn -f 2
+TC_MCAP_INV_BI_03_C	PASS	mcaptest -C 4099 -D 4101 -d -f 2 -c <PTS addr>
+TC_MCAP_INV_BI_04_C	PASS	mcaptest -C 4099 -D 4101 -f 2 -c <PTS addr>
+TC_MCAP_INV_BI_05_C	PASS	mcaptest -C 4099 -D 4101 -f 2
+TC_MCAP_INV_BI_06_C	PASS	mcaptest -C 4099 -D 4101 -f 2
+TC_MCAP_INV_BI_07_C	PASS	mcaptest -C 4099 -D 4101 -f 2
+-------------------------------------------------------------------------------

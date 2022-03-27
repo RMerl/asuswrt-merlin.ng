@@ -257,7 +257,7 @@ void perform_http_serv(int sockfd, char *mac){
 
 }
 
-#ifdef DSL_AX82U
+#ifdef RTCONFIG_ISP_OPTUS
 /*
 	For Optus puase customization.
 */
@@ -452,7 +452,7 @@ void op_check_and_add_rules(void *info) {
 /*
 	For Optus puase customization.
 */
-#endif
+#endif /* RTCONFIG_ISP_OPTUS */
 
 
 int pc_block_main(int argc, char *argv[]){

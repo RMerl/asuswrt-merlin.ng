@@ -46,6 +46,12 @@ LDFLAGS = -L$(OPENSSL_DIR) -lcrypto -lssl
 LDFLAGS += -L$(CURL_DIR)/lib/.libs -lcurl
 LDFLAGS += -L$(XML2_DIR)/.libs -lxml2
 LDFLAGS += -L$(JSON_C_DIR)/.libs -ljson-c
+ifeq ($(RTCONFIG_REALTEK),y)
+LDFLAGS = -L$(TOP_PLATFORM)/nvram${BCMEX} -lnvram -L$(TOP)/shared -lshared -lcrypt -ldl
+else
+LDFLAGS = -L$(TOP_PLATFORM)/nvram${BCMEX}${EX7} -lnvram -L$(TOP)/shared -lshared $(if $(CONFIG_BCMWL5),-lcrypt -ldl)
+endif
+
 ifeq ($(HND_ROUTER),y)
 LDFLAGS += -lm -lgcc_s
 endif

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<record>
+  <attribute id="0x0001">
+    <sequence>
+      <uuid value="0x1106"/>
+    </sequence>
+  </attribute>
+
+  <attribute id="0x0004">
+    <sequence>
+      <sequence>
+        <uuid value="0x0100"/>
+      </sequence>
+      <sequence>
+        <uuid value="0x0003"/>
+        <uint8 value="23" name="channel"/>
+      </sequence>
+      <sequence>
+        <uuid value="0x0008"/>
+      </sequence>
+    </sequence>
+  </attribute>
+
+  <attribute id="0x0009">
+    <sequence>
+      <sequence>
+        <uuid value="0x1106"/>
+        <uint16 value="0x0100" name="version"/>
+      </sequence>
+    </sequence>
+  </attribute>
+
+  <attribute id="0x0100">
+    <text value="OBEX File Transfer" name="name"/>
+  </attribute>
+</record>

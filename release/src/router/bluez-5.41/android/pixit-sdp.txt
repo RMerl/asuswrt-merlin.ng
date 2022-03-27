@@ -1,0 +1,45 @@
+SDP PIXIT for the PTS tool.
+
+PTS version: 6.1
+
+* - different than PTS defaults
+& - should be set to IUT Bluetooth address
+^ - should be set accordingly
+# - should be set according to the reported phone number's type
+
+		Required PIXIT settings
+-------------------------------------------------------------------------------
+Parameter Name							Value
+-------------------------------------------------------------------------------
+TSPX_sdp_service_search_pattern					0100
+TSPX_sdp_service_search_pattern_no_results			EEEE
+TSPX_sdp_service_search_additional_protocol_descriptor_list
+TSPX_sdp_service_search_bluetooth_profile_descriptor_list
+TSPX_sdp_service_search_pattern_browse_group_list
+TSPX_sdp_service_search_pattern_client_exe_url
+TSPX_sdp_service_search_pattern_documentation_url
+TSPX_sdp_service_search_pattern_icon_url
+TSPX_sdp_service_search_pattern_language_base_attribute_id_list
+TSPX_sdp_service_search_pattern_protocol_descriptor_list
+TSPX_sdp_service_search_pattern_provider_name
+TSPX_sdp_service_search_pattern_service_availability
+TSPX_sdp_service_search_pattern_service_data_base_state		1000(*)
+TSPX_sdp_service_search_pattern_service_description
+TSPX_sdp_service_search_pattern_service_id
+TSPX_sdp_service_search_pattern_service_info_time_to_live
+TSPX_sdp_service_search_pattern_version_number_list		1000(*)
+TSPX_sdp_service_search_pattern_service_name
+TSPX_sdp_service_search_pattern_service_record_state
+TSPX_sdp_unsupported_attribute_id				EEEE
+TSPX_security_enabled						FALSE
+TSPX_delete_link_key						FALSE
+TSPX_bd_addr_iut						112233445566(*&)
+TSPX_class_of_device_pts					200404
+TSPX_class_of_device_test_pts_initiator				TRUE
+TSPX_limited_inquiry_used					FALSE
+TSPX_pin_code							0000
+TSPX_time_guard							200000
+TSPX_device_search_time						20
+TSPX_use_implicit_send						TRUE
+TSPX_secure_simple_pairing_pass_key_confirmation		FALSE
+-------------------------------------------------------------------------------

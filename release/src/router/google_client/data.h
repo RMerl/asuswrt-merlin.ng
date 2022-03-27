@@ -245,6 +245,7 @@ char *write_error_message(char *format,...);
 int create_shell_file();
 int convert_nvram_to_file_mutidir(char *file,struct asus_config *config);
 int detect_process(char * process_name);
+int detect_process2(char * process_name);
 #else
 int create_webdav_conf_file(struct asus_config *config);
 int write_get_nvram_script();

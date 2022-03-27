@@ -115,7 +115,7 @@ function validForm(){
 		 !document.form.filter_lw_date_x_Tue.checked && !document.form.filter_lw_date_x_Wed.checked &&
 		 !document.form.filter_lw_date_x_Thu.checked && !document.form.filter_lw_date_x_Fri.checked &&
 		 !document.form.filter_lw_date_x_Sat.checked && !document.form.fw_lw_enable_x[1].checked){
-		alert(Untranslated.filter_lw_date_valid);
+		alert("<#FirewallConfig_LanWan_SelectOne#>");
 		document.form.filter_lw_date_x_Sun.focus();
 		return false;
 	}
@@ -157,8 +157,8 @@ function addRow(obj, head){
 		filter_lwlist_array += "&#60"
 	else
 		filter_lwlist_array += "&#62"
-			
-	filter_lwlist_array += obj.value;
+	
+	filter_lwlist_array += obj.value.toUpperCase();
 	obj.value = "";
 }
 
@@ -174,16 +174,75 @@ function addRow_Group(upper){
 	}			
 		
 	if(document.form.filter_lw_srcip_x_0.value=="" && document.form.filter_lw_srcport_x_0.value=="" &&
-			document.form.filter_lw_dstip_x_0.value=="" && document.form.filter_lw_dstport_x_0.value==""){
-					alert("<#JS_fieldblank#>");
-					document.form.filter_lw_srcip_x_0.focus();
-					document.form.filter_lw_srcip_x_0.select();
-					return false;
-	}else{		
-					if(!validator.ipv4cidr(document.form.filter_lw_srcip_x_0))
-                                                return false;
-					if(!validator.ipv4cidr(document.form.filter_lw_dstip_x_0))
-						return false;
+		document.form.filter_lw_dstip_x_0.value=="" && document.form.filter_lw_dstport_x_0.value=="")
+	{
+		alert("<#JS_fieldblank#>");
+		document.form.filter_lw_srcip_x_0.focus();
+		document.form.filter_lw_srcip_x_0.select();
+		return false;
+	}
+	else{	
+
+		var srcip_flag_v4 = 0;
+		var srcip_flag_v6 = 0;
+		var dstip_flag_v4 = 0;
+		var dstip_flag_v6 = 0;
+		if(document.form.filter_lw_srcip_x_0.value.split("*").length >= 2){
+			if(!validator.ipSubnet(document.form.filter_lw_srcip_x_0)){
+				return false;
+			}
+			else{
+				srcip_flag_v4=1;
+			}
+		}
+		else if(!validator.ipv4cidr(document.form.filter_lw_srcip_x_0))
+			if(!validator.isLegal_ipv6(document.form.filter_lw_srcip_x_0, 1)){
+				alert(document.form.filter_lw_srcip_x_0.value + ": <#JS_validip#>");
+				document.form.filter_lw_srcip_x_0.focus();
+				document.form.filter_lw_srcip_x_0.select();
+				return false;
+			}
+			else{
+				srcip_flag_v6=1;
+			}
+		}
+		else{
+			if(document.form.filter_lw_srcip_x_0.value != "")
+				srcip_flag_v4=1;
+		}
+
+		if(document.form.filter_lw_dstip_x_0.value.split("*").length >= 2){
+			if(!validator.ipSubnet(document.form.filter_lw_dstip_x_0)){
+				return false;
+			}
+			else{
+				dstip_flag_v4=1;
+			}
+		}
+		else if(!validator.ipv4cidr(document.form.filter_lw_dstip_x_0)){
+			if(!validator.isLegal_ipv6(document.form.filter_lw_dstip_x_0, 1)){
+				alert(document.form.filter_lw_dstip_x_0.value + ": <#JS_validip#>");
+				document.form.filter_lw_srcip_x_0.focus();
+				document.form.filter_lw_srcip_x_0.select();
+				return false;
+			}
+			else{
+				dstip_flag_v6=1;
+			}
+		}
+		else{
+			if(document.form.filter_lw_dstip_x_0.value != "")
+				dstip_flag_v4=1;
+		}
+
+		if(document.form.filter_lw_srcip_x_0.value != "" && document.form.filter_lw_dstip_x_0.value != ""){
+			if((srcip_flag_v4 == dstip_flag_v6) || (srcip_flag_v6 == dstip_flag_v4)){
+				alert("<#FirewallConfig_LWFilterList_IPformat#>");
+				document.form.filter_lw_srcip_x_0.focus();
+				document.form.filter_lw_srcip_x_0.select();
+				return false;
+			}
+		}
 	}
 		
 	if(document.form.filter_lw_srcport_x_0.value != "" || document.form.filter_lw_dstport_x_0.value != "")
@@ -267,7 +326,7 @@ function check_duplicate(){
 		}
 }
 
-function Do_addRow_Group(){		
+function Do_addRow_Group(){
 		addRow(document.form.filter_lw_srcip_x_0 ,1);
 		addRow(document.form.filter_lw_srcport_x_0, 0);
 		addRow(document.form.filter_lw_dstip_x_0, 0);
@@ -322,7 +381,7 @@ function showfilter_lwlist(){
 			var filter_lwlist_col = filter_lwlist_row[i].split('&#62');
 			var wid=[20, 15, 20, 15, 15];
 				for(var j = 0; j < filter_lwlist_col.length; j++){
-					code +='<td width="'+wid[j]+'%">'+ filter_lwlist_col[j] +'</td>';		//IP  width="98"
+					code +='<td width="'+wid[j]+'%" style="word-break:break-all;">'+ filter_lwlist_col[j] +'</td>';		//IP  width="98"
 				}
 				code +='<td width="15%"><!--input class="edit_btn" onclick="edit_Row(this);" value=""/-->';
 				code +='<input class="remove_btn" onclick="del_Row(this);" value=""/></td>';
@@ -538,9 +597,9 @@ function updateDateTime(){
             					<th><#list_add_delete#></th>
           					</tr>
           					<tr>
-          						<td width="20%"><input type="text" maxlength="18" class="input_15_table" name="filter_lw_srcip_x_0" autocorrect="off" autocapitalize="off"></td>
+          						<td width="20%"><input type="text" maxlength="39" class="input_15_table" name="filter_lw_srcip_x_0" autocorrect="off" autocapitalize="off"></td>
             					<td width="15%"><input type="text" maxlength="11" class="input_12_table" name="filter_lw_srcport_x_0" onKeyPress="return validator.isPortRange(this,event)" value="" autocorrect="off" autocapitalize="off"></td>
-            					<td width="20%"><input type="text" maxlength="18" class="input_15_table" name="filter_lw_dstip_x_0" autocorrect="off" autocapitalize="off"></td>
+            					<td width="20%"><input type="text" maxlength="39" class="input_15_table" name="filter_lw_dstip_x_0" autocorrect="off" autocapitalize="off"></td>
             					<td width="15%"><input type="text" maxlength="11" class="input_12_table" name="filter_lw_dstport_x_0" onKeyPress="return validator.isPortRange(this,event)" value="" autocorrect="off" autocapitalize="off"></td>
             					<td width="15%">
 								<select name="filter_lw_proto_x_0" class="input_option">

@@ -78,7 +78,8 @@
 						"dsl8_pppoe_username", 
 						"dsl8_pppoe_passwd", 
 						"dsl8_dnsenable",
-						"smart_connect_x"
+						"smart_connect_x",
+						"dpsta_band",
 					]);
 
 					systemVariable.historyPage = [];
@@ -144,6 +145,7 @@
 					systemVariable.rebootTime = initNvram.reboot_time;
 					systemVariable.lanIpaddr = initNvram.lan_ipaddr;
 					systemVariable.CoBrand = initNvram.CoBrand;
+					systemVariable.dpsta_band = initNvram.dpsta_band;
 					systemVariable.forceChangePw = (httpApi.hookGet("check_pw") == '1') ? true : false;
 					systemVariable.linkLnternet = httpApi.isConnected();
 					systemVariable.maxPasswordLen = getSupportNum("MaxLen_http_passwd");
@@ -176,6 +178,7 @@
 					if(dwb_mode == "1" && systemVariable.scMode == "SC_all")
 						systemVariable.scMode = "SC_dwb_mode";
 
+					systemVariable.eth_wan_list = httpApi.hookGet("get_ethernet_wan_list", true);
 					handleSysDep();
 
 					switch(getJsonFromUrl["flag"] || ""){
@@ -1051,8 +1054,8 @@
 				<div class="table_td">
 					<div class="pageDesc" id="connTypeDesc"><#Layer3Forwarding_x_ConnectionType_itemname#></div>
 					<div>
-						<div class="selectorTopContainer">
-							<div class="selectorContainer">
+						<div class="selectorTopContainer" id="wanOptions">
+							<div class="selectorContainer WAN1G">
 								<div class="selectorContainerDiv">
 									<div class="selectBar" onclick="apply.WAN1G();">
 										<#wan_port#>
@@ -1503,11 +1506,11 @@
 					</div>
 				</div>
 				<div class="table_td">
-					<div class="pageDesc">DHCP option settings</div>
+					<div class="pageDesc"><#ipv6_6rd_dhcp_option#></div>
 					<div>
 						<div>
 							<div class="inputTitleContainer">
-								<div class="inputTitle">Class-identifier (option 60)</div>
+								<div class="inputTitle"><#DHCPoption_Class#> (<#NetworkTools_option#> 60)</div>
 							</div>
 							<div class="inputContainer">
 								<input id="wan_vendorid" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" maxlength="126" class="textInput pppInput" data-role="none" value="" data-clear-btn="true" />
@@ -1516,7 +1519,7 @@
 
 						<div>
 							<div class="inputTitleContainer">
-								<div class="inputTitle">Client-identifier (option 61)</div>
+								<div class="inputTitle"><#DHCPoption_Client#> (<#NetworkTools_option#> 61)</div>
 							</div>
 							<div class="inputContainer">
 								<input type="checkbox" id="wan_clientid_type" name="wan_clientid_type" onclick="showDiableDHCPclientID(this);" class="labelInput"><label for="wan_clientid_type" class="labelInput">IAID/DUID</label><br>

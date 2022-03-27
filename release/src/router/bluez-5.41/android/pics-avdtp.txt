@@ -1,0 +1,236 @@
+AVDTP PICS for the PTS tool.
+
+PTS version: 6.1
+
+* - different than PTS defaults
+# - not yet implemented/supported
+
+M - mandatory if such role selected
+O - optional
+
+		Versions
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_AVDTP_0_1	False		AVDTP 1.0 (C.1)
+TSPC_AVDTP_0_2	False		AVDTP 1.2 (C.1)
+TSPC_AVDTP_0_3	True (*)	AVDTP 1.3 (C.1)
+-------------------------------------------------------------------------------
+C.1: It is mandatory to select only one of the protocol versions.
+-------------------------------------------------------------------------------
+
+
+		Roles
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_AVDTP_1_1	True (*)	Source (C.1)
+TSPC_AVDTP_1_2	True (*)	Sink (C.1)
+TSPC_AVDTP_1_3	True (*)	Initiator (C.2)
+TSPC_AVDTP_1_4	True (*)	Acceptor (C.2)
+-------------------------------------------------------------------------------
+C.1: It is mandatory to support at least one of the defined roles.
+C.2: It is within the scope of profiles using the AVDTP specification to
+	mandate Initiator/Acceptor capabilities. It is mandatory to support at
+	least one of the defined roles.
+-------------------------------------------------------------------------------
+
+
+		Signaling Message Format (Initiator)
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_AVDTP_2_1	True		Transaction label (M)
+TSPC_AVDTP_2_2	True		Packet type (M)
+TSPC_AVDTP_2_3	True		Message type (M)
+TSPC_AVDTP_2_4	True		Signal identifier (M)
+-------------------------------------------------------------------------------
+
+
+		Signaling Channel Establishment/Disconnection (Initiator)
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_AVDTP_3_1	True (*)	Establish signaling channel (O)
+TSPC_AVDTP_3_2	True (*)	Disconnect signaling channel (O)
+-------------------------------------------------------------------------------
+
+
+		Stream Discovery and Configuration (Initiator)
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_AVDTP_4_1	True (*)	Stream discover command (O)
+TSPC_AVDTP_4_2	True (*)	Stream get capabilities command (C.2)
+TSPC_AVDTP_4_3	True (*)	Set configuration command (O)
+TSPC_AVDTP_4_4	True (*)	Get configuration command (O)
+TSPC_AVDTP_4_5	False		Reconfigure command (O)
+TSPC_AVDTP_4_6	True (*)	Stream get all capabilities command (C.1)
+-------------------------------------------------------------------------------
+C.1: It is optional to support if TSPC_AVDTP_0_3 is supported, otherwise
+	excluded.
+C.2: Mandatory to support if TSPC_AVDTP_4_6 is supported, otherwise Optional.
+-------------------------------------------------------------------------------
+
+
+		Stream Establishment, Suspension and Release (Initiator)
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_AVDTP_5_1	True (*)	Open stream command (O)
+TSPC_AVDTP_5_2	True (*)	Start stream command (O)
+TSPC_AVDTP_5_3	True (*)	Close stream command (O)
+TSPC_AVDTP_5_4	True (*)	Suspend command (O)
+TSPC_AVDTP_5_5	True (*)	Abort stream command (O)
+-------------------------------------------------------------------------------
+
+
+		Security Signaling (Initiator)
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_AVDTP_6_1	False		Content security control command (O)
+-------------------------------------------------------------------------------
+
+
+		Message Fragmentation (Initiator)
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_AVDTP_7_1	True		Signaling message fragmentation (M)
+-------------------------------------------------------------------------------
+
+
+		Signaling Message Format (Acceptor)
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_AVDTP_8_1	True		Transaction label (M)
+TSPC_AVDTP_8_2	True		Packet type (M)
+TSPC_AVDTP_8_3	True		Message type (M)
+TSPC_AVDTP_8_4	True		Signal identifier (M)
+-------------------------------------------------------------------------------
+
+
+		Signaling Channel Establishment/Disconnection (Acceptor)
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_AVDTP_9_1	True (*)	Establish signaling channel (O)
+TSPC_AVDTP_9_2	True (*)	Disconnect signaling channel (O)
+-------------------------------------------------------------------------------
+
+
+		Stream Discovery and Configuration (Acceptor)
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_AVDTP_10_1	True (*)	Stream discover response (O)
+TSPC_AVDTP_10_2	True (*)	Stream get capabilities response (C.2)
+TSPC_AVDTP_10_3	True (*)	Set configuration response (O)
+TSPC_AVDTP_10_4	True (*)	Get configuration response (O)
+TSPC_AVDTP_10_5 False		Reconfigure response (O)
+TSPC_AVDTP_10_6	True (*)	Stream get all capabilities response (C.1)
+-------------------------------------------------------------------------------
+C.1: It is optional to support if TSPC_AVDTP_0_3 is supported, otherwise
+	excluded.
+C.2: It is Mandatory to support if TSPC_AVDTP_10_6 is supported, otherwise
+	Optional.
+-------------------------------------------------------------------------------
+
+
+		Stream Establishment, Suspension and Release (Acceptor)
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_AVDTP_11_1	True (*)	Open stream response (O)
+TSPC_AVDTP_11_2	True (*)	Start stream response (O)
+TSPC_AVDTP_11_3	True (*)	Close stream response (O)
+TSPC_AVDTP_11_4	True (*)	Suspend response (O)
+TSPC_AVDTP_11_5	True (*)	Abort stream response (O)
+TSPC_AVDTP_11_6	True (*)	General reject message (O)
+-------------------------------------------------------------------------------
+
+
+		Security Signaling (Acceptor)
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_AVDTP_12_1	False		Content security control response (O)
+-------------------------------------------------------------------------------
+
+
+		Message Fragmentation (Acceptor)
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_AVDTP_13_1	True		Signaling message fragmentation (M)
+-------------------------------------------------------------------------------
+
+
+		Source Capabilities
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_AVDTP_14_1	True		Basic transport service support (M)
+TSPC_AVDTP_14_2	False		Reporting service support (O)
+TSPC_AVDTP_14_3	False		Recovery service support (O)
+TSPC_AVDTP_14_4	False		Multiplexing service support (O)
+TSPC_AVDTP_14_5	False		Robust header compression service support (O)
+TSPC_AVDTP_14_6	True (*)	Delay Reporting (C.1)
+-------------------------------------------------------------------------------
+C.1: It is optional to support if TSPC_AVDTP_0_3 is supported, else excluded.
+-------------------------------------------------------------------------------
+
+
+		Sink Capabilities
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_AVDTP_15_1	True		Basic transport service support (M)
+TSPC_AVDTP_15_2	False		Reporting service support (O)
+TSPC_AVDTP_15_3	False		Recovery service support (O)
+TSPC_AVDTP_15_4	False		Multiplexing service support (O)
+TSPC_AVDTP_15_5	False		Robust header compression service support (O)
+TSPC_AVDTP_15_6	True (*)	Delay Reporting (C.1)
+-------------------------------------------------------------------------------
+C.1: It is optional to support if TSPC_AVDTP_0_3 is supported, else excluded.
+-------------------------------------------------------------------------------
+
+
+		Message Error Handling Capabilities
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_AVDTP_16_1	False		Reporting Capability Error (C.1)
+TSPC_AVDTP_16_2	False		Reject Corrupted Messages (C.2)
+TSPC_AVDTP_16_3	True (*)	General Reject Response Includes Signal ID (C.3)
+-------------------------------------------------------------------------------
+C.1: Optional if TSPC_AVDTP_0_2 or TSPC_AVDTP_0_3 supported, excluded
+	otherwise.
+C.2: Optional, excluded if TSPC_AVDTP_16_3 (General Reject Response Includes
+	Signal ID) is supported.
+C.3: Mandatory if TSPC_AVDTP_0_3 supported, otherwise Optional.
+-------------------------------------------------------------------------------
+
+
+		Upper Test Interface
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_AVDTP_17_1	False		Upper Test Interface provided (O)
+-------------------------------------------------------------------------------
+
+
+		L2CAP Capabilities
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_AVDTP_18_1	False		Enhanced Retransmission Mode preferred for
+				signaling channel (O)
+TSPC_AVDTP_18_2	False		Streaming Mode preferred for Media Transport
+				channel (O)
+TSPC_AVDTP_18_3	False		FCS Option (C.1)
+-------------------------------------------------------------------------------
+C.1: Mandatory if TSPC_AVDTP_18_1 is supported, otherwise Optional.
+-------------------------------------------------------------------------------

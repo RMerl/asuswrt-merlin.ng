@@ -683,19 +683,10 @@ function validForm(){
 
 			if( ((qos_type == 1 && document.form.bw_setting_name[1].checked == true ) || qos_type == 0 || qos_type == 3) && (document.form.obw.value.length == 0 || document.form.obw.value == 0)){		// To check field is 0 && Traditional QoS
 				alert("<#QoS_invalid_zero#>");
-				document.form.obw.focus();
-				document.form.obw.select();
 				error_obw++;
 
 			}
 			else if( (((qos_type == 1 || qos_type == 9) && document.form.bw_setting_name[1].checked == true ) || qos_type == 0 || qos_type == 3) && !validator.rangeFloat(document.form.obw, 0, 9999999999, "")){
-				error_obw++;
-			}
-
-			if( ((qos_type == 1 && document.form.bw_setting_name[1].checked == true ) || qos_type == 0 || qos_type == 3 || qos_type == 9) && document.form.obw.value.split(".").length > 2){		//To check more than two point symbol
-				alert("The format of field of upload bandwidth is invalid"); /* untranslated */
-				document.form.obw.focus();
-				document.form.obw.select();
 				error_obw++;
 			}
 
@@ -728,18 +719,9 @@ function validForm(){
 
 			if( ((qos_type == 1 && document.form.bw_setting_name[1].checked == true ) || qos_type == 0 || qos_type == 3) && (document.form.ibw.value.length == 0 || document.form.ibw.value == 0)){		// To check field is 0 && Traditional QoS
 				alert("<#QoS_invalid_zero#>");
-				document.form.ibw.focus();
-				document.form.ibw.select();
 				error_ibw++;
 			}
 			else if( (((qos_type == 1 || qos_type == 9) && document.form.bw_setting_name[1].checked == true ) || qos_type == 0 || qos_type == 3) && !validator.rangeFloat(document.form.ibw, 0, 9999999999, "")){
-				error_ibw++;
-			}
-
-			if(((qos_type == 1 && document.form.bw_setting_name[1].checked == true ) || qos_type == 0 || qos_type == 3 || qos_type == 9) && document.form.ibw.value.split(".").length > 2){
-				alert("The format of field of download bandwidth is invalid");	/* untranslated */
-				document.form.ibw.focus();
-				document.form.ibw.select();
 				error_ibw++;
 			}
 
@@ -785,20 +767,11 @@ function validForm(){
 			if(mtwancfg_support && wans_flag == "1") {
 
 				if( ((qos_type == 1 && document.form.bw_setting_name[1].checked == true ) || qos_type == 0 || qos_type == 3) && (document.form.obw1.value.length == 0 || document.form.obw1.value == 0)){		// To check field is 0 && Traditional QoS
-					alert("Download/Upload Bandwidth cannot be 0.");	/* untranslated */
-					document.form.obw1.focus();
-					document.form.obw1.select();
+					alert("<#QoS_invalid_zero#>");
 					error_obw1++;
 
 				}
 				else if( (((qos_type == 1 || qos_type == 9) && document.form.bw_setting_name[1].checked == true ) || qos_type == 0 || qos_type == 3) && !validator.rangeFloat(document.form.obw1, 0, 9999999999, "")){
-					error_obw1++;
-				}
-
-				if( ((qos_type == 1 && document.form.bw_setting_name[1].checked == true ) || qos_type == 0 || qos_type == 3 || qos_type == 9) && document.form.obw1.value.split(".").length > 2){		//To check more than two point symbol
-					alert("The format of field of upload bandwidth is invalid"); /* untranslated */
-					document.form.obw1.focus();
-					document.form.obw1.select();
 					error_obw1++;
 				}
 
@@ -821,19 +794,10 @@ function validForm(){
 				}
 
 				if( ((qos_type == 1 && document.form.bw_setting_name[1].checked == true ) || qos_type == 0 || qos_type == 3) && (document.form.ibw1.value.length == 0 || document.form.ibw1.value == 0)){		// To check field is 0 && Traditional QoS
-					alert("Download/Upload Bandwidth cannot be 0.");	/* untranslated */
-					document.form.ibw1.focus();
-					document.form.ibw1.select();
+					alert("<#QoS_invalid_zero#>");
 					error_ibw1++;
 				}
 				else if( (((qos_type == 1 || qos_type == 9) && document.form.bw_setting_name[1].checked == true ) || qos_type == 0 || qos_type == 3) && !validator.rangeFloat(document.form.ibw1, 0, 9999999999, "")){
-					error_ibw1++;
-				}
-
-				if(((qos_type == 1 && document.form.bw_setting_name[1].checked == true ) || qos_type == 0 || qos_type == 3 || qos_type == 9) && document.form.ibw1.value.split(".").length > 2){
-					alert("The format of field of download bandwidth is invalid");	/* untranslated */
-					document.form.ibw1.focus();
-					document.form.ibw1.select();
 					error_ibw1++;
 				}
 
@@ -899,7 +863,7 @@ function validForm(){
 					}				
 				}
 				else{
-					alert("You have not selected QoS priority mode.");		//untranslated
+					alert("<#Adaptive_QoS_priority_yet#>");
 					return false;
 				}
 			}
@@ -993,8 +957,17 @@ function submitQoS(){
 			}
 
 			determineActionScript();
-			showLoading();
-			document.form.submit();
+
+			if(document.form.action_script.value=="reboot"){
+				if(confirm("<#AiMesh_Node_Reboot#>")){
+					showLoading();
+					document.form.submit();
+				}
+			}
+			else{
+				showLoading();
+				document.form.submit();
+			}
 		}
 	}
 	else
@@ -1156,11 +1129,11 @@ function change_qos_type(value){
 	if(value != 2){
 		var alert_hint = "";
 		if(GN_with_BandwidthLimeter)
-			alert_hint += "The Bandwidth Limiter of Guest Network will be disabled."/* Untranslated */
+			alert_hint += "<#Guest_Network_disable_BWL#>";
 		if(GN_with_Amazon_WSS_enabled){
 			if(alert_hint != "")
 				alert_hint += "\n";
-			alert_hint += "Amazon WiFi Simple Setup will be disabled. "/* Untranslated */
+			alert_hint += "<#Guest_Network_disable_AmazonWiFi#>";
 		}
 		if(alert_hint != "")
 			alert(alert_hint);
@@ -2032,11 +2005,11 @@ function set_overhead(entry) {
 
 																var alert_hint = "";
 																if(GN_with_BandwidthLimeter)
-																	alert_hint += "The Bandwidth Limiter of Guest Network will be disabled."/* Untranslated */
+																	alert_hint += "<#Guest_Network_disable_BWL#>";
 																if(GN_with_Amazon_WSS_enabled){
 																	if(alert_hint != "")
 																	alert_hint += "\n";
-																	alert_hint += "Amazon WiFi Simple Setup will be disabled. "/* Untranslated */
+																	alert_hint += "<#Guest_Network_disable_AmazonWiFi#>";
 																}
 																if(alert_hint != "")
 																	alert(alert_hint);

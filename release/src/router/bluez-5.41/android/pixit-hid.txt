@@ -1,0 +1,31 @@
+HID PIXIT for the PTS tool.
+
+PTS version: 6.1
+
+* - different than PTS defaults
+& - should be set to IUT Bluetooth address
+
+		Required PIXIT settings
+-------------------------------------------------------------------------------
+Parameter Name						Value
+-------------------------------------------------------------------------------
+TSPX_security_enabled					True
+TSPX_delete_link_key					True
+TSPX_query_iut_sdp					True
+TSPX_bd_addr_iut					112233445566 (*&)
+TSPX_pointing_device_class_of_device			002580
+TSPX_keyboard_device_class_of_device			002540
+TSPX_host_class_of_device				100108
+TSPX_pts_device_role					MOUSE
+TSPX_pin_code						0000
+TSPX_use_dynamic_pin_code				False
+TSPX_time_guard						6000000
+TSPX_hid_data_interval					1000
+TSPX_use_implicit_send					True
+TSPX_verbose_implicit_send				False
+TSPX_no_fail_verdicts					False
+TSPX_time_reconnect					30000
+TSPX_secure_simple_pairing_pass_key_confirmation	False
+TSPX_hid_report_id					1
+TSPX_hid_report_data					ff00 (*)
+-------------------------------------------------------------------------------

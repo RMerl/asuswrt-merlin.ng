@@ -29,8 +29,11 @@ static void wps_pbc(int sig)
 	char tmp[100], prefix[] = "wlXXXXXXXXXX_";
 
 	snprintf(prefix, sizeof(prefix), "wl%d_", unit);
-	if (!nvram_match(strcat_r(prefix, "mode", tmp), "ap"))
-	{
+	if (!nvram_match(strcat_r(prefix, "mode", tmp), "ap")
+#ifdef RTCONFIG_AMAS
+		&& !(sw_mode() == SW_MODE_AP && nvram_match("re_mode", "1"))
+#endif
+	) {
 		nvram_set_int("wps_enr_hw", 1);
 		notify_rc("start_wps_enr");
 	}
@@ -40,7 +43,7 @@ static void wps_pbc(int sig)
 #ifdef RTCONFIG_QCA_PLC2
 //		do_plc_pushbutton(6);	//star PLC join procedure
 		killall("detect_plc", SIGUSR1);
-	    if(nvram_match("wps_enable", "1"))
+		if(nvram_match("wps_enable", "1"))
 #endif
 		start_wps_pbc(0);
 	}

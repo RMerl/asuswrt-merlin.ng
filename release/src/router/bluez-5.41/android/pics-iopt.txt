@@ -1,0 +1,223 @@
+IOPT PICS for the PTS tool.
+
+PTS version: 6.1
+
+* - different than PTS defaults
+# - not yet implemented/supported
+
+M - mandatory
+O - optional
+
+		Profiles
+-------------------------------------------------------------------------------
+Parameter Name				Selected	Description
+-------------------------------------------------------------------------------
+TSPC_support_						Support for: Advanced
+AdvancedAudioDistributionProfile_Sink	False		Audio Distribution
+							Profile. Role: Sink
+
+TSPC_support_						Support for: Advanced
+AdvancedAudioDistributionProfile_Source	True (*)	Audio Distribution
+							Profile. Role: Source
+
+TSPC_support_AVRemoteControlProfile_CT	True (*)	Support for: Audio\Video
+							Remote Control Profile.
+							Role: Controller
+
+TSPC_support_AVRemoteControlProfile_TG	True (*)	Support for: Audio\Video
+							Remote Control Profile.
+							Role: Target
+
+TSPC_support_BasicImagingProfile_CLIENT	False		Support for: Basic
+							Imaging Profile.
+							Role: Client
+
+TSPC_support_BasicImagingProfile_			Support for: Basic
+SERVER_ImagingAutomaticArchive		False		Imaging Profile. Role:
+							Server Functionality:
+							Imaging autoarchive
+
+TSPC_support_BasicImagingProfile_	False		Support for: Basic
+SERVER_ImagingReferencedObjects				Imaging Profile. Role:
+							Server Functionality:
+							Imaging ref. objects
+
+TSPC_support_BasicImagingProfile_	False		Support for: Basic
+SERVER_ImagingResponder					Imaging Profile. Role:
+							Server Functionality:
+							Imaging responder
+
+TSPC_support_				False		Support for: Basic
+BasicPrintingProfile_PRINTER				Printing Profile. Role:
+							Printer
+
+TSPC_support_						Support for: Basic
+BasicPriProfile_PRINTER_ReflectedUI	False		Printing Profile. Role:
+							Printer Functionality:
+							Reflected UI
+
+TSPC_support_BasicPrintingProfile_			Support for: Basic
+SENDER_Referenced_objects_Service	False		Printing Profile. Role:
+							Sender Functionality:
+							Refe. objects service
+
+TSPC_support_DialUpNetworkingProfile_DT	False		Support for: Dial-Up
+							Networking Profile.
+							Role: Data Terminal
+
+TSPC_support_DialUpNetworkingProfile_GW	False		Support for: Dial-Up
+							Networking Profile.
+							Role: Gateway
+
+TSPC_support_				False		Support for: Extended
+ExtendedServiceDiscoveryProfile_IP_LAP			SDP. Version: IP-LAP
+
+TSPC_support_				False		Support for: Extended
+ExtendedServiceDiscoveryProfile_IP_PAN			SDP. Version: IP-PAN
+
+TSPC_support_				False		Support for: Extended
+ExtendedServiceDiscoveryProfile_L2CAP			SDP. Version: L2CAP
+
+TSPC_support_FAXProfile_DT		False		Support for: FAX Profile
+							Role: Data Terminal
+
+TSPC_support_FAXProfile_GW		False		Support for: FAX Profile
+							Role: Gateway
+
+TSPC_support_FileTransferProfile_CLIENT	False		Support for: FTP
+							Role: Client
+
+TSPC_support_FileTransferProfile_SERVER	False		Support for: FTP
+							Role: Server
+
+TSPC_support_HealthDeviceProfile_Sink	True (*)	Support for: HDP
+							Role: Sink
+
+TSPC_support_HealthDeviceProfile_Source	False		Support for: HDP
+							Role: Source
+
+TSPC_support_NewHandsFreeProfile_AG	True (*)	Support for: HFP
+							Role: Audio gateway
+
+TSPC_support_NewHandsFreeProfile_HF	False		Support for: HFP
+							Role: Hands-Free unit
+
+TSPC_support_				False		Support for: Hard Copy
+HardCopyReplacementProfile_				cable Repl. Profile
+CLIENT_CR_RegisterNotofication_support			Role: Client
+							Functionality: CR
+							register notification
+							support
+
+TSPC_support_				False		Support for: Hard Copy
+HardCopyReplacementProfile_CLIENT_print			cable Repl. Profile.
+							Role: Client
+							Functionality: Print
+
+TSPC_support_				False		Support for: Hard Copy
+HardCopyReplacementProfile_CLIENT_scan			cable Repl. Profile.
+							Role: Client
+							Functionality: Scan
+
+TSPC_support_				False		Support for: Hard Copy
+HardCopyReplacementProfile_SERVER_print			cable Repl. Profile.
+							Role: Server
+							Functionality: Print
+
+TSPC_support_				False		Support for: Hard Copy
+HardCopyReplacementProfile_SERVER_scan			cable Repl. Profile.
+							Role: Server
+							Functionality: Scan
+
+TSPC_support_HeadsetProfile_AG		True (*)	Support for: HSP
+							Role: Audio Gateway
+
+TSPC_support_HeadsetProfile_HS		False		Support for: HSP
+							Role: Headset
+
+TSPC_support_				False		Support for: HID
+HumanInterfaceDeviceProfile				Role: Device
+
+TSPC_support_HID_Host			True (*)	Support for: HID
+							Role: Host
+
+TSPC_support_LANAccessProfile_DT	False		Support for: LAN Access
+							Profile. Role: Data
+							Terminal
+
+TSPC_support_LANAccessProfile_LAP	False		Support for: LAN Access
+							Profile. Role: LAN
+							Access Point
+
+TSPC_support_MessaeAccessProfile_MCE	False		Support for: MAP
+							Role: MCE
+
+TSPC_support_MessageAccessProfile_MSE	True (*)	Support for: MAP
+							Role: MSE
+
+TSPC_support_ObjectPushProfile_CLIENT	True (*)	Support for: OPP
+							Role: Client
+
+TSPC_support_ObjectPushProfile_SERVER	True (*)	Support for: OPP
+							Role: Server
+
+TSPC_support_				False		Support for: PAN
+PersonalAreaNetworkProfile_GN				Role: GN
+
+TSPC_support_				True (*)	Support for: PAN
+PersonalAreaNetworkProfile_NAP				Role: NAP
+
+TSPC_support_				True (*)	Support for: PAN
+PersonalAreaNetworkProfile_PANU				Role: PANU
+
+TSPC_support_PhonebookAccessProfile_PCE	False		Support for: PBAP
+							Role: PCE
+
+TSPC_support_PhonebookAccessProfile_PSE	True (*)	Support for: PBAP
+							Role: PSE
+
+TSPC_support_SerialPortProfile_Service	False		Support for: SPP
+							Role: Dev B
+
+TSPC_support_				False		Support for: Service
+ServiceDiscoveryApplicationProfile			Discovery Application
+							Profile
+
+TSPC_support_SIMAccessProfile_CLIENT	False		Support for: SIM access
+							Profile. Role: Client
+
+TSPC_support_SIMAccessProfile_SERVER	False		Support for: SIM access
+							Profile. Role: Server
+
+TSPC_support_				False		Support for:
+SynchronizationProfile_CLIENT				Synchronization Profile
+							Role: Client
+
+TSPC_support_				False		Support for:
+SynchronizationProfile_SERVER				Synchronization Profile
+							Role: Server
+
+TSPC_support_UDIProfile_MT		False		Support for: UDI Profile
+							Role: MT
+
+TSPC_support_UDIProfile_TA		False		Support for: UDI Profile
+							Role: TA
+
+TSPC_support_				False		Support for: Video
+VideoDistributionProfile_Sink				distribution Profile
+							Role: Sink
+
+TSPC_support_				False		Support for: Video
+VideoDistributionProfile_Source				distribution Profile
+							Role: Source
+
+TSPC_support_WAPOverBluetooth_CLIENT	False		Support for: WAP over
+							Bluetooth Profile
+							Role: Client
+
+TSPC_support_WAPOverBluetooth_PROXY	False		Support for: WAP over
+							Bluetooth Profile
+							Role: PROXY
+
+TSPC_support_GNSS_SERVER		False		Support for: GNSS
+							Role: Server

@@ -1478,6 +1478,7 @@ function applyRule(){
 		reset_wan_to_fo.change_wan_mode(document.form);
 
 	document.form.qos_rulelist.value = qos_rulelist;
+	showLoading();
 	document.form.submit();
 }
 
@@ -1786,9 +1787,11 @@ function getTrafficUnit(){
 						</tr>
 						<tr>
 							<td>
+								<div style="margin:0 0 0 12px;width:200px;">
+									<a id="faq" href="" style="text-decoration:underline;" target="_blank"><#Bandwidth_monitor_WANLAN#> FAQ</a>
+								</div>
 								<div style=" *width:136px;margin:5px 0px 0px 300px;" class="titlebtn" align="center" onClick="applyRule();">
 									<span><#CTL_apply#></span>
-									<div style="margin:-30px 0 0px -290px;width:200px;"><a id="faq" href="" style="text-decoration:underline;" target="_blank"><#Bandwidth_monitor_WANLAN#> FAQ</a></div>
 								</div>
 							</td>
 						</tr>

@@ -1,0 +1,22 @@
+PTS test results for SPP
+
+PTS version: 6.1
+Tested: 19-May-2015
+Android version: 5.1
+
+Results:
+PASS	test passed
+FAIL	test failed
+INC	test is inconclusive
+N/A	test is disabled due to PICS setup
+
+-------------------------------------------------------------------------------
+Test Name		Result	Notes
+-------------------------------------------------------------------------------
+TC_DevA_APP_BV_01_C	PASS	haltest: socket connect <PTS addr>
+					BTSOCK_RFCOMM 00001101 0
+TC_DevB_APP_BV_02_C	PASS	haltest: socket listen BTSOCK_RFCOMM SerialPort
+					00001101
+				Note: IUT must be in connectable, discoverable
+					mode.
+-------------------------------------------------------------------------------

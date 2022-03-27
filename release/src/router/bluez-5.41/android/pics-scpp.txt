@@ -1,0 +1,143 @@
+ScPP PICS for the PTS tool.
+
+PTS version: 6.1
+
+* - different than PTS defaults
+
+M - mandatory
+O - optional
+
+		Connection Roles
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_ScPP_1_1	False (*)	Scan Server (C.1)
+TSPC_ScPP_1_2	True		Scan Client (C.1)
+-------------------------------------------------------------------------------
+Note: Mandatory to support at least one of TSPC_ScPP_1_1 or TSPC_ScPP_1_2.
+-------------------------------------------------------------------------------
+
+
+		Transport Requirements
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_ScPP_2_1	False (*)	Profile supported over BR/EDR (C.1)
+TSPC_ScPP_2_2	True		Profile supported over LE (M)
+-------------------------------------------------------------------------------
+C.1: Excluded for this profile.
+-------------------------------------------------------------------------------
+
+
+		Services - Scan Server
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_ScPP_3_1	False (*)	Implements Scan Parameters Service (M)
+-------------------------------------------------------------------------------
+
+
+		GAP Requirements - Scan Server Role
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_ScPP_4_1	False (*)	Peripheral (M)
+TSPC_ScPP_4_2	False (*)	Directed Connectable Mode (O)
+TSPC_ScPP_4_3	False (*)	Undirected Connectable Mode (M)
+TSPC_ScPP_4_4	False (*)	Bondable mode (peripheral) (O)
+TSPC_ScPP_4_5	False (*)	Bonding procedure (peripheral) (O)
+TSPC_ScPP_4_6	False (*)	LE Security Mode 1 (peripheral) (M)
+-------------------------------------------------------------------------------
+
+
+		Scan Server
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_ScPP_5_1	False (*)	SM 2.3.1-
+TSPC_ScPP_5_2	False (*)	Unauthenticated no MITM protection. (LE Security
+				Level 2, Just Works) (O)
+TSPC_ScPP_5_3	False (*)	Authenticated MITM protection (LE Security
+				Level 3, Passkey) (O)
+-------------------------------------------------------------------------------
+
+
+		Client Services Support - Scan Client Role
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_ScPP_6_1	True		Scan Parameters Service (M)
+-------------------------------------------------------------------------------
+
+
+		Discover Services and Characteristics - Scan Client Role
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_ScPP_7_1	True		Discover Scan Parameters Service (M)
+TSPC_ScPP_7_2	True		Discover Scan Parameters characteristic:
+				Scan interval Window (M)
+TSPC_ScPP_7_3	True		Discover Scan Parameters characteristic:
+				Scan Refresh (M)
+TSPC_ScPP_7_4	True		Discover Scan Parameters characteristic:
+				Scan Refresh – Client Characteristic
+				Configuration Descriptor (M)
+-------------------------------------------------------------------------------
+
+
+		Features - Client
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_ScPP_8_1	True		Write Scan Interval Window characteristic (M)
+TSPC_ScPP_8_2	True		Configure Scan Refresh characteristic:
+				Client Characteristic Configuration
+				characteristic descriptor with 0x0001 (M)
+TSPC_ScPP_8_3	True		Notify Scan Refresh characteristic (M)
+-------------------------------------------------------------------------------
+
+
+		GATT Requirements - Scan Client
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_ScPP_9_1	True		Attribute Protocol supported over LE Transport
+				(M)
+TSPC_ScPP_9_2	True		Generic Attribute Profile Client (M)
+TSPC_ScPP_9_3	True		Discover All Primary Services (C.1)
+TSPC_ScPP_9_4	True		Discover Primary Services by Service UUID (C.1)
+TSPC_ScPP_9_5	True		Discover All Characteristics of a Service (C.2)
+TSPC_ScPP_9_6	True		Discover Characteristics by UUID (C.2)
+TSPC_ScPP_9_7	True		Discover All Characteristic Descriptors (M)
+TSPC_ScPP_9_8	True		Write without Response (M)
+TSPC_ScPP_9_9	True		Write Characteristic Descriptors (M)
+TSPC_ScPP_9_10	True		Notifications (M)
+-------------------------------------------------------------------------------
+C.1: Mandatory to support one of these sub-procedures for service discovery
+C.2: Mandatory to support one of these sub-procedures for characteristic
+	discovery
+-------------------------------------------------------------------------------
+
+
+		GAP Requirements - Scan Client
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_ScPP_10_1	True		Central (M)
+TSPC_ScPP_10_2	True		Bondable mode (central) (O)
+TSPC_ScPP_10_3	True		Bonding procedure (central) (O)
+TSPC_ScPP_10_4	True		Central (M)
+-------------------------------------------------------------------------------
+
+
+		SM Requirements - Scan Client
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_ScPP_11_1	True		No Security Requirements (LE Security Level 1,
+				No Security) (M)
+TSPC_ScPP_11_2	True		Unauthenticated no MITM protection (LE Security
+				Level 2, Just Works) (O)
+TSPC_ScPP_11_3	True		Authenticated MITM protection (LE Security
+				Level 3, Passkey) (O)
+-------------------------------------------------------------------------------

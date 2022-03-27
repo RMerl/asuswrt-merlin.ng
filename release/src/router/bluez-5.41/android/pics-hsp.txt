@@ -1,0 +1,103 @@
+HSP PICS for the PTS tool.
+
+PTS version: 6.1
+
+* - different than PTS defaults
+# - not yet implemented/supported
+
+M - mandatory
+O - optional
+
+		Version
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_HSP_0_1	False		Version: Headset Profile v1.1 (C.1)
+TSPC_HSP_0_2	True (*)	Version: Headset Profile v1.2 (C.1)
+-------------------------------------------------------------------------------
+C.1: Mandatory to support one and only one of these versions.
+-------------------------------------------------------------------------------
+
+
+		Roles
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_HSP_1_1	True (*)	Role: Audio Gateway (AG) (C.1)
+TSPC_HSP_1_2	False		Role: Headset (HS) (C.1)
+-------------------------------------------------------------------------------
+C.1: Mandatory to support at least one of the defined roles.
+-------------------------------------------------------------------------------
+
+
+		Audio Gateway Role
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_HSP_2_1	True		Incoming audio connection establishment (M)
+TSPC_HSP_2_2	True (*)	Ring (AT command) (C.3)
+TSPC_HSP_2_3	False 		Inband ring tone (O)
+TSPC_HSP_2_4	True (*)	Outgoing audio connection establishment (O)
+TSPC_HSP_2_5	True (*)	Audio connection release from HS (C.5)
+TSPC_HSP_2_6	True 		Audio connection release from AG (M)
+TSPC_HSP_2_7	True		Audio connection transfer: AG to HS (M)
+TSPC_HSP_2_8	True		Audio connection transfer: HS to AG (M)
+TSPC_HSP_2_9	True (*)	Remote audio volume control (C.1)
+TSPC_HSP_2_10	True (*)	HS informs AG about local changes of audio
+					volume (O)
+TSPC_HSP_2_11	True (*)	Audio volume setting storage by HS (O)
+TSPC_HSP_2_12	False		Remote microphone gain control (C.2)
+TSPC_HSP_2_13	False		HS informs AG about local changes of microphone
+					gain (O)
+TSPC_HSP_2_14	False		Microphone gain setting storage by HS (O)
+TSPC_HSP_2_15	True		Connection handling with Detach/Page (M)
+TSPC_HSP_2_16	False		Connection handling with Park Mode (C.4)
+-------------------------------------------------------------------------------
+C.1: Mandatory if TSPC_HSP_2_10 is supported, otherwise optional
+C:2: Mandatory if TSPC_HSP_2_13 is supported, otherwise optional
+C.3: Excluded if TSPC_HSP_2_3 and TSPC_HSP_4_1 ("Show that in-band
+	ringing and RING are mutually exclusive") are supported,
+	otherwise optional
+C.4: Excluded if TSPC_HSP_0_2 is supported, otherwise optional
+C.5: Mandatory if TSPC_HSP_0_1 is supported, otherwise optional
+-------------------------------------------------------------------------------
+
+
+		Headset Application Features
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_HSP_3_1	False (*)	Incoming audio connection establishment (M)
+TSPC_HSP_3_2	False (*)	Ring (AT command) (M)
+TSPC_HSP_3_3	False (*)	Inband ring tone (M)
+TSPC_HSP_3_4	False (*)	Outgoing audio connection establishment (M)
+TSPC_HSP_3_5	False (*)	Audio connection release from HS (M)
+TSPC_HSP_3_6	False (*)	Audio connection release from AG (M)
+TSPC_HSP_3_7	False (*)	Audio connection transfer: AG to HS (M)
+TSPC_HSP_3_8	False (*)	Audio connection transfer: HS to AG (M)
+TSPC_HSP_3_9	False		Remote audio volume control (C.1)
+TSPC_HSP_3_10	False		HS informs AG about local changes of audio
+                                        volume (O)
+TSPC_HSP_3_11	False		Audio volume setting storage by HS (O)
+TSPC_HSP_3_12	False		Remote microphone gain control (C.2)
+TSPC_HSP_3_13	False		HS informs AG about local changes of microphone
+                                        gain (O)
+TSPC_HSP_3_14	False		Microphone gain setting storage by HS (O)
+TSPC_HSP_3_15	False (*)	Connection handling with Detach/Page (M)
+TSPC_HSP_3_16	False		Connection handling with Park Mode (C.3)
+-------------------------------------------------------------------------------
+C.1: Mandatory if TSPC_HSP_3_10 is supported, otherwise optional
+C.2: Mandatory if TSPC_HSP_2_13 is supported, otherwise optional
+C.3: Excluded if TSPC_HSP_0_2 is supported, otherwise optional
+-------------------------------------------------------------------------------
+
+
+		Errata Service Releases
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_HSP_4_1	False		Show that in-band ringing and RING are
+					mutually exclusive (C.1)
+-------------------------------------------------------------------------------
+C.1: Excluded if TSPC_HSP_0_2 is supported, otherwise optional
+-------------------------------------------------------------------------------

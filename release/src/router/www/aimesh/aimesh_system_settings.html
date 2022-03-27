@@ -655,13 +655,13 @@ function node_location_translate(_node_info, _isReNode){
 	{value:"Balcony",text:"<#AiMesh_NodeLocation22#>"}, {value:"Meeting Room",text:"<#AiMesh_NodeLocation23#>"}, {value:"Garage",text:"<#AiMesh_NodeLocation25#>"},
 	{value:"Custom",text:"<#AiMesh_NodeLocation24#>"}];
 	var result = "<#AiMesh_NodeLocation01#>";
-	var location = "Home";
+	var node_location_text = "Home";
 	if(_isReNode){
 		if("config" in _node_info) {
 			if("misc" in _node_info.config) {
 				if("cfg_alias" in _node_info.config.misc) {
 					if(_node_info.config.misc.cfg_alias != "")
-						location = _node_info.config.misc.cfg_alias;
+						node_location_text = _node_info.config.misc.cfg_alias;
 				}
 			}
 		}
@@ -669,16 +669,16 @@ function node_location_translate(_node_info, _isReNode){
 	else{
 		var alias = _node_info.alias;
 		if(alias != _node_info.mac)
-			location = alias;
+			node_location_text = alias;
 	}
 	var specific_location = location_array.filter(function(item, index, _array){
-		return (item.value == location);
+		return (item.value == node_location_text);
 	})[0];
 	if(specific_location != undefined){
 		result = specific_location.text;
 	}
 	else{
-		result = location;
+		result = node_location_text;
 	}
 	return htmlEnDeCode.htmlEncode(result);
 }

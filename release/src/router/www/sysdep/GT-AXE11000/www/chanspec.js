@@ -440,6 +440,9 @@ function wl_chanspec_list_change(){
 			if(band6g_support){		// due to GT-AXE11000 does not support
 				if(document.getElementById('psc6g_checkbox').checked){
 					wl_channel_list_5g_2 = ['37', '53', '69', '85', '101', '117', '133', '149', '165', '181', '197', '213'];
+					if(is_EU_sku){
+						wl_channel_list_5g_2 = ['5', '21', '37', '53', '69', '85'];
+					}
 				}
 
 				for(var i=wl_channel_list_5g_2.length-1; i>=0; i--){

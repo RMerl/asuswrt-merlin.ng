@@ -119,6 +119,11 @@ CODESTARTparse
 		--lenMsg;
 		++p2parse;
 	}
+	/* Note: we deliberately count the 0-byte below because we need to go chars+1! */
+	if(lenMsg < (int) sizeof(OpeningText)) {
+		dbgprintf("pmcisconames: too short for being cisco messages\n");
+		ABORT_FINALIZE(RS_RET_COULD_NOT_PARSE);
+	}
 	/* skip the space after the hostname */
 	lenMsg -=1;
 	p2parse +=1;
@@ -126,7 +131,7 @@ CODESTARTparse
 	log and fix it */
 	if(strncasecmp((char*) p2parse, OpeningText, sizeof(OpeningText)-1) != 0) {
 		/* wrong opening text */
-	DBGPRINTF("not a cisco name mangled log!\n");
+		DBGPRINTF("not a cisco name mangled log!\n");
 		ABORT_FINALIZE(RS_RET_COULD_NOT_PARSE);
 	}
 	/* bump the message portion up by two characters to overwrite the extra : */

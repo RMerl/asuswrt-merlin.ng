@@ -1,0 +1,141 @@
+MCAP PICS for the PTS tool.
+
+PTS version: 6.1
+
+* - different than PTS defaults
+# - not yet implemented/supported
+
+M - mandatory
+O - optional
+
+		Protocols
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_MCAP_1_A_1	True (*)	Supports Standard Op Codes (C.1)
+TSPC_MCAP_1_A_2	True (*)	Supports Clock Synchronization Protocol (C.1)
+-------------------------------------------------------------------------------
+C.1: Support for at least one of the defined protocols is Mandatory.
+-------------------------------------------------------------------------------
+
+
+		Roles
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_MCAP_1_1	True (*)	Supports Source Role (C.1)
+TSPC_MCAP_1_2	True (*)	Supports Sink Role (C.1)
+TSPC_MCAP_1_3	False		Supports Sync-Slave Role (C.2)
+TSPC_MCAP_1_4	False		Supports Sync-Master Role (C.3)
+-------------------------------------------------------------------------------
+C.1: If support for TSPC_MCAP_1_A_1 is supported, at least one of the
+	defined roles is Mandatory otherwise Excluded.
+C.2: Mandatory if TSPC_MCAP_1_A_2 is supported, otherwise Excluded.
+C.3: Optional if TSPC_MCAP_1_A_2 is supported, otherwise Excluded.
+-------------------------------------------------------------------------------
+
+
+		L2CAP Features - Source
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_MCAP_2_1	True (*)	Supports L2CAP Control Channel (M)
+TSPC_MCAP_2_2	True (*)	Supports at least one L2CAP Data Channel (M)
+TSPC_MCAP_2_3	True (*)	Maximum number of simultaneous L2CAP Data
+				Channels supported (DCmax) per MCL (M)
+TSPC_MCAP_2_4	False		Can support multiple simultaneous MCLs with
+				Standard Op Codes (O)
+-------------------------------------------------------------------------------
+
+
+		Connection Management - Source
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_MCAP_3_1			This row intentionally left blank
+TSPC_MCAP_3_2	True (*)	Initiate creation of Control and Data Channels
+				(C.1)
+TSPC_MCAP_3_3	True (*)	Accept creation of Control and Data Channels
+				(C.1)
+TSPC_MCAP_3_4	True (*)	Initiate Disconnection of MCL (M)
+TSPC_MCAP_3_5	True (*)	Accept Disconnection of MCL (M)
+TSPC_MCAP_3_6	True (*)	Initiate Disconnection of MDL (M)
+TSPC_MCAP_3_7	True (*)	Accept Disconnection of MDL (M)
+TSPC_MCAP_3_8	False		Initiate Reconnection of MDL (O)
+TSPC_MCAP_3_9	False		Accept Reconnection of MDL (C.2)
+TSPC_MCAP_3_10	False		Initiate Deletion of MDL (O)
+TSPC_MCAP_3_11	True (*)	Accept Deletion of MDL (M)
+TSPC_MCAP_3_12	False		Initiate Delete of All MDLs using 0xFFFF (O)
+TSPC_MCAP_3_13	True (*)	Accept Delete of All MDLs using 0xFFFF (M)
+TSPC_MCAP_3_14	False		Send MDL Abort request (O)
+TSPC_MCAP_3_15	True (*)	Accept MDL Abort request (M)
+-------------------------------------------------------------------------------
+C.1: Support for at least one of TSPC_MCAP_3_2 or TSPC_MCAP_3_3 is Mandatory.
+C.2: Mandatory if TSPC_MCAP_3_3 is supported, otherwise Excluded.
+-------------------------------------------------------------------------------
+
+
+		L2CAP Features - Sink
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_MCAP_4_1	True (*)	Supports L2CAP Control Channel (M)
+TSPC_MCAP_4_2	True (*)	Supports at least one L2CAP Data Channel (M)
+TSPC_MCAP_4_3	True (*)	Maximum number of simultaneous L2CAP Data
+				Channels supported (DCmax) per MCL (M)
+TSPC_MCAP_4_4	False		Can support multiple simultaneous MCLs with
+				Standard Op Codes (O)
+-------------------------------------------------------------------------------
+
+
+		Connection Management - Sink
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_MCAP_5_1			This row intentionally left blank
+TSPC_MCAP_5_2	True (*)	Initiate creation of Control and Data Channels
+				(M)
+TSPC_MCAP_5_3	True (*)	Accept creation of Control and Data Channels
+				(M)
+TSPC_MCAP_5_4	True (*)	Initiate Disconnection of MCL (M)
+TSPC_MCAP_5_5	True (*)	Accept Disconnection of MCL (M)
+TSPC_MCAP_5_6	True (*)	Initiate Disconnection of MDL (M)
+TSPC_MCAP_5_7	True (*)	Accept Disconnection of MDL (M)
+TSPC_MCAP_5_8	False		Initiate Reconnection of MDL (O)
+TSPC_MCAP_5_9	True (*)	Accept Reconnection of MDL (M)
+TSPC_MCAP_5_10	False		Initiate Deletion of MDL (O)
+TSPC_MCAP_5_11	True (*)	Accept Deletion of MDL (M)
+TSPC_MCAP_5_12	False		Initiate Delete of All MDLs using 0xFFFF (O)
+TSPC_MCAP_5_13	True (*)	Accept Delete of All MDLs using 0xFFFF (M)
+TSPC_MCAP_5_14	False		Send MDL Abort request (O)
+TSPC_MCAP_5_15	True (*)	Accept MDL Abort request (M)
+-------------------------------------------------------------------------------
+
+
+		Clock Synchronization Features - Sync-Slave
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_MCAP_6_1	False (*)	Accept MD_SYNC_CAP_REQ and MD_SYNC_SET_REQ and
+				Initiate MD_SYNC_INFO_IND (C.1)
+TSPC_MCAP_6_2			This row intentionally left blank
+TSPC_MCAP_6_3	False		Can support multiple simultaneous MCLs with CSP
+				(O)
+TSPC_MCAP_6_4	False		Can access Bluetooth Clock (O)
+-------------------------------------------------------------------------------
+C.1: Mandatory if MCAP TSPC_MCAP_1_A_2 is supported, otherwise Excluded.
+-------------------------------------------------------------------------------
+
+
+		Clock Synchronization Features - Sync-Master
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_MCAP_7_1			This row intentionally left blank
+TSPC_MCAP_7_2	False (*)	Initiate MD_SYNC_CAP_REQ and MD_SYNC_SET_REQ
+				and Accept MD_SYNC_INFO_IND (C.1)
+TSPC_MCAP_7_3	False		Can support multiple simultaneous MCLs with CSP (O)
+TSPC_MCAP_7_4	False (*)	Can access Bluetooth Clock (O)
+-------------------------------------------------------------------------------
+C.1: Mandatory to support IF TSPC_MCAP_1_A_2 is supported.
+-------------------------------------------------------------------------------

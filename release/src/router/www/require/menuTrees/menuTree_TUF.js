@@ -326,6 +326,10 @@ define(function(){
 			menus: function(){
 				var retArray = [];
 
+				if(!wifiRadar_support){
+					retArray.push("menu_WifiRadar");
+				}
+
 				if(!multissid_support){
 					retArray.push("menu_GuestNetwork");
 				}

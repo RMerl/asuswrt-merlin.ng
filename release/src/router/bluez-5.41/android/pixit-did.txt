@@ -1,0 +1,24 @@
+DID PIXIT for the PTS tool.
+
+PTS version: 6.1
+
+* - different than PTS defaults
+& - should be set to IUT Bluetooth address
+
+		Required PIXIT settings
+-------------------------------------------------------------------------------
+Parameter Name						Value
+-------------------------------------------------------------------------------
+TSPX_security_enabled					False
+TSPX_ClientExecutableURL				False (*)
+TSPX_ServiceDescription					False (*)
+TSPX_DocumentationURL					False (*)
+TSPX_bd_addr_iut					112233445566 (*&)
+TSPX_class_of_device_pts				200404
+TSPX_device_search_time					30
+TSPX_delete_link_key					False
+TSPX_pin_code						0000
+TSPX_time_guard						200000
+TSPX_use_implicit_send					True
+TSPX_secure_simple_pairing_pass_key_confirmation	False
+-------------------------------------------------------------------------------

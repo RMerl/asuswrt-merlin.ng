@@ -521,7 +521,8 @@ static void write_ct_timeout(const char *type, const char *name, unsigned int va
 	unsigned char buf[128];
 	char v[16];
 
-	sprintf((char *) buf, "/proc/sys/net/ipv4/netfilter/ip_conntrack_%s_timeout%s%s",
+	sprintf((char *) buf, "/proc/sys/net/%s_%s_timeout%s%s",
+		d_exists("/proc/sys/net/ipv4/netfilter") ? "ipv4/netfilter/ip_conntrack" : "netfilter/nf_conntrack",
 		type, (name && name[0]) ? "_" : "", name ? name : "");
 	sprintf(v, "%u", val);
 
@@ -542,7 +543,8 @@ static unsigned int read_ct_timeout(const char *type, const char *name)
 	unsigned int val = 0;
 	char v[16];
 
-	sprintf((char *) buf, "/proc/sys/net/ipv4/netfilter/ip_conntrack_%s_timeout%s%s",
+	sprintf((char *) buf, "/proc/sys/net/%s_%s_timeout%s%s",
+		d_exists("/proc/sys/net/ipv4/netfilter") ? "ipv4/netfilter/ip_conntrack" : "netfilter/nf_conntrack",
 		type, (name && name[0]) ? "_" : "", name ? name : "");
 	if (f_read_string((const char *) buf, v, sizeof(v)) > 0)
 		val = atoi(v);
@@ -587,7 +589,7 @@ void setup_udp_timeout(int connflag)
 #endif
 	) {
 		snprintf(p, sizeof(p), "%s", nvram_safe_get("ct_udp_timeout"));
-		if (sscanf(p, "%u%u", &v[0], &v[1]) == 2) {
+		if (strcmp(p,"0 0") && sscanf(p, "%u%u", &v[0], &v[1]) == 2) {
 			write_udp_timeout(NULL, v[0]);
 			write_udp_timeout("stream", v[1]);
 		}
@@ -647,7 +649,7 @@ void setup_ct_timeout(int connflag)
 #endif
 	) {
 		snprintf(p, sizeof(p), "%s", nvram_safe_get("ct_timeout"));
-		if (sscanf(p, "%u%u", &v[0], &v[1]) == 2) {
+		if (strcmp(p,"0 0") && sscanf(p, "%u%u", &v[0], &v[1]) == 2) {
 //			write_ct_timeout("generic", NULL, v[0]);
 			write_ct_timeout("icmp", NULL, v[1]);
 		}
@@ -656,9 +658,6 @@ void setup_ct_timeout(int connflag)
 			v[1] = read_ct_timeout("icmp", NULL);
 
 			snprintf(buf, sizeof(buf), "%u %u", v[0], v[1]);
-#if defined(RTCONFIG_HND_ROUTER_AX_675X) && !defined(RTCONFIG_HND_ROUTER_AX_6710)
-		if(strcmp(buf, "0 0") != 0)
-#endif
 			nvram_set("ct_timeout", buf);
 		}
 	}
@@ -687,9 +686,9 @@ void setup_conntrack(void)
 #endif
 
 	snprintf(p, sizeof(p), "%s", nvram_safe_get("ct_tcp_timeout"));
-	if (sscanf(p, "%u%u%u%u%u%u%u%u%u%u",
+	if (strcmp(p,"0 0 0 0 0 0 0 0 0 0") && sscanf(p, "%u%u%u%u%u%u%u%u%u%u",
 		&v[0], &v[1], &v[2], &v[3], &v[4], &v[5], &v[6], &v[7], &v[8], &v[9]) == 10) {	// lightly verify
-#if defined(RTCONFIG_HND_ROUTER_AX_675X) && !defined(RTCONFIG_HND_ROUTER_AX_6710)
+#if defined(RTCONFIG_HND_ROUTER_AX_675X)
 		fprintf(stderr, "ct_tcp_timeout:[%s]\n", p);
 #endif
 		write_tcp_timeout("established", v[1]);
@@ -712,17 +711,14 @@ void setup_conntrack(void)
 		v[8] = read_tcp_timeout("last_ack");
 		snprintf(buf, sizeof(buf), "0 %u %u %u %u %u %u %u %u 0",
 			v[1], v[2], v[3], v[4], v[5], v[6], v[7], v[8]);
-#if defined(RTCONFIG_HND_ROUTER_AX_675X) && !defined(RTCONFIG_HND_ROUTER_AX_6710)
-		if(strcmp(buf, "0 0 0 0 0 0 0 0 0 0") != 0)
-#endif
 			nvram_set("ct_tcp_timeout", buf);
 	}
 
 	setup_udp_timeout(FALSE);
 
 	snprintf(p, sizeof(p), "%s", nvram_safe_get("ct_timeout"));
-	if (sscanf(p, "%u%u", &v[0], &v[1]) == 2) {
-#if defined(RTCONFIG_HND_ROUTER_AX_675X) && !defined(RTCONFIG_HND_ROUTER_AX_6710)
+	if (strcmp(p,"0 0") && sscanf(p, "%u%u", &v[0], &v[1]) == 2) {
+#if defined(RTCONFIG_HND_ROUTER_AX_675X)
 		fprintf(stderr, "ct_timeout:[%s]\n", p);
 #endif
 //		write_ct_timeout("generic", NULL, v[0]);
@@ -732,9 +728,6 @@ void setup_conntrack(void)
 		v[0] = read_ct_timeout("generic", NULL);
 		v[1] = read_ct_timeout("icmp", NULL);
 		snprintf(buf, sizeof(buf), "%u %u", v[0], v[1]);
-#if defined(RTCONFIG_HND_ROUTER_AX_675X) && !defined(RTCONFIG_HND_ROUTER_AX_6710)
-		if(strcmp(buf, "0 0") != 0)
-#endif
 		nvram_set("ct_timeout", buf);
 	}
 
@@ -836,6 +829,9 @@ void setup_conntrack(void)
 		ct_modprobe_r("pptp");
 		ct_modprobe_r("proto_gre");
 	}
+#ifdef RTCONFIG_HND_ROUTER_AX_6756
+	f_write_string("/proc/sys/net/netfilter/nf_conntrack_helper", "1", 0, 0);
+#endif
 
 }
 
@@ -1401,7 +1397,15 @@ void time_zone_x_mapping(void)
 		fprintf(fp, "%s\n", tmpstr);
 		fclose(fp);
 	}
+#ifdef RTCONFIG_AVOID_TZ_ENV
+	/* add a "/tmp/TZ" as a hard link of /etc/TZ in process that run chroot() */
+	if ((fp = fopen("/tmp/TZ", "w")) != NULL) {
+		fprintf(fp, "%s\n", tmpstr);
+		fclose(fp);
+	}
+#endif
 }
+
 
 /* Get the timezone from NVRAM and set the timezone in the kernel
  * and export the TZ variable 
@@ -1422,7 +1426,9 @@ setup_timezone(void)
 	 * use.
 	 */
 	time_zone_x_mapping();
+#ifndef RTCONFIG_AVOID_TZ_ENV
 	setenv("TZ", nvram_get("time_zone_x"), 1);
+#endif
 
 	/* Update kernel timezone */
 	time(&now);

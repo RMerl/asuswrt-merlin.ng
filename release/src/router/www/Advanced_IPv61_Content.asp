@@ -22,6 +22,7 @@
 <script>
 
 <% wan_get_parameter(); %>
+
 var wan_proto_orig = '<% nvram_get("wan1_proto"); %>';
 var ipv61_proto_orig = '<% nvram_get("ipv61_service"); %>';
 var ipv61_tun6rd_dhcp = '<% nvram_get("ipv61_6rd_dhcp"); %>';
@@ -48,6 +49,7 @@ var ipv6_service_opt = new Array(	new Array("<#btn_disable#>", "disabled"),
 new Array("SLAAC", "slaac"),
 new Array("ICMPv6", "icmp6")
 */
+var enable_ftp_orig = httpApi.nvramGet(["enable_ftp"]).enable_ftp;
 var faq_href = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=108";
 
 function initial(){	
@@ -866,6 +868,10 @@ function applyRule(){
 				&& (document.form.ipv61_service.value == "6in4" || ipv61_proto_orig == "6in4"))
     		FormActions("start_apply.htm", "apply", "reboot", "<% get_default_reboot_time(); %>");
 		}*/
+
+		if(enable_ftp_orig==1){
+			document.form.action_script.value += ";restart_ftpd";
+		}
 	
 		showLoading();
 

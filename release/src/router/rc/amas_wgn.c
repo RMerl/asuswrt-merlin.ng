@@ -63,16 +63,10 @@
 #define IS_RE()  			( (nvram_get_int("re_mode") == 1) )
 
 #define WGN_WLIFU_MAX_NO_BRIDGE	WLIFU_MAX_NO_BRIDGE
-#define WGN_ETH_IFNAME			WAN_IF_ETH
 #define WGN_WAN_IFNAME			"wan0_ifname"
 #define WGN_IFNAMES 			"wgn_ifnames"
 #define WGN_ENABLED             "wgn_enabled"
 #define WGN_VLAN_IFNAMES 		"wgn_vlan_ifnames"
-
-// WGN_HAVE_VLAND0 define in amas_wgn_shared.h
-//#if defined(HND_ROUTER) && !(defined(RTCONFIG_HND_ROUTER_AX_675X) && !defined(RTCONFIG_HND_ROUTER_AX_6710))
-//#define WGN_HAVE_VLAN0
-//#endif
 
 #if 1
 #define exec_cmd(cmd, args ...) do {\
@@ -1041,42 +1035,6 @@ int is_wlif(
 	return 0;
 }
 
-#if 0
-int is_wlif(
-	char *ifname)
-{
-	int i;
-	int ret = 0;
-	char word[33];
-	char *next = NULL;
-	char s[81];
-
-	if (!ifname)
-		return 0;
-	
-	if (!IS_RE()) {
-		foreach(word, nvram_safe_get("wl_ifnames"), next)
-			if ((ret = !strcmp(word, ifname)))
-				break;
-	}
-	else {
-		for (i=0; i<num_of_wl_if(); i++) {
-			memset(s, 0, sizeof(s));
-			snprintf(s, sizeof(s), "wl%d_vifnames", i);
-			foreach(word, nvram_safe_get(s), next) {
-				if ((ret = !strcmp(word, ifname)))
-					break;
-			}
-
-			if (ret)
-				break;
-		}
-	}
-
-	return ret;
-}
-#endif
-
 void wgn_filter_forward(
 	FILE *fp, 
 #if defined(RTCONFIG_IPV6)
@@ -1179,6 +1137,7 @@ void wgn_filter_input(
 	memset(vlan_list, 0, sizeof(wgn_vlan_rule) * WGN_MAXINUM_VLAN_RULELIST);
 	if (!wgn_vlan_list_get_from_nvram(vlan_list, WGN_MAXINUM_VLAN_RULELIST, &vlan_listsize))
 		return;
+
 	foreach(word, wgn_ifnames, next)
 	{
 		if (!(p_brif_rule = brif_list_find(brif_list, brif_listsize, word)))
@@ -1203,6 +1162,11 @@ void wgn_filter_input(
 
 		// iptables -A INPUT -i brX -p udp --dport 53 -j ACCEPT
 		fprintf(fp, "-A INPUT -i %s -p udp --dport 53 -j ACCEPT\n", word);
+		// iptables -A INPUT -i brX -p tdp --dport 53 -j ACCEPT
+#ifdef RTCONFIG_DNSPRIVACY
+		if (nvram_get_int("dnspriv_enable"))
+		fprintf(fp, "-A INPUT -i %s -p tcp --dport 53 -j ACCEPT\n", word);
+#endif
 		// iptables -A INPUT -i brX -p udp --dport 67 -j ACCEPT
 		fprintf(fp, "-A INPUT -i %s -p udp --dport 67 -j ACCEPT\n", word);
 		// iptables -A INPUT -i brX -p udp --dport 68 -j ACCEPT
@@ -1301,6 +1265,9 @@ int wgn_if_check_used(
 	if (!wgn_vlan_list_get_from_nvram(vlan_list, WGN_MAXINUM_VLAN_RULELIST, &total))
 		return 0;
 
+	if (IS_RE())
+		wgn_vlan_list_wl_subunit_shift(vlan_list, total);
+
 	for (i=0, found=0; i<total; i++)
 	{
 		if (!vlan_list[i].enable)
@@ -1330,18 +1297,73 @@ int wgn_if_check_used(
 	return (found) ? 1 : 0;
 }
 
+int wgn_if_enable(
+    char *ifname)
+{
+    int found;
+    int unit;
+    int subunit;
+    char wl_ifname[33];
+    size_t i;
+    size_t total = 0;
+    struct wgn_vlan_rule_t vlan_list[WGN_MAXINUM_VLAN_RULELIST];
+
+    if (!ifname && !*ifname)
+        return 0;
+
+    if (!IS_CAP() && !IS_RE())
+        return 0;
+
+    if (!ifname)
+        return 0;
+
+    memset(vlan_list, 0, sizeof(struct wgn_vlan_rule_t) * WGN_MAXINUM_VLAN_RULELIST);
+    if (!wgn_vlan_list_get_from_nvram(vlan_list, WGN_MAXINUM_VLAN_RULELIST, &total))
+        return 0;
+
+	if (IS_RE())
+		wgn_vlan_list_wl_subunit_shift(vlan_list, total);
+
+    for (i=0, found=0; i<total; i++)
+    {
+        if (!vlan_list[i].enable)
+            continue;
+
+        wgn_get_wl_unit(&unit,&subunit,&vlan_list[i]);
+        if (unit < 0 || subunit <= 0)
+            continue;
+
+        if (!get_wl_bss_enabled(unit, subunit))
+            continue;
+
+        memset(wl_ifname, 0, sizeof(wl_ifname));
+        if (!get_wl_ifname(unit, subunit, wl_ifname, sizeof(wl_ifname)-1))
+            continue;
+
+        if (strncmp(ifname, wl_ifname, strlen(wl_ifname)) != 0)
+            continue;
+
+        found = 1;
+        break;
+    }
+
+    return (found) ? 1 : 0;
+}
+
+
 int is_wgn_enabled()
 {
         char word[64], *next;
         char word2[64], *next2;
-        char wlx_vifnames[128];
+        char wlx_vifnames[128], ifname[128];
         int unit = 0;
 
         foreach (word, nvram_safe_get("wl_ifnames"), next) {
-                sprintf(wlx_vifnames, "wl%d_vifnames", unit++);
+                snprintf(wlx_vifnames, sizeof(wlx_vifnames), "wl%d_vifnames", unit++);
                 foreach (word2, nvram_safe_get(wlx_vifnames), next2) {
-                        if (wgn_if_check_used(word2))
-                                return 1;
+                    snprintf(ifname, sizeof(ifname), "%s_ifname", word2);
+                    if (wgn_if_enable(nvram_safe_get(ifname)))
+                        return 1;
                 }
         }
 
@@ -1539,6 +1561,9 @@ void wgn_hotplug_net(
 
 	if (!wgn_vlan_list_get_from_nvram(vlan_list, WGN_MAXINUM_VLAN_RULELIST, &vlan_total))
 		return;
+
+	if (IS_RE())
+		wgn_vlan_list_wl_subunit_shift(vlan_list, vlan_total);
 
 	for (i=0; i<brif_total; i++)
 	{
@@ -1817,9 +1842,6 @@ void destory_vlan(
 	int i;
 
 #if defined(HND_ROUTER)
-	//char wl_bh_ifnames[2048];
-	//char sta_bh_ifnames[2048];
-	//char *bh_ifnames = NULL;
 #if defined(WGN_HAVE_VLAN0)	
     char wl_bh_ifnames[2048];
     char sta_bh_ifnames[2048];
@@ -1976,7 +1998,6 @@ char *create_vlan(
 
 		foreach (word, bh_ifnames, next)
 		{
-			// if (find_br0_ifnames_by_ifname(word)) exec_cmd("brctl", "delif", "br0", word);			
 			ret = ioctl_bridge(ARG_DELIF, "br0", word);
 			memset(vif0, 0, sizeof(vif0));
 			snprintf(vif0, sizeof(vif0)-1, "%s.0", word);
@@ -2003,7 +2024,6 @@ char *create_vlan(
 			// ifconfig vif allmulti
 			ifconfig(vif, IFUP | IFF_ALLMULTI | IFF_MULTICAST, NULL, NULL);
 			// brctl addif br0 eth6.0;
-			// if (find_br0_ifnames_by_ifname(word)) exec_cmd("brctl", "addif", "br0", vif0);
 			if (type == 2) exec_cmd("brctl", "addif", "br0", vif0);
 			if (ret == 0) ioctl_bridge(ARG_ADDIF, "br0", word);
 		}
@@ -2023,12 +2043,8 @@ char *create_vlan(
 		{      
 			memset(vif, 0, sizeof(vif));
 			snprintf(vif, sizeof(vif)-1, "%s.%s", word, vid);
-			// if (find_br0_ifnames_by_ifname(word)) exec_cmd("brctl", "delif", "br0", word);
-			//exec_cmd("brctl", "delif", "br0", word);
 			ret = ioctl_bridge(ARG_DELIF, "br0", word);
 	        exec_cmd("vconfig", "add", word, vid);
-			// if (find_br0_ifnames_by_ifname(word)) exec_cmd("brctl", "addif", "br0", word);
-			//if (find_lan_ifnames_by_ifname(word)) exec_cmd("brctl", "addif", "br0", word);
 		    if (ret == 0) ioctl_bridge(ARG_ADDIF, "br0", word);
 	        ifconfig(vif, IFUP | IFF_ALLMULTI | IFF_MULTICAST, NULL, NULL);
 		}
@@ -2062,18 +2078,13 @@ char *create_vlan(
 				snprintf(vif, sizeof(vif)-1, "%s.%s", iface, vid);
 			else
 				snprintf(vif, sizeof(vif)-1, "%s.%s", word, vid);
-			// if (find_br0_ifnames_by_ifname(word)) exec_cmd("brctl", "delif", "br0", word);
-			//exec_cmd("brctl", "delif", "br0", word);
 			ret = ioctl_bridge(ARG_DELIF, "br0", word);
             exec_cmd("vconfig", "add", word, vid);
-			// if (find_br0_ifnames_by_ifname(word)) exec_cmd("brctl", "addif", "br0", word);
-			//if (find_lan_ifnames_by_ifname(word)) exec_cmd("brctl", "addif", "br0", word);
 			if (ret == 0) ioctl_bridge(ARG_ADDIF, "br0", word);
             ifconfig(vif, IFUP | IFF_ALLMULTI | IFF_MULTICAST, NULL, NULL);
 		}
 		exec_cmd("vconfig", "set_name_type", "VLAN_PLUS_VID_NO_PAD");	
 	}
-//#else	/* defined(HND_ROUTER) && !(defined(RTCONFIG_HND_ROUTER_AX_675X) && !defined(RTCONFIG_HND_ROUTER_AX_6710)) */
 #else	// defined(HND_ROUTER)
 	foreach (word, bh_ifnames, next)
 	{
@@ -2108,8 +2119,6 @@ char *create_vlan(
 			strlcpy(word, "eth0", sizeof(word));
 #endif
 		memset(vif, 0, sizeof(vif));
-		// if (find_br0_ifnames_by_ifname(word)) exec_cmd("brctl", "delif", "br0", word);
-		//exec_cmd("brctl", "delif", "br0", word);
 		ret = ioctl_bridge(ARG_DELIF, "br0", word);
 		
 		memset(iface, 0, sizeof(iface));
@@ -2123,13 +2132,10 @@ char *create_vlan(
 			snprintf(vif, sizeof(vif)-1, "%s.%s", word, vid);
         		exec_cmd("vconfig", "add", word, vid);
 		}		
-		// if (find_br0_ifnames_by_ifname(word)) exec_cmd("brctl", "addif", "br0", word);
-		//if (find_lan_ifnames_by_ifname(word)) exec_cmd("brctl", "addif", "br0", word);
 	    if (ret == 0) ioctl_bridge(ARG_ADDIF, "br0", word);
         ifconfig(vif, IFUP | IFF_ALLMULTI | IFF_MULTICAST, NULL, NULL);
 	}
 	exec_cmd("vconfig", "set_name_type", "VLAN_PLUS_VID_NO_PAD");
-// #endif	/* defined(HND_ROUTER) && !(defined(RTCONFIG_HND_ROUTER_AX_675X) && !defined(RTCONFIG_HND_ROUTER_AX_6710)) */
 #endif	// defined(HND_ROUTER)	
 
 	if (strlen(ret_ifnames) > 0)
@@ -2264,6 +2270,8 @@ int create_guest_bridge(
 		nvram_set(nvram_name, eth_vifnames);
 	}
 
+	// set wireless interface
+	wgn_sysdep_wl_set(vlan_id);
 	// nvram_set wgn_brX_sta_ifnames
 	if (sta_vifnames)
 	{
@@ -2302,6 +2310,7 @@ int create_guest_bridge(
 create_guest_bridge_failed:
 	destory_vlan();
 	wgn_sysdep_swtich_unset(vlan_id);
+	wgn_sysdep_wl_unset(vlan_id);
 
 	// remove bridge
 	exec_cmd("brctl", "delbr", br_ifname);
@@ -2378,6 +2387,9 @@ void wgn_start(
 
 	if (subnet_total <= 0)
 		return;
+
+	if (IS_RE())
+		wgn_vlan_list_wl_subunit_shift(vlan_list, vlan_total);
 
 	for (i=0; i<brif_total; i++)
 	{
@@ -2761,6 +2773,8 @@ void wgn_stop(
 		// brctl delbr brX
 		exec_cmd("brctl", "delbr", word);
 
+		// unset wireless interface
+		wgn_sysdep_wl_unset(p_vlan_rule->vid);
 		// nvram_unset wgn_lanX_ifname
 		memset(s, 0, sizeof(s));
 		snprintf(s, sizeof(s)-1, "lan%d_ifname", ifidx);

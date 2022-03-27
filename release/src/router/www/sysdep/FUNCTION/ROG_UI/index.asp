@@ -60,24 +60,6 @@
 	width:740px;
 	box-shadow: 3px 3px 10px #000;
 }
-#custom_image table{
-	border: 1px solid #1A1C1D;
-	border-collapse: collapse;
-}
-#custom_image div{
-	background-image:url('/images/New_ui/networkmap/client-list.svg');
-	background-image:url('/images/New_ui/networkmap/client.png') \9;
-	background-repeat:no-repeat;
-	height:60px;
-	width:60px;
-	cursor:pointer;
-	background-size: 900%;
-	background-color: #680516;
-	border-radius: 10px;
-}
-#custom_image div:hover{
-	background-color: #cf0a2c;
-}
 .imgClientIcon{
 	position: relative; 
 	width: 52px;
@@ -120,6 +102,39 @@
 .wl6_icon_off{
 	background-position: 40px -158px;
 }
+.block_all_icon{
+	position: absolute;
+	width: 80%;
+	background-color: #f5a02b;
+	height: 32px;
+	border-radius: 24px;
+	left: 10%;
+	align-items: center;
+	justify-content: center;
+	top: -16px;
+	cursor: pointer;
+	box-shadow: 0 2px 4px 0 rgba(0,0,0,0.20), 0 1px 4px 0 rgba(60,60,60,0.30);
+	font-weight: bolder;
+	display: none;
+}
+.block_all_icon:hover{
+	background-color: #FBB655;
+}
+.block_all_icon > div{
+	position: relative;
+	margin-left: 8px;
+}
+.block_all_icon > div:before{
+	content: "";
+	position: absolute;
+	left: -22px;
+	top: -2px;
+	width: 18px;
+	height: 18px;
+	background-size: contain;
+	background-repeat: no-repeat;
+	background-image: url("data:image/jpeg;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAACXBIWXMAAAsTAAALEwEAmpwYAAAF92lUWHRYTUw6Y29tLmFkb2JlLnhtcAAAAAAAPD94cGFja2V0IGJlZ2luPSLvu78iIGlkPSJXNU0wTXBDZWhpSHpyZVN6TlRjemtjOWQiPz4gPHg6eG1wbWV0YSB4bWxuczp4PSJhZG9iZTpuczptZXRhLyIgeDp4bXB0az0iQWRvYmUgWE1QIENvcmUgNi4wLWMwMDYgNzkuMTY0NjQ4LCAyMDIxLzAxLzEyLTE1OjUyOjI5ICAgICAgICAiPiA8cmRmOlJERiB4bWxuczpyZGY9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkvMDIvMjItcmRmLXN5bnRheC1ucyMiPiA8cmRmOkRlc2NyaXB0aW9uIHJkZjphYm91dD0iIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtbG5zOnhtcE1NPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvbW0vIiB4bWxuczpzdEV2dD0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL3NUeXBlL1Jlc291cmNlRXZlbnQjIiB4bWxuczpkYz0iaHR0cDovL3B1cmwub3JnL2RjL2VsZW1lbnRzLzEuMS8iIHhtbG5zOnBob3Rvc2hvcD0iaHR0cDovL25zLmFkb2JlLmNvbS9waG90b3Nob3AvMS4wLyIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgMjIuMiAoTWFjaW50b3NoKSIgeG1wOkNyZWF0ZURhdGU9IjIwMjEtMDgtMDRUMTU6MTQ6NDArMDg6MDAiIHhtcDpNZXRhZGF0YURhdGU9IjIwMjEtMDgtMDRUMTU6MTQ6NDArMDg6MDAiIHhtcDpNb2RpZnlEYXRlPSIyMDIxLTA4LTA0VDE1OjE0OjQwKzA4OjAwIiB4bXBNTTpJbnN0YW5jZUlEPSJ4bXAuaWlkOmYwOTZmYjFhLTY3ZDktNDkyZS1hNDk5LTdiZjUwMGU0NWNlMCIgeG1wTU06RG9jdW1lbnRJRD0iYWRvYmU6ZG9jaWQ6cGhvdG9zaG9wOmYzNDJlYWZiLTA3YmItMWI0NS05ZWI4LTY3ODExYjcxODg3MSIgeG1wTU06T3JpZ2luYWxEb2N1bWVudElEPSJ4bXAuZGlkOmEwODg4MWYwLTEwYWQtNGI4OC04MTFmLWIyZWQ3ZWVkZjliMCIgZGM6Zm9ybWF0PSJpbWFnZS9wbmciIHBob3Rvc2hvcDpDb2xvck1vZGU9IjMiIHBob3Rvc2hvcDpJQ0NQcm9maWxlPSJzUkdCIElFQzYxOTY2LTIuMSI+IDx4bXBNTTpIaXN0b3J5PiA8cmRmOlNlcT4gPHJkZjpsaSBzdEV2dDphY3Rpb249ImNyZWF0ZWQiIHN0RXZ0Omluc3RhbmNlSUQ9InhtcC5paWQ6YTA4ODgxZjAtMTBhZC00Yjg4LTgxMWYtYjJlZDdlZWRmOWIwIiBzdEV2dDp3aGVuPSIyMDIxLTA4LTA0VDE1OjE0OjQwKzA4OjAwIiBzdEV2dDpzb2Z0d2FyZUFnZW50PSJBZG9iZSBQaG90b3Nob3AgMjIuMiAoTWFjaW50b3NoKSIvPiA8cmRmOmxpIHN0RXZ0OmFjdGlvbj0ic2F2ZWQiIHN0RXZ0Omluc3RhbmNlSUQ9InhtcC5paWQ6ZjA5NmZiMWEtNjdkOS00OTJlLWE0OTktN2JmNTAwZTQ1Y2UwIiBzdEV2dDp3aGVuPSIyMDIxLTA4LTA0VDE1OjE0OjQwKzA4OjAwIiBzdEV2dDpzb2Z0d2FyZUFnZW50PSJBZG9iZSBQaG90b3Nob3AgMjIuMiAoTWFjaW50b3NoKSIgc3RFdnQ6Y2hhbmdlZD0iLyIvPiA8L3JkZjpTZXE+IDwveG1wTU06SGlzdG9yeT4gPC9yZGY6RGVzY3JpcHRpb24+IDwvcmRmOlJERj4gPC94OnhtcG1ldGE+IDw/eHBhY2tldCBlbmQ9InIiPz5gqlrZAAABEklEQVQ4jYWRsU4CQRRF7yCJ2hAKQ2Vpb0UDVnRE/4ZCWwsTwgf4CTRbQkGDf7MJLYSwwWKPBYNel2W41e688+7ceS/ojIAbSfeSSkl5CGF/jq02DoAF8M2f9sAM6Kcam8AnlzUBGnUG3rwCRkAPeALegNzq47rYrh0wqDAtYGlM14sLu3mXMGlHBiD7nbYNbBTTpEzeY217PHiwWD17Uq0JMDS+09Bhz0c1JCmE8CXpRVIh6VbS3Ex8A6WAaw57BnitGe6/JMBH/F87OIuHOdBKmBTAJn5PHerbu5ZAu8akMKYEHlWBJgas4rSHwHOMvbF6pqqAK2BMWiWQAc0TAzPqRmhrjWtgehL7koAOcJdifgCrvyzQ8BT7EAAAAABJRU5ErkJggg==");
+}
 </style>
 <script type="text/javascript" src="/md5.js"></script>
 <script type="text/javascript" src="/state.js"></script>
@@ -127,8 +142,8 @@
 <script type="text/javascript" src="/popup.js"></script>
 <script type="text/javascript" src="/help.js"></script>
 <script type="text/javascript" src="/validator.js"></script>
-<script language="JavaScript" type="text/javascript" src="/client_function.js"></script>
 <script language="JavaScript" type="text/javascript" src="/js/jquery.js"></script>
+<script language="JavaScript" type="text/javascript" src="/client_function.js"></script>
 <script language="JavaScript" type="text/javascript" src="/js/httpApi.js"></script>
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
 <script language="JavaScript" type="text/javascript" src="/form.js"></script>
@@ -137,6 +152,8 @@
 if(usb_support) addNewScript("/disk_functions.js");
 
 var userIconBase64 = "NoIcon";
+var userIconBase64_ori = "NoIcon";
+var userUploadFlag = false;
 var verderIcon = "";
 var userIconHideFlag = false;
 var custom_usericon_del = "";
@@ -227,12 +244,20 @@ window.onresize = function() {
 var wl0_radio = '<% nvram_get("wl0_radio"); %>';
 var wl1_radio = '<% nvram_get("wl1_radio"); %>';
 var wl2_radio = '<% nvram_get("wl2_radio"); %>';
-
+var wl3_radio = '<% nvram_get("wl3_radio"); %>';
+if(based_modelid === 'GT-AXE16000'){
+	var t = wl0_radio;
+	w0_radio = wl1_radio;
+	wl1_radio = wl2_radio;
+	wl2_radio = wl3_radio;
+	wl3_radio = t;
+}
 var orig_NM_container_height;
 function initial(){
 	var autodet_state = '<% nvram_get("autodet_state"); %>';
 	var autodet_auxstate = '<% nvram_get("autodet_auxstate"); %>';	
 	var wan_proto = '<% nvram_get("wan_proto"); %>';
+	var wlc_band = '<% nvram_get("wlc_band"); %>';
 	show_menu();
 	var isIE6 = navigator.userAgent.search("MSIE 6") > -1;
 	if(isIE6)
@@ -259,8 +284,7 @@ function initial(){
 
 		show_middle_status(wlc_auth_mode, 0);
 	}
-	else if(sw_mode == 2){
-		var wlc_band = '<% nvram_get("wlc_band"); %>';
+	else if(sw_mode == 2){		
 		if(wlc_band == '1'){
 			var wl_auth_mode = '<% nvram_get("wl1.1_auth_mode_x"); %>';
 			var wl_wep_x = '<% nvram_get("wl1.1_wep_x"); %>';
@@ -296,7 +320,6 @@ function initial(){
 		$("#ameshContainer").remove();
 
 	set_default_choice();
-
 	if(!parent.usb_support || usbPortMax == 0){
 		$("#line3_img").hide();
 		$("#line3_single").show();
@@ -378,7 +401,7 @@ function initial(){
 		
 		check_usb3();
 	}
-	
+
 	showMapWANStatus(sw_mode);
 
 	if(sw_mode != "1"){
@@ -486,6 +509,26 @@ function initial(){
 
 	orig_NM_container_height = parseInt($(".NM_radius_bottom_container").css("height"));
 	setTimeout(check_eula, 100);
+
+	if(!downsize_4m_support){
+		custom_icon_list_api.paramObj.container = $(".custom_icon_list_bg");
+		custom_icon_list_api.paramObj.source = "local";
+		custom_icon_list_api.paramObj.select_icon_callBack = select_custom_icon;
+		custom_icon_list_api.paramObj.upload_callBack = previewImage;
+		custom_icon_list_api.gen_component(custom_icon_list_api.paramObj);
+		$.getJSON("https://nw-dlcdnet.asus.com/plugin/js/extend_custom_icon.json", {_: new Date().getTime()},
+			function(data){
+				custom_icon_list_api.paramObj.container = $(".custom_icon_list_bg");
+				custom_icon_list_api.paramObj.source = "cloud";
+				custom_icon_list_api.paramObj.db = data;
+				custom_icon_list_api.paramObj.select_icon_callBack = select_custom_icon;
+				custom_icon_list_api.gen_component(custom_icon_list_api.paramObj);
+			}
+		);
+	}
+	var MULTIFILTER_BLOCK_ALL = httpApi.nvramGet(["MULTIFILTER_BLOCK_ALL"]).MULTIFILTER_BLOCK_ALL;
+	if(MULTIFILTER_BLOCK_ALL == "1")
+		$(".block_all_icon").css("display", "flex");
 }
 
 function check_eula(){
@@ -540,11 +583,11 @@ function show_ddns_status(){
 			}
         }
 	}
-	
-	if(le_enable == "1" && le_state == "1")
-   	document.getElementById("le_icon").style.display = "";
-  else
-   	document.getElementById("le_icon").style.display = "none";
+
+    if(le_enable == "1" && le_state == "1")
+    	document.getElementById("le_icon").style.display = "";
+    else
+    	document.getElementById("le_icon").style.display = "none";
 
 	setTimeout("show_ddns_status();", 2000);
 }
@@ -620,7 +663,7 @@ function show_middle_status(auth_mode, wl_wep_x){
 				break;
 		case "psk2sae":
 				security_mode = "WPA2/WPA3-Personal";
-				break;		
+				break;
 		case "pskpsk2":
 				security_mode = "WPA-Auto-Personal";
 				document.getElementById("wl_securitylevel_span").style.fontSize = "16px";
@@ -716,7 +759,7 @@ function showDiskInfo(device){
 
 	if(device.mountNumber > 0){
 		percentbar = simpleNum2((device.totalSize - device.totalUsed)/device.totalSize*100);
-		percentbar = Math.round(100 - percentbar);		
+		percentbar = Math.round(100 - percentbar);
 
 		dec_html_code += '<div id="diskquota" align="left" style="margin-top:5px;margin-bottom:10px;">\n';
 		dec_html_code += '<div class="quotabar" style="width:'+ percentbar +'%;height:13px;"></div>';
@@ -940,6 +983,13 @@ function clickEvent(obj){
 		obj.classList.add('iconAMesh');
 		obj.classList.remove('iconAMesh_dis');
 	}
+	else if(obj.id.indexOf("Client") > 0) {
+		var MULTIFILTER_BLOCK_ALL = httpApi.nvramGet(["MULTIFILTER_BLOCK_ALL"]).MULTIFILTER_BLOCK_ALL;
+		if(MULTIFILTER_BLOCK_ALL == "1")
+			obj.style.backgroundPosition = '0% -194px';
+		else
+			obj.style.backgroundPosition = '0% -97px';
+	}
 	else{
 		obj.style.backgroundPosition = '0% 100%';
 	}
@@ -1112,8 +1162,8 @@ function validForm(){
 			ip_obj.focus();
 			retFlag = 0;
 		}
-		else if(ip_num <= getSubnet('<% nvram_get("lan_ipaddr"); %>', '<% nvram_get("lan_netmask"); %>', "head") ||
-			 ip_num >= getSubnet('<% nvram_get("lan_ipaddr"); %>', '<% nvram_get("lan_netmask"); %>', "end")){
+		else if(ipBindingFlag && (ip_num <= getSubnet('<% nvram_get("lan_ipaddr"); %>', '<% nvram_get("lan_netmask"); %>', "head") ||
+			 ip_num >= getSubnet('<% nvram_get("lan_ipaddr"); %>', '<% nvram_get("lan_netmask"); %>', "end"))){
 			alert(ip_obj.value+" <#JS_validip#>");
 			ip_obj.value = document.getElementById("ipaddr_field_orig").value;
 			ip_obj.focus();
@@ -1195,9 +1245,6 @@ function edit_confirm(){
 		}
 		else {
 			clientTypeNum = document.getElementById('client_image').className.replace("clientIcon_no_hover type", "");
-			if(clientTypeNum == "0_viewMode") {
-				clientTypeNum = "0";
-			}
 		}
 		var clientMac = document.getElementById('macaddr_field').value.toUpperCase();
 		originalCustomListArray = custom_name.split('<');
@@ -1336,13 +1383,23 @@ function edit_confirm(){
 		// handle user image
 		document.list_form.custom_usericon.disabled = true;
 		if(usericon_support) {
-			document.list_form.custom_usericon.disabled = false;
 			var clientMac = document.getElementById("macaddr_field").value.replace(/\:/g, "");
-			if(userIconBase64 != "NoIcon") {
-				document.list_form.custom_usericon.value = clientMac + ">" + userIconBase64;
+			document.list_form.custom_usericon.disabled = false;
+			if(userIconBase64 != "NoIcon" && (userIconBase64 != userIconBase64_ori)) {
+				if(userUploadFlag)
+					document.list_form.custom_usericon.value = clientMac + ">" + userIconBase64;
+				else{
+					document.list_form.custom_usericon.value = clientTypeNum + ">" + userIconBase64;
+					document.list_form.usericon_mac.disabled = false;
+					document.list_form.usericon_mac.value = clientMac;
+				}
 			}
-			else {
+			else if(userIconBase64 == "NoIcon"){
 				document.list_form.custom_usericon.value = clientMac + ">noupload";
+			}
+			else{
+				document.list_form.custom_usericon.disabled = true;
+				document.list_form.usericon_mac.disabled = true;
 			}
 		}
 
@@ -1427,33 +1484,38 @@ function edit_delete(){
 function show_custom_image() {
 	if(top.isIE8) return false;
 
-	var display_state = document.getElementById("custom_image").style.display;
+	var display_state = $(".custom_icon_list_bg").css("display");
 	if(display_state == "none") {
-		$("#custom_image").slideDown("slow");
+		$(".custom_icon_list_bg").slideDown("slow");
 		document.getElementById("changeIconTitle").innerHTML = "<#CTL_close#>";
 	}
 	else {
-		$("#custom_image").slideUp("slow");
+		$(".custom_icon_list_bg").slideUp("slow");
 		document.getElementById("changeIconTitle").innerHTML = "<#CTL_Change#>";
 	}
 }
-
+function select_custom_icon($obj){
+	var type = $obj.attr("class")
+	var icon_rul = $obj.css("background-image").replace('url(','').replace(')','').replace(/\"/gi, "");
+	$("#client_image").css("background-image","url(" + icon_rul + ")");
+	$("#client_image").find(".flash").remove();
+	$("#client_image").removeClass().addClass("clientIcon_no_hover").addClass(type).css("background-size", "");
+	$("#client_image").show();
+	$("#canvasUserIcon").hide();
+	userIconBase64 = icon_rul;
+	userUploadFlag = false;
+}
 function select_image(type){
 	var sequence = type.substring(4,type.length);
 	$("#client_image").find(".flash").remove();
+	$("#client_image").css("background-image","");
 	document.getElementById("client_image").style.display = "none";
 	document.getElementById("canvasUserIcon").style.display = "none";
-	var icon_type = type;
-	if(type == "type0") {
-		icon_type = "type0_viewMode";
-	}
-
 	document.getElementById('client_image').style.backgroundSize = "";
-	document.getElementById('client_image').className = "clientIcon_no_hover " + icon_type;
-
-	if(verderIcon != "" && type == "type0") {
+	document.getElementById('client_image').className = "clientIcon_no_hover " + type;
+	if(verderIcon != "" && type == "type0" && !downsize_4m_support) {
 		var venderIconClassName = getVenderIconClassName(verderIcon.toLowerCase());
-		if(venderIconClassName != "" && !downsize_4m_support) {
+		if(venderIconClassName != "") {
 			document.getElementById('client_image').className = "venderIcon_no_hover " + venderIconClassName;
 			document.getElementById('client_image').style.backgroundSize = "180%";
 		}
@@ -1464,6 +1526,7 @@ function select_image(type){
 		if(usericon_support) {
 			var clientMac = document.getElementById('macaddr_field').value.replace(/\:/g, "");
 			userIconBase64 = getUploadIcon(clientMac);
+			userIconBase64_ori = userIconBase64;
 			if(userIconBase64 != "NoIcon") {
 				var img = document.createElement("img");
 				img.src = userIconBase64;
@@ -1497,7 +1560,7 @@ function hideEditBlock(){
 function oui_query(mac){
 	var queryStr = mac.replace(/\:/g, "").splice(6,6,"");
 
-	$.getJSON("http://nw-dlcdnet.asus.com/plugin/js/ouiDB.json", function(data){
+	$.getJSON("https://nw-dlcdnet.asus.com/plugin/js/ouiDB.json", function(data){
 		if(data != "" && data[queryStr] != undefined){
 			if(document.getElementById("edit_client_block").style.display == "none") return true;
 			var vendor_name = data[queryStr].trim();
@@ -1528,7 +1591,6 @@ function popupEditBlock(clientObj){
 		$("#edit_client_block").fadeOut(300);
 	}
 	else{
-		document.getElementById("uploadIcon").value = "";
 		document.list_form.dhcp_staticlist.value = dhcp_staticlist_orig;
 		document.list_form.MULTIFILTER_ENABLE.value = MULTIFILTER_ENABLE_orig;
 		document.list_form.MULTIFILTER_MAC.value = MULTIFILTER_MAC_orig;
@@ -1545,7 +1607,7 @@ function popupEditBlock(clientObj){
 		else {
 			document.getElementById('tr_adv_setting').style.display = "none";
 		}
-		document.getElementById("custom_image").style.display = "none";
+		$(".custom_icon_list_bg").hide();
 		document.getElementById("changeIconTitle").innerHTML = "<#CTL_Change#>";
 
 		var rssi_t = 0;
@@ -1590,7 +1652,7 @@ function popupEditBlock(clientObj){
 				if(navigator.userAgent.toUpperCase().match(/CHROME\/([\d.]+)/)){
 					bandClass = "band_txt_chrome";
 				}
-				clientIconHtml += '<div class="band_block"><span class="' + bandClass + '">' + wl_nband_title[clientObj.isWL-1].replace("Hz", "").replace(/\s*/g,"") + '</span></div>';
+				clientIconHtml += '<div class="band_block"><span class="' + bandClass + '">' + isWL_map[clientObj.isWL]["text"] + '</span></div>';
 			}
 			document.getElementById('client_interface').innerHTML = clientIconHtml;
 			document.getElementById('client_interface').title = connectModeTip;
@@ -1784,7 +1846,6 @@ function popupEditBlock(clientObj){
 		if(usericon_support && !downsize_4m_support) {
 			//2.check browswer support File Reader and Canvas or not.
 			if(isSupportFileReader() && isSupportCanvas()) {
-				document.getElementById("trUserIcon").style.display = "";
 				//Setting drop event
 				var holder = document.getElementById("divDropClientImage");
 				holder.ondragover = function () { return false; };
@@ -1814,6 +1875,7 @@ function popupEditBlock(clientObj){
 								}, 100); //for firefox FPS(Frames per Second) issue need delay
 							};
 							reader.readAsDataURL(file);
+							userUploadFlag = true;
 							return false;
 						}
 						else {
@@ -1865,11 +1927,10 @@ function popupEditBlock(clientObj){
 
 function check_usb3(){
 	if(based_modelid == "DSL-AC68U" || based_modelid == "RT-AC3200" || based_modelid == "RT-AC87U" || based_modelid == "RT-AC68U" || based_modelid == "RT-AC68A" || based_modelid == "RT-AC56S" || based_modelid == "RT-AC56U" || based_modelid == "RT-AC55U" || based_modelid == "RT-AC55UHP" || based_modelid == "RT-N18U" || based_modelid == "RT-AC88U" || based_modelid == "RT-AC86U" || based_modelid == "GT-AC2900" || based_modelid == "RT-AC3100" || based_modelid == "RT-AC5300" || based_modelid == "RP-AC68U" || based_modelid == "RT-AC58U" || based_modelid == "RT-AC82U" ||
-	based_modelid == "MAP-AC3000" || based_modelid == "RT-AC85P" || based_modelid == "RT-AC85U" || based_modelid == "RT-AC65U" || based_modelid == "4G-AC68U" || based_modelid == "BLUECAVE" || based_modelid == "RT-AX92U" || based_modelid == "RT-AX95Q" || based_modelid == "XT8PRO" || based_modelid == "RT-AXE95Q" || based_modelid == "ET8PRO" || based_modelid == "RT-AX56_XD4" || based_modelid == "XD4PRO" || based_modelid == "CT-AX56_XD4" || based_modelid == "RT-AX58U" || based_modelid == "RT-AX58U_V2" || based_modelid == "TUF-AX3000" || based_modelid == "TUF-AX5400" || based_modelid == "RT-AX82U" || based_modelid == "RT-AX56U" || based_modelid == "RT-ACRH26" || based_modelid == "GT-AX6000"){
+	based_modelid == "MAP-AC3000" || based_modelid == "RT-AC85P" || based_modelid == "RT-AC85U" || based_modelid == "RT-AC65U" || based_modelid == "4G-AC68U" || based_modelid == "BLUECAVE" || based_modelid == "RT-AX92U" || based_modelid == "RT-AX95Q" || based_modelid == "XT8PRO" || based_modelid == "RT-AXE95Q" || based_modelid == "ET8PRO" || based_modelid == "RT-AX56_XD4" || based_modelid == "XD4PRO" || based_modelid == "CT-AX56_XD4" || based_modelid == "RT-AX58U" || based_modelid == "RT-AX58U_V2" || based_modelid == "TUF-AX3000" || based_modelid == "TUF-AX3000_V2" || based_modelid == "TUF-AX5400" || based_modelid == "RT-AX82U" || based_modelid == "RT-AX56U" || based_modelid == "RT-ACRH26" || based_modelid == "GS-AX3000" || based_modelid == "GS-AX5400" || based_modelid == "PL-AX56_XP4" || based_modelid == "GT-AX6000" || based_modelid == "RT-AXE7800" || based_modelid == "GT-AXE16000"){
 		document.getElementById('usb_text_1').innerHTML = "USB 3.0";
 	}
-	else if(based_modelid == "RT-AC88Q" || based_modelid == "RT-AX89U" || based_modelid == "RT-AD7200" || based_modelid == "RT-N65U" || based_modelid == "GT-AC5300" || based_modelid == "RT-AX88U" || based_modelid == "GT-AX11000" || based_modelid == "GT-AC9600" || based_modelid == "GT-AXY16000" || based_modelid == "GT-AXE11000" || based_modelid == "GT-AX11000_PRO" || based_modelid == "GT-AXE16000"){
-
+	else if(based_modelid == "RT-AC88Q" || based_modelid == "RT-AX89U" || based_modelid == "RT-AD7200" || based_modelid == "RT-N65U" || based_modelid == "GT-AC5300" || based_modelid == "RT-AX88U" || based_modelid == "GT-AX11000" || based_modelid == "GT-AC9600" || based_modelid == "GT-AXY16000" || based_modelid == "GT-AXE11000" || based_modelid == "GT-AX11000_PRO"){
 		document.getElementById('usb_text_1').innerHTML = "USB 3.0";
 		document.getElementById('usb_text_2').innerHTML = "USB 3.0";
 	}
@@ -2018,9 +2079,9 @@ function btUserIconCancel() {
 	$("#edit_usericon_block").fadeOut(100);
 }
 
-function previewImage(imageObj) {
+function previewImage($obj) {
 	var userIconLimitFlag = userIconNumLimit(document.getElementById("macaddr_field").value);
-	
+
 	if(userIconLimitFlag) {	//not over 100
 		var checkImageExtension = function (imageFileObject) {
 		var  picExtension= /\.(jpg|jpeg|gif|png|bmp|ico)$/i;  //analy extension
@@ -2031,10 +2092,8 @@ function previewImage(imageObj) {
 		};
 
 		//1.check image extension
-		if (!checkImageExtension(imageObj.value)) {
+		if (!checkImageExtension($obj.val()))
 			alert("<#Setting_upload_hint#>");
-			imageObj.focus();
-		}
 		else {
 			//2.Re-drow image
 			var fileReader = new FileReader(); 
@@ -2054,8 +2113,9 @@ function previewImage(imageObj) {
 					userIconBase64 = dataURL;
 				}, 100); //for firefox FPS(Frames per Second) issue need delay
 			}
-			fileReader.readAsDataURL(imageObj.files[0]);
+			fileReader.readAsDataURL($obj.prop("files")[0]);
 			userIconHideFlag = true;
+			userUploadFlag = true;
 		}
 	}
 	else {	//over 100 then let usee select delete icon or nothing
@@ -2074,6 +2134,7 @@ function updateClientsCount() {
 	setTimeout("updateClientsCount();", 5000);
 }
 function setDefaultIcon() {
+	$("#client_image").css("background-image","");
 	var mac = document.getElementById("macaddr_field").value;
 	select_image("type" + parseInt(clientList[mac].defaultType));
 }
@@ -2094,10 +2155,21 @@ function check_wireless(){
 		if (isSwMode('mb')) {
 			wl1_radio = '0';
 		}
-		temp = (wl1_radio == "1") ? "wl1_icon_on" : "wl1_icon_off";
-		if(band5g2_support){
+
+		if(based_modelid === 'GT-AXE16000'){
 			temp = (wl1_radio == "1") ? "wl1_1_icon_on" : "wl1_1_icon_off";
 		}
+		else{
+			temp = (wl1_radio == "1") ? "wl1_icon_on" : "wl1_icon_off";
+			if(band5g2_support){
+				if(band6g_support){
+					temp = (wl1_radio == "1") ? "wl1_icon_on" : "wl1_icon_off";
+				}
+				else{
+					temp = (wl1_radio == "1") ? "wl1_1_icon_on" : "wl1_1_icon_off";
+				}	
+			}
+		}		
 
 		$("#wl1_icon").show();
 		$("#wl1_icon").addClass(temp);
@@ -2109,15 +2181,26 @@ function check_wireless(){
 			wl2_radio = '0';
 		}
 
-		if(band6g_support){
-			temp = (wl2_radio == "1") ? "wl6_icon_on" : "wl6_icon_off";
+		if(based_modelid === 'GT-AXE16000'){
+			temp = (wl2_radio == "1") ? "wl2_icon_on" : "wl2_icon_off";
+			$("#wl2_icon").show();
+			$("#wl2_icon").addClass(temp);
+
+			temp = (wl3_radio == "1") ? "wl6_icon_on" : "wl6_icon_off";
+			$("#wl3_icon").show();
+			$("#wl3_icon").addClass(temp);
 		}
 		else{
-			temp = (wl2_radio == "1") ? "wl2_icon_on" : "wl2_icon_off";
-		}
-		
-		$("#wl2_icon").show();
-		$("#wl2_icon").addClass(temp);
+			if(band6g_support){
+				temp = (wl2_radio == "1") ? "wl6_icon_on" : "wl6_icon_off";
+			}
+			else{
+				temp = (wl2_radio == "1") ? "wl2_icon_on" : "wl2_icon_off";
+			}
+			
+			$("#wl2_icon").show();
+			$("#wl2_icon").addClass(temp);
+		}		
 	}
 }
 
@@ -2221,6 +2304,7 @@ function notice_apply(){
 	<input type="hidden" name="dhcp_staticlist" value="" disabled>
 	<input type="hidden" name="dhcp_static_x" value='<% nvram_get("dhcp_static_x"); %>' disabled>
 	<input type="hidden" name="custom_usericon" value="">
+	<input type="hidden" name="usericon_mac" value="" disabled>
 	<input type="hidden" name="custom_usericon_del" value="" disabled>
 	<input type="hidden" name="MULTIFILTER_ALL" value='<% nvram_get("MULTIFILTER_ALL"); %>' disabled>
 	<input type="hidden" name="MULTIFILTER_ENABLE" value="" disabled>
@@ -2367,109 +2451,7 @@ function notice_apply(){
 
 		<tr>
 			<td colspan="3">
-				<div id="custom_image" style="display:none;">
-					<table border="1" align="center" cellpadding="4" cellspacing="0" style="width:100%">
-						<tr>
-							<td>
-								<div class="type1" onclick="select_image(this.className);" title="Windows device"></div><!--untranslated-->
-							</td>
-							<td>
-								<div class="type2" onclick="select_image(this.className);" title="Router"></div><!--untranslated-->
-							</td>
-							<td>
-								<div class="type4" onclick="select_image(this.className);" title="NAS/Server"></div><!--untranslated-->
-							</td>
-							<td>
-								<div class="type5" onclick="select_image(this.className);" title="IP Cam"></div><!--untranslated-->
-							</td>
-							<td>
-								<div class="type6" onclick="select_image(this.className);" title="Macbook"></div><!--untranslated-->
-							</td>
-							<td>
-								<div class="type7" onclick="select_image(this.className);" title="Game Console"></div><!--untranslated-->
-							</td>
-							<td>
-								<div class="type9" onclick="select_image(this.className);" title="Android Phone"></div><!--untranslated-->
-							</td>
-						</tr>
-						<tr>
-							<td>
-								<div class="type10" onclick="select_image(this.className);" title="iPhone"></div><!--untranslated-->
-							</td>
-							<td>
-								<div class="type11" onclick="select_image(this.className);" title="Apple TV"></div><!--untranslated-->
-							</td>
-							<td>
-								<div class="type12" onclick="select_image(this.className);" title="Set-top Box"></div><!--untranslated-->
-							</td>
-							<td>
-								<div class="type14" onclick="select_image(this.className);" title="iMac"></div><!--untranslated-->
-							</td>
-							<td>
-								<div class="type15" onclick="select_image(this.className);" title="ROG"></div><!--untranslated-->
-							</td>
-							<td>
-								<div class="type18" onclick="select_image(this.className);" title="<#Clientlist_Printer#>"></div>
-							</td>
-							<td>
-								<div class="type19" onclick="select_image(this.className);" title="Windows Phone"></div><!--untranslated-->
-							</td>
-						</tr>
-						<tr>
-							<td>
-								<div class="type20" onclick="select_image(this.className);" title="Android Tablet"></div><!--untranslated-->
-							</td>
-							<td>
-								<div class="type21" onclick="select_image(this.className);" title="iPad"></div><!--untranslated-->
-							</td>
-							<td>
-								<div class="type22" onclick="select_image(this.className);" title="Linux Device"></div><!--untranslated-->
-							</td>
-							<td>
-								<div class="type23" onclick="select_image(this.className);" title="Smart TV"></div><!--untranslated-->
-							</td>
-							<td>
-								<div class="type24" onclick="select_image(this.className);" title="Repeater"></div><!--untranslated-->
-							</td>
-							<td>
-								<div class="type25" onclick="select_image(this.className);" title="Kindle"></div><!--untranslated-->
-							</td>
-							<td>
-								<div class="type26" onclick="select_image(this.className);" title="Scanner"></div><!--untranslated-->
-							</td>
-						</tr>
-						<tr>
-							<td>
-								<div class="type27" onclick="select_image(this.className);" title="Chromecast"></div><!--untranslated-->
-							</td>
-							<td>
-								<div class="type28" onclick="select_image(this.className);" title="ASUS smartphone"></div><!--untranslated-->
-							</td>
-							<td>
-								<div class="type29" onclick="select_image(this.className);" title="ASUS Pad"></div><!--untranslated-->
-							</td>
-							<td>
-								<div class="type30" onclick="select_image(this.className);" title="Windows"></div><!--untranslated-->
-							</td>
-							<td>
-								<div class="type31" onclick="select_image(this.className);" title="Android"></div><!--untranslated-->
-							</td>
-							<td>
-								<div class="type32" onclick="select_image(this.className);" title="Mac OS"></div><!--untranslated-->
-							</td>
-							<td>
-								<div class="type35" onclick="select_image(this.className);" title="Windows laptop"></div><!--untranslated-->
-							</td>
-						</tr>
-						<tr id="trUserIcon" style="display:none;">
-							<td>
-								<div class="client_upload_div">+
-									<input type="file" name="uploadIcon" id="uploadIcon" class="client_upload_file" onchange="previewImage(this);" title="Upload client icon" /><!--untranslated-->
-								</div>
-							</td>
-						</tr>
-					</table>
-		 		</div>	
+				<div class="custom_icon_list_bg"></div>
 			</td>
 		</tr>
 		<tr id="tr_adv_setting">
@@ -2643,6 +2625,7 @@ function notice_apply(){
 								<div id="wl0_icon" class="wl_icon wl0_icon_on"></div>
 								<div id="wl1_icon" class="wl_icon wl1_icon_on" style="display:none"></div>
 								<div id="wl2_icon" class="wl_icon wl2_icon_on" style="display:none"></div>
+								<div id="wl3_icon" class="wl_icon wl3_icon_on" style="display:none"></div>
 								</div>
 							</div>
 						</div>
@@ -2683,6 +2666,14 @@ function notice_apply(){
 				</tr>
 				<tr>
 					<td id="clients_td" width="150" bgcolor="#444f53" align="center" valign="top" class="NM_radius" style="padding-bottom:15px;">
+						<div class="block_all_icon"><div>Blocked</div></div>
+						<script type="text/javascript">
+							$(".block_all_icon").unbind("click").click(function(e){
+								e = e || event;
+								e.stopPropagation();
+								block_all_device_hint();
+							});
+						</script>
 						<div id="clientsContainer" onclick="showstausframe('Client');">
 							<a id="clientStatusLink" href="device-map/clients.asp" target="statusframe">
 							<div id="iconClient" style="margin-top:20px;" onclick="clickEvent(this);"></div>

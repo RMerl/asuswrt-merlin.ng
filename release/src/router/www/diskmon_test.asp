@@ -182,7 +182,7 @@ function scan_manually(){
 
 function done_committing(){}
 function restart_needed_time(reload_sec){
-	setTimeout("location.href = location.href;", reload_sec*1000);
+	setTimeout("location.reload();", reload_sec*1000);
 }
 </script>
 </head>

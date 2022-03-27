@@ -134,6 +134,7 @@ char cookies_buf[4096];
 int do_ssl = 0; 	// use Global for HTTPS upgrade judgment in web.c
 int ssl_stream_fd; 	// use Global for HTTPS stream fd in web.c
 int json_support = 0;
+char wl_band_list[8][8] = {{0}};
 
 #ifdef TRANSLATE_ON_FLY
 char Accept_Language[16];
@@ -343,7 +344,9 @@ void Debug2File(const char *path, const char *fmt, ...)
 
 	fp = fopen(path, "a+");
 	if (fp) {
+#ifndef RTCONFIG_AVOID_TZ_ENV
 		setenv("TZ", nvram_safe_get_x("", "time_zone_x"), 1);
+#endif
 		now = time(NULL);
 		localtime_r(&now, &tm);
 		strftime(timebuf, sizeof(timebuf), "%b %d %H:%M:%S", &tm);
@@ -561,7 +564,7 @@ send_login_page(int fromapp_flag, int error_status, char* url, char* file, int l
 	}else{
 		snprintf(inviteCode, sizeof(inviteCode), "\"error_status\":\"%d\"", error_status);
 		if(error_status == LOGINLOCK){
-			snprintf(buf, sizeof(buf), ",\"remaining_lock_time\":\"%ld\"", LOCKTIME - login_dt);
+			snprintf(buf, sizeof(buf), ",\"remaining_lock_time\":\"%ld\"", max_lock_time - login_dt);
 			strlcat(inviteCode, buf, sizeof(inviteCode));
 		}
 	}
@@ -1403,7 +1406,7 @@ handle_request(void)
 			}
 			if (handler->auth) {
 				url_do_auth = 1;
-#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400)
+#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX6000) || defined(GTAXE16000) || defined(GTAX11000_PRO)
 				switch_ledg(LEDG_QIS_FINISH);
 #endif
 				if ((mime_exception&MIME_EXCEPTION_NOAUTH_FIRST)&&!x_Setting) {
@@ -2148,7 +2151,7 @@ load_dictionary (char *lang, pkw_t pkw)
 #endif  // RELOAD_DICT
 
 //	gettimeofday (&tv1, NULL);
-	if (lang == NULL || (lang != NULL && strlen (lang) == 0)) {
+	if(lang == NULL || strlen(lang) != 2 || !strstr(ALL_LANGS, lang)){
 		// if "lang" is invalid, use English as default
 		snprintf (dfn, sizeof (dfn), eng_dict);
 	} else {
@@ -2324,7 +2327,9 @@ int main(int argc, char **argv)
 	/* set initial TZ to avoid mem leaks
 	 * it suppose to be convert after applying
 	 * time_zone_x_mapping(); */
+#ifndef RTCONFIG_AVOID_TZ_ENV
 	setenv("TZ", nvram_safe_get_x("", "time_zone_x"), 1);
+#endif
 
 #ifdef RTCONFIG_LETSENCRYPT
 	nvram_unset("le_restart_httpd");
@@ -2431,6 +2436,7 @@ int main(int argc, char **argv)
 
 	/* handler global variable */
 	get_index_page(indexpage, sizeof(indexpage));
+	get_wl_nband_list();
 #if defined(RTCONFIG_SW_HW_AUTH) && defined(RTCONFIG_AMAS)
 	amas_support = getAmasSupportMode();
 #endif
@@ -2438,6 +2444,9 @@ int main(int argc, char **argv)
 		save_ui_support_to_file();
 		save_iptvSettings_to_file();
 	}
+#ifdef RTCONFIG_JFFS2USERICON
+	renew_upload_icon();
+#endif
 
 	/* Loop forever handling requests */
 	for (;;) {

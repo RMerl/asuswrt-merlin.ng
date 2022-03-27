@@ -47,6 +47,9 @@ endif
 	LDFLAGS += -L$(TOP)/libusb/libusb/.libs -lusb
 #	LDFLAGS += -L$(TOP)/libusb-0.1.12/.libs -l:libusb.a
 	LDFLAGS += -L$(TOP)/shared -lshared
+ifeq ($(RTCONFIG_BCM_502L07P2),y)
+	LDFLAGS += -L$(TOP_PLATFORM)/ethctl_lib -lethctl
+endif
 	LDFLAGS += -L$(TOP_PLATFORM)/nvram${BCMEX}$(EX7) -lnvram
 #endif
 

@@ -1,0 +1,47 @@
+MPS PIXIT for the PTS tool.
+
+PTS version: 6.1
+
+* - different than PTS defaults
+& - should be set to IUT Bluetooth address
+^ - should be set accordingly
+# - should be set according to the reported phone number's type
+
+		Required PIXIT settings
+-------------------------------------------------------------------------------
+Parameter Name						Value
+-------------------------------------------------------------------------------
+TSPX_avrcp_revision					1.5 (^)
+TSPX_class_of_device					20050C
+TSPX_establish_avdtp_stream				TRUE
+TSPX_iut_establishes_initial_condition			FALSE
+TSPX_tester_device					A (*)
+TSPX_media_directory
+TSPX_bd_addr_iut					112233445566 (*&)
+TSPX_delete_link_key					FALSE
+TSPX_pin_code						0000
+TSPX_security_enabled					FALSE
+TSPX_time_guard						300000
+TSPX_use_implicit_send					TRUE
+TSPX_auth_password					0000
+TSPX_auth_user_id					PTS
+TSPX_l2cap_psm						1003
+TSPX_rfcomm_channel					8
+TSPX_no_confirmations					FALSE
+TSPX_AG_match_tester_BRSF_codec_negotiation_bit		FALSE
+TSPX_network_supports_correct_call_and_callstatus	TRUE
+TSPX_no_fail_verdicts					FALSE
+TSPX_packet_type_sco					00A0
+TSPX_phone_number					1234567 (^)
+TSPX_phone_number_memory				1
+TSPX_phone_number_memory_invalid_index			9999
+TSPX_phone_number_type					145 (*#)
+TSPX_scan_all_memory_dial_locations			FALSE
+TSPX_second_phone_number				1234567 (^)
+TSPX_second_phone_type					129
+TSPX_secure_simple_pairing_pass_key_confirmation	FALSE
+TSPX_server_channel_iut					00
+TSPX_server_channel_tester				01
+TSPX_verbose_implicit_send				FALSE
+TSPX_verify_CLIP_information				TRUE
+-------------------------------------------------------------------------------

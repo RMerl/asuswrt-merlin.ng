@@ -1,0 +1,242 @@
+PTS test results for AVRCP
+
+PTS version: 6.1
+Tested: 21-May-2015
+Android version: 5.1
+
+Results:
+PASS	test passed
+FAIL	test failed
+INC	test is inconclusive
+N/A	test is disabled due to PICS setup
+
+		Controller (CT)
+-------------------------------------------------------------------------------
+Test Name		Result	Notes
+-------------------------------------------------------------------------------
+TC_CT_BGN_BV_01_I	N/A
+TC_CT_BGN_BV_02_I	N/A
+TC_CT_CA_BV_01_C	N/A
+TC_CT_CA_BV_03_C	N/A
+TC_CT_CA_BV_05_C	N/A
+TC_CT_CA_BV_07_C	N/A
+TC_CT_CA_BV_09_C	N/A
+TC_CT_CA_BV_11_C	N/A
+TC_CT_CA_BV_13_C	N/A
+TC_CT_CA_BV_15_C	N/A
+TC_CT_CA_BV_17_C	N/A
+TC_CT_CA_BV_18_C	N/A
+TC_CT_CA_BV_01_I	N/A
+TC_CT_CA_BV_02_I	N/A
+TC_CT_CA_BV_03_I	N/A
+TC_CT_CEC_BV_01_I	N/A
+TC_CT_CEC_BV_02_I	N/A
+TC_CT_CFG_BV_01_C	N/A
+TC_CT_CON_BV_01_C	N/A
+TC_CT_CON_BV_03_C	N/A
+TC_CT_CRC_BV_01_I	N/A
+TC_CT_CRC_BV_02_I	N/A
+TC_CT_ICC_BV_01_I	N/A
+TC_CT_ICC_BV_02_I	N/A
+TC_CT_MCN_CB_BV_01_C	N/A
+TC_CT_MCN_CB_BV_04_C	N/A
+TC_CT_MCN_CB_BV_07_C	N/A
+TC_CT_MCN_CB_BV_12_C	N/A
+TC_CT_MCN_CB_BV_01_I	N/A
+TC_CT_MCN_CB_BV_02_I	N/A
+TC_CT_MCN_CB_BV_03_I	N/A
+TC_CT_MCN_CB_BV_04_I	N/A
+TC_CT_MCN_CB_BV_05_I	N/A
+TC_CT_MCN_CB_BV_06_I	N/A
+TC_CT_MCN_NP_BV_01_C	N/A
+TC_CT_MCN_NP_BV_03_C	N/A
+TC_CT_MCN_NP_BV_05_C	N/A
+TC_CT_MCN_NP_BV_08_C	N/A
+TC_CT_MCN_NP_BV_10_C	N/A
+TC_CT_MCN_NP_BV_01_I	N/A
+TC_CT_MCN_NP_BV_02_I	N/A
+TC_CT_MCN_NP_BV_03_I	N/A
+TC_CT_MCN_NP_BV_04_I	N/A
+TC_CT_MCN_NP_BV_05_I	N/A
+TC_CT_MCN_NP_BV_06_I	N/A
+TC_CT_MCN_NP_BV_07_I	N/A
+TC_CT_MCN_SRC_BV_01_C	N/A
+TC_CT_MCN_SRC_BV_03_C	N/A
+TC_CT_MCN_SRC_BV_05_C	N/A
+TC_CT_MCN_SRC_BV_07_C	N/A
+TC_CT_MCN_SRC_BV_01_I	N/A
+TC_CT_MCN_SRC_BV_02_I	N/A
+TC_CT_MCN_SRC_BV_03_I	N/A
+TC_CT_MCN_SRC_BV_04_I	N/A
+TC_CT_MDI_BV_01_C	N/A
+TC_CT_MDI_BV_03_C	N/A
+TC_CT_MPS_BV_01_C	N/A
+TC_CT_MPS_BV_03_C	N/A
+TC_CT_MPS_BV_08_C	N/A
+TC_CT_MPS_BV_11_C	N/A
+TC_CT_MPS_BV_01_I	N/A
+TC_CT_MPS_BV_02_I	N/A
+TC_CT_MPS_BV_03_I	N/A
+TC_CT_NFY_BV_01_C	N/A
+TC_CT_PAS_BV_01_C	N/A
+TC_CT_PAS_BV_03_C	N/A
+TC_CT_PAS_BV_05_C	N/A
+TC_CT_PAS_BV_07_C	N/A
+TC_CT_PAS_BV_09_C	N/A
+TC_CT_PAS_BV_11_C	N/A
+TC_CT_PTH_BV_01_C	N/A
+TC_CT_PTH_BV_02_C	N/A
+TC_CT_PTT_BV_01_I	N/A
+TC_CT_PTT_BV_02_I	N/A
+TC_CT_PTT_BV_03_I	N/A
+TC_CT_PTT_BV_04_I	N/A
+TC_CT_PTT_BV_05_I	N/A
+TC_CT_RCR_BV_01_C	N/A
+TC_CT_RCR_BV_03_C	N/A
+TC_CT_VLH_BI_03_C	PASS	Send SetAbsolute Volume command by pressing
+				volume up or down buttons then adb logcat and
+				check VOLUME_CHANGED value
+TC_CT_VLH_BI_04_C	PASS	adb logcat: check VOLUME_CHANGED value
+TC_CT_VLH_BV_01_C	PASS	Send SetAbsolute Volume command by pressing
+				volume up or down buttons
+TC_CT_VLH_BV_03_C	PASS	adb logcat: check VOLUME_CHANGED value
+TC_CT_VLH_BV_01_I	PASS	Send SetAbsolute Volume command by pressing
+				volume up or down buttons
+TC_CT_VLH_BV_02_I	PASS 	Send SetAbsolute Volume command by pressing
+				volume up or down buttons
+-------------------------------------------------------------------------------
+
+
+		Target (TG)
+-------------------------------------------------------------------------------
+Test Name		Result	Notes
+-------------------------------------------------------------------------------
+TC_TG_BGN_BV_01_I	N/A
+TC_TG_BGN_BV_02_I	N/A
+TC_TG_CA_BI_01_C	N/A
+TC_TG_CA_BI_02_C	N/A
+TC_TG_CA_BI_03_C	N/A
+TC_TG_CA_BI_04_C	N/A
+TC_TG_CA_BI_05_C	N/A
+TC_TG_CA_BI_06_C	N/A
+TC_TG_CA_BI_07_C	N/A
+TC_TG_CA_BI_08_C	N/A
+TC_TG_CA_BI_09_C	N/A
+TC_TG_CA_BI_10_C	N/A
+TC_TG_CA_BV_02_C	N/A
+TC_TG_CA_BV_04_C	N/A
+TC_TG_CA_BV_06_C	N/A
+TC_TG_CA_BV_08_C	N/A
+TC_TG_CA_BV_10_C	N/A
+TC_TG_CA_BV_12_C	N/A
+TC_TG_CA_BV_14_C	N/A
+TC_TG_CA_BV_16_C	N/A
+TC_TG_CA_BV_01_I	N/A
+TC_TG_CA_BV_02_I	N/A
+TC_TG_CA_BV_03_I	N/A
+TC_TG_CEC_BV_01_I	PASS
+TC_TG_CEC_BV_02_I	PASS
+TC_TG_CFG_BI_01_C	PASS
+TC_TG_CFG_BV_02_C	PASS
+TC_TG_CON_BV_02_C	N/A
+TC_TG_CON_BV_04_C	N/A
+TC_TG_CON_BV_05_C	N/A
+TC_TG_CRC_BV_01_I	PASS
+TC_TG_CRC_BV_02_I	PASS	Disconnect from PTS
+TC_TG_ICC_BV_01_I	PASS
+TC_TG_ICC_BV_02_I	PASS
+TC_TG_INV_BI_01_C	PASS
+TC_TG_INV_BI_02_C	N/A
+TC_TG_MCN_CB_BI_01_C	N/A
+TC_TG_MCN_CB_BI_02_C	N/A
+TC_TG_MCN_CB_BI_03_C	N/A
+TC_TG_MCN_CB_BI_04_C	N/A
+TC_TG_MCN_CB_BI_05_C	N/A
+TC_TG_MCN_CB_BV_02_C	N/A
+TC_TG_MCN_CB_BV_02_I	N/A
+TC_TG_MCN_CB_BV_03_C	N/A
+TC_TG_MCN_CB_BV_03_I	N/A
+TC_TG_MCN_CB_BV_04_I	N/A
+TC_TG_MCN_CB_BV_05_C	N/A
+TC_TG_MCN_CB_BV_05_I	N/A
+TC_TG_MCN_CB_BV_06_C	N/A
+TC_TG_MCN_CB_BV_06_I	N/A
+TC_TG_MCN_CB_BV_07_I	N/A
+TC_TG_MCN_CB_BV_08_C	N/A
+TC_TG_MCN_CB_BV_09_C	N/A
+TC_TG_MCN_CB_BV_10_C	N/A
+TC_TG_MCN_CB_BV_11_C	N/A
+TC_TG_MCN_CB_BV_13_C	N/A
+TC_TG_MCN_NP_BI_01_C	N/A
+TC_TG_MCN_NP_BI_02_C	N/A
+TC_TG_MCN_NP_BV_01_I	N/A
+TC_TG_MCN_NP_BV_02_C	N/A
+TC_TG_MCN_NP_BV_02_I	N/A
+TC_TG_MCN_NP_BV_03_I	N/A
+TC_TG_MCN_NP_BV_04_C	N/A
+TC_TG_MCN_NP_BV_04_I	N/A
+TC_TG_MCN_NP_BV_05_I	N/A
+TC_TG_MCN_NP_BV_06_C	N/A
+TC_TG_MCN_NP_BV_06_I	N/A
+TC_TG_MCN_NP_BV_07_C	N/A
+TC_TG_MCN_NP_BV_07_I	N/A
+TC_TG_MCN_NP_BV_09_C	N/A
+TC_TG_MCN_NP_BV_11_C	N/A
+TC_TG_MCN_SRC_BV_01_I	N/A
+TC_TG_MCN_SRC_BV_02_C	N/A
+TC_TG_MCN_SRC_BV_02_I	N/A
+TC_TG_MCN_SRC_BV_03_I	N/A
+TC_TG_MCN_SRC_BV_04_C	N/A
+TC_TG_MCN_SRC_BV_04_I	N/A
+TC_TG_MCN_SRC_BV_06_C	N/A
+TC_TG_MCN_SRC_BV_08_C	N/A
+TC_TG_MDI_BV_02_C	PASS
+TC_TG_MDI_BV_04_C	PASS
+TC_TG_MDI_BV_05_C	PASS
+TC_TG_MPS_BI_01_C	N/A
+TC_TG_MPS_BI_02_C	N/A
+TC_TG_MPS_BV_01_I	N/A
+TC_TG_MPS_BV_02_C	N/A
+TC_TG_MPS_BV_02_I	N/A
+TC_TG_MPS_BV_03_I	N/A
+TC_TG_MPS_BV_04_C	N/A
+TC_TG_MPS_BV_05_C	N/A
+TC_TG_MPS_BV_06_C	N/A
+TC_TG_MPS_BV_07_C	N/A
+TC_TG_MPS_BV_09_C	N/A
+TC_TG_MPS_BV_10_C	N/A
+TC_TG_MPS_BV_12_C	N/A
+TC_TG_NFY_BI_01_C	PASS
+TC_TG_NFY_BV_02_C	PASS	Change track when requested
+TC_TG_NFY_BV_03_C	N/A
+TC_TG_NFY_BV_04_C	PASS
+TC_TG_NFY_BV_05_C	PASS
+TC_TG_NFY_BV_06_C	N/A
+TC_TG_NFY_BV_07_C	N/A
+TC_TG_NFY_BV_08_C	PASS
+TC_TG_PAS_BI_01_C	N/A
+TC_TG_PAS_BI_02_C	N/A
+TC_TG_PAS_BI_03_C	N/A
+TC_TG_PAS_BI_04_C	N/A
+TC_TG_PAS_BI_05_C	N/A
+TC_TG_PAS_BV_02_C	N/A
+TC_TG_PAS_BV_04_C	N/A
+TC_TG_PAS_BV_06_C	N/A
+TC_TG_PAS_BV_08_C	N/A
+TC_TG_PAS_BV_10_C	N/A
+TC_TG_PTT_BV_01_I	PASS
+TC_TG_PTT_BV_02_I	PASS
+TC_TG_PTT_BV_03_I	N/A
+TC_TG_PTT_BV_04_I	N/A
+TC_TG_PTT_BV_05_I	N/A
+TC_TG_RCR_BV_02_C	PASS	Use modified media metadata (artist, title,
+					album etc.) to be larger than 512 byte.
+TC_TG_RCR_BV_04_C	PASS	Use modified media metadata (artist, title,
+					album etc.) to be larger than 512 byte.
+TC_TG_VLH_BI_01_C	N/A
+TC_TG_VLH_BI_02_C	N/A
+TC_TG_VLH_BV_01_I	N/A
+TC_TG_VLH_BV_02_C	N/A
+TC_TG_VLH_BV_02_I	N/A
+TC_TG_VLH_BV_04_C	N/A
+-------------------------------------------------------------------------------

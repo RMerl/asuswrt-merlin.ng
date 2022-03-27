@@ -94,6 +94,8 @@ int rtkswitch_ioctl(int val, int val2)
 	case 41:	/* turn off led */
 	case 42:	/* turn on led by force */
 	case 43:	/* turn on led normally */
+	case 44:	/* hardware reset */
+	case 45:	/* software reset */
 		p = NULL;
 		break;
 	default:

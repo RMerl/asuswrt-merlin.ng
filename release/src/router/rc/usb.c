@@ -292,10 +292,13 @@ void add_usb_host_modules(void)
 	modprobe(USBCORE_MOD);
 
 #ifdef RTCONFIG_HND_ROUTER_AX
-	if(nvram_get_int("usb_usb3") == 1)
-		eval("insmod", "bcm_usb", "usb3_enable=1");
-	else
-		eval("insmod", "bcm_usb", "usb3_enable=0");
+	eval("insmod",
+#if defined(BCM4912) || defined(BCM6756)
+		"bcm_bca_usb"
+#else
+		"bcm_usb"
+#endif
+		, (nvram_get_int("usb_usb3") == 1) ? "usb3_enable=1" : "usb3_enable=0");
 #endif
 
 #if defined(RTCONFIG_USB_XHCI)
@@ -315,7 +318,9 @@ void add_usb_host_modules(void)
 #elif defined(RTCONFIG_ALPINE)
 	modprobe(USB30_MOD);
 #else
+#if !defined(BCM4912) && !defined(BCM6756)
 	if (nvram_get_int("usb_usb3") == 1) {
+#endif
 #ifdef RTCONFIG_HND_ROUTER
 		modprobe(USB30_MOD);
 		modprobe("xhci-plat-hcd");
@@ -325,7 +330,9 @@ void add_usb_host_modules(void)
 #else
 		modprobe(USB30_MOD);
 #endif
+#if !defined(BCM4912) && !defined(BCM6756)
 	}
+#endif
 #endif
 #endif // RTCONFIG_USB_XHCI
 
@@ -444,10 +451,10 @@ void add_usb_modem_modules(void)
 
 void remove_usb_modem_modules(void)
 {
-#ifdef RTCONFIG_INTERNAL_GOBI
 	if(get_wans_dualwan()&WANSCAP_USB)
 		return;
 
+#ifdef RTCONFIG_INTERNAL_GOBI
 	killall_tk("gobi");
 	modprobe_r("gobi");
 #endif
@@ -1051,10 +1058,10 @@ void remove_usb_module(void)
 #ifdef RTCONFIG_USB_MODEM
 void stop_modem_program()
 {
-#ifdef RTCONFIG_INTERNAL_GOBI
 	if(get_wans_dualwan()&WANSCAP_USB)
 		return;
 
+#ifdef RTCONFIG_INTERNAL_GOBI
 	killall_tk("gobi_api");
 	if(!g_reboot)
 		sleep(1);
@@ -1350,6 +1357,9 @@ int mount_r(char *mnt_dev, char *mnt_dir, char *_type)
 					sprintf(options + strlen(options), ",nodev" + (options[0] ? 0 : 1));
 				else
 					sprintf(options + strlen(options), ",nodev,iostreaming" + (options[0] ? 0 : 1));
+#if defined(BCM49XX)
+				sprintf(options + strlen(options), ",inode32" + (options[0] ? 0 : 1));
+#endif
 #else
 				sprintf(options + strlen(options), ",noatime" + (options[0] ? 0 : 1));
 #endif
@@ -1364,6 +1374,9 @@ int mount_r(char *mnt_dev, char *mnt_dir, char *_type)
 				sprintf(options + strlen(options), ",nodev" + (options[0] ? 0 : 1));
 			else
 				sprintf(options + strlen(options), ",nodev,iostreaming" + (options[0] ? 0 : 1));
+#if defined(BCM49XX)
+			sprintf(options + strlen(options), ",inode32" + (options[0] ? 0 : 1));
+#endif
 #else
 			sprintf(options + strlen(options), ",noatime" + (options[0] ? 0 : 1));
 #endif
@@ -1514,7 +1527,10 @@ int mount_r(char *mnt_dev, char *mnt_dir, char *_type)
 #if defined(RTCONFIG_OPENPLUSTUXERA_NTFS)
 					else
 #endif
-						ret = eval("mount", "-t", "tntfs", "-o", options, mnt_dev, mnt_dir);
+					{
+						//ret = eval("mount", "-t", "tntfs", "-o", options, mnt_dev, mnt_dir);
+						ret = eval("mount", "-t", "tntfs", "-o", "nodev", mnt_dev, mnt_dir);
+					}
 #endif
 #if defined(RTCONFIG_PARAGON_NTFS)
 #if defined(RTCONFIG_OPENPLUSPARAGON_NTFS)
@@ -1615,6 +1631,9 @@ int mount_r(char *mnt_dev, char *mnt_dir, char *_type)
 						type, (flags & MS_RDONLY) ? " (ro)" : "", mnt_dev, mnt_dir);
 				logmessage("usb", "USB %s%s fs at %s mounted on %s.\n",
 						type, (flags & MS_RDONLY) ? " (ro)" : "", mnt_dev, mnt_dir);
+#if defined(RTCONFIG_SOC_IPQ8074)
+				f_write_string("/proc/net/skb_recycler/max_skbs", "12288", 0, 0);
+#endif
 				return (flags & MS_RDONLY) ? MOUNT_VAL_RONLY : MOUNT_VAL_RW;
 			}
 
@@ -2034,10 +2053,8 @@ static inline void remove_disk_log(char *device) { }
 int mount_partition(char *dev_name, int host_num, char *dsc_name, char *pt_name, uint flags)
 {
 	char the_label[128], mountpoint[128], uuid[40];
-	int ret;
-	char *type, *ptr, *end;
-	static char *swp_argv[] = { "swapon", "-a", NULL };
-	struct mntent *mnt;
+	int ret = -1;
+	char *type, *ptr;
 #if defined(RTCONFIG_USB_MODEM) || defined(RTCONFIG_APP_PREINSTALLED) || defined(RTCONFIG_APP_NETINSTALLED)
 	char command[PATH_MAX];
 #endif
@@ -2050,6 +2067,11 @@ int mount_partition(char *dev_name, int host_num, char *dsc_name, char *pt_name,
 		type = "unknown";
 
 	run_custom_script("pre-mount", 120, dev_name, type);
+
+#if !defined(RTCONFIG_HND_ROUTER_AX_6710) && !defined(RTCONFIG_BCM_502L07P2) && !defined(BCM4912)
+	char *end;
+	static char *swp_argv[] = { "swapon", "-a", NULL };
+	struct mntent *mnt;
 
 	if (f_exists("/etc/fstab")) {
 		if (strcmp(type, "swap") == 0) {
@@ -2072,6 +2094,7 @@ int mount_partition(char *dev_name, int host_num, char *dsc_name, char *pt_name,
 			goto done;
 		}
 	}
+#endif
 
 	if (*the_label != 0) {
 		for (ptr = the_label; *ptr; ptr++) {
@@ -3490,10 +3513,15 @@ start_samba(void)
 
 #if defined(SMP) && !defined(HND_ROUTER)
 #if defined(RTCONFIG_BCMARM) || defined(RTCONFIG_SOC_IPQ8064) || defined(RTCONFIG_SOC_IPQ8074)
-#if defined(RTCONFIG_HND_ROUTER_AX_675X) && !defined(RTCONFIG_HND_ROUTER_AX_6710)
+#if defined(RTCONFIG_HND_ROUTER_AX_675X)
 	taskset_ret = -1;
 #else
 	if(!nvram_match("stop_taskset", "1")){
+#if defined(RTCONFIG_HND_ROUTER_AX_6756)
+#if defined(BCM6756)
+		cpu_num = 3;
+#endif
+#endif
 		if(cpu_num > 1)
 		{
 #ifndef RTCONFIG_BCMARM
@@ -3616,11 +3644,11 @@ void find_dms_dbdir(char *dbdir)
 	char dbdir_t[128], dbfile[128];
 	int found=0;
 
-  	strcpy(dbdir_t, nvram_safe_get("dms_dbdir"));
+	strlcpy(dbdir_t, nvram_safe_get("dms_dbdir"), sizeof(dbdir_t));
 
 	/* if previous dms_dbdir there, use it */
 	if(!strcmp(dbdir_t, nvram_default_get("dms_dbdir"))) {
-		sprintf(dbfile, "%s/files.db", dbdir_t);
+		snprintf(dbfile, sizeof(dbfile), "%s/file.db", dbdir_t);
 		if (check_if_file_exist(dbfile)) {
 			strcpy(dbdir, dbdir_t);
 			found = 1;
@@ -3893,17 +3921,23 @@ write_mt_daapd_conf(char *servername)
 		snprintf(dmsdir, sizeof(dmsdir), "%s", nvram_default_get("dms_dir"));
 
 #if 1
-	char *http_passwd = nvram_safe_get("http_passwd");
+	char http_passwd[128];
 #ifdef RTCONFIG_NVRAM_ENCRYPT
-	int declen = strlen(http_passwd);
-	char dec_passwd[declen];
-	memset(dec_passwd, 0, sizeof(dec_passwd));
-	pw_dec(http_passwd, dec_passwd, sizeof(dec_passwd));
-	http_passwd = dec_passwd;
+	int declen;
+	char *dec_passwd = NULL;
+
+	strlcpy(http_passwd, nvram_safe_get("http_passwd"), sizeof(http_passwd));
+	declen = strlen(http_passwd)+1;
+	dec_passwd = malloc(declen);
+	if(dec_passwd){
+		memset(dec_passwd, 0, declen);
+		pw_dec(http_passwd, dec_passwd, declen);
+		strlcpy(http_passwd, dec_passwd, sizeof(http_passwd));
+	}
 #endif
 	memset(dbdir, 0, sizeof(dbdir));
 	if (find_dms_dbdir_candidate(dbdir_t))
-		sprintf(dbdir, "%s/.mt-daapd", dbdir_t);
+		snprintf(dbdir, sizeof(dbdir), "%s/.mt-daapd", dbdir_t);
 
 	ptr = strlen(dbdir) ? dbdir : "/var/cache/mt-daapd";
 	nvram_set("daapd_dbdir", ptr);
@@ -3937,6 +3971,9 @@ write_mt_daapd_conf(char *servername)
 	fprintf(fp, "process_playlists = 1\n");
 	fprintf(fp, "process_itunes = 1\n");
 	fprintf(fp, "process_m3u = 1\n");
+#endif
+#ifdef RTCONFIG_NVRAM_ENCRYPT
+	if(dec_passwd) free(dec_passwd);
 #endif
 	fclose(fp);
 }
@@ -5371,8 +5408,7 @@ int diskmon_main(int argc, char *argv[])
 			continue;
 		}
 
-		memset(nvram_name, 0, 32);
-		sprintf(nvram_name, "usb_path%d_diskmon_freq_time", (port_num+1));
+		snprintf(nvram_name, sizeof(nvram_name), "usb_path%d_diskmon_freq_time", (port_num+1));
 		nv = nvp = strdup(nvram_safe_get(nvram_name));
 		if(!nv || strlen(nv) <= 0){
 			cprintf("disk_monitor: Without setting the running time at the port %d!\n", (port_num+1));

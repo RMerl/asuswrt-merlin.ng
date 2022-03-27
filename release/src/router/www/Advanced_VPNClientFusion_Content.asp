@@ -327,7 +327,7 @@ function initial(){
 
 	document.getElementById("faq1").href=faq_href2;		//this id is include in string : #VPN_Fusion_FAQ#	
 
-	$("#ip_conflict_hint").html("<#vpn_openvpn_conflict#>: Please change your router LAN subnet, please refer to this <a target='_blank'>FAQ</a> for detail");/* untranslated */
+	$("#ip_conflict_hint").html("<#vpn_openvpn_conflict#>: <#vpnc_ip_conflict_hint#>");
 	$("#ip_conflict_hint a").attr("href", faq_href3);
 
 }
@@ -358,7 +358,7 @@ function gen_exception_list_table() {
 				"width" : "30%"
 			},
 			{
-				"title" : "<#CTL_Activate#>",
+				"title" : "<#VPN_Fusion_Activate#>",
 				"width" : "10%"
 			}
 		],
@@ -1435,6 +1435,10 @@ function ovpnFileChecker(){
 			if(vpn_upload_state == "init"){
 				setTimeout("ovpnFileChecker();",1000);
 			}
+			else if(vpn_upload_state == "err"){
+				document.getElementById("importOvpnFile").innerHTML = "<#Setting_upload_hint#>";
+				document.getElementById("manualCRList").style.color = "#FC0";
+			}
 			else{
 				setManualTable(document.vpnclientForm.vpnc_openvpn_unit_edit.value);
 				
@@ -2066,7 +2070,7 @@ function save_ipsec_profile_panel() {
 		else if(getRadioItemCheck(document.ipsec_form.ipsec_remote_gateway_method) == "1") {
 			if(!validator.domainName_flag(document.ipsec_form.ipsec_remote_gateway.value)) {
 				document.ipsec_form.ipsec_remote_gateway.focus();
-				alert(document.ipsec_form.ipsec_remote_gateway.value + " is invalid Domain Name");/*untranslated*/
+				alert(document.ipsec_form.ipsec_remote_gateway.value + "<#JS_invalid_domain#>");
 				return false;
 			}
 			if(!validator.isEmpty(document.ipsec_form.ipsec_remote_id))
@@ -3205,14 +3209,14 @@ function del_exception_list_confirm(_parArray) {
 						<th><#vpn_ipsec_Local_ID#></th>
 						<td>
 							<input type="text" class="input_25_table" name="ipsec_local_id" placeholder="<#IPConnection_ExternalIPAddress_itemname#>、FQDN、<#AiProtection_WebProtector_EMail#> or DN" autocomplete="off" autocorrect="off" autocapitalize="off">
-							<span style="color:#FC0">(Optional)<!--untranslated--></span>
+							<span style="color:#FC0">(<#feedback_optional#>)</span>
 						</td>
 					</tr>
 					<tr id="tr_adv_remote_id">
 						<th><#vpn_ipsec_Remote_ID#></th>
 						<td>
 							<input type="text" class="input_25_table" name="ipsec_remote_id" placeholder="<#IPConnection_ExternalIPAddress_itemname#>、FQDN、<#AiProtection_WebProtector_EMail#> or DN" autocomplete="off" autocorrect="off" autocapitalize="off">
-							<span id="ipsec_remote_id_hint" style="color:#FC0">(Optional)<!--untranslated--></span>
+							<span id="ipsec_remote_id_hint" style="color:#FC0">(<#feedback_optional#>)</span>
 						</td>
 					</tr>
 				</table>

@@ -12,7 +12,6 @@
 # $ make install (default INSTALLPREFIX is /usr)
 
 include ../common.mak
-include ../.config
 
 OS = Linux
 VERSION = 2.6.36
@@ -59,6 +58,9 @@ JNAERATORBASEURL = http://jnaerator.googlecode.com/files/
 
 CFLAGS += -I$(TOP)/shared -I$(SRCBASE)/include -I$(TOP)/networkmap
 LDFLAGS += -L$(TOP)/shared -lshared  -L$(TOP_PLATFORM)/nvram${BCMEX}${EX7} -lnvram
+ifeq ($(RTCONFIG_BCM_502L07P2),y)
+LDFLAGS += -L$(TOP_PLATFORM)/ethctl_lib -lethctl
+endif
 
 ifeq ($(HND_ROUTER),y)
 LDFLAGS += -L$(TOP_PLATFORM)/wlcsm$(EXHND) -lwlcsm

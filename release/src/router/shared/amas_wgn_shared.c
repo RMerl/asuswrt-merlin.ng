@@ -337,7 +337,7 @@ wgn_vlan_rule* 	wgn_vlan_list_get_from_content(
 	char *type;
 
 	int fields = 0;
-	int wlband_count[3];
+	int wlband_count[64];
  	int unit = 0;
 	size_t list_size = 0;
 
@@ -710,6 +710,25 @@ int wgn_vlan_list_check_subunit_conflict(
 	return ret;
 }
 
+void wgn_vlan_list_wl_subunit_shift(
+	wgn_vlan_rule *list,
+	size_t list_size)
+{
+	int unit = 0;
+	char word[64], *next = NULL;
+
+	if (list == NULL || list_size <=0)
+		return;
+
+	foreach(word, nvram_safe_get("wl_ifnames"), next) {
+		SKIP_ABSENT_BAND_AND_INC_UNIT(unit);
+		wgn_vlan_list_check_subunit_conflict(list, list_size, unit, 1);
+		unit++;
+	}
+
+	return;
+}
+
 int wgn_get_wl_band_unit(
 	int *result_unit,
 	int *result_subunit, 
@@ -726,13 +745,18 @@ int wgn_get_wl_band_unit(
 	if (result_subunit)
 		*result_subunit = -1;
 
-	if (wl2gset && strlen(wl2gset) == 4 && (wlset = strtoul(wl2gset, NULL, 10)) > 0)
-		unit = 0;
-	else if (wl5gset && strlen(wl5gset) == 4 && (wlset = strtoul(wl5gset, NULL, 10)) > 0)
-		unit = 1;
-	else if (wl5gset && strlen(wl5gset) == 8 && (wlset = strtoul(wl5gset, NULL, 10)) > 0)
-		unit = 2;
+	if (wl2gset && strlen(wl2gset) == 4 && (wlset = strtoul(wl2gset, NULL, 10)) > 0)	// 2G
+		unit = wgn_get_unit_by_band(WGN_WL_BAND_2G);
+	else if (wl5gset && strlen(wl5gset) == 4 && (wlset = strtoul(wl5gset, NULL, 10)) > 0)	// 5g
+		unit = wgn_get_unit_by_band(WGN_WL_BAND_5G);
+	else if (wl5gset && strlen(wl5gset) == 8 && (wlset = strtoul(&wl5gset[4], NULL, 10)) > 0)	// 5g1
+		unit = wgn_get_unit_by_band(WGN_WL_BAND_5GH);
+	else if (wl5gset && strlen(wl5gset) == 12 && (wlset = strtoul(&wl5gset[8], NULL, 10)) > 0)	// 6G
+		unit = wgn_get_unit_by_band(WGN_WL_BAND_6G);
 	else 
+		return -1;
+
+	if (unit == -1)
 		return -1;
 
 	for (subunit=0, i=0; i<16; i++, subunit++)
@@ -749,6 +773,109 @@ int wgn_get_wl_band_unit(
 		*result_subunit = subunit;
 
 	return unit;
+}
+
+int wgn_get_unit_by_band(
+	int band_type)
+{
+	char nv[64], wlifnames[128];
+	char word[64], *next = NULL;
+	int nband = 0, unit = 0, result = -1, num5g = 0, found = 0;
+
+	memset(wlifnames, 0, sizeof(wlifnames));
+	strlcpy(wlifnames, nvram_safe_get("wl_ifnames"), sizeof(wlifnames));
+
+	switch (band_type) {
+		case WGN_WL_BAND_2G:
+			nband = 2;
+			break;
+		case WGN_WL_BAND_5G:
+		case WGN_WL_BAND_5GH:
+			nband = 1;
+			break;
+		case WGN_WL_BAND_6G:
+			nband = 4;
+			break;
+		default:
+			return -1;
+	}
+
+	foreach(word, wlifnames, next) {
+		SKIP_ABSENT_BAND_AND_INC_UNIT(unit);
+		memset(nv, 0, sizeof(nv));
+		snprintf(nv, sizeof(nv), "wl%d_nband", unit);
+		if (nband == nvram_get_int(nv)) {
+			if (nband == 1) {
+				num5g++;
+				if (num5g == 1 && band_type == WGN_WL_BAND_5G) {
+					found = 1;
+					result = unit;
+				}
+				else if (num5g == 2 && band_type == WGN_WL_BAND_5GH) {
+					found = 1;
+					result = unit;
+				}
+			}
+			else {
+				found = 1;
+				result = unit;
+			}
+		}
+
+		if (found == 1)
+			break;
+		unit++;
+	}
+
+	return (found == 1) ? result : -1;
+}
+
+int wgn_get_band_by_unit(
+	int unit)
+{
+	char nv[64], wlifnames[128];
+	char word[64], *next = NULL;
+	int wlband[16], i = 0, num5g = 0, array_size = sizeof(wlband)/sizeof(int);
+
+	if (unit > array_size-1)
+		return -1;
+
+	memset(wlifnames, 0, sizeof(wlifnames));
+	strlcpy(wlifnames, nvram_safe_get("wl_ifnames"), sizeof(wlifnames));
+
+	memset(wlband, -1, sizeof(wlband));
+	foreach (word, wlifnames, next) {
+		if (i > array_size-1)
+			break;
+
+		SKIP_ABSENT_BAND_AND_INC_UNIT(i);
+		memset(nv, 0, sizeof(nv));
+		snprintf(nv, sizeof(nv), "wl%d_nband", i);
+		switch (nvram_get_int(nv)) {
+			case 2:	// 2G
+				wlifnames[i] = WGN_WL_BAND_2G;
+				break;
+			case 1: // 5G
+				num5g++;
+				if (num5g==1)
+					wlifnames[i] = WGN_WL_BAND_5G;
+				else if (num5g==2)
+					wlifnames[i] = WGN_WL_BAND_5GH;
+				else
+					wlifnames[i] = -1;
+				break;
+			case 4:	// 6G
+				wlifnames[i] = WGN_WL_BAND_6G;
+				break;
+			default:
+				wlifnames[i] = -1;
+				break;
+		}
+
+		i++;
+	}
+
+	return wlifnames[unit];
 }
 
 void wgn_get_wl_unit(
@@ -771,13 +898,18 @@ void wgn_get_wl_unit(
 	if (!(p = vlan_rule))
 		return;
 
-	if (p->wl2gset && strlen(p->wl2gset) == 4 && (wlset = strtoul(p->wl2gset, NULL, 10)) > 0)
-		unit = 0;
-	else if (p->wl5gset && strlen(p->wl5gset) == 4 && (wlset = strtoul(p->wl5gset,  NULL, 10)) > 0)
-		unit = 1;
-	else if (p->wl5gset && strlen(p->wl5gset) == 8 && (wlset = strtoul(&p->wl5gset[4], NULL, 10)) > 0)
-		unit = 2;
+	if (p->wl2gset && strlen(p->wl2gset) == 4 && (wlset = strtoul(p->wl2gset, NULL, 10)) > 0)	// 2G
+		unit = wgn_get_unit_by_band(WGN_WL_BAND_2G);
+	else if (p->wl5gset && strlen(p->wl5gset) == 4 && (wlset = strtoul(p->wl5gset,  NULL, 10)) > 0)	// 5G
+		unit = wgn_get_unit_by_band(WGN_WL_BAND_5G);
+	else if (p->wl5gset && strlen(p->wl5gset) == 8 && (wlset = strtoul(&p->wl5gset[4], NULL, 10)) > 0)	// 5GH
+		unit = wgn_get_unit_by_band(WGN_WL_BAND_5GH);
+	else if (p->wl5gset && strlen(p->wl5gset) == 12 && (wlset = strtoul(&p->wl5gset[8], NULL, 10)) > 0)	// 6G
+		unit = wgn_get_unit_by_band(WGN_WL_BAND_6G);
 	else
+		return;
+
+	if (unit == -1)
 		return;
 
 	for (subunit=0, i=0; i<16; i++, subunit++)
@@ -802,29 +934,36 @@ void wgn_set_wl_unit(
 	wgn_vlan_rule *vlan_rule)
 {
 	struct wgn_vlan_rule_t *p;
+	char *pp = NULL;
+	int nband = -1;
 
 	if (!(p = vlan_rule))
 		return;
 
-	if (subunit < 1 || subunit > 15)
+	if (unit < 0 || subunit < 1 || subunit > 15)
 		return;
 
-	switch (unit)
-	{
-		case 0:
-			memset(p->wl2gset, 0, sizeof(p->wl2gset));
-			snprintf(p->wl2gset, sizeof(p->wl2gset), "%04X", (1 << subunit));
+	if ((nband = wgn_get_band_by_unit(unit)) == -1)
+		return;
+
+	switch (nband) {
+		case WGN_WL_BAND_2G:
+			pp = &p->wl2gset[0];
 			break;
-		case 1:
-			memset(p->wl5gset, 0, sizeof(p->wl5gset));
-			snprintf(p->wl5gset, sizeof(p->wl5gset), "%04X", (1 << subunit));
+		case WGN_WL_BAND_5G:
+			pp = &p->wl5gset[0];
 			break;
-		case 2:
-			memset(p->wl5gset, 0, sizeof(p->wl5gset));
-			snprintf(p->wl5gset, sizeof(p->wl5gset), "%04X%04X", 0, (1 << subunit));
+		case WGN_WL_BAND_5GH:
+			pp = &p->wl5gset[4];
 			break;
+		case WGN_WL_BAND_6G:
+			pp = &p->wl5gset[8];
+			break;
+		default:
+			return;
 	}
 
+	snprintf(pp, WGN_VLAN_RULE_WLANSET_SIZE, "%04X", (1 << subunit));
 	return;
 }
 
@@ -848,6 +987,9 @@ char *wgn_guest_ifnames(
 
 	char s[33];
 
+	if (band < 0)
+		return NULL;
+
 	if (!ret_ifnames || ifnames_bsize <= 0)
 		return NULL;
 
@@ -855,6 +997,9 @@ char *wgn_guest_ifnames(
 	memset(vlan_list, 0, sizeof(struct wgn_vlan_rule_t) * WGN_MAXINUM_VLAN_RULELIST);
 	if (!wgn_vlan_list_get_from_nvram(vlan_list, WGN_MAXINUM_VLAN_RULELIST, &vlan_total))
 		return NULL;
+
+	if (nvram_get_int("re_mode") == 1)
+		wgn_vlan_list_wl_subunit_shift(vlan_list, vlan_total);
 
 	if (total <= 0 || total > vlan_total)
 		total = vlan_total; 
@@ -900,6 +1045,9 @@ char *wgn_guest_all_ifnames(
 	memset(vlan_list, 0, sizeof(struct wgn_vlan_rule_t) * WGN_MAXINUM_VLAN_RULELIST);
     if (!wgn_vlan_list_get_from_nvram(vlan_list, WGN_MAXINUM_VLAN_RULELIST, &vlan_total))
         return NULL;
+
+	if (nvram_get_int("re_mode") == 1)
+		wgn_vlan_list_wl_subunit_shift(vlan_list, vlan_total);
 
 	for (i=0, offset=0; i<vlan_total && offset<ifnames_bsize; i++) {
 		unit = subunit = -1;
@@ -999,44 +1147,43 @@ char *wgn_guest_vlans(
 void wgn_check_settings(
 	void)
 {
-	struct wgn_vlan_rule_t vlan_list[WGN_MAXINUM_VLAN_RULELIST];
-	struct wgn_subnet_rule_t subnet_list[WGN_MAXINUM_SUBNET_RULELIST];
-	size_t vlan_list_size = 0, subnet_list_size = 0;
-	char *nv_default = NULL;
+	int apply_default = 0;
+	char *nv_default = NULL, *nv_vlanlist = NULL, *nv_subnetlist = NULL;
 
-	memset(vlan_list, 0, sizeof(struct wgn_vlan_rule_t) * WGN_MAXINUM_VLAN_RULELIST);
-	wgn_vlan_list_get_from_nvram(vlan_list, WGN_MAXINUM_VLAN_RULELIST, &vlan_list_size);
+	// valn_rulelist
+	apply_default = 0;
+	if ((nv_default = nvram_default_get(WGN_VLAN_RULE_NVRAM))) {
+		if ((nv_vlanlist = strdup(nvram_safe_get(WGN_VLAN_RULE_NVRAM)))) {
+			apply_default = (strncmp(nv_default, nv_vlanlist, strlen(nv_default)) != 0) ? 1 : 0;
+			free(nv_vlanlist);
+		}
+		else {
+			apply_default = 1;
+		}
 
-	memset(subnet_list, 0, sizeof(struct wgn_subnet_rule_t) * WGN_MAXINUM_SUBNET_RULELIST);
-	wgn_subnet_list_get_from_nvram(subnet_list, WGN_MAXINUM_SUBNET_RULELIST, &subnet_list_size);
-
-	// default vlan_rulelist
-	if (vlan_list_size <= 0)
-	{
-		if ((nv_default = nvram_default_get(WGN_VLAN_RULE_NVRAM)))
-		{
-			vlan_list_size = 0;
-			memset(vlan_list, 0, sizeof(struct wgn_vlan_rule_t) * WGN_MAXINUM_VLAN_RULELIST);
-			if (wgn_vlan_list_get_from_content(nv_default, vlan_list, WGN_MAXINUM_VLAN_RULELIST, &vlan_list_size, WGN_GET_CFG_TYPE_WGN_ONLY))
-			{
-				wgn_vlan_list_set_to_nvram(vlan_list, vlan_list_size);		
-			}
+		if (apply_default == 1) {
+			nvram_set(WGN_VLAN_RULE_NVRAM, nv_default);
+			nvram_commit();
 		}
 	}
 
-	// default subnet_rulelist
-	if (subnet_list_size <= 0)
-	{
-		if ((nv_default = nvram_default_get(WGN_SUBNET_RULE_NVRAM)))
-		{
-			subnet_list_size = 0;
-			memset(subnet_list, 0, sizeof(struct wgn_subnet_rule_t) * WGN_MAXINUM_SUBNET_RULELIST);
-			if (wgn_subnet_list_get_from_content(nv_default, subnet_list, WGN_MAXINUM_SUBNET_RULELIST, &subnet_list_size, WGN_GET_CFG_TYPE_WGN_ONLY))
-			{				
-				wgn_subnet_list_set_to_nvram(subnet_list, subnet_list_size);
-			}
+	// subnet_rulelist
+	apply_default = 0;
+	if ((nv_default = nvram_default_get(WGN_SUBNET_RULE_NVRAM))) {
+		if ((nv_subnetlist = strdup(nvram_safe_get(WGN_SUBNET_RULE_NVRAM)))) {
+			apply_default = (strncmp(nv_default, nv_subnetlist, strlen(nv_default)) != 0) ? 1 : 0;
+			free(nv_subnetlist);
+		} 
+		else {
+			apply_default = 1;
+		}
+
+		if (apply_default == 1) {
+			nvram_set(WGN_SUBNET_RULE_NVRAM, nv_default);
+			nvram_commit();
 		}
 	}
+
 	return;
 }
 

@@ -1,0 +1,99 @@
+SPP PICS for the PTS tool.
+
+PTS version: 6.1
+
+* - different than PTS defaults
+# - not yet implemented/supported
+
+M - mandatory
+O - optional
+
+
+		Profile Version
+-------------------------------------------------------------------------------
+Item		Selected	Description
+-------------------------------------------------------------------------------
+TSPC_SPP_0_1	False		SPP v1.1 (C.1)
+TSPC_SPP_0_2	True (*)	SPP v1.2 (C.1)
+-------------------------------------------------------------------------------
+C.1: Mandatory to support only one Profile version.
+-------------------------------------------------------------------------------
+
+
+		Device Role
+-------------------------------------------------------------------------------
+Item		Selected	Description
+-------------------------------------------------------------------------------
+TSPC_SPP_1_1	True (*)	Device A (DevA) (C.1)
+TSPC_SPP_1_2	True (*)	Device B (DevB) (C.1)
+-------------------------------------------------------------------------------
+C.1: It is mandatory to support at least one of the defined roles.
+-------------------------------------------------------------------------------
+
+
+		Support of SPP Service
+-------------------------------------------------------------------------------
+Item		Selected	Description
+-------------------------------------------------------------------------------
+TSPC_SPP_2_1	True (*)	Support of Serial Profile Service (C.1)
+-------------------------------------------------------------------------------
+C.1: Mandatory for devices that support Serial Profile for serial cable
+     emulation as a Bluetooth service. Irrelevant of devices that only
+     support Serial Profile for usage by another application profile
+     e.g. Fax Profile, Dun Profile, Hands free Profile, etc.
+-------------------------------------------------------------------------------
+
+
+		Application Procedures
+-------------------------------------------------------------------------------
+Item		Selected	Description
+-------------------------------------------------------------------------------
+TSPC_SPP_3_1	True (*)	Establish link and set up virtual serial
+				connection (C.1)
+TSPC_SPP_3_2	True (*)	Accept link and virtual serial connection
+				establishment (C.2)
+TSPC_SPP_3_3	True (*)	Register Service record for application in
+				local SDP database (C.2)
+TSPC_SPP_3_4	True (*)	No release in Sniff mode. Sniff mode enabled
+				in the Link Manager (O)
+TSPC_SPP_3_5	True (*)	No release in Hold mode. Hold mode enabled
+				in the Link Manager (O)
+TSPC_SPP_3_6	True (*)	No release in Park mode. Park mode enabled
+				in the Link Manager (O)
+TSPC_SPP_3_7	True (*)	No release after Master/Slave switch. M/S
+				switch enabled in the Link manager (O)
+-------------------------------------------------------------------------------
+C.1: Mandatory for Device A, Irrelevant for Device B.
+C.2: Mandatory for Device B, Irrelevant for Device A.
+-------------------------------------------------------------------------------
+
+
+		Service Port Profile Record Content (SerialPort UUID)
+-------------------------------------------------------------------------------
+Item		Selected	Description
+-------------------------------------------------------------------------------
+TSPC_SPP_4_1	True (*)	SerialPort service class (UUID16: 0x1101) (C.1)
+TSPC_SPP_4_2	True (*)	Protocol0, L2CAP (C.1)
+TSPC_SPP_4_3	True (*)	Protocol1, RFCOMM (C.1)
+TSPC_SPP_4_4	True (*)	Server Channel number (C.1)
+TSPC_SPP_4_5	True (*)	Displayable text name (C.2)
+TSPC_SPP_4_6	True (*)	BluetoothProfileDescriptorList (C.3)
+-------------------------------------------------------------------------------
+C.1: Mandatory for role B, if capability 'Support of Serial Profile Service'
+	(TSPC_SPP_2_1) supported. Irrelevant for role A.
+C.2: Mandatory to support if TSPC_SPP_2_1 AND TSPC_SPP_0_1 are supported,
+	otherwise Optional.
+C.3: Mandatory to support if TSPC_SPP_2_1 AND TSPC_SPP_0_2 are supported,
+	otherwise Optional.
+-------------------------------------------------------------------------------
+
+
+		Encryption
+-------------------------------------------------------------------------------
+Item		Selected	Description
+-------------------------------------------------------------------------------
+TSPC_SPP_5_1	True (*)	Initiate encryption (O)
+TSPC_SPP_5_2	True		Accept encryption request (M)
+TSPC_SPP_5_3	True		Point to point encryption (M)
+TSPC_SPP_5_4	True		Stop encryption (M)
+-------------------------------------------------------------------------------

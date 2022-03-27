@@ -152,22 +152,21 @@ function genListTable(){
 		// matching game
 		for(j=0; j<gameProfile.profile.length; j++){
 			var _target = gameProfile.profile[j];
-			if(_target.port == vts_rulelist_col[1]){	
+			
+			if( _target.port == vts_rulelist_col[1] 
+			&& (_target.title == vts_rulelist_col[0] || vts_rulelist_col[0].indexOf(_target.title) != -1)){	
 				if(vts_rulelist_col[0].split('@').length < 2){
-					if(_target.port == vts_rulelist_col[1] 
-					&& (_target.title == vts_rulelist_col[0] || vts_rulelist_col[0].indexOf(_target.title) != -1)){
-						_platform = _target.platform;
-					}
+					_platform = _target.platform;
+			
 				}
 				else{
 					_platform = vts_rulelist_col[0].split('@')[1];
 				}
 
-
 				_class += ' game-p-' + _target.class;
 			}
 		}
-
+		
 		var _platformObj = {
 			'PC': 'PC',
 			"XBOXSerX":"XBOX Series X",

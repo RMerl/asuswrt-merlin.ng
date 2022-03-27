@@ -15,7 +15,7 @@ function GenContent(){
 		timeout: 1500,
 		error: function(xhr){
 			if(dead > 30){
-				$("#noteArea0").html("Fail to grab release note");
+				$("#noteArea0").html("<#FW_rlnote_failed#>");
 			}
 			else{
 				dead++;
@@ -29,7 +29,7 @@ function GenContent(){
 				$("#noteArea0").html(content);
 			}
 			else{
-				$("#noteArea0").html("Fail to grab release note");
+				$("#noteArea0").html("<#FW_rlnote_failed#>");
 			}
 		}
 	});

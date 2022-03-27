@@ -1,0 +1,38 @@
+PTS test results for RFCOMM
+
+PTS version: 6.1
+Tested: 12-May-2015
+Android version: 5.1
+Kernel version: 4.1
+
+Results:
+PASS	test passed
+FAIL	test failed
+INC	test is inconclusive
+N/A	test is disabled due to PICS setup
+NONE	test result is none
+
+-------------------------------------------------------------------------------
+Test Name		Result	Notes
+-------------------------------------------------------------------------------
+TC_RFC_BV_01_C		PASS	rctest -n -P 1 <btaddr>
+TC_RFC_BV_02_C		PASS	rctest -r -P 1
+TC_RFC_BV_03_C		PASS	rctest -r -P 1
+TC_RFC_BV_04_C		PASS	rctest -r -P 1
+TC_RFC_BV_05_C		PASS	rctest -n -P 4 <btaddr>
+				Note: test requires IUT to connect on the given
+				channel. sdptool browse <btaddr> to check the
+				channel.
+TC_RFC_BV_06_C		PASS	rctest -r -P 1
+TC_RFC_BV_07_C		PASS	rctest -r -P 1
+TC_RFC_BV_08_C		PASS	rctest -r -P 1
+TC_RFC_BV_11_C		PASS	rctest -r -P 1
+TC_RFC_BV_13_C		PASS	rctest -r -P 1
+TC_RFC_BV_14_C		N/A
+TC_RFC_BV_15_C		PASS	rctest -r -P 1
+TC_RFC_BV_17_C		PASS	rctest -d -P 1
+TC_RFC_BV_19_C		PASS
+TC_RFC_BV_21_C		PASS	rctest -w -N 10 -P 1
+TC_RFC_BV_22_C		PASS	rctest -w -N 10 -P 1
+TC_RFC_BV_25_C		PASS	rctest -r -P 1
+-------------------------------------------------------------------------------

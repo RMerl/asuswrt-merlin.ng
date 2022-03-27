@@ -109,6 +109,10 @@ CODESTARTparse
 	/* bump the message portion up by skipLen(23 or 5) characters to overwrite the "Message forwarded from
 " or "From " with the hostname */
 	lenMsg -=skipLen;
+	if(lenMsg < 2) {
+		dbgprintf("not a AIX message forwarded from message has nothing after header\n");
+		ABORT_FINALIZE(RS_RET_COULD_NOT_PARSE);
+	}
 	memmove(p2parse, p2parse + skipLen, lenMsg);
 	*(p2parse + lenMsg) = '\n';
 	*(p2parse + lenMsg + 1)  = '\0';
@@ -119,6 +123,11 @@ really an AIX log, but has a similar preamble */
 	while(lenMsg && *p2parse != ' ' && *p2parse != ':') {
 		--lenMsg;
 		++p2parse;
+	}
+	if (lenMsg < 1) {
+		dbgprintf("not a AIX message forwarded from message has nothing after colon "
+			"or no colon at all\n");
+		ABORT_FINALIZE(RS_RET_COULD_NOT_PARSE);
 	}
 	if (lenMsg && *p2parse != ':') {
 	DBGPRINTF("not a AIX message forwarded from mangled log but similar enough that the preamble has "

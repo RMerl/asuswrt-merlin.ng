@@ -1,0 +1,175 @@
+MAP PICS for the PTS tool.
+
+PTS version: 6.1
+
+* - different than PTS defaults
+# - not yet implemented/supported
+
+M - mandatory
+O - optional
+
+	Profile Version
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_MAP_0_1	False		Role: Map 1.0 (C1)
+TSPC_MAP_0_2	True (*)	Role: Map 1.1 (C1)
+TSPC_MAP_0_3	False		Role: Map 1.2 (C1)
+-------------------------------------------------------------------------------
+C.1: Mandatory to support only one Profile version.
+-------------------------------------------------------------------------------
+
+
+	Roles
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_MAP_1_1	True (*)	Role: Messaging Server Equipment (C1)
+TSPC_MAP_1_2	False		Role: Messaging Client Equipment (C1)
+-------------------------------------------------------------------------------
+C.1: It is mandatory to support at least one of the defined roles.
+-------------------------------------------------------------------------------
+
+
+	Supported features MCE
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_MAP_2_1	False		MCE: Message Notification (C1)
+TSPC_MAP_2_1a	False		MCE: SendEvent (C4)
+TSPC_MAP_2_2	False		MCE: Message Browsing (C1)
+TSPC_MAP_2_2a	False		MCE: SetFolder (C5)
+TSPC_MAP_2_2b	False		MCE: GetFoldersListing (C5)
+TSPC_MAP_2_2c	False		MCE: GetMessagesListing (C5)
+TSPC_MAP_2_2d	False		MCE: GetMessage (O)
+TSPC_MAP_2_2e	False		MCE: SetMessageStatus (O)
+TSPC_MAP_2_2f	False		MCE: UpdateInbox (O)
+TSPC_MAP_2_2g	False		MCE: Filtering (O)
+TSPC_MAP_2_2h	False		MCE: Multiple simultaneous MAS instances (O)
+TSPC_MAP_2_3	False		MCE: Message Uploading (O)
+TSPC_MAP_2_3a	False		MCE: SetFolder (C6)
+TSPC_MAP_2_3b	False		MCE: GetFoldersListing (C6)
+TSPC_MAP_2_3c	False		MCE: PushMessage (C6)
+TSPC_MAP_2_4	False		MCE: Message Delete (O)
+TSPC_MAP_2_4a	False		MCE: SetMessageStatus (C7)
+TSPC_MAP_2_5	False		MCE: Notification Registration (C2)
+TSPC_MAP_2_5a	False		MCE: SetNotificationRegistration off (O)
+TSPC_MAP_2_5b	False		MCE: SetNotificationRegistration on (C8)
+TSPC_MAP_2_6	False		MCE: Supported Message Types
+TSPC_MAP_2_6a	False (*)	MCE: EMAIL (C3)
+TSPC_MAP_2_6b	False (*)	MCE: SMS_GSM (C3)
+TSPC_MAP_2_6c	False (*)	MCE: SMS_CDMA (C3)
+TSPC_MAP_2_6d	False (*)	MCE: MMS (C3)
+TSPC_MAP_2_7	False		MCE: Instance Information (Not Supported)
+TSPC_MAP_2_7a	False (*)	MCE: GetMASInstanceInformation (Not Supported)
+TSPC_MAP_2_8	False		MCE: Extended MAP-Event-Report (Not Supported)
+TSPC_MAP_2_8a	False (*)	MCE: MAP-Event-Report: Version 1.1
+					(Not Supported)
+-------------------------------------------------------------------------------
+C.1: Mandatory to support at least one of the defined features TSPC_MAP_2_1 or
+	TSPC_MAP_2_2.
+C.2: Mandatory to support TSPC_MAP_2_5 if TSPC_MAP_2_1 is supported.
+C.3: Mandatory to support at least one of the defined message types
+	TSPC_MAP_2_6a to TSPC_MAP_2_6d IF TSPC_MAP_2_2 or TSPC_MAP_2_3 is
+	supported.
+C.4: Support of functionality TSPC_MAP_2_1a mandatory IF related feature
+	TSPC_MAP_2_1 supported.
+C.5: Support of functionality mandatory IF TSPC_MAP_2_2 supported.
+C.6: Support of functionality mandatory IF TSPC_MAP_2_3 supported.
+C.7: Support of functionality mandatory IF TSPC_MAP_2_4 supported.
+C.8: Mandatory to support IF TSPC_MAP_2_5 (Notification Registration) is
+	supported, otherwise excluded.
+C.9: Optional to support IF TSPC_MAP_0_3 (MAP v1.2) is supported, otherwise
+	excluded.
+C.10: Mandatory to support IF TSPC_MAP_0_3 (MAP v1.2) and TSPC_MAP_2_1
+	(Message Notification) is supported, otherwise excluded.
+-------------------------------------------------------------------------------
+
+
+	Supported features MSE
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_MAP_3_1	True		MSE: Message Notification (M)
+TSPC_MAP_3_1a	True		MSE: SendEvent (M)
+TSPC_MAP_3_2	True		MSE: Message Browsing (M)
+TSPC_MAP_3_2a	True		MSE: SetFolder (M)
+TSPC_MAP_3_2b	True		MSE: GetFoldersListing (M)
+TSPC_MAP_3_2c	True		MSE: GetMessagesListing (M)
+TSPC_MAP_3_2d	True		MSE: GetMessage (M)
+TSPC_MAP_3_2e	True		MSE: SetMessageStatus (M)
+TSPC_MAP_3_2f	True		MSE: UpdateInbox (M)
+TSPC_MAP_3_2g	False		MSE: Multiple simultaneous MAS instances (O)
+TSPC_MAP_3_3	True		MSE: Message Uploading (M)
+TSPC_MAP_3_3a	True		MSE: SetFolder (M)
+TSPC_MAP_3_3b	True		MSE: GetFoldersListing (M)
+TSPC_MAP_3_3c	True		MSE: PushMessage (M)
+TSPC_MAP_3_4	True		MSE: Message Delete (M)
+TSPC_MAP_3_4a	True		MSE: SetMessageStatus (M)
+TSPC_MAP_3_5	True		MSE: Notification Registration (M)
+TSPC_MAP_3_5a	True		MSE: SetNotificationRegistration (M)
+TSPC_MAP_3_6	False		MSE: Supported Message Types
+TSPC_MAP_3_6a	False		MSE: EMAIL (C1)
+TSPC_MAP_3_6b	True		MSE: SMS_GSM (C1)
+TSPC_MAP_3_6c	True (*)	MSE: SMS_CDMA (C1)
+TSPC_MAP_3_6d	True		MSE: MMS (C1)
+TSPC_MAP_3_7	False		MSE: Instance Information (Not Supported)
+TSPC_MAP_3_7a	False (*)	MSE: GetMASInstanceInformation (Not Supported)
+TSPC_MAP_3_8	False		MSE: Extended MAP-Event-Report (Not Supported)
+TSPC_MAP_3_8a	False (*)	MSE: MAP-Event-Report: Version 1.1
+					(Not Supported)
+-------------------------------------------------------------------------------
+C.1: Mandatory to support at least one of the defined message types
+	TSPC_MAP_3_6a to TSPC_MAP_3_6d IF TSPC_MAP_3_2 or TSPC_MAP_3_3
+	is supported.
+C.2: Mandatory to support IF TSPC_MAP_0_3 (MAP v1.2) is supported,
+	otherwise excluded.
+-------------------------------------------------------------------------------
+
+
+	GOEP v2.0 or later Features
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_MAP_7b_1	False		GOEP v2.0 or later (C1)
+TSPC_MAP_7b_2	False		GOEP v2 Backwards Compatibility (C1)
+TSPC_MAP_7b_3	False		OBEX over L2CAP (C1)
+-------------------------------------------------------------------------------
+C.1: Mandatory if TSPC_MAP_0_3 (MAP v1.2) is supported else excluded.
+-------------------------------------------------------------------------------
+
+
+	MCE OBEX Header Support
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_MAP_10_1	False (*)	Name (M)
+TSPC_MAP_10_2	False (*)	Typr (M)
+TSPC_MAP_10_3	False (*)	Body (M)
+TSPC_MAP_10_4	False (*)	End of Body (M)
+TSPC_MAP_10_5	False (*)	Target (M)
+TSPC_MAP_10_6	False (*)	Who (M)
+TSPC_MAP_10_7	False (*)	Connection ID (M)
+TSPC_MAP_10_8	False (*)	Application Parameters (M)
+TSPC_MAP_10_9	False		SRM (C2)
+TSPC_MAP_10_10	False		Receive SRMP (C2)
+TSPC_MAP_10_11	False		Send SRMP (C2)
+-------------------------------------------------------------------------------
+C.1: Mandatory if TSPC_MAP_0_3 (MAP v1.2) is supported else excluded.
+C.2: Optional if TSPC_MAP_0_3 (MAP v1.2) is supported else excluded.
+-------------------------------------------------------------------------------
+
+
+	GetMessagesListing Filtering Parameter Support
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_MAP_20_1	False (*)	MCE: FilterMessageType (O)
+TSPC_MAP_20_2	False (*)	MCE: FilterPeriodBegin (O)
+TSPC_MAP_20_3	False (*)	MCE: FilterPeriodEnd (O)
+TSPC_MAP_20_4	False (*)	MCE: FilterReadStatus (O)
+TSPC_MAP_20_5	False (*)	MCE: FilterRecipient (O)
+TSPC_MAP_20_6	False (*)	MCE: FilterOriginator (O)
+TSPC_MAP_20_7	False (*)	MCE: FilterPriority (O)
+TSPC_ALL	False (*)	Turns on all the test cases
+-------------------------------------------------------------------------------

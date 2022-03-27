@@ -962,6 +962,15 @@ function check_unregister_result(){
 				</select>
 				</td>
 			</tr>
+			<tr id="ddns_ipcheck_tr">
+				<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(5,17);">Method to retrieve WAN IP</a></th>
+                                <td>
+				<select name="ddns_realip_x" class="input_option">
+					<option class="content_input_fd" value="0" <% nvram_match("ddns_realip_x", "0","selected"); %>>Internal</option>
+					<option class="content_input_fd" value="1" <% nvram_match("ddns_realip_x", "1","selected"); %>>External</option>
+				</select>
+				</td>
+			</tr>
 			<tr>
 				<th><#LANHostConfig_x_DDNSServer_itemname#></th>
 				<td>

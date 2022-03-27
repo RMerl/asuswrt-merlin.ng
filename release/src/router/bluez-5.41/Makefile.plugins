@@ -1,0 +1,130 @@
+
+builtin_modules += hostname
+builtin_sources += plugins/hostname.c
+
+builtin_modules += wiimote
+builtin_sources += plugins/wiimote.c
+
+builtin_modules += autopair
+builtin_sources += plugins/autopair.c
+
+builtin_modules += policy
+builtin_sources += plugins/policy.c
+
+if MAINTAINER_MODE
+builtin_modules += gatt_example
+builtin_sources += plugins/gatt-example.c
+endif
+
+if EXPERIMENTAL
+builtin_modules += neard
+builtin_sources += plugins/neard.c
+
+builtin_modules += sap
+builtin_sources += profiles/sap/main.c profiles/sap/manager.h \
+			profiles/sap/manager.c profiles/sap/server.h \
+			profiles/sap/server.c profiles/sap/sap.h \
+			profiles/sap/sap-dummy.c
+
+noinst_LIBRARIES += profiles/sap/libsap.a
+profiles_sap_libsap_a_SOURCES = profiles/sap/sap.h profiles/sap/sap-u8500.c
+endif
+
+builtin_modules += a2dp
+builtin_sources += profiles/audio/source.h profiles/audio/source.c \
+			profiles/audio/sink.h profiles/audio/sink.c \
+			profiles/audio/a2dp.h profiles/audio/a2dp.c \
+			profiles/audio/avdtp.h profiles/audio/avdtp.c \
+			profiles/audio/media.h profiles/audio/media.c \
+			profiles/audio/transport.h profiles/audio/transport.c \
+			profiles/audio/a2dp-codecs.h
+
+builtin_modules += avrcp
+builtin_sources += profiles/audio/control.h profiles/audio/control.c \
+			profiles/audio/avctp.h profiles/audio/avctp.c \
+			profiles/audio/avrcp.h profiles/audio/avrcp.c \
+			profiles/audio/player.h profiles/audio/player.c
+
+builtin_modules += network
+builtin_sources += profiles/network/manager.c \
+			profiles/network/bnep.h profiles/network/bnep.c \
+			profiles/network/server.h profiles/network/server.c \
+			profiles/network/connection.h \
+			profiles/network/connection.c
+
+builtin_modules += input
+builtin_sources += profiles/input/manager.c \
+			profiles/input/server.h profiles/input/server.c \
+			profiles/input/device.h profiles/input/device.c \
+			profiles/input/hidp_defs.h
+
+builtin_modules += hog
+builtin_sources += profiles/input/hog.c profiles/input/uhid_copy.h \
+			profiles/input/hog-lib.c profiles/input/hog-lib.h \
+			profiles/deviceinfo/dis.c profiles/deviceinfo/dis.h \
+			profiles/battery/bas.c profiles/battery/bas.h \
+			profiles/scanparam/scpp.c profiles/scanparam/scpp.h \
+			profiles/input/suspend.h profiles/input/suspend-none.c
+
+EXTRA_DIST += profiles/input/suspend-dummy.c
+
+if EXPERIMENTAL
+builtin_modules += health
+builtin_sources += profiles/health/mcap.h profiles/health/mcap.c \
+			profiles/health/hdp_main.c profiles/health/hdp_types.h \
+			profiles/health/hdp_manager.h \
+			profiles/health/hdp_manager.c \
+			profiles/health/hdp.h profiles/health/hdp.c \
+			profiles/health/hdp_util.h profiles/health/hdp_util.c
+endif
+
+builtin_modules += gap
+builtin_sources += profiles/gap/gas.c
+
+builtin_modules += scanparam
+builtin_sources += profiles/scanparam/scan.c
+
+builtin_modules += deviceinfo
+builtin_sources += profiles/deviceinfo/deviceinfo.c
+
+if DEPRECATED
+builtin_modules += alert
+builtin_sources += profiles/alert/server.c
+
+builtin_modules += time
+builtin_sources += profiles/time/server.c
+
+builtin_modules += proximity
+builtin_sources += profiles/proximity/main.c profiles/proximity/manager.h \
+			profiles/proximity/manager.c \
+			profiles/proximity/monitor.h \
+			profiles/proximity/monitor.c \
+			profiles/proximity/reporter.h \
+			profiles/proximity/reporter.c \
+			profiles/proximity/linkloss.h \
+			profiles/proximity/linkloss.c \
+			profiles/proximity/immalert.h \
+			profiles/proximity/immalert.c
+
+builtin_modules += thermometer
+builtin_sources += profiles/thermometer/thermometer.c
+
+builtin_modules += heartrate
+builtin_sources += profiles/heartrate/heartrate.c
+
+builtin_modules += cyclingspeed
+builtin_sources += profiles/cyclingspeed/cyclingspeed.c
+endif
+
+if EXTAQIS
+builtin_modules += aqis
+builtin_sources += profiles/aqis/aqis.c
+endif
+
+if SIXAXIS
+plugin_LTLIBRARIES += plugins/sixaxis.la
+plugins_sixaxis_la_SOURCES = plugins/sixaxis.c
+plugins_sixaxis_la_LDFLAGS = $(AM_LDFLAGS) -module -avoid-version \
+						-no-undefined @UDEV_LIBS@
+plugins_sixaxis_la_CFLAGS = $(AM_CFLAGS) -fvisibility=hidden @UDEV_CFLAGS@
+endif

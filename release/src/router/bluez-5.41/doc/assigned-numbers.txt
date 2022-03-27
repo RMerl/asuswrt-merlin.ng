@@ -1,0 +1,24 @@
+RFCOMM Channels
+===============
+
+Since there are a limited amount of possible RFCOMM channels (1-31)
+they've been pre-allocated for currently known profiles in order to
+avoid conflicts.
+
+Profile		Channel
+-----------------------
+DUN		1
+HFP HF		7
+OPP		9
+FTP		10
+BIP		11
+HSP AG		12
+HFP AG		13
+SYNCH (IrMC)	14
+PBAP		15
+MAP MAS		16
+MAP MNS		17
+SyncEvolution	19
+PC/Ovi Suite	24
+SyncML Client	25
+SyncML Server	26

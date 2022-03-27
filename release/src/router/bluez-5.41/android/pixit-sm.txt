@@ -1,0 +1,72 @@
+SM PIXIT for the PTS tool.
+
+PTS version: 6.1
+
+* - different than PTS defaults
+& - should be set to IUT Bluetooth address
+
+		Required PIXIT settings
+-------------------------------------------------------------------------------
+Parameter Name						Value
+-------------------------------------------------------------------------------
+TSPX_bd_addr_iut					112233445566 (*&)
+TSPX_SMP_pin_code					111111
+TSPX_OOB_Data						000000000000FE12036E5A
+							889F4D
+TSPX_peer_addr_type					00
+TSPX_own_addr_type					00
+TSPX_conn_interval_min					0190
+TSPX_conn_interval_max					0190
+TSPX_con_latency					0000
+TSPX_client_class_of_device				100104
+TSPX_server_class_of_device				100104
+TSPX_security_enabled					TRUE
+TSPX_delete_link_key					TRUE
+TSPX_pin_code						1234
+TSPX_ATTR_HANDLE					0000
+TSPX_ATTR_VALUE						000000000000000
+TSPX_delay_variation_in					FFFFFFFF
+TSPX_delay_variation_out				FFFFFFFF
+TSPX_flushto						FFFF
+TSPX_inmtu						02A0
+TSPX_inquiry_length					17
+TSPX_latency_in						FFFFFFFF
+TSPX_latency_out					FFFFFFFF
+TSPX_linkto						3000
+TSPX_max_nbr_retransmission				10
+TSPX_no_fail_verdicts					FALSE
+TSPX_outmtu						02A0
+TSPX_tester_role_optional				L2CAP_ROLE_INITIATOR
+TSPX_page_scan_mode					00
+TSPX_page_scan_repetition_mode				00
+TSPX_peak_bandwidth_in					00000000
+TSPX_peak_bandwidth_out					00000000
+TSPX_psm						0011
+TSPX_service_type_in					01
+TSPX_service_type_out					01
+TSPX_support_retransmissions				TRUE
+TSPX_time_guard						180000
+TSPX_timer_ertx						120000
+TSPX_timer_ertx_max					300000
+TSPX_timer_ertx_min					60000
+TSPX_timer_rtx						10000
+TSPX_timer_rtx_max					60000
+TSPX_timer_rtx_min					1000
+TSPX_token_bucket_size_in				00000000
+TSPX_token_bucket_size_out				00000000
+TSPX_token_rate_in					00000000
+TSPX_token_rate_out					00000000
+TSPX_rfc_mode_mode					03
+TSPX_rfc_mode_tx_window_size				08
+TSPX_rfc_mode_max_transmit				03
+TSPX_rfc_mode_retransmission_timeout			07D0
+TSPX_rfc_mode_monitor_timeout				2EE0
+TSPX_rfc_mode_maximum_pdu_size				02A0
+TSPX_extended_window_size				0012
+TSPX_use_implicit_send					TRUE
+TSPX_use_dynamic_pin					FALSE
+TSPX_iut_SDU_size_in_bytes				144
+TSPX_secure_simple_pairing_pass_key_confirmation	FALSE
+TSPX_Min_Encryption_Key_Length				07
+TSPX_Bonding_Flags					00
+-------------------------------------------------------------------------------

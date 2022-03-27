@@ -1,0 +1,59 @@
+.\"
+.TH "BLUETOOTHD" "8" "March 2004" "Bluetooth daemon" "System management commands"
+.SH "NAME"
+bluetoothd \- Bluetooth daemon
+
+.SH "SYNOPSIS"
+.B bluetoothd [--version] | [--help]
+
+.B bluetoothd [--nodetach] [--compat] [--experimental] [--debug=<files>] [--plugin=<plugins>] [--noplugin=<plugins>]
+
+.SH "DESCRIPTION"
+This manual page documents briefly the
+.B bluetoothd
+daemon, which manages all the Bluetooth devices.
+.B bluetoothd
+can also provide a number of services via the D-Bus message bus
+system.
+.SH "OPTIONS"
+.TP
+.B -v, --version
+Print bluetoothd version and exit.
+.TP
+.B -h, --help
+Print bluetoothd options and exit.
+.TP
+.B -n, --nodetach
+Enable logging in foreground. Directs log output to the controlling terminal \
+in addition to syslog.
+.TP
+.B -d, --debug=<file1>:<file2>:...
+Sets how much information bluetoothd sends to the log destination (usually \
+syslog's "daemon" facility). If the file options are omitted, then debugging \
+information from all the source files are printed. If file options are \
+present, then only debug prints from that source file are printed. The option \
+can be a pattern containing "*" and "?" characters.
+
+Example: --debug=src/adapter.c:src/agent.c
+.TP
+.B -p, --plugin=<plugin1>,<plugin2>,..
+Load these plugins only. The option can be a pattern containing "*" and "?" \
+characters.
+.TP
+.B -P, --noplugin=<plugin1>,<plugin2>,..
+Never load these plugins. The option can be a pattern containing "*" and "?" \
+characters.
+.TP
+.B -C, --compat
+Provide deprecated command line interfaces.
+.TP
+.B -E, --experimental
+Enable experimental interfaces. Those interfaces are not guaranteed to be
+compatible or present in future releases.
+.SH "FILES"
+.TP
+.I @CONFIGDIR@/main.conf
+Location of the global configuration file.
+
+.SH "AUTHOR"
+This manual page was written by Marcel Holtmann, Philipp Matthias Hahn and Fredrik Noring.

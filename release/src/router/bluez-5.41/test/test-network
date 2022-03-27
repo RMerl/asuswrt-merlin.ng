@@ -1,0 +1,54 @@
+#!/usr/bin/python
+
+from __future__ import absolute_import, print_function, unicode_literals
+
+from optparse import OptionParser, make_option
+import sys
+import time
+import dbus
+import bluezutils
+
+bus = dbus.SystemBus()
+
+manager = dbus.Interface(bus.get_object("org.bluez", "/"),
+						"org.bluez.Manager")
+
+option_list = [
+		make_option("-i", "--device", action="store",
+				type="string", dest="dev_id"),
+		]
+parser = OptionParser(option_list=option_list)
+
+(options, args) = parser.parse_args()
+
+if (len(args) < 1):
+	print("Usage: %s <address> [service]" % (sys.argv[0]))
+	sys.exit(1)
+
+# Fix-up in case of "connect" invocation that other scripts use
+if args[0] == "connect":
+	del args[:1]
+
+if (len(args) < 2):
+	service = "panu"
+else:
+	service = args[1]
+
+device = bluezutils.find_device(args[0], options.dev_id)
+
+network = dbus.Interface(bus.get_object("org.bluez", device.object_path),
+						"org.bluez.Network1")
+
+iface = network.Connect(service)
+
+print("Connected to %s service %s, interface %s" % (args[0], service, iface))
+
+print("Press CTRL-C to disconnect")
+
+try:
+	time.sleep(1000)
+	print("Terminating connection")
+except:
+	pass
+
+network.Disconnect()

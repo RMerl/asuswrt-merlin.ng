@@ -146,7 +146,7 @@ function show_conns() {
 										</div>
 										<br>
 										<div class="apply_gen">
-											<input type="button" onClick="location.href=location.href" value="<#CTL_refresh#>" class="button_gen">
+											<input type="button" onClick="location.reload();" value="<#CTL_refresh#>" class="button_gen">
 										</div>
 									</td>
 								</tr>

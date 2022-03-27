@@ -1,0 +1,57 @@
+﻿/* GT-AXE16000 */
+@-moz-keyframes evolution {
+	0%   { background: linear-gradient(to right, rgb(0, 120, 200)  40%, rgb(0, 220, 120) 60%, rgb(0, 255, 60) 80%) ; }
+	9%   { background: linear-gradient(to right, rgba(0, 120, 200, 0.2)  40%, rgba(0, 220, 120, 0.2) 60%, rgba(0, 255, 60, 0.2) 80%); }
+	18%  { background: linear-gradient(to right, rgb(0, 20, 255)  40%, rgb(0, 180, 255) 60%, rgb(0, 220, 255) 80%) ; }
+	27%  { background: linear-gradient(to right, rgba(0, 20, 255, 0.2)  40%, rgba(0, 180, 255, 0.2) 60%, rgba(0, 220, 255, 0.2) 80%); }
+	36%  { background: linear-gradient(to right, rgb(180, 0, 255)  40%, rgb(40, 0, 255) 60%, rgb(0, 0, 255) 80%) ; }
+	45%  { background: linear-gradient(to right, rgba(180, 0, 255, 0.2)  40%, rgba(40, 0, 255, 0.2) 60%, rgba(0, 0, 255, 0.2) 80%); }
+	54%  { background: linear-gradient(to right, rgb(40, 0, 255)  40%, rgb(220, 0, 200) 60%, rgb(255, 0, 160) 80%) ; }
+	63%  { background: linear-gradient(to right, rgba(40, 0, 255, 0.2)  40%, rgba(220, 0, 200, 0.2) 60%, rgba(255, 0, 160, 0.2) 80%); }
+	72%  { background: linear-gradient(to right, rgb(0, 200, 255)  40%, rgb(0, 60, 255) 60%, rgb(0, 20, 255) 80%) ; }
+	81%  { background: linear-gradient(to right, rgba(0, 200, 255, 0.2)  40%, rgba(0, 60, 255, 0.2) 60%, rgba(0, 20, 255, 0.2) 80%); }
+	90%  { background: linear-gradient(to right, rgb(0, 255, 60)  40%, rgb(0, 220, 120) 60%, rgb(0, 120, 200) 80%) ; }
+	100% { background: linear-gradient(to right, rgba(0, 255, 60, 0.2)  40%, rgba(0, 220, 120, 0.2) 60%, rgba(0, 120, 200, 0.2) 80%); }
+}
+@-webkit-keyframes evolution {
+	0%   { background: linear-gradient(to right, rgb(0, 120, 200)  40%, rgb(0, 220, 120) 60%, rgb(0, 255, 60) 80%) ; }
+	9%   { background: linear-gradient(to right, rgba(0, 120, 200, 0.2)  40%, rgba(0, 220, 120, 0.2) 60%, rgba(0, 255, 60, 0.2) 80%); }
+	18%  { background: linear-gradient(to right, rgb(0, 20, 255)  40%, rgb(0, 180, 255) 60%, rgb(0, 220, 255) 80%) ; }
+	27%  { background: linear-gradient(to right, rgba(0, 20, 255, 0.2)  40%, rgba(0, 180, 255, 0.2) 60%, rgba(0, 220, 255, 0.2) 80%); }
+	36%  { background: linear-gradient(to right, rgb(180, 0, 255)  40%, rgb(40, 0, 255) 60%, rgb(0, 0, 255) 80%) ; }
+	45%  { background: linear-gradient(to right, rgba(180, 0, 255, 0.2)  40%, rgba(40, 0, 255, 0.2) 60%, rgba(0, 0, 255, 0.2) 80%); }
+	54%  { background: linear-gradient(to right, rgb(40, 0, 255)  40%, rgb(220, 0, 200) 60%, rgb(255, 0, 160) 80%) ; }
+	63%  { background: linear-gradient(to right, rgba(40, 0, 255, 0.2)  40%, rgba(220, 0, 200, 0.2) 60%, rgba(255, 0, 160, 0.2) 80%); }
+	72%  { background: linear-gradient(to right, rgb(0, 200, 255)  40%, rgb(0, 60, 255) 60%, rgb(0, 20, 255) 80%) ; }
+	81%  { background: linear-gradient(to right, rgba(0, 200, 255, 0.2)  40%, rgba(0, 60, 255, 0.2) 60%, rgba(0, 20, 255, 0.2) 80%); }
+	90%  { background: linear-gradient(to right, rgb(0, 255, 60)  40%, rgb(0, 220, 120) 60%, rgb(0, 120, 200) 80%) ; }
+	100% { background: linear-gradient(to right, rgba(0, 255, 60, 0.2)  40%, rgba(0, 220, 120, 0.2) 60%, rgba(0, 120, 200, 0.2) 80%); }
+}
+@-o-keyframes evolution {
+	0%   { background: linear-gradient(to right, rgb(0, 120, 200)  40%, rgb(0, 220, 120) 60%, rgb(0, 255, 60) 80%) ; }
+	9%   { background: linear-gradient(to right, rgba(0, 120, 200, 0.2)  40%, rgba(0, 220, 120, 0.2) 60%, rgba(0, 255, 60, 0.2) 80%); }
+	18%  { background: linear-gradient(to right, rgb(0, 20, 255)  40%, rgb(0, 180, 255) 60%, rgb(0, 220, 255) 80%) ; }
+	27%  { background: linear-gradient(to right, rgba(0, 20, 255, 0.2)  40%, rgba(0, 180, 255, 0.2) 60%, rgba(0, 220, 255, 0.2) 80%); }
+	36%  { background: linear-gradient(to right, rgb(180, 0, 255)  40%, rgb(40, 0, 255) 60%, rgb(0, 0, 255) 80%) ; }
+	45%  { background: linear-gradient(to right, rgba(180, 0, 255, 0.2)  40%, rgba(40, 0, 255, 0.2) 60%, rgba(0, 0, 255, 0.2) 80%); }
+	54%  { background: linear-gradient(to right, rgb(40, 0, 255)  40%, rgb(220, 0, 200) 60%, rgb(255, 0, 160) 80%) ; }
+	63%  { background: linear-gradient(to right, rgba(40, 0, 255, 0.2)  40%, rgba(220, 0, 200, 0.2) 60%, rgba(255, 0, 160, 0.2) 80%); }
+	72%  { background: linear-gradient(to right, rgb(0, 200, 255)  40%, rgb(0, 60, 255) 60%, rgb(0, 20, 255) 80%) ; }
+	81%  { background: linear-gradient(to right, rgba(0, 200, 255, 0.2)  40%, rgba(0, 60, 255, 0.2) 60%, rgba(0, 20, 255, 0.2) 80%); }
+	90%  { background: linear-gradient(to right, rgb(0, 255, 60)  40%, rgb(0, 220, 120) 60%, rgb(0, 120, 200) 80%) ; }
+	100% { background: linear-gradient(to right, rgba(0, 255, 60, 0.2)  40%, rgba(0, 220, 120, 0.2) 60%, rgba(0, 120, 200, 0.2) 80%); }
+}
+@keyframes evolution {
+	0%   { background: linear-gradient(to right, rgb(0, 120, 200)  40%, rgb(0, 220, 120) 60%, rgb(0, 255, 60) 80%) ; }
+	9%   { background: linear-gradient(to right, rgba(0, 120, 200, 0.2)  40%, rgba(0, 220, 120, 0.2) 60%, rgba(0, 255, 60, 0.2) 80%); }
+	18%  { background: linear-gradient(to right, rgb(0, 20, 255)  40%, rgb(0, 180, 255) 60%, rgb(0, 220, 255) 80%) ; }
+	27%  { background: linear-gradient(to right, rgba(0, 20, 255, 0.2)  40%, rgba(0, 180, 255, 0.2) 60%, rgba(0, 220, 255, 0.2) 80%); }
+	36%  { background: linear-gradient(to right, rgb(180, 0, 255)  40%, rgb(40, 0, 255) 60%, rgb(0, 0, 255) 80%) ; }
+	45%  { background: linear-gradient(to right, rgba(180, 0, 255, 0.2)  40%, rgba(40, 0, 255, 0.2) 60%, rgba(0, 0, 255, 0.2) 80%); }
+	54%  { background: linear-gradient(to right, rgb(40, 0, 255)  40%, rgb(220, 0, 200) 60%, rgb(255, 0, 160) 80%) ; }
+	63%  { background: linear-gradient(to right, rgba(40, 0, 255, 0.2)  40%, rgba(220, 0, 200, 0.2) 60%, rgba(255, 0, 160, 0.2) 80%); }
+	72%  { background: linear-gradient(to right, rgb(0, 200, 255)  40%, rgb(0, 60, 255) 60%, rgb(0, 20, 255) 80%) ; }
+	81%  { background: linear-gradient(to right, rgba(0, 200, 255, 0.2)  40%, rgba(0, 60, 255, 0.2) 60%, rgba(0, 20, 255, 0.2) 80%); }
+	90%  { background: linear-gradient(to right, rgb(0, 255, 60)  40%, rgb(0, 220, 120) 60%, rgb(0, 120, 200) 80%) ; }
+	100% { background: linear-gradient(to right, rgba(0, 255, 60, 0.2)  40%, rgba(0, 220, 120, 0.2) 60%, rgba(0, 120, 200, 0.2) 80%); }
+}

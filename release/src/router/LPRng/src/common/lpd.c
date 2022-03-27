@@ -297,7 +297,7 @@ int main(int argc, char *argv[])
 	FD_SET(sockfd_ASUS, &afds);
 	memcpy(&rfds, &afds, sizeof(rfds));
 
-	if((err_select=select(nfds+1, &rfds, (fd_set *)0, (fd_set *)0, (struct timeval *)0 )) < 0) 
+	if(nvram_match("MFP_busy", "1") || (err_select=select(nfds+1, &rfds, (fd_set *)0, (fd_set *)0, (struct timeval *)0 )) < 0) 
 	{
 //JY1120	printf("select error on sockfd: error=%d\n", errno);
 		/**/
@@ -358,6 +358,7 @@ int main(int argc, char *argv[])
         }
 
 	lock = file_lock("printer");
+#if 0
 //	if (busy!=FALSE)	/* 2004/09/10 by Joey, process nack in parent for LPR and Remote Prot */
 	if (nvram_invmatch("MFP_busy", "0"))		// by Jiahao for U2EC. 20080808.
 	{
@@ -371,9 +372,9 @@ int main(int argc, char *argv[])
 		sleep(5);
 		continue;
 	}
+#endif
 
 	nvram_set("MFP_busy", "1");
-
 	if (nvram_match("lan_ipaddr_t", ""))
 		nvram_set("u2ec_busyip", nvram_safe_get("lan_ipaddr"));
 	else

@@ -1,5 +1,4 @@
 include ../common.mak
-include $(SRCBASE)/.config
 
 OBJ = libasc.o
 
@@ -29,6 +28,9 @@ endif
 
 LDFLAGS += -lpthread -lm
 LDFLAGS += $(LIBS) -L$(TOP)/shared -lshared -L$(TOP)/nvram -lnvram
+ifeq ($(RTCONFIG_BCM_502L07P2),y)
+LDFLAGS += -L$(TOP_PLATFORM)/ethctl_lib -lethctl
+endif
 LDFLAGS += -L$(TOP)/curl/lib/.libs -lcurl -L$(TOP)/
 LDFLAGS += -L$(TOP)/openssl -lcrypto -lssl
 

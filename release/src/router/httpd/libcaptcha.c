@@ -1,9 +1,9 @@
 // Version 
 // zlib/libpng license is at the end of this file
 
-const int gifsize;
+#include "common.h"
 void captcha(unsigned char im[70*200], unsigned char l[6]);
-void makegif(unsigned char im[70*200], unsigned char gif[gifsize]);
+void makegif(unsigned char im[70*200], unsigned char gif[GIFSIZE]);
 
 #include <unistd.h>
 #include <stdint.h>
@@ -11,9 +11,8 @@ void makegif(unsigned char im[70*200], unsigned char gif[gifsize]);
 #include <string.h>
 
 static int8_t *lt[];
-const int gifsize=17646;
 
-void makegif(unsigned char im[70*200], unsigned char gif[gifsize]) {
+void makegif(unsigned char im[70*200], unsigned char gif[GIFSIZE]) {
  	// tag ; widthxheight ; GCT:0:0:7 ; bgcolor + aspect // GCT
  	// Image Separator // left x top // widthxheight // Flags
 	// LZW code size
@@ -56,7 +55,7 @@ void makegif(unsigned char im[70*200], unsigned char gif[gifsize]) {
 	}
 
  	// Data length // End of LZW (b10001) // Terminator // GIF End
-	memcpy(gif+gifsize-4,"\x01" "\x11" "\x00" ";",4);
+	memcpy(gif+GIFSIZE-4,"\x01" "\x11" "\x00" ";",4);
 }
 
 static const int8_t sw[200]={0, 4, 8, 12, 16, 20, 23, 27, 31, 35, 39, 43, 47, 50, 54, 58, 61, 65, 68, 71, 75, 78, 81, 84, 87, 90, 93, 96, 98, 101, 103, 105, 108, 110, 112, 114, 115, 117, 119, 120, 121, 122, 123, 124, 125, 126, 126, 127, 127, 127, 127, 127, 127, 127, 126, 126, 125, 124, 123, 122, 121, 120, 119, 117, 115, 114, 112, 110, 108, 105, 103, 101, 98, 96, 93, 90, 87, 84, 81, 78, 75, 71, 68, 65, 61, 58, 54, 50, 47, 43, 39, 35, 31, 27, 23, 20, 16, 12, 8, 4, 0, -4, -8, -12, -16, -20, -23, -27, -31, -35, -39, -43, -47, -50, -54, -58, -61, -65, -68, -71, -75, -78, -81, -84, -87, -90, -93, -96, -98, -101, -103, -105, -108, -110, -112, -114, -115, -117, -119, -120, -121, -122, -123, -124, -125, -126, -126, -127, -127, -127, -127, -127, -127, -127, -126, -126, -125, -124, -123, -122, -121, -120, -119, -117, -115, -114, -112, -110, -108, -105, -103, -101, -98, -96, -93, -90, -87, -84, -81, -78, -75, -71, -68, -65, -61, -58, -54, -50, -47, -43, -39, -35, -31, -27, -23, -20, -16, -12, -8, -4};
@@ -175,7 +174,7 @@ void captcha(unsigned char im[70*200], unsigned char l[6]) {
 	dots(im); 
 	blur(im); 
 	//filter(im);
-	//line(im,swr,s1); 
+	line(im,swr,s1);
 	l[0]=letters[l[0]]; l[1]=letters[l[1]]; l[2]=letters[l[2]]; l[3]=letters[l[3]]; l[4]=letters[l[4]];
 }
 

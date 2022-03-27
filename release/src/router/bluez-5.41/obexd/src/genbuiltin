@@ -1,0 +1,17 @@
+#!/bin/sh
+
+for i in $*
+do
+	echo "extern struct obex_plugin_desc __obex_builtin_$i;"
+done
+
+echo
+echo "static struct obex_plugin_desc *__obex_builtin[] = {"
+
+for i in $*
+do
+	echo "  &__obex_builtin_$i,"
+done
+
+echo "  NULL"
+echo "};"

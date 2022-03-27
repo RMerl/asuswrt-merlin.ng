@@ -74,6 +74,7 @@ $(document).ready(function(){
 
 var nvram = new Object();
 var variable = new Object();
+var smart_connect_mode = '';
 function getVariable(){	
 	var _array = new Array('sw_mode', 'wps_enable');
 	var _ssid = new Array();
@@ -83,7 +84,7 @@ function getVariable(){
 	}
 
 	if(system.smartConnectSupport){
-		_array.push('smart_connect_x');
+		_array.push('smart_connect_x', 'smart_connect_selif_x');
 	}
 
 	if(system.band2gSupport){
@@ -146,6 +147,26 @@ function getVariable(){
 		_array.push.apply(_array, _element);
 	}
 
+	if(system.modelName == 'GT-AXE16000'){
+		var _element = new Array();
+		if(isSwMode('re') && (concurrep_support || wlc_band == '3')){
+			_element = ['wl3.1_nmode_x', 'wl3.1_auth_mode_x', 'wl3.1_crypto', 'wl3.1_mfp', 'wl3.1_wep_x', 'wl3.1_key', 'wl3.1_key1', 'wl3.1_key2', 'wl3.1_key3', 'wl3.1_key4'];
+			_ssid.push('wl3.1_ssid');
+			_ssid.push('wl3.1_wpa_psk');
+		}
+		else{
+			_element = ['wl3_nmode_x', 'wl3_auth_mode_x', 'wl3_crypto', 'wl3_mfp', 'wl3_wep_x', 'wl3_key', 'wl3_key1', 'wl3_key2', 'wl3_key3', 'wl3_key4'];
+			_ssid.push('wl3_ssid');
+			_ssid.push('wl3_wpa_psk');
+		}
+
+		if(mbo_support){
+			_element.push('wl3_mbo_enable');
+		}
+		
+		_array.push.apply(_array, _element);
+	}
+
 	if(isSupport("amas_fronthaul_network"))
 		_array.push('fh_ap_enabled');
 
@@ -157,6 +178,12 @@ function getVariable(){
 	});
 
 	variable = Object.assign(variable, nvram);
+
+	smart_connect_mode = variable['smart_connect_selif_x'];
+	smart_connect_mode = parseInt(smart_connect_mode).toString(2);
+	while(smart_connect_mode.length < 4){
+		smart_connect_mode = '0' + smart_connect_mode;
+	}
 }
 
 var wlInterface = new Array();	
@@ -164,6 +191,7 @@ function getInterface(){
 	wlInterface = [];	// initialize
 	var _temp = new Array();
 	var typeObj = {
+		'quadBandSmartConnect': [['3', 'Quad-Band Smart Connect', '3']],
 		'triBandSmartConnect': [['0', '<#smart_connect_tri#>', '0']],
 		'dualBand6GHzSmartConnect': [['0', '2.4 / 5 GHz', '0'], ['2', '6 GHz', '2']],
 		'dualBandSmartConnect': [['0', '<#smart_connect_dual#>', '0']],
@@ -172,32 +200,87 @@ function getInterface(){
 		'triBand6GHzMeshSmartConnect': [['0', '<#smart_connect_dual#>', '0'], ['2', '6 GHz', '2']],
 		'lyraHide': [['0', 'Wireless', '0']],
 		'2.4G':  [['0', '2.4 GHz', '0']],
+		'2.4G-AXE16000':  [['3', '2.4 GHz', '3']],
 		'5GDualBand': [['1', '5 GHz', '1']],
 		'5GTriBand': [['1', '5 GHz-1', '1'], ['2', '5 GHz-2', '2']],
 		'6GTriBand': [['1', '5 GHz', '1'], ['2', '6 GHz', '2']],
-		'60G': [['3', '60 GHz','3']]
+		'6GQuadBand': [['0', '5 GHz-1', '0'], ['1', '5 GHz-2', '1'], ['2', '6 GHz', '2']],
+		'60G': [['3', '60 GHz','3']],
+		'5L5H6GSmartCommect': [['0', '5 GHz-1/5 GHz-2/6 GHz', '0'], ['3', '2.4 GHz', '3']],
+		'2.4G5H6GSmartCommect': [['1', '2.4 GHz/5 GHz-2/6 GHz', '1'], ['0', '5 GHz-1', '0']],
+		'2.4G5L6GSmartCommect': [['0', '2.4 GHz/5 GHz-1/6 GHz', '0'], ['1', '5 GHz-2', '1']],
+		'2.4G5L5HSmartCommect': [['0', '2.4 GHz/5 GHz-1/5 GHz-2', '0'], ['2', '6 GHz', '2']],
+		'5H6GSmartCommect': [['1', '5 GHz-2/6 GHz', '1'], ['3', '2.4 GHz', '3'], ['0', '5 GHz-1', '0']],
+		'5L6GSmartCommect': [['0', '5 GHz-1/6 GHz', '0'], ['3', '2.4 GHz', '3'], ['1', '5 GHz-2', '1']],
+		'2.4G6GSmartCommect': [['3', '2.4 GHz/6 GHz', '3'], ['0', '5 GHz-1', '0'], ['1', '5 GHz-2', '1']],
+		'5L5HGSmartCommect': [['0', '5 GHz-1/5 GHz-2', '0'], ['3', '2.4 GHz', '3'], ['2', '6 GHz', '2']],
+		'2.4G5HSmartCommect': [['1', '2.4 GHz/5 GHz-2', '1'], ['0', '5 GHz-1', '0'], ['2', '6 GHz', '2']],
+		'2.4G5LSmartCommect': [['0', '2.4 GHz/5 GHz-1', '0'], ['1', '5 GHz-2', '1'], ['2', '6 GHz', '2']],
 	}
 
-
-	if(system.smartConnectSupport && variable.smart_connect_x != '0'){		// Smart Connect
+	if(system.smartConnectSupport && variable.smart_connect_x != '0' && !qca_support){		// Smart Connect
 		if(variable.smart_connect_x == '1'){	// Tri/Dual-Band Smart Connect		
-			if(system.band5g2Support){
-				if(dwb_info.mode == '1'){
-					if(system.band6gSupport){
-						//_temp = typeObj['triBand6GHzMeshSmartConnect'];
-						_temp = typeObj['triBandSmartConnect'];
-					}
-					else{
-						_temp = typeObj['triBandMeshSmartConnect'];
-					}
+			if(system.modelName === 'GT-AXE16000'){
+				if(variable.smart_connect_selif_x === '15'){
+					_temp = typeObj['quadBandSmartConnect'];
 				}
-				else{
-					_temp = typeObj['triBandSmartConnect'];
-				}	
+				else if(variable.smart_connect_selif_x === '14'){
+					_temp = typeObj['5L5H6GSmartCommect'];
+				}
+				else if(variable.smart_connect_selif_x === '13'){
+					_temp = typeObj['2.4G5H6GSmartCommect'];
+				}
+				else if(variable.smart_connect_selif_x === '11'){
+					_temp = typeObj['2.4G5L6GSmartCommect'];
+				}
+				else if(variable.smart_connect_selif_x === '7'){
+					_temp = typeObj['2.4G5L5HSmartCommect'];
+				}
+				else if(variable.smart_connect_selif_x === '12'){
+					_temp = typeObj['5H6GSmartCommect'];
+				}
+				else if(variable.smart_connect_selif_x === '10'){
+					_temp = typeObj['5L6GSmartCommect'];
+				}
+				else if(variable.smart_connect_selif_x === '9'){
+					_temp = typeObj['2.4G6GSmartCommect'];
+				}
+				else if(variable.smart_connect_selif_x === '6'){
+					_temp = typeObj['5L5HSmartCommect'];
+				}
+				else if(variable.smart_connect_selif_x === '5'){
+					_temp = typeObj['2.4G5HSmartCommect'];
+				}
+				else if(variable.smart_connect_selif_x === '3'){
+					_temp = typeObj['2.4G5LSmartCommect'];
+				}
 			}
 			else{
-				_temp = typeObj['dualBandSmartConnect'];
-			}	
+				if(system.band5g2Support){
+					if(dwb_info.mode == '1'){
+						if(system.band6gSupport){
+							//_temp = typeObj['triBand6GHzMeshSmartConnect'];
+							_temp = typeObj['triBandSmartConnect'];
+						}
+						else{
+							_temp = typeObj['triBandMeshSmartConnect'];
+							if(isSupport("amas_fronthaul_network")){
+								var fh_ap_enabled = httpApi.nvramGet(["fh_ap_enabled"]).fh_ap_enabled;
+								if(fh_ap_enabled == "2"){
+									_temp[0][1] = '<#smart_connect_tri#>';
+									_temp[1][1] = '5 GHz-2 (Backhaul)';
+								}
+							}
+						}
+					}
+					else{
+						_temp = typeObj['triBandSmartConnect'];
+					}	
+				}
+				else{
+					_temp = typeObj['dualBandSmartConnect'];
+				}	
+			}			
 		}
 		else if(variable.smart_connect_x == '3'){
 			_temp = typeObj['dualBand6GHzSmartConnect'];
@@ -211,10 +294,18 @@ function getInterface(){
 	}
 	else{
 		if(system.band2gSupport){
-			_temp = _temp.concat(typeObj['2.4G']);
+			if(system.modelName === 'GT-AXE16000'){
+				_temp = _temp.concat(typeObj['2.4G-AXE16000']);
+			}
+			else{
+				_temp = _temp.concat(typeObj['2.4G']);
+			}			
 		}
 
-		if(system.band5gSupport){
+		if(system.modelName === 'GT-AXE16000'){
+			_temp = _temp.concat(typeObj['6GQuadBand']);
+		}
+		else if(system.band5gSupport){
 			if(system.band5g2Support){
 				if(system.band6gSupport){
 					_temp = _temp.concat(typeObj['6GTriBand']);
@@ -245,7 +336,7 @@ function getInterface(){
 		}
 	}
 
-	genElement();
+	genElement(wlInterface);
 	setOptions();
 	genQRCodes();
 }
@@ -269,15 +360,40 @@ function genElement(){
 	}
 
 	// part of Smart Connect
-	if(system.smartConnectSupport && variable.smart_connect_x != '0'){
+	if(system.smartConnectSupport && variable.smart_connect_x != '0' && !qca_support){
 		$('#smart_connect_field').show();
-		var smartConnectType_ori = nvram['smart_connect_x'];
-		if(smartConnectType_ori != '0'){
+		if(system.modelName === 'GT-AXE16000'){
+			var smartConnectType_ori = nvram['smart_connect_x'];
+			
+	
 			code += '<div class="info-block">';
 			code += '<div class="info-title"><#smart_connect#></div>';
-			code += '<div><select id="smart_connect_x" class="input_option" onchange="updateVariable(this.id, value)"></select></div>';
+			
+		
+			code += '<select class="input_option" onchange="enableSmartConnect(this.value)">'
+			code += '<option value="0" '+ (variable.smart_connect_x === '0' ? 'selected': '') +'>關閉';
+			code += '<option value="1" '+ (variable.smart_connect_x !== '0' ? 'selected': '') +'>開';			
+			code += '</select>'
+	
+
+			code += '<div id="smart_connect_mode_field">';		
+			code += '<input id="smart_connect_check_0" type="checkbox" onchange="updateSmartConnect(0, this.checked)"'+ (smart_connect_mode[3] ==='1'? 'checked': '') +'>2.4 GHz';
+			code += '<input id="smart_connect_check_1" type="checkbox" onchange="updateSmartConnect(1, this.checked)"'+ (smart_connect_mode[2] ==='1'? 'checked': '') +'>5 GHz-1';
+			code += '<input id="smart_connect_check_2" type="checkbox" onchange="updateSmartConnect(2, this.checked)"'+ (smart_connect_mode[1] ==='1'? 'checked': '') +'>5 GHz-2';
+			code += '<input id="smart_connect_check_3" type="checkbox" onchange="updateSmartConnect(3, this.checked)"'+ (smart_connect_mode[0] ==='1'? 'checked': '') +'>6 GHz';								
+			code += '</div>';
 			code += '</div>';
 		}
+		else{
+			var smartConnectType_ori = nvram['smart_connect_x'];
+			if(smartConnectType_ori != '0'){
+				code += '<div class="info-block">';
+				code += '<div class="info-title"><#smart_connect#></div>';
+				code += '<div><select id="smart_connect_x" class="input_option" onchange="updateVariable(this.id, value)"></select></div>';
+				code += '</div>';
+			}
+		}
+		
 
 		$('#smart_connect_field').html(code);
 		genSmartConnect();
@@ -295,17 +411,32 @@ function genElement(){
 		// Mesh, description of dedicated backhaul
 		code += '<div class="unit-block"><div class="division-block">'+ wlInterface[i][1] +'</div>';
 		if(dwb_info.mode == '1' && (dwb_info.band == UNIT)){
-			if(band6g_support){
-				if(isSupport("amas_fronthaul_network") && variable.fh_ap_enabled == '0'){
+			var show_dwb_hint = false;
+			var wl_closed = httpApi.nvramGet(["wl" + dwb_info.band + "_closed"])["wl" + dwb_info.band + "_closed"];
+			if(isSupport("amas_fronthaul_network")){
+				if(variable.fh_ap_enabled == '0'){
+					if(wl_closed == "1"){
+						show_dwb_hint = true;
+					}
+				}
+			}
+			else{
+				if(wl_closed == "1"){
+					show_dwb_hint = true;
+				}
+			}
+
+			if(show_dwb_hint){
+				if(band6g_support){
 					code += '<div class="dwb_hint">6 GHz <#AiMesh_backhaul_band_5GHz-2_desc1#></div>';
 					code += '<div class="dwb_hint"><#AiMesh_backhaul_band_5GHz-2_desc2#></div>';
 					break;
 				}
-			}
-			else{
-				code += '<div class="dwb_hint">5 GHz-2 <#AiMesh_backhaul_band_5GHz-2_desc1#></div>';
-				code += '<div class="dwb_hint"><#AiMesh_backhaul_band_5GHz-2_desc2#></div>';
-				break;
+				else{
+					code += '<div class="dwb_hint">5 GHz-2 <#AiMesh_backhaul_band_5GHz-2_desc1#></div>';
+					code += '<div class="dwb_hint"><#AiMesh_backhaul_band_5GHz-2_desc2#></div>';
+					break;
+				}
 			}
 		}
 
@@ -439,6 +570,11 @@ function genSmartConnect(){
 	}
 	else{
 		_optionArray = [['<#wl_securitylevel_0#>', '0'], ['<#smart_connect_dual#>', '1']];
+				if(isSupport("amas_fronthaul_network")){
+					var fh_ap_enabled = httpApi.nvramGet(["fh_ap_enabled"]).fh_ap_enabled;
+					if(fh_ap_enabled == "2")
+						_optionArray[1][0] = '<#smart_connect_tri#>';
+				}
 	}
 
 	for(var i=0; i<_optionArray.length; i++){
@@ -501,7 +637,13 @@ function genAuthMethod(unit, id, nmode_x, auth_mode_x){
 		}	
 	}
 	else if(unit == '3'){
-		auth_array = authObj['60G'];
+		if(system.modelName === 'GT-AXE16000'){
+			auth_array = authObj['normalWithWPA3'];
+		}
+		else{
+			auth_array = authObj['60G'];
+		}
+		
 	}
 	else if(nmode_x == '2'){	// Legacy mode
 		if(system.modelName == 'BLUECAVE'){
@@ -748,15 +890,21 @@ function apply(rc_flag){
 		'rc_service': rc_flag
 	}
 
+	if(variable.smart_connect_x === '0'){
+		delete variable['smart_connect_selif_x'];
+	}
+
 	if(validateInput()){
-		if(system.triBandSupport && dwb_info.mode && variable['smart_connect_x'] == "1"){
-			variable["wl" + dwb_info.band + "_closed"] = "1";
+		if(isSupport("amas_fronthaul_network")){
+			if(system.triBandSupport && dwb_info.mode && variable['smart_connect_x'] == "1"){
+				variable["wl" + dwb_info.band + "_closed"] = "1";
+			}
 		}
 		postObj = Object.assign(postObj, variable);
 		httpApi.nvramSet(postObj, function(){
 			parent.showLoading(rc_time);
 			setTimeout(function(){
-				location.href = location.href;
+				location.reload();
 			}, rc_time*1000);
 		});
 	}
@@ -1018,6 +1166,75 @@ function validateInput(){
 	}
 
 	return true;
+}
+function updateSmartConnect(unit, checked){
+	var offset = 0;
+
+	var value = parseInt(smart_connect_mode, 2);
+	var index = '';
+	if(unit == '0'){
+		offset = checked ? 1 : -1;
+	}
+	else if(unit == '1'){
+		offset = checked ? 2 : -2;
+	}
+	else if(unit == '2'){
+		offset = checked ? 4 : -4;
+	}
+	else if(unit == '3'){
+		offset = checked ? 8 : -8;
+	}
+
+	value += offset;
+	if(value == 0
+	|| value == 1
+	|| value == 2
+	|| value == 4
+	|| value == 8){
+		alert('For Smart Connect to work, please select at least two radio bands.');
+		document.querySelector('#smart_connect_check_' + unit).checked = true;
+		return false;
+	}
+
+	var temp = '';
+	while(value > 0){
+		var r = value % 2;
+		value = parseInt(value / 2);
+		temp = r.toString() + temp;
+	}
+
+	while(temp.length < 4){
+		temp = '0' + temp;
+	}
+
+	smart_connect_mode = temp;
+	if(smart_connect_mode[3] === '1'){
+		variable.smart_connect_x = '1';
+	}
+	else{
+		variable.smart_connect_x = '2';
+	}
+	variable.smart_connect_selif_x = parseInt(smart_connect_mode, 2).toString();
+	
+	getInterface();
+}
+
+function enableSmartConnect(value){
+	if(value === '0'){
+		document.querySelector('#smart_connect_mode_field').style.display = 'none';
+		variable.smart_connect_x = '0';
+	}
+	else{
+		document.querySelector('#smart_connect_mode_field').style.display = '';
+		if(smart_connect_mode[3] === '1'){
+			variable.smart_connect_x = '1';
+		}
+		else{
+			variable.smart_connect_x = '2';
+		}		
+	}
+
+	getInterface();
 }
 </script>
 	<div class="main-block">

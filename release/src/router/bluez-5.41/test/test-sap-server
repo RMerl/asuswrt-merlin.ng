@@ -1,0 +1,151 @@
+#!/usr/bin/python
+
+from __future__ import absolute_import, print_function, unicode_literals
+
+from sap_client import *
+import time
+import sys
+
+def connect_disconnect_by_client(sap):
+
+    print("[Test] Connect - Disconnect by client \n")
+
+    try:
+        if not sap.isConnected():
+           sap.connect()
+
+        if sap.proc_connect():
+            if sap.proc_disconnectByClient():
+                print("OK")
+                return 0
+
+        print("NOT OK")
+        return 1
+
+    except BluetoothError as e:
+        print("Error " + str(e))
+
+
+def connect_disconnect_by_server_gracefully(sap, timeout=0):
+
+    print("[Test] Connect - Disconnect by server with timer \n")
+
+    try:
+        if not sap.isConnected():
+           sap.connect()
+
+        if sap.proc_connect():
+            if sap.proc_disconnectByServer(timeout):
+                print("OK")
+                return 0
+
+        print("NOT OK")
+        return 1
+
+    except BluetoothError as e:
+        print("Error " + str(e))
+
+
+def connect_txAPDU_disconnect_by_client(sap):
+
+    print("[Test] Connect - TX APDU - Disconnect by client \n")
+
+    try:
+        if not sap.isConnected():
+           sap.connect()
+
+        if sap.proc_connect():
+            if not sap.proc_transferAPDU():
+                print("NOT OK 1")
+                return 1
+
+            if not sap.proc_transferAPDU():
+                print("NOT OK 2")
+                return 1
+
+            if not sap.proc_transferAPDU():
+                print("NOT OK 3")
+                return 1
+
+            if not sap.proc_transferAPDU():
+                print("NOT OK 4")
+                return 1
+
+            if sap.proc_disconnectByClient():
+                print("OK")
+                return 0
+
+        print("NOT OK")
+        return 1
+
+    except BluetoothError as e:
+        print("Error " + str(e))
+
+def connect_rfcomm_only_and_wait_for_close_by_server(sap):
+
+    print("[Test] Connect rfcomm only  - Disconnect by server timeout \n")
+
+    if not sap.isConnected():
+       sap.connect()
+
+    time.sleep(40)
+    print("OK")
+
+def power_sim_off_on(sap):
+
+    print("[Test] Powe sim off \n")
+
+    try:
+        if not sap.isConnected():
+           sap.connect()
+
+        if sap.proc_connect():
+            if not sap.proc_resetSim():
+                print("NOT OK")
+                return 1
+
+            if not sap.proc_powerSimOff():
+                print("NOT OK")
+                return 1
+
+            if not sap.proc_powerSimOn():
+                print("NOT OK")
+                return 1
+
+            if sap.proc_disconnectByClient():
+                print("OK")
+                return 0
+
+        print("NOT OK")
+        return 1
+
+    except BluetoothError as e:
+        print("Error " + str(e))
+
+
+if __name__ == "__main__":
+
+    host = None  # server bd_addr
+    port = 8  # sap server port
+
+    if (len(sys.argv) < 2):
+        print("Usage: %s <address> [port]" % (sys.argv[0]))
+        sys.exit(1)
+
+    host = sys.argv[1]
+
+    if (len(sys.argv) == 3):
+        port = sys.argv[2]
+
+    try:
+        s = SAPClient(host, port)
+    except BluetoothError as e:
+        print("Error: " + str(e))
+        sys.exit(1)
+
+    connect_disconnect_by_client(s)
+    connect_disconnect_by_server_gracefully(s)
+    connect_disconnect_by_server_gracefully(s, 40)  #  wait 40 sec for srv to close rfcomm sock
+    connect_rfcomm_only_and_wait_for_close_by_server(s)
+    connect_txAPDU_disconnect_by_client(s)
+    power_sim_off_on(s)

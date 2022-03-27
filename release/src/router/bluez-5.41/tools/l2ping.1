@@ -1,0 +1,76 @@
+.TH L2PING 1 "Jan 22 2002" BlueZ "Linux System Administration"
+.SH NAME
+l2ping \- Send L2CAP echo request and receive answer
+.SH SYNOPSIS
+.B l2ping
+.RB [\| \-i
+.IR <hciX> \|]
+.RB [\| \-s
+.IR size \|]
+.RB [\| \-c
+.IR count \|]
+.RB [\| \-t
+.IR timeout \|]
+.RB [\| \-d
+.IR delay \|]
+.RB [\| \-f \|]
+.RB [\| \-r \|]
+.RB [\| \-v \|]
+.I bd_addr
+
+.SH DESCRIPTION
+.LP
+L2ping sends a L2CAP echo request to the Bluetooth MAC address
+.I bd_addr
+given in dotted hex notation.
+.SH OPTIONS
+.TP
+.BI \-i " <hciX>"
+The command is applied to device
+.BI
+hciX
+, which must be the name of an installed Bluetooth device (X = 0, 1, 2, ...)
+If not specified, the command will be sent to the first available Bluetooth
+device.
+.TP
+.BI \-s " size"
+The
+.I size
+of the data packets to be sent.
+.TP
+.BI \-c " count"
+Send
+.I count
+number of packets then exit.
+.TP
+.BI \-t " timeout"
+Wait
+.I timeout
+seconds for the response.
+.TP
+.BI \-d " delay"
+Wait
+.I delay
+seconds between pings.
+.TP
+.B \-f
+Kind of flood ping. Use with care! It reduces the delay time between packets
+to 0.
+.TP
+.B \-r
+Reverse ping (gnip?). Send echo response instead of echo request.
+.TP
+.B \-v
+Verify response payload is identical to request payload. It is not required for
+remote stacks to return the request payload, but most stacks do (including
+Bluez).
+.TP
+.I bd_addr
+The Bluetooth MAC address to be pinged in dotted hex notation like
+.B 01:02:03:ab:cd:ef
+or
+.B 01:EF:cd:aB:02:03
+.SH AUTHORS
+Written by Maxim Krasnyansky <maxk@qualcomm.com> and Marcel Holtmann <marcel@holtmann.org>
+.PP
+man page by Nils Faerber <nils@kernelconcepts.de>, Adam Laurie <adam@algroup.co.uk>.

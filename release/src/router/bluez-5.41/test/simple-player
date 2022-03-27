@@ -1,0 +1,156 @@
+#!/usr/bin/python
+
+from __future__ import print_function
+
+import os
+import sys
+import dbus
+import dbus.service
+import dbus.mainloop.glib
+try:
+  from gi.repository import GObject
+except ImportError:
+  import gobject as GObject
+import bluezutils
+
+class Player(dbus.service.Object):
+	properties = None
+	metadata = None
+
+	def set_object(self, obj = None):
+		if obj != None:
+			bus = dbus.SystemBus()
+			mp = dbus.Interface(bus.get_object("org.bluez", obj),
+						"org.bluez.MediaPlayer1")
+			prop = dbus.Interface(bus.get_object("org.bluez", obj),
+						"org.freedesktop.DBus.Properties")
+
+			self.properties = prop.GetAll("org.bluez.MediaPlayer1")
+
+			bus.add_signal_receiver(self.properties_changed,
+				path = obj,
+				dbus_interface = "org.freedesktop.DBus.Properties",
+				signal_name = "PropertiesChanged")
+		else:
+			track = dbus.Dictionary({
+					"xesam:title" : "Title",
+					"xesam:artist" : ["Artist"],
+					"xesam:album" : "Album",
+					"xesam:genre" : ["Genre"],
+					"xesam:trackNumber" : dbus.Int32(1),
+					"mpris:length" : dbus.Int64(10000) },
+					signature="sv")
+
+			self.properties = dbus.Dictionary({
+					"PlaybackStatus" : "playing",
+					"Identity" : "SimplePlayer",
+					"LoopStatus" : "None",
+					"Rate" : dbus.Double(1.0),
+					"Shuffle" : dbus.Boolean(False),
+					"Metadata" : track,
+					"Volume" : dbus.Double(1.0),
+					"Position" : dbus.Int64(0),
+					"MinimumRate" : dbus.Double(1.0),
+					"MaximumRate" : dbus.Double(1.0),
+					"CanGoNext" : dbus.Boolean(False),
+					"CanGoPrevious" : dbus.Boolean(False),
+					"CanPlay" : dbus.Boolean(False),
+					"CanSeek" : dbus.Boolean(False),
+					"CanControl" : dbus.Boolean(False),
+					},
+					signature="sv")
+
+			handler = InputHandler(self)
+			GObject.io_add_watch(sys.stdin, GObject.IO_IN,
+							handler.handle)
+
+	@dbus.service.method("org.freedesktop.DBus.Properties",
+					in_signature="ssv", out_signature="")
+	def Set(self, interface, key, value):
+		print("Set (%s, %s)" % (key, value), file=sys.stderr)
+		return
+
+	@dbus.service.signal("org.freedesktop.DBus.Properties",
+							signature="sa{sv}as")
+	def PropertiesChanged(self, interface, properties,
+						invalidated = dbus.Array()):
+		"""PropertiesChanged(interface, properties, invalidated)
+
+		Send a PropertiesChanged signal. 'properties' is a dictionary
+		containing string parameters as specified in doc/media-api.txt.
+		"""
+		pass
+
+	def help(self, func):
+		help(self.__class__.__dict__[func])
+
+	def properties_changed(self, interface, properties, invalidated):
+		print("properties_changed(%s, %s)" % (properties, invalidated))
+
+		self.PropertiesChanged(interface, properties, invalidated)
+
+class InputHandler:
+	commands = { 'PropertiesChanged': '(interface, properties)',
+			'help': '(cmd)' }
+	def __init__(self, player):
+		self.player = player
+		print('\n\nAvailable commands:')
+		for cmd in self.commands:
+			print('\t', cmd, self.commands[cmd], sep='')
+
+		print("\nUse python syntax to pass arguments to available methods.\n" \
+                "E.g.: PropertiesChanged({'Metadata' : {'Title': 'My title', \
+		'Album': 'my album' }})")
+		self.prompt()
+
+	def prompt(self):
+		print('\n>>> ', end='')
+		sys.stdout.flush()
+
+	def handle(self, fd, condition):
+		s = os.read(fd.fileno(), 1024).strip()
+		try:
+			cmd = s[:s.find('(')]
+			if not cmd in self.commands:
+				print("Unknown command ", cmd)
+		except ValueError:
+			print("Malformed command")
+			return True
+
+		try:
+			exec "self.player.%s" % s
+		except Exception as e:
+			print(e)
+			pass
+		self.prompt()
+		return True
+
+
+if __name__ == '__main__':
+	dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
+
+	bus = dbus.SystemBus()
+
+	if len(sys.argv) > 1:
+		path = bluezutils.find_adapter(sys.argv[1]).object_path
+	else:
+		path = bluezutils.find_adapter().object_path
+
+	media = dbus.Interface(bus.get_object("org.bluez", path),
+						"org.bluez.Media1")
+
+	path = "/test/player"
+	player = Player(bus, path)
+	mainloop = GObject.MainLoop()
+
+	if len(sys.argv) > 2:
+		player.set_object(sys.argv[2])
+	else:
+		player.set_object()
+
+	print('Register media player with:\n\tProperties: %s' \
+						% (player.properties))
+
+	media.RegisterPlayer(dbus.ObjectPath(path), player.properties)
+
+	mainloop.run()

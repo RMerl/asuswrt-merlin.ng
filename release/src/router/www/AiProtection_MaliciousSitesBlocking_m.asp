@@ -445,7 +445,7 @@ function recount(){
 
 function applyRule(){
 	if(ctf_disable == 0 && ctf_fa_mode == 2){
-		if(!confirm(Untranslated.ctf_fa_hint)){
+		if(!confirm("<#ctf_fa_hint#>")){
 			return false;
 		}	
 		else{

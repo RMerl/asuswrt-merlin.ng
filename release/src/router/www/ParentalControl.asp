@@ -1013,10 +1013,10 @@ function show_inner_tab(){
 			</table>
 			<div style="margin:0 0 10px 5px;" class="splitLine"></div>
 			<div id="block_all_device" style="margin-bottom:6px;display:none;">
-				<div style="font-size:14px;margin-left:6px;margin-bottom:6px;">By enabling Block All Devices, all of the connected devices will be blocked from Internet access.</div>
+				<div style="font-size:14px;margin-left:6px;margin-bottom:6px;"><#Block_All_Device_Desc#></div>
 				<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable">
 					<tr>
-						<th>Enable block all device</th>
+						<th><#Block_All_Device#></th>
 						<td>
 							<div align="center" class="left" style="width:94px; float:left; cursor:pointer;" id="radio_block_all"></div>
 							<div class="iphone_switch_container" style="height:32px; width:74px; position: relative; overflow: hidden">

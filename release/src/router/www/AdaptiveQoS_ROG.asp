@@ -264,7 +264,7 @@ function updateClientInfo(target, mac){
 
 		error: function(jqXHR, textStatus){
 			if(ajaxQueries[mac].alive && ajaxQueries[mac].timeOut > 5){ // ajax request had got stuck
-				location.href = location.href;
+				location.reload();
 				return;
 			}
 			else{

@@ -1,0 +1,56 @@
+BlueZ D-Bus Proximity API description
+***********************************
+
+
+Proximity Monitor hierarchy
+===========================
+
+Service		org.bluez
+Interface	org.bluez.ProximityMonitor1
+Object path	[variable prefix]/{hci0,hci1,...}/dev_XX_XX_XX_XX_XX_XX
+
+Properties	string SignalLevel [readonly]
+
+			Alert indicating that a threshold has been reached.
+			Possible values: "unknown", "good", "regular", "weak"
+
+		string LinkLossAlertLevel [readwrite]
+
+			Persistent property. Sets the alert level in the
+			proximity reporter for link loss scenario. Values:
+			"none", "mild", "high".
+
+		string ImmediateAlertLevel [readwrite]
+
+			Alert level to be written in the Immediate Alert Level.
+			Property shared between Path Loss and Find Me.
+			Values: "none", "mild", "high". Default value is
+			"none". Applications can disable the alert setting
+			the value to "none". If the "Target" is not found,
+			"none" will be emitted after the configured timeout.
+			When changing the level, signal is the confirmation
+			that the value was written in the remote.
+
+Proximity Reporter hierarchy
+===========================
+
+Shared service used by Proximity Path Loss and Find Me. Allows per device
+alert level handling.
+
+Service		org.bluez
+Interface	org.bluez.ProximityReporter1
+Object path	[variable prefix]/{hci0,hci1,...}/dev_XX_XX_XX_XX_XX_XX
+
+Properties	string ImmediateAlertLevel [readonly]
+
+			This property indicates that Immediate Alert Level
+			characteristic in the local Immediate Alert Service
+			was changed by the remote device. Property shared
+			between Path Loss and Find Me. Values: "none", "mild",
+			"high".
+
+		string LinkLossAlertLevel [readonly]
+
+			This property indicates that Alert Level characteristic
+			in the local Link Loss Service was changed by the
+			remote device. Values: "none", "mild", "high".

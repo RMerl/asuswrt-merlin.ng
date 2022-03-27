@@ -1,0 +1,70 @@
+PTS test results for A2DP
+
+PTS version: 6.1
+Tested 21-May-2015
+Android version: 5.1
+
+Results:
+PASS	test passed
+FAIL	test failed
+INC	test is inconclusive
+N/A	test is disabled due to PICS setup
+
+		Source (SRC)
+-------------------------------------------------------------------------------
+Test Name		Result	Notes
+-------------------------------------------------------------------------------
+TC_SRC_CC_BV_09_I	PASS	Start streaming
+TC_SRC_CC_BV_10_I	PASS	Start streaming
+TC_SRC_REL_BV_01_I	PASS	When requested disconnect from IUT
+TC_SRC_REL_BV_02_I	PASS	Start streaming
+TC_SRC_SET_BV_01_I	PASS
+TC_SRC_SET_BV_02_I	PASS
+TC_SRC_SET_BV_03_I	PASS	Start streaming
+TC_SRC_SET_BV_04_I	PASS	Start streaming
+TC_SRC_SET_BV_05_I	PASS	Start streaming
+				IUT must be moved out of range
+				Initiate connection
+TC_SRC_SET_BV_06_I	PASS	PTS issue#13469
+				IUT must be moved out of range
+				To pass set TSPX_no_avrcp to TRUE
+TC_SRC_SUS_BV_01_I	PASS	Start streaming
+				Stop streaming
+				Start streaming
+TC_SRC_SUS_BV_02_I	PASS	Start streaming
+TC_SRC_SDP_BV_01_I	PASS
+TC_SRC_AS_BV_01_I	PASS	Requires checking if the output on the IUT is
+				correct
+TC_SRC_AS_BV_02_I	N/A
+TC_SRC_AS_BV_03_I	N/A
+TC_SRC_SYN_BV_02_I	N/A
+-------------------------------------------------------------------------------
+
+
+		Sink (SNK)
+-------------------------------------------------------------------------------
+Test Name		Result	Notes
+-------------------------------------------------------------------------------
+TC_SNK_CC_BV_01_I	N/A
+TC_SNK_CC_BV_02_I	N/A
+TC_SNK_CC_BV_03_I	N/A
+TC_SNK_CC_BV_04_I	N/A
+TC_SNK_CC_BV_05_I	N/A
+TC_SNK_CC_BV_06_I	N/A
+TC_SNK_CC_BV_07_I	N/A
+TC_SNK_CC_BV_08_I	N/A
+TC_SNK_REL_BV_01_I	N/A
+TC_SNK_REL_BV_02_I	N/A
+TC_SNK_SET_BV_01_I	N/A
+TC_SNK_SET_BV_02_I	N/A
+TC_SNK_SET_BV_03_I	N/A
+TC_SNK_SET_BV_04_I	N/A
+TC_SNK_SET_BV_05_I	N/A
+TC_SNK_SET_BV_06_I	N/A
+TC_SNK_SUS_BV_01_I	N/A
+TC_SNK_SUS_BV_02_I	N/A
+TC_SNK_SDP_BV_02_I	N/A
+TC_SNK_AS_BV_01_I	N/A
+TC_SNK_AS_BV_02_I	N/A
+TC_SNK_SYN_BV_01_I	N/A
+-------------------------------------------------------------------------------

@@ -1,0 +1,58 @@
+Android Compatibility Test Suite results
+
+Tested: 27-Nov-2014
+Android version: 5.0
+Kernel Version: 3.18
+CTS version: 5.0 R1 (android-5.0.0_r7)
+
+Note:
+CTS reliable write GATT tests require using CTS from master branch
+or https://android-review.googlesource.com/99354 applied.
+
+(*) Tests are disabled due to CTS quality issues. Link for reference:
+https://android.googlesource.com/platform/cts/+/0a62e4a0a9910101ccf2ccc43f6%5E!/
+
+-------------------------------------------------------------------------------
+android.bluetooth.cts.BasicAdapterTest (automated tests)
+Test Name				Result	Notes
+-------------------------------------------------------------------------------
+testAndroidTestCaseSetupProperly	PASS
+test_checkBluetoothAddress		PASS
+test_enableDisable			PASS
+test_getAddress				PASS
+test_getBondedDevices			PASS
+test_getDefaultAdapter			PASS
+test_getName				PASS
+test_getRemoteDevice			PASS
+test_listenUsingRfcommWithServiceRecord	PASS
+-------------------------------------------------------------------------------
+
+
+-------------------------------------------------------------------------------
+com.android.cts.verifier (manual tests)
+Test Name				Result	Notes
+-------------------------------------------------------------------------------
+Toggle Bluetooth			PASS
+BLE Client Test:
+	connect				N/A	(*)
+	discover service		N/A	(*)
+	read/write characteristic	N/A	(*)
+	reliable write			N/A	(*)
+	notify characteristic		N/A	(*)
+	read/write descriptor		N/A	(*)
+	read RSSI			N/A	(*)
+	disconnect			N/A	(*)
+BLE Server Test:
+	add service			N/A	(*)
+	connection			N/A	(*)
+	read characteristic request	N/A	(*)
+	write characteristic request	N/A	(*)
+	read descriptor request		N/A	(*)
+	write descriptor request	N/A	(*)
+	reliable write			N/A	(*)
+	disconnection			N/A	(*)
+Insecure Client				PASS
+Insecure Server				PASS
+Secure Client				PASS
+Secure Server				PASS
+-------------------------------------------------------------------------------

@@ -1,0 +1,191 @@
+PTS test results for L2CAP
+
+PTS version: 6.1
+Tested: 28-May-2015
+Android version: 5.1
+Kernel version: 4.1
+
+Results:
+PASS   test passed
+FAIL   test failed
+INC    test is inconclusive
+N/A    test is disabled due to PICS setup
+
+-------------------------------------------------------------------------------
+Test Name		Result	Notes
+-------------------------------------------------------------------------------
+				For all tests daemon should be stopped then:
+					setprop ctl.start hciattach
+TC_COS_CED_BV_01_C	PASS	l2test -n -P 4113 <bdaddr>
+TC_COS_CED_BV_03_C	PASS	l2test -y -N 1 -P 4113 <bdaddr>
+TC_COS_CED_BV_04_C	PASS	l2test -n -P 4113 <bdaddr>
+TC_COS_CED_BV_05_C	PASS	l2test -r -P 4113
+TC_COS_CED_BV_07_C	PASS	l2test -n -P 4113 <bdaddr>
+TC_COS_CED_BV_08_C	PASS	l2test -n -P 4113 <bdaddr>
+TC_COS_CED_BV_09_C	PASS	l2test -n -P 4113 <bdaddr>
+TC_COS_CED_BV_10_C	N/A
+TC_COS_CED_BV_11_C	PASS	l2test -u -P 4113 <bdaddr>
+TC_COS_CED_BI_01_C	PASS
+TC_COS_CFD_BV_01_C	PASS	l2test -r -P 4113
+TC_COS_CFD_BV_02_C	PASS	l2test -n -P 4113 <bdaddr>
+TC_COS_CFD_BV_03_C	PASS	l2test -n -P 4113 <bdaddr>
+TC_COS_CFD_BV_08_C	PASS	l2test -n -P 4113 <bdaddr>
+TC_COS_CFD_BV_09_C	PASS	l2test -n -P 4113 <bdaddr>
+TC_COS_CFD_BV_10_C	N/A
+TC_COS_CFD_BV_11_C	PASS	l2test -n -P 4113 <bdaddr>
+TC_COS_CFD_BV_12_C	PASS	l2test -n -P 4113 <bdaddr>
+TC_COS_CFD_BV_13_C	N/A
+TC_COS_IEX_BV_01_C	PASS	l2test -n -P 4113 <bdaddr>
+TC_COS_IEX_BV_02_C	PASS
+TC_COS_ECH_BV_01_C	PASS
+TC_COS_ECH_BV_02_C	PASS	l2ping -c 1 <bdaddr>
+TC_COS_CFC_BV_01_C	PASS	l2test -y -N 1 -b 40 -V le_public -P 37 <braddr>
+TC_COS_CFC_BV_02_C	PASS	l2test -y -N 1 -b 1 -V le_public -P 37 <bdaddr>
+TC_COS_CFC_BV_03_C	PASS	l2test -u -V le_public -P 37 <bdaddr>
+TC_COS_CFC_BV_04_C	PASS	l2test -u -V le_public -P 37 <bdaddr>
+TC_COS_CFC_BV_05_C	PASS	l2test -u -V le_public <bdaddr>
+				l2test -u -V le_public <bdaddr>
+TC_CLS_CLR_BV_01_C	N/A
+TC_CLS_UCD_BV_01_C	PASS
+TC_CLS_UCD_BV_02_C	PASS	l2test -s -G -N 1 -P 4113 <bdaddr>
+TC_CLS_UCD_BV_03_C	PASS	l2test -s -E -G -N 1 -P 4113 <bdaddr>
+TC_EXF_BV_01_C		PASS
+TC_EXF_BV_02_C		PASS
+TC_EXF_BV_03_C		PASS
+TC_EXF_BV_04_C		N/A
+TC_EXF_BV_05_C		PASS
+TC_EXF_BV_06_C		N/A
+TC_CMC_BV_01_C		PASS	l2test -r -X ertm -P 4113
+TC_CMC_BV_02_C		PASS	l2test -r -X ertm -P 4113
+TC_CMC_BV_03_C		PASS	l2test -r -X ertm -P 4113
+TC_CMC_BV_04_C		PASS	l2test -r -X streaming -P 4113
+TC_CMC_BV_05_C		PASS	l2test -r -X streaming -P 4113
+TC_CMC_BV_06_C		PASS	l2test -r -X streaming -P 4113
+TC_CMC_BV_07_C		PASS	l2test -r -X ertm -P 4113
+TC_CMC_BV_08_C		PASS	l2test -r -X streaming -P 4113
+TC_CMC_BV_09_C		PASS	l2test -r -X basic -P 4113
+TC_CMC_BV_10_C		PASS	l2test -n -P 4113 <bdaddr>
+TC_CMC_BV_11_C		PASS	l2test -n -P 4113 <bdaddr>
+TC_CMC_BV_12_C		PASS	l2test -z -X ertm <bdaddr>
+TC_CMC_BV_13_C		PASS	l2test -z -X streaming <bdaddr>
+TC_CMC_BV_14_C		PASS	l2test -r -X streaming -P 4113
+TC_CMC_BV_15_C		PASS	l2test -r -X streaming -P 4113
+TC_CMC_BI_01_C		PASS	l2test -r -X ertm -P 4113
+TC_CMC_BI_02_C		PASS	l2test -r -X ertm -P 4113
+TC_CMC_BI_03_C		PASS	l2test -r -X streaming -P 4113
+TC_CMC_BI_04_C		PASS	l2test -r -X streaming -P 4113
+TC_CMC_BI_05_C		PASS	l2test -r -X basic -P 4113
+TC_CMC_BI_06_C		PASS	l2test -r -X basic -P 4113
+TC_FOC_BV_01_C		PASS	l2test -r -X ertm -P 4113 -F 0
+TC_FOC_BV_02_C		PASS	l2test -r -X ertm -P 4113 -F 0
+TC_FOC_BV_03_C		PASS	l2test -r -X ertm -P 4113 -F 0
+TC_OFS_BV_01_C		PASS	l2test -x -X ertm -P 4113 -F 0 -N 1
+TC_OFS_BV_02_C		PASS	l2test -r -X ertm -P 4113 -F 0
+TC_OFS_BV_03_C		PASS	l2test -x -X streaming -P 4113 -F 0 -N 1
+TC_OFS_BV_04_C		PASS	l2test -d -X streaming -P 4113 -F 0
+TC_OFS_BV_05_C		PASS	l2test -x -X ertm -P 4113 -N 1
+TC_OFS_BV_06_C		PASS	l2test -r -X ertm -P 4113
+TC_OFS_BV_07_C		PASS	l2test -x -X streaming -P 4113 -F 0 -N 1
+TC_OFS_BV_08_C		PASS	l2test -d -X streaming -P 4113
+TC_ERM_BV_01_C		PASS	l2test -x -X ertm -P 4113 -N 3 -Y 3
+TC_ERM_BV_02_C		PASS	l2test -r -X ertm -P 4113
+TC_ERM_BV_03_C		PASS	l2test -r -X ertm -P 4113
+TC_ERM_BV_05_C		PASS	l2test -x -X ertm -P 4113 -N 2 -Y 2
+TC_ERM_BV_06_C		PASS	l2test -x -X ertm -P 4113 -N 2 -Y 2
+TC_ERM_BV_07_C		PASS	l2test -r -H 1000 -K 10000 -X ertm -P 4113
+TC_ERM_BV_08_C		PASS	l2test -x -X ertm -P 4113 -N 1
+TC_ERM_BV_09_C		PASS	l2test -X ertm -P 4113
+TC_ERM_BV_10_C		PASS	l2test -x -X ertm -P 4113 -N 1
+TC_ERM_BV_11_C		PASS	l2test -x -X ertm -P 4113 -N 1 -Q 1
+TC_ERM_BV_12_C		PASS	l2test -x -X ertm -P 4113 -R -N 1 -Q 1
+TC_ERM_BV_13_C		PASS	l2test -x -X ertm -P 4113 -N 2
+TC_ERM_BV_14_C		PASS	l2test -x -X ertm -P 4113 -N 4
+TC_ERM_BV_15_C		PASS	l2test -x -X ertm -P 4113 -N 4
+TC_ERM_BV_16_C		N/A
+TC_ERM_BV_17_C		PASS	l2test -X ertm -P 4113
+TC_ERM_BV_18_C		PASS	l2test -x -X ertm -P 4113 -N 1
+TC_ERM_BV_19_C		PASS	l2test -x -X ertm -P 4113 -N 1
+TC_ERM_BV_20_C		PASS	l2test -x -X ertm -P 4113 -N 1
+TC_ERM_BV_21_C		PASS	l2test -x -X ertm -P 4113 -D 2000 -N 2
+TC_ERM_BV_22_C		PASS	l2test -r -H 1000 -K 10000 -X ertm -P 4113
+TC_ERM_BV_23_C		PASS	l2test -x -X ertm -P 4113 -N 2
+TC_ERM_BI_01_C		N/A
+TC_ERM_BI_02_C		PASS	l2test -X ertm -P 4113
+TC_ERM_BI_03_C		PASS	l2test -x -X ertm -P 4113 -N 2
+TC_ERM_BI_04_C		PASS	l2test -x -X ertm -P 4113 -N 2
+TC_ERM_BI_05_C		PASS	l2test -x -X ertm -P 4113 -N 2
+TC_STM_BV_01_C		PASS	l2test -x -X streaming -P 4113 -N 3 -Y 3
+TC_STM_BV_02_C		PASS	l2test -d -X streaming -P 4113
+TC_STM_BV_03_C		PASS	l2test -x -X streaming -P 4113 -N 2
+TC_STM_BV_11_C		N/A
+TC_STM_BV_12_C		N/A
+TC_STM_BV_13_C		N/A
+TC_FIX_BV_01_C		PASS	l2test -z -P 4113 <bdaddr>
+TC_FIX_BV_02_C		N/A
+TC_EWC_BV_01_C		N/A
+TC_EWC_BV_02_C		N/A
+TC_EWC_BV_03_C		N/A
+TC_LSC_BV_01_C		N/A
+TC_LSC_BV_02_C		N/A
+TC_LSC_BV_03_C		N/A
+TC_LSC_BI_04_C		N/A
+TC_LSC_BI_05_C		N/A
+TC_LSC_BV_06_C		N/A
+TC_LSC_BV_07_C		N/A
+TC_LSC_BV_08_C		N/A
+TC_LSC_BV_09_C		N/A
+TC_LSC_BI_10_C		N/A
+TC_LSC_BI_11_C		N/A
+TC_LSC_BV_12_C		N/A
+TC_CCH_BV_01_C		N/A
+TC_CCH_BV_02_C		N/A
+TC_CCH_BV_03_C		N/A
+TC_CCH_BV_04_C		N/A
+TC_ECF_BV_01_C		N/A
+TC_ECF_BV_02_C		N/A
+TC_ECF_BV_03_C		N/A
+TC_ECF_BV_04_C		N/A
+TC_ECF_BV_05_C		N/A
+TC_ECF_BV_06_C		N/A
+TC_ECF_BV_07_C		N/A
+TC_ECF_BV_08_C		N/A
+TC_LE_CPU_BV_01_C	PASS	btmgmt advertising on
+				l2test -r -V le_public -J 4
+TC_LE_CPU_BV_02_C	PASS	l2test -n -V le_public -J 4 <braddr>
+TC_LE_CPU_BI_01_C	PASS	l2test -n -V le_public -J 4 <braddr>
+TC_LE_CPU_BI_02_C	PASS	btmgmt advertising on
+				l2test -r -V le_public -J 4
+TC_LE_REJ_BI_01_C	PASS	l2test -n -V le_public -J 4 <braddr>
+TC_LE_REJ_BI_02_C	PASS	l2test -n -V le_public -J 4 <braddr>
+TC_LE_CFC_BV_01_C	PASS	l2test -n -V le_public -P 37 <braddr>
+TC_LE_CFC_BV_02_C	PASS	l2test -n -V le_public -P 37 <braddr>
+TC_LE_CFC_BV_03_C	PASS	l2test -x -N 1 -V le_public
+				hcitool lecc <braddr>
+				hcitool ledc <handle>
+TC_LE_CFC_BV_04_C	PASS	l2test -n -V le_public -P 241 <braddr>
+TC_LE_CFC_BV_05_C	PASS	l2test -r -V le_public -J 4
+				hcitool lecc <braddr>
+				hcitool ledc <handle>
+TC_LE_CFC_BV_06_C	PASS	l2test -s -N 10 -V le_public <braddr>
+TC_LE_CFC_BV_07_C	PASS	l2test -u -V le_public <braddr>
+TC_LE_CFC_BI_01_C	PASS	l2test -u -V le_public <bdaddr>
+TC_LE_CFC_BV_08_C	PASS	l2test -n -V le_public -P 37 <braddr>
+TC_LE_CFC_BV_09_C	PASS	l2test -n -V le_public -P 37 <braddr>
+TC_LE_CFC_BV_16_C	PASS	l2test -n -V le_public -P 37 <braddr>
+TC_LE_CFC_BV_17_C	N/A
+TC_LE_CID_BV_01_C	PASS	PTS issue #12730
+				l2test -r -J 2
+				l2test -r -J 4 -V le_public
+				hcitool cc <braddr>
+				hcitool lecc --static <braddr>
+				l2test -s -N 1 -C 0 -e 5 -D 10000 <braddr>
+				l2test -s -N 1 -C 0 -D 10000 -g 10000
+					-V le_public <braddr>
+TC_LE_CID_BV_02_I	PASS	PTS issue #12730
+				l2test -r -J 2
+				l2test -r -J 4 -V le_public
+				l2test -w -N 1 -C 0 -D 5000 -g 10000
+				l2test -w -N 1 -C 0 -D 5000 -e 5 -g 10000
+					-V le_public
+				hcitool cc <braddr>
+				hcitool lecc --static <braddr>

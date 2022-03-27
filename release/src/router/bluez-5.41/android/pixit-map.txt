@@ -1,0 +1,44 @@
+MAP PIXIT for the PTS tool.
+
+PTS version: 6.1
+
+* - different than PTS defaults
+& - should be set to IUT Bluetooth address
+# - should be set to tester's phone number
+$ - should be set to IUT e-mail address
+
+		Required PIXIT settings
+-------------------------------------------------------------------------------
+Parameter Name						Value
+-------------------------------------------------------------------------------
+TSPX_auth_password					0000
+TSPX_auth_user_id					PTS
+TSPX_bd_addr_iut					112233445566 (*&)
+TSPX_client_class_of_device				100204
+TSPX_delete_link_key					FALSE
+TSPX_get_object_name					put.gif
+TSPX_initial_path
+TSPX_l2cap_psm						1001
+TSPX_no_confirmations					FALSE
+TSPX_pin_code						0000
+TSPX_rfcomm_channel					8
+TSPX_secure_simple_pairing_pass_key_confirmation	FALSE
+TSPX_security_enabled					TRUE
+TSPX_server_class_of_device				100204
+TSPX_time_guard						300000
+TSPX_use_implicit_send					TRUE
+TSPX_Message_Access_rfcomm_channel			1
+TSPX_Message_Notification_rfcomm_channel		2
+TSPX_SPP_rfcomm_channel					03
+TSPX_filter_period_begin				20100101T000000
+TSPX_filter_period_end					20111231T125959
+TSPX_filter_recipient					PTS
+TSPX_filter_originator					PTS
+TSPX_default_message_upload_folder_in_msg		draft
+TSPX_default_test_folder_in_msg				inbox
+TSPX_message_notification_l2cap_psm			1003
+TSPX_message_notification_rfcomm_channel		9
+TSPX_upload_msg_phonenumber				123456789 (#)
+TSPX_upload_msg_emailaddress				IUT-email ($)
+TSPX_Automation						FALSE
+-------------------------------------------------------------------------------

@@ -26,13 +26,13 @@
 
 /*
  * Automatically generated make config: don't edit
- * Date: Sun Jul  4 10:58:18 2021
+ * Date: Thu Dec  2 17:01:19 2021
  */
 #ifndef __TMCFG__AUTOCONF_OUTPUT_H_
 #define __TMCFG__AUTOCONF_OUTPUT_H_
 
 #define TMCFG_BRAND "asus"
-#define TMCFG_MODEL "rt-ax95q"
+#define TMCFG_MODEL "xt12"
 
 /*
  * Target device information
@@ -42,15 +42,15 @@
 #define TMCFG_ARCH_X86 0 // n
 #define TMCFG_ARCH_X86_64 0 // n
 #define TMCFG_ARCH_MIPS 0 // n
-#define TMCFG_ARCH_ARM 1 // y
-#define TMCFG_ARCH_ARM_64 0 // n
+#define TMCFG_ARCH_ARM 0 // n
+#define TMCFG_ARCH_ARM_64 1 // y
 #define TMCFG_ARCH_POWERPC 0 // n
 #define TMCFG_CPU_BIG_ENDIAN 0 // n
 #define TMCFG_CPU_LITTLE_ENDIAN 1 // y
-#define TMCFG_KERN_DIR "/opt/ASUS/asuswrt_AX95Q_GPL_386_43170_sharon/release/src-rt-5.02axhnd.675x/kernel/linux-4.1/"
-#define TMCFG_KERN_ARCH "arm"
-#define TMCFG_CPU_32BITS 1 // y
-#define TMCFG_CPU_64BITS 0 // n
+#define TMCFG_KERN_DIR "/opt/ASUS/asuswrt_XT12_GPL_386_46737/release/src-rt-5.04axhnd.675x/kernel/linux-4.19"
+#define TMCFG_KERN_ARCH "arm64"
+#define TMCFG_CPU_32BITS 0 // n
+#define TMCFG_CPU_64BITS 1 // y
 #define TMCFG_LOCAL_ATOMIC_OP_LOCK 0 // n
 
 /*
@@ -60,7 +60,7 @@
 /*
  * Target device toolchain (cross utilities)
  */
-#define TMCFG_TC_PFX "/opt/ASUS/toolchains/crosstools-arm-gcc-5.5-linux-4.1-glibc-2.26-binutils-2.28.1//usr/bin/arm-buildroot-linux-gnueabi-"
+#define TMCFG_TC_PFX "/opt/toolchains/crosstools-aarch64-gcc-9.2-linux-4.19-glibc-2.30-binutils-2.32/bin/aarch64-buildroot-linux-gnu-"
 #define TMCFG_TC_BIT_FIELD_ORDER_LITTLE_ENDIAN 1 // y
 #define TMCFG_TC_BIT_FIELD_ORDER_BIG_ENDIAN 0 // n
 #define TMCFG_TC_CC "$(TMCFG_TC_PFX)gcc"
@@ -72,7 +72,7 @@
 /*
  * (CAUTION) Shared CC flags. Do not change if u are not sure.
  */
-#define TMCFG_TC_EXTRA_CFLAGS "-fsigned-char"
+#define TMCFG_TC_EXTRA_CFLAGS "-fsigned-char -Wno-incompatible-pointer-types"
 #define TMCFG_TC_EXTRA_LDFLAGS ""
 #define TMCFG_TC_RUN_STRIP 1 // y
 
@@ -93,7 +93,7 @@
 /*
  * Engine
  */
-#define TMCFG_E_EXTRA_CFLAGS ""
+#define TMCFG_E_EXTRA_CFLAGS "-I/opt/ASUS/asuswrt_XT12_GPL_386_46737/release/src-rt-5.04axhnd.675x/kernel/bcmkernel/include"
 #define TMCFG_E_KMOD_NAME "tdts"
 #define TMCFG_E_KMOD_IOCTL_DEV_NAME "idp"
 #define TMCFG_E_KMOD_IOCTL_DEV_MAJ 190
@@ -106,7 +106,7 @@
 #define TMCFG_E_MAJ_VER 2
 #define TMCFG_E_MID_VER 0
 #define TMCFG_E_MIN_VER 1
-#define TMCFG_E_LOCAL_VER "09297f16"
+#define TMCFG_E_LOCAL_VER "12022021"
 
 /*
  * Engine core
@@ -250,14 +250,14 @@
 /*
  * Userspace toolchain
  */
-#define TMCFG_APP_U_TC_PFX "/opt/ASUS/toolchains/asus-toolchain-arm-rt_ax88u_u/usr/bin/arm-buildroot-linux-gnueabi-"
+#define TMCFG_APP_U_TC_PFX "/opt/toolchains/crosstools-aarch64-gcc-9.2-linux-4.19-glibc-2.30-binutils-2.32/bin/aarch64-buildroot-linux-gnu-"
 #define TMCFG_APP_U_TC_CC "$(TMCFG_APP_U_TC_PFX)gcc"
 #define TMCFG_APP_U_TC_AR "$(TMCFG_APP_U_TC_PFX)ar"
 #define TMCFG_APP_U_TC_LD "$(TMCFG_APP_U_TC_PFX)ld"
 #define TMCFG_APP_U_TC_RANLIB "$(TMCFG_APP_U_TC_PFX)ranlib"
 #define TMCFG_APP_U_TC_STRIP "$(TMCFG_APP_U_TC_PFX)strip"
 #define TMCFG_APP_U_TC_OBJDUMP "$(TMCFG_APP_U_TC_PFX)objdump"
-#define TMCFG_APP_U_EXTRA_CFLAGS "-fstack-protector-all"
+#define TMCFG_APP_U_EXTRA_CFLAGS ""
 #define TMCFG_APP_U_EXTRA_LDFLAGS ""
 #define TMCFG_APP_U_KA_API 1 // y
 #define TMCFG_APP_U_TDTS_RULE_AGENT 1 // y

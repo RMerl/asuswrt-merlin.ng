@@ -1,6 +1,5 @@
 
 include ../common.mak
-include $(TOP)/.config
 
 CURL_DIR=$(TOP)/curl-7.21.7
 XML2_DIR=$(TOP)/libxml2
@@ -10,12 +9,12 @@ JSON_C_DIR=$(TOP)/json-c
 SHARED_DIR=$(TOP)/shared
 
 
-#ROUTER_LIBS=-lnvram
-#ROUTER_LDFLAGS=-L$(NVRAM_DIR)
-
-ROUTER_LIBS=-lnvram -lshared
-ROUTER_LDFLAGS=-L$(NVRAM_DIR) -L$(SHARED_DIR)
-
+ROUTER_LIBS = -lnvram -lshared
+ROUTER_LDFLAGS = -L$(NVRAM_DIR) -L$(SHARED_DIR)
+ifeq ($(RTCONFIG_BCM_502L07P2),y)
+ROUTER_LIBS += -lethctl
+ROUTER_LDFLAGS += -L$(TOP_PLATFORM)/ethctl_lib
+endif
 
 
 
@@ -24,11 +23,8 @@ ROUTER_CFLAGS=-DNVRAM=1 -DEMBEDDED -I$(SHARED_DIR)
 ROUTER_CFLAGS+=-DTNL_CALLBACK_ENABLE -DTNL_2_X -DUSE_IM_IPC
 
 ifeq ($(RTCONFIG_QTN),y)
-ROUTER_LIBS=-lnvram -lshared -lqcsapi_client
-ROUTER_LDFLAGS=-L$(NVRAM_DIR) -L$(SHARED_DIR) -L$(QCSAPI_DIR)
-else
-ROUTER_LIBS=-lnvram -lshared
-ROUTER_LDFLAGS=-L$(NVRAM_DIR) -L$(SHARED_DIR)
+ROUTER_LIBS += -lqcsapi_client
+ROUTER_LDFLAGS += -L$(QCSAPI_DIR)
 endif
 
 ifeq ($(RTCONFIG_NOTIFICATION_CENTER),y)

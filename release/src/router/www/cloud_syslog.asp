@@ -76,7 +76,7 @@ function initial(){
 										<tr class="apply_gen" valign="top">
 											<td width="40%" align="center" >
 												<form method="post" name="form3" action="apply.cgi">
-													<input type="button" onClick="location.href=location.href" value="<#CTL_refresh#>" class="button_gen">
+													<input type="button" onClick="location.reload();" value="<#CTL_refresh#>" class="button_gen">
 												</form>
 											</td>	
 										</tr>

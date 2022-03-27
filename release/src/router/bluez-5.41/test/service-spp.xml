@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<record>
+  <attribute id="0x0001">
+    <sequence>
+      <uuid value="0x1101"/>
+    </sequence>
+  </attribute>
+
+  <attribute id="0x0004">
+    <sequence>
+      <sequence>
+        <uuid value="0x0100"/>
+      </sequence>
+      <sequence>
+        <uuid value="0x0003"/>
+        <uint8 value="23" name="channel"/>
+      </sequence>
+    </sequence>
+  </attribute>
+
+  <attribute id="0x0100">
+    <text value="COM5" name="name"/>
+  </attribute>
+</record>

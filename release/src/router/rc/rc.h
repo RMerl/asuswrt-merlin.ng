@@ -909,7 +909,7 @@ extern void bsd_defaults(void);
 #ifdef GTAC2900
 extern void update_cfe_ac2900();
 #endif
-#if defined(RTCONFIG_HND_ROUTER_AX_675X) && !defined(RTCONFIG_HND_ROUTER_AX_6710)
+#if defined(RTCONFIG_HND_ROUTER_AX_675X)
 extern void update_cfe_675x();
 #endif
 #if defined(RTAX58U) || defined(TUFAX3000)
@@ -1015,6 +1015,7 @@ extern void set_owe_transition_bss_enabled(int unit, int subunit);
 #if defined(CONFIG_BCMWL5) && defined(HND_ROUTER)
 /* GPY211 WAR */
 extern void GPY211_INIT_SPEED();
+extern void reset_ext_phy();
 #endif
 
 #if defined(RTCONFIG_MULTISERVICE_WAN)
@@ -1248,6 +1249,7 @@ extern void set_vendor_id(const char* vendor_id);
 extern void set_version(const char* version);
 extern void set_serial_no(const char* serial_no);
 extern void config_ptm_queue(QOS_Q_PARAM *p);
+extern void dsl_defaults_x();
 #endif
 
 #endif /* RTCONFIG_DSL_HOST */
@@ -1325,6 +1327,7 @@ extern int _ifconfig_get(const char *name, int *flags, char *addr, char *netmask
 extern int ifconfig_mtu(const char *name, int mtu);
 extern int route_add(char *name, int metric, char *dst, char *gateway, char *genmask);
 extern int route_del(char *name, int metric, char *dst, char *gateway, char *genmask);
+extern int route_exist(const char *name, int metric, const char *dst, const char *gateway, const char *mask);
 extern int start_vlan(void);
 extern int stop_vlan(void);
 extern int config_vlan(void);
@@ -1457,6 +1460,7 @@ extern void start_wds_ra();
 #if defined(RTCONFIG_AMAS) && defined(RTCONFIG_VIF_ONBOARDING)
 extern void set_onboarding_vif_status(void);
 #endif
+extern int chk_inlan(char*);
 
 // firewall.c
 extern int start_firewall(int wanunit, int lanunit);
@@ -1495,12 +1499,12 @@ extern int pc_main(int argc, char *argv[]);
 #ifdef RTCONFIG_PARENTALCTRL
 extern int pc_block_main(int argc, char *argv[]);
 extern void config_blocking_redirect(FILE *fp);
-#ifdef DSL_AX82U
+#ifdef RTCONFIG_ISP_OPTUS
 // For optus customization
 extern int op_is_whitelist_url(const char *url);
 extern void op_write_redirect_rules(FILE *fp);
 extern void op_check_and_add_rules(void *info);
-#endif
+#endif /* RTCONFIG_ISP_OPTUS */
 #endif
 
 // pc_tmp.c
@@ -1549,6 +1553,7 @@ extern void reset_vpnc_state(void);
 extern int vpnc_ovpn_up_main(int argc, char **argv);
 extern int vpnc_ovpn_down_main(int argc, char **argv);
 extern int vpnc_ovpn_route_up_main(int argc, char **argv);
+extern int vpnc_ovpn_route_pre_down_main(int argc, char **argv);
 #else
 extern void update_vpnc_state(char *prefix, int state, int reason);
 #endif
@@ -1733,6 +1738,9 @@ extern int psta_monitor_main(int argc, char *argv[]);
 extern int ledg_main(int argc, char *argv[]);
 extern int ledbtn_main(int argc, char *argv[]);
 #endif
+#ifdef GTAX6000
+extern int antled_main(int argc, char *argv[]);
+#endif
 #if defined(RTCONFIG_NBR_RPT)
 extern int nbr_monitor_main(int argc, char *argv[]);
 #endif
@@ -1759,6 +1767,9 @@ extern void duplicate_prelink_config();
 extern void restore_prelink_config();
 extern void set_mssid_prelink_bss_enabled(int unit, int subunit);
 extern void restore_mssid_prelink_config();
+#if defined(RTCONFIG_QCA) && defined(RTCONFIG_MSSID_PRELINK)
+extern int chk_unique_plk(void);
+#endif
 #endif
 #endif
 
@@ -2425,6 +2436,9 @@ void stop_cstats(void);
 #endif
 extern void setup_leds();
 int ddns_custom_updated_main(int argc, char *argv[]);
+#if defined(RTCONFIG_HND_ROUTER_AX)
+int set_cable_media(const char *eth_inf, const char *media_type);
+#endif
 
 // dnsfilter.c
 #ifdef RTCONFIG_DNSFILTER
@@ -2547,7 +2561,9 @@ void stop_amas_misc(void);
 void start_plc_master(void);
 void stop_plc_master(void);
 #endif	/* RTCONFIG_QCA_PLC2 */
-#endif
+void stop_amas_service(void);
+void start_amas_service(void);
+#endif /* RTCONFIG_AMAS */
 #endif	/* RTCONFIG_WIRELESSREPEATER */
 #if defined(RTCONFIG_QCA_LBD)
 extern void duplicate_wl_ifaces(void);
@@ -2853,6 +2869,7 @@ extern int monitor_main(int argc, char *argv[]);
 extern int start_tr(void);
 extern void stop_tr(void);
 extern int tr_lease_main(int argc, char *argv[]);
+extern void tr_switch_wan_line(int wan_unit);
 #endif
 
 #ifdef RTCONFIG_NEW_USER_LOW_RSSI
@@ -3190,6 +3207,7 @@ static inline int asus_ctrl_sku_write(char *asusctrl_sku) { return 0; }
 #endif
 extern void asus_ctrl_sku_check();
 extern void asus_ctrl_sku_update();
+extern void fix_location_code(void);
 extern int asus_ctrl_nv(char *asusctrl);
 extern int asus_ctrl_nv_restore();
 extern int setting_SG_mode_wps();
@@ -3253,6 +3271,31 @@ extern void start_oam_service(oam_srv_t* param);
 extern void stop_oam_service();
 #endif
 
+#ifdef RTCONFIG_WIREGUARD
+#define WG_SERVER_MAX	1
+#define WG_SERVER_CLIENT_MAX	10
+#define WG_CLIENT_MAX	5
+#define WG_SERVER_IF_PREFIX	"wgs"
+#define WG_CLIENT_IF_PREFIX	"wgc"
+#define WG_SERVER_NVRAM_PREFIX	"wgs"
+#define WG_CLIENT_NVRAM_PREFIX	"wgc"
+extern void start_wgsall();
+extern void stop_wgsall();
+extern void start_wgcall();
+extern void stop_wgcall();
+extern void start_wgs(int unit);
+extern void stop_wgs(int unit);
+extern void start_wgc(int unit);
+extern void stop_wgc(int unit);
+extern void update_wgs_client(int s_unit, int c_unit);
+extern void update_wgs_client_ep();
+extern int write_wgc_resolv_dnsmasq(FILE* fp_servers);
+extern void write_wgs_dnsmasq_config(FILE* fp);
+extern void run_wgs_fw_scripts();
+extern void run_wgc_fw_scripts();
+extern int is_wg_enabled();
+#endif
+
 extern int get_active_wan_unit(void);
 
 #ifdef RTCONFIG_UPNPC_NEW
@@ -3294,31 +3337,6 @@ typedef struct wanlan_st_s {
 } wanlan_st_t;
 int get_wanlanstatus(wanlan_st_t *wlst);
 int transform_wanlanstatus(wanlan_st_t *wlst);
-
-#ifdef RTCONFIG_WIREGUARD
-#define WG_SERVER_MAX	1
-#define WG_SERVER_CLIENT_MAX	10
-#define WG_CLIENT_MAX	5
-#define WG_SERVER_IF_PREFIX	"wgs"
-#define WG_CLIENT_IF_PREFIX	"wgc"
-#define WG_SERVER_NVRAM_PREFIX	"wgs"
-#define WG_CLIENT_NVRAM_PREFIX	"wgc"
-extern void start_wgsall();
-extern void stop_wgsall();
-extern void start_wgcall();
-extern void stop_wgcall();
-extern void start_wgs(int unit);
-extern void stop_wgs(int unit);
-extern void start_wgc(int unit);
-extern void stop_wgc(int unit);
-extern void update_wgs_client(int s_unit, int c_unit);
-extern void update_wgs_client_ep();
-extern int write_wgc_resolv_dnsmasq(FILE* fp_servers);
-extern void write_wgs_dnsmasq_config(FILE* fp);
-extern void write_wgs_fw_filter(FILE* fp);
-extern void run_wgc_fw_scripts();
-extern int is_wg_enabled();
-#endif
 
 //Log path is '/tmp/asusdebuglog/plc.log'
 #ifdef RTCONFIG_QCA_PLC2

@@ -1,0 +1,187 @@
+OPP PICS for the PTS tool.
+
+PTS version: 6.2.0
+
+* - different than PTS defaults
+# - not yet implemented/supported
+
+M - mandatory
+O - optional
+
+		Roles
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_OPP_1_1	True (*)	Role: Object Push Client (C.1)
+TSPC_OPP_1_2	True (*)	Role: Object Push Server (C.1)
+-------------------------------------------------------------------------------
+C.1: Mandatory to support at least one of the defined roles.
+-------------------------------------------------------------------------------
+
+
+		Client Profile Version
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_OPP_1b_1	False		Client supports OPP version 1.1. (C.1)
+TSPC_OPP_1b_2	True (*)	Client supports OPP version 1.2. (C.1)
+-------------------------------------------------------------------------------
+C.1: It is mandatory to support at least one of the profile versions.
+-------------------------------------------------------------------------------
+
+
+		Client Application Features
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_OPP_2_1	True		Client: Perform Service Discovery request (M)
+TSPC_OPP_2_2	True		Client: Authentication/PIN exchange supported.
+					(M)
+TSPC_OPP_2_2a	True (*)	Client: Require Authentication/PIN by default.
+					(O)
+TSPC_OPP_2_3	True		Client: Object Push (M)
+TSPC_OPP_2_4	True (*)	Client: vCard 2.1 (C.3)
+TSPC_OPP_2_5	False		Client: vCalender 1.0 (O)
+TSPC_OPP_2_6	False		Client: vMsg as defined in IrMC 1.1 (O)
+TSPC_OPP_2_7	False		Client: vNote as defined in IrMC 1.1 (O)
+TSPC_OPP_2_8	True (*)	Client: Support content formats other than those
+					declared in TSPC_OPP_2_4 through
+					TSPC_OPP_2_7. (O)
+TSPC_OPP_2_8a	False		Client: Support specific set of other content
+					formats. (C.4)
+TSPC_OPP_2_8b	True (*)	Client: Support all content formats. (C.4)
+TSPC_OPP_2_9	True (*)	Client: Push multiple vCard objects. (O)
+TSPC_OPP_2_9a	True (*)	Client: Push multiple vCard objects using
+					different PUT operations. (C.5)
+TSPC_OPP_2_9b	False		Client: Push multiple vCard objects using the
+					same PUT operation. (C.5)
+TSPC_OPP_2_10	True (*)	Client: Push multiple vCalender objects. (O)
+TSPC_OPP_2_10a	True		Client: Push multiple vCalendar objects using
+					different PUT operations. (C.6)
+TSPC_OPP_2_10b	False		Client: Push multiple vCalendar objects using
+					the same PUT operation. (C.6)
+TSPC_OPP_2_11	True (*)	Client: Push multiple vMsg objects. (O)
+TSPC_OPP_2_11a	True (*)	Client: Push multiple vMsg objects using
+					different PUT operations. (C.7)
+TSPC_OPP_2_11b	False		Client: Push multiple vMsg objects using the
+					same PUT operation. (C.7)
+TSPC_OPP_2_12	True (*)	Client: Push multiple vNote objects. (O)
+TSPC_OPP_2_12a	True (*)	Client: Push multiple vNote objects using
+					different PUT operations. (C.8)
+TSPC_OPP_2_12b	False		Client: Push multiple vNote objects using the
+					same PUT operation. (C.8)
+TSPC_OPP_2_13	True (*)	Client: Pull business card (O)
+TSPC_OPP_2_14	True (*)	Client: vCard 2.1 (C.1)
+TSPC_OPP_2_15	True (*)	Client: Exchange business card (O)
+TSPC_OPP_2_16	False		Client: vCard 2.1 (C.2)
+TSPC_OPP_2_17	True (*)	GOEP v2 (C.9)
+TSPC_OPP_2_18	True (*)	GOEP v2 Backward Compatibility (C.9)
+TSPC_OPP_2_19	True (*)	OBEX over L2CAP (C.9)
+TSPC_OPP_2_20	False		OBEX Reliable Session (C.10)
+TSPC_OPP_2_21	False		OBEX SRM (C.10)
+TSPC_OPP_2_22	False		Send OBEX SRMP header (C.10)
+TSPC_OPP_2_23	False		Receive OBEX SRMP header (C.11)
+-------------------------------------------------------------------------------
+C.1: Mandatory to Support IF (TSPC_OPP_2_13) Business Card Pull is supported.
+C.2: Mandatory to Support IF (TSPC_OPP_2_15) Business Card Exchange is
+	supported.
+C.3: vCard 2.1 support is required for devices containing phonebook
+	applications. vCard 2.1 support optional for other devices.
+C.4: Mandatory to support one of TSPC_OPP_2_8a or TSPC_OPP_2_8b if TSPC_OPP_2_8
+	is supported. Otherwise, both items are excluded.
+C.5: Mandatory to support at least one of TSPC_OPP_2_9a and TSPC_OPP_2_9b if
+	TSPC_OPP_2_9 is supported. Otherwise, both items are excluded.
+C.6: Mandatory to support at least one of TSPC_OPP_2_10a and TSPC_OPP_2_10b if
+	TSPC_OPP_2_10 is supported. Otherwise, both items are excluded.
+C.7: Mandatory to support at least one of TSPC_OPP_2_11a and TSPC_OPP_2_11b if
+	TSPC_OPP_2_11 is supported. Otherwise, both items are excluded.
+C.8: Mandatory to support at least one of TSPC_OPP_2_12a and TSPC_OPP_2_12b if
+	TSPC_OPP_2_12 is supported. Otherwise, both items are excluded.
+C.9: Mandatory if TSPC_OPP_1b_2 supported.
+C.10: Optional to support if TSPC_OPP_1b_2 supported else excluded.
+C.11: Mandatory if TSPC_OPP_17 and TSPC_OPP_21 supported else excluded.
+-------------------------------------------------------------------------------
+
+
+		Server Profile Version
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_OPP_2b_1	False		Server supports OPP version 1.1.
+TSPC_OPP_2b_2	True (*)	Server supports OPP version 1.2.
+-------------------------------------------------------------------------------
+C.1: It is mandatory to support at least one of the profile versions.
+-------------------------------------------------------------------------------
+
+
+		Server Application Features
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_OPP_3_1	True		Server: Provide information on supported
+					contents type on service discovery
+					request. (M)
+TSPC_OPP_3_2	True		Server: Authentication/PIN exchange supported.
+					(M)
+TSPC_OPP_3_3	True		Server: Object Push (M)
+TSPC_OPP_3_3a	True (*)	Server: Receive multiple objects in the same
+					PUT operation. (O)
+TSPC_OPP_3_4	True (*)	Server: vCard 2.1 (C.3)
+TSPC_OPP_3_5	False		Server: vCalender 1.0 format (O)
+TSPC_OPP_3_6	False		Server: vMsg as defined in IrMC 1.1 (O)
+TSPC_OPP_3_7	False		Server: vNote as defined in IrMC 1.1 (O)
+TSPC_OPP_3_8	True (*)	Server: Support content formats other than those
+					declared in TSPC_OPP_3_4 through
+					TSPC_OPP_3_7. (O)
+TSPC_OPP_3_8a	False		Server: Support specific set of other content
+					formats. (C.4)
+TSPC_OPP_3_8b	True (*)	Server: Support all content formats. (C.4)
+TSPC_OPP_3_9	True (*)	Server: Object Push vCard reject. (O)
+TSPC_OPP_3_10	True (*)	Server: Object Push vCal reject. (O)
+TSPC_OPP_3_11	True (*)	Server: Object Push vMsg reject. (O)
+TSPC_OPP_3_12	True (*)	Server: Object Push vNote reject. (O)
+TSPC_OPP_3_13	True (*)	Server: Business card pull (O.1)
+TSPC_OPP_3_14	True (*)	Server: vCard 2.1 (C.1)
+TSPC_OPP_3_15	True (*)	Server: Business card pull reject. (O)
+TSPC_OPP_3_16	True (*)	Server: Business card exchange (O.2)
+TSPC_OPP_3_17	True (*)	Server: vCard 2.1 (C.2)
+TSPC_OPP_3_18	True (*)	Server: Business card exchange reject. (O)
+TSPC_OPP_3_19	True (*)	GOEP v2 (C.5)
+TSPC_OPP_3_20	True (*)	GOEP v2 Backward Compatibility (C.5)
+TSPC_OPP_3_21	True (*)	OBEX over L2CAP (C.5)
+TSPC_OPP_3_22	False		OBEX Reliable Session (C.16)
+TSPC_OPP_3_23	False		OBEX SRM (C.6)
+TSPC_OPP_3_24	False		Send OBEX SRMP header (C.6)
+TSPC_OPP_3_25	False		Receive OBEX SRMP header (C.7)
+-------------------------------------------------------------------------------
+O.1: IF NOT Supported, an error message must be sent on request for Business
+	Card Pull.
+O.2: IF NOT Supported, an error message must be sent on request for Business
+	Card Exchange.
+C.1: Mandatory to Support IF (TSPC_OPP_3_13) Business Card Pull is supported.
+C.2: Mandatory to Support IF (TSPC_OPP_3_16) Business Card Exchange is
+	supported.
+C.3: vCard 2.1 support is required for devices containing phonebook
+	applications. vCard 2.1 support optional for other devices.
+C.4: Mandatory to support one of TSPC_OPP_3_8a or TSPC_OPP_3_8b if TSPC_OPP_3_8
+	is supported. Otherwise, both items are excluded.
+C.5: Mandatory if TSPC_OPP_2b_2 supported.
+C.6: Optional to support if TSPC_OPP_2b_2 supported, else excluded.
+C.7: Mandatory if TSPC_OPP_3_19 and TSPC_OPP_3_23 supported else excluded.
+-------------------------------------------------------------------------------
+
+
+		Additional OPP Capabilities
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_OPP_4_1	False		Abort-Push Operation (O)
+TSPC_OPP_4_2	False		Intentionally Left Blank (N/A)
+TSPC_OPP_4_3	True (*)	Multiple vCards transferred as a single vObject
+					(C.1)
+TSPC_OPP_4_4	True (*)	Multiple vCards transfer (C.1)
+TSPC_OPP_4_5	True (*)	vCards with multiple Phone Number Fields (C.1)
+TSPC_OPP_4_6	True (*)	Push vCal to Different Time Zone Server (C.1)
+-------------------------------------------------------------------------------
+C.1: Optional if TSPC_OPP_1_2 is supported, otherwise excluded.
+-------------------------------------------------------------------------------

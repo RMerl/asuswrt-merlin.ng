@@ -16,12 +16,17 @@
 #include "shutils.h"
 #include <shared.h>
 
-#if defined(HND_ROUTER) && !(defined(RTCONFIG_HND_ROUTER_AX_675X) && !defined(RTCONFIG_HND_ROUTER_AX_6710)) && !defined(RTCONFIG_HND_ROUTER_AX_6756)
+#if defined(HND_ROUTER) && !defined(RTCONFIG_HND_ROUTER_AX_675X) && !defined(RTCONFIG_HND_ROUTER_AX_6756)
 #define WGN_HAVE_VLAN0
 #endif
 
 #define SYNC_NODE_ROUTER_ONLY	0
 #define SYNC_NODE_RE_ALL		1
+
+#define WGN_WL_BAND_2G			0
+#define WGN_WL_BAND_5G			1
+#define WGN_WL_BAND_5GH         2
+#define WGN_WL_BAND_6G			3
 
 #define WGN_MAX_NO_GUEST_NETWORK			8
 #define WGN_MAXINUM_SUBNET_RULELIST			256
@@ -95,6 +100,7 @@ extern void 			wgn_vlan_list_set_to_nvram(wgn_vlan_rule *list, size_t list_size)
 extern wgn_vlan_rule* 	wgn_vlan_list_find(wgn_vlan_rule *list, size_t list_size, char *subnet_name);
 extern wgn_vlan_rule* 	wgn_vlan_list_find_unit(wgn_vlan_rule *list, size_t list_size, int unit, int subunit);
 extern int 				wgn_vlan_list_check_subunit_conflict(wgn_vlan_rule *list, size_t list_size, int unit, int subunit);
+extern void 	 		wgn_vlan_list_wl_subunit_shift(wgn_vlan_rule *list, size_t list_size);
 
 extern int 				wgn_get_wl_band_unit(int *result_unit, int *result_subunit, char *wl2gset, char *wl5gset);
 extern void 			wgn_get_wl_unit(int *result_unit, int *result_subunit, wgn_vlan_rule *vlan_rule);
@@ -107,4 +113,7 @@ extern void 			wgn_check_settings(void);
 extern int 				wgn_guest_is_enabled(void);
 extern int 				wgn_check_vlan_invalid(char *word,char *iface);
 extern void 			wgn_subnet(const char *guest_ifname, char *net, int len);
+extern int 				wgn_get_band_by_unit(int unit);
+extern int 				wgn_get_unit_by_band(int band_type);
+extern char* 			wgn_get_band_by_ifnames(char *buffer, size_t buffer_size);
 #endif 	/* !__WGN_SHAREDH__ */

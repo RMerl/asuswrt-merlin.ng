@@ -1,0 +1,12 @@
+{
+	global:
+		btd_*;
+		g_dbus_*;
+		info;
+		error;
+		debug;
+		baswap;
+		ba2str;
+	local:
+		*;
+};

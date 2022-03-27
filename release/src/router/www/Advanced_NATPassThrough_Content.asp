@@ -37,6 +37,12 @@ function initial(){
 				}
 			}
 		);
+		$("#vts_ftpport").focus(
+			function() {				
+				var position_text = $("#vts_ftpport").position();
+				pop_s46_ports(position_text);
+			}
+		);
 	}
 }
 
@@ -219,7 +225,7 @@ function applyRule(){
 										<tr>
 											<th><#FTP_ALG_port#><div class="setup_info_icon" style="display:none;"></div></th>
 											<td>
-												<input type="text" maxlength="5" name="vts_ftpport" class="input_6_table" value="<% nvram_get("vts_ftpport"); %>" onkeypress="return validator.isNumber(this,event);" autocorrect="off" autocapitalize="off">
+												<input type="text" maxlength="5" id="vts_ftpport" name="vts_ftpport" class="input_6_table" value="<% nvram_get("vts_ftpport"); %>" onkeypress="return validator.isNumber(this,event);" autocorrect="off" autocapitalize="off">
 											</td>
 										</tr>
 							

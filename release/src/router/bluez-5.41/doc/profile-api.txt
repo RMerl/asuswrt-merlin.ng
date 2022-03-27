@@ -1,0 +1,147 @@
+BlueZ D-Bus Profile API description
+***********************************
+
+
+Profile Manager hierarchy
+=========================
+
+Service		org.bluez
+Interface	org.bluez.ProfileManager1
+Object path	/org/bluez
+
+		void RegisterProfile(object profile, string uuid, dict options)
+
+			This registers a profile implementation.
+
+			If an application disconnects from the bus all
+			its registered profiles will be removed.
+
+			HFP HS UUID: 0000111e-0000-1000-8000-00805f9b34fb
+
+				Default RFCOMM channel is 6. And this requires
+				authentication.
+
+			Available options:
+
+				string Name
+
+					Human readable name for the profile
+
+				string Service
+
+					The primary service class UUID
+					(if different from the actual
+					 profile UUID)
+
+				string Role
+
+					For asymmetric profiles that do not
+					have UUIDs available to uniquely
+					identify each side this
+					parameter allows specifying the
+					precise local role.
+
+					Possible values: "client", "server"
+
+				uint16 Channel
+
+					RFCOMM channel number that is used
+					for client and server UUIDs.
+
+					If applicable it will be used in the
+					SDP record as well.
+
+				uint16 PSM
+
+					PSM number that is used for client
+					and server UUIDs.
+
+					If applicable it will be used in the
+					SDP record as well.
+
+				boolean RequireAuthentication
+
+					Pairing is required before connections
+					will be established. No devices will
+					be connected if not paired.
+
+				boolean RequireAuthorization
+
+					Request authorization before any
+					connection will be established.
+
+				boolean AutoConnect
+
+					In case of a client UUID this will
+					force connection of the RFCOMM or
+					L2CAP channels when a remote device
+					is connected.
+
+				string ServiceRecord
+
+					Provide a manual SDP record.
+
+				uint16 Version
+
+					Profile version (for SDP record)
+
+				uint16 Features
+
+					Profile features (for SDP record)
+
+			Possible errors: org.bluez.Error.InvalidArguments
+			                 org.bluez.Error.AlreadyExists
+
+		void UnregisterProfile(object profile)
+
+			This unregisters the profile that has been previously
+			registered. The object path parameter must match the
+			same value that has been used on registration.
+
+			Possible errors: org.bluez.Error.DoesNotExist
+
+
+Profile hierarchy
+=================
+
+Service		unique name
+Interface	org.bluez.Profile1
+Object path	freely definable
+
+Methods		void Release() [noreply]
+
+			This method gets called when the service daemon
+			unregisters the profile. A profile can use it to do
+			cleanup tasks. There is no need to unregister the
+			profile, because when this method gets called it has
+			already been unregistered.
+
+		void NewConnection(object device, fd, dict fd_properties)
+
+			This method gets called when a new service level
+			connection has been made and authorized.
+
+			Common fd_properties:
+
+			uint16 Version		Profile version (optional)
+			uint16 Features		Profile features (optional)
+
+			Possible errors: org.bluez.Error.Rejected
+			                 org.bluez.Error.Canceled
+
+		void RequestDisconnection(object device)
+
+			This method gets called when a profile gets
+			disconnected.
+
+			The file descriptor is no longer owned by the service
+			daemon and the profile implementation needs to take
+			care of cleaning up all connections.
+
+			If multiple file descriptors are indicated via
+			NewConnection, it is expected that all of them
+			are disconnected before returning from this
+			method call.
+
+			Possible errors: org.bluez.Error.Rejected
+			                 org.bluez.Error.Canceled

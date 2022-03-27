@@ -2127,6 +2127,7 @@ function pop_clientlist_listview() {
 		removeElement(document.getElementById("view_clientlist_form"));
 	}
 	var formObj = document.createElement("form");
+	formObj.method = "POST";
 	formObj.setAttribute("id","view_clientlist_form");
 	formObj.setAttribute("name","view_clientlist_form");
 	formObj.action = "/start_apply2.htm";

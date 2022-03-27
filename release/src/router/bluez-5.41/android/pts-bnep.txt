@@ -1,0 +1,60 @@
+PTS test results for BNEP
+
+PTS version: 6.1
+Tested: 11-May-2015
+Android version: 5.1
+Kernel version: 4.1
+
+Results:
+PASS	test passed
+FAIL	test failed
+INC	test is inconclusive
+N/A	test is disabled due to PICS setup
+
+--------------------------------------------------------------------------------
+Test Name		Result	Notes
+--------------------------------------------------------------------------------
+TC_CTRL_BV_01_C		PASS	bneptest -s -b <bridge> -n <iface>
+TC_CTRL_BV_02_C		PASS	bneptest -c <PTS addr> -b <bridge> -n <iface>
+TC_CTRL_BV_03_C		PASS	bneptest -s -b <bridge> -n <iface>
+TC_CTRL_BV_04_C		PASS	PTS issue #13169
+				bneptest -s -b <bridge> -n <iface>
+TC_CTRL_BV_05_C		PASS	PTS issue #13169
+				bneptest -s -b <bridge> -n <iface>
+TC_CTRL_BV_06_C		PASS	PTS issue #13169
+				bneptest -s -b <bridge> -n <iface>
+TC_CTRL_BV_07_C		PASS	PTS issue #13169
+				bneptest -c <PTS addr> -b <bridge> -n <iface>
+					-t 3 -d 0 -e 1500 -y 1
+TC_CTRL_BV_08_C		PASS	PTS issue #13169
+				bneptest -s -b <bridge> -n <iface>
+TC_CTRL_BV_09_C		PASS	bneptest -c <PTS addr> -b <bridge> -n <iface>
+					-t 5 -g 00:00:00:00:00:00
+					-j ff:ff:ff:ff:ff:ff -y 1
+TC_CTRL_BV_10_C		PASS	PTS issue #13169
+				bneptest -s -b <bridge> -n <iface>
+TC_CTRL_BV_19_C		PASS	bneptest -s -b <bridge> -n <iface>
+TC_RX_TYPE_0_BV_11_C	PASS	PTS issue #13171
+				bneptest -s -b <bridge> -n <iface>
+TC_RX_C_BV_12_C		PASS	PTS issue #13171
+				bneptest -s -b <bridge> -n <iface>
+TC_RX_C_S_BV_13_C	PASS	PTS issue #13171
+				bneptest -s -b <bridge> -n <iface>
+TC_RX_C_S_BV_14_C	PASS	PTS issue #13171
+				bneptest -s -b <bridge> -n <iface>
+TC_RX_TYPE_0_BV_15_C	PASS	PTS issue #13169
+				bneptest -s -b <bridge> -n <iface>
+TC_RX_TYPE_0_BV_16_C	PASS	PTS issue #13171
+				bneptest -s -b <bridge> -n <iface>
+TC_RX_TYPE_0_BV_17_C	PASS	PTS issue #13169
+				bneptest -s -b <bridge> -n <iface>
+TC_RX_TYPE_0_BV_18_C	PASS	PTS issue #13171
+				bneptest -s -b <bridge> -n <iface>
+TC_TX_TYPE_0_BV_20_C	PASS	bneptest -c <PTS addr> -b <bridge> -n <iface>
+					-w 0 -k <src hw addr> -f <dst hw addr>
+TC_TX_C_BV_21_C		PASS	bneptest -c <PTS addr> -b <bridge> -n <iface>
+					-w 2 -k <src hw addr> -f <dst hw addr>
+TC_TX_C_S_BV_22_C	PASS	bneptest -c <PTS addr> -b <bridge> -n <iface>
+					-w 3 -k <src hw addr> -f <dst hw addr>
+TC_TX_C_D_BV_23_C	PASS	bneptest -c <PTS addr> -b <bridge> -n <iface>
+					-w 4 -k <src hw addr> -f <dst hw addr>

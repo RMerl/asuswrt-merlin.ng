@@ -1,0 +1,37 @@
+PBAP PIXIT for the PTS tool.
+
+PTS version: 6.1
+
+* - different than PTS defaults
+& - should be set to IUT Bluetooth address
+
+		Required PIXIT settings
+-------------------------------------------------------------------------------
+Parameter Name						Value
+-------------------------------------------------------------------------------
+TSPX_auth_password					0000
+TSPX_auth_user_id					PTS
+TSPX_security_enabled					True
+TSPX_bd_addr_iut					112233445566 (*&)
+TSPX_pin_code						0000
+TSPX_time_guard						100000
+TSPX_use_implicit_send					True
+TSPX_client_class_of_device				100204
+TSPX_server_class_of_device				100204
+TSPX_PSE_vCardSelector					0000000000000001
+TSPX_delete_link_key					False
+TSPX_PBAP_profile_version				1
+TSPX_PBAP_supported_repositories			1
+TSPX_PBAP_rfcomm_channel				1
+TSPX_telecom_folder_path				telecom
+TSPX_secure_simple_pairing_pass_key_confirmation	False
+TSPX_check_downloaded_contents_after_disconnect		False
+TSPX_SPP_rfcomm_channel					03
+TSPX_l2cap_psm						1005
+TSPX_rfcomm_channel					2
+TSPX_obex_auth_password					0000
+TSPX_no_confirmations					False
+TSPX_PSE_vCardSelector					0000000000000001
+TSPX_Automation						False
+TSPX_search_criteria					PTS
+-------------------------------------------------------------------------------

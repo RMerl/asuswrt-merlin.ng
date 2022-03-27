@@ -1,0 +1,152 @@
+PAN PICS for the PTS tool.
+
+PTS version: 6.1
+
+* - different than PTS defaults
+# - not yet implemented/supported
+
+M - mandatory
+O - optional
+
+		Roles
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_PAN_1_1	True (*)	Role: Network Access Point (O.1)
+TSPC_PAN_1_2	False		Role: Group Ad-hoc Network (O.1)
+TSPC_PAN_1_3	True (*)	Role: PAN User (O.1)
+TSPC_PAN_1a_1	True		BNEP: BNEP Connection Setup (M)
+TSPC_PAN_1a_2	True		BNEP: BNEP Data Packet Reception (M)
+TSPC_PAN_1a_3	True		BNEP: BNEP Data Packet Transmission (M)
+TSPC_PAN_1a_3a	True		BNEP: BNEP Compressed Packet Transmission (O)
+TSPC_PAN_1a_3b	True		BNEP: BNEP Compressed Packet Transmission
+								Source Only (O)
+TSPC_PAN_1a_4	True		BNEP: BNEP Control Message Processing (M)
+TSPC_PAN_1a_5	True		BNEP: BNEP Extension Header Processing (M)
+TSPC_PAN_1a_6	False		BNEP: Network Protocol Filter Message
+					Transmission (O)
+TSPC_PAN_1a_7	False		BNEP: Multicast Address Filter Message
+					Transmission (O)
+-------------------------------------------------------------------------------
+O.1: It is mandatory to support at least one of the defined roles.
+-------------------------------------------------------------------------------
+
+
+		Network Access Point Application Features
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_PAN_2_1	True		NAP: Support BNEP (M)
+TSPC_PAN_2_2	True		NAP: Support BNEP Forwarding (M)
+TSPC_PAN_2_3	False		NAP: Support Layer 2-Bridging between PAN and
+					External Network (C.1)
+TSPC_PAN_2_4	True (*)	NAP: Support IP forwarding between PAN and
+					External Network (C.1)
+TSPC_PAN_2_5	False		NAP: Support BNEP Packet Filtering (O)
+TSPC_PAN_2_6	False		NAP: Support IPv4 (C.2)
+TSPC_PAN_2_6a	False		NAP: Supports operable routable IPv4 address (O)
+TSPC_PAN_2_6b	False		NAP: Support link-local address configuration
+					for IPv4 (C.4)
+TSPC_PAN_2_7	False		NAP: Support ping client for IPv4 (O)
+TSPC_PAN_2_8	False		NAP: Support DHCP Client for IPv4 (O)
+TSPC_PAN_2_9	False		NAP: Support DNS/LLMNR Resolver for IPv4 (O)
+TSPC_PAN_2_9a	False (*)	NAP: Support LLMNR Sender for IPv4 (C.5)
+TSPC_PAN_2_9b	False		NAP: Support LLMNR Responder for IPv4 (O)
+TSPC_PAN_2_10	False		NAP: Support HTTP Client for IPv4 (O)
+TSPC_PAN_2_11	False		NAP: Support WAP Client for IPv4 (O)
+TSPC_PAN_2_12	False		NAP: Support IPv6 (C.3)
+TSPC_PAN_2_13	False		NAP: Support ping client for IPv6 (O)
+TSPC_PAN_2_14	False		NAP: Support DNS/LLMNR Resolver for IPv6 (O)
+TSPC_PAN_2_14a	False (*)	NAP: Support LLMNR Sender for IPv6 (C.6)
+TSPC_PAN_2_14b	False		NAP: Support LLMNR Responder for IPv6 (O)
+TSPC_PAN_2_15	False		NAP: Support HTTP Client for IPv6 (O)
+TSPC_PAN_2_16	False		NAP: Support WAP Client for IPv6 (O)
+TSPC_PAN_2_17	True		NAP: Supports Connectable Mode (M)
+TSPC_PAN_2_18	True		NAP: NAP Service Record (M)
+TSPC_PAN_2_19	False		NAP: Support at least three PANUs (O)
+TSPC_PAN_2_20	False		NAP: Support at least two PANUs (O)
+-------------------------------------------------------------------------------
+Note that support for IP-related features only applies to the PAN interface of
+	the NAP (i.e. If the IP stack is accessible by PANUs).
+C.1: Network Access Point devices MUST support either (TSPC_PAN_2_3)
+	OR (TSPC_PAN_2_4).
+C.2: Mandatory to support IF any IPv4-based transport protocol OR
+	(TSPC_PAN_2_7-11) is supported, ELSE Optional.
+C.3: Mandatory to support IF any IPv6-based transport protocol OR
+	(TSPC_PAN_2_13-16) is supported, ELSE Optional.
+C.4: Mandatory if TSPC_PAN_2_6 is supported and TSPC_PAN_2_6a is not supported,
+	otherwise optional.
+C.5: Mandatory if item (TSPC_PAN_2_6) supported.
+C.6: Mandatory if item (TSPC_PAN_2_12) supported
+-------------------------------------------------------------------------------
+
+
+		Group Ad-hoc Network Application Features
+			(GN Application Features)
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_PAN_3_1	False (*)	GN: Support BNEP (M)
+TSPC_PAN_3_2	False (*)	GN: Support BNEP Forwarding (M)
+TSPC_PAN_3_3	False		GN: Support BNEP Packet Filtering (O)
+TSPC_PAN_3_4	False		GN: Support IPv4 (C.1)
+TSPC_PAN_3_5	False		GN: Support ping client for IPv4 (O)
+TSPC_PAN_3_6	False		GN: Support DHCP Client for IPv4 (O)
+TSPC_PAN_3_7	False		GN: Support DNS/LLMNR Resolver for IPv4 (O)
+TSPC_PAN_3_7a	False (*)	GN: Support LLMNR Sender for IPv4 (C.3)
+TSPC_PAN_3_7b	False		GN: Support LLMNR Responder for IPv4 (O)
+TSPC_PAN_3_8	False		GN: Support HTTP Client for IPv4 (O)
+TSPC_PAN_3_9	False		GN: Support WAP Client for IPv4 (O)
+TSPC_PAN_3_10	False		GN: Support IPv6 (C.2)
+TSPC_PAN_3_11	False		GN: Support ping client for IPv6 (O)
+TSPC_PAN_3_12	False		GN: Support DNS/LLMNR Resolver for IPv6 (O)
+TSPC_PAN_3_12a	False (*)	GN: Support LLMNR Sender for IPv6 (C.4)
+TSPC_PAN_3_12b	False		GN: Support LLMNR Responder for IPv6 (O)
+TSPC_PAN_3_13	False		GN: Support HTTP Client for IPv6 (O)
+TSPC_PAN_3_14	False		GN: Support WAP Client for IPv6 (O)
+TSPC_PAN_3_15	False (*)	GN: Supports Connectable Mode (M)
+TSPC_PAN_3_16	False (*)	GN: GN Service Record (M)
+TSPC_PAN_3_17	False		GN: Support at least three PANUs (O)
+TSPC_PAN_3_18	False		GN: Support at least two PANUs (O)
+-------------------------------------------------------------------------------
+C.1: Mandatory to support IF any IPv4-based transport protocol OR
+	(TSPC_PAN_3_5-9) is supported, ELSE Optional.
+C.2: Mandatory to support IF any IPv6-based transport protocol OR
+	(TSPC_PAN_3_11-14) is supported, ELSE Optional.
+C.3: Mandatory to support IF (TSPC_PAN_3_4) is supported.
+C.4: Mandatory to support if (TSPC_PAN_3_10) is supported.
+-------------------------------------------------------------------------------
+
+
+		PAN User Application Features
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_PAN_4_1	True		PANU: Support BNEP (M)
+TSPC_PAN_4_2	True (*)	PANU: Support IPv4 (C.1)
+TSPC_PAN_4_3	False		PANU: Support ping client for IPv4 (O)
+TSPC_PAN_4_4	False		PANU: Support DHCP client for  IPv4 (O)
+TSPC_PAN_4_5	False		PANU: Support DNS/LLMNR Resolver for IPv4 (O)
+TSPC_PAN_4_5a	False (*)	PANU: Support LLMNR Sender for IPv4 (C.2)
+				Reference: SE #3558, TSE #4382, TCW #448
+TSPC_PAN_4_5b	False		PANU: Support LLMNR Responder for IPv4 (O)
+TSPC_PAN_4_6	False		PANU: Support HTTP Client for IPv4 (O)
+TSPC_PAN_4_7	False		PANU: Support WAP Client for IPv4 (O)
+TSPC_PAN_4_8	False		PANU: Support IPv6 (C.1)
+TSPC_PAN_4_9	False		PANU: Support ping client for IPv6 (O)
+TSPC_PAN_4_10	False		PANU: Support DNS/LLMNR Resolver for IPv6 (O)
+TSPC_PAN_4_10a	False (*)	PANU: Support LLMNR Sender for IPv6 (C.3)
+TSPC_PAN_4_10b	False		PANU: Support LLMNR Responder for IPv6 (O)
+TSPC_PAN_4_11	False		PANU: Support HTTP Client for IPv6 (O)
+TSPC_PAN_4_12	False		PANU: Support WAP Client for IPv6 (O)
+TSPC_PAN_4_13	False		PANU: Support connections to multi-user
+					NAPs/GNs (O)
+TSPC_PAN_4_14	False		PANU: Supports Connectable Mode (O)
+TSPC_PAN_4_15	False		PANU: PANU Service Record (O)
+TSPC_ALL	False		Turns on all the test cases
+-------------------------------------------------------------------------------
+C.1: PAN User devices must support at least One of items (TSPC_PAN_4_2) or
+	(TSPC_PAN_4_8).
+C.2: Mandatory to support if (TSPC_PAN_4_2) is supported.
+C.3: Mandatory to support if (TSPC_PAN_4_8) is supported.
+-------------------------------------------------------------------------------

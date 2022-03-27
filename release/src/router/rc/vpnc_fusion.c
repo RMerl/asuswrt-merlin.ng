@@ -790,6 +790,7 @@ int vpnc_ovpn_up_main(int argc, char **argv)
 		vpnc_update_resolvconf(vpnc_idx);
 		//update_resolvconf();
 
+#if 0	// integrate with OpenVPN client
 		//set route table
 		cnt = 0;
 		while(1)
@@ -823,6 +824,7 @@ int vpnc_ovpn_up_main(int argc, char **argv)
 		remote = safe_getenv("trusted_ip");
 		if(remote && remote[0] != '\0')
 			nvram_set("trusted_ip", remote);
+#endif
 
 		//set dns server policy rule
 		//vpnc_handle_dns_policy_rule(VPNC_ROUTE_ADD, vpnc_idx);
@@ -878,7 +880,9 @@ int vpnc_ovpn_down_main(int argc, char **argv)
 		//clean routing rule
 		clean_routing_rule_by_vpnc_idx(vpnc_idx);
 
+#if 0	// integrate with OpenVPN client.
 		set_routing_table(0, vpnc_idx);
+#endif
 
 		//set up default wan
 		change_default_wan_as_vpnc_updown(vpnc_idx, 0);
@@ -964,6 +968,7 @@ int vpnc_ovpn_route_up_main(int argc, char **argv)
 {
 	int unit, vpnc_idx;
 	char *ifname = safe_getenv("dev");
+	char rt_table[8] = {0};
 
 	if(argc < 2)
 	{
@@ -984,12 +989,53 @@ int vpnc_ovpn_route_up_main(int argc, char **argv)
 	{
 		if(!vpnc_up(vpnc_idx, ifname))
 		{
+#if 1		// integrate with OpenVPN client.
+			snprintf(rt_table, sizeof(rt_table), "%d", vpnc_idx);
+			setenv("rt_table", rt_table, 1);
+			ovpn_route_up_handler();
+#else
 			set_routing_table(1, vpnc_idx);
+#endif
 
 			//set up default wan
 			change_default_wan_as_vpnc_updown(vpnc_idx, 1);
 		}
 	}
+	return 0;
+}
+
+int vpnc_ovpn_route_pre_down_main(int argc, char **argv)
+{
+	int unit, vpnc_idx;
+	char *ifname = safe_getenv("dev");
+	char rt_table[8] = {0};
+
+	if(argc < 2)
+	{
+		_dprintf("[%s, %d]parameters error!\n", __FUNCTION__, __LINE__);
+		return 0;
+	}
+
+	unit = atoi(argv[1]);
+
+	_dprintf("[%s, %d]openvpn unit = %d, ifname = %s\n", __FUNCTION__, __LINE__, unit, ifname);
+
+	// load vpnc profile list
+	vpnc_init();
+
+	vpnc_idx = _find_vpnc_idx_by_ovpn_unit(unit);
+
+	if(vpnc_idx != -1 )
+	{
+#if 1	// integrate with OpenVPN client.
+		snprintf(rt_table, sizeof(rt_table), "%d", vpnc_idx);
+		setenv("rt_table", rt_table, 1);
+		ovpn_route_pre_down_handler();
+#else
+		set_routing_table(0, vpnc_idx);
+#endif
+	}
+
 	return 0;
 }
 
@@ -2396,6 +2442,7 @@ int clean_vpnc_setting_value(const int vpnc_idx)
 	nvram_unset(strlcat_r(prefix, "ifname", tmp, sizeof(tmp)));
 	nvram_unset(strlcat_r(prefix, "ipaddr", tmp, sizeof(tmp)));
 
+#if 0	// integrate with OpenVPN client
 	//unset OpenVPN settings.
 	prof = vpnc_get_profile_by_vpnc_id(vpnc_profile, MAX_VPNC_PROFILE, vpnc_idx);
 
@@ -2421,6 +2468,7 @@ int clean_vpnc_setting_value(const int vpnc_idx)
 			nvram_unset(strlcat_r(prefix, tmp2, tmp, sizeof(tmp)));
 		}
 	}
+#endif
 
 	return 0;
 }
@@ -2469,7 +2517,7 @@ int get_vpnc_state(const int vpnc_idx)
 	if(vpnc_idx)	//vpn client
 		snprintf(vpnc_prefix, sizeof(vpnc_prefix), "vpnc%d_", vpnc_idx);
 	else
-		snprintf(vpnc_prefix, sizeof(vpnc_prefix), "wan0_");	//internet
+		snprintf(vpnc_prefix, sizeof(vpnc_prefix), "wan%d_", wan_primary_ifunit());	//internet
 
 	return nvram_get_int(strlcat_r(vpnc_prefix, "state_t", tmp, sizeof(tmp)));
 }

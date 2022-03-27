@@ -67,6 +67,9 @@ unsigned char label_mac[6] = { 0x00, 0x0c, 0x6e, 0xbd, 0xf3, 0xc5};
 unsigned char cfg_group_g[20];
 int cfg_groupid_is_null;
 #define ID_LEN		20
+char* gen_vsie_id(int, size_t *);
+#include <time.h>
+int str2hex(const char *, unsigned char *, size_t);
 #endif
 
 void sig_do_nothing(int sig)

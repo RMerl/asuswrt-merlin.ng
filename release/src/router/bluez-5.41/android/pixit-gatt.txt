@@ -1,0 +1,32 @@
+GATT PIXIT for the PTS tool.
+
+PTS version: 6.1
+
+* - different than PTS defaults
+& - should be set to IUT Bluetooth address
+
+		Required PIXIT settings
+-------------------------------------------------------------------------------
+Parameter Name						Value
+-------------------------------------------------------------------------------
+TSPX_bd_addr_iut					112233445566 (*&)
+TSPX_security_enabled					FALSE
+TSPX_delete_link_key					TRUE
+TSPX_time_guard						180000
+TSPX_selected_handle					0012
+TSPX_use_implicit_send					TRUE
+TSPX_secure_simple_pairing_pass_key_confirmation	FALSE
+TSPX_iut_use_dynamic_bd_addr				FALSE
+TSPX_iut_setup_att_over_br_edr				FALSE
+TSPX_tester_database_file				[Path to GATT Test
+								Database]
+TSPX_iut_is_client_periphral				FALSE
+TSPX_iut_is_server_central				FALSE
+TSPX_mtu_size						23
+TSPX_pin_code						0000
+TSPX_use_dynamic_pin					FALSE
+TSPX_delete_ltk						FALSE
+TSPX_characteristic_readable				FALSE
+TSPX_tester_appearance					0000
+TSPX_iut_use_resolvable_random_access			FALSE
+-------------------------------------------------------------------------------

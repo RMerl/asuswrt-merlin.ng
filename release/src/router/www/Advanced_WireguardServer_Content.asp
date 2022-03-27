@@ -180,6 +180,13 @@ function hideQRCode(){
 								<input type="radio" value="0" name="wgs_dns" class="input" <% nvram_match("wgs_dns", "0", "checked"); %>><#checkbox_No#></input>
 							</td>
 						</tr>
+						<tr id="wgs_nat6">
+							<th>IPv6 NAT</th>
+							<td>
+								<input type="radio" value="1" name="wgs_nat6" class="input" <% nvram_match("wgs_nat6", "1", "checked"); %>><#checkbox_Yes#></input>
+								<input type="radio" value="0" name="wgs_nat6" class="input" <% nvram_match("wgs_nat6", "0", "checked"); %>><#checkbox_No#></input>
+							</td>
+						</tr>
 						<tr id="wgs_psk">
 							<th>Use Preshared Key</th>
 							<td>
@@ -308,7 +315,7 @@ function hideQRCode(){
 									<textarea class="textarea_ssh_table" style="width:99%; font-family:'Courier New', Courier, mono; font-size:13px;" cols="63" rows="25" readonly="readonly" wrap=off><% nvram_dump("wgs.log",""); %></textarea>
 								</div>
 								<div class="apply_gen">
-									<input type="button" onClick="location.href=location.href" value="<#CTL_refresh#>" class="button_gen">
+									<input type="button" onClick="location.reload();" value="<#CTL_refresh#>" class="button_gen">
 								</div>
 							</td>
 						</tr>

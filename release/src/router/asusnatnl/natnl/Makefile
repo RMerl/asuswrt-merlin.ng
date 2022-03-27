@@ -48,6 +48,10 @@ LDLIBS += -lshared
 LDLIBS += -lnvram
 LDFLAGS += -L$(RTSHAREDBASE)
 LDFLAGS += -L$(RTNVARMBASE)
+ifeq ($(RTCONFIG_BCM_502L07P2),y)
+LDLIBS += -lethctl
+LDFLAGS += -L$(TOP_PLATFORM)/ethctl_lib
+endif
 endif
 
 #check if make goal is android-lib or linux-lib

@@ -59,8 +59,9 @@ function initial(){
 
 	if(outfox_support)
 		$("#outfox_div").css("display", "");
-	else
-		$("#wtfast_div").css("display", "");
+	else{
+		if(wtfast_support) $("#wtfast_div").css("display", "");
+	}
 }
 
 function sign_eula(){

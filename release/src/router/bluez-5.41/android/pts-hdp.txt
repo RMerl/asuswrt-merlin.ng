@@ -1,0 +1,296 @@
+PTS test results for HDP
+
+PTS version: 6.1
+Tested: 08-May-2015
+Android version: 5.1
+
+Results:
+PASS	test passed
+FAIL	test failed
+INC	test is inconclusive
+N/A	test is disabled due to PICS setup
+
+-------------------------------------------------------------------------------
+Test Name		Result	Notes
+-------------------------------------------------------------------------------
+TC_SRC_CON_BV_01_I	PASS	haltest:
+				hl register_application <args>
+				for instance:
+				hl register_application health intel heartrate
+				heartrate-monitor 1 BTHL_MDEP_ROLE_SOURCE 4100
+				BTHL_CHANNEL_TYPE_RELIABLE testing
+
+				when prompted:
+				bluetooth ssp_reply <args>
+				for instance:
+				bluetooth ssp_reply <bdaddr>
+				BT_SSP_VARIANT_CONSENT 1
+				Note: IUT must be discoverable, connectable
+TC_SRC_CON_BV_02_I	PASS	Note: IUT must be in discoverable mode
+TC_SRC_CON_BV_03_I	PASS	when prompted: bluetooth ssp_reply <args>
+TC_SRC_CON_BV_04_I	PASS	haltest:
+				hl connect_channel <app_id> <bd_addr>
+				<mdep_cfg_index>
+
+				when prompted: bluetooth ssp_reply <args>
+TC_SRC_CON_BV_05_I	PASS	when prompted: bluetooth ssp_reply <args>
+				Note: IUT must be in connectable mode
+TC_SRC_CON_BV_06_I	PASS	haltest:
+				hl connect_channel <app_id> <bd_addr>
+				<mdep_cfg_index>
+
+				when prompted: bluetooth ssp_reply <args>
+TC_SRC_CON_BV_07_I	PASS	bluetooth start_discovery
+				Note: PTS HDP device must be discovered
+TC_SRC_CON_BV_08_I	PASS	bluetooth remove_bond <PTS addr>
+				when prompted: bluetooth ssp_reply <args>
+TC_SRC_CON_BV_09_I	PASS	haltest:
+				hl connect_channel <app_id> <bd_addr>
+				<mdep_cfg_index>
+
+				when prompted: bluetooth ssp_reply <args>
+TC_SRC_CON_BV_10_I	N/A
+TC_SRC_CC_BV_01_C	PASS	haltest:
+				hl connect_channel <app_id> <bd_addr>
+				<mdep_cfg_index>
+
+				when prompted: bluetooth ssp_reply <args>
+TC_SRC_CC_BV_02_C	PASS	when prompted: bluetooth ssp_reply <args>
+				Note: IUT must be discoverable, connectable
+TC_SRC_CC_BV_03_C	PASS    haltest:
+				hl register_application bluez-android Bluez
+				bluez-hdp health-device-profile 1
+				BTHL_MDEP_ROLE_SOURCE 4100
+				BTHL_CHANNEL_TYPE_RELIABLE pulse-oximeter
+
+				hl connect_channel <app_id> <bd_addr>
+				<mdep_cfg_index>
+
+				when prompted: bluetooth ssp_reply <args>
+TC_SRC_CC_BV_05_C	PASS	haltest:
+				hl register_application bluez-android Bluez
+				bluez-hdp health-device-profile 1
+				BTHL_MDEP_ROLE_SOURCE 4100
+				BTHL_CHANNEL_TYPE_RELIABLE pulse-oximeter
+				Note: IUT must be discoverable, connectable
+TC_SRC_CC_BV_07_C	PASS    haltest:
+				hl register_application bluez-android Bluez
+				bluez-hdp health-device-profile 2
+				BTHL_MDEP_ROLE_SOURCE 4100
+				BTHL_CHANNEL_TYPE_RELIABLE pulse-oximeter
+				BTHL_MDEP_ROLE_SOURCE 4100
+				BTHL_CHANNEL_TYPE_STREAMING pulse-oximeter
+
+				hl connect_channel <app_id> <bd_addr>
+				<mdep_cfg_index>
+
+				when prompted: bluetooth ssp_reply <args>
+
+				when prompted:
+				hl connect_channel <app_id> <bd_addr>
+				<mdep_cfg_index>
+TC_SRC_CC_BV_09_C	PASS    haltest:
+				hl register_application bluez-android Bluez
+				bluez-hdp health-device-profile 2
+				BTHL_MDEP_ROLE_SOURCE 4100
+				BTHL_CHANNEL_TYPE_RELIABLE pulse-oximeter
+				BTHL_MDEP_ROLE_SOURCE 4100
+				BTHL_CHANNEL_TYPE_STREAMING pulse-oximeter
+
+				when prompted: bluetooth ssp_reply <args>
+				Note: IUT must be discoverable, connectable
+TC_SRC_CC_BI_12_C	PASS	haltest:
+				hl register_application bluez-android Bluez
+				bluez-hdp health-device-profile 1
+				BTHL_MDEP_ROLE_SOURCE 4100
+				BTHL_CHANNEL_TYPE_RELIABLE pulse-oximeter
+				Note: IUT must be discoverable, connectable
+TC_SRC_HCT_BV_01_I	PASS    haltest:
+				hl register_application bluez-android Bluez
+				bluez-hdp health-device-profile 1
+				BTHL_MDEP_ROLE_SOURCE 4100
+				BTHL_CHANNEL_TYPE_RELIABLE pulse-oximeter
+
+				hl connect_channel <app_id> <bd_addr>
+				<mdep_cfg_index>
+
+				when prompted: bluetooth ssp_reply <args>
+TC_SRC_HCT_BV_02_I	PASS	haltest:
+				hl register_application bluez-android Bluez
+				bluez-hdp health-device-profile 1
+				BTHL_MDEP_ROLE_SOURCE 4100
+				BTHL_CHANNEL_TYPE_RELIABLE pulse-oximeter
+				Note: IUT must be discoverable, connectable
+TC_SRC_HCT_BV_03_I	N/A
+TC_SRC_HCT_BV_04_I	PASS    haltest:
+				hl register_application bluez-android Bluez
+				bluez-hdp health-device-profile 1
+				BTHL_MDEP_ROLE_SOURCE 4100
+				BTHL_CHANNEL_TYPE_RELIABLE pulse-oximeter
+
+				when prompted: bluetooth ssp_reply <args>
+				Note: IUT must be discoverable, connectable
+TC_SRC_HCT_BV_05_C	N/A
+TC_SRC_HCT_BV_06_C	PASS    haltest:
+				hl register_application bluez-android Bluez
+				bluez-hdp health-device-profile 1
+				BTHL_MDEP_ROLE_SOURCE 4100
+				BTHL_CHANNEL_TYPE_RELIABLE pulse-oximeter
+
+				when prompted: bluetooth ssp_reply <args>
+				Note: IUT must be discoverable, connectable
+TC_SRC_HCT_BV_07_C	PASS	haltest:
+				hl register_application bluez-android Bluez
+				bluez-hdp health-device-profile 1
+				BTHL_MDEP_ROLE_SOURCE 4100
+				BTHL_CHANNEL_TYPE_RELIABLE pulse-oximeter
+TC_SRC_DE_BV_01_I	N/A
+TC_SRC_DE_BV_02_I	PASS	haltest:
+				hl register_application bluez-android Bluez
+				bluez-hdp health-device-profile 1
+				BTHL_MDEP_ROLE_SOURCE 4100
+				BTHL_CHANNEL_TYPE_RELIABLE pulse-oximeter
+				Note: IUT must be discoverable, connectable
+TC_SRC_DEP_BV_01_I	N/A
+TC_SRC_DEP_BV_02_I	N/A
+TC_SNK_CON_BV_01_I	PASS	haltest:
+				hl register_application <args>
+				for instance:
+				hl register_application health intel heartrate
+				heartrate-monitor 1 BTHL_MDEP_ROLE_SINK 4100
+				BTHL_CHANNEL_TYPE_RELIABLE testing
+
+				when prompted:
+				bluetooth ssp_reply <args>
+				for instance:
+				bluetooth ssp_reply <bdaddr>
+				BT_SSP_VARIANT_CONSENT 1
+				Note: IUT must be discoverable, connectable
+TC_SNK_CON_BV_02_I	PASS	Note: IUT must be discoverable, connectable
+TC_SNK_CON_BV_03_I	PASS	when prompted: bluetooth ssp_reply <args>
+				Note: IUT must be discoverable, connectable
+TC_SNK_CON_BV_04_I	PASS	haltest:
+				hl connect_channel <app_id> <bd_addr>
+				<mdep_cfg_index>
+
+				when prompted: bluetooth ssp_reply <args>
+				Note: IUT must be discoverable, connectable
+TC_SNK_CON_BV_05_I	PASS	when prompted: bluetooth ssp_reply <args>
+TC_SNK_CON_BV_06_I	PASS	haltest:
+				hl connect_channel <app_id> <bd_addr>
+				<mdep_cfg_index>
+
+				when prompted: bluetooth ssp_reply <args>
+TC_SNK_CON_BV_07_I	PASS	bluetooth start_discovery
+TC_SNK_CON_BV_08_I	PASS	bluetooth remove_bond <PTS addr>
+
+				when prompted: bluetooth ssp_reply <args>
+				Note: IUT must be discoverable, connectable
+TC_SNK_CON_BV_09_I	PASS	haltest:
+				hl connect_channel <app_id> <bd_addr>
+				<mdep_cfg_index>
+
+				when prompted: bluetooth ssp_reply <args>
+TC_SNK_CON_BV_10_I	N/A
+TC_SNK_CC_BV_01_C	PASS	haltest:
+				hl connect_channel <app_id> <bd_addr>
+				<mdep_cfg_index>
+
+				when prompted: bluetooth ssp_reply <args>
+TC_SNK_CC_BV_02_C	PASS	when prompted: bluetooth ssp_reply <args>
+				Note: IUT must be discoverable, connectable
+TC_SNK_CC_BV_04_C	PASS    haltest:
+				hl register_application bluez-android Bluez
+				bluez-hdp health-device-profile 1
+				BTHL_MDEP_ROLE_SINK 4100
+				BTHL_CHANNEL_TYPE_RELIABLE pulse-oximeter
+
+				hl connect_channel <app_id> <bd_addr>
+				<mdep_cfg_index>
+
+				when prompted: bluetooth ssp_reply <args>
+TC_SNK_CC_BV_06_C	PASS	haltest:
+				hl register_application bluez-android Bluez
+				bluez-hdp health-device-profile 2
+				BTHL_MDEP_ROLE_SINK 4100 BTHL_CHANNEL_TYPE_RELIABLE
+				pulse-oximeter
+				BTHL_MDEP_ROLE_SINK 4100 BTHL_CHANNEL_TYPE_STREAMING
+				pulse-oximeter
+TC_SNK_CC_BV_08_C	PASS    haltest:
+				hl register_application bluez-android Bluez
+				bluez-hdp health-device-profile 2
+				BTHL_MDEP_ROLE_SINK 4100
+				BTHL_CHANNEL_TYPE_RELIABLE pulse-oximeter
+				BTHL_MDEP_ROLE_SINK 4100
+				BTHL_CHANNEL_TYPE_STREAMING pulse-oximeter
+
+				hl connect_channel <app_id> <bd_addr>
+				<mdep_cfg_index>
+
+				when prompted: bluetooth ssp_reply <args>
+
+				when prompted:
+				hl connect_channel <app_id> <bd_addr>
+				<mdep_cfg_index>
+TC_SNK_CC_BV_10_C	PASS	haltest:
+				hl register_application bluez-android Bluez
+				bluez-hdp health-device-profile 2
+				BTHL_MDEP_ROLE_SINK 4100 BTHL_CHANNEL_TYPE_RELIABLE
+				pulse-oximeter
+				BTHL_MDEP_ROLE_SINK 4100 BTHL_CHANNEL_TYPE_STREAMING
+				pulse-oximeter
+				Note: IUT must be discoverable, connectable
+TC_SNK_CC_BI_11_C	PASS	haltest:
+				hl register_application bluez-android Bluez
+				bluez-hdp health-device-profile 1
+				BTHL_MDEP_ROLE_SINK 4100
+				BTHL_CHANNEL_TYPE_RELIABLE pulse-oximeter
+				Note: IUT must be discoverable, connectable
+TC_SNK_HCT_BV_01_I	PASS    haltest:
+				hl register_application bluez-android Bluez
+				bluez-hdp health-device-profile 1
+				BTHL_MDEP_ROLE_SINK 4100
+				BTHL_CHANNEL_TYPE_RELIABLE pulse-oximeter
+
+				hl connect_channel <app_id> <bd_addr>
+				<mdep_cfg_index>
+
+				when prompted: bluetooth ssp_reply <args>
+TC_SNK_HCT_BV_02_I	PASS	haltest:
+				hl register_application bluez-android Bluez
+				bluez-hdp health-device-profile 1
+				BTHL_MDEP_ROLE_SINK 4100
+				BTHL_CHANNEL_TYPE_RELIABLE pulse-oximeter
+				Note: IUT must be discoverable, connectable
+TC_SNK_HCT_BV_03_I	N/A
+TC_SNK_HCT_BV_04_I	PASS    haltest:
+				hl register_application bluez-android Bluez
+				bluez-hdp health-device-profile 1
+				BTHL_MDEP_ROLE_SINK 4100
+				BTHL_CHANNEL_TYPE_RELIABLE pulse-oximeter
+
+				when prompted: bluetooth ssp_reply <args>
+				Note: IUT must be discoverable, connectable
+TC_SNK_HCT_BV_05_C	N/A
+TC_SNK_HCT_BV_06_C	PASS	haltest:
+				hl register_application bluez-android Bluez
+				bluez-hdp health-device-profile 1
+				BTHL_MDEP_ROLE_SINK 4100
+				BTHL_CHANNEL_TYPE_RELIABLE pulse-oximeter
+				Note: IUT must be discoverable, connectable
+TC_SNK_HCT_BV_07_C	PASS	haltest:
+				hl register_application bluez-android Bluez
+				bluez-hdp health-device-profile 1
+				BTHL_MDEP_ROLE_SINK 4100
+				BTHL_CHANNEL_TYPE_RELIABLE pulse-oximeter
+				Note: IUT must be discoverable, connectable
+TC_SNK_DE_BV_01_I	N/A
+TC_SNK_DE_BV_02_I	PASS	haltest:
+				hl register_application bluez-android Bluez
+				bluez-hdp health-device-profile 1
+				BTHL_MDEP_ROLE_SINK 4100
+				BTHL_CHANNEL_TYPE_RELIABLE pulse-oximeter
+				Note: IUT must be discoverable, connectable
+TC_SNK_DEP_BV_03_I	N/A
+TC_SNK_DEP_BV_04_I	N/A
+-------------------------------------------------------------------------------

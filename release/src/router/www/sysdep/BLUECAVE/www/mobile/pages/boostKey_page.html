@@ -164,7 +164,7 @@
 	abort.boostKey = function(){
 		postDataModel.remove(boostKeyObj);
 
-		if(isSupport("11AX")){
+		if(isSupport("11AX") && !isSupport("qis_hide_he_features")){
 			goTo.loadPage("axMode_page", true);
 		}
 		else{

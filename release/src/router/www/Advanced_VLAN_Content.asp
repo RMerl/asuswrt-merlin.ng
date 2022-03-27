@@ -39,11 +39,6 @@ function initial() {
 	showVLANRuleList();
 }
 
-function applyRule() {
-		showLoading();
-		document.form.submit();
-}
-
 var arrayWirelessName = new Array();
 var arrayWirelessValue = new Array();
 var iSelectWireless1 = 0;
@@ -508,9 +503,11 @@ function showVLANRuleList()
 
 function applyRule()
 {
-	document.form.vlan_rulelist.value = vlan_rulelist_array;
-	showLoading();
-	document.form.submit();
+	if(confirm("<#AiMesh_Node_Reboot#>")){
+		document.form.vlan_rulelist.value = vlan_rulelist_array;	
+		showLoading();
+		document.form.submit();
+	}
 }
 </script>
 </head>

@@ -100,10 +100,19 @@ config RTCONFIG_HND_ROUTER_AX_6710
 
 config RTCONFIG_SDK502L07P1_121_37
 	bool "SDK 5.02L.07p1_17.10.121.37"
+	depends on RTCONFIG_HND_ROUTER_AX_675X || RTCONFIG_HND_ROUTER_AX_6710
 	default n
 
 config RTCONFIG_SDK504L02_188_1303
 	bool "SDK 5.04L.02_17.10.188.1303"
+	default n
+
+config RTCONFIG_BCM_502L07P2
+	bool "Broadcom SDK 5.02L.07p2"
+	default n
+
+config RTCONFIG_BCM_WIFI_NIC_DEBUG
+	bool "Broadcom: dump the debug messages of the WiFi NIC mode"
 	default n
 
 config RTCONFIG_HND_WL
@@ -202,6 +211,11 @@ config RTCONFIG_JFFS_NVRAM
 	depends on RTCONFIG_BRCM_NAND_JFFS2 || RTCONFIG_UBIFS
 	default y
 
+config RTCONFIG_JFFS_NVRAM_HND_OLD
+	bool "old patch for Broadcom HND SDK"
+	depends on RTCONFIG_JFFS_NVRAM
+	default n
+
 config RTCONFIG_JFFS2
 	bool "JFFS Support"
 	default n
@@ -296,6 +310,10 @@ config RTCONFIG_EMF
 
 config RTCONFIG_BCMBSD
 	bool "Brcm Band Steer Selection"
+	default n
+
+config RTCONFIG_BCMBSD_V2
+	bool "Brcm Band Steer Selection V2"
 	default n
 
 config RTCONFIG_BCMSSD
@@ -856,10 +874,6 @@ config RTCONFIG_NEWSSID_REV4
 
 config RTCONFIG_NEWSSID_REV5
 	bool "RT-V5 SSID rule"
-	default n
-
-config RTCONFIG_NEWSSID_REV6
-	bool "RT-V6 SSID rule"
 	default n
 
 config RTCONFIG_RP_NEWSSID_REV3
@@ -1990,6 +2004,11 @@ config RTCONFIG_FBWIFI
 	bool "enable FBWIFI for FaceBook"
 	default n
 
+config RTCONFIG_QCA_EZMESH
+	bool "QCA EZMESH"
+	depends on RTCONFIG_QCA
+	default n
+
 config RTCONFIG_ADV_RAST
 	bool "enable advanced roaming assistant"
 	default n
@@ -2259,8 +2278,8 @@ config RTCONFIG_PRELINK
 	default n
 
 config RTCONFIG_MSSID_PRELINK
-        bool "AMAS prelink on mssid"
-        default n
+	bool "AMAS prelink on mssid"
+	default n
 
 choice
 	prompt "SSL library"
@@ -2495,6 +2514,10 @@ config RTCONFIG_SPF11_4_QSDK
 	depends on RTCONFIG_QCA
 	default n
 
+config RTCONFIG_QSDK_LM256
+	bool "LM256 for RAM 256MB hardware design"
+	default n
+
 config RTCONFIG_QCA_WLAN_SCRIPTS
 	depends on RTCONFIG_QCA
 	bool "use script to load/unload wifi instead of complex & mass code"
@@ -2559,3 +2582,27 @@ config RTCONFIG_LLDPD_0_9_8
 config RTCONFIG_LLDPD_1_0_11
 	bool "lldpd-1.0.11"
 endchoice
+
+config RTCONFIG_HW_DOG
+	bool "CPU hardward watchdog daemon"
+	default n
+
+config RTCONFIG_MSSID_REALMAC
+	bool "MSSID with real MAC address"
+	default n
+
+config RTCONFIG_NCURSES_6_1
+	bool "ncurses 6.1"
+	default n
+
+config RTCONFIG_AMAS_CENTRAL_CONTROL
+        bool "AiMesh central control"
+        default n
+
+config RTCONFIG_AVOID_TZ_ENV
+	bool "Not use setenv(TZ) but use timezone in /etc/TZ"
+	default n
+
+config RTCONFIG_BANDINDEX_NEW
+        bool " Bandindex version greater than 1"
+        default n

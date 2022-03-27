@@ -290,7 +290,8 @@ var systemVariable = {
 	"onboardingInfo": {},
 	"skipAiMeshOptionPage": false,
 	"amas_newWindow_addNode": false,
-	"authModePostData": {}
+	"authModePostData": {},
+	"eth_wan_list":{},
 }
 
 var aimeshObj = {

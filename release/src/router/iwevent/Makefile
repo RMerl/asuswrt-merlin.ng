@@ -1,5 +1,4 @@
 include ../common.mak
-include $(SRCBASE)/router/.config
 
 EXEC = wlceventd
 SRC=iwevent.c
@@ -31,6 +30,9 @@ endif
 
 LDFLAGS +=  -L. -liw
 LDFLAGS += -L$(TOP)/shared -L$(INSTALLDIR)/shared/usr/lib -lshared
+ifeq ($(RTCONFIG_BCM_502L07P2),y)
+LDFLAGS += -L$(TOP_PLATFORM)/ethctl_lib -lethctl
+endif
 LDFLAGS += -L$(TOP_PLATFORM)/nvram$(BCMEX)${EX7} ${EXTRA_NV_LDFLAGS} -lnvram
 LIBS= -lm
 # Composition of the library :

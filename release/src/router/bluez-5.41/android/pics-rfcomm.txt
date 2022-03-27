@@ -1,0 +1,65 @@
+RFCOMM PICS for the PTS tool.
+
+PTS version: 6.1
+
+* - different than PTS defaults
+# - not yet implemented/supported
+
+M - mandatory
+O - optional
+
+		Protocol Version
+-------------------------------------------------------------------------------
+Parameter Name		Selected	Description
+-------------------------------------------------------------------------------
+TSPC_RFCOMM_0_1		False		RFCOMM 1.1 with TS 07.10 (C.1)
+TSPC_RFCOMM_0_2		True (*)	RFCOMM 1.2 with TS 07.10 (C.1)
+-------------------------------------------------------------------------------
+C.1: Mandatory to support one and only one of the protocol versions.
+-------------------------------------------------------------------------------
+
+
+		Supported Procedures
+-------------------------------------------------------------------------------
+Parameter Name		Selected	Description
+-------------------------------------------------------------------------------
+TSPC_RFCOMM_1_1		True (*)	Initialize RFCOMM Session (C.2)
+TSPC_RFCOMM_1_2		True (*)	Respond to Initialization of an RFCOMM
+					Session (C.1)
+TSPC_RFCOMM_1_3		True		Shutdown RFCOMM Session (M)
+TSPC_RFCOMM_1_4		True		Respond to a Shutdown of an RFCOMM
+					Session (M)
+TSPC_RFCOMM_1_5		True (*)	Establish DLC (C.2)
+TSPC_RFCOMM_1_6		True (*)	Respond to Establishment of a DLC (C.1)
+TSPC_RFCOMM_1_7		True		Disconnect DLC (M)
+TSPC_RFCOMM_1_8		True		Respond to Disconnection of a DLC (M)
+TSPC_RFCOMM_1_9		True		Respond to and send MSC Command (M)
+TSPC_RFCOMM_1_10	True		Initiate Transfer Information (M)
+TSPC_RFCOMM_1_11	True		Respond to Test Command (M)
+TSPC_RFCOMM_1_12	True (*)	Send Test Command (O)
+TSPC_RFCOMM_1_13	True		React to Aggregate Flow Control (M)
+TSPC_RFCOMM_1_14	True		Respond to RLS Command (M)
+TSPC_RFCOMM_1_15	False		Send RLS Command (O)
+TSPC_RFCOMM_1_16	True		Respond to PN Command (M)
+TSPC_RFCOMM_1_17	True (*)	Send PN Command (C.3)
+TSPC_RFCOMM_1_18	True (*)	Send Non-Supported Command (NSC)
+					response (C.4)
+TSPC_RFCOMM_1_19	True		Respond to RPN Command (M)
+TSPC_RFCOMM_1_20	True (*)	Send RPN Command (O)
+TSPC_RFCOMM_1_21	True (*)	Closing Multiplexer by First Sending
+					a DISC Command (O)
+TSPC_RFCOMM_1_22	True		Support of Credit Based Flow Control (M)
+-------------------------------------------------------------------------------
+C.1: Mandatory if SPP 1/2 (Device B) is supported, otherwise Excluded.
+C.2: Mandatory if SPP 1/1 (Device A) is supported, otherwise Excluded.
+C.3: Mandatory if SPP 1/1 (Device A) is supported, otherwise Optional.
+C.4: Mandatory to support if TSPC_RFCOMM_0_2 is supported, otherwise Optional.
+-------------------------------------------------------------------------------
+
+
+-------------------------------------------------------------------------------
+Parameter Name		Selected	Description
+-------------------------------------------------------------------------------
+TSPC_SPP_2_1		False		Channel the tester should use when
+					connecting to the IUT (Default "")
+-------------------------------------------------------------------------------

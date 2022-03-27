@@ -1,14 +1,14 @@
 /* vi: set sw=4 ts=4: */
-/* Small bzip2 deflate implementation, by Rob Landley (rob@landley.net).
-
-   Based on bzip2 decompression code by Julian R Seward (jseward@acm.org),
-   which also acknowledges contributions by Mike Burrows, David Wheeler,
-   Peter Fenwick, Alistair Moffat, Radford Neal, Ian H. Witten,
-   Robert Sedgewick, and Jon L. Bentley.
-
-   Licensed under GPLv2 or later, see file LICENSE in this source tree.
-*/
-
+/*
+ * Small bzip2 deflate implementation, by Rob Landley (rob@landley.net).
+ *
+ * Based on bzip2 decompression code by Julian R Seward (jseward@acm.org),
+ * which also acknowledges contributions by Mike Burrows, David Wheeler,
+ * Peter Fenwick, Alistair Moffat, Radford Neal, Ian H. Witten,
+ * Robert Sedgewick, and Jon L. Bentley.
+ *
+ * Licensed under GPLv2 or later, see file LICENSE in this source tree.
+ */
 /*
 	Size and speed optimizations by Manuel Novoa III  (mjn3@codepoet.org).
 
@@ -38,7 +38,6 @@
 
 	Manuel
  */
-
 #include "libbb.h"
 #include "bb_archive.h"
 
@@ -134,7 +133,7 @@ static unsigned get_bits(bunzip_data *bd, int bits_wanted)
 
 		/* Avoid 32-bit overflow (dump bit buffer to top of output) */
 		if (bit_count >= 24) {
-			bits = bd->inbufBits & ((1 << bit_count) - 1);
+			bits = bd->inbufBits & ((1U << bit_count) - 1);
 			bits_wanted -= bit_count;
 			bits <<= bits_wanted;
 			bit_count = 0;
@@ -157,15 +156,15 @@ static unsigned get_bits(bunzip_data *bd, int bits_wanted)
 static int get_next_block(bunzip_data *bd)
 {
 	struct group_data *hufGroup;
-	int dbufCount, dbufSize, groupCount, *base, *limit, selector,
-		i, j, t, runPos, symCount, symTotal, nSelectors, byteCount[256];
-	int runCnt = runCnt; /* for compiler */
+	int groupCount, *base, *limit, selector,
+		i, j, symCount, symTotal, nSelectors, byteCount[256];
 	uint8_t uc, symToByte[256], mtfSymbol[256], *selectors;
 	uint32_t *dbuf;
-	unsigned origPtr;
+	unsigned origPtr, t;
+	unsigned dbufCount, runPos;
+	unsigned runCnt = runCnt; /* for compiler */
 
 	dbuf = bd->dbuf;
-	dbufSize = bd->dbufSize;
 	selectors = bd->selectors;
 
 /* In bbox, we are ok with aborting through setjmp which is set up in start_bunzip */
@@ -188,7 +187,7 @@ static int get_next_block(bunzip_data *bd)
 	   it didn't actually work. */
 	if (get_bits(bd, 1)) return RETVAL_OBSOLETE_INPUT;
 	origPtr = get_bits(bd, 24);
-	if ((int)origPtr > dbufSize) return RETVAL_DATA_ERROR;
+	if (origPtr > bd->dbufSize) return RETVAL_DATA_ERROR;
 
 	/* mapping table: if some byte values are never used (encoding things
 	   like ascii text), the compression code removes the gaps to have fewer
@@ -308,7 +307,7 @@ static int get_next_block(bunzip_data *bd)
 		base = hufGroup->base - 1;
 		limit = hufGroup->limit - 1;
 
-		/* Calculate permute[].  Concurently, initialize temp[] and limit[]. */
+		/* Calculate permute[].  Concurrently, initialize temp[] and limit[]. */
 		pp = 0;
 		for (i = minLen; i <= maxLen; i++) {
 			int k;
@@ -436,7 +435,14 @@ static int get_next_block(bunzip_data *bd)
 			   symbols, but a run of length 0 doesn't mean anything in this
 			   context).  Thus space is saved. */
 			runCnt += (runPos << nextSym); /* +runPos if RUNA; +2*runPos if RUNB */
-			if (runPos < dbufSize) runPos <<= 1;
+//The 32-bit overflow of runCnt wasn't yet seen, but probably can happen.
+//This would be the fix (catches too large count way before it can overflow):
+//			if (runCnt > bd->dbufSize) {
+//				dbg("runCnt:%u > dbufSize:%u RETVAL_DATA_ERROR",
+//						runCnt, bd->dbufSize);
+//				return RETVAL_DATA_ERROR;
+//			}
+			if (runPos < bd->dbufSize) runPos <<= 1;
 			goto end_of_huffman_loop;
 		}
 
@@ -446,14 +452,15 @@ static int get_next_block(bunzip_data *bd)
 		   literal used is the one at the head of the mtfSymbol array.) */
 		if (runPos != 0) {
 			uint8_t tmp_byte;
-			if (dbufCount + runCnt > dbufSize) {
-				dbg("dbufCount:%d+runCnt:%d %d > dbufSize:%d RETVAL_DATA_ERROR",
-						dbufCount, runCnt, dbufCount + runCnt, dbufSize);
+			if (dbufCount + runCnt > bd->dbufSize) {
+				dbg("dbufCount:%u+runCnt:%u %u > dbufSize:%u RETVAL_DATA_ERROR",
+						dbufCount, runCnt, dbufCount + runCnt, bd->dbufSize);
 				return RETVAL_DATA_ERROR;
 			}
 			tmp_byte = symToByte[mtfSymbol[0]];
 			byteCount[tmp_byte] += runCnt;
-			while (--runCnt >= 0) dbuf[dbufCount++] = (uint32_t)tmp_byte;
+			while ((int)--runCnt >= 0)
+				dbuf[dbufCount++] = (uint32_t)tmp_byte;
 			runPos = 0;
 		}
 
@@ -467,7 +474,7 @@ static int get_next_block(bunzip_data *bd)
 		   first symbol in the mtf array, position 0, would have been handled
 		   as part of a run above.  Therefore 1 unused mtf position minus
 		   2 non-literal nextSym values equals -1.) */
-		if (dbufCount >= dbufSize) return RETVAL_DATA_ERROR;
+		if (dbufCount >= bd->dbufSize) return RETVAL_DATA_ERROR;
 		i = nextSym - 1;
 		uc = mtfSymbol[i];
 

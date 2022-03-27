@@ -37,6 +37,13 @@
 	cursor: pointer;
 	text-decoration: underline;
 }
+.loadingIcon {
+	background: url('/images/InternetScan.gif') center no-repeat;
+	width: 33px;
+	height: 33px;
+	background-size: contain;
+	display: inline-block;
+}
 </style>
 <script>
 var usb_status_last_time = false;
@@ -54,6 +61,13 @@ var wl2_radio_orig = httpApi.nvramGet(["wl2_radio"], true).wl2_radio;
 var wl0_timesched_orig = httpApi.nvramGet(["wl0_timesched"], true).wl0_timesched;
 var wl1_timesched_orig = httpApi.nvramGet(["wl1_timesched"], true).wl1_timesched;
 var wl2_timesched_orig = httpApi.nvramGet(["wl2_timesched"], true).wl2_timesched;
+var within_hour = "<#feedback_when_withinhour#>";
+var updated_within_hour = within_hour.replace('%@', '1');	//<1
+var several_hour = "<#feedback_when_hour#>";
+var updated_several_hour = several_hour.replace('%2$@', '3');	//1-3
+var several_hours = "<#feedback_when_hours#>";
+var updated_several_hours = several_hour.replace('%1$@', '3').replace('%2$@', '12');	//3-12
+var fb_state = httpApi.nvramGet(["fb_state"], true).fb_state;
 
 function initial(){
 	show_menu();
@@ -102,6 +116,15 @@ function initial(){
 		init_diag_feature();
 	else {
 		$(".dblog_support_class").remove();
+	}
+
+	if(fb_state == "2"){
+		$('html, body').hide();
+		redirect();
+	}
+	else if(fb_state == "0"){
+		disbled_feedback_filed(0);
+		detect_fb_state();
 	}
 
 	if(false){
@@ -165,21 +188,38 @@ function gen_contact_sel(){
 	}
 }
 
+/*
+ * option status:
+ * 0: feedback proceeding
+ * 1: wan disconnect
+ */
+function disbled_feedback_filed(status){
+	document.form.eula_checkbox.disabled = true;
+	document.form.fb_country.disabled = true;
+	document.form.fb_email.disabled = true;
+	document.form.fb_serviceno.disabled = true;
+	document.form.attach_syslog.disabled = true;
+	document.form.attach_cfgfile.disabled = true;
+	document.form.attach_modemlog.disabled = true;
+	document.form.attach_wlanlog.disabled = true;
+	document.form.fb_ptype.disabled = true;
+	document.form.fb_pdesc.disabled = true;
+	document.form.fb_comment.disabled = true;
+	document.form.btn_send.disabled = true;
+	if(status == 0){
+		$(".dblog_disabled_status").find("input, textarea, button, select").attr("disabled", true);
+		$("#apply_button").css("display", "none");
+		$("#loadingIcon").css("display", "");
+	}
+	else if(status == 1){
+		document.getElementById("fb_desc_disconnect").style.display = "";
+	}
+}
+
 function check_wan_state(){
 	
 	if(sw_mode != 3 && document.getElementById("connect_status").className == "connectstatusoff"){
-		document.getElementById("fb_desc_disconnect").style.display = "";
-		document.form.fb_country.disabled = true;
-		document.form.fb_email.disabled = true;
-		document.form.fb_serviceno.disabled = true;
-		document.form.attach_syslog.disabled = true;
-		document.form.attach_cfgfile.disabled = true;
-		document.form.attach_modemlog.disabled = true;
-		document.form.attach_wlanlog.disabled = true;
-		document.form.fb_ptype.disabled = true;
-		document.form.fb_pdesc.disabled = true;
-		document.form.fb_comment.disabled = true;
-		document.form.btn_send.disabled = true;
+		disbled_feedback_filed(1);
 		if(dsl_support){
 			document.form.fb_ISP.disabled = true;
 			document.form.fb_Subscribed_Info.disabled = true;
@@ -190,7 +230,6 @@ function check_wan_state(){
 			document.form.fb_availability.disabled = true;
 			
 		}
-
 	}
 	else{
 		document.getElementById("fb_desc_disconnect").style.display = "none";
@@ -296,7 +335,7 @@ function Reload_pdesc(obj, url){
 		desclist.push(["<#menu5_2#>","LAN"]);
 		url_group.push(["LAN", "DHCP", "GWStaticRoute", "IPTV", "SwitchCtrl"]);
 
-		desclist.push(["<#menu5_4_4#>","USB dongle"]);
+		desclist.push(["<#menu5_4_4#>/<#usb_tethering#>","USB dongle"]);
 		url_group.push(["Modem"]);
 
 		desclist.push(["<#DM_title#>","DM"]);
@@ -336,7 +375,7 @@ function Reload_pdesc(obj, url){
 		url_group.push(["FirmwareUpgrade"]);
 
 		if(isSupport("Instant_Guard")){
-			desclist.push(["<#Instant_Guard_title#>","Instant Guard"]);	//30 //Untranslated
+			desclist.push(["<#Instant_Guard_title#>","Instant Guard"]);	//30
 			url_group.push(["Instant_Guard"]);
 		}
 
@@ -375,7 +414,7 @@ function Reload_pdesc(obj, url){
 		desclist.push(["<#feedback_tech_asus#>","tech_ASUS"]);
 		desclist.push(["<#feedback_tech_amazon#>","tech_Amazon"]);
 		desclist.push(["<#feedback_tech_iOS#>","tech_iOS"]);
-		desclist.push(["<#feedback_tech_Android#>","tech_Android"]);		
+		desclist.push(["<#feedback_tech_Android#>","tech_Android"]);
 	}
 	else{	//Other_Problem
 		
@@ -407,13 +446,13 @@ function Reload_pdesc(obj, url){
 	if(ptype == "Setting_Problem" || ptype == "Compatibility_Problem"){
 		$(".when_occur_tr").css("display", "");
 		timelist.push(["<#Select_menu_default#> ...","No_selected"]);
-		timelist.push(["Just Now","Just Now"]);
-		timelist.push(["Within 1 hour","Within 1 hour"]);
-		timelist.push(["1 - 3 hour(s) ago","1 - 3 hour(s) ago"]);
-		timelist.push(["3 - 12 hours ago","3 - 12 hours ago"]);
-		timelist.push(["Today","Today"]);
-		timelist.push(["Recently","Recently"]);
-		timelist.push(["I don’t recall","I don’t recall"]);
+		timelist.push(["<#feedback_when_now#>","Just Now"]);
+		timelist.push([updated_within_hour,"Within 1 hour"]);
+		timelist.push([updated_several_hour,"1 - 3 hour(s) ago"]);
+		timelist.push([updated_several_hours,"3 - 12 hours ago"]);
+		timelist.push(["<#feedback_when_today#>","Today"]);
+		timelist.push(["<#feedback_when_recent#>","Recently"]);
+		timelist.push(["<#feedback_when_notrecall#>","I don’t recall"]);
 
 		for(var i = 0; i < timelist.length; i++){
 			document.form.fb_when_occur.options[i] = new Option(timelist[i][0], timelist[i][1]);
@@ -432,13 +471,13 @@ function Change_pdesc(obj){
 		if(obj.value == "Wireless speed" || obj.value == "Wired speed" || obj.value == "Unstable connection" || obj.value == "Router reboot" || obj.value == "Wireless disconnected"){
 			$(".when_occur_tr").css("display", "");
 			timelist.push(["<#Select_menu_default#> ...","No_selected"]);
-			timelist.push(["Just Now","Just Now"]);
-			timelist.push(["Within 1 hour","Within 1 hour"]);
-			timelist.push(["1 - 3 hour(s) ago","1 - 3 hour(s) ago"]);
-			timelist.push(["3 - 12 hours ago","3 - 12 hours ago"]);
-			timelist.push(["Today","Today"]);
-			timelist.push(["Recently","Recently"]);
-			timelist.push(["I don’t recall","I don’t recall."]);
+			timelist.push(["<#feedback_when_now#>","Just Now"]);
+			timelist.push([updated_within_hour,"Within 1 hour"]);
+			timelist.push([updated_several_hour,"1 - 3 hour(s) ago"]);
+			timelist.push([updated_several_hours,"3 - 12 hours ago"]);
+			timelist.push(["<#feedback_when_today#>","Today"]);
+			timelist.push(["<#feedback_when_recent#>","Recently"]);
+			timelist.push(["<#feedback_when_notrecall#>","I don’t recall."]);
 
 			for(var i = 0; i < timelist.length; i++){
 				document.form.fb_when_occur.options[i] = new Option(timelist[i][0], timelist[i][1]);
@@ -456,10 +495,10 @@ function Change_pdesc(obj){
 		bandlist.push(["5GHz-1","5GHz-1"]);
 		bandlist.push(["5GHz-2","5GHz-2"]);
 		bandlist.push(["6GHz","6GHz"]);
-		bandlist.push(["All","All"]);
-		bandlist.push(["I am not sure","I am not sure"]);
-		bandlist.push(["Issue with the main router","Issue with the main router"]);
-		bandlist.push(["Issue with node(s)","Issue with node(s)"]);
+		bandlist.push(["<#All#>","All"]);
+		bandlist.push(["<#feedback_issue_notsure#>","I am not sure"]);
+		bandlist.push(["<#feedback_issue_CAP#>","Issue with the main router"]);
+		bandlist.push(["<#feedback_issue_Node#>","Issue with node(s)"]);
 
 		for(var i = 0; i < bandlist.length; i++){
 			document.form.fb_which_band.options[i] = new Option(bandlist[i][0], bandlist[i][1]);
@@ -471,17 +510,17 @@ function Change_pdesc(obj){
 	if(obj.value == "Unstable connection"){
 		$(".unstable_conn_tr").css("display", "");
 		unstablelist.push(["<#Select_menu_default#> ...","No_selected"]);
-		unstablelist.push(["All WiFi","All WiFi"]);
+		unstablelist.push(["<#feedback_issue_WiFi#>","All WiFi"]);
 		unstablelist.push(["2.4GHz","2.4GHz"]);
 		unstablelist.push(["5GHz","5GHz"]);
 		unstablelist.push(["5GHz-1","5GHz-1"]);
 		unstablelist.push(["5GHz-2","5GHz-2"]);
 		unstablelist.push(["6GHz","6GHz"]);
 		unstablelist.push(["WAN","WAN"]);
-		unstablelist.push(["Both WiFi and WAN","Both WiFi and WAN"]);
-		unstablelist.push(["I am not sure","I am not sure"]);
-		unstablelist.push(["Issue with the main router","Issue with the main router"]);
-		unstablelist.push(["Issue with node(s)","Issue with node(s)"]);
+		unstablelist.push(["<#feedback_issue_WiFinWAN#>","Both WiFi and WAN"]);
+		unstablelist.push(["<#feedback_issue_notsure#>","I am not sure"]);
+		unstablelist.push(["<#feedback_issue_CAP#>","Issue with the main router"]);
+		unstablelist.push(["<#feedback_issue_Node#>","Issue with node(s)"]);
 
 		for(var j = 0; j < unstablelist.length; j++){
 			document.form.fb_unstable_conn.options[j] = new Option(unstablelist[j][0], unstablelist[j][1]);
@@ -492,25 +531,31 @@ function Change_pdesc(obj){
 		$("#occur_hint").show()
 						.css("text-decoration", "underline")
 						.css("cursor", "pointer")
-						.html("<br>- Reboot Scheduler currently enabled, please check scheduler setting")
+						.html("<br>- <#feedback_check_reboot#>")
 						.click( function(){ redirect_page("reboot_schedule_enable_x"); } );
 		$("#occur_hint2").hide();
 	}
 	else if(obj.value == "Wireless disconnected"){
 
-		if(wl0_timesched_orig == 1 || wl1_timesched_orig == 1 || wl2_timesched_orig == 1){
+		if((wl0_timesched_orig == 1 && wl_info.band2g_support) 
+			|| (wl1_timesched_orig == 1 && wl_info.band5g_support) 
+			|| (wl2_timesched_orig == 1 && wl_info.band5g_2_support)){
+
 			$("#occur_hint").show()
-							.css("text-decoration", "underline")
-							.css("cursor", "pointer")
-							.html("<br>- Wireless Scheduler currently enabled, please check scheduler setting")
-							.click( function(){ redirect_page("wl_timesched"); } );
+					.css("text-decoration", "underline")
+					.css("cursor", "pointer")
+					.html("<br>- <#feedback_check_disconnect1#>")
+					.click( function(){ redirect_page("wl_timesched"); } );
 		}
-		if(wl0_radio_orig == 0 || wl1_radio_orig == 0 || wl2_radio_orig == 0){
+		if((wl0_radio_orig == 0 && wl_info.band2g_support) 
+			|| (wl1_radio_orig == 0 && wl_info.band5g_support) 
+			|| (wl2_radio_orig == 0 && wl_info.band5g_2_support)){
+
 			$("#occur_hint2").show()
-							.css("text-decoration", "underline")
-							.css("cursor", "pointer")
-							.html("<br>- 2.4GHz or 5GHz or 5GHz-1 or 5GHz-2(or 2.4GHz and 5GHz-2 and so on) or All bands currently disabled, please check WiFi radio setting.")
-							.click( function(){ redirect_page("wl_radio"); } );	
+					.css("text-decoration", "underline")
+					.css("cursor", "pointer")
+					.html("<br>- <#feedback_check_disconnect2#>")
+					.click( function(){ redirect_page("wl_radio"); } );	
 		}
 	}
 	else{
@@ -964,11 +1009,11 @@ function diag_change_service_list_all() {
 		$inputHtml2.val(_value);
 		$inputHtml2.click(function() {
 			if(this.checked) {
-				if(!confirm("This WiFi DHD Log capture requires system reboot after the feedback is sent, would you like to continue?")){	//Untranslated
+				if(!confirm("<#feedback_WiFi_DHD_log_confirm#>")){
 					$(".dblog_service_item.dhd").children().prop("checked", false);
 				}
-				diag_change_service_list();
 			}
+			diag_change_service_list();
 		});
 
 		$labelHtml2.append($inputHtml2);
@@ -979,12 +1024,12 @@ function diag_change_service_list_all() {
 
 	if($("input[name=dblog_service_list_all]").prop("checked")) {
 		if(dhdlog_support && $(".dblog_service_item.wifi").length > 0 && $(".dblog_service_item.dhd").length == 0){
-			$(".dblog_service_item.wifi").after(gen_appendix_option(16, "Additional WiFi DHD Log", "dhd"));		//Untranslated
+			$(".dblog_service_item.wifi").after(gen_appendix_option(16, "<#feedback_WiFi_DHD_log#>", "dhd"));
 		}
 		$("input[name=dblog_service_list]").prop("checked", true);
 
 		if(dhdlog_support && $(".dblog_service_item.dhd").children().prop("checked")) {
-			if(!confirm("This WiFi DHD Log capture requires system reboot after the feedback is sent, would you like to continue?")){	//Untranslated
+			if(!confirm("<#feedback_WiFi_DHD_log_confirm#>")){
 				$(".dblog_service_item.all").children().prop("checked", false);
 				$(".dblog_service_item.dhd").children().prop("checked", false);
 			}
@@ -1018,8 +1063,9 @@ function diag_tune_service_option() {
 		$inputHtml.click(function() {
 			if(dhdlog_support && _text=="WiFi"){
 				if(this.checked) {
-					$(".dblog_service_item.wifi").after(gen_appendix_option(16, "Additional WiFi DHD Log", "dhd"));		//Untranslated
-				}else{
+					$(".dblog_service_item.wifi").after(gen_appendix_option(16, "<#feedback_WiFi_DHD_log#>", "dhd"));
+				}
+				else{
 					$(".dblog_service_item.dhd").remove();
 				}
 			}
@@ -1043,7 +1089,7 @@ function diag_tune_service_option() {
 		$inputHtml2.val(_value);
 		$inputHtml2.click(function() {
 			if(this.checked) {
-				if(!confirm("This WiFi DHD Log capture requires system reboot after the feedback is sent, would you like to continue?")){	//Untranslated
+				if(!confirm("<#feedback_WiFi_DHD_log_confirm#>")){
 					$(".dblog_service_item.dhd").children().prop("checked", false);
 				}
 			}
@@ -1192,6 +1238,14 @@ function CheckFBSize(){
 					setTimeout("redirect()", 1000);
 		}
 	});
+}
+
+function detect_fb_state(){
+	var fb_state = httpApi.nvramGet(["fb_state"], true).fb_state;
+	if(fb_state == "0")
+		setTimeout("detect_fb_state();", 5000);
+	else
+		top.location.href="Advanced_Feedback.asp";
 }
 </script>
 </head>
@@ -1415,7 +1469,7 @@ function CheckFBSize(){
 </tr>
 
 <tr class="which_band_tr" style="display:none;">
-<th><a class="hintstyle" href="javascript:void(0);" onClick="">Which band(s)?</a></th> <!-- Untranslated -->
+<th><a class="hintstyle" href="javascript:void(0);" onClick=""><#feedback_which_band#></a></th>
 <td>
 	<select class="input_option" name="fb_which_band" onChange="">
 		
@@ -1424,7 +1478,7 @@ function CheckFBSize(){
 </tr>
 
 <tr class="when_occur_tr" style="display:none;">
-<th><a class="hintstyle" href="javascript:void(0);" onClick="">When did it occur?</a></th> <!-- Untranslated -->
+<th><a class="hintstyle" href="javascript:void(0);" onClick=""><#feedback_when_occur#></a></th>
 <td>
 	<select class="input_option" name="fb_when_occur" onChange="">
 		
@@ -1435,7 +1489,7 @@ function CheckFBSize(){
 </tr>
 
 <tr class="unstable_conn_tr" style="display:none;">
-<th><a class="hintstyle" href="javascript:void(0);" onClick="">Issue specifically with WiFi or WAN?</a></th> <!-- Untranslated -->
+<th><a class="hintstyle" href="javascript:void(0);" onClick=""><#feedback_issue_WiFiorWAN#></a></th>
 <td>
 	<select class="input_option" name="fb_unstable_conn" onChange="">
 		
@@ -1474,7 +1528,8 @@ function CheckFBSize(){
 			<div style="float: left;"><input type="checkbox" name="eula_checkbox"/></div>
 			<div id="eula_content" style="margin-left: 20px;"><#feedback_eula#></div>
 		</div>
-		<input class="button_gen" style="margin-left: 305px; margin-top:5px;" name="btn_send" onclick="applyRule()" type="button" value="<#btn_send#>"/>
+		<input id="apply_button" class="button_gen" style="margin-left: 305px; margin-top:5px;" name="btn_send" onclick="applyRule()" type="button" value="<#btn_send#>"/>
+		<div  id="loadingIcon" style="display:none;"><div class="loadingIcon" style="float: left; margin-left: 305px; margin-top:5px;"></div><div style="float: left; margin-left: 15px; margin-top:10px;"><span class="hint-color"><#Main_alert_processing#>...</span></div></div>
 	</td>
 </tr>
 

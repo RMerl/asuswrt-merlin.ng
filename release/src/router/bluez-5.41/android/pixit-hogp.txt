@@ -1,0 +1,29 @@
+HOGP PIXIT for the PTS tool.
+
+PTS version: 6.1
+
+* - different than PTS defaults
+& - should be set to IUT Bluetooth address
+
+		Required PIXIT settings
+-------------------------------------------------------------------------------
+Parameter Name						Value
+-------------------------------------------------------------------------------
+TSPX_bd_addr_iut					112233445566 (*&)
+TSPX_time_guard						180000
+TSPX_use_implicit_send					TRUE
+TSPX_tester_database_file				[Path to HOGP Test
+								Database]
+TSPX_mtu_size						23
+TSPX_secure_simple_pairing_pass_key_confirmation	FALSE
+TSPX_delete_link_key					FALSE
+TSPX_pin_code						0000
+TSPX_use_dynamic_pin					FALSE
+TSPX_delete_ltk						FALSE
+TSPX_security_enabled					TRUE
+TSPX_input_report_data					CDA6F8B3AA
+TSPX_output_report_data					001234567890EF
+TSPX_feature_report_data				872D3F45EA
+TSPX_tester_appearance					03C0
+TSPX_iut_use_resolvable_random_address			FALSE
+-------------------------------------------------------------------------------

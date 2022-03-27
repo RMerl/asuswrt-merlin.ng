@@ -4,9 +4,7 @@
 	ASUSGATE_note6 : "Your DSL (Digital Suscriber Line) seems unstable. We strongly recommend that you submit feedback to our support team.",
 	ASUSGATE_note7 : "If you are experiencing any DSL related issues or you have any comments, please feel free to inform our support team.",
 	ASUSGATE_act_feedback : "Feedback now",
-	ASUSGATE_DSL_setting : "Go setting DSL",
-	filter_lw_date_valid : 'Please select at least one day or disable this feature.',
-	ctf_fa_hint : 'System will reboot automatically after enable AiProtection for function working fine. Please click apply to enable this function or click cancel to back to page.'
+	ASUSGATE_DSL_setting : "Go setting DSL"
 };
 
 var rc_support = '<% nvram_get("rc_support"); %>';
@@ -1094,7 +1092,7 @@ function openHint(hint_array_id, hint_show_id, flag){
 		statusmenu = "<div>";
 		statusmenu += "<#WANAggregation_help_desc#>";
 		statusmenu += "<ol>";
-		statusmenu += "<li><#WANAggregation_help_step1#></li>".replace(/LAN-*\D* 4/, wanAggr_p2_name(orig_wnaports_bond));
+		statusmenu += "<li><#WANAggregation_help_step1#></li>".replace("LAN 4", wanAggr_p2_name(orig_wnaports_bond));
 		statusmenu += "<li><#WANAggregation_help_step2#></li>";
 		statusmenu += "<li><#WANAggregation_help_step3#></li>";
 		statusmenu += "<li><#WANAggregation_help_step4#></li>";
@@ -1325,7 +1323,7 @@ var docRoot = 'document.body';
 if (olNs4) {
 	var oW = window.innerWidth;
 	var oH = window.innerHeight;
-	window.onresize = function() { if (oW != window.innerWidth || oH != window.innerHeight) location.href = location.href; }
+	window.onresize = function() { if (oW != window.innerWidth || oH != window.innerHeight) location.reload(); }
 }
 
 // Microsoft Stupidity Check(tm).

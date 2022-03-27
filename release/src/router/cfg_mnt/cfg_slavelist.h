@@ -117,6 +117,9 @@ extern int cm_getObVifReByNewReMac(char *newReMac, char *obReMac, int macLen);
 extern void cm_updateObVifReList(char *newReMac, char *obReMac, int action);
 #endif
 extern void cm_reorganizeReList();
+#ifdef RTCONFIG_AMAS_CENTRAL_CONTROL
+extern void cm_updateReObList(char *reMac, int action, int commit);
+#endif
 
 #endif /* __CFG_SLAVELIST_H__ */
 /* End of cfg_slavelist.h */

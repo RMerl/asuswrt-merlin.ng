@@ -844,7 +844,7 @@ var validator = {
 		}	
 	},
 
-	isLegal_ipv6: function(obj) {
+	isLegal_ipv6: function(obj, flag) {
 		
 		var rangere=new RegExp("^((([0-9A-Fa-f]{1,4}:){7}[0-9A-Fa-f]{1,4})|(([0-9A-Fa-f]{1,4}:){6}:[0-9A-Fa-f]{1,4})|(([0-9A-Fa-f]{1,4}:){5}:([0-9A-Fa-f]{1,4}:)?[0-9A-Fa-f]{1,4})|(([0-9A-Fa-f]{1,4}:){4}:([0-9A-Fa-f]{1,4}:){0,2}[0-9A-Fa-f]{1,4})|(([0-9A-Fa-f]{1,4}:){3}:([0-9A-Fa-f]{1,4}:){0,3}[0-9A-Fa-f]{1,4})|(([0-9A-Fa-f]{1,4}:){2}:([0-9A-Fa-f]{1,4}:){0,4}[0-9A-Fa-f]{1,4})|(([0-9A-Fa-f]{1,4}:){6}((\\b((25[0-5])|(1\\d{2})|(2[0-4]\\d)|(\\d{1,2}))\\b)\\.){3}(\\b((25[0-5])|(1\\d{2})|(2[0-4]\\d)|(\\d{1,2}))\\b))|(([0-9A-Fa-f]{1,4}:){0,5}:((\\b((25[0-5])|(1\\d{2})|(2[0-4]\\d)|(\\d{1,2}))\\b)\\.){3}(\\b((25[0-5])|(1\\d{2})|(2[0-4]\\d)|(\\d{1,2}))\\b))|(::([0-9A-Fa-f]{1,4}:){0,5}((\\b((25[0-5])|(1\\d{2})|(2[0-4]\\d)|(\\d{1,2}))\\b)\\.){3}(\\b((25[0-5])|(1\\d{2})|(2[0-4]\\d)|(\\d{1,2}))\\b))|([0-9A-Fa-f]{1,4}::([0-9A-Fa-f]{1,4}:){0,5}[0-9A-Fa-f]{1,4})|(::([0-9A-Fa-f]{1,4}:){0,6}[0-9A-Fa-f]{1,4})|(([0-9A-Fa-f]{1,4}:){1,7}:))$", "gi");
 
@@ -852,9 +852,11 @@ var validator = {
 			return true;
 		}
 		else{
-			alert(obj.value+" <#JS_validip#>");
-			obj.focus();
-			obj.select();
+			if(flag != 1){	//1: mute
+				alert(obj.value+" <#JS_validip#>");
+				obj.focus();
+				obj.select();
+			}
 			return false;
 		}
  	},
@@ -1088,11 +1090,12 @@ var validator = {
 						return false;
 					}
 					else{
-						alert(o.value+" <#JS_validip#>");
-						
-						o.value = "";
-						o.focus();
-						o.select();
+						if(noAlert != 1){
+							alert(o.value+" <#JS_validip#>");
+							o.value = "";
+							o.focus();
+							o.select();
+						}
 						return false;
 					}
 				}
@@ -1114,10 +1117,12 @@ var validator = {
 				return false;
 			}
 			else{
-				alert(o.value + " <#JS_validip#>");
-				o.value = "";
-				o.focus();
-				o.select();
+				if(noAlert != 1){
+					alert(o.value + " <#JS_validip#>");
+					o.value = "";
+					o.focus();
+					o.select();
+				}
 				return false;
 			}
 		}
@@ -2108,11 +2113,16 @@ var validator = {
 	validIPForm: function(obj, flag){
 		if(obj.value == ""){
 			return true;
-		}else if(flag==0){	//without netMask
+		}else if(flag==0){	//0:without netMask
 			if(!this.ipAddrFinal(obj, obj.name)){
 				obj.focus();
-				obj.select();		
-				return false;	
+				obj.select();
+				return false;
+			}else
+				return true;
+		}else if(flag==3){	//3:mute
+			if(!this.ipAddrFinal(obj, obj.name, 1)){
+				return false;
 			}else
 				return true;
 		}else if(flag==1){	//with netMask and generate netmask

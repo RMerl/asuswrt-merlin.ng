@@ -1,4 +1,4 @@
-tcpdump-4.x: tcpdump-4.x/Makefile
+tcpdump-4.x: libpcap tcpdump-4.x/Makefile
 	@$(SEP)
 	@$(MAKE) -j 8 -C tcpdump-4.x
 

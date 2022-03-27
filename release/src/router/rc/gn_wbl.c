@@ -41,6 +41,10 @@ static void GN_WBL_broute_rule(char *ifname, int mark)
 	/* WSS only request to ban to access router index, ASUS extend the protection to whole ports except DNS / DHCP */
 	/* only access DNS / DHCP port in router, others dropped */
 	eval("ebtables", "-t", "broute", "-A", "BROUTING", "-i", ifname, "-p", "IPv4", "--ip-dst", nvram_safe_get("lan_ipaddr"), "--ip-proto", "udp", "--ip-dport", "53", "-j", "ACCEPT");
+#ifdef RTCONFIG_DNSPRIVACY
+	if (nvram_get_int("dnspriv_enable"))
+	eval("ebtables", "-t", "broute", "-A", "BROUTING", "-i", ifname, "-p", "IPv4", "--ip-dst", nvram_safe_get("lan_ipaddr"), "--ip-proto", "tcp", "--ip-dport", "53", "-j", "ACCEPT");
+#endif
 	eval("ebtables", "-t", "broute", "-A", "BROUTING", "-i", ifname, "-p", "IPv4", "--ip-dst", nvram_safe_get("lan_ipaddr"), "--ip-proto", "udp", "--ip-dport", "67", "-j", "ACCEPT");
 	eval("ebtables", "-t", "broute", "-A", "BROUTING", "-i", ifname, "-p", "IPv4", "--ip-dst", nvram_safe_get("lan_ipaddr"), "--ip-proto", "udp", "--ip-dport", "68", "-j", "ACCEPT");
 	eval("ebtables", "-t", "broute", "-A", "BROUTING", "-i", ifname, "-p", "IPv4", "--ip-dst", nvram_safe_get("lan_ipaddr"), "-j", "DROP");

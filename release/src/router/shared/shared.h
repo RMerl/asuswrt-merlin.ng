@@ -81,10 +81,15 @@ extern int PS_pclose(FILE *);
 #define EXTPHY_GPY_ADDR_STR "0x19"
 
 #if defined(RTCONFIG_EXTPHY_BCM84880)
-// BCM84880, BCM54991, BCM50991
+// BCM84880, BCM54991, BCM50991, BCM84891L
 #ifdef GTAX6000
 #define EXTPHY_ADDR 0x13
 #define EXTPHY_ADDR_STR "0x13"
+#elif defined(GTAXE16000)
+#define EXTPHY_ADDR 0x13
+#define EXTPHY_ADDR_STR "0x13"
+#define EXTPHY_ADDR_2 0x15
+#define EXTPHY_ADDR_STR_2 "0x15"
 #else
 #define EXTPHY_ADDR 0x1e
 #define EXTPHY_ADDR_STR "0x1e"
@@ -167,8 +172,10 @@ extern int PS_pclose(FILE *);
 #ifndef le32_to_cpu
 #define le32_to_cpu(x) (x)
 #endif
+#ifndef RTCONFIG_BCM_502L07P2
 #ifndef le64_to_cpu
 #define le64_to_cpu(x) (x)
+#endif
 #endif
 #ifndef be16_to_cpu
 #define be16_to_cpu(x) __bswap16(x)
@@ -231,11 +238,25 @@ extern int PS_pclose(FILE *);
 #define WLREADY			"wlready"
 #endif
 
-#if defined(BCM6750) || defined(BCM63178)
+#ifdef RTAX82_XD6S
+#define WAN_IF_ETH	"eth1"
+#elif defined(BCM6750) || defined(BCM63178)
 #define WAN_IF_ETH	"eth4"
 #else
 #define WAN_IF_ETH	"eth0"
 #endif
+
+static inline char *wan_if_eth(void)
+{
+#ifdef HND_ROUTER
+	char *value = nvram_get("wan_ifname");
+
+	if (value && strlen(value))
+		return value;
+	else
+#endif
+		return WAN_IF_ETH;
+}
 
 /**
  * skb->mark usage
@@ -729,7 +750,7 @@ struct vlan_rules_s {
 #endif
 
 #if defined(RTCONFIG_BT_CONN)
-#define BASE_UUID "FB 34 9B 5F 80 00 00 80 00 10 00 00 %s AB 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"
+#define BASE_UUID "FB 34 9B 5F 80 00 00 80 00 10 00 00 %s AB 00 00"
 #if defined(XT12)
 #define UUID_AMAP "8B"
 #elif defined(ET12)
@@ -871,6 +892,7 @@ extern int modprobe_r(const char *mod);
 extern int load_kmods(char *kmods_list);
 extern int remove_kmods(char *kmods_list);
 extern int num_of_wl_if(void);
+extern int num_of_5g_if(void);
 
 // usb.c
 #ifdef RTCONFIG_USB
@@ -1063,7 +1085,7 @@ enum led_id {
 	FAN,
 	HAVE_FAN,
 	LED_WAN,
-#if defined(RTCONFIG_WANLEDX2)
+#if defined(RTCONFIG_WANLEDX2) || defined(RTAXE7800)
 	LED_WAN2,
 #endif
 #ifdef HND_ROUTER
@@ -1224,7 +1246,7 @@ enum led_id {
  && (defined(RTAX89U) || defined(GTAXY16000))
 	PWR_USB2,
 #endif
-#if defined(RTAX95Q) || defined(XT8PRO) || defined(RTAXE95Q) || defined(ET8PRO) || defined(RTAX56_XD4) || defined(XD4PRO) || defined(RTAX82_XD6) || defined(ET12) || defined(XT12)
+#if defined(RTAX95Q) || defined(XT8PRO) || defined(RTAXE95Q) || defined(ET8PRO) || defined(RTAX56_XD4) || defined(XD4PRO) || defined(RTAX82_XD6) || defined(RTAX82_XD6S) || defined(ET12) || defined(XT12)
 	BT_RESET,
 	BT_DISABLE,
 	LED_RGB1_RED,
@@ -1398,18 +1420,38 @@ static inline int max_no_mssid(void)
 #endif	/* ! RTCONFIG_HAS_5G */
 
 enum wl_band_id {
+#ifdef GTAXE16000
+	WL_5G_BAND = 0,
+	WL_5G_2_BAND = 1,
+	WL_6G_BAND = 2,
+	WL_2G_BAND = 3,
+#else
 	WL_2G_BAND = 0,
 	WL_5G_BAND = 1,
 	WL_5G_2_BAND = 2,
-#ifdef RTCONFIG_WIFI6E
+#if defined(RTCONFIG_WIFI6E)
 	WL_6G_BAND = 3,
-	WL_60G_BAND = 4,
-#else
-	WL_60G_BAND = 3,
 #endif
-
+#endif
+	WL_60G_BAND,
 	WL_NR_BANDS				/* Maximum number of Wireless bands of all models. */
 };
+
+#ifdef RTCONFIG_WIFI6E
+static inline int is_6g(int unit)
+{
+	char prefix[] = "wlXXXXXXXXXXXX_";
+
+	if (unit == WL_6G_BAND)
+		return 1;
+
+	snprintf(prefix, sizeof(prefix), "wl%d_", unit);
+	if (nvram_pf_match(prefix, "nband", "4"))
+		return 1;
+
+	return 0;
+}
+#endif
 
 #if defined(RTCONFIG_RALINK) || defined(RTCONFIG_QCA)
 enum wl_bandwidth_id {
@@ -1494,7 +1536,7 @@ static inline int lacp_enabled(void) { return 0; }
  */
 static inline int __absent_band(enum wl_band_id band)
 {
-	if (band < WL_2G_BAND || band >= WL_NR_BANDS)
+	if (band < 0 || band >= WL_NR_BANDS)
 		return 1;
 #if defined(RTCONFIG_RALINK) || defined(RTCONFIG_QCA)
 	if (band >= MAX_NR_WL_IF)
@@ -2116,6 +2158,7 @@ extern void pre_config_switch(void);
 extern void post_config_switch(void);
 extern void post_start_lan(void);
 extern void post_start_lan_wl(void);
+extern void upgrade_aqr113c_fw(void);
 extern void __pre_config_switch(void) __attribute__((weak));
 extern void __post_config_switch(void) __attribute__((weak));
 extern void __post_start_lan(void) __attribute__((weak));
@@ -2281,7 +2324,7 @@ extern int get_psta_status(int unit);
 
 #define WLSTA_JSON_FILE 				"/tmp/wl_sta_list.json"
 #define MAX_STA_COUNT 128
-#if defined(RTCONFIG_HND_ROUTER_AX_675X) && !defined(RTCONFIG_SDK502L07P1_121_37)
+#if (defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(RTCONFIG_HND_ROUTER_AX_6710)) && !defined(RTCONFIG_SDK502L07P1_121_37)
 #else
 #define MAX_SUBIF_NUM 4
 #endif
@@ -2849,22 +2892,30 @@ extern char *get_wl_led_gpio_nv(int band);
 #define CH177_M	(1U << 30)
 extern int ch2g2bit(int ch);
 extern int ch5g2bit(int ch);
-extern unsigned int ch2g2bitmask(int ch);
-extern unsigned int ch5g2bitmask(int ch);
+extern uint64_t ch2g2bitmask(int ch);
+extern uint64_t ch5g2bitmask(int ch);
 extern int bit2ch2g(int bit);
 extern int bit2ch5g(int bit);
-extern unsigned int chlist2g2bitmask(char *ch_list, char *sep);
-extern unsigned int chlist5g2bitmask(char *ch_list, char *sep);
-extern char *__bitmask2chlist2g(unsigned int mask, char *sep, char *ch_list, size_t ch_list_len);
-extern char *__bitmask2chlist5g(unsigned int mask, char *sep, char *ch_list, size_t ch_list_len);
-extern char *bitmask2chlist2g(unsigned int mask, char *sep);
-extern char *bitmask2chlist5g(unsigned int mask, char *sep);
+extern uint64_t chlist2g2bitmask(char *ch_list, char *sep);
+extern uint64_t chlist5g2bitmask(char *ch_list, char *sep);
+extern char *__bitmask2chlist2g(uint64_t mask, char *sep, char *ch_list, size_t ch_list_len);
+extern char *__bitmask2chlist5g(uint64_t mask, char *sep, char *ch_list, size_t ch_list_len);
+extern char *bitmask2chlist2g(uint64_t mask, char *sep);
+extern char *bitmask2chlist5g(uint64_t mask, char *sep);
+#if defined(RTCONFIG_WIFI6E)
+extern int ch6g2bit(int ch);
+extern uint64_t ch6g2bitmask(int ch);
+extern int bit2ch6g(int bit);
+extern uint64_t chlist6g2bitmask(char *ch_list, char *sep);
+extern char *__bitmask2chlist6g(uint64_t mask, char *sep, char *ch_list, size_t ch_list_len);
+extern char *bitmask2chlist6g(uint64_t mask, char *sep);
+#endif
 extern int ch2bit(enum wl_band_id band, int ch);
-extern unsigned int ch2bitmask(enum wl_band_id band, int ch);
+extern uint64_t ch2bitmask(enum wl_band_id band, int ch);
 extern int bit2ch(enum wl_band_id band, int bit);
-extern unsigned int chlist2bitmask(enum wl_band_id band, char *ch_list, char *sep);
-extern char *__bitmask2chlist(enum wl_band_id band, unsigned int mask, char *sep, char *ch_list, size_t ch_list_len);
-extern char *bitmask2chlist(enum wl_band_id band, unsigned int mask, char *sep);
+extern uint64_t chlist2bitmask(enum wl_band_id band, char *ch_list, char *sep);
+extern char *__bitmask2chlist(enum wl_band_id band, uint64_t mask, char *sep, char *ch_list, size_t ch_list_len);
+extern char *bitmask2chlist(enum wl_band_id band, uint64_t mask, char *sep);
 #if defined(RTCONFIG_QCA)
 extern char *get_wsup_drvname(int band);
 extern void disassoc_sta(char *ifname, char *sta_addr);
@@ -3444,6 +3495,7 @@ extern void ac68u_cofs();
 extern int is_ax5400_i1();
 extern int is_ax5400_i1d();
 extern int is_ax5400_i1n();
+extern int is_custom_i2();
 #endif
 
 #ifdef RTAX86U
@@ -3718,7 +3770,8 @@ enum {
 	BCM_CLED_BLUE,
 	BCM_CLED_YELLOW,
 	BCM_CLED_WHITE,
-	BCM_CLED_OFF
+	BCM_CLED_OFF,
+	BCM_CLED_END
 };
 enum {
 	BCM_CLED_STEADY_NOBLINK = 0,
@@ -3733,6 +3786,12 @@ enum {
 
 extern int amazon_wss_ap_isolate_support(char *prefix);
 extern void firmware_downgrade_check(uint32_t sf);
+
+#ifdef GTAX6000
+#define ANTLED_SCHEME_OFF               0
+#define ANTLED_SCHEME_STATIC            1
+#define ANTLED_SCHEME_RSSI              2
+#endif
 
 #if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTAX6000)
 #define LEDG_OFF			0
@@ -3806,6 +3865,47 @@ int is_passwd_default(void);
 #define	SMRTCONN_FULL_BANDS	1
 #define SMRTCONN_5G_ONLY	2
 #define SMRTCONN_2G_AND_5G	3
+
+#ifdef RTCONFIG_BCMBSD_V2
+
+extern void gen_bcmbsd_def_policy(int sel);
+
+#define SMRTCONN_SEL_2G		0x0001
+#define SMRTCONN_SEL_5G		0x0002
+#define SMRTCONN_SEL_5G2	0x0004
+#define SMRTCONN_SEL_6G		0x0008
+
+enum {
+	BCMBSD_SELIF_2G_5G1_5G2_6G = 1,
+	BCMBSD_SELIF_2G_5G1_6G	   = 2,	
+	BCMBSD_SELIF_2G_5G1_5G2	   = 3,
+	BCMBSD_SELIF_2G_5G1	   = 4,	
+	BCMBSD_SELIF_2G_5G2_6G	   = 5,
+	BCMBSD_SELIF_2G_6G	   = 6,
+	BCMBSD_SELIF_5G1_5G2_6G	   = 7,
+	BCMBSD_SELIF_5G1_6G 	   = 8,
+	BCMBSD_SELIF_2G_5G2 	   = 9,
+	BCMBSD_SELIF_5G1_5G2 	   = 10,
+	BCMBSD_SELIF_5G2_6G 	   = 11,
+	BCMBSD_SELIF_MAX 	   = 12
+};
+
+enum {
+#if defined(GTAXE16000)
+	WLIF_2G	 = 3,
+	WLIF_5G1 = 0,
+	WLIF_5G2 = 1,
+	WLIF_6G	 = 2,
+#else
+	WLIF_2G	 = 0,
+	WLIF_5G1 = 1,
+	WLIF_5G2 = 2,
+	WLIF_6G	 = 3,
+#endif
+	WLIF_MAX = 4
+};
+
+#endif
 #endif
 
 #ifdef CONFIG_BCMWL5
@@ -3816,5 +3916,12 @@ int is_passwd_default(void);
 
 #define GENERIC_LANGS	"BR CN CZ DE EN ES FR HU IT JP KR MS NL PL RU RO SL TH TR TW UK"
 #define ALL_LANGS 		"BR CN CZ DE EN ES FR HU IT JP KR MS NL PL RU RO SL TH TR TW UK DA FI NO SV"
+
+#ifdef RTCONFIG_DNSFILTER
+extern char *server_table[][2];
+#ifdef RTCONFIG_IPV6
+extern char *server6_table[][2];
+#endif
+#endif
 
 #endif	/* !__SHARED_H__ */

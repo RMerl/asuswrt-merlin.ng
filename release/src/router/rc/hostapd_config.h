@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: hostapd_config.h 791935 2020-10-14 05:58:43Z $
+ * $Id: hostapd_config.h 796839 2021-03-15 07:38:09Z $
  */
 
 #ifndef _hostapd_config_h_
@@ -41,9 +41,10 @@ extern void hapd_wpasupp_wds_hndlr(const char *pkt);
 #endif /* HAPD_WDS */
 extern char *hapd_wpasupp_strncpy(char *dest, const char *src, size_t n);
 
+#if !defined(RTCONFIG_BCM_502L07P2)
 extern int hapd_wpasupp_get_all_lanifname_sz(void);
 extern int hapd_wpasupp_get_all_lanifname(char *ifnames, int ifnames_sz);
 extern int hapd_wpasupp_get_all_lanifnames_listsz(void);
 extern int hapd_wpasupp_get_all_lanifnames_list(char *ifnames_list, int ifnames_listsz);
-
+#endif
 #endif /* _hostapd_config_h_ */

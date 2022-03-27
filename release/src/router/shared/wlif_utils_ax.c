@@ -223,8 +223,7 @@ void get_ifname_by_wlmac_prep(void)
 char *
 get_ifname_by_wlmac(unsigned char *mac, char *name)
 {
-	char nv_name[16], os_name[16];
-	static char if_name[16];
+	char nv_name[16], os_name[16], if_name[16];
 	char tmptr[] = "lanXX_ifnames";
 	char *ifnames, *ifname;
 	int i;
@@ -716,6 +715,24 @@ wl_wlif_update_wps_ui(wlif_wps_ui_status_code_id_t idx)
 	nvram_set("wps_proc_status", wlif_wps_ui_status_arr[idx].val);
 }
 
+#if 0 // TODO: wlan 17.10.157.60
+/* Updates the dpp_status nvram to reflect the dpp status in dpp.asp page */
+void
+wl_wlif_update_dpp_ui(DPP_UI_SCSTATE idx, char *ifname)
+{
+	char nv_name[WLIF_MIN_BUF] = {0};
+	char buffer[32] = {0};
+
+	if (idx < 0 || idx > DPP_UI_DISASSOCIATED) {
+		return;
+	}
+
+	snprintf(nv_name, sizeof(nv_name), "%s_dpp_status", ifname);
+	snprintf(buffer, sizeof(buffer), "%d", idx);
+	nvram_set(nv_name, buffer);
+}
+#endif
+
 /* Gets the status code from the wps_proc_status nvram value */
 int
 wl_wlif_get_wps_status_code()
@@ -780,6 +797,65 @@ wl_wlif_save_wpa_settings(char *type, char *val, wlif_wps_nw_creds_t *creds)
 	}
 }
 
+#if 0 // TODO: wlan 17.10.157.60
+/* convert ascii string to hex string */
+void wl_ascii_str_to_hex_str(char *ascii_str, uint16 ascii_len, char *hex_str, uint16 hex_len)
+{
+	int i = 0;
+
+	if (!ascii_str || !hex_str || !ascii_len || !hex_len) {
+		return;
+	}
+
+	while (ascii_str[i] != '\0' && i < (ascii_len - 1) && (i * 2) < (hex_len - 1)) {
+		sprintf((hex_str + i*2), "%02X", ascii_str[i]);
+		i = i + 1;
+	}
+	hex_str[hex_len - 1] = '\0';
+	return;
+}
+
+static int wl_wlif_hexstr2number(char ch)
+{
+	if (ch >= 'a' && ch <= 'f')
+		return ch - 'a' + 10;
+	if (ch >= 'A' && ch <= 'F')
+		return ch - 'A' + 10;
+	if (ch >= '0' && ch <= '9')
+		return ch - '0';
+	return -1;
+}
+
+int wl_wlif_hexstr2byte(const char *hex)
+{
+	int x, y;
+	x = wl_wlif_hexstr2number(*hex++);
+	if (x < 0)
+		return -1;
+	y = wl_wlif_hexstr2number(*hex++);
+	if (y < 0)
+		return -1;
+	return (x << 4) | y;
+}
+
+int wl_wlif_hexstr2ascii(const char *hex_str, unsigned char *buf, size_t len)
+{
+	size_t i;
+	int x;
+	unsigned char *buf_ptr = buf;
+	const char *hex_ptr = hex_str;
+
+	for (i = 0; i < len; i++) {
+		x = wl_wlif_hexstr2byte(hex_ptr);
+		if (x < 0)
+			return -1;
+		*buf_ptr++ = x;
+		hex_ptr += 2;
+	}
+	return 0;
+}
+#endif
+
 /* Apply the DPP credentials to radio interface received from the wps session */
 int
 wl_wlif_apply_dpp_creds(wlif_bss_t *bss, wlif_dpp_creds_t *dpp_creds)
@@ -823,7 +899,7 @@ wl_wlif_apply_dpp_creds(wlif_bss_t *bss, wlif_dpp_creds_t *dpp_creds)
 	}
 
 	// If akm is dpp, set dpp specific nvrams.
-	if (nvram_match(nv_name, "dpp")) {
+	if (!strcmp(dpp_creds->akm, DPP_AKM)) {
 		/* crypto */
 		memset(nv_name, 0, sizeof(nv_name));
 		snprintf(nv_name, sizeof(nv_name), "%s_crypto", prefix);
@@ -849,6 +925,58 @@ wl_wlif_apply_dpp_creds(wlif_bss_t *bss, wlif_dpp_creds_t *dpp_creds)
 		snprintf(nv_name, sizeof(nv_name), "%s_dpp_netaccess_key", prefix);
 		nvram_set(nv_name, dpp_creds->dpp_netaccess_key);
 
+#if 0 // TODO: wlan 17.10.157.60
+		if (!ap) {
+			/* dpp_pp_key */
+			memset(nv_name, 0, sizeof(nv_name));
+			snprintf(nv_name, sizeof(nv_name), "%s_dpp_pp_key", prefix);
+			nvram_set(nv_name, dpp_creds->dpp_pp_key);
+		}
+
+		ret = 0;
+	}
+	else if (!strcmp(dpp_creds->akm, PSK_AKM) ||
+			!strcmp(dpp_creds->akm, SAE_AKM) ||
+			!strcmp(dpp_creds->akm, PSK_SAE_AKM) ||
+			!strcmp(dpp_creds->akm, DPP_SAE_AKM) ||
+			!strcmp(dpp_creds->akm, DPP_PSK_SAE_AKM)) {
+		if (!strcmp(dpp_creds->akm, DPP_PSK_SAE_AKM)) {
+			// adjust the akm
+			memset(nv_name, 0, sizeof(nv_name));
+			snprintf(nv_name, sizeof(nv_name), "%s_akm", prefix);
+			nvram_set(nv_name, "psk2 psk2sha256 sae dpp");
+		} else if (!strcmp(dpp_creds->akm, DPP_SAE_AKM)) {
+			// adjust the akm
+			memset(nv_name, 0, sizeof(nv_name));
+			snprintf(nv_name, sizeof(nv_name), "%s_akm", prefix);
+			nvram_set(nv_name, "sae dpp");
+		} else if (!strcmp(dpp_creds->akm, PSK_SAE_AKM)) {
+			// adjust the akm
+			memset(nv_name, 0, sizeof(nv_name));
+			snprintf(nv_name, sizeof(nv_name), "%s_akm", prefix);
+			nvram_set(nv_name, "psk2 psk2sha256 sae");
+		} else if (!strcmp(dpp_creds->akm, PSK_AKM)) { /* psk */
+			// adjust the akm
+			memset(nv_name, 0, sizeof(nv_name));
+			snprintf(nv_name, sizeof(nv_name), "%s_akm", prefix);
+			nvram_set(nv_name, "psk2 psk2sha256");
+		}
+
+		/* crypto */
+		memset(nv_name, 0, sizeof(nv_name));
+		snprintf(nv_name, sizeof(nv_name), "%s_crypto", prefix);
+		nvram_set(nv_name, "aes");
+
+		/* wpa_psk */
+		memset(nv_name, 0, sizeof(nv_name));
+		snprintf(nv_name, sizeof(nv_name), "%s_wpa_psk", prefix);
+		nvram_set(nv_name, dpp_creds->dpp_psk);
+
+		/* mfp */
+		memset(nv_name, 0, sizeof(nv_name));
+		snprintf(nv_name, sizeof(nv_name), "%s_mfp", prefix);
+		nvram_set(nv_name, "1");
+#endif
 		ret = 0;
 	}
 
@@ -1418,7 +1546,7 @@ end:
 
 // Stops the ongoing wps session for the interface provided in wps_ifname
 int
-#ifdef RTCONFIG_WIFI6E
+#if defined(RTCONFIG_WIFI6E) || defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_BCM_502L07P2)
 wl_wlif_wps_stop_session(char *wps_ifname, bool bUpdateUI)
 #else
 wl_wlif_wps_stop_session(char *wps_ifname)
@@ -1453,7 +1581,7 @@ wl_wlif_wps_stop_session(char *wps_ifname)
 		dprintf("Info: shared %s cli cmd %s failed for interface %s ret = %d\n", __func__,
 			cmd, wps_ifname, ret);
 	}
-#ifdef RTCONFIG_WIFI6E
+#if defined(RTCONFIG_WIFI6E) || defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_BCM_502L07P2)
 	if (bUpdateUI)
 #endif
 	{
@@ -2061,8 +2189,13 @@ end:
 #endif	/* MULTIAP */
 #endif	/* CONFIG_HOSTAPD */
 
-#if defined(RTCONFIG_HND_ROUTER_AX_6756)
+#if defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_BCM_502L07P2)
 #if !defined(RTCONFIG_SDK504L02_188_1303)
+/* Supported rate bitmap control feature initially requested by LGI, but make it a common feature
+ * Supported rate bitmap definition
+ * b19b18b17b16b15b14b13b12b11b10b9b8b1b7b6b5b4b3b2b1b0
+ * mcs7mcs6mcs5mcs4mcs3mcs2mcs1mcs054Mbps48Mbps36Mbps24Mbps18Mbps12Mpbs9Mbps6Mbps11Mbps5.5Mbps2Mps1Mbps
+ */
 
 static bit2rate_map_t tbl_2g[] = {
 	{BIT0, 2},      /* 1 Mbps */

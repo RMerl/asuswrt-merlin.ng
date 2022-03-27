@@ -145,12 +145,14 @@ function initial(){
 		//	document.getElementById('switch_menu').style.display = "";
 	}
 	if(isSupport("PC_SCHED_V3")){
-		$("#desc_title").html("This feature allows you to set up a scheduled time for specific devices' Internet access.");/* untranslated */
-		$("#desc_title").nextAll("ol:first").find("li:eq(0)").html("In [Client Name] column, select a device you would like to manage. You can also manually key in MAC address in this column.");/* untranslated */
-		$("#desc_title").nextAll("ol:first").find("li:eq(2)").html("In [Time Management] column, click the edit icon to set a schedule.");/* untranslated */
-		$("#desc_title").nextAll("ol:first").find("li:eq(4)").html("Click [Apply] to save the configurations.");/* untranslated */
-		$("#desc_title").nextAll("ol:first").find("li:eq(3)").remove();
-		$("#desc_note").nextAll("ol:first").find("li:eq(0)").remove();
+		$("#desc_title").html("<#PC_SCHED_Title#>");
+		var $desc_item = $("#desc_item").empty();
+		$("<li>").html("<#PC_SCHED_Desc1#>").appendTo($desc_item);
+		$("<li>").html("<#ParentalCtrl_Desc2#>").appendTo($desc_item);
+		$("<li>").html("<#PC_SCHED_Desc2#>").appendTo($desc_item);
+		$("<li>").html("<#PC_SCHED_Desc3#>").appendTo($desc_item);
+
+		$("#desc_note_item").find("li:eq(0)").remove();
 		if($("#nat_desc").css("display") == "none")
 			$("#desc_note").hide();
 	}
@@ -621,10 +623,10 @@ function show_inner_tab(){
 			</table>
 			<div style="margin:0 0 10px 5px;" class="splitLine"></div>
 			<div id="block_all_device" style="margin-bottom:6px;display:none;">
-				<div style="font-size:14px;margin-left:6px;margin-bottom:6px;">By enabling Block All Devices, all of the connected devices will be blocked from Internet access.</div>
+				<div style="font-size:14px;margin-left:6px;margin-bottom:6px;"><#Block_All_Device_Desc#></div>
 				<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable">
 					<tr>
-						<th>Enable block all device</th>
+						<th><#Block_All_Device#></th>
 						<td>
 							<div align="center" class="left" style="width:94px; float:left; cursor:pointer;" id="radio_block_all"></div>
 							<div class="iphone_switch_container" style="height:32px; width:74px; position: relative; overflow: hidden">
@@ -665,7 +667,7 @@ function show_inner_tab(){
 					<td>&nbsp;&nbsp;</td>
 					<td style="font-size: 14px;">
 						<span id="desc_title"><#ParentalCtrl_Desc#></span>
-						<ol>	
+						<ol id="desc_item">
 							<li><#ParentalCtrl_Desc1#></li>
 							<li><#ParentalCtrl_Desc2#></li>
 							<li><#ParentalCtrl_Desc3#></li>
@@ -673,7 +675,7 @@ function show_inner_tab(){
 							<li><#ParentalCtrl_Desc5#></li>							
 						</ol>
 						<span id="desc_note" class="hint-color"><#ADSL_FW_note#></span>
-						<ol class="hint-color" style="margin:-5px 0px 3px -18px;*margin-left:18px;">
+						<ol id="desc_note_item" class="hint-color" style="margin:-5px 0px 3px -18px;*margin-left:18px;">
 							<li><#ParentalCtrl_default#></li>
 							<li id="nat_desc"><#ParentalCtrl_disable_NAT#></li>
 						</ol>	

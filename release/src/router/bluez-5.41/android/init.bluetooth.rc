@@ -1,0 +1,38 @@
+# required permissions
+on boot
+    chown bluetooth bluetooth /data/misc/bluetooth
+    chown bluetooth bluetooth /dev/uhid
+    chown system    bluetooth /dev/uinput
+
+# services
+on property:bluetooth.start=daemon
+    setprop bluetooth.start none
+    start bluetoothd
+
+on property:bluetooth.stop=daemon
+    setprop bluetooth.stop none
+    stop bluetoothd
+
+on property:bluetooth.start=snoop
+    setprop bluetooth.start none
+    start bluetoothd-snoop
+
+on property:bluetooth.stop=snoop
+    setprop bluetooth.stop none
+    stop bluetoothd-snoop
+
+service bluetoothd /system/bin/bluetoothd
+    class main
+    # init does not yet support setting capabilities so run as root,
+    # bluetoothd drop uid to bluetooth with the right linux capabilities
+    group bluetooth
+    disabled
+    oneshot
+
+service bluetoothd-snoop /system/bin/bluetoothd-snoop
+    class main
+    # init does not yet support setting capabilities so run as root,
+    # bluetoothd-snoop drops unneeded linux capabilities
+    group nobody
+    disabled
+    oneshot

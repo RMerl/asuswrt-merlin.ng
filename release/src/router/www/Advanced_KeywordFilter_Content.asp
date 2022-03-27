@@ -11,9 +11,9 @@
 <title><#Web_Title#> - <#menu5_5_5#></title>
 <link rel="stylesheet" type="text/css" href="index_style.css"> 
 <link rel="stylesheet" type="text/css" href="form_style.css">
-<script type="text/javascript" src="/js/jquery.js"></script>
+<script language="JavaScript" type="text/javascript" src="/js/jquery.js"></script>
 <script language="JavaScript" type="text/javascript" src="/state.js"></script>
-<script type="text/javascript" language="JavaScript" src="/help.js"></script>
+<script language="JavaScript" type="text/javascript" src="/help.js"></script>
 <script language="JavaScript" type="text/javascript" src="/general.js"></script>
 <script language="JavaScript" type="text/javascript" src="/popup.js"></script>
 <script language="JavaScript" type="text/javascript" src="/validator.js"></script>
@@ -21,9 +21,13 @@
 var keyword_rulelist_array = "<% nvram_char_to_ascii("","keyword_rulelist"); %>";
 var keyword_firewall_enable = "<% nvram_get("keyword_enable_x"); %>";
 
+var faq_href = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=159";
+
 function initial(){
 	show_menu();
 	show_keyword_rulelist();
+
+	$("#kwf_desc2 a").attr("href", faq_href);
 }
 
 function show_keyword_rulelist(){
@@ -165,7 +169,7 @@ function done_validating(action){
 									<div class="formfonttitle"><#menu5_5#> - <#menu5_5_5#></div>
 									<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 									<div class="formfontdesc"><#FirewallConfig_KeywordFilterEnable_sectiondesc#></div>
-									<div class="formfontdesc"><#FirewallConfig_KeywordFilterEnable_sectiondesc2#></div>	
+									<div id="kwf_desc2" class="formfontdesc"><#FirewallConfig_KeywordFilterEnable_sectiondesc2#></div>	
 									<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
 										<thead>
 											<tr>

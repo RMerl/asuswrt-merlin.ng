@@ -14,9 +14,14 @@ CFLAGS		+= -I$(SRCBASE)/shared/bcmwifi/include -DTYPEDEF_FLOAT_T
 endif
 LDFLAGS		= -L$(OPENSSL_DIR) -L$(NVRAM_DIR) -L$(SHARED_DIR) -L$(JSON_C_DIR)/.libs -L$(LLDPD_DIR)/src/lib/.libs -L$(STAGEDIR)/usr/lib/ -ljansson
 LIBS		= -ljson-c -lcrypto -lnvram -lshared -llldpctl
-LIBS += -ldl -lm
+ifeq ($(RTCONFIG_BCM_502L07P2),y)
+LDFLAGS += -L$(TOP_PLATFORM)/ethctl_lib
+LIBS += -lethctl
+endif
+LIBS += -ldl -lm -pthread
 
 ifeq ($(HND_ROUTER),y)
+CFLAGS += -DHND_ROUTER
 LDFLAGS += -L$(TOP_PLATFORM)/wlcsm -lwlcsm
 endif
 

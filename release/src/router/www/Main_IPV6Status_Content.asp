@@ -218,7 +218,7 @@ function show_pinholes() {
 										</div>
 										<br><br>
 										<div class="apply_gen">
-											<input type="button" onClick="location.href=location.href" value="<#CTL_refresh#>" class="button_gen">
+											<input type="button" onClick="location.reload();" value="<#CTL_refresh#>" class="button_gen">
 										</div>
 									</td><!--==magic 2008.11 del name ,if there are name, when the form was sent, the textarea also will be sent==-->
 								</tr>

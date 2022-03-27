@@ -570,6 +570,7 @@ static int add_qos_rules(char *pcWANIF)
 		case MODEL_XD4PRO:
 		case MODEL_CTAX56_XD4:
 		case MODEL_RTAX58U:
+		case MODEL_RTAX82_XD6S:
 		case MODEL_RTAX58U_V2:
 		case MODEL_RTAX55:
 		case MODEL_RTAX56U:

@@ -1,0 +1,232 @@
+HFP PICS for the PTS tool.
+
+PTS version: 6.1
+
+* - different than PTS defaults
+# - not yet implemented/supported
+
+M - mandatory
+O - optional
+
+		Version
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_HFP_0_1	False		Version: Hands-Free Profile v1.5 (O.1)
+TSPC_HFP_0_2	True (*)	Version: Hands-Free Profile v1.6 (O.1)
+TSPC_HFP_0_3	False		Version: Hands-Free Profile v1.7 (O.1)
+-------------------------------------------------------------------------------
+O.1: It is mandatory to support only one of the adopted versions.
+-------------------------------------------------------------------------------
+
+
+		Roles
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_HFP_1_1	True (*)	Role: Audio Gateway (AG) (O.1)
+TSPC_HFP_1_2	False		Role: Hands-Free (HF) (O.1)
+-------------------------------------------------------------------------------
+O.1: It is mandatory to support at least one of the defined roles.
+-------------------------------------------------------------------------------
+
+
+		Audio Gateway Role
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_HFP_2_1	True		Connection management (M)
+TSPC_HFP_2_1a	True (*)	SLC initiation during active ongoing call (O)
+TSPC_HFP_2_2	True		Phone Status Information (M)
+TSPC_HFP_2_3	True		Audio connection handling (M)
+TSPC_HFP_2_3a	False		Audio connection establishment independent of
+					a call processing (O)
+TSPC_HFP_2_3b	True (*)	eSCO support in Audio Connection (C.10)
+TSPC_HFP_2_3c	True (*)	Codec negotiation (C.7)
+TSPC_HFP_2_4a	False		Accept an incoming voice call
+					(in-band ring) (C.1)
+TSPC_HFP_2_4b	True (*)	Accept an incoming voice call
+					(no in-band ring) (C.1)
+TSPC_HFP_2_4c	False		Capability to change the "in-band ring"
+					settings (O)
+TSPC_HFP_2_5	True (*)	Reject an incoming voice call (O)
+TSPC_HFP_2_6	True		Terminate a call (M)
+TSPC_HFP_2_7	True		Audio connection transfer during an ongoing
+					call (M)
+TSPC_HFP_2_7a	True (*)	HF-initiated Audio transfer to AG during
+					ongoing call (O)
+TSPC_HFP_2_8	True		Place a call with a phone number supplied by
+					the HF (M)
+TSPC_HFP_2_9	True		Place a call using memory dialing (M)
+TSPC_HFP_2_10	True		Place a call to the last number dialed (M)
+TSPC_HFP_2_11	True		Call waiting notification (M)
+TSPC_HFP_2_12	True (*)	Three Way Calling (O)
+TSPC_HFP_2_12a	True (*)	User Busy (AT+CHLD value 0) (C.3)
+TSPC_HFP_2_12b	True (*)	Call Hold Handling (AT+CHLD value 1,2) (C.2)
+TSPC_HFP_2_12c	True (*)	Three Way Call (AT+CHLD value 3) (C.3)
+TSPC_HFP_2_12d	False		Explicit Call Transfer (AT+CHLD value 4) (C.3)
+TSPC_HFP_2_13	True		Calling Line Identification (CLI) (M)
+TSPC_HFP_2_14	True (*)	Echo canceling (EC) and Noise reduction (NR) (O)
+TSPC_HFP_2_15	True (*)	Voice recognition activation (O)
+TSPC_HFP_2_15a	True (*)	Initiate voice recognition from AG (C.6)
+TSPC_HFP_2_15b	True (*)	Autonomous voice deactivation (C.6)
+TSPC_HFP_2_16	False		Attach a phone number to a voice tag (O)
+TSPC_HFP_2_17	True		Ability to transmit DTMF codes (M)
+TSPC_HFP_2_18a	True (*)	Remote audio volume control – speaker (O)
+TSPC_HFP_2_18b	False		Remote audio volume control – microphone (O)
+TSPC_HFP_2_18c	True (*)	Volume Level Synchronization – speaker and
+					microphone (C.5)
+TSPC_HFP_2_19	False		Response and hold (O)
+TSPC_HFP_2_20	True		Subscriber Number Information (M)
+TSPC_HFP_2_21a	True		Enhanced Call Status (C.4)
+TSPC_HFP_2_21b	False		Enhanced Call Control (C.3)
+TSPC_HFP_2_21c	True (*)	Enhanced Call Status with limited network
+					notification (C.4)
+TSPC_HFP_2_22	False		Support for automatic link loss recovery (O)
+TSPC_HFP_2_23	True		Individual Indicator Activation (C.9)
+TSPC_HFP_2_24	True (*)	Wide Band Speech service (C.8)
+TSPC_HFP_2_25	False		Support roaming function (O)
+TSPC_HFP_2_26	False		HF Indicators (C.11)
+TSPC_HFP_2_27	False		Support CVSD eSCO s4 setting (C.12)
+-------------------------------------------------------------------------------
+C.1:  The AG must support one of item TSPC_HFP_2_4a or TSPC_HFP_2_4b
+C.2:  Mandatory if TSPC_HFP_2_12 is TRUE; otherwise excluded
+C.3:  Optional if TSPC_HFP_2_12 is TRUE; otherwise excluded
+C.4:  The AG must support one of item TSPC_HFP_2_21a or TSPC_HFP_2_21c
+C.5:  Mandatory if TSPC_HFP_2_18a or TSPC_HFP_2_18b; otherwise optional
+C.6:  Optional if TSPC_HFP_2_15 is supported, otherwise excluded
+C.7:  Mandatory if TSPC_HFP_2_24 otherwise excluded
+C.8:  Excluded if TSPC_HFP_0_1 otherwise optional
+C.9:  Excluded if TSPC_HFP_0_1 otherwise mandatory
+C.10: Mandatory if TSPC_HFP_2_27 or TSPC_HFP_2_24 otherwise optional
+C.11: Optional IF HFP v1.5 (TSPC_HFP_0_1) OR HFP v1.6 (TSPC_HFP_0_2) is NOT
+	supported, otherwise Excluded.
+C.12: Excluded IF HFP v1.5 (TSPC_HFP_0_1) OR HFP v1.6 (TSPC_HFP_0_2) is
+	supported, otherwise Mandatory.
+-------------------------------------------------------------------------------
+
+
+		Hands-Free Role
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_HFP_3_1	False (*)	Connection Management (M)
+TSPC_HFP_3_2a	False (*)	Phone Status Information ("service" and "call"
+					indicators) (M)
+TSPC_HFP_3_2b	False		Phone Status Information ("callsetup"
+					indicators) (O)
+TSPC_HFP_3_2c	False		Accept indicator of signal strength (O)
+TSPC_HFP_3_2d	False		Accept indicator of roaming state ("roam:") (O)
+TSPC_HFP_3_2e	False		Accept indicator of battery level ("battchg") (O)
+TSPC_HFP_3_2f	False		Accept indicator of operator selection (O)
+TSPC_HFP_3_3	False (*)	Audio connection handling (M)
+TSPC_HFP_3_3a	False		Audio connection establishment independent
+					of call processing (O)
+TSPC_HFP_3_3b	False		eSCO support in Audio Connection (C.7)
+TSPC_HFP_3_3c	False		Codec negotiation (C.5)
+TSPC_HFP_3_4a	False (*)	Accept an incoming voice call (in-band ring) (M)
+TSPC_HFP_3_4b	False (*)	Accept an incoming voice call (no in-band
+					ring) (M)
+TSPC_HFP_3_4c	False		Accept an incoming voice call (in-band ring
+					muting) (O)
+TSPC_HFP_3_5	False (*)	Reject an incoming voice call (M)
+TSPC_HFP_3_6	False (*)	Terminate a call (M)
+TSPC_HFP_3_7	False (*)	Audio connection transfer during an ongoing
+					call (M)
+TSPC_HFP_3_7a	False		HF-initiated Audio transfer to AG during
+					ongoing call (O)
+TSPC_HFP_3_8	False		Place a call with a phone number supplied by
+					the HF (O)
+TSPC_HFP_3_9	False		Place a call using memory dialing (O)
+TSPC_HFP_3_10	False		Place a call to the last number dialed (O)
+TSPC_HFP_3_11	False		Call waiting notification (O)
+TSPC_HFP_3_12	False		Three Way Calling (O)
+TSPC_HFP_3_12a	False		Three way calling (AT+CHLD values 0) (C.2)
+TSPC_HFP_3_12b	False		Three way calling (AT+CHLD values 1 and 2) (C.1)
+TSPC_HFP_3_12c	False		Three way calling (AT+CHLD value 3) (C.2)
+TSPC_HFP_3_12d	False		Three way calling (AT+CHLD value 4) (C.2)
+TSPC_HFP_3_12e	False		Originate new call with established call in
+					progress (C.2)
+TSPC_HFP_3_13	False		Calling Line Identification (CLI) (O)
+TSPC_HFP_3_14	False		Echo cancelling (EC) and Noise reduction (NR) (O)
+TSPC_HFP_3_15	False		Voice recognition activation/deactivation (O)
+TSPC_HFP_3_16	False		Attach a phone number to a voice tag (O)
+TSPC_HFP_3_17	False		Ability to transmit DTMF codes (O)
+TSPC_HFP_3_18a	False		Remote audio volume control – speaker (O)
+TSPC_HFP_3_18b	False		Remote audio volume control – microphone (O)
+TSPC_HFP_3_18c	False		Volume Level Synchronization – speaker (C.3)
+TSPC_HFP_3_18d	False		Volume Level Synchronization – microphone (C.4)
+TSPC_HFP_3_18e	False		HF informs AG about local changes of audio
+					volume (O)
+TSPC_HFP_3_18f	False		HF informs AG about local changes of
+					microphone gain (O)
+TSPC_HFP_3_19	False		Response and hold (O)
+TSPC_HFP_3_20	False		Subscriber Number Information (O)
+TSPC_HFP_3_21a	False		Enhanced Call Status (O)
+TSPC_HFP_3_21b	False		Enhanced Call Control (C.2)
+TSPC_HFP_3_22	False		Support for automatic link loss recovery (O)
+TSPC_HFP_3_23	False (*)	Individual Indicator Activation (C.6)
+TSPC_HFP_3_24	False		Wide Band Speech service (C.6)
+TSPC_HFP_3_25	False		HF Indicators (C.8)
+TSPC_HFP_3_26	False		Support CVSD eSCO S4 setting (C.9)
+-------------------------------------------------------------------------------
+C.1: Mandatory if TSPC_HFP_3_12; otherwise excluded
+C.2: Optional if TSPC_HFP_3_12; otherwise excluded
+C.3: Mandatory if TSPC_HFP_3_18a or TSPC_HFP_3_18b, otherwise optional
+C.4: Mandatory if TSPC_HFP_3_18b, otherwise optional
+C.5: Mandatory if TSPC_HFP_3_24 otherwise excluded
+C.6: Excluded if TSPC_HFP_0_1 otherwise optional
+C.7: Mandatory if TSPC_HFP_3_26 or TSPC_HFP_3_24 otherwise optional
+C.8: Optional IF HFP v1.5 (TSPC_HFP_0_1) OR HFP v1.6 (TSPC_HFP_0_2) is NOT
+	supported, otherwise Excluded.
+C.9: Excluded IF HFP v1.5 (TSPC_HFP_0_1) OR HFP v1.6 (TSPC_HFP_0_2) is
+	supported, otherwise Mandatory.
+-------------------------------------------------------------------------------
+
+
+		Audio Coding Requirements
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_HFP_4_1	True		CVSD audio coding over SCO (M)
+TSPC_HFP_4_2	True (*)	mSBC audio coding over eSCO (C.1)
+TSPC_HFP_4_3	True (*)	CVSD audio coding over eSCO (Initiating) (C.2)
+TSPC_HFP_4_2	True (*)	CVSD audio coding over eSCO (Accepting) (C.2)
+-------------------------------------------------------------------------------
+C.1: Mandatory if Wide band speech service is supported TSPC_HFP_2_24 or
+	TSPC_HFP_3_24, otherwise excluded
+C.2: Mandatory IF TPSC_HFP_2_3b OR TSPC_HFP_3_3b; otherwise Excluded.
+-------------------------------------------------------------------------------
+
+
+		Supplementary Interoperability Verification
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_HFP_8_1	True (*)	Multiple audio transfers during call –
+					AG and HF initiated (C.1)
+TSPC_HFP_8_2	True (*)	Audio transfer by SLC release during
+					an active call (C.1)
+TSPC_HFP_8_3	True (*)	Audio transfer by powering ON HF (O)
+TSPC_HFP_8_4	True (*)	SLC during SDP response (O)
+TSPC_HFP_8_5	True (*)	Handle dynamic server channel number for HFP
+					service (O)
+TSPC_HFP_8_6	False		HF disallows connections in non-discoverable
+					mode (C.2)
+TSPC_HFP_8_7	True (*)	HF connects to AG during incoming call (O)
+TSPC_HFP_8_8	True (*)	Link loss during incoming call (C.3)
+TSPC_HFP_8_9	True (*)	SLC release during incoming call (C.3)
+TSPC_HFP_8_10	True (*)	Voice Recognition Activation (C.4)
+TSPC_HFP_8_11	True (*)	Place outgoing call by dialing number on
+					the AG (O)
+TSPC_HFP_8_12	True (*)	Active call termination – NO CARRIER signal
+					(C.5)
+-------------------------------------------------------------------------------
+C.1: Optional if TSPC_HFP_2_7a or TSPC_HFP_3_7a is supported,
+	otherwise excluded
+C.2: Optional if TSPC_HFP_1_2 is supported, otherwise excluded
+C.3: Optional if TSPC_HFP_1_1 is supported, otherwise excluded
+C.4: Optional if TSPC_HFP_2_15 or TSPC_HFP_3_15 is supported,
+	otherwise excluded
+C.5: Optional if TSPC_HFP_2_6 is supported, otherwise excluded
+-------------------------------------------------------------------------------

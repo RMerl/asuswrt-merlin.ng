@@ -32,8 +32,9 @@ $(function(){
 	if(internetSpeed_lite_support){
 		$("#history_desc").hide();
 		$("#speedTest_history_div").hide();
-		$("#packet_loss_div").hide();
 	}
+
+	$("#packet_loss_div").hide();
 });
 
 var speedTest_result = [];
@@ -649,7 +650,7 @@ function add_speedTest_history(history_obj, type){//type: 'last', 'first'
 	var packetloss = "0.00";
 	if(typeof history_obj.packetLoss != "undefined")
 		packetloss = history_obj.packetLoss.toFixed(2);
-
+/*
 	var packetLossContainer =
 			$("<div>")
 			.addClass("history_loss_div")
@@ -674,7 +675,7 @@ function add_speedTest_history(history_obj, type){//type: 'last', 'first'
 				.addClass("ping_unit")
 				.html("%")
 				.appendTo(lossValue);
-
+*/
 	var historyMoreObj =
 		$("<div>")
 		.addClass("history_more")
@@ -1365,10 +1366,10 @@ function build_interface_list(){
 							<div><#InternetSpeed_Jitter#></div>
 							<div>(<#InternetSpeed_ms#>)</div>
 						</div>
-						<div class="history_loss_div">
+						<!--div class="history_loss_div">
 							<div><#InternetSpeed_Loss#></div>
 							<div>(%)</div>
-						</div>
+						</div-->
 					</div>
 				</div>
 				<div class="history_container history_title_m">

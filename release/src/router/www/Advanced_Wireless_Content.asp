@@ -70,6 +70,13 @@ var wl_wpa_psk_org = decodeURIComponent("<% nvram_char_to_ascii("WLANConfig11b",
 var faq_fref = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=150";
 
 function initial(){
+	if(smart_connect_support && Qcawifi_support && document.form.smart_connect_x.value === '1'){
+		httpApi.nvramSet({
+			"action_mode":"apply",
+			"smart_connect_x": "0",
+		});
+	}
+
 	show_menu();
 	if (he_frame_support) {
 		$("#he_mode_field").show();
@@ -248,7 +255,7 @@ function initial(){
 		}
 	}
 
-	if(smart_connect_support && (isSwMode("rt") || isSwMode("ap"))){
+	if(smart_connect_support && !Qcawifi_support && (isSwMode("rt") || isSwMode("ap"))){
 		var flag = '<% get_parameter("flag"); %>';		
 		var smart_connect_flag_t;
 		document.getElementById("smartcon_enable_field").style.display = "";
@@ -292,6 +299,8 @@ function initial(){
 			document.form.wl_channel.value = _ch;
 		}
 	}
+
+	controlHideSSIDHint();
 
 	$("<div>")
 		.attr({"id": "ssid_msg"})
@@ -668,11 +677,15 @@ function applyRule(){
 		}
 
 		if(smart_connect_support && (isSwMode("rt") || isSwMode("ap")) && document.form.smart_connect_x.value == "1"){
-			if(smart_connect_flag_t != document.form.smart_connect_x.value){//SC change to 1
-				if(dwb_info.mode && wl_unit != dwb_info.band){//current wl_unit maybe is 0 or 1
-					var nvramSet_obj = {"action_mode":"apply"};
-					nvramSet_obj["wl"+dwb_info.band+"_closed"] = "1"
-					httpApi.nvramSet(nvramSet_obj);
+			if(isSupport("amas_fronthaul_network")){
+				if(isSupport("triband")){
+					if(smart_connect_flag_t != document.form.smart_connect_x.value){//SC change to 1
+						if(dwb_info.mode && wl_unit != dwb_info.band){//current wl_unit maybe is 0 or 1
+							var nvramSet_obj = {"action_mode":"apply"};
+							nvramSet_obj["wl"+dwb_info.band+"_closed"] = "1";
+							httpApi.nvramSet(nvramSet_obj);
+						}
+					}
 				}
 			}
 		}
@@ -987,17 +1000,23 @@ function enableSmartCon(val){
 	if(based_modelid=="RT-AC5300" || based_modelid=="GT-AC5300" || based_modelid=="RT-AC3200")
 		_change_smart_connect(val);
 
-	var wl_closed = httpApi.nvramGet(["wl_closed"]).wl_closed;
-	if(wl_closed != undefined && wl_closed != ""){
-		$('input:radio[name=wl_closed]').each(function(){$(this).prop('checked', false);});
-		$('input:radio[name=wl_closed][value="' + wl_closed + '"]').click();
-	}
-	if(dwb_info.mode && wl_unit == dwb_info.band){
-		if(smart_connect_flag_t != val && val == "1"){
-			$('input:radio[name=wl_closed]').each(function(){$(this).prop('checked', false);});
-			$('input:radio[name=wl_closed][value=1]').click();
+	if(isSupport("amas_fronthaul_network")){
+		if(isSupport("triband")){
+			var wl_closed = httpApi.nvramGet(["wl_closed"]).wl_closed;
+			if(wl_closed != undefined && wl_closed != ""){
+				$('input:radio[name=wl_closed]').each(function(){$(this).prop('checked', false);});
+				$('input:radio[name=wl_closed][value="' + wl_closed + '"]').click();
+			}
+			if(dwb_info.mode && wl_unit == dwb_info.band){
+				if(smart_connect_flag_t != val && val == "1"){
+					$('input:radio[name=wl_closed]').each(function(){$(this).prop('checked', false);});
+					$('input:radio[name=wl_closed][value=1]').click();
+				}
+			}
 		}
 	}
+
+	controlHideSSIDHint();
 }
 
 function enable_160MHz(obj){
@@ -1111,7 +1130,15 @@ function he_frame_mode(obj) {
 		document.form.acs_dfs.value = 0;
 	}
 }
-
+function controlHideSSIDHint() {
+	$("#dwb_band_hide_hint").hide();
+	if(isSupport("triband") && dwb_info.mode){
+		if(dwb_info.band == wl_unit){
+			if(document.form.smart_connect_x.value != "1" && ($('input:radio[name=wl_closed]:checked').val() == "1"))
+				$("#dwb_band_hide_hint").show();
+		}
+	}
+}
 function ajax_wl_channel(){
 	$.ajax({
 		url: '/ajax_wl_channel.asp',
@@ -1325,6 +1352,8 @@ function ajax_wl_edmg_channel(){
 						<input type="radio" value="1" name="wl_closed" class="input" onClick="return change_common_radio(this, 'WLANConfig11b', 'wl_closed', '1')" <% nvram_match("wl_closed", "1", "checked"); %>><#checkbox_Yes#>
 						<input type="radio" value="0" name="wl_closed" class="input" onClick="return change_common_radio(this, 'WLANConfig11b', 'wl_closed', '0')" <% nvram_match("wl_closed", "0", "checked"); %>><#checkbox_No#>
 						<span id="WPS_hideSSID_hint" style="display:none;"></span>	
+						<br>
+						<span id="dwb_band_hide_hint"><#AiMesh_dedicated_backhaul_band_hide_SSID#></span>
 					</td>					
 				</tr>
 					  

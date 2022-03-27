@@ -291,6 +291,14 @@ var t_sec = time.getSeconds();
 var wl0_radio = '<% nvram_get("wl0_radio"); %>';
 var wl1_radio = '<% nvram_get("wl1_radio"); %>';
 var wl2_radio = '<% nvram_get("wl2_radio"); %>';
+var wl3_radio = '<% nvram_get("wl3_radio"); %>';
+if(based_modelid === 'GT-AXE16000'){
+	var t = wl3_radio;
+	wl3_radio = wl2_radio;
+	wl2_radio = wl1_radio;
+	wl1_radio = wl0_radio;
+	wl0_radio = t;
+}
 var label_mac = <% get_label_mac(); %>;
 var CNSku = in_territory_code("CN");
 
@@ -320,30 +328,17 @@ var aurargb = "";
 var aura_settings = new Array();
 var boost_id = "";
 function initial(){
-	if(isSupport("ledg")){
-		$("#light_effect_bg").show();
-		$("#aura_rgb_bg").hide();
-	}
-	else{
-		$("#light_effect_bg").hide();
-		$("#aura_rgb_bg").show();
-	}
-
 	if(odm_support){
 		$(".banner").attr("class", "banner_COD");
 		$("#wan_state_icon").attr("class", "cod_connect");
-		$("#pingMap").show();
-		$("#aura_field").show();
-		$("#boostKey_field").show();
 	}
-	else if(isGundam){
+
+	if(isGundam || isEva){
 		$(".banner").attr("class", "banner_GD");
 		$("#wan_state_icon").attr("class", "gd_connect");
-		$("#pingMap").show();
-		$("#aura_field").show();
-		$("#boostKey_field").show();
 	}
-	else if(rog_support){
+	
+	if(rog_support){
 		$("#pingMap").show();
 		if (aura_support) {
 			if(based_modelid == 'GT-AC2900'){
@@ -352,10 +347,6 @@ function initial(){
 
 			$("#aura_field").show();
 		}
-		else {
-			$('#pingMap').height('430px');
-		}
-
 		if (boostKey_support) {
 			$("#boostKey_field").show();
 		}
@@ -363,6 +354,15 @@ function initial(){
 	else{
 		$("#wan_state_icon").attr("class", "wan_state_icon");
 	}
+
+	if(isSupport("ledg")){
+		$("#aura_field").show();
+		$("#light_effect_bg").show();
+		$("#aura_rgb_bg").hide();
+	}
+
+	if($("#aura_field").css("display") == "none")
+		$('#pingMap').height('430px');
 
 	if(uu_support && based_modelid == 'GT-AC5300'){
 		$('#uu_field').show();
@@ -373,16 +373,6 @@ function initial(){
 	check_sw_mode();
 	check_wireless();
 	updateClientsCount();
-	
-	httpApi.nvramGetAsync({
-		data: ["ping_target"],
-		success: function(nvram){
-			netoolApiDashBoard.start({
-				"type": 1, 
-				"target": (nvram.ping_target == "") ? "www.google.com" : nvram.ping_target
-			});
-		}
-	})
 
 	if(isSwMode('rt')){
 		if (ddns_enable == '0' || ddnsName == '' || ddnsName == isMD5DDNSName()) {
@@ -479,9 +469,24 @@ function initial(){
 		$('#boost_aura').show();
 	}
 
+	var boostKey = httpApi.boostKey_support();
+	$(".boost-function").hover(function(){
+		$("#boostKey_desc").html(boostKey[this.id].desc)
+	})
+
 	if(!ASUS_EULA.status("tm")){
 		ASUS_EULA.config(tm_agree, tm_disagree);
 	}
+
+	httpApi.nvramGetAsync({
+		data: ["ping_target"],
+		success: function(nvram){
+			netoolApiDashBoard.start({
+				"type": 1, 
+				"target": (nvram.ping_target == "") ? "www.google.com" : nvram.ping_target
+			});
+		}
+	})
 }
 
 function updateWANIP(){
@@ -535,15 +540,21 @@ function check_wireless(){
 			wl1_radio = '0';
 		}
 
-		temp = (wl1_radio == "1") ? "wl1_icon_on" : "wl1_icon_off"
-		if(band5g2_support || band6g_support){
-			if(band6g_support){
-				temp = (wl1_radio == "1") ? "wl1_icon_on" : "wl1_icon_off";
-			}
-			else{
-				temp = (wl1_radio == "1") ? "wl1_1_icon_on" : "wl1_1_icon_off";
-			}			
+		if(based_modelid === 'GT-AXE16000'){
+			temp = (wl1_radio == "1") ? "wl1_1_icon_on" : "wl1_1_icon_off";
 		}
+		else{
+			temp = (wl1_radio == "1") ? "wl1_icon_on" : "wl1_icon_off"
+			if(band5g2_support || band6g_support){
+				if(band6g_support){
+					temp = (wl1_radio == "1") ? "wl1_icon_on" : "wl1_icon_off";
+				}
+				else{
+					temp = (wl1_radio == "1") ? "wl1_1_icon_on" : "wl1_1_icon_off";
+				}			
+			}
+		}
+		
 
 		$("#wl1_icon").show();
 		$("#wl1_icon").addClass(temp);
@@ -555,16 +566,28 @@ function check_wireless(){
 			wl2_radio = '0';
 		}
 
-		if(band6g_support){
-			temp = (wl2_radio == "1") ? "wl6_icon_on" : "wl6_icon_off";
+		if(based_modelid === 'GT-AXE16000'){
+			temp = (wl2_radio == "1") ? "wl2_icon_on" : "wl2_icon_off";
+			$("#wl2_icon").show();
+			$("#wl2_icon").addClass(temp);
+
+			temp = (wl3_radio == "1") ? "wl6_icon_on" : "wl6_icon_off";
+			$("#wl3_icon").show();
+			$("#wl3_icon").addClass(temp);
 		}
 		else{
-			temp = (wl2_radio == "1") ? "wl2_icon_on" : "wl2_icon_off";
+			if(band6g_support){
+				temp = (wl2_radio == "1") ? "wl6_icon_on" : "wl6_icon_off";
+			}
+			else{
+				temp = (wl2_radio == "1") ? "wl2_icon_on" : "wl2_icon_off";
+			}
+			
+
+			$("#wl2_icon").show();
+			$("#wl2_icon").addClass(temp);
 		}
 		
-
-		$("#wl2_icon").show();
-		$("#wl2_icon").addClass(temp);
 	}
 }
 
@@ -760,15 +783,19 @@ var netoolApiDashBoard = {
 
 		$.getJSON("/netool.cgi", obj)
 			.done(function(data){
-				if(data.successful != "0") setTimeout(function(){
-					netoolApiDashBoard.check(obj, data.successful)
-				}, 2000)
+				if(data.successful != "0"){
+					setTimeout(function(){
+						netoolApiDashBoard.check(obj, data.successful)
+					}, 2000)
+				} 
 			})
 	},
 
 	check: function(obj, fileName){
 		$.getJSON("/netool.cgi", {"type":0,"target":fileName})
 			.done(function(data){
+				if(data.result.length == 0) return false;
+				
 				var thisTarget = targetData[obj.target];
 				var pingVal = (data.result[0].ping !== "") ? parseFloat(data.result[0].ping) : 0;
 				var jitterVal = (thisTarget.points.length === 0) ? 0 : Math.abs(pingVal - thisTarget.points[thisTarget.points.length-1]).toFixed(1);
@@ -1117,10 +1144,11 @@ function uuRegister(mac){
 										<div style="display: inline-block;width:240px;vertical-align: top;text-align: center;">			
 											<div style="margin: 0 0 0 30px;">
 												<div class="rog-title"><#ROG_WIRELESS_STATE#></div>
-												<div style="text-align: right;margin:15px 20px 0 0;">
+												<div style="text-align: right;margin:15px 0 0 0;">
 													<div id="wl0_icon" class="wl_icon"></div>
 													<div id="wl1_icon" class="wl_icon" style="display:none"></div>
 													<div id="wl2_icon" class="wl_icon" style="display:none"></div>
+													<div id="wl3_icon" class="wl_icon" style="display:none"></div>
 												</div>
 											</div>
 											<div style="margin: 15px 0 0 10px;text-align: center;">
@@ -1238,11 +1266,15 @@ function uuRegister(mac){
 										<div id="light_effect_bg" style="width:100%;height:100%;">
 											<iframe id="light_effect_iframe" class="light_effect_iframe" frameborder="0"></iframe>
 											<script>
-												$("#light_effect_iframe").attr("src", "/light_effect/light_effect.html");
-												$("#light_effect_iframe").load(function(){
-													$("#light_effect_iframe").contents().find(".light_effect_bg").css("height", "160px");
-													$("#light_effect_iframe").contents().find(".light_effect_mask").css("background-size", "95vw 160px");
-												});
+												if(isSupport("ledg")){
+													setTimeout(function(){
+														$("#light_effect_iframe").attr("src", "/light_effect/light_effect.html");
+														$("#light_effect_iframe").load(function(){
+															$("#light_effect_iframe").contents().find(".light_effect_bg").css("height", "160px");
+															$("#light_effect_iframe").contents().find(".light_effect_mask").css("background-size", "95vw 160px");
+														});
+													}, 1000);
+												}
 											</script>
 										</div>
 										<div id="aura_rgb_bg">
@@ -1405,7 +1437,7 @@ function uuRegister(mac){
 												<div style="width:240px;height: 150px;background: url('./images/New_ui/Img-subProd-base.png') no-repeat;background-size: 100%;"></div>
 											</div>
 											<div style="width: 350px;height:170px;">
-												<div style="font-size: 16px;font-family: Roboto;margin-bottom: 24px;height: 80px;"><#BoostKey_desc#></div>
+												<div style="font-size: 16px;font-family: Roboto;margin-bottom: 24px;"><#BoostKey_desc#></div>
 												<div id="boostKey_desc" style="font-size: 16px;font-family: Roboto;color: #BFBFBF;"></div>
 											</div>	
 										</div>

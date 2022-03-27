@@ -827,10 +827,13 @@ function export_cert(_mode) {
 			location.href = "ikev2_cert_mobile.pem";
 	}
 	else if(_mode == "1") {//renew
-		if(!check_ddns_status()){
-			alert("Update failed, please check your DDNS setting.");/* untranslated */
-			window.location.href = "Advanced_ASUSDDNS_Content.asp";
-			return false;
+		var ddns_enable_x = httpApi.nvramGet(["ddns_enable_x"]).ddns_enable_x;
+		if(ddns_enable_x == "1"){
+			if(!check_ddns_status()){
+				alert("Update failed, please check your DDNS setting.");/* untranslated */
+				window.location.href = "Advanced_ASUSDDNS_Content.asp";
+				return false;
+			}
 		}
 		$(".button_gen.ipsec_active.renew").hide();
 		$(".ipsec_inactive.renew_hint").hide();

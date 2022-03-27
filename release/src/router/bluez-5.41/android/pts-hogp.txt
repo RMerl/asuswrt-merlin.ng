@@ -1,0 +1,102 @@
+PTS test results for HoG
+
+PTS version: 6.1
+Tested: 20-May-2015
+Android version: 5.1
+
+Results:
+PASS	test passed
+FAIL	test failed
+INC	test is inconclusive
+N/A	test is disabled due to PICS setup
+
+-------------------------------------------------------------------------------
+Test Name		Result	Notes
+-------------------------------------------------------------------------------
+TC_HGDS_HH_BV_01_I	PASS
+TC_HGDS_HH_BV_02_I	PASS
+TC_HGDS_HH_BV_03_I	PASS
+TC_HGDS_HD_BV_01_I	N/A
+TC_HGDS_HD_BV_02_I	N/A
+TC_HGDR_RH_BV_01_I	PASS
+TC_HGDC_RH_BV_01_I	PASS
+TC_HGDC_RH_BV_02_I	PASS
+TC_HGDC_RH_BV_03_I	PASS
+TC_HGDC_RH_BV_04_I	PASS
+TC_HGDC_RH_BV_05_I	PASS
+TC_HGDC_RH_BV_06_I	PASS
+TC_HGDC_RH_BV_07_I	PASS
+TC_HGDC_HH_BV_08_I	PASS
+TC_HGDC_HH_BV_14_I	PASS
+TC_HGDC_HH_BV_15_I	PASS
+TC_HGDC_HH_BV_16_I	PASS
+TC_HGDC_BH_BV_09_I	N/A
+TC_HGDC_BH_BV_10_I	N/A
+TC_HGDC_BH_BV_11_I	N/A
+TC_HGDC_BH_BV_12_I	N/A
+TC_HGDC_BH_BV_13_I	N/A
+TC_HGRF_RH_BV_01_I	PASS
+TC_HGRF_RH_BV_02_I	PASS
+TC_HGRF_RH_BV_03_I	PASS
+TC_HGRF_RH_BV_04_I	PASS
+TC_HGRF_RH_BV_05_I	PASS
+TC_HGRF_RH_BV_19_I	PASS
+TC_HGRF_RH_BV_06_I	PASS
+TC_HGRF_RH_BV_07_I	PASS
+TC_HGRF_RH_BV_08_I	PASS
+TC_HGRF_RH_BV_09_I	PASS
+TC_HGRF_HH_BV_10_I	PASS
+TC_HGRF_HH_BV_11_I	PASS
+TC_HGRF_HH_BV_12_I	PASS
+TC_HGRF_BH_BV_13_I	N/A
+TC_HGRF_BH_BV_14_I	N/A
+TC_HGRF_BH_BV_15_I	N/A
+TC_HGRF_BH_BV_16_I	N/A
+TC_HGRF_BH_BV_17_I	N/A
+TC_HGRF_HH_BV_18_I	N/A
+TC_HGWF_RH_BV_01_I	PASS	haltest: hidhost connect <addr>
+				hidhost set_report <addr> BTHH_INPUT_REPORT
+					AAB3F8A6CD
+				hidhost disconnect <addr>
+TC_HGWF_RH_BV_02_I	PASS	haltest: hidhost connect <addr>
+				hidhost set_report <addr> BTHH_OUTPUT_REPORT
+					EF907856341200
+				hidhost disconnect <addr>
+TC_HGWF_RH_BV_03_I	PASS	haltest: hidhost connect <addr>
+				hidhost set_report <addr> BTHH_OUTPUT_REPORT
+					EF907856341200
+				hidhost disconnect <addr>
+TC_HGWF_RH_BV_04_I	PASS	haltest: hidhost connect <addr>
+				hidhost set_report <addr> BTHH_FEATURE_REPORT
+					EA453F2D87
+				hidhost disconnect <addr>
+TC_HGWF_RH_BV_05_I	N/A
+TC_HGWF_RH_BV_06_I	N/A
+TC_HGWF_RH_BV_07_I	N/A
+TC_HGWF_BH_BV_08_I	N/A
+TC_HGWF_BH_BV_09_I	N/A
+TC_HGWF_BH_BV_10_I	N/A
+TC_HGWF_BH_BV_11_I	N/A
+TC_HGCF_RH_BV_01_I	PASS
+TC_HGCF_RH_BV_02_I	PASS	haltest: hidhost connect <addr>
+				gattc search_service 1
+				gattc get_characteristic 1 {1812,2,1}
+				gattc get_descriptor 1 {1812,2,1} {2a4d,5}
+				gattc write_descriptor 1 {1812,2,1} {2a4d,5}
+					{2902,1} 2 0x0000 0
+				gattc get_characteristic 1 {1812,5,1}
+				gattc get_descriptor 1 {1812,5,1} {2a4d,4}
+				gattc write_descriptor 1 {1812,5,1}
+					{2a4d,4} {2902,1} 2 0x0000 0
+				hidhost disconnect <addr>
+TC_HGCF_BH_BV_03_I	N/A
+TC_HGCF_BH_BV_04_I	N/A
+TC_HGCF_BH_BV_05_I	N/A
+TC_HGCF_BH_BV_06_I	N/A
+TC_HGNF_RH_BV_01_I	PASS
+TC_HGNF_RH_BI_01_I	PASS
+TC_HGNF_RH_BI_01_I	PASS
+TC_HGNF_BH_BV_02_I	N/A
+TC_HGNF_BH_BV_03_I	N/A
+TC_HGNF_BH_BI_01_I	N/A
+-------------------------------------------------------------------------------

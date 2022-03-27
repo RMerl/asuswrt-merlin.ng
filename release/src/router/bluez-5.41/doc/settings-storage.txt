@@ -1,0 +1,284 @@
+BlueZ settings storage
+**********************
+
+Purpose
+=======
+
+The purpose of this document is to describe the directory structure of
+BlueZ settings storage. In effect, this document will serve as the primary,
+up to date source of BlueZ storage information.
+
+It is intended as reference for developers. Direct access to the storage
+outside from bluetoothd is highly discouraged.
+
+Adapter and remote device info are read form the storage during object
+initialization. Write to storage is performed immediately on every value
+change.
+
+Default storage directory is /var/lib/bluetooth. This can be adjusted
+by the --localstatedir configure switch. Default is --localstatedir=/var.
+
+All files are in ini-file format.
+
+
+Storage directory structure
+===========================
+
+There is one directory per adapter, named by its Bluetooth address, which
+contains:
+ - a settings file for the local adapter
+ - an attributes file containing attributes of supported LE services
+ - a cache directory containing:
+    - one file per device, named by remote device address, which contains
+    device name
+ - one directory per remote device, named by remote device address, which
+   contains:
+    - an info file
+    - an attributes file containing attributes of remote LE services
+    - a ccc file containing persistent Client Characteristic Configuration
+      (CCC) descriptor information for GATT characteristics
+
+So the directory structure is:
+    /var/lib/bluetooth/<adapter address>/
+        ./settings
+        ./attributes
+        ./cache/
+            ./<remote device address>
+            ./<remote device address>
+            ...
+        ./<remote device address>/
+            ./info
+            ./attributes
+            ./ccc
+        ./<remote device address>/
+            ./info
+            ./attributes
+        ...
+
+
+Settings file format
+====================
+
+Settings file contains one [General] group with adapter info like:
+
+  Alias			String		Friendly user provided name advertised
+					for this adapter
+
+					This value overwrites the system
+					name (pretty hostname)
+
+  Discoverable		Boolean		Discoverability of the adapter
+
+  PairableTimeout	Integer		How long to stay in pairable mode
+					before going back to non-pairable.
+					The value is in seconds.
+					0 = disable timer, i.e. stay
+					pairable forever
+
+  DiscoverableTimeout	Integer		How long to stay in discoverable mode
+					before going back to non-discoverable.
+					The value is in seconds.
+					0 = disable timer, i.e. stay
+					discoverable forever
+
+Sample:
+  [General]
+  Name=My PC
+  Discoverable=false
+  Pairable=true
+  DiscoverableTimeout=0
+
+
+Attributes file format
+======================
+
+The attributes file lists all attributes supported by the local adapter or
+remote device.
+
+Attributes are stored using their handle as group name (decimal format).
+
+Each group contains:
+
+  UUID			String		128-bit UUID of the attribute
+
+  Value			String		Value of the attribute as hexadecimal encoded
+					string
+
+  EndGroupHandle	Integer		End group handle in decimal format
+
+Sample:
+  [1]
+  UUID=00002800-0000-1000-8000-00805f9b34fb
+  Value=0018
+
+  [4]
+  UUID=00002803-0000-1000-8000-00805f9b34fb
+  Value=020600002A
+
+  [6]
+  UUID=00002a00-0000-1000-8000-00805f9b34fb
+  Value=4578616D706C6520446576696365
+
+
+CCC file format
+======================
+
+The ccc file stores the current CCC descriptor values for GATT characteristics
+which have notification/indication enabled by the remote device.
+
+Information is stored using CCC attribute handle as group name (in decimal
+format).
+
+Each group contains:
+
+  Value			String		CCC descriptor value encoded in
+					hexadecimal
+
+
+Cache directory file format
+============================
+
+Each file, named by remote device address, may includes multiple groups
+(General, ServiceRecords, Attributes).
+
+In ServiceRecords, SDP records are stored using their handle as key
+(hexadecimal format).
+
+In "Attributes" group GATT database is stored using attribute handle as key
+(hexadecimal format). Value associated with this handle is serialized form of
+all data required to re-create given attribute. ":" is used to separate fields.
+
+[General] group contains:
+
+  Name		String		Remote device friendly name
+
+  ShortName	String		Remote device shortened name
+
+[ServiceRecords] group contains
+
+  <0x...>	String		SDP record as hexadecimal encoded
+				string
+
+In [Attributes] group value always starts with attribute type, that determines
+how to interpret rest of value:
+
+  Primary service:
+    2800:end_handle:uuid
+
+  Secondary service:
+    2801:end_handle:uuid
+
+  Included service:
+    2802:start_handle:end_handle:uuid
+
+  Characteristic:
+    2803:value_handle:properties:uuid
+
+  Descriptor:
+    value:uuid
+    uuid
+
+Sample Attributes section:
+  [Attributes]
+  0001=2800:0005:1801
+  0002=2803:0003:20:2a05
+  0014=2800:001c:1800
+  0015=2803:0016:02:2a00
+  0017=2803:0018:02:2a01
+  0019=2803:001a:02:2aa6
+  0028=2800:ffff:0000180d-0000-1000-8000-00805f9b34fb
+  0029=2803:002a:10:00002a37-0000-1000-8000-00805f9b34fb
+  002b=2803:002c:02:00002a38-0000-1000-8000-00805f9b34fb
+  002d=2803:002e:08:00002a39-0000-1000-8000-00805f9b34fb
+
+
+Info file format
+================
+
+Info file may includes multiple groups (General, Device ID, Link key and
+Long term key) related to a remote device.
+
+[General] group contains:
+
+  Name			String		Remote device friendly name
+
+  Alias			String		Alias name
+
+  Class			String		Device class in hexadecimal,
+					i.e. 0x000000
+
+  Appearance		String		Device appearance in hexadecimal,
+					i.e. 0x0000
+
+  SupportedTechnologies	List of		List of technologies supported by
+			strings		device, separated by ";"
+					Technologies can be BR/EDR or LE
+
+  AddressType		String		An address can be "static" or "public"
+
+  Trusted		Boolean		True if the remote device is trusted
+
+  Blocked		Boolean		True if the remote device is blocked
+
+  Services		List of		List of service UUIDs advertised by
+			strings		remote in 128-bits UUID format,
+					separated by ";"
+
+
+[DeviceID] group contains:
+
+  Source		Integer		Assigner of Device ID
+
+  Vendor		Integer		Device vendor
+
+  Product		Integer		Device product
+
+  Version		Integer		Device version
+
+
+[LinkKey] group contains:
+
+  Key			String		Key in hexadecimal format
+
+  Type			Integer		Type of link key
+
+  PINLength		Integer		Length of PIN
+
+
+[LongTermKey] group contains:
+
+  Key			String		Long term key in hexadecimal format
+
+  Authenticated		Boolean		True if remote device has been
+					authenticated
+
+  EncSize		Integer		Encrypted size
+
+  EDiv			Integer		Encrypted diversifier
+
+  Rand			Integer		Randomizer
+
+
+[SlaveLongTermKey] group contains:
+
+  Same as the [LongTermKey] group, except for slave keys.
+
+
+[ConnectionParameters] group contains:
+
+  MinInterval		Integer		Minimum Connection Interval
+
+  MaxInterval		Integer		Maximum Connection Interval
+
+  Latency		Integer		Connection Latency
+
+  Timeout		Integer		Supervision Timeout
+
+
+[LocalSignatureKey] and [RemoteSignatureKey] groups contain:
+
+  Key			String		Key in hexadecimal format
+
+  Counter		Integer		Signing counter
+
+  Authenticated		Boolean		True if the key is authenticated

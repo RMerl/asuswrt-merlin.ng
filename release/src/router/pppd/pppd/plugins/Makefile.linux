@@ -1,9 +1,6 @@
 #CC	= gcc
 COPTS	= -O2 -g
 CFLAGS	= $(COPTS) -I.. -I../../include -fPIC $(EXTRACFLAGS)
-ifeq ($(HND_ROUTER_AX_6756),y)
-CFLAGS += "-DRTCONFIG_HND_ROUTER_AX_6756"
-endif
 LDFLAGS	= -shared
 INSTALL	= install
 

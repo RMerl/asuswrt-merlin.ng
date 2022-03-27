@@ -1,0 +1,30 @@
+HSP PIXIT for the PTS tool.
+
+PTS version: 6.1
+
+* - different than PTS defaults
+& - should be set to IUT Bluetooth address
+
+		Required PIXIT settings
+-------------------------------------------------------------------------------
+Parameter Name						Value
+-------------------------------------------------------------------------------
+TSPX_security_enabled					TRUE
+TSPX_bd_addr_iut					112233445566 (*&)
+TSPX_hs_class_of_device					200404
+TSPX_ag_class_of_device					400204
+TSPX_packet_type_sco					00A0
+TSPX_pin_code						0000
+TSPX_time_guard						20000000
+TSPX_use_implicit_send					TRUE
+TSPX_verbose_implicit_send				FALSE
+TSPX_delete_link_key					FALSE
+TSPX_server_channel_tester				01
+TSPX_server_channel_iut					00
+TSPX_no_fail_verdict					FALSE
+TSPX_remote_audio_volume_control			TRUE
+TSPX_secure_simple_pairing_pass_key_confirmation	FALSE
+TSPX_inband_ring_only					FALSE
+TSPX_no_ring_or_inband_ring_tone			FALSE
+TSPX_iut_establish_audio_before_RING			FALSE
+-------------------------------------------------------------------------------

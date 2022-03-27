@@ -1,0 +1,606 @@
+BlueZ D-Bus Media API description
+*********************************
+
+
+Media hierarchy
+===============
+
+Service		org.bluez
+Interface	org.bluez.Media1
+Object path	[variable prefix]/{hci0,hci1,...}
+
+Methods		void RegisterEndpoint(object endpoint, dict properties)
+
+			Register a local end point to sender, the sender can
+			register as many end points as it likes.
+
+			Note: If the sender disconnects the end points are
+			automatically unregistered.
+
+			possible properties:
+
+				string UUID:
+
+					UUID of the profile which the endpoint
+					is for.
+
+				byte Codec:
+
+					Assigned number of codec that the
+					endpoint implements. The values should
+					match the profile specification which
+					is indicated by the UUID.
+
+				array{byte} Capabilities:
+
+					Capabilities blob, it is used as it is
+					so the size and byte order must match.
+
+			Possible Errors: org.bluez.Error.InvalidArguments
+					 org.bluez.Error.NotSupported - emitted
+					 when interface for the end-point is
+					 disabled.
+
+		void UnregisterEndpoint(object endpoint)
+
+			Unregister sender end point.
+
+		void RegisterPlayer(object player, dict properties)
+
+			Register a media player object to sender, the sender
+			can register as many objects as it likes.
+
+			Object must implement at least
+			org.mpris.MediaPlayer2.Player as defined in MPRIS 2.2
+			spec:
+
+			http://specifications.freedesktop.org/mpris-spec/latest/
+
+			Note: If the sender disconnects its objects are
+			automatically unregistered.
+
+			Possible Errors: org.bluez.Error.InvalidArguments
+					 org.bluez.Error.NotSupported
+
+		void UnregisterPlayer(object player)
+
+			Unregister sender media player.
+
+
+Media Control hierarchy
+=======================
+
+Service		org.bluez
+Interface	org.bluez.MediaControl1
+Object path	[variable prefix]/{hci0,hci1,...}/dev_XX_XX_XX_XX_XX_XX
+
+Methods		void Play() [Deprecated]
+
+			Resume playback.
+
+		void Pause() [Deprecated]
+
+			Pause playback.
+
+		void Stop() [Deprecated]
+
+			Stop playback.
+
+		void Next() [Deprecated]
+
+			Next item.
+
+		void Previous() [Deprecated]
+
+			Previous item.
+
+		void VolumeUp() [Deprecated]
+
+			Adjust remote volume one step up
+
+		void VolumeDown() [Deprecated]
+
+			Adjust remote volume one step down
+
+		void FastForward() [Deprecated]
+
+			Fast forward playback, this action is only stopped
+			when another method in this interface is called.
+
+		void Rewind() [Deprecated]
+
+			Rewind playback, this action is only stopped
+			when another method in this interface is called.
+
+Properties
+
+		boolean Connected [readonly]
+
+		object Player [readonly, optional]
+
+			Addressed Player object path.
+
+
+MediaPlayer1 hierarchy
+======================
+
+Service		org.bluez (Controller role)
+Interface	org.bluez.MediaPlayer1
+Object path	[variable prefix]/{hci0,hci1,...}/dev_XX_XX_XX_XX_XX_XX/playerX
+
+Methods		void Play()
+
+			Resume playback.
+
+			Possible Errors: org.bluez.Error.NotSupported
+					 org.bluez.Error.Failed
+
+		void Pause()
+
+			Pause playback.
+
+			Possible Errors: org.bluez.Error.NotSupported
+					 org.bluez.Error.Failed
+
+		void Stop()
+
+			Stop playback.
+
+			Possible Errors: org.bluez.Error.NotSupported
+					 org.bluez.Error.Failed
+
+		void Next()
+
+			Next item.
+
+			Possible Errors: org.bluez.Error.NotSupported
+					 org.bluez.Error.Failed
+
+		void Previous()
+
+			Previous item.
+
+			Possible Errors: org.bluez.Error.NotSupported
+					 org.bluez.Error.Failed
+
+		void FastForward()
+
+			Fast forward playback, this action is only stopped
+			when another method in this interface is called.
+
+			Possible Errors: org.bluez.Error.NotSupported
+					 org.bluez.Error.Failed
+
+		void Rewind()
+
+			Rewind playback, this action is only stopped
+			when another method in this interface is called.
+
+			Possible Errors: org.bluez.Error.NotSupported
+					 org.bluez.Error.Failed
+
+Properties	string Equalizer [readwrite]
+
+			Possible values: "off" or "on"
+
+		string Repeat [readwrite]
+
+			Possible values: "off", "singletrack", "alltracks" or
+					"group"
+
+		string Shuffle [readwrite]
+
+			Possible values: "off", "alltracks" or "group"
+
+		string Scan [readwrite]
+
+			Possible values: "off", "alltracks" or "group"
+
+		string Status [readonly]
+
+			Possible status: "playing", "stopped", "paused",
+					"forward-seek", "reverse-seek"
+					or "error"
+
+		uint32 Position [readonly]
+
+			Playback position in milliseconds. Changing the
+			position may generate additional events that will be
+			sent to the remote device. When position is 0 it means
+			the track is starting and when it's greater than or
+			equal to track's duration the track has ended. Note
+			that even if duration is not available in metadata it's
+			possible to signal its end by setting position to the
+			maximum uint32 value.
+
+		dict Track [readonly]
+
+			Track metadata.
+
+			Possible values:
+
+				string Title:
+
+					Track title name
+
+				string Artist:
+
+					Track artist name
+
+				string Album:
+
+					Track album name
+
+				string Genre:
+
+					Track genre name
+
+				uint32 NumberOfTracks:
+
+					Number of tracks in total
+
+				uint32 TrackNumber:
+
+					Track number
+
+				uint32 Duration:
+
+					Track duration in milliseconds
+
+		object Device [readonly]
+
+			Device object path.
+
+		string Name [readonly]
+
+			Player name
+
+		string Type [readonly]
+
+			Player type
+
+			Possible values:
+
+				"Audio"
+				"Video"
+				"Audio Broadcasting"
+				"Video Broadcasting"
+
+		string Subtype [readonly]
+
+			Player subtype
+
+			Possible values:
+
+				"Audio Book"
+				"Podcast"
+
+		boolean Browsable [readonly]
+
+			If present indicates the player can be browsed using
+			MediaFolder interface.
+
+			Possible values:
+
+				True: Supported and active
+				False: Supported but inactive
+
+			Note: If supported but inactive clients can enable it
+			by using MediaFolder interface but it might interfere
+			in the playback of other players.
+
+
+		boolean Searchable [readonly]
+
+			If present indicates the player can be searched using
+			MediaFolder interface.
+
+			Possible values:
+
+				True: Supported and active
+				False: Supported but inactive
+
+			Note: If supported but inactive clients can enable it
+			by using MediaFolder interface but it might interfere
+			in the playback of other players.
+
+		object Playlist
+
+			Playlist object path.
+
+MediaFolder1 hierarchy
+======================
+
+Service		unique name (Target role)
+		org.bluez (Controller role)
+Interface	org.bluez.MediaFolder1
+Object path	freely definable (Target role)
+		[variable prefix]/{hci0,hci1,...}/dev_XX_XX_XX_XX_XX_XX/playerX
+		(Controller role)
+
+Methods		object Search(string value, dict filter)
+
+			Return a folder object containing the search result.
+
+			To list the items found use the folder object returned
+			and pass to ChangeFolder.
+
+			Possible Errors: org.bluez.Error.NotSupported
+					 org.bluez.Error.Failed
+
+		array{objects, properties} ListItems(dict filter)
+
+			Return a list of items found
+
+			Possible Errors: org.bluez.Error.InvalidArguments
+					 org.bluez.Error.NotSupported
+					 org.bluez.Error.Failed
+
+		void ChangeFolder(object folder)
+
+			Change current folder.
+
+			Note: By changing folder the items of previous folder
+			might be destroyed and have to be listed again, the
+			exception is NowPlaying folder which should be always
+			present while the player is active.
+
+			Possible Errors: org.bluez.Error.InvalidArguments
+					 org.bluez.Error.NotSupported
+					 org.bluez.Error.Failed
+
+Properties	uint32 NumberOfItems [readonly]
+
+			Number of items in the folder
+
+		string Name [readonly]
+
+			Folder name:
+
+			Possible values:
+				"/Filesystem/...": Filesystem scope
+				"/NowPlaying/...": NowPlaying scope
+
+			Note: /NowPlaying folder might not be listed if player
+			is stopped, folders created by Search are virtual so
+			once another Search is perform or the folder is
+			changed using ChangeFolder it will no longer be listed.
+
+Filters		uint32 Start:
+
+			Offset of the first item.
+
+			Default value: 0
+
+		uint32 End:
+
+			Offset of the last item.
+
+			Default value: NumbeOfItems
+
+		array{string} Attributes
+
+			Item properties that should be included in the list.
+
+			Possible Values:
+
+				"title", "artist", "album", "genre",
+				"number-of-tracks", "number", "duration"
+
+			Default Value: All
+
+MediaItem1 hierarchy
+====================
+
+Service		unique name (Target role)
+		org.bluez (Controller role)
+Interface	org.bluez.MediaItem1
+Object path	freely definable (Target role)
+		[variable
+		prefix]/{hci0,hci1,...}/dev_XX_XX_XX_XX_XX_XX/playerX/itemX
+		(Controller role)
+
+Methods		void Play()
+
+			Play item
+
+			Possible Errors: org.bluez.Error.NotSupported
+					 org.bluez.Error.Failed
+
+		void AddtoNowPlaying()
+
+			Add item to now playing list
+
+			Possible Errors: org.bluez.Error.NotSupported
+					 org.bluez.Error.Failed
+
+Properties	object Player [readonly]
+
+			Player object path the item belongs to
+
+		string Name [readonly]
+
+			Item displayable name
+
+		string Type [readonly]
+
+			Item type
+
+			Possible values: "video", "audio", "folder"
+
+		string FolderType [readonly, optional]
+
+			Folder type.
+
+			Possible values: "mixed", "titles", "albums", "artists"
+
+			Available if property Type is "Folder"
+
+		boolean Playable [readonly, optional]
+
+			Indicates if the item can be played
+
+			Available if property Type is "folder"
+
+		dict Metadata [readonly]
+
+			Item metadata.
+
+			Possible values:
+
+				string Title
+
+					Item title name
+
+					Available if property Type is "audio"
+					or "video"
+
+				string Artist
+
+					Item artist name
+
+					Available if property Type is "audio"
+					or "video"
+
+				string Album
+
+					Item album name
+
+					Available if property Type is "audio"
+					or "video"
+
+				string Genre
+
+					Item genre name
+
+					Available if property Type is "audio"
+					or "video"
+
+				uint32 NumberOfTracks
+
+					Item album number of tracks in total
+
+					Available if property Type is "audio"
+					or "video"
+
+				uint32 Number
+
+					Item album number
+
+					Available if property Type is "audio"
+					or "video"
+
+				uint32 Duration
+
+					Item duration in milliseconds
+
+					Available if property Type is "audio"
+					or "video"
+
+MediaEndpoint1 hierarchy
+========================
+
+Service		unique name
+Interface	org.bluez.MediaEndpoint1
+Object path	freely definable
+
+Methods		void SetConfiguration(object transport, dict properties)
+
+			Set configuration for the transport.
+
+		array{byte} SelectConfiguration(array{byte} capabilities)
+
+			Select preferable configuration from the supported
+			capabilities.
+
+			Returns a configuration which can be used to setup
+			a transport.
+
+			Note: There is no need to cache the selected
+			configuration since on success the configuration is
+			send back as parameter of SetConfiguration.
+
+		void ClearConfiguration(object transport)
+
+			Clear transport configuration.
+
+		void Release()
+
+			This method gets called when the service daemon
+			unregisters the endpoint. An endpoint can use it to do
+			cleanup tasks. There is no need to unregister the
+			endpoint, because when this method gets called it has
+			already been unregistered.
+
+
+MediaTransport1 hierarchy
+=========================
+
+Service		org.bluez
+Interface	org.bluez.MediaTransport1
+Object path	[variable prefix]/{hci0,hci1,...}/dev_XX_XX_XX_XX_XX_XX/fdX
+
+Methods		fd, uint16, uint16 Acquire()
+
+			Acquire transport file descriptor and the MTU for read
+			and write respectively.
+
+			Possible Errors: org.bluez.Error.NotAuthorized
+					 org.bluez.Error.Failed
+
+		fd, uint16, uint16 TryAcquire()
+
+			Acquire transport file descriptor only if the transport
+			is in "pending" state at the time the message is
+			received by BlueZ. Otherwise no request will be sent
+			to the remote device and the function will just fail
+			with org.bluez.Error.NotAvailable.
+
+			Possible Errors: org.bluez.Error.NotAuthorized
+					 org.bluez.Error.Failed
+					 org.bluez.Error.NotAvailable
+
+		void Release()
+
+			Releases file descriptor.
+
+Properties	object Device [readonly]
+
+			Device object which the transport is connected to.
+
+		string UUID [readonly]
+
+			UUID of the profile which the transport is for.
+
+		byte Codec [readonly]
+
+			Assigned number of codec that the transport support.
+			The values should match the profile specification which
+			is indicated by the UUID.
+
+		array{byte} Configuration [readonly]
+
+			Configuration blob, it is used as it is so the size and
+			byte order must match.
+
+		string State [readonly]
+
+			Indicates the state of the transport. Possible
+			values are:
+				"idle": not streaming
+				"pending": streaming but not acquired
+				"active": streaming and acquired
+
+		uint16 Delay [readwrite]
+
+			Optional. Transport delay in 1/10 of millisecond, this
+			property is only writeable when the transport was
+			acquired by the sender.
+
+		uint16 Volume [readwrite]
+
+			Optional. Indicates volume level of the transport,
+			this property is only writeable when the transport was
+			acquired by the sender.
+
+			Possible Values: 0-127

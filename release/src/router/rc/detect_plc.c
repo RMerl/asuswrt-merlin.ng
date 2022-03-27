@@ -5,8 +5,14 @@
 #include <rc.h>
 #include <shared.h>
 #include <amas-utils.h>
-#include <amas/amas.h>
 #include <libasuslog.h>
+
+//#include <amas/amas.h>
+enum {
+	ROLE_NONE = 0,
+	ROLE_LAN = 1,
+};
+
 
 #if defined(RTCONFIG_QCA_PLC2)
 #include <plc_utils.h>
@@ -102,7 +108,6 @@ void amas_set_bridge(int is_cap_re, char *plc_ifname, int add_to_bridge, int *in
 			action = "delif";
 		}
 		amas_set_eth_role(amas_role);
-		eval("brctl", action, nvram_safe_get("lan_ifname"), plc_ifname);
 		amas_set_bridge_GN(plc_ifname, add_to_bridge);	//also remove guest network from bridge
 		*in_bridge = add_to_bridge;
 	   if (isolation_rst < 1)
@@ -113,10 +118,17 @@ void amas_set_bridge(int is_cap_re, char *plc_ifname, int add_to_bridge, int *in
 			action = "addif";
 		else
 			action = "delif";
-		eval("brctl", action, nvram_safe_get("lan_ifname"), plc_ifname);
+	}
+	else if (is_cap_re < 0 && add_to_bridge == 0 && (*in_bridge) == -1 
+		&& (strcmp(get_2g_hwaddr(), "00:AA:BB:CC:DD:E0") == 0 && strcmp(get_5g_hwaddr(), "00:AA:BB:CC:DD:E4") == 0))
+	{ // add plc to bridge in Factory Default for PLC test
+		action = "addif";
 	}
 	if (action)
+	{
+		eval("brctl", action, nvram_safe_get("lan_ifname"), plc_ifname);
 		PLC_DBG("#PLC# cap(%d) %s %s\n", is_cap_re, action, plc_ifname);
+	}
 }
 
 void chk_plc_master(char *plc_ifname, int *in_bridge, int *add_try)
@@ -179,7 +191,7 @@ int detect_plc_main(int argc, char *argv[])
 	int num, last_num;
 	int interval = 5;
 	int i;
-	struct remote_plc *rplc;
+	struct remote_plc *rplc = NULL;
 	int tx, rx;
 	int tx_mimo, rx_mimo;
 	int failed_cnt;
@@ -403,12 +415,14 @@ int detect_plc_main(int argc, char *argv[])
 				nvram_set_int("plc_pb_state", pb_state);
 				stop_wps_method();
 			}
-			if (wps_stopped && (pb_state == 1 || pb_state == 2 || pb_state == 3)) {
+			else if (wps_stopped && (pb_state == 1 || pb_state == 2 || pb_state == 3)) {
 				PLC_DBG("#PLC# wifi wps is stopped! wps_stopped(%d)\n", wps_stopped);
 				nvram_set("plc_pb_state", "5");
 				do_plc_pushbutton(5);	/* 5: stop PLC join procedure */
 			}
 			if (wps_stopped || (pb_state == 0 || pb_state == 4 || pb_state == 5 || pb_state == 6)) {
+				PLC_DBG("#PLC# BOTH (wps/plc) END\n");
+				nvram_set_int("plc_pb_state", pb_state);
 				wps_state = 0;
 				retry = 0;
 			}
@@ -421,6 +435,7 @@ int detect_plc_main(int argc, char *argv[])
 		else if (wps_state == 4) {
 			int pb_state = get_plc_pb_state();
 			if (IS_PLC_JOIN_STOPPED(pb_state)) {
+				PLC_DBG("#PLC# plc pair END\n");
 				nvram_set_int("plc_pb_state", pb_state);
 				wps_state = 0;
 				retry = 0;

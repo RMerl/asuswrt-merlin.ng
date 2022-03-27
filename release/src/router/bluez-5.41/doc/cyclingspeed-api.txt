@@ -1,0 +1,99 @@
+Cycling Speed and Cadence API description
+*****************************************
+
+
+Cycling Speed and Cadence Manager hierarchy
+===========================================
+
+Service		org.bluez
+Interface	org.bluez.CyclingSpeedManager1
+Object path	[variable prefix]/{hci0,hci1,...}
+
+Methods		RegisterWatcher(object agent)
+
+			Registers a watcher to monitor cycling speed and
+			cadence measurements.
+
+			Possible Errors: org.bluez.Error.InvalidArguments
+
+		UnregisterWatcher(object agent)
+
+			Unregisters a watcher.
+
+Cycling Speed and Cadence Profile hierarchy
+===========================================
+
+Service		org.bluez
+Interface	org.bluez.CyclingSpeed1
+Object path	[variable prefix]/{hci0,hci1,...}/dev_XX_XX_XX_XX_XX_XX
+
+Methods		SetCumulativeWheelRevolutions(uint32 value)
+
+			Sets cumulative wheel revolutions value if
+			Cumulative Wheel Revolutions feature is supported.
+
+			Possible Errors: org.bluez.Error.NotSupported
+
+Properties	string Location (optional) [readwrite]
+
+			Current sensor location, if supported.
+			If Multiple Sensor Locations feature is supported,
+			this property can be set to one of values read from
+			SupportedLocations property.
+
+			Possible values: "other", "top-of-shoe", "in-shoe",
+					"hip", "front-wheel", "left-crank",
+					"right-crank", "left-pedal",
+					"right-pedal", "front-hub",
+					"rear-dropout", "chainstay",
+					"rear-wheel", "rear-hub"
+
+		array{string} SupportedLocations (optional) [readonly]
+
+			List of locations supported by sensor, only present
+			if Multiple Sensor Locations feature is supported.
+
+		boolean WheelRevolutionDataSupported [readonly]
+
+			true if sensor can read and set Cumulative Wheel
+			Revolutions value, false otherwise.
+
+		boolean MultipleLocationsSupported [readonly]
+
+			true if sensor supports Multiple Sensor Locations
+			feature and can set Location, false otherwise.
+
+Cycling Speed and Cadence Watcher hierarchy
+===========================================
+
+Service		unique name
+Interface	org.bluez.CyclingSpeedWatcher1
+Object path	freely definable
+
+Methods		void MeasurementReceived(object device, dict measurement)
+
+			This callback is called whenever wheel and/or crank
+			revolutions measurement is received from sensor.
+
+			Measurement:
+
+				uint32 WheelRevolutions (optional):
+
+					Cumulative number of wheel revolutions.
+
+				uint16 LastWheelEventTime (optional):
+
+					Time of last event from wheel sensor.
+					Value is expressed in 1/1024 second
+					units and can roll over during a ride.
+
+				uint16 CrankRevolutions (optional):
+
+					Cumulative number of crank revolutions.
+					This value can occasionally roll over.
+
+				uint16 LastCrankEventTime (optional):
+
+					Time of last event from crank sensor.
+					Value is expressed in 1/1024 second
+					units and can roll over during a ride.

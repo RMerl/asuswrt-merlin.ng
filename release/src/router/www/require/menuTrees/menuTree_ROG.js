@@ -325,6 +325,10 @@ define(function(){
 			menus: function(){
 				var retArray = [];
 
+                if(!wifiRadar_support){
+                    retArray.push("menu_WifiRadar");
+                }
+
 				if(!multissid_support){
 					retArray.push("menu_GuestNetwork");
 				}
@@ -794,7 +798,7 @@ define(function(){
 					retArray.push("AdaptiveQoS_InternetSpeed.asp");
 				}
 
-				if(outfox_support)
+				if(outfox_support || !wtfast_support)
 					retArray.push("Advanced_WTFast_Content.asp");
 
 				return retArray;

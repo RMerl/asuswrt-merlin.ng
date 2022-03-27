@@ -6651,6 +6651,49 @@ int detect_process(char * process_name)
     pclose(ptr);
     return 0;
 }
+
+int detect_process2(char * process_name)
+{
+    DIR *dir;
+    struct dirent *ptr;
+    FILE *fp;
+    char filepath[50];
+    char filetext[50];
+    
+    memset(filepath, 0, sizeof(filepath));
+    memset(filetext, 0, sizeof(filetext));
+
+    dir = opendir("/proc");
+    if(NULL != dir)
+    {
+        while(NULL != (ptr = readdir(dir)))
+        {
+            if((0 == strcmp(ptr -> d_name,"."))||(0 == strcmp(ptr -> d_name,"..")))continue;
+            if(DT_DIR != ptr->d_type) continue;
+            snprintf(filepath, sizeof(filepath), "/proc/%s/comm", ptr->d_name);
+
+            fp = fopen(filepath,"r");
+            if(fp != NULL)
+            {
+                int lens = fread(filetext, 1, sizeof(filetext), fp);
+                filetext[lens-1]='\0';
+                //fprintf(stderr,"=== <%d>%s:%s\n", process_name, lens,filetext);
+                if(strcmp(filetext, process_name) == 0)
+                {
+                    fclose(fp);
+                    closedir(dir);
+
+                    return 1;
+                }
+                fclose(fp);
+            }
+        }
+        closedir(dir);
+    }
+
+    return 0;
+}
+
 #ifdef NVRAM_
 int create_shell_file(){
 

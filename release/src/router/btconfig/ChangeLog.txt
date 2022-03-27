@@ -1,0 +1,5 @@
+10/03/2012: define HI_MAGIC_NUMBER as unsigned short int, send sleep mode enabled command before do soft reset in master blaster mode since sleep mode is enabled from PS_ASIC.pst. version:1.05
+06/08/2012: Sync the structure tBtHost_Interest and PsSysCfgTransmitPowerControlEntry with BtTest version: 1.04
+04/26/2012: Support RX test and get BER at "Masterblaster" mode version: 1.03
+0
+03/14/2012: BtAgent is running at customer platform. It communicates with the host via USB. It looks like a router, which is forwarding packet between the host and AR3002. BtSoc.exe is running at the host. Like BtUART.exe, it can send command or receive event from AR3002 via BtAgent. version: 1.02

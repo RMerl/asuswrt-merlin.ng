@@ -57,7 +57,7 @@ else
 pf4_build_mod := $(filter-out account, ${pf4_build_mod})
 endif
 ifeq ($(or $(OPENVPN),$(WIREGUARD)),y)
-ifeq ($(findstring $(HND_ROUTER)$(PLATFORM_ROUTER), y ipq807x),)
+ifeq ($(findstring $(HND_ROUTER)$(PLATFORM_ROUTER), y spf11.1 ipq807x ipq60xx ipq50xx ipq40xx),)
 pf6_build_mod := $(filter-out MASQUERADE, ${pf6_build_mod})
 endif
 endif

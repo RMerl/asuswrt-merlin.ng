@@ -1,0 +1,47 @@
+type bluetoothd, domain;
+type bluetoothd_exec, exec_type, file_type;
+type bluetoothd_main_exec, exec_type, file_type;
+
+# Start bluetoothd from init
+init_daemon_domain(bluetoothd)
+
+# Data file accesses
+allow bluetoothd bluetooth_data_file:dir w_dir_perms;
+allow bluetoothd bluetooth_data_file:notdevfile_class_set create_file_perms;
+
+allow bluetoothd self:capability { setuid net_admin net_bind_service net_raw };
+allow bluetoothd kernel:system module_request;
+
+# TODO: this may be romoved for userbuild where we don't use bluetoothd_wrapper
+allow bluetoothd bluetoothd_main_exec:file { execute execute_no_trans read open };
+
+# IPC socket communication
+allow bluetoothd self:socket { create_socket_perms accept listen setopt getopt };
+
+# Allow clients to use a socket provided by the bluetooth app.
+allow bluetoothd { bluetooth mediaserver }:unix_stream_socket connectto;
+
+# Allow system app to use sockets and fds
+allow bluetooth bluetoothd:fd use;
+allow bluetooth bluetoothd:unix_stream_socket rw_socket_perms;
+
+# Allow user bluetooth apps to use sockets and fds
+allow bluetoothdomain bluetoothd:fd use;
+allow bluetoothdomain bluetoothd:unix_stream_socket { getopt setopt getattr read write ioctl shutdown };
+
+# Other domains that can create and use bluetooth sockets.
+allow bluetoothdomain self:socket create_socket_perms;
+
+#This we might should put to mediaserver.te ?
+allow mediaserver bluetoothd:fd use;
+allow mediaserver bluetoothd:socket rw_socket_perms;
+
+# needs /system/bin/log access
+allow bluetoothd devpts:chr_file rw_file_perms;
+
+# access to uhid device
+allow bluetoothd uhid_device:chr_file rw_file_perms;
+
+# tethering
+allow bluetoothd self:udp_socket create_socket_perms;
+allow bluetoothd self:tcp_socket { create ioctl };

@@ -29,7 +29,7 @@
 	}
 	else{
 		aler("<#FIRM_fail_desc#>");
-		parent.location.href=parent.location.href;
+		parent.location.reload();
 	}	
 </script>
 </body>

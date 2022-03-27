@@ -1,0 +1,87 @@
+Bluetooth Audio Plugin
+======================
+
+The audio plugin happen to be in a different socket but all the rules for
+HAL socket apply here as well, the abstract socket name is
+"\0bluez_audio_socket" (tentative):
+
+	.---Audio---.                             .--Android--.
+	|  Plugin   |                             |   Daemon  |
+	|           |          Command            |           |
+	|           | --------------------------> |           |
+	|           |                             |           |
+	|           | <-------------------------- |           |
+	|           |          Response           |           |
+	|           |                             |           |
+	|           |                             |           |
+	|           |                             |           |
+	'-----------'                             '-----------'
+
+
+	Audio HAL                               Daemon
+	----------------------------------------------------
+
+	call dev->open()                    --> command 0x01
+	return dev->open()                  <-- response 0x01
+
+	call dev->open_output_stream()      --> command 0x03
+	return dev->open_output_stream()    <-- response 0x03
+
+	call stream->write()                --> command 0x05
+	return stream->write()              <-- response 0x05
+
+	call stream->common.standby()       --> command 0x06
+	return stream->common.standby()     <-- response 0x06
+
+	call dev->close_output_stream()     --> command 0x04
+	return dev->close_output_stream()   <-- response 0x04
+
+	call dev->close()                   --> command 0x02
+	return dev->close()                 <-- response 0x02
+
+Audio Service (ID 0)
+====================
+
+	Opcode 0x00 - Error response
+
+		Response parameters: Status (1 octet)
+
+	Opcode 0x01 - Open Audio Endpoint commmand
+
+		Command parameters: Service UUID (16 octets)
+				    Codec ID (1 octet)
+				    Number of codec presets (1 octet)
+				    Codec capabilities length (1 octet)
+				    Codec capabilities (variable)
+				    Codec preset # length (1 octet)
+				    Codec preset # configuration (variable)
+				    ...
+		Response parameters: Endpoint ID (1 octet)
+
+	Opcode 0x02 - Close Audio Endpoint command
+
+		Command parameters: Endpoint ID (1 octet)
+		Response parameters: <none>
+
+	Opcode 0x03 - Open Stream command
+
+		Command parameters: Endpoint ID (1 octet)
+		Response parameters: Outgoing MTU (2 octets)
+				     Codec configuration length (1 octet)
+				     Codec configuration (1 octet)
+				     File descriptor (inline)
+
+	Opcode 0x04 - Close Stream command
+
+		Command parameters: Endpoint ID (1 octet)
+		Response parameters: <none>
+
+	Opcode 0x05 - Resume Stream command
+
+		Command parameters: Endpoint ID (1 octet)
+		Response parameters: <none>
+
+	Opcode 0x06 - Suspend Stream command
+
+		Command parameters: Endpoint ID (1 octet)
+		Response parameters: <none>

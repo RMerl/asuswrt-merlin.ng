@@ -120,8 +120,12 @@
 }
 </style>
 <script>
+function isSupport(_ptn){
+	var ui_support = [<% get_ui_support(); %>][0];
+	return (ui_support[_ptn]) ? ui_support[_ptn] : 0;
+}
+var odm_support = isSupport("odm");
 function initial() {
-	var odm_support = ('<% nvram_get("rc_support"); %>'.indexOf(' odm') != -1) ? true : false;
 	if(odm_support)
 		document.body.className = "bg-odm";
 	else

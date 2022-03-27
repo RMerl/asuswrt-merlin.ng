@@ -1,0 +1,60 @@
+GAP PIXIT for the PTS tool.
+
+PTS version: 6.1
+
+* - different than PTS defaults
+& - should be set to IUT Bluetooth address
+# - should be set to IUT name
+
+		Required PIXIT settings
+-------------------------------------------------------------------------------
+Parameter Name						Value
+-------------------------------------------------------------------------------
+TSPX_bd_addr_iut					112233445566 (*&)
+TSPX_bd_addr_PTS					C000DEADBEEF
+TSPX_broadcaster_class_of_device			100104
+TSPX_observer_class_of_device				100104
+TSPX_peripheral_class_of_device				100104
+TSPX_central_class_of_device				100104
+TSPX_security_enabled					True
+TSPX_delete_link_key					True
+TSPX_pin_code						0000
+TSPX_time_guard						300000
+TSPX_use_implicit_send					True
+TSPX_use_dynamic_pin					False
+TSPX_secure_simple_pairing_pass_key_confirmation	False
+TSPX_using_public_device_address			True
+TSPX_using_random_device_address			False
+TSPX_lim_adv_timeout					30720
+TSPX_gen_disc_adv_min					30720
+TSPX_lim_disc_scan_min					10240
+TSPX_gen_disc_scan_min					10240
+TSPX_database_file					Database-GAP.sig
+TSPX_iut_rx_mtu						23
+TSPX_iut_private_address_interval			30000 (*)
+TSPX_iut_privacy_enabled				False
+TSPX_psm						1001
+TSPX_iut_valid_connection_interval_min			00C8
+TSPX_iut_valid_conneciton_interval_max			0960
+TSPX_iut_valid_connection_latency			0006
+TSPX_iut_valid_timeout_multiplier			0962
+TSPX_iut_connection_parameter_timeout			30000
+TSPX_iut_invalid_connection_interval_min		0000
+TSPX_iut_invalid_conneciton_interval_max		0000
+TSPX_iut_invalid_connection_latency			0000
+TSPX_iut_invalid_timeout_multiplier			0000
+TSPX_LE_scan_interval					0010
+TSPX_LE_scan_window					0010
+TSPX_con_interval_min					0032
+TSPX_con_interval_max					0046
+TSPX_con_latency					0000
+TSPX_supervision_timeout				07D0
+TSPX_minimum_ce_length					0000
+TSPX_maximum_ce_length					0000
+TSPX_pairing_before_service_request			False
+TSPX_iut_mandates_mitm					False
+TSPX_encryption_before_service_request			False
+TSPX_tester_appearance					0000
+TSPX_iut_advertising_data_in_broadcasting_mode		[set to default value]
+TSPX_iut_device_name_in_adv_packet_for_random_address	PTS-66DE (#)
+-------------------------------------------------------------------------------

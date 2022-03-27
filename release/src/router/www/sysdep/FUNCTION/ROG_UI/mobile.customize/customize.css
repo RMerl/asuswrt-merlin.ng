@@ -37,6 +37,10 @@ body{
 a{
 	color: #CF0A2C !important;
 }
+.navigation li dd:hover{
+	text-decoration:underline;
+	background-color: rgba(207,10,44,1);
+}
 /*
 .nonROG{
 	display: none;

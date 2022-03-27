@@ -61,8 +61,6 @@ CFLAGS += -DLANTIQ_WPS
 CFLAGS += -I$(TOP)/shared/sysdeps/lantiq -I$(TOP)/wireless_tools
 endif
 
-include $(SRCBASE)/.config
-
 ifeq ($(RTN11P)$(RTN300),y)
 CFLAGS += -DBAND_2G_ONLY
 endif
@@ -129,10 +127,10 @@ OBJS += web-alpine.o
 else ifeq ($(CONFIG_LANTIQ),y)
 OBJS += $(if $(wildcard sysdeps/web-lantiq.c),web-lantiq.o,prebuild/web-lantiq.o)
 else
-ifeq ($(or $(RTCONFIG_HND_ROUTER_AX_675X),$(RTCONFIG_HND_ROUTER_AX_6710),$(RTCONFIG_HND_ROUTER_AX_6756)),y)
+ifeq ($(or $(RTCONFIG_HND_ROUTER_AX_675X),$(RTCONFIG_HND_ROUTER_AX_6756),$(RTCONFIG_HND_ROUTER_AX_6710),$(RTCONFIG_BCM_502L07P2)),y)
 OBJS += $(if $(wildcard sysdeps/web-broadcom_private.c),web-broadcom_private.o,prebuild/web-broadcom_private.o)
 endif
-OBJS += web-broadcom.o
+OBJS += $(if $(wildcard sysdeps/web-broadcom.c),web-broadcom.o,prebuild/web-broadcom.o)
 ifeq ($(RTCONFIG_QTN),y)
 OBJS += find_host_addr.o
 endif
@@ -168,11 +166,14 @@ endif
 OBJS += $(if $(wildcard web_hook.c), web_hook.o, prebuild/web_hook.o)
 
 LIBS = -L$(TOP_PLATFORM)/nvram${BCMEX}$(EX7) -lnvram -L$(TOP)/shared -lshared
+ifeq ($(RTCONFIG_BCM_502L07P2),y)
+LIBS += -L$(TOP_PLATFORM)/ethctl_lib -lethctl
+endif
 ifeq ($(HND_ROUTER),y)
 LIBS += -L$(TOP_PLATFORM)/wlcsm -lwlcsm
 endif
 
-ifeq ($(HND_ROUTER_AX_6756),y)
+ifeq ($(or $(RTCONFIG_HND_ROUTER_AX_6756),$(RTCONFIG_BCM_502L07P2)),y)
 LIBS += -L$(TOP_PLATFORM)/bcm_flashutil -lbcm_flashutil -L$(TOP_PLATFORM)/gen_util -lgen_util -L$(TOP_PLATFORM)/sys_util -lsys_util -L$(TOP_PLATFORM)/bcm_util -lbcm_util -L$(TOP_PLATFORM)/bcm_boardctl -lbcm_boardctl
 endif
 
@@ -199,7 +200,7 @@ CFLAGS += -I$(SRCBASE)/wl/sys
 CFLAGS += -I$(SRCBASE)/../../43684/src/wl/sys
 endif
 LIBS += -lgcc_s
-ifeq ($(HND_ROUTER_AX_6756),y)
+ifeq ($(or $(RTCONFIG_HND_ROUTER_AX_6756),$(RTCONFIG_BCM_502L07P2)),y)
 CFLAGS += -I$(TOP_PLATFORM)/bcm_flashutil -I$(HND_SRC)/userspace/public/include -I$(HND_SRC)/userspace/public/include/linux 
 endif
 ifeq ($(RTCONFIG_QTN),y)

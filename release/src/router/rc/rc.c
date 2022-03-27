@@ -41,11 +41,17 @@
 #define ARRAYSIZE(a) (sizeof(a) / sizeof(a[0]))
 #endif /* ARRAYSIZE */
 
+#if defined(RTCONFIG_HW_DOG)
+int hwdog_main(int, char **);
+#endif
 #if defined(RTCONFIG_PTHSAFE_POPEN)
 void PS_pod_main(void);
 #endif
 
 void exe_eu_wa_rr(void);
+#ifdef RTCONFIG_BCMBSD_V2
+extern void gen_bcmbsd_def_policy(int sel);
+#endif
 
 #ifdef HND_ROUTER
 typedef enum cmds_e {
@@ -409,10 +415,10 @@ static int rctest_main(int argc, char *argv[])
 		FILE *fp;
 		int i, ch;
 		int size = nvram_get_int("dump_size");
-		int start = nvram_get_int("dump_start");
+		//int start = nvram_get_int("dump_start");
 
 		if(!argv[2])	
-			return;
+			return 0;
 
 		_dprintf("dumpx [%s] -------->\n", argv[2]);
 		fp = fopen(argv[2], "r");
@@ -510,6 +516,13 @@ static int rctest_main(int argc, char *argv[])
 #ifdef RTCONFIG_AMAS_WGN
 	else if (strcmp(argv[1], "wgn")==0) {
 		_dprintf("check: %d\n", is_wgn_enabled());
+	}
+#endif
+#ifdef RTCONFIG_BCMBSD_V2
+	else if (strcmp(argv[1], "bsdsel")==0) {
+		int selif_val = nvram_get_int("smart_connect_selif");
+
+		gen_bcmbsd_def_policy(selif_val);
 	}
 #endif
 #if defined(RPAX56) || defined(RPAX58)
@@ -809,7 +822,7 @@ static int rctest_main(int argc, char *argv[])
 		else if (strcmp(argv[1], "gpior") == 0) {
 			printf("%d\n", get_gpio(atoi(argv[2])));
 		}
-#if defined(RTCONFIG_HND_ROUTER_AX_6710) || defined(RTAX58U) || defined(TUFAX3000) || defined(TUFAX5400) || defined(RTAX82U) || defined(RTAX82_XD6) || defined(GSAX3000) || defined(GSAX5400) || defined(BCM6756) || defined(GTAX6000)
+#if defined(RTCONFIG_HND_ROUTER_AX_6710) || defined(RTAX58U) || defined(TUFAX3000) || defined(TUFAX5400) || defined(RTAX82U) || defined(RTAX82_XD6) || defined(RTAX82_XD6S) || defined(GSAX3000) || defined(GSAX5400) || defined(BCM6756) || defined(GTAX6000)
 		else if (strcmp(argv[1], "gpio2r") == 0) {
 			printf("%d\n", get_gpio2(atoi(argv[2])));
 		}
@@ -817,6 +830,14 @@ static int rctest_main(int argc, char *argv[])
 #ifndef HND_ROUTER
 		else if (strcmp(argv[1], "gpiod") == 0) {
 			if (argc>=4) gpio_dir(atoi(argv[2]), atoi(argv[3]));
+		}
+#endif
+#if defined(RTCONFIG_HND_ROUTER_AX_6756)
+		else if (strcmp(argv[1], "bootstate") == 0) {
+			chk_same_boot_policy();
+		}
+		else if (strcmp(argv[1], "syncboot") == 0) {
+			sync_boot_state();
 		}
 #endif
 		else if (strcmp(argv[1], "init_switch") == 0) {
@@ -1487,6 +1508,7 @@ static const applets_t applets[] = {
 	{ "ovpnc-up",			vpnc_ovpn_up_main				},
 	{ "ovpnc-down",		vpnc_ovpn_down_main			},
 	{ "ovpnc-route-up",	vpnc_ovpn_route_up_main			},
+	{ "ovpnc-route-pre-down",vpnc_ovpn_route_pre_down_main	},
 #endif
 #endif
 #ifdef RTCONFIG_OPENVPN
@@ -1494,6 +1516,7 @@ static const applets_t applets[] = {
 	{ "ovpn-down",			ovpn_down_main			},
 	{ "ovpn-route-up",		ovpn_route_up_main				},
 	{ "ovpn-route-pre-down",	ovpn_route_pre_down_main	},
+	{ "ovpn-route-pre-down",ovpn_route_pre_down_main	},
 #endif
 #ifdef RTCONFIG_TPVPN
 #ifdef RTCONFIG_OPENVPN
@@ -1662,6 +1685,9 @@ static const applets_t applets[] = {
 #endif
 #if defined(DSL_AX82U)
 	{ "ledg",			ledg_main			},
+#endif
+#if defined(GTAX6000)
+	{ "antled",			antled_main			},
 #endif
 #ifdef BUILD_READMEM
 	{ "readmem",			readmem_main			},
@@ -1837,6 +1863,12 @@ int main(int argc, char **argv)
 			return a->main(argc, argv);
 		}
 	}
+
+#if defined(RTCONFIG_HW_DOG)
+	if(!strcmp(base, "hwdog")) {
+		return hwdog_main(argc, argv);
+	}
+#endif
 
 #if defined(RTCONFIG_PTHSAFE_POPEN)
 	if(!strcmp(base, "PS_pod")){
@@ -3034,6 +3066,15 @@ int main(int argc, char **argv)
 			}
 			printf("\n");
 		}
+		return 0;
+	}
+#endif
+#if defined(RTCONFIG_HND_ROUTER_AX)
+	else if (!strcmp(base, "set_cable_media")) {
+		if(argc != 3)
+			return 0;
+
+		set_cable_media(argv[1], argv[2]);
 		return 0;
 	}
 #endif

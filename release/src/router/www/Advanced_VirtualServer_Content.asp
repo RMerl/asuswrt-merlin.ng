@@ -139,6 +139,12 @@ function initial(){
 				}
 			}
 		);
+		$("#vts_port_x").focus(
+			function() {
+				var position_text = $("#vts_port_x").position();
+				pop_s46_ports(position_text, "pf");
+			}
+		);
 	}
 	
 	loadAppOptions();
@@ -569,6 +575,12 @@ function editProfile(_mode, _this) {
 								var position = $(".setup_info_icon").position();
 								pop_s46_ports(position, "pf");
 							}
+						}
+					);
+					$("#vts_port_x").focus(
+						function() {
+							var position_text = $("#vts_port_x").position();
+							pop_s46_ports(position_text, "pf");
 						}
 					);
 				}

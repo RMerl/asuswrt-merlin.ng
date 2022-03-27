@@ -690,6 +690,56 @@ udhcpc_wan(int argc, char **argv)
 {
 	run_custom_script("dhcpc-event", 0, argv[1], NULL);
 
+#ifdef HND_ROUTER //tmp workaround for process blocking issue.
+	pid_t pid;
+	char pidfile[64] = {0};
+	FILE *fp = NULL;
+	int ret = 0;
+	snprintf(pidfile, sizeof(pidfile), "/var/run/tmp_udhcpc_%s.pid", safe_getenv("interface"));
+	if (f_exists(pidfile)) {
+		char buf[8] = {0};
+		f_read_string(pidfile, buf, sizeof(buf));
+		pid = strtoul(buf, NULL, 0);
+		_dprintf("%s: kill %u\n", __FUNCTION__, pid);
+		if (process_exists(pid))
+			kill_pid_tk(pid);
+	}
+	pid = fork();
+	if (pid == -1) {
+		perror("fork");
+		_dprintf("%s: fork failed\n", __FUNCTION__);
+		ret = errno;
+		return (ret);
+	}
+	if (pid != 0) {
+		// parent
+		fp = fopen(pidfile, "w");
+		if (fp) {
+			fprintf(fp, "%u", pid);
+			fclose(fp);
+		}
+		return 0;
+	}
+	// child
+	if(argv[1] && !strstr(argv[1], "leasefail"))
+		_dprintf("%s:: %s\n", __func__, argv[1]);
+	if (!argv[1]){
+		_dprintf("%s::\n", __func__);
+		ret = EINVAL;
+	}
+	else if (strstr(argv[1], "deconfig"))
+		ret = deconfig(0);
+	else if (strstr(argv[1], "bound"))
+		ret = bound(0);
+	else if (strstr(argv[1], "renew"))
+		ret = renew();
+	else if (strstr(argv[1], "leasefail"))
+		ret = leasefail();
+
+	unlink(pidfile);
+	// _dprintf("%s: delete pid %u file\n", __FUNCTION__, getpid());
+	return (ret);
+#else
 	if(argv[1] && !strstr(argv[1], "leasefail"))
 		_dprintf("%s:: %s\n", __func__, argv[1]);
 	if (!argv[1]){
@@ -707,6 +757,7 @@ udhcpc_wan(int argc, char **argv)
 /*	else if (strstr(argv[1], "nak")) */
 
 	return 0;
+#endif
 }
 
 int
@@ -764,7 +815,7 @@ start_udhcpc(char *wan_ifname, int unit, pid_t *ppid)
 	/* Skip dhcp and start zcip for pppoe, if desired */
 	if ((nvram_match(strcat_r(prefix, "proto", tmp), "pppoe") &&
 	    nvram_match(strcat_r(prefix, "vpndhcp", tmp), "0"))
-#if defined(RTCONFIG_IPV6) && defined(RTAX82_XD6)
+#if defined(RTCONFIG_IPV6) && (defined(RTAX82_XD6) || defined(RTAX82_XD6S))
 	||  (!strncmp(nvram_safe_get("territory_code"), "CH", 2) &&
 	    ipv6_enabled() && nvram_match(ipv6_nvname("ipv6_only"), "1"))
 #endif
@@ -969,7 +1020,7 @@ config(void)
 
 	wan_up(wan_ifname);
 
-#if defined(RTCONFIG_IPV6) && defined(RTAX82_XD6)
+#if defined(RTCONFIG_IPV6) && (defined(RTAX82_XD6) || defined(RTAX82_XD6S))
 	if ((!strncmp(nvram_safe_get("territory_code"), "CH", 2) &&
 		ipv6_enabled() &&
 		nvram_match(ipv6_nvname("ipv6_only"), "1")) &&

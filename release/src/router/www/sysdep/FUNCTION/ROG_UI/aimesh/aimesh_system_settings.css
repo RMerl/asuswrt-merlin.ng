@@ -35,24 +35,44 @@
 	background-repeat: no-repeat;
 	margin-left: 10px;
 }
+.system_settings_bg.plc_master > .system_icon{
+	background-position: 3px -332px;
+}
 .system_settings_bg.eap > .system_icon{
-	background-position: 2px 2px;
+	background-position: 3px 3px;
 }
 .system_settings_bg.led > .system_icon{
-	background-position: 2px -65px;
+	background-position: 3px -64px;
 }
 .system_settings_bg.roaming_block > .system_icon{
-	background-position: 2px -267px;
+	background-position: 3px -265px;
 }
 .system_settings_bg.reset > .system_icon{
-	background-position: 2px -132px;
+	background-position: 3px -131px;
 }
 .system_settings_bg.reboot > .system_icon{
-	background-position: 2px -200px;
+	background-position: 3px -198px;
+}
+.system_settings_bg.plc_master > .select_option_bg{
+	top: 10px;
+	right: 20px;
+	float: right;
+	position: relative;
+	display: inline-block;
+}
+.select_option_bg > select{
+	min-width: 200px;
+	height: 26px;
+	width: auto;
+	border-radius: 4px;
+	background-color: rgb(62,3,13);
+	border-color: rgb(145,7,31);
+	color: #FFFFFF;
+	font-size: 13px;
 }
 .system_text{
 	height: 100%;
-	font-family: Roboto-Regular;
+	font-family: Roboto-Regular, "Microsoft JhengHei";
 	font-size: 14px;
 	color: #FFFFFF;
 	letter-spacing: 0;
@@ -132,7 +152,7 @@
 	background-position: -99px -76px;
 	background-size: 500%;
 }
-.system_settings_bg .bubble_icon.info.eap{
+.system_settings_bg .bubble_icon.info.eap, .system_settings_bg .bubble_icon.info.plc_master{
 	top: 12px;
 	left: 6px;
 }
@@ -172,7 +192,7 @@
 	z-index: 500;
 	display: none;
 }
-.system_settings_bg .hover_pop_hint_bg.eap{
+.system_settings_bg .hover_pop_hint_bg.eap, .system_settings_bg .hover_pop_hint_bg.plc_master{
 	top: 54px;
 	left: 70px;
 }
@@ -186,7 +206,7 @@
 	border: initial;
 }
 .popup_hint_bg .hint_text .yellow_text{
-	color: #FC0; 
+	color: #FC0;
 }
 .popup_hint_bg .hint_text .gray_text{
 	color: #A4B7C3;

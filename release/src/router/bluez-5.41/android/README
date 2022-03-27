@@ -1,0 +1,454 @@
+BlueZ for Android
+*****************
+
+Since Android 4.2 there exists a well standardized HAL interface that the
+Bluetooth stack is expected to provide and which enables the easy replacement
+of the stack of choice on Android. Android BlueZ is intended as a drop-in
+replacement to Android provided Bluetooth stack.
+
+More details about BlueZ for Android architecture and components can be found
+in android/hal-ipc-api.txt file.
+
+Supported Android version: 4.4 KitKat and 5.0, 5.1 Lollipop
+
+
+Building and running on Android
+===============================
+
+Steps needed to build and run Android Open Source Project with integrated BlueZ.
+
+
+Build requirements
+------------------
+
+- GLib - Android 4.2 or later don't provide GLib and one must provide it in
+'external/bluetooth/glib' folder of Android tree. Sample Android GLib port
+is available at https://github.com/bluez-android/glib
+
+- SBC - A2DP code requires SBC library (version 1.2 or higher) present in
+'external/bluetooth/sbc' directory. Library is build from Android.mk provided
+by BlueZ. SBC code is available at git://git.kernel.org/pub/scm/bluetooth/sbc
+
+- Bionic support - Android 5.0 provides all required functionality. Running
+BlueZ on Android 4.4 requires backporting missing features (epoll_create1 and
+ppoll calls). Sample Bionic for Android 4.4 with all required features
+backported is available at
+https://github.com/bluez-android/aosp_platform_bionic
+
+Runtime requirements
+--------------------
+
+BlueZ HAL library requires 'bluetoothd' and 'bluetoothd-snoop' services to be
+available on Android system. Some permissions settings are also required.
+
+This can be done by importing init.bluetooth.rc file in init.rc file of targeted
+board:
+import init.bluetooth.rc
+
+For convenience examples are provided at:
+https://github.com/bluez-android/aosp_device_lge_mako           (Nexus 4)
+https://github.com/bluez-android/aosp_device_lge_hammerhead     (Nexus 5)
+https://github.com/bluez-android/aosp_device_asus_flo           (Nexus 7 2013)
+
+Security-Enhanced Linux in Android
+----------------------------------
+
+Since 5.0 release Android moved to full enforcement of SELinux. This requires
+proper policy to be provided for all BlueZ for Android services (and services
+interacting with BlueZ). Policies should be placed in external/selinux/ path.
+
+Required policy files are provided at:
+bluetoothd.te
+bluetoothd_snoop.te
+
+For convenience sepolicy.git with all required policies is available at:
+https://github.com/bluez-android/aosp_platform_external_sepolicy
+
+Downloading and building
+------------------------
+
+Building for Android requires full Android AOSP source tree. Sample Android tree
+with all required components present is available at
+https://github.com/bluez-android
+
+This tree provides support for Nexus4 (mako), Nexus 5 (hammerhead) and
+Nexus 7 2013 (flo, deb). Tree does not provide binary blobs needed to run
+Android on supported devices. Those can be obtained from
+https://developers.google.com/android/nexus/drivers. Binary blobs needs to be
+unpacked (EULA acceptance required) into 'vendor' directory of Android tree.
+
+Downloading:
+Android 5.0 - 'lollipop' branch
+Android 4.4 - 'kitkat' branch
+
+repo init -u https://github.com/bluez-android/aosp_platform_manifest \
+	-b lollipop
+repo sync
+
+Building:
+source build/envsetup.sh
+lunch aosp_<target>-userdebug
+make -j8
+
+Flashing:
+adb reboot bootloader
+fastboot flashall -w
+
+After full build is done it is possible to rebuild only BlueZ:
+'cd external/bluetooth/bluez/android/'
+'mm' (or 'mm -B' to force rebuilding of all files)
+'adb sync' to update target device.
+
+Downloading and building for Intel devices
+------------------------------------------
+
+Sample Android tree with all required components for Intel devices based on
+Intel reference image (https://01.org/android-ia) can be reconstructed following
+instructions below.
+
+This tree provides support for Dell XPS12, Minnowboard MAX, Intel NUC,
+Acer Iconia W700 and other devices mentioned in:
+https://01.org/android-ia/guides/devices
+
+Downloading:
+repo init -u https://github.com/01org/android-bluez-manifest.git -b android-ia \
+	-m topic/bluez
+repo sync
+
+Building:
+source build/envsetup.sh
+lunch haswell_generic-eng
+make -j8
+
+Installing:
+Live and Install image is $OUT/live.img
+Flash live.img to USB flash and boot from it. More instructions here:
+https://01.org/android-ia/guides/developers/build-and-install
+
+Linux Kernel requirements
+-------------------------
+
+BlueZ for Android uses Linux Bluetooth subsystem and it must be enabled in
+kernel. Minimal required version of management interface is 1.3. This
+corresponds to Linux 3.9 but latest available version is recommended. Other
+requirements include UHID and network bridge support.
+
+Following kernel options should be enabled:
+CONFIG_BT
+CONFIG_BT_RFCOMM
+CONFIG_BT_RFCOMM_TTY
+CONFIG_BT_BNEP
+CONFIG_BT_BNEP_MC_FILTER
+CONFIG_BT_BNEP_PROTO_FILTER
+CONFIG_BRIDGE
+CONFIG_UHID
+CONFIG_CRYPTO_CMAC
+CONFIG_CRYPTO_USER_API
+CONFIG_CRYPTO_USER_API_HASH
+CONFIG_CRYPTO_USER_API_SKCIPHER
+
+Also BT chip driver needs to be enabled e.g:
+CONFIG_BT_HCIBTUSB
+
+If it is not possible to use new enough Linux kernel one can use updated
+bluetooth subsystem from Backports project. More information about Backports can
+be found at https://backports.wiki.kernel.org. Sample kernels using backports
+for running BlueZ on Android are available at https://github.com/bluez-android.
+
+
+Running with Valgrind
+---------------------
+
+BlueZ for Android is preconfigured to be easily run under Valgrind memcheck.
+Appropriate configuration and required modules are automatically included when
+building either userdebug or eng variant of Android platform.
+
+Valgrind can be enabled in runtime by setting "persist.sys.bluetooth.valgrind"
+property to either literal "true" or any numeric value >0. For example:
+adb root
+adb shell setprop persist.sys.bluetooth.valgrind true
+
+After changing property value Bluetooth need to be restarted to apply changes
+(this can be done using UI, just disable and enable it again). Property is
+persistent, i.e. there's no need to enable Valgrind again after reboot.
+
+It's recommended to have unstripped libglib.so installed which will enable
+complete backtraces in Valgrind output. Otherwise, in many cases backtrace
+will break at e.g. g_free() function without prior callers. It's possible to
+have proper library installed automatically by appropriate entry in Android.mk,
+see https://github.com/bluez-android/glib for an example.
+
+When running with valgrind SElinux needs to be set into permissive mode. This
+can be done by executing 'setenforce 0' from root shell.
+
+
+Enabling BlueZ debugs
+---------------------
+
+BlueZ debug logs can be enabled in runtime by setting
+"persist.sys.bluetooth.debug" property to either literal "true" or any
+numeric value >0. For example:
+adb root
+adb shell setprop persist.sys.bluetooth.debug 1
+
+After changing property value Bluetooth needs to be restarted to apply changes.
+
+There is also a possibility to enable mgmt debug logs which also enables debugs
+as above. To enable it proceed in the same way as described above but use
+system properties called: persist.sys.bluetooth.mgmtdbg
+
+Note: Debugs are only available on NON USER build variants
+
+
+Customization
+-------------
+
+It is possible to customize BlueZ for Android through Android system properties.
+This may include enabling extra profiles or features inside HALs implementation
+These properties are read on Bluetooth stack startup only and require stack
+restart if changed. All customization properties names start with
+"persist.sys.bluetooth." or "ro.bluetooth." followed by specific HAL name e.g.
+"persist.sys.bluetooth.handsfree". If both are present "persist.sys.bluetooth."
+takes precedence. This allows for read only properties to be set during build
+leaving enough flexibility for developing or debugging purposes.
+This section list available customization options.
+
+Property	Value		Description
+-------------------------------------------
+mode		bredr		Enable BlueZ in BR/EDR mode
+		le		Enable BlueZ in LE mode
+		<none>		Enable BlueZ in default mode - enable BR/EDR/LE
+				if available.
+handsfree	hfp		Enable Handsfree Profile (HFP) with narrowband
+				speech only
+		hfp_wbs		Enable Handsfree Profile (HFP) with narrowband
+				and wideband speech support
+		<none>		Don't enable Handsfree Profile (HFP)
+vendor		<any>		Set vendor name in DIS. If not set fallback to
+				"ro.product.manufacturer".
+model		<any>		Set model name used as default adapter name.
+				If not set fallback to "ro.product.model".
+name		<any>		Set model number in DIS. If not set fallback to
+				"ro.product.name".
+serialno	<any>		Set serial number in DIS. If not set fallback to
+				"ro.serialno".
+systemid	<uint64>	Set system ID in DIS. Hex string encoded uint64.
+pnpid		<any>		PnP information used in DIS and DID profiles.
+				Required format: "Source:VID:PID:Version".
+				Source must be either "bluetooth" or "usb".
+				VID, PID and Version are uint16. Version is
+				optional.
+fwrev		<any>		Firmware revision in DIS. If not set fallback to
+				"ro.build.version.release".
+hwrew		<any>		Hardware revision in DIS. If not set fallback to
+				"ro.board.platform".
+
+
+Building and running on Linux
+-----------------------------
+
+It is possible to build and test BlueZ for Android daemon on Linux (eg. PC).
+Simply follow instructions available at README file in BlueZ top directory.
+Android daemon binary is located at android/bluetoothd. See next section on
+how to test Android daemon on Linux.
+
+
+Testing tool
+------------
+
+BT HAL test tools located in android/haltest is provided for HAL level testing
+of both Android daemon and HAL library. Start it with '-n' parameter and type
+'bluetooth init' in prompt to initialize HAL library. Running without parameter
+will make haltest try to initialize all services after start. On Android
+required bluetoothd service will be started automatically. On Linux it is
+required to start android/bluetoothd manually before init command timeout or
+use provided android/system-emulator, which takes care of launching daemon
+automatically on HAL library initialization. To deinitialize HAL library and
+stop daemon type 'bluetooth cleanup'. Type 'help' for more information. Tab
+completion is also supported.
+
+
+Implementation status
+=====================
+
+Summary of HALs implementation status.
+
+complete    - implementation is feature complete and Android Framework is able
+              to use it normally
+partial     - implementation is in progress and not all required features are
+              present, Android Framework is able to use some of features
+initial     - only initial implementations is present, Android Framework is
+              able to initialize but most likely not able to use it
+not started - no implementation, Android Framework is not able to initialize it
+
+Profile ID        HAL header         4.4 Status    5.0 status
+-------------------------------------------------------------
+core              bluetooth.h        complete      partial
+a2dp              bt_av.h            complete      complete
+gatt              bt_gatt.h          complete      partial
+                  bt_gatt_client.h   complete      partial
+                  bt_gatt_server.h   complete      partial
+handsfree         bt_hf.h            complete      complete
+hidhost           bt_hh.h            complete      complete
+health            bt_hl.h            complete      complete
+pan               bt_pan.h           complete      complete
+avrcp             bt_rc.h            complete      complete
+socket            bt_sock.h          complete      partial
+handsfree_client  bt_hf_client.h     N/A           complete
+map_client        bt_mce.h           N/A           complete
+a2dp_sink         bt_av.h            N/A           partial
+avrcp_ctrl        bt_rc.h            N/A           partial
+
+
+Implementation shortcomings
+===========================
+
+It is possible that some of HAL functionality (although being marked as
+complete) is missing implementation due to reasons like feature feasibility or
+necessity for latest Android Framework. This sections provides list of such
+deficiencies. Note that HAL library is always expected to fully implement HAL
+API so missing implementation might happen only in daemon.
+
+
+HAL Bluetooth
+-------------
+
+methods:
+dut_mode_send                      never called from Android Framework
+le_test_mode                       never called from Android Framework
+
+callbacks:
+dut_mode_recv_cb                   empty JNI implementation
+le_test_mode_cb                    empty JNI implementation
+
+properties:
+BT_PROPERTY_SERVICE_RECORD         not supported for adapter, for device this
+                                   property is returned as a response to
+                                   get_remote_service_record call
+
+BT_PROPERTY_REMOTE_VERSION_INFO    information required by this property (LMP
+                                   information) are not accessible from mgmt
+                                   interface, also marking this property as
+                                   settable is probably a typo in HAL header
+
+HAL Socket
+----------
+
+Support only for BTSOCK_RFCOMM socket type.
+
+
+HAL AVRCP
+---------
+
+methods:
+list_player_app_attr_rsp           never called from Android Framework
+list_player_app_value_rsp          never called from Android Framework
+get_player_app_value_rsp           never called from Android Framework
+get_player_app_attr_text_rsp       never called from Android Framework
+get_player_app_value_text_rsp      never called from Android Framework
+set_player_app_value_rsp           never called from Android Framework
+
+callbacks:
+list_player_app_attr_cb            NULL JNI implementation
+list_player_app_values_cb          NULL JNI implementation
+get_player_app_value_cb            NULL JNI implementation
+get_player_app_attrs_text_cb       NULL JNI implementation
+get_player_app_values_text_cb      NULL JNI implementation
+set_player_app_value_cb            NULL JNI implementation
+
+
+HAL GATT
+--------
+
+methods:
+client->set_adv_data               missing kernel support for vendor data
+client->connect                    is_direct parameter is ignored
+
+
+Audio SCO HAL
+=============
+
+When Bluetooth chip's audio is not wired directly to device audio, Audio SCO
+HAL is used to enable SCO support. It needs to be loaded by AudioFlinger
+following audio_policy.conf configuration. Example of configuration is shown
+below:
+
+...
+  sco {
+    outputs {
+      sco {
+        sampling_rates 8000|44100
+        channel_masks AUDIO_CHANNEL_OUT_STEREO
+        formats AUDIO_FORMAT_PCM_16_BIT
+        devices AUDIO_DEVICE_OUT_ALL_SCO
+      }
+    }
+    inputs {
+      sco {
+        sampling_rates 8000|44100
+        channel_masks AUDIO_CHANNEL_IN_MONO
+        formats AUDIO_FORMAT_PCM_16_BIT
+        devices AUDIO_DEVICE_IN_BLUETOOTH_SCO_HEADSET
+      }
+    }
+  }
+...
+
+Known Android issues
+====================
+
+It is possible that BlueZ is triggering bugs on Android Framework that could
+affect qualification or user experience. This section provides list of
+recommended Android fixes that are not part of latest AOSP release supported by
+BlueZ.
+
+For Android 5.1 Lollipop:
+https://android-review.googlesource.com/177314
+
+For Android 5.0 Lollipop:
+https://android-review.googlesource.com/99761
+https://android-review.googlesource.com/100297
+https://android-review.googlesource.com/102882
+https://android-review.googlesource.com/132733
+https://android-review.googlesource.com/132763
+https://android-review.googlesource.com/177314
+
+For Android 4.4 KitKat:
+https://android-review.googlesource.com/82757
+https://android-review.googlesource.com/87670
+https://android-review.googlesource.com/88384
+https://android-review.googlesource.com/99761
+https://android-review.googlesource.com/99850
+https://android-review.googlesource.com/100297
+https://android-review.googlesource.com/102882
+https://android-review.googlesource.com/177314
+
+Unimplemented Bluetooth features
+================================
+
+Some Bluetooth functionality require support from outside of BT stack
+eg. telephony stack. This sections describes profiles optional features not
+implemented due to lack of support in other Android subsystems or missing API
+in respective BT HALs.
+
+Profile		Feature				Comments
+--------------------------------------------------------
+HFP		Attach a phone number to	AT+BINP=1
+		a voice tag
+HFP		Enhanced Call Control		AT+CHLD={1x,2x}
+HFP		Explicit Call Transfer		AT+CHLD=4
+HFP		Response and Hold		AT+BTRH, +BTRH
+HFP		In-band Ring Tone		+BSIR
+AVRCP		Player Settings			HAL API present but not used
+AVRCP		Browsing			No HAL API
+GATT		Read multiple characteristics	No HAL API
+
+
+Reporting Bugs
+==============
+
+Bugs should be reported at https://01.org/jira/browse/BA. When reporting
+a bug please attach logs from logcat (logcat -v time) and HCI trace. Daemon
+debug logs should be enabled. When reporting daemon crash please run it under
+valgrind if possible. For details on how to enabled debug logs and valgrind see
+"Enabling BlueZ debugs" section.

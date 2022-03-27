@@ -1,0 +1,17 @@
+type bluetoothd_snoop, domain;
+type bluetoothd_snoop_exec, exec_type, file_type;
+
+# Start bluetoothd_snoop from init
+init_daemon_domain(bluetoothd_snoop)
+
+# directory search and read caps
+allow bluetoothd_snoop self:capability dac_read_search;
+# use raw and packet sockets caps
+allow bluetoothd_snoop self:capability net_raw;
+
+# monitor socket access
+allow bluetoothd_snoop self:socket { create bind setopt read };
+
+# sdcard access
+allow bluetoothd_snoop fuse:dir w_dir_perms;
+allow bluetoothd_snoop fuse:file create_file_perms;

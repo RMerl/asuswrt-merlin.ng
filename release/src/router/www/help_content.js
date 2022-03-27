@@ -100,7 +100,8 @@ helpcontent[5] = new Array("",
 							 "<#LANHostConfig_x_DDNSHostNames_itemdesc#>",
 							 "<#RouterConfig_IGMPver_itemname#>",
 							 "<#RouterConfig_MLDver_itemname#>",
-							 "Enable Fast Leave");
+							 "Enable Fast Leave",
+							 "Internal: use the IP configured on your router's WAN.  External: query a remote service to use your public IP.  The latter will work through double NAT, but might not work properly when using a VPN tunnel or with some DDNS providers.");
 helpcontent[6] = new Array("",
 						   "<#RHELP_desc4#>",
 						   "<#RHELP_desc5#>",
@@ -141,16 +142,23 @@ helpcontent[7] = new Array("",
 							 "<#isp_profile#>",
 							 "<#PPPConnection_Authentication_itemdesc#>",
 							 "<#PPPConnection_Authentication_itemdesc2#>", //30
-							 "<b>PPP Echo:</b> Use Echo-Request and Echo-Reply message defined in PPP Link Control Protocol (LCP) to test the PPP connection. <b>DNS Probe:</b> Performs a DNS lookup request and resolved IP address to test DNS connection",	//31
-							 "Send an LCP Echo-Request frame to the peer every n seconds.",
-							 "Presume the peer to be dead if n LCP Echo-Requests are sent without receiving a valid LCP Echo-Reply. Use of this option requires a non-zero value for the Echo Interval parameter.",
-							 "If DNS resolution fails or returns the wrong address to n times, then it is assumed that the internet connection is completely unsuccessful",
-							 "You can configure your router to use a third party DNS server that supports encryption to prevent snooping on your DNS queries.  While this increases privacy, note that it might decrease general DNS performance.",
-							 "In strict mode, only allow the use of a DNS server if the identity of the remote server can be authenticated.  In opportunistic mode it will attempt to authenticate, but will still use that server if it fails to authenticate its identity, allowing name resolution to still work properly.",
-							 "The IP address of the nameserver.",
-							 "TLS Port  (defaults to 853 if left empty).",
-							 "Authentication domain name checked against the server certificate.",
-							 "(Optional) Base64 hash value of the sha256 fingerprint of the public key.");	// 40
+							 "<#PPPConnection_x_InternetDetection_itemdesc#>",	//31
+							 "<#PPPConnection_x_PPPEcho_Interval_desc#>",
+							 "<#PPPConnection_x_PPPEcho_Max_Failure_desc#>",
+							 "<#PPPConnection_x_DNSProbe_Max_Failure_desc#>",
+							 "<#WAN_DNS_Privacy_desc#>",
+							 "<#WAN_DNS_over_TLS_desc#>",
+							 "<#WAN_DNS_over_TLS_server_IP_desc#>",
+							 "<#WAN_DNS_over_TLS_server_port_desc#>",
+							 "<#WAN_DNS_over_TLS_server_name_desc#>",
+							 "<#WAN_DNS_over_TLS_server_SPKI_desc#>",
+							 "<#WAN_DNS_dot_presets_desc#>",	//41
+							 "<#WAN_Queries_Upstream_DNS_Desc#>",
+							 "<#WAN_DNS_Rebind_Desc#>",
+							 "<#WAN_DNSSEC_Support_Desc#>",
+							 "<#WAN_Valid_Unsigned_DNSSEC_Desc#>",
+							 "<#WAN_Prevent_DoH_Desc#>"
+							 );
 
 //Firewall
 helpcontent[8] = new Array("",
@@ -392,8 +400,9 @@ helpcontent[33] = new Array("",
 
 //Feedback
 helpcontent[34] = new Array("",
-							"This feature allows system to capture diagnostic System debug log in the background, duration depends on the “Diagnostic debug log capture duration” option, depends on the option selected, system might transmit single debug log automatically to ASUS Support Team for analysis after capture completed or transmit multiple debug logs over a period of time. Click on the yellow System icon could cancel the debug log capture.",/*untranslated*/
-							"<#Feedback_case_No_desc#>"
+							"This feature allows system to capture diagnostic System debug log in the background, duration depends on the Diagnostic debug log capture duration option, depends on the option selected, system might transmit single debug log automatically to ASUS Support Team for analysis after capture completed or transmit multiple debug logs over a period of time. Click on the yellow System icon could cancel the debug log capture.",/*untranslated*/
+							"<#Feedback_case_No_desc#>",
+							"<#feedback_tech_account_desc#>"
 							);
 
 helpcontent[35] = new Array("",

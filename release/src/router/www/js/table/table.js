@@ -463,6 +463,12 @@ var tableApi = {
 									}
 								}
 							);
+							$(".setup_info_icon").parent().siblings().focus(
+								function() {
+									var position_text = $(".setup_info_icon").parent().siblings().position();
+									pop_s46_ports(position_text, "game");
+								}
+							);
 						}
 					}
 

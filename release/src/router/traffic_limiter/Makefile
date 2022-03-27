@@ -6,6 +6,9 @@ CFLAGS += -I$(TOP)/util-linux/include
 CFLAGS += -idirafter$(LINUXDIR)/arch/arm/include -idirafter$(LINUXDIR)/include
 
 LDFLAGS += -L$(TOP)/nvram$(BCMEX) -lnvram -L$(TOP)/shared -lshared
+ifeq ($(RTCONFIG_BCM_502L07P2),y)
+LDFLAGS += -L$(TOP_PLATFORM)/ethctl_lib -lethctl
+endif
 LDFLAGS += -L$(TOP)/sqlite/.libs -lsqlite3
 
 ifeq ($(RTCONFIG_QTN),y)

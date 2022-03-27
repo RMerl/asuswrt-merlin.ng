@@ -12,6 +12,9 @@ ifeq ($(HND_ROUTER),y)
 LDFLAGS += -L$(TOP_PLATFORM)/wlcsm -lwlcsm -lgcc_s
 endif
 LDFLAGS += -L$(TOP)/shared -lshared
+ifeq ($(RTCONFIG_BCM_502L07P2),y)
+LDFLAGS += -L$(TOP_PLATFORM)/ethctl_lib -lethctl
+endif
 LDFLAGS += -L$(TOP)/openssl -lcrypto -lssl
 LDFLAGS += -L$(TOP)/curl-7.21.7/lib/.libs -lcurl
 LDFLAGS += -L$(TOP)/libxml2/.libs -lxml2

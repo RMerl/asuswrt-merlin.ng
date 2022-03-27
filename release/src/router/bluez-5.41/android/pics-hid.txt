@@ -1,0 +1,291 @@
+HID PICS for the PTS tool.
+
+PTS version: 6.1
+
+* - different than PTS defaults
+# - not yet implemented/supported
+
+M - mandatory
+O - optional
+
+		Roles
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_HID_1_1	True (*)	Role: Host, Report protocol (O.1)
+TSPC_HID_1_2	False		Role: HID Role (O.1)
+TSPC_HID_1_3	False		Role: Host, Boot protocol (O.1)
+-------------------------------------------------------------------------------
+O.1: It is Mandatory to support One of these roles.
+-------------------------------------------------------------------------------
+
+
+		Application Procedures
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_HID_2_1	True (*)	Host: Establish HID connection (C.4)
+TSPC_HID_2_2	True (*)	Host: Accept HID connection (C.4)
+TSPC_HID_2_3	True (*)	Host: Terminate HID connection (C.4)
+TSPC_HID_2_4	True (*)	Host: Accept termination of HID connection (C.4)
+TSPC_HID_2_5	True (*)	Host: Support for virtual cables (C.4)
+TSPC_HID_2_6	True (*)	Host: HID initiated connection (C.4)
+TSPC_HID_2_7	True (*)	Host: Host initiated connection (C.4)
+TSPC_HID_2_8	True (*)	Host: Host data transfer to HID (C.1)
+TSPC_HID_2_9	True (*)	Host: HID data transfer to Host (C.1)
+TSPC_HID_2_10	False		Host: Boot mode data transfer to Host (C.2)
+TSPC_HID_2_11	False		Host : Boot mode data transfer to HID (C.2)
+TSPC_HID_2_12	False		Host : Support for Application to send
+					GET_Report (O)
+TSPC_HID_2_13	False		Host : Support for Application to send
+					SET_REPORT (O)
+TSPC_HID_2_14	False		Host : Support for sending HCI_CONTROL with
+					VIRTUAL_CABLE_UNPLUG (C.3)
+TSPC_HID_2_15	False		Host : Support for receiving HCI_CONTROL with
+					VIRTUAL_CABLE_UNPLUG (C.3)
+-------------------------------------------------------------------------------
+C.1: Optional for Boot Mode Only Hosts (TSPC_HID_1_3); Mandatory for Host Role
+	(TSPC_HID_1_1); OTHERWISE Excluded.
+C.2: Mandatory for Boot Mode Only Hosts (TSPC_HID_1_3); otherwise Optional.
+C.3: Optional IF (TSPC_HID_2_5) supported, otherwise excluded.
+C.4: Mandatory IF TSPC_HID_1_1 (Host, Report protocol) is supported, otherwise
+	Optional.
+-------------------------------------------------------------------------------
+
+
+		Device to Host Transfers
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_HID_3_1	False		Host : Data reports larger than host MTU on
+					Control channel (O)
+TSPC_HID_3_2	True (*)	Host : Data reports larger than host MTU on
+					Interrupt channel (C.1)
+TSPC_HID_3_3	True (*)	Host : Data reports to host (C.1)
+TSPC_HID_3_4	False		Host : Boot mode reports to host (C.2)
+-------------------------------------------------------------------------------
+C.1: Excluded for Boot Mode Only Hosts (TSPC_HID_1_3); Mandatory IF
+	TSPC_HID_2_12 is supported, otherwise Optional.
+C.2: Mandatory IF TSPC_HID_1_3 is supported, otherwise Optional.
+-------------------------------------------------------------------------------
+
+
+		Host to Device Transfers
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_HID_4_1	False		Host : Data reports larger than device MTU on
+					Control channel (C.1)
+TSPC_HID_4_2	False		Host : Data reports larger than device MTU on
+					Interrupt channel (C.1)
+TSPC_HID_4_3	True (*)	Host : Data reports to device (C.2)
+TSPC_HID_4_4	False		Host : Boot mode reports to device (O)
+-------------------------------------------------------------------------------
+C.1: Excluded for Boot Mode Only Hosts (TSPC_HID_1_3); otherwise Optional
+C.2: Excluded for Boot Mode Only Hosts (TSPC_HID_1_3); otherwise Mandatory for
+	Host Role (TSPC_HID_1_1).
+-------------------------------------------------------------------------------
+
+
+		HID Control Commands
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_HID_5_1	False		Host : Set_Protocol command (C.1, C.4)
+TSPC_HID_5_2	False		Host : Get_Protocol command (C.1, C.4)
+TSPC_HID_5_3	False		Host : Set_Idle command (O)
+TSPC_HID_5_4	False		Host : Get_Idle command (O)
+TSPC_HID_5_5	False		Host : Set_Report command (C.2)
+TSPC_HID_5_6	False		Host : Get_Report command (C.3)
+-------------------------------------------------------------------------------
+C.1: Mandatory for Boot Mode Only Hosts (TSPC_HID_1_3); otherwise Optional.
+C.2: Mandatory IF (TSPC_HID_1_1) supported AND (TSPC_HID_2_13) supported.
+C.3: Mandatory IF (TSPC_HID_1_1) Supported AND (TSPC_HID_2_12) Supported
+C.4: Mandatory to support TSPC_HID_5_1 (Set_Protocol command) AND TSPC_HID_5_2
+	(Get_Protocol command) IF one of TSPC_HID_5_1 (Set_Protocol command)
+	OR TSPC_HID_5_2 (Get_Protocol command) is supported, otherwise
+	Excluded.
+-------------------------------------------------------------------------------
+
+
+		Host Link Manager Procedures
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_HID_6_1	False		Host : Initiate Authentication before
+					connection completed (C.1)
+TSPC_HID_6_2	False		Host : Initiate Authentication after connection
+					completed (C.1)
+TSPC_HID_6_3	False		Host : Initiate pairing before connection
+					completed (C.2)
+TSPC_HID_6_4	False		Host : Initiate pairing after connection
+					completed (C.2)
+TSPC_HID_6_5	False		Host : Encryption (O)
+TSPC_HID_6_6	False		Host : Initiate encryption (C.3)
+TSPC_HID_6_7	False		Host : Accept encryption requests (C.3)
+TSPC_HID_6_8	True (*)	Host : Role switch (Master/Slave) (C.4)
+TSPC_HID_6_9	True (*)	Host : Request Master Slave switch (C.4)
+TSPC_HID_6_10	True (*)	Host : Accept Master Slave switch requests (C.4)
+TSPC_HID_6_11	False		Host : Hold mode (O)
+TSPC_HID_6_12	True (*)	Host : Sniff mode (C.4)
+TSPC_HID_6_13	False		Host : Park mode (O)
+-------------------------------------------------------------------------------
+C.1: Mandatory to support TSPC_HID_6_1 AND TSPC_HID_6_2 IF GAP 2/3
+	(Initiate LMP-Authentication) is supported, otherwise Excluded.
+C.2: If Pairing supported both (TSPC_HID_6_3) AND (TSPC_HID_6_4) must
+	be supported.
+C.3: Mandatory IF (TSPC_HID_6_5) encryption supported.
+C.4: Mandatory IF (TSPC_HID_1_1) supported, otherwise Excluded.
+-------------------------------------------------------------------------------
+
+
+		Host Link Control Requirements
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_HID_7_1	True (*)	Host : Supports inquiry, 79 channel (C.1)
+TSPC_HID_7_2	False		Host : Supports inquiry scan, 79 channel (C.2)
+-------------------------------------------------------------------------------
+C.1: Mandatory to support IF (TSPC_HID_1_1) supported, otherwise Excluded.
+C.2: Feature should not be used by a Host, but can be supported in LM.
+-------------------------------------------------------------------------------
+
+
+		HID Device Roles
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_HID_8_1	False		Hid : Pointing HID (O.1)
+TSPC_HID_8_2	False		Hid : Keyboard HID (O.1)
+TSPC_HID_8_3	False		Hid : Identification HID (O.1)
+TSPC_HID_8_4	False		Hid : Other HID (O.1)
+-------------------------------------------------------------------------------
+O.1: It is Mandatory to support One of these roles IF (TSPC_HID_1_2)
+	is selected
+-------------------------------------------------------------------------------
+
+
+		HID Application Procedures
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_HID_9_1	False		Hid : Establish HID connection (O)
+TSPC_HID_9_2	False (*)	Hid : Accept HID connection (M)
+TSPC_HID_9_3	False		Hid : Terminate HID connection (O)
+TSPC_HID_9_4	False (*)	Hid : Accept Termination of HID connection (M)
+TSPC_HID_9_5	False		Hid : Support for virtual cables (O)
+TSPC_HID_9_6	False		Hid : HID initiated reconnection (C.1)
+TSPC_HID_9_7	False		Hid : Host initiated reconnection (C.1)
+TSPC_HID_9_8	False		Hid : Host data transfer to HID (C.2)
+TSPC_HID_9_9	False		Hid : HID data transfer to Host (C.2)
+TSPC_HID_9_10	False		Hid : HID Boot mode data transfer to Host (C.3)
+TSPC_HID_9_11	False		Hid : Host Boot mode data transfer to HID (C.4)
+TSPC_HID_9_12	False		Hid : Output reports declared (C.4)
+TSPC_HID_9_13	False		Hid : Input reports declared (C.3)
+TSPC_HID_9_14	False		Hid : Feature reports declared (O)
+TSPC_HID_9_15	False		Hid : Support for sending HCI_CONTROL with
+					VIRTUAL_CABLE_UNPLUG (C.5)
+TSPC_HID_9_16	False		Hid : Support for receiving HCI_CONTROL with
+					VIRTUAL_CABLE_UNPLUG (C.5)
+-------------------------------------------------------------------------------
+C.1: One of these is Mandatory IF (TSPC_HID_9_5) is supported
+	(SDP attribute 0x204=True)
+C.2: One of these is Mandatory if TSPC_HID_1_2 (HID Role) is supported.
+C.3: Mandatory IF (TSPC_HID_8_1) OR (TSPC_HID_8_2) is selected
+C.4: Mandatory IF (TSPC_HID_8_2) is supported (for status indicators)
+C.5: Optional IF (TSPC_HID_9_5) supported, otherwise excluded.
+-------------------------------------------------------------------------------
+
+
+		Device to Host Transfers
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_HID_10_1	False		Hid : Data reports larger than host MTU on
+					Control channel (O)
+TSPC_HID_10_2	False		Hid : Data reports larger than host MTU on
+					Interrupt channel (O)
+TSPC_HID_10_3	False		Hid : Data reports to host (O)
+TSPC_HID_10_4	False		Hid : Boot mode reports to host (C.1)
+-------------------------------------------------------------------------------
+C.1: Mandatory IF (TSPC_HID_8_1) OR (TSPC_HID_8_2) is supported.
+	Optional for other HIDs.
+-------------------------------------------------------------------------------
+
+
+		Host to Device Transfers
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_HID_11_1	False		Hid : Data reports larger than device MTU on
+					Control channel (O)
+TSPC_HID_11_2	False		Hid : Data reports larger than device MTU on
+					Interrupt channel (O)
+TSPC_HID_11_3	False		Hid : Data reports to device (O)
+TSPC_HID_11_4	False		Hid : Boot mode reports to device (C.1)
+-------------------------------------------------------------------------------
+C.1: Mandatory IF (TSPC_HID_8_2) is supported. Optional for other HIDs.
+-------------------------------------------------------------------------------
+
+
+		HID Control Commands
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_HID_12_1	False		Hid : Set_Protocol command (C.1, C.5)
+TSPC_HID_12_2	False		Hid : Get_Protocol command (C.1, C.5)
+TSPC_HID_12_3	False		Hid : Set_Idle command (C.2)
+TSPC_HID_12_4	False		Hid : Get_Idle command (C.2)
+TSPC_HID_12_5	False		Hid : Set_Report command (C.3)
+TSPC_HID_12_6	False		Hid : Get_Report command (C.4)
+-------------------------------------------------------------------------------
+C.1: Mandatory IF (TSPC_HID_8_1) OR (TSPC_HID_8_2) is supported.
+	Optional for other HIDs. If either Set_Protocol or Get_Protocol
+	supported, both are Mandatory.
+C.2: Mandatory IF (TSPC_HID_8_2) Keyboard is selected. Optional for other HIDs.
+C.3: Mandatory IF (TSPC_HID_9_12) or (TSPC_HID_9_14) supported.
+C.4: Mandatory IF (TSPC_HID_9_13) or (TSPC_HID_9_14) supported
+C.5: If either TSPC_HID_12_1 (Set_Protocol command) OR TSPC_HID_12_2
+	(Get_Protocol command) is supported, both TSPC_HID_12_1
+	(Set_Protocol command) AND TSPC_HID_12_2 (Get_Protocol command) are
+	Mandatory to support
+-------------------------------------------------------------------------------
+
+
+		HID Link Manager Procedures
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_HID_13_1	False		Hid : Host initiated Authentication before
+					connection completed (C.1)
+TSPC_HID_13_2	False		Hid : Host initiated Authentication after
+					connection completed (C.1)
+TSPC_HID_13_3	False		Hid : Item no longer used (N/A)
+TSPC_HID_13_4	False		Hid : Item no longer used (N/A)
+TSPC_HID_13_5	False		Hid : Encryption (C.1)
+TSPC_HID_13_6	False		Hid : Initiate encryption (O)
+TSPC_HID_13_7	False		Hid : Accept encryption requests (C.2)
+TSPC_HID_13_8	False		Hid : Role switch (Master/Slave) (C.3)
+TSPC_HID_13_9	False		Hid : Request Master Slave switch (O)
+TSPC_HID_13_10	False		Hid : Accept Master Slave switch requests (C.3)
+TSPC_HID_13_11	False		Hid : Hold mode (O)
+TSPC_HID_13_12	False		Hid : Sniff mode (O)
+TSPC_HID_13_13	False		Hid : Park mode (O)
+-------------------------------------------------------------------------------
+C.1: Mandatory IF (TSPC_HID_8_2) OR (TSPC_HID_8_3) is selected. Optional
+	for other HIDs.
+C.2: Mandatory IF (TSPC_HID_13_5) supported.
+C.3: Mandatory IF (TSPC_HID_9_6) is supported.
+-------------------------------------------------------------------------------
+
+
+		HID Link Control Requirements
+-------------------------------------------------------------------------------
+Parameter Name	Selected	Description
+-------------------------------------------------------------------------------
+TSPC_HID_14_1	False		Hid : Supports inquiry, 79 channel (O)
+TSPC_HID_14_2	False		Hid : Supports inquiry scan, 79 channel (M.1)
+TSPC_ALL	False		Enables all test cases when set to true.
+-------------------------------------------------------------------------------
+M.1: Mandatory IF (TSPC_HID_1_2) is supported.
+-------------------------------------------------------------------------------

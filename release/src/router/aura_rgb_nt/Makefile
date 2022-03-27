@@ -4,6 +4,9 @@ CFLAGS  += -I. -I$(TOP)/shared  -I$(SRCBASE)/include -Wall
 
 LDFLAGS += -L$(TOP)/nvram$(BCMEX)${EX7} ${EXTRA_NV_LDFLAGS} -lnvram
 LDFLAGS += -L$(TOP)/shared -L$(INSTALLDIR)/shared/usr/lib -lshared
+ifeq ($(RTCONFIG_BCM_502L07P2),y)
+LDFLAGS += -L$(TOP_PLATFORM)/ethctl_lib -lethctl
+endif
 
 all: aura_rgb_nt aura_rgb_sw
 

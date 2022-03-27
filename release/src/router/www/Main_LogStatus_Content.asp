@@ -53,7 +53,7 @@ function clearLog(){
 	document.form1.target = "hidden_frame";
 	document.form1.action_mode.value = " Clear ";
 	document.form1.submit();
-	location.href = location.href;
+	location.reload();
 }
 
 function showDST(){
@@ -129,12 +129,13 @@ var height = 0;
 function get_log_data(){
 	var h = 0;
     $.ajax({
-    	url: '/ajax_log_data.asp',
-    	dataType: 'script',
-    	error: function(xhr){
+		url: '/appGet.cgi?hook=nvram_dump(\"syslog.log\",\"syslog.sh\")',
+		dataType: 'text',
+		error: function(xhr){
       		setTimeout("get_log_data();", 1000);
-    	},
-    	success: function(response){
+		},
+		success: function(response){
+			var logString = htmlEnDeCode.htmlEncode(response.toString().slice(26,-4));
     		h = $("#textarea").scrollTop();
 			var _log = '';
 			if((document.getElementById("auto_refresh").checked) && !(height > 0 && h < height)){

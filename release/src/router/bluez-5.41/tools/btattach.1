@@ -1,0 +1,53 @@
+.TH "btattach" "1" "November 2015" "BlueZ" "Linux System Administration"
+.SH NAME
+btattach \- attach serial devices to BlueZ stack
+
+.SH SYNOPSIS
+.B btattach
+.RB [\| \-B
+.IR device \|]
+.RB [\| \-A
+.IR device \|]
+.RB [\| \-P
+.IR protocol \|]
+.RB [\| \-R \|]
+
+.SH DESCRIPTION
+.LP
+btattach is used to attach a serial UART to the Bluetooth stack as a
+transport interface.
+
+.SH OPTIONS
+.TP
+.BI \-B " device" , " " \--bredr " device"
+Attach a BR/EDR controller.
+.TP
+.BI \-A " device" , " " \--amp " device"
+Attach an AMP controller.
+.TP
+.BI \-P " protocol" , " " \--protocol " protocol"
+Specify the protocol type for talking to the device.
+Supported values are:
+.RS
+.IP \(bu 2
+.B h4
+.IP \(bu 2
+.B bcsp
+.IP \(bu 2
+.B 3wire
+.IP \(bu 2
+.B h4ds
+.IP \(bu 2
+.B ll
+.IP \(bu 2
+.B ath3k
+.IP \(bu 2
+.B intel
+.IP \(bu 2
+.B bcm
+.IP \(bu 2
+.B qca
+.RE
+.TP
+.B \-R
+Set the device into raw mode (the kernel and bluetoothd will ignore it).

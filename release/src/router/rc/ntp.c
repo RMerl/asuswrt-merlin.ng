@@ -97,7 +97,7 @@ static void set_alarm()
 	int diff_sec;
 	unsigned int sec;
 
-#if defined(RTCONFIG_IPV6) && defined(RTAX82_XD6)
+#if defined(RTCONFIG_IPV6) && (defined(RTAX82_XD6) || defined(RTAX82_XD6S))
 	if (!strncmp(nvram_safe_get("territory_code"), "CH", 2) &&
 		ipv6_enabled() &&
                 nvram_match(ipv6_nvname("ipv6_only"), "1") &&
@@ -169,7 +169,7 @@ int ntp_main(int argc, char *argv[])
 	FILE *fp;
 	pid_t pid;
 	char *args[] = {"ntpclient", "-h", server, "-i", "3", "-l", "-s", NULL};
-#ifdef RTAX82_XD6
+#if defined(RTAX82_XD6) || defined(RTAX82_XD6S)
 	pid_t pid__ntpdate;
 	char *args_ntpdate[] = { "ntpdate", "2.pool.ntp.org", NULL };
 #endif
@@ -193,7 +193,7 @@ int ntp_main(int argc, char *argv[])
 //	signal(SIGCHLD, chld_reap);
 	signal(SIGCHLD, catch_sig);
 
-#ifdef RTAX82_XD6
+#if defined(RTAX82_XD6) || defined(RTAX82_XD6S)
 	unlink("/tmp/ntpdated");
 #endif
 	nvram_set("ntp_ready", "0");
@@ -238,7 +238,7 @@ int ntp_main(int argc, char *argv[])
 				logmessage("ntp", "start NTP update");
 
 		if (is_router_mode()) {	// try simultaneously
-#if defined(RTCONFIG_IPV6) && defined(RTAX82_XD6)
+#if defined(RTCONFIG_IPV6) && (defined(RTAX82_XD6) || defined(RTAX82_XD6S))
 			if (!strncmp(nvram_safe_get("territory_code"), "CH", 2) &&
 				ipv6_enabled() &&
 				nvram_match(ipv6_nvname("ipv6_only"), "1"))

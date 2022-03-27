@@ -640,6 +640,79 @@ width:122px;
 	border-radius: 0 10px 10px 0;
 }
 
+.noti_s46_ports {
+	position: absolute;
+	padding: 30px;
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+	border-radius: 5px;
+	z-index: 300;
+	background-color:#232629;
+	/*margin-left: 920px;
+	margin-top: -310px;*/
+	width:425px;
+	height:auto;
+	line-height:20px;
+	box-shadow: 3px 3px 10px #000;
+	display:block;
+	overflow: auto;
+}
+.s46_ports {
+	position: absolute;
+	padding: 10px;
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+	border-radius: 5px;
+	z-index: 300;
+	background-color:#444f53;
+	/*margin-left: 920px;
+	margin-top: -310px;*/
+	width:425px;
+	height:auto;
+	line-height:20px;
+	box-shadow: 3px 3px 10px #000;
+	display:block;
+	overflow: auto;
+}
+.s46_ports_pf {
+	position: absolute;
+	padding: 10px;
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+	border-radius: 5px;
+	z-index: 300;
+	background-color:#444f53;
+	/*margin-left: 920px;
+	margin-top: -310px;*/
+	width:425px;
+	height:auto;
+	line-height:20px;
+	box-shadow: 3px 3px 10px #000;
+	display:inline;
+	overflow: auto;
+}
+.setup_info_icon{
+	cursor:pointer;
+	margin-left:225px;
+	margin-top:-18px;
+	background: url(images/New_ui/bottom_help.png);
+	background-position: -0px -0px; width: 19px; height: 19px;
+}
+.setup_info_icon_game{
+	cursor:pointer;
+	margin-left:155px;
+	margin-top:-18px;
+	background: url(images/New_ui/bottom_help.png);
+	background-position: -0px -0px; width: 19px; height: 19px;
+}
+.setup_info_icon_table{
+	cursor:pointer;
+	margin-left:88px;
+	margin-top:-18px;
+	background: url(images/New_ui/bottom_help.png);
+	background-position: -0px -0px; width: 19px; height: 19px;
+}
+
 #bottom_help_icon{
   background: url(images/New_ui/bottom_help.png);
   background-position: -0px -0px; width: 19px; height: 19px;

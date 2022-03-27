@@ -599,7 +599,6 @@ if [ "$MAKEFILE" ] ; then
 fi
 
 # UUID API
-=======
 case $OS_NAME in
 	OpenWrt)
 		echo "#define LIB_UUID" >> ${CONFIGFILE}

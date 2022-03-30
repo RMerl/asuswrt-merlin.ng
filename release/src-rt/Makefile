@@ -778,11 +778,11 @@ ifneq ($(LIVE_UPDATE_RSA),)
 ifneq (,$(wildcard $(KEY_PATH)/private*.pem))
 	for f in $(KEY_PATH)/private*.pem; do \
 		rsa_idx=$$(echo $${f} | sed "s/.*\///" | sed "s/private//" | sed "s/.pem//"); \
-		$$(openssl sha1 -sign $(KEY_PATH)/private$${rsa_idx}.pem -out $(IMAGEDIR)/$(COMBINE_NAME)_>
+		$$(openssl sha1 -sign $(KEY_PATH)/private$${rsa_idx}.pem -out $(IMAGEDIR)/$(COMBINE_NAME)_$(IMAGEVER)_rsa$${rsa_idx}.zip $(IMAGEDIR)/$(COMBINE_NAME)_$(IMAGEVER).trx); \
 	done
 else
 ifneq (,$(wildcard $(SRC_ROOT)/../../buildtools/private.pem))
-	openssl sha1 -sign $(SRC_ROOT)/../../buildtools/private.pem -out $(IMAGEDIR)/$(COMBINE_NAME)_$(IMA>
+	openssl sha1 -sign $(SRC_ROOT)/../../buildtools/private.pem -out $(IMAGEDIR)/$(COMBINE_NAME)_$(IMAGEVER)_rsa.zip $(IMAGEDIR)/$(COMBINE_NAME)_$(IMAGEVER).trx
 endif
 endif
 endif
@@ -5764,6 +5764,11 @@ ETJ etj:
 
 ET12 et12 XT12 xt12 XD4PRO xd4pro XT8PRO xt8pro ET8PRO et8pro:
 	$(call save_src_config, $@,_CFG)
+ifeq ($(or $(HND_ROUTER_AX_675x),$(HND_ROUTER_AX)),y)
+	@echo "Copy router-sysdep.$(lowercase_B) content"
+	@rm -fr router-sysdep
+	@cp -ar router-sysdep.$(lowercase_B)/ router-sysdep
+endif
 	$(MAKE) bin
 
 ifeq ($(ALPINE)$(LANTIQ),y)

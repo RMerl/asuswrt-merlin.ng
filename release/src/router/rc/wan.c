@@ -1176,8 +1176,9 @@ start_wan_if(int unit)
 	struct ifreq ifr;
 	int wan_mtu;
 	pid_t pid;
+	int mtu = 0;
 #ifdef RTCONFIG_USB_MODEM
-	int flags, mtu = 0;
+	int flags;
 	char usb_node[32], port_path[8];
 	char nvram_name[32];
 	int i = 0;

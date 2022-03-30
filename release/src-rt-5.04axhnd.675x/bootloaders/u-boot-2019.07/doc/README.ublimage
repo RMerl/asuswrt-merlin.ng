@@ -1,0 +1,141 @@
+---------------------------------------------
+UBL image Boot Image generation using mkimage
+---------------------------------------------
+
+This document describes how to set up an U-Boot image that can be directly
+booted by a DaVinci processor via NAND boot mode, using an UBL header,
+but without need for UBL.
+
+For more details see section 11.2 "ARM ROM Boot Modes" of
+http://focus.ti.com/lit/ug/sprufg5a/sprufg5a.pdf
+
+Command syntax:
+--------------
+./tools/mkimage -l <u-boot_file>
+		to list the UBL image file details
+
+./tools/mkimage -T ublimage \
+		-n <board specific configuration file> \
+		-d <u-boot binary>  <output image file>
+
+For example, for the davinci dm365evm board:
+./tools/mkimage -n ./board/davinci/dm365evm/ublimage.cfg \
+		-T ublimage \
+		-d u-boot-nand.bin u-boot.ubl
+
+You can generate the image directly when you compile u-boot with:
+
+$ make u-boot.ubl
+
+The output image can be flashed into the NAND.
+
+Please check the DaVinci documentation for further details.
+
+Board specific configuration file specifications:
+-------------------------------------------------
+1. This file must present in the $(BOARDDIR) and the name should be
+	ublimage.cfg (since this is used in Makefile).
+2. This file can have empty lines and lines starting with "#" as first
+	character to put comments.
+3. This file can have configuration command lines as mentioned below,
+	any other information in this file is treated as invalid.
+
+Configuration command line syntax:
+---------------------------------
+1. Each command line must have two strings, first one command or address
+	and second one data string
+2. Following are the valid command strings and associated data strings:-
+	Command string		data string
+	--------------		-----------
+	MODE			UBL special mode, on of:
+				safe
+				Example:
+				MODE	safe
+
+	ENTRY			Entry point address for the user
+				bootloader (absolute address) = TEXT_BASE
+				nand_spl loader.
+				Example:
+				ENTRY	0x00000020
+
+	PAGES			Number of pages (size of user bootloader
+				in number of pages)
+				Example:
+				PAGES	27
+
+	START_BLOCK		Block number where user bootloader is present
+				Example:
+				START_BLOCK	5
+
+	START_PAGE		Page number where user bootloader is present
+				(for RBL always 0)
+				Example:
+				START_PAGE	0
+
+------------------------------------------------
+
+Structure of the u-boot.ubl binary:
+
+compile steps:
+
+1) nand_spl code compile, with pad_to = (TEXT_BASE +
+   (CONFIG_SYS_NROF_PAGES_NAND_SPL * pagesize))
+   Example: cam_enc_4xx pad_to = 0x20 + (6 * 0x800) = 0x3020 = 12320
+   -> u-boot-spl-16k.bin
+
+   !! TEXT_BASE = 0x20, as the RBL starts at 0x20
+
+2) compile u-boot.bin ("normal" u-boot)
+   -> u-boot.bin
+
+3) create u-boot-nand.bin = u-boot-spl-16k.bin + u-boot.bin
+
+4) create u-boot.ubl, size = 1 page size NAND
+   create UBL header and paste it before u-boot.bin
+
+This steps are done automagically if you do a "make all"
+
+-> You get an u-boot.ubl binary, which you can flash
+   into your NAND.
+
+Structure of this binary (Example for the cam_enc_4xx board with a NAND
+page size = 0x800):
+
+offset :    0x00000 | 0x800	  | 0x3800
+content:    UBL     | nand_spl	  | u-boot code
+	    Header  | code	  |
+
+The NAND layout looks for example like this:
+
+(Example for the cam_enc_4xx board with a NAND page size = 0x800, block
+size = 0x20000 and CONFIG_SYS_NROF_UBL_HEADER 5):
+
+offset :    0x80000 | 0xa0000	  | 0xa3000
+content:    UBL     | nand_spl	  | u-boot code
+	    Header  | code	  |
+	    ^	      ^
+	    ^	      0xa0000 = CONFIG_SYS_NROF_UBL_HEADER * 0x20000
+	    ^
+	    0x80000 = Block 4 * 0x20000
+
+If the cpu starts in NAND boot mode, it checks the UBL descriptor
+starting with block 1 (page 0).  When a valid UBL signature is found,
+the corresponding block number (from 1 to 24) is written to the last 32
+bits of ARM internal memory (0x7ffc-0x8000).  This feature is provided
+as a basic debug mechanism.  If not found, it continues with block 2
+... last possible block is 24
+
+If a valid UBL descriptor is found, the UBL descriptor is read and
+processed.  The descriptor gives the information required for loading
+and control transfer to the nand_spl code.  The nand_spl code is then
+read and processed.
+
+Once the user-specified start-up conditions are set, the RBL copies the
+nand_spl into ARM internal RAM, starting at address 0x0000: 0020.
+							    ^^^^
+
+The nand_spl code itself now does necessary intializations, and at least,
+copies the u-boot code from NAND into RAM, and jumps to it ...
+
+------------------------------------------------
+Author: Heiko Schocher <hs@denx.de>

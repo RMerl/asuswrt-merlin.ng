@@ -1,0 +1,253 @@
+#
+# PINCTRL infrastructure and drivers
+#
+
+menu "Pin controllers"
+
+config PINCTRL
+	bool "Support pin controllers"
+	depends on DM
+	help
+	  This enables the basic support for pinctrl framework.  You may want
+	  to enable some more options depending on what you want to do.
+
+config PINCTRL_FULL
+	bool "Support full pin controllers"
+	depends on PINCTRL && OF_CONTROL
+	default y
+	help
+	  This provides Linux-compatible device tree interface for the pinctrl
+	  subsystem.  This feature depends on device tree configuration because
+	  it parses a device tree to look for the pinctrl device which the
+	  peripheral device is associated with.
+
+	  If this option is disabled (it is the only possible choice for non-DT
+	  boards), the pinctrl core provides no systematic mechanism for
+	  identifying peripheral devices, applying needed pinctrl settings.
+	  It is totally up to the implementation of each low-level driver.
+	  You can save memory footprint in return for some limitations.
+
+config PINCTRL_GENERIC
+	bool "Support generic pin controllers"
+	depends on PINCTRL_FULL
+	default y
+	help
+	  Say Y here if you want to use the pinctrl subsystem through the
+	  generic DT interface.  If enabled, some functions become available
+	  to parse common properties such as "pins", "groups", "functions" and
+	  some pin configuration parameters.  It would be easier if you only
+	  need the generic DT interface for pin muxing and pin configuration.
+	  If you need to handle vendor-specific DT properties, you can disable
+	  this option and implement your own set_state callback in the pinctrl
+	  operations.
+
+config PINMUX
+	bool "Support pin multiplexing controllers"
+	depends on PINCTRL_GENERIC
+	default y
+	help
+	  This option enables pin multiplexing through the generic pinctrl
+	  framework. Most SoCs have their own multiplexing arrangement where
+	  a single pin can be used for several functions. An SoC pinctrl driver
+	  allows the required function to be selected for each pin.
+	  The driver is typically controlled by the device tree.
+
+config PINCONF
+	bool "Support pin configuration controllers"
+	depends on PINCTRL_GENERIC
+	help
+	  This option enables pin configuration through the generic pinctrl
+	  framework.
+
+config SPL_PINCTRL
+	bool "Support pin controllers in SPL"
+	depends on SPL && SPL_DM
+	help
+	  This option is an SPL-variant of the PINCTRL option.
+	  See the help of PINCTRL for details.
+
+config SPL_PINCTRL_FULL
+	bool "Support full pin controllers in SPL"
+	depends on SPL_PINCTRL && SPL_OF_CONTROL
+	default n if TARGET_STM32F746_DISCO
+	default y
+	help
+	  This option is an SPL-variant of the PINCTRL_FULL option.
+	  See the help of PINCTRL_FULL for details.
+
+config SPL_PINCTRL_GENERIC
+	bool "Support generic pin controllers in SPL"
+	depends on SPL_PINCTRL_FULL
+	default y
+	help
+	  This option is an SPL-variant of the PINCTRL_GENERIC option.
+	  See the help of PINCTRL_GENERIC for details.
+
+config SPL_PINMUX
+	bool "Support pin multiplexing controllers in SPL"
+	depends on SPL_PINCTRL_GENERIC
+	default y
+	help
+	  This option is an SPL-variant of the PINMUX option.
+	  See the help of PINMUX for details.
+	  The pinctrl subsystem can add a substantial overhead to the SPL
+	  image since it typically requires quite a few tables either in the
+	  driver or in the device tree. If this is acceptable and you need
+	  to adjust pin multiplexing in SPL in order to boot into U-Boot,
+	  enable this option. You will need to enable device tree in SPL
+	  for this to work.
+
+config SPL_PINCONF
+	bool "Support pin configuration controllers in SPL"
+	depends on SPL_PINCTRL_GENERIC
+	help
+	  This option is an SPL-variant of the PINCONF option.
+	  See the help of PINCONF for details.
+
+if PINCTRL || SPL_PINCTRL
+
+config PINCTRL_AR933X
+	bool "QCA/Athores ar933x pin control driver"
+	depends on DM && SOC_AR933X
+	help
+	  Support pin multiplexing control on QCA/Athores ar933x SoCs.
+	  The driver is controlled by a device tree node which contains
+	  both the GPIO definitions and pin control functions for each
+	  available multiplex function.
+
+config PINCTRL_AT91
+	bool "AT91 pinctrl driver"
+	depends on DM
+	help
+	  This option is to enable the AT91 pinctrl driver for AT91 PIO
+	  controller.
+
+	  AT91 PIO controller is a combined gpio-controller, pin-mux and
+	  pin-config module. Each I/O pin may be dedicated as a general-purpose
+	  I/O or be assigned to a function of an embedded peripheral. Each I/O
+	  pin has a glitch filter providing rejection of glitches lower than
+	  one-half of peripheral clock cycle and a debouncing filter providing
+	  rejection of unwanted pulses from key or push button operations. You
+	  can also control the multi-driver capability, pull-up and pull-down
+	  feature on each I/O pin.
+
+config PINCTRL_AT91PIO4
+	bool "AT91 PIO4 pinctrl driver"
+	depends on DM
+	help
+	  This option is to enable the AT91 pinctrl driver for AT91 PIO4
+	  controller which is available on SAMA5D2 SoC.
+
+config PINCTRL_PIC32
+	bool "Microchip PIC32 pin-control and pin-mux driver"
+	depends on DM && MACH_PIC32
+	default y
+	help
+	  Supports individual pin selection and configuration for each
+	  remappable peripheral available on Microchip PIC32
+	  SoCs. This driver is controlled by a device tree node which
+	  contains both GPIO definition and pin control functions.
+
+config PINCTRL_QCA953X
+	bool "QCA/Athores qca953x pin control driver"
+	depends on DM && SOC_QCA953X
+	help
+	  Support pin multiplexing control on QCA/Athores qca953x SoCs.
+
+	  The driver is controlled by a device tree node which contains both
+	  the GPIO definitions and pin control functions for each available
+	  multiplex function.
+
+config PINCTRL_ROCKCHIP_RV1108
+	bool "Rockchip rv1108 pin control driver"
+	depends on DM
+	help
+	  Support pin multiplexing control on Rockchip rv1108 SoC.
+
+	  The driver is controlled by a device tree node which contains
+	  both the GPIO definitions and pin control functions for each
+	  available multiplex function.
+
+config PINCTRL_SANDBOX
+	bool "Sandbox pinctrl driver"
+	depends on SANDBOX
+	help
+	  This enables pinctrl driver for sandbox.
+
+	  Currently, this driver actually does nothing but print debug
+	  messages when pinctrl operations are invoked.
+
+config PINCTRL_SINGLE
+	bool "Single register pin-control and pin-multiplex driver"
+	depends on DM
+	help
+	  This enables pinctrl driver for systems using a single register for
+	  pin configuration and multiplexing. TI's AM335X SoCs are examples of
+	  such systems.
+
+	  Depending on the platform make sure to also enable OF_TRANSLATE and
+	  eventually SPL_OF_TRANSLATE to get correct address translations.
+
+config PINCTRL_STI
+	bool "STMicroelectronics STi pin-control and pin-mux driver"
+	depends on DM && ARCH_STI
+	default y
+	help
+	  Support pin multiplexing control on STMicrolectronics STi SoCs.
+
+	  The driver is controlled by a device tree node which contains both
+	  the GPIO definitions and pin control functions for each available
+	  multiplex function.
+
+config PINCTRL_STM32
+	bool "ST STM32 pin control driver"
+	depends on DM
+	help
+	  Supports pin multiplexing control on stm32 SoCs.
+
+	  The driver is controlled by a device tree node which contains both
+	  the GPIO definitions and pin control functions for each available
+	  multiplex function.
+
+config PINCTRL_STMFX
+	bool "STMicroelectronics STMFX I2C GPIO expander pinctrl driver"
+	depends on DM && PINCTRL_FULL
+	help
+	  I2C driver for STMicroelectronics Multi-Function eXpander (STMFX)
+	  GPIO expander.
+	  Supports pin multiplexing control on stm32 SoCs.
+
+	  The driver is controlled by a device tree node which contains both
+	  the GPIO definitions and pin control functions for each available
+	  multiplex function.
+
+config SPL_PINCTRL_STMFX
+	bool "STMicroelectronics STMFX I2C GPIO expander pinctrl driver in SPL"
+	depends on SPL_PINCTRL_FULL
+	help
+	  This option is an SPL-variant of the SPL_PINCTRL_STMFX option.
+	  See the help of PINCTRL_STMFX for details.
+
+config ASPEED_AST2500_PINCTRL
+  bool "Aspeed AST2500 pin control driver"
+  depends on DM && PINCTRL_GENERIC && ASPEED_AST2500
+  default y
+  help
+    Support pin multiplexing control on Aspeed ast2500 SoC. The driver uses
+	Generic Pinctrl framework and is compatible with the Linux driver,
+	i.e. it uses the same device tree configuration.
+
+endif
+
+source "drivers/pinctrl/broadcom/Kconfig"
+source "drivers/pinctrl/exynos/Kconfig"
+source "drivers/pinctrl/mediatek/Kconfig"
+source "drivers/pinctrl/meson/Kconfig"
+source "drivers/pinctrl/mscc/Kconfig"
+source "drivers/pinctrl/mvebu/Kconfig"
+source "drivers/pinctrl/nxp/Kconfig"
+source "drivers/pinctrl/renesas/Kconfig"
+source "drivers/pinctrl/rockchip/Kconfig"
+source "drivers/pinctrl/uniphier/Kconfig"
+
+endmenu

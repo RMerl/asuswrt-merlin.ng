@@ -1,0 +1,12 @@
+if TARGET_PCM058
+
+config SYS_BOARD
+	default "pcm058"
+
+config SYS_VENDOR
+	default "phytec"
+
+config SYS_CONFIG_NAME
+	default "pcm058"
+
+endif

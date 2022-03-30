@@ -1,0 +1,37 @@
+config RSA
+	bool "Use RSA Library"
+	select RSA_FREESCALE_EXP if FSL_CAAM && !ARCH_MX7 && !ARCH_MX6 && !ARCH_MX5
+	select RSA_SOFTWARE_EXP if !RSA_FREESCALE_EXP
+	help
+	  RSA support. This enables the RSA algorithm used for FIT image
+	  verification in U-Boot.
+	  See doc/uImage.FIT/signature.txt for more details.
+	  The Modular Exponentiation algorithm in RSA is implemented using
+	  driver model. So CONFIG_DM needs to be enabled by default for this
+	  library to function.
+	  The signing part is build into mkimage regardless of this
+	  option. The software based modular exponentiation is built into
+	  mkimage irrespective of this option.
+
+if RSA
+
+config SPL_RSA
+	bool "Use RSA Library within SPL"
+
+config RSA_SOFTWARE_EXP
+	bool "Enable driver for RSA Modular Exponentiation in software"
+	depends on DM
+	help
+	  Enables driver for modular exponentiation in software. This is a RSA
+	  algorithm used in FIT image verification. It required RSA Key as
+	  input.
+	  See doc/uImage.FIT/signature.txt for more details.
+
+config RSA_FREESCALE_EXP
+	bool "Enable RSA Modular Exponentiation with FSL crypto accelerator"
+	depends on DM && FSL_CAAM && !ARCH_MX7 && !ARCH_MX6 && !ARCH_MX5
+	help
+	Enables driver for RSA modular exponentiation using Freescale cryptographic
+	accelerator - CAAM.
+
+endif

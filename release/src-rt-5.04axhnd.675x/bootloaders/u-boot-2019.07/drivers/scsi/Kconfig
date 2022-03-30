@@ -1,0 +1,18 @@
+config SCSI
+	bool "Support SCSI controllers"
+	select HAVE_BLOCK_DEVICE
+	help
+	  This enables support for SCSI (Small Computer System Interface),
+	  a parallel interface widely used with storage peripherals such as
+	  hard drives and optical drives. The SCSI standards define physical
+	  interfaces as well as protocols for controlling devices and
+	  tranferring data.
+
+config DM_SCSI
+	bool "Support SCSI controllers with driver model"
+	depends on BLK
+	help
+	  This option enables the SCSI (Small Computer System Interface) uclass
+	  which supports SCSI and SATA HDDs. For every device configuration
+	  (IDs/LUNs) a block device is created with RAW read/write and
+	  filesystem support.

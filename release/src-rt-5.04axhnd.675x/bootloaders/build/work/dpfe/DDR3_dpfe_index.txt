@@ -1,0 +1,8 @@
+4912/dpfe_4912_hpk1_32_ddr3_0.bin      0  
+4912/dpfe_4912_hpk1_32_ddr3_1.bin      1
+4912/dpfe_4912_hpk1_32_ddr3_2.bin      2
+4912/dpfe_4912_hpk1_32_ddr3_3.bin      83
+63146/dpfe_63146_hpk3_16_ddr3_0.bin     0
+63146/dpfe_63146_hpk3_16_ddr3_1.bin     1
+63146/dpfe_63146_hpk3_16_ddr3_2.bin     2
+63146/dpfe_63146_hpk3_16_ddr3_3.bin     83

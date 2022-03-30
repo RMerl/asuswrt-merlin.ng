@@ -1,0 +1,366 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2018 B&R Industrial Automation GmbH
+ * http://www.br-automation.com
+ *
+ */
+/dts-v1/;
+
+#include "am33xx.dtsi"
+
+/ {
+	model = "BRPPT1 (MMC) Panel";
+	compatible = "ti,am33xx";
+
+	fset: factory-settings {
+		bl-version	= "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456890";
+		version		= <0x0100>;
+		order-no	= "6PPT30 (SPI)";
+		hw-revision	= "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456890";
+		serial-no	= "0";
+		device-id	= <0x0>;
+		parent-id	= <0x0>;
+		hw-variant	= <0x1>;
+	};
+
+	aliases {
+		ds1bkl0 = &pwmbacklight;
+		ds1bkl1 = &tps_bl;
+		ds1timing = &timing0;
+		ds1ctrl = &lcdc;
+		gpmc = &gpmc;
+		mmc = &mmc2;
+		spi0 = &spi0;
+		fset = &fset;
+	};
+
+	chosen {
+		bootargs = "console=ttyO0,115200 earlyprintk";
+		stdout-path = &uart0;
+	};
+
+	memory {
+		device_type = "memory";
+		reg = <0x80000000 0x10000000>; /* 256 MB */
+	};
+
+	panel {
+		status = "disabled";
+
+		compatible = "ti,tilcdc,panel";
+		enable-gpios = <&gpio0 6 GPIO_ACTIVE_LOW>;
+
+		backlight = <&pwmbacklight>;
+		bkl-pwm = <&pwmbacklight>;
+		bkl-tps = <&tps_bl>;
+
+		panel-info {
+			ac-bias		= <255>;
+			ac-bias-intrpt	= <0>;
+			dma-burst-sz	= <16>;
+			bpp		= <32>;
+			fdd		= <0x80>;
+			sync-edge	= <0>;
+			sync-ctrl	= <1>;
+			raster-order	= <0>;
+			fifo-th		= <0>;
+		};
+
+		display-timings {
+			native-mode = <&timing0>;
+			timing0: lcd {
+				clock-frequency	= <32000000>;
+				hactive		= <800>;
+				vactive		= <480>;
+				hfront-porch	= <2>;
+				hback-porch	= <192>;
+				hsync-len	= <1>;
+				vfront-porch	= <20>;
+				vback-porch	= <2>;
+				vsync-len	= <1>;
+				hsync-active	= <1>;
+				vsync-active	= <1>;
+				pupdelay	= <10>;
+				pondelay	= <10>;
+			};
+		};
+	};
+
+	vmmcsd_fixed: fixedregulator@0 {
+		compatible = "regulator-fixed";
+		regulator-name = "vmmcsd_fixed";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+	};
+
+	pwm0: omap-pwm@timer5 {
+		compatible = "ti,omap-dmtimer-pwm";
+		ti,timers = <&timer5>;
+		#pwm-cells = <3>;
+	};
+
+	pwm1: omap-pwm@timer6 {
+		compatible = "ti,omap-dmtimer-pwm";
+		ti,timers = <&timer6>;
+		#pwm-cells = <3>;
+	};
+
+	beeper: pwm-beep {
+		compatible = "pwm-beeper";
+		pwms = <&pwm0 0 0 0>;
+	};
+
+	pwmbacklight: pwm-bkl {
+		compatible = "pwm-backlight";
+		pwms = <&pwm1 0 5000000 0>;
+
+		default-brightness-level = <255>;
+		brightness-levels = <0 16 32 64 128 170 202 234 255>;
+
+		power-supply = <&vmmcsd_fixed>;
+		enable-gpios = <&gpio0 7 GPIO_ACTIVE_HIGH>;
+	};
+};
+
+&uart0 {		/* console uart */
+	u-boot,dm-spl;
+	status = "okay";
+};
+
+&uart1 {
+	status = "okay";
+};
+
+&i2c0 {
+	u-boot,dm-spl;
+	status = "okay";
+	clock-frequency = <400000>;
+
+	tps: tps@24 {		/* PMIC controller */
+		u-boot,dm-spl;
+		reg = <0x24>;
+		compatible = "ti,tps65217";
+
+		tps_bl: backlight {
+			compatible = "ti,tps65217-bl";
+			isel = <1>;	/* 1 - ISET1, 2 ISET2 */
+			fdim = <1000>;	/* TPS65217_BL_FDIM_1kHZ */
+			default-brightness = <50>;
+		};
+	};
+};
+
+&i2c2 {
+	status = "okay";
+	clock-frequency = <100000>;
+};
+
+&spi0 {
+	u-boot,dm-spl;
+	status = "okay";
+
+	cs-gpios = <&gpio0 5 GPIO_ACTIVE_HIGH>,
+		   <&gpio0 6 GPIO_ACTIVE_HIGH>,
+		   <0>,
+		   <0>;
+
+	spi-max-frequency = <24000000>;
+
+	spi_flash: spiflash@0 {
+		u-boot,dm-spl;
+		u-boot,dm-pre-reloc;
+		compatible = "spidev", "jedec,spi-nor";
+		spi-max-frequency = <24000000>;
+		reg = <0>;
+	};
+};
+
+&edma {
+	status = "okay";
+};
+
+&cppi41dma  {
+	status = "okay";
+};
+
+&usb {
+	status = "okay";
+};
+
+&usb_ctrl_mod {
+	status = "okay";
+};
+
+&usb0_phy {
+	status = "okay";
+};
+
+&usb1_phy {
+	status = "okay";
+};
+
+&usb0 {
+	status = "okay";
+	dr_mode = "host";
+};
+
+&usb1 {
+	status = "okay";
+	dr_mode = "host";
+};
+
+&davinci_mdio {
+	status = "okay";
+
+	phy0: ethernet-phy@0 {
+		reg = <1>;
+	};
+
+	phy1: ethernet-phy@1 {
+		reg = <2>;
+	};
+};
+
+&mac {
+	status = "okay";
+};
+
+&cpsw_emac0 {
+	phy-handle = <&phy0>;
+	dual_emac_res_vlan = <1>;
+	phy-mode = "mii";
+};
+
+&cpsw_emac1 {
+	phy-handle = <&phy1>;
+	dual_emac_res_vlan = <2>;
+	phy-mode = "mii";
+};
+
+&mmc1 {
+	u-boot,dm-spl;
+	vmmc-supply = <&vmmcsd_fixed>;
+	bus-width = <0x4>;
+	ti,non-removable;
+	ti,needs-special-hs-handling;
+	ti,vcc-aux-disable-is-sleep;
+	status = "okay";
+};
+
+&mmc2 {
+	u-boot,dm-spl;
+	vmmc-supply = <&vmmcsd_fixed>;
+	bus-width = <0x8>;
+	ti,non-removable;
+	ti,needs-special-hs-handling;
+	ti,vcc-aux-disable-is-sleep;
+	status = "okay";
+};
+
+&lcdc {
+	status = "disabled";
+};
+
+&elm {
+	status = "okay";
+};
+
+&sham {
+	status = "okay";
+};
+
+&aes {
+	status = "okay";
+};
+
+&gpio0 {
+	u-boot,dm-spl;
+	ti,no-reset-on-init;
+};
+
+&gpio1 {
+	u-boot,dm-spl;
+	ti,no-reset-on-init;
+};
+
+&gpio2 {
+	u-boot,dm-spl;
+	ti,no-reset-on-init;
+};
+
+&gpio3 {
+	u-boot,dm-spl;
+	ti,no-reset-on-init;
+};
+
+&wdt2 {
+	ti,no-reset-on-init;
+	ti,no-idle-on-init;
+};
+
+&tscadc {
+	status = "okay";
+	tsc {
+		ti,wires = <4>;
+		ti,x-plate-resistance = <200>;
+		ti,zx-cutoff-ratio = <40>;
+		ti,min_deviation = <60>;
+		ti,max_deviation = <600>;
+		ti,coordinate-readouts = <5>;
+		ti,wire-config = <0x00 0x11 0x22 0x33>;
+
+		bnr-buttons {
+			Home-Button {};
+		};
+	};
+
+	adc {
+		ti,adc-channels = <5 6 7>;
+	};
+};
+
+&timer6 {		/* used for cpsw end device */
+	status = "okay";
+	ti,no-reset-on-init;
+	ti,no-idle-on-init;
+};
+
+&timer7 {		/* used for cpsw end device */
+	status = "okay";
+	ti,no-reset-on-init;
+	ti,no-idle-on-init;
+};
+
+&wdt2 {
+	status = "okay";
+	ti,no-reset-on-init;
+	ti,no-idle-on-init;
+};
+
+&epwmss0 {
+	status = "okay";
+};
+
+&tscadc {
+	status = "okay";
+};
+
+&dcan0 {
+	status = "okay";
+};
+
+&dcan1 {
+	status = "okay";
+};
+
+&sham {
+	status = "disabled";
+};
+
+&aes {
+	status = "disabled";
+};
+
+&rng {
+	status = "disabled";
+};

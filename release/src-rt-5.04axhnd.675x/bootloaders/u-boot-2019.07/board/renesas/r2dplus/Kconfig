@@ -1,0 +1,12 @@
+if TARGET_R2DPLUS
+
+config SYS_BOARD
+	default "r2dplus"
+
+config SYS_VENDOR
+	default "renesas"
+
+config SYS_CONFIG_NAME
+	default "r2dplus"
+
+endif

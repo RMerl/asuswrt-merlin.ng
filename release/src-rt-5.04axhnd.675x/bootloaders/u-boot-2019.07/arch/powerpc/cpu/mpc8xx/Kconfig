@@ -1,0 +1,179 @@
+menu "mpc8xx CPU"
+	depends on MPC8xx
+
+config SYS_CPU
+	default "mpc8xx"
+
+choice
+	prompt "Target select"
+	optional
+
+config TARGET_MCR3000
+	bool "Support MCR3000 board from CSSI"
+
+endchoice
+
+choice
+	prompt "CPU select"
+	default MPC866
+
+config MPC866
+	bool "MPC866"
+
+config MPC885
+	bool "MPC885"
+
+endchoice
+
+#config MPC8xx_WATCHDOG
+#	bool "Watchdog"
+#	select HW_WATCHDOG
+
+config 8xx_GCLK_FREQ
+	int "CPU GCLK Frequency"
+
+comment "Specific commands"
+
+config CMD_IMMAP
+	bool "Enable various commands to dump IMMR information"
+	help
+	  This enables various commands such as:
+
+	    siuinfo - print System Interface Unit (SIU) registers
+	    memcinfo - print Memory Controller registers
+
+comment "Configuration Registers"
+
+config SYS_SIUMCR
+	hex "SIUMCR register"
+	help
+	  SIU Module Configuration (11-6)
+
+config SYS_SYPCR
+	hex "SYPCR register"
+	help
+	  System Protection Control (11-9)
+
+config SYS_TBSCR
+	hex "TBSCR register"
+	help
+	  Time Base Status and Control (11-26)
+
+config SYS_PISCR
+	hex "PISCR register"
+	help
+	  Periodic Interrupt Status and Control (11-31)
+
+config SYS_PLPRCR_BOOL
+	bool "Customise PLPRCR"
+
+config SYS_PLPRCR
+	hex "PLPRCR register"
+	depends on SYS_PLPRCR_BOOL
+	help
+	  PLL, Low-Power, and Reset Control Register (15-30)
+
+config SYS_SCCR
+	hex "SCCR register"
+	help
+	  System Clock and reset Control Register (15-27)
+
+config SYS_SCCR_MASK
+	hex "MASK for setting SCCR register"
+
+config SYS_DER
+	hex "DER register"
+	help
+	  Debug Event Register (37-47)
+
+comment "Memory mapping"
+
+config SYS_BR0_PRELIM
+	hex "Preliminary value for BR0"
+
+config SYS_OR0_PRELIM
+	hex "Preliminary value for OR0"
+
+config SYS_BR1_PRELIM_BOOL
+	bool "Define Bank 1"
+
+config SYS_BR1_PRELIM
+	hex "Preliminary value for BR1"
+	depends on SYS_BR1_PRELIM_BOOL
+
+config SYS_OR1_PRELIM
+	hex "Preliminary value for OR1"
+	depends on SYS_BR1_PRELIM_BOOL
+
+config SYS_BR2_PRELIM_BOOL
+	bool "Define Bank 2"
+
+config SYS_BR2_PRELIM
+	hex "Preliminary value for BR2"
+	depends on SYS_BR2_PRELIM_BOOL
+
+config SYS_OR2_PRELIM
+	hex "Preliminary value for OR2"
+	depends on SYS_BR2_PRELIM_BOOL
+
+config SYS_BR3_PRELIM_BOOL
+	bool "Define Bank 3"
+
+config SYS_BR3_PRELIM
+	hex "Preliminary value for BR3"
+	depends on SYS_BR3_PRELIM_BOOL
+
+config SYS_OR3_PRELIM
+	hex "Preliminary value for OR3"
+	depends on SYS_BR3_PRELIM_BOOL
+
+config SYS_BR4_PRELIM_BOOL
+	bool "Define Bank 4"
+
+config SYS_BR4_PRELIM
+	hex "Preliminary value for BR4"
+	depends on SYS_BR4_PRELIM_BOOL
+
+config SYS_OR4_PRELIM
+	hex "Preliminary value for OR4"
+	depends on SYS_BR4_PRELIM_BOOL
+
+config SYS_BR5_PRELIM_BOOL
+	bool "Define Bank 5"
+
+config SYS_BR5_PRELIM
+	hex "Preliminary value for BR5"
+	depends on SYS_BR5_PRELIM_BOOL
+
+config SYS_OR5_PRELIM
+	hex "Preliminary value for OR5"
+	depends on SYS_BR5_PRELIM_BOOL
+
+config SYS_BR6_PRELIM_BOOL
+	bool "Define Bank 6"
+
+config SYS_BR6_PRELIM
+	hex "Preliminary value for BR6"
+	depends on SYS_BR6_PRELIM_BOOL
+
+config SYS_OR6_PRELIM
+	hex "Preliminary value for OR6"
+	depends on SYS_BR6_PRELIM_BOOL
+
+config SYS_BR7_PRELIM_BOOL
+	bool "Define Bank 7"
+
+config SYS_BR7_PRELIM
+	hex "Preliminary value for BR7"
+	depends on SYS_BR7_PRELIM_BOOL
+
+config SYS_OR7_PRELIM
+	hex "Preliminary value for OR7"
+	depends on SYS_BR7_PRELIM_BOOL
+
+config SYS_IMMR
+	hex "Value for IMMR"
+
+source "board/cssi/MCR3000/Kconfig"
+
+endmenu

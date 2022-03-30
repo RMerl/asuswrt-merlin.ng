@@ -1,0 +1,56 @@
+Rockusb (Rockchip USB protocol)
+=====================================================
+
+Overview
+--------
+
+Rockusb protocol is widely used by Rockchip SoC based devices. It can
+read/write info, image to/from devices. This document briefly describes how to
+use Rockusb for upgrading firmware (e.g. kernel, u-boot, rootfs, etc.).
+
+Tools
+--------
+There are many tools can support Rockusb protocol. rkdeveloptool
+(https://github.com/rockchip-linux/rkdeveloptool) is open source,
+It is maintained by Rockchip. People don't want to build from source
+can download from here
+(https://github.com/rockchip-linux/rkbin/blob/master/tools/rkdeveloptool)
+
+Usage
+--------
+The Usage of Rockusb command is:
+
+rockusb <USB_controller> <devtype> <dev[:part]>
+
+e.g. rockusb 0 mmc 0
+
+On your U-Boot console, type this command to enter rockusb mode.
+On your host PC. use lsusb command. you should see a usb device
+using 0x2207 as its USB verdor id.
+
+for more detail about the rkdeveloptool. please read the usage.
+
+rkdeveloptool -h
+
+use rkdeveloptool wl command to write lba. BeginSec is the lba on device
+you want to write.
+
+sudo rkdeveloptool wl  <BeginSec> <File>
+
+to flash U-Boot image use below command. U-Boot binary is made by mkimage.
+see doc/README.rockchip for more detail about how to get U-Boot binary.
+
+sudo rkdeveloptool wl  64 <U-Boot binary>
+
+Current set of rkdeveloptool commands supported:
+- rci: Read Chip Info
+- rfi: Read Flash Id
+- rd : Reset Device
+- td : Test Device Ready
+- rl : Read blocks using LBA
+- wl : Write blocks using LBA
+- wlx: Write partition
+
+To do
+-----
+* Fully support Rockusb protocol

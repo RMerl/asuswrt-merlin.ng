@@ -1,0 +1,12 @@
+if TARGET_GOFLEXHOME
+
+config SYS_BOARD
+	default "goflexhome"
+
+config SYS_VENDOR
+	default "Seagate"
+
+config SYS_CONFIG_NAME
+	default "goflexhome"
+
+endif

@@ -1,0 +1,188 @@
+/* 963158REF4D board led definition */
+
+&legacy_leds {
+	adsl-led = <&led18>;
+	sec-adsl-led = <&led19>;
+	wan-data-led = <&led30>;
+	voip1-ok-led = <&led28>;
+	wl-sess-led = <&led29>;	
+};
+
+&led_ctrl {
+	pinctrl-names = "default";
+	pinctrl-0 = <&a_ser_led_clk_pin_1 &a_ser_led_data_pin_0 &a_ser_led_mask_pin_2>;
+	serial-shifters-installed = <3>;
+	serial-data-polarity-high;
+	led0: port_0-led_0-bit_0 {
+		active_high;
+		link = <(LED_SPEED_10|LED_SPEED_100)>;
+		status = "okay";
+	};
+	led1: port_0-led_1-bit_1 {
+		active_high;
+		link = <(LED_SPEED_100|LED_SPEED_1G)>;
+		status = "okay";
+	};
+	led2: port_1-led_0-bit_2 {
+		active_high;
+		link = <(LED_SPEED_10|LED_SPEED_100)>;
+		status = "okay";
+	};
+	led3: port_1-led_1-bit_3 {
+		active_high;
+		link = <(LED_SPEED_100|LED_SPEED_1G)>;
+		status = "okay";
+	};
+	led4: port_2-led_0-bit_4 {
+		active_high;
+		link = <(LED_SPEED_10|LED_SPEED_100)>;
+		status = "okay";
+	};
+	led5: port_2-led_1-bit_5 {
+		active_high;
+		link = <(LED_SPEED_100|LED_SPEED_1G)>;
+		status = "okay";
+	};
+	led6: port_3-led-0-pin_6 {
+		active_high;
+		link = <(LED_SPEED_10|LED_SPEED_100)>;
+		status = "okay";
+	};
+	led7: port_3-led-1-pin_7 {
+		active_high;
+		link = <(LED_SPEED_100|LED_SPEED_1G)>;
+		status = "okay";
+	};
+	led8: cb_port_1-led_0-bit_8 {
+		active_high;
+		link = <(LED_SPEED_10|LED_SPEED_100)>;
+		status = "okay";
+	};
+	led9: cb_port_1-led_1-bit_9 {
+		active_high;
+		link = <(LED_SPEED_100|LED_SPEED_1G)>;
+		status = "okay";
+	};
+	led10: cb_port_0-led_0-bit_10 {
+		active_high;
+		link = <(LED_SPEED_10|LED_SPEED_100|LED_SPEED_2500)>;
+		status = "okay";
+	};
+	led11: cb_port_0-led_1-bit_11 {
+		active_high;
+		link = <(LED_SPEED_100|LED_SPEED_1G)>;
+		status = "okay";
+	};
+	led12: cb_port_0-led_2-bit_12 {
+		active_high;
+		link = <LED_SPEED_2500>;
+		status = "okay";
+	};
+	led13: rnr_port_4-led_0-bit_13 {
+		active_high;
+		link = <(LED_SPEED_10|LED_SPEED_100|LED_SPEED_2500)>;
+		/* activity = <(LED_SPEED_10|LED_SPEED_100|LED_SPEED_2500)>; */
+		status = "okay";
+	};
+	led14: rnr_port_4-led_1-bit_14 {
+		active_high;
+		link = <(LED_SPEED_100|LED_SPEED_1G)>;
+		/* activity = <(LED_SPEED_100|LED_SPEED_1G)>; */
+		status = "okay";
+	};
+	led15: rnr_port_4-led_2-bit_15 {
+		active_high;
+		link = <(LED_SPEED_2500|LED_SPEED_10G)>;
+		/* activity = <(LED_SPEED_2500|LED_SPEED_10G)>; */
+		status = "okay";
+	};
+	led16: rnr_port_5-led_0-bit_16 {
+		active_high;
+		link = <(LED_SPEED_10|LED_SPEED_100)>;
+		status = "okay";
+	};
+	led17: rnr_port_5-led_1-bit_17 {
+		active_high;
+		link = <(LED_SPEED_100|LED_SPEED_1G)>;
+		status = "okay";
+	};
+	led18: sw_led_18-pin_18 {
+		active_high;
+		status = "okay";
+	};
+	led19: sw_led-bit_19 {
+		active_high;
+		status = "okay";
+	};
+	led20: port_0-led_3-bit_20 {
+		active_high;
+		activity = <LED_SPEED_GBE>;
+		link = <(LED_SPEED_GBE)>;
+		status = "okay";
+	};
+	led21: port_1-led_3-bit_21 {
+		active_high;
+		activity = <LED_SPEED_GBE>;
+		link = <(LED_SPEED_GBE)>;
+		status = "okay";
+	};
+	led22: port_2-led_3-bit_22 {
+		active_high;
+		activity = <LED_SPEED_GBE>;
+		link = <(LED_SPEED_GBE)>;		
+		status = "okay";
+	};
+	led23: port_3-led-3-pin_23 {
+		active_high;
+		activity = <LED_SPEED_GBE>;
+		link = <(LED_SPEED_GBE)>;		
+		status = "okay";
+	};
+	led24: cb_port_1-led_3-bit_24 {
+		active_high;
+		activity = <LED_SPEED_GBE>;
+		link = <(LED_SPEED_GBE)>;
+		status = "okay";
+	};
+	led25: cb_port_0-led_3-bit_25 {
+		active_high;
+		activity = <(LED_SPEED_GBE|LED_SPEED_2500)>;
+		link = <(LED_SPEED_GBE|LED_SPEED_2500)>;
+		status = "okay";
+	};
+	/* software led for GPON ranging activity */
+	/* led26: sw_led-bit_26 {
+		active_high;
+		status = "okay";
+	}; */
+
+	led26: rnr_port_4-led_3-bit_26 {
+		active_high;
+		activity = <(LED_SPEED_GBE|LED_SPEED_2500|LED_SPEED_10G)>;
+		link = <(LED_SPEED_GBE|LED_SPEED_2500|LED_SPEED_10G)>;
+		status = "okay";
+	};
+
+	led27: rnr_port_5-led_3-bit_27 {
+		active_high;
+		activity = <LED_SPEED_GBE>;
+		link = <(LED_SPEED_GBE)>;
+		status = "okay";
+	};
+	led28: sw_led_28-pin_28 {
+		active_high;
+		status = "okay";
+	};
+	led29: sw_led_29-pin_29 {
+		active_high;
+		status = "okay";
+	};
+	led30: dsl_act_0-pin_30 {
+		active_high;
+		status = "okay";
+	};
+	led31: dsl_act_1-pin_31 {
+		active_high;
+		status = "okay";
+	};
+};

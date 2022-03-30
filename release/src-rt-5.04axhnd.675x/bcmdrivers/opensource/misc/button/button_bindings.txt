@@ -1,0 +1,74 @@
+Button driver it's common driver for all kinds of buttons.
+This driver has its own device tree structure:
+
+buttons{
+      	compatible = "brcm,buttons";
+   	reset_button {
+			ext_irq = <&bca_extintr 54 BCA_GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+			press {
+   			print = "Button Press -- Hold for 5s to do restore to default";
+   		};
+			hold {
+	  			rst_to_dflt = <5>;
+ 			};
+			release {
+  				reset = <0>;
+			};	
+  		};
+		ses_button {
+			ext_irq = <&bca_extintr 53 BCA_GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+			release {
+  				ses = <1>;
+			};
+		};
+};
+
+Name of main node can be any, it's not predefined. In our case it's "buttons". Name of buttons nodes is user defined ("reset_button", "ses_button").
+When user build its own button node in DT he must define external interrupt entry. How to define this entry user needs to read bca_extintr_bindingd.txt.
+But name of external interrupt entry predefined as "ext_irq". It must be same for each button. Each event/trigger that can happen on button must be defined
+as node with predefined name "press", "hold", "release". In each trigger/event node, user must define action property (user defined name). Properties values
+can be only timeout (in seconds). "print" action defined and registered by button driver. "print_uboot" action can also be added for u-boot if user needs a
+different message. Also for u-boot only,  <action_name>_cmd string property can be used to specify a customized command to run for that action. 
+
+Button driver has external api function for buttons actions hooks registration:
+
+int register_button_action(const char *button_name, char *action_name, buttonNotifyHook_t hook);
+
+For example there is reset button driver. 
+It defines two action and hooks:
+	- reset (timeout 0, release event)
+   - reset to default (timeout 5 sec, hold event)
+
+Third action is print (already registered by button driver).
+
+This id for instance how reset_button driver calls api function for button action hook registration:
+
+register_button_action("reset_button", "rst_to_dflt", btn_hook_rst_to_dflt);
+register_button_action("reset_button", "reset", btn_hook_reset);
+
+The Button driver also supports the "gpio-keys" like behavior.
+It could send the EV_KEY <linux key code> Press/Released event to userspace. That could be handled via /dev/input/eventX
+In order to turn this on the reqiered button should be extended with linux,code=<KEY_CODE>; property and press/release
+action should be extended with linux,press and linux,release properies with possible delayed report. The delay is in
+miliseconds.
+The definitions of the key_codes should be taken from dt-bindings/input/linux-event-codes.h
+
+Ex:
+#include <dt-bindings/input/linux-event-codes.h>
+
+test_button {
+    ext_irq = <&bca_extintr 53 BCA_GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+    linux,code = <KEY_F12>;
+
+    press {
+        linux,press = <0>;
+    };
+    hold {
+        linux,release = <20>; /* ms  Send release command if button remain pressed for specified timeout in ms 
+                               */
+    };
+    release {
+        linux,release = <0>;
+    };
+};
+

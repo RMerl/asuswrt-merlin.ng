@@ -1,0 +1,2 @@
+compatible = "brcm,iproc-rng200";
+reg = <RNG200_OFFSET RNG200_SIZE>;

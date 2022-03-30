@@ -1,0 +1,100 @@
+Exynos Display Controller
+=========================
+Required properties:
+SOC specific:
+	compatible: should be "samsung,exynos-fimd"
+	reg: Base address of FIMD IP.
+
+Board(panel specific):
+	samsung,vl-col: X resolution of the panel
+	samsung,vl-row: Y resolution of the panel
+	samsung,vl-freq: Refresh rate
+	samsung,vl-bpix: Bits per pixel
+	samsung,vl-hspw: Hsync value
+	samsung,vl-hfpd: Right margin
+	samsung,vl-hbpd: Left margin
+	samsung,vl-vspw: Vsync value
+	samsung,vl-vfpd: Lower margin
+	samsung,vl-vbpd: Upper margin
+
+Optional properties:
+Board(panel specific):
+	samsung,vl-width: width of display area in mm
+	samsung,vl-height: Height of display area in mm
+
+	samsung,vl-clkp: Clock polarity
+		CONFIG_SYS_LOW if defined, else CONFIG_SYS_HIGH
+	samsung,vl-oep: Output Enable polarity
+		CONFIG_SYS_LOW if defined, else CONFIG_SYS_HIGH
+	samsung,vl-hsp: Horizontal Sync polarity
+		CONFIG_SYS_LOW if defined, else CONFIG_SYS_HIGH
+	samsung,vl-vsp: Vertical Sync polarity
+		CONFIG_SYS_LOW if defined, else CONFIG_SYS_HIGH
+	samsung,vl-dp: Data polarity
+		CONFIG_SYS_LOW if defined, else CONFIG_SYS_HIGH
+
+	samsung,vl-cmd-allow-len: Wait end of frame
+	samsung,winid: Window number on which data is to be displayed
+	samsung,init-delay: Delay before LCD initialization starts
+	samsung,power-on-delay: Delay after LCD is powered on
+	samsung,reset-delay: Delay after LCD is reset
+	samsung,interface-mode: 1(FIMD_RGB_INTERFACE), 2(FIMD_CPU_INTERFACE)
+	samsung,mipi-enabled: 1 if you want to use MIPI, else 0
+	samsung,dp-enabled: 1is you want to use DP, else 0
+	samsung,cs-setup: cs_setup value in FIMD_CPU_INTERFACE mode.
+	samsung,wr-setup: wr_setup value in FIMD_CPU_INTERFACE mode.
+	samsung,wr-act: wr_act value in FIMD_CPU_INTERFACE mode.
+	samsung,wr-hold: wr_hold value in FIMD_CPU_INTERFACE mode.
+	samsung,logo-on: 1 if you want to use custom logo.
+			 0 if you want LCD console.
+	samsung,logo-width: pixel width of logo image. Valid if logo_on = 1
+	samsung,logo-height: pixel height of logo image. Valid if logo_on = 1
+	samsung,logo-addr: Address of logo image. Valid if logo_on = 1
+	samsung,rgb-mode: 0(MODE_RGB_P), 1(MODE_BGR_P),
+			  2(MODE_RGB_S), 3(MODE_BGR_S)
+	samsung,pclk-name: parent clock identifier: 1(MPLL), 2(EPLL), 3(VPLL)
+	samsung,sclk-div: parent_clock/source_clock ratio
+	samsung,dual-lcd-enabled: 1 if you support two LCD, else 0
+	samsung,disable-sysmmu: Define this if you want to disable FIMD sysmmu.
+				(needed for Exynos5420 and newer versions)
+				Add the required FIMD sysmmu nodes to be
+				disabled with compatible string
+				"samsung,sysmmu-v3.3", with a "reg" property
+				holding the register address of FIMD sysmmu.
+	samsung,pwm-out-gpio: PWM output GPIO.
+	samsung,bl-en-gpio: backlight enable GPIO.
+
+Example:
+SOC specific part:
+	fimd@14400000 {
+		compatible = "samsung,exynos-fimd";
+		reg = <0x14400000 0x10000>;
+		#address-cells = <1>;
+		#size-cells = <1>;
+	};
+
+Board specific part:
+	fimd@14400000 {
+		samsung,vl-freq = <60>;
+		samsung,vl-col = <2560>;
+		samsung,vl-row = <1600>;
+		samsung,vl-width = <2560>;
+		samsung,vl-height = <1600>;
+
+		samsung,vl-clkp;
+		samsung,vl-dp;
+		samsung,vl-bpix = <4>;
+
+		samsung,vl-hspw = <32>;
+		samsung,vl-hbpd = <80>;
+		samsung,vl-hfpd = <48>;
+		samsung,vl-vspw = <6>;
+		samsung,vl-vbpd = <37>;
+		samsung,vl-vfpd = <3>;
+		samsung,vl-cmd-allow-len = <0xf>;
+
+		samsung,winid = <3>;
+		samsung,interface-mode = <1>;
+		samsung,dp-enabled = <1>;
+		samsung,dual-lcd-enabled = <0>;
+	};

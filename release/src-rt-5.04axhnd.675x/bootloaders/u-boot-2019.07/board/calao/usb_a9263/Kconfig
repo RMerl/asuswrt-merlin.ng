@@ -1,0 +1,12 @@
+if TARGET_USB_A9263
+
+config SYS_BOARD
+	default "usb_a9263"
+
+config SYS_VENDOR
+	default "calao"
+
+config SYS_CONFIG_NAME
+	default "usb_a9263"
+
+endif

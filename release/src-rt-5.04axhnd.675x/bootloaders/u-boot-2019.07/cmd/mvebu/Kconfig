@@ -1,0 +1,52 @@
+menu "MVEBU commands"
+depends on ARCH_MVEBU
+
+config CMD_MVEBU_BUBT
+	bool "bubt"
+	default n
+	help
+	  bubt - Burn a u-boot image to flash
+	  For details about bubt command please see the documentation
+	  in doc/mvebu/cmd/bubt.txt
+
+choice
+	prompt "Flash for image"
+	default MVEBU_SPI_BOOT
+
+config MVEBU_NAND_BOOT
+	bool "NAND flash boot"
+	depends on NAND_PXA3XX
+	help
+	  Enable boot from NAND flash.
+	  Allow usage of NAND flash as a target for "bubt" command
+	  For details about bubt command please see the documentation
+	  in doc/mvebu/cmd/bubt.txt
+
+config MVEBU_SPI_BOOT
+	bool "SPI flash boot"
+	depends on SPI_FLASH
+	help
+	  Enable boot from SPI flash.
+	  Allow usage of SPI flash as a target for "bubt" command
+	  For details about bubt command please see the documentation
+	  in doc/mvebu/cmd/bubt.txt
+
+config MVEBU_MMC_BOOT
+	bool "eMMC flash boot"
+	depends on MVEBU_MMC
+	help
+	  Enable boot from eMMC boot partition
+	  Allow usage of eMMC/SD device as a target for "bubt" command
+	  For details about bubt command please see the documentation
+	  in doc/mvebu/cmd/bubt.txt
+
+endchoice
+
+config MVEBU_UBOOT_DFLT_NAME
+	string "Default image name for bubt command"
+	default "flash-image.bin"
+	help
+	  This option should contain a default file name to be used with
+	  MVEBU "bubt" command if the source file name is omitted
+
+endmenu

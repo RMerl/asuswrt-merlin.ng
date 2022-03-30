@@ -1,0 +1,125 @@
+/* 963138RREF board led definition */
+
+&legacy_leds {
+	adsl-led = <&led17>;
+	adsl-fail-led = <&led16>;
+	wan-data-led = <&led15>;
+	wl-sess-led = <&led24>;
+	voip1-ok-led = <&led29>;
+	voip2-ok-led = <&led30>;
+};
+
+&led_ctrl {
+    led0: port_0-led_0-pin_0 {
+        active_low;
+        link = <(LED_SPEED_1G)>;
+        status = "okay";
+    };
+    led1: port_0-led_1-pin_1 {
+        active_low;
+        link = <(LED_SPEED_100)>;
+        status = "okay";
+    };
+    led2: port_1-led_0-pin_2 {
+        active_low;
+        link = <(LED_SPEED_1G)>;
+        status = "okay";
+    };
+    led3: port_1-led_1-pin_3 {
+        active_low;
+        link = <(LED_SPEED_100)>;
+        status = "okay";
+    };
+    led4: port_2-led_0-pin_4 {
+        active_low;
+        link = <(LED_SPEED_1G)>;
+        status = "okay";
+    };
+    led5: port_2-led_1-pin_5 {
+        active_low;
+        link = <(LED_SPEED_100)>;
+        status = "okay";
+    };
+    led6: port_3-led_0-pin_6 {
+        active_low;
+        link = <(LED_SPEED_1G)>;
+        status = "okay";
+    };
+    led7: port_3-led_1-pin_7 {
+        active_low;
+        link = <(LED_SPEED_100)>;
+        status = "okay";
+    };
+    led10: port_0-led_2-pin_10 {
+        active_low;
+        activity = <(LED_SPEED_100|LED_SPEED_1G)>;
+        link = <(LED_SPEED_100|LED_SPEED_1G)>;
+        status = "okay";
+    };
+    led11: port_1-led_2-pin_11 {
+        active_low;
+        activity = <(LED_SPEED_100|LED_SPEED_1G)>;
+        link = <(LED_SPEED_100|LED_SPEED_1G)>;
+        status = "okay";
+    };
+    led12: port_2-led_2-pin_12 {
+        active_low;
+        activity = <(LED_SPEED_100|LED_SPEED_1G)>;
+        link = <(LED_SPEED_100|LED_SPEED_1G)>;
+        status = "okay";
+    };
+    led13: port_3-led_2-pin_13 {
+        active_low;
+        activity = <(LED_SPEED_100|LED_SPEED_1G)>;
+        link = <(LED_SPEED_100|LED_SPEED_1G)>;
+        status = "okay";
+    };    
+    led15: wan_0-data-pin_15 {
+        active_low;
+        status = "okay";
+    };
+    led16: sw_led_16-pin_16 {
+        active_low;
+        status = "okay";
+    };
+    led17: sw_led_17-pin_17 {
+        active_low;
+        status = "okay";
+    };
+    led20: rnr_port_0-led_0-pin_20 {
+        active_low;
+        link = <(LED_SPEED_1G)>;
+        status = "okay";
+    };
+    led21: rnr_port_0-led_1-pin_21 {
+        active_low;
+        link = <(LED_SPEED_100)>;
+        status = "okay";
+    };
+    led22: rnr_port_0-led_2-pin_22 {
+        active_low;
+        link = <(LED_SPEED_100|LED_SPEED_1G)>;
+        activity = <(LED_SPEED_100|LED_SPEED_1G)>;
+        status = "okay";
+    };
+    led23: sw_led_23-pin_23 {
+        active_low;
+        status = "okay";
+    };
+    led24: sw_led_24-pin_24 {
+        active_low;
+        status = "okay";
+    };
+    led26: sw_led_26-pin_26 {
+        active_low;
+        status = "okay";
+    };
+    led29: sw_led_29-pin_29 {
+        active_low;
+        status = "okay";
+    };
+    led30: sw_led_30-pin_30 {
+        active_low;
+        status = "okay";
+    };
+};

@@ -1,0 +1,229 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2019 Philippe Reynes <philippe.reynes@softathome.com>
+ */
+
+#include "skeleton64.dtsi"
+#include "bcm4908-pinctrl.dtsi"
+#include "bcmbca-sf2net.dtsi"
+
+/ {
+	compatible = "brcm,bcm4908";
+	#address-cells = <2>;
+	#size-cells = <2>;
+
+	aliases {
+		spi1 = &hsspi;
+	};
+
+	cpus {
+		#address-cells = <2>;
+		#size-cells = <0>;
+		u-boot,dm-pre-reloc;
+
+		cpu0: cpu@0 {
+			compatible = "arm,cortex-a53", "arm,armv8";
+			device_type = "cpu";
+			reg = <0x0 0x0>;
+			next-level-cache = <&l2>;
+			u-boot,dm-pre-reloc;
+		};
+
+		cpu1: cpu@1 {
+			compatible = "arm,cortex-a53", "arm,armv8";
+			device_type = "cpu";
+			reg = <0x0 0x1>;
+			next-level-cache = <&l2>;
+			u-boot,dm-pre-reloc;
+		};
+
+		cpu2: cpu@2 {
+			compatible = "arm,cortex-a53", "arm,armv8";
+			device_type = "cpu";
+			reg = <0x0 0x2>;
+			next-level-cache = <&l2>;
+			u-boot,dm-pre-reloc;
+		};
+
+		cpu3: cpu@3 {
+			compatible = "arm,cortex-a53", "arm,armv8";
+			device_type = "cpu";
+			reg = <0x0 0x3>;
+			next-level-cache = <&l2>;
+			u-boot,dm-pre-reloc;
+		};
+
+		l2: l2-cache0 {
+			compatible = "cache";
+			u-boot,dm-pre-reloc;
+		};
+	};
+
+	clocks {
+		compatible = "simple-bus";
+		#address-cells = <2>;
+		#size-cells = <2>;
+		ranges;
+		u-boot,dm-pre-reloc;
+
+		refclk50mhz: refclk50mhz {
+			compatible = "fixed-clock";
+			#clock-cells = <0>;
+			clock-frequency = <50000000>;
+		        u-boot,dm-pre-reloc;
+		};
+
+		periph_osc: periph-osc {
+			compatible = "fixed-clock";
+			#clock-cells = <0>;
+			clock-frequency = <200000000>;
+			u-boot,dm-pre-reloc;
+		};
+
+		hsspi_pll: hsspi-pll {
+			compatible = "fixed-factor-clock";
+			#clock-cells = <0>;
+			clocks = <&periph_osc>;
+			clock-mult = <2>;
+			clock-div = <1>;
+		        u-boot,dm-pre-reloc;			
+		};
+	};
+
+	boot_state {
+		u-boot,dm-pre-reloc; 
+		compatible = "brcm,bcmbca-bootstate-v2";
+		reg-names = "reset_status", "reset_reason";
+		reg =   <0x0 0xff800438 0x0 0x04>,
+			<0x0 0xFF802628 0x0 0x04>;
+	};
+
+	ubus {
+		compatible = "simple-bus";
+		#address-cells = <2>;
+		#size-cells = <2>;
+		u-boot,dm-pre-reloc;
+
+
+		uart0: serial@ff800640 {
+			compatible = "brcm,bcm6345-uart";
+			reg = <0x0 0xff800640 0x0 0x1000>;
+			clocks = <&refclk50mhz>;
+			u-boot,dm-pre-reloc;
+		};
+		leds: led-controller@ff800800 {
+			compatible = "brcm,bcm6858-leds";
+			reg = <0x0 0xff800800 0x0 0xe4>;
+
+			status = "disabled";
+		};
+
+		wdt1: watchdog@ff800480 {
+			compatible = "brcm,bcm6345-wdt";
+			reg = <0x0 0xff800428 0x0 0x14>;
+			clocks = <&refclk50mhz>;
+		};
+
+		wdt-reboot {
+			compatible = "wdt-reboot";
+			wdt = <&wdt1>;
+		};
+
+		sf2gmac_eth {
+			compatible = "brcm,bcmbca-sf2gmac";
+			reg-names = "gmac-intf-base",
+						"gmac-mac-base",
+						"gmac-dma-base";
+
+		reg = <0x0 0x80002000 0x0 0x48>,
+			<0x0 0x80002400 0x0 0x340>,
+			<0x0 0x80002800 0x0 0x420>;
+
+			ethsw = <&switchsf2>;
+		};
+
+		switchsf2: sf2@0x80080000 {
+		compatible = "brcm,bcmbca-sf2";
+		phy_base = <0x8>;
+		reg-names = "switchcore-base",
+					"switchreg-base",
+					"switchmdio-base",
+					"qphy-ctrl",
+					"sphy-ctrl",
+					"phy-test-ctrl";
+
+		reg = <0x0 0x80080000 0x0 0x286B0>,
+			<0x0 0x800C0000 0x0 0x3F4>,
+			<0x0 0x800C05C0 0x0 0x8>,
+			<0x0 0x800C001C 0x0 0x04>,
+			<0x0 0x800C0024 0x0 0x04>,
+			<0x0 0x800C0018 0x0 0x04>;
+		};
+
+		pinctrl: pinctrl {
+		compatible = "brcm,bcmbca-pinctrl";
+		reg = <0x0 0xff800564 0x0 0x14>;
+		};
+
+		usb_ctrl:usb_ctrl {
+		compatible = "brcm,bcmbca-usb-ctrl";
+		reg-names = "usb-ctrl";
+		reg = <0x0 0x8000c200 0x0 0x100>;
+		status = "okay";
+		};
+
+		usb0: usb@0x8000c300 {
+		compatible = "brcm,bcmbca-ehci";
+		reg-names = "usb-ehci";
+		reg = <0x0 0x8000c300 0x0 0x100>;
+		};
+
+		usb_ohci0: usb_ohci@0x8000c400 {
+		compatible = "brcm,bcmbca-ohci";
+		reg-names = "usb-ohci";
+		reg = <0x0 0x8000c400 0x0 0x100>;
+		};
+
+		hsspi: spi-controller@ff801000 {
+			compatible = "brcm,bcm6328-hsspi";
+			#address-cells = <1>;
+			#size-cells = <0>;
+			u-boot,dm-pre-reloc;			
+			reg = <0x0 0xff801000 0x0 0x600>;
+			clocks = <&hsspi_pll>, <&hsspi_pll>;
+			clock-names = "hsspi", "pll";
+			spi-max-frequency = <100000000>;
+			num-cs = <8>;
+			status = "disabled";			
+		};
+
+		nand: nand-controller@ff801800 {
+			compatible = "brcm,nand-bcmbca",
+				     "brcm,brcmnand-v7.1",
+				     "brcm,brcmnand";
+			reg-names = "nand", "nand-int-base", "nand-cache";
+			reg = <0x0 0xff801800 0x0 0x400>,
+			      <0x0 0xff802000 0x0 0x10>,
+			      <0x0 0xff801c00 0x0 0x200>;
+			parameter-page-big-endian = <0>;
+
+			status = "disabled";
+		};
+
+		sdhci: sdhci@ff858000 {
+			compatible = "brcm,bcm63xx-sdhci",
+			             "brcm,sdhci-brcmbca";
+			reg-names = "sdhci-base", "sdhci-boot";
+			reg = <0x0 0xff858000 0x0 0x100>,
+			      <0x0 0xff858200 0x0 0x40>;	
+			bus-width = <8>;
+			u-boot,dm-pre-reloc;
+		};
+		
+		rng: rng@ff800b80 {
+			compatible = "brcm,iproc-rng200";
+			reg = <0x0 0xff800b80 0x0 0x28>;
+			u-boot,dm-pre-reloc;
+		};
+	};
+};

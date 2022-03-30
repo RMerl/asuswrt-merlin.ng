@@ -1,0 +1,15 @@
+BCM7445 BOARD
+M:	Thomas Fitzsimmons <fitzsim@fitzsim.org>
+S:	Maintained
+F:	board/broadcom/bcmstb/
+F:	include/configs/bcmstb.h
+F:	include/configs/bcm7445.h
+F:	configs/bcm7445_defconfig
+
+BCM7260 BOARD
+M:	Thomas Fitzsimmons <fitzsim@fitzsim.org>
+S:	Maintained
+F:	board/broadcom/bcmstb/
+F:	include/configs/bcmstb.h
+F:	include/configs/bcm7260.h
+F:	configs/bcm7260_defconfig

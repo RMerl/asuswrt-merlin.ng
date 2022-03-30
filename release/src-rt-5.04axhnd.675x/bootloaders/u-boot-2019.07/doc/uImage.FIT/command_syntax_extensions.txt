@@ -1,0 +1,201 @@
+Command syntax extensions for the new uImage format
+===================================================
+
+Author: Bartlomiej Sieka <tur@semihalf.com>
+
+With the introduction of the new uImage format, bootm command (and other
+commands as well) have to understand new syntax of the arguments. This is
+necessary in order to specify objects contained in the new uImage, on which
+bootm has to operate. This note attempts to first summarize bootm usage
+scenarios, and then introduces new argument syntax.
+
+
+bootm usage scenarios
+---------------------
+
+Below is a summary of bootm usage scenarios, focused on booting a PowerPC
+Linux kernel. The purpose of the following list is to document a complete list
+of supported bootm usages.
+
+Note: U-Boot supports two methods of booting a PowerPC Linux kernel: old way,
+i.e., without passing the Flattened Device Tree (FDT), and new way, where the
+kernel is passed a pointer to the FDT. The boot method is indicated for each
+scenario.
+
+
+1.  bootm		boot image at the current address, equivalent to 2,3,8
+
+Old uImage:
+2.  bootm <addr1>		    /* single image at <addr1> */
+3.  bootm <addr1>		    /* multi-image at <addr1>  */
+4.  bootm <addr1> -		    /* multi-image at <addr1>  */
+5.  bootm <addr1> <addr2>	    /* single image at <addr1> */
+6.  bootm <addr1> <addr2> <addr3>   /* single image at <addr1> */
+7.  bootm <addr1> -	  <addr3>   /* single image at <addr1> */
+
+New uImage:
+8.  bootm <addr1>
+9.  bootm [<addr1>]:<subimg1>
+10. bootm [<addr1>]#<conf>[#<extra-conf[#...]]
+11. bootm [<addr1>]:<subimg1> [<addr2>]:<subimg2>
+12. bootm [<addr1>]:<subimg1> [<addr2>]:<subimg2> [<addr3>]:<subimg3>
+13. bootm [<addr1>]:<subimg1> [<addr2>]:<subimg2> <addr3>
+14. bootm [<addr1>]:<subimg1> -			  [<addr3>]:<subimg3>
+15. bootm [<addr1>]:<subimg1> -			  <addr3>
+
+
+Ad. 1. This is equivalent to cases 2,3,8, depending on the type of image at
+the current image address.
+- boot method: see cases 2,3,8
+
+Ad. 2. Boot kernel image located at <addr1>.
+- boot method: non-FDT
+
+Ad. 3. First and second components of the image at <addr1> are assumed to be a
+kernel and a ramdisk, respectively. The kernel is booted with initrd loaded
+with the ramdisk from the image.
+- boot method: depends on the number of components at <addr1>, and on whether
+  U-Boot is compiled with OF support:
+
+		    |	       2 components |	       3 components |
+		    |	   (kernel, initrd) | (kernel, initrd, fdt) |
+---------------------------------------------------------------------
+#ifdef CONFIG_OF_*  |		    non-FDT |			FDT |
+#ifndef CONFIG_OF_* |		    non-FDT |		    non-FDT |
+
+Ad. 4. Similar to case 3, but the kernel is booted without initrd.  Second
+component of the multi-image is irrelevant (it can be a dummy, 1-byte file).
+- boot method: see case 3
+
+Ad. 5. Boot kernel image located at <addr1> with initrd loaded with ramdisk
+from the image at <addr2>.
+- boot method: non-FDT
+
+Ad. 6. <addr1> is the address of a kernel image, <addr2> is the address of a
+ramdisk image, and <addr3> is the address of a FDT binary blob.  Kernel is
+booted with initrd loaded with ramdisk from the image at <addr2>.
+- boot method: FDT
+
+Ad. 7. <addr1> is the address of a kernel image and <addr3> is the address of
+a FDT binary blob. Kernel is booted without initrd.
+- boot method: FDT
+
+Ad. 8. Image at <addr1> is assumed to contain a default configuration, which
+is booted.
+- boot method: FDT or non-FDT, depending on whether the default configuration
+  defines FDT
+
+Ad. 9. Similar to case 2: boot kernel stored in <subimg1> from the image at
+address <addr1>.
+- boot method: non-FDT
+
+Ad. 10. Boot configuration <conf> from the image at <addr1>.
+- boot method: FDT or non-FDT, depending on whether the configuration given
+  defines FDT
+
+Ad. 11. Equivalent to case 5: boot kernel stored in <subimg1> from the image
+at <addr1> with initrd loaded with ramdisk <subimg2> from the image at
+<addr2>.
+- boot method: non-FDT
+
+Ad. 12. Equivalent to case 6: boot kernel stored in <subimg1> from the image
+at <addr1> with initrd loaded with ramdisk <subimg2> from the image at
+<addr2>, and pass FDT blob <subimg3> from the image at <addr3>.
+- boot method: FDT
+
+Ad. 13. Similar to case 12, the difference being that <addr3> is the address
+of FDT binary blob that is to be passed to the kernel.
+- boot method: FDT
+
+Ad. 14. Equivalent to case 7: boot kernel stored in <subimg1> from the image
+at <addr1>, without initrd, and pass FDT blob <subimg3> from the image at
+<addr3>.
+- boot method: FDT
+
+Ad. 15. Similar to case 14, the difference being that <addr3> is the address
+of the FDT binary blob that is to be passed to the kernel.
+- boot method: FDT
+
+
+New uImage argument syntax
+--------------------------
+
+New uImage support introduces two new forms for bootm arguments, with the
+following syntax:
+
+- new uImage sub-image specification
+<addr>:<sub-image unit_name>
+
+- new uImage configuration specification
+<addr>#<configuration unit_name>
+
+- new uImage configuration specification with extra configuration components
+<addr>#<configuration unit_name>[#<extra configuration unit_name>[#..]]
+
+The extra configuration currently is supported only for additional device tree
+overlays to apply on the base device tree supplied by the first configuration
+unit.
+
+Examples:
+
+- boot kernel "kernel-1" stored in a new uImage located at 200000:
+bootm 200000:kernel-1
+
+- boot configuration "cfg-1" from a new uImage located at 200000:
+bootm 200000#cfg-1
+
+- boot configuration "cfg-1" with extra "cfg-2" from a new uImage located
+  at 200000:
+bootm 200000#cfg-1#cfg-2
+
+- boot "kernel-1" from a new uImage at 200000 with initrd "ramdisk-2" found in
+  some other new uImage stored at address 800000:
+bootm 200000:kernel-1 800000:ramdisk-2
+
+- boot "kernel-2" from a new uImage at 200000, with initrd "ramdisk-1" and FDT
+  "fdt-1", both stored in some other new uImage located at 800000:
+bootm 200000:kernel-1 800000:ramdisk-1 800000:fdt-1
+
+- boot kernel "kernel-2" with initrd "ramdisk-2", both stored in a new uImage
+  at address 200000, with a raw FDT blob stored at address 600000:
+bootm 200000:kernel-2 200000:ramdisk-2 600000
+
+- boot kernel "kernel-2" from new uImage at 200000 with FDT "fdt-1" from the
+  same new uImage:
+bootm 200000:kernel-2 - 200000:fdt-1
+
+
+Note on current image address
+-----------------------------
+
+When bootm is called without arguments, the image at current image address is
+booted. The current image address is the address set most recently by a load
+command, etc, and is by default equal to CONFIG_SYS_LOAD_ADDR. For example, consider
+the following commands:
+
+tftp 200000 /tftpboot/kernel
+bootm
+Last command is equivalent to:
+bootm 200000
+
+In case of the new uImage argument syntax, the address portion of any argument
+can be omitted. If <addr3> is omitted, then it is assumed that image at
+<addr2> should be used. Similarly, when <addr2> is omitted, it is assumed that
+image at <addr1> should be used. If <addr1> is omitted, it is assumed that the
+current image address is to be used. For example, consider the following
+commands:
+
+tftp 200000 /tftpboot/uImage
+bootm :kernel-1
+Last command is equivalent to:
+bootm 200000:kernel-1
+
+tftp 200000 /tftpboot/uImage
+bootm 400000:kernel-1 :ramdisk-1
+Last command is equivalent to:
+bootm 400000:kernel-1 400000:ramdisk-1
+
+tftp 200000 /tftpboot/uImage
+bootm :kernel-1 400000:ramdisk-1 :fdt-1
+Last command is equivalent to:
+bootm 200000:kernel-1 400000:ramdisk-1 400000:fdt-1

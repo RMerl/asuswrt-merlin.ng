@@ -1,0 +1,97 @@
+// SPDX-License-Identifier: GPL-2.0+ OR X11
+/*
+ * (C) Copyright 2018
+ * Lukasz Majewski, DENX Software Engineering, lukma@denx.de.
+ *
+ * Copyright 2016 Toradex AG
+ */
+
+/dts-v1/;
+#include "vf610-pcm052.dtsi"
+#include "vf610-pinfunc.h"
+
+/ {
+	model = "Liebherr (LVF) BK4 Vybrid Board";
+	compatible = "lvf,bk4", "fsl,vf610";
+
+	leds {
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_gpio_leds>;
+
+		compatible = "gpio-leds";
+
+		/* PTE15 PORT3[24] H6 green */
+		led@0 {
+			label = "0";
+			gpios = <&gpio3 24 GPIO_ACTIVE_LOW>;
+			default-state = "off";
+		};
+
+		/* PTA12 PORT0[5] H5 green */
+		led@1 {
+			label = "1";
+			gpios = <&gpio0 5 GPIO_ACTIVE_LOW>;
+			default-state = "off";
+		};
+
+		/* PTE20 PORT3[39] H4 green */
+		led@2 {
+			label = "2";
+			gpios = <&gpio3 29 GPIO_ACTIVE_LOW>;
+			default-state = "off";
+		};
+
+		/* PTE12 PORT3[21] H3 green */
+		led@3 {
+			label = "3";
+			gpios = <&gpio3 21 GPIO_ACTIVE_LOW>;
+			default-state = "off";
+		};
+
+		/* LED6 is now PRESET ETH -> PTA16 PORT0[6]  H6 red */
+		/* PTE9  PORT3[18] H5 red */
+		led@4 {
+			label = "5";
+			gpios = <&gpio3 18 GPIO_ACTIVE_LOW>;
+			default-state = "off";
+		};
+
+		/* PTE23 PORT4[0]  H4 red */
+		led@5 {
+			label = "6";
+			gpios = <&gpio4 0 GPIO_ACTIVE_LOW>;
+			default-state = "off";
+		};
+
+		/* PTE16 PORT3[25] H3 red */
+		led@6 {
+			label = "7";
+			gpios = <&gpio3 25 GPIO_ACTIVE_LOW>;
+			default-state = "off";
+		};
+	};
+};
+
+&iomuxc {
+	pinctrl-0 = <&pinctrl_ddr &pinctrl_hog>;
+
+	pinctrl_hog: hoggrp {
+		fsl,pins = <
+			/* ETH control pins */
+			VF610_PAD_PTE17__GPIO_122		0x1183
+			VF610_PAD_PTA16__GPIO_6	0x1183
+		>;
+	};
+
+	pinctrl_gpio_leds: gpioledsgrp {
+		fsl,pins = <
+			/* LEDS */
+			VF610_PAD_PTE15__GPIO_120	0x1183
+			VF610_PAD_PTA12__GPIO_5	0x1183
+			VF610_PAD_PTE9__GPIO_114	0x1183
+			VF610_PAD_PTE20__GPIO_125	0x1183
+			VF610_PAD_PTE23__GPIO_128	0x1183
+			VF610_PAD_PTE16__GPIO_121	0x1183
+		>;
+	};
+};

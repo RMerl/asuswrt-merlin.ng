@@ -1,0 +1,6 @@
+SL50 BOARD
+M:	Enric Balletbo i Serra <enric.balletbo@collabora.com>
+S:	Maintained
+F:	board/tcl/sl50/
+F:	include/configs/am335x_sl50.h
+F:	configs/am335x_sl50_defconfig

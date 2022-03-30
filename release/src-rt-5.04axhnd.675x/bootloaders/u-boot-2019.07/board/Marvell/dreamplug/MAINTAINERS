@@ -1,0 +1,6 @@
+DREAMPLUG BOARD
+M:	Jason Cooper <u-boot@lakedaemon.net>
+S:	Maintained
+F:	board/Marvell/dreamplug/
+F:	include/configs/dreamplug.h
+F:	configs/dreamplug_defconfig

@@ -1,0 +1,12 @@
+if TARGET_CORVUS
+
+config SYS_BOARD
+	default "corvus"
+
+config SYS_VENDOR
+	default "siemens"
+
+config SYS_CONFIG_NAME
+	default "corvus"
+
+endif

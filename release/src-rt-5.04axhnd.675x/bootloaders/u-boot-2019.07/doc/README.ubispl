@@ -1,0 +1,141 @@
+Lightweight UBI and UBI fastmap support
+
+# Copyright (C) Thomas Gleixner <tglx@linutronix.de>
+#
+# SPDX-License-Identifier: GPL 2.0+ BSD-3-Clause
+
+Scans the UBI information and loads the requested static volumes into
+memory.
+
+Configuration Options:
+
+   CONFIG_SPL_UBI
+     Enables the SPL UBI support
+
+   CONFIG_SPL_UBI_MAX_VOL_LEBS
+     The maximum number of logical eraseblocks which a static volume
+     to load can contain. Used for sizing the scan data structure
+
+   CONFIG_SPL_UBI_MAX_PEB_SIZE
+     The maximum physical erase block size. Either a compile time
+     constant or runtime detection. Used for sizing the scan data
+     structure
+
+   CONFIG_SPL_UBI_MAX_PEBS
+     The maximum physical erase block count. Either a compile time
+     constant or runtime detection. Used for sizing the scan data
+     structure
+
+   CONFIG_SPL_UBI_VOL_IDS
+     The maximum volume ids which can be loaded. Used for sizing the
+     scan data structure.
+
+Usage notes:
+
+In the board config file define for example:
+
+#define CONFIG_SPL_UBI
+#define CONFIG_SPL_UBI_MAX_VOL_LEBS	256
+#define CONFIG_SPL_UBI_MAX_PEB_SIZE	(256*1024)
+#define CONFIG_SPL_UBI_MAX_PEBS		4096
+#define CONFIG_SPL_UBI_VOL_IDS		8
+
+The size requirement is roughly as follows:
+
+    2k for the basic data structure
+  + CONFIG_SPL_UBI_VOL_IDS * CONFIG_SPL_UBI_MAX_VOL_LEBS * 8
+  + CONFIG_SPL_UBI_MAX_PEBS * 64
+  + CONFIG_SPL_UBI_MAX_PEB_SIZE * UBI_FM_MAX_BLOCKS
+
+The last one is big, but I really don't care in that stage. Real world
+implementations only use the first couple of blocks, but the code
+handles up to UBI_FM_MAX_BLOCKS.
+
+Given the above configuration example the requirement is about 5M
+which is usually not a problem to reserve in the RAM along with the
+other areas like the kernel/dts load address.
+
+So something like this will do the trick:
+
+#define SPL_FINFO_ADDR			0x80800000
+#define SPL_DTB_LOAD_ADDR		0x81800000
+#define SPL_KERNEL_LOAD_ADDR		0x82000000
+
+In the board file, implement the following:
+
+static struct ubispl_load myvolumes[] = {
+	{
+		.vol_id		= 0,	/* kernel volume */
+		.load_addr	= (void *)SPL_KERNEL_LOAD_ADDR,
+	},
+	{
+		.vol_id		= 1,	/* DT blob */
+		.load_addr	= (void *)SPL_DTB_LOAD_ADDR,
+	}
+};
+
+int spl_start_uboot(void)
+{
+	struct ubispl_info info;
+
+	info.ubi = (struct ubi_scan_info *) SPL_FINFO_ADDR;
+	info.fastmap = 1;
+	info.read = nand_spl_read_flash;
+
+#if COMPILE_TIME_DEFINED
+	/*
+	 * MY_NAND_NR_SPL_PEBS is the number of physical erase blocks
+	 * in the FLASH which are reserved for the SPL. Think about
+	 * mtd partitions:
+	 *
+	 * part_spl { .start = 0, .end = 4 }
+	 * part_ubi { .start = 4, .end = NR_PEBS }
+	 */
+	info.peb_offset = MY_NAND_NR_SPL_PEBS;
+	info.peb_size = CONFIG_SYS_NAND_BLOCK_SIZE;
+	info.vid_offset = MY_NAND_UBI_VID_OFFS;
+	info.leb_start = MY_NAND_UBI_DATA_OFFS;
+	info.peb_count = MY_NAND_UBI_NUM_PEBS;
+#else
+	get_flash_info(&flash_info);
+	info.peb_offset = MY_NAND_NR_SPL_PEBS;
+	info.peb_size = flash_info.peb_size;
+
+	/*
+	 * The VID and Data offset depend on the capability of the
+	 * FLASH chip to do subpage writes.
+	 *
+	 * If the flash chip supports subpage writes, then the VID
+	 * header starts at the second subpage. So for 2k pages size
+	 * with 4 subpages the VID offset is 512. The DATA offset is 2k.
+	 *
+	 * If the flash chip does not support subpage writes then the
+	 * VID offset is FLASH_PAGE_SIZE and the DATA offset
+	 * 2 * FLASH_PAGE_SIZE
+	 */
+	info.vid_offset = flash_info.vid_offset;
+	info.leb_start = flash_info.data_offset;
+
+	/*
+	 * The flash reports the total number of erase blocks, so
+	 * we need to subtract the number of blocks which are reserved
+	 * for the SPL itself and not managed by UBI.
+	 */
+	info.peb_count = flash_info.peb_count - MY_NAND_NR_SPL_PEBS;
+#endif
+
+	ret = ubispl_load_volumes(&info, myvolumes, ARRAY_SIZE(myvolumes);
+
+	....
+
+}
+
+Note: you can load any payload that way. You can even load u-boot from
+UBI, so the only non UBI managed FLASH area is the one which is
+reserved for the SPL itself and read from the SoC ROM.
+
+And you can do fallback scenarios:
+
+    if (ubispl_load_volumes(&info, volumes0, ARRAY_SIZE(volumes0)))
+        if (ubispl_load_volumes(&info, volumes1, ARRAY_SIZE(volumes1)))
+	    ubispl_load_volumes(&info, vol_uboot, ARRAY_SIZE(vol_uboot));

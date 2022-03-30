@@ -1,0 +1,10 @@
+Chipidea EHCI controller (part of OTG controller) used on Qualcomm devices.
+
+Required properties:
+- compatible: must be "qcom,ehci-host"
+- reg: start address and size of the registers
+
+ehci@78d9000 {
+	compatible = "qcom,ehci-host";
+	reg = <0x78d9000 0x400>;
+};

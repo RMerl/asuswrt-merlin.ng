@@ -1,0 +1,68 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2017 Álvaro Fernández Rojas <noltari@gmail.com>
+ */
+
+/dts-v1/;
+
+#include "brcm,bcm6348.dtsi"
+
+/ {
+	model = "Comtrend CT-5361";
+	compatible = "comtrend,ct-5361", "brcm,bcm6348";
+
+	aliases {
+		serial0 = &uart0;
+	};
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+	};
+
+	gpio-leds {
+		compatible = "gpio-leds";
+
+		power_green {
+			label = "CT-5361:green:power";
+			gpios = <&gpio0 0 1>;
+		};
+
+		alarm_red {
+			label = "CT-5361:red:alarm";
+			gpios = <&gpio0 2 1>;
+		};
+	};
+};
+
+&enet1 {
+	status = "okay";
+	phy = <&enet1phy>;
+	phy-mode = "mii";
+
+	enet1phy: fixed-link {
+		reg = <1>;
+		speed = <100>;
+		full-duplex;
+	};
+};
+
+&gpio0 {
+	status = "okay";
+};
+
+&ohci {
+	status = "okay";
+};
+
+&pflash {
+	status = "okay";
+};
+
+&uart0 {
+	u-boot,dm-pre-reloc;
+	status = "okay";
+};
+
+&usbh {
+	status = "okay";
+};

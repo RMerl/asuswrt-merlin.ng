@@ -1,0 +1,6 @@
+GEEKBOX
+M:	Andreas Färber <afaerber@suse.de>
+S:	Maintained
+F:	board/geekbuying/geekbox
+F:	include/configs/geekbox.h
+F:	configs/geekbox_defconfig

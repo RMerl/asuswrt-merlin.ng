@@ -1,0 +1,367 @@
+menu "Power"
+
+source "drivers/power/domain/Kconfig"
+
+source "drivers/power/pmic/Kconfig"
+
+source "drivers/power/regulator/Kconfig"
+
+choice
+	prompt "Select Sunxi PMIC Variant"
+	depends on ARCH_SUNXI
+	default AXP209_POWER if MACH_SUN4I || MACH_SUN5I || MACH_SUN7I
+	default AXP221_POWER if MACH_SUN6I || MACH_SUN8I_A23 || MACH_SUN8I_A33 || MACH_SUN8I_R40
+	default AXP818_POWER if MACH_SUN8I_A83T
+	default SUNXI_NO_PMIC if MACH_SUNXI_H3_H5 || MACH_SUN50I
+
+config SUNXI_NO_PMIC
+	bool "board without a pmic"
+	---help---
+	Select this for boards which do not use a PMIC.
+
+config AXP152_POWER
+	bool "axp152 pmic support"
+	depends on MACH_SUN5I
+	select AXP_PMIC_BUS
+	select CMD_POWEROFF
+	---help---
+	Select this to enable support for the axp152 pmic found on most
+	A10s boards.
+
+config AXP209_POWER
+	bool "axp209 pmic support"
+	depends on MACH_SUN4I || MACH_SUN5I || MACH_SUN7I
+	select AXP_PMIC_BUS
+	select CMD_POWEROFF
+	---help---
+	Select this to enable support for the axp209 pmic found on most
+	A10, A13 and A20 boards.
+
+config AXP221_POWER
+	bool "axp221 / axp223 pmic support"
+	depends on MACH_SUN6I || MACH_SUN8I_A23 || MACH_SUN8I_A33 || MACH_SUN8I_R40
+	select AXP_PMIC_BUS
+	select CMD_POWEROFF
+	---help---
+	Select this to enable support for the axp221/axp223 pmic found on most
+	A23 and A31 boards.
+
+config AXP809_POWER
+	bool "axp809 pmic support"
+	depends on MACH_SUN9I
+	select AXP_PMIC_BUS
+	select CMD_POWEROFF
+	---help---
+	Say y here to enable support for the axp809 pmic found on A80 boards.
+
+config AXP818_POWER
+	bool "axp818 pmic support"
+	depends on MACH_SUN8I_A83T
+	select AXP_PMIC_BUS
+	select CMD_POWEROFF
+	---help---
+	Say y here to enable support for the axp818 pmic found on
+	A83T dev board.
+
+config SY8106A_POWER
+	bool "SY8106A pmic support"
+	depends on MACH_SUNXI_H3_H5
+	---help---
+	Select this to enable support for the SY8106A pmic found on some
+	H3 boards.
+
+endchoice
+
+config AXP_DCDC1_VOLT
+	int "axp pmic dcdc1 voltage"
+	depends on AXP221_POWER || AXP809_POWER || AXP818_POWER
+	default 3300 if AXP818_POWER || MACH_SUN8I_R40
+	default 3000 if MACH_SUN6I || MACH_SUN8I || MACH_SUN9I
+	---help---
+	Set the voltage (mV) to program the axp pmic dcdc1 at, set to 0 to
+	disable dcdc1. On A23 / A31 / A33 (axp221) boards dcdc1 is used for
+	generic 3.3V IO voltage for external devices like the lcd-panal and
+	sdcard interfaces, etc. On most boards dcdc1 is undervolted to 3.0V to
+	save battery. On A31 devices dcdc1 is also used for VCC-IO. On A83T
+	dcdc1 is used for VCC-IO, nand, usb0, sd , etc. On A80 dcdc1 normally
+	powers some of the pingroups, NAND/eMMC, SD/MMC, and USB OTG.
+
+config AXP_DCDC2_VOLT
+	int "axp pmic dcdc2 voltage"
+	depends on AXP152_POWER || AXP209_POWER || AXP221_POWER || AXP809_POWER || AXP818_POWER
+	default 900 if AXP818_POWER
+	default 1400 if AXP152_POWER || AXP209_POWER
+	default 1200 if MACH_SUN6I
+	default 1100 if MACH_SUN8I
+	default 0 if MACH_SUN9I
+	---help---
+	Set the voltage (mV) to program the axp pmic dcdc2 at, set to 0 to
+	disable dcdc2.
+	On A10(s) / A13 / A20 boards dcdc2 is VDD-CPU and should be 1.4V.
+	On A31 boards dcdc2 is used for VDD-GPU and should be 1.2V.
+	On A23/A33 boards dcdc2 is used for VDD-SYS and should be 1.1V.
+	On A80 boards dcdc2 powers the GPU and can be left off.
+	On A83T boards dcdc2 is used for VDD-CPUA(cluster 0) and should be 0.9V.
+	On R40 boards dcdc2 is VDD-CPU and should be 1.1V
+
+config AXP_DCDC3_VOLT
+	int "axp pmic dcdc3 voltage"
+	depends on AXP152_POWER || AXP209_POWER || AXP221_POWER || AXP809_POWER || AXP818_POWER
+	default 900 if AXP809_POWER || AXP818_POWER
+	default 1500 if AXP152_POWER
+	default 1250 if AXP209_POWER
+	default 1100 if MACH_SUN8I_R40
+	default 1200 if MACH_SUN6I || MACH_SUN8I
+	---help---
+	Set the voltage (mV) to program the axp pmic dcdc3 at, set to 0 to
+	disable dcdc3.
+	On A10(s) / A13 / A20 boards with an axp209 dcdc3 is VDD-INT-DLL and
+	should be 1.25V.
+	On A10s boards with an axp152 dcdc3 is VCC-DRAM and should be 1.5V.
+	On A23 / A31 / A33 boards dcdc3 is VDD-CPU and should be 1.2V.
+	On A80 boards dcdc3 is used for VDD-CPUA(cluster 0) and should be 0.9V.
+	On A83T boards dcdc3 is used for VDD-CPUB(cluster 1) and should be 0.9V.
+	On R40 boards dcdc3 is VDD-SYS and VDD-GPU and should be 1.1V.
+
+config AXP_DCDC4_VOLT
+	int "axp pmic dcdc4 voltage"
+	depends on AXP152_POWER || AXP221_POWER || AXP809_POWER || AXP818_POWER
+	default 1250 if AXP152_POWER
+	default 1200 if MACH_SUN6I
+	default 0 if MACH_SUN8I
+	default 900 if MACH_SUN9I
+	---help---
+	Set the voltage (mV) to program the axp pmic dcdc4 at, set to 0 to
+	disable dcdc4.
+	On A10s boards with an axp152 dcdc4 is VDD-INT-DLL and should be 1.25V.
+	On A31 boards dcdc4 is used for VDD-SYS and should be 1.2V.
+	On A23 / A33 boards dcdc4 is unused and should be disabled.
+	On A80 boards dcdc4 powers VDD-SYS, HDMI, USB OTG and should be 0.9V.
+	On A83T boards dcdc4 is used for VDD-GPU.
+
+config AXP_DCDC5_VOLT
+	int "axp pmic dcdc5 voltage"
+	depends on AXP221_POWER || AXP809_POWER || AXP818_POWER
+	default 1500 if MACH_SUN6I || MACH_SUN8I || MACH_SUN9I
+	---help---
+	Set the voltage (mV) to program the axp pmic dcdc5 at, set to 0 to
+	disable dcdc5.
+	On A23 / A31 / A33 / A80 / A83T / R40 boards dcdc5 is VCC-DRAM and
+	should be 1.5V, 1.35V if DDR3L is used.
+
+config AXP_ALDO1_VOLT
+	int "axp pmic (a)ldo1 voltage"
+	depends on AXP221_POWER || AXP809_POWER || AXP818_POWER
+	default 0 if MACH_SUN6I || MACH_SUN8I_R40
+	default 1800 if MACH_SUN8I_A83T
+	default 3000 if MACH_SUN8I || MACH_SUN9I
+	---help---
+	Set the voltage (mV) to program the axp pmic aldo1 at, set to 0 to
+	disable aldo1.
+	On A31 boards aldo1 is often used to power the wifi module.
+	On A23 / A33 boards aldo1 is used for VCC-IO and should be 3.0V.
+	On A80 boards aldo1 powers the USB hosts and should be 3.0V.
+	On A83T / H8 boards aldo1 is used for MIPI CSI, DSI, HDMI, EFUSE, and
+	should be 1.8V.
+
+config AXP_ALDO2_VOLT
+	int "axp pmic (a)ldo2 voltage"
+	depends on AXP152_POWER || AXP209_POWER || AXP221_POWER || AXP809_POWER || AXP818_POWER
+	default 3000 if AXP152_POWER || AXP209_POWER
+	default 0 if MACH_SUN6I || MACH_SUN9I
+	default 1800 if MACH_SUN8I_A83T
+	default 2500 if MACH_SUN8I
+	---help---
+	Set the voltage (mV) to program the axp pmic aldo2 at, set to 0 to
+	disable aldo2.
+	On A10(s) / A13 / A20 boards aldo2 is AVCC and should be 3.0V.
+	On A31 boards aldo2 is typically unused and should be disabled.
+	On A31 boards aldo2 may be used for LPDDR2 then it should be 1.8V.
+	On A23 / A33 boards aldo2 is used for VDD-DLL and should be 2.5V.
+	On A80 boards aldo2 powers PB pingroup and camera IO and can be left off.
+	On A83T / H8 boards aldo2 powers VDD-DLL, VCC18-PLL, CPVDD, VDD18-ADC,
+	LPDDR2, and the codec. It should be 1.8V.
+
+config AXP_ALDO3_VOLT
+	int "axp pmic (a)ldo3 voltage"
+	depends on AXP209_POWER || AXP221_POWER || AXP809_POWER || AXP818_POWER
+	default 0 if AXP209_POWER || MACH_SUN9I
+	default 3000 if MACH_SUN6I || MACH_SUN8I
+	---help---
+	Set the voltage (mV) to program the axp pmic aldo3 at, set to 0 to
+	disable aldo3.
+	On A10(s) / A13 / A20 boards aldo3 should be 2.8V.
+	On A23 / A31 / A33 / R40 boards aldo3 is VCC-PLL and AVCC and should
+	be 3.0V.
+	On A80 boards aldo3 is normally not used.
+	On A83T / H8 boards aldo3 is AVCC, VCC-PL, and VCC-LED, and should be
+	3.0V.
+
+choice
+	prompt "axp pmic (a)ldo3 voltage rate control"
+	depends on AXP209_POWER
+	default AXP_ALDO3_VOLT_SLOPE_NONE
+	---help---
+	The AXP can slowly ramp up voltage to reduce the inrush current when
+	changing voltages.
+	Note, this does not apply when enabling/disabling LDO3. See
+	"axp pmic (a)ldo3 inrush quirk" below to enable a slew rate to limit
+	inrush current on broken board designs.
+
+config AXP_ALDO3_VOLT_SLOPE_NONE
+	bool "No voltage slope"
+	---help---
+	Tries to reach the next voltage setting near instantaneously. Measurements
+	indicate that this is about 0.0167 V/uS.
+
+config AXP_ALDO3_VOLT_SLOPE_16
+	bool "1.6 mV per uS"
+	---help---
+	Increases the voltage by 1.6 mV per uS until the final voltage has
+	been reached. Note that the scaling is in 25 mV steps and thus
+	the slew rate in reality is about 25 mV/31.250 uS.
+
+config AXP_ALDO3_VOLT_SLOPE_08
+	bool "0.8 mV per uS"
+	---help---
+	Increases the voltage by 0.8 mV per uS until the final voltage has
+	been reached. Note that the scaling is in 25 mV steps however and thus
+	the slew rate in reality is about 25 mV/15.625 uS.
+	This is the slowest supported rate.
+
+endchoice
+
+config AXP_ALDO3_INRUSH_QUIRK
+	bool "axp pmic (a)ldo3 inrush quirk"
+	depends on AXP209_POWER
+	default n
+	---help---
+	The reference design denotes a value of 4.7 uF for the output capacitor
+	of LDO3. Some boards have too high capacitance causing 	an inrush current
+	and resulting an AXP209 shutdown.
+
+config AXP_ALDO4_VOLT
+	int "axp pmic (a)ldo4 voltage"
+	depends on AXP209_POWER
+	default 0 if AXP209_POWER
+	---help---
+	Set the voltage (mV) to program the axp pmic aldo4 at, set to 0 to
+	disable aldo4.
+	On A10(s) / A13 / A20 boards aldo4 should be 2.8V.
+
+config AXP_DLDO1_VOLT
+	int "axp pmic dldo1 voltage"
+	depends on AXP221_POWER || AXP809_POWER || AXP818_POWER
+	default 0
+	---help---
+	Set the voltage (mV) to program the axp pmic dldo1 at, set to 0 to
+	disable dldo1. On sun6i (A31) boards with ethernet dldo1 is often used
+	to power the ethernet phy. On A23, A33 and A80 boards this is often
+	used to power the wifi.
+
+config AXP_DLDO2_VOLT
+	int "axp pmic dldo2 voltage"
+	depends on AXP221_POWER || AXP809_POWER || AXP818_POWER
+	default 3000 if MACH_SUN9I
+	default 0
+	---help---
+	Set the voltage (mV) to program the axp pmic dldo2 at, set to 0 to
+	disable dldo2.
+	On A80 boards dldo2 normally powers the PL pins and should be 3.0V.
+
+config AXP_DLDO3_VOLT
+	int "axp pmic dldo3 voltage"
+	depends on AXP221_POWER || AXP818_POWER
+	default 0
+	---help---
+	Set the voltage (mV) to program the axp pmic dldo3 at, set to 0 to
+	disable dldo3.
+
+config AXP_DLDO4_VOLT
+	int "axp pmic dldo4 voltage"
+	depends on AXP221_POWER || AXP818_POWER
+	default 0
+	---help---
+	Set the voltage (mV) to program the axp pmic dldo4 at, set to 0 to
+	disable dldo4.
+
+config AXP_ELDO1_VOLT
+	int "axp pmic eldo1 voltage"
+	depends on AXP221_POWER || AXP809_POWER || AXP818_POWER
+	default 0
+	---help---
+	Set the voltage (mV) to program the axp pmic eldo1 at, set to 0 to
+	disable eldo1.
+
+config AXP_ELDO2_VOLT
+	int "axp pmic eldo2 voltage"
+	depends on AXP221_POWER || AXP809_POWER || AXP818_POWER
+	default 0
+	---help---
+	Set the voltage (mV) to program the axp pmic eldo2 at, set to 0 to
+	disable eldo2.
+
+config AXP_ELDO3_VOLT
+	int "axp pmic eldo3 voltage"
+	depends on AXP221_POWER || AXP809_POWER || AXP818_POWER
+	default 3000 if MACH_SUN9I
+	default 0
+	---help---
+	Set the voltage (mV) to program the axp pmic eldo3 at, set to 0 to
+	disable eldo3. On some A31(s) tablets it might be used to supply
+	1.2V for the SSD2828 chip (converter of parallel LCD interface
+	into MIPI DSI).
+	On A80 boards it powers the PM pingroup and should be 3.0V.
+
+config AXP_FLDO1_VOLT
+	int "axp pmic fldo1 voltage"
+	depends on AXP818_POWER
+	default 0 if MACH_SUN8I_A83T
+	---help---
+	Set the voltage (mV) to program the axp pmic fldo1 at, set to 0 to
+	disable fldo1.
+	On A83T / H8 boards fldo1 is VCC-HSIC and should be 1.2V if HSIC is
+	used.
+
+config AXP_FLDO2_VOLT
+	int "axp pmic fldo2 voltage"
+	depends on AXP818_POWER
+	default 900 if MACH_SUN8I_A83T
+	---help---
+	Set the voltage (mV) to program the axp pmic fldo2 at, set to 0 to
+	disable fldo2.
+	On A83T / H8 boards fldo2 is VCC-CPUS and should be 0.9V.
+
+config AXP_FLDO3_VOLT
+	int "axp pmic fldo3 voltage"
+	depends on AXP818_POWER
+	default 0
+	---help---
+	Set the voltage (mV) to program the axp pmic fldo3 at, set to 0 to
+	disable fldo3.
+
+config AXP_SW_ON
+	bool "axp pmic sw on"
+	depends on AXP809_POWER || AXP818_POWER
+	default n
+	---help---
+	Enable to turn on axp pmic sw.
+
+config SY8106A_VOUT1_VOLT
+	int "SY8106A pmic VOUT1 voltage"
+	depends on SY8106A_POWER
+	default 1200
+	---help---
+	Set the voltage (mV) to program the SY8106A pmic VOUT1. This
+	is typically used to power the VDD-CPU and should be 1200mV.
+	Values can range from 680mV till 1950mV.
+
+config TWL4030_POWER
+	depends on OMAP34XX
+	bool "Enable driver for TI TWL4030 power management chip"
+	imply CMD_POWEROFF
+	---help---
+	The TWL4030 in a combination audio CODEC/power management with
+	GPIO and it is commonly used with the OMAP3 family of processors
+
+endmenu

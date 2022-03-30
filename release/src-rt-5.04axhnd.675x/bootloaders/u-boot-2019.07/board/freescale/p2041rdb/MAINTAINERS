@@ -1,0 +1,11 @@
+P2041RDB BOARD
+#M:	-
+S:	Maintained
+F:	board/freescale/p2041rdb/
+F:	include/configs/P2041RDB.h
+F:	configs/P2041RDB_defconfig
+F:	configs/P2041RDB_NAND_defconfig
+F:	configs/P2041RDB_SDCARD_defconfig
+F:	configs/P2041RDB_SECURE_BOOT_defconfig
+F:	configs/P2041RDB_SPIFLASH_defconfig
+F:	configs/P2041RDB_SRIO_PCIE_BOOT_defconfig

@@ -1,0 +1,6 @@
+RK3368 Sheep Board
+M:	Andy Yan <andy.yan@rock-chips.com>
+S:	Maintained
+F:	board/rockchip/sheep_rk3368
+F:	include/configs/sheep_rk3368.h
+F:	configs/sheep-rk3368_defconfig

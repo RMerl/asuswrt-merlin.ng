@@ -1,0 +1,85 @@
+Display Controller
+------------------
+
+(there isn't yet a generic binding in Linux, so this describes what is in
+U-Boot, and may change based on Linux activity)
+
+The device node for a display device is as described in the document
+"Open Firmware Recommended Practice : Universal Serial Bus" with the
+following modifications and additions :
+
+Required properties :
+ - compatible : Should be "nvidia,tegra20-dc"
+
+Required subnode 'rgb' is as follows:
+
+Required properties (rgb) :
+ - nvidia,panel : phandle of LCD panel information
+
+
+The panel node describes the panel itself. This has the properties listed in
+displaymode.txt as well as:
+
+Required properties (panel) :
+ - nvidia,bits-per-pixel: number of bits per pixel (depth)
+ - nvidia,pwm : pwm to use to set display contrast (see tegra20-pwm.txt)
+ - nvidia,panel-timings: 4 cells containing required timings in ms:
+	* delay before asserting panel_vdd
+	* delay between panel_vdd-rise and data-rise
+	* delay between data-rise and backlight_vdd-rise
+	* delay between backlight_vdd and pwm-rise
+	* delay between pwm-rise and backlight_en-rise
+
+Optional GPIO properies all have (phandle, GPIO number, flags):
+ - nvidia,backlight-enable-gpios: backlight enable GPIO
+ - nvidia,lvds-shutdown-gpios: LVDS power shutdown GPIO
+ - nvidia,backlight-vdd-gpios: backlight power GPIO
+ - nvidia,panel-vdd-gpios: panel power GPIO
+
+Example:
+
+host1x {
+	compatible = "nvidia,tegra20-host1x", "simple-bus";
+	reg = <0x50000000 0x00024000>;
+	interrupts = <0 65 0x04   /* mpcore syncpt */
+			0 67 0x04>; /* mpcore general */
+
+	#address-cells = <1>;
+	#size-cells = <1>;
+	status = "okay";
+
+	ranges = <0x54000000 0x54000000 0x04000000>;
+
+	dc@54200000 {
+		compatible = "nvidia,tegra20-dc";
+		reg = <0x54200000 0x00040000>;
+		interrupts = <0 73 0x04>;
+		status = "okay";
+
+		rgb {
+			status = "okay";
+			nvidia,panel = <&lcd_panel>;
+		};
+	};
+};
+
+lcd_panel: panel {
+	/* Seaboard has 1366x768 */
+	clock = <70600000>;
+	xres = <1366>;
+	yres = <768>;
+	left-margin = <58>;
+	right-margin = <58>;
+	hsync-len = <58>;
+	lower-margin = <4>;
+	upper-margin = <4>;
+	vsync-len = <4>;
+	hsync-active-high;
+	nvidia,bits-per-pixel = <16>;
+	nvidia,pwm = <&pwm 2 0>;
+	nvidia,backlight-enable-gpios = <&gpio 28 0>;	/* PD4 */
+	nvidia,lvds-shutdown-gpios = <&gpio 10 0>;	/* PB2 */
+	nvidia,backlight-vdd-gpios = <&gpio 176 0>;	/* PW0 */
+	nvidia,panel-vdd-gpios = <&gpio 22 0>;		/* PC6 */
+	nvidia,panel-timings = <400 4 203 17 15>;
+};

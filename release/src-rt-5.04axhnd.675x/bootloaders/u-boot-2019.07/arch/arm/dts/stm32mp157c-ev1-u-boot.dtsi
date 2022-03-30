@@ -1,0 +1,61 @@
+// SPDX-License-Identifier: GPL-2.0+ OR BSD-3-Clause
+/*
+ * Copyright : STMicroelectronics 2018
+ */
+
+#include "stm32mp157c-ed1-u-boot.dtsi"
+
+/ {
+	aliases {
+		gpio26 = &stmfx_pinctrl;
+		i2c1 = &i2c2;
+		i2c4 = &i2c5;
+		pinctrl2 = &stmfx_pinctrl;
+		spi0 = &qspi;
+		usb0 = &usbotg_hs;
+	};
+};
+
+&flash0 {
+	compatible = "jedec,spi-nor";
+	u-boot,dm-spl;
+};
+
+&flash1 {
+	compatible = "jedec,spi-nor";
+};
+
+&qspi {
+	u-boot,dm-spl;
+};
+
+&qspi_clk_pins_a {
+	u-boot,dm-spl;
+	pins {
+		u-boot,dm-spl;
+	};
+};
+
+&qspi_bk1_pins_a {
+	u-boot,dm-spl;
+	pins1 {
+		u-boot,dm-spl;
+	};
+	pins2 {
+		u-boot,dm-spl;
+	};
+};
+
+&qspi_bk2_pins_a {
+	u-boot,dm-spl;
+	pins1 {
+		u-boot,dm-spl;
+	};
+	pins2 {
+		u-boot,dm-spl;
+	};
+};
+
+&v3v3 {
+	regulator-always-on;
+};

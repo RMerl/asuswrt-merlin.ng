@@ -1,0 +1,51 @@
+LEDs connected to Broadcom BCM6858 controller
+
+This controller is present on BCM6858, BCM6328, BCM6362 and BCM63268.
+In these SoCs it's possible to control LEDs both as GPIOs or by hardware.
+
+Required properties:
+  - compatible : should be "brcm,bcm6858-leds".
+  - #address-cells : must be 1.
+  - #size-cells : must be 0.
+  - reg : BCM6858 LED controller address and size.
+
+Optional properties:
+  - brcm,serial-led-msb-first : Boolean, msb data come out first on serial data pin
+    Default : false
+  - brcm,serial-led-en-pol : Boolean, serial led polarity (true => active high)
+    Default : false
+  - brcm,serial-led-clk-pol : Boolean, serial clock polarity (true => active high)
+    Default : false
+  - brcm,serial-led-data-ppol : Boolean, serial data polarity (true => active high)
+    Default : false
+  - brcm,serial-shift-inv : Boolean, led test mode
+    Default : false
+
+Each LED is represented as a sub-node of the brcm,bcm6858-leds device.
+
+LED sub-node required properties:
+  - reg : LED pin number (only LEDs 0 to 32 are valid).
+
+LED sub-node optional properties:
+  - label : see Documentation/devicetree/bindings/leds/common.txt
+  - active-low : Boolean, makes LED active low.
+    Default : false
+
+Examples:
+BCM6328 with 2 GPIO LEDs
+	leds0: led-controller@ff800800 {
+		compatible = "brcm,bcm6858-leds";
+		#address-cells = <1>;
+		#size-cells = <0>;
+		reg = <0x0 0xff800800 0x0 0xe4>;
+
+		led@2 {
+			reg = <2>;
+			label = "green:inet";
+		};
+
+		led@5 {
+			reg = <5>;
+			label = "red:alarm";
+		};
+	};

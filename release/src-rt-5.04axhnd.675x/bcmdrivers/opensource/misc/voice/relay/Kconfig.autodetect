@@ -1,0 +1,12 @@
+config BCM_VOICE_RELAY
+	bool "Broadcom 63xx sound support"
+	default n
+	help
+	  Enable ALSA framework for Broadcom 63xx SoCs
+
+config BCM_VOICE_RELAY_IMPL
+	int "Implementation index for sound driver"
+	depends on BCM_VOICE_RELAY
+	default 1
+	
+

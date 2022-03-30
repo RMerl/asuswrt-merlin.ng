@@ -1,0 +1,22 @@
+compatible = "brcm,bcmbca-xhci";
+
+#ifdef GBL_ADDR
+reg-names = "usb-xhci", "xhci-gbl";
+reg = <USB_ADDR USB_SIZE>, <GBL_ADDR GBL_SIZE>;
+#else
+reg-names = "usb-xhci";
+reg = <USB_ADDR USB_SIZE>;
+#endif
+interrupts = <GIC_SPI USB_IRQ IRQ_TYPE_LEVEL_HIGH>;
+usb3-lpm-capable;
+status = "disabled";
+
+/* The following options should be appended on chip specific level */
+
+/* coherency_enable; */ /* For DMA coherency enabled on 63158 only */
+/* skip_erdy_nump_bypass; */ /* To skip bypass init */
+
+/* to let add multiple usb without errors undefine usb definitions */
+#undef USB_ADDR
+#undef USB_SIZE
+#undef USB_IRQ

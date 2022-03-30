@@ -1,0 +1,145 @@
+================================================================================
+Useful notes on bulding and using of U-Boot on
+ARC IoT Development Kit (AKA IoTDK)
+================================================================================
+
+   BOARD OVERVIEW
+
+   The DesignWare ARC IoT Development Kit is a versatile platform that includes
+   the necessary hardware and software to accelerate software development and
+   debugging of sensor fusion, voice recognition and face detection designs.
+
+   The ARC IoT Development Kit includes a silicon implementation of the
+   ARC Data Fusion IP Subsystem running at 144 MHz on SMIC's
+   55-nm ultra-low power process, and a rich set of peripherals commonly used
+   in IoT designs such as USB, UART, SPI, I2C, PWM, SDIO and ADCs.
+
+   The board is shipped with pre-installed U-Boot in non-volatile memory
+   (eFlash) so on power-on user sees U-Boot start header and command line
+   prompt which might be used for U-Boot environment fine-tuning, manual
+   loading and execution of user application binaries etc.
+
+   The board has the following features useful for U-Boot:
+    * On-board 2-channel FTDI TTL-to-USB converter
+      - The first channel is used for serial debug port (which makes it possible
+        to use a serial connection on pretty much any host machine be it
+        Windows, Linux or Mac).
+        On Linux machine typucally FTDI serial port would be /dev/ttyUSB0.
+        There's no HW flow-control and baud-rate is 115200.
+
+      - The second channel is used for built-in Digilent USB JTAG probe.
+        That means no extra hardware is required to access ARC core from a
+        debugger on development host. Both proprietary MetaWare debugger and
+        open source OpenOCD + GDB client are supported.
+
+      - Also with help of this FTDI chip it is possible to reset entire
+        board with help of a special `rff-ftdi-reset` utility, see:
+        https://github.com/foss-for-synopsys-dwc-arc-processors/rff-ftdi-reset
+
+    * Micro SD-card slot
+      - U-Boot expects to see the very first partition on the card formatted as
+        FAT file-system and uses it for keeping its environment in `uboot.env`
+        file. Note uboot.env is not just a text file but it is auto-generated
+        file created by U-Boot on invocation of `saveenv` command.
+        It contains a checksum which makes this saved environment invalid in
+        case of maual modification.
+
+      - There might be more useful files on that first FAT partition like
+        user applications, data files etc.
+
+    * USB OTG connector
+      - U-Boot may access USB mass-storage devices attached to this connector.
+        Note only FAT file-system is supported. It might be used for storing
+        user application binaries as well as micro SD-card mentioned above.
+
+    * The following memories are avaialble on the board:
+      - eFlash:	256 KiB @ 0x0000_0000
+        A non-volatile memory from which ARC core may execute code directly.
+        Still is is not direcly writable, thus this is not an ordinary RAM.
+
+      - ICCM:	256 KiB @ 0x2000_0000
+        Instruction Closely Coupled Memory - fast on-chip memory primary used
+        for code being executed, still data could be placed in this memory too.
+        In that sense it's just a general purpose RAM.
+
+      - SRAM:	128 KiB @ 0x3000_0000
+        On-chip SRAM. From user perspective is the same as ICCM above.
+
+      - DCCM:	128 KiB @ 0x8000_0000
+        Data Closely Coupled Memory is similar to ICCM with a major difference -
+        ARC core cannot execute code from DCCM. So this is very special RAM
+        only suitable for data.
+
+   BUILDING U-BOOT
+
+   1. Configure U-Boot:
+      ------------------------->8----------------------
+      make iot_devkit_defconfig
+      ------------------------->8----------------------
+
+   2. To build Elf file (for example to be used with host debugger via JTAG
+      connection to the target board):
+      ------------------------->8----------------------
+      make mdbtrick
+      ------------------------->8----------------------
+
+      This will produce `u-boot` Elf file.
+
+   3. To build binary image to be put in "ROM":
+      ------------------------->8----------------------
+      make u-boot.bin
+      ------------------------->8----------------------
+
+
+   EXECUTING U-BOOT
+
+   1. The IoTDK board is supposed to auto-start U-Boot image stored in eFlash on
+      power-on. Note it's possible to update that image - follow instructions in
+      user's manual.
+
+   2. Though it is possible to load and start U-Boot as a simple Elf file
+      via JTAG right in ICCM. For that it's required to re-configure U-Boot
+      so it gets linked to ICCM address 0x2000_0000 (remember eFlash is not
+      direcly writable).
+      Run U-Boot's configuration utility with "make menuconfig", go to
+      "Boot images" and change "Text Base" from default 0x00000000 to
+      0x20000000. Exit & save new configuration. Now run "make mdbtrick" to
+      build new Elf.
+
+      2.1. In case of proprietary MetaWare debugger run:
+      ------------------------->8----------------------
+      mdb -digilent u-boot
+      ------------------------->8----------------------
+
+   USING U-BOOT
+
+   Note due to limited memory size it's supposed that user will run binary
+   images of their applications instead of loading Elf files.
+
+   1. To load and start application binary from micro SD-card execute
+      the following commands in U-Boot's shell:
+      ------------------------->8----------------------
+      fatload mmc 0 0x20000000 yourapp.bin
+      go 0x20000000
+      ------------------------->8----------------------
+
+   2. To load and start application binary from USB mass-storage device execute
+      the following commands in U-Boot's shell:
+      ------------------------->8----------------------
+      usb start
+      fatload usb 0x20000000 yourapp.bin
+      go 0x20000000
+      ------------------------->8----------------------
+
+   3. To have a sequence of commands executed on U-Boot start put those
+      commands in "bootcmd" with semicolon between them.
+      For example to get (1) done automatically:
+      ------------------------->8----------------------
+      setenv bootcmd fatload mmc 0 0x20000000 yourapp.bin\; go 0x20000000
+      saveenv
+      ------------------------->8----------------------
+
+   4. To reboot the board just run:
+      ------------------------->8----------------------
+      reset
+      ------------------------->8----------------------

@@ -1,0 +1,33 @@
+Maxim DS2502 driver device binding - one wire protocol add only memory from Maxim
+=======================
+
+This memory needs to be connected to a onewire bus, as a child node.
+The bus will read the device serial number and match this node with a found
+device on the bus
+Also check doc/device-tree-bindings/w1 for onewire bus drivers
+
+Driver:
+- drivers/w1-eeprom/ds2502.c
+
+Ds2502 device-tree node properties:
+Required:
+* compatible = "maxim,ds2502"
+
+Optional:
+* none
+
+Example:
+	eeprom1: eeprom@0 {
+		compatible = "maxim,ds2502";
+	};
+
+Example with parent bus:
+	onewire {
+		compatible = "fsl,imx53-owire";
+		reg = <0x63fa4000 0x4000>;
+
+		eeprom1: eeprom@0 {
+			compatible = "maxim,ds2502";
+		};
+	};
+

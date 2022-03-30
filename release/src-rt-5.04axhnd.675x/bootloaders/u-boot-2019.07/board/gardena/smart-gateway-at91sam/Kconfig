@@ -1,0 +1,12 @@
+if TARGET_GARDENA_SMART_GATEWAY_AT91SAM
+
+config SYS_BOARD
+	default "smart-gateway-at91sam"
+
+config SYS_VENDOR
+	default "gardena"
+
+config SYS_CONFIG_NAME
+	default "gardena-smart-gateway-at91sam"
+
+endif

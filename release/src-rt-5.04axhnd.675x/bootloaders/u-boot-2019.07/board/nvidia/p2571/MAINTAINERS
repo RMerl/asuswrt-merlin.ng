@@ -1,0 +1,6 @@
+P2571 BOARD
+M:	Tom Warren <twarren@nvidia.com>
+S:	Maintained
+F:	board/nvidia/p2571/
+F:	include/configs/p2571.h
+F:	configs/p2571_defconfig

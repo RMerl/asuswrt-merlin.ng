@@ -1,0 +1,16 @@
+if ASPEED_AST2500
+
+config SYS_CPU
+	default "arm1176"
+
+config TARGET_EVB_AST2500
+	bool "Evb-AST2500"
+	help
+	  Evb-AST2500 is Aspeed evaluation board for AST2500 chip.
+	  It has 512M of RAM, 32M of SPI flash, two Ethernet ports,
+	  4 Serial ports, 4 USB ports, VGA port, PCIe, SD card slot,
+	  20 pin JTAG, pinouts for 14 I2Cs, 3 SPIs and eSPI, 8 PWMs.
+
+source "board/aspeed/evb_ast2500/Kconfig"
+
+endif

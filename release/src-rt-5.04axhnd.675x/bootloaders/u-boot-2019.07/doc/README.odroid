@@ -1,0 +1,332 @@
+ U-Boot for Odroid X2/U3/XU3/XU4/HC1
+========================
+
+1. Summary
+==========
+This is a quick instruction for setup Odroid boards.
+Board config: odroid_config for X2/U3
+Board config: odroid-xu3_config for XU3/XU4/HC1
+
+2. Supported devices
+====================
+This U-BOOT config can be used on three boards:
+- Odroid U3
+- Odroid X2
+with CPU Exynos 4412 rev 2.0 and 2GB of RAM
+- Odroid XU3
+- Odroid XU4
+- Odroid HC1
+with CPU Exynos5422 and 2GB of RAM
+
+3. Boot sequence
+================
+iROM->BL1->(BL2 + TrustZone)->U-BOOT
+
+This version of U-BOOT doesn't implement SPL. So, BL1, BL2, and TrustZone
+binaries are needed to boot up.
+
+<< X2/U3 >>
+It can be found in "boot.tar.gz" from here:
+http://dev.odroid.com/projects/4412boot/wiki/FrontPage?action=download&value=boot.tar.gz
+or here:
+http://odroid.in/guides/ubuntu-lfs/boot.tar.gz
+
+<< XU3/XU4 >>
+It can be downloaded from:
+https://github.com/hardkernel/u-boot/tree/odroidxu3-v2012.07/sd_fuse/hardkernel_1mb_uboot
+
+
+4. Boot media layout
+====================
+The table below shows SD/eMMC cards layout for U-Boot.
+The block offset is starting from 0 and the block size is 512B.
+ -------------------------------------
+|  Binary   | Block offset| part type |
+|   name    | SD   | eMMC |(eMMC only)|
+ -------------------------------------
+| Bl1       | 1    | 0    |  1 (boot) |
+| Bl2       | 31   | 30   |  1 (boot) |
+| U-Boot    | 63   | 62   |  1 (boot) |
+| Tzsw      | 2111 | 2110 |  1 (boot) |
+| Uboot Env | 2560 | 2560 |  0 (user) |
+ -------------------------------------
+
+5. Prepare the SD boot card - with SD card reader
+=================================================
+To prepare bootable media you need boot binaries provided by hardkernel.
+From the downloaded files, You can find:
+- bl1.bin
+- tzsw.bin
+- bl2.bin
+- sd_fusing.sh
+- u-boot.bin
+(The file names can be slightly different, but you can distinguish what they are
+without problem)
+
+This is all you need to boot this board. But if you want to use your custom
+U-Boot then you need to change u-boot.bin with your own U-Boot binary*
+and run the script "sd_fusing.sh" - this script is valid only for SD card.
+
+*note:
+The proper binary file of current U-Boot is u-boot-dtb.bin.
+
+quick steps for Linux:
+- Download all files from the link at point 3 and extract it if needed.
+- put any SD card into the SD reader
+- check the device with "dmesg"
+- run ./sd_fusing.sh /dev/sdX - where X is SD card device (but not a partition)
+Check if Hardkernel U-Boot is booting, and next do the same with your U-Boot.
+
+6. Prepare the eMMC boot card
+   with a eMMC card reader (boot from eMMC card slot)
+=====================================================
+To boot the device from the eMMC slot you should use a special card reader
+which supports eMMC partition switch. All of the boot binaries are stored
+on the eMMC boot partition which is normally hidden.
+
+The "sd_fusing.sh" script can be used after updating offsets of binaries
+according to the table from point 4. Be sure that you are working on the right
+eMMC partition - its size is usually very small, about 1-4 MiB.
+
+7. Prepare the eMMC boot card
+   with a SD card reader (boot from SD card slot)
+=================================================
+If you have an eMMC->microSD adapter you can prepare the card as in point 5.
+But then the device can boot only from the SD card slot.
+
+8. Prepare the boot media using Hardkernel U-Boot
+=================================================
+You can update the U-Boot to the custom one if you have a working bootloader
+delivered with the board on the eMMC/SD card. Then follow the steps:
+- install the android fastboot tool
+- connect a micro usb cable to the board
+- on the U-Boot prompt, run command: fastboot (as a root)
+- on the host, run command: "fastboot flash bootloader u-boot-dtb.bin"
+- the custom U-Boot should start after the board resets.
+
+9. Partition layout
+====================
+Default U-Boot environment is setup for fixed partition layout.
+
+Partition table: MSDOS. Disk layout and files as listed in the table below.
+ ----- ------ ------ ------ -------- ---------------------------------
+| Num | Name |  FS  | Size | Offset |         Reguired files          |
+|     |      | Type |  MiB |  MiB   |                                 |
+ ----- ------ ------ ------ -------- ---------------------------------
+|  1  | BOOT | fat  |  100 |   2    |  kernel, fdt**                  |
+|  2  | ROOT | ext4 |   -  |        |  any Linux system               |
+ ----- ------ ------ ------ -------- ---------------------------------
+
+**note:
+Supported fdt files are:
+- exynos4412-odroidx2.dtb
+- exynos4412-odroidu3.dtb
+- exynos5422-odroidxu3.dtb
+- exynos5422-odroidxu3-lite.dtb
+- exynos5422-odroidxu4.dtb
+- exynos5422-odroidhc1.dtb
+
+Supported kernel files are:
+- Image.itb
+- zImage
+- uImage
+
+The default environmental variable "dfu_alt_info" is set* for above layout.
+Each partition size is just an example, dfu_alt_info tries init two partitions.
+The size of each is not important.
+
+*note:
+$dfu_alt_info is set on a boot time and it is concatenated using two variables:
+- $dfu_alt_boot(set dynamically)
+- $dfu_alt_system(from current env).
+
+To add any changes to dfu_alt_info - please modify $dfu_alt_system only.
+Changes are visible after board reset.
+
+10. The environment and booting the kernel
+==========================================
+There are three macros defined in config for various boot options:
+Two for both, kernel with device tree support and also without it:
+- boot_uimg - load uImage
+- boot_zimg - load zImage
+If proper fdt file exists then it will be automatically loaded,
+so for old kernel types, please remove fdt file from boot partition.
+
+The third boot option for multi image support (more info: doc/uImage.FIT/)
+- boot_fit - for binary file: "Image.itb"
+
+Default boot command: "autoboot"
+And the boot sequence is:
+- boot_fit - if "Image.itb" exists
+- boot_zimg - if "zImage" exists
+- boot_uimg - if "uImage" exists
+
+11. USB host support
+====================
+NOTE: This section is only for Odroid X2/U3.
+
+The ethernet can be accessed after starting the USB subsystem in U-Boot.
+The adapter does not come with a preconfigured MAC address, and hence it needs
+to be set before starting USB.
+setenv usbethaddr 02:DE:AD:BE:EF:FF
+
+Note that in this example a locally managed MAC address is chosen. Care should
+be taken to make these MAC addresses unique within the same subnet.
+
+Start the USB subsystem:
+Odroid # setenv usbethaddr 02:DE:AD:BE:EF:FF
+Odroid # usb start
+(Re)start USB...
+USB0:   USB EHCI 1.00
+scanning bus 0 for devices... 4 USB Device(s) found
+       scanning usb for storage devices... 1 Storage Device(s) found
+       scanning usb for ethernet devices... 1 Ethernet Device(s) found
+Odroid #
+
+Automatic IP assignment:
+------------------------
+If the ethernet is connected to a DHCP server (router maybe with DHCP enabled),
+then the below will automatically assign an ip address through DHCP.
+setenv autoload no
+dhcp
+
+Odroid # setenv autoload no
+Odroid # dhcp
+Waiting for Ethernet connection... done.
+BOOTP broadcast 1
+DHCP client bound to address 192.168.1.10 (524 ms)
+Odroid #
+
+Note that this automatically sets the many IP address related variables in
+U-Boot that is obtained from the DHCP server.
+
+Odroid # printenv ipaddr netmask gatewayip dnsip
+ipaddr=192.168.1.10
+netmask=255.255.255.0
+gatewayip=192.168.1.1
+dnsip=192.168.1.1
+
+Ping example:
+The ping command can be used a test to check connectivity. In this example,
+192.168.1.27 is a pingable server in the network.
+Odroid # ping 192.168.1.27
+Waiting for Ethernet connection... done.
+Using sms0 device
+host 192.168.1.27 is alive
+Odroid #
+
+Static IP assignment:
+---------------------
+In the case where there are no DHCP servers in the network, or you want to
+set the IP address statically, it can be done by:
+Odroid # setenv ipaddr 192.168.1.10
+Odroid # ping 192.168.1.27
+Waiting for Ethernet connection... done.
+Using sms0 device
+host 192.168.1.27 is alive
+
+TFTP booting:
+-------------
+Say there exists a tftp server in the network with address 192.168.1.27 and
+it serves a kernel image (zImage.3.17) and a DTB blob (exynos4412-odroidu3.dtb)
+that needs to be loaded and booted. It can be accomplished as below:
+(Assumes that you have setenv usbethaddr, and have not set autoload to no)
+
+Odroid # setenv serverip 192.168.1.27
+Odroid # tftpboot 0x40080000 zImage.3.17
+Waiting for Ethernet connection... done.
+Using sms0 device
+TFTP from server 192.168.1.27; our IP address is 192.168.1.10
+Filename 'zImage.3.17'.
+Load address: 0x40080000
+Loading: #################################################################
+	 #################################################################
+	 #################################################################
+	 #######################
+	 52.7 KiB/s
+done
+Bytes transferred = 3194200 (30bd58 hex)
+Odroid # tftpboot 0x42000000 exynos4412-odroidu3.dtb
+Waiting for Ethernet connection... done.
+Using sms0 device
+TFTP from server 192.168.1.27; our IP address is 192.168.1.10
+Filename 'exynos4412-odroidu3.dtb'.
+Load address: 0x42000000
+Loading: ####
+	 40 KiB/s
+done
+Bytes transferred = 46935 (b757 hex)
+Odroid # printenv bootargs
+bootargs=Please use defined boot
+Odroid # setenv bootargs console=ttySAC1,115200n8 root=/dev/mmcblk0p2 rootwait
+Odroid # bootz 40080000 - 42000000
+Kernel image @ 0x40080000 [ 0x000000 - 0x30bd58 ]
+## Flattened Device Tree blob at 42000000
+   Booting using the fdt blob at 0x42000000
+   Loading Device Tree to 4fff1000, end 4ffff756 ... OK
+
+Starting kernel ...
+
+[    0.000000] Booting Linux on physical CPU 0xa00
+... etc ...
+
+In the above example you can substitute 'dhcp' for 'tftpboot' as well.
+
+USB Storage booting:
+--------------------
+Similarly we can use the USB storage to load the kernel image/initrd/fdt etc
+and boot. For this example, there is a USB drive plugged in. It has a FAT
+1st partition and an EXT 2nd partition. Using the generic FS (ls/load) makes
+it even easier to work with FAT/EXT file systems.
+For this example the second EXT partition is used for booting and as rootfs.
+The boot files - kernel and the dtb are present in the /boot directory of the
+second partition.
+
+Odroid # usb start
+(Re)start USB...
+USB0:   USB EHCI 1.00
+scanning bus 0 for devices... 4 USB Device(s) found
+       scanning usb for storage devices... 1 Storage Device(s) found
+       scanning usb for ethernet devices...
+Error: sms0 address not set.		<----- Note the error as usbethaddr
+Warning: failed to set MAC address	<----- is not set.
+1 Ethernet Device(s) found
+Odroid # usb part 0
+
+Partition Map for USB device 0  --   Partition Type: DOS
+
+Part	Start Sector	Num Sectors	UUID		Type
+  1	3072      	263168    	000c4046-01	06
+  2	266240    	13457408  	000c4046-02	83
+
+Odroid # ls usb 0:2 /boot
+<DIR>       4096 .
+<DIR>       4096 ..
+             353 boot.scr
+             281 boot.txt
+          101420 config-3.8.13.23
+         2127254 initrd.img-3.8.13.23
+         2194825 uInitrd
+         2194825 uInitrd-3.8.13.23
+         2453112 zImage
+          101448 config-3.8.13.26
+         2127670 uInitrd-3.8.13.26
+         2127606 initrd.img-3.8.13.26
+         3194200 zImage.3.17                    <--- Kernel
+           46935 exynos4412-odroidu3.dtb        <--- DTB
+Odroid # load usb 0:2 40080000 /boot/zImage.3.17
+3194200 bytes read in 471 ms (6.5 MiB/s)
+Odroid # load usb 0:2 42000000 /boot/exynos4412-odroidu3.dtb
+46935 bytes read in 233 ms (196.3 KiB/s)
+Odroid # setenv bootargs console=ttySAC1,115200n8 root=/dev/sda2 rootwait
+Odroid # bootz 40080000 - 42000000
+Kernel image @ 0x40080000 [ 0x000000 - 0x30bd58 ]
+## Flattened Device Tree blob at 42000000
+   Booting using the fdt blob at 0x42000000
+   Loading Device Tree to 4fff1000, end 4ffff756 ... OK
+
+Starting kernel ...
+
+[    0.000000] Booting Linux on physical CPU 0xa00
+
+Please refer to README.usb for additional information.

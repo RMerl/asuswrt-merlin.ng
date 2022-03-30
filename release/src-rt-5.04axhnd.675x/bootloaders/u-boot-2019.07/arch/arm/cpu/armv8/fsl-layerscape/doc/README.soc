@@ -1,0 +1,381 @@
+SoC overview
+
+	1. LS1043A
+	2. LS1088A
+	3. LS2080A
+	4. LS1012A
+	5. LS1046A
+	6. LS2088A
+	7. LS2081A
+	8. LX2160A
+	9. LS1028A
+
+LS1043A
+---------
+The LS1043A integrated multicore processor combines four ARM Cortex-A53
+processor cores with datapath acceleration optimized for L2/3 packet
+processing, single pass security offload and robust traffic management
+and quality of service.
+
+The LS1043A SoC includes the following function and features:
+ - Four 64-bit ARM Cortex-A53 CPUs
+ - 1 MB unified L2 Cache
+ - One 32-bit DDR3L/DDR4 SDRAM memory controllers with ECC and interleaving
+   support
+ - Data Path Acceleration Architecture (DPAA) incorporating acceleration the
+   the following functions:
+   - Packet parsing, classification, and distribution (FMan)
+   - Queue management for scheduling, packet sequencing, and congestion
+     management (QMan)
+   - Hardware buffer management for buffer allocation and de-allocation (BMan)
+   - Cryptography acceleration (SEC)
+ - Ethernet interfaces by FMan
+   - Up to 1 x XFI supporting 10G interface
+   - Up to 1 x QSGMII
+   - Up to 4 x SGMII supporting 1000Mbps
+   - Up to 2 x SGMII supporting 2500Mbps
+   - Up to 2 x RGMII supporting 1000Mbps
+ - High-speed peripheral interfaces
+   - Three PCIe 2.0 controllers, one supporting x4 operation
+   - One serial ATA (SATA 3.0) controllers
+ - Additional peripheral interfaces
+   - Three high-speed USB 3.0 controllers with integrated PHY
+   - Enhanced secure digital host controller (eSDXC/eMMC)
+   - Quad Serial Peripheral Interface (QSPI) Controller
+   - Serial peripheral interface (SPI) controller
+   - Four I2C controllers
+   - Two DUARTs
+   - Integrated flash controller supporting NAND and NOR flash
+ - QorIQ platform's trust architecture 2.1
+
+LS1088A
+--------
+The QorIQ LS1088A processor is built on the Layerscape
+architecture combining eight ARM A53 processor cores
+with advanced, high-performance datapath acceleration
+and networks, peripheral interfaces required for
+networking, wireless infrastructure, and general-purpose
+embedded applications.
+
+LS1088A is compliant with the Layerscape Chassis Generation 3.
+
+Features summary:
+ - 8 32-bit / 64-bit ARM v8 Cortex-A53 CPUs
+ - Cores are in 2 cluster of 4-cores each
+ - 1MB L2 - Cache per cluster
+ - Cache coherent interconnect (CCI-400)
+ - 1 64-bit DDR4 SDRAM memory controller with ECC
+ - Data path acceleration architecture 2.0 (DPAA2)
+ - 4-Lane 10GHz SerDes comprising of WRIOP
+ - 4-Lane 10GHz SerDes comprising of PCI, SATA, uQE(TDM/HLDC/UART)
+ - Ethernet interfaces: SGMIIs, RGMIIs, QSGMIIs, XFIs
+ - QSPI, SPI, IFC2.0 supporting NAND, NOR flash
+ - 3 PCIe3.0 , 1 SATA3.0, 2 USB3.0, 1 SDXC, 2 DUARTs etc
+ - 2 DUARTs
+ - 4 I2C, GPIO
+ - Thermal monitor unit(TMU)
+ - 4 Flextimers and 1 generic timer
+ - Support for hardware virtualization and partitioning enforcement
+ - QorIQ platform's trust architecture 3.0
+ - Service processor (SP) provides pre-boot initialization and secure-boot
+   capabilities
+
+LS2080A
+--------
+The LS2080A integrated multicore processor combines eight ARM Cortex-A57
+processor cores with high-performance data path acceleration logic and network
+and peripheral bus interfaces required for networking, telecom/datacom,
+wireless infrastructure, and mil/aerospace applications.
+
+The LS2080A SoC includes the following function and features:
+
+ - Eight 64-bit ARM Cortex-A57 CPUs
+ - 1 MB platform cache with ECC
+ - Two 64-bit DDR4 SDRAM memory controllers with ECC and interleaving support
+ - One secondary 32-bit DDR4 SDRAM memory controller, intended for use by
+  the AIOP
+ - Data path acceleration architecture (DPAA2) incorporating acceleration for
+ the following functions:
+   - Packet parsing, classification, and distribution (WRIOP)
+   - Queue and Hardware buffer management for scheduling, packet sequencing, and
+     congestion management, buffer allocation and de-allocation (QBMan)
+   - Cryptography acceleration (SEC) at up to 10 Gbps
+   - RegEx pattern matching acceleration (PME) at up to 10 Gbps
+   - Decompression/compression acceleration (DCE) at up to 20 Gbps
+   - Accelerated I/O processing (AIOP) at up to 20 Gbps
+   - QDMA engine
+ - 16 SerDes lanes at up to 10.3125 GHz
+ - Ethernet interfaces
+   - Up to eight 10 Gbps Ethernet MACs
+   - Up to eight 1 / 2.5 Gbps Ethernet MACs
+ - High-speed peripheral interfaces
+   - Four PCIe 3.0 controllers, one supporting SR-IOV
+ - Additional peripheral interfaces
+   - Two serial ATA (SATA 3.0) controllers
+   - Two high-speed USB 3.0 controllers with integrated PHY
+   - Enhanced secure digital host controller (eSDXC/eMMC)
+   - Serial peripheral interface (SPI) controller
+   - Quad Serial Peripheral Interface (QSPI) Controller
+   - Four I2C controllers
+   - Two DUARTs
+   - Integrated flash controller (IFC 2.0) supporting NAND and NOR flash
+ - Support for hardware virtualization and partitioning enforcement
+ - QorIQ platform's trust architecture 3.0
+ - Service processor (SP) provides pre-boot initialization and secure-boot
+  capabilities
+
+LS1012A
+--------
+The LS1012A features an advanced 64-bit ARM v8 Cortex-
+A53 processor, with 32 KB of parity protected L1-I cache,
+32 KB of ECC protected L1-D cache, as well as 256 KB of
+ECC protected L2 cache.
+
+The LS1012A SoC includes the following function and features:
+ - One 64-bit ARM v8 Cortex-A53 core with the following capabilities:
+ - ARM v8 cryptography extensions
+ - One 16-bit DDR3L SDRAM memory controller, Up to 1.0 GT/s, Supports
+    16-/8-bit operation (no ECC support)
+ - ARM core-link CCI-400 cache coherent interconnect
+ - Packet Forwarding Engine (PFE)
+ - Cryptography acceleration (SEC)
+ - Ethernet interfaces supported by PFE:
+ - One Configurable x3 SerDes:
+    Two Serdes PLLs supported for usage by any SerDes data lane
+    Support for up to 6 GBaud operation
+ - High-speed peripheral interfaces:
+     - One PCI Express Gen2 controller, supporting x1 operation
+     - One serial ATA (SATA Gen 3.0) controller
+     - One USB 3.0/2.0 controller with integrated PHY
+     - One USB 2.0 controller with ULPI interface. .
+ - Additional peripheral interfaces:
+    - One quad serial peripheral interface (QuadSPI) controller
+    - One serial peripheral interface (SPI) controller
+    - Two enhanced secure digital host controllers
+    - Two I2C controllers
+    - One 16550 compliant DUART (two UART interfaces)
+    - Two general purpose IOs (GPIO)
+    - Two FlexTimers
+    - Five synchronous audio interfaces (SAI)
+    - Pre-boot loader (PBL) provides pre-boot initialization and RCW loading
+    - Single-source clocking solution enabling generation of core, platform,
+    DDR, SerDes, and USB clocks from a single external crystal and internal
+    crystaloscillator
+    - Thermal monitor unit (TMU) with +/- 3C accuracy
+    - Two WatchDog timers
+    - ARM generic timer
+ - QorIQ platform's trust architecture 2.1
+
+LS1046A
+--------
+The LS1046A integrated multicore processor combines four ARM Cortex-A72
+processor cores with datapath acceleration optimized for L2/3 packet
+processing, single pass security offload and robust traffic management
+and quality of service.
+
+The LS1046A SoC includes the following function and features:
+ - Four 64-bit ARM Cortex-A72 CPUs
+ - 2 MB unified L2 Cache
+ - One 64-bit DDR4 SDRAM memory controllers with ECC and interleaving
+   support
+ - Data Path Acceleration Architecture (DPAA) incorporating acceleration the
+   the following functions:
+   - Packet parsing, classification, and distribution (FMan)
+   - Queue management for scheduling, packet sequencing, and congestion
+     management (QMan)
+   - Hardware buffer management for buffer allocation and de-allocation (BMan)
+   - Cryptography acceleration (SEC)
+ - Two Configurable x4 SerDes
+   - Two PLLs per four-lane SerDes
+   - Support for 10G operation
+ - Ethernet interfaces by FMan
+   - Up to 2 x XFI supporting 10G interface (MAC 9, 10)
+   - Up to 1 x QSGMII (MAC 5, 6, 10, 1)
+   - Up to 4 x SGMII supporting 1000Mbps (MAC 5, 6, 9, 10)
+   - Up to 3 x SGMII supporting 2500Mbps (MAC 5, 9, 10)
+   - Up to 2 x RGMII supporting 1000Mbps (MAC 3, 4)
+ - High-speed peripheral interfaces
+   - Three PCIe 3.0 controllers, one supporting x4 operation
+   - One serial ATA (SATA 3.0) controllers
+ - Additional peripheral interfaces
+   - Three high-speed USB 3.0 controllers with integrated PHY
+   - Enhanced secure digital host controller (eSDXC/eMMC)
+   - Quad Serial Peripheral Interface (QSPI) Controller
+   - Serial peripheral interface (SPI) controller
+   - Four I2C controllers
+   - Two DUARTs
+   - Integrated flash controller (IFC) supporting NAND and NOR flash
+ - QorIQ platform's trust architecture 2.1
+
+LS2088A
+--------
+The LS2088A integrated multicore processor combines eight ARM Cortex-A72
+processor cores with high-performance data path acceleration logic and network
+and peripheral bus interfaces required for networking, telecom/datacom,
+wireless infrastructure, and mil/aerospace applications.
+
+The LS2088A SoC includes the following function and features:
+
+ - Eight 64-bit ARM Cortex-A72 CPUs
+ - 1 MB platform cache with ECC
+ - Two 64-bit DDR4 SDRAM memory controllers with ECC and interleaving support
+ - One secondary 32-bit DDR4 SDRAM memory controller, intended for use by
+   the AIOP
+ - Data path acceleration architecture (DPAA2) incorporating acceleration for
+   the following functions:
+   - Packet parsing, classification, and distribution (WRIOP)
+   - Queue and Hardware buffer management for scheduling, packet sequencing, and
+     congestion management, buffer allocation and de-allocation (QBMan)
+   - Cryptography acceleration (SEC) at up to 10 Gbps
+   - RegEx pattern matching acceleration (PME) at up to 10 Gbps
+   - Decompression/compression acceleration (DCE) at up to 20 Gbps
+   - Accelerated I/O processing (AIOP) at up to 20 Gbps
+   - QDMA engine
+ - 16 SerDes lanes at up to 10.3125 GHz
+ - Ethernet interfaces
+   - Up to eight 10 Gbps Ethernet MACs
+   - Up to eight 1 / 2.5 Gbps Ethernet MACs
+ - High-speed peripheral interfaces
+   - Four PCIe 3.0 controllers, one supporting SR-IOV
+ - Additional peripheral interfaces
+   - Two serial ATA (SATA 3.0) controllers
+   - Two high-speed USB 3.0 controllers with integrated PHY
+   - Enhanced secure digital host controller (eSDXC/eMMC)
+   - Serial peripheral interface (SPI) controller
+   - Quad Serial Peripheral Interface (QSPI) Controller
+   - Four I2C controllers
+   - Two DUARTs
+   - Integrated flash controller (IFC 2.0) supporting NAND and NOR flash
+ - Support for hardware virtualization and partitioning enforcement
+ - QorIQ platform's trust architecture 3.0
+ - Service processor (SP) provides pre-boot initialization and secure-boot
+ capabilities
+
+LS2088A SoC has 3 more similar SoC personalities
+1)LS2048A, few difference w.r.t. LS2088A:
+       a) Four 64-bit ARM v8 Cortex-A72 CPUs
+
+2)LS2084A, few difference w.r.t. LS2088A:
+       a) No AIOP
+       b) No 32-bit DDR3 SDRAM memory
+       c) 5 * 1/10G + 5 *1G WRIOP
+       d) No L2 switch
+
+3)LS2044A, few difference w.r.t. LS2084A:
+       a) Four 64-bit ARM v8 Cortex-A72 CPUs
+
+LS2081A
+--------
+LS2081A is 40-pin derivative of LS2084A.
+So feature-wise it is same as LS2084A.
+Refer to LS2084A(LS2088A) section above for details.
+
+It has one more similar SoC personality
+1)LS2041A, few difference w.r.t. LS2081A:
+       a) Four 64-bit ARM v8 Cortex-A72 CPUs
+
+LX2160A
+--------
+The QorIQ LX2160A processor is built in the 16FFC process on
+the Layerscape architecture combining sixteen ARM A72 processor
+cores with advanced, high-performance datapath acceleration and
+network, peripheral interfaces required for networking, wireless
+infrastructure, storage, and general-purpose embedded applications.
+
+LX2160A is compliant with the Layerscape Chassis Generation 3.2.
+
+The LX2160A SoC includes the following function and features:
+  Sixteen 32-bit / 64-bit ARM v8 A72 CPUs
+  Cache Coherent Interconnect Fabric (CCN508 aka “Eliot”)
+  Two 64-bit 3.2GT/s DDR4 SDRAM memory controllers with ECC.
+  Data path acceleration architecture (DPAA2)
+  24 Serdes lanes at up to 25 GHz
+  Ethernet interfaces
+  Single WRIOP tile supporting 130Gbps using 18 MACs
+  Support for 10G-SXGMII (aka USXGMII).
+  Support for SGMII (and 1000Base-KX)
+  Support for XFI (and 10GBase-KR)
+  Support for CAUI4 (100G); CAUI2 (50G) and 25G-AUI(25G).
+  Support for XLAUI (and 40GBase-KR4) for 40G.
+  Support for two RGMII parallel interfaces.
+  Energy efficient Ethernet support (802.3az)
+  IEEE 1588 support.
+  High-speed peripheral interfaces
+	Two PCIe Gen 4.0 8-lane controllers supporting SR-IOV,
+	Four PCIe Gen 4.0 4-lane controllers.
+	Four serial ATA (SATA 3.0) controllers.
+	Two USB 3.0 controllers with integrated PHY
+	Two Enhanced secure digital host controllers
+	Two Controller Area Network (CAN) modules
+	Flexible Serial peripheral interface (FlexSPI) controller.
+	Three Serial peripheral interface (SPI) controllers.
+	Eight I2C Controllers.
+	Four PL011 UARTs supporting two 4-pin UART ports or four 2-pin UART ports.
+	General Purpose IO (GPIO)
+  Support for hardware virtualization and partitioning (ARM MMU-500)
+  Support for GIC (ARM GIC-500)
+  QorIQ platform Trust Architecture 3.0
+  One Secure WatchDog timer and one Non-Secure Watchdog timer.
+  ARM Generic Timer
+  Two Flextimers
+  Debug supporting run control, data acquisition, high-speed trace,
+  performance/event monitoring
+  Thermal Monitor Unit (TMU) with +/- 2C accuracy
+  Support for Voltage ID (VID) for yield improvement
+
+LX2160A SoC has 2 more similar SoC personalities
+1)LX2120A, few difference w.r.t. LX2160A:
+       a) Twelve 64-bit ARM v8 Cortex-A72 CPUs
+
+2)LX2080A, few difference w.r.t. LX2160A:
+       a) Eight 64-bit ARM v8 Cortex-A72 CPUs
+
+
+LS1028A
+--------
+The QorIQ LS1028A processor integrates two 64-bit Arm Cortex-A72 cores with
+a GPU and LCD controller, as well as two TSN-enabled Ethernet controllers and
+a TSNenabled 4-port switch.
+
+The high performance Cortex-A72 cores, performing above 16,000 CoreMarks,
+combined with 2.5 Gbit Ethernet, PCI express Gen 3.0, SATA 3.0, USB 3.0 and
+Octal/Quad SPI interfaces provide capabilities for a number of industrial and
+embedded applications. The device provides excellent integration with the
+new Time-Sensitive Networking standard, and enables a number of
+TSN applications.
+
+The LS1028A SoC includes the following function and features:
+ - Two 64-bit ARM v8 A72 CPUs
+ - Cache Coherent interconnect (CCI-400)
+ - One 32-bit DDR3L/DDR4 SDRAM memory controller with ECC
+ - eDP/Displayport interface
+ - Graphics processing unit
+ - One Configurable x4 SerDes
+ - Ethernet interfaces
+   - Non-switched: One Ethernet MAC supporting 2.5G, 1G, 100M, 10M, one
+   ethernet MAC supporting 1G, 100M, 10M.
+   - Switched: TSN IP to support four 2.5/1G interfaces.
+   - None of the MACs support MACSEC
+   - Support for RGMII, SGMII (and 1000Base-KX), SGMII 2.5x, QSGMII
+   - Support for 10G-SXGMII and 10G-QXGMII.
+   - Energy efficient Ethernet support (802.3az)
+   - IEEE 1588 support
+  - High-speed peripheral interfaces
+    - Two PCIe 3.0 controllers, one supporting x4 operation
+    - One serial ATA (SATA 3.0) controller
+  - Additional peripheral interfaces
+    - Two high-speed USB 2.0/3.0 controllers with integrated PHY each
+      supporting host or device modes
+    - Two Enhanced secure digital host controllers (SD/SDIO/eMMC)
+    - Two Serial peripheral interface (SPI) controllers
+    - Eight I2C controllers
+    - Two UART controllers
+    - Additional six Industrual UARTs (LPUART).
+    - One FlexSPI controller
+    - General Purpose IO (GPIO)
+    - Two CAN-FD interfaces
+    - Eight Flextimers with PWM I/O
+  - Support for hardware virtualization and partitioning enforcement
+  - Layerscape Trust Architecture
+  - Service Processor (SP) provides pre-boot initialization and secure-boot
+    capabilities

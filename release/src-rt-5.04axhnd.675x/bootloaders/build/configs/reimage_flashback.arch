@@ -1,0 +1,26 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use FindBin qw($Bin);
+use lib "$Bin/../../../hostTools/PerlLib";
+use BRCM::GenConfig;
+
+my $c = new BRCM::GenConfig( shift);
+
+######   Any config changes start here #####
+
+
+$c->unset('CONFIG_BCMBCA_BOARD_SDK');
+$c->unset('CONFIG_ENV_IS_IN_BOOT_MAGIC');
+$c->unset('CONFIG_BCMBCA_RDP_ETH');
+$c->unset('CONFIG_BCMBCA_RDP');
+$c->unset('CONFIG_BCMBCA_HTTPD');
+$c->set('CONFIG_CMD_LZMADEC','y');
+$c->set('CONFIG_CMD_JFFS2','y');
+$c->set('CONFIG_FS_JFFS2','y');
+$c->set('CONFIG_BCMBCA_EXTRA_BOARD_OBJECTS','"reimage.o reimage_flashback.o"');
+
+
+#####   End of config changes #####
+$c->write();
+

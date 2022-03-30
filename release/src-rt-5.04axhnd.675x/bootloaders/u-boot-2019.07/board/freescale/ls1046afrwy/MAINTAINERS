@@ -1,0 +1,7 @@
+LS1046AFRWY BOARD
+M:	Pramod Kumar <pramod.kumar_1@nxp.com>
+S:	Maintained
+F:	board/freescale/ls1046afrwy/
+F:	board/freescale/ls1046afrwy/ls1046afrwy.c
+F:	include/configs/ls1046afrwy.h
+F:	configs/ls1046afrwy_tfa_defconfig

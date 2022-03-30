@@ -1,0 +1,15 @@
+if TARGET_M54451EVB
+
+config SYS_CPU
+	default "mcf5445x"
+
+config SYS_BOARD
+	default "m54451evb"
+
+config SYS_VENDOR
+	default "freescale"
+
+config SYS_CONFIG_NAME
+	default "M54451EVB"
+
+endif

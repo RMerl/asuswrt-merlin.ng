@@ -1,0 +1,38 @@
+if TARGET_VEXPRESS_CA15_TC2
+
+config SYS_BOARD
+	default "vexpress"
+
+config SYS_VENDOR
+	default "armltd"
+
+config SYS_CONFIG_NAME
+	default "vexpress_ca15_tc2"
+
+endif
+
+if TARGET_VEXPRESS_CA5X2
+
+config SYS_BOARD
+	default "vexpress"
+
+config SYS_VENDOR
+	default "armltd"
+
+config SYS_CONFIG_NAME
+	default "vexpress_ca5x2"
+
+endif
+
+if TARGET_VEXPRESS_CA9X4
+
+config SYS_BOARD
+	default "vexpress"
+
+config SYS_VENDOR
+	default "armltd"
+
+config SYS_CONFIG_NAME
+	default "vexpress_ca9x4"
+
+endif

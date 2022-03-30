@@ -1,0 +1,15 @@
+* Samsung eMMC reset
+
+Some exynos boards require special handling of nRESET_OUT line for eMMC memory
+to perform complete reboot.
+
+Required properties:
+- compatible: should be "samsung,emmc-reset"
+- reset-gpio: gpio chip for eMMC reset.
+
+Example:
+
+emmc-reset {
+        compatible = "samsung,emmc-reset";
+        reset-gpio = <&gpk1 2 0>;
+};

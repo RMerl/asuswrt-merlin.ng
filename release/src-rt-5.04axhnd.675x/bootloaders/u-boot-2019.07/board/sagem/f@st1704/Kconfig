@@ -1,0 +1,12 @@
+if BOARD_SAGEM_FAST1704
+
+config SYS_BOARD
+	default "f@st1704"
+
+config SYS_VENDOR
+	default "sagem"
+
+config SYS_CONFIG_NAME
+	default "sagem_f@st1704"
+
+endif

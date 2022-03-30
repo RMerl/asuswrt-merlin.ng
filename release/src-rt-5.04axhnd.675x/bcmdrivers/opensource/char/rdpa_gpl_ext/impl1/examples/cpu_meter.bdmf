@@ -1,0 +1,56 @@
+#
+# <:copyright-BRCM:2013:DUAL/GPL:standard
+# 
+#    Copyright (c) 2013 Broadcom 
+#    All Rights Reserved
+# 
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License, version 2, as published by
+# the Free Software Foundation (the "GPL").
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# 
+# A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+# writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+# Boston, MA 02111-1307, USA.
+# 
+# :> 
+#
+
+# CPU metering configuration example
+
+/bdmf
+new system/init_cfg=<wan_type=gbe,wan_emac=emac4>
+
+# Configure queue 1
+config cpu/index=host rxq_cfg[1]={size=128}
+
+# Configure US meter #0
+config cpu/index=host meter_cfg[{dir=us,index=0}]={sir=1000}
+
+# Configure US meter #1
+config cpu/index=host meter_cfg[{dir=us,index=1}]={sir=2000}
+
+# trace debug cpu
+
+# Configure CPU metering/0 for reason unknown_da on lan1, lan2, lan3
+config cpu/index=host reason_cfg[{dir=us,reason=unknown_da}]={queue=1,meter=0,meter_ports=lan1+lan2+lan3}
+
+# Configure CPU metering/1 for reason unknown_da on lan0, lan3
+# ports lan1+lan2 are metered by meter/0, ports lan0+lan3 - by meter/1
+config cpu/index=host reason_cfg[{dir=us,reason=unknown_da}]={meter=1,meter_ports=lan0+lan3}
+
+# Configure CPU metering/0 for reason unknown_da on lan1
+# port lan2 becomes un-metered
+# ports lan1 is metered by meter/0, ports lan0+lan3 - by meter/1
+config cpu/index=host reason_cfg[{dir=us,reason=unknown_da}]={meter=0,meter_ports=lan1}
+
+# Disable CPU metering for reason unknown_da on port lan3
+config cpu/index=host reason_cfg[{dir=us,reason=unknown_da}]={meter=-1,meter_ports=lan3}
+
+ex cpu/index=host reason_cfg
+

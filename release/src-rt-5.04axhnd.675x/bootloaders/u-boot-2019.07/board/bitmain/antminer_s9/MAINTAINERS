@@ -1,0 +1,6 @@
+Bitmain Antminer S9
+M:	Michal Simek <monstr@monstr.eu>
+S:	Maintained
+F:	board/bitmain/antminer_s9
+F:	include/configs/bitmain_antminer_s9.h
+F:	configs/bitmain_antminer_s9_defconfig

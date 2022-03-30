@@ -1,0 +1,24 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Device Tree Source extras for U-Boot on RCar Gen3
+ *
+ * Copyright (C) 2018 Marek Vasut <marek.vasut@gmail.com>
+ */
+
+/ {
+	soc {
+		u-boot,dm-pre-reloc;
+	};
+};
+
+&cpg {
+	u-boot,dm-pre-reloc;
+};
+
+&extal_clk {
+	u-boot,dm-pre-reloc;
+};
+
+&prr {
+	u-boot,dm-pre-reloc;
+};

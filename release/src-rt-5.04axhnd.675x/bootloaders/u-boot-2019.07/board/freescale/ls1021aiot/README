@@ -1,0 +1,58 @@
+Overview
+--------
+The LS1021A-IOT is a Freescale reference board that hosts
+the LS1021A SoC.
+
+LS1021AIOT board Overview
+-------------------------
+ - DDR Controller
+	- Supports 1GB un-buffered DDR3L SDRAM discrete
+	devices(32-bit bus) with 4 bit ECC
+	- DDR power supplies 1.35V to all devices with
+	automatic tracking of VTT
+	- Soldered DDR chip
+	- Supprot one fixed speed
+ - Ethernet
+	- Two on-board SGMII 10/100/1G ethernet ports
+	- One Gbit Etherent RGMII interface to 4-ports switch
+	with 4x 10/100/1000 RJ145 ports
+ - CPLD
+	- 8-bit registers in CPLD for system configuration
+	- connected to IFC_AD[0:7]
+ - Power Supplies
+	- 12V@5A DC
+ - SDHC
+	- SDHC port connects directly to a full 8-bit SD/MMC slot
+	- Support for SDIO devices
+ - USB
+	- Two on-board USB 3.0
+	- One on-board USB k22
+ - PCIe
+	- Two MiniPCIe Solts
+ - SATA
+	- Support SATA Connector
+ - AUDIO
+	- AUDIO in and out
+ - I/O Expansion
+	- Arduino Shield Connector
+	- Port0 - CAN/GPIO/Flextimer
+	- Port1 - GPIO/CPLD Expansion
+	- Port2 - SPI/I2C/UART
+
+Memory map
+-----------
+The addresses in brackets are physical addresses.
+
+Start Address	End Address		Description			Size
+0x00_0100_0000	0x00_0FFF_FFFF	CCSRBAR				240MB
+0x00_4000_0000	0x00_43FF_FFFF	QSPI(Chip select 0)	64MB
+0x00_4400_0000	0x00_47FF_FFFF	QSPI(Chip select 1)	64MB
+0x00_6000_0000	0x00_6000_FFFF	CPLD				64K
+0x00_8000_0000	0x00_BFFF_FFFF	DDR					1GB
+
+Boot description
+-----------------
+LS1021A-IOT support two ways of boot:
+Qspi boot and SD boot
+The board doesn't support boot from another
+source without changing any switch/jumper.

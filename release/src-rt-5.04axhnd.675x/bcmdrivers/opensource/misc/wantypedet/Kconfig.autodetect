@@ -1,0 +1,10 @@
+config BCM_PON_WAN_TYPE_AUTO_DETECT
+    tristate "Support for WAN type auto-detection"
+    depends on BCM_I2C_CHIP && BCM_GPON
+    default n
+
+config BCM_PON_WAN_TYPE_AUTO_DETECT_IMPL
+    int "Implementation index for BRCM WAN type auto-detection"
+    depends on BCM_PON_WAN_TYPE_AUTO_DETECT
+    default 1
+

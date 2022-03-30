@@ -1,0 +1,12 @@
+if TARGET_SBx81LIFKW
+
+config SYS_BOARD
+       default "SBx81LIFKW"
+
+config SYS_VENDOR
+       default "alliedtelesis"
+
+config SYS_CONFIG_NAME
+       default "SBx81LIFKW"
+
+endif

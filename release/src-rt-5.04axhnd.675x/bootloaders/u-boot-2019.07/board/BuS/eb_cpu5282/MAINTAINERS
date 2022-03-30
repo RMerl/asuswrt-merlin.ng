@@ -1,0 +1,7 @@
+EB_CPU5282 BOARD
+M:	Jens Scharsig <esw@bus-elektronik.de>
+S:	Maintained
+F:	board/BuS/eb_cpu5282/
+F:	include/configs/eb_cpu5282.h
+F:	configs/eb_cpu5282_defconfig
+F:	configs/eb_cpu5282_internal_defconfig

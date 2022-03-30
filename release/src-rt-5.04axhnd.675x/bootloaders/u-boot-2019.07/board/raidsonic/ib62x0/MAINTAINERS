@@ -1,0 +1,6 @@
+IB62X0 BOARD
+M:	Luka Perkov <luka@openwrt.org>
+S:	Maintained
+F:	board/raidsonic/ib62x0/
+F:	include/configs/ib62x0.h
+F:	configs/ib62x0_defconfig

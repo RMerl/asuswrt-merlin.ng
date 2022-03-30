@@ -1,0 +1,264 @@
+T2080PCIe-RDB is a Freescale Reference Design Board that hosts the T2080 SoC.
+It can work in two mode: standalone mode and PCIe endpoint mode.
+
+T2080 SoC Overview
+------------------
+The T2080 QorIQ multicore processor combines four dual-threaded e6500 Power
+Architecture processor cores with high-performance datapath acceleration
+logic and network and peripheral bus interfaces required for networking,
+telecom/datacom, wireless infrastructure, and mil/aerospace applications.
+
+T2080 includes the following functions and features:
+ - Four dual-threads 64-bit Power architecture e6500 cores, up to 1.8GHz
+ - 2MB L2 cache and 512KB CoreNet platform cache (CPC)
+ - Hierarchical interconnect fabric
+ - One 32-/64-bit DDR3/3L SDRAM memory controllers with ECC and interleaving
+ - Data Path Acceleration Architecture (DPAA) incorporating acceleration
+ - 16 SerDes lanes up to 10.3125 GHz
+ - 8 Ethernet interfaces, supporting combinations of the following:
+   - Up to four 10 Gbps Ethernet MACs
+   - Up to eight 1 Gbps Ethernet MACs
+   - Up to four 2.5 Gbps Ethernet MACs
+ - High-speed peripheral interfaces
+   - Four PCI Express controllers (two PCIe 2.0 and two PCIe 3.0 with SR-IOV)
+   - Two Serial RapidIO 2.0 controllers/ports running at up to 5 GHz
+ - Additional peripheral interfaces
+   - Two serial ATA (SATA 2.0) controllers
+   - Two high-speed USB 2.0 controllers with integrated PHY
+   - Enhanced secure digital host controller (SD/SDHC/SDXC/eMMC)
+   - Enhanced serial peripheral interface (eSPI)
+   - Four I2C controllers
+   - Four 2-pin UARTs or two 4-pin UARTs
+   - Integrated Flash Controller supporting NAND and NOR flash
+ - Three eight-channel DMA engines
+ - Support for hardware virtualization and partitioning enforcement
+ - QorIQ Platform's Trust Architecture 2.0
+
+Differences between T2080 and T2081
+-----------------------------------
+  Feature		T2080	 T2081
+  1G Ethernet numbers:  8	 6
+  10G Ethernet numbers: 4	 2
+  SerDes lanes:		16	 8
+  Serial RapidIO,RMan:  2	 no
+  SATA Controller:	2	 no
+  Aurora:		yes	 no
+  SoC Package:		896-pins 780-pins
+
+
+T2080PCIe-RDB board Overview
+----------------------------
+ - SERDES Configuration
+     - SerDes-1 Lane A-B: to two 10G XFI fiber (MAC9 & MAC10)
+     - SerDes-1 Lane C-D: to two 10G Base-T (MAC1 & MAC2)
+     - SerDes-1 Lane E-H: to PCIe Goldfinger (PCIe4 x4, Gen3)
+     - SerDes-2 Lane A-D: to PCIe Slot (PCIe1 x4, Gen2)
+     - SerDes-2 Lane E-F: to C293 secure co-processor (PCIe2 x2)
+     - SerDes-2 Lane G-H: to SATA1 & SATA2
+ - Ethernet
+     - Two on-board 10M/100M/1G RGMII ethernet ports
+     - Two on-board 10Gbps XFI fiber ports
+     - Two on-board 10Gbps Base-T copper ports
+ - DDR Memory
+     - Supports 72bit 4GB DDR3-LP SODIMM
+ - PCIe
+     - One PCIe x4 gold-finger
+     - One PCIe x4 connector
+     - One PCIe x2 end-point device (C293 Crypto co-processor)
+ - IFC/Local Bus
+     - NOR:  128MB 16-bit NOR Flash
+     - NAND: 1GB 8-bit NAND flash
+     - CPLD: for system controlling with programable header on-board
+ - SATA
+     - Two SATA 2.0 onnectors on-board
+ - USB
+     - Supports two USB 2.0 ports with integrated PHYs
+     - Two type A ports with 5V@1.5A per port.
+ - SDHC
+     - one TF-card connector on-board
+ - SPI
+     -  On-board 64MB SPI flash
+ - Other
+     - Two Serial ports
+     - Four I2C ports
+
+
+System Memory map
+-----------------
+Start Address  End Address      Description			Size
+0xF_FFDF_0000  0xF_FFDF_0FFF    IFC - CPLD			4KB
+0xF_FF80_0000  0xF_FF80_FFFF    IFC - NAND Flash		64KB
+0xF_FE00_0000  0xF_FEFF_FFFF    CCSRBAR				16MB
+0xF_F803_0000  0xF_F803_FFFF    PCI Express 4 I/O Space		64KB
+0xF_F802_0000  0xF_F802_FFFF    PCI Express 3 I/O Space		64KB
+0xF_F801_0000  0xF_F801_FFFF    PCI Express 2 I/O Space		64KB
+0xF_F800_0000  0xF_F800_FFFF    PCI Express 1 I/O Space		64KB
+0xF_F600_0000  0xF_F7FF_FFFF    Queue manager software portal	32MB
+0xF_F400_0000  0xF_F5FF_FFFF    Buffer manager software portal	32MB
+0xF_E800_0000  0xF_EFFF_FFFF    IFC - NOR Flash			128MB
+0xF_0000_0000  0xF_003F_FFFF    DCSR				4MB
+0xC_4000_0000  0xC_4FFF_FFFF    PCI Express 4 Mem Space		256MB
+0xC_3000_0000  0xC_3FFF_FFFF    PCI Express 3 Mem Space		256MB
+0xC_2000_0000  0xC_2FFF_FFFF    PCI Express 2 Mem Space		256MB
+0xC_0000_0000  0xC_1FFF_FFFF    PCI Express 1 Mem Space		512MB
+0x0_0000_0000  0x0_ffff_ffff    DDR				4GB
+
+
+128M NOR Flash memory Map
+-------------------------
+Start Address   End Address	Definition			Max size
+0xEFF40000	0xEFFFFFFF	U-Boot (current bank)		768KB
+0xEFF20000	0xEFF3FFFF	U-Boot env (current bank)	128KB
+0xEFF00000	0xEFF1FFFF	FMAN Ucode (current bank)	128KB
+0xEFE00000	0xEFE3FFFF	PHY CS4315 firmware		256KB
+0xED300000	0xEFEFFFFF	rootfs (alt bank)		44MB
+0xEC800000	0xEC8FFFFF	Hardware device tree (alt bank)	1MB
+0xEC020000	0xEC7FFFFF	Linux.uImage (alt bank)		7MB + 875KB
+0xEC000000	0xEC01FFFF	RCW (alt bank)			128KB
+0xEBF40000	0xEBFFFFFF	U-Boot (alt bank)		768KB
+0xEBF20000	0xEBF3FFFF	U-Boot env (alt bank)		128KB
+0xEBF00000	0xEBF1FFFF	FMAN ucode (alt bank)		128KB
+0xEBE00000	0xEBE3FFFF	PHY CS4315 firmware (alt bank)	256KB
+0xE9300000	0xEBEFFFFF	rootfs (current bank)		44MB
+0xE8800000	0xE88FFFFF	Hardware device tree (cur bank)	1MB
+0xE8020000	0xE86FFFFF	Linux.uImage (current bank)	7MB + 875KB
+0xE8000000	0xE801FFFF	RCW (current bank)		128KB
+
+
+T2080PCIe-RDB Ethernet Port Map
+-------------------------------
+Label    In Uboot      In Linux     FMan Address   Comments    PHY
+ETH0     FM1@GTEC1     fm1-mac9     0xfe4f0000     10G SFP+   (CS4315)
+ETH1     FM1@GTEC2     fm1-mac10    0xfe4f2000     10G SFP+   (CS4315)
+ETH2     FM1@GTEC3     fm1-mac1     0xfe4e0000     10G Base-T (AQ1202)
+ETH3     FM1@GTEC4     fm1-mac2     0xfe4e2000     10G Base-T (AQ1202)
+ETH4     FM1@DTSEC3    fm1-mac3     0xfe4e4000     1G  RGMII  (RTL8211E)
+ETH5     FM1@DTSEC4    fm1-mac4     0xfe4e6000     1G  RGMII  (RTL8211E)
+
+
+T2080PCIe-RDB Default DIP-Switch setting
+----------------------------------------
+SW1[1:8] = '00010011'
+SW2[1:8] = '10111111'
+SW3[1:8] = '11100001'
+
+Software configurations and board settings
+------------------------------------------
+1. NOR boot:
+   a. build NOR boot image
+	$ make T2080RDB_config
+	$ make
+   b. program u-boot.bin image to NOR flash
+	=> tftp 1000000 u-boot.bin
+	=> pro off all;era eff40000 efffffff;cp.b 1000000 eff40000 $filesize
+	set SW1[1:8] = '00010011', SW2[1] = '1', SW3[4] = '0' for NOR boot
+
+   Switching between default bank and alternate bank on NOR flash
+   To change boot source to vbank4:
+	via software:   run command 'cpld reset altbank' in U-Boot.
+	via DIP-switch: set SW3[5:7] = '100'
+
+   To change boot source to vbank0:
+	via software:   run command 'cpld reset' in U-Boot.
+	via DIP-Switch: set SW3[5:7] = '000'
+
+2. NAND Boot:
+   a. build PBL image for NAND boot
+	$ make T2080RDB_NAND_config
+	$ make
+   b. program u-boot-with-spl-pbl.bin to NAND flash
+	=> tftp 1000000 u-boot-with-spl-pbl.bin
+	=> nand erase 0 d0000
+	=> nand write 1000000 0 $filesize
+	set SW1[1:8] = '10000010', SW2[1] = '1', SW3[4] = '1' for NAND boot
+
+3. SPI Boot:
+   a. build PBL image for SPI boot
+	$ make T2080RDB_SPIFLASH_config
+	$ make
+   b. program u-boot-with-spl-pbl.bin to SPI flash
+	=> tftp 1000000 u-boot-with-spl-pbl.bin
+	=> sf probe 0
+	=> sf erase 0 d0000
+	=> sf write 1000000 0 $filesize
+	set SW1[1:8] = '00100010', SW2[1] ='1' for SPI boot
+
+4. SD Boot:
+   a. build PBL image for SD boot
+	$ make T2080RDB_SDCARD_config
+	$ make
+   b. program u-boot-with-spl-pbl.bin to micro-SD/TF card
+	=> tftp 1000000 u-boot-with-spl-pbl.bin
+	=> mmc write 1000000 8 0x800
+	set SW1[1:8] = '00100000', SW2[1] = '0' for SD boot
+
+
+2-stage NAND/SPI/SD boot loader
+-------------------------------
+PBL initializes the internal CPC-SRAM and copy SPL(160K) to SRAM.
+SPL further initializes DDR using SPD and environment variables
+and copy U-Boot(768 KB) from NAND/SPI/SD device to DDR.
+Finally SPL transers control to U-Boot for futher booting.
+
+SPL has following features:
+ - Executes within 256K
+ - No relocation required
+
+Run time view of SPL framework
+-------------------------------------------------
+|Area		   | Address			|
+-------------------------------------------------
+|SecureBoot header | 0xFFFC0000 (32KB)		|
+-------------------------------------------------
+|GD, BD		   | 0xFFFC8000 (4KB)		|
+-------------------------------------------------
+|ENV		   | 0xFFFC9000 (8KB)		|
+-------------------------------------------------
+|HEAP		   | 0xFFFCB000 (50KB)		|
+-------------------------------------------------
+|STACK		   | 0xFFFD8000 (22KB)		|
+-------------------------------------------------
+|U-Boot SPL	   | 0xFFFD8000 (160KB)		|
+-------------------------------------------------
+
+NAND Flash memory Map on T2080RDB
+--------------------------------------------------------------
+Start		End		Definition	Size
+0x000000	0x0FFFFF	U-Boot img	1MB  (2 blocks)
+0x100000	0x17FFFF	U-Boot env	512KB (1 block)
+0x180000	0x1FFFFF	FMAN ucode	512KB (1 block)
+0x200000	0x27FFFF	CS4315 ucode	512KB (1 block)
+
+
+Micro SD Card memory Map on T2080RDB
+----------------------------------------------------
+Block		#blocks		Definition	Size
+0x008		2048		U-Boot img	1MB
+0x800		0016		U-Boot env	8KB
+0x820		0128		FMAN ucode	64KB
+0x8a0		0512		CS4315 ucode	256KB
+
+
+SPI Flash memory Map on T2080RDB
+----------------------------------------------------
+Start		End		Definition	Size
+0x000000	0x0FFFFF	U-Boot img	1MB
+0x100000	0x101FFF	U-Boot env	8KB
+0x110000	0x11FFFF	FMAN ucode	64KB
+0x120000        0x15FFFF        CS4315 ucode	256KB
+
+
+How to update the ucode of Cortina CS4315/CS4340 10G PHY
+--------------------------------------------------------
+=> tftp 1000000 CS4315-CS4340-PHY-ucode.txt
+=> pro off all;era 0xefe00000 0xefefffff;cp.b 1000000 0xefe00000 $filesize
+
+
+How to update the ucode of Freescale FMAN
+-----------------------------------------
+=> tftp 1000000 fsl_fman_ucode_t2080_r1.0.bin
+=> pro off all;erase 0xeff00000 0xeff1ffff;cp 1000000 0xeff00000 $filesize
+
+
+For more details, please refer to T2080PCIe-RDB User Guide and access
+website www.freescale.com and Freescale QorIQ SDK Infocenter document.

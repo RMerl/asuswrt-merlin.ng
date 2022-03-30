@@ -1,0 +1,61 @@
+Intel Interrupt Router Device Binding
+=====================================
+
+The device tree node which describes the operation of the Intel Interrupt Router
+device is as follows:
+
+Required properties :
+- reg : Specifies the interrupt router's PCI configuration space address as
+    defined by the Open Firmware spec.
+- compatible = "intel,irq-router"
+- intel,pirq-config : Specifies the IRQ routing register programming mechanism.
+    Valid values are:
+      "pci": IRQ routing is controlled by PCI configuration registers
+      "ibase": IRQ routing is in the memory-mapped IBASE register block
+- intel,ibase-offset : IBASE register offset in the interrupt router's PCI
+    configuration space, required only if intel,pirq-config = "ibase".
+- intel,actl-8bit : If ACTL (ACPI control) register width is 8-bit, this must
+    be specified. The 8-bit ACTL register is seen on ICH series chipset, like
+    ICH9/Panther Point/etc. On Atom chipset it is a 32-bit register.
+- intel,actl-addr : ACTL (ACPI control) register offset. ACTL can be either
+    in the interrupt router's PCI configuration space, or IBASE.
+- intel,pirq-link : Specifies the PIRQ link information with two cells. The
+    first cell is the register offset that controls the first PIRQ link routing.
+    The second cell is the total number of PIRQ links the router supports.
+- intel,pirq-regmap : Specifies PIRQ routing register offset of all PIRQ links,
+    encoded as 2 cells a group for each link. The first cell is the PIRQ link
+    number (0 for PIRQA, 1 for PIRQB, etc). The second cell is the PIRQ routing
+    register offset from the interrupt router's base address. If this property
+    is omitted, it indicates a consecutive register offset from the first PIRQ
+    link, as specified by the first cell of intel,pirq-link.
+- intel,pirq-mask : Specifies the IRQ mask representing the 16 IRQs in the
+    8259 PIC. Bit N is 1 means IRQ N is available to be routed.
+- intel,pirq-routing : Specifies all PCI devices' IRQ routing information,
+   encoded as 3 cells a group for a device. The first cell is the device's PCI
+   bus number, device number and function number encoding with PCI_BDF() macro.
+   The second cell is the PCI interrupt pin used by this device. The last cell
+   is which PIRQ line the PCI interrupt pin is routed to.
+
+
+Example
+-------
+
+#include <dt-bindings/interrupt-router/intel-irq.h>
+
+	irq-router@1f,0 {
+		reg = <0x0000f800 0 0 0 0>;
+		compatible = "intel,irq-router";
+		intel,pirq-config = "pci";
+		intel,pirq-link = <0x60 8>;
+		intel,pirq-mask = <0xdef8>;
+		intel,pirq-routing = <
+			PCI_BDF(0, 2, 0) INTA PIRQA
+			PCI_BDF(0, 3, 0) INTA PIRQB
+			PCI_BDF(0, 8, 0) INTA PIRQC
+			PCI_BDF(0, 8, 1) INTB PIRQD
+			PCI_BDF(1, 6, 0) INTA PIRQE
+			PCI_BDF(1, 6, 1) INTB PIRQF
+			PCI_BDF(1, 6, 2) INTC PIRQG
+			PCI_BDF(1, 6, 3) INTD PIRQH
+		>;
+	};

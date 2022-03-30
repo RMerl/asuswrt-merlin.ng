@@ -1,0 +1,26 @@
+LX2160ARDB BOARD
+M:	Priyanka Jain <priyanka.jain@nxp.com>
+S:	Maintained
+F:	board/freescale/lx2160a/
+F:	include/configs/lx2160a_common.h
+F:	include/configs/lx2160ardb.h
+F:	configs/lx2160ardb_tfa_defconfig
+F:	arch/arm/dts/fsl-lx2160a-rdb.dts
+
+LX2160ARDB_SECURE_BOOT BOARD
+M:	Udit Agarwal <udit.agarwal@nxp.com>
+S:	Maintained
+F:	configs/lx2160ardb_tfa_SECURE_BOOT_defconfig
+
+LX2160AQDS BOARD
+M:	Pankaj Bansal <pankaj.bansal@nxp.com>
+S:	Maintained
+F:	board/freescale/lx2160a/eth_lx2160aqds.h
+F:	include/configs/lx2160aqds.h
+F:	configs/lx2160aqds_tfa_defconfig
+F:	arch/arm/dts/fsl-lx2160a-qds.dts
+
+LX2160AQDS_SECURE_BOOT BOARD
+M:	Udit Agarwal <udit.agarwal@nxp.com>
+S:	Maintained
+F:	configs/lx2160aqds_tfa_SECURE_BOOT_defconfig

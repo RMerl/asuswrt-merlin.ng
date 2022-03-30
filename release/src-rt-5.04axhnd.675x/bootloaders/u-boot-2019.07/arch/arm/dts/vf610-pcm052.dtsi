@@ -1,0 +1,259 @@
+// SPDX-License-Identifier: GPL-2.0+ OR X11
+/*
+ * (C) Copyright 2018
+ * Lukasz Majewski, DENX Software Engineering, lukma@denx.de.
+ *
+ */
+
+/dts-v1/;
+#include "vf.dtsi"
+#include "vf610-pinfunc.h"
+
+/ {
+	chosen {
+		stdout-path = &uart1;
+	};
+
+	aliases {
+		spi0 = &qspi0;
+		mmc0 = &esdhc1;
+	};
+};
+
+&esdhc1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_esdhc1>;
+	bus-width = <4>;
+	cd-gpios = <&gpio3 2 GPIO_ACTIVE_LOW>;
+	status = "okay";
+};
+
+&fec0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_eth>;
+
+	phy-mode = "rmii";
+	status = "okay";
+};
+
+&fec1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_eth1>;
+
+	phy-mode = "rmii";
+	status = "okay";
+};
+
+&i2c2 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_i2c2>;
+	status = "okay";
+
+	eeprom: eeprom@50 {
+		compatible = "atmel,24c256";
+		reg = <0x50>;
+		pagesize = <64>;
+		u-boot,i2c-offset-len = <2>;
+	};
+
+	m41t62: rtc@68 {
+		compatible = "st,m41t62";
+		reg = <0x68>;
+	};
+};
+
+&iomuxc {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_ddr>;
+
+	pinctrl_ddr: ddrgrp {
+		fsl,pins = <
+			VF610_PAD_DDR_A15__DDR_A_15             0x1c0
+			VF610_PAD_DDR_A14__DDR_A_14             0x1c0
+			VF610_PAD_DDR_A13__DDR_A_13             0x1c0
+			VF610_PAD_DDR_A12__DDR_A_12             0x1c0
+			VF610_PAD_DDR_A11__DDR_A_11             0x1c0
+			VF610_PAD_DDR_A10__DDR_A_10             0x1c0
+			VF610_PAD_DDR_A9__DDR_A_9               0x1c0
+			VF610_PAD_DDR_A8__DDR_A_8               0x1c0
+			VF610_PAD_DDR_A7__DDR_A_7               0x1c0
+			VF610_PAD_DDR_A6__DDR_A_6               0x1c0
+			VF610_PAD_DDR_A5__DDR_A_5               0x1c0
+			VF610_PAD_DDR_A4__DDR_A_4               0x1c0
+			VF610_PAD_DDR_A3__DDR_A_3               0x1c0
+			VF610_PAD_DDR_A2__DDR_A_2               0x1c0
+			VF610_PAD_DDR_A1__DDR_A_1               0x1c0
+			VF610_PAD_DDR_A0__DDR_A_0               0x1c0
+			VF610_PAD_DDR_BA2__DDR_BA_2             0x1c0
+			VF610_PAD_DDR_BA1__DDR_BA_1             0x1c0
+			VF610_PAD_DDR_BA0__DDR_BA_0             0x1c0
+			VF610_PAD_DDR_CAS__DDR_CAS_B            0x1c0
+			VF610_PAD_DDR_CKE__DDR_CKE_0            0x1c0
+			VF610_PAD_DDR_CLK__DDR_CLK_0            0x101c0
+			VF610_PAD_DDR_CS__DDR_CS_B_0            0x1c0
+			VF610_PAD_DDR_D15__DDR_D_15             0x1c0
+			VF610_PAD_DDR_D14__DDR_D_14             0x1c0
+			VF610_PAD_DDR_D13__DDR_D_13             0x1c0
+			VF610_PAD_DDR_D12__DDR_D_12             0x1c0
+			VF610_PAD_DDR_D11__DDR_D_11             0x1c0
+			VF610_PAD_DDR_D10__DDR_D_10             0x1c0
+			VF610_PAD_DDR_D9__DDR_D_9               0x1c0
+			VF610_PAD_DDR_D8__DDR_D_8               0x1c0
+			VF610_PAD_DDR_D7__DDR_D_7               0x1c0
+			VF610_PAD_DDR_D6__DDR_D_6               0x1c0
+			VF610_PAD_DDR_D5__DDR_D_5               0x1c0
+			VF610_PAD_DDR_D4__DDR_D_4               0x1c0
+			VF610_PAD_DDR_D3__DDR_D_3               0x1c0
+			VF610_PAD_DDR_D2__DDR_D_2               0x1c0
+			VF610_PAD_DDR_D1__DDR_D_1               0x1c0
+			VF610_PAD_DDR_D0__DDR_D_0               0x1c0
+			VF610_PAD_DDR_DQM1__DDR_DQM_1           0x1c0
+			VF610_PAD_DDR_DQM0__DDR_DQM_0           0x1c0
+			VF610_PAD_DDR_DQS1__DDR_DQS_1           0x101c0
+			VF610_PAD_DDR_DQS0__DDR_DQS_0           0x101c0
+			VF610_PAD_DDR_RAS__DDR_RAS_B            0x1c0
+			VF610_PAD_DDR_WE__DDR_WE_B              0x1c0
+			VF610_PAD_DDR_ODT1__DDR_ODT_0           0x1c0
+			VF610_PAD_DDR_ODT0__DDR_ODT_1           0x1c0
+			VF610_PAD_DDR_DDRBYTE1__DDR_DDRBYTE1    0x1c0
+			VF610_PAD_DDR_DDRBYTE2__DDR_DDRBYTE2    0x1c0
+			VF610_PAD_DDR_RESETB                    0x1006c
+		>;
+	};
+
+	pinctrl_esdhc1: esdhc1grp {
+		fsl,pins = <
+			VF610_PAD_PTA24__ESDHC1_CLK		0x31ef
+			VF610_PAD_PTA25__ESDHC1_CMD		0x31ef
+			VF610_PAD_PTA26__ESDHC1_DAT0		0x31ef
+			VF610_PAD_PTA27__ESDHC1_DAT1		0x31ef
+			VF610_PAD_PTA28__ESDHC1_DATA2		0x31ef
+			VF610_PAD_PTA29__ESDHC1_DAT3		0x31ef
+			VF610_PAD_PTB28__GPIO_98		0x219d
+		>;
+	};
+
+	pinctrl_eth: ethgrp {
+		fsl,pins = <
+			VF610_PAD_PTA6__RMII_CLKIN              0x30dd
+			VF610_PAD_PTC0__ENET_RMII0_MDC          0x30de
+			VF610_PAD_PTC1__ENET_RMII0_MDIO 0x30df
+			VF610_PAD_PTC2__ENET_RMII0_CRS          0x30dd
+			VF610_PAD_PTC3__ENET_RMII0_RXD1 0x30dd
+			VF610_PAD_PTC4__ENET_RMII0_RXD0 0x30dd
+			VF610_PAD_PTC5__ENET_RMII0_RXER 0x30dd
+			VF610_PAD_PTC6__ENET_RMII0_TXD1 0x30de
+			VF610_PAD_PTC7__ENET_RMII0_TXD0 0x30de
+			VF610_PAD_PTC8__ENET_RMII0_TXEN 0x30de
+		>;
+	};
+
+	pinctrl_eth1: eth1grp {
+		fsl,pins = <
+			VF610_PAD_PTC9__ENET_RMII1_MDC		0x30de
+			VF610_PAD_PTC10__ENET_RMII1_MDIO	0x30df
+			VF610_PAD_PTC11__ENET_RMII1_CRS	0x30dd
+			VF610_PAD_PTC12__ENET_RMII1_RXD1	0x30dd
+			VF610_PAD_PTC13__ENET_RMII1_RXD0	0x30dd
+			VF610_PAD_PTC14__ENET_RMII1_RXER	0x30dd
+			VF610_PAD_PTC15__ENET_RMII1_TXD1	0x30de
+			VF610_PAD_PTC16__ENET_RMII1_TXD0	0x30de
+			VF610_PAD_PTC17__ENET_RMII1_TXEN	0x30de
+		>;
+	};
+
+	pinctrl_i2c2: i2c2grp {
+		fsl,pins = <
+			VF610_PAD_PTA22__I2C2_SCL		0x34df
+			VF610_PAD_PTA23__I2C2_SDA		0x34df
+		>;
+	};
+
+	pinctrl_nfc: nfcgrp {
+		fsl,pins = <
+			VF610_PAD_PTD31__NF_IO15		0x28df
+			VF610_PAD_PTD30__NF_IO14		0x28df
+			VF610_PAD_PTD29__NF_IO13		0x28df
+			VF610_PAD_PTD28__NF_IO12		0x28df
+			VF610_PAD_PTD27__NF_IO11		0x28df
+			VF610_PAD_PTD26__NF_IO10		0x28df
+			VF610_PAD_PTD25__NF_IO9		0x28df
+			VF610_PAD_PTD24__NF_IO8		0x28df
+			VF610_PAD_PTD23__NF_IO7		0x28df
+			VF610_PAD_PTD22__NF_IO6		0x28df
+			VF610_PAD_PTD21__NF_IO5		0x28df
+			VF610_PAD_PTD20__NF_IO4		0x28df
+			VF610_PAD_PTD19__NF_IO3		0x28df
+			VF610_PAD_PTD18__NF_IO2		0x28df
+			VF610_PAD_PTD17__NF_IO1		0x28df
+			VF610_PAD_PTD16__NF_IO0		0x28df
+			VF610_PAD_PTB24__NF_WE_B		0x28c2
+			VF610_PAD_PTB25__NF_CE0_B		0x28c2
+			VF610_PAD_PTB27__NF_RE_B		0x28c2
+			VF610_PAD_PTC26__NF_RB_B		0x283d
+			VF610_PAD_PTC27__NF_ALE		0x28c2
+			VF610_PAD_PTC28__NF_CLE		0x28c2
+		>;
+	};
+
+	pinctrl_qspi0: qspi0grp {
+		fsl,pins = <
+			VF610_PAD_PTD0__QSPI0_A_QSCK	0x397f
+			VF610_PAD_PTD1__QSPI0_A_CS0	0x397f
+			VF610_PAD_PTD2__QSPI0_A_DATA3	0x397f
+			VF610_PAD_PTD3__QSPI0_A_DATA2	0x397f
+			VF610_PAD_PTD4__QSPI0_A_DATA1	0x397f
+			VF610_PAD_PTD5__QSPI0_A_DATA0	0x397f
+			VF610_PAD_PTD7__QSPI0_B_QSCK	0x397f
+			VF610_PAD_PTD8__QSPI0_B_CS0	0x397f
+			VF610_PAD_PTD11__QSPI0_B_DATA1	0x397f
+			VF610_PAD_PTD12__QSPI0_B_DATA0	0x397f
+		>;
+	};
+
+	pinctrl_uart1: uart1grp {
+		fsl,pins = <
+			VF610_PAD_PTB4__UART1_TX                0x21a2
+			VF610_PAD_PTB5__UART1_RX                0x21a1
+		>;
+	};
+};
+
+&nfc {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_nfc>;
+
+	status = "okay";
+};
+
+&uart1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_uart1>;
+
+	status = "okay";
+};
+
+&qspi0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_qspi0>;
+
+	bus-num = <0>;
+	num-cs = <2>;
+	status = "okay";
+
+	qflash0: spi_flash@0 {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "spi-flash";
+		spi-max-frequency = <108000000>;
+		reg = <0>;
+	};
+
+	qflash1: spi_flash@1 {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "spi-flash";
+		spi-max-frequency = <66000000>;
+		reg = <1>;
+	};
+};

@@ -1,0 +1,31 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Device Tree Source extras for U-Boot for the M3N Salvator-XS board
+ *
+ * Copyright (C) 2018 Marek Vasut <marek.vasut@gmail.com>
+ */
+
+#include "r8a77965-salvator-x.dts"
+#include "r8a77965-u-boot.dtsi"
+
+&sdhi0 {
+	sd-uhs-sdr12;
+	sd-uhs-sdr25;
+	sd-uhs-sdr104;
+	max-frequency = <208000000>;
+	status = "okay";
+};
+
+&sdhi2 {
+	mmc-hs400-1_8v;
+	max-frequency = <200000000>;
+	status = "okay";
+};
+
+&sdhi3 {
+	sd-uhs-sdr12;
+	sd-uhs-sdr25;
+	sd-uhs-sdr104;
+	max-frequency = <208000000>;
+	status = "okay";
+};

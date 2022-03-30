@@ -1,0 +1,6 @@
+SFR NEUFBOX 4 SERCOMM BOARD
+M:	Álvaro Fernández Rojas <noltari@gmail.com>
+S:	Maintained
+F:	board/sfr/nb4_ser/
+F:	include/configs/sfr_nb4_ser.h
+F:	configs/sfr_nb4-ser_ram_defconfig

@@ -1,0 +1,54 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Device Tree Source extras for U-Boot for the Eagle board
+ *
+ * Copyright (C) 2018 Marek Vasut <marek.vasut@gmail.com>
+ */
+
+#include "r8a77970-eagle.dts"
+#include "r8a77970-u-boot.dtsi"
+#include <dt-bindings/gpio/gpio.h>
+
+/ {
+	aliases {
+		spi0 = &rpc;
+	};
+};
+
+&avb {
+	pinctrl-0 = <&avb0_pins>;
+	pinctrl-names = "default";
+
+};
+
+&phy0 {
+	reset-gpios = <&gpio1 16 GPIO_ACTIVE_LOW>;
+};
+
+&pfc {
+	avb0_pins: avb {
+		mux {
+			groups = "avb0_link", "avb0_mdio", "avb0_rgmii", "avb0_txcrefclk";
+			function = "avb0";
+		};
+	};
+};
+
+&rpc {
+	num-cs = <1>;
+	status = "okay";
+	spi-max-frequency = <50000000>;
+	#address-cells = <1>;
+	#size-cells = <0>;
+
+	flash0: spi-flash@0 {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "s25fs512s", "jedec,spi-nor";
+		spi-max-frequency = <50000000>;
+		spi-tx-bus-width = <1>;
+		spi-rx-bus-width = <1>;
+		reg = <0>;
+		status = "okay";
+	};
+};

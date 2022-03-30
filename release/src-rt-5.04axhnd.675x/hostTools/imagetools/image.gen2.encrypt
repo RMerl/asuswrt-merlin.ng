@@ -1,0 +1,72 @@
+#!/usr/bin/env perl
+use strict;
+use warnings;
+use bytes;
+use File::stat;
+####
+#### This currently assembles images for GEN3 devices with puresqubi ONLY
+####
+unless ( $ENV{SECURE_BOOT_ARCH} eq 'GEN2' ) {
+    die "Not supported $ENV{SECURE_BOOT_ARCH}";
+}
+
+sub shell {
+    if ( defined $_[1] ) {
+        print "$_[0]\n";
+    }
+    my $res = `$_[0]`;
+    ( $? == 0 ) or die "ERROR: $!";
+    print "$res";
+    return $res;
+}
+
+my @args = @ARGV;
+
+##
+#
+# Redirection of BL1 (aka CFE_ROM) if TK was chosen
+#
+#
+#my $AES_EK = $ENV{OP_AES_EK};
+#my $AES_IV  = $ENV{OP_AES_IV};
+# Present implementations doesn't honor OP credentials for encryption and signing 
+my  $SFX     = $ENV{OP_ENC};
+my  $AES_EK = $ENV{MFG_AES_EK};
+my  $AES_IV  = $ENV{MFG_AES_IV};
+my  $BL2 = 'secram.000';
+if ( $args[0] eq "mfg" ) {
+    $BL2 = 'secmfg.000';
+    $SFX     = $ENV{MFG_ENC};
+}
+$AES_EK = shell("hexdump -v -e '/1 \"%02X\"' $AES_EK");
+$AES_IV = shell("hexdump -v -e '/1 \"%02X\"' $AES_IV");
+local *cat = sub {
+           local $/;
+           my $data;
+           my $flag = (defined $_[1])? ">":"<";
+           open( C, $flag, $_[0]) or 
+                   die("can't open $_[0] ");
+           if (defined $_[1]) {
+              print C $_[1]  ;
+           } else {
+             $data = <C>;
+           } 
+           close(C);
+           return $data;
+};
+# due to size constraints for SRAM
+# CFERAM is always
+# 1. Compressed
+# 2. Encrypted
+my $bytes = cat($ENV{CFE_RAM});
+my $comp_sz = (length $bytes)-12;
+ cat("$ENV{WDIR}/cferam.tmp.$$", substr($bytes, 12, $comp_sz) ); 
+shell(
+        "$ENV{HOSTTOOLS_DIR}/lzmacmd e $ENV{WDIR}/cferam.tmp.$$ $ENV{WDIR}/$BL2.lz.$$ -d22 -lp2 -lc1"
+);
+my $infl = cat("$ENV{WDIR}/$BL2.lz.$$"); 
+substr($bytes, 8, 4) = pack("(I)<",(length $infl));
+cat("$ENV{WDIR}/$BL2.lz.$$", substr($bytes, 0, 12) . $infl); 
+shell(
+        "cat $ENV{WDIR}/$BL2.lz.$$|openssl enc -aes-128-cbc -K $AES_EK -iv $AES_IV -out $ENV{WDIR}/bootfs/$BL2"
+    );

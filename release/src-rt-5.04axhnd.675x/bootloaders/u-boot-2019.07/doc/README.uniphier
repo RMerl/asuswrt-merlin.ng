@@ -1,0 +1,462 @@
+U-Boot for UniPhier SoC family
+==============================
+
+
+Recommended toolchains
+----------------------
+
+The UniPhier platform is well tested with Linaro toolchains.
+You can download pre-built toolchains from:
+
+    http://www.linaro.org/downloads/
+
+
+Compile the source
+------------------
+
+The source can be configured and built with the following commands:
+
+    $ make <defconfig>
+    $ make CROSS_COMPILE=<toolchain-prefix> DEVICE_TREE=<device-tree>
+
+The recommended <toolchain-prefix> is `arm-linux-gnueabihf-` for 32bit SoCs,
+`aarch64-linux-gnu-` for 64bit SoCs, but you may wish to change it to use your
+favorite compiler.
+
+The following tables show <defconfig> and <device-tree> for each board.
+
+32bit SoC boards:
+
+ Board         | <defconfig>                 | <device-tree>
+---------------|-----------------------------|------------------------------
+LD4 reference  | uniphier_ld4_sld8_defconfig | uniphier-ld4-ref (default)
+sld8 reference | uniphier_ld4_sld8_defconfig | uniphier-sld8-def
+Pro4 reference | uniphier_v7_defconfig       | uniphier-pro4-ref
+Pro4 Ace       | uniphier_v7_defconfig       | uniphier-pro4-ace
+Pro4 Sanji     | uniphier_v7_defconfig       | uniphier-pro4-sanji
+Pro5 4KBOX     | uniphier_v7_defconfig       | uniphier-pro5-4kbox
+PXs2 Gentil    | uniphier_v7_defconfig       | uniphier-pxs2-gentil
+PXs2 Vodka     | uniphier_v7_defconfig       | uniphier-pxs2-vodka (default)
+LD6b reference | uniphier_v7_defconfig       | uniphier-ld6b-ref
+
+64bit SoC boards:
+
+ Board         | <defconfig>           | <device-tree>
+---------------|-----------------------|----------------------------
+LD11 reference | uniphier_v8_defconfig | uniphier-ld11-ref
+LD11 Global    | uniphier_v8_defconfig | uniphier-ld11-global
+LD20 reference | uniphier_v8_defconfig | uniphier-ld20-ref (default)
+LD20 Global    | uniphier_v8_defconfig | uniphier-ld20-global
+PXs3 reference | uniphier_v8_defconfig | uniphier-pxs3-ref
+
+For example, to compile the source for PXs2 Vodka board, run the following:
+
+    $ make uniphier_v7_defconfig
+    $ make CROSS_COMPILE=arm-linux-gnueabihf- DEVICE_TREE=uniphier-pxs2-vodka
+
+The device tree marked as (default) can be omitted.  `uniphier-pxs2-vodka` is
+the default device tree for the configuration `uniphier_v7_defconfig`, so the
+following gives the same result.
+
+    $ make uniphier_v7_defconfig
+    $ make CROSS_COMPILE=arm-linux-gnueabihf-
+
+
+Booting 32bit SoC boards
+------------------------
+
+The build command will generate the following:
+- u-boot.bin
+- spl/u-boot.bin
+
+U-Boot can boot UniPhier 32bit SoC boards by itself.  Flash the generated images
+to the storage device (NAND or eMMC) on your board.
+
+ - spl/u-boot-spl.bin at the offset address 0x00000000
+ - u-boot.bin         at the offset address 0x00020000
+
+The `u-boot-with-spl.bin` is the concatenation of the two (with appropriate
+padding), so you can also do:
+
+ - u-boot-with-spl.bin at the offset address 0x00000000
+
+If a TFTP server is available, the images can be easily updated.
+Just copy the u-boot-spl.bin and u-boot.bin to the TFTP public directory,
+and run the following command at the U-Boot command line:
+
+To update the images in NAND:
+
+    => run nandupdate
+
+To update the images in eMMC:
+
+    => run emmcupdate
+
+
+Booting 64bit SoC boards
+------------------------
+
+The build command will generate the following:
+- u-boot.bin
+
+However, U-Boot is not the first stage loader for UniPhier 64bit SoC boards.
+U-Boot serves as a non-secure boot loader loaded by [ARM Trusted Firmware],
+so you need to provide the `u-boot.bin` to the build command of ARM Trusted
+Firmware.
+
+[ARM Trusted Firmware]: https://github.com/ARM-software/arm-trusted-firmware
+
+
+Verified Boot
+-------------
+
+U-Boot supports an image verification method called "Verified Boot".
+This is a brief tutorial to utilize this feature for the UniPhier platform.
+You will find details documents in the doc/uImage.FIT directory.
+
+Here, we take LD20 reference board for example, but it should work for any
+other boards including 32 bit SoCs.
+
+1. Generate key to sign with
+
+  $ mkdir keys
+  $ openssl genpkey -algorithm RSA -out keys/dev.key \
+    -pkeyopt rsa_keygen_bits:2048 -pkeyopt rsa_keygen_pubexp:65537
+  $ openssl req -batch -new -x509 -key keys/dev.key -out keys/dev.crt
+
+Two files "dev.key" and "dev.crt" will be created.  The base name is arbitrary,
+but need to match to the "key-name-hint" property described below.
+
+2. Describe FIT source
+
+You need to write an FIT (Flattened Image Tree) source file to describe the
+structure of the image container.
+
+The following is an example for a simple usecase:
+
+---------------------------------------->8----------------------------------------
+/dts-v1/;
+
+/ {
+	description = "Kernel, DTB and Ramdisk for UniPhier LD20 Reference Board";
+	#address-cells = <1>;
+
+	images {
+		kernel {
+			description = "linux";
+			data = /incbin/("PATH/TO/YOUR/LINUX/DIR/arch/arm64/boot/Image.gz");
+			type = "kernel";
+			arch = "arm64";
+			os = "linux";
+			compression = "gzip";
+			load = <0x82080000>;
+			entry = <0x82080000>;
+			hash-1 {
+				algo = "sha256";
+			};
+		};
+
+		fdt-1 {
+			description = "fdt";
+			data = /incbin/("PATH/TO/YOUR/LINUX/DIR/arch/arm64/boot/dts/socionext/uniphier-ld20-ref.dtb");
+			type = "flat_dt";
+			arch = "arm64";
+			compression = "none";
+			hash-1 {
+				algo = "sha256";
+			};
+		};
+
+		ramdisk {
+			description = "ramdisk";
+			data = /incbin/("PATH/TO/YOUR/ROOTFS/DIR/rootfs.cpio");
+			type = "ramdisk";
+			arch = "arm64";
+			os = "linux";
+			compression = "none";
+			hash-1 {
+				algo = "sha256";
+			};
+		};
+	};
+
+	configurations {
+		default = "config-1";
+
+		config-1 {
+			description = "Configuration0";
+			kernel = "kernel";
+			fdt = "fdt-1";
+			ramdisk = "ramdisk";
+			signature-1 {
+				algo = "sha256,rsa2048";
+				key-name-hint = "dev";
+				sign-images = "kernel", "fdt", "ramdisk";
+			};
+		};
+	};
+};
+---------------------------------------->8----------------------------------------
+
+You need to change the three '/incbin/' lines, depending on the location of
+your kernel image, device tree blob, and init ramdisk.  The "load" and "entry"
+properties also need to be adjusted if you want to change the physical placement
+of the kernel.
+
+The "key-name-hint" must specify the key name you have created in the step 1.
+
+The FIT file name is arbitrary.  Let's say you saved it into "fit.its".
+
+3. Compile U-Boot with FIT and signature enabled
+
+To use the Verified Boot, you need to enable the following two options:
+  CONFIG_FIT
+  CONFIG_FIT_SIGNATURE
+
+They are disabled by default for UniPhier defconfig files.  So, you need to
+tweak the configuration from "make menuconfig" or friends.
+
+  $ make uniphier_v8_defconfig
+  $ make menuconfig
+      [ enable CONFIG_FIT and CONFIG_FIT_SIGNATURE ]
+  $ make CROSS_COMPILE=aarch64-linux-gnu-
+
+4. Build the image tree blob
+
+After building U-Boot, you will see tools/mkimage.  With this tool, you can
+create an image tree blob as follows:
+
+  $ tools/mkimage -f fit.its -k keys -K dts/dt.dtb -r -F fitImage
+
+The -k option must specify the key directory you have created in step 1.
+
+A file "fitImage" will be created.  This includes kernel, DTB, Init-ramdisk,
+hash data for each of the three, and signature data.
+
+The public key needed for the run-time verification is stored in "dts/dt.dtb".
+
+5. Compile U-Boot again
+
+Since the "dt.dtb" has been updated in step 4, you need to re-compile the
+U-Boot.
+
+  $ make CROSS_COMPILE=aarch64-linux-gnu-
+
+The re-compiled "u-boot.bin" is appended with DTB that contains the public key.
+
+6. Flash the image
+
+Flash the "fitImage" to a storage device (NAND, eMMC, or whatever) on your
+board.
+
+Please note the "u-boot.bin" must be signed, and verified by someone when it is
+loaded.  For ARMv8 SoCs, the "someone" is generally ARM Trusted Firmware BL2.
+ARM Trusted Firmware supports an image authentication mechanism called Trusted
+Board Boot (TBB).  The verification process must be chained from the moment of
+the system reset.  If the Chain of Trust has a breakage somewhere, the verified
+boot process is entirely pointless.
+
+7. Boot verified kernel
+
+Load the fitImage to memory and run the following from the U-Boot command line.
+
+  > bootm <addr>
+
+Here, <addr> is the base address of the fitImage.
+
+If it is successful, you will see messages like follows:
+
+---------------------------------------->8----------------------------------------
+## Loading kernel from FIT Image at 84100000 ...
+   Using 'config-1' configuration
+   Verifying Hash Integrity ... sha256,rsa2048:dev+ OK
+   Trying 'kernel' kernel subimage
+     Description:  linux
+     Created:      2017-10-20  14:32:29 UTC
+     Type:         Kernel Image
+     Compression:  gzip compressed
+     Data Start:   0x841000c8
+     Data Size:    6957818 Bytes = 6.6 MiB
+     Architecture: AArch64
+     OS:           Linux
+     Load Address: 0x82080000
+     Entry Point:  0x82080000
+     Hash algo:    sha256
+     Hash value:   82a37b7f11ae55f4e07aa25bf77e4067cb9dc1014d52d6cd4d588f92eee3aaad
+   Verifying Hash Integrity ... sha256+ OK
+## Loading ramdisk from FIT Image at 84100000 ...
+   Using 'config-1' configuration
+   Trying 'ramdisk' ramdisk subimage
+     Description:  ramdisk
+     Created:      2017-10-20  14:32:29 UTC
+     Type:         RAMDisk Image
+     Compression:  uncompressed
+     Data Start:   0x847a5cc0
+     Data Size:    5264365 Bytes = 5 MiB
+     Architecture: AArch64
+     OS:           Linux
+     Load Address: unavailable
+     Entry Point:  unavailable
+     Hash algo:    sha256
+     Hash value:   44980a2874154a2e31ed59222c9f8ea968867637f35c81e4107a984de7014deb
+   Verifying Hash Integrity ... sha256+ OK
+## Loading fdt from FIT Image at 84100000 ...
+   Using 'config-1' configuration
+   Trying 'fdt-1' fdt subimage
+     Description:  fdt
+     Created:      2017-10-20  14:32:29 UTC
+     Type:         Flat Device Tree
+     Compression:  uncompressed
+     Data Start:   0x847a2cb0
+     Data Size:    12111 Bytes = 11.8 KiB
+     Architecture: AArch64
+     Hash algo:    sha256
+     Hash value:   c517099db537f6d325e6be46b25c871a41331ad5af0283883fd29d40bfc14e1d
+   Verifying Hash Integrity ... sha256+ OK
+   Booting using the fdt blob at 0x847a2cb0
+   Uncompressing Kernel Image ... OK
+   reserving fdt memory region: addr=80000000 size=2000000
+   Loading Device Tree to 000000009fffa000, end 000000009fffff4e ... OK
+
+Starting kernel ...
+---------------------------------------->8----------------------------------------
+
+Please pay attention to the lines that start with "Verifying Hash Integrity".
+
+"Verifying Hash Integrity ... sha256,rsa2048:dev+ OK" means the signature check
+passed.
+
+"Verifying Hash Integrity ... sha256+ OK" (3 times) means the hash check passed
+for kernel, DTB, and Init ramdisk.
+
+If they are not displayed, the Verified Boot is not working.
+
+
+Deployment for Distro Boot
+--------------------------
+
+UniPhier SoC family boot the kernel in a generic manner as described in
+doc/README.distro .
+
+To boot the kernel, you need to deploy necesssary components to a file
+system on one of your block devices (eMMC, NAND, USB drive, etc.).
+
+The components depend on the kernel image format.
+
+[1] Bare images
+
+  - kernel
+  - init ramdisk
+  - device tree blob
+  - boot configuration file (extlinux.conf)
+
+Here is an exmple of the configuration file.
+
+-------------------->8--------------------
+menu title UniPhier Boot Options.
+
+timeout 50
+default UniPhier
+
+label UniPhier
+      kernel ../Image
+      initrd ../rootfs.cpio.gz
+      fdtdir ..
+-------------------->8--------------------
+
+Then, write 'Image', 'rootfs.cpio.gz', 'uniphier-ld20-ref.dtb' (DTB depends on
+your board), and 'extlinux/extlinux.conf' to the file system.
+
+[2] FIT
+
+  - FIT blob
+  - boot configuration file (extlinux.conf)
+
+-------------------->8--------------------
+menu title UniPhier Boot Options.
+
+timeout 50
+default UniPhier
+
+label UniPhier
+      kernel ../fitImage
+-------------------->8--------------------
+
+Since the init ramdisk and DTB are contained in the FIT blob,
+you do not need to describe them in the configuration file.
+Write 'fitImage' and 'extlinux/extlinux.conf' to the file system.
+
+
+UniPhier specific commands
+--------------------------
+
+ - pinmon (enabled by CONFIG_CMD_PINMON)
+     shows the boot mode pins that has been latched at the power-on reset
+
+ - ddrphy (enabled by CONFIG_CMD_DDRPHY_DUMP)
+     shows the DDR PHY parameters set by the PHY training
+
+ - ddrmphy (enabled by CONFIG_CMD_DDRMPHY_DUMP)
+     shows the DDR Multi PHY parameters set by the PHY training
+
+
+Supported devices
+-----------------
+
+ - UART (on-chip)
+ - NAND
+ - SD/eMMC
+ - USB 2.0 (EHCI)
+ - USB 3.0 (xHCI)
+ - GPIO
+ - LAN (on-board SMSC9118)
+ - I2C
+ - EEPROM (connected to the on-board I2C bus)
+ - Support card (SRAM, NOR flash, some peripherals)
+
+
+Micro Support Card
+------------------
+
+The recommended bit switch settings are as follows:
+
+ SW2    OFF(1)/ON(0)   Description
+ ------------------------------------------
+ bit 1   <----         BKSZ[0]
+ bit 2   ---->         BKSZ[1]
+ bit 3   <----         SoC Bus Width 16/32
+ bit 4   <----         SERIAL_SEL[0]
+ bit 5   ---->         SERIAL_SEL[1]
+ bit 6   ---->         BOOTSWAP_EN
+ bit 7   <----         CS1/CS5
+ bit 8   <----         SOC_SERIAL_DISABLE
+
+ SW8    OFF(1)/ON(0)   Description
+ ------------------------------------------
+ bit 1    <----        CS1_SPLIT
+ bit 2    <----        CASE9_ON
+ bit 3    <----        CASE10_ON
+ bit 4  Don't Care     Reserve
+ bit 5  Don't Care     Reserve
+ bit 6  Don't Care     Reserve
+ bit 7    ---->        BURST_EN
+ bit 8    ---->        FLASHBUS32_16
+
+The BKSZ[1:0] specifies the address range of memory slot and peripherals
+as follows:
+
+ BKSZ    Description              RAM slot            Peripherals
+ --------------------------------------------------------------------
+ 0b00   15MB RAM / 1MB Peri    00000000-00efffff    00f00000-00ffffff
+ 0b01   31MB RAM / 1MB Peri    00000000-01efffff    01f00000-01ffffff
+ 0b10   64MB RAM / 1MB Peri    00000000-03efffff    03f00000-03ffffff
+ 0b11  127MB RAM / 1MB Peri    00000000-07efffff    07f00000-07ffffff
+
+Set BSKZ[1:0] to 0b01 for U-Boot.
+This mode is the most handy because EA[24] is always supported by the save pin
+mode of the system bus.  On the other hand, EA[25] is not supported for some
+newer SoCs.  Even if it is, EA[25] is not connected on most of the boards.
+
+--
+Masahiro Yamada <yamada.masahiro@socionext.com>
+Oct. 2017

@@ -1,0 +1,21 @@
+#
+# Copyright 2015 Freescale Semiconductor
+#
+# SPDX-License-Identifier:      GPL-2.0+
+#
+
+Freescale LayerScape with Chassis Generation 2
+
+This architecture supports Freescale ARMv8 SoCs with Chassis generation 2,
+for example LS1043A.
+
+Watchdog support Overview
+-------------------
+Support watchdog driver for LSCH2. The driver is disabled in default.
+You can enable it by setting CONFIG_IMX_WATCHDOG.
+Use following config to set watchdog timeout, if this config is not defined,
+the default timeout value is 128s which is the maximum. Set 10 seconds for
+example:
+    #define CONFIG_WATCHDOG_TIMEOUT_MSECS 10000
+Set CONFIG_WATCHDOG_RESET_DISABLE to disable reset watchdog, so that the
+watchdog will not be fed in u-boot.

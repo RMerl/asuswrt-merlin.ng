@@ -1,0 +1,126 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ *  Copyright 2020 Broadcom Ltd.
+ */
+
+/dts-v1/;
+
+#include "bcm4912.dtsi"
+
+/ {
+	model = "Broadcom bcm94912";
+	compatible = "broadcom,bcm94912", "brcm,bcm4912";
+
+	aliases {
+		serial0 = &uart0;
+	};
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+	};
+
+	memory {
+		device_type = "memory";
+		reg = <0x0 0x0 0x0 0x08000000>;
+	};
+	boot_state {
+		u-boot,dm-pre-reloc;
+		compatible = "brcm,bcmbca-bootstate-v2";
+		reg-names = "reset_reason", "reset_status";
+		reg =   <0x0 0xff802628 0x0 0x04>,
+			<0x0 0xff85a01c 0x0 0x04>;
+	};
+};
+
+&uart0 {
+	u-boot,dm-pre-reloc;
+	status = "okay";
+};
+
+&hsspi {
+	status = "okay";
+	spi-nand {
+		compatible = "spi-nand";
+		reg = <0>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		u-boot,dm-pre-reloc;				
+		spi-max-frequency = <100000000>;
+	};
+};
+
+&nand {
+	status = "okay";
+	write-protect = <1>;
+	#address-cells = <1>;
+	#size-cells = <0>;
+
+	nandcs@0 {
+		compatible = "brcm,nandcs";
+		reg = <0>;
+	};
+};
+
+/* FIXME!
+&rgmii {
+	status = "okay";
+};
+*/
+
+&mdio {
+	phy1:1 {
+		status = "okay";
+	};
+
+	phy2:2 {
+		status = "okay";
+	};
+
+	phy3:3 {
+		status = "okay";
+	};
+
+	phy4:4 {
+		status = "okay";
+	};
+
+	/* FIXME
+	phy_rgmii: phy_rgmii {
+		reg = <7>;
+		tx-delay;
+		status = "okay";
+	};
+
+	phy_ext_serdes: ext_serdes {
+		reg = <0x1e>;
+		phy-type = "EXT1";
+		enet-phy-lane-swap;
+		status = "okay";
+	};
+
+	phy_serdes: serdes {
+		phy-handle = <&phy_ext_serdes>;
+		status = "okay";
+	}; */
+};
+
+&switch0 {
+	ports {
+		port0@0 {
+			status = "okay";
+		};
+
+		port1@1 {
+			status = "okay";
+		};
+
+		port2@2 {
+			status = "okay";
+		};
+
+		port3@3 {
+			status = "okay";
+		};
+	};
+};
+

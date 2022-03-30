@@ -1,0 +1,7 @@
+MX7ULPEVK BOARD
+M:	Peng Fan <peng.fan@nxp.com>
+S:	Maintained
+F:	board/freescale/mx7ulp_evk/
+F:	include/configs/mx7ulp_evk.h
+F:	configs/mx7ulp_evk_defconfig
+F:	configs/mx7ulp_evk_plugin_defconfig

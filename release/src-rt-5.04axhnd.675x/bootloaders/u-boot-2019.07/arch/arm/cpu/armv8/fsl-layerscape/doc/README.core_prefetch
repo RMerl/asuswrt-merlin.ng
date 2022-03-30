@@ -1,0 +1,20 @@
+Core instruction prefetch disable
+---------------------------------
+To disable instruction prefetch of core; hwconfig needs to be updated.
+for e.g.
+setenv hwconfig 'fsl_ddr:bank_intlv=auto;core_prefetch:disable=0x02'
+
+Here 0x02 can be replaced with any valid value except Mask[0] bit. It
+represents 64 bit mask. The 64-bit Mask has one bit for each core.
+Mask[0] = core0
+Mask[1] = core1
+Mask[2] = core2
+etc
+If the bit is set ('b1) in the mask, then prefetch is disabled for
+that core when it is released from reset.
+
+core0 prefetch should not be disabled i.e. Mask[0] should never be set.
+Setting Mask[0] may lead to undefined behavior.
+
+Once disabled, prefetch remains disabled until the next reset.
+There is no function to re-enable prefetch.

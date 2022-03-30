@@ -1,0 +1,400 @@
+#
+# Copyright 2014-2015 Freescale Semiconductor
+#
+# SPDX-License-Identifier:      GPL-2.0+
+#
+
+Freescale LayerScape with Chassis Generation 3
+
+This architecture supports Freescale ARMv8 SoCs with Chassis generation 3,
+for example LS2080A.
+
+DDR Layout
+============
+Entire DDR region splits into two regions.
+ - Region 1 is at address 0x8000_0000 to 0xffff_ffff.
+ - Region 2 is at 0x80_8000_0000 to the top of total memory,
+   for example 16GB, 0x83_ffff_ffff.
+
+All DDR memory is marked as cache-enabled.
+
+When MC and Debug server is enabled, they carve 512MB away from the high
+end of DDR. For example, if the total DDR is 16GB, it shrinks to 15.5GB
+with MC and Debug server enabled. Linux only sees 15.5GB.
+
+The reserved 512MB layout looks like
+
+   +---------------+ <-- top/end of memory
+   |    256MB      |  debug server
+   +---------------+
+   |    256MB      |  MC
+   +---------------+
+   |     ...       |
+
+MC requires the memory to be aligned with 512MB, so even debug server is
+not enabled, 512MB is reserved, not 256MB.
+
+Flash Layout
+============
+
+(1) A typical layout of various images (including Linux and other firmware images)
+   is shown below considering a 32MB NOR flash device present on most
+   pre-silicon platforms (simulator and emulator):
+
+	-------------------------
+	| 	FIT Image	|
+	| (linux + DTB + RFS)	|
+	------------------------- ----> 0x0120_0000
+	| 	Debug Server FW |
+	------------------------- ----> 0x00C0_0000
+	|	AIOP FW 	|
+	------------------------- ----> 0x0070_0000
+	|	MC FW 		|
+	------------------------- ----> 0x006C_0000
+	| 	MC DPL Blob 	|
+	------------------------- ----> 0x0020_0000
+	| 	BootLoader + Env|
+	------------------------- ----> 0x0000_1000
+	|	PBI 		|
+	------------------------- ----> 0x0000_0080
+	|	RCW 		|
+	------------------------- ----> 0x0000_0000
+
+	32-MB NOR flash layout for pre-silicon platforms (simulator and emulator)
+
+(2) A typical layout of various images (including Linux and other firmware images)
+    is shown below considering a 128MB NOR flash device present on QDS and RDB
+    boards:
+	----------------------------------------- ----> 0x5_8800_0000 ---
+	|	.. Unused .. (7M)		|			|
+	----------------------------------------- ----> 0x5_8790_0000	|
+	| FIT Image (linux + DTB + RFS)	(40M)	|			|
+	----------------------------------------- ----> 0x5_8510_0000	|
+	|	PHY firmware (2M)	 	|			|
+	----------------------------------------- ----> 0x5_84F0_0000	| 64K
+	|	Debug Server FW (2M)		|			| Alt
+	----------------------------------------- ----> 0x5_84D0_0000	| Bank
+	|	AIOP FW (4M)			|			|
+	----------------------------------------- ----> 0x5_8490_0000 (vbank4)
+	|	MC DPC Blob (1M) 		|			|
+	----------------------------------------- ----> 0x5_8480_0000	|
+	|	MC DPL Blob (1M)		|			|
+	----------------------------------------- ----> 0x5_8470_0000	|
+	| 	MC FW (4M)			|			|
+	----------------------------------------- ----> 0x5_8430_0000	|
+	|	BootLoader Environment (1M) 	|			|
+	----------------------------------------- ----> 0x5_8420_0000	|
+	|	BootLoader (1M)			|			|
+	----------------------------------------- ----> 0x5_8410_0000	|
+	|	RCW and PBI (1M) 		|			|
+	----------------------------------------- ----> 0x5_8400_0000 ---
+	|	.. Unused .. (7M)		|			|
+	----------------------------------------- ----> 0x5_8390_0000	|
+	| FIT Image (linux + DTB + RFS)	(40M)	|			|
+	----------------------------------------- ----> 0x5_8110_0000	|
+	|	PHY firmware (2M)	 	|			|
+	----------------------------------------- ----> 0x5_80F0_0000	| 64K
+	|	Debug Server FW (2M)		|			| Bank
+	----------------------------------------- ----> 0x5_80D0_0000	|
+	|	AIOP FW (4M)			|			|
+	----------------------------------------- ----> 0x5_8090_0000 (vbank0)
+	|	MC DPC Blob (1M) 		|			|
+	----------------------------------------- ----> 0x5_8080_0000	|
+	|	MC DPL Blob (1M)		|			|
+	----------------------------------------- ----> 0x5_8070_0000	|
+	| 	MC FW (4M)			|			|
+	----------------------------------------- ----> 0x5_8030_0000	|
+	|	BootLoader Environment (1M) 	|			|
+	----------------------------------------- ----> 0x5_8020_0000	|
+	|	BootLoader (1M)			|			|
+	----------------------------------------- ----> 0x5_8010_0000	|
+	|	RCW and PBI (1M) 		|			|
+	----------------------------------------- ----> 0x5_8000_0000 ---
+
+	128-MB NOR flash layout for QDS and RDB boards
+
+Environment Variables
+=====================
+mcboottimeout:	MC boot timeout in milliseconds. If this variable is not defined
+		the value CONFIG_SYS_LS_MC_BOOT_TIMEOUT_MS will be assumed.
+
+mcmemsize:	MC DRAM block size in hex. If this variable is not defined, the value
+		CONFIG_SYS_LS_MC_DRAM_BLOCK_MIN_SIZE will be assumed.
+
+mcinitcmd:	This environment variable is defined to initiate MC and DPL deployment
+		from the location where it is stored(NOR, NAND, SD, SATA, USB)during
+		u-boot booting.If this variable is not defined then MC_BOOT_ENV_VAR
+		will be null and MC will not be booted and DPL will not be applied
+		during U-boot booting.However the MC, DPC and DPL can be applied from
+		console independently.
+		The variable needs to be set from the console once and then on
+		rebooting the parameters set in the variable will automatically be
+		executed. The commmand is demostrated taking an example of mc boot
+		using NOR Flash i.e. MC, DPL, and DPC is stored in the NOR flash:
+
+		cp.b 0xa0000000 0x580300000 $filesize
+		cp.b 0x80000000 0x580800000 $filesize
+		cp.b 0x90000000 0x580700000 $filesize
+
+		setenv mcinitcmd 'fsl_mc start mc 0x580300000 0x580800000'
+
+		If only linux is to be booted then the mcinitcmd environment should be set as
+
+		setenv mcinitcmd 'fsl_mc start mc 0x580300000 0x580800000;fsl_mc apply DPL 0x580700000'
+
+		Here the addresses 0xa0000000, 0x80000000, 0x80000000 are of DDR to where
+		MC binary, DPC binary and DPL binary are stored and 0x580300000, 0x580800000
+		and 0x580700000 are addresses in NOR where these are copied. It is to be
+		noted that these addresses in 'fsl_mc start mc 0x580300000 0x580800000;fsl_mc apply DPL 0x580700000'
+		can be replaced with the addresses of DDR to
+		which these will be copied in case of these binaries being stored in other
+		devices like SATA, USB, NAND, SD etc.
+
+Booting from NAND
+-------------------
+Booting from NAND requires two images, RCW and u-boot-with-spl.bin.
+The difference between NAND boot RCW image and NOR boot image is the PBI
+command sequence. Below is one example for PBI commands for LS2085AQDS which
+uses NAND device with 2KB/page, block size 128KB.
+
+1) CCSR 4-byte write to 0x00e00404, data=0x00000000
+2) CCSR 4-byte write to 0x00e00400, data=0x1800a000
+The above two commands set bootloc register to 0x00000000_1800a000 where
+the u-boot code will be running in OCRAM.
+
+3) Block Copy: SRC=0x0107, SRC_ADDR=0x00020000, DEST_ADDR=0x1800a000,
+BLOCK_SIZE=0x00014000
+This command copies u-boot image from NAND device into OCRAM. The values need
+to adjust accordingly.
+
+SRC		should match the cfg_rcw_src, the reset config pins. It depends
+		on the NAND device. See reference manual for cfg_rcw_src.
+SRC_ADDR	is the offset of u-boot-with-spl.bin image in NAND device. In
+		the example above, 128KB. For easy maintenance, we put it at
+		the beginning of next block from RCW.
+DEST_ADDR	is fixed at 0x1800a000, matching bootloc set above.
+BLOCK_SIZE	is the size to be copied by PBI.
+
+RCW image should be written to the beginning of NAND device. Example of using
+u-boot command
+
+nand write <rcw image in memory> 0 <size of rcw image>
+
+To form the NAND image, build u-boot with NAND config, for example,
+ls2080aqds_nand_defconfig. The image needed is u-boot-with-spl.bin.
+The u-boot image should be written to match SRC_ADDR, in above example 0x20000.
+
+nand write <u-boot image in memory> 200000 <size of u-boot image>
+
+With these two images in NAND device, the board can boot from NAND.
+
+Another example for LS2085ARDB boards,
+
+1) CCSR 4-byte write to 0x00e00404, data=0x00000000
+2) CCSR 4-byte write to 0x00e00400, data=0x1800a000
+3) Block Copy: SRC=0x0119, SRC_ADDR=0x00080000, DEST_ADDR=0x1800a000,
+BLOCK_SIZE=0x00014000
+
+nand write <rcw image in memory> 0 <size of rcw image>
+nand write <u-boot image in memory> 80000 <size of u-boot image>
+
+Notice the difference from QDS is SRC, SRC_ADDR and the offset of u-boot image
+to match board NAND device with 4KB/page, block size 512KB.
+
+Note, LS2088A and LS1088A don't support booting from NAND.
+
+Booting from SD/eMMC
+-------------------
+Booting from SD/eMMC requires two images, RCW and u-boot-with-spl.bin.
+The difference between SD boot RCW image and QSPI-NOR boot image is the
+PBI command sequence. Below is one example for PBI commands for RDB
+and QDS which uses SD device with block size 512. Block location can be
+calculated by dividing offset with block size.
+
+1) Block Copy: SRC=0x0040, SRC_ADDR=0x00100000, DEST_ADDR=0x1800a000,
+BLOCK_SIZE=0x00016000
+
+This command copies u-boot image from SD device into OCRAM. The values
+need to adjust accordingly for SD/eMMC
+
+SRC		should match the cfg_rcw_src, the reset config pins.
+		The value for source(SRC) can be 0x0040 or 0x0041
+		depending upon SD or eMMC.
+SRC_ADDR	is the offset of u-boot-with-spl.bin image in SD device.
+		In the example above, 1MB. This is same as QSPI-NOR.
+DEST_ADDR	is configured at 0x1800a000, matching bootloc set above.
+BLOCK_SIZE	is the size to be copied by PBI.
+
+2) CCSR 4-byte write to 0x01e00404, data=0x00000000
+3) CCSR 4-byte write to 0x01e00400, data=0x1800a000
+The above two commands set bootloc register to 0x00000000_1800a000 where
+the u-boot code will be running in OCRAM.
+
+
+RCW image should be written at 8th block of device(SD/eMMC). Example of
+using u-boot command
+
+mmc erase 0x8 0x10
+mmc write <rcw image in memory> 0x8 <size of rcw in block count typical value=10>
+
+To form the SD-Boot image, build u-boot with SD config, for example,
+ls1088ardb_sdcard_qspi_defconfig. The image needed is u-boot-with-spl.bin.
+The u-boot image should be written to match SRC_ADDR, in above example
+offset 0x100000 in other work it means block location 0x800
+
+mmc erase 0x800 0x1800
+mmc write <u-boot image in memory> 0x800 <size of u-boot image in block count>
+
+With these two images in SD/eMMC device, the board can boot from SD/eMMC.
+
+MMU Translation Tables
+======================
+
+(1) Early MMU Tables:
+
+     Level 0                   Level 1                   Level 2
+------------------        ------------------        ------------------
+| 0x00_0000_0000 | -----> | 0x00_0000_0000 | -----> | 0x00_0000_0000 |
+------------------        ------------------        ------------------
+| 0x80_0000_0000 | --|    | 0x00_4000_0000 |        | 0x00_0020_0000 |
+------------------   |    ------------------        ------------------
+|    invalid     |   |    | 0x00_8000_0000 |        | 0x00_0040_0000 |
+------------------   |    ------------------        ------------------
+                     |    | 0x00_c000_0000 |        | 0x00_0060_0000 |
+                     |    ------------------        ------------------
+                     |    | 0x01_0000_0000 |        | 0x00_0080_0000 |
+                     |    ------------------        ------------------
+                     |            ...                      ...
+                     |    ------------------
+                     |    | 0x05_8000_0000 |  --|
+                     |    ------------------    |
+                     |    | 0x05_c000_0000 |    |
+                     |    ------------------    |
+                     |            ...           |
+                     |    ------------------    |   ------------------
+                     |--> | 0x80_0000_0000 |    |-> | 0x00_3000_0000 |
+                          ------------------        ------------------
+                          | 0x80_4000_0000 |        | 0x00_3020_0000 |
+                          ------------------        ------------------
+                          | 0x80_8000_0000 |        | 0x00_3040_0000 |
+                          ------------------        ------------------
+                          | 0x80_c000_0000 |        | 0x00_3060_0000 |
+                          ------------------        ------------------
+                          | 0x81_0000_0000 |        | 0x00_3080_0000 |
+                          ------------------        ------------------
+			         ...	                   ...
+
+(2) Final MMU Tables:
+
+     Level 0                   Level 1                   Level 2
+------------------        ------------------        ------------------
+| 0x00_0000_0000 | -----> | 0x00_0000_0000 | -----> | 0x00_0000_0000 |
+------------------        ------------------        ------------------
+| 0x80_0000_0000 | --|    | 0x00_4000_0000 |        | 0x00_0020_0000 |
+------------------   |    ------------------        ------------------
+|    invalid     |   |    | 0x00_8000_0000 |        | 0x00_0040_0000 |
+------------------   |    ------------------        ------------------
+                     |    | 0x00_c000_0000 |        | 0x00_0060_0000 |
+                     |    ------------------        ------------------
+                     |    | 0x01_0000_0000 |        | 0x00_0080_0000 |
+                     |    ------------------        ------------------
+                     |            ...                      ...
+                     |    ------------------
+                     |    | 0x08_0000_0000 | --|
+                     |    ------------------   |
+                     |    | 0x08_4000_0000 |   |
+                     |    ------------------   |
+                     |            ...          |
+                     |    ------------------   |    ------------------
+                     |--> | 0x80_0000_0000 |   |--> | 0x08_0000_0000 |
+                          ------------------        ------------------
+                          | 0x80_4000_0000 |        | 0x08_0020_0000 |
+                          ------------------        ------------------
+                          | 0x80_8000_0000 |        | 0x08_0040_0000 |
+                          ------------------        ------------------
+                          | 0x80_c000_0000 |        | 0x08_0060_0000 |
+                          ------------------        ------------------
+                          | 0x81_0000_0000 |        | 0x08_0080_0000 |
+                          ------------------        ------------------
+			         ...	                   ...
+
+
+DPAA2 commands to manage Management Complex (MC)
+------------------------------------------------
+DPAA2 commands has been introduced to manage Management Complex
+(MC). These commands are used to start mc, aiop and apply DPL
+from u-boot command prompt.
+
+Please note Management complex Firmware(MC), DPL and DPC are no
+more deployed during u-boot boot-sequence.
+
+Commands:
+a) fsl_mc start mc <FW_addr> <DPC_addr> - Start Management Complex
+b) fsl_mc apply DPL <DPL_addr> - Apply DPL file
+c) fsl_mc start aiop <FW_addr> - Start AIOP
+
+How to use commands :-
+1. Command sequence for u-boot ethernet:
+   a) fsl_mc start mc <FW_addr> <DPC_addr> - Start Management Complex
+   b) DPMAC net-devices are now available for use
+
+   Example-
+	Assumption: MC firmware, DPL and DPC dtb is already programmed
+	on NOR flash.
+
+	=> fsl_mc start mc 580300000 580800000
+	=> setenv ethact DPMAC1@xgmii
+	=> ping $serverip
+
+2. Command sequence for Linux boot:
+   a) fsl_mc start mc <FW_addr> <DPC_addr> - Start Management Complex
+   b) fsl_mc apply DPL <DPL_addr> - Apply DPL file
+   c) No DPMAC net-devices are available for use in u-boot
+   d) boot Linux
+
+   Example-
+	Assumption: MC firmware, DPL and DPC dtb is already programmed
+	on NOR flash.
+
+	=> fsl_mc start mc 580300000 580800000
+	=> setenv ethact DPMAC1@xgmii
+	=> tftp a0000000 kernel.itb
+	=> fsl_mc apply dpl 580700000
+	=> bootm a0000000
+
+3. Command sequence for AIOP boot:
+   a) fsl_mc start mc <FW_addr> <DPC_addr> - Start Management Complex
+   b) fsl_mc start aiop <FW_addr> - Start AIOP
+   c) fsl_mc apply DPL <DPL_addr> - Apply DPL file
+   d) No DPMAC net-devices are availabe for use in u-boot
+  Please note actual AIOP start will happen during DPL parsing of
+  Management complex
+
+  Example-
+	Assumption: MC firmware, DPL, DPC dtb and AIOP firmware is already
+	programmed on NOR flash.
+
+	=> fsl_mc start mc 580300000 580800000
+	=> fsl_mc start aiop 0x580900000
+	=> setenv ethact DPMAC1@xgmii
+	=> fsl_mc apply dpl 580700000
+
+Errata A009635
+---------------
+If the core runs at higher than x3 speed of the platform, there is
+possiblity about sev instruction to getting missed by other cores.
+This is because of SoC Run Control block may not able to sample
+the EVENTI(Sev) signals.
+
+Workaround: Configure Run Control and EPU to periodically send out EVENTI signals to
+wake up A57 cores
+
+Errata workaround uses Env variable "a009635_interval_val". It uses decimal
+value.
+- Default value of env variable is platform clock (MHz)
+
+- User can modify default value by updating the env variable
+  setenv a009635_interval_val 600; saveenv;
+  It configure platform clock as 600 MHz
+
+- Env variable as 0 signifies no workaround

@@ -1,0 +1,18 @@
+SMDK5250 BOARD
+M:	Chander Kashyap <k.chander@samsung.com>
+S:	Maintained
+F:	board/samsung/smdk5250/
+F:	include/configs/smdk5250.h
+F:	configs/smdk5250_defconfig
+
+SNOW BOARD
+M:	Akshay Saraswat <akshay.s@samsung.com>
+S:	Maintained
+F:	include/configs/snow.h
+F:	configs/snow_defconfig
+
+SPRING BOARD
+M:	Simon Glass <sjg@chromium.org>
+S:	Maintained
+F:	include/configs/spring.h
+F:	configs/spring_defconfig

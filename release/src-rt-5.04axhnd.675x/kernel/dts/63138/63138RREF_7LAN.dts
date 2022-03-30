@@ -1,0 +1,135 @@
+#include "63138.dtsi"
+#include "963138RREF_leds.dtsi"
+
+/ {
+	memory_controller {
+		memcfg = <(BP_DDR_SPEED_800_11_11_11   | \
+			BP_DDR_TOTAL_SIZE_1024MB  | \
+			BP_DDR_DEVICE_WIDTH_8)>;
+	};
+
+	buttons {
+		compatible = "brcm,buttons";
+		reset_button {
+			ext_irq = <&bca_extintr 32 BCA_GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_LEVEL)>;
+			press {
+				print = "Button Press -- Hold for 5s to do restore to default";
+			};
+			hold {
+				rst_to_dflt = <5>;
+			};
+			release {
+				reset = <0>;
+			};	
+		};
+		ses_button {
+			ext_irq = <&bca_extintr 33 BCA_GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_LEVEL)>;
+			release {
+				ses_short_period = <0>;
+				ses_long_period = <3>;
+			};
+		};
+	};
+};
+
+&vreg_sync {
+		pinctrl-0 = <&vreg_clk_pin_18>;
+		pinctrl-names = "default";
+};
+
+
+&mdio_sf2 {
+	/* PHYs directly connected to SF2 */
+	gphy8:8 {
+		status = "okay";
+	};
+	gphy9:9 {
+		status = "okay";
+	};
+	gphya:a {
+		status = "okay";
+	};
+	phy_rgmii1:rgmii1 {
+		reg = <24>;
+		status = "okay";
+	};
+	phy_rgmii2:rgmii2 {
+		reg = <25>;
+		status = "okay";
+	};
+
+	/* PHYs connected to crossbar */
+	gphyb:b {
+		status = "okay";
+	};
+	gphyc:c {
+		status = "okay";
+	};
+
+	/* Crossbar groups */
+	xbar_grp0:0 {
+		phy-handle = <&gphyb>;
+		status = "okay";
+	};
+	xbar_grp1:1 {
+		phy-handle = <&gphyc>;
+		status = "okay";
+	};
+};
+
+&switch_sf2 {
+	ports {
+		/* ports connect directly */
+		sf2_port0@0 {
+			label = "eth1";
+			phy-handle = <&gphy8>;
+			network-leds = <&led0 &led1 &led10>;
+			status = "okay";
+		};
+
+		sf2_port1@1 {
+			label = "eth2";
+			phy-handle = <&gphy9>;
+			network-leds = <&led2 &led3 &led11>;
+			status = "okay";
+		};
+
+		sf2_port2@2 {
+			label = "eth3";
+			phy-handle = <&gphya>;
+			network-leds = <&led4 &led5 &led12>;
+			status = "okay";
+		};
+
+		sf2_port5@5 {
+			label = "eth6";
+			phy-handle = <&phy_rgmii1>;
+			status = "okay";
+		};
+
+		sf2_port7@7 {
+			label = "eth7";
+			phy-handle = <&phy_rgmii2>;
+			status = "okay";
+		};
+
+		/* ports connected to crossbar */
+		sf2_port3@3 {
+			label = "eth4";
+			phy-handle = <&xbar_grp0>;
+			network-leds = <&led6 &led7 &led13>;
+			status = "okay";
+		};
+		sf2_port4@4 {
+			label = "eth5";
+			phy-handle = <&xbar_grp1>;
+			status = "okay";
+		};
+	};
+};
+
+&switch0 {
+	ports {
+
+	};
+};

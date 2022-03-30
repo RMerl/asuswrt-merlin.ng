@@ -1,0 +1,82 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Samsung Exynos7420 SoC device tree source
+ *
+ * Copyright (c) 2016 Samsung Electronics Co., Ltd.
+ *		http://www.samsung.com
+ */
+
+/dts-v1/;
+#include "skeleton.dtsi"
+#include <dt-bindings/clock/exynos7420-clk.h>
+/ {
+	compatible = "samsung,exynos7420";
+
+	fin_pll: xxti {
+		compatible = "fixed-clock";
+		clock-output-names = "fin_pll";
+		u-boot,dm-pre-reloc;
+		#clock-cells = <0>;
+	};
+
+	clock_topc: clock-controller@10570000 {
+		compatible = "samsung,exynos7-clock-topc";
+		reg = <0x10570000 0x10000>;
+		u-boot,dm-pre-reloc;
+		#clock-cells = <1>;
+		clocks = <&fin_pll>;
+		clock-names = "fin_pll";
+	};
+
+	clock_top0: clock-controller@105d0000 {
+		compatible = "samsung,exynos7-clock-top0";
+		reg = <0x105d0000 0xb000>;
+		u-boot,dm-pre-reloc;
+		#clock-cells = <1>;
+		clocks = <&fin_pll>, <&clock_topc DOUT_SCLK_BUS0_PLL>,
+			 <&clock_topc DOUT_SCLK_BUS1_PLL>,
+			 <&clock_topc DOUT_SCLK_CC_PLL>,
+			 <&clock_topc DOUT_SCLK_MFC_PLL>;
+		clock-names = "fin_pll", "dout_sclk_bus0_pll",
+			      "dout_sclk_bus1_pll", "dout_sclk_cc_pll",
+			      "dout_sclk_mfc_pll";
+	};
+
+	clock_peric1: clock-controller@14c80000 {
+		compatible = "samsung,exynos7-clock-peric1";
+		reg = <0x14c80000 0xd00>;
+		u-boot,dm-pre-reloc;
+		#clock-cells = <1>;
+		clocks = <&fin_pll>, <&clock_top0 DOUT_ACLK_PERIC1>,
+			 <&clock_top0 CLK_SCLK_UART1>,
+			 <&clock_top0 CLK_SCLK_UART2>,
+			 <&clock_top0 CLK_SCLK_UART3>;
+		clock-names = "fin_pll", "dout_aclk_peric1_66",
+			      "sclk_uart1", "sclk_uart2", "sclk_uart3";
+	};
+
+	pinctrl@13470000 {
+		compatible = "samsung,exynos7420-pinctrl";
+		reg = <0x13470000 0x1000>;
+		u-boot,dm-pre-reloc;
+
+		serial2_bus: serial2-bus {
+			samsung,pins = "gpd1-4", "gpd1-5";
+			samsung,pin-function = <2>;
+			samsung,pin-pud = <3>;
+			samsung,pin-drv = <0>;
+			u-boot,dm-pre-reloc;
+		};
+	};
+
+	serial@14C30000 {
+		compatible = "samsung,exynos4210-uart";
+		reg = <0x14C30000 0x100>;
+		u-boot,dm-pre-reloc;
+		clocks = <&clock_peric1 PCLK_UART2>,
+			 <&clock_peric1 SCLK_UART2>;
+		clock-names = "uart", "clk_uart_baud0";
+		pinctrl-names = "default";
+		pinctrl-0 = <&serial2_bus>;
+	};
+};

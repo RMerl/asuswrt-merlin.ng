@@ -1,0 +1,15 @@
+if TARGET_M5373EVB
+
+config SYS_CPU
+	default "mcf532x"
+
+config SYS_BOARD
+	default "m5373evb"
+
+config SYS_VENDOR
+	default "freescale"
+
+config SYS_CONFIG_NAME
+	default "M5373EVB"
+
+endif

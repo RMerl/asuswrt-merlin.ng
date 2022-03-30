@@ -1,0 +1,247 @@
+#!/usr/bin/env perl
+
+use FindBin qw[$Bin];
+use lib "$Bin/../../../hostTools/PerlLib";
+use YAML;
+use Digest::SHA qw[sha256 sha256_hex];
+use Digest::CRC qw(crc32);
+use Getopt::Long;
+use File::Basename;
+use bytes;
+
+use constant MCB_TABLE_MAGIC  => 0x00CB00CB;
+use constant MCB_TABLE_ENTRY  => 0x00CB00CB;
+use constant DDR3_TABLE_MAGIC => 0x64447233;
+use constant DDR3_TABLE_ENTRY => 0x64447233;
+use constant DDR4_TABLE_MAGIC => 0x64447234;
+use constant DDR4_TABLE_ENTRY => 0x64447234;
+use constant DPFE_DDR3_TABLE_MAGIC => 0x64503300;
+use constant DPFE_DDR3_TABLE_ENTRY => 0x64503300;
+use constant DPFE_DDR4_TABLE_MAGIC => 0x64503400;
+use constant DPFE_DDR4_TABLE_ENTRY => 0x64503400;
+use constant TPL_TABLE_MAGIC => 0x74506c21;
+use constant TPL_TABLE_ENTRY => 0x74506c21;
+use constant UBOOT_ENV_MAGIC => 0x75456e76;
+
+
+my $debug;
+my $hashout = "hashtable.h";
+my $mcbout  = "mcbs.bin";
+my @dpfes;
+my @ddrlibs;
+my $tpl;
+my $usage = q[
+usage:
+generate_hash_block [options] chipid 
+
+By default, leaves mcbs.bin and hashtable.h in current directory
+--hashout=filename  specify filename to put hashblock C file
+--mcbout=filename   specify filename for MCB block with  imagic number
+--dpfeout=filename  specify filename for DPFE block with  imagic number
+--ddrlibs=filename if provided pointing to the bcm_ddr.bin (bcm_ddr.txt must be in same directory) with ddr3 or ddr4 standalone 
+      [ use twice for builds with both ddr and ddr4 ]
+--tpl=filename  specify location of tpl
+];
+
+sub gen_dpfe_hashes {
+    my $ddrt = shift;
+    my $dpfe = shift;
+    my $chip = shift;
+    my $dpfe_index = $ddrt."_dpfe_index.txt";
+
+    if (open( F, "<$Bin/dpfe/$dpfe_index" )) {
+        open( DPFES, ">$dpfe" );
+        my $dpfe_offset = 12;
+
+        while ( my $l = <F> ) {
+            if ( $l =~ /^($chip\/dpfe_$chip\S+\.bin)\s+(\w+)\s*$/ ) {
+                print "got $1 and $2\n" if $debug;
+                my $dpfe_file = $1;
+                my $dpfe_id  = $2;
+
+                print "offset now $dpfe_offset\n" if $debug;
+                open( DPFE, "<", "$Bin/dpfe/$dpfe_file" )
+                or die("cant open dpfe file $Bin/dpfe/$dpfe_file");
+
+                local $/;
+                my $p = <DPFE>;
+
+                my $entry = sprintf(
+                    qq[{0x%X,0x%s, %d, %d, {0x%*vx} },\n],
+                       (( $ddrt eq 'DDR3' ) ? DPFE_DDR3_TABLE_ENTRY : DPFE_DDR4_TABLE_ENTRY) | hex($dpfe_id),
+                       $dpfe_id, $dpfe_offset,
+                       length($p), ", 0x", sha256($p)
+                );
+                print DPFES pack( "LLL", (( $ddrt eq 'DDR3' ) ? DPFE_DDR3_TABLE_MAGIC : DPFE_DDR4_TABLE_MAGIC) | hex($dpfe_id),
+                    length($p), crc32($p) ) . $p;
+                print $entry if $debug;
+                print HT $entry;
+
+                #pad to 4K boundary
+                my $new_size = (length($p) + 12 + 4095) & ~4095;
+                my $zero_pad = "\x00" x ($new_size - length($p) - 12);
+                print DPFES $zero_pad;
+            }
+        }
+        close(F);
+        close(DPFES);
+    }
+}
+
+GetOptions(
+    "hashout=s", \$hashout, "mcbout=s", \$mcbout, "dpfeout=s", \@dpfes,
+    "ddrlibs=s", \@ddrlibs, "tpl=s", \$tpl, "debug",    \$debug
+) or die("$usage");
+
+my $chip = shift;
+die($usage) unless $chip;
+
+open( F, "<$Bin/mcb/mcb_index.txt" ) or die("can't open mcb_index.txt");
+
+open( HT, ">$hashout" );
+
+# hash overlay structure:
+# struct overlays {
+#   unsigned int ovltype;
+#   unsigned int selector;
+#   unsigned int offset;
+#   unsigned int size;
+#   unsigned char sha[32];
+# }
+
+print HT q[
+static struct overlays
+ovl[] = {
+];
+
+printf HT qq[{0x%X},\n], UBOOT_ENV_MAGIC;
+
+my $outdir = dirname($mcbout);
+
+
+open( MCBS, ">$mcbout" );
+
+my $mcbs = '';
+my $mcb_offset = 12;
+my %mcbs_done;
+my $mcb_chip = $chip;
+
+# 63148 use the same mcb as 63138
+if( $mcb_chip eq "63148" ) {
+    $mcb_chip = "63138";
+}
+
+if( $mcb_chip eq "6756" ) {
+    $mcb_chip = "47622";
+}
+
+if( $mcb_chip eq "6813" ) {
+    $mcb_chip = "4912";
+}
+
+while ( my $l = <F> ) {
+    if ( $l =~ /^($mcb_chip\/mcb_$mcb_chip\D+_\S+\.bin)\s+(\w+)\s*$/ ) {
+        print "got $1 and $2\n" if $debug;
+        my $mfile = $1;
+        my $msel  = $2;
+        my $mfilename = $1;
+
+        if ( $mcbs_done{$mfile} ) {
+            print "already have mcb for $msel\n" if $debug;
+        }
+        else {
+            print "offset now $mcb_offset\n" if $debug;
+            open( M, "<", "$Bin/mcb/$mfile" )
+              or die("cant open mcb file $mfile");
+            $mfilename =~ s/$mcb_chip\///;
+            open( jtag_mcb, ">", "$outdir/jtag_$mfilename" )
+              or die("cant open mcb file $outdir/jtag_$mfilename");
+            local $/;
+            my $m = <M>;
+            print jtag_mcb pack("LL", hex($msel), 0);
+            print jtag_mcb $m;
+            close(jtag_mcb);
+            $mcbs .= $m;
+            $mcbs_done{$mfile} = { offset => $mcb_offset, sha => sha256($m) };
+            $mcb_offset += length($m);
+        }
+	# The %*vx is a vector print operation, so each byte of the sha256 becomes a hex number, joined by the ", 0x" in
+	# the previous argument
+        my $entry = sprintf(
+            qq[{0x%X,0x%s, %d, %d, {0x%*vx} },\n],
+            MCB_TABLE_ENTRY, $msel, $mcbs_done{$mfile}->{offset},
+            608, ", 0x", $mcbs_done{$mfile}->{sha}
+        );
+        print $entry if $debug;
+        print HT $entry;
+    }
+}
+print MCBS pack( "LLL", MCB_TABLE_MAGIC, length($mcbs), crc32($mcbs) ) . $mcbs;
+close(F);
+
+my $dpfe_chip = $chip;
+
+if( $dpfe_chip eq "6813" ) {
+    $dpfe_chip = "4912";
+}
+
+foreach my $dpfeout (@dpfes) {
+    if ( $dpfeout =~ /(DDR[3|4])/) {
+        my $ddrtype = $1;
+        gen_dpfe_hashes($ddrtype, $dpfeout, $dpfe_chip);
+    }
+}
+
+foreach my $ddrlib (@ddrlibs) {
+    open( D, "<$ddrlib" ) or die("couldnt open ddrlib $ddrlib");
+    local $/;
+    my $t = $ddrlib;
+    my $ddr;
+    my $dtype;
+    if ( ( $t =~ s/\.bin$/.txt/ ) && ( open( T, "<$t" ) ) ) {
+        $ddr   = <D>;
+        $dtype = uc(<T>);
+        $dtype =~ s/\s*(\S+)\s*/$1/;
+
+    }
+    else {
+        die("coulnt open text file for $t");
+    }
+    print "DDR type is $dtype\n";
+    my $entry = sprintf(
+        qq[{0x%X,0x%s, %d, %d, {0x%*vx} },\n],
+        ( $dtype eq 'DDR3' ) ? DDR3_TABLE_ENTRY : DDR4_TABLE_ENTRY,
+        0, 12, length($ddr), ", 0x", sha256($ddr) 
+    );
+    print $entry if $debug;
+    print HT $entry;
+    close(D);
+    open( D, ">${ddrlib}_headered" )
+      or die("couldnt open ddrlib ${ddrlib}_headered");
+    print D pack( "LLL",
+        ( $dtype eq 'DDR3' ) ? DDR3_TABLE_MAGIC : DDR4_TABLE_MAGIC, length($ddr), crc32($ddr) );
+    print D $ddr;
+    close(D);
+}
+
+if ($tpl) {
+    open( D, "<$tpl" ) or die("couldnt open tpl $tpl");
+    local $/;
+    my $dtype;
+        my $tplbin   = <D>;
+    my $entry = sprintf(
+        qq[{0x%X,0x%s, %d, %d, {0x%*vx} },\n],
+        TPL_TABLE_ENTRY,
+        0, 12, length($tplbin), ", 0x", sha256($tplbin)  
+    );
+    print $entry if $debug;
+    print HT $entry;
+    close(D);
+    open( D, ">${tpl}_headered" )
+      or die("couldnt open ${tpl}_headered");
+    print D pack( "LLL", TPL_TABLE_MAGIC, length($tplbin), crc32($tplbin) );
+    print D $tplbin;
+    close(D);
+}
+
+print HT "{0}\n}\n;";

@@ -1,0 +1,12 @@
+if TARGET_MX7DSABRESD
+
+config SYS_BOARD
+	default "mx7dsabresd"
+
+config SYS_VENDOR
+	default "freescale"
+
+config SYS_CONFIG_NAME
+	default "mx7dsabresd"
+
+endif

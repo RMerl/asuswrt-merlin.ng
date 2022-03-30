@@ -1,0 +1,185 @@
+BRCMDRIVERS_DIR_RELATIVE = ../../bcmdrivers
+
+#saves  from copying files to linux-*/include/*
+LINUXINCLUDE += -I$(BRCMDRIVERS_DIR_RELATIVE)/opensource/include/bcm963xx/
+export LINUXINCLUDE
+
+
+ifdef BCM_KF # defined(CONFIG_BCM_KF_MISC_MAKEFILE)
+# Read in config
+-include include/config/auto.conf
+export HPATH 	:= $(TOPDIR)/include
+export CONFIG_SYSTEM := linux
+ifeq ($(strip $(CONFIG_BRCM_IKOS)),$(strip $(CONFIG_BRCM_QEMU)))
+brcmdrivers-y	:= $(INC_BRCMBOARDPARMS_PATH)/$(BRCM_BOARD)/ $(BRCMDRIVERS_DIR_RELATIVE)/ $(INC_UTILS_PATH)/  $(INC_FLASH_PATH)/ ../bcmkernel/
+# Other chip specific compilations
+ifneq ($(findstring _$(strip $(CONFIG_BCM_ENET))_,_m_y_),)
+brcmdrivers-y += $(BRCMDRIVERS_DIR)/opensource/phy/
+endif
+ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_6858_63138_63148_4908_63158_6846_6856_6878_63146_4912_6855_6813_),)
+ifneq "$(wildcard $(PROJECT_DIR)/target )" ""
+brcmdrivers-y += $(PROJECT_DIR)/target/bdmf/ $(PROJECT_DIR)/target/rdpa/ $(PROJECT_DIR)/target/rdpa_gpl/ $(PROJECT_DIR)/target/rdpa_user/
+endif
+ifneq ($(RDP_PROJECT2),)
+brcmdrivers-y += $(subst FC,PRV,$(PROJECT_DIR))/target/rdpa/
+endif
+endif
+brcmdrivers-y += $(SHARED_DIR)/opensource/drivers/
+else
+brcmdrivers-y	:= $(BRCMDRIVERS_DIR_RELATIVE)/ $(INC_UTILS_PATH)/ ../bcmkernel/
+endif
+
+LINUXINCLUDE  += -I$(BUILD_DIR)/kernel/bcmkernel/include
+LINUXINCLUDE  += -I$(SHARED_DIR)/opensource/include/bcm963xx
+LINUXINCLUDE  += -I$(BUILD_DIR)/kernel/bcmkernel/include/uapi
+USERINCLUDE  += -I$(BUILD_DIR)/kernel/bcmkernel/include/uapi
+
+ifeq ($(strip $(CONFIG_BCM_WLCSM_DEBUG)),y)
+CFLAGS_MODULE += -g -DWLCSM_DEBUG
+CFLAGS_KERNEL += -g
+CFLAGS_MODULE +=  -I$(BRCMDRIVERS_DIR)/broadcom/char/wlcsm_ext/impl1/include -DWL_DEFAULT_NUM_SSID=$(BRCM_DEFAULT_NUM_MBSS) -include wlcsm_linux.h
+endif
+
+ifneq ($(CONFIG_BRIDGE),)
+LINUXINCLUDE  += -I$(KERNEL_DIR)/net/bridge
+endif
+
+ifneq ($(CONFIG_BUZZZ),)
+brcmdrivers-$(CONFIG_BUZZZ) += $(BRCMDRIVERS_DIR)/broadcom/char/buzzz/
+endif
+
+ifeq ($(KBUILD_VERBOSE),1)
+$(info * bcmdrivers-y = $(brcmdrivers-y))
+$(info * bcmdrivers-m = $(brcmdrivers-m))
+$(info * INC_BRCMBOARDPARMS_PATH = $(INC_BRCMBOARDPARMS_PATH))
+$(info * BRCM_BOARD = $(BRCM_BOARD))
+$(info * BRCMDRIVERS_DIR = $(BRCMDRIVERS_DIR))
+$(info * INC_FLASH_PATH = $(INC_FLASH_PATH))
+endif
+BRCMDRIVERS	:= $(brcmdrivers-y)
+endif # BCM_KF # CONFIG_BCM_KF_MISC_MAKEFILE
+
+ext=o
+ifeq ("$(VERSION)$(PATCHLEVEL)","419")
+ext=a
+endif 
+
+brcmdrv-dirs        := $(patsubst %/,%,$(filter %/, \
+                    $(brcmdrivers-y) $(brcmdrivers-m)))
+
+vmlinux-dirs += $(brcmdrv-dirs)
+
+
+brcmdriver-dirs := $(patsubst %/,%,$(filter %/, \
+                     $(brcmdrivers-y) $(brcmdrivers-m)))
+
+vmlinux-alldirs +=  $(sort $(brcmdriver-dirs) $(patsubst %/,%,$(filter %/, \
+                     $(brcmdrivers-n) $(brcmdrivers-))))
+brcmdrivers-y   := $(patsubst %/, %/built-in.$(ext), $(brcmdrivers-y))
+
+
+KBUILD_VMLINUX_MAIN += $(brcmdrivers-y)
+export KBUILD_VMLINUX_MAIN
+
+PHONY += $(brcmdriver-dirs)
+
+ifeq ($(wildcard $(CURDIR)/rdp_flags.txt),)
+	INC_RDP_FLAGS:=
+else
+	INC_RDP_FLAGS:='@$(CURDIR)/rdp_flags.txt'
+endif
+export INC_RDP_FLAGS
+
+$(brcmdriver-dirs): | prepare_bcm_driver
+
+
+ifeq ("$(BRCMDRIVERS_DIR)", "")
+BRCMDRIVERS_DIR=$(BRCMDRIVERS_DIR_RELATIVE)
+endif
+
+prepare_bcm_driver:
+	$(Q)$(MAKE) -C $(BRCMDRIVERS_DIR) symlinks
+
+version_info:
+	$(Q)$(MAKE) -C $(BRCMDRIVERS_DIR) version_info
+
+
+LDFLAGS_vmlinux += -z max-page-size=0x8000 -Map vmlinux.map
+
+
+
+#clean-dirs += $(addprefix _clean_, . $(wildcard $(vmlinux-alldirs)))
+
+#$(clean-dirs): | prepare_bcm_driver
+
+
+export RCS_FIND_IGNORE := $(subst .git,.git -o -name '*prebuilt*',$(RCS_FIND_IGNORE))
+
+clean: bcmdrivers_clean clean_brcm
+
+clean_brcm:
+	-rm vmlinux.map
+	find $(BUILD_DIR)/kernel/dts \
+		\( -name '*.dtb' -o -name '*.dtb.S' \
+		-o -name '.*.tmp' -o -name '.*.cmd'  \
+		\) -type f -print | xargs rm -f
+
+
+bcmdrivers_clean:
+	@echo Cleaning bcmdrivers
+	@find . $(BRCMDRIVERS) $(RCS_FIND_IGNORE) \
+	       \( -name '*.[oas]' -o -name '*.ko' -o -name '.*.cmd' \
+	       -o -name '.*.d' -o -name '.*.tmp' -o -name '*.mod.c' \
+	       -o -name '*.symtypes' -o -name 'modules.order' \
+	       -o -name modules.builtin -o -name '.tmp_*.o.*' \
+	       -o -name '*.gcno' \) -type f -print | xargs rm -f
+	@echo Cleaning bcmlinks
+	$(Q)$(MAKE) -C $(BRCMDRIVERS_DIR) cleanlinks
+
+# Here, '-u' option in $(HEADER_INSTALL) doesn't work because the dst file is always
+# removed by kernel_headers_install first. So, add '--preserve=timestamps'.
+bcmkernel_headers_install:
+	@echo Install bcmkernel/include/uapi headers
+	$(HEADER_INSTALL) --preserve=timestamps $(BUILD_DIR)/kernel/bcmkernel/include/uapi/linux/*.h  $(INSTALL_HDR_PATH)/include/linux/
+	$(HEADER_INSTALL) --preserve=timestamps $(BUILD_DIR)/kernel/bcmkernel/include/uapi/linux/netfilter/*.h  $(INSTALL_HDR_PATH)/include/linux/netfilter/
+	$(HEADER_INSTALL) --preserve=timestamps $(BUILD_DIR)/kernel/bcmkernel/include/uapi/linux/netfilter_bridge/*.h  $(INSTALL_HDR_PATH)/include/linux/netfilter_bridge/
+
+ifeq ($(strip $(CONFIG_ARM)),y)
+# always use LINUX_START_ADDR defined in bcm_mem_reserve.h
+ifeq ($(CONFIG_OPTEE),y)
+KERNEL_TEXT_OFFSET := 0x00608000
+else
+KERNEL_TEXT_OFFSET := 0x00108000
+endif
+
+textofs-$(CONFIG_ARCH_MULTI_V7) := $(KERNEL_TEXT_OFFSET)
+textofs-$(CONFIG_ARCH_BCM947XXX) := $(KERNEL_TEXT_OFFSET)
+textofs-$(CONFIG_ARCH_BCM63XX) := $(KERNEL_TEXT_OFFSET)
+
+# The byte offset of the kernel image in RAM from the start of RAM.
+TEXT_OFFSET := $(textofs-y)
+
+export TEXT_OFFSET
+endif
+
+# Add custom CFLAGS or compiler warning switches here
+ifneq ($(strip $(BCA_HNDROUTER)),)
+KBUILD_CFLAGS += -DBCA_HNDROUTER
+endif
+ifneq ($(strip $(BCA_CPEROUTER)),)
+KBUILD_CFLAGS += -DBCA_CPEROUTER
+endif
+
+#
+# INSTALL_MOD_PATH specifies a prefix to MODLIB for module directory
+# relocations required by build roots. MODLIB is a recursively expanded
+# variable which is exported before Makefile.brcm_pre is included. So 
+# our definition of INSTALL_MOD_PATH here should be picked up properly
+#
+INSTALL_MOD_PATH := $(PROFILE_DIR)/modules
+
+# Ignored warnings
+KBUILD_CFLAGS   += -Wno-array-bounds \
+		   -Wno-maybe-uninitialized
+
+

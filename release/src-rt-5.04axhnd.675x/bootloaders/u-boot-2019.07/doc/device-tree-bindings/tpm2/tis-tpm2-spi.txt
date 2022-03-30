@@ -1,0 +1,18 @@
+ST33TPHF20 SPI TPMv2.0 bindings
+-------------------------------
+
+Required properties:
+- compatible		: Should be "tis,tpm2-spi"
+- reg			: SPI Chip select
+
+Optional properties:
+- gpio-reset		: Reset GPIO (if not connected to the SoC reset line)
+- spi-max-frequency	: See spi-bus.txt
+
+Example:
+
+	tpm@1 {
+		compatible = "tis,tpm2-spi";
+		reg = <1>;
+		spi-max-frequency = <10000000>;
+	};

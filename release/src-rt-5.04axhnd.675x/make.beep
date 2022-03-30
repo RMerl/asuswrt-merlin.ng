@@ -1,0 +1,80 @@
+###################################
+#    BEEP make package targets    #
+###################################
+
+beepPkg = "all"
+beep:
+	@echo -e "Build BEEP package $(beepPkg)"
+ifeq ($(strip $(beepPkg)), cwmp)
+	$(MAKE) -C userspace private/apps/cwmpctl
+else ifeq ($(strip $(beepPkg)), dad)
+	$(MAKE) -C userspace private/apps/dad
+else ifeq ($(strip $(beepPkg)), tr69c)
+	$(MAKE) -C userspace private/apps/tr69c
+else ifeq ($(strip $(beepPkg)), dmactl)
+	$(MAKE) -C userspace private/apps/dmactl
+else ifeq ($(strip $(beepPkg)), spTestSuite)
+	$(MAKE) -C userspace private/apps/spTestSuite
+else ifeq ($(strip $(beepPkg)), dsldiagd)
+	$(MAKE) -C userspace private/apps/dsldiagd
+else ifeq ($(strip $(beepPkg)), firewalld)
+	$(MAKE) -C userspace private/apps/firewalld
+else ifeq ($(strip $(beepPkg)), iperf)
+	$(MAKE) -C userspace public/apps/iperf
+else ifeq ($(strip $(beepPkg)), iperf3)
+	$(MAKE) -C userspace public/apps/iperf3
+else ifeq ($(strip $(beepPkg)), samba)
+	$(MAKE) -C userspace gpl/apps/samba
+else ifeq ($(strip $(beepPkg)), bas)
+	$(MAKE) -C userspace private/apps/bas
+else ifeq ($(strip $(beepPkg)), bee)
+	$(MAKE) -C userspace private/apps/pmd
+	cd $(TARGETS_DIR); ./buildFS_BEE;
+else ifeq ($(strip $(beepPkg)), cms)
+	cd $(TARGETS_DIR); ./buildFS_CMS;
+else ifeq ($(strip $(beepPkg)), exampleEE)
+	$(MAKE) -C userspace private/apps/exampleEE
+	cd $(TARGETS_DIR); ./buildFS_EXAMPLEEE;
+else ifeq ($(strip $(beepPkg)), exampleEE2)
+	$(MAKE) -C userspace private/apps/exampleEE2
+	cd $(TARGETS_DIR); ./buildFS_EXAMPLEEE2;
+else ifeq ($(strip $(beepPkg)), exampleEE3)
+	$(MAKE) -C userspace private/apps/exampleEE3
+	cd $(TARGETS_DIR); ./buildFS_EXAMPLEEE3;
+else ifeq ($(strip $(beepPkg)), dockerEE)
+	cd $(TARGETS_DIR); ./buildFS_DOCKEREE;
+else ifeq ($(strip $(beepPkg)), openwrtEE)
+	cd $(TARGETS_DIR); ./buildFS_OPENWRTEE;
+else
+	$(MAKE) -C userspace private/apps/cwmpctl
+	$(MAKE) -C userspace private/apps/dad
+	$(MAKE) -C userspace private/apps/tr69c
+	$(MAKE) -C userspace private/apps/dmactl
+	$(MAKE) -C userspace private/apps/spTestSuite
+	$(MAKE) -C userspace private/apps/dsldiagd
+	$(MAKE) -C userspace private/apps/firewalld
+
+	$(MAKE) -C userspace public/apps/iperf
+
+	$(MAKE) -C userspace gpl/apps/samba
+
+	$(MAKE) -C userspace private/apps/bas
+
+	$(MAKE) -C userspace private/apps/pmd
+	cd $(TARGETS_DIR); ./buildFS_BEE;
+
+	$(MAKE) -C userspace private/apps/exampleEE
+	cd $(TARGETS_DIR); ./buildFS_EXAMPLEEE;
+
+	$(MAKE) -C userspace private/apps/exampleEE2
+	cd $(TARGETS_DIR); ./buildFS_EXAMPLEEE2;
+
+	$(MAKE) -C userspace private/apps/exampleEE3
+	cd $(TARGETS_DIR); ./buildFS_EXAMPLEEE3;
+
+	$(MAKE) -C userspace private/apps/dockerEE
+	cd $(TARGETS_DIR); ./buildFS_DOCKEREE;
+
+	cd $(TARGETS_DIR); ./buildFS_OPENWRTEE;
+endif
+

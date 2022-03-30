@@ -1,0 +1,106 @@
+LEDs connected to Broadcom BCM6328 controller
+
+This controller is present on BCM6318, BCM6328, BCM6362 and BCM63268.
+In these SoCs it's possible to control LEDs both as GPIOs or by hardware.
+However, on some devices there are Serial LEDs (LEDs connected to a 74x164
+controller), which can either be controlled by software (exporting the 74x164
+as spi-gpio. See Documentation/devicetree/bindings/gpio/gpio-74x164.txt), or
+by hardware using this driver.
+Some of these Serial LEDs are hardware controlled (e.g. ethernet LEDs) and
+exporting the 74x164 as spi-gpio prevents those LEDs to be hardware
+controlled, so the only chance to keep them working is by using this driver.
+
+Required properties:
+  - compatible : should be "brcm,bcm6328-leds".
+  - #address-cells : must be 1.
+  - #size-cells : must be 0.
+  - reg : BCM6328 LED controller address and size.
+
+Optional properties:
+  - brcm,serial-leds : Boolean, enables Serial LEDs.
+    Default : false
+  - brcm,serial-mux : Boolean, enables Serial LEDs multiplexing.
+    Default : false
+  - brcm,serial-clk-low : Boolean, makes clock signal active low.
+    Default : false
+  - brcm,serial-dat-low : Boolean, makes data signal active low.
+    Default : false
+  - brcm,serial-shift-inv : Boolean, inverts Serial LEDs shift direction.
+    Default : false
+
+Each LED is represented as a sub-node of the brcm,bcm6328-leds device.
+
+LED sub-node required properties:
+  - reg : LED pin number (only LEDs 0 to 23 are valid).
+
+LED sub-node optional properties:
+  - label : see Documentation/devicetree/bindings/leds/common.txt
+  - active-low : Boolean, makes LED active low.
+    Default : false
+
+Examples:
+Scenario 1 : BCM6328 with 4 GPIO LEDs
+	leds0: led-controller@10000800 {
+		compatible = "brcm,bcm6328-leds";
+		#address-cells = <1>;
+		#size-cells = <0>;
+		reg = <0x10000800 0x24>;
+
+		alarm_red@2 {
+			reg = <2>;
+			active-low;
+			label = "red:alarm";
+		};
+		inet_green@3 {
+			reg = <3>;
+			active-low;
+			label = "green:inet";
+		};
+		power_green@4 {
+			reg = <4>;
+			active-low;
+			label = "green:power";
+		};
+	};
+
+Scenario 2 : BCM63268 with Serial LEDs
+	leds0: led-controller@10001900 {
+		compatible = "brcm,bcm6328-leds";
+		#address-cells = <1>;
+		#size-cells = <0>;
+		reg = <0x10001900 0x24>;
+		brcm,serial-leds;
+		brcm,serial-dat-low;
+		brcm,serial-shift-inv;
+
+		inet_red@2 {
+			reg = <2>;
+			active-low;
+			label = "red:inet";
+		};
+		dsl_green@3 {
+			reg = <3>;
+			active-low;
+			label = "green:dsl";
+		};
+		usb_green@4 {
+			reg = <4>;
+			active-low;
+			label = "green:usb";
+		};
+		wps_green@7 {
+			reg = <7>;
+			active-low;
+			label = "green:wps";
+		};
+		inet_green@8 {
+			reg = <8>;
+			active-low;
+			label = "green:inet";
+		};
+		power_green@20 {
+			reg = <20>;
+			active-low;
+			label = "green:power";
+		};
+	};

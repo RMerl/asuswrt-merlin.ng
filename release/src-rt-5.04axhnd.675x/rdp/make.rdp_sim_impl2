@@ -1,0 +1,35 @@
+# Packet Runner UT Definitions
+ifneq ($(filter ut,$(MAKECMDGOALS)),)
+    export PKTRUNNER_UT_SIM=y
+endif
+ifeq ($(XRDP_EMU),y)
+    export PKTRUNNER_UT_SIM=y
+endif
+ifeq ($(PKTRUNNER_UT_SIM),y)
+    # Early check for COMMENGINE_DIR
+    ifndef COMMENGINE_DIR
+        $(error COMMENGINE_DIR must be defined to run UT on DSL projects.)
+    endif
+ifneq (,$(findstring PON,$(PROJECT)))
+    PROJ_DEFS += -DCONFIG_BCM_PON_XRDP
+    PROJ_DEFS += -DCONFIG_BCM_PON
+endif
+    PROJ_DEFS += -DCONFIG_BLOG
+    export PKTRNR_IMPL = impl2
+    export CMDLIST_IMPL = impl1
+    export PKTRNR_SOURCE_DIR = $(COMMENGINE_DIR)/bcmdrivers/broadcom/char/pktrunner/$(PKTRNR_IMPL)
+    export CMDLIST_SOURCE_DIR = $(COMMENGINE_DIR)/bcmdrivers/broadcom/char/cmdlist/$(CMDLIST_IMPL)
+    export PKTRNR_SHARED_DIR = $(COMMENGINE_DIR)/bcmdrivers/broadcom/char/pktrunner/shared
+    export RDPA_MW_SOURCE_DIR = $(COMMENGINE_DIR)/bcmdrivers/opensource/char/rdpa_mw/impl1
+    export RDPA_MW_INCLUDE_DIR = $(COMMENGINE_DIR)/bcmdrivers/opensource/char/rdpa_mw/impl1/include
+    export BCM963XX_INCLUDE_DIR = $(COMMENGINE_DIR)/bcmdrivers/broadcom/include/bcm963xx
+
+    PROJ_CFLAGS += -I$(COMMENGINE_DIR)/shared/opensource/include/bcm963xx
+
+    export PKTRUNNER_SIM_INCLUDES = -I$(BCM963XX_INCLUDE_DIR) \
+                                    -I$(COMMENGINE_DIR)/bcmdrivers/opensource/char/rdpa_gpl_ext/impl1/include \
+                                    -I$(RDPA_MW_SOURCE_DIR)  \
+                                    -I$(RDPA_MW_INCLUDE_DIR) \
+                                    -I$(COMMENGINE_DIR)/bcmdrivers/opensource/include/bcm963xx
+
+endif

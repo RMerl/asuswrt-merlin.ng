@@ -1,0 +1,122 @@
+#include "63158.dtsi"
+#include "963158X_leds.dtsi"
+
+/ {
+    memory_controller {
+        memcfg = <(BP_DDR_SPEED_1067_14_14_14 | \
+                   BP_DDR_TOTAL_SIZE_1024MB   | \
+                   BP_DDR_DEVICE_WIDTH_16     | \
+                   BP_DDR_TOTAL_WIDTH_32BIT   | \
+                   BP_DDR_SSC_CONFIG_1)>;
+    };
+
+	buttons {
+		compatible = "brcm,buttons";
+		reset_button {
+			ext_irq = <&bca_extintr 46 BCA_GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+			press {
+				print = "Button Press -- Hold for 5s to do restore to default";
+			};
+			hold {
+				rst_to_dflt = <5>;
+			};
+			release {
+				reset = <0>;
+			};	
+		};
+	};
+
+	pmd: pmd {
+		compatible = "brcm,pmd";
+		pinctrl-names = "state_ewake";
+		pinctrl-0 = <&b_wan_early_txen_pin_33>;
+		ewake-gpio = <&gpioc 33 GPIO_ACTIVE_HIGH>;
+		rstn-gpio = <&gpioc 5 GPIO_ACTIVE_LOW>;
+		alarm = <&bca_extintr 40 GPIO_ACTIVE_HIGH (BCA_EXTINTR_TYPE_HIGH_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+		i2c-bus = <&i2c0>;
+	};
+};
+
+&i2c0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&b0_i2c_scl_0_pin_25 &b0_i2c_sda_0_pin_24>;
+	status = "okay";
+};
+
+&usb_ctrl {
+	pinctrl-names="default";
+	pinctrl-0 = <&usb0a_pwr_pins &usb1a_pwr_pins>;
+	status = "okay";
+	xhci-enable;
+};
+
+&usb0_ehci {
+	status = "okay";
+};
+&usb1_ehci {
+	status = "okay";
+};
+
+&usb0_ohci {
+	status = "okay";
+};
+&usb1_ohci {
+	status = "okay";
+};
+
+&usb0_xhci {
+	status = "okay";
+};
+
+&vreg_sync {
+		pinctrl-0 = <&a_vreg_sync_pin_19>;
+		pinctrl-names = "default";
+};
+
+&mdio_sf2 {
+	/* Cascade PHY */
+	phy_cascade1:cascade1 {
+		reg = <30>;
+		status = "okay";
+	};
+
+	/* PHYs connected to crossbar */
+	gphyc:c {
+		status = "okay";
+	};
+	phy_serdes1:serdes1 {
+		phy-handle = <&phy_cascade1>;
+		status = "okay";
+	};
+
+	/* Crossbar groups */
+	xbar_grp0:0 {
+		phy-handle = <&gphyc>;
+		status = "okay";
+	};
+	xbar_grp1:1 {
+		phy-handle = <&phy_serdes1>;
+		status = "okay";
+	};
+};
+
+&switch_sf2 {
+	ports {
+		sf2_port4@4 {
+			phy-handle = <&xbar_grp0>;
+			status = "okay";
+		};
+
+		sf2_port6@6 {
+			phy-handle = <&xbar_grp1>;
+			phy-mode = "serdes";
+			network-leds-0 = <&led10 &led11 &led12 &led25>;
+			status = "okay";
+		};
+	};
+};
+
+&switch0 {
+	ports {
+	};
+};

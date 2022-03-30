@@ -1,0 +1,4 @@
+u-boot,dm-pre-reloc;
+compatible = "brcm,bcmbca-bootstate-v1";
+reg-names = "reset_status", "global_control", "flash_control", "mode_control";
+reg = <RESET_STATUS_OFFSET RESET_STATUS_SIZE>, <GLOBAL_CTRL_OFFSET GLOBAL_CTRL_SIZE>, <FLASH_CTRL_OFFSET FLASH_CTRL_SIZE>, <MODE_CTRL_OFFSET MODE_CTRL_SIZE>;

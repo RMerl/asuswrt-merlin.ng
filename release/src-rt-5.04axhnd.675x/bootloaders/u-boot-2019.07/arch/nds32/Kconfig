@@ -1,0 +1,48 @@
+menu "NDS32 architecture"
+	depends on NDS32
+
+config SYS_ARCH
+	default "nds32"
+
+choice
+	prompt "Target select"
+	optional
+
+config TARGET_ADP_AG101P
+	bool "Support adp-ag101p"
+
+config TARGET_ADP_AE3XX
+	bool "Support adp-ae3xx"
+
+endchoice
+
+config SYS_ICACHE_OFF
+	bool "Do not enable icache"
+	default n
+	help
+	  Do not enable instruction cache in U-Boot.
+
+config SPL_SYS_ICACHE_OFF
+	bool "Do not enable icache in SPL"
+	depends on SPL
+	default SYS_ICACHE_OFF
+	help
+	  Do not enable instruction cache in SPL.
+
+config SYS_DCACHE_OFF
+	bool "Do not enable dcache"
+	default n
+	help
+	  Do not enable data cache in U-Boot.
+
+config SPL_SYS_DCACHE_OFF
+	bool "Do not enable dcache in SPL"
+	depends on SPL
+	default SYS_DCACHE_OFF
+	help
+	  Do not enable data cache in SPL.
+
+source "board/AndesTech/adp-ag101p/Kconfig"
+source "board/AndesTech/adp-ae3xx/Kconfig"
+
+endmenu

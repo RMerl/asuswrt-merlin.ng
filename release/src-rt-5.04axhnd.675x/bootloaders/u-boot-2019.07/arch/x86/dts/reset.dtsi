@@ -1,0 +1,6 @@
+/ {
+	reset: reset {
+		compatible = "x86,reset";
+		u-boot,dm-pre-reloc;
+	};
+};

@@ -1,0 +1,131 @@
+if ARCH_RMOBILE
+
+config PINCTRL_PFC
+	bool "Renesas pin control drivers"
+	depends on DM && ARCH_RMOBILE
+	default n if CPU_RZA1
+	help
+	  Enable support for clock present on Renesas RCar SoCs.
+
+config PINCTRL_PFC_R8A7790
+	bool "Renesas RCar Gen2 R8A7790 pin control driver"
+	depends on PINCTRL_PFC
+	help
+	  Support pin multiplexing control on Renesas RCar Gen3 R8A7790 SoCs.
+
+	  The driver is controlled by a device tree node which contains both
+	  the GPIO definitions and pin control functions for each available
+	  multiplex function.
+
+config PINCTRL_PFC_R8A7791
+	bool "Renesas RCar Gen2 R8A7791 pin control driver"
+	depends on PINCTRL_PFC
+	help
+	  Support pin multiplexing control on Renesas RCar Gen3 R8A7791 SoCs.
+
+	  The driver is controlled by a device tree node which contains both
+	  the GPIO definitions and pin control functions for each available
+	  multiplex function.
+
+config PINCTRL_PFC_R8A7792
+	bool "Renesas RCar Gen2 R8A7792 pin control driver"
+	depends on PINCTRL_PFC
+	help
+	  Support pin multiplexing control on Renesas RCar Gen3 R8A7792 SoCs.
+
+	  The driver is controlled by a device tree node which contains both
+	  the GPIO definitions and pin control functions for each available
+	  multiplex function.
+
+config PINCTRL_PFC_R8A7793
+	bool "Renesas RCar Gen2 R8A7793 pin control driver"
+	depends on PINCTRL_PFC
+	help
+	  Support pin multiplexing control on Renesas RCar Gen3 R8A7793 SoCs.
+
+	  The driver is controlled by a device tree node which contains both
+	  the GPIO definitions and pin control functions for each available
+	  multiplex function.
+
+config PINCTRL_PFC_R8A7794
+	bool "Renesas RCar Gen2 R8A7794 pin control driver"
+	depends on PINCTRL_PFC
+	help
+	  Support pin multiplexing control on Renesas RCar Gen3 R8A7794 SoCs.
+
+	  The driver is controlled by a device tree node which contains both
+	  the GPIO definitions and pin control functions for each available
+	  multiplex function.
+
+config PINCTRL_PFC_R8A7795
+	bool "Renesas RCar Gen3 R8A7795 pin control driver"
+	depends on PINCTRL_PFC
+	help
+	  Support pin multiplexing control on Renesas RCar Gen3 R8A7795 SoCs.
+
+	  The driver is controlled by a device tree node which contains both
+	  the GPIO definitions and pin control functions for each available
+	  multiplex function.
+
+config PINCTRL_PFC_R8A7796
+	bool "Renesas RCar Gen3 R8A7796 pin control driver"
+	depends on PINCTRL_PFC
+	help
+	  Support pin multiplexing control on Renesas RCar Gen3 R8A7796 SoCs.
+
+	  The driver is controlled by a device tree node which contains both
+	  the GPIO definitions and pin control functions for each available
+	  multiplex function.
+
+config PINCTRL_PFC_R8A77965
+	bool "Renesas RCar Gen3 R8A77965 pin control driver"
+	depends on PINCTRL_PFC
+	help
+	  Support pin multiplexing control on Renesas RCar Gen3 R8A77965 SoCs.
+
+	  The driver is controlled by a device tree node which contains both
+	  the GPIO definitions and pin control functions for each available
+	  multiplex function.
+
+config PINCTRL_PFC_R8A77970
+	bool "Renesas RCar Gen3 R8A77970 pin control driver"
+	depends on PINCTRL_PFC
+	help
+	  Support pin multiplexing control on Renesas RCar Gen3 R8A77970 SoCs.
+
+	  The driver is controlled by a device tree node which contains both
+	  the GPIO definitions and pin control functions for each available
+	  multiplex function.
+
+config PINCTRL_PFC_R8A77990
+	bool "Renesas RCar Gen3 R8A77990 pin control driver"
+	depends on PINCTRL_PFC
+	help
+	  Support pin multiplexing control on Renesas RCar Gen3 R8A77990 SoCs.
+
+	  The driver is controlled by a device tree node which contains both
+	  the GPIO definitions and pin control functions for each available
+	  multiplex function.
+
+config PINCTRL_PFC_R8A77995
+	bool "Renesas RCar Gen3 R8A77995 pin control driver"
+	depends on PINCTRL_PFC
+	help
+	  Support pin multiplexing control on Renesas RCar Gen3 R8A77995 SoCs.
+
+	  The driver is controlled by a device tree node which contains both
+	  the GPIO definitions and pin control functions for each available
+	  multiplex function.
+
+config PINCTRL_PFC_R7S72100
+	bool "Renesas RZ/A1 R7S72100 pin control driver"
+	depends on CPU_RZA1
+	default y if CPU_RZA1
+	help
+	  Support pin multiplexing control on Renesas RZ/A1 R7S72100 SoCs.
+
+	  The driver is controlled by a device tree node which contains both
+	  the GPIO definitions and pin control functions for each available
+	  multiplex function.
+
+endif

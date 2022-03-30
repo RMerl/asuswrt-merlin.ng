@@ -1,0 +1,19 @@
+compatible = "brcm,wantypedetect";
+status = "okay";
+reg-names = "gpon_general_config", "epon_top", "epon_lif"
+#ifdef EPON_XPCSR_ADDR
+    , "epon_xpcsr"
+#endif
+#ifdef NGPON_RXGEN_ADDR
+    , "ngpon_rxgen"
+#endif
+    ;
+    
+reg = <GPON_GENERAL_CONFIG_ADDR GPON_GENERAL_CONFIG_SIZE>, <EPON_TOP_ADDR EPON_TOP_SIZE>, <EPON_LIF_ADDR EPON_LIF_SIZE>
+#ifdef EPON_XPCSR_ADDR
+    , <EPON_XPCSR_ADDR EPON_XPCSR_SIZE>
+#endif
+#ifdef NGPON_RXGEN_ADDR
+    , <NGPON_RXGEN_ADDR NGPON_RXGEN_SIZE>
+#endif
+    ;

@@ -1,0 +1,43 @@
+This file contains API information of the initialization code written for
+Vitesse cross-point devices, VSC3316 and VSC3308 for board B4860QDS
+
+Author: Shaveta Leekha <shaveta@freescale.com>
+
+About Device:
+=============
+VSC 3316/3308 is a low-power, low-cost asynchronous crosspoint switch capable of data rates upto 11.5Gbps.
+
+VSC3316 has 16 input and 16 output ports whereas VSC3308 has 8 input and 8 output ports. Programming of these devices are performed by two-wire or four-wire serial interface.
+
+Initialization:
+===============
+On reset, VSC devices are in low-power state with all inputs, outputs and connections in an off state.
+First thing required is to program it to interface with either two-wire or four-wire interface.
+In our case the interface is two-wire I2C serial interface. So the value in Interface mode register at address 79.h to be written is 0x02 for two-wire interface. Also for crosspoint connections to be activated, 01.h value need to be written in 75.h (core configuration register).
+
+API Overview:
+=============
+
+	vsc_if_enable(u8 vsc_addr):
+	--------------------------
+		This API programs VSC to interface with either two-wire or four-wire interface. In our case the interface is two-wire I2C serial interface. So the value in Interface mode register at address 79.h to be written is 0x02 for two-wire interface.
+	Parameters:
+		vsc_addr - Address of the VSC device on board.
+
+
+	vsc3316_config(u8 vsc_addr, int con_arr[][2], u8 num_con):
+	---------------------------------------------------------
+	This API configures the VSC3316 device for required connections. Connection through the VSC device requires the inputs and outputs to be properly configured.
+	Connection registers are on page 00. It Configures the selected input and output correctly and join them to make a connection. It also program Input state register, Global input ISE, Global input LOS, Global core control, Output mode register and core control registers etc.
+	vsc3308_config(u8 vsc_addr, int con_arr[][2], u8 num_con) does the essential configurations for VSC3308.
+
+	Parameters:
+		vsc_addr - Address of the VSC device on board.
+		con_arr - connection array
+		num_con - number of connections to be configured
+
+	vsc_wp_config(u8 vsc_addr):
+	--------------------------
+		For crosspoint connections to be activated, 01.h value need to be written in 75.h (core configuration register), which is done by this API.
+	Parameters:
+		vsc_addr - Address of the VSC device on board.

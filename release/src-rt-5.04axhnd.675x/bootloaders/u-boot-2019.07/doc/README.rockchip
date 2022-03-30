@@ -1,0 +1,693 @@
+# SPDX-License-Identifier: GPL-2.0+
+#
+# Copyright (C) 2015 Google. Inc
+# Written by Simon Glass <sjg@chromium.org>
+
+U-Boot on Rockchip
+==================
+
+A wide range of Rockchip SoCs are supported in mainline U-Boot
+
+
+Prerequisites
+=============
+
+You will need:
+
+   - Firefly RK3288 board or something else with a supported RockChip SoC
+   - Power connection to 5V using the supplied micro-USB power cable
+   - Separate USB serial cable attached to your computer and the Firefly
+        (connect to the micro-USB connector below the logo)
+   - rkflashtool [3]
+   - openssl (sudo apt-get install openssl)
+   - Serial UART connection [4]
+   - Suitable ARM cross compiler, e.g.:
+        sudo apt-get install gcc-4.7-arm-linux-gnueabi
+
+
+Building
+========
+
+At present 12 RK3288 boards are supported:
+
+   - EVB RK3288 - use evb-rk3288 configuration
+   - Fennec RK3288 - use fennec-rk3288 configuration
+   - Firefly RK3288 - use firefly-rk3288 configuration
+   - Hisense Chromebook - use chromebook_jerry configuration
+   - Asus C100P Chromebook - use chromebook_minnie configuration
+   - Asus Chromebit - use chromebook_mickey configuration
+   - MiQi RK3288 - use miqi-rk3288 configuration
+   - phyCORE-RK3288 RDK - use phycore-rk3288 configuration
+   - PopMetal RK3288 - use popmetal-rk3288 configuration
+   - Radxa Rock 2 - use rock2 configuration
+   - Tinker RK3288 - use tinker-rk3288 configuration
+   - Vyasa RK3288 - use vyasa-rk3288 configuration
+
+Two RK3036 boards are supported:
+
+   - EVB RK3036 - use evb-rk3036 configuration
+   - Kylin - use kylin_rk3036 configuration
+
+Two RK3328 board are supported:
+
+   - EVB RK3328 - use evb-rk3328_defconfig
+   - Pine64 Rock64 board - use rock64-rk3328_defconfig
+
+Size RK3399 boards are supported (aarch64):
+
+   - EBV RK3399 - use evb_rk3399 configuration
+   - Firefly RK3399 - use the firefly_rk3399 configuration
+   - Puma - use puma_rk3399 configuration
+   - Ficus - use ficus-rk3399 configuration
+   - Rock960 (Vamrs) - use rock960-rk3399 configuration
+   - Bob - use chromebook_bob configuration
+
+Four RK3368 boards are supported:
+
+   - Sheep - use sheep-rk3368 configuration
+   - Lion - use lion-rk3368 configuration
+   - Geekbox - use geekbox configuration
+   - EVB PX5 - use evb-px5  configuration
+
+One RK3128 board is supported:
+
+   - EVB RK3128 - use evb-rk3128 configuration
+
+One RK3229 board is supported:
+
+   - EVB RK3229 - use evb-rk3229 configuration
+
+Two RV1108 boards are supported:
+
+   - EVB RV1108 - use evb-rv1108 configuration
+   - Elgin R1 - use elgin-rv1108 configuration
+
+One RV3188 baord is supported:
+
+   - Raxda Rock - use rock configuration
+
+
+For example:
+
+1. To build RK3288 board:
+
+   CROSS_COMPILE=arm-linux-gnueabi- make O=firefly firefly-rk3288_defconfig all
+
+    (or you can use another cross compiler if you prefer)
+
+2. To build RK3399 board:
+
+   Option 1: Package the image with Rockchip miniloader:
+
+   - Compile U-Boot
+
+     => cd /path/to/u-boot
+     => make nanopi-neo4-rk3399_defconfig
+     => make
+
+   - Get the rkbin
+
+     => git clone https://github.com/rockchip-linux/rkbin.git
+
+   - Create trust.img
+
+     => cd /path/to/rkbin
+     => ./tools/trust_merger RKTRUST/RK3399TRUST.ini
+
+   - Create uboot.img
+
+     => cd /path/to/rkbin
+     => ./tools/loaderimage --pack --uboot /path/to/u-boot/u-boot-dtb.bin uboot.img
+
+     (Get trust.img and uboot.img)
+
+   Option 2: Package the image with SPL:
+
+   - We need the Python elftools.elf.elffile library for make_fit_atf.py to work
+
+     => sudo apt-get install python-pyelftools
+
+   - Export cross compiler path for aarch64
+
+   - Compile ATF
+
+     For Puma board.
+
+	=> git clone git://git.theobroma-systems.com/arm-trusted-firmware.git
+	=> cd arm-trusted-firmware
+	=> make CROSS_COMPILE=aarch64-linux-gnu- PLAT=rk3399 bl31
+
+	(export bl31.bin)
+	=> export BL31=/path/to/arm-trusted-firmware/build/rk3399/release/bl31/bl31.bin
+
+     For rest of rk3399 boards.
+
+	=> git clone https://github.com/ARM-software/arm-trusted-firmware.git
+	=> cd arm-trusted-firmware
+
+	(export cross compiler path for Cortex-M0 MCU likely arm-none-eabi-)
+	=> make realclean
+	=> make CROSS_COMPILE=aarch64-linux-gnu- PLAT=rk3399
+
+	(export bl31.elf)
+	=> export BL31=/path/to/arm-trusted-firmware/build/rk3399/release/bl31/bl31.elf
+
+   - Compile PMU M0 firmware
+
+     This is optional for most of the rk3399 boards and required only for Puma board.
+
+     => git clone git://git.theobroma-systems.com/rk3399-cortex-m0.git
+     => cd rk3399-cortex-m0
+
+     (export cross compiler path for Cortex-M0 PMU)
+     => make CROSS_COMPILE=arm-cortex_m0-eabi-
+
+     (export rk3399m0.bin)
+     => export PMUM0=/path/to/rk3399-cortex-m0/rk3399m0.bin
+
+   - Compile U-Boot
+
+     => cd /path/to/u-boot
+     => make orangepi-rk3399_defconfig
+     => make
+
+     (Get spl/u-boot-spl-dtb.bin, u-boot.itb images and some boards would get
+      spl/u-boot-spl.bin since it doesn't enable CONFIG_SPL_OF_CONTROL
+
+      If TPL enabled on the target, get tpl/u-boot-tpl-dtb.bin or tpl/u-boot-tpl.bin
+      if CONFIG_TPL_OF_CONTROL not enabled)
+
+Writing to the board with USB
+=============================
+
+For USB to work you must get your board into ROM boot mode, either by erasing
+your MMC or (perhaps) holding the recovery button when you boot the board.
+To erase your MMC, you can boot into Linux and type (as root)
+
+   dd if=/dev/zero of=/dev/mmcblk0 bs=1M
+
+Connect your board's OTG port to your computer.
+
+To create a suitable image and write it to the board:
+
+   ./firefly-rk3288/tools/mkimage -n rk3288 -T rkimage -d \
+	./firefly-rk3288/spl/u-boot-spl-dtb.bin out && \
+   cat out | openssl rc4 -K 7c4e0304550509072d2c7b38170d1711 | rkflashtool l
+
+If all goes well you should something like:
+
+   U-Boot SPL 2015.07-rc1-00383-ge345740-dirty (Jun 03 2015 - 10:06:49)
+   Card did not respond to voltage select!
+   spl: mmc init failed with error: -17
+   ### ERROR ### Please RESET the board ###
+
+You will need to reset the board before each time you try. Yes, that's all
+it does so far. If support for the Rockchip USB protocol or DFU were added
+in SPL then we could in principle load U-Boot and boot to a prompt from USB
+as several other platforms do. However it does not seem to be possible to
+use the existing boot ROM code from SPL.
+
+
+Booting from an SD card
+=======================
+
+To write an image that boots from an SD card (assumed to be /dev/sdc):
+
+   ./firefly-rk3288/tools/mkimage -n rk3288 -T rksd -d \
+	firefly-rk3288/spl/u-boot-spl-dtb.bin out && \
+   sudo dd if=out of=/dev/sdc seek=64 && \
+   sudo dd if=firefly-rk3288/u-boot-dtb.img of=/dev/sdc seek=16384
+
+This puts the Rockchip header and SPL image first and then places the U-Boot
+image at block 16384 (i.e. 8MB from the start of the SD card). This
+corresponds with this setting in U-Boot:
+
+   #define CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR	0x4000
+
+Put this SD (or micro-SD) card into your board and reset it. You should see
+something like:
+
+   U-Boot 2016.01-rc2-00309-ge5bad3b-dirty (Jan 02 2016 - 23:41:59 -0700)
+
+   Model: Radxa Rock 2 Square
+   DRAM:  2 GiB
+   MMC:   dwmmc@ff0f0000: 0, dwmmc@ff0c0000: 1
+   *** Warning - bad CRC, using default environment
+
+   In:    serial
+   Out:   vop@ff940000.vidconsole
+   Err:   serial
+   Net:   Net Initialization Skipped
+   No ethernet found.
+   Hit any key to stop autoboot:  0
+   =>
+
+The rockchip bootrom can load and boot an initial spl, then continue to
+load a second-stage bootloader (ie. U-Boot) as soon as the control is returned
+to the bootrom. Both the RK3288 and the RK3036 use this special boot sequence.
+The configuration option enabling this is:
+
+	CONFIG_SPL_ROCKCHIP_BACK_TO_BROM=y
+
+You can create the image via the following operations:
+
+   ./firefly-rk3288/tools/mkimage -n rk3288 -T rksd -d \
+	firefly-rk3288/spl/u-boot-spl-dtb.bin out && \
+   cat firefly-rk3288/u-boot-dtb.bin >> out && \
+   sudo dd if=out of=/dev/sdc seek=64
+
+If you have an HDMI cable attached you should see a video console.
+
+For evb_rk3036 board:
+	./evb-rk3036/tools/mkimage -n rk3036 -T rksd  -d evb-rk3036/spl/u-boot-spl.bin out && \
+	cat evb-rk3036/u-boot-dtb.bin >> out && \
+	sudo dd if=out of=/dev/sdc seek=64
+
+Note: rk3036 SDMMC and debug uart use the same iomux, so if you boot from SD, the
+      debug uart must be disabled
+
+
+Booting from an SD card on RK3288 with TPL
+==========================================
+
+Since the size of SPL can't be exceeded 0x8000 bytes in RK3288, it is not possible add
+new SPL features like Falcon mode or etc.
+
+So introduce TPL so-that adding new features to SPL is possible because now TPL should
+run minimal with code like DDR, clock etc and rest of new features in SPL.
+
+As of now TPL is added on Vyasa-RK3288 board.
+
+To write an image that boots from an SD card (assumed to be /dev/mmcblk0):
+
+   ./tools/mkimage -n rk3288 -T rksd -d ./tpl/u-boot-tpl.bin out &&
+    cat ./spl/u-boot-spl-dtb.bin >> out &&
+    sudo dd if=out of=/dev/mmcblk0 seek=64 &&
+    sudo dd if=u-boot-dtb.img of=/dev/mmcblk0 seek=16384
+
+Booting from an SD card on RK3188
+=================================
+
+For rk3188 boards the general storage onto the card stays the same as
+described above, but the image creation needs a bit more care.
+
+The bootrom of rk3188 expects to find a small 1kb loader which returns
+control to the bootrom, after which it will load the real loader, which
+can then be up to 29kb in size and does the regular ddr init.  This is
+handled by a single image (built as the SPL stage) that tests whether
+it is handled for the first or second time via code executed from the
+boot0-hook.
+
+Additionally the rk3188 requires everything the bootrom loads to be
+rc4-encrypted. Except for the very first stage the bootrom always reads
+and decodes 2kb pages, so files should be sized accordingly.
+
+# copy tpl, pad to 1020 bytes and append spl
+tools/mkimage -n rk3188 -T rksd -d spl/u-boot-spl.bin out
+
+# truncate, encode and append u-boot.bin
+truncate -s %2048 u-boot.bin
+cat u-boot.bin | split -b 512 --filter='openssl rc4 -K 7C4E0304550509072D2C7B38170D1711' >> out
+
+Booting from an SD card on Pine64 Rock64 (RK3328)
+=================================================
+
+For Rock64 rk3328 board the following three parts are required:
+TPL, SPL, and the u-boot image tree blob. While u-boot-spl.bin and
+u-boot.itb are to be compiled as usual, TPL is currently not
+implemented in u-boot, so you need to pick one from rkbin:
+
+  - Get the rkbin
+
+    => git clone https://github.com/rockchip-linux/rkbin.git
+
+  - Create TPL/SPL image
+
+    => tools/mkimage -n rk3328 -T rksd -d rkbin/bin/rk33/rk3328_ddr_333MHz_v1.16.bin idbloader.img
+    => cat spl/u-boot-spl.bin >> idbloader.img
+
+  - Write TPL/SPL image at 64 sector
+
+    => sudo dd if=idbloader.img of=/dev/mmcblk0 seek=64
+
+  - Write u-boot image tree blob at 16384 sector
+
+    => sudo dd if=u-boot.itb of=/dev/mmcblk0 seek=16384
+
+Booting from an SD card on RK3399
+=================================
+
+To write an image that boots from an SD card (assumed to be /dev/sdc):
+
+Option 1: Package the image with Rockchip miniloader:
+
+  - Create idbloader.img
+
+    => cd /path/to/u-boot
+    => ./tools/mkimage  -n rk3399 -T rksd -d /path/to/rkbin/bin/rk33/rk3399_ddr_800MHz_v1.20.bin idbloader.img
+    => cat /path/to/rkbin/bin/rk33/rk3399_miniloader_v1.19.bin >> idbloader.img
+
+  - Write idbloader.img at 64 sector
+
+    => sudo dd if=idbloader.img of=/dev/sdc seek=64
+
+  - Write trust.img at 24576
+
+    => sudo dd if=trust.img of=/dev/sdc seek=24576
+
+  - Write uboot.img at 16384 sector
+
+    => sudo dd if=uboot.img of=/dev/sdc seek=16384
+    => sync
+
+Put this SD (or micro-SD) card into your board and reset it. You should see
+something like:
+
+DDR Version 1.20 20190314
+In
+Channel 0: DDR3, 933MHz
+Bus Width=32 Col=10 Bank=8 Row=15 CS=1 Die Bus-Width=16 Size=1024MB
+no stride
+ch 0 ddrconfig = 0x101, ddrsize = 0x20
+pmugrf_os_reg[2] = 0x10006281, stride = 0x17
+OUT
+Boot1: 2019-03-14, version: 1.19
+CPUId = 0x0
+ChipType = 0x10, 239
+mmc: ERROR: SDHCI ERR:cmd:0x102,stat:0x18000
+mmc: ERROR: Card did not respond to voltage select!
+emmc reinit
+mmc: ERROR: SDHCI ERR:cmd:0x102,stat:0x18000
+mmc: ERROR: Card did not respond to voltage select!
+emmc reinit
+mmc: ERROR: SDHCI ERR:cmd:0x102,stat:0x18000
+mmc: ERROR: Card did not respond to voltage select!
+SdmmcInit=2 1
+mmc0:cmd5,20
+SdmmcInit=0 0
+BootCapSize=0
+UserCapSize=60543MB
+FwPartOffset=2000 , 0
+StorageInit ok = 45266
+SecureMode = 0
+SecureInit read PBA: 0x4
+SecureInit read PBA: 0x404
+SecureInit read PBA: 0x804
+SecureInit read PBA: 0xc04
+SecureInit read PBA: 0x1004
+SecureInit read PBA: 0x1404
+SecureInit read PBA: 0x1804
+SecureInit read PBA: 0x1c04
+SecureInit ret = 0, SecureMode = 0
+atags_set_bootdev: ret:(0)
+GPT 0x3380ec0 signature is wrong
+recovery gpt...
+GPT 0x3380ec0 signature is wrong
+recovery gpt fail!
+LoadTrust Addr:0x4000
+No find bl30.bin
+Load uboot, ReadLba = 2000
+hdr 0000000003380880 + 0x0:0x88,0x41,0x3e,0x97,0xe6,0x61,0x54,0x23,0xe9,0x5a,0xd1,0x2b,0xdc,0x2f,0xf9,0x35,
+
+Load OK, addr=0x200000, size=0x9c9c0
+RunBL31 0x10000
+NOTICE:  BL31: v1.3(debug):370ab80
+NOTICE:  BL31: Built : 09:23:41, Mar  4 2019
+NOTICE:  BL31: Rockchip release version: v1.1
+INFO:    GICv3 with legacy support detected. ARM GICV3 driver initialized in EL3
+INFO:    Using opteed sec cpu_context!
+INFO:    boot cpu mask: 0
+INFO:    plat_rockchip_pmu_init(1181): pd status 3e
+INFO:    BL31: Initializing runtime services
+INFO:    BL31: Initializing BL32
+INF [0x0] TEE-CORE:init_primary_helper:337: Initializing (1.1.0-195-g8f090d20 #6 Fri Dec  7 06:11:20 UTC 2018 aarch64)
+
+INF [0x0] TEE-CORE:init_primary_helper:338: Release version: 1.2
+
+INF [0x0] TEE-CORE:init_teecore:83: teecore inits done
+INFO:    BL31: Preparing for EL3 exit to normal world
+INFO:    Entry point address = 0x200000
+INFO:    SPSR = 0x3c9
+
+
+U-Boot 2019.04-rc4-00136-gfd121f9641-dirty (Apr 16 2019 - 14:02:47 +0530)
+
+Model: FriendlyARM NanoPi NEO4
+DRAM:  1022 MiB
+MMC:   dwmmc@fe310000: 2, dwmmc@fe320000: 1, sdhci@fe330000: 0
+Loading Environment from MMC... *** Warning - bad CRC, using default environment
+
+In:    serial@ff1a0000
+Out:   serial@ff1a0000
+Err:   serial@ff1a0000
+Model: FriendlyARM NanoPi NEO4
+Net:   eth0: ethernet@fe300000
+Hit any key to stop autoboot:  0
+=>
+
+Option 2: Package the image with SPL:
+
+  - Prefix rk3399 header to SPL image
+
+    => cd /path/to/u-boot
+    => ./tools/mkimage -n rk3399 -T rksd -d spl/u-boot-spl-dtb.bin out
+
+  - Write prefixed SPL at 64th sector
+
+    => sudo dd if=out of=/dev/sdc seek=64
+
+  - Write U-Boot proper at 16384 sector
+
+    => sudo dd if=u-boot.itb of=/dev/sdc seek=16384
+    => sync
+
+Put this SD (or micro-SD) card into your board and reset it. You should see
+something like:
+
+U-Boot SPL board init
+Trying to boot from MMC1
+
+
+U-Boot 2019.01-00004-g14db5ee998 (Mar 11 2019 - 13:18:41 +0530)
+
+Model: Orange Pi RK3399 Board
+DRAM:  2 GiB
+MMC:   dwmmc@fe310000: 2, dwmmc@fe320000: 1, sdhci@fe330000: 0
+Loading Environment from MMC... OK
+In:    serial@ff1a0000
+Out:   serial@ff1a0000
+Err:   serial@ff1a0000
+Model: Orange Pi RK3399 Board
+Net:   eth0: ethernet@fe300000
+Hit any key to stop autoboot:  0
+=>
+
+Option 3: Package the image with TPL:
+
+  - Prefix rk3399 header to TPL image
+
+    => cd /path/to/u-boot
+    => ./tools/mkimage -n rk3399 -T rksd -d tpl/u-boot-tpl-dtb.bin out
+
+  - Concatinate tpl with spl
+
+    => cd /path/to/u-boot
+    => cat ./spl/u-boot-spl-dtb.bin >> out
+
+  - Write tpl+spl at 64th sector
+
+    => sudo dd if=out of=/dev/sdc seek=64
+
+  - Write U-Boot proper at 16384 sector
+
+    => sudo dd if=u-boot.itb of=/dev/sdc seek=16384
+    => sync
+
+Put this SD (or micro-SD) card into your board and reset it. You should see
+something like:
+
+U-Boot TPL board init
+Trying to boot from BOOTROM
+Returning to boot ROM...
+
+U-Boot SPL board init
+Trying to boot from MMC1
+
+
+U-Boot 2019.07-rc1-00241-g5b3244767a (May 08 2019 - 10:51:06 +0530)
+
+Model: Orange Pi RK3399 Board
+DRAM:  2 GiB
+MMC:   dwmmc@fe310000: 2, dwmmc@fe320000: 1, sdhci@fe330000: 0
+Loading Environment from MMC... OK
+In:    serial@ff1a0000
+Out:   serial@ff1a0000
+Err:   serial@ff1a0000
+Model: Orange Pi RK3399 Board
+Net:   eth0: ethernet@fe300000
+Hit any key to stop autoboot:  0
+=>
+
+Using fastboot on rk3288
+========================
+- Write GPT partition layout to mmc device which fastboot want to use it to
+store the image
+
+        => gpt write mmc 1 $partitions
+
+- Invoke fastboot command to prepare
+
+        => fastboot 1
+
+- Start fastboot request on PC
+
+        fastboot -i 0x2207 flash loader evb-rk3288/spl/u-boot-spl-dtb.bin
+
+You should see something like:
+
+        => fastboot 1
+        WARNING: unknown variable: partition-type:loader
+        Starting download of 357796 bytes
+        ..
+        downloading of 357796 bytes finished
+        Flashing Raw Image
+        ........ wrote 357888 bytes to 'loader'
+
+Booting from SPI
+================
+
+To write an image that boots from SPI flash (e.g. for the Haier Chromebook or
+Bob):
+
+   ./chromebook_jerry/tools/mkimage -n rk3288 -T rkspi \
+	-d chromebook_jerry/spl/u-boot-spl-dtb.bin spl.bin && \
+   dd if=spl.bin of=spl-out.bin bs=128K conv=sync && \
+   cat spl-out.bin chromebook_jerry/u-boot-dtb.img >out.bin && \
+   dd if=out.bin of=out.bin.pad bs=4M conv=sync
+
+This converts the SPL image to the required SPI format by adding the Rockchip
+header and skipping every second 2KB block. Then the U-Boot image is written at
+offset 128KB and the whole image is padded to 4MB which is the SPI flash size.
+The position of U-Boot is controlled with this setting in U-Boot:
+
+   #define CONFIG_SYS_SPI_U_BOOT_OFFS	(128 << 10)
+
+If you have a Dediprog em100pro connected then you can write the image with:
+
+      sudo em100 -s -c GD25LQ32 -d out.bin.pad -r
+
+When booting you should see something like:
+
+   U-Boot SPL 2015.07-rc2-00215-g9a58220-dirty (Jun 23 2015 - 12:11:32)
+
+
+   U-Boot 2015.07-rc2-00215-g9a58220-dirty (Jun 23 2015 - 12:11:32 -0600)
+
+   Model: Google Jerry
+   DRAM:  2 GiB
+   MMC:
+   Using default environment
+
+   In:    serial@ff690000
+   Out:   serial@ff690000
+   Err:   serial@ff690000
+   =>
+
+Future work
+===========
+
+Immediate priorities are:
+
+- USB host
+- USB device
+- Run CPU at full speed (code exists but we only see ~60 DMIPS maximum)
+- NAND flash
+- Boot U-Boot proper over USB OTG (at present only SPL works)
+
+
+Development Notes
+=================
+
+There are plenty of patches in the links below to help with this work.
+
+[1] https://github.com/rkchrome/uboot.git
+[2] https://github.com/linux-rockchip/u-boot-rockchip.git branch u-boot-rk3288
+[3] https://github.com/linux-rockchip/rkflashtool.git
+[4] http://wiki.t-firefly.com/index.php/Firefly-RK3288/Serial_debug/en
+
+rkimage
+-------
+
+rkimage.c produces an SPL image suitable for sending directly to the boot ROM
+over USB OTG. This is a very simple format - just the string RK32 (as 4 bytes)
+followed by u-boot-spl-dtb.bin.
+
+The boot ROM loads image to 0xff704000 which is in the internal SRAM. The SRAM
+starts at 0xff700000 and extends to 0xff718000 where we put the stack.
+
+rksd
+----
+
+rksd.c produces an image consisting of 32KB of empty space, a header and
+u-boot-spl-dtb.bin. The header is defined by 'struct header0_info' although
+most of the fields are unused by U-Boot. We just need to specify the
+signature, a flag and the block offset and size of the SPL image.
+
+The header occupies a single block but we pad it out to 4 blocks. The header
+is encoding using RC4 with the key 7c4e0304550509072d2c7b38170d1711. The SPL
+image can be encoded too but we don't do that.
+
+The maximum size of u-boot-spl-dtb.bin which the boot ROM will read is 32KB,
+or 0x40 blocks. This is a severe and annoying limitation. There may be a way
+around this limitation, since there is plenty of SRAM, but at present the
+board refuses to boot if this limit is exceeded.
+
+The image produced is padded up to a block boundary (512 bytes). It should be
+written to the start of an SD card using dd.
+
+Since this image is set to load U-Boot from the SD card at block offset,
+CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR, dd should be used to write
+u-boot-dtb.img to the SD card at that offset. See above for instructions.
+
+rkspi
+-----
+
+rkspi.c produces an image consisting of a header and u-boot-spl-dtb.bin. The
+resulting image is then spread out so that only the first 2KB of each 4KB
+sector is used. The header is the same as with rksd and the maximum size is
+also 32KB (before spreading). The image should be written to the start of
+SPI flash.
+
+See above for instructions on how to write a SPI image.
+
+rkmux.py
+--------
+
+You can use this script to create #defines for SoC register access. See the
+script for usage.
+
+
+Device tree and driver model
+----------------------------
+
+Where possible driver model is used to provide a structure to the
+functionality. Device tree is used for configuration. However these have an
+overhead and in SPL with a 32KB size limit some shortcuts have been taken.
+In general all Rockchip drivers should use these features, with SPL-specific
+modifications where required.
+
+GPT partition layout
+----------------------------
+
+Rockchip use a unified GPT partition layout  in open source support.
+With this GPT partition layout, uboot can be compatilbe with other components,
+like miniloader, trusted-os, arm-trust-firmware.
+
+There are some documents about partitions in the links below.
+http://rockchip.wikidot.com/partitions
+
+--
+Jagan Teki <jagan@amarulasolutions.com>
+27 Mar 2019
+Simon Glass <sjg@chromium.org>
+24 June 2015

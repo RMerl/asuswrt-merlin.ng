@@ -1,0 +1,225 @@
+Motorola MPC85xxCDS boards
+--------------------------
+
+The CDS family of boards consists of a PCI backplane called the
+"Arcadia", a PCI-form-factor carrier card that plugs into a PCI slot,
+and a CPU daughter card that bolts onto the daughter card.
+
+Much of the content of the README.mpc85xxads for the 85xx ADS boards
+applies to the 85xx CDS boards as well.	 In particular the toolchain,
+the switch nomenclature, and the basis for the memory map.  There are
+some differences, though.
+
+
+Building U-Boot
+---------------
+
+The Binutils in current ELDK toolchain will not support MPC85xx
+chip.  You need to use binutils-2.14.tar.bz2 (or newer) from
+    http://ftp.gnu.org/gnu/binutils.
+
+The 85xx CDS code base is known to compile using:
+    gcc (GCC) 3.2.2 20030217 (Yellow Dog Linux 3.0 3.2.2-2a)
+
+
+Memory Map
+----------
+
+The memory map for U-Boot and linux has been extended w.r.t. the ADS
+platform to allow for utilization of all 85xx CDS devices.  The memory
+map is setup for linux to operate properly.  The linux source when
+configured for MPC85xx CDS has been updated to reflect the new memory
+map.
+
+The mapping is:
+
+   0x0000_0000	   0x7fff_ffff	   DDR			   2G
+   0x8000_0000	   0x9fff_ffff	   PCI1 MEM		   512M
+   0xa000_0000	   0xbfff_ffff	   PCI2 MEM		   512M
+   0xe000_0000	   0xe00f_ffff	   CCSR			   1M
+   0xe200_0000	   0xe2ff_ffff	   PCI1 IO		   16M
+   0xe300_0000	   0xe3ff_ffff	   PCI2 IO		   16M
+   0xf000_0000	   0xf7ff_ffff	   SDRAM		   128M
+   0xf800_0000	   0xf80f_ffff	   NVRAM/CADMUS (*)	   1M
+   0xff00_0000	   0xff7f_ffff	   FLASH (2nd bank)	   8M
+   0xff80_0000	   0xffff_ffff	   FLASH (boot bank)	   8M
+
+   (*) The system control registers (CADMUS) start at offset 0xfdb0_4000
+   within the NVRAM/CADMUS region of memory.
+
+
+Using Flash
+-----------
+
+The CDS board  has two flash banks, each 8MB in size (2^23 = 0x00800000).
+There is a switch which allows the boot-bank to be selected.  The switch
+settings for updating flash are given below.
+
+The U-Boot commands for copying the boot-bank into the secondary bank are
+as follows:
+
+     erase ff780000 ff7fffff
+     cp.b fff80000 ff780000 80000
+
+
+U-Boot/kermit commands for downloading an image, then copying
+it into the secondary bank:
+
+     loadb
+     [Drop to kermit:
+	^\c
+	send <u-boot-bin-image>
+	c
+     ]
+
+     erase ff780000 ff7fffff
+     cp.b $loadaddr ff780000 80000
+
+
+U-Boot commands for downloading an image via tftp and flashing
+it into the second bank:
+
+     tftp 10000 <u-boot.bin.image>
+     erase ff780000 ff7fffff
+     cp.b 10000 ff780000 80000
+
+
+After copying the image into the second bank of flash, be sure to toggle
+SW2[2] on the carrier card before resetting the board in order to set the
+secondary bank as the boot-bank.
+
+
+Carrier Board Switches
+----------------------
+
+As a reminder, you should read the README.mpc85xxads too.
+
+Most switches on the carrier board should not be changed.  The only
+user-settable switches on the carrier board are used to configure
+the flash banks and determining the PCI slot.
+
+The first two bits of SW2 control how flash is used on the board:
+
+      12345678
+      --------
+  SW2=00XXXXXX	   FLASH:  Boot bank 1, bank 2 available.
+      01XXXXXX	   FLASH:  Boot bank 2, bank 1 available (swapped).
+      10XXXXXX	   FLASH:  Boot promjet, bank 1 available
+      11XXXXXX	   FLASH:  Boot promjet, bank 2 available
+
+The boot bank is always mapped to FF80_0000 and listed first by
+the "flinfo" command.  The secondary bank is always FF00_0000.
+
+When using PCI, linux needs to know to which slot the CDS carrier is
+connected..  By convention, the user-specific bits of SW2 are used to
+convey this information:
+
+      12345678
+      --------
+  SW2=xxxxxx00	   PCI SLOT INFORM: The CDS carrier is in slot0 of the Arcadia
+      xxxxxx01	   PCI SLOT INFORM: The CDS carrier is in slot1 of the Arcadia
+      xxxxxx10	   PCI SLOT INFORM: The CDS carrier is in slot2 of the Arcadia
+      xxxxxx11	   PCI SLOT INFORM: The CDS carrier is in slot3 of the Arcadia
+
+These are cleverly, er, clearly silkscreened as Slot 1 through 4,
+respectively, on the Arcadia near the support posts.
+
+
+The default setting of all switches on the carrier board is:
+
+      12345678
+      --------
+  SW1=01101100
+  SW2=0x1111yy	   x=Flash bank, yy=PCI slot
+  SW3=11101111
+  SW4=10001000
+
+
+8555/41 CPU Card Switches
+-------------------------
+
+Most switches on the CPU Card should not be changed.  However, the
+frequency can be changed by setting SW3:
+
+      12345678
+      --------
+  SW3=XX00XXXX == CORE:CCB 2:1
+      XX01XXXX == CORE:CCB 5:2
+      XX10XXXX == CORE:CCB 3:1
+      XX11XXXX == CORE:CCB 7:2
+      XXXX1000 == CCB:SYSCLK 8:1
+      XXXX1010 == CCB:SYSCLK 10:1
+
+A safe default setting for all switches on the CPU board is:
+
+      12345678
+      --------
+  SW1=10001111
+  SW2=01000111
+  SW3=00001000
+  SW4=11111110
+
+
+8548 CPU Card Switches
+----------------------
+And, just to be confusing, in this set of switches:
+
+    ON  = 1
+    OFF = 0
+
+Default
+  SW1=11111101
+  SW2=10011111
+  SW3=11001000    (8X) (2:1)
+  SW4=11110011
+
+  SW3=X000XXXX  == CORE:CCB    4:1
+      X001XXXX  == CORE:CCB    9:2
+      X010XXXX  == CORE:CCB    1:1
+      X011XXXX  == CORE:CCB    3:2
+      X100XXXX  == CORE:CCB    2:1
+      X101XXXX  == CORE:CCB    5:2
+      X110XXXX  == CORE:CCB    3:1
+      X111XXXX  == CORE:CCB    7:2
+      XXXX0000  == CCB:SYSCLK 16:1
+      XXXX0001  == RESERVED
+      XXXX0010  == CCB:SYSCLK  2:1
+      XXXX0011  == CCB:SYSCLK  3:1
+      XXXX0100  == CCB:SYSCLK  4:1
+      XXXX0101  == CCB:SYSCLK  5:1
+      XXXX0110  == CCB:SYSCLK  6:1
+      XXXX0111  == RESERVED
+      XXXX1000  == CCB:SYSCLK  8:1
+      XXXX1001  == CCB:SYSCLK  9:1
+      XXXX1010  == CCB:SYSCLK 10:1
+      XXXX1011  == RESERVED
+      XXXX1100  == CCB:SYSCLK 12:1
+      XXXX1101  == CCB:SYSCLK 20:1
+      XXXX1110  == RESERVED
+      XXXX1111  == RESERVED
+
+
+eDINK Info
+----------
+
+One bank of flash may contain an eDINK image.
+
+Memory Map:
+
+   CCSRBAR @ 0xe0000000
+   Flash Bank 1 @ 0xfe000000
+   Flash Bank 2 @ 0xff000000
+   Ram @ 0
+
+Commands for downloading a U-Boot image to memory from edink:
+
+   env -c
+   time -s 4/8/2004 4:30p
+   dl -k -b -o 100000
+   [Drop to kermit:
+	^\c
+	transmit /binary <u-boot-bin-image>
+	c
+   ]
+
+   fu -l 100000 fe780000 80000

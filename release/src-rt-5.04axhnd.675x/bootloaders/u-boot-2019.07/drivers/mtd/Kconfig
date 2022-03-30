@@ -1,0 +1,103 @@
+menu "MTD Support"
+
+config MTD_PARTITIONS
+	bool
+
+config MTD
+	bool "Enable Driver Model for MTD drivers"
+	depends on DM
+	help
+	  Enable driver model for Memory Technology Devices (MTD), such as
+	  flash, RAM and similar chips, often used for solid state file
+	  systems on embedded devices.
+
+config MTD_NOR_FLASH
+	bool "Enable parallel NOR flash support"
+	help
+	  Enable support for parallel NOR flash.
+
+config MTD_DEVICE
+	bool "Enable MTD Device for NAND and ONENAND devices"
+	help
+	  Adds the MTD device infrastructure from the Linux kernel.
+	  Needed for mtdparts command support.
+
+config FLASH_CFI_DRIVER
+	bool "Enable CFI Flash driver"
+	help
+	  The Common Flash Interface specification was developed by Intel,
+	  AMD and other flash manufactures. It provides a universal method
+	  for probing the capabilities of flash devices. If you wish to
+	  support any device that is CFI-compliant, you need to enable this
+	  option. Visit <http://www.amd.com/products/nvd/overview/cfi.html>
+	  for more information on CFI.
+
+config CFI_FLASH
+	bool "Enable Driver Model for CFI Flash driver"
+	depends on MTD
+	help
+	  The Common Flash Interface specification was developed by Intel,
+	  AMD and other flash manufactures. It provides a universal method
+	  for probing the capabilities of flash devices. If you wish to
+	  support any device that is CFI-compliant, you need to enable this
+	  option. Visit <http://www.amd.com/products/nvd/overview/cfi.html>
+	  for more information on CFI.
+
+config SYS_FLASH_USE_BUFFER_WRITE
+	bool "Enable buffered writes to flash"
+	depends on FLASH_CFI_DRIVER
+	help
+	  Use buffered writes to flash.
+
+config FLASH_CFI_MTD
+	bool "Enable CFI MTD driver"
+	depends on FLASH_CFI_DRIVER
+	help
+	  This option enables the building of the cfi_mtd driver
+	  in the drivers directory. The driver exports CFI flash
+	  to the MTD layer.
+
+config SYS_FLASH_PROTECTION
+	bool "Use hardware flash protection"
+	depends on FLASH_CFI_DRIVER
+	help
+	  If defined, hardware flash sectors protection is used
+	  instead of U-Boot software protection.
+
+config SYS_FLASH_CFI
+	bool "Define extra elements in CFI for flash geometry"
+	depends on FLASH_CFI_DRIVER
+	help
+	  Define if the flash driver uses extra elements in the
+	  common flash structure for storing flash geometry.
+
+config ALTERA_QSPI
+	bool "Altera Generic Quad SPI Controller"
+	depends on MTD
+	help
+	  This enables access to Altera EPCQ/EPCS flash chips using the
+	  Altera Generic Quad SPI Controller. The controller converts SPI
+	  NOR flash to parallel flash interface. Please find details on the
+	  "Embedded Peripherals IP User Guide" of Altera.
+
+config FLASH_PIC32
+	bool "Microchip PIC32 Flash driver"
+	depends on MACH_PIC32 && MTD
+	help
+	  This enables access to Microchip PIC32 internal non-CFI flash
+	  chips through PIC32 Non-Volatile-Memory Controller.
+
+config RENESAS_RPC_HF
+	bool "Renesas RCar Gen3 RPC Hyperflash driver"
+	depends on RCAR_GEN3 && MTD
+	help
+	  This enables access to Hyperflash memory through the Renesas
+	  RCar Gen3 RPC controller.
+
+source "drivers/mtd/nand/Kconfig"
+
+source "drivers/mtd/spi/Kconfig"
+
+source "drivers/mtd/ubi/Kconfig"
+
+endmenu

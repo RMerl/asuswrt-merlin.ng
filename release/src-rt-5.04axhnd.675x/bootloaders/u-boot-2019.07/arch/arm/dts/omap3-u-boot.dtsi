@@ -1,0 +1,81 @@
+/*
+ * Copyright (C) 2017 Texas Instruments Incorporated - http://www.ti.com/
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation.
+ * Based on "omap5-u-boot.dtsi"
+ */
+
+/{
+	ocp@68000000 {
+		u-boot,dm-spl;
+
+		bandgap@48002524 {
+			u-boot,dm-spl;
+		};
+	};
+};
+
+&uart1 {
+	u-boot,dm-spl;
+	reg-shift = <2>;
+};
+
+&uart2 {
+	u-boot,dm-spl;
+	reg-shift = <2>;
+};
+
+&uart3 {
+	u-boot,dm-spl;
+	reg-shift = <2>;
+};
+
+&mmc1 {
+	u-boot,dm-spl;
+};
+
+&mmc2 {
+	u-boot,dm-spl;
+};
+
+&l4_core {
+	u-boot,dm-spl;
+};
+
+&scm {
+	u-boot,dm-spl;
+};
+
+&scm_conf {
+	u-boot,dm-spl;
+};
+
+&gpio1 {
+	u-boot,dm-spl;
+};
+
+&gpio2 {
+	u-boot,dm-spl;
+};
+
+&gpio3 {
+	u-boot,dm-spl;
+};
+
+&gpio4 {
+	u-boot,dm-spl;
+};
+
+&gpio5 {
+	u-boot,dm-spl;
+};
+
+&gpio6 {
+	u-boot,dm-spl;
+};
+
+&i2c1 {
+	u-boot,dm-spl;
+};

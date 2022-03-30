@@ -1,0 +1,78 @@
+BEDBUG Support for U-Boot
+--------------------------
+
+These changes implement the bedbug (emBEDded deBUGger) debugger in U-Boot.
+A specific implementation is made for the AMCC 405 processor but other flavors
+can be easily implemented.
+
+#####################
+### Modifications ###
+#####################
+
+./common/Makefile
+	Included cmd_bedbug.c and bedbug.c in the Makefile.
+
+./common/command.c
+	Added bedbug commands to command table.
+
+./common/board.c
+	Added call to initialize debugger on startup.
+
+./arch/powerpc/cpu/ppc4xx/Makefile
+	Added bedbug_405.c to the Makefile.
+
+./arch/powerpc/cpu/ppc4xx/start.S
+	Added code to handle the debug exception (0x2000) on the 405.
+	Also added code to handle critical exceptions since the debug
+	is treated as critical on the 405.
+
+./arch/powerpc/cpu/ppc4xx/traps.c
+	Added more detailed output for the program exception to tell
+	if it is an illegal instruction, privileged instruction or
+	a trap. Also added debug trap handler.
+
+./include/ppc_asm.tmpl
+	Added code to handle critical exceptions
+
+#################
+### New Stuff ###
+#################
+
+./include/bedbug/ppc.h
+./include/bedbug/regs.h
+./include/bedbug/bedbug.h
+./include/bedbug/elf.h		[obsoleted by new include/elf.h]
+./include/bedbug/tables.h
+./include/cmd_bedbug.h
+./common/cmd_bedbug.c
+./common/bedbug.c
+	Bedbug library includes code for assembling and disassembling
+	PowerPC instructions to/from memory as well as handling
+	hardware breakpoints and stepping through code.  These
+	routines are common to all PowerPC processors.
+
+./arch/powerpc/cpu/ppc4xx/bedbug_405.c
+	AMCC  PPC405 specific debugger routines.
+
+
+Bedbug support for the MPC860
+-----------------------------
+
+Changes:
+
+	common/cmd_bedbug.c
+		Added call to initialize 860 debugger.
+
+	arch/powerpc/cpu/mpc8xx/Makefile
+		Added new file "bedbug_860.c" to the makefile
+
+	arch/powerpc/cpu/mpc8xx/start.S
+		Added handler for InstructionBreakpoint (0xfd00)
+
+	arch/powerpc/cpu/mpc8xx/traps.c
+		Added new routine DebugException()
+
+New Files:
+
+	arch/powerpc/cpu/mpc8xx/bedbug_860.c
+		CPU-specific routines for 860 debug registers.

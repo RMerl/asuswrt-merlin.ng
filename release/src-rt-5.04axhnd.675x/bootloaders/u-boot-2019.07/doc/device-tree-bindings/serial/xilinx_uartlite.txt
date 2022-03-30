@@ -1,0 +1,13 @@
+Binding for Xilinx Uartlite Controller
+
+Required properties:
+- compatible : should be "xlnx,xps-uartlite-1.00.a", or "xlnx,opb-uartlite-1.00.b"
+- reg: Should contain UART controller registers location and length.
+- interrupts: Should contain UART controller interrupts.
+
+Example:
+	serial@40600000 {
+		compatible = "xlnx,xps-uartlite-1.00.a";
+		interrupts = <1 0>;
+		reg = <0x40600000 0x10000>;
+	};

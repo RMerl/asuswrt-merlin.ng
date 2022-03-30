@@ -1,0 +1,7 @@
+NET2BIG_V2 BOARD
+M:	Simon Guinot <simon.guinot@sequanux.org>
+S:	Maintained
+F:	board/LaCie/net2big_v2/
+F:	include/configs/lacie_kw.h
+F:	configs/d2net_v2_defconfig
+F:	configs/net2big_v2_defconfig

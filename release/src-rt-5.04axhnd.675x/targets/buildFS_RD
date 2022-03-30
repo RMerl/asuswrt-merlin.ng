@@ -1,0 +1,68 @@
+#!/bin/bash
+
+source $KERNEL_DIR/.config
+
+# make root file system image
+if [ "$BRCM_IKOS" = "y" ]; then
+# ikos need a simple init to just run the busybox shell
+   rm -f $TARGET_FS/etc/inittab
+   sed -e 's/^::respawn.*sh.*/::respawn:-\/bin\/sh/' -e 's/^::sysinit.*sh.*/::sysinit:\/bin\/sh -l -c \/etc\/init.sh/' $BUILD_DIR/userspace/public/apps/scripts/consoled/inittab > $TARGET_FS/etc/inittab
+   echo ${LINUX_VER_STR} ----- ${LINUX_VER_STR} ---- ${LINUX_VER_STR}
+   echo -e "\x23\x21bin/sh\nmount -t proc /proc /proc\nmount -t sysfs none /sys\n" > $TARGET_FS/etc/init.sh
+   echo LINUX_VER_STR=${LINUX_VER_STR} >> $TARGET_FS/etc/init.sh
+   if [ "$CONFIG_BRCM_QEMU" = "y" ]; then   
+        if [ "$BCM_DSL_XRDP" = "y" ]; then
+            cat $SHARED_DIR/opensource/drv/qemu/qemu_init_dsl.sh |sed -e 's/LINUX_VER_STR/${LINUX_VER_STR}/' >> $TARGET_FS/etc/init.sh
+        else
+            cat $BRCMDRIVERS_DIR/opensource/char/plat-bcm/impl1/qemu/qemu_init.sh |sed -e 's/4\.1\.52/${LINUX_VER_STR}/' >> $TARGET_FS/etc/init.sh
+        fi
+   fi   
+   chmod +x $TARGET_FS/etc/init.sh
+
+	rm $TARGET_FS/bin/sqlite3
+	rm $TARGET_FS/bin/openssl
+	rm $TARGET_FS/bin/xtables-legacy-multi
+	rm $TARGET_FS/bin/sgdisk
+	rm $TARGET_FS/bin/openl2tpd
+	rm $TARGET_FS/bin/mke2fs
+	rm $TARGET_FS/bin/dumpe2fs
+	rm $TARGET_FS/bin/tc
+	rm $TARGET_FS/bin/resize2fs
+	rm $TARGET_FS/bin/sshd
+	rm $TARGET_FS/bin/ip
+	rm $TARGET_FS/bin/zebra
+	rm $TARGET_FS/bin/httpd
+	rm $TARGET_FS/bin/upnp
+	rm $TARGET_FS/bin/e2fsck
+	rm $TARGET_FS/bin/dropbearconvert
+	rm $TARGET_FS/bin/pppd
+	rm $TARGET_FS/bin/tcpdump
+	rm $TARGET_FS/bin/l2tpconfig
+	rm $TARGET_FS/bin/ethtool
+	rm $TARGET_FS/bin/tr69c
+	rm $TARGET_FS/webs/* -rf
+	rm $TARGET_FS/lib/libcharon.so.0.0.0
+	rm $TARGET_FS/lib/libstrongswan.so.0.0.0
+	rm $TARGET_FS/lib/libbmedia.so
+	rm $TARGET_FS/lib/libwebsockets.so
+
+
+
+# ikos is too slow for using compressed SquashFS, so we are disabling the compression. Make sure kernel creates large enough ramdisk for the uncompressed fs image
+   $HOSTTOOLS_DIR/mksquashfs $TARGET_FS $PROFILE_DIR/ramdisk -noappend -all-root -noI -noD -noF
+else
+   (ulimit -t 900 ; $HOSTTOOLS_DIR/mksquashfs $TARGET_FS $PROFILE_DIR/ramdisk -noappend -all-root -comp xz) 
+   if [ $? -ne 0 ]; then
+        echo "mksquashfs failed once"
+        (ulimit -t 900 ; $HOSTTOOLS_DIR/mksquashfs $TARGET_FS $PROFILE_DIR/ramdisk -noappend -all-root -comp xz) 
+        if [ $? -ne 0 ]; then
+            echo "mksquashfs failed twice"
+            exit 2
+        fi
+   fi
+
+   if [ ! -e "$PROFILE_DIR/vmlinux_rd_boot" ]; then
+        echo "error: $PROFILE_DIR/vmlinux_rd_boot not found! Check buildFS output"
+        exit 2
+   fi 
+fi

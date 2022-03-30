@@ -1,0 +1,100 @@
+// SPDX-License-Identifier: GPL-2.0+ OR X11
+/*
+ * Device Tree Include file for Freescale Layerscape-1043A family SoC.
+ *
+ * Copyright (C) 2015, Freescale Semiconductor
+ *
+ * Mingkai Hu <Mingkai.hu@freescale.com>
+ */
+
+/dts-v1/;
+/include/ "fsl-ls1043a.dtsi"
+
+/ {
+	model = "LS1043A RDB Board";
+
+        aliases {
+		spi1 = &dspi0;
+        };
+
+};
+
+&dspi0 {
+	bus-num = <0>;
+	status = "okay";
+
+	dspiflash: n25q12a {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "jedec,spi-nor";
+		reg = <0>;
+		spi-max-frequency = <1000000>; /* input clock */
+	};
+
+};
+
+&i2c0 {
+	status = "okay";
+	ina220@40 {
+		compatible = "ti,ina220";
+		reg = <0x40>;
+		shunt-resistor = <1000>;
+	};
+	adt7461a@4c {
+		compatible = "adi,adt7461a";
+		reg = <0x4c>;
+	};
+	eeprom@52 {
+		compatible = "at24,24c512";
+		reg = <0x52>;
+	};
+
+	eeprom@53 {
+		compatible = "at24,24c512";
+		reg = <0x53>;
+	};
+
+	rtc@68 {
+		compatible = "pericom,pt7c4338";
+		reg = <0x68>;
+	};
+};
+
+&ifc {
+	status = "okay";
+	#address-cells = <2>;
+	#size-cells = <1>;
+	/* NOR, NAND Flashes and FPGA on board */
+	ranges = <0x0 0x0 0x0 0x60000000 0x08000000
+		  0x1 0x0 0x0 0x7e800000 0x00010000
+		  0x2 0x0 0x0 0x7fb00000 0x00000100>;
+
+		nor@0,0 {
+			compatible = "cfi-flash";
+			#address-cells = <1>;
+			#size-cells = <1>;
+			reg = <0x0 0x0 0x8000000>;
+			bank-width = <2>;
+			device-width = <1>;
+		};
+
+		nand@1,0 {
+			compatible = "fsl,ifc-nand";
+			#address-cells = <1>;
+			#size-cells = <1>;
+			reg = <0x1 0x0 0x10000>;
+		};
+
+		cpld: board-control@2,0 {
+			compatible = "fsl,ls1043ardb-cpld";
+			reg = <0x2 0x0 0x0000100>;
+		};
+};
+
+&duart0 {
+	status = "okay";
+};
+
+&duart1 {
+	status = "okay";
+};

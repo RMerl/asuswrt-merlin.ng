@@ -1,0 +1,13 @@
+SPEAR300 BOARD
+M:	Vipin Kumar <vipin.kumar@st.com>
+S:	Maintained
+F:	board/spear/spear300/
+F:	include/configs/spear3xx_evb.h
+F:	configs/spear300_defconfig
+
+SPEAR300_NAND BOARD
+#M:	-
+S:	Maintained
+F:	configs/spear300_nand_defconfig
+F:	configs/spear300_usbtty_defconfig
+F:	configs/spear300_usbtty_nand_defconfig

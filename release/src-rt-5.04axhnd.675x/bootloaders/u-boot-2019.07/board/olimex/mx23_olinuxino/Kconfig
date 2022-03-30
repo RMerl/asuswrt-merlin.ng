@@ -1,0 +1,15 @@
+if TARGET_MX23_OLINUXINO
+
+config SYS_BOARD
+	default "mx23_olinuxino"
+
+config SYS_VENDOR
+	default "olimex"
+
+config SYS_SOC
+	default "mxs"
+
+config SYS_CONFIG_NAME
+	default "mx23_olinuxino"
+
+endif

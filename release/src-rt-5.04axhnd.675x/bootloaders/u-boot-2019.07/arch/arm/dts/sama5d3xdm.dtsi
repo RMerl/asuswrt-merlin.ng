@@ -1,0 +1,67 @@
+/*
+ * sama5d3dm.dtsi - Device Tree file for SAMA5 display module
+ *
+ *  Copyright (C) 2013 Atmel,
+ *                2013 Ludovic Desroches <ludovic.desroches@atmel.com>
+ *
+ * Licensed under GPLv2 or later.
+ */
+
+/ {
+	ahb {
+		apb {
+			hlcdc: hlcdc@f0030000 {
+				atmel,vl-bpix = <4>;
+				atmel,output-mode = <24>;
+				atmel,guard-time = <1>;
+				pinctrl-names = "default";
+				pinctrl-0 = <&pinctrl_lcd_base &pinctrl_lcd_pwm &pinctrl_lcd_rgb888_alt>;
+				status = "okay";
+				u-boot,dm-pre-reloc;
+
+				display-timings {
+					u-boot,dm-pre-reloc;
+					800x480 {
+						clock-frequency = <24000000>;
+						hactive = <800>;
+						vactive = <480>;
+						hsync-len = <5>;
+						hfront-porch = <64>;
+						hback-porch = <64>;
+						vfront-porch = <22>;
+						vback-porch = <21>;
+						vsync-len = <5>;
+						u-boot,dm-pre-reloc;
+					};
+				};
+			};
+
+			i2c1: i2c@f0018000 {
+				qt1070: keyboard@1b {
+					compatible = "qt1070";
+					reg = <0x1b>;
+					interrupt-parent = <&pioE>;
+					interrupts = <31 0x0>;
+					pinctrl-names = "default";
+					pinctrl-0 = <&pinctrl_qt1070_irq>;
+					wakeup-source;
+				};
+			};
+
+			adc0: adc@f8018000 {
+				atmel,adc-ts-wires = <4>;
+				atmel,adc-ts-pressure-threshold = <10000>;
+				status = "okay";
+			};
+
+			pinctrl@fffff200 {
+				board {
+					pinctrl_qt1070_irq: qt1070_irq {
+						atmel,pins =
+							<AT91_PIOE 31 AT91_PERIPH_GPIO AT91_PINCTRL_PULL_UP_DEGLITCH>; /* PE31 GPIO with pull up deglith */
+					};
+				};
+			};
+		};
+	};
+};

@@ -1,0 +1,7 @@
+APF27 BOARD
+M:	Philippe Reynes <tremyfr@yahoo.fr>
+M:	Eric Jarrige <eric.jarrige@armadeus.org>
+S:	Maintained
+F:	board/armadeus/apf27/
+F:	include/configs/apf27.h
+F:	configs/apf27_defconfig

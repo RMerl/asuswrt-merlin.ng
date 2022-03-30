@@ -1,0 +1,178 @@
+# SPDX-License-Identifier: GPL-2.0+
+#
+# (C) Copyright 2019 Broadcom Ltd
+#
+
+config BCMBCA_RDP_ETH
+	bool "BCMBCA RDP based network driver"
+	select BCMBCA_RDP
+	depends on DM_ETH && ARCH_BCMBCA
+	default y if BCM63138
+	default y if BCM63148
+	default n
+	help
+	   This driver supports RDP based network driver
+
+config BCMBCA_XRDP_ETH
+	bool "BCMBCA XRDP based network driver"
+	depends on DM_ETH && ARCH_BCMBCA
+	default y if BCM6846
+	default y if BCM6856
+	default y if BCM6858
+	default y if BCM6878
+	default y if BCM63146
+	default y if BCM4912
+	default y if BCM6813
+	default y if BCM6855
+	default n
+	help
+	   This driver supports XRDP based network driver
+
+config BCMBCA_XRDP_ETH_SWITCH_IFACE
+	bool "BCMBCA XRDP network driver switch"
+	depends on BCMBCA_XRDP_ETH
+	default y
+	help
+	   Create a single ETH interface representing the whole switch
+
+config BCMBCA_LPORT
+	bool "BCMBCA LPORT driver"
+	default y if BCM6858
+	default n
+	help
+	   This driver supports lport
+
+config BCMBCA_XRDP
+	bool "BCMBCA XRDP driver"
+	default y if BCM6846
+	default y if BCM6856
+	default y if BCM6858
+	default y if BCM6878
+	default y if BCM63146
+	default y if BCM4912
+	default y if BCM6813
+	default y if BCM6855
+	default n
+	help
+	   This driver supports xrdp
+
+config BCMBCA_XRDP_PON
+	bool "BCMBCA XRDP driver for PON platform"
+	default y if BCM6846
+	default y if BCM6856
+	default y if BCM6858
+	default y if BCM6878
+        default y if BCM6855
+	default n
+	help
+	   This driver supports xrdp for PON
+
+config BCMBCA_XRDP_DSL
+	bool "BCMBCA XRDP driver for DSL platform"
+	default y if BCM63146
+	default y if BCM4912
+	default y if BCM6813
+	default n
+	help
+	   This driver supports xrdp for DSL
+
+config BCMBCA_PHY
+	bool "BCMBCA PHY framework driver"
+	default y if BCM6846
+	default y if BCM6856
+	default y if BCM6858
+	default y if BCM6878
+	default y if BCM63178
+	default y if BCM47622
+	default y if BCM63146
+	default y if BCM4912
+	default y if BCM6756
+	default y if BCM6813
+	default y if BCM6855
+	default n
+	help
+	   This driver supports PHY framework
+
+config BCM_SELECTIVE_PHYS
+	bool "Selective PHYs"
+    depends on BCMBCA_PHY
+	default n
+
+config BCM_PHY_MAKO_A0
+	bool "Mako A0 support"
+	depends on BCM_SELECTIVE_PHYS
+	default n
+
+config BCM_PHY_ORCA_A0
+	bool "Orca A0 support"
+	depends on BCM_SELECTIVE_PHYS
+	default n
+
+config BCM_PHY_ORCA_B0
+	bool "Orca A0 support"
+	depends on BCM_SELECTIVE_PHYS
+	default n
+
+config BCM_PHY_BLACKFIN_A0
+	bool "Blackfin A0 support"
+	depends on BCM_SELECTIVE_PHYS
+	default n
+
+config BCM_PHY_BLACKFIN_B0
+	bool "Blackfin B0 support"
+	depends on BCM_SELECTIVE_PHYS
+	default n
+
+config BCM_PHY_LONGFIN_A0
+	bool "Longfin A0 support"
+	depends on BCM_SELECTIVE_PHYS
+	default n
+
+config BCM_PHY_LONGFIN_B0
+	bool "Longfin B0 support"
+	depends on BCM_SELECTIVE_PHYS
+	default n
+
+config BCMBCA_SYSPORT_V1
+	bool "BCMBCA Sysport version 1 support"
+	default y if BCM63158
+	default n
+	help
+	   This driver supports BCM System port v1.0
+
+config BCMBCA_SYSPORT_V2
+	bool "BCMBCA Sysport version 2 support"
+	default y if BCM63178
+	default y if BCM47622
+	default y if BCM6756
+	default n
+	help
+	   This driver supports BCM System port v2.0
+
+config BCMBCA_SWITCH
+	bool "BCMBCA Switch Driver"
+	default y if BCM63138
+	default y if BCM63148
+	default y if BCM63158
+	default y if BCM63178
+	default y if BCM4908
+	default y if BCM6756	
+	default n
+	help
+	   This driver supports BCMBCA Switch
+
+config BCMBCA_SF2_GMAC
+	bool "BCMBCA External Switch Driver"
+	default y if BCM4908
+	default n
+	help
+	   This driver supports BCMBCA External Switch
+
+config BCMBCA_EXT_SWITCH
+	bool "BCMBCA External Switch Driver"
+	default y if BCM47622
+	default y if BCM6756
+	default n
+	help
+	   This driver supports BCMBCA External Switch
+

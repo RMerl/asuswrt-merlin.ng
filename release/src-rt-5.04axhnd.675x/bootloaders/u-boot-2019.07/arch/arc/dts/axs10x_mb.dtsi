@@ -1,0 +1,122 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2017 Synopsys, Inc. All rights reserved.
+ */
+
+/ {
+	aliases {
+		spi0 = &spi0;
+	};
+
+	axs10x_mb@e0000000 {
+		compatible = "simple-bus";
+		#address-cells = <1>;
+		#size-cells = <1>;
+		ranges = <0x00000000 0xe0000000 0x10000000>;
+		u-boot,dm-pre-reloc;
+
+		clocks {
+			compatible = "simple-bus";
+			u-boot,dm-pre-reloc;
+
+			apbclk: apbclk {
+				compatible = "fixed-clock";
+				clock-frequency = <50000000>;
+				#clock-cells = <0>;
+			};
+
+			uartclk: uartclk {
+				compatible = "fixed-clock";
+				clock-frequency = <33333333>;
+				#clock-cells = <0>;
+				u-boot,dm-pre-reloc;
+			};
+
+			mmcclk_ciu: mmcclk-ciu {
+				compatible = "fixed-clock";
+				/*
+				 * DW sdio controller has external ciu clock divider
+				 * controlled via register in SDIO IP. It divides
+				 * sdio_ref_clk (which comes from CGU) by 16 for
+				 * default. So default mmcclk clock (which comes
+				 * to sdk_in) is 25000000 Hz.
+				 */
+				clock-frequency = <25000000>;
+				#clock-cells = <0>;
+			};
+
+			mmcclk_biu: mmcclk-biu {
+				compatible = "fixed-clock";
+				clock-frequency = <50000000>;
+				#clock-cells = <0>;
+			};
+		};
+
+		ethernet@18000 {
+			compatible = "altr,socfpga-stmmac";
+			reg = < 0x18000 0x2000 >;
+			phy-mode = "gmii";
+			snps,pbl = < 32 >;
+			clocks = <&apbclk>;
+			clock-names = "stmmaceth";
+			max-speed = <100>;
+		};
+
+		ehci@0x40000 {
+			compatible = "generic-ehci";
+			reg = < 0x40000 0x100 >;
+		};
+
+		ohci@0x60000 {
+			compatible = "generic-ohci";
+			reg = < 0x60000 0x100 >;
+		};
+
+		mmc: mmc@15000 {
+			compatible = "snps,dw-mshc";
+			reg = <0x15000 0x400>;
+			bus-width = <4>;
+			clocks = <&mmcclk_biu>, <&mmcclk_ciu>;
+			clock-names = "biu", "ciu";
+			max-frequency = <25000000>;
+		};
+
+		uart0: serial0@22000 {
+			compatible = "snps,dw-apb-uart";
+			reg = <0x22000 0x100>;
+			clocks = <&uartclk>;
+			reg-shift = <2>;
+			reg-io-width = <4>;
+		};
+
+		spi0: spi@0 {
+			compatible = "snps,dw-apb-ssi";
+			reg = <0x0 0x100>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+			spi-max-frequency = <4000000>;
+			clocks = <&apbclk>;
+			clock-names = "spi_clk";
+			cs-gpio = <&cs_gpio 0>;
+			spi_flash@0 {
+				compatible = "jedec,spi-nor";
+				reg = <0>;
+				spi-max-frequency = <4000000>;
+			};
+		};
+
+		cs_gpio: gpio@11218 {
+			compatible = "snps,creg-gpio";
+			reg = <0x11218 0x4>;
+			gpio-controller;
+			#gpio-cells = <1>;
+			gpio-bank-name = "axs-spi-cs";
+			gpio-count = <1>;
+			gpio-first-shift = <0>;
+			gpio-bit-per-line = <2>;
+			gpio-activate-val = <1>;
+			gpio-deactivate-val = <3>;
+			gpio-default-val = <1>;
+		};
+	};
+};

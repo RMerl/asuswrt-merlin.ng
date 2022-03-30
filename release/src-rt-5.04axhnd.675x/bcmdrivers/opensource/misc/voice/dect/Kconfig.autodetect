@@ -1,0 +1,12 @@
+config BCM_VOICE_DECT_RESET
+	bool "Broadcom voice DECT reset support"
+	default n
+	help
+	  Enable DECT for Broadcom dsl/pon SoCs
+
+config BCM_VOICE_DECT_RESET_IMPL
+	int "Implementation index for dect reset driver"
+	depends on BCM_VOICE_DECT_RESET
+	default 1
+	
+

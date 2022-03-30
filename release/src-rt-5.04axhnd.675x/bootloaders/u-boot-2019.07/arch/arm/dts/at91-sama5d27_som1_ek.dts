@@ -1,0 +1,232 @@
+/*
+ * at91-sama5d27_som1_ek.dts - Device Tree file for SAMA5D27 SOM1 EK board
+ *
+ *  Copyright (C) 2017 Microchip Corporation
+ *                     Wenyou Yang <wenyou.yang@microchip.com>
+ *
+ * This file is dual-licensed: you can use it either under the terms
+ * of the GPL or the X11 license, at your option. Note that this dual
+ * licensing only applies to this file, and not this project as a
+ * whole.
+ *
+ *  a) This file is free software; you can redistribute it and/or
+ *     modify it under the terms of the GNU General Public License as
+ *     published by the Free Software Foundation; either version 2 of the
+ *     License, or (at your option) any later version.
+ *
+ *     This file is distributed in the hope that it will be useful,
+ *     but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *     GNU General Public License for more details.
+ *
+ * Or, alternatively,
+ *
+ *  b) Permission is hereby granted, free of charge, to any person
+ *     obtaining a copy of this software and associated documentation
+ *     files (the "Software"), to deal in the Software without
+ *     restriction, including without limitation the rights to use,
+ *     copy, modify, merge, publish, distribute, sublicense, and/or
+ *     sell copies of the Software, and to permit persons to whom the
+ *     Software is furnished to do so, subject to the following
+ *     conditions:
+ *
+ *     The above copyright notice and this permission notice shall be
+ *     included in all copies or substantial portions of the Software.
+ *
+ *     THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ *     EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+ *     OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ *     NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ *     HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ *     WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ *     FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+ *     OTHER DEALINGS IN THE SOFTWARE.
+ */
+/dts-v1/;
+#include "sama5d27_som1.dtsi"
+
+/ {
+	model = "Atmel SAMA5D27 SOM1 EK";
+	compatible = "atmel,sama5d27-som1-ek", "atmel,sama5d2", "atmel,sama5";
+
+	chosen {
+		u-boot,dm-pre-reloc;
+		stdout-path = &uart1;
+	};
+
+	onewire_tm: onewire {
+		gpios = <&pioA 17 0>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_onewire_tm_default>;
+		status = "okay";
+
+		w1_eeprom: w1_eeprom@0 {
+			compatible = "maxim,ds24b33";
+			status = "okay";
+		};
+	};
+
+	ahb {
+		usb1: ohci@00400000 {
+			num-ports = <3>;
+			atmel,vbus-gpio = <&pioA 42 0>;
+			pinctrl-names = "default";
+			pinctrl-0 = <&pinctrl_usb_default>;
+			status = "okay";
+		};
+
+		usb2: ehci@00500000 {
+			status = "okay";
+		};
+
+		sdmmc0: sdio-host@a0000000 {
+			bus-width = <8>;
+			pinctrl-names = "default";
+			pinctrl-0 = <&pinctrl_sdmmc0_cmd_dat_default &pinctrl_sdmmc0_ck_cd_default>;
+			status = "okay";
+			u-boot,dm-pre-reloc;
+		};
+
+		sdmmc1: sdio-host@b0000000 {
+			bus-width = <4>;
+			pinctrl-names = "default";
+			pinctrl-0 = <&pinctrl_sdmmc1_cmd_dat_default &pinctrl_sdmmc1_ck_cd_default>;
+			status = "okay"; /* conflict with qspi0 */
+			u-boot,dm-pre-reloc;
+		};
+
+		apb {
+			hlcdc: hlcdc@f0000000 {
+				atmel,vl-bpix = <4>;
+				atmel,guard-time = <1>;
+				pinctrl-names = "default";
+				pinctrl-0 = <&pinctrl_lcd_base &pinctrl_lcd_pwm &pinctrl_lcd_rgb666>;
+				status = "okay";
+				u-boot,dm-pre-reloc;
+
+				display-timings {
+					u-boot,dm-pre-reloc;
+					480x272 {
+						clock-frequency = <9000000>;
+						hactive = <480>;
+						vactive = <272>;
+						hsync-len = <41>;
+						hfront-porch = <2>;
+						hback-porch = <2>;
+						vfront-porch = <2>;
+						vback-porch = <2>;
+						vsync-len = <11>;
+						u-boot,dm-pre-reloc;
+					};
+				};
+			};
+
+			uart1: serial@f8020000 {
+				pinctrl-names = "default";
+				pinctrl-0 = <&pinctrl_uart1_default>;
+				status = "okay";
+				u-boot,dm-pre-reloc;
+			};
+
+			pioA: gpio@fc038000 {
+				pinctrl {
+					pinctrl_lcd_base: pinctrl_lcd_base {
+						pinmux = <PIN_PC5__LCDVSYNC>,
+							 <PIN_PC6__LCDHSYNC>,
+							 <PIN_PC8__LCDDEN>,
+							 <PIN_PC7__LCDPCK>;
+						bias-disable;
+					};
+
+					pinctrl_lcd_pwm: pinctrl_lcd_pwm {
+						pinmux = <PIN_PC3__LCDPWM>;
+						bias-disable;
+					};
+
+					pinctrl_lcd_rgb666: pinctrl_lcd_rgb666 {
+						pinmux = <PIN_PB13__LCDDAT2>,
+							 <PIN_PB14__LCDDAT3>,
+							 <PIN_PB15__LCDDAT4>,
+							 <PIN_PB16__LCDDAT5>,
+							 <PIN_PB17__LCDDAT6>,
+							 <PIN_PB18__LCDDAT7>,
+							 <PIN_PB21__LCDDAT10>,
+							 <PIN_PB22__LCDDAT11>,
+							 <PIN_PB23__LCDDAT12>,
+							 <PIN_PB24__LCDDAT13>,
+							 <PIN_PB25__LCDDAT14>,
+							 <PIN_PB26__LCDDAT15>,
+							 <PIN_PB29__LCDDAT18>,
+							 <PIN_PB30__LCDDAT19>,
+							 <PIN_PB31__LCDDAT20>,
+							 <PIN_PC0__LCDDAT21>,
+							 <PIN_PC1__LCDDAT22>,
+							 <PIN_PC2__LCDDAT23>;
+						bias-disable;
+					};
+
+					pinctrl_sdmmc0_cmd_dat_default: sdmmc0_cmd_dat_default {
+						pinmux = <PIN_PA1__SDMMC0_CMD>,
+							 <PIN_PA2__SDMMC0_DAT0>,
+							 <PIN_PA3__SDMMC0_DAT1>,
+							 <PIN_PA4__SDMMC0_DAT2>,
+							 <PIN_PA5__SDMMC0_DAT3>,
+							 <PIN_PA6__SDMMC0_DAT4>,
+							 <PIN_PA7__SDMMC0_DAT5>,
+							 <PIN_PA8__SDMMC0_DAT6>,
+							 <PIN_PA9__SDMMC0_DAT7>;
+						bias-pull-up;
+						u-boot,dm-pre-reloc;
+					};
+
+					pinctrl_sdmmc0_ck_cd_default: sdmmc0_ck_cd_default {
+						pinmux = <PIN_PA0__SDMMC0_CK>,
+							 <PIN_PA10__SDMMC0_RSTN>,
+							 <PIN_PA13__SDMMC0_CD>;
+						bias-disable;
+						u-boot,dm-pre-reloc;
+					};
+
+					pinctrl_sdmmc1_cmd_dat_default: sdmmc1_cmd_dat_default {
+						pinmux = <PIN_PA28__SDMMC1_CMD>,
+							 <PIN_PA18__SDMMC1_DAT0>,
+							 <PIN_PA19__SDMMC1_DAT1>,
+							 <PIN_PA20__SDMMC1_DAT2>,
+							 <PIN_PA21__SDMMC1_DAT3>;
+						bias-pull-up;
+						u-boot,dm-pre-reloc;
+					};
+
+					pinctrl_sdmmc1_ck_cd_default: sdmmc1_ck_cd_default {
+						pinmux = <PIN_PA22__SDMMC1_CK>,
+							 <PIN_PA30__SDMMC1_CD>;
+						bias-disable;
+						u-boot,dm-pre-reloc;
+					};
+
+					pinctrl_uart1_default: uart1_default {
+						pinmux = <PIN_PD2__URXD1>,
+							 <PIN_PD3__UTXD1>;
+						bias-disable;
+						u-boot,dm-pre-reloc;
+					};
+
+					pinctrl_usb_default: usb_default {
+						pinmux = <PIN_PB10__GPIO>;
+						bias-disable;
+					};
+
+					pinctrl_usba_vbus: usba_vbus {
+						pinmux = <PIN_PA31__GPIO>;
+						bias-disable;
+					};
+
+					pinctrl_onewire_tm_default: onewire_tm_default {
+						pinmux = <PIN_PA17__GPIO>;
+						bias-pull-up;
+					};
+				};
+			};
+		};
+	};
+};

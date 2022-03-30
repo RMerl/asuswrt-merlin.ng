@@ -1,0 +1,6 @@
+VENICE2 BOARD
+M:	Tom Warren <twarren@nvidia.com>
+S:	Maintained
+F:	board/nvidia/venice2/
+F:	include/configs/venice2.h
+F:	configs/venice2_defconfig

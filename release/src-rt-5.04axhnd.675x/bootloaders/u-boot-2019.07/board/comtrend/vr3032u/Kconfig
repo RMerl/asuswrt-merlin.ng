@@ -1,0 +1,12 @@
+if BOARD_COMTREND_VR3032U
+
+config SYS_BOARD
+	default "vr3032u"
+
+config SYS_VENDOR
+	default "comtrend"
+
+config SYS_CONFIG_NAME
+	default "comtrend_vr3032u"
+
+endif

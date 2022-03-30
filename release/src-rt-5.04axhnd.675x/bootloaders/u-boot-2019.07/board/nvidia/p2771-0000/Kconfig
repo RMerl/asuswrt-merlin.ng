@@ -1,0 +1,16 @@
+# Copyright (c) 2016, NVIDIA CORPORATION.
+#
+# SPDX-License-Identifier: GPL-2.0
+
+if TARGET_P2771_0000
+
+config SYS_BOARD
+	default "p2771-0000"
+
+config SYS_VENDOR
+	default "nvidia"
+
+config SYS_CONFIG_NAME
+	default "p2771-0000"
+
+endif

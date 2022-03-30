@@ -1,0 +1,13 @@
+
+/ {
+
+    usb0a_pwrflt_pins: usb0a_pwrflt_pinmux {
+        pins = <132>;
+        function = <1>;
+    };
+
+    usb0a_pwron_pins: usb0a_pwron_pinmux {
+        pins = <133>;
+        function = <1>;
+    };
+};

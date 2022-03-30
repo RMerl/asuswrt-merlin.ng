@@ -1,0 +1,303 @@
+FU540-C000 RISC-V SoC
+=====================
+The FU540-C000 is the world’s first 4+1 64-bit RISC‑V SoC from SiFive.
+
+The HiFive Unleashed development platform is based on FU540-C000 and capable
+of running Linux.
+
+Mainline support
+================
+The support for following drivers are already enabled:
+1. SiFive UART Driver.
+2. SiFive PRCI Driver for clock.
+3. Cadence MACB ethernet driver for networking support.
+
+TODO:
+1. SPI driver is still missing. So MMC card can't be used in U-Boot as of now.
+2. U-Boot expects the serial console device entry to be present under /chosen
+   DT node. Example:
+   chosen {
+        stdout-path = "/soc/serial@10010000:115200";
+   };
+
+   Without a serial console U-Boot will panic.
+
+Building
+========
+1. Add the RISC-V toolchain to your PATH.
+2. Setup ARCH & cross compilation enviornment variable.
+   a. export ARCH=riscv
+   b. export CROSS_COMPILE=<riscv64 toolchain prefix>
+3. make sifive_fu540_defconfig
+4. make
+
+Flashing
+========
+The current U-Boot port is supported in S-mode only and loaded from DRAM.
+
+A prior stage (M-mode) firmware/bootloader (e.g OpenSBI or BBL) is required to
+load the u-boot.bin into memory and provide runtime services. The u-boot.bin
+can be given as a payload to the prior stage (M-mode) firmware/bootloader.
+
+The description of steps required to build the firmware is beyond the scope of
+this document. Please refer OpenSBI or BBL documenation.
+(Note: OpenSBI git repo is at https://github.com/riscv/opensbi.git)
+(Note: BBL git repo is at https://github.com/riscv/riscv-pk.git)
+
+Once the prior stage firmware/bootloader binary is generated, it should be
+copied to the first partition of the sdcard.
+
+sudo dd if=<prior_stage_firmware_binary> of=/dev/disk2s1 bs=1024
+
+Booting
+=======
+Once you plugin the sdcard and power up, you should see the U-Boot prompt.
+
+Sample boot log from HiFive Unleashed board
+===========================================
+U-Boot 2019.01-00019-gc7953536-dirty (Jan 22 2019 - 11:05:40 -0800)
+
+CPU:   rv64imafdc
+Model: sifive,hifive-unleashed-a00
+DRAM:  8 GiB
+In:    serial@10010000
+Out:   serial@10010000
+Err:   serial@10010000
+Net:
+Warning: ethernet@10090000 (eth0) using random MAC address - b6:75:4d:48:50:94
+eth0: ethernet@10090000
+Hit any key to stop autoboot:  0
+=> version
+U-Boot 2019.01-00019-gc7953536-dirty (Jan 22 2019 - 11:05:40 -0800)
+
+riscv64-linux-gcc.br_real (Buildroot 2018.11-rc2-00003-ga0787e9) 8.2.0
+GNU ld (GNU Binutils) 2.31.1
+=>
+===============================================================================
+
+Now you can configure your networking, tftp server and use tftp boot method to
+load uImage.
+
+==========================================================================
+=> setenv ethaddr 70:B3:D5:92:F0:C2
+=> setenv ipaddr 10.196.157.189
+=> setenv serverip 10.11.143.218
+=> setenv gatewayip 10.196.156.1
+=> setenv netmask 255.255.252.0
+=> bdinfo
+boot_params = 0x0000000000000000
+DRAM bank   = 0x0000000000000000
+-> start    = 0x0000000080000000
+-> size     = 0x0000000200000000
+relocaddr   = 0x00000000fff90000
+reloc off   = 0x000000007fd90000
+ethaddr     = 70:B3:D5:92:F0:C2
+IP addr     = 10.196.157.189
+baudrate    = 115200 bps
+=> tftpboot uImage
+ethernet@10090000: PHY present at 0
+ethernet@10090000: Starting autonegotiation...
+ethernet@10090000: Autonegotiation complete
+ethernet@10090000: link up, 1000Mbps full-duplex (lpa: 0x3800)
+Using ethernet@10090000 device
+TFTP from server 10.11.143.218; our IP address is 10.196.157.189; sending through gateway 10.196.156.1
+Filename 'uImage'.
+Load address: 0x80200000
+Loading: #################################################################
+         #################################################################
+         #################################################################
+         #################################################################
+         #################################################################
+         #################################################################
+         #################################################################
+         #################################################################
+         #################################################################
+         #################################################################
+         #################################################################
+         #################################################################
+         #################################################################
+         #################################################################
+         #################################################################
+         #################################################################
+         #################################################################
+         #################################################################
+         #################################################################
+         #################################################################
+         #################################################################
+         #################################################################
+         #################################################################
+         #################################################################
+         #################################################################
+         #################################################################
+         #################################################################
+         #################################################################
+         #################################################################
+         #################################################################
+         #################################################################
+         #################################################################
+         #################################################################
+         #################################################################
+         #################################################################
+         #################################################################
+         #################################################################
+         #################################################################
+         #################################################################
+         #################################################################
+         #################################################################
+         #################################################################
+         #################################################################
+         #################################################################
+         ##########################################################
+         2.5 MiB/s
+done
+Bytes transferred = 14939132 (e3f3fc hex)
+=> bootm 0x80200000 - 0x82200000
+## Booting kernel from Legacy Image at 80200000 ...
+   Image Name:   Linux
+   Image Type:   RISC-V Linux Kernel Image (uncompressed)
+   Data Size:    14939068 Bytes = 14.2 MiB
+   Load Address: 80200000
+   Entry Point:  80200000
+   Verifying Checksum ... OK
+## Flattened Device Tree blob at 82200000
+   Booting using the fdt blob at 0x82200000
+   Loading Kernel Image ... OK
+   Using Device Tree in place at 0000000082200000, end 0000000082205c69
+
+Starting kernel ...
+
+[    0.000000] OF: fdt: Ignoring memory range 0x80000000 - 0x80200000
+[    0.000000] Linux version 5.0.0-rc1-00020-g4b51f736 (atish@jedi-01) (gcc version 7.2.0 (GCC)) #262 SMP Mon Jan 21 17:39:27 PST 2019
+[    0.000000] initrd not found or empty - disabling initrd
+[    0.000000] Zone ranges:
+[    0.000000]   DMA32    [mem 0x0000000080200000-0x00000000ffffffff]
+[    0.000000]   Normal   [mem 0x0000000100000000-0x000027ffffffffff]
+[    0.000000] Movable zone start for each node
+[    0.000000] Early memory node ranges
+[    0.000000]   node   0: [mem 0x0000000080200000-0x000000027fffffff]
+[    0.000000] Initmem setup node 0 [mem 0x0000000080200000-0x000000027fffffff]
+[    0.000000] software IO TLB: mapped [mem 0xfbfff000-0xfffff000] (64MB)
+[    0.000000] CPU with hartid=0 has a non-okay status of "masked"
+[    0.000000] CPU with hartid=0 has a non-okay status of "masked"
+[    0.000000] elf_hwcap is 0x112d
+[    0.000000] percpu: Embedded 15 pages/cpu @(____ptrval____) s29720 r0 d31720 u61440
+[    0.000000] Built 1 zonelists, mobility grouping on.  Total pages: 2067975
+[    0.000000] Kernel command line: earlyprintk
+[    0.000000] Dentry cache hash table entries: 1048576 (order: 11, 8388608 bytes)
+[    0.000000] Inode-cache hash table entries: 524288 (order: 10, 4194304 bytes)
+[    0.000000] Sorting __ex_table...
+[    0.000000] Memory: 8178760K/8386560K available (3309K kernel code, 248K rwdata, 872K rodata, 9381K init, 763K bss, 207800K reserved, 0K cma-reserved)
+[    0.000000] SLUB: HWalign=64, Order=0-3, MinObjects=0, CPUs=4, Nodes=1
+[    0.000000] rcu: Hierarchical RCU implementation.
+[    0.000000] rcu:     RCU event tracing is enabled.
+[    0.000000] rcu:     RCU restricting CPUs from NR_CPUS=8 to nr_cpu_ids=4.
+[    0.000000] rcu: RCU calculated value of scheduler-enlistment delay is 10 jiffies.
+[    0.000000] rcu: Adjusting geometry for rcu_fanout_leaf=16, nr_cpu_ids=4
+[    0.000000] NR_IRQS: 0, nr_irqs: 0, preallocated irqs: 0
+[    0.000000] plic: mapped 53 interrupts to 4 (out of 9) handlers.
+[    0.000000] riscv_timer_init_dt: Registering clocksource cpuid [0] hartid [1]
+[    0.000000] clocksource: riscv_clocksource: mask: 0xffffffffffffffff max_cycles: 0x1d854df40, max_idle_ns: 3526361616960 ns
+[    0.000008] sched_clock: 64 bits at 1000kHz, resolution 1000ns, wraps every 2199023255500ns
+[    0.000221] Console: colour dummy device 80x25
+[    0.000902] printk: console [tty0] enabled
+[    0.000963] Calibrating delay loop (skipped), value calculated using timer frequency.. 2.00 BogoMIPS (lpj=10000)
+[    0.001034] pid_max: default: 32768 minimum: 301
+[    0.001541] Mount-cache hash table entries: 16384 (order: 5, 131072 bytes)
+[    0.001912] Mountpoint-cache hash table entries: 16384 (order: 5, 131072 bytes)
+[    0.003542] rcu: Hierarchical SRCU implementation.
+[    0.004347] smp: Bringing up secondary CPUs ...
+[    1.040259] CPU1: failed to come online
+[    2.080483] CPU2: failed to come online
+[    3.120699] CPU3: failed to come online
+[    3.120765] smp: Brought up 1 node, 1 CPU
+[    3.121923] devtmpfs: initialized
+[    3.124649] clocksource: jiffies: mask: 0xffffffff max_cycles: 0xffffffff, max_idle_ns: 19112604462750000 ns
+[    3.124727] futex hash table entries: 1024 (order: 4, 65536 bytes)
+[    3.125346] random: get_random_u32 called from bucket_table_alloc+0x72/0x172 with crng_init=0
+[    3.125578] NET: Registered protocol family 16
+[    3.126400] sifive-u54-prci 10000000.prci: Registered U54 core clocks
+[    3.126649] sifive-gemgxl-mgmt 100a0000.cadence-gemgxl-mgmt: Registered clock switch 'cadence-gemgxl-mgmt'
+[    3.135572] vgaarb: loaded
+[    3.135858] SCSI subsystem initialized
+[    3.136193] usbcore: registered new interface driver usbfs
+[    3.136266] usbcore: registered new interface driver hub
+[    3.136348] usbcore: registered new device driver usb
+[    3.136446] pps_core: LinuxPPS API ver. 1 registered
+[    3.136484] pps_core: Software ver. 5.3.6 - Copyright 2005-2007 Rodolfo Giometti <giometti@linux.it>
+[    3.136575] PTP clock support registered
+[    3.137256] clocksource: Switched to clocksource riscv_clocksource
+[    3.142711] NET: Registered protocol family 2
+[    3.143322] tcp_listen_portaddr_hash hash table entries: 4096 (order: 4, 65536 bytes)
+[    3.143634] TCP established hash table entries: 65536 (order: 7, 524288 bytes)
+[    3.145799] TCP bind hash table entries: 65536 (order: 8, 1048576 bytes)
+[    3.149121] TCP: Hash tables configured (established 65536 bind 65536)
+[    3.149591] UDP hash table entries: 4096 (order: 5, 131072 bytes)
+[    3.150094] UDP-Lite hash table entries: 4096 (order: 5, 131072 bytes)
+[    3.150781] NET: Registered protocol family 1
+[    3.230693] workingset: timestamp_bits=62 max_order=21 bucket_order=0
+[    3.241224] io scheduler mq-deadline registered
+[    3.241269] io scheduler kyber registered
+[    3.242143] sifive_gpio 10060000.gpio: SiFive GPIO chip registered 16 GPIOs
+[    3.242357] pwm-sifivem 10020000.pwm: Unable to find controller clock
+[    3.242439] pwm-sifivem 10021000.pwm: Unable to find controller clock
+[    3.243228] xilinx-pcie 2000000000.pci: PCIe Link is DOWN
+[    3.243289] xilinx-pcie 2000000000.pci: host bridge /soc/pci@2000000000 ranges:
+[    3.243360] xilinx-pcie 2000000000.pci:   No bus range found for /soc/pci@2000000000, using [bus 00-ff]
+[    3.243447] xilinx-pcie 2000000000.pci:   MEM 0x40000000..0x5fffffff -> 0x40000000
+[    3.243591] xilinx-pcie 2000000000.pci: PCI host bridge to bus 0000:00
+[    3.243636] pci_bus 0000:00: root bus resource [bus 00-ff]
+[    3.243676] pci_bus 0000:00: root bus resource [mem 0x40000000-0x5fffffff]
+[    3.276547] Serial: 8250/16550 driver, 4 ports, IRQ sharing disabled
+[    3.277689] 10010000.serial: ttySIF0 at MMIO 0x10010000 (irq = 39, base_baud = 0) is a SiFive UART v0
+[    3.786963] printk: console [ttySIF0] enabled
+[    3.791504] 10011000.serial: ttySIF1 at MMIO 0x10011000 (irq = 40, base_baud = 0) is a SiFive UART v0
+[    3.801251] sifive_spi 10040000.spi: mapped; irq=41, cs=1
+[    3.806362] m25p80 spi0.0: unrecognized JEDEC id bytes: 9d, 70, 19
+[    3.812084] m25p80: probe of spi0.0 failed with error -2
+[    3.817453] sifive_spi 10041000.spi: mapped; irq=42, cs=4
+[    3.823027] sifive_spi 10050000.spi: mapped; irq=43, cs=1
+[    3.828604] libphy: Fixed MDIO Bus: probed
+[    3.832623] macb: GEM doesn't support hardware ptp.
+[    3.837196] libphy: MACB_mii_bus: probed
+[    4.041156] Microsemi VSC8541 SyncE 10090000.ethernet-ffffffff:00: attached PHY driver [Microsemi VSC8541 SyncE] (mii_bus:phy_addr=10090000.ethernet-ffffffff:00, irq=POLL)
+[    4.055779] macb 10090000.ethernet eth0: Cadence GEM rev 0x10070109 at 0x10090000 irq 12 (70:b3:d5:92:f0:c2)
+[    4.065780] ehci_hcd: USB 2.0 'Enhanced' Host Controller (EHCI) Driver
+[    4.072033] ehci-pci: EHCI PCI platform driver
+[    4.076521] usbcore: registered new interface driver usb-storage
+[    4.082843] softdog: initialized. soft_noboot=0 soft_margin=60 sec soft_panic=0 (nowayout=0)
+[    4.127465] mmc_spi spi2.0: SD/MMC host mmc0, no DMA, no WP, no poweroff
+[    4.133645] usbcore: registered new interface driver usbhid
+[    4.138980] usbhid: USB HID core driver
+[    4.143017] NET: Registered protocol family 17
+[    4.147885] pwm-sifivem 10020000.pwm: SiFive PWM chip registered 4 PWMs
+[    4.153945] pwm-sifivem 10021000.pwm: SiFive PWM chip registered 4 PWMs
+[    4.186407] Freeing unused kernel memory: 9380K
+[    4.190224] This architecture does not have kernel memory protection.
+[    4.196609] Run /init as init process
+Starting logging: OK
+Starting mdev...
+[    4.303785] mmc0: host does not support reading read-only switch, assuming write-enable
+[    4.311109] mmc0: new SDHC card on SPI
+[    4.317103] mmcblk0: mmc0:0000 SS08G 7.40 GiB
+[    4.386471]  mmcblk0: p1 p2
+sort: /sys/devices/platform/Fixed: No such file or directory
+modprobe: can't change directory to '/lib/modules': No such file or directory
+Initializing random[    4.759075] random: dd: uninitialized urandom read (512 bytes read)
+ number generator... done.
+Starting network...
+udhcpc (v1.24.2) started
+Sending discover...
+Sending discover...
+[    7.927510] macb 10090000.ethernet eth0: link up (1000/Full)
+Sending discover...
+Sending select for 10.196.157.190...
+Lease of 10.196.157.190 obtained, lease time 499743
+deleting routers
+adding dns 10.86.1.1
+adding dns 10.86.2.1
+/etc/init.d/S50dropbear
+Starting dropbear sshd: [   12.772393] random: dropbear: uninitialized urandom read (32 bytes read)
+OK
+
+Welcome to Buildroot
+buildroot login:

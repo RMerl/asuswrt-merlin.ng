@@ -1,0 +1,136 @@
+The chosen node
+---------------
+The chosen node does not represent a real device, but serves as a place
+for passing data like which serial device to used to print the logs etc
+
+
+stdout-path property
+--------------------
+Device trees may specify the device to be used for boot console output
+with a stdout-path property under /chosen.
+
+Example
+-------
+/ {
+	chosen {
+		stdout-path = "/serial@f00:115200";
+	};
+
+	serial@f00 {
+		compatible = "vendor,some-uart";
+		reg = <0xf00 0x10>;
+	};
+};
+
+tick-timer property
+-------------------
+In a system there are multiple timers, specify which timer to be used
+as the tick-timer. Earlier it was hardcoded in the timer driver now
+since device tree has all the timer nodes. Specify which timer to be
+used as tick timer.
+
+Example
+-------
+/ {
+	chosen {
+		tick-timer = "/timer2@f00";
+	};
+
+	timer2@f00 {
+		compatible = "vendor,some-timer";
+		reg = <0xf00 0x10>;
+	};
+};
+
+u-boot,bootcount-device property
+--------------------------------
+
+In a DM-based system, the bootcount may be stored in a device known to
+the DM framework (e.g. in a battery-backed SRAM area within a RTC
+device) managed by a device conforming to UCLASS_BOOTCOUNT.  If
+multiple such devices are present in a system concurrently, then the
+u-boot,bootcount-device property can select the preferred target.
+
+Example
+-------
+/ {
+	chosen {
+	        u-boot,bootcount-device = &bootcount-rv3029;
+	};
+
+	bootcount-rv3029: bootcount@0 {
+		compatible = "u-boot,bootcount-rtc";
+		rtc = &rv3029;
+		offset = <0x38>;
+	};
+
+	i2c2 {
+	        rv3029: rtc@56 {
+		                compatible = "mc,rv3029";
+		                reg = <0x56>;
+		};
+	};
+};
+
+u-boot,spl-boot-order property
+------------------------------
+
+In a system using an SPL stage and having multiple boot sources
+(e.g. SPI NOR flash, on-board eMMC and a removable SD-card), the boot
+device may be probed by reading the image and verifying an image
+signature.
+
+If the SPL is configured through the device-tree, the boot-order can
+be configured with the spl-boot-order property under the /chosen node.
+Each list element of the property should specify a device to be probed
+in the order they are listed: references (i.e. implicit paths), a full
+path or an alias is expected for each entry.
+
+A special specifier "same-as-spl" can be used at any position in the
+boot-order to direct U-Boot to insert the device the SPL was booted
+from there.  Whether this is indeed inserted or silently ignored (if
+it is not supported on any given SoC/board or if the boot-device is
+not available to continue booting from) is implementation-defined.
+Note that if "same-as-spl" expands to an actual node for a given
+board, the corresponding node may appear multiple times in the
+boot-order (as there currently exists no mechanism to suppress
+duplicates from the list).
+
+Example
+-------
+/ {
+	chosen {
+		u-boot,spl-boot-order = "same-as-spl", &sdmmc, "/sdhci@fe330000";
+	};
+};
+
+u-boot,spl-boot-device property
+-------------------------------
+
+This property is a companion-property to the u-boot,spl-boot-order and
+will be injected automatically by the SPL stage to notify a later stage
+of where said later stage was booted from.
+
+You should not define this property yourself in the device-tree, as it
+may be overwritten without warning.
+
+firmware-loader property
+------------------------
+Multiple file system firmware loader nodes could be defined in device trees for
+multiple storage type and their default partition, then a property
+"firmware-loader" can be used to pass default firmware loader
+node(default storage type) to the firmware loader driver.
+
+Example
+-------
+/ {
+	chosen {
+		firmware-loader = &fs_loader0;
+	};
+
+	fs_loader0: fs-loader@0 {
+		u-boot,dm-pre-reloc;
+		compatible = "u-boot,fs-loader";
+		phandlepart = <&mmc 1>;
+	};
+};

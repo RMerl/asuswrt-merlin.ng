@@ -1,0 +1,15 @@
+if TARGET_SMDKC100
+
+config SYS_BOARD
+	default "smdkc100"
+
+config SYS_VENDOR
+	default "samsung"
+
+config SYS_SOC
+	default "s5pc1xx"
+
+config SYS_CONFIG_NAME
+	default "smdkc100"
+
+endif

@@ -1,0 +1,9 @@
+MPC8349EMDS BOARD
+#M:	Kim Phillips <kim.phillips@freescale.com>
+S:	Orphan (since 2018-05)
+F:	board/freescale/mpc8349emds/
+F:	include/configs/MPC8349EMDS.h
+F:	configs/MPC8349EMDS_defconfig
+F:	configs/MPC8349EMDS_SDRAM_defconfig
+F:	configs/MPC8349EMDS_PCI64_defconfig
+F:	configs/MPC8349EMDS_SLAVE_defconfig

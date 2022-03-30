@@ -1,0 +1,10 @@
+config BCM_LPORT_SERDES
+	tristate "Support for Broadcom Lport Serdes features"
+	default n if BCM96858
+    default n if BCM96838
+	default n
+
+config BCM_LPORT_SERDES_IMPL
+	int "Implementation index for Broadcom Lport Serdes features"
+	depends on BCM_LPORT_SERDES
+	default 1

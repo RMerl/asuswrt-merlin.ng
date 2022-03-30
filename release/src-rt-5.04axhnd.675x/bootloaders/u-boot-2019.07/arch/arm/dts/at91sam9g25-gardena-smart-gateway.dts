@@ -1,0 +1,120 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Device Tree file for the GARDENA smart Gateway (AT91SAM)
+ *
+ *  Copyright (C) 2012 Atmel,
+ *                2012 Nicolas Ferre <nicolas.ferre@atmel.com>
+ */
+
+/dts-v1/;
+
+#include "at91sam9g25.dtsi"
+
+/ {
+	model = "GARDENA smart Gateway (AT91SAM)";
+	compatible = "gardena,smart-gateway-at91sam", "atmel,at91sam9";
+
+	aliases {
+		serial0 = &dbgu;
+	};
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+	};
+
+	memory {
+		reg = <0x20000000 0x8000000>;
+	};
+
+	clocks {
+		slow_xtal {
+			clock-frequency = <32768>;
+		};
+
+		main_xtal {
+			clock-frequency = <12000000>;
+		};
+	};
+
+	leds {
+		compatible = "gpio-leds";
+
+		power_blue {
+			label = "smartgw:power:blue";
+			gpios = <&pioC 21 GPIO_ACTIVE_HIGH>;
+			default-state = "off";
+		};
+
+		power_green {
+			label = "smartgw:power:green";
+			gpios = <&pioC 20 GPIO_ACTIVE_HIGH>;
+			default-state = "on";
+		};
+
+		power_red {
+			label = "smartgw:power:red";
+			gpios = <&pioC 19 GPIO_ACTIVE_HIGH>;
+			default-state = "off";
+		};
+
+		radio_blue {
+			label = "smartgw:radio:blue";
+			gpios = <&pioC 18 GPIO_ACTIVE_HIGH>;
+			default-state = "off";
+		};
+
+		radio_green {
+			label = "smartgw:radio:green";
+			gpios = <&pioC 17 GPIO_ACTIVE_HIGH>;
+			default-state = "off";
+		};
+
+		radio_red {
+			label = "smartgw:radio:red";
+			gpios = <&pioC 16 GPIO_ACTIVE_HIGH>;
+			default-state = "off";
+		};
+
+		internet_blue {
+			label = "smartgw:internet:blue";
+			gpios = <&pioC 15 GPIO_ACTIVE_HIGH>;
+			default-state = "off";
+		};
+
+		internet_green {
+			label = "smartgw:internet:green";
+			gpios = <&pioC 14 GPIO_ACTIVE_HIGH>;
+			default-state = "off";
+		};
+
+		internet_red {
+			label = "smartgw:internet:red";
+			gpios = <&pioC 13 GPIO_ACTIVE_HIGH>;
+			default-state = "off";
+		};
+	};
+};
+
+&dbgu {
+	status = "okay";
+};
+
+&macb0 {
+	phy-mode = "rmii";
+	status = "okay";
+};
+
+&nand0 {
+	nand-bus-width = <8>;
+	nand-ecc-mode = "hw";
+	atmel,has-pmecc;	/* Enable PMECC */
+	atmel,pmecc-cap = <2>;
+	atmel,pmecc-sector-size = <512>;
+	nand-on-flash-bbt;
+	status = "okay";
+};
+
+&watchdog {
+	status = "okay";
+	timeout-sec = <16>;
+};

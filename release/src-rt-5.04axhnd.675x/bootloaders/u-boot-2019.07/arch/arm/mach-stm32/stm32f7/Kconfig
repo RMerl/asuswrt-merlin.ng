@@ -1,0 +1,8 @@
+if STM32F7
+
+config TARGET_STM32F746_DISCO
+	bool "STM32F746 Discovery board"
+
+source "board/st/stm32f746-disco/Kconfig"
+
+endif

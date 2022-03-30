@@ -1,0 +1,15 @@
+if TARGET_ELGIN_RV1108
+
+config SYS_BOARD
+	default "elgin_rv1108"
+
+config SYS_VENDOR
+	default "elgin"
+
+config SYS_CONFIG_NAME
+	default "elgin_rv1108"
+
+config BOARD_SPECIFIC_OPTIONS # dummy
+	def_bool y
+
+endif

@@ -1,0 +1,58 @@
+MIPS Boston Development Board
+
+---------
+  About
+---------
+
+The MIPS Boston development board is built around an FPGA & 3 PCIe controllers,
+one of which is connected to an Intel EG20T Platform Controller Hub which
+provides most connectivity to the board. It is used during the development &
+testing of both new CPUs and the software support for them. It is essentially
+the successor of the older MIPS Malta board.
+
+--------
+  QEMU
+--------
+
+U-Boot can be run on a currently out-of-tree branch of QEMU with support for
+the Boston board added. This QEMU code can currently be found in the "boston"
+branch of git://git.linux-mips.org/pub/scm/paul/qemu.git and used like so:
+
+  $ git clone git://git.linux-mips.org/pub/scm/paul/qemu.git -b boston
+  $ cd qemu
+  $ ./configure --target-list=mips64el-softmmu
+  $ make
+  $ ./mips64el-softmmu/qemu-system-mips64el -M boston -m 2G \
+      -bios u-boot.bin -serial stdio
+
+Please note that QEMU will default to emulating the I6400 CPU which implements
+the MIPS64r6 ISA, and at the time of writing doesn't implement any earlier CPUs
+with support for the CPS features the Boston board relies upon. You will
+therefore need to configure U-Boot to build for MIPSr6 in order to obtain a
+binary that will work in QEMU.
+
+-------------
+  Toolchain
+-------------
+
+If building for MIPSr6 then you will need a toolchain including GCC 5.x or
+newer, or the Codescape toolchain available for download from Imagination
+Technologies:
+
+  http://codescape-mips-sdk.imgtec.com/components/toolchain/2015.06-05/
+
+The "IMG GNU Linux Toolchain" is capable of building for all current MIPS ISAs,
+architecture revisions & both endiannesses.
+
+--------
+  TODO
+--------
+
+  - AHCI support
+  - CPU driver
+  - Exception handling (+UHI?)
+  - Flash support
+  - IOCU support
+  - L2 cache support
+  - More general LCD display driver
+  - Multi-arch-variant multi-endian fat binary

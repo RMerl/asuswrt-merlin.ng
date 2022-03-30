@@ -1,0 +1,54 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * U-Boot additions
+ *
+ * Copyright (C) 2013 Steffen Trumtrar <s.trumtrar@pengutronix.de>
+ * Copyright (c) 2018 Simon Goldschmidt
+ */
+
+#include "socfpga-common-u-boot.dtsi"
+
+/{
+	aliases {
+		spi0 = "/soc/spi@ff705000";
+		udc0 = &usb1;
+	};
+};
+
+&watchdog0 {
+	status = "disabled";
+};
+
+&mmc {
+	u-boot,dm-pre-reloc;
+};
+
+&qspi {
+	u-boot,dm-pre-reloc;
+};
+
+&flash {
+	compatible = "n25q00", "jedec,spi-nor";
+	u-boot,dm-pre-reloc;
+};
+
+&uart0 {
+	clock-frequency = <100000000>;
+	u-boot,dm-pre-reloc;
+};
+
+&uart1 {
+	clock-frequency = <100000000>;
+};
+
+&porta {
+	bank-name = "porta";
+};
+
+&portb {
+	bank-name = "portb";
+};
+
+&portc {
+	bank-name = "portc";
+};

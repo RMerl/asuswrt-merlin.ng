@@ -1,0 +1,14 @@
+if TARGET_OMAP3_LOGIC
+
+config SYS_BOARD
+	default "omap3som"
+
+config SYS_VENDOR
+	default "logicpd"
+
+config SYS_CONFIG_NAME
+	default "omap3_logic"
+
+source "board/ti/common/Kconfig"
+
+endif

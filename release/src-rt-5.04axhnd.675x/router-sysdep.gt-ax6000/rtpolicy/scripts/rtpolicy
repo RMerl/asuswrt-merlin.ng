@@ -1,0 +1,308 @@
+#!/bin/sh
+
+rtSettingsMetadata="/etc/rt_policy_info.d/rt_settings_metadata"
+
+# The value of CPUTREEDIR must be kept in sync with cgroupctl/scripts/cgroups.conf
+CPUTREEDIR=/cgroups/cputree
+
+isCgroupsDirMounted=`mount | grep -q -w $CPUTREEDIR; echo $?`
+
+# sync with kernel/include/linux/sched.h
+PF_NO_SETAFFINITY=0x04000000
+
+
+#trim leading and trailing space
+trim() {
+    if [ ! -z $* ]; then
+        local var="$*"
+        var="${var#"${var%%[![:space:]]*}"}"
+        var="${var%"${var##*[![:space:]]}"}"
+        echo -n "$var"
+    fi
+}
+
+
+#$(getStrByPos "12 33 44" " " 2) will return 33
+getStrByPos() {
+    local num=$3
+    local backup_IFS=$IFS
+    IFS="$2"
+    set -- $1
+    eval echo \$$num
+    IFS=$backup_IFS
+}
+
+
+# arg 1: kthread/process name
+getPidListByName()
+{
+    local ps_result=`ps | grep -v grep | grep -v rtpolicy | grep -w $1`
+    local pid_list
+    local backup_IFS
+
+    backup_IFS=$IFS
+    IFS=$'\n'
+    set -- $ps_result
+    #shift
+
+    for line in $*
+    do
+        #echo $line
+        IFS=" "
+        set -- $line
+        pid_list="$1,$pid_list"
+    done
+
+    if [ -z $pid_list ]; then
+        echo 0
+    else
+        echo $pid_list
+    fi
+
+    IFS=$backup_IFS
+}
+
+
+# arg 1: pid
+getPidByName()
+{
+    local pid=$(getStrByPos "`ps | grep -v grep | grep -v rtpolicy | grep $1`" " " 1);
+
+    if [ -z $pid ]; then
+        echo 0;
+    else
+        echo $pid;
+    fi
+}
+
+
+# arg 1: kthread/process name
+# arg 2: pid
+# arg 3: affinity
+setProcAffinity() 
+{
+    echo "set cpu affinity of $1($2) to [$3]"
+    taskset -p $3 $2
+    if [ "$?" != "0" ]; then
+        echo "pin $1 failed, rc=$?"
+    fi
+}
+
+
+# arg 1: kthread/process name
+# arg 2: pid
+# arg 3: schedule policy
+# arg 4: schedule priority
+setProcScheduling()
+{
+    local policy=$3
+    local prio=$4
+
+    if [ "$policy" = "o" ]
+    then
+        prio=0
+    fi
+    echo "set real-time attributes of $1($2) to policy[$policy] prio:[$prio]" 
+    chrt -$policy -p $prio $2
+    if [ "$?" != "0" ]; then
+        echo "Failed to set $1 to realtime priority $prio"
+    fi
+}
+
+
+# arg 1: kthread/process name
+# arg 2: pid
+# arg 3: CPU group name
+setCpuGroups()
+{
+    local path=$CPUTREEDIR/$3/tasks
+
+    # get /proc/PID/stat's 'flag' field
+    #local procStatFlags=$(getStrByPos "`cat /proc/$2/stat`" " " 9)
+
+    # Cgroups doesn't allowed to move/migrate thread/process 
+    # to other group if it's "kthreadd" or "PF_NO_SETAFFINITY"
+    # has been set in its task flag
+
+    # skip if it's kthreadd
+    #[ "$1" == "kthreadd" ] && return
+
+    # skip if PF_NO_SETAFFINITY is set in procStatFlags
+    #[ $(( $procStatFlags & $PF_NO_SETAFFINITY )) -ne 0 ] && return
+
+    echo "move $2 to $CPUTREEDIR/$3/tasks group"
+    [ -e $path ] && echo $2 > $path
+}
+
+
+# arg 1: interrupt device name
+# arg 2: cpu mask  
+setIntAffinity()
+{
+    local proc_result_line=`cat /proc/interrupts | grep -w $1`
+
+    if [ ! -z "$proc_result_line" ]; then
+        local irq_num=$(getStrByPos "$proc_result_line" ":" 1)
+        echo "Assigning CPU Affinity(0x$2) to IRQ$irq_num"
+        echo $2 >/proc/irq/$(trim $irq_num)/smp_affinity
+    fi
+}
+
+
+# arg1: "0" -> all the processes/interrupts
+#       "1" -> individual process
+#       "2" -> individual interrupt
+# arg2: process/interrupt name
+applyDefaultSettings()
+{
+    local back_IFS
+    local name
+    local pidlist
+    local cpumask
+    local schpolicy
+    local schprio
+    local cgroup
+    local mode=$1
+    local target_proc_name
+    local target_int_name
+    local found=0
+    local isIntSetting=0
+
+    if [ $mode -eq 1 ]
+    then
+        target_proc_name=$2
+    elif [ $mode -eq 2 ]
+    then
+        target_int_name=$2
+    fi
+
+    # line format: No,Name,CpuMask,SchPolicy,SchPriority,Cgroup,
+    while read line
+    do
+        [ -z $line ] && continue
+
+        # set "," as separator
+        back_IFS=$IFS
+        IFS=","
+        set -- $line
+
+        name=$2
+        cpumask=$3
+        schpolicy=$4
+        schprio=$5
+        cpugroup=$6
+        irqcpumask=$7
+
+        [ -z $irqcpumask ] && isIntSetting=0 || isIntSetting=1
+
+        if [ $mode -eq 1 ]
+        then
+            if [ $isIntSetting -eq 0 ] && [ "$name" == "$target_proc_name" ]
+            then
+                found=1
+            else
+                IFS=$back_IFS
+                continue
+            fi
+        elif [ $mode -eq 2 ]
+        then
+            if [ $isIntSetting -eq 1 ] && [ "$name" == "$target_int_name" ]
+            then
+                found=1
+            else
+                IFS=$back_IFS
+                continue
+            fi
+        fi
+
+        if [ $isIntSetting -eq 0 ]
+        then
+
+            # retrieves pid(s) of the given name from "ps" results
+            pidlist=$(getPidListByName $name)
+
+            set -- $pidlist
+            for pid in $*
+            do
+                [ $pid -eq 0 ] && break
+
+                if [ $isCgroupsDirMounted -eq 0 ] && [ ! -z $cpugroup ]
+                then
+                    setCpuGroups $name $pid $cpugroup
+                fi
+
+                [ -z $cpumask ] || setProcAffinity $name $pid $cpumask
+
+                if [ ! -z $schpolicy ] && [ ! -z $schprio ]
+                then
+                    setProcScheduling $name $pid $schpolicy $schprio
+                fi
+
+            done
+        else
+            [ ! -z $irqcpumask ] && setIntAffinity $name $irqcpumask
+        fi #if [ $isIntSetting -eq 0 ]
+
+        IFS=$back_IFS
+        [ $found == 1 ] && break
+    done < $rtSettingsMetadata
+}
+
+usage()
+{
+    echo "Usage:"
+    echo -e "    rtpolicy <mode> <target> [<target name>]\n"
+    echo "        mode:   \"auto\" - apply settings according to the config files in /etc/rt_policy_info.d/"
+    echo "        target: \"ALL\"  - apply settings for all"
+    echo "                \"proc\" - apply settings for a process"
+    echo "                \"int\"  - apply settings for an interrupt"
+    echo "        target name: must give a name of process or interrupt if mode is NOT \"ALL\""
+    echo -e "\n    Example:"
+    echo "        rtpolicy auto ALL"
+    echo "        rtpolicy auto proc ssk"
+    echo "        rtpolicy auto int brcm_xx"
+}
+
+case "$1" in
+    auto)
+        case "$2" in
+            ALL)
+                echo "=====> Applying RT settings for all the targets listed in configuration files <====="
+                applyDefaultSettings 0
+                ;;
+            proc)
+                if [ -z $3 ]
+                then
+                    echo "Please specify process name!"
+                else
+                    echo "=====> Applying RT settings for the target process <$3> <====="
+                    applyDefaultSettings 1 $3
+                fi
+                ;;
+            int)
+                if [ -z $3 ]
+                then
+                    echo "Please specify interrupt device name!"
+                else
+                    echo "=====> Applying RT settings for the target interrupt <$3> <====="
+                    applyDefaultSettings 2 $3
+                fi
+                ;;
+            *)
+                echo "Please specify the *target type* you would like to configure: \"ALL\", \"proc\" or \"int\""
+                exit 1
+                ;;
+        esac
+        exit 0
+        ;;
+    -h)
+        usage
+        exit 0
+        ;;
+    *)
+        echo "unrecognized mode [$1]"
+        usage 
+        exit 1
+        ;;
+esac
+

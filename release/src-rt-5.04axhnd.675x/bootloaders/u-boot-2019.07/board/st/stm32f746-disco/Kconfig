@@ -1,0 +1,19 @@
+if TARGET_STM32F746_DISCO
+
+config SYS_BOARD
+	string
+	default "stm32f746-disco"
+
+config SYS_VENDOR
+	string
+	default "st"
+
+config SYS_SOC
+	string
+	default "stm32f7"
+
+config SYS_CONFIG_NAME
+	string
+	default "stm32f746-disco"
+
+endif

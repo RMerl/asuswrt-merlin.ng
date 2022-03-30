@@ -1,0 +1,11 @@
+config BCM_BCA_USB
+	tristate "Broadcom BCA USB Host Driver"
+	depends on BCM_BCA_PINCTRL
+	default n
+	help
+	  Add the BCM BCA USB host support.
+
+config BCM_BCA_USB_IMPL
+	int "Implementation index for BCA USB module"
+	depends on BCM_BCA_USB
+	default 1

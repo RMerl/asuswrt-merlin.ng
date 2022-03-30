@@ -1,0 +1,6 @@
+PIC32MZDASK BOARD
+M:	Purna Chandra Mandal <purna.mandal@microchip.com>
+S:	Maintained
+F:	board/microchip/pic32mzda/
+F:	include/configs/pic32mzdask.h
+F:	configs/pic32mzdask_defconfig

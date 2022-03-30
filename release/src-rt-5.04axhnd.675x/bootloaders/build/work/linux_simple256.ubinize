@@ -1,0 +1,29 @@
+
+[fit1]
+mode=ubi
+image=obj/binaries/brcm_full_linux.itb
+vol_id=3
+vol_type=static
+vol_name=bootfs1
+
+[rootfs1]
+mode=ubi
+image=obj/binaries/rootfs_256.ubifs
+vol_id=4
+vol_type=dynamic
+vol_name=rootfs1
+
+# [fit2]
+# mode=ubi
+# image=obj/binaries/brcm_simple.itb
+# vol_id=5
+# vol_type=static
+# vol_name=fit2
+
+
+[metadata1]
+mode=ubi
+image=obj/binaries/test_metadata.bin_headered
+vol_id=1
+vol_type=static
+vol_name=metadata1

@@ -1,0 +1,125 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Xilinx CSE QSPI board DTS
+ *
+ * Copyright (C) 2015 - 2017 Xilinx, Inc.
+ */
+/dts-v1/;
+
+/ {
+	#address-cells = <1>;
+	#size-cells = <1>;
+	model = "Zynq CSE QSPI Board";
+	compatible = "xlnx,zynq-cse-qspi", "xlnx,zynq-7000";
+
+	aliases {
+		spi0 = &qspi;
+		serial0 = &dcc;
+	};
+
+	memory@fffc0000 {
+		device_type = "memory";
+		reg = <0xFFFC0000 0x40000>;
+	};
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+	};
+
+	dcc: dcc {
+		compatible = "arm,dcc";
+		status = "disabled";
+		u-boot,dm-pre-reloc;
+	};
+
+	amba: amba {
+		u-boot,dm-pre-reloc;
+		compatible = "simple-bus";
+		#address-cells = <1>;
+		#size-cells = <1>;
+		interrupt-parent = <&intc>;
+		ranges;
+
+		intc: interrupt-controller@f8f01000 {
+			compatible = "arm,cortex-a9-gic";
+			#interrupt-cells = <3>;
+			interrupt-controller;
+			reg = <0xF8F01000 0x1000>,
+			      <0xF8F00100 0x100>;
+		};
+
+		qspi: spi@e000d000 {
+			clock-names = "ref_clk", "pclk";
+			clocks = <&clkc 10>, <&clkc 43>;
+			compatible = "xlnx,zynq-qspi-1.0";
+			status = "okay";
+			interrupt-parent = <&intc>;
+			interrupts = <0 19 4>;
+			reg = <0xe000d000 0x1000>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+			num-cs = <1>;
+			flash0: flash@0 {
+				compatible = "n25q128a11";
+				reg = <0x0>;
+				spi-tx-bus-width = <1>;
+				spi-rx-bus-width = <4>;
+				spi-max-frequency = <50000000>;
+				#address-cells = <1>;
+				#size-cells = <1>;
+				partition@qspi-fsbl-uboot {
+					label = "qspi-fsbl-uboot";
+					reg = <0x0 0x100000>;
+				};
+				partition@qspi-linux {
+					label = "qspi-linux";
+					reg = <0x100000 0x500000>;
+				};
+				partition@qspi-device-tree {
+					label = "qspi-device-tree";
+					reg = <0x600000 0x20000>;
+				};
+				partition@qspi-rootfs {
+					label = "qspi-rootfs";
+					reg = <0x620000 0x5E0000>;
+				};
+				partition@qspi-bitstream {
+					label = "qspi-bitstream";
+					reg = <0xC00000 0x400000>;
+				};
+			};
+		};
+
+		slcr: slcr@f8000000 {
+			u-boot,dm-pre-reloc;
+			#address-cells = <1>;
+			#size-cells = <1>;
+			compatible = "xlnx,zynq-slcr", "syscon", "simple-bus";
+			reg = <0xF8000000 0x1000>;
+			ranges;
+			clkc: clkc@100 {
+				#clock-cells = <1>;
+				compatible = "xlnx,ps7-clkc";
+				fclk-enable = <0xf>;
+				u-boot,dm-pre-reloc;
+				clock-output-names = "armpll", "ddrpll", "iopll", "cpu_6or4x",
+						"cpu_3or2x", "cpu_2x", "cpu_1x", "ddr2x", "ddr3x",
+						"dci", "lqspi", "smc", "pcap", "gem0", "gem1",
+						"fclk0", "fclk1", "fclk2", "fclk3", "can0", "can1",
+						"sdio0", "sdio1", "uart0", "uart1", "spi0", "spi1",
+						"dma", "usb0_aper", "usb1_aper", "gem0_aper",
+						"gem1_aper", "sdio0_aper", "sdio1_aper",
+						"spi0_aper", "spi1_aper", "can0_aper", "can1_aper",
+						"i2c0_aper", "i2c1_aper", "uart0_aper", "uart1_aper",
+						"gpio_aper", "lqspi_aper", "smc_aper", "swdt",
+						"dbg_trc", "dbg_apb";
+				reg = <0x100 0x100>;
+			};
+		};
+	};
+
+};
+
+&dcc {
+	status = "okay";
+};

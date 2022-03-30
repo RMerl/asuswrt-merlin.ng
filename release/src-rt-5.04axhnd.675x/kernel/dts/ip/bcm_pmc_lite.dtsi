@@ -1,0 +1,5 @@
+
+compatible = "brcm,bca-pmc-lite";
+
+reg = <PMC_REG_OFFSET PMC_REG_SIZE>;
+reg-names = "pmc";

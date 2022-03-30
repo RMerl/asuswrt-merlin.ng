@@ -1,0 +1,58 @@
+Overview
+--------
+QorIQ LS1012A FREEDOM (LS1012AFRDM) is a high-performance development
+platform, with a complete debugging environment. The LS1012AFRDM board
+supports the QorIQ LS1012A processor and is optimized to support the
+high-bandwidth DDR3L memory and a full complement of high-speed SerDes ports.
+
+LS1012A SoC Overview
+--------------------
+Please refer arch/arm/cpu/armv8/fsl-layerscape/doc/README.soc for LS2080A
+SoC overview.
+
+ LS1012AFRDM board Overview
+ -----------------------
+ - SERDES Connections, 2 lanes supportingspeeds upto 1 Gbit/s
+     - 2 SGMII 1G PHYs
+ - DDR Controller
+     - 4 Gb DDR3L SDRAM memory, running at data rates up to 1 GT/s
+	operating at 1.35 V
+ - QSPI
+     - Onboard 512 Mbit QSPI flash memory running at speed up
+      to 108/54 MHz
+ - One high-speed USB 2.0/3.0 port, one USB 2.0 port
+     - USB 2.0/3.0 port is configured as On-The-Go (OTG) with a
+       Micro-AB connector.
+     - USB 2.0 port is a debug port (CMSIS DAP) and is configured
+       as a Micro-AB device.
+ - I2C controller
+     - One I2C bus with connectivity to Arduino headers
+ - UART
+     - UART (Console): UART1 (Without flow control) for console
+ - ARM JTAG support
+     - ARM Cortex® 10-pin JTAG connector for LS1012A
+     - CMSIS DAP through K20 microcontroller
+ - SAI Audio interface
+     - One SAI port, SAI 2 with full duplex support
+ - Clocks
+     - 25 MHz crystal for LS1012A
+     - 8 MHz Crystal for K20
+     - 24 MHz for SC16IS740IPW SPI to Dual UART bridge
+ - Power Supplies
+     - 5 V input supply from USB
+     - 0.9 V, 1.35 V, and 1.8 V for VDD/Core, DDR, I/O, and
+       other board interfaces
+
+Booting Options
+---------------
+QSPI Flash 1
+
+QSPI flash map
+--------------
+Images		| Size	|QSPI Flash Address
+------------------------------------------
+RCW + PBI	| 1MB	| 0x4000_0000
+U-boot 		| 1MB	| 0x4010_0000
+U-boot Env 	| 1MB	| 0x4020_0000
+PPA FIT image	| 2MB	| 0x4050_0000
+Linux ITB	| ~53MB | 0x40A0_0000

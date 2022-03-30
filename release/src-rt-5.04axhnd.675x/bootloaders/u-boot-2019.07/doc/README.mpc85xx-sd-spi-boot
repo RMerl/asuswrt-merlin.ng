@@ -1,0 +1,75 @@
+----------------------------------------
+Booting from On-Chip ROM (eSDHC or eSPI)
+----------------------------------------
+
+boot_format is a tool to write SD bootable images to a filesystem and build
+SD/SPI images to a binary file for writing later.
+
+When booting from an SD card/MMC, boot_format puts the configuration file and
+the RAM-based U-Boot image on the card.
+When booting from an EEPROM, boot_format generates a binary image that is used
+to boot from this EEPROM.
+
+Where to get boot_format:
+========================
+
+you can browse it online at:
+http://git.freescale.com/git/cgit.cgi/ppc/sdk/boot-format.git/
+
+Building
+========
+
+Run the following to build this project
+
+	$ make
+
+Execution
+=========
+
+boot_format runs under a regular Linux machine and requires a super user mode
+to run. Execute boot_format as follows.
+
+For building SD images by writing directly to a file system on SD media:
+
+	$ boot_format $config u-boot.bin -sd $device
+
+Where $config is the included config.dat file for your platform and $device
+is the target block device for the SD media on your computer.
+
+For build binary images directly a local file:
+
+	$ boot_format $config u-boot.bin -spi $file
+
+Where $file is the target file. Also keep in mind the u-boot.bin file needs
+to be the u-boot built for your particular platform and target media.
+
+Example: To generate a u-boot.bin for a P1022DS booting from SD, run the
+following in the u-boot repository:
+
+	$ make P1022DS_SDCARD
+
+Configuration Files
+===================
+
+Below are the configuration files to be used with a particular platform. Keep
+in mind that some of these config files are tied to the platforms DDR speed.
+Please see the SoC reference manual for more documentation.
+
+P1022DS		config_sram_p1022ds.dat
+P2020DS		config_sram_p2020ds.dat
+P1020RDB	config_ddr2_1g_p1020rdb_533M.dat
+P1020RDB	config_ddr2_1g_p1020rdb_667M.dat
+P2020RDB	config_ddr2_1g_p2020rdb_800M.dat
+P2020RDB	config_ddr2_1g_p2020rdb_667M.dat
+P2020RDB	config_ddr3_1gb_64bit_p2020rdb_pc.dat
+P1020RDB	config_ddr3_1gb_p1_p2_rdb_pc_800M.dat
+P1011RDB	config_ddr3_1gb_p1_p2_rdb_pc_800M.dat
+P1010RDB	config_ddr3_1gb_p1010rdb_800M.dat
+P1021RDB	config_ddr3_1gb_p1_p2_rdb_pc_800M.dat
+P1022DS		config_ddr3_2gb_p1022ds.dat
+P1024RDB	config_ddr3_1gb_p1_p2_rdb_pc_667M.dat
+P1025RDB	config_ddr3_1gb_p1_p2_rdb_pc_667M.dat
+P1016RDB	config_ddr3_1gb_p1_p2_rdb_pc_667M.dat
+P1020UTM	config_ddr3_1gb_p1_p2_rdb_pc_800M.dat
+P1020MBG	config_ddr3_1gb_p1_p2_rdb_pc_800M.dat
+MPC8536DS	config_ddr2_512m_mpc8536ds_667M.dat

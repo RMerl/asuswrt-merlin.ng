@@ -1,0 +1,7 @@
+MX6MEMCAL BOARD
+M:	Eric Nelson <eric@nelint.com>
+S:	Maintained
+F:	board/freescale/mx6memcal/
+F:	include/configs/mx6memcal.h
+F:	configs/mx6memcal_defconfig
+

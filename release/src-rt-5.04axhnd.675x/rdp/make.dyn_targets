@@ -1,0 +1,38 @@
+RCS_SIGN = $$$$
+ENDLINE = $$
+LD_LIBRARY_PATH = /tools/oss/packages/x86_64-rhel6/gcc/4.8.2/lib64/
+
+ifeq ("$(ENABLE_FW_OPT)", "y")
+	OPT_FLAGS = --optimize $(PORTABLE_PROJ_FW_OUTPUT)$(RUNNER_FW)_$(1).opt.txt
+	OPT_RENAME = $(TOOLS_BIN)/rename -v .opt. . $(PROJ_FW_OUTPUT)runner_fw_*.opt.*
+endif
+
+define build_runner_fw_3G
+$(RUNNER_FW)_$(1)_$(2)_$(3)_3G:
+	@echo "Building FW for Runner" $(1) $(2).
+	$(CC) -xc $(PROJ_DEFS) -E $(PROJ_FW_TARGET)/$(RUNNER_FW)_$(1).uc $(FW_INCLUDE_FLAGS) | \
+		gawk -f $(TOOLS_BIN)/lineReference.awk - $(PROJ_FW_OUTPUT)/$(RUNNER_FW)_$(1).p.lines 1>$(PROJ_FW_OUTPUT)/$(RUNNER_FW)_$(1).p
+	python $(TOOLS_BIN)/PreprocessorOutputAdapter.py $(PROJ_FW_OUTPUT)/$(RUNNER_FW)_$(1).p
+	$(TOOLS_RUNNER_BIN)BinaryBuilder --compile --instructions $(PORTABLE_TOOLS_RUNNER_BIN)Runner.ins.p --processor Runner --input-files $(PORTABLE_PROJ_FW_OUTPUT)$(RUNNER_FW)_$(1).p  --obj $(PORTABLE_PROJ_FW_OUTPUT)$(RUNNER_FW)_$(1).obj --lines $(PORTABLE_PROJ_FW_OUTPUT)$(RUNNER_FW)_$(1).p.lines
+	$(TOOLS_RUNNER_BIN)BinaryBuilder --link --instructions $(PORTABLE_TOOLS_RUNNER_BIN)Runner.ins.p --processor Runner $(PORTABLE_PROJ_FW_OUTPUT)$(RUNNER_FW)_$(1).obj --source $(PORTABLE_PROJ_FW_OUTPUT)$(RUNNER_FW)_$(1).src  --lines $(PORTABLE_PROJ_FW_OUTPUT)$(RUNNER_FW)_$(1).lines --base-name $(RUNNER_FW)_$(1) --map $(PORTABLE_PROJ_FW_OUTPUT)$(RUNNER_FW)_$(1).amap --liveness $(PORTABLE_PROJ_FW_OUTPUT)$(RUNNER_FW)_$(1).liveness --int $(PORTABLE_PROJ_FW_OUTPUT)$(RUNNER_FW)_$(1).int --vm $(PORTABLE_PROJ_FW_OUTPUT)$(RUNNER_FW)_$(1).vm --print-causing-restrictions 0 $(SPLIT_LIVENESS) $(PROJ_FW_LINK_FLAGS) $(OPT_FLAGS)
+	$(OPT_RENAME)
+	$(CP) $(FW_COMMON_SRC_DIR)/runner_copyright.h $(PROJ_FW_TARGET)/fw_output/
+	$(CP) $(FW_COMMON_SRC_DIR)/runner_proprietary.h $(PROJ_FW_TARGET)/fw_output/
+	cd $(PROJ_FW_TARGET)/fw_output && $(ACE_EXE) -ob -$(2) $(RUNNER_FW)_$(1).src -t \
+		-Crunner_copyright.h -Hrunner_proprietary.h -S$($(3)) -F$(RUNNER_FW)_$(2).c && cd -
+	echo 'char *rdpa_version_fw_$(2) = "$(RCS_SIGN)Change: 00000 $(RCS_SIGN)";' >> $(PROJ_FW_TARGET)/fw_output/$(RUNNER_FW)_$(2).c
+	$(PERL) $(TOOLS_BIN)/put_fw_version.pl $(PROJ_FW_TARGET)/fw_output/$(RUNNER_FW)_$(2).c $(PROJ_FW_BIN)/$(RUNNER_FW)_$(2).c $(DRIVERS_DIR)/rdpa/rdp_version.h
+	chmod +w $(PROJ_RDD_SRC)/*
+	chmod +w $(PROJ_FW_BIN)/*
+	find $(PROJ_FW_TARGET) -type f -name "*.[ch]" | xargs dos2unix
+	$(CP) $(PROJ_FW_TARGET)/fw_output/*.c $(PROJ_FW_BIN)
+	$(MV) $(PROJ_FW_TARGET)/fw_output/*.c $(PROJ_FW_TARGET)/
+	$(PERL) $(TOOLS_BIN)/create_tasks_addresses_defs.pl \
+		$(PROJ_FW_OUTPUT)/$(RUNNER_FW)_$(1).int $(PROJ_FW_BIN)/rdd_runner_$(2)_labels.h runner_$(2)
+endef
+
+$(eval $(call build_runner_fw_3G,0_main,a,MAIN_INSTR_SIZE))
+$(eval $(call build_runner_fw_3G,1_main,b,MAIN_INSTR_SIZE))
+$(eval $(call build_runner_fw_3G,0_pico,c,PICO_INSTR_SIZE))
+$(eval $(call build_runner_fw_3G,1_pico,d,PICO_INSTR_SIZE))
+

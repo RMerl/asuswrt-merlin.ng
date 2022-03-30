@@ -1,0 +1,9 @@
+config PCH
+	bool "Enable Platform-controller Hub (PCH) support"
+	depends on X86 || SANDBOX
+	help
+	  Most x86 chips include a PCH which is responsible for handling
+	  parts of the system not handled by that CPU. It supersedes the
+	  northbridge / southbridge architecture that was previously used. The
+	  PCH allows for higher performance since the memory functions are
+	  handled in the CPU.

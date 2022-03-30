@@ -1,0 +1,15 @@
+// SPDX-License-Identifier: GPL-2.0+ OR X11
+/*
+ * Device Tree file for Freescale Layerscape-1012A family SoC.
+ *
+ * Copyright 2016, Freescale Semiconductor
+ */
+
+/dts-v1/;
+#include "fsl-ls1012a-frdm.dtsi"
+
+/ {
+	chosen {
+		stdout-path = &duart0;
+	};
+};

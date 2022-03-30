@@ -1,0 +1,7 @@
+MCCMON6 BOARD
+M:	Lukasz Majewski <lukma@denx.de>
+S:	Maintained
+F:	board/liebherr/mccmon6/
+F:	include/configs/mccmon6.h
+F:	configs/mccmon6_nor_defconfig
+F:	configs/mccmon6_sd_defconfig

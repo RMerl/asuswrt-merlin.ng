@@ -1,0 +1,185 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2016, Bin Meng <bmeng.cn@gmail.com>
+ */
+
+/dts-v1/;
+
+#include <dt-bindings/interrupt-router/intel-irq.h>
+
+/include/ "skeleton.dtsi"
+/include/ "serial.dtsi"
+/include/ "keyboard.dtsi"
+/include/ "reset.dtsi"
+/include/ "rtc.dtsi"
+/include/ "tsc_timer.dtsi"
+
+/ {
+	model = "Intel Cougar Canyon 2";
+	compatible = "intel,cougarcanyon2", "intel,chiefriver";
+
+	aliases {
+		spi0 = &spi0;
+	};
+
+	config {
+		silent_console = <0>;
+	};
+
+	chosen {
+		stdout-path = "/serial";
+	};
+
+	cpus {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		cpu@0 {
+			device_type = "cpu";
+			compatible = "intel,core-gen3";
+			reg = <0>;
+			intel,apic-id = <0>;
+		};
+
+		cpu@1 {
+			device_type = "cpu";
+			compatible = "intel,core-gen3";
+			reg = <1>;
+			intel,apic-id = <1>;
+		};
+
+		cpu@2 {
+			device_type = "cpu";
+			compatible = "intel,core-gen3";
+			reg = <2>;
+			intel,apic-id = <2>;
+		};
+
+		cpu@3 {
+			device_type = "cpu";
+			compatible = "intel,core-gen3";
+			reg = <3>;
+			intel,apic-id = <3>;
+		};
+	};
+
+	microcode {
+		update@0 {
+#include "microcode/m12306a2_00000008.dtsi"
+		};
+		update@1 {
+#include "microcode/m12306a4_00000007.dtsi"
+		};
+		update@2 {
+#include "microcode/m12306a5_00000007.dtsi"
+		};
+		update@3 {
+#include "microcode/m12306a8_00000010.dtsi"
+		};
+		update@4 {
+#include "microcode/m12306a9_0000001b.dtsi"
+		};
+	};
+
+	fsp {
+		compatible = "intel,ivybridge-fsp";
+		fsp,enable-ht;
+	};
+
+	pci {
+		#address-cells = <3>;
+		#size-cells = <2>;
+		compatible = "pci-x86";
+		u-boot,dm-pre-reloc;
+		ranges = <0x02000000 0x0 0xc0000000 0xc0000000 0 0x10000000
+			  0x42000000 0x0 0xd0000000 0xd0000000 0 0x10000000
+			  0x01000000 0x0 0x2000 0x2000 0 0xe000>;
+
+		pch@1f,0 {
+			reg = <0x0000f800 0 0 0 0>;
+			compatible = "intel,bd82x6x";
+			u-boot,dm-pre-reloc;
+			#address-cells = <1>;
+			#size-cells = <1>;
+
+			irq-router {
+				compatible = "intel,irq-router";
+				intel,pirq-config = "pci";
+				intel,actl-8bit;
+				intel,actl-addr = <0x44>;
+				intel,pirq-link = <0x60 8>;
+				intel,pirq-regmap = <
+					PIRQA 0
+					PIRQB 1
+					PIRQC 2
+					PIRQD 3
+					PIRQE 8
+					PIRQF 9
+					PIRQG 10
+					PIRQH 11
+				>;
+				intel,pirq-mask = <0xcee0>;
+				intel,pirq-routing = <
+					/* Panther Point PCI devices */
+					PCI_BDF(0, 2, 0) INTA PIRQA
+					PCI_BDF(0, 20, 0) INTA PIRQA
+					PCI_BDF(0, 22, 0) INTA PIRQA
+					PCI_BDF(0, 22, 1) INTB PIRQB
+					PCI_BDF(0, 22, 2) INTC PIRQC
+					PCI_BDF(0, 22, 3) INTD PIRQD
+					PCI_BDF(0, 25, 0) INTA PIRQA
+					PCI_BDF(0, 26, 0) INTA PIRQA
+					PCI_BDF(0, 27, 0) INTB PIRQA
+					PCI_BDF(0, 28, 0) INTA PIRQA
+					PCI_BDF(0, 28, 1) INTB PIRQB
+					PCI_BDF(0, 28, 2) INTC PIRQC
+					PCI_BDF(0, 28, 3) INTD PIRQD
+					PCI_BDF(0, 28, 4) INTA PIRQA
+					PCI_BDF(0, 28, 5) INTB PIRQB
+					PCI_BDF(0, 28, 6) INTC PIRQC
+					PCI_BDF(0, 28, 7) INTD PIRQD
+					PCI_BDF(0, 29, 0) INTA PIRQA
+					PCI_BDF(0, 31, 2) INTB PIRQB
+					PCI_BDF(0, 31, 3) INTC PIRQC
+					PCI_BDF(0, 31, 5) INTB PIRQB
+					PCI_BDF(0, 31, 6) INTC PIRQC
+				>;
+			};
+
+			spi0: spi {
+				#address-cells = <1>;
+				#size-cells = <0>;
+				compatible = "intel,ich9-spi";
+				intel,spi-lock-down;
+
+				spi-flash@0 {
+					reg = <0>;
+					compatible = "winbond,w25q64bv", "jedec,spi-nor";
+					memory-map = <0xff800000 0x00800000>;
+				};
+			};
+
+			gpioa {
+				compatible = "intel,ich6-gpio";
+				u-boot,dm-pre-reloc;
+				reg = <0 0x10>;
+				bank-name = "A";
+			};
+
+			gpiob {
+				compatible = "intel,ich6-gpio";
+				u-boot,dm-pre-reloc;
+				reg = <0x30 0x10>;
+				bank-name = "B";
+			};
+
+			gpioc {
+				compatible = "intel,ich6-gpio";
+				u-boot,dm-pre-reloc;
+				reg = <0x40 0x10>;
+				bank-name = "C";
+			};
+		};
+	};
+
+};

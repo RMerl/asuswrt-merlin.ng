@@ -1,0 +1,6 @@
+BROADCOM BCM963158
+M:	Philippe Reynes <philippe.reynes@softathome.com>
+S:	Maintained
+F:	board/broadcom/bcm963158/
+F:	include/configs/broadcom_bcm963158.h
+F:	configs/bcm963158_ram_defconfig

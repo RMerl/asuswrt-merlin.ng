@@ -1,0 +1,46 @@
+EVB-RK3399
+M:      Kever Yang <kever.yang@rock-chips.com>
+S:      Maintained
+F:      board/rockchip/evb_rk3399
+F:      include/configs/evb_rk3399.h
+F:      configs/evb-rk3399_defconfig
+F:      configs/firefly-rk3399_defconfig
+
+NANOPC-T4
+M:	Jagan Teki <jagan@amarulasolutions.com>
+S:	Maintained
+F:	configs/nanopc-t4-rk3399_defconfig
+F:	arch/arm/dts/rk3399-nanopc-t4-u-boot.dtsi
+
+NANOPI-M4
+M:	Jagan Teki <jagan@amarulasolutions.com>
+S:	Maintained
+F:	configs/nanopi-m4-rk3399_defconfig
+F:	arch/arm/dts/rk3399-nanopi-m4-u-boot.dtsi
+
+NANOPI-NEO4
+M:	Jagan Teki <jagan@amarulasolutions.com>
+S:	Maintained
+F:	configs/nanopi-neo4-rk3399_defconfig
+F:	arch/arm/dts/rk3399-nanopi-neo4-u-boot.dtsi
+
+ORANGEPI-RK3399
+M:	Jagan Teki <jagan@amarulasolutions.com>
+S:	Maintained
+F:	configs/orangepi-rk3399_defconfig
+F:	arch/arm/dts/rk3399-u-boot.dtsi
+F:	arch/arm/dts/rk3399-orangepi-u-boot.dtsi
+
+ROCK-PI-4
+M:	Akash Gajjar <akash@openedev.com>
+M:	Jagan Teki <jagan@amarulasolutions.com>
+S:	Maintained
+F:	configs/rock-pi-4-rk3399_defconfig
+F:	arch/arm/dts/rk3399-rock-pi-4-u-boot.dtsi
+
+ROCKPRO64
+M:	Akash Gajjar <akash@openedev.com>
+M:	Jagan Teki <jagan@amarulasolutions.com>
+S:	Maintained
+F:	configs/rockpro64-rk3399_defconfig
+F:	arch/arm/dts/rk3399-rockpro64-u-boot.dtsi

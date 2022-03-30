@@ -1,0 +1,7 @@
+MPC8641HPCN BOARD
+M:	Prabhakar Kushwaha <prabhakar.kushwaha@nxp.com>
+S:	Maintained
+F:	board/freescale/mpc8641hpcn/
+F:	include/configs/MPC8641HPCN.h
+F:	configs/MPC8641HPCN_defconfig
+F:	configs/MPC8641HPCN_36BIT_defconfig

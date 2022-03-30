@@ -1,0 +1,57 @@
+			   LYNX KDI SUPPORT
+
+		    Last Update: July 20, 2003
+=======================================================================
+
+This file describes support for LynuxWorks KDI within U-Boot. Support
+is enabled by defining CONFIG_LYNXKDI.
+
+
+LYNXOS AND BLUECAT SUPPORTED
+============================
+Both LynxOS and BlueCat linux KDIs are supported. The implementation
+automatically detects which is being booted. When you use mkimage
+you should specify "lynxos" for both (see target-specific notes).
+
+
+SUPPORTED ARCHITECTURE/TARGETS
+==============================
+The following targets have been tested:
+
+-PowerPC  MPC8260ADS
+
+
+FILES TO LOOK AT
+================
+include/lynxkdi.h    -defines a simple struct passed to a kdi.
+common/lynxkdi.c     -implements the call to the kdi.
+common/cmd_bootm.c   -top-level command implementation ("bootm").
+
+
+====================================================================
+TARGET SPECIFIC NOTES
+====================================================================
+
+MPC8260ADS
+===========
+The default LynxOS and BlueCat implementations require some
+modifications to the config file.
+
+Edit include/configs/MPC8260ADS.h to use the following:
+
+#define CONFIG_SYS_IMMR	0xFA200000
+#define CONFIG_SYS_BCSR	0xFA100000
+#define CONFIG_SYS_BR1_PRELIM	0xFA101801
+
+When creating a LynxOS or BlueCat u-boot image using mkimage,
+you must specify the following:
+
+Both:    -A ppc -O lynxos -T kernel -C none
+LynxOS:  -a 0x00004000 -e 0x00004020
+BlueCat: -a 0x00500000 -e 0x00507000
+
+To pass the MAC address to BlueCat you should define the
+"fcc2_ether_addr" parameter in the "bootargs" environment
+variable. E.g.:
+
+==> setenv bootargs fcc2_ether_addr=00:11:22:33:44:55:66

@@ -1,0 +1,12 @@
+config BCM_BCA_PINCTRL
+	bool "Broadcom BCA pin mux control"
+	select PINCTRL
+	select PINMUX
+	default y
+	help
+	  Add the BCM BCA PINCTRL support.
+
+config BCM_BCA_PINCTRL_IMPL
+	int "Implementation index for BCA PINCTRL module"
+	depends on BCM_BCA_PINCTRL
+	default 1

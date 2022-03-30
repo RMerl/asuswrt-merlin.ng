@@ -1,0 +1,8 @@
+#include "949418EAP.dtsi"
+&mdio {
+	phy_cascade0:9 {
+		wake-on-lan;
+		status = "okay";
+	};
+
+};

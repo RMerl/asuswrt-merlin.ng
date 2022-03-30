@@ -1,0 +1,42 @@
+Rockchip Dynamic Memory Controller Driver
+Required properties:
+- compatible: "rockchip,rk3399-dmc", "syscon"
+- rockchip,cru: this driver should access cru regs, so need get cru here
+- rockchip,pmucru: this driver should access pmucru regs, so need get pmucru here
+- rockchip,pmugrf: this driver should access pmugrf regs, so need get pmugrf here
+- rockchip,pmusgrf: this driver should access pmusgrf regs, so need get pmusgrf here
+- rockchip,cic: this driver should access cic regs, so need get cic here
+- reg: dynamic ram protocol controller(PCTL) address, PHY Independent(PI) address, phy controller(PHYCTL) address and memory schedule(MSCH) address
+- clock: must include clock specifiers corresponding to entries in the clock-names property.
+    Must contain
+      dmc_clk: for ddr working frequency
+- rockchip,sdram-params: SDRAM parameters, including all the information by ddr driver:
+    Must contain
+      Genarate by vendor tool and adjust for U-Boot dtsi.
+
+Example:
+	dmc: dmc {
+		u-boot,dm-pre-reloc;
+		compatible = "rockchip,rk3399-dmc";
+		devfreq-events = <&dfi>;
+		interrupts = <GIC_SPI 1 IRQ_TYPE_LEVEL_HIGH 0>;
+		clocks = <&cru SCLK_DDRCLK>;
+		clock-names = "dmc_clk";
+		reg = <0x0 0xffa80000 0x0 0x0800
+		       0x0 0xffa80800 0x0 0x1800
+		       0x0 0xffa82000 0x0 0x2000
+		       0x0 0xffa84000 0x0 0x1000
+		       0x0 0xffa88000 0x0 0x0800
+		       0x0 0xffa88800 0x0 0x1800
+		       0x0 0xffa8a000 0x0 0x2000
+		       0x0 0xffa8c000 0x0 0x1000>;
+	};
+
+	&dmc {
+		rockchip,sdram-params = <
+		0x2
+		0xa
+		0x3
+		...
+		>;
+	};

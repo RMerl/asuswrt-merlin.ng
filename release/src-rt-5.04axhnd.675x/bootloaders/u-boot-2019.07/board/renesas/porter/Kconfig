@@ -1,0 +1,12 @@
+if TARGET_PORTER
+
+config SYS_BOARD
+	default "porter"
+
+config SYS_VENDOR
+	default "renesas"
+
+config SYS_CONFIG_NAME
+	default "porter"
+
+endif

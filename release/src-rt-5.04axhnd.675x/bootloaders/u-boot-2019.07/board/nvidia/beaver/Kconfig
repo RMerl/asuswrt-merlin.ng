@@ -1,0 +1,12 @@
+if TARGET_BEAVER
+
+config SYS_BOARD
+	default "beaver"
+
+config SYS_VENDOR
+	default "nvidia"
+
+config SYS_CONFIG_NAME
+	default "beaver"
+
+endif

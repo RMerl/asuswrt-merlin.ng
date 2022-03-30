@@ -1,0 +1,10 @@
+#include "6858.dtsi"
+
+/ {
+	/* arch */
+	#define PERIPH_CLK			200000000
+	#define HS_SPI_PLL_CLK			400000000
+	#define PMU_CORE0_SPI	9
+	#define PMU_CORE1_SPI	10
+	#include "../../ip/bcm_b53_dual.dtsi"
+};

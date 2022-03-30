@@ -1,0 +1,78 @@
+Summary
+=======
+
+Note: this document used to be about the entire family of DaVinci SOCs but the
+support for the DM* family and DA830 has since been dropped.
+
+This README is about U-Boot support for TI's DA850 SoC. This SOC has an OMAP
+part number but is very similar to the DaVinci series.
+
+Currently the following boards are supported:
+
+* TI DA850 EVM
+
+* TI OMAP-L138 LCDK
+
+* Lego EV3
+
+Build
+=====
+
+* TI DA850 EVM:
+
+make da850evm_config
+make
+
+* TI OMAP-L138 LCDK
+
+make omapl138_lcdk_defconfig
+make
+
+* Lego EV3
+
+make legoev3_defconfig
+make
+
+Bootloaders
+===============
+
+For DA850 an SPL (secondary program loader, see doc/README.SPL) is provided
+to load U-Boot directly from SPI flash. The SPL takes care of the low level
+initialization.
+
+The SPL is built as u-boot.ais for all DA850 defconfigs. The resulting
+image file can be programmed to the SPI flash of the DA850 EVM/LCDK.
+
+Environment Variables
+=====================
+
+The DA850 EVM allows the user to specify the maximum cpu clock allowed by the
+silicon, in Hz, via an environment variable "maxcpuclk".
+
+The maximum clock rate allowed depends on the silicon populated on the EVM.
+Please make sure you understand the restrictions placed on this clock in the
+device specific datasheet before setting up this variable. This information is
+passed to the Linux kernel using the ATAG_REVISION atag.
+
+If "maxcpuclk" is not defined, the configuration CONFIG_DA850_EVM_MAX_CPU_CLK
+is used to obtain this information.
+
+Links
+=====
+
+1) TI DA850 EVM
+http://focus.ti.com/docs/prod/folders/print/omap-l138.html
+http://www.logicpd.com/products/development-kits/zoom-omap-l138-evm-development-kit
+
+2) TI OMAP-L138 LCDK
+http://focus.ti.com/docs/prod/folders/print/omap-l138.html
+http://www.ti.com/tool/TMDXLCDK138
+
+Davinci special defines
+=======================
+
+CONFIG_SYS_DV_NOR_BOOT_CFG:	AM18xx based boards, booting in NOR Boot mode
+				need a "NOR Boot Configuration Word" stored
+				in the NOR Flash. This define adds this.
+				More Info about this, see:
+				spraba5a.pdf chapter 3.1

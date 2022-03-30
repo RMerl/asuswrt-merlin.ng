@@ -1,0 +1,844 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Google Veyron (and derivatives) board device tree source
+ *
+ * Copyright 2014 Google, Inc
+ */
+
+#include <dt-bindings/clock/rockchip,rk808.h>
+#include <dt-bindings/input/input.h>
+#include "rk3288.dtsi"
+
+/ {
+	memory {
+		reg = <0x0 0x80000000>;
+	};
+
+	chosen {
+		stdout-path = &uart2;
+	};
+
+	config {
+		u-boot,dm-pre-reloc;
+		u-boot,boot0 = &spi_flash;
+	};
+
+	firmware {
+		chromeos {
+			pinctrl-names = "default";
+			pinctrl-0 = <&fw_wp_ap>;
+			write-protect-gpio = <&gpio7 6 GPIO_ACTIVE_LOW>;
+		};
+	};
+
+	backlight: backlight {
+		compatible = "pwm-backlight";
+		brightness-levels = <
+			  0   1   2   3   4   5   6   7
+			  8   9  10  11  12  13  14  15
+			 16  17  18  19  20  21  22  23
+			 24  25  26  27  28  29  30  31
+			 32  33  34  35  36  37  38  39
+			 40  41  42  43  44  45  46  47
+			 48  49  50  51  52  53  54  55
+			 56  57  58  59  60  61  62  63
+			 64  65  66  67  68  69  70  71
+			 72  73  74  75  76  77  78  79
+			 80  81  82  83  84  85  86  87
+			 88  89  90  91  92  93  94  95
+			 96  97  98  99 100 101 102 103
+			104 105 106 107 108 109 110 111
+			112 113 114 115 116 117 118 119
+			120 121 122 123 124 125 126 127
+			128 129 130 131 132 133 134 135
+			136 137 138 139 140 141 142 143
+			144 145 146 147 148 149 150 151
+			152 153 154 155 156 157 158 159
+			160 161 162 163 164 165 166 167
+			168 169 170 171 172 173 174 175
+			176 177 178 179 180 181 182 183
+			184 185 186 187 188 189 190 191
+			192 193 194 195 196 197 198 199
+			200 201 202 203 204 205 206 207
+			208 209 210 211 212 213 214 215
+			216 217 218 219 220 221 222 223
+			224 225 226 227 228 229 230 231
+			232 233 234 235 236 237 238 239
+			240 241 242 243 244 245 246 247
+			248 249 250 251 252 253 254 255>;
+		default-brightness-level = <128>;
+		enable-gpios = <&gpio7 2 GPIO_ACTIVE_HIGH>;
+		backlight-boot-off;
+		pinctrl-names = "default";
+		pinctrl-0 = <&bl_en>;
+		pwms = <&pwm0 0 1000000 0>;
+	};
+
+	panel: panel {
+		compatible ="cnm,n116bgeea2","simple-panel";
+		status = "okay";
+		power-supply = <&vcc33_lcd>;
+		backlight = <&backlight>;
+	};
+
+	gpio_keys: gpio-keys {
+		compatible = "gpio-keys";
+
+		pinctrl-names = "default";
+		pinctrl-0 = <&pwr_key_h>;
+		power {
+			label = "Power";
+			gpios = <&gpio0 5 GPIO_ACTIVE_HIGH>;
+			linux,code = <KEY_POWER>;
+			debounce-interval = <100>;
+			gpio-key,wakeup;
+		};
+	};
+
+	gpio-restart {
+		compatible = "gpio-restart";
+		gpios = <&gpio0 13 GPIO_ACTIVE_HIGH>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&ap_warm_reset_h>;
+		priority = /bits/ 8 <200>;
+	};
+
+	emmc_pwrseq: emmc-pwrseq {
+		compatible = "mmc-pwrseq-emmc";
+		pinctrl-0 = <&emmc_reset>;
+		pinctrl-names = "default";
+		reset-gpios = <&gpio2 9 GPIO_ACTIVE_HIGH>;
+	};
+
+	sound {
+		compatible = "rockchip,rockchip-audio-max98090";
+		rockchip,model = "ROCKCHIP-I2S";
+		rockchip,i2s-controller = <&i2s>;
+		rockchip,audio-codec = <&max98090>;
+		rockchip,hp-det-gpios = <&gpio6 5 GPIO_ACTIVE_HIGH>;
+		rockchip,mic-det-gpios = <&gpio6 11 GPIO_ACTIVE_LOW>;
+		rockchip,headset-codec = <&headsetcodec>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&mic_det>, <&hp_det>;
+	};
+
+	vdd_logic: pwm-regulator {
+		compatible = "pwm-regulator";
+		pwms = <&pwm1 0 2000 0>;
+
+		voltage-table = <1350000 0>,
+				<1300000 10>,
+				<1250000 20>,
+				<1200000 31>,
+				<1150000 41>,
+				<1100000 52>,
+				<1050000 62>,
+				<1000000 72>,
+				< 950000 83>;
+
+		regulator-min-microvolt = <950000>;
+		regulator-max-microvolt = <1350000>;
+		regulator-name = "vdd_logic";
+		regulator-ramp-delay = <4000>;
+	};
+
+	vcc33_sys: vcc33-sys {
+		compatible = "regulator-fixed";
+		regulator-name = "vcc33_sys";
+		regulator-always-on;
+		regulator-boot-on;
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		vin-supply = <&vccsys>;
+	};
+
+	vcc_5v: vcc-5v {
+		compatible = "regulator-fixed";
+		regulator-name = "vcc_5v";
+		regulator-always-on;
+		regulator-boot-on;
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
+	};
+
+	vcc50_hdmi: vcc50-hdmi {
+		compatible = "regulator-fixed";
+		regulator-name = "vcc50_hdmi";
+		regulator-always-on;
+		regulator-boot-on;
+		vin-supply = <&vcc_5v>;
+	};
+
+	bt_regulator: bt-regulator {
+		/*
+		 * On the module itself this is one of these (depending
+		 * on the actual card pouplated):
+		 * - BT_I2S_WS_BT_RFDISABLE_L
+		 * - No connect
+		 */
+
+		compatible = "regulator-fixed";
+		enable-active-high;
+		gpio = <&gpio4 29 GPIO_ACTIVE_HIGH>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&bt_enable_l>;
+		regulator-name = "bt_regulator";
+	};
+
+	wifi_regulator: wifi-regulator {
+		/*
+		 * On the module itself this is one of these (depending
+		 * on the actual card populated):
+		 * - SDIO_RESET_L_WL_REG_ON
+		 * - PDN (power down when low)
+		 */
+
+		compatible = "regulator-fixed";
+		enable-active-high;
+		gpio = <&gpio4 28 GPIO_ACTIVE_HIGH>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&wifi_enable_h>;
+		regulator-name = "wifi_regulator";
+
+		/* Faux input supply.  See bt_regulator description. */
+		vin-supply = <&bt_regulator>;
+	};
+
+	io-domains {
+		compatible = "rockchip,rk3288-io-voltage-domain";
+		rockchip,grf = <&grf>;
+
+		audio-supply = <&vcc18_codec>;
+		bb-supply = <&vcc33_io>;
+		dvp-supply = <&vcc_18>;
+		flash0-supply = <&vcc18_flashio>;
+		gpio1830-supply = <&vcc33_io>;
+		gpio30-supply = <&vcc33_io>;
+		lcdc-supply = <&vcc33_lcd>;
+		sdcard-supply = <&vccio_sd>;
+		wifi-supply = <&vcc18_wl>;
+	};
+};
+
+&cpu0 {
+	cpu0-supply = <&vdd_cpu>;
+};
+
+&dmc {
+	logic-supply = <&vdd_logic>;
+	rockchip,odt-disable-freq = <333000000>;
+	rockchip,dll-disable-freq = <333000000>;
+	rockchip,sr-enable-freq = <333000000>;
+	rockchip,pd-enable-freq = <666000000>;
+	rockchip,auto-self-refresh-cnt = <0>;
+	rockchip,auto-power-down-cnt = <64>;
+	rockchip,ddr-speed-bin = <21>;
+	rockchip,trcd = <10>;
+	rockchip,trp = <10>;
+	operating-points = <
+		/* KHz    uV */
+		200000 1050000
+		333000 1100000
+		533000 1150000
+		666000 1200000
+	>;
+};
+
+&efuse {
+	status = "okay";
+};
+
+&emmc {
+	broken-cd;
+	bus-width = <8>;
+	cap-mmc-highspeed;
+	mmc-hs200-1_8v;
+	mmc-pwrseq = <&emmc_pwrseq>;
+	disable-wp;
+	non-removable;
+	num-slots = <1>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&emmc_clk &emmc_cmd &emmc_bus8 &emmc_pwr>;
+	status = "okay";
+};
+
+&sdio0 {
+	broken-cd;
+	bus-width = <4>;
+	cap-sd-highspeed;
+	sd-uhs-sdr12;
+	sd-uhs-sdr25;
+	sd-uhs-sdr50;
+	sd-uhs-sdr104;
+	cap-sdio-irq;
+	card-external-vcc-supply = <&wifi_regulator>;
+	clocks = <&cru HCLK_SDIO0>, <&cru SCLK_SDIO0>, <&cru SCLK_SDIO0_DRV>,
+		 <&cru SCLK_SDIO0_SAMPLE>, <&rk808 RK808_CLKOUT1>;
+	clock-names = "biu", "ciu", "ciu_drv", "ciu_sample", "card_ext_clock";
+	keep-power-in-suspend;
+	non-removable;
+	num-slots = <1>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&sdio0_clk &sdio0_cmd &sdio0_bus4>;
+	status = "okay";
+	vmmc-supply = <&vcc33_sys>;
+	vqmmc-supply = <&vcc18_wl>;
+};
+
+&sdmmc {
+	bus-width = <4>;
+	cap-mmc-highspeed;
+	cap-sd-highspeed;
+	sd-uhs-sdr12;
+	sd-uhs-sdr25;
+	sd-uhs-sdr50;
+	sd-uhs-sdr104;
+	card-detect-delay = <200>;
+	cd-gpios = <&gpio7 5 GPIO_ACTIVE_LOW>;
+	num-slots = <1>;
+	status = "okay";
+	vmmc-supply = <&vcc33_sd>;
+	vqmmc-supply = <&vccio_sd>;
+};
+
+&spi2 {
+	status = "okay";
+	u-boot,dm-pre-reloc;
+
+	spi_flash: spiflash@0 {
+		u-boot,dm-pre-reloc;
+		compatible = "spidev", "jedec,spi-nor";
+		spi-max-frequency = <20000000>; /* Reduce for Dediprog em100 pro */
+		reg = <0>;
+	};
+};
+
+&i2c0 {
+	status = "okay";
+
+	clock-frequency = <400000>;
+	i2c-scl-falling-time-ns = <50>;		/* 2.5ns measured */
+	i2c-scl-rising-time-ns = <100>;		/* 45ns measured */
+	u-boot,dm-pre-reloc;
+
+	rk808: pmic@1b {
+		compatible = "rockchip,rk808";
+		clock-output-names = "xin32k", "wifibt_32kin";
+		interrupt-parent = <&gpio0>;
+		interrupts = <4 IRQ_TYPE_LEVEL_LOW>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&pmic_int_l>;
+		reg = <0x1b>;
+		rockchip,system-power-controller;
+		wakeup-source;
+		#clock-cells = <1>;
+		u-boot,dm-pre-reloc;
+
+		vcc1-supply = <&vcc33_sys>;
+		vcc2-supply = <&vcc33_sys>;
+		vcc3-supply = <&vcc33_sys>;
+		vcc4-supply = <&vcc33_sys>;
+		vcc6-supply = <&vcc_5v>;
+		vcc7-supply = <&vcc33_sys>;
+		vcc8-supply = <&vcc33_sys>;
+		vcc9-supply = <&vcc_5v>;
+		vcc10-supply = <&vcc33_sys>;
+		vcc11-supply = <&vcc_5v>;
+		vcc12-supply = <&vcc_18>;
+
+		vddio-supply = <&vcc33_io>;
+
+		regulators {
+			vdd_cpu: DCDC_REG1 {
+				regulator-always-on;
+				regulator-boot-on;
+				regulator-min-microvolt = <750000>;
+				regulator-max-microvolt = <1450000>;
+				regulator-name = "vdd_arm";
+				regulator-ramp-delay = <6001>;
+				regulator-suspend-mem-disabled;
+			};
+
+			vdd_gpu: DCDC_REG2 {
+				regulator-always-on;
+				regulator-boot-on;
+				regulator-min-microvolt = <800000>;
+				regulator-max-microvolt = <1250000>;
+				regulator-name = "vdd_gpu";
+				regulator-ramp-delay = <6001>;
+				regulator-suspend-mem-disabled;
+			};
+
+			vcc135_ddr: DCDC_REG3 {
+				regulator-always-on;
+				regulator-boot-on;
+				regulator-name = "vcc135_ddr";
+				regulator-suspend-mem-enabled;
+			};
+
+			/*
+			 * vcc_18 has several aliases.  (vcc18_flashio and
+			 * vcc18_wl).  We'll add those aliases here just to
+			 * make it easier to follow the schematic.  The signals
+			 * are actually hooked together and only separated for
+			 * power measurement purposes).
+			 */
+			vcc18_wl: vcc18_flashio: vcc_18: DCDC_REG4 {
+				regulator-always-on;
+				regulator-boot-on;
+				regulator-min-microvolt = <1800000>;
+				regulator-max-microvolt = <1800000>;
+				regulator-name = "vcc_18";
+				regulator-suspend-mem-microvolt = <1800000>;
+			};
+
+			/*
+			 * Note that both vcc33_io and vcc33_pmuio are always
+			 * powered together. To simplify the logic in the dts
+			 * we just refer to vcc33_io every time something is
+			 * powered from vcc33_pmuio. In fact, on later boards
+			 * (such as danger) they're the same net.
+			 */
+			vcc33_io: LDO_REG1 {
+				regulator-always-on;
+				regulator-boot-on;
+				regulator-min-microvolt = <3300000>;
+				regulator-max-microvolt = <3300000>;
+				regulator-name = "vcc33_io";
+				regulator-suspend-mem-microvolt = <3300000>;
+			};
+
+			vdd_10: LDO_REG3 {
+				regulator-always-on;
+				regulator-boot-on;
+				regulator-min-microvolt = <1000000>;
+				regulator-max-microvolt = <1000000>;
+				regulator-name = "vdd_10";
+				regulator-suspend-mem-microvolt = <1000000>;
+			};
+
+			vccio_sd: LDO_REG4 {
+				regulator-min-microvolt = <1800000>;
+				regulator-max-microvolt = <3300000>;
+				regulator-name = "vccio_sd";
+				regulator-suspend-mem-disabled;
+			};
+
+			vcc33_sd: LDO_REG5 {
+				regulator-min-microvolt = <3300000>;
+				regulator-max-microvolt = <3300000>;
+				regulator-name = "vcc33_sd";
+				regulator-suspend-mem-disabled;
+			};
+
+			vcc18_codec: LDO_REG6 {
+				regulator-always-on;
+				regulator-boot-on;
+				regulator-min-microvolt = <1800000>;
+				regulator-max-microvolt = <1800000>;
+				regulator-name = "vcc18_codec";
+				regulator-suspend-mem-disabled;
+			};
+
+			vdd10_lcd_pwren_h: LDO_REG7 {
+				regulator-always-on;
+				regulator-boot-on;
+				regulator-min-microvolt = <2500000>;
+				regulator-max-microvolt = <2500000>;
+				regulator-name = "vdd10_lcd_pwren_h";
+				regulator-suspend-mem-disabled;
+			};
+
+			vcc33_lcd: SWITCH_REG1 {
+				regulator-always-on;
+				regulator-boot-on;
+				regulator-name = "vcc33_lcd";
+				regulator-suspend-mem-disabled;
+			};
+		};
+	};
+};
+
+&i2c1 {
+	status = "okay";
+
+	clock-frequency = <400000>;
+	i2c-scl-falling-time-ns = <50>;		/* 2.5ns measured */
+	i2c-scl-rising-time-ns = <100>;		/* 40ns measured */
+
+	tpm: tpm@20 {
+		compatible = "infineon,slb9645tt";
+		reg = <0x20>;
+		powered-while-suspended;
+	};
+};
+
+&i2c2 {
+	status = "okay";
+
+	/* 100kHz since 4.7k resistors don't rise fast enough */
+	clock-frequency = <100000>;
+	i2c-scl-falling-time-ns = <50>;		/* 10ns measured */
+	i2c-scl-rising-time-ns = <800>;		/* 600ns measured */
+
+	max98090: max98090@10 {
+		compatible = "maxim,max98090";
+		reg = <0x10>;
+		#sound-dai-cells = <0>;
+		interrupt-parent = <&gpio6>;
+		interrupts = <7 IRQ_TYPE_EDGE_FALLING>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&int_codec>;
+	};
+};
+
+&i2c3 {
+	status = "okay";
+
+	clock-frequency = <400000>;
+	i2c-scl-falling-time-ns = <50>;
+	i2c-scl-rising-time-ns = <300>;
+};
+
+&i2c4 {
+	status = "okay";
+
+	clock-frequency = <400000>;
+	i2c-scl-falling-time-ns = <50>;		/* 11ns measured */
+	i2c-scl-rising-time-ns = <300>;		/* 225ns measured */
+
+	headsetcodec: ts3a227e@3b {
+		compatible = "ti,ts3a227e";
+		reg = <0x3b>;
+		interrupt-parent = <&gpio0>;
+		interrupts = <3 IRQ_TYPE_LEVEL_LOW>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&ts3a227e_int_l>;
+		ti,micbias = <7>;		/* MICBIAS = 2.8V */
+	};
+};
+
+&i2c5 {
+	status = "okay";
+
+	clock-frequency = <100000>;
+	i2c-scl-falling-time-ns = <300>;
+	i2c-scl-rising-time-ns = <1000>;
+};
+
+&i2s {
+	status = "okay";
+	clock-names = "i2s_hclk", "i2s_clk", "i2s_clk_out";
+	clocks = <&cru HCLK_I2S0>, <&cru SCLK_I2S0>, <&cru SCLK_I2S0_OUT>;
+};
+
+&wdt {
+	status = "okay";
+};
+
+&pwm0 {
+	status = "okay";
+};
+
+&pwm1 {
+	status = "okay";
+};
+
+&uart0 {
+	status = "okay";
+
+	/* Pins don't include flow control by default; add that in */
+	pinctrl-names = "default";
+	pinctrl-0 = <&uart0_xfer &uart0_cts &uart0_rts>;
+	/* We need to go faster than 24MHz, so adjust clock parents / rates */
+	assigned-clocks = <&cru SCLK_UART0>;
+	assigned-clock-rates = <48000000>;
+};
+
+&uart1 {
+	status = "okay";
+};
+
+&uart2 {
+	status = "okay";
+	u-boot,dm-pre-reloc;
+	reg-shift = <2>;
+};
+
+&vopb {
+	status = "okay";
+};
+
+&vopb_mmu {
+	status = "okay";
+};
+
+&vopl {
+	status = "okay";
+};
+
+&vopl_mmu {
+	status = "okay";
+};
+
+&edp {
+	status = "okay";
+	rockchip,panel = <&panel>;
+};
+
+&hdmi {
+	status = "okay";
+};
+
+&hdmi_audio {
+	status = "okay";
+};
+
+&gpu {
+	status = "okay";
+};
+
+&tsadc {
+	tsadc-tshut-mode = <1>; /* tshut mode 0:CRU 1:GPIO */
+	tsadc-tshut-polarity = <1>; /* tshut polarity 0:LOW 1:HIGH */
+	status = "okay";
+};
+
+&pinctrl {
+	u-boot,dm-pre-reloc;
+	pinctrl-names = "default", "sleep";
+	pinctrl-0 = <
+		/* Common for sleep and wake, but no owners */
+		&ddr0_retention
+		&ddrio_pwroff
+		&global_pwroff
+
+		/* Wake only */
+		&bt_dev_wake_awake
+	>;
+	pinctrl-1 = <
+		/* Common for sleep and wake, but no owners */
+		&ddr0_retention
+		&ddrio_pwroff
+		&global_pwroff
+
+		/* Sleep only */
+		&bt_dev_wake_sleep
+	>;
+
+	/* Add this for sdmmc pins to SD card */
+	pcfg_pull_none_drv_8ma: pcfg-pull-none-drv-8ma {
+		drive-strength = <8>;
+	};
+
+	pcfg_pull_up_drv_8ma: pcfg-pull-up-drv-8ma {
+		bias-pull-up;
+		drive-strength = <8>;
+	};
+
+	pcfg_output_high: pcfg-output-high {
+		output-high;
+	};
+
+	pcfg_output_low: pcfg-output-low {
+		output-low;
+	};
+
+	backlight {
+		bl_en: bl-en {
+			rockchip,pins = <7 2 RK_FUNC_GPIO &pcfg_pull_none>;
+		};
+	};
+
+	buttons {
+		pwr_key_h: pwr-key-h {
+			rockchip,pins = <0 5 RK_FUNC_GPIO &pcfg_pull_none>;
+		};
+	};
+
+	codec {
+		hp_det: hp-det {
+			rockchip,pins = <6 5 RK_FUNC_GPIO &pcfg_pull_up>;
+		};
+		int_codec: int-codec {
+			rockchip,pins = <6 7 RK_FUNC_GPIO &pcfg_pull_up>;
+		};
+		mic_det: mic-det {
+			rockchip,pins = <6 11 RK_FUNC_GPIO &pcfg_pull_up>;
+		};
+	};
+
+	emmc {
+		emmc_reset: emmc-reset {
+			rockchip,pins = <2 9 RK_FUNC_GPIO &pcfg_pull_none>;
+		};
+
+		/*
+		 * We run eMMC at max speed; bump up drive strength.
+		 * We also have external pulls, so disable the internal ones.
+		 */
+		emmc_clk: emmc-clk {
+			rockchip,pins = <3 18 RK_FUNC_2 &pcfg_pull_none_drv_8ma>;
+		};
+
+		emmc_cmd: emmc-cmd {
+			rockchip,pins = <3 16 RK_FUNC_2 &pcfg_pull_none_drv_8ma>;
+		};
+
+		emmc_bus8: emmc-bus8 {
+			rockchip,pins = <3 0 RK_FUNC_2 &pcfg_pull_none_drv_8ma>,
+					<3 1 RK_FUNC_2 &pcfg_pull_none_drv_8ma>,
+					<3 2 RK_FUNC_2 &pcfg_pull_none_drv_8ma>,
+					<3 3 RK_FUNC_2 &pcfg_pull_none_drv_8ma>,
+					<3 4 RK_FUNC_2 &pcfg_pull_none_drv_8ma>,
+					<3 5 RK_FUNC_2 &pcfg_pull_none_drv_8ma>,
+					<3 6 RK_FUNC_2 &pcfg_pull_none_drv_8ma>,
+					<3 7 RK_FUNC_2 &pcfg_pull_none_drv_8ma>;
+		};
+	};
+
+	headset {
+		ts3a227e_int_l: ts3a227e-int-l {
+			rockchip,pins = <0 3 RK_FUNC_GPIO &pcfg_pull_up>;
+		};
+	};
+
+	pmic {
+		pmic_int_l: pmic-int-l {
+			/*
+			 * Causes jerry to hang when probing bus 0
+			 * rockchip,pins = <RK_GPIO0 4 RK_FUNC_GPIO &pcfg_pull_up>;
+			 */
+		};
+	};
+
+	reboot {
+		ap_warm_reset_h: ap-warm-reset-h {
+			rockchip,pins = <RK_GPIO0 13 RK_FUNC_GPIO &pcfg_pull_none>;
+		};
+	};
+
+	sdio0 {
+		wifi_enable_h: wifienable-h {
+			rockchip,pins = <4 28 RK_FUNC_GPIO &pcfg_pull_none>;
+		};
+
+		/* NOTE: mislabelled on schematic; should be bt_enable_h */
+		bt_enable_l: bt-enable-l {
+			rockchip,pins = <4 29 RK_FUNC_GPIO &pcfg_pull_none>;
+		};
+
+		/*
+		 * We run sdio0 at max speed; bump up drive strength.
+		 * We also have external pulls, so disable the internal ones.
+		 */
+		sdio0_bus4: sdio0-bus4 {
+			rockchip,pins = <4 20 RK_FUNC_1 &pcfg_pull_none_drv_8ma>,
+					<4 21 RK_FUNC_1 &pcfg_pull_none_drv_8ma>,
+					<4 22 RK_FUNC_1 &pcfg_pull_none_drv_8ma>,
+					<4 23 RK_FUNC_1 &pcfg_pull_none_drv_8ma>;
+		};
+
+		sdio0_cmd: sdio0-cmd {
+			rockchip,pins = <4 24 RK_FUNC_1 &pcfg_pull_none_drv_8ma>;
+		};
+
+		sdio0_clk: sdio0-clk {
+			rockchip,pins = <4 25 RK_FUNC_1 &pcfg_pull_none_drv_8ma>;
+		};
+
+		/*
+		 * These pins are only present on very new veyron boards; on
+		 * older boards bt_dev_wake is simply always high.  Note that
+		 * gpio4_26 is a NC on old veyron boards, so it doesn't hurt
+		 * to map this pin everywhere
+		 */
+		bt_dev_wake_sleep: bt-dev-wake-sleep {
+			rockchip,pins = <4 26 RK_FUNC_GPIO &pcfg_output_low>;
+		};
+
+		bt_dev_wake_awake: bt-dev-wake-awake {
+			rockchip,pins = <4 26 RK_FUNC_GPIO &pcfg_output_high>;
+		};
+	};
+
+	sdmmc {
+		/*
+		 * We run sdmmc at max speed; bump up drive strength.
+		 * We also have external pulls, so disable the internal ones.
+		 */
+		sdmmc_bus4: sdmmc-bus4 {
+			rockchip,pins = <6 16 RK_FUNC_1 &pcfg_pull_none_drv_8ma>,
+					<6 17 RK_FUNC_1 &pcfg_pull_none_drv_8ma>,
+					<6 18 RK_FUNC_1 &pcfg_pull_none_drv_8ma>,
+					<6 19 RK_FUNC_1 &pcfg_pull_none_drv_8ma>;
+		};
+
+		sdmmc_clk: sdmmc-clk {
+			rockchip,pins = <6 20 RK_FUNC_1 &pcfg_pull_none_drv_8ma>;
+		};
+
+		sdmmc_cmd: sdmmc-cmd {
+			rockchip,pins = <6 21 RK_FUNC_1 &pcfg_pull_none_drv_8ma>;
+		};
+
+		/*
+		 * Builtin CD line is hooked to ground to prevent JTAG at boot
+		 * (and also to get the voltage rail correct).  Make we
+		 * configure gpio6_C6 as GPIO so dw_mmc builtin CD doesn't
+		 * think there's a card inserted
+		 */
+		sdmmc_cd_disabled: sdmmc-cd-disabled {
+			rockchip,pins = <6 22 RK_FUNC_GPIO &pcfg_pull_none>;
+		};
+
+		/* This is where we actually hook up CD */
+		sdmmc_cd_gpio: sdmmc-cd-gpio {
+			rockchip,pins = <7 5 RK_FUNC_GPIO &pcfg_pull_none>;
+		};
+	};
+
+	tpm {
+		tpm_int_h: tpm-int-h {
+			rockchip,pins = <7 4 RK_FUNC_GPIO &pcfg_pull_none>;
+		};
+	};
+
+	write-protect {
+		fw_wp_ap: fw-wp-ap {
+			rockchip,pins = <7 6 RK_FUNC_GPIO &pcfg_pull_none>;
+		};
+	};
+};
+
+&usbphy {
+	status = "okay";
+};
+
+&usb_host0_ehci {
+	status = "okay";
+	needs-reset-on-resume;
+};
+
+&usb_host1 {
+	status = "okay";
+};
+
+&usb_otg {
+	dr_mode = "host";
+	status = "okay";
+	assigned-clocks = <&cru SCLK_USBPHY480M_SRC>;
+	assigned-clock-parents = <&cru SCLK_OTGPHY0>;
+};
+
+&sdmmc {
+	u-boot,dm-pre-reloc;
+};
+
+&gpio3 {
+	u-boot,dm-pre-reloc;
+};
+
+&gpio8 {
+	u-boot,dm-pre-reloc;
+};

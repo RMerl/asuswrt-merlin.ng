@@ -1,0 +1,9 @@
+if TARGET_UDOO
+
+config SYS_BOARD
+	default "udoo"
+
+config SYS_CONFIG_NAME
+	default "udoo"
+
+endif

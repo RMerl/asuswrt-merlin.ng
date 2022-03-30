@@ -1,0 +1,34 @@
+# SPDX-License-Identifier: GPL-2.0+
+#
+# (C) Copyright 2019 Broadcom Ltd
+#
+
+if BCM63178
+
+config TARGET_BCM963178
+	bool "Broadcom 63178 Reference Board"
+	depends on ARCH_BCMBCA
+
+config SYS_SOC
+	default "bcm63178"
+
+if BCMBCA_DDRC
+config BCMBCA_DDR_DEF_MCBSEL
+	hex "default DDR3 mcb selector value"
+	default 0x20001603
+endif
+
+config TPL_MAX_SIZE
+	default 1048576
+
+config RSVD_USE_MAX_FROM_ENV_AND_DT 
+	bool "RSVD will use max value from env and DT"
+	default y
+
+config BCMBCA_LDO_TRIM
+	bool "Support LDO Trim"
+	default y
+
+source "board/broadcom/bcmbca/Kconfig"
+
+endif

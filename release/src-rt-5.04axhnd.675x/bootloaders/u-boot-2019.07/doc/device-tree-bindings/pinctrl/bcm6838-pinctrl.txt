@@ -1,0 +1,35 @@
+* broadcom bcm6838 pinctrl
+
+Required properties for the pinctrl driver:
+- compatible:	   "brcm,bcm6838-pinctrl"
+- regmap: 		   specify the gpio test port syscon
+- brcm,pins-count:      the number of pin
+- brcm,functions-count: the number of function
+
+Please refer to pinctrl-bindings.txt in this directory for details of the
+common pinctrl bindings used by client devices.
+
+Example:
+
+		gpio_test_port: syscon@14e00294 {
+			compatible = "syscon";
+			reg = <0x14e00294 0x1c>;
+		};
+
+		pinctrl: pinctrl {
+			compatible = "brcm,bcm6838-pinctrl";
+			regmap = <&gpio_test_port>;
+			brcm,pins-count = <74>;
+			brcm,functions-count = <8>;
+
+			usb0: usb0 {
+				usb0_pwrflt {
+					pins = "69";
+					function = "1";
+				};
+				usb0_pwron {
+					pins = "70";
+					function = "1";
+				};
+			};
+		};

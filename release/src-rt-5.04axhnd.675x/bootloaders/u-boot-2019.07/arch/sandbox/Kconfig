@@ -1,0 +1,49 @@
+menu "Sandbox architecture"
+	depends on SANDBOX
+
+config SYS_ARCH
+	default "sandbox"
+
+config SYS_BOARD
+	default "sandbox"
+
+config SYS_CPU
+	default "sandbox"
+
+config SANDBOX64
+	bool "Use 64-bit addresses"
+	select PHYS_64BIT
+	select HOST_64BIT
+
+config SANDBOX_SPL
+	bool "Enable SPL for sandbox"
+	select SUPPORT_SPL
+
+config SYS_CONFIG_NAME
+	default "sandbox_spl" if SANDBOX_SPL
+	default "sandbox" if !SANDBOX_SPL
+
+choice
+	prompt "Run sandbox on 32/64-bit host"
+	default HOST_64BIT
+	help
+	  Sandbox can be built on 32-bit and 64-bit hosts.
+	  The default is to build on a 64-bit host and run
+	  on a 64-bit host. If you want to run sandbox on
+	  a 32-bit host, change it here.
+
+config HOST_32BIT
+	bool "32-bit host"
+	depends on !PHYS_64BIT
+
+config HOST_64BIT
+	bool "64-bit host"
+
+endchoice
+
+config SANDBOX_BITS_PER_LONG
+	int
+	default 32 if HOST_32BIT
+	default 64 if HOST_64BIT
+
+endmenu

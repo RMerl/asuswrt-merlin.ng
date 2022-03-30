@@ -1,0 +1,75 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+use bytes;
+
+use Getopt::Long;
+use FindBin qw($Bin);
+use lib qw($Bin $Bin/../PerlLib);
+
+
+sub shell {
+
+    #if (defined $_[1]) {
+    #print "$_[0]\n";
+    #}
+    my $res = `$_[0]`;
+    ( $? == 0 ) or die "ERROR: $!";
+    #print "$res";
+    return $res;
+}
+
+sub trow_error 
+{
+    my $usage = qq(
+        Encrypts or signs input files 
+        The following arguments are supported: 
+        --sign - will sign when the content of the argument 
+          are private key and signable in the following format : <priv key>,<signable> 
+        --out - either single or mutilple output files delimited by comma if --encrypt option is specified  
+        --encrypt - will encrypt fld_roe keys with the content of the argument in the follwong format:
+                   <key>,<iv>    
+        --fld_roe - FLD ROE key and IV in the following format e.g --fld_roe ek_file,iv_file);
+   
+}
+
+my %args = ();
+
+
+GetOptions(\%args,'sign:s','encrypt:s','out:s','fld_roe:s');
+
+if (!$args{out}) {
+    throw_error();
+}
+if ( $args{sign} ) {
+    #Sign kekystore with MFG keyinfo
+    my @sign  = split(/,/,$args{sign});
+    shell(
+        "cat $sign[1] | openssl dgst -sign $sign[0] -keyform pem -sha256 -sigopt \\
+                  rsa_padding_mode:pss -sigopt rsa_pss_saltlen:-1 -out $args{out}"
+    );
+} elsif ( $args{encrypt} ) {
+    #Encrypt FLD keys
+   if (!$args{fld_roe}) {
+       throw_error();
+   }
+    my @ek = split(/,| /,$args{encrypt}); 
+    my @fld_roe = split(/,| /,$args{fld_roe});
+    #my @out = split(/,/,$args{out});
+    $ek[0] = shell("hexdump -v -e '/1 \"%02X\"' $ek[0]");
+    $ek[1] = shell("hexdump -v -e '/1 \"%02X\"' $ek[1]");
+    shell(
+        "cat $fld_roe[0]|openssl enc -aes-128-cbc -K $ek[0] -iv $ek[1] -out $args{out}.ek"
+    );
+    shell(
+        "cat $fld_roe[1]|openssl enc -aes-128-cbc -K $ek[0] -iv $ek[1] -out $args{out}.iv"
+    );
+    shell(
+        "cat $args{out}.ek $args{out}.iv > $args{out}"
+    );
+} else { 
+    trow_error();
+} 
+
+

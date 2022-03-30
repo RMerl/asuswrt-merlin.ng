@@ -1,0 +1,174 @@
+#include "inc/68460.dtsi"
+#include "../bcm_voice.dtsi"
+
+/ {
+    memory_controller {
+        memcfg = <(BP_DDR_SPEED_800_11_11_11  | \
+                   BP_DDR_TOTAL_SIZE_256MB    | \
+                   BP_DDR_DEVICE_WIDTH_16     | \
+                   BP_DDR_TOTAL_WIDTH_16BIT)>;
+    };
+};
+
+/ {
+    model = "968460RGW";
+
+    wan_serdes {
+            compatible = "brcm,pon-drv";
+            trx = <&pmd>;
+            rx-polarity-invert;
+            tx-polarity-invert;
+    };
+
+    pmd: pmd {
+            compatible = "brcm,pmd";
+            pinctrl-names = "default", "state_ewake";
+            pinctrl-0 = <&pon_lbe_p_pin_67>;
+            pinctrl-1 = <&pon_lbe_p_pin_67 &b_wan_early_txen_pin_4>;
+            ewake-gpio = <&gpioc 4 GPIO_ACTIVE_HIGH>;
+            rstn-gpio = <&gpioc 40 GPIO_ACTIVE_LOW>;
+            alarm = <&bca_extintr 14 GPIO_ACTIVE_HIGH (BCA_EXTINTR_TYPE_HIGH_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+            apd-boost;
+            i2c-bus = <&i2c0>;
+    };
+
+    buttons {
+        compatible = "brcm,buttons";
+        reset_button {
+            ext_irq = <&bca_extintr 19 BCA_GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+            press {
+                print = "Button Press -- Hold for 5s to do restore to default";
+   	 };
+            hold {
+                rst_to_dflt = <5>;
+            };
+            release {
+                reset = <0>;
+            };	
+        };
+    };
+};
+
+&rgmii {
+        status = "okay";
+};
+
+&mdio {
+        phy1:1 {
+                status = "okay";
+        };
+
+        phy2:2 {
+                status = "okay";
+        };
+
+        phy3:3 {
+                status = "okay";
+        };
+
+        phy4:4 {
+                status = "okay";
+        };
+
+        phy_rgmii: rgmii {
+                reg = <7>;
+                tx-delay;
+                status = "okay";
+        };
+};
+
+&switch0 {
+        pinctrl-names = "default", "rgmii";
+        pinctrl-0 = <&per_mdc_pin_54 &per_mdio_pin_55 &rgmii_pins>;
+        pinctrl-1 = <&rgmii_pins>;
+
+        ports {
+                port0@0 {
+                        status = "okay";
+                };
+
+                port1@1 {
+                        status = "okay";
+                };
+
+                port2@2 {
+                        status = "okay";
+                };
+
+                port3@3 {
+                        status = "okay";
+                };
+
+                port4@4 {
+                        mii-pinctrl-state = "rgmii";
+                        status = "okay";
+                };
+        };
+};
+
+&led_ctrl {
+    led0: sw_led_0-pin_18 {
+              active_low;
+              status = "okay";
+              label = "INET";
+          };
+    led1: sw-led_2-pin_22 {
+              active_low;
+              status = "okay";
+              label = "ALARM";
+          };
+    led2: sw-led_3-pin_24 {
+              active_low;
+              status = "okay";
+              label = "WAN_LINK";
+          };
+};
+
+&legacy_leds {
+    wan-data-led = <&led2>;
+};
+
+&nand {
+	status = "okay";
+};
+&uart0 {
+	status = "okay";
+};
+&wdt {
+	status = "okay";
+};
+&i2c0 {
+    pinctrl-names = "default";
+    pinctrl-0 = <&i2c_scl_pin_68 &i2c_sda_pin_69>;
+	status = "okay";
+};
+&usb_ctrl {
+    pinctrl-names = "default";
+    pinctrl-0 = <&usb0_pwr_pins &usb1_pwr_pins>;
+	status = "okay";
+};
+&usb0_ehci {
+	status = "okay";
+};
+&usb1_ehci {
+	status = "okay";
+};
+&usb0_ohci {
+	status = "okay";
+};
+&usb1_ohci {
+	status = "okay";
+};
+&hsspi {
+	status = "okay";
+};
+
+&pcie0 {
+	status = "okay";
+};
+&pcie1 {
+	status = "okay";
+};
+&bcm_voice{
+	sliclist = "NOSLIC", "LE9641_ZSI_BB";
+};

@@ -1,0 +1,105 @@
+#include "63178.dtsi"
+
+/ {
+    memory_controller {
+        memcfg = <(BP_DDR_SPEED_800_11_11_11 | \
+                   BP_DDR_TOTAL_SIZE_512MB   | \
+                   BP_DDR_DEVICE_WIDTH_16    | \
+                   BP_DDR_TOTAL_WIDTH_16BIT  | \
+                   BP_DDR_63178_DEFAULT)>;
+    };
+
+	buttons {
+		compatible = "brcm,buttons";
+		reset_button {
+			ext_irq = <&bca_extintr 0 BCA_GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+			press {
+				print = "Button Press -- Hold for 5s to do restore to default";
+			};
+			hold {
+				rst_to_dflt = <5>;
+			};
+			release {
+				reset = <0>;
+			};	
+		};
+		ses_button {
+			ext_irq = <&bca_extintr 21 BCA_GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+			release {
+				ses_short_period = <0>;
+				ses_long_period = <3>;
+			};
+		};
+	};
+};
+
+&switch0 {
+	ports {
+		port0@0 {
+			status = "okay";
+			network-leds = <&led0>;
+		};
+
+		port1@1 {
+			status = "okay";
+			network-leds = <&led1>;
+		};
+
+		port2@2 {
+			status = "okay";
+			network-leds = <&led2>;
+		};
+
+		port3@3 {
+			status = "okay";
+			network-leds = <&led3>;
+		};
+
+		port4@4 {
+			status = "okay";
+			network-leds = <&led4>;
+		};
+	};
+};
+
+&legacy_leds {
+	wl-sess-led = <&led5>;
+};
+
+&led_ctrl {
+	status = "okay";
+	led0: port_0-led-3-pin_47 {
+		active_low;
+		activity = <LED_SPEED_GBE>;
+		status = "okay";
+	};
+	led1: port_1-led-3-pin_51 {
+		active_low;
+		activity = <LED_SPEED_GBE>;
+		status = "okay";
+	};
+	led2: port_2-led-3-pin_50 {
+		active_low;
+		activity = <LED_SPEED_GBE>;
+		status = "okay";
+	};
+	led3: port_3-led-3-pin_49 {
+		active_low;
+		activity = <LED_SPEED_GBE>;
+		status = "okay";
+	};
+	led4: port_4-led-3-pin_56 {
+		active_low;
+		activity = <LED_SPEED_GBE>;
+		status = "okay";
+	};
+	led5: sw_led_08-pin_59 {
+		active_low;
+		status = "okay";
+	};
+	led6: sw_led_02-pin_57 {
+		active_low;
+		status = "okay";
+	};
+
+};

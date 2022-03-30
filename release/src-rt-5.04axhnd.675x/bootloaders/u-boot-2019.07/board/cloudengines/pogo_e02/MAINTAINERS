@@ -1,0 +1,6 @@
+POGO_E02 BOARD
+M:	Dave Purdy <david.c.purdy@gmail.com>
+S:	Maintained
+F:	board/cloudengines/pogo_e02/
+F:	include/configs/pogo_e02.h
+F:	configs/pogo_e02_defconfig

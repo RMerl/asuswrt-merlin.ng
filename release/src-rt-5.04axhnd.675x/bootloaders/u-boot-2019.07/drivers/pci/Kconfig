@@ -1,0 +1,148 @@
+menuconfig PCI
+	bool "PCI support"
+	default y if PPC
+	help
+	  Enable support for PCI (Peripheral Interconnect Bus), a type of bus
+	  used on some devices to allow the CPU to communicate with its
+	  peripherals.
+
+if PCI
+
+config DM_PCI
+	bool "Enable driver model for PCI"
+	depends on DM
+	help
+	  Use driver model for PCI. Driver model is the new method for
+	  orgnising devices in U-Boot. For PCI, driver model keeps track of
+	  available PCI devices, allows scanning of PCI buses and provides
+	  device configuration support.
+
+config DM_PCI_COMPAT
+	bool "Enable compatible functions for PCI"
+	depends on DM_PCI
+	help
+	  Enable compatibility functions for PCI so that old code can be used
+	  with CONFIG_DM_PCI enabled. This should be used as an interim
+	  measure when porting a board to use driver model for PCI. Once the
+	  board is fully supported, this option should be disabled.
+
+config PCI_AARDVARK
+	bool "Enable Aardvark PCIe driver"
+	default n
+	depends on DM_PCI
+	depends on ARMADA_3700
+	help
+	  Say Y here if you want to enable PCIe controller support on
+	  Armada37x0 SoCs. The PCIe controller on Armada37x0 is based on
+	  Aardvark hardware.
+
+config PCI_PNP
+	bool "Enable Plug & Play support for PCI"
+	depends on PCI || DM_PCI
+	default y
+	help
+	  Enable PCI memory and I/O space resource allocation and assignment.
+
+config PCIE_ECAM_GENERIC
+	bool "Generic ECAM-based PCI host controller support"
+	default n
+	depends on DM_PCI
+	help
+	  Say Y here if you want to enable support for generic ECAM-based
+	  PCIe host controllers, such as the one emulated by QEMU.
+
+config PCIE_DW_MVEBU
+	bool "Enable Armada-8K PCIe driver (DesignWare core)"
+	depends on DM_PCI
+	depends on ARMADA_8K
+	help
+	  Say Y here if you want to enable PCIe controller support on
+	  Armada-8K SoCs. The PCIe controller on Armada-8K is based on
+	  DesignWare hardware.
+
+config PCIE_FSL
+	bool "FSL PowerPC PCIe support"
+	depends on DM_PCI
+	help
+	  Say Y here if you want to enable PCIe controller support on FSL
+	  PowerPC MPC85xx, MPC86xx, B series, P series and T series SoCs.
+	  This driver does not support SRIO_PCIE_BOOT feature.
+
+config PCI_RCAR_GEN2
+	bool "Renesas RCar Gen2 PCIe driver"
+	depends on DM_PCI
+	depends on RCAR_32
+	help
+	  Say Y here if you want to enable PCIe controller support on
+	  Renesas RCar Gen2 SoCs. The PCIe controller on RCar Gen2 is
+	  also used to access EHCI USB controller on the SoC.
+
+config PCI_RCAR_GEN3
+	bool "Renesas RCar Gen3 PCIe driver"
+	depends on DM_PCI
+	depends on RCAR_GEN3
+	help
+	  Say Y here if you want to enable PCIe controller support on
+	  Renesas RCar Gen3 SoCs.
+
+config PCI_SANDBOX
+	bool "Sandbox PCI support"
+	depends on SANDBOX && DM_PCI
+	help
+	  Support PCI on sandbox, as an emulated bus. This permits testing of
+	  PCI feature such as bus scanning, device configuration and device
+	  access. The available (emulated) devices are defined statically in
+	  the device tree but the normal PCI scan technique is used to find
+	  then.
+
+config PCI_TEGRA
+	bool "Tegra PCI support"
+	depends on TEGRA
+	depends on (TEGRA186 && POWER_DOMAIN) || (!TEGRA186)
+	help
+	  Enable support for the PCIe controller found on some generations of
+	  Tegra. Tegra20 has 2 root ports with a total of 4 lanes, Tegra30 has
+	  3 root ports with a total of 6 lanes and Tegra124 has 2 root ports
+	  with a total of 5 lanes. Some boards require this for Ethernet
+	  support to work (e.g. beaver, jetson-tk1).
+
+config PCI_XILINX
+	bool "Xilinx AXI Bridge for PCI Express"
+	depends on DM_PCI
+	help
+	  Enable support for the Xilinx AXI bridge for PCI express, an IP block
+	  which can be used on some generations of Xilinx FPGAs.
+
+config PCIE_LAYERSCAPE
+	bool "Layerscape PCIe support"
+	depends on DM_PCI
+	help
+	  Support Layerscape PCIe. The Layerscape SoC may have one or several
+	  PCIe controllers. The PCIe may works in RC or EP mode according to
+	  RCW[HOST_AGT_PEX] setting.
+
+config PCIE_LAYERSCAPE_GEN4
+	bool "Layerscape Gen4 PCIe support"
+	depends on DM_PCI
+	help
+	  Support PCIe Gen4 on NXP Layerscape SoCs, which may have one or
+	  several PCIe controllers. The PCIe controller can work in RC or
+	  EP mode according to RCW[HOST_AGT_PEX] setting.
+
+config PCIE_INTEL_FPGA
+	bool "Intel FPGA PCIe support"
+	depends on DM_PCI
+	help
+	  Say Y here if you want to enable PCIe controller support on Intel
+	  FPGA, example Stratix 10.
+
+config PCI_MVEBU
+	bool "Enable Armada XP/38x PCIe driver"
+	depends on ARCH_MVEBU
+	select DM_PCI
+	select MISC
+	help
+	  Say Y here if you want to enable PCIe controller support on
+	  Armada XP/38x SoCs.
+
+endif

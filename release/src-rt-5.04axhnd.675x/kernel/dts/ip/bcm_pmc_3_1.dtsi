@@ -1,0 +1,6 @@
+compatible = "brcm,bca-pmc-3-1";
+
+reg = <PMC_REG_OFFSET PMC_REG_SIZE>,
+    <PROCMON_REG_OFFSET PROCMON_REG_SIZE>, 
+    <MAESTRO_REG_OFFSET MAESTRO_REG_SIZE>;
+reg-names = "pmc", "procmon", "maestro";

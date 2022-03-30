@@ -1,0 +1,15 @@
+#address-cells = <1>;
+#size-cells = <1>;
+compatible = "arm,pl011", "arm,primecell";
+reg = <UART_OFFSET UART_SIZE>;
+interrupts = <GIC_SPI UART_SPI IRQ_TYPE_LEVEL_HIGH>;
+clocks = <&UART_CLK_LABEL>, <&UART_CLK_LABEL>;
+clock = <UART_CLK>;
+clock-names = "uartclk", "apb_pclk";
+status = "disabled";
+
+#undef UART_OFFSET
+#undef UART_SPI
+#undef UART_SIZE
+#undef UART_CLK_LABEL
+#undef UART_CLK

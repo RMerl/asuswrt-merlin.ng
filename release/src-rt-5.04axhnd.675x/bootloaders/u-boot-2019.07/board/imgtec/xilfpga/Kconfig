@@ -1,0 +1,15 @@
+if TARGET_XILFPGA
+
+config SYS_BOARD
+	default "xilfpga"
+
+config SYS_VENDOR
+	default "imgtec"
+
+config SYS_CONFIG_NAME
+	default "imgtec_xilfpga"
+
+config SYS_TEXT_BASE
+	default 0x80C00000
+
+endif

@@ -1,0 +1,6 @@
+COLIBRI_PXA270 BOARD
+M:	Marek Vasut <marek.vasut@gmail.com>
+S:	Maintained
+F:	board/toradex/colibri_pxa270/
+F:	include/configs/colibri_pxa270.h
+F:	configs/colibri_pxa270_defconfig

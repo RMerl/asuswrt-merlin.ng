@@ -1,0 +1,24 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2018 Jagan Teki <jagan@amarulasolutions.com>
+ */
+
+#include "imx6ul-u-boot.dtsi"
+
+&usdhc1 {
+	u-boot,dm-spl;
+};
+
+&iomuxc {
+	pinctrl_usdhc1: usdhc1grp {
+		u-boot,dm-spl;
+	};
+
+	pinctrl_usdhc1_100mhz: usdhc1grp100mhz {
+		u-boot,dm-spl;
+	};
+
+	pinctrl_usdhc1_200mhz: usdhc1grp200mhz {
+		u-boot,dm-spl;
+	};
+};

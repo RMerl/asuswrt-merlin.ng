@@ -1,0 +1,143 @@
+/* 94908DVT board led definition */
+
+&legacy_leds {
+	wl-sess-led = <&led24>;
+	voip1-ok-led = <&led23>;
+	voip2-ok-led = <&led26>;
+};
+
+&led_ctrl {
+    pinctrl-names = "default";
+    pinctrl-0 = <&ser_led_clk_pin_1 &ser_led_data_pin_0 &ser_led_mask_pin_2>;
+    serial-shifters-installed = <2>;
+    serial-data-polarity-high;
+
+    led0: port_0-led_0-bit_0 {
+        active_high;
+        link = <(LED_SPEED_1G)>;
+        status = "okay";
+    };
+    led1: port_0-led_1-bit_1 {
+        active_high;
+        link = <(LED_SPEED_100)>;
+        status = "okay";
+    };
+    led2: port_1-led_0-bit_2 {
+        active_high;
+        link = <(LED_SPEED_1G)>;
+        status = "okay";
+    };
+    led3: port_1-led_1-bit_3 {
+        active_high;
+        link = <(LED_SPEED_100)>;
+        status = "okay";
+    };
+    led4: port_2-led_0-pin_4 {
+        active_low;
+        link = <(LED_SPEED_1G)>;
+        status = "okay";
+    };
+    led5: port_2-led_1-pin_5 {
+        active_low;
+        link = <(LED_SPEED_100)>;
+        status = "okay";
+    };
+    led6: port_3-led_0-pin_6 {
+        active_low;
+        link = <(LED_SPEED_1G)>;
+        status = "okay";
+    };
+    led7: port_3-led_1-pin_7 {
+        active_low;
+        link = <(LED_SPEED_100)>;
+        status = "okay";
+    };
+    led8: port_7-led_0-pin_8 {
+        active_low;
+        link = <(LED_SPEED_1G)>;
+        status = "okay";
+    };
+    led9: port_7-led_1-pin_9 {
+        active_low;
+        link = <(LED_SPEED_100)>;
+        status = "okay";
+    };
+    led10: rnr_port_3-led_0-pin_10 {
+        active_low;
+        link = <(LED_SPEED_1G)>;
+        status = "okay";
+    };
+    led11: rnr_port_3-led_1-pin_11 {
+        active_low;
+        link = <(LED_SPEED_100)>;
+        status = "okay";
+    };
+	led12: aggr_link-pin_12 {
+		active_low;
+		status = "okay";
+	};
+	led13: aggr_act-pin_13 {
+		active_low;
+		status = "okay";
+	};
+	led14: pwm_0-pin_14 {
+        active_low;
+        status = "okay";
+	};
+	led15: pwm_1-pin_15 {
+        active_low;
+        status = "okay";
+	};
+    led16: port_0-led_2-pin_16 {
+        active_low;
+        link = <(LED_SPEED_100|LED_SPEED_1G)>;
+        activity = <(LED_SPEED_100|LED_SPEED_1G)>;
+        status = "okay";
+    };
+	led17: port_1-led_2-pin_17 {
+        active_low;
+        link = <(LED_SPEED_100|LED_SPEED_1G)>;
+        activity = <(LED_SPEED_100|LED_SPEED_1G)>;
+        status = "okay";
+    };
+	led18: port_2-led_2-bit_18 {
+        active_high;
+        link = <(LED_SPEED_100|LED_SPEED_1G)>;
+        activity = <(LED_SPEED_100|LED_SPEED_1G)>;
+        status = "okay";
+    };
+	led19: port_3-led_2-bit_19 {
+        active_high;
+        link = <(LED_SPEED_100|LED_SPEED_1G)>;
+        activity = <(LED_SPEED_100|LED_SPEED_1G)>;
+        status = "okay";
+    };
+	led20: port_7-led_2-bit_20 {
+        active_high;
+        link = <(LED_SPEED_100|LED_SPEED_1G)>;
+        activity = <(LED_SPEED_100|LED_SPEED_1G)>;
+        status = "okay";
+    };
+	led21: rnr_port_3-led_2-pin_21 {
+        active_low;
+        link = <(LED_SPEED_100|LED_SPEED_1G)>;
+        activity = <(LED_SPEED_100|LED_SPEED_1G)>;
+        status = "okay";
+    };
+    led22: sw_led-bit_22 {
+        active_high;
+        status = "okay";
+    };
+    led23: sw_led-bit_23 {
+        active_high;
+        status = "okay";
+    };
+	led24: sw_led_24-pin_24 {
+        active_low;
+        status = "okay";
+    };
+    led26: sw_led-bit_26 {
+        active_high;
+        status = "okay";
+    };
+};

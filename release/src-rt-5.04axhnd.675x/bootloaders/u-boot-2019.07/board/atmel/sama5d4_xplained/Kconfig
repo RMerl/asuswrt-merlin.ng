@@ -1,0 +1,12 @@
+if TARGET_SAMA5D4_XPLAINED
+
+config SYS_BOARD
+	default "sama5d4_xplained"
+
+config SYS_VENDOR
+	default "atmel"
+
+config SYS_CONFIG_NAME
+	default "sama5d4_xplained"
+
+endif

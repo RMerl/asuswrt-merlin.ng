@@ -1,0 +1,9 @@
+if TARGET_H2200
+
+config SYS_BOARD
+	default "h2200"
+
+config SYS_CONFIG_NAME
+	default "h2200"
+
+endif

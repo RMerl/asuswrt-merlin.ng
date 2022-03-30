@@ -1,0 +1,239 @@
+/*
+ * Broadcom reserved memory dtsi template
+ */
+
+#if defined(CONFIG_BCM_ADSL) || defined(CONFIG_BCM_ADSL_MODULE)
+
+#define MBALIGN(N)	 ((N+0xFFFFF)&0xFFF00000)
+
+#include "dslmemdef.h"
+
+#ifdef	ADSL_SDRAM_RESERVE_SIZE
+#define ADSL_SDRAM_SIZE MBALIGN(ADSL_SDRAM_RESERVE_SIZE)
+#else
+#define ADSL_SDRAM_SIZE MBALIGN(ADSL_SDRAM_IMAGE_SIZE)
+#endif
+
+#ifndef SDRAM4G_FULL_SUPPORT
+#undef	SDRAM_EXCL_ADDR_LOW
+#define SDRAM_EXCL_ADDR_LOW     0x10000000
+#undef	SDRAM_EXCL_ADDR_HIGH
+#define SDRAM_EXCL_ADDR_HIGH    0xFFFFFFFF
+#endif
+
+#define DT_RESERVED_ADSL_IN_UNCACHED_DEV
+
+#endif 
+
+#if defined (CONFIG_BCM_RDPA) || defined (CONFIG_BCM_RDPA_MODULE)
+#if CONFIG_BCM_CHIP_NUMBER==63146 || CONFIG_BCM_CHIP_NUMBER==4912
+#define	 DT_RESERVED_BUFMEM_IN_UNCACHED_DEV
+#elif CONFIG_BCM_CHIP_NUMBER==6858 || CONFIG_BCM_CHIP_NUMBER==4908 || CONFIG_BCM_CHIP_NUMBER==63158 || CONFIG_BCM_CHIP_NUMBER==6855
+#define	 DT_RESERVED_RDP1_IN_CACHED_DEV
+#else
+#define	 DT_RESERVED_RDP1_IN_UNCACHED_DEV
+#endif
+
+#if CONFIG_BCM_CHIP_NUMBER==63146 || CONFIG_BCM_CHIP_NUMBER==4912
+#define	 DT_RESERVED_RNRMEM_IN_UNCACHED_DEV
+#elif (CONFIG_BCM_CHIP_NUMBER==63158) && defined(CONFIG_BCM_GLB_COHERENCY)
+#define	 DT_RESERVED_RDP2_IN_CACHED_DEV
+#else
+#define	 DT_RESERVED_RDP2_IN_UNCACHED_DEV
+#endif
+
+#else /* no RDPA */
+
+/* no RDPA, but have MPM */
+#if defined(CONFIG_BCM_MPM) || defined(CONFIG_BCM_MPM_MODULE)
+#define	 DT_RESERVED_BUFMEM_IN_CACHED_DEV
+#define RDP_PKT_BUFFER_MEM_SIZE		0x2000000	/* 32MB */
+#endif
+
+#endif
+
+#if defined (CONFIG_BCM_DHD_RUNNER) || (CONFIG_BCM_DHD_RUNNER_MODULE) || defined(CONFIG_BCM_DHD_ARCHER) || defined(CONFIG_BCM_DHD_ARCHER_MODULE)
+#define DT_RESERVED_DHD_IN_UNCACHED_DEV
+#endif
+
+#if defined(CONFIG_BCM_PON_XRDP)
+
+#if CONFIG_BCM_CHIP_NUMBER==6878 || CONFIG_BCM_CHIP_NUMBER==6846
+#define RDP_FLOW_TABLE_MEM_SIZE		0x0800000	/* 8MB */ 
+#define RDP_PKT_BUFFER_MEM_SIZE		0x1000000	/* 16MB */
+#elif CONFIG_BCM_CHIP_NUMBER==6855
+#define RDP_FLOW_TABLE_MEM_SIZE		0x0c00000	/* 12MB */
+#define RDP_PKT_BUFFER_MEM_SIZE		0x2000000	/* 32MB */
+#else
+#define RDP_FLOW_TABLE_MEM_SIZE		0x800000	/* 8MB */
+#define RDP_PKT_BUFFER_MEM_SIZE		0x2000000	/* 32MB */
+#endif
+
+#elif CONFIG_BCM_CHIP_NUMBER==63158
+#define RDP_PKT_BUFFER_MEM_SIZE		0x1000000	/* 16MB */
+#define RDP_FLOW_TABLE_MEM_SIZE		0x0c00000	/* 12MB */
+
+#elif CONFIG_BCM_CHIP_NUMBER==63146 || CONFIG_BCM_CHIP_NUMBER==4912
+#define RDP_FLOW_TABLE_MEM_SIZE		0x0c00000	/* 12MB */
+#if defined(CONFIG_BCM_MPM) || defined(CONFIG_BCM_MPM_MODULE)
+#if CONFIG_BRCM_CHIP_REV==0x4912B0
+#define RDP_PKT_BUFFER_MEM_SIZE		0x8000000	/* 128MB */
+#else
+#define RDP_PKT_BUFFER_MEM_SIZE		0x4000000	/* 64MB */
+#endif
+#else
+#define RDP_PKT_BUFFER_MEM_SIZE		0x2000000	/* 32MB */
+#endif
+
+#elif CONFIG_BCM_CHIP_NUMBER==4908
+#if defined(CONFIG_BCM_DHD_RUNNER) && defined(CONFIG_BCM_JUMBO_FRAME)
+#define RDP_PKT_BUFFER_MEM_SIZE		0x4000000	/* 64MB */
+#elif defined(CONFIG_BCM_DHD_RUNNER) || defined(CONFIG_BCM_JUMBO_FRAME)
+#define RDP_PKT_BUFFER_MEM_SIZE		0x2000000	/* 32MB */
+#elif defined(CONFIG_BCM_FPM_POOL_NUM) && CONFIG_BCM_FPM_POOL_NUM==2
+#define RDP_PKT_BUFFER_MEM_SIZE		0x2000000	/* 32MB */
+#else
+#define RDP_PKT_BUFFER_MEM_SIZE		0x1000000	/* 16MB */
+#endif
+#if defined(CONFIG_BCM_RDPA_MCAST)
+#define RDP_FLOW_TABLE_MEM_SIZE		0x2c00000	/* 44MB */
+#else
+#define RDP_FLOW_TABLE_MEM_SIZE		0x0c00000	/* 12MB */
+#endif
+
+#elif CONFIG_BCM_CHIP_NUMBER==63138 || CONFIG_BCM_CHIP_NUMBER==63148
+#define RDP_PKT_BUFFER_MEM_SIZE		0x0E00000	/* 14MB */
+#define RDP_FLOW_TABLE_MEM_SIZE		0x0400000	/*	4MB */
+#elif defined(CONFIG_BRCM_QEMU)
+#define RDP_PKT_BUFFER_MEM_SIZE		0x0400000	/* 4MB */
+#define RDP_FLOW_TABLE_MEM_SIZE		0x0400000	/* 4MB */
+#else
+#define RDP_PKT_BUFFER_MEM_SIZE		0x0000000	/*	0MB */
+#define RDP_FLOW_TABLE_MEM_SIZE		0x0000000	/*	0MB */
+#endif
+
+#define RDP_PARAM1_DEF_DDR_SIZE RDP_PKT_BUFFER_MEM_SIZE
+#define RDP_PARAM2_DEF_DDR_SIZE RDP_FLOW_TABLE_MEM_SIZE
+#define BUFMEM_DEF_DDR_SIZE RDP_PKT_BUFFER_MEM_SIZE
+#define RNRMEM_DEF_DDR_SIZE RDP_FLOW_TABLE_MEM_SIZE
+
+#if defined(CONFIG_BCM_DHD_ARCHER) || defined(CONFIG_BCM_DHD_ARCHER_MODULE)
+#define DHD_PARAM0_DDR_SIZE 0x0B00000    /* 11 MB */
+#define DHD_PARAM1_DDR_SIZE 0
+#define DHD_PARAM2_DDR_SIZE 0
+#else
+#define DHD_PARAM0_DDR_SIZE 0
+#define DHD_PARAM1_DDR_SIZE 0
+#define DHD_PARAM2_DDR_SIZE 0
+#endif
+
+#if defined(CONFIG_ARM64) 
+#define CELLS_NUM 2
+#define RSVDMEM_CMA_ADDR 0x0 0x0
+#define RSVDMEM_CMA_SIZE 0x0 0x0
+#else
+#define CELLS_NUM 1
+#define RSVDMEM_CMA_ADDR 0x0
+#define RSVDMEM_CMA_SIZE 0x0
+#endif
+
+#if defined(CONFIG_BRCM_QEMU) && CONFIG_BCM_CHIP_NUMBER==6855
+#define RSVDMEM_CMA_ADDR 0x07800000 /* 0x8000000 - 0x800000 */
+#define RSVDMEM_CMA_SIZE 0x00800000
+#endif
+
+reserved-memory {
+	#address-cells = <CELLS_NUM>;
+	#size-cells = <CELLS_NUM>;
+	ranges;
+
+	dt_reserved_cma: dt_reserved_cma {
+		compatible = "shared-dma-pool";
+		reusable;
+		/* Bootloader will fill in the total size and offset */
+		reg = <RSVDMEM_CMA_ADDR RSVDMEM_CMA_SIZE>;
+	};
+};
+
+plat_rsvmem_cached_device {
+	compatible = "brcm,plat-rsvmem";
+	dma-coherent;
+	memory-region = <&dt_reserved_cma>;
+
+#ifdef DT_RESERVED_RDP1_IN_CACHED_DEV
+	dt_reserved_rdp1: dt_reserved_rdp1 {
+		rsvd-size = <RDP_PARAM1_DEF_DDR_SIZE>;
+	};
+#endif
+
+#ifdef DT_RESERVED_RDP2_IN_CACHED_DEV
+	dt_reserved_rdp2: dt_reserved_rdp2 {
+		rsvd-size = <RDP_PARAM2_DEF_DDR_SIZE>;
+	};
+#endif
+
+#ifdef DT_RESERVED_BUFMEM_IN_CACHED_DEV
+	dt_reserved_bufmem: dt_reserved_bufmem {
+		rsvd-size = <BUFMEM_DEF_DDR_SIZE>;
+	};
+#endif
+
+#ifdef DT_RESERVED_RNRMEM_IN_CACHED_DEV
+	dt_reserved_rnrmem: dt_reserved_rnrmem {
+		rsvd-size = <RNRMEM_DEF_DDR_SIZE>;
+	};
+#endif
+
+};
+
+plat_rsvmem_uncached_device {
+	compatible = "brcm,plat-rsvmem";
+	memory-region = <&dt_reserved_cma>;
+	
+#ifdef DT_RESERVED_ADSL_IN_UNCACHED_DEV
+	dt_reserved_adsl {
+		rsvd-size = <ADSL_SDRAM_SIZE>;
+		excl-addr-low = <SDRAM_EXCL_ADDR_LOW>;
+		excl-addr-high = <SDRAM_EXCL_ADDR_HIGH>;
+	};
+#endif
+
+
+#ifdef DT_RESERVED_RDP1_IN_UNCACHED_DEV
+	dt_reserved_rdp1: dt_reserved_rdp1 {
+		rsvd-size = <RDP_PARAM1_DEF_DDR_SIZE>;
+	};
+#endif
+
+#ifdef DT_RESERVED_RDP2_IN_UNCACHED_DEV
+	dt_reserved_rdp2: dt_reserved_rdp2 {
+		rsvd-size = <RDP_PARAM2_DEF_DDR_SIZE>;
+	};
+
+#endif
+
+#ifdef DT_RESERVED_BUFMEM_IN_UNCACHED_DEV
+	dt_reserved_bufmem: dt_reserved_bufmem {
+		rsvd-size = <BUFMEM_DEF_DDR_SIZE>;
+	};
+#endif
+
+#ifdef DT_RESERVED_RNRMEM_IN_UNCACHED_DEV
+	dt_reserved_rnrmem: dt_reserved_rnrmem {
+		rsvd-size = <RNRMEM_DEF_DDR_SIZE>;
+	};
+#endif
+
+#ifdef DT_RESERVED_DHD_IN_UNCACHED_DEV
+	 dt_reserved_dhd0:dt_reserved_dhd0 {
+		rsvd-size = <DHD_PARAM0_DDR_SIZE>;
+	};
+	 dt_reserved_dhd1:dt_reserved_dhd1 {
+		rsvd-size = <DHD_PARAM1_DDR_SIZE>;
+	};
+	 dt_reserved_dhd2:dt_reserved_dhd2 {
+		rsvd-size = <DHD_PARAM2_DDR_SIZE>;
+	};
+#endif
+
+};

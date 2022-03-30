@@ -1,0 +1,6 @@
+BOARDS from CS Systemes d'Information
+M:	Christophe Leroy <christophe.leroy@c-s.fr>
+S:	Maintained
+F:	board/cssi/
+F:	include/configs/MCR3000.h
+F:	configs/MCR3000_defconfig

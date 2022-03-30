@@ -1,0 +1,94 @@
+// SPDX-License-Identifier: GPL-2.0+ OR X11
+/*
+ * Copyright 2019 Toradex AG
+ */
+
+/dts-v1/;
+#include "imx7-colibri.dtsi"
+
+/ {
+	model = "Toradex Colibri iMX7S/D";
+	compatible = "toradex,imx7-colibri", "fsl,imx7";
+
+	chosen {
+		stdout-path = &uart1;
+	};
+
+	aliases {
+		usb0 = &usbotg1; /* required for ums */
+	};
+
+	reg_5v0: regulator-5v0 {
+		compatible = "regulator-fixed";
+		regulator-name = "5V";
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
+	};
+
+	reg_usbh_vbus: regulator-usbh-vbus {
+		compatible = "regulator-fixed";
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_usbh_reg>;
+		regulator-name = "VCC_USB[1-4]";
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
+		gpio = <&gpio4 7 GPIO_ACTIVE_LOW>;
+		vin-supply = <&reg_5v0>;
+	};
+};
+
+&gpmi {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_gpmi_nand>;
+	fsl,use-minimum-ecc;
+	nand-on-flash-bbt;
+	nand-ecc-mode = "hw";
+	status = "okay";
+};
+
+&iomuxc {
+	pinctrl_gpmi_nand: gpmi-nand-grp {
+		fsl,pins = <
+			MX7D_PAD_SD3_CLK__NAND_CLE		0x71
+			MX7D_PAD_SD3_CMD__NAND_ALE		0x71
+			MX7D_PAD_SAI1_TX_BCLK__NAND_CE0_B	0x71
+			MX7D_PAD_SAI1_TX_DATA__NAND_READY_B	0x74
+			MX7D_PAD_SD3_STROBE__NAND_RE_B		0x71
+			MX7D_PAD_SD3_RESET_B__NAND_WE_B		0x71
+			MX7D_PAD_SD3_DATA0__NAND_DATA00		0x71
+			MX7D_PAD_SD3_DATA1__NAND_DATA01		0x71
+			MX7D_PAD_SD3_DATA2__NAND_DATA02		0x71
+			MX7D_PAD_SD3_DATA3__NAND_DATA03		0x71
+			MX7D_PAD_SD3_DATA4__NAND_DATA04		0x71
+			MX7D_PAD_SD3_DATA5__NAND_DATA05		0x71
+			MX7D_PAD_SD3_DATA6__NAND_DATA06		0x71
+			MX7D_PAD_SD3_DATA7__NAND_DATA07		0x71
+		>;
+	};
+
+	pinctrl_usbh_reg: gpio-usbh-vbus {
+		fsl,pins = <
+			MX7D_PAD_UART3_CTS_B__GPIO4_IO7	0x14
+		>;
+	};
+};
+
+/* Colibri USBC */
+&usbotg1 {
+	/*
+	 * usbotg1 on Colibri iMX7 can function in both host/otg modes.
+	 * Gadget stack currently does not look at this at all while
+	 * the host stack refuses to bind/load if it is not set to host
+	 * (it obviously won't be enumerated during usb start invocation
+	 * if dr_mode = "otg")
+	 */
+	dr_mode = "host";
+	status = "okay";
+};
+
+/* Colibri USBH */
+&usbotg2 {
+	dr_mode = "host";
+	vbus-supply = <&reg_usbh_vbus>;
+	status = "okay";
+};

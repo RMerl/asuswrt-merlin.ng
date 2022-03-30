@@ -1,0 +1,31 @@
+LS1028AQDS BOARD
+M:	Sudhanshu Gupta <sudhanshu.gupta@nxp.com>
+M:	Rai Harninder <harninder.rai@nxp.com>
+M:	Rajesh Bhagat <rajesh.bhagat@nxp.com>
+M:	Tang Yuantian <andy.tang@nxp.com>
+S:	Maintained
+F:	board/freescale/ls1028a/
+F:	include/configs/ls1028a_common.h
+F:	include/configs/ls1028aqds.h
+F:	configs/ls1028aqds_tfa_defconfig
+
+LS1028ARDB BOARD
+M:	Sudhanshu Gupta <sudhanshu.gupta@nxp.com>
+M:	Rai Harninder <harninder.rai@nxp.com>
+M:	Rajesh Bhagat <rajesh.bhagat@nxp.com>
+M:	Tang Yuantian <andy.tang@nxp.com>
+S:	Maintained
+F:	board/freescale/ls1028a/
+F:	include/configs/ls1028a_common.h
+F:	include/configs/ls1028ardb.h
+F:	configs/ls1028ardb_tfa_defconfig
+
+LS1028AQDS_SECURE_BOOT BOARD
+M:	Tang Yuantian <andy.tang@nxp.com>
+S:	Maintained
+F:	configs/ls1028aqds_tfa_SECURE_BOOT_defconfig
+
+LS1028ARDB_SECURE_BOOT BOARD
+M:	Tang Yuantian <andy.tang@nxp.com>
+S:	Maintained
+F:	configs/ls1028ardb_tfa_SECURE_BOOT_defconfig

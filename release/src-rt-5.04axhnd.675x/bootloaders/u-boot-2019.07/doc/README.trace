@@ -1,0 +1,346 @@
+# SPDX-License-Identifier: GPL-2.0+
+#
+# Copyright (c) 2013 The Chromium OS Authors.
+
+Tracing in U-Boot
+=================
+
+U-Boot supports a simple tracing feature which allows a record of excecution
+to be collected and sent to a host machine for analysis. At present the
+main use for this is to profile boot time.
+
+
+Overview
+--------
+
+The trace feature uses GCC's instrument-functions feature to trace all
+function entry/exit points. These are then recorded in a memory buffer.
+The memory buffer can be saved to the host over a network link using
+tftpput or by writing to an attached memory device such as MMC.
+
+On the host, the file is first converted with a tool called 'proftool',
+which extracts useful information from it. The resulting trace output
+resembles that emitted by Linux's ftrace feature, so can be visually
+displayed by pytimechart.
+
+
+Quick-start using Sandbox
+-------------------------
+
+Sandbox is a build of U-Boot that can run under Linux so it is a convenient
+way of trying out tracing before you use it on your actual board. To do
+this, follow these steps:
+
+Add the following to include/configs/sandbox.h (if not already there)
+
+#define CONFIG_TRACE
+#define CONFIG_CMD_TRACE
+#define CONFIG_TRACE_BUFFER_SIZE		(16 << 20)
+#define CONFIG_TRACE_EARLY_SIZE		(8 << 20)
+#define CONFIG_TRACE_EARLY
+#define CONFIG_TRACE_EARLY_ADDR		0x00100000
+
+Build sandbox U-Boot with tracing enabled:
+
+$ make FTRACE=1 O=sandbox sandbox_config
+$ make FTRACE=1 O=sandbox
+
+Run sandbox, wait for a bit of trace information to appear, and then capture
+a trace:
+
+$ ./sandbox/u-boot
+
+
+U-Boot 2013.04-rc2-00100-ga72fcef (Apr 17 2013 - 19:25:24)
+
+DRAM:  128 MiB
+trace: enabled
+Using default environment
+
+In:    serial
+Out:   serial
+Err:   serial
+=>trace stats
+	671,406 function sites
+	 69,712 function calls
+	      0 untracked function calls
+	 73,373 traced function calls
+	     16 maximum observed call depth
+	     15 call depth limit
+	 66,491 calls not traced due to depth
+=>trace stats
+	671,406 function sites
+      1,279,450 function calls
+	      0 untracked function calls
+	950,490 traced function calls (333217 dropped due to overflow)
+	     16 maximum observed call depth
+	     15 call depth limit
+      1,275,767 calls not traced due to depth
+=>trace calls 0 e00000
+Call list dumped to 00000000, size 0xae0a40
+=>print
+baudrate=115200
+profbase=0
+profoffset=ae0a40
+profsize=e00000
+stderr=serial
+stdin=serial
+stdout=serial
+
+Environment size: 117/8188 bytes
+=>host save host 0 trace 0 ${profoffset}
+11405888 bytes written in 10 ms (1.1 GiB/s)
+=>reset
+
+
+Then run proftool to convert the trace information to ftrace format.
+
+$ ./sandbox/tools/proftool -m sandbox/System.map -p trace dump-ftrace >trace.txt
+
+Finally run pytimechart to display it:
+
+$ pytimechart trace.txt
+
+Using this tool you can zoom and pan across the trace, with the function
+calls on the left and little marks representing the start and end of each
+function.
+
+
+CONFIG Options
+--------------
+
+- CONFIG_TRACE
+		Enables the trace feature in U-Boot.
+
+- CONFIG_CMD_TRACE
+		Enables the trace command.
+
+- CONFIG_TRACE_BUFFER_SIZE
+		Size of trace buffer to allocate for U-Boot. This buffer is
+		used after relocation, as a place to put function tracing
+		information. The address of the buffer is determined by
+		the relocation code.
+
+- CONFIG_TRACE_EARLY
+		Define this to start tracing early, before relocation.
+
+- CONFIG_TRACE_EARLY_SIZE
+		Size of 'early' trace buffer. Before U-Boot has relocated
+		it doesn't have a proper trace buffer. On many boards
+		you can define an area of memory to use for the trace
+		buffer until the 'real' trace buffer is available after
+		relocation. The contents of this buffer are then copied to
+		the real buffer.
+
+- CONFIG_TRACE_EARLY_ADDR
+		Address of early trace buffer
+
+
+Building U-Boot with Tracing Enabled
+------------------------------------
+
+Pass 'FTRACE=1' to the U-Boot Makefile to actually instrument the code.
+This is kept as a separate option so that it is easy to enable/disable
+instrumenting from the command line instead of having to change board
+config files.
+
+
+Collecting Trace Data
+---------------------
+
+When you run U-Boot on your board it will collect trace data up to the
+limit of the trace buffer size you have specified. Once that is exhausted
+no more data will be collected.
+
+Collecting trace data has an affect on execution time/performance. You
+will notice this particularly with trvial functions - the overhead of
+recording their execution may even exceed their normal execution time.
+In practice this doesn't matter much so long as you are aware of the
+effect. Once you have done your optimisations, turn off tracing before
+doing end-to-end timing.
+
+The best time to start tracing is right at the beginning of U-Boot. The
+best time to stop tracing is right at the end. In practice it is hard
+to achieve these ideals.
+
+This implementation enables tracing early in board_init_f(). This means
+that it captures most of the board init process, missing only the
+early architecture-specific init. However, it also misses the entire
+SPL stage if there is one.
+
+U-Boot typically ends with a 'bootm' command which loads and runs an
+OS. There is useful trace data in the execution of that bootm
+command. Therefore this implementation provides a way to collect trace
+data after bootm has finished processing, but just before it jumps to
+the OS. In practical terms, U-Boot runs the 'fakegocmd' environment
+variable at this point. This variable should have a short script which
+collects the trace data and writes it somewhere.
+
+Trace data collection relies on a microsecond timer, accesed through
+timer_get_us(). So the first think you should do is make sure that
+this produces sensible results for your board. Suitable sources for
+this timer include high resolution timers, PWMs or profile timers if
+available. Most modern SOCs have a suitable timer for this. Make sure
+that you mark this timer (and anything it calls) with
+__attribute__((no_instrument_function)) so that the trace library can
+use it without causing an infinite loop.
+
+
+Commands
+--------
+
+The trace command has variable sub-commands:
+
+- stats
+		Display tracing statistics
+
+- pause
+		Pause tracing
+
+- resume
+		Resume tracing
+
+- funclist [<addr> <size>]
+		Dump a list of functions into the buffer
+
+- calls  [<addr> <size>]
+		Dump function call trace into buffer
+
+If the address and size are not given, these are obtained from environment
+variables (see below). In any case the environment variables are updated
+after the command runs.
+
+
+Environment Variables
+---------------------
+
+The following are used:
+
+- profbase
+		Base address of trace output buffer
+
+- profoffset
+		Offset of first unwritten byte in trace output buffer
+
+- profsize
+		Size of trace output buffer
+
+All of these are set by the 'trace calls' command.
+
+These variables keep track of the amount of data written to the trace
+output buffer by the 'trace' command. The trace commands which write data
+to the output buffer can use these to specify the buffer to write to, and
+update profoffset each time. This allows successive commands to append data
+to the same buffer, for example:
+
+	trace funclist 10000 e00000
+	trace calls
+
+(the latter command appends more data to the buffer).
+
+
+- fakegocmd
+		Specifies commands to run just before booting the OS. This
+		is a useful time to write the trace data to the host for
+		processing.
+
+
+Writing Out Trace Data
+----------------------
+
+Once the trace data is in an output buffer in memory there are various ways
+to transmit it to the host. Notably you can use tftput to send the data
+over a network link:
+
+fakegocmd=trace pause; usb start; set autoload n; bootp;
+	trace calls 10000000 1000000;
+	tftpput ${profbase} ${profoffset} 192.168.1.4:/tftpboot/calls
+
+This starts up USB (to talk to an attached USB Ethernet dongle), writes
+a trace log to address 10000000 and sends it to a host machine using
+TFTP. After this, U-Boot will boot the OS normally, albeit a little
+later.
+
+
+Converting Trace Output Data
+----------------------------
+
+The trace output data is kept in a binary format which is not documented
+here. To convert it into something useful, you can use proftool.
+
+This tool must be given the U-Boot map file and the trace data received
+from running that U-Boot. It produces a text output file.
+
+Options
+	-m <map_file>
+		Specify U-Boot map file
+
+	-p <trace_file>
+		Specifiy profile/trace file
+
+Commands:
+
+- dump-ftrace
+	Write a text dump of the file in Linux ftrace format to stdout
+
+
+Viewing the Trace Data
+----------------------
+
+You can use pytimechart for this (sudo apt-get pytimechart might work on
+your Debian-style machine, and use your favourite search engine to obtain
+documentation). It expects the file to have a .txt extension. The program
+has terse user interface but is very convenient for viewing U-Boot
+profile information.
+
+
+Workflow Suggestions
+--------------------
+
+The following suggestions may be helpful if you are trying to reduce boot
+time:
+
+1. Enable CONFIG_BOOTSTAGE and CONFIG_BOOTSTAGE_REPORT. This should get
+you are helpful overall snapshot of the boot time.
+
+2. Build U-Boot with tracing and run it. Note the difference in boot time
+(it is common for tracing to add 10% to the time)
+
+3. Collect the trace information as descibed above. Use this to find where
+all the time is being spent.
+
+4. Take a look at that code and see if you can optimise it. Perhaps it is
+possible to speed up the initialisation of a device, or remove an unused
+feature.
+
+5. Rebuild, run and collect again. Compare your results.
+
+6. Keep going until you run out of steam, or your boot is fast enough.
+
+
+Configuring Trace
+-----------------
+
+There are a few parameters in the code that you may want to consider.
+There is a function call depth limit (set to 15 by default). When the
+stack depth goes above this then no tracing information is recorded.
+The maximum depth reached is recorded and displayed by the 'trace stats'
+command.
+
+
+Future Work
+-----------
+
+Tracing could be a little tidier in some areas, for example providing
+run-time configuration options for trace.
+
+Some other features that might be useful:
+
+- Trace filter to select which functions are recorded
+- Sample-based profiling using a timer interrupt
+- Better control over trace depth
+- Compression of trace information
+
+
+Simon Glass <sjg@chromium.org>
+April 2013

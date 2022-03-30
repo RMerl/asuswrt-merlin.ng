@@ -1,0 +1,32 @@
+/dts-v1/;
+
+#include "tegra186-p2771-0000.dtsi"
+
+/ {
+	model = "NVIDIA P2771-0000-500";
+	compatible = "nvidia,p2771-0000-500", "nvidia,p2771-0000", "nvidia,tegra186";
+
+	sdhci@3400000 {
+		cd-gpios = <&gpio_main TEGRA_MAIN_GPIO(P, 5) GPIO_ACTIVE_LOW>;
+		power-gpios = <&gpio_main TEGRA_MAIN_GPIO(P, 6) GPIO_ACTIVE_HIGH>;
+	};
+
+	pcie@10003000 {
+		status = "okay";
+
+		pci@1,0 {
+			status = "okay";
+			nvidia,num-lanes = <4>;
+		};
+
+		pci@2,0 {
+			status = "disabled";
+			nvidia,num-lanes = <0>;
+		};
+
+		pci@3,0 {
+			status = "disabled";
+			nvidia,num-lanes = <1>;
+		};
+	};
+};

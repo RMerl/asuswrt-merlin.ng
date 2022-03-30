@@ -1,0 +1,207 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/*
+ * Copyright (c) 2018 Microsemi Corporation
+ */
+
+/ {
+	#address-cells = <1>;
+	#size-cells = <1>;
+	compatible = "mscc,serval";
+
+	cpus {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		cpu@0 {
+			compatible = "mips,mips24KEc";
+			device_type = "cpu";
+			clocks = <&cpu_clk>;
+			reg = <0>;
+		};
+	};
+
+	aliases {
+		serial0 = &uart0;
+	};
+
+	cpuintc: interrupt-controller@0 {
+		#address-cells = <0>;
+		#interrupt-cells = <1>;
+		interrupt-controller;
+		compatible = "mti,cpu-interrupt-controller";
+	};
+
+	cpu_clk: cpu-clock {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		clock-frequency = <416666666>;
+	};
+
+	sys_clk: sys-clk {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		clock-frequency = <208333333>;
+	};
+
+	ahb_clk: ahb-clk {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		clock-frequency = <208333333>;
+	};
+
+	ahb {
+		compatible = "simple-bus";
+		#address-cells = <1>;
+		#size-cells = <1>;
+		ranges = <0 0x70000000 0x2000000>;
+
+		interrupt-parent = <&intc>;
+
+		cpu_ctrl: syscon@0 {
+			compatible = "mscc,serval-cpu-syscon", "syscon";
+			reg = <0x0 0x2c>;
+		};
+
+		intc: interrupt-controller@70 {
+			compatible = "mscc,serval-icpu-intr";
+			reg = <0x70 0x70>;
+			#interrupt-cells = <1>;
+			interrupt-controller;
+			interrupt-parent = <&cpuintc>;
+			interrupts = <2>;
+		};
+
+		uart0: serial@100000 {
+			pinctrl-0 = <&uart_pins>;
+			pinctrl-names = "default";
+			compatible = "ns16550a";
+			reg = <0x100000 0x20>;
+			interrupts = <6>;
+			clocks = <&ahb_clk>;
+			reg-io-width = <4>;
+			reg-shift = <2>;
+
+			status = "disabled";
+		};
+
+		uart2: serial@100800 {
+			pinctrl-0 = <&uart2_pins>;
+			pinctrl-names = "default";
+			compatible = "ns16550a";
+			reg = <0x100800 0x20>;
+			interrupts = <7>;
+			clocks = <&ahb_clk>;
+			reg-io-width = <4>;
+			reg-shift = <2>;
+
+			status = "disabled";
+		};
+
+		reset@1070008 {
+			compatible = "mscc,serval-chip-reset";
+			reg = <0x1070008 0x4>;
+		};
+
+		gpio: pinctrl@1070034 {
+			compatible = "mscc,serval-pinctrl";
+			reg = <0x1070034 0x68>;
+			gpio-controller;
+			#gpio-cells = <2>;
+			gpio-ranges = <&gpio 0 0 22>;
+
+			sgpio_pins: sgpio-pins {
+				pins = "GPIO_0", "GPIO_2", "GPIO_3", "GPIO_1";
+				function = "sio";
+			};
+
+			uart_pins: uart-pins {
+				pins = "GPIO_26", "GPIO_27";
+				function = "uart";
+			};
+
+			uart2_pins: uart2-pins {
+				pins = "GPIO_13", "GPIO_14";
+				function = "uart2";
+			};
+		};
+
+		spi0: spi-bitbang {
+			compatible = "mscc,luton-bb-spi";
+			status = "okay";
+			reg = <0x50 0x4>;
+			num-chipselects = <1>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+		};
+
+		sgpio: gpio@10700b4 {
+			compatible = "mscc,luton-sgpio";
+			status = "disabled";
+			clocks = <&sys_clk>;
+			pinctrl-0 = <&sgpio_pins>;
+			pinctrl-names = "default";
+			reg = <0x10700b4 0x100>;
+			gpio-controller;
+			#gpio-cells = <2>;
+			gpio-ranges = <&sgpio 0 0 64>;
+		};
+
+		switch: switch@011e0000 {
+			compatible = "mscc,vsc7418-switch";
+			reg = <0x011e0000 0x0100>,   // VTSS_TO_DEV0
+			      <0x011f0000 0x0100>,   // VTSS_TO_DEV1
+			      <0x01200000 0x0100>,   // VTSS_TO_DEV2
+			      <0x01210000 0x0100>,   // VTSS_TO_DEV3
+			      <0x01220000 0x0100>,   // VTSS_TO_DEV4
+			      <0x01230000 0x0100>,   // VTSS_TO_DEV5
+			      <0x01240000 0x0100>,   // VTSS_TO_DEV6
+			      <0x01250000 0x0100>,   // VTSS_TO_DEV7
+			      <0x01260000 0x0100>,   // VTSS_TO_DEV8
+			      <0x01270000 0x0100>,   // VTSS_TO_DEV9
+			      <0x01280000 0x0100>,   // VTSS_TO_DEV10
+			      <0x01900000 0x100000>, // ANA
+			      <0x01080000 0x20000>,  // QS
+			      <0x01800000 0x100000>, // QSYS
+			      <0x01030000 0x10000>,  // REW
+			      <0x01010000 0x20000>,  // SYS
+			      <0x010a0000 0x10000>;  // HSIO
+			reg-names = "port0", "port1", "port2", "port3",
+				    "port4", "port5", "port6", "port7",
+				    "port8", "port9", "port10",
+				    "ana", "qs", "qsys", "rew", "sys",
+				    "hsio";
+			status = "okay";
+
+			ethernet-ports {
+				#address-cells = <1>;
+				#size-cells = <0>;
+			};
+		};
+
+		mdio0: mdio@0107005c {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			compatible = "mscc,serval-miim";
+			reg = <0x0107005c 0x24>;
+			status = "disabled";
+		};
+
+		mdio1: mdio@01070080 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			compatible = "mscc,serval-miim";
+			reg = <0x01070080 0x24>;
+			status = "disabled";
+		};
+
+		hsio: syscon@10d0000 {
+			compatible = "mscc,serval-hsio", "syscon", "simple-mfd";
+			reg = <0x10a0000 0x10000>;
+
+			serdes_hsio: serdes_hsio {
+				compatible = "mscc,vsc7418-serdes";
+				#phy-cells = <3>;
+			};
+		};
+	};
+};

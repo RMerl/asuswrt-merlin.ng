@@ -1,0 +1,118 @@
+#include <dt-bindings/interrupt-controller/arm-gic.h>
+#include <dt-bindings/interrupt-controller/irq.h>
+
+#define GIC_DIST_BASE			0x80031000
+#define GIC_CPUI_BASE			0x80032000
+
+#define PMU_CORE0_SPI			8
+#define PMU_CORE1_SPI			9
+
+model = MODEL;
+compatible = COMPATIBLE;
+interrupt-parent = <&gic>;
+#address-cells = <1>;
+#size-cells = <1>;
+
+#if defined (CONFIG_BCM_PSCI)
+psci {
+	compatible	= "arm,psci-0.2";
+	method		= "smc";
+	cpu_off		= <1>;
+	cpu_on		= <2>;
+};
+
+#define ENABLE_METHOD "psci"
+#else
+#define ENABLE_METHOD "brcm,bca-smp"
+#endif
+
+#if defined (CONFIG_OPTEE)
+firmware {
+	optee {
+		compatible = "linaro,optee-tz";
+		method = "smc";
+	};
+};
+#endif
+
+cpus {
+	#address-cells = <1>;
+	#size-cells = <0>;
+
+	CA15_0: cpu@0 {
+		device_type = "cpu";
+		compatible = "arm,cortex-a15";
+		reg = <0x0>;
+		clocks = <&armcpu>;
+		clock-names = "cpuclk";
+	};
+
+	CA15_1: cpu@1 {
+		device_type = "cpu";
+		compatible = "arm,cortex-a15";
+		reg = <0x1>;
+		clocks = <&armcpu>;
+		clock-names = "cpuclk";
+		enable-method = ENABLE_METHOD;
+	};
+};
+
+
+gic: interrupt-controller@80031000 {
+	compatible = "arm,cortex-a15-gic";
+	#interrupt-cells = <3>;
+	#address-cells = <0>;
+	interrupt-controller;
+	reg = <GIC_DIST_BASE 0x1000>,
+	      <GIC_CPUI_BASE 0x0100>;
+};
+
+pmu {
+	compatible = "arm,cortex-a15-pmu";
+	interrupts = <GIC_SPI PMU_CORE0_SPI IRQ_TYPE_LEVEL_HIGH>,
+		     <GIC_SPI PMU_CORE1_SPI IRQ_TYPE_LEVEL_HIGH>;
+	interrupt-affinity = <&CA15_0>, <&CA15_1>;
+};
+
+brcm-legacy {
+	compatible = "brcm,brcm-legacy";
+};
+
+memory@00000000 {
+	device_type = "memory";
+	reg = <0x0 0x8000000>; 
+};
+
+clocks {
+	compatible = "simple-bus";
+	#address-cells = <1>;
+	#size-cells = <1>;
+	ranges;
+	u-boot,dm-pre-reloc;
+
+	armcpu: armcpu {
+		#clock-cells = <0>;
+		compatible = "brcm,63xx_cpuclk";
+		clock-output-names = "pll-cpuclk";
+	};
+
+	periph_osc: periph-osc {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		clock-frequency = <PERIPH_CLK>;
+		u-boot,dm-pre-reloc;
+	};
+
+	refclk50mhz: refclk50mhz {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		clock-frequency = <50000000>;
+	};
+
+	hsspi_pll: hsspi-pll {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		clock-frequency = <HS_SPI_PLL_CLK>;
+		u-boot,dm-pre-reloc;		
+	};
+};

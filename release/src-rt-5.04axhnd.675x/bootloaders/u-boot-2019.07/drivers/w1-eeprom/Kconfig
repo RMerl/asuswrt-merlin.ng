@@ -1,0 +1,42 @@
+#
+# EEPROM subsystem configuration
+#
+
+menu "1-wire EEPROM support"
+
+config W1_EEPROM
+	bool "Enable support for EEPROMs on 1wire interface"
+	depends on DM
+	help
+	  Support for the EEPROMs connected on 1-wire Dallas protocol interface
+
+if W1_EEPROM
+
+config W1_EEPROM_DS24XXX
+	bool "Enable Maxim DS24 families EEPROM support"
+	depends on W1
+	help
+	  Maxim DS24 EEPROMs 1-Wire EEPROM support
+
+config W1_EEPROM_DS2502
+	bool "Enable Maxim DS2502 Add-Only Memory support"
+	depends on W1
+	help
+	  Maxim DS2502 1-Wire add-only memory support.
+	  This device has 128 bytes of data memory, organized as 4 pages of
+	  32 bytes and 8 out of band status bytes that may be used to redirect
+	  pages, allowing data to be modified up to 4 times (by external
+	  programming).
+
+	  The device may be seen as a 32 byte memory, using the page redirection
+	  or as a 128 byte memory, ignoring the page redirection.
+
+config W1_EEPROM_SANDBOX
+	bool "Enable sandbox onewire EEPROM driver"
+	depends on W1
+	help
+	  Sandbox driver for a onewire EEPROM memory
+
+endif
+
+endmenu

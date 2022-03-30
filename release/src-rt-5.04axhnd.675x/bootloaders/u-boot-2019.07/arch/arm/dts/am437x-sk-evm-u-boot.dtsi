@@ -1,0 +1,24 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2018 Texas Instruments Incorporated - http://www.ti.com/
+ */
+
+#include "am4372-u-boot.dtsi"
+
+/{
+	ocp {
+		u-boot,dm-spl;
+	};
+};
+
+&uart0 {
+	u-boot,dm-spl;
+};
+
+&i2c0 {
+	u-boot,dm-spl;
+};
+
+&mmc1 {
+	u-boot,dm-spl;
+};

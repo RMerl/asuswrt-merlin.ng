@@ -1,0 +1,11 @@
+config BCM_BCA_VREG_SYNC
+	bool "Broadcom BCA Vreg Sync driver"
+	default n
+	depends on BCM963158 || BCM963178 || BCM94912 || BCM963146 || BCM963138 || BCM963148
+	help
+	  Add the BCM BCA Vreg Sync Driver
+
+config BCM_BCA_VREG_SYNC_IMPL
+	int "Implementation index for BCA Vreg Sync module"
+	depends on BCM_BCA_VREG_SYNC
+	default 1

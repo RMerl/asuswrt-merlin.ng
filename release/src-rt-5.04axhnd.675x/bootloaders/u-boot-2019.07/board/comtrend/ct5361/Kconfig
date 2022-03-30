@@ -1,0 +1,12 @@
+if BOARD_COMTREND_CT5361
+
+config SYS_BOARD
+	default "ct5361"
+
+config SYS_VENDOR
+	default "comtrend"
+
+config SYS_CONFIG_NAME
+	default "comtrend_ct5361"
+
+endif

@@ -1,0 +1,38 @@
+// SPDX-License-Identifier: GPL-2.0+ OR X11
+/*
+ * Freescale ls2080a RDB board device tree source
+ *
+ * Copyright 2013-2015 Freescale Semiconductor, Inc.
+ */
+
+/dts-v1/;
+
+#include "fsl-ls2080a.dtsi"
+
+/ {
+	model = "Freescale Layerscape 2080a RDB Board";
+	compatible = "fsl,ls2080a-rdb", "fsl,ls2080a";
+
+	aliases {
+		spi1 = &dspi;
+	};
+};
+
+&dspi {
+	bus-num = <0>;
+	status = "okay";
+
+	dflash0: n25q512a {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "jedec,spi-nor";
+		spi-max-frequency = <3000000>;
+		spi-cpol;
+		spi-cpha;
+		reg = <0>;
+	};
+};
+
+&sata {
+	status = "okay";
+};

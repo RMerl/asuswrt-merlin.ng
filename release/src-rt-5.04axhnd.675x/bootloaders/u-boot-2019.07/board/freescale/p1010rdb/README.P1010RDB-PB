@@ -1,0 +1,188 @@
+Overview
+=========
+The P1010RDB-PB is a Freescale Reference Design Board that hosts the P1010 SoC.
+P1010RDB-PB is a variation of previous P1010RDB-PA board.
+
+The P1010 is a cost-effective, low-power, highly integrated host processor
+based on a Power Architecture e500v2 core (maximum core frequency 1GHz),that
+addresses the requirements of several routing, gateways, storage, consumer,
+and industrial applications. Applications of interest include the main CPUs and
+I/O processors in network attached storage (NAS), the voice over IP (VoIP)
+router/gateway, and wireless LAN (WLAN) and industrial controllers.
+
+The P1010RDB-PB board features are as following:
+Memory subsystem:
+	- 1G bytes unbuffered DDR3 SDRAM discrete devices (32-bit bus)
+	- 32M bytes NOR flash single-chip memory
+	- 2G bytes NAND flash memory
+	- 16M bytes SPI memory
+	- 256K bit M24256 I2C EEPROM
+	- I2C Board EEPROM 128x8 bit memory
+	- SD/MMC connector to interface with the SD memory card
+Interfaces:
+	- Three 10/100/1000 BaseT Ethernet ports (One RGMII and two SGMII)
+	- PCIe 2.0: two x1 mini-PCIe slots
+	- SATA 2.0: two SATA interfaces
+	- USB 2.0: one USB interface
+	- FlexCAN: two FlexCAN interfaces (revision 2.0B)
+	- UART: one USB-to-Serial interface
+	- TDM: 2 FXS ports connected via an external SLIC to the TDM interface.
+	       1 FXO port connected via a relay to FXS for switchover to POTS
+
+Board connectors:
+	- Mini-ITX power supply connector
+	- JTAG/COP for debugging
+
+POR: support critical POR setting changed via switch on board
+PCB: 6-layer routing (4-layer signals, 2-layer power and ground)
+
+Physical Memory Map on P1010RDB
+===============================
+Address Start   Address End   Memory type	Attributes
+0x0000_0000	0x3fff_ffff   DDR		1G Cacheable
+0xa000_0000	0xdfff_ffff   PCI Express Mem	1G non-cacheable
+0xee00_0000	0xefff_ffff   NOR Flash		32M non-cacheable
+0xffc2_0000	0xffc5_ffff   PCI IO range	256K non-cacheable
+0xffa0_0000	0xffaf_ffff   NAND Flash	1M cacheable
+0xffb0_0000	0xffbf_ffff   Board CPLD	1M non-cacheable
+0xffd0_0000	0xffd0_3fff   L1 for Stack	16K Cacheable TLB0
+0xffe0_0000	0xffef_ffff   CCSR		1M non-cacheable
+
+
+Serial Port Configuration on P1010RDB
+=====================================
+Configure the serial port of the attached computer with the following values:
+	-Data rate: 115200 bps
+	-Number of data bits: 8
+	-Parity: None
+	-Number of Stop bits: 1
+	-Flow Control: Hardware/None
+
+
+P1010RDB-PB default DIP-switch settings
+=======================================
+SW1[1:8]= 10101010
+SW2[1:8]= 11011000
+SW3[1:8]= 10010000
+SW4[1:4]= 1010
+SW5[1:8]= 11111010
+
+
+P1010RDB-PB boot mode settings via DIP-switch
+=============================================
+SW4[1:4]= 1111 and SW3[3:4]= 00 for 16bit NOR boot
+SW4[1:4]= 1010 and SW3[3:4]= 01 for 8bit NAND boot
+SW4[1:4]= 0110 and SW3[3:4]= 00 for SPI boot
+SW4[1:4]= 0111 and SW3[3:4]= 10 for SD boot
+Note: 1 stands for 'on', 0 stands for 'off'
+
+
+Switch P1010RDB-PB boot mode via software without setting DIP-switch
+====================================================================
+=> run boot_bank0    (boot from NOR bank0)
+=> run boot_bank1    (boot from NOR bank1)
+=> run boot_nand     (boot from NAND flash)
+=> run boot_spi      (boot from SPI flash)
+=> run boot_sd       (boot from SD card)
+
+
+Frequency combination support on P1010RDB-PB
+=============================================
+SW1[4:7] SW5[1] SW5[5:8] SW2[2] Core(MHz) Platform(MHz) DDR(MT/s)
+0101      1      1010     0       800       400		800
+1001      1      1010     0       800       400		667
+1010      1      1100     0       667       333		667
+1000      0      1010     0       533       266		667
+0101      1      1010     1       1000      400		800
+1001      1      1010     1       1000      400		667
+
+
+Setting of pin mux
+==================
+Since pins multiplexing, TDM and CAN are muxed with SPI flash.
+SDHC is muxed with IFC. IFC and SPI flash are enabled by default.
+
+To enable TDM:
+=> setenv hwconfig fsl_p1010mux:tdm_can=tdm
+=> save;reset
+
+To enable FlexCAN:
+=> setenv hwconfig fsl_p1010mux:tdm_can=can
+=> save;reset
+
+To enable SDHC in case of NOR/NAND/SPI boot
+   a) For temporary use case in runtime without reboot system
+      run 'mux sdhc' in U-Boot to validate SDHC with invalidating IFC.
+
+   b) For long-term use case
+      set 'esdhc' in hwconfig and save it.
+
+To enable IFC in case of SD boot
+   a) For temporary use case in runtime without reboot system
+      run 'mux ifc' in U-Boot to validate IFC with invalidating SDHC.
+
+   b) For long-term use case
+      set 'ifc' in hwconfig and save it.
+
+
+Build images for different boot mode
+====================================
+First setup cross compile environment on build host
+   $ export ARCH=powerpc
+   $ export CROSS_COMPILE=<your-compiler-path>/powerpc-linux-gnu-
+
+1. For NOR boot
+   $ make P1010RDB-PB_NOR
+
+2. For NAND boot
+   $ make P1010RDB-PB_NAND
+
+3. For SPI boot
+   $ make P1010RDB-PB_SPIFLASH
+
+4. For SD boot
+   $ make P1010RDB-PB_SDCARD
+
+
+Steps to program images to flash for different boot mode
+========================================================
+1. NOR boot
+   => tftp 1000000 u-boot.bin
+   For bank0
+   => pro off all;era eff40000 efffffff;cp.b 1000000 eff40000 $filesize
+   set SW1[8]=0, SW4[1:4]= 1111 and SW3[3:4]= 00, then power on the board
+
+   For bank1
+   => pro off all;era eef40000 eeffffff;cp.b 1000000 eef40000 $filesize
+   set SW1[8]=1, SW4[1:4]= 1111 and SW3[3:4]= 00, then power on the board
+
+2. NAND boot
+   => tftp 1000000 u-boot-nand.bin
+   => nand erase 0 $filesize; nand write $loadaddr 0 $filesize
+   Set SW4[1:4]= 1010 and SW3[3:4]= 01, then power on the board
+
+3. SPI boot
+   1)  cat p1010rdb-config-header.bin u-boot.bin > u-boot-spi-combined.bin
+   2)  =>  tftp 1000000 u-boot-spi-combined.bin
+   3)  =>  sf probe 0; sf erase 0 100000; sf write 1000000 0 100000
+   set SW4[1:4]= 0110 and SW3[3:4]= 00, then power on the board
+
+4. SD boot
+   1)	cat p1010rdb-config-header.bin u-boot.bin > u-boot-sd-combined.bin
+   2)	=> tftp 1000000 u-boot-sd-combined.bin
+   3)	=> mux sdhc
+   4)	=> mmc write 1000000 0 1050
+   set SW4[1:4]= 0111 and SW3[3:4]= 10, then power on the board
+
+
+Boot Linux from network using TFTP on P1010RDB-PB
+=================================================
+Place uImage, p1010rdb.dtb and rootfs files in the TFTP download path.
+	=> tftp 1000000 uImage
+	=> tftp 2000000 p1010rdb.dtb
+	=> tftp 3000000 rootfs.ext2.gz.uboot.p1010rdb
+	=> bootm 1000000 3000000 2000000
+
+
+For more details, please refer to P1010RDB-PB User Guide and access website
+www.freescale.com and Freescale QorIQ SDK Infocenter document.

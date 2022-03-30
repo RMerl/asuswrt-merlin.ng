@@ -1,0 +1,43 @@
+// SPDX-License-Identifier: GPL-2.0+ OR X11
+/*
+ * NXP ls1088a RDB board device tree source
+ *
+ * Copyright 2017 NXP
+ */
+
+/dts-v1/;
+
+#include "fsl-ls1088a.dtsi"
+
+/ {
+	model = "NXP Layerscape 1088a RDB Board";
+	compatible = "fsl,ls1088a-rdb", "fsl,ls1088a";
+	aliases {
+		spi0 = &qspi;
+	};
+};
+
+&qspi {
+	bus-num = <0>;
+	status = "okay";
+
+	qflash0: s25fs512s@0 {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "jedec,spi-nor";
+		spi-max-frequency = <50000000>;
+		reg = <0>;
+	};
+
+	qflash1: s25fs512s@1 {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "jedec,spi-nor";
+		spi-max-frequency = <50000000>;
+		reg = <1>;
+	 };
+};
+
+&sata {
+	status = "okay";
+};

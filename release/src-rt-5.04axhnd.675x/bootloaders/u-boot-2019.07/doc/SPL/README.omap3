@@ -1,0 +1,52 @@
+Overview of SPL on OMAP3 devices
+================================
+
+Introduction
+------------
+
+This document provides an overview of how SPL functions on OMAP3 (and related
+such as am35x and am37x) processors.
+
+Methodology
+-----------
+
+On these platforms the ROM supports trying a sequence of boot devices.  Once
+one has been used successfully to load SPL this information is stored in memory
+and the location stored in a register.  We will read this to determine where to
+read U-Boot from in turn.
+
+Memory Map
+----------
+
+This is an example of a typical setup.  See top-level README for documentation
+of which CONFIG variables control these values.  For a given board and the
+amount of DRAM available to it different values may need to be used.
+Note that the size of the SPL text rodata and data is enforced with a CONFIG
+option and growing over that size results in a link error.  The SPL stack
+starts at the top of SRAM (which is configurable) and grows downward.  The
+space between the top of SRAM and the enforced upper bound on the size of the
+SPL text, data and rodata is considered the safe stack area.  Details on
+confirming this behavior are shown below.
+
+A portion of the system memory map looks as follows:
+SRAM: 0x40200000 - 0x4020FFFF
+DDR1: 0x80000000 - 0xBFFFFFFF
+
+Option 1 (SPL only):
+0x40200800 - 0x4020BBFF: Area for SPL text, data and rodata
+0x4020E000 - 0x4020FFFC: Area for the SPL stack.
+0x80000000 - 0x8007FFFF: Area for the SPL BSS.
+0x80100000: CONFIG_SYS_TEXT_BASE of U-Boot
+0x80208000 - 0x80307FFF: malloc() pool available to SPL.
+
+Option 2 (SPL or X-Loader):
+0x40200800 - 0x4020BBFF: Area for SPL text, data and rodata
+0x4020E000 - 0x4020FFFC: Area for the SPL stack.
+0x80008000: CONFIG_SYS_TEXT_BASE of U-Boot
+0x87000000 - 0x8707FFFF: Area for the SPL BSS.
+0x87080000 - 0x870FFFFF: malloc() pool available to SPL.
+
+For the areas that reside within DDR1 they must not be used prior to s_init()
+completing.  Note that CONFIG_SYS_TEXT_BASE must be clear of the areas that SPL
+uses while running.  This is why we have two versions of the memory map that
+only vary in where the BSS and malloc pool reside.

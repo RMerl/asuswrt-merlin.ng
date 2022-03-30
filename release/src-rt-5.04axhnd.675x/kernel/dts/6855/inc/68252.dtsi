@@ -1,0 +1,8 @@
+#include "6855.dtsi"
+
+/ {
+	/* arch */
+	#define PMU_CORE0_SPI	7
+	#define PMU_CORE1_SPI	8
+	#include "../../ip/bcm_cortexA7_dual.dtsi"
+};

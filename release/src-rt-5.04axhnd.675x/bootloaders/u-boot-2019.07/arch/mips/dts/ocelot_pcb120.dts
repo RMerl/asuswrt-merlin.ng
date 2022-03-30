@@ -1,0 +1,163 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/*
+ * Copyright (c) 2018 Microsemi Corporation
+ */
+
+/dts-v1/;
+#include "mscc,ocelot_pcb.dtsi"
+#include <dt-bindings/mscc/ocelot_data.h>
+
+/ {
+	model = "Ocelot PCB120 Reference Board";
+	compatible = "mscc,ocelot-pcb120", "mscc,ocelot";
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+	};
+
+	gpio-leds {
+		compatible = "gpio-leds";
+
+		poe_green {
+			label = "pcb120:green:poe";
+			gpios = <&sgpio 44 1>; /* p12.1 */
+			default-state = "off";
+		};
+
+		poe_red {
+			label = "pcb120:red:poe";
+			gpios = <&sgpio 12 1>; /* p12.0 */
+			default-state = "off";
+		};
+
+		alarm_green {
+			label = "pcb120:green:alarm";
+			gpios = <&sgpio 45 1>; /* p13.1 */
+			default-state = "off";
+		};
+
+		alarm_red {
+			label = "pcb120:red:alarm";
+			gpios = <&sgpio 13 1>; /* p13.0 */
+			default-state = "off";
+		};
+
+		dc_a_green {
+			label = "pcb120:green:dc_a";
+			gpios = <&sgpio 46 1>; /* p14.1 */
+			default-state = "off";
+		};
+
+		dc_a_red {
+			label = "pcb120:red:dc_a";
+			gpios = <&sgpio 14 1>; /* p14.0 */
+			default-state = "off";
+		};
+
+		dc_b_green {
+			label = "pcb120:green:dc_b";
+			gpios = <&sgpio 47 1>; /* p15.1 */
+			default-state = "off";
+		};
+
+		dc_b_red {
+			label = "pcb120:red:dc_b";
+			gpios = <&sgpio 15 1>; /* p15.0 */
+			default-state = "off";
+		};
+
+		status_green {
+			label = "pcb120:green:status";
+			gpios = <&sgpio 48 1>; /* p16.1 */
+			default-state = "on";
+		};
+
+		status_red {
+			label = "pcb120:red:alarm";
+			gpios = <&sgpio 16 1>; /* p16.0 */
+			default-state = "off";
+		};
+
+	};
+
+};
+
+&sgpio {
+	status = "okay";
+	mscc,sgpio-ports = <0x000FFFFF>;
+};
+
+&mdio0 {
+	status = "okay";
+
+	phy4: ethernet-phy@4 {
+		reg = <3>;
+	};
+	phy5: ethernet-phy@5 {
+		reg = <2>;
+	};
+	phy6: ethernet-phy@6 {
+		reg = <1>;
+	};
+	phy7: ethernet-phy@7 {
+		reg = <0>;
+	};
+};
+
+&mdio1 {
+	status = "okay";
+
+	phy0: ethernet-phy@0 {
+		reg = <3>;
+	};
+	phy1: ethernet-phy@1 {
+		reg = <2>;
+	};
+	phy2: ethernet-phy@2 {
+		reg = <1>;
+	};
+	phy3: ethernet-phy@3 {
+		reg = <0>;
+	};
+};
+
+&switch {
+	ethernet-ports {
+		port0: port@0 {
+			reg = <5>;
+			phy-handle = <&phy0>;
+			phys = <&serdes_hsio 5 SERDES1G(2) PHY_MODE_SGMII>;
+		};
+		port1: port@1 {
+			reg = <9>;
+			phy-handle = <&phy1>;
+			phys = <&serdes_hsio 9 SERDES1G(3) PHY_MODE_SGMII>;
+		};
+		port2: port@2 {
+			reg = <6>;
+			phy-handle = <&phy2>;
+			phys = <&serdes_hsio 6 SERDES1G(4) PHY_MODE_SGMII>;
+		};
+		port3: port@3 {
+			reg = <4>;
+			phy-handle = <&phy3>;
+			phys = <&serdes_hsio 4 SERDES1G(5) PHY_MODE_SGMII>;
+		};
+		port4: port@4 {
+			reg = <3>;
+			phy-handle = <&phy4>;
+		};
+		port5: port@5 {
+			reg = <2>;
+			phy-handle = <&phy5>;
+		};
+		port6: port@6 {
+			reg = <1>;
+			phy-handle = <&phy6>;
+		};
+		port7: port@7 {
+			reg = <0>;
+			phy-handle = <&phy7>;
+		};
+	};
+};

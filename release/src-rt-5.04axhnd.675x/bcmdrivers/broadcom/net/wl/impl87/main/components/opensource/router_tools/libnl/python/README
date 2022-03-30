@@ -1,0 +1,12 @@
+
+***************************************************************************
+
+NOTE: The python wrapper is experimental and may or may not work.
+
+***************************************************************************
+
+For the brave:
+
+  (requires an installed libnl)
+  - $ python ./setup.py build
+  - $ sudo python ./setup.py install

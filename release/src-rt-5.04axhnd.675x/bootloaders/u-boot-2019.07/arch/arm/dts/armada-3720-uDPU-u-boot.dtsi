@@ -1,0 +1,13 @@
+// SPDX-License-Identifier: GPL-2.0+
+
+&spi0 {
+	u-boot,dm-pre-reloc;
+
+	spi-flash@0 {
+		u-boot,dm-pre-reloc;
+	};
+};
+
+&sdhci1 {
+	u-boot,dm-pre-reloc;
+};

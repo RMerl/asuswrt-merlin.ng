@@ -1,0 +1,28 @@
+if RZA1
+
+# required by the Ethernet driver
+config R7S72100
+	bool
+	default y
+
+# required by serial and usb driver
+config CPU_RZA1
+	bool
+	default y
+
+choice
+	prompt "Renesas RZ/A1 board select"
+
+# Renesas Supported Boards
+config TARGET_GRPEACH
+	bool "GR-PEACH board"
+
+endchoice
+
+config SYS_SOC
+	default "rmobile"
+
+# Renesas Supported Boards
+source "board/renesas/grpeach/Kconfig"
+
+endif

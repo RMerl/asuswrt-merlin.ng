@@ -1,0 +1,40 @@
+Intel GMA Bindings
+==================
+
+This is the Intel Graphics Media Accelerator. This binding supports selection
+of display parameters only.
+
+
+Required properties:
+ - compatible : "intel,gma";
+
+Optional properties:
+ - intel,dp-hotplug : values for digital port hotplug, one cell per value for
+     ports B, C and D
+  - intel,panel-port-select : output port to use: 0=LVDS 1=DP_B 2=DP_C 3=DP_D
+  - intel,panel-power-cycle-delay : T4 time sequence (6 = 500ms)
+
+  The following delays are in units of 0.1ms:
+  - intel,panel-power-up-delay : T1+T2 time sequence
+  - intel,panel-power-down-delay : T3 time sequence
+  - intel,panel-power-backlight-on-delay : T5 time sequence
+  - intel,panel-power-backlight-off-delay : Tx time sequence
+
+  - intel,cpu-backlight : Value for CPU Backlight PWM
+  - intel,pch-backlight : Value for PCH Backlight PWM
+
+Example
+-------
+
+gma {
+	compatible = "intel,gma";
+	intel,dp_hotplug = <0 0 0x06>;
+	intel,panel-port-select = <1>;
+	intel,panel-power-cycle-delay = <6>;
+	intel,panel-power-up-delay = <2000>;
+	intel,panel-power-down-delay = <500>;
+	intel,panel-power-backlight-on-delay = <2000>;
+	intel,panel-power-backlight-off-delay = <2000>;
+	intel,cpu-backlight = <0x00000200>;
+	intel,pch-backlight = <0x04000000>;
+};

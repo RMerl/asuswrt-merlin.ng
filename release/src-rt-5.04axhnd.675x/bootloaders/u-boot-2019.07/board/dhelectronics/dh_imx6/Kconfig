@@ -1,0 +1,12 @@
+if TARGET_DHCOMIMX6
+
+config SYS_BOARD
+	default "dh_imx6"
+
+config SYS_VENDOR
+	default "dhelectronics"
+
+config SYS_CONFIG_NAME
+	default "dh_imx6"
+
+endif

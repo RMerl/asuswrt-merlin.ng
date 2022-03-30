@@ -1,0 +1,7 @@
+Advantech SOM-DB5800-SOM-6867
+M:	George McCollister <george.mccollister@gmail.com>
+S:	Maintained
+F:	board/advantech/som-db5800-som-6867
+F:	include/configs/som-db5800-som-6867.h
+F:	configs/som-db5800-som-6867_defconfig
+F:	arch/x86/dts/baytrail_som-db5800-som-6867.dts

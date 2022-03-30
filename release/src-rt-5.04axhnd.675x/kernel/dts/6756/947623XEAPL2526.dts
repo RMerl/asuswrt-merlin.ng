@@ -1,0 +1,152 @@
+#include "6756.dtsi"
+
+/ {
+	memory_controller {
+		memcfg = <(BP_DDR_TYPE_DDR4           | \
+			BP_DDR_SPEED_1067_15_15_15 | \
+			BP_DDR_TOTAL_SIZE_2048MB   | \
+			BP_DDR_DEVICE_WIDTH_8      | \
+			BP_DDR_TOTAL_WIDTH_16BIT   | \
+			BP_DDR_6756_DEFAULT)>;
+	};
+
+	buttons {
+		compatible = "brcm,buttons";
+		ses_button {
+			ext_irq = <&bca_extintr 4 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+			release {
+				ses_short_period = <0>;
+				ses_long_period = <3>;
+			};
+		};
+	};
+	switch_sf2_ext:0 {
+	};
+};
+
+&sysport {
+    ethsw_ext = <&switch_sf2_ext>;
+};
+
+&mdio_sf2 {
+	phy_cascade0:cascade0 {
+		reg = <9>;
+		phy-reset = <&gpioc 33 GPIO_ACTIVE_LOW>;
+		enet-phy-lane-swap;
+		status = "okay";
+	};
+	phy_serdes0:serdes0 {
+		phy-handle = <&phy_cascade0>;
+		status = "okay";    /* HSGMII 5GE */
+	};
+	phy_serdes1:serdes1 {
+		phy-extswitch;
+		config_speed = <2500>;
+		status = "okay";
+	};
+	/* PHYs on external SF2 switch */
+	sf2_gphy0:0 {
+		compatible = "brcm,bcaphy";
+		phy-type = "EGPHY";
+		reg = <0>;
+		status = "okay";
+	};
+	sf2_gphy1:1 {
+		compatible = "brcm,bcaphy";
+		phy-type = "EGPHY";
+		reg = <1>;
+		status = "okay";
+	};
+	sf2_gphy2:2 {
+		compatible = "brcm,bcaphy";
+		phy-type = "EGPHY";
+		reg = <2>;
+		status = "okay";
+	};
+	sf2_gphy3:3 {
+		compatible = "brcm,bcaphy";
+		phy-type = "EGPHY";
+		reg = <3>;
+		status = "okay";
+	};
+};
+
+&switch0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&a_rgmii_mdc_pin_68 &a_rgmii_mdio_pin_69>;
+
+	ports {
+		port5@5 {
+			phy-handle = <&phy_serdes0>;
+			status = "okay";
+		};
+		port6@6 {
+			phy-handle = <&phy_serdes1>;
+			link = <&switch_sf2_ext>;           /* root.p1 <--> sf2_ext.p8 */
+			shrink-ipg;
+			status = "okay";
+		};
+	};
+};
+
+&switch_sf2_ext {                       /* linux/uboot: external sf2 */
+	unit = <1>;
+	sw-type = "SF2_SW";
+
+	compatible = "brcm,bcmbca-extsw";
+	extswsgmii_addr = <0x7>;
+	switch-reset = <&gpioc 32 GPIO_ACTIVE_LOW>;
+
+	ports {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		sf2_port0@0 {
+			phy-handle = <&sf2_gphy0>;
+			reg = <0>;
+			mac-type = "SF2MAC";
+			phy-mode = "gmii";
+			gmii-direct;
+			status = "okay";
+		};
+		sf2_port1@1 {
+			phy-handle = <&sf2_gphy1>;
+			reg = <1>;
+			mac-type = "SF2MAC";
+			phy-mode = "gmii";
+			gmii-direct;
+			status = "okay";
+		};
+		sf2_port2@2 {
+			phy-handle = <&sf2_gphy2>;
+			reg = <2>;
+			mac-type = "SF2MAC";
+			phy-mode = "gmii";
+			gmii-direct;
+			status = "okay";
+		};
+		sf2_port3@3 {
+			phy-handle = <&sf2_gphy3>;
+			reg = <3>;
+			mac-type = "SF2MAC";
+			phy-mode = "gmii";
+			gmii-direct;
+			status = "okay";
+		};
+		sf2_port8@8 {
+			management;                     /* sf2_ext.p8 <--> root.p1 */
+			reg = <8>;
+			mac-type = "SF2MAC";
+			shrink-ipg;
+			phy-mode = "gmii";
+			gmii-direct;
+			status = "okay";
+		};
+	};
+};
+
+&sdhci {
+	pinctrl-names="default";
+	pinctrl-0 = <&emmc_ctrl_pins>;
+	status = "okay";
+};

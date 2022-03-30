@@ -1,0 +1,46 @@
+// =============================================================
+// Any change in the following defines
+// must be reflected in bcm_mem_reserve.h
+//==============================================================
+
+
+
+//==============================================================
+// ALWAYS RESERVED
+// =============================================================
+//	 Address range		   Size(KB)
+//	 0x00000000:0x00004000	 16	 to boot secondary ARM CPU
+//	 0x00004000:0x000C0000	752	 to keep ATF firmware
+//	 0x000C0000:0x000F0000	192	 to keep PMC firmware
+//	 0x000F0000:0x00100000	 64	 to keep PMC firmware log
+//==============================================================
+
+#define ALWAYS_RESERVED	   0x100000
+
+//==============================================================
+//OPTIONAL RESERVATION FOR OPTEE IF DEFINED
+//==============================================================
+//	 0x00100000:0x00500000 4096	 to keep OPTEE Core
+//	 0x00500000:0x00600000 1024	 to keep OPTEE SHRM
+//==============================================================
+
+#if defined(CONFIG_OPTEE)
+#define OPTEE_RESERVED	  0x500000
+#else
+#define OPTEE_RESERVED	  0x0
+#endif
+
+//==============================================================
+// For 32 bit ARM, Linux needs extra 32K head room for MMU table
+//==============================================================
+#if defined(CONFIG_ARM64)
+#define ARM_MMU_TBL	   0x0	 
+#else
+#define ARM_MMU_TBL	   0x8000
+#endif
+
+#define BOOT_RESERVED	  (ALWAYS_RESERVED + OPTEE_RESERVED + ARM_MMU_TBL)	
+
+
+
+/memreserve/ 0x00000000 BOOT_RESERVED;

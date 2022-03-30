@@ -1,0 +1,40 @@
+# SPDX-License-Identifier: GPL-2.0+
+#
+# Copyright (C) 2015, Bin Meng <bmeng.cn@gmail.com>
+
+if VENDOR_DFI
+
+choice
+	prompt "Mainboard model"
+
+config TARGET_Q7X_151_DFI_BT700
+	bool "DFI BT700 BayTrail on DFI Q7X-151 baseboard"
+	imply SCSI
+	help
+	  This is the DFI Q7X-151 baseboard equipped with the
+	  DFI BayTrail Bt700 SoM. It contains an Atom E3845 with
+	  Ethernet (in non-PCIe-x4 configuration), micro-SD, USB 2,
+	  USB 3, SATA, serial console and DisplayPort video out.
+	  It requires some binary blobs - see README.x86 for details.
+
+	  Note that PCIE_ECAM_BASE is set up by the FSP so the value used
+	  by U-Boot matches that value.
+
+config TARGET_THEADORABLE_X86_DFI_BT700
+	bool "DFI BT700 BayTrail on theadorable-x86 baseboard"
+	imply SCSI
+	help
+	  This is the theadorable-x86 baseboard equipped with the
+	  DFI BayTrail Bt700 SoM. It contains an Atom E3845 with
+	  Ethernet (in non-PCIe-x4 configuration), micro-SD, USB 2,
+	  USB 3, SATA, serial console and DisplayPort video out.
+	  It requires some binary blobs - see README.x86 for details.
+
+	  Note that PCIE_ECAM_BASE is set up by the FSP so the value used
+	  by U-Boot matches that value.
+
+endchoice
+
+source "board/dfi/dfi-bt700/Kconfig"
+
+endif

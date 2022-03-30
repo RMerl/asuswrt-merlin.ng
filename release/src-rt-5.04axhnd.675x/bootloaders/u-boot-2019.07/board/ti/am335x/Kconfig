@@ -1,0 +1,24 @@
+if TARGET_AM335X_EVM
+
+config SYS_BOARD
+	default "am335x"
+
+config SYS_VENDOR
+	default "ti"
+
+config SYS_SOC
+	default "am33xx"
+
+config SYS_CONFIG_NAME
+	default "am335x_evm"
+
+config NOR
+	bool "Support for NOR flash"
+	help
+	  The AM335x SoC supports having a NOR flash connected to the GPMC.
+	  In practice this is seen as a NOR flash module connected to the
+	  "memory cape" for the BeagleBone family.
+
+source "board/ti/common/Kconfig"
+
+endif

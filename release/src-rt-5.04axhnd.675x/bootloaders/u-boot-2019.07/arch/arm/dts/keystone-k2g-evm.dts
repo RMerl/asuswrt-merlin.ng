@@ -1,0 +1,153 @@
+/*
+ * Copyright 2014 Texas Instruments, Inc.
+ *
+ * Device Tree Source for K2G EVM
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation.
+ */
+/dts-v1/;
+
+#include "keystone-k2g.dtsi"
+
+/ {
+	compatible =  "ti,k2g-evm","ti,keystone";
+	model = "Texas Instruments K2G General Purpose EVM";
+
+	chosen {
+		stdout-path = &uart0;
+	};
+
+	memory@80000000 {
+		device_type = "memory";
+		reg = <0x80000000 0x80000000>;
+	};
+};
+
+&mdio {
+	status = "okay";
+	ethphy0: ethernet-phy@0 {
+		reg = <0>;
+	};
+};
+
+&keystone_usb0 {
+	status = "okay";
+};
+
+&usb0_phy {
+	status = "okay";
+	compatible = "nop-phy";
+};
+
+&usb0 {
+	dr_mode = "host";
+	status = "okay";
+};
+
+&keystone_usb1 {
+	status = "okay";
+};
+
+&usb1_phy {
+	compatible = "nop-phy";
+	status = "okay";
+};
+
+&usb1 {
+	dr_mode = "peripheral";
+	status = "okay";
+};
+
+&gbe0 {
+	phy-handle = <&ethphy0>;
+};
+
+&netcp {
+	status = "okay";
+};
+
+&spi1 {
+	status = "okay";
+
+	spi_nor: flash@0 {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "jedec,spi-nor";
+		spi-max-frequency = <50000000>;
+		m25p,fast-read;
+		reg = <0>;
+
+		partition@0 {
+			label = "u-boot-spl";
+			reg = <0x0 0x80000>;
+			read-only;
+		};
+
+		partition@1 {
+			label = "misc";
+			reg = <0x80000 0xf80000>;
+		};
+	};
+};
+
+&qspi {
+	status = "okay";
+
+	flash0: m25p80@0 {
+		compatible = "s25fl512s","jedec,spi-nor";
+		reg = <0>;
+		spi-tx-bus-width = <1>;
+		spi-rx-bus-width = <4>;
+		spi-max-frequency = <96000000>;
+		#address-cells = <1>;
+		#size-cells = <1>;
+		cdns,tshsl-ns = <392>;
+		cdns,tsd2d-ns = <392>;
+		cdns,tchsh-ns = <100>;
+		cdns,tslch-ns = <100>;
+		block-size = <18>;
+
+		partition@0 {
+			label = "QSPI.u-boot-spl-os";
+			reg = <0x00000000 0x00100000>;
+		};
+		partition@1 {
+			label = "QSPI.u-boot-env";
+			reg = <0x00100000 0x00040000>;
+		};
+		partition@2 {
+			label = "QSPI.skern";
+			reg = <0x00140000 0x0040000>;
+		};
+		partition@3 {
+			label = "QSPI.pmmc-firmware";
+			reg = <0x00180000 0x0040000>;
+		};
+		partition@4 {
+			label = "QSPI.kernel";
+			reg = <0x001C0000 0x0800000>;
+		};
+		partition@5 {
+			label = "QSPI.file-system";
+			reg = <0x009C0000 0x3640000>;
+		};
+	};
+};
+
+&mmc0 {
+	status = "okay";
+};
+
+&mmc1 {
+	status = "okay";
+};
+
+&i2c0 {
+	status = "okay";
+};
+
+&i2c1 {
+	status = "okay";
+};

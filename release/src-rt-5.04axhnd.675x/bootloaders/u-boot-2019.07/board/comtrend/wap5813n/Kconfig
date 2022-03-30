@@ -1,0 +1,12 @@
+if BOARD_COMTREND_WAP5813N
+
+config SYS_BOARD
+	default "wap5813n"
+
+config SYS_VENDOR
+	default "comtrend"
+
+config SYS_CONFIG_NAME
+	default "comtrend_wap5813n"
+
+endif

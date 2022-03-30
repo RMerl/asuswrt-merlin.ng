@@ -1,0 +1,157 @@
+#!/usr/bin/env python2
+# SPDX-License-Identifier: GPL-2.0+
+#
+# Copyright (C) 2014, Masahiro Yamada <yamada.m@jp.panasonic.com>
+
+'''
+A tool to create/update the mailmap file
+
+The command 'git shortlog' summarizes git log output in a format suitable
+for inclusion in release announcements. Each commit will be grouped by
+author and title.
+
+One problem is that the authors' name and/or email address is sometimes
+spelled differently. The .mailmap feature can be used to coalesce together
+commits by the same persion.
+(See 'man git-shortlog' for furthur information of this feature.)
+
+This tool helps to create/update the mailmap file.
+
+It runs 'git shortlog' internally and searches differently spelled author
+names which share the same email address. The author name with the most
+commits is asuumed to be a canonical real name. If the number of commits
+from the cananonical name is equal to or greater than 'MIN_COMMITS',
+the entry for the cananical name will be output. ('MIN_COMMITS' is used
+here because we do not want to create a fat mailmap by adding every author
+with only a few commits.)
+
+If there exists a mailmap file specified by the mailmap.file configuration
+options or '.mailmap' at the toplevel of the repository, it is used as
+a base file. (The mailmap.file configuration takes precedence over the
+'.mailmap' file if both exist.)
+
+The base file and the newly added entries are merged together and sorted
+alphabetically (but the comment block is kept untouched), and then printed
+to standard output.
+
+Usage
+-----
+
+  scripts/mailmapper
+
+prints the mailmapping to standard output.
+
+  scripts/mailmapper > tmp; mv tmp .mailmap
+
+will be useful for updating '.mailmap' file.
+'''
+
+import sys
+import os
+import subprocess
+
+# The entries only for the canonical names with MIN_COMMITS or more commits.
+# This limitation is used so as not to create a too big mailmap file.
+MIN_COMMITS = 50
+
+try:
+    toplevel = subprocess.check_output(['git', 'rev-parse', '--show-toplevel'])
+except subprocess.CalledProcessError:
+    sys.exit('Please run in a git repository.')
+
+# strip '\n'
+toplevel = toplevel.rstrip()
+
+# Change the current working directory to the toplevel of the respository
+# for our easier life.
+os.chdir(toplevel)
+
+# First, create 'auther name' vs 'number of commits' database.
+# We assume the name with the most commits as the canonical real name.
+shortlog = subprocess.check_output(['git', 'shortlog', '-s', '-n'])
+
+commits_per_name = {}
+
+for line in shortlog.splitlines():
+    try:
+        commits, name = line.split(None, 1)
+    except ValueError:
+        # ignore lines with an empty author name
+        pass
+    commits_per_name[name] = int(commits)
+
+# Next, coalesce the auther names with the same email address
+shortlog = subprocess.check_output(['git', 'shortlog', '-s', '-n', '-e'])
+
+mail_vs_name = {}
+output = {}
+
+for line in shortlog.splitlines():
+    # tmp, mail = line.rsplit(None, 1) is not safe
+    # because weird email addresses might include whitespaces
+    tmp, mail = line.split('<')
+    mail = '<' + mail.rstrip()
+    try:
+        _, name = tmp.rstrip().split(None, 1)
+    except ValueError:
+        # author name is empty
+        name = ''
+    if mail in mail_vs_name:
+        # another name for the same email address
+        prev_name = mail_vs_name[mail]
+        # Take the name with more commits
+        major_name = sorted([prev_name, name],
+                            key=lambda x: commits_per_name[x] if x else 0)[1]
+        mail_vs_name[mail] = major_name
+        if commits_per_name[major_name] > MIN_COMMITS:
+            output[mail] = major_name
+    else:
+        mail_vs_name[mail] = name
+
+# [1] If there exists a mailmap file at the location pointed to
+#     by the mailmap.file configuration option, update it.
+# [2] If the file .mailmap exists at the toplevel of the repository, update it.
+# [3] Otherwise, create a new mailmap file.
+mailmap_files = []
+
+try:
+    config_mailmap = subprocess.check_output(['git', 'config', 'mailmap.file'])
+except subprocess.CalledProcessError:
+    config_mailmap = ''
+
+config_mailmap = config_mailmap.rstrip()
+if config_mailmap:
+    mailmap_files.append(config_mailmap)
+
+mailmap_files.append('.mailmap')
+
+infile = None
+
+for map_file in mailmap_files:
+    try:
+        infile = open(map_file)
+    except:
+        # Failed to open. Try next.
+        continue
+    break
+
+comment_block = []
+output_lines = []
+
+if infile:
+    for line in infile:
+        if line[0] == '#' or line[0] == '\n':
+            comment_block.append(line)
+        else:
+            output_lines.append(line)
+            break
+    for line in infile:
+        output_lines.append(line)
+    infile.close()
+
+for mail, name in output.items():
+    output_lines.append(name + ' ' + mail + '\n')
+
+output_lines.sort()
+
+sys.stdout.write(''.join(comment_block + output_lines))

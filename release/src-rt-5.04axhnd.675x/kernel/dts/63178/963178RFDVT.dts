@@ -1,0 +1,106 @@
+#include "63178.dtsi"
+
+/ {
+    memory_controller {
+        memcfg = <(BP_DDR_SPEED_800_11_11_11 | \
+                   BP_DDR_TOTAL_SIZE_512MB   | \
+                   BP_DDR_DEVICE_WIDTH_16    | \
+                   BP_DDR_TOTAL_WIDTH_16BIT  | \
+                   BP_DDR_63178_DEFAULT)>;
+    };
+
+	buttons {
+		compatible = "brcm,buttons";
+		reset_button {
+			ext_irq = <&bca_extintr 0 BCA_GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+			press {
+				print = "Button Press -- Hold for 5s to do restore to default";
+			};
+			hold {
+				rst_to_dflt = <5>;
+			};
+			release {
+				reset = <0>;
+			};	
+		};
+		ses_button {
+			ext_irq = <&bca_extintr 1 BCA_GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+			release {
+				ses_short_period = <0>;
+				ses_long_period = <3>;
+			};
+		};
+	};
+};
+
+&switch0 {
+	ports {
+		port0@0 {
+			status = "okay";
+			 network-leds = <&led0 &led1 &led2>;
+		};
+
+		port1@1 {
+			status = "okay";
+			 network-leds = <&led3 &led4 &led5>;
+		};
+	};
+};
+
+&vreg_sync {
+		pinctrl-0 = <&vreg_sync_pin_2>;
+		pinctrl-names = "default";
+};
+
+&legacy_leds {
+	wl-sess-led = <&led6>;
+	wan-data-led = <&led7>;
+	wan-data-fail-led = <&led8>;
+};
+
+&led_ctrl {
+	led0: port_0-led-0-pin_71 {
+		active_low;
+		link = <LED_SPEED_1G>;
+		status = "okay";
+	};
+	led1: port_0-led-1-pin_70 {
+		active_low;
+		link = <LED_SPEED_100>;
+		status = "okay";
+	};
+	led2: port_0-led-3-pin_72 {
+		active_low;
+		activity = <LED_SPEED_GBE>;
+		status = "okay";
+	};
+	led3: port_1-led-0-pin_66 {
+		active_low;
+		link = <LED_SPEED_1G>;
+		status = "okay";
+	};
+	led4: port_1-led-1-pin_69 {
+		active_low;
+		link = <LED_SPEED_100>;
+		status = "okay";
+	};
+	led5: port_1-led-3-pin_60 {
+		active_low;
+		activity = <LED_SPEED_GBE>;
+		status = "okay";
+	};
+
+	led6: sw_led_17-pin_29 {
+		active_low;
+		status = "okay";
+	};
+	led7: dsl_act_0-pin_8 {
+		active_low;
+		status = "okay";
+	};
+	led8: sw_led_27-pin_30 {
+		active_low;
+		status = "okay";
+	};
+
+};

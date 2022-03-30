@@ -1,0 +1,104 @@
+#include "6756.dtsi"
+#include "../bcm_voice.dtsi"
+
+/ {
+	memory_controller {
+		memcfg = <(BP_DDR_SPEED_1067_14_14_14 | \
+			BP_DDR_TOTAL_SIZE_512MB    | \
+			BP_DDR_DEVICE_WIDTH_16     | \
+			BP_DDR_TOTAL_WIDTH_16BIT   | \
+			BP_DDR_6756_DEFAULT)>;
+	};
+};
+
+&bcm_voice{
+	sliclist = SLICSLAC_LIST_COMMON_NOFXO;
+ };
+
+&hsspi {
+	voice0 {
+		pinctrl-0 = <&spim_ss1_b_pin_76>;
+		pinctrl-names = "default";
+		compatible = "bcm-spi-voice";
+		reg = <1>; /* chip select 1 */
+		spi-max-frequency = <1024000>;
+		reset-gpio = <&gpioc 30 GPIO_ACTIVE_LOW>;
+		spi-index = <0>;/* voice header index */
+	};
+};
+
+&mdio_sf2 {
+	phy_ge:8 {
+		status = "okay";
+	};
+	phy_serdes0:serdes0 {
+		status = "okay";
+	};
+	phy_serdes1:serdes1 {
+		status = "okay";
+	};
+};
+
+&switch0 {
+	pinctrl-names = "default"; 
+	pinctrl-0 = <&a_rgmii_mdc_pin_68 &a_rgmii_mdio_pin_69>; 
+
+	ports {
+		port0@0 {
+			phy-handle = <&phy_ge>;
+			status = "okay";
+		};
+		port5@5 {
+			phy-handle = <&phy_serdes0>;
+			status = "okay";
+		};
+		port6@6 {
+			phy-handle = <&phy_serdes1>;
+			status = "okay";
+		};
+	};
+};
+
+
+&usb_ctrl {
+	pinctrl-names="default";
+	pinctrl-0 = <&usb0_pwr_pins &usb1_pwr_pins>;
+	status = "okay";
+	xhci-enable;
+};
+
+&usb0_xhci {
+	status = "okay";
+};
+
+&usb0_ehci {
+	status = "okay";
+};
+
+&usb1_ehci {
+	status = "okay";
+};
+
+&usb0_ohci {
+	status = "okay";
+};
+
+&usb1_ohci {
+	status = "okay";
+};
+
+&hs_uart0 {
+	status = "okay";
+};
+
+&i2c0 {
+	pinctrl-names="default";
+	pinctrl-0 = <&i2c_sda_pin_16 &i2c_scl_pin_17>;
+	status = "okay";
+};
+
+&i2c1 {
+	pinctrl-names="default";
+	pinctrl-0 = <&a_i2c1_sda_pin_7 &a_i2c1_scl_pin_8>;
+	status = "okay";
+};

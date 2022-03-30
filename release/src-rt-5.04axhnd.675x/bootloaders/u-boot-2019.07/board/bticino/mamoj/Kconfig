@@ -1,0 +1,12 @@
+if TARGET_MX6DL_MAMOJ
+
+config SYS_BOARD
+	default "mamoj"
+
+config SYS_VENDOR
+	default "bticino"
+
+config SYS_CONFIG_NAME
+	default "imx6dl-mamoj"
+
+endif

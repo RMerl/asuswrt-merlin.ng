@@ -1,0 +1,28 @@
+// SPDX-License-Identifier: GPL-2.0+
+/dts-v1/;
+
+/ {
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	binman {
+		text {
+			size = <8>;
+			text-label = "test-id";
+		};
+		text2 {
+			type = "text";
+			text-label = "test-id2";
+		};
+		text3 {
+			type = "text";
+			text-label = "test-id3";
+		};
+		/* This one does not use command-line args */
+		text4 {
+			type = "text";
+			text-label = "test-id4";
+			test-id4 = "some text";
+		};
+	};
+};

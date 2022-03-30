@@ -1,0 +1,6 @@
+KC1 BOARD
+M:	Paul Kocialkowski <contact@paulk.fr>
+S:	Maintained
+F:	board/amazon/kc1/
+F:	include/configs/kc1.h
+F:	configs/kc1_defconfig

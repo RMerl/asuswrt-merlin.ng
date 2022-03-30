@@ -1,0 +1,97 @@
+#!/bin/bash
+
+export LD_LIBRARY_PATH=$HOSTTOOLS_DIR/libelf/lib:$LD_LIBRARY_PATH 
+source $KERNEL_DIR/.config
+
+TARGETS_DIR=`pwd`
+
+if [ "$INSTALL_DIR" == "" ]; then
+    INSTALL_DIR=./$PROFILE/fs.install
+fi
+
+if [ -d $PROFILE/fs ]; then
+  ROOTFS=$PROFILE/fs
+else # Alternative path for DESKTOP_LINUX
+  ROOTFS=$PROFILE/fs.install
+fi
+
+USERSPACE_DL_MODULES_BEEP_DIR=$BUILD_DIR/userspace/dlModules/beep
+SMD_DIR=$BUILD_DIR/userspace/private/apps/smd
+USERSPACE_DL_MODULES_BEE_DIR=$SMD_DIR/bee
+
+
+if [ "$ARCH" == "arm64" ]; then
+	LIBDIR_NAME="lib64"
+else
+	LIBDIR_NAME="lib"
+fi
+
+mkdir -p $USERSPACE_DL_MODULES_BEEP_DIR
+
+mkdir -p $USERSPACE_DL_MODULES_BEE_DIR/bin
+mkdir -p $USERSPACE_DL_MODULES_BEE_DIR/sbin
+mkdir -p $USERSPACE_DL_MODULES_BEE_DIR/usr/bin
+mkdir -p $USERSPACE_DL_MODULES_BEE_DIR/$LIBDIR_NAME
+mkdir -p $USERSPACE_DL_MODULES_BEE_DIR/etc/cms_entity_info.d
+mkdir -p $USERSPACE_DL_MODULES_BEE_DIR/webs
+
+##############################################################################
+cp -av $TARGETS_DIR/$ROOTFS/bin/bcmbusybox $USERSPACE_DL_MODULES_BEE_DIR/bin
+cp -av $TARGETS_DIR/$ROOTFS/bin/bftpd $USERSPACE_DL_MODULES_BEE_DIR/bin
+cp -av $TARGETS_DIR/$ROOTFS/bin/bmu $USERSPACE_DL_MODULES_BEE_DIR/bin
+cp -av $TARGETS_DIR/$ROOTFS/bin/bmuctl $USERSPACE_DL_MODULES_BEE_DIR/bin
+cp -av $TARGETS_DIR/$ROOTFS/bin/bmud $USERSPACE_DL_MODULES_BEE_DIR/bin
+cp -av $TARGETS_DIR/$ROOTFS/bin/consoled $USERSPACE_DL_MODULES_BEE_DIR/bin
+cp -av $TARGETS_DIR/$ROOTFS/bin/ddnsd $USERSPACE_DL_MODULES_BEE_DIR/bin
+cp -av $TARGETS_DIR/$ROOTFS/bin/dhcp6c $USERSPACE_DL_MODULES_BEE_DIR/bin
+cp -av $TARGETS_DIR/$ROOTFS/bin/dhcp6s $USERSPACE_DL_MODULES_BEE_DIR/bin
+cp -av $TARGETS_DIR/$ROOTFS/bin/dhcpc $USERSPACE_DL_MODULES_BEE_DIR/bin
+cp -av $TARGETS_DIR/$ROOTFS/bin/dhcpd $USERSPACE_DL_MODULES_BEE_DIR/bin
+cp -av $TARGETS_DIR/$ROOTFS/bin/dnsproxy $USERSPACE_DL_MODULES_BEE_DIR/bin
+cp -av $TARGETS_DIR/$ROOTFS/bin/httpd $USERSPACE_DL_MODULES_BEE_DIR/bin
+cp -av $TARGETS_DIR/$ROOTFS/bin/ippd $USERSPACE_DL_MODULES_BEE_DIR/bin
+cp -av $TARGETS_DIR/$ROOTFS/bin/periodicstat $USERSPACE_DL_MODULES_BEE_DIR/bin
+cp -av $TARGETS_DIR/$ROOTFS/bin/radvd $USERSPACE_DL_MODULES_BEE_DIR/bin
+cp -av $TARGETS_DIR/$ROOTFS/bin/rastatus6 $USERSPACE_DL_MODULES_BEE_DIR/bin
+cp -av $TARGETS_DIR/$ROOTFS/bin/send_cms_msg $USERSPACE_DL_MODULES_BEE_DIR/bin
+cp -av $TARGETS_DIR/$ROOTFS/bin/smd $USERSPACE_DL_MODULES_BEE_DIR/bin
+cp -av $TARGETS_DIR/$ROOTFS/bin/ssk $USERSPACE_DL_MODULES_BEE_DIR/bin
+cp -av $TARGETS_DIR/$ROOTFS/bin/telnetd $USERSPACE_DL_MODULES_BEE_DIR/bin
+cp -av $TARGETS_DIR/$ROOTFS/bin/tr143DownloadDiag $USERSPACE_DL_MODULES_BEE_DIR/bin
+cp -av $TARGETS_DIR/$ROOTFS/bin/tr143EchoCfgServer $USERSPACE_DL_MODULES_BEE_DIR/bin
+cp -av $TARGETS_DIR/$ROOTFS/bin/tr143UploadDiag $USERSPACE_DL_MODULES_BEE_DIR/bin
+cp -av $TARGETS_DIR/$ROOTFS/bin/tr69c $USERSPACE_DL_MODULES_BEE_DIR/bin
+cp -av $TARGETS_DIR/$ROOTFS/bin/udhcpd $USERSPACE_DL_MODULES_BEE_DIR/bin
+cp -av $TARGETS_DIR/$ROOTFS/bin/upnp $USERSPACE_DL_MODULES_BEE_DIR/bin
+cp -av $TARGETS_DIR/$ROOTFS/bin/websockd $USERSPACE_DL_MODULES_BEE_DIR/bin
+cp -av $TARGETS_DIR/$ROOTFS/bin/xmppc $USERSPACE_DL_MODULES_BEE_DIR/bin
+cp -av $TARGETS_DIR/$ROOTFS/bin/smbd $USERSPACE_DL_MODULES_BEE_DIR/bin
+
+cp -av $TARGETS_DIR/$ROOTFS/usr/bin/tftpd $USERSPACE_DL_MODULES_BEE_DIR/usr/bin/tftpd
+
+cp -av $TARGETS_DIR/$ROOTFS/sbin/hotplug $USERSPACE_DL_MODULES_BEE_DIR/sbin
+cp -av $TARGETS_DIR/$ROOTFS/sbin/sendarp $USERSPACE_DL_MODULES_BEE_DIR/sbin
+cp -av $TARGETS_DIR/$ROOTFS/sbin/sysinfo $USERSPACE_DL_MODULES_BEE_DIR/sbin
+
+cp -av $TARGETS_DIR/$ROOTFS/$LIBDIR_NAME/libcms* $USERSPACE_DL_MODULES_BEE_DIR/$LIBDIR_NAME
+cp -av $TARGETS_DIR/$ROOTFS/$LIBDIR_NAME/libmdm* $USERSPACE_DL_MODULES_BEE_DIR/$LIBDIR_NAME
+cp -av $TARGETS_DIR/$ROOTFS/$LIBDIR_NAME/libnanoxml* $USERSPACE_DL_MODULES_BEE_DIR/$LIBDIR_NAME
+cp -av $TARGETS_DIR/$ROOTFS/$LIBDIR_NAME/libstrophe* $USERSPACE_DL_MODULES_BEE_DIR/$LIBDIR_NAME
+cp -av $TARGETS_DIR/$ROOTFS/$LIBDIR_NAME/libtr143_utils* $USERSPACE_DL_MODULES_BEE_DIR/$LIBDIR_NAME
+cp -av $TARGETS_DIR/$ROOTFS/$LIBDIR_NAME/libwlcsm_dm_tr98* $USERSPACE_DL_MODULES_BEE_DIR/$LIBDIR_NAME
+
+cp -av $TARGETS_DIR/$ROOTFS/etc/cms_entity_info.d/* $USERSPACE_DL_MODULES_BEE_DIR/etc/cms_entity_info.d/
+
+cp -av $TARGETS_DIR/$ROOTFS/webs/* $USERSPACE_DL_MODULES_BEE_DIR/webs/
+
+##############################################################################
+
+tar zcf smd.tar.gz -C $USERSPACE_DL_MODULES_BEE_DIR .
+mv smd.tar.gz $USERSPACE_DL_MODULES_BEE_DIR
+
+cd $SMD_DIR
+cp -av ./smd.manifest $USERSPACE_DL_MODULES_BEE_DIR
+$HOSTTOOLS_DIR/beep/beepPkgBuilder -f ./smd-pkginfo.txt
+
+mv ./pkg_beep_*_*.tar.gz $USERSPACE_DL_MODULES_BEEP_DIR
+rm -rf $USERSPACE_DL_MODULES_BEE_DIR

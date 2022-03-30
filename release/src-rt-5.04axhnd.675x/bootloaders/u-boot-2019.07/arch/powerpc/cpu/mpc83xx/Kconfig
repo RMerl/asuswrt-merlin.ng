@@ -1,0 +1,364 @@
+menu "mpc83xx CPU"
+	depends on MPC83xx
+
+config SYS_CPU
+	default "mpc83xx"
+
+choice
+	prompt "Target select"
+	optional
+
+config TARGET_MPC8308_P1M
+	bool "Support mpc8308_p1m"
+	select ARCH_MPC8308
+
+config TARGET_SBC8349
+	bool "Support sbc8349"
+	select ARCH_MPC8349
+
+config TARGET_VE8313
+	bool "Support ve8313"
+	select ARCH_MPC8313
+
+config TARGET_VME8349
+	bool "Support vme8349"
+	select ARCH_MPC8349
+
+config TARGET_CADDY2
+	bool "Support caddy2"
+	select ARCH_MPC8349
+
+config TARGET_MPC8308RDB
+	bool "Support MPC8308RDB"
+	select ARCH_MPC8308
+	select SYS_FSL_ERRATUM_ESDHC111
+
+config TARGET_MPC8313ERDB_NOR
+	bool "Support MPC8313ERDB_NOR"
+	select ARCH_MPC8313
+	select BOARD_EARLY_INIT_F
+	select SUPPORT_SPL
+
+config TARGET_MPC8313ERDB_NAND
+	bool "Support MPC8313ERDB_NAND"
+	select ARCH_MPC8313
+	select BOARD_EARLY_INIT_F
+	select SUPPORT_SPL
+
+config TARGET_MPC8315ERDB
+	bool "Support MPC8315ERDB"
+	select ARCH_MPC8315
+	select BOARD_EARLY_INIT_F
+
+config TARGET_MPC8323ERDB
+	bool "Support MPC8323ERDB"
+	select ARCH_MPC832X
+
+config TARGET_MPC832XEMDS
+	bool "Support MPC832XEMDS"
+	select ARCH_MPC832X
+	select BOARD_EARLY_INIT_F
+
+config TARGET_MPC8349EMDS
+	bool "Support MPC8349EMDS"
+	select ARCH_MPC8349
+	select BOARD_EARLY_INIT_F
+	select SYS_FSL_DDR
+	select SYS_FSL_DDR_BE
+	select SYS_FSL_HAS_DDR2
+
+config TARGET_MPC8349EMDS_SDRAM
+	bool "Support MPC8349EMDS_SDRAM"
+	select ARCH_MPC8349
+	select BOARD_EARLY_INIT_F
+	select SYS_FSL_DDR
+	select SYS_FSL_DDR_BE
+	select SYS_FSL_HAS_DDR2
+
+config TARGET_MPC8349ITX
+	bool "Support MPC8349ITX"
+	select ARCH_MPC8349
+	imply CMD_IRQ
+
+config TARGET_MPC837XEMDS
+	bool "Support MPC837XEMDS"
+	select ARCH_MPC837X
+	select BOARD_EARLY_INIT_F
+	imply CMD_SATA
+	imply FSL_SATA
+
+config TARGET_MPC837XERDB
+	bool "Support MPC837XERDB"
+	select ARCH_MPC837X
+	select BOARD_EARLY_INIT_F
+
+config TARGET_IDS8313
+	bool "Support ids8313"
+	select ARCH_MPC8313
+	select DM
+	imply CMD_DM
+
+config TARGET_KMETER1
+	bool "Support kmeter1"
+	select ARCH_MPC8360
+	imply CMD_CRAMFS
+	imply CMD_DIAG
+	imply FS_CRAMFS
+
+config TARGET_KMCOGE5NE
+	bool "Support kmcoge5ne"
+	select ARCH_MPC8360
+	imply CMD_CRAMFS
+	imply CMD_DIAG
+	imply FS_CRAMFS
+
+config TARGET_SUVD3
+	bool "Support suvd3"
+	select ARCH_MPC832X
+	imply CMD_CRAMFS
+	imply FS_CRAMFS
+
+config TARGET_KMVECT1
+	bool "Support kmvect1"
+	select ARCH_MPC8309
+	imply CMD_CRAMFS
+	imply FS_CRAMFS
+
+config TARGET_KMTEGR1
+	bool "Support kmtegr1"
+	select ARCH_MPC8309
+	imply CMD_CRAMFS
+	imply FS_CRAMFS
+
+config TARGET_TUXX1
+	bool "Support tuxx1"
+	select ARCH_MPC832X
+	imply CMD_CRAMFS
+	imply FS_CRAMFS
+
+config TARGET_KMSUPX5
+	bool "Support kmsupx5"
+	select ARCH_MPC832X
+	imply CMD_CRAMFS
+	imply FS_CRAMFS
+
+config TARGET_TUGE1
+	bool "Support tuge1"
+	select ARCH_MPC832X
+	imply CMD_CRAMFS
+	imply FS_CRAMFS
+
+config TARGET_KMOPTI2
+	bool "Support kmopti2"
+	select ARCH_MPC832X
+	imply CMD_CRAMFS
+	imply FS_CRAMFS
+
+config TARGET_KMTEPR2
+	bool "Support kmtepr2"
+	select ARCH_MPC832X
+	imply CMD_CRAMFS
+	imply FS_CRAMFS
+
+config TARGET_TQM834X
+	bool "Support TQM834x"
+	select ARCH_MPC8349
+
+config TARGET_HRCON
+	bool "Support hrcon"
+	select ARCH_MPC8308
+	select SYS_FSL_ERRATUM_ESDHC111
+
+config TARGET_STRIDER
+	bool "Support strider"
+	select ARCH_MPC8308
+	select SYS_FSL_ERRATUM_ESDHC111
+	imply CMD_PCA953X
+
+config TARGET_GAZERBEAM
+	bool "Support gazerbeam"
+	select ARCH_MPC8308
+	select SYS_FSL_ERRATUM_ESDHC111
+	imply ENV_IS_IN_FLASH
+	help
+	  The "Gazerbeam" is a modular system by Guntermann & Drunck GmbH
+	  Systementwicklung based on the NXP MPC8308 SoC for usage in KVM
+	  appliances.
+
+	  Features include:
+	  * Two gigabit ethernet ports
+	  * Multiple USB ports (depending on variant)
+	  * Several gigabit ethernet or optical fiber ports (depending on
+	    variant)
+	  * Several display port inputs and outputs, and supporting redrivers
+	    (depending on variant)
+	  * Several FPGAs with custom logic (depending on variant)
+
+endchoice
+
+config MPC83XX_QUICC_ENGINE
+	bool
+
+# TODO: Imply MPC83xx PCI driver
+config MPC83XX_PCI_SUPPORT
+	bool
+
+# TODO: Imply TSEC driver
+config MPC83XX_TSEC1_SUPPORT
+	bool
+
+config MPC83XX_TSEC2_SUPPORT
+	bool
+
+config MPC83XX_PCIE1_SUPPORT
+	bool
+
+config MPC83XX_PCIE2_SUPPORT
+	bool
+
+config MPC83XX_SDHC_SUPPORT
+	bool
+
+config MPC83XX_SATA_SUPPORT
+	bool
+
+config MPC83XX_SECOND_I2C_SUPPORT
+	bool
+
+config MPC83XX_LDP_PIN
+	bool
+
+config ARCH_MPC830X
+	bool
+	select MPC83XX_SDHC_SUPPORT
+
+config ARCH_MPC8308
+	bool
+	select ARCH_MPC830X
+	select MPC83XX_TSEC1_SUPPORT
+	select MPC83XX_TSEC2_SUPPORT
+	select MPC83XX_PCIE1_SUPPORT
+	select MPC83XX_SECOND_I2C_SUPPORT
+
+config ARCH_MPC8309
+	bool
+	select ARCH_MPC830X
+	select MPC83XX_QUICC_ENGINE
+	select MPC83XX_PCI_SUPPORT
+	select MPC83XX_SECOND_I2C_SUPPORT
+
+config ARCH_MPC831X
+	bool
+	select MPC83XX_PCI_SUPPORT
+	select MPC83XX_TSEC1_SUPPORT
+	select MPC83XX_TSEC2_SUPPORT
+
+config ARCH_MPC8313
+	bool
+	select ARCH_MPC831X
+	select MPC83XX_SECOND_I2C_SUPPORT
+
+config ARCH_MPC8315
+	bool
+	select ARCH_MPC831X
+	select MPC83XX_PCIE1_SUPPORT
+	select MPC83XX_PCIE2_SUPPORT
+	select MPC83XX_SATA_SUPPORT
+
+config ARCH_MPC832X
+	bool
+	select MPC83XX_QUICC_ENGINE
+	select MPC83XX_PCI_SUPPORT
+
+config ARCH_MPC834X
+	bool
+
+config ARCH_MPC8349
+	bool
+	select ARCH_MPC834X
+	select MPC83XX_PCI_SUPPORT
+	select MPC83XX_TSEC1_SUPPORT
+	select MPC83XX_TSEC2_SUPPORT
+	select MPC83XX_LDP_PIN
+	select MPC83XX_SECOND_I2C_SUPPORT
+
+config ARCH_MPC8360
+	bool
+	select MPC83XX_QUICC_ENGINE
+	select MPC83XX_PCI_SUPPORT
+	select MPC83XX_LDP_PIN
+	select MPC83XX_SECOND_I2C_SUPPORT
+
+config ARCH_MPC837X
+	bool
+	select MPC83XX_PCI_SUPPORT
+	select MPC83XX_TSEC1_SUPPORT
+	select MPC83XX_TSEC2_SUPPORT
+	select MPC83XX_PCIE1_SUPPORT
+	select MPC83XX_PCIE2_SUPPORT
+	select MPC83XX_SDHC_SUPPORT
+	select MPC83XX_SATA_SUPPORT
+	select MPC83XX_LDP_PIN
+	select MPC83XX_SECOND_I2C_SUPPORT
+
+config SYS_IMMR
+	hex "Value for IMMR"
+	default 0xE0000000
+	help
+	  Address for the Internal Memory-Mapped Registers (IMMR) window used
+	  to configure the features of the SoC.
+
+source "arch/powerpc/cpu/mpc83xx/hrcw/Kconfig"
+source "arch/powerpc/cpu/mpc83xx/bats/Kconfig"
+source "arch/powerpc/cpu/mpc83xx/lblaw/Kconfig"
+source "arch/powerpc/cpu/mpc83xx/elbc/Kconfig"
+source "arch/powerpc/cpu/mpc83xx/hid/Kconfig"
+source "arch/powerpc/cpu/mpc83xx/sysio/Kconfig"
+source "arch/powerpc/cpu/mpc83xx/arbiter/Kconfig"
+source "arch/powerpc/cpu/mpc83xx/initreg/Kconfig"
+
+menu "Legacy options"
+
+if ARCH_MPC8349
+
+#TODO(mario.six@gdsys.cc): Remove when mpc83xx PCI has been converted to DM/DT
+choice
+	prompt "PMC slot configuration"
+
+config PCI_ALL_PCI1
+	bool "All PMC slots on PCI1"
+
+config PCI_ONE_PCI1
+	bool "First PMC1 on PCI1"
+
+config PCI_TWO_PCI1
+	bool "First two PMC1 on PCI1"
+
+endchoice
+
+config PCI_64BIT
+	bool "PMC2 is 64bit"
+
+endif
+
+endmenu
+
+source "board/esd/vme8349/Kconfig"
+source "board/freescale/mpc8308rdb/Kconfig"
+source "board/freescale/mpc8313erdb/Kconfig"
+source "board/freescale/mpc8315erdb/Kconfig"
+source "board/freescale/mpc8323erdb/Kconfig"
+source "board/freescale/mpc832xemds/Kconfig"
+source "board/freescale/mpc8349emds/Kconfig"
+source "board/freescale/mpc8349itx/Kconfig"
+source "board/freescale/mpc837xemds/Kconfig"
+source "board/freescale/mpc837xerdb/Kconfig"
+source "board/ids/ids8313/Kconfig"
+source "board/keymile/km83xx/Kconfig"
+source "board/mpc8308_p1m/Kconfig"
+source "board/sbc8349/Kconfig"
+source "board/tqc/tqm834x/Kconfig"
+source "board/ve8313/Kconfig"
+source "board/gdsys/mpc8308/Kconfig"
+
+endmenu

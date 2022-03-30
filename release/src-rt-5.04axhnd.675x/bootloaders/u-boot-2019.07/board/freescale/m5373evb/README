@@ -1,0 +1,325 @@
+Freescale MCF5373EVB ColdFire Development Board
+================================================
+
+TsiChung Liew(Tsi-Chung.Liew@freescale.com)
+Created 11/08/07
+===========================================
+
+
+Changed files:
+==============
+
+- board/freescale/m5373evb/m5373evb.c	Dram setup
+- board/freescale/m5373evb/mii.c	Mii access
+- board/freescale/m5373evb/Makefile	Makefile
+- board/freescale/m5373evb/config.mk	config make
+- board/freescale/m5373evb/u-boot.lds	Linker description
+
+- arch/m68k/cpu/mcf532x/cpu.c		cpu specific code
+- arch/m68k/cpu/mcf532x/cpu_init.c	FBCS, Mux pins, icache and RTC extra regs
+- arch/m68k/cpu/mcf532x/interrupts.c	cpu specific interrupt support
+- arch/m68k/cpu/mcf532x/speed.c		system, pci, flexbus, and cpu clock
+- arch/m68k/cpu/mcf532x/Makefile		Makefile
+- arch/m68k/cpu/mcf532x/config.mk		config make
+- arch/m68k/cpu/mcf532x/start.S		start up assembly code
+
+- doc/README.m5373evb		This readme file
+
+- drivers/net/mcffec.c		ColdFire common FEC driver
+- drivers/serial/mcfuart.c	ColdFire common UART driver
+- drivers/rtc/mcfrtc.c		Realtime clock Driver
+
+- include/asm-m68k/bitops.h		Bit operation function export
+- include/asm-m68k/byteorder.h		Byte order functions
+- include/asm-m68k/fec.h		FEC structure and definition
+- include/asm-m68k/fsl_i2c.h		I2C structure and definition
+- include/asm-m68k/global_data.h	Global data structure
+- include/asm-m68k/immap.h		ColdFire specific header file and driver macros
+- include/asm-m68k/immap_532x.h		mcf532x specific header file
+- include/asm-m68k/io.h			io functions
+- include/asm-m68k/m532x.h		mcf532x specific header file
+- include/asm-m68k/posix_types.h	Posix
+- include/asm-m68k/processor.h		header file
+- include/asm-m68k/ptrace.h		Exception structure
+- include/asm-m68k/rtc.h		Realtime clock header file
+- include/asm-m68k/string.h		String function export
+- include/asm-m68k/timer.h		Timer structure and definition
+- include/asm-m68k/types.h		Data types definition
+- include/asm-m68k/uart.h		Uart structure and definition
+- include/asm-m68k/u-boot.h		U-Boot structure
+
+- include/configs/M5373EVB.h		Board specific configuration file
+
+- arch/m68k/lib/board.c			board init function
+- arch/m68k/lib/cache.c
+- arch/m68k/lib/interrupts			Coldfire common interrupt functions
+- arch/m68k/lib/m68k_linux.c
+- arch/m68k/lib/time.c			Timer functions (Dma timer and PIT)
+- arch/m68k/lib/traps.c			Exception init code
+
+1 MCF5373 specific Options/Settings
+====================================
+1.1 pre-loader is no longer suppoer in thie coldfire family
+
+1.2 Configuration settings for M5373EVB Development Board
+CONFIG_MCF532x		-- define for all MCF532x CPUs
+CONFIG_M5373		-- define for all Freescale MCF5373 CPUs
+CONFIG_M5373EVB		-- define for M5373EVB board
+
+CONFIG_MCFUART		-- define to use common CF Uart driver
+CONFIG_SYS_UART_PORT		-- define UART port number, start with 0, 1 and 2
+CONFIG_BAUDRATE		-- define UART baudrate
+
+CONFIG_MCFRTC		-- define to use common CF RTC driver
+CONFIG_SYS_MCFRTC_BASE		-- provide base address for RTC in immap.h
+CONFIG_SYS_RTC_OSCILLATOR	-- define RTC clock frequency
+RTC_DEBUG		-- define to show RTC debug message
+CONFIG_CMD_DATE		-- enable to use date feature in U-Boot
+
+CONFIG_MCFFEC		-- define to use common CF FEC driver
+CONFIG_MII		-- enable to use MII driver
+CONFIG_CF_DOMII		-- enable to use MII feature in cmd_mii.c
+CONFIG_SYS_DISCOVER_PHY	-- enable PHY discovery
+CONFIG_SYS_RX_ETH_BUFFER	-- Set FEC Receive buffer
+CONFIG_SYS_FAULT_ECHO_LINK_DOWN--
+CONFIG_SYS_FEC0_PINMUX		-- Set FEC0 Pin configuration
+CONFIG_SYS_FEC0_MIIBASE	-- Set FEC0 MII base register
+MCFFEC_TOUT_LOOP	-- set FEC timeout loop
+
+CONFIG_MCFTMR		-- define to use DMA timer
+CONFIG_MCFPIT		-- define to use PIT timer
+
+CONFIG_SYS_I2C_FSL	-- define to use FSL common I2C driver
+CONFIG_SYS_I2C_SOFT	-- define for I2C bit-banged
+CONFIG_SYS_I2C_SPEED		-- define for I2C speed
+CONFIG_SYS_I2C_SLAVE		-- define for I2C slave address
+CONFIG_SYS_I2C_OFFSET		-- define for I2C base address offset
+CONFIG_SYS_IMMR		-- define for MBAR offset
+
+CONFIG_SYS_MBAR		-- define MBAR offset
+
+CONFIG_MONITOR_IS_IN_RAM -- Not support
+
+CONFIG_SYS_INIT_RAM_ADDR	-- defines the base address of the MCF5373 internal SRAM
+
+CONFIG_SYS_CSn_BASE	-- defines the Chip Select Base register
+CONFIG_SYS_CSn_MASK	-- defines the Chip Select Mask register
+CONFIG_SYS_CSn_CTRL	-- defines the Chip Select Control register
+
+CONFIG_SYS_SDRAM_BASE	-- defines the DRAM Base
+
+2. MEMORY MAP UNDER U-BOOT AND LINUX KERNEL
+===========================================
+2.1. System memory map:
+	Flash:		0x00000000-0x3FFFFFFF (1024MB)
+	DDR:		0x40000000-0x7FFFFFFF (1024MB)
+	SRAM:		0x80000000-0x8FFFFFFF (256MB)
+	IP:		0xF0000000-0xFFFFFFFF (256MB)
+
+2.2. For the initial bringup, we adopted a consistent memory scheme between U-Boot and
+	linux kernel, you can customize it based on your system requirements:
+	Flash0:		0x00000000-0x00FFFFFF (16MB)
+
+	DDR:		0x40000000-0x4FFFFFFF (256MB)
+	SRAM:		0x80000000-0x80007FFF (32KB)
+	IP:		0xFC000000-0xFC0FFFFF (64KB)
+
+3. COMPILATION
+==============
+3.1	To create U-Boot the gcc-4.1-xx compiler set (ColdFire ELF or
+uClinux version) from codesourcery.com was used. Download it from:
+http://www.codesourcery.com/gnu_toolchains/coldfire/download.html
+
+3.2 Compilation
+   export CROSS_COMPILE=cross-compile-prefix
+   cd u-boot-1.x.x
+   make distclean
+   make M5373EVB_config
+   make
+
+4. SCREEN DUMP
+==============
+4.1 M5373EVB Development board
+    (NOTE: May not show exactly the same)
+
+U-Boot 1.3.0 (Nov 8 2007 - 12:44:08)
+
+CPU:   Freescale MCF5373 (Mask:65 Version:1)
+       CPU CLK 240 Mhz BUS CLK 80 Mhz
+Board: Freescale FireEngine 5373 EVB
+I2C:   ready
+DRAM:  32 MB
+FLASH: 2 MB
+In:    serial
+Out:   serial
+Err:   serial
+NAND:  16 MiB
+Net:   FEC0
+-> print
+bootdelay=1
+baudrate=115200
+ethaddr=00:e0:0c:bc:e5:60
+hostname=M5373EVB
+netdev=eth0
+loadaddr=40010000
+load=tftp ${loadaddr) ${u-boot}
+upd=run load; run prog
+prog=prot off 0 2ffff;era 0 2ffff;cp.b ${loadaddr} 0 ${filesize};save
+ethact=FEC0
+u-boot=u-boot.bin
+gatewayip=192.168.1.1
+netmask=255.255.255.0
+ipaddr=192.168.1.3
+serverip=192.168.1.2
+stdin=serial
+stdout=serial
+stderr=serial
+mem=261632k
+
+Environment size: 401/8188 bytes
+-> bdinfo
+memstart    = 0x40000000
+memsize     = 0x02000000
+flashstart  = 0x00000000
+flashsize   = 0x00200000
+flashoffset = 0x00000000
+sramstart   = 0x80000000
+sramsize    = 0x00008000
+mbar	    = 0xFC000000
+busfreq     =	  80 MHz
+ethaddr     = 00:E0:0C:BC:E5:60
+ip_addr     = 192.168.1.3
+baudrate    = 115200 bps
+->
+-> help
+?	- alias for 'help'
+base	- print or set address offset
+bdinfo	- print Board Info structure
+boot	- boot default, i.e., run 'bootcmd'
+bootd	- boot default, i.e., run 'bootcmd'
+bootelf - Boot from an ELF image in memory
+bootm	- boot application image from memory
+bootp	- boot image via network using BootP/TFTP protocol
+bootvx	- Boot vxWorks from an ELF image
+cmp	- memory compare
+coninfo - print console devices and information
+cp	- memory copy
+crc32	- checksum calculation
+date	- get/set/reset date & time
+dcache	- enable or disable data cache
+echo	- echo args to console
+erase	- erase FLASH memory
+flinfo	- print FLASH memory information
+go	- start application at address 'addr'
+help	- print online help
+i2c	- I2C sub-system
+icache	- enable or disable instruction cache
+iminfo	- print header information for application image
+imls	- list all images found in flash
+itest	- return true/false on integer compare
+loadb	- load binary file over serial line (kermit mode)
+loads	- load S-Record file over serial line
+loady	- load binary file over serial line (ymodem mode)
+loop	- infinite loop on address range
+ls	- list files in a directory (default /)
+md	- memory display
+mii	- MII utility commands
+mm	- memory modify (auto-incrementing)
+mtest	- simple RAM test
+mw	- memory write (fill)
+nand	- NAND sub-system
+nboot	- boot from NAND device
+nfs	- boot image via network using NFS protocol
+nm	- memory modify (constant address)
+ping	- send ICMP ECHO_REQUEST to network host
+printenv- print environment variables
+protect - enable or disable FLASH write protection
+rarpboot- boot image via network using RARP/TFTP protocol
+reset	- Perform RESET of the CPU
+run	- run commands in an environment variable
+saveenv - save environment variables to persistent storage
+setenv	- set environment variables
+sleep	- delay execution for some time
+source	- run script from memory
+tftpboot- boot image via network using TFTP protocol
+version - print monitor version
+-> tftp 0x40800000 uImage
+Using FEC0 device
+TFTP from server 192.168.1.3; our IP address is 192.168.1.3 Filename 'uImage'.
+Load address: 0x40800000
+Loading: #################################################################
+	  #################################################################
+	  ##########
+done
+Bytes transferred = 2053270 (1f5496 hex)
+-> bootm 0x40800000
+## Booting image at 40800000 ...
+    Image Name:   Linux Kernel Image
+    Created:	  2007-11-07  20:33:08 UTC
+    Image Type:   M68K Linux Kernel Image (gzip compressed)
+    Data Size:	  2053206 Bytes =  2 MB
+    Load Address: 40020000
+    Entry Point:  40020000
+    Verifying Checksum ... OK
+    Uncompressing Kernel Image ... OK
+Linux version 2.6.22-uc1 (mattw@loa) (gcc version 4.2.1 (Sourcery G++ Lite 4.2-7
+
+
+uClinux/COLDFIRE(m537x)
+COLDFIRE port done by Greg Ungerer, gerg@snapgear.com Flat model support (C) 1998,1999 Kenneth Albanowski, D. Jeff Dionne Built 1 zonelists.  Total pages: 8128 Kernel command line: rootfstype=romfs PID hash table entries: 128 (order: 7, 512 bytes) Dentry cache hash table entries: 4096 (order: 2, 16384 bytes) Inode-cache hash table entries: 2048 (order: 1, 8192 bytes) Memory available: 28092k/32768k RAM, (1788k kernel code, 244k data) Mount-cache hash table entries: 512
+NET: Registered protocol family 16
+USB-MCF537x: (HOST module) EHCI device is registered
+USB-MCF537x: (OTG module) EHCI device is registered
+USB-MCF537x: (OTG module) UDC device is registered
+usbcore: registered new interface driver usbfs
+usbcore: registered new interface driver hub
+usbcore: registered new device driver usb
+NET: Registered protocol family 2
+IP route cache hash table entries: 1024 (order: 0, 4096 bytes) TCP established hash table entries: 1024 (order: 1, 8192 bytes) TCP bind hash table entries: 1024 (order: 0, 4096 bytes)
+TCP: Hash tables configured (established 1024 bind 1024) TCP reno registered
+JFFS2 version 2.2. (NAND) © 2001-2006 Red Hat, Inc.
+io scheduler noop registered
+io scheduler cfq registered (default)
+ColdFire internal UART serial driver version 1.00 ttyS0 at 0xfc060000 (irq = 90) is a builtin ColdFire UART
+ttyS1 at 0xfc064000 (irq = 91) is a builtin ColdFire UART
+ttyS2 at 0xfc068000 (irq = 92) is a builtin ColdFire UART RAMDISK driver initialized: 16 RAM disks of 4096K size 1024 blocksize
+loop: module loaded
+nbd: registered device at major 43
+usbcore: registered new interface driver ub FEC ENET Version 0.2
+fec: PHY @ 0x1, ID 0x20005c90 -- DP83848
+eth0: ethernet 00:e0:0c:bc:e5:60
+uclinux[mtd]: RAM probe address=0x4021c22c size=0x22b000 Creating 1 MTD partitions on "RAM":
+0x00000000-0x0022b000 : "ROMfs"
+uclinux[mtd]: set ROMfs to be root filesystem NAND device: Manufacturer ID: 0x20, Chip ID: 0x73 (ST Micro NAND 16MiB 3,3V 8-b) Scanning device for bad blocks Creating 1 MTD partitions on "NAND 16MiB 3,3V 8-bit":
+0x00000000-0x01000000 : "M53xx flash partition 1"
+QSPI: spi->max_speed_hz 300000
+QSPI: Baud set to 255
+SPI: Coldfire master initialized
+M537x - Disable UART1 when using Audio
+udc: Freescale MCF53xx UDC driver version 27 October 2006 init
+udc: MCF53xx USB Device is found. ID=0x5 Rev=0x41 i2c /dev entries driver
+usbcore: registered new interface driver usbhid
+drivers/hid/usbhid/hid-core.c: v2.6:USB HID core driver TCP cubic registered
+NET: Registered protocol family 1
+NET: Registered protocol family 17
+VFS: Mounted root (romfs filesystem) readonly.
+Freeing unused kernel memory: 64k freed (0x401f5000 - 0x40204000) init started:  BusyBox v1.00 (2007.11.07-19:57+0000) multi-call binary?Setting e Mounting filesystems
+mount: Mounting devpts on /dev/pts failed: No such device
+mount: Mounting usbfs on /proc/bus/usb failed: No such file or directory Starting syslogd and klogd Setting up networking on loopback device:
+Setting up networking on eth0:
+info, udhcpc (v0.9.9-pre) started
+eth0: config: auto-negotiation on, 100FDX, 100HDX, 10FDX, 10HDX.
+debug, Sending discover...
+debug, Sending discover...
+debug, Sending select for 172.27.0.130...
+info, Lease of 172.27.0.130 obtained, lease time 43200 deleting routers
+route: SIOC[ADD|DEL]RT: No such process
+adding dns 172.27.0.1
+Starting the boa webserver:
+Setting time from ntp server: ntp.cs.strath.ac.uk
+ntp.cs.strath.ac.uk: Unknown host
+
+
+BusyBox v1.00 (2007.11.07-19:57+0000) Built-in shell (msh) Enter 'help' for a list of built-in commands.
+
+#

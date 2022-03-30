@@ -1,0 +1,128 @@
+================================================================================
+Useful notes on bulding and using of U-Boot on ARC HS Development Kit (AKA HSDK)
+================================================================================
+
+   BOARD OVERVIEW
+
+   The DesignWare ARC HS Development Kit is a ready-to-use platform for rapid
+   software development on the ARC HS3x family of processors.
+
+   For more information please visit:
+   https://www.synopsys.com/dw/ipdir.php?ds=arc-hs-development-kit
+
+   User guide is availalble here:
+   https://github.com/foss-for-synopsys-dwc-arc-processors/ARC-Development-Systems-Forum/wiki/docs/ARC_HSDK_User_Guide.pdf
+
+   It has the following features useful for U-Boot:
+    * On-board 2-channel FTDI TTL-to-USB converter
+      - The first channel is used for serial debug port (which makes it possible
+        to use a serial connection on pretty much any host machine be it
+        Windows, Linux or Mac).
+        On Linux machine typucally FTDI serial port would be /dev/ttyUSB0.
+        There's no HW flow-control and baud-rate is 115200.
+
+      - The second channel is used for built-in Digilent USB JTAG probe.
+        That means no extra hardware is required to access ARC core from a
+        debugger on development host. Both proprietary MetaWare debugger and
+        open source OpenOCD + GDB client are supported.
+
+      - Also with help of this FTDI chip it is possible to reset entire
+        board with help of a special `rff-ftdi-reset` utility, see:
+        https://github.com/foss-for-synopsys-dwc-arc-processors/rff-ftdi-reset
+
+    * Micro SD-card slot
+      - U-Boot expects to see the very first partition on the card formatted as
+        FAT file-system and uses it for keeping its environment in `uboot.env`
+        file. Note uboot.env is not just a text file but it is auto-generated
+        file created by U-Boot on invocation of `saveenv` command.
+        It contains a checksum which makes this saved environment invalid in
+        case of maual modification.
+
+      - There might be more useful files on that first FAT partition like
+        Linux kernl image in form of uImage (with or without built-in
+        initramfs), device tree blob (.dtb) etc.
+
+      - Except FAT partition there might be others following the first FAT one
+        like Ext file-system with rootfs etc.
+
+    * 1 Gb Ethernet socket
+      - U-Boot might get payload from TFTP server. This might be uImage, rootfs
+        image and anything else.
+
+    * 2 MiB of SPI-flash
+      - SPI-flahs is used as a storage for image of an application auto-executed
+        by bootROM on power-on. Typically U-Boot gets programmed there but
+        there might be other uses. But note bootROM expects to find a special
+        header preceeding application image itself so before flashing anything
+        make sure required image is prepended. In case of U-Boot this is done
+        by invocation of `headerize-hsdk.py` with `make bsp-generate` command.
+
+
+   BUILDING U-BOOT
+
+   1. Configure U-Boot:
+      ------------------------->8----------------------
+      make hsdk_defconfig
+      ------------------------->8----------------------
+
+   2. To build Elf file (for example to be used with host debugger via JTAG
+      connection to the target board):
+      ------------------------->8----------------------
+      make mdbtrick
+      ------------------------->8----------------------
+
+      This will produce `u-boot` Elf file.
+
+   3. To build artifacts required for U-Boot update in n-board SPI-flash:
+      ------------------------->8----------------------
+      make bsp-generate
+      ------------------------->8----------------------
+
+      This will produce `u-boot.head` and `u-boot-update.scr` which should
+      be put on the first FAT partition of micro SD-card to be inserted in the
+      HSDK board.
+
+      Note that Python3 script is used for generation of a header, thus
+      to get that done it's required to have Python3 with "pyelftools" installed.
+
+      "pyelftools" could be installed with help of "pip" even w/o root rights:
+      ------------------------->8----------------------
+      python3 -m pip install --user pyelftools
+      ------------------------->8----------------------
+
+   EXECUTING U-BOOT
+
+   1. The HSDK board is supposed to auto-start U-Boot image stored in on-board
+      SPI-flash on power-on. For that make sure DIP-switches in the corner of
+      the board are in their default positions: BIM in 1:off, 2:on state
+      while both BMC and BCS should be in 1:on, 2:on state.
+
+   2. Though it is possible to load U-Boot as a simple Elf file via JTAG right
+      in DDR and start it from the debugger.
+
+      2.1. In case of proprietary MetaWare debugger run:
+      ------------------------->8----------------------
+      mdb -digilent -run -cl u-boot
+      ------------------------->8----------------------
+
+
+   UPDATION U-BOOT IMAGE IN ON-BOARD SPI-FLASH
+
+   1. Create `u-boot.head` and `u-boot-update.scr` as discribed above with
+      `make bsp-generate` command.
+
+   2. Copy `u-boot.head` and `u-boot-update.scr` to the first FAT partition
+      of micro SD-card.
+
+   3. Connect USB cable from the HSDK board to the developemnt host and
+      fire-up serial terminal.
+
+   3. Insert prepared micro SD-card in the HSDK board, press reset button
+      and stop auto-execution of existing `bootcmd` pressing any key in serial
+      terminal and enter the following command:
+      ------------------------->8----------------------
+      mmc rescan && fatload mmc 0:1 ${loadaddr} u-boot-update.scr && source ${loadaddr}
+      ------------------------->8----------------------
+      Wait before you see "u-boot update: OK" message.
+
+   4. Press RESET button and enjoy updated U-Boot version.

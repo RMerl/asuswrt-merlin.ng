@@ -1,0 +1,50 @@
+Texas Instruments' K3 Remote processor driver
+=============================================
+
+In K3 generation Socs, loading an image on any processing entity
+cannot be done directly from U-Boot. In order to load an image,
+remoteproc driver should communicate to SYSFW with a specific sequence.
+Also enable the timer required for this remotecore.
+
+Required properties:
+--------------------
+- compatible:		Shall be: "ti,am654-rproc"
+- reg:			base address of the remoteproc timer.
+- power-domains:	Should contain two sets of entries:
+			First set corresponds to pm domain of the
+			remotecore timer. Seconf entry corresponds to the
+			remoteproc to start.
+			This property is as per the binding,
+			doc/device-tree-bindings/power/ti,sci-pm-domain.txt
+- resets:		Should contain a phandle to a reset controller node
+			and an args specifier containing the remote code
+			device id and reset mask value. This is as per the
+			doc/device-tree-bindings/reset/ti,sci-reset.txt
+- ti,sci:		Phandle to TI-SCI compatible System controller node.
+- ti,sci-proc-id:	Processor id as identified by TISCI
+
+Optional properties:
+--------------------
+- assigned-clocks:	Should contain a phandle to clock node and an args
+			specifier containing the remote core device id and
+			the clock id within the remote core. This is as per
+			doc/device-tree-bindings/clock/ti,sci-clk.txt
+- assigned-clock-rates: One entry for each entry of assigned-clocks. This is
+			the frequency at which the corresponding clock needs
+			to be assigned.
+- ti,sci-host-id:	Host ID to which the processor control is transferred to
+
+Example:
+---------
+
+a53_0: a53@0 {
+	compatible = "ti,am654-rproc";
+	power-domains = <&k3_pds 61>,
+			<&k3_pds 202>;
+	resets = <&k3_reset 202 0>;
+	assigned-clocks = <&k3_clks 202 0>;
+	assigned-clock-rates = <800000000>;
+	ti,sci = <&dmsc>;
+	ti,sci-proc-id = <32>;
+	ti,sci-host-id = <10>;
+};

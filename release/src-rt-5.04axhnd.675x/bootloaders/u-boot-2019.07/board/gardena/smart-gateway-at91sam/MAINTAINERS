@@ -1,0 +1,7 @@
+GARDENA_SMART_GATEWAY_AT91SAM BOARD
+M:	Stefan Roese <sr@denx.de>
+S:	Maintained
+F:	board/gardena/smart-gateway-at91sam/
+F:	include/configs/gardena-smart-gateway-at91sam.h
+F:	configs/gardena-smart-gateway-at91sam_defconfig
+F:	arch/arm/dts/gardena-smart-gateway-at91sam.dts

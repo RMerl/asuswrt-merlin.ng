@@ -1,0 +1,70 @@
+menu "mpc86xx CPU"
+	depends on MPC86xx
+
+config SYS_CPU
+	default "mpc86xx"
+
+choice
+	prompt "Target select"
+	optional
+
+config TARGET_SBC8641D
+	bool "Support sbc8641d"
+	select ARCH_MPC8641
+	select BOARD_EARLY_INIT_F
+
+config TARGET_MPC8610HPCD
+	bool "Support MPC8610HPCD"
+	select ARCH_MPC8610
+	select BOARD_EARLY_INIT_F
+
+config TARGET_MPC8641HPCN
+	bool "Support MPC8641HPCN"
+	select ARCH_MPC8641
+	select FSL_DDR_INTERACTIVE
+	imply SCSI
+
+config TARGET_XPEDITE517X
+	bool "Support xpedite517x"
+	select ARCH_MPC8641
+
+endchoice
+
+config ARCH_MPC8610
+	bool
+	select FSL_LAW
+	select SYS_FSL_HAS_DDR1
+	select SYS_FSL_HAS_DDR2
+
+config ARCH_MPC8641
+	bool
+	select FSL_LAW
+	select SYS_FSL_HAS_DDR1
+	select SYS_FSL_HAS_DDR2
+
+config FSL_LAW
+	bool
+	help
+		Use Freescale common code for Local Access Window
+
+config SYS_CCSRBAR_DEFAULT
+	hex "Default CCSRBAR address"
+	default 0xff700000 if ARCH_MPC8610 || ARCH_MPC8641
+	help
+		Default value of CCSRBAR comes from power-on-reset. It
+		is fixed on each SoC. Some SoCs can have different value
+		if changed by pre-boot regime. The value here must match
+		the current value in SoC. If not sure, do not change.
+config SYS_FSL_NUM_LAWS
+	int "Number of local access windows"
+	default 10 if ARCH_MPC8610 || ARCH_MPC8641
+	help
+		Number of local access windows. This is fixed per SoC.
+		If not sure, do not change.
+
+source "board/freescale/mpc8610hpcd/Kconfig"
+source "board/freescale/mpc8641hpcn/Kconfig"
+source "board/sbc8641d/Kconfig"
+source "board/xes/xpedite517x/Kconfig"
+
+endmenu

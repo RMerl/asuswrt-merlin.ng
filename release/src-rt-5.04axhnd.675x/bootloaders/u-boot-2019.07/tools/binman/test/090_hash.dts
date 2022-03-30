@@ -1,0 +1,12 @@
+// SPDX-License-Identifier: GPL-2.0+
+/dts-v1/;
+
+/ {
+	binman {
+		u-boot {
+			hash {
+				algo = "sha256";
+			};
+		};
+	};
+};

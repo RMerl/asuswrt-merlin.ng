@@ -1,0 +1,12 @@
+if TARGET_KZM9G
+
+config SYS_BOARD
+	default "kzm9g"
+
+config SYS_VENDOR
+	default "kmc"
+
+config SYS_CONFIG_NAME
+	default "kzm9g"
+
+endif

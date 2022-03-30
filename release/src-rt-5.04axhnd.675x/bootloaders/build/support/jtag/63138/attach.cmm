@@ -1,0 +1,69 @@
+//**************************************************************//
+// Attach script for BCM63138                                   //
+//**************************************************************//
+
+AREA
+AREA.CLEAR
+
+SYSTEM.RESET
+
+SYSTEM.JTAGCLOCK 20MHz
+
+jtag.lock
+jtag.pin.enable
+jtag.pin.TDI LOW
+jtag.SHIFTTMS 1 1 1 1 1 1 1 0 1 1 0 0
+jtag.SHIFTTDI %Long 0x0 0x0 
+jtag.shifttdi %Long 0xffffffff 0xffffffff
+&a=jtag.SHIFT() 
+&b=&a&0xfffff
+jtag.SHIFTTMS 1 1 1 1 1 1 1 1 1
+jtag.unlock
+
+if (&b>0xfff00) 
+(
+   print "scan chain is DAP-only"
+)
+else
+(
+   SYStem.CONFIG.DAPIRPOST  20.
+   SYStem.CONFIG.DAPIRPRE   31.
+   SYStem.CONFIG.DAPDRPOST  4.
+   SYStem.CONFIG.DAPDRPRE   1.
+)
+
+SYSTEM.CPU CORTEXA9MPCORE
+
+SYSTEM.CONFIG.MEMORYACCESSPORT 1
+
+SYSTEM.CONFIG.CORENUMBER 2
+SYSTEM.CONFIG.CORE 1
+SYSTEM.CONFIG.COREBASE 0x80030000
+SYSTEM.CONFIG.ETMBASE  0x80032000
+SYSTEM.CONFIG.CTIBASE  0x80033000
+SYSTEM.CONFIG.ETB.BASE  0x8001A000
+SYSTEM.CONFIG.FUNNEL.BASE  0x80026000
+SYSTEM.CONFIG.FUNNEL.ATBSOURCE  ETM 0
+SYSTEM.CONFIG.ETB.ATBSOURCE  FUNNEL
+
+SYSTEM.OPTION L2CacheBase 0x8001d000
+
+CORE.ASSIGN 1
+
+SYSTEM.MEMACCESS.DAP 
+SYSTEM.OPTION.DACR ON
+SYSTEM.OPTION ENRESET ON
+SYSTEM.OPTION RESBREAK OFF
+SYSTEM.OPTION WAITRESET 0us
+SYSTEM.OPTION IMASKASM ON
+SYSTEM.OPTION IMASKHLL ON
+
+TRONCHIP.SET DABORT OFF        ; used by Linux for page miss!
+TRONCHIP.SET PABORT OFF        ; used by Linux for page miss!
+
+SYSTEM.MODE ATTACH
+
+;do ~~/demo/windows_setup.cmm
+
+ENDDO
+

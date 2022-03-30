@@ -1,0 +1,77 @@
+Status LED
+========================================
+
+This README describes the status LED API.
+
+The API is defined by the include file include/status_led.h
+
+The first step is to enable CONFIG_LED_STATUS in menuconfig:
+> Device Drivers > LED Support.
+
+If the LED support is only for specific board, enable
+CONFIG_LED_STATUS_BOARD_SPECIFIC in the menuconfig.
+
+Status LEDS 0 to 5 are enabled by the following configurations at menuconfig:
+CONFIG_STATUS_LED0, CONFIG_STATUS_LED1, ... CONFIG_STATUS_LED5
+
+The following should be configured for each of the enabled LEDs:
+CONFIG_STATUS_LED_BIT<n>
+CONFIG_STATUS_LED_STATE<n>
+CONFIG_STATUS_LED_FREQ<n>
+Where <n> is an integer 1 through 5 (empty for 0).
+
+CONFIG_STATUS_LED_BIT is passed into the __led_* functions to identify which LED
+is being acted on. As such, the value choose must be unique with with respect to
+the other CONFIG_STATUS_LED_BIT's. Mapping the value to a physical LED is the
+reponsiblity of the __led_* function.
+
+CONFIG_STATUS_LED_STATE is the initial state of the LED. It should be set to one
+of these values: CONFIG_LED_STATUS_OFF or CONFIG_LED_STATUS_ON.
+
+CONFIG_STATUS_LED_FREQ determines the LED blink frequency.
+Values range from 2 to 10.
+
+Some other LED macros
+---------------------
+
+CONFIG_STATUS_LED_BOOT is the LED to light when the board is booting.
+This must be a valid LED number (0-5).
+
+CONFIG_STATUS_LED_RED is the red LED. It is used to signal errors. This must be
+a valid LED number (0-5). Other similar color LED's macros are
+CONFIG_STATUS_LED_GREEN, CONFIG_STATUS_LED_YELLOW and CONFIG_STATUS_LED_BLUE.
+
+General LED functions
+---------------------
+The following functions should be defined:
+
+__led_init is called once to initialize the LED to CONFIG_STATUS_LED_STATE.
+One time start up code should be placed here.
+
+__led_set is called to change the state of the LED.
+
+__led_toggle is called to toggle the current state of the LED.
+
+Colour LED
+========================================
+
+Colour LED's are at present only used by ARM.
+
+The functions names explain their purpose.
+
+coloured_LED_init
+red_LED_on
+red_LED_off
+green_LED_on
+green_LED_off
+yellow_LED_on
+yellow_LED_off
+blue_LED_on
+blue_LED_off
+
+These are weakly defined in arch/arm/lib/board.c to noops. Where applicable, define
+these functions in the board specific source.
+
+TBD : Describe older board dependent macros similar to what is done for
+
+TBD : Describe general support via asm/status_led.h

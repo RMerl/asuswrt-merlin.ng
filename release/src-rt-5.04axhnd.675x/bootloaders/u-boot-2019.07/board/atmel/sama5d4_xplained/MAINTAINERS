@@ -1,0 +1,8 @@
+SAMA5D4 XPLAINED ULTRA BOARD
+M:	Eugen Hristev <eugen.hristev@microchip.com>
+S:	Maintained
+F:	board/atmel/sama5d4_xplained/
+F:	include/configs/sama5d4_xplained.h
+F:	configs/sama5d4_xplained_mmc_defconfig
+F:	configs/sama5d4_xplained_nandflash_defconfig
+F:	configs/sama5d4_xplained_spiflash_defconfig

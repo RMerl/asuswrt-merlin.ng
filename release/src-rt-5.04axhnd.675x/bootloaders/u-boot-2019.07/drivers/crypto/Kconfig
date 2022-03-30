@@ -1,0 +1,5 @@
+menu "Hardware crypto devices"
+
+source drivers/crypto/fsl/Kconfig
+
+endmenu

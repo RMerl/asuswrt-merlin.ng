@@ -1,0 +1,13 @@
+Sandbox LCD
+===========
+
+This uses the displaymode.txt binding except that only xres and yres are
+required properties.
+
+Example:
+
+	lcd {
+		compatible = "sandbox,lcd-sdl";
+		xres = <800>;
+		yres = <600>;
+	};

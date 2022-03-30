@@ -1,0 +1,323 @@
+choice
+	prompt "SPI group"
+
+config SICR_SPI_SPI
+	bool "SPI"
+
+config SICR_SPI_MSRCID
+	bool "MSRCID"
+
+config SICR_SPI_LSRCID
+	bool "LSRCID"
+
+endchoice
+
+choice
+	prompt "UART group"
+
+config SICR_UART_SPI
+	bool "UART"
+
+config SICR_UART_MSRCID
+	bool "MSRCID"
+
+config SICR_UART_LSRCID
+	bool "LSRCID"
+
+endchoice
+
+choice
+	prompt "IRQ group"
+
+config SICR_IRQ_SPI
+	bool "IRQ"
+
+config SICR_IRQ_MCP_CKSTOP
+	bool "MCP/CKSTOP"
+
+config SICR_IRQ_INTA
+	bool "INTA"
+
+endchoice
+
+choice
+	prompt "I2C2 group"
+
+config SICR_I2C2_I2C
+	bool "IRQ"
+
+config SICR_I2C2_CKSTOP
+	bool "CKSTOP"
+
+endchoice
+
+choice
+	prompt "ETSEC1 A group"
+
+config SICR_ETSEC1_A_TSEC2
+	bool "TSEC1"
+
+config SICR_ETSEC1_A_TSEC_GTX_CLK125
+	bool "TSEC1 GTX_CLK125"
+
+endchoice
+
+choice
+	prompt "eSDHC A group"
+
+config SICR_ESDHC_A_SD
+	bool "SD"
+
+config SICR_ESDHC_A_GTM
+	bool "GTM"
+
+config SICR_ESDHC_A_GPIO
+	bool "GPIO"
+
+endchoice
+
+choice
+	prompt "eSDHC B group"
+
+config SICR_ESDHC_B_SD
+	bool "SD"
+
+config SICR_ESDHC_B_GTM
+	bool "GTM"
+
+config SICR_ESDHC_B_GPIO
+	bool "GPIO"
+
+endchoice
+
+choice
+	prompt "eSDHC C group"
+
+config SICR_ESDHC_C_SD
+	bool "SD"
+
+config SICR_ESDHC_C_GTM
+	bool "GTM"
+
+config SICR_ESDHC_C_GPIO
+	bool "GPIO"
+
+endchoice
+
+choice
+	prompt "GPIO A group"
+
+config SICR_GPIO_A_GPIO
+	bool "GPIO"
+
+config SICR_GPIO_A_TSEC2
+	bool "TSEC2"
+
+endchoice
+
+choice
+	prompt "GPIO B group"
+
+config SICR_GPIO_B_GPIO
+	bool "GPIO"
+
+config SICR_GPIO_B_TSEC2
+	bool "TSEC2"
+
+config SICR_GPIO_B_TSEC_GTX_CLK125
+	bool "TSEC2 GTX_CLK125"
+
+endchoice
+
+choice
+	prompt "IEEE1588 A group"
+
+config SICR_IEEE1588_A_TSEC
+	bool "TSEC"
+
+config SICR_IEEE1588_A_GPIO
+	bool "GPIO"
+
+endchoice
+
+choice
+	prompt "USB group"
+
+config SICR_USB_TSEC
+	bool "USB"
+
+endchoice
+
+choice
+	prompt "GTM group"
+
+config SICR_GTM_TSEC
+	bool "GTM"
+
+config SICR_GTM_GPIO
+	bool "GPIO"
+
+endchoice
+
+choice
+	prompt "IEEE1588 B group"
+
+config SICR_IEEE1588_B_GPIO
+	bool "GPIO"
+
+endchoice
+
+choice
+	prompt "ETSEC2 group"
+
+config SICR_ETSEC2_TSEC2
+	bool "TSEC2"
+
+config SICR_ETSEC2_GPIO
+	bool "GPIO"
+
+endchoice
+
+choice
+	prompt "GPIO selection"
+
+config SICR_GPIOSEL_GPIO
+	bool "GPIO_A, GPIO_B"
+
+config SICR_GPIOSEL_IEEE1588
+	bool "IEEE1588_A, IEEE1588_B, ETSEC2"
+
+endchoice
+
+choice
+	prompt "IEEE1588 timer output buffer impedance"
+
+config SICR_TMROBI_3_3_V
+	bool "40 Ohm, 3.3V"
+
+config SICR_TMROBI_2_5_V
+	bool "40 Ohm, 2.5V"
+
+endchoice
+
+choice
+	prompt "TSEC1 output buffer impedance"
+
+config SICR_TMSOBI1_3_3_V
+	bool "40 Ohm, 3.3V"
+
+config SICR_TMSOBI1_2_5_V
+	bool "40 Ohm, 2.5V"
+
+endchoice
+
+choice
+	prompt "TSEC2 output buffer impedance"
+
+config SICR_TMSOBI2_3_3_V
+	bool "40 Ohm, 3.3V"
+
+config SICR_TMSOBI2_2_5_V
+	bool "40 Ohm, 2.5V"
+
+endchoice
+
+config SICRL_SPI
+	hex
+	default 0x0 if SICR_SPI_SPI
+	default 0x10000000 if SICR_SPI_MSRCID
+	default 0x30000000 if SICR_SPI_LSRCID
+
+config SICRL_UART
+	hex
+	default 0x0 if SICR_UART_SPI
+	default 0x4000000 if SICR_UART_MSRCID
+	default 0xc000000 if SICR_UART_LSRCID
+
+config SICRL_IRQ
+	hex
+	default 0x0 if SICR_IRQ_SPI
+	default 0x1000000 if SICR_IRQ_MCP_CKSTOP
+	default 0x3000000 if SICR_IRQ_INTA
+
+config SICRL_I2C2
+	hex
+	default 0x0 if SICR_I2C2_I2C
+	default 0x100000 if SICR_I2C2_CKSTOP
+
+config SICRL_ETSEC1_A
+	hex
+	default 0x0 if SICR_ETSEC1_A_TSEC2
+	default 0x40 if SICR_ETSEC1_A_TSEC_GTX_CLK125
+
+config SICRH_ESDHC_A
+	hex
+	default 0x0 if SICR_ESDHC_A_SD
+	default 0x40000000 if SICR_ESDHC_A_GTM
+	default 0xc0000000 if SICR_ESDHC_A_GPIO
+
+config SICRH_ESDHC_B
+	hex
+	default 0x0 if SICR_ESDHC_B_SD
+	default 0x10000000 if SICR_ESDHC_B_GTM
+	default 0x30000000 if SICR_ESDHC_B_GPIO
+
+config SICRH_ESDHC_C
+	hex
+	default 0x0 if SICR_ESDHC_C_SD
+	default 0x4000000 if SICR_ESDHC_C_GTM
+	default 0xc000000 if SICR_ESDHC_C_GPIO
+
+config SICRH_GPIO_A
+	hex
+	default 0x0 if SICR_GPIO_A_GPIO
+	default 0x1000000 if SICR_GPIO_A_TSEC2
+
+config SICRH_GPIO_B
+	hex
+	default 0x0 if SICR_GPIO_B_GPIO
+	default 0x400000 if SICR_GPIO_B_TSEC2
+	default 0x800000 if SICR_GPIO_B_TSEC_GTX_CLK125
+
+config SICRH_IEEE1588_A
+	hex
+	default 0x100000 if SICR_IEEE1588_A_TSEC
+	default 0x300000 if SICR_IEEE1588_A_GPIO
+
+config SICRH_USB
+	hex
+	default 0x40000 if SICR_USB_TSEC
+
+config SICRH_GTM
+	hex
+	default 0x10000 if SICR_GTM_TSEC
+	default 0x30000 if SICR_GTM_GPIO
+
+config SICRH_IEEE1588_B
+	hex
+	default 0xc000 if SICR_IEEE1588_B_GPIO
+
+config SICRH_ETSEC2
+	hex
+	default 0x1000 if SICR_ETSEC2_TSEC2
+	default 0x3000 if SICR_ETSEC2_GPIO
+
+config SICRH_GPIOSEL
+	hex
+	default 0x0 if SICR_GPIOSEL_GPIO
+	default 0x100 if SICR_GPIOSEL_IEEE1588
+
+config SICRH_TMROBI
+	hex
+	default 0x0 if SICR_TMROBI_3_3_V
+	default 0x10 if SICR_TMROBI_2_5_V
+
+config SICRH_TMSOBI1
+	hex
+	default 0x0 if SICR_TMSOBI1_3_3_V
+	default 0x2 if SICR_TMSOBI1_2_5_V
+
+config SICRH_TMSOBI2
+	hex
+	default 0x0 if SICR_TMSOBI2_3_3_V
+	default 0x1 if SICR_TMSOBI2_2_5_V

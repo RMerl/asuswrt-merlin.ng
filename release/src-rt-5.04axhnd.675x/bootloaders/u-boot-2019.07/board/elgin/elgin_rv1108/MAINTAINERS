@@ -1,0 +1,6 @@
+ELGIN-RV1108
+M:      Otavio Salvador <otavio@ossystems.com.br>
+S:      Maintained
+F:      board/elgin/elgin_rv1108
+F:      include/configs/elgin_rv1108.h
+F:      configs/elgin-rv1108_defconfig

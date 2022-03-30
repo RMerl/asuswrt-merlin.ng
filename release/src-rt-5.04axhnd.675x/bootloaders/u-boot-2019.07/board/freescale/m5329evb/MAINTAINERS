@@ -1,0 +1,7 @@
+M5329EVB BOARD
+M:	TsiChung Liew <Tsi-Chung.Liew@nxp.com>
+S:	Maintained
+F:	board/freescale/m5329evb/
+F:	include/configs/M5329EVB.h
+F:	configs/M5329AFEE_defconfig
+F:	configs/M5329BFEE_defconfig

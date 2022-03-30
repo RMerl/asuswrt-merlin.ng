@@ -1,0 +1,203 @@
+#include "inc/68782.dtsi"
+#include "../bcm_voice.dtsi"
+
+/ {
+    memory_controller {
+        memcfg = <(BP_DDR_SPEED_800_11_11_11  | \
+                   BP_DDR_TOTAL_SIZE_512MB    | \
+                   BP_DDR_DEVICE_WIDTH_16     | \
+                   BP_DDR_TOTAL_WIDTH_16BIT)>;
+    };
+};
+
+/ {
+    model = "968782GFM";
+
+    wan_serdes {
+            compatible = "brcm,pon-drv";
+            trx = <&pmd>;
+            rx-polarity-invert;
+            tx-polarity-invert;
+    };
+
+    pmd: pmd {
+            compatible = "brcm,pmd";
+            pinctrl-names = "default", "state_ewake";
+            pinctrl-0 = <&pon_lbe_p_pin_61>;
+            pinctrl-1 = <&pon_lbe_p_pin_61 &wan_early_txen_pin_4>;
+            ewake-gpio = <&gpioc 4 GPIO_ACTIVE_HIGH>;
+            rstn-gpio = <&gpioc 10 GPIO_ACTIVE_LOW>;
+            alarm = <&bca_extintr 13 GPIO_ACTIVE_HIGH (BCA_EXTINTR_TYPE_HIGH_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+            apd-boost;
+            i2c-bus = <&i2c0>;
+    };
+
+	 buttons {
+        compatible = "brcm,buttons";
+        reset_button {
+            ext_irq = <&bca_extintr 60 BCA_GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+            press {
+                print = "Button Press -- Hold for 5s to do restore to default";
+   	 };
+            hold {
+                rst_to_dflt = <5>;
+            };
+            release {
+                reset = <0>;
+            };	
+        };
+    };
+};
+
+&rgmii {
+        status = "okay";
+};
+
+&mdio {
+        phy1:1 {
+                status = "okay";
+        };
+
+        phy2:2 {
+                status = "okay";
+        };
+
+        phy3:3 {
+                status = "okay";
+        };
+
+        phy4:4 {
+                status = "okay";
+        };
+
+        phy_rgmii: rgmii {
+                reg = <7>;
+                tx-delay;
+                status = "okay";
+        };
+};
+
+&switch0 {
+        pinctrl-names = "default", "rgmii";
+        pinctrl-0 = <&per_mdc_pin_52 &per_mdio_pin_53 &rgmii_pins>;
+        pinctrl-1 = <&rgmii_pins>;
+
+        ports {
+                port0@0 {
+                        network-leds = <&led0 &led1>;
+                        status = "okay";
+                };
+
+                port1@1 {
+                        network-leds = <&led2 &led3>;
+                        status = "okay";
+                };
+
+                port2@2 {
+                        network-leds = <&led4 &led5>;
+                        status = "okay";
+                };
+
+                port3@3 {
+                        network-leds = <&led6 &led7>;
+                        status = "okay";
+                };
+
+                port4@4 {
+                        mii-pinctrl-state = "rgmii";
+                        status = "okay";
+                };
+        };
+};
+
+&led_ctrl {
+    pinctrl-names = "default";
+    pinctrl-0 = <&a_ser_led_clk_pin_8 &a_ser_led_data_pin_9 &a_ser_led_mask_pin_7>;
+    serial-shifters-installed = <2>;
+    led0: port_0-led_0-bit_8 {
+              active_low;
+              status = "okay";
+              link = <LED_SPEED_GBE>;
+          };
+    led1: port_0-led_1-bit_9 {
+              active_low;
+              status = "okay";
+              activity = <LED_SPEED_GBE>;
+          };
+    led2: port_1-led_0-bit_10 {
+              active_low;
+              status = "okay";
+              link = <LED_SPEED_GBE>;
+          };
+    led3: port_1-led_1-bit_11 {
+              active_low;
+              status = "okay";
+              activity = <LED_SPEED_GBE>;
+          };
+    led4: port_2-led_0-bit_12 {
+              active_low;
+              status = "okay";
+              link = <LED_SPEED_GBE>;
+          };
+    led5: port_2-led_1-bit_13 {
+              active_low;
+              status = "okay";
+              activity = <LED_SPEED_GBE>;
+          };
+    led6: port_3-led_0-bit_14 {
+              active_low;
+              status = "okay";
+              link = <LED_SPEED_GBE>;
+          };
+    led7: port_3-led_1-bit_15 {
+               active_low;
+               status = "okay";
+               activity = <LED_SPEED_GBE>;
+          };
+};
+
+&nand {
+	status = "okay";
+};
+&wdt {
+	status = "okay";
+};
+&i2c0 {
+    pinctrl-names = "default";
+    pinctrl-0 = <&i2c_scl_pin_62 &i2c_sda_pin_63>;
+	status = "okay";
+};
+&usb_ctrl {
+    pinctrl-names = "default";
+    pinctrl-0 = <&usb0_pwr_pins &usb1_pwr_pins>;
+	status = "okay";
+};
+&usb0_ehci {
+	status = "okay";
+};
+&usb0_ohci {
+	status = "okay";
+};
+&usb1_ehci {
+	status = "okay";
+};
+&usb1_ohci {
+	status = "okay";
+};
+
+&pcie0 {
+	status = "okay";
+};
+
+&hsspi {
+         status = "okay";
+};
+
+&pincontroller {
+    pinctrl-names = "default";
+    pinctrl-0 = <&a_wl_fem_ctrl_2_pin_16 &wl_fem_ctrl_3_pin_17 &a_wl_fem_ctrl_8_pin_22 &wl_fem_ctrl_9_pin_23>;
+};
+
+&bcm_voice{
+	sliclist = "NOSLIC", "LE9642_ZSI_BB";
+};

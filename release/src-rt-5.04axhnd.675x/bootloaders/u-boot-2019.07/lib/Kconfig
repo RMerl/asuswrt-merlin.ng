@@ -1,0 +1,515 @@
+menu "Library routines"
+
+config BCH
+	bool "Enable Software based BCH ECC"
+	help
+	  Enables software based BCH ECC algorithm present in lib/bch.c
+	  This is used by SoC platforms which do not have built-in ELM
+	  hardware engine required for BCH ECC correction.
+
+config CC_OPTIMIZE_LIBS_FOR_SPEED
+	bool "Optimize libraries for speed"
+	help
+	  Enabling this option will pass "-O2" to gcc when compiling
+	  under "lib" directory.
+
+	  If unsure, say N.
+
+config DYNAMIC_CRC_TABLE
+	bool "Enable Dynamic tables for CRC"
+	help
+	  Enable this option to calculate entries for CRC tables at runtime.
+	  This can be helpful when reducing the size of the build image
+
+config HAVE_ARCH_IOMAP
+	bool
+	help
+	  Enable this option if architecture provides io{read,write}{8,16,32}
+	  I/O accessor functions.
+
+config HAVE_PRIVATE_LIBGCC
+	bool
+
+config LIB_UUID
+	bool
+
+config PRINTF
+	bool
+	default y
+
+config SPL_PRINTF
+	bool
+	select SPL_SPRINTF
+	select SPL_STRTO if !USE_TINY_PRINTF
+
+config TPL_PRINTF
+	bool
+	select TPL_SPRINTF
+	select TPL_STRTO if !USE_TINY_PRINTF
+
+config SPRINTF
+	bool
+	default y
+
+config SPL_SPRINTF
+	bool
+
+config TPL_SPRINTF
+	bool
+
+config STRTO
+	bool
+	default y
+
+config SPL_STRTO
+	bool
+
+config TPL_STRTO
+	bool
+
+config IMAGE_SPARSE
+	bool
+
+config IMAGE_SPARSE_FILLBUF_SIZE
+	hex "Android sparse image CHUNK_TYPE_FILL buffer size"
+	default 0x80000
+	depends on IMAGE_SPARSE
+	help
+	  Set the size of the fill buffer used when processing CHUNK_TYPE_FILL
+	  chunks.
+
+config USE_PRIVATE_LIBGCC
+	bool "Use private libgcc"
+	depends on HAVE_PRIVATE_LIBGCC
+	default y if HAVE_PRIVATE_LIBGCC && ((ARM && !ARM64) || MIPS)
+	help
+	  This option allows you to use the built-in libgcc implementation
+	  of U-Boot instead of the one provided by the compiler.
+	  If unsure, say N.
+
+config SYS_HZ
+	int
+	default 1000
+	help
+	  The frequency of the timer returned by get_timer().
+	  get_timer() must operate in milliseconds and this option must be
+	  set to 1000.
+
+config USE_TINY_PRINTF
+	bool "Enable tiny printf() version"
+	help
+	  This option enables a tiny, stripped down printf version.
+	  This should only be used in space limited environments,
+	  like SPL versions with hard memory limits. This version
+	  reduces the code size by about 2.5KiB on armv7.
+
+	  The supported format specifiers are %c, %s, %u/%d and %x.
+
+config PANIC_HANG
+	bool "Do not reset the system on fatal error"
+	help
+	  Define this option to stop the system in case of a fatal error,
+	  so that you have to reset it manually. This is probably NOT a good
+	  idea for an embedded system where you want the system to reboot
+	  automatically as fast as possible, but it may be useful during
+	  development since you can try to debug the conditions that lead to
+	  the situation.
+
+config REGEX
+	bool "Enable regular expression support"
+	default y if NET
+	help
+	  If this variable is defined, U-Boot is linked against the
+	  SLRE (Super Light Regular Expression) library, which adds
+	  regex support to some commands, for example "env grep" and
+	  "setexpr".
+
+choice
+	prompt "Pseudo-random library support type"
+	depends on NET_RANDOM_ETHADDR || RANDOM_UUID || CMD_UUID
+	default LIB_RAND
+	help
+	  Select the library to provide pseudo-random number generator
+	  functions.  LIB_HW_RAND supports certain hardware engines that
+	  provide this functionality.  If in doubt, select LIB_RAND.
+
+config LIB_RAND
+	bool "Pseudo-random library support"
+
+config LIB_HW_RAND
+	bool "HW Engine for random libray support"
+
+endchoice
+
+config SPL_TINY_MEMSET
+	bool "Use a very small memset() in SPL"
+	help
+	  The faster memset() is the arch-specific one (if available) enabled
+	  by CONFIG_USE_ARCH_MEMSET. If that is not enabled, we can still get
+	  better performance by writing a word at a time. But in very
+	  size-constrained environments even this may be too big. Enable this
+	  option to reduce code size slightly at the cost of some speed.
+
+config TPL_TINY_MEMSET
+	bool "Use a very small memset() in TPL"
+	help
+	  The faster memset() is the arch-specific one (if available) enabled
+	  by CONFIG_USE_ARCH_MEMSET. If that is not enabled, we can still get
+	  better performance by writing a word at a time. But in very
+	  size-constrained environments even this may be too big. Enable this
+	  option to reduce code size slightly at the cost of some speed.
+
+config RBTREE
+	bool
+
+config BITREVERSE
+	bool "Bit reverse library from Linux"
+
+config TRACE
+	bool "Support for tracing of function calls and timing"
+	imply CMD_TRACE
+	help
+	  Enables function tracing within U-Boot. This allows recording of call
+	  traces including timing information. The command can write data to
+	  memory for exporting for analysis (e.g. using bootchart).
+	  See doc/README.trace for full details.
+
+config TRACE_BUFFER_SIZE
+	hex "Size of trace buffer in U-Boot"
+	depends on TRACE
+	default 0x01000000
+	help
+	  Sets the size of the trace buffer in U-Boot. This is allocated from
+	  memory during relocation. If this buffer is too small, the trace
+	  history will be truncated, with later records omitted.
+
+	  If early trace is enabled (i.e. before relocation), this buffer must
+	  be large enough to include all the data from the early trace buffer as
+	  well, since this is copied over to the main buffer during relocation.
+
+	  A trace record is emitted for each function call and each record is
+	  12 bytes (see struct trace_call). A suggested minimum size is 1MB. If
+	  the size is too small then 'trace stats' will show a message saying
+	  how many records were dropped due to buffer overflow.
+
+config TRACE_EARLY
+	bool "Enable tracing before relocation"
+	depends on TRACE
+	help
+	  Sometimes it is helpful to trace execution of U-Boot before
+	  relocation. This is possible by using a arch-specific, fixed buffer
+	  position in memory. Enable this option to start tracing as early as
+	  possible after U-Boot starts.
+
+config TRACE_EARLY_SIZE
+	hex "Size of early trace buffer in U-Boot"
+	depends on TRACE_EARLY
+	default 0x00100000
+	help
+	  Sets the size of the early trace buffer in bytes. This is used to hold
+	  tracing information before relocation.
+
+config TRACE_EARLY_ADDR
+	hex "Address of early trace buffer in U-Boot"
+	depends on TRACE_EARLY
+	default 0x00100000
+	help
+	  Sets the address of the early trace buffer in U-Boot. This memory
+	  must be accessible before relocation.
+
+	  A trace record is emitted for each function call and each record is
+	  12 bytes (see struct trace_call). A suggested minimum size is 1MB. If
+	  the size is too small then the message which says the amount of early
+	  data being coped will the the same as the
+
+source lib/dhry/Kconfig
+
+menu "Security support"
+
+config AES
+	bool "Support the AES algorithm"
+	help
+	  This provides a means to encrypt and decrypt data using the AES
+	  (Advanced Encryption Standard). This algorithm uses a symetric key
+	  and is widely used as a streaming cipher. Different key lengths are
+	  supported by the algorithm but only a 128-bit key is supported at
+	  present.
+
+source lib/rsa/Kconfig
+
+config TPM
+	bool "Trusted Platform Module (TPM) Support"
+	depends on DM
+	help
+	  This enables support for TPMs which can be used to provide security
+	  features for your board. The TPM can be connected via LPC or I2C
+	  and a sandbox TPM is provided for testing purposes. Use the 'tpm'
+	  command to interactive the TPM. Driver model support is provided
+	  for the low-level TPM interface, but only one TPM is supported at
+	  a time by the TPM library.
+
+config SPL_TPM
+	bool "Trusted Platform Module (TPM) Support in SPL"
+	depends on SPL_DM
+	help
+	  This enables support for TPMs which can be used to provide security
+	  features for your board. The TPM can be connected via LPC or I2C
+	  and a sandbox TPM is provided for testing purposes. Use the 'tpm'
+	  command to interactive the TPM. Driver model support is provided
+	  for the low-level TPM interface, but only one TPM is supported at
+	  a time by the TPM library.
+
+config TPL_TPM
+	bool "Trusted Platform Module (TPM) Support in TPL"
+	depends on TPL_DM
+	help
+	  This enables support for TPMs which can be used to provide security
+	  features for your board. The TPM can be connected via LPC or I2C
+	  and a sandbox TPM is provided for testing purposes. Use the 'tpm'
+	  command to interactive the TPM. Driver model support is provided
+	  for the low-level TPM interface, but only one TPM is supported at
+	  a time by the TPM library.
+
+endmenu
+
+menu "Android Verified Boot"
+
+config LIBAVB
+	bool "Android Verified Boot 2.0 support"
+	depends on ANDROID_BOOT_IMAGE
+	default n
+	help
+	  This enables support of Android Verified Boot 2.0 which can be used
+	  to assure the end user of the integrity of the software running on a
+	  device. Introduces such features as boot chain of trust, rollback
+	  protection etc.
+
+endmenu
+
+menu "Hashing Support"
+
+config SHA1
+	bool "Enable SHA1 support"
+	help
+	  This option enables support of hashing using SHA1 algorithm.
+	  The hash is calculated in software.
+	  The SHA1 algorithm produces a 160-bit (20-byte) hash value
+	  (digest).
+
+config SHA256
+	bool "Enable SHA256 support"
+	help
+	  This option enables support of hashing using SHA256 algorithm.
+	  The hash is calculated in software.
+	  The SHA256 algorithm produces a 256-bit (32-byte) hash value
+	  (digest).
+
+config SHA_HW_ACCEL
+	bool "Enable hashing using hardware"
+	help
+	  This option enables hardware acceleration
+	  for SHA1/SHA256 hashing.
+	  This affects the 'hash' command and also the
+	  hash_lookup_algo() function.
+
+config SHA_PROG_HW_ACCEL
+	bool "Enable Progressive hashing support using hardware"
+	depends on SHA_HW_ACCEL
+	help
+	  This option enables hardware-acceleration for
+	  SHA1/SHA256 progressive hashing.
+	  Data can be streamed in a block at a time and the hashing
+	  is performed in hardware.
+
+config MD5
+	bool
+
+config CRC32C
+	bool
+
+config XXHASH
+	bool
+
+endmenu
+
+menu "Compression Support"
+
+config LZ4
+	bool "Enable LZ4 decompression support"
+	help
+	  If this option is set, support for LZ4 compressed images
+	  is included. The LZ4 algorithm can run in-place as long as the
+	  compressed image is loaded to the end of the output buffer, and
+	  trades lower compression ratios for much faster decompression.
+	  
+	  NOTE: This implements the release version of the LZ4 frame
+	  format as generated by default by the 'lz4' command line tool.
+	  This is not the same as the outdated, less efficient legacy
+	  frame format currently (2015) implemented in the Linux kernel
+	  (generated by 'lz4 -l'). The two formats are incompatible.
+
+config LZMA
+	bool "Enable LZMA decompression support"
+	help
+	  This enables support for LZMA (Lempel-Ziv-Markov chain algorithm),
+	  a dictionary compression algorithm that provides a high compression
+	  ratio and fairly fast decompression speed. See also
+	  CONFIG_CMD_LZMADEC which provides a decode command.
+
+config LZO
+	bool "Enable LZO decompression support"
+	help
+	  This enables support for LZO compression algorithm.r
+
+config GZIP
+	bool "Enable gzip decompression support"
+	select ZLIB
+	default y
+	help
+	  This enables support for GZIP compression algorithm.
+
+config ZLIB
+	bool
+	default y
+	help
+	  This enables ZLIB compression lib.
+
+config ZSTD
+	bool "Enable Zstandard decompression support"
+	select XXHASH
+	help
+	  This enables Zstandard decompression library.
+
+config SPL_LZ4
+	bool "Enable LZ4 decompression support in SPL"
+	help
+	  This enables support for tge LZ4 decompression algorithm in SPL. LZ4
+	  is a lossless data compression algorithm that is focused on
+	  fast compression and decompression speed. It belongs to the LZ77
+	  family of byte-oriented compression schemes.
+
+config SPL_LZO
+	bool "Enable LZO decompression support in SPL"
+	help
+	  This enables support for LZO compression algorithm in the SPL.
+
+config SPL_GZIP
+	bool "Enable gzip decompression support for SPL build"
+	select SPL_ZLIB
+	help
+	  This enables support for GZIP compression altorithm for SPL boot.
+
+config SPL_ZLIB
+	bool
+	help
+	  This enables compression lib for SPL boot.
+
+config SPL_ZSTD
+	bool "Enable Zstandard decompression support in SPL"
+	select XXHASH
+	help
+	  This enables Zstandard decompression library in the SPL.
+
+endmenu
+
+config ERRNO_STR
+	bool "Enable function for getting errno-related string message"
+	help
+	  The function errno_str(int errno), returns a pointer to the errno
+	  corresponding text message:
+	  - if errno is null or positive number - a pointer to "Success" message
+	  - if errno is negative - a pointer to errno related message
+
+config HEXDUMP
+	bool "Enable hexdump"
+	help
+	  This enables functions for printing dumps of binary data.
+
+config OF_LIBFDT
+	bool "Enable the FDT library"
+	default y if OF_CONTROL
+	help
+	  This enables the FDT library (libfdt). It provides functions for
+	  accessing binary device tree images in memory, such as adding and
+	  removing nodes and properties, scanning through the tree and finding
+	  particular compatible nodes. The library operates on a flattened
+	  version of the device tree.
+
+config OF_LIBFDT_OVERLAY
+	bool "Enable the FDT library overlay support"
+	depends on OF_LIBFDT
+	default y if ARCH_OMAP2PLUS || ARCH_KEYSTONE
+	help
+	  This enables the FDT library (libfdt) overlay support.
+
+config SPL_OF_LIBFDT
+	bool "Enable the FDT library for SPL"
+	default y if SPL_OF_CONTROL
+	help
+	  This enables the FDT library (libfdt). It provides functions for
+	  accessing binary device tree images in memory, such as adding and
+	  removing nodes and properties, scanning through the tree and finding
+	  particular compatible nodes. The library operates on a flattened
+	  version of the device tree.
+
+config TPL_OF_LIBFDT
+	bool "Enable the FDT library for TPL"
+	default y if TPL_OF_CONTROL
+	help
+	  This enables the FDT library (libfdt). It provides functions for
+	  accessing binary device tree images in memory, such as adding and
+	  removing nodes and properties, scanning through the tree and finding
+	  particular compatible nodes. The library operates on a flattened
+	  version of the device tree.
+
+config FDT_FIXUP_PARTITIONS
+	bool "overwrite MTD partitions in DTS through defined in 'mtdparts'"
+	depends on OF_LIBFDT
+	depends on CMD_MTDPARTS
+	help
+	  Allow overwriting defined partitions in the device tree blob
+	  using partition info defined in the 'mtdparts' environment
+	  variable.
+
+menu "System tables"
+	depends on (!EFI && !SYS_COREBOOT) || (ARM && EFI_LOADER)
+
+config GENERATE_SMBIOS_TABLE
+	bool "Generate an SMBIOS (System Management BIOS) table"
+	default y
+	depends on X86 || EFI_LOADER
+	help
+	  The System Management BIOS (SMBIOS) specification addresses how
+	  motherboard and system vendors present management information about
+	  their products in a standard format by extending the BIOS interface
+	  on Intel architecture systems.
+
+	  Check http://www.dmtf.org/standards/smbios for details.
+
+config SMBIOS_MANUFACTURER
+	string "SMBIOS Manufacturer"
+	depends on GENERATE_SMBIOS_TABLE
+	default SYS_VENDOR
+	help
+	  The board manufacturer to store in SMBIOS structures.
+	  Change this to override the default one (CONFIG_SYS_VENDOR).
+
+config SMBIOS_PRODUCT_NAME
+	string "SMBIOS Product Name"
+	depends on GENERATE_SMBIOS_TABLE
+	default SYS_BOARD
+	help
+	  The product name to store in SMBIOS structures.
+	  Change this to override the default one (CONFIG_SYS_BOARD).
+
+endmenu
+
+source lib/efi/Kconfig
+source lib/efi_loader/Kconfig
+source lib/optee/Kconfig
+
+config TEST_FDTDEC
+	bool "enable fdtdec test"
+	depends on OF_LIBFDT
+
+endmenu

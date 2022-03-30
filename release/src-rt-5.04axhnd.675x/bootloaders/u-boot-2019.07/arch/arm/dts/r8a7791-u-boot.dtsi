@@ -1,0 +1,20 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Device Tree Source extras for U-Boot on RCar R8A7791 SoC
+ *
+ * Copyright (C) 2018 Marek Vasut <marek.vasut@gmail.com>
+ */
+
+#include "r8a779x-u-boot.dtsi"
+
+&usb_extal_clk {
+	u-boot,dm-pre-reloc;
+};
+
+&pfc {
+	u-boot,dm-pre-reloc;
+};
+
+&rst {
+	u-boot,dm-pre-reloc;
+};

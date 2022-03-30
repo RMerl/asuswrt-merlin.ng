@@ -1,0 +1,5 @@
+SOCKIT BOARD
+M:	Marek Vasut <marex@denx.de>
+S:	Maintained
+F:	include/configs/socfpga_sockit.h
+F:	configs/socfpga_sockit_defconfig

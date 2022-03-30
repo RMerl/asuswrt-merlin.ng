@@ -1,0 +1,185 @@
+/*
+ * Gazerbeam Device Tree Source
+ *
+ * (C) Copyright 2015
+ * Dirk Eibach, Guntermann & Drunck GmbH, eibach@gdsys.de
+ *
+ * This program is free software; you can redistribute  it and/or modify it
+ * under  the terms of  the GNU General  Public License as published by the
+ * Free Software Foundation;  either version 2 of the  License, or (at your
+ * option) any later version.
+ */
+
+/ {
+	model = "gdsys,gazerbeam";
+	compatible = "fsl,mpc8308rdb";
+
+	aliases {
+		ethernet0 = &enet0;
+		ethernet1 = &enet1;
+	};
+
+	memory {
+		device_type = "memory";
+	};
+};
+
+&enet1 {
+	status = "okay";
+};
+
+&IIC {
+	fsl,preserve-clocking;
+
+	at97sc3205t@29 {
+		compatible = "atmel,at97sc3204t";
+		reg = <0x29>;
+	};
+
+	lm77@48 {
+		compatible = "national,lm77";
+		reg = <0x48>;
+	};
+
+	ads1015@49 {
+		compatible = "ti,ads1015";
+		reg = <0x49>;
+	};
+
+	lm77@4a {
+		compatible = "national,lm77";
+		reg = <0x4a>;
+	};
+
+	emc2305@2e {
+		compatible = "smsc,emc2305";
+		#address-cells = <1>;
+		#size-cells = <0>;
+		reg = <0x2e>;
+		fan@0 {
+			reg = <0>;
+		};
+		fan@1 {
+			reg = <1>;
+		};
+		fan@2 {
+			reg = <2>;
+		};
+		fan@3 {
+			reg = <3>;
+		};
+		fan@4 {
+			reg = <4>;
+		};
+	};
+
+	emc2305@4c {
+		compatible = "smsc,emc2305";
+		#address-cells = <1>;
+		#size-cells = <0>;
+		reg = <0x4c>;
+		fan@0 {
+			reg = <0>;
+		};
+		fan@1 {
+			reg = <1>;
+		};
+		fan@2 {
+			reg = <2>;
+		};
+		fan@3 {
+			reg = <3>;
+		};
+		fan@4 {
+			reg = <4>;
+		};
+	};
+
+	at24c512@54 {
+		compatible = "atmel,24c512";
+		reg = <0x54>;
+	};
+
+	/* PPC-Board */
+	pca9698@22 {
+		compatible = "nxp,pca9698";
+		reg = <0x22>;
+		#gpio-cells = <2>;
+		gpio-controller;
+	};
+
+	/* IO-Board */
+	pca9698@20 {
+		compatible = "nxp,pca9698";
+		reg = <0x20>;
+		#gpio-cells = <2>;
+		gpio-controller;
+	};
+};
+
+&IIC2 {
+	fsl,preserve-clocking;
+
+	status = "okay";
+
+	/* MC2/SC-Board */
+	GPIO_VB0: pca9698@20 {
+		compatible = "nxp,pca9698";
+		reg = <0x20>;
+		#gpio-cells = <2>;
+		gpio-controller;
+	};
+
+	/* MC4-Board */
+	GPIO_VB1: pca9698@22 {
+		compatible = "nxp,pca9698";
+		reg = <0x22>;
+		#gpio-cells = <2>;
+		gpio-controller;
+	};
+};
+
+&SPI {
+	gpios = < /*SPI-CSS-FPGA-U-FLASH#*/ &gpio0 8 0
+		  /*SPI-CSS-FPGA-O-FLASH#*/ &gpio0 6 0
+		  /*SPI-CSS-STDP1_U-FLASH#*/ &gpio0 12 0
+		  /*SPI-CSS-STDP2_U-FLASH#*/ &gpio0 11 0
+		  /*SPI-CSS-STDP1_O-FLASH#*/ &gpio0 15 0
+		  /*SPI-CSS-STDP2_O-FLASH#*/ &gpio0 3 0>;
+
+	m25p16@0 {
+		compatible = "st,n25q128a11";
+		reg = <0x0>;
+		spi-max-frequency = <20000000>;
+	};
+
+	m25p16@1 {
+		compatible = "st,n25q128a11";
+		reg = <0x1>;
+		spi-max-frequency = <20000000>;
+	};
+
+	m25p16@2 {
+		compatible = "st,m25p40";
+		reg = <0x2>;
+		spi-max-frequency = <20000000>;
+	};
+
+	m25p16@3 {
+		compatible = "st,m25p40";
+		reg = <0x3>;
+		spi-max-frequency = <20000000>;
+	};
+
+	m25p16@4 {
+		compatible = "st,m25p40";
+		reg = <0x4>;
+		spi-max-frequency = <20000000>;
+	};
+
+	m25p16@5 {
+		compatible = "st,m25p40";
+		reg = <0x5>;
+		spi-max-frequency = <20000000>;
+	};
+};

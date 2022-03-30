@@ -1,0 +1,15 @@
+if TARGET_SHEEP
+
+config SYS_BOARD
+	default "sheep_rk3368"
+
+config SYS_VENDOR
+	default "rockchip"
+
+config SYS_CONFIG_NAME
+	default "sheep_rk3368"
+
+config BOARD_SPECIFIC_OPTIONS # dummy
+	def_bool y
+
+endif

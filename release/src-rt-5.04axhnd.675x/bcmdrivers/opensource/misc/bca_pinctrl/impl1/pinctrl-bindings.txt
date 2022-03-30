@@ -1,0 +1,131 @@
+== Introduction ==
+Pin Controller device:
+Linux Kernel 4.19 Device Tree based driver for PinCtrl + PinMux.
+Uses the kernel Pin Control Subsystem for pins multiplexing.
+
+More in-depth documentation on these can be found in
+<kernel/linux-4.19/Documentation/devicetree/bindings/pinctrl/pinctrl-bindings.txt>
+
+== Pin controller device ==
+Required properties:
+pinctrl-npins           - The total number of pins for this chip.
+pinctrl-nfuncs          - The total number of pin mux functions for this chip.
+
+See the 'pincontroller' example below.
+
+== Pin multiplexing node content ==
+Required properties:
+pins                    - List of pin numbers to be assigned with a mux function number.
+function                - The mux function to select for the list of pins. Can be a
+                          single number to assign all the pins with the same mux
+                          function number, or can be a list of mux function numbers to
+                          be assigned respectively to each pin in the list of pins.
+
+See the 'uart0_test' example below.
+
+== Example for the BCM6858 chip ==
+[.../devel/kernel/dts/6858/96858.dts file]
+
+/ {
+soc {
+	compatible = "simple-bus";
+	#address-cells = <1>;
+	#size-cells = <1>;
+	ranges;
+
+	pincontroller: pinctrl@ff800554 {
+			compatible = "brcm,bcmbca-pinctrl";
+			reg = <0xff800554 0xc>;
+			pinctrl-npins = < 125 >;
+			pinctrl-nfuncs = < 8 >;
+
+			pinctrl-names = "default";
+			pinctrl-0 = <&uart0_test>;
+
+			uart0_test: uart0_test {
+				/* pins = <14 15 17 20>;
+				function = <5 3 7 2>; */
+				pins = < 100 101 >;
+				function = < 1 >;
+			};
+	};
+};
+
+== Explanation of the DTS example above ==
+Set pins 100 and 101 to mux function 1 (all the pins are set to the same mux function):
+pins = < 100 101 >;
+function = < 1 >;
+
+In the remark you can set pin 14 to function 5, pin 15 to func 3, pin 17 to func 7
+and pin 20 to func 2 (each pin is set to a specific mux function respectively):
+pins = <14 15 17 20>;
+function = <5 3 7 2>;
+
+In the 6858 chip we can select 8 different functions to each pin and we have 125 pins:
+pinctrl-npins = < 125 >;
+pinctrl-nfuncs = < 8 >;
+
+The physical base address for the PinMux in the 6858 chip is 0xff800554.
+We use the first 3 registers to control the PinMux.
+The register size is 4 Bytes. 3 * 4 = 0xc:
+reg = <0xff800554 0xc>;
+
+== Run time examples for the DTS configuration above (cat from the Linux sys/kernel/debug/...) ==
+# cat /sys/kernel/debug/pinctrl/ff800554.pinctrl-pinctrl-bcmbca/pins
+registered pins: 125
+pin 0 (PIN0)  pinctrl-bcmbca
+pin 1 (PIN1)  pinctrl-bcmbca
+pin 2 (PIN2)  pinctrl-bcmbca
+...
+
+# cat /sys/kernel/debug/pinctrl/ff800554.pinctrl-pinctrl-bcmbca/pingroups 
+registered pin groups:
+group: BCMBCA_PINCTRL_GROUP_000
+pin 0 (PIN0)
+
+group: BCMBCA_PINCTRL_GROUP_001
+pin 1 (PIN1)
+...
+
+# cat /sys/kernel/debug/pinctrl/ff800554.pinctrl-pinctrl-bcmbca/pinmux-pins 
+Pinmux settings per pin
+Format: pin (name): mux_owner gpio_owner hog?
+pin 0 (PIN0): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+...
+pin 99 (PIN99): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+pin 100 (PIN100): ff800554.pinctrl (GPIO UNCLAIMED) function BCMBCA_PINCTRL_FUNCTION_01 group BCMBCA_PINCTRL_GROUP_100
+pin 101 (PIN101): ff800554.pinctrl (GPIO UNCLAIMED) function BCMBCA_PINCTRL_FUNCTION_01 group BCMBCA_PINCTRL_GROUP_101
+pin 102 (PIN102): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+pin 103 (PIN103): (MUX UNCLAIMED) (GPIO UNCLAIMED)
+...
+
+# cat /sys/kernel/debug/pinctrl/ff800554.pinctrl-pinctrl-bcmbca/pinmux-functions
+function: BCMBCA_PINCTRL_FUNCTION_00, groups = [ BCMBCA_PINCTRL_GROUP_000 BCMBCA_PINCTRL_GROUP_001 BCMBCA_PINCTRL_GROUP_002 ...
+...
+
+# cat sys/kernel/debug/pinctrl/pinctrl-handles 
+Requested pin control handlers their pinmux maps:
+device: ff800554.pinctrl current state: default
+  state: default
+    type: MUX_GROUP controller pinctrl-bcmbca group: BCMBCA_PINCTRL_GROUP_100 (100) function: BCMBCA_PINCTRL_FUNCTION_01 (1)
+    type: MUX_GROUP controller pinctrl-bcmbca group: BCMBCA_PINCTRL_GROUP_101 (101) function: BCMBCA_PINCTRL_FUNCTION_01 (1)
+
+# cat sys/kernel/debug/pinctrl/pinctrl-maps 
+Pinctrl maps:
+device ff800554.pinctrl
+state default
+type MUX_GROUP (2)
+controlling device ff800554.pinctrl
+group BCMBCA_PINCTRL_GROUP_100
+function BCMBCA_PINCTRL_FUNCTION_01
+
+device ff800554.pinctrl
+state default
+type MUX_GROUP (2)
+controlling device ff800554.pinctrl
+group BCMBCA_PINCTRL_GROUP_101
+function BCMBCA_PINCTRL_FUNCTION_01
+
+# cat sys/kernel/debug/pinctrl/pinctrl-devices 
+name [pinmux] [pinconf]
+pinctrl-bcmbca yes no

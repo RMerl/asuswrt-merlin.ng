@@ -1,0 +1,7 @@
+AM57XX EVM
+M:	Lokesh Vutla <lokeshvutla@ti.com>
+S:	Maintained
+F:	board/ti/am57xx/
+F:	include/configs/am57xx_evm.h
+F:	configs/am57xx_evm_defconfig
+F:	configs/am57xx_hs_evm_defconfig

@@ -1,0 +1,18 @@
+if TARGET_DISPLAY5
+
+config SYS_CPU
+	default "armv7"
+
+config SYS_BOARD
+	default "display5"
+
+config SYS_VENDOR
+	default "liebherr"
+
+config SYS_SOC
+	default "mx6"
+
+config SYS_CONFIG_NAME
+	default "display5"
+
+endif

@@ -1,0 +1,22 @@
+/dts-v1/;
+
+/ {
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	binman {
+		multiple-images;
+		image1 {
+			u-boot {
+			};
+		};
+
+		image2 {
+			pad-before = <3>;
+			pad-after = <5>;
+
+			u-boot {
+			};
+		};
+	};
+};

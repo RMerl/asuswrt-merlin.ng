@@ -1,0 +1,197 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Qualcomm APQ8016 based Dragonboard 410C board device tree source
+ *
+ * (C) Copyright 2015 Mateusz Kulikowski <mateusz.kulikowski@gmail.com>
+ */
+
+/dts-v1/;
+
+#include "skeleton64.dtsi"
+#include <dt-bindings/pinctrl/pinctrl-snapdragon.h>
+
+/ {
+	model = "Qualcomm Technologies, Inc. Dragonboard 410c";
+	compatible = "qcom,dragonboard", "qcom,apq8016-sbc";
+	qcom,msm-id = <0xce 0x0 0xf8 0x0 0xf9 0x0 0xfa 0x0 0xf7 0x0>;
+	qcom,board-id = <0x10018 0x0>;
+	#address-cells = <0x2>;
+	#size-cells = <0x2>;
+
+	aliases {
+		usb0 = "/soc/ehci@78d9000";
+	};
+
+	memory {
+		device_type = "memory";
+		reg = <0 0x80000000 0 0x3da00000>;
+	};
+
+	reserved-memory {
+		#address-cells = <2>;
+		#size-cells = <2>;
+		ranges;
+
+		smem_mem: smem_region@86300000 {
+			reg = <0x0 0x86300000 0x0 0x100000>;
+			no-map;
+		};
+	};
+
+	chosen {
+		stdout-path = "/soc/serial@78b0000";
+	};
+
+	smem {
+		compatible = "qcom,smem";
+		memory-region = <&smem_mem>;
+		qcom,rpm-msg-ram = <&rpm_msg_ram>;
+	};
+
+	soc {
+		#address-cells = <0x1>;
+		#size-cells = <0x1>;
+		ranges = <0x0 0x0 0x0 0xffffffff>;
+		compatible = "simple-bus";
+
+		rpm_msg_ram: memory@60000 {
+			compatible = "qcom,rpm-msg-ram";
+			reg = <0x60000 0x8000>;
+		};
+
+		pinctrl: qcom,tlmm@1000000 {
+			compatible = "qcom,tlmm-apq8016";
+			reg = <0x1000000 0x400000>;
+
+			blsp1_uart: uart {
+				function = "blsp1_uart";
+				pins = "GPIO_4", "GPIO_5";
+				drive-strength = <DRIVE_STRENGTH_8MA>;
+				bias-disable;
+			};
+		};
+		clkc: qcom,gcc@1800000 {
+			compatible = "qcom,gcc-apq8016";
+			reg = <0x1800000 0x80000>;
+			#address-cells = <0x1>;
+			#size-cells = <0x0>;
+		};
+
+		serial@78b0000 {
+			compatible = "qcom,msm-uartdm-v1.4";
+			reg = <0x78b0000 0x200>;
+			clock = <&clkc 4>;
+			pinctrl-names = "uart";
+			pinctrl-0 = <&blsp1_uart>;
+		};
+
+		soc_gpios: pinctrl@1000000 {
+			compatible = "qcom,apq8016-pinctrl";
+			reg = <0x1000000 0x300000>;
+			gpio-controller;
+			gpio-count = <122>;
+			gpio-bank-name="soc";
+			#gpio-cells = <1>;
+		};
+
+		ehci@78d9000 {
+			compatible = "qcom,ehci-host";
+			reg = <0x78d9000 0x400>;
+			phys = <&ehci_phy>;
+		};
+
+		ehci_phy: ehci_phy@78d9000 {
+			compatible = "qcom,apq8016-usbphy";
+			reg = <0x78d9000 0x400>;
+			#phy-cells = <0>;
+		};
+
+		sdhci@07824000 {
+			compatible = "qcom,sdhci-msm-v4";
+			reg = <0x7824900 0x11c 0x7824000 0x800>;
+			bus-width = <0x8>;
+			index = <0x0>;
+			non-removable;
+			clock = <&clkc 0>;
+			clock-frequency = <100000000>;
+		};
+
+		sdhci@07864000 {
+			compatible = "qcom,sdhci-msm-v4";
+			reg = <0x7864900 0x11c 0x7864000 0x800>;
+			index = <0x1>;
+			bus-width = <0x4>;
+			clock = <&clkc 1>;
+			clock-frequency = <200000000>;
+		};
+
+		wcnss {
+			bt {
+				compatible="qcom,wcnss-bt";
+			};
+
+			wifi {
+				compatible="qcom,wcnss-wlan";
+			};
+		};
+
+		spmi@200f000 {
+			compatible = "qcom,spmi-pmic-arb";
+			reg = <0x200f800 0x200 0x2400000 0x400000 0x2c00000 0x400000>;
+			#address-cells = <0x1>;
+			#size-cells = <0x1>;
+			pmic0: pm8916@0 {
+				compatible = "qcom,spmi-pmic";
+				reg = <0x0 0x1>;
+				#address-cells = <0x1>;
+				#size-cells = <0x1>;
+
+				pm8916_pon: pm8916_pon@800 {
+					compatible = "qcom,pm8916-pwrkey";
+					reg = <0x800 0x96>;
+					#gpio-cells = <2>;
+					gpio-controller;
+				};
+
+				pm8916_gpios: pm8916_gpios@c000 {
+					compatible = "qcom,pm8916-gpio";
+					reg = <0xc000 0x400>;
+					gpio-controller;
+					gpio-count = <4>;
+					#gpio-cells = <2>;
+					gpio-bank-name="pmic";
+				};
+			};
+
+			pmic1: pm8916@1 {
+				compatible = "qcom,spmi-pmic";
+				reg = <0x1 0x1>;
+			};
+		};
+	};
+
+	leds {
+		compatible = "gpio-leds";
+		user1 {
+			label = "green:user1";
+			gpios = <&soc_gpios 21 0>;
+		};
+
+		user2 {
+			label = "green:user2";
+			gpios = <&soc_gpios 120 0>;
+		};
+
+		user3 {
+			label = "green:user3";
+			gpios = <&pm8916_gpios 0 0>;
+		};
+
+		user4 {
+			label = "green:user4";
+			gpios = <&pm8916_gpios 1 0>;
+		};
+	};
+};
+
+#include "dragonboard410c-uboot.dtsi"

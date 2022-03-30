@@ -1,0 +1,98 @@
+SPDX-License-Identifier: GPL-2.0+
+/*
+ * (C) Copyright 2011-2012 Pali Rohár <pali.rohar@gmail.com>
+ */
+
+ANSI terminal bootmenu command
+
+The "bootmenu" command uses U-Boot menu interfaces and provides
+a simple mechanism for creating menus with different boot items.
+The cursor keys "Up" and "Down" are used for navigation through
+the items. Current active menu item is highlighted and can be
+selected using the "Enter" key. The selection of the highlighted
+menu entry invokes an U-Boot command (or a list of commands)
+associated with this menu entry.
+
+The "bootmenu" command interprets ANSI escape sequencies, so
+an ANSI terminal is required for proper menu rendering and item
+selection.
+
+The assembling of the menu is done via a set of environment variables
+"bootmenu_<num>" and "bootmenu_delay", i.e.:
+
+  bootmenu_delay=<delay>
+  bootmenu_<num>="<title>=<commands>"
+
+  <delay> is the autoboot delay in seconds, after which the first
+  menu entry will be selected automatically
+
+  <num> is the boot menu entry number, starting from zero
+
+  <title> is the text of the menu entry shown on the console
+  or on the boot screen
+
+  <commands> are commands which will be executed when a menu
+  entry is selected
+
+  (title and commands are separated by first appearance of '='
+   character in the environment variable)
+
+First (optional) argument of the "bootmenu" command is a delay specifier
+and it overrides the delay value defined by "bootmenu_delay" environment
+variable. If the environment variable "bootmenu_delay" is not set or if
+the argument of the "bootmenu" command is not specified, the default delay
+will be CONFIG_BOOTDELAY. If delay is 0, no menu entries will be shown on
+the console (or on the screen) and the command of the first menu entry will
+be called immediately. If delay is less then 0, bootmenu will be shown and
+autoboot will be disabled.
+
+Bootmenu always adds menu entry "U-Boot console" at the end of all menu
+entries specified by environment variables. When selecting this entry
+the bootmenu terminates and the usual U-Boot command prompt is presented
+to the user.
+
+Example environment:
+
+  setenv bootmenu_0 Boot 1. kernel=bootm 0x82000000  # Set first menu entry
+  setenv bootmenu_1 Boot 2. kernel=bootm 0x83000000  # Set second menu entry
+  setenv bootmenu_2 Reset board=reset                # Set third menu entry
+  setenv bootmenu_3 U-Boot boot order=boot           # Set fourth menu entry
+  bootmenu 20        # Run bootmenu with autoboot delay 20s
+
+
+The above example will be rendered as below
+(without decorating rectangle):
+
+┌──────────────────────────────────────────┐
+│                                          │
+│  *** U-Boot Boot Menu ***                │
+│                                          │
+│     Boot 1. kernel                       │
+│     Boot 2. kernel                       │
+│     Reset board                          │
+│     U-Boot boot order                    │
+│     U-Boot console                       │
+│                                          │
+│  Hit any key to stop autoboot: 20        │
+│  Press UP/DOWN to move, ENTER to select  │
+│                                          │
+└──────────────────────────────────────────┘
+
+Selected menu entry will be highlighted - it will have inverted
+background and text colors.
+
+To enable the "bootmenu" command add following definitions to the
+board config file:
+
+  #define CONFIG_CMD_BOOTMENU
+  #define CONFIG_MENU
+
+To run the bootmenu at startup add these additional definitions:
+
+  #define CONFIG_AUTOBOOT_KEYED
+  #define CONFIG_BOOTDELAY 30
+  #define CONFIG_MENU_SHOW
+
+When you intend to use the bootmenu on color frame buffer console,
+make sure to additionally define CONFIG_CFB_CONSOLE_ANSI in the
+board config file.

@@ -1,0 +1,152 @@
+/*
+ * Device Tree Source for K2G Netcp driver
+ *
+ * Copyright 2015 Texas Instruments, Inc.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation.
+ */
+
+qmss: qmss@4020000 {
+	compatible = "ti,keystone-navigator-qmss-l";
+	dma-coherent;
+	#address-cells = <1>;
+	#size-cells = <1>;
+	/* power-domains = <&k2g_pds K2G_DEV_NSS0>; */
+	/* clocks = <&k2g_clks K2G_DEV_NSS0 K2G_DEV_NSS_VCLK>; */
+	clock-names = "nss_vclk";
+	ranges;
+	queue-range	= <0 0x80>;
+	linkram0	= <0x4020000 0x7ff>;
+
+	qmgrs {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		ranges;
+		qmgr0 {
+			managed-queues = <0 0x80>;
+			reg = <0x4100000 0x800>,
+			      <0x4040000 0x100>,
+			      <0x4080000 0x800>,
+			      <0x40c0000 0x800>;
+			reg-names = "peek", "config",
+				    "region", "push";
+		};
+
+	};
+	queue-pools {
+		qpend {
+			qpend-0 {
+				qrange = <77 8>;
+				interrupts =<0 308 0xf04 0 309 0xf04 0 310 0xf04
+					     0 311 0xf04 0 312 0xf04 0 313 0xf04
+					     0 314 0xf04 0 315 0xf04>;
+				qalloc-by-id;
+			};
+		};
+		general-purpose {
+			gp-0 {
+				qrange = <112 8>;
+			};
+			netcp-tx {
+				qrange = <5 8>;
+				qalloc-by-id;
+			};
+		};
+	};
+
+	descriptor-regions {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		ranges;
+		region-12 {
+			id = <12>;
+			region-spec = <1023 128>; /* num_desc desc_size */
+			link-index = <0x400>;
+		};
+	};
+}; /* qmss */
+
+knav_dmas: knav_dmas@0 {
+	compatible = "ti,keystone-navigator-dma";
+	#address-cells = <1>;
+	#size-cells = <1>;
+	/* power-domains = <&k2g_pds K2G_DEV_NSS0>; */
+	/* clocks = <&k2g_clks K2G_DEV_NSS0 K2G_DEV_NSS_VCLK>; */
+	clock-names = "nss_vclk";
+	ranges;
+	ti,navigator-cloud-address = <0x40c0000 0x40c0000 0x40c0000 0x40c0000>;
+
+	dma_gbe: dma_gbe@0 {
+		reg = <0x4010000 0x100>,
+			  <0x4011000 0x2a0>, /* 21 Tx channels */
+			  <0x4012000 0x400>, /* 32 Rx channels */
+			  <0x4010100 0x80>,
+			  <0x4013000 0x400>; /* 32 Rx flows */
+		reg-names = "global", "txchan", "rxchan",
+				"txsched", "rxflow";
+	};
+
+};
+
+gbe_subsys: subsys@4200000 {
+	compatible = "syscon";
+	reg = <0x4200000 0x100>;
+};
+
+netcp: netcp@4000000 {
+	reg = <0x2620110 0x8>;
+	reg-names = "efuse";
+	compatible = "ti,netcp-1.0";
+	status = "disabled";
+	#address-cells = <1>;
+	#size-cells = <1>;
+	/* power-domains = <&k2g_pds K2G_DEV_NSS0>; */
+	/* clocks = <&k2g_clks K2G_DEV_NSS0 K2G_DEV_NSS_ESW_CLK>; */
+	clock-names = "ethss_clk";
+
+	/* NetCP address range */
+	ranges = <0 0x4000000 0x1000000>;
+
+	dma-coherent;
+
+	ti,navigator-dmas = <&dma_gbe 0>, <&dma_gbe 5>;
+	ti,navigator-dma-names = "netrx0", "nettx";
+
+	netcp-devices {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		ranges;
+		gbe@200000 {
+			label = "netcp-gbe";
+			compatible = "ti,netcp-gbe-2";
+			syscon-subsys = <&gbe_subsys>;
+			reg = <0x200100 0xe00>, <0x220000 0x20000>;
+			/* enable-ale; */
+			tx-queue = <5>;
+			tx-channel = "nettx";
+
+			interfaces {
+				gbe0: interface-0 {
+					slave-port = <0>;
+					link-interface	= <5>;
+				};
+			};
+		};
+	};
+
+	netcp-interfaces {
+		interface-0 {
+			rx-channel = "netrx0";
+			rx-pool = <512 12>;
+			tx-pool = <511 12>;
+			rx-queue-depth = <128 128 0 0>;
+			rx-buffer-size = <1518 4096 0 0>;
+			rx-queue = <77>;
+			tx-completion-queue = <78>;
+			efuse-mac = <1>;
+			netcp-gbe = <&gbe0>;
+		};
+	};
+};

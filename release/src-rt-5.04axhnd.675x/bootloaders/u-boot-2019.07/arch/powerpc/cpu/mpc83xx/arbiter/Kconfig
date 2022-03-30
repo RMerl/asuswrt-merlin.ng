@@ -1,0 +1,139 @@
+menu "Arbiter"
+
+choice
+	prompt "Pipeline depth"
+
+config ACR_PIPE_DEP_UNSET
+	bool "Don't set value"
+
+config ACR_PIPE_DEP_1
+	bool "1"
+
+config ACR_PIPE_DEP_2
+	bool "2"
+
+config ACR_PIPE_DEP_3
+	bool "3"
+
+config ACR_PIPE_DEP_4
+	bool "4"
+
+endchoice
+
+choice
+	prompt "Repeat count"
+
+config ACR_RPTCNT_UNSET
+	bool "Don't set value"
+
+config ACR_RPTCNT_1
+	bool "1"
+
+config ACR_RPTCNT_2
+	bool "2"
+
+config ACR_RPTCNT_3
+	bool "3"
+
+config ACR_RPTCNT_4
+	bool "4"
+
+config ACR_RPTCNT_5
+	bool "5"
+
+config ACR_RPTCNT_6
+	bool "6"
+
+config ACR_RPTCNT_7
+	bool "7"
+
+config ACR_RPTCNT_8
+	bool "8"
+
+endchoice
+
+choice
+	prompt "Address parking"
+
+config ACR_APARK_UNSET
+	bool "Don't set value"
+
+config ACR_APARK_MASTER
+	bool "Park to master"
+
+config ACR_APARK_LAST
+	bool "Park to last owner"
+
+config ACR_APARK_DISABLE
+	bool "Disabled"
+
+endchoice
+
+choice
+	prompt "Parking master"
+
+config ACR_PARKM_UNSET
+	bool "Don't set value"
+
+config ACR_PARKM_E300
+	bool "e300 core"
+
+config ACR_PARKM_TSEC_1_2
+	bool "TSEC1, TSEC2"
+
+config ACR_PARKM_USB_I2C1_BOOT
+	bool "USB/I2C1_BOOT"
+
+config ACR_PARKM_DMA_ESDHC_USB
+	bool "DMA, ESDHC, USB"
+
+config ACR_PARKM_PEX
+	bool "PCI Express"
+
+if MPC83XX_QUICC_ENGINE
+
+config ACR_PARKM_ENC_CORE
+	bool "Encryption core"
+
+endif
+
+endchoice
+
+config ACR_PIPE_DEP
+	hex
+	default 0x0 if ACR_PIPE_DEP_UNSET
+	default 0x0 if ACR_PIPE_DEP_1
+	default 0x10000 if ACR_PIPE_DEP_2
+	default 0x20000 if ACR_PIPE_DEP_3
+	default 0x30000 if ACR_PIPE_DEP_4
+
+config ACR_RPTCNT
+	hex
+	default 0x0 if ACR_RPTCNT_UNSET
+	default 0x0 if ACR_RPTCNT_1
+	default 0x100 if ACR_RPTCNT_2
+	default 0x200 if ACR_RPTCNT_3
+	default 0x300 if ACR_RPTCNT_4
+	default 0x400 if ACR_RPTCNT_5
+	default 0x500 if ACR_RPTCNT_6
+	default 0x600 if ACR_RPTCNT_7
+	default 0x700 if ACR_RPTCNT_8
+
+config ACR_APARK
+	hex
+	default 0x0 if ACR_APARK_UNSET
+	default 0x0 if ACR_APARK_MASTER
+	default 0x10 if ACR_APARK_LAST
+	default 0x20 if ACR_APARK_DISABLE
+
+config ACR_PARKM
+	hex
+	default 0x0 if ACR_PARKM_UNSET
+	default 0x0 if ACR_PARKM_E300
+	default 0x2 if ACR_PARKM_TSEC_1_2
+	default 0x3 if ACR_PARKM_USB_I2C1_BOOT
+	default 0x4 if ACR_PARKM_DMA_ESDHC_USB
+	default 0x5 if ACR_PARKM_PEX
+	default 0x5 if ACR_PARKM_ENC_CORE
+
+endmenu

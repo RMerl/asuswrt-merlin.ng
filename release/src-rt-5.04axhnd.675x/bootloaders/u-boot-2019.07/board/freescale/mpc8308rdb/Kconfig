@@ -1,0 +1,12 @@
+if TARGET_MPC8308RDB
+
+config SYS_BOARD
+	default "mpc8308rdb"
+
+config SYS_VENDOR
+	default "freescale"
+
+config SYS_CONFIG_NAME
+	default "MPC8308RDB"
+
+endif

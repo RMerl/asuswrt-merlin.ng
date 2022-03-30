@@ -1,0 +1,69 @@
+/*
+ * Broadcom reserved Slic list dtsi
+ */
+#define SLICSLAC_LIST_ISI_NOFXO         \
+        "NOSLIC",                       \
+        "SI32172_ISI_LQC",              \
+        "SI32173_ISI_LQC",              \
+        "SI32182_ISI_CB",               \
+        "SI32192_ISI_CB",               \
+        "SI32280_ISI_CB",               \
+        "SI32281_ISI_CB",               \
+        "SI32284_ISI_CB",               \
+        "SI32267"
+
+#define SLICSLAC_LIST_ZSI_NOFXO         \
+        "LE88536_ZSI",                  \
+        "LE9641_ZSI_BB",                \
+        "LE9642_ZSI_BB",                \
+        "LE9642_ZSI_IB",                \
+        "LE9642_ZSI_TB",                \
+        "LE9652_ZSI_IB",                \
+        "LE9643_ZSI_IB",                \
+        "LE9661_ZSI",                   \
+        "LE9661_ZSI_BB",                \
+        "LE9662_ZSI",                   \
+        "LE9662_ZSI_BB",                \
+        "LE9672_ZSI",                   \
+        "ZL88702_ZSI"
+
+#define SLICSLAC_LIST_COMMON_NOFXO      \
+        SLICSLAC_LIST_ISI_NOFXO,        \
+        SLICSLAC_LIST_ZSI_NOFXO,        \
+        "LE89116",                      \
+        "LE88506",                      \
+        "LE9653_IB",                    \
+        "LE9622_IB",                    \
+        "ZL88601",                      \
+        "ZL88601x2",                    \
+        "SI32176",                      \
+        "SI32176_LCQC",                 \
+        "SI32282_CB",                   \
+        "SI32184_CB",                   \
+        "SI32286_CB",                   \
+        "SI32260",                      \
+        "Si32260_LCUB",                 \
+        "Si32260_LCQC"
+
+#define SLICSLAC_LIST_COMMON_FXO        \
+        SLICSLAC_LIST_COMMON_NOFXO,     \
+        "VE890_INVBOOST",               \
+        "ZL88701",                      \
+        "ZL88801_89010BB",              \
+        "SI3217X",                      \
+        "SI32178",                      \
+        "SI32260_3050",                 \
+        "SI32260_3050_QC"
+
+#define SLICSLAC_LIST_4FXS_NOFXO        \
+        "SI32260x2"
+
+#define SLICSLAC_LIST_4FXS_FXO          \
+        SLICSLAC_LIST_4FXS_NOFXO,       \
+        "SI32260x2_3050"
+
+/ {
+    bcm_voice: bcm_voice {
+         sliclist = "NOSLIC";
+    };
+};

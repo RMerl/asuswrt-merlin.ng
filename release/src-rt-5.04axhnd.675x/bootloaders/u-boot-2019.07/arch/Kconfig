@@ -1,0 +1,287 @@
+config CREATE_ARCH_SYMLINK
+	bool
+
+config HAVE_ARCH_IOREMAP
+	bool
+
+choice
+	prompt "Architecture select"
+	default SANDBOX
+
+config ARC
+	bool "ARC architecture"
+	select ARCH_EARLY_INIT_R
+	select ARC_TIMER
+	select CLK
+	select HAVE_PRIVATE_LIBGCC
+	select SUPPORT_OF_CONTROL
+	select TIMER
+
+config ARM
+	bool "ARM architecture"
+	select CREATE_ARCH_SYMLINK
+	select HAVE_PRIVATE_LIBGCC if !ARM64
+	select SUPPORT_OF_CONTROL
+
+config M68K
+	bool "M68000 architecture"
+	select HAVE_PRIVATE_LIBGCC
+	select SYS_BOOT_GET_CMDLINE
+	select SYS_BOOT_GET_KBD
+	select SUPPORT_OF_CONTROL
+
+config MICROBLAZE
+	bool "MicroBlaze architecture"
+	select SUPPORT_OF_CONTROL
+	imply CMD_IRQ
+
+config MIPS
+	bool "MIPS architecture"
+	select HAVE_ARCH_IOREMAP
+	select HAVE_PRIVATE_LIBGCC
+	select SUPPORT_OF_CONTROL
+
+config NDS32
+	bool "NDS32 architecture"
+	select SUPPORT_OF_CONTROL
+
+config NIOS2
+	bool "Nios II architecture"
+	select CPU
+	select DM
+	select OF_CONTROL
+	select SUPPORT_OF_CONTROL
+	imply CMD_DM
+
+config PPC
+	bool "PowerPC architecture"
+	select HAVE_PRIVATE_LIBGCC
+	select SUPPORT_OF_CONTROL
+	select SYS_BOOT_GET_CMDLINE
+	select SYS_BOOT_GET_KBD
+
+config RISCV
+	bool "RISC-V architecture"
+	select CREATE_ARCH_SYMLINK
+	select SUPPORT_OF_CONTROL
+	select OF_CONTROL
+	select DM
+	imply DM_SERIAL
+	imply DM_ETH
+	imply DM_MMC
+	imply DM_SPI
+	imply DM_SPI_FLASH
+	imply BLK
+	imply CLK
+	imply MTD
+	imply TIMER
+	imply CMD_DM
+
+config SANDBOX
+	bool "Sandbox"
+	select BOARD_LATE_INIT
+	select DM
+	select DM_GPIO
+	select DM_I2C
+	select DM_KEYBOARD
+	select DM_MMC
+	select DM_SERIAL
+	select DM_SPI
+	select DM_SPI_FLASH
+	select HAVE_BLOCK_DEVICE
+	select LZO
+	select SPI
+	select SUPPORT_OF_CONTROL
+	imply BITREVERSE
+	select BLOBLIST
+	imply CMD_DM
+	imply CMD_GETTIME
+	imply CMD_HASH
+	imply CMD_IO
+	imply CMD_IOTRACE
+	imply CMD_LZMADEC
+	imply CMD_SATA
+	imply CMD_SF
+	imply CMD_SF_TEST
+	imply CRC32_VERIFY
+	imply FAT_WRITE
+	imply FIRMWARE
+	imply HASH_VERIFY
+	imply LZMA
+	imply SCSI
+	imply TEE
+	imply AVB_VERIFY
+	imply LIBAVB
+	imply CMD_AVB
+	imply UDP_FUNCTION_FASTBOOT
+	imply VIRTIO_MMIO
+	imply VIRTIO_PCI
+	imply VIRTIO_SANDBOX
+	imply VIRTIO_BLK
+	imply VIRTIO_NET
+	imply DM_SOUND
+	imply PCH
+
+config SH
+	bool "SuperH architecture"
+	select HAVE_PRIVATE_LIBGCC
+
+config X86
+	bool "x86 architecture"
+	select SUPPORT_SPL
+	select SUPPORT_TPL
+	select CREATE_ARCH_SYMLINK
+	select DM
+	select DM_PCI
+	select HAVE_ARCH_IOMAP
+	select HAVE_PRIVATE_LIBGCC
+	select OF_CONTROL
+	select PCI
+	select SUPPORT_OF_CONTROL
+	select TIMER
+	select USE_PRIVATE_LIBGCC
+	select X86_TSC_TIMER
+	imply BLK
+	imply CMD_DM
+	imply CMD_FPGA_LOADMK
+	imply CMD_GETTIME
+	imply CMD_IO
+	imply CMD_IRQ
+	imply CMD_PCI
+	imply CMD_SF
+	imply CMD_SF_TEST
+	imply CMD_ZBOOT
+	imply DM_ETH
+	imply DM_GPIO
+	imply DM_KEYBOARD
+	imply DM_MMC
+	imply DM_RTC
+	imply DM_SCSI
+	imply DM_SERIAL
+	imply DM_SPI
+	imply DM_SPI_FLASH
+	imply DM_USB
+	imply DM_VIDEO
+	imply SYSRESET
+	imply SPL_SYSRESET
+	imply SYSRESET_X86
+	imply USB_ETHER_ASIX
+	imply USB_ETHER_SMSC95XX
+	imply USB_HOST_ETHER
+	imply PCH
+	imply RTC_MC146818
+
+	# Thing to enable for when SPL/TPL are enabled: SPL
+	imply SPL_DM
+	imply SPL_OF_LIBFDT
+	imply SPL_DRIVERS_MISC_SUPPORT
+	imply SPL_GPIO_SUPPORT
+	imply SPL_LIBCOMMON_SUPPORT
+	imply SPL_LIBGENERIC_SUPPORT
+	imply SPL_SERIAL_SUPPORT
+	imply SPL_SPI_FLASH_SUPPORT
+	imply SPL_SPI_SUPPORT
+	imply SPL_OF_CONTROL
+	imply SPL_TIMER
+	imply SPL_REGMAP
+	imply SPL_SYSCON
+	# TPL
+	imply TPL_DM
+	imply TPL_OF_LIBFDT
+	imply TPL_DRIVERS_MISC_SUPPORT
+	imply TPL_GPIO_SUPPORT
+	imply TPL_LIBCOMMON_SUPPORT
+	imply TPL_LIBGENERIC_SUPPORT
+	imply TPL_SERIAL_SUPPORT
+	imply TPL_SPI_FLASH_SUPPORT
+	imply TPL_SPI_SUPPORT
+	imply TPL_OF_CONTROL
+	imply TPL_TIMER
+	imply TPL_REGMAP
+	imply TPL_SYSCON
+
+config XTENSA
+	bool "Xtensa architecture"
+	select CREATE_ARCH_SYMLINK
+	select SUPPORT_OF_CONTROL
+
+endchoice
+
+config SYS_ARCH
+	string
+	help
+	  This option should contain the architecture name to build the
+	  appropriate arch/<CONFIG_SYS_ARCH> directory.
+	  All the architectures should specify this option correctly.
+
+config SYS_CPU
+	string
+	help
+	  This option should contain the CPU name to build the correct
+	  arch/<CONFIG_SYS_ARCH>/cpu/<CONFIG_SYS_CPU> directory.
+
+	  This is optional.  For those targets without the CPU directory,
+	  leave this option empty.
+
+config SYS_SOC
+	string
+	help
+	  This option should contain the SoC name to build the directory
+	  arch/<CONFIG_SYS_ARCH>/cpu/<CONFIG_SYS_CPU>/<CONFIG_SYS_SOC>.
+
+	  This is optional.  For those targets without the SoC directory,
+	  leave this option empty.
+
+config SYS_VENDOR
+	string
+	help
+	  This option should contain the vendor name of the target board.
+	  If it is set and
+	  board/<CONFIG_SYS_VENDOR>/common/Makefile exists, the vendor common
+	  directory is compiled.
+	  If CONFIG_SYS_BOARD is also set, the sources under
+	  board/<CONFIG_SYS_VENDOR>/<CONFIG_SYS_BOARD> directory are compiled.
+
+	  This is optional.  For those targets without the vendor directory,
+	  leave this option empty.
+
+config SYS_BOARD
+	string
+	help
+	  This option should contain the name of the target board.
+	  If it is set, either board/<CONFIG_SYS_VENDOR>/<CONFIG_SYS_BOARD>
+	  or board/<CONFIG_SYS_BOARD> directory is compiled depending on
+	  whether CONFIG_SYS_VENDOR is set or not.
+
+	  This is optional.  For those targets without the board directory,
+	  leave this option empty.
+
+config SYS_CONFIG_NAME
+	string
+	help
+	  This option should contain the base name of board header file.
+	  The header file include/configs/<CONFIG_SYS_CONFIG_NAME>.h
+	  should be included from include/config.h.
+
+config SYS_DISABLE_DCACHE_OPS
+	bool
+	help
+	 This option disables dcache flush and dcache invalidation
+	 operations. For example, on coherent systems where cache
+	 operatios are not required, enable this option to avoid them.
+	 Note that, its up to the individual architectures to implement
+	 this functionality.
+
+source "arch/arc/Kconfig"
+source "arch/arm/Kconfig"
+source "arch/m68k/Kconfig"
+source "arch/microblaze/Kconfig"
+source "arch/mips/Kconfig"
+source "arch/nds32/Kconfig"
+source "arch/nios2/Kconfig"
+source "arch/powerpc/Kconfig"
+source "arch/sandbox/Kconfig"
+source "arch/sh/Kconfig"
+source "arch/x86/Kconfig"
+source "arch/xtensa/Kconfig"
+source "arch/riscv/Kconfig"

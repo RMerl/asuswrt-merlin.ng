@@ -1,0 +1,6 @@
+WB45N CPU MODULE
+M:	Ben Whitten <ben.whitten@lairdtech.com>
+S:	Maintained
+F:	board/laird/wb45n/
+F:	include/configs/wb45n.h
+F:	configs/wb45n_defconfig

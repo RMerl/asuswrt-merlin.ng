@@ -1,0 +1,30 @@
+menu "Demo for driver model"
+
+config DM_DEMO
+	bool "Enable demo uclass support"
+	depends on DM
+	help
+	  This uclass allows you to play around with driver model. It provides
+	  an interface to a couple of demo devices. You can access it using
+	  the 'demo' command or by calling the uclass functions from your
+	  own code.
+
+config DM_DEMO_SIMPLE
+	bool "Enable simple demo device for driver model"
+	depends on DM_DEMO
+	help
+	  This device allows you to play around with driver model. It prints
+	  a message when the 'demo hello' command is executed which targets
+	  this device. It can be used to help understand how driver model
+	  works.
+
+config DM_DEMO_SHAPE
+	bool "Enable shape demo device for driver model"
+	depends on DM_DEMO
+	help
+	  This device allows you to play around with driver model. It prints
+	  a shape when the 'demo hello' command is executed which targets
+	  this device. It can be used to help understand how driver model
+	  works.
+
+endmenu

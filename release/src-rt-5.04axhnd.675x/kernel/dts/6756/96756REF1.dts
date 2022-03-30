@@ -1,0 +1,268 @@
+#include "6756.dtsi"
+#include "../bcm_voice.dtsi"
+
+/ {
+	memory_controller {
+		memcfg = <(BP_DDR_SPEED_1067_14_14_14 | \
+			BP_DDR_TOTAL_SIZE_512MB    | \
+			BP_DDR_DEVICE_WIDTH_16     | \
+			BP_DDR_TOTAL_WIDTH_16BIT   | \
+			BP_DDR_6756_DEFAULT)>;
+	};
+
+	buttons {
+		compatible = "brcm,buttons";
+		ses_button {
+			ext_irq = <&bca_extintr 4 BCA_GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+			release {
+				ses_short_period = <0>;
+				ses_long_period = <3>;
+			};
+		};
+	};
+
+	switch_sf2_ext:0 {
+	};
+
+};
+
+&sysport {
+    ethsw_ext = <&switch_sf2_ext>;
+};
+
+&i2c0 {
+	pinctrl-names="default";
+	pinctrl-0 = <&i2c_sda_pin_16 &i2c_scl_pin_17>;
+	status = "okay";
+	
+	#address-cells = <1>;
+	#size-cells = <0>;
+	codec_playback:codec_palyback@18{
+		compatible = "ti,tlv320dac3203";
+		reg = <0x18>;
+	};
+	codec_capture:codec_capture@4e{
+		compatible = "ti,tlv320adc5140";
+		reg = <0x4e>;
+	};
+};
+
+&mdio_sf2 {
+	phy_ge:8 {
+		status = "okay";
+	};
+
+	phy_m2m:m2m {
+		compatible = "brcm,bcaphy";
+		phy-type = "MAC2MAC";
+		reg = <1>;
+		status = "okay";
+		phy-extswitch;
+	};
+
+	/* PHYs on external SF2 switch */
+	sf2_gphy0:0 {
+		compatible = "brcm,bcaphy";
+		phy-type = "EGPHY";
+		reg = <0>;
+		status = "okay";
+	};
+	sf2_gphy1:1 {
+		compatible = "brcm,bcaphy";
+		phy-type = "EGPHY";
+		reg = <1>;
+		status = "okay";
+	};
+	sf2_gphy2:2 {
+		compatible = "brcm,bcaphy";
+		phy-type = "EGPHY";
+		reg = <2>;
+		status = "okay";
+	};
+	sf2_gphy3:3 {
+		compatible = "brcm,bcaphy";
+		phy-type = "EGPHY";
+		reg = <3>;
+		status = "okay";
+	};
+};
+
+
+&switch_sf2_ext {                       /* linux/uboot: external sf2 */
+	unit = <1>;
+	sw-type = "SF2_SW";
+
+	compatible = "brcm,bcmbca-extsw";
+	reg-names ="parent-rgmii-ctrl",
+	           "parent-gpio-pad-ctrl";
+	reg = <0x804800ec 0x44>,
+	      <0xff800500 0x78>;
+	switch-reset = <&gpioc 10 GPIO_ACTIVE_LOW>;
+
+	ports {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		sf2_port0@0 {
+			phy-handle = <&sf2_gphy0>;
+			reg = <0>;
+			mac-type = "SF2MAC";
+			phy-mode = "gmii";
+			gmii-direct;
+			status = "okay";
+		};
+		sf2_port1@1 {
+			phy-handle = <&sf2_gphy1>;
+			reg = <1>;
+			mac-type = "SF2MAC";
+			phy-mode = "gmii";
+			gmii-direct;
+			status = "okay";
+		};
+		sf2_port2@2 {
+			phy-handle = <&sf2_gphy2>;
+			reg = <2>;
+			mac-type = "SF2MAC";
+			phy-mode = "gmii";
+			gmii-direct;
+			status = "okay";
+		};
+		sf2_port3@3 {
+			phy-handle = <&sf2_gphy3>;
+			reg = <3>;
+			mac-type = "SF2MAC";
+			phy-mode = "gmii";
+			gmii-direct;
+			status = "okay";
+		};
+		sf2_port8@8 {
+			management;                     /* sf2_ext.p8 <--> root.p1 */
+			reg = <8>;
+			mac-type = "SF2MAC";
+			shrink-ipg;
+			phy-mode = "gmii";
+			gmii-direct;
+			status = "okay";
+		};
+	};
+};
+
+&switch0 {                              /* linux/uboot: internal sf2 */
+	pinctrl-names = "default", "rgmii"; 
+	pinctrl-0 = <&a_rgmii_mdc_pin_68 &a_rgmii_mdio_pin_69 &rgmii_pins>; 
+	pinctrl-1 = <&rgmii_pins>; 
+
+	ports {
+		port0@0 {
+			phy-handle = <&phy_ge>;
+			status = "okay";
+		};
+		port1@1 {
+			phy-handle = <&phy_m2m>;
+			mii-pinctrl-state = "rgmii";
+			phy-mode = "rgmii";
+			rgmii-3p3v;
+			rx-delay;
+			tx-delay;
+			link = <&switch_sf2_ext>;           /* root.p1 <--> sf2_ext.p8 */
+			shrink-ipg;
+			status = "okay";
+		};
+	};
+};
+
+&usb_ctrl {
+	pinctrl-names="default";
+	pinctrl-0 = <&usb0_pwr_pins &usb1_pwr_pins>;
+	pwron-bias-pull-up;
+	status = "okay";
+	xhci-enable;
+};
+
+&usb0_xhci {
+	status = "okay";
+};
+
+&usb0_ehci {
+	status = "okay";
+};
+
+&usb1_ehci {
+	status = "okay";
+};
+
+&usb0_ohci {
+	status = "okay";
+};
+
+&usb1_ohci {
+	status = "okay";
+};
+
+&legacy_leds {
+	wl-sess-led = <&led2>;
+	wl0-led = <&led3>;
+	wl1-led = <&led4>;
+};
+&led_ctrl {
+	led0: port_0-led-0 {
+		active_high;
+		link = <(LED_SPEED_100|LED_SPEED_1G)>;
+		pinctrl-0=<&a_per_led_00_pin_0>;
+		status = "okay";
+	};
+	led1: port_0-led-2 {
+		active_low;
+		activity = <LED_SPEED_GBE>;
+		pinctrl-0=<&a_per_led_03_pin_3>;
+		status = "okay";
+	};
+	led2: sw_led_01 {
+		active_low;
+		pinctrl-0=<&a_per_led_01_pin_1>;
+		status = "okay";
+	};
+	led3:led_gpio_7 {
+		compatible = "brcm,gpio-led";
+		software_led;
+		pin = <7>;
+		active_low;
+	};
+	led4:led_gpio_36 {
+		compatible = "brcm,gpio-led";
+		software_led;
+		pin = <36>;
+		active_low;
+	};
+};
+
+&bcm_voice{
+	sliclist = SLICSLAC_LIST_COMMON_NOFXO;
+};
+
+&hsspi {
+	voice0 {
+		pinctrl-0 = <&spim_ss1_b_pin_76>;
+		pinctrl-names = "default";
+		compatible = "bcm-spi-voice";
+		reg = <1>; /* chip select 1 */
+		spi-max-frequency = <1024000>;
+		reset-gpio = <&gpioc 26 GPIO_ACTIVE_LOW>;
+		spi-index = <0>;/* voice header index */
+	};
+	voice1 {
+		pinctrl-0 = <&spim_ss2_b_pin_10>;
+		pinctrl-names = "default";
+		compatible = "bcm-spi-voice";
+		reg = <2>; /* chip select 2 */
+		spi-max-frequency = <1024000>;
+		/*reset-gpio = NA*/
+		spi-index = <1>;/* voice header index */
+	};
+};
+/* RX lrclk and sclk are from voice header, voice would not work if audio enabled or vice versa*/
+&i2s {
+			pinctrl-0 = <&i2s_tx_sclk_pin_11 &i2s_tx_lrck_pin_12 &i2s_tx_sdata_pin_15 &i2s_tx_mclk_pin_14 &i2s_rx_sclk_pin_22 &i2s_rx_lrck_pin_23 &i2s_rx_sdata_pin_13 &i2s_rx_mclk_pin_24>;
+			pinctrl-names = "default";
+			status = "okay";
+};

@@ -1,0 +1,323 @@
+/*
+ * Copyright (C) 2016 Marvell Technology Group Ltd.
+ *
+ * This file is dual-licensed: you can use it either under the terms
+ * of the GPLv2 or the X11 license, at your option. Note that this dual
+ * licensing only applies to this file, and not this project as a
+ * whole.
+ *
+ *  a) This library is free software; you can redistribute it and/or
+ *     modify it under the terms of the GNU General Public License as
+ *     published by the Free Software Foundation; either version 2 of the
+ *     License, or (at your option) any later version.
+ *
+ *     This library is distributed in the hope that it will be useful,
+ *     but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *     GNU General Public License for more details.
+ *
+ * Or, alternatively,
+ *
+ *  b) Permission is hereby granted, free of charge, to any person
+ *     obtaining a copy of this software and associated documentation
+ *     files (the "Software"), to deal in the Software without
+ *     restriction, including without limitation the rights to use,
+ *     copy, modify, merge, publish, distribute, sublicense, and/or
+ *     sell copies of the Software, and to permit persons to whom the
+ *     Software is furnished to do so, subject to the following
+ *     conditions:
+ *
+ *     The above copyright notice and this permission notice shall be
+ *     included in all copies or substantial portions of the Software.
+ *
+ *     THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ *     EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+ *     OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ *     NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ *     HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ *     WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ *     FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+ *     OTHER DEALINGS IN THE SOFTWARE.
+ */
+
+/*
+ * Device Tree file for Marvell Armada 8040 Development board platform
+ */
+
+#include "armada-8040.dtsi"
+
+/ {
+	model = "Marvell Armada 8040 DB board";
+	compatible = "marvell,armada8040-db", "marvell,armada8040",
+		     "marvell,armada-ap806-quad", "marvell,armada-ap806";
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+	};
+
+	aliases {
+		i2c0 = &cpm_i2c0;
+		spi0 = &cps_spi1;
+	};
+
+	memory@00000000 {
+		device_type = "memory";
+		reg = <0x0 0x0 0x0 0x80000000>;
+	};
+};
+
+/* Accessible over the mini-USB CON9 connector on the main board */
+&uart0 {
+	status = "okay";
+};
+
+&ap_pinctl {
+	/* MPP Bus:
+	 * SDIO  [0-10]
+	 * UART0 [11,19]
+	 */
+		  /* 0 1 2 3 4 5 6 7 8 9 */
+	pin-func = < 1 1 1 1 1 1 1 1 1 1
+		     1 3 0 0 0 0 0 0 0 3 >;
+};
+
+&ap_sdhci0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&ap_emmc_pins>;
+	bus-width = <8>;
+	status = "okay";
+};
+
+&cpm_pinctl {
+	/* MPP Bus:
+	 *	[0-31]	= 0xff: Keep default CP0_shared_pins
+	 *	[11]	CLKOUT_MPP_11 (out)
+	 *	[23]	LINK_RD_IN_CP2CP (in)
+	 *	[25]	CLKOUT_MPP_25 (out)
+	 *	[29]	AVS_FB_IN_CP2CP (in)
+	 *	[32,34]	GE_MDIO/MDC
+	 *	[33]	GPIO: GE_INT#/push button/Wake
+	 *	[35]	MSS_GPIO[3]: MSS_PWDN
+	 *	[36]	MSS_GPIO[5]: MSS_VTT_EN
+	 *	[37-38]	I2C0
+	 *	[39]	PTP_CLK
+	 *	[40-41]	SATA[0/1]_PRESENT_ACTIVEn
+	 *	[42-43]	XG_MDC/XG_MDIO (XSMI)
+	 *	[44-55]	RGMII1
+	 *	[56-62]	SD
+	 */
+	/*   0    1    2    3    4    5    6    7    8    9 */
+	pin-func = < 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff
+		     0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff
+		     0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff
+		     0xff 0xff 0x7  0x0  0x7  0xa  0xa  0x2  0x2  0x5
+		     0x9  0x9  0x8  0x8  0x1  0x1  0x1  0x1  0x1  0x1
+		     0x1  0x1  0x1  0x1  0x1  0x1  0xe  0xe  0xe  0xe
+		     0xe  0xe  0xe>;
+};
+
+&cpm_comphy {
+	/* Serdes Configuration:
+	 *	Lane 0: PCIe0 (x1)
+	 *	Lane 1: SATA0
+	 *	Lane 2: SFI (10G)
+	 *	Lane 3: SATA1
+	 *	Lane 4: USB3_HOST1
+	 *	Lane 5: PCIe2 (x1)
+	 */
+	phy0 {
+		phy-type = <PHY_TYPE_PEX0>;
+	};
+	phy1 {
+		phy-type = <PHY_TYPE_SATA0>;
+	};
+	phy2 {
+		phy-type = <PHY_TYPE_SFI>;
+	};
+	phy3 {
+		phy-type = <PHY_TYPE_SATA1>;
+	};
+	phy4 {
+		phy-type = <PHY_TYPE_USB3_HOST1>;
+	};
+	phy5 {
+		phy-type = <PHY_TYPE_PEX2>;
+	};
+};
+
+/* CON6 on CP0 expansion */
+&cpm_pcie0 {
+	status = "okay";
+};
+
+&cpm_pcie1 {
+	status = "disabled";
+};
+
+/* CON5 on CP0 expansion */
+&cpm_pcie2 {
+	status = "okay";
+};
+
+&cpm_i2c0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&cpm_i2c0_pins>;
+	status = "okay";
+	clock-frequency = <100000>;
+};
+
+/* CON4 on CP0 expansion */
+&cpm_sata0 {
+	status = "okay";
+};
+
+/* CON9 on CP0 expansion */
+&cpm_usb3_0 {
+	status = "okay";
+};
+
+/* CON10 on CP0 expansion */
+&cpm_usb3_1 {
+	status = "okay";
+};
+
+&cpm_utmi0 {
+	status = "okay";
+};
+
+&cpm_utmi1 {
+	status = "okay";
+};
+
+&cpm_sdhci0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&cpm_sdhci_pins>;
+	bus-width = <4>;
+	status = "okay";
+};
+
+&cps_pinctl {
+	/* MPP Bus:
+	 *	[0-11]	RGMII0
+	 *	[13-16]	SPI1
+	 *	[27,31]	GE_MDIO/MDC
+	 *	[28]	SATA1_PRESENT_ACTIVEn
+	 *	[29-30]	UART0
+	 *	[32-62]	= 0xff: Keep default CP1_shared_pins
+	 */
+	/*   0    1    2    3    4    5    6    7    8    9 */
+	pin-func = < 0x3  0x3  0x3  0x3  0x3  0x3  0x3  0x3  0x3  0x3
+		     0x3  0x3  0x3  0x3  0x3  0x3  0x3  0xff 0xff 0xff
+		     0xff 0xff 0xff 0xff 0xff 0xff 0xff 0x8  0x9  0xa
+		     0xA  0x8  0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff
+		     0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff
+		     0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff
+		     0xff 0xff 0xff>;
+};
+
+&cps_comphy {
+	/* Serdes Configuration:
+	 *	Lane 0: PCIe0 (x1)
+	 *	Lane 1: SATA0
+	 *	Lane 2: SFI (10G)
+	 *	Lane 3: SATA1
+	 *	Lane 4: PCIe1 (x1)
+	 *	Lane 5: PCIe2 (x1)
+	 */
+	phy0 {
+		phy-type = <PHY_TYPE_PEX0>;
+	};
+	phy1 {
+		phy-type = <PHY_TYPE_SATA0>;
+	};
+	phy2 {
+		phy-type = <PHY_TYPE_SFI>;
+	};
+	phy3 {
+		phy-type = <PHY_TYPE_SATA1>;
+	};
+	phy4 {
+		phy-type = <PHY_TYPE_PEX1>;
+	};
+	phy5 {
+		phy-type = <PHY_TYPE_PEX2>;
+	};
+};
+
+/* CON6 on CP1 expansion */
+&cps_pcie0 {
+	status = "okay";
+};
+
+&cps_pcie1 {
+	status = "okay";
+};
+
+/* CON5 on CP1 expansion */
+&cps_pcie2 {
+	status = "okay";
+};
+
+&cps_spi1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&cps_spi1_pins>;
+	status = "okay";
+
+	spi-flash@0 {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "jedec,spi-nor";
+		reg = <0>;
+		spi-max-frequency = <10000000>;
+
+		partitions {
+			compatible = "fixed-partitions";
+			#address-cells = <1>;
+			#size-cells = <1>;
+
+			partition@0 {
+				label = "U-Boot";
+				reg = <0 0x200000>;
+			};
+			partition@400000 {
+				label = "Filesystem";
+				reg = <0x200000 0xce0000>;
+			};
+		};
+	};
+};
+
+/* CON4 on CP1 expansion */
+&cps_sata0 {
+	status = "okay";
+};
+
+/* CON9 on CP1 expansion */
+&cps_usb3_0 {
+	status = "okay";
+};
+
+/* CON10 on CP1 expansion */
+&cps_usb3_1 {
+	status = "okay";
+};
+
+&cps_utmi0 {
+	status = "okay";
+};
+
+&cpm_mdio {
+	phy1: ethernet-phy@1 {
+		reg = <1>;
+	};
+};
+
+&cpm_ethernet {
+	status = "okay";
+};
+
+&cpm_eth2 {
+	status = "okay";
+	phy = <&phy1>;
+	phy-mode = "rgmii-id";
+};

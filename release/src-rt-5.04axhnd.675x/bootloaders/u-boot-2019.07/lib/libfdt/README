@@ -1,0 +1,25 @@
+The libfdt functionality was written by David Gibson.  The original
+source came from the Git repository:
+
+URL:		git://ozlabs.org/home/dgibson/git/libfdt.git
+
+author		David Gibson <dgibson@sneetch.(none)>
+		Fri, 23 Mar 2007 04:16:54 +0000 (15:16 +1100)
+committer	David Gibson <dgibson@sneetch.(none)>
+		Fri, 23 Mar 2007 04:16:54 +0000 (15:16 +1100)
+commit		857f54e79f74429af20c2b5ecc00ee98af6a3b8b
+tree		2f648f0f88225a51ded452968d28b4402df8ade0
+parent		07a12a08005f3b5cd9337900a6551e450c07b515
+
+To adapt for U-Boot usage, only the applicable files were copied and
+imported into the U-Boot Git repository.
+
+Omitted:
+
+  * GPL - U-Boot comes with a copy of the GPL license
+  * test subdirectory - not directly useful for U-Boot
+
+After importing, other customizations were performed.  See the
+"git log" for details.
+
+Jerry Van Baren

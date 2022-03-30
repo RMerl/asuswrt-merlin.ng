@@ -1,0 +1,17 @@
+Ricoh RN5T567 PMIC
+
+This file describes the binding info for the PMIC driver.
+
+Required properties:
+- compatible: "ricoh,rn5t567"
+- reg: depending on strapping, e.g. 0x33
+
+With those two properties, the PMIC device can be used to read/write
+registers.
+
+Example:
+
+rn5t567@33 {
+	compatible = "ricoh,rn5t567";
+	reg = <0x33>;
+};

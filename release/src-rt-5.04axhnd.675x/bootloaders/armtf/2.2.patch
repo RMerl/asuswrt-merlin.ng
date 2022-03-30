@@ -1,0 +1,250 @@
+diff --git a/Makefile b/Makefile
+index 721246d..fa7fb8c 100644
+--- a/Makefile
++++ b/Makefile
+@@ -268,8 +268,9 @@ ifeq ($(findstring clang,$(notdir $(CC))),)
+ # not using clang
+ WARNINGS	+=		-Wunused-but-set-variable	\
+ 				-Wmaybe-uninitialized		\
+-				-Wpacked-bitfield-compat	\
+-				-Wshift-overflow=2
++				-Wpacked-bitfield-compat
++# BRCM_PATCH: Conflicts with toolchain
++#				-Wshift-overflow=2
+ else
+ # using clang
+ WARNINGS	+=		-Wshift-overflow -Wshift-sign-overflow
+@@ -283,10 +284,16 @@ CPPFLAGS		=	${DEFINES} ${INCLUDES} ${MBEDTLS_INC} -nostdinc		\
+ 				-Wmissing-include-dirs $(ERRORS) $(WARNINGS)
+ ASFLAGS			+=	$(CPPFLAGS) $(ASFLAGS_$(ARCH))			\
+ 				-ffreestanding -Wa,--fatal-warnings
++# BRCM_PATCH: Code optimization for Cortex-A9 brings instability
++ifeq ($(strip $(BRCM_CHIP)),63138)
++TF_CFLAGS		+=	$(CPPFLAGS) $(TF_CFLAGS_$(ARCH))		\
++				-ffreestanding -fno-builtin -Wall -std=gnu99	\
++				-O0 -ffunction-sections -fdata-sections
++else
+ TF_CFLAGS		+=	$(CPPFLAGS) $(TF_CFLAGS_$(ARCH))		\
+ 				-ffreestanding -fno-builtin -Wall -std=gnu99	\
+ 				-Os -ffunction-sections -fdata-sections
+-
++endif
+ ifeq (${SANITIZE_UB},on)
+ TF_CFLAGS		+=	-fsanitize=undefined -fno-sanitize-recover
+ endif
+@@ -364,7 +371,7 @@ INCLUDE_TBBR_MK		:=	1
+ 
+ ifneq (${SPD},none)
+ ifeq (${ARCH},aarch32)
+-        $(error "Error: SPD is incompatible with AArch32.")
++#        $(error "Error: SPD is incompatible with AArch32.")
+ endif
+ ifdef EL3_PAYLOAD_BASE
+         $(warning "SPD and EL3_PAYLOAD_BASE are incompatible build options.")
+@@ -718,7 +725,9 @@ endif
+ # This is done after including the platform specific makefile to allow the
+ # platform to overwrite the default options
+ ################################################################################
+-
++# BRCM_PATCH: Need to add Broadcom SoC specific platform profiles
++$(eval $(call add_define,PLATFORM_FLAVOR_${BRCM_CHIP}))
++$(eval $(call add_define,_BCM9${BRCM_CHIP}_))
+ $(eval $(call add_define,ARM_ARCH_MAJOR))
+ $(eval $(call add_define,ARM_ARCH_MINOR))
+ $(eval $(call add_define,COLD_BOOT_SINGLE_CPU))
+diff --git a/bl31/aarch64/bl31_entrypoint.S b/bl31/aarch64/bl31_entrypoint.S
+index 1ad26e4..2d4a553 100644
+--- a/bl31/aarch64/bl31_entrypoint.S
++++ b/bl31/aarch64/bl31_entrypoint.S
+@@ -12,6 +12,7 @@
+ #include <lib/pmf/pmf_asm_macros.S>
+ #include <lib/runtime_instr.h>
+ #include <lib/xlat_tables/xlat_mmu_helpers.h>
++#include <context.h>
+ 
+ 	.globl	bl31_entrypoint
+ 	.globl	bl31_warm_entrypoint
+@@ -129,6 +130,13 @@ func bl31_entrypoint
+ 	sub	x1, x1, x0
+ 	bl	clean_dcache_range
+ 
++/* BRCM_PATCH: Save the CTX_PMCR_EL0 configured by boot loader
++*/
++	msr	spsel, #MODE_SP_ELX
++	mrs	x17, pmcr_el0
++	str	x17, [sp, #CTX_EL3STATE_OFFSET + CTX_PMCR_EL0]
++	msr	spsel, #MODE_SP_EL0
++
+ 	b	el3_exit
+ endfunc bl31_entrypoint
+ 
+@@ -138,6 +146,7 @@ endfunc bl31_entrypoint
+ 	 * warmboot entrypoint
+ 	 * --------------------------------------------------------------------
+ 	 */
++	.align 8
+ func bl31_warm_entrypoint
+ #if ENABLE_RUNTIME_INSTRUMENTATION
+ 
+diff --git a/bl32/sp_min/aarch32/entrypoint.S b/bl32/sp_min/aarch32/entrypoint.S
+index 0a68475..132495e 100644
+--- a/bl32/sp_min/aarch32/entrypoint.S
++++ b/bl32/sp_min/aarch32/entrypoint.S
+@@ -153,6 +153,13 @@ func sp_min_entrypoint
+ 
+ 	/* r0 points to `smc_ctx_t` */
+ 	/* The PSCI cpu_context registers have been copied to `smc_ctx_t` */
++	/* BRCM_PATCH: PMCR passed from boot loader needs to be saved to initial ATF context.
++	 *             Othewise, PMCR setting will be lost, when ATF returns to next stage boot loader.
++	 */
++	push	{r1}
++	ldcopr	r1, PMCR
++	str	r1, [r0, #SMC_CTX_PMCR]
++	pop	{r1}
+ 	b	sp_min_exit
+ endfunc sp_min_entrypoint
+ 
+@@ -285,12 +292,24 @@ func sp_min_warm_entrypoint
+ #else
+ 	mov	r0, #DISABLE_DCACHE
+ #endif
++	/* BRCM_PATCH: BCM63138 (Cortex-A9) does not support long MMU descriptor.
++	 *             Need to use A9 specific short MMU descriptor.
++	 */
++#if defined(PLATFORM_FLAVOR_63138)
++	bl	a9_l1cache_inval_d
++	bl	a9_bl32_plat_enable_mmu
++#else
+ 	bl	bl32_plat_enable_mmu
++#endif
+ 
+ #if SP_MIN_WITH_SECURE_FIQ
+ 	route_fiq_to_sp_min r0
+ #endif
+ 
++#if defined(SPD_opteed)
++	bl opteed_setup
++#endif
++
+ 	bl	sp_min_warm_boot
+ 	bl	smc_get_next_ctx
+ 	/* r0 points to `smc_ctx_t` */
+diff --git a/include/arch/aarch32/el3_common_macros.S b/include/arch/aarch32/el3_common_macros.S
+index 7559de4..da71fc9 100644
+--- a/include/arch/aarch32/el3_common_macros.S
++++ b/include/arch/aarch32/el3_common_macros.S
+@@ -100,8 +100,16 @@
+ 	 * ---------------------------------------------------------------------
+ 	 */
+ #if ((ARM_ARCH_MAJOR > 7) || defined(ARMV7_SUPPORTS_VFP)) && !(__SOFTFP__)
++	/* BRCM_PATCH: BCM63138 does not have NEON in 2nd CPU */
++#if defined (PLATFORM_FLAVOR_63138)
++	bl	plat_my_core_pos
++	cmp	r0, #0
++	ldreq	r0, =(FPEXC_RESET_VAL | FPEXC_EN_BIT)
++	vmsreq	FPEXC, r0
++#else
+ 	ldr	r0, =(FPEXC_RESET_VAL | FPEXC_EN_BIT)
+ 	vmsr	FPEXC, r0
++#endif
+ 	isb
+ #endif
+ 
+@@ -146,7 +154,9 @@
+ #else
+ 	ldr	r0, =(PMCR_RESET_VAL | PMCR_DP_BIT)
+ #endif
++	/* BRCM_PATCH: Do not overwrite the setting done by BRCM boot loaders
+ 	stcopr	r0, PMCR
++	*/
+ 
+ 	/*
+ 	 * If Data Independent Timing (DIT) functionality is implemented,
+diff --git a/include/arch/aarch64/el3_common_macros.S b/include/arch/aarch64/el3_common_macros.S
+index 378e827..c2946a8 100644
+--- a/include/arch/aarch64/el3_common_macros.S
++++ b/include/arch/aarch64/el3_common_macros.S
+@@ -155,9 +155,9 @@
+ 	mov_imm	x0, ((PMCR_EL0_RESET_VAL | PMCR_EL0_LP_BIT | \
+ 		      PMCR_EL0_LC_BIT | PMCR_EL0_DP_BIT) & \
+ 		    ~(PMCR_EL0_X_BIT | PMCR_EL0_D_BIT))
+-
++	/* BRCM_PATCH: Do not overwrite the setting done by BRCM boot loaders
+ 	msr	pmcr_el0, x0
+-
++	*/
+ 	/* ---------------------------------------------------------------------
+ 	 * Enable External Aborts and SError Interrupts now that the exception
+ 	 * vectors have been setup.
+diff --git a/include/common/bl_common.h b/include/common/bl_common.h
+index 896a03f..c713b48 100644
+--- a/include/common/bl_common.h
++++ b/include/common/bl_common.h
+@@ -26,8 +26,9 @@
+  * Constants to identify the location of a memory region in a given memory
+  * layout.
+ ******************************************************************************/
+-#define TOP	U(0x1)
+-#define BOTTOM	U(0x0)
++/* BRCM_PATCH: Avoid symbol conflict with Broadcom */
++#define ATF_TOP	U(0x1)
++#define ATF_BOTTOM	U(0x0)
+ 
+ /*******************************************************************************
+  * Constants to indicate type of exception to the common exception handler.
+diff --git a/include/lib/cpus/aarch64/cortex_a53.h b/include/lib/cpus/aarch64/cortex_a53.h
+index 6fe67a9..d288651 100644
+--- a/include/lib/cpus/aarch64/cortex_a53.h
++++ b/include/lib/cpus/aarch64/cortex_a53.h
+@@ -11,6 +11,7 @@
+ 
+ /* Cortex-A53 midr for revision 0 */
+ #define CORTEX_A53_MIDR			U(0x410FD030)
++#define CORTEX_B53_MIDR			U(0x420F1000)
+ 
+ /* Retention timer tick definitions */
+ #define RETENTION_ENTRY_TICKS_2		U(0x1)
+diff --git a/lib/aarch32/misc_helpers.S b/lib/aarch32/misc_helpers.S
+index 6d2ec1c..7c9c23a 100644
+--- a/lib/aarch32/misc_helpers.S
++++ b/lib/aarch32/misc_helpers.S
+@@ -7,6 +7,7 @@
+ #include <arch.h>
+ #include <asm_macros.S>
+ #include <assert_macros.S>
++.arch_extension sec
+ 
+ 	.globl	smc
+ 	.globl	zeromem
+diff --git a/lib/cpus/aarch64/cortex_a53.S b/lib/cpus/aarch64/cortex_a53.S
+index b105de2..290c561 100644
+--- a/lib/cpus/aarch64/cortex_a53.S
++++ b/lib/cpus/aarch64/cortex_a53.S
+@@ -388,7 +388,7 @@ func cortex_a53_cpu_reg_dump
+ 	ret
+ endfunc cortex_a53_cpu_reg_dump
+ 
+-declare_cpu_ops cortex_a53, CORTEX_A53_MIDR, \
++declare_cpu_ops cortex_a53, CORTEX_B53_MIDR, \
+ 	cortex_a53_reset_func, \
+ 	cortex_a53_core_pwr_dwn, \
+ 	cortex_a53_cluster_pwr_dwn
+diff --git a/make_helpers/armv7-a-cpus.mk b/make_helpers/armv7-a-cpus.mk
+index 5571ab0..8b35b15 100644
+--- a/make_helpers/armv7-a-cpus.mk
++++ b/make_helpers/armv7-a-cpus.mk
+@@ -50,6 +50,14 @@ $(eval $(call add_define,ARMV7_SUPPORTS_GENERIC_TIMER))
+ $(eval $(call add_define,ARMV7_SUPPORTS_VFP))
+ endif
+ 
++# BRCM_PATCH: 1. BCM63138 (Cortex-A9) does have NEON.
++#             2. Even though A9 does not support LARGE_PAGE_ADDRESSING
++#                needed to enable it to get compilation going.
++ifeq ($(filter yes,$(ARM_CORTEX_A9)),yes)
++$(eval $(call add_define,ARMV7_SUPPORTS_LARGE_PAGE_ADDRESSING))
++$(eval $(call add_define,ARMV7_SUPPORTS_VFP))
++endif
++
+ ifeq ($(ARM_CORTEX_A5),yes)
+ $(eval $(call add_define,ARM_CORTEX_A5))
+ endif

@@ -1,0 +1,223 @@
+This is the readme for the Das U-Boot standalone program smc91111
+
+The main purpose of this is to manage MAC addresses on platforms
+which include the SMC91111 integrated 10/100 MAC Phy, with attached
+EEPROMs.
+
+
+Contents:
+------------------------
+1. Ensuring U-Boot's MAC address can be set in hardware
+2. Running the smc91111_eeprom program
+3. Setting MAC addresses
+4. Other things you can do with this
+5. Things to be done.
+
+
+1. Ensuring U-Boot's MAC address can be set in hardware
+--------------------------------------------------------------------------
+
+On the Internet - MAC addresses are very important. Short for Media
+Access Control address, a hardware address that uniquely identifies
+each node of a network. When things are not unique - bad things
+can happen.  This is why U-Boot makes it difficult to change MAC
+addresses.
+
+To find out who has a MAC address, or to purchase MAC addresses, goto
+the IEEE, at:
+http://standards.ieee.org/regauth/oui/index.shtml
+
+2. Running the smc91111_eeprom program
+---------------------------------------------------------------------
+
+After Uboot is compiled, there should be three files of interest:
+-rwxr-xr-x    1		8806 2004-10-11 14:00 smc91111_eeprom	    <- ELF
+-rwxr-xr-x    1		3440 2004-10-11 14:00 smc91111_eeprom.bin   <- BIN
+-rwxr-xr-x    1		9524 2004-10-11 14:00 smc91111_eeprom.srec  <- SREC
+
+if there is not, check the examples/Makefile, and ensure there is something
+like for your architecture:
+
+   ifeq ($(ARCH),blackfin)
+   SREC	  += smc91111_eeprom.srec
+   BIN	  += smc91111_eeprom.bin smc91111_eeprom
+   endif
+
+To load the files: there are two methods: a) serial or b) network. Since
+it is not a good idea to start doing things on the network before the
+MAC address is set, this example will do things over serial.
+
+a) Loading the elf file via the serial port
+--------------------------------------------
+Loading the elf is very easy - just ensure that the location
+you specify things to load as is not the load address specified
+in the Makefile.
+
+BOOT> loadb 0x1000000
+
+## Ready for binary (kermit) download to 0x01000000 at 57600 bps...
+
+(type CNTL-\ then C)
+(Back at local machine)
+----------------------------------------------------
+Kermit>send ~/u-boot_1.1.1/examples/smc91111_eeprom
+Kermit>connect
+
+Connecting to /dev/ttyS0, speed 57600
+ Escape character: Ctrl-\ (ASCII 28, FS): enabled
+Type the escape character followed by C to get back,
+or followed by ? to see other options.
+----------------------------------------------------
+## Total Size	   = 0x00002266 = 8806 Bytes
+## Start Addr	   = 0x01000000
+
+BOOT> bootelf 0x1000000
+
+Loading .text @ 0x00001000 (3440 bytes)
+## Starting application at 0x000010d8 ...
+
+SMC91111>
+
+b) Loading the binary file via the serial port
+-----------------------------------------------
+For many toolchains, the entry point is not the load point.
+The Load point is a hard coded address from the
+examples/Makefile. The entry point can be found by doing something
+like:
+
+  u-boot_1.1.1/examples> bfin-elf-objdump -d smc91111_eeprom |less
+
+  smc91111_eeprom:     file format elf32-bfin
+
+  Disassembly of section .text:
+
+  00001000 <smc91111_eeprom-0xd8>:
+      1000:
+  000010d8 <smc91111_eeprom>:
+
+You can see that the entry point (or the address that should be
+jumped to is 0x10d8). This is also the same as the entry point
+of the elf file.
+
+Now we load it to the actual load location:
+
+BOOT> loadb 0x1000
+
+## Ready for binary (kermit) download to 0x00001000 at 57600 bps...
+
+(Back at pinky.dsl-only.net)
+----------------------------------------------------
+Kermit>send /tftpboot/eeprom.bin
+Kermit>connect
+
+Connecting to /dev/ttyS0, speed 57600
+ Escape character: Ctrl-\ (ASCII 28, FS): enabled
+Type the escape character followed by C to get back,
+or followed by ? to see other options.
+----------------------------------------------------
+## Total Size	   = 0x00000d70 = 3440 Bytes
+## Start Addr	   = 0x00001000
+
+BOOT> go 0x10D8
+
+## Starting application at 0x000010D8 ...
+
+SMC91111>
+
+3. Setting MAC addresses
+--------------------------------------------------------------------------
+
+The MAC address can be stored in four locations:
+
+-Boot environmental variable in Flash <- can not change, without
+					  re-flashing U-Boot.
+U-Boot environmental variable	       <- can not change, without
+					  resetting board/U-Boot
+LAN91C111 Registers		       <- volatile
+LAN91C111 EEPROM		       <- Non-volatile
+
+If you have not activated the network, and do not have a hardcoded
+or pre-assigned MAC address in U-Boot, the environmental variables
+should be blank, and allow you to set things one time.
+
+To set the EEPROM MAC address to 12:34:56:78:9A:BC
+
+SMC91111> W E 20 3412
+
+Writing EEPROM register 20 with 3412
+SMC91111> W E 21 7856
+
+Writing EEPROM register 21 with 7856
+SMC91111> W E 22 BC9A
+
+Writing EEPROM register 22 with bc9a
+EEPROM contents copied to MAC
+SMC91111> P
+
+Current MAC Address in SMSC91111 12:34:56:78:9a:bc
+Current MAC Address in EEPROM	 12:34:56:78:9a:bc
+
+(CNTRL-C to exit)
+SMC91111> ## Application terminated, rc = 0x0
+
+BOOT> reset
+U-Boot 1.1.1 (gcc version: 3.3.3)
+Release Version Beta released on Oct 10 2004 - 00:34:35
+Blackfin support by LG Soft India
+For further information please check this link http://www.blackfin.uclinux.org
+BOOT> ping 192.168.0.4
+
+Using MAC Address 12:34:56:78:9A:BC
+host 192.168.0.4 is alive
+
+
+4. Other things that you can do
+--------------------------------------------------------------------------
+After the stand alone application is running, there are a few options:
+ - P : Print the MAC
+ - D : Dump the LAN91C111 EEPROM contents
+ - M : Dump the LAN91C111 MAC contents
+ - C : Copies the MAC address from the EEPROM to the LAN91C111
+ - W : Write a register in the EEPROM or in the MAC
+
+SMC91111> P
+
+Current MAC Address in SMSC91111 12:34:56:78:9a:bc
+Current MAC Address in EEPROM	 12:34:56:78:9a:bc
+
+SMC91111> D
+
+IOS2-0	  000	  001	  002	  003	  004	  005	  006	  007
+CONFIG 00:ffff 04:ffff 08:ffff 0c:ffff 10:ffff 14:ffff 18:ffff 1c:ffff
+BASE   01:ffff 05:ffff 09:ffff 0d:ffff 11:ffff 15:ffff 19:ffff 1d:ffff
+       02:ffff 06:ffff 0a:ffff 0e:0020 12:ffff 16:ffff 1a:ffff 1e:ffff
+       03:ffff 07:ffff 0b:ffff 0f:ffff 13:ffff 17:ffff 1b:ffff 1f:ffff
+
+20:3412 21:7856 22:bc9a 23:ffff 24:ffff 25:ffff 26:ffff 27:ffff
+28:ffff 29:ffff 2a:ffff 2b:ffff 2c:ffff 2d:ffff 2e:ffff 2f:ffff
+30:ffff 31:ffff 32:ffff 33:ffff 34:ffff 35:ffff 36:ffff 37:ffff
+38:ffff 39:ffff 3a:ffff 3b:ffff 3c:ffff 3d:ffff 3e:ffff 3f:ffff
+
+SMC91111> M
+
+    Bank0 Bank1 Bank2 Bank3
+00  0000  a0b1	3332  0000
+02  0000  1801	8000  0000
+04  0000  3412	8080  0000
+06  0000  7856	003f  0000
+08  0404  bc9a	02df  3332
+0a  0000  ffff	02df  3391
+0c  0000  1214	0004  001f
+0e  3300  3301	3302  3303
+
+SMC91111> C
+
+EEPROM contents copied to MAC
+
+SMC91111> W E 2A ABCD
+
+Writing EEPROM register 2a with abcd
+
+SMC91111> W M 14 FF00
+
+Writing MAC register bank 1, reg 04 with ff00

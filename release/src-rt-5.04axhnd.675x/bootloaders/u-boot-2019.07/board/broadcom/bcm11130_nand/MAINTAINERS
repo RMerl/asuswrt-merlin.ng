@@ -1,0 +1,6 @@
+BCM11130_NAND BOARD
+M:	Steve Rae <steve.rae@raedomain.com>
+S:	Maintained
+F:	board/broadcom/bcm28155_ap/
+F:	include/configs/bcm_ep_board.h
+F:	configs/bcm11130_nand_defconfig

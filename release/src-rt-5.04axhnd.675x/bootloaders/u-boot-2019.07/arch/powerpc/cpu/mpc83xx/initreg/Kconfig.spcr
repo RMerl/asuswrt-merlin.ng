@@ -1,0 +1,115 @@
+menu "SPCR - System priority and configuration register"
+
+choice
+	prompt "Optimize"
+
+config SPCR_OPT_UNSET
+	bool "Don't set value"
+
+config SPCR_OPT_NONE
+	bool "No performance enhancement"
+
+config SPCR_OPT_SPEC_READ
+	bool "Performance enhancement by speculative read"
+
+endchoice
+
+if ARCH_MPC8308 || ARCH_MPC831X || ARCH_MPC837X
+
+choice
+	prompt "TSEC emergency priority"
+
+config SPCR_TSECEP_UNSET
+	bool "Don't set value"
+
+config SPCR_TSECEP_0
+	bool "Level 0 (lowest priority)"
+
+config SPCR_TSECEP_1
+	bool "Level 1"
+
+config SPCR_TSECEP_2
+	bool "Level 2"
+
+config SPCR_TSECEP_3
+	bool "Level 3 (highest priority)"
+
+endchoice
+
+endif
+
+if ARCH_MPC8349
+
+choice
+	prompt "TSEC1 emergency priority"
+
+config SPCR_TSEC1EP_UNSET
+	bool "Don't set value"
+
+config SPCR_TSEC1EP_0
+	bool "Level 0 (lowest priority)"
+
+config SPCR_TSEC1EP_1
+	bool "Level 1"
+
+config SPCR_TSEC1EP_2
+	bool "Level 2"
+
+config SPCR_TSEC1EP_3
+	bool "Level 3 (highest priority)"
+
+endchoice
+
+choice
+	prompt "TSEC2 emergency priority"
+
+config SPCR_TSEC2EP_UNSET
+	bool "Don't set value"
+
+config SPCR_TSEC2EP_0
+	bool "Level 0 (lowest priority)"
+
+config SPCR_TSEC2EP_1
+	bool "Level 1"
+
+config SPCR_TSEC2EP_2
+	bool "Level 2"
+
+config SPCR_TSEC2EP_3
+	bool "Level 3 (highest priority)"
+
+endchoice
+
+endif
+
+config SPCR_OPT
+	hex
+	default 0x0 if SPCR_OPT_UNSET
+	default 0x0 if SPCR_OPT_NONE
+	default 0x800000 if SPCR_OPT_SPEC_READ
+
+config SPCR_TSECEP
+	hex
+	default 0x0 if SPCR_TSECEP_UNSET
+	default 0x0 if SPCR_TSECEP_0
+	default 0x100 if SPCR_TSECEP_1
+	default 0x200 if SPCR_TSECEP_2
+	default 0x300 if SPCR_TSECEP_3
+
+config SPCR_TSEC1EP
+	hex
+	default 0x0 if SPCR_TSEC1EP_UNSET
+	default 0x0 if SPCR_TSEC1EP_0
+	default 0x100 if SPCR_TSEC1EP_1
+	default 0x200 if SPCR_TSEC1EP_2
+	default 0x300 if SPCR_TSEC1EP_3
+
+config SPCR_TSEC2EP
+	hex
+	default 0x0 if SPCR_TSEC2EP_UNSET
+	default 0x0 if SPCR_TSEC2EP_0
+	default 0x1 if SPCR_TSEC2EP_1
+	default 0x2 if SPCR_TSEC2EP_2
+	default 0x3 if SPCR_TSEC2EP_3
+
+endmenu

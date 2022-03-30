@@ -1,0 +1,867 @@
+menu "Boot timing"
+
+config BOOTSTAGE
+	bool "Boot timing and reporting"
+	help
+	  Enable recording of boot time while booting. To use it, insert
+	  calls to bootstage_mark() with a suitable BOOTSTAGE_ID from
+	  bootstage.h. Only a single entry is recorded for each ID. You can
+	  give the entry a name with bootstage_mark_name(). You can also
+	  record elapsed time in a particular stage using bootstage_start()
+	  before starting and bootstage_accum() when finished. Bootstage will
+	  add up all the accumulated time and report it.
+
+	  Normally, IDs are defined in bootstage.h but a small number of
+	  additional 'user' IDs can be used by passing BOOTSTAGE_ID_ALLOC
+	  as the ID.
+
+	  Calls to show_boot_progress() will also result in log entries but
+	  these will not have names.
+
+config SPL_BOOTSTAGE
+	bool "Boot timing and reported in SPL"
+	depends on BOOTSTAGE
+	help
+	  Enable recording of boot time in SPL. To make this visible to U-Boot
+	  proper, enable BOOTSTAGE_STASH as well. This will stash the timing
+	  information when SPL finishes and load it when U-Boot proper starts
+	  up.
+
+config TPL_BOOTSTAGE
+	bool "Boot timing and reported in TPL"
+	depends on BOOTSTAGE
+	help
+	  Enable recording of boot time in SPL. To make this visible to U-Boot
+	  proper, enable BOOTSTAGE_STASH as well. This will stash the timing
+	  information when TPL finishes and load it when U-Boot proper starts
+	  up.
+
+config BOOTSTAGE_REPORT
+	bool "Display a detailed boot timing report before booting the OS"
+	depends on BOOTSTAGE
+	help
+	  Enable output of a boot time report just before the OS is booted.
+	  This shows how long it took U-Boot to go through each stage of the
+	  boot process. The report looks something like this:
+
+		Timer summary in microseconds:
+		       Mark    Elapsed  Stage
+			  0          0  reset
+		  3,575,678  3,575,678  board_init_f start
+		  3,575,695         17  arch_cpu_init A9
+		  3,575,777         82  arch_cpu_init done
+		  3,659,598     83,821  board_init_r start
+		  3,910,375    250,777  main_loop
+		 29,916,167 26,005,792  bootm_start
+		 30,361,327    445,160  start_kernel
+
+config BOOTSTAGE_RECORD_COUNT
+	int "Number of boot stage records to store"
+	default 30
+	help
+	  This is the size of the bootstage record list and is the maximum
+	  number of bootstage records that can be recorded.
+
+config SPL_BOOTSTAGE_RECORD_COUNT
+	int "Number of boot stage records to store for SPL"
+	default 5
+	help
+	  This is the size of the bootstage record list and is the maximum
+	  number of bootstage records that can be recorded.
+
+config BOOTSTAGE_FDT
+	bool "Store boot timing information in the OS device tree"
+	depends on BOOTSTAGE
+	help
+	  Stash the bootstage information in the FDT. A root 'bootstage'
+	  node is created with each bootstage id as a child. Each child
+	  has a 'name' property and either 'mark' containing the
+	  mark time in microseconds, or 'accum' containing the
+	  accumulated time for that bootstage id in microseconds.
+	  For example:
+
+		bootstage {
+			154 {
+				name = "board_init_f";
+				mark = <3575678>;
+			};
+			170 {
+				name = "lcd";
+				accum = <33482>;
+			};
+		};
+
+	  Code in the Linux kernel can find this in /proc/devicetree.
+
+config BOOTSTAGE_STASH
+	bool "Stash the boot timing information in memory before booting OS"
+	depends on BOOTSTAGE
+	help
+	  Some OSes do not support device tree. Bootstage can instead write
+	  the boot timing information in a binary format at a given address.
+	  This happens through a call to bootstage_stash(), typically in
+	  the CPU's cleanup_before_linux() function. You can use the
+	  'bootstage stash' and 'bootstage unstash' commands to do this on
+	  the command line.
+
+config BOOTSTAGE_STASH_ADDR
+	hex "Address to stash boot timing information"
+	default 0
+	help
+	  Provide an address which will not be overwritten by the OS when it
+	  starts, so that it can read this information when ready.
+
+config BOOTSTAGE_STASH_SIZE
+	hex "Size of boot timing stash region"
+	default 0x1000
+	help
+	  This should be large enough to hold the bootstage stash. A value of
+	  4096 (4KiB) is normally plenty.
+
+endmenu
+
+menu "Boot media"
+
+config NOR_BOOT
+	bool "Support for booting from NOR flash"
+	depends on NOR
+	help
+	  Enabling this will make a U-Boot binary that is capable of being
+	  booted via NOR.  In this case we will enable certain pinmux early
+	  as the ROM only partially sets up pinmux.  We also default to using
+	  NOR for environment.
+
+config NAND_BOOT
+	bool "Support for booting from NAND flash"
+	default n
+	imply NAND
+	help
+	  Enabling this will make a U-Boot binary that is capable of being
+	  booted via NAND flash. This is not a must, some SoCs need this,
+	  some not.
+
+config ONENAND_BOOT
+	bool "Support for booting from ONENAND"
+	default n
+	imply NAND
+	help
+	  Enabling this will make a U-Boot binary that is capable of being
+	  booted via ONENAND. This is not a must, some SoCs need this,
+	  some not.
+
+config QSPI_BOOT
+	bool "Support for booting from QSPI flash"
+	default n
+	help
+	  Enabling this will make a U-Boot binary that is capable of being
+	  booted via QSPI flash. This is not a must, some SoCs need this,
+	  some not.
+
+config SATA_BOOT
+	bool "Support for booting from SATA"
+	default n
+	help
+	  Enabling this will make a U-Boot binary that is capable of being
+	  booted via SATA. This is not a must, some SoCs need this,
+	  some not.
+
+config SD_BOOT
+	bool "Support for booting from SD/EMMC"
+	default n
+	help
+	  Enabling this will make a U-Boot binary that is capable of being
+	  booted via SD/EMMC. This is not a must, some SoCs need this,
+	  some not.
+
+config SPI_BOOT
+	bool "Support for booting from SPI flash"
+	default n
+	help
+	  Enabling this will make a U-Boot binary that is capable of being
+	  booted via SPI flash. This is not a must, some SoCs need this,
+	  some not.
+
+endmenu
+
+config BOOTDELAY
+	int "delay in seconds before automatically booting"
+	default 2
+	depends on AUTOBOOT
+	help
+	  Delay before automatically running bootcmd;
+	  set to 0 to autoboot with no delay, but you can stop it by key input.
+	  set to -1 to disable autoboot.
+	  set to -2 to autoboot with no delay and not check for abort
+
+	  If this value is >= 0 then it is also used for the default delay
+	  before starting the default entry in bootmenu. If it is < 0 then
+	  a default value of 10s is used.
+
+	  See doc/README.autoboot for details.
+
+config USE_BOOTARGS
+	bool "Enable boot arguments"
+	help
+	  Provide boot arguments to bootm command. Boot arguments are specified
+	  in CONFIG_BOOTARGS option. Enable this option to be able to specify
+	  CONFIG_BOOTARGS string. If this option is disabled, CONFIG_BOOTARGS
+	  will be undefined and won't take any space in U-Boot image.
+
+config BOOTARGS
+	string "Boot arguments"
+	depends on USE_BOOTARGS
+	help
+	  This can be used to pass arguments to the bootm command. The value of
+	  CONFIG_BOOTARGS goes into the environment value "bootargs". Note that
+	  this value will also override the "chosen" node in FDT blob.
+
+config USE_BOOTCOMMAND
+	bool "Enable a default value for bootcmd"
+	help
+	  Provide a default value for the bootcmd entry in the environment.  If
+	  autoboot is enabled this is what will be run automatically.  Enable
+	  this option to be able to specify CONFIG_BOOTCOMMAND as a string.  If
+	  this option is disabled, CONFIG_BOOTCOMMAND will be undefined and
+	  won't take any space in U-Boot image.
+
+config BOOTCOMMAND
+	string "bootcmd value"
+	depends on USE_BOOTCOMMAND
+	default "run distro_bootcmd" if DISTRO_DEFAULTS
+	help
+	  This is the string of commands that will be used as bootcmd and if
+	  AUTOBOOT is set, automatically run.
+
+config USE_PREBOOT
+	bool "Enable preboot"
+	help
+	  When this option is enabled, the existence of the environment
+	  variable "preboot" will be checked immediately before starting the
+	  CONFIG_BOOTDELAY countdown and/or running the auto-boot command resp.
+	  entering interactive mode.
+
+	  This feature is especially useful when "preboot" is automatically
+	  generated or modified. For example, the boot code can modify the
+	  "preboot" when a user holds down a certain combination of keys.
+
+config PREBOOT
+	string "preboot default value"
+	depends on USE_PREBOOT
+	default ""
+	help
+	  This is the default of "preboot" environment variable.
+
+menu "Console"
+
+config MENU
+	bool
+	help
+	  This is the library functionality to provide a text-based menu of
+	  choices for the user to make choices with.
+
+config CONSOLE_RECORD
+	bool "Console recording"
+	help
+	  This provides a way to record console output (and provide console
+	  input) through circular buffers. This is mostly useful for testing.
+	  Console output is recorded even when the console is silent.
+	  To enable console recording, call console_record_reset_enable()
+	  from your code.
+
+config CONSOLE_RECORD_OUT_SIZE
+	hex "Output buffer size"
+	depends on CONSOLE_RECORD
+	default 0x400 if CONSOLE_RECORD
+	help
+	  Set the size of the console output buffer. When this fills up, no
+	  more data will be recorded until some is removed. The buffer is
+	  allocated immediately after the malloc() region is ready.
+
+config CONSOLE_RECORD_IN_SIZE
+	hex "Input buffer size"
+	depends on CONSOLE_RECORD
+	default 0x100 if CONSOLE_RECORD
+	help
+	  Set the size of the console input buffer. When this contains data,
+	  tstc() and getc() will use this in preference to real device input.
+	  The buffer is allocated immediately after the malloc() region is
+	  ready.
+
+config DISABLE_CONSOLE
+	bool "Add functionality to disable console completely"
+	help
+		Disable console (in & out).
+
+config IDENT_STRING
+	string "Board specific string to be added to uboot version string"
+	help
+	  This options adds the board specific name to u-boot version.
+
+config LOGLEVEL
+	int "loglevel"
+	default 4
+	range 0 8
+	help
+	  All Messages with a loglevel smaller than the console loglevel will
+	  be compiled in. The loglevels are defined as follows:
+
+	    0 - emergency
+	    1 - alert
+	    2 - critical
+	    3 - error
+	    4 - warning
+	    5 - note
+	    6 - info
+	    7 - debug
+	    8 - debug content
+	    9 - debug hardware I/O
+
+config SPL_LOGLEVEL
+	int
+	default LOGLEVEL
+
+config TPL_LOGLEVEL
+	int
+	default LOGLEVEL
+
+config SILENT_CONSOLE
+	bool "Support a silent console"
+	help
+	  This option allows the console to be silenced, meaning that no
+	  output will appear on the console devices. This is controlled by
+	  setting the environment variable 'silent' to a non-empty value.
+	  Note this also silences the console when booting Linux.
+
+	  When the console is set up, the variable is checked, and the
+	  GD_FLG_SILENT flag is set. Changing the environment variable later
+	  will update the flag.
+
+config SILENT_U_BOOT_ONLY
+	bool "Only silence the U-Boot console"
+	depends on SILENT_CONSOLE
+	help
+	  Normally when the U-Boot console is silenced, Linux's console is
+	  also silenced (assuming the board boots into Linux). This option
+	  allows the linux console to operate normally, even if U-Boot's
+	  is silenced.
+
+config SILENT_CONSOLE_UPDATE_ON_SET
+	bool "Changes to the 'silent' environment variable update immediately"
+	depends on SILENT_CONSOLE
+	default y if SILENT_CONSOLE
+	help
+	  When the 'silent' environment variable is changed, update the
+	  console silence flag immediately. This allows 'setenv' to be used
+	  to silence or un-silence the console.
+
+	  The effect is that any change to the variable will affect the
+	  GD_FLG_SILENT flag.
+
+config SILENT_CONSOLE_UPDATE_ON_RELOC
+	bool "Allow flags to take effect on relocation"
+	depends on SILENT_CONSOLE
+	help
+	  In some cases the environment is not available until relocation
+	  (e.g. NAND). This option makes the value of the 'silent'
+	  environment variable take effect at relocation.
+
+config PRE_CONSOLE_BUFFER
+	bool "Buffer characters before the console is available"
+	help
+	  Prior to the console being initialised (i.e. serial UART
+	  initialised etc) all console output is silently discarded.
+	  Defining CONFIG_PRE_CONSOLE_BUFFER will cause U-Boot to
+	  buffer any console messages prior to the console being
+	  initialised to a buffer. The buffer is a circular buffer, so
+	  if it overflows, earlier output is discarded.
+
+	  Note that this is not currently supported in SPL. It would be
+	  useful to be able to share the pre-console buffer with SPL.
+
+config PRE_CON_BUF_SZ
+	int "Sets the size of the pre-console buffer"
+	depends on PRE_CONSOLE_BUFFER
+	default 4096
+	help
+	  The size of the pre-console buffer affects how much console output
+	  can be held before it overflows and starts discarding earlier
+	  output. Normally there is very little output at this early stage,
+	  unless debugging is enabled, so allow enough for ~10 lines of
+	  text.
+
+	  This is a useful feature if you are using a video console and
+	  want to see the full boot output on the console. Without this
+	  option only the post-relocation output will be displayed.
+
+config PRE_CON_BUF_ADDR
+	hex "Address of the pre-console buffer"
+	depends on PRE_CONSOLE_BUFFER
+	default 0x2f000000 if ARCH_SUNXI && MACH_SUN9I
+	default 0x4f000000 if ARCH_SUNXI && !MACH_SUN9I
+	help
+	  This sets the start address of the pre-console buffer. This must
+	  be in available memory and is accessed before relocation and
+	  possibly before DRAM is set up. Therefore choose an address
+	  carefully.
+
+	  We should consider removing this option and allocating the memory
+	  in board_init_f_init_reserve() instead.
+
+config CONSOLE_MUX
+	bool "Enable console multiplexing"
+	default y if DM_VIDEO || VIDEO || LCD
+	help
+	  This allows multiple devices to be used for each console 'file'.
+	  For example, stdout can be set to go to serial and video.
+	  Similarly, stdin can be set to come from serial and keyboard.
+	  Input can be provided from either source. Console multiplexing
+	  adds a small amount of size to U-Boot.  Changes to the environment
+	  variables stdout, stdin and stderr will take effect immediately.
+
+config SYS_CONSOLE_IS_IN_ENV
+	bool "Select console devices from the environment"
+	default y if CONSOLE_MUX
+	help
+	  This allows multiple input/output devices to be set at boot time.
+	  For example, if stdout is set to "serial,video" then output will
+	  be sent to both the serial and video devices on boot. The
+	  environment variables can be updated after boot to change the
+	  input/output devices.
+
+config SYS_CONSOLE_OVERWRITE_ROUTINE
+	bool "Allow board control over console overwriting"
+	help
+	  If this is enabled, and the board-specific function
+	  overwrite_console() returns 1, the stdin, stderr and stdout are
+	  switched to the serial port, else the settings in the environment
+	  are used. If this is not enabled, the console will not be switched
+	  to serial.
+
+config SYS_CONSOLE_ENV_OVERWRITE
+	bool "Update environment variables during console init"
+	help
+	  The console environment variables (stdout, stdin, stderr) can be
+	  used to determine the correct console devices on start-up. This
+	  option writes the console devices to these variables on console
+	  start-up (after relocation). This causes the environment to be
+	  updated to match the console devices actually chosen.
+
+config SYS_CONSOLE_INFO_QUIET
+	bool "Don't display the console devices on boot"
+	help
+	  Normally U-Boot displays the current settings for stdout, stdin
+	  and stderr on boot when the post-relocation console is set up.
+	  Enable this option to suppress this output. It can be obtained by
+	  calling stdio_print_current_devices() from board code.
+
+config SYS_STDIO_DEREGISTER
+	bool "Allow deregistering stdio devices"
+	default y if USB_KEYBOARD
+	help
+	  Generally there is no need to deregister stdio devices since they
+	  are never deactivated. But if a stdio device is used which can be
+	  removed (for example a USB keyboard) then this option can be
+	  enabled to ensure this is handled correctly.
+
+endmenu
+
+menu "Logging"
+
+config LOG
+	bool "Enable logging support"
+	depends on DM
+	help
+	  This enables support for logging of status and debug messages. These
+	  can be displayed on the console, recorded in a memory buffer, or
+	  discarded if not needed. Logging supports various categories and
+	  levels of severity.
+
+config SPL_LOG
+	bool "Enable logging support in SPL"
+	depends on LOG
+	help
+	  This enables support for logging of status and debug messages. These
+	  can be displayed on the console, recorded in a memory buffer, or
+	  discarded if not needed. Logging supports various categories and
+	  levels of severity.
+
+config TPL_LOG
+	bool "Enable logging support in TPL"
+	depends on LOG
+	help
+	  This enables support for logging of status and debug messages. These
+	  can be displayed on the console, recorded in a memory buffer, or
+	  discarded if not needed. Logging supports various categories and
+	  levels of severity.
+
+config LOG_MAX_LEVEL
+	int "Maximum log level to record"
+	depends on LOG
+	default 5
+	help
+	  This selects the maximum log level that will be recorded. Any value
+	  higher than this will be ignored. If possible log statements below
+	  this level will be discarded at build time. Levels:
+
+	    0 - emergency
+	    1 - alert
+	    2 - critical
+	    3 - error
+	    4 - warning
+	    5 - note
+	    6 - info
+	    7 - debug
+	    8 - debug content
+	    9 - debug hardware I/O
+
+config SPL_LOG_MAX_LEVEL
+	int "Maximum log level to record in SPL"
+	depends on SPL_LOG
+	default 3
+	help
+	  This selects the maximum log level that will be recorded. Any value
+	  higher than this will be ignored. If possible log statements below
+	  this level will be discarded at build time. Levels:
+
+	    0 - emergency
+	    1 - alert
+	    2 - critical
+	    3 - error
+	    4 - warning
+	    5 - note
+	    6 - info
+	    7 - debug
+	    8 - debug content
+	    9 - debug hardware I/O
+
+config TPL_LOG_MAX_LEVEL
+	int "Maximum log level to record in TPL"
+	depends on TPL_LOG
+	default 3
+	help
+	  This selects the maximum log level that will be recorded. Any value
+	  higher than this will be ignored. If possible log statements below
+	  this level will be discarded at build time. Levels:
+
+	    0 - emergency
+	    1 - alert
+	    2 - critical
+	    3 - error
+	    4 - warning
+	    5 - note
+	    6 - info
+	    7 - debug
+	    8 - debug content
+	    9 - debug hardware I/O
+
+config LOG_DEFAULT_LEVEL
+	int "Default logging level to display"
+	default 6
+	help
+	  This is the default logging level set when U-Boot starts. It can
+	  be adjusted later using the 'log level' command. Note that setting
+	  this to a value above LOG_MAX_LEVEL will be ineffective, since the
+	  higher levels are not compiled in to U-Boot.
+
+	    0 - emergency
+	    1 - alert
+	    2 - critical
+	    3 - error
+	    4 - warning
+	    5 - note
+	    6 - info
+	    7 - debug
+	    8 - debug content
+	    9 - debug hardware I/O
+
+config LOG_CONSOLE
+	bool "Allow log output to the console"
+	depends on LOG
+	default y
+	help
+	  Enables a log driver which writes log records to the console.
+	  Generally the console is the serial port or LCD display. Only the
+	  log message is shown - other details like level, category, file and
+	  line number are omitted.
+
+config SPL_LOG_CONSOLE
+	bool "Allow log output to the console in SPL"
+	depends on SPL_LOG
+	default y
+	help
+	  Enables a log driver which writes log records to the console.
+	  Generally the console is the serial port or LCD display. Only the
+	  log message is shown - other details like level, category, file and
+	  line number are omitted.
+
+config TPL_LOG_CONSOLE
+	bool "Allow log output to the console in SPL"
+	depends on TPL_LOG
+	default y
+	help
+	  Enables a log driver which writes log records to the console.
+	  Generally the console is the serial port or LCD display. Only the
+	  log message is shown - other details like level, category, file and
+	  line number are omitted.
+
+config LOG_TEST
+	bool "Provide a test for logging"
+	depends on LOG
+	default y if SANDBOX
+	help
+	  This enables a 'log test' command to test logging. It is normally
+	  executed from a pytest and simply outputs logging information
+	  in various different ways to test that the logging system works
+	  correctly with various settings.
+
+config LOG_ERROR_RETURN
+	bool "Log all functions which return an error"
+	depends on LOG
+	help
+	  When an error is returned in U-Boot it is sometimes difficult to
+	  figure out the root cause. For example, reading from SPI flash may
+	  fail due to a problem in the SPI controller or due to the flash part
+	  not returning the expected information. This option changes
+	  log_ret() to log any errors it sees. With this option disabled,
+	  log_ret() is a nop.
+
+	  You can add log_ret() to all functions which return an error code.
+
+endmenu
+
+config SUPPORT_RAW_INITRD
+	bool "Enable raw initrd images"
+	help
+	  Note, defining the SUPPORT_RAW_INITRD allows user to supply
+	  kernel with raw initrd images. The syntax is slightly different, the
+	  address of the initrd must be augmented by it's size, in the following
+	  format: "<initrd address>:<initrd size>".
+
+config DEFAULT_FDT_FILE
+	string "Default fdt file"
+	help
+	  This option is used to set the default fdt file to boot OS.
+
+config MISC_INIT_R
+	bool "Execute Misc Init"
+	default y if ARCH_KEYSTONE || ARCH_SUNXI || MPC85xx
+	default y if ARCH_OMAP2PLUS && !AM33XX
+	help
+	  Enabling this option calls 'misc_init_r' function
+
+config VERSION_VARIABLE
+	bool "add U-Boot environment variable vers"
+	default n
+	help
+	  If this variable is defined, an environment variable
+	  named "ver" is created by U-Boot showing the U-Boot
+	  version as printed by the "version" command.
+	  Any change to this variable will be reverted at the
+	  next reset.
+
+config BOARD_LATE_INIT
+	bool "Execute Board late init"
+	help
+	  Sometimes board require some initialization code that might
+	  require once the actual init done, example saving board specific env,
+	  boot-modes etc. which eventually done at late.
+
+	  So this config enable the late init code with the help of board_late_init
+	  function which should defined on respective boards.
+
+config DISPLAY_CPUINFO
+	bool "Display information about the CPU during start up"
+	default y if ARC|| ARM || NIOS2 || X86 || XTENSA || M68K
+	help
+	  Display information about the CPU that U-Boot is running on
+	  when U-Boot starts up. The function print_cpuinfo() is called
+	  to do this.
+
+config DISPLAY_BOARDINFO
+	bool "Display information about the board during early start up"
+	default y if ARC || ARM || M68K || MIPS || PPC || SANDBOX || XTENSA
+	help
+	  Display information about the board that U-Boot is running on
+	  when U-Boot starts up. The board function checkboard() is called
+	  to do this.
+
+config DISPLAY_BOARDINFO_LATE
+	bool "Display information about the board during late start up"
+	help
+	  Display information about the board that U-Boot is running on after
+	  the relocation phase. The board function checkboard() is called to do
+	  this.
+
+config BOUNCE_BUFFER
+	bool "Include bounce buffer API"
+	help
+	  Some peripherals support DMA from a subset of physically
+	  addressable memory only.  To support such peripherals, the
+	  bounce buffer API uses a temporary buffer: it copies data
+	  to/from DMA regions while managing cache operations.
+
+	  A second possible use of bounce buffers is their ability to
+	  provide aligned buffers for DMA operations.
+
+config BOARD_TYPES
+	bool "Call get_board_type() to get and display the board type"
+	help
+	  If this option is enabled, checkboard() will call get_board_type()
+	  to get a string containing the board type and this will be
+	  displayed immediately after the model is shown on the console
+	  early in boot.
+
+menu "Start-up hooks"
+
+config ARCH_EARLY_INIT_R
+	bool "Call arch-specific init soon after relocation"
+	help
+	  With this option U-Boot will call arch_early_init_r() soon after
+	  relocation. Driver model is running by this point, and the cache
+	  is on. Note that board_early_init_r() is called first, if
+	  enabled. This can be used to set up architecture-specific devices.
+
+config ARCH_MISC_INIT
+	bool "Call arch-specific init after relocation, when console is ready"
+	help
+	  With this option U-Boot will call arch_misc_init() after
+	  relocation to allow miscellaneous arch-dependent initialisation
+	  to be performed. This function should be defined by the board
+	  and will be called after the console is set up, after relocation.
+
+config BOARD_EARLY_INIT_F
+	bool "Call board-specific init before relocation"
+	help
+	  Some boards need to perform initialisation as soon as possible
+	  after boot. With this option, U-Boot calls board_early_init_f()
+	  after driver model is ready in the pre-relocation init sequence.
+	  Note that the normal serial console is not yet set up, but the
+	  debug UART will be available if enabled.
+
+config BOARD_EARLY_INIT_R
+	bool "Call board-specific init after relocation"
+	help
+	  Some boards need to perform initialisation as directly after
+	  relocation. With this option, U-Boot calls board_early_init_r()
+	  in the post-relocation init sequence.
+
+config LAST_STAGE_INIT
+	bool "Call board-specific as last setup step"
+	help
+	  Some boards need to perform initialisation immediately before control
+	  is passed to the command-line interpreter (e.g. for initializations
+	  that depend on later phases in the init sequence). With this option,
+	  U-Boot calls last_stage_init() before the command-line interpreter is
+	  started.
+
+endmenu
+
+menu "Security support"
+
+config HASH
+	bool # "Support hashing API (SHA1, SHA256, etc.)"
+	help
+	  This provides a way to hash data in memory using various supported
+	  algorithms (such as SHA1, MD5, CRC32). The API is defined in hash.h
+	  and the algorithms it supports are defined in common/hash.c. See
+	  also CMD_HASH for command-line access.
+
+config AVB_VERIFY
+	bool "Build Android Verified Boot operations"
+	depends on LIBAVB && FASTBOOT
+	depends on PARTITION_UUIDS
+	help
+	  This option enables compilation of bootloader-dependent operations,
+	  used by Android Verified Boot 2.0 library (libavb). Includes:
+	    * Helpers to process strings in order to build OS bootargs.
+	    * Helpers to access MMC, similar to drivers/fastboot/fb_mmc.c.
+	    * Helpers to alloc/init/free avb ops.
+
+config SPL_HASH
+	bool # "Support hashing API (SHA1, SHA256, etc.)"
+	help
+	  This provides a way to hash data in memory using various supported
+	  algorithms (such as SHA1, MD5, CRC32). The API is defined in hash.h
+	  and the algorithms it supports are defined in common/hash.c. See
+	  also CMD_HASH for command-line access.
+
+config TPL_HASH
+	bool # "Support hashing API (SHA1, SHA256, etc.)"
+	help
+	  This provides a way to hash data in memory using various supported
+	  algorithms (such as SHA1, MD5, CRC32). The API is defined in hash.h
+	  and the algorithms it supports are defined in common/hash.c. See
+	  also CMD_HASH for command-line access.
+
+endmenu
+
+menu "Update support"
+
+config UPDATE_TFTP
+	bool "Auto-update using fitImage via TFTP"
+	depends on FIT
+	help
+	  This option allows performing update of NOR with data in fitImage
+	  sent via TFTP boot.
+
+config UPDATE_TFTP_CNT_MAX
+	int "The number of connection retries during auto-update"
+	default 0
+	depends on UPDATE_TFTP
+
+config UPDATE_TFTP_MSEC_MAX
+	int "Delay in mSec to wait for the TFTP server during auto-update"
+	default 100
+	depends on UPDATE_TFTP
+
+endmenu
+
+menu "Blob list"
+
+config BLOBLIST
+	bool "Support for a bloblist"
+	help
+	  This enables support for a bloblist in U-Boot, which can be passed
+	  from TPL to SPL to U-Boot proper (and potentially to Linux). The
+	  blob list supports multiple binary blobs of data, each with a tag,
+	  so that different U-Boot components can store data which can survive
+	  through to the next stage of the boot.
+
+config SPL_BLOBLIST
+	bool "Support for a bloblist in SPL"
+	depends on BLOBLIST
+	default y if SPL
+	help
+	  This enables a bloblist in SPL. If this is the first part of U-Boot
+	  to run, then the bloblist is set up in SPL and passed to U-Boot
+	  proper. If TPL also has a bloblist, then SPL uses the one from there.
+
+config TPL_BLOBLIST
+	bool "Support for a bloblist in TPL"
+	depends on BLOBLIST
+	default y if TPL
+	help
+	  This enables a bloblist in TPL. The bloblist is set up in TPL and
+	  passed to SPL and U-Boot proper.
+
+config BLOBLIST_SIZE
+	hex "Size of bloblist"
+	depends on BLOBLIST
+	default 0x400
+	help
+	  Sets the size of the bloblist in bytes. This must include all
+	  overhead (alignment, bloblist header, record header). The bloblist
+	  is set up in the first part of U-Boot to run (TPL, SPL or U-Boot
+	  proper), and this sane bloblist is used for subsequent stages.
+
+config BLOBLIST_ADDR
+	hex "Address of bloblist"
+	depends on BLOBLIST
+	default 0xe000 if SANDBOX
+	help
+	  Sets the address of the bloblist, set up by the first part of U-Boot
+	  which runs. Subsequent U-Boot stages typically use the same address.
+
+endmenu
+
+source "common/spl/Kconfig"

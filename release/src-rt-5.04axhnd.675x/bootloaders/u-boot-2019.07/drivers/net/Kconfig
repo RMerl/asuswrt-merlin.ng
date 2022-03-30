@@ -1,0 +1,548 @@
+source "drivers/net/phy/Kconfig"
+source "drivers/net/pfe_eth/Kconfig"
+
+config DM_ETH
+	bool "Enable Driver Model for Ethernet drivers"
+	depends on DM
+	help
+	  Enable driver model for Ethernet.
+
+	  The eth_*() interface will be implemented by the UCLASS_ETH class
+	  This is currently implemented in net/eth-uclass.c
+	  Look in include/net.h for details.
+
+menuconfig NETDEVICES
+	bool "Network device support"
+	depends on NET
+	default y if DM_ETH
+	help
+	  You must select Y to enable any network device support
+	  Generally if you have any networking support this is a given
+
+	  If unsure, say Y
+
+if NETDEVICES
+
+config PHY_GIGE
+	bool "Enable GbE PHY status parsing and configuration"
+	help
+	  Enables support for parsing the status output and for
+	  configuring GbE PHYs (affects the inner workings of some
+	  commands and miiphyutil.c).
+
+config AG7XXX
+	bool "Atheros AG7xxx Ethernet MAC support"
+	depends on DM_ETH && ARCH_ATH79
+	select PHYLIB
+	help
+	  This driver supports the Atheros AG7xxx Ethernet MAC. This MAC is
+	  present in the Atheros AR7xxx, AR9xxx and QCA9xxx MIPS chips.
+
+
+config ALTERA_TSE
+	bool "Altera Triple-Speed Ethernet MAC support"
+	depends on DM_ETH
+	select PHYLIB
+	help
+	  This driver supports the Altera Triple-Speed (TSE) Ethernet MAC.
+	  Please find details on the "Triple-Speed Ethernet MegaCore Function
+	  Resource Center" of Altera.
+
+config BCM_SF2_ETH
+	bool "Broadcom SF2 (Starfighter2) Ethernet support"
+	select PHYLIB
+	help
+	  This is an abstract framework which provides a generic interface
+	  to MAC and DMA management for multiple Broadcom SoCs such as
+	  Cygnus, NSP and bcm28155_ap platforms.
+
+config BCM_SF2_ETH_DEFAULT_PORT
+	int "Broadcom SF2 (Starfighter2) Ethernet default port number"
+	depends on BCM_SF2_ETH
+	default 0
+	help
+	  Default port number for the Starfighter2 ethernet driver.
+
+config BCM_SF2_ETH_GMAC
+	bool "Broadcom SF2 (Starfighter2) GMAC Ethernet support"
+	depends on DM_ETH
+	help
+	  This flag enables the ethernet support for Broadcom platforms with
+	  GMAC such as Cygnus. This driver is based on the framework provided
+	  by the BCM_SF2_ETH driver.
+	  Say Y to any bcmcygnus based platforms.
+
+config BCM6348_ETH
+	bool "BCM6348 EMAC support"
+	depends on DM_ETH && ARCH_BMIPS
+	select DMA
+	select DMA_CHANNELS
+	select MII
+	select PHYLIB
+	help
+	  This driver supports the BCM6348 Ethernet MAC.
+
+config BCM6368_ETH
+	bool "BCM6368 EMAC support"
+	depends on DM_ETH && ARCH_BMIPS
+	select DMA
+	select MII
+	help
+	  This driver supports the BCM6368 Ethernet MAC.
+
+source "drivers/net/bcmbca/Kconfig"
+
+config DWC_ETH_QOS
+	bool "Synopsys DWC Ethernet QOS device support"
+	depends on DM_ETH
+	select PHYLIB
+	help
+	  This driver supports the Synopsys Designware Ethernet QOS (Quality
+	  Of Service) IP block. The IP supports many options for bus type,
+	  clocking/reset structure, and feature list. This driver currently
+	  supports the specific configuration used in NVIDIA's Tegra186 chip,
+	  but should be extensible to other combinations quite easily.
+
+config E1000
+	bool "Intel PRO/1000 Gigabit Ethernet support"
+	help
+	  This driver supports Intel(R) PRO/1000 gigabit ethernet family of
+	  adapters.  For more information on how to identify your adapter, go
+	  to the Adapter & Driver ID Guide at:
+
+	  <http://support.intel.com/support/network/adapter/pro100/21397.htm>
+
+config E1000_SPI_GENERIC
+	bool "Allow access to the Intel 8257x SPI bus"
+	depends on E1000
+	help
+	  Allow generic access to the SPI bus on the Intel 8257x, for
+	  example with the "sspi" command.
+
+config E1000_SPI
+	bool "Enable SPI bus utility code"
+	depends on E1000
+	help
+	  Utility code for direct access to the SPI bus on Intel 8257x.
+	  This does not do anything useful unless you set at least one
+	  of CONFIG_CMD_E1000 or CONFIG_E1000_SPI_GENERIC.
+
+config CMD_E1000
+	bool "Enable the e1000 command"
+	depends on E1000
+	help
+	  This enables the 'e1000' management command for E1000 devices. When
+	  used on devices with SPI support you can reprogram the EEPROM from
+	  U-Boot.
+
+config ETH_SANDBOX
+	depends on DM_ETH && SANDBOX
+	default y
+	bool "Sandbox: Mocked Ethernet driver"
+	help
+	  This driver simply responds with fake ARP replies and ping
+	  replies that are used to verify network stack functionality
+
+	  This driver is particularly useful in the test/dm/eth.c tests
+
+config ETH_SANDBOX_RAW
+	depends on DM_ETH && SANDBOX
+	default y
+	bool "Sandbox: Bridge to Linux Raw Sockets"
+	help
+	  This driver is a bridge from the bottom of the network stack
+	  in U-Boot to the RAW AF_PACKET API in Linux. This allows real
+	  network traffic to be tested from within sandbox. See
+	  board/sandbox/README.sandbox for more details.
+
+config ETH_DESIGNWARE
+	bool "Synopsys Designware Ethernet MAC"
+	select PHYLIB
+	imply ETH_DESIGNWARE_SOCFPGA if ARCH_SOCFPGA
+	help
+	  This MAC is present in SoCs from various vendors. It supports
+	  100Mbit and 1 Gbit operation. You must enable CONFIG_PHYLIB to
+	  provide the PHY (physical media interface).
+
+config ETH_DESIGNWARE_SOCFPGA
+	select REGMAP
+	select SYSCON
+	bool "Altera SoCFPGA extras for Synopsys Designware Ethernet MAC"
+	depends on DM_ETH && ETH_DESIGNWARE
+	help
+	  The Altera SoCFPGA requires additional configuration of the
+	  Altera system manager to correctly interface with the PHY.
+	  This code handles those SoC specifics.
+
+config ETHOC
+	bool "OpenCores 10/100 Mbps Ethernet MAC"
+	help
+	  This MAC is present in OpenRISC and Xtensa XTFPGA boards.
+
+config FEC_MXC_SHARE_MDIO
+	bool "Share the MDIO bus for FEC controller"
+	depends on FEC_MXC
+
+config FEC_MXC_MDIO_BASE
+	hex "MDIO base address for the FEC controller"
+	depends on FEC_MXC_SHARE_MDIO
+	help
+	  This specifies the MDIO registers base address. It is used when
+	  two FEC controllers share MDIO bus.
+
+config FEC_MXC
+	bool "FEC Ethernet controller"
+	depends on MX5 || MX6 || MX7 || IMX8 || VF610
+	help
+	  This driver supports the 10/100 Fast Ethernet controller for
+	  NXP i.MX processors.
+
+config FMAN_ENET
+	bool "Freescale FMan ethernet support"
+	depends on ARM || PPC
+	help
+	  This driver support the Freescale FMan Ethernet controller
+
+config FTMAC100
+	bool "Ftmac100 Ethernet Support"
+	help
+	  This MAC is present in Andestech SoCs.
+
+config FTGMAC100
+	bool "Ftgmac100 Ethernet Support"
+	depends on DM_ETH
+	select PHYLIB
+	help
+	  This driver supports the Faraday's FTGMAC100 Gigabit SoC
+	  Ethernet controller that can be found on Aspeed SoCs (which
+	  include NCSI).
+
+	  It is fully compliant with IEEE 802.3 specification for
+	  10/100 Mbps Ethernet and IEEE 802.3z specification for 1000
+	  Mbps Ethernet and includes Reduced Media Independent
+	  Interface (RMII) and Reduced Gigabit Media Independent
+	  Interface (RGMII) interfaces. It adopts an AHB bus interface
+	  and integrates a link list DMA engine with direct M-Bus
+	  accesses for transmitting and receiving packets. It has
+	  independent TX/RX fifos, supports half and full duplex (1000
+	  Mbps mode only supports full duplex), flow control for full
+	  duplex and backpressure for half duplex.
+
+	  The FTGMAC100 also implements IP, TCP, UDP checksum offloads
+	  and supports IEEE 802.1Q VLAN tag insertion and removal. It
+	  offers high-priority transmit queue for QoS and CoS
+	  applications.
+
+
+config MVGBE
+	bool "Marvell Orion5x/Kirkwood network interface support"
+	depends on KIRKWOOD || ORION5X
+	select PHYLIB if DM_ETH
+	help
+	  This driver supports the network interface units in the
+	  Marvell Orion5x and Kirkwood SoCs
+
+config MVNETA
+	bool "Marvell Armada XP/385/3700 network interface support"
+	depends on ARMADA_XP || ARMADA_38X || ARMADA_3700
+	select PHYLIB
+	help
+	  This driver supports the network interface units in the
+	  Marvell ARMADA XP, ARMADA 38X and ARMADA 3700 SoCs
+
+config MVPP2
+	bool "Marvell Armada 375/7K/8K network interface support"
+	depends on ARMADA_375 || ARMADA_8K
+	select PHYLIB
+	help
+	  This driver supports the network interface units in the
+	  Marvell ARMADA 375, 7K and 8K SoCs.
+
+config MACB
+	bool "Cadence MACB/GEM Ethernet Interface"
+	depends on DM_ETH
+	select PHYLIB
+	help
+	  The Cadence MACB ethernet interface is found on many Atmel
+	  AT91 and SAMA5 parts.  This driver also supports the Cadence
+	  GEM (Gigabit Ethernet MAC) found in some ARM SoC devices.
+	  Say Y to include support for the MACB/GEM chip.
+
+config MACB_ZYNQ
+	bool "Cadence MACB/GEM Ethernet Interface for Xilinx Zynq"
+	depends on MACB
+	help
+	  The Cadence MACB ethernet interface was used on Zynq platform.
+	  Say Y to enable support for the MACB/GEM in Zynq chip.
+
+config MT7628_ETH
+	bool "MediaTek MT7628 Ethernet Interface"
+	depends on SOC_MT7628
+	help
+	  The MediaTek MT7628 ethernet interface is used on MT7628 and
+	  MT7688 based boards.
+
+config PCH_GBE
+	bool "Intel Platform Controller Hub EG20T GMAC driver"
+	depends on DM_ETH && DM_PCI
+	select PHYLIB
+	help
+	  This MAC is present in Intel Platform Controller Hub EG20T. It
+	  supports 10/100/1000 Mbps operation.
+
+config RGMII
+	bool "Enable RGMII"
+	help
+	  Enable the support of the Reduced Gigabit Media-Independent
+	  Interface (RGMII).
+
+config MII
+	bool "Enable MII"
+	help
+	  Enable support of the Media-Independent Interface (MII)
+
+config RTL8139
+	bool "Realtek 8139 series Ethernet controller driver"
+	help
+	  This driver supports Realtek 8139 series fast ethernet family of
+	  PCI chipsets/adapters.
+
+config RTL8169
+	bool "Realtek 8169 series Ethernet controller driver"
+	help
+	  This driver supports Realtek 8169 series gigabit ethernet family of
+	  PCI/PCIe chipsets/adapters.
+
+config SMC911X
+	bool "SMSC LAN911x and LAN921x controller driver"
+
+if SMC911X
+
+config SMC911X_BASE
+	hex "SMC911X Base Address"
+	help
+	  Define this to hold the physical address
+	  of the device (I/O space)
+
+choice
+	prompt "SMC911X bus width"
+	default SMC911X_16_BIT
+
+config SMC911X_32_BIT
+	bool "Enable 32-bit interface"
+
+config SMC911X_16_BIT
+	bool "Enable 16-bit interface"
+	help
+	  Define this if data bus is 16 bits. If your processor
+	  automatically converts one 32 bit word to two 16 bit
+	  words you may also try CONFIG_SMC911X_32_BIT.
+
+endchoice
+endif #SMC911X
+
+config SUN7I_GMAC
+	bool "Enable Allwinner GMAC Ethernet support"
+	help
+	  Enable the support for Sun7i GMAC Ethernet controller
+
+config SUN7I_GMAC_FORCE_TXERR
+	bool "Force PA17 as gmac function"
+	depends on SUN7I_GMAC
+	help
+	  Some ethernet phys needs TXERR control. Since the GMAC
+	  doesn't have such signal, setting PA17 as GMAC function
+	  makes the pin output low, which enables data transmission.
+
+config SUN4I_EMAC
+	bool "Allwinner Sun4i Ethernet MAC support"
+	depends on DM_ETH
+	select PHYLIB
+	help
+	  This driver supports the Allwinner based SUN4I Ethernet MAC.
+
+config SUN8I_EMAC
+        bool "Allwinner Sun8i Ethernet MAC support"
+        depends on DM_ETH
+        select PHYLIB
+	select PHY_GIGE
+        help
+          This driver supports the  Allwinner based SUN8I/SUN50I Ethernet MAC.
+	  It can be found in H3/A64/A83T based SoCs and compatible with both
+	  External and Internal PHYs.
+
+config SH_ETHER
+	bool "Renesas SH Ethernet MAC"
+	select PHYLIB
+	help
+	  This driver supports the Ethernet for Renesas SH and ARM SoCs.
+
+source "drivers/net/ti/Kconfig"
+
+config XILINX_AXIEMAC
+	depends on DM_ETH && (MICROBLAZE || ARCH_ZYNQ || ARCH_ZYNQMP)
+	select PHYLIB
+	select MII
+	bool "Xilinx AXI Ethernet"
+	help
+	  This MAC is present in Xilinx Microblaze, Zynq and ZynqMP SoCs.
+
+config XILINX_EMACLITE
+	depends on DM_ETH && (MICROBLAZE || ARCH_ZYNQ || ARCH_ZYNQMP || MIPS)
+	select PHYLIB
+	select MII
+	bool "Xilinx Ethernetlite"
+	help
+	  This MAC is present in Xilinx Microblaze, Zynq and ZynqMP SoCs.
+
+config ZYNQ_GEM
+	depends on DM_ETH && (ARCH_ZYNQ || ARCH_ZYNQMP || ARCH_VERSAL)
+	select PHYLIB
+	bool "Xilinx Ethernet GEM"
+	help
+	  This MAC is present in Xilinx Zynq and ZynqMP SoCs.
+
+config PIC32_ETH
+	bool "Microchip PIC32 Ethernet Support"
+	depends on DM_ETH && MACH_PIC32
+	select PHYLIB
+	help
+	  This driver implements 10/100 Mbps Ethernet and MAC layer for
+	  Microchip PIC32 microcontrollers.
+
+config GMAC_ROCKCHIP
+	bool "Rockchip Synopsys Designware Ethernet MAC"
+	depends on DM_ETH && ETH_DESIGNWARE
+	help
+	  This driver provides Rockchip SoCs network support based on the
+	  Synopsys Designware driver.
+
+config RENESAS_RAVB
+	bool "Renesas Ethernet AVB MAC"
+	depends on DM_ETH && RCAR_GEN3
+	select PHYLIB
+	help
+	  This driver implements support for the Ethernet AVB block in
+	  Renesas M3 and H3 SoCs.
+
+config MPC8XX_FEC
+	bool "Fast Ethernet Controller on MPC8XX"
+	depends on MPC8xx
+	select MII
+	help
+	  This driver implements support for the Fast Ethernet Controller
+	  on MPC8XX
+
+config SNI_AVE
+	bool "Socionext AVE Ethernet support"
+	depends on DM_ETH && ARCH_UNIPHIER
+	select PHYLIB
+	select SYSCON
+	select REGMAP
+	help
+	  This driver implements support for the Socionext AVE Ethernet
+	  controller, as found on the Socionext UniPhier family.
+
+source "drivers/net/mscc_eswitch/Kconfig"
+
+config ETHER_ON_FEC1
+	bool "FEC1"
+	depends on MPC8XX_FEC
+	default y
+
+config FEC1_PHY
+	int "FEC1 PHY"
+	depends on ETHER_ON_FEC1
+	default -1
+	help
+	  Define to the hardcoded PHY address which corresponds
+	  to the given FEC; i. e.
+		#define CONFIG_FEC1_PHY 4
+	  means that the PHY with address 4 is connected to FEC1
+
+	  When set to -1, means to probe for first available.
+
+config PHY_NORXERR
+	bool "PHY_NORXERR"
+	depends on ETHER_ON_FEC1
+	default n
+	help
+	  The PHY does not have a RXERR line (RMII only).
+	  (so program the FEC to ignore it).
+
+config ETHER_ON_FEC2
+	bool "FEC2"
+	depends on MPC8XX_FEC && MPC885
+	default y
+
+config FEC2_PHY
+	int "FEC2 PHY"
+	depends on ETHER_ON_FEC2
+	default -1
+	help
+	  Define to the hardcoded PHY address which corresponds
+	  to the given FEC; i. e.
+		#define CONFIG_FEC1_PHY 4
+	  means that the PHY with address 4 is connected to FEC1
+
+	  When set to -1, means to probe for first available.
+
+config FEC2_PHY_NORXERR
+	bool "PHY_NORXERR"
+	depends on ETHER_ON_FEC2
+	default n
+	help
+	  The PHY does not have a RXERR line (RMII only).
+	  (so program the FEC to ignore it).
+
+config SYS_DPAA_QBMAN
+	bool "Device tree fixup for QBMan on freescale SOCs"
+	depends on (ARM || PPC) && !SPL_BUILD
+	default y if ARCH_B4860 || \
+		     ARCH_B4420 || \
+		     ARCH_P1023 || \
+		     ARCH_P2041 || \
+		     ARCH_T1023 || \
+		     ARCH_T1024 || \
+		     ARCH_T1040 || \
+		     ARCH_T1042 || \
+		     ARCH_T2080 || \
+		     ARCH_T2081 || \
+		     ARCH_T4240 || \
+		     ARCH_T4160 || \
+		     ARCH_P4080 || \
+		     ARCH_P3041 || \
+		     ARCH_P5040 || \
+		     ARCH_P5020 || \
+		     ARCH_LS1043A || \
+		     ARCH_LS1046A
+	help
+	  QBman fixups to allow deep sleep in DPAA 1 SOCs
+
+config TSEC_ENET
+	select PHYLIB
+	bool "Enable Three-Speed Ethernet Controller"
+	help
+	  This driver implements support for the (Enhanced) Three-Speed
+	  Ethernet Controller found on Freescale SoCs.
+
+config MEDIATEK_ETH
+	bool "MediaTek Ethernet GMAC Driver"
+	depends on DM_ETH
+	select PHYLIB
+	select DM_GPIO
+	select DM_RESET
+	help
+	  This Driver support MediaTek Ethernet GMAC
+	  Say Y to enable support for the MediaTek Ethernet GMAC.
+
+config HIGMACV300_ETH
+	bool "HiSilicon Gigabit Ethernet Controller"
+	depends on DM_ETH
+	select DM_RESET
+	select PHYLIB
+	help
+	  This driver supports HIGMACV300 Ethernet controller found on
+	  HiSilicon SoCs.
+
+endif # NETDEVICES

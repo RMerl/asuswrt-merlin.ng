@@ -1,0 +1,21 @@
+##########################################
+Date: Sep 14, 2020 20:02:00 PDT
+From: rdkb_dunfell.patch
+Subject: BCOM-5033 [Yocto 3.1] XB&: Broadcom wifi build failure
+Source: Broadcom
+License: Closed
+Upstream-Status: N/a
+Signed-off-by: Broadcom
+##########################################
+--- /cmwifi/apps/nvram/Makefile
++++ /cmwifi/apps/nvram/Makefile
+@@ -147,7 +147,7 @@
+ endif # UNFNVRAMOBJS
+ 
+ libnvram: $(LIBOBJS)
+-	$(LD) -shared -soname libnvram.so -o libnvram.so $(LIBOBJS) -L$(LIBDIR) $(WLCSM_LIB) -lc
++	$(LD) -shared -soname libnvram.so -o libnvram.so $(LIBOBJS) -L$(LIBDIR) $(WLCSM_LIB)
+ 	install -m 755 libnvram.so $(INSTALL_DIR)/lib
+ 	$(STRIP) $(INSTALL_DIR)/lib/libnvram.so
+ 
+

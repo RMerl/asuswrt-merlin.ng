@@ -1,0 +1,20 @@
+gdsys IO endpoint of IHS FPGA devices
+
+The IO endpoint of IHS FPGA devices is a packet-based transmission interface
+that allows interconnected gdsys devices to send and receive data over the
+FPGA's main ethernet connection.
+
+Required properties:
+- compatible: must be "gdsys,io-endpoint"
+- reg: describes the address and length of the endpoint's register map (within
+  the FPGA's register space)
+
+Example:
+
+fpga0_ep0 {
+	compatible = "gdsys,io-endpoint";
+	reg = <0x020 0x10
+           0x320 0x10
+           0x340 0x10
+           0x360 0x10>;
+};

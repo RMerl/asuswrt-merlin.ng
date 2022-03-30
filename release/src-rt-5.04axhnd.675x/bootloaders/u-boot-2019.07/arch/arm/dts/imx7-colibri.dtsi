@@ -1,0 +1,141 @@
+// SPDX-License-Identifier: GPL-2.0+ OR X11
+/*
+ * Copyright 2016-2019 Toradex AG
+ */
+
+/dts-v1/;
+#include <dt-bindings/gpio/gpio.h>
+#include "imx7d.dtsi"
+
+&i2c1 {
+	pinctrl-names = "default", "gpio";
+	pinctrl-0 = <&pinctrl_i2c1>;
+	pinctrl-1 = <&pinctrl_i2c1_gpio>;
+	sda-gpios = <&gpio1 5 GPIO_ACTIVE_LOW>;
+	scl-gpios = <&gpio1 4 GPIO_ACTIVE_LOW>;
+	status = "okay";
+
+	rn5t567@33 {
+		compatible = "ricoh,rn5t567";
+		reg = <0x33>;
+	};
+};
+
+&i2c4 {
+	pinctrl-names = "default", "gpio";
+	pinctrl-0 = <&pinctrl_i2c4>;
+	pinctrl-1 = <&pinctrl_i2c4_gpio>;
+	sda-gpios = <&gpio7 9 GPIO_ACTIVE_LOW>;
+	scl-gpios = <&gpio7 8 GPIO_ACTIVE_LOW>;
+	status = "okay";
+};
+
+&uart1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_uart1 &pinctrl_uart1_ctrl1>;
+	uart-has-rtscts;
+	fsl,dte-mode;
+	status = "okay";
+};
+
+&usdhc1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_usdhc1 &pinctrl_cd_usdhc1>;
+	no-1-8-v;
+	cd-gpios = <&gpio1 0 GPIO_ACTIVE_LOW>;
+	disable-wp;
+	status = "okay";
+};
+
+&iomuxc {
+	pinctrl_i2c4: i2c4-grp {
+		fsl,pins = <
+			MX7D_PAD_ENET1_RGMII_TD3__I2C4_SDA	0x4000007f
+			MX7D_PAD_ENET1_RGMII_TD2__I2C4_SCL	0x4000007f
+		>;
+	};
+
+	pinctrl_i2c4_gpio: i2c4-gpio-grp {
+			fsl,pins = <
+			MX7D_PAD_ENET1_RGMII_TD3__GPIO7_IO9	0x4000007f
+			MX7D_PAD_ENET1_RGMII_TD2__GPIO7_IO8	0x4000007f
+		>;
+	};
+
+	pinctrl_uart1: uart1-grp {
+		fsl,pins = <
+			MX7D_PAD_UART1_TX_DATA__UART1_DTE_RX	0x79
+			MX7D_PAD_UART1_RX_DATA__UART1_DTE_TX	0x79
+			MX7D_PAD_SAI2_TX_BCLK__UART1_DTE_CTS	0x79
+			MX7D_PAD_SAI2_TX_SYNC__UART1_DTE_RTS	0x79
+		>;
+	};
+
+	pinctrl_uart1_ctrl1: uart1-ctrl1-grp {
+		fsl,pins = <
+			MX7D_PAD_SD2_DATA1__GPIO5_IO15		0x14 /* DCD */
+			MX7D_PAD_SD2_DATA0__GPIO5_IO14		0x14 /* DTR */
+		>;
+	};
+
+	pinctrl_usdhc1: usdhc1-grp {
+		fsl,pins = <
+			MX7D_PAD_SD1_CMD__SD1_CMD	0x59
+			MX7D_PAD_SD1_CLK__SD1_CLK	0x19
+			MX7D_PAD_SD1_DATA0__SD1_DATA0	0x59
+			MX7D_PAD_SD1_DATA1__SD1_DATA1	0x59
+			MX7D_PAD_SD1_DATA2__SD1_DATA2	0x59
+			MX7D_PAD_SD1_DATA3__SD1_DATA3	0x59
+		>;
+	};
+};
+
+&iomuxc_lpsr {
+	pinctrl_i2c1: i2c1-grp {
+		fsl,pins = <
+			MX7D_PAD_LPSR_GPIO1_IO05__I2C1_SDA	0x4000007f
+			MX7D_PAD_LPSR_GPIO1_IO04__I2C1_SCL	0x4000007f
+		>;
+	};
+
+	pinctrl_i2c1_gpio: i2c1-gpio-grp {
+		fsl,pins = <
+			MX7D_PAD_LPSR_GPIO1_IO05__GPIO1_IO5	0x4000007f
+			MX7D_PAD_LPSR_GPIO1_IO04__GPIO1_IO4	0x4000007f
+		>;
+	};
+
+	pinctrl_cd_usdhc1: usdhc1-cd-grp {
+		fsl,pins = <
+			MX7D_PAD_LPSR_GPIO1_IO00__GPIO1_IO0	0x59 /* CD */
+		>;
+	};
+};
+
+&lcdif {
+	u-boot,dm-pre-reloc;
+	status = "okay";
+
+	display-timings {
+		native-mode = <&timing_vga>;
+
+		/* Standard VGA timing */
+		timing_vga: 640x480 {
+			u-boot,dm-pre-reloc;
+			clock-frequency = <25175000>;
+			hactive = <640>;
+			vactive = <480>;
+			hback-porch = <48>;
+			hfront-porch = <16>;
+			vback-porch = <33>;
+			vfront-porch = <10>;
+			hsync-len = <96>;
+			vsync-len = <2>;
+
+			de-active = <1>;
+			hsync-active = <0>;
+			vsync-active = <0>;
+			pixelclk-active = <0>;
+		};
+	};
+};

@@ -1,0 +1,100 @@
+brcm,bca-enet network driver Device Tree Bindings
+
+Switch device node
+==================
+Only the root switch is a platform device. When probed, enet driver
+recursively parses port nodes and linked switch nodes.
+
+Required properties:
+
+- ports: A container for child nodes representing switch ports.
+
+- sw-type: switch type from port_type_t
+
+
+Optional properties:
+
+- label:            Describes the label associated with this switch, which
+                    will become the netdev name.
+
+- unit:             Used for ethswctl compatibility, default is 0 if not set (to be depricated).
+- switch-reset:     gpio, if set, used to take switch out of reset before switch initialization
+
+
+The ports container has the following properties
+
+Required properties:
+
+- #address-cells	: Must be 1
+- #size-cells		: Must be 0
+
+Each port children node must have the following mandatory properties:
+
+- reg:        Describes the port address in the switch
+
+- mac-type:   string, mac_drv_t type
+
+
+An uplink/downlink port between switches in the cluster has the following
+mandatory property:
+
+- link:       Should be a phandle to another bcmbca-enet switch
+              port. This port is used as the outgoing port
+              towards the phandle ports. 
+              netdev will not be created for ports with link.
+
+
+A user port has the following optional property:
+
+- label:      Describes the label associated with this port, which
+              will become the netdev name.
+              Default name will be assigned if label is not specified.
+
+- management: sets port_info_t->is_management.
+              For example used to set RGMII port as a non-lan/wan port and
+              G999.1 inband management channels.
+
+- detect: Sets port_info_t->is_detect.
+
+- is-wan: Sets port_info_t->is_wan, capability as WAN only interface.
+
+- error-sample: Create G999.1 error-sample netdev.
+
+- oam-idx: Used for ethswctl compatibility (to be depricated).
+
+
+Port child nodes may also contain the following optional NON-standardised
+properties, described below:
+
+- phy-handle: phandle, specifies a reference to a node representing a
+              bcmbca-PHY device described in phydrv-bindings.txt.
+
+- phy-mode:   string, operation mode of the PHY interface from phy_mii_type_t.
+
+- xport-intf: index, for port with "XPORT" mac-type, identify which instance. 
+
+- shrink-ipg: string, indicates shrinking 4 byte IPG to accomodate Broadcom Tag.
+
+
+Port capability can be specified to one of following optional properties.
+However each device can have hardware/software limitation on port capability.
+Error will be shown on console if incompatible capability is set.
+
+- wan-only:         string, indicates port is on WAN only
+
+- wan-preferred     string, indicates port is WAN preferred
+
+- lan-only          string, indicates port is on LAN only
+
+
+Port child nodes with phy-mode set to "rgmii" also contain the following optional properties:
+
+- rx-delay:   string, RGMII interface rx delay configuration.
+
+- tx-delay:   string, RGMII interface tx delay configuration.
+
+- rgmii-1p8v: string, RGMII interface is 1.8v 
+
+- rgmii-3p3v: string, RGMII interface is 3.3v
+
+- rgmii-intf: index, indicates which RGMII interface (if absent, index is 0) 

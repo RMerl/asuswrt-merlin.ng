@@ -1,0 +1,30 @@
+// SPDX-License-Identifier: GPL-2.0+ OR MIT
+/*
+ * at91-sama5d2_icp-for-uboot.dtsi - Device Tree file for SAMA5D2 ICP board
+ *			SAMA5D2 Industrial Connectivity Platform
+ *
+ *  Copyright (c) 2019, Microchip Technology Inc. and its subsidiaries
+ *                2019, Eugen Hristev <eugen.hristev@microchip.com>
+ */
+
+/ {
+	chosen {
+		u-boot,dm-pre-reloc;
+	};
+};
+
+&sdmmc0 {
+	u-boot,dm-pre-reloc;
+};
+
+&uart0 { /* mikrobus1 uart */
+	u-boot,dm-pre-reloc;
+};
+
+&pinctrl_sdmmc0_default {
+	u-boot,dm-pre-reloc;
+};
+
+&pinctrl_mikrobus1_uart {
+	u-boot,dm-pre-reloc;
+};

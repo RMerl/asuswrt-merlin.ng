@@ -1,0 +1,66 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2018 EETS GmbH - https://www.eets.ch/
+ * Copyright (C) 2018 Robert Bosch Power Tools GmbH
+ */
+
+/ {
+	ocp {
+		u-boot,dm-pre-reloc;
+	};
+};
+
+&l4_wkup {
+	u-boot,dm-pre-reloc;
+};
+
+&mmc1 {
+	u-boot,dm-pre-reloc;
+};
+
+&mmc1_pins {
+	u-boot,dm-pre-reloc;
+};
+
+&rtc {
+	clocks = <&l4_per_clkctrl AM3_CLKDIV32K_CLKCTRL 0>;
+	clock-names = "int-clk";
+};
+
+&scm {
+	u-boot,dm-pre-reloc;
+};
+
+&uart0 {
+	u-boot,dm-pre-reloc;
+};
+
+&uart0_pins {
+	u-boot,dm-pre-reloc;
+};
+
+&usb {
+	u-boot,dm-pre-reloc;
+};
+
+&usb_ctrl_mod {
+	u-boot,dm-pre-reloc;
+};
+
+&usb0 {
+	u-boot,dm-pre-reloc;
+};
+
+&usb0_phy {
+	u-boot,dm-pre-reloc;
+};
+
+&am33xx_pinmux {
+	u-boot,dm-pre-reloc;
+
+	lcd0_pins: pinmux_lcd0_pins {
+		pinctrl-single,pins = <
+			AM33XX_IOPAD(0x908, PIN_OUTPUT_PULLUP   | MUX_MODE7)
+		>;
+	};
+};

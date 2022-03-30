@@ -1,0 +1,10 @@
+#include "inc/68552_qemu.dtsi"
+
+/ {
+	model = "968552QEMU";
+
+};
+
+&uart0 {
+	status = "okay";
+};

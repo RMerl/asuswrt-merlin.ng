@@ -1,0 +1,42 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+use bytes;
+use Getopt::Long;
+
+my $delg;
+my $keyfile;
+my $name;
+
+GetOptions( "delegated_aes_base=s", \$delg, "key=s", \$keyfile, "name=s",
+    \$name )
+  or die("bad usage");
+
+local $/;
+open( D, "<${delg}-ek.bin" ) or die("cant open ${delg}-ek.bin");
+my $ek = unpack( 'H*', <D> );
+close(D);
+open( D, "<${delg}-iv.bin" ) or die("cant open ${delg}-iv.bin");
+my $iv = unpack( 'H*', <D> );
+close(D);
+foreach my $keys (@ARGV) {
+    if ( $keys =~ /^(\S+):(\S+)$/ ) {
+	$name = $1;
+	$keyfile = $2;
+	my $encfile = $keyfile;
+	$encfile =~ s|^.*/|obj/binaries/|;
+	$encfile .= ".enc";
+        my $cmd =
+"openssl enc -aes-128-cbc -K $ek -iv $iv -in $keyfile -out $encfile";
+        ( system($cmd) == 0 ) or die("$cmd failed $!");
+        open( K, "<$encfile" ) or die($!);
+        open( KR, '>>obj/binaries/image_key.keyring' );
+        print KR "$name: " . unpack( 'H*', <K> ) . "\n";
+        close(KR);
+    }
+    else {
+        die("bad usage -- args must be name:path");
+    }
+}
+

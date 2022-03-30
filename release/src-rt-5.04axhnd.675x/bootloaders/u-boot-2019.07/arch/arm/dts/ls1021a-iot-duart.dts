@@ -1,0 +1,15 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Freescale ls1021a IOT board device tree source
+ *
+ * Copyright 2016 Freescale Semiconductor, Inc.
+ */
+
+/dts-v1/;
+#include "ls1021a-iot.dtsi"
+
+/ {
+	chosen {
+	stdout-path = &uart0;
+	};
+};

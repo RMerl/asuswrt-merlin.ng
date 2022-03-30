@@ -1,0 +1,150 @@
+* Broadcom 963XX PCIe host controller for ARM/ARM64 based SoC's
+
+=======================================
+Properties of the host controller node:
+=======================================
+
+Linux PCI driver specific properties
+------------------------------------
+- compatible         : Must be "brcm,bcm963xx-pcie"
+
+- device_type        : Must be "pci".
+
+- bus-range          : Optional property (also described in IEEE Std 1275-1994)
+                       to indicate the range of bus numbers for this controller.
+                       If absent, defaults to <0 255> (i.e. all buses).
+
+- #address-cells     : Must be 3.
+
+- #size-cells        : Must be 2.
+
+- #interrupt-cells   : Must be 1
+
+- reg                : The PCIe core register base and size
+
+- ranges             : ranges for the PCI memory regions (I/O space region is not supported by hardware)
+                       <flags:1> <pci addr:2> <cpu addr:2> <size:2>
+                       Please refer to the standard PCI bus binding document for a more detailed explanation
+
+- interrupt-names    : Set to "intr" to use PCIe core interrupts
+                     : Add "msi" to use in-band (MSI) interrupts
+
+- interrupts         : Must be set to use in-band (MSI) interrupts.
+                       In-band interrupt number is same as out-band interrupt number
+                       Also need to enable MSI in the build profile
+
+- interrupt-map      : <see aforementioned specification>
+
+- interrupt-map-mask : <see aforementioned specification>
+
+- linux,pci-domain   : <see aforementioned specification>
+
+
+Broadcom 963xx specific properties
+----------------------------------
+- brcm,coreid        : Must be set to PCIe core id as defined in the SoC
+
+- brcm,speed         : Optional property. To force PCIe speed (0: auto (set by SoC), 1: 2.5Gbps, 2: 5Gbps)
+                       Default as set by SoC
+
+- brcm,apon          : Optional property. To force PCIe core powered on even if there is no link found (0: power down on no link, 1: Keep powered ON)
+                       Default disabled
+
+- brcm,phypwrmode    : Optional property. To operate PCIe PHY at different power levels (0: Full Power, 1: Reduced Power)
+                       Default "Full Power"
+
+- brcm,num-lanes     : Optional property. To operate PCIe with single lane on a dual lane hardware to save power (0: Auto detect, 1: force to single lane)
+                       Default "Auto detect"
+
+- brcm,acc           : Optional property. To enable PCIe Ack and Credit Coalescing (0: disable 1: enable)
+                       Default: "Enable"
+                       Entry  : brcm,acc = <0>;
+
+Common to all cores   (32bit, each nibble respresent a core (similar to nvram) in little endian format)
+-------------------------------------------------------------------------------------------------------
+- brcm,pllclkid      : To specify the pll clock id and "coreid" mapping of the port the phy clock shared with
+                       Default is coreid
+                       Entry  : brcm,pllclkid = <0x3210>;
+
+- brcm,ssc           : Optional property. Spread Spectrum Clock feature (non-zero: Enable)
+                       Default disabled.
+                       Entry  : brcm,ssc = <0x0011>;
+
+
+
+
+How to enable device tree entries for PCIe driver (example 4912 below)
+
+=============================================
+SOC specific Device Tree file (<soc>.dtsi)
+=============================================
+
+#if defined(CONFIG_BCM_PCIE_HCD) || defined(CONFIG_BCM_PCIE_HCD_MODULE)
+	/* pcie common */
+	pcie: pcie {
+		compatible = "brcm,bcm-pcie";
+		device_type = "cpci";
+		brcm,pllclkid = <0x3210>;
+	}
+
+	/* pcie core 0 */
+	pcie0: pcie0 {
+		#define PCIE_ID				0
+		#define PCIE_SPI			68
+		#define PCIE_ADDR			0 0x80080000
+		#define PCIE_SIZE			0 0x0000A000
+					      /*           flags    pci_addr     cpu_addr     size */
+		#define PCIE_RANGE			0x02000000 0 0xC0000000 0 0xC0000000 0 0x10000000
+		#include "../ip/bcm_pcie_core.dtsi"
+	};
+	/* pcie core 1 */
+	pcie1: pcie1 {
+		#define PCIE_ID				1
+		#define PCIE_SPI			69
+		#define PCIE_ADDR			0 0x80090000
+		#define PCIE_SIZE			0 0x0000A000
+					      /*           flags    pci_addr     cpu_addr     size */
+		#define PCIE_RANGE			0x02000000 0 0xD0000000 0 0xD0000000 0 0x10000000
+		#include "../ip/bcm_pcie_core.dtsi"
+	};
+	/* pcie core 2 */
+	pcie2: pcie2 {
+		#define PCIE_ID				2
+		#define PCIE_SPI			70
+		#define PCIE_ADDR			0 0x800A0000
+		#define PCIE_SIZE			0 0x0000A000
+					      /*           flags    pci_addr     cpu_addr     size */
+		#define PCIE_RANGE			0x02000000 0 0xE0000000 0 0xE0000000 0 0x10000000
+		#include "../ip/bcm_pcie_core.dtsi"
+	};
+	/* pcie core 3 */
+	pcie3: pcie3 {
+		#define PCIE_ID				3
+		#define PCIE_SPI			71
+		#define PCIE_ADDR			0 0x800B0000
+		#define PCIE_SIZE			0 0x0000B000
+					      /*           flags    pci_addr     cpu_addr     size */
+		#define PCIE_RANGE			0x02000000 0 0xA0000000 0 0xA0000000 0 0x20000000
+		#include "../ip/bcm_pcie_core.dtsi"
+	};
+#endif /* defined(CONFIG_BCM_PCIE_HCD) || defined(CONFIG_BCM_PCIE_HCD_MODULE) */
+
+=============================================
+Board specific Device Tree file (<board>.dts)
+=============================================
+#if defined(CONFIG_BCM_PCIE_HCD) || defined(CONFIG_BCM_PCIE_HCD_MODULE)
+&pcie0 {
+	status = "okay";
+};
+&pcie1 {
+	status = "okay";
+};
+&pcie2 {
+	status = "okay";
+};
+&pcie3 {
+	status = "okay";
+};
+#endif //#if defined(CONFIG_BCM_PCIE_HCD) || defined(CONFIG_BCM_PCIE_HCD_MODULE)
+
+

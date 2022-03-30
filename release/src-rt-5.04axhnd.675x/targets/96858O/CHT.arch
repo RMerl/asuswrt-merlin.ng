@@ -1,0 +1,83 @@
+<PUBLISH>
+@@ -156,9 +156,9 @@
+ # BUILD_BRCM_BASE_SHELL is not set
+ BUILD_BRCM_CMS=y
+ # BUILD_BRCM_BDK is not set
+-BUILD_DM_LEGACY98=y
++# BUILD_DM_LEGACY98 is not set
+ # BUILD_DM_HYBRID is not set
+-# BUILD_DM_PURE181 is not set
++BUILD_DM_PURE181=y
+ # BUILD_DM_DETECT is not set
+ # BUILD_CUSTOMER is not set
+ BUILD_CONSOLED=y
+@@ -186,9 +186,9 @@
+ # BUILD_BUSYBOX_TAR is not set
+ # BUILD_BUSYBOX_TELNET is not set
+ # BUILD_BUSYBOX_VI is not set
+-# BUILD_BUSYBOX_AWK is not set
++BUILD_BUSYBOX_AWK=y
+ # BUILD_BUSYBOX_PIDOF is not set
+-# BUILD_BUSYBOX_NTPD is not set
++BUILD_BUSYBOX_NTPD=y
+ BUILD_IPV6=y
+ # BUILD_VCONFIG is not set
+ # BUILD_BRCM_INTERNAL is not set
+@@ -398,7 +398,7 @@
+ # BRCM_KERNEL_NF_NAT_ALG_FTP is not set
+ # BRCM_KERNEL_NF_NAT_ALG_SIP is not set
+ # BRCM_KERNEL_NF_NAT_ALG_TFTP is not set
+-# BRCM_KERNEL_NF_NAT_ALG_H323 is not set
++BRCM_KERNEL_NF_NAT_ALG_H323=m
+ # BRCM_KERNEL_NF_NAT_ALG_H323_SIGNAL_PROXY is not set
+ # BRCM_KERNEL_NF_NAT_ALG_IRC is not set
+ # BRCM_KERNEL_NF_NAT_ALG_WM is not set
+@@ -619,6 +619,7 @@
+ # BUILD_LEDCTL is not set
+ # BCM_WLCLED is not set
+ BUILD_WDTCTL=y
++# BUILD_FW_UPGRADE_WDT is not set
+ BUILD_BACKUP_PSI=y
+ # BUILD_BACKUP_PSI_MIRROR_MODE is not set
+ # BUILD_BACKUP_PSI_DEVICE_DEFAULT is not set
+@@ -696,12 +697,25 @@
+ # BRCM_LANG_TW is not set
+ # BRCM_LANG_KR is not set
+ BRCM_WEBUI_LANG=en_US
+-# MGMT_TR69C is not set
+-MGMT_none=y
+-BUILD_TR69C=
+-BUILD_TR69C_SSL=
++MGMT_TR69C=y
++# MGMT_none is not set
++# MGMT_TR69C_NO_SSL is not set
++# MGMT_TR69C_BCM_SSL is not set
++MGMT_TR69C_SSL=y
++BRCM_MULTIPLE_TR69C_SUPPORT=2
++BUILD_TR69C=dynamic
++BUILD_TR69C_SSL=dynamic
+ BUILD_TR69C_BCM_SSL=
+ BRCM_CERT_FILE=
++# BUILD_TR69_XBRCM is not set
++# BUILD_TR69_UPLOAD is not set
++# BUILD_TR69_QUEUED_TRANSFERS is not set
++# BUILD_TR69_TR143 is not set
++# BUILD_TR69_PERIODIC_STATISTICS is not set
++# BUILD_TR69_VENDOR_RPC is not set
++# BUILD_TR69_AUTONOMOUS_TRANSFER_COMPLETE_RPC is not set
++# BUILD_STUN is not set
++# BUILD_PROFILE_SUPPORTED_DATA_MODEL is not set
+ # BUILD_USP is not set
+ # BUILD_BAS is not set
+ # BUILD_XMPP is not set
+@@ -761,8 +775,8 @@
+ # BUILD_LMBENCH is not set
+ # BUILD_TCPDUMP is not set
+ # BUILD_SENDPACKETS is not set
+-# BUILD_IPERFV2 is not set
+-# BUILD_IPERFV3 is not set
++BUILD_IPERFV2=y
++BUILD_IPERFV3=y
+ BUILD_PCIUTILS=y
+ # BUILD_STRACE is not set
+ BUILD_DISABLE_EXEC_STACK=y

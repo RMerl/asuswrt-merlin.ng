@@ -1,0 +1,38 @@
+-------------------------------------------------
+   Simple steps used to test the SH-QSPI at U-Boot
+-------------------------------------------------
+
+#0, Currently, SH-QSPI is used by lager board (Renesas ARM SoC R8A7790)
+    and koelsch board (Renesas ARM SoC R8A7791). These boot from SPI ROM
+    basically. Thus, U-Boot start, SH-QSPI will is operating normally.
+
+#1, build U-Boot and load u-boot.bin
+
+  => tftpboot 40000000 u-boot.bin
+  sh_eth Waiting for PHY auto negotiation to complete.. done
+  sh_eth: 100Base/Half
+  Using sh_eth device
+  TFTP from server 192.168.169.1; our IP address is 192.168.169.79
+  Filename 'u-boot.bin'.
+  Load address: 0x40000000
+  Loading: ############
+    2.5 MiB/s
+  done
+  Bytes transferred = 175364 (2ad04 hex)
+
+#2, Commands to erase/write u-boot to flash device
+
+  Note: This method is description of the lager board. If you want to use the
+  other boards, please change the value according to each environment.
+
+  =>  sf probe 0
+  SF: Detected S25FL512S_256K with page size 512 Bytes, erase size 64 KiB, total 64 MiB
+  => sf erase 80000 40000
+  SF: 262144 bytes @ 0x80000 Erased: OK
+  => sf write 40000000 80000 175364
+  SF: 1528676 bytes @ 0x80000 Written: OK
+  =>
+
+#3, Push reset button.
+
+  If you're written correctly and driver works properly, U-Boot starts.

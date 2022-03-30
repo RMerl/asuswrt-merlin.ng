@@ -1,0 +1,168 @@
+/dts-v1/;
+
+#include "tegra20.dtsi"
+
+/ {
+	model = "Toradex Colibri T20";
+	compatible = "toradex,colibri_t20", "nvidia,tegra20";
+
+	chosen {
+		stdout-path = &uarta;
+	};
+
+	aliases {
+		i2c0 = "/i2c@7000d000";
+		i2c1 = "/i2c@7000c000";
+		i2c2 = "/i2c@7000c400";
+		mmc0 = "/sdhci@c8000600";
+		usb0 = "/usb@c5000000";
+		usb1 = "/usb@c5004000"; /* On-module only, for ASIX */
+		usb2 = "/usb@c5008000";
+	};
+
+	host1x@50000000 {
+		dc@54200000 {
+			rgb {
+				status = "okay";
+				nvidia,panel = <&lcd_panel>;
+				display-timings {
+					timing@0 {
+						/* VESA VGA */
+						clock-frequency = <25175000>;
+						hactive = <640>;
+						vactive = <480>;
+						hback-porch = <48>;
+						hfront-porch = <16>;
+						hsync-len = <96>;
+						vback-porch = <31>;
+						vfront-porch = <11>;
+						vsync-len = <2>;
+					};
+				};
+			};
+		};
+	};
+
+	nand-controller@70008000 {
+		nvidia,wp-gpios = <&gpio TEGRA_GPIO(S, 0) GPIO_ACTIVE_HIGH>;
+		nvidia,width = <8>;
+		nvidia,timing = <15 100 25 80 25 10 15 10 100>;
+
+		nand@0 {
+			reg = <0>;
+			compatible = "nand-flash";
+		};
+	};
+
+	pwm@7000a000 {
+		status = "okay";
+	};
+
+	/*
+	 * GEN1_I2C: I2C_SDA/SCL on SODIMM pin 194/196 (e.g. RTC on carrier
+	 * board)
+	 */
+	i2c@7000c000 {
+		status = "okay";
+		clock-frequency = <400000>;
+	};
+
+	/* GEN2_I2C: unused */
+
+	/* DDC_CLOCK/DATA on X3 pin 15/16 (e.g. display EDID) */
+	i2c@7000c400 {
+		status = "okay";
+		clock-frequency = <10000>;
+	};
+
+	/*
+	 * PWR_I2C: power I2C to PMIC and temperature sensor
+	 */
+	i2c@7000d000 {
+		status = "okay";
+		clock-frequency = <100000>;
+	};
+
+	/* EHCI instance 0: USB1_DP/N -> USBC_P/N */
+	usb@c5000000 {
+		status = "okay";
+		dr_mode = "otg";
+	};
+
+	/* EHCI instance 1: ULPI -> USB3340 -> AX88772B */
+	usb@c5004000 {
+		status = "okay";
+		/* ULPI_RESET */
+		nvidia,phy-reset-gpio =
+				<&gpio TEGRA_GPIO(V, 1) GPIO_ACTIVE_LOW>;
+		/* VBUS_LAN */
+		nvidia,vbus-gpio = <&gpio TEGRA_GPIO(BB, 1) GPIO_ACTIVE_HIGH>;
+	};
+
+	/* EHCI instance 2: USB3_DP/N -> USBH_P/N */
+	usb@c5008000 {
+		status = "okay";
+		/* USBH_PEN */
+		nvidia,vbus-gpio = <&gpio TEGRA_GPIO(W, 2) GPIO_ACTIVE_LOW>;
+	};
+
+	sdhci@c8000600 {
+		status = "okay";
+		bus-width = <4>;
+		cd-gpios = <&gpio TEGRA_GPIO(C, 7) GPIO_ACTIVE_LOW>;
+	};
+
+	backlight: backlight {
+		compatible = "pwm-backlight";
+
+		brightness-levels = <255 128 64 32 16 8 4 0>;
+		default-brightness-level = <6>;
+		/* BL_ON */
+		enable-gpios = <&gpio TEGRA_GPIO(T, 4) GPIO_ACTIVE_HIGH>;
+		power-supply = <&reg_3v3>;
+		/* PWM<A> */
+		pwms = <&pwm 0 5000000>;
+	};
+
+	clocks {
+		compatible = "simple-bus";
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		clk32k_in: clock@0 {
+			compatible = "fixed-clock";
+			reg=<0>;
+			#clock-cells = <0>;
+			clock-frequency = <32768>;
+		};
+	};
+
+	lcd_panel: panel {
+		/*
+		 * edt,et057090dhu: EDT 5.7" LCD TFT
+		 * edt,et070080dh6: EDT 7.0" LCD TFT
+		 */
+		compatible = "edt,et057090dhu", "simple-panel";
+
+		backlight = <&backlight>;
+	};
+
+	regulators {
+		compatible = "simple-bus";
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		reg_3v3: regulator@0 {
+			compatible = "regulator-fixed";
+			reg = <0>;
+			regulator-name = "+V3.3";
+			regulator-min-microvolt = <3300000>;
+			regulator-max-microvolt = <3300000>;
+			regulator-always-on;
+		};
+	};
+};
+
+&uarta {
+	status = "okay";
+};

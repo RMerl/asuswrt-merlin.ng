@@ -1,0 +1,46 @@
+;**************************************************************
+;            Attach script for BCM6855   
+;            JTAG Scan-chain for 6855 is
+;            TDI->MEMC(5)->ARM(4)->WIFI(32)->LV(32)->TDO                                  
+;**************************************************************
+
+
+
+AREA
+AREA.CLEAR
+SYSTEM.RESET
+SYSTEM.JTAGCLOCK 20MHz
+
+AREA.select
+print "+++++++++++++++++++++++ Full scan chain +++++++++++++++++++++++++++++++++++"
+print "             TDI->MEMC(5)->ARM(4)->WIFI(32)->LV(32)->TDO                   "
+print "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+print "  "
+
+SYStem.CONFIG.DAPIRPOST  5.
+SYStem.CONFIG.DAPIRPRE   64.
+SYStem.CONFIG.DAPDRPOST  1.
+SYStem.CONFIG.DAPDRPRE   2.
+
+SYSTEM.CPU CORTEXA7MPCORE
+SYSTEM.CONFIG.CORENUMBER      3
+SYSTEM.CONFIG.CORE            1
+SYSTEM.CONFIG.DEBUGACCESSPORT 0
+SYStem.CONFIG AXIACCESSPORT   1
+
+SYSTEM.CONFIG.COREBASE 0x81810000	
+SYStem.CONFIG.BMC.Base 0x81811000
+
+CORE.ASSIGN 1	
+
+SYStem.option TRST     OFF 
+SYStem.option ENRESET  OFF
+
+print "             JTAG ATTACH CORE#0"
+print "   "
+print "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+
+SYSTEM.MODE NODEBUG
+SYSTEM.MODE ATTACH
+
+ENDDO

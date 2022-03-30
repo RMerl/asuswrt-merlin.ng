@@ -1,0 +1,14 @@
+if TARGET_T1024QDS
+
+config SYS_BOARD
+	default "t102xqds"
+
+config SYS_VENDOR
+	default "freescale"
+
+config SYS_CONFIG_NAME
+	default "T102xQDS"
+
+source "board/freescale/common/Kconfig"
+
+endif

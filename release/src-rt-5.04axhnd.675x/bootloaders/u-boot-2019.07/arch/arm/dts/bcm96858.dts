@@ -1,0 +1,140 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2018 Philippe Reynes <philippe.reynes@softathome.com>
+ *
+ * Copyright 2019 Broadcom Ltd.
+ */
+
+/dts-v1/;
+
+#include "bcm6858.dtsi"
+
+/ {
+	model = "Broadcom bcm96858";
+	compatible = "broadcom,bcm96858", "brcm,bcm6858";
+
+	aliases {
+		serial0 = &uart0;
+	};
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+	};
+
+	memory {
+		device_type = "memory";
+		reg = <0x0 0x0 0x0 0x08000000>;
+	};
+};
+
+&uart0 {
+	u-boot,dm-pre-reloc;
+	status = "okay";
+};
+
+&nand {
+	status = "okay";
+	write-protect = <0>;
+	#address-cells = <1>;
+	#size-cells = <0>;
+
+	nandcs@0 {
+		compatible = "brcm,nandcs";
+		reg = <0>;
+	};
+};
+
+&hsspi {
+	status = "okay";
+	spi-nand {
+		compatible = "spi-nand";
+		reg = <0>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		u-boot,dm-pre-reloc;				
+		spi-max-frequency = <100000000>;
+	};
+};
+
+&leds {
+	status = "okay";
+	#address-cells = <1>;
+	#size-cells = <0>;
+	brcm,serial-led-en-pol;
+	brcm,serial-led-data-ppol;
+
+	led@2 {
+		reg = <2>;
+		label = "green:inet";
+	};
+
+	led@5 {
+		reg = <5>;
+		label = "red:alarm";
+	};
+
+	led@8 {
+		reg = <8>;
+		label = "green:wlan_link";
+	};
+
+	led@11 {
+		reg = <11>;
+		label = "green:fxs1";
+	};
+
+	led@14 {
+		reg = <14>;
+		label = "green:fxs2";
+	};
+
+	led@15 {
+		reg = <15>;
+		label = "green:usb0";
+	};
+
+	led@16 {
+		reg = <16>;
+		label = "green:usb1";
+	};
+
+	led@17 {
+		reg = <17>;
+		label = "green:wps";
+	};
+};
+
+/* pinmux */
+/ {
+	usb0a_pwrflt_pins: usb0a_pwrflt_pinmux {
+	    pins = <113>;
+	    function = <1>;
+	};
+
+	usb0a_pwron_pins: usb0a_pwron_pinmux {
+	    pins = <114>;
+	    function = <1>;
+	};
+
+	usb1a_pwrflt_pins: usb1a_pwrflt_pinmux {
+	    pins = <115>;
+	    function = <1>;
+	};
+
+	usb1a_pwron_pins: usb1a_pwron_pinmux {
+	    pins = <116>;
+	    function = <1>;
+	};
+};
+
+&usb0 {
+	status = "okay";
+	pinctrl-0 = <&usb0a_pwrflt_pins &usb0a_pwron_pins>;
+	pinctrl-names="default";
+};
+
+&usb1 {
+	status = "okay";
+	pinctrl-0 = <&usb1a_pwrflt_pins &usb1a_pwron_pins>;
+	pinctrl-names="default";
+};

@@ -1,0 +1,62 @@
+Domain Name System
+-------------------------------------------
+
+The Domain Name System (DNS) is a hierarchical naming system for computers,
+services, or any resource participating in the Internet. It associates various
+information with domain names assigned to each of the participants. Most
+importantly, it translates domain names meaningful to humans into the numerical
+(binary) identifiers associated with networking equipment for the purpose of
+locating and addressing these devices world-wide. An often used analogy to
+explain the Domain Name System is that it serves as the "phone book" for the
+Internet by translating human-friendly computer hostnames into IP addresses.
+For example, www.example.com translates to 208.77.188.166.
+
+For more information on DNS - http://en.wikipedia.org/wiki/Domain_Name_System
+
+U-Boot and DNS
+------------------------------------------
+
+CONFIG_CMD_DNS - controls if the 'dns' command is compiled in. If it is, it
+		 will send name lookups to the dns server (env var 'dnsip')
+		 Turning this option on will about abou 1k to U-Boot's size.
+
+		 Example:
+
+bfin> print dnsip
+dnsip=192.168.0.1
+
+bfin> dns www.google.com
+66.102.1.104
+
+		 By default, dns does nothing except print the IP number on
+		 the default console - which by itself, would be pretty
+		 useless. Adding a third argument to the dns command will
+		 use that as the environment variable to be set.
+
+		 Example:
+
+bfin> print googleip
+## Error: "googleip" not defined
+bfin> dns www.google.com googleip
+64.233.161.104
+bfin> print googleip
+googleip=64.233.161.104
+bfin> ping ${googleip}
+Using Blackfin EMAC device
+host 64.233.161.104 is alive
+
+		 In this way, you can lookup, and set many more meaningful
+		 things.
+
+bfin> sntp
+ntpserverip not set
+bfin> dns pool.ntp.org ntpserverip
+72.18.205.156
+bfin> sntp
+Date: 2009-07-18 Time:	4:06:57
+
+		 For some helpful things that can be related to DNS in U-Boot,
+		 look at the top level README for these config options:
+		    CONFIG_CMD_DHCP
+		    CONFIG_BOOTP_DNS
+		    CONFIG_BOOTP_DNS2

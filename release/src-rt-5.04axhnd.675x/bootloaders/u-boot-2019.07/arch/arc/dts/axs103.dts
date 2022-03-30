@@ -1,0 +1,18 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2017 Synopsys, Inc. All rights reserved.
+ */
+/dts-v1/;
+
+/include/ "axc003.dtsi"
+/include/ "axs10x_mb.dtsi"
+
+
+/ {
+	model = "snps,axs103";
+
+	chosen {
+		stdout-path = &uart0;
+	};
+};
+

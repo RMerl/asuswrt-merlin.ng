@@ -1,0 +1,29 @@
+# Copyright (c) 2016, NVIDIA CORPORATION.
+#
+# SPDX-License-Identifier: GPL-2.0
+
+if TEGRA186
+
+choice
+	prompt "Tegra186 board select"
+
+config TARGET_P2771_0000
+	bool "NVIDIA Tegra186 P2771-0000 board"
+	select BOARD_LATE_INIT
+	help
+	  P2771-0000 is a P3310 CPU board married to a P2597 I/O board. The
+	  combination contains SoC, DRAM, eMMC, SD card slot, HDMI, USB
+	  micro-B port, Ethernet, USB3 host port, SATA, PCIe, and two GPIO
+	  expansion headers.
+
+endchoice
+
+config SYS_SOC
+	default "tegra186"
+
+config SYS_INIT_SP_BSS_OFFSET
+	default 524288
+
+source "board/nvidia/p2771-0000/Kconfig"
+
+endif

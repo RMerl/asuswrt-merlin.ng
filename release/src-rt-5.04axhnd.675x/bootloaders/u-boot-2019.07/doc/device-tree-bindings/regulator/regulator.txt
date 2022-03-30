@@ -1,0 +1,65 @@
+Voltage/Current regulator
+
+Binding:
+The regulator devices don't use the "compatible" property. The binding is done
+by the prefix of regulator node's name, or, if this fails, by the prefix of the
+regulator's "regulator-name" property. Usually the pmic I/O driver will provide
+the array of 'struct pmic_child_info' with the prefixes and compatible drivers.
+The bind is done by calling function: pmic_bind_childs().
+Example drivers:
+pmic: drivers/power/pmic/max77686.c
+regulator: drivers/power/regulator/max77686.c
+
+For the node name e.g.: "prefix[:alpha:]num { ... }":
+- the driver prefix should be: "prefix" - case sensitive
+- the node name's "num" is set as "dev->driver_data" on bind
+
+Example the prefix "ldo" will pass for: "ldo1", "ldo@1", "ldoreg@1, ...
+
+Binding by means of the node's name is preferred. However if the node names
+would produce ambiguous prefixes (like "regulator@1" and "regualtor@11") and you
+can't or do not want to change them then binding against the "regulator-name"
+property is possible. The syntax for the prefix of the "regulator-name" property
+is the same as the one for the regulator's node name.
+Use case: a regulator named "regulator@1" to be bound to a driver named
+"LDO_DRV" and a regulator named "regualator@11" to be bound to an other driver
+named "BOOST_DRV". Using prefix "regualtor@1" for driver matching would load
+the same driver for both regulators, hence the prefix is ambiguous.
+
+Optional properties:
+- regulator-name: a string, required by the regulator uclass, used for driver
+                  binding if binding by node's name prefix fails
+- regulator-min-microvolt: a minimum allowed Voltage value
+- regulator-max-microvolt: a maximum allowed Voltage value
+- regulator-min-microamp: a minimum allowed Current value
+- regulator-max-microamp: a maximum allowed Current value
+- regulator-always-on: regulator should never be disabled
+- regulator-boot-on: enabled by bootloader/firmware
+- regulator-ramp-delay: ramp delay for regulator (in uV/us)
+
+Note
+The "regulator-name" constraint is used for setting the device's uclass
+platform data '.name' field. And the regulator device name is set from
+it's node name. If "regulator-name" is not provided in dts, node name
+is chosen for setting the device's uclass platform data '.name' field.
+
+Other kernel-style properties, are currently not used.
+
+Note:
+For the regulator autoset from constraints, the framework expects that:
+- regulator-min-microvolt is equal to regulator-max-microvolt
+- regulator-min-microamp is equal to regulator-max-microamp
+- regulator-always-on or regulator-boot-on is set
+
+Example:
+ldo0 {
+	/* Optional */
+	regulator-name = "VDDQ_EMMC_1.8V";
+	regulator-min-microvolt = <1800000>;
+	regulator-max-microvolt = <1800000>;
+	regulator-min-microamp = <100000>;
+	regulator-max-microamp = <100000>;
+	regulator-always-on;
+	regulator-boot-on;
+	regulator-ramp-delay = <12000>;
+};

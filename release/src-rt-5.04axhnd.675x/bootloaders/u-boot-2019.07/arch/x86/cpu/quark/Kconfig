@@ -1,0 +1,137 @@
+# SPDX-License-Identifier: GPL-2.0+
+#
+# Copyright (C) 2015, Bin Meng <bmeng.cn@gmail.com>
+
+config INTEL_QUARK
+	bool
+	select HAVE_RMU
+	select ARCH_EARLY_INIT_R
+	select ARCH_MISC_INIT
+	imply ENABLE_MRC_CACHE
+	imply ETH_DESIGNWARE
+	imply ICH_SPI
+	imply INTEL_ICH6_GPIO
+	imply MMC
+	imply MMC_PCI
+	imply MMC_SDHCI
+	imply MMC_SDHCI_SDMA
+	imply SPI_FLASH
+	imply SYS_NS16550
+	imply USB
+	imply USB_EHCI_HCD
+
+if INTEL_QUARK
+
+config HAVE_RMU
+	bool "Add a Remote Management Unit (RMU) binary"
+	help
+	  Select this option to add a Remote Management Unit (RMU) binary
+	  to the resulting U-Boot image. It is a data block (up to 64K) of
+	  machine-specific code which must be put in the flash for the RMU
+	  within the Quark SoC processor to access when powered up before
+	  system BIOS is executed.
+
+config RMU_FILE
+	string "Remote Management Unit (RMU) binary filename"
+	depends on HAVE_RMU
+	default "rmu.bin"
+	help
+	  The filename of the file to use as Remote Management Unit (RMU)
+	  binary in the board directory.
+
+config RMU_ADDR
+	hex "Remote Management Unit (RMU) binary location"
+	depends on HAVE_RMU
+	default 0xfff00000
+	help
+	  The location of the RMU binary is determined by a strap. It must be
+	  put in flash at a location matching the strap-determined base address.
+
+	  The default base address of 0xfff00000 indicates that the binary must
+	  be located at offset 0 from the beginning of a 1MB flash device.
+
+config HAVE_CMC
+	bool
+	default HAVE_RMU
+
+config CMC_FILE
+	string
+	depends on HAVE_CMC
+	default RMU_FILE
+
+config CMC_ADDR
+	hex
+	depends on HAVE_CMC
+	default RMU_ADDR
+
+config ESRAM_BASE
+	hex
+	default 0x80000000
+	help
+	  Embedded SRAM (eSRAM) memory-mapped base address.
+
+config PCIE_ECAM_BASE
+	hex
+	default 0xe0000000
+
+config RCBA_BASE
+	hex
+	default 0xfed1c000
+	help
+	  Root Complex register block memory-mapped base address.
+
+config ACPI_PM1_BASE
+	hex
+	default 0x1000
+	help
+	  ACPI Power Management 1 (PM1) i/o-mapped base address.
+	  This device is defined in ACPI specification, with 16 bytes in size.
+
+config ACPI_PBLK_BASE
+	hex
+	default 0x1010
+	help
+	  ACPI Processor Block (PBLK) i/o-mapped base address.
+	  This device is defined in ACPI specification, with 16 bytes in size.
+
+config SPI_DMA_BASE
+	hex
+	default 0x1020
+	help
+	  SPI DMA i/o-mapped base address.
+
+config GPIO_BASE
+	hex
+	default 0x1080
+	help
+	  GPIO i/o-mapped base address.
+
+config ACPI_GPE0_BASE
+	hex
+	default 0x1100
+	help
+	  ACPI General Purpose Event 0 (GPE0) i/o-mapped base address.
+	  This device is defined in ACPI specification, with 64 bytes in size.
+
+config WDT_BASE
+	hex
+	default 0x1140
+	help
+	  Watchdog timer i/o-mapped base address.
+
+config SYS_CAR_ADDR
+	hex
+	default ESRAM_BASE
+
+config SYS_CAR_SIZE
+	hex
+	default 0x8000
+	help
+	  Space in bytes in eSRAM used as Cache-As-ARM (CAR).
+	  Note this size must not exceed eSRAM's total size.
+
+config X86_TSC_TIMER_EARLY_FREQ
+	int
+	default 400
+
+endif

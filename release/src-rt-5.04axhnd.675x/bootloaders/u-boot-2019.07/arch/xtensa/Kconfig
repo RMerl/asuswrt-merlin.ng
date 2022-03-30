@@ -1,0 +1,47 @@
+menu "Xtensa architecture"
+	depends on XTENSA
+
+config SYS_ARCH
+	string
+	default "xtensa"
+
+config SYS_CPU
+	string "Xtensa Core Variant"
+
+choice
+	prompt "Target select"
+
+config TARGET_XTFPGA
+	bool "Support XTFPGA"
+
+endchoice
+
+config SYS_ICACHE_OFF
+	bool "Do not enable icache"
+	default n
+	help
+	  Do not enable instruction cache in U-Boot.
+
+config SPL_SYS_ICACHE_OFF
+	bool "Do not enable icache in SPL"
+	depends on SPL
+	default SYS_ICACHE_OFF
+	help
+	  Do not enable instruction cache in SPL.
+
+config SYS_DCACHE_OFF
+	bool "Do not enable dcache"
+	default n
+	help
+	  Do not enable data cache in U-Boot.
+
+config SPL_SYS_DCACHE_OFF
+	bool "Do not enable dcache in SPL"
+	depends on SPL
+	default SYS_DCACHE_OFF
+	help
+	  Do not enable data cache in SPL.
+
+source "board/cadence/xtfpga/Kconfig"
+
+endmenu

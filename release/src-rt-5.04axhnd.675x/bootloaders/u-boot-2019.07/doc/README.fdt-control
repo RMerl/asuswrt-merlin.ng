@@ -1,0 +1,230 @@
+# SPDX-License-Identifier: GPL-2.0+
+#
+# Copyright (c) 2011 The Chromium OS Authors.
+
+Device Tree Control in U-Boot
+=============================
+
+This feature provides for run-time configuration of U-Boot via a flat
+device tree (fdt). U-Boot configuration has traditionally been done
+using CONFIG options in the board config file. This feature aims to
+make it possible for a single U-Boot binary to support multiple boards,
+with the exact configuration of each board controlled by a flat device
+tree (fdt). This is the approach recently taken by the ARM Linux kernel
+and has been used by PowerPC for some time.
+
+The fdt is a convenient vehicle for implementing run-time configuration
+for three reasons. Firstly it is easy to use, being a simple text file.
+It is extensible since it consists of nodes and properties in a nice
+hierarchical format.
+
+Finally, there is already excellent infrastructure for the fdt: a
+compiler checks the text file and converts it to a compact binary
+format, and a library is already available in U-Boot (libfdt) for
+handling this format.
+
+The dts directory contains a Makefile for building the device tree blob
+and embedding it in your U-Boot image. This is useful since it allows
+U-Boot to configure itself according to what it finds there. If you have
+a number of similar boards with different peripherals, you can describe
+the features of each board in the device tree file, and have a single
+generic source base.
+
+To enable this feature, add CONFIG_OF_CONTROL to your board config file.
+
+
+What is a Flat Device Tree?
+---------------------------
+
+An fdt can be specified in source format as a text file. To read about
+the fdt syntax, take a look at the specification here:
+
+https://www.power.org/resources/downloads/Power_ePAPR_APPROVED_v1.0.pdf
+
+You also might find this section of the Linux kernel documentation
+useful: (access this in the Linux kernel source code)
+
+	Documentation/devicetree/booting-without-of.txt
+
+There is also a mailing list:
+
+	http://lists.ozlabs.org/listinfo/devicetree-discuss
+
+In case you are wondering, OF stands for Open Firmware.
+
+
+Tools
+-----
+
+To use this feature you will need to get the device tree compiler. This is
+provided by U-Boot automatically. If you have a system version of dtc
+(typically in the 'device-tree-compiler' package), it is currently not used.
+
+If you want to build your own dtc, it is kept here:
+
+	git://git.kernel.org/pub/scm/utils/dtc/dtc.git
+
+For example:
+
+	$ git clone git://git.kernel.org/pub/scm/utils/dtc/dtc.git
+	$ cd dtc
+	$ make
+	$ sudo make install
+
+Then run the compiler (your version will vary):
+
+	$ dtc -v
+	Version: DTC 1.2.0-g2cb4b51f
+	$ make tests
+	$ cd tests
+	$ ./run_tests.sh
+	********** TEST SUMMARY
+	*     Total testcases:	1371
+	*                PASS:	1371
+	*                FAIL:	0
+	*   Bad configuration:	0
+	* Strange test result:	0
+
+You will also find a useful fdtdump utility for decoding a binary file, as
+well as fdtget/fdtput for reading and writing properties in a binary file.
+
+
+Where do I get an fdt file for my board?
+----------------------------------------
+
+You may find that the Linux kernel has a suitable file. Look in the
+kernel source in arch/<arch>/boot/dts.
+
+If not you might find other boards with suitable files that you can
+modify to your needs. Look in the board directories for files with a
+.dts extension.
+
+Failing that, you could write one from scratch yourself!
+
+
+Configuration
+-------------
+
+Use:
+
+#define CONFIG_DEFAULT_DEVICE_TREE	"<name>"
+
+to set the filename of the device tree source. Then put your device tree
+file into
+
+	board/<vendor>/dts/<name>.dts
+
+This should include your CPU or SOC's device tree file, placed in
+arch/<arch>/dts, and then make any adjustments required.
+
+If CONFIG_OF_EMBED is defined, then it will be picked up and built into
+the U-Boot image (including u-boot.bin). This is suitable for debugging
+and development only and is not recommended for production devices.
+
+If CONFIG_OF_SEPARATE is defined, then it will be built and placed in
+a u-boot.dtb file alongside u-boot-nodtb.bin. A common approach is then to
+join the two:
+
+	cat u-boot-nodtb.bin u-boot.dtb >image.bin
+
+and then flash image.bin onto your board. Note that U-Boot creates
+u-boot-dtb.bin which does the above step for you also. Resulting
+u-boot.bin is a copy of u-boot-dtb.bin in this case. If you are using
+CONFIG_SPL_FRAMEWORK, then u-boot.img will be built to include the device
+tree binary.
+
+If CONFIG_OF_BOARD is defined, a board-specific routine will provide the
+device tree at runtime, for example if an earlier bootloader stage creates
+it and passes it to U-Boot.
+
+If CONFIG_OF_HOSTFILE is defined, then it will be read from a file on
+startup. This is only useful for sandbox. Use the -d flag to U-Boot to
+specify the file to read.
+
+You cannot use more than one of these options at the same time.
+
+To use a device tree file that you have compiled yourself, pass
+EXT_DTB=<filename> to 'make', as in:
+
+	make EXT_DTB=boot/am335x-boneblack-pubkey.dtb
+
+Then U-Boot will copy that file to u-boot.dtb, put it in the .img file
+if used, and u-boot-dtb.bin.
+
+If you wish to put the fdt at a different address in memory, you can
+define the "fdtcontroladdr" environment variable. This is the hex
+address of the fdt binary blob, and will override either of the options.
+Be aware that this environment variable is checked prior to relocation,
+when only the compiled-in environment is available. Therefore it is not
+possible to define this variable in the saved SPI/NAND flash
+environment, for example (it will be ignored). After relocation, this
+variable will be set to the address of the newly relocated fdt blob.
+It is read-only and cannot be changed. It can optionally be used to
+control the boot process of Linux with bootm/bootz commands.
+
+To use this, put something like this in your board header file:
+
+#define CONFIG_EXTRA_ENV_SETTINGS	"fdtcontroladdr=10000\0"
+
+Build:
+
+After board configuration is done, fdt supported u-boot can be build in two ways:
+1)  build the default dts which is defined from CONFIG_DEFAULT_DEVICE_TREE
+    $ make
+2)  build the user specified dts file
+    $ make DEVICE_TREE=<dts-file-name>
+
+
+Relocation, SPL and TPL
+-----------------------
+
+U-Boot can be divided into three phases: TPL, SPL and U-Boot proper.
+
+The full device tree is available to U-Boot proper, but normally only a subset
+(or none at all) is available to TPL and SPL. See 'Pre-Relocation Support' and
+'SPL Support' in doc/driver-model/README.txt for more details.
+
+
+Using several DTBs in the SPL (CONFIG_SPL_MULTI_DTB)
+----------------------------------------------------
+In some rare cases it is desirable to let SPL be able to select one DTB among
+many. This usually not very useful as the DTB for the SPL is small and usually
+fits several platforms. However the DTB sometimes include information that do
+work on several platforms (like IO tuning parameters).
+In this case it is possible to use CONFIG_SPL_MULTI_DTB. This option appends to
+the SPL a FIT image containing several DTBs listed in SPL_OF_LIST.
+board_fit_config_name_match() is called to select the right DTB.
+
+If board_fit_config_name_match() relies on DM (DM driver to access an EEPROM
+containing the board ID for example), it possible to start with a generic DTB
+and then switch over to the right DTB after the detection. For this purpose,
+the platform code must call fdtdec_resetup(). Based on the returned flag, the
+platform may have to re-initiliaze the DM subusystem using dm_uninit() and
+dm_init_and_scan().
+
+
+Limitations
+-----------
+
+U-Boot is designed to build with a single architecture type and CPU
+type. So for example it is not possible to build a single ARM binary
+which runs on your AT91 and OMAP boards, relying on an fdt to configure
+the various features. This is because you must select one of
+the CPU families within arch/arm/cpu/arm926ejs (omap or at91) at build
+time. Similarly you cannot build for multiple cpu types or
+architectures.
+
+That said the complexity reduction by using fdt to support variants of
+boards which use the same SOC / CPU can be substantial.
+
+It is important to understand that the fdt only selects options
+available in the platform / drivers. It cannot add new drivers (yet). So
+you must still have the CONFIG option to enable the driver. For example,
+you need to define CONFIG_SYS_NS16550 to bring in the NS16550 driver,
+but can use the fdt to specific the UART clock, peripheral address, etc.
+In very broad terms, the CONFIG options in general control *what* driver
+files are pulled in, and the fdt controls *how* those files work.
+
+--
+Simon Glass <sjg@chromium.org>
+1-Sep-11

@@ -1,0 +1,482 @@
+#
+# I2C subsystem configuration
+#
+
+menu "I2C support"
+
+config DM_I2C
+	bool "Enable Driver Model for I2C drivers"
+	depends on DM
+	help
+	  Enable driver model for I2C. The I2C uclass interface: probe, read,
+	  write and speed, is implemented with the bus drivers operations,
+	  which provide methods for bus setting and data transfer. Each chip
+	  device (bus child) info is kept as parent platdata. The interface
+	  is defined in include/i2c.h. When i2c bus driver supports the i2c
+	  uclass, but the device drivers not, then DM_I2C_COMPAT config can
+	  be used as compatibility layer.
+
+config DM_I2C_COMPAT
+	bool "Enable I2C compatibility layer"
+	depends on DM
+	help
+	  Enable old-style I2C functions for compatibility with existing code.
+	  This option can be enabled as a temporary measure to avoid needing
+	  to convert all code for a board in a single commit. It should not
+	  be enabled for any board in an official release.
+
+config I2C_CROS_EC_TUNNEL
+	tristate "Chrome OS EC tunnel I2C bus"
+	depends on CROS_EC
+	help
+	  This provides an I2C bus that will tunnel i2c commands through to
+	  the other side of the Chrome OS EC to the I2C bus connected there.
+	  This will work whatever the interface used to talk to the EC (SPI,
+	  I2C or LPC). Some Chromebooks use this when the hardware design
+	  does not allow direct access to the main PMIC from the AP.
+
+config I2C_CROS_EC_LDO
+	bool "Provide access to LDOs on the Chrome OS EC"
+	depends on CROS_EC
+	---help---
+	On many Chromebooks the main PMIC is inaccessible to the AP. This is
+	often dealt with by using an I2C pass-through interface provided by
+	the EC. On some unfortunate models (e.g. Spring) the pass-through
+	is not available, and an LDO message is available instead. This
+	option enables a driver which provides very basic access to those
+	regulators, via the EC. We implement this as an I2C bus	which
+	emulates just the TPS65090 messages we know about. This is done to
+	avoid duplicating the logic in the TPS65090 regulator driver for
+	enabling/disabling an LDO.
+
+config I2C_SET_DEFAULT_BUS_NUM
+	bool "Set default I2C bus number"
+	depends on DM_I2C
+	help
+	  Set default number of I2C bus to be accessed. This option provides
+	  behaviour similar to old (i.e. pre DM) I2C bus driver.
+
+config I2C_DEFAULT_BUS_NUMBER
+	hex "I2C default bus number"
+	depends on I2C_SET_DEFAULT_BUS_NUM
+	default 0x0
+	help
+	  Number of default I2C bus to use
+
+config DM_I2C_GPIO
+	bool "Enable Driver Model for software emulated I2C bus driver"
+	depends on DM_I2C && DM_GPIO
+	help
+	  Enable the i2c bus driver emulation by using the GPIOs. The bus GPIO
+	  configuration is given by the device tree. Kernel-style device tree
+	  bindings are supported.
+	  Binding info: doc/device-tree-bindings/i2c/i2c-gpio.txt
+
+config SYS_I2C_AT91
+	bool "Atmel I2C driver"
+	depends on DM_I2C && ARCH_AT91
+	help
+	  Add support for the Atmel I2C driver. A serious problem is that there
+	  is no documented way to issue repeated START conditions for more than
+	  two messages, as needed to support combined I2C messages. Use the
+	  i2c-gpio driver unless your system can cope with this limitation.
+	  Binding info: doc/device-tree-bindings/i2c/i2c-at91.txt
+
+config SYS_I2C_FSL
+       bool "Freescale I2C bus driver"
+       depends on DM_I2C
+       help
+	  Add support for Freescale I2C busses as used on MPC8240, MPC8245, and
+	  MPC85xx processors.
+
+config SYS_I2C_CADENCE
+	tristate "Cadence I2C Controller"
+	depends on DM_I2C && (ARCH_ZYNQ || ARM64)
+	help
+	  Say yes here to select Cadence I2C Host Controller. This controller is
+	  e.g. used by Xilinx Zynq.
+
+config SYS_I2C_DAVINCI
+	bool "Davinci I2C Controller"
+	depends on (ARCH_KEYSTONE || ARCH_DAVINCI)
+	help
+	  Say yes here to add support for Davinci and Keystone I2C controller
+
+config SYS_I2C_DW
+	bool "Designware I2C Controller"
+	default n
+	help
+	  Say yes here to select the Designware I2C Host Controller. This
+	  controller is used in various SoCs, e.g. the ST SPEAr, Altera
+	  SoCFPGA, Synopsys ARC700 and some Intel x86 SoCs.
+
+config SYS_I2C_DW_ENABLE_STATUS_UNSUPPORTED
+	bool "DW I2C Enable Status Register not supported"
+	depends on SYS_I2C_DW && (TARGET_SPEAR300 || TARGET_SPEAR310 || \
+		TARGET_SPEAR320 || TARGET_SPEAR600 || TARGET_X600)
+	default y
+	help
+	  Some versions of the Designware I2C controller do not support the
+	  enable status register. This config option can be enabled in such
+	  cases.
+
+config SYS_I2C_ASPEED
+	bool "Aspeed I2C Controller"
+	depends on DM_I2C && ARCH_ASPEED
+	help
+	  Say yes here to select Aspeed I2C Host Controller. The driver
+	  supports AST2500 and AST2400 controllers, but is very limited.
+	  Only single master mode is supported and only byte-by-byte
+	  synchronous reads and writes are supported, no Pool Buffers or DMA.
+
+config SYS_I2C_INTEL
+	bool "Intel I2C/SMBUS driver"
+	depends on DM_I2C
+	help
+	  Add support for the Intel SMBUS driver. So far this driver is just
+	  a stub which perhaps some basic init. There is no implementation of
+	  the I2C API meaning that any I2C operations will immediately fail
+	  for now.
+
+config SYS_I2C_IMX_LPI2C
+	bool "NXP i.MX LPI2C driver"
+	help
+	  Add support for the NXP i.MX LPI2C driver.
+
+config SYS_I2C_MESON
+	bool "Amlogic Meson I2C driver"
+	depends on DM_I2C && ARCH_MESON
+	help
+	  Add support for the I2C controller available in Amlogic Meson
+	  SoCs. The controller supports programmable bus speed including
+	  standard (100kbits/s) and fast (400kbit/s) speed and allows the
+	  software to define a flexible format of the bit streams. It has an
+	  internal buffer holding up to 8 bytes for transfers and supports
+	  both 7-bit and 10-bit addresses.
+
+config SYS_I2C_MXC
+	bool "NXP MXC I2C driver"
+	help
+	  Add support for the NXP I2C driver. This supports up to four bus
+	  channels and operating on standard mode up to 100 kbits/s and fast
+	  mode up to 400 kbits/s.
+
+# These settings are not used with DM_I2C, however SPL doesn't use
+# DM_I2C even if DM_I2C is enabled, and so might use these settings even
+# when main u-boot does not!
+if SYS_I2C_MXC && (!DM_I2C || SPL)
+config SYS_I2C_MXC_I2C1
+	bool "NXP MXC I2C1"
+	help
+	 Add support for NXP MXC I2C Controller 1.
+	 Required for SoCs which have I2C MXC controller 1 eg LS1088A, LS2080A
+
+config SYS_I2C_MXC_I2C2
+	bool "NXP MXC I2C2"
+	help
+	 Add support for NXP MXC I2C Controller 2.
+	 Required for SoCs which have I2C MXC controller 2 eg LS1088A, LS2080A
+
+config SYS_I2C_MXC_I2C3
+	bool "NXP MXC I2C3"
+	help
+	 Add support for NXP MXC I2C Controller 3.
+	 Required for SoCs which have I2C MXC controller 3 eg LS1088A, LS2080A
+
+config SYS_I2C_MXC_I2C4
+	bool "NXP MXC I2C4"
+	help
+	 Add support for NXP MXC I2C Controller 4.
+	 Required for SoCs which have I2C MXC controller 4 eg LS1088A, LS2080A
+
+config SYS_I2C_MXC_I2C5
+	bool "NXP MXC I2C5"
+	help
+	 Add support for NXP MXC I2C Controller 5.
+	 Required for SoCs which have I2C MXC controller 5 eg LX2160A
+
+config SYS_I2C_MXC_I2C6
+	bool "NXP MXC I2C6"
+	help
+	 Add support for NXP MXC I2C Controller 6.
+	 Required for SoCs which have I2C MXC controller 6 eg LX2160A
+
+config SYS_I2C_MXC_I2C7
+	bool "NXP MXC I2C7"
+	help
+	 Add support for NXP MXC I2C Controller 7.
+	 Required for SoCs which have I2C MXC controller 7 eg LX2160A
+
+config SYS_I2C_MXC_I2C8
+	bool "NXP MXC I2C8"
+	help
+	 Add support for NXP MXC I2C Controller 8.
+	 Required for SoCs which have I2C MXC controller 8 eg LX2160A
+endif
+
+if SYS_I2C_MXC_I2C1
+config SYS_MXC_I2C1_SPEED
+	int "I2C Channel 1 speed"
+	default 40000000 if TARGET_LS2080A_SIMU || TARGET_LS2080A_EMU
+	default 100000
+	help
+	 MXC I2C Channel 1 speed
+
+config SYS_MXC_I2C1_SLAVE
+	int "I2C1 Slave"
+	default 0
+	help
+	 MXC I2C1 Slave
+endif
+
+if SYS_I2C_MXC_I2C2
+config SYS_MXC_I2C2_SPEED
+	int "I2C Channel 2 speed"
+	default 40000000 if TARGET_LS2080A_SIMU || TARGET_LS2080A_EMU
+	default 100000
+	help
+	 MXC I2C Channel 2 speed
+
+config SYS_MXC_I2C2_SLAVE
+	int "I2C2 Slave"
+	default 0
+	help
+	 MXC I2C2 Slave
+endif
+
+if SYS_I2C_MXC_I2C3
+config SYS_MXC_I2C3_SPEED
+	int "I2C Channel 3 speed"
+	default 100000
+	help
+	 MXC I2C Channel 3 speed
+
+config SYS_MXC_I2C3_SLAVE
+	int "I2C3 Slave"
+	default 0
+	help
+	 MXC I2C3 Slave
+endif
+
+if SYS_I2C_MXC_I2C4
+config SYS_MXC_I2C4_SPEED
+	int "I2C Channel 4 speed"
+	default 100000
+	help
+	 MXC I2C Channel 4 speed
+
+config SYS_MXC_I2C4_SLAVE
+	int "I2C4 Slave"
+	default 0
+	help
+	 MXC I2C4 Slave
+endif
+
+if SYS_I2C_MXC_I2C5
+config SYS_MXC_I2C5_SPEED
+	int "I2C Channel 5 speed"
+	default 100000
+	help
+	 MXC I2C Channel 5 speed
+
+config SYS_MXC_I2C5_SLAVE
+	int "I2C5 Slave"
+	default 0
+	help
+	 MXC I2C5 Slave
+endif
+
+if SYS_I2C_MXC_I2C6
+config SYS_MXC_I2C6_SPEED
+	int "I2C Channel 6 speed"
+	default 100000
+	help
+	 MXC I2C Channel 6 speed
+
+config SYS_MXC_I2C6_SLAVE
+	int "I2C6 Slave"
+	default 0
+	help
+	 MXC I2C6 Slave
+endif
+
+if SYS_I2C_MXC_I2C7
+config SYS_MXC_I2C7_SPEED
+	int "I2C Channel 7 speed"
+	default 100000
+	help
+	 MXC I2C Channel 7 speed
+
+config SYS_MXC_I2C7_SLAVE
+	int "I2C7 Slave"
+	default 0
+	help
+	 MXC I2C7 Slave
+endif
+
+if SYS_I2C_MXC_I2C8
+config SYS_MXC_I2C8_SPEED
+	int "I2C Channel 8 speed"
+	default 100000
+	help
+	 MXC I2C Channel 8 speed
+
+config SYS_MXC_I2C8_SLAVE
+	int "I2C8 Slave"
+	default 0
+	help
+	 MXC I2C8 Slave
+endif
+
+config SYS_I2C_OMAP24XX
+	bool "TI OMAP2+ I2C driver"
+	depends on ARCH_OMAP2PLUS
+	help
+	  Add support for the OMAP2+ I2C driver.
+
+if SYS_I2C_OMAP24XX
+config SYS_OMAP24_I2C_SLAVE
+	int "I2C Slave addr channel 0"
+	default 1
+	help
+	  OMAP24xx I2C Slave address channel 0
+
+config SYS_OMAP24_I2C_SPEED
+	int "I2C Slave channel 0 speed"
+	default 100000
+	help
+	  OMAP24xx Slave speed channel 0
+endif
+
+config SYS_I2C_RCAR_I2C
+	bool "Renesas RCar I2C driver"
+	depends on (RCAR_GEN3 || RCAR_GEN2) && DM_I2C
+	help
+	  Support for Renesas RCar I2C controller.
+
+config SYS_I2C_RCAR_IIC
+	bool "Renesas RCar Gen3 IIC driver"
+	depends on (RCAR_GEN3 || RCAR_GEN2) && DM_I2C
+	help
+	  Support for Renesas RCar Gen3 IIC controller.
+
+config SYS_I2C_ROCKCHIP
+	bool "Rockchip I2C driver"
+	depends on DM_I2C
+	help
+	  Add support for the Rockchip I2C driver. This is used with various
+	  Rockchip parts such as RK3126, RK3128, RK3036 and RK3288. All chips
+	  have several I2C ports and all are provided, controlled by the
+	  device tree.
+
+config SYS_I2C_SANDBOX
+	bool "Sandbox I2C driver"
+	depends on SANDBOX && DM_I2C
+	help
+	  Enable I2C support for sandbox. This is an emulation of a real I2C
+	  bus. Devices can be attached to the bus using the device tree
+	  which specifies the driver to use.  See sandbox.dts as an example.
+
+config SYS_I2C_S3C24X0
+	bool "Samsung I2C driver"
+	depends on ARCH_EXYNOS4 && DM_I2C
+	help
+	  Support for Samsung I2C controller as Samsung SoCs.
+
+config SYS_I2C_STM32F7
+	bool "STMicroelectronics STM32F7 I2C support"
+	depends on (STM32F7 || STM32H7 || ARCH_STM32MP) && DM_I2C
+	help
+	  Enable this option to add support for STM32 I2C controller
+	  introduced with STM32F7/H7 SoCs. This I2C controller supports :
+	   _ Slave and master modes
+	   _ Multimaster capability
+	   _ Standard-mode (up to 100 kHz)
+	   _ Fast-mode (up to 400 kHz)
+	   _ Fast-mode Plus (up to 1 MHz)
+	   _ 7-bit and 10-bit addressing mode
+	   _ Multiple 7-bit slave addresses (2 addresses, 1 with configurable mask)
+	   _ All 7-bit addresses acknowledge mode
+	   _ General call
+	   _ Programmable setup and hold times
+	   _ Easy to use event management
+	   _ Optional clock stretching
+	   _ Software reset
+
+config SYS_I2C_TEGRA
+	bool "NVIDIA Tegra internal I2C controller"
+	depends on TEGRA
+	help
+	  Support for NVIDIA I2C controller available in Tegra SoCs.
+
+config SYS_I2C_UNIPHIER
+	bool "UniPhier I2C driver"
+	depends on ARCH_UNIPHIER && DM_I2C
+	default y
+	help
+	  Support for UniPhier I2C controller driver.  This I2C controller
+	  is used on PH1-LD4, PH1-sLD8 or older UniPhier SoCs.
+
+config SYS_I2C_UNIPHIER_F
+	bool "UniPhier FIFO-builtin I2C driver"
+	depends on ARCH_UNIPHIER && DM_I2C
+	default y
+	help
+	  Support for UniPhier FIFO-builtin I2C controller driver.
+	  This I2C controller is used on PH1-Pro4 or newer UniPhier SoCs.
+
+config SYS_I2C_VERSATILE
+	bool "Arm Ltd Versatile I2C bus driver"
+	depends on DM_I2C && (TARGET_VEXPRESS_CA15_TC2 || TARGET_VEXPRESS64_JUNO)
+	help
+	  Add support for the Arm Ltd Versatile Express I2C driver. The I2C host
+	  controller is present in the development boards manufactured by Arm Ltd.
+
+config SYS_I2C_MVTWSI
+	bool "Marvell I2C driver"
+	depends on DM_I2C
+	help
+	  Support for Marvell I2C controllers as used on the orion5x and
+	  kirkwood SoC families.
+
+config TEGRA186_BPMP_I2C
+	bool "Enable Tegra186 BPMP-based I2C driver"
+	depends on TEGRA186_BPMP
+	help
+	  Support for Tegra I2C controllers managed by the BPMP (Boot and
+	  Power Management Processor). On Tegra186, some I2C controllers are
+	  directly controlled by the main CPU, whereas others are controlled
+	  by the BPMP, and can only be accessed by the main CPU via IPC
+	  requests to the BPMP. This driver covers the latter case.
+
+config SYS_I2C_BUS_MAX
+	int "Max I2C busses"
+	depends on ARCH_KEYSTONE || ARCH_OMAP2PLUS || ARCH_SOCFPGA
+	default 2 if TI816X
+	default 3 if OMAP34XX || AM33XX || AM43XX || ARCH_KEYSTONE
+	default 4 if ARCH_SOCFPGA || OMAP44XX || TI814X
+	default 5 if OMAP54XX
+	help
+	  Define the maximum number of available I2C buses.
+
+config SYS_I2C_XILINX_XIIC
+	bool "Xilinx AXI I2C driver"
+	depends on DM_I2C
+	help
+	  Support for Xilinx AXI I2C controller.
+
+config SYS_I2C_IHS
+        bool "gdsys IHS I2C driver"
+        depends on DM_I2C
+        help
+          Support for gdsys IHS I2C driver on FPGA bus.
+
+config SYS_I2C_BCMBCA
+        bool "Broadcom bcmbca I2C driver"
+        depends on DM_I2C
+        help
+          Support Broadcom bcmbca I2C driver.
+
+source "drivers/i2c/muxes/Kconfig"
+
+endmenu

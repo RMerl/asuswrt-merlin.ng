@@ -1,0 +1,16 @@
+u-boot,dm-pre-reloc;
+compatible = "brcm,bcm63xx-sdhci";
+reg-names = "sdhci-base", "sdhci-topcfg", "sdhci-boot", "sdhci-ahbss-ctrl";
+reg = <SDHCI_OFFSET SDHCI_SIZE>,
+      <SDHCI_TOPCFG_OFFSET SDHCI_TOPCFG_SIZE>,
+      <SDHCI_BOOT_OFFSET SDHCI_BOOT_SIZE>,
+      <SDHCI_AHBSS_CTRL_OFFSET SDHCI_AHBSS_CTRL_SIZE>;
+interrupts = <GIC_SPI SDIO_EMMC_SPI IRQ_TYPE_LEVEL_HIGH>;
+bus-width = <8>;
+sd-uhs-sdr50;
+sd-uhs-sdr104;
+sd-uhs-ddr50;
+mmc-ddr-1_8v;
+mmc-hs200-1_8v;
+clock-frequency = <SDHCI_HS200_BASE_CLOCK_FREQ>;
+status = "disabled";

@@ -1,0 +1,58 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2015 Purna Chandra Mandal, purna.mandal@microchip.com
+ */
+
+/dts-v1/;
+
+#include "pic32mzda.dtsi"
+
+/ {
+	model = "Microchip PIC32MZDASK";
+	compatible = "microchip,pic32mzdask", "microchip,pic32mzda";
+
+	aliases {
+		console = &uart2;
+		serial0 = &uart2;
+	};
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+	};
+};
+
+&clock {
+	microchip,refo2-frequency = <50000000>;
+	microchip,refo4-frequency = <25000000>;
+	microchip,refo5-frequency = <40000000>;
+	status = "okay";
+	u-boot,dm-pre-reloc;
+};
+
+&pinctrl {
+	status = "okay";
+	u-boot,dm-pre-reloc;
+};
+
+&uart2 {
+	status = "okay";
+	u-boot,dm-pre-reloc;
+};
+
+&sdhci {
+	status = "okay";
+};
+
+&ethernet {
+	reset-gpios = <&gpioJ 15 0>;
+	status = "okay";
+	phy-mode = "rmii";
+	phy-handle = <&ethernet_phy>;
+	ethernet_phy: lan8740_phy@0 {
+		reg = <0>;
+	};
+};
+
+&usb {
+	status = "okay";
+};

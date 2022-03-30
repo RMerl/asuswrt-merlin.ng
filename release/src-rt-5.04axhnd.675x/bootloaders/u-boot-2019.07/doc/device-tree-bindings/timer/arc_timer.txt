@@ -1,0 +1,24 @@
+ARC Timer
+
+Required properties:
+
+- compatible : should be "snps,arc-timer".
+- reg : Specifies timer ID, could be either 0 or 1.
+- clocks : Specifies clocks that drives the counter.
+
+Examples:
+
+timer@0 {
+	compatible = "snps,arc-timer";
+	clocks = <&core_clk>;
+	reg = <0>;
+};
+
+timer@1 {
+	compatible = "snps,arc-timer";
+	clocks = <&core_clk>;
+	reg = <1>;
+};
+
+NOTE: if you specify both timers, clocks always should be the same
+as each timer is driven by the same core clock.

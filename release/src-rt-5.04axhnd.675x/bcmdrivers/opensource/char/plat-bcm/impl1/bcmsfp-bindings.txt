@@ -1,0 +1,53 @@
+brcm-bca Small Form Factor (SFF), Small Form-factor Pluggable (SFP), eXtensible
+  Form-factor Transceiver driver
+===============================================================================
+
+Device node label must be "xfp_sfp" in order for bcm-i2c-legacy driver to assign
+Transceiver to WAN interface.
+
+Required properties:
+
+- compatible: must be one of
+  "brcm,sff" for soldered down SFF modules
+  "brcm,sfp" for SFP/XFP modules, same as above, but uses MOD-DEF0 gpio for
+    polling Transceiver presence
+
+- i2c-bus: phandle, I2C bus controller for the SFP
+
+
+Optional properties:
+
+- mod-def0-gpio: GPIO phandle and a specifier of the MOD-DEF0 (AKA Mod_ABS)
+  module presence input gpio signal, active (module absent) high. Must
+  not be present for SFF modules
+  Legacy: bp_usExtIntrOpticalModulePresence
+
+  or:
+
+  mod-def0: brcm,bca-extintr, external interrupt descriptor for the above gpio
+
+  or:
+
+  <none>: I2C polling will be used to detect if Transceiver is in connected.
+
+- los-gpio: GPIO phandle and a specifier of the Receiver Loss of Signal
+  Indication input gpio signal, active (signal lost) high
+  Legacy: bp_usGpioWanSignalDetected
+
+- tx-disable-gpio: GPIO phandle and a specifier of the Transmitter Disable
+  output gpio signal, active (Tx disabled) high
+  * Sometimes this pin is connected to SERDES LBE
+
+- tx-power-gpio: GPIO phandle and a specifier of the Transmitter Tx-Power
+  output gpio signal, active (Tx powered) high
+  Legacy: bp_usGpioPonTxEn
+
+- tx-power-down-gpio: GPIO phandle and specifier for the Transmitter Tx
+  power down, used to disable the Tx in some Trx (commonly pin-9), active
+  (Powered on) high
+  Legacy: bp_usGpioOpticalModuleTxPwrDown
+
+- tx-sd pinctrl: a pinctrl selection (pinctrl-names) named "tx-sd" must be
+  set for configuring Transmitter Tx-SD signal (commonly pin 7); used for
+  Rogue Tx in some TDMA optical Trx (Powered on) high
+

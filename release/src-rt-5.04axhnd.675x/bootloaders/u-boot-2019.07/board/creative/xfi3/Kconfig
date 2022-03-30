@@ -1,0 +1,15 @@
+if TARGET_XFI3
+
+config SYS_BOARD
+	default "xfi3"
+
+config SYS_VENDOR
+	default "creative"
+
+config SYS_SOC
+	default "mxs"
+
+config SYS_CONFIG_NAME
+	default "xfi3"
+
+endif

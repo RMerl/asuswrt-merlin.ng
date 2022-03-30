@@ -1,0 +1,12 @@
+if TARGET_STM32MP1
+
+config SYS_BOARD
+	default "stm32mp1"
+
+config SYS_VENDOR
+	default "st"
+
+config SYS_CONFIG_NAME
+	default "stm32mp1"
+
+endif

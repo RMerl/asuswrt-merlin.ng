@@ -1,0 +1,128 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2018 Álvaro Fernández Rojas <noltari@gmail.com>
+ */
+
+/dts-v1/;
+
+#include "brcm,bcm6318.dtsi"
+
+/ {
+	model = "Comtrend AR-5315u";
+	compatible = "comtrend,ar5315-un", "brcm,bcm6318";
+
+	aliases {
+		serial0 = &uart0;
+	};
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+	};
+};
+
+&ehci {
+	status = "okay";
+};
+
+&enet {
+	status = "okay";
+
+	port@0 {
+		compatible = "brcm,enetsw-port";
+		reg = <0>;
+		label = "fe4";
+		brcm,phy-id = <1>;
+	};
+
+	port@1 {
+		compatible = "brcm,enetsw-port";
+		reg = <1>;
+		label = "fe3";
+		brcm,phy-id = <2>;
+	};
+
+	port@2 {
+		compatible = "brcm,enetsw-port";
+		reg = <2>;
+		label = "fe2";
+		brcm,phy-id = <3>;
+	};
+
+	port@3 {
+		compatible = "brcm,enetsw-port";
+		reg = <3>;
+		label = "fe1";
+		brcm,phy-id = <4>;
+	};
+};
+
+&leds {
+	status = "okay";
+
+	led@0 {
+		reg = <0>;
+		active-low;
+		label = "AR-5315u:green:wps";
+	};
+
+	led@1 {
+		reg = <1>;
+		active-low;
+		label = "AR-5315u:green:power";
+	};
+
+	led@2 {
+		reg = <2>;
+		active-low;
+		label = "AR-5315u:green:usb";
+	};
+
+	led@8 {
+		reg = <8>;
+		active-low;
+		label = "AR-5315u:green:inet";
+	};
+
+	led@9 {
+		reg = <9>;
+		active-low;
+		label = "AR-5315u:red:inet";
+	};
+
+	led@10 {
+		reg = <10>;
+		active-low;
+		label = "AR-5315u:green:dsl";
+	};
+
+	led@11 {
+		reg = <11>;
+		active-low;
+		label = "AR-5315u:red:power";
+	};
+};
+
+&ohci {
+	status = "okay";
+};
+
+&spi {
+	status = "okay";
+
+	spi-flash@0 {
+		compatible = "jedec,spi-nor";
+		reg = <0>;
+		#address-cells = <1>;
+		#size-cells = <1>;
+		spi-max-frequency = <62500000>;
+	};
+};
+
+&uart0 {
+	u-boot,dm-pre-reloc;
+	status = "okay";
+};
+
+&usbh {
+	status = "okay";
+};

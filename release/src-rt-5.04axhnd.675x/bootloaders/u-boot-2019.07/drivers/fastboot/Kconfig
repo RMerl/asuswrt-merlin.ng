@@ -1,0 +1,139 @@
+menu "Fastboot support"
+
+config FASTBOOT
+	bool
+	imply ANDROID_BOOT_IMAGE
+	imply CMD_FASTBOOT
+
+config USB_FUNCTION_FASTBOOT
+	bool "Enable USB fastboot gadget"
+	depends on USB_GADGET
+	default y if ARCH_SUNXI && USB_MUSB_GADGET
+	select FASTBOOT
+	select USB_GADGET_DOWNLOAD
+	help
+	  This enables the USB part of the fastboot gadget.
+
+config UDP_FUNCTION_FASTBOOT
+	depends on NET
+	select FASTBOOT
+	bool "Enable fastboot protocol over UDP"
+	help
+	  This enables the fastboot protocol over UDP.
+
+if FASTBOOT
+
+config FASTBOOT_BUF_ADDR
+	hex "Define FASTBOOT buffer address"
+	default 0x82000000 if MX6SX || MX6SL || MX6UL || MX6SLL
+	default 0x81000000 if ARCH_OMAP2PLUS
+	default 0x42000000 if ARCH_SUNXI && !MACH_SUN9I
+	default 0x22000000 if ARCH_SUNXI && MACH_SUN9I
+	default 0x60800800 if ROCKCHIP_RK3036 || ROCKCHIP_RK3188 || \
+				ROCKCHIP_RK322X
+	default 0x800800 if ROCKCHIP_RK3288 || ROCKCHIP_RK3329 || \
+				ROCKCHIP_RK3399
+	default 0x280000 if ROCKCHIP_RK3368
+	default 0x100000 if ARCH_ZYNQMP
+	default 0 if SANDBOX
+	help
+	  The fastboot protocol requires a large memory buffer for
+	  downloads. Define this to the starting RAM address to use for
+	  downloaded images.
+
+config FASTBOOT_BUF_SIZE
+	hex "Define FASTBOOT buffer size"
+	default 0x8000000 if ARCH_ROCKCHIP
+	default 0x6000000 if ARCH_ZYNQMP
+	default 0x2000000 if ARCH_SUNXI
+	default 0x8192 if SANDBOX
+	default 0x7000000
+	help
+	  The fastboot protocol requires a large memory buffer for
+	  downloads. This buffer should be as large as possible for a
+	  platform. Define this to the size available RAM for fastboot.
+
+config FASTBOOT_USB_DEV
+	int "USB controller number"
+	depends on USB_FUNCTION_FASTBOOT
+	default 0
+	help
+	  Some boards have USB OTG controller other than 0. Define this
+	  option so it can be used in compiled environment (e.g. in
+	  CONFIG_BOOTCOMMAND).
+
+config FASTBOOT_FLASH
+	bool "Enable FASTBOOT FLASH command"
+	default y if ARCH_SUNXI
+	depends on MMC || (NAND && CMD_MTDPARTS)
+	select IMAGE_SPARSE
+	help
+	  The fastboot protocol includes a "flash" command for writing
+	  the downloaded image to a non-volatile storage device. Define
+	  this to enable the "fastboot flash" command.
+
+choice
+	prompt "Flash provider for FASTBOOT"
+	depends on FASTBOOT_FLASH
+
+config FASTBOOT_FLASH_MMC
+	bool "FASTBOOT on MMC"
+	depends on MMC
+
+config FASTBOOT_FLASH_NAND
+	bool "FASTBOOT on NAND"
+	depends on NAND && CMD_MTDPARTS
+
+endchoice
+
+config FASTBOOT_FLASH_MMC_DEV
+	int "Define FASTBOOT MMC FLASH default device"
+	depends on FASTBOOT_FLASH_MMC
+	default 0 if ARCH_SUNXI && MMC_SUNXI_SLOT_EXTRA = -1
+	default 1 if ARCH_SUNXI && MMC_SUNXI_SLOT_EXTRA != -1
+	help
+	  The fastboot "flash" command requires additional information
+	  regarding the non-volatile storage device. Define this to
+	  the eMMC device that fastboot should use to store the image.
+
+config FASTBOOT_FLASH_NAND_TRIMFFS
+	bool "Skip empty pages when flashing NAND"
+	depends on FASTBOOT_FLASH_NAND
+	help
+	  When flashing NAND enable the DROP_FFS flag to drop trailing all-0xff
+	  pages.
+
+config FASTBOOT_GPT_NAME
+	string "Target name for updating GPT"
+	depends on FASTBOOT_FLASH_MMC && EFI_PARTITION
+	default "gpt"
+	help
+	  The fastboot "flash" command supports writing the downloaded
+	  image to the Protective MBR and the Primary GUID Partition
+	  Table. (Additionally, this downloaded image is post-processed
+	  to generate and write the Backup GUID Partition Table.)
+	  This occurs when the specified "partition name" on the
+	  "fastboot flash" command line matches the value defined here.
+	  The default target name for updating GPT is "gpt".
+
+config FASTBOOT_MBR_NAME
+	string "Target name for updating MBR"
+	depends on FASTBOOT_FLASH_MMC && DOS_PARTITION
+	default "mbr"
+	help
+	  The fastboot "flash" command allows to write the downloaded image
+	  to the Master Boot Record. This occurs when the "partition name"
+	  specified on the "fastboot flash" command line matches the value
+	  defined here. The default target name for updating MBR is "mbr".
+
+config FASTBOOT_CMD_OEM_FORMAT
+	bool "Enable the 'oem format' command"
+	depends on FASTBOOT_FLASH_MMC && CMD_GPT
+	help
+	  Add support for the "oem format" command from a client. This
+	  relies on the env variable partitions to contain the list of
+	  partitions as required by the gpt command.
+
+endif # FASTBOOT
+
+endmenu

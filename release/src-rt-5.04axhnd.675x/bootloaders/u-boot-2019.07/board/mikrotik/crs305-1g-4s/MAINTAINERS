@@ -1,0 +1,7 @@
+CRS305-1G-4S BOARD
+M:	Luka Kovacic <me@lukakovacic.xyz>
+S:	Maintained
+F:	board/mikrotik/crs305-1g-4s/
+F:	include/configs/crs305-1g-4s.h
+F:	configs/crs305-1g-4s_defconfig
+F:	arch/arm/dts/armada-xp-crs305-1g-4s.dts

@@ -1,0 +1,562 @@
+#!/bin/bash
+
+export LD_LIBRARY_PATH=$HOSTTOOLS_DIR/libelf/lib:$LD_LIBRARY_PATH 
+source $KERNEL_DIR/.config
+[ -f $PROFILE_DIR/$PROFILE ] && source $PROFILE_DIR/$PROFILE
+
+TARGETS_DIR=`pwd`
+BUILD_DIR=$TARGETS_DIR/..
+
+if [ "$MOD_DIR" == "" ] ; then
+    MOD_DIR=$PROFILE/modules
+fi
+
+if [ "$FSSRC_DIR" == "" ]; then
+    FSSRC_DIR=./fs.src
+fi
+
+if [ "$INSTALL_DIR" == "" ]; then
+    INSTALL_DIR=./$PROFILE/fs.install
+fi
+
+ROOTFS=$PROFILE/fs
+
+# Create file system dir
+if [ -L $ROOTFS ]; then
+  rm -rf $ROOTFS/*
+else
+  rm -rf $ROOTFS
+  mkdir $ROOTFS
+fi
+chmod 777 $ROOTFS
+# Copy files onto root file system
+echo "Creating target root file system..."
+cp -av $FSSRC_DIR/* $ROOTFS
+
+# Update mdev.conf with 'ignore' entries for proprietary drivers
+echo "Updating mdev.conf"
+chmod 0644 $ROOTFS/rom/etc/mdev.conf
+grep /dev $ROOTFS/rom/etc/make_static_devnodes.sh | cut -d' ' -f 2 | cut -d'/' -f 3 | awk '{print $1 " " "0:0 666 !"}' >> $ROOTFS/rom/etc/mdev.conf
+
+# Remove all svn metadata files
+find $ROOTFS -name ".svn" -exec rm -rf '{}' \;
+
+# convert Snn*.symlink and Knn*.symlink files to real symlinks
+flist=`ls ${ROOTFS}/etc/rc3.d/S*.symlink ${ROOTFS}/etc/rc3.d/K*.symlink 2> /dev/null`
+for f in $flist
+do
+	f=$(basename $f)
+	numbase=${f%.*}
+	namebase=`echo $numbase | cut -c 4-`
+	(cd ${ROOTFS}/etc/rc3.d; rm -f ${numbase}.symlink; ln -s ../init.d/${namebase}.sh ${numbase})
+done
+
+# Remove unneeded (wlan prebuilt) files
+find $INSTALL_DIR -name "*_saved-*" | xargs rm -fv
+
+# Copy over all files to ROOTFS
+rsync -av --exclude="/lib"  $INSTALL_DIR/* $ROOTFS
+
+# Setup lib directories
+mkdir $ROOTFS/lib
+if [ "$ARCH" == "arm64" ]; then
+	# In aarch64 build, all 64-bit libs are in /lib, but the 
+	# default search path for Dynamic Linker is /lib64
+	rsync -av --exclude="/public" --exclude="/private" --exclude="/gpl" --exclude="/arm" $INSTALL_DIR/lib/* $ROOTFS/lib64
+	cp -av $INSTALL_DIR/lib/public/* $ROOTFS/lib64
+	cp -av $INSTALL_DIR/lib/private/* $ROOTFS/lib64
+	cp -av $INSTALL_DIR/lib/gpl/* $ROOTFS/lib64
+	# If there are 32-bit libs present in 64-bit build
+	if [ -d $INSTALL_DIR/lib/arm ] ; then
+		cp -av $INSTALL_DIR/lib/arm/* $ROOTFS/lib
+	fi
+	# Move all loaders to /lib, thats where linux looks for them
+	mv $ROOTFS/lib64/ld* $ROOTFS/lib
+else
+	rsync -av --exclude="/public" --exclude="/private" --exclude="/gpl" --exclude="/aarch64" $INSTALL_DIR/lib/* $ROOTFS/lib
+	cp -av $INSTALL_DIR/lib/public/* $ROOTFS/lib
+	cp -av $INSTALL_DIR/lib/private/* $ROOTFS/lib
+	cp -av $INSTALL_DIR/lib/gpl/* $ROOTFS/lib
+	# If there are 64-bit libs present in 32-bit build
+	if [ -d $INSTALL_DIR/lib/aarch64 ] ; then
+		mkdir $ROOTFS/lib64
+		cp -av $INSTALL_DIR/lib/aarch64/* $ROOTFS/lib64
+	fi
+fi
+
+EXECSTACK=`which execstack`
+if [ "x$EXECSTACK" == "x" ]; then 
+	EXECSTACK=$HOSTTOOLS_DIR/prelink/src/execstack
+fi
+
+if [ "$BUILD_DISABLE_EXEC_STACK" == "y" ]; then
+	#clear execute bit on binaries
+        rm .exestack_error
+        find $INSTALL_DIR -type f -perm /u=x,g=x,o=x -print |(while read filename; do\
+	IS_ELF=$(dd if=$filename count=3 skip=1  bs=1 2> /dev/null); \
+	if [ "x${IS_ELF}" == "xELF" ]; then\
+		E=$($EXECSTACK -c $filename); \
+		if [ "x$?" == "x127" ]; then \
+		    echo "Fatal error " . $E;\
+		    touch .exestack_error
+		    exit 1;\
+		fi;\
+	fi;\
+        done;\
+        )
+        if [ -f .exestack_error ]; then
+            rm .exestack_error
+            exit 1
+        fi
+fi
+
+# Conflict exists between two systems:
+# openwrt rootfs created them arleady, redundant actions deleted.
+# Create directories as needed.
+#mkdir $ROOTFS/dev, mnt, sys, proc, var
+mkdir $ROOTFS/data
+mkdir $ROOTFS/etc/adsl
+cp -av $BRCMDRIVERS_DIR/broadcom/char/adsl/bcm9$BRCM_CHIP/*.bin  $ROOTFS/etc/adsl
+
+# Conflict exists between two systems: uncompile some modules
+# Keep files used by mhd_gpon
+if [ "$BUILD_GPON" != "" ] ; then
+  if [ -d $ROOTFS/webs/ ]; then
+   echo "keep mhnd_gpon part"
+   if [ -f ${BUILD_DIR}/userspace/private/apps/mhd_gpon/mhdgpon_files.txt ]; then
+      old_dir=`pwd`
+      cd ${ROOTFS}/webs/
+      for i in *; do
+         if ! grep -qxFe "$i" $BUILD_DIR/userspace/private/apps/mhd_gpon/mhdgpon_files.txt; then
+            rm -fr "$i"
+         fi
+      done
+      cd $old_dir
+   fi
+  fi
+fi
+
+# debugfs
+if [ "$BUILD_DEBUG_TOOLS" == "y" ] ; then
+    chmod +w $ROOTFS/etc/fstab
+    echo -e "debugfs\t/sys/kernel/debug\tdebugfs\tnofail\t0\t0\n" >> $ROOTFS/etc/fstab
+    chmod -w $ROOTFS/etc/fstab
+    rm -rf $ROOTFS/sys/kernel/debug
+    mkdir -p $ROOTFS/sys/kernel/debug
+    rm -f $ROOTFS/debug
+    ln -s sys/kernel/debug $ROOTFS/debug
+fi
+
+# Update kernel directory based on kernel:
+sed -i "s|^KERNELVER=_set_by_buildFS_$|KERNELVER=$LINUX_VER_STR|" $ROOTFS/etc/init.d/*.sh;
+
+
+if [ "$BRCM_KERNEL_OPROFILE" == "y" ] ; then
+   mkdir -p $ROOTFS/dev/oprofile
+fi
+
+
+# this tells busybox to set the core rlimit to unlimited, thus allowing
+# apps to dump their core when they crash
+if [ "$CONFIG_ELF_CORE" == "y" ]; then
+   touch $ROOTFS/.init_enable_core
+fi
+
+# copy our top level PROFILE file and image version to filesystem
+# We use some of the profile settings to configure the kernel through /proc settings
+echo "Include a copy of PROFILE file in system image"
+rm -f $ROOTFS/etc/$PROFILE
+cp $PROFILE_DIR/$PROFILE $ROOTFS/etc
+ln -s $PROFILE $ROOTFS/etc/build_profile
+echo $IMAGE_VERSION > $ROOTFS/etc/image_version
+cp $BUILD_DIR/patch.version $ROOTFS/etc
+
+DEFAULTCFG=`echo $BRCM_DEFAULTCFG | tr -d '"'`
+
+if [ ! -z $DEFAULTCFG ]; then
+    if [[ $DEFAULTCFG != /* ]]; then
+        DEFAULTCFG=$DEFAULTCFG_DIR/$DEFAULTCFG
+    fi
+   
+   if [ -f "$DEFAULTCFG" ]; then
+       echo "Using $DEFAULTCFG as default config"
+       mkdir -p $ROOTFS/etc
+       cp -v $DEFAULTCFG $ROOTFS/etc/default.cfg && chmod 444 $ROOTFS/etc/default.cfg || exit 1
+   else
+       echo
+       echo "        No default run-time config file called $DEFAULTCFG"
+       echo "        Check your profile setting!"
+       echo
+       exit 1
+   fi
+fi
+
+#
+# The logic to test BRCM_CERT_FILE must be different than the logic to test
+# BRCM_DEFAULTCFG (above) because BRCM_CERT_FILE can have 3 possible values:
+# 1. If user does not select TR69_BCM_SSL, then BRCM_CERT_FILE=
+# 2. If user selects TR69_BCM_SSL, but does not specify a cert file, then BRCM_CERT_FILE=""
+# 3. If user selects TR69_BMC_SSL, and specifies a cert file, then BRCM_CERT_FILE="somefilename"
+#
+# The elif line tests for case 1 first, so that if BRCM_CERT_FILE is blank,
+# the first condition will be false and the second condition [ $BRCM_CERT_FILE != '""' ]
+# will not be tested.  That second condition will cause bash to complain if BRCM_CERT_FILE is blank.
+#
+DEFAULT_CERT_FILE=`echo $DEFAULTCFG_DIR/$BRCM_CERT_FILE|sed -e 's/\"//g'`
+
+if [ -f "$DEFAULT_CERT_FILE" ]; then
+   cp -v $DEFAULT_CERT_FILE $ROOTFS/etc/acscert.cacert; chmod a+r $ROOTFS/etc/acscert.cacert
+elif [ "X$BRCM_CERT_FILE" != "X" ] && [ $BRCM_CERT_FILE != '""' ]; then
+   echo
+   echo "        No certificate file called $BRCM_CERT_FILE in $DEFAULTCFG_DIR"
+   echo "        Check your profile setting!"
+   exit 1
+else
+   echo
+fi
+
+# Conflict exists between two systems:
+# In BRCM system, tmp is softlink of /var/tmp, but OpenWrt system tmp is real folder, var is softlink to tmp.
+# some symbolic links already create in openwrt rootfs. redundant actions deleted.
+
+# Create symbolic links
+mkdir $ROOTFS/dev/misc
+ln -s /var/fuse $ROOTFS/dev/misc/fuse
+ln -s /var/fuse $ROOTFS/dev/fuse
+ln -s /var/sysmsg $ROOTFS/etc/sysmsg
+ln -s /var/ppp/pppmsg $ROOTFS/etc/pppmsg
+ln -s /var/dms.conf $ROOTFS/etc/dms.conf
+ln -s /var/samba $ROOTFS/etc/samba
+#ln -s /var/mtab $ROOTFS/etc/mtab
+#ln -s /var/passwd $ROOTFS/etc/passwd
+#ln -s /var/group $ROOTFS/etc/group
+#ln -s /var/fyi/sys/dns $ROOTFS/etc/resolv.conf
+#ln -s /var/fyi/sys/gateway $ROOTFS/etc/gateway.conf
+#ln -s /var/udhcpd/udhcpd.conf $ROOTFS/etc/udhcpd.conf
+#ln -s /var/udhcpd/udhcpd.leases $ROOTFS/etc/udhcpd.leases
+#ln -s /var/TZ $ROOTFS/etc/TZ
+#ln -s /var/timezone $ROOTFS/etc/timezone
+#ln -s /var/localtime $ROOTFS/etc/localtime
+#ln -s /var/iproute2/rt_tables $ROOTFS/etc/iproute2/rt_tables
+#ln -s /data $ROOTFS/usr/local/data
+if [ "$BUILD_DBUS" == "y" ]; then
+   ln -s /var/dbus-1/system.d $ROOTFS/share/dbus-1/system.d
+fi
+if [ -x $PROFILE/special-buildFS ]; then
+   $PROFILE/special-buildFS
+fi
+
+# Copy proprietary binaries if any
+FSBIN=`ls $TARGETS_DIR/fs.bin|wc -l`
+if [ $FSBIN != 0 ]; then
+   echo "Copying proprietary binaries..."
+   cd $TARGETS_DIR
+   cp -avf fs.bin/* $ROOTFS
+fi
+
+# Copy 3rdParty supplied .ko onto dummy .ko
+if [ "$BRCM_DRIVER_ISDN" == "m" ] ; then
+   echo "Copying 3rdParty kernel objects (.ko) ..."
+   eval "find $TARGETS_DIR/$ROOTFS/../modules/lib/modules/. -name '*isdn.ko' | xargs cp -f $BRCMDRIVERS_DIR/broadcom/char/isdn/bcm9$BRCM_CHIP/3rdParty/*isdn.ko_3rdParty "
+fi
+
+
+   if [ -d $ROOTFS/opt/modules ]; then
+     pushd $ROOTFS/opt/modules && for f in *.ko.save; do mv "$f" "${f%.ko.save}.ko"; done
+     popd
+   fi
+cd $MOD_DIR
+kd=${LINUX_VER_STR}
+mkdir -p lib/modules/${kd}/extra
+#go through every directory other than the lib/modules/${LINUX_VER_STR}
+for dir in `ls lib/modules/ |grep -v ${kd}`
+do
+   for file in `find lib/modules/${dir} -type f`
+   do
+      mv $file lib/modules/${kd}/extra/
+   done
+   rm -rf lib/modules/$dir
+done
+#some modules are built with full build path (e.g. adsl, wl), treat them diferently   
+bd=$(realpath ${BUILD_DIR})
+for file in `find lib/modules/${kd}/kernel/${bd}/ -type f -name \*.ko`
+do
+   mv $file lib/modules/${kd}/extra/
+done 
+if [ ! "x${bd}" == "x" ]; then
+   rm -rf lib/modules/${kd}/kernel/${bd}/
+fi
+
+
+cp -a lib $TARGETS_DIR/$ROOTFS/.
+
+if [ "$CONFIG_BCM_UBUSCAP" == "y" ]; then
+    # copy UBUSCAP control script
+    cp -avf $BRCMDRIVERS_DIR/broadcom/char/ubuscap/impl$CONFIG_BCM_UBUSCAP_IMPL/ubcap_$BRCM_CHIP.sh  $TARGETS_DIR/$ROOTFS/opt/scripts/ubcap
+fi    
+
+if [ "$KSTRIP" != "/bin/touch" ]; then
+# Stripping unneeded module symbols only when strip is "enabled"
+echo "Stripping kernel modules..."
+find $TARGETS_DIR/$ROOTFS/lib/modules -name "*.ko"
+   if [ "$CONFIG_KALLSYMS" == "y" ]; then
+      #if KALLSYMS is enabled only strip debug symbols from all modules, this helps
+      #to retain symbols of static functions 
+      eval "find $TARGETS_DIR/$ROOTFS/lib/modules -name '*.ko' |xargs $KSTRIP --strip-debug"
+   else
+      #Modules that need parameters cannot be stripped
+      eval "find $TARGETS_DIR/$ROOTFS/lib/modules -name '*.ko' ! -name 'ip*.ko' |xargs $KSTRIP --strip-unneeded"
+      # However do strip debug symbols, in case debug symbols are included
+      eval "find $TARGETS_DIR/$ROOTFS/lib/modules -name 'ip*.ko' |xargs $KSTRIP --strip-debug"
+   fi
+fi
+
+# /etc/modules.d/bcm-ipt-ext
+echo "prepare kmodloader autoload ko and file ..."
+if [ -f "$TARGETS_DIR/$ROOTFS/lib/modules/$LINUX_VER_STR/bcmkernel/net/netfilter/xt_SKIPLOG.ko" ]; then
+   cp -f $TARGETS_DIR/$ROOTFS/lib/modules/$LINUX_VER_STR/bcmkernel/net/netfilter/xt_SKIPLOG.ko $TARGETS_DIR/$ROOTFS/lib/modules/$LINUX_VER_STR/
+   cp -f $TARGETS_DIR/$ROOTFS/lib/modules/$LINUX_VER_STR/bcmkernel/net/netfilter/xt_blog.ko $TARGETS_DIR/$ROOTFS/lib/modules/$LINUX_VER_STR/
+   echo -e "xt_SKIPLOG\nxt_blog" > $TARGETS_DIR/$ROOTFS/etc/modules.d/bcm-ipt-ext
+fi
+
+if [ -f $TARGETS_DIR/$PROFILE/filesystem.tgz ]
+then
+  echo "consumer build -- not dynamically generating bcm-base-drivers.sh"
+else
+  cat $TARGETS_DIR/$ROOTFS/etc/init.d/bcm-base-drivers.head > $TARGETS_DIR/$ROOTFS/etc/init.d/bcm-base-drivers.sh
+  cat $TARGETS_DIR/$ROOTFS/etc/init.d/bcm-base-drivers.list | ( while IFS= read -r driver_line 
+  do
+     read a b c <<< $driver_line
+     if echo $a | egrep -q '^\s*(#.*)?$'
+     then
+      if echo $a | egrep -q '^\s*(#KP:.*)?$'
+      then
+         echo "${driver_line:4}" >> $TARGETS_DIR/$ROOTFS/etc/init.d/bcm-base-drivers.sh
+      else
+         echo "$a $b" >> $TARGETS_DIR/$ROOTFS/etc/init.d/bcm-base-drivers.sh
+      fi
+     else
+       if echo $a | egrep -q '^-!'
+       then
+         eval v=\$${a:2}
+       elif echo $a | egrep -q '^-'
+       then
+         eval v=\$${a:1}
+         if [ -z "$v" ]
+         then
+           v=y
+         else
+           v=
+         fi
+       fi
+       if echo $a | egrep -q '^-'
+       then
+         echo "considering $a for $b $c"
+         if [ -z "$v" ]
+         then
+           echo "passed"
+           a=$b
+           b=$c
+           c=
+         else
+           echo "skipped"
+           a=NEVER
+         fi
+       fi
+       # Special insmod needed for rdpa/rdpa_prv ko depend on rdpa_prv existence and pspctl
+       if echo $a | egrep -q 'extra/rdpa.ko'
+       then
+         if test -e  $TARGETS_DIR/$ROOTFS/lib/modules/$LINUX_VER_STR/extra/rdpa.ko || test -e  $TARGETS_DIR/$ROOTFS/lib/modules/$LINUX_VER_STR/extra/rdpa_prv.ko
+         then
+           echo -e "if test -e  /lib/modules/$LINUX_VER_STR/extra/rdpa_prv.ko\nthen" >> $TARGETS_DIR/$ROOTFS/etc/init.d/bcm-base-drivers.sh
+           echo -e "  if echo \$(/bin/pspctl dump OperationMode) | grep -q 'FC'\n  then" >> $TARGETS_DIR/$ROOTFS/etc/init.d/bcm-base-drivers.sh
+           echo -e "    insmod /lib/modules/$LINUX_VER_STR/extra/rdpa.ko $b $c\n    echo 'FC operation mode loaded!'" >> $TARGETS_DIR/$ROOTFS/etc/init.d/bcm-base-drivers.sh
+           echo "  else" >> $TARGETS_DIR/$ROOTFS/etc/init.d/bcm-base-drivers.sh
+           echo -e "    insmod /lib/modules/$LINUX_VER_STR/extra/rdpa_prv.ko $b $c\n    echo 'Provision operation mode loaded!'" >> $TARGETS_DIR/$ROOTFS/etc/init.d/bcm-base-drivers.sh
+           echo "  fi" >> $TARGETS_DIR/$ROOTFS/etc/init.d/bcm-base-drivers.sh
+           echo -e "else\n  insmod /lib/modules/$LINUX_VER_STR/$a $b $c" >> $TARGETS_DIR/$ROOTFS/etc/init.d/bcm-base-drivers.sh
+           echo "fi" >> $TARGETS_DIR/$ROOTFS/etc/init.d/bcm-base-drivers.sh
+         fi
+       elif echo $a | egrep -q 'extra/pktflow.ko'
+       then
+         if test -e  $TARGETS_DIR/$ROOTFS/lib/modules/$LINUX_VER_STR/extra/rdpa_prv.ko
+         then
+           echo -e "if echo \$(/bin/pspctl dump OperationMode) | grep -q 'FC'\nthen" >> $TARGETS_DIR/$ROOTFS/etc/init.d/bcm-base-drivers.sh
+           echo -e "  insmod /lib/modules/$LINUX_VER_STR/$a $b $c" >> $TARGETS_DIR/$ROOTFS/etc/init.d/bcm-base-drivers.sh
+           echo "fi" >> $TARGETS_DIR/$ROOTFS/etc/init.d/bcm-base-drivers.sh
+         else
+           echo -e "insmod /lib/modules/$LINUX_VER_STR/$a $b $c" >> $TARGETS_DIR/$ROOTFS/etc/init.d/bcm-base-drivers.sh
+         fi
+       elif echo $a | egrep -q 'extra/pktrunner.ko'
+       then
+         if test -e  $TARGETS_DIR/$ROOTFS/lib/modules/$LINUX_VER_STR/extra/rdpa_prv.ko
+         then
+           echo -e "if echo \$(/bin/pspctl dump OperationMode) | grep -q 'FC'\nthen" >> $TARGETS_DIR/$ROOTFS/etc/init.d/bcm-base-drivers.sh
+           echo -e "  insmod /lib/modules/$LINUX_VER_STR/$a $b $c" >> $TARGETS_DIR/$ROOTFS/etc/init.d/bcm-base-drivers.sh
+           echo "fi" >> $TARGETS_DIR/$ROOTFS/etc/init.d/bcm-base-drivers.sh
+         else
+           echo -e "insmod /lib/modules/$LINUX_VER_STR/$a $b $c" >> $TARGETS_DIR/$ROOTFS/etc/init.d/bcm-base-drivers.sh
+         fi
+       elif echo $a | egrep -q 'extra/bcm_spdsvc.ko|extra/bcm_tcpspdtest.ko'
+       then
+         if test -e  $TARGETS_DIR/$ROOTFS/lib/modules/$LINUX_VER_STR/$a
+         then
+           echo -e "if test -e  /lib/modules/$LINUX_VER_STR/extra/rdpa_prv.ko\n then" >> $TARGETS_DIR/$ROOTFS/etc/init.d/bcm-base-drivers.sh
+           echo -e "  if echo \$(/bin/pspctl dump OperationMode) | grep -q 'FC'\n  then" >> $TARGETS_DIR/$ROOTFS/etc/init.d/bcm-base-drivers.sh
+           echo "    insmod /lib/modules/$LINUX_VER_STR/$a $b $c" >> $TARGETS_DIR/$ROOTFS/etc/init.d/bcm-base-drivers.sh
+           echo "  fi" >> $TARGETS_DIR/$ROOTFS/etc/init.d/bcm-base-drivers.sh
+           echo -e "else\n  insmod /lib/modules/$LINUX_VER_STR/$a $b $c" >> $TARGETS_DIR/$ROOTFS/etc/init.d/bcm-base-drivers.sh
+           echo "fi" >> $TARGETS_DIR/$ROOTFS/etc/init.d/bcm-base-drivers.sh
+         fi
+       else
+         if test -e  $TARGETS_DIR/$ROOTFS/lib/modules/$LINUX_VER_STR/$a
+         then
+           echo "insmod /lib/modules/$LINUX_VER_STR/$a $b $c" >> $TARGETS_DIR/$ROOTFS/etc/init.d/bcm-base-drivers.sh
+         fi
+       fi
+     fi
+  done
+  )
+  cat $TARGETS_DIR/$ROOTFS/etc/init.d/bcm-base-drivers.tail >> $TARGETS_DIR/$ROOTFS/etc/init.d/bcm-base-drivers.sh
+  chmod +x $TARGETS_DIR/$ROOTFS/etc/init.d/bcm-base-drivers.sh
+  rm  -f $TARGETS_DIR/$ROOTFS/etc/init.d/bcm-base-drivers.tail  
+  rm -f $TARGETS_DIR/$ROOTFS/etc/init.d/bcm-base-drivers.head  
+  rm -f $TARGETS_DIR/$ROOTFS/etc/init.d/bcm-base-drivers.list
+fi
+
+#delete unwanted module
+echo "deleting intermediate wl modules"
+MODULE_CLEAN_UP="wldrv.ko wl_tmp_partial.ko wlpartial.ko"
+#remove unnecessary wlan driver
+if [ "${WLBUS}"  != "" ]; then
+    if [ `expr index $WLBUS pci` == 0 ]; then
+           MODULE_CLEAN_UP=${MODULE_CLEAN_UP}" wl.ko"
+    fi
+    if [ `expr index $WLBUS usb` == 0 ]; then
+           MODULE_CLEAN_UP=${MODULE_CLEAN_UP}" wl-usb.ko"
+    fi
+else
+   MODULE_CLEAN_UP=${MODULE_CLEAN_UP}" wl-usb.ko"
+fi
+for f in $MODULE_CLEAN_UP; do \
+   eval "find $TARGETS_DIR/$ROOTFS/lib/modules -name $f |xargs rm -f";\
+done
+eval "find $TARGETS_DIR/$ROOTFS/lib/modules -name wlobj-*.ko | xargs rm -f"
+
+# strip userspace binaries is sstrip is "enabled"
+# sstrip is set to /bin/touch if BUILD_GDBSERVER=y
+if [ "$SSTRIP" != "/bin/touch" ]; then
+    # Even though libcreduction did some stripping, we can make the
+    # libraries even smaller by doing sstrip here.  Also libcreduction
+    # does not process all libs, e.g. libmdm.so
+    echo "Stripping userspace binaries..."
+    if [ "$BUILD_DISABLE_EXEC_STACK" == "y" ]; then
+        rm .exestack_error
+        #clear execute bit on binaries
+        find $TARGETS_DIR/$ROOTFS -type f -perm /u=x,g=x,o=x -print |(while read filename; \
+        do \
+	IS_ELF=$(dd if=$filename count=3 skip=1  bs=1 2> /dev/null); \
+	if [ "x${IS_ELF}" == "xELF" ]; then\
+		E=$($EXECSTACK -c $filename 2>&1); \
+		if [ "x$?" == "x127" ]; then \
+		    echo "Fatal error " . $E;\
+		    touch .exestack_error
+		    exit 1;\
+		fi;\
+        fi;\
+        done;)
+        if [ -f .exestack_error ]; then
+            rm .exestack_error
+            exit 1;
+        fi
+    fi
+    $SSTRIP $TARGETS_DIR/$ROOTFS/bin/* $TARGETS_DIR/$ROOTFS/sbin/* $TARGETS_DIR/$ROOTFS/usr/bin/* $TARGETS_DIR/$ROOTFS/usr/sbin/* $TARGETS_DIR/$ROOTFS/lib/*.so* $TARGETS_DIR/$ROOTFS/lib/*/*.so*
+fi
+
+# Copy over and strip vmlinux
+cp $KERNEL_DIR/vmlinux $PROFILE_DIR/.
+$KSTRIP --remove-section=.note --remove-section=.comment $PROFILE_DIR/vmlinux
+
+# Generate vmlinux.bin
+$KOBJCOPY -O binary $PROFILE_DIR/vmlinux $PROFILE_DIR/vmlinux.bin
+# Generate vmlinux_rd_boot
+if [ "$BRCM_IKOS" != "y" ]; then
+   # when using ramdisk boot from CFE/boot loader, change of the virtual address in the vmlinux elf file is required for ARM-based device
+
+   la=""
+   if [ $KARCH == "arm64" ]; then
+       la=0xffffffffffffffff
+       offset=0x80000
+   elif [ "$KARCH" == "arm" ] ; then
+       offset=0x00018000
+       la=0xffffffff
+   fi
+   if [ ! "x$la" == "x" ]; then
+       entry=$(readelf -l $PROFILE_DIR/vmlinux |grep Entry |sed -e 's/.* //')
+       let entry=$entry-$offset
+       let change_addr=${la}-${entry}
+       let change_addr=${change_addr}+1
+       $KOBJCOPY --change-start ${change_addr} --change-addr ${change_addr} $PROFILE_DIR/vmlinux $PROFILE_DIR/vmlinux_rd_boot
+   else
+       cp $PROFILE_DIR/vmlinux $PROFILE_DIR/vmlinux_rd_boot
+   fi
+fi
+
+        echo -en "@(#) \$imageversion: " > $PROFILE_DIR/image_ident
+        cat $TARGET_FS/etc/image_version | tr -d "\n" >> $PROFILE_DIR/image_ident
+        echo -en " $\n@(#) \$imageversion: " >> $PROFILE_DIR/image_ident
+        cat $TARGET_FS/etc/image_version | tr -d "\n" >> $PROFILE_DIR/image_ident
+        echo -e " $" >> $PROFILE_DIR/image_ident
+
+        if [ -f $TARGET_FS/etc/JENKINS_CHANGELIST ];
+        then
+            echo -en "@(#) \$changelist: " >> $PROFILE_DIR/image_ident
+            cat $TARGET_FS/etc/JENKINS_CHANGELIST | tr -d "\n" >> $PROFILE_DIR/image_ident
+            echo -en " $\n@(#) \$changelist: " >> $PROFILE_DIR/image_ident
+            cat $TARGET_FS/etc/JENKINS_CHANGELIST | tr -d "\n" >> $PROFILE_DIR/image_ident
+            echo -e " $" >> $PROFILE_DIR/image_ident
+        fi
+        svnc=$TARGET_FS/etc/SVN_COMMIT_LIST.txt
+        if [ -f $svnc ]
+        then
+           svnr=`grep Revision $svnc | head -1`
+           echo -en " $\n@(#) \$svnrevision: $svnr " >> $PROFILE_DIR/image_ident
+           echo -e " $" >> $PROFILE_DIR/image_ident
+           echo -en " $\n@(#) \$svnrevision: $svnr " >> $PROFILE_DIR/image_ident
+           echo -e " $" >> $PROFILE_DIR/image_ident
+        fi
+        bid=$TARGET_FS/etc/build_id.txt
+        if [ -f $bid ]
+        then
+           tt=/tmp/bldfs$$
+	   cat $bid | sed -e "s/: */=/"  > $tt
+           svb=`( . $tt ; echo $BRANCH@$Revision)`
+           rm $tt
+           echo -en " $\n@(#) \$svnsource: $svb " >> $PROFILE_DIR/image_ident
+           echo -e " $" >> $PROFILE_DIR/image_ident
+           echo -en " $\n@(#) \$svnsource: $svb " >> $PROFILE_DIR/image_ident
+           echo -e " $" >> $PROFILE_DIR/image_ident
+        fi
+
+        echo -en "@(#) \$imgversion: " >> $PROFILE_DIR/image_ident
+        echo -en $BRCM_VERSION >> $PROFILE_DIR/image_ident
+        echo -en "." >> $PROFILE_DIR/image_ident
+        echo -en $BRCM_RELEASE >> $PROFILE_DIR/image_ident
+        echo -en "L." >> $PROFILE_DIR/image_ident
+        echo -en $BRCM_EXTRAVERSION >> $PROFILE_DIR/image_ident
+        echo -e " $" >> $PROFILE_DIR/image_ident
+
+        echo -en "@(#) \$imgversion: " >> $PROFILE_DIR/image_ident
+        echo -en $BRCM_VERSION >> $PROFILE_DIR/image_ident
+        echo -en "." >> $PROFILE_DIR/image_ident
+        echo -en $BRCM_RELEASE >> $PROFILE_DIR/image_ident
+        echo -en "L." >> $PROFILE_DIR/image_ident
+        echo -en $BRCM_EXTRAVERSION >> $PROFILE_DIR/image_ident
+        echo -e " $" >> $PROFILE_DIR/image_ident
+
+
+
+# If a consumer release has created a filesystem tarball, fill in
+# any missing proprietary binaries using that tarball
+( cd $TARGETS_DIR/$ROOTFS ; tar xzkf ../filesystem.tgz 2>/dev/null ; true )
+

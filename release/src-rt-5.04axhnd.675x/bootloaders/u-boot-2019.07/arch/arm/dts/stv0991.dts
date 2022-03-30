@@ -1,0 +1,55 @@
+/dts-v1/;
+
+/ {
+	model = "ST STV0991 application board";
+	compatible = "st,stv0991";
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	chosen {
+		stdout-path = &uart0;
+	};
+
+	memory {
+		device_type="memory";
+		reg = <0x0 0x198000>;
+	};
+
+	uart0: serial@0x80406000 {
+		compatible = "arm,pl011", "arm,primecell";
+		reg = <0x80406000 0x1000>;
+		clock = <2700000>;
+	};
+
+	aliases {
+		spi0 = "/spi@80203000";		/* QSPI */
+	};
+
+	qspi: spi@80203000 {
+			compatible = "cdns,qspi-nor";
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <0x80203000 0x100>,
+				<0x40000000 0x1000000>;
+			clocks = <3750000>;
+			cdns,fifo-depth = <256>;
+			cdns,fifo-width = <4>;
+			cdns,trigger-address = <0x40000000>;
+			status = "okay";
+
+			flash0: n25q32@0 {
+				#address-cells = <1>;
+				#size-cells = <1>;
+				compatible = "jedec,spi-nor";
+				reg = <0>;		/* chip select */
+				spi-max-frequency = <50000000>;
+				m25p,fast-read;
+				page-size = <256>;
+				block-size = <16>; 	/* 2^16, 64KB */
+				cdns,tshsl-ns = <50>;
+				cdns,tsd2d-ns = <50>;
+				cdns,tchsh-ns = <4>;
+				cdns,tslch-ns = <4>;
+			};
+	};
+};

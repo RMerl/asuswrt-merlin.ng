@@ -1,0 +1,59 @@
+/*
+ * Copyright (C) 2014 DENX Software Engineering GmbH
+ * Heiko Schocher <hs@denx.de>
+ *
+ * Copyright (C) 2012 Texas Instruments Incorporated - http://www.ti.com/
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation.
+ */
+/dts-v1/;
+
+#include "am335x-pxm2.dtsi"
+
+/ {
+	model = "PXM2/PXM50";
+	compatible = "ti,am335x-evm", "ti,am33xx";
+
+		panel {
+			compatible = "ti,tilcdc,panel";
+			backlight = <&backlight0>;
+			pinctrl-names = "default";
+			pinctrl-0 = <&lcd_pins_s0>;
+			enable-gpios = <&gpio3 15 0>;
+			status = "okay";
+
+			panel-info {
+				ac-bias           = <255>;
+				ac-bias-intrpt    = <0>;
+				dma-burst-sz      = <16>;
+				bpp               = <32>;
+				fdd               = <0x80>;
+				sync-edge         = <0>;
+				sync-ctrl         = <1>;
+				raster-order      = <0>;
+				fifo-th           = <0>;
+				tft-alt-mode      = <0>;
+				invert-pxl-clk    = <0>;
+			};
+
+			display-timings {
+				native-mode = <&timing1>;
+
+				timing1: 1376x768p50 {
+					clock-frequency = <60000000>;
+					hactive = <1376>;
+					vactive = <768>;
+					hfront-porch = <14>;
+					hback-porch = <64>;
+					hsync-len = <56>;
+					vback-porch = <28>;
+					vfront-porch = <1>;
+					vsync-len = <6>;
+					hsync-active = <1>;
+					vsync-active = <1>;
+				};
+			};
+		};
+};

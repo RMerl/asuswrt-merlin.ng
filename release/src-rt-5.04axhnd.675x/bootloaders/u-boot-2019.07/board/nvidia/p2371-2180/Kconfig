@@ -1,0 +1,12 @@
+if TARGET_P2371_2180
+
+config SYS_BOARD
+	default "p2371-2180"
+
+config SYS_VENDOR
+	default "nvidia"
+
+config SYS_CONFIG_NAME
+	default "p2371-2180"
+
+endif

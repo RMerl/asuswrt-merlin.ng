@@ -1,0 +1,15 @@
+if TARGET_ROCK960_RK3399
+
+config SYS_BOARD
+	default "rock960_rk3399"
+
+config SYS_VENDOR
+	default "vamrs"
+
+config SYS_CONFIG_NAME
+	default "rock960_rk3399"
+
+config BOARD_SPECIFIC_OPTIONS # dummy
+	def_bool y
+
+endif

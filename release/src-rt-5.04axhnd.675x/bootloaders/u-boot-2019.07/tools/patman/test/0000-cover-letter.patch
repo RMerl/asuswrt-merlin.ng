@@ -1,0 +1,23 @@
+From 5ab48490f03051875ab13d288a4bf32b507d76fd Mon Sep 17 00:00:00 2001
+From: Simon Glass <sjg@chromium.org>
+Date: Sat, 27 May 2017 20:52:11 -0600
+Subject: [RFC 0/2] *** SUBJECT HERE ***
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+*** BLURB HERE ***
+
+Simon Glass (2):
+  pci: Correct cast for sandbox
+  fdt: Correct cast for sandbox in fdtdec_setup_mem_size_base()
+
+ cmd/pci.c                   | 3 ++-
+ fs/fat/fat.c                | 1 +
+ lib/efi_loader/efi_memory.c | 1 +
+ lib/fdtdec.c                | 3 ++-
+ 4 files changed, 6 insertions(+), 2 deletions(-)
+
+-- 
+2.7.4
+

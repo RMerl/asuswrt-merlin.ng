@@ -1,0 +1,6 @@
+MAXBCM BOARD
+M:	Stefan Roese <sr@denx.de>
+S:	Maintained
+F:	board/maxbcm/
+F:	include/configs/maxbcm.h
+F:	configs/maxbcm_defconfig

@@ -1,0 +1,7 @@
+MX6ULEVK BOARD
+M:	Peng Fan <peng.fan@nxp.com>
+S:	Maintained
+F:	board/freescale/mx6ul_14x14_evk/
+F:	include/configs/mx6ul_14x14_evk.h
+F:	configs/mx6ul_14x14_evk_defconfig
+F:	configs/mx6ul_9x9_evk_defconfig

@@ -1,0 +1,18 @@
+Qualcomm pm8916 PMIC
+
+This PMIC is connected using SPMI bus so should be child of SPMI bus controller.
+
+Required properties:
+- compatible: "qcom,spmi-pmic";
+- reg: SPMI Slave ID, size (ignored)
+- #address-cells: 0x1 (peripheral ID)
+- #size-cells: 0x1 (size of peripheral register space)
+
+Example:
+
+pm8916@0 {
+	compatible = "qcom,spmi-pmic";
+	reg = <0x0 0x1>;
+	#address-cells = <0x1>;
+	#size-cells = <0x1>;
+};

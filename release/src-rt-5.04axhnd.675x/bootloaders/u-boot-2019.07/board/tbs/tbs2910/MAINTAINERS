@@ -1,0 +1,7 @@
+TBS2910 BOARD
+M:	Soeren Moch <smoch@web.de>
+S:	Maintained
+F:	arch/arm/dts/imx6q-tbs2910.dts
+F:	board/tbs/tbs2910/
+F:	configs/tbs2910_defconfig
+F:	include/configs/tbs2910.h

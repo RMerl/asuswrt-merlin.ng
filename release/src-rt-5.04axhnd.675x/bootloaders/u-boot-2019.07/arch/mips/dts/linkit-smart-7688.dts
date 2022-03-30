@@ -1,0 +1,45 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Copyright (C) 2018 Stefan Roese <sr@denx.de>
+ */
+
+/dts-v1/;
+
+#include "mt7628a.dtsi"
+
+/ {
+	compatible = "seeed,linkit-smart-7688", "ralink,mt7628a-soc";
+	model = "LinkIt-Smart-7688";
+
+	aliases {
+		serial0 = &uart2;
+		spi0 = &spi0;
+	};
+
+	memory@0 {
+		device_type = "memory";
+		reg = <0x0 0x08000000>;
+	};
+
+	chosen {
+		stdout-path = &uart2;
+	};
+};
+
+&uart2 {
+	status = "okay";
+	clock-frequency = <40000000>;
+};
+
+&spi0 {
+	status = "okay";
+	num-cs = <2>;
+
+	spi-flash@0 {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "jedec,spi-nor";
+		spi-max-frequency = <25000000>;
+		reg = <0>;
+	};
+};

@@ -1,0 +1,9 @@
+mmcboot=setenv bootargs root=/dev/mmcblk${mmcdev}p${mmcrootpart} ${rootfstype} rootwait ${console}; run loaduimage; bootm 0x40007FC0
+rootfstype=ext4
+loaduimage=ext4load mmc ${mmcdev}:${mmcbootpart} 0x40007FC0 uImage
+mmcdev=0
+mmcbootpart=2
+mmcrootpart=5
+console=console=ttySAC2,115200n8
+bootcmd=run mmcboot
+dfu_alt_info=u-boot mmc 80 800;params.bin mmc 0x38 0x8;uImage ext4 0 2

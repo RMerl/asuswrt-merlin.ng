@@ -1,0 +1,6 @@
+<PUBLISH>
+@@ -437,0 +438 @@
+-# BRCM_PLATFORM_RDP_PRV is not set
+-# BUILD_RDPA_PRV is not set
++BRCM_PLATFORM_RDP_PRV=y
++BUILD_RDPA_PRV=y

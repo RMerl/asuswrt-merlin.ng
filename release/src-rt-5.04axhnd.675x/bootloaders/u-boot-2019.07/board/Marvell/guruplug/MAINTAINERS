@@ -1,0 +1,6 @@
+GURUPLUG BOARD
+M:	Siddarth Gore <gores@marvell.com>
+S:	Maintained
+F:	board/Marvell/guruplug/
+F:	include/configs/guruplug.h
+F:	configs/guruplug_defconfig

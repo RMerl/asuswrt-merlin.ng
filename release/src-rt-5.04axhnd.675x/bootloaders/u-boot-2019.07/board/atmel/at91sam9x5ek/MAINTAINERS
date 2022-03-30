@@ -1,0 +1,9 @@
+AT91SAM9X5EK BOARD
+M:	Eugen Hristev <eugen.hristev@microchip.com>
+S:	Maintained
+F:	board/atmel/at91sam9x5ek/
+F:	include/configs/at91sam9x5ek.h
+F:	configs/at91sam9x5ek_dataflash_defconfig
+F:	configs/at91sam9x5ek_mmc_defconfig
+F:	configs/at91sam9x5ek_nandflash_defconfig
+F:	configs/at91sam9x5ek_spiflash_defconfig

@@ -1,0 +1,130 @@
+menu "Reset Controller Support"
+
+config DM_RESET
+	bool "Enable reset controllers using Driver Model"
+	depends on DM && OF_CONTROL
+	help
+	  Enable support for the reset controller driver class. Many hardware
+	  modules are equipped with a reset signal, typically driven by some
+	  reset controller hardware module within the chip. In U-Boot, reset
+	  controller drivers allow control over these reset signals. In some
+	  cases this API is applicable to chips outside the CPU as well,
+	  although driving such reset isgnals using GPIOs may be more
+	  appropriate in this case.
+
+config SANDBOX_RESET
+	bool "Enable the sandbox reset test driver"
+	depends on DM_MAILBOX && SANDBOX
+	help
+	  Enable support for a test reset controller implementation, which
+	  simply accepts requests to reset various HW modules without actually
+	  doing anything beyond a little error checking.
+
+config STI_RESET
+	bool "Enable the STi reset"
+	depends on ARCH_STI
+	help
+	  Support for reset controllers on STMicroelectronics STiH407 family SoCs.
+	  Say Y if you want to control reset signals provided by system config
+	  block.
+
+config STM32_RESET
+	bool "Enable the STM32 reset"
+	depends on STM32 || ARCH_STM32MP
+	help
+	  Support for reset controllers on STMicroelectronics STM32 family SoCs.
+	  This resset driver is compatible with STM32 F4/F7 and H7 SoCs.
+
+config TEGRA_CAR_RESET
+	bool "Enable Tegra CAR-based reset driver"
+	depends on TEGRA_CAR
+	help
+	  Enable support for manipulating Tegra's on-SoC reset signals via
+	  direct register access to the Tegra CAR (Clock And Reset controller).
+
+config TEGRA186_RESET
+	bool "Enable Tegra186 BPMP-based reset driver"
+	depends on TEGRA186_BPMP
+	help
+	  Enable support for manipulating Tegra's on-SoC reset signals via IPC
+	  requests to the BPMP (Boot and Power Management Processor).
+
+config RESET_TI_SCI
+	bool "TI System Control Interface (TI SCI) reset driver"
+	depends on DM_RESET && TI_SCI_PROTOCOL
+	help
+	  This enables the reset driver support over TI System Control Interface
+	  available on some new TI's SoCs. If you wish to use reset resources
+	  managed by the TI System Controller, say Y here. Otherwise, say N.
+
+config RESET_BCM6345
+	bool "Reset controller driver for BCM6345"
+	depends on DM_RESET && ARCH_BMIPS
+	help
+	  Support reset controller on BCM6345.
+
+config RESET_UNIPHIER
+	bool "Reset controller driver for UniPhier SoCs"
+	depends on ARCH_UNIPHIER
+	default y
+	help
+	  Support for reset controllers on UniPhier SoCs.
+	  Say Y if you want to control reset signals provided by System Control
+	  block, Media I/O block, Peripheral Block.
+
+config AST2500_RESET
+	bool "Reset controller driver for AST2500 SoCs"
+	depends on DM_RESET && WDT_ASPEED
+	default y if ASPEED_AST2500
+	help
+	  Support for reset controller on AST2500 SoC. This controller uses
+	  watchdog to reset different peripherals and thus only supports
+	  resets that are supported by watchdog. The main limitation though
+	  is that some reset signals, like I2C or MISC reset multiple devices.
+
+config RESET_ROCKCHIP
+	bool "Reset controller driver for Rockchip SoCs"
+	depends on DM_RESET && ARCH_ROCKCHIP && CLK
+	default y
+	help
+	  Support for reset controller on rockchip SoC. The main limitation
+	  though is that some reset signals, like I2C or MISC reset multiple
+	  devices.
+
+config RESET_MESON
+	bool "Reset controller driver for Amlogic Meson SoCs"
+	depends on DM_RESET && ARCH_MESON
+	imply REGMAP
+	default y
+	help
+	  Support for reset controller on Amlogic Meson SoC.
+
+config RESET_SOCFPGA
+	bool "Reset controller driver for SoCFPGA"
+	depends on DM_RESET && ARCH_SOCFPGA
+	default y
+	help
+	  Support for reset controller on SoCFPGA platform.
+
+config RESET_MEDIATEK
+	bool "Reset controller driver for MediaTek SoCs"
+	depends on DM_RESET && ARCH_MEDIATEK && CLK
+	default y
+	help
+	  Support for reset controller on MediaTek SoCs.
+
+config RESET_SUNXI
+	bool "RESET support for Allwinner SoCs"
+	depends on DM_RESET && ARCH_SUNXI
+	default y
+	help
+	  This enables support for common reset driver for
+	  Allwinner SoCs.
+
+config RESET_HISILICON
+	bool "Reset controller driver for HiSilicon SoCs"
+	depends on DM_RESET
+	help
+	  Support for reset controller on HiSilicon SoCs.
+
+endmenu

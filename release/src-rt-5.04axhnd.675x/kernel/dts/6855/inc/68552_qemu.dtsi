@@ -1,0 +1,19 @@
+#include "6855_qemu.dtsi"
+
+/ {
+	/* arch */
+	#define PMU_CORE0_SPI	7
+	#define PMU_CORE1_SPI	8
+	#define PMU_CORE2_SPI	9
+	#include "../../ip/bcm_cortexA7_qemu.dtsi"
+
+    unimac {
+		compatible = "brcm,unimac";
+        reg = <0x828a8000 0x6000>,
+              <0x828b0000 0x1800>;
+        conf_offset = <0x1000>;
+        mib_offset = <0x400>;
+        top_offset = <0x400>;
+        mib_step = <0x2>;
+    };
+};

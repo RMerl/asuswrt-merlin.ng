@@ -1,0 +1,164 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * SAMSUNG SMDK5420 board device tree source
+ *
+ * Copyright (c) 2013 Samsung Electronics Co., Ltd.
+ *		http://www.samsung.com
+ */
+
+/dts-v1/;
+#include "exynos54xx.dtsi"
+
+/ {
+	model = "SAMSUNG SMDK5420 board based on EXYNOS5420";
+	compatible = "samsung,smdk5420", "samsung,exynos5";
+
+	config {
+		hwid = "smdk5420 TEST A-A 9382";
+	};
+
+	aliases {
+		serial0 = "/serial@12C30000";
+		console = "/serial@12C30000";
+	};
+
+	tmu@10060000 {
+		samsung,min-temp	= <25>;
+		samsung,max-temp	= <125>;
+		samsung,start-warning	= <95>;
+		samsung,start-tripping	= <105>;
+		samsung,hw-tripping	= <110>;
+		samsung,efuse-min-value	= <40>;
+		samsung,efuse-value	= <55>;
+		samsung,efuse-max-value	= <100>;
+		samsung,slope		= <274761730>;
+		samsung,dc-value	= <25>;
+	};
+
+	/* s2mps11 is on i2c bus 4 */
+	i2c@12CA0000 {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		pmic@66 {
+			reg = <0x66>;
+			compatible = "samsung,s2mps11-pmic";
+		};
+	};
+
+	spi@12d20000 { /* spi0 */
+		spi-max-frequency = <50000000>;
+		firmware_storage_spi: flash@0 {
+			reg = <0>;
+		};
+	};
+
+	fimd@14400000 {
+		samsung,vl-freq = <60>;
+		samsung,vl-col = <2560>;
+		samsung,vl-row = <1600>;
+		samsung,vl-width = <2560>;
+		samsung,vl-height = <1600>;
+
+		samsung,vl-clkp;
+		samsung,vl-dp;
+		samsung,vl-bpix = <4>;
+
+		samsung,vl-hspw = <32>;
+		samsung,vl-hbpd = <80>;
+		samsung,vl-hfpd = <48>;
+		samsung,vl-vspw = <6>;
+		samsung,vl-vbpd = <37>;
+		samsung,vl-vfpd = <3>;
+		samsung,vl-cmd-allow-len = <0xf>;
+
+		samsung,winid = <3>;
+		samsung,interface-mode = <1>;
+		samsung,dp-enabled = <1>;
+		samsung,dual-lcd-enabled = <0>;
+	};
+
+	sound@3830000 {
+		samsung,codec-type = "wm8994";
+	};
+
+	i2c@12C70000 {
+		wm8994: soundcodec@1a {
+			reg = <0x1a>;
+			u-boot,i2c-offset-len = <2>;
+			compatible = "wolfson,wm8994";
+			#sound-dai-cells = <1>;
+		};
+	};
+
+	sound {
+		compatible = "samsung,smdk5420-audio-wm8994";
+
+		samsung,model = "Snow-I2S-MAX98095";
+		samsung,audio-codec = <&wm8994>;
+
+		cpu {
+			sound-dai = <&i2s0 0>;
+		};
+
+		codec {
+			sound-dai = <&wm8994 0>;
+		};
+	};
+
+	mmc@12200000 {
+		samsung,bus-width = <8>;
+		samsung,timing = <1 3 3>;
+		samsung,removable = <0>;
+		samsung,pre-init;
+	};
+
+	mmc@12210000 {
+		status = "disabled";
+	};
+
+	mmc@12220000 {
+		samsung,bus-width = <4>;
+		samsung,timing = <1 2 3>;
+		samsung,removable = <1>;
+	};
+
+	mmc@12230000 {
+		status = "disabled";
+	};
+
+	fimd@14400000 {
+		/* sysmmu is not used in U-Boot */
+		samsung,disable-sysmmu;
+	};
+
+	dp@145b0000 {
+		samsung,lt-status = <0>;
+
+		samsung,master-mode = <0>;
+		samsung,bist-mode = <0>;
+		samsung,bist-pattern = <0>;
+		samsung,h-sync-polarity = <0>;
+		samsung,v-sync-polarity = <0>;
+		samsung,interlaced = <0>;
+		samsung,color-space = <0>;
+		samsung,dynamic-range = <0>;
+		samsung,ycbcr-coeff = <0>;
+		samsung,color-depth = <1>;
+	};
+
+	dmc {
+		mem-type = "ddr3";
+	};
+
+	xhci1: xhci@12400000 {
+		compatible = "samsung,exynos5250-xhci";
+		reg = <0x12400000 0x10000>;
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		phy {
+			compatible = "samsung,exynos5250-usb3-phy";
+			reg = <0x12500000 0x100>;
+		};
+	};
+};

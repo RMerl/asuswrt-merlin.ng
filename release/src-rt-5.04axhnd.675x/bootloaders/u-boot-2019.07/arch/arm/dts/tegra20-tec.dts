@@ -1,0 +1,80 @@
+/dts-v1/;
+
+#include "tegra20-tamonten.dtsi"
+
+/ {
+	model = "Avionic Design Tamonten Evaluation Carrier";
+	compatible = "ad,tec", "nvidia,tegra20";
+
+	chosen {
+		stdout-path = &uartd;
+	};
+
+	aliases {
+		usb0 = "/usb@c5008000";
+		mmc0 = "/sdhci@c8000600";
+	};
+
+	memory {
+		reg = <0x00000000 0x20000000>;
+	};
+
+	host1x@50000000 {
+		status = "okay";
+
+		dc@54200000 {
+			status = "okay";
+
+			rgb {
+				nvidia,panel = <&lcd_panel>;
+				status = "okay";
+			};
+		};
+	};
+
+	serial@70006300 {
+		clock-frequency = <216000000>;
+	};
+
+	i2c@7000c000 {
+		status = "disabled";
+	};
+
+	i2c@7000c400 {
+		status = "disabled";
+	};
+
+	i2c@7000c500 {
+		status = "disabled";
+	};
+
+	i2c@7000d000 {
+		status = "disabled";
+	};
+
+	pwm: pwm@7000a000 {
+		status = "okay";
+	};
+
+	lcd_panel: panel {
+		clock = <33260000>;
+		xres = <800>;
+		yres = <480>;
+		left-margin = <120>;
+		right-margin = <120>;
+		hsync-len = <16>;
+		lower-margin = <15>;
+		upper-margin = <15>;
+		vsync-len = <15>;
+
+		nvidia,bits-per-pixel = <16>;
+		nvidia,pwm = <&pwm 0 500000>;
+		nvidia,backlight-enable-gpios = <&gpio TEGRA_GPIO(B, 5)
+							GPIO_ACTIVE_HIGH>;
+		nvidia,lvds-shutdown-gpios = <&gpio TEGRA_GPIO(B, 2)
+							GPIO_ACTIVE_HIGH>;
+		nvidia,backlight-vdd-gpios = <&gpio TEGRA_GPIO(W, 0)
+							GPIO_ACTIVE_HIGH>;
+		nvidia,panel-timings = <0 0 0 0>;
+	};
+};

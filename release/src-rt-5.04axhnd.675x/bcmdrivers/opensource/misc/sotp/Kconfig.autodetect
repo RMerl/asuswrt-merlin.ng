@@ -1,0 +1,10 @@
+config BCM_SOTP
+	bool "Broadcom BCA SOTP driver"
+	default n
+	help
+	  Add the BCM BCA SOTP support.
+
+config BCM_SOTP_IMPL
+	int "Implementation index for BCA SOTP module"
+	depends on BCM_SOTP
+	default 1

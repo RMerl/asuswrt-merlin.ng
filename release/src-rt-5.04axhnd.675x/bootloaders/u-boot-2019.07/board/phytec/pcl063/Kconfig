@@ -1,0 +1,25 @@
+if TARGET_PCL063
+
+config SYS_BOARD
+	default "pcl063"
+
+config SYS_VENDOR
+	default "phytec"
+
+config SYS_CONFIG_NAME
+	default "pcl063"
+
+endif
+
+if TARGET_PCL063_ULL
+
+config SYS_BOARD
+	default "pcl063"
+
+config SYS_VENDOR
+	default "phytec"
+
+config SYS_CONFIG_NAME
+	default "pcl063_ull"
+
+endif

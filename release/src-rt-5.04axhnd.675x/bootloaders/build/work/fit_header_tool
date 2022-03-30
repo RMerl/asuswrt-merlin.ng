@@ -1,0 +1,71 @@
+#!/usr/bin/env perl
+
+use bytes;
+use Getopt::Long;
+use warnings;
+use strict;
+use constant {
+    BCM_TAG_FIT_HDR_SIGNATURE => 0x46495453, # FITS
+    BCM_TAG_FIT_HDR_PUBKEY => 0x46495450,    # FITP
+};
+
+my $hex;
+my $padding = 0;
+my @pubfiles;
+my $pub;
+my @sigfiles;
+my @append;
+my $sig;
+
+GetOptions( "append=s",\@append, "hex", \$hex, "padding=i", \$padding, "signature=s", \@sigfiles, "pubkey=s", \@pubfiles) or die();
+@append = split(/,/,join(',',@append));
+
+local $/;
+my $ifile = shift @ARGV;
+open(I,"<$ifile") or die("$ifile open failed");
+my $img = <I>;
+close(I);
+my @a = unpack( "NN", $img );
+die("bad magic number") unless $a[0] == 0xd00dfeed;
+my $len = $a[1] + $padding;
+if ($hex) {
+    $len = sprintf("%x",$len);
+}
+
+print $len;
+
+my $wptr = $len;
+
+foreach my $file (@append) {
+   open(S,"<$file") or die("$file open failed");
+   $pub = <S>;
+   close(S);
+   substr($img,$wptr,length($pub)) = $pub;
+   $wptr += length($pub);
+}
+
+foreach my $pubfile (@pubfiles) {
+   open(S,"<$pubfile") or die("$pubfile open failed");
+   $pub = pack('V',BCM_TAG_FIT_HDR_PUBKEY) . <S>;
+   close(S);
+   substr($img,$wptr,length($pub)) = $pub;
+   $wptr += length($pub);
+}
+
+foreach my $sigfile (@sigfiles) {
+   open(S,"<$sigfile") or die("$sigfile open failed");
+   $sig = pack('V',BCM_TAG_FIT_HDR_SIGNATURE) . <S>;
+   close(S);
+   if ($ENV{'TEST_FORCE_BAD_FIT_SIG'}) {
+      substr($sig,20,8) = 'ABCDDCBA';
+   }
+   substr($img,$wptr,length($sig)) = $sig;
+   $wptr += length($sig);
+}
+
+if (@sigfiles) {
+   open(O,">$ifile") or die("$ifile open for write failed");
+   print O $img;
+   close(O);
+}
+

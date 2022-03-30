@@ -1,0 +1,72 @@
+#include "../../../bcmdrivers/opensource/include/bcm963xx/bcm_bca_leds_dt_bindings.h"
+
+#define HW_SERIAL_PORT_LED_BIT(_name_, _port, _led, _bit) \
+    _name_ {\
+        compatible = "brcm,serial-led"; \
+        hardware_led; \
+        port = <(_port)>;\
+        led = <(_led)>;\
+        bit = <(_bit)>;\
+        status = "disabled";\
+    }
+
+#define SW_SERIAL_BIT(_name_, _bit) \
+    _name_ {\
+        compatible = "brcm,serial-led"; \
+        software_led; \
+        bit = <(_bit)>;\
+        status = "disabled";\
+    }
+
+#define HW_SERIAL_AGGREGATE_BIT(_name_, _bit) \
+    _name_ {\
+        compatible = "brcm,serial-led"; \
+        hardware_led; \
+        bit = <(_bit)>;\
+        status = "disabled";\
+    }
+
+#define HW_PARALLEL_PORT_LED_BIT_PIN_NAME(_name_, _port, _led, _bit, _pin_) \
+    _name_ {\
+        compatible = "brcm,parallel-led"; \
+        hardware_led; \
+        port = <(_port)>;\
+        led = <(_led)>;\
+        bit = <(_bit)>;\
+        pinctrl-names = "default";\
+        pinctrl-0 = <&_pin_>;\
+        status = "disabled";\
+    }
+
+#define SW_PARALLEL_BIT_PIN_NAME(_name_, _bit, _pin_) \
+    _name_ {\
+        compatible = "brcm,parallel-led"; \
+        software_led; \
+        bit = <(_bit)>;\
+        pinctrl-names = "default";\
+        pinctrl-0 = <&_pin_>;\
+        status = "disabled";\
+    }
+
+#define HW_PARALLEL_AGGREGATE_BIT_PIN_NAME(_name_, _bit, _pin_) \
+    _name_ {\
+        compatible = "brcm,parallel-led"; \
+        hardware_led; \
+        bit = <(_bit)>;\
+        pinctrl-names = "default";\
+        pinctrl-0 = <&_pin_>;\
+        status = "disabled";\
+    }
+
+compatible = "brcm,bca-leds-ctrl";
+reg = <LED_GLBL_CTRL_OFFSET LED_GLBL_CTRL_SIZE>, <LED_HW_EN_OFFSET LED_HW_EN_SIZE>,
+<LED_SER_SHIFT_OFFSET LED_SER_SHIFT_SIZE>, <LED_FLASH_RATE_OFFSET LED_FLASH_RATE_SIZE>,
+<LED_BRIGHTNESS_OFFSET LED_BRIGHTNESS_SIZE>, <LED_POWER_LED_CFG_OFFSET LED_POWER_LED_CFG_SIZE>,
+<LED_POWER_LUT_OFFSET LED_POWER_LUT_SIZE>, <LED_HW_POLARITY_OFFSET LED_HW_POLARITY_SIZE>,
+<LED_SW_DATA_OFFSET LED_SW_DATA_SIZE>, <LED_SW_POLARITY_OFFSET LED_SW_POLARITY_SIZE>,
+<LED_PAR_POLARITY_OFFSET LED_PAR_POLARITY_SIZE>, <LED_SER_POLARITY_OFFSET LED_SER_POLARITY_SIZE>,
+<LED_MASK_OFFSET LED_MASK_SIZE>;
+
+reg-names = "glbl_ctrl", "hw_en", "ser_shift", "flash_rate", "brightness", "power_led_cfg", "power_lut",
+	    "hw_polarity", "sw_data", "sw_polarity", "par_polarity", "ser_polarity", "mask";
+nleds = <MAX_SUPPORTED_LEDS>;

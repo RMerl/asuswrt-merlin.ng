@@ -1,0 +1,194 @@
+Overview
+--------
+The T4240QDS is a high-performance computing evaluation, development and test
+platform supporting the T4240 QorIQ™ Power Architecture™ processor. T4240QDS is
+optimized to support the high-bandwidth DDR3 memory ports, as well as the
+highly-configurable SerDes ports. The system is lead-free and RoHS-compliant.
+
+Board Features
+  SERDES Connections
+	32 lanes grouped into four 8-lane banks
+	Two “front side” banks dedicated to Ethernet
+		- High-speed crosspoint switch fabric on selected lanes
+		- Two PCI Express slots with side-band connector supporting
+		- SGMII
+		- XAUI
+		- HiGig
+		- I-pass connectors allow board-to-board and loopback support
+	Two “back side” banks dedicated to other protocols
+		- High-speed crosspoint switch fabric on all lanes
+		- Four PCI Express slots with side-band connector supporting
+		- PCI Express 3.0
+		- SATA 2.0
+		- SRIO 2.0
+		- Supports 4X Aurora debug with two connectors
+  DDR Controllers
+	Three independant 64-bit DDR3 controllers
+	Supports rates of 1866 up to 2133 MHz data-rate
+	Supports two DDR3/DDR3LP UDIMM/RDIMMs per controller
+	DDR power supplies 1.5V to all devices with automatic tracking of VTT.
+	Power software-switchable to 1.35V if software detects all DDR3LP devices.
+	MT9JSF25672AZ-2G1KZESZF has been tested at 1333, 1600, 1867, 2000 and
+	2133MT/s speeds. For 1867MT/s and above, read-to-write turnaround time
+	increases by 1 clock.
+
+  IFC/Local Bus
+	NAND flash: 8-bit, async or sync, up to 2GB.
+	NOR: 16-bit, Address/Data Multiplexed (ADM), up to 128 MB
+	NOR: 8-bit or 16-bit, non-multiplexed, up to 512MB
+		- NOR devices support 16 virtual banks
+	GASIC: Minimal target within Qixis FPGA
+	PromJET rapid memory download support
+	Address demultiplexing handled within FPGA.
+		- Flexible demux allows 8 or 16 bit evaluation.
+	IFC Debug/Development card
+		- Support for 32-bit devices
+  Ethernet
+	Support two on-board RGMII 10/100/1G ethernet ports.
+	SGMII and XAUI support via SERDES block (see above).
+	1588 support via Symmetricom board.
+  QIXIS System Logic FPGA
+	Manages system power and reset sequencing
+	Manages DUT, board, clock, etc. configuration for dynamic shmoo
+	Collects V-I-T data in background for code/power profiling.
+	Supports legacy TMT test features (POSt, IRS, SYSCLK-synchronous assertion)
+	General fault monitoring and logging
+	Runs from ATX “hot” power rails allowing operation while system is off.
+  Clocks
+	System and DDR clock (SYSCLK, “DDRCLK”)
+		- Switch selectable to one of 16 common settings in the interval 33MHz-166MHz.
+		- Software selectable in 1MHz increments from 1-200MHz.
+	SERDES clocks
+		- Provides clocks to all SerDes blocks and slots
+		- 100, 125 and 156.25 MHz
+  Power Supplies
+	Dedicated regulators for VDD
+		- Adjustable from (0.7V to 1.3V at 80A
+		- Regulators can be controlled by VID and/or software
+	Dedicated regulator for GVDD_PL: 1.35/1.5V at 22A
+		- VTT/MVREF automatically track operating voltage
+	Dedicated regulators/filters for AVDD supplies
+	Dedicated regulators for other supplies: OVDD, BVDD, DVDD, LVDD, POVDD, etc.
+  USB
+	Supports two USB 2.0 ports with integrated PHYs
+		- One type A, one type micro-AB with 1.0A power per port.
+  Other IO
+	eSDHC/MMC
+		- SDHC card slot
+	eSPI port
+		- High-speed serial flash
+	Two Serial port
+	Four I2C ports
+  XFI
+	XFI is supported on T4QDS-XFI board which removed slot3 and routed
+	four Lanes A/B/C/D to a SFP+ cages, which to house fiber cable or
+	direct attach cable(copper), the copper cable is used to emulate
+	10GBASE-KR scenario.
+	So, for XFI usage, there are two scenarios, one will use fiber cable,
+	another will use copper cable. An hwconfig env "fsl_10gkr_copper" is
+	introduced to indicate a XFI port will use copper cable, and U-Boot
+	will fixup the dtb accordingly.
+	It's used as: fsl_10gkr_copper:<10g_mac_name>
+	The <10g_mac_name> can be fm1_10g1, fm1_10g2, fm2_10g1, fm2_10g2, they
+	do not have to be coexist in hwconfig. If a MAC is listed in the env
+	"fsl_10gkr_copper", it will use copper cable, otherwise, fiber cable
+	will be used by default.
+	for ex. set "fsl_10gkr_copper:fm1_10g1,fm1_10g2,fm2_10g1,fm2_10g2" in
+	hwconfig, then both four XFI ports will use copper cable.
+	set "fsl_10gkr_copper:fm1_10g1,fm1_10g2" in hwconfig, then first two
+	XFI ports will use copper cable, the other two XFI ports will use fiber
+	cable.
+
+Memory map
+----------
+The addresses in brackets are physical addresses.
+
+0x0_0000_0000 (0x0_0000_0000) - 0x0_7fff_ffff   2GB DDR (more than 2GB is initialized but not mapped under with TLB)
+0x0_8000_0000 (0xc_0000_0000) - 0x0_dfff_ffff 1.5GB PCIE memory
+0x0_f000_0000 (0xf_0000_0000) - 0x0_f1ff_ffff  32MB DCSR (includes trace buffers)
+0x0_f400_0000 (0xf_f400_0000) - 0x0_f5ff_ffff  32MB BMan
+0x0_f600_0000 (0xf_f600_0000) - 0x0_f7ff_ffff  32MB QMan
+0x0_f800_0000 (0xf_f800_0000) - 0x0_f803_ffff 256KB PCIE IO
+0x0_e000_0000 (0xf_e000_0000) - 0x0_efff_ffff 256MB NOR flash
+0x0_fe00_0000 (0xf_fe00_0000) - 0x0_feff_ffff  16MB CCSR
+0x0_ffdf_0000 (0xf_ffdf_0000) - 0x0_ffdf_03ff   4KB QIXIS
+0x0_ffff_f000 (0x0_7fff_fff0) - 0x0_ffff_ffff   4KB Boot page translation for secondary cores
+
+The physical address of the last (boot page translation) varies with the actual DDR size.
+
+Voltage ID and VDD override
+--------------------
+T4240 has a VID feature. U-Boot reads the VID efuses and adjust the voltage
+accordingly. The voltage can also be override by command vdd_override. The
+syntax is
+
+vdd_override <voltage in mV>, eg. 1050 is for 1.050v.
+
+Upon success, the actual voltage will be read back. The value is checked
+for safety and any invalid value will not adjust the voltage.
+
+Another way to override VDD is to use environmental variable, in case of using
+command is too late for some debugging. The syntax is
+
+setenv t4240qds_vdd_mv <voltage in mV>
+saveenv
+reset
+
+The override voltage takes effect when booting.
+
+Note: voltage adjustment needs to be done step by step. Changing voltage too
+rapidly may cause current surge. The voltage stepping is done by software.
+Users can set the final voltage directly.
+
+2-stage NAND/SD boot loader
+-------------------------------
+PBL initializes the internal SRAM and copy SPL(160K) in SRAM.
+SPL further initialise DDR using SPD and environment variables
+and copy U-Boot(768 KB) from NAND/SD device to DDR.
+Finally SPL transers control to U-Boot for futher booting.
+
+SPL has following features:
+ - Executes within 256K
+ - No relocation required
+
+Run time view of SPL framework
+-------------------------------------------------
+|Area		| Address			|
+-------------------------------------------------
+|SecureBoot header | 0xFFFC0000	(32KB)		|
+-------------------------------------------------
+|GD, BD		| 0xFFFC8000	(4KB)		|
+-------------------------------------------------
+|ENV		| 0xFFFC9000	(8KB)		|
+-------------------------------------------------
+|HEAP		| 0xFFFCB000	(50KB)		|
+-------------------------------------------------
+|STACK		| 0xFFFD8000	(22KB)		|
+-------------------------------------------------
+|U-Boot SPL	| 0xFFFD8000 	(160KB)		|
+-------------------------------------------------
+
+NAND Flash memory Map on T4QDS
+--------------------------------------------------------------
+Start		End		Definition	Size
+0x000000	0x0FFFFF	U-Boot img	1MB
+0x140000	0x15FFFF	U-Boot env      128KB
+0x160000	0x17FFFF	FMAN Ucode      128KB
+
+Micro SD Card memory Map on T4QDS
+----------------------------------------------------
+Block		#blocks		Definition	Size
+0x008		2048		U-Boot img	1MB
+0x800		0016		U-Boot env	8KB
+0x820		0128		FMAN ucode	64KB
+
+Switch Settings: (ON is 1, OFF is 0)
+===============
+NAND boot SW setting:
+SW1[1:8] = 10000010
+SW2[1.1] = 0
+SW6[1:4] = 1001
+
+SD boot SW setting:
+SW1[1:8] = 00100000
+SW2[1.1] = 0

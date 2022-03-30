@@ -1,0 +1,27 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Device Tree Source for Generic 66AK2G0X EVM
+ *
+ * Copyright (C) 2017 Texas Instruments Incorporated - http://www.ti.com/
+ */
+
+/dts-v1/;
+
+#include "keystone-k2g.dtsi"
+
+/ {
+	compatible = "ti,k2g-generic", "ti,k2g", "ti,keystone";
+	model = "Texas Instruments 66AK2G02 Generic";
+
+	chosen {
+		stdout-path = &uart0;
+	};
+};
+
+&i2c0 {
+        status = "okay";
+};
+
+&i2c1 {
+        status = "okay";
+};

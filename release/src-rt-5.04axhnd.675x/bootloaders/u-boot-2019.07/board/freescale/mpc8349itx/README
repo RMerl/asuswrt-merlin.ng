@@ -1,0 +1,186 @@
+Freescale MPC8349E-mITX and MPC8349E-mITX-GP Boards
+---------------------------------------------------
+
+1.	Board Description
+
+	The MPC8349E-mITX and MPC8349E-mITX-GP are reference boards featuring
+	the Freescale MPC8349E processor in a Mini-ITX form factor.
+
+	The MPC8349E-mITX-GP is an MPC8349E-mITX with the following differences:
+
+	A) One 8MB on-board flash EEPROM chip, instead of two.
+	B) No SATA controller
+	C) No Compact Flash slot
+	D) No Mini-PCI slot
+	E) No Vitesse 7385 5-port Ethernet switch
+	F) No 4-port USB Type-A interface
+
+2.	Board Switches and Jumpers
+
+2.0	Descriptions for all of the board jumpers can be found in the User
+	Guide.  Of particular interest to U-Boot developers is jumper J22:
+
+	Pos.	Name		Default		Description
+	-----------------------------------------------------------------------
+	A	LGPL0		ON (0)          HRCW source, bit 0
+	B       LGPL1           ON (0)          HRCW source, bit 1
+	C       LGPL3           ON (0)		HRCW source, bit 2
+	D       LGPL5           OFF (1)         PCI_SYNC_OUT frequency
+	E       BOOT1           ON (0)          Flash EEPROM boot device
+	F       PCI_M66EN       ON (0)          PCI 66MHz enable
+	G       I2C-WP          ON (0)          I2C EEPROM write protection
+	H       F_WP            OFF (1)         Flash EEPROM write protection
+
+	Jumper J22.E is only for the ITX, and it decides the configuration
+	of the flash chips.  If J22.E is ON (i.e. jumpered), then flash chip
+	U4 is located at address FE000000 and flash chip U7 is at FE800000.
+	If J22.E is OFF, then U7 is at FE000000 and U4 is at FE800000.
+
+	For U-Boot development, J22.E can be used to switch back-and-forth
+	between two U-Boot images.
+
+3.	Memory Map
+
+3.1.	The memory map should look pretty much like this:
+
+	0x0000_0000 - 0x0FFF_FFFF DDR SDRAM (256 MB)
+	0x8000_0000 - 0x9FFF_FFFF PCI1 memory space (512 MB)
+	0xA000_0000 - 0xBFFF_FFFF PCI2 memory space (512 MB)
+	0xE000_0000 - 0xEFFF_FFFF IMMR (1 MB)
+	0xE200_0000 - 0xE2FF_FFFF PCI1 I/O space (16 MB)
+	0xE300_0000 - 0xE3FF_FFFF PCI2 I/O space (16 MB)
+	0xF000_0000 - 0xF000_FFFF Compact Flash (ITX only)
+	0xF001_0000 - 0xF001_FFFF Local bus expansion slot
+	0xF800_0000 - 0xF801_FFFF Vitesse 7385 Parallel Interface (ITX only)
+	0xFE00_0000 - 0xFE7F_FFFF First 8MB bank of Flash memory
+	0xFE80_0000 - 0xFEFF_FFFF Second 8MB bank of Flash memory (ITX only)
+
+3.2	Flash EEPROM layout.
+
+	On the ITX, jumper J22.E is used to determine which flash chips are
+	at which address.  When J22.E is switched, addresses from FE000000
+	to FE7FFFFF are swapped with addresses from FE800000 to FEFFFFFF.
+
+	On the ITX, at the normal boot address (aka HIGHBOOT):
+
+	FE00_0000	HRCW
+	FE70_0000	Alternative U-Boot image
+	FE80_0000	Alternative HRCW
+	FEF0_0000	U-Boot image
+	FEFF_FFFF	End of flash
+
+	On the ITX, at the low boot address (LOWBOOT)
+
+	FE00_0000	HRCW and U-Boot image
+	FE04_0000	U-Boot environment variables
+	FE80_0000	Alternative HRCW and U-Boot image
+	FEFF_FFFF	End of flash
+
+	On the ITX-GP, the only option is LOWBOOT and there is only one chip
+
+	FE00_0000	HRCW and U-Boot image
+	FE04_0000	U-Boot environment variables
+	F7FF_FFFF	End of flash
+
+4. Definitions
+
+4.1 Explanation of NEW definitions in:
+
+	include/configs/MPC8349ITX.h
+
+	CONFIG_MPC83xx		MPC83xx family
+	CONFIG_MPC8349		MPC8349 specific
+	CONFIG_MPC8349ITX		MPC8349E-mITX
+
+5. Compilation
+
+	Assuming you're using BASH shell:
+
+		export CROSS_COMPILE=your-cross-compile-prefix
+		cd u-boot
+		make distclean
+
+		make MPC8349ITX_config
+	or:
+		make MPC8349ITXGP_config
+	or:
+		make MPC8349ITX_LOWBOOT_config
+
+		make
+
+6. Downloading and Flashing Images
+
+6.1 Download via tftp:
+
+	tftp $loadaddr <uboot>
+
+	where "<uboot>" is the path and filename, on the TFTP server, of
+	the U-Boot image.
+
+6.1 Reflash U-Boot Image using U-Boot
+
+	setenv uboot <uboot>
+	run tftpflash
+
+	where "<uboot>" is the path and filename, on the TFTP server, of
+	the U-Boot image.
+
+6.2 Using the HRCW to switch between two different U-Boot images on the ITX
+
+	Because the ITX has 16MB of flash, it is possible to keep two U-Boot
+	images in flash, and use the HRCW to specify which one is to be used
+	when the board boots.  This trick is especially effective with a
+	hardware debugger that can override the HRCW, such as the BDI-2000.
+
+	When the BMS bit in the HRCW is 0, the ITX will boot the U-Boot image
+	at address FE000000.  When the BMS bit is 1, the ITX will boot the
+	image at address FEF00000.
+
+	Therefore, just put a U-Boot image at both FE000000 and FEF00000 and
+	change the BMS bit whenever you want to boot the other image.
+
+	Step-by-step instructions:
+
+	1) Build an ITX image to be loaded at FEF00000
+
+		make distclean
+		make MPC8349ITX_config
+		make
+
+	2) Take the u-boot.bin image and flash it at FEF00000.
+
+		tftp $loadaddr u-boot.bin
+		protect off all
+		erase FEF00000 +$filesize
+		cp.b $loadaddr FEF00000 $filesize
+
+	3) Build an ITX image to be loaded at FE000000
+
+		make distclean
+		make MPC8349ITX_LOWBOOT_config
+		make
+
+	4) Take the u-boot.bin image and flash it at FE000000.
+
+		tftp $loadaddr u-boot.bin
+		protect off FE000000 +$filesize
+		erase FE000000 +$filesize
+		cp.b $loadaddr FE000000 $filesize
+
+	The HRCW in flash is currently set to boot the image at FE000000.
+
+	If you have a hardware debugger, configure it to set the HRCW to
+	B460A000 04040000 if you want to boot the image at FEF00000, or set
+	it to B060A000 04040000 if you want to boot the image at FE000000.
+
+	To change the HRCW in flash to boot the image at FEF00000, use these
+	U-Boot commands:
+
+		cp.b FE000000 1000 10000	; copy 1st flash sector to 1000
+		mw.b 1020 b4 8			; modify BMS bit
+		protect off FE000000 +10000
+		erase FE000000 +10000
+		cp.b 1000 FE000000 10000
+
+7. Notes
+	1) The console baudrate for MPC8349EITX is 115200bps.

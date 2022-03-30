@@ -1,0 +1,10 @@
+AT91SAM9263EK BOARD
+M:	Stelian Pop <stelian@popies.net>
+S:	Maintained
+F:	board/atmel/at91sam9263ek/
+F:	include/configs/at91sam9263ek.h
+F:	configs/at91sam9263ek_dataflash_defconfig
+F:	configs/at91sam9263ek_dataflash_cs0_defconfig
+F:	configs/at91sam9263ek_nandflash_defconfig
+F:	configs/at91sam9263ek_norflash_defconfig
+F:	configs/at91sam9263ek_norflash_boot_defconfig

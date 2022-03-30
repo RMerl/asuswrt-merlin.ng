@@ -1,0 +1,429 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+use Getopt::Long;
+use Digest::SHA;
+use File::stat;
+
+my $dir;
+my $arch = "arm64";
+my $armtf;
+my $optee;
+my $loadables;
+my $chip;
+my $kcompression;
+my $ksuffix;
+my $kentry = "0x100000";
+my $simple;
+my $shapath;
+my $pmcfw_code_addr;
+my $pmcfw_data_addr;
+my $securitydefs;
+my $security_policy;
+my @keyrings;
+my %keyring;
+my $mapper;
+
+my $usage = q[
+Usage: generate_linux_its [--simple] --dir=direcotry_with_dtbs --arch=arch [--armtf] [--optee] --chip=chipid
+   [--pmcfw_code_addr=caddr] [--pmcfw_data_addr=daddr] [--sha=rootfs_path]
+   [--securitydefs=file] [--security_policy=file] [ --keyring=keyring_file ... ]
+   [--mapper=file]
+];
+
+GetOptions(
+    "dir=s",                \$dir,
+    "armtf",                \$armtf,
+    "simple",               \$simple,
+    "optee",                \$optee,
+    "arch=s",               \$arch,
+    "chip=s",               \$chip,
+    "keyring=s",            \@keyrings,
+    "pmcfw_code_addr=s",    \$pmcfw_code_addr,
+    "pmcfw_data_addr=s",    \$pmcfw_data_addr,
+    "securitydefs=s",       \$securitydefs,
+    "security_policy=s",    \$security_policy,
+    "kernel_compression:s", \$kcompression,
+    "mapper=s",             \$mapper,
+    "sha=s" => \$shapath
+) or die("$usage");
+
+die($usage) unless ( $dir && $chip );
+
+if ( $kcompression && ( $kcompression ne 'none' ) ) {
+    $ksuffix = ".$kcompression";
+}
+else {
+    $ksuffix      = "";
+    $kcompression = "none";
+}
+
+@keyrings = ( split( /,/, join( ',', @keyrings ) ) );
+foreach my $k (@keyrings) {
+    open( K, "<$k" ) or die("couldnt open $k");
+    my $n;
+    my $v;
+    while ( my $l = <K> ) {
+        chomp $l;
+        if ( $l =~ /^(\S+):(.*)$/ ) {
+            $n = $1;
+            $v = $2;
+            if ( $keyring{$n} ) {
+                die("key $n redefined");
+            }
+        }
+        else {
+            $v = $l;
+        }
+        $keyring{$n} .= $v;
+    }
+    close(K);
+}
+
+my @loadables;
+push @loadables, "atf" if ( $armtf || $optee );
+push @loadables, "optee"      if $optee;
+push @loadables, "uboot";
+push @loadables, "pmcfw_code" if $pmcfw_code_addr;
+push @loadables, "pmcfw_data" if $pmcfw_data_addr;
+$loadables = join( ",", map( qq["$_"], @loadables ) );
+
+if ( $arch eq "aarch64" ) {
+    $arch = "arm64";
+    $kentry = $optee ? "0x600000" : "0x100000";
+}
+elsif ( $arch eq "arm" ) {
+    $arch = "arm";
+    $kentry = $optee ? "0x608000" : "0x108000";
+}
+
+my @dtbs = glob("$dir/*.dtb");
+
+my $fitout = q[
+/*
+ * Copyright (C) 2017 Rockchip Electronic Co.,Ltd
+ * Copyright (C) 2019 Broadcom
+ *
+ * Simple U-boot fit source file containing U-Boot, dtb and optee
+ */
+
+/dts-v1/;
+
+/ {
+	description = "Simple image with ATF and optional OP-TEE support";
+	#address-cells = <1>;
+];
+
+if ( open( IDENT, "<", "$dir/image_ident" ) ) {
+    my $iline = 1;
+    while ( my $ident = <IDENT> ) {
+        chomp $ident;
+        if ( $ident =~ /\$.*\$/ ) {
+            $fitout .= qq[\tident_$iline = "$ident";\n];
+            $iline++;
+        }
+    }
+    close(IDENT);
+}
+
+if ((!$simple) && $securitydefs) {
+    open( E, "<$securitydefs" )
+      or die("couldnt open $securitydefs");
+    local $/;
+    my $e = <E>;
+    close(E);
+    while ( $e =~ /^\s*\w.*%(\w+)%/m ) {
+        my $k = $1;
+        my $v = $keyring{$k};
+        if ($v) {
+            if (!($e =~ s/^(\s*\w.*)%$k%/$1$v/m)) {
+		die "fail to swap $k";
+            }
+        }
+        else {
+	    # Remove data value
+            $e =~ s/^(\s*\w.*)%$k%.*$//m;
+        }
+    }
+    $fitout .= qq[
+	trust {
+$e
+     };
+];
+}
+
+if ($mapper) {
+    my $dmdev = '';
+    open(M,"<$mapper") or die("couldnt open $mapper");
+    my $m = <M>;
+    close(M);
+    chomp($m);
+    if ($m =~ s|^(/dev/\S*?):||) {
+        $dmdev = qq[dev = "$1";];
+    }
+    $m =~ s/\d+:\d+/%DEVICE%/;
+    $m =~ s/(crypt .*?)\s[0-9a-fA-F]{64}\s/$1 %IMAGE_KEY% /;
+    $fitout .= qq[
+    brcm_rootfs_encrypt {
+        mapper = "$m";
+        $dmdev
+        type = "squashfs";
+		};
+       ];
+}
+
+if ($shapath) {
+    $fitout .= "brcm_sec_hashes {\n";
+
+    # insert rootfs sha256 hash
+    my $sha = new Digest::SHA(256);
+    $sha->addfile($shapath) or die("$shapath could not be added to sha256");
+    my $st   = stat($shapath);
+    my $len  = $st->size;
+    my $base = "rootfs";
+    my $hex  = $sha->hexdigest;
+    if ( $ENV{'TEST_FORCE_BAD_ROOTFS_HASH'} ) {
+        substr( $hex, 16, 8 ) = '00000000';
+    }
+    $fitout .= qq[
+		$base {
+			description = "rootfs";
+			size = < $len >;
+			hash-1 {
+                                value = [$hex];
+				algo = "sha256";
+			};
+		};
+       \n];
+
+    $fitout .= "};\n";
+}
+
+if ($security_policy) {
+    my $s;
+
+    open( S, "<$security_policy" )
+      or die("couldnt open $security_policy");
+    local $/;
+    $s = <S>;
+    close(S);
+    my $security_policy_bin= unpack( "H*", $s );
+
+    open( S, "<$security_policy.sig" )
+      or die("couldnt open $security_policy.sig");
+    $s = <S>;
+    close(S);
+    my $security_policy_sig = unpack( "H*", $s );
+
+    $fitout .= qq[
+		security {
+			description = "Security Node";
+			data = [$security_policy_bin];
+			signature = [$security_policy_sig];
+		};
+       \n];
+}
+
+$fitout .= q[
+
+	images {
+] . (
+    $armtf
+    ? qq[
+		atf {
+			description = "ATF";
+			data = /incbin/("../../obj/atf/armtf.bin");
+			type = "firmware";
+			arch = "$arch";
+			os = "arm-trusted-firmware";
+			compression = "none";
+			load = <0x4000>;
+			entry = <0x4000>;
+			hash-1 {
+				algo = "sha256";
+			};
+		};
+]
+    : ""
+  )
+  . (
+    $optee
+    ? qq[
+		optee {
+			description = "OPTEE";
+			data = /incbin/("../../obj/optee/tee.bin");
+			os = "optee";
+			arch = "$arch";
+			compression = "none";
+			load = <0x100000>;
+			entry = <0x100000>;
+			hash-1 {
+				algo = "sha256";
+			};
+		};
+]
+    : ""
+  )
+  . qq[
+		uboot {
+			description = "U-Boot";
+			data = /incbin/("../../obj/uboot/u-boot-nodtb.bin");
+			os = "U-Boot";
+			arch = "$arch";
+			compression = "none";
+			load = <0x01000000>;
+			entry = <0x01000000>;
+			hash-1 {
+				algo = "sha256";
+			};
+		};
+		fdt_uboot {
+			description = "dtb";
+			data = /incbin/("../../obj/uboot/dts/dt.dtb");
+			type = "flat_dt";
+			compression = "none";
+			hash-1 {
+				algo = "sha256";
+			};
+		};
+] . (
+    ( not $simple )
+    ? qq[
+		kernel {
+			description = "4.19 kernel";
+			data = /incbin/("../../obj/uboot/vmlinux.bin$ksuffix");
+			type = "kernel";
+			os = "linux";
+			arch = "$arch";
+			compression = "$kcompression";
+			load = <$kentry>;
+			entry = <$kentry>;
+			hash-1 {
+				algo = "sha256";
+			};
+		};
+]
+      . (
+        $pmcfw_code_addr
+        ? qq[
+		pmcfw_code {
+			description = "pmc firmware code";
+			data = /incbin/("../../obj/binaries/pmc_firmware_${chip}_code.bin");
+			type = "firmware";
+			os = "bcmbca-firepath";
+			arch = "maestro";
+			compression = "none";
+			load = <$pmcfw_code_addr>;
+			hash-1 {
+				algo = "sha256";
+				value = [0000000000000000000000000000000000000000000000000000000000000000];
+			};
+		};
+]
+        : ""
+      )
+      . (
+        $pmcfw_data_addr
+        ? qq[
+		pmcfw_data {
+			description = "pmc firmware data";
+			data = /incbin/("../../obj/binaries/pmc_firmware_${chip}_data.bin");
+			type = "firmware";
+			os = "bcmbca-firepath";
+			arch = "maestro";
+			compression = "none";
+			load = <$pmcfw_data_addr>;
+			hash-1 {
+				algo = "sha256";
+				value = [0000000000000000000000000000000000000000000000000000000000000000];
+			};
+		};
+]
+        : ""
+      )
+    : ""
+);
+
+# insert more DTBs here
+my %dtbseen;
+foreach my $dtb (@dtbs) {
+    if ( $dtb =~ /((?:\-|\w)+)\.dtb$/ ) {
+        my $fdtname = "fdt_" . $1;
+        if ( $dtbseen{ uc($1) }++ ) {
+            die(
+                "ERROR: $1 is ambiguous with another dtb differing in case only"
+            );
+        }
+        $fitout .= qq[
+		$fdtname {
+			description = "dtb";
+			data = /incbin/("../../$dtb");
+			arch = "$arch";
+			type = "flat_dt";
+			compression = "none";
+			hash-1 {
+				algo = "sha256";
+				value = [0000000000000000000000000000000000000000000000000000000000000000];
+			};
+		};
+       \n];
+    }
+}
+
+$fitout .= qq[
+	};
+	configurations {
+		default = "conf_uboot";
+		conf_uboot {
+			description = "BRCM 63xxx with uboot";
+			fdt = "fdt_uboot";
+			loadables = $loadables;
+		};
+	] . (
+    ( not $simple )
+    ? qq[
+		conf_linux {
+			description = "BRCM 63xxx linux";
+			kernel = "kernel";
+			fdt = "fdt_9$chip";
+		};
+]
+    : ""
+);
+
+# insert more CONFIGs here
+foreach my $dtb (@dtbs) {
+    if ( $dtb =~ /(\w+)\.dtb$/ ) {
+        my $cfgname_lx = "conf_lx_" . $1;
+        my $cfgname_ub = "conf_ub_" . $1;
+        my $fdtname    = "fdt_" . $1;
+        $fitout .= (
+            ( not $simple )
+            ? qq[
+		$cfgname_lx {
+			description = "BRCM 63xxx linux";
+			kernel = "kernel";
+			fdt = "$fdtname";
+		};
+	]
+            : ""
+          )
+          . qq[
+		$cfgname_ub {
+			description = "$1";
+			fdt = "$fdtname";
+			loadables = $loadables;
+		};
+        \n];
+    }
+}
+
+$fitout .= q[
+
+	};
+};
+];
+
+print $fitout;
+

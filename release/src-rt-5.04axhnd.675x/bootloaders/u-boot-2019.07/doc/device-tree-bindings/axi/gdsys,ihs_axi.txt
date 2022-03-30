@@ -1,0 +1,22 @@
+gdsys AXI busses of IHS FPGA devices
+
+Certain gdsys IHS FPGAs offer a interface to their built-in AXI bus with which
+the connected devices (usually IP cores) can be controlled via software.
+
+Required properties:
+- compatible: must be "gdsys,ihs_axi"
+- reg: describes the address and length of the AXI bus's register map (within
+  the FPGA's register space)
+
+Example:
+
+fpga0_axi_video0 {
+	#address-cells = <1>;
+	#size-cells = <1>;
+	compatible = "gdsys,ihs_axi";
+	reg = <0x170 0x10>;
+
+	axi_dev_1 {
+        ...
+	};
+};

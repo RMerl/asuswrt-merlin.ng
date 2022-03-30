@@ -1,0 +1,26 @@
+clocks: clocks {
+	compatible = "simple-bus";
+	#address-cells = <1>;
+	#size-cells = <1>;
+	ranges;
+	u-boot,dm-pre-reloc;
+
+	periph_osc: periph-osc {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		clock-frequency = <PERIPH_CLK>;
+		u-boot,dm-pre-reloc;
+	};
+	refclk50mhz: refclk50mhz {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		clock-frequency = <50000000>;
+	};
+	hsspi_pll: hsspi-pll {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		clock-frequency = <HS_SPI_PLL_CLK>;
+		u-boot,dm-pre-reloc;		
+	};	
+};
+

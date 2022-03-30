@@ -1,0 +1,79 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * (C) Copyright 2016 Rockchip Electronics Co., Ltd
+ */
+
+/dts-v1/;
+
+#include "rv1108.dtsi"
+
+/ {
+	model = "Rockchip RV1108 Evaluation board";
+	compatible = "rockchip,rv1108-evb", "rockchip,rv1108";
+
+	memory@60000000 {
+		device_type = "memory";
+		reg = <0x60000000 0x08000000>;
+	};
+
+	chosen {
+		stdout-path = "serial2:1500000n8";
+	};
+
+	vcc5v0_otg: vcc5v0-otg-drv {
+		compatible = "regulator-fixed";
+		enable-active-high;
+		regulator-name = "vcc5v0_otg";
+		gpio = <&gpio0 RK_PB0 GPIO_ACTIVE_HIGH>;
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
+	};
+};
+
+&gmac {
+	status = "okay";
+	clock_in_out = <0>;
+	snps,reset-active-low;
+	snps,reset-delays-us = <0 10000 1000000>;
+	snps,reset-gpio = <&gpio1 RK_PC1 GPIO_ACTIVE_LOW>;
+};
+
+&saradc {
+	status = "okay";
+};
+
+&sfc {
+	status = "okay";
+	flash@0 {
+		compatible = "gd25q256","jedec,spi-nor";
+		reg = <0>;
+		spi-tx-bus-width = <1>;
+		spi-rx-bus-width = <1>;
+		spi-max-frequency = <96000000>;
+	};
+};
+
+&uart0 {
+	status = "okay";
+};
+
+&uart1 {
+	status = "okay";
+};
+
+&uart2 {
+	status = "okay";
+};
+
+&usb20_otg {
+	vbus-supply = <&vcc5v0_otg>;
+	status = "okay";
+};
+
+&usb_host_ehci {
+	status = "okay";
+};
+
+&usb_host_ohci {
+	status = "okay";
+};

@@ -1,0 +1,87 @@
+
+anti-rollback {
+	status = "disabled";
+	description = "Anti-rollback update - Optional Node";
+	new_antirollback = <11>;
+};
+
+hw_state {
+	// all    - Blocks access for all masters 
+	// none   - Unlocks access for all masters
+	// nonsec - Blocks access for nonsecure masters only
+	// prov   - unlock access for nonsecure provisioning by 
+	//          locking populated data only (sotp)
+	sotp-lock = "prov";
+	rng-lock = "none";
+};
+
+encoded_keys {
+	// key1 {
+		// description = "OPTEE Key";
+		// data = [ %OPTEE_KEY% ];
+		// algo = "aes-cbc-128";
+		// load_addr = <0x0>;
+		// key_name = "optee_aes";
+		// permission = "secure";
+	// }; 
+	key2 {
+		description = "Image decryption Key";
+		data = [ %IMAGE_KEY% ];
+		size = < 0x20 >;
+		algo = "aes-cbc-128";
+		load_addr = <0x0>;
+		key_name = "image_aes";
+		permission = "nonsecure";
+	};
+	key3 {
+		description = "Bootloader CLI Key seed";
+		data = [ %CMD_KEY% ];
+		size = < 0x20 >;
+		algo = "aes-cbc-128";
+		load_addr = <0x0>;
+		key_name = "cli_seed";
+		permission = "nonsecure";
+	};
+
+};
+
+// List of items that need to be exported from the secure environment in TPL
+// to the nonsecure uboot and linux environments via the dtb
+sec_exports {
+	// The 'export_itemx' node names are only placeholders and can be 
+	// renamed to any user defined name
+	// Fields:
+	//   item_sec_id: unique secure item identifier, must match ids in source
+	//   item_name: Name of final exported item in dtb
+	//   algo: Hashing algorithm to use if item needs to be obfuscated
+	//   salt: optional 32-bit salt value to use before hashing
+	//   length: Length of the final exported value
+	export_item1 {
+		// Export 32 byte device specific key after salting and hashing
+		// key_dev_specific_256[0-31] = sha256(salt+dev_specific_key)
+		item_sec_id = "SEC_ITEM_KEY_DEV_SPECIFIC";
+		item_name = "key_dev_specific_256";
+		algo = "sha256";
+		salt = <0xaabbccdd>;
+		length = <32>;
+	};
+	export_item2 {
+		// Export a 64 byte device specific key after salting and hashing
+		// key_dev_specific_512[00-31] = sha256(salt+dev_specific_key)
+		// key_dev_specific_512[32-63] = sha256(dev_specific_key+salt)
+		item_sec_id = "SEC_ITEM_KEY_DEV_SPECIFIC";
+		item_name = "key_dev_specific_512";
+		algo = "sha256";
+		salt = <0x00112233>;
+		length = <64>;
+	};
+	export_item3 {
+		// Export secure serial number
+		// serial_num[00-32] = secure serial number
+		item_sec_id = "SEC_ITEM_SER_NUM";
+		item_name = "serial_num";
+		length = <32>;
+	};
+};
+
+

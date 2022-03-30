@@ -1,0 +1,12 @@
+if TARGET_DOCKSTAR
+
+config SYS_BOARD
+	default "dockstar"
+
+config SYS_VENDOR
+	default "Seagate"
+
+config SYS_CONFIG_NAME
+	default "dockstar"
+
+endif

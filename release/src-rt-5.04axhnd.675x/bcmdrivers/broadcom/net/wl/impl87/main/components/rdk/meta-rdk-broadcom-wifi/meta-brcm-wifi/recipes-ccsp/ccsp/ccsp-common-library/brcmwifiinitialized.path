@@ -1,0 +1,7 @@
+[Unit]
+Description=BRCM WiFi Initialized Path
+[Path]
+PathExists=/tmp/wl_instances.txt
+Unit=ccspwifiagent.service
+[Install]
+WantedBy=multi-user.target

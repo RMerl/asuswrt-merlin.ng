@@ -1,0 +1,31 @@
+if TARGET_PLATINUM_PICON
+
+config SYS_CPU
+	default "armv7"
+
+config SYS_VENDOR
+	default "barco"
+
+config SYS_BOARD
+	default "platinum"
+
+config SYS_CONFIG_NAME
+	default "platinum_picon"
+
+endif
+
+if TARGET_PLATINUM_TITANIUM
+
+config SYS_CPU
+	default "armv7"
+
+config SYS_VENDOR
+	default "barco"
+
+config SYS_BOARD
+	default "platinum"
+
+config SYS_CONFIG_NAME
+	default "platinum_titanium"
+
+endif

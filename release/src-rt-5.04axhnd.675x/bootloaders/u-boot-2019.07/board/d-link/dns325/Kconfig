@@ -1,0 +1,12 @@
+if TARGET_DNS325
+
+config SYS_BOARD
+	default "dns325"
+
+config SYS_VENDOR
+	default "d-link"
+
+config SYS_CONFIG_NAME
+	default "dns325"
+
+endif

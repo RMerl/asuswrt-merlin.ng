@@ -1,0 +1,85 @@
+config INPUT
+	bool "Enable input subsystem"
+	depends on DM
+	default y
+
+config SPL_INPUT
+	bool "Enable input subsystem for SPL"
+	depends on SPL_DM
+
+config TPL_INPUT
+	bool "Enable input subsystem for TPL"
+	depends on TPL_DM
+
+config DM_KEYBOARD
+	bool "Enable driver model keyboard support"
+	depends on DM
+	help
+	  This adds a uclass for keyboards and implements keyboard support
+	  using driver model. The API is implemented by keyboard.h and
+	  includes methods to start/stop the device, check for available
+	  input and update LEDs if the keyboard has them.
+
+config SPL_DM_KEYBOARD
+	bool "Enable driver model keyboard support"
+	depends on SPL_DM
+	help
+	  This adds a uclass for keyboards and implements keyboard support
+	  using driver model. The API is implemented by keyboard.h and
+	  includes methods to start/stop the device, check for available
+	  input and update LEDs if the keyboard has them.
+
+config TPL_DM_KEYBOARD
+	bool "Enable driver model keyboard support"
+	depends on TPL_DM
+	help
+	  This adds a uclass for keyboards and implements keyboard support
+	  using driver model. The API is implemented by keyboard.h and
+	  includes methods to start/stop the device, check for available
+	  input and update LEDs if the keyboard has them.
+
+config CROS_EC_KEYB
+	bool "Enable Chrome OS EC keyboard support"
+	depends on INPUT
+	help
+	  Most ARM Chromebooks use an EC to provide access to the keyboard.
+	  Messages are used to request key scans from the EC and these are
+	  then decoded into keys by this driver.
+
+config SPL_CROS_EC_KEYB
+	bool "Enable Chrome OS EC keyboard support in SPL"
+	depends on SPL_INPUT
+	help
+	  Most ARM Chromebooks use an EC to provide access to the keyboard.
+	  Messages are used to request key scans from the EC and these are
+	  then decoded into keys by this driver.
+
+config TPL_CROS_EC_KEYB
+	bool "Enable Chrome OS EC keyboard support in TPL"
+	depends on TPL_INPUT
+	help
+	  Most ARM Chromebooks use an EC to provide access to the keyboard.
+	  Messages are used to request key scans from the EC and these are
+	  then decoded into keys by this driver.
+
+config I8042_KEYB
+	bool "Enable Intel i8042 keyboard support"
+	depends on DM_KEYBOARD
+	default X86
+	help
+	  This adds a driver for the i8042 keyboard controller, allowing the
+	  keyboard to be used on devices which support this controller. The
+	  driver handles English and German keyboards - set the environment
+	  variable 'keymap' to "de" to select German. Keyboard repeat is
+	  handled by the keyboard itself.
+
+config TEGRA_KEYBOARD
+	bool "NVIDIA Tegra internal matrix keyboard controller support"
+	help
+	  A matrix keyboard connected directly to the internal keyboard
+	  controller on Tegra SoCs.
+
+config TWL4030_INPUT
+	bool "Enable TWL4030 Input controller"
+	help
+	  Enable TWL4030 Input controller

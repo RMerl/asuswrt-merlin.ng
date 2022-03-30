@@ -1,0 +1,49 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use FindBin qw($Bin);
+use lib "$Bin/../../../hostTools/PerlLib";
+use BRCM::GenConfig;
+
+my $c = new BRCM::GenConfig( shift);
+
+######   Any config changes start here #####
+
+# Disable options for other flash devices
+$c->unset('CONFIG_NAND');
+$c->unset('CONFIG_SPL_NAND_SUPPORT');
+$c->unset('CONFIG_TPL_NAND_SUPPORT');
+$c->unset('CONFIG_CMD_NAND');
+$c->unset('CONFIG_CMD_UBI');
+$c->unset('CONFIG_NAND_BRCMNAND');
+
+$c->unset('CONFIG_MMC');
+$c->unset('CONFIG_SPL_MMC_SUPPORT');
+$c->unset('CONFIG_SPL_LIBDISK_SUPPORT');
+$c->unset('CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_USE_PARTITION');
+$c->unset('CONFIG_TPL_MMC_SUPPORT');
+$c->unset('CONFIG_CMD_MMC');
+$c->unset('CONFIG_CMD_PART');
+$c->unset('CONFIG_CMD_GPT');
+$c->unset('CONFIG_CMD_GPT_RENAME');
+$c->unset('CONFIG_EFI_PARTITION');
+$c->unset('CONFIG_PARTITION_TYPE_GUID');
+$c->unset('CONFIG_DM_MMC');
+$c->unset('CONFIG_SUPPORT_EMMC_BOOT');
+$c->unset('CONFIG_MMC_SDHCI');
+$c->unset('CONFIG_MMC_SDHCI_BCMBCA');
+
+$c->set('CONFIG_SPL_SPI_FLASH_SUPPORT','y');
+$c->set('CONFIG_TPL_SPI_FLASH_SUPPORT','y');
+$c->set('CONFIG_CMD_SF','y');
+$c->set('CONFIG_CMD_SF_TEST','y');
+$c->set('CONFIG_CMD_SPI','y');
+$c->set('CONFIG_DM_SPI_FLASH','y');
+$c->set('CONFIG_SPI_FLASH','y');
+$c->set('CONFIG_SPI_FLASH_MACRONIX','y');
+$c->set('CONFIG_SPI_FLASH_MTD','y');
+
+
+#####   End of config changes #####
+$c->write();
+

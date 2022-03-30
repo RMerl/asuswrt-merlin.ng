@@ -1,0 +1,25 @@
+# SPDX-License-Identifier: GPL-2.0+
+#
+# (C) Copyright 2019 Broadcom Ltd
+#
+
+config MHS_VER
+	string "MHS version"
+	default "2p2" if BCM47622
+	default "4p3" if BCM63146
+	default "5p3" if BCM4912 || BCM6813
+
+config DPFE_SEGSIZE
+	hex "dpfe segment size"
+	default 0x500c
+
+config MEMC_VER
+	string "MEMC version"
+	default "4p50" if BCM47622
+	default "5p1" if BCM63146
+	default "5p3" if BCM4912 || BCM6813
+
+config MEMC_PHY_WIDTH
+	int "MEMC PHY width"
+	default 32 if BCM47622 || BCM4912 || BCM6813
+	default 16 if BCM63146

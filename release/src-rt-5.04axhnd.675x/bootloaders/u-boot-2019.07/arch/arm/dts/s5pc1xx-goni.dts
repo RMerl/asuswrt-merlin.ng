@@ -1,0 +1,199 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Samsung's S5PC110-based Goni board device tree source
+ *
+ * Copyright (c) 2014 Google, Inc
+ */
+
+/dts-v1/;
+
+#include "skeleton.dtsi"
+#include "s5pc110-pinctrl.dtsi"
+
+/ {
+	model = "Samsung Goni based on S5PC110";
+	compatible = "samsung,goni", "samsung,s5pc110";
+
+	aliases {
+		serial2 = "/serial@e2900800";
+		console = "/serial@e2900800";
+		pinctrl0 = &pinctrl0;
+		i2c3 = &i2c_pmic;
+	};
+
+	pinctrl0: pinctrl@e0200000 {
+		compatible = "samsung,s5pc110-pinctrl";
+		reg = <0xe0200000 0x1000>;
+	};
+
+	serial@e2900800 {
+		compatible = "samsung,exynos4210-uart";
+		reg = <0xe2900800 0x400>;
+		id = <2>;
+	};
+
+	i2c_pmic: i2c-pmic {
+		compatible = "i2c-gpio";
+		gpios = <&gpj4 0 0>, /* sda */
+			<&gpj4 3 0>; /* scl */
+		i2c-gpio,delay-us = <2>;        /* ~100 kHz */
+		#address-cells = <1>;
+		#size-cells = <0>;
+		status = "okay";
+
+		max8998-pmic@66 {
+			compatible = "maxim,max8998";
+			reg = <0x66 0 0>;
+
+			voltage-regulators {
+				ldo2_reg: LDO2 {
+					regulator-compatible = "LDO2";
+					regulator-name = "VALIVE_1.1V";
+					regulator-min-microvolt = <1100000>;
+					regulator-max-microvolt = <1100000>;
+					regulator-always-on;
+				};
+
+				ldo3_reg: LDO3 {
+					regulator-compatible = "LDO3";
+					regulator-name = "VUSB+MIPI_1.1V";
+					regulator-min-microvolt = <1100000>;
+					regulator-max-microvolt = <1100000>;
+					regulator-always-on;
+				};
+
+				ldo4_reg: LDO4 {
+					regulator-compatible = "LDO4";
+					regulator-name = "VADC_3.3V";
+					regulator-min-microvolt = <3300000>;
+					regulator-max-microvolt = <3300000>;
+				};
+
+				ldo5_reg: LDO5 {
+					regulator-compatible = "LDO5";
+					regulator-name = "VTF_2.8V";
+					regulator-min-microvolt = <2800000>;
+					regulator-max-microvolt = <2800000>;
+				};
+
+				ldo6_reg: LDO6 {
+					regulator-compatible = "LDO6";
+					regulator-name = "VCC_3.3V";
+					regulator-min-microvolt = <3300000>;
+					regulator-max-microvolt = <3300000>;
+				};
+
+				ldo7_reg: LDO7 {
+					regulator-compatible = "LDO7";
+					regulator-name = "VLCD_1.8V";
+					regulator-min-microvolt = <1800000>;
+					regulator-max-microvolt = <1800000>;
+					regulator-always-on;
+				};
+
+				ldo8_reg: LDO8 {
+					regulator-compatible = "LDO8";
+					regulator-name = "VUSB+VDAC_3.3V";
+					regulator-min-microvolt = <3300000>;
+					regulator-max-microvolt = <3300000>;
+				};
+
+				ldo9_reg: LDO9 {
+					regulator-compatible = "LDO9";
+					regulator-name = "VCC+VCAM_2.8V";
+					regulator-min-microvolt = <2800000>;
+					regulator-max-microvolt = <2800000>;
+				};
+
+				ldo10_reg: LDO10 {
+					regulator-compatible = "LDO10";
+					regulator-name = "VPLL_1.1V";
+					regulator-min-microvolt = <1100000>;
+					regulator-max-microvolt = <1100000>;
+					regulator-boot-on;
+				};
+
+				ldo11_reg: LDO11 {
+					regulator-compatible = "LDO11";
+					regulator-name = "CAM_IO_2.8V";
+					regulator-min-microvolt = <2800000>;
+					regulator-max-microvolt = <2800000>;
+				};
+
+				ldo12_reg: LDO12 {
+					regulator-compatible = "LDO12";
+					regulator-name = "CAM_ISP_1.2V";
+					regulator-min-microvolt = <1200000>;
+					regulator-max-microvolt = <1200000>;
+				};
+
+				ldo13_reg: LDO13 {
+					regulator-compatible = "LDO13";
+					regulator-name = "CAM_A_2.8V";
+					regulator-min-microvolt = <2800000>;
+					regulator-max-microvolt = <2800000>;
+				};
+
+				ldo14_reg: LDO14 {
+					regulator-compatible = "LDO14";
+					regulator-name = "CAM_CIF_1.8V";
+					regulator-min-microvolt = <1800000>;
+					regulator-max-microvolt = <1800000>;
+				};
+
+				ldo15_reg: LDO15 {
+					regulator-compatible = "LDO15";
+					regulator-name = "CAM_AF_3.3V";
+					regulator-min-microvolt = <3300000>;
+					regulator-max-microvolt = <3300000>;
+				};
+
+				ldo16_reg: LDO16 {
+					regulator-compatible = "LDO16";
+					regulator-name = "VMIPI_1.8V";
+					regulator-min-microvolt = <1800000>;
+					regulator-max-microvolt = <1800000>;
+				};
+
+				ldo17_reg: LDO17 {
+					regulator-compatible = "LDO17";
+					regulator-name = "CAM_8M_1.8V";
+					regulator-min-microvolt = <1800000>;
+					regulator-max-microvolt = <1800000>;
+					regulator-always-on;
+				};
+
+				buck1_reg: BUCK1 {
+					regulator-compatible = "BUCK1";
+					regulator-name = "VARM_1.2V";
+					regulator-min-microvolt = <1200000>;
+					regulator-max-microvolt = <1200000>;
+				};
+
+				buck2_reg: BUCK2 {
+					regulator-compatible = "BUCK2";
+					regulator-name = "VINT_1.2V";
+					regulator-min-microvolt = <1200000>;
+					regulator-max-microvolt = <1200000>;
+				};
+
+				buck3_reg: BUCK3 {
+					regulator-compatible = "BUCK3";
+					regulator-name = "VCC_1.8V";
+					regulator-min-microvolt = <1800000>;
+					regulator-max-microvolt = <1800000>;
+					regulator-always-on;
+				};
+
+				buck4_reg: BUCK4 {
+					regulator-compatible = "BUCK4";
+					regulator-name = "CAM_CORE_1.2V";
+					regulator-min-microvolt = <1200000>;
+					regulator-max-microvolt = <1200000>;
+					regulator-always-on;
+				};
+			};
+		};
+	};
+
+};

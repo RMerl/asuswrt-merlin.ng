@@ -1,0 +1,46 @@
+Texas Instruments' K3 AM654 DDRSS
+=================================
+
+K3 based AM654 devices has DDR memory subsystem that comprises
+Synopys DDR controller, Synopsis DDR phy and wrapper logic to
+integrate these blocks into the device. This DDR subsystem
+provides an interface to external SDRAM devices. This DDRSS driver
+adds support for the initialization of the external SDRAM devices by
+configuring the DDRSS registers and using the buitin PHY
+initialization routines.
+
+DDRSS device node:
+==================
+Required properties:
+--------------------
+- compatible:		Shall be: "ti,am654-ddrss"
+- reg-names 		ss - Map the sub system wrapper logic region
+			ctl - Map the controller region
+			phy - Map the PHY region
+- reg:			Contains the register map per reg-names.
+- power-domains:	Should contain a phandle to a PM domain provider node
+			and an args specifier containing the DDRSS device id
+			value. This property is as per the binding,
+			doc/device-tree-bindings/power/ti,sci-pm-domain.txt
+- clocks:		Must contain an entry for enabling DDR clock. Should
+			be defined as per the appropriate clock bindings consumer
+			usage in doc/device-tree-bindings/clock/ti,sci-clk.txt
+
+
+Optional Properties:
+--------------------
+- clock-frequency:	Frequency at which DDR pll should be locked.
+			If not provided, default frequency will be used.
+
+Example (AM65x):
+================
+		memory-controller: memory-controller@298e000 {
+			compatible = "ti,am654-ddrss";
+			reg = <0x0298e000 0x200>,
+				<0x02980000 0x4000>,
+				<0x02988000 0x2000>;
+			reg-names = "ss", "ctl", "phy";
+			clocks = <&k3_clks 20 0>;
+			power-domains = <&k3_pds 20>;
+			u-boot,dm-spl;
+		};

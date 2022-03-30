@@ -1,0 +1,6 @@
+i.MX8QM MEK BOARD
+M:	Peng Fan <peng.fan@nxp.com>
+S:	Maintained
+F:	board/freescale/imx8qm_mek/
+F:	include/configs/imx8qm_mek.h
+F:	configs/imx8qm_mek_defconfig

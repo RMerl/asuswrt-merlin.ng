@@ -1,0 +1,274 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * U-Boot additions to enable a generic Exynos GPIO driver
+ *
+ * Copyright (c) 2014 Google, Inc
+ */
+
+/ {
+	pinctrl@e0200000 {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		gpa0: gpa0 {
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gpa1: gpa1 {
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gpb: gpb {
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gpc0: gpc0 {
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gpc1: gpc1 {
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gpd0: gpd0 {
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gpd1: gpd1 {
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gpe0: gpe0 {
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gpe1: gpe1 {
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gpf0: gpf0 {
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gpf1: gpf1 {
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gpf2: gpf2 {
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gpf3: gpf3 {
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gpg0: gpg0 {
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gpg1: gpg1 {
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gpg2: gpg2 {
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gpg3: gpg3 {
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gpi: gpi {
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gpj0: gpj0 {
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gpj1: gpj1 {
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gpj2: gpj2 {
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gpj3: gpj3 {
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gpj4: gpj4 {
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gpmp01: gpmp01 {
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gpmp02: gpmp02 {
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gpmp03: gpmp03 {
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gpmp04: gpmp04 {
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gpmp05: gpmp05 {
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gpmp06: gpmp06 {
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gpmp07: gpmp07 {
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gpmp10: gpmp10 {
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gpmp11: gpmp11 {
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gpmp12: gpmp12 {
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gpmp13: gpmp13 {
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gpmp14: gpmp14 {
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gpmp15: gpmp15 {
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gpmp16: gpmp16 {
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gpmp17: gpmp17 {
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gpmp18: gpmp18 {
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gpmp20: gpmp20 {
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gpmp21: gpmp21 {
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gpmp22: gpmp22 {
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gpmp23: gpmp23 {
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gpmp24: gpmp24 {
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gpmp25: gpmp25 {
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gpmp26: gpmp26 {
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gpmp27: gpmp27 {
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gpmp28: gpmp28 {
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gph0: gph0 {
+			reg = <0xc00 0x20>;
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gph1: gph1 {
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gph2: gph2 {
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		gph3: gph3 {
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+	};
+};

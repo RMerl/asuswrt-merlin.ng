@@ -1,0 +1,3 @@
+# List of addresses picked up by patman/get_maintainer.pl that are known to
+# bounce. Addresses are listed one per line and need to match the author
+# information recorded in git.

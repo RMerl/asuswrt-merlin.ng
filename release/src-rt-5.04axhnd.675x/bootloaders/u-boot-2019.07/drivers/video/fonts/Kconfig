@@ -1,0 +1,52 @@
+#
+# Video fonts
+#
+
+menu "TrueType Fonts"
+
+config CONSOLE_TRUETYPE_NIMBUS
+	bool "Nimbus Sans Regular"
+	depends on CONSOLE_TRUETYPE
+	default y
+	help
+	  Nimbus Sans L is a version of Nimbus Sans using Adobe font sources.
+	  It was designed in 1987. A subset of Nimbus Sans L were released
+	  under the GPL. Although the characters are not exactly the same,
+	  Nimbus Sans L has metrics almost identical to Helvetica and Arial.
+	  (From Wikipedia, the free encyclopedia)
+	  From: https://fontlibrary.org/en/font/nimbus-sans-l
+	  License: GNU GPL v3
+	  http://www.gnu.org/copyleft/gpl.html
+
+config CONSOLE_TRUETYPE_ANKACODER
+	bool "Anka Coder Narrow"
+	depends on CONSOLE_TRUETYPE
+	help
+	  The Anka/Coder family is a monospaced, courier-width font for source
+	  code and terminals, in two styles and weights. Anka/Coder Narrow was
+	  developed for printing source code.
+	  https://code.google.com/p/anka-coder-fonts/
+	  From: https://fontlibrary.org/en/font/anka-coder-narrow
+	  License: SIL Open Font Licence
+	  http://scripts.sil.org/cms/scripts/page.php?site_id=nrsi&id=OFL
+
+config CONSOLE_TRUETYPE_RUFSCRIPT
+	bool "Ruf Script"
+	depends on CONSOLE_TRUETYPE
+	help
+	  A laid-back handwritten font.
+	  Font: https://fontlibrary.org/en/font/rufscript
+	  License: GPL with font exception
+	  http://www.gnu.org/copyleft/gpl.html
+
+config CONSOLE_TRUETYPE_CANTORAONE
+	bool "Cantoraone"
+	depends on CONSOLE_TRUETYPE
+	help
+	  Cantora is a friendly semi formal, semi condensed, semi sans-serif
+	  with a hint of handwriting. Perfect for headlines.
+	  From https://fontlibrary.org/en/font/cantora
+	  License: SIL Open Font Licence
+	  http://scripts.sil.org/cms/scripts/page.php?site_id=nrsi&id=OFL
+
+endmenu

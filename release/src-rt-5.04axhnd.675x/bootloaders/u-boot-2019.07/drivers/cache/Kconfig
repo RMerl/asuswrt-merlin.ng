@@ -1,0 +1,25 @@
+#
+# Cache controllers
+#
+
+menu "Cache Controller drivers"
+
+config CACHE
+	bool "Enable Driver Model for Cache controllers"
+	depends on DM
+	help
+	  Enable driver model for cache controllers that are found on
+	  most CPU's. Cache is memory that the CPU can access directly and
+	  is usually located on the same chip. This uclass can be used for
+	  configuring settings that be found from a device tree file.
+
+config L2X0_CACHE
+	tristate "PL310 cache driver"
+	select CACHE
+	depends on ARM
+	help
+	  This driver is for the PL310 cache controller commonly found on
+	  ARMv7(32-bit) devices. The driver configures the cache settings
+	  found in the device tree.
+
+endmenu

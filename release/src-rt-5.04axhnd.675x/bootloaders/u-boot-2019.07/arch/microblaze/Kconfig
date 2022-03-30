@@ -1,0 +1,28 @@
+menu "MicroBlaze architecture"
+	depends on MICROBLAZE
+
+config SYS_ARCH
+	default "microblaze"
+
+choice
+	prompt "Target select"
+	optional
+
+config TARGET_MICROBLAZE_GENERIC
+	bool "Support microblaze-generic"
+	select BOARD_LATE_INIT
+	select DM
+	select DM_SERIAL
+	select OF_CONTROL
+	select SUPPORT_SPL
+	select SYSRESET
+	imply CMD_DM
+
+endchoice
+
+source "board/xilinx/microblaze-generic/Kconfig"
+
+config SPL_LDSCRIPT
+	default "arch/microblaze/cpu/u-boot-spl.lds"
+
+endmenu

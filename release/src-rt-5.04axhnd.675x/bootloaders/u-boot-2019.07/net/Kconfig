@@ -1,0 +1,38 @@
+#
+# Network configuration
+#
+
+menuconfig NET
+	bool "Networking support"
+	default y
+
+if NET
+
+config NET_RANDOM_ETHADDR
+	bool "Random ethaddr if unset"
+	help
+	  Selecting this will allow the Ethernet interface to function
+	  even when the ethaddr variable for that interface is unset.
+	  A new MAC address will be generated on every boot and it will
+	  not be added to the environment.
+
+config NETCONSOLE
+	bool "NetConsole support"
+	help
+	  Support the 'nc' input/output device for networked console.
+	  See README.NetConsole for details.
+
+config IP_DEFRAG
+	bool "Support IP datagram reassembly"
+	default n
+	help
+	  Selecting this will enable IP datagram reassembly according
+	  to the algorithm in RFC815.
+
+config TFTP_BLOCKSIZE
+	int "TFTP block size"
+	default 512
+	help
+	  Default TFTP block size.
+
+endif   # if NET

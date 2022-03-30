@@ -1,0 +1,23 @@
+if TARGET_BAV335X
+
+config SYS_BOARD
+	default "bav335x"
+
+config SYS_VENDOR
+	default "birdland"
+
+config SYS_SOC
+	default "am33xx"
+
+config SYS_CONFIG_NAME
+	default "bav335x"
+
+config BAV_VERSION
+	int "BAV335x Version (1=A, 2=B)"
+	range 1 2
+	help
+	  The BAV335x has various version of the board. Rev.A (mostly obsolete)
+	  used 10/100 Ethernet PHY while Rev.B uses a Gigabit Ethernet PHY.
+	  Overwrite this if you have an older Rev.A and want ethernet support.
+
+endif

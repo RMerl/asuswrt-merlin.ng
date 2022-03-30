@@ -1,0 +1,6 @@
+M5253DEMO BOARD
+M:	TsiChung Liew <Tsi-Chung.Liew@nxp.com>
+S:	Maintained
+F:	board/freescale/m5253demo/
+F:	include/configs/M5253DEMO.h
+F:	configs/M5253DEMO_defconfig

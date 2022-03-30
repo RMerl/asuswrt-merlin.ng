@@ -1,0 +1,13 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2017 Texas Instruments Incorporated - http://www.ti.com/
+ */
+
+
+&mmc3 {
+	status = "disabled";
+};
+
+&usb0 {
+	dr_mode = "peripheral";
+};

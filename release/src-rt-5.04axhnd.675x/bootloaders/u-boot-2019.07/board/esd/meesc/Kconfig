@@ -1,0 +1,12 @@
+if TARGET_MEESC
+
+config SYS_BOARD
+	default "meesc"
+
+config SYS_VENDOR
+	default "esd"
+
+config SYS_CONFIG_NAME
+	default "meesc"
+
+endif

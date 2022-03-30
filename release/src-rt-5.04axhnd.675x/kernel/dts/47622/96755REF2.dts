@@ -1,0 +1,46 @@
+#include "47622.dtsi"
+
+/ {
+    memory_controller {
+        memcfg = <(BP_DDR_SPEED_933_13_13_13  | \
+                   BP_DDR_TOTAL_SIZE_512MB    | \
+                   BP_DDR_DEVICE_WIDTH_16     | \
+                   BP_DDR_TOTAL_WIDTH_16BIT   | \
+                   BP_DDR_SSC_CONFIG_1)>;
+    };
+
+};
+
+&mdio {
+	phy8:8 {
+		status = "okay";
+	};
+
+	phy_rgmii:rgmii {
+		reg = <25>;
+		status = "okay";
+		phy-external;
+	};
+};
+
+
+&switch0 {
+	pinctrl-names = "default", "rgmii"; 
+	pinctrl-0 = <&a_rgmii_mdc_pin_68 &a_rgmii_mdio_pin_69 &rgmii_pins>; 
+	pinctrl-1 = <&rgmii_pins>; 
+
+	ports {
+		/* fixed port configuration */
+		sysp_port0@0 {
+			phy-handle = <&phy8>;
+			status = "okay";
+		};
+		sysp_port1@1 {
+			phy-handle = <&phy_rgmii>;
+			mii-pinctrl-state = "rgmii";
+			phy-mode = "rgmii";
+			rgmii-3p3v;
+			status = "okay";
+		};
+	};
+};

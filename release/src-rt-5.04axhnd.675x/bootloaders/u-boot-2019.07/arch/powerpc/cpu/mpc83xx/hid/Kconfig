@@ -1,0 +1,565 @@
+menu "HID setup"
+
+menu "HID0 initial"
+
+config HID0_INIT_EMCP
+	bool "Enable machine check int on mcp"
+
+config HID0_INIT_ECPE
+	bool "Enable cache parity errors"
+
+config HID0_INIT_EBA
+	bool "Enable address parity checking"
+
+config HID0_INIT_EBD
+	bool "Enable data parity checking"
+
+choice
+	prompt "HID0 clock configuration"
+
+config HID0_INIT_CLKOUT_OFF
+	bool "Clock output off"
+
+config HID0_INIT_CLKOUT_CORE_HALF
+	bool "Core clock / 2"
+
+config HID0_INIT_CLKOUT_CORE
+	bool "Core clock"
+
+config HID0_INIT_CLKOUT_BUS
+	bool "Bus clock"
+
+endchoice
+
+config HID0_INIT_PAR
+	bool "Disable precharge of artry_out"
+
+config HID0_INIT_DOZE
+	bool "Enable doze mode"
+
+config HID0_INIT_NAP
+	bool "Enable nap mode"
+
+config HID0_INIT_SLEEP
+	bool "Enable sleep mode"
+
+config HID0_INIT_DPM
+	bool "Enable dynamic power management"
+
+config HID0_INIT_ICE
+	bool "Enable instruction cache"
+
+config HID0_INIT_DCE
+	bool "Enable data cache"
+
+config HID0_INIT_ILOCK
+	bool "Lock instruction cache"
+
+config HID0_INIT_DLOCK
+	bool "Lock data cache"
+
+config HID0_INIT_ICFI
+	bool "Flash invalidate instruction cache"
+
+config HID0_INIT_DCFI
+	bool "Flash invalidate data cache"
+
+config HID0_INIT_IFEM
+	bool "Enable m bit on bus for instruction fetches"
+
+config HID0_INIT_DECAREN
+	bool "Decrementer auto reload"
+
+config HID0_INIT_FBIOB
+	bool "Force indirect branch on the bus"
+
+config HID0_INIT_ABE
+	bool "Enable address broadcast"
+
+config HID0_INIT_NOOPTI
+	bool "No-op data cache touch intructions"
+
+endmenu
+
+menu "HID0 final"
+
+config HID0_FINAL_EMCP
+	bool "Enable machine check int on mcp"
+
+config HID0_FINAL_ECPE
+	bool "Enable cache parity errors"
+
+config HID0_FINAL_EBA
+	bool "Enable address parity checking"
+
+config HID0_FINAL_EBD
+	bool "Enable data parity checking"
+
+choice
+	prompt "HID0 clock configuration"
+
+config HID0_FINAL_CLKOUT_OFF
+	bool "Clock output off"
+
+config HID0_FINAL_CLKOUT_CORE_HALF
+	bool "Core clock / 2"
+
+config HID0_FINAL_CLKOUT_CORE
+	bool "Core clock"
+
+config HID0_FINAL_CLKOUT_BUS
+	bool "Bus clock"
+
+endchoice
+
+config HID0_FINAL_PAR
+	bool "Disable precharge of artry_out"
+
+config HID0_FINAL_DOZE
+	bool "Enable doze mode"
+
+config HID0_FINAL_NAP
+	bool "Enable nap mode"
+
+config HID0_FINAL_SLEEP
+	bool "Enable sleep mode"
+
+config HID0_FINAL_DPM
+	bool "Enable dynamic power management"
+
+config HID0_FINAL_ICE
+	bool "Enable instruction cache"
+
+config HID0_FINAL_DCE
+	bool "Enable data cache"
+
+config HID0_FINAL_ILOCK
+	bool "Lock instruction cache"
+
+config HID0_FINAL_DLOCK
+	bool "Lock data cache"
+
+config HID0_FINAL_ICFI
+	bool "Flash invalidate instruction cache"
+
+config HID0_FINAL_DCFI
+	bool "Flash invalidate data cache"
+
+config HID0_FINAL_IFEM
+	bool "Enable m bit on bus for instruction fetches"
+
+config HID0_FINAL_DECAREN
+	bool "Decrementer auto reload"
+
+config HID0_FINAL_FBIOB
+	bool "Force indirect branch on the bus"
+
+config HID0_FINAL_ABE
+	bool "Enable address broadcast"
+
+config HID0_FINAL_NOOPTI
+	bool "No-op data cache touch intructions"
+
+endmenu
+
+config HID0_INIT_EMCP_BIT
+	hex
+	default 0x0 if !HID0_INIT_EMCP
+	default 0x80000000 if HID0_INIT_EMCP
+
+config HID0_INIT_ECPE_BIT
+	hex
+	default 0x0 if !HID0_INIT_ECPE
+	default 0x40000000 if HID0_INIT_ECPE
+
+config HID0_INIT_EBA_BIT
+	hex
+	default 0x0 if !HID0_INIT_EBA
+	default 0x20000000 if HID0_INIT_EBA
+
+config HID0_INIT_EBD_BIT
+	hex
+	default 0x0 if !HID0_INIT_EBD
+	default 0x10000000 if HID0_INIT_EBD
+
+config HID0_INIT_CLKOUT
+	hex
+	default 0x0 if HID0_INIT_CLKOUT_OFF
+	default 0x8000000 if HID0_INIT_CLKOUT_CORE_HALF
+	default 0x2000000 if HID0_INIT_CLKOUT_CORE
+	default 0xa000000 if HID0_INIT_CLKOUT_BUS
+
+config HID0_INIT_PAR_BIT
+	hex
+	default 0x0 if !HID0_INIT_PAR
+	default 0x1000000 if HID0_INIT_PAR
+
+config HID0_INIT_DOZE_BIT
+	hex
+	default 0x0 if !HID0_INIT_DOZE
+	default 0x800000 if HID0_INIT_DOZE
+
+config HID0_INIT_NAP_BIT
+	hex
+	default 0x0 if !HID0_INIT_NAP
+	default 0x400000 if HID0_INIT_NAP
+
+config HID0_INIT_SLEEP_BIT
+	hex
+	default 0x0 if !HID0_INIT_SLEEP
+	default 0x200000 if HID0_INIT_SLEEP
+
+config HID0_INIT_DPM_BIT
+	hex
+	default 0x0 if !HID0_INIT_DPM
+	default 0x100000 if HID0_INIT_DPM
+
+config HID0_INIT_ICE_BIT
+	hex
+	default 0x0 if !HID0_INIT_ICE
+	default 0x8000 if HID0_INIT_ICE
+
+config HID0_INIT_DCE_BIT
+	hex
+	default 0x0 if !HID0_INIT_DCE
+	default 0x4000 if HID0_INIT_DCE
+
+config HID0_INIT_ILOCK_BIT
+	hex
+	default 0x0 if !HID0_INIT_ILOCK
+	default 0x2000 if HID0_INIT_ILOCK
+
+config HID0_INIT_DLOCK_BIT
+	hex
+	default 0x0 if !HID0_INIT_DLOCK
+	default 0x1000 if HID0_INIT_DLOCK
+
+config HID0_INIT_ICFI_BIT
+	hex
+	default 0x0 if !HID0_INIT_ICFI
+	default 0x800 if HID0_INIT_ICFI
+
+config HID0_INIT_DCFI_BIT
+	hex
+	default 0x0 if !HID0_INIT_DCFI
+	default 0x400 if HID0_INIT_DCFI
+
+config HID0_INIT_IFEM_BIT
+	hex
+	default 0x0 if !HID0_INIT_IFEM
+	default 0x80 if HID0_INIT_IFEM
+
+config HID0_INIT_DECAREN_BIT
+	hex
+	default 0x0 if !HID0_INIT_DECAREN
+	default 0x40 if HID0_INIT_DECAREN
+
+config HID0_INIT_FBIOB_BIT
+	hex
+	default 0x0 if !HID0_INIT_FBIOB
+	default 0x10 if HID0_INIT_FBIOB
+
+config HID0_INIT_ABE_BIT
+	hex
+	default 0x0 if !HID0_INIT_ABE
+	default 0x8 if HID0_INIT_ABE
+
+config HID0_INIT_NOOPTI_BIT
+	hex
+	default 0x0 if !HID0_INIT_NOOPTI
+	default 0x1 if HID0_INIT_NOOPTI
+
+config HID0_FINAL_EMCP_BIT
+	hex
+	default 0x0 if !HID0_FINAL_EMCP
+	default 0x80000000 if HID0_FINAL_EMCP
+
+config HID0_FINAL_ECPE_BIT
+	hex
+	default 0x0 if !HID0_FINAL_ECPE
+	default 0x40000000 if HID0_FINAL_ECPE
+
+config HID0_FINAL_EBA_BIT
+	hex
+	default 0x0 if !HID0_FINAL_EBA
+	default 0x20000000 if HID0_FINAL_EBA
+
+config HID0_FINAL_EBD_BIT
+	hex
+	default 0x0 if !HID0_FINAL_EBD
+	default 0x10000000 if HID0_FINAL_EBD
+
+config HID0_FINAL_CLKOUT
+	hex
+	default 0x0 if HID0_FINAL_CLKOUT_OFF
+	default 0x8000000 if HID0_FINAL_CLKOUT_CORE_HALF
+	default 0x2000000 if HID0_FINAL_CLKOUT_CORE
+	default 0xa000000 if HID0_FINAL_CLKOUT_BUS
+
+config HID0_FINAL_SBCLK_BIT
+	hex
+	default 0x0 if !HID0_FINAL_SBCLK
+	default 0x8000000 if HID0_FINAL_SBCLK
+
+config HID0_FINAL_ECLK_BIT
+	hex
+	default 0x0 if !HID0_FINAL_ECLK
+	default 0x2000000 if HID0_FINAL_ECLK
+
+config HID0_FINAL_PAR_BIT
+	hex
+	default 0x0 if !HID0_FINAL_PAR
+	default 0x1000000 if HID0_FINAL_PAR
+
+config HID0_FINAL_DOZE_BIT
+	hex
+	default 0x0 if !HID0_FINAL_DOZE
+	default 0x800000 if HID0_FINAL_DOZE
+
+config HID0_FINAL_NAP_BIT
+	hex
+	default 0x0 if !HID0_FINAL_NAP
+	default 0x400000 if HID0_FINAL_NAP
+
+config HID0_FINAL_SLEEP_BIT
+	hex
+	default 0x0 if !HID0_FINAL_SLEEP
+	default 0x200000 if HID0_FINAL_SLEEP
+
+config HID0_FINAL_DPM_BIT
+	hex
+	default 0x0 if !HID0_FINAL_DPM
+	default 0x100000 if HID0_FINAL_DPM
+
+config HID0_FINAL_ICE_BIT
+	hex
+	default 0x0 if !HID0_FINAL_ICE
+	default 0x8000 if HID0_FINAL_ICE
+
+config HID0_FINAL_DCE_BIT
+	hex
+	default 0x0 if !HID0_FINAL_DCE
+	default 0x4000 if HID0_FINAL_DCE
+
+config HID0_FINAL_ILOCK_BIT
+	hex
+	default 0x0 if !HID0_FINAL_ILOCK
+	default 0x2000 if HID0_FINAL_ILOCK
+
+config HID0_FINAL_DLOCK_BIT
+	hex
+	default 0x0 if !HID0_FINAL_DLOCK
+	default 0x1000 if HID0_FINAL_DLOCK
+
+config HID0_FINAL_ICFI_BIT
+	hex
+	default 0x0 if !HID0_FINAL_ICFI
+	default 0x800 if HID0_FINAL_ICFI
+
+config HID0_FINAL_DCFI_BIT
+	hex
+	default 0x0 if !HID0_FINAL_DCFI
+	default 0x400 if HID0_FINAL_DCFI
+
+config HID0_FINAL_IFEM_BIT
+	hex
+	default 0x0 if !HID0_FINAL_IFEM
+	default 0x80 if HID0_FINAL_IFEM
+
+config HID0_FINAL_DECAREN_BIT
+	hex
+	default 0x0 if !HID0_FINAL_DECAREN
+	default 0x40 if HID0_FINAL_DECAREN
+
+config HID0_FINAL_FBIOB_BIT
+	hex
+	default 0x0 if !HID0_FINAL_FBIOB
+	default 0x10 if HID0_FINAL_FBIOB
+
+config HID0_FINAL_ABE_BIT
+	hex
+	default 0x0 if !HID0_FINAL_ABE
+	default 0x8 if HID0_FINAL_ABE
+
+config HID0_FINAL_NOOPTI_BIT
+	hex
+	default 0x0 if !HID0_FINAL_NOOPTI
+	default 0x1 if HID0_FINAL_NOOPTI
+
+menu "HID2"
+
+config HID2_LET
+	bool "True little-endian mode"
+
+config HID2_IFEB
+	bool "Instruction fetch burst extension"
+
+config HID2_MESISTATE
+	bool "MESI state enable"
+
+config HID2_IFEC
+	bool "Instruction fetch cancel extension"
+
+config HID2_EBQS
+	bool "BIU queue sharing"
+
+config HID2_EBPX
+	bool "BIU pipeline extension"
+
+if !ARCH_MPC8360
+
+config HID2_ELRW
+	bool "Weighted LRU"
+
+config HID2_NOKS
+	bool "No kill for snoop"
+
+endif
+
+config HID2_HBE
+	bool "High bat enable"
+
+choice
+	prompt "Instruction cache way-lock"
+
+config HID2_IWLCK_NONE
+	bool "No ways locked"
+
+config HID2_IWLCK_0
+	bool "Way 0 locked"
+
+config HID2_IWLCK_1
+	bool "Way 0 through 1 locked"
+
+config HID2_IWLCK_2
+	bool "Way 0 through 2 locked"
+
+if ARCH_MPC8349 || ARCH_MPC8360 || ARCH_MPC8379
+
+config HID2_IWLCK_3
+	bool "Way 0 through 3 locked"
+
+config HID2_IWLCK_4
+	bool "Way 0 through 4 locked"
+
+config HID2_IWLCK_5
+	bool "Way 0 through 5 locked"
+
+config HID2_IWLCK_6
+	bool "Way 0 through 6 locked"
+
+endif
+
+endchoice
+
+config HID2_ICWP
+	bool "Instruction cache way protection"
+
+choice
+	prompt "Data cache way-lock"
+
+config HID2_DWLCK_NONE
+	bool "No ways locked"
+
+config HID2_DWLCK_0
+	bool "Way 0 locked"
+
+config HID2_DWLCK_1
+	bool "Way 0 through 1 locked"
+
+config HID2_DWLCK_2
+	bool "Way 0 through 2 locked"
+
+if ARCH_MPC8349 || ARCH_MPC8360 || ARCH_MPC8379
+
+config HID2_DWLCK_3
+	bool "Way 0 through 3 locked"
+
+config HID2_DWLCK_4
+	bool "Way 0 through 4 locked"
+
+config HID2_DWLCK_5
+	bool "Way 0 through 5 locked"
+
+config HID2_DWLCK_6
+	bool "Way 0 through 6 locked"
+
+endif
+
+endchoice
+
+config HID2_LET_BIT
+	hex
+	default 0x0 if !HID2_LET
+	default 0x8000000 if HID2_LET
+
+config HID2_IFEB_BIT
+	hex
+	default 0x0 if !HID2_IFEB
+	default 0x4000000 if HID2_IFEB
+
+config HID2_MESISTATE_BIT
+	hex
+	default 0x0 if !HID2_MESISTATE
+	default 0x1000000 if HID2_MESISTATE
+
+config HID2_IFEC_BIT
+	hex
+	default 0x0 if !HID2_IFEC
+	default 0x800000 if HID2_IFEC
+
+config HID2_EBQS_BIT
+	hex
+	default 0x0 if !HID2_EBQS
+	default 0x400000 if HID2_EBQS
+
+config HID2_EBPX_BIT
+	hex
+	default 0x0 if !HID2_EBPX
+	default 0x200000 if HID2_EBPX
+
+config HID2_ELRW_BIT
+	hex
+	default 0x0 if !HID2_ELRW
+	default 0x100000 if HID2_ELRW
+
+config HID2_NOKS_BIT
+	hex
+	default 0x0 if !HID2_NOKS
+	default 0x80000 if HID2_NOKS
+
+config HID2_HBE_BIT
+	hex
+	default 0x0 if !HID2_HBE
+	default 0x40000 if HID2_HBE
+
+config HID2_IWLCK
+	hex
+	default 0x0 if HID2_IWLCK_NONE
+	default 0x2000 if HID2_IWLCK_0
+	default 0x4000 if HID2_IWLCK_1
+	default 0x6000 if HID2_IWLCK_2
+	default 0x8000 if HID2_IWLCK_3
+	default 0xA000 if HID2_IWLCK_4
+	default 0xC000 if HID2_IWLCK_5
+	default 0xE000 if HID2_IWLCK_6
+
+config HID2_ICWP_BIT
+	hex
+	default 0x0 if !HID2_ICWP
+	default 0x1000 if HID2_ICWP
+
+config HID2_DWLCK
+	hex
+	default 0x0 if HID2_DWLCK_NONE
+	default 0x20 if HID2_DWLCK_0
+	default 0x40 if HID2_DWLCK_1
+	default 0x60 if HID2_DWLCK_2
+	default 0x80 if HID2_DWLCK_3
+	default 0xA0 if HID2_DWLCK_4
+	default 0xC0 if HID2_DWLCK_5
+	default 0xE0 if HID2_DWLCK_6
+
+endmenu
+
+endmenu

@@ -1,0 +1,57 @@
+if ARCH_IMX8
+
+config IMX8
+	bool
+
+config MU_BASE_SPL
+	hex "MU base address used in SPL"
+	default 0x5d1b0000
+	help
+	  SPL runs in EL3 mode, it use MU0_A to communicate with SCU.
+	  So we could not reuse the one in dts which is for normal U-Boot.
+
+config IMX8QM
+	select IMX8
+	select SUPPORT_SPL
+	bool
+
+config IMX8QXP
+	select IMX8
+	select SUPPORT_SPL
+	bool
+
+config SYS_SOC
+	default "imx8"
+
+choice
+	prompt "i.MX8 board select"
+	optional
+
+config TARGET_APALIS_IMX8
+	bool "Support Apalis iMX8 module"
+	select BOARD_LATE_INIT
+	select IMX8QM
+
+config TARGET_COLIBRI_IMX8X
+	bool "Support Colibri iMX8X module"
+	select BOARD_LATE_INIT
+	select IMX8QXP
+
+config TARGET_IMX8QM_MEK
+	bool "Support i.MX8QM MEK board"
+	select BOARD_LATE_INIT
+	select IMX8QM
+
+config TARGET_IMX8QXP_MEK
+	bool "Support i.MX8QXP MEK board"
+	select BOARD_LATE_INIT
+	select IMX8QXP
+
+endchoice
+
+source "board/freescale/imx8qm_mek/Kconfig"
+source "board/freescale/imx8qxp_mek/Kconfig"
+source "board/toradex/apalis-imx8/Kconfig"
+source "board/toradex/colibri-imx8x/Kconfig"
+
+endif

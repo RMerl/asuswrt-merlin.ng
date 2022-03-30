@@ -1,0 +1,23 @@
+--- a/source/TR-181/sbapi/cosa_wifi_apis.h
++++ b/source/TR-181/sbapi/cosa_wifi_apis.h
+@@ -1063,7 +1063,7 @@
+ #else
+ #define COSA_DML_WIFI_DPP_STA_MAX                                   16
+ #endif
+-#if !defined(_HUB4_PRODUCT_REQ_) && !defined(_XB7_PRODUCT_REQ_)
++#if !defined(_HUB4_PRODUCT_REQ_)
+ typedef  enum
+ _COSA_DML_WIFI_DPP_ENROLEE_RESP_STATUS
+ {
+--- a/source/TR-181/sbapi/wifi_data_plane.c
++++ b/source/TR-181/sbapi/wifi_data_plane.c
+@@ -340,7 +340,7 @@
+ int init_wifi_data_plane()
+ {
+ #if defined (DUAL_CORE_XB3) || \
+-    (defined(_XB6_PRODUCT_REQ_) && !defined(_XB8_PRODUCT_REQ_)) || \
++    (defined(_XB6_PRODUCT_REQ_) && !defined(_XB7_PRODUCT_REQ_) && !defined(_XB8_PRODUCT_REQ_)) || \
+     (defined(_CBR_PRODUCT_REQ_) && !(defined(_CBR2_PRODUCT_REQ_)) )
+
+     pthread_attr_t attr;
+

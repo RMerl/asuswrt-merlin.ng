@@ -1,0 +1,18 @@
+
+/ {
+
+    usb0_pwr_pins: usb0_pwr_pinmux {
+        pins = <79 80>;
+        function = <1>;
+    };
+
+    usb1_pwr_pins: usb1_pwr_pinmux {
+        pins = <81 82>;
+        function = <1>;
+    };
+
+	xmii_1_pins: xmii_1_pins {
+		pins = <10 56 57 58 59 60 61 62 63 64 65 66 67 68 69>;
+		function = <1>;
+	};
+};

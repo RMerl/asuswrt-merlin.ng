@@ -1,0 +1,24 @@
+MPC83xx SerDes controller devices
+
+MPC83xx SoCs contain a built-in SerDes controller that determines which
+protocols (SATA, PCI Express, SGMII, ...) are used on the system's serdes lines
+and how the lines are configured.
+
+Required properties:
+- compatible: must be "fsl,mpc83xx-serdes"
+- reg: must point to the serdes controller's register map
+- proto: selects for which protocol the serdes lines are configured. One of
+  "sata", "pex", "pex-x2", "sgmii"
+- serdes-clk: determines the frequency the serdes lines are configured for. One
+  of 100, 125, 150.
+- vdd: determines whether 1.0V core VDD is used or not
+
+Example:
+
+SERDES: serdes@e3000 {
+	reg = <0xe3000 0x200>;
+	compatible = "fsl,mpc83xx-serdes";
+	proto = "pex";
+	serdes-clk = <100>;
+	vdd;
+};

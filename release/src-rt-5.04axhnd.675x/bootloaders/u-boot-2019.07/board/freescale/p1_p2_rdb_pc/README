@@ -1,0 +1,47 @@
+Overview
+--------
+P1_P2_RDB_PC represents a set of boards including
+    P1020MSBG-PC
+    P1020RDB-PC
+    P1020RDB-PD
+    P1020UTM-PC
+    P1021RDB-PC
+    P1024RDB
+    P1025RDB
+    P2020RDB-PC
+
+They have similar design of P1020RDB but have DDR3 instead of DDR2. P2020RDB-PC
+has 64-bit DDR. All others have 32-bit DDR.
+
+Key features on these boards include:
+    * DDR3
+    * NOR flash
+    * NAND flash (on RDB's only)
+    * SPI flash (on RDB's only)
+    * SDHC/MMC card slot
+    * VSC7385 Ethernet switch (on P1020MBG, P1020RDB, & P1021RDB)
+    * PCIE slot and mini-PCIE slots
+
+As these boards use soldered DDR chips not regular DIMMs, an on-board EEPROM
+is used to store SPD data. In case of absent or corrupted SPD, falling back
+to timing data embedded in the source code will be used. Raw timing data is
+extracted from DDR chip datasheet. Different speeds of DDR are supported with
+this approach. ODT option is forced to fit this set of boards, again because
+they don't have regular DIMMs.
+
+CONFIG_SYS_EEPROM_PAGE_WRITE_DELAY_MS is defined as 5ms to meet specification
+for writing timing.
+
+VSC firmware Address is defined by default in config file for eTSEC1.
+
+SD width is based off DIP switch. DIP switch is detected on the
+board by reading i2c bus and setting the appropriate mux values.
+
+Some boards have QE module in the silicon (P1021 and P1025). QE and eLBC have
+pins multiplexing. QE function needs to be disabled to access Nor Flash and
+CPLD. QE-UEC and QE-UART can be enabled for linux kernel by setting "qe"
+in hwconfig. In addition, QE-UEC and QE-TDM also have pins multiplexing, to
+enable QE-TDM for linux kernel, set "qe;tdm" in hwconfig. Syntax is as below
+
+'setenv hwconfig qe' to enable QE UEC/UART and disable Nor-Flash/CPLD.
+'setenv hwconfig 'qe;tdm'' to enalbe QE TDM and disable Nor-Flash/CPLD.

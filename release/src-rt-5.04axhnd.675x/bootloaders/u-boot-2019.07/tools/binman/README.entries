@@ -1,0 +1,698 @@
+Binman Entry Documentation
+===========================
+
+This file describes the entry types supported by binman. These entry types can
+be placed in an image one by one to build up a final firmware image. It is
+fairly easy to create new entry types. Just add a new file to the 'etype'
+directory. You can use the existing entries as examples.
+
+Note that some entries are subclasses of others, using and extending their
+features to produce new behaviours.
+
+
+
+Entry: blob: Entry containing an arbitrary binary blob
+------------------------------------------------------
+
+Note: This should not be used by itself. It is normally used as a parent
+class by other entry types.
+
+Properties / Entry arguments:
+    - filename: Filename of file to read into entry
+    - compress: Compression algorithm to use:
+        none: No compression
+        lz4: Use lz4 compression (via 'lz4' command-line utility)
+
+This entry reads data from a file and places it in the entry. The
+default filename is often specified specified by the subclass. See for
+example the 'u_boot' entry which provides the filename 'u-boot.bin'.
+
+If compression is enabled, an extra 'uncomp-size' property is written to
+the node (if enabled with -u) which provides the uncompressed size of the
+data.
+
+
+
+Entry: blob-dtb: A blob that holds a device tree
+------------------------------------------------
+
+This is a blob containing a device tree. The contents of the blob are
+obtained from the list of available device-tree files, managed by the
+'state' module.
+
+
+
+Entry: blob-named-by-arg: A blob entry which gets its filename property from its subclass
+-----------------------------------------------------------------------------------------
+
+Properties / Entry arguments:
+    - <xxx>-path: Filename containing the contents of this entry (optional,
+        defaults to 0)
+
+where <xxx> is the blob_fname argument to the constructor.
+
+This entry cannot be used directly. Instead, it is used as a parent class
+for another entry, which defined blob_fname. This parameter is used to
+set the entry-arg or property containing the filename. The entry-arg or
+property is in turn used to set the actual filename.
+
+See cros_ec_rw for an example of this.
+
+
+
+Entry: cros-ec-rw: A blob entry which contains a Chromium OS read-write EC image
+--------------------------------------------------------------------------------
+
+Properties / Entry arguments:
+    - cros-ec-rw-path: Filename containing the EC image
+
+This entry holds a Chromium OS EC (embedded controller) image, for use in
+updating the EC on startup via software sync.
+
+
+
+Entry: files: Entry containing a set of files
+---------------------------------------------
+
+Properties / Entry arguments:
+    - pattern: Filename pattern to match the files to include
+    - compress: Compression algorithm to use:
+        none: No compression
+        lz4: Use lz4 compression (via 'lz4' command-line utility)
+
+This entry reads a number of files and places each in a separate sub-entry
+within this entry. To access these you need to enable device-tree updates
+at run-time so you can obtain the file positions.
+
+
+
+Entry: fill: An entry which is filled to a particular byte value
+----------------------------------------------------------------
+
+Properties / Entry arguments:
+    - fill-byte: Byte to use to fill the entry
+
+Note that the size property must be set since otherwise this entry does not
+know how large it should be.
+
+You can often achieve the same effect using the pad-byte property of the
+overall image, in that the space between entries will then be padded with
+that byte. But this entry is sometimes useful for explicitly setting the
+byte value of a region.
+
+
+
+Entry: fmap: An entry which contains an Fmap section
+----------------------------------------------------
+
+Properties / Entry arguments:
+    None
+
+FMAP is a simple format used by flashrom, an open-source utility for
+reading and writing the SPI flash, typically on x86 CPUs. The format
+provides flashrom with a list of areas, so it knows what it in the flash.
+It can then read or write just a single area, instead of the whole flash.
+
+The format is defined by the flashrom project, in the file lib/fmap.h -
+see www.flashrom.org/Flashrom for more information.
+
+When used, this entry will be populated with an FMAP which reflects the
+entries in the current image. Note that any hierarchy is squashed, since
+FMAP does not support this.
+
+
+
+Entry: gbb: An entry which contains a Chromium OS Google Binary Block
+---------------------------------------------------------------------
+
+Properties / Entry arguments:
+    - hardware-id: Hardware ID to use for this build (a string)
+    - keydir: Directory containing the public keys to use
+    - bmpblk: Filename containing images used by recovery
+
+Chromium OS uses a GBB to store various pieces of information, in particular
+the root and recovery keys that are used to verify the boot process. Some
+more details are here:
+
+    https://www.chromium.org/chromium-os/firmware-porting-guide/2-concepts
+
+but note that the page dates from 2013 so is quite out of date. See
+README.chromium for how to obtain the required keys and tools.
+
+
+
+Entry: intel-cmc: Entry containing an Intel Chipset Micro Code (CMC) file
+-------------------------------------------------------------------------
+
+Properties / Entry arguments:
+    - filename: Filename of file to read into entry
+
+This file contains microcode for some devices in a special format. An
+example filename is 'Microcode/C0_22211.BIN'.
+
+See README.x86 for information about x86 binary blobs.
+
+
+
+Entry: intel-descriptor: Intel flash descriptor block (4KB)
+-----------------------------------------------------------
+
+Properties / Entry arguments:
+    filename: Filename of file containing the descriptor. This is typically
+        a 4KB binary file, sometimes called 'descriptor.bin'
+
+This entry is placed at the start of flash and provides information about
+the SPI flash regions. In particular it provides the base address and
+size of the ME (Management Engine) region, allowing us to place the ME
+binary in the right place.
+
+With this entry in your image, the position of the 'intel-me' entry will be
+fixed in the image, which avoids you needed to specify an offset for that
+region. This is useful, because it is not possible to change the position
+of the ME region without updating the descriptor.
+
+See README.x86 for information about x86 binary blobs.
+
+
+
+Entry: intel-fsp: Entry containing an Intel Firmware Support Package (FSP) file
+-------------------------------------------------------------------------------
+
+Properties / Entry arguments:
+    - filename: Filename of file to read into entry
+
+This file contains binary blobs which are used on some devices to make the
+platform work. U-Boot executes this code since it is not possible to set up
+the hardware using U-Boot open-source code. Documentation is typically not
+available in sufficient detail to allow this.
+
+An example filename is 'FSP/QUEENSBAY_FSP_GOLD_001_20-DECEMBER-2013.fd'
+
+See README.x86 for information about x86 binary blobs.
+
+
+
+Entry: intel-me: Entry containing an Intel Management Engine (ME) file
+----------------------------------------------------------------------
+
+Properties / Entry arguments:
+    - filename: Filename of file to read into entry
+
+This file contains code used by the SoC that is required to make it work.
+The Management Engine is like a background task that runs things that are
+not clearly documented, but may include keyboard, deplay and network
+access. For platform that use ME it is not possible to disable it. U-Boot
+does not directly execute code in the ME binary.
+
+A typical filename is 'me.bin'.
+
+See README.x86 for information about x86 binary blobs.
+
+
+
+Entry: intel-mrc: Entry containing an Intel Memory Reference Code (MRC) file
+----------------------------------------------------------------------------
+
+Properties / Entry arguments:
+    - filename: Filename of file to read into entry
+
+This file contains code for setting up the SDRAM on some Intel systems. This
+is executed by U-Boot when needed early during startup. A typical filename
+is 'mrc.bin'.
+
+See README.x86 for information about x86 binary blobs.
+
+
+
+Entry: intel-vbt: Entry containing an Intel Video BIOS Table (VBT) file
+-----------------------------------------------------------------------
+
+Properties / Entry arguments:
+    - filename: Filename of file to read into entry
+
+This file contains code that sets up the integrated graphics subsystem on
+some Intel SoCs. U-Boot executes this when the display is started up.
+
+See README.x86 for information about Intel binary blobs.
+
+
+
+Entry: intel-vga: Entry containing an Intel Video Graphics Adaptor (VGA) file
+-----------------------------------------------------------------------------
+
+Properties / Entry arguments:
+    - filename: Filename of file to read into entry
+
+This file contains code that sets up the integrated graphics subsystem on
+some Intel SoCs. U-Boot executes this when the display is started up.
+
+This is similar to the VBT file but in a different format.
+
+See README.x86 for information about Intel binary blobs.
+
+
+
+Entry: powerpc-mpc85xx-bootpg-resetvec: PowerPC mpc85xx bootpg + resetvec code for U-Boot
+-----------------------------------------------------------------------------------------
+
+Properties / Entry arguments:
+    - filename: Filename of u-boot-br.bin (default 'u-boot-br.bin')
+
+This enrty is valid for PowerPC mpc85xx cpus. This entry holds
+'bootpg + resetvec' code for PowerPC mpc85xx CPUs which needs to be
+placed at offset 'RESET_VECTOR_ADDRESS - 0xffc'.
+
+
+
+Entry: section: Entry that contains other entries
+-------------------------------------------------
+
+Properties / Entry arguments: (see binman README for more information)
+    - size: Size of section in bytes
+    - align-size: Align size to a particular power of two
+    - pad-before: Add padding before the entry
+    - pad-after: Add padding after the entry
+    - pad-byte: Pad byte to use when padding
+    - sort-by-offset: Reorder the entries by offset
+    - end-at-4gb: Used to build an x86 ROM which ends at 4GB (2^32)
+    - name-prefix: Adds a prefix to the name of every entry in the section
+        when writing out the map
+
+A section is an entry which can contain other entries, thus allowing
+hierarchical images to be created. See 'Sections and hierarchical images'
+in the binman README for more information.
+
+
+
+Entry: text: An entry which contains text
+-----------------------------------------
+
+The text can be provided either in the node itself or by a command-line
+argument. There is a level of indirection to allow multiple text strings
+and sharing of text.
+
+Properties / Entry arguments:
+    text-label: The value of this string indicates the property / entry-arg
+        that contains the string to place in the entry
+    <xxx> (actual name is the value of text-label): contains the string to
+        place in the entry.
+
+Example node:
+
+    text {
+        size = <50>;
+        text-label = "message";
+    };
+
+You can then use:
+
+    binman -amessage="this is my message"
+
+and binman will insert that string into the entry.
+
+It is also possible to put the string directly in the node:
+
+    text {
+        size = <8>;
+        text-label = "message";
+        message = "a message directly in the node"
+    };
+
+The text is not itself nul-terminated. This can be achieved, if required,
+by setting the size of the entry to something larger than the text.
+
+
+
+Entry: u-boot: U-Boot flat binary
+---------------------------------
+
+Properties / Entry arguments:
+    - filename: Filename of u-boot.bin (default 'u-boot.bin')
+
+This is the U-Boot binary, containing relocation information to allow it
+to relocate itself at runtime. The binary typically includes a device tree
+blob at the end of it. Use u_boot_nodtb if you want to package the device
+tree separately.
+
+U-Boot can access binman symbols at runtime. See:
+
+    'Access to binman entry offsets at run time (fdt)'
+
+in the binman README for more information.
+
+
+
+Entry: u-boot-dtb: U-Boot device tree
+-------------------------------------
+
+Properties / Entry arguments:
+    - filename: Filename of u-boot.dtb (default 'u-boot.dtb')
+
+This is the U-Boot device tree, containing configuration information for
+U-Boot. U-Boot needs this to know what devices are present and which drivers
+to activate.
+
+Note: This is mostly an internal entry type, used by others. This allows
+binman to know which entries contain a device tree.
+
+
+
+Entry: u-boot-dtb-with-ucode: A U-Boot device tree file, with the microcode removed
+-----------------------------------------------------------------------------------
+
+Properties / Entry arguments:
+    - filename: Filename of u-boot.dtb (default 'u-boot.dtb')
+
+See Entry_u_boot_ucode for full details of the three entries involved in
+this process. This entry provides the U-Boot device-tree file, which
+contains the microcode. If the microcode is not being collated into one
+place then the offset and size of the microcode is recorded by this entry,
+for use by u_boot_with_ucode_ptr. If it is being collated, then this
+entry deletes the microcode from the device tree (to save space) and makes
+it available to u_boot_ucode.
+
+
+
+Entry: u-boot-elf: U-Boot ELF image
+-----------------------------------
+
+Properties / Entry arguments:
+    - filename: Filename of u-boot (default 'u-boot')
+
+This is the U-Boot ELF image. It does not include a device tree but can be
+relocated to any address for execution.
+
+
+
+Entry: u-boot-img: U-Boot legacy image
+--------------------------------------
+
+Properties / Entry arguments:
+    - filename: Filename of u-boot.img (default 'u-boot.img')
+
+This is the U-Boot binary as a packaged image, in legacy format. It has a
+header which allows it to be loaded at the correct address for execution.
+
+You should use FIT (Flat Image Tree) instead of the legacy image for new
+applications.
+
+
+
+Entry: u-boot-nodtb: U-Boot flat binary without device tree appended
+--------------------------------------------------------------------
+
+Properties / Entry arguments:
+    - filename: Filename of u-boot.bin (default 'u-boot-nodtb.bin')
+
+This is the U-Boot binary, containing relocation information to allow it
+to relocate itself at runtime. It does not include a device tree blob at
+the end of it so normally cannot work without it. You can add a u_boot_dtb
+entry after this one, or use a u_boot entry instead (which contains both
+U-Boot and the device tree).
+
+
+
+Entry: u-boot-spl: U-Boot SPL binary
+------------------------------------
+
+Properties / Entry arguments:
+    - filename: Filename of u-boot-spl.bin (default 'spl/u-boot-spl.bin')
+
+This is the U-Boot SPL (Secondary Program Loader) binary. This is a small
+binary which loads before U-Boot proper, typically into on-chip SRAM. It is
+responsible for locating, loading and jumping to U-Boot. Note that SPL is
+not relocatable so must be loaded to the correct address in SRAM, or written
+to run from the correct address if direct flash execution is possible (e.g.
+on x86 devices).
+
+SPL can access binman symbols at runtime. See:
+
+    'Access to binman entry offsets at run time (symbols)'
+
+in the binman README for more information.
+
+The ELF file 'spl/u-boot-spl' must also be available for this to work, since
+binman uses that to look up symbols to write into the SPL binary.
+
+
+
+Entry: u-boot-spl-bss-pad: U-Boot SPL binary padded with a BSS region
+---------------------------------------------------------------------
+
+Properties / Entry arguments:
+    None
+
+This is similar to u_boot_spl except that padding is added after the SPL
+binary to cover the BSS (Block Started by Symbol) region. This region holds
+the various used by SPL. It is set to 0 by SPL when it starts up. If you
+want to append data to the SPL image (such as a device tree file), you must
+pad out the BSS region to avoid the data overlapping with U-Boot variables.
+This entry is useful in that case. It automatically pads out the entry size
+to cover both the code, data and BSS.
+
+The ELF file 'spl/u-boot-spl' must also be available for this to work, since
+binman uses that to look up the BSS address.
+
+
+
+Entry: u-boot-spl-dtb: U-Boot SPL device tree
+---------------------------------------------
+
+Properties / Entry arguments:
+    - filename: Filename of u-boot.dtb (default 'spl/u-boot-spl.dtb')
+
+This is the SPL device tree, containing configuration information for
+SPL. SPL needs this to know what devices are present and which drivers
+to activate.
+
+
+
+Entry: u-boot-spl-elf: U-Boot SPL ELF image
+-------------------------------------------
+
+Properties / Entry arguments:
+    - filename: Filename of SPL u-boot (default 'spl/u-boot')
+
+This is the U-Boot SPL ELF image. It does not include a device tree but can
+be relocated to any address for execution.
+
+
+
+Entry: u-boot-spl-nodtb: SPL binary without device tree appended
+----------------------------------------------------------------
+
+Properties / Entry arguments:
+    - filename: Filename of spl/u-boot-spl-nodtb.bin (default
+        'spl/u-boot-spl-nodtb.bin')
+
+This is the U-Boot SPL binary, It does not include a device tree blob at
+the end of it so may not be able to work without it, assuming SPL needs
+a device tree to operation on your platform. You can add a u_boot_spl_dtb
+entry after this one, or use a u_boot_spl entry instead (which contains
+both SPL and the device tree).
+
+
+
+Entry: u-boot-spl-with-ucode-ptr: U-Boot SPL with embedded microcode pointer
+----------------------------------------------------------------------------
+
+This is used when SPL must set up the microcode for U-Boot.
+
+See Entry_u_boot_ucode for full details of the entries involved in this
+process.
+
+
+
+Entry: u-boot-tpl: U-Boot TPL binary
+------------------------------------
+
+Properties / Entry arguments:
+    - filename: Filename of u-boot-tpl.bin (default 'tpl/u-boot-tpl.bin')
+
+This is the U-Boot TPL (Tertiary Program Loader) binary. This is a small
+binary which loads before SPL, typically into on-chip SRAM. It is
+responsible for locating, loading and jumping to SPL, the next-stage
+loader. Note that SPL is not relocatable so must be loaded to the correct
+address in SRAM, or written to run from the correct address if direct
+flash execution is possible (e.g. on x86 devices).
+
+SPL can access binman symbols at runtime. See:
+
+    'Access to binman entry offsets at run time (symbols)'
+
+in the binman README for more information.
+
+The ELF file 'tpl/u-boot-tpl' must also be available for this to work, since
+binman uses that to look up symbols to write into the TPL binary.
+
+
+
+Entry: u-boot-tpl-dtb: U-Boot TPL device tree
+---------------------------------------------
+
+Properties / Entry arguments:
+    - filename: Filename of u-boot.dtb (default 'tpl/u-boot-tpl.dtb')
+
+This is the TPL device tree, containing configuration information for
+TPL. TPL needs this to know what devices are present and which drivers
+to activate.
+
+
+
+Entry: u-boot-tpl-dtb-with-ucode: U-Boot TPL with embedded microcode pointer
+----------------------------------------------------------------------------
+
+This is used when TPL must set up the microcode for U-Boot.
+
+See Entry_u_boot_ucode for full details of the entries involved in this
+process.
+
+
+
+Entry: u-boot-tpl-with-ucode-ptr: U-Boot TPL with embedded microcode pointer
+----------------------------------------------------------------------------
+
+See Entry_u_boot_ucode for full details of the entries involved in this
+process.
+
+
+
+Entry: u-boot-ucode: U-Boot microcode block
+-------------------------------------------
+
+Properties / Entry arguments:
+    None
+
+The contents of this entry are filled in automatically by other entries
+which must also be in the image.
+
+U-Boot on x86 needs a single block of microcode. This is collected from
+the various microcode update nodes in the device tree. It is also unable
+to read the microcode from the device tree on platforms that use FSP
+(Firmware Support Package) binaries, because the API requires that the
+microcode is supplied before there is any SRAM available to use (i.e.
+the FSP sets up the SRAM / cache-as-RAM but does so in the call that
+requires the microcode!). To keep things simple, all x86 platforms handle
+microcode the same way in U-Boot (even non-FSP platforms). This is that
+a table is placed at _dt_ucode_base_size containing the base address and
+size of the microcode. This is either passed to the FSP (for FSP
+platforms), or used to set up the microcode (for non-FSP platforms).
+This all happens in the build system since it is the only way to get
+the microcode into a single blob and accessible without SRAM.
+
+There are two cases to handle. If there is only one microcode blob in
+the device tree, then the ucode pointer it set to point to that. This
+entry (u-boot-ucode) is empty. If there is more than one update, then
+this entry holds the concatenation of all updates, and the device tree
+entry (u-boot-dtb-with-ucode) is updated to remove the microcode. This
+last step ensures that that the microcode appears in one contiguous
+block in the image and is not unnecessarily duplicated in the device
+tree. It is referred to as 'collation' here.
+
+Entry types that have a part to play in handling microcode:
+
+    Entry_u_boot_with_ucode_ptr:
+        Contains u-boot-nodtb.bin (i.e. U-Boot without the device tree).
+        It updates it with the address and size of the microcode so that
+        U-Boot can find it early on start-up.
+    Entry_u_boot_dtb_with_ucode:
+        Contains u-boot.dtb. It stores the microcode in a
+        'self.ucode_data' property, which is then read by this class to
+        obtain the microcode if needed. If collation is performed, it
+        removes the microcode from the device tree.
+    Entry_u_boot_ucode:
+        This class. If collation is enabled it reads the microcode from
+        the Entry_u_boot_dtb_with_ucode entry, and uses it as the
+        contents of this entry.
+
+
+
+Entry: u-boot-with-ucode-ptr: U-Boot with embedded microcode pointer
+--------------------------------------------------------------------
+
+Properties / Entry arguments:
+    - filename: Filename of u-boot-nodtb.dtb (default 'u-boot-nodtb.dtb')
+    - optional-ucode: boolean property to make microcode optional. If the
+        u-boot.bin image does not include microcode, no error will
+        be generated.
+
+See Entry_u_boot_ucode for full details of the three entries involved in
+this process. This entry updates U-Boot with the offset and size of the
+microcode, to allow early x86 boot code to find it without doing anything
+complicated. Otherwise it is the same as the u_boot entry.
+
+
+
+Entry: vblock: An entry which contains a Chromium OS verified boot block
+------------------------------------------------------------------------
+
+Properties / Entry arguments:
+    - keydir: Directory containing the public keys to use
+    - keyblock: Name of the key file to use (inside keydir)
+    - signprivate: Name of provide key file to use (inside keydir)
+    - version: Version number of the vblock (typically 1)
+    - kernelkey: Name of the kernel key to use (inside keydir)
+    - preamble-flags: Value of the vboot preamble flags (typically 0)
+
+Output files:
+    - input.<unique_name> - input file passed to futility
+    - vblock.<unique_name> - output file generated by futility (which is
+        used as the entry contents)
+
+Chromium OS signs the read-write firmware and kernel, writing the signature
+in this block. This allows U-Boot to verify that the next firmware stage
+and kernel are genuine.
+
+
+
+Entry: x86-start16: x86 16-bit start-up code for U-Boot
+-------------------------------------------------------
+
+Properties / Entry arguments:
+    - filename: Filename of u-boot-x86-16bit.bin (default
+        'u-boot-x86-16bit.bin')
+
+x86 CPUs start up in 16-bit mode, even if they are 32-bit CPUs. This code
+must be placed at a particular address. This entry holds that code. It is
+typically placed at offset CONFIG_SYS_X86_START16. The code is responsible
+for changing to 32-bit mode and jumping to U-Boot's entry point, which
+requires 32-bit mode (for 32-bit U-Boot).
+
+For 64-bit U-Boot, the 'x86_start16_spl' entry type is used instead.
+
+
+
+Entry: x86-start16-spl: x86 16-bit start-up code for SPL
+--------------------------------------------------------
+
+Properties / Entry arguments:
+    - filename: Filename of spl/u-boot-x86-16bit-spl.bin (default
+        'spl/u-boot-x86-16bit-spl.bin')
+
+x86 CPUs start up in 16-bit mode, even if they are 64-bit CPUs. This code
+must be placed at a particular address. This entry holds that code. It is
+typically placed at offset CONFIG_SYS_X86_START16. The code is responsible
+for changing to 32-bit mode and starting SPL, which in turn changes to
+64-bit mode and jumps to U-Boot (for 64-bit U-Boot).
+
+For 32-bit U-Boot, the 'x86_start16' entry type is used instead.
+
+
+
+Entry: x86-start16-tpl: x86 16-bit start-up code for TPL
+--------------------------------------------------------
+
+Properties / Entry arguments:
+    - filename: Filename of tpl/u-boot-x86-16bit-tpl.bin (default
+        'tpl/u-boot-x86-16bit-tpl.bin')
+
+x86 CPUs start up in 16-bit mode, even if they are 64-bit CPUs. This code
+must be placed at a particular address. This entry holds that code. It is
+typically placed at offset CONFIG_SYS_X86_START16. The code is responsible
+for changing to 32-bit mode and starting TPL, which in turn jumps to SPL.
+
+If TPL is not being used, the 'x86_start16_spl or 'x86_start16' entry types
+may be used instead.
+
+
+

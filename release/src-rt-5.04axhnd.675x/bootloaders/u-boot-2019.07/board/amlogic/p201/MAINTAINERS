@@ -1,0 +1,6 @@
+P201
+M:	Neil Armstrong <narmstrong@baylibre.com>
+S:	Maintained
+L:	u-boot-amlogic@groups.io
+F:	board/amlogic/p201/
+F:	configs/p201_defconfig

@@ -1,0 +1,21 @@
+KM83XX BOARD
+M:	Holger Brunck <holger.brunck@ch.abb.com>
+S:	Maintained
+F:	board/keymile/km83xx/
+F:	include/configs/km8360.h
+F:	configs/kmcoge5ne_defconfig
+F:	configs/kmeter1_defconfig
+F:	include/configs/tuxx1.h
+F:	configs/kmopti2_defconfig
+F:	configs/kmtepr2_defconfig
+F:	include/configs/suvd3.h
+F:	configs/kmtegr1_defconfig
+F:	configs/kmvect1_defconfig
+F:	configs/suvd3_defconfig
+F:	configs/tuge1_defconfig
+F:	configs/tuxx1_defconfig
+
+KMSUPX5 BOARD
+M:	Heiko Schocher <hs@denx.de>
+S:	Maintained
+F:	configs/kmsupx5_defconfig

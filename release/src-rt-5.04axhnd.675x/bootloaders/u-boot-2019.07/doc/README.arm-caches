@@ -1,0 +1,53 @@
+Disabling I-cache:
+- Set CONFIG_SYS_ICACHE_OFF
+
+Disabling D-cache:
+- Set CONFIG_SYS_DCACHE_OFF
+
+Enabling I-cache:
+- Make sure CONFIG_SYS_ICACHE_OFF is not set and call icache_enable().
+
+Enabling D-cache:
+- Make sure CONFIG_SYS_DCACHE_OFF is not set and call dcache_enable().
+
+Enabling Caches at System Startup:
+- Implement enable_caches() for your platform and enable the I-cache and
+  D-cache from this function. This function is called immediately
+  after relocation.
+
+Guidelines for Working with D-cache:
+
+Memory to Peripheral DMA:
+- Flush the buffer after the MPU writes the data and before the DMA is
+  initiated.
+
+Peripheral to Memory DMA:
+- Invalidate the buffer before starting the DMA. In case there are any dirty
+  lines from the DMA buffer in the cache, subsequent cache-line replacements
+  may corrupt the buffer in memory while the DMA is still going on. Cache-line
+  replacement can happen if the CPU tries to bring some other memory locations
+  into the cache while the DMA is going on.
+- Invalidate the buffer after the DMA is complete and before the MPU reads
+  it. This may be needed in addition to the invalidation before the DMA
+  mentioned above, because in some processors memory contents can spontaneously
+  come to the cache due to speculative memory access by the CPU. If this
+  happens with the DMA buffer while DMA is going on we have a coherency problem.
+
+Buffer Requirements:
+- Any buffer that is invalidated(that is, typically the peripheral to
+  memory DMA buffer) should be aligned to cache-line boundary both at
+  at the beginning and at the end of the buffer.
+- If the buffer is not cache-line aligned invalidation will be restricted
+  to the aligned part. That is, one cache-line at the respective boundary
+  may be left out while doing invalidation.
+- A suitable buffer can be alloced on the stack using the
+  ALLOC_CACHE_ALIGN_BUFFER macro.
+
+Cleanup Before Linux:
+- cleanup_before_linux() should flush the D-cache, invalidate I-cache, and
+  disable MMU and caches.
+- The following sequence is advisable while disabling d-cache:
+  1. dcache_disable() - flushes and disables d-cache
+  2. invalidate_dcache_all() - invalid any entry that came to the cache
+	in the short period after the cache was flushed but before the
+	cache got disabled.

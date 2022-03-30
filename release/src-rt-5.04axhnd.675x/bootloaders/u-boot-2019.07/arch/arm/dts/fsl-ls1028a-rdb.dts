@@ -1,0 +1,88 @@
+// SPDX-License-Identifier: GPL-2.0+ OR X11
+/*
+ * NXP ls1028ARDB device tree source
+ *
+ * Copyright 2019 NXP
+ *
+ */
+
+/dts-v1/;
+
+#include "fsl-ls1028a.dtsi"
+
+/ {
+	model = "NXP Layerscape 1028a RDB Board";
+	compatible = "fsl,ls1028a-rdb", "fsl,ls1028a";
+};
+
+&dspi0 {
+	status = "okay";
+};
+
+&dspi1 {
+	status = "okay";
+};
+
+&dspi2 {
+	status = "okay";
+};
+
+&esdhc0 {
+	status = "okay";
+};
+
+&esdhc1 {
+	status = "okay";
+};
+
+&i2c0 {
+	status = "okay";
+};
+
+&i2c1 {
+	status = "okay";
+};
+
+&i2c2 {
+	status = "okay";
+};
+
+&i2c3 {
+	status = "okay";
+};
+
+&i2c4 {
+	status = "okay";
+};
+
+&i2c5 {
+	status = "okay";
+};
+
+&i2c6 {
+	status = "okay";
+};
+
+&i2c7 {
+	status = "okay";
+};
+
+&sata {
+	status = "okay";
+};
+
+&serial0 {
+	status = "okay";
+};
+
+&serial1 {
+	status = "okay";
+};
+
+&usb1 {
+	status = "okay";
+};
+
+&usb2 {
+	status = "okay";
+};

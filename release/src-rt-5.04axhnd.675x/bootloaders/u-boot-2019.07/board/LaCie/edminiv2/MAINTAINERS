@@ -1,0 +1,6 @@
+EDMINIV2 BOARD
+M:	Albert ARIBAUD <albert.u.boot@aribaud.net>
+S:	Maintained
+F:	board/LaCie/edminiv2/
+F:	include/configs/edminiv2.h
+F:	configs/edminiv2_defconfig

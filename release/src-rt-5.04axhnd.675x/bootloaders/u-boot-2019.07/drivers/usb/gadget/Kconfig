@@ -1,0 +1,217 @@
+#
+# USB Gadget support on a system involves
+#    (a) a peripheral controller, and
+#    (b) the gadget driver using it.
+#
+# NOTE:  Gadget support ** DOES NOT ** depend on host-side CONFIG_USB !!
+#
+#  - Host systems (like PCs) need CONFIG_USB (with "A" jacks).
+#  - Peripherals (like PDAs) need CONFIG_USB_GADGET (with "B" jacks).
+#  - Some systems have both kinds of controllers.
+#
+# With help from a special transceiver and a "Mini-AB" jack, systems with
+# both kinds of controller can also support "USB On-the-Go" (CONFIG_USB_OTG).
+#
+
+menuconfig USB_GADGET
+	bool "USB Gadget Support"
+	help
+	   USB is a master/slave protocol, organized with one master
+	   host (such as a PC) controlling up to 127 peripheral devices.
+	   The USB hardware is asymmetric, which makes it easier to set up:
+	   you can't connect a "to-the-host" connector to a peripheral.
+
+	   U-Boot can run in the host, or in the peripheral.  In both cases
+	   you need a low level bus controller driver, and some software
+	   talking to it.  Peripheral controllers are often discrete silicon,
+	   or are integrated with the CPU in a microcontroller.  The more
+	   familiar host side controllers have names like "EHCI", "OHCI",
+	   or "UHCI", and are usually integrated into southbridges on PC
+	   motherboards.
+
+	   Enable this configuration option if you want to run U-Boot inside
+	   a USB peripheral device.  Configure one hardware driver for your
+	   peripheral/device side bus controller, and a "gadget driver" for
+	   your peripheral protocol.
+
+if USB_GADGET
+
+config USB_GADGET_MANUFACTURER
+	string "Vendor name of the USB device"
+	default "Allwinner Technology" if ARCH_SUNXI
+	default "U-Boot"
+	help
+	  Vendor name of the USB device emulated, reported to the host device.
+	  This is usually either the manufacturer of the device or the SoC.
+
+config USB_GADGET_VENDOR_NUM
+	hex "Vendor ID of the USB device"
+	default 0x1f3a if ARCH_SUNXI
+	default 0x0
+	help
+	  Vendor ID of the USB device emulated, reported to the host device.
+	  This is usually the board or SoC vendor's, unless you've registered
+	  for one.
+
+config USB_GADGET_PRODUCT_NUM
+	hex "Product ID of the USB device"
+	default 0x1010 if ARCH_SUNXI
+	default 0x0
+	help
+	  Product ID of the USB device emulated, reported to the host device.
+
+config USB_GADGET_ATMEL_USBA
+	bool "Atmel USBA"
+	select USB_GADGET_DUALSPEED
+	help
+	  USBA is the integrated high-speed USB Device controller on
+	  the AT32AP700x, some AT91SAM9 and AT91CAP9 processors from Atmel.
+
+config USB_GADGET_BCM_UDC_OTG_PHY
+	bool "Broadcom UDC OTG PHY"
+	help
+	  Enable the Broadcom UDC OTG physical device interface.
+
+config USB_GADGET_DWC2_OTG
+	bool "DesignWare USB2.0 HS OTG controller (gadget mode)"
+	select USB_GADGET_DUALSPEED
+	help
+	  The Designware USB2.0 high-speed gadget controller
+	  integrated into many SoCs. Select this option if you want the
+	  driver to operate in Peripheral mode. This option requires
+	  USB_GADGET to be enabled.
+
+if USB_GADGET_DWC2_OTG
+
+config USB_GADGET_DWC2_OTG_PHY_BUS_WIDTH_8
+	bool "DesignWare USB2.0 HS OTG controller 8-bit PHY bus width"
+	help
+	  Set the Designware USB2.0 high-speed OTG controller
+	  PHY interface width to 8 bits, rather than the default (16 bits).
+
+endif # USB_GADGET_DWC2_OTG
+
+config CI_UDC
+	bool "ChipIdea device controller"
+	select USB_GADGET_DUALSPEED
+	help
+	  Say Y here to enable device controller functionality of the
+	  ChipIdea driver.
+
+config USB_GADGET_VBUS_DRAW
+	int "Maximum VBUS Power usage (2-500 mA)"
+	range 2 500
+	default 2
+	help
+	   Some devices need to draw power from USB when they are
+	   configured, perhaps to operate circuitry or to recharge
+	   batteries.  This is in addition to any local power supply,
+	   such as an AC adapter or batteries.
+
+	   Enter the maximum power your device draws through USB, in
+	   milliAmperes.  The permitted range of values is 2 - 500 mA;
+	   0 mA would be legal, but can make some hosts misbehave.
+
+	   This value will be used except for system-specific gadget
+	   drivers that have more specific information.
+
+# Selected by UDC drivers that support high-speed operation.
+config USB_GADGET_DUALSPEED
+	bool
+
+config USB_GADGET_DOWNLOAD
+	bool "Enable USB download gadget"
+	help
+	  Composite USB download gadget support (g_dnl) for download functions.
+	  This code works on top of composite gadget.
+
+if USB_GADGET_DOWNLOAD
+
+config USB_FUNCTION_MASS_STORAGE
+	bool "Enable USB mass storage gadget"
+	help
+	  Enable mass storage protocol support in U-Boot. It allows exporting
+	  the eMMC/SD card content to HOST PC so it can be mounted.
+
+config USB_FUNCTION_ROCKUSB
+        bool "Enable USB rockusb gadget"
+        help
+          Rockusb protocol is widely used by Rockchip SoC based devices. It can
+          read/write info, image to/from devices. This enables the USB part of
+          the rockusb gadget.for more detail about Rockusb protocol, please see
+          doc/README.rockusb
+
+config USB_FUNCTION_SDP
+	bool "Enable USB SDP (Serial Download Protocol)"
+	help
+	  Enable Serial Download Protocol (SDP) device support in U-Boot. This
+	  allows to download images into memory and execute (jump to) them
+	  using the same protocol as implemented by the i.MX family's boot ROM.
+
+config USB_FUNCTION_THOR
+	bool "Enable USB THOR gadget"
+	help
+	  Enable Tizen's THOR download protocol support in U-Boot. It
+	  allows downloading images into memory and flash them to target device.
+
+endif # USB_GADGET_DOWNLOAD
+
+config USB_ETHER
+	bool "USB Ethernet Gadget"
+	depends on NET
+	default y if ARCH_SUNXI && USB_MUSB_GADGET
+	help
+	  Creates an Ethernet network device through a USB peripheral
+	  controller. This will create a network interface on both the device
+	  (U-Boot) and the host (remote device) that can be used just like any
+	  other nework interface.
+	  It will bind on the peripheral USB controller, ignoring the USB hosts
+	  controllers in the system.
+
+if USB_ETHER
+
+choice
+	prompt "USB Ethernet Gadget Model"
+	default USB_ETH_RNDIS
+	help
+	  There is several models (protocols) to implement Ethernet over USB
+	  devices. The main ones are Microsoft's RNDIS and USB's CDC-Ethernet
+	  (also called CDC-ECM). RNDIS is obviously compatible with Windows,
+	  while CDC-ECM is not. Most other operating systems support both, so
+	  if inter-operability is a concern, RNDIS is to be preferred.
+
+config USB_ETH_CDC
+	bool "CDC-ECM Protocol"
+	help
+	  CDC (Communications Device Class) is the standard for Ethernet over
+	  USB devices. While there's several alternatives, the most widely used
+	  protocol is ECM (Ethernet Control Model). However, compatibility with
+	  Windows is not that great.
+
+config USB_ETH_RNDIS
+	bool "RNDIS Protocol"
+	help
+	  The RNDIS (Remote Network Driver Interface Specification) is a
+	  Microsoft proprietary protocol to create an Ethernet device over USB.
+	  Windows obviously supports it, as well as all the major operating
+	  systems, so it's the best option for compatibility.
+
+endchoice
+
+config USBNET_DEVADDR
+	string "USB Gadget Ethernet device mac address"
+	default "de:ad:be:ef:00:01"
+	help
+	  Ethernet MAC address of the device-side (ie. local board's) MAC
+	  address of the usb_ether interface
+
+config USBNET_HOST_ADDR
+	string "USB Gadget Ethernet host mac address"
+	default "de:ad:be:ef:00:00"
+	help
+	  Ethernet MAC address of the host-side (ie. remote device's) MAC
+	  address of the usb_ether interface
+
+endif # USB_ETHER
+
+endif # USB_GADGET

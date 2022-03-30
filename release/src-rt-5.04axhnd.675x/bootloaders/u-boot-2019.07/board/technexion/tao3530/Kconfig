@@ -1,0 +1,12 @@
+if TARGET_TAO3530
+
+config SYS_BOARD
+	default "tao3530"
+
+config SYS_VENDOR
+	default "technexion"
+
+config SYS_CONFIG_NAME
+	default "tao3530"
+
+endif

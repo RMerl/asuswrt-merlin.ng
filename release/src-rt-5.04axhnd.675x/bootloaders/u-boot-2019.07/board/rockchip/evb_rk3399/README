@@ -1,0 +1,129 @@
+Introduction
+============
+
+RK3399 key features we might use in U-Boot:
+* CPU: ARMv8 64bit Big-Little architecture,
+*      Big: dual-core Cortex-A72
+*      Little: quad-core Cortex-A53
+* IRAM: 200KB
+* DRAM: 4GB-128MB dual-channel
+* eMMC: support eMMC 5.0/5.1, suport HS400, HS200, DDR50
+* SD/MMC: support SD 3.0, MMC 4.51
+* USB: USB3.0 typc-C port *2 with dwc3 controller
+*      USB2.0 EHCI host port *2
+* Display: RGB/HDMI/DP/MIPI/EDP
+
+evb key features:
+* regulator: pwm regulator for CPU B/L
+* PMIC: rk808
+* debug console: UART2
+
+In order to support Arm Trust Firmware(ATF), we can use either SPL or
+miniloader from rockchip to do:
+* do DRAM init
+* load and verify ATF image
+* load and verify U-Boot image
+
+Here is the step-by-step to boot to U-Boot on rk3399.
+
+Get the Source and prebuild binary
+==================================
+
+  > mkdir ~/evb_rk3399
+  > cd ~/evb_rk3399
+  > git clone https://github.com/ARM-software/arm-trusted-firmware.git
+  > git clone https://github.com/rockchip-linux/rkbin.git
+  > git clone https://github.com/rockchip-linux/rkdeveloptool.git
+
+Get some prerequisites
+======================
+
+You need the Python elftools.elf.elffile library for make_fit_atf.py to work:
+
+  > sudo apt-get install python-pyelftools
+
+Compile ATF
+===========
+
+  > cd arm-trusted-firmware
+  > make realclean
+  > make CROSS_COMPILE=aarch64-linux-gnu- PLAT=rk3399 bl31
+
+  Get bl31.elf in this step, copy it to U-Boot root dir:
+  > cp build/rk3399/release/bl31/bl31.elf ../u-boot/
+
+  Or you can get the bl31.elf directly from Rockchip:
+  > cp rkbin/rk33/rk3399_bl31_v1.00.elf ../u-boot/bl31.elf
+
+
+Compile U-Boot
+==============
+
+  > cd ../u-boot
+  > export ARCH=arm64
+  > export CROSS_COMPILE=aarch64-linux-gnu-
+  > make evb-rk3399_defconfig
+  for firefly-rk3399, use below instead:
+  > make firefly-rk3399_defconfig
+  > make
+  > make u-boot.itb
+
+  Get spl/u-boot-spl.bin and u-boot.itb in this step.
+
+Compile rkdeveloptool
+=====================
+
+Get rkdeveloptool installed on your Host in this step.
+
+Follow instructions in latest README, example:
+  > cd ../rkdeveloptool
+  > autoreconf -i
+  > ./configure
+  > make
+  > sudo make install
+
+Both origin binaries and Tool are ready now, choose either option 1 or
+option 2 to deploy U-Boot.
+
+Package the image
+=================
+
+Package the image for U-Boot SPL(option 1)
+--------------------------------
+  > cd ..
+  > tools/mkimage -n rk3399 -T rksd -d spl/u-boot-spl.bin idbspl.img
+
+  Get idbspl.img in this step.
+
+Package the image for Rockchip miniloader(option 2)
+------------------------------------------
+  > cd ..
+  > cp arm-trusted-firmware/build/rk3399/release/bl31.elf rkbin/rk33
+  > ./rkbin/tools/trust_merger rkbin/tools/RK3399TRUST.ini
+  > ./rkbin/tools/loaderimage --pack --uboot u-boot/u-boot-dtb.bin uboot.img
+
+  Get trust.img and uboot.img in this step.
+
+Flash the image to eMMC
+=======================
+
+Flash the image with U-Boot SPL(option 1)
+-------------------------------
+Power on(or reset with RESET KEY) with MASKROM KEY preesed, and then:
+  > rkdeveloptool db rkbin/rk33/rk3399_loader_v1.08.106.bin
+  > rkdeveloptool wl 64 u-boot/idbspl.img
+  > rkdeveloptool wl 0x4000 u-boot/u-boot.itb
+  > rkdeveloptool rd
+
+Flash the image with Rockchip miniloader(option 2)
+----------------------------------------
+Power on(or reset with RESET KEY) with MASKROM KEY preesed, and then:
+  > rkdeveloptool db rkbin/rk33/rk3399_loader_v1.08.106.bin
+  > rkdeveloptool ul rkbin/rk33/rk3399_loader_v1.08.106.bin
+  > rkdeveloptool wl 0x4000 u-boot/uboot.img
+  > rkdeveloptool wl 0x6000 u-boot/trust.img
+  > rkdeveloptool rd
+
+You should be able to get U-Boot log in console/UART2(baurdrate 1500000)
+For more detail, please reference to:
+http://opensource.rock-chips.com/wiki_Boot_option

@@ -1,0 +1,19 @@
+gdsys IHS FPGA for CPU devices
+
+The gdsys IHS FPGA is the main FPGA on gdsys CPU devices. This driver provides
+support for enabling and starting the FPGA, as well as verifying working bus
+communication.
+
+Required properties:
+- compatible: must be "gdsys,iocpu_fpga"
+- reset-gpios: List of GPIOs controlling the FPGA's reset
+- done-gpios: List of GPIOs notifying whether the FPGA's reconfiguration is
+              done
+
+Example:
+
+FPGA0 {
+	compatible = "gdsys,iocpu_fpga";
+	reset-gpios = <&PPCPCA 26 0>;
+	done-gpios = <&GPIO_VB0 19 0>;
+};

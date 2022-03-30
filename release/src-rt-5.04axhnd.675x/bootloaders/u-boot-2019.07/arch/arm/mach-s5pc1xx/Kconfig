@@ -1,0 +1,25 @@
+if ARCH_S5PC1XX
+
+choice
+	prompt "S5PC1XX board select"
+	optional
+
+config TARGET_S5P_GONI
+	bool "S5P Goni board"
+	select OF_CONTROL
+	select BLK
+	select DM_MMC
+
+config TARGET_SMDKC100
+	bool "Support smdkc100 board"
+	select OF_CONTROL
+
+endchoice
+
+config SYS_SOC
+	default "s5pc1xx"
+
+source "board/samsung/goni/Kconfig"
+source "board/samsung/smdkc100/Kconfig"
+
+endif

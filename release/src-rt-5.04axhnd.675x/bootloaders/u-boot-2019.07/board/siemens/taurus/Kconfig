@@ -1,0 +1,28 @@
+if TARGET_TAURUS
+
+config SYS_BOARD
+	default "taurus"
+
+config SYS_VENDOR
+	default "siemens"
+
+config SYS_CONFIG_NAME
+	default "taurus"
+
+choice
+	prompt "Board Type AXM/TAURUS"
+	default BOARD_AXM
+
+config BOARD_AXM
+	bool "AXM board type"
+	help
+	  Select this, if you want to build for AXM board.
+
+config BOARD_TAURUS
+	bool "TAURUS board type"
+	help
+	  Select this, if you want to build for TAURUS board.
+
+endchoice
+
+endif

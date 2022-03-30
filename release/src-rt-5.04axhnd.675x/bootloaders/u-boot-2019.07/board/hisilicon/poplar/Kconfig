@@ -1,0 +1,15 @@
+if TARGET_POPLAR
+
+config SYS_BOARD
+	default "poplar"
+
+config SYS_VENDOR
+	default "hisilicon"
+
+config SYS_SOC
+	default "hi3798cv200"
+
+config SYS_CONFIG_NAME
+	default "poplar"
+
+endif

@@ -1,0 +1,41 @@
+/dts-v1/;
+
+#include "tegra20-tamonten.dtsi"
+
+/ {
+	model = "Avionic Design Plutux";
+	compatible = "ad,plutux", "nvidia,tegra20";
+
+	chosen {
+		stdout-path = &uartd;
+	};
+
+	aliases {
+		usb0 = "/usb@c5008000";
+		mmc0 = "/sdhci@c8000600";
+	};
+
+	memory {
+		reg = <0x00000000 0x20000000>;
+	};
+
+	serial@70006300 {
+		clock-frequency = <216000000>;
+	};
+
+	i2c@7000c000 {
+		status = "disabled";
+	};
+
+	i2c@7000c400 {
+		status = "disabled";
+	};
+
+	i2c@7000c500 {
+		status = "disabled";
+	};
+
+	i2c@7000d000 {
+		status = "disabled";
+	};
+};

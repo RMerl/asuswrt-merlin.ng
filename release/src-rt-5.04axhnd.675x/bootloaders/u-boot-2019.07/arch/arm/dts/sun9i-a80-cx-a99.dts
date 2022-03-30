@@ -1,0 +1,380 @@
+/*
+ * sun9i-a80-cx-a99.dts - Device Tree file for the Sunchip CX-A99 board.
+ *
+ * Copyright (C) 2017 Rask Ingemann Lambertsen <rask@formelder.dk>
+ *
+ * This file is dual-licensed: you can use it either under the terms
+ * of the GPL or the X11 license, at your option. Note that this dual
+ * licensing only applies to this file, and not this project as a
+ * whole.
+ *
+ *  a) This file is free software; you can redistribute it and/or
+ *     modify it under the terms of the GNU General Public License as
+ *     published by the Free Software Foundation; either version 2 of the
+ *     License, or (at your option) any later version.
+ *
+ *     This file is distributed in the hope that it will be useful,
+ *     but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *     GNU General Public License for more details.
+ *
+ * Or, alternatively,
+ *
+ *  b) Permission is hereby granted, free of charge, to any person
+ *     obtaining a copy of this software and associated documentation
+ *     files (the "Software"), to deal in the Software without
+ *     restriction, including without limitation the rights to use,
+ *     copy, modify, merge, publish, distribute, sublicense, and/or
+ *     sell copies of the Software, and to permit persons to whom the
+ *     Software is furnished to do so, subject to the following
+ *     conditions:
+ *
+ *     The above copyright notice and this permission notice shall be
+ *     included in all copies or substantial portions of the Software.
+ *
+ *     THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ *     EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+ *     OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ *     NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ *     HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ *     WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ *     FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+ *     OTHER DEALINGS IN THE SOFTWARE.
+ */
+
+/*
+ * The Sunchip CX-A99 board is found in several similar Android media
+ * players, such as:
+ *
+ * Instabox Fantasy A8 (no external antenna)
+ * Jesurun CS-Q8 (ships with larger remote control)
+ * Jesurun Maxone
+ * Rikomagic (RKM) MK80/MK80LE
+ * Tronsmart Draco AW80 Meta/Telos
+ *
+ * See the Sunchip CX-A99 page on the Linux-sunxi wiki for more information.
+ */
+
+/dts-v1/;
+#include "sun9i-a80.dtsi"
+
+#include <dt-bindings/gpio/gpio.h>
+
+/ {
+	model = "Sunchip CX-A99";
+	compatible = "sunchip,cx-a99", "allwinner,sun9i-a80";
+
+	aliases {
+		serial0 = &uart0;
+	};
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+	};
+
+	leds {
+		compatible = "gpio-leds";
+
+		blue {
+			gpios = <&pio 6 10 GPIO_ACTIVE_HIGH>;	/* PG10 */
+			label = "cx-a99:blue:status";
+		};
+
+		red {
+			gpios = <&pio 6 11 GPIO_ACTIVE_HIGH>;	/* PG11 */
+			label = "cx-a99:red:status";
+		};
+	};
+
+	powerseq_wifi: powerseq-wifi {
+		compatible = "mmc-pwrseq-simple";
+		clocks = <&ac100_rtc 1>;
+		clock-names = "ext_clock";
+		reset-gpios = <&r_pio 1 0 GPIO_ACTIVE_LOW>;	/* PM0 */
+		post-power-on-delay-ms = <1>;	/* Minimum 2 cycles. */
+	};
+
+	/* USB 2.0 connector closest to the 12 V power connector. */
+	reg_usb1_vbus: regulator-usb1-vbus {
+		compatible = "regulator-fixed";
+		regulator-name = "usb1-vbus";
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
+		gpio = <&r_pio 0 7 /* no flag support */ 0>;	/* PL7 */
+		enable-active-high;
+	};
+
+	/* USB 2.0 connector next to the SD card slot. */
+	reg_usb3_vbus: regulator-usb3-vbus {
+		compatible = "regulator-fixed";
+		regulator-name = "usb3-vbus";
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
+		gpio = <&r_pio 0 8 /* no flag support */ 0>;	/* PL8 */
+		enable-active-high;
+	};
+
+	/*
+	 * OZ80120 voltage regulator for the four Cortex-A15 CPU cores.
+	 * Although the regulator can output 750 - 1200 mV, the permissible
+	 * range for the CPU cores is only 800 - 1100 mV.
+	 */
+	reg_vdd_cpub: regulator-vdd-cpub {
+		compatible = "regulator-gpio";
+
+		regulator-always-on;
+		regulator-min-microvolt = < 800000>;
+		regulator-max-microvolt = <1100000>;
+		regulator-name = "vdd-cpub";
+
+		/* Note: GPIO flags are not supported here . */
+		enable-gpio = <&r_pio 0 2 /* flags n/a */ 0>;	/* PL2 */
+		enable-active-high;
+		gpios = <&r_pio 0 3 /* no flag support */ 0>,	/* PL3 */
+			<&r_pio 0 4 /* no flag support */ 0>,	/* PL4 */
+			<&r_pio 0 5 /* no flag support */ 0>;	/* PL5 */
+
+		gpios-states = <1 0 0>;
+		states = <	 750000 0x7
+				 800000 0x3
+				 850000 0x5
+				 900000 0x1
+				 950000 0x6
+				1000000 0x2
+				1100000 0x4
+				1200000 0x0>;
+	};
+};
+
+&ehci0 {
+	status = "okay";
+};
+
+&ehci2 {
+	status = "okay";
+};
+
+/*
+ * SD card slot. Although the GPIO pin for card detection is listed as capable
+ * of generating interrupts in the "A80 User Manual", this doesn't work for
+ * some unknown reason, so poll the GPIO for card detection. This is also what
+ * the vendor sys_config.fex file specifies.
+ */
+&mmc0 {
+	bus-width = <4>;
+	cd-gpios = <&pio 7 17 GPIO_ACTIVE_LOW>;	/* PH17 */
+	broken-cd;				/* Poll. */
+	pinctrl-names = "default";
+	pinctrl-0 = <&mmc0_pins>;
+	vmmc-supply = <&reg_dcdce>;
+	status = "okay";
+};
+
+/* Ampak AP6335 IEEE 802.11 a/b/g/n/ac Wifi. */
+&mmc1 {
+	bus-width = <4>;
+	non-removable;
+	pinctrl-names = "default";
+	pinctrl-0 = <&mmc1_pins>;
+	vmmc-supply = <&reg_cldo3>;	/* See cldo2,cldo3 note. */
+	vqmmc-supply = <&reg_aldo2>;
+	mmc-pwrseq = <&powerseq_wifi>;
+	status = "okay";
+};
+
+/* On-board eMMC card. */
+&mmc2 {
+	bus-width = <8>;
+	non-removable;
+	pinctrl-names = "default";
+	pinctrl-0 = <&mmc2_8bit_pins>;
+	vmmc-supply = <&reg_dcdce>;
+	status = "okay";
+};
+
+&osc32k {
+	clocks = <&ac100_rtc 0>;
+};
+
+&r_ir {
+	status = "okay";
+};
+
+&r_rsb {
+	status = "okay";
+
+	ac100: codec@e89 {
+		compatible = "x-powers,ac100";
+		reg = <0xe89>;
+
+		ac100_codec: codec {
+			compatible = "x-powers,ac100-codec";
+			interrupt-parent = <&r_pio>;
+			interrupts = <0 9 IRQ_TYPE_LEVEL_LOW>;	/* PL9 */
+			#clock-cells = <0>;
+			clock-output-names = "4M_adda";
+		};
+
+		ac100_rtc: rtc {
+			compatible = "x-powers,ac100-rtc";
+			interrupt-parent = <&nmi_intc>;
+			interrupts = <0 IRQ_TYPE_LEVEL_LOW>;
+			clocks = <&ac100_codec>;
+			#clock-cells = <1>;
+			clock-output-names = "cko1_rtc",
+					     "cko2_rtc",
+					     "cko3_rtc";
+		};
+	};
+
+	pmic@745 {
+		compatible = "x-powers,axp808", "x-powers,axp806";
+		x-powers,master-mode;
+		reg = <0x745>;
+		interrupt-parent = <&nmi_intc>;
+		interrupts = <0 IRQ_TYPE_LEVEL_LOW>;
+		interrupt-controller;
+		#interrupt-cells = <1>;
+
+		swin-supply = <&reg_dcdce>;
+
+		regulators {
+			reg_aldo1: aldo1 {
+				regulator-boot-on;
+				regulator-min-microvolt = <3000000>;
+				regulator-max-microvolt = <3000000>;
+				regulator-name = "vcc-3v0";
+			};
+
+			/* Supplies pin groups G and M. */
+			reg_aldo2: aldo2 {
+				regulator-boot-on;
+				regulator-min-microvolt = <1800000>;
+				regulator-max-microvolt = <3600000>;
+				regulator-name = "vddio-wifi-codec";
+			};
+
+			reg_aldo3: aldo3 {
+				regulator-boot-on;
+				regulator-min-microvolt = <2500000>;
+				regulator-max-microvolt = <2500000>;
+				regulator-name = "vddio-gmac";
+			};
+
+			reg_bldo1: bldo1 {
+				regulator-always-on;	/* Hang if disabled */
+				regulator-min-microvolt = <1700000>;
+				regulator-max-microvolt = <1900000>;
+				regulator-name = "vdd18-dll-vcc18-pll";
+			};
+
+			reg_bldo2: bldo2 {
+				regulator-always-on;	/* Hang if disabled */
+				regulator-min-microvolt = < 800000>;
+				regulator-max-microvolt = <1100000>;
+				regulator-name = "vdd-cpus";
+			};
+
+			reg_bldo3: bldo3 {
+				regulator-min-microvolt = <1100000>;
+				regulator-max-microvolt = <1300000>;
+				regulator-name = "vcc12-hsic";
+			};
+
+			reg_bldo4: bldo4 {
+				regulator-boot-on;
+				regulator-min-microvolt = < 800000>;
+				regulator-max-microvolt = <1100000>;
+				regulator-name = "vdd09-hdmi";
+			};
+
+			/* Supplies PLx pins which control some regulators. */
+			reg_cldo1: cldo1 {
+				regulator-always-on;
+				regulator-min-microvolt = <3300000>;
+				regulator-max-microvolt = <3300000>;
+				regulator-name = "vcc-pl-led";
+			};
+
+			/*
+			 * cldo2 and cldo3 are connected in parallel.
+			 * There is currently no way to express that.
+			 * For now, use regulator-always-on on cldo2 and lock
+			 * the voltage on both to 3.3 V.
+			 */
+			reg_cldo2: cldo2 {
+				regulator-always-on;
+				regulator-min-microvolt = <3300000>;
+				regulator-max-microvolt = <3300000>;
+				regulator-name = "vbat2-wifi+bt";
+			};
+
+			reg_cldo3: cldo3 {
+				regulator-min-microvolt = <3300000>;
+				regulator-max-microvolt = <3300000>;
+				regulator-name = "vbat1-wifi+bt";
+			};
+
+			reg_dcdca: dcdca {
+				regulator-always-on;
+				regulator-min-microvolt = < 800000>;
+				regulator-max-microvolt = <1100000>;
+				regulator-name = "vdd-cpua";
+			};
+
+			reg_dcdcb: dcdcb {
+				regulator-always-on;
+				regulator-min-microvolt = <1450000>;
+				regulator-max-microvolt = <1550000>;
+				regulator-name = "vcc-dram";
+			};
+
+			reg_dcdcc: dcdcc {
+				regulator-min-microvolt = < 800000>;
+				regulator-max-microvolt = <1100000>;
+				regulator-name = "vdd-gpu";
+			};
+
+			reg_dcdcd: dcdcd {
+				regulator-always-on;	/* Hang if disabled. */
+				regulator-min-microvolt = < 800000>;
+				regulator-max-microvolt = <1100000>;
+				regulator-name = "vdd-sys";
+			};
+
+			/* Supplies pin groups B-F and H. */
+			reg_dcdce: dcdce {
+				regulator-always-on;
+				regulator-min-microvolt = <3300000>;
+				regulator-max-microvolt = <3300000>;
+				regulator-name = "vcc-io-mmc-spdif";
+			};
+
+			reg_sw: sw {
+				regulator-min-microvolt = <3300000>;
+				regulator-max-microvolt = <3300000>;
+				regulator-name = "vcc-gmac-codec";
+			};
+		};
+	};
+};
+
+/*
+ * 5-pin connector opposite of the SD card slot:
+ * 1 = GND (pointed to by small triangle), 2 = GND, 3 = 3.3 V, 4 = RX, 5 = TX.
+ */
+&uart0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&uart0_ph_pins>;
+	status = "okay";
+};
+
+&usbphy1 {
+	phy-supply = <&reg_usb1_vbus>;
+	status = "okay";
+};
+
+&usbphy3 {
+	phy-supply = <&reg_usb3_vbus>;
+	status = "okay";
+};

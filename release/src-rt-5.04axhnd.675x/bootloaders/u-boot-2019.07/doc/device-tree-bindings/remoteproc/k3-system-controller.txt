@@ -1,0 +1,24 @@
+Texas Instruments' K3 System Controller
+=========================================
+
+K3 specific SoCs have a dedicated microcontroller for doing
+resource management. Any HLOS/firmware on compute clusters should
+load a firmware to this microcontroller before accessing any resource.
+This driver communicates with ROM for loading this firmware.
+
+Required properties:
+--------------------
+- compatible:		Shall be: "ti,am654-system-controller"
+- mbox-names:		"tx" for Transfer channel
+			"rx" for Receive channel
+- mboxes:		Corresponding phandles to mailbox channels.
+
+
+Example:
+--------
+
+system-controller: system-controller {
+	compatible = "ti,am654-system-controller";
+	mboxes= <&secproxy 4>, <&secproxy 5>;
+	mbox-names = "tx", "rx";
+};

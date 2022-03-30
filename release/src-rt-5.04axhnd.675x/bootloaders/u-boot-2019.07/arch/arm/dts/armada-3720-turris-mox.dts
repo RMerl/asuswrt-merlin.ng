@@ -1,0 +1,156 @@
+// SPDX-License-Identifier: GPL-2.0+ or X11
+/*
+ * Device Tree file for CZ.NIC Turris Mox Board
+ * 2018 by Marek Behun <marek.behun@nic.cz>
+ *
+ * Based on armada-3720-espressobin.dts by:
+ *   Gregory CLEMENT <gregory.clement@free-electrons.com>
+ *   Konstantin Porotchkin <kostap@marvell.com>
+ */
+
+/dts-v1/;
+
+#include <dt-bindings/gpio/gpio.h>
+#include "armada-372x.dtsi"
+
+/ {
+	model = "CZ.NIC Turris Mox Board";
+	compatible = "cznic,turris-mox", "marvell,armada3720",
+		     "marvell,armada3710";
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+	};
+
+	aliases {
+		ethernet0 = &eth0;
+		ethernet1 = &eth1;
+		i2c0 = &i2c0;
+		spi0 = &spi0;
+	};
+
+	memory {
+		device_type = "memory";
+		reg = <0x00000000 0x00000000 0x00000000 0x20000000>;
+	};
+
+	reg_usb3_vbus: usb3_vbus@0 {
+		compatible = "regulator-fixed";
+		regulator-name = "usb3-vbus";
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
+		startup-delay-us = <2000000>;
+		shutdown-delay-us = <1000000>;
+		gpio = <&gpiosb 0 GPIO_ACTIVE_HIGH>;
+		regulator-boot-on;
+	};
+
+	mdio {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		eth_phy1: ethernet-phy@1 {
+			reg = <1>;
+		};
+	};
+};
+
+&comphy {
+	max-lanes = <3>;
+	phy0 {
+		phy-type = <PHY_TYPE_SGMII1>;
+		phy-speed = <PHY_SPEED_3_125G>;
+	};
+
+	phy1 {
+		phy-type = <PHY_TYPE_PEX0>;
+		phy-speed = <PHY_SPEED_5G>;
+	};
+
+	phy2 {
+		phy-type = <PHY_TYPE_USB3_HOST0>;
+		phy-speed = <PHY_SPEED_5G>;
+	};
+};
+
+&eth0 {
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&rgmii_pins>, <&smi_pins>;
+	phy-mode = "rgmii";
+	phy = <&eth_phy1>;
+};
+
+&i2c0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&i2c1_pins>;
+	status = "okay";
+
+	rtc@6f {
+		compatible = "microchip,mcp7941x";
+		reg = <0x6f>;
+	};
+};
+
+&sdhci1 {
+	bus-width = <4>;
+	status = "okay";
+};
+
+&pinctrl_nb {
+	spi_cs1_pins: spi-cs1-pins {
+		groups = "spi_cs1";
+		function = "spi";
+	};
+};
+
+&spi0 {
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&spi_cs1_pins>;
+	assigned-clocks = <&nb_periph_clk 7>;
+	assigned-clock-parents = <&tbg 1>;
+	assigned-clock-rates = <20000000>;
+
+	spi-flash@0 {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "st,s25fl064l", "jedec,spi-nor";
+		reg = <0>;
+		spi-max-frequency = <20000000>;
+		m25p,fast-read;
+	};
+
+	moxtet@1 {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		compatible = "cznic,moxtet";
+		reg = <1>;
+		reset-gpios = <&gpiosb 2 GPIO_ACTIVE_LOW>;
+		spi-max-frequency = <1000000>;
+		spi-cpol;
+		spi-cpha;
+	};
+};
+
+&uart0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&uart1_pins>;
+	status = "okay";
+};
+
+&usb2 {
+	status = "okay";
+};
+
+&usb3 {
+	vbus-supply = <&reg_usb3_vbus>;
+	status = "okay";
+};
+
+&pcie0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pcie_pins>;
+	reset-gpio = <&gpiosb 3 GPIO_ACTIVE_HIGH>;
+	status = "disabled";
+};

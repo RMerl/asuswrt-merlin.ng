@@ -1,0 +1,145 @@
+#include "63148.dtsi"
+#include "../bcm_voice.dtsi"
+#include "963148REF_leds.dtsi"
+
+/ {
+    memory_controller {
+        memcfg = <(BP_DDR_SPEED_800_11_11_11 | \
+                   BP_DDR_TOTAL_SIZE_512MB   | \
+                   BP_DDR_DEVICE_WIDTH_16)>;
+    };
+
+	buttons {
+		compatible = "brcm,buttons";
+		reset_button {
+			ext_irq = <&bca_extintr 32 BCA_GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_LEVEL)>;
+			press {
+				print = "Button Press -- Hold for 5s to do restore to default";
+			};
+			hold {
+				rst_to_dflt = <5>;
+			};
+			release {
+				reset = <0>;
+			};	
+		};
+		ses_button {
+			ext_irq = <&bca_extintr 33 BCA_GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_LEVEL)>;
+			release {
+				ses_short_period = <0>;
+				ses_long_period = <3>;
+			};
+		};
+	}; 
+
+	pstn_relay:pstn_relay {
+		compatible = "brcm,voice-pstn-relay";
+		pstnrelay-gpio = <&gpioc 3 GPIO_ACTIVE_HIGH>;
+	};
+};
+
+&bcm_voice{
+	sliclist = SLICSLAC_LIST_COMMON_FXO;
+ };
+
+&hsspi {
+	status = "okay";
+	voice0 {
+		pinctrl-0 = <&a_spim_ss1_b_pin_127>;
+		pinctrl-names = "default";
+		compatible = "bcm-spi-voice";
+		reg = <1>; /* chip select 1 */
+		spi-max-frequency = <1024000>;
+		reset-gpio = <&gpioc 4 GPIO_ACTIVE_LOW>;
+		spi-index = <0>;/* voice header index */
+	};
+	voice1 {
+		pinctrl-0 = <&spim_ss4_b_pin_8>;
+		pinctrl-names = "default";
+		compatible = "bcm-spi-voice";
+		reg = <4>; /* chip select 2 */
+		spi-max-frequency = <1024000>;
+		reset-gpio = <&gpioc 5 GPIO_ACTIVE_LOW>;
+		spi-index = <1>;/* voice header index */
+	};
+	voice2 {
+		pinctrl-0 = <&spim_ss5_b_pin_7>;
+		pinctrl-names = "default";
+		compatible = "bcm-spi-voice";
+		reg = <5>; /* chip select 2 */
+		spi-max-frequency = <1024000>;
+		reset-gpio = <&gpioc 6 GPIO_ACTIVE_LOW>;
+		spi-index = <2>;/* voice header index */
+	};
+};
+
+&mdio_sf2 {
+	/* PHYs directly connected to SF2 */
+	gphy8:8 {
+		status = "okay";
+	};
+	gphy9:9 {
+		status = "okay";
+	};
+	gphya:a {
+		status = "okay";
+	};
+	gphyb:b {
+		status = "okay";
+	};
+
+	/* PHYs connected to crossbar */
+	gphyc:c {
+		status = "okay";
+	};
+	phy_serdes0:serdes0 {
+		status = "okay";
+	};
+
+	/* Crossbar groups */
+	xbar_grp1:1 {
+		phy-handle = <&gphyc &phy_serdes0>;
+		status = "okay";
+	};
+};
+
+&switch_sf2 {
+	ports {
+		sf2_port0@0 {
+			phy-handle = <&gphy8>;
+			network-leds = <&led0 &led1 &led10>;
+			status = "okay";
+		};
+
+		sf2_port1@1 {
+			phy-handle = <&gphy9>;
+			network-leds = <&led2 &led3 &led11>;
+			status = "okay";
+		};
+
+		sf2_port2@2 {
+			phy-handle = <&gphya>;
+			network-leds = <&led4 &led5 &led12>;
+			status = "okay";
+		};
+
+		sf2_port3@3 {
+			phy-handle = <&gphyb>;
+			network-leds = <&led6 &led7 &led13>;
+			status = "okay";
+		};
+
+	};
+};
+
+&switch0 {
+	ports {
+		
+		port0@0 {
+			phy-handle = <&xbar_grp1>;
+			phy-mode = "gmii";
+			network-leds = <&led20 &led21 &led22>;
+			status = "okay";
+		};
+	};
+};

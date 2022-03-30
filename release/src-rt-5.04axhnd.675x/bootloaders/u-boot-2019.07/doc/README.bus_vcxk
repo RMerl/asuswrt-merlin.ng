@@ -1,0 +1,67 @@
+SPDX-License-Identifier: GPL-2.0+
+/*
+ * (C) Copyright 2008-2009
+ * BuS Elektronik GmbH & Co. KG <www.bus-elektronik.de>
+ * Jens Scharsig <esw@bus-elektronik.de>
+ */
+
+U-Boot vcxk video controller driver
+======================================
+
+By defining CONFIG_VIDEO_VCXK this driver can be used with VC2K, VC4K and
+VC8K devices on following boards:
+
+board           | ARCH          | Vendor
+-----------------------------------------------------------------------
+EB+CPU5282-T1   | MCF5282       | BuS Elektronik GmbH & Co. KG
+EB+MCF-EVB123   | MCF5282       | BuS Elektronik GmbH & Co. KG
+EB+CPUx9K2      | AT91RM9200    | BuS Elektronik GmbH & Co. KG
+ZLSA            | AT91RM9200    | Ruf Telematik AG
+
+Driver configuration
+--------------------
+
+The driver needs some defines to describe the target hardware:
+
+CONFIG_SYS_VCXK_BASE
+
+	base address of VCxK hardware memory
+
+CONFIG_SYS_VCXK_DEFAULT_LINEALIGN
+
+	defines the physical alignment of a pixel row
+
+CONFIG_SYS_VCXK_DOUBLEBUFFERED
+
+	some boards that use vcxk prevent read from framebuffer memory.
+	define this option to enable double buffering (needs 16KiB RAM)
+
+CONFIG_SYS_VCXK_<xxxx>_PIN
+
+	defines the number of the I/O line PIN in the port
+	valid values for <xxxx> are:
+
+		ACKNOWLEDGE
+			describes the acknowledge line from vcxk hardware
+
+		ENABLE
+			describes the enable line to vcxk hardware
+
+		INVERT
+			describes the invert line to vcxk hardware
+
+		RESET
+			describes the reset line to vcxk hardware
+
+		REQUEST
+			describes the request line to vcxk hardware
+
+CONFIG_SYS_VCXK_<xxxx>_PORT
+
+	defines the I/O port which is connected with the line
+	for valid values for <xxxx> see CONFIG_SYS_VCXK_<xxxx>_PIN
+
+CONFIG_SYS_VCXK_<xxxx>_DDR
+
+	defines the register which configures the direction
+	for valid values for <xxxx> see CONFIG_SYS_VCXK_<xxxx>_PIN

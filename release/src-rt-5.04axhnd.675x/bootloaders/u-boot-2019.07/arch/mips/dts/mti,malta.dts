@@ -1,0 +1,32 @@
+/dts-v1/;
+
+/memreserve/ 0x00000000 0x00001000;	/* Exception vectors */
+/memreserve/ 0x000f0000 0x00010000;	/* PIIX4 ISA memory */
+
+/ {
+	#address-cells = <1>;
+	#size-cells = <1>;
+	compatible = "mti,malta";
+
+	chosen {
+		stdout-path = &uart0;
+	};
+
+	isa@0 {
+		compatible = "isa";
+		#address-cells = <2>;
+		#size-cells = <1>;
+		ranges = <1 0 0 0x1000>;
+
+		uart0: serial@3f8 {
+			compatible = "ns16550a";
+
+			reg = <1 0x3f8 0x40>;
+			reg-shift = <0>;
+
+			clock-frequency = <1843200>;
+
+			u-boot,dm-pre-reloc;
+		};
+	};
+};

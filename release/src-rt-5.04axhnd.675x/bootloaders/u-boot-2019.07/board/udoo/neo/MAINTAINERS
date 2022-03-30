@@ -1,0 +1,7 @@
+UDOO NEO BOARD
+M:	Breno Lima <breno.lima@nxp.com>
+M:	Francesco Montefoschi <francesco.montefoschi@udoo.org>
+S:	Maintained
+F:	board/udoo/neo/
+F:	include/configs/udoo_neo.h
+F:	configs/udoo_neo_defconfig

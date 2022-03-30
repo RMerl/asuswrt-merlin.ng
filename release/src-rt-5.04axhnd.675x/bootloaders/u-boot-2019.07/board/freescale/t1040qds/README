@@ -1,0 +1,169 @@
+Overview
+--------
+The T1040QDS is a Freescale reference board that hosts the T1040 SoC
+(and variants).
+
+T1040 SoC Overview
+------------------
+The QorIQ T1040/T1042 processor support four integrated 64-bit e5500 PA
+processor cores with high-performance data path acceleration architecture
+and network peripheral interfaces required for networking & telecommunications.
+
+The T1040/T1042 SoC includes the following function and features:
+
+ - Four e5500 cores, each with a private 256 KB L2 cache
+ - 256 KB shared L3 CoreNet platform cache (CPC)
+ - Interconnect CoreNet platform
+ - 32-/64-bit DDR3L/DDR4 SDRAM memory controller with ECC and interleaving
+   support
+ - Data Path Acceleration Architecture (DPAA) incorporating acceleration
+ for the following functions:
+    -  Packet parsing, classification, and distribution
+    -  Queue management for scheduling, packet sequencing, and congestion
+    	management
+    -  Cryptography Acceleration (SEC 5.0)
+    - RegEx Pattern Matching Acceleration (PME 2.2)
+    - IEEE Std 1588 support
+    - Hardware buffer management for buffer allocation and deallocation
+ - Ethernet interfaces
+    - Integrated 8-port Gigabit Ethernet switch (T1040 only)
+    - Four 1 Gbps Ethernet controllers
+ - Two RGMII interfaces or one RGMII and one MII interfaces
+ - High speed peripheral interfaces
+   - Four PCI Express 2.0 controllers running at up to 5 GHz
+   - Two SATA controllers supporting 1.5 and 3.0 Gb/s operation
+   - Upto two QSGMII interface
+   - Upto six SGMII interface supporting 1000 Mbps
+   - One SGMII interface supporting upto 2500 Mbps
+ - Additional peripheral interfaces
+   - Two USB 2.0 controllers with integrated PHY
+   - SD/eSDHC/eMMC
+   -  eSPI controller
+   - Four I2C controllers
+   - Four UARTs
+   - Four GPIO controllers
+   - Integrated flash controller (IFC)
+   - LCD and HDMI interface (DIU) with 12 bit dual data rate
+   - TDM interface
+ - Multicore programmable interrupt controller (PIC)
+ - Two 8-channel DMA engines
+ - Single source clocking implementation
+ - Deep Sleep power implementaion (wakeup from GPIO/Timer/Ethernet/USB)
+
+ T1040QDS board Overview
+ -----------------------
+ - SERDES Connections, 8 lanes supporting:
+      — PCI Express: supporting Gen 1 and Gen 2;
+      — SGMII
+      — QSGMII
+      — SATA 2.0
+      — Aurora debug with dedicated connectors (T1040 only)
+ - DDR Controller
+     - Supports rates of up to 1600 MHz data-rate
+     - Supports one DDR3LP UDIMM/RDIMMs, of single-, dual- or quad-rank types.
+ -IFC/Local Bus
+     - NAND flash: 8-bit, async, up to 2GB.
+     - NOR: 8-bit or 16-bit, non-multiplexed, up to 512MB
+     - GASIC: Simple (minimal) target within Qixis FPGA
+     - PromJET rapid memory download support
+ - Ethernet
+     - Two on-board RGMII 10/100/1G ethernet ports.
+     - PHY #0 remains powered up during deep-sleep (T1040 only)
+ - QIXIS System Logic FPGA
+ - Clocks
+     - System and DDR clock (SYSCLK, “DDRCLK”)
+     - SERDES clocks
+ - Power Supplies
+ - Video
+     - DIU supports video at up to 1280x1024x32bpp
+ - USB
+     - Supports two USB 2.0 ports with integrated PHYs
+     — Two type A ports with 5V@1.5A per port.
+     — Second port can be converted to OTG mini-AB
+ - SDHC
+     - SDHC port connects directly to an adapter card slot, featuring:
+     - Supporting SD slots for: SD, SDHC (1x, 4x, 8x) and/or MMC
+     — Supporting eMMC memory devices
+ - SPI
+    -  On-board support of 3 different devices and sizes
+ - Other IO
+    - Two Serial ports
+    - ProfiBus port
+    - Four I2C ports
+
+Memory map on T1040QDS
+----------------------
+The addresses in brackets are physical addresses.
+
+Start Address  End Address      Description                     Size
+0xF_FFDF_0000  0xF_FFDF_0FFF    IFC - FPGA                      4KB
+0xF_FF80_0000  0xF_FF80_FFFF    IFC - NAND Flash                64KB
+0xF_FE00_0000  0xF_FEFF_FFFF    CCSRBAR                         16MB
+0xF_F803_0000  0xF_F803_FFFF    PCI Express 4 I/O Space         64KB
+0xF_F802_0000  0xF_F802_FFFF    PCI Express 3 I/O Space	        64KB
+0xF_F801_0000  0xF_F801_FFFF    PCI Express 2 I/O Space         64KB
+0xF_F800_0000  0xF_F800_FFFF    PCI Express 1 I/O Space	        64KB
+0xF_F600_0000  0xF_F7FF_FFFF    Queue manager software portal   32MB
+0xF_F400_0000  0xF_F5FF_FFFF    Buffer manager software portal  32MB
+0xF_E800_0000  0xF_EFFF_FFFF    IFC - NOR Flash                 128MB
+0xF_E000_0000  0xF_E7FF_FFFF    Promjet                         128MB
+0xF_0000_0000  0xF_003F_FFFF    DCSR                            4MB
+0xC_3000_0000  0xC_3FFF_FFFF    PCI Express 4 Mem Space         256MB
+0xC_2000_0000  0xC_2FFF_FFFF    PCI Express 3 Mem Space         256MB
+0xC_1000_0000  0xC_1FFF_FFFF    PCI Express 2 Mem Space         256MB
+0xC_0000_0000  0xC_0FFF_FFFF    PCI Express 1 Mem Space         256MB
+0x0_0000_0000  0x0_ffff_ffff    DDR                             2GB
+
+
+NOR Flash memory Map on T1040QDS
+--------------------------------
+ Start          End             Definition                       Size
+0xEFF40000      0xEFFFFFFF      U-Boot (current bank)            768KB
+0xEFF20000      0xEFF3FFFF      U-Boot env (current bank)        128KB
+0xEFF00000      0xEFF1FFFF      FMAN Ucode (current bank)        128KB
+0xED300000      0xEFEFFFFF      rootfs (alt bank)                44MB
+0xEC800000      0xEC8FFFFF      Hardware device tree (alt bank)  1MB
+0xEC020000      0xEC7FFFFF      Linux.uImage (alt bank)          7MB + 875KB
+0xEC000000      0xEC01FFFF      RCW (alt bank)                   128KB
+0xEBF40000      0xEBFFFFFF      U-Boot (alt bank)                768KB
+0xEBF20000      0xEBF3FFFF      U-Boot env (alt bank)            128KB
+0xEBF00000      0xEBF1FFFF      FMAN ucode (alt bank)            128KB
+0xE9300000      0xEBEFFFFF      rootfs (current bank)            44MB
+0xE8800000      0xE88FFFFF      Hardware device tree (cur bank)  11MB + 512KB
+0xE8020000      0xE86FFFFF      Linux.uImage (current bank)      7MB + 875KB
+0xE8000000      0xE801FFFF      RCW (current bank)               128KB
+
+
+Various Software configurations/environment variables/commands
+--------------------------------------------------------------
+The below commands apply to T1040QDS
+
+1. U-Boot environment variable hwconfig
+   The default hwconfig is:
+	hwconfig=fsl_ddr:ctlr_intlv=null,bank_intlv=cs0_cs1;usb1:
+					dr_mode=host,phy_type=utmi
+   Note: For USB gadget set "dr_mode=peripheral"
+
+2. FMAN Ucode versions
+   fsl_fman_ucode_t1040.bin
+
+3. Switching to alternate bank
+   Commands for switching to alternate bank.
+
+	1. To change from vbank0 to vbank4
+		=> qixis_reset altbank (it will boot using vbank4)
+
+	2.To change from vbank4 to vbank0
+		=> qixis reset (it will boot using vbank0)
+
+T1040 Personality
+--------------------
+
+T1022 Personality
+--------------------
+T1022 is a reduced personality of T1040 with less core/clusters.
+
+T1042 Personality
+--------------------
+T1042 is a reduced personality of T1040 without Integrated 8-port Gigabit
+Ethernet switch. Rest of the blocks are same as T1040

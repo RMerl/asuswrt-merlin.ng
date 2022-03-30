@@ -1,0 +1,15 @@
+if TARGET_BCM28155_AP
+
+config SYS_BOARD
+	default "bcm28155_ap"
+
+config SYS_VENDOR
+	default "broadcom"
+
+config SYS_SOC
+	default "bcm281xx"
+
+config SYS_CONFIG_NAME
+	default "bcm28155_ap"
+
+endif

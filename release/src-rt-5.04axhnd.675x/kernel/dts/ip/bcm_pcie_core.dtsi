@@ -1,0 +1,27 @@
+compatible = "brcm,bcm963xx-pcie";
+device_type = "pci";
+reg = <PCIE_ADDR PCIE_SIZE>;
+
+#address-cells = <3>;
+#size-cells = <2>;
+ranges = <PCIE_RANGE>;
+
+/* core error log interrupts */
+interrupt-names = "intr";
+interrupts = <GIC_SPI PCIE_SPI IRQ_TYPE_LEVEL_HIGH>;
+
+#interrupt-cells = <1>;
+interrupt-map-mask = <0 0 0 0>;
+interrupt-map = <0 0 0 0 &gic GIC_SPI PCIE_SPI IRQ_TYPE_LEVEL_HIGH>;
+
+brcm,coreid = <PCIE_ID>;
+
+status = "disabled";
+
+/* to let add multiple pcie without errors undefine pcie definitions */
+#undef PCIE_ID
+#undef PCIE_SPI
+#undef PCIE_ADDR
+#undef PCIE_SIZE
+#undef PCIE_RANGE
+

@@ -1,0 +1,6 @@
+USB_A9263 BOARD
+M:	Mateusz Kulikowski <mateusz.kulikowski@gmail.com>
+S:	Maintained
+F:	board/calao/usb_a9263/
+F:	include/configs/usb_a9263.h
+F:	configs/usb_a9263_dataflash_defconfig

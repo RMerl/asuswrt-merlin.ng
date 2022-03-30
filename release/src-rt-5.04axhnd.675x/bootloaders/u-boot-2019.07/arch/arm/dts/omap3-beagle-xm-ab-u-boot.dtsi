@@ -1,0 +1,14 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * U-Boot additions
+ *
+ * (C) Copyright 2017 Derald D. Woods <woods.technical@gmail.com>
+ */
+
+#include "omap3-u-boot.dtsi"
+
+/ {
+	chosen {
+		stdout-path = &uart3;
+	};
+};

@@ -1,0 +1,164 @@
+if OMAP54XX
+
+config DRA7XX
+	bool
+	help
+	  DRA7xx is an OMAP based SOC with Dual Core A-15s.
+
+choice
+	prompt "OMAP5 board select"
+	optional
+
+config TARGET_CM_T54
+	bool "CompuLab CM-T54"
+
+config TARGET_OMAP5_UEVM
+	bool "TI OMAP5 uEVM board"
+
+config TARGET_DRA7XX_EVM
+	bool "TI DRA7XX"
+	select BOARD_LATE_INIT
+	select DRA7XX
+	select PHYS_64BIT
+	select TI_I2C_BOARD_DETECT
+	imply DM_PMIC
+	imply DM_REGULATOR
+	imply DM_REGULATOR_LP87565
+	imply DM_THERMAL
+	imply PMIC_LP87565
+	imply SCSI
+	imply SPL_THERMAL
+	imply TI_DRA7_THERMAL
+
+config TARGET_AM57XX_EVM
+	bool "AM57XX"
+	select BOARD_LATE_INIT
+	select CMD_DDR3
+	select DRA7XX
+	select TI_I2C_BOARD_DETECT
+	imply DM_THERMAL
+	imply SCSI
+	imply SPL_THERMAL
+	imply TI_DRA7_THERMAL
+
+endchoice
+
+config SYS_SOC
+	default "omap5"
+
+config OMAP_PLATFORM_RESET_TIME_MAX_USEC
+	int "Something"
+	range 0  31219
+	default 31219
+	help
+	  Most OMAPs' provide a way to specify the time for which the reset
+	  should be held low while the voltages and Oscillator outputs
+	  stabilize.
+	  This time is mostly board and PMIC dependent. Hence the boards are
+	  expected to specify a pre-computed time using the above option.
+	  This value can be computed using a summation of the below 3
+	  parameters
+	  1: Time taken by the Osciallator to stop and restart
+	  2: PMIC OTP time
+	  3: Voltage ramp time, which can be derived using the PMIC slew rate
+	     and value of voltage ramp needed.
+
+if TARGET_DRA7XX_EVM || TARGET_AM57XX_EVM
+menu "Voltage Domain OPP selections"
+
+choice
+	prompt "MPU Voltage Domain"
+	default DRA7_MPU_OPP_NOM
+        help
+	  Select the Operating Performance Point(OPP) for the MPU voltage
+	  domain on DRA7xx & AM57xx SoCs.
+
+config DRA7_MPU_OPP_NOM
+	bool "OPP NOM"
+	help
+	  This config option enables Normal OPP for MPU. This is the safest
+	  option for booting.
+
+endchoice
+
+choice
+	prompt "DSPEVE Voltage Domain"
+        help
+	  Select the Operating Performance Point(OPP) for the DSPEVE voltage
+	  domain on DRA7xx & AM57xx SoCs.
+
+config DRA7_DSPEVE_OPP_NOM
+	bool "OPP NOM"
+	help
+	  This config option enables Normal OPP for DSPEVE. This is the safest
+	  option for booting and choose this when unsure about other OPPs .
+
+config DRA7_DSPEVE_OPP_OD
+	bool "OPP OD"
+	help
+	  This config option enables Over drive OPP for DSPEVE.
+
+config DRA7_DSPEVE_OPP_HIGH
+	bool "OPP HIGH"
+	help
+	  This config option enables High OPP for DSPEVE.
+
+endchoice
+
+choice
+	prompt "IVA Voltage Domain"
+        help
+	  Select the Operating Performance Point(OPP) for the IVA voltage
+	  domain on DRA7xx & AM57xx SoCs.
+
+config DRA7_IVA_OPP_NOM
+	bool "OPP NOM"
+	help
+	  This config option enables Normal OPP for IVA. This is the safest
+	  option for booting and choose this when unsure about other OPPs .
+
+config DRA7_IVA_OPP_OD
+	bool "OPP OD"
+	help
+	  This config option enables Over drive OPP for IVA.
+
+config DRA7_IVA_OPP_HIGH
+	bool "OPP HIGH"
+	help
+	  This config option enables High OPP for IVA.
+
+endchoice
+
+choice
+	prompt "GPU Voltage Domain"
+        help
+	  Select the Operating Performance Point(OPP) for the GPU voltage
+	  domain on DRA7xx & AM57xx SoCs.
+
+config DRA7_GPU_OPP_NOM
+	bool "OPP NOM"
+	help
+	  This config option enables Normal OPP for GPU. This is the safest
+	  option for booting and choose this when unsure about other OPPs .
+
+config DRA7_GPU_OPP_OD
+	bool "OPP OD"
+	help
+	  This config option enables Over drive OPP for GPU.
+
+config DRA7_GPU_OPP_HIGH
+	bool "OPP HIGH"
+	help
+	  This config option enables High OPP for GPU.
+
+endchoice
+
+endmenu
+endif
+
+source "board/compulab/cm_t54/Kconfig"
+source "board/ti/omap5_uevm/Kconfig"
+source "board/ti/dra7xx/Kconfig"
+source "board/ti/am57xx/Kconfig"
+
+endif

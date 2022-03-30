@@ -1,0 +1,82 @@
+Exynos MIPI-DSIM Controller
+=========================
+
+Required properties:
+SOC specific:
+	compatible: should be "samsung,exynos-mipi-dsi"
+	reg: Base address of MIPI-DSIM IP.
+
+Board specific:
+	samsung,dsim-config-e-interface: interface to be used (RGB interface
+		for main display or CPU interface for main or sub display).
+	samsung,dsim-config-e-virtual-ch: virtual channel number that main
+		or sub display uses.
+	samsung,dsim-config-e-pixel-format: pixel stream format for main
+		or sub display.
+	samsung,dsim-config-e-burst-mode: selects Burst mode in Video mode.
+		in Non-burst mode, RGB data area is filled with RGB data and
+		NULL packets, according to input bandwidth of RGB interface.
+	samsung,dsim-config-e-no-data-lane: data lane count used by Master.
+	samsung,dsim-config-e-byte-clk: select byte clock source.
+		It must be DSIM_PLL_OUT_DIV8.
+		DSIM_EXT_CLK_DIV8 and DSIM_EXT_CLK_BYPASSS are not supported.
+	samsung,dsim-config-hfp: HFP disable mode.
+		If set, DSI master ignores HFP area in VIDEO mode.
+		In command mode, this variable is ignored.
+	samsung,dsim-config-p: P value for PMS setting.
+	samsung,dsim-config-m: M value for PMS setting.
+	samsung,dsim-config-s: S value for PMS setting.
+	samsung,dsim-config-pll-stable-time: the PLL Timer for stability
+		of the ganerated clock.
+	samsung,dsim-config-esc-clk: escape clock frequency for getting
+		the escape clock prescaler value.
+	samsung,dsim-config-stop-holding-cnt: the interval value between
+		transmitting read packet (or write "set_tear_on" command)
+		and BTA request. After transmitting read packet or write
+		"set_tear_on" command, BTA requests to D-PHY automatically.
+		This counter value specifies the interval between them.
+	samsung,dsim-config-bta-timeout: the timer for BTA. This register
+		specifies time out from BTA request to change the direction
+		with respect to Tx escape clock.
+	samsung,dsim-config-rx-timeout: the timer for LP Rx mode timeout.
+		this register specifies time out on how long RxValid deasserts,
+		after RxLpdt asserts with respect to Tx escape clock.
+		- RxValid specifies Rx data valid indicator.
+		- RxLpdt specifies an indicator that D-PHY is under RxLpdt mode
+		- RxValid and RxLpdt specifies signal from D-PHY.
+	samsung,dsim-device-name: name of the device.
+	samsung,dsim-device-id: unique device id.
+	samsung,dsim-device-bus_id: bus id for identifing connected bus
+		and this bus id should be same as id of mipi_dsim_device.
+
+Optional properties:
+	samsung,dsim-device-reverse-panel: reverse panel.
+
+Example:
+	mipidsi@11c80000 {
+		compatible = "samsung,exynos-mipi-dsi";
+		reg = <0x11c80000 0x5c>;
+
+		samsung,dsim-config-e-interface = <1>;
+		samsung,dsim-config-e-virtual-ch = <0>;
+		samsung,dsim-config-e-pixel-format = <7>;
+		samsung,dsim-config-e-burst-mode = <1>;
+		samsung,dsim-config-e-no-data-lane = <3>;
+		samsung,dsim-config-e-byte-clk = <0>;
+		samsung,dsim-config-hfp = <1>;
+
+		samsung,dsim-config-p = <3>;
+		samsung,dsim-config-m = <120>;
+		samsung,dsim-config-s = <1>;
+
+		samsung,dsim-config-pll-stable-time = <500>;
+		samsung,dsim-config-esc-clk = <20000000>;
+		samsung,dsim-config-stop-holding-cnt = <0x7ff>;
+		samsung,dsim-config-bta-timeout = <0xff>;
+		samsung,dsim-config-rx-timeout = <0xffff>;
+
+		samsung,dsim-device-id = <0xffffffff>;
+		samsung,dsim-device-bus-id = <0>;
+
+		samsung,dsim-device-reverse-panel = <1>;
+	};

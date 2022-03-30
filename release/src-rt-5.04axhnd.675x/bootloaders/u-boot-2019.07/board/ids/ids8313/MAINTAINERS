@@ -1,0 +1,6 @@
+IDS8313 BOARD
+M:	Heiko Schocher <hs@denx.de>
+S:	Maintained
+F:	board/ids/ids8313/
+F:	include/configs/ids8313.h
+F:	configs/ids8313_defconfig

@@ -1,0 +1,72 @@
+/dts-v1/;
+/ {
+	compatible = "nds32 ag101p";
+	#address-cells = <1>;
+	#size-cells = <1>;
+	interrupt-parent = <&intc>;
+
+	aliases {
+		uart0 = &serial0;
+		ethernet0 = &mac0;
+	} ;
+
+	chosen {
+		/* bootargs = "console=ttyS0,38400n8 earlyprintk=uart8250-32bit,0x99600000 debug bootmem_debug memblock=debug loglevel=7"; */
+		bootargs = "console=ttyS0,38400n8 earlyprintk=uart8250-32bit,0x99600000 debug loglevel=7";
+		stdout-path = "uart0:38400n8";
+		tick-timer = &timer0;
+	};
+
+	memory@0 {
+		device_type = "memory";
+		reg = <0x00000000 0x40000000>;
+	};
+
+	cpus {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		cpu@0 {
+			compatible = "andestech,n13";
+			reg = <0>;
+			/* FIXME: to fill correct frqeuency */
+			clock-frequency = <60000000>;
+		};
+	};
+
+	intc: interrupt-controller {
+		compatible = "andestech,atnointc010";
+		#interrupt-cells = <1>;
+		interrupt-controller;
+	};
+
+	serial0: serial@99600000 {
+		compatible = "andestech,uart16550", "ns16550a";
+		reg = <0x99600000 0x1000>;
+		interrupts = <7 4>;
+		clock-frequency = <14745600>;
+		reg-shift = <2>;
+		no-loopback-test = <1>;
+	};
+
+	timer0: timer@98400000 {
+		compatible = "andestech,attmr010";
+		reg = <0x98400000 0x1000>;
+		interrupts = <19 4>;
+		clock-frequency = <15000000>;
+	};
+
+	mac0: mac@90900000 {
+		compatible = "andestech,atmac100";
+		reg = <0x90900000 0x1000>;
+		interrupts = <25 4>;
+	};
+
+	mmc0: mmc@98e00000 {
+		compatible = "andestech,atfsdc010";
+		max-frequency = <30000000>;
+		fifo-depth = <0x10>;
+		reg = <0x98e00000 0x1000>;
+		interrupts = <5 4>;
+		cap-sd-highspeed;
+	};
+};

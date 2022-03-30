@@ -1,0 +1,39 @@
+STM32 QSPI controller device tree bindings
+--------------------------------------------
+
+Required properties:
+- compatible		: should be "st,stm32-qspi".
+- reg			: 1. Physical base address and size of SPI registers map.
+			  2. Physical base address & size of mapped NOR Flash.
+- spi-max-frequency	: Max supported spi frequency.
+- status		: enable in requried dts.
+
+Connected flash properties
+--------------------------
+- spi-max-frequency	: Max supported spi frequency.
+- spi-tx-bus-width	: Bus width (number of lines) for writing (1-4)
+- spi-rx-bus-width	: Bus width (number of lines) for reading (1-4)
+- memory-map		: Address and size for memory-mapping the flash
+
+Example:
+	qspi: quadspi@A0001000 {
+		compatible = "st,stm32-qspi";
+		#address-cells = <1>;
+		#size-cells = <0>;
+		reg = <0xA0001000 0x1000>, <0x90000000 0x10000000>;
+		reg-names = "QuadSPI", "QuadSPI-memory";
+		interrupts = <92>;
+		spi-max-frequency = <108000000>;
+		status = "okay";
+
+		qflash0: n25q128a {
+			#address-cells = <1>;
+			#size-cells = <1>;
+			compatible = "micron,n25q128a13", "jedec,spi-nor";
+			spi-max-frequency = <108000000>;
+			spi-tx-bus-width = <4>;
+			spi-rx-bus-width = <4>;
+			memory-map = <0x90000000 0x1000000>;
+			reg = <0>;
+		};
+	};

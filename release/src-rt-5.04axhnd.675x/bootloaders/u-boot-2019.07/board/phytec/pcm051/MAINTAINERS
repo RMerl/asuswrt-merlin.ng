@@ -1,0 +1,7 @@
+PCM051 BOARD
+M:	Lars Poeschel <poeschel@lemonage.de>
+S:	Maintained
+F:	board/phytec/pcm051/
+F:	include/configs/pcm051.h
+F:	configs/pcm051_rev1_defconfig
+F:	configs/pcm051_rev3_defconfig

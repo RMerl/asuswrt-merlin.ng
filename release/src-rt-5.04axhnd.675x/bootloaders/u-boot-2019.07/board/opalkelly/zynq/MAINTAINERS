@@ -1,0 +1,6 @@
+ZYNQ BOARD
+M:	Tom McLeod <tom.mcleod@opalkelly.com>
+S:	Maintained
+F:	board/opalkelly/zynq/
+F:	include/configs/syzygy_hub.h
+F:	configs/syzygy_hub_defconfig

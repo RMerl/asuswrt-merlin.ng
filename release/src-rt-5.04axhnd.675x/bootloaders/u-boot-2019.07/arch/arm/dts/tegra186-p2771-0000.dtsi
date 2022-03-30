@@ -1,0 +1,84 @@
+#include "tegra186.dtsi"
+
+/ {
+	model = "NVIDIA P2771-0000";
+	compatible = "nvidia,p2771-0000", "nvidia,tegra186";
+
+	chosen {
+		stdout-path = &uarta;
+	};
+
+	aliases {
+		ethernet = "/ethernet@2490000";
+		mmc0 = "/sdhci@3460000";
+		mmc1 = "/sdhci@3400000";
+		i2c0 = "/bpmp/i2c";
+		i2c1 = "/i2c@3160000";
+		i2c2 = "/i2c@c240000";
+		i2c3 = "/i2c@3180000";
+		i2c4 = "/i2c@3190000";
+		i2c5 = "/i2c@31c0000";
+		i2c6 = "/i2c@c250000";
+		i2c7 = "/i2c@31e0000";
+	};
+
+	memory {
+		reg = <0x0 0x80000000 0x0 0x60000000>;
+	};
+
+	ethernet@2490000 {
+		status = "okay";
+		phy-reset-gpios = <&gpio_main TEGRA_MAIN_GPIO(M, 4) GPIO_ACTIVE_LOW>;
+		local-mac-address = [ 00 00 00 00 00 00 ];
+	};
+
+	i2c@3160000 {
+		status = "okay";
+	};
+
+	i2c@3180000 {
+		status = "okay";
+	};
+
+	i2c@3190000 {
+		status = "okay";
+	};
+
+	i2c@31c0000 {
+		status = "okay";
+	};
+
+	sdhci@3400000 {
+		status = "okay";
+		wp-gpios = <&gpio_main TEGRA_MAIN_GPIO(P, 4) GPIO_ACTIVE_HIGH>;
+		bus-width = <4>;
+	};
+
+	sdhci@3460000 {
+		status = "okay";
+		bus-width = <8>;
+		non-removable;
+	};
+
+	i2c@c240000 {
+		status = "okay";
+	};
+
+	i2c@c250000 {
+		status = "okay";
+	};
+
+	i2c@31e0000 {
+		status = "okay";
+	};
+
+	bpmp {
+		i2c {
+			status = "okay";
+		};
+	};
+};
+
+&uarta {
+	status = "okay";
+};

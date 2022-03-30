@@ -1,0 +1,6 @@
+COMTREND AR-5315U BOARD
+M:	Álvaro Fernández Rojas <noltari@gmail.com>
+S:	Maintained
+F:	board/comtrend/ar-5315u/
+F:	include/configs/comtrend_ar5315u.h
+F:	configs/comtrend_ar5315u_ram_defconfig

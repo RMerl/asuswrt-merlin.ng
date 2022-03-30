@@ -1,0 +1,12 @@
+if TARGET_ALT
+
+config SYS_BOARD
+	default "alt"
+
+config SYS_VENDOR
+	default "renesas"
+
+config SYS_CONFIG_NAME
+	default "alt"
+
+endif

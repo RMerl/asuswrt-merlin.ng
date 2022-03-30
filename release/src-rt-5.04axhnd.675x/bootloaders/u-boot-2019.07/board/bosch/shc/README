@@ -1,0 +1,114 @@
+Summary
+=======
+
+This document covers various features of the 'am335x_shc' build.
+
+Hardware
+========
+
+AM335X based board:
+
+I2C:   ready
+DRAM:  512 MiB
+Enabling the D-Cache
+MMC:   OMAP SD/MMC: 0 @ 26 MHz, OMAP SD/MMC: 1 @ 26 MHz
+Net:   cpsw
+
+Following boot options are possible:
+
+2 Jumpers:
+
+Jumper 1 Jumper 2 Bootmode
+off      off    eMMC boot
+on       off    SD boot
+off      on     Net boot
+
+Compiling
+=========
+
+$ make am335x_shc_defconfig
+  HOSTCC  scripts/basic/fixdep
+  HOSTCC  scripts/kconfig/conf.o
+  SHIPPED scripts/kconfig/zconf.tab.c
+  SHIPPED scripts/kconfig/zconf.lex.c
+  SHIPPED scripts/kconfig/zconf.hash.c
+  HOSTCC  scripts/kconfig/zconf.tab.o
+  HOSTLD  scripts/kconfig/conf
+#
+# configuration written to .config
+#
+$ make -s all
+
+-> now you have the MLO and the u-boot.img file, you can put
+on your SD card or eMMC.
+
+Configuring
+===========
+
+There are a lot of board versions and boot configurations, which
+can be selected through "make menuconfig"
+
+ARM architecture  --->
+  enable different boot versions for the shc board (enable eMMC)  --->
+   (X) enable eMMC
+   ( ) enable ICT
+   ( ) enable NETBOOT
+   ( ) enable SDBOOT
+
+  enable different board versions for the shc board (C3 Sample board version)  --->
+   ( ) B Sample board version
+   ( ) B2 Sample board version
+   ( ) C Sample board version
+   ( ) C2 Sample board version
+   (X) C3 Sample board version
+   ( ) Series board version
+
+Netboot
+=======
+- see also doc/SPL/README.am335x-network
+
+- set the jumper into netboot mode
+- compile the U-boot sources with:
+  make am335x_shc_netboot_defconfig
+  make all
+- copy the images into your tftp boot directory
+  cp spl/u-boot-spl.bin /tftpboot/.../u-boot-spl-restore.bin
+  cp u-boot.img /tftpboot/.../u-boot-restore.img
+- power on the board, and you should get something like this:
+
+U-Boot SPL 2016.05-rc2-00016-gf23b960-dirty (Apr 26 2016 - 09:02:18)
+#### NETBOOT ####
+SHC
+MPU reference clock runs at 6 MHz
+Setting MPU clock to 594 MHz
+Enabling Spread Spectrum of 18 permille for MPU
+Trying to boot from net
+Using default environment
+
+<ethaddr> not set. Validating first E-fuse MAC
+cpsw
+cpsw Waiting for PHY auto negotiation to complete... done
+link up on port 0, speed 100, full duplex
+BOOTP broadcast 1
+BOOTP broadcast 2
+DHCP client bound to address 192.168.20.91 (258 ms)
+Using cpsw device
+TFTP from server 192.168.1.1; our IP address is 192.168.20.91
+Filename 'shc/u-boot-restore.img'.
+Load address: 0x807fffc0
+Loading: ##################
+         1.2 MiB/s
+done
+Bytes transferred = 262480 (40150 hex)
+
+
+U-Boot 2016.05-rc2-00016-gf23b960-dirty (Apr 26 2016 - 09:02:18 +0200)
+
+       Watchdog enabled
+I2C:   ready
+DRAM:  512 MiB
+MMC:   OMAP SD/MMC: 0, OMAP SD/MMC: 1
+*** Warning - bad CRC, using default environment
+
+Net:   cpsw
+switch to partitions #0, OK

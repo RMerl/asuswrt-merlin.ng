@@ -1,0 +1,26 @@
+diff --git a/rg_apps/make.common b/rg_apps/make.common
+index 6072f90..8fc1a6d 100644
+--- a/rg_apps/make.common
++++ b/rg_apps/make.common
+@@ -337,20 +337,6 @@
+ ifeq ($(strip $(DESKTOP_LINUX)),y)
+ CROSS_COMPILE = /usr/bin/
+ endif
+ 
+-
+-AR              = $(CROSS_COMPILE)ar
+-AS              = $(CROSS_COMPILE)as
+-LD              = $(CROSS_COMPILE)ld
+-CC              = $(strip $(CCACHE) $(CROSS_COMPILE)gcc)
+-CXX             = $(CROSS_COMPILE)g++
+-CPP             = $(CROSS_COMPILE)cpp
+-NM              = $(CROSS_COMPILE)nm
+-STRIP           = $(CROSS_COMPILE)strip
+-SSTRIP          = $(CROSS_COMPILE)strip
+-OBJCOPY         = $(CROSS_COMPILE)objcopy
+-OBJDUMP         = $(CROSS_COMPILE)objdump
+-RANLIB          = $(CROSS_COMPILE)ranlib
+-
+ # If building on desktop, don't strip binaries
+ ifeq ($(strip $(DESKTOP_LINUX)),y)
+ STRIP  = /bin/touch

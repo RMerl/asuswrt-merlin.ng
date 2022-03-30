@@ -1,0 +1,7 @@
+S400
+M:	Neil Armstrong <narmstrong@baylibre.com>
+S:	Maintained
+L:	u-boot-amlogic@groups.io
+F:	board/amlogic/s400/
+F:	include/configs/s400.h
+F:	configs/s400_defconfig

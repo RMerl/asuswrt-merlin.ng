@@ -1,0 +1,117 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright 2018 NXP
+ */
+
+&{/imx8qx-pm} {
+
+	u-boot,dm-spl;
+};
+
+&mu {
+	u-boot,dm-spl;
+};
+
+&clk {
+	u-boot,dm-spl;
+};
+
+&iomuxc {
+	u-boot,dm-spl;
+};
+
+&pd_lsio {
+	u-boot,dm-spl;
+};
+
+&pd_lsio_gpio0 {
+	u-boot,dm-spl;
+};
+
+&pd_lsio_gpio1 {
+	u-boot,dm-spl;
+};
+
+&pd_lsio_gpio2 {
+	u-boot,dm-spl;
+};
+
+&pd_lsio_gpio3 {
+	u-boot,dm-spl;
+};
+
+&pd_lsio_gpio4 {
+	u-boot,dm-spl;
+};
+
+&pd_lsio_gpio5 {
+	u-boot,dm-spl;
+};
+
+&pd_lsio_gpio6 {
+	u-boot,dm-spl;
+};
+
+&pd_lsio_gpio7 {
+	u-boot,dm-spl;
+};
+
+&pd_conn {
+	u-boot,dm-spl;
+};
+
+&pd_conn_sdch0 {
+	u-boot,dm-spl;
+};
+
+&pd_conn_sdch1 {
+	u-boot,dm-spl;
+};
+
+&pd_conn_sdch2 {
+	u-boot,dm-spl;
+};
+
+&gpio0 {
+	u-boot,dm-spl;
+};
+
+&gpio1 {
+	u-boot,dm-spl;
+};
+
+&gpio2 {
+	u-boot,dm-spl;
+};
+
+&gpio3 {
+	u-boot,dm-spl;
+};
+
+&gpio4 {
+	u-boot,dm-spl;
+};
+
+&gpio5 {
+	u-boot,dm-spl;
+};
+
+&gpio6 {
+	u-boot,dm-spl;
+};
+
+&gpio7 {
+	u-boot,dm-spl;
+};
+
+&lpuart0 {
+	u-boot,dm-spl;
+};
+
+&usdhc1 {
+	u-boot,dm-spl;
+};
+
+&usdhc2 {
+	u-boot,dm-spl;
+};

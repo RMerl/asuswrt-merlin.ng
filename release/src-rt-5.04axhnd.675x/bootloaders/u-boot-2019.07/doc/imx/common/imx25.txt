@@ -1,0 +1,10 @@
+U-Boot for Freescale i.MX25
+
+This file contains information for the port of U-Boot to the Freescale i.MX25
+SoC.
+
+1. CONVENTIONS FOR FUSE ASSIGNMENTS
+-----------------------------------
+
+1.1 MAC Address: It is stored in the words 26 to 31 of fuse bank 0, using the
+    natural MAC byte order (i.e. MSB first).

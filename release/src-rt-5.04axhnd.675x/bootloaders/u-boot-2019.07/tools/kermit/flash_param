@@ -1,0 +1,60 @@
+#!/usr/bin/kermit +
+# usage: ./flash_param parameters
+# Parameters: IP Address       ETH Address        ERIC Number
+# Format:     xxx.xxx.xxx.xxx  xx:xx:xx:xx:xx:xx  xxxx
+
+set line /dev/ttyS0
+set speed 115200
+set serial 8N1
+set carrier-watch off
+set handshake none
+#set flow-control none
+set flow-control xon/xoff
+#robust
+set file type bin
+set file name lit
+set rec pack 1000
+set send pack 1000
+set window 5
+set prompt Kermit>
+#robust
+# Milliseconds to pause between each OUTPUT character
+set output pacing 1
+
+out \13
+in 10 =>
+#first erase the environment memory within NVRAM
+out mw f0000000 0 200\13
+in 10 =>
+out reset\13
+in 5 autoboot
+out \13\13
+in 10 =>
+#set additional env parameter
+out setenv ethaddr \%2\13
+in 10 =>
+out setenv serial# ERIC 1.0 \%3\13
+in 10 =>
+out setenv eric_id \%3\13
+in 10 =>
+#out setenv prec_videocard_bus unknown\13
+#in 10 =>
+#out setenv prec_bios_type unknown\13
+#in 10 =>
+out setenv eric_passwd .eRIC.\13
+in 10 =>
+#out setenv bootargs root=/dev/ram ramdisk_size=8192 init=/sbin/init ip=\%1:192.168.1.100:192.168.1.254:255.255.255.0\13
+#out setenv bootargs root=/dev/ram ramdisk_size=8192 init=/sbin/init ip=\%1:192.168.0.1\13
+#out setenv bootargs root=/dev/ram ramdisk_size=8192 init=/sbin/init ip=\%1\13
+out setenv bootargs console=/dev/ttyS0,115200 root=/dev/nfs nfsroot=192.168.1.26:/eric_root_devel ip=\%1:192.168.1.26\13
+in 10 =>
+out setenv bootcmd bootm FFC00000\13
+in 10 =>
+out saveenv\13
+in 10 =>
+out reset\13
+in 5 autoboot
+out \13\13
+in 10 =>
+quit
+exit 0

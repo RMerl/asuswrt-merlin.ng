@@ -1,0 +1,63 @@
+This file contains information for VSC9953, a Vitesse L2 Switch IP
+which is integrated in the T1040/T1020 Freescale SoCs.
+
+About Device:
+=============
+VSC9953 is an 8-port Gigabit Ethernet switch supports the following features:
+	-	8192 MAC addresses
+	-	Static Address provisioning
+	-	Dynamic learning of MAC addresses and aging
+	-	4096 VLANs
+	-	Independent and shared VLAN learning (IVL, SVL)
+	-	Policing with storm control and MC/BC protection
+	-	IPv4 and IPv6 multicast
+	-	Jumbo frames (9.6 KB)
+	-	Access Control List
+	-	VLAN editing, translation and remarking
+	-	RMON counters per port
+
+Switch interfaces:
+	-	8 Gigabit switch ports (ports 0 to 7) are external and are connected to external PHYs
+	-	2 switch ports (ports 8 and 9) of 2.5 G are connected (fixed links)
+		to FMan ports (FM1@DTSEC1 and FM1@DTSEC2)
+
+Commands Overview:
+=============
+Commands supported
+	- enable/disable a port or show its configuration (speed, duplexity, status, etc.)
+	- port statistics
+	- MAC learning
+	- add/remove FDB entries
+	- Port-based VLAN
+	- Private/Shared VLAN learning
+	- VLAN ingress filtering
+	- Port LAG
+
+Commands syntax
+ethsw [port <port_no>] { enable | disable | show } - enable/disable a port; show a port's configuration
+ethsw [port <port_no>] statistics { [help] | [clear] } - show an l2 switch port's statistics
+ethsw [port <port_no>] learning { [help] | show | auto | disable } - enable/disable/show learning configuration on a port
+ethsw [port <port_no>] [vlan <vid>] fdb { [help] | show | flush | { add | del } <mac> } - add/delete a mac entry in FDB; use show to see FDB entries;
+											  if [vlan <vid>] is missing, VID 1 will be used
+ethsw [port <port_no>] pvid { [help] | show | <pvid> } - set/show PVID (ingress and egress VLAN tagging) for a port
+ethsw [port <port_no>] vlan { [help] | show | add <vid> | del <vid> } - add a VLAN to a port (VLAN members)
+ethsw [port <port_no>] untagged { [help] | show | all | none | pvid } - set egress tagging mode for a port
+ethsw [port <port_no>] egress tag { [help] | show | pvid | classified } - configure VID source for egress tag.
+									  Tag's VID could be the frame's classified VID or the PVID of the port
+ethsw vlan fdb { [help] | show | shared | private } - make VLAN learning shared or private
+ethsw [port <port_no>] ingress filtering { [help] | show | enable | disable } - enable/disable VLAN ingress filtering on port
+ethsw [port <port_no>] aggr { [help] | show | <lag_group_no> } - get/set LAG group for a port
+
+=> ethsw show
+    Port   Status     Link    Speed   Duplex
+       0  enabled     down       10     half
+       1  enabled     down       10     half
+       2  enabled     down       10     half
+       3  enabled       up     1000     full
+       4 disabled     down        -     half
+       5 disabled     down        -     half
+       6 disabled     down        -     half
+       7 disabled     down        -     half
+       8  enabled       up     2500     full
+       9  enabled       up     2500     full
+=>

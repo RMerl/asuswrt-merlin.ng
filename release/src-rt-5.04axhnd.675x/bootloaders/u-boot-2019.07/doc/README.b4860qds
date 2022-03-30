@@ -1,0 +1,366 @@
+Overview
+--------
+The B4860QDS is a Freescale reference board that hosts the B4860 SoC (and variants).
+
+B4860 Overview
+-------------
+The B4860 QorIQ Qonverge device is a Freescale high-end, multicore SoC based on
+StarCore and Power Architecture® cores. It targets the broadband wireless
+infrastructure and builds upon the proven success of the existing multicore
+DSPs and Power CPUs. It is designed to bolster the rapidly changing and
+expanding wireless markets, such as 3GLTE (FDD and TDD), LTE-Advanced, and UMTS.
+
+The B4860 is a highly-integrated StarCore and Power Architecture processor that
+contains:
+. Six fully-programmable StarCore SC3900 FVP subsystems, divided into three
+clusters-each core runs up to 1.2 GHz, with an architecture highly optimized for
+wireless base station applications
+. Four dual-thread e6500 Power Architecture processors organized in one cluster-each
+core runs up to 1.8 GHz
+. Two DDR3/3L controllers for high-speed, industry-standard memory interface each
+runs at up to 1866.67 MHz
+. MAPLE-B3 hardware acceleration-for forward error correction schemes including
+Turbo or Viterbi decoding, Turbo encoding and rate matching, MIMO MMSE
+equalization scheme, matrix operations, CRC insertion and check, DFT/iDFT and
+FFT/iFFT calculations, PUSCH/PDSCH acceleration, and UMTS chip rate
+acceleration
+. CoreNet fabric that fully supports coherency using MESI protocol between the
+  e6500 cores, SC3900 FVP cores, memories and external interfaces.
+  CoreNet fabric interconnect runs at 667 MHz and supports coherent and
+  non-coherent out of order transactions with prioritization and bandwidth
+  allocation amongst CoreNet endpoints.
+. Data Path Acceleration Architecture, which includes the following:
+. Frame Manager (FMan), which supports in-line packet parsing and general
+  classification to enable policing and QoS-based packet distribution
+. Queue Manager (QMan) and Buffer Manager (BMan), which allow offloading
+  of queue management, task management, load distribution, flow ordering, buffer
+  management, and allocation tasks from the cores
+. Security engine (SEC 5.3)-crypto-acceleration for protocols such as IPsec,
+  SSL, and 802.16
+. RapidIO manager (RMAN) - Support SRIO types 8, 9, 10, and 11 (inbound and
+  outbound). Supports types 5, 6 (outbound only)
+. Large internal cache memory with snooping and stashing capabilities for
+  bandwidth saving and high utilization of processor elements. The 9856-Kbyte
+  internal memory space includes the following:
+. 32 Kbyte L1 ICache per e6500/SC3900 core
+. 32 Kbyte L1 DCache per e6500/SC3900 core
+. 2048 Kbyte unified L2 cache for each SC3900 FVP cluster
+. 2048 Kbyte unified L2 cache for the e6500 cluster
+. Two 512 Kbyte shared L3 CoreNet platform caches (CPC)
+. Sixteen 10-GHz SerDes lanes serving:
+. Two Serial RapidIO interfaces.
+	- Each supports up to 4 lanes and a total of up to 8 lanes
+. Up to 8-lanes Common Public Radio Interface (CPRI) controller for glue-less
+  antenna connection
+. Two 10-Gbit Ethernet controllers (10GEC)
+. Six 1G/2.5-Gbit Ethernet controllers for network communications
+. PCI Express controller
+. Debug (Aurora)
+. Two OCeaN DMAs
+. Various system peripherals
+. 182 32-bit timers
+
+B4860QDS Overview
+------------------
+- DDRC1: Ten separate DDR3 parts of 16-bit to support 72-bit (ECC) at 1866MT/s, ECC, 4 GB
+  of memory in two ranks of 2 GB.
+- DDRC2: Five separate DDR3 parts of 16-bit to support 72-bit (ECC) at 1866MT/s, ECC, 2 GB
+  of memory. Single rank.
+- SerDes 1 multiplexing: Two Vitesse (transmit and receive path) cross-point 16x16 switch
+  VSC3316
+- SerDes 2 multiplexing: Two Vitesse (transmit and receive path) cross-point 8x8 switch VSC3308
+- USB 2.0 ULPI PHY USB3315 by SMSC supports USB port in host mode.
+  B4860 UART port is available over USB-to-UART translator USB2SER or over RS232 flat cable.
+- A Vitesse dual SGMII phy VSC8662 links the B4860 SGMII lines to 2xRJ-45 copper connectors
+  for Stand-alone mode and to the 1000Base-X over AMC MicroTCA connector ports 0 and 2 for
+  AMC mode.
+- The B4860 configuration may be loaded from nine bits coded reset configuration reset source. The
+  RCW source is set by appropriate DIP-switches:
+- 16-bit NOR Flash / PROMJet
+- QIXIS 8-bit NOR Flash Emulator
+- 8-bit NAND Flash
+- 24-bit SPI Flash
+- Long address I2C EEPROM
+- Available debug interfaces are:
+	- On-board eCWTAP controller with ETH and USB I/F
+	- JTAG/COP 16-pin header for any external TAP controller
+	- External JTAG source over AMC to support B2B configuration
+	- 70-pin Aurora debug connector
+- QIXIS (FPGA) logic:
+	- 2 KB internal memory space including
+- IDT840NT4 clock synthesizer provides B4860 essential clocks : SYSCLK, DDRCLK1,2 and
+  RTCCLK.
+- Two 8T49N222A SerDes ref clock devices support two SerDes port clock frequency - total four
+  refclk, including CPRI clock scheme.
+
+B4420 Personality
+--------------------
+
+B4420 Personality
+--------------------
+B4420 is a reduced personality of B4860 with less core/clusters(both SC3900 and e6500), less DDR
+controllers, less serdes lanes, less SGMII interfaces and reduced target frequencies.
+
+Key differences between B4860 and B4420
+----------------------------------------
+
+B4420 has:
+1. Less e6500 cores: 1 cluster with 2 e6500 cores
+2. Less SC3900 cores/clusters: 1 cluster with 2 SC3900 cores per cluster.
+3. Single DDRC
+4. 2X 4 lane serdes
+5. 3 SGMII interfaces
+6. no sRIO
+7. no 10G
+
+B4860QDS Default Settings
+-------------------------
+
+Switch Settings
+----------------
+
+SW1	OFF [0]	OFF [0]	OFF [0]	OFF [0]	OFF [0]	OFF [0]	OFF [0]	OFF [0]
+SW2	ON	ON	ON	ON	ON	ON	OFF	OFF
+SW3	OFF	OFF	OFF	ON	OFF	OFF	ON	OFF
+SW5	OFF	OFF	OFF	OFF	OFF	OFF	ON	ON
+
+Note: PCIe slots modes: All the PCIe devices work as Root Complex.
+Note: Boot location: NOR flash.
+
+SysClk/Core(e6500)/CCB/DDR/FMan/DDRCLK/StarCore/CPRI-Maple/eTVPE-Maple/ULB-Maple
+66MHz/1.6GHz/667MHz/1.6GHz data rate/667MHz/133MHz/1200MHz/500MHz/800MHz/667MHz
+
+a) NAND boot
+	SW1 [1.1] = 0
+	SW2 [1.1] = 1
+	SW3 [1:4] = 0001
+b) NOR boot
+	SW1 [1.1] = 1
+	SW2 [1.1] = 0
+	SW3 [1:4] = 1000.
+
+B4420QDS Default Settings
+-------------------------
+
+Switch Settings
+----------------
+SW1	OFF[0]	OFF [0]	OFF [0]	OFF [0]	OFF [0]	OFF [0]	OFF [0]	OFF [0]
+SW2	ON	OFF	ON	OFF	ON	ON	OFF	OFF
+SW3	OFF	OFF	OFF	ON	OFF	OFF	ON	OFF
+SW5	OFF	OFF	OFF	OFF	OFF	OFF	ON	ON
+
+Note: PCIe slots modes: All the PCIe devices work as Root Complex.
+Note: Boot location: NOR flash.
+
+SysClk/Core(e6500)/CCB/DDR/FMan/DDRCLK/StarCore/CPRI-Maple/eTVPE-Maple/ULB-Maple
+66MHz/1.6GHz/667MHz/1.6GHz data rate/667MHz/133MHz/1200MHz/500MHz/800MHz/667MHz
+
+a) NAND boot
+	SW1 [1.1] = 0
+	SW2 [1.1] = 1
+	SW3 [1:4] = 0001
+b) NOR boot
+	SW1 [1.1] = 1
+	SW2 [1.1] = 0
+	SW3 [1:4] = 1000.
+
+Memory map on B4860QDS
+----------------------
+The addresses in brackets are physical addresses.
+
+Start Address	End Address	Description	Size
+0xF_FFDF_1000 	0xF_FFFF_FFFF	Free		2 MB
+0xF_FFDF_0000 	0xF_FFDF_0FFF	IFC - FPGA 	4 KB
+0xF_FF81_0000 	0xF_FFDE_FFFF	Free		5 MB
+0xF_FF80_0000	0xF_FF80_FFFF	IFC NAND Flash	64 KB
+0xF_FF00_0000	0xF_FF7F_FFFF	Free		8 MB
+0xF_FE00_0000 	0xF_FEFF_FFFF	CCSRBAR		16 MB
+0xF_F801_0000 	0xF_FDFF_FFFF	Free		95 MB
+0xF_F800_0000	0xF_F800_FFFF	PCIe I/O Space 	64 KB
+0xF_F600_0000 	0xF_F7FF_FFFF	QMAN s/w portal	32 MB
+0xF_F400_0000 	0xF_F5FF_FFFF	BMAN s/w portal	32 MB
+0xF_F000_0000 	0xF_F3FF_FFFF	Free		64 MB
+0xF_E800_0000 	0xF_EFFF_FFFF	IFC  NOR Flash 	128 MB
+0xF_E000_0000	0xF_E7FF_FFFF	Promjet		128 MB
+0xF_A0C0_0000 	0xF_DFFF_FFFF	Free		1012 MB
+0xF_A000_0000 	0xF_A0BF_FFFF	MAPLE0/1/2	12 MB
+0xF_0040_0000 	0xF_9FFF_FFFF	Free		12 GB
+0xF_0000_0000 	0xF_01FF_FFFF	DCSR		32 MB
+0xC_4000_0000 	0xE_FFFF_FFFF	Free		11 GB
+0xC_3000_0000 	0xC_3FFF_FFFF	sRIO-2 I/O 	256 MB
+0xC_2000_0000 	0xC_2FFF_FFFF	sRIO-1 I/O  	256 MB
+0xC_0000_0000	0xC_1FFF_FFFF	PCIe Mem Space 	512 MB
+0x1_0000_0000 	0xB_FFFF_FFFF	Free		44 GB
+0x0_8000_0000 	0x0_FFFF_FFFF	DDRC1		2 GB
+0x0_0000_0000 	0x0_7FFF_FFFF	DDRC2	  	2 GB
+
+Memory map on B4420QDS
+----------------------
+The addresses in brackets are physical addresses.
+
+Start Address	End Address	Description	Size
+0xF_FFDF_1000 	0xF_FFFF_FFFF	Free		2 MB
+0xF_FFDF_0000 	0xF_FFDF_0FFF	IFC - FPGA 	4 KB
+0xF_FF81_0000 	0xF_FFDE_FFFF	Free		5 MB
+0xF_FF80_0000	0xF_FF80_FFFF	IFC NAND Flash	64 KB
+0xF_FF00_0000	0xF_FF7F_FFFF	Free		8 MB
+0xF_FE00_0000 	0xF_FEFF_FFFF	CCSRBAR		16 MB
+0xF_F801_0000 	0xF_FDFF_FFFF	Free		95 MB
+0xF_F800_0000	0xF_F800_FFFF	PCIe I/O Space 	64 KB
+0xF_F600_0000 	0xF_F7FF_FFFF	QMAN s/w portal	32 MB
+0xF_F400_0000 	0xF_F5FF_FFFF	BMAN s/w portal	32 MB
+0xF_F000_0000 	0xF_F3FF_FFFF	Free		64 MB
+0xF_E800_0000 	0xF_EFFF_FFFF	IFC  NOR Flash 	128 MB
+0xF_E000_0000	0xF_E7FF_FFFF	Promjet		128 MB
+0xF_A0C0_0000 	0xF_DFFF_FFFF	Free		1012 MB
+0xF_A000_0000 	0xF_A0BF_FFFF	MAPLE0/1/2	12 MB
+0xF_0040_0000 	0xF_9FFF_FFFF	Free		12 GB
+0xF_0000_0000 	0xF_01FF_FFFF	DCSR		32 MB
+0xC_4000_0000 	0xE_FFFF_FFFF	Free		11 GB
+0xC_3000_0000 	0xC_3FFF_FFFF	sRIO-2 I/O 	256 MB
+0xC_2000_0000 	0xC_2FFF_FFFF	sRIO-1 I/O  	256 MB
+0xC_0000_0000	0xC_1FFF_FFFF	PCIe Mem Space 	512 MB
+0x1_0000_0000 	0xB_FFFF_FFFF	Free		44 GB
+0x0_0000_0000 	0x0_FFFF_FFFF	DDRC1		4 GB
+
+
+NOR Flash memory Map on B4860 and B4420QDS
+------------------------------------------
+ Start		 End		Definition			Size
+0xEFF40000	0xEFFFFFFF	U-Boot (current bank)		768KB
+0xEFF20000	0xEFF3FFFF	U-Boot env (current bank)	128KB
+0xEFF00000	0xEFF1FFFF	FMAN Ucode (current bank)	128KB
+0xEF300000	0xEFEFFFFF	rootfs (alternate bank)		12MB
+0xEE800000	0xEE8FFFFF	device tree (alternate bank)	1MB
+0xEE020000	0xEE6FFFFF	Linux.uImage (alternate bank)	6MB+896KB
+0xEE000000	0xEE01FFFF	RCW (alternate bank)		128KB
+0xEDF40000	0xEDFFFFFF	U-Boot (alternate bank)		768KB
+0xEDF20000	0xEDF3FFFF	U-Boot env (alternate bank)	128KB
+0xEDF00000	0xEDF1FFFF	FMAN ucode (alternate bank)	128KB
+0xED300000	0xEDEFFFFF	rootfs (current bank)		12MB
+0xEC800000	0xEC8FFFFF	device tree (current bank)	1MB
+0xEC020000	0xEC6FFFFF	Linux.uImage (current bank)	6MB+896KB
+0xEC000000	0xEC01FFFF	RCW (current bank)		128KB
+
+Various Software configurations/environment variables/commands
+--------------------------------------------------------------
+The below commands apply to both B4860QDS and B4420QDS.
+
+1. U-Boot environment variable hwconfig
+   The default hwconfig is:
+	hwconfig=fsl_ddr:ctlr_intlv=null,bank_intlv=cs0_cs1;usb1:
+					dr_mode=host,phy_type=ulpi
+   Note: For USB gadget set "dr_mode=peripheral"
+
+2. FMAN Ucode versions
+   fsl_fman_ucode_B4860_106_3_6.bin
+
+3. Switching to alternate bank
+   Commands for switching to alternate bank.
+
+	1. To change from vbank0 to vbank2
+		=> qixis_reset altbank (it will boot using vbank2)
+
+	2.To change from vbank2 to vbank0
+		=> qixis reset (it will boot using vbank0)
+
+4. To change personality of board
+   For changing personality from B4860 to B4420
+	1)Boot from vbank0
+	2)Flash vbank2 with b4420 rcw and U-Boot
+	3)Give following commands to uboot prompt
+	   => mw.b ffdf0040 0x30;
+	   => mw.b ffdf0010 0x00;
+	   => mw.b ffdf0062 0x02;
+	   => mw.b ffdf0050 0x02;
+	   => mw.b ffdf0010 0x30;
+	   => reset
+
+   Note: Power off cycle will lead to default switch settings.
+   Note: 0xffdf0000 is the address of the QIXIS FPGA.
+
+5. Switching between NOR and NAND boot(RCW src changed from NOR <-> NAND)
+
+   To change from NOR to NAND boot give following command on uboot prompt
+	=> mw.b ffdf0040 0x30
+	=> mw.b ffdf0010 0x00
+	=> mw.b 0xffdf0050 0x08
+	=> mw.b 0xffdf0060 0x82
+	=> mw.b ffdf0061 0x00
+	=> mw.b ffdf0010 0x30
+	=> reset
+
+   To change from NAND to NOR boot give following command on uboot prompt:
+	=> mw.b ffdf0040 0x30
+	=> mw.b ffdf0010 0x00
+	=> mw.b 0xffdf0050 0x00(for vbank0) or (mw.b 0xffdf0050 0x02 for vbank2)
+	=> mw.b 0xffdf0060 0x12
+	=> mw.b ffdf0061 0x01
+	=> mw.b ffdf0010 0x30
+	=> reset
+
+   Note: Power off cycle will lead to default switch settings.
+   Note: 0xffdf0000 is the address of the QIXIS FPGA.
+
+6.  Ethernet interfaces for B4860QDS
+   Serdes protocosl tested:
+   0x2a, 0x8d (serdes1, serdes2) [DEFAULT]
+   0x2a, 0xb2 (serdes1, serdes2)
+
+   When using [DEFAULT] RCW, which including 2 * 1G SGMII on board and 2 * 1G
+   SGMII on SGMII riser card.
+   Under U-Boot these network interfaces are recognized as:
+   FM1@DTSEC3, FM1@DTSEC4, FM1@DTSEC5 and FM1@DTSEC6.
+
+   On Linux the interfaces are renamed as:
+	. eth2 -> fm1-gb2
+	. eth3 -> fm1-gb3
+	. eth4 -> fm1-gb4
+	. eth5 -> fm1-gb5
+
+7. RCW and Ethernet interfaces for B4420QDS
+   Serdes protocosl tested:
+   0x18, 0x9e (serdes1, serdes2)
+
+   Under U-Boot these network interfaces are recognized as:
+   FM1@DTSEC3, FM1@DTSEC4 and  e1000#0.
+
+   On Linux the interfaces are renamed as:
+	. eth2 -> fm1-gb2
+	. eth3 -> fm1-gb3
+
+NAND boot with 2 Stage boot loader
+----------------------------------
+PBL initialise the internal SRAM and copy SPL(160KB) in SRAM.
+SPL further initialise DDR using SPD and environment variables and copy
+U-Boot(768 KB) from flash to DDR.
+Finally SPL transer control to U-Boot for futher booting.
+
+SPL has following features:
+ - Executes within 256K
+ - No relocation required
+
+ Run time view of SPL framework during  boot :-
+ -----------------------------------------------
+ Area        | Address                         |
+-----------------------------------------------
+ Secure boot | 0xFFFC0000 (32KB)               |
+ headers     |                                 |
+ -----------------------------------------------
+ GD, BD      | 0xFFFC8000 (4KB)                |
+ -----------------------------------------------
+ ENV         | 0xFFFC9000 (8KB)                |
+ -----------------------------------------------
+ HEAP        | 0xFFFCB000 (30KB)               |
+ -----------------------------------------------
+ STACK       | 0xFFFD8000 (22KB)               |
+ -----------------------------------------------
+ U-Boot SPL  | 0xFFFD8000 (160KB)              |
+ -----------------------------------------------
+
+NAND Flash memory Map on B4860 and B4420QDS
+------------------------------------------
+ Start		 End		Definition			Size
+0x000000	0x0FFFFF	U-Boot                          1MB
+0x140000	0x15FFFF	U-Boot env                      128KB
+0x1A0000	0x1BFFFF	FMAN Ucode                      128KB

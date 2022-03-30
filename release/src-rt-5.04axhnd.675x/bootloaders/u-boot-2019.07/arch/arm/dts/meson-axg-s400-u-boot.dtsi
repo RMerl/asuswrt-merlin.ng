@@ -1,0 +1,14 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/*
+ * Copyright (c) 2017 Amlogic, Inc. All rights reserved.
+ */
+
+/* wifi module */
+&sd_emmc_b {
+	status = "disabled";
+};
+
+/* emmc storage */
+&sd_emmc_c {
+	status = "okay";
+};

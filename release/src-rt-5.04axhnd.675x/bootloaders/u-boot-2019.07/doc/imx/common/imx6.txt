@@ -1,0 +1,90 @@
+U-Boot for Freescale i.MX6
+
+This file contains information for the port of U-Boot to the Freescale i.MX6
+SoC.
+
+1. CONVENTIONS FOR FUSE ASSIGNMENTS
+-----------------------------------
+
+1.1 MAC Address: It is stored in fuse bank 4, with the 32 lsbs in word 2 and the
+    16 msbs in word 3[15:0].
+    For i.MX6SX and i.MX6UL, they have two MAC addresses. The second MAC address
+    is stored in fuse bank 4, with the 16 lsb in word 3[31:16] and the 32 msbs in 
+    word 4.
+
+Example:
+
+For reading the MAC address fuses on a MX6Q:
+
+- The MAC address is stored in two fuse addresses (the fuse addresses are
+described in the Fusemap Descriptions table from the mx6q Reference Manual):
+
+0x620[31:0] - MAC_ADDR[31:0]
+0x630[15:0] - MAC_ADDR[47:32]
+
+In order to use the fuse API, we need to pass the bank and word values, which
+are calculated as below:
+
+Fuse address for the lower MAC address: 0x620
+Base address for the fuses: 0x400
+
+(0x620 - 0x400)/0x10 = 0x22 = 34 decimal
+
+As the fuses are arranged in banks of 8 words:
+
+34 / 8 = 4 and the remainder is 2, so in this case:
+
+bank = 4
+word = 2
+
+And the U-Boot command would be:
+
+=> fuse read 4 2
+Reading bank 4:
+
+Word 0x00000002: 9f027772
+
+Doing the same for the upper MAC address:
+
+Fuse address for the upper MAC address: 0x630
+Base address for the fuses: 0x400
+
+(0x630 - 0x400)/0x10 = 0x23 = 35 decimal
+
+As the fuses are arranged in banks of 8 words:
+
+35 / 8 = 4 and the remainder is 3, so in this case:
+
+bank = 4
+word = 3
+
+And the U-Boot command would be:
+
+=> fuse read 4 3
+Reading bank 4:
+
+Word 0x00000003: 00000004
+
+,which matches the ethaddr value:
+=> echo ${ethaddr}
+00:04:9f:02:77:72
+
+Some other useful hints:
+
+- The 'bank' and 'word' numbers can be easily obtained from the mx6 Reference
+Manual. For the mx6quad case, please check the "46.5 OCOTP Memory Map/Register
+Definition" from the "i.MX 6Dual/6Quad Applications Processor Reference Manual,
+Rev. 1, 04/2013" document. For example, for the MAC fuses we have:
+
+Address:
+21B_C620	Value of OTP Bank4 Word2 (MAC Address)(OCOTP_MAC0)
+
+21B_C630	Value of OTP Bank4 Word3 (MAC Address)(OCOTP_MAC1)
+
+- The command '=> fuse read 4 2 2' reads the whole MAC addresses at once:
+
+=> fuse read 4 2 2
+Reading bank 4:
+
+Word 0x00000002: 9f027772 00000004
+

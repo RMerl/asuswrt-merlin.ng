@@ -1,0 +1,154 @@
+Overview
+========
+
+The overall usage pattern for ECC diagnostic commands is the following:
+
+  * (injecting errors is initially disabled)
+
+  * define inject mask (which tells the DDR controller what type of errors
+    we'll be injecting: single/multiple bit etc.)
+
+  * enable injecting errors - from now on the controller injects errors as
+    indicated in the inject mask
+
+IMPORTANT NOTICE: enabling injecting multiple-bit errors is potentially
+dangerous as such errors are NOT corrected by the controller. Therefore caution
+should be taken when enabling the injection of multiple-bit errors: it is only
+safe when used on a carefully selected memory area and used under control of
+the 'ecc testdw' 'ecc testword' command (see example 'Injecting Multiple-Bit
+Errors' below). In particular, when you simply set the multiple-bit errors in
+inject mask and enable injection, U-Boot is very likely to hang quickly as the
+errors will be injected when it accesses its code, data etc.
+
+
+Use cases for DDR 'ecc' command:
+================================
+
+Before executing particular tests reset target board or clear status registers:
+
+=> ecc captureclear
+=> ecc errdetectclr all
+=> ecc sbecnt 0
+
+
+Injecting Single-Bit Errors
+---------------------------
+
+1. Set 1 bit in Data Path Error Inject Mask
+
+=> ecc injectdatahi 1
+
+2. Run test over some memory region
+
+=> ecc testdw 200000 10
+
+3. Check ECC status
+
+=> ecc status
+...
+Memory Data Path Error Injection Mask High/Low: 00000001 00000000
+...
+Memory Single-Bit Error Management (0..255):
+  Single-Bit Error Threshold: 255
+  Single Bit Error Counter: 16
+...
+Memory Error Detect:
+  Multiple Memory Errors: 0
+  Multiple-Bit Error: 0
+  Single-Bit Error: 0
+...
+
+16 errors were generated, Single-Bit Error flag was not set as Single Bit Error
+Counter did not reach  Single-Bit Error Threshold.
+
+4. Make sure used memory region got re-initialized with 0x0123456789abcdef
+
+=> md 200000
+00200000: 01234567 89abcdef 01234567 89abcdef    .#Eg.....#Eg....
+00200010: 01234567 89abcdef 01234567 89abcdef    .#Eg.....#Eg....
+00200020: 01234567 89abcdef 01234567 89abcdef    .#Eg.....#Eg....
+00200030: 01234567 89abcdef 01234567 89abcdef    .#Eg.....#Eg....
+00200040: 01234567 89abcdef 01234567 89abcdef    .#Eg.....#Eg....
+00200050: 01234567 89abcdef 01234567 89abcdef    .#Eg.....#Eg....
+00200060: 01234567 89abcdef 01234567 89abcdef    .#Eg.....#Eg....
+00200070: 01234567 89abcdef 01234567 89abcdef    .#Eg.....#Eg....
+00200080: deadbeef deadbeef deadbeef deadbeef    ................
+00200090: deadbeef deadbeef deadbeef deadbeef    ................
+
+Injecting Multiple-Bit Errors
+-----------------------------
+
+1. Set more than 1 bit in Data Path Error Inject Mask
+
+=> ecc injectdatahi 1
+=> ecc injectdatalo 1
+
+2. Run test over some memory region
+
+=> ecc testword 200000 1
+
+3. Check ECC status
+
+=> ecc status
+...
+Memory Data Path Error Injection Mask High/Low: 00000001 00000001
+...
+Memory Error Detect:
+  Multiple Memory Errors: 0
+  Multiple-Bit Error: 1
+  Single-Bit Error: 0
+...
+
+The Multiple Memory Errors flags not set and Multiple-Bit Error flags are set.
+
+4. Make sure used memory region got re-initialized with 0x0123456789abcdef
+
+=> md 200000
+00200000: 01234567 89abcdef 01234567 89abcdef    .#Eg.....#Eg....
+00200010: 01234567 89abcdef 01234567 89abcdef    .#Eg.....#Eg....
+00200020: 01234567 89abcdef 01234567 89abcdef    .#Eg.....#Eg....
+00200030: 01234567 89abcdef 01234567 89abcdef    .#Eg.....#Eg....
+00200040: 01234567 89abcdef 01234567 89abcdef    .#Eg.....#Eg....
+00200050: 01234567 89abcdef 01234567 89abcdef    .#Eg.....#Eg....
+00200060: 01234567 89abcdef 01234567 89abcdef    .#Eg.....#Eg....
+00200070: 01234567 89abcdef 01234567 89abcdef    .#Eg.....#Eg....
+00200080: deadbeef deadbeef deadbeef deadbeef    ................
+00200090: deadbeef deadbeef deadbeef deadbeef    ................
+
+
+Test Single-Bit Error Counter and Threshold
+-------------------------------------------
+
+1. Set 1 bit in Data Path Error Inject Mask
+
+=> ecc injectdatahi 1
+
+2. Enable error injection
+
+=> ecc inject en
+
+3. Let u-boot run for a with Single-Bit error injection enabled
+
+4. Disable error injection
+
+=> ecc inject dis
+
+4. Check status
+
+=> ecc status
+
+...
+Memory Single-Bit Error Management (0..255):
+  Single-Bit Error Threshold: 255
+  Single Bit Error Counter: 199
+
+Memory Error Detect:
+  Multiple Memory Errors: 1
+  Multiple-Bit Error: 0
+  Single-Bit Error: 1
+...
+
+Observe that Single-Bit Error is 'on' which means that Single-Bit Error Counter
+reached Single-Bit Error Threshold. Multiple Memory Errors bit is also 'on', that
+is Counter reached Threshold more than one time (it wraps back after reaching
+Threshold).

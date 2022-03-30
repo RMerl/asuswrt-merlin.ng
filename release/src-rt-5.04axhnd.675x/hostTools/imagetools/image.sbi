@@ -1,0 +1,130 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+use bytes;
+use Getopt::Long;
+use File::Find;
+use File::Temp qw[ tempfile ];
+use File::Basename;
+use Data::Dumper;
+use BRCM::SBI;
+
+my $usage = qq[usage: $0 builds either header sbi or unheadered sbi 
+   --in input filename
+   --smode         mode MFG/FLD/OP/UNSEC
+   --nohdr         if == sign/encrypt corresponding image either signed or encrypted 
+   --out filename  filename to place headers 
+   This script relies on external environmental variables sourced from profile and make.common  
+];
+#my @keys = keys %ENV;
+#my @values = values %ENV;
+#while (@keys) {
+#   print pop(@keys), '=', pop(@values), "\n";
+#} 
+my %args = ();
+GetOptions(\%args, "in=s", 'smode=s', 'out=s', 'nohdr:s','secopt:s') or die ($usage);
+print "Args: ", %args, "\n";
+($ENV{SECURE_BOOT_ARCH} eq 'GEN3' && $args{smode} !~ m/(UNSEC|MFG|FLD)/g) and die ($usage);
+($ENV{SECURE_BOOT_ARCH} eq 'GEN2' && $args{smode} !~ m/(UNSEC|MFG|OP)/g) and die ($usage);
+
+my $aes_ek;
+my $aes_iv;
+my $rsa_key;
+my $cred;
+my $u;
+    if  ($args{smode} eq 'MFG') {
+         $aes_ek = $ENV{MFG_AES_EK};
+         $aes_iv = $ENV{MFG_AES_IV};
+         $rsa_key = $ENV{MFG_KEY};
+         $cred = $ENV{MFG_CRED_LIST};
+    } elsif ($args{smode} eq 'FLD') {
+         $aes_ek = $ENV{FLD_AES_EK};
+         $aes_iv = $ENV{FLD_AES_IV};
+         $rsa_key = $ENV{FLD_KEY};
+         $cred = $ENV{FLD_CRED_LIST};
+    } elsif ($args{smode} eq 'OP') {
+         $aes_ek = $ENV{MFG_AES_EK};
+         $aes_iv = $ENV{MFG_AES_IV};
+         $rsa_key = $ENV{MFG_KEY};
+         $cred = $ENV{OP_CRED_LIST};
+    }
+    #print "$0 Running as:chip=$ENV{BRCM_CHIP}", " ARCH=$ENV{SECURE_BOOT_ARCH}", " SecMode=$args{smode}", " cred=" ,$cred," file=$args{in} \n"; 
+    sub _S  {
+        $_[0] =~ s/\'//g;
+        return $_[0];
+    };
+    if ($args{smode} !~ m/UNSEC/) {
+       $aes_ek = _S($aes_ek);
+       $aes_iv = _S($aes_iv);
+       $rsa_key = _S($rsa_key);
+    }
+    $u = new BRCM::SBI(
+        {
+            sec_mode  => $args{smode},
+            byteorder => $ENV{ARCH_ENDIAN},
+            chip      => $ENV{BRCM_CHIP},
+            cred      => $cred
+        }
+    );
+    $u->{tool_path} = $ENV{HOSTTOOLS_DIR};
+    my @images = split(/,/, $args{in});
+    my $image; 
+    if (@images > 1) {
+        $images[1] = $u->f2var($images[1]);
+        $image = $u->f2var($images[0]);
+    } else {
+        $image = $u->f2var($args{in});
+    }
+    if ($args{nohdr} && $args{nohdr} =~ m/(sbi|sign)/) {
+        $image = unhdr_sbi($image);
+    }  else {
+       $image = sbi($image);
+       if (@images == 2)  {
+      	   $image .= $images[1];
+       }
+    }
+    $u->fdump($args{out}, $image);
+
+sub unhdr_sbi {
+    my $img = shift;
+    my $sig;
+    if ($args{nohdr} =~ m/sbi/) {
+        my $hdr_size  = 12;
+        printf( "Building non-headered secure image \n");
+
+        my $hdr = substr($img, 0, $hdr_size); 
+        my $compressed = $u->lzma_deflate( substr($img, $hdr_size) );
+
+       #update header's size field
+        substr($hdr, 8, 4) = pack("I$u->{en}", length($compressed));
+        print "Compressed length",length($compressed),"\n";
+        $img = $u->cipher($hdr . $compressed,
+                    {'ek',$u->f2hex($aes_ek),'iv',$u->f2hex($aes_iv)});
+        return $u->sign($u->f2var($rsa_key), $img) . $img;
+    } 
+    if ($args{nohdr} =~ m/sign/g) {
+        printf( "Signing with  %s \n",$rsa_key);
+        return $u->sign($u->f2var($rsa_key), $img);
+    }
+}
+
+
+
+sub sbi {
+    my $img = shift;
+    my $sig;
+    if ($ENV{SECURE_BOOT_ARCH} eq 'GEN3' && $cred && 
+            $cred =~ m/.*opt<enc>.*/g) {
+        $img = $u->cipher($img,
+                    {'ek',$u->f2hex($aes_ek),'iv',$u->f2hex($aes_iv)});
+    }
+    my $header = $u->prepare_header( length($img) );
+    if ($args{smode} !~ m/UNSEC/) {
+        $sig = $u->sign($u->f2var($rsa_key), $header->{auth} . $img);
+    }
+    my $trailer =
+          $u->prepare_trailer( $header->{auth}, $img,
+            { mfg => $sig, fld => $sig } );
+    return $header->{unauth} . $header->{auth} . $img . $trailer;
+}

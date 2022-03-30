@@ -1,0 +1,56 @@
+config CLK_AT91
+	bool "AT91 clock drivers"
+	depends on CLK
+	select MISC
+	help
+	  This option is used to enable the AT91 clock driver.
+	  The driver supports the AT91 clock generator, including
+	  the oscillators and PLLs, such as main clock, slow clock,
+	  PLLA, UTMI PLL. Clocks can also be a source clock of other
+	  clocks a tree structure, such as master clock, usb device
+	  clock, matrix clock and generic clock.
+	  Devices can use a common clock API to request a particular
+	  clock, enable it and get its rate.
+
+config AT91_UTMI
+	bool "Support UTMI PLL Clock"
+	depends on CLK_AT91
+	select REGMAP
+	select SPL_REGMAP if SPL_DM
+	select SYSCON
+	select SPL_SYSCON if SPL_DM
+	help
+	  This option is used to enable the AT91 UTMI PLL clock
+	  driver. It is the clock provider of USB, and UPLLCK is the
+	  output of 480 MHz UTMI PLL, The souce clock of the UTMI
+	  PLL is the main clock, so the main clock must select the
+	  fast crystal oscillator to meet the frequency accuracy
+	  required by USB.
+
+config AT91_USB_CLK
+	bool "Support USB OHCI Input Clock"
+	depends on CLK_AT91
+	help
+	  This option is used to enable the USB Input Clock, from
+	  the device tree, configure the USBS bit (PLLA or UTMI PLL)
+	  and USBDIV field of the PMC_USB register.
+
+config AT91_H32MX
+	bool "Support H32MX 32-bit Matrix Clock"
+	depends on CLK_AT91
+	help
+	  This option is used to enable the AT91 H32MX matrixes
+	  clock driver. There are H64MX and H32MX matrixes clocks,
+	  H64MX 64-bit matrix clocks are MCK. The H32MX 32-bit
+	  matrix clock is to be configured as MCK if MCK does not
+	  exceed 83 MHz, else it is to be configured as MCK/2.
+
+config AT91_GENERIC_CLK
+	bool "Support Generic Clock"
+	depends on CLK_AT91
+	help
+	  This option is used to enable the AT91 generic clock
+	  driver. Some peripherals may need a second clock source
+	  that may be different from the system clock. This second
+	  clock is the generic clock (GCLK) and is managed by
+	  the PMC via PMC_PCR register.

@@ -1,0 +1,6 @@
+CL-SOM-IMX7 BOARD
+M:	Uri Mashiach <uri.mashiach@compulab.co.il>
+S:	Maintained
+F:	board/compulab/cl-som-imx7
+F:	include/configs/cl-som-imx7.h
+F:	configs/cl-som-imx7_defconfig

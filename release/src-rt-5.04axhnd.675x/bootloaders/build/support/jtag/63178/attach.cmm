@@ -1,0 +1,64 @@
+;**************************************************************
+;              Attach script for BCM63178 ARM CORE 
+;**************************************************************
+
+AREA
+AREA.CLEAR
+SYSTEM.RESET
+SYSTEM.JTAGCLOCK 20MHz
+
+;comment out the following scan chain detect for now. verify when the chip is back
+;jtag.lock
+;jtag.pin.enable
+;jtag.pin.TDI LOW
+;jtag.SHIFTTMS 1 1 1 1 1 1 1 0 1 1 0 0
+;jtag.SHIFTTDI %Long 0x0 0x0 
+;jtag.shifttdi %Long 0xffffffff 0xffffffff
+;&a=jtag.SHIFT() 
+;&b=&a&0xfffff
+;jtag.SHIFTTMS 1 1 1 1 1 1 1 1 1
+;jtag.unlock
+
+;if (&b>0xfff00) 
+;(
+;	PRINT %ERROR   "ERROR: Scan chain is LV-only"
+;	AREA.select  A000
+;	PRINT %ERROR   "ERROR: Please remove pull-up from JTAG_CE pin to configure Full scan chain"
+;	ENDDO
+;)
+;else
+;(
+	AREA.select
+	print "+++++++++++++++++++++++ Full scan chain +++++++++++++++++++++++++++++++++++"
+	print "    TDI->MIPS(5)->MEMC(5)->WIFI(32)->ARM(4)->LV(27)->TDO                   "       
+	print "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	print "  "
+	
+	SYStem.CONFIG.DAPIRPOST  42.
+	SYStem.CONFIG.DAPIRPRE   27.
+	SYStem.CONFIG.DAPDRPOST  3.
+	SYStem.CONFIG.DAPDRPRE   1.
+
+	SYSTEM.CPU CORTEXA7MPCORE
+	SYSTEM.CONFIG.CORENUMBER 1
+	SYSTEM.CONFIG.CORE 1
+	SYSTEM.CONFIG.DEBUGACCESSPORT 0
+	SYStem.CONFIG AXIACCESSPORT  1
+
+	;CTI and ETM is not available in our A7 core
+        ;SYSTEM.CONFIG.CTIBASE  0x81053000	
+	SYSTEM.CONFIG.COREBASE 0x81810000	
+	SYStem.CONFIG.BMC.Base 0x81811000
+
+	CORE.ASSIGN 1	
+
+	SYStem.option TRST     OFF 
+	SYStem.option ENRESET  OFF
+
+	print "JTAG ATTACH To CORE 0"
+
+	SYSTEM.MODE NODEBUG
+	SYSTEM.MODE ATTACH
+	ENDDO
+;)
+ENDDO

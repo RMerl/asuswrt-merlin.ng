@@ -1,0 +1,13 @@
+3C120 DEVBOARD
+M:	Thomas Chou <thomas@wytron.com.tw>
+S:	Maintained
+F:	arch/nios2/dts/3c120_devboard.dts
+F:	configs/3c120_defconfig
+F:	include/configs/3c120_devboard.h
+
+10M50 DEVBOARD
+M:	Thomas Chou <thomas@wytron.com.tw>
+S:	Maintained
+F:	arch/nios2/dts/10m50_devboard.dts
+F:	configs/10m50_defconfig
+F:	include/configs/10m50_devboard.h

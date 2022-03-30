@@ -1,0 +1,305 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Clock specification for Xilinx ZynqMP
+ *
+ * (C) Copyright 2017, Xilinx, Inc.
+ *
+ * Michal Simek <michal.simek@xilinx.com>
+ */
+
+/ {
+	fclk0: fclk0 {
+		status = "disabled";
+		compatible = "xlnx,fclk";
+		clocks = <&clkc 71>;
+	};
+
+	fclk1: fclk1 {
+		status = "disabled";
+		compatible = "xlnx,fclk";
+		clocks = <&clkc 72>;
+	};
+
+	fclk2: fclk2 {
+		status = "disabled";
+		compatible = "xlnx,fclk";
+		clocks = <&clkc 73>;
+	};
+
+	fclk3: fclk3 {
+		status = "disabled";
+		compatible = "xlnx,fclk";
+		clocks = <&clkc 74>;
+	};
+
+	pss_ref_clk: pss_ref_clk {
+		u-boot,dm-pre-reloc;
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		clock-frequency = <33333333>;
+	};
+
+	video_clk: video_clk {
+		u-boot,dm-pre-reloc;
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		clock-frequency = <27000000>;
+	};
+
+	pss_alt_ref_clk: pss_alt_ref_clk {
+		u-boot,dm-pre-reloc;
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		clock-frequency = <0>;
+	};
+
+	gt_crx_ref_clk: gt_crx_ref_clk {
+		u-boot,dm-pre-reloc;
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		clock-frequency = <108000000>;
+	};
+
+	aux_ref_clk: aux_ref_clk {
+		u-boot,dm-pre-reloc;
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		clock-frequency = <27000000>;
+	};
+
+	clkc: clkc {
+		u-boot,dm-pre-reloc;
+		#clock-cells = <1>;
+		compatible = "xlnx,zynqmp-clkc";
+		clocks = <&pss_ref_clk>, <&video_clk>, <&pss_alt_ref_clk>, <&aux_ref_clk>, <&gt_crx_ref_clk>;
+		clock-names = "pss_ref_clk", "video_clk", "pss_alt_ref_clk", "aux_ref_clk", "gt_crx_ref_clk";
+		clock-output-names = "iopll", "rpll", "apll", "dpll",
+				"vpll", "iopll_to_fpd", "rpll_to_fpd",
+				"apll_to_lpd", "dpll_to_lpd", "vpll_to_lpd",
+				"acpu", "acpu_half", "dbf_fpd", "dbf_lpd",
+				"dbg_trace", "dbg_tstmp", "dp_video_ref",
+				"dp_audio_ref", "dp_stc_ref", "gdma_ref",
+				"dpdma_ref", "ddr_ref", "sata_ref", "pcie_ref",
+				"gpu_ref", "gpu_pp0_ref", "gpu_pp1_ref",
+				"topsw_main", "topsw_lsbus", "gtgref0_ref",
+				"lpd_switch", "lpd_lsbus", "usb0_bus_ref",
+				"usb1_bus_ref", "usb3_dual_ref", "usb0",
+				"usb1", "cpu_r5", "cpu_r5_core", "csu_spb",
+				"csu_pll", "pcap", "iou_switch", "gem_tsu_ref",
+				"gem_tsu", "gem0_ref", "gem1_ref", "gem2_ref",
+				"gem3_ref", "gem0_tx", "gem1_tx", "gem2_tx",
+				"gem3_tx", "qspi_ref", "sdio0_ref", "sdio1_ref",
+				"uart0_ref", "uart1_ref", "spi0_ref",
+				"spi1_ref", "nand_ref", "i2c0_ref", "i2c1_ref",
+				"can0_ref", "can1_ref", "can0", "can1",
+				"dll_ref", "adma_ref", "timestamp_ref",
+				"ams_ref", "pl0", "pl1", "pl2", "pl3", "wdt";
+	};
+
+	dp_aclk: dp_aclk {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		clock-frequency = <100000000>;
+		clock-accuracy = <100>;
+	};
+};
+
+&can0 {
+	clocks = <&clkc 63>, <&clkc 31>;
+};
+
+&can1 {
+	clocks = <&clkc 64>, <&clkc 31>;
+};
+
+&cpu0 {
+	clocks = <&clkc 10>;
+};
+
+&fpd_dma_chan1 {
+	clocks = <&clkc 19>, <&clkc 31>;
+};
+
+&fpd_dma_chan2 {
+	clocks = <&clkc 19>, <&clkc 31>;
+};
+
+&fpd_dma_chan3 {
+	clocks = <&clkc 19>, <&clkc 31>;
+};
+
+&fpd_dma_chan4 {
+	clocks = <&clkc 19>, <&clkc 31>;
+};
+
+&fpd_dma_chan5 {
+	clocks = <&clkc 19>, <&clkc 31>;
+};
+
+&fpd_dma_chan6 {
+	clocks = <&clkc 19>, <&clkc 31>;
+};
+
+&fpd_dma_chan7 {
+	clocks = <&clkc 19>, <&clkc 31>;
+};
+
+&fpd_dma_chan8 {
+	clocks = <&clkc 19>, <&clkc 31>;
+};
+
+&gpu {
+	clocks = <&clkc 24>, <&clkc 25>, <&clkc 26>;
+};
+
+&lpd_dma_chan1 {
+	clocks = <&clkc 68>, <&clkc 31>;
+};
+
+&lpd_dma_chan2 {
+	clocks = <&clkc 68>, <&clkc 31>;
+};
+
+&lpd_dma_chan3 {
+	clocks = <&clkc 68>, <&clkc 31>;
+};
+
+&lpd_dma_chan4 {
+	clocks = <&clkc 68>, <&clkc 31>;
+};
+
+&lpd_dma_chan5 {
+	clocks = <&clkc 68>, <&clkc 31>;
+};
+
+&lpd_dma_chan6 {
+	clocks = <&clkc 68>, <&clkc 31>;
+};
+
+&lpd_dma_chan7 {
+	clocks = <&clkc 68>, <&clkc 31>;
+};
+
+&lpd_dma_chan8 {
+	clocks = <&clkc 68>, <&clkc 31>;
+};
+
+&nand0 {
+	clocks = <&clkc 60>, <&clkc 31>;
+};
+
+&gem0 {
+	clocks = <&clkc 31>, <&clkc 49>, <&clkc 45>, <&clkc 49>, <&clkc 44>;
+	clock-names = "pclk", "hclk", "tx_clk", "rx_clk", "tsu_clk";
+};
+
+&gem1 {
+	clocks = <&clkc 31>, <&clkc 50>, <&clkc 46>, <&clkc 50>, <&clkc 44>;
+	clock-names = "pclk", "hclk", "tx_clk", "rx_clk", "tsu_clk";
+};
+
+&gem2 {
+	clocks = <&clkc 31>, <&clkc 51>, <&clkc 47>, <&clkc 51>, <&clkc 44>;
+	clock-names = "pclk", "hclk", "tx_clk", "rx_clk", "tsu_clk";
+};
+
+&gem3 {
+	clocks = <&clkc 31>, <&clkc 52>, <&clkc 48>, <&clkc 52>, <&clkc 44>;
+	clock-names = "pclk", "hclk", "tx_clk", "rx_clk", "tsu_clk";
+};
+
+&gpio {
+	clocks = <&clkc 31>;
+};
+
+&i2c0 {
+	clocks = <&clkc 61>;
+};
+
+&i2c1 {
+	clocks = <&clkc 62>;
+};
+
+&pcie {
+	clocks = <&clkc 23>;
+};
+
+&qspi {
+	clocks = <&clkc 53>, <&clkc 31>;
+};
+
+&sata {
+	clocks = <&clkc 22>;
+};
+
+&sdhci0 {
+	clocks = <&clkc 54>, <&clkc 31>;
+};
+
+&sdhci1 {
+	clocks = <&clkc 55>, <&clkc 31>;
+};
+
+&spi0 {
+	clocks = <&clkc 58>, <&clkc 31>;
+};
+
+&spi1 {
+	clocks = <&clkc 59>, <&clkc 31>;
+};
+
+&ttc0 {
+	clocks = <&clkc 31>;
+};
+
+&ttc1 {
+	clocks = <&clkc 31>;
+};
+
+&ttc2 {
+	clocks = <&clkc 31>;
+};
+
+&ttc3 {
+	clocks = <&clkc 31>;
+};
+
+&uart0 {
+	clocks = <&clkc 56>,  <&clkc 31>;
+};
+
+&uart1 {
+	clocks = <&clkc 57>,  <&clkc 31>;
+};
+
+&usb0 {
+	clocks = <&clkc 32>,  <&clkc 34>;
+};
+
+&usb1 {
+	clocks = <&clkc 33>,  <&clkc 34>;
+};
+
+&watchdog0 {
+	clocks = <&clkc 75>;
+};
+
+&xilinx_ams {
+	clocks = <&clkc 70>;
+};
+
+&xilinx_drm {
+	clocks = <&clkc 16>;
+};
+
+&xlnx_dp {
+	clocks = <&dp_aclk>, <&clkc 17>;
+};
+
+&xlnx_dpdma {
+	clocks = <&clkc 20>;
+};
+
+&xlnx_dp_snd_codec0 {
+	clocks = <&clkc 17>;
+};

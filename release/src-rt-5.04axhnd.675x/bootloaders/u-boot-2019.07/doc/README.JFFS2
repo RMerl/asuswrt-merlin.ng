@@ -1,0 +1,40 @@
+JFFS2 options and usage.
+-----------------------
+
+JFFS2 in U-Boot is a read only implementation of the file system in
+Linux with the same name. To use JFFS2 define CONFIG_CMD_JFFS2.
+
+The module adds three new commands.
+fsload  - load binary file from a file system image
+fsinfo  - print information about file systems
+ls      - list files in a directory
+chpart  - change active partition
+
+If you do now need the commands, you can enable the filesystem separately
+with CONFIG_FS_JFFS2 and call the jffs2 functions yourself.
+
+If you boot from a partition which is mounted writable, and you
+update your boot environment by replacing single files on that
+partition, you should also define CONFIG_SYS_JFFS2_SORT_FRAGMENTS. Scanning
+the JFFS2 filesystem takes *much* longer with this feature, though.
+Sorting is done while inserting into the fragment list, which is
+more or less a bubble sort. That algorithm is known to be O(n^2),
+thus you should really consider if you can avoid it!
+
+
+There only one way for JFFS2 to find the disk. It uses the flash_info
+structure to find the start of a JFFS2 disk (called partition in the code)
+and you can change where the partition is with two defines.
+
+CONFIG_SYS_JFFS2_FIRST_BANK
+	defined the first flash bank to use
+
+CONFIG_SYS_JFFS2_FIRST_SECTOR
+	defines the first sector to use
+---
+
+TODO.
+
+	Remove the assumption that JFFS can dereference a pointer
+	into the disk. The current code do not work with memory holes
+	or hardware with a sliding window (PCMCIA).

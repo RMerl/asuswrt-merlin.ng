@@ -1,0 +1,53 @@
+NAND Flash
+----------
+
+(there isn't yet a generic binding in Linux, so this describes what is in
+U-Boot. There should not be Linux-specific or U-Boot specific binding, just
+a binding that describes this hardware. But agreeing a binding in Linux in
+the absence of a driver may be beyond my powers.)
+
+The device node for a NAND flash device is as follows:
+
+Required properties :
+ - compatible : Should be "manufacturer,device", "nand-flash"
+
+This node should sit inside its controller.
+
+
+Nvidia NAND Controller
+----------------------
+
+The device node for a NAND flash controller is as follows:
+
+Optional properties:
+
+nvidia,wp-gpios : GPIO of write-protect line, three cells in the format:
+		phandle, parameter, flags
+nvidia,nand-width : bus width of the NAND device in bits
+
+ - nvidia,nand-timing : Timing parameters for the NAND. Each is in ns.
+	Order is: MAX_TRP_TREA, TWB, Max(tCS, tCH, tALS, tALH),
+	TWHR, Max(tCS, tCH, tALS, tALH), TWH, TWP, TRH, TADL
+
+	MAX_TRP_TREA is:
+		non-EDO mode: Max(tRP, tREA) + 6ns
+		EDO mode: tRP timing
+
+The 'reg' property should provide the chip select used by the flash chip.
+
+
+Example
+-------
+
+nand-controller@0x70008000 {
+	compatible = "nvidia,tegra20-nand";
+	#address-cells = <1>;
+	#size-cells = <0>;
+	nvidia,wp-gpios = <&gpio 59 0>;		/* PH3 */
+	nvidia,nand-width = <8>;
+	nvidia,timing = <26 100 20 80 20 10 12 10 70>;
+	nand@0 {
+		reg = <0>;
+		compatible = "hynix,hy27uf4g2b", "nand-flash";
+	};
+};

@@ -1,0 +1,22 @@
+diff --git a/source/TR-181/sbapi/cosa_wifi_apis.c b/source/TR-181/sbapi/cosa_wifi_apis.c
+index e428380..f07f3a2 100644
+--- a/source/TR-181/sbapi/cosa_wifi_apis.c
++++ b/source/TR-181/sbapi/cosa_wifi_apis.c
+@@ -7503,7 +7503,7 @@ printf("%s: Reset FactoryReset to 0 \n",__FUNCTION__);
+     CosaDmlWiFi_GetRapidReconnectIndicationEnable(&(pMyObject->bRapidReconnectIndicationEnabled), true);
+     CosaDmlWiFiGetvAPStatsFeatureEnable(&(pMyObject->bX_RDKCENTRAL_COM_vAPStatsEnable));
+     CosaDmlWiFiGetTxOverflowSelfheal(&(pMyObject->bTxOverflowSelfheal));
+-#if !defined(_PLATFORM_RASPBERRYPI_) && !defined(_PLATFORM_TURRIS_)
++#if !defined(_PLATFORM_RASPBERRYPI_) && !defined(_PLATFORM_TURRIS_) && !defined(_COSA_BCM_ARM_)
+     CosaDmlWiFiGetForceDisableWiFiRadio(&(pMyObject->bForceDisableWiFiRadio));
+ #endif
+ 
+@@ -8110,7 +8110,7 @@ ANSC_STATUS CosaDmlWiFiGetForceDisableWiFiRadio(BOOLEAN *pbValue)
+ 
+     // Initialize the value as FALSE always
+     *pbValue = FALSE;
+-#if defined(_PLATFORM_RASPBERRYPI_) || defined(_PLATFORM_TURRIS_)
++#if defined(_PLATFORM_RASPBERRYPI_) || defined(_PLATFORM_TURRIS_) || defined(_COSA_BCM_ARM_)
+     return ANSC_STATUS_SUCCESS;
+ #else
+     if (CCSP_SUCCESS == PSM_Get_Record_Value2(bus_handle,

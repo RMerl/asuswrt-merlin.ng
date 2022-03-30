@@ -1,0 +1,12 @@
+<PUBLISH>
+@@ special demark for maketargets.  All + and - lines after this line will modify profile.
+-BUILD_DYNAMIC_CFE=y
++# BUILD_DYNAMIC_CFE is not set
++RDK_BUILD=y
++BRCM_TOOLCHAIN_BASE=/opt/toolchains
+-BRCM_USE_STD_TOOLCHAIN=y
++# BRCM_USE_STD_TOOLCHAIN is not set
++BRCM_USE_ALT_TOOLCHAIN=y
++BRCM_ALT_ARM_TOOLCHAIN_PREFIX=arm-rdk-linux-gnueabi
++BRCM_ALT_TOOLCHAIN_BASE=to_be_replaced
++BRCM_ALT_ARM_TOOLCHAIN_TOPDIR=to_be_replaced

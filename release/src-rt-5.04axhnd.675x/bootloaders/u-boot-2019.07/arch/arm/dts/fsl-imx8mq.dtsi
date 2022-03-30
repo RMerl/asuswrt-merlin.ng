@@ -1,0 +1,429 @@
+/*
+ * Copyright (C) 2016 Freescale Semiconductor, Inc.
+ * Copyright 2017 NXP
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+#include "fsl-imx8-ca53.dtsi"
+#include <dt-bindings/clock/imx8mq-clock.h>
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/input/input.h>
+#include <dt-bindings/interrupt-controller/arm-gic.h>
+#include <dt-bindings/pinctrl/pins-imx8mq.h>
+#include <dt-bindings/thermal/thermal.h>
+
+/ {
+	compatible = "fsl,imx8mq";
+	interrupt-parent = <&gpc>;
+	#address-cells = <2>;
+	#size-cells = <2>;
+
+	aliases {
+		ethernet0 = &fec1;
+		mmc0 = &usdhc1;
+		mmc1 = &usdhc2;
+		gpio0 = &gpio1;
+		gpio1 = &gpio2;
+		gpio2 = &gpio3;
+		gpio3 = &gpio4;
+		gpio4 = &gpio5;
+		i2c0 = &i2c1;
+		i2c1 = &i2c2;
+		i2c2 = &i2c3;
+		i2c3 = &i2c4;
+	};
+
+	memory@40000000 {
+		device_type = "memory";
+		reg = <0x00000000 0x40000000 0 0xc0000000>;
+	};
+
+	gic: interrupt-controller@38800000 {
+		compatible = "arm,gic-v3";
+		reg = <0x0 0x38800000 0 0x10000>, /* GIC Dist */
+		      <0x0 0x38880000 0 0xC0000>; /* GICR (RD_base + SGI_base) */
+		#interrupt-cells = <3>;
+		interrupt-controller;
+		interrupts = <GIC_PPI 9 IRQ_TYPE_LEVEL_HIGH>;
+		interrupt-parent = <&gic>;
+	};
+
+	timer {
+		compatible = "arm,armv8-timer";
+		interrupts = <GIC_PPI 13 (GIC_CPU_MASK_SIMPLE(6) |
+			     IRQ_TYPE_LEVEL_LOW)>, /* Physical Secure */
+			     <GIC_PPI 14 (GIC_CPU_MASK_SIMPLE(6) |
+			     IRQ_TYPE_LEVEL_LOW)>, /* Physical Non-Secure */
+			     <GIC_PPI 11 (GIC_CPU_MASK_SIMPLE(6) |
+			     IRQ_TYPE_LEVEL_LOW)>, /* Virtual */
+			     <GIC_PPI 10 (GIC_CPU_MASK_SIMPLE(6) |
+			     IRQ_TYPE_LEVEL_LOW)>; /* Hypervisor */
+		clock-frequency = <8333333>;
+		interrupt-parent = <&gic>;
+	};
+
+	power: power-controller {
+		compatible = "fsl,imx8mq-pm-domain";
+		num-domains = <11>;
+		#power-domain-cells = <1>;
+	};
+
+	pwm2: pwm@30670000 {
+		compatible = "fsl,imx8mq-pwm", "fsl,imx27-pwm";
+		reg = <0x0 0x30670000 0x0 0x10000>;
+		interrupts = <GIC_SPI 82 IRQ_TYPE_LEVEL_HIGH>;
+		clocks = <&clk IMX8MQ_CLK_PWM2_ROOT>,
+			 <&clk IMX8MQ_CLK_PWM2_ROOT>;
+		clock-names = "ipg", "per";
+		#pwm-cells = <2>;
+		status = "disabled";
+	};
+
+	gpio1: gpio@30200000 {
+		compatible = "fsl,imx8mq-gpio", "fsl,imx35-gpio";
+		reg = <0x0 0x30200000 0x0 0x10000>;
+		interrupts = <GIC_SPI 64 IRQ_TYPE_LEVEL_HIGH>,
+			     <GIC_SPI 65 IRQ_TYPE_LEVEL_HIGH>;
+		gpio-controller;
+		#gpio-cells = <2>;
+		interrupt-controller;
+		#interrupt-cells = <2>;
+	};
+
+	gpio2: gpio@30210000 {
+		compatible = "fsl,imx8mq-gpio", "fsl,imx35-gpio";
+		reg = <0x0 0x30210000 0x0 0x10000>;
+		interrupts = <GIC_SPI 66 IRQ_TYPE_LEVEL_HIGH>,
+			<GIC_SPI 67 IRQ_TYPE_LEVEL_HIGH>;
+		gpio-controller;
+		#gpio-cells = <2>;
+		interrupt-controller;
+		#interrupt-cells = <2>;
+	};
+
+	gpio3: gpio@30220000 {
+		compatible = "fsl,imx8mq-gpio", "fsl,imx35-gpio";
+		reg = <0x0 0x30220000 0x0 0x10000>;
+		interrupts = <GIC_SPI 68 IRQ_TYPE_LEVEL_HIGH>,
+			<GIC_SPI 69 IRQ_TYPE_LEVEL_HIGH>;
+		gpio-controller;
+		#gpio-cells = <2>;
+		interrupt-controller;
+		#interrupt-cells = <2>;
+	};
+
+	gpio4: gpio@30230000 {
+		compatible = "fsl,imx8mq-gpio", "fsl,imx35-gpio";
+		reg = <0x0 0x30230000 0x0 0x10000>;
+		interrupts = <GIC_SPI 70 IRQ_TYPE_LEVEL_HIGH>,
+				<GIC_SPI 71 IRQ_TYPE_LEVEL_HIGH>;
+		gpio-controller;
+		#gpio-cells = <2>;
+		interrupt-controller;
+		#interrupt-cells = <2>;
+	};
+
+	gpio5: gpio@30240000 {
+		compatible = "fsl,imx8mq-gpio", "fsl,imx35-gpio";
+		reg = <0x0 0x30240000 0x0 0x10000>;
+		interrupts = <GIC_SPI 72 IRQ_TYPE_LEVEL_HIGH>,
+			<GIC_SPI 73 IRQ_TYPE_LEVEL_HIGH>;
+		gpio-controller;
+		#gpio-cells = <2>;
+		interrupt-controller;
+		#interrupt-cells = <2>;
+	};
+
+	tmu: tmu@30260000 {
+		compatible = "fsl,imx8mq-tmu";
+		reg = <0x0 0x30260000 0x0 0x10000>;
+		interrupt = <GIC_SPI 49 IRQ_TYPE_LEVEL_HIGH>;
+		little-endian;
+		u-boot,dm-pre-reloc;
+		fsl,tmu-range = <0xa0000 0x90026 0x8004a 0x1006a>;
+		fsl,tmu-calibration = <0x00000000 0x00000020
+				       0x00000001 0x00000028
+				       0x00000002 0x00000030
+				       0x00000003 0x00000038
+				       0x00000004 0x00000040
+				       0x00000005 0x00000048
+				       0x00000006 0x00000050
+				       0x00000007 0x00000058
+				       0x00000008 0x00000060
+				       0x00000009 0x00000068
+				       0x0000000a 0x00000070
+				       0x0000000b 0x00000077
+
+				       0x00010000 0x00000057
+				       0x00010001 0x0000005b
+				       0x00010002 0x0000005f
+				       0x00010003 0x00000063
+				       0x00010004 0x00000067
+				       0x00010005 0x0000006b
+				       0x00010006 0x0000006f
+				       0x00010007 0x00000073
+				       0x00010008 0x00000077
+				       0x00010009 0x0000007b
+				       0x0001000a 0x0000007f
+
+				       0x00020000 0x00000002
+				       0x00020001 0x0000000e
+				       0x00020002 0x0000001a
+				       0x00020003 0x00000026
+				       0x00020004 0x00000032
+				       0x00020005 0x0000003e
+				       0x00020006 0x0000004a
+				       0x00020007 0x00000056
+				       0x00020008 0x00000062
+
+				       0x00030000 0x00000000
+				       0x00030001 0x00000008
+				       0x00030002 0x00000010
+				       0x00030003 0x00000018
+				       0x00030004 0x00000020
+				       0x00030005 0x00000028
+				       0x00030006 0x00000030
+				       0x00030007 0x00000038>;
+		#thermal-sensor-cells =  <0>;
+	};
+
+	thermal-zones {
+		/* cpu thermal */
+		cpu-thermal {
+			polling-delay-passive = <250>;
+			polling-delay = <2000>;
+			thermal-sensors = <&tmu>;
+			trips {
+				cpu_alert0: trip0 {
+					temperature = <85000>;
+					hysteresis = <2000>;
+					type = "passive";
+				};
+				cpu_crit0: trip1 {
+					temperature = <125000>;
+					hysteresis = <2000>;
+					type = "critical";
+				};
+			};
+
+			cooling-maps {
+				map0 {
+					trip = <&cpu_alert0>;
+					cooling-device =
+					<&A53_0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
+				};
+			};
+		};
+	};
+
+	lcdif: lcdif@30320000 {
+		compatible = "fsl,imx8mq-lcdif", "fsl,imx28-lcdif";
+		reg = <0x0 0x30320000 0x0 0x10000>;
+		clocks = <&clk IMX8MQ_CLK_LCDIF_PIXEL_DIV>,
+			 <&clk IMX8MQ_CLK_DUMMY>,
+			 <&clk IMX8MQ_CLK_DUMMY>;
+		clock-names = "pix", "axi", "disp_axi";
+		assigned-clocks = <&clk IMX8MQ_CLK_LCDIF_PIXEL_SRC>;
+		assigned-clock-parents = <&clk IMX8MQ_VIDEO_PLL1_OUT>;
+		assigned-clock-rate = <594000000>;
+		interrupts = <GIC_SPI 5 IRQ_TYPE_LEVEL_HIGH>;
+		status = "disabled";
+	};
+
+	iomuxc: iomuxc@30330000 {
+		compatible = "fsl,imx8mq-iomuxc";
+		reg = <0x0 0x30330000 0x0 0x10000>;
+	};
+
+	gpr: iomuxc-gpr@30340000 {
+		compatible = "fsl,imx8mq-iomuxc-gpr", "fsl,imx7d-iomuxc-gpr", "syscon";
+		reg = <0x0 0x30340000 0x0 0x10000>;
+	};
+
+	ocotp: ocotp-ctrl@30350000 {
+		compatible = "fsl,imx8mq-ocotp", "fsl,imx7d-ocotp", "syscon";
+		reg = <0x0 0x30350000 0x0 0x10000>;
+	};
+
+	anatop: anatop@30360000 {
+		compatible = "fsl,imx8mq-anatop", "fsl,imx6q-anatop",
+			"syscon", "simple-bus";
+		reg = <0x0 0x30360000 0x0 0x10000>;
+		interrupts = <GIC_SPI 49 IRQ_TYPE_LEVEL_HIGH>;
+	};
+
+	clk: ccm@30380000 {
+		compatible = "fsl,imx8mq-ccm";
+		reg = <0x0 0x30380000 0x0 0x10000>;
+		interrupts = <GIC_SPI 85 IRQ_TYPE_LEVEL_HIGH>,
+			<GIC_SPI 86 IRQ_TYPE_LEVEL_HIGH>;
+		#clock-cells = <1>;
+	};
+
+	gpc: gpc@303a0000 {
+		compatible = "fsl,imx8mq-gpc", "fsl,imx7d-gpc", "syscon";
+		reg = <0x0 0x303a0000 0x0 0x10000>;
+		interrupt-controller;
+		interrupts = <GIC_SPI 87 IRQ_TYPE_LEVEL_HIGH>;
+		#interrupt-cells = <3>;
+		interrupt-parent = <&gic>;
+	};
+
+	usdhc1: usdhc@30b40000 {
+		compatible = "fsl,imx8mq-usdhc", "fsl,imx7d-usdhc";
+		reg = <0x0 0x30b40000 0x0 0x10000>;
+		interrupts = <GIC_SPI 22 IRQ_TYPE_LEVEL_HIGH>;
+		clocks = <&clk IMX8MQ_CLK_DUMMY>,
+			<&clk IMX8MQ_CLK_NAND_USDHC_BUS_DIV>,
+			<&clk IMX8MQ_CLK_USDHC1_ROOT>;
+		clock-names = "ipg", "ahb", "per";
+		assigned-clocks = <&clk IMX8MQ_CLK_USDHC1_DIV>;
+		assigned-clock-rates = <400000000>;
+		fsl,tuning-start-tap = <20>;
+		fsl,tuning-step= <2>;
+		bus-width = <4>;
+		status = "disabled";
+	};
+
+	usdhc2: usdhc@30b50000 {
+		compatible = "fsl,imx8mq-usdhc", "fsl,imx7d-usdhc";
+		reg = <0x0 0x30b50000 0x0 0x10000>;
+		interrupts = <GIC_SPI 23 IRQ_TYPE_LEVEL_HIGH>;
+		clocks = <&clk IMX8MQ_CLK_DUMMY>,
+			<&clk IMX8MQ_CLK_NAND_USDHC_BUS_DIV>,
+			<&clk IMX8MQ_CLK_USDHC2_ROOT>;
+		clock-names = "ipg", "ahb", "per";
+		fsl,tuning-start-tap = <20>;
+		fsl,tuning-step= <2>;
+		bus-width = <4>;
+		status = "disabled";
+	};
+
+	fec1: ethernet@30be0000 {
+		compatible = "fsl,imx8mq-fec", "fsl,imx6sx-fec";
+		reg = <0x0 0x30be0000 0x0 0x10000>;
+		interrupts = <GIC_SPI 118 IRQ_TYPE_LEVEL_HIGH>,
+			<GIC_SPI 119 IRQ_TYPE_LEVEL_HIGH>,
+			<GIC_SPI 120 IRQ_TYPE_LEVEL_HIGH>;
+		clocks = <&clk IMX8MQ_CLK_ENET1_ROOT>,
+			<&clk IMX8MQ_CLK_ENET1_ROOT>,
+			<&clk IMX8MQ_CLK_ENET_TIMER_DIV>,
+			<&clk IMX8MQ_CLK_ENET_REF_DIV>,
+			<&clk IMX8MQ_CLK_ENET_PHY_REF_DIV>;
+		clock-names = "ipg", "ahb", "ptp",
+			"enet_clk_ref", "enet_out";
+		assigned-clocks = <&clk IMX8MQ_CLK_ENET_AXI_SRC>,
+				  <&clk IMX8MQ_CLK_ENET_TIMER_SRC>,
+				  <&clk IMX8MQ_CLK_ENET_REF_SRC>,
+				  <&clk IMX8MQ_CLK_ENET_TIMER_DIV>;
+		assigned-clock-parents = <&clk IMX8MQ_SYS1_PLL_266M>,
+					 <&clk IMX8MQ_SYS2_PLL_100M>,
+					 <&clk IMX8MQ_SYS2_PLL_125M>;
+		assigned-clock-rates = <0>, <0>, <125000000>, <100000000>;
+		stop-mode = <&gpr 0x10 3>;
+		fsl,num-tx-queues=<3>;
+		fsl,num-rx-queues=<3>;
+		fsl,wakeup_irq = <2>;
+		status = "disabled";
+	};
+
+	imx_ion {
+		compatible = "fsl,mxc-ion";
+		fsl,heap-id = <0>;
+	};
+
+	i2c1: i2c@30a20000 {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		compatible = "fsl,imx21-i2c";
+		reg = <0x0 0x30a20000 0x0 0x10000>;
+		interrupts = <GIC_SPI 35 IRQ_TYPE_LEVEL_HIGH>;
+		clocks = <&clk IMX8MQ_CLK_I2C1_ROOT>;
+		status = "disabled";
+	};
+
+	i2c2: i2c@30a30000 {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		compatible = "fsl,imx21-i2c";
+		reg = <0x0 0x30a30000 0x0 0x10000>;
+		interrupts = <GIC_SPI 36 IRQ_TYPE_LEVEL_HIGH>;
+		clocks = <&clk IMX8MQ_CLK_I2C2_ROOT>;
+		status = "disabled";
+	};
+
+	i2c3: i2c@30a40000 {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		compatible = "fsl,imx21-i2c";
+		reg = <0x0 0x30a40000 0x0 0x10000>;
+		interrupts = <GIC_SPI 37 IRQ_TYPE_LEVEL_HIGH>;
+		clocks = <&clk IMX8MQ_CLK_I2C3_ROOT>;
+		status = "disabled";
+	};
+
+	i2c4: i2c@30a50000 {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		compatible = "fsl,imx21-i2c";
+		reg = <0x0 0x30a50000 0x0 0x10000>;
+		interrupts = <GIC_SPI 38 IRQ_TYPE_LEVEL_HIGH>;
+		clocks = <&clk IMX8MQ_CLK_I2C4_ROOT>;
+		status = "disabled";
+	};
+
+	wdog1: wdog@30280000 {
+			compatible = "fsl,imx21-wdt";
+			reg = <0 0x30280000 0 0x10000>;
+			interrupts = <GIC_SPI 78 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&clk IMX8MQ_CLK_WDOG1_ROOT>;
+			status = "disabled";
+	};
+
+	wdog2: wdog@30290000 {
+			compatible = "fsl,imx21-wdt";
+			reg = <0 0x30290000 0 0x10000>;
+			interrupts = <GIC_SPI 79 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&clk IMX8MQ_CLK_WDOG2_ROOT>;
+			status = "disabled";
+	};
+
+	wdog3: wdog@302a0000 {
+			compatible = "fsl,imx21-wdt";
+			reg = <0 0x302a0000 0 0x10000>;
+			interrupts = <GIC_SPI 10 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&clk IMX8MQ_CLK_WDOG3_ROOT>;
+			status = "disabled";
+	};
+
+	dma_cap: dma_cap {
+		compatible = "dma-capability";
+		only-dma-mask32 = <1>;
+	};
+
+	qspi: qspi@30bb0000 {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		compatible = "fsl,imx7d-qspi";
+		reg = <0 0x30bb0000 0 0x10000>, <0 0x08000000 0 0x10000000>;
+		reg-names = "QuadSPI", "QuadSPI-memory";
+		interrupts = <GIC_SPI 107 IRQ_TYPE_LEVEL_HIGH>;
+		clocks = <&clk IMX8MQ_CLK_QSPI_ROOT>,
+		<&clk IMX8MQ_CLK_QSPI_ROOT>;
+		clock-names = "qspi_en", "qspi";
+		status = "disabled";
+	};
+};
+
+&A53_0 {
+	#cooling-cells = <2>;
+};

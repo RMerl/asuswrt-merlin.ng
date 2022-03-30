@@ -1,0 +1,8 @@
+LINKIT_SMART_7688 BOARD
+M:	Stefan Roese <sr@denx.de>
+S:	Maintained
+F:	board/seeed/linkit-smart-7688
+F:	include/configs/linkit-smart-7688.h
+F:	configs/linkit-smart-7688_defconfig
+F:	configs/linkit-smart-7688-ram_defconfig
+F:	arch/mips/dts/linkit-smart-7688.dts

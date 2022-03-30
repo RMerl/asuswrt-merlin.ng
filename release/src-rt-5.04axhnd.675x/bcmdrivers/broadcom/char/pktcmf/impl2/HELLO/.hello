@@ -1,0 +1,5 @@
+Config Filename: ./config/untagged_nonIP.cfg
+Traffic Filename: ./config/untagged_nonIP.pcap
+Traffic Port: 0
+Traffic Gem: 0
+Debug: 3

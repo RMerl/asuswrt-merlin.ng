@@ -1,0 +1,6 @@
+E2220-1170 BOARD
+M:	Tom Warren <twarren@nvidia.com>
+S:	Maintained
+F:	board/nvidia/e2220-1170/
+F:	include/configs/e2220-1170.h
+F:	configs/e2220-1170_defconfig

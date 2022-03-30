@@ -1,0 +1,46 @@
+#include "6756.dtsi"
+
+/ {
+	memory_controller {
+		memcfg = <(BP_DDR_TYPE_DDR4           | \
+			BP_DDR_SPEED_1067_15_15_15 | \
+			BP_DDR_TOTAL_SIZE_2048MB   | \
+			BP_DDR_DEVICE_WIDTH_8      | \
+			BP_DDR_TOTAL_WIDTH_16BIT   | \
+			BP_DDR_6756_DEFAULT)>;
+	};
+
+	buttons {
+		compatible = "brcm,buttons";
+		ses_button {
+			ext_irq = <&bca_extintr 4 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+			release {
+				ses_short_period = <0>;
+				ses_long_period = <3>;
+			};
+		};
+	};
+};
+
+
+&mdio_sf2 {
+	phy_ge:8 {
+		status = "okay";
+	};
+};
+
+&switch0 {
+	pinctrl-names = "default"; 
+	pinctrl-0 = <&a_rgmii_mdc_pin_68 &a_rgmii_mdio_pin_69>; 
+
+	ports {
+		port0@0 {
+			phy-handle = <&phy_ge>;
+			status = "okay";
+		};
+	};
+};
+
+&pcie0 {
+	status = "disabled";
+};

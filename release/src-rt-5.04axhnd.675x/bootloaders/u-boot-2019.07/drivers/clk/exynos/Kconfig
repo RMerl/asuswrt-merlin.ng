@@ -1,0 +1,18 @@
+config CLK_EXYNOS
+	bool
+	select CLK
+	help
+	  This enables support for common clock driver API on Samsung
+	  Exynos SoCs.
+
+menu "Clock drivers for Exynos SoCs"
+	depends on CLK_EXYNOS
+
+config CLK_EXYNOS7420
+	bool "Clock driver for Samsung's Exynos7420 SoC"
+	default y
+	help
+	  This enables common clock driver support for platforms based
+	  on Samsung Exynos7420 SoC.
+
+endmenu

@@ -1,0 +1,75 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+use Getopt::Long;
+use Data::Dumper;
+use bytes;
+use File::Basename;
+
+
+my $usage = q[
+Usage: generate_loader --layout=$(bcm_uboot_layout) --out=$(FLASHIMG) $(objdir)/binaries/*.bin_headered
+
+];
+
+my $out;
+my $layout;
+my $obuff = '';
+my $ptr = 0;
+my %files;
+my $splprefix = '';
+
+GetOptions("out=s" , \$out,"layout=s",\$layout, "splprefix:s", \$splprefix) or die("$usage");
+die($usage) unless ($out && $layout);
+
+while (my $f = shift @ARGV) {
+	$f =~ /^(.*?)\/([\-\.\w]+)$/;
+	$files{$2} = $f;
+}
+
+open(L,"<$layout") or die("cant open $layout");
+open(OF,">$out") or die("cant open $out");
+open(OFM,">${out}.map") or die("cant open ${out}.map");
+
+print OFM "loader layout map file: offset, Binary, (size)\n";
+print OFM "----------------------------------------------\n";
+
+while (my $line = <L>) {
+    $ptr = ($ptr + 4095) & ~4095;
+    print "at $ptr\n";
+    print $line;
+    $line =~ s/\s*#.*$//;
+    $line =~ s/\s*$//;
+    my $pf = $splprefix . $line;
+    if (($files{$line}) || (!$files{$pf})) {
+        $pf = $line;
+    }
+    if ($line =~ /^loader:\s*(\d+)([MK]?)\s*$/i) {
+	my $mult = $1;
+	$mult = $mult * 1024 if ($2 && (uc($2) eq 'K'));
+	$mult = $mult * 1024 * 1024 if ($2 && (uc($2) eq 'M'));
+        $obuff = chr(255) x $mult;
+    } elsif ($line =~ /^offset:\s*(\d+)([MK]?)\s*$/i) {
+	my $mult = $1;
+	$mult = $mult * 1024 if ($2 && (uc($2) eq 'K'));
+	$mult = $mult * 1024 * 1024 if ($2 && (uc($2) eq 'M'));
+	if ($ptr <= $mult) {
+            $ptr = $mult;
+        } else {
+            printf("already %d beyond %d\n",$ptr - $mult, $mult);
+        }
+    } elsif ( ($pf =~ /\w/ ) && ($files{$pf}) && (-r $files{$pf})) {
+        print "add $files{$pf}\n";
+        local $/;
+        open(F,"<",$files{$pf}) or die("cant open file for $pf"); 
+        my $f = <F>;
+        my $flen = length($f);
+        printf OFM "0x%08x %s (%d bytes)\n",$ptr,basename($files{$pf}),$flen;
+        substr($obuff,$ptr,$flen) = $f;
+        $ptr = $ptr + $flen;
+    } 
+}
+
+print OF $obuff;
+

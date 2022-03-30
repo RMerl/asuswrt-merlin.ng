@@ -1,0 +1,47 @@
+QSPI U-Boot support
+------------------
+
+Host processor is connected to serial flash device via qpsi
+interface. QSPI is a kind of spi module that allows single,
+dual and quad read access to external spi devices. The module
+has a memory mapped interface which provide direct interface
+for accessing data form external spi devices.
+
+The one QSPI in the device is primarily intended for fast booting
+from Quad SPI flash devices.
+
+Usecase
+-------
+
+MLO/u-boot.img will be flashed from SD/MMC to the flash device
+using serial flash erase and write commands. Then, switch settings
+will be changed to qspi boot. Then, the ROM code will read MLO
+from the predefined location in the flash, where it was flashed and
+execute it after storing it in SDRAM. Then, the MLO will read
+u-boot.img from flash and execute it from SDRAM.
+
+SPI mode
+-------
+SPI mode uses mtd spi framework for transfer and reception of data.
+Can be used in:
+1. Normal mode: use single pin for transfers
+2. Dual Mode: use two pins for transfers.
+3. Quad mode: use four pin for transfer
+
+Memory mapped read mode
+-----------------------
+In this, SPI controller is configured using configuration port and then
+controller is switched to memory mapped port for data read.
+
+Driver
+------
+drivers/qspi/ti_qspi.c
+    - Newly created file which is responsible for configuring the
+	qspi controller and also for providing the low level api which
+	is responsible for transferring the datas from host controller
+	to flash device and vice versa.
+
+Testing
+-------
+A seperated file named README.dra_qspi_test has been created which gives all the
+details about the commands required to test qspi at U-Boot level.

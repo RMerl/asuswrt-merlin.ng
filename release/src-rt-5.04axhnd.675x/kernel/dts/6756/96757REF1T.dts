@@ -1,0 +1,104 @@
+#include "6756.dtsi"
+
+/ {
+	memory_controller {
+		memcfg = <(BP_DDR_TYPE_DDR4           | \
+			BP_DDR_SPEED_1067_15_15_15 | \
+			BP_DDR_TOTAL_SIZE_1024MB   | \
+			BP_DDR_DEVICE_WIDTH_16     | \
+			BP_DDR_TOTAL_WIDTH_16BIT   | \
+			BP_DDR_6756_DEFAULT)>;
+	};
+
+	buttons {
+		compatible = "brcm,buttons";
+		ses_button {
+			ext_irq = <&bca_extintr 4 BCA_GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+			release {
+				ses_short_period = <0>;
+				ses_long_period = <3>;
+			};
+		};
+	};
+};
+
+
+&mdio_sf2 {
+	phy_ge:8 {
+		status = "okay";
+	};
+	phy_cascade0:cascade0 {
+		reg = <28>;
+		phy-reset = <&gpioc 10 GPIO_ACTIVE_LOW>;
+		enet-phy-lane-swap;
+		status = "okay";
+	};
+	phy_serdes0:serdes0 {
+		phy-handle = <&phy_cascade0>;
+		status = "okay";
+	};
+	phy_cascade1:cascade1 {
+		reg = <30>;
+		phy-reset = <&gpioc 32 GPIO_ACTIVE_LOW>;
+		enet-phy-lane-swap;
+		status = "okay";
+	};
+	phy_serdes1:serdes1 {
+		phy-handle = <&phy_cascade1>;
+		status = "okay";
+	};
+};
+
+&switch0 {
+	pinctrl-names = "default"; 
+	pinctrl-0 = <&a_rgmii_mdc_pin_68 &a_rgmii_mdio_pin_69>; 
+
+	ports {
+		port0@0 {
+			phy-handle = <&phy_ge>;
+			status = "okay";
+		};
+		port5@5 {
+			phy-handle = <&phy_serdes0>;
+			status = "okay";
+		};
+		port6@6 {
+			phy-handle = <&phy_serdes1>;
+			status = "okay";
+		};
+	};
+};
+
+&usb_ctrl {
+	pinctrl-names="default";
+	pinctrl-0 = <&usb0_pwr_pins &usb1_pwr_pins>;
+	pwron-bias-pull-up;
+	status = "okay";
+	xhci-enable;
+};
+
+&usb0_xhci {
+	status = "okay";
+};
+
+&usb0_ehci {
+	status = "okay";
+};
+
+&usb1_ehci {
+	status = "okay";
+};
+
+&usb0_ohci {
+	status = "okay";
+};
+
+&usb1_ohci {
+	status = "okay";
+};
+
+&i2c0 {
+	pinctrl-names="default";
+	pinctrl-0 = <&i2c_sda_pin_16 &i2c_scl_pin_17>;
+	status = "okay";
+};

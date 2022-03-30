@@ -1,0 +1,23 @@
+/dts-v1/;
+
+/ {
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	binman {
+		sort-by-offset;
+		end-at-4gb;
+		size = <16>;
+		intel-me {
+			filename = "me.bin";
+			offset-unset;
+			intval = <3>;
+			intarray = <5 6>;
+			byteval = [08];
+			bytearray = [01 23 34];
+			longbytearray = [09 0a 0b 0c];
+			stringval = "message2";
+			stringarray = "another", "multi-word", "message";
+		};
+	};
+};

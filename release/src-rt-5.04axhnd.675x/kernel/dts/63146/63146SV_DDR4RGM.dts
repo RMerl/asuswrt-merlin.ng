@@ -1,0 +1,24 @@
+#include "963146SV_DDR4.dts"
+
+&mdio {
+		phy_rgmii: rgmii {
+				reg = <25>;
+				status = "okay";
+		};
+};
+
+&switch0 {
+		pinctrl-names = "default", "rgmii"; 
+		pinctrl-0 = <&a_rgmii_mdc_pin_65 &a_rgmii_mdio_pin_66 &rgmii_pins>; 
+		pinctrl-1 = <&rgmii_pins>; 
+
+		ports {
+				port5@5 {
+					mii-pinctrl-state = "rgmii";
+					rgmii-1p8v;
+					gmii-direct;
+					status = "okay";
+				};
+		};
+};
+

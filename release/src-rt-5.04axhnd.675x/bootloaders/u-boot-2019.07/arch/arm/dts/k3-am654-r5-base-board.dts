@@ -1,0 +1,139 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Copyright (C) 2016-2018 Texas Instruments Incorporated - http://www.ti.com/
+ */
+
+/dts-v1/;
+
+#include "k3-am654.dtsi"
+#include "k3-am654-base-board-u-boot.dtsi"
+#include "k3-am654-base-board-ddr4-1600MHz.dtsi"
+#include "k3-am654-ddr.dtsi"
+
+/ {
+	compatible =  "ti,am654-evm", "ti,am654";
+	model = "Texas Instruments AM654 R5 Base Board";
+
+	aliases {
+		serial0 = &wkup_uart0;
+		serial2 = &main_uart0;
+	};
+
+	chosen {
+		stdout-path = "serial2:115200n8";
+		tick-timer = &timer1;
+	};
+
+	aliases {
+		remoteproc0 = &sysctrler;
+		remoteproc1 = &a53_0;
+	};
+
+	a53_0: a53@0 {
+		compatible = "ti,am654-rproc";
+		reg = <0x0 0x00a90000 0x0 0x10>;
+		power-domains = <&k3_pds 61>,
+				<&k3_pds 202>;
+		resets = <&k3_reset 202 0>;
+		assigned-clocks = <&k3_clks 202 0>;
+		assigned-clock-rates = <800000000>;
+		ti,sci = <&dmsc>;
+		ti,sci-proc-id = <32>;
+		ti,sci-host-id = <10>;
+		u-boot,dm-spl;
+	};
+
+	vtt_supply: vtt_supply {
+		compatible = "regulator-gpio";
+		regulator-name = "vtt";
+		regulator-min-microvolt = <0>;
+		regulator-max-microvolt = <3300000>;
+		gpios = <&wkup_gpio0 28 GPIO_ACTIVE_HIGH>;
+		states = <0 0x0 3300000 0x1>;
+		u-boot,dm-spl;
+	};
+};
+
+&cbass_main {
+	timer1: timer@40400000 {
+		compatible = "ti,omap5430-timer";
+		reg = <0x0 0x40400000 0x0 0x80>;
+		ti,timer-alwon;
+		clock-frequency = <25000000>;
+		u-boot,dm-pre-reloc;
+	};
+};
+
+&cbass_mcu {
+	mcu_secproxy: secproxy@28380000 {
+		compatible = "ti,am654-secure-proxy";
+		reg = <0x0 0x2a380000 0x0 0x80000>,
+		      <0x0 0x2a400000 0x0 0x80000>,
+		      <0x0 0x2a480000 0x0 0x80000>;
+		reg-names = "rt", "scfg", "target_data";
+		#mbox-cells = <1>;
+		u-boot,dm-spl;
+	};
+};
+
+&cbass_wakeup {
+	sysctrler: sysctrler {
+		compatible = "ti,am654-system-controller";
+		mboxes= <&mcu_secproxy 4>, <&mcu_secproxy 5>;
+		mbox-names = "tx", "rx";
+		u-boot,dm-spl;
+	};
+
+	wkup_gpio0: wkup_gpio0@42110000 {
+		compatible = "ti,k2g-gpio", "ti,keystone-gpio";
+		reg = <0x42110000 0x100>;
+		gpio-controller;
+		#gpio-cells = <2>;
+		ti,ngpio = <56>;
+		ti,davinci-gpio-unbanked = <0>;
+		clocks = <&k3_clks 59 0>;
+		clock-names = "gpio";
+		u-boot,dm-spl;
+	};
+
+};
+
+&dmsc {
+	mboxes= <&mcu_secproxy 8>, <&mcu_secproxy 6>, <&mcu_secproxy 5>;
+	mbox-names = "tx", "rx", "notify";
+	ti,host-id = <4>;
+	ti,secure-host;
+};
+
+&wkup_uart0 {
+	u-boot,dm-spl;
+	pinctrl-names = "default";
+	pinctrl-0 = <&wkup_uart0_pins_default>;
+	status = "okay";
+};
+
+&wkup_pmx0 {
+	u-boot,dm-spl;
+	wkup_uart0_pins_default: wkup_uart0_pins_default {
+		pinctrl-single,pins = <
+			AM65X_WKUP_IOPAD(0x00a0, PIN_INPUT, 0)	/* (AB1) WKUP_UART0_RXD */
+			AM65X_WKUP_IOPAD(0x00a4, PIN_OUTPUT, 0)	/* (AB5) WKUP_UART0_TXD */
+			AM65X_WKUP_IOPAD(0x00c8, PIN_INPUT, 1)	/* (AC2) WKUP_GPIO0_6.WKUP_UART0_CTSn */
+			AM65X_WKUP_IOPAD(0x00cc, PIN_OUTPUT, 1)	/* (AC1) WKUP_GPIO0_7.WKUP_UART0_RTSn */
+		>;
+		u-boot,dm-spl;
+	};
+
+	wkup_vtt_pins_default: wkup_vtt_pins_default {
+		pinctrl-single,pins = <
+			AM65X_WKUP_IOPAD(0x0040, PIN_OUTPUT_PULLUP, 7)	/* WKUP_GPIO0_28 */
+		>;
+		u-boot,dm-spl;
+	};
+};
+
+&memorycontroller {
+	vtt-supply = <&vtt_supply>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&wkup_vtt_pins_default>;
+};

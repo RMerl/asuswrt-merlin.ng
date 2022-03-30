@@ -1,0 +1,24 @@
+/* SPDX-License-Identifier: GPL-2.0+ */
+/*
+ * Copyright (C) 2017 Álvaro Fernández Rojas <noltari@gmail.com>
+ */
+
+#ifndef __DT_BINDINGS_POWER_DOMAIN_BCM63268_H
+#define __DT_BINDINGS_POWER_DOMAIN_BCM63268_H
+
+#define BCM63268_PWR_SAR	0
+#define BCM63268_PWR_IPSEC	1
+#define BCM63268_PWR_MIPS	2
+#define BCM63268_PWR_DECT	3
+#define BCM63268_PWR_USBH	4
+#define BCM63268_PWR_USBD	5
+#define BCM63268_PWR_ROBOSW	6
+#define BCM63268_PWR_PCM	7
+#define BCM63268_PWR_PERIPH	8
+#define BCM63268_PWR_VDSL_PHY	9
+#define BCM63268_PWR_VDSL_MIPS	10
+#define BCM63268_PWR_FAP	11
+#define BCM63268_PWR_PCIE	12
+#define BCM63268_PWR_WLAN_PADS	13
+
+#endif /* __DT_BINDINGS_POWER_DOMAIN_BCM63268_H */

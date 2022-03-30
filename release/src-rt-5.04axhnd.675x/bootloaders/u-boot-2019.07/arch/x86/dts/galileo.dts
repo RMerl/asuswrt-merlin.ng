@@ -1,0 +1,167 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2015, Bin Meng <bmeng.cn@gmail.com>
+ */
+
+/dts-v1/;
+
+#include <dt-bindings/mrc/quark.h>
+#include <dt-bindings/interrupt-router/intel-irq.h>
+
+/include/ "skeleton.dtsi"
+/include/ "reset.dtsi"
+/include/ "rtc.dtsi"
+/include/ "tsc_timer.dtsi"
+
+/ {
+	model = "Intel Galileo";
+	compatible = "intel,galileo", "intel,quark";
+
+	aliases {
+		spi0 = &spi;
+	};
+
+	config {
+		silent_console = <0>;
+	};
+
+	chosen {
+		stdout-path = &pciuart0;
+	};
+
+	cpus {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		cpu@0 {
+			device_type = "cpu";
+			compatible = "cpu-x86";
+			reg = <0>;
+			intel,apic-id = <0>;
+		};
+	};
+
+	tsc-timer {
+		clock-frequency = <400000000>;
+	};
+
+	mrc {
+		compatible = "intel,quark-mrc";
+		flags = <MRC_FLAG_SCRAMBLE_EN>;
+		dram-width = <DRAM_WIDTH_X8>;
+		dram-speed = <DRAM_FREQ_800>;
+		dram-type = <DRAM_TYPE_DDR3>;
+		rank-mask = <DRAM_RANK(0)>;
+		chan-mask = <DRAM_CHANNEL(0)>;
+		chan-width = <DRAM_CHANNEL_WIDTH_X16>;
+		addr-mode = <DRAM_ADDR_MODE0>;
+		refresh-rate = <DRAM_REFRESH_RATE_785US>;
+		sr-temp-range = <DRAM_SRT_RANGE_NORMAL>;
+		ron-value = <DRAM_RON_34OHM>;
+		rtt-nom-value = <DRAM_RTT_NOM_120OHM>;
+		rd-odt-value = <DRAM_RD_ODT_OFF>;
+		dram-density = <DRAM_DENSITY_1G>;
+		dram-cl = <6>;
+		dram-ras = <0x0000927c>;
+		dram-wtr = <0x00002710>;
+		dram-rrd = <0x00002710>;
+		dram-faw = <0x00009c40>;
+	};
+
+	pci {
+		#address-cells = <3>;
+		#size-cells = <2>;
+		compatible = "pci-x86";
+		u-boot,dm-pre-reloc;
+		ranges = <0x02000000 0x0 0x90000000 0x90000000 0 0x20000000
+			  0x42000000 0x0 0xb0000000 0xb0000000 0 0x20000000
+			  0x01000000 0x0 0x2000 0x2000 0 0xe000>;
+
+		pciuart0: uart@14,5 {
+			compatible = "pci8086,0936.00",
+					"pci8086,0936",
+					"pciclass,070002",
+					"pciclass,0700",
+					"ns16550";
+			u-boot,dm-pre-reloc;
+			reg = <0x0000a500 0x0 0x0 0x0 0x0
+			       0x0200a510 0x0 0x0 0x0 0x0>;
+			reg-shift = <2>;
+			clock-frequency = <44236800>;
+			current-speed = <115200>;
+		};
+
+		pch@1f,0 {
+			reg = <0x0000f800 0 0 0 0>;
+			compatible = "intel,pch7";
+			#address-cells = <1>;
+			#size-cells = <1>;
+
+			irq-router {
+				compatible = "intel,irq-router";
+				intel,pirq-config = "pci";
+				intel,actl-addr = <0x58>;
+				intel,pirq-link = <0x60 8>;
+				intel,pirq-mask = <0xdef8>;
+				intel,pirq-routing = <
+					PCI_BDF(0, 20, 0) INTA PIRQE
+					PCI_BDF(0, 20, 1) INTB PIRQF
+					PCI_BDF(0, 20, 2) INTC PIRQG
+					PCI_BDF(0, 20, 3) INTD PIRQH
+					PCI_BDF(0, 20, 4) INTA PIRQE
+					PCI_BDF(0, 20, 5) INTB PIRQF
+					PCI_BDF(0, 20, 6) INTC PIRQG
+					PCI_BDF(0, 20, 7) INTD PIRQH
+					PCI_BDF(0, 21, 0) INTA PIRQE
+					PCI_BDF(0, 21, 1) INTB PIRQF
+					PCI_BDF(0, 21, 2) INTC PIRQG
+					PCI_BDF(0, 23, 0) INTA PIRQA
+					PCI_BDF(0, 23, 1) INTB PIRQB
+
+					/* PCIe root ports downstream interrupts */
+					PCI_BDF(1, 0, 0) INTA PIRQA
+					PCI_BDF(1, 0, 0) INTB PIRQB
+					PCI_BDF(1, 0, 0) INTC PIRQC
+					PCI_BDF(1, 0, 0) INTD PIRQD
+					PCI_BDF(2, 0, 0) INTA PIRQB
+					PCI_BDF(2, 0, 0) INTB PIRQC
+					PCI_BDF(2, 0, 0) INTC PIRQD
+					PCI_BDF(2, 0, 0) INTD PIRQA
+				>;
+			};
+
+			spi: spi {
+				#address-cells = <1>;
+				#size-cells = <0>;
+				compatible = "intel,ich7-spi";
+				spi-flash@0 {
+					#size-cells = <1>;
+					#address-cells = <1>;
+					reg = <0>;
+					compatible = "winbond,w25q64",
+						"jedec,spi-nor";
+					memory-map = <0xff800000 0x00800000>;
+					rw-mrc-cache {
+						label = "rw-mrc-cache";
+						reg = <0x00010000 0x00010000>;
+					};
+				};
+			};
+
+			gpioa {
+				compatible = "intel,ich6-gpio";
+				u-boot,dm-pre-reloc;
+				reg = <0 0x20>;
+				bank-name = "A";
+			};
+
+			gpiob {
+				compatible = "intel,ich6-gpio";
+				u-boot,dm-pre-reloc;
+				reg = <0x20 0x20>;
+				bank-name = "B";
+			};
+		};
+	};
+
+};

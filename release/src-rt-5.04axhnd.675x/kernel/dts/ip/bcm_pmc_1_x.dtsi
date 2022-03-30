@@ -1,0 +1,7 @@
+
+compatible = "brcm,bca-pmc-1-x";
+
+reg = <PMC_REG_OFFSET PMC_REG_SIZE>,
+    <PROCMON_REG_OFFSET PROCMON_REG_SIZE>,
+    <MISC_STRAP_BUS_OFFSET MISC_STRAP_BUS_SIZE>;
+reg-names = "pmc", "procmon", "strap";

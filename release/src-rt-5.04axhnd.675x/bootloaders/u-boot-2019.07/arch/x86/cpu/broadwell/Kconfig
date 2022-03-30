@@ -1,0 +1,42 @@
+# SPDX-License-Identifier: GPL-2.0
+#
+# Copyright (C) 2016 Google Inc.
+#
+
+config INTEL_BROADWELL
+	bool
+	select CACHE_MRC_BIN
+	select ARCH_EARLY_INIT_R
+	imply HAVE_INTEL_ME
+	imply ENABLE_MRC_CACHE
+	imply AHCI_PCI
+	imply ICH_SPI
+	imply INTEL_BROADWELL_GPIO
+	imply SCSI
+	imply SCSI_AHCI
+	imply SPI_FLASH
+	imply USB
+	imply USB_EHCI_HCD
+	imply VIDEO_BROADWELL_IGD
+
+if INTEL_BROADWELL
+
+config DCACHE_RAM_BASE
+	default 0xff7c0000
+
+config DCACHE_RAM_SIZE
+	default 0x40000
+
+config DCACHE_RAM_MRC_VAR_SIZE
+	default 0x30000
+
+config CPU_SPECIFIC_OPTIONS
+	def_bool y
+	select SMM_TSEG
+	select X86_RAMTEST
+
+config SMM_TSEG_SIZE
+	hex
+	default 0x800000
+
+endif

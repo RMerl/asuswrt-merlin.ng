@@ -1,0 +1,18 @@
+options {
+	driveTag = 0x00;
+	flags = 0x01;
+}
+
+sources {
+	u_boot_spl="spl/u-boot-spl.bin";
+	u_boot="u-boot.bin";
+}
+
+section (0) {
+	load u_boot_spl > 0x0000;
+	load ivt (entry = 0x0014) > 0x8000;
+	call 0x8000;
+
+	load u_boot > 0x40000100;
+	call 0x40000100;
+}

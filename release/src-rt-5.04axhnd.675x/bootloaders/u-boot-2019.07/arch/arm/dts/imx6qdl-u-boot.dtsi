@@ -1,0 +1,33 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2018 Jagan Teki <jagan@amarulasolutions.com>
+ */
+
+/ {
+	aliases {
+		usb0 = &usbotg;
+	};
+
+	soc {
+		u-boot,dm-spl;
+
+		aips-bus@2000000 {
+			u-boot,dm-spl;
+			spba-bus@2000000 {
+				u-boot,dm-spl;
+			};
+		};
+
+		aips-bus@2100000 {
+			u-boot,dm-spl;
+		};
+	};
+};
+
+&gpio1 {
+	u-boot,dm-spl;
+};
+
+&iomuxc {
+	u-boot,dm-spl;
+};

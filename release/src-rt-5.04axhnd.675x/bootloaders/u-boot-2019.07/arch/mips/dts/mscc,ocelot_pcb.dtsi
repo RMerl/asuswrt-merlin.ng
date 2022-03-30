@@ -1,0 +1,42 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/*
+ * Copyright (c) 2018 Microsemi Corporation
+ */
+
+/dts-v1/;
+#include "mscc,ocelot.dtsi"
+
+/ {
+	compatible = "mscc,ocelot";
+
+	aliases {
+		spi0 = &spi0;
+		serial0 = &uart0;
+	};
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+	};
+};
+
+&uart0 {
+	status = "okay";
+};
+
+&spi0 {
+	status = "okay";
+	pinctrl-0 = <&spi_cs1_pin>;
+	pinctrl-names = "default";
+
+	spi-flash@0 {
+		compatible = "jedec,spi-nor";
+		spi-max-frequency = <18000000>; /* input clock */
+		reg = <0>; /* CS0 */
+	};
+
+	spi-nand@1 {
+		compatible = "spi-nand";
+		spi-max-frequency = <18000000>; /* input clock */
+		reg = <1>; /* CS1 */
+	};
+};

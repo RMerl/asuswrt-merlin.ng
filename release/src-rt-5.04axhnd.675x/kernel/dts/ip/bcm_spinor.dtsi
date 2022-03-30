@@ -1,0 +1,8 @@
+#address-cells = <1>;
+#size-cells = <0>;
+compatible = "jedec,spi-nor";
+reg = <0>;
+spi-max-frequency = <SPINOR_MAX_FREQ>;
+label = "spi-nor.0";
+u-boot,dm-pre-reloc;
+status = "disabled";

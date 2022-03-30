@@ -1,0 +1,28 @@
+if VENDOR_ADVANTECH
+
+choice
+	prompt "Mainboard model"
+	optional
+
+config TARGET_SOM_DB5800_SOM_6867
+	bool "Advantech SOM-DB5800 & SOM-6867"
+	help
+	  Advantech SOM-DB5800 COM Express development board with SOM-6867
+	  installed.
+
+	  SOM-6867 is a COM Express Type 6 Compact Module with either an Intel
+	  Atom E3845 or Celeron N2920 processor.
+
+	  SOM-DB5800 is a COM Express Development board with:
+	    10/100/1000 Ethernet
+	    PCIe slots
+	    4x USB ports
+	    HDMI/DisplayPort/DVI, LVDS, VGA
+	    SATA ports
+	    ALC892 HD Audio Codec
+
+endchoice
+
+source "board/advantech/som-db5800-som-6867/Kconfig"
+
+endif

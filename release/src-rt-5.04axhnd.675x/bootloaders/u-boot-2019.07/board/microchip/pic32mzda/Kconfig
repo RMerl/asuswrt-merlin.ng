@@ -1,0 +1,16 @@
+
+if TARGET_PIC32MZDASK
+
+config SYS_BOARD
+	default "pic32mzda"
+
+config SYS_VENDOR
+	default "microchip"
+
+config SYS_CONFIG_NAME
+	default "pic32mzdask"
+
+config SYS_TEXT_BASE
+	default 0x9d004000
+
+endif

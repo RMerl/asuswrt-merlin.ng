@@ -1,0 +1,217 @@
+#include "inc/68580.dtsi"
+
+/ {
+    memory_controller {
+        memcfg = <(BP_DDR_SPEED_1067_14_14_14 | \
+                   BP_DDR_TOTAL_SIZE_512MB    | \
+                   BP_DDR_DEVICE_WIDTH_16     | \
+                   BP_DDR_TOTAL_WIDTH_32BIT)>;
+    };
+};
+
+/ {
+    xfp_sfp: xfp_sfp {
+        pinctrl-names = "tx-sd";
+        pinctrl-0 = <&a_rogue_onu_in_pin_56>;
+        compatible = "brcm,sfp";
+        i2c-bus = <&mux7_i2c>;
+        los-gpio = <&gpioc 49 GPIO_ACTIVE_HIGH>;
+        mod-def0 = <&bca_extintr 61 BCA_GPIO_ACTIVE_HIGH (BCA_EXTINTR_TYPE_BOTH_EDGE | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+        tx-power-gpio = <&gpioc 50 GPIO_ACTIVE_HIGH>;
+    };
+
+    wan_serdes {
+            compatible = "brcm,pon-drv";
+            trx = <&xfp_sfp>;
+            pon-led = <&led8>;
+            alarm-led = <&led5>;
+    };
+};
+
+&serdes_lport {
+        lportphy_opt4:opt4 {
+                pinctrl-names = "default";
+                pinctrl-0 = <&sfp_dserdes0_sig_det_1_pin_58 &sfp_dserdes0_mod_def_1_pin_25>;
+                tx-disable = <&gpioc 52 GPIO_ACTIVE_HIGH>;
+                status = "okay";
+        };
+};
+
+&uart1 {
+    pinctrl-0 = <&a_uart1_sin_pin_27 &a_uart1_sout_pin_28>;
+    status = "okay";
+};
+
+&hs_uart0 {
+    pinctrl-0 = <&b_uart2_sin_pin_16 &b_uart2_sout_pin_17 &b_uart2_cts_pin_18 &b_uart2_rts_pin_19>;
+    status = "okay";
+};
+
+&mdio_lport {
+        lportphy1:1 {
+                status = "okay";
+        };
+
+        lportphy2:2 {
+                status = "okay";
+        };
+};
+
+&switch0 {
+        ports {
+                port0@0 {
+                        status = "okay";
+                        network-leds = <&led0 &led1>;
+                };
+
+                port1@1 {
+                        network-leds = <&led3 &led4>;
+                        status = "okay";
+                };
+
+                port_xfi4@4 {
+                        phy-handle = <&lportphy_opt4>;
+                        oam-idx = <2>;
+                        network-leds = <&led12 &led13>;
+                        status = "okay";
+                };
+        };
+};
+
+&i2c1 {
+    i2cswitch {
+        compatible = "nxp,pca9548";
+        #address-cells = <1>;
+        #size-cells = <0>;
+        reg = <0x70>;
+
+        mux7_i2c: i2c@7 {
+            reg = <0x7>;
+        };
+    };
+};
+
+&led_ctrl {
+    pinctrl-names = "default";
+    pinctrl-0 = <&b_ser_led_clk_pin_30 &b_ser_led_data_pin_29 &b_ser_led_mask_pin_31>;
+    serial-shifters-installed = <2>;
+
+    led0: port_0-led_0-bit_0 {
+              active_low;
+              status = "okay";
+              link = <LED_SPEED_GBE>;
+          };
+    led1: port_0-led_1-bit_1 {
+              active_low;
+              status = "okay";
+              activity = <LED_SPEED_GBE>;
+          };
+    led2: sw_led-bit_2 {
+              active_low; 
+              brightness = <255>;
+              flash_rate = <0>;
+              status = "okay";
+              label = "WAN";
+          };
+    led3: port_1-led_0-bit_3 {
+              active_low;
+              status = "okay";
+              link = <LED_SPEED_GBE>;
+          };
+    led4: port_1-led_1-bit_4 {
+              active_low;
+              status = "okay";
+              activity = <LED_SPEED_GBE>;
+          };
+    led5: sw_led-bit_5 {
+              active_low; 
+              brightness = <255>;
+              flash_rate = <0>;
+              status = "okay";
+              label = "OpticalLinkFail";
+          };
+    led6: sw_led-bit_6 {
+              active_low;
+              brightness = <0>;
+              flash_rate = <0>;
+              status = "okay";
+          };
+    led7: sw_led-bit_7 {
+              active_low;
+              brightness = <0>;
+              flash_rate = <0>;
+              status = "okay";
+          };
+    led8: sw_led-bit_8 {
+              active_low; 
+              brightness = <255>;
+              flash_rate = <0>;
+              status = "okay";
+              label = "PON";
+          };
+    led9: sw_led-bit_9 {
+              active_low;
+              brightness = <0>;
+              flash_rate = <0>;
+              status = "okay";
+          };
+    led10: sw_led-bit_10 {
+              active_low;
+              brightness = <0>;
+              flash_rate = <0>;
+              status = "okay";
+          };
+    led11: sw_led-bit_11 {
+              active_low; 
+              brightness = <0>;
+              flash_rate = <0>;
+              status = "okay";
+          };
+    led12: sw_led-bit_12 {
+              active_low; 
+              brightness = <0>;
+              flash_rate = <0>;
+              status = "okay";
+          };
+    led13: sw_led-bit_13 {
+              active_low; 
+              brightness = <0>;
+              flash_rate = <0>;
+              status = "okay";
+          };
+    led14: sw_led-bit_14 {
+              active_low; 
+              brightness = <0>;
+              flash_rate = <0>;
+              status = "okay";
+          };
+};
+
+&legacy_leds {
+    wan-data-led = <&led2>;
+    voip1-ok-led = <&led11>;
+    voip2-ok-led = <&led14>;
+    usb-led = <&led12>;
+    wl-sess-led = <&led13>;
+};
+
+&nand {
+	status = "okay";
+};
+&wdt {
+	status = "okay";
+};
+&i2c0 {
+    status = "okay";
+};
+&i2c1 {
+    pinctrl-0 = <&i2c_2_scl_pin_23 &i2c_2_sda_pin_24>;
+    pinctrl-names = "default";
+    status = "okay";
+};
+&sdhci {
+	status = "okay";
+};
+&hsspi {
+	status = "okay";
+};

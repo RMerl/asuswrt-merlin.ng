@@ -1,0 +1,53 @@
+Marvell U-Boot Build Instructions
+=================================
+
+This document describes how to compile the U-Boot and how to change U-Boot configuration
+
+Build Procedure
+----------------
+1. Install required packages:
+
+		# sudo apt-get install libssl-dev
+		# sudo apt-get install device-tree-compiler
+		# sudo apt-get install swig libpython-dev
+
+2. Set the cross compiler:
+
+		# export CROSS_COMPILE=/path/to/toolchain/aarch64-marvell-linux-gnu-
+
+3. Clean-up old residuals:
+
+		# make mrproper
+
+4. Configure the U-Boot:
+
+		# make <defconfig_file>
+
+	- For the Armada-70x0/80x0 DB board use "mvebu_db_armada8k_defconfig"
+	- For the Armada-80x0 MacchiatoBin use "make mvebu_mcbin-88f8040_defconfig"
+	- For the Armada-3700 DB board use "make mvebu_db-88f3720_defconfig"
+	- For the Armada-3700 EsspressoBin use "make mvebu_espressobin-88f3720_defconfig"
+
+5. Configure the device-tree and build the U-Boot image:
+
+	Compile u-boot and set the required device-tree using:
+
+		# make DEVICE_TREE=<name>
+
+	NOTE:
+	Compilation with "mvebu_db_armada8k_defconfig" requires explicitly exporting DEVICE_TREE
+	for the requested board.
+	By default, u-boot is compiled with armada-8040-db device-tree.
+        Using A80x0 device-tree on A70x0 might break the device.
+        In order to prevent this, the required device-tree MUST be set during compilation.
+        All device-tree files are located in ./arch/arm/dts/ folder.
+
+	NOTE:
+	The u-boot.bin should not be used as a stand-alone image.
+	The ARM Trusted Firmware (ATF) build process uses this image to generate the
+	flash image.
+
+Configuration update
+---------------------
+	To update the U-Boot configuration, please refer to doc/README.kconfig
+

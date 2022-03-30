@@ -1,0 +1,12 @@
+if TARGET_VYASA_RK3288
+
+config SYS_BOARD
+	default "vyasa-rk3288"
+
+config SYS_VENDOR
+	default "amarula"
+
+config SYS_CONFIG_NAME
+	default "vyasa-rk3288"
+
+endif

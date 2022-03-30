@@ -1,0 +1,231 @@
+#include "4912.dtsi"
+#include "../bcm_voice.dtsi"
+
+/ {
+	memory_controller {
+		memcfg = <(BP_DDR_TYPE_DDR4           | \
+			BP_DDR_SPEED_1600_22_22_22    | \
+			BP_DDR_TOTAL_SIZE_2048MB      | \
+			BP_DDR_DEVICE_WIDTH_16        | \
+			BP_DDR_TOTAL_WIDTH_32BIT      | \
+			BP_DDR_4912_DEFAULT)>;
+	};
+
+	buttons: buttons {
+		compatible = "brcm,buttons";
+		reset_button {
+			ext_irq = <&bca_extintr 51 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+			press {
+				print = "Button Press -- Hold for 5s to do restore to default";
+			};
+			hold {
+				rst_to_dflt = <5>;
+			};
+			release {
+				reset = <0>;
+			};	
+		};
+		ses_button {
+			ext_irq = <&bca_extintr 52 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+			release {
+				ses_short_period = <0>;
+				ses_long_period = <3>;
+			};
+		};		
+	};
+
+	sfp0: sfp0 {
+		compatible = "brcm,sfp";
+		pinctrl-names = "default", "rx-sd";
+		pinctrl-0 = <&serdes2_rx_los_pin_2>;
+		pinctrl-1 = <&serdes2_rx_los_pin_2>;
+		i2c-bus = <&i2c1>;
+		mod-def0 = <&bca_extintr 5 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_BOTH_EDGE | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+	};
+
+};
+
+&nand {
+	write-protect = <1>;
+};
+
+#if defined(CONFIG_BCM_PCIE_HCD) || defined(CONFIG_BCM_PCIE_HCD_MODULE)
+&pcie1 {
+	status = "okay";
+};
+#endif //#if defined(CONFIG_BCM_PCIE_HCD) || defined(CONFIG_BCM_PCIE_HCD_MODULE)
+
+&i2c1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&i2c1_sclk_pin_14 &i2c1_sdata_pin_15>;
+	status = "okay";
+};
+
+&mdio {
+	phy4:4 {
+		status = "okay";
+	};
+	phy1:1 {
+		status = "okay";
+	};
+	phy_rgmii: rgmii {
+		status = "disabled";
+	};
+
+	phy_cascade0:9 {
+		status = "okay";
+	};
+
+	phy_serdes0:6 {
+		phy-handle = <&phy_cascade0>;
+		status = "okay";
+	};
+
+	phy_serdes2:8 {
+		trx = <&sfp0>;
+		status = "okay";
+	};
+};
+
+&switch0 {
+	ports {
+		port0@0 {
+			status = "okay";
+		};
+		port3@3 {
+			network-leds = <&led6 &led7>;
+			status = "okay";
+		};
+
+		port5@5 {
+			network-leds = <&led8 &led9>;
+			status = "okay";
+		};
+
+		port7@7 {
+			network-leds = <&led12 &led13>;
+			status = "okay";
+		};
+	};
+};
+
+&legacy_leds {
+    wl-sess-led = <&led15>;
+};
+
+&led_ctrl {
+    pinctrl-names = "default";
+    pinctrl-0 = <&ser_led_clk_pin_17 &ser_led_data_pin_16 &ser_led_mask_pin_18>;
+    serial-shifters-installed = <2>;
+    serial-data-polarity-high;
+
+    led0:sw_serial_led_0 {
+        status = "okay";
+        active_high;
+	crossbar-output = <0>;
+    };
+    led1:sw_serial_led_1 {
+	crossbar-output = <1>;
+        active_high;
+        status = "okay";
+    };
+    led2:sw_serial_led_2 {
+        status = "okay";
+        active_high;
+	crossbar-output = <2>;
+    };
+    led3:sw_serial_led_3 {
+        status = "okay";
+        active_high;
+	crossbar-output = <3>;
+    };
+    led4:sw_serial_led_4 {
+        status = "okay";
+        active_high;
+	crossbar-output = <4>;
+    };
+    led5:sw_serial_led_5 {
+        status = "okay";
+        active_high;
+	crossbar-output = <5>;
+    };
+    led6: serial-port_3-led_0 {
+        active_high;
+        link = <(LED_SPEED_100)>;
+        activity = <(LED_SPEED_100)>;
+	crossbar-output = <9>;
+        status = "okay";
+    };
+    led7: serial-port_3-led_1 {
+        active_high;
+        link = <(LED_SPEED_1G)>;
+        activity = <(LED_SPEED_1G)>;
+	crossbar-output = <10>;
+        status = "okay";
+    };
+    led8: serial-port_5-led_0 {
+        active_high;
+        link = <(LED_SPEED_100|LED_SPEED_2500)>;
+        activity = <(LED_SPEED_100|LED_SPEED_2500)>;
+	crossbar-output = <15>;
+        status = "okay";
+    };
+    led9: serial-port_5-led_1 {
+        active_high;
+        link = <(LED_SPEED_1G|LED_SPEED_2500)>;
+        activity = <(LED_SPEED_1G|LED_SPEED_2500)>;
+	crossbar-output = <16>;
+        status = "okay";
+    };
+    led10: serial-port_6-led_0 {
+        active_high;
+        link = <(LED_SPEED_100|LED_SPEED_2500|LED_SPEED_10G)>;
+        activity = <(LED_SPEED_100|LED_SPEED_2500|LED_SPEED_10G)>;
+	crossbar-output = <18>;
+        status = "okay";
+    };
+    led11: serial-port_6-led_1 {
+        active_high;
+        link = <(LED_SPEED_1G|LED_SPEED_2500|LED_SPEED_10G)>;
+        activity = <(LED_SPEED_1G|LED_SPEED_2500|LED_SPEED_10G)>;
+	crossbar-output = <19>;
+        status = "okay";
+    };
+    led12: serial-port_7-led_0 {
+        active_high;
+        link = <(LED_SPEED_100|LED_SPEED_2500|LED_SPEED_10G)>;
+        activity = <(LED_SPEED_100|LED_SPEED_2500|LED_SPEED_10G)>;
+	crossbar-output = <21>;
+        status = "okay";
+    };
+    led13: serial-port_7-led_1 {
+        active_high;
+        link = <(LED_SPEED_1G|LED_SPEED_2500|LED_SPEED_10G)>;
+        activity = <(LED_SPEED_1G|LED_SPEED_2500|LED_SPEED_10G)>;
+	crossbar-output = <22>;
+        status = "okay";
+    };
+    led14: sw_serial_led_30 {
+        active_high;
+        label = "INET";
+        crossbar-output = <23>;
+        status = "okay";
+    };
+    led15: sw_serial_led_31 {
+        active_high;
+        label = "WPS";
+        crossbar-output = <31>;
+        status = "okay";
+    };
+};
+
+&vreg_sync {
+		pinctrl-0 = <&a_vreg_sync_pin_19>;
+		pinctrl-names = "default";
+};
+&uart0 {
+        pinctrl-names = "default";
+        pinctrl-0 = <&uart0_sdin_pin_56 &uart0_sdout_pin_57 >;
+        status = "okay";
+};
+

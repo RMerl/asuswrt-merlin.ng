@@ -1,0 +1,250 @@
+#include <dt-bindings/memory/mpc83xx-sdram.h>
+#include <dt-bindings/clk/mpc83xx-clk.h>
+
+/ {
+	aliases {
+		i2c0 = &IIC;
+		i2c1 = &IIC2;
+		i2c2 = "/fpga0bus/fpga0_iic_main";
+		i2c3 = "/fpga0bus/fpga0_iic_video0";
+		i2c4 = "/fpga0bus/fpga0_iic_video1";
+		i2c5 = "/fpga0bus/fpga0_iic_usb";
+		gdsys_soc0 = "/fpga0bus";
+		gdsys_soc1 = "/fpga1bus";
+		ioep0 = "/fpga0bus/fpga0_ep0";
+		ioep1 = "/fpga0bus/fpga1_ep0";
+	};
+
+	chosen {
+		stdout-path = &serial1;
+	};
+
+	cpus {
+		compatible = "cpu_bus";
+		u-boot,dm-pre-reloc;
+
+		PowerPC,8308@0 {
+			compatible = "fsl,mpc8308";
+			clocks = <&socclocks MPC83XX_CLK_CORE
+			          &socclocks MPC83XX_CLK_CSB>;
+			u-boot,dm-pre-reloc;
+		};
+	};
+
+	board {
+		compatible = "gdsys,board_gazerbeam";
+		csb = <&board_soc>;
+		serdes = <&SERDES>;
+		rxaui0 = <&RXAUI0_0>;
+		rxaui1 = <&RXAUI0_1>;
+		rxaui2 = <&RXAUI0_2>;
+		rxaui3 = <&RXAUI0_3>;
+		rxaui4 = <&RXAUI1_0>;
+		rxaui5 = <&RXAUI1_1>;
+		rxaui6 = <&RXAUI1_2>;
+		rxaui7 = <&RXAUI1_3>;
+		fpga0 = <&FPGA0>;
+		fpga1 = <&FPGA1>;
+		ioep0 = <&IOEP0>;
+		ioep1 = <&IOEP1>;
+
+		ver-gpios = <&PPCPCA 12 0
+			     &PPCPCA 13 0
+			     &PPCPCA 14 0
+			     &PPCPCA 15 0>;
+
+		/* MC2/SC-Board */
+		var-gpios-mc2 = <&GPIO_VB0 0 0    /* VAR-MC_SC */
+				 &GPIO_VB0 11 0>; /* VAR-CON */
+		/* MC4-Board */
+		var-gpios-mc4 = <&GPIO_VB1 0 0    /* VAR-MC_SC */
+				 &GPIO_VB1 11 0>; /* VAR-CON */
+
+		reset-gpios = <&gpio0 1 0 &gpio0 2 1>;
+	};
+
+	socclocks: clocks {
+		compatible = "fsl,mpc8308-clk";
+		#clock-cells = <1>;
+		u-boot,dm-pre-reloc;
+	};
+
+	timer {
+		compatible = "fsl,mpc83xx-timer";
+		clocks = <&socclocks MPC83XX_CLK_CSB>;
+	};
+};
+
+&FPGA0 {
+	reset-gpios = <&PPCPCA 26 0>;
+	done-gpios = <&GPIO_VB0 19 0>;
+};
+
+&FPGA1 {
+	status = "disable";
+};
+
+&FPGA0BUS {
+	ranges = <0x0 0xe0600000 0x00004000>;
+	fpga = <&FPGA0>;
+
+	fpga0_video0 {
+		mode = "640_480_60";
+
+		status = "disabled";
+	};
+
+	RXAUI0_0: fpga0_rxaui@fc0 {
+		compatible = "gdsys,rxaui_ctrl";
+		reg = <0x0fc0 0x10>;
+	};
+
+	fpga0_iic_video0  {
+		status = "disabled";
+	};
+
+	fpga0_axi_video0 {
+		status = "disabled";
+	};
+
+	fpga0_video1 {
+		mode = "640_480_60";
+		status = "disabled";
+	};
+
+	fpga0_iic_video1  {
+		status = "disabled";
+	};
+
+	fpga0_axi_video1 {
+		status = "disabled";
+	};
+
+	IOEP0: fpga0_ep0 {
+	};
+
+	RXAUI0_1: fpga0_rxaui@fd0 {
+		compatible = "gdsys,rxaui_ctrl";
+		reg = <0x0fd0 0x10>;
+	};
+
+	RXAUI0_2: fpga0_rxaui@fe0 {
+		compatible = "gdsys,rxaui_ctrl";
+		reg = <0x0fe0 0x10>;
+	};
+
+	RXAUI0_3: fpga0_rxaui@ff0 {
+		compatible = "gdsys,rxaui_ctrl";
+		reg = <0x0ff0 0x10>;
+	};
+};
+
+&FPGA1BUS {
+	ranges = <0x0 0xe0700000 0x00004000>;
+	fpga = <&FPGA1>;
+
+	status = "disable";
+
+	fpga1_video0 {
+		mode = "640_480_60";
+	};
+
+	RXAUI1_0: fpga0_rxaui@fc0 {
+		compatible = "gdsys,rxaui_ctrl";
+		reg = <0x0fc0 0x10>;
+	};
+
+	fpga1_video1 {
+		mode = "640_480_60";
+	};
+
+	IOEP1: fpga1_ep0 {
+	};
+
+	RXAUI1_1: fpga0_rxaui@fd0 {
+		compatible = "gdsys,rxaui_ctrl";
+		reg = <0x0fd0 0x10>;
+	};
+
+	RXAUI1_2: fpga0_rxaui@fe0 {
+		compatible = "gdsys,rxaui_ctrl";
+		reg = <0x0fe0 0x10>;
+	};
+
+	RXAUI1_3: fpga0_rxaui@ff0 {
+		compatible = "gdsys,rxaui_ctrl";
+		reg = <0x0ff0 0x10>;
+	};
+};
+
+&board_soc {
+	u-boot,dm-pre-reloc;
+	clocks = <&socclocks MPC83XX_CLK_CSB>;
+
+	memory@2000 {
+		u-boot,dm-pre-reloc;
+	};
+
+	sdhc@2e000 {
+		clocks = <&socclocks MPC83XX_CLK_SDHC>;
+		clock-names = "per";
+	};
+
+	SERDES: serdes@e3000 {
+		reg = <0xe3000 0x200>;
+		compatible = "fsl,mpc83xx-serdes";
+		proto = "pex";
+		serdes-clk = <100>;
+		vdd;
+	};
+};
+
+&IIC {
+	clocks = <&socclocks MPC83XX_CLK_I2C1>;
+
+	PPCPCA: pca9698@20 {
+		label = "ppc";
+	};
+
+	IOPCA: pca9698@22 {
+		label = "io";
+	};
+
+	at97sc3205t@29 {
+		u-boot,i2c-offset-len = <0>;
+	};
+};
+
+&IIC2 {
+	clocks = <&socclocks MPC83XX_CLK_I2C2>;
+
+	GPIO_VB0: pca9698@20 {
+		label = "mc2-sc";
+	};
+
+	GPIO_VB1: pca9698@22 {
+		label = "mc4";
+	};
+};
+
+&board_soc {
+	u-boot,dm-pre-reloc;
+};
+
+&GPIO_VB0 {
+	u-boot,dm-pre-reloc;
+};
+
+&serial0 {
+	clocks = <&socclocks MPC83XX_CLK_CSB>;
+	u-boot,dm-pre-reloc;
+};
+
+&serial1 {
+	clocks = <&socclocks MPC83XX_CLK_CSB>;
+	u-boot,dm-pre-reloc;
+};
+
+&pci0 {
+	clocks = <&socclocks MPC83XX_CLK_PCIEXP1>;
+};

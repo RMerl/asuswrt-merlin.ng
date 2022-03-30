@@ -1,0 +1,31 @@
+How to use U-Boot on Grinn's liteBoard
+--------------------------------------
+
+- Build U-Boot for liteBoard:
+
+$ make mrproper
+$ make liteboard_defconfig
+$ make
+
+This will generate the SPL image called SPL and the u-boot.img.
+
+- Flash the SPL image into the micro SD card:
+
+sudo dd if=SPL of=/dev/mmcblk0 bs=1k seek=1; sync
+
+- Flash the u-boot.img image into the micro SD card:
+
+sudo dd if=u-boot.img of=/dev/mmcblk0 bs=1k seek=69; sync
+
+- Jumper settings:
+
+S1: 0 1 0 1 1 1
+
+where 0 means bottom position and 1 means top position (from the
+switch label numbers reference).
+
+- Insert the micro SD card in the board.
+
+- Connect USB cable between liteBoard and the PC for the power and console.
+
+- U-Boot messages should come up.

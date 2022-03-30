@@ -1,0 +1,15 @@
+if TARGET_JZ4780_CI20
+
+config SYS_BOARD
+	default "ci20"
+
+config SYS_VENDOR
+	default "imgtec"
+
+config SYS_CONFIG_NAME
+	default "ci20"
+
+config SYS_TEXT_BASE
+	default 0x80000000
+
+endif

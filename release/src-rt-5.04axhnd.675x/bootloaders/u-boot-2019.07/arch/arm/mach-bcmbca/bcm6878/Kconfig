@@ -1,0 +1,27 @@
+# SPDX-License-Identifier: GPL-2.0+
+#
+# (C) Copyright 2019 Broadcom Ltd
+#
+
+if BCM6878
+
+config TARGET_BCM96878
+    bool "Broadcom 6878 Reference Board"
+    depends on ARCH_BCMBCA
+
+config SYS_SOC
+    default "bcm6878"
+
+if BCMBCA_DDRC
+config BCMBCA_DDR_DEF_MCBSEL
+    hex "default mcb selector value"
+    default 0x80407
+endif
+
+config TPL_MAX_SIZE
+    default 1048576
+
+source "board/broadcom/bcmbca/Kconfig"
+
+endif
+

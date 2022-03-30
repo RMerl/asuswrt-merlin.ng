@@ -1,0 +1,151 @@
+Overview
+--------
+- BSC9131 is integrated device that targets Femto base station market.
+ It combines Power Architecture e500v2 and DSP StarCore SC3850 core
+ technologies with MAPLE-B2F baseband acceleration processing elements.
+- It's MAPLE disabled personality is called 9231.
+
+The BSC9131 SoC includes the following function and features:
+. Power Architecture subsystem including a e500 processor with 256-Kbyte shared
+  L2 cache
+. StarCore SC3850 DSP subsystem with a 512-Kbyte private L2 cache
+. The Multi Accelerator Platform Engine for Femto BaseStation Baseband
+  Processing (MAPLE-B2F)
+. A multi-standard baseband algorithm accelerator for Channel Decoding/Encoding,
+ Fourier Transforms, UMTS chip rate processing, LTE UP/DL Channel processing,
+ and CRC algorithms
+. Consists of accelerators for Convolution, Filtering, Turbo Encoding,
+ Turbo Decoding, Viterbi decoding, Chiprate processing, and Matrix Inversion
+ operations
+. DDR3/3L memory interface with 32-bit data width without ECC and 16-bit with
+ ECC, up to 400-MHz clock/800 MHz data rate
+. Dedicated security engine featuring trusted boot
+. DMA controller
+. OCNDMA with four bidirectional channels
+. Interfaces
+. Two triple-speed Gigabit Ethernet controllers featuring network acceleration
+  including IEEE 1588. v2 hardware support and virtualization (eTSEC)
+. eTSEC 1 supports RGMII/RMII
+. eTSEC 2 supports RGMII
+. High-speed USB 2.0 host and device controller with ULPI interface
+. Enhanced secure digital (SD/MMC) host controller (eSDHC)
+. Antenna interface controller (AIC), supporting three industry standard
+  JESD207/three custom ADI RF interfaces (two dual port and one single port)
+  and three MAXIM's MaxPHY serial interfaces
+. ADI lanes support both full duplex FDD support and half duplex TDD support
+. Universal Subscriber Identity Module (USIM) interface that facilitates
+  communication to SIM cards or Eurochip pre-paid phone cards
+. TDM with one TDM port
+. Two DUART, four eSPI, and two I2C controllers
+. Integrated Flash memory controller (IFC)
+. TDM with 256 channels
+. GPIO
+. Sixteen 32-bit timers
+
+The e500 core subsystem within the Power Architecture consists of the following:
+. 32-Kbyte L1 instruction cache
+. 32-Kbyte L1 data cache
+. 256-Kbyte L2 cache/L2 memory/L2 stash
+. programmable interrupt controller (PIC)
+. Debug support
+. Timers
+
+The SC3850 core subsystem consists of the following:
+. 32 Kbyte 8-way level 1 instruction cache (L1 ICache)
+. 32 Kbyte 8-way level 1 data cache (L1 DCache)
+. 512 Kbyte 8-way level 2 unified instruction/data cache (M2 memory)
+. Memory management unit (MMU)
+. Enhanced programmable interrupt controller (EPIC)
+. Debug and profiling unit (DPU)
+. Two 32-bit timers
+
+BSC9131RDB board Overview
+-------------------------
+ 1Gbyte DDR3 (on board DDR)
+ 128Mbyte 2K page size NAND Flash
+ 256 Kbit M24256 I2C EEPROM
+ 128 Mbit SPI Flash memory
+ USB-ULPI
+ eTSEC1: Connected to RGMII PHY
+ eTSEC2: Connected to RGMII PHY
+ DUART interface: supports one UARTs up to 115200 bps for console display
+ USIM connector
+
+Frequency Combinations Supported
+--------------------------------
+Core MHz/CCB MHz/DDR(MT/s)
+1. 1000/500/800
+2. 800/400/667
+
+Boot Methods Supported
+-----------------------
+1. NAND Flash
+2. SPI Flash
+
+Default Boot Method
+--------------------
+NAND boot
+
+Building U-Boot
+--------------
+To build the U-Boot for BSC9131RDB:
+1. NAND Flash with sysclk 66MHz(J16 on RDB closed, default)
+	make BSC9131RDB_NAND
+2. NAND Flash with sysclk 100MHz(J16 on RDB open)
+	make BSC9131RDB_NAND_SYSCLK100
+3. SPI Flash with sysclk 66MHz(J16 on RDB closed, default)
+	make BSC9131RDB_SPIFLASH
+4. SPI Flash with sysclk 100MHz(J16 on RDB open)
+	make BSC9131RDB_SPIFLASH_SYSCLK100
+
+Memory map
+-----------
+ 0x0000_0000	0x7FFF_FFFF	DDR			1G cacheable
+ 0xA0000000	0xBFFFFFFF	Shared DSP core L2/M2 space	512M
+ 0xC100_0000	0xC13F_FFFF	MAPLE-2F		4M
+ 0xC1F0_0000	0xC1F3_FFFF	PA SRAM Region 0	256K
+ 0xC1F8_0000	0xC1F9_FFFF	PA SRAM Region 1	128K
+ 0xFED0_0000	0xFED0_3FFF	SEC Secured RAM		16K
+ 0xFEE0_0000	0xFEE0_0FFF	DSP Boot ROM		4K
+ 0xFF60_0000	0xFF6F_FFFF 	DSP CCSR		1M
+ 0xFF70_0000	0xFF7F_FFFF	PA CCSR			1M
+ 0xFF80_0000	0xFFFF_FFFF	Boot Page & NAND Buffer 8M
+
+DDR Memory map
+---------------
+ 0x0000_0000	0x36FF_FFFF	Memory passed onto Linux
+ 0x3700_0000	0x37FF_FFFF	PowerPC-DSP shared control area
+ 0x3800_0000	0x4FFF_FFFF	DSP Private area
+
+ Out of 880M, passed onto Linux, 1hugetlb page of 256M is reserved for
+ data communcation between PowerPC and DSP core.
+ Rest is PowerPC private area.
+
+Flashing Images
+---------------
+To place a new U-Boot image in the NAND flash and then boot
+with that new image temporarily, use this:
+	tftp 1000000 u-boot-nand.bin
+	nand erase 0 100000
+	nand write 1000000 0 100000
+	reset
+
+Using the Device Tree Source File
+---------------------------------
+To create the DTB (Device Tree Binary) image file,
+use a command similar to this:
+
+	dtc -b 0 -f -I dts -O dtb bsc9131rdb.dts > bsc9131rdb.dtb
+
+Likely, that .dts file will come from here;
+
+	linux-2.6/arch/powerpc/boot/dts/bsc9131rdb.dts
+
+Booting Linux
+-------------
+Place a linux uImage in the TFTP disk area.
+
+	tftp 1000000 uImage
+	tftp 2000000 rootfs.ext2.gz.uboot
+	tftp c00000 bsc9131rdb.dtb
+	bootm 1000000 2000000 c00000

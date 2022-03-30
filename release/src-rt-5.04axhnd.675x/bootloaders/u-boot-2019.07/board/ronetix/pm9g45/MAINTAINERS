@@ -1,0 +1,6 @@
+PM9G45 BOARD
+M:	Ilko Iliev <iliev@ronetix.at>
+S:	Maintained
+F:	board/ronetix/pm9g45/
+F:	include/configs/pm9g45.h
+F:	configs/pm9g45_defconfig

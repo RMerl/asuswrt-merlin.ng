@@ -1,0 +1,15 @@
+if TARGET_CHILIBOARD
+
+config SYS_BOARD
+	default "chiliboard"
+
+config SYS_VENDOR
+	default "grinn"
+
+config SYS_CONFIG_NAME
+	default "chiliboard"
+
+config SYS_SOC
+	default "am33xx"
+
+endif

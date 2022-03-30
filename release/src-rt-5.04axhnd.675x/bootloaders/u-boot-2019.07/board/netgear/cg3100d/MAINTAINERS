@@ -1,0 +1,6 @@
+NETGEAR CG3100D BOARD
+M:	Álvaro Fernández Rojas <noltari@gmail.com>
+S:	Maintained
+F:	board/netgear/cg3100d/
+F:	include/configs/netgear_cg3100d.h
+F:	configs/netgear_cg3100d_ram_defconfig

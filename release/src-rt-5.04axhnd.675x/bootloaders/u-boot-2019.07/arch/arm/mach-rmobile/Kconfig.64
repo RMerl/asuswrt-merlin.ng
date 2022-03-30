@@ -1,0 +1,103 @@
+if RCAR_GEN3
+
+menu "Select Target SoC"
+
+config R8A7795
+	bool "Renesas SoC R8A7795"
+	imply CLK_R8A7795
+	imply PINCTRL_PFC_R8A7795
+
+config R8A7796
+	bool "Renesas SoC R8A7796"
+	imply CLK_R8A7796
+	imply PINCTRL_PFC_R8A7796
+
+config R8A77965
+	bool "Renesas SoC R8A77965"
+	imply CLK_R8A77965
+	imply PINCTRL_PFC_R8A77965
+
+config R8A77970
+	bool "Renesas SoC R8A77970"
+	imply CLK_R8A77970
+	imply PINCTRL_PFC_R8A77970
+
+config R8A77990
+	bool "Renesas SoC R8A77990"
+	imply CLK_R8A77990
+	imply PINCTRL_PFC_R8A77990
+
+config R8A77995
+	bool "Renesas SoC R8A77995"
+	imply CLK_R8A77995
+	imply PINCTRL_PFC_R8A77995
+
+endmenu
+
+choice
+	prompt "Renesas ARM64 SoCs board select"
+	optional
+
+config TARGET_DRAAK
+	bool "Draak board"
+	imply R8A77995
+	help
+          Support for Renesas R-Car Gen3 Draak platform
+
+config TARGET_EAGLE
+	bool "Eagle board"
+	imply R8A77970
+	help
+          Support for Renesas R-Car Gen3 Eagle platform
+
+config TARGET_EBISU
+	bool "Ebisu board"
+	imply R8A77990
+	help
+          Support for Renesas R-Car Gen3 Ebisu platform
+
+config TARGET_SALVATOR_X
+	bool "Salvator-X board"
+	imply R8A7795
+	imply R8A7796
+	imply R8A77965
+	imply SYS_MALLOC_F
+	imply MULTI_DTB_FIT
+	imply MULTI_DTB_FIT_USER_DEFINED_AREA
+	help
+          Support for Renesas R-Car Gen3 platform
+
+config TARGET_ULCB
+	bool "ULCB board"
+	imply R8A7795
+	imply R8A7796
+	imply R8A77965
+	imply SYS_MALLOC_F
+	imply MULTI_DTB_FIT
+	imply MULTI_DTB_FIT_USER_DEFINED_AREA
+	help
+          Support for Renesas R-Car Gen3 ULCB platform
+
+endchoice
+
+config SYS_SOC
+	default "rmobile"
+
+source "board/renesas/draak/Kconfig"
+source "board/renesas/eagle/Kconfig"
+source "board/renesas/ebisu/Kconfig"
+source "board/renesas/salvator-x/Kconfig"
+source "board/renesas/ulcb/Kconfig"
+
+config MULTI_DTB_FIT_UNCOMPRESS_SZ
+	default 0x80000 if TARGET_SALVATOR_X
+	default 0x80000 if TARGET_ULCB
+
+config MULTI_DTB_FIT_USER_DEF_ADDR
+	default 0x49000000 if TARGET_SALVATOR_X
+	default 0x49000000 if TARGET_ULCB
+
+config SYS_MALLOC_F_LEN
+	default 0x8000 if RCAR_GEN3
+
+endif

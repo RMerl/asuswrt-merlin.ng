@@ -1,0 +1,8 @@
+config UT_DM
+	bool "Enable driver model unit test command"
+	depends on SANDBOX && UNIT_TEST
+	help
+	  This enables the 'ut dm' command which runs a series of unit
+	  tests on the driver model code. Each subsystem (uclass) is tested.
+	  If all is well then all tests pass although there will be a few
+	  messages printed along the way.

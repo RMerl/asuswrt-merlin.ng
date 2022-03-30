@@ -1,0 +1,6 @@
+SNIPER BOARD
+M:	Paul Kocialkowski <contact@paulk.fr>
+S:	Maintained
+F:	board/lg/sniper/
+F:	include/configs/sniper.h
+F:	configs/sniper_defconfig

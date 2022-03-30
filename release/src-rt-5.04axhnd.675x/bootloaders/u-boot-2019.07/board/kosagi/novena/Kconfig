@@ -1,0 +1,12 @@
+if TARGET_KOSAGI_NOVENA
+
+config SYS_BOARD
+	default "novena"
+
+config SYS_VENDOR
+	default "kosagi"
+
+config SYS_CONFIG_NAME
+	default "novena"
+
+endif

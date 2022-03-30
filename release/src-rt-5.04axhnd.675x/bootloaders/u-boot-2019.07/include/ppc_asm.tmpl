@@ -1,0 +1,286 @@
+/* SPDX-License-Identifier: GPL-2.0+ */
+/*
+ * (C) Copyright 2000-2002
+ * Wolfgang Denk, DENX Software Engineering, wd@denx.de.
+ */
+
+/*
+ * This file contains all the macros and symbols which define
+ * a PowerPC assembly language environment.
+ */
+#ifndef	__PPC_ASM_TMPL__
+#define __PPC_ASM_TMPL__
+
+#include <config.h>
+
+/***************************************************************************
+ *
+ * These definitions simplify the ugly declarations necessary for GOT
+ * definitions.
+ *
+ * Stolen from prepboot/bootldr.h, (C) 1998 Gabriel Paubert, paubert@iram.es
+ *
+ * Uses r12 to access the GOT
+ */
+
+#define START_GOT			\
+	.section	".got2","aw";	\
+.LCTOC1 = .+32768
+
+#define END_GOT				\
+	.text
+
+#define GET_GOT				\
+	bl	1f		;	\
+	.text	2		;	\
+0:	.long	.LCTOC1-1f	;	\
+	.text			;	\
+1:	mflr	r12		;	\
+	lwz	r0,0b-1b(r12)	;	\
+	add	r12,r0,r12	;
+
+#define GOT_ENTRY(NAME)		.L_ ## NAME = . - .LCTOC1 ; .long NAME
+
+#define GOT(NAME)		.L_ ## NAME (r12)
+
+
+/***************************************************************************
+ * Register names
+ */
+#define	r0	0
+#define	r1	1
+#define	r2	2
+#define	r3	3
+#define	r4	4
+#define	r5	5
+#define	r6	6
+#define	r7	7
+#define	r8	8
+#define	r9	9
+#define	r10	10
+#define	r11	11
+#define	r12	12
+#define	r13	13
+#define	r14	14
+#define	r15	15
+#define	r16	16
+#define	r17	17
+#define	r18	18
+#define	r19	19
+#define	r20	20
+#define	r21	21
+#define	r22	22
+#define	r23	23
+#define	r24	24
+#define	r25	25
+#define	r26	26
+#define	r27	27
+#define	r28	28
+#define	r29	29
+#define	r30	30
+#define	r31	31
+
+#if defined(CONFIG_MPC8xx)
+
+/* Some special registers */
+
+#define ICR	148	/* Interrupt Cause Register (37-44) */
+#define DER	149
+#define COUNTA	150	/* Breakpoint Counter	    (37-44) */
+#define COUNTB	151	/* Breakpoint Counter	    (37-44) */
+#define LCTRL1	156	/* Load/Store Support	    (37-40) */
+#define LCTRL2	157	/* Load/Store Support	    (37-41) */
+#define ICTRL	158
+
+#endif	/* CONFIG_MPC8xx */
+
+
+#if defined(CONFIG_MPC8xx)
+
+/* Registers in the processor's internal memory map that we use.
+*/
+#define SYPCR	0x00000004
+#define BR0	0x00000100
+#define OR0	0x00000104
+#define BR1	0x00000108
+#define OR1	0x0000010c
+#define BR2	0x00000110
+#define OR2	0x00000114
+#define BR3	0x00000118
+#define OR3	0x0000011c
+#define BR4	0x00000120
+#define OR4	0x00000124
+
+#define MAR	0x00000164
+#define MCR	0x00000168
+#define MAMR	0x00000170
+#define MBMR	0x00000174
+#define MSTAT	0x00000178
+#define MPTPR	0x0000017a
+#define MDR	0x0000017c
+
+#define TBSCR	0x00000200
+#define TBREFF0	0x00000204
+
+#define PLPRCR	0x00000284
+
+#endif
+
+#define curptr r2
+
+#define SYNC \
+	sync; \
+	isync
+
+/*
+ * Macros for storing registers into and loading registers from
+ * exception frames.
+ */
+#define SAVE_GPR(n, base)	stw	n,GPR0+4*(n)(base)
+#define SAVE_2GPRS(n, base)	SAVE_GPR(n, base); SAVE_GPR(n+1, base)
+#define SAVE_4GPRS(n, base)	SAVE_2GPRS(n, base); SAVE_2GPRS(n+2, base)
+#define SAVE_8GPRS(n, base)	SAVE_4GPRS(n, base); SAVE_4GPRS(n+4, base)
+#define SAVE_10GPRS(n, base)	SAVE_8GPRS(n, base); SAVE_2GPRS(n+8, base)
+#define REST_GPR(n, base)	lwz	n,GPR0+4*(n)(base)
+#define REST_2GPRS(n, base)	REST_GPR(n, base); REST_GPR(n+1, base)
+#define REST_4GPRS(n, base)	REST_2GPRS(n, base); REST_2GPRS(n+2, base)
+#define REST_8GPRS(n, base)	REST_4GPRS(n, base); REST_4GPRS(n+4, base)
+#define REST_10GPRS(n, base)	REST_8GPRS(n, base); REST_2GPRS(n+8, base)
+
+/*
+ * GCC sometimes accesses words at negative offsets from the stack
+ * pointer, although the SysV ABI says it shouldn't.  To cope with
+ * this, we leave this much untouched space on the stack on exception
+ * entry.
+ */
+#define STACK_UNDERHEAD	64
+
+/*
+ * Exception entry code.  This code runs with address translation
+ * turned off, i.e. using physical addresses.
+ * We assume sprg3 has the physical address of the current
+ * task's thread_struct.
+ */
+#define EXCEPTION_PROLOG(reg1, reg2)	\
+	mtspr	SPRG0,r20;	\
+	mtspr	SPRG1,r21;	\
+	mfcr	r20;		\
+	subi	r21,r1,INT_FRAME_SIZE+STACK_UNDERHEAD;	/* alloc exc. frame */\
+	stw	r20,_CCR(r21);		/* save registers */ \
+	stw	r22,GPR22(r21);	\
+	stw	r23,GPR23(r21);	\
+	mfspr	r20,SPRG0;	\
+	stw	r20,GPR20(r21);	\
+	mfspr	r22,SPRG1;	\
+	stw	r22,GPR21(r21);	\
+	mflr	r20;		\
+	stw	r20,_LINK(r21);	\
+	mfctr	r22;		\
+	stw	r22,_CTR(r21);	\
+	mfspr	r20,XER;	\
+	stw	r20,_XER(r21);	\
+	mfspr	r20, DAR_DEAR;	\
+	stw	r20,_DAR(r21);	\
+	mfspr	r22,reg1;	\
+	mfspr	r23,reg2;	\
+	stw	r0,GPR0(r21);	\
+	stw	r1,GPR1(r21);	\
+	stw	r2,GPR2(r21);	\
+	stw	r1,0(r21);	\
+	mr	r1,r21;			/* set new kernel sp */	\
+	SAVE_4GPRS(3, r21);
+/*
+ * Note: code which follows this uses cr0.eq (set if from kernel),
+ * r21, r22 (SRR0), and r23 (SRR1).
+ */
+
+/*
+ * Exception vectors.
+ *
+ * The data words for `hdlr' and `int_return' are initialized with
+ * OFFSET values only; they must be relocated first before they can
+ * be used!
+ */
+#define COPY_EE(d, s)		rlwimi d,s,0,16,16
+#define NOCOPY(d, s)
+
+#ifdef CONFIG_E500
+#define EXC_XFER_TEMPLATE(n, label, hdlr, msr, copyee)	\
+	stw	r22,_NIP(r21);				\
+	stw	r23,_MSR(r21);				\
+	li	r23,n;					\
+	stw	r23,TRAP(r21);				\
+	li	r20,msr;				\
+	copyee(r20,r23);				\
+	rlwimi	r20,r23,0,25,25;			\
+	mtmsr	r20;					\
+	bl	1f;					\
+1:	mflr	r23;					\
+	addis	r23,r23,(hdlr - 1b)@ha;			\
+	addi	r23,r23,(hdlr - 1b)@l;			\
+	b	transfer_to_handler
+
+#define STD_EXCEPTION(n, label, hdlr)				\
+.align 4;							\
+label:								\
+	EXCEPTION_PROLOG(SRR0, SRR1);				\
+	addi	r3,r1,STACK_FRAME_OVERHEAD;			\
+	EXC_XFER_TEMPLATE(n, label, hdlr, MSR_KERNEL, NOCOPY)	\
+
+#define CRIT_EXCEPTION(n, label, hdlr)				\
+.align 4;							\
+label:								\
+	EXCEPTION_PROLOG(CSRR0, CSRR1);				\
+	addi	r3,r1,STACK_FRAME_OVERHEAD;			\
+	EXC_XFER_TEMPLATE(n, label, hdlr,			\
+	MSR_KERNEL & ~(MSR_ME|MSR_DE|MSR_CE), NOCOPY)		\
+
+#define MCK_EXCEPTION(n, label, hdlr)				\
+.align 4;							\
+label:								\
+	EXCEPTION_PROLOG(MCSRR0, MCSRR1);			\
+	addi	r3,r1,STACK_FRAME_OVERHEAD;			\
+	EXC_XFER_TEMPLATE(n, label, hdlr,			\
+	MSR_KERNEL & ~(MSR_ME|MSR_DE|MSR_CE), NOCOPY)		\
+
+#else	/* !E500 */
+
+#define EXC_XFER_TEMPLATE(label, hdlr, msr, copyee)	\
+	bl	1f;					\
+1:	mflr    r20;					\
+	lwz	r20,(.L_ ## label)-1b+8(r20);		\
+	mtlr	r20;					\
+	li	r20,msr;				\
+	copyee(r20,r23);				\
+	rlwimi	r20,r23,0,25,25;			\
+	blrl;						\
+.L_ ## label :						\
+	.long	hdlr - _start + _START_OFFSET;		\
+	.long	int_return - _start + _START_OFFSET;	\
+	.long	transfer_to_handler - _start + _START_OFFSET
+
+#define STD_EXCEPTION(n, label, hdlr)				\
+	. = n;							\
+label:								\
+	EXCEPTION_PROLOG(SRR0, SRR1);				\
+	addi	r3,r1,STACK_FRAME_OVERHEAD;			\
+	EXC_XFER_TEMPLATE(label, hdlr, MSR_KERNEL, NOCOPY)	\
+
+#define CRIT_EXCEPTION(n, label, hdlr)				\
+	. = n;							\
+label:								\
+	EXCEPTION_PROLOG(CSRR0, CSRR1);				\
+	addi	r3,r1,STACK_FRAME_OVERHEAD;			\
+	EXC_XFER_TEMPLATE(label, hdlr,				\
+	MSR_KERNEL & ~(MSR_ME|MSR_DE|MSR_CE), NOCOPY)		\
+
+#define MCK_EXCEPTION(n, label, hdlr)				\
+	. = n;							\
+label:								\
+	EXCEPTION_PROLOG(MCSRR0, MCSRR1);			\
+	addi	r3,r1,STACK_FRAME_OVERHEAD;			\
+	EXC_XFER_TEMPLATE(label, hdlr,				\
+	MSR_KERNEL & ~(MSR_ME|MSR_DE|MSR_CE), NOCOPY)		\
+
+#endif	/* !E500 */
+#endif	/* __PPC_ASM_TMPL__ */

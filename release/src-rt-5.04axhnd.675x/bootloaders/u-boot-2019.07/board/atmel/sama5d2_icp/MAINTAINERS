@@ -1,0 +1,7 @@
+SAMA5D2 ICP BOARD
+M:     Eugen Hristev <eugen.hristev@microchip.com>
+S:     Maintained
+F:     board/atmel/sama5d2_icp/
+F:     include/configs/sama5d2_icp.h
+F:     configs/sama5d2_icp_mmc_defconfig
+

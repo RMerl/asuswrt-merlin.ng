@@ -1,0 +1,35 @@
+MAXIM, MAX77686 pmic
+
+This device uses two drivers:
+- drivers/power/pmic/max77686.c (for parent device)
+- drivers/power/regulator/max77686.c (for child regulators)
+
+This file describes the binding info for the PMIC driver.
+
+To bind the regulators, please read the additional binding info:
+- doc/device-tree-bindings/regulator/max77686.txt
+
+Required properties:
+- compatible: "maxim,max77686"
+- reg = 0x9
+
+With those two properties, the pmic device can be used for read/write only.
+To bind each regulator, the optional regulators subnode should exists.
+
+Optional subnode:
+- voltage-regulators: subnode list of each device's regulator
+  (see max77686.txt - regulator binding info)
+
+Example:
+
+max77686@09 {
+	compatible = "maxim,max77686";
+	reg = <0x09>;
+
+	voltage-regulators {
+		ldo1 {
+			...
+		};
+		...
+	};
+};

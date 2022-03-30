@@ -1,0 +1,17 @@
+SAMSUNG, S2MPS11 PMIC
+
+This file describes the binding info for the PMIC driver:
+- drivers/power/pmic/s2mps11.c
+
+Required properties:
+- compatible: "samsung,s2mps11-pmic"
+- reg = 0x66
+
+With those two properties, the pmic device can be used for read/write only.
+
+Example:
+
+s2mps11@66 {
+	compatible = "samsung,s2mps11-pmic";
+	reg = <0x66>;
+};

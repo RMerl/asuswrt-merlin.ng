@@ -1,0 +1,53 @@
+Led Controller:
+
+The LED controller is declared in ip/bcm_led_ctrl.dtsi
+This dtsi should be included by SOC family dtsi file and the following register offsets and sizes should be defined:
+
+LED_GLBL_CTRL_OFFSET     
+LED_GLBL_CTRL_SIZE       
+LED_HW_EN_OFFSET         
+LED_HW_EN_SIZE           
+LED_SER_SHIFT_OFFSET     
+LED_SER_SHIFT_SIZE       
+LED_FLASH_RATE_OFFSET    
+LED_FLASH_RATE_SIZE      
+LED_BRIGHTNESS_OFFSET    
+LED_BRIGHTNESS_SIZE      
+LED_POWER_LED_CFG_OFFSET 
+LED_POWER_LED_CFG_SIZE   
+LED_POWER_LUT_OFFSET     
+LED_POWER_LUT_SIZE       
+LED_HW_POLARITY_OFFSET   
+LED_HW_POLARITY_SIZE     
+LED_SW_DATA_OFFSET       
+LED_SW_DATA_SIZE         
+LED_SW_POLARITY_OFFSET   
+LED_SW_POLARITY_SIZE     
+LED_PAR_POLARITY_OFFSET  
+LED_PAR_POLARITY_SIZE    
+LED_SER_POLARITY_OFFSET  
+LED_SER_POLARITY_SIZE    
+
+The following defines are optional: 
+LED_MASK_OFFSET          
+LED_MASK_SIZE            
+
+The following define must declare the maximum supported LEDs by LED controller (usually 32):
+
+MAX_SUPPORTED_LEDS
+
+Driver supports HW / SW polarity overwriting (in case defaults was wrong)
+&led_ctrl {
+       hw-polarity-quirk = <0x00c00000>; 
+       sw-polarity-quirk = <0x00000000>;
+    }
+
+In case Serial LED interface is in use for specific board, it must be specified in the board level dts file:
+
+&led_ctrl {
+    serial-shifters-installed = <3>; 
+    pinctrl-0 = <&serial_data &serial_clk &serial_msk>;
+    pinctrl-names = "default";
+    serial-data-polarity-low; /* Optional parameter */
+    serial-order-msb-first;   /* Optional parameter */
+}

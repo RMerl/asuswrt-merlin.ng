@@ -1,0 +1,133 @@
+menu "Sound support"
+
+config SOUND
+	bool "Enable sound support"
+	help
+	  Support making sounds through an audio codec. This is normally a
+	  beep at a chosen frequency for a selected length of time. However
+	  the drivers support playing arbitrary sound samples using a
+	  PCM interface.
+
+	  Note: At present the sound setup is somewhat tangled up in that the
+	  audio codecs are called from the sound-i2s code. This could be
+	  converted to driver model.
+
+config I2S
+	bool "Enable I2S support"
+	depends on SOUND
+	help
+	  I2S is a serial bus often used to transmit audio data from the
+	  SoC to the audio codec. This option enables sound support using
+	  I2S. It calls either of the two supported codecs (no use is made
+	  of driver model at present).
+
+config I2S_ROCKCHIP
+	bool "Enable I2S support for Rockchip SoCs"
+	depends on I2S
+	help
+	  Rockchip SoCs support an I2S interface for sending audio data to an
+	  audio codec. This option enables support for this, using one of the
+	  available audio codec drivers. This driver does not make use of
+	  DMA, but writes each word directly to the hardware.
+
+config I2S_SAMSUNG
+	bool "Enable I2C support for Samsung SoCs"
+	depends on I2S
+	help
+	  Samsung Exynos SoCs support an I2S interface for sending audio
+	  data to an audio codec. This option enables support for this,
+	  using one of the available audio codec drivers. Enabling this
+	  option provides an implementation for sound_init() and
+	  sound_play().
+
+config SOUND_I8254
+	bool "Intel i8254 timer / beeper"
+	depends on SOUND
+	help
+	  This enables support for a beeper that uses the i8254 timer chip.
+	  This can emit beeps at a fixed frequency. It is possible to control
+	  the length of the beeps, by turning a beep on, waiting for a period
+	  of time, then turning it off.
+
+	  This is quite an old feature, called PIT (Programmable Interval
+	  Timer), but is nonetheless still available on modern x86 machines.
+
+config SOUND_INTEL_HDA
+	bool "Intel HDA audio codec"
+	depends on SOUND
+	help
+	  Most Intel chips have an HDA (High-definition audio) codec which can
+	  be used by U-Boot to play simple beeps. This is also sometimes called
+	  Azalia which was the development code-name. It requires setup
+	  information in the device tree (see intel-hda.txt).
+
+config SOUND_IVYBRIDGE
+	bool "Intel Ivybridge sound support"
+	depends on SOUND
+	select SOUND_INTEL_HDA
+	help
+	  Enable sound output on supported Intel Ivybridge-based boards. This
+	  driver uses Intel's High-definition Audio (HDA) architecture,
+	  sometimes called Azalia. The audio codec is detected using a
+	  semi-automatic mechanism.
+
+config I2S_TEGRA
+	bool "Enable I2S support for Nvidia Tegra SoCs"
+	depends on I2S
+	select TEGRA124_DMA
+	help
+	  Nvidia Tegra SoCs support several I2S interfaces for sending audio
+	  data to an audio codec. This option enables support for this,
+	  using one of the available audio codec drivers.
+
+config SOUND_MAX98088
+	bool "Support Maxim max98088 audio codec"
+	depends on I2S
+	help
+	  Enable the max98088 audio codec. This is connected via I2S for
+	  audio data and I2C for codec control. At present it only works
+	  with the Samsung I2S driver.
+
+config SOUND_MAX98090
+	bool "Support Maxim max98090 audio codec"
+	depends on I2S
+	help
+	  Enable the max98090 audio codec. This is connected via I2S for
+	  audio data and I2C for codec control. At present it only works
+	  with the Samsung I2S driver.
+
+config SOUND_MAX98095
+	bool "Support Maxim max98095 audio codec"
+	depends on I2S
+	help
+	  Enable the max98095 audio codec. This is connected via I2S for
+	  audio data and I2C for codec control. At present it only works
+	  with the Samsung I2S driver.
+
+config SOUND_RT5677
+	bool "Support Realtek RT5677 audio codec"
+	depends on SOUND
+	help
+	  Enable the Realtek RT5677 audio codec. This is an I2S device used on
+	  some Chromebooks from around 2015 ('auron'). It is configured using
+	  an I2C interface and supports multiple sound inputs and outputs,
+	  including digital microphones.
+
+config SOUND_SANDBOX
+	bool "Support sandbox emulated audio codec"
+	depends on SANDBOX && SOUND
+	help
+	  U-Boot sandbox can emulate a sound device using SDL, playing the
+	  sound on the host machine. This option implements the sound_init()
+	  and sound_play() functions for sandbox. Note that you must install
+	  the SDL libraries for this to work.
+
+config SOUND_WM8994
+	bool "Support Wolfson Micro wm8994 audio codec"
+	depends on I2S_SAMSUNG
+	help
+	  Enable the wm8994 audio codec. This is connected via I2S for
+	  audio data and I2C for codec control. At present it only works
+	  with the Samsung I2S driver.
+
+endmenu

@@ -1,0 +1,7 @@
+config FS_CRAMFS
+	bool "Enable CRAMFS filesystem support"
+	help
+	  This provides support for reading images from CRAMFS (Compressed ROM
+	  filesystem). CRAMFS is useful when space is tight since files are
+	  compressed. You can also enable CMD_CRAMFS to get command-line
+	  access.

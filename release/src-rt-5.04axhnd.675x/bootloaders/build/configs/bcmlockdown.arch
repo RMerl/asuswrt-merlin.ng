@@ -1,0 +1,23 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use FindBin qw($Bin);
+use lib "$Bin/../../../hostTools/PerlLib";
+use BRCM::GenConfig;
+
+my $c = new BRCM::GenConfig( shift);
+
+######   Any config changes start here #####
+
+
+$c->set('CONFIG_BCMBCA_EXTRA_BOARD_OBJECTS','"bcm_uboot_lockdown.o"');
+$c->set('CONFIG_AUTOBOOT_KEYED','y');
+$c->set('CONFIG_AUTOBOOT_ENCRYPTION','y');
+$c->set('CONFIG_AUTOBOOT_PROMPT','"Enter password ( attempting autoboot in %2ds )\n"');
+# STOP_STR_SHA256 should be set to something impossible
+# lockdown will set the environmant variable bootstopkeysha256 at run-time
+$c->set('CONFIG_AUTOBOOT_STOP_STR_SHA256','"937e8d5fbb481234554321deadbeeffeedf00d2f830c5c308e2cdec422ae2244"');
+
+#####   End of config changes #####
+$c->write();
+

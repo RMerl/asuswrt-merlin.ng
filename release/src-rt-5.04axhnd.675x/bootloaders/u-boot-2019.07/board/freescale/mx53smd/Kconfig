@@ -1,0 +1,15 @@
+if TARGET_MX53SMD
+
+config SYS_BOARD
+	default "mx53smd"
+
+config SYS_VENDOR
+	default "freescale"
+
+config SYS_SOC
+	default "mx5"
+
+config SYS_CONFIG_NAME
+	default "mx53smd"
+
+endif

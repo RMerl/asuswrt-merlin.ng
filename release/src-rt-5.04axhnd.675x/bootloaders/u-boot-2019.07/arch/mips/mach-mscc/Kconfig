@@ -1,0 +1,93 @@
+# SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+
+menu "MSCC VCore-III platforms"
+	depends on ARCH_MSCC
+
+config SOC_VCOREIII
+	select MIPS_TUNE_24KC
+	select ROM_EXCEPTION_VECTORS
+	select SUPPORTS_BIG_ENDIAN
+	select SUPPORTS_CPU_MIPS32_R1
+	select SUPPORTS_CPU_MIPS32_R2
+	select SUPPORTS_LITTLE_ENDIAN
+	bool
+
+config SYS_SOC
+	default "mscc"
+
+choice
+
+	prompt "SOC Family Variant"
+
+config SOC_OCELOT
+	bool "Ocelot SOC Family"
+	select SOC_VCOREIII
+	select DESIGNWARE_SPI
+	help
+	  This supports MSCC Ocelot family of SOCs.
+
+config SOC_LUTON
+	bool "Luton SOC Family"
+	select SOC_VCOREIII
+	help
+	  This supports MSCC Luton family of SOCs.
+
+config SOC_JR2
+	bool "Jaguar2 SOC Family"
+	select SOC_VCOREIII
+	select DESIGNWARE_SPI
+	help
+	  This supports MSCC Jaguar2 family of SOCs.
+
+config SOC_SERVALT
+	bool "Servalt SOC Family"
+	select SOC_VCOREIII
+	select MSCC_BB_SPI
+	help
+	  This supports MSCC Servalt family of SOCs.
+
+config SOC_SERVAL
+	bool "Serval SOC Family"
+	select SOC_VCOREIII
+	select MSCC_BB_SPI
+	help
+	  This supports MSCC Serval family of SOCs.
+
+endchoice
+
+config SYS_CONFIG_NAME
+	default "vcoreiii"
+
+choice
+	prompt "DDR type"
+
+config DDRTYPE_H5TQ4G63MFR
+	bool "Hynix H5TQ4G63MFR-PBC (4Gbit, DDR3-800, 256Mbitx16)"
+
+config DDRTYPE_MT41K256M16
+	bool "Micron MT41K256M16 (4Gbit, DDR3L-800, 256Mbitx16)"
+
+config DDRTYPE_H5TQ1G63BFA
+	bool "Hynix H5TQ1G63BFA (1Gbit DDR3, x16)"
+
+config DDRTYPE_MT41J128M16HA
+	bool "Micron MT41J128M16HA-15E:D (2Gbit DDR3, x16)"
+
+config DDRTYPE_MT41K128M16JT
+	bool "Micron MT41K128M16JT-125 (2Gbit DDR3L, 128Mbitx16)"
+
+config DDRTYPE_MT47H128M8HQ
+	bool "Micron MT47H128M8-3 (1Gbit, DDR-533@CL4 @ 4.80ns 16Mbisx8x8)"
+
+endchoice
+
+source "board/mscc/ocelot/Kconfig"
+
+source "board/mscc/luton/Kconfig"
+
+source "board/mscc/jr2/Kconfig"
+
+source "board/mscc/servalt/Kconfig"
+
+source "board/mscc/serval/Kconfig"
+endmenu

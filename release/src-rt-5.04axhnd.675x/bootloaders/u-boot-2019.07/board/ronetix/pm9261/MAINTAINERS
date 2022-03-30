@@ -1,0 +1,6 @@
+PM9261 BOARD
+M:	Ilko Iliev <iliev@ronetix.at>
+S:	Maintained
+F:	board/ronetix/pm9261/
+F:	include/configs/pm9261.h
+F:	configs/pm9261_defconfig

@@ -1,0 +1,12 @@
+if TARGET_SMDKV310
+
+config SYS_BOARD
+	default "smdkv310"
+
+config SYS_VENDOR
+	default "samsung"
+
+config SYS_CONFIG_NAME
+	default "smdkv310"
+
+endif

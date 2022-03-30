@@ -1,0 +1,16 @@
+compatible = "brcm,bcm63xx-hs-uart";
+#if defined(CONFIG_BCM963138)
+reg-names = "hs_uart_base", "prog_out";
+reg = <UART_OFFSET UART_SIZE>, <PROG_OUT_OFFSET PROG_OUT_SIZE>;
+#else
+reg-names = "hs_uart_base";
+reg = <UART_OFFSET UART_SIZE>;
+#endif
+interrupts = <GIC_SPI UART_SPI IRQ_TYPE_LEVEL_HIGH>;
+clocks = <&periph_osc>;
+u-boot,dm-pre-reloc;
+status = "disabled";
+
+#undef UART_OFFSET
+#undef UART_SPI
+#undef UART_SIZE

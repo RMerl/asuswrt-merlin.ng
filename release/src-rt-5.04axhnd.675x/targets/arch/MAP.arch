@@ -1,0 +1,5 @@
+<PUBLISH>
+@@ -383,7 +383,8 @@
+-# BUILD_MAP is not set
++BUILD_MAP=y
++BRCM_DRIVER_MAP=m

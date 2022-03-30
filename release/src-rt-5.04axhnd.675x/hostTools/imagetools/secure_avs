@@ -1,0 +1,12 @@
+#!/bin/bash
+#usage: secure_avs <bin_input_filename> <bin_output_filename> <partid> <link address> <path to the keys>
+#example: secure_avs avs_close.bin avs6878.bin 6878 0x82616fc0 ../keys
+#example: secure_avs avs_close.bin avs6855.bin 6855 0x82036880 ../keys
+
+TOP=$PWD/../../
+HOST_PERLARCH=x86_64-linux-thread-multi
+HOSTTOOLS_DIR=$TOP/hostTools
+export PERL5LIB=$HOSTTOOLS_DIR/PerlLib:$HOSTTOOLS_DIR/local_install/Perl/:$HOSTTOOLS_DIR/PerlLib/$HOST_PERLARCH/
+make -C $HOSTTOOLS_DIR/openssl
+#./image.avs --in ${1}.new --out ${2}.1 --sign avs.pem --ek avs_ek --iv avs_iv --ssldir $HOSTTOOLS_DIR//openssl/bin --verify
+./image.avs --in ${1} --out ${2} --sign ${5}/avs.pem --ek ${5}/avs_ek --iv ${5}/avs_iv --ssldir $HOSTTOOLS_DIR//openssl/bin --partid ${3} --la ${4}

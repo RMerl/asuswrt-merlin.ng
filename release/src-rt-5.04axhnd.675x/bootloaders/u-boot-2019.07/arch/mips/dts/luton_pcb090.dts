@@ -1,0 +1,252 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/*
+ * Copyright (c) 2018 Microsemi Corporation
+ */
+
+/dts-v1/;
+#include "mscc,luton.dtsi"
+#include <dt-bindings/mscc/luton_data.h>
+
+/ {
+	model = "Luton26 PCB090 Reference Board";
+	compatible = "mscc,luton-pcb090", "mscc,luton";
+
+	aliases {
+		serial0 = &uart0;
+		spi0 = &spi0;
+	};
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+	};
+
+	gpio-leds {
+		compatible = "gpio-leds";
+
+		status_green {
+			label = "pcb090:green:status";
+			gpios = <&sgpio 64 GPIO_ACTIVE_HIGH>; /* p0.2 */
+			default-state = "on";
+		};
+
+		status_red {
+			label = "pcb090:red:status";
+			gpios = <&sgpio 65 GPIO_ACTIVE_HIGH>; /* p1.2 */
+			default-state = "off";
+		};
+	};
+};
+
+&sgpio {
+	status = "okay";
+	gpio-ranges = <&sgpio 0 0 96>;
+};
+
+&uart0 {
+	status = "okay";
+};
+
+&spi0 {
+	status = "okay";
+	spi-flash@0 {
+		compatible = "jedec,spi-nor";
+		spi-max-frequency = <18000000>; /* input clock */
+		reg = <0>; /* CS0 */
+		spi-cs-high;
+	};
+};
+
+&mdio0 {
+	status = "okay";
+
+	phy0: ethernet-phy@0 {
+		reg = <0>;
+	};
+	phy1: ethernet-phy@1 {
+		reg = <1>;
+	};
+	phy2: ethernet-phy@2 {
+		reg = <2>;
+	};
+	phy3: ethernet-phy@3 {
+		reg = <3>;
+	};
+	phy4: ethernet-phy@4 {
+		reg = <4>;
+	};
+	phy5: ethernet-phy@5 {
+		reg = <5>;
+	};
+	phy6: ethernet-phy@6 {
+		reg = <6>;
+	};
+	phy7: ethernet-phy@7 {
+		reg = <7>;
+	};
+	phy8: ethernet-phy@8 {
+		reg = <8>;
+	};
+	phy9: ethernet-phy@9 {
+		reg = <9>;
+	};
+	phy10: ethernet-phy@10 {
+		reg = <10>;
+	};
+	phy11: ethernet-phy@11 {
+		reg = <11>;
+	};
+};
+
+&mdio1 {
+	status = "okay";
+
+	phy12: ethernet-phy@12 {
+		reg = <0>;
+	};
+	phy13: ethernet-phy@13 {
+		reg = <1>;
+	};
+	phy14: ethernet-phy@14 {
+		reg = <2>;
+	};
+	phy15: ethernet-phy@15 {
+		reg = <3>;
+	};
+	phy16: ethernet-phy@16 {
+		reg = <4>;
+	};
+	phy17: ethernet-phy@17 {
+		reg = <5>;
+	};
+	phy18: ethernet-phy@18 {
+		reg = <6>;
+	};
+	phy19: ethernet-phy@19 {
+		reg = <7>;
+	};
+	phy20: ethernet-phy@20 {
+		reg = <8>;
+	};
+	phy21: ethernet-phy@21 {
+		reg = <9>;
+	};
+	phy22: ethernet-phy@22 {
+		reg = <10>;
+	};
+	phy23: ethernet-phy@23 {
+		reg = <11>;
+	};
+};
+
+&switch {
+	ethernet-ports {
+		port0: port@0 {
+			reg = <0>;
+			phy-handle = <&phy0>;
+		};
+		port1: port@1 {
+			reg = <1>;
+			phy-handle = <&phy1>;
+		};
+		port2: port@2 {
+			reg = <2>;
+			phy-handle = <&phy2>;
+		};
+		port3: port@3 {
+			reg = <3>;
+			phy-handle = <&phy3>;
+		};
+		port4: port@4 {
+			reg = <4>;
+			phy-handle = <&phy4>;
+		};
+		port5: port@5 {
+			reg = <5>;
+			phy-handle = <&phy5>;
+		};
+		port6: port@6 {
+			reg = <6>;
+			phy-handle = <&phy6>;
+		};
+		port7: port@7 {
+			reg = <7>;
+			phy-handle = <&phy7>;
+		};
+		port8: port@8 {
+			reg = <8>;
+			phy-handle = <&phy8>;
+		};
+		port9: port@9 {
+			reg = <9>;
+			phy-handle = <&phy9>;
+		};
+		port10: port@10 {
+			reg = <10>;
+			phy-handle = <&phy10>;
+		};
+		port11: port@11 {
+			reg = <11>;
+			phy-handle = <&phy11>;
+		};
+		port12: port@12 {
+			reg = <12>;
+			phy-handle = <&phy12>;
+			phys = <&serdes_hsio 12 SERDES6G(1) PHY_MODE_QSGMII>;
+		};
+		port13: port@13 {
+			reg = <13>;
+			phy-handle = <&phy13>;
+			phys = <&serdes_hsio 13 0xff PHY_MODE_QSGMII>;
+		};
+		port14: port@14 {
+			reg = <14>;
+			phy-handle = <&phy14>;
+			phys = <&serdes_hsio 14 0xff PHY_MODE_QSGMII>;
+		};
+		port15: port@15 {
+			reg = <15>;
+			phy-handle = <&phy15>;
+			phys = <&serdes_hsio 15 0xff PHY_MODE_QSGMII>;
+		};
+		port16: port@16 {
+			reg = <16>;
+			phy-handle = <&phy16>;
+			phys = <&serdes_hsio 16 SERDES6G(2) PHY_MODE_QSGMII>;
+		};
+		port17: port@17 {
+			reg = <17>;
+			phy-handle = <&phy17>;
+			phys = <&serdes_hsio 17 0xff PHY_MODE_QSGMII>;
+		};
+		port18: port@18 {
+			reg = <18>;
+			phy-handle = <&phy18>;
+			phys = <&serdes_hsio 18 0xff PHY_MODE_QSGMII>;
+		};
+		port19: port@19 {
+			reg = <19>;
+			phy-handle = <&phy19>;
+			phys = <&serdes_hsio 19 0xff PHY_MODE_QSGMII>;
+		};
+		port20: port@20 {
+			reg = <20>;
+			phy-handle = <&phy20>;
+			phys = <&serdes_hsio 20 SERDES6G(3) PHY_MODE_QSGMII>;
+		};
+		port21: port@21 {
+			reg = <21>;
+			phy-handle = <&phy21>;
+			phys = <&serdes_hsio 21 0xff PHY_MODE_QSGMII>;
+		};
+		port22: port@22 {
+			reg = <22>;
+			phy-handle = <&phy22>;
+			phys = <&serdes_hsio 22 0xff PHY_MODE_QSGMII>;
+		};
+		port23: port@23 {
+			reg = <23>;
+			phy-handle = <&phy23>;
+			phys = <&serdes_hsio 23 0xff PHY_MODE_QSGMII>;
+		};
+	};
+};

@@ -1,0 +1,26 @@
+#include "6846.dtsi"
+	
+/ {
+	/* usb */
+	usb_ctrl: usb_ctrl {
+		#define USB_CTRL_ADDR       0x8000c200
+		#define USB_CTRL_SIZE       0x100
+		#include "../../ip/bcm_usb_ctrl.dtsi"
+	};
+
+	usb0_ehci: usb0_ehci {
+		#define USB_ADDR			0x8000c300
+		#define USB_SIZE			0x100
+		#define USB_IRQ             125
+        #define USB_PORT_ID         0
+		#include "../../ip/bcm_usb_ehci.dtsi"
+	};
+
+	usb0_ohci: usb0_ohci {
+		#define USB_ADDR			0x8000c400
+		#define USB_SIZE			0x100
+		#define USB_IRQ             124
+        #define USB_PORT_ID         0
+		#include "../../ip/bcm_usb_ohci.dtsi"
+	};
+};

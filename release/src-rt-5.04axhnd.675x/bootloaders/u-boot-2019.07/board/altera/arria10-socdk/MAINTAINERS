@@ -1,0 +1,7 @@
+SOCFPGA BOARD
+M:	Dinh Nguyen <dinguyen@kernel.org>
+M:	Chin-Liang See <clsee@altera.com>
+S:	Maintained
+F:	board/altera/arria10-socdk/
+F:	include/configs/socfpga_arria10_socdk.h
+F:	configs/socfpga_arria10_defconfig

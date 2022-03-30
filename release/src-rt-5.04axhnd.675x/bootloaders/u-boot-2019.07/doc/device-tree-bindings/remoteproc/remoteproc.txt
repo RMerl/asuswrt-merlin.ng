@@ -1,0 +1,14 @@
+Remote Processor uclass
+
+Binding:
+
+Remoteproc devices shall have compatible corresponding to thier
+drivers. However the following generic properties will be supported
+
+Optional Properties:
+- remoteproc-name: a string, used if provided to describe the processor.
+  This must be unique in an operational system.
+- remoteproc-internal-memory-mapped: a bool, indicates that the remote
+  processor has internal memory that it uses to execute code and store
+  data. Such a device is not expected to have a MMU. If no type property
+  is provided, the device is assumed to map to such a model.

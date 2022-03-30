@@ -1,0 +1,322 @@
+#include "4912.dtsi"
+#include "../bcm_voice.dtsi"
+
+/ {
+	memory_controller {
+		memcfg = <(BP_DDR_SPEED_1067_14_14_14 | \
+			BP_DDR_TOTAL_SIZE_1024MB      | \
+			BP_DDR_DEVICE_WIDTH_16        | \
+			BP_DDR_TOTAL_WIDTH_32BIT      | \
+			BP_DDR_VTT_EN_DR              | \			
+			BP_DDR_4912_DEFAULT)>;
+	};
+
+	buttons: buttons {
+		compatible = "brcm,buttons";
+		/* disable reset button for now. REF1D seems trigger this button by itself */
+		/* need board team to look into this first */
+		/* reset_button {
+			ext_irq = <&bca_extintr 51 BCA_GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+			press {
+				print = "Button Press -- Hold for 5s to do restore to default";
+			};
+			hold {
+				rst_to_dflt = <5>;
+			};
+			release {
+				reset = <0>;
+			};	
+		};*/
+		ses_button {
+			ext_irq = <&bca_extintr 53 BCA_GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+			release {
+				ses_short_period = <0>;
+				ses_long_period = <3>;
+			};
+		};		
+	};
+
+	ubus@ff800000 {
+		i2s: bcm63xx-i2s {
+			pinctrl-0 = <&b_i2s_tx_lrck_pin_7 &b_i2s_tx_mclk_pin_6 &a_i2s_rx_sclk_pin_45 &a_i2s_rx_lrck_pin_46 &a_i2s_sdata_in_pin_47 &a_i2s_rx_mclk_pin_48 &a_i2s_sdata_out_pin_49 &a_i2s_tx_sclk_pin_50>;
+			pinctrl-names = "default";
+			compatible = "brcm,bcm63xx-i2s";
+			reg = <0 0x2080 0 0x7f>;
+			interrupts = <GIC_SPI 44 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&i2stxclk>,<&i2srxclk>,<&osc>;
+			clock-names = "i2stxclk","i2srxclk","i2sosc"; 
+		};
+	};
+};
+
+&nand {
+	write-protect = <1>;
+};
+
+#if defined(CONFIG_BCM_PCIE_HCD) || defined(CONFIG_BCM_PCIE_HCD_MODULE)
+&pcie0 {
+	status = "okay";
+};
+&pcie1 {
+	status = "okay";
+};
+&pcie2 {
+	status = "okay";
+};
+&pcie3 {
+	status = "okay";
+};
+#endif //#if defined(CONFIG_BCM_PCIE_HCD) || defined(CONFIG_BCM_PCIE_HCD_MODULE)
+
+&i2c0 {
+	status = "okay";
+};
+&i2c1 {
+	status = "okay";
+	#address-cells = <1>;
+	#size-cells = <0>;
+	codec_playback:codec_palyback@18{
+	compatible = "ti,tlv320dac3203";
+	reg = <0x18>;
+	};
+	codec_capture:codec_capture@4e{
+	compatible = "ti,tlv320adc5140";
+	reg = <0x4e>;
+	};
+};
+
+&usb_ctrl {
+	pinctrl-names = "default";
+	pinctrl-0 = <&usb0_pwr_pins &usb1_pwr_pins>;
+	status = "okay";
+	xhci-enable;
+};
+&usb0_xhci {
+	status = "okay";
+};
+
+&mdio {
+	phy1:1 {
+		status = "okay";
+	};
+
+	phy2:2 {
+		status = "okay";
+	};
+
+	phy3:3 {
+		status = "okay";
+	};
+
+	phy4:4 {
+		status = "okay";
+	};
+
+	phy_rgmii: rgmii {
+		status = "disabled";
+	};
+
+	phy_cascade0:9 {
+		status = "okay";
+	};
+
+	phy_serdes0:6 {
+		phy-handle = <&phy_cascade0>;
+		status = "okay";
+	};
+
+	phy_serdes1:7 {
+		status = "okay";
+	};
+
+	phy_serdes2:8 {
+		status = "okay";
+	};
+};
+
+&switch0 {
+	ports {
+		port0@0 {
+			network-leds = <&led0 &led1>;
+			status = "okay";
+		};
+
+		port1@1 {
+			network-leds = <&led2 &led3>;
+			status = "okay";
+		};
+
+		port2@2 {
+			network-leds = <&led4 &led5>;
+			status = "okay";
+		};
+
+		port3@3 {
+			network-leds = <&led6 &led7>;
+			status = "okay";
+		};
+
+		port5@5 {
+			status = "okay";
+			network-leds = <&led8 &led9>;
+		};
+
+		port6@6 {
+			status = "okay";
+			network-leds = <&led10 &led11>;
+		};
+
+		port7@7 {
+			status = "okay";
+			network-leds = <&led12 &led13>;
+		};
+	};
+};
+&hsspi {
+	status = "okay";
+	voice0 {
+		pinctrl-0 = <&hs_spim_ss_1_b_pin_20>;
+		pinctrl-names = "default";
+		compatible = "bcm-spi-voice";
+		reg = <1>; /* chip select 1 */
+		spi-max-frequency = <1024000>;
+		reset-gpio = <&gpioc 13 GPIO_ACTIVE_LOW>;
+		spi-index = <0>;/* voice header index */
+	};	
+};
+
+&legacy_leds {
+    wl-sess-led = <&led15>;
+};
+
+&led_ctrl {
+    pinctrl-names = "default";
+    pinctrl-0 = <&ser_led_clk_pin_17 &ser_led_data_pin_16 &ser_led_mask_pin_18>;
+    serial-shifters-installed = <2>;
+    serial-data-polarity-high;
+    led0: serial-port_0-led_0 {
+        active_high;
+        crossbar-output = <0>;
+        link = <(LED_SPEED_100)>;
+        activity = <(LED_SPEED_100)>;
+        status = "okay";
+    };
+    led1: serial-port_0-led_1 {
+        active_high;
+        crossbar-output = <1>;
+        link = <(LED_SPEED_1G)>;
+        activity = <(LED_SPEED_1G)>;
+        status = "okay";
+    };
+    led2: serial-port_1-led_0 {
+        active_high;
+        crossbar-output = <2>;
+        link = <(LED_SPEED_100)>;
+        activity = <(LED_SPEED_100)>;
+        status = "okay";
+    };
+    led3: serial-port_1-led_1 {
+        active_high;
+        crossbar-output = <3>;
+        link = <(LED_SPEED_1G)>;
+        activity = <(LED_SPEED_1G)>;
+        status = "okay";
+    };
+    led4: serial-port_2-led_0 {
+        active_high;
+        crossbar-output = <4>;
+        link = <(LED_SPEED_100)>;
+        activity = <(LED_SPEED_100)>;
+        status = "okay";
+    };
+    led5: serial-port_2-led_1 {
+        active_high;
+        crossbar-output = <5>;
+        link = <(LED_SPEED_1G)>;
+        activity = <(LED_SPEED_1G)>;
+        status = "okay";
+    };
+    led6: serial-port_3-led_0 {
+        active_high;
+        crossbar-output = <6>;
+        link = <(LED_SPEED_100)>;
+        activity = <(LED_SPEED_100)>;
+        status = "okay";
+    };
+    led7: serial-port_3-led_1 {
+        active_high;
+        crossbar-output = <7>;
+        link = <(LED_SPEED_1G)>;
+        activity = <(LED_SPEED_1G)>;
+        status = "okay";
+    };
+
+    led8: serial-port_5-led_0 {
+        active_high; 
+        label = "mphy00";
+        crossbar-output = <8>;
+        link = <(LED_SPEED_100|LED_SPEED_2500)>;
+        activity = <(LED_SPEED_100|LED_SPEED_2500)>;		
+        status = "okay";
+    };
+    led9: serial-port_5-led_1 {
+        active_high; 
+        label = "mphy01";
+        crossbar-output = <9>;
+        link = <(LED_SPEED_1G|LED_SPEED_2500)>;
+        activity = <(LED_SPEED_1G|LED_SPEED_2500)>;		
+        status = "okay";
+    };
+    led10: serial-port_6-led_0 {
+        active_high; 
+        label = "mphy10";
+        crossbar-output = <10>;
+        link = <(LED_SPEED_100|LED_SPEED_2500|LED_SPEED_10G)>;
+        activity = <(LED_SPEED_100|LED_SPEED_2500|LED_SPEED_10G)>;		
+        status = "okay";
+    };
+    led11: serial-port_6-led_1 {
+        active_high; 
+        label = "mphy11";
+        crossbar-output = <11>;
+        link = <(LED_SPEED_1G|LED_SPEED_2500|LED_SPEED_10G)>;
+        activity = <(LED_SPEED_1G|LED_SPEED_2500|LED_SPEED_10G)>;		
+        status = "okay";
+    };
+    led12: serial-port_7-led_0 {
+        active_high; 
+        label = "mphy20";
+        crossbar-output = <12>;
+        link = <(LED_SPEED_100|LED_SPEED_2500|LED_SPEED_10G)>;
+        activity = <(LED_SPEED_100|LED_SPEED_2500|LED_SPEED_10G)>;		
+        status = "okay";
+    };
+    led13: serial-port_7-led_1 {
+        active_high; 
+        label = "mphy21";
+        crossbar-output = <13>;
+        link = <(LED_SPEED_1G|LED_SPEED_2500|LED_SPEED_10G)>;
+        activity = <(LED_SPEED_1G|LED_SPEED_2500|LED_SPEED_10G)>;		
+        status = "okay";
+    };
+    led14: sw_serial_led_14 {
+        active_high; 
+        label = "INET";
+        crossbar-output = <14>;
+        status = "okay";
+    };
+    led15: sw_serial_led_15 {
+        active_high; 
+        label = "WPS";
+        crossbar-output = <15>;
+        status = "okay";
+    };
+};
+&bcm_voice{
+	sliclist = SLICSLAC_LIST_COMMON_NOFXO;
+ };
+
+&vreg_sync {
+		pinctrl-0 = <&a_vreg_sync_pin_19>;
+		pinctrl-names = "default";
+};

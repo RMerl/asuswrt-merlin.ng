@@ -1,0 +1,141 @@
+config AHCI
+	bool "Support SATA controllers with driver model"
+	depends on DM
+	help
+	  This enables a uclass for disk controllers in U-Boot. Various driver
+	  types can use this, such as AHCI/SATA. It does not provide any standard
+	  operations at present. The block device interface has not been converted
+	  to driver model.
+
+config SATA
+	bool "Support SATA controllers"
+	select HAVE_BLOCK_DEVICE
+	help
+	  This enables support for SATA (Serial Advanced Technology
+	  Attachment), a serial bus standard for connecting to hard drives and
+	  other storage devices.
+
+	  SATA replaces PATA (originally just ATA), which stands for Parallel AT
+	  Attachment, where AT refers to an IBM AT (Advanced Technology)
+	  computer released in 1984.
+
+	  See also CMD_SATA which provides command-line support.
+
+config LIBATA
+	bool
+	help
+	  Select this to build and link the libata helper functions.
+
+config SCSI_AHCI
+	bool "Enable SCSI interface to SATA devices"
+	select LIBATA
+	help
+	  Enable this to allow interfacing SATA devices via the SCSI layer.
+
+menu "SATA/SCSI device support"
+
+config AHCI_PCI
+	bool "Support for PCI-based AHCI controller"
+	depends on DM_SCSI
+	help
+	  Enables support for the PCI-based AHCI controller.
+
+config SATA_CEVA
+	bool "Ceva Sata controller"
+	depends on AHCI
+	depends on DM_SCSI
+	help
+	  This option enables Ceva Sata controller hard IP available on Xilinx
+	  ZynqMP. Support up to 2 external devices. Complient with SATA 3.1 and
+	  AHCI 1.3 specifications with hot-plug detect feature.
+
+
+config DWC_AHCI
+	bool "Enable Synopsys DWC AHCI driver support"
+	select SCSI_AHCI
+	select PHY
+	depends on DM_SCSI
+	help
+	  Enable this driver to support Sata devices through
+	  Synopsys DWC AHCI module.
+
+config FSL_AHCI
+	bool "Enable Freescale AHCI driver support"
+	select SCSI_AHCI
+	depends on AHCI
+	depends on DM_SCSI
+	help
+	  Enable this driver to support Sata devices found in
+	  some Freescale PowerPC SoCs.
+
+
+config DWC_AHSATA
+	bool "Enable DWC AHSATA driver support"
+	select LIBATA
+	help
+	  Enable this driver to support the DWC AHSATA SATA controller found
+	  in i.MX5 and i.MX6 SoCs.
+
+config DWC_AHSATA_AHCI
+	bool "Enable DWC AHSATA AHCI driver support"
+	depends on DWC_AHSATA
+	depends on AHCI
+	default y
+	help
+	  Enable this option unless you need your private ahci implementation
+
+config FSL_SATA
+	bool "Enable Freescale SATA controller driver support"
+	select LIBATA
+	help
+	  Enable this driver to support the SATA controller found in
+	  some Freescale PowerPC SoCs.
+
+config MVSATA_IDE
+	bool "Enable Marvell SATA controller driver support via IDE interface"
+	help
+	  Enable this driver to support the SATA controller found in
+	  some Marvell SoCs, running in IDE compatibility mode using PIO.
+
+config SATA_MV
+	bool "Enable Marvell SATA controller driver support"
+	select AHCI
+	select LIBATA
+	depends on BLK
+	help
+	  Enable this driver to support the SATA controller found in
+	  some Marvell SoCs.
+
+config SATA_SIL
+	bool "Enable Silicon Image SIL3131 / SIL3132 / SIL3124 SATA driver support"
+	select LIBATA
+	help
+	  Enable this driver to support the SIL3131, SIL3132 and SIL3124
+	  SATA controllers.
+
+config SATA_SIL3114
+	bool "Enable Silicon Image SIL3114 SATA driver support"
+	select LIBATA
+	help
+	  Enable this driver to support the SIL3114 SATA controllers.
+
+config SUNXI_AHCI
+	bool "Enable Allwinner SATA driver support"
+	depends on AHCI
+	default y if ARCH_SUNXI
+	help
+	  Enable this driver to support the SATA controllers found in the
+	  Allwinner A10, A20 and R40 SoCs.
+
+config AHCI_MVEBU
+	bool "Marvell EBU AHCI SATA support"
+	depends on ARCH_MVEBU
+	depends on AHCI
+	select SCSI_AHCI
+	select DM_SCSI
+	help
+	  This option enables support for the Marvell EBU SoC's
+	  onboard AHCI SATA.
+
+	  If unsure, say N.
+endmenu

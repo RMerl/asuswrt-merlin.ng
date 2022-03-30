@@ -1,0 +1,119 @@
+#!/bin/bash
+
+TARGETS_DIR=`pwd`
+
+if [ "$INSTALL_DIR" == "" ]; then
+    INSTALL_DIR=./$PROFILE/fs.install
+fi
+
+if [ -d $PROFILE/fs ]; then
+  ROOTFS=$PROFILE/fs
+else # Alternative path for DESKTOP_LINUX
+  ROOTFS=$PROFILE/fs.install
+fi
+
+USERSPACE_DL_MODULES_BEEP_DIR=$BUILD_DIR/userspace/dlModules/beep
+OPT_EE_DIR=$INSTALL_DIR/opt/ee
+OPT_EE_HOSTEE_DIR=$OPT_EE_DIR/HOSTEE
+OPT_EE_HOSTEE_DU_DIR=$OPT_EE_HOSTEE_DIR/du
+
+OPT_EE_OPENWRTEE_DIR=$OPT_EE_DIR/OpenwrtEE
+OPT_EE_OPENWRTEE_DU_DIR=$OPT_EE_OPENWRTEE_DIR/du
+
+OPT_EE_EXAMPLEEE_DIR=$OPT_EE_DIR/ExampleEE
+OPT_EE_EXAMPLEEE_DU_DIR=$OPT_EE_EXAMPLEEE_DIR/du
+
+OPT_EE_EXAMPLEEE2_DIR=$OPT_EE_DIR/ExampleEE2
+OPT_EE_EXAMPLEEE2_DU_DIR=$OPT_EE_EXAMPLEEE2_DIR/du
+
+OPT_EE_EXAMPLEEE3_DIR=$OPT_EE_DIR/ExampleEE3
+OPT_EE_EXAMPLEEE3_DU_DIR=$OPT_EE_EXAMPLEEE3_DIR/du
+
+function cpHostEEDu()
+{
+  if [ -d $OPT_EE_HOSTEE_DU_DIR  ]; then
+    echo "$OPT_EE_HOSTEE_DU_DIR directory exists!"
+  else
+    echo "$OPT_EE_HOSTEE_DU_DIR directory not found and create this directory" 
+    mkdir -p $OPT_EE_HOSTEE_DU_DIR
+  fi
+  cp -avR $1 $OPT_EE_HOSTEE_DU_DIR
+}
+
+
+### HOSTEE preinstall
+if [ "$BUILD_OPEN_PLATFORM" = "y" ]; then
+  rm -rf $OPT_EE_HOSTEE_DIR
+
+  if [ "$BUILD_BRCM_HOSTEE_DSLDIAGD_PREINSTALL" = "y" ] && [ "$BUILD_OPEN_PLATFORM" = "y" ]; then
+    cpHostEEDu $USERSPACE_DL_MODULES_BEEP_DIR/pkg_OPS_HOSTEE_*_dsldiagd*.tar.gz 
+  fi
+  if [ "$BUILD_BRCM_HOSTEE_IPERFV2_PREINSTALL" = "y" ]; then
+    cpHostEEDu $USERSPACE_DL_MODULES_BEEP_DIR/pkg_OPS_HOSTEE_*_iPerf2*.tar.gz 
+  fi
+  if [ "$BUILD_BRCM_HOSTEE_SAMBA_PREINSTALL" = "y" ]; then
+    cpHostEEDu $USERSPACE_DL_MODULES_BEEP_DIR/pkg_OPS_HOSTEE_*_sambaservice*.tar.gz 
+  fi  
+  if [ "$BUILD_BRCM_HOSTEE_SPTESTSUITE_PREINSTALL" = "y" ]; then
+    cpHostEEDu $USERSPACE_DL_MODULES_BEEP_DIR/pkg_OPS_HOSTEE_*_spTestSuite*.tar.gz 
+  fi	
+  if [ "$BUILD_BRCM_HOSTEE_IPERFV3_PREINSTALL" = "y" ]; then
+    cpHostEEDu $USERSPACE_DL_MODULES_BEEP_DIR/pkg_OPS_HOSTEE_*_iPerf3*.tar.gz 
+  fi	
+  if [ "$BUILD_BRCM_HOSTEE_BAS_PREINSTALL" = "y" ]; then
+    cpHostEEDu $USERSPACE_DL_MODULES_BEEP_DIR/pkg_OPS_HOSTEE_*_bas*.tar.gz 
+    cpHostEEDu $USERSPACE_DL_MODULES_BEEP_DIR/pkg_OPS_HOSTEE_*_basplugins*.tar.gz 
+  fi
+#  if [ "$BUILD_BRCM_HOSTEE_TR69C_PREINSTALL" = "y" ]; then
+#    cpHostEEDu $USERSPACE_DL_MODULES_BEEP_DIR/pkg_OPS_HOSTEE_*_tr69c*.tar.gz 
+#  fi	
+fi
+
+
+### OpenwrtEE preinstall
+if [ "$BUILD_MODSW_OPENWRTEE_PREINSTALL" = "y" ] && [ "$BUILD_OPEN_PLATFORM" = "y" ]; then
+  echo "mkdir $OPT_EE_OPENWRTEE_DIR"
+  rm -rf $OPT_EE_OPENWRTEE_DIR  
+  mkdir -p $OPT_EE_OPENWRTEE_DIR
+  cp -avR $USERSPACE_DL_MODULES_BEEP_DIR/pkg_ops_openwrtEE_*.tar.gz $OPT_EE_OPENWRTEE_DIR
+fi
+
+
+### ExampleEE preinstall
+if [ "$BUILD_MODSW_EXAMPLEEE_PREINSTALL" = "y" ] && [ "$BUILD_OPEN_PLATFORM" = "y" ]; then
+  echo "mkdir $OPT_EE_EXAMPLEEE_DIR"
+  rm -rf $OPT_EE_EXAMPLEEE_DIR  
+  mkdir -p $OPT_EE_EXAMPLEEE_DIR
+  cp -avR $USERSPACE_DL_MODULES_BEEP_DIR/pkg_ops_ExampleEE_*.tar.gz $OPT_EE_EXAMPLEEE_DIR
+fi
+
+
+### ExampleEE2 preinstall
+if [ "$BUILD_MODSW_EXAMPLEEE2_PREINSTALL" = "y" ] && [ "$BUILD_OPEN_PLATFORM" = "y" ]; then
+  echo "mkdir $OPT_EE_EXAMPLEEE2_DIR"
+  rm -rf $OPT_EE_EXAMPLEEE2_DIR  
+  mkdir -p $OPT_EE_EXAMPLEEE2_DIR
+  cp -avR $USERSPACE_DL_MODULES_BEEP_DIR/pkg_ops_ExampleEE2_*.tar.gz $OPT_EE_EXAMPLEEE2_DIR
+
+  mkdir -p $OPT_EE_EXAMPLEEE2_DU_DIR
+
+  if [ "$BUILD_BRCM_EXAMPLEEE2_SPTESTSUITE_PREINSTALL" = "y" ]; then
+	cp -avR $USERSPACE_DL_MODULES_BEEP_DIR/pkg_ExampleEE2_*_spTestSuite*.tar.gz $OPT_EE_EXAMPLEEE2_DU_DIR
+  fi
+fi
+
+
+### ExampleEE3 preinstall
+if [ "$BUILD_MODSW_EXAMPLEEE3_PREINSTALL" = "y" ] && [ "$BUILD_OPEN_PLATFORM" = "y" ]; then
+  echo "mkdir $OPT_EE_EXAMPLEEE3_DIR"
+  rm -rf $OPT_EE_EXAMPLEEE3_DIR  
+  mkdir -p $OPT_EE_EXAMPLEEE3_DIR
+  cp -avR $USERSPACE_DL_MODULES_BEEP_DIR/pkg_ops_ExampleEE3_*.tar.gz $OPT_EE_EXAMPLEEE3_DIR
+
+  mkdir -p $OPT_EE_EXAMPLEEE3_DU_DIR
+
+  if [ "$BUILD_BRCM_EXAMPLEEE3_SPTESTSUITE_PREINSTALL" = "y" ]; then
+	cp -avR $USERSPACE_DL_MODULES_BEEP_DIR/pkg_ExampleEE3_*_spTestSuite*.tar.gz $OPT_EE_EXAMPLEEE3_DU_DIR
+  fi
+fi
+

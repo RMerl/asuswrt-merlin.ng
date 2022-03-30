@@ -1,0 +1,44 @@
+if TARGET_SIFIVE_FU540
+
+config SYS_BOARD
+	default "fu540"
+
+config SYS_VENDOR
+	default "sifive"
+
+config SYS_CPU
+	default "generic"
+
+config SYS_CONFIG_NAME
+	default "sifive-fu540"
+
+config SYS_TEXT_BASE
+	default 0x80000000 if !RISCV_SMODE
+	default 0x80200000 if RISCV_SMODE
+
+config BOARD_SPECIFIC_OPTIONS # dummy
+	def_bool y
+	select GENERIC_RISCV
+	imply CMD_DHCP
+	imply CMD_EXT2
+	imply CMD_EXT4
+	imply CMD_FAT
+	imply CMD_FS_GENERIC
+	imply CMD_NET
+	imply CMD_PING
+	imply CLK_SIFIVE
+	imply CLK_SIFIVE_FU540_PRCI
+	imply CLK_SIFIVE_GEMGXL_MGMT
+	imply DOS_PARTITION
+	imply EFI_PARTITION
+	imply IP_DYN
+	imply ISO_PARTITION
+	imply MACB
+	imply MII
+	imply NET_RANDOM_ETHADDR
+	imply PHY_LIB
+	imply PHY_MSCC
+	imply SIFIVE_SERIAL
+	imply SMP
+
+endif

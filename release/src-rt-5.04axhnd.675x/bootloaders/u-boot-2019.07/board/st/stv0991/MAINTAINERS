@@ -1,0 +1,6 @@
+STV0991 APPLICATION BOARD
+M:	Vikas Manocha <vikas.manocha@st.com>
+S:	Maintained
+F:	board/st/stv0991/
+F:	include/configs/stv0991.h
+F:	configs/stv0991_defconfig

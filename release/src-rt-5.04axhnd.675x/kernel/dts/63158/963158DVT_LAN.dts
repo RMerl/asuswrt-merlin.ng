@@ -1,0 +1,164 @@
+#include "63158.dtsi"
+#include "963158DVT_leds.dtsi"
+
+/ {
+    memory_controller {
+        memcfg = <(BP_DDR_SPEED_1067_14_14_14 | \
+                   BP_DDR_TOTAL_SIZE_1024MB   | \
+                   BP_DDR_DEVICE_WIDTH_16     | \
+                   BP_DDR_TOTAL_WIDTH_32BIT   | \
+                   BP_DDR_SSC_CONFIG_1)>;
+    };
+
+	buttons {
+		compatible = "brcm,buttons";
+		reset_button {
+			ext_irq = <&bca_extintr 41 BCA_GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+			press {
+				print = "Button Press -- Hold for 5s to do restore to default";
+			};
+			hold {
+				rst_to_dflt = <5>;
+			};
+			release {
+				reset = <0>;
+			};	
+		};
+		ses_button {
+			ext_irq = <&bca_extintr 46 BCA_GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+			release {
+				ses_short_period = <0>;
+				ses_long_period = <3>;
+			};
+		};
+	};
+};
+
+&usb_ctrl {
+	pinctrl-names="default";
+	pinctrl-0 = <&usb0a_pwr_pins &usb1a_pwr_pins>;
+	status = "okay";
+	xhci-enable;
+};
+
+&usb0_ehci {
+	status = "okay";
+};
+&usb1_ehci {
+	status = "okay";
+};
+
+&usb0_ohci {
+	status = "okay";
+};
+&usb1_ohci {
+	status = "okay";
+};
+
+&usb0_xhci {
+	status = "okay";
+};
+
+&mdio_sf2 {
+	/* PHYs directly connected to SF2 */
+	gphy8:8 {
+		status = "okay";
+	};
+	gphy9:9 {
+		status = "okay";
+	};
+	gphya:a {
+		status = "okay";
+	};
+	gphyb:b {
+		status = "okay";
+	};
+
+	/* Cascade PHY */
+	phy_cascade1:cascade1 {
+		reg = <30>;
+		status = "okay";
+	};
+	
+	/* PHYs connected to crossbar */
+	phy_rgmii:rgmii {
+		reg = <24>;
+		status = "okay";
+	};
+	phy_rgmii1:rgmii1 {
+		reg = <25>;
+		status = "okay";
+	};
+	gphyc:c {
+		status = "okay";
+	};
+	phy_serdes1:serdes1 {
+		phy-handle = <&phy_cascade1>;
+		status = "okay";
+	};
+
+	/* Crossbar groups */
+	xbar_grp0:0 {
+		phy-handle = <&phy_rgmii>;
+		status = "okay";
+	};
+	xbar_grp1:1 {
+		phy-handle = <&phy_rgmii1 &phy_serdes1>;
+		status = "okay";
+	};
+	xbar_grp2:2 {
+		phy-handle = <&gphyc>;
+		status = "okay";
+	};
+};
+
+&switch_sf2 {
+	ports {
+		sf2_port0@0 {
+			phy-handle = <&gphy8>;
+			network-leds = <&led0 &led1 &led20>;
+			status = "okay";
+		};
+
+		sf2_port1@1 {
+			phy-handle = <&gphy9>;
+			network-leds = <&led2 &led3 &led21>;
+			status = "okay";
+		};
+
+		sf2_port2@2 {
+			phy-handle = <&gphya>;
+			network-leds = <&led4 &led5 &led22>;
+			status = "okay";
+		};
+
+		sf2_port3@3 {
+			phy-handle = <&gphyb>;
+			network-leds = <&led6 &led7 &led23>;
+			status = "okay";
+		};
+
+		sf2_port4@4 {
+			phy-handle = <&xbar_grp0>;
+			status = "okay";
+		};
+
+		sf2_port6@6 {
+			phy-handle = <&xbar_grp1>;
+			/* xbar ext ep 0 serdes leds */
+			network-leds-0 = <&led10 &led11 &led12 &led25>;
+			status = "okay";
+		};
+	};
+};
+
+&switch0 {
+	ports {
+		port5@5 {
+			phy-handle = <&xbar_grp2>;
+			/* xbar ext ep 1 sgphy leds */
+			network-leds-1 = <&led8 &led9 &led24>;
+			status = "okay";
+		};
+	};
+};

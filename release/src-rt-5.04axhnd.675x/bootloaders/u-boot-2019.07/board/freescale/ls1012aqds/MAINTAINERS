@@ -1,0 +1,9 @@
+LS1012AQDS BOARD
+M:	Prabhakar Kushwaha <prabhakar.kushwaha@nxp.com>
+M:	Rajesh Bhagat <rajesh.bhagat@nxp.com>
+S:	Maintained
+F:	board/freescale/ls1012aqds/
+F:	include/configs/ls1012aqds.h
+F:	configs/ls1012aqds_qspi_defconfig
+F:	configs/ls1012aqds_tfa_defconfig
+F:	configs/ls1012aqds_tfa_SECURE_BOOT_defconfig

@@ -1,0 +1,12 @@
+if TARGET_LEGOEV3
+
+config SYS_BOARD
+	default "ev3"
+
+config SYS_VENDOR
+	default "lego"
+
+config SYS_CONFIG_NAME
+	default "legoev3"
+
+endif

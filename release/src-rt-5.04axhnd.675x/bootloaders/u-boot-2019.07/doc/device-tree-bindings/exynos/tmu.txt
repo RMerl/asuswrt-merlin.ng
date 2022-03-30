@@ -1,0 +1,44 @@
+Exynos Thermal management Unit
+
+Required properties:
+
+ - compatible : Should be "samsung,exynos-tmu" for TMU
+ - samsung,min-temp : Minimum temperature value (25 degree celsius)
+	- Current temperature of SoC should be more than this value.
+ - samsung,max-temp : Maximum temperature value (125 degree celsius)
+	- Current temperature of SoC should be less than this value.
+ - samsung,start-warning : Temperature at which TMU starts giving warning (degree celsius)
+ - samsung,start-tripping : Temperature at which TMU shuts down the system (degree celsius)
+ - samsung,hw-tripping : Temperature at which hardware tripping should happen
+	in case TMU fails to power off (degree celsius)
+ - samsung,efuse-min-value : SOC efuse min value (Constant 40)
+	- efuse-value should be more than this value.
+ - samsung,efuse-value : SOC actual efuse value (Literal value)
+	- This is the data trimming info.
+	- This value is used to calculate measuring error.
+ - samsung,efuse-max-value : SoC max efuse value (Constant 100)
+	- efuse-value should be less than this value.
+ - samsung,slope : Default value 274761730 (Constant 0x1060_8802).
+	- This is the default value for TMU_CONTROL register.
+	- It sets the gain of amplifier to the positive-tc generator block.
+	- It selects thermal tripping mode and enables thermal tripping.
+ - samsung,dc-value : Measured data calibration value (Constant 25)
+	- Used for tempearture calculation.
+	- This is 25 because temperature measured is always above 25 degrees.
+
+
+Example:
+
+tmu@10060000 {
+	compatible = "samsung,exynos-tmu"
+	samsung,min-temp = <25>;
+	samsung,max-temp = <125>;
+	samsung,start-warning = <95>;
+	samsung,start-tripping = <105>;
+	samsung,hw-tripping = <110>;
+	samsung,efuse-min-value = <40>;
+	samsung,efuse-value = <55>;
+	samsung,efuse-max-value = <100>;
+	samsung,slope = <274761730>;
+	samsung,dc-value = <25>;
+};

@@ -1,0 +1,24 @@
+if ARCH_QEMU
+
+config SYS_VENDOR
+	default "emulation"
+
+config SYS_BOARD
+	default "qemu-arm"
+
+config SYS_CONFIG_NAME
+	default "qemu-arm"
+
+endif
+
+config TARGET_QEMU_ARM_32BIT
+	bool "Support qemu_arm"
+	depends on ARCH_QEMU
+	select ARCH_SUPPORT_PSCI
+	select CPU_V7A
+	select SYS_ARCH_TIMER
+
+config TARGET_QEMU_ARM_64BIT
+	bool "Support qemu_arm64"
+	depends on ARCH_QEMU
+	select ARM64

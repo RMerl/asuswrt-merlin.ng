@@ -1,0 +1,142 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2019 Philippe Reynes <philippe.reynes@softathome.com>
+ */
+
+/dts-v1/;
+
+#include "bcm4908.dtsi"
+
+/ {
+	model = "Broadcom bcm94908";
+	compatible = "broadcom,bcm94908", "brcm,bcm4908";
+
+	aliases {
+		serial0 = &uart0;
+	};
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+	};
+
+	memory {
+		device_type = "memory";
+		reg = <0x0 0x0 0x0 0x08000000>;
+	};
+};
+
+&uart0 {
+	u-boot,dm-pre-reloc;
+	status = "okay";
+};
+
+&nand {
+	status = "okay";
+	write-protect = <0>;
+	#address-cells = <1>;
+	#size-cells = <0>;
+
+	nandcs@0 {
+		compatible = "brcm,nandcs";
+		reg = <0>;
+	};
+};
+
+&hsspi {
+	status = "okay";
+	spi-nand {
+		compatible = "spi-nand";
+		reg = <0>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		u-boot,dm-pre-reloc;				
+		spi-max-frequency = <100000000>;
+	};
+};
+
+&leds {
+	status = "okay";
+	#address-cells = <1>;
+	#size-cells = <0>;
+	brcm,serial-led-en-pol;
+	brcm,serial-led-data-ppol;
+
+	led@16 {
+		reg = <16>;
+		label = "red:dsl2";
+	};
+
+	led@17 {
+		reg = <17>;
+		label = "green:dsl1";
+	};
+
+	led@18 {
+		reg = <18>;
+		label = "green:fxs2";
+	};
+
+	led@19 {
+		reg = <19>;
+		label = "green:fxs1";
+	};
+
+	led@26 {
+		reg = <26>;
+		label = "green:wan1_act";
+	};
+
+	led@27 {
+		reg = <27>;
+		label = "green:wps";
+	};
+
+	led@28 {
+		reg = <28>;
+		active-low;
+		label = "green:aggregate_act";
+	};
+
+	led@29 {
+		reg = <29>;
+		label = "green:aggregate_link";
+	};
+};
+
+&usb0 {
+	status = "okay";
+	pinctrl-0 = <&usb0a_pwrflt_pins &usb0a_pwron_pins>;
+	pinctrl-names="default";
+};
+
+&switchsf2 {
+	status = "okay";
+	phy_base = <0x8>;
+	ports {
+		port0@0 {
+			phy-handle = <&gphy8>;
+		};
+		port1@1 {
+			phy-handle = <&gphy9>;
+		};
+		port2@2 {
+			phy-handle = <&gphya>;
+		};
+		port3@3 {
+			phy-handle = <&gphyb>;
+		};
+	};
+};
+
+&hsspi {
+	status = "okay";
+	spi-nor@0 {
+		compatible = "jedec,spi-nor";
+		reg = <0>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		spi-max-frequency = <50000000>;
+		u-boot,dm-pre-reloc;
+	};
+};
+

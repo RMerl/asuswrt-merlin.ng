@@ -1,0 +1,46 @@
+#!/usr/bin/env perl
+
+use FindBin qw[$Bin];
+use lib "$Bin/../../../hostTools/PerlLib";
+use YAML;
+use Digest::SHA qw[sha256 sha256_hex];
+use Digest::CRC qw(crc32);
+use Getopt::Long;
+use File::Basename;
+use bytes;
+
+my $pkgtb = shift @ARGV;
+open( F, "<$pkgtb" ) or die("cant open $pkgtb");
+my $img;
+{
+    local $/;
+    $img = <F>;
+}
+close(F);
+my @a = unpack( "NN", $img );
+die("bad magic number") unless $a[0] == 0xd00dfeed;
+my $len = $a[1];
+open( D, "dtc -O dts $pkgtb |" );
+my $dts;
+{
+    local $/;
+    $dts = <D>;
+}
+close(D);
+print $dts;
+
+while ( $dts =~ /^(?:.*?)(\S+)\s+{\s+(data-size[^{}]*)(.*)$/ms ) {
+    # print "capture $1 $2\n";
+    my $cap  = $2;
+    my $name = $1;
+    $dts = $3;
+    $cap =~ /data-offset\s+=\s+<(\w+)>/ or die("parse error in $cap");
+    my $soff = $len + hex($1);
+    $cap =~ /data-size\s+=\s+<(\w+)>/ or die("parse error in $cap");
+    my $siz = hex($1);
+    my $fnam = "file_$name.bin";
+    open( O, ">$fnam" );
+    print O substr( $img, $soff, $siz );
+    print "extracted $fnam size = $siz\n";
+}
+

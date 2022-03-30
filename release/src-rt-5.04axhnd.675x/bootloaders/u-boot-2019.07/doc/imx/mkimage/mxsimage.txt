@@ -1,0 +1,170 @@
+Freescale i.MX233/i.MX28 SB image generator via mkimage
+=======================================================
+
+This tool allows user to produce SB BootStream encrypted with a zero key.
+Such a BootStream is then bootable on i.MX23/i.MX28.
+
+Usage -- producing image:
+=========================
+The mxsimage tool is targeted to be a simple replacement for the elftosb2 .
+To generate an image, write an image configuration file and run:
+
+ mkimage -A arm -O u-boot -T mxsimage -n <path to configuration file> \
+	 <output bootstream file>
+
+The output bootstream file is usually using the .sb file extension. Note
+that the example configuration files for producing bootable BootStream with
+the U-Boot bootloader can be found under arch/arm/boot/cpu/arm926ejs/mxs/
+directory. See the following files:
+
+ mxsimage.mx23.cfg -- This is an example configuration for i.MX23
+ mxsimage.mx28.cfg -- This is an example configuration for i.MX28
+
+Each configuration file uses very simple instruction semantics and a few
+additional rules have to be followed so that a useful image can be produced.
+These semantics and rules will be outlined now.
+
+- Each line of the configuration file contains exactly one instruction.
+- Every numeric value must be encoded in hexadecimal and in format 0xabcdef12 .
+- The configuration file is a concatenation of blocks called "sections" and
+  optionally "DCD blocks" (see below), and optional flags lines.
+  - Each "section" is started by the "SECTION" instruction.
+  - The "SECTION" instruction has the following semantics:
+
+      SECTION u32_section_number [BOOTABLE]
+      - u32_section_number :: User-selected ID of the section
+      - BOOTABLE           :: Sets the section as bootable
+
+  - A bootable section is one from which the BootROM starts executing
+    subsequent instructions or code. Exactly one section must be selected
+    as bootable, usually the one containing the instructions and data to
+    load the bootloader.
+
+  - A "SECTION" must be immediatelly followed by a "TAG" instruction.
+  - The "TAG" instruction has the following semantics:
+
+      TAG [LAST]
+      - LAST               :: Flag denoting the last section in the file
+
+  - After a "TAG" instruction, any of the following instructions may follow
+    in any order and any quantity:
+
+      NOOP
+      - This instruction does nothing
+
+      LOAD     u32_address string_filename
+      - Instructs the BootROM to load file pointed by "string_filename" onto
+	address "u32_address".
+
+      LOAD IVT u32_address u32_IVT_entry_point
+      - Crafts and loads IVT onto address "u32_address" with the entry point
+	of u32_IVT_entry_point.
+      - i.MX28-specific instruction!
+
+      LOAD DCD u32_address u32_DCD_block_ID
+      - Loads the DCD block with ID "u32_DCD_block_ID" onto address
+	"u32_address" and executes the contents of this DCD block
+      - i.MX28-specific instruction!
+
+      FILL u32_address u32_pattern u32_length
+      - Starts to write memory from addres "u32_address" with a pattern
+	specified by "u32_pattern". Writes exactly "u32_length" bytes of the
+	pattern.
+
+      JUMP [HAB] u32_address [u32_r0_arg]
+      - Jumps onto memory address specified by "u32_address" by setting this
+	address in PT. The BootROM will pass the "u32_r0_arg" value in ARM
+	register "r0" to the executed code if this option is specified.
+	Otherwise, ARM register "r0" will default to value 0x00000000. The
+	optional "HAB" flag is i.MX28-specific flag turning on the HAB boot.
+
+      CALL [HAB] u32_address [u32_r0_arg]
+      - See JUMP instruction above, as the operation is exactly the same with
+	one difference. The CALL instruction does allow returning into the
+	BootROM from the executed code. U-Boot makes use of this in it's SPL
+	code.
+
+      MODE string_mode
+      - Restart the CPU and start booting from device specified by the
+	"string_mode" argument. The "string_mode" differs for each CPU
+	and can be:
+	 i.MX23, string_mode = USB/I2C/SPI1_FLASH/SPI2_FLASH/NAND_BCH
+			       JTAG/SPI3_EEPROM/SD_SSP0/SD_SSP1
+	 i.MX28, string_mode = USB/I2C/SPI2_FLASH/SPI3_FLASH/NAND_BCH
+			       JTAG/SPI2_EEPROM/SD_SSP0/SD_SSP1
+
+  - An optional "DCD" blocks can be added at the begining of the configuration
+    file. Note that the DCD is only supported on i.MX28.
+    - The DCD blocks must be inserted before the first "section" in the
+      configuration file.
+    - The DCD block has the following semantics:
+
+	DCD u32_DCD_block_ID
+	- u32_DCD_block_ID	:: The ID number of the DCD block, must match
+				   the ID number used by "LOAD DCD" instruction.
+
+    - The DCD block must be followed by one of the following instructions. All
+      of the instructions operate either on 1, 2 or 4 bytes. This is selected by
+      the 'n' suffix of the instruction:
+
+	WRITE.n u32_address u32_value
+	- Write the "u32_value" to the "u32_address" address.
+
+	ORR.n u32_address u32_value
+	- Read the "u32_address", perform a bitwise-OR with the "u32_value" and
+	  write the result back to "u32_address".
+
+	ANDC.n u32_address u32_value
+	- Read the "u32_address", perform a bitwise-AND with the complement of
+	  "u32_value" and write the result back to "u32_address".
+
+	EQZ.n u32_address u32_count
+	- Read the "u32_address" at most "u32_count" times and test if the value
+	  read is zero. If it is, break the loop earlier.
+
+	NEZ.n u32_address u32_count
+	- Read the "u32_address" at most "u32_count" times and test if the value
+	  read is non-zero. If it is, break the loop earlier.
+
+	EQ.n u32_address u32_mask
+	- Read the "u32_address" in a loop and test if the result masked with
+	  "u32_mask" equals the "u32_mask". If the values are equal, break the
+	  reading loop.
+
+	NEQ.n u32_address u32_mask
+	- Read the "u32_address" in a loop and test if the result masked with
+	  "u32_mask" does not equal the "u32_mask". If the values are not equal,
+	  break the reading loop.
+
+	NOOP
+	- This instruction does nothing.
+
+  - An optional flags lines can be one of the following:
+
+	DISPLAYPROGRESS
+	- Enable boot progress output from the BootROM.
+
+- If the boot progress output from the BootROM is enabled, the BootROM will
+  produce a letter on the Debug UART for each instruction it started processing.
+  Here is a mapping between the above instructions and the BootROM output:
+
+   H -- SB Image header loaded
+   T -- TAG instruction
+   N -- NOOP instruction
+   L -- LOAD instruction
+   F -- FILL instruction
+   J -- JUMP instruction
+   C -- CALL instruction
+   M -- MODE instruction
+
+Usage -- verifying image:
+=========================
+
+The mxsimage can also verify and dump contents of an image. Use the following
+syntax to verify and dump contents of an image:
+
+ mkimage -l <input bootstream file>
+
+This will output all the information from the SB image header and all the
+instructions contained in the SB image. It will also check if the various
+checksums in the SB image are correct.

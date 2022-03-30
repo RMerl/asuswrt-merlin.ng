@@ -1,0 +1,50 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+use bytes;
+####
+#### This currently assembles images for GEN3 devices with puresqubi ONLY
+####
+unless ( $ENV{SECURE_BOOT_ARCH} eq 'GEN2' ) {
+    die "Not supported $ENV{SECURE_BOOT_ARCH}";
+}
+
+sub shell {
+
+#    if (defined $_[1]) {
+        print "$_[0]\n";
+#    }
+    my $res = `$_[0]`;
+    ( $? == 0 ) or die "ERROR: $!";
+    print "$res";
+    return $res;
+}
+
+
+##
+#
+# prepare wkspace:
+#
+shell("mkdir -p $ENV{WDIR}/head $ENV{WDIR}/bootfs");
+#shell("cp -f $ENV{CFE_ROM} $ENV{WDIR}/$ENV{CFE_ROM_BN}");
+shell("ls  -allt $ENV{CFE_ROM_UNSEC} $ENV{CFE_ROM_TK} $ENV{CFE_ROM_UNSEC_TK}  $ENV{CFE_RAM_UNSEC}  ");
+shell("cp -f $ENV{CFE_ROM_UNSEC} $ENV{WDIR}/$ENV{CFE_ROM_UNSEC_BN}");
+shell("cp -f $ENV{CFE_ROM_XIP} $ENV{WDIR}/$ENV{CFE_ROM_XIP_BN}");
+#shell("cp -f $ENV{CFE_ROM} $ENV{WDIR}/$ENV{CFE_ROM_BN}");
+if ( (defined $ENV{SECURE_BOOT_TURNKEY}) && ($ENV{SECURE_BOOT_TURNKEY} eq "y")) { 
+     shell("cp -f $ENV{CFE_ROM_TK} $ENV{WDIR}/$ENV{CFE_ROM_TK_BN}");
+     shell("cp -f $ENV{CFE_ROM_UNSEC_TK} $ENV{WDIR}/$ENV{CFE_ROM_UNSEC_TK_BN}");
+} else {
+     shell("cp -f $ENV{CFE_ROM} $ENV{WDIR}/$ENV{CFE_ROM_BN}");
+}
+#shell("ls  -allt $ENV{WDIR}/$ENV{CFE_ROM_BN}    $ENV{WDIR}/$ENV{CFE_ROM_TK_BN}  $ENV{WDIR}/$ENV{CFE_ROM_UNSEC_TK_BN} ");
+shell("cp -fr $ENV{TARGET_BOOTFS}/* $ENV{WDIR}/bootfs");
+shell("cp -f $ENV{CFE_RAM_UNSEC} $ENV{WDIR}/bootfs/cferam.000");
+#if ( ($ENV{BUILD_SECURE_BOOT}) && ($ENV{BUILD_SECURE_BOOT} eq 'y' )) {
+   #if ( defined $ENV{encrypt} && $ENV{encrypt} eq '2' ) { 
+   #   shell("rm -f $ENV{WDIR}/bootfs/secram.000");
+   #} else {
+   #   shell("cp -f $ENV{CFE_RAM} $ENV{WDIR}/bootfs/secram.000");
+   #}
+#}

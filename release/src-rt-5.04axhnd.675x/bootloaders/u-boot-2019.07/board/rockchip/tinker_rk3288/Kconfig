@@ -1,0 +1,15 @@
+if TARGET_TINKER_RK3288
+
+config SYS_BOARD
+	default "tinker_rk3288"
+
+config SYS_VENDOR
+	default "rockchip"
+
+config SYS_CONFIG_NAME
+	default "tinker_rk3288"
+
+config BOARD_SPECIFIC_OPTIONS # dummy
+	def_bool y
+
+endif

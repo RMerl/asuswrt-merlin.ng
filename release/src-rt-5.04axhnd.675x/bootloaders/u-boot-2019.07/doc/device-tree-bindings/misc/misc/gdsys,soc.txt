@@ -1,0 +1,16 @@
+gdsys soc bus driver
+
+This driver provides a simple interface for the busses associated with gdsys
+IHS FPGAs. The bus itself contains devices whose register maps are contained
+within the FPGA's register space.
+
+Required properties:
+- fpga: A phandle to the controlling IHS FPGA
+
+Example:
+
+FPGA0BUS: fpga0bus {
+	compatible = "gdsys,soc";
+	ranges = <0x0 0xe0600000 0x00004000>;
+	fpga = <&FPGA0>;
+};

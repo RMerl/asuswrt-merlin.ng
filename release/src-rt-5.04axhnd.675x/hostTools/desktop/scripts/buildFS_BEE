@@ -1,0 +1,85 @@
+#!/bin/bash
+
+source $KERNEL_DIR/.config
+
+if [ "$ARCH" == "arm64" ]; then
+	LIBDIR_NAME="lib64"
+else
+	LIBDIR_NAME="lib"
+fi
+
+#construct bee base filesystem
+echo "construct bee base filesystem to /opt/bee/rootfs"
+mkdir -p $BEE_ROOTFS/bin
+mkdir -p $BEE_ROOTFS/data
+mkdir -p $BEE_ROOTFS/dev
+mkdir -p $BEE_ROOTFS/etc
+mkdir -p $BEE_ROOTFS/lib
+mkdir -p $BEE_ROOTFS/local
+mkdir -p $BEE_ROOTFS/mnt
+mkdir -p $BEE_ROOTFS/proc
+mkdir -p $BEE_ROOTFS/sbin
+mkdir -p $BEE_ROOTFS/sys
+mkdir -p $BEE_ROOTFS/tmp
+mkdir -p $BEE_ROOTFS/usr
+mkdir -p $BEE_ROOTFS/var
+mkdir -p $BEE_ROOTFS/libexec
+mkdir -p $BEE_ROOTFS/run
+mkdir -p $BEE_ROOTFS/share
+mkdir -p $BEE_ROOTFS/include
+mkdir -p $BEE_ROOTFS/opt
+
+cp -a ${TARGETDIR}/bin/busybox $BEE_ROOTFS/bin
+cp -a ${TARGETDIR}/bin/dhcpclient $BEE_ROOTFS/bin
+cp -a ${TARGETDIR}/bin/bash $BEE_ROOTFS/bin
+cp -a ${TARGETDIR}/bin/cat $BEE_ROOTFS/bin
+cp -a ${TARGETDIR}/bin/cp $BEE_ROOTFS/bin
+cp -a ${TARGETDIR}/bin/echo $BEE_ROOTFS/bin
+cp -a ${TARGETDIR}/bin/ip $BEE_ROOTFS/bin
+cp -a ${TARGETDIR}/bin/kill $BEE_ROOTFS/bin
+cp -a ${TARGETDIR}/bin/ln $BEE_ROOTFS/bin
+cp -a ${TARGETDIR}/bin/ls $BEE_ROOTFS/bin
+cp -a ${TARGETDIR}/bin/mkdir $BEE_ROOTFS/bin
+cp -a ${TARGETDIR}/bin/mknod $BEE_ROOTFS/bin
+cp -a ${TARGETDIR}/bin/mount $BEE_ROOTFS/bin
+cp -a ${TARGETDIR}/bin/ping $BEE_ROOTFS/bin
+cp -a ${TARGETDIR}/bin/ps $BEE_ROOTFS/bin
+cp -a ${TARGETDIR}/bin/pwd $BEE_ROOTFS/bin
+cp -a ${TARGETDIR}/bin/rm $BEE_ROOTFS/bin
+cp -a ${TARGETDIR}/bin/sh $BEE_ROOTFS/bin
+cp -a ${TARGETDIR}/bin/sleep $BEE_ROOTFS/bin
+cp -a ${TARGETDIR}/bin/tar $BEE_ROOTFS/bin
+cp -a ${TARGETDIR}/bin/umount $BEE_ROOTFS/bin
+cp -a ${TARGETDIR}/bin/uname $BEE_ROOTFS/bin
+
+cp -a ${TARGETDIR}/sbin/init $BEE_ROOTFS/sbin
+cp -a ${TARGETDIR}/sbin/init.lxc $BEE_ROOTFS/sbin
+
+cp -a ${TARGETDIR}/lib/ld-* $BEE_ROOTFS/lib
+cp -a ${TARGETDIR}/$LIBDIR_NAME/libbcm_boardctl.* $BEE_ROOTFS/lib
+cp -a ${TARGETDIR}/$LIBDIR_NAME/libbcm_crc.* $BEE_ROOTFS/lib
+cp -a ${TARGETDIR}/$LIBDIR_NAME/libbcm_flashutil.* $BEE_ROOTFS/lib
+cp -a ${TARGETDIR}/$LIBDIR_NAME/libc.* $BEE_ROOTFS/lib
+cp -a ${TARGETDIR}/$LIBDIR_NAME/libcms_msg.* $BEE_ROOTFS/lib
+cp -a ${TARGETDIR}/$LIBDIR_NAME/libcms_util.* $BEE_ROOTFS/lib
+cp -a ${TARGETDIR}/$LIBDIR_NAME/libcrypt.* $BEE_ROOTFS/lib
+cp -a ${TARGETDIR}/$LIBDIR_NAME/libdbus-1.* $BEE_ROOTFS/lib
+cp -a ${TARGETDIR}/$LIBDIR_NAME/libdl.* $BEE_ROOTFS/lib
+cp -a ${TARGETDIR}/$LIBDIR_NAME/libexpat.* $BEE_ROOTFS/lib
+cp -a ${TARGETDIR}/$LIBDIR_NAME/libffi.* $BEE_ROOTFS/lib
+cp -a ${TARGETDIR}/$LIBDIR_NAME/libgcc_s.* $BEE_ROOTFS/lib
+cp -a ${TARGETDIR}/$LIBDIR_NAME/libgio-2.* $BEE_ROOTFS/lib
+cp -a ${TARGETDIR}/$LIBDIR_NAME/libglib-2.* $BEE_ROOTFS/lib
+cp -a ${TARGETDIR}/$LIBDIR_NAME/libgmodule-2.* $BEE_ROOTFS/lib
+cp -a ${TARGETDIR}/$LIBDIR_NAME/libgobject-2.* $BEE_ROOTFS/lib
+cp -a ${TARGETDIR}/$LIBDIR_NAME/libgthread-2.* $BEE_ROOTFS/lib
+cp -a ${TARGETDIR}/$LIBDIR_NAME/libjson.* $BEE_ROOTFS/lib
+cp -a ${TARGETDIR}/$LIBDIR_NAME/libjson-c.* $BEE_ROOTFS/lib
+cp -a ${TARGETDIR}/$LIBDIR_NAME/liblxc.* $BEE_ROOTFS/lib
+cp -a ${TARGETDIR}/$LIBDIR_NAME/libm.* $BEE_ROOTFS/lib
+cp -a ${TARGETDIR}/$LIBDIR_NAME/libnss*.* $BEE_ROOTFS/lib
+cp -a ${TARGETDIR}/$LIBDIR_NAME/libpthread.* $BEE_ROOTFS/lib
+cp -a ${TARGETDIR}/$LIBDIR_NAME/libresolv.* $BEE_ROOTFS/lib
+cp -a ${TARGETDIR}/$LIBDIR_NAME/librt.* $BEE_ROOTFS/lib
+cp -a ${TARGETDIR}/$LIBDIR_NAME/libutil.* $BEE_ROOTFS/lib
+cp -a ${TARGETDIR}/$LIBDIR_NAME/libz.* $BEE_ROOTFS/lib

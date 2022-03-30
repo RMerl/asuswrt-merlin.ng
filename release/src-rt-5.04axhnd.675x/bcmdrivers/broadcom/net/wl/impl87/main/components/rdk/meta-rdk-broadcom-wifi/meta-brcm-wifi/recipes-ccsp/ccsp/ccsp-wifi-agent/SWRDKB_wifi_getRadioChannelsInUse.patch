@@ -1,0 +1,15 @@
+--- a/source/TR-181/sbapi/wifi_monitor.c
++++ b/source/TR-181/sbapi/wifi_monitor.c
+@@ -2633,9 +2633,11 @@
+                     g_monitor_module.radio_data[radiocnt].CarrierSenseThreshold_Exceeded = radioTrafficStats.radio_CarrierSenseThreshold_Exceeded;
+                     g_monitor_module.radio_data[radiocnt].channelUtil = radioTrafficStats.radio_ChannelUtilization;
+ 
++		    /* remove getRadioChannelsInUse, as it causes throughput dip */
++#if 0
+                     wifi_getRadioChannelsInUse (radiocnt, ChannelsInUse);
+                     strncpy((char *)&g_monitor_module.radio_data[radiocnt].ChannelsInUse, ChannelsInUse,sizeof(ChannelsInUse));
+-
++#endif
+                     wifi_getRadioChannel(radiocnt, &Channel);
+                     g_monitor_module.radio_data[radiocnt].primary_radio_channel = Channel;
+ 

@@ -1,0 +1,59 @@
+REDUCED XRDP UBOOT README
+
+1) The XRDP_ETH driver can be compiled in two modes, GPL and FULL mode, the
+   first compiles with bare minimum of RDP souces, and the later is used for
+   generating new GPL FW access_logging.
+   The main difference in compilation, is that GPL mode compiles against
+   xrdp/ folder, and recorded data_path_$(CHIP_ID).c files, and FULL mode
+   compiles the xrdp_full/ folder and sources from the XRDP_CFE2 project.
+
+   XRDP datapath logic is implemented in two files: xrdp/bcmbca_xrdp_api.o,
+   used in both modes, and xrdp/bcmbca_xrdp_api_full.o used only in FULL mode.
+
+2) New devices:
+   When a new device is migrated, make sure the xdp Makefiles are enabling the
+   correct operation mode, either XRDP_DIRECT or XRDP_SBPM.
+
+   a) FULL mode with REDUCED_XRDP support is implemented by linking files from
+      rdp XRDP_CFE2 project according to BRCM_CHIP and CHIP_VER.
+      This is done in u-boot-2019.07/drivers/net/bcmbca/xrdp_full/Makefile:
+      BCM$(BRCM_CHIP)_$(CHIP_VER)_sources.list and
+      BCM$(BRCM_CHIP)_$(CHIP_VER)_fw_sources.list will be used as input files
+      for compilation of the project, and make.proj_flags will be include for
+      project flags.
+
+    b) GPL mode support:
+       - Add base addresses in rdp_data_structure.h
+       - If a register map is different, consider adding new GEN macro's for
+         new platform
+
+3) Compiling
+   a. Compile a regular full image (not just uboot); this will build the GPL
+      by default
+   > make PROFILE=<target>
+
+   GPL mode is the default, but full mode with GPL_GEN can be compiled using:
+   b. clean uboot
+   > make uboot_clean
+
+   c. Built with XRDP_FULL
+   > make CONFIG_XRDP_FULL=1 CONFIG_XRDP_GPL_GEN=1 PROFILE=<target> uboot
+
+   XXX: until fixed, FULL mode requires to run make twice for the first time so
+        linked files depencency exists
+
+4) Create access logging for GPL mode:
+   In XRDP in FULL mode, all register and SRAM accesses will be logged to the
+   console.
+   Using gen_data_path_init_data.sh tool, it can be converted to a
+   data_path_<chip_id>.c file, which should be submitted into the GPL folder.
+
+   Usage:
+    1) Compile uboot with XRDP in FULL mode with GPL_GEN, as mentioned in (3)
+       and boot the image into uboot.
+    2) Clear Terminal console, power up the board and stop in U-Boot.
+    3) Save console log to a file (e.g., /tmp/session.log)
+    4) Generate GPL access_logging by running:
+       gen_data_path_init_data.sh /tmp/session.log data_path_<chip_id>.c 
+       and move it to the xrdp GPL folder.
+

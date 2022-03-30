@@ -1,0 +1,5 @@
+config DM_MOD_EXP
+	bool "Enable Driver Model for RSA Modular Exponentiation"
+	depends on DM
+	help
+	  If you want to use driver model for RSA Modular Exponentiation, say Y.

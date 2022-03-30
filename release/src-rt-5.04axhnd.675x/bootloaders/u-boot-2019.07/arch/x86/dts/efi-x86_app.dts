@@ -1,0 +1,31 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (c) 2015 Google, Inc
+ */
+
+/dts-v1/;
+
+/include/ "skeleton.dtsi"
+/include/ "tsc_timer.dtsi"
+
+/ {
+	model = "EFI x86 Application";
+	compatible = "efi,x86-app";
+
+	chosen {
+		stdout-path = &serial;
+	};
+
+	tsc-timer {
+		clock-frequency = <1000000000>;
+	};
+
+	serial: serial {
+		compatible = "efi,uart";
+	};
+
+	reset {
+		compatible = "efi,reset";
+		u-boot,dm-pre-reloc;
+	};
+};

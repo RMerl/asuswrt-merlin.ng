@@ -1,0 +1,74 @@
+External Interrupt Controller.
+==============================
+
+The external interrupt handler does require it¿s own driver and device tree instance:
+bca_extintr: bca_extintr0 {
+     compatible = "brcm,bca-extintr";
+     reg = <EXTINTR_OFFSET EXTINTR_SIZE>;
+     num_ext_intr = <MAX_EXT_INTR>;
+     external_interrupts = < list of external irqs (SPI) >
+     /* clear_workarround; *//* add for 6858 */
+     /* skip_opeational; *//* add for 63146 */
+}
+
+Cause we have three different external interrupt drivers three implementations are introduced.
+Impl 2 supports the Legacy External Interrupt controller used in 63138 and 63148 with dedicated GPIOs and no dedicated operational registers.
+Impl 3 supports the Transition External Interrupt controller used in 4908 with any GPIO mapping option, but no dedicated operation registers.
+Impl 1 supports the New External Interrupt controller used in 6858 and later, with any GPIO mapping options and dedicated operational registers.
+The Impl 1 also supports two errata:
+6858  - Clean workaround;
+To operate this errata the corresponding boolean property should appear in the device tree node of the external interrupt controller.
+
+The external interrupt allocation will be managed by driver it-self, the consumer device driver will not arrange some specific external interrupt for it needs but requests the free one. 
+The only exception is Impl 2 where dedicated GPIOs are mapped to the external interrupt¿s. In case the wrong GPIO will be specified in the device tree node of the consumer driver - the error will be return. 
+
+Each device that needs to use some specific gpio pin as interrupt  should declare it as part of its node like this: 
+<consumer-name>= <phandle_to_extint_driver GPIO_PIN_number GPIO_POLARITY EXTINTR_TYPE>;
+Ex:
+    device: my_device@68 {
+        compatible = "brcm,'name";
+      
+        my_extint = <&bca_extintr 22 BCA_GPIO_ACTIVE_HIGH (BCA_EXTINTR_HIGH_LEVEL | BCA_EXTINTR_TYPE_BOTH_EDGE)>;
+    };
+
+
+The extintr_type_mask could be a combination of the following flags:
+#define BCA_EXTINTR_TYPE_LOW_LEVEL      (0x0 << 1)
+#define BCA_EXTINTR_TYPE_HIGH_LEVEL     (0x1 << 1)
+#define BCA_EXTINTR_TYPE_SENSE_LEVEL    (0x0 << 2)
+#define BCA_EXTINTR_TYPE_SENSE_EDGE     (0x1 << 2)
+#define BCA_EXTINTR_TYPE_BOTH_EDGE      (0x1 << 3)
+#define BCA_EXTINTR_NOT_SHARED          (0x0 << 4)
+#define BCA_EXTINTR_SHARED              (0x1 << 4)
+#define BCA_GPIO_ACTIVE_HIGH            (0x0 << 1)
+#define BCA_GPIO_ACTIVE_LOW             (0x1 << 1)
+
+The consumer driver must include the bcm_bca_extintr.h to use API.
+
+To request the interrupt the following API should be called:
+Int bcm_bca_extintr_request(struct device *dev, struct device_node *np, const char *consumer_name,
+    irq_handler_t pfunc, void *param, const char *interrupt_name, irq_handler_t thread_fn)
+
+Where:
+    struct device *dev                  (IN) pointer to consumer device;
+    struct device_node *np              (IN) pointer to specific device node to parse, if NULL the dev->device_node will
+                                             be parsed;
+    const char *consumer_name           (IN) consumer name to find the gpio/intr property
+    irq_handler_t pfunc                 (IN) interrupt handler
+    void *param                         (IN) interrupt handler parameter
+    const char *interrupt_name          (IN) interrupt name
+    irq_handler_t thread_fn             (IN) Function called from the IRQ handler thread
+                                             If NULL, no IRQ thread is created
+    
+
+Return value: 0 on success, else on failure.
+
+To Clear interrupt :
+void bcm_bca_extintr_clear(unsigned int irq);
+To Mask:
+void bcm_bca_extintr_mask(unsigned int irq);
+To Unmask:
+void bcm_bca_extintr_unmask(unsigned int irq);
+To get gpio descriptor fot future opration with gpio:
+void *bcm_bca_extintr_get_gpiod(unsigned int irq);
+

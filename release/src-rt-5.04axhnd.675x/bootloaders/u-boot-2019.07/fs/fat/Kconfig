@@ -1,0 +1,24 @@
+config FS_FAT
+	bool "Enable FAT filesystem support"
+	help
+	  This provides support for reading images from File Allocation Table
+	  (FAT) filesystem. FAT filesystem is a legacy, lightweight filesystem.
+	  It is useful mainly for its wide compatibility with various operating
+	  systems. You can also enable CMD_FAT to get access to fat commands.
+
+config FAT_WRITE
+	bool "Enable FAT filesystem write support"
+	depends on FS_FAT
+	help
+	  This provides support for creating and writing new files to an
+	  existing FAT filesystem partition.
+
+config FS_FAT_MAX_CLUSTSIZE
+	int "Set maximum possible clustersize"
+	default 65536
+	depends on FS_FAT
+	help
+	  Set the maximum possible clustersize for the FAT filesytem. This
+	  is the smallest amount of disk space that can be used to hold a
+	  file. Unless you have an extremely tight memory memory constraints,
+	  leave the default.

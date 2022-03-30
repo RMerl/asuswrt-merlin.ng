@@ -1,0 +1,12 @@
+if TARGET_SEABOARD
+
+config SYS_BOARD
+	default "seaboard"
+
+config SYS_VENDOR
+	default "nvidia"
+
+config SYS_CONFIG_NAME
+	default "seaboard"
+
+endif

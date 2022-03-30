@@ -1,0 +1,12 @@
+T1040QDS BOARD
+M:	Poonam Aggrwal <poonam.aggrwal@nxp.com>
+S:	Maintained
+F:	board/freescale/t1040qds/
+F:	include/configs/T1040QDS.h
+F:	configs/T1040QDS_defconfig
+F:	configs/T1040QDS_DDR4_defconfig
+
+T1040QDS_SECURE_BOOT BOARD
+M:	Ruchika Gupta <ruchika.gupta@nxp.com>
+S:	Maintained
+F:	configs/T1040QDS_SECURE_BOOT_defconfig

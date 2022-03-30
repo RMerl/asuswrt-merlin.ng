@@ -1,0 +1,103 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Copyright (C) 2018 Xilinx, Inc.
+ *
+ * Michal Simek <michal.simek@xilinx.com>
+ */
+/dts-v1/;
+#include "zynq-7000.dtsi"
+
+/ {
+	model = "Zynq DLC20 Rev1.0";
+	compatible = "xlnx,zynq-dlc20-rev1.0", "xlnx,zynq-dlc20",
+		     "xlnx,zynq-7000";
+
+	aliases {
+		ethernet0 = &gem0;
+		i2c0 = &i2c0;
+		serial0 = &uart1;
+		spi0 = &qspi;
+		mmc0 = &sdhci0;
+	};
+
+	memory@0 {
+		device_type = "memory";
+		reg = <0x0 0x20000000>;
+	};
+
+	chosen {
+		bootargs = "earlyprintk";
+		stdout-path = "serial0:115200n8";
+	};
+
+	usb_phy0: phy0@e0002000 {
+		compatible = "ulpi-phy";
+		#phy-cells = <0>;
+		reg = <0xe0002000 0x1000>;
+		view-port = <0x0170>;
+		drv-vbus;
+	};
+};
+
+&clkc {
+	ps-clk-frequency = <33333333>; /* U7 */
+};
+
+&gem0 {
+	status = "okay"; /* MIO16-MIO27, MDIO MIO52/53 */
+	phy-mode = "rgmii-id";
+	phy-handle = <&ethernet_phy>;
+
+	ethernet_phy: ethernet-phy@7 { /* rtl8211e - U25 */
+		reg = <1>;
+	};
+};
+
+&i2c0 {
+	status = "okay"; /* MIO14/15 */
+	clock-frequency = <400000>;
+	/* U46 - m24c08 */
+	eeprom: eeprom@54 {
+		compatible = "atmel,24c08";
+		reg = <0x54>;
+	};
+};
+
+&qspi {
+	u-boot,dm-pre-reloc;
+	status = "okay";
+	is-dual = <0>;
+	num-cs = <1>;
+	spi-tx-bus-width = <4>;
+	spi-rx-bus-width = <4>;
+	flash@0 {
+		/* Rev1.0 W25Q128FWSIG, RevC N25Q128A */
+		compatible = "n25q128a11", "jedec,spi-nor";
+		reg = <0x0>;
+		spi-tx-bus-width = <1>;
+		spi-rx-bus-width = <4>;
+		spi-max-frequency = <50000000>;
+	};
+};
+
+&sdhci0 {
+	u-boot,dm-pre-reloc;
+	status = "okay"; /* EMMC MTFC4GACAJCN - MIO40-MIO45 */
+	non-removable;
+	bus-width = <4>;
+};
+
+&uart1 {
+	u-boot,dm-pre-reloc;
+	status = "okay"; /* MIO8/9 */
+};
+
+&usb0 {
+	status = "okay"; /* MIO28-MIO39 */
+	dr_mode = "device";
+	usb-phy = <&usb_phy0>;
+};
+
+&watchdog0 {
+	reset-on-timeout;
+};

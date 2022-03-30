@@ -1,0 +1,519 @@
+menu "LBLAW setup"
+
+choice
+	prompt "NAND LAWBAR for NAND SPL"
+
+config NAND_LBLAWBAR_PRELIM_NONE
+	bool "None"
+
+config NAND_LBLAWBAR_PRELIM_0
+	bool "0"
+	depends on LBLAW0
+
+config NAND_LBLAWBAR_PRELIM_1
+	bool "1"
+	depends on LBLAW1
+
+config NAND_LBLAWBAR_PRELIM_2
+	bool "2"
+	depends on LBLAW2
+
+config NAND_LBLAWBAR_PRELIM_3
+	bool "3"
+	depends on LBLAW3
+
+endchoice
+
+menuconfig LBLAW0
+	bool "LBLAW0"
+
+if LBLAW0
+
+config LBLAW0_ENABLE
+	bool "Window enable"
+	default "y"
+
+if !LBLAW0_ENABLE
+
+config LBLAW0_BASE
+	hex
+	default 0x0
+
+endif
+
+if LBLAW0_ENABLE
+
+config LBLAW0_NAME
+	string "Identifier"
+
+config LBLAW0_BASE
+	hex "Window base"
+
+choice
+	prompt "Window size"
+
+config LBLAW0_LENGTH_4_KBYTES
+	bool "4 kb"
+
+config LBLAW0_LENGTH_8_KBYTES
+	bool "8 kb"
+
+config LBLAW0_LENGTH_16_KBYTES
+	bool "16 kb"
+
+config LBLAW0_LENGTH_32_KBYTES
+	bool "32 kb"
+
+config LBLAW0_LENGTH_64_KBYTES
+	bool "64 kb"
+
+config LBLAW0_LENGTH_128_KBYTES
+	bool "128 kb"
+
+config LBLAW0_LENGTH_256_KBYTES
+	bool "256 kb"
+
+config LBLAW0_LENGTH_512_KBYTES
+	bool "512 kb"
+
+config LBLAW0_LENGTH_1_MBYTES
+	bool "1 mb"
+
+config LBLAW0_LENGTH_2_MBYTES
+	bool "2 mb"
+
+config LBLAW0_LENGTH_4_MBYTES
+	bool "4 mb"
+
+config LBLAW0_LENGTH_8_MBYTES
+	bool "8 mb"
+
+config LBLAW0_LENGTH_16_MBYTES
+	bool "16 mb"
+
+config LBLAW0_LENGTH_32_MBYTES
+	bool "32 mb"
+
+config LBLAW0_LENGTH_64_MBYTES
+	bool "64 mb"
+
+config LBLAW0_LENGTH_128_MBYTES
+	bool "128 mb"
+
+config LBLAW0_LENGTH_256_MBYTES
+	bool "256 mb"
+
+config LBLAW0_LENGTH_512_MBYTES
+	bool "512 mb"
+
+config LBLAW0_LENGTH_1_GBYTES
+	bool "1 gb"
+
+config LBLAW0_LENGTH_2_GBYTES
+	bool "2 gb"
+
+endchoice
+
+endif # LBLAW0_ENABLE
+
+endif # LBLAW0
+
+config LBLAW0_ENABLE_BIT
+	hex
+	default 0x0 if !LBLAW0_ENABLE
+	default 0x80000000 if LBLAW0_ENABLE
+
+config LBLAW0_LENGTH
+	hex
+	default 0x0 if !LBLAW0_ENABLE
+	default 0x0000000B if LBLAW0_LENGTH_4_KBYTES
+	default 0x0000000C if LBLAW0_LENGTH_8_KBYTES
+	default 0x0000000D if LBLAW0_LENGTH_16_KBYTES
+	default 0x0000000E if LBLAW0_LENGTH_32_KBYTES
+	default 0x0000000F if LBLAW0_LENGTH_64_KBYTES
+	default 0x00000010 if LBLAW0_LENGTH_128_KBYTES
+	default 0x00000011 if LBLAW0_LENGTH_256_KBYTES
+	default 0x00000012 if LBLAW0_LENGTH_512_KBYTES
+	default 0x00000013 if LBLAW0_LENGTH_1_MBYTES
+	default 0x00000014 if LBLAW0_LENGTH_2_MBYTES
+	default 0x00000015 if LBLAW0_LENGTH_4_MBYTES
+	default 0x00000016 if LBLAW0_LENGTH_8_MBYTES
+	default 0x00000017 if LBLAW0_LENGTH_16_MBYTES
+	default 0x00000018 if LBLAW0_LENGTH_32_MBYTES
+	default 0x00000019 if LBLAW0_LENGTH_64_MBYTES
+	default 0x0000001A if LBLAW0_LENGTH_128_MBYTES
+	default 0x0000001B if LBLAW0_LENGTH_256_MBYTES
+	default 0x0000001C if LBLAW0_LENGTH_512_MBYTES
+	default 0x0000001D if LBLAW0_LENGTH_1_GBYTES
+	default 0x0000001E if LBLAW0_LENGTH_2_GBYTES
+
+menuconfig LBLAW1
+	bool "LBLAW1"
+
+if LBLAW1
+
+config LBLAW1_ENABLE
+	bool "Window enable"
+	default "y"
+
+if !LBLAW1_ENABLE
+
+config LBLAW1_BASE
+	hex
+	default 0x0
+
+endif
+
+if LBLAW1_ENABLE
+
+config LBLAW1_NAME
+	string "Identifier"
+
+config LBLAW1_BASE
+	hex "Window base"
+
+choice
+	prompt "Window size"
+
+config LBLAW1_LENGTH_4_KBYTES
+	bool "4 kb"
+
+config LBLAW1_LENGTH_8_KBYTES
+	bool "8 kb"
+
+config LBLAW1_LENGTH_16_KBYTES
+	bool "16 kb"
+
+config LBLAW1_LENGTH_32_KBYTES
+	bool "32 kb"
+
+config LBLAW1_LENGTH_64_KBYTES
+	bool "64 kb"
+
+config LBLAW1_LENGTH_128_KBYTES
+	bool "128 kb"
+
+config LBLAW1_LENGTH_256_KBYTES
+	bool "256 kb"
+
+config LBLAW1_LENGTH_512_KBYTES
+	bool "512 kb"
+
+config LBLAW1_LENGTH_1_MBYTES
+	bool "1 mb"
+
+config LBLAW1_LENGTH_2_MBYTES
+	bool "2 mb"
+
+config LBLAW1_LENGTH_4_MBYTES
+	bool "4 mb"
+
+config LBLAW1_LENGTH_8_MBYTES
+	bool "8 mb"
+
+config LBLAW1_LENGTH_16_MBYTES
+	bool "16 mb"
+
+config LBLAW1_LENGTH_32_MBYTES
+	bool "32 mb"
+
+config LBLAW1_LENGTH_64_MBYTES
+	bool "64 mb"
+
+config LBLAW1_LENGTH_128_MBYTES
+	bool "128 mb"
+
+config LBLAW1_LENGTH_256_MBYTES
+	bool "256 mb"
+
+config LBLAW1_LENGTH_512_MBYTES
+	bool "512 mb"
+
+config LBLAW1_LENGTH_1_GBYTES
+	bool "1 gb"
+
+config LBLAW1_LENGTH_2_GBYTES
+	bool "2 gb"
+
+endchoice
+
+endif # LBLAW1_ENABLE
+
+endif # LBLAW1
+
+config LBLAW1_ENABLE_BIT
+	hex
+	default 0x0 if !LBLAW1_ENABLE
+	default 0x80000000 if LBLAW1_ENABLE
+
+config LBLAW1_LENGTH
+	hex
+	default 0x0 if !LBLAW1_ENABLE
+	default 0x0000000B if LBLAW1_LENGTH_4_KBYTES
+	default 0x0000000C if LBLAW1_LENGTH_8_KBYTES
+	default 0x0000000D if LBLAW1_LENGTH_16_KBYTES
+	default 0x0000000E if LBLAW1_LENGTH_32_KBYTES
+	default 0x0000000F if LBLAW1_LENGTH_64_KBYTES
+	default 0x00000010 if LBLAW1_LENGTH_128_KBYTES
+	default 0x00000011 if LBLAW1_LENGTH_256_KBYTES
+	default 0x00000012 if LBLAW1_LENGTH_512_KBYTES
+	default 0x00000013 if LBLAW1_LENGTH_1_MBYTES
+	default 0x00000014 if LBLAW1_LENGTH_2_MBYTES
+	default 0x00000015 if LBLAW1_LENGTH_4_MBYTES
+	default 0x00000016 if LBLAW1_LENGTH_8_MBYTES
+	default 0x00000017 if LBLAW1_LENGTH_16_MBYTES
+	default 0x00000018 if LBLAW1_LENGTH_32_MBYTES
+	default 0x00000019 if LBLAW1_LENGTH_64_MBYTES
+	default 0x0000001A if LBLAW1_LENGTH_128_MBYTES
+	default 0x0000001B if LBLAW1_LENGTH_256_MBYTES
+	default 0x0000001C if LBLAW1_LENGTH_512_MBYTES
+	default 0x0000001D if LBLAW1_LENGTH_1_GBYTES
+	default 0x0000001E if LBLAW1_LENGTH_2_GBYTES
+
+menuconfig LBLAW2
+	bool "LBLAW2"
+
+if LBLAW2
+
+config LBLAW2_ENABLE
+	bool "Window enable"
+	default "y"
+
+if !LBLAW2_ENABLE
+
+config LBLAW2_BASE
+	hex
+	default 0x0
+
+endif
+
+if LBLAW2_ENABLE
+
+config LBLAW2_NAME
+	string "Identifier"
+
+config LBLAW2_BASE
+	hex "Window base"
+
+choice
+	prompt "Window size"
+
+config LBLAW2_LENGTH_4_KBYTES
+	bool "4 kb"
+
+config LBLAW2_LENGTH_8_KBYTES
+	bool "8 kb"
+
+config LBLAW2_LENGTH_16_KBYTES
+	bool "16 kb"
+
+config LBLAW2_LENGTH_32_KBYTES
+	bool "32 kb"
+
+config LBLAW2_LENGTH_64_KBYTES
+	bool "64 kb"
+
+config LBLAW2_LENGTH_128_KBYTES
+	bool "128 kb"
+
+config LBLAW2_LENGTH_256_KBYTES
+	bool "256 kb"
+
+config LBLAW2_LENGTH_512_KBYTES
+	bool "512 kb"
+
+config LBLAW2_LENGTH_1_MBYTES
+	bool "1 mb"
+
+config LBLAW2_LENGTH_2_MBYTES
+	bool "2 mb"
+
+config LBLAW2_LENGTH_4_MBYTES
+	bool "4 mb"
+
+config LBLAW2_LENGTH_8_MBYTES
+	bool "8 mb"
+
+config LBLAW2_LENGTH_16_MBYTES
+	bool "16 mb"
+
+config LBLAW2_LENGTH_32_MBYTES
+	bool "32 mb"
+
+config LBLAW2_LENGTH_64_MBYTES
+	bool "64 mb"
+
+config LBLAW2_LENGTH_128_MBYTES
+	bool "128 mb"
+
+config LBLAW2_LENGTH_256_MBYTES
+	bool "256 mb"
+
+config LBLAW2_LENGTH_512_MBYTES
+	bool "512 mb"
+
+config LBLAW2_LENGTH_1_GBYTES
+	bool "1 gb"
+
+config LBLAW2_LENGTH_2_GBYTES
+	bool "2 gb"
+
+endchoice
+
+endif # LBLAW2_ENABLE
+
+endif # LBLAW2
+
+config LBLAW2_ENABLE_BIT
+	hex
+	default 0x0 if !LBLAW2_ENABLE
+	default 0x80000000 if LBLAW2_ENABLE
+
+config LBLAW2_LENGTH
+	hex
+	default 0x0 if !LBLAW2_ENABLE
+	default 0x0000000B if LBLAW2_LENGTH_4_KBYTES
+	default 0x0000000C if LBLAW2_LENGTH_8_KBYTES
+	default 0x0000000D if LBLAW2_LENGTH_16_KBYTES
+	default 0x0000000E if LBLAW2_LENGTH_32_KBYTES
+	default 0x0000000F if LBLAW2_LENGTH_64_KBYTES
+	default 0x00000010 if LBLAW2_LENGTH_128_KBYTES
+	default 0x00000011 if LBLAW2_LENGTH_256_KBYTES
+	default 0x00000012 if LBLAW2_LENGTH_512_KBYTES
+	default 0x00000013 if LBLAW2_LENGTH_1_MBYTES
+	default 0x00000014 if LBLAW2_LENGTH_2_MBYTES
+	default 0x00000015 if LBLAW2_LENGTH_4_MBYTES
+	default 0x00000016 if LBLAW2_LENGTH_8_MBYTES
+	default 0x00000017 if LBLAW2_LENGTH_16_MBYTES
+	default 0x00000018 if LBLAW2_LENGTH_32_MBYTES
+	default 0x00000019 if LBLAW2_LENGTH_64_MBYTES
+	default 0x0000001A if LBLAW2_LENGTH_128_MBYTES
+	default 0x0000001B if LBLAW2_LENGTH_256_MBYTES
+	default 0x0000001C if LBLAW2_LENGTH_512_MBYTES
+	default 0x0000001D if LBLAW2_LENGTH_1_GBYTES
+	default 0x0000001E if LBLAW2_LENGTH_2_GBYTES
+
+menuconfig LBLAW3
+	bool "LBLAW3"
+
+if LBLAW3
+
+config LBLAW3_ENABLE
+	bool "Window enable"
+	default "y"
+
+if !LBLAW3_ENABLE
+
+config LBLAW3_BASE
+	hex
+	default 0x0
+
+endif
+
+if LBLAW3_ENABLE
+
+config LBLAW3_NAME
+	string "Identifier"
+
+config LBLAW3_BASE
+	hex "Window base"
+
+choice
+	prompt "Window size"
+
+config LBLAW3_LENGTH_4_KBYTES
+	bool "4 kb"
+
+config LBLAW3_LENGTH_8_KBYTES
+	bool "8 kb"
+
+config LBLAW3_LENGTH_16_KBYTES
+	bool "16 kb"
+
+config LBLAW3_LENGTH_32_KBYTES
+	bool "32 kb"
+
+config LBLAW3_LENGTH_64_KBYTES
+	bool "64 kb"
+
+config LBLAW3_LENGTH_128_KBYTES
+	bool "128 kb"
+
+config LBLAW3_LENGTH_256_KBYTES
+	bool "256 kb"
+
+config LBLAW3_LENGTH_512_KBYTES
+	bool "512 kb"
+
+config LBLAW3_LENGTH_1_MBYTES
+	bool "1 mb"
+
+config LBLAW3_LENGTH_2_MBYTES
+	bool "2 mb"
+
+config LBLAW3_LENGTH_4_MBYTES
+	bool "4 mb"
+
+config LBLAW3_LENGTH_8_MBYTES
+	bool "8 mb"
+
+config LBLAW3_LENGTH_16_MBYTES
+	bool "16 mb"
+
+config LBLAW3_LENGTH_32_MBYTES
+	bool "32 mb"
+
+config LBLAW3_LENGTH_64_MBYTES
+	bool "64 mb"
+
+config LBLAW3_LENGTH_128_MBYTES
+	bool "128 mb"
+
+config LBLAW3_LENGTH_256_MBYTES
+	bool "256 mb"
+
+config LBLAW3_LENGTH_512_MBYTES
+	bool "512 mb"
+
+config LBLAW3_LENGTH_1_GBYTES
+	bool "1 gb"
+
+config LBLAW3_LENGTH_2_GBYTES
+	bool "2 gb"
+
+endchoice
+
+endif # LBLAW3_ENABLE
+
+endif # LBLAW3
+
+config LBLAW3_ENABLE_BIT
+	hex
+	default 0x0 if !LBLAW3_ENABLE
+	default 0x80000000 if LBLAW3_ENABLE
+
+config LBLAW3_LENGTH
+	hex
+	default 0x0 if !LBLAW3_ENABLE
+	default 0x0000000B if LBLAW3_LENGTH_4_KBYTES
+	default 0x0000000C if LBLAW3_LENGTH_8_KBYTES
+	default 0x0000000D if LBLAW3_LENGTH_16_KBYTES
+	default 0x0000000E if LBLAW3_LENGTH_32_KBYTES
+	default 0x0000000F if LBLAW3_LENGTH_64_KBYTES
+	default 0x00000010 if LBLAW3_LENGTH_128_KBYTES
+	default 0x00000011 if LBLAW3_LENGTH_256_KBYTES
+	default 0x00000012 if LBLAW3_LENGTH_512_KBYTES
+	default 0x00000013 if LBLAW3_LENGTH_1_MBYTES
+	default 0x00000014 if LBLAW3_LENGTH_2_MBYTES
+	default 0x00000015 if LBLAW3_LENGTH_4_MBYTES
+	default 0x00000016 if LBLAW3_LENGTH_8_MBYTES
+	default 0x00000017 if LBLAW3_LENGTH_16_MBYTES
+	default 0x00000018 if LBLAW3_LENGTH_32_MBYTES
+	default 0x00000019 if LBLAW3_LENGTH_64_MBYTES
+	default 0x0000001A if LBLAW3_LENGTH_128_MBYTES
+	default 0x0000001B if LBLAW3_LENGTH_256_MBYTES
+	default 0x0000001C if LBLAW3_LENGTH_512_MBYTES
+	default 0x0000001D if LBLAW3_LENGTH_1_GBYTES
+	default 0x0000001E if LBLAW3_LENGTH_2_GBYTES
+
+endmenu

@@ -1,0 +1,26 @@
+How to use U-Boot on PHYTEC phyBOARD-i.MX6UL-Segin
+--------------------------------------------------
+
+- Configure and build U-Boot for phyCORE-i.MX6UL:
+
+    $ make mrproper
+    $ make phycore_pcl063_defconfig
+    $ make
+
+  This will generate SPL and u-boot-dtb.img images.
+
+- The SPL and u-boot-dtb.img images need to be flashed into the micro SD card:
+
+    $ sudo dd if=SPL of=/dev/mmcblk0 bs=1k seek=1; sync
+    $ sudo dd if=u-boot-dtb.img of=/dev/mmcblk0 bs=1k seek=69; sync
+
+- Jumper settings:
+
+  JP1:   Open: Boot from NAND
+       Closed: Boot from SD/MMC1
+
+- Connect the Serial cable to UART0 and the PC for the console.
+
+- Insert the micro SD card in the board and power it up.
+
+- U-Boot messages should come up.

@@ -1,0 +1,6 @@
+SOCRATES BOARD
+M:	Stefan Roese <sr@denx.de>
+S:	Maintained
+F:	board/ebv/socrates/
+F:	include/configs/socfpga_socrates.h
+F:	configs/socfpga_socrates_defconfig

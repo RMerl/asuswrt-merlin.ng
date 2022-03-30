@@ -1,0 +1,166 @@
+#
+# (C) Copyright 2014 Samsung Electronics
+# Lukasz Majewski <l.majewski@samsung.com>
+#
+# SPDX-License-Identifier:      GPL-2.0+
+#
+
+Introduction
+------------
+
+This document describes the second version of the u-boot's PMIC (Power
+Management IC) framework. As a reference boards please consider Samsungs' Trats
+and Trats2.
+
+Background
+----------
+
+Boards supported by u-boot are getting increasingly complex. Developers and
+designers strive to cut down power consumption. Hence several different types of
+devices are now available on the board - namely power managers (PMIC), fuel
+gauges (FG), micro USB interface controllers (MUIC), batteries, multi-function
+devices (MFD).
+
+Explanation of key design decisions
+-----------------------------------
+
+One package can integrate PMIC and MUIC with different addresses on the I2C bus.
+The same device - e.g. MAX8997 uses two different I2C busses and addresses.
+
+Power devices use not only I2C for communication, but SPI as well. Additionally
+different ICs use different endianess. For this reason struct pmic holds
+information about I2C/SPI transmission, which is used with generic
+pmic_req_write() function.
+
+The "flat" hierarchy for power devices works well when each device performs only
+one operation - e.g. PMIC enables LDO.
+
+The problem emerges when we have a device (battery) which conceptually shall be
+the master and uses methods exported by other devices. We need to control MUIC
+to start charging the battery, use PMIC to reduce board's overall power
+consumption (by disabling not needed LDOs, BUCKs) and get current state of
+energy on the battery from FG.
+Up till now u-boot doesn't support device model, so a simple one had to be
+added.
+
+The directory hierarchy has following structure:
+./include/power/<device_name>_<device_function>.h
+e.g. ./include/power/max8997_pmic.h
+
+./drivers/power/pmic/power_{core files}.c
+e.g. ./drivers/power/pmic/power_core.c
+
+./drivers/power/pmic/<device_function>/<device_function>_<device_name>.c
+e.g. ./drivers/power/pmic/pmic_max8997.c
+e.g. ./drivers/power/battery/trats/bat_trats.c
+e.g. ./drivers/power/fuel_gauge/fg_max17042.c
+
+The framework classifies devices by their function - separate directories should
+be maintained for different classes of devices.
+
+Current design
+--------------
+
+Everything is a power device described by struct pmic. Even battery is
+considered as a valid power device. This helps for better management of those
+devices.
+
+- Block diagram of the hierarchy:
+			-----------------
+		--------| BAT           |------------
+		|       |               |           |
+		|       -----------------           |
+		|               |                   |
+	       \|/             \|/                 \|/
+	-----------     -----------------       ---------
+	|FG       |     |MUIC           |       |CHRG   |
+	|         |     |               |       |       |
+	-----------     -----------------       ---------
+
+
+1. When hierarchy is not needed (no complex battery charge):
+
+Definition of the struct pmic is only required with proper name and parameters
+for communication. This is enough to use the "pmic" command in the u-boot
+prompt to change values of device's register (enable/disable LDO, BUCK).
+
+The PG, MUIC and CHRG above are regarded to be in the same level in the
+hierarchy.
+
+2. Complex battery charging.
+
+To charge a battery, information from several "abstract" power devices is
+needed (defined at ./include/power/pmic.h):
+- FG device (struct power_fg):
+	     -- *fg_battery_check - check if battery is not above its limits
+	     -- *fg_battery_update - update the pmic framework with current
+				     battery state(voltage and current capacity)
+
+- Charger device (struct power_chrq):
+	     -- *chrg_type - type/capacity of the charger (including information
+			     about USB cable disconnection)
+	     -- *chrg_bat_present - detection if battery to be charged is
+				    present
+	     -- *chrg_state - status of the charger - if it is enabled or
+			      disabled
+
+- Battery device (struct power_battery):
+	     -- *battery_init - assign proper callbacks to be used by top
+				hierarchy battery device
+	     -- *battery_charge - called from "pmic" command, responsible
+				  for performing the charging
+
+Now two batteries are supported; trats and trats2 [*]. Those differ in the way
+how they handle the exact charging. Trats uses polling (MAX8997) and trats2
+relies on the PMIC/MUIC HW completely (MAX77693).
+
+__Example for trats (this can be very different for other board):__
+	     -- *fg_battery_check       -> FG device (fg_max17042.c)
+	     -- *fg_battery_update      -> FG device (fg_max17042.c)
+	     -- *chrg_type              -> MUIC device (muic_max8997.c)
+	     -- *chrg_bat_present       -> PMIC device (pmic_max8997.c)
+	     -- *chrg_state             -> PMIC device (pmic_max8997.c)
+	     -- *battery_init           -> BAT device (bat_trats.c)
+	     -- *battery_charge         -> BAT device (bat_trats.c)
+
+Also the struct pmic holds method (*low_power_mode) for reducing board's
+power consumption when one calls "pmic BAT_TRATS bat charge" command.
+
+How to add a new power device
+-----------------------------
+
+1. Simple device should be added with creation of file
+<pmic_function>_<pmic_name>.c, <pmic_name>_<pmic_function>.h  according to the
+proposed and described above scheme.
+
+Then "pmic" command supports reading/writing/dump of device's internal
+registers.
+
+2. Charging battery with hierarchy
+Define devices as listed at 1.
+
+Define battery file (bat_<board>.c). Please also note that one might need a
+corresponding battery model description for FG.
+
+For points 1 and 2 use a generic function power_init_board() to initialise the
+power framework on your board.
+
+For reference, please look into the trats/trats2 boards.
+
+TO DO list (for PMICv3) - up till v2014.04
+------------------------------------------
+
+1. Description of the devices related to power via device tree is not available.
+This is the main problem when a developer tries to build a multi-boot u-boot
+binary. The best would be to parse the DTS from Linux kernel.
+
+2. To support many instances of the same IC, like two MAX8997, one needs to
+copy the corresponding pmic_max8997.c file with changed name to "MAX8997_PMICX",
+where X is the device number. This problem will be addressed when extended
+pmic_core.c will support storing available devices in a list.
+
+3. Definition of batteries [*] (for trats/trats2) should be excluded from the
+code responsible for charging them and since it in fact describes the charging
+profile it should be put to a separate file.
+
+4. Adjust the framework to work with the device model.

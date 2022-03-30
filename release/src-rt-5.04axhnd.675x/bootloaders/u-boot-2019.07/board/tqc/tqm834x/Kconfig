@@ -1,0 +1,12 @@
+if TARGET_TQM834X
+
+config SYS_BOARD
+	default "tqm834x"
+
+config SYS_VENDOR
+	default "tqc"
+
+config SYS_CONFIG_NAME
+	default "TQM834x"
+
+endif

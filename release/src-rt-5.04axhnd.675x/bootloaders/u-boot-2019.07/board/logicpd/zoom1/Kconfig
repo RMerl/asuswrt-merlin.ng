@@ -1,0 +1,12 @@
+if TARGET_OMAP3_ZOOM1
+
+config SYS_BOARD
+	default "zoom1"
+
+config SYS_VENDOR
+	default "logicpd"
+
+config SYS_CONFIG_NAME
+	default "omap3_zoom1"
+
+endif

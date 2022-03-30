@@ -1,0 +1,6 @@
+DEVKIT3250 BOARD
+M:	Vladimir Zapolskiy <vz@mleia.com>
+S:	Maintained
+F:	board/timll/devkit3250/
+F:	include/configs/devkit3250.h
+F:	configs/devkit3250_defconfig

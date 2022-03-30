@@ -1,0 +1,6 @@
+MX6QUQ7 BOARD
+M:	Boris Brezillon <boris.brezillon@free-electrons.com>
+S:	Maintained
+F:	board/seco/mx6quq7/
+F:	include/configs/secomx6quq7.h
+F:	configs/secomx6quq7_defconfig

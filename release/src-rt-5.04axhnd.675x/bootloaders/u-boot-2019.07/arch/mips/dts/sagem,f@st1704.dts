@@ -1,0 +1,73 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2017 Álvaro Fernández Rojas <noltari@gmail.com>
+ */
+
+/dts-v1/;
+
+#include "brcm,bcm6338.dtsi"
+
+/ {
+	model = "Sagem F@ST1704";
+	compatible = "sagem,f@st1704", "brcm,bcm6338";
+
+	aliases {
+		serial0 = &uart0;
+	};
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+	};
+
+	gpio-leds {
+		compatible = "gpio-leds";
+
+		inet_green {
+			label = "F@ST1704:green:inet";
+			gpios = <&gpio 0 GPIO_ACTIVE_LOW>;
+		};
+
+		power_green {
+			label = "F@ST1704:green:power";
+			gpios = <&gpio 1 GPIO_ACTIVE_LOW>;
+		};
+
+		inet_red {
+			label = "F@ST1704:red:inet";
+			gpios = <&gpio 2 GPIO_ACTIVE_LOW>;
+		};
+	};
+};
+
+&enet {
+	status = "okay";
+	phy = <&enetphy>;
+	phy-mode = "mii";
+
+	enetphy: fixed-link {
+		reg = <1>;
+		speed = <100>;
+		full-duplex;
+	};
+};
+
+&gpio {
+	status = "okay";
+};
+
+&spi {
+	status = "okay";
+
+	spi-flash@0 {
+		compatible = "jedec,spi-nor";
+		reg = <0>;
+		#address-cells = <1>;
+		#size-cells = <1>;
+		spi-max-frequency = <20000000>;
+	};
+};
+
+&uart0 {
+	u-boot,dm-pre-reloc;
+	status = "okay";
+};

@@ -1,0 +1,12 @@
+if TARGET_ETHERNUT5
+
+config SYS_BOARD
+	default "ethernut5"
+
+config SYS_VENDOR
+	default "egnite"
+
+config SYS_CONFIG_NAME
+	default "ethernut5"
+
+endif

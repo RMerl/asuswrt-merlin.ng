@@ -1,0 +1,12 @@
+if TARGET_MCCMON6
+
+config SYS_BOARD
+	default "mccmon6"
+
+config SYS_VENDOR
+	default "liebherr"
+
+config SYS_CONFIG_NAME
+	default "mccmon6"
+
+endif

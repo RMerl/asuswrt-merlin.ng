@@ -1,0 +1,27 @@
+if ARCH_OWL
+
+config SYS_SOC
+	default "owl"
+
+choice
+        prompt "Actions Semi OWL SoCs board select"
+        optional
+
+config TARGET_BUBBLEGUM_96
+	bool "96Boards Bubblegum-96"
+	help
+	  Support for 96Boards Bubblegum-96. This board complies with
+	  96Board Consumer Edition Specification. Features:
+	  - Actions Semi S900 SoC (4xCortex A53, Power VR G6230 GPU)
+	  - 2GiB RAM
+	  - 8GiB eMMC, uSD slot
+	  - WiFi, Bluetooth and GPS module
+	  - 2x Host, 1x Device USB port
+	  - HDMI
+	  - 20-pin low speed and 40-pin high speed expanders, 6 LED, 3 buttons
+
+endchoice
+
+source "board/ucRobotics/bubblegum_96/Kconfig"
+
+endif

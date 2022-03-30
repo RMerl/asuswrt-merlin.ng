@@ -1,0 +1,23 @@
+#!/bin/sh
+# SPDX-License-Identifier: GPL-2.0+
+#
+# Show the command name for GNU Make
+#
+# U-Boot is supposed to be built on various platforms.
+# One problem is that the command 'make' is not always GNU Make.
+# (For ex. the command name for GNU Make on FreeBSD is usually 'gmake'.)
+# It is not a good idea to hard-code the command name in scripts
+# where where GNU Make is expected.
+# Call this helper script to get the command name for GNU Make.
+
+gnu_make=
+
+for m in make gmake
+do
+	if $m --version 2>/dev/null | grep -q GNU; then
+		echo $m
+		exit 0
+	fi
+done
+
+exit 1

@@ -1,0 +1,15 @@
+if TARGET_SC_SPS_1
+
+config SYS_BOARD
+	default "sc_sps_1"
+
+config SYS_VENDOR
+	default "schulercontrol"
+
+config SYS_SOC
+	default "mxs"
+
+config SYS_CONFIG_NAME
+	default "sc_sps_1"
+
+endif

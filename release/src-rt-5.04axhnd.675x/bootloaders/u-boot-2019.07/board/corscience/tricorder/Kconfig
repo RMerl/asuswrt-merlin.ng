@@ -1,0 +1,12 @@
+if TARGET_TRICORDER
+
+config SYS_BOARD
+	default "tricorder"
+
+config SYS_VENDOR
+	default "corscience"
+
+config SYS_CONFIG_NAME
+	default "tricorder"
+
+endif

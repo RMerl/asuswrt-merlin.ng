@@ -1,0 +1,9 @@
+config BCM_PMC
+	bool "Broadcom 63xx PMC driver"
+	default n
+
+config BCM_PMC_IMPL
+	int "Implementation index for PMC driver"
+	depends on BCM_PMC
+	default 1
+

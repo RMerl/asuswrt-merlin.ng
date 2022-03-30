@@ -1,0 +1,14 @@
+# SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+
+if SOC_LUTON
+
+config SYS_VENDOR
+	default "mscc"
+
+config SYS_BOARD
+	default "luton"
+
+config SYS_CONFIG_NAME
+	default "luton"
+
+endif

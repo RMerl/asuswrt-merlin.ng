@@ -1,0 +1,190 @@
+#include "63138.dtsi"
+
+/ {
+    memory_controller {
+        memcfg = <(BP_DDR_SPEED_800_11_11_11   | \
+                   BP_DDR_TOTAL_SIZE_256MB  | \
+                   BP_DDR_DEVICE_WIDTH_8)>;
+    };
+};
+
+&mdio_sf2 {
+	/* PHYs directly connected to SF2 */
+	gphy8:8 {
+		status = "okay";
+	};
+	gphy9:9 {
+		status = "okay";
+	};
+	gphya:a {
+		status = "okay";
+	};
+
+	/* PHYs connected to crossbar */
+	gphyb:b {
+		status = "okay";
+	};
+	gphyc:c {
+		status = "okay";
+	};
+	phy_serdes0:serdes0 {
+		status = "okay";
+	};
+
+	/* Crossbar groups */
+	xbar_grp0:0 {
+		phy-handle = <&gphyb>;
+		status = "okay";
+	};
+	xbar_grp2:2 {
+		phy-handle = <&gphyc &phy_serdes0>;
+		status = "okay";
+	};
+};
+
+&switch_sf2 {
+	ports {
+		/* ports connect directly */
+		sf2_port0@0 {
+			phy-handle = <&gphy8>;
+			/* link led use wrong gpio pin in the board design for port 0, 1, 2.
+			   Use activity to show both link/activity */
+			network-leds = <&led28>;
+			status = "okay";
+		};
+
+		sf2_port1@1 {
+			phy-handle = <&gphy9>;
+			network-leds = <&led11>;
+			status = "okay";
+		};
+
+		sf2_port2@2 {
+			phy-handle = <&gphya>;
+			network-leds = <&led12>;
+			status = "okay";
+		};
+
+		/* ports connected to crossbar */
+		sf2_port3@3 {
+			phy-handle = <&xbar_grp0>;
+			network-leds = <&led24 &led25 &led13>;
+			status = "okay";
+		};
+	};
+};
+
+&switch0 {
+	ports {
+		
+		port0@0 {
+			phy-handle = <&xbar_grp2>;
+			phy-mode = "serdes";
+			status = "okay";
+		};
+	};
+};
+
+
+&legacy_leds {
+	adsl-led = <&led30>;
+	sec-adsl-led = <&led31>;
+	wan-data-led = <&led15>;
+	wl-sess-led = <&led29>;
+	voip1-ok-led = <&led3>;
+	voip2-ok-led = <&led4>;
+};
+
+&led_ctrl {
+    pinctrl-names = "default";
+    pinctrl-0 = <&ser_led_clk_pin_1 &ser_led_data_pin_0 &ser_led_mask_pin_2>;
+    serial-shifters-installed = <4>;
+    serial-data-polarity-high;
+
+    led3: sw_led_3-pin_3 {
+        active_low;
+        status = "okay";
+    };
+    led4: sw_led_4-pin_4 {
+        active_low;
+        status = "okay";
+    };
+    led11: port_1-led_2-pin_11 {
+        active_low;
+        activity = <(LED_SPEED_100|LED_SPEED_1G)>;
+        link = <(LED_SPEED_100|LED_SPEED_1G)>;
+        status = "okay";
+    };
+    led12: port_2-led_2-pin_12 {
+        active_low;
+        activity = <(LED_SPEED_100|LED_SPEED_1G)>;
+        link = <(LED_SPEED_100|LED_SPEED_1G)>;
+        status = "okay";
+    };
+    led13: port_3-led_2-pin_13 {
+        active_low;
+        activity = <(LED_SPEED_100|LED_SPEED_1G)>;
+        link = <(LED_SPEED_100|LED_SPEED_1G)>;		
+        status = "okay";
+    };
+    led14: port_4-led_2-pin_14 {
+        active_low;
+        activity = <(LED_SPEED_100|LED_SPEED_1G)>;
+        link = <(LED_SPEED_100|LED_SPEED_1G)>;
+        status = "okay";
+    };
+    led15: wan_0-data-pin_15 {
+        active_low;
+        status = "okay";
+    };
+    led16: pwm-0-pin_16 {
+        active_low;
+        status = "okay";
+    };
+    led17: pwm-1-pin_17 {
+        active_low;
+        status = "okay";
+    };
+    led18: sw_led_18-pin_18 {
+        active_low;
+        status = "okay";
+    };
+    led24: port_3-led_0-pin_24 {
+        active_low;
+        link = <(LED_SPEED_1G)>;
+        status = "okay";
+    };
+    led25: port_3-led_1-pin_25 {
+        active_low;
+        link = <(LED_SPEED_100)>;
+        status = "okay";
+    };
+    led26: port_4-led_0-pin_26 {
+        active_low;
+        link = <(LED_SPEED_1G)>;
+        status = "okay";
+    };
+    led27: port_4-led_1-pin_27 {
+        active_low;
+        link = <(LED_SPEED_100)>;
+        status = "okay";
+    };
+    led28: port_0-led_2-pin_28 {
+        active_low;
+        activity = <(LED_SPEED_100|LED_SPEED_1G)>;
+        link = <(LED_SPEED_100|LED_SPEED_1G)>;
+        status = "okay";
+    };
+    led29: sw_led_29-pin_29 {
+        active_low;
+        status = "okay";
+    };
+    led30: sw_led_30-pin_30 {
+        active_low;
+        status = "okay";
+    };
+    led31: sw_led_31-pin_31 {
+        active_low;
+        status = "okay";
+    };	
+};

@@ -1,0 +1,91 @@
+Work_92105 from Work Microwave is an LPC3250- based board with the
+following features:
+
+    - 64MB SDR DRAM
+    - 1 GB SLC NAND, managed through MLC controller.
+    - Ethernet
+    - Ethernet + PHY SMSC8710
+    - I2C:
+      - EEPROM (24M01-compatible)
+      - RTC (DS1374-compatible)
+      - Temperature sensor (DS620)
+      - DACs (2 x MAX518)
+    - SPI (through SSP interface)
+      - Port expander MAX6957
+    - LCD display (HD44780-compatible), controlled
+      through the port expander and DACs
+
+Standard SPL and U-Boot binaries
+--------------------------------
+
+The default 'make' (or the 'make all') command will produce the
+following files:
+
+1. spl/u-boot-spl.bin	SPL, intended to run from SRAM at address 0.
+			This file can be loaded in SRAM through a JTAG
+			debugger or through the LPC32XX Service Boot
+			mechanism.
+
+2. u-boot.bin		The raw U-Boot image, which can be loaded in
+			DDR through a JTAG debugger (for instance by
+			breaking SPL after DDR init), or by a running
+			U-Boot through e.g. 'loady' or 'tftp' and then
+			executed with 'go'.
+
+3. u-boot.img		A U-Boot image with a mkimage header prepended.
+			SPL assumes (even when loaded through JTAG or
+			Service Boot) that such an image will be found
+			at offset 0x00040000 in NAND.
+
+NAND cold-boot binaries
+-----------------------
+
+The board can boot entirely from power-on with only SPL and U-Boot in
+NAND. The LPC32XX-specific 'make lpc32xx-full.bin' command will produce
+(in addition to spl/u-boot-spl.bin and u-boot.img if they were not made
+already) the following files:
+
+4. lpc32xx-spl.img	spl/u-boot-spl.bin, with a LPC32XX boot header
+			prepended. This header is required for the ROM
+			code to load SPL into SRAM and branch into it.
+			The content of this file is expected to reside
+			in NAND at addresses 0x00000000 and 0x00020000
+			(two copies).
+
+5. lpc32xx-boot-0.bin	lpc32xx-spl.img, padded with 0xFF bytes to a
+			size of 0x20000 bytes. This file covers exactly
+			the reserved area for the first bootloader copy
+			in NAND.
+
+6. lpc32xx-boot-1.bin	Same as lpc32xx-boot-0.bin. This is intended to
+			be used as the second bootloader copy.
+
+7. lpc32xx-full.bin	lpc32xx-boot-0.bin, lpc32xx-boot-1.bin and
+			u-boot.img concatenated. This file represents
+			the content of whole bootloader as present in
+			NAND at offset 00x00000000.
+
+Flashing instructions
+---------------------
+
+The following assumes a working U-Boot on the target, with the ability
+to load files into DDR.
+
+To update the whole bootloader:
+
+	nand erase 0x00000000 0x80000
+	(load lpc32xx-full.bin at location $loadaddr)
+	nand write $loadaddr 0x00000000 $filesize
+
+To update SPL only (note the double nand write) :
+
+	nand erase 0x00000000 0x40000
+	(load lpc32xx-spl.img or lpc32xx-boot-N.bin at location $loadaddr)
+	nand write $loadaddr 0x00000000 $filesize
+	nand write $loadaddr 0x00020000 $filesize
+
+To update U-Boot only:
+
+	nand erase 0x00040000 0x40000
+	(load u-boot.img at location $loadaddr)
+	nand write $loadaddr 0x00040000 $filesize

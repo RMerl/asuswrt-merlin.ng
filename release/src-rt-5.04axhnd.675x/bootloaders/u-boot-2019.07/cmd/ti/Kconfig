@@ -1,0 +1,10 @@
+menu "TI specific command line interface"
+
+config CMD_DDR3
+	bool "command for verifying DDR features"
+	help
+	   Support for testing ddr3 on TI platforms. This command
+	   supports memory verification, memory comapre and ecc
+	   verification if supported.
+
+endmenu

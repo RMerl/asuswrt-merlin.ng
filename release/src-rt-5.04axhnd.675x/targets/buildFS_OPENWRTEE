@@ -1,0 +1,63 @@
+#!/bin/bash
+
+export LD_LIBRARY_PATH=$HOSTTOOLS_DIR/libelf/lib:$LD_LIBRARY_PATH 
+source $KERNEL_DIR/.config
+
+TARGETS_DIR=`pwd`
+ROOTFS_TARBALL="openwrt-rootfs.tar.gz"
+PKG_TARBALL_NAME="openwrt.tar.gz"
+
+if [ "$INSTALL_DIR" == "" ]; then
+    INSTALL_DIR=./$PROFILE/fs.install
+fi
+
+if [ -d $PROFILE/fs ]; then
+  ROOTFS=$PROFILE/fs
+else # Alternative path for DESKTOP_LINUX
+  ROOTFS=$PROFILE/fs.install
+fi
+
+USERSPACE_DL_MODULES_BEEP_DIR=$BUILD_DIR/userspace/dlModules/beep
+EEMNGR_DIR=$BUILD_DIR/userspace/gpl/apps/openwrt
+USERSPACE_DL_MODULES_EEMNGR_DIR=$EEMNGR_DIR/openwrtEEDir
+
+
+#Obtain openwrt EE base filesystem
+echo "obtain openwrt EE base filesystem"
+mkdir -p $USERSPACE_DL_MODULES_EEMNGR_DIR
+cp $EEMNGR_DIR/$ROOTFS_TARBALL $USERSPACE_DL_MODULES_EEMNGR_DIR/$PKG_TARBALL_NAME
+
+
+cd $EEMNGR_DIR
+
+SYS_DIRS=$(echo SYS_*)
+EXE=openwrt
+PACKAGE_NAME=openwrt
+BEEP_MANIFEST_SUFIX=.manifest
+BEEP_PKT_INFO_SUFIIX=-pkginfo.txt
+BEEPPKG_INFO=$PACKAGE_NAME$BEEP_PKT_INFO_SUFIIX
+BEEPPKG_MANIFEST=$EXE$BEEP_MANIFEST_SUFIX
+
+echo "BEEPPKG_MANIFEST $BEEPPKG_MANIFEST"
+echo "BEEPPKG_INFO $BEEPPKG_INFO"
+
+for d in $SYS_DIRS
+do
+   echo "Working on SYS dir $d ..."
+   if [ -f $d/$BEEPPKG_INFO ]
+   then
+     echo "pkginfo.txt file: $d/$BEEPPKG_INFO, pkg manifest file: $d/$BEEPPKG_MANIFEST "
+     if [ -f $d/$BEEPPKG_MANIFEST ] 
+     then
+       echo "pkg manifest file: $d/$BEEPPKG_MANIFEST"
+       cp -fav $d/$BEEPPKG_MANIFEST $USERSPACE_DL_MODULES_EEMNGR_DIR
+       $HOSTTOOLS_DIR/beep/beepPkgBuilder -f $d/$BEEPPKG_INFO
+       rm -f $USERSPACE_DL_MODULES_BEE_DIR/$BEEPPKG_MANIFEST     
+     fi
+  fi
+  
+done
+
+mv ./pkg_*_*.tar.gz $USERSPACE_DL_MODULES_BEEP_DIR
+$HOSTTOOLS_DIR/beep/reposcan -d $USERSPACE_DL_MODULES_BEEP_DIR
+rm -rf $USERSPACE_DL_MODULES_EEMNGR_DIR

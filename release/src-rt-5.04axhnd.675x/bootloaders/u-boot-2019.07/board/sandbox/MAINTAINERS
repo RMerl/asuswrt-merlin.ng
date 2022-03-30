@@ -1,0 +1,35 @@
+SANDBOX BOARD
+M:	Simon Glass <sjg@chromium.org>
+S:	Maintained
+F:	board/sandbox/
+F:	include/configs/sandbox.h
+F:	configs/sandbox_defconfig
+
+SANDBOX64 BOARD
+M:	Simon Glass <sjg@chromium.org>
+M:	Mario Six <mario.six@gdsys.cc>
+S:	Maintained
+F:	board/sandbox/
+F:	include/configs/sandbox.h
+F:	configs/sandbox64_defconfig
+
+SANDBOX_NOBLK BOARD
+M:	Simon Glass <sjg@chromium.org>
+S:	Maintained
+F:	board/sandbox/
+F:	include/configs/sandbox.h
+F:	configs/sandbox_noblk_defconfig
+
+SANDBOX SPL BOARD
+M:	Simon Glass <sjg@chromium.org>
+S:	Maintained
+F:	board/sandbox/
+F:	include/configs/sandbox_spl.h
+F:	configs/sandbox_spl_defconfig
+
+SANDBOX FLAT TREE BOARD
+M:	Simon Glass <sjg@chromium.org>
+S:	Maintained
+F:	board/sandbox/
+F:	include/configs/sandbox.h
+F:	configs/sandbox_flattree_defconfig

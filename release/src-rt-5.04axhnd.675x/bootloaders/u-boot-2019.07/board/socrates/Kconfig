@@ -1,0 +1,9 @@
+if TARGET_SOCRATES
+
+config SYS_BOARD
+	default "socrates"
+
+config SYS_CONFIG_NAME
+	default "socrates"
+
+endif

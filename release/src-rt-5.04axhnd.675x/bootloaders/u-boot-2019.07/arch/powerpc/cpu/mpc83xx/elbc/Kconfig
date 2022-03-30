@@ -1,0 +1,32 @@
+menu "ELBC register setup"
+
+choice
+	prompt "OR/BR for NAND SPL"
+
+config ELBC_BR_OR_NAND_PRELIM_NONE
+	bool "None"
+
+config ELBC_BR_OR_NAND_PRELIM_0
+	bool "0"
+
+config ELBC_BR_OR_NAND_PRELIM_1
+	bool "1"
+
+config ELBC_BR_OR_NAND_PRELIM_2
+	bool "2"
+
+config ELBC_BR_OR_NAND_PRELIM_3
+	bool "3"
+
+config ELBC_BR_OR_NAND_PRELIM_4
+	bool "4"
+
+endchoice
+
+source "arch/powerpc/cpu/mpc83xx/elbc/Kconfig.elbc0"
+source "arch/powerpc/cpu/mpc83xx/elbc/Kconfig.elbc1"
+source "arch/powerpc/cpu/mpc83xx/elbc/Kconfig.elbc2"
+source "arch/powerpc/cpu/mpc83xx/elbc/Kconfig.elbc3"
+source "arch/powerpc/cpu/mpc83xx/elbc/Kconfig.elbc4"
+
+endmenu

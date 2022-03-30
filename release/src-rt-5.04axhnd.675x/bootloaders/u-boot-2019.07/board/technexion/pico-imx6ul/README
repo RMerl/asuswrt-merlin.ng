@@ -1,0 +1,159 @@
+How to Update U-Boot on Pico-imx6ul board
+-----------------------------------------
+
+Required software on the host PC:
+
+- imx_usb_loader: https://github.com/boundarydevices/imx_usb_loader
+
+- dfu-util: http://dfu-util.sourceforge.net/releases/
+
+Build U-Boot for Pico:
+
+$ make mrproper
+$ make pico-imx6ul_defconfig
+$ make
+
+This generates the SPL and u-boot-dtb.img binaries.
+
+1. Loading U-Boot via USB Serial Download Protocol
+
+Note: This method is convenient for development purposes.
+If the eMMC has already a U-Boot flashed with DFU support then
+the user can go to step 2 below in order to update U-Boot.
+
+Put pico board in USB download mode (refer to the document
+http://www.wandboard.org/images/hobbit/hobbitboard-imx6ul-reva1.pdf
+page 15).
+
+Connect a USB to serial adapter between the host PC and pico.
+
+Connect a USB cable between the OTG pico port and the host PC.
+
+Open a terminal program such as minicom.
+
+Copy SPL and u-boot-dtb.img to the imx_usb_loader folder.
+
+Load the SPL binary via USB:
+
+$ sudo ./imx_usb SPL
+
+Load the u-boot-dtb.img binary via USB:
+
+$ sudo ./imx_usb u-boot-dtb.img
+
+Then U-Boot starts and its messages appear in the console program.
+
+Use the default environment variables:
+
+=> env default -f -a
+=> saveenv
+
+2. Flashing U-Boot into the eMMC
+
+Run the DFU agent so we can flash the new images using dfu-util tool:
+
+=> dfu 0 mmc 0
+
+Flash SPL and u-boot-dtb.img into the eMMC running the following commands on a PC:
+
+$ sudo dfu-util -D SPL -a spl
+
+$ sudo dfu-util -D u-boot-dtb.img -a u-boot
+
+Remove power from the pico board.
+
+Put pico board into normal boot mode.
+
+Power up the board and the new updated U-Boot should boot from eMMC.
+
+Booting in Falcon mode
+======================
+
+Generate a uImage kernel:
+
+$ make imx_v6_v7_defconfig (Using the default imx_v6_v7_defconfig configuration
+just for an example. In order to boot faster the user should customize the
+defconfig by only enabling the minimal required drivers).
+
+$ make -j4 uImage LOADADDR=0x80800000
+
+$ cp arch/arm/boot/uImage /tftpboot
+$ cp arch/arm/boot/dts/imx6ul-pico-hobbit.dtb /tftpboot
+
+In the U-Boot prompt:
+
+Setup the server and board IP addresses:
+=> setenv serverip 192.168.0.10
+=> setenv ipaddr 192.168.0.11
+
+Get the dtb file:
+=> tftp ${fdt_addr} imx6ul-pico-hobbit.dtb
+
+Get the kernel:
+=> tftp ${loadaddr} uImage
+
+Write the kernel at 2MB offset:
+=> mmc write ${loadaddr} 0x1000 0x4000
+
+Setup the bootargs:
+=> setenv bootargs 'console=ttymxc5,115200 root=/dev/mmcblk0p2 rootfstype=ext4 rootwait rw'
+
+Prepare args:
+=> spl export fdt ${loadaddr} - ${fdt_addr}
+## Booting kernel from Legacy Image at 82000000 ...
+   Image Name:   Linux-4.19.0-rc2-next-20180905-0
+   Image Type:   ARM Linux Kernel Image (uncompressed)
+   Data Size:    8365608 Bytes = 8 MiB
+   Load Address: 80800000
+   Entry Point:  80800000
+   Verifying Checksum ... OK
+## Flattened Device Tree blob at 83000000
+   Booting using the fdt blob at 0x83000000
+   Loading Kernel Image ... OK
+   Using Device Tree in place at 83000000, end 83009c63
+subcommand not supported
+subcommand not supported
+   Using Device Tree in place at 83000000, end 8300cc63
+Argument image is now in RAM: 0x83000000
+
+Write 1MB of args data (0x800 sectors) to 1MB offset (0x800 sectors):
+
+=> mmc write ${fdt_addr} 0x800 0x800
+
+In order to boot with Falcon mode, activate the CONFIG_SPL_OS_BOOT
+option in the defconfig
+
+--- a/configs/pico-hobbit-imx6ul_defconfig
++++ b/configs/pico-hobbit-imx6ul_defconfig
+@@ -53,3 +53,4 @@ CONFIG_USB_GADGET_VENDOR_NUM=0x0525
+ CONFIG_USB_GADGET_PRODUCT_NUM=0xa4a5
+ CONFIG_CI_UDC=y
+ CONFIG_OF_LIBFDT=y
++CONFIG_SPL_OS_BOOT=y
+
+Then rebuild U-Boot:
+
+$ make pico-hobbit-imx6ul_defconfig
+$ make -j4
+
+Launch UMS:
+=> ums 0 mmc 0
+
+Flash the new binaries:
+
+$ sudo dd if=SPL of=/dev/sdX bs=1k seek=1; sync
+$ sudo dd if=u-boot-dtb.img  of=/dev/sdX bs=1k seek=69; sync
+
+And then SPL binary will load and jump directly to the kernel:
+
+U-Boot SPL 2018.09-rc2-00156-g8c46f15-dirty (Sep 05 2018 - 16:24:05 -0300)
+Trying to boot from MMC1
+[    0.000000] Booting Linux on physical CPU 0x0
+[    0.000000] Linux version 4.19.0-rc2-next-20180905-00001-gb805e2d (fabio@fabio-Latitude-E5450) (gcc version 5.4.0 20160609 (Ubuntu/Linaro 5.4.0-6ubuntu1~16.04.9)) #533 SMP Wed Sep 5 16:21:03 -03 2018
+[    0.000000] CPU: ARMv7 Processor [410fc075] revision 5 (ARMv7), cr=10c5387d
+[    0.000000] CPU: div instructions available: patching division code
+[    0.000000] CPU: PIPT / VIPT nonaliasing data cache, VIPT aliasing instruction cache
+[    0.000000] OF: fdt: Machine model: Technexion Pico i.MX6UL Board
+[    0.000000] Memory policy: Data cache writealloc
+[    0.000000] cma: Reserved 64 MiB at 0x8c000000
+...

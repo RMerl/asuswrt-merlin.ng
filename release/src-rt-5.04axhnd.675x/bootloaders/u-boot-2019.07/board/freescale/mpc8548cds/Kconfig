@@ -1,0 +1,12 @@
+if TARGET_MPC8548CDS
+
+config SYS_BOARD
+	default "mpc8548cds"
+
+config SYS_VENDOR
+	default "freescale"
+
+config SYS_CONFIG_NAME
+	default "MPC8548CDS"
+
+endif

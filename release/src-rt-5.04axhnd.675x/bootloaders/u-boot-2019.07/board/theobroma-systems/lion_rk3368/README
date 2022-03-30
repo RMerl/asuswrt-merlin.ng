@@ -1,0 +1,80 @@
+Here is the step-by-step to boot to U-Boot on RK3368-uQ7
+
+Get the Source and build ATF
+============================
+
+  > git clone git://git.theobroma-systems.com/arm-trusted-firmware.git
+  > cd arm-trusted-firmware
+  > make CROSS_COMPILE=aarch64-linux-gnu- PLAT=rk3368 bl31
+  > cp build/rk3368/release/bl31.bin ../u-boot/bl31-rk3368.bin
+
+Configure U-Boot
+================
+
+  > cd ../u-boot
+  > make lion-rk3368_defconfig
+
+Build the TPL/SPL stage
+=======================
+
+  > make CROSS_COMPILE=aarch64-unknown-elf- ARCH=arm
+  > tools/mkimage -n rk3368 -T rksd -d tpl/u-boot-tpl.bin spl-3368.img
+  > cat spl/u-boot-spl-dtb.bin >> spl-3368.img
+
+Build the full U-Boot and a FIT image including the ATF
+=======================================================
+
+  > make CROSS_COMPILE=aarch64-unknown-elf- ARCH=arm u-boot.itb
+
+Flash the image
+===============
+
+Copy the SPL to offset 32k and the FIT image containing the payloads
+(U-Boot proper, ATF, devicetree) to offset 256k card.
+
+SD-Card
+-------
+
+  > dd if=spl-3368.img of=/dev/sdb seek=64
+  > dd if=u-boot.itb of=/dev/sdb seek=512
+
+eMMC
+----
+
+rkdeveloptool allows to flash the on-board eMMC via the USB OTG interface with
+help of the Rockchip loader binary.
+
+  > git clone https://github.com/rockchip-linux/rkdeveloptool
+  > cd rkdeveloptool
+  > autoreconf -i && && ./configure && make
+  > git clone https://github.com/rockchip-linux/rkbin.git
+  > ./rkdeveloptool db rkbin/rk33/rk3368_loader_v2.00.256.bin
+  > ./rkdeveloptool wl 64 ../spl.img
+  > ./rkdeveloptool wl 512 ../u-boot.itb
+
+
+If everything went according to plan, you should see the following
+output on UART0:
+
+<debug_uart> U-Boot TPL board init
+Trying to boot from BOOTROM
+Returning to boot ROM...
+Trying to boot from MMC1
+NOTICE:  BL31: v1.3(release):v1.2-1320-gbf43a443
+NOTICE:  BL31: Built : 18:04:47, Jul  5 2017
+
+
+U-Boot 2017.07-00158-g2395e99858 (Jul 18 2017 - 21:03:31 +0200)
+
+Model: Theobroma Systems RK3368-uQ7 SoM
+DRAM:  2 GiB
+MMC:   dwmmc@ff0c0000: 1, dwmmc@ff0f0000: 0
+Using default environment
+
+In:    serial@ff180000
+Out:   serial@ff180000
+Err:   serial@ff180000
+Net:
+Warning: ethernet@ff290000 (eth0) using random MAC address - d2:69:35:7e:d0:1e
+eth0: ethernet@ff290000
+Hit any key to stop autoboot:  2

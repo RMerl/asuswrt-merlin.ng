@@ -1,0 +1,23 @@
+if TARGET_WARP7
+
+config SYS_BOARD
+	default "warp7"
+
+config SYS_CONFIG_NAME
+	default "warp7"
+
+config WARP7_ROOT_PART
+	int "Partition number to use for root filesystem"
+	default 2
+	help
+	  The partition number to use for root filesystem this is the
+	  partition that is typically specified with root=/dev/sdaX or
+	  which gets converted into a root=PARTUUID=some_uuid.
+
+config SYS_FDT_ADDR
+	hex "FDT load address"
+	default 0x83000000
+	help
+	  The address the FDT file should be loaded to.
+
+endif

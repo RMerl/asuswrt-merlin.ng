@@ -1,0 +1,11 @@
+congatec DFI-BT700
+M:	Stefan Roese <sr@denx.de>
+S:	Maintained
+F:	board/dfi/dfi-bt700
+F:	include/configs/dfi-bt700.h
+F:	include/configs/theadorable-x86-dfi-bt700.h
+F:	configs/dfi-bt700-q7x-151_defconfig
+F:	configs/theadorable-x86-dfi-bt700_defconfig
+F:	arch/x86/dts/dfi-bt700.dtsi
+F:	arch/x86/dts/dfi-bt700-q7x-151.dts
+F:	arch/x86/dts/theadorable-x86-dfi-bt700.dts

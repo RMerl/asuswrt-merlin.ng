@@ -1,0 +1,233 @@
+#
+# Automatically Generated Kconfig File.  DO NOT MODIFY
+#
+
+
+config BCM_KF_MISC_MAKEFILE
+	bool
+	default y
+
+config BCM_KF_ARM_BCM963XX
+	bool
+	default y
+
+config BCM_KF_ARM64_BCM963XX
+	bool
+	default y
+
+config BCM_KF_SPI
+	bool
+	default y
+
+config BCM_KF_JFFS
+	bool
+	default y
+
+config BCM_KF_MTD_BCMNAND
+	bool
+	default y
+
+config BCM_KF_MTD_BCM963XX
+	bool
+	default y
+
+config BCM_KF_MTD_OOPS
+	bool
+	default y
+
+config BCM_KF_UBI
+	bool
+	default y
+
+config BCM_KF_EMMC
+	bool
+	default y
+
+config BCM_KF_EXTRA_DEBUG
+	bool
+	default y
+
+config BCM_KF_SUPPRESS_DEBUG
+	bool
+	default y
+
+config BCM_KF_WDT
+	bool
+	default y
+
+config BCM_KF_L2CACHE_OPTIMIZATION
+	bool
+	default y
+
+config BCM_KF_CHAR_SYSRQ
+	bool
+	default y
+
+config BCM_KF_GLB_COHERENCY
+	bool
+	default y
+
+config BCM_KF_CPU_AFFINITY_HINT
+	bool
+	default y
+
+config BCM_KF_POWER_SAVE
+	bool
+	default y
+
+config BCM_KF_NBUFF
+	bool
+	default y
+
+config BCM_KF_BLOG
+	bool
+	default y
+
+config BCM_KF_KBONDING
+	bool
+	default y
+
+config BCM_KF_OPTEE
+	bool
+	default y
+
+config BCM_KF_ATF
+	bool
+	default y
+
+config BCM_KF_NF_REGARDLESS_DROP
+	bool
+	default y
+
+config BCM_KF_NETFILTER
+	bool
+	default y
+
+config BCM_KF_EXTSTATS
+	bool
+	default y
+
+config BCM_KF_SCHED_RT_SHARE
+	bool
+	default y
+
+config BCM_KF_HWRNG
+	bool
+	default y
+
+config BCM_KF_SKB_EXT
+	bool
+	default y
+
+config BCM_KF_NETDEV_EXT
+	bool
+	default y
+
+config BCM_KF_KERN_BUG_FIX
+	bool
+	default y
+
+config BCM_KF_BR_HOOKS
+	bool
+	default y
+
+config BCM_KF_MAP
+	bool
+	default y
+
+config BCM_KF_PCI_RESET_DOMAIN_NR
+	bool
+	default y
+
+config BCM_KF_WL_HOSTAPD
+	bool
+	default y
+
+config BCM_KF_USB_HOSTS
+	bool
+	default y
+
+config BCM_KF_USBNET
+	bool
+	default y
+
+config BCM_KF_NETFILTER_SIP
+	bool
+	default y
+
+config BCM_KF_PRINTK_INT_ENABLED
+	bool
+	default y
+
+config BCM_KF_NDI
+	bool
+	default y
+
+config BCM_KF_DPI
+	bool
+	default y
+
+config BCM_KF_SGS
+	bool
+	default y
+
+config BCM_KF_IPV6
+	bool
+	default y
+
+config BCM_KF_SPU
+	bool
+	default y
+
+config BCM_KF_MPTCP
+	bool
+	default y
+
+config BCM_KF_TCP_NO_TSQ
+	bool
+	default y
+
+config BCM_KF_NL80211_6G_BAND_SUPPORT
+	bool
+	default y
+
+config BCM_KF_BUZZZ
+	bool
+	default y
+
+config BCM_KF_PPP
+	bool
+	default y
+
+config BCM_KF_PROTO_IPSEC
+	bool
+	default y
+
+config BCM_KF_PROTO_ESP
+	bool
+	default y
+
+config BCM_KF_MISC_BACKPORTS
+	bool
+	default y
+
+config BCM_KF_VLAN_DEI
+	bool
+	default y
+
+config BCM_KF_ARM_KASAN
+	bool
+	default y
+
+config BCM_KF_FAIL_CONFIG_ON_EOF
+	bool
+	default y
+
+config BCM_KF_DM_CREATE_BACKPORT
+	bool
+	default y
+
+config BCM_KF_SCSI_WRITE_PROTECT
+	bool
+	default y
+

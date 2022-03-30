@@ -1,0 +1,6 @@
+TURRIS OMNIA BOARD
+M:	Marek Behún <marek.behun@nic.cz>
+S:	Maintained
+F:	board/CZ.NIC/turris_omnia/
+F:	include/configs/turris_omnia.h
+F:	configs/turris_omnia_defconfig

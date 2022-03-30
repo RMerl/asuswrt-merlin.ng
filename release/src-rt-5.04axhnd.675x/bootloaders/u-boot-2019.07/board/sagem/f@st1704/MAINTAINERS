@@ -1,0 +1,6 @@
+SAGEM F@ST1704 BOARD
+M:	Álvaro Fernández Rojas <noltari@gmail.com>
+S:	Maintained
+F:	board/sagem/f@st1704/
+F:	include/configs/sagem_f@st1704.h
+F:	configs/sagem_f@st1704_ram_defconfig

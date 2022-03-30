@@ -1,0 +1,29 @@
+if TARGET_AX25_AE350
+
+config SYS_CPU
+	default "ax25"
+
+config SYS_BOARD
+	default "ax25-ae350"
+
+config SYS_VENDOR
+	default "AndesTech"
+
+config SYS_SOC
+	default "ae350"
+
+config SYS_CONFIG_NAME
+	default "ax25-ae350"
+
+config ENV_SIZE
+	default 0x2000 if ENV_IS_IN_SPI_FLASH
+
+config ENV_OFFSET
+	default 0x140000 if ENV_IS_IN_SPI_FLASH
+
+config BOARD_SPECIFIC_OPTIONS # dummy
+	def_bool y
+	select RISCV_NDS
+	imply SMP
+
+endif

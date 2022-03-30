@@ -1,0 +1,15 @@
+menu "ASUSWRT"
+
+choice
+	prompt "Choose Product"
+	depends on ATM
+	help
+	   Choose product
+
+config DSLAX82U
+	bool "DSLAX82U"
+	default n
+
+endchoice
+
+endmenu # "ASUSWRT"

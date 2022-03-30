@@ -1,0 +1,68 @@
+#include "63138.dtsi"
+
+/ {
+    memory_controller {
+        memcfg = <(BP_DDR_SPEED_533_8_8_8   | \
+                   BP_DDR_TOTAL_SIZE_128MB  | \
+                   BP_DDR_DEVICE_WIDTH_16)>;
+    };
+};
+
+&vreg_sync {
+		pinctrl-0 = <&vreg_clk_2_pin_37>;
+		pinctrl-names = "default";
+};
+
+&mdio_sf2 {
+	/* PHYs directly connected to SF2 */
+
+	/* PHYs connected to crossbar */
+	gphyc:c {
+		status = "okay";
+	};
+
+	/* Crossbar groups */
+	xbar_grp1:1 {
+		phy-handle = <&gphyc>;
+		status = "okay";
+	};
+};
+
+&switch_sf2 {
+	ports {
+		/* ports connect directly */
+
+		/* ports connected to crossbar */
+		sf2_port4@4 {
+			phy-handle = <&xbar_grp1>;
+			network-leds = <&led14>;
+			status = "okay";
+		};
+	};
+};
+
+&switch0 {
+	ports {
+	};
+};
+
+&legacy_leds {
+	adsl-led = <&led28>;
+};
+
+&led_ctrl {
+    led14: port_4-led_2-pin_14 {
+        active_low;
+        activity = <(LED_SPEED_100|LED_SPEED_1G)>;
+        link = <(LED_SPEED_100|LED_SPEED_1G)>;
+        status = "okay";
+    };
+	led24: sw_led_24-pin_24 {
+        active_low;
+        status = "okay";	
+	};
+	led28: sw_led_24-pin_28 {
+        active_low;
+        status = "okay";	
+	};
+};

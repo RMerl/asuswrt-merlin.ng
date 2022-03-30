@@ -1,0 +1,8 @@
+- BOARD
+M:	Alexey Brodkin <abrodkin@synopsys.com>
+S:	Maintained
+F:	include/configs/nsim.h
+F:	configs/nsim_700_defconfig
+F:	configs/nsim_700be_defconfig
+F:	configs/nsim_hs38_defconfig
+F:	configs/nsim_hs38be_defconfig

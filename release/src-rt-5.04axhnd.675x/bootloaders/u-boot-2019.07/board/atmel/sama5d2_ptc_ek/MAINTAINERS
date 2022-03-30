@@ -1,0 +1,8 @@
+SAMA5D2 PTC EK BOARD
+M:	Eugen Hristev <eugen.hristev@microchip.com>
+M:	Ludovic Desroches <ludovic.desroches@microchip.com>
+S:	Maintained
+F:	board/atmel/sama5d2_ptc_ek/
+F:	include/configs/sama5d2_ptc_ek.h
+F:	configs/sama5d2_ptc_ek_mmc_defconfig
+F:	configs/sama5d2_ptc_ek_nandflash_defconfig

@@ -1,0 +1,66 @@
+/****************************************************************************
+ *
+ * G997.gh 
+ *
+ * Description:
+ *	This is a header file which defines the type for the G997 Framer
+ *	global variable structure.
+ *
+ *
+ * Copyright (c) 1993-1998 AltoCom, Inc. All rights reserved.
+ * Authors: Ilya Stomakhin
+ *
+ * $Revision: 1.5 $
+ *
+ * $Id: G997.gh,v 1.5 2004/07/21 01:39:41 ilyas Exp $
+ *
+ * $Log: G997.gh,v $
+ * Revision 1.5  2004/07/21 01:39:41  ilyas
+ * Reset entire G.997 state on retrain. Timeout in G.997 if no ACK
+ *
+ * Revision 1.4  2004/04/27 00:27:16  ilyas
+ * Implemented double buffering to ensure G.997 HDLC frame is continuous
+ *
+ * Revision 1.3  2003/07/18 18:56:59  ilyas
+ * Added support for shared TX buffer (for ADSL driver)
+ *
+ * Revision 1.2  2002/01/11 06:48:27  ilyas
+ * Added command handler pointer
+ *
+ * Revision 1.1  2001/12/13 02:28:27  ilyas
+ * Added common framer (DslPacket and G997) and G997 module
+ *
+ *
+ *****************************************************************************/
+
+#ifndef	G997FramerGlobals
+#define	G997FramerGlobals
+
+#include "DslFramer.h"
+#include "HdlcFramer.h"
+
+#define	kG997MsgBufSize		64
+
+typedef struct
+	{
+	bitMap					setup;
+	dslFramerControl		dslFramer;
+	hdlcByteControl			hdlcByte;
+	dslCommandHandlerType	commandHandler;
+
+	uint					timeMs;
+	uint					timeCmdOut;
+
+	uchar					rxMsgNum;		
+	uchar					txMsgNum;
+	Boolean					txIdle;		
+	uchar					txMsgBuf[kG997MsgBufSize];
+	int					txMsgBufLen;
+	uchar					*txMsgBufPtr;
+	int					txMsgLen;
+	int					txMsgBufs;
+	int					txMsgBufNum;
+	}
+	g997VarsStruct;
+
+#endif	/* G997FramerGlobals */

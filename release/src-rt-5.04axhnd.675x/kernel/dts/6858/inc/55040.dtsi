@@ -1,0 +1,14 @@
+#include "5504X.dtsi"
+
+/ {
+	/* pcie core 0 */
+	pcie0: pcie0 {
+		#define PCIE_ID				0
+		#define PCIE_SPI			60
+		#define PCIE_ADDR			0 0x80040000
+		#define PCIE_SIZE			0 0x0000A000
+					      /*           flags    pci_addr     cpu_addr     size */
+		#define PCIE_RANGE			0x02000000 0 0xC0000000 0 0xC0000000 0 0x10000000
+		#include "../../ip/bcm_pcie_core.dtsi" 
+	};
+};

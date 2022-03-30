@@ -1,0 +1,12 @@
+if TARGET_SNIPER
+
+config SYS_BOARD
+	default "sniper"
+
+config SYS_VENDOR
+	default "lg"
+
+config SYS_CONFIG_NAME
+	default "sniper"
+
+endif

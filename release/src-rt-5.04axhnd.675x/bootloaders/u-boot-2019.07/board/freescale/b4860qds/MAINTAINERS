@@ -1,0 +1,17 @@
+B4860QDS BOARD
+M:	Ashish Kumar <ashish.kumar@nxp.com>
+S:	Maintained
+F:	board/freescale/b4860qds/
+F:	include/configs/B4860QDS.h
+F:	configs/B4420QDS_defconfig
+F:	configs/B4420QDS_NAND_defconfig
+F:	configs/B4420QDS_SPIFLASH_defconfig
+F:	configs/B4860QDS_defconfig
+F:	configs/B4860QDS_NAND_defconfig
+F:	configs/B4860QDS_SPIFLASH_defconfig
+F:	configs/B4860QDS_SRIO_PCIE_BOOT_defconfig
+
+B4860QDS_SECURE_BOOT BOARD
+M:	Ruchika Gupta <ruchika.gupta@nxp.com>
+S:	Maintained
+F:	configs/B4860QDS_SECURE_BOOT_defconfig

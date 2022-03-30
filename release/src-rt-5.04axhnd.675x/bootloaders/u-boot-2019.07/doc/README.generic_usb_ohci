@@ -1,0 +1,63 @@
+Notes on the the generic USB-OHCI driver
+========================================
+
+This driver (drivers/usb/usb_ohci.[ch]) is the result of the merge of
+various existing OHCI drivers that were basically identical beside
+cpu/board dependant initalization. This initalization has been moved
+into cpu/board directories and are called via the hooks below.
+
+Configuration options
+----------------------
+
+	CONFIG_USB_OHCI_NEW: enable the new OHCI driver
+
+	CONFIG_SYS_USB_OHCI_BOARD_INIT: call the board dependant hooks:
+
+		  - extern int board_usb_init(void);
+		  - extern int usb_board_stop(void);
+		  - extern int usb_cpu_init_fail(void);
+
+	CONFIG_SYS_USB_OHCI_CPU_INIT: call the cpu dependant hooks:
+
+		  - extern int usb_cpu_init(void);
+		  - extern int usb_cpu_stop(void);
+		  - extern int usb_cpu_init_fail(void);
+
+	CONFIG_SYS_USB_OHCI_REGS_BASE: defines the base address of the OHCI
+				registers
+
+	CONFIG_SYS_USB_OHCI_SLOT_NAME: slot name
+
+	CONFIG_SYS_USB_OHCI_MAX_ROOT_PORTS: maximal number of ports of the
+				     root hub.
+
+
+Endianness issues
+------------------
+
+The USB bus operates in little endian, but unfortunately there are
+OHCI controllers that operate in big endian such as ppc4xx. For these the
+config option
+
+	CONFIG_SYS_OHCI_BE_CONTROLLER
+
+needs to be defined.
+
+
+PCI Controllers
+----------------
+
+You'll need to define
+
+	CONFIG_PCI_OHCI
+
+If you have several USB PCI controllers, define
+
+	CONFIG_PCI_OHCI_DEVNO: number of the OHCI device in PCI list
+
+If undefined, the first instance found in PCI space will be used.
+
+PCI Controllers need to do byte swapping on register accesses, so they
+should to define:
+
+	CONFIG_SYS_OHCI_SWAP_REG_ACCESS

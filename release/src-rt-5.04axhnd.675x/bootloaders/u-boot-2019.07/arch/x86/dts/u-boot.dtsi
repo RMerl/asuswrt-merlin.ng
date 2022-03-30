@@ -1,0 +1,133 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2016 Google, Inc
+ * Written by Simon Glass <sjg@chromium.org>
+ */
+
+#include <config.h>
+
+#ifdef CONFIG_CHROMEOS
+/ {
+	binman {
+		multiple-images;
+		rom: rom {
+		};
+	};
+};
+#else
+/ {
+	rom: binman {
+	};
+};
+#endif
+
+#ifdef CONFIG_ROM_SIZE
+&rom {
+	filename = "u-boot.rom";
+	end-at-4gb;
+	sort-by-offset;
+	pad-byte = <0xff>;
+	size = <CONFIG_ROM_SIZE>;
+#ifdef CONFIG_HAVE_INTEL_ME
+	intel-descriptor {
+		filename = CONFIG_FLASH_DESCRIPTOR_FILE;
+	};
+	intel-me {
+		filename = CONFIG_INTEL_ME_FILE;
+	};
+#endif
+#ifdef CONFIG_TPL
+	u-boot-tpl-with-ucode-ptr {
+		offset = <CONFIG_TPL_TEXT_BASE>;
+	};
+	u-boot-tpl-dtb {
+	};
+	u-boot-spl {
+		offset = <CONFIG_SPL_TEXT_BASE>;
+	};
+	u-boot-spl-dtb {
+	};
+	u-boot {
+		offset = <CONFIG_SYS_TEXT_BASE>;
+	};
+#elif defined(CONFIG_SPL)
+	u-boot-spl-with-ucode-ptr {
+		offset = <CONFIG_SPL_TEXT_BASE>;
+	};
+	u-boot-dtb-with-ucode2 {
+		type = "u-boot-dtb-with-ucode";
+	};
+	u-boot {
+		/*
+		 * TODO(sjg@chromium.org):
+		 * Normally we use CONFIG_SYS_TEXT_BASE as the flash offset. But
+		 * for boards with textbase in SDRAM we cannot do this. Just use
+		 * an assumed-valid value (1MB before the end of flash) here so
+		 * that we can actually build an image for coreboot, etc.
+		 * We need a better solution, perhaps a separate Kconfig.
+		 */
+#if CONFIG_SYS_TEXT_BASE == 0x1110000
+		offset = <0xfff00000>;
+#else
+		offset = <CONFIG_SYS_TEXT_BASE>;
+#endif
+	};
+#else
+	u-boot-with-ucode-ptr {
+		offset = <CONFIG_SYS_TEXT_BASE>;
+	};
+#endif
+	u-boot-dtb-with-ucode {
+	};
+	u-boot-ucode {
+		align = <16>;
+	};
+#ifdef CONFIG_HAVE_MRC
+	intel-mrc {
+		offset = <CONFIG_X86_MRC_ADDR>;
+	};
+#endif
+#ifdef CONFIG_HAVE_FSP
+	intel-fsp {
+		filename = CONFIG_FSP_FILE;
+		offset = <CONFIG_FSP_ADDR>;
+	};
+#endif
+#ifdef CONFIG_HAVE_CMC
+	intel-cmc {
+		filename = CONFIG_CMC_FILE;
+		offset = <CONFIG_CMC_ADDR>;
+	};
+#endif
+#ifdef CONFIG_HAVE_VGA_BIOS
+	intel-vga {
+		filename = CONFIG_VGA_BIOS_FILE;
+		offset = <CONFIG_VGA_BIOS_ADDR>;
+	};
+#endif
+#ifdef CONFIG_HAVE_VBT
+	intel-vbt {
+		filename = CONFIG_VBT_FILE;
+		offset = <CONFIG_VBT_ADDR>;
+	};
+#endif
+#ifdef CONFIG_HAVE_REFCODE
+	intel-refcode {
+		offset = <CONFIG_X86_REFCODE_ADDR>;
+	};
+#endif
+#ifdef CONFIG_TPL
+	x86-start16-tpl {
+		offset = <CONFIG_SYS_X86_START16>;
+	};
+#elif defined(CONFIG_SPL)
+	x86-start16-spl {
+		offset = <CONFIG_SYS_X86_START16>;
+	};
+#else
+	x86-start16 {
+		offset = <CONFIG_SYS_X86_START16>;
+	};
+#endif
+};
+#endif

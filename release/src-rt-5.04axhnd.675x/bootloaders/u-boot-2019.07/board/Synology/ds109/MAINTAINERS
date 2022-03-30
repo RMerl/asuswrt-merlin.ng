@@ -1,0 +1,6 @@
+DS109 BOARD
+M:	Walter Schweizer <swwa@users.sourceforge.net>
+S:	Maintained
+F:	board/Synology/ds109
+F:	configs/ds109_defconfig
+F:	include/configs/ds109.h

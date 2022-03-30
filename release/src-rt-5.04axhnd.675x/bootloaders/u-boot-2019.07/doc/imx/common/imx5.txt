@@ -1,0 +1,40 @@
+U-Boot for Freescale i.MX5x
+
+This file contains information for the port of U-Boot to the Freescale
+i.MX5x SoCs.
+
+1. CONFIGURATION OPTIONS/SETTINGS
+---------------------------------
+
+1.1 CONFIG_MX51_PLL_ERRATA: Workaround for i.MX51 PLL errata.
+    This option should be enabled by all boards using the i.MX51 silicon
+    version up until (including) 3.0 running at 800MHz.
+    The PLL's in the i.MX51 processor can go out of lock due to a metastable
+    condition in an analog flip-flop when used at high frequencies.
+    This workaround implements an undocumented feature in the PLL (dither
+    mode), which causes the effect of this failure to be much lower (in terms
+    of frequency deviation), avoiding system failure, or at least decreasing
+    the likelihood of system failure.
+
+1.2 CONFIG_SYS_MAIN_PWR_ON: Trigger MAIN_PWR_ON upon startup.
+    This option should be enabled for boards having a SYS_ON_OFF_CTL signal
+    connected to GPIO1[23] and triggering the MAIN_PWR_ON signal like in the
+    reference designs.
+
+2. CONVENTIONS FOR FUSE ASSIGNMENTS
+-----------------------------------
+
+2.1 MAC Address: It is stored in the words 9 to 14 of fuse bank 1, using the
+    natural MAC byte order (i.e. MSB first).
+
+    This is an example how to program an example MAC address 01:23:45:67:89:ab
+    into the eFuses. Assure that the programming voltage is available and then
+    execute:
+
+    => fuse prog -y 1 9 01 23 45 67 89 ab
+
+    After programming a MAC address, consider locking the MAC fuses. This is
+    done by programming the MAC_ADDR_LOCK fuse, which is bit 4 of word 0 in
+    bank 1:
+
+    => fuse prog -y 1 0 10

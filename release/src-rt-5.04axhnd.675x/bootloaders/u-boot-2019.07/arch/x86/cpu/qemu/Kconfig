@@ -1,0 +1,34 @@
+# SPDX-License-Identifier: GPL-2.0+
+#
+# Copyright (C) 2015, Bin Meng <bmeng.cn@gmail.com>
+
+config QEMU
+	bool
+	select ARCH_EARLY_INIT_R
+	imply AHCI_PCI
+	imply E1000
+	imply SCSI
+	imply SCSI_AHCI
+	imply SYS_NS16550
+	imply USB
+	imply USB_EHCI_HCD
+	imply VIDEO_VESA
+
+if QEMU
+
+config SYS_CAR_ADDR
+	hex
+	default 0x10000
+
+config SYS_CAR_SIZE
+	hex
+	default 0x10000
+
+config ACPI_PM1_BASE
+	hex
+	default 0xe400
+	help
+	  ACPI Power Management 1 (PM1) i/o-mapped base address.
+	  This device is defined in ACPI specification, with 16 bytes in size.
+
+endif

@@ -1,0 +1,124 @@
+config GDSYS_LEGACY_OSD_CMDS
+	bool
+	help
+	  Use the 'osdw', 'osdp', and 'osdsize' legacy commands required by
+	  gdsys devices.
+
+config GDSYS_LEGACY_DRIVERS
+	bool
+	help
+	  Enable the gdsys legacy drivers under board/gdsys/common. If this
+	  option is not set, all relevant DM drivers must be configured for the
+	  device in question.
+
+config SYS_FPGA0_BASE
+	hex
+	default E0600000
+	help
+	  The base address of the first FPGA's register map.
+
+config SYS_FPGA0_SIZE
+	hex
+	default 1
+	help
+	  The base address of the first FPGA's register map.
+
+config SYS_FPGA1_BASE
+	hex
+	help
+	  The base address of the second FPGA's register map.
+
+config SYS_FPGA1_SIZE
+	hex
+	help
+	  The base address of the second FPGA's register map.
+
+if TARGET_HRCON
+
+config SYS_BOARD
+	default "mpc8308"
+
+config SYS_VENDOR
+	default "gdsys"
+
+config SYS_CONFIG_NAME
+	default "hrcon"
+
+config GDSYS_LEGACY_OSD_CMDS
+	default y
+
+config GDSYS_LEGACY_DRIVERS
+	default y
+
+endif
+
+if TARGET_STRIDER
+
+config SYS_BOARD
+	default "mpc8308"
+
+config SYS_VENDOR
+	default "gdsys"
+
+config SYS_CONFIG_NAME
+	default "strider"
+
+config GDSYS_LEGACY_OSD_CMDS
+	default y
+
+config GDSYS_LEGACY_DRIVERS
+	default y
+
+endif
+
+if TARGET_GAZERBEAM
+
+config SYS_BOARD
+	default "mpc8308"
+
+config SYS_VENDOR
+	default "gdsys"
+
+config SYS_CONFIG_NAME
+	default "gazerbeam"
+
+config SYS_FPGA1_BASE
+	default E0700000
+
+config SYS_FPGA1_SIZE
+	default 1
+
+config GDSYS_LEGACY_OSD_CMDS
+	default y
+endif
+
+if TARGET_HRCON || TARGET_STRIDER || TARGET_GAZERBEAM
+
+choice
+	prompt "FPGA flavor selection"
+
+config SYS_FPGA_FLAVOR_LEGACY
+	bool "Legacy flavor"
+	help
+	  This enables support for the gdsys pre-Gazerbeam FPGA memory layout.
+
+config SYS_FPGA_FLAVOR_GAZERBEAM
+	bool "Gazerbeam flavor"
+	help
+	  This enables support for the gdsys FPGA memory layout of the
+	  Gazerbeam board.
+
+endchoice
+
+config EXTENDED_FEATURES
+	bool "FPGA extended features"
+	depends on GDSYS_LEGACY_DRIVERS
+	help
+	  Enable support for the extended features field of the IHS FPGA.
+
+config CMD_IOLOOP
+	bool "Enable 'ioloop' and 'ioreflect' commands"
+	help
+	  These commands provide FPGA tests.
+
+endif

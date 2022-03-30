@@ -1,0 +1,62 @@
+#include "47622.dtsi"
+
+/ {
+    memory_controller {
+        memcfg = <(BP_DDR_SPEED_1067_14_14_14 | \
+                   BP_DDR_TOTAL_SIZE_512MB    | \
+                   BP_DDR_DEVICE_WIDTH_16     | \
+                   BP_DDR_TOTAL_WIDTH_16BIT   | \
+                   BP_DDR_SSC_CONFIG_1)>;
+    };
+
+	buttons {
+		compatible = "brcm,buttons";
+		reset_button {
+			ext_irq = <&bca_extintr 39 BCA_GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+			press {
+				print = "Button Press -- Hold for 5s to do restore to default";
+			};
+			hold {
+				rst_to_dflt = <5>;
+			};
+			release {
+				reset = <0>;
+			};	
+		};
+		ses_button {
+			ext_irq = <&bca_extintr 38 BCA_GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+			release {
+				ses_short_period = <0>;
+				ses_long_period = <3>;
+			};
+		};
+	};
+};
+
+
+&mdio {
+	phy8:8 {
+		status = "okay";
+	};
+
+	phy_serdes0:6 {
+		status = "okay";
+	};
+
+};
+
+&switch0 {
+	pinctrl-names = "default"; 
+	pinctrl-0 = <&a_rgmii_mdc_pin_68 &a_rgmii_mdio_pin_69>; 
+	ports {
+		/* fixed port configuration */
+		sysp_port0@0 {
+			phy-handle = <&phy8>;
+			status = "okay";
+		};
+		sysp_port1@1 {
+			phy-handle = <&phy_serdes0>;
+			status = "okay";
+		};
+	};
+};

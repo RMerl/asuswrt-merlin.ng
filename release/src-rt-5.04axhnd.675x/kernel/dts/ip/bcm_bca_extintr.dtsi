@@ -1,0 +1,9 @@
+#include "../../../bcmdrivers/opensource/include/bcm963xx/bcm_bca_extintr_dt_bindings.h"
+
+compatible = "brcm,bca-extintr";
+reg = <EXTINTR_OFFSET EXTINTR_SIZE>;
+num_ext_intr = <MAX_EXT_INTR>;
+/* external_interrupts = <List of external interrups id (SPI)> */
+/* clear_workarround; *//* add for 6858 */
+/* skip_opeational; *//* add for 63146 */
+

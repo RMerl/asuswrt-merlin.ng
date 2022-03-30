@@ -1,0 +1,12 @@
+if TARGET_MX6SABREAUTO
+
+config SYS_BOARD
+	default "mx6sabreauto"
+
+config SYS_VENDOR
+	default "freescale"
+
+config SYS_CONFIG_NAME
+	default "mx6sabreauto"
+
+endif

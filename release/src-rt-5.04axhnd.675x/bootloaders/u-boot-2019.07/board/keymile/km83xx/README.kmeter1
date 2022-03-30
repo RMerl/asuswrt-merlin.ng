@@ -1,0 +1,91 @@
+Keymile kmeter1 Board
+-----------------------------------------
+1.	Alternative Boot EEPROM
+
+    Upon the kmeter1 startup the I2C_1 controller is used to fetch the boot
+    configuration from a serial EEPROM. During the development and debugging
+    phase it might be helpful to apply an alternative boot configuration in
+    a simple way. Therefore it is an alternative boot eeprom on the PIGGY,
+    which can be activated by setting the "ST" jumper on the PIGGY board.
+
+2.	Memory Map
+
+    BaseAddr    PortSz  Size  Device
+    ----------- ------  -----  ------
+    0x0000_0000 64 bit  256MB  DDR
+    0x8000_0000  8 bit  256KB  GPIO/PIGGY on CS1
+    0xa000_0000  8 bit  256MB  PAXE on CS3
+    0xe000_0000           2MB  Int Mem Reg Space
+    0xf000_0000 16 bit  256MB  FLASH on CS0
+
+
+    DDR-SDRAM:
+    The current realization is made with four 16-bits memory devices.
+    Mounting options have been foreseen for device architectures from
+    4Mx16 to 512Mx16. The kmeter1 is equipped with four 32Mx16 devices
+    thus resulting in a total capacity of 256MBytes.
+
+3. Compilation
+
+	Assuming you're using BASH shell:
+
+		export CROSS_COMPILE=your-cross-compile-prefix
+		cd u-boot
+		make distclean
+		make kmeter1_config
+		make
+
+4. Downloading and Flashing Images
+
+4.0 Download over serial line using Kermit:
+
+	loadb
+	[Drop to kermit:
+	    ^\c
+	    send <u-boot-bin-image>
+	    c
+	]
+
+
+    Or via tftp:
+
+	tftp 10000 u-boot.bin
+    => run load
+    Using UEC0 device
+    TFTP from server 192.168.1.1; our IP address is 192.168.205.4
+    Filename '/tftpboot/kmeter1/u-boot.bin'.
+    Load address: 0x200000
+    Loading: ##############
+    done
+    Bytes transferred = 204204 (31dac hex)
+    =>
+
+4.1 Reflash U-Boot Image using U-Boot
+
+    => run update
+    ..... done
+    Un-Protected 5 sectors
+
+    ..... done
+    Erased 5 sectors
+    Copy to Flash... done
+    ..... done
+    Protected 5 sectors
+    Total of 204204 bytes were the same
+    Saving Environment to Flash...
+    . done
+    Un-Protected 1 sectors
+    . done
+    Un-Protected 1 sectors
+    Erasing Flash...
+    . done
+    Erased 1 sectors
+    Writing to Flash... done
+    . done
+    Protected 1 sectors
+    . done
+    Protected 1 sectors
+    =>
+
+5. Notes
+	1) The console baudrate for kmeter1 is 115200bps.

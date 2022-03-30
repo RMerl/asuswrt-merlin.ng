@@ -1,0 +1,22 @@
+if TARGET_AMCORE
+
+config SYS_CPU
+        string
+        default "mcf530x"
+
+config SYS_BOARD
+        string
+        default "amcore"
+
+config SYS_VENDOR
+        string
+        default "sysam"
+
+config SYS_CONFIG_NAME
+        string
+        default "amcore"
+
+endif
+
+
+

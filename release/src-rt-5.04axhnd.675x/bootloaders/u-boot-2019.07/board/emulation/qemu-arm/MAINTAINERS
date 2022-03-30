@@ -1,0 +1,7 @@
+QEMU ARM 'VIRT' BOARD
+M:	Tuomas Tynkkynen <tuomas.tynkkynen@iki.fi>
+S:	Maintained
+F:	board/emulation/qemu-arm/
+F:	include/configs/qemu-arm.h
+F:	configs/qemu_arm_defconfig
+F:	configs/qemu_arm64_defconfig

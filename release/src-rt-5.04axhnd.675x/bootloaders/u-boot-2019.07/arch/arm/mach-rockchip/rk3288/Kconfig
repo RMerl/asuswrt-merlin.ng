@@ -1,0 +1,175 @@
+if ROCKCHIP_RK3288
+
+config TARGET_CHROMEBOOK_JERRY
+	bool "Google/Rockchip Veyron-Jerry Chromebook"
+	select BOARD_LATE_INIT
+	help
+	  Jerry is a RK3288-based clamshell device with 2 USB 3.0 ports,
+	  HDMI, an 11.9 inch EDP display, micro-SD card, touchpad and
+	  WiFi. It includes a Chrome OS EC (Cortex-M3) to provide access to
+	  the keyboard and battery functions.
+
+config TARGET_CHROMEBIT_MICKEY
+	bool "Google/Rockchip Veyron-Mickey Chromebit"
+	select BOARD_LATE_INIT
+	help
+	  Mickey is a small RK3288-based device with one USB 3.0 port, HDMI
+	  and WiFi. It has a separate power port and is designed to connect
+	  to the HDMI input of a monitor or TV. It has no internal battery.
+	  Typically a USB hub or wireless keyboard/touchpad is used to get
+	  keyboard and mouse access.
+
+config TARGET_CHROMEBOOK_MINNIE
+	bool "Google/Rockchip Veyron-Minnie Chromebook"
+	select BOARD_LATE_INIT
+	help
+	  Minnie is a RK3288-based convertible clamshell device with 2 USB 3.0
+	  ports, micro HDMI, a 10.1-inch 1280x800 EDP display, micro-SD card,
+	  HD camera, touchpad, WiFi and Bluetooth. It includes a Chrome OS
+	  EC (Cortex-M3) to provide access to the keyboard and battery
+	  functions. It includes 2 or 4GB of SDRAM and 16 or 32GB of
+	  internal MMC. The product name is ASUS Chromebook Flip.
+
+config TARGET_CHROMEBOOK_SPEEDY
+	bool "Google/Rockchip Veyron-Speedy Chromebook"
+	select BOARD_LATE_INIT
+	help
+	  Speedy is a RK3288-based clamshell device with 2 USB 2.0 ports,
+	  micro HDMI, an 11.6 inch display, micro-SD card,
+	  HD camera, touchpad, wifi and Bluetooth. It includes a Chrome OS
+	  EC (Cortex-M3) to provide access to the keyboard and battery
+	  functions. It includes 2 or 4GB of SDRAM and 16GB of internal MMC.
+	  The product name is Asus Chromebook C201PA.
+
+config TARGET_EVB_RK3288
+	bool "Evb-RK3288"
+	select BOARD_LATE_INIT
+	help
+	  EVB-RK3288 is a RK3288-based development board with 2 USB ports,
+	  HDMI, VGA, micro-SD card, audio, WiFi  and Gigabit Ethernet, It
+	  also includes on-board eMMC and 2GB of SDRAM. Expansion connectors
+	  provide access to display pins, I2C, SPI, UART and GPIOs.
+
+config TARGET_FENNEC_RK3288
+	bool "Fennec-RK3288"
+	select BOARD_LATE_INIT
+	help
+	  Fennec is a RK3288-based development board with 2 USB ports,
+	  HDMI, micro-SD card, audio, WiFi and Gigabit Ethernet. It also
+	  includes on-board eMMC and 2GB of SDRAM. Expansion connectors
+	  provide access to display pins, I2C, SPI, UART and GPIOs.
+
+config TARGET_FIREFLY_RK3288
+	bool "Firefly-RK3288"
+	select BOARD_LATE_INIT
+	help
+	  Firefly is a RK3288-based development board with 2 USB ports,
+	  HDMI, VGA, micro-SD card, audio, WiFi  and Gigabit Ethernet, It
+	  also includes on-board eMMC and 1GB of SDRAM. Expansion connectors
+	  provide access to display pins, I2C, SPI, UART and GPIOs.
+
+config TARGET_MIQI_RK3288
+	bool "MiQi-RK3288"
+	select BOARD_LATE_INIT
+	help
+	  MiQi-RK3288 is a RK3288-based development board with 4 USB 2.0
+	  ports, HDMI, micro-SD card, 16 GB eMMC and Gigabit Ethernet. It
+	  has 1 or 2 GiB SDRAM. Expansion connectors provide access to
+	  I2C, SPI, UART, GPIOs and fan control.
+
+config TARGET_PHYCORE_RK3288
+	bool "phyCORE-RK3288"
+        select BOARD_LATE_INIT
+	help
+	  Add basic support for the PCM-947 carrier board, a RK3288 based
+	  development board made by PHYTEC. This board works in a combination
+	  with the phyCORE-RK3288 System on Module.
+
+config TARGET_POPMETAL_RK3288
+	bool "PopMetal-RK3288"
+	select BOARD_LATE_INIT
+	help
+	  PopMetal is a RK3288-based development board with 3 USB host ports,
+	  1 micro USB OTG port, HDMI, VGA, micro-SD card, audio, WiFi, Gigabit
+	  Ethernet and lots of sensors. It also includes on-board 8 GeMMC and
+	  2GB DDR3. Expansion connectors provide access to I2C, SPI, UART,
+	  GPIOs and display interface.
+
+config TARGET_VYASA_RK3288
+	bool "Vyasa-RK3288"
+	select BOARD_LATE_INIT
+	select ROCKCHIP_BROM_HELPER
+	select TPL
+	help
+	  Vyasa is a RK3288-based development board with 2 USB ports,
+	  HDMI, VGA, micro-SD card, audio, WiFi  and Gigabit Ethernet, It
+	  also includes on-board eMMC and 2GB of SDRAM. Expansion connectors
+	  provide access to display pins, I2C, SPI, UART and GPIOs.
+
+config TARGET_ROCK2
+	bool "Radxa Rock 2"
+	select BOARD_LATE_INIT
+	help
+	  Rock 2 is a SOM and base-board combination based on RK3288. It
+	  includes Ethernet, HDMI, 3 USB, micro-SD, audio, SATA, WiFi and
+	  space for a real-time-clock battery. There is also an expansion
+	  interface which provides access to many pins.
+
+config TARGET_TINKER_RK3288
+	bool "Tinker-RK3288"
+        select BOARD_LATE_INIT
+	select TPL
+	help
+	  Tinker is a RK3288-based development board with 2 USB ports, HDMI,
+	  micro-SD card, audio, Gigabit Ethernet. It also includes on-board
+	  8GB eMMC and 2GB of SDRAM. Expansion connectors provide access to
+	  I2C, SPI, UART, GPIOs.
+
+config ROCKCHIP_FAST_SPL
+	bool "Change the CPU to full speed in SPL"
+	depends on TARGET_CHROMEBOOK_JERRY
+	help
+	  Some boards want to boot as fast as possible. We can increase the
+	  CPU frequency in SPL if the power supply is configured to the correct
+	  voltage. This option is only available on boards which support it
+	  and have the required PMIC code.
+
+config SYS_SOC
+	default "rk3288"
+
+config SYS_MALLOC_F_LEN
+	default 0x0800
+
+config SPL_DRIVERS_MISC_SUPPORT
+	default y
+
+config SPL_LIBCOMMON_SUPPORT
+	default y
+
+config SPL_LIBGENERIC_SUPPORT
+	default y
+
+config SPL_SERIAL_SUPPORT
+	default y
+
+source "board/amarula/vyasa-rk3288/Kconfig"
+
+source "board/chipspark/popmetal_rk3288/Kconfig"
+
+source "board/firefly/firefly-rk3288/Kconfig"
+
+source "board/google/veyron/Kconfig"
+
+source "board/mqmaker/miqi_rk3288/Kconfig"
+
+source "board/phytec/phycore_rk3288/Kconfig"
+
+source "board/radxa/rock2/Kconfig"
+
+source "board/rockchip/evb_rk3288/Kconfig"
+
+source "board/rockchip/fennec_rk3288/Kconfig"
+
+source "board/rockchip/tinker_rk3288/Kconfig"
+
+endif

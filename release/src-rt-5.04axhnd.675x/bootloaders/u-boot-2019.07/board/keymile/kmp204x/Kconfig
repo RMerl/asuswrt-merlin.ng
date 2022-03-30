@@ -1,0 +1,12 @@
+if TARGET_KMP204X
+
+config SYS_BOARD
+	default "kmp204x"
+
+config SYS_VENDOR
+	default "keymile"
+
+config SYS_CONFIG_NAME
+	default "kmp204x"
+
+endif

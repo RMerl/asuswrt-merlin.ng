@@ -1,0 +1,113 @@
+#!/usr/bin/env perl
+
+use warnings;
+use strict;
+use Getopt::Long;
+use File::stat;
+use bytes;
+
+my $mode = 'split';
+my $tools =
+'/opt/toolchains/crosstools-aarch64-gcc-9.2-linux-4.19-glibc-2.30-binutils-2.32/aarch64-buildroot-linux-gnu/bin/';
+my $objcopy = "$tools/objcopy";
+my $objdump = "$tools/objdump";
+my $start;
+my $load;
+my $sz;
+my $format = 'split';
+
+$ENV{LC_ALL}        = 'C';
+$ENV{ARCH_ENDIAN}   = 'little';
+$ENV{PROFILE_DIR}   = '..';
+$ENV{HOSTTOOLS_DIR} = '../hostTools';
+
+my $ubootobjdir = "obj/uboot";
+my $payload     = "obj/binaries/bootstrap_image_128.bin";
+my $out         = "obj/bootfs/cferam.000";
+my $chip        = '63138';
+my $blocksize   = 128;
+my $btrm = 0;
+
+GetOptions(
+    "pureubi", sub { $mode = 'pureubi'; },
+    "payload=s",     \$payload,
+    "ubootobjdir=s", \$ubootobjdir,
+    "chip=s",        \$chip,
+    'blocksize=i',   \$blocksize,
+    "format=s",      \$format,
+    'btrm=i',        \$btrm
+);
+
+my $elf = "$ubootobjdir/u-boot";
+my $bin = "$ubootobjdir/u-boot-dtb.bin";
+$ENV{BRCM_CHIP} = $chip;
+
+system("mkdir -p obj/bootfs");
+
+local $/;
+open( OD, "$objdump -x $elf|" );
+my $od = <OD>;
+close(OD);
+open( B, "<$bin" );
+my $cferam = <B>;
+close(B);
+$sz = length($cferam);
+
+if ( $od =~ /^start address (0x\w+)\s*$/m ) {
+    $start = hex($1);
+    printf( "start %x\n", $start );
+}
+if ( $od =~ /^\s+LOAD off.* paddr\s+(0x\w+)\s/m ) {
+    $load = hex($1);
+    printf( "load %x\n", $load );
+}
+
+open( FO, ">$out" );
+print FO pack( 'V*', $start, $load, $sz ) or die("Error\n");
+print FO $cferam;
+close(FO);
+
+open( F, "dd if=$payload bs=1M count=2|" );
+my $lplus = <F>;
+close(F);
+
+my $payload_loader_size;
+my $payload_size;
+if ( $lplus =~ /IMAGE=NAND:(\d+)(M|m|K|k),\d+(?:M|m|K|k)\000/ ) {
+    $payload_loader_size = $1 << ( ( uc($2) eq 'M' ) ? 20 : 10 );
+    print "loader size $payload_loader_size\n";
+}
+my $st = stat($payload);
+$payload_size = $st->size;
+print "payload size is $payload_size\n";
+
+if ( $format eq 'split' ) {
+    system(
+"../hostTools/mkfs.jffs2 -x zlib -x rtime -v -l -p -n -e ${blocksize}KiB -r obj/bootfs -o obj/binaries/fakecfe${blocksize}.img"
+    );
+    open( FO, ">>obj/binaries/fakecfe${blocksize}.img" );
+    my $split = chr(255) x ( $blocksize * 1024 );
+    my $mark =
+"ImageFollows - e62b6965f01ec7e98fcde8ee1de57bfa9bc4e2e4eb5cee95406d5337ed9355da\0";
+    $mark .= "$payload_loader_size\0$payload_size\0";
+    for ( my $i = 0 ; $i < $blocksize * 1024 ; $i += 2048 ) {
+        substr( $split, $i, length($mark) ) = $mark;
+    }
+    print FO $split;
+    close(FO);
+    system("cat $payload >> obj/binaries/fakecfe${blocksize}.img");
+}
+else {
+    open(FO,">obj/binaries/payload.bin");
+    my $head = "$payload_loader_size\0$payload_size\0" . "\0" x 2048;
+    $head = substr($head,0,2048); 
+    print FO $head;
+    close(FO);
+system('../hostTools/imagetools/mkfs.nada --out obj/binaries/blob.bin obj/bootfs/cferam.000');
+system("cat $payload >> obj/binaries/payload.bin");
+system("../hostTools/mtd-utils*/ubinize -v -o obj/binaries/fakecfe${blocksize}.img -m 4096 -p 262144  build/work/reimage/pureubi.ini");
+}
+system(
+"../hostTools/addvtoken --endian little --chip $chip --flashtype NAND${blocksize} --btrm $btrm obj/binaries/fakecfe${blocksize}.img obj/binaries/fakecfe${blocksize}.w"
+);
+

@@ -1,0 +1,28 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Device Tree Source extras for U-Boot for the OPOS6UL SoM
+ *
+ * Copyright (C) 2018 Armadeus Systems <support@armadeus.com>
+ */
+
+/ {
+	soc {
+		u-boot,dm-spl;
+	};
+};
+
+&aips2 {
+	u-boot,dm-spl;
+};
+
+&iomuxc {
+	u-boot,dm-spl;
+};
+
+&pinctrl_usdhc1 {
+	u-boot,dm-spl;
+};
+
+&usdhc1 {
+	u-boot,dm-spl;
+};

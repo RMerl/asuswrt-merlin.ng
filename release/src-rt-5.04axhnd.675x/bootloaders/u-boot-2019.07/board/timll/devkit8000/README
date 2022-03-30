@@ -1,0 +1,15 @@
+DevKit8000
+==========
+
+The OMAP3 DevKit8000 from Embest/Timll is a clone of the OMAP3 beagle board
+with Ethernet and Touch Screen controller on board.
+
+For more information go to:
+http://www.embedinfo.com/English/Product/devkit8000.asp
+
+There's no real MAC address available.
+If ethaddr is not set, 5 Bytes of the OMAP Die ID will be used.
+
+Build:
+make devkit8000_config
+make

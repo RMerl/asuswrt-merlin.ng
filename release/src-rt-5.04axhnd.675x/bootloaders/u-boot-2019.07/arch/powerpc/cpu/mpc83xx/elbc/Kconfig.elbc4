@@ -1,0 +1,733 @@
+menuconfig ELBC_BR4_OR4
+	bool "ELBC BR4/OR4"
+
+if ELBC_BR4_OR4
+
+config BR4_OR4_NAME
+	string "Identifier"
+
+config BR4_OR4_BASE
+	hex "Port base"
+
+choice
+	prompt "Port size"
+
+config BR4_PORTSIZE_8BIT
+	bool "8-bit"
+
+config BR4_PORTSIZE_16BIT
+	depends on !BR4_MACHINE_FCM
+	bool "16-bit"
+
+
+config BR4_PORTSIZE_32BIT
+	depends on !BR4_MACHINE_FCM
+	depends on ARCH_MPC8349 || ARCH_MPC8360 || ARCH_MPC8379
+	bool "32-bit"
+
+endchoice
+
+if BR4_MACHINE_FCM
+
+choice
+	prompt "Data Error Checking"
+
+config BR4_ERRORCHECKING_DISABLED
+	bool "Disabled"
+
+config BR4_ERRORCHECKING_ECC_CHECKING
+	bool "ECC checking / No ECC generation"
+
+config BR4_ERRORCHECKING_BOTH
+	bool "ECC checking and generation"
+
+endchoice
+
+endif
+
+config BR4_WRITE_PROTECT
+	bool "Write-protect"
+
+config BR4_MACHINE_UPM
+	bool
+
+choice
+	prompt "Machine select"
+
+config BR4_MACHINE_GPCM
+	bool "GPCM"
+
+config BR4_MACHINE_FCM
+	depends on !ARCH_MPC832X && !ARCH_MPC8349 && !ARCH_MPC8360
+	bool "FCM"
+
+config BR4_MACHINE_SDRAM
+	depends on ARCH_MPC8349 || ARCH_MPC8360
+	bool "SDRAM"
+
+config BR4_MACHINE_UPMA
+	select BR4_MACHINE_UPM
+	bool "UPM (A)"
+
+config BR4_MACHINE_UPMB
+	select BR4_MACHINE_UPM
+	bool "UPM (B)"
+
+config BR4_MACHINE_UPMC
+	select BR4_MACHINE_UPM
+	bool "UPM (C)"
+
+endchoice
+
+if ARCH_MPC8313 || ARCH_MPC8323 || ARCH_MPC8360
+
+choice
+	prompt "Atomic operations"
+
+config BR4_ATOMIC_NONE
+	bool "No atomic operations"
+
+config BR4_ATOMIC_RAWA
+	bool "Read-after-write-atomic"
+
+config BR4_ATOMIC_WARA
+	bool "Write-after-read-atomic"
+
+endchoice
+
+endif
+
+if BR4_MACHINE_GPCM || BR4_MACHINE_FCM || BR4_MACHINE_UPM || BR4_MACHINE_SDRAM
+
+choice
+	prompt "Address mask"
+
+config OR4_AM_32_KBYTES
+	depends on !BR4_MACHINE_SDRAM
+	bool "32 kb"
+
+config OR4_AM_64_KBYTES
+	bool "64 kb"
+
+config OR4_AM_128_KBYTES
+	bool "128 kb"
+
+config OR4_AM_256_KBYTES
+	bool "256 kb"
+
+config OR4_AM_512_KBYTES
+	bool "512 kb"
+
+config OR4_AM_1_MBYTES
+	bool "1 mb"
+
+config OR4_AM_2_MBYTES
+	bool "2 mb"
+
+config OR4_AM_4_MBYTES
+	bool "4 mb"
+
+config OR4_AM_8_MBYTES
+	bool "8 mb"
+
+config OR4_AM_16_MBYTES
+	bool "16 mb"
+
+config OR4_AM_32_MBYTES
+	bool "32 mb"
+
+config OR4_AM_64_MBYTES
+	bool "64 mb"
+
+# XXX: Some boards define 128MB AM with GPCM, even though it should not be
+# possible according to the manuals
+config OR4_AM_128_MBYTES
+	bool "128 mb"
+
+# XXX: Some boards define 256MB AM with GPCM, even though it should not be
+# possible according to the manuals
+config OR4_AM_256_MBYTES
+	bool "256 mb"
+
+config OR4_AM_512_MBYTES
+	depends on BR4_MACHINE_FCM
+	bool "512 mb"
+
+# XXX: Some boards define 1GB AM with GPCM, even though it should not be
+# possible according to the manuals
+config OR4_AM_1_GBYTES
+	bool "1 gb"
+
+config OR4_AM_2_GBYTES
+	depends on BR4_MACHINE_FCM
+	bool "2 gb"
+
+config OR4_AM_4_GBYTES
+	depends on BR4_MACHINE_FCM
+	bool "4 gb"
+
+endchoice
+
+config OR4_XAM_SET
+	bool "Set unused bytes after address mask"
+choice
+	prompt "Buffer control disable"
+
+config OR4_BCTLD_ASSERTED
+	bool "Asserted"
+
+config OR4_BCTLD_NOT_ASSERTED
+	bool "Not asserted"
+
+endchoice
+
+endif
+
+if BR4_MACHINE_GPCM || BR4_MACHINE_FCM
+
+choice
+	prompt "Cycle length in bus clocks"
+
+config OR4_SCY_0
+	bool "No wait states"
+
+config OR4_SCY_1
+	bool "1 wait state"
+
+config OR4_SCY_2
+	bool "2 wait states"
+
+config OR4_SCY_3
+	bool "3 wait states"
+
+config OR4_SCY_4
+	bool "4 wait states"
+
+config OR4_SCY_5
+	bool "5 wait states"
+
+config OR4_SCY_6
+	bool "6 wait states"
+
+config OR4_SCY_7
+	bool "7 wait states"
+
+config OR4_SCY_8
+	depends on BR4_MACHINE_GPCM
+	bool "8 wait states"
+
+config OR4_SCY_9
+	depends on BR4_MACHINE_GPCM
+	bool "9 wait states"
+
+config OR4_SCY_10
+	depends on BR4_MACHINE_GPCM
+	bool "10 wait states"
+
+config OR4_SCY_11
+	depends on BR4_MACHINE_GPCM
+	bool "11 wait states"
+
+config OR4_SCY_12
+	depends on BR4_MACHINE_GPCM
+	bool "12 wait states"
+
+config OR4_SCY_13
+	depends on BR4_MACHINE_GPCM
+	bool "13 wait states"
+
+config OR4_SCY_14
+	depends on BR4_MACHINE_GPCM
+	bool "14 wait states"
+
+config OR4_SCY_15
+	depends on BR4_MACHINE_GPCM
+	bool "15 wait states"
+
+endchoice
+
+endif # BR4_MACHINE_GPCM || BR4_MACHINE_FCM
+
+if BR4_MACHINE_GPCM
+
+choice
+	prompt "Chip select negotiation time"
+
+config OR4_CSNT_NORMAL
+	bool "Normal"
+
+config OR4_CSNT_EARLIER
+	bool "Earlier"
+
+endchoice
+
+choice
+	prompt "Address to chip-select setup"
+
+config OR4_ACS_SAME_TIME
+	bool "At the same time"
+
+config OR4_ACS_HALF_CYCLE_EARLIER
+	bool "Half of a bus clock cycle earlier"
+
+config OR4_ACS_QUARTER_CYCLE_EARLIER
+	bool "Half/Quarter of a bus clock cycle earlier"
+
+endchoice
+
+choice
+	prompt "Extra address to check-select setup"
+
+config OR4_XACS_NORMAL
+	bool "Normal"
+
+config OR4_XACS_EXTENDED
+	bool "Extended"
+
+endchoice
+
+choice
+	prompt "External address termination"
+
+config OR4_SETA_INTERNAL
+	bool "Access is terminated internally"
+
+config OR4_SETA_EXTERNAL
+	bool "Access is terminated externally"
+
+endchoice
+
+endif # BR4_MACHINE_GPCM
+
+if BR4_MACHINE_FCM
+
+choice
+	prompt "NAND Flash EEPROM page size"
+
+config OR4_PGS_SMALL
+	bool "Small page device"
+
+config OR4_PGS_LARGE
+	bool "Large page device"
+
+endchoice
+
+choice
+	prompt "Chip select to command time"
+
+config OR4_CSCT_1_CYCLE
+	depends on OR4_TRLX_NORMAL
+	bool "1 cycle"
+
+config OR4_CSCT_2_CYCLE
+	depends on OR4_TRLX_RELAXED
+	bool "2 cycles"
+
+config OR4_CSCT_4_CYCLE
+	depends on OR4_TRLX_NORMAL
+	bool "4 cycles"
+
+config OR4_CSCT_8_CYCLE
+	depends on OR4_TRLX_RELAXED
+	bool "8 cycles"
+
+endchoice
+
+choice
+	prompt "Command setup time"
+
+config OR4_CST_COINCIDENT
+	depends on OR4_TRLX_NORMAL
+	bool "Coincident with any command"
+
+config OR4_CST_QUARTER_CLOCK
+	depends on OR4_TRLX_NORMAL
+	bool "0.25 clocks after"
+
+config OR4_CST_HALF_CLOCK
+	depends on OR4_TRLX_RELAXED
+	bool "0.5 clocks after"
+
+config OR4_CST_ONE_CLOCK
+	depends on OR4_TRLX_RELAXED
+	bool "1 clock after"
+
+endchoice
+
+choice
+	prompt "Command hold time"
+
+config OR4_CHT_HALF_CLOCK
+	depends on OR4_TRLX_NORMAL
+	bool "0.5 clocks before"
+
+config OR4_CHT_ONE_CLOCK
+	depends on OR4_TRLX_NORMAL
+	bool "1 clock before"
+
+config OR4_CHT_ONE_HALF_CLOCK
+	depends on OR4_TRLX_RELAXED
+	bool "1.5 clocks before"
+
+config OR4_CHT_TWO_CLOCK
+	depends on OR4_TRLX_RELAXED
+	bool "2 clocks before"
+
+endchoice
+
+choice
+	prompt "Reset setup time"
+
+config OR4_RST_THREE_QUARTER_CLOCK
+	depends on OR4_TRLX_NORMAL
+	bool "0.75 clocks prior"
+
+config OR4_RST_ONE_HALF_CLOCK
+	depends on OR4_TRLX_RELAXED
+	bool "0.5 clocks prior"
+
+config OR4_RST_ONE_CLOCK
+	bool "1 clock prior"
+
+endchoice
+
+endif # BR4_MACHINE_FCM
+
+if BR4_MACHINE_UPM
+
+choice
+	prompt "Burst inhibit"
+
+config OR4_BI_BURSTSUPPORT
+	bool "Support burst access"
+
+config OR4_BI_BURSTINHIBIT
+	bool "Inhibit burst access"
+
+endchoice
+
+endif # BR4_MACHINE_UPM
+
+if BR4_MACHINE_SDRAM
+
+choice
+	prompt "Number of column address lines"
+
+config OR4_COLS_7
+	bool "7"
+
+config OR4_COLS_8
+	bool "8"
+
+config OR4_COLS_9
+	bool "9"
+
+config OR4_COLS_10
+	bool "10"
+
+config OR4_COLS_11
+	bool "11"
+
+config OR4_COLS_12
+	bool "12"
+
+config OR4_COLS_13
+	bool "13"
+
+config OR4_COLS_14
+	bool "14"
+
+endchoice
+
+choice
+	prompt "Number of rows address lines"
+
+config OR4_ROWS_9
+	bool "9"
+
+config OR4_ROWS_10
+	bool "10"
+
+config OR4_ROWS_11
+	bool "11"
+
+config OR4_ROWS_12
+	bool "12"
+
+config OR4_ROWS_13
+	bool "13"
+
+config OR4_ROWS_14
+	bool "14"
+
+config OR4_ROWS_15
+	bool "15"
+
+endchoice
+
+choice
+	prompt "Page mode select"
+
+config OR4_PMSEL_BTB
+	bool "Back-to-back"
+
+config OR4_PMSEL_KEPT_OPEN
+	bool "Page kept open until page miss or refresh"
+
+endchoice
+
+endif # BR4_MACHINE_SDRAM
+
+choice
+	prompt "Relaxed timing"
+
+config OR4_TRLX_NORMAL
+	bool "Normal"
+
+config OR4_TRLX_RELAXED
+	bool "Relaxed"
+
+endchoice
+
+choice
+	prompt "Extended hold time"
+
+config OR4_EHTR_NORMAL
+	depends on OR4_TRLX_NORMAL
+	bool "Normal"
+
+config OR4_EHTR_1_CYCLE
+	depends on OR4_TRLX_NORMAL
+	bool "1 idle clock cycle inserted"
+
+config OR4_EHTR_4_CYCLE
+	depends on OR4_TRLX_RELAXED
+	bool "4 idle clock cycles inserted"
+
+config OR4_EHTR_8_CYCLE
+	depends on OR4_TRLX_RELAXED
+	bool "8 idle clock cycles inserted"
+
+endchoice
+
+if !ARCH_MPC8308
+
+choice
+	prompt "External address latch delay"
+
+config OR4_EAD_NONE
+	bool "None"
+
+config OR4_EAD_EXTRA
+	bool "Extra"
+
+endchoice
+
+endif # !ARCH_MPC8308
+
+endif # ELBC_BR4_OR4
+
+config BR4_PORTSIZE
+	hex
+	default 0x800 if BR4_PORTSIZE_8BIT
+	default 0x1000 if BR4_PORTSIZE_16BIT
+	default 0x1800 if BR4_PORTSIZE_32BIT
+
+config BR4_ERRORCHECKING
+	hex
+	default 0x0 if !BR4_MACHINE_FCM
+	default 0x0 if BR4_ERRORCHECKING_DISABLED
+	default 0x200 if BR4_ERRORCHECKING_ECC_CHECKING
+	default 0x400 if BR4_ERRORCHECKING_BOTH
+
+config BR4_WRITE_PROTECT_BIT
+	hex
+	default 0x0 if !BR4_WRITE_PROTECT
+	default 0x100 if BR4_WRITE_PROTECT
+
+config BR4_MACHINE
+	hex
+	default 0x0 if BR4_MACHINE_GPCM
+	default 0x20 if BR4_MACHINE_FCM
+	default 0x60 if BR4_MACHINE_SDRAM
+	default 0x80 if BR4_MACHINE_UPMA
+	default 0xa0 if BR4_MACHINE_UPMB
+	default 0xc0 if BR4_MACHINE_UPMC
+
+config BR4_ATOMIC
+	hex
+	default 0x0 if !ARCH_MPC8313 && !ARCH_MPC8323 && !ARCH_MPC8360
+	default 0x0 if BR4_ATOMIC_NONE
+	default 0x4 if BR4_ATOMIC_RAWA
+	default 0x8 if BR4_ATOMIC_WARA
+
+config BR4_VALID_BIT
+	hex
+	default 0x0 if !ELBC_BR4_OR4
+	default 0x1 if ELBC_BR4_OR4
+
+config OR4_AM
+	hex
+	default 0xffff8000 if OR4_AM_32_KBYTES && !BR4_MACHINE_SDRAM
+	default 0xffff0000 if OR4_AM_64_KBYTES
+	default 0xfffe0000 if OR4_AM_128_KBYTES
+	default 0xfffc0000 if OR4_AM_256_KBYTES
+	default 0xfff80000 if OR4_AM_512_KBYTES
+	default 0xfff00000 if OR4_AM_1_MBYTES
+	default 0xffe00000 if OR4_AM_2_MBYTES
+	default 0xffc00000 if OR4_AM_4_MBYTES
+	default 0xff800000 if OR4_AM_8_MBYTES
+	default 0xff000000 if OR4_AM_16_MBYTES
+	default 0xfe000000 if OR4_AM_32_MBYTES
+	default 0xfc000000 if OR4_AM_64_MBYTES
+	default 0xf8000000 if OR4_AM_128_MBYTES
+	default 0xf0000000 if OR4_AM_256_MBYTES
+	default 0xe0000000 if OR4_AM_512_MBYTES
+	default 0xc0000000 if OR4_AM_1_GBYTES
+	default 0x80000000 if OR4_AM_2_GBYTES
+	default 0x00000000 if OR4_AM_4_GBYTES
+
+config OR4_XAM
+	hex
+	default 0x0 if !OR4_XAM_SET
+	default 0x6000 if OR4_XAM_SET
+
+config OR4_BCTLD
+	hex
+	default 0x0 if OR4_BCTLD_ASSERTED
+	default 0x1000 if OR4_BCTLD_NOT_ASSERTED
+
+config OR4_BI
+	hex
+	default 0x0 if !BR4_MACHINE_UPM
+	default 0x0 if OR4_BI_BURSTSUPPORT
+	default 0x100 if OR4_BI_BURSTINHIBIT
+
+config OR4_COLS
+	hex
+	default 0x0 if !BR4_MACHINE_SDRAM
+	default 0x0 if OR4_COLS_7
+	default 0x400 if OR4_COLS_8
+	default 0x800 if OR4_COLS_9
+	default 0xc00 if OR4_COLS_10
+	default 0x1000 if OR4_COLS_11
+	default 0x1400 if OR4_COLS_12
+	default 0x1800 if OR4_COLS_13
+	default 0x1c00 if OR4_COLS_14
+
+config OR4_ROWS
+	hex
+	default 0x0 if !BR4_MACHINE_SDRAM
+	default 0x0 if OR4_ROWS_9
+	default 0x40 if OR4_ROWS_10
+	default 0x80 if OR4_ROWS_11
+	default 0xc0 if OR4_ROWS_12
+	default 0x100 if OR4_ROWS_13
+	default 0x140 if OR4_ROWS_14
+	default 0x180 if OR4_ROWS_15
+
+config OR4_PMSEL
+	hex
+	default 0x0 if !BR4_MACHINE_SDRAM
+	default 0x0 if OR4_PMSEL_BTB
+	default 0x20 if OR4_PMSEL_KEPT_OPEN
+
+config OR4_SCY
+	hex
+	default 0x0 if !BR4_MACHINE_GPCM && !BR4_MACHINE_FCM
+	default 0x0 if OR4_SCY_0
+	default 0x10 if OR4_SCY_1
+	default 0x20 if OR4_SCY_2
+	default 0x30 if OR4_SCY_3
+	default 0x40 if OR4_SCY_4
+	default 0x50 if OR4_SCY_5
+	default 0x60 if OR4_SCY_6
+	default 0x70 if OR4_SCY_7
+	default 0x80 if OR4_SCY_8
+	default 0x90 if OR4_SCY_9
+	default 0xa0 if OR4_SCY_10
+	default 0xb0 if OR4_SCY_11
+	default 0xc0 if OR4_SCY_12
+	default 0xd0 if OR4_SCY_13
+	default 0xe0 if OR4_SCY_14
+	default 0xf0 if OR4_SCY_15
+
+config OR4_PGS
+	hex
+	default 0x0 if !BR4_MACHINE_FCM
+	default 0x0 if OR4_PGS_SMALL
+	default 0x400 if OR4_PGS_LARGE
+
+config OR4_CSCT
+	hex
+	default 0x0 if !BR4_MACHINE_FCM
+	default 0x0 if OR4_CSCT_1_CYCLE
+	default 0x0 if OR4_CSCT_2_CYCLE
+	default 0x200 if OR4_CSCT_4_CYCLE
+	default 0x200 if OR4_CSCT_8_CYCLE
+
+config OR4_CST
+	hex
+	default 0x0 if !BR4_MACHINE_FCM
+	default 0x0 if OR4_CST_COINCIDENT
+	default 0x100 if OR4_CST_QUARTER_CLOCK
+	default 0x0 if OR4_CST_HALF_CLOCK
+	default 0x100 if OR4_CST_ONE_CLOCK
+
+config OR4_CHT
+	hex
+	default 0x0 if !BR4_MACHINE_FCM
+	default 0x0 if OR4_CHT_HALF_CLOCK
+	default 0x80 if OR4_CHT_ONE_CLOCK
+	default 0x0 if OR4_CHT_ONE_HALF_CLOCK
+	default 0x80 if OR4_CHT_TWO_CLOCK
+
+config OR4_RST
+	hex
+	default 0x0 if !BR4_MACHINE_FCM
+	default 0x0 if OR4_RST_THREE_QUARTER_CLOCK
+	default 0x8 if OR4_RST_ONE_CLOCK
+	default 0x0 if OR4_RST_ONE_HALF_CLOCK
+
+config OR4_CSNT
+	hex
+	default 0x0 if !BR4_MACHINE_GPCM
+	default 0x0 if OR4_CSNT_NORMAL
+	default 0x800 if OR4_CSNT_EARLIER
+
+config OR4_ACS
+	hex
+	default 0x0 if !BR4_MACHINE_GPCM
+	default 0x0 if OR4_ACS_SAME_TIME
+	default 0x400 if OR4_ACS_QUARTER_CYCLE_EARLIER
+	default 0x600 if OR4_ACS_HALF_CYCLE_EARLIER
+
+config OR4_XACS
+	hex
+	default 0x0 if !BR4_MACHINE_GPCM
+	default 0x0 if OR4_XACS_NORMAL
+	default 0x100 if OR4_XACS_EXTENDED
+
+config OR4_SETA
+	hex
+	default 0x0 if !BR4_MACHINE_GPCM
+	default 0x0 if OR4_SETA_INTERNAL
+	default 0x8 if OR4_SETA_EXTERNAL
+
+config OR4_TRLX
+	hex
+	default 0x0 if OR4_TRLX_NORMAL
+	default 0x4 if OR4_TRLX_RELAXED
+
+config OR4_EHTR
+	hex
+	default 0x0 if OR4_EHTR_NORMAL
+	default 0x2 if OR4_EHTR_1_CYCLE
+	default 0x0 if OR4_EHTR_4_CYCLE
+	default 0x2 if OR4_EHTR_8_CYCLE
+
+config OR4_EAD
+	hex
+	default 0x0 if ARCH_MPC8308
+	default 0x0 if OR4_EAD_NONE
+	default 0x1 if OR4_EAD_EXTRA

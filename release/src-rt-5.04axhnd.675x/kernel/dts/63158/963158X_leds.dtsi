@@ -1,0 +1,59 @@
+/* 963158X board led definition */
+
+&legacy_leds {
+	adsl-led = <&led18>;
+	wan-data-led = <&led30>;
+};
+
+&led_ctrl {
+	led10: cb_port_0-led_0-pin_74 {
+		active_high;
+		link = <(LED_SPEED_10|LED_SPEED_100|LED_SPEED_2500)>;
+		status = "okay";
+	};
+	led11: cb_port_0-led_1-pin_75 {
+		active_high;
+		link = <(LED_SPEED_100|LED_SPEED_1G)>;
+		status = "okay";
+	};
+	led12: cb_port_0-led_2-pin_76 {
+		active_high;
+		link = <LED_SPEED_2500>;
+		status = "okay";
+	};
+	led13: rnr_port_4-led_0-pin_77 {
+		active_high;
+		link = <(LED_SPEED_10|LED_SPEED_100|LED_SPEED_2500)>;
+		status = "okay";
+	};
+	led14: rnr_port_4-led_1-pin_78 {
+		active_high;
+		link = <(LED_SPEED_100|LED_SPEED_1G)>;
+		status = "okay";
+	};
+	led15: rnr_port_4-led_2-pin_79 {
+		active_high;
+		link = <(LED_SPEED_2500|LED_SPEED_10G)>;
+		status = "okay";
+	};
+	led18: sw_led_18-pin_18 {
+		active_high;
+		status = "okay";
+	};
+	led25: cb_port_0-led_3-pin_25 {
+		active_high;
+		activity = <(LED_SPEED_GBE|LED_SPEED_2500)>;
+		link = <(LED_SPEED_GBE|LED_SPEED_2500)>;
+		status = "okay";
+	};
+	led26: rnr_port_4-led_3-pin_26 {
+		active_high;
+		activity = <(LED_SPEED_GBE|LED_SPEED_2500|LED_SPEED_10G)>;
+		link = <(LED_SPEED_GBE|LED_SPEED_2500|LED_SPEED_10G)>;
+		status = "okay";
+	};
+	led30: dsl_act_0-pin_30 {
+		active_high;
+		status = "okay";
+	};
+};

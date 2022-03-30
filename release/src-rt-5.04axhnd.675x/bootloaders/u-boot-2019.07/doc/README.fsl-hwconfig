@@ -1,0 +1,46 @@
+Freescale-specific 'hwconfig' options.
+
+This file documents Freescale-specific key:value pairs for the 'hwconfig'
+option.  See README.hwconfig for general information about 'hwconfig'.
+
+audclk
+	Specific to the P1022DS reference board.
+
+	This option specifies which of the two oscillator frequencies should be
+	routed to the Wolfson WM8776 codec.  The ngPIXIS can be programmed to
+	route either a 11.2896MHz or a 12.288MHz clock.  The default is
+	12.288MHz.  This option has two effects.  First, the MUX on the board
+	will be programmed accordingly.  Second, the clock-frequency property
+	in the codec node in the device tree will be updated to the correct
+	value.
+
+	'audclk:11'
+		Select the 11.2896MHz clock
+
+	'audclk:12'
+		Select the 12.288MHz clock
+
+usb
+	Specific to boards have USB controller
+
+	This option specifies the following for a USB controller:
+
+		- which controller mode to use
+		- which USB PHY to use
+
+	This is used by generic USB device-tree fixup function to update
+	modified values of phy type and controller mode.
+
+	Also used for configuring multiple USB controllers such that
+	'usbN' (where N is 1, 2, etc. refers to controller no.)
+
+	'phy_type'
+		Select USB phy type: 'utmi' OR 'ulpi'
+
+	'dr_mode'
+		Select USB controller mode: 'host', 'peripheral' OR 'otg'
+
+	Examples:
+		usb1:dr_mode=host;usb2:dr_mode=peripheral'
+
+		usb1:dr_mode=host,phy_type=utmi;usb2:dr_mode=host'

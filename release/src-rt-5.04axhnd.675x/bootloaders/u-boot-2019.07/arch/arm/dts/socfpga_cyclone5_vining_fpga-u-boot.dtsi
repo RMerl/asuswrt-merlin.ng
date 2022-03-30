@@ -1,0 +1,58 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR X11)
+/*
+ * U-Boot additions
+ *
+ * Copyright (C) 2015 Marek Vasut <marex@denx.de>
+ * Copyright (c) 2018 Simon Goldschmidt
+ */
+
+#include "socfpga-common-u-boot.dtsi"
+
+/{
+	aliases {
+		spi0 = "/soc/spi@ff705000";
+		udc0 = &usb0;
+	};
+};
+
+&watchdog0 {
+	status = "disabled";
+};
+
+&mmc {
+	u-boot,dm-pre-reloc;
+};
+
+&qspi {
+	u-boot,dm-pre-reloc;
+
+	n25q128@0 {
+		compatible = "n25q128", "jedec,spi-nor";
+		u-boot,dm-pre-reloc;
+	};
+	n25q00@1 {
+		compatible = "n25q00", "jedec,spi-nor";
+		u-boot,dm-pre-reloc;
+	};
+};
+
+&uart0 {
+	clock-frequency = <100000000>;
+	u-boot,dm-pre-reloc;
+};
+
+&uart1 {
+	clock-frequency = <100000000>;
+};
+
+&porta {
+	bank-name = "porta";
+};
+
+&portb {
+	bank-name = "portb";
+};
+
+&portc {
+	bank-name = "portc";
+};

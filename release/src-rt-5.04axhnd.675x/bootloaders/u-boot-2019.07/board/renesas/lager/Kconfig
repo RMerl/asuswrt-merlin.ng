@@ -1,0 +1,12 @@
+if TARGET_LAGER
+
+config SYS_BOARD
+	default "lager"
+
+config SYS_VENDOR
+	default "renesas"
+
+config SYS_CONFIG_NAME
+	default "lager"
+
+endif

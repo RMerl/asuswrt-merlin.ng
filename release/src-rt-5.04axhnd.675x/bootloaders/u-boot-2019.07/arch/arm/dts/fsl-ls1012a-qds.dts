@@ -1,0 +1,13 @@
+// SPDX-License-Identifier: GPL-2.0+ OR X11
+/*
+ * Copyright 2016 Freescale Semiconductor
+ */
+
+/dts-v1/;
+#include "fsl-ls1012a-qds.dtsi"
+
+/ {
+       chosen {
+               stdout-path = &duart0;
+       };
+};

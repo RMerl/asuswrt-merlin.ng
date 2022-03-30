@@ -1,0 +1,8 @@
+SBC8349 BOARD
+M:	Paul Gortmaker <paul.gortmaker@windriver.com>
+S:	Maintained
+F:	board/sbc8349/
+F:	include/configs/sbc8349.h
+F:	configs/sbc8349_defconfig
+F:	configs/sbc8349_PCI_33_defconfig
+F:	configs/sbc8349_PCI_66_defconfig

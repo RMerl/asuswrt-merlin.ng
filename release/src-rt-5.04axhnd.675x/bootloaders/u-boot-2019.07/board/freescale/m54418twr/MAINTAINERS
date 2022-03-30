@@ -1,0 +1,11 @@
+M54418TWR BOARD
+#M:	-
+S:	Maintained
+F:	board/freescale/m54418twr/
+F:	include/configs/M54418TWR.h
+F:	configs/M54418TWR_defconfig
+F:	configs/M54418TWR_nand_mii_defconfig
+F:	configs/M54418TWR_nand_rmii_defconfig
+F:	configs/M54418TWR_nand_rmii_lowfreq_defconfig
+F:	configs/M54418TWR_serial_mii_defconfig
+F:	configs/M54418TWR_serial_rmii_defconfig

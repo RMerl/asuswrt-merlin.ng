@@ -1,0 +1,24 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (c) 2019 Broadcom
+ */
+/*
+*  
+*/
+
+#ifndef BCM_BCA_LED_DT_BINDINGS_H
+#define BCM_BCA_LED_DT_BINDINGS_H
+
+#define LED_SPEED_10   0x00000001
+#define LED_SPEED_100  0x00000002
+#define LED_SPEED_1G   0x00000004
+#define LED_SPEED_2500 0x00000008
+#define LED_SPEED_10G  0x00000010
+
+#define LED_SPEED_FAE  (LED_SPEED_10 | LED_SPEED_100)
+#define LED_SPEED_GBE  (LED_SPEED_FAE | LED_SPEED_1G)
+#define LED_SPEED_ALL  (LED_SPEED_GBE | LED_SPEED_2500 | LED_SPEED_10G)
+
+#define STATE_ON  1
+#define STATE_OFF 1
+#endif

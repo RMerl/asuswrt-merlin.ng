@@ -1,0 +1,15 @@
+if TARGET_SANSA_FUZE_PLUS
+
+config SYS_BOARD
+	default "sansa_fuze_plus"
+
+config SYS_VENDOR
+	default "sandisk"
+
+config SYS_SOC
+	default "mxs"
+
+config SYS_CONFIG_NAME
+	default "sansa_fuze_plus"
+
+endif

@@ -1,0 +1,575 @@
+/dts-v1/;
+
+#include "linux_autoconf.h"
+
+#include "../../boot_rsvdmem.dtsi"
+
+/ {
+	/* arch */
+	#define PERIPH_CLK			200000000
+	#define HS_SPI_PLL_CLK			400000000	
+	#define PMU_CORE0_SPI	9
+	#define PMU_CORE1_SPI	10
+	#include "../../ip/bcm_b53_dual.dtsi"
+};
+/ {
+	/* memory reservations */
+	#include "../../bcm_rsvdmem.dtsi"
+
+	/* memc */
+	#include "../../ip/memc.dtsi"
+
+	aliases {
+		serial0 = &uart0;
+		serial1 = &uart1;
+		spi1 = &hsspi; /* 0 = legacy, 1 = high speed */
+		hs_serial0 = &hs_uart0;
+		spinand0 = &spinand;
+		nand0 = &nand;
+	};
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+		/* increase coherent_pool size */
+		bootargs = "coherent_pool=4M cpuidle_sysfs_switch pci=pcie_bus_safe console=ttyS0,115200 earlycon rootwait";
+	};
+
+	/* PMC */
+	pmc: pmc {
+		#define PMC_REG_OFFSET              0x0 0xffb01018 
+		#define PMC_REG_SIZE                0x0 0x5080
+		#define PROCMON_REG_OFFSET          0x0 0xffb20000
+		#define PROCMON_REG_SIZE            0x0 0x240
+		#define MAESTRO_REG_OFFSET          0x0 0xffb20400
+		#define MAESTRO_REG_SIZE            0x0 0x5d0
+		#include "../../ip/bcm_pmc_3_1.dtsi"
+	};
+
+	/* boot state */
+	boot_state: boot_state {
+		#define RESET_REASON_OFFSET  0x0 0xff80263c
+		#define RESET_REASON_SIZE    0x0 0x4
+		#define RESET_STATUS_OFFSET  0x0 0xff85a03c
+		#define RESET_STATUS_SIZE    0x0 0x4
+		#include "../../ip/bcm_boot_state_v2.dtsi"
+	};
+
+	/* wan type auto detect */
+	wantype_detect {
+		#define GPON_GENERAL_CONFIG_ADDR	0x0 0x82db1000
+		#define GPON_GENERAL_CONFIG_SIZE	0x0 0x10
+		#define EPON_TOP_ADDR			0x0 0x82dac000
+		#define EPON_TOP_SIZE			0x0 0x1C
+		#define EPON_LIF_ADDR			0x0 0x82dad800
+		#define EPON_LIF_SIZE			0x0 0x110
+		#define EPON_XPCSR_ADDR			0x0 0x82daf000
+		#define EPON_XPCSR_SIZE			0x0 0x124
+		#define NGPON_RXGEN_ADDR		0x0 0x82db4000
+		#define NGPON_RXGEN_SIZE		0x0 0x80
+		#include "../../ip/bcm_wantype_detect.dtsi"
+	};
+
+	/* pcie common */
+	pcie: pcie {
+		compatible = "brcm,bcm-pcie";
+		device_type = "cpci";
+		brcm,pllclkid = <0x210>;
+	};
+
+	/* pcie core 0 */
+	pcie0: pcie0 {
+		/* pcie core 0*/
+		#define PCIE_ID				0
+		#define PCIE_SPI			60
+		#define PCIE_ADDR			0 0x80040000
+		#define PCIE_SIZE			0 0x0000A000
+					      /*           flags    pci_addr     cpu_addr     size */
+		#define PCIE_RANGE			0x02000000 0 0x90000000 0 0x90000000 0 0x10000000
+		#include "../../ip/bcm_pcie_core.dtsi"
+	};
+
+	/* pcie core 1*/
+	pcie1: pcie1 {
+		#define PCIE_ID				1
+		#define PCIE_SPI			61
+		#define PCIE_ADDR			0 0x80050000
+		#define PCIE_SIZE			0 0x0000A000
+					      /*        flags,		pci_addr,   cpu_addr     size */
+		#define PCIE_RANGE			0x02000000 0 0xA0000000 0 0xA0000000 0 0x10000000
+		#include "../../ip/bcm_pcie_core.dtsi"
+	};
+
+	/* pcie core 2*/
+	pcie2: pcie2 {
+		#define PCIE_ID				2
+		#define PCIE_SPI			62
+		#define PCIE_ADDR			0 0x80060000
+		#define PCIE_SIZE			0 0x0000A000
+					      /*        flags,		pci_addr,   cpu_addr     size */
+		#define PCIE_RANGE			0x02000000 0 0xB0000000 0 0xB0000000 0 0x10000000
+		#include "../../ip/bcm_pcie_core.dtsi"
+	};
+
+	/* usb */
+	usb_ctrl: usb_ctrl {
+		#define USB_CTRL_ADDR       0x0 0x8000c200
+		#define USB_CTRL_SIZE       0x0 0x100
+		#include "../../ip/bcm_usb_ctrl.dtsi"
+    };
+
+	usb0_xhci: usb0_xhci {
+		#define USB_ADDR            0x0 0x8000d000
+		#define USB_SIZE            0x0 0x1000
+		#define USB_IRQ             121
+		#include "../../ip/bcm_usb_xhci.dtsi"
+	};
+
+	usb0_ehci: usb0_ehci {
+		#define USB_ADDR			0x0 0x8000c300
+		#define USB_SIZE			0x0 0x100
+		#define USB_IRQ             125
+        #define USB_PORT_ID         0
+		#include "../../ip/bcm_usb_ehci.dtsi"
+	};
+
+	usb1_ehci: usb1_ehci {
+		#define USB_ADDR			0x0 0x8000c500
+		#define USB_SIZE			0x0 0x100
+		#define USB_IRQ             123
+        #define USB_PORT_ID         1
+		#include "../../ip/bcm_usb_ehci.dtsi"
+	};
+
+	usb0_ohci: usb0_ohci {
+		#define USB_ADDR			0x0 0x8000c400
+		#define USB_SIZE			0x0 0x100
+		#define USB_IRQ             124
+        #define USB_PORT_ID         0
+		#include "../../ip/bcm_usb_ohci.dtsi"
+	};
+
+	usb1_ohci: usb1_ohci {
+		#define USB_ADDR			0x0 0x8000c600
+		#define USB_SIZE			0x0 0x100
+		#define USB_IRQ             122
+        #define USB_PORT_ID         1
+		#include "../../ip/bcm_usb_ohci.dtsi"
+	};
+
+	/* NAND controller and EMMC although they are on PERIPH bus, but to facilitate single 
+	  device tree for linux/uboot and because uboot cannot interpret composite
+	  addresses, has no scope */
+	/* NAND controller */
+	nand: nand {
+		#define NAND_CTRL_OFFSET		0x0 0xff801800
+		#define NAND_CTRL_SIZE			0x0 0x400
+		#define NAND_INTR_OFFSET		0x0 0xff802000
+		#define NAND_INTR_SIZE			0x0 0x10
+		#define NAND_CACHE_OFFSET		0x0 0xff801C00
+		#define NAND_CACHE_SIZE			0x0 0x200
+		#include "../../ip/bcm_nand7_1.dtsi"
+	};
+
+   	/* EMMC */
+	sdhci: sdhci {
+		#define SDHCI_OFFSET			0x00000000 0xff858000
+		#define SDHCI_SIZE			0x00000000 0x100
+		#define SDHCI_TOPCFG_OFFSET		0x00000000 0xff858100
+		#define SDHCI_TOPCFG_SIZE		0x00000000 0x100
+		#define SDHCI_BOOT_OFFSET		0x00000000 0xff858200
+		#define SDHCI_BOOT_SIZE			0x00000000 0x40
+		#define SDHCI_AHBSS_CTRL_OFFSET		0x00000000 0xff858300
+		#define SDHCI_AHBSS_CTRL_SIZE		0x00000000 0x100
+		#define SDIO_EMMC_SPI			95
+		#include "../../ip/bcm_sdhci.dtsi"
+	};
+
+    hs_uart0: hs_serial0 {
+        #define UART_OFFSET			0x0 0xff858400
+        #define UART_SIZE			0x0 0x1E0
+        #define UART_SPI 			93
+        #include "../../ip/bcm_hs_uart.dtsi"
+    };
+
+	periph {
+		compatible = "simple-bus";
+		#address-cells = <2>;
+		#size-cells = <2>;
+		ranges = <0x0 0x0 0x0 0xff800000 0x0 0x62000>;
+
+		/* UART */
+		uart0: serial0 {
+			#define UART_OFFSET			0x0 0x640
+			#define UART_SIZE			0x0 0x18
+			#define UART_SPI 			32
+			#include "../../ip/bcm_uart.dtsi"
+		};
+
+		/* UART 2*/
+		uart1: serial1 {
+			#define UART_OFFSET			0x0 0x660
+			#define UART_SIZE			0x0 0x18
+			#define UART_SPI 			33
+			#include "../../ip/bcm_uart.dtsi"
+		};
+
+		rng: rng {
+			#define RNG200_OFFSET			0x0 0x00000b80
+			#define RNG200_SIZE			0x0 0x28
+			#include "../../ip/bcm_rng200.dtsi"
+		};
+
+		i2c0: i2c0 {
+			#define I2C_OFFSET			0x0 0x2100
+			#define I2C_SIZE			0x0 0x60
+			#include "../../ip/bcm_i2c_bus.dtsi"
+		};
+
+		/* periph timers */
+		timers: timers {
+			#define TIMERS_OFFSET		0x0 0x400
+			#define TIMERS__SIZE		0x0 0x48
+			#define TIMER0_SPI			11
+			#define TIMER1_SPI			12
+			#define TIMER2_SPI			13
+			#define TIMER3_SPI			14
+			#include "../../ip/bcm_timer.dtsi"
+		};
+
+		/* watchdog */
+		wdt: watchdog {
+			#define WATCHDOG_OFFSET			0x0 0x480
+			#define WATCHDOG_SIZE			0x0 0x10
+			#define WATCHDOG_TIMEOUT		80
+			#include "../../ip/bcm_wdt.dtsi"
+		};
+
+		/* watchdog reboot */
+		wdt-reboot {
+			compatible = "wdt-reboot";
+			wdt = <&wdt>;
+		};
+		
+		/* sotp */
+		sotp {
+			#define SOTP_OFFSET			0x0 0xc00
+			#define SOTP_SIZE			0x0 0x84
+			#include "../../ip/bcm_sotp.dtsi"
+		};
+		
+		/* pinctrl */
+		pincontroller: pinctrl {
+			#define PINCTRL_OFFSET			0x0 0x554
+			#define PINCTRL_SIZE			0x0 0xc
+			#define PINCTRL_NUM_PINS		84
+			#define PINCTRL_NUM_FUNC		8
+			#define PINCTRL_GPIO_FUNC		4
+			#include "../../ip/bcm_bca_pinctrl.dtsi"
+			#include "6856_pinctrl.dtsi"
+		};
+
+		/* gpio */
+		gpioc: gpioc {
+			#define GPIO_DIR_OFFSET      0x0 0x500
+			#define GPIO_DIR_SIZE        0x0 0x20
+			#define GPIO_DATA_OFFSET     0x0 0x520
+			#define GPIO_DATA_SIZE       0x0 0x20
+			#define NUM_OF_GPIOS         84 
+			#include "../../ip/bcm_bca_gpio.dtsi"
+		};
+
+		/* external interrups */
+		bca_extintr: bca_extintr0 {
+			#define EXTINTR_OFFSET       0x0 0x4
+			#define EXTINTR_SIZE         0x0 0x48
+			#define MAX_EXT_INTR         8
+			#include "../../ip/bcm_bca_extintr.dtsi"
+			external_interrupts = <181 182 183 184 185 186 187 188>;
+		};
+
+		/* Led Controller */
+		led_ctrl: led_ctrl {
+			#define LED_GLBL_CTRL_OFFSET     0x0 0x800
+			#define LED_GLBL_CTRL_SIZE       0x0 0x4 
+			#define LED_HW_EN_OFFSET         0x0 0x808
+			#define LED_HW_EN_SIZE           0x0 0x4
+			#define LED_SER_SHIFT_OFFSET     0x0 0x80c
+			#define LED_SER_SHIFT_SIZE       0x0 0x4
+			#define LED_FLASH_RATE_OFFSET    0x0 0x810
+			#define LED_FLASH_RATE_SIZE      0x0 0x10
+			#define LED_BRIGHTNESS_OFFSET    0x0 0x820
+			#define LED_BRIGHTNESS_SIZE      0x0 0x10
+			#define LED_POWER_LED_CFG_OFFSET 0x0 0x830
+			#define LED_POWER_LED_CFG_SIZE   0x0 0x4
+			#define LED_POWER_LUT_OFFSET     0x0 0x834
+			#define LED_POWER_LUT_SIZE       0x0 0x80
+			#define LED_HW_POLARITY_OFFSET   0x0 0x8b4
+			#define LED_HW_POLARITY_SIZE     0x0 0x4
+			#define LED_SW_DATA_OFFSET       0x0 0x8b8
+			#define LED_SW_DATA_SIZE         0x0 0x4
+			#define LED_SW_POLARITY_OFFSET   0x0 0x8bc
+			#define LED_SW_POLARITY_SIZE     0x0 0x4
+			#define LED_PAR_POLARITY_OFFSET  0x0 0x8c0
+			#define LED_PAR_POLARITY_SIZE    0x0 0x4
+			#define LED_SER_POLARITY_OFFSET  0x0 0x8c4
+			#define LED_SER_POLARITY_SIZE    0x0 0x4
+			#define LED_MASK_OFFSET          0x0 0x804
+			#define LED_MASK_SIZE            0x0 0x4
+			#define MAX_SUPPORTED_LEDS       32
+
+			hw-polarity-quirk = <0xc0000000>;
+			status = "okay";
+			#include "../../ip/bcm_led_ctrl.dtsi"
+			#include "6856_leds.dtsi"
+		};
+
+        legacy_leds: legacy_leds {
+			compatible = "brcm,legacy-led";
+        };
+
+		i2s: bcm63xx-i2s {
+			compatible = "brcm,bcm63xx-i2s";
+			reg = <0 0x2080 0 0x21>; 
+			clocks = <&i2sclk>, <&osc>;
+			clock-names = "i2sclk","i2sosc";
+			pinctrl-0 = <&i2s_lrck_pin_2 &i2s_sclk_pin_1 &i2s_sdata_pin_0>;
+			pinctrl-names = "default";
+		};
+
+		/* HS SPI */
+		hsspi: spi {
+			pinctrl-0 = <&spim_group_pins>;
+			pinctrl-names = "default";
+			#define HS_SPI_OFFSET			0x0 0x1000
+			#define HS_SPI_SIZE			0x0 0x600
+			#define HS_SPI_MAX_FREQ			100000000
+			#include "../../ip/bcm_hsspi.dtsi"
+			spinand: spi-nand@0 {
+				#define SPINAND_MAX_FREQ	100000000
+				#include "../../ip/bcm_spinand.dtsi"
+			};
+
+			voice7 {
+				pinctrl-0 = <&pcm_sdin_pin_45 &pcm_sdout_pin_46 &pcm_clk_pin_47 &pcm_fs_pin_75>;
+				pinctrl-names = "default";
+				compatible = "bcm-spi-voice";
+				reg = <7>; /* chip select 7 */
+				spi-index = <7>;/* ZSI/ISI header position index */
+				spi-max-frequency = <1024000>;
+			};
+		};
+	};
+
+	/* i2s */
+	clocks {
+		i2s_clkmclk_syscon: i2s_clkmclk_syscon@0xFF802080 {
+			compatible = "brcm,i2s-audio-clkmclk-syscon", "syscon";
+			reg = <0x0 0xFF802080 0x0 0x4>;
+		};
+
+		osc: oscillator {
+			#clock-cells = <0>;
+			compatible = "fixed-clock";
+			clock-frequency = <50000000>; /* xpon 50MHz output */
+		};
+
+		i2sclk: i2sclk@0x80158000 {
+			#clock-cells = <0>;
+			compatible = "brcm,i2s-clock";
+			clocks = <&osc>;
+			clk-mclk-syscon        = <&i2s_clkmclk_syscon>;
+			clock-output-names     = "i2s_clk";
+		};
+	};
+
+    therm0: brcm-therm {
+		compatible = "brcm,therm";
+		reboot-temperature = <130000>; /* millicelsius */
+	};
+
+	/* pcm */
+	pcm5100 {
+		compatible = "brcm,pcm5100";
+	};
+
+	bcm63xx-pcm-audio {
+		compatible = "brcm,bcm63xx-pcm-audio";
+		interrupts = <GIC_SPI 84 IRQ_TYPE_LEVEL_HIGH>;
+	};
+
+    unimac {
+		compatible = "brcm,unimac";
+        reg = <0x0 0x82da0000 0x0 0x6000>,
+              <0x0 0x82da8000 0x0 0x1800>,
+              <0x0 0x82daa000 0x0 0x1800>;
+        conf_offset = <0x1000>;
+        mib_offset = <0x400>;
+        top_offset = <0x400>;
+        mib_step = <0x1>;
+    };
+
+    egphy {
+		compatible = "brcm,egphy";
+        reg = <0x0 0x82db2200 0x0 0x10>;
+    };
+
+    sgmii {
+		compatible = "brcm,sgmii";
+        reg = <0x0 0x82db2280 0x0 0x14>;
+    };
+
+    mdio5 {
+		compatible = "brcm,mdio5";
+        reg = <0x0 0xff802060 0x0 0x10>,
+              <0x0 0xff85a068 0x0 0x4>;
+    };
+
+	rgmii: rgmii {
+        compatible = "brcm,rgmii1";
+        reg = <0x0 0x82d98300 0x0 0x44>,
+              <0x0 0xff800500 0x0 0x78>,
+              <0x0 0xff85a004 0x0 0x04>;
+        status = "disabled";
+	};
+
+	mdio: mdio {
+		compatible = "simple-bus";
+		bus-type = "MDIO_V1_INT";
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		phy1:1 {
+			compatible = "brcm,bcaphy";
+			phy-type = "EGPHY";
+			reg = <1>;
+			status = "disabled";
+		};
+
+		phy2:2 {
+			compatible = "brcm,bcaphy";
+			phy-type = "EGPHY";
+			reg = <2>;
+			status = "disabled";
+		};
+
+		phy3:3 {
+			compatible = "brcm,bcaphy";
+			phy-type = "EGPHY";
+			reg = <3>;
+			status = "disabled";
+		};
+
+		phy4:4 {
+			compatible = "brcm,bcaphy";
+			phy-type = "EGPHY";
+			reg = <4>;
+			status = "disabled";
+		};
+
+		phy_rgmii:rgmii {
+			compatible = "brcm,bcaphy";
+			phy-type = "EXT1";
+			status = "disabled";
+		};
+
+		phy_detect:detect {
+			compatible = "brcm,bcaphy";
+			phy-type = "EXT3";
+			status = "disabled";
+		};
+
+		phy_ext_serdes:ext_serdes {
+			compatible = "brcm,bcaphy";
+            caps-no-hdx;
+            caps-no-10000;
+            caps-no-5000;
+            phy-type = "EXT3";
+			status = "disabled";
+		};
+
+		phy_serdes:serdes {
+			compatible = "brcm,bcaphy";
+			phy-type = "SGMII";
+			reg = <6>;
+			status = "disabled";
+		};
+	};
+
+	switch0: switch0 {
+		compatible = "brcm,enet";
+		label = "bcmsw";
+		sw-type = "RUNNER_SW";
+
+        pinctrl-0 = <&per_mdc_pin_60 &per_mdio_pin_61 &rgmii1_pins>;
+        pinctrl-names = "default";
+
+		ports {
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+			port0@0 {
+				reg = <0>;
+				mac-type = "UNIMAC";
+				phy-handle = <&phy1>;
+				phy-mode = "gmii";
+				gmii-direct;
+				status = "disabled";
+			};
+
+			port1@1 {
+				reg = <1>;
+				mac-type = "UNIMAC";
+				phy-handle = <&phy2>;
+				phy-mode = "gmii";
+				gmii-direct;
+				status = "disabled";
+			};
+
+			port2@2 {
+				reg = <2>;
+				mac-type = "UNIMAC";
+				phy-handle = <&phy3>;
+				phy-mode = "gmii";
+				gmii-direct;
+				status = "disabled";
+			};
+
+			port3@3 {
+				reg = <3>;
+				mac-type = "UNIMAC";
+				phy-handle = <&phy4>;
+				phy-mode = "gmii";
+				gmii-direct;
+				status = "disabled";
+			};
+
+			port4@4 {
+				reg = <4>;
+				mac-type = "UNIMAC";
+				phy-handle = <&phy_rgmii>;
+				phy-mode = "rgmii";
+				gmii-direct;
+				status = "disabled";
+			};
+
+			port5@5 {
+				reg = <5>;
+				mac-type = "UNIMAC";
+				phy-handle = <&phy_serdes>;
+				phy-mode = "hsgmii";
+				gmii-direct;
+				status = "disabled";
+			};
+
+			port_detect@6 {
+				reg = <6>;
+				phy-handle = <&phy_detect>;
+				phy-mode = "xfi";
+				is-wan;
+				detect;
+				status = "disabled";
+			};
+		};
+	};
+};
+

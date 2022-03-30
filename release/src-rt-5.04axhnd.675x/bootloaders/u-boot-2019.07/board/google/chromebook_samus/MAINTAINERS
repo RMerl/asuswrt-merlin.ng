@@ -1,0 +1,13 @@
+CHROMEBOOK SAMUS BOARD
+M:	Simon Glass <sjg@chromium.org>
+S:	Maintained
+F:	board/google/chromebook_samus/
+F:	include/configs/chromebook_samus.h
+F:	configs/chromebook_samus_defconfig
+
+CHROMEBOOK SAMUS TPL BOARD
+M:	Simon Glass <sjg@chromium.org>
+S:	Maintained
+F:	board/google/chromebook_samus/
+F:	include/configs/chromebook_samus.h
+F:	configs/chromebook_samus_tpl_defconfig

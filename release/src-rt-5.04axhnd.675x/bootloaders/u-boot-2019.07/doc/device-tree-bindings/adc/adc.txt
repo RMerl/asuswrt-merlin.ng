@@ -1,0 +1,62 @@
+ADC device binding
+
+There are no mandatory properties for ADC. However, if Voltage info is required,
+then there are two options:
+- use microvolts constraint or
+- use regulator phandle to enable/read supply's Voltage
+
+Properties and constraints:
+*optional and always checked, Voltage polarity info:
+- vdd-polarity-negative:  positive reference Voltage has a negative polarity
+- vss-polarity-negative:  negative reference Voltage has a negative polarity
+
+Chose one option, for each supply (Vdd/Vss):
+
+*optional and always checked, supply Voltage constants:
+- vdd-supply:            phandle to Vdd regulator's node
+- vss-supply:            phandle to Vss regulator's node
+
+*optional and checked only if the above corresponding, doesn't exist:
+- vdd-microvolts:        positive reference Voltage value [uV]
+- vss-microvolts:        negative reference Voltage value [uV]
+
+Example with constant 'Vdd' value:
+adc@1000000 {
+	compatible = "some-adc";
+	reg = <0xaabb000 0x100>;
+	status = "enabled";
+	vdd-microvolts = <1800000>;
+};
+
+Example of supply phandle usage, for the ADC's VDD/VSS references as below:
+   _______         _______
+  |Sandbox|       |Sandbox|
+  : PMIC  :       :  ADC  :
+  .       .       .       .
+  |       | (Vdd) |   AIN0|-->
+  |  BUCK2|-------|VDDref |
+  | (3.3V)|      _|VSSref |
+  |_______|     | |_______|
+               _|_
+
+For the above PMIC, the node can be defined as follows:
+sandbox_pmic {
+	compatible = "sandbox,pmic";
+	...
+	buck2: buck2 {
+		regulator-name = "SUPPLY_3.3V";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+	};
+	...
+};
+
+For the above ADC, the node can be defined as follows:
+adc@0 {
+	compatible = "sandbox,adc";
+	vdd-supply = <&buck2>;
+	vss-microvolts = <0>;
+};
+
+The ADC uclass code, will enable the supply before start of the conversion,
+but it will not configure the regulator settings.

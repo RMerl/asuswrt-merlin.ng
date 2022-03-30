@@ -1,0 +1,46 @@
+#!/bin/sh
+WLNANDMFG_FILE=/proc/nvram/wl_nand_manufacturer
+if [ -e $WLNANDMFG_FILE ]; then
+SYSTEM_INFO_INDICATOR=$(cat  $WLNANDMFG_FILE )
+else
+SYSTEM_INFO_INDICATOR=0
+fi
+SYSTEM_UBOOT=$(($SYSTEM_INFO_INDICATOR & 8))
+if [ $SYSTEM_UBOOT -gt 0 ]; then
+	MFG_NVRAM_MODE_FILEPATH=/proc/environment/mfg_nvram_mode
+else
+	MFG_NVRAM_MODE_FILEPATH=/proc/brcm/blxparms/mfg_nvram_mode
+fi
+if  [ -e $MFG_NVRAM_MODE_FILEPATH ]; then
+	mfg_nvram_mode=$(cat $MFG_NVRAM_MODE_FILEPATH)
+else
+	mfg_nvram_mode=0
+fi
+
+MTDOOPS_PART=/proc/environment/mtdoops
+if [ -e $MTDOOPS_PART ]; then
+	mtdoops=$(cat $MTDOOPS_PART)
+	rec_size=65536
+	log_shift=$(gunzip -c /proc/config.gz | grep CONFIG_LOG_BUF_SHIFT | cut -d '=' -f 2)
+	rec_size=$((2**$log_shift))
+	mtdsize=$(cat /proc/mtd  | grep $mtdoops | cut -d ' ' -f3)
+	if [ "$mtdsize" != "" ]; then
+		mtdsize=$((0x${mtdsize}))
+		if [ $rec_size -gt $mtdsize ]; then
+			rec_size=$mtdsize
+		fi
+	else
+		mtdoops=""
+	fi
+else
+	mtdoops=""
+fi
+
+trap "" 2
+
+
+case "$1" in
+	start)
+		echo "Loading drivers and kernel modules... "
+		echo
+

@@ -1,0 +1,79 @@
+#!/usr/bin/env perl
+
+use bytes;
+use Getopt::Long;
+use warnings;
+use strict;
+use constant {
+    BCM_TAG_FIT_HDR_SEC_DELG_REC => 0x44454c47, # DELG
+};
+
+my $delg_id;
+my $rollback;
+my $sec_template_its;
+my $sec_template_txt;
+my $kenc_aes;
+my $kdelg_pub;
+my $out_path;
+my $sdr;
+
+my $usage = q[
+Usage: gen_sec_delg_obj --delg_id=delegate_id --rollback=anti_rollback_level --secits=security_policy_template.its
+   --kencaesdelg=encrypted_delgated_aes_key --krsadelgpub=delegated_rsa_pub_key  --out_path=path_to_output_dir
+];
+
+GetOptions( "delg_id=s", \$delg_id, "rollback=i", \$rollback, "secits=s", \$sec_template_its, "kencaesdelg=s", \$kenc_aes, "krsadelgpub=s", \$kdelg_pub, "out_path=s", \$out_path) or die("$usage");
+
+die($usage) unless ($delg_id && $rollback && $sec_template_its && $kenc_aes && $kdelg_pub && $out_path);
+
+# 1 - Generate SDR
+{
+	local $/; # slurp!
+	open(S,"<$kdelg_pub") or die("$kdelg_pub open failed");
+	$sdr = pack('VVV',BCM_TAG_FIT_HDR_SEC_DELG_REC,$delg_id,$rollback) . <S>;
+	close(S);
+
+	my $sdr_file = "${out_path}/${delg_id}_sec_sdr.bin";
+	open(O,">$sdr_file") or die("$sdr_file open for write failed");
+	print O $sdr;
+	close(O);
+}
+
+# 2 - Read security policy template its 
+{
+	local $/; # slurp!
+	open(S,"<$sec_template_its") or die("$sec_template_its open failed");
+	$sec_template_txt = <S>;
+	close(S);
+}
+
+# 3 - Read and parse encrypted delegated aes key
+my $key_word;
+my $delg_aes_key_data;
+open(B,"<$kenc_aes") or die("$kenc_aes open for write failed");
+binmode(B);
+while( read(B, $key_word, 4) )
+{
+	$delg_aes_key_data .= sprintf(" 0x%04X", unpack('N',$key_word))
+}
+close(B);
+
+# 4 - Preform value substitutions
+$sec_template_txt =~ s/%DELG_ID%/$delg_id/;
+$sec_template_txt =~ s/%DELG_AES_KEY_DATA%/$delg_aes_key_data/;
+
+# 5 - Generate Security policy dts/its
+my $sec_its_file = "${out_path}/${delg_id}_sec_policy.its";
+open(O,">$sec_its_file") or die("$sec_its_file open for write failed");
+print O qq[/dts-v1/;
+/ {
+$sec_template_txt
+};
+];
+close(O);
+
+# 6 - Generate Security Policy dtb/itb
+my $sec_itb_file = "${out_path}/${delg_id}_sec_policy.itb";
+my $cmd = "dtc -I dts -O dtb $sec_its_file > $sec_itb_file";
+system($cmd);
+

@@ -1,0 +1,124 @@
+SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright 2010-2011 Calxeda, Inc.
+ */
+
+U-Boot provides a set of interfaces for creating and using simple, text
+based menus. Menus are displayed as lists of labeled entries on the
+console, and an entry can be selected by entering its label.
+
+To use the menu code, enable CONFIG_MENU, and include "menu.h" where
+the interfaces should be available.
+
+Menus are composed of items. Each item has a key used to identify it in
+the menu, and an opaque pointer to data controlled by the consumer.
+
+If you want to show a menu, instead starting the shell, define
+CONFIG_MENU_SHOW. You have to code the int menu_show(int bootdelay)
+function, which handle your menu. This function returns the remaining
+bootdelay.
+
+Interfaces
+----------
+#include "menu.h"
+
+/*
+ * Consumers of the menu interfaces will use a struct menu * as the
+ * handle for a menu. struct menu is only fully defined in menu.c,
+ * preventing consumers of the menu interfaces from accessing its
+ * contents directly.
+ */
+struct menu;
+
+/*
+ * NOTE: See comments in common/menu.c for more detailed documentation on
+ * these interfaces.
+ */
+
+/*
+ * menu_create() - Creates a menu handle with default settings
+ */
+struct menu *menu_create(char *title, int timeout, int prompt,
+				void (*item_data_print)(void *),
+				char *(*item_choice)(void *),
+				void *item_choice_data);
+
+/*
+ * menu_item_add() - Adds or replaces a menu item
+ */
+int menu_item_add(struct menu *m, char *item_key, void *item_data);
+
+/*
+ * menu_default_set() - Sets the default choice for the menu
+ */
+int menu_default_set(struct menu *m, char *item_key);
+
+/*
+ * menu_default_choice() - Set *choice to point to the default item's data
+ */
+int menu_default_choice(struct menu *m, void **choice);
+
+/*
+ * menu_get_choice() - Returns the user's selected menu entry, or the
+ * default if the menu is set to not prompt or the timeout expires.
+ */
+int menu_get_choice(struct menu *m, void **choice);
+
+/*
+ * menu_destroy() - frees the memory used by a menu and its items.
+ */
+int menu_destroy(struct menu *m);
+
+/*
+ * menu_display_statusline(struct menu *m);
+ * shows a statusline for every menu_display call.
+ */
+void menu_display_statusline(struct menu *m);
+
+Example Code
+------------
+This example creates a menu that always prompts, and allows the user
+to pick from a list of tools.  The item key and data are the same.
+
+#include "menu.h"
+
+char *tools[] = {
+	"Hammer",
+	"Screwdriver",
+	"Nail gun",
+	NULL
+};
+
+char *pick_a_tool(void)
+{
+	struct menu *m;
+	int i;
+	char *tool = NULL;
+
+	m = menu_create("Tools", 0, 1, NULL);
+
+	for(i = 0; tools[i]; i++) {
+		if (menu_item_add(m, tools[i], tools[i]) != 1) {
+			printf("failed to add item!");
+			menu_destroy(m);
+			return NULL;
+		}
+	}
+
+	if (menu_get_choice(m, (void **)&tool) != 1)
+		printf("Problem picking tool!\n");
+
+	menu_destroy(m);
+
+	return tool;
+}
+
+void caller(void)
+{
+	char *tool = pick_a_tool();
+
+	if (tool) {
+		printf("picked a tool: %s\n", tool);
+		use_tool(tool);
+	}
+}

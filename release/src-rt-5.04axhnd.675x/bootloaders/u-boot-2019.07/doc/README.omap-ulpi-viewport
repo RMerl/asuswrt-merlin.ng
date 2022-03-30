@@ -1,0 +1,27 @@
+Reference code ""drivers/usb/ulpi/omap-ulpi-viewport.c"
+
+Contains the ulpi read write api's to perform
+any ulpi phy port access on omap platform.
+
+On omap ehci reg map contains INSNREG05_ULPI
+register which offers the ulpi phy access so
+any ulpi phy commands should be passsed using this
+register.
+
+omap-ulpi-viewport.c is a low level function
+implementation of "drivers/usb/ulpi/ulpi.c"
+
+To enable and use omap-ulpi-viewport.c
+we require CONFIG_USB_ULPI_VIEWPORT_OMAP and
+CONFIG_USB_ULPI be enabled in config file.
+
+Any ulpi ops request can be done with ulpi.c
+and soc specific binding and usage is done with
+omap-ulpi-viewport implementation.
+
+Ex: scenario:
+omap-ehci driver code requests for ulpi phy reset if
+ehci is used in phy mode, which will call ulpi phy reset
+the ulpi phy reset does ulpi_read/write from viewport
+implementation which will do ulpi reset using the
+INSNREG05_ULPI register.

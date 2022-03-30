@@ -1,0 +1,14 @@
+INTEGRATOR BOARD
+M:	Linus Walleij <linus.walleij@linaro.org>
+S:	Maintained
+F:	board/armltd/integrator/
+F:	include/configs/integratorcp.h
+F:	configs/integratorcp_cm1136_defconfig
+F:	include/configs/integratorap.h
+F:	configs/integratorap_cm720t_defconfig
+F:	configs/integratorap_cm920t_defconfig
+F:	configs/integratorcp_cm920t_defconfig
+F:	configs/integratorap_cm926ejs_defconfig
+F:	configs/integratorcp_cm926ejs_defconfig
+F:	configs/integratorap_cm946es_defconfig
+F:	configs/integratorcp_cm946es_defconfig

@@ -1,0 +1,47 @@
+-------------------------------------------------
+   Simple steps used to test the QSPI at U-Boot
+-------------------------------------------------
+
+For #1, build the patched U-Boot and load MLO/u-boot.img
+
+----------------------------------
+Boot from another medium like MMC
+----------------------------------
+
+U-Boot# mmc dev 0
+mmc0 is current device
+U-Boot# fatload mmc 0 0x82000000 MLO
+reading MLO
+55872 bytes read in 8 ms (6.7 MiB/s)
+U-Boot# fatload mmc 0 0x83000000 u-boot.img
+reading u-boot.img
+248600 bytes read in 19 ms (12.5 MiB/s)
+
+--------------------------------------------------
+Commands to erase/write u-boot/mlo to flash device
+--------------------------------------------------
+U-Boot# sf probe 0
+SF: Detected S25FL256S_64K with page size 256 Bytes, erase size 64 KiB, total 32 MiB, mapped at 5c000000
+U-Boot# sf erase 0 0x10000
+SF: 65536 bytes @ 0x0 Erased: OK
+U-Boot# sf erase 0x20000 0x10000
+SF: 65536 bytes @ 0x20000 Erased: OK
+U-Boot# sf erase 0x30000 0x10000
+SF: 65536 bytes @ 0x30000 Erased: OK
+U-Boot# sf erase 0x40000 0x10000
+SF: 65536 bytes @ 0x40000 Erased: OK
+U-Boot# sf erase 0x50000 0x10000
+SF: 65536 bytes @ 0x50000 Erased: OK
+U-Boot# sf erase 0x60000 0x10000
+SF: 65536 bytes @ 0x60000 Erased: OK
+U-Boot# sf write 82000000 0 0x10000
+SF: 65536 bytes @ 0x0 Written: OK
+U-Boot# sf write 83000000 0x20000 0x60000
+SF: 393216 bytes @ 0x20000 Written: OK
+
+For #2, set sysboot to QSPI-1 boot mode(SYSBOOT[5:0] = 100110) and power
+on. ROM should find the GP header at offset 0 and load/execute SPL. SPL
+then detects that ROM was in QSPI-1 mode (boot code 10) and attempts to
+find a U-Boot image header at offset 0x20000 (set in the config file)
+and proceeds to load that image using the U-Boot image payload offset/size
+from the header. It will then start U-Boot.

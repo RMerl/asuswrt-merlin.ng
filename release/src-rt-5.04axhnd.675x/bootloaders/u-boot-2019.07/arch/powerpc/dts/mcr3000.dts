@@ -1,0 +1,22 @@
+/*
+ * MCR3000 Device Tree Source
+ *
+ * Copyright 2017 CS Systemes d'Information
+ *
+ * SPDX-License-Identifier:	GPL-2.0+
+ */
+
+/dts-v1/;
+
+/ {
+	WDT: watchdog@0 {
+		compatible = "fsl,pq1-wdt";
+	};
+	SERIAL: smc@0 {
+		compatible = "fsl,pq1-smc";
+	};
+
+	chosen {
+		stdout-path = &SERIAL;
+	};
+};

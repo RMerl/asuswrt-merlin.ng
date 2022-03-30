@@ -1,0 +1,10 @@
+compatible = "brcm,bcm6345-uart";
+reg = <UART_OFFSET UART_SIZE>;
+interrupts = <GIC_SPI UART_SPI IRQ_TYPE_LEVEL_HIGH>;
+clocks = <&periph_osc>;
+u-boot,dm-pre-reloc;
+status = "disabled";
+
+#undef UART_OFFSET
+#undef UART_SPI
+#undef UART_SIZE

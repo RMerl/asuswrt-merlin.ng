@@ -1,0 +1,18 @@
+if ROCKCHIP_RK322X
+
+config TARGET_EVB_RK3229
+	bool "EVB_RK3229"
+	select BOARD_LATE_INIT
+
+config SYS_SOC
+	default "rk322x"
+
+config SYS_MALLOC_F_LEN
+	default 0x400
+
+config SPL_SERIAL_SUPPORT
+	default y
+
+source "board/rockchip/evb_rk3229/Kconfig"
+
+endif

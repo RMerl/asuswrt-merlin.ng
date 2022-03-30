@@ -1,0 +1,6 @@
+RPI BOARD
+M:	Matthias Brugger <mbrugger@suse.com>
+S:	Maintained
+F:	board/raspberrypi/rpi/
+F:	include/configs/rpi.h
+F:	configs/rpi_*defconfig

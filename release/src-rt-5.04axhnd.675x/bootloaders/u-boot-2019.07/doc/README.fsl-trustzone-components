@@ -1,0 +1,25 @@
+Freescale ARM64 SoCs like LS2080A have ARM TrustZone components like
+TZPC-BP147 (TrustZone Protection Controller) and TZASC-400 (TrustZone
+Address Space Controller).
+
+While most of the configuration related programming of these peripherals
+is left to a root-of-trust security software layer (running in EL3
+privilege mode), but still some configurations of these peripherals
+might be required while the bootloader is executing in EL3 privilege
+mode. The following sections define how to turn on these features for
+LS2080A like SoCs.
+
+TZPC-BP147 (TrustZone Protection Controller)
+============================================
+- Depends on CONFIG_FSL_TZPC_BP147 configuration flag.
+- Separates Secure World and Normal World on-chip RAM (OCRAM) spaces.
+- Provides a programming model to set access control policy via the TZPC
+  TZDECPROT Registers.
+
+TZASC-400 (TrustZone Address Space Controller)
+==============================================
+- Depends on CONFIG_FSL_TZASC_400 configuration flag.
+- Separates Secure World and Normal World external memory spaces for bus masters
+  such as processors and DMA-equipped peripherals.
+- Supports 8 fully programmable address regions, initially inactive at reset,
+  and one base region, always active, that covers the remaining address space.

@@ -1,0 +1,6 @@
+SEABOARD BOARD
+M:	Tom Warren <twarren@nvidia.com>
+S:	Maintained
+F:	board/nvidia/seaboard/
+F:	include/configs/seaboard.h
+F:	configs/seaboard_defconfig

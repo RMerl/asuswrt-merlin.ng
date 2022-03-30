@@ -1,0 +1,32 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Device Tree Source extras for U-Boot for the ULCB board
+ *
+ * Copyright (C) 2018 Marek Vasut <marek.vasut@gmail.com>
+ */
+
+#include "r8a7795-h3ulcb.dts"
+#include "r8a7795-u-boot.dtsi"
+
+/ {
+	cpld {
+		compatible = "renesas,ulcb-cpld";
+		status = "okay";
+		gpio-sck = <&gpio6 8 0>;
+		gpio-mosi = <&gpio6 7 0>;
+		gpio-miso = <&gpio6 10 0>;
+		gpio-sstbz = <&gpio2 3 0>;
+	};
+};
+
+&sdhi0 {
+	sd-uhs-sdr12;
+	sd-uhs-sdr25;
+	sd-uhs-sdr104;
+	max-frequency = <208000000>;
+};
+
+&sdhi2 {
+	mmc-hs400-1_8v;
+	max-frequency = <200000000>;
+};

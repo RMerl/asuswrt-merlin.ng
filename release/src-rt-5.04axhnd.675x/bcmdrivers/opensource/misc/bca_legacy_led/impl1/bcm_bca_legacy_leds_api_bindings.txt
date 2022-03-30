@@ -1,0 +1,144 @@
+Broadcom Legacy LED API support for Software-driven LEDs.
+=========================================================
+
+While BCA LED driver provides support for Software-driven LEDs to be operated 
+using standard Linux APIs.
+
+This option has a few limitations:
+1) Difficult or sometimes impossible use Linux LED APIs from "legacy" device tree unfriendly drivers.
+2) All special states for LED blinking do not exist in the Linux API 
+   and need to be implemented in the consumer driver.
+
+To solve this limitation this driver provides the support for BCA Legacy LED APIs (e.g. kerSysLedCtrl). 
+
+The original Broadcom LED driver provides the list of predefined two-state software LEDs, 
+    ( state OK /Green and state Fail/Red)
+    kLedAdsl,
+    kLedSecAdsl,
+    kLedWanData,
+    kLedSes,
+    kLedVoip,
+    kLedVoip1,
+    kLedVoip2,
+    kLedPots,
+    kLedDect,
+    kLedGpon,
+    kLedOpticalLink,
+    kLedUSB,
+    kLedSim,
+    kLedSimITMS,
+    kLedEpon,
+    kLedWL0,
+    kLedWL1
+    
+And the following Led states:
+    kLedStateOff,                   /* turn led off */
+    kLedStateOn,                    /* turn led on */
+    kLedStateFail,                  /* turn led on red */
+    kLedStateSlowBlinkContinues,    /* slow blink continues at 2HZ interval */
+    kLedStateFastBlinkContinues,    /* fast blink continues at 4HZ interval */
+    kLedStateUserWpsInProgress,     /* 200ms on, 100ms off */
+    kLedStateUserWpsError,          /* 100ms on, 100ms off */
+    kLedStateUserWpsSessionOverLap  /* 100ms on, 100ms off, 5 times, off for 500ms */
+    
+The BCA Legacy LED API continues to support all above functionality
+  without any change in the existing drivers.
+  But it requires a special device tree node labeled legacy_leds to be extended 
+  in the board level device dts file. 
+  
+  This section will define led type to physical led references.
+  &legacy_leds {
+        <predefined-led-name> = <&led_label>;
+        <predefined-led-name> = <&led_label>;
+        <predefined-led-name> = <&led_label>;
+  };
+
+  Example:
+  &legacy_leds {
+    wan-data-led = <&led2>;
+    voip1-ok-led = <&led11>;
+    voip2-ok-led = <&led14>;
+    wl-sess-led = <&led17>;
+  };
+
+Please find below the list of the predefined led names and corresponding legacy led names and types:
+=====================================================================
+|   predefined led name |   Legacy LED name     |   Legacy LED type |
+=====================================================================
+| "adsl-led"            |   kLedAdsl            |   kLedOK          |
+| "adsl-fail-led"       |   kLedAdsl            |   kLedFail        |
+| "sec-adsl-led"        |   kLedSecAdsl         |   kLedOK          |
+| "sec-adsl-fail-led"   |   kLedSecAdsl         |   kLedFail        |
+| "wan-data-led"        |   kLedWanData         |   kLedOK          |
+| "wan-data-fail-led"   |   kLedWanData         |   kLedFail        |
+| "wl-sess-led"         |   kLedSes             |   kLedOK          |
+| "voip-led"            |   kLedVoip            |   kLedOK          |
+| "voip1-ok-led"        |   kLedVoip1           |   kLedOK          |
+| "voip1-fail-led"      |   kLedVoip1           |   kLedFail        |
+| "voip2-ok-led"        |   kLedVoip2           |   kLedOK          |
+| "voip2-fail-led"      |   kLedVoip2           |   kLedFail        |
+| "pots-led"            |   kLedPots            |   kLedOK          |
+| "dect-led"            |   kLedDect            |   kLedOK          |
+| "wl0-led"             |   kLedWL0             |   kLedOK          |
+| "wl1-led"             |   kLedWL1             |   kLedOK          |
+| "usb-led"             |   kLedUSB             |   kLedOK          |
+| "sim-led"             |   kLedSim             |   kLedOK          |
+| "sim-itms-led"        |   kLedSimITMS         |   kLedOK          |
+| "pon-led"             |   kLedEpon/kLedGpon   |   kLedOK          |
+| "alarm-led"           |   kLedEpon/kLedGpon   |   kLedFail        |
+=====================================================================
+
+=====================================================================
+  We strongly recomends, if possible, to use the 
+  standard Linux LED APIs for any new driver you add to the system.                   
+=====================================================================
+
+But if you port the existing driver based on BCA Legacy LED driver,
+ please follow the below steps
+
+
+How to add the customer-defined LED to use the Legacy API
+=========================================================
+
+There are two options:
+
+1. The Driver has its own device tree node and probe function, but need to access BCA Legacy LED API.
+    i. Edit file
+            bcmdrivers/opensource/include/bcm963xx/bcm_bca_legacy_led_api.h
+       to add customer specific led or leds to the BOARD_LED_NAME enum.
+       NOTE: must be added before kLedEnd.
+   ii. Add to device tree node of the Driver the following property:
+        "customer-led-name" = <&software_led_label>;
+         NOTE:  If Led is two-stated each state has to be specified separately.
+                Each added LED must have its own entry.
+        Example:
+        If reqiered software led is defined as following
+	        led2: sw_led_01-pin_1 {
+		            software_led;
+		            active_low;
+		            status = "okay";
+                };
+        The customer led should be:
+            "customer-led-name" = <&led2>;
+
+  iii. During the probe function of the Driver call to the
+            bca_legacy_led_request_sw_led(dev->of_node, "customer-led-name", <customer_led_define>, kLedOK/kLedFail);
+       for each added line in the device tree node.
+   iv. Use kerSysLedCtrl API to control added LEDs.
+
+2. The Driver does not have its own device tree node.
+    i. Edit file
+            bcmdrivers/opensource/include/bcm963xx/bcm_bca_legacy_led_api.h
+       to add customer specific led or leds to the BOARD_LED_NAME enum.
+       NOTE: must be added before kLedEnd.
+   ii. Edit file
+            bcmdrivers/opensource/misc/bca_legacy_led/impl1/bcm_bca_legacy_leds_api.c
+       to add requires leds to the legacy_leds array
+            {.consumer_name = "customer-led-name", .led_name = customer_led_define, .led_type = kLedOK/kLedFail},
+  iii. Extend the legacy_leds device tree node with new added LEDs:
+            &legacy_leds {
+                "customer-led-name" = <&software_led_label>;
+                ...
+            };
+   iv. Use kerSysLedCtrl API to control added LEDs.
+

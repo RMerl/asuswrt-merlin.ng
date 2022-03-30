@@ -1,0 +1,12 @@
+if TARGET_SILK
+
+config SYS_BOARD
+	default "silk"
+
+config SYS_VENDOR
+	default "renesas"
+
+config SYS_CONFIG_NAME
+	default "silk"
+
+endif

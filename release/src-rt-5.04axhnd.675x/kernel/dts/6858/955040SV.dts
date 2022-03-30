@@ -1,0 +1,176 @@
+#include "inc/55040.dtsi"
+
+/ {
+    xfp_sfp: xfp_sfp {
+        pinctrl-names = "tx-sd";
+        pinctrl-0 = <&a_rogue_onu_in_pin_56>;
+        compatible = "brcm,sfp";
+        i2c-bus = <&i2c1>;
+        tx-power-gpio = <&gpioc 50 GPIO_ACTIVE_LOW>;
+    };
+
+    wan_serdes {
+            compatible = "brcm,pon-drv";
+            trx = <&xfp_sfp>;
+            pon-led = <&led8>;
+            alarm-led = <&led5>;
+    };
+};
+
+&hs_uart0 {
+    pinctrl-0 = <&b_uart2_sin_pin_16 &b_uart2_sout_pin_17 &b_uart2_cts_pin_18 &b_uart2_rts_pin_19>;
+	status = "okay";
+};
+
+&mdio_lport {
+        lportphy5:5 {
+                status = "okay";
+        };
+};
+
+&switch0 {
+        pinctrl-names = "default", "rgmii3";
+        pinctrl-0 = <&lport_m_mdc_pin_98 &lport_m_mdio_pin_99 &rgmii3_pins>;
+        pinctrl-1 = <&rgmii3_pins>;
+
+        ports {
+                port_rgmii_4@4 {
+                        reg = <4>;
+                        mac-type = "LPORT";
+                        phy-handle = <&lportphy5>;
+                        phy-mode = "rgmii";
+                        tx-delay;
+                        mii-pinctrl-state = "rgmii3";
+                        status = "okay";
+                };
+        };
+};
+
+&led_ctrl {
+    pinctrl-names = "default";
+    pinctrl-0 = <&b_ser_led_clk_pin_30 &b_ser_led_data_pin_29 &b_ser_led_mask_pin_31>;
+    serial-shifters-installed = <3>;
+
+    led0: sw_led-bit_0 {
+              active_low; 
+              brightness = <0>;
+              flash_rate = <0>;
+              status = "okay";
+          };
+    led1: sw_led-bit_1 {
+              active_low; 
+              brightness = <0>;
+              flash_rate = <0>;
+              status = "okay";
+          };
+    led2: sw_led-bit_2 {
+              active_low; 
+              brightness = <255>;
+              flash_rate = <0>;
+              status = "okay";
+              label = "WAN";
+          };
+    led3: sw_led-bit_3 {
+              active_low; 
+              brightness = <0>;
+              flash_rate = <0>;
+              status = "okay";
+          };
+    led4: sw_led-bit_4 {
+              active_low; 
+              brightness = <0>;
+              flash_rate = <0>;
+              status = "okay";
+          };
+    led5: sw_led-bit_5 {
+              active_low; 
+              brightness = <255>;
+              flash_rate = <0>;
+              status = "okay";
+              label = "OpticalLinkFail";
+          };
+    led6: sw_led-bit_6 {
+              active_low; 
+              brightness = <0>;
+              flash_rate = <0>;
+              status = "okay";
+          };
+    led7: sw_led-bit_7 {
+              active_low; 
+              brightness = <0>;
+              flash_rate = <0>;
+              status = "okay";
+          };
+
+    led8: sw_led-bit_8 {
+              active_low; 
+              brightness = <255>;
+              flash_rate = <0>;
+              status = "okay";
+              label = "PON";
+          };
+};
+
+&legacy_leds {
+    wan-data-led = <&led2>;
+};
+
+&nand {
+	status = "okay";
+};
+&wdt {
+	status = "okay";
+};
+&i2c0 {
+    status = "okay";
+};
+&i2c1 {
+    pinctrl-0 = <&i2c_2_scl_pin_23 &i2c_2_sda_pin_24>;
+    pinctrl-names = "default";
+    status = "okay";
+};
+
+&sdhci {
+	status = "okay";
+};
+&hsspi {
+	status = "okay";
+
+    voice1 {
+        pinctrl-0 = <&spim_ss1_b_pin_106>;
+        pinctrl-names = "default";
+        compatible = "bcm-spi-voice";
+        reg = <3>; /* chip select 3 */
+        spi-max-frequency = <1024000>;
+    };
+
+    voice2 {
+        pinctrl-0 = <&c_spim_ss2_b_pin_51>;
+        pinctrl-names = "default";
+        compatible = "bcm-spi-voice";
+        reg = <4>; /* chip select 4 */
+        spi-max-frequency = <1024000>;
+    };
+
+    voice3 {
+        compatible = "bcm-spi-voice";
+        reg = <5>; /* chip select 5 */
+        spi-max-frequency = <1024000>;
+    };
+
+    voice4 {
+        compatible = "bcm-spi-voice";
+        reg = <1>; /* chip select 1 */
+        spi-max-frequency = <1024000>;
+    };
+
+    voice7 {
+        pinctrl-0 = <&a_pcm_sdin_pin_0 &a_pcm_sdout_pin_1 &a_pcm_clk_pin_2 &a_pcm_fs_pin_3>;
+        pinctrl-names = "default";
+    };
+};
+
+&pcie0 {
+	status = "okay";
+};
+

@@ -1,0 +1,43 @@
+if ARCH_BCMSTB
+
+config TARGET_BCM7445
+	bool "Broadcom 7445 TSBL"
+	depends on ARCH_BCMSTB
+	help
+	  Support for the Broadcom 7445 SoC.  This port assumes BOLT
+	  is acting as the second stage bootloader, and U-Boot is
+	  acting as the third stage bootloader (TSBL), loaded by BOLT.
+
+config TARGET_BCM7260
+	bool "Broadcom 7260 TSBL"
+	depends on ARCH_BCMSTB
+	help
+	  Support for the Broadcom 7260 SoC.  This port assumes BOLT
+	  is acting as the second stage bootloader, and U-Boot is
+	  acting as the third stage bootloader (TSBL), loaded by BOLT.
+
+config SYS_CPU
+	default "armv7"
+
+config SYS_BOARD
+	default "bcmstb"
+
+config SYS_VENDOR
+	default "broadcom"
+
+config SYS_SOC
+	default "bcmstb"
+
+config SYS_CONFIG_NAME
+	default "bcm7445" if TARGET_BCM7445
+	default "bcm7260" if TARGET_BCM7260
+
+config SYS_FDT_SAVE_ADDRESS
+	hex "Address to which the prior stage provided DTB will be copied"
+	default 0x1f00000
+
+config BCMSTB_SDHCI_INDEX
+	int "Index of preferred BCMSTB SDHCI alias in DTB"
+	default 1
+
+endif

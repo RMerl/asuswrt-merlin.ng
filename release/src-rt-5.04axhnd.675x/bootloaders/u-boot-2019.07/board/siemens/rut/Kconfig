@@ -1,0 +1,15 @@
+if TARGET_RUT
+
+config SYS_BOARD
+	default "rut"
+
+config SYS_VENDOR
+	default "siemens"
+
+config SYS_SOC
+	default "am33xx"
+
+config SYS_CONFIG_NAME
+	default "rut"
+
+endif

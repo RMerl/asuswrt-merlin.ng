@@ -1,0 +1,113 @@
+#
+# RTC drivers configuration
+#
+
+menu "Real Time Clock"
+
+config DM_RTC
+	bool "Enable Driver Model for RTC drivers"
+	depends on DM
+	help
+	  Enable drver model for real-time-clock drivers. The RTC uclass
+	  then provides the rtc_get()/rtc_set() interface, delegating to
+	  drivers to perform the actual functions. See rtc.h for a
+	  description of the API.
+
+config SPL_DM_RTC
+	bool "Enable Driver Model for RTC drivers in SPL"
+	depends on SPL_DM
+	help
+	  Enable drver model for real-time-clock drivers. The RTC uclass
+	  then provides the rtc_get()/rtc_set() interface, delegating to
+	  drivers to perform the actual functions. See rtc.h for a
+	  description of the API.
+
+config TPL_DM_RTC
+	bool "Enable Driver Model for RTC drivers in TPL"
+	depends on TPL_DM
+	help
+	  Enable drver model for real-time-clock drivers. The RTC uclass
+	  then provides the rtc_get()/rtc_set() interface, delegating to
+	  drivers to perform the actual functions. See rtc.h for a
+	  description of the API.
+
+config RTC_PCF2127
+	bool "Enable PCF2127 driver"
+	depends on DM_RTC
+	help
+	  The PCF2127 is a CMOS Real Time Clock (RTC) and calendar with an integrated
+	  Temperature Compensated Crystal (Xtal) Oscillator (TCXO) and a 32.768 kHz quartz
+	  crystal optimized for very high accuracy and very low power consumption. The PCF2127
+	  has a selectable I2C-bus or SPI-bus, a backup battery switch-over circuit, a
+	  programmable watchdog function, a timestamp function, and many other features.
+
+config RTC_DS1307
+	bool "Enable DS1307 driver"
+	depends on DM_RTC
+	help
+	  Support for Dallas Semiconductor (now Maxim) DS1307 and DS1338/9 and
+	  compatible Real Time Clock devices.
+
+config RTC_ISL1208
+	bool "Enable ISL1208 driver"
+	depends on DM_RTC
+	help
+	  The Renesas (formerly Intersil) ISL1208 is a I2C Real Time Clock (RTC) and
+	  calendar with automatic leap year correction, 2-byte battery backed SRAM,
+	  automatic power switch-over, alarm function and 15 selectable frequency
+	  outputs.
+
+	  This driver supports reading and writing the RTC/calendar and detects
+	  total power failures.
+
+config RTC_RV3029
+	bool "Enable RV3029 driver"
+	depends on DM_RTC
+	help
+	  The MicroCrystal RV3029 is a I2C Real Time Clock (RTC) with 8-byte
+	  battery-backed SRAM.
+
+	  This driver supports reading and writing the RTC/calendar and the
+	  battery-baced SRAM section.
+
+config RTC_RX8010SJ
+	bool "Enable RX8010SJ driver"
+	depends on DM_RTC
+	help
+	  Support for Epson RX8010SJ Real Time Clock devices.
+
+config RTC_PL031
+	bool "Enable ARM AMBA PL031 RTC driver"
+	help
+	  The ARM PrimeCell Real Time Clock (PL031) is an optional SoC
+	  peripheral based on the Advanced Microcontroller Bus Architecture
+	  (AMBA). It is emulated in QEMU virtual ARM machines.
+
+config RTC_MV
+	bool "Enable Marvell RTC driver"
+	depends on DM_RTC
+	help
+	  Enable Marvell RTC driver. This driver supports the rtc that is present
+	  on some Marvell SoCs.
+
+config RTC_S35392A
+	bool "Enable S35392A driver"
+	select BITREVERSE
+	help
+	  Enable s35392a driver which provides rtc get and set function.
+
+config RTC_MC146818
+	bool "Enable MC146818 driver"
+	help
+	  This is a widely used real-time clock chip originally by Motorola
+	  and now available from NXP. It includes a battery-backed real-time
+	  clock with a wide array of features and 50 bytes of general-purpose,
+	  battery-backed RAM. The driver supports access to the clock and RAM.
+
+config RTC_M41T62
+	bool "Enable M41T62 driver"
+	help
+	  Enable driver for ST's M41T62 compatible RTC devices (like RV-4162).
+	  It is a serial (I2C) real-time clock (RTC) with alarm.
+
+endmenu

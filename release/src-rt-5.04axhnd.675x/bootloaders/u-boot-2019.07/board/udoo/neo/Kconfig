@@ -1,0 +1,12 @@
+if TARGET_UDOO_NEO
+
+config SYS_VENDOR
+	default "udoo"
+
+config SYS_BOARD
+	default "neo"
+
+config SYS_CONFIG_NAME
+	default "udoo_neo"
+
+endif

@@ -1,0 +1,30 @@
+if ARCH_MX25
+
+config MX25
+	bool
+	default y
+	select SYS_FSL_ERRATUM_ESDHC_A001
+choice
+	prompt "MX25 board select"
+	optional
+
+config TARGET_MX25PDK
+	bool "Support mx25pdk"
+	select BOARD_LATE_INIT
+	select CPU_ARM926EJS
+	select BOARD_EARLY_INIT_F
+
+config TARGET_ZMX25
+	bool "Support zmx25"
+	select BOARD_LATE_INIT
+	select CPU_ARM926EJS
+
+endchoice
+
+config SYS_SOC
+	default "mx25"
+
+source "board/freescale/mx25pdk/Kconfig"
+source "board/syteco/zmx25/Kconfig"
+
+endif

@@ -1,0 +1,4 @@
+Altera SPI
+
+Required properties:
+- compatible : should be "altr,spi-1.0".

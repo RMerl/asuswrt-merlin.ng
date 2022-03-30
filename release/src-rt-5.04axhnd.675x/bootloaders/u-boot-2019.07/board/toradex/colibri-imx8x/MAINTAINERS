@@ -1,0 +1,9 @@
+Colibri iMX8X
+M:	Marcel Ziswiler <marcel.ziswiler@toradex.com>
+W:	http://developer.toradex.com/software/linux/linux-software
+S:	Maintained
+F:	arch/arm/dts/fsl-imx8x-colibri.dts
+F:	arch/arm/dts/fsl-imx8x-colibri-u-boot.dtsi
+F:	board/toradex/colibri-imx8x/
+F:	configs/colibri-imx8qxp_defconfig
+F:	include/configs/colibri-imx8x.h

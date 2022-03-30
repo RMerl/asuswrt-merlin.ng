@@ -1,0 +1,9 @@
+if TARGET_WANDBOARD
+
+config SYS_BOARD
+	default "wandboard"
+
+config SYS_CONFIG_NAME
+	default "wandboard"
+
+endif

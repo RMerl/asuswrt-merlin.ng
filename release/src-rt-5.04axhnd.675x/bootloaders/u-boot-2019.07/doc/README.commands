@@ -1,0 +1,136 @@
+Command definition
+------------------
+
+Commands are added to U-Boot by creating a new command structure.
+This is done by first including command.h, then using the U_BOOT_CMD() or the
+U_BOOT_CMD_COMPLETE macro to fill in a cmd_tbl_t struct.
+
+U_BOOT_CMD(name, maxargs, repeatable, command, "usage", "help")
+U_BOOT_CMD_COMPLETE(name, maxargs, repeatable, command, "usage, "help", comp)
+
+name:		The name of the command. THIS IS NOT a string.
+
+maxargs:	The maximum number of arguments this function takes including
+		the command itself.
+
+repeatable:	Either 0 or 1 to indicate if autorepeat is allowed.
+
+command:	Pointer to the command function. This is the function that is
+		called when the command is issued.
+
+usage:		Short description. This is a string.
+
+help:		Long description. This is a string. The long description is
+		only available if CONFIG_SYS_LONGHELP is defined.
+
+comp:		Pointer to the completion function. May be NULL.
+		This function is called if the user hits the TAB key while
+		entering the command arguments to complete the entry. Command
+		completion is only available if CONFIG_AUTO_COMPLETE is defined.
+
+Sub-command definition
+----------------------
+
+Likewise an array of cmd_tbl_t holding sub-commands can be created using either
+of the following macros:
+
+* U_BOOT_CMD_MKENT(name, maxargs, repeatable, command, "usage", "help")
+* U_BOOT_CMD_MKENTCOMPLETE(name, maxargs, repeatable, command, "usage, "help",
+  comp)
+
+This table has to be evaluated in the command function of the main command, e.g.
+
+    static cmd_tbl_t cmd_sub[] = {
+        U_BOOT_CMD_MKENT(foo, CONFIG_SYS_MAXARGS, 1, do_foo, "", ""),
+        U_BOOT_CMD_MKENT(bar, CONFIG_SYS_MAXARGS, 1, do_bar, "", ""),
+    };
+
+    static int do_cmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
+    {
+        cmd_tbl_t *cp;
+
+        if (argc < 2)
+                return CMD_RET_USAGE;
+
+        /* drop sub-command argument */
+        argc--;
+        argv++;
+
+        cp = find_cmd_tbl(argv[0], cmd_ut_sub, ARRAY_SIZE(cmd_sub));
+
+        if (cp)
+            return cp->cmd(cmdtp, flag, argc, argv);
+
+        return CMD_RET_USAGE;
+    }
+
+Command function
+----------------
+
+The command function pointer has to be of type
+int (*cmd)(struct cmd_tbl_s *cmdtp, int flag, int argc, const char *argv[]);
+
+cmdtp:		Table entry describing the command (see above).
+
+flag:		A bitmap which may contain the following bit:
+		CMD_FLAG_REPEAT - The last command is repeated.
+		CMD_FLAG_BOOTD  - The command is called by the bootd command.
+		CMD_FLAG_ENV    - The command is called by the run command.
+
+argc:		Number of arguments including the command.
+
+argv:		Arguments.
+
+Allowable return value are:
+
+CMD_SUCCESS	The command was successfully executed.
+
+CMD_FAILURE	The command failed.
+
+CMD_RET_USAGE	The command was called with invalid parameters. This value
+		leads to the display of the usage string.
+
+Completion function
+-------------------
+
+The completion function pointer has to be of type
+int (*complete)(int argc, char *const argv[], char last_char,
+		int maxv, char *cmdv[]);
+
+argc:		Number of arguments including the command.
+
+argv:		Arguments.
+
+last_char:	The last character in the command line buffer.
+
+maxv:		Maximum number of possible completions that may be returned by
+		the function.
+
+cmdv:		Used to return possible values for the last argument. The last
+		possible completion must be followed by NULL.
+
+The function returns the number of possible completions (without the terminating
+NULL value).
+
+Behind the scene
+----------------
+
+The structure created is named with a special prefix and placed by
+the linker in a special section using the linker lists mechanism
+(see include/linker_lists.h)
+
+This makes it possible for the final link to extract all commands
+compiled into any object code and construct a static array so the
+command array can be iterated over using the linker lists macros.
+
+The linker lists feature ensures that the linker does not discard
+these symbols when linking full U-Boot even though they are not
+referenced in the source code as such.
+
+If a new board is defined do not forget to define the command section
+by writing in u-boot.lds ($(srctree)/board/boardname/u-boot.lds) these
+3 lines:
+
+	.u_boot_list : {
+		KEEP(*(SORT(.u_boot_list*)));
+	}

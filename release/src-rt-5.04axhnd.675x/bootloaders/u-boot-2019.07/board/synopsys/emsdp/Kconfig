@@ -1,0 +1,12 @@
+if TARGET_EMSDP
+
+config SYS_BOARD
+	default "emsdp"
+
+config SYS_VENDOR
+	default "synopsys"
+
+config SYS_CONFIG_NAME
+	default "emsdp"
+
+endif

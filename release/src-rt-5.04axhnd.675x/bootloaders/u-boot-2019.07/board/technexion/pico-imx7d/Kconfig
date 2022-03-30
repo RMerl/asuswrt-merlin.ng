@@ -1,0 +1,15 @@
+if TARGET_PICO_IMX7D
+
+config SYS_BOARD
+	default "pico-imx7d"
+
+config SYS_VENDOR
+	default "technexion"
+
+config SYS_SOC
+	default "mx7"
+
+config SYS_CONFIG_NAME
+	default "pico-imx7d"
+
+endif

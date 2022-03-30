@@ -1,0 +1,55 @@
+if TARGET_APALIS_IMX6
+
+config SYS_BOARD
+	default "apalis_imx6"
+
+config SYS_CONFIG_NAME
+	default "apalis_imx6"
+
+config SYS_CPU
+	default "armv7"
+
+config SYS_SOC
+	default "mx6"
+
+config SYS_VENDOR
+	default "toradex"
+
+config TDX_CFG_BLOCK
+	default y
+
+config TDX_HAVE_MMC
+	default y
+
+config TDX_CFG_BLOCK_DEV
+	default "0"
+
+config TDX_CFG_BLOCK_PART
+	default "1"
+
+# Toradex config block in eMMC, at the end of 1st "boot sector"
+config TDX_CFG_BLOCK_OFFSET
+	default "-512"
+
+config TDX_CMD_IMX_MFGR
+	bool "Enable factory testing commands for Toradex iMX 6 modules"
+	help
+	  This adds the commands
+	    pf0100_otp_prog - Program the OTP fuses on the PMIC PF0100
+	  If executed on already fused modules it doesn't change any fuse setting.
+	default y
+
+config TDX_APALIS_IMX6_V1_0
+	bool "Apalis iMX6 V1.0 HW"
+	help
+	  Apalis iMX6 V1.0 HW has a different pinout for the UART.
+	    The UARTs must be used in DCE mode, RTS/CTS are swapped and
+	    thus unusable on standard carrier boards.
+	    This option configures DCE mode unconditionally. Whithout this
+	    option the config block stating V1.0 HW selects DCE mode,
+	    otherwise the UARTs are configuered in DTE mode.
+	default n
+
+source "board/toradex/common/Kconfig"
+
+endif

@@ -1,0 +1,12 @@
+if TARGET_MX7ULP_EVK
+
+config SYS_BOARD
+	default "mx7ulp_evk"
+
+config SYS_VENDOR
+	default "freescale"
+
+config SYS_CONFIG_NAME
+	default "mx7ulp_evk"
+
+endif

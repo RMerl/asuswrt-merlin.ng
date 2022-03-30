@@ -1,0 +1,21 @@
+#!/usr/bin/kermit +
+set line /dev/ttyS0
+set speed 115200
+set serial 8N1
+set carrier-watch off
+set handshake none
+set flow-control none
+robust
+set file type bin
+set file name lit
+set rec pack 1000
+set send pack 1000
+set window 5
+set prompt Kermit>
+
+#out \13
+#in 10 =>
+out \%1 \%2 \%3 \%4 \%5 \%6 \%7\13
+in 10 =>
+quit
+exit 0

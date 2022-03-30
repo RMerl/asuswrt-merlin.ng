@@ -1,0 +1,142 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright 2019 Broadcom Ltd.
+ */
+
+#include "skeleton.dtsi"
+/* #include "bcm63138-pinctrl.dtsi" */
+#include "bcmbca-sf2net.dtsi"
+
+
+/ {
+	compatible = "brcm,bcm63148";
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	clocks {
+		compatible = "simple-bus";
+		#address-cells = <1>;
+		#size-cells = <1>;
+		ranges;
+		u-boot,dm-pre-reloc;
+
+		refclk50mhz: refclk50mhz {
+			compatible = "fixed-clock";
+			#clock-cells = <0>;
+			clock-frequency = <50000000>;
+			u-boot,dm-pre-reloc;
+		};
+	};
+
+	ubus@ff800000 {
+		compatible = "simple-bus";
+		#address-cells = <1>;
+		#size-cells = <1>;
+		u-boot,dm-pre-reloc;
+
+		uart0: serial@fffe8600 {	
+			u-boot,dm-pre-reloc;
+			compatible = "brcm,bcm6345-uart";
+			reg = <0xfffe8600 0x20>;
+			clocks = <&refclk50mhz>;
+			status = "disabled";
+		};
+
+		timer0: timer@fffe8080 {
+			u-boot,dm-pre-reloc;
+			compatible = "brcm,bcm6xxx-timer";
+			reg = <0xfffe8080 0x28>;
+			clocks = <&refclk50mhz>;
+			status = "disabled";
+		};
+
+		wdt1: watchdog@fffe80a8 {
+			compatible = "brcm,bcm6345-wdt";
+			reg = <0xfffe80a8 0x14>;
+			clocks = <&refclk50mhz>;
+		};
+
+		wdt-reboot {
+			compatible = "wdt-reboot";
+			wdt = <&wdt1>;
+		};
+
+		rdp_eth {
+			compatible = "brcm,bcmbca-rdp";
+			ethsw = <&switchsf2>;
+		};
+
+		switchsf2: sf2@0x80080000 {
+			compatible = "brcm,bcmbca-sf2";
+			phy_base = <0x8>;
+			reg-names = "switchcore-base",
+						"switchreg-base",
+						"switchmdio-base",
+						"qphy-ctrl",
+						"sphy-ctrl",
+						"phy-test-ctrl";
+			reg = <0x80080000 0x40000>,
+					<0x800c0000 0x1a8>,
+					<0x800c03c0 0x8>,
+					<0x800c0024 0x4>,
+					<0x800c002c 0x4>,
+					<0x800c0020 0x4>;
+		};
+
+		nand: nand-controller@fffea000 {
+			compatible = "brcm,nand-bcmbca",
+				     "brcm,brcmnand-v7.1",
+				     "brcm,brcmnand";
+			reg-names = "nand", "nand-int-base", "nand-cache";
+			reg = <0xfffea000 0x400>,
+			      <0xfffe80f0 0x10>,
+			      <0xfffea400 0x200>;
+			parameter-page-big-endian = <0>;
+
+			status = "disabled";
+		};
+
+		rng: rng@fffe8300 {
+			compatible = "brcm,iproc-rng200";
+			reg = <0xfffe8300 0x28>;
+			u-boot,dm-pre-reloc;
+		};
+
+		pinctrl: pinctrl {
+			compatible = "brcm,bcmbca-pinctrl";
+			reg = <0xfffe813c 0x14>;
+		};
+
+		usb_ctrl:usb_ctrl {
+			compatible = "brcm,bcmbca-usb-ctrl";
+			reg-names = "usb-ctrl";
+			reg = <0x8000c200 0x100>;
+			status = "okay";
+		};
+
+		usb0: usb@0x8000c300 {
+			compatible = "brcm,bcmbca-ehci";
+			reg-names = "usb-ehci";
+			reg = <0x8000c300 0x100>;
+		};
+
+		usb_ohci0: usb_ohci@0x8000c400 {
+			compatible = "brcm,bcmbca-ohci";
+			reg-names = "usb-ohci";
+			reg = <0x8000c400 0x100>;
+		};
+
+		boot_state {
+		u-boot,dm-pre-reloc;
+		compatible = "brcm,bcmbca-bootstate-v1";
+                reg-names = "reset_status", "global_control",
+				"flash_control", "mode_control";
+		reg = <0xfffe80b8 0x04>,
+			<0xfffe9000 0x04>,
+			<0xfffe9014 0x04>,
+			<0xfffe91e8 0x04>;
+		};
+
+
+	};
+};

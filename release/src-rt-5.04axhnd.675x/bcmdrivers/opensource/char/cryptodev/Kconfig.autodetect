@@ -1,0 +1,9 @@
+config BCM_CRYPTODEV
+	tristate "Cyrptodev Linux module"
+	default n
+
+config BCM_CRYPTODEV_IMPL
+	int "Implementation index for Cryptodev Linux"
+	depends on BCM_CRYPTODEV
+	default 1
+

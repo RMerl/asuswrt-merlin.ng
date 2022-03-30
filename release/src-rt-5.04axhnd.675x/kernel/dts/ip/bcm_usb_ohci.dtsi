@@ -1,0 +1,14 @@
+compatible = "brcm,bcmbca-ohci";
+
+reg-names = "usb-ohci";
+reg = <USB_ADDR USB_SIZE>;
+interrupts = <GIC_SPI USB_IRQ IRQ_TYPE_LEVEL_HIGH>;
+usb_port-id = <USB_PORT_ID>;
+status = "disabled";
+/* coherency_enable */ /* For DMA coherency enabled on 63158 only */
+
+/* to let add multiple usb without errors undefine usb definitions */
+#undef USB_ADDR
+#undef USB_SIZE
+#undef USB_IRQ
+#undef USB_PORT_ID

@@ -1,0 +1,7 @@
+DB-XC3-24G4XG BOARD
+M:	Chris Packham <chris.packham@alliedtelesis.co.nz>
+S:	Maintained
+F:	board/Marvell/db-xc3-24g4xg/
+F:	include/configs/db-xc3-24g4xg.h
+F:	configs/db-xc3-24g4xg_defconfig
+F:	arch/arm/dts/armada-xp-db-xc3-24g4xg.dts

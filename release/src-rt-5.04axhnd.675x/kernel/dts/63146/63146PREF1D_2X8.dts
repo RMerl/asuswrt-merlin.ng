@@ -1,0 +1,300 @@
+#include "63146.dtsi"
+#include "../bcm_voice.dtsi"
+
+/ {
+	memory_controller {
+		memcfg = <(BP_DDR_TYPE_DDR4        | \
+			BP_DDR_SPEED_1600_22_22_22 | \
+			BP_DDR_TOTAL_SIZE_2048MB   | \
+			BP_DDR_DEVICE_WIDTH_8     | \
+			BP_DDR_TOTAL_WIDTH_16BIT   | \
+			BP_DDR_63146_DEFAULT)>;
+	};
+
+	buttons {
+		compatible = "brcm,buttons";
+		reset_button {
+			ext_irq = <&bca_extintr 15 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+			press {
+				print = "Button Press -- Hold for 5s to do restore to default";
+			};
+			hold {
+				rst_to_dflt = <5>;
+			};
+			release {
+				reset = <0>;
+			};	
+		};
+		ses_button {
+			ext_irq = <&bca_extintr 14 GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+			release {
+				ses_short_period = <0>;
+				ses_long_period = <3>;
+			};
+		};
+	};
+};
+
+&nand {
+	write-protect = <1>;
+};
+
+&sdhci {
+	pinctrl-names = "default";
+	pinctrl-0 = <&emmc_ctrl_pins &data_pins>;
+	status = "okay";
+};
+
+#if defined(CONFIG_BCM_PCIE_HCD) || defined(CONFIG_BCM_PCIE_HCD_MODULE)
+&pcie0 {
+	status = "okay";
+};
+&pcie1 {
+	status = "okay";
+};
+&pcie2 {
+	status = "okay";
+};
+#endif //#if defined(CONFIG_BCM_PCIE_HCD) || defined(CONFIG_BCM_PCIE_HCD_MODULE)
+
+&usb_ctrl {
+    pinctrl-names = "default";
+    pinctrl-0 = <&usb0_pwr_pins &usb1_pwr_pins>;
+	status = "okay";
+	xhci-enable;
+};
+&usb0_xhci {
+	status = "okay";
+};
+
+&i2c0 {
+	status = "okay";
+};
+&i2c1 {
+	status = "okay";
+};
+
+&mdio {
+	phy1:1 {
+		status = "okay";
+	};
+
+	phy2:2 {
+		status = "okay";
+	};
+
+	phy3:3 {
+		status = "okay";
+	};
+
+	phy4:4 {
+		status = "okay";
+	};
+
+	phy5:5 {
+		status = "okay";
+	};
+
+	phy_rgmii: rgmii {
+		status = "disabled";
+	};
+
+	phy_serdes0:7 {
+		status = "okay";
+	};
+
+	phy_serdes1:8 {
+		status = "okay";
+	};
+};
+
+&switch0 {
+	ports {
+		port0@0 {
+			network-leds = <&led8 &led9>;
+			status = "okay";
+		};
+
+		port1@1 {
+			network-leds = <&led6 &led7>;
+			status = "okay";
+		};
+
+		port2@2 {
+			network-leds = <&led4 &led5>;
+			status = "okay";
+		};
+
+		port3@3 {
+			network-leds = <&led2 &led3>;
+			status = "okay";
+		};
+
+		port4@4 {
+			network-leds = <&led0 &led1>;
+			status = "okay";
+		};
+
+		port6@6 {
+			status = "okay";
+		};
+
+		port7@7 {
+			status = "okay";
+		};
+	};
+};
+
+&legacy_leds {
+	adsl-led = <&led14>;
+	sec-adsl-led = <&led13>;
+	wan-data-led = <&led15>;
+	voip1-ok-led = <&led12>;
+	voip2-ok-led = <&led11>;
+	wl-sess-led = <&led10>;
+};
+
+&led_ctrl {
+	pinctrl-names = "default";
+	pinctrl-0 = <&ser_led_clk_pin_6 &ser_led_data_pin_8 &ser_led_mask_pin_11>;
+	serial-shifters-installed = <2>;
+	serial-data-polarity-high;
+	led0: serial-port_4-led_2 {
+		active_high;
+		activity = <LED_SPEED_GBE>;
+		link = <LED_SPEED_GBE>;
+		crossbar-output = <0>;
+		status = "okay";
+	};
+	led1: serial-port_4-led_0 {
+		active_high;
+		link = <(LED_SPEED_GBE)>;
+		crossbar-output = <1>;
+		status = "okay";
+	};
+	led2: serial-port_3-led_2 {
+		active_high;
+		activity = <LED_SPEED_GBE>;
+		link = <LED_SPEED_GBE>;
+		crossbar-output = <2>;
+		status = "okay";
+	};
+	led3: serial-port_3-led_0 {
+		active_high;
+		link = <(LED_SPEED_GBE)>;
+		crossbar-output = <3>;
+		status = "okay";
+	};
+	led4: serial-port_2-led_2 {
+		active_high;
+		activity = <LED_SPEED_GBE>;
+		link = <LED_SPEED_GBE>;
+		crossbar-output = <4>;
+		status = "okay";
+	};
+	led5: serial-port_2-led_0 {
+		active_high;
+		link = <(LED_SPEED_GBE)>;
+		crossbar-output = <5>;
+		status = "okay";
+	};
+	led6: serial-port_1-led_2 {
+		active_high;
+		activity = <LED_SPEED_GBE>;
+		link = <LED_SPEED_GBE>;
+		crossbar-output = <6>;
+		status = "okay";
+	};
+	led7: serial-port_1-led_0 {
+		active_high;
+		link = <(LED_SPEED_GBE)>;
+		crossbar-output = <7>;
+		status = "okay";
+	};
+	led8: serial-port_0-led_2 {
+		active_high;
+		activity = <LED_SPEED_GBE>;
+		link = <LED_SPEED_GBE>;
+		crossbar-output = <8>;
+		status = "okay";
+	};
+	led9: serial-port_0-led_0 {
+		active_high;
+		link = <(LED_SPEED_GBE)>;
+		crossbar-output = <9>;
+		status = "okay";
+	};
+	led10: sw_serial_led_1 {
+		active_high; 
+		label = "WiFi";
+		crossbar-output = <10>;
+		status = "okay";
+	};
+	led11: sw_serial_led_4 {
+		active_high; 
+		label = "VOIP_2";
+		crossbar-output = <11>;
+		status = "okay";
+	};
+	led12: sw_serial_led_7 {
+		active_high; 
+		label = "VOIP_1";
+		crossbar-output = <12>;
+		status = "okay";
+	};
+	led13: sw_serial_led_10 {
+		active_high; 
+		label = "DSL_2";
+		crossbar-output = <13>;
+		status = "okay";
+	};
+	led14: sw_serial_led_13 {
+		active_high; 
+		label = "DSL_1";
+		crossbar-output = <14>;
+		status = "okay";
+	};
+	led15: serial_dsl_act_0 {
+		active_high; 
+		label = "INET";
+		crossbar-output = <15>;
+		status = "okay";
+	};
+};
+&bcm_voice{
+	sliclist = SLICSLAC_LIST_COMMON_NOFXO;
+};
+
+&hsspi {
+	voice0 {
+		pinctrl-0 = <&hs_spim_ss_1_b_pin_20>;
+		pinctrl-names = "default";
+		compatible = "bcm-spi-voice";
+		reg = <1>; /* chip select 1 */
+		spi-max-frequency = <1024000>;
+		reset-gpio = <&gpioc 02 GPIO_ACTIVE_LOW>;
+		spi-index = <0>;/* voice header index */
+	};
+};
+
+&vreg_sync {
+		pinctrl-names = "default";
+		pinctrl-0 = <&vreg_sync_pin_10>;
+		vreg_sync_gpio = <10>;
+};
+
+&hs_uart0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&a_hs_uart_cts_n_pin_0 &a_hs_uart_rts_n_pin_4 &a_hs_uart_sdin_pin_7 &a_hs_uart_sdout_pin_9>;
+	status = "okay";
+};
+&uart1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&b_uart1_sdin_pin_66 &b_uart1_sdout_pin_65>;
+	status = "okay";
+};
+
+&pincontroller {
+	pinctrl-names = "default";
+	pinctrl-0 = <&a_pps_pin_1 &d_ntr_inout_pin_54>;
+};

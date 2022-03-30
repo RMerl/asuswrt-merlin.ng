@@ -1,0 +1,653 @@
+diff --git a/Makefile b/Makefile
+index 6aa4e9a..b2977f6 100644
+--- a/Makefile
++++ b/Makefile
+@@ -80,19 +80,31 @@ else
+ endif
+ export Q
+ 
++ifeq ($(strip $(BRCM_CHIP)),63138)
++OPTIMIZE_LVL	=	O0
++MARCH	=	armv7-a
++ASFLAGS +=	-mfpu=vfpv3-d16 -mcpu=cortex-a9
++else
++ifeq ($(strip $(ARCH)),aarch32)
++ASFLAGS +=	-mfpu=vfpv3-d16
++endif
++OPTIMIZE_LVL	=	Os
++MARCH	=	armv8-a
++endif
++
+ # Process Debug flag
+ $(eval $(call add_define,DEBUG))
+ ifneq (${DEBUG}, 0)
+         BUILD_TYPE	:=	debug
+-        TF_CFLAGS	+= 	-g
+-        ASFLAGS		+= 	-g -Wa,--gdwarf-2
++        TF_CFLAGS	+= 	-g -O0
++        ASFLAGS		+= 	-g -O0 -Wa,--gdwarf-2
+         # Use LOG_LEVEL_INFO by default for debug builds
+-        LOG_LEVEL	:=	40
++        LOG_LEVEL	:=	0
+ else
+         BUILD_TYPE	:=	release
+         $(eval $(call add_define,NDEBUG))
+         # Use LOG_LEVEL_NOTICE by default for release builds
+-        LOG_LEVEL	:=	20
++        LOG_LEVEL	:=	0
+ endif
+ 
+ # Default build string (git branch and commit)
+@@ -127,20 +139,20 @@ NM			:=	${CROSS_COMPILE}nm
+ PP			:=	${CROSS_COMPILE}gcc -E
+ 
+ ifeq ($(notdir $(CC)),armclang)
+-TF_CFLAGS_aarch32	=	-target arm-arm-none-eabi -march=armv8-a
+-TF_CFLAGS_aarch64	=	-target aarch64-arm-none-eabi -march=armv8-a
++TF_CFLAGS_aarch32	=	-target arm-arm-none-eabi -march=$(MARCH)
++TF_CFLAGS_aarch64	=	-target aarch64-arm-none-eabi -march=$(MARCH)
+ else ifneq ($(findstring clang,$(notdir $(CC))),)
+ TF_CFLAGS_aarch32	=	-target armv8a-none-eabi
+ TF_CFLAGS_aarch64	=	-target aarch64-elf
+ else
+-TF_CFLAGS_aarch32	=	-march=armv8-a
+-TF_CFLAGS_aarch64	=	-march=armv8-a
++TF_CFLAGS_aarch32	=	-march=$(MARCH)
++TF_CFLAGS_aarch64	=	-march=$(MARCH)
+ endif
+ 
+ TF_CFLAGS_aarch64	+=	-mgeneral-regs-only -mstrict-align
+ 
+-ASFLAGS_aarch32		=	-march=armv8-a
+-ASFLAGS_aarch64		=	-march=armv8-a
++ASFLAGS_aarch32		=	-march=$(MARCH)
++ASFLAGS_aarch64		=	-march=$(MARCH)
+ 
+ CPPFLAGS		=	${DEFINES} ${INCLUDES} -nostdinc		\
+ 				-Wmissing-include-dirs -Werror
+@@ -149,7 +161,7 @@ ASFLAGS			+=	$(CPPFLAGS) $(ASFLAGS_$(ARCH))			\
+ 				-Wa,--fatal-warnings
+ TF_CFLAGS		+=	$(CPPFLAGS) $(TF_CFLAGS_$(ARCH))		\
+ 				-ffreestanding -fno-builtin -Wall -std=gnu99	\
+-				-Os -ffunction-sections -fdata-sections
++				-$(OPTIMIZE_LVL) -ffunction-sections -fdata-sections
+ 
+ TF_LDFLAGS		+=	--fatal-warnings -O1
+ TF_LDFLAGS		+=	--gc-sections
+@@ -211,14 +223,13 @@ SPDS			:=	$(sort $(filter-out none, $(patsubst services/spd/%,%,$(wildcard servi
+ # Platforms providing their own TBB makefile may override this value
+ INCLUDE_TBBR_MK		:=	1
+ 
+-
+ ################################################################################
+ # Include SPD Makefile if one has been specified
+ ################################################################################
+ 
+ ifneq (${SPD},none)
+ ifeq (${ARCH},aarch32)
+-	$(error "Error: SPD is incompatible with AArch32.")
++#	$(error "Error: SPD is incompatible with AArch32.")
+ endif
+ ifdef EL3_PAYLOAD_BASE
+         $(warning "SPD and EL3_PAYLOAD_BASE are incompatible build options.")
+@@ -464,7 +475,8 @@ $(eval $(call assert_numeric,ARM_ARCH_MINOR))
+ # This is done after including the platform specific makefile to allow the
+ # platform to overwrite the default options
+ ################################################################################
+-
++$(eval $(call add_define,PLATFORM_FLAVOR_${BRCM_CHIP}))
++$(eval $(call add_define,_BCM9${BRCM_CHIP}_))
+ $(eval $(call add_define,ARM_CCI_PRODUCT_ID))
+ $(eval $(call add_define,ARM_ARCH_MAJOR))
+ $(eval $(call add_define,ARM_ARCH_MINOR))
+diff --git a/bl31/aarch64/bl31_entrypoint.S b/bl31/aarch64/bl31_entrypoint.S
+index 419927d..ca53d36 100644
+--- a/bl31/aarch64/bl31_entrypoint.S
++++ b/bl31/aarch64/bl31_entrypoint.S
+@@ -55,6 +55,10 @@ func bl31_entrypoint
+ 	mov	x0, x20
+ 	mov	x1, x21
+ #else
++	/* Save parameters */
++	mov	x20, x0
++	mov	x21, x1
++
+ 	/* ---------------------------------------------------------------------
+ 	 * For RESET_TO_BL31 systems which have a programmable reset address,
+ 	 * bl31_entrypoint() is executed only on the cold boot path so we can
+@@ -75,8 +79,10 @@ func bl31_entrypoint
+ 	 * arguments passed to the platform layer to reflect that.
+ 	 * ---------------------------------------------------------------------
+ 	 */
+-	mov	x0, 0
+-	mov	x1, 0
++
++	/* Restore parameters */
++	mov	x0, x20
++	mov	x1, x21
+ #endif /* RESET_TO_BL31 */
+ 
+ 	/* ---------------------------------------------
+diff --git a/bl31/aarch64/runtime_exceptions.S b/bl31/aarch64/runtime_exceptions.S
+index 45b0213..683447e 100644
+--- a/bl31/aarch64/runtime_exceptions.S
++++ b/bl31/aarch64/runtime_exceptions.S
+@@ -292,8 +292,8 @@ smc_handler32:
+ smc_handler64:
+ 	/*
+ 	 * Populate the parameters for the SMC handler.
+-	 * We already have x0-x4 in place. x5 will point to a cookie (not used
+-	 * now). x6 will point to the context structure (SP_EL3) and x7 will
++	 * We already have x0-x4 in place. x5 will point to a cookie (entry
++	 * addr). x6 will point to the context structure (SP_EL3) and x7 will
+ 	 * contain flags we need to pass to the handler Hence save x5-x7.
+ 	 *
+ 	 * Note: x4 only needs to be preserved for AArch32 callers but we do it
+@@ -305,7 +305,9 @@ smc_handler64:
+ 	/* Save rest of the gpregs and sp_el0*/
+ 	save_x18_to_x29_sp_el0
+ 
+-	mov	x5, xzr
++
++	/* Pass SMC calling address to service handler */
++	mrs	x5, elr_el3
+ 	mov	x6, sp
+ 
+ 	/* Get the unique owning entity number */
+diff --git a/bl32/sp_min/aarch32/entrypoint.S b/bl32/sp_min/aarch32/entrypoint.S
+index b3fccde..5bd9f3e 100644
+--- a/bl32/sp_min/aarch32/entrypoint.S
++++ b/bl32/sp_min/aarch32/entrypoint.S
+@@ -68,6 +68,8 @@ func sp_min_entrypoint
+ 	mov	r0, r11
+ 	mov	r1, r12
+ #else
++	mov	r6, r0
++	mov	r7, r1
+ 	/* ---------------------------------------------------------------------
+ 	 * For RESET_TO_SP_MIN systems which have a programmable reset address,
+ 	 * sp_min_entrypoint() is executed only on the cold boot path so we can
+@@ -88,13 +90,12 @@ func sp_min_entrypoint
+ 	 * Zero the arguments passed to the platform layer to reflect that.
+ 	 * ---------------------------------------------------------------------
+ 	 */
+-	mov	r0, #0
+-	mov	r1, #0
++	mov	r0, r6
++	mov	r1, r7
+ #endif /* RESET_TO_SP_MIN */
+ 
+ 	bl	sp_min_early_platform_setup
+ 	bl	sp_min_plat_arch_setup
+-
+ 	/* Jump to the main function */
+ 	bl	sp_min_main
+ 
+@@ -127,6 +128,28 @@ endfunc sp_min_entrypoint
+  * SMC handling function for SP_MIN.
+  */
+ func handle_smc
++#if defined(PLATFORM_FLAVOR_63138)
++	/* following is needed to support cortex-a9 */
++	// save r0,r1 in the stack beyond the context structure
++	str	r0, [sp, #SMC_CTX_SIZE]
++	str	r1, [sp, #SMC_CTX_SIZE + 4]
++	// check r14, if the smc call is coming from Linux
++	ldr	r0, =0x80000000
++	ands	r0, r0, r14
++	ldrne	r0, [sp, #SMC_CTX_SIZE]
++	ldrne	r1, [sp, #SMC_CTX_SIZE + 4]
++	bne	smc_from_os
++	// check if the smc call is coming from contex save/restore code
++	ldr	r0, [r14]
++	ldr	r1, =0xFFFFFFFF
++	cmp	r0, r1
++	ldr	r0, [sp, #SMC_CTX_SIZE]
++	ldr	r1, [sp, #SMC_CTX_SIZE + 4]
++	addeq	r14, r14, #4
++	moveq	pc, r14
++	nop
++smc_from_os:
++#endif
+ 	/* On SMC entry, `sp` points to `smc_ctx_t`. Save `lr`. */
+ 	str	lr, [sp, #SMC_CTX_LR_MON]
+ 
+@@ -210,8 +233,13 @@ func sp_min_warm_entrypoint
+ 	 * enter coherency (as CPUs already are); and there's no reason to have
+ 	 * caches disabled either.
+ 	 */
++#if defined(PLATFORM_FLAVOR_63138)
++	bl	a9_l1cache_inval_d
++	bl	a9_bl32_plat_enable_mmu
++#else
+ 	mov	r0, #DISABLE_DCACHE
+ 	bl	bl32_plat_enable_mmu
++#endif
+ 
+ #if HW_ASSISTED_COHERENCY || WARMBOOT_ENABLE_DCACHE_EARLY
+ 	ldcopr	r0, SCTLR
+@@ -220,6 +248,10 @@ func sp_min_warm_entrypoint
+ 	isb
+ #endif
+ 
++#if defined(SPD_opteed)
++	bl opteed_setup
++#endif
++
+ 	bl	sp_min_warm_boot
+ 	bl	smc_get_next_ctx
+ 	/* r0 points to `smc_ctx_t` */
+diff --git a/common/aarch32/debug.S b/common/aarch32/debug.S
+index 2e60bd5..1f410ea 100644
+--- a/common/aarch32/debug.S
++++ b/common/aarch32/debug.S
+@@ -83,6 +83,7 @@ assert_msg2:
+  * ---------------------------------------------------------------------------
+  */
+ func asm_assert
++#if !defined(PLATFORM_FLAVOR_63138)
+ #if LOG_LEVEL >= LOG_LEVEL_INFO
+ 	/*
+ 	 * Only print the output if LOG_LEVEL is higher or equal to
+@@ -130,6 +131,7 @@ dec_print_loop:
+ 1:
+ #endif /* LOG_LEVEL >= LOG_LEVEL_INFO */
+ 	no_ret	plat_panic_handler
++#endif
+ endfunc asm_assert
+ #endif /* ENABLE_ASSERTIONS */
+ 
+diff --git a/common/bl_common.c b/common/bl_common.c
+index cad4de9..18cd100 100644
+--- a/common/bl_common.c
++++ b/common/bl_common.c
+@@ -95,10 +95,10 @@ static unsigned int choose_mem_pos(uintptr_t mem_start, uintptr_t mem_end,
+ 
+ 	if (top_chunk_size < bottom_chunk_size) {
+ 		*small_chunk_size = top_chunk_size;
+-		return TOP;
++		return TOP_MEM;
+ 	} else {
+ 		*small_chunk_size = bottom_chunk_size;
+-		return BOTTOM;
++		return BOTTOM_MEM;
+ 	}
+ }
+ 
+@@ -132,12 +132,12 @@ void reserve_mem(uintptr_t *free_base, size_t *free_size,
+ 	reserved_size = size + discard_size;
+ 	*free_size -= reserved_size;
+ 
+-	if (pos == BOTTOM)
++	if (pos == BOTTOM_MEM)
+ 		*free_base = addr + size;
+ 
+ 	VERBOSE("Reserved 0x%zx bytes (discarded 0x%zx bytes %s)\n",
+ 	     reserved_size, discard_size,
+-	     pos == TOP ? "above" : "below");
++	     pos == TOP_MEM ? "above" : "below");
+ }
+ 
+ static void dump_load_info(uintptr_t image_load_addr,
+diff --git a/drivers/delay_timer/delay_timer.c b/drivers/delay_timer/delay_timer.c
+index 43f5af7..ba8f47d 100644
+--- a/drivers/delay_timer/delay_timer.c
++++ b/drivers/delay_timer/delay_timer.c
+@@ -19,6 +19,7 @@ static const timer_ops_t *ops;
+  ***********************************************************/
+ void udelay(uint32_t usec)
+ {
++#if !defined (PLATFORM_FLAVOR_63138)
+ 	assert(ops != NULL &&
+ 		(ops->clk_mult != 0) &&
+ 		(ops->clk_div != 0) &&
+@@ -40,6 +41,7 @@ void udelay(uint32_t usec)
+ 		delta = start - ops->get_timer_value(); /* Decreasing counter */
+ 
+ 	} while (delta < total_delta);
++#endif
+ }
+ 
+ /***********************************************************
+diff --git a/include/common/aarch32/el3_common_macros.S b/include/common/aarch32/el3_common_macros.S
+index 6fc00dd..5680fd9 100644
+--- a/include/common/aarch32/el3_common_macros.S
++++ b/include/common/aarch32/el3_common_macros.S
+@@ -103,10 +103,16 @@
+ 	 *  from all exception levels.
+ 	 * ---------------------------------------------------------------------
+ 	 */
++#if defined (PLATFORM_FLAVOR_63138)
++	bl	plat_my_core_pos
++	cmp	r0, #0
++	ldreq	r0, =(FPEXC_RESET_VAL | FPEXC_EN_BIT)
++	vmsreq	FPEXC, r0
++#else
+ 	ldr	r0, =(FPEXC_RESET_VAL | FPEXC_EN_BIT)
+ 	vmsr	FPEXC, r0
+ 	isb
+-
++#endif
+ 	/* ---------------------------------------------------------------------
+ 	 * Initialise SDCR, setting all the fields rather than relying on hw.
+ 	 *
+@@ -114,8 +120,9 @@
+ 	 * Secure EL1 are disabled.
+ 	 * ---------------------------------------------------------------------
+ 	 */
+-	ldr	r0, =(SDCR_RESET_VAL | SDCR_SPD(SDCR_SPD_DISABLE))
+-	stcopr	r0, SDCR
++	// Following not supported in native 32 bit platforms
++	// ldr	r0, =(SDCR_RESET_VAL | SDCR_SPD(SDCR_SPD_DISABLE))
++	// stcopr	r0, SDCR
+ 
+ 	.endm
+ 
+diff --git a/include/common/aarch64/asm_macros.S b/include/common/aarch64/asm_macros.S
+index 528e29e..70283e9 100644
+--- a/include/common/aarch64/asm_macros.S
++++ b/include/common/aarch64/asm_macros.S
+@@ -53,7 +53,7 @@
+ 	 */
+ 	.macro vector_base  label
+ 	.section .vectors, "ax"
+-	.align 11, 0
++	.align 11
+ 	\label:
+ 	.endm
+ 
+@@ -66,7 +66,7 @@
+ 	 */
+ 	.macro vector_entry  label
+ 	.section .vectors, "ax"
+-	.align 7, 0
++	.align 7
+ 	\label:
+ 	.endm
+ 
+diff --git a/include/common/bl_common.h b/include/common/bl_common.h
+index 15ffc57..a6d85b5 100644
+--- a/include/common/bl_common.h
++++ b/include/common/bl_common.h
+@@ -17,8 +17,8 @@
+  * Constants to identify the location of a memory region in a given memory
+  * layout.
+ ******************************************************************************/
+-#define TOP	0x1
+-#define BOTTOM	!TOP
++#define TOP_MEM	0x1
++#define BOTTOM_MEM	!TOP_MEM
+ 
+ /*
+  * The following are used for image state attributes.
+diff --git a/include/lib/aarch32/arch.h b/include/lib/aarch32/arch.h
+index 661dbf8..58fe168 100644
+--- a/include/lib/aarch32/arch.h
++++ b/include/lib/aarch32/arch.h
+@@ -207,6 +207,7 @@
+ #define NASCR_CP11_BIT		(1 << 11)
+ #define NASCR_CP10_BIT		(1 << 10)
+ #endif
++#define NSACR_SMP		(1 << 18)
+ #define NSACR_CP11_BIT		(1 << 11)
+ #define NSACR_CP10_BIT		(1 << 10)
+ #define NSACR_IMP_DEF_MASK	(0x7 << 16)
+diff --git a/include/lib/aarch32/smcc_macros.S b/include/lib/aarch32/smcc_macros.S
+index 7edf410..1bd1090 100644
+--- a/include/lib/aarch32/smcc_macros.S
++++ b/include/lib/aarch32/smcc_macros.S
+@@ -7,7 +7,135 @@
+ #define __SMCC_MACROS_S__
+ 
+ #include <arch.h>
++#if defined(PLATFORM_FLAVOR_63138)
++/*
++ * Macro to save the General purpose registers (r0 - r12), the banked
++ * spsr, lr, sp registers and the `scr` register to the SMC context on entry
++ * due a SMC call. The `lr` of the current mode (monitor) is expected to be
++ * already saved. The `sp` must point to the `smc_ctx_t` to save to.
++ */
++	.macro smcc_save_gp_mode_regs
++	/* Save r0 - r12 in the SMC context */
++	stm	sp, {r0-r12}
++	/* Save current SPSR */
++	mrs	r4, spsr
++	str	r4, [sp, #SMC_CTX_SPSR_MON]
++	/* lr_mon is already saved by caller */
++	ldcopr	r0, SCR
++	str	r0, [sp, #SMC_CTX_SCR]
++	bic	r0, r0, #(SCR_NS_BIT | SCR_FIQ_BIT) /* Clear NS and FIQ bit in SCR */
++	stcopr	r0, SCR
++
++	mov	r0, sp
++	add	r0, r0, #SMC_CTX_SP_USR
++	/* Save the banked registers including the current SPSR and LR */
++	cps	#MODE32_sys
++	mov	r4, sp
++	mov	r5, lr
++	cps	#MODE32_irq
++	mrs	r6, spsr
++	mov	r7, sp
++	mov	r8, lr
++	cps	#MODE32_fiq
++	mrs	r9, spsr
++	mov	r10, sp
++	mov	r11, lr
++	cps	#MODE32_svc
++	mrs	r12, spsr
++	stm	r0!, {r4-r12}
++        
++	mov	r4, sp
++	mov	r5, lr
++	cps	#MODE32_abt
++	mrs	r6, spsr
++	mov	r7, sp
++	mov	r8, lr
++	cps	#MODE32_und
++	mrs	r9, spsr
++	mov	r10, sp
++	mov	r11, lr
++	/* Switch back to monitor */
++	.word	0xE1600070 /* opcode to smc call */
++	.word	0xFFFFFFFF
++	nop
++	ldr	r12, [sp, #SMC_CTX_SPSR_MON]
++	stm	r0!, {r4-r12}
++	.endm
++
++/*
++ * Macro to restore the `smc_ctx_t`, which includes the General purpose
++ * registers and banked mode registers, and exit from the monitor mode.
++ * r0 must point to the `smc_ctx_t` to restore from.
++ */
++	.macro monitor_exit
++
++        
++	/*
++	 * Save the current sp and restore the smc context
++	 * pointer to sp which will be used for handling the
++	 * next SMC.
++	 */
++	str	sp, [r0, #SMC_CTX_SP_MON]
++	mov	sp, r0
++
++	/*
++	 * Restore SCR first so that we access the right banked register
++	 * when the other mode registers are restored.
++	 */
++	/* Restore the banked registers including the current SPSR */
++	add	r1, r0, #SMC_CTX_SP_USR
++	ldm	r1!, {r4-r12}
++	cps	#MODE32_sys
++	mov	sp, r4
++	mov	lr, r5
++	cps	#MODE32_irq
++	msr	spsr, r6
++	mov	sp, r7
++	mov	lr, r8
++	cps	#MODE32_fiq
++	msr	spsr, r9
++	mov	sp, r10
++	mov	lr, r11
++	cps	#MODE32_svc
++	msr	spsr, r12
++	ldm	r1!, {r4-r12}
+ 
++	/*
++	 * Use the `_fsxc` suffix explicitly to instruct the assembler
++	 * to update all the 32 bits of SPSR. Else, by default, the
++	 * assembler assumes `_fc` suffix which only modifies
++	 * f->[31:24] and c->[7:0] bits of SPSR.
++	 */
++
++	mov	sp, r4
++	mov	lr, r5
++	cps	#MODE32_abt
++	msr	spsr, r6
++	mov	sp, r7
++	mov	lr, r8
++	cps	#MODE32_und
++	msr	spsr, r9
++	mov	sp, r10
++	mov	lr, r11
++	/* Switch back to monitor */
++	.word	0xE1600070 /* opcode to smc call */
++	.word	0xFFFFFFFF
++	/* Restore SPSR MON */
++	msr	spsr_fsxc, r12
++	/* Restore the LR */
++	ldr	lr, [r0, #SMC_CTX_LR_MON]
++	/*
++	 * Restore SCR
++	 */
++	ldr	r1, [r0, #SMC_CTX_SCR]
++	stcopr	r1, SCR
++	isb
++
++	/* Restore the rest of the general purpose registers */
++	ldm	r0, {r0-r12}
++	movs	pc, lr
++	.endm
++#else
+ /*
+  * Macro to save the General purpose registers (r0 - r12), the banked
+  * spsr, lr, sp registers and the `scr` register to the SMC context on entry
+@@ -107,5 +235,5 @@
+ 	ldm	r0, {r0-r12}
+ 	eret
+ 	.endm
+-
++#endif
+ #endif /* __SMCC_MACROS_S__ */
+diff --git a/include/lib/cpus/aarch64/cortex_a53.h b/include/lib/cpus/aarch64/cortex_a53.h
+index 6627dcf..46b696d 100644
+--- a/include/lib/cpus/aarch64/cortex_a53.h
++++ b/include/lib/cpus/aarch64/cortex_a53.h
+@@ -9,6 +9,7 @@
+ 
+ /* Cortex-A53 midr for revision 0 */
+ #define CORTEX_A53_MIDR			U(0x410FD030)
++#define CORTEX_B53_MIDR			U(0x420F1000)
+ 
+ /* Retention timer tick definitions */
+ #define RETENTION_ENTRY_TICKS_2		U(0x1)
+diff --git a/lib/aarch32/misc_helpers.S b/lib/aarch32/misc_helpers.S
+index 77cf6cd..05ebe8b 100644
+--- a/lib/aarch32/misc_helpers.S
++++ b/lib/aarch32/misc_helpers.S
+@@ -23,7 +23,11 @@ func smc
+ 	 * Clobbers: r4-r6
+ 	 */
+ 	ldm	sp, {r4, r5, r6}
++#if defined (PLATFORM_FLAVOR_63138)
++	.word	0xE1600070 /* opcode to smc call */
++#else
+ 	smc	#0
++#endif
+ endfunc smc
+ 
+ /* -----------------------------------------------------------------------
+diff --git a/lib/cpus/aarch64/cortex_a53.S b/lib/cpus/aarch64/cortex_a53.S
+index 7a17f8f..6e99af2 100644
+--- a/lib/cpus/aarch64/cortex_a53.S
++++ b/lib/cpus/aarch64/cortex_a53.S
+@@ -304,7 +304,7 @@ func cortex_a53_cpu_reg_dump
+ 	ret
+ endfunc cortex_a53_cpu_reg_dump
+ 
+-declare_cpu_ops cortex_a53, CORTEX_A53_MIDR, \
++declare_cpu_ops cortex_a53, CORTEX_B53_MIDR, \
+ 	cortex_a53_reset_func, \
+ 	cortex_a53_core_pwr_dwn, \
+ 	cortex_a53_cluster_pwr_dwn
+diff --git a/lib/locks/exclusive/aarch32/spinlock.S b/lib/locks/exclusive/aarch32/spinlock.S
+index bc77bc9..15a0416 100644
+--- a/lib/locks/exclusive/aarch32/spinlock.S
++++ b/lib/locks/exclusive/aarch32/spinlock.S
+@@ -26,6 +26,6 @@ endfunc spin_lock
+ 
+ func spin_unlock
+ 	mov	r1, #0
+-	stl	r1, [r0]
++	str	r1, [r0]
+ 	bx	lr
+ endfunc spin_unlock
+diff --git a/lib/psci/psci_setup.c b/lib/psci/psci_setup.c
+index f70e34d..6713a84 100644
+--- a/lib/psci/psci_setup.c
++++ b/lib/psci/psci_setup.c
+@@ -259,8 +259,10 @@ int psci_setup(const psci_lib_args_t *lib_args)
+  ******************************************************************************/
+ void psci_arch_setup(void)
+ {
++#if !defined (PLATFORM_FLAVOR_63138)
+ 	/* Program the counter frequency */
+ 	write_cntfrq_el0(plat_get_syscnt_freq2());
++#endif
+ 
+ 	/* Initialize the cpu_ops pointer. */
+ 	init_cpu_ops();
+diff --git a/services/spd/opteed/opteed_common.c b/services/spd/opteed/opteed_common.c
+index de9e809..4542c93 100644
+--- a/services/spd/opteed/opteed_common.c
++++ b/services/spd/opteed/opteed_common.c
+@@ -50,7 +50,10 @@ void opteed_init_optee_ep_state(struct entry_point_info *optee_entry_point,
+ 						      DAIF_FIQ_BIT |
+ 							DAIF_IRQ_BIT |
+ 							DAIF_ABT_BIT);
+-	zeromem(&optee_entry_point->args, sizeof(optee_entry_point->args));
++	/*
++		Do not clear the args, as it contains parameters for optee
++		zeromem(&optee_entry_point->args, sizeof(optee_entry_point->args));
++	*/
+ }
+ 
+ /*******************************************************************************
+diff --git a/services/spd/opteed/opteed_main.c b/services/spd/opteed/opteed_main.c
+index 418e482..2dad4e1 100644
+--- a/services/spd/opteed/opteed_main.c
++++ b/services/spd/opteed/opteed_main.c
+@@ -192,6 +192,7 @@ uint64_t opteed_smc_handler(uint32_t smc_fid,
+ 			 void *handle,
+ 			 uint64_t flags)
+ {
++	static uint64_t entry_addr = 0;
+ 	cpu_context_t *ns_cpu_context;
+ 	uint32_t linear_id = plat_my_core_pos();
+ 	optee_context_t *optee_ctx = &opteed_sp_context[linear_id];
+@@ -200,8 +201,14 @@ uint64_t opteed_smc_handler(uint32_t smc_fid,
+ 	/*
+ 	 * Determine which security state this SMC originated from
+ 	 */
+-
+ 	if (is_caller_non_secure(flags)) {
++
++		/* Determine the service is requested from known entry point */
++		if (entry_addr == 0)
++			entry_addr = (uint64_t)cookie ;
++		if (entry_addr != (uint64_t)cookie)
++			panic();
++
+ 		/*
+ 		 * This is a fresh request from the non-secure client.
+ 		 * The parameters are in x1 and x2. Figure out which

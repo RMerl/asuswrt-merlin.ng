@@ -1,0 +1,44 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * U-Boot addition to handle Dragonboard 820c pins
+ *
+ * (C) Copyright 2017 Jorge Ramirez-Ortiz <jorge.ramirez-ortiz@linaro.org>
+ */
+
+/ {
+	smem {
+		u-boot,dm-pre-reloc;
+	};
+
+	soc {
+		u-boot,dm-pre-reloc;
+
+		qcom,tlmm@1010000 {
+			u-boot,dm-pre-reloc;
+
+			uart {
+				u-boot,dm-pre-reloc;
+			};
+		};
+
+		clock-controller@300000 {
+			u-boot,dm-pre-reloc;
+		};
+
+		serial@75b0000 {
+			u-boot,dm-pre-reloc;
+		};
+	};
+};
+
+&pm8994_pon {
+	key_vol_down {
+		gpios = <&pm8994_pon 1 0>;
+		label = "key_vol_down";
+	};
+
+	key_power {
+		gpios = <&pm8994_pon 0 0>;
+		label = "key_power";
+	};
+};

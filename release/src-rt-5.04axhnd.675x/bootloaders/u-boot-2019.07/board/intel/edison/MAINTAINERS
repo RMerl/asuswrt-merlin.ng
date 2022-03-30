@@ -1,0 +1,6 @@
+Intel Edison Board
+M:	Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+S:	Maintained
+F:	board/intel/edison
+F:	include/configs/edison.h
+F:	configs/edison_defconfig

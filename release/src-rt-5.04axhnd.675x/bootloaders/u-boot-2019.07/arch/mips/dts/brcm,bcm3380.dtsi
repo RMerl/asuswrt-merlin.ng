@@ -1,0 +1,170 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2017 Álvaro Fernández Rojas <noltari@gmail.com>
+ */
+
+#include <dt-bindings/clock/bcm3380-clock.h>
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/reset/bcm3380-reset.h>
+#include "skeleton.dtsi"
+
+/ {
+	compatible = "brcm,bcm3380";
+
+	aliases {
+		spi0 = &spi;
+	};
+
+	cpus {
+		reg = <0x14e00000 0x4>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		u-boot,dm-pre-reloc;
+
+		cpu@0 {
+			compatible = "brcm,bcm3380-cpu", "mips,mips4Kc";
+			device_type = "cpu";
+			reg = <0>;
+			u-boot,dm-pre-reloc;
+		};
+
+		cpu@1 {
+			compatible = "brcm,bcm3380-cpu", "mips,mips4Kc";
+			device_type = "cpu";
+			reg = <1>;
+			u-boot,dm-pre-reloc;
+		};
+	};
+
+	clocks {
+		compatible = "simple-bus";
+		#address-cells = <1>;
+		#size-cells = <1>;
+		u-boot,dm-pre-reloc;
+
+		periph_osc: periph-osc {
+			compatible = "fixed-clock";
+			#clock-cells = <0>;
+			clock-frequency = <48000000>;
+			u-boot,dm-pre-reloc;
+		};
+
+		periph_clk0: periph-clk@14e00004 {
+			compatible = "brcm,bcm6345-clk";
+			reg = <0x14e00004 0x4>;
+			#clock-cells = <1>;
+		};
+
+		periph_clk1: periph-clk@14e00008 {
+			compatible = "brcm,bcm6345-clk";
+			reg = <0x14e00008 0x4>;
+			#clock-cells = <1>;
+		};
+	};
+
+	ubus {
+		compatible = "simple-bus";
+		#address-cells = <1>;
+		#size-cells = <1>;
+		u-boot,dm-pre-reloc;
+
+		memory-controller@12000000 {
+			compatible = "brcm,bcm6328-mc";
+			reg = <0x12000000 0x1000>;
+			u-boot,dm-pre-reloc;
+		};
+
+		periph_rst0: reset-controller@14e0008c {
+			compatible = "brcm,bcm6345-reset";
+			reg = <0x14e0008c 0x4>;
+			#reset-cells = <1>;
+		};
+
+		periph_rst1: reset-controller@14e00090 {
+			compatible = "brcm,bcm6345-reset";
+			reg = <0x14e00090 0x4>;
+			#reset-cells = <1>;
+		};
+
+		pll_cntl: syscon@14e00094 {
+			compatible = "syscon";
+			reg = <0x14e00094 0x4>;
+		};
+
+		syscon-reboot {
+			compatible = "syscon-reboot";
+			regmap = <&pll_cntl>;
+			offset = <0x0>;
+			mask = <0x1>;
+		};
+
+		wdt: watchdog@14e000dc {
+			compatible = "brcm,bcm6345-wdt";
+			reg = <0x14e000dc 0xc>;
+
+			clocks = <&periph_osc>;
+		};
+
+		wdt-reboot {
+			compatible = "wdt-reboot";
+			wdt = <&wdt>;
+		};
+
+		gpio0: gpio-controller@14e00100 {
+			compatible = "brcm,bcm6345-gpio";
+			reg = <0x14e00100 0x4>, <0x14e00108 0x4>;
+			gpio-controller;
+			#gpio-cells = <2>;
+
+			status = "disabled";
+		};
+
+		gpio1: gpio-controller@14e00104 {
+			compatible = "brcm,bcm6345-gpio";
+			reg = <0x14e00104 0x4>, <0x14e0010c 0x4>;
+			gpio-controller;
+			#gpio-cells = <2>;
+			ngpios = <3>;
+
+			status = "disabled";
+		};
+
+		uart0: serial@14e00200 {
+			compatible = "brcm,bcm6345-uart";
+			reg = <0x14e00200 0x18>;
+			clocks = <&periph_osc>;
+
+			status = "disabled";
+		};
+
+		uart1: serial@14e00220 {
+			compatible = "brcm,bcm6345-uart";
+			reg = <0x14e00220 0x18>;
+			clocks = <&periph_osc>;
+
+			status = "disabled";
+		};
+
+		spi: spi@14e02000 {
+			compatible = "brcm,bcm6358-spi";
+			reg = <0x14e02000 0x70c>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+			clocks = <&periph_clk0 BCM3380_CLK0_SPI>;
+			resets = <&periph_rst0 BCM3380_RST0_SPI>;
+			spi-max-frequency = <25000000>;
+			num-cs = <6>;
+
+			status = "disabled";
+		};
+
+		leds: led-controller@14e00f00 {
+			compatible = "brcm,bcm6328-leds";
+			reg = <0x14e00f00 0x1c>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+			status = "disabled";
+		};
+	};
+};

@@ -1,0 +1,7 @@
+Sandbox timer
+
+The sandbox timer device is an emulated device which gets time from
+host os.
+
+Required properties:
+  compatible: "sandbox,timer"

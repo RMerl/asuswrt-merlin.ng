@@ -1,0 +1,10 @@
+compatible = "brcm,bcmbca-usb-ctrl";
+
+reg-names = "usb-ctrl";
+reg = <USB_CTRL_ADDR USB_CTRL_SIZE>;
+
+status = "disabled";
+/* The following parameters must appear on board level dts file */
+/* xhci-enable; */ /* For boards with USB3 support */
+/* pwron-bias-pull-up; */ /* For boards with polarity high of pwrON */
+/* pwrflt-bias-pull-up; */ /* For boards with polarity high of pwrFLT */

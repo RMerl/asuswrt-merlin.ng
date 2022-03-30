@@ -1,0 +1,133 @@
+#include "63138.dtsi"
+#include "../bcm_voice.dtsi"
+#include "963138REF_RNC_leds.dtsi"
+
+/ {
+	memory_controller {
+		memcfg = <(BP_DDR_SPEED_800_11_11_11   | \
+			BP_DDR_TOTAL_SIZE_512MB  | \
+			BP_DDR_DEVICE_WIDTH_16)>;
+	};
+
+	buttons {
+		compatible = "brcm,buttons";
+		reset_button {
+			ext_irq = <&bca_extintr 32 BCA_GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_LEVEL)>;
+			press {
+				print = "Button Press -- Hold for 5s to do restore to default";
+			};
+			hold {
+				rst_to_dflt = <5>;
+			};
+			release {
+				reset = <0>;
+			};	
+		};
+		ses_button {
+			ext_irq = <&bca_extintr 33 BCA_GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_LEVEL)>;
+			release {
+				ses_short_period = <0>;
+				ses_long_period = <3>;
+			};
+		};
+	};
+	dect_reset:dect_reset {
+		compatible = "brcm,voice-dect-reset";
+		dectreset-gpio = <&gpioc 115 GPIO_ACTIVE_HIGH>;
+	};
+};
+
+&bcm_voice{
+	sliclist = SLICSLAC_LIST_COMMON_NOFXO;
+ };
+
+&hsspi {
+	status = "okay";
+	voice0 {
+		pinctrl-0 = <&a_spim_ss1_b_pin_127>;
+		pinctrl-names = "default";
+		compatible = "bcm-spi-voice";
+		reg = <1>; /* chip select 1 */
+		spi-max-frequency = <1024000>;
+		reset-gpio = <&gpioc 7 GPIO_ACTIVE_LOW>;
+		spi-index = <0>;/* voice header index */
+	};
+};
+
+&vreg_sync {
+		pinctrl-0 = <&vreg_clk_2_pin_37>;
+		pinctrl-names = "default";
+};
+
+&mdio_sf2 {
+	/* PHYs directly connected to SF2 */
+	gphy8:8 {
+		status = "okay";
+	};
+	gphy9:9 {
+		status = "okay";
+	};
+	gphya:a {
+		status = "okay";
+	};
+
+	/* PHYs connected to crossbar */
+	gphyb:b {
+		status = "okay";
+	};
+	gphyc:c {
+		status = "okay";
+	};
+
+	/* Crossbar groups */
+	xbar_grp0:0 {
+		phy-handle = <&gphyb>;
+		status = "okay";
+	};
+	xbar_grp2:2 {
+		phy-handle = <&gphyc>;
+		status = "okay";
+	};
+};
+
+&switch_sf2 {
+	ports {
+		/* ports connect directly */
+		sf2_port0@0 {
+			phy-handle = <&gphy8>;
+			network-leds = <&led0 &led1 &led28>;
+			status = "okay";
+		};
+
+		sf2_port1@1 {
+			phy-handle = <&gphy9>;
+			network-leds = <&led2 &led3 &led11>;
+			status = "okay";
+		};
+
+		sf2_port2@2 {
+			phy-handle = <&gphya>;
+			network-leds = <&led4 &led5 &led12>;
+			status = "okay";
+		};
+
+		/* ports connected to crossbar */
+		sf2_port3@3 {
+			phy-handle = <&xbar_grp0>;
+			network-leds = <&led6 &led7 &led13>;
+			status = "okay";
+		};
+	};
+};
+
+&switch0 {
+	ports {
+		
+		port0@0 {
+			phy-handle = <&xbar_grp2>;
+			phy-mode = "gmii";
+			network-leds = <&led20 &led21 &led22>;
+			status = "okay";
+		};
+	};
+};

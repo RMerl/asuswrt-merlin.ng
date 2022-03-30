@@ -1,0 +1,44 @@
+
+/ {
+
+    usb0a_pwrflt_pins: usb0a_pwrflt_pinmux {
+        pins = <121>;
+        function = <1>;
+    };
+
+    usb0a_pwron_pins: usb0a_pwron_pinmux {
+        pins = <122>;
+        function = <1>;
+    };
+
+    usb0b_pwrflt_pins: usb0b_pwrflt_pinmux {
+        pins = <123>;
+        function = <2>;
+    };
+
+    usb0b_pwron_pins: usb0b_pwron_pinmux {
+        pins = <124>;
+        function = <2>;
+    };
+
+    usb1a_pwrflt_pins: usb1a_pwrflt_pinmux {
+        pins = <123>;
+        function = <1>;
+    };
+
+    usb1a_pwron_pins: usb1a_pwron_pinmux {
+        pins = <124>;
+        function = <1>;
+    };
+
+    usb1b_pwrflt_pins: usb1b_pwrflt_pinmux {
+        pins = <121>;
+        function = <2>;
+    };
+
+    usb1b_pwron_pins: usb1b_pwron_pinmux {
+        pins = <122>;
+        function = <2>;
+    };
+
+};

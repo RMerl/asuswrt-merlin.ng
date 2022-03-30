@@ -1,0 +1,19 @@
+if TARGET_STM32F469_DISCOVERY
+
+config SYS_BOARD
+	string
+	default "stm32f469-discovery"
+
+config SYS_VENDOR
+	string
+	default "st"
+
+config SYS_SOC
+	string
+	default "stm32f4"
+
+config SYS_CONFIG_NAME
+	string
+	default "stm32f469-discovery"
+
+endif

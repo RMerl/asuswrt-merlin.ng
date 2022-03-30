@@ -1,0 +1,7 @@
+MT7623
+M:	Ryder Lee <ryder.lee@mediatek.com>
+M:	Weijie Gao <weijie.gao@mediatek.com>
+S:	Maintained
+F:	board/mediatek/mt7623
+F:	include/configs/mt7623.h
+F:	configs/mt7623n_bpir2_defconfig

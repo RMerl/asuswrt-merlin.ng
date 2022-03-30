@@ -1,0 +1,8 @@
+EL6X BOARD
+M:	Stefano Babic <sbabic@denx.de>
+S:	Maintained
+F:	board/el/el6x/
+F:	include/configs/zc5202.h
+F:	include/configs/zc5601.h
+F:	configs/zc5202_defconfig
+F:	configs/zc5601_defconfig

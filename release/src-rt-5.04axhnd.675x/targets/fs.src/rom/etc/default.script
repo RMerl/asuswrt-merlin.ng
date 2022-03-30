@@ -1,0 +1,67 @@
+#!/bin/sh
+# udhcpc script
+
+RESOLV_CONF="/etc/resolv.conf"
+
+[ -n "$1" ] || { echo "Error: should be called from udhcpc"; exit 1; }
+
+NETMASK=""
+if [ -e /bin/ip ] ; then
+	[ -n "$subnet" ] && NETMASK="/$subnet"
+else
+	[ -n "$subnet" ] && NETMASK="netmask $subnet"
+fi
+BROADCAST="broadcast +"
+[ -n "$broadcast" ] && BROADCAST="broadcast $broadcast"
+
+case "$1" in
+	deconfig)
+		echo "Clearing IP addresses on $interface, upping it"
+		if [ -e /bin/ip ] ; then
+			ip -4 addr flush dev $interface
+			ip link set dev $interface up
+		else
+			ifconfig $interface 0.0.0.0
+		fi
+		;;
+
+	renew|bound)
+		echo "Setting IP address $ip on $interface"
+		if [ -e /bin/ip ] ; then
+			ip addr add $ip$NETMASK $BROADCAST dev $interface
+		else
+			ifconfig $interface $ip $NETMASK $BROADCAST
+		fi
+
+        # You mgiht delet the following section if don't want to touch routing.
+		if [ -n "$router" ] ; then
+			echo "Deleting routers"
+			while route del default gw 0.0.0.0 dev $interface ; do
+				:
+			done
+
+			metric=0
+			for i in $router ; do
+				echo "Adding router $i"
+				if [ "$subnet" = "255.255.255.255" ]; then
+	# special case for /32 subnets:
+	# /32 instructs kernel to always use routing for all outgoing packets
+	# (they can never be sent to local subnet - there is no local subnet for /32).
+	# Used in datacenters, avoids the need for private ip-addresses between two hops.
+					ip route add $i dev $interface
+				fi
+				route add default gw $i dev $interface metric $((metric++))
+			done
+		fi
+
+        # Configure the /etc/resolv.conf
+        # You mgiht delet the following section if don't want to touch DNS setting.
+		echo "" > $RESOLV_CONF
+		for i in $dns ; do
+			echo " Adding DNS server $i"
+			echo "nameserver $i" >> $RESOLV_CONF
+		done
+		;;
+esac
+
+exit 0

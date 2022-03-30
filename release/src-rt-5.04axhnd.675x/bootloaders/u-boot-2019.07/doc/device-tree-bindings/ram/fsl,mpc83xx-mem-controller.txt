@@ -1,0 +1,314 @@
+MPC83xx RAM controller
+
+This driver supplies support for the embedded RAM controller on MCP83xx-series
+SoCs.
+
+For static configuration mode, each controller node should have child nodes
+describing the actual RAM modules installed.
+
+Controller node
+===============
+
+Required properties:
+- compatible:                Must be "fsl,mpc83xx-mem-controller"
+- reg:                       The address of the RAM controller's register space
+- #address-cells:            Must be 2
+- #size-cells:               Must be 1
+- driver_software_override:  DDR driver software override is enabled (1) or
+                             disabled (0)
+- p_impedance_override:      DDR driver software p-impedance override; possible
+                             values:
+                              * DSO_P_IMPEDANCE_HIGHEST_Z
+                              * DSO_P_IMPEDANCE_MUCH_HIGHER_Z
+                              * DSO_P_IMPEDANCE_HIGHER_Z
+                              * DSO_P_IMPEDANCE_NOMINAL
+                              * DSO_P_IMPEDANCE_LOWER_Z
+- n_impedance_override:      DDR driver software n-impedance override; possible
+                             values:
+                              * DSO_N_IMPEDANCE_HIGHEST_Z
+                              * DSO_N_IMPEDANCE_MUCH_HIGHER_Z
+                              * DSO_N_IMPEDANCE_HIGHER_Z
+                              * DSO_N_IMPEDANCE_NOMINAL
+                              * DSO_N_IMPEDANCE_LOWER_Z
+- odt_termination_value:     ODT termination value for I/Os; possible values:
+                              * ODT_TERMINATION_75_OHM
+                              * ODT_TERMINATION_150_OHM
+- ddr_type:                  Selects voltage level for DDR pads; possible
+                             values:
+                              * DDR_TYPE_DDR2_1_8_VOLT
+                              * DDR_TYPE_DDR1_2_5_VOLT
+- mvref_sel:                 Determine where MVREF_SEL signal is generated;
+                             possible values:
+                              * MVREF_SEL_EXTERNAL
+                              * MVREF_SEL_INTERNAL_GVDD
+- m_odr:                     Disable memory transaction reordering; possible
+                             values:
+                              * M_ODR_ENABLE
+                              * M_ODR_DISABLE
+- clock_adjust:              Clock adjust; possible values:
+                              * CLOCK_ADJUST_025
+                              * CLOCK_ADJUST_05
+                              * CLOCK_ADJUST_075
+                              * CLOCK_ADJUST_1
+- ext_refresh_rec:           Extended refresh recovery time; possible values:
+                              0, 16, 32, 48, 64, 80, 96, 112
+- read_to_write:             Read-to-write turnaround; possible values:
+                              0, 1, 2, 3
+- write_to_read:             Write-to-read turnaround; possible values:
+                              0, 1, 2, 3
+- read_to_read:              Read-to-read turnaround; possible values:
+                              0, 1, 2, 3
+- write_to_write:            Write-to-write turnaround; possible values:
+                              0, 1, 2, 3
+- active_powerdown_exit:     Active powerdown exit timing; possible values:
+                              1, 2, 3, 4, 5, 6, 7
+- precharge_powerdown_exit:  Precharge powerdown exit timing; possible values:
+                              1, 2, 3, 4, 5, 6, 7
+- odt_powerdown_exit:        ODT powerdown exit timing; possible values:
+                              0, 1, 2, 3, 4, 5, 6, 7, 8,
+                              9, 10, 11, 12, 13, 14, 15
+- mode_reg_set_cycle:        Mode register set cycle time; possible values:
+                              1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
+- precharge_to_activate:     Precharge-to-acitvate interval; possible values:
+                              1, 2, 3, 4, 5, 6, 7
+- activate_to_precharge:     Activate to precharge interval; possible values:
+                              4, 5, 6, 7, 8, 9, 10, 11, 12,
+                              13, 14, 15, 16, 17, 18, 19
+- activate_to_readwrite:     Activate to read/write interval for SDRAM;
+                             possible values:
+                              1, 2, 3, 4, 5, 6, 7
+- mcas_latency:              MCAS latency from READ command; possible values:
+                              * CASLAT_20
+                              * CASLAT_25
+                              * CASLAT_30
+                              * CASLAT_35
+                              * CASLAT_40
+                              * CASLAT_45
+                              * CASLAT_50
+                              * CASLAT_55
+                              * CASLAT_60
+                              * CASLAT_65
+                              * CASLAT_70
+                              * CASLAT_75
+                              * CASLAT_80
+- refresh_recovery:          Refresh recovery time; possible values:
+                              8, 9, 10, 11, 12, 13, 14, 15,
+                              16, 17, 18, 19, 20, 21, 22, 23
+- last_data_to_precharge:    Last data to precharge minimum interval; possible
+                             values:
+                              1, 2, 3, 4, 5, 6, 7
+- activate_to_activate:      Activate-to-activate interval; possible values:
+                              1, 2, 3, 4, 5, 6, 7
+- last_write_data_to_read:   Last write data pair to read command issue
+                             interval; possible values:
+                              1, 2, 3, 4, 5, 6, 7
+- additive_latency:          Additive latency; possible values:
+                              0, 1, 2, 3, 4, 5
+- mcas_to_preamble_override: MCAS-to-preamble-override; possible values:
+                              * READ_LAT
+                              * READ_LAT_PLUS_1_4
+                              * READ_LAT_PLUS_1_2
+                              * READ_LAT_PLUS_3_4
+                              * READ_LAT_PLUS_1
+                              * READ_LAT_PLUS_5_4
+                              * READ_LAT_PLUS_3_2
+                              * READ_LAT_PLUS_7_4
+                              * READ_LAT_PLUS_2
+                              * READ_LAT_PLUS_9_4
+                              * READ_LAT_PLUS_5_2
+                              * READ_LAT_PLUS_11_4
+                              * READ_LAT_PLUS_3
+                              * READ_LAT_PLUS_13_4
+                              * READ_LAT_PLUS_7_2
+                              * READ_LAT_PLUS_15_4
+                              * READ_LAT_PLUS_4
+                              * READ_LAT_PLUS_17_4
+                              * READ_LAT_PLUS_9_2
+                              * READ_LAT_PLUS_19_4
+- write_latency:             Write latency; possible values:
+                              1, 2, 3, 4, 5, 6, 7
+- read_to_precharge:         Read to precharge; possible values:
+                              1, 2, 3, 4
+- write_cmd_to_write_data:   Write command to write data strobe timing
+                             adjustment; possible values:
+                              * CLOCK_DELAY_0
+                              * CLOCK_DELAY_1_4
+                              * CLOCK_DELAY_1_2
+                              * CLOCK_DELAY_3_4
+                              * CLOCK_DELAY_1
+                              * CLOCK_DELAY_5_4
+                              * CLOCK_DELAY_3_2
+- minimum_cke_pulse_width:   Minimum CKE pulse width; possible values:
+                              1, 2, 3, 4
+- four_activates_window:     Window for four activates; possible values:
+                              1, 2, 3, 4 8, 9, 10, 11, 12,
+                              13, 14, 15, 16, 17, 18, 19
+- self_refresh:              Self refresh (during sleep); possible values:
+                              * SREN_DISABLE
+                              * SREN_ENABLE
+- ecc:                       Support for ECC; possible values:
+                              * ECC_DISABLE
+                              * ECC_ENABLE
+- registered_dram:           Support for registered DRAM; possible values:
+                              * RD_DISABLE
+                              * RD_ENABLE
+- sdram_type:                Type of SDRAM device to be used; possible values:
+                              * TYPE_DDR1
+                              * TYPE_DDR2
+- dynamic_power_management:  Dynamic power management mode; possible values:
+                              * DYN_PWR_DISABLE
+                              * DYN_PWR_ENABLE
+- databus_width:             DRAM data bus width; possible values
+                              * DATA_BUS_WIDTH_16
+                              * DATA_BUS_WIDTH_32
+- nc_auto_precharge:         Non-concurrent auto-precharge; possible values:
+                              * NCAP_DISABLE
+                              * NCAP_ENABLE
+- timing_2t:                 2T timing; possible values:
+                              * TIMING_1T
+                              * TIMING_2T
+- bank_interleaving_ctrl:    Bank (chip select) interleaving control; possible
+                             values:
+                              * INTERLEAVE_NONE
+                              * INTERLEAVE_1_AND_2
+- precharge_bit_8:           Precharge bin 8; possible values
+                              * PRECHARGE_MA_10
+                              * PRECHARGE_MA_8
+- half_strength:             Global half-strength override; possible values:
+                              * STRENGTH_FULL
+                              * STRENGTH_HALF
+- bypass_initialization:     Bypass initialization; possible values:
+                              * INITIALIZATION_DONT_BYPASS
+                              * INITIALIZATION_BYPASS
+- force_self_refresh:         Force self refresh; possible values:
+                               * MODE_NORMAL
+                               * MODE_REFRESH
+- dll_reset:                  DLL reset; possible values:
+                               * DLL_RESET_ENABLE
+                               * DLL_RESET_DISABLE
+- dqs_config:                 DQS configuration; possible values:
+                               * DQS_TRUE
+- odt_config:                 ODT configuration; possible values:
+                               * ODT_ASSERT_NEVER
+                               * ODT_ASSERT_WRITES
+                               * ODT_ASSERT_READS
+                               * ODT_ASSERT_ALWAYS
+- posted_refreshes:           Number of posted refreshes
+                               1, 2, 3, 4, 5, 6, 7, 8
+- sdmode:                     Initial value loaded into the DDR SDRAM mode
+                              register
+- esdmode:                    Initial value loaded into the DDR SDRAM extended
+                              mode register
+- esdmode2:                   Initial value loaded into the DDR SDRAM extended
+                              mode 2 register
+- esdmode3:                   Initial value loaded into the DDR SDRAM extended
+                              mode 3 register
+- refresh_interval:           Refresh interval; possible values:
+                               0 - 65535
+- precharge_interval:         Precharge interval; possible values:
+                               0 - 16383
+
+RAM module node:
+================
+
+Required properties:
+- reg:            A triple <cs addr size>, which consists of:
+                   * cs - the chipselect used to drive this RAM module
+                   * addr - the address where this RAM module's memory is map
+                     to in the global memory space
+                   * size - the size of the RAM module's memory in bytes
+- auto_precharge: Chip select auto-precharge; possible values:
+                   * AUTO_PRECHARGE_ENABLE
+                   * AUTO_PRECHARGE_DISABLE
+- odt_rd_cfg:     ODT for reads configuration; possible values:
+                   * ODT_RD_NEVER
+                   * ODT_RD_ONLY_CURRENT
+                   * ODT_RD_ONLY_OTHER_CS
+                   * ODT_RD_ONLY_OTHER_DIMM
+                   * ODT_RD_ALL
+- odt_wr_cfg:     ODT for writes configuration; possible values:
+                   * ODT_WR_NEVER
+                   * ODT_WR_ONLY_CURRENT
+                   * ODT_WR_ONLY_OTHER_CS
+                   * ODT_WR_ONLY_OTHER_DIMM
+                   * ODT_WR_ALL
+- bank_bits:      Number of bank bits for SDRAM on chip select; possible
+                  values:
+                   2, 3
+- row_bits:       Number of row bits for SDRAM on chip select; possible values:
+                   12, 13, 14
+- col_bits:       Number of column bits for SDRAM on chip select; possible
+                  values:
+                   8, 9, 10, 11
+
+Example:
+
+memory@2000 {
+	#address-cells = <2>;
+	#size-cells = <1>;
+	compatible = "fsl,mpc83xx-mem-controller";
+	reg = <0x2000 0x1000>;
+	device_type = "memory";
+	u-boot,dm-pre-reloc;
+
+	driver_software_override = <DSO_ENABLE>;
+	p_impedance_override = <DSO_P_IMPEDANCE_NOMINAL>;
+	n_impedance_override = <DSO_N_IMPEDANCE_NOMINAL>;
+	odt_termination_value = <ODT_TERMINATION_150_OHM>;
+	ddr_type = <DDR_TYPE_DDR2_1_8_VOLT>;
+
+	clock_adjust = <CLOCK_ADJUST_05>;
+
+	read_to_write = <0>;
+	write_to_read = <0>;
+	read_to_read = <0>;
+	write_to_write = <0>;
+	active_powerdown_exit = <2>;
+	precharge_powerdown_exit = <6>;
+	odt_powerdown_exit = <8>;
+	mode_reg_set_cycle = <2>;
+
+	precharge_to_activate = <2>;
+	activate_to_precharge = <6>;
+	activate_to_readwrite = <2>;
+	mcas_latency = <CASLAT_40>;
+	refresh_recovery = <17>;
+	last_data_to_precharge = <2>;
+	activate_to_activate = <2>;
+	last_write_data_to_read = <2>;
+
+	additive_latency = <0>;
+	mcas_to_preamble_override = <READ_LAT_PLUS_1_2>;
+	write_latency = <3>;
+	read_to_precharge = <2>;
+	write_cmd_to_write_data = <CLOCK_DELAY_1_2>;
+	minimum_cke_pulse_width = <3>;
+	four_activates_window = <5>;
+
+	self_refresh = <SREN_ENABLE>;
+	sdram_type = <TYPE_DDR2>;
+	databus_width = <DATA_BUS_WIDTH_32>;
+
+	force_self_refresh = <MODE_NORMAL>;
+	dll_reset = <DLL_RESET_ENABLE>;
+	dqs_config = <DQS_TRUE>;
+	odt_config = <ODT_ASSERT_READS>;
+	posted_refreshes = <1>;
+
+	refresh_interval = <2084>;
+	precharge_interval = <256>;
+
+	sdmode = <0x0242>;
+	esdmode = <0x0440>;
+
+	ram@0 {
+		reg = <0x0 0x0 0x8000000>;
+		compatible = "nanya,nt5tu64m16hg";
+
+		odt_rd_cfg = <ODT_RD_NEVER>;
+		odt_wr_cfg = <ODT_WR_ONLY_CURRENT>;
+		bank_bits = <3>;
+		row_bits = <13>;
+		col_bits = <10>;
+	};
+};

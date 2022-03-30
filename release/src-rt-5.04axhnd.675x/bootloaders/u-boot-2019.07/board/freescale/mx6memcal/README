@@ -1,0 +1,49 @@
+mx6memcal - a tool for calibrating DDR on i.MX6 boards.
+
+The mx6memcal board isn't a real board, but a tool for use in bring-up of
+new i.MX6 board designs.
+
+It provides a similar function to the tool from NXP([1]) with a number
+of advantages:
+
+1. It's open-source, so it's easier to change if needed.
+   Typical reasons for needing to change include the use of alternate
+   UARTs and PMIC initialization.
+2. It produces an image that's directly loadable with imx_usb [2] or
+   SB_LOADER.exe [3].
+   The NXP tool requires either a cumbersome JTAG connection that
+   makes running the DDR very slow or a working U-Boot image that
+   suffers from a chicken-and-egg problem (i.e. where do you get the
+   DDR parameters for U-Boot?).
+3. It doesn't prompt for parameters, so it's much faster to gather
+   data from multiple boards.
+4. Parameters to the calibration process can be chosen through
+   'make menuconfig'.
+
+When booted, the mx6memcal board will run the DDR calibration
+routines and display the result in a form suitable for cut and
+paste into struct mx6_mmdc_calibration. It can also optionally
+produce output in a form usable in a DCD-style .cfg file.
+
+Selections in Kconfig allow most system design settings to be chosen:
+
+1. The UART number and pad configuration for the UART. Options
+   include support for the most frequent reference designs on
+   i.MX6DQ/SDL (SABRE Lite and SABRESD designs).
+2. The memory bus width (64 and 32-bit)
+3. The number of chip-selects in use
+4. The type of DDR (DDR3 or LPDDR2). Note that LPDDR2 support
+   is incomplete as of this writing.
+5. The type of DDR chips in use. This selection allows re-use of common
+   parts and four DDR3 and two LPDDR2 parts are currently defined
+6. The On-die termination value for the DRAM lines
+7. The DRAM drive strength
+8. The RTT_NOM and RTT_WR termination settings
+9. RALAT/WALAT latency values
+
+References:
+[1] - NXP DDR Stress Test Tool - https://community.nxp.com/docs/DOC-105652
+[2] - Boundary Devices imx_usb_loader
+      https://github.com/boundarydevices/imx_usb_loader
+[3] - Use of SB_Loader.exe
+      https://boundarydevices.com/windows-users-and-unbricking

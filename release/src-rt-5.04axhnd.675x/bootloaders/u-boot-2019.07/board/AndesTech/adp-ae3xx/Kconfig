@@ -1,0 +1,18 @@
+if TARGET_ADP_AE3XX
+
+config SYS_CPU
+	default "n1213"
+
+config SYS_BOARD
+	default "adp-ae3xx"
+
+config SYS_VENDOR
+	default "AndesTech"
+
+config SYS_SOC
+	default "ae3xx"
+
+config SYS_CONFIG_NAME
+	default "adp-ae3xx"
+
+endif

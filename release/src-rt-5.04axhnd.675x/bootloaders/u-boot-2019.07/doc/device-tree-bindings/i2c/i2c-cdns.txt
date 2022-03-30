@@ -1,0 +1,20 @@
+Cadence I2C controller Device Tree Bindings
+-------------------------------------------
+
+Required properties:
+- compatible		: Should be "cdns,i2c-r1p10" or "xlnx,zynq-spi-r1p10".
+- reg			: Physical base address and size of I2C registers map.
+- interrupts		: Property with a value describing the interrupt
+			  number.
+- interrupt-parent	: Must be core interrupt controller
+- clocks		: Clock phandles (see clock bindings for details).
+
+Example:
+	i2c0: i2c@e0004000 {
+		compatible = "cdns,i2c-r1p10";
+		reg = <0xe0004000 0x1000>;
+		clocks = <&clkc 38>;
+		interrupts = <0 25 4>;
+		interrupt-parent = <&intc>;
+		status = "disabled";
+	};

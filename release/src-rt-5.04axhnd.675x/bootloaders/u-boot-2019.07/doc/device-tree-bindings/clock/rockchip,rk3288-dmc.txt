@@ -1,0 +1,155 @@
+Rockchip Dynamic Memory Controller Driver
+Required properties:
+- compatible: "rockchip,rk3288-dmc", "syscon"
+- rockchip,cru: this driver should access cru regs, so need get cru here
+- rockchip,grf: this driver should access grf regs, so need get grf here
+- rockchip,pmu: this driver should access pmu regs, so need get pmu here
+- rockchip,sgrf: this driver should access sgrf regs, so need get sgrf here
+- rockchip,noc: this driver should access noc regs, so need get noc here
+- reg: dynamic ram protocol controller(PCTL) address and phy controller(PHYCTL) address
+- clock: must include clock specifiers corresponding to entries in the clock-names property.
+- clock-output-names: from common clock binding to override the default output clock name
+    Must contain
+      pclk_ddrupctl0: support clock for access protocol controller registers of channel 0
+      pclk_publ0: support clock for access phy controller registers of channel 0
+      pclk_ddrupctl1: support clock for access protocol controller registers of channel 1
+      pclk_publ1: support clock for access phy controller registers of channel 1
+      arm_clk: for get arm frequency
+-logic-supply: this driver should adjust VDD_LOGIC according to dmc frequency, so need get logic-supply here
+-timings:
+    Must contain
+      rockchip,odt-disable-freq: if ddr clock frequency low than odt-disable-freq,this driver should disable DDR ODT
+      rockchip,dll-disable-freq: if ddr clock frequency low than dll-disable-freq,this driver should disable DDR DLL
+      rockchip,sr-enable-freq: if ddr clock frequency high than sr-enable-freq,this driver should enable the automatic self refresh function
+      rockchip,pd-enable-freq: if ddr clock frequency high than pd-enable-freq,this driver should enable the automatic power down function
+      rockchip,auto-self-refresh-cnt: Self Refresh idle period. Memories are placed into Self-Refresh mode if the NIF is idle in Access state for auto-self-refresh-cnt * 32 * n_clk cycles.The automatic self refresh function is disabled when auto-self-refresh-cnt=0.
+      rockchip,auto-power-down-cnt: Power-down idle period. Memories are placed into power-down mode if the NIF is idle for auto-power-down-cnt n_clk cycles.The automatic power down function is disabled when auto-power-down-cnt=0.
+      rockchip,ddr-speed-bin: DDR3 type,AC timing parameters from the memory data-sheet
+        0.DDR3_800D (5-5-5)
+        1.DDR3_800E (6-6-6)
+        2.DDR3_1066E (6-6-6)
+        3.DDR3_1066F (7-7-7)
+        4.DDR3_1066G (8-8-8)
+        5.DDR3_1333F (7-7-7)
+        6.DDR3_1333G (8-8-8)
+        7.DDR3_1333H (9-9-9)
+        8.DDR3_1333J (10-10-10)
+        9.DDR3_1600G (8-8-8)
+        10.DDR3_1600H (9-9-9)
+        11.DDR3_1600J (10-10-10)
+        12.DDR3_1600K (11-11-11)
+        13.DDR3_1866J (10-10-10)
+        14.DDR3_1866K (11-11-11)
+        15.DDR3_1866L (12-12-12)
+        16.DDR3_1866M (13-13-13)
+        17.DDR3_2133K (11-11-11)
+        18.DDR3_2133L (12-12-12)
+        19.DDR3_2133M (13-13-13)
+        20.DDR3_2133N (14-14-14)
+        21.DDR3_DEFAULT
+      rockchip,trcd: tRCD,AC timing parameters from the memory data-sheet
+      rockchip,trp: tRP,AC timing parameters from the memory data-sheet
+-rockchip,num-channels: number of SDRAM channels (1 or 2)
+-rockchip,pctl-timing: parameters for the SDRAM setup, in this order:
+	togcnt1u
+	tinit
+	trsth
+	togcnt100n
+	trefi
+	tmrd
+	trfc
+	trp
+	trtw
+	tal
+	tcl
+	tcwl
+	tras
+	trc
+	trcd
+	trrd
+	trtp
+	twr
+	twtr
+	texsr
+	txp
+	txpdll
+	tzqcs
+	tzqcsi
+	tdqs
+	tcksre
+	tcksrx
+	tcke
+	tmod
+	trstl
+	tzqcl
+	tmrr
+	tckesr
+	tdpd
+-rockchip,phy-timing: PHY timing information in this order:
+	dtpr0
+	dtpr1
+	dtpr2
+	mr0..mr3
+-rockchip,sdram-channel: SDRAM channel information, each 8 bits. Both channels
+will be set up the same. The parameters are in this order:
+	rank
+	col
+	bk
+	bw
+	dbw
+	row_3_4
+	cs0_row
+	cs1_row
+- rockchip,sdram-params: SDRAM base parameters, in this order:
+	NOC timing	- value for ddrtiming register
+	NOC activate	- value for activate register
+	ddrconf		- value for ddrconf register
+	DDR frequency in MHz
+	DRAM type (3=DDR3, 6=LPDDR3)
+	stride		- stride value for soc_con2 register
+	odt             - 1 to enable DDR ODT, 0 to disable
+
+Example:
+	dmc: dmc@ff610000 {
+		compatible = "rockchip,rk3288-dmc", "syscon";
+		rockchip,cru = <&cru>;
+		rockchip,grf = <&grf>;
+		rockchip,pmu = <&pmu>;
+		rockchip,sgrf = <&sgrf>;
+		rockchip,noc = <&noc>;
+		reg = <0xff610000 0x3fc
+		       0xff620000 0x294
+		       0xff630000 0x3fc
+		       0xff640000 0x294>;
+		clocks = <&cru PCLK_DDRUPCTL0>, <&cru PCLK_PUBL0>,
+			 <&cru PCLK_DDRUPCTL1>, <&cru PCLK_PUBL1>,
+			 <&cru ARMCLK>;
+		clock-names = "pclk_ddrupctl0", "pclk_publ0",
+			      "pclk_ddrupctl1", "pclk_publ1",
+			      "arm_clk";
+	};
+
+	&dmc {
+		logic-supply = <&vdd_logic>;
+		timings {
+			rockchip,odt-disable-freq = <333000000>;
+			rockchip,dll-disable-freq = <333000000>;
+			rockchip,sr-enable-freq = <333000000>;
+			rockchip,pd-enable-freq = <666000000>;
+			rockchip,auto-self-refresh-cnt = <0>;
+			rockchip,auto-power-down-cnt = <64>;
+			rockchip,ddr-speed-bin = <21>;
+			rockchip,trcd = <10>;
+			rockchip,trp = <10>;
+		};
+		rockchip,num-channels = <2>;
+		rockchip,pctl-timing = <0x29a 0x1f4 0xc8 0x42 0x4e 0x4 0xea 0xa
+			0x5 0x0 0xa 0x7 0x19 0x24 0xa 0x7
+			0x5 0xa 0x5 0x200 0x5 0x10 0x40 0x0
+			0x1 0x7 0x7 0x4 0xc 0x43 0x100 0x0
+			0x5 0x0>;
+		rockchip,phy-timing = <0x48f9aab4 0xea0910 0x1002c200
+			0xa60 0x40 0x10 0x0>;
+		rockchip,sdram-channel = /bits/ 8 <0x1 0xa 0x3 0x2 0x1 0x0 0xf 0xf>;
+		rockchip,sdram-params = <0x30B25564 0x627 3 666000000 3 9 1>;
+	};

@@ -1,0 +1,24 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * U-Boot additions
+ *
+ * (C) Copyright 2017 Derald D. Woods <woods.technical@gmail.com>
+ */
+
+/ {
+	chosen {
+		stdout-path = &uart3;
+	};
+};
+
+&uart1 {
+	reg-shift = <2>;
+};
+
+&uart2 {
+	reg-shift = <2>;
+};
+
+&uart3 {
+	reg-shift = <2>;
+};

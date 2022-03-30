@@ -1,0 +1,17 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use FindBin qw($Bin);
+use lib "$Bin/../../../hostTools/PerlLib";
+use BRCM::GenConfig;
+
+my $c = new BRCM::GenConfig( shift);
+
+######   Any config changes start here #####
+
+# Disable options not needed for SPL
+$c->set('CONFIG_BCMBCA_EARLY_ABORT_JTAG_UNLOCK','y');
+
+#####   End of config changes #####
+$c->write();
+

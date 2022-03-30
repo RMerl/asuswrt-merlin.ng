@@ -1,0 +1,255 @@
+#include "inc/68552C.dtsi"
+#include "../bcm_voice.dtsi"
+
+/ {
+	memory_controller {
+		memcfg = <(BP_DDR_SPEED_1067_14_14_14 | \
+					BP_DDR_TOTAL_SIZE_512MB   | \
+					BP_DDR_DEVICE_WIDTH_16    | \
+					BP_DDR_TOTAL_WIDTH_16BIT  | \
+					BP_DDR_SSC_CONFIG_1)>;
+	};
+};
+
+/ {
+      model = "968552CREF2";
+
+      buttons {
+        compatible = "brcm,buttons";
+        reset_button {
+            ext_irq = <&bca_extintr 14 BCA_GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+            press {
+                print = "Button Press -- Hold for 5s to do restore to default";
+            };
+            hold {
+                rst_to_dflt = <5>;
+            };
+            release {
+                reset = <0>;
+            };
+        };
+    };
+
+    xfp_sfp: xfp_sfp {
+        compatible = "brcm,sfp";
+        pinctrl-names = "default", "tx-sd";
+        pinctrl-0 = <&pon_lbe_p_pin_100>;
+        pinctrl-1 = <&pon_lbe_p_pin_100 &rogue_onu_in_pin_29>;
+        i2c-bus = <&i2c0>;
+        los-gpio = <&gpioc 12 GPIO_ACTIVE_HIGH>;
+        tx-power-gpio = <&gpioc 13 GPIO_ACTIVE_HIGH>;
+    };
+
+    wan_serdes {
+            compatible = "brcm,pon-drv";
+            trx = <&xfp_sfp>;
+            tx-polarity-invert;
+            pon-led = <&led9>;
+            alarm-led = <&led10>;
+    };
+
+    smtc {
+        compatible = "brcm,smtc";
+        smtc-tx-dis-gpio = <&gpioc 28 GPIO_ACTIVE_HIGH>;
+        i2c-bus = <&i2c0>;
+    };
+};
+
+&i2c0 {
+    pinctrl-0 = <&i2c_scl_pin_77 &i2c_sda_pin_78>;
+    pinctrl-names = "default";
+    status = "okay";
+};
+&nand {
+	status = "okay";
+};
+&wdt {
+	status = "okay";
+};
+&uart0 {
+	status = "okay";
+};
+
+&usb_ctrl {
+    pinctrl-names = "default";
+    pinctrl-0 = <&usb0_pwr_pins &usb1_pwr_pins>;
+    xhci-enable;
+    status = "okay";
+};
+&usb0_ehci {
+    status = "okay";
+};
+&usb0_xhci {
+    status = "okay";
+};
+&usb0_ohci {
+    status = "okay";
+};
+&usb1_ehci {
+    status = "okay";
+};
+&usb1_ohci {
+    status = "okay";
+};
+
+&pincontroller {
+    pinctrl-names = "default";
+    pinctrl-0 = <&c0_femctrl_0_pin_84 &c0_femctrl_1_pin_85 &c0_femctrl_2_pin_86 &c0_femctrl_3_pin_87 \
+                 &c0_femctrl_4_pin_88 &c0_femctrl_5_pin_89 &c1_femctrl_0_pin_90 &c1_femctrl_1_pin_91 \
+                 &c1_femctrl_2_pin_92 &c1_femctrl_3_pin_93 &c1_femctrl_4_pin_94 &c1_femctrl_5_pin_95 >;
+};
+
+&mdio {
+        phy1:1 {
+                status = "okay";
+        };
+
+        phy2:2 {
+                status = "okay";
+        };
+
+        phy3:3 {
+                status = "okay";
+        };
+
+        phy4:4 {
+                status = "okay";
+        };
+};
+
+&switch0 {
+        ports {
+                port0@0 {
+                        network-leds = <&led0 &led1>;
+                        status = "okay";
+                };
+
+                port1@1 {
+                        network-leds = <&led2 &led3>;
+                        status = "okay";
+                };
+
+                port2@2 {
+                        network-leds = <&led4 &led5>;
+                        status = "okay";
+                };
+
+                port3@3 {
+                        network-leds = <&led6 &led7>;
+                        status = "okay";
+                };
+        };
+};
+
+&legacy_leds {
+    usb-led = <&led11>;
+    wl0-led = <&led12>;
+};
+
+&led_ctrl {
+    led0: parallel-port_0-led_0{
+        active_low;
+        pinctrl-0 = <&a_per_led_01_pin_1>;
+        link = <LED_SPEED_GBE>;
+        status = "okay";
+    };
+
+    led1: parallel-port_0-led_1{
+        active_low;
+        pinctrl-0 = <&a_per_led_02_pin_2>;
+        activity = <LED_SPEED_GBE>;
+        status = "okay";
+    };
+
+    led2: parallel-port_1-led_0{
+        active_low;
+        pinctrl-0 = <&a_per_led_14_pin_4>;
+        link = <LED_SPEED_GBE>;
+        status = "okay";
+    };
+
+    led3: parallel-port_1-led_1{
+        active_low;
+        pinctrl-0 = <&a_per_led_07_pin_8>;
+        activity = <LED_SPEED_GBE>;
+        status = "okay";
+    };
+
+    led4: parallel-port_2-led_0{
+        active_low;
+        pinctrl-0 = <&a_per_led_06_pin_7>;
+        link = <LED_SPEED_GBE>;
+        status = "okay";
+    };
+
+    led5: parallel-port_2-led_1{
+        active_low;
+        pinctrl-0 = <&a_per_led_11_pin_11>;
+        activity = <LED_SPEED_GBE>;
+        status = "okay";
+    };
+
+    led6: parallel-port_3-led_0{
+        active_low;
+        pinctrl-0 = <&a_per_led_09_pin_32>;
+        link = <LED_SPEED_GBE>;
+        status = "okay";
+    };
+
+    led7: parallel-port_3-led_1{
+        active_low;
+        pinctrl-0 = <&b_per_led_12_pin_34>;
+        activity = <LED_SPEED_GBE>;
+        status = "okay";
+    };
+
+    led8: sw_parallel_led_0{
+        active_low;
+        pinctrl-0 = <&a_per_led_00_pin_0>;
+        label = "INTERNET";
+        status = "okay";
+    };
+
+    led10: sw_parallel_led_3{
+        active_low;
+        label = "ALARM";
+        pinctrl-0 = <&a_per_led_10_pin_10>;
+        status = "okay";
+    };
+
+    led9: sw_parallel_led_4{
+        active_low;
+        pinctrl-0 = <&a_per_led_08_pin_9>;
+        label = "WAN";
+        status = "okay";
+    };
+
+    led11: sw_parallel_led_5{
+        active_low;
+        pinctrl-0 = <&a_per_led_16_pin_6>;
+        label = "USB1";
+        status = "okay";
+    };
+
+    led12: sw_parallel_led_6{
+        active_low;
+        pinctrl-0 = <&a_per_led_13_pin_3>;
+        label = "WLAN0";
+        status = "okay";
+    };
+};
+
+#if defined(CONFIG_BCM_PCIE_HCD) || defined(CONFIG_BCM_PCIE_HCD_MODULE)
+&pcie0 {
+    status = "okay";
+};
+#endif
+
+&bcm_voice{
+    sliclist = SLICSLAC_LIST_COMMON_NOFXO;
+};
+
+&hsspi {
+    status = "okay";
+};
+

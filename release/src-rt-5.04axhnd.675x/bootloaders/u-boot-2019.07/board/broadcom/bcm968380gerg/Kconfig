@@ -1,0 +1,12 @@
+if BOARD_BROADCOM_BCM968380GERG
+
+config SYS_BOARD
+	default "bcm968380gerg"
+
+config SYS_VENDOR
+	default "broadcom"
+
+config SYS_CONFIG_NAME
+	default "broadcom_bcm968380gerg"
+
+endif

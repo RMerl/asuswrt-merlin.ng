@@ -1,0 +1,76 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright 2019 Broadcom Ltd.
+ */
+
+
+/dts-v1/;
+
+#include "bcm63148.dtsi"
+
+/ {
+	model = "Broadcom bcm963148";
+	compatible = "broadcom,bcm963148", "brcm,bcm963148";
+
+	aliases {
+		serial0 = &uart0;
+	};
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+		tick-timer = &timer0;
+	};
+
+	memory {
+		device_type = "memory";
+		reg = <0x0 0x08000000>;
+	};
+};
+
+&uart0 {
+	u-boot,dm-pre-reloc;
+	status = "okay";
+};
+
+&timer0 {
+	u-boot,dm-pre-reloc;
+	status = "okay";
+};
+
+&nand {
+	status = "okay";
+	write-protect = <0>;
+	#address-cells = <1>;
+	#size-cells = <0>;
+
+	nandcs@0 {
+		compatible = "brcm,nandcs";
+		reg = <0>;
+	};
+};
+
+/* usb0 {
+	status = "okay";
+	pinctrl-0 = <&usb0a_pwrflt_pins &usb0a_pwron_pins>;
+	pinctrl-names = "default";
+}; */
+
+&switchsf2 {
+	status = "okay";
+	phy_base = <0x8>;
+	ports {
+		port0@0 {
+			phy-handle = <&gphy8>;
+		};
+		port1@1 {
+			phy-handle = <&gphy9>;
+		};
+		port2@2 {
+			phy-handle = <&gphya>;
+		};
+		port3@3 {
+			phy-handle = <&gphyb>;
+		};
+	};
+};
+

@@ -1,0 +1,9 @@
+config BCM_SPIDEV_VOICE
+	bool "SPI voice device driver"
+	help
+	  SPI voice kernel driver
+
+config BCM_SPIDEV_VOICE_IMPL
+	int "Implementation index for SPI voice driver"
+	depends on BCM_SPIDEV_VOICE
+	default 1

@@ -1,0 +1,7 @@
+MEESC BOARD
+M:	Daniel Gorsulowski <daniel.gorsulowski@esd.eu>
+S:	Maintained
+F:	board/esd/meesc/
+F:	include/configs/meesc.h
+F:	configs/meesc_defconfig
+F:	configs/meesc_dataflash_defconfig

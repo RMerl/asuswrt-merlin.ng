@@ -1,0 +1,12 @@
+#
+# Copyright (C) 2014 Stefan Roese <sr@denx.de>
+#
+
+# Armada XP uses version 1 image format
+VERSION		1
+
+# Boot Media configurations
+BOOT_FROM	spi
+
+# Binary Header (bin_hdr) with DDR3 training code
+BINARY board/mikrotik/crs305-1g-4s/binary.0 0000005b 00000068

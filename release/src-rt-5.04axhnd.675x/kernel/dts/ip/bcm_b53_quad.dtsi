@@ -1,0 +1,141 @@
+#include <dt-bindings/interrupt-controller/arm-gic.h>
+#include <dt-bindings/interrupt-controller/irq.h>
+#define GIC_DIST_BASE	0x81001000
+#define GIC_CPUI_BASE	0x81002000
+
+#define TIMER_HYP_PPI			10
+#define TIMER_VIRT_PPI			11
+#define TIMER_PHYS_SECURE_PPI		13
+#define TIMER_PHYS_NONSECURE_PPI	14
+
+
+model = "Broadcom-v8A";
+compatible = "brcm,brcm-v8A";
+interrupt-parent = <&gic>;
+#address-cells = <2>;
+#size-cells = <2>;
+
+#if defined (CONFIG_BCM_PSCI)
+#define ENABLE_METHOD "psci"
+
+psci {
+	compatible	= "arm,psci-0.2";
+	method		= "smc";
+	cpu_off		= <1>;
+	cpu_on		= <2>;
+};
+#else
+#define ENABLE_METHOD "spin-table"
+#endif
+
+#if defined (CONFIG_OPTEE)
+firmware {
+	optee {
+		compatible = "linaro,optee-tz";
+		method = "smc";
+	};
+};
+#endif /* CONFIG_OPTEE */
+
+cpus {
+	#address-cells = <2>;
+	#size-cells = <0>;
+
+	B53_0: cpu@0 {
+		device_type = "cpu";
+		compatible = "arm,cortex-a53";
+		reg = <0x0 0x0>;
+		enable-method = ENABLE_METHOD;
+		cpu-release-addr = <0x0 0xfff8>;
+		next-level-cache = <&L2_0>;
+	};
+	B53_1: cpu@1 {
+		device_type = "cpu";
+		compatible = "arm,cortex-a53";
+		reg = <0x0 0x1>;
+		enable-method = ENABLE_METHOD;
+		cpu-release-addr = <0x0 0xfff8>;
+		next-level-cache = <&L2_0>;
+	};
+	B53_2: cpu@2 {
+		device_type = "cpu";
+		compatible = "arm,cortex-a53";
+		reg = <0x0 0x2>;
+		enable-method = ENABLE_METHOD;
+		cpu-release-addr = <0x0 0xfff8>;
+		next-level-cache = <&L2_0>;
+	};
+	B53_3: cpu@3 {
+		device_type = "cpu";
+		compatible = "arm,cortex-a53";
+		reg = <0x0 0x3>;
+		enable-method = ENABLE_METHOD;
+		cpu-release-addr = <0x0 0xfff8>;
+		next-level-cache = <&L2_0>;
+	};
+	L2_0: l2-cache0 {
+		compatible = "cache";
+	};
+};
+
+memory {
+	device_type = "memory";
+	reg = <0x0 0x0 0x0 0x8000000>;
+};
+
+clocks: clocks {
+	compatible = "simple-bus";
+	#address-cells = <2>;
+	#size-cells = <2>;
+	ranges;
+	u-boot,dm-pre-reloc;
+
+	periph_osc: periph-osc {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		clock-frequency = <PERIPH_CLK>;
+		u-boot,dm-pre-reloc;
+	};
+	refclk50mhz: refclk50mhz {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		clock-frequency = <50000000>;
+	};
+	hsspi_pll: hsspi-pll {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		clock-frequency = <HS_SPI_PLL_CLK>;
+		u-boot,dm-pre-reloc;		
+	};	
+};
+
+gic: interrupt-controller@81000000 {
+	compatible = "arm,cortex-a15-gic", "arm,cortex-a9-gic";
+	#interrupt-cells = <3>;
+	#address-cells = <0>;
+	interrupt-controller;
+	reg = <0x0 GIC_DIST_BASE 0 0x1000>,
+	      <0x0 GIC_CPUI_BASE 0 0x2000>;
+};
+
+timer {
+	compatible = "arm,armv8-timer";
+	interrupts = <GIC_PPI TIMER_PHYS_SECURE_PPI    (GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_LOW)>,
+		      <GIC_PPI TIMER_PHYS_NONSECURE_PPI (GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_LOW)>,
+		      <GIC_PPI TIMER_VIRT_PPI           (GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_LOW)>,
+		      <GIC_PPI TIMER_HYP_PPI            (GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_LOW)>;
+};
+
+pmu: pmu {
+	compatible = "arm,armv8-pmuv3";
+	interrupts = <GIC_SPI PMU_CORE0_SPI IRQ_TYPE_LEVEL_HIGH>,
+		      <GIC_SPI PMU_CORE1_SPI IRQ_TYPE_LEVEL_HIGH>,
+		      <GIC_SPI PMU_CORE2_SPI IRQ_TYPE_LEVEL_HIGH>,
+		      <GIC_SPI PMU_CORE3_SPI IRQ_TYPE_LEVEL_HIGH>;
+	interrupt-affinity = <&B53_0>, <&B53_1>,
+			<&B53_2>, <&B53_3>;
+};
+
+brcm-legacy {
+	compatible = "brcm,brcm-legacy";
+};

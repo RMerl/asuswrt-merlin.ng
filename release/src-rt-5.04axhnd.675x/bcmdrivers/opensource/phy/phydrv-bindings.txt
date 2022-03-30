@@ -1,0 +1,102 @@
+brcm,bca-phy network driver Device Tree Bindings
+
+PHY nodes
+=========
+
+PHY node must be a child device of a simple-bus (i.e MDIO), which has the required 'bus-type'
+property, refering to bus_type_t bus name.
+Each PHY driver might specify its own required and optional properties in addition to the properties
+below detailed in it own binding txt file.
+
+Required properties:
+
+- reg:        The ID number for the phy, usually a small integer
+
+- phy-type:   string, phydrv phy_type_t device driver type
+
+
+Optional Properties:
+
+- enet-phy-lane-swap: swap pair
+
+- caps-no-hdx: Disable half duplex capability advertisement
+
+- caps-no-5000: Disable 5G capability advertisement
+
+- idle-stuffing:
+
+- phy-reset:    gpio, if set, used to take phy out of reset before PHY initialization
+
+- serdes-core:  serdes core index
+
+- serdes-lane:  serdes lane index within core
+
+- phy-external: bool, indicates phy is external to chip.
+
+- phy-extswitch: bool, indicates external switch is connected.
+
+- wake-on-lan: bool, indicates wake-on-lan is supported.
+
+# TODO: is this LPORT_SERDES specific ?
+- serdes-tx-disable: The GPIO phandle and specifier for the SFP tx disable signal.
+
+
+egphy
+=====
+
+Represents the QGPHY block
+
+Required properties:
+- reg:          memory map for egphy registers
+
+Optional Properties:
+- base-addr:    base address of the 4 GPHY ports. default is 1 if not set.
+
+
+lport
+=====
+
+Represents the LPORT block
+
+Required properties:
+- reg:          memory maps for lport registers
+
+Optional Properties:
+- base-addr:    base address of the 4 GPHY ports. default is 1 if not set.
+
+
+crossbar
+========
+
+Devices like 63138, 63148, 4902, 63158, 47622 contain crossbar so N ports can shared M PHY connections.
+On port side (internal endpoint), a crossbar group (PHY node) is defined.
+On PHY side (external endpoint), a PHY node is also defined.
+
+Required properties for crossbar group:
+- phy-handle:   phandle to PHYs on external endpoint, can be one or more per crossbar group.
+
+- reg:          index, indicates internal endpoint (based 0)
+
+- phy-type:     "crossbar"
+
+
+Required properties for external endpoint PHY node:
+- xbar-ext-ep:  index, indicates external endpoint (based 0)
+
+- phy-mode:     string, operation mode of the PHY interface from phy_mii_type_t.
+
+
+For external endpoint PHY node with phy-mode set to "rgmii" on devices using RGMII pad control (63138, 63148, 63158) 
+following optional properties should be set.
+
+- rx-delay:   string, RGMII interface rx delay configuration.
+
+- tx-delay:   string, RGMII interface tx delay configuration.
+
+- rgmii-1p8v: string, RGMII interface is 1.8v 
+
+- rgmii-3p3v: string, RGMII interface is 3.3v
+
+- rgmii-disabled: string, RGMII interface is not connected
+
+- rgmii-intf: index, indicates which RGMII interface (if absent, index is 0) 

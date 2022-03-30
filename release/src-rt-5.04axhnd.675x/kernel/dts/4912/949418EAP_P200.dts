@@ -1,0 +1,10 @@
+#include "949418EAP.dtsi"
+&mdio {
+	phy_cascade1:10 {
+		reg = <0x1d>;
+		enet-phy-lane-swap;
+		phy-reset = <&gpioc 3 GPIO_ACTIVE_LOW>;
+		status = "okay";
+	};
+
+};

@@ -1,0 +1,6 @@
+phyCORE-RK3288
+M:	Wadim Egorov <w.egorov@phytec.de>
+S:	Maintained
+F:	board/phytec/phycore_rk3288
+F:	include/configs/phycore_rk3288.h
+F:	configs/phycore-rk3288_defconfig

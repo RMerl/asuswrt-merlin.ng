@@ -1,0 +1,87 @@
+if TARGET_AM335X_SHC
+
+config SYS_BOARD
+	default "shc"
+
+config SYS_VENDOR
+	default "bosch"
+
+config SYS_SOC
+	default "am33xx"
+
+config SYS_CONFIG_NAME
+	default "am335x_shc"
+
+choice
+	prompt "enable different boot versions for the shc board"
+	default SHC_EMMC
+	help
+	  Select the boot version of the shc board.
+
+config SHC_EMMC
+	bool "enable eMMC"
+	help
+	  enable here the eMMC functionality on the bosch shc board.
+
+config SHC_ICT
+	bool "enable ICT"
+	help
+	  enable here the ICT functionality on the bosch shc board
+
+config SHC_NETBOOT
+	bool "enable NETBOOT"
+	help
+	  enable here the NETBOOT functionality on the bosch shc board
+
+config SHC_SDBOOT
+	bool "enable SDBOOT"
+	help
+	  enable here the SDBOOT functionality on the bosch shc board
+
+endchoice
+
+choice
+	prompt "enable different board versions for the shc board"
+	default C3_SAMPLE
+	help
+	  Select the board version of the shc board.
+
+config B_SAMPLE
+	bool "B Sample board version"
+	help
+	  activate, if you want to build for the B sample version
+	  of the bosch shc board
+
+config B2_SAMPLE
+	bool "B2 Sample board version"
+	help
+	  activate, if you want to build for the B2 sample version
+	  of the bosch shc board
+
+config C_SAMPLE
+	bool "C Sample board version"
+	help
+	  activate, if you want to build for the C sample version
+	  of the bosch shc board
+
+config C2_SAMPLE
+	bool "C2 Sample board version"
+	help
+	  activate, if you want to build for the C2 sample version
+	  of the bosch shc board
+
+config C3_SAMPLE
+	bool "C3 Sample board version"
+	help
+	  activate, if you want to build for the C3 sample version
+	  of the bosch shc board
+
+config SERIES
+	bool "Series board version"
+	help
+	  activate, if you want to build for the Series version
+	  of the bosch shc board
+
+endchoice
+
+endif

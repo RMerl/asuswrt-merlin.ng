@@ -1,0 +1,6 @@
+MX23_OLINUXINO BOARD
+M:	Marek Vasut <marek.vasut@gmail.com>
+S:	Maintained
+F:	board/olimex/mx23_olinuxino/
+F:	include/configs/mx23_olinuxino.h
+F:	configs/mx23_olinuxino_defconfig

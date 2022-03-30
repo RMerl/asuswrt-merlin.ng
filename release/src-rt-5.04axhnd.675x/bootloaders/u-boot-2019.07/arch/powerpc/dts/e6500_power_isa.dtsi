@@ -1,0 +1,39 @@
+// SPDX-License-Identifier: GPL-2.0+ OR X11
+/*
+ * e6500 Power ISA Device Tree Source (include)
+ *
+ * Copyright 2013 Freescale Semiconductor Inc.
+ * Copyright 2018 NXP
+ */
+
+/ {
+	cpus {
+		power-isa-version = "2.06";
+		power-isa-b;		// Base
+		power-isa-e;		// Embedded
+		power-isa-atb;		// Alternate Time Base
+		power-isa-cs;		// Cache Specification
+		power-isa-ds;		// Decorated Storage
+		power-isa-e.ed;		// Embedded.Enhanced Debug
+		power-isa-e.pd;		// Embedded.External PID
+		power-isa-e.hv;		// Embedded.Hypervisor
+		power-isa-e.le;		// Embedded.Little-Endian
+		power-isa-e.pm;		// Embedded.Performance Monitor
+		power-isa-e.pc;		// Embedded.Processor Control
+		power-isa-ecl;		// Embedded Cache Locking
+		power-isa-exp;		// External Proxy
+		power-isa-fp;		// Floating Point
+		power-isa-fp.r;		// Floating Point.Record
+		power-isa-mmc;		// Memory Coherence
+		power-isa-scpm;		// Store Conditional Page Mobility
+		power-isa-wt;		// Wait
+		power-isa-64;		// 64-bit
+		power-isa-e.pt;		// Embedded.Page Table
+		power-isa-e.hv.lrat;	// Embedded.Hypervisor.LRAT
+		power-isa-e.em;		// Embedded Multi-Threading
+		power-isa-v;		// Vector (AltiVec)
+		fsl,eref-er;		// Enhanced Reservations
+		fsl,eref-deo;		// Data Cache Extended Operations
+		mmu-type = "power-embedded";
+	};
+};

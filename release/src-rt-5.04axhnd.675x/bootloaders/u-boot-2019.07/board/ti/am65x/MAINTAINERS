@@ -1,0 +1,7 @@
+AM65x BOARD
+M:	Lokesh Vutla <lokeshvutla@ti.com>
+S:	Maintained
+F:	board/ti/am65x/
+F:	include/configs/am65x_evm.h
+F:	configs/am65x_evm_a53_defconfig
+F:	configs/am65x_evm_r5_defconfig

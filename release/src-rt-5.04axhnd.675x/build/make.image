@@ -1,0 +1,164 @@
+####
+#### This is makefile contains test rules (for now) that can be run AFTER a normal build to exercise 
+#### image assembly component commands.  Later, it will take on the standard image assembly as well
+####
+#### This currently assembles images for GEN3 devices with puresqubi ONLY
+####
+makefile_name:=$(lastword $(MAKEFILE_LIST))
+
+ifeq ($(strip $(MAKECMDGOALS)),)
+#default case 
+MAKECMDGOALS:=nand
+endif
+
+image: nand
+
+BUILD_DIR = $(shell pwd)/../
+
+include $(BUILD_DIR)/make.common
+include sec.mk
+
+
+# move to make.common?
+BUILD_NAND_IMG_BLKSIZE_ALL := $(filter BUILD_NAND_IMG_BLKSIZE_%,$(.VARIABLES))
+BUILD_NAND_IMG_BLKSIZE=$(foreach var,$(BUILD_NAND_IMG_BLKSIZE_ALL),$(if $(findstring $($(var)),y),$(subst KB,,$(subst BUILD_NAND_IMG_BLKSIZE_,,$(var)))))
+
+ifneq ($(strip $(AVS_IMAGE_PATH)),)
+# the comma is a delimiter to pass to perl script option 
+OTHER_IMAGES:=,$(BUILD_DIR)/$(AVS_IMAGE_PATH)
+BTRM_IMAGE_SIZE_ALLOCATION:=$(shell expr $(BTRM_IMAGE_SIZE_ALLOCATION) + $(AVS_IMAGE_MAX_SIZE))
+endif
+# setup the ddr type flag
+ifeq ($(CFE_DDR_TYPE_CHECK),y)
+ifeq ($(strip $(BUILD_CFE_DDR4)),y)
+IMG_DDR_TYPE_OPT:=--ddrtype DDR4
+else
+IMG_DDR_TYPE_OPT:=--ddrtype DDR3
+endif
+endif
+
+ifeq ($(IMG_SCRIPT),) 
+# Script directory
+SCRIPT_DIR:=$(BUILD_DIR)/hostTools/imagetools
+#
+# Set defaults if wasn't specified yet on cmd line
+#
+ifneq ($(findstring nand,$(MAKECMDGOALS)),)
+#IMAGE_TYPE:=nand
+CFE_ROM:=$(strip $(CFE_ROM_FILE))
+#BN stands for "base name" e.g. without the path to file 
+CFE_ROM_BN:=$(notdir $(strip $(CFE_ROM_FILE)))
+CFE_ROM_TK:=$(strip $(CFE_ROM_FILE_TK))
+CFE_ROM_TK_BN:=$(notdir $(strip $(CFE_ROM_FILE))).tk
+CFE_RAM=$(CFE_RAM_FILE)
+#Workdir
+#
+WDIR:=$(PROFILE_DIR)/imagebuild/NAND
+#
+# Select script for the target,  workdir 
+#
+IMG_SCRIPT:=$(SCRIPT_DIR)/image.nand
+endif
+
+
+#
+ifneq ($(findstring emmc,$(MAKECMDGOALS)),)
+CFE_ROM_BN:=$(notdir $(strip $(CFE_ROM_EMMC_FILE)))
+CFE_ROM:=$(strip $(CFE_ROM_EMMC_FILE))
+CFE_ROM_TK_BN:=$(notdir $(strip $(CFE_ROM_EMMC_FILE_TK))).tk
+CFE_ROM_TK:=$(strip $(CFE_ROM_EMMC_FILE_TK))
+CFE_RAM:=$(CFE_RAM_EMMC_FILE)
+IMG_SCRIPT:=$(SCRIPT_DIR)/image.emmc
+WDIR:=$(PROFILE_DIR)/imagebuild/EMMC
+endif
+#
+# If full target is specified - select corresponding script
+ifneq ($(findstring full,$(MAKECMDGOALS)),)
+IMG_MODE:=.ext
+WDIR:=$(WDIR)_EXT
+endif
+IMG_SCRIPT:=$(IMG_SCRIPT)$(IMG_MODE)
+
+endif
+
+##
+# Export all  variables
+# Todo: export only required ones  
+export
+#
+#
+#
+nand emmc:
+	$(SCRIPT_DIR)/image.setup
+#
+#Showcasing steps
+# Encrypt bootloaders if selected (menuconfig)
+#     as per GEN3 protocol
+#  
+ifeq ($(strip $(BUILD_SECURE_BOOT)),y)
+	$(MAKE) -f $(makefile_name) encrypt
+endif
+#
+# Stage 1 prepare artifacts such as hashes/secure headers for signing  
+# 
+	$(MAKE) -f $(makefile_name) prepare
+ifeq ($(strip $(BUILD_SECURE_BOOT)),y)
+	$(MAKE) -f $(makefile_name) sign
+endif
+#
+#Stage 2 complete image assembly
+#
+	$(MAKE) -f $(makefile_name) complete
+
+#
+#
+#
+#
+# 
+prepare:
+	$(IMG_SCRIPT) prepare
+
+#
+#
+#
+complete:
+	$(IMG_SCRIPT)
+
+#
+#
+#
+sign:
+	$(SCRIPT_DIR)/image.sign fld
+ifneq ($(findstring ext,$(IMG_MODE)),)
+	$(SCRIPT_DIR)/image.sign mfg
+ifeq ($(strip $(SECURE_BOOT_TK_MODE_REQ)),FLD)
+	$(SCRIPT_DIR)/image.tk sign 
+endif
+endif
+
+#
+#
+#
+encrypt:
+ifneq ($(findstring ext,$(IMG_MODE)),)
+ifeq ($(strip $(SECURE_BOOT_ENCRYPT_BTLDRS)),y)
+#
+#  Encrypt  2 copies bootloader with fld/mfg keys 
+#  prior the formation of the authenticated header for the bootloader 
+#
+	$(SCRIPT_DIR)/image.encrypt fld
+	$(SCRIPT_DIR)/image.encrypt mfg
+endif
+ifeq ($(strip $(SECURE_BOOT_TK_MODE_REQ)),FLD)
+	$(SCRIPT_DIR)/image.tk encrypt 
+endif
+endif
+
+clean:
+	rm -rf $(PROFILE_DIR)/imagebuild/
+
+shell:
+	@echo "You are in a shell that includes the Makefile environment.  "exit" to return to normal"
+	bash
+
+.PHONY:  nand emmc clean sotp_tk_update sign encrypt prepare complete full

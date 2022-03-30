@@ -1,0 +1,29 @@
+Texas Instruments TI SCI System Reset Controller
+================================================
+
+Some TI SoCs contain a system controller (like the SYSFW, etc...) that is
+responsible for controlling the state of the IPs that are present.
+Communication between the host processor running an OS and the system
+controller happens through a protocol known as TI SCI [1].
+
+[1] http://processors.wiki.ti.com/index.php/TISCI
+
+System Reset Controller Node
+============================
+The sysreset controller node represents the reset for the overall SoC
+which is managed by the SYSFW. Because this relies on the TI SCI protocol
+to communicate with the SYSFW it must be a child of the sysfw node.
+
+Required Properties:
+--------------------
+ - compatible: Must be "ti,sci-sysreset"
+
+Example (AM65x):
+----------------
+	sysfw: sysfw {
+		compatible = "ti,am654-system-controller";
+		...
+		k3_sysreset: sysreset-controller {
+			compatible = "ti,sci-sysreset";
+		};
+	};

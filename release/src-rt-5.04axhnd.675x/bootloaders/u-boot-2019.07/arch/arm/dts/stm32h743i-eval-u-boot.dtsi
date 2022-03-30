@@ -1,0 +1,12 @@
+// SPDX-License-Identifier: GPL-2.0+
+
+#include <stm32h7-u-boot.dtsi>
+
+&sdmmc1 {
+	status = "okay";
+	pinctrl-0 = <&sdmmc1_pins>,
+		    <&pinctrl_sdmmc1_level_shifter>;
+	pinctrl-names = "default";
+	bus-width = <4>;
+	st,sig-dir;
+};

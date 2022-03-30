@@ -1,0 +1,23 @@
+------------------------------
+U-Boot console UART selection:
+------------------------------
+
+The U-Boot port for this congatec board currently supports two different
+configurations (defconfig files). The only difference is the UART that
+is used as the U-Boot console UART. The default defconfig file:
+
+conga-qeval20-qa3-e3845_defconfig
+
+provides this console on the UART0 which is provided via a Winbond
+Super-IO chip connected on the congatec Qseven 2.0 evaluation carrier
+board (conga-QEVAL). This UART is the one provided with a SubD9
+connector on the mainboard (the low one). The 2nd defconfig file:
+
+conga-qeval20-qa3-e3845-internal-uart_defconfig
+
+provides the U-Boot console on the BayTrail internal legacy UART,
+which is routed from the QSeven SoM to the X300 connector on the
+baseboard. Here is called COM2. The baseboard already provides the
+RS232 level shifters. So a TTL-USB UART adapter does not work in
+this case. The signals need to get connected directly to the
+RS232 level signals of the PC UART via some adapter cable.

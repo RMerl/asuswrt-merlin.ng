@@ -1,0 +1,27 @@
+// SPDX-License-Identifier: GPL-2.0+
+/dts-v1/;
+
+/ {
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	binman {
+		u_boot: u-boot {
+		};
+
+		vblock {
+			content = <&u_boot &other>;
+			keyblock = "firmware.keyblock";
+			signprivate = "firmware_data_key.vbprivk";
+			version = <1>;
+			kernelkey = "kernel_subkey.vbpubk";
+			preamble-flags = <1>;
+		};
+
+		dtb: u-boot-dtb {
+		};
+	};
+
+	other: other {
+	};
+};

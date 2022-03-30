@@ -1,0 +1,12 @@
+if TARGET_CEI_TK1_SOM
+
+config SYS_BOARD
+	default "cei-tk1-som"
+
+config SYS_VENDOR
+	default "cei"
+
+config SYS_CONFIG_NAME
+	default "cei-tk1-som"
+
+endif

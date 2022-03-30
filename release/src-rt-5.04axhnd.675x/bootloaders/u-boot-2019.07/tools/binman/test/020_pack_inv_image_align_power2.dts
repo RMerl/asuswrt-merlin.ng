@@ -1,0 +1,13 @@
+/dts-v1/;
+
+/ {
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	binman {
+		align-size = <131>;
+
+		u-boot {
+		};
+	};
+};

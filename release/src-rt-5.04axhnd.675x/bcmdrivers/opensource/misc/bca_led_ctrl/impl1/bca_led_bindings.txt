@@ -1,0 +1,236 @@
+Broadcom LED driver
+===================
+
+Broadcom LED driver supports three types of LED interfaces:
+1) GPIO LEDs 
+    The LED is connected directly to any not used GPIO of the SOC and controlled by Software ONLY.
+    The LED number is limited only by the number of available GPIOs.
+2) Serial LED Interface
+    LEDs connected to serial shifters array and controlled by the LED controller, supports both sources Hardware and Software.
+    The LED number is limited by the number of shifters (each shifter supports up to eight LEDs), but not bigger than 32 LEDs
+3) Parallel LED Interface
+    LEDs connected to predefined SOC pins and controlled by the LED controller, support both sources Hardware and Software.
+    The LED number is limited by 32 LEDs.
+
+-----------------
+LEDs Declaration
+-----------------
+GPIO LEDs
+===========
+To declare GPIO LED consumer should declare the following node for each led.
+The nodes must be declared under Broadcom led_ctrl in board-specific dts.
+
+"led_name": "led_node_name" {
+    compatible = "brcm,gpio-led"; /* declares LED as GPIOs */
+    software_led;                    /* Only software LEDs are supported for this interface.*/
+    pin = <GPIO_NUM>;                /* Declares the GPIO number LED is connected */  
+    active_high / active_low;        /* Declares the GPIO polarity */
+    init_high / init_low;            /* Declares the GPIO initial state */
+};
+
+* led_name is used by specific driver to reference this specific LED to its functionality.
+The pinmux to GPIO functionality done automatiacally by driver, no need to specify pin control explicitly. 
+
+Ex:
+&led_ctrl{
+    led0: led0 {
+        compatible = "brcm,gpio-led"; 
+        software_led;
+        pin = <12>;
+        active_high;
+        init_low;
+    };
+};
+
+Parallel LEDs Interface
+=======================
+The parallel interface strictly defines availiable SOC pins for LED functionality and reqieres specific muxing.
+All possible options are listed in the kernel/dts/<SOC_NUM>/<SOC_NUM>_leds.dtsi
+Declaration done by following macros:
+HW_PARALLEL_PORT_LED_BIT_PIN_NAME(name,....);
+SW_PARALLEL_BIT_PIN_NAME(name, ...);
+
+where "name" is the led node name that should be appended with needed functionality:
+
+The "name" is built by the following naming convention:
+For Hardware operated LEDs:
+
+port_<port id>-led_<0..3>-pin_<SOC pin number>
+Ex.:
+port_3-led_2-pin_73 means that this LED is assigned to LAN port 3 led 2 connected to SOC pin 73.
+
+For Software operated LED's:
+sw_led_<led_id>-pin_<SOC pin number>
+
+Ex.:
+sw_led_0-pin_62 means LED connected to SOC pin 62 controlled by Software.
+
+
+All LED initially declared as disabled, to enable the LED it must be appended in the board-specific dts as following:
+
+"led_name": "led_node_name" {
+    status = "okay";                        /* to enable the LED */
+    active_low / active_high;               /* define the polarity of the SOC pin */
+    link = <LINK_SPEED_MASK>;               /* for Hardwares LEDs only declares behavior depends on Link speed */
+    activity = <LINK_SPEED_MASK>;           /* for Hardwares LEDs only declares behavior depends on trafic of specific Link speed */
+    brightness = <0..255>;                  /* for Software LEDs only allows to controll the initial brightness level 
+                                               Optional */
+    flash_rate = <0..7>;                    /* for Software LEDs only allows to controll the initial blinking speed 
+                                               Optional */
+    label = "led_name"                      /* for Software LEDs only allows to set custom sysfs represantation name
+                                               Optional */
+    default-state = <STATE_ON/STATE_OFF>    /* for Software LEDs only allows to set initial state Optional */
+}
+
+Ex.:
+led0: port_0-led_0-pin_0 {
+    active_low;
+    status = "okay";
+    link = <LED_SPEED_GBE>;
+};
+
+led1: port_0-led_1-pin_1 {
+     active_low;
+     status = "okay";
+     activity = <LED_SPEED_GBE>;
+};
+
+declares Led 0 of port 0 to be ON on 1G/100Mb/10Mb Link and to be ON on traffic.
+declares Led 1 of port 0 to be OFF on any Link and to BLINK on traffic of 1G/100Mb/10Mb
+
+Ex.:
+led2: sw_led_0-pin_2 {
+    active_low;
+    status = "okay";
+    brightness = <127>;
+    flash_rate = <7>;
+}
+declares sowtware led 2 for initial half brightness and slow blinking.
+The blinking could be turned off by setting brightness to 0 using Linux API.
+
+
+
+Serial LEDs Interface
+=====================
+The serial LED interface strictly defines the optional bits for Hardware operated LED's.
+All possible options are listed in the kernel/dts/<SOC_NUM>/<SOC_NUM>_leds.dtsi
+Declaration done by following macros:
+HW_SERIAL_PORT_LED_BIT(name,....);
+SW_SERIAL_BIT(name, ...);
+
+where "name" is the led node name that should be appended with needed functionality:
+
+The "name" is built by the following naming convention:
+For Hardware operated LEDs:
+port_<port id>-led_<0..3>-bit_<Serial bit>
+
+Ex.
+port_1-led_0-bit_3 means that this LED is assigned to LAN port 1 led 0 connected to serial output bit 3. 
+
+For Software operated LEDs:
+sw_led-bit_<Serial bit>
+
+Ex.:
+sw_led-bit_2 means LED connected to Serial bit 2 controlled by Software.
+
+All LED initially declared as disabled, to enable the LED it must be appended in the board-specific dts as following:
+
+"led_name": "led_node_name" {
+    status = "okay";                     /* to enable the LED */   
+    active_low / active_high;            /* define the polarity of the SOC pin */
+    link = <LINK_SPEED_MASK>;            /* for Hardwares LEDs only declares behavior depends on Link speed */
+    activity = <LINK_SPEED_MASK>;        /* for Hardwares LEDs only declares behavior depends on trafic of specific Link speed */
+    brightness = <0..255>;               /* for Software LEDs only allows to controll the initial brightness level Optional */
+    flash_rate = <0..7>;                 /* for Software LEDs only allows to controll the initial blinking speed Optional */
+    label = "led_name"                   /* for Software LEDs only allows to set custom sysfs represantation name Optional */
+    default_state = <STATE_ON/STATE_OFF> /* for Software LEDs only allows to set initial state Optional */
+}
+
+Ex.:
+led0: port_0-led_0-bit_0 {
+    active_low;
+    status = "okay";
+    link = <LED_SPEED_GBE>;
+};
+
+led1: port_0-led_1-bit_1 {
+    active_low;
+    status = "okay";    
+    activity = <LED_SPEED_GBE>;
+};
+
+declares Led 0 of port 0 to be ON on 1G/100Mb/10Mb Link and to be ON on traffic.
+declares Led 1 of port 0 to be OFF on any Link and to BLINK on traffic of 1G/100Mb/10Mb
+
+Ex.:
+led2: sw_led-bit_2 {
+    active_low;
+    status = "okay";
+    brightness = <127>;
+    flash_rate = <7>;
+}
+declares sowtware led 2 for initial half brightness and slow blinking.
+The blinking could be turned off by setting brightness to 0 using Linux API.
+
+Hardware LED referencing by network ports:
+==========================================
+
+port1@1 {
+    status = "okay";
+    network-leds = <&led3 &led4>;
+};
+
+If the switch port connects to a crossbar port, multiple network led sets can be
+defined using network-leds-<xbar-ext-ep-num> if the crossbar external endpoints
+connect to different leds. For example:
+port5@5 {
+    phy-handle = <&xbar_grp2>;
+    /* xbar ext ep 0 serdes leds */
+    network-leds-0 = <&led10 &led11 &led12 &led25>;
+    /* xbar ext ep 1 sgphy leds */
+    network-leds-1 = <&led8 &led9 &led24>;
+    status = "okay";
+};
+
+The LINK_SPEED_MASK is declared as following:
+
+LED_SPEED_10
+LED_SPEED_100 
+LED_SPEED_1G
+LED_SPEED_2500
+LED_SPEED_10G 
+ 
+There are few predefined masks:
+
+LED_SPEED_FAE   (LED_SPEED_10 | LED_SPEED_100)
+LED_SPEED_GBE   (LED_SPEED_FAE | LED_SPEED_1G)
+LED_SPEED_ALL   (LED_SPEED_GBE | LED_SPEED_2500 | LED_SPEED_10G)
+
+Software LED referencing by consumer driver
+===========================================
+
+A consumer driver will create the following property for led:
+for sw_led:
+    consumer_name1-led = <&led0>;
+    consumer_name2-led = <&led1>;
+    consumer_name3-led = <&led2>;
+
+The consumer driver must call to the 
+struct led_classdev* bca_led_request_sw_led(struct device_node *dn, const char *consumer_led_name);
+
+and to save on its own context the led_classdev handler to be able to operate using Linux standard API's could be found
+in the include/linux/leds.h file
+
+Aggregate LEDs
+===============
+There are two kind of aggregate LEDs that are supported by Broadcom BCA SOCs:
+1) Aggregate Link LED
+2) Aggregate Activity LED.
+The Aggregate Link LED is a special hardware LED that will be ON in case of active link on any of declared LAN ports.
+The Aggregate Activity LED is a special hardware LED that will be Flash in case of traffic activity on any of declared LAN ports.
+
+Each specific port could be ignored in aggregation.
+To do so "no_aggregate" property should be added in any of the LEDs of specific port.
+NOTE: due to HW design limitation appearence of the no_aggregate property in any of the ports specific LED will mark it
+out of aggregation, even it was done only for activity LED (for example).
+

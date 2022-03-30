@@ -1,0 +1,64 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (C) 2018 Philippe Reynes <philippe.reynes@softathome.com>
+ */
+
+/dts-v1/;
+
+#include "brcm,bcm6838.dtsi"
+
+/ {
+	model = "Broadcom bcm68380gerg";
+	compatible = "broadcom,bcm68380gerg", "brcm,bcm6838";
+
+	aliases {
+		serial0 = &uart0;
+	};
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+	};
+};
+
+&memory {
+	force-size = <0x10000000>;
+};
+
+&uart0 {
+	u-boot,dm-pre-reloc;
+	status = "okay";
+};
+
+&leds {
+	status = "okay";
+
+	led@0 {
+		reg = <0>;
+		active-low;
+		label = "bcm968380gerg:green:usb";
+	};
+};
+
+&gpio_lo {
+	status = "okay";
+};
+
+&gpio_mid0 {
+	status = "okay";
+};
+
+&gpio_mid1 {
+	status = "okay";
+};
+
+&nand {
+	status = "okay";
+
+	nandcs@0 {
+		compatible = "brcm,nandcs";
+		reg = <0>;
+		nand-ecc-strength = <4>;
+		nand-ecc-step-size = <512>;
+		brcm,nand-oob-sector-size = <16>;
+	};
+};

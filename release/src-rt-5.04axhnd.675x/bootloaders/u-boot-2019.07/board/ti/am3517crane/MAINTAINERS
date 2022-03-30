@@ -1,0 +1,6 @@
+AM3517CRANE BOARD
+M:	Nagendra T S  <nagendra@mistralsolutions.com>
+S:	Maintained
+F:	board/ti/am3517crane/
+F:	include/configs/am3517_crane.h
+F:	configs/am3517_crane_defconfig

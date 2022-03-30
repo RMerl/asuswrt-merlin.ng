@@ -1,0 +1,64 @@
+Sandbox SPI/SPI Flash Implementation
+====================================
+
+U-Boot supports SPI and SPI flash emulation in sandbox. This must be enabled
+using the --spi_sf paramter when starting U-Boot.
+
+For example:
+
+$ make O=sandbox sandbox_config
+$ make O=sandbox
+$ ./sandbox/u-boot --spi_sf 0:0:W25Q128:b/chromeos_peach/out/image.bin
+
+The four parameters to spi_sf are:
+
+   SPI bus number (typically 0)
+   SPI chip select number (typically 0)
+   SPI chip to emulate
+   File containing emulated data
+
+Supported chips are W25Q16 (2MB), W25Q32 (4MB) and W25Q128 (16MB). Once
+U-Boot it started you can use 'sf' commands as normal. For example:
+
+$ ./b/sandbox/u-boot --spi_sf 0:0:W25Q128:b/chromeos_peach/out/image.bin \
+	-c "sf probe; sf test 0 100000; sf read 0 1000 1000; \
+		sf erase 1000 1000; sf write 0 1000 1000"
+
+
+U-Boot 2013.10-00237-gd4e0fdb (Nov 07 2013 - 20:08:15)
+
+DRAM:  128 MiB
+Using default environment
+
+In:    serial
+Out:   serial
+Err:   serial
+SF: Detected W25Q128BV with page size 256 Bytes, erase size 4 KiB, total 16 MiB
+SPI flash test:
+0 erase: 1 ticks, 1024000 KiB/s 8192.000 Mbps
+1 check: 2 ticks, 512000 KiB/s 4096.000 Mbps
+2 write: 6 ticks, 170666 KiB/s 1365.328 Mbps
+3 read: 0 ticks, 1048576000 KiB/s -201326.-592 Mbps
+Test passed
+0 erase: 1 ticks, 1024000 KiB/s 8192.000 Mbps
+1 check: 2 ticks, 512000 KiB/s 4096.000 Mbps
+2 write: 6 ticks, 170666 KiB/s 1365.328 Mbps
+3 read: 0 ticks, 1048576000 KiB/s -201326.-592 Mbps
+SF: 4096 bytes @ 0x1000 Read: OK
+SF: 4096 bytes @ 0x1000 Erased: OK
+SF: 4096 bytes @ 0x1000 Written: OK
+
+
+Since the SPI bus is fully implemented as well as the SPI flash connected to
+it, you can also use low-level SPI commands to access the flash. For example
+this reads the device ID from the emulated chip:
+
+=> sspi 0 32 9f
+FFEF4018
+
+
+Simon Glass
+sjg@chromium.org
+7/11/2013
+Note that the sandbox SPI implementation was written by Mike Frysinger
+<vapier@gentoo.org>.

@@ -1,0 +1,249 @@
+SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright 2010-2011 Calxeda, Inc.
+ */
+
+The 'pxe' commands provide a near subset of the functionality provided by
+the PXELINUX boot loader. This allows U-Boot based systems to be controlled
+remotely using the same PXE based techniques that many non U-Boot based servers
+use.
+
+Commands
+========
+
+pxe get
+-------
+     syntax: pxe get
+
+     follows PXELINUX's rules for retrieving configuration files from a tftp
+     server, and supports a subset of PXELINUX's config file syntax.
+
+     Environment
+     -----------
+     'pxe get' requires two environment variables to be set:
+
+     pxefile_addr_r - should be set to a location in RAM large enough to hold
+     pxe files while they're being processed. Up to 16 config files may be
+     held in memory at once. The exact number and size of the files varies with
+     how the system is being used. A typical config file is a few hundred bytes
+     long.
+
+     bootfile,serverip - these two are typically set in the DHCP response
+     handler, and correspond to fields in the DHCP response.
+
+     'pxe get' optionally supports these two environment variables being set:
+
+     ethaddr - this is the standard MAC address for the ethernet adapter in use.
+     'pxe get' uses it to look for a configuration file specific to a system's
+     MAC address.
+
+     pxeuuid - this is a UUID in standard form using lower case hexadecimal
+     digits, for example, 550e8400-e29b-41d4-a716-446655440000. 'pxe get' uses
+     it to look for a configuration file based on the system's UUID.
+
+     File Paths
+     ----------
+     'pxe get' repeatedly tries to download config files until it either
+     successfully downloads one or runs out of paths to try. The order and
+     contents of paths it tries mirrors exactly that of PXELINUX - you can
+     read in more detail about it at:
+
+     http://syslinux.zytor.com/wiki/index.php/Doc/pxelinux
+
+pxe boot
+--------
+     syntax: pxe boot [pxefile_addr_r]
+
+     Interprets a pxe file stored in memory.
+
+     pxefile_addr_r is an optional argument giving the location of the pxe file.
+     The file must be terminated with a NUL byte.
+
+     Environment
+     -----------
+     There are some environment variables that may need to be set, depending
+     on conditions.
+
+     pxefile_addr_r - if the optional argument pxefile_addr_r is not supplied,
+     an environment variable named pxefile_addr_r must be supplied. This is
+     typically the same value as is used for the 'pxe get' command.
+
+     bootfile - typically set in the DHCP response handler based on the
+     same field in the DHCP respone, this path is used to generate the base
+     directory that all other paths to files retrieved by 'pxe boot' will use.
+     If no bootfile is specified, paths used in pxe files will be used as is.
+
+     serverip - typically set in the DHCP response handler, this is the IP
+     address of the tftp server from which other files will be retrieved.
+
+     kernel_addr_r, initrd_addr_r - locations in RAM at which 'pxe boot' will
+     store the kernel(or FIT image) and initrd it retrieves from tftp. These
+     locations will be passed to the bootm command to boot the kernel. These
+     environment variables are required to be set.
+
+     fdt_addr_r - location in RAM at which 'pxe boot' will store the fdt blob it
+     retrieves from tftp. The retrieval is possible if 'fdt' label is defined in
+     pxe file and 'fdt_addr_r' is set. If retrieval is possible, 'fdt_addr_r'
+     will be passed to bootm command to boot the kernel.
+
+     fdt_addr - the location of a fdt blob. 'fdt_addr' will be passed to bootm
+     command if it is set and 'fdt_addr_r' is not passed to bootm command.
+
+pxe file format
+===============
+The pxe file format is nearly a subset of the PXELINUX file format; see
+http://syslinux.zytor.com/wiki/index.php/PXELINUX. It's composed of one line
+commands - global commands, and commands specific to labels. Lines begining
+with # are treated as comments. White space between and at the beginning of
+lines is ignored.
+
+The size of pxe files and the number of labels is only limited by the amount
+of RAM available to U-Boot. Memory for labels is dynamically allocated as
+they're parsed, and memory for pxe files is statically allocated, and its
+location is given by the pxefile_addr_r environment variable. The pxe code is
+not aware of the size of the pxefile memory and will outgrow it if pxe files
+are too large.
+
+Supported global commands
+-------------------------
+Unrecognized commands are ignored.
+
+default <label>	    - the label named here is treated as the default and is
+		      the first label 'pxe boot' attempts to boot.
+
+menu title <string> - sets a title for the menu of labels being displayed.
+
+menu include <path> - use tftp to retrieve the pxe file at <path>, which
+		      is then immediately parsed as if the start of its
+		      contents were the next line in the current file. nesting
+		      of include up to 16 files deep is supported.
+
+prompt <flag>	    - if 1, always prompt the user to enter a label to boot
+		      from. if 0, only prompt the user if timeout expires.
+
+timeout <num>	    - wait for user input for <num>/10 seconds before
+		      auto-booting a node.
+
+label <name>	    - begin a label definition. labels continue until
+		      a command not recognized as a label command is seen,
+		      or EOF is reached.
+
+Supported label commands
+------------------------
+labels end when a command not recognized as a label command is reached, or EOF.
+
+menu default	    - set this label as the default label to boot; this is
+		      the same behavior as the global default command but
+		      specified in a different way
+
+kernel <path>	    - if this label is chosen, use tftp to retrieve the kernel
+		      (or FIT image) at <path>. it will be stored at the address
+		      indicated in the kernel_addr_r environment variable, and
+		      that address will be passed to bootm to boot this kernel.
+		      For FIT image, The configuration specification can be
+		      appended to the file name, with the format:
+		        <path>#<conf>[#<extra-conf[#...]]
+		      It will passed to bootm with that address.
+		      (see: doc/uImage.FIT/command_syntax_extensions.txt)
+		      It useful for overlay selection in pxe file
+		      (see: doc/uImage.FIT/overlay-fdt-boot.txt)
+
+append <string>	    - use <string> as the kernel command line when booting this
+		      label.
+
+initrd <path>	    - if this label is chosen, use tftp to retrieve the initrd
+		      at <path>. it will be stored at the address indicated in
+		      the initrd_addr_r environment variable, and that address
+		      will be passed to bootm.
+
+fdt <path>	    - if this label is chosen, use tftp to retrieve the fdt blob
+		      at <path>. it will be stored at the address indicated in
+		      the fdt_addr_r environment variable, and that address will
+		      be passed to bootm.
+
+fdtdir <path>	    - if this label is chosen, use tftp to retrieve a fdt blob
+		      relative to <path>. If the fdtfile environment variable
+		      is set, <path>/<fdtfile> is retrieved. Otherwise, the
+		      filename is generated from the soc and board environment
+		      variables, i.e. <path>/<soc>-<board>.dtb is retrieved.
+		      If the fdt command is specified, fdtdir is ignored.
+
+localboot <flag>    - Run the command defined by "localcmd" in the environment.
+		      <flag> is ignored and is only here to match the syntax of
+		      PXELINUX config files.
+
+Example
+-------
+Here's a couple of example files to show how this works.
+
+------------/tftpboot/pxelinux.cfg/menus/base.menu-----------
+menu title Linux selections
+
+# This is the default label
+label install
+	menu label Default Install Image
+	kernel kernels/install.bin
+	append console=ttyAMA0,38400 debug earlyprintk
+	initrd initrds/uzInitrdDebInstall
+
+# Just another label
+label linux-2.6.38
+	kernel kernels/linux-2.6.38.bin
+	append root=/dev/sdb1
+
+# The locally installed kernel
+label local
+	menu label Locally installed kernel
+	append root=/dev/sdb1
+	localboot 1
+-------------------------------------------------------------
+
+------------/tftpboot/pxelinux.cfg/default-------------------
+menu include pxelinux.cfg/menus/base.menu
+timeout 500
+
+default linux-2.6.38
+-------------------------------------------------------------
+
+When a pxe client retrieves and boots the default pxe file,
+'pxe boot' will wait for user input for 5 seconds before booting
+the linux-2.6.38 label, which will cause /tftpboot/kernels/linux-2.6.38.bin
+to be downloaded, and boot with the command line "root=/dev/sdb1"
+
+Differences with PXELINUX
+=========================
+The biggest difference between U-Boot's pxe and PXELINUX is that since
+U-Boot's pxe support is written entirely in C, it can run on any platform
+with network support in U-Boot. Here are some other differences between
+PXELINUX and U-Boot's pxe support.
+
+- U-Boot's pxe does not support the PXELINUX DHCP option codes specified
+  in RFC 5071, but could be extended to do so.
+
+- when U-Boot's pxe fails to boot, it will return control to U-Boot,
+  allowing another command to run, other U-Boot command, instead of resetting
+  the machine like PXELINUX.
+
+- U-Boot's pxe doesn't rely on or provide an UNDI/PXE stack in memory, it
+  only uses U-Boot.
+
+- U-Boot's pxe doesn't provide the full menu implementation that PXELINUX
+  does, only a simple text based menu using the commands described in
+  this README.	With PXELINUX, it's possible to have a graphical boot
+  menu, submenus, passwords, etc. U-Boot's pxe could be extended to support
+  a more robust menuing system like that of PXELINUX's.
+
+- U-Boot's pxe expects U-Boot uimg's as kernels.  Anything that would work
+  with the 'bootm' command in U-Boot could work with the 'pxe boot' command.
+
+- U-Boot's pxe only recognizes a single file on the initrd command line.  It
+  could be extended to support multiple.
+
+- in U-Boot's pxe, the localboot command doesn't necessarily cause a local
+  disk boot - it will do whatever is defined in the 'localcmd' env
+  variable. And since it doesn't support a full UNDI/PXE stack, the
+  type field is ignored.
+
+- the interactive prompt in U-Boot's pxe only allows you to choose a label
+  from the menu.  If you want to boot something not listed, you can ctrl+c
+  out of 'pxe boot' and use existing U-Boot commands to accomplish it.

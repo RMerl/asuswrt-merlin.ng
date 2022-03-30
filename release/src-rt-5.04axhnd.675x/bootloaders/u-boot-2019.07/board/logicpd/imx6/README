@@ -1,0 +1,83 @@
+U-Boot for LogicPD i.MX6 Development Kit
+----------------------------------------
+
+This file contains information for the port of U-Boot to the Logic PD Development kit.
+
+Logic PD has an i.MX6 System On Module (SOM) and a correspondong development
+board.  SOM has a built-in microSD socket, DDR and NAND flash.  The development kit has
+an SMSC Ethernet PHY, serial debug port and a variety of peripherals.
+
+On the intial release, the SOM came with either an i.MX6D or i.MX6Q.
+
+For more details about Logic PD i.MX6 Development kit, visit:
+https://www.logicpd.com/
+
+Building U-Boot for Logic PD Development Kit
+--------------------------------------------
+To build U-Boot for the Dual and Quad variants:
+
+ make imx6q_logic_defconfig
+ make u-boot.imx ARCH=arm CROSS_COMPILE=arm-linux-
+
+
+Flashing U-Boot into the SD card
+--------------------------------
+U-Boot is now building with SPL enabled which means there are two files to
+load into the SD card. Make sure the card is formatted with at least two
+partitions with the first partition being FAT32. First copy u-boot-dtb.img
+to the first partition then burn SPL to the SD card with dd.
+The SPL portion is programmed into a certain location for use by the internal
+bootROM and it cannot be changed.  The following instructions assume the SD
+card is located as /dev/sdb.
+
+  cp u-boot-dtb.img /dev/media/logic/boot
+  sudo dd if=SPL of=/dev/sdb bs=1k seek=1 oflag=sync status=none && sync
+
+
+Flashing U-Boot into NAND
+-------------------------
+Once in Linux with MTD support for the NAND on /dev/mtd0, program U-Boot with the following:
+with:
+
+  kobs-ng init -v -x u-boot-dtb.imx
+
+
+Using Falcon Mode
+-----------------
+With Falcon Mode enabled, U-Boot can be bypassed by having SPL directly load
+the kernel.  The device tree, Kernel and boot args must first be configured,
+and stored to a file on the micro SD card called 'args'
+The kernel uImage is built with LOAD_ADDR=0x12000000 and the device tree is
+assummed to be imx6q-logicpd.dtb.
+
+By default the mmcroot is set to the baseboard.
+
+  # Establish bootargs
+  run mmcargs
+
+  # Load Linux Kernel uImage
+  fatload mmc 1 $loadaddr uImage
+
+  # Load Device Tree
+  run loadfdt
+
+  # Setup the blob that will get passed to the kernel
+  spl export fdt ${loadaddr} - ${fdt_addr_r}
+
+  # Note the starting and ending address of the updated device tree.
+  # for this example:
+  # Loading Device Tree to 1ffdf000, end 1fff038b ... OK
+  # Notice that 0x1fff038b - 1ffdf000 = 0x1138b
+  # now Add 1, so the length is 0x1138c.
+
+  fatwrite mmc 1 0x1ffdf000 args 0x1138c
+
+  # Reset the board and it will bypass U-Boot and SPL will directly boot
+  # the uImage
+
+To interrupt the boot sequence and force U-Boot to load, hold the 'c' button
+while starting.
+
+Additional Support Documentation can be found at:
+https://support.logicpd.com/
+

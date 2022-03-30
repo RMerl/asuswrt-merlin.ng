@@ -1,0 +1,58 @@
+if TEGRA20
+
+choice
+	prompt "Tegra20 board select"
+	optional
+
+config TARGET_HARMONY
+	bool "NVIDIA Tegra20 Harmony evaluation board"
+	select BOARD_LATE_INIT
+
+config TARGET_MEDCOM_WIDE
+	bool "Avionic Design Medcom-Wide board"
+	select BOARD_LATE_INIT
+
+config TARGET_PAZ00
+	bool "Paz00 board"
+	select BOARD_LATE_INIT
+
+config TARGET_PLUTUX
+	bool "Avionic Design Plutux board"
+	select BOARD_LATE_INIT
+
+config TARGET_SEABOARD
+	bool "NVIDIA Seaboard"
+	select BOARD_LATE_INIT
+
+config TARGET_TEC
+	bool "Avionic Design Tamonten Evaluation Carrier"
+	select BOARD_LATE_INIT
+
+config TARGET_TRIMSLICE
+	bool "Compulab TrimSlice board"
+	select BOARD_LATE_INIT
+
+config TARGET_VENTANA
+	bool "NVIDIA Tegra20 Ventana evaluation board"
+	select BOARD_LATE_INIT
+
+config TARGET_COLIBRI_T20
+	bool "Toradex Colibri T20 board"
+	select BOARD_LATE_INIT
+
+endchoice
+
+config SYS_SOC
+	default "tegra20"
+
+source "board/nvidia/harmony/Kconfig"
+source "board/avionic-design/medcom-wide/Kconfig"
+source "board/compal/paz00/Kconfig"
+source "board/avionic-design/plutux/Kconfig"
+source "board/nvidia/seaboard/Kconfig"
+source "board/avionic-design/tec/Kconfig"
+source "board/compulab/trimslice/Kconfig"
+source "board/nvidia/ventana/Kconfig"
+source "board/toradex/colibri_t20/Kconfig"
+
+endif

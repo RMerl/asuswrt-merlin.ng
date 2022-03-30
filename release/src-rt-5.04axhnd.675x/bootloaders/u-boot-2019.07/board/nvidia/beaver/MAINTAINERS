@@ -1,0 +1,7 @@
+BEAVER BOARD
+M:	Tom Warren <twarren@nvidia.com>
+M:	Stephen Warren <swarren@nvidia.com>
+S:	Maintained
+F:	board/nvidia/beaver/
+F:	include/configs/beaver.h
+F:	configs/beaver_defconfig

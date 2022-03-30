@@ -1,0 +1,43 @@
+/* SPDX-License-Identifier: GPL-2.0+ OR X11 */
+/*
+ * Copyright 2018 General Electric Company
+ * Based on imx53-ppd.dts from kernel 4.20.5.
+ */
+
+/dts-v1/;
+
+#include "imx53.dtsi"
+
+/ {
+	model = "General Electric CS ONE";
+	compatible = "ge,imx53-cpuvo", "fsl,imx53";
+};
+
+&iomuxc {
+	pinctrl-names = "default";
+
+	pinctrl_esdhc3: esdhc3grp {
+		fsl,pins = <
+			MX53_PAD_PATA_DATA8__ESDHC3_DAT0        0x1d5
+			MX53_PAD_PATA_DATA9__ESDHC3_DAT1        0x1d5
+			MX53_PAD_PATA_DATA10__ESDHC3_DAT2       0x1d5
+			MX53_PAD_PATA_DATA11__ESDHC3_DAT3       0x1d5
+			MX53_PAD_PATA_DATA0__ESDHC3_DAT4        0x1d5
+			MX53_PAD_PATA_DATA1__ESDHC3_DAT5        0x1d5
+			MX53_PAD_PATA_DATA2__ESDHC3_DAT6        0x1d5
+			MX53_PAD_PATA_DATA3__ESDHC3_DAT7        0x1d5
+			MX53_PAD_PATA_RESET_B__ESDHC3_CMD       0x1d5
+			MX53_PAD_PATA_IORDY__ESDHC3_CLK         0x1d5
+		>;
+	};
+};
+
+/* eMMC */
+&esdhc3 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_esdhc3>;
+	compatible = "fsl,esdhc";
+	bus-width = <8>;
+	non-removable;
+	status = "okay";
+};

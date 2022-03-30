@@ -1,0 +1,37 @@
+Andestech ATCSPI200 SPI controller Device Tree Bindings
+-------------------------------------------------------
+ATCSPI200 is a Serial Peripheral Interface (SPI) controller
+which serves as a SPI master or a SPI slave.
+
+It is often be embedded in AE3XX and AE250 platforms.
+
+Required properties:
+- compatible: has to be "andestech,atcspi200".
+- reg: Base address and size of the controllers memory area.
+- #address-cells: <1>, as required by generic SPI binding.
+- #size-cells: <0>, also as required by generic SPI binding.
+- interrupts: Property with a value describing the interrupt number.
+- clocks: Clock phandles (see clock bindings for details).
+- spi-max-frequency: Maximum SPI clocking speed of device in Hz.
+
+Optional properties:
+- num-cs: Number of chip selects used.
+
+Example:
+
+	spi: spi@f0b00000 {
+		compatible = "andestech,atcspi200";
+		reg = <0xf0b00000 0x1000>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		num-cs = <1>;
+		clocks = <&spiclk>;
+		interrupts = <3 4>;
+		flash@0 {
+			compatible = "jedec,spi-nor";
+			spi-max-frequency = <50000000>;
+			reg = <0>;
+			spi-cpol;
+			spi-cpha;
+		};
+	};

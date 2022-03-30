@@ -1,0 +1,12 @@
+if TARGET_ORIGEN
+
+config SYS_BOARD
+	default "origen"
+
+config SYS_VENDOR
+	default "samsung"
+
+config SYS_CONFIG_NAME
+	default "origen"
+
+endif

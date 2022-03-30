@@ -1,0 +1,27 @@
+# SPDX-License-Identifier: GPL-2.0
+
+if ARCH_ZYNQMP_R5
+
+config SYS_BOARD
+	string "Board name"
+	default "zynqmp_r5"
+
+config SYS_VENDOR
+	string "Vendor name"
+	default "xilinx"
+
+config SYS_SOC
+	default "zynqmp-r5"
+
+config SYS_CONFIG_NAME
+	string "Board configuration name"
+	default "xilinx_zynqmp_r5"
+	help
+	  This option contains information about board configuration name.
+	  Based on this option include/configs/<CONFIG_SYS_CONFIG_NAME>.h header
+	  will be used for board configuration.
+
+config SYS_MALLOC_F_LEN
+	default 0x600
+
+endif

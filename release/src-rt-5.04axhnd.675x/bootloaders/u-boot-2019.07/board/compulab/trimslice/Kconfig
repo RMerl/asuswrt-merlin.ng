@@ -1,0 +1,12 @@
+if TARGET_TRIMSLICE
+
+config SYS_BOARD
+	default "trimslice"
+
+config SYS_VENDOR
+	default "compulab"
+
+config SYS_CONFIG_NAME
+	default "trimslice"
+
+endif

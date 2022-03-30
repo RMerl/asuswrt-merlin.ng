@@ -1,0 +1,147 @@
+// SPDX-License-Identifier: GPL-2.0+
+
+#include <dt-bindings/memory/stm32-sdram.h>
+/{
+	soc {
+		u-boot,dm-pre-reloc;
+
+		fmc: fmc@A0000000 {
+			compatible = "st,stm32-fmc";
+			reg = <0xA0000000 0x1000>;
+			clocks = <&rcc 0 STM32F7_AHB3_CLOCK(FMC)>;
+			pinctrl-0 = <&fmc_pins>;
+			pinctrl-names = "default";
+			status = "okay";
+			u-boot,dm-pre-reloc;
+		};
+
+		mac: ethernet@40028000 {
+			compatible = "st,stm32-dwmac";
+			reg = <0x40028000 0x8000>;
+			reg-names = "stmmaceth";
+			clocks = <&rcc 0 STM32F7_AHB1_CLOCK(ETHMAC)>,
+				 <&rcc 0 STM32F7_AHB1_CLOCK(ETHMACTX)>,
+				 <&rcc 0 STM32F7_AHB1_CLOCK(ETHMACRX)>;
+			interrupts = <61>, <62>;
+			interrupt-names = "macirq", "eth_wake_irq";
+			snps,pbl = <8>;
+			snps,mixed-burst;
+			dma-ranges;
+			pinctrl-0 = <&ethernet_mii>;
+			phy-mode = "rmii";
+			phy-handle = <&phy0>;
+
+			status = "okay";
+
+			mdio0 {
+				#address-cells = <1>;
+				#size-cells = <0>;
+				compatible = "snps,dwmac-mdio";
+				phy0: ethernet-phy@0 {
+					reg = <0>;
+				};
+			};
+		};
+
+		qspi: quadspi@A0001000 {
+			compatible = "st,stm32-qspi";
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <0xA0001000 0x1000>, <0x90000000 0x10000000>;
+			reg-names = "qspi", "qspi_mm";
+			interrupts = <92>;
+			spi-max-frequency = <108000000>;
+			clocks = <&rcc 0 STM32F7_AHB3_CLOCK(QSPI)>;
+			resets = <&rcc STM32F7_AHB3_RESET(QSPI)>;
+			pinctrl-0 = <&qspi_pins>;
+
+			status = "okay";
+		};
+	};
+};
+
+&clk_hse {
+	u-boot,dm-pre-reloc;
+};
+
+&gpioa {
+	compatible = "st,stm32-gpio";
+	u-boot,dm-pre-reloc;
+};
+
+&gpiob {
+	compatible = "st,stm32-gpio";
+	u-boot,dm-pre-reloc;
+};
+
+&gpioc {
+	compatible = "st,stm32-gpio";
+	u-boot,dm-pre-reloc;
+};
+
+&gpiod {
+	compatible = "st,stm32-gpio";
+	u-boot,dm-pre-reloc;
+};
+
+&gpioe {
+	compatible = "st,stm32-gpio";
+	u-boot,dm-pre-reloc;
+};
+
+&gpiof {
+	compatible = "st,stm32-gpio";
+	u-boot,dm-pre-reloc;
+};
+
+&gpiog {
+	compatible = "st,stm32-gpio";
+	u-boot,dm-pre-reloc;
+};
+
+&gpioh {
+	compatible = "st,stm32-gpio";
+	u-boot,dm-pre-reloc;
+};
+
+&gpioi {
+	compatible = "st,stm32-gpio";
+	u-boot,dm-pre-reloc;
+};
+
+&gpioj {
+	compatible = "st,stm32-gpio";
+};
+
+&gpiok {
+	compatible = "st,stm32-gpio";
+};
+
+&pinctrl {
+	u-boot,dm-pre-reloc;
+
+	fmc_pins: fmc@0 {
+		u-boot,dm-pre-reloc;
+		pins
+		{
+		 u-boot,dm-pre-reloc;
+		};
+	};
+};
+
+&pwrcfg {
+	u-boot,dm-pre-reloc;
+};
+
+&rcc {
+	u-boot,dm-pre-reloc;
+};
+
+&timer5 {
+	u-boot,dm-pre-reloc;
+};
+
+&usart1 {
+	u-boot,dm-pre-reloc;
+	clocks = <&rcc 0 STM32F7_APB2_CLOCK(USART1)>;
+};

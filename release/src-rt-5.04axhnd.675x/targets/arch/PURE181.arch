@@ -1,0 +1,7 @@
+<PUBLISH>
+@@ special demark for maketargets.  All + and - lines after this line will modify profile.
+-BUILD_DM_HYBRID=y
+-BUILD_DM_LEGACY98=y
++BUILD_DM_PURE181=y
+-BUILD_QUICKSETUP=y
++BUILD_QUICKSETUP is not set

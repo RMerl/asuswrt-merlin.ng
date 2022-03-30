@@ -1,0 +1,15 @@
+# SPDX-License-Identifier: GPL-2.0+
+#
+# (C) Copyright 2017
+# Adam Ford, Logic PD, aford173@gmail.com
+
+comment "USB Phy"
+
+config TWL4030_USB
+	bool "TWL4030 PHY"
+
+config OMAP_USB_PHY
+	bool "OMAP PHY"
+
+config ROCKCHIP_USB2_PHY
+	bool "Rockchip USB2 PHY"

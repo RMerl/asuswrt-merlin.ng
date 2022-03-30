@@ -1,0 +1,22 @@
+Exynos ISP SPI Subsystem
+
+The device node for ISP SPI subsytem.
+Since Peripheral id in EXYNOS is decoded based on Interrupts, currently
+ISP SPI have no individual interrupts hence we add ad dummy interrupt node
+which will have a value beyond the maximum number of interrupts exynos5 can
+support.
+
+Required properties :
+ - compatible : Should be "samsung,exynos-spi" for spi.
+ - reg : Base adrress of the the subsystem.
+ - interrupts : A value which is beyond the maximum number of interrupts
+exynos5 can support.
+
+Example:
+spi@131a0000 {
+	#address-cells = <1>;
+	#size-cells = <0>;
+	compatible = "samsung,exynos-spi";
+	reg = <0x131a0000 0x30>;
+	interrupts = <0 129 0>;
+};

@@ -1,0 +1,23 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Samsung Espresso7420 board device tree source
+ *
+ * Copyright (c) 2016 Samsung Electronics Co., Ltd.
+ *		http://www.samsung.com
+ */
+
+#include "exynos7420.dtsi"
+/ {
+	model = "Samsung Espresso7420 board based on Exynos7420";
+	compatible = "samsung,espresso7420", "samsung,exynos7420";
+
+	aliases {
+		serial2 = "/serial@14C30000";
+		console = "/serial@14C30000";
+		pinctrl0 = "/pinctrl@13470000";
+	};
+};
+
+&fin_pll {
+	clock-frequency = <24000000>;
+};

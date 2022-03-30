@@ -1,0 +1,5 @@
+* Broadcom BCM283x GPIO controller
+
+Required properties:
+- compatible: must be "brcm,bcm2835-gpio"
+- reg: exactly one register range with length 0xb4

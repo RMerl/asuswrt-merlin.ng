@@ -1,0 +1,66 @@
+config BLK
+	bool "Support block devices"
+	depends on DM
+	default y if DM_MMC
+	help
+	  Enable support for block devices, such as SCSI, MMC and USB
+	  flash sticks. These provide a block-level interface which permits
+	  reading, writing and (in some cases) erasing blocks. Block
+	  devices often have a partition table which allows the device to
+	  be partitioned into several areas, called 'partitions' in U-Boot.
+	  A filesystem can be placed in each partition.
+
+config HAVE_BLOCK_DEVICE
+	bool "Enable Legacy Block Device"
+	help
+	  Some devices require block support whether or not DM is enabled
+
+config SPL_BLK
+	bool "Support block devices in SPL"
+	depends on SPL_DM && BLK
+	default y
+	help
+	  Enable support for block devices, such as SCSI, MMC and USB
+	  flash sticks. These provide a block-level interface which permits
+	  reading, writing and (in some cases) erasing blocks. Block
+	  devices often have a partition table which allows the device to
+	  be partitioned into several areas, called 'partitions' in U-Boot.
+	  A filesystem can be placed in each partition.
+
+config TPL_BLK
+	bool "Support block devices in TPL"
+	depends on TPL_DM && BLK
+	default y
+	help
+	  Enable support for block devices, such as SCSI, MMC and USB
+	  flash sticks. These provide a block-level interface which permits
+	  reading, writing and (in some cases) erasing blocks. Block
+	  devices often have a partition table which allows the device to
+	  be partitioned into several areas, called 'partitions' in U-Boot.
+	  A filesystem can be placed in each partition.
+
+config BLOCK_CACHE
+	bool "Use block device cache"
+	depends on BLK
+	default y
+	help
+	  This option enables a disk-block cache for all block devices.
+	  This is most useful when accessing filesystems under U-Boot since
+	  it will prevent repeated reads from directory structures and other
+	  filesystem data structures.
+
+config SPL_BLOCK_CACHE
+	bool "Use block device cache in SPL"
+	depends on SPL_BLK
+	default n
+	help
+	  This option enables the disk-block cache in SPL
+
+config IDE
+	bool "Support IDE controllers"
+	select HAVE_BLOCK_DEVICE
+	help
+	  Enables support for IDE (Integrated Drive Electronics) hard drives.
+	  This allows access to raw blocks and filesystems on an IDE drive
+	  from U-Boot. See also CMD_IDE which provides an 'ide' command for
+	  performing various IDE operations.

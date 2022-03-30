@@ -1,0 +1,51 @@
+Driver implementing the fuse API for Freescale's On-Chip OTP Controller (OCOTP)
+on MXC
+
+This IP can be found on the following SoCs:
+ - Vybrid VF610,
+ - i.MX6.
+
+Note that this IP is different from albeit similar to the IPs of the same name
+that can be found on the following SoCs:
+ - i.MX23,
+ - i.MX28,
+ - i.MX50.
+
+The section numbers in this file refer to the i.MX6 Reference Manual.
+
+A fuse word contains 32 fuse bit slots, as explained in 46.2.1.
+
+A bank contains 8 fuse word slots, as explained in 46.2.1 and shown by the
+memory map in 46.4.
+
+Some fuse bit or word slots may not have the corresponding fuses actually
+implemented in the fusebox.
+
+See the README files of the SoCs using this driver in order to know the
+conventions used by U-Boot to store some specific data in the fuses, e.g. MAC
+addresses.
+
+Fuse operations:
+
+   Read
+      Read operations are implemented as read accesses to the shadow registers,
+      using "Bankx Wordy" from the memory map in 46.4. This is explained in
+      detail by the first two paragraphs in 46.2.1.2.
+
+   Sense
+      Sense operations are implemented as the direct fusebox read explained by
+      the steps in 46.2.1.2.
+
+   Program
+      Program operations are implemented as explained by the steps in 46.2.1.3.
+      Following this operation, the shadow registers are not reloaded by the
+      hardware.
+
+   Override
+      Override operations are implemented as write accesses to the shadow
+      registers, as explained by the first paragraph in 46.2.1.3.
+
+Configuration:
+
+   CONFIG_MXC_OCOTP
+      Define this to enable the mxc_ocotp driver.

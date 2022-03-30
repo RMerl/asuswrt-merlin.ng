@@ -1,0 +1,7 @@
+MT7629
+M:	Ryder Lee <ryder.lee@mediatek.com>
+M:	Weijie Gao <weijie.gao@mediatek.com>
+S:	Maintained
+F:	board/mediatek/mt7629
+F:	include/configs/mt7629.h
+F:	configs/mt7629_rfb_defconfig

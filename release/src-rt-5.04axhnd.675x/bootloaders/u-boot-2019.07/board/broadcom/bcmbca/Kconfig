@@ -1,0 +1,138 @@
+# SPDX-License-Identifier: GPL-2.0+
+#
+# (C) Copyright 2019 Broadcom Ltd
+#
+
+config SYS_VENDOR
+	default "broadcom"
+
+config SYS_BOARD
+	default "bcmbca"
+
+if TARGET_BCM963158
+config SYS_CONFIG_NAME
+	default "bcm963158"
+endif
+
+if TARGET_BCM96858
+config SYS_CONFIG_NAME
+	default "bcm96858"
+endif
+
+if TARGET_BCM96856
+config SYS_CONFIG_NAME
+	default "bcm96856"
+endif
+
+if TARGET_BCM963178
+config SYS_CONFIG_NAME
+	default "bcm963178"
+endif
+
+if TARGET_BCM947622
+config SYS_CONFIG_NAME
+	default "bcm947622"
+endif
+
+if TARGET_BCM96756
+config SYS_CONFIG_NAME
+	default "bcm96756"
+endif
+
+if TARGET_BCM96846
+config SYS_CONFIG_NAME
+    default "bcm96846"
+endif
+
+if TARGET_BCM96878
+config SYS_CONFIG_NAME
+    default "bcm96878"
+endif
+
+if TARGET_BCM96855
+config SYS_CONFIG_NAME
+    default "bcm96855"
+endif
+
+if TARGET_BCM94908
+config SYS_CONFIG_NAME
+	default "bcm94908"
+endif
+
+if TARGET_BCM94912
+config SYS_CONFIG_NAME
+	default "bcm94912"
+endif
+
+if TARGET_BCM96813
+config SYS_CONFIG_NAME
+	default "bcm96813"
+endif
+
+if TARGET_BCM963146
+config SYS_CONFIG_NAME
+	default "bcm963146"
+endif
+
+if TARGET_BCM963138
+config SYS_CONFIG_NAME
+	default "bcm963138"
+endif
+
+if TARGET_BCM963148
+config SYS_CONFIG_NAME
+	default "bcm963148"
+endif
+
+config BCMBCA_HTTPD
+	bool "Support HTTPD server"
+	depends on NET
+
+config BCMBCA_IKOS
+	bool "IKOS"
+	depends on !CONFIG_SYS_ARCH_TIMER
+	help
+	  Enable IKOS build 
+
+config BCMBCA_BOARD_SPECIFIC_DT
+	bool "Load board specific device tree for uboot"
+
+config BCMBCA_UPDATE_MCB_IN_ENV
+	bool "Auto update MCB selector in environment"
+	depends on BCMBCA_BOARD_SPECIFIC_DT
+	default y
+
+config BCMBCA_BOARD_SDK
+	bool "Support board sdk"
+	default y
+
+config BCMBCA_DECRYPT_TPL
+	bool "Directs SPL to unconditionally decrypt TPL in Bootrom FLD/MFG Secure mode using AES symmetric key. Caution: TPL will not be capable to run in unsecrue mode"
+
+config BCMBCA_EARLY_ABORT_JTAG_UNLOCK
+	bool "Unlocks JTAG in early abort. Hazardous: Use in debug/development mode only"
+	help
+          JTAG unlock is a debug feature helping to unbrick board if booted to BOOTROM secure mode
+		
+#Hopefully temporary home for this driver
+#since we need this in tpl, we can't have it under misc 
+config BCM_BOOTSTATE
+	bool "Enable support for Broadcom Bootstate Driver"
+	help
+	  If you say Y here, you will get support broadcom bootstate
+	  mechanism
+
+config BCMBCA_EXTRA_BOARD_OBJECTS
+	string "Space Seperated List of Extra board/broadcom/bcmbca  objects to build"
+	help
+	  To add additional files to the uboot proper in the board/broadcom/bcmbca directory
+	  add the names of the .o files in a space-separated list
+
+config BCMBCA_BOARD_TK_PROG
+	bool "Build Turnkey Programming SPL Version"
+	default n
+
+config BCMBCA_BUTTON
+	bool "button support for broadcom board"
+	depends on DM
+	default y

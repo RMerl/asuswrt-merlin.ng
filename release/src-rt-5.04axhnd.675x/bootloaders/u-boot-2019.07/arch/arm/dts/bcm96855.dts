@@ -1,0 +1,163 @@
+/dts-v1/;
+
+
+
+/ {
+	model = "Broadcom-v7";
+	compatible = "brcm,brcm-v7";
+	#address-cells = <0x1>;
+	#size-cells = <0x1>;
+
+	aliases {
+		serial0 = &uart0;
+	};
+
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+	};
+
+	memory {
+		device_type = "memory";
+		reg = <0x0 0x08000000>;
+	};
+
+    boot_state {
+        u-boot,dm-pre-reloc;
+        compatible = "brcm,bcmbca-bootstate-v2";
+        reg-names = "reset_reason", "reset_status";
+        reg =   <0xff802628 0x04>,
+            <0xff85a018 0x04>;
+    };
+
+	clocks {
+		compatible = "simple-bus";
+		#address-cells = <1>;
+		#size-cells = <1>;
+		ranges;
+		u-boot,dm-pre-reloc;
+
+		periph_osc: periph-osc {
+			compatible = "fixed-clock";
+			#clock-cells = <0>;
+			clock-frequency = <200000000>;
+			u-boot,dm-pre-reloc;
+		};
+
+		hsspi_pll: hsspi-pll {
+			compatible = "fixed-factor-clock";
+			#clock-cells = <0>;
+			clocks = <&periph_osc>;
+			clock-mult = <1>;
+			clock-div = <1>;
+			u-boot,dm-pre-reloc;
+		};
+
+		refclk50mhz: refclk50mhz {
+			compatible = "fixed-clock";
+			#clock-cells = <0>;
+			clock-frequency = <50000000>;
+		};
+	};
+
+	ubus@ff800000 {
+		compatible = "simple-bus";
+		#address-cells = <0x1>;
+		#size-cells = <0x1>;
+		u-boot,dm-pre-reloc;
+
+		uart0: serial@ff812000 {
+			u-boot,dm-pre-reloc;
+			compatible = "arm,pl011", "arm,primecell";
+			reg = <0xff812000 0x1000>;
+			clock = <50000000>;
+			status = "okay";
+		};
+
+		wdt1: watchdog@ff800480 {
+			compatible = "brcm,bcm6345-wdt";
+			reg = <0xff800480 0x14>;
+			clocks = <&refclk50mhz>;
+		};
+
+		wdt2: watchdog@ff8004c0 {
+			compatible = "brcm,bcm6345-wdt";
+			reg = <0xff8004c0 0x14>;
+			clocks = <&refclk50mhz>;
+		};
+
+		wdt-reboot {
+			compatible = "wdt-reboot";
+			wdt = <&wdt1>;
+		};
+
+		hsspi: hsspi@ff801000 {
+			compatible = "brcm,bcm6328-hsspi";
+			#address-cells = <0x1>;
+			#size-cells = <0x0>;
+			u-boot,dm-pre-reloc;
+			
+			reg = <0xff801000 0x1000>;
+			clocks = <&hsspi_pll>, <&hsspi_pll>;
+			clock-names = "hsspi", "pll";
+			spi-max-frequency = <50000000>;
+			num-cs = <8>;
+			status = "disabled";
+		};
+
+		nand: nand-controller@ff801800 {
+			compatible = "brcm,nand-bcmbca", "brcm,brcmnand-v7.1";
+			reg-names = "nand", "nand-int-base";
+			reg = <0xff801800 0x600>, <0xff802000 0x10>;
+			parameter-page-big-endian = <0>;
+			status = "disabled";
+		};
+
+		sdhci: sdhci@ff810000 {
+			compatible = "brcm,bcm63xx-sdhci",
+						 "brcm,sdhci-brcmbca";
+			reg-names = "sdhci-base", "sdhci-boot";
+			reg = <0xff810000 0x100>,
+				  <0xff810200 0x40>;
+			bus-width = <8>;
+			u-boot,dm-pre-reloc;
+		};
+
+		rng: rng@ff800b80 {
+			compatible = "brcm,iproc-rng200";
+			reg = <0xff800b80 0x28>;
+			u-boot,dm-pre-reloc;
+		};
+
+		pinctrl: pinctrl {
+		compatible = "brcm,bcmbca-pinctrl";
+		reg = <0xff800554 0x14>;
+		};
+	}; 
+};
+
+&nand {
+	status = "okay";
+	write-protect = <0>;
+	#address-cells = <1>;
+	#size-cells = <0>;
+
+	nandcs@0 {
+		compatible = "brcm,nandcs";
+		reg = <0>;
+	};
+};
+
+&hsspi {
+	status = "okay";
+	spi-nand {
+		compatible = "spi-nand";
+		reg = <0>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		u-boot,dm-pre-reloc;				
+		spi-max-frequency = <50000000>;
+	};
+};
+
+

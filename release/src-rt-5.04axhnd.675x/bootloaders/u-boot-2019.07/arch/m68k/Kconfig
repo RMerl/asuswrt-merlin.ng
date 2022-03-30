@@ -1,0 +1,260 @@
+menu "M68000 architecture"
+	depends on M68K
+
+config SYS_ARCH
+	default "m68k"
+
+# processor family
+config MCF520x
+	select OF_CONTROL
+	select DM
+        select DM_SERIAL
+	bool
+
+config MCF52x2
+	select OF_CONTROL
+	select DM
+        select DM_SERIAL
+	bool
+
+config MCF523x
+	select OF_CONTROL
+	select DM
+        select DM_SERIAL
+	bool
+
+config MCF530x
+	select OF_CONTROL
+	select DM
+        select DM_SERIAL
+	bool
+
+config MCF5301x
+	select OF_CONTROL
+	select DM
+        select DM_SERIAL
+	bool
+
+config MCF532x
+	select OF_CONTROL
+	select DM
+        select DM_SERIAL
+	bool
+
+config MCF537x
+	select OF_CONTROL
+	select DM
+        select DM_SERIAL
+	bool
+
+config MCF5441x
+	select OF_CONTROL
+	select DM
+        select DM_SERIAL
+	bool
+
+config MCF5445x
+	select OF_CONTROL
+	select DM
+        select DM_SERIAL
+	bool
+
+config MCF5227x
+	select OF_CONTROL
+	select DM
+        select DM_SERIAL
+	bool
+
+config MCF547x_8x
+	select OF_CONTROL
+        select DM
+        select DM_SERIAL
+	bool
+
+# processor type
+config M5208
+	bool
+	select MCF520x
+
+config M5235
+	bool
+	select MCF523x
+
+config M5249
+	bool
+	select MCF52x2
+
+config M5253
+	bool
+	select MCF52x2
+
+config M5271
+	bool
+	select MCF52x2
+
+config M5272
+	bool
+	select MCF52x2
+
+config M5275
+	bool
+	select MCF52x2
+
+config M5282
+	bool
+	select MCF52x2
+
+config M5307
+	bool
+	select MCF530x
+
+config M53015
+	bool
+	select MCF5301x
+
+config M5329
+	bool
+	select MCF532x
+
+config M5373
+	bool
+	select MCF532x
+	select MCF537x
+
+config M54418
+	bool
+	select MCF5441x
+
+config M54451
+	bool
+	select MCF5445x
+
+config M54455
+	bool
+	select MCF5445x
+
+config M52277
+	bool
+	select MCF5227x
+
+config M547x
+	bool
+	select MCF547x_8x
+
+config M548x
+	bool
+	select MCF547x_8x
+
+choice
+	prompt "Target select"
+	optional
+
+config TARGET_M52277EVB
+	bool "Support M52277EVB"
+	select M52277
+
+config TARGET_M5235EVB
+	bool "Support M5235EVB"
+	select M5235
+
+config TARGET_COBRA5272
+	bool "Support cobra5272"
+	select M5272
+
+config TARGET_EB_CPU5282
+	bool "Support eb_cpu5282"
+	select M5282
+
+config TARGET_M5208EVBE
+	bool "Support M5208EVBE"
+	select M5208
+
+config TARGET_M5249EVB
+	bool "Support M5249EVB"
+	select M5249
+
+config TARGET_M5253DEMO
+	bool "Support M5253DEMO"
+	select M5253
+
+config TARGET_M5272C3
+	bool "Support M5272C3"
+	select M5272
+
+config TARGET_M5275EVB
+	bool "Support M5275EVB"
+	select M5275
+
+config TARGET_M5282EVB
+	bool "Support M5282EVB"
+	select M5282
+
+config TARGET_ASTRO_MCF5373L
+	bool "Support astro_mcf5373l"
+	select M5373
+
+config TARGET_M53017EVB
+	bool "Support M53017EVB"
+	select M53015
+
+config TARGET_M5329EVB
+	bool "Support M5329EVB"
+	select M5329
+
+config TARGET_M5373EVB
+	bool "Support M5373EVB"
+	select M5373
+
+config TARGET_M54418TWR
+	bool "Support M54418TWR"
+	select M54418
+
+config TARGET_M54451EVB
+	bool "Support M54451EVB"
+	select M54451
+
+config TARGET_M54455EVB
+	bool "Support M54455EVB"
+	select M54455
+
+config TARGET_M5475EVB
+	bool "Support M5475EVB"
+	select M547x
+
+config TARGET_M5485EVB
+	bool "Support M5485EVB"
+	select M548x
+
+config TARGET_AMCORE
+	bool "Support AMCORE"
+	select M5307
+
+config TARGET_STMARK2
+        bool "Support stmark2"
+        select M54418
+
+endchoice
+
+source "board/BuS/eb_cpu5282/Kconfig"
+source "board/astro/mcf5373l/Kconfig"
+source "board/cobra5272/Kconfig"
+source "board/freescale/m5208evbe/Kconfig"
+source "board/freescale/m52277evb/Kconfig"
+source "board/freescale/m5235evb/Kconfig"
+source "board/freescale/m5249evb/Kconfig"
+source "board/freescale/m5253demo/Kconfig"
+source "board/freescale/m5272c3/Kconfig"
+source "board/freescale/m5275evb/Kconfig"
+source "board/freescale/m5282evb/Kconfig"
+source "board/freescale/m53017evb/Kconfig"
+source "board/freescale/m5329evb/Kconfig"
+source "board/freescale/m5373evb/Kconfig"
+source "board/freescale/m54418twr/Kconfig"
+source "board/freescale/m54451evb/Kconfig"
+source "board/freescale/m54455evb/Kconfig"
+source "board/freescale/m547xevb/Kconfig"
+source "board/freescale/m548xevb/Kconfig"
+source "board/sysam/amcore/Kconfig"
+source "board/sysam/stmark2/Kconfig"
+
+endmenu

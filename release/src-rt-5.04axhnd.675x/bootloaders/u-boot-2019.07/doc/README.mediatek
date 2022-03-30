@@ -1,0 +1,221 @@
+# SPDX-License-Identifier: GPL-2.0+
+#
+# Copyright (C) 2018 MediaTek Inc.
+# Ryder Lee <ryder.lee@kernel.org>
+
+
+This document describes how to compile the U-Boot and how to change U-Boot
+configuration about the MediaTek SoCs.
+
+
+Build Procedure
+===============
+	-Set the cross compiler:
+
+		# export CROSS_COMPILE=/path/to/toolchain/arm-linux-gnueabi-
+
+	-Clean-up old residuals:
+
+		# make mrproper
+
+	-Configure the U-Boot:
+
+		# make <defconfig_file>
+		# make
+
+		- For the MT7623n bananapi R2 board use "mt7623n_bpir2_defconfig"
+		- For the MT7629 reference board use "mt7629_rfb_defconfig"
+
+
+Boot sequence
+=============
+	-Bootrom -> MTK preloader -> U-Boot
+
+		- MT7623n
+
+	This version of U-Boot doesn't implement SPL. So, MTK preloader binary
+	is needed to boot up:
+
+	https://github.com/BPI-SINOVOIP/BPI-R2-bsp/tree/master/mt-pack/mtk/bpi-r2/bin
+
+
+	-Bootrom -> SPL -> U-Boot
+
+		- MT7629
+
+
+Configuration update
+====================
+	To update the U-Boot configuration, please refer to doc/README.kconfig
+
+
+MediaTek image header
+=====================
+Currently there are two image headers used for MediaTek chips:
+
+	- BootROM image header. This header is used by the first stage bootloader. It records
+	  the desired compatible boot device, integrity information and its load address.
+
+	  The on-chip BootROM will firstly verify integrity and compatibility of the bootloader.
+
+	  If verification passed, the BootROM will then load the bootloader into on-chip SRAM,
+	  and pass control to it.
+
+	  Note that this header is actually a combination of three independent headers:
+	  Device header, BRLYT header and GFH header.
+
+	  Used by U-Boot SPL of MT7629 and preloader of MT7623.
+
+
+	- MediaTek legacy image header. This header was originally used by the legacy image. It
+	  basically records the load address, image size and image name.
+
+	  After all low level initializations passed, the preloader will locate the LK image and
+	  load it into DRAM, and pass control to it.
+
+	  Now this header is used by U-Boot of MT7623.
+
+
+To generate these two headers with mkimage:
+
+	# mkimage -T mtk_image -a <load_addr> -n <option_string> -d <input_file> <image_file>
+
+	- mtk_image means using MediaTek's header generation method.
+
+
+	- load_addr is the load address of this image.
+	  For first stage bootloader like U-Boot SPL or preloader, it usually points to the
+	  on-chip SRAM.
+
+	  For second stage bootloader like U-Boot, it usually points to the DRAM.
+
+
+	- option_string contains options to generate the header.
+
+	  The option string is using the follow format:
+		key1=value1;key2=value2;...
+
+	  The following key names are valid:
+		lk: If lk=1, LK image header is used. Otherwise BootROM image header is used.
+
+		lkname: The name of the LK image header. The maximum length is 32.
+			The default value is "U-Boot".
+
+		media: Desired boot device. The valid values are:
+		nand : Parallel NAND
+		snand: Serial NAND
+		nor  : Serial NOR
+		emmc : eMMC
+		sdmmc: SD
+
+	   nandinfo: Desired NAND device type, a combination of page size, oob size and
+		     optional device capacity. Valid types are:
+		2k+64    : for Serial NAND, 2KiB page size + 64B oob size
+		2k+120   : for Serial NAND, 2KiB page size + 120B oob size
+		2k+128   : for Serial NAND, 2KiB page size + 128B oob size
+		4k+256   : for Serial NAND, 4KiB page size + 256B oob size
+		1g:2k+64 : for Parallel NAND, 2KiB page size + 64B oob size, total 1Gbit size
+		2g:2k+64 : for Parallel NAND, 2KiB page size + 64B oob size, total 2Gbit size
+		4g:2k+64 : for Parallel NAND, 2KiB page size + 64B oob size, total 4Gbit size
+		2g:2k+128: for Parallel NAND, 2KiB page size + 128B oob size, total 2Gbit size
+		4g:2k+128: for Parallel NAND, 2KiB page size + 128B oob size, total 4Gbit size
+
+
+MT7629 partitions on Serial NOR
+===============================
+
+	Start      End       Size       Description
+	00000000 - 0000ffff: 64KiB      U-Boot SPL
+	00010000 - 0005ffff: 320KiB     U-Boot
+	00060000 - 0006ffff: 64KiB      U-Boot env / MediaTek NVRAM
+	00070000 - 000affff: 256KiB     RF calibration data
+	000b0000 - xxxxxxxx: all left   Firmware image
+
+
+BPi-R2 (MT7623N) partitions on SD
+=================================
+	Please note that the last two partitions can vary from different Linux distributions
+	depending on the MBR partition table.
+
+	Start      End       Size       Description
+	00000000 - 000001ff: 512B       Device header (with MBR partition table)
+	00000200 - 000007ff: 1536B      BRLYT header
+	00000800 - 0004ffff: 318KiB     Preloader (with GFH header)
+	00050000 - 000fffff: 704KiB     U-Boot
+	00100000 - 063fffff: 99MiB      Reserved
+	06400000 - 163fffff: 256MiB     Partition 1 (FAT32)
+	16400000 - xxxxxxxx: all left   Partition 2 (ext4)
+
+
+Upgrading notice on Serial NOR
+==============================
+Example: MT7629
+
+	The command sf is used to operate the Serial NOR device:
+
+	- To probe current NOR flash:
+
+		# sf probe
+
+	- To erase a region:
+
+		# sf erase <offset> <len>
+
+	- To write data to an offset:
+
+		# sf write <data_addr> <offset> <len>
+
+	- To boot kernel:
+
+		# bootm 0x300b0000
+
+	The memory address range 0x30000000 - 0x3fffffff is mapped to the NOR flash.
+	The DRAM starts at 0x40000000.
+
+	Please note that the output binary u-boot-mtk.bin is a combination of SPL and U-Boot,
+	and it should be write to beginning of the flash.
+
+	Otherwise you should use standalone files:
+
+		spl/u-boot-spl-mtk.bin for SPL,
+		u-boot.img for U-Boot.
+
+
+Upgrading notice on SD / eMMC
+=============================
+Example: MT7623
+
+	Normally only Preloader and U-Boot can be upgraded within U-Boot, and other partitions
+	should be written in PC.
+
+	- To probe current SD card / eMMC:
+
+		# mmc dev 0 for eMMC
+		# mmc dev 1 for SD
+
+	- To erase a region:
+
+		# mmc erase <blk_offset> <blk_num>
+
+	- To write data to a block offset:
+
+		# mmc write <data_addr> <blk_offset> <blk_num>
+
+	- To load kernel image from partition 1:
+
+		# fatload mmc 0:1 <load_address> <path_to_kernel_uImage> for eMMC
+		# fatload mmc 1:1 <load_address> <path_to_kernel_uImage> for SD
+
+	- To boot kernel:
+
+		# bootm <load_address>
+
+	The DRAM starts at 0x80000000.
+
+	Please note that we use block offset and block count for SD card, not the byte offset.
+	The block size is always 512 bytes for SD card.
+
+
+Documentation
+=============
+	http://wiki.banana-pi.org/Banana_Pi_BPI-R2

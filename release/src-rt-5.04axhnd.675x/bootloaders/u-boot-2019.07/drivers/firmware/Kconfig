@@ -1,0 +1,23 @@
+config FIRMWARE
+	bool "Enable Firmware driver support"
+
+config SPL_ARM_PSCI_FW
+	bool
+	select FIRMWARE
+
+config ARM_PSCI_FW
+	bool
+	select FIRMWARE
+
+config TI_SCI_PROTOCOL
+	tristate "TI System Control Interface (TISCI) Message Protocol"
+	depends on K3_SEC_PROXY
+	select FIRMWARE
+	help
+	  TI System Control Interface (TISCI) Message Protocol is used to manage
+	  compute systems such as ARM, DSP etc with the system controller in
+	  complex System on Chip (SoC) such as those found on certain K3
+	  generation SoC from TI.
+
+	  This protocol library is used by client drivers to use the features
+	  provided by the system controller.

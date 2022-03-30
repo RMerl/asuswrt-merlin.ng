@@ -1,0 +1,6 @@
+ETHERNUT5 BOARD
+M:	egnite GmbH <info@egnite.de>
+S:	Maintained
+F:	board/egnite/ethernut5/
+F:	include/configs/ethernut5.h
+F:	configs/ethernut5_defconfig

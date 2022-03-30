@@ -1,0 +1,39 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use FindBin qw($Bin);
+use lib "$Bin/../../../hostTools/PerlLib";
+use BRCM::GenConfig;
+
+my $c = new BRCM::GenConfig( shift);
+
+######   Any config changes start here #####
+
+# Disable options not needed for SPL
+$c->set('CONFIG_BCMBCA_HTTPD','n');
+
+# Disable options for other flash devices
+$c->unset('CONFIG_NAND');
+$c->unset('CONFIG_SPL_NAND_SUPPORT');
+$c->unset('CONFIG_TPL_NAND_SUPPORT');
+$c->unset('CONFIG_CMD_MTD');
+$c->unset('CONFIG_CMD_NAND');
+$c->unset('CONFIG_CMD_MTDPARTS');
+$c->unset('CONFIG_CMD_UBI');
+$c->unset('CONFIG_MTD');
+$c->unset('CONFIG_NAND_BRCMNAND');
+
+# Disable eMMC options not needed in SPL
+$c->unset('CONFIG_MMC_WRITE');
+$c->unset('CONFIG_MMC_HW_PARTITIONING');
+$c->unset('CONFIG_MMC_VERBOSE');
+$c->unset('CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_USE_PARTITION');
+$c->unset('CONFIG_SPL_LIBDISK_SUPPORT');
+$c->unset('CONFIG_PARTITIONS');
+$c->unset('CONFIG_EFI_LOADER');
+$c->unset('CONFIG_CMD_GPT');
+$c->unset('CONFIG_CMD_MMC');
+$c->unset('CONFIG_CMD_PART');
+#####   End of config changes #####
+$c->write();
+

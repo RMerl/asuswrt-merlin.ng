@@ -1,0 +1,8 @@
+NXP i.MX (MXC) UART
+
+Required properties:
+- compatible: must be "fsl,imx7d-uart"
+- reg: start address and size of the registers
+
+Optional properties:
+- fsl,dte-mode: use DTE mode

@@ -1,0 +1,7 @@
+VF610TWR BOARD
+M:	Alison Wang <alison.wang@nxp.com>
+S:	Maintained
+F:	board/freescale/vf610twr/
+F:	include/configs/vf610twr.h
+F:	configs/vf610twr_defconfig
+F:	configs/vf610twr_nand_defconfig

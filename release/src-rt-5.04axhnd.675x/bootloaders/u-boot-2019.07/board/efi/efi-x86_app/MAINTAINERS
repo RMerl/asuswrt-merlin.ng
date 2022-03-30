@@ -1,0 +1,6 @@
+EFI-X86_APP BOARD
+M:	Simon Glass <sjg@chromium.org>
+S:	Maintained
+F:	board/efi/efi-x86_app/
+F:	include/configs/efi-x86_app.h
+F:	configs/efi-x86_app_defconfig

@@ -1,0 +1,38 @@
+if TEGRA30
+
+choice
+	prompt "Tegra30 board select"
+	optional
+
+config TARGET_APALIS_T30
+	bool "Toradex Apalis T30 board"
+	select BOARD_LATE_INIT
+
+config TARGET_BEAVER
+	bool "NVIDIA Tegra30 Beaver evaluation board"
+	select BOARD_LATE_INIT
+
+config TARGET_CARDHU
+	bool "NVIDIA Tegra30 Cardhu evaluation board"
+	select BOARD_LATE_INIT
+
+config TARGET_COLIBRI_T30
+	bool "Toradex Colibri T30 board"
+	select BOARD_LATE_INIT
+
+config TARGET_TEC_NG
+	bool "Avionic Design TEC-NG board"
+	select BOARD_LATE_INIT
+
+endchoice
+
+config SYS_SOC
+	default "tegra30"
+
+source "board/toradex/apalis_t30/Kconfig"
+source "board/nvidia/beaver/Kconfig"
+source "board/nvidia/cardhu/Kconfig"
+source "board/toradex/colibri_t30/Kconfig"
+source "board/avionic-design/tec-ng/Kconfig"
+
+endif

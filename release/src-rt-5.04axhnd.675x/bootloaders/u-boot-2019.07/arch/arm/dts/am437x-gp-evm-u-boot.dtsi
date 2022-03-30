@@ -1,0 +1,44 @@
+/*
+ * Copyright (C) 2017 Texas Instruments Incorporated - http://www.ti.com/
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation.
+ * Based on "dra7.dtsi"
+ */
+
+#include "am4372-u-boot.dtsi"
+
+/{
+	ocp {
+		u-boot,dm-spl;
+	};
+};
+
+&uart0 {
+	u-boot,dm-spl;
+};
+
+&mmc1 {
+	u-boot,dm-spl;
+};
+
+&mac {
+	u-boot,dm-spl;
+};
+
+&davinci_mdio {
+	u-boot,dm-spl;
+};
+
+&cpsw_emac0 {
+	u-boot,dm-spl;
+};
+
+&phy_sel {
+	u-boot,dm-spl;
+};
+
+&i2c0 {
+	u-boot,dm-spl;
+};

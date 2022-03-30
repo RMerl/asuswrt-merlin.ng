@@ -1,0 +1,8 @@
+CHILIBOARD
+M:	Marcin Niestroj <m.niestroj@grinn-global.com>
+S:	Maintained
+F:	arch/arm/include/asm/arch-am33xx/chilisom.h
+F:	arch/arm/mach-omap2/am33xx/chilisom.c
+F:	board/grinn/chiliboard/
+F:	include/configs/chiliboard.h
+F:	configs/chiliboard_defconfig

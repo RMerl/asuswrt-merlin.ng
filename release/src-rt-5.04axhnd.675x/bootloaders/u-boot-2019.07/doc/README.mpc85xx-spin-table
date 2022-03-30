@@ -1,0 +1,26 @@
+Spin table in cache
+=====================================
+As specified by ePAPR v1.1, the spin table needs to be in cached memory. After
+DDR is initialized and U-Boot relocates itself into DDR, the spin table is
+accessible for core 0. It is part of release.S, within 4KB range after
+__secondary_start_page. For other cores to use the spin table, the booting
+process is described below:
+
+Core 0 sets up the reset page on the top 4K of memory (or 4GB if total memory
+is more than 4GB), and creates a TLB to map it to 0xffff_f000, regardless of
+the physical address of this page, with WIMGE=0b01010. Core 0 also enables boot
+page translation for secondary cores to use this page of memory. Then 4KB
+memory is copied from __secondary_start_page to the boot page, after flusing
+cache because this page is mapped as normal DDR. Before copying the reset page,
+core 0 puts the physical address of the spin table (which is in release.S and
+relocated to the top of mapped memory) into a variable __spin_table_addr so
+that secondary cores can see it.
+
+When secondary cores boot up from 0xffff_f000 page, they only have one default
+TLB. While booting, they set up another TLB in AS=1 space and jump into
+the new space. The new TLB covers the physical address of the spin table page,
+with WIMGE =0b00100. Now secondary cores can keep polling the spin table
+without stress DDR bus because both the code and the spin table is in cache.
+
+For the above to work, DDR has to set the 'M' bit of WIMGE, in order to keep
+cache coherence.

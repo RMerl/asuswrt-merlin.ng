@@ -1,0 +1,17 @@
+AT91SAM9260EK BOARD
+M:	Stelian Pop <stelian@popies.net>
+S:	Maintained
+F:	board/atmel/at91sam9260ek/
+F:	include/configs/at91sam9260ek.h
+F:	configs/at91sam9260ek_dataflash_cs0_defconfig
+F:	configs/at91sam9260ek_dataflash_cs1_defconfig
+F:	configs/at91sam9260ek_nandflash_defconfig
+F:	configs/at91sam9g20ek_2mmc_nandflash_defconfig
+F:	configs/at91sam9g20ek_dataflash_cs0_defconfig
+F:	configs/at91sam9g20ek_dataflash_cs1_defconfig
+F:	configs/at91sam9g20ek_mmc_defconfig
+F:	configs/at91sam9g20ek_2mmc_defconfig
+F:	configs/at91sam9g20ek_nandflash_defconfig
+F:	configs/at91sam9xeek_dataflash_cs0_defconfig
+F:	configs/at91sam9xeek_dataflash_cs1_defconfig
+F:	configs/at91sam9xeek_nandflash_defconfig

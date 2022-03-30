@@ -1,0 +1,189 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/*
+ * Copyright (c) 2018 Microsemi Corporation
+ */
+
+/ {
+	#address-cells = <1>;
+	#size-cells = <1>;
+	compatible = "mscc,servalt";
+
+	cpus {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		cpu@0 {
+			compatible = "mips,mips24KEc";
+			device_type = "cpu";
+			clocks = <&cpu_clk>;
+			reg = <0>;
+		};
+	};
+
+	aliases {
+		serial0 = &uart0;
+	};
+
+	cpuintc: interrupt-controller@0 {
+		#address-cells = <0>;
+		#interrupt-cells = <1>;
+		interrupt-controller;
+		compatible = "mti,cpu-interrupt-controller";
+	};
+
+	cpu_clk: cpu-clock {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		clock-frequency = <500000000>;
+	};
+
+	sys_clk: sys-clk {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		clock-frequency = <250000000>;
+	};
+
+	ahb_clk: ahb-clk {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		clock-frequency = <250000000>;
+	};
+
+	ahb {
+		compatible = "simple-bus";
+		#address-cells = <1>;
+		#size-cells = <1>;
+		ranges = <0 0x70000000 0x2000000>;
+
+		interrupt-parent = <&intc>;
+
+		cpu_ctrl: syscon@0 {
+			compatible = "mscc,servalt-cpu-syscon", "syscon";
+			reg = <0x0 0x2c>;
+		};
+
+		intc: interrupt-controller@70 {
+			compatible = "mscc,servalt-icpu-intr";
+			reg = <0x70 0x74>;
+			#interrupt-cells = <1>;
+			interrupt-controller;
+			interrupt-parent = <&cpuintc>;
+			interrupts = <2>;
+		};
+
+		uart0: serial@100000 {
+			pinctrl-0 = <&uart_pins>;
+			pinctrl-names = "default";
+			compatible = "ns16550a";
+			reg = <0x100000 0x20>;
+			interrupts = <6>;
+			clocks = <&ahb_clk>;
+			reg-io-width = <4>;
+			reg-shift = <2>;
+
+			status = "disabled";
+		};
+
+		uart2: serial@100800 {
+			pinctrl-0 = <&uart2_pins>;
+			pinctrl-names = "default";
+			compatible = "ns16550a";
+			reg = <0x100800 0x20>;
+			interrupts = <7>;
+			clocks = <&ahb_clk>;
+			reg-io-width = <4>;
+			reg-shift = <2>;
+
+			status = "disabled";
+		};
+
+		reset@1010008 {
+			compatible = "mscc,servalt-chip-reset";
+			reg = <0x1010008 0x4>;
+		};
+
+		gpio: pinctrl@1010034 {
+			compatible = "mscc,servalt-pinctrl";
+			reg = <0x1010034 0x90>;
+			gpio-controller;
+			#gpio-cells = <2>;
+			gpio-ranges = <&gpio 0 0 36>;
+
+			sgpio_pins: sgpio-pins {
+				pins = "GPIO_0", "GPIO_1", "GPIO_2", "GPIO_3";
+				function = "sio";
+			};
+
+			uart_pins: uart-pins {
+				pins = "GPIO_6", "GPIO_7";
+				function = "uart";
+			};
+
+			uart2_pins: uart2-pins {
+				pins = "GPIO_20", "GPIO_21";
+				function = "uart2";
+			};
+		};
+
+		spi0: spi-bitbang {
+			compatible = "mscc,luton-bb-spi";
+			status = "okay";
+			reg = <0x50 0x4>;
+			num-chipselects = <1>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+		};
+
+		sgpio: gpio@1010120 {
+			compatible = "mscc,ocelot-sgpio";
+			status = "disabled";
+			clocks = <&sys_clk>;
+			pinctrl-0 = <&sgpio_pins>;
+			pinctrl-names = "default";
+			reg = <0x1010120 0x100>;
+			gpio-controller;
+			#gpio-cells = <2>;
+			gpio-ranges = <&sgpio 0 0 128>;
+		};
+
+		switch: switch@1010000 {
+			compatible = "mscc,vsc7437-switch";
+			reg = <0x01030000 0x0100>,   // VTSS_TO_DEV_0
+			      <0x01040000 0x0100>,   // VTSS_TO_DEV_1
+			      <0x01f00000 0x100000>, // ANA_AC
+			      <0x01d00000 0x100000>, // ANA_CL
+			      <0x01e00000 0x100000>, // ANA_L2
+			      <0x01120000 0x10000>,  // ASM
+			      <0x01130000 0x00000>,  // LRN
+			      <0x017d0000 0x10000>,  // QFWD
+			      <0x01020000 0x20000>,  // QS
+			      <0x017e0000 0x10000>,  // QSYS
+			      <0x01b00000 0x80000>;  // REW
+			reg-names = "port0", "port1",
+				    "ana_ac", "ana_cl", "ana_l2", "asm", "lrn",
+				    "qfwd", "qs", "qsys", "rew";
+			status = "okay";
+
+			ethernet-ports {
+				#address-cells = <1>;
+				#size-cells = <0>;
+			};
+		};
+
+		mdio0: mdio@010100c4 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			compatible = "mscc,jr2-miim";
+			reg = <0x010100c4 0x24>;
+			status = "disabled";
+		};
+
+		mdio1: mdio@010100e8 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			compatible = "mscc,jr2-miim";
+			reg = <0x010100e8 0x24>;
+			status = "disabled";
+		};
+	};
+};

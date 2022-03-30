@@ -1,0 +1,12 @@
+if TARGET_PICOSAM9G45
+
+config SYS_BOARD
+	default "picosam9g45"
+
+config SYS_VENDOR
+	default "mini-box"
+
+config SYS_CONFIG_NAME
+	default "picosam9g45"
+
+endif

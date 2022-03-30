@@ -1,0 +1,15 @@
+if TARGET_EFI_APP
+
+config SYS_BOARD
+	default "efi-x86_app"
+
+config SYS_VENDOR
+	default "efi"
+
+config SYS_SOC
+	default "efi"
+
+config SYS_CONFIG_NAME
+	default "efi-x86_app"
+
+endif

@@ -1,0 +1,10 @@
+#include "inc/68552_ikos.dtsi"
+
+/ {
+	model = "968552IKOS";
+
+};
+
+&uart0 {
+	status = "okay";
+};

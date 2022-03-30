@@ -1,0 +1,6 @@
+HIGHBANK BOARD
+M:	Rob Herring <robh@kernel.org>
+S:	Maintained
+F:	board/highbank/
+F:	include/configs/highbank.h
+F:	configs/highbank_defconfig

@@ -1,0 +1,35 @@
+config VIDEO_BRIDGE
+	bool "Support video bridges"
+	depends on DM
+	help
+	  Some platforms use video bridges to convert from one output to
+	  another. For example, where the SoC only supports eDP and the LCD
+	  requires LVDS, an eDP->LVDS bridge chip can be used to provide the
+	  necessary conversion. This option enables support for these devices.
+
+config VIDEO_BRIDGE_PARADE_PS862X
+	bool "Support Parade PS862X DP->LVDS bridge"
+	depends on VIDEO_BRIDGE
+	help
+	  The Parade PS8622 and PS8625 are DisplayPort-to-LVDS (Low voltage
+	  differential signalling) converters. They enable an LVDS LCD panel
+	  to be connected to an eDP output device such as an SoC that lacks
+	  LVDS capability, or where LVDS requires too many signals to route
+	  on the PCB. Setup parameters are provided in the device tree.
+
+config VIDEO_BRIDGE_NXP_PTN3460
+	bool "Support NXP PTN3460 DP->LVDS bridge"
+	depends on VIDEO_BRIDGE
+	help
+	  The NXP PTN3460 is a DisplayPort-to-LVDS (Low voltage differential
+	  signalling) converter. It enables an LVDS LCD panel to be connected
+	  to an eDP output device such as an SoC that lacks LVDS capability,
+	  or where LVDS requires too many signals to route on the PCB.
+
+config VIDEO_BRIDGE_ANALOGIX_ANX6345
+	bool "Support Analogix ANX6345 RGB->DP bridge"
+	depends on VIDEO_BRIDGE
+	select DM_I2C
+	help
+	 The Analogix ANX6345 is RGB-to-DP converter. It enables an eDP LCD
+	 panel to be connected to an parallel LCD interface.

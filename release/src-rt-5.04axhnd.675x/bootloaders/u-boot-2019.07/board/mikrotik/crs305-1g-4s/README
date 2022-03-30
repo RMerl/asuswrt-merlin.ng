@@ -1,0 +1,23 @@
+MikroTik CRS305-1G-4S+IN
+========================
+
+CRS305-1G-4S+IN is a 4x SFP+ switch with a Gigabit Ethernet port for management.
+Specifications:
+ - Marvell Prestera 98DX3236 switch with an integrated ARMv7 CPU
+ - 512 MB DDR3 RAM
+ - UART @ 115200bps
+ - 4x SFP+
+ - Gigabit Ethernet (AR8033)
+ - 16 MB SPI flash (Winbond 25Q128JVSM)
+
+Currently supported hardware:
+ - UART boot (using kwboot) and console
+ - SPI boot, environment and load kernel
+
+Planned:
+ - Gigabit Ethernet support
+
+Getting binary.0
+================
+binary.0 (DDR3 init phase) can be retrieved/extracted from the integrated bootloader on the SPI flash.
+Then binary.0 can be replaced with the extracted blob.

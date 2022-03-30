@@ -1,0 +1,7 @@
+R2DPLUS BOARD
+M:	Nobuhiro Iwamatsu <iwamatsu.nobuhiro@renesas.com>
+M:	Nobuhiro Iwamatsu <iwamatsu@nigauri.org>
+S:	Maintained
+F:	board/renesas/r2dplus/
+F:	include/configs/r2dplus.h
+F:	configs/r2dplus_defconfig

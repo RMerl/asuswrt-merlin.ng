@@ -1,0 +1,15 @@
+if TARGET_STV0991
+
+config SYS_BOARD
+	default "stv0991"
+
+config SYS_VENDOR
+	default "st"
+
+config SYS_SOC
+	default "stv0991"
+
+config SYS_CONFIG_NAME
+	default "stv0991"
+
+endif

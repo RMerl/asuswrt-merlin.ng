@@ -1,0 +1,304 @@
+#include "inc/65450.dtsi"
+
+/ {
+    memory_controller {
+        memcfg = <(BP_DDR_SPEED_1067_14_14_14 | \
+                   BP_DDR_TOTAL_SIZE_512MB    | \
+                   BP_DDR_DEVICE_WIDTH_16     | \
+                   BP_DDR_TOTAL_WIDTH_32BIT)>;
+    };
+};
+
+/ {
+    buttons {
+        compatible = "brcm,buttons";
+        reset_button {
+            ext_irq = <&bca_extintr 54 BCA_GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+            press {
+                print = "Button Press -- Hold for 5s to do restore to default";
+   			};
+            hold {
+                rst_to_dflt = <5>;
+            };
+            release {
+                reset = <0>;
+            };	
+        };
+    };    
+
+    xfp_sfp: xfp_sfp {
+        pinctrl-names = "tx-sd";
+        pinctrl-0 = <&a_rogue_onu_in_pin_56>;
+        compatible = "brcm,sfp";
+        i2c-bus = <&i2c1>;
+        los-gpio = <&gpioc 49 GPIO_ACTIVE_HIGH>;
+        mod-def0 = <&bca_extintr 60 BCA_GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_BOTH_EDGE | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+        tx-power-gpio = <&gpioc 51 GPIO_ACTIVE_HIGH>;
+        tx-power-down-gpio = <&gpioc 55 GPIO_ACTIVE_HIGH>;
+    };
+
+    wan_serdes {
+            compatible = "brcm,pon-drv";
+            trx = <&xfp_sfp>;
+    };
+
+    tod {
+        compatible = "brcm,tod";
+        pinctrl-names = "default";
+        pinctrl-0 = <&a_wan_nco_1pps_sig_pin_32>;
+
+        unstable-gpio = <&gpioc 12 GPIO_ACTIVE_HIGH>;
+    };
+
+    xdsl_distpoint {
+        compatible = "brcm,xdsldistpoint";
+        gpios = <&gpioc 13 GPIO_ACTIVE_HIGH>, <&gpioc 5 GPIO_ACTIVE_HIGH>, <&gpioc 6 GPIO_ACTIVE_HIGH>;
+        gpio-names = "reset-DCXO_PWDN", "70M_CLK_SEL", "CPE_DYING_GASP";
+        gpio-default-val = <0 1 1>;
+        // gpio-value-names-0 = "EXT", "DCXO";
+        // gpio-value-names-2 = "Trigger DSL DYING GASP message to CO", "OFF";
+    };
+
+    dsldsp0: dsldsp {
+        /* Defined below */
+    };
+};
+
+&dsldsp0 {
+        switchdsp0port0:0 {
+                sw-type = "G9991_SW";
+
+                ports {
+                        #address-cells = <1>;
+                        #size-cells = <0>;
+
+                        port0@0 {
+                                reg = <0>;
+                        };
+
+                        port1@1 {
+                                reg = <1>;
+                        };
+
+                        port2@2 {
+                                reg = <2>;
+                        };
+
+                        port3@3 {
+                                reg = <3>;
+                        };
+
+                        port16@16 {
+                                reg = <16>;
+                                management;
+                                label = "dsp0";
+                        };
+
+                        port18@18 {
+                                reg = <18>;
+                                error-sample;
+                        };
+                };
+        };
+
+        switchdsp0port1:1 {
+                sw-type = "G9991_SW";
+
+                ports {
+                        #address-cells = <1>;
+                        #size-cells = <0>;
+
+                        port4@4 {
+                                reg = <4>;
+                        };
+
+                        port5@5 {
+                                reg = <5>;
+                        };
+
+                        port6@6 {
+                                reg = <6>;
+                        };
+
+                        port7@7 {
+                                reg = <7>;
+                        };
+                };
+        };
+
+        switchdsp0port2:2 {
+                compatible = "brcm,runner-dpu";
+                sw-type = "G9991_SW";
+
+                ports {
+                        #address-cells = <1>;
+                        #size-cells = <0>;
+
+                        port8@8 {
+                                reg = <8>;
+                        };
+
+                        port9@9 {
+                                reg = <9>;
+                        };
+
+                        port10@10 {
+                                reg = <10>;
+                        };
+
+                        port11@11 {
+                                reg = <11>;
+                        };
+                };
+        };
+
+        switchdsp0port3:3 {
+                sw-type = "G9991_SW";
+
+                ports {
+                        #address-cells = <1>;
+                        #size-cells = <0>;
+
+                        port12@12 {
+                                reg = <12>;
+                        };
+
+                        port13@13 {
+                                reg = <13>;
+                        };
+
+                        port14@14 {
+                                reg = <14>;
+                        };
+
+                        port15@15 {
+                                reg = <15>;
+                        };
+                };
+        };
+};
+
+&serdes_lport {
+        lport_serdes0:0 {
+                compatible = "brcm,bcaphy";
+                phy-type = "SERDES";
+                reg = <0x0>;
+                caps-no-hdx;
+        };
+
+        lport_serdes1:1 {
+                compatible = "brcm,bcaphy";
+                phy-type = "SERDES";
+                reg = <0x1>;
+                caps-no-hdx;
+        };
+
+        lport_serdes2:2 {
+                compatible = "brcm,bcaphy";
+                phy-type = "SERDES";
+                reg = <0x2>;
+                caps-no-hdx;
+        };
+
+        lport_serdes3:3 {
+                compatible = "brcm,bcaphy";
+                phy-type = "SERDES";
+                reg = <0x3>;
+                caps-no-hdx;
+        };
+};
+
+&mdio_lport {
+        rgmii_phy1:rgmii_phy@1 {
+                compatible = "brcm,bcaphy";
+                phy-type = "EXT1";
+                reg = <0x1>;
+                caps-no-hdx;
+        };
+};
+
+&switch0 {
+        pinctrl-names = "default", "rgmii1";
+        pinctrl-0 = <&lport_m_mdc_pin_98 &lport_m_mdio_pin_99 &rgmii1_pins>;
+        pinctrl-1 = <&rgmii1_pins>;
+
+        /delete-node/ ports;
+        ports {
+                #address-cells = <1>;
+                #size-cells = <0>;
+
+                port0@0 {
+                        reg = <0>;
+                        mac-type = "LPORT";
+                        phy-handle = <&lport_serdes0>;
+                        phy-mode = "hsgmii";
+                        link = <&switchdsp0port0>;
+                };
+
+                port1@1 {
+                        reg = <1>;
+                        mac-type = "LPORT";
+                        phy-handle = <&lport_serdes1>;
+                        phy-mode = "hsgmii";
+                        link = <&switchdsp0port1>;
+                };
+
+                port2@2 {
+                        reg = <2>;
+                        mac-type = "LPORT";
+                        phy-handle = <&lport_serdes2>;
+                        phy-mode = "hsgmii";
+                        link = <&switchdsp0port2>;
+                };
+
+                port3@3 {
+                        reg = <3>;
+                        mac-type = "LPORT";
+                        phy-handle = <&lport_serdes3>;
+                        phy-mode = "hsgmii";
+                        link = <&switchdsp0port3>;
+                };
+
+                port5@5 {
+                        reg = <5>;
+                        label = "eth0";
+                        mac-type = "LPORT";
+                        phy-handle = <&rgmii_phy1>;
+                        phy-mode = "rgmii";
+                        management;
+                        rgmii-1p8v;
+                        mii-pinctrl-state = "rgmii1";
+                };
+        };
+};
+
+&hsspi {
+    pinctrl-names="default";
+    pinctrl-0 = <&spim_ss1_b_pin_106>;
+    status = "okay";
+
+    #address-cells = <1>;
+    #size-cells = <0>;
+
+    dsl_dsp0 {
+        compatible = "bcm-spi-rev2";
+        reg = <1>; /* chip select 1 */
+        spi-max-frequency = <20000000>;
+        reset-gpio = <&gpioc 52 GPIO_ACTIVE_LOW>;
+        spi-cpha;
+        spi-cpol;
+    };
+};
+
+&nand {
+	status = "okay";
+};
+&wdt {
+	status = "okay";
+};
+&i2c1 {
+    pinctrl-0 = <&i2c_2_scl_pin_23 &i2c_2_sda_pin_24>;
+    pinctrl-names = "default";
+    status = "okay";
+};
+

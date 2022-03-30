@@ -1,0 +1,139 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Qualcomm APQ8096 based Dragonboard 820C board device tree source
+ *
+ * (C) Copyright 2017 Jorge Ramirez-Ortiz <jorge.ramirez-ortiz@linaro.org>
+ */
+
+/dts-v1/;
+
+#include "skeleton64.dtsi"
+#include <dt-bindings/pinctrl/pinctrl-snapdragon.h>
+
+/ {
+	model = "Qualcomm Technologies, Inc. DB820c";
+	compatible = "arrow,apq8096-db820c", "qcom,apq8096-sbc";
+	#address-cells = <2>;
+	#size-cells = <2>;
+
+	aliases {
+		serial0 = &blsp2_uart2;
+	};
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+	};
+
+	memory {
+		device_type = "memory";
+		reg = <0 0x80000000 0 0xc0000000>;
+	};
+
+	reserved-memory {
+		#address-cells = <2>;
+		#size-cells = <2>;
+		ranges;
+
+		smem_mem: smem_region@86300000 {
+			reg = <0x0 0x86300000 0x0 0x200000>;
+			no-map;
+		};
+	};
+
+	psci {
+		compatible = "arm,psci-1.0";
+		method = "smc";
+	};
+
+	smem {
+		compatible = "qcom,smem";
+		memory-region = <&smem_mem>;
+	};
+
+	soc: soc {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		ranges = <0 0 0 0xffffffff>;
+		compatible = "simple-bus";
+
+		gcc: clock-controller@300000 {
+			compatible = "qcom,gcc-msm8996";
+			#clock-cells = <1>;
+			#reset-cells = <1>;
+			#power-domain-cells = <1>;
+			reg = <0x300000 0x90000>;
+		};
+
+		pinctrl: qcom,tlmm@1010000 {
+			compatible = "qcom,tlmm-apq8096";
+			reg = <0x1010000 0x400000>;
+
+			blsp8_uart: uart {
+				function = "blsp_uart8";
+				pins = "GPIO_4", "GPIO_5";
+				drive-strength = <DRIVE_STRENGTH_8MA>;
+				bias-disable;
+			};
+		};
+
+		blsp2_uart2: serial@75b0000 {
+			compatible = "qcom,msm-uartdm-v1.4", "qcom,msm-uartdm";
+			reg = <0x75b0000 0x1000>;
+			clock = <&gcc 4>;
+			pinctrl-names = "uart";
+			pinctrl-0 = <&blsp8_uart>;
+		};
+
+		sdhc2: sdhci@74a4900 {
+			compatible = "qcom,sdhci-msm-v4";
+			reg = <0x74a4900 0x314>, <0x74a4000 0x800>;
+			index = <0x0>;
+			bus-width = <4>;
+			clock = <&gcc 0>;
+			clock-frequency = <200000000>;
+		 };
+
+		spmi@400f000 {
+			compatible = "qcom,spmi-pmic-arb";
+			reg = <0x400f800 0x200>,
+			      <0x4400000 0x400000>,
+			      <0x4c00000 0x400000>;
+			#address-cells = <0x1>;
+			#size-cells = <0x1>;
+
+			pmic0: pm8994@0 {
+				compatible = "qcom,spmi-pmic";
+				reg = <0x0 0x1>;
+				#address-cells = <0x1>;
+				#size-cells = <0x1>;
+
+				pm8994_pon: pm8994_pon@800 {
+					compatible = "qcom,pm8994-pwrkey";
+					reg = <0x800 0x96>;
+					#gpio-cells = <2>;
+					gpio-controller;
+					gpio-bank-name="pm8994_key.";
+				};
+
+				pm8994_gpios: pm8994_gpios@c000 {
+					compatible = "qcom,pm8994-gpio";
+					reg = <0xc000 0x400>;
+					gpio-controller;
+					gpio-count = <24>;
+					#gpio-cells = <2>;
+					gpio-bank-name="pm8994.";
+				};
+			};
+
+			pmic1: pm8994@1 {
+				compatible = "qcom,spmi-pmic";
+				reg = <0x1 0x1>;
+				#address-cells = <0x1>;
+				#size-cells = <0x1>;
+			};
+		};
+	};
+
+};
+
+#include "dragonboard820c-uboot.dtsi"

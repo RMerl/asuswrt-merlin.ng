@@ -1,0 +1,6 @@
+EVB-RK3128
+M:      Kever Yang <kever.yang@rock-chips.com>
+S:      Maintained
+F:      board/rockchip/evb_rk3128
+F:      include/configs/evb_rk3128.h
+F:      configs/evb-rk3128_defconfig

@@ -1,0 +1,15 @@
+U-Boot has networking support for VLANs (802.1q), and CDP (Cisco
+Discovery Protocol).
+
+You control the sending/receiving of VLAN tagged packets with the
+"vlan" environmental variable. When not present no tagging is
+performed.
+
+CDP is used mainly to discover your device VLAN(s) when connected to
+a Cisco switch.
+
+Note: In order to enable CDP support a small change is needed in the
+networking driver. You have to enable reception of the
+01:00:0c:cc:cc:cc MAC address which is a multicast address.
+
+Various defines control CDP; see the README section.

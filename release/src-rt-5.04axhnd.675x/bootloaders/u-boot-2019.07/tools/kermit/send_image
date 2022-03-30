@@ -1,0 +1,26 @@
+#!/usr/bin/kermit +
+# usage: send_image FILE_NAME OFFSET
+# e.g.   send_image output.bin 1F00000
+set line /dev/ttyS0
+set speed 115200
+set serial 8N1
+set carrier-watch off
+set handshake none
+set flow-control none
+robust
+set file type bin
+set file name lit
+set rec pack 1000
+set send pack 1000
+set window 5
+set prompt Kermit>
+
+out \13
+in 10 =>
+out loadb \%2 \13
+in 10 download ...
+send \%1
+out \13
+in 10 ## Start Addr
+quit
+exit 0

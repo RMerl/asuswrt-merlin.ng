@@ -1,0 +1,12 @@
+if TARGET_WB50N
+
+config SYS_BOARD
+	default "wb50n"
+
+config SYS_VENDOR
+	default "laird"
+
+config SYS_CONFIG_NAME
+	default "wb50n"
+
+endif

@@ -1,0 +1,46 @@
+if ARCH_RMOBILE
+
+choice
+	prompt "Target Renesas SoC select"
+	default RCAR_32
+
+config RCAR_32
+	bool "Renesas ARM SoCs R-Car Gen1/Gen2 (32bit)"
+	select CPU_V7A
+
+config RCAR_GEN3
+	bool "Renesas ARM SoCs R-Car Gen3 (64bit)"
+	select ARM64
+	select PHY
+	select CMD_CACHE
+	select PINCTRL
+	select PINCONF
+	select PINCTRL_PFC
+	select SUPPORT_SPL
+	imply CMD_FS_UUID
+	imply CMD_GPT
+	imply CMD_UUID
+	imply CMD_MMC_SWRITE if MMC
+	imply SUPPORT_EMMC_RPMB if MMC
+	imply SPL
+	imply SPL_BOARD_INIT
+	imply SPL_GZIP
+	imply SPL_LIBCOMMON_SUPPORT
+	imply SPL_LIBGENERIC_SUPPORT
+	imply SPL_SERIAL_SUPPORT
+	imply SPL_SYS_MALLOC_SIMPLE
+	imply SPL_TINY_MEMSET
+	imply SPL_YMODEM_SUPPORT
+	imply USE_TINY_PRINTF
+
+config RZA1
+	prompt "Renesas ARM SoCs RZ/A1 (32bit)"
+	select CPU_V7A
+
+endchoice
+
+source "arch/arm/mach-rmobile/Kconfig.32"
+source "arch/arm/mach-rmobile/Kconfig.64"
+source "arch/arm/mach-rmobile/Kconfig.rza1"
+
+endif

@@ -1,0 +1,150 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/*
+ * Copyright (c) 2018 Microsemi Corporation
+ */
+
+/dts-v1/;
+#include "mscc,jr2.dtsi"
+#include <dt-bindings/mscc/jr2_data.h>
+
+/ {
+	model = "Jaguar2 Cu8-Sfp16 PCB110 Reference Board";
+	compatible = "mscc,jr2-pcb110", "mscc,jr2";
+
+	aliases {
+		spi0 = &spi0;
+		serial0 = &uart0;
+	};
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+	};
+
+	gpio-leds {
+		compatible = "gpio-leds";
+
+		status_green {
+			label = "pcb110:green:status";
+			gpios = <&gpio 12 0>;
+			default-state = "on";
+		};
+
+		status_red {
+			label = "pcb110:red:status";
+			gpios = <&gpio 13 0>;
+			default-state = "off";
+		};
+	};
+};
+
+&uart0 {
+	status = "okay";
+};
+
+&spi0 {
+	status = "okay";
+	spi-flash@0 {
+		compatible = "jedec,spi-nor";
+		spi-max-frequency = <18000000>; /* input clock */
+		reg = <0>; /* CS0 */
+	};
+};
+
+&gpio {
+	/* SPIO only use DO, CLK, no inputs */
+	sgpio1_pins: sgpio1-pins {
+		pins = "GPIO_4", "GPIO_5";
+		function = "sg1";
+	};
+};
+
+&sgpio {
+	status = "okay";
+	sgpio-ports = <0x00ffffff>;
+};
+
+&sgpio1 {
+	status = "okay";
+	sgpio-ports = <0x00ff0000>;
+};
+
+&sgpio2 {
+	status = "okay";
+	sgpio-ports = <0x3f00ffff>;
+	gpio-ranges = <&sgpio2 0 0 96>;
+};
+
+&mdio1 {
+	status = "okay";
+
+	phy0: ethernet-phy@0 {
+		reg = <0>;
+	};
+	phy1: ethernet-phy@1 {
+		reg = <1>;
+	};
+	phy2: ethernet-phy@2 {
+		reg = <2>;
+	};
+	phy3: ethernet-phy@3 {
+		reg = <3>;
+	};
+	phy4: ethernet-phy@4 {
+		reg = <4>;
+	};
+	phy5: ethernet-phy@5 {
+		reg = <5>;
+	};
+	phy6: ethernet-phy@6 {
+		reg = <6>;
+	};
+	phy7: ethernet-phy@7 {
+		reg = <7>;
+	};
+};
+
+&switch {
+	ethernet-ports {
+
+		port0: port@0 {
+			reg = <0>;
+			phy-handle = <&phy0>;
+			phys = <&serdes_hsio 0 SERDES1G(1) PHY_MODE_SGMII>;
+		};
+		port1: port@1 {
+			reg = <1>;
+			phy-handle = <&phy1>;
+			phys = <&serdes_hsio 1 SERDES1G(2) PHY_MODE_SGMII>;
+		};
+		port2: port@2 {
+			reg = <2>;
+			phy-handle = <&phy2>;
+			phys = <&serdes_hsio 2 SERDES1G(3) PHY_MODE_SGMII>;
+		};
+		port3: port@3 {
+			reg = <3>;
+			phy-handle = <&phy3>;
+			phys = <&serdes_hsio 3 SERDES1G(4) PHY_MODE_SGMII>;
+		};
+		port4: port@4 {
+			reg = <4>;
+			phy-handle = <&phy4>;
+			phys = <&serdes_hsio 4 SERDES1G(5) PHY_MODE_SGMII>;
+		};
+		port5: port@5 {
+			reg = <5>;
+			phy-handle = <&phy5>;
+			phys = <&serdes_hsio 5 SERDES1G(6) PHY_MODE_SGMII>;
+		};
+		port6: port@6 {
+			reg = <6>;
+			phy-handle = <&phy6>;
+			phys = <&serdes_hsio 6 SERDES1G(7) PHY_MODE_SGMII>;
+		};
+		port7: port@7 {
+			reg = <7>;
+			phy-handle = <&phy7>;
+			phys = <&serdes_hsio 7 SERDES1G(8) PHY_MODE_SGMII>;
+		};
+	};
+};

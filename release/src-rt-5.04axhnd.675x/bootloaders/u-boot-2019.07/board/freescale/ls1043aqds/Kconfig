@@ -1,0 +1,33 @@
+if TARGET_LS1043AQDS
+
+config SYS_BOARD
+	default "ls1043aqds"
+
+config SYS_VENDOR
+	default "freescale"
+
+config SYS_SOC
+	default "fsl-layerscape"
+
+config SYS_CONFIG_NAME
+	default "ls1043aqds"
+
+if FSL_LS_PPA
+config SYS_LS_PPA_FW_ADDR
+	hex "PPA Firmware Addr"
+	default 0x40400000 if SYS_LS_PPA_FW_IN_XIP && QSPI_BOOT
+	default 0x60400000 if SYS_LS_PPA_FW_IN_XIP
+	default 0x400000 if SYS_LS_PPA_FW_IN_MMC || SYS_LS_PPA_FW_IN_NAND
+
+if CHAIN_OF_TRUST
+config SYS_LS_PPA_ESBC_ADDR
+	hex "PPA Firmware HDR Addr"
+	default 0x40680000 if SYS_LS_PPA_FW_IN_XIP && QSPI_BOOT
+	default 0x60680000 if SYS_LS_PPA_FW_IN_XIP
+	default 0x680000 if SYS_LS_PPA_FW_IN_MMC || SYS_LS_PPA_FW_IN_NAND
+endif
+endif
+
+source "board/freescale/common/Kconfig"
+
+endif

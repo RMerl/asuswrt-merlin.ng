@@ -1,0 +1,69 @@
+#include "6878.dtsi"
+
+/ {
+	/* pcie common */
+	pcie: pcie {
+		compatible = "brcm,bcm-pcie";
+		device_type = "cpci";
+		brcm,pllclkid = <0x0>;
+	};
+
+    /* pcie core 1 (internal wifi first) */
+	pcie1: pcie1 {
+		compatible = "brcm,bcm963xx-vpcie";
+		device_type = "vpci";
+		reg = <0x84000000 0x01000000>;
+
+		brcm,coreid = <1>;
+	};
+
+	/* pcie core 0 */
+	pcie0: pcie0 {
+		#define PCIE_ID				0
+		#define PCIE_SPI			60
+		#define PCIE_ADDR			0x80040000
+		#define PCIE_SIZE			0x0000A000
+					      /*           flags    pci_addr     cpu_addr     size */
+		#define PCIE_RANGE			0x02000000 0 0x90000000 0x90000000 0 0x10000000
+		#include "../../ip/bcm_pcie_core.dtsi"
+	};
+	
+	/* usb */
+	usb_ctrl: usb_ctrl {
+		#define USB_CTRL_ADDR       0x8000c200
+		#define USB_CTRL_SIZE       0x100
+		#include "../../ip/bcm_usb_ctrl.dtsi"
+	};
+
+	usb0_ehci: usb0_ehci {
+		#define USB_ADDR			0x8000c300
+		#define USB_SIZE			0x100
+		#define USB_IRQ             125
+		#define USB_PORT_ID         0
+		#include "../../ip/bcm_usb_ehci.dtsi"
+	};
+
+	usb1_ehci: usb1_ehci {
+		#define USB_ADDR			0x8000c500
+		#define USB_SIZE			0x100
+		#define USB_IRQ             123
+		#define USB_PORT_ID         1
+		#include "../../ip/bcm_usb_ehci.dtsi"
+	};
+
+	usb0_ohci: usb0_ohci {
+		#define USB_ADDR			0x8000c400
+		#define USB_SIZE			0x100
+		#define USB_IRQ             124
+		#define USB_PORT_ID         0
+		#include "../../ip/bcm_usb_ohci.dtsi"
+	};
+
+	usb1_ohci: usb1_ohci {
+		#define USB_ADDR			0x8000c600
+		#define USB_SIZE			0x100
+		#define USB_IRQ             122
+		#define USB_PORT_ID         1
+		#include "../../ip/bcm_usb_ohci.dtsi"
+	};
+};

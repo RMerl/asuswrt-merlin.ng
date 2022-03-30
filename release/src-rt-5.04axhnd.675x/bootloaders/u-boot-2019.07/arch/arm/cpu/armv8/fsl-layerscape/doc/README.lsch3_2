@@ -1,0 +1,27 @@
+#
+# Copyright 2018 NXP
+#
+# SPDX-License-Identifier:      GPL-2.0+
+#
+
+NXP LayerScape with Chassis Generation 3.2
+
+This architecture supports NXP ARMv8 SoCs with Chassis generation 3.2
+for example LX2160A.
+
+This architecture is enhancement over Chassis Generation 3 with
+few differences mentioned below
+
+1)DDR Layout
+============
+Entire DDR region splits into three regions.
+ - Region 1 is at address 0x8000_0000 to 0xffff_ffff.
+ - Region 2 is at address 0x20_8000_0000 to 0x3f_ffff_ffff,
+ - Region 3 is at address 0x60_0000_0000 to the top of memory,
+   for example 140GB, 0x63_7fff_ffff.
+
+All DDR memory is marked as cache-enabled.
+
+2)IFC is removed
+
+3)Number of I2C controllers increased to 8

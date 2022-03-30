@@ -1,0 +1,43 @@
+GPIO via CREG (control registers) driver
+
+31                 9        7        5           0   < bit number
+|                  |        |        |           |
+[     not used     | gpio-1 | gpio-0 | <-shift-> ]   < 32 bit register
+                       ^        ^
+                       |        |
+                write 0x2 == set output to "1" (activate)
+                write 0x3 == set output to "0" (deactivate)
+
+Required properties:
+- compatible : "snps,creg-gpio"
+- reg : Exactly one register range with length 0x4.
+- #gpio-cells : Should be one - the pin number.
+- gpio-controller : Marks the device node as a GPIO controller.
+- gpio-count: Number of GPIO pins.
+- gpio-bit-per-line: Number of bits per gpio line (see picture).
+- gpio-first-shift: Shift (in bits) of the first GPIO field in register
+  (see picture).
+- gpio-activate-val: Value should be set in corresponding field to set
+  output to "1" (see picture). Applied to all GPIO ports.
+- gpio-deactivate-val: Value should be set in corresponding field to set
+  output to "0" (see picture). Applied to all GPIO ports.
+
+Optional properties:
+- gpio-bank-name: name of bank (as default driver name is used is used)
+- gpio-default-val: array of default output values (must me 0 or 1)
+
+Example (see picture):
+
+gpio: gpio@f00014b0 {
+	compatible = "snps,creg-gpio";
+	reg = <0xf00014b0 0x4>;
+	gpio-controller;
+	#gpio-cells = <1>;
+	gpio-bank-name = "hsdk-spi-cs";
+	gpio-count = <2>;
+	gpio-first-shift = <5>;
+	gpio-bit-per-line = <2>;
+	gpio-activate-val = <2>;
+	gpio-deactivate-val = <3>;
+	gpio-default-val = <1 1>;
+};

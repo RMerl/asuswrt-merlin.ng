@@ -1,0 +1,38 @@
+Chrome OS CROS_EC Binding
+======================
+
+The device tree node which describes the operation of the CROS_EC interface
+is as follows:
+
+Required properties :
+- compatible = "google,cros-ec"
+
+Optional properties :
+- spi-max-frequency : Sets the maximum frequency (in Hz) for SPI bus
+   operation
+- i2c-max-frequency : Sets the maximum frequency (in Hz) for I2C bus
+   operation
+- ec-interrupt : Selects the EC interrupt, defined as a GPIO according
+   to the platform
+- optimise-flash-write : Boolean property - if present then flash blocks
+   containing all 0xff will not be written, since we assume that the EC
+   uses that pattern for erased blocks
+
+The CROS_EC node should appear as a subnode of the interrupt that connects it
+to the EC (e.g. i2c, spi, lpc). The reg property (as usual) will indicate
+the unit address on that bus.
+
+
+Example
+=======
+
+	spi@131b0000 {
+		cros-ec@0 {
+			reg = <0>;
+			compatible = "google,cros-ec";
+			spi-max-frequency = <5000000>;
+			ec-interrupt = <&gpio 174 1>;
+			optimise-flash-write;
+			status = "disabled";
+		};
+	};

@@ -1,0 +1,124 @@
+BTicino Mamoj board:
+===================
+
+Build:
+
+ $ make mrproper
+ $ make imx6dl_mamoj_defconfig
+ $ make
+
+   This will generate the SPL image called SPL and the u-boot-dtb.img.
+
+The following methods can be used for booting Mamoj boards:
+
+1. USB SDP boot
+
+2. eMMC boot (via DFU)
+
+3. Falcon mode
+
+1. USB SDP boot:
+---------------
+
+ - Build imx_usb_loader
+
+    $ git clone git://github.com/boundarydevices/imx_usb_loader.git
+    $ cd imx_usb_loader
+    $ make
+
+ - Build the BSP and copy SPL, u-boot-dtb.img in imx_usb_loader directory
+
+ - Put the board in "Serial Download Mode"
+
+ - Plug-in USB-to-Serial, Open minicom 1152008N1 and USB OTG cables to Host
+
+ - Turn-on board
+
+ - Identify VID/PID using lsusb
+
+    Bus 001 Device 010: ID 15a2:0061 Freescale Semiconductor, Inc. i.MX 6Solo/6DualLite SystemOnChip in RecoveryMode
+
+ - Update the conf files
+
+    imx_usb.conf
+      0x15a2:0x0061, mx6_usb_rom.conf, 0x0525:0xb4a4, mx6_usb_sdp_spl.conf
+
+    mx6_usb_rom.conf
+      mx6_usb
+      hid,1024,0x910000,0x10000000,512M,0x00900000,0x40000
+      SPL:jump header2
+
+    mx6_usb_sdp_spl.conf
+      mx6_spl_sdp
+      hid,uboot_header,1024,0x910000,0x10000000,512M,0x00900000,0x40000
+      u-boot-dtb.img:jump header2
+
+  - Launch the loader
+
+     $ ./imx_usb
+
+  We can see U-Boot boot from USB SDP on minicom
+
+2. eMMC boot via DFU:
+--------------------
+
+  Once booted from USB SDP, program the eMMC as below(make sure to connect USB OTG)
+
+  - Change eMMC partition config
+
+     => mmc partconf 2 1 0 0
+
+  - Partition eMMC on host
+
+     => ums 0 mmc 2
+
+    Host will able to detect the eMMC disk as UMS, partition the same.
+
+  - Program SPL
+
+     => setenv dfu_alt_info $dfu_alt_info_spl
+     => dfu 0 mmc 2
+
+     At Host
+
+     # dfu-util -D SPL -a spl
+
+  - Program u-boot-dtb.img
+
+     => setenv dfu_alt_info $dfu_alt_info_uboot
+     => dfu 0 mmc 2
+
+     At Host
+
+     # dfu-util -D u-boot-dtb.img -a u-boot
+
+  Poweroff and Poweron the board and see U-Boot booting from eMMC.
+
+3. Falcon mode:
+--------------
+
+  - Skip 10M space and create dual partitions for eMMC, start sector is 20480
+
+    Partition Map for MMC device 2  --   Partition Type: DOS
+
+    Part    Start Sector    Num Sectors     UUID            Type
+      1     20480           131072          c52e78be-01     83
+      2     151552          7581696         c52e78be-02     83
+
+  - Write uImage
+
+    => fatload mmc 2:1 $kernel_addr_r uImage
+    => mmc write $kernel_addr_r 0x1000 0x4000
+
+  - Write dtb and args
+
+    => setenv bootargs console=ttymxc2,115200 root=/dev/mmcblk0p2 rootfstype=ext4 rootwait rw quiet
+    => fatload mmc 2:1 $fdt_addr_r imx6dl-mamoj.dtb
+    => spl export fdt $kernel_addr_r - $fdt_addr_r
+    => mmc write 0x13000000 0x800 0x800
+
+  Poweroff and Poweron the board and see Linux booting directly after SPL.
+
+--
+Jagan Teki <jagan@amarulasolutions.com>
+03/12/18

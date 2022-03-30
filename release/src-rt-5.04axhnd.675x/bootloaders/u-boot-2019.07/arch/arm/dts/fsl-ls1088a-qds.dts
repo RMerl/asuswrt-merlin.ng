@@ -1,0 +1,110 @@
+// SPDX-License-Identifier: GPL-2.0+ OR X11
+/*
+ * NXP ls1088a QDS board device tree source
+ *
+ * Copyright 2017 NXP
+ */
+
+/dts-v1/;
+
+#include "fsl-ls1088a.dtsi"
+
+/ {
+	model = "NXP Layerscape 1088a QDS Board";
+	compatible = "fsl,ls1088a-qds", "fsl,ls1088a";
+	aliases {
+		spi0 = &qspi;
+		spi1 = &dspi;
+	};
+};
+
+&ifc {
+	#address-cells = <2>;
+	#size-cells = <1>;
+	/* NOR, NAND Flashes and FPGA on board */
+	ranges = <0 0 0x5 0x80000000 0x08000000
+			2 0 0x5 0x30000000 0x00010000
+			3 0 0x5 0x20000000 0x00010000>;
+	status = "okay";
+
+	nor@0,0 {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "cfi-flash";
+		reg = <0x0 0x0 0x8000000>;
+		bank-width = <2>;
+		device-width = <1>;
+	};
+
+	nand@2,0 {
+		compatible = "fsl,ifc-nand";
+		#address-cells = <1>;
+		#size-cells = <1>;
+		reg = <0x1 0x0 0x10000>;
+	};
+
+	fpga: board-control@3,0 {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "simple-bus", "fsl,ls1088aqds-fpga",
+				"fsl,fpga-qixis";
+		reg = <0x2 0x0 0x0000100>;
+		bank-width = <1>;
+		device-width = <1>;
+		ranges = <0 2 0 0x100>;
+	};
+};
+
+&dspi {
+	bus-num = <0>;
+	status = "okay";
+
+	dflash0: n25q128a {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "jedec,spi-nor";
+		reg = <0>;
+		spi-max-frequency = <1000000>; /* input clock */
+	};
+
+	dflash1: sst25wf040b {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "jedec,spi-nor";
+		spi-max-frequency = <3500000>;
+		reg = <1>;
+	};
+
+	dflash2: en25s64 {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "jedec,spi-nor";
+		spi-max-frequency = <3500000>;
+		reg = <2>;
+	};
+};
+
+&qspi {
+	bus-num = <0>;
+	status = "okay";
+
+	qflash0: s25fs512s@0 {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "jedec,spi-nor";
+		spi-max-frequency = <50000000>;
+		reg = <0>;
+	};
+
+	qflash1: s25fs512s@1 {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "jedec,spi-nor";
+		spi-max-frequency = <50000000>;
+		reg = <1>;
+	 };
+};
+
+&sata {
+	status = "okay";
+};

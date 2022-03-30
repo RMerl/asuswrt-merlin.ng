@@ -1,0 +1,75 @@
+if TARGET_LS1012AQDS
+
+config SYS_BOARD
+	default "ls1012aqds"
+
+config SYS_VENDOR
+	default "freescale"
+
+config SYS_SOC
+	default "fsl-layerscape"
+
+config SYS_CONFIG_NAME
+	default "ls1012aqds"
+
+config SYS_LS_PPA_FW_ADDR
+        hex "PPA Firmware Addr"
+        default 0x40400000
+
+if CHAIN_OF_TRUST
+config SYS_LS_PPA_ESBC_ADDR
+	hex "PPA Firmware HDR Addr"
+	default 0x40680000
+endif
+
+if FSL_PFE
+
+config BOARD_SPECIFIC_OPTIONS # dummy
+	def_bool y
+	select PHYLIB
+	imply PHY_VITESSE
+	imply PHY_REALTEK
+	imply PHY_AQUANTIA
+	imply PHYLIB_10G
+
+config PFE_RGMII_RESET_WA
+	def_bool y
+
+config SYS_LS_PFE_FW_ADDR
+	hex "Flash address of PFE firmware"
+	default 0x40a00000
+
+config SYS_LS_PFE_ESBC_ADDR
+	hex "PFE Firmware HDR Addr"
+	default 0x40700000
+
+config DDR_PFE_PHYS_BASEADDR
+	hex "PFE DDR physical base address"
+	default 0x03800000
+
+config DDR_PFE_BASEADDR
+	hex "PFE DDR base address"
+	default 0x83800000
+
+config PFE_EMAC1_PHY_ADDR
+	hex "PFE DDR base address"
+	default 0x1e
+
+config PFE_EMAC2_PHY_ADDR
+	hex "PFE DDR base address"
+	default 0x1
+
+config PFE_SGMII_2500_PHY1_ADDR
+	hex "PFE DDR base address"
+	default 0x1
+
+config PFE_SGMII_2500_PHY2_ADDR
+	hex "PFE DDR base address"
+	default 0x2
+
+endif
+
+
+source "board/freescale/common/Kconfig"
+
+endif

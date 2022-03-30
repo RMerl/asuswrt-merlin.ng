@@ -1,0 +1,45 @@
+Sandbox, PMIC regulators
+
+This device uses two drivers:
+- drivers/power/pmic/sandbox.c (as parent I/O device)
+- drivers/power/regulator/sandbox.c (for child regulators)
+
+This file describes the binding info for the REGULATOR driver.
+
+First, please read the binding info for the PMIC:
+- doc/device-tree-bindings/pmic/sandbox.txt
+
+Required subnodes:
+- ldoN { };
+- buckN { };
+
+The sandbox PMIC can support: ldo1, ldo2, buck1, buck2.
+
+For each PMIC's regulator subnode, there is one required property:
+- regulator-name: used for regulator uclass platform data '.name'
+
+Optional:
+- regulator-min-microvolt: minimum allowed Voltage to set
+- regulator-max-microvolt: minimum allowed Voltage to set
+- regulator-min-microamps: minimum allowed Current limit to set (LDO1/BUCK1)
+- regulator-max-microamps: minimum allowed Current limit to set (LDO1/BUCK1)
+- regulator-always-on: regulator should be never disabled
+- regulator-boot-on: regulator should be enabled by the bootloader
+
+Example PMIC's regulator subnodes:
+
+ldo1 {
+	regulator-name = "VDD_1.0V";
+	regulator-min-microvolt = <1000000>;
+	regulator-max-microvolt = <1200000>;
+	regulator-min-microamps = <100000>;
+	regulator-max-microamps = <400000>;
+	regulator-always-on;
+};
+
+buck2 {
+	regulator-name = "VDD_1.8V";
+	regulator-min-microvolt = <1800000>;
+	regulator-max-microvolt = <1800000>;
+	regulator-boot-on;
+};

@@ -1,0 +1,7 @@
+EFI-X86_PAYLOAD BOARD
+M:	Bin Meng <bmeng.cn@gmail.com>
+S:	Maintained
+F:	board/efi/efi-x86_payload/
+F:	include/configs/efi-x86_payload.h
+F:	configs/efi-x86_payload32_defconfig
+F:	configs/efi-x86_payload64_defconfig

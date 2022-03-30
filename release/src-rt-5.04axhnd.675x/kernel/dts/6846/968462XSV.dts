@@ -1,0 +1,129 @@
+#include "inc/68462.dtsi"
+
+/ {
+    memory_controller {
+        memcfg = <(BP_DDR_SPEED_800_11_11_11 | \
+                   BP_DDR_TOTAL_SIZE_512MB   | \
+                   BP_DDR_DEVICE_WIDTH_8     | \
+                   BP_DDR_TOTAL_WIDTH_8BIT)>;
+    };
+};
+
+/ {
+    model = "968462XSV";
+
+    xfp_sfp: xfp_sfp {
+        compatible = "brcm,sfp";
+        pinctrl-names = "default", "tx-sd";
+        pinctrl-0 = <&pon_lbe_p_pin_67>;
+        pinctrl-1 = <&pon_lbe_p_pin_67 &b_rogue_onu_in_pin_14>;
+        i2c-bus = <&i2c0>;
+        los-gpio = <&gpioc 15 GPIO_ACTIVE_HIGH>;
+    };
+
+    wan_serdes {
+            compatible = "brcm,pon-drv";
+            trx = <&xfp_sfp>;
+    };
+};
+
+&mdio {
+        phy1:1 {
+                status = "okay";
+        };
+
+        phy2:2 {
+                status = "okay";
+        };
+
+        phy3:3 {
+                status = "okay";
+        };
+
+        phy4:4 {
+                status = "okay";
+        };
+};
+
+&switch0 {
+        ports {
+                port0@0 {
+                        network-leds = <&led0>;
+                        status = "okay";
+                };
+
+                port1@1 {
+                        network-leds = <&led1>;
+                        status = "okay";
+                };
+
+                port2@2 {
+                        network-leds = <&led2>;
+                        status = "okay";
+                };
+
+                port3@3 {
+                        network-leds = <&led3>;
+                        status = "okay";
+                };
+        };
+};
+
+&led_ctrl {
+    led0: port_0-led_0-pin_52 {
+              active_low;
+              link = <LED_SPEED_GBE>;
+              activity = <LED_SPEED_GBE>;
+              status = "okay";
+          };
+    led1: port_1-led_0-pin_53 {
+              active_low;
+              link = <LED_SPEED_GBE>;
+              activity = <LED_SPEED_GBE>;
+              status = "okay";
+          };
+    led2: port_2-led_0-pin_49 {
+              active_low;
+              link = <LED_SPEED_GBE>;
+              activity = <LED_SPEED_GBE>;
+              status = "okay";
+          };
+    led3: port_3-led_0-pin_44 {
+              active_low;
+              link = <LED_SPEED_GBE>;
+              activity = <LED_SPEED_GBE>;
+              status = "okay";
+          };
+};
+
+&nand {
+	status = "okay";
+};
+&uart0 {
+	status = "okay";
+};
+&hs_uart0 {
+   status = "okay";
+};
+&wdt {
+	status = "okay";
+};
+&i2c0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&i2c_scl_pin_68 &i2c_sda_pin_69>;
+	status = "okay";
+};
+&usb_ctrl {
+	pinctrl-names = "default";
+	pinctrl-0 = <&usb0_pwr_pins>;
+	status = "okay";
+};
+&usb0_ehci {
+	status = "okay";
+};
+&usb0_ohci {
+	status = "okay";
+};
+&hsspi {
+	status = "okay";
+};

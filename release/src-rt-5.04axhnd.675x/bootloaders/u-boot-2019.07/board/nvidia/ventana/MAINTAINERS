@@ -1,0 +1,7 @@
+VENTANA BOARD
+M:	Tom Warren <twarren@nvidia.com>
+M:	Stephen Warren <swarren@nvidia.com>
+S:	Maintained
+F:	board/nvidia/ventana/
+F:	include/configs/ventana.h
+F:	configs/ventana_defconfig

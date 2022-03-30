@@ -1,0 +1,11 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright 2018 NXP
+ */
+
+#include "fsl-imx8dx.dtsi"
+
+/ {
+	model = "Freescale i.MX8DXP";
+	compatible = "fsl,imx8dxp", "fsl,imx8qxp";
+};

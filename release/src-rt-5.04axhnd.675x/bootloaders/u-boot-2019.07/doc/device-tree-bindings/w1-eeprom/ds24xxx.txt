@@ -1,0 +1,37 @@
+Maxim DS24 families driver device binding - one wire protocol EEPROMS from Maxim
+=======================
+
+This memory needs to be connected to a onewire bus, as a child node.
+The bus will read the device serial number and match this node with a found
+device on the bus
+Also check doc/device-tree-bindings/w1 for onewire bus drivers
+
+Driver:
+- drivers/w1-eeprom/ds24xxx.c
+
+Software ds24xxx device-tree node properties:
+Required:
+* compatible = "maxim,ds24b33"
+or
+* compatible = "maxim,ds2431"
+Further memories can be added.
+
+Optional:
+* none
+
+Example:
+	eeprom1: eeprom@0 {
+		compatible = "maxim,ds24xxx";
+	}
+
+Example with parent bus:
+
+onewire_tm: onewire {
+		compatible = "w1-gpio";
+		gpios = <&pioA 32 0>;
+
+		eeprom1: eeprom@0 {
+			compatible = "maxim,ds24xxx";
+		}
+};
+

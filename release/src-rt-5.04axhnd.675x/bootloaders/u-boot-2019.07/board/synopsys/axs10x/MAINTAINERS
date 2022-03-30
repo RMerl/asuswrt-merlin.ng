@@ -1,0 +1,7 @@
+AXS10X BOARD
+M:	Alexey Brodkin <abrodkin@synopsys.com>
+S:	Maintained
+F:	board/synopsys/axs10x/
+F:	include/configs/axs10x.h
+F:	configs/axs101_defconfig
+F:	configs/axs103_defconfig

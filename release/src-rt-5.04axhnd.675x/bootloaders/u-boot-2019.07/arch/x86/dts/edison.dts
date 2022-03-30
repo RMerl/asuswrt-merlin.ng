@@ -1,0 +1,137 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Copyright (c) 2017 Intel Corporation
+ */
+
+/dts-v1/;
+
+#include <dt-bindings/gpio/x86-gpio.h>
+#include <dt-bindings/interrupt-router/intel-irq.h>
+
+/include/ "skeleton.dtsi"
+/include/ "rtc.dtsi"
+/include/ "tsc_timer.dtsi"
+
+/ {
+	model = "Intel Edison";
+	compatible = "intel,edison";
+
+	aliases {
+		serial0 = &serial0;
+		serial1 = &serial1;
+		serial2 = &serial2;
+	};
+
+	chosen {
+		stdout-path = &serial2;
+	};
+
+	cpus {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		cpu@0 {
+			device_type = "cpu";
+			compatible = "cpu-x86";
+			reg = <0>;
+			intel,apic-id = <0>;
+		};
+
+		cpu@1 {
+			device_type = "cpu";
+			compatible = "cpu-x86";
+			reg = <1>;
+			intel,apic-id = <2>;
+		};
+	};
+
+	pci {
+		compatible = "pci-x86";
+		#address-cells = <3>;
+		#size-cells = <2>;
+		u-boot,dm-pre-reloc;
+		ranges = <0x02000000 0x0 0x80000000 0x80000000 0 0x40000000
+			  0x42000000 0x0 0xc0000000 0xc0000000 0 0x20000000
+			  0x01000000 0x0 0x2000 0x2000 0 0xe000>;
+	};
+
+	serial0: serial@ff010080 {
+		compatible = "intel,mid-uart";
+		reg = <0xff010080 0x100>;
+		reg-shift = <0>;
+		clock-frequency = <29491200>;
+		current-speed = <115200>;
+	};
+
+	serial1: serial@ff010100 {
+		compatible = "intel,mid-uart";
+		reg = <0xff010100 0x100>;
+		reg-shift = <0>;
+		clock-frequency = <29491200>;
+		current-speed = <115200>;
+	};
+
+	serial2: serial@ff010180 {
+		compatible = "intel,mid-uart";
+		reg = <0xff010180 0x100>;
+		reg-shift = <0>;
+		clock-frequency = <29491200>;
+		current-speed = <115200>;
+	};
+
+	emmc: mmc@ff3fc000 {
+		compatible = "intel,sdhci-tangier";
+		reg = <0xff3fc000 0x1000>;
+	};
+
+/*
+ * FIXME: For now U-Boot DM model doesn't allow to power up this controller.
+ * Enabling it will make U-Boot hang.
+ *
+	sdcard: mmc@ff3fa000 {
+		compatible = "intel,sdhci-tangier";
+		reg = <0xff3fa000 0x1000>;
+	};
+ */
+
+	pmu: power@ff00b000 {
+		compatible = "intel,pmu-mid";
+		reg = <0xff00b000 0x1000>;
+	};
+
+	scu: ipc@ff009000 {
+		compatible = "intel,scu-ipc";
+		reg = <0xff009000 0x1000>;
+	};
+
+	watchdog: wdt@0 {
+		compatible = "intel,tangier-wdt";
+	};
+
+	reset {
+		compatible = "intel,reset-tangier";
+		u-boot,dm-pre-reloc;
+	};
+
+	pinctrl {
+		compatible = "intel,pinctrl-tangier";
+		reg = <0xff0c0000 0x8000>;
+
+		/*
+		 * Initial configuration came from the firmware.
+		 * Which quite likely has been used in the phones, where I2C #8,
+		 * that is not part of Atom peripheral, is in use.
+		 * Thus we need to override the leftover.
+		 */
+		i2c6_scl@0 {
+			pad-offset = <111>;
+			mode-func = <1>;
+			protected;
+		};
+		i2c6_sda@0 {
+			pad-offset = <112>;
+			mode-func = <1>;
+			protected;
+		};
+	};
+};

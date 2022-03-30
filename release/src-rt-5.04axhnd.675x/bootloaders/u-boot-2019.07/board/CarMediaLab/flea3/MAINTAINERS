@@ -1,0 +1,6 @@
+FLEA3 BOARD
+M:	Stefano Babic <sbabic@denx.de>
+S:	Maintained
+F:	board/CarMediaLab/flea3/
+F:	include/configs/flea3.h
+F:	configs/flea3_defconfig

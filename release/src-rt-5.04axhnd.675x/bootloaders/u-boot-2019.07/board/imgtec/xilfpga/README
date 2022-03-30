@@ -1,0 +1,55 @@
+/*
+ * Copyright (C) 2016, Imagination Technologies Ltd.
+ *
+ * Zubair Lutfullah Kakakhel, Zubair.Kakakhel@imgtec.com
+ */
+
+MIPSfpga
+=======================================
+
+MIPSfpga is an FPGA based development platform by Imagination Technologies
+As we are dealing with a MIPS core instantiated on an FPGA, specifications
+are fluid and can be varied in RTL.
+
+The example project provided by IMGTEC runs on the Nexys4DDR board by
+Digilent powered by the ARTIX-7 FPGA by Xilinx. Relevant details about
+the example project and the Nexys4DDR board:
+
+- microAptiv UP core m14Kc
+- 50MHz clock speed
+- 128Mbyte DDR RAM	at 0x0000_0000
+- 8Kbyte RAM		at 0x1000_0000
+- axi_intc		at 0x1020_0000
+- axi_uart16550		at 0x1040_0000
+- axi_gpio		at 0x1060_0000
+- axi_i2c		at 0x10A0_0000
+- custom_gpio		at 0x10C0_0000
+- axi_ethernetlite	at 0x10E0_0000
+- 8Kbyte BootRAM	at 0x1FC0_0000
+- 16Mbyte QPI		at 0x1D00_0000
+
+Boot protocol:
+--------------
+
+The BootRAM is a writeable "RAM" in FPGA at 0x1FC0_0000.
+This is for easy reprogrammibility via JTAG.
+
+DDR initialization is already handled by a HW IP block.
+
+When the example project bitstream is loaded, the cpu_reset button
+needs to be pressed.
+
+The bootram initializes the cache and axi_uart
+Then checks if there is anything non 0xffff_ffff at location 0x1D40_0000
+
+If there is, then that is considered as u-boot. u-boot is copied from
+0x1D40_0000 to memory and the bootram jumps into u-boot code.
+
+At this point, the board is ready to load the Linux kernel + buildroot initramfs
+
+This can be done in multiple ways:
+
+1- JTAG load the binary and jump into it.
+2- Load kernel stored in the QSPI flash at 0x1D80_0000
+3- Load uImage via tftp. Ethernet works in u-boot.
+   e.g. env set server ip 192.168.154.45; dhcp uImage; bootm

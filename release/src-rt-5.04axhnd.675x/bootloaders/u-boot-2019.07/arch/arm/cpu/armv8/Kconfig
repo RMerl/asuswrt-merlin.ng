@@ -1,0 +1,171 @@
+if ARM64
+
+config ARMV8_SPL_EXCEPTION_VECTORS
+	bool "Install crash dump exception vectors"
+	depends on SPL
+	default n
+	help
+	  The default exception vector table is only used for the crash
+	  dump, but still takes quite a lot of space in the image size.
+
+	  Say N here if you are running out of code space in the image
+	  and want to save some space at the cost of less debugging info.
+
+config ARMV8_MULTIENTRY
+        bool "Enable multiple CPUs to enter into U-Boot"
+
+config ARMV8_SET_SMPEN
+        bool "Enable data coherency with other cores in cluster"
+        help
+	  Say Y here if there is not any trust firmware to set
+	  CPUECTLR_EL1.SMPEN bit before U-Boot.
+
+	  For A53, it enables data coherency with other cores in the
+	  cluster, and for A57/A72, it enables receiving of instruction
+	  cache and TLB maintenance operations.
+	  Cortex A53/57/72 cores require CPUECTLR_EL1.SMPEN set even
+	  for single core systems. Unfortunately write access to this
+	  register may be controlled by EL3/EL2 firmware. To be more
+	  precise, by default (if there is EL2/EL3 firmware running)
+	  this register is RO for NS EL1.
+	  This switch can be used to avoid writing to CPUECTLR_EL1,
+	  it can be safely enabled when EL2/EL3 initialized SMPEN bit
+	  or when CPU implementation doesn't include that register.
+
+config ARMV8_SPIN_TABLE
+	bool "Support spin-table enable method"
+	depends on ARMV8_MULTIENTRY && OF_LIBFDT
+	help
+	  Say Y here to support "spin-table" enable method for booting Linux.
+
+	  To use this feature, you must do:
+	    - Specify enable-method = "spin-table" in each CPU node in the
+	      Device Tree you are using to boot the kernel
+	    - Bring secondary CPUs into U-Boot proper in a board specific
+	      manner.  This must be done *after* relocation.  Otherwise, the
+	      secondary CPUs will spin in unprotected memory area because the
+	      master CPU protects the relocated spin code.
+
+	  U-Boot automatically does:
+	    - Set "cpu-release-addr" property of each CPU node
+	      (overwrites it if already exists).
+	    - Reserve the code for the spin-table and the release address
+	      via a /memreserve/ region in the Device Tree.
+
+menu "ARMv8 secure monitor firmware"
+config ARMV8_SEC_FIRMWARE_SUPPORT
+	bool "Enable ARMv8 secure monitor firmware framework support"
+	select FIT
+	select OF_LIBFDT
+	help
+	  This framework is aimed at making secure monitor firmware load
+	  process brief.
+	  Note: Only FIT format image is supported.
+	  You should prepare and provide the below information:
+	    - Address of secure firmware.
+	    - Address to hold the return address from secure firmware.
+	    - Secure firmware FIT image related information.
+	      Such as: SEC_FIRMWARE_FIT_IMAGE and SEC_FIRMEWARE_FIT_CNF_NAME
+	    - The target exception level that secure monitor firmware will
+	      return to.
+
+config SPL_ARMV8_SEC_FIRMWARE_SUPPORT
+	bool "Enable ARMv8 secure monitor firmware framework support for SPL"
+	select SPL_FIT
+	select SPL_OF_LIBFDT
+	help
+	  Say Y here to support this framework in SPL phase.
+
+config SEC_FIRMWARE_ARMV8_PSCI
+	bool "PSCI implementation in secure monitor firmware"
+	depends on ARMV8_SEC_FIRMWARE_SUPPORT || SPL_ARMV8_SEC_FIRMWARE_SUPPORT
+	help
+	  This config enables the ARMv8 PSCI implementation in secure monitor
+	  firmware. This is a private PSCI implementation and different from
+	  those implemented under the common ARMv8 PSCI framework.
+
+config ARMV8_SEC_FIRMWARE_ERET_ADDR_REVERT
+	bool "ARMv8 secure monitor firmware ERET address byteorder swap"
+	depends on ARMV8_SEC_FIRMWARE_SUPPORT || SPL_ARMV8_SEC_FIRMWARE_SUPPORT
+	help
+	  Say Y here when the endianness of the register or memory holding the
+	  Secure firmware exception return address is different with core's.
+
+endmenu
+
+config PSCI_RESET
+	bool "Use PSCI for reset and shutdown"
+	default y
+	select ARM_SMCCC if OF_CONTROL
+	depends on !ARCH_EXYNOS7 && !ARCH_BCM283X && \
+		   !TARGET_LS2080A_SIMU && !TARGET_LS2080AQDS && \
+		   !TARGET_LS2080ARDB && !TARGET_LS2080A_EMU && \
+		   !TARGET_LS1088ARDB && !TARGET_LS1088AQDS && \
+		   !TARGET_LS1012ARDB && !TARGET_LS1012AFRDM && \
+		   !TARGET_LS1012A2G5RDB && !TARGET_LS1012AQDS && \
+		   !TARGET_LS1012AFRWY && \
+		   !TARGET_LS1028ARDB && !TARGET_LS1028AQDS && \
+		   !TARGET_LS1043ARDB && !TARGET_LS1043AQDS && \
+		   !TARGET_LS1046ARDB && !TARGET_LS1046AQDS && \
+		   !TARGET_LS1046AFRWY && \
+		   !TARGET_LS2081ARDB && !TARGET_LX2160ARDB && \
+		   !TARGET_LX2160AQDS && \
+		   !ARCH_UNIPHIER && !TARGET_S32V234EVB
+	help
+	  Most armv8 systems have PSCI support enabled in EL3, either through
+	  ARM Trusted Firmware or other firmware.
+
+	  On these systems, we do not need to implement system reset manually,
+	  but can instead rely on higher level firmware to deal with it.
+
+	  Select Y here to make use of PSCI calls for system reset
+
+config ARMV8_PSCI
+	bool "Enable PSCI support" if EXPERT
+	default n
+	help
+	  PSCI is Power State Coordination Interface defined by ARM.
+	  The PSCI in U-boot provides a general framework and each platform
+	  can implement their own specific PSCI functions.
+	  Say Y here to enable PSCI support on ARMv8 platform.
+
+config ARMV8_PSCI_NR_CPUS
+	int "Maximum supported CPUs for PSCI"
+	depends on ARMV8_PSCI
+	default 4
+	help
+	  The maximum number of CPUs supported in the PSCI firmware.
+	  It is no problem to set a larger value than the number of CPUs in
+	  the actual hardware implementation.
+
+config ARMV8_PSCI_CPUS_PER_CLUSTER
+	int "Number of CPUs per cluster"
+	depends on ARMV8_PSCI
+	default 0
+	help
+	  The number of CPUs per cluster, suppose each cluster has same number
+	  of CPU cores, platforms with asymmetric clusters don't apply here.
+	  A value 0 or no definition of it works for single cluster system.
+	  System with multi-cluster should difine their own exact value.
+
+config ARMV8_EA_EL3_FIRST
+	bool "External aborts and SError interrupt exception are taken in EL3"
+	default n
+	help
+	  Exception handling at all exception levels for External Abort and
+	  SError interrupt exception are taken in EL3.
+
+if SYS_HAS_ARMV8_SECURE_BASE
+
+config ARMV8_SECURE_BASE
+	hex "Secure address for PSCI image"
+	depends on ARMV8_PSCI
+	help
+	  Address for placing the PSCI text, data and stack sections.
+	  If not defined, the PSCI sections are placed together with the u-boot
+	  but platform can choose to place PSCI code image separately in other
+	  places such as some secure RAM built-in SOC etc.
+
+endif
+
+endif

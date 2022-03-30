@@ -1,0 +1,74 @@
+if ARCH_MX7
+
+config MX7
+	bool
+	default y
+	select ARCH_SUPPORT_PSCI
+	select CPU_V7_HAS_NONSEC
+	select CPU_V7_HAS_VIRT
+	select ROM_UNIFIED_SECTIONS
+	select SYSCOUNTER_TIMER
+	imply CMD_FUSE
+
+config MX7D
+	bool
+	select HAS_CAAM
+	select ROM_UNIFIED_SECTIONS
+	imply CMD_FUSE
+
+choice
+	prompt "MX7 board select"
+	optional
+
+config TARGET_CL_SOM_IMX7
+	bool "CL-SOM-iMX7"
+	select DM
+	select DM_THERMAL
+	select MX7D
+	select SUPPORT_SPL
+	imply CMD_DM
+
+config TARGET_MX7DSABRESD
+	bool "mx7dsabresd"
+	select BOARD_LATE_INIT
+	select DM
+	select DM_THERMAL
+	select MX7D
+	imply CMD_DM
+
+config TARGET_PICO_IMX7D
+	bool "pico-imx7d"
+	select BOARD_LATE_INIT
+	select DM
+	select DM_THERMAL
+	select MX7D
+	select SUPPORT_SPL
+	imply CMD_DM
+
+config TARGET_WARP7
+	bool "warp7"
+	select BOARD_LATE_INIT
+	select DM
+	select DM_THERMAL
+	select MX7D
+	imply CMD_DM
+
+config TARGET_COLIBRI_IMX7
+	bool "Support Colibri iMX7S/iMX7D modules"
+	select DM
+	select DM_SERIAL
+	select DM_THERMAL
+	imply CMD_DM
+
+endchoice
+
+config SYS_SOC
+	default "mx7"
+
+source "board/compulab/cl-som-imx7/Kconfig"
+source "board/freescale/mx7dsabresd/Kconfig"
+source "board/technexion/pico-imx7d/Kconfig"
+source "board/toradex/colibri_imx7/Kconfig"
+source "board/warp7/Kconfig"
+
+endif

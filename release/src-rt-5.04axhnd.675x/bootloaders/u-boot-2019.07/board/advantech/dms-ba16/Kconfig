@@ -1,0 +1,31 @@
+if TARGET_ADVANTECH_DMS_BA16
+
+choice
+	prompt "DDR Size"
+	default SYS_DDR_2G
+
+config SYS_DDR_1G
+	bool "1GiB"
+
+config SYS_DDR_2G
+	bool "2GiB"
+
+endchoice
+
+config IMX_CONFIG
+	default "board/advantech/dms-ba16/dms-ba16_2g.cfg" if SYS_DDR_2G
+	default "board/advantech/dms-ba16/dms-ba16_1g.cfg" if SYS_DDR_1G
+
+config SYS_BOARD
+	default "dms-ba16"
+
+config SYS_VENDOR
+	default "advantech"
+
+config SYS_SOC
+	default "mx6"
+
+config SYS_CONFIG_NAME
+	default "advantech_dms-ba16"
+
+endif

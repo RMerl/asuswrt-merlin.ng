@@ -1,0 +1,6 @@
+TEC-NG BOARD
+M:	Alban Bedel <alban.bedel@avionic-design.de>
+S:	Maintained
+F:	board/avionic-design/tec-ng/
+F:	include/configs/tec-ng.h
+F:	configs/tec-ng_defconfig

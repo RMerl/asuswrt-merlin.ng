@@ -1,0 +1,6 @@
+X600 BOARD
+M:	Stefan Roese <sr@denx.de>
+S:	Maintained
+F:	board/spear/x600/
+F:	include/configs/x600.h
+F:	configs/x600_defconfig

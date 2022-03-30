@@ -1,0 +1,37 @@
+NXP i.MX (MXC) One wire bus master controller
+=======================
+
+Child nodes are required in device tree. The driver will detect
+the devices serial number and then search in the child nodes in the device tree
+for the proper node and try to match it with the device.
+
+Also check doc/device-tree-bindings/w1-eeprom for possible child nodes drivers
+
+Driver:
+- drivers/w1/mxc_w1.c
+
+Required properties:
+- compatible : should be one of
+	"fsl,imx21-owire", "fsl,imx27-owire", "fsl,imx31-owire", "fsl,imx25-owire"
+	"fsl,imx25-owire", "fsl,imx35-owire", "fsl,imx50-owire", "fsl,imx53-owire"
+
+- reg : Address and length of the register set for the device
+
+Optional:
+* none
+
+Example:
+	onewire {
+		compatible = "fsl,imx53-owire";
+		reg = <0x63fa4000 0x4000>;
+	};
+
+Example with child:
+	onewire {
+		compatible = "fsl,imx53-owire";
+		reg = <0x63fa4000 0x4000>;
+
+		eeprom1: eeprom@0 {
+			compatible = "maxim,ds24xxx";
+		};
+	};

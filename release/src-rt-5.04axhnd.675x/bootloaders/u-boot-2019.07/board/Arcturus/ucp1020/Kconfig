@@ -1,0 +1,36 @@
+if TARGET_UCP1020
+
+config SYS_BOARD
+	string
+	default "ucp1020"
+
+config SYS_VENDOR
+	string
+	default "Arcturus"
+
+config SYS_CONFIG_NAME
+	string
+	default "UCP1020"
+
+choice
+	prompt "Target image select"
+
+config TARGET_UCP1020_NOR
+	bool "NOR flash u-boot image"
+
+config TARGET_UCP1020_SPIFLASH
+	bool "SPI flash u-boot image"
+
+endchoice
+
+if TARGET_UCP1020_SPIFLASH
+config UCBOOT
+	bool
+	default y
+
+config SPIFLASH
+	bool
+	default y
+endif
+
+endif

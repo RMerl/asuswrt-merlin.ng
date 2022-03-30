@@ -1,0 +1,7 @@
+menu "System I/O configuration"
+
+if ARCH_MPC8308
+source "arch/powerpc/cpu/mpc83xx/sysio/Kconfig.mpc8308"
+endif
+
+endmenu

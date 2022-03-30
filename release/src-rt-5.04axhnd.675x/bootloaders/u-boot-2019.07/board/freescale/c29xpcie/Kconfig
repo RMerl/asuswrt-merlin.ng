@@ -1,0 +1,14 @@
+if TARGET_C29XPCIE
+
+config SYS_BOARD
+	default "c29xpcie"
+
+config SYS_VENDOR
+	default "freescale"
+
+config SYS_CONFIG_NAME
+	default "C29XPCIE"
+
+source "board/freescale/common/Kconfig"
+
+endif

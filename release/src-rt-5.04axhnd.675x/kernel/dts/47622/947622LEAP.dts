@@ -1,0 +1,62 @@
+#include "47622.dtsi"
+
+#define HS_SPIM_SPI			36
+
+/ {
+    memory_controller {
+        memcfg = <(BP_DDR_TYPE_DDR4           | \
+                   BP_DDR_SPEED_1067_15_15_15 | \
+                   BP_DDR_TOTAL_SIZE_2048MB   | \
+                   BP_DDR_DEVICE_WIDTH_8      | \
+                   BP_DDR_TOTAL_WIDTH_16BIT   | \
+                   BP_DDR_SSC_CONFIG_1)>;
+    };
+
+	buttons {
+		compatible = "brcm,buttons";
+		ses_button {
+			ext_irq = <&bca_extintr 4 BCA_GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+			release {
+				ses_short_period = <0>;
+				ses_long_period = <3>;
+			};
+		};
+	};
+};
+
+&hsspi {
+	spi-max-frequency = <67000000>;
+	interrupts = <GIC_SPI HS_SPIM_SPI IRQ_TYPE_LEVEL_HIGH>;
+	status = "okay";
+	flash: m25p80@0 {
+		status = "okay";
+		compatible = "jedec,spi-nor";
+		reg = <0>; /* chip select 0 */
+		spi-max-frequency = <60000000>;
+		#address-cells = <1>;
+		#size-cells = <1>;
+		partition@0 {
+			label = "bootloader";
+			reg = <0x0 0x0100000>;
+		};
+		partition@1 {
+			label = "mtdoops";
+			reg = <0x0100000 0x0020000>;
+		};
+	 };
+};
+
+&mdio {
+	phy8:8 {
+		status = "okay";
+	};
+};
+
+&switch0 {
+	ports {
+		sysp_port0@0 {
+			phy-handle = <&phy8>;
+			status = "okay";
+		};
+	};
+};

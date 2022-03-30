@@ -1,0 +1,3 @@
+dependson: private/libs/ethctl
+makeflags: dynamic
+

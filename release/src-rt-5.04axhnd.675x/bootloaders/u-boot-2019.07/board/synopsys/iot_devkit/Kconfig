@@ -1,0 +1,12 @@
+if TARGET_IOT_DEVKIT
+
+config SYS_BOARD
+	default "iot_devkit"
+
+config SYS_VENDOR
+	default "synopsys"
+
+config SYS_CONFIG_NAME
+	default "iot_devkit"
+
+endif

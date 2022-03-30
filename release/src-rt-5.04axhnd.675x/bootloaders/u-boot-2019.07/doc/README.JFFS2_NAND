@@ -1,0 +1,8 @@
+JFFS2 NAND support:
+
+To enable, use the following #define in the board configuration file:
+
+#define CONFIG_JFFS2_NAND
+
+Configuration of partitions is similar to how this is done in  U-Boot
+for  JFFS2  on top NOR flash.

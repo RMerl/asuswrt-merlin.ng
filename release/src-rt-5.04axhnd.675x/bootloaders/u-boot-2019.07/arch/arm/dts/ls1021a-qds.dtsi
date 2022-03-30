@@ -1,0 +1,218 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Freescale ls1021a QDS board common device tree source
+ *
+ * Copyright 2013-2015 Freescale Semiconductor, Inc.
+ */
+
+#include "ls1021a.dtsi"
+
+/ {
+	model = "LS1021A QDS Board";
+
+	aliases {
+		enet0-rgmii-phy = &rgmii_phy1;
+		enet1-rgmii-phy = &rgmii_phy2;
+		enet2-rgmii-phy = &rgmii_phy3;
+		enet0-sgmii-phy = &sgmii_phy1c;
+		enet1-sgmii-phy = &sgmii_phy1d;
+		spi0 = &qspi;
+		spi1 = &dspi0;
+	};
+};
+
+&dspi0 {
+	bus-num = <0>;
+	status = "okay";
+
+	dspiflash: at45db021d@0 {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "atmel,dataflash";
+		spi-max-frequency = <16000000>;
+		spi-cpol;
+		spi-cpha;
+		reg = <0>;
+	};
+};
+
+&qspi {
+	bus-num = <0>;
+	status = "okay";
+
+	qflash0: s25fl128s@0 {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "jedec,spi-nor";
+		spi-max-frequency = <20000000>;
+		reg = <0>;
+	};
+};
+
+&i2c0 {
+	status = "okay";
+
+	pca9547: mux@77 {
+		reg = <0x77>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		i2c@0 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <0x0>;
+
+			ds3232: rtc@68 {
+				compatible = "dallas,ds3232";
+				reg = <0x68>;
+				interrupts = <GIC_SPI 169 IRQ_TYPE_LEVEL_HIGH>;
+			};
+		};
+
+		i2c@2 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <0x2>;
+
+			ina220@40 {
+				compatible = "ti,ina220";
+				reg = <0x40>;
+				shunt-resistor = <1000>;
+			};
+
+			ina220@41 {
+				compatible = "ti,ina220";
+				reg = <0x41>;
+				shunt-resistor = <1000>;
+			};
+		};
+
+		i2c@3 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <0x3>;
+
+			eeprom@56 {
+				compatible = "atmel,24c512";
+				reg = <0x56>;
+			};
+
+			eeprom@57 {
+				compatible = "atmel,24c512";
+				reg = <0x57>;
+			};
+
+			adt7461a@4c {
+				compatible = "adi,adt7461a";
+				reg = <0x4c>;
+			};
+		};
+	};
+};
+
+&ifc {
+	#address-cells = <2>;
+	#size-cells = <1>;
+	/* NOR, NAND Flashes and FPGA on board */
+	ranges = <0x0 0x0 0x60000000 0x08000000
+		  0x2 0x0 0x7e800000 0x00010000
+		  0x3 0x0 0x7fb00000 0x00000100>;
+	status = "okay";
+
+	nor@0,0 {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "cfi-flash";
+		reg = <0x0 0x0 0x8000000>;
+		bank-width = <2>;
+		device-width = <1>;
+	};
+
+	fpga: board-control@3,0 {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "simple-bus";
+		reg = <0x3 0x0 0x0000100>;
+		bank-width = <1>;
+		device-width = <1>;
+		ranges = <0 3 0 0x100>;
+
+		mdio-mux-emi1 {
+			compatible = "mdio-mux-mmioreg";
+			mdio-parent-bus = <&mdio0>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <0x54 1>; /* BRDCFG4 */
+			mux-mask = <0xe0>; /* EMI1[2:0] */
+
+			/* Onboard PHYs */
+			ls1021amdio0: mdio@0 {
+				reg = <0>;
+				#address-cells = <1>;
+				#size-cells = <0>;
+				rgmii_phy1: ethernet-phy@1 {
+					reg = <0x1>;
+				};
+			};
+
+			ls1021amdio1: mdio@20 {
+				reg = <0x20>;
+				#address-cells = <1>;
+				#size-cells = <0>;
+				rgmii_phy2: ethernet-phy@2 {
+					reg = <0x2>;
+				};
+			};
+
+			ls1021amdio2: mdio@40 {
+				reg = <0x40>;
+				#address-cells = <1>;
+				#size-cells = <0>;
+				rgmii_phy3: ethernet-phy@3 {
+					reg = <0x3>;
+				};
+			};
+
+			ls1021amdio3: mdio@60 {
+				reg = <0x60>;
+				#address-cells = <1>;
+				#size-cells = <0>;
+				sgmii_phy1c: ethernet-phy@1c {
+					reg = <0x1c>;
+				};
+			};
+
+			ls1021amdio4: mdio@80 {
+				reg = <0x80>;
+				#address-cells = <1>;
+				#size-cells = <0>;
+				sgmii_phy1d: ethernet-phy@1d {
+					reg = <0x1d>;
+				};
+			};
+		};
+	};
+};
+
+&lpuart0 {
+	status = "okay";
+};
+
+&mdio0 {
+	tbi0: tbi-phy@8 {
+		reg = <0x8>;
+		device_type = "tbi-phy";
+	};
+};
+
+&uart0 {
+	status = "okay";
+};
+
+&uart1 {
+	status = "okay";
+};
+
+&sata {
+	status = "okay";
+};

@@ -1,0 +1,18 @@
+Overview of SPL verified boot on powerpc/mpc85xx & arm/layerscape platforms
+===========================================================================
+
+Introduction
+------------
+
+This document provides an overview of how SPL verified boot works on powerpc/
+mpc85xx & arm/layerscape platforms.
+
+Methodology
+-----------
+
+The SPL image is responsible for loading the next stage boot loader, which is
+the main u-boot image. For secure boot process on these platforms ROM verifies
+SPL image, so to continue chain of trust SPL image verifies U-boot image using
+spl_validate_uboot(). This function uses QorIQ Trust Architecture header
+(appended to U-boot image) to validate the U-boot binary just before passing
+control to it.

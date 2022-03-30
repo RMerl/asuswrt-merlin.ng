@@ -1,0 +1,437 @@
+/*
+   Copyright (c) 2015 Broadcom
+   All Rights Reserved
+
+    <:label-BRCM:2015:DUAL/GPL:standard
+    
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License, version 2, as published by
+    the Free Software Foundation (the "GPL").
+    
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    
+    
+    A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
+    writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+    Boston, MA 02111-1307, USA.
+    
+:>
+*/
+
+
+
+/* This is an automated file. Do not edit its contents. */
+
+
+#include "bdmf_shell.h"
+#ifdef RDP_SIM
+#include "rdd_platform.h"
+#endif
+#include "access_macros.h"
+#include "rdd_runner_reg_dump.h"
+
+void dump_RDD_PROCESSING_TX_DESCRIPTOR(bdmf_session_handle session, unsigned char *p)
+{
+	unsigned int r;
+	bdmf_session_print(session, "  Register PROCESSING_TX_DESCRIPTOR\n");
+
+	FIELD_MREAD_8((uint8_t *)(p), 7, 1, (r));
+	bdmf_session_print(session, "\tvalid                    = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	FIELD_MREAD_8((uint8_t *)(p), 6, 1, (r));
+	bdmf_session_print(session, "\theadroom                 = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	FIELD_MREAD_8((uint8_t *)(p), 5, 1, (r));
+	bdmf_session_print(session, "\tdont_agg                 = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	FIELD_MREAD_8((uint8_t *)(p), 4, 1, (r));
+	bdmf_session_print(session, "\tmc_copy                  = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	FIELD_MREAD_8((uint8_t *)(p), 3, 1, (r));
+	bdmf_session_print(session, "\treprocess                = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	FIELD_MREAD_8((uint8_t *)(p), 2, 1, (r));
+	bdmf_session_print(session, "\tcolor                    = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	FIELD_MREAD_8((uint8_t *)(p), 1, 1, (r));
+	bdmf_session_print(session, "\tforce_copy               = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	FIELD_MREAD_16((uint8_t *)(p), 0, 9, (r));
+	bdmf_session_print(session, "\tsecond_level_q           = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	FIELD_MREAD_16((uint8_t *)(p) + 2, 7, 9, (r));
+	bdmf_session_print(session, "\tfirst_level_q            = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	FIELD_MREAD_8((uint8_t *)(p) + 3, 6, 1, (r));
+	bdmf_session_print(session, "\tflag_1588                = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	FIELD_MREAD_8((uint8_t *)(p) + 3, 5, 1, (r));
+	bdmf_session_print(session, "\tcoherent                 = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	FIELD_MREAD_8((uint8_t *)(p) + 3, 0, 5, (r));
+	bdmf_session_print(session, "\thn                       = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	FIELD_MREAD_16((uint8_t *)(p) + 4, 6, 10, (r));
+	bdmf_session_print(session, "\tserial_num               = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	FIELD_MREAD_8((uint8_t *)(p) + 5, 5, 1, (r));
+	bdmf_session_print(session, "\tpriority                 = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	FIELD_MREAD_8((uint8_t *)(p) + 5, 4, 1, (r));
+	bdmf_session_print(session, "\tingress_cong             = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	FIELD_MREAD_8((uint8_t *)(p) + 5, 3, 1, (r));
+	bdmf_session_print(session, "\tabs                      = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	FIELD_MREAD_32((uint8_t *)(p) + 4, 14, 5, (r));
+	bdmf_session_print(session, "\treserved0                = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	FIELD_MREAD_16((uint8_t *)(p) + 6, 0, 14, (r));
+	bdmf_session_print(session, "\tpacket_length            = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	FIELD_MREAD_8((uint8_t *)(p) + 8, 7, 1, (r));
+	bdmf_session_print(session, "\tdrop                     = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	FIELD_MREAD_8((uint8_t *)(p) + 8, 4, 3, (r));
+	bdmf_session_print(session, "\tcong_state_stream        = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	FIELD_MREAD_8((uint8_t *)(p) + 8, 3, 1, (r));
+	bdmf_session_print(session, "\tlan                      = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	FIELD_MREAD_16((uint8_t *)(p) + 8, 3, 8, (r));
+	bdmf_session_print(session, "\tingress_port             = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	FIELD_MREAD_32((uint8_t *)(p) + 8, 0, 19, (r));
+	bdmf_session_print(session, "\tunion3                   = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	FIELD_MREAD_8((uint8_t *)(p) + 12, 7, 1, (r));
+	bdmf_session_print(session, "\tagg_pd                   = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	FIELD_MREAD_8((uint8_t *)(p) + 12, 6, 1, (r));
+	bdmf_session_print(session, "\ttarget_mem_0             = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	FIELD_MREAD_32((uint8_t *)(p) + 12, 0, 30, (r));
+	bdmf_session_print(session, "\tpayload_offset_sop       = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+}
+
+void dump_RDD_BBH_TX_EGRESS_COUNTER_ENTRY(bdmf_session_handle session, unsigned char *p)
+{
+	unsigned int r;
+	bdmf_session_print(session, "  Register BBH_TX_EGRESS_COUNTER_ENTRY\n");
+
+	MREAD_8((uint8_t *)(p), (r));
+	bdmf_session_print(session, "\tcounter                  = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	FIELD_MREAD_32((uint8_t *)(p) + 0, 0, 24, (r));
+	bdmf_session_print(session, "\treserved0                = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_32((uint8_t *)(p) + 4, (r));
+	bdmf_session_print(session, "\treserved1                = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+}
+
+void dump_RDD_PROCESSING_RX_DESCRIPTOR(bdmf_session_handle session, unsigned char *p)
+{
+	unsigned int r;
+	bdmf_session_print(session, "  Register PROCESSING_RX_DESCRIPTOR\n");
+
+	MREAD_32((uint8_t *)(p), (r));
+	bdmf_session_print(session, "\tpd_info                  = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	FIELD_MREAD_16((uint8_t *)(p) + 4, 6, 10, (r));
+	bdmf_session_print(session, "\tserial_num               = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	FIELD_MREAD_8((uint8_t *)(p) + 5, 5, 1, (r));
+	bdmf_session_print(session, "\tploam                    = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	FIELD_MREAD_8((uint8_t *)(p) + 5, 4, 1, (r));
+	bdmf_session_print(session, "\tingress_cong             = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	FIELD_MREAD_8((uint8_t *)(p) + 5, 3, 1, (r));
+	bdmf_session_print(session, "\tabs_or_dsl               = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	FIELD_MREAD_8((uint8_t *)(p) + 5, 2, 1, (r));
+	bdmf_session_print(session, "\treserved                 = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	FIELD_MREAD_32((uint8_t *)(p) + 4, 14, 4, (r));
+	bdmf_session_print(session, "\terror_type_or_cpu_tx     = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	FIELD_MREAD_16((uint8_t *)(p) + 6, 0, 14, (r));
+	bdmf_session_print(session, "\tpacket_length            = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	FIELD_MREAD_8((uint8_t *)(p) + 8, 7, 1, (r));
+	bdmf_session_print(session, "\terror                    = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	FIELD_MREAD_8((uint8_t *)(p) + 8, 6, 1, (r));
+	bdmf_session_print(session, "\ttarget_mem_1             = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	FIELD_MREAD_8((uint8_t *)(p) + 8, 4, 2, (r));
+	bdmf_session_print(session, "\tcong_state               = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	FIELD_MREAD_8((uint8_t *)(p) + 8, 3, 1, (r));
+	bdmf_session_print(session, "\tlan                      = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	FIELD_MREAD_16((uint8_t *)(p) + 8, 3, 8, (r));
+	bdmf_session_print(session, "\tingress_port             = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	FIELD_MREAD_32((uint8_t *)(p) + 8, 0, 19, (r));
+	bdmf_session_print(session, "\tbn1_last_or_abs1         = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	FIELD_MREAD_8((uint8_t *)(p) + 12, 7, 1, (r));
+	bdmf_session_print(session, "\tagg_pd                   = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	FIELD_MREAD_8((uint8_t *)(p) + 12, 6, 1, (r));
+	bdmf_session_print(session, "\ttarget_mem_0             = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	FIELD_MREAD_32((uint8_t *)(p) + 12, 0, 30, (r));
+	bdmf_session_print(session, "\tpayload_offset_sop       = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+}
+
+void dump_RDD_BYTES_4(bdmf_session_handle session, unsigned char *p)
+{
+	unsigned int r;
+	bdmf_session_print(session, "  Register BYTES_4\n");
+
+	MREAD_32((uint8_t *)(p), (r));
+	bdmf_session_print(session, "\tbits                     = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+}
+
+void dump_RDD_BBH_TX_DESCRIPTOR(bdmf_session_handle session, unsigned char *p)
+{
+	unsigned int r;
+	bdmf_session_print(session, "  Register BBH_TX_DESCRIPTOR\n");
+
+	FIELD_MREAD_8((uint8_t *)(p), 7, 1, (r));
+	bdmf_session_print(session, "\tsof                      = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	FIELD_MREAD_8((uint8_t *)(p), 6, 1, (r));
+	bdmf_session_print(session, "\teof                      = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	FIELD_MREAD_8((uint8_t *)(p), 2, 4, (r));
+	bdmf_session_print(session, "\tg9991_const              = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	FIELD_MREAD_8((uint8_t *)(p), 0, 2, (r));
+	bdmf_session_print(session, "\tsid_1_0                  = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_8((uint8_t *)(p) + 1, (r));
+	bdmf_session_print(session, "\tsid_9_2                  = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_16((uint8_t *)(p) + 2, (r));
+	bdmf_session_print(session, "\tfrag_length              = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	FIELD_MREAD_8((uint8_t *)(p) + 4, 7, 1, (r));
+	bdmf_session_print(session, "\tlast                     = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	FIELD_MREAD_8((uint8_t *)(p) + 4, 6, 1, (r));
+	bdmf_session_print(session, "\tmc_header_size           = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	FIELD_MREAD_8((uint8_t *)(p) + 4, 5, 1, (r));
+	bdmf_session_print(session, "\tfpm_free_dis             = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	FIELD_MREAD_8((uint8_t *)(p) + 4, 4, 1, (r));
+	bdmf_session_print(session, "\tg9991_frag               = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	FIELD_MREAD_8((uint8_t *)(p) + 4, 3, 1, (r));
+	bdmf_session_print(session, "\tflag_1588                = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	FIELD_MREAD_8((uint8_t *)(p) + 4, 2, 1, (r));
+	bdmf_session_print(session, "\tcoherent                 = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	FIELD_MREAD_16((uint8_t *)(p) + 4, 5, 5, (r));
+	bdmf_session_print(session, "\thn                       = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	FIELD_MREAD_8((uint8_t *)(p) + 5, 4, 1, (r));
+	bdmf_session_print(session, "\tingress_cong             = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	FIELD_MREAD_8((uint8_t *)(p) + 5, 3, 1, (r));
+	bdmf_session_print(session, "\tabs                      = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	FIELD_MREAD_32((uint8_t *)(p) + 4, 14, 5, (r));
+	bdmf_session_print(session, "\treserved0                = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	FIELD_MREAD_16((uint8_t *)(p) + 6, 0, 14, (r));
+	bdmf_session_print(session, "\tpacket_length            = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	FIELD_MREAD_8((uint8_t *)(p) + 8, 7, 1, (r));
+	bdmf_session_print(session, "\terror                    = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	FIELD_MREAD_8((uint8_t *)(p) + 8, 6, 1, (r));
+	bdmf_session_print(session, "\ttarget_mem_1             = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	FIELD_MREAD_8((uint8_t *)(p) + 8, 4, 2, (r));
+	bdmf_session_print(session, "\tcong_state               = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	FIELD_MREAD_8((uint8_t *)(p) + 8, 3, 1, (r));
+	bdmf_session_print(session, "\tlan                      = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	FIELD_MREAD_16((uint8_t *)(p) + 8, 3, 8, (r));
+	bdmf_session_print(session, "\tingress_port             = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	FIELD_MREAD_32((uint8_t *)(p) + 8, 0, 19, (r));
+	bdmf_session_print(session, "\tbuffer_number_1_or_abs_2 = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	FIELD_MREAD_8((uint8_t *)(p) + 12, 7, 1, (r));
+	bdmf_session_print(session, "\tagg_pd                   = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	FIELD_MREAD_8((uint8_t *)(p) + 12, 6, 1, (r));
+	bdmf_session_print(session, "\ttarget_mem_0             = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	FIELD_MREAD_32((uint8_t *)(p) + 12, 0, 30, (r));
+	bdmf_session_print(session, "\tpayload_offset_sop       = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+}
+
+void dump_RDD_BB_DESTINATION_ENTRY(bdmf_session_handle session, unsigned char *p)
+{
+	unsigned int r;
+	bdmf_session_print(session, "  Register BB_DESTINATION_ENTRY\n");
+
+	MREAD_32((uint8_t *)(p), (r));
+	bdmf_session_print(session, "\tBB_DESTINATION           = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+}
+
+void dump_RDD_PACKETS_AND_BYTES(bdmf_session_handle session, unsigned char *p)
+{
+	unsigned int r;
+	bdmf_session_print(session, "  Register PACKETS_AND_BYTES\n");
+
+	MREAD_32((uint8_t *)(p), (r));
+	bdmf_session_print(session, "\tpackets                  = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_32((uint8_t *)(p) + 4, (r));
+	bdmf_session_print(session, "\tbytes                    = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+}
+
+void dump_RDD_BYTE_1(bdmf_session_handle session, unsigned char *p)
+{
+	unsigned int r;
+	bdmf_session_print(session, "  Register BYTE_1\n");
+
+	MREAD_8((uint8_t *)(p), (r));
+	bdmf_session_print(session, "\tbits                     = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+}
+
+void dump_RDD_BYTES_2(bdmf_session_handle session, unsigned char *p)
+{
+	unsigned int r;
+	bdmf_session_print(session, "  Register BYTES_2\n");
+
+	MREAD_16((uint8_t *)(p), (r));
+	bdmf_session_print(session, "\tbits                     = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+}
+
+void dump_RDD_RX_FLOW_ENTRY(bdmf_session_handle session, unsigned char *p)
+{
+	unsigned int r;
+	bdmf_session_print(session, "  Register RX_FLOW_ENTRY\n");
+
+	FIELD_MREAD_8((uint8_t *)(p), 3, 5, (r));
+	bdmf_session_print(session, "\tvirtual_port             = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	FIELD_MREAD_8((uint8_t *)(p), 2, 1, (r));
+	bdmf_session_print(session, "\tflow_dest                = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	FIELD_MREAD_8((uint8_t *)(p), 1, 1, (r));
+	bdmf_session_print(session, "\texception                = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	FIELD_MREAD_8((uint8_t *)(p), 0, 1, (r));
+	bdmf_session_print(session, "\treserved                 = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+	MREAD_8((uint8_t *)(p) + 1, (r));
+	bdmf_session_print(session, "\tcntr_id                  = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+}
+

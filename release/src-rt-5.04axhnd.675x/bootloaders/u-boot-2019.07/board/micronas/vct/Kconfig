@@ -1,0 +1,52 @@
+if TARGET_VCT
+
+config SYS_BOARD
+	default "vct"
+
+config SYS_VENDOR
+	default "micronas"
+
+config SYS_CONFIG_NAME
+	default "vct"
+
+config SYS_TEXT_BASE
+	default 0x87000000
+
+config SYS_DCACHE_SIZE
+	default 16384
+
+config SYS_DCACHE_LINE_SIZE
+	default 32
+
+config SYS_ICACHE_SIZE
+	default 16384
+
+config SYS_ICACHE_LINE_SIZE
+	default 32
+
+menu "vct board options"
+
+choice
+	prompt "Board variant"
+	optional
+
+config VCT_PLATINUM
+	bool "Enable VCT_PLATINUM"
+
+config VCT_PLATINUMAVC
+	bool "Enable VCT_PLATINUMAVC"
+
+config VCT_PREMIUM
+	bool "Enable VCT_PLATINUMAVC"
+
+endchoice
+
+config VCT_ONENAND
+	bool "Enable VCT_ONENAND"
+
+config VCT_SMALL_IMAGE
+	bool "Enable VCT_SMALL_IMAGE"
+
+endmenu
+
+endif

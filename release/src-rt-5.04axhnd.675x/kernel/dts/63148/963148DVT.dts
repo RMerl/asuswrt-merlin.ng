@@ -1,0 +1,311 @@
+#include "63148.dtsi"
+#include "../bcm_voice.dtsi"
+
+/ {
+	memory_controller {
+		memcfg = <(BP_DDR_SPEED_800_11_11_11 | \
+				BP_DDR_TOTAL_SIZE_512MB   | \
+				BP_DDR_DEVICE_WIDTH_16)>;
+	};
+
+	buttons {
+		compatible = "brcm,buttons";
+
+		ses_button {
+			ext_irq = <&bca_extintr 33 BCA_GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_LEVEL)>;
+			release {
+				ses_short_period = <0>;
+				ses_long_period = <3>;
+			};
+		};
+	};
+
+	pstn_relay:pstn_relay {
+		compatible = "brcm,voice-pstn-relay";
+		pstnrelay-gpio = <&gpioc 6 GPIO_ACTIVE_HIGH>;
+	};
+
+	dect_reset:dect_reset {
+		compatible = "brcm,voice-dect-reset";
+		dectreset-gpio = <&gpioc 37 GPIO_ACTIVE_HIGH>;
+	};
+};
+
+&bcm_voice{
+	sliclist = SLICSLAC_LIST_COMMON_FXO;
+ };
+
+&hsspi {
+	status = "okay";
+	voice0 {
+		pinctrl-0 = <&a_spim_ss1_b_pin_127>;
+		pinctrl-names = "default";
+		compatible = "bcm-spi-voice";
+		reg = <1>; /* chip select 1 */
+		spi-max-frequency = <1024000>;
+		reset-gpio = <&gpioc 7 GPIO_ACTIVE_LOW>;
+		spi-index = <0>;/* voice header index */
+	};
+	voice1 {
+		pinctrl-0 = <&spim_ss2_b_2_pin_25>;
+		pinctrl-names = "default";
+		compatible = "bcm-spi-voice";
+		reg = <2>; /* chip select 2 */
+		spi-max-frequency = <1024000>;
+		reset-gpio = <&gpioc 9 GPIO_ACTIVE_LOW>;
+		spi-index = <1>;/* voice header index */
+	};
+	voice2 {
+		pinctrl-0 = <&spim_ss4_b_pin_8>;
+		pinctrl-names = "default";
+		compatible = "bcm-spi-voice";
+		reg = <4>; /* chip select 2 */
+		spi-max-frequency = <1024000>;
+		reset-gpio = <&gpioc 36 GPIO_ACTIVE_LOW>;
+		spi-index = <2>;/* voice header index */
+	};
+};
+
+
+&mdio_sf2 {
+	/* PHYs directly connected to SF2 */
+	gphy8:8 {
+		status = "okay";
+	};
+	gphy9:9 {
+		status = "okay";
+	};
+	gphya:a {
+		status = "okay";
+	};
+	gphyb:b {
+		status = "okay";
+	};
+	phy_rgmii1:rgmii1 {
+		status = "okay";
+	};
+	phy_rgmii2:rgmii2 {
+		status = "okay";
+	};
+
+	/* PHYs connected to crossbar */
+	phy_rgmii0:rgmii0 {
+		status = "okay";
+	};
+	phy_rgmii3:rgmii3 {
+		status = "okay";
+	};
+	gphyc:c {
+		status = "okay";
+	};
+	phy_serdes0:serdes0 {
+		status = "okay";
+	};
+
+	/* Crossbar groups */
+	xbar_grp0:0{
+		phy-handle = <&phy_rgmii0>;
+		status = "okay";
+	};
+	xbar_grp1:1 {
+		phy-handle = <&gphyc &phy_serdes0 &phy_rgmii3>;
+		status = "okay";
+	};
+};
+
+&switch_sf2 {
+	ports {
+		sf2_port0@0 {
+			phy-handle = <&gphy8>;
+			network-leds = <&led0 &led1 &led28>;
+			status = "okay";
+		};
+
+		sf2_port1@1 {
+			phy-handle = <&gphy9>;
+			network-leds = <&led2 &led3 &led11>;
+			status = "okay";
+		};
+
+		sf2_port2@2 {
+			phy-handle = <&gphya>;
+			network-leds = <&led4 &led5 &led12>;
+			status = "okay";
+		};
+
+		sf2_port3@3 {
+			phy-handle = <&gphyb>;
+			network-leds = <&led6 &led7 &led13>;
+			status = "okay";
+		};
+
+		sf2_port4@4 {
+			phy-handle = <&xbar_grp0>;
+			status = "okay";
+		};
+
+		sf2_port5@5 {
+			phy-handle = <&phy_rgmii1>;
+			status = "okay";
+		};
+
+		sf2_port7@7 {
+			phy-handle = <&phy_rgmii2>;
+			status = "okay";
+		};
+	};
+};
+
+&switch0 {
+	ports {
+		
+		port0@0 {
+			phy-handle = <&xbar_grp1>;
+			phy-mode = "gmii";
+			status = "okay";
+		};
+	};
+};
+
+&legacy_leds {
+	adsl-led = <&led31>;
+	adsl-fail-led = <&led16>;
+	sec-adsl-led = <&led18>;
+	wan-data-led = <&led15>;
+	wl-sess-led = <&led24>;
+	voip1-ok-led = <&led8>;
+	voip2-ok-led = <&led9>;
+	pots-led =  <&led10>;
+};
+
+&led_ctrl {
+	pinctrl-names = "default";
+	pinctrl-0 = <&ser_led_clk_pin_1 &ser_led_data_pin_0 &ser_led_mask_pin_2>;
+	serial-shifters-installed = <1>;
+	serial-data-polarity-high;
+
+	led0: port_0-led_0-bit_0 {
+		active_low;
+		link = <(LED_SPEED_1G)>;
+		status = "okay";
+	};
+	led1: port_0-led_1-bit_1 {
+		active_low;
+		link = <(LED_SPEED_100)>;
+		status = "okay";
+	};
+	led2: port_1-led_0-bit_2 {
+		active_low;
+		link = <(LED_SPEED_1G)>;
+		status = "okay";
+	};
+	led3: port_1-led_1-pin_3 {
+		active_low;
+		link = <(LED_SPEED_100)>;
+		status = "okay";
+	};
+	led4: port_2-led_0-pin_4 {
+		active_low;
+		link = <(LED_SPEED_1G)>;
+		status = "okay";
+	};
+	led5: port_2-led_1-pin_5 {
+		active_low;
+		link = <(LED_SPEED_100)>;
+		status = "okay";
+	};
+	led6: port_3-led_0-bit_6 {
+		active_low;
+		link = <(LED_SPEED_1G)>;
+		status = "okay";
+	};
+	led7: port_3-led_1-bit_7 {
+		active_low;
+		link = <(LED_SPEED_100)>;
+		status = "okay";
+	};
+	led8: sw_led-bit_8 {
+		active_low;
+		status = "okay";
+	};
+	led9: sw_led-bit_9 {
+		active_low;
+		status = "okay";
+	};
+	led10: sw_led-bit_10 {
+		active_low;
+		status = "okay";
+	};
+	led11: port_1-led_2-pin_11 {
+		active_low;
+		activity = <(LED_SPEED_100|LED_SPEED_1G)>;
+		link = <(LED_SPEED_100|LED_SPEED_1G)>;
+		status = "okay";
+	};
+	led12: port_2-led_2-pin_12 {
+		active_low;
+		activity = <(LED_SPEED_100|LED_SPEED_1G)>;
+		link = <(LED_SPEED_100|LED_SPEED_1G)>;
+		status = "okay";
+	};
+	led13: port_3-led_2-pin_13 {
+		active_low;
+		activity = <(LED_SPEED_100|LED_SPEED_1G)>;
+		link = <(LED_SPEED_100|LED_SPEED_1G)>;		
+		status = "okay";
+	};
+	led14: port_4-led_2-pin_14 {
+		active_low;
+		activity = <(LED_SPEED_100|LED_SPEED_1G)>;
+		link = <(LED_SPEED_100|LED_SPEED_1G)>;
+		status = "okay";
+	};
+	led15: wan_0-data-pin_15 {
+		active_low;
+		status = "okay";
+	};
+	led16: sw_led_16-pin_16 {
+		active_low;
+		status = "okay";
+	};
+	led17: pwm-1-pin_17 {
+		active_low;
+		status = "okay";
+	};
+	led18: sw_led_18-pin_18 {
+		active_low;
+		status = "okay";
+	};
+	led24: sw_led_24-pin_24 {
+		active_low;
+		status = "okay";
+	};
+	led26: port_4-led_0-pin_26 {
+		active_low;
+		link = <(LED_SPEED_1G)>;
+		status = "okay";
+	};
+	led27: port_4-led_1-pin_27 {
+		active_low;
+		link = <(LED_SPEED_100)>;
+		status = "okay";
+	};	
+	led28: port_0-led_2-pin_28 {
+		active_low;
+		activity = <(LED_SPEED_100|LED_SPEED_1G)>;
+		link = <(LED_SPEED_100|LED_SPEED_1G)>;
+		status = "okay";
+	};
+	led29: sw_led_29-pin_29 {
+		active_low;
+		status = "okay";
+	};
+	led30: sw_led_30-pin_30 {
+		active_low;
+		status = "okay";
+	};
+	led31: sw_led_31-pin_31 {
+		active_low;
+		status = "okay";
+	};
+};

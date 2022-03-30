@@ -1,0 +1,9 @@
+P200
+M:	Beniamino Galvani <b.galvani@gmail.com>
+M:	Neil Armstrong <narmstrong@baylibre.com>
+S:	Maintained
+L:	u-boot-amlogic@groups.io
+F:	board/amlogic/p200/
+F:	configs/nanopi-k2_defconfig
+F:	configs/odroid-c2_defconfig
+F:	configs/p200_defconfig

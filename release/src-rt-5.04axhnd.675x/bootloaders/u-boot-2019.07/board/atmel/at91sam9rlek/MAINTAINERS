@@ -1,0 +1,8 @@
+AT91SAM9RLEK BOARD
+M:	Stelian Pop <stelian@popies.net>
+S:	Maintained
+F:	board/atmel/at91sam9rlek/
+F:	include/configs/at91sam9rlek.h
+F:	configs/at91sam9rlek_dataflash_defconfig
+F:	configs/at91sam9rlek_nandflash_defconfig
+F:	configs/at91sam9rlek_mmc_defconfig

@@ -1,0 +1,118 @@
+---------------------------------------
+SRIO and PCIE Boot on Corenet Platforms
+---------------------------------------
+
+For some PowerPC processors with SRIO or PCIE interface, boot location can be
+configured to SRIO or PCIE by RCW. The processor booting from SRIO or PCIE can
+do without flash for u-boot image, ucode and ENV. All the images can be fetched
+from another processor's memory space by SRIO or PCIE link connected between
+them.
+
+This document describes the processes based on an example implemented on P4080DS
+platforms and a RCW example with boot from SRIO or PCIE configuration.
+
+Environment of the SRIO or PCIE boot:
+	a) Master and slave can be SOCs in one board or SOCs in separate boards.
+	b) They are connected with SRIO or PCIE links, whether 1x, 2x or 4x, and
+	   directly or through switch system.
+	c) Only Master has NorFlash for booting, and all the Master's and Slave's
+	   U-Boot images, UCodes will be stored in this flash.
+	d) Slave has its own EEPROM for RCW and PBI.
+	e) Slave's RCW should configure the SerDes for SRIO or PCIE boot port, set
+	   the boot location to SRIO or PCIE, and holdoff all the cores.
+
+	-----------       -----------             -----------
+	|         |       |         |             |         |
+	|         |       |         |             |         |
+	| NorFlash|<----->| Master  |SRIO or PCIE |  Slave  |<---->[EEPROM]
+	|         |       |         |<===========>|         |
+	|         |       |         |             |         |
+	-----------       -----------             -----------
+
+The example based on P4080DS platform:
+	Two P4080DS platforms can be used to implement the boot from SRIO or PCIE.
+	Their SRIO or PCIE ports 1 will be connected directly and will be used for
+	the boot from SRIO or PCIE.
+
+	1. Slave's RCW example for boot from SRIO port 1 and all cores in holdoff.
+		00000000: aa55 aa55 010e 0100 0c58 0000 0000 0000
+		00000010: 1818 1818 0000 8888 7440 4000 0000 2000
+		00000020: f440 0000 0100 0000 0000 0000 0000 0000
+		00000030: 0000 0000 0083 0000 0000 0000 0000 0000
+		00000040: 0000 0000 0000 0000 0813 8040 063c 778f
+
+	2. Slave's RCW example for boot from PCIE port 1 and all cores in holdoff.
+		00000000: aa55 aa55 010e 0100 0c58 0000 0000 0000
+		00000010: 1818 1818 0000 8888 1440 4000 0000 2000
+		00000020: f040 0000 0100 0000 0020 0000 0000 0000
+		00000030: 0000 0000 0083 0000 0000 0000 0000 0000
+		00000040: 0000 0000 0000 0000 0813 8040 547e ffc9
+
+	3. Sequence in Step by Step.
+		a) Update RCW for slave with boot from SRIO or PCIE port 1 configuration.
+		b) Program slave's U-Boot image, UCode, and ENV parameters into master's
+		   NorFlash.
+		c) Set environment variable "bootmaster" to "SRIO1" or "PCIE1" and save
+		   environment for master.
+					setenv bootmaster SRIO1
+				or
+					setenv bootmaster PCIE1
+					saveenv
+		d) Restart up master and it will boot up normally from its NorFlash.
+		   Then, it will finish necessary configurations for slave's boot from
+		   SRIO or PCIE port 1.
+		e) Master will set inbound SRIO or PCIE windows covered slave's U-Boot
+		   image stored in master's NorFlash.
+		f) Master will set an inbound SRIO or PCIE window covered slave's UCode
+		   and ENV stored in master's NorFlash.
+		g) Master will set outbound SRIO or PCIE  windows in order to configure
+		   slave's registers for the core's releasing.
+		h) Since all cores of slave in holdoff, slave should be powered on before
+		   all the above master's steps, and wait to be released by master. In the
+		   startup phase of the slave from SRIO or PCIE, it will finish some
+		   necessary configurations.
+		i) Slave will set a specific TLB entry for the boot process.
+		j) Slave will set a LAW entry with the TargetID SRIO or PCIE port 1 for
+		   the boot.
+		k) Slave will set a specific TLB entry in order to fetch UCode and ENV
+		   from master.
+		l) Slave will set a LAW entry with the TargetID SRIO or PCIE port 1 for
+		   UCode and ENV.
+
+How to use this feature:
+	To use this feature, you need to focus those points.
+
+	1. Slave's RCW with SRIO or PCIE boot configurations, and all cores in holdoff
+	   configurations.
+	   Please refer to the examples given above.
+
+	2. U-Boot image's compilation.
+	   For master, U-Boot image should be generated normally.
+
+	   For example, master U-Boot image used on P4080DS should be compiled with
+
+				make P4080DS_config.
+
+	   For slave, U-Boot image should be generated specifically by
+
+				make xxxx_SRIO_PCIE_BOOT_config.
+
+	   For example, slave U-Boot image used on P4080DS should be compiled with
+
+				make P4080DS_SRIO_PCIE_BOOT_config.
+
+	3. Necessary modifications based on a specific environment.
+	   For a specific environment, the addresses of the slave's U-Boot image,
+	   UCode, ENV stored in master's NorFlash, and any other configurations
+	   can be modified in the file:
+				include/configs/corenet_ds.h.
+
+	4. Set and save the environment variable "bootmaster" with "SRIO1", "SRIO2"
+	   or "PCIE1", "PCIE2", "PCIE3" for master, and then restart it in order to
+	   perform the role as a master for boot from SRIO or PCIE.
+
+NOTE: When the Slave's ENV parameters are stored in Master's NorFlash,
+      it can fetch them through PCIE or SRIO interface. But the ENV
+      parameters can not be modified by "saveenv" or other commands under
+      the Slave's u-boot environment, because the Slave can not erase,
+      write Master's NorFlash by PCIE or SRIO link.

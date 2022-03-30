@@ -1,0 +1,48 @@
+Driver implementing the fuse API for Freescale's IC Identification Module (IIM)
+
+This IP can be found on the following SoCs:
+ - MPC512x,
+ - i.MX25,
+ - i.MX27,
+ - i.MX31,
+ - i.MX35,
+ - i.MX51,
+ - i.MX53.
+
+The section numbers in this file refer to the i.MX25 Reference Manual.
+
+A fuse word contains 8 fuse bit slots, as explained in 30.4.2.2.1.
+
+A bank contains 256 fuse word slots, as shown by the memory map in 30.3.1.
+
+Some fuse bit or word slots may not have the corresponding fuses actually
+implemented in the fusebox.
+
+See the README files of the SoCs using this driver in order to know the
+conventions used by U-Boot to store some specific data in the fuses, e.g. MAC
+addresses.
+
+Fuse operations:
+
+   Read
+      Read operations are implemented as read accesses to the shadow registers,
+      using "Word y of Bank x" from the register summary in 30.3.2. This is
+      explained in detail in 30.4.5.1.
+
+   Sense
+      Sense operations are implemented as explained in 30.4.5.2.
+
+   Program
+      Program operations are implemented as explained in 30.4.5.3. Following
+      this operation, the shadow registers are reloaded by the hardware (not
+      immediately, but this does not make any difference for a user reading
+      these registers).
+
+   Override
+      Override operations are implemented as write accesses to the shadow
+      registers, as explained in 30.4.5.4.
+
+Configuration:
+
+   CONFIG_FSL_IIM
+      Define this to enable the fsl_iim driver.

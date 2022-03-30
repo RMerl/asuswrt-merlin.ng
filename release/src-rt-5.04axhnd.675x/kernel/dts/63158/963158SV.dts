@@ -1,0 +1,104 @@
+#include "63158.dtsi"
+
+/ {
+    memory_controller {
+        memcfg = <(BP_DDR_SPEED_1067_14_14_14 | \
+                   BP_DDR_TOTAL_SIZE_1024MB   | \
+                   BP_DDR_DEVICE_WIDTH_16     | \
+                   BP_DDR_TOTAL_WIDTH_32BIT   | \
+                   BP_DDR_SSC_CONFIG_1)>;
+    };
+};
+
+&usb_ctrl {
+	pinctrl-names="default";
+	pinctrl-0 = <&usb0a_pwr_pins &usb1a_pwr_pins>;
+	status = "okay";
+	xhci-enable;
+};
+
+&usb0_ehci {
+	status = "okay";
+};
+&usb1_ehci {
+	status = "okay";
+};
+
+&usb0_ohci {
+	status = "okay";
+};
+&usb1_ohci {
+	status = "okay";
+};
+
+&usb0_xhci {
+	status = "okay";
+};
+
+&vreg_sync {
+		pinctrl-0 = <&a_vreg_sync_pin_19>;
+		pinctrl-names = "default";
+};
+
+&mdio_sf2 {
+	/* PHYs directly connected to SF2 */
+	gphy8:8 {
+		status = "okay";
+	};
+	gphy9:9 {
+		status = "okay";
+	};
+	gphya:a {
+		status = "okay";
+	};
+	gphyb:b {
+		status = "okay";
+	};
+
+	/* PHYs connected to crossbar */
+	gphyc:c {
+		status = "okay";
+	};
+
+	/* Crossbar groups */
+	xbar_grp2:2 {
+		phy-handle = <&gphyc>;
+		status = "okay";
+	};
+};
+
+&switch_sf2 {
+	ports {
+		sf2_port0@0 {
+			phy-handle = <&gphy8>;
+			status = "okay";
+		};
+
+		sf2_port1@1 {
+			phy-handle = <&gphy9>;
+			status = "okay";
+		};
+
+		sf2_port2@2 {
+			phy-handle = <&gphya>;
+			status = "okay";
+		};
+
+		sf2_port3@3 {
+			phy-handle = <&gphyb>;
+			status = "okay";
+		};
+
+	};
+};
+
+&switch0 {
+		ports {
+			
+			port5@5 {
+				phy-handle = <&xbar_grp2>;
+				status = "okay";
+			};
+
+		};
+};

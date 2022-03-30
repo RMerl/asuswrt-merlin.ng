@@ -1,0 +1,266 @@
+// SPDX-License-Identifier: GPL-2.0
+
+#include <dt-bindings/gpio/gpio.h>
+#include "armada-385.dtsi"
+
+/ {
+	model = "Allied Telesis x530";
+	compatible = "alliedtelesis,x530", "marvell,armada385", "marvell,armada380";
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+		bootargs = "console=ttyS0,115200 earlyprintk";
+	};
+
+	aliases {
+		spi1 = &spi1;
+		i2c0 = &i2c0;
+	};
+
+	memory {
+		device_type = "memory";
+		reg = <0 0x00000000 0 0x40000000>; /* 1 GB */
+	};
+
+	soc {
+		ranges = <MBUS_ID(0xf0, 0x01) 0 0xf1000000 0x100000
+			  MBUS_ID(0x01, 0x3d) 0 0xf4800000 0x80000
+			  MBUS_ID(0x01, 0x1d) 0 0xfff00000 0x100000>;
+
+		pcie-mem-aperture = <0xa0000000 0x40000000>;
+	};
+
+	eco-button-interrupt {
+		compatible = "atl,eco-button-interrupt";
+		eco-button-gpio = <&gpio0 14 GPIO_ACTIVE_LOW>;
+	};
+
+	board-reset {
+		compatible = "atl,phy_reset";
+		/* Physical board layout of reset pin is active-low but for the
+		 * current driver we have to set it to active-high here.
+		 */
+		phy-reset-gpio = <&gpio0 12 GPIO_ACTIVE_HIGH>,
+				 <&gpio1 21 GPIO_ACTIVE_HIGH>;
+	};
+
+	phy-int {
+		compatible = "linux,uio-pdrv-genirq";
+		interrupt-parent = <&gpio0>;
+		interrupts = <6 IRQ_TYPE_EDGE_BOTH>;
+	};
+
+	led-enable {
+		compatible = "atl,led-enable";
+		led-enable-gpios = <&gpio1 17 GPIO_ACTIVE_LOW>;
+	};
+
+	led_7seg {
+		compatible = "atl,of-led-7seg";
+		segment-gpios = <
+			&led_7seg_gpio 0 0
+			&led_7seg_gpio 1 0
+			&led_7seg_gpio 2 0
+			&led_7seg_gpio 3 0
+			&led_7seg_gpio 4 0
+			&led_7seg_gpio 5 0
+			&led_7seg_gpio 6 0
+			&led_7seg_gpio 7 0>;
+	};
+
+	poe {
+		compatible = "atl,periph-poe";
+		poe-reset-gpio = <&gpio0 15 GPIO_ACTIVE_HIGH>;
+		interrupt-parent = <&gpio0>;
+		interrupts = <20 IRQ_TYPE_EDGE_BOTH>;
+	};
+};
+
+&pciec {
+	status = "okay";
+};
+
+&pcie1 {
+	status = "okay";
+};
+
+&devbus_cs1 {
+	compatible = "marvell,mvebu-devbus";
+	status = "okay";
+
+	devbus,bus-width    = <8>;
+	devbus,turn-off-ps  = <60000>;
+	devbus,badr-skew-ps = <0>;
+	devbus,acc-first-ps = <124000>;
+	devbus,acc-next-ps  = <248000>;
+	devbus,rd-setup-ps  = <0>;
+	devbus,rd-hold-ps   = <0>;
+
+	/* Write parameters */
+	devbus,sync-enable = <0>;
+	devbus,wr-high-ps  = <60000>;
+	devbus,wr-low-ps   = <60000>;
+	devbus,ale-wr-ps   = <60000>;
+
+	nvs@0 {
+		status = "okay";
+
+		compatible = "mtd-ram";
+		reg = <0 0x00080000>;
+		bank-width = <1>;
+		label = "nvs";
+	};
+};
+
+&gpio0 {
+	poe-disable {
+		gpio-hog;
+		gpios = <16 GPIO_ACTIVE_HIGH>;
+		output-high;
+		line-name = "poe-disable";
+	};
+};
+
+&gpio1 {
+	poe-mezz-reset {
+		gpio-hog;
+		gpios = <15 GPIO_ACTIVE_HIGH>;
+		output-high;
+		line-name = "poe-mezz-reset";
+	};
+};
+
+&i2c0 {
+	clock-frequency = <100000>;
+	status = "okay";
+
+	mux@71 {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		compatible = "nxp,pca9544";
+		reg = <0x71>;
+		i2c-mux-idle-disconnect;
+
+		i2c@0 { /* POE devices MUX */
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <0>;
+		};
+
+		i2c@1 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <1>;
+
+			rng@3b {
+				compatible = "maxim,ds2476";
+				reg = <0x3b>;
+			};
+
+			hwmon@2e {
+				compatible = "adi,adt7476";
+				reg = <0x2e>;
+			};
+
+			hwmon@2d {
+				compatible = "adi,adt7476";
+				reg = <0x2d>;
+			};
+
+		};
+
+		i2c@2 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <2>;
+
+			rtc@68 {
+				compatible = "dallas,ds1340";
+				reg = <0x68>;
+			};
+		};
+
+		i2c@3 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <3>;
+
+			led_7seg_gpio: gpio@20 {
+				compatible = "nxp,pca9554";
+				gpio-controller;
+				#gpio-cells = <2>;
+				reg = <0x20>;
+			};
+
+			sfpgpio: gpio@27 { /* I2C to GPIO */
+				compatible = "nxp,pca9555";
+				gpio-controller;
+				#gpio-cells = <2>;
+				reg = <0x27>;
+				interrupt-parent = <&gpio0>;
+				interrupts = <13 IRQ_TYPE_LEVEL_LOW>;
+			};
+
+			sfpmux: mux@77 { /* SFP I2C MUX */
+				#address-cells = <1>;
+				#size-cells = <0>;
+				compatible = "nxp,pca9544";
+				reg = <0x77>;
+				i2c-mux-idle-disconnect;
+			};
+		};
+	};
+};
+
+&spi1 {
+	status = "okay";
+
+	spi-flash@0 {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "jedec,spi-nor";
+		reg = <0>; /* Chip select 0 */
+		spi-max-frequency = <50000000>;
+		m25p,fast-read;
+
+		partition@u-boot {
+			reg = <0x00000000 0x00100000>;
+			label = "u-boot";
+		};
+		partition@u-boot-env {
+			reg = <0x00100000 0x00040000>;
+			label = "u-boot-env";
+		};
+		partition@unused {
+			reg = <0x00140000 0x00e80000>;
+			label = "unused";
+		};
+		partition@idprom {
+			reg = <0x00fc0000 0x00040000>;
+			label = "idprom";
+		};
+	};
+};
+
+&uart0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&uart0_pins>;
+	status = "okay";
+};
+
+&usb0 {
+	status = "okay";
+};
+
+&refclk {
+	clock-frequency = <25000000>;
+};
+
+&nand_controller { /* 256 MB */
+	status = "okay";
+	num-cs = <1>;
+	nand-ecc-strength = <4>;
+	nand-ecc-step-size = <512>;
+	marvell,nand-enable-arbiter;
+	nand-on-flash-bbt;
+};

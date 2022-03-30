@@ -1,0 +1,791 @@
+menu "x86 architecture"
+	depends on X86
+
+config SYS_ARCH
+	default "x86"
+
+choice
+	prompt "Run U-Boot in 32/64-bit mode"
+	default X86_RUN_32BIT
+	help
+	  U-Boot can be built as a 32-bit binary which runs in 32-bit mode
+	  even on 64-bit machines. In this case SPL is not used, and U-Boot
+	  runs directly from the reset vector (via 16-bit start-up).
+
+	  Alternatively it can be run as a 64-bit binary, thus requiring a
+	  64-bit machine. In this case SPL runs in 32-bit mode (via 16-bit
+	  start-up) then jumps to U-Boot in 64-bit mode.
+
+	  For now, 32-bit mode is recommended, as 64-bit is still
+	  experimental and is missing a lot of features.
+
+config X86_RUN_32BIT
+	bool "32-bit"
+	help
+	  Build U-Boot as a 32-bit binary with no SPL. This is the currently
+	  supported normal setup. U-Boot will stay in 32-bit mode even on
+	  64-bit machines. When booting a 64-bit kernel, U-Boot will switch
+	  to 64-bit just before starting the kernel. Only the bottom 4GB of
+	  memory can be accessed through normal means, although
+	  arch_phys_memset() can be used for basic access to other memory.
+
+config X86_RUN_64BIT
+	bool "64-bit"
+	select X86_64
+	select SPL
+	select SPL_SEPARATE_BSS
+	help
+	  Build U-Boot as a 64-bit binary with a 32-bit SPL. This is
+	  experimental and many features are missing. U-Boot SPL starts up,
+	  runs through the 16-bit and 32-bit init, then switches to 64-bit
+	  mode and jumps to U-Boot proper.
+
+endchoice
+
+config X86_64
+	bool
+
+config SPL_X86_64
+	bool
+	depends on SPL
+
+choice
+	prompt "Mainboard vendor"
+	default VENDOR_EMULATION
+
+config VENDOR_ADVANTECH
+	bool "advantech"
+
+config VENDOR_CONGATEC
+	bool "congatec"
+
+config VENDOR_COREBOOT
+	bool "coreboot"
+
+config VENDOR_DFI
+	bool "dfi"
+
+config VENDOR_EFI
+	bool "efi"
+
+config VENDOR_EMULATION
+	bool "emulation"
+
+config VENDOR_GOOGLE
+	bool "Google"
+
+config VENDOR_INTEL
+	bool "Intel"
+
+endchoice
+
+# subarchitectures-specific options below
+config INTEL_MID
+	bool "Intel MID platform support"
+	select REGMAP
+	select SYSCON
+	help
+	  Select to build a U-Boot capable of supporting Intel MID
+	  (Mobile Internet Device) platform systems which do not have
+	  the PCI legacy interfaces.
+
+	  If you are building for a PC class system say N here.
+
+	  Intel MID platforms are based on an Intel processor and
+	  chipset which consume less power than most of the x86
+	  derivatives.
+
+# board-specific options below
+source "board/advantech/Kconfig"
+source "board/congatec/Kconfig"
+source "board/coreboot/Kconfig"
+source "board/dfi/Kconfig"
+source "board/efi/Kconfig"
+source "board/emulation/Kconfig"
+source "board/google/Kconfig"
+source "board/intel/Kconfig"
+
+# platform-specific options below
+source "arch/x86/cpu/baytrail/Kconfig"
+source "arch/x86/cpu/braswell/Kconfig"
+source "arch/x86/cpu/broadwell/Kconfig"
+source "arch/x86/cpu/coreboot/Kconfig"
+source "arch/x86/cpu/ivybridge/Kconfig"
+source "arch/x86/cpu/efi/Kconfig"
+source "arch/x86/cpu/qemu/Kconfig"
+source "arch/x86/cpu/quark/Kconfig"
+source "arch/x86/cpu/queensbay/Kconfig"
+source "arch/x86/cpu/tangier/Kconfig"
+
+# architecture-specific options below
+
+config AHCI
+	default y
+
+config SYS_MALLOC_F_LEN
+	default 0x800
+
+config RAMBASE
+	hex
+	default 0x100000
+
+config XIP_ROM_SIZE
+	hex
+	depends on X86_RESET_VECTOR
+	default ROM_SIZE
+
+config CPU_ADDR_BITS
+	int
+	default 36
+
+config HPET_ADDRESS
+	hex
+	default 0xfed00000 if !HPET_ADDRESS_OVERRIDE
+
+config SMM_TSEG
+	bool
+	default n
+
+config SMM_TSEG_SIZE
+	hex
+
+config X86_RESET_VECTOR
+	bool
+	default n
+	select BINMAN
+
+# The following options control where the 16-bit and 32-bit init lies
+# If SPL is enabled then it normally holds this init code, and U-Boot proper
+# is normally a 64-bit build.
+#
+# The 16-bit init refers to the reset vector and the small amount of code to
+# get the processor into 32-bit mode. It may be in SPL or in U-Boot proper,
+# or missing altogether if U-Boot is started from EFI or coreboot.
+#
+# The 32-bit init refers to processor init, running binary blobs including
+# FSP, setting up interrupts and anything else that needs to be done in
+# 32-bit code. It is normally in the same place as 16-bit init if that is
+# enabled (i.e. they are both in SPL, or both in U-Boot proper).
+config X86_16BIT_INIT
+	bool
+	depends on X86_RESET_VECTOR
+	default y if X86_RESET_VECTOR && !SPL
+	help
+	  This is enabled when 16-bit init is in U-Boot proper
+
+config SPL_X86_16BIT_INIT
+	bool
+	depends on X86_RESET_VECTOR
+	default y if X86_RESET_VECTOR && SPL && !TPL
+	help
+	  This is enabled when 16-bit init is in SPL
+
+config TPL_X86_16BIT_INIT
+	bool
+	depends on X86_RESET_VECTOR
+	default y if X86_RESET_VECTOR && TPL
+	help
+	  This is enabled when 16-bit init is in TPL
+
+config X86_32BIT_INIT
+	bool
+	depends on X86_RESET_VECTOR
+	default y if X86_RESET_VECTOR && !SPL
+	help
+	  This is enabled when 32-bit init is in U-Boot proper
+
+config SPL_X86_32BIT_INIT
+	bool
+	depends on X86_RESET_VECTOR
+	default y if X86_RESET_VECTOR && SPL
+	help
+	  This is enabled when 32-bit init is in SPL
+
+config RESET_SEG_START
+	hex
+	depends on X86_RESET_VECTOR
+	default 0xffff0000
+
+config RESET_SEG_SIZE
+	hex
+	depends on X86_RESET_VECTOR
+	default 0x10000
+
+config RESET_VEC_LOC
+	hex
+	depends on X86_RESET_VECTOR
+	default 0xfffffff0
+
+config SYS_X86_START16
+	hex
+	depends on X86_RESET_VECTOR
+	default 0xfffff800
+
+config X86_LOAD_FROM_32_BIT
+	bool "Boot from a 32-bit program"
+	help
+	  Define this to boot U-Boot from a 32-bit program which sets
+	  the GDT differently. This can be used to boot directly from
+	  any stage of coreboot, for example, bypassing the normal
+	  payload-loading feature.
+
+config BOARD_ROMSIZE_KB_512
+	bool
+config BOARD_ROMSIZE_KB_1024
+	bool
+config BOARD_ROMSIZE_KB_2048
+	bool
+config BOARD_ROMSIZE_KB_4096
+	bool
+config BOARD_ROMSIZE_KB_8192
+	bool
+config BOARD_ROMSIZE_KB_16384
+	bool
+
+choice
+	prompt "ROM chip size"
+	depends on X86_RESET_VECTOR
+	default UBOOT_ROMSIZE_KB_512 if BOARD_ROMSIZE_KB_512
+	default UBOOT_ROMSIZE_KB_1024 if BOARD_ROMSIZE_KB_1024
+	default UBOOT_ROMSIZE_KB_2048 if BOARD_ROMSIZE_KB_2048
+	default UBOOT_ROMSIZE_KB_4096 if BOARD_ROMSIZE_KB_4096
+	default UBOOT_ROMSIZE_KB_8192 if BOARD_ROMSIZE_KB_8192
+	default UBOOT_ROMSIZE_KB_16384 if BOARD_ROMSIZE_KB_16384
+	help
+	  Select the size of the ROM chip you intend to flash U-Boot on.
+
+	  The build system will take care of creating a u-boot.rom file
+	  of the matching size.
+
+config UBOOT_ROMSIZE_KB_512
+	bool "512 KB"
+	help
+	  Choose this option if you have a 512 KB ROM chip.
+
+config UBOOT_ROMSIZE_KB_1024
+	bool "1024 KB (1 MB)"
+	help
+	  Choose this option if you have a 1024 KB (1 MB) ROM chip.
+
+config UBOOT_ROMSIZE_KB_2048
+	bool "2048 KB (2 MB)"
+	help
+	  Choose this option if you have a 2048 KB (2 MB) ROM chip.
+
+config UBOOT_ROMSIZE_KB_4096
+	bool "4096 KB (4 MB)"
+	help
+	  Choose this option if you have a 4096 KB (4 MB) ROM chip.
+
+config UBOOT_ROMSIZE_KB_8192
+	bool "8192 KB (8 MB)"
+	help
+	  Choose this option if you have a 8192 KB (8 MB) ROM chip.
+
+config UBOOT_ROMSIZE_KB_16384
+	bool "16384 KB (16 MB)"
+	help
+	  Choose this option if you have a 16384 KB (16 MB) ROM chip.
+
+endchoice
+
+# Map the config names to an integer (KB).
+config UBOOT_ROMSIZE_KB
+	int
+	default 512 if UBOOT_ROMSIZE_KB_512
+	default 1024 if UBOOT_ROMSIZE_KB_1024
+	default 2048 if UBOOT_ROMSIZE_KB_2048
+	default 4096 if UBOOT_ROMSIZE_KB_4096
+	default 8192 if UBOOT_ROMSIZE_KB_8192
+	default 16384 if UBOOT_ROMSIZE_KB_16384
+
+# Map the config names to a hex value (bytes).
+config ROM_SIZE
+	hex
+	default 0x80000 if UBOOT_ROMSIZE_KB_512
+	default 0x100000 if UBOOT_ROMSIZE_KB_1024
+	default 0x200000 if UBOOT_ROMSIZE_KB_2048
+	default 0x400000 if UBOOT_ROMSIZE_KB_4096
+	default 0x800000 if UBOOT_ROMSIZE_KB_8192
+	default 0xc00000 if UBOOT_ROMSIZE_KB_12288
+	default 0x1000000 if UBOOT_ROMSIZE_KB_16384
+
+config HAVE_INTEL_ME
+	bool "Platform requires Intel Management Engine"
+	help
+	  Newer higher-end devices have an Intel Management Engine (ME)
+	  which is a very large binary blob (typically 1.5MB) which is
+	  required for the platform to work. This enforces a particular
+	  SPI flash format. You will need to supply the me.bin file in
+	  your board directory.
+
+config X86_RAMTEST
+	bool "Perform a simple RAM test after SDRAM initialisation"
+	help
+	  If there is something wrong with SDRAM then the platform will
+	  often crash within U-Boot or the kernel. This option enables a
+	  very simple RAM test that quickly checks whether the SDRAM seems
+	  to work correctly. It is not exhaustive but can save time by
+	  detecting obvious failures.
+
+config FLASH_DESCRIPTOR_FILE
+	string "Flash descriptor binary filename"
+	depends on HAVE_INTEL_ME
+	default "descriptor.bin"
+	help
+	  The filename of the file to use as flash descriptor in the
+	  board directory.
+
+config INTEL_ME_FILE
+	string "Intel Management Engine binary filename"
+	depends on HAVE_INTEL_ME
+	default "me.bin"
+	help
+	  The filename of the file to use as Intel Management Engine in the
+	  board directory.
+
+config HAVE_FSP
+	bool "Add an Firmware Support Package binary"
+	depends on !EFI
+	help
+	  Select this option to add an Firmware Support Package binary to
+	  the resulting U-Boot image. It is a binary blob which U-Boot uses
+	  to set up SDRAM and other chipset specific initialization.
+
+	  Note: Without this binary U-Boot will not be able to set up its
+	  SDRAM so will not boot.
+
+config FSP_FILE
+	string "Firmware Support Package binary filename"
+	depends on HAVE_FSP
+	default "fsp.bin"
+	help
+	  The filename of the file to use as Firmware Support Package binary
+	  in the board directory.
+
+config FSP_ADDR
+	hex "Firmware Support Package binary location"
+	depends on HAVE_FSP
+	default 0xfffc0000
+	help
+	  FSP is not Position Independent Code (PIC) and the whole FSP has to
+	  be rebased if it is placed at a location which is different from the
+	  perferred base address specified during the FSP build. Use Intel's
+	  Binary Configuration Tool (BCT) to do the rebase.
+
+	  The default base address of 0xfffc0000 indicates that the binary must
+	  be located at offset 0xc0000 from the beginning of a 1MB flash device.
+
+config FSP_TEMP_RAM_ADDR
+	hex
+	depends on HAVE_FSP
+	default 0x2000000
+	help
+	  Stack top address which is used in fsp_init() after DRAM is ready and
+	  CAR is disabled.
+
+config FSP_SYS_MALLOC_F_LEN
+	hex
+	depends on HAVE_FSP
+	default 0x100000
+	help
+	  Additional size of malloc() pool before relocation.
+
+config FSP_USE_UPD
+	bool
+	depends on HAVE_FSP
+	default y
+	help
+	  Most FSPs use UPD data region for some FSP customization. But there
+	  are still some FSPs that might not even have UPD. For such FSPs,
+	  override this to n in their platform Kconfig files.
+
+config FSP_BROKEN_HOB
+	bool
+	depends on HAVE_FSP
+	help
+	  Indicate some buggy FSPs that does not report memory used by FSP
+	  itself as reserved in the resource descriptor HOB. Select this to
+	  tell U-Boot to do some additional work to ensure U-Boot relocation
+	  do not overwrite the important boot service data which is used by
+	  FSP, otherwise the subsequent call to fsp_notify() will fail.
+
+config ENABLE_MRC_CACHE
+	bool "Enable MRC cache"
+	depends on !EFI && !SYS_COREBOOT
+	help
+	  Enable this feature to cause MRC data to be cached in NV storage
+	  to be used for speeding up boot time on future reboots and/or
+	  power cycles.
+
+	  For platforms that use Intel FSP for the memory initialization,
+	  please check FSP output HOB via U-Boot command 'fsp hob' to see
+	  if there is FSP_NON_VOLATILE_STORAGE_HOB_GUID (asm/fsp/fsp_hob.h).
+	  If such GUID does not exist, MRC cache is not available on such
+	  platform (eg: Intel Queensbay), which means selecting this option
+	  here does not make any difference.
+
+config HAVE_MRC
+	bool "Add a System Agent binary"
+	depends on !HAVE_FSP
+	help
+	  Select this option to add a System Agent binary to
+	  the resulting U-Boot image. MRC stands for Memory Reference Code.
+	  It is a binary blob which U-Boot uses to set up SDRAM.
+
+	  Note: Without this binary U-Boot will not be able to set up its
+	  SDRAM so will not boot.
+
+config CACHE_MRC_BIN
+	bool
+	depends on HAVE_MRC
+	default n
+	help
+	  Enable caching for the memory reference code binary. This uses an
+	  MTRR (memory type range register) to turn on caching for the section
+	  of SPI flash that contains the memory reference code. This makes
+	  SDRAM init run faster.
+
+config CACHE_MRC_SIZE_KB
+	int
+	depends on HAVE_MRC
+	default 512
+	help
+	  Sets the size of the cached area for the memory reference code.
+	  This ends at the end of SPI flash (address 0xffffffff) and is
+	  measured in KB. Typically this is set to 512, providing for 0.5MB
+	  of cached space.
+
+config DCACHE_RAM_BASE
+	hex
+	depends on HAVE_MRC
+	help
+	  Sets the base of the data cache area in memory space. This is the
+	  start address of the cache-as-RAM (CAR) area and the address varies
+	  depending on the CPU. Once CAR is set up, read/write memory becomes
+	  available at this address and can be used temporarily until SDRAM
+	  is working.
+
+config DCACHE_RAM_SIZE
+	hex
+	depends on HAVE_MRC
+	default 0x40000
+	help
+	  Sets the total size of the data cache area in memory space. This
+	  sets the size of the cache-as-RAM (CAR) area. Note that much of the
+	  CAR space is required by the MRC. The CAR space available to U-Boot
+	  is normally at the start and typically extends to 1/4 or 1/2 of the
+	  available size.
+
+config DCACHE_RAM_MRC_VAR_SIZE
+	hex
+	depends on HAVE_MRC
+	help
+	  This is the amount of CAR (Cache as RAM) reserved for use by the
+	  memory reference code. This depends on the implementation of the
+	  memory reference code and must be set correctly or the board will
+	  not boot.
+
+config HAVE_REFCODE
+        bool "Add a Reference Code binary"
+        help
+          Select this option to add a Reference Code binary to the resulting
+          U-Boot image. This is an Intel binary blob that handles system
+          initialisation, in this case the PCH and System Agent.
+
+          Note: Without this binary (on platforms that need it such as
+          broadwell) U-Boot will be missing some critical setup steps.
+          Various peripherals may fail to work.
+
+config SMP
+	bool "Enable Symmetric Multiprocessing"
+	default n
+	help
+	  Enable use of more than one CPU in U-Boot and the Operating System
+	  when loaded. Each CPU will be started up and information can be
+	  obtained using the 'cpu' command. If this option is disabled, then
+	  only one CPU will be enabled regardless of the number of CPUs
+	  available.
+
+config MAX_CPUS
+	int "Maximum number of CPUs permitted"
+	depends on SMP
+	default 4
+	help
+	  When using multi-CPU chips it is possible for U-Boot to start up
+	  more than one CPU. The stack memory used by all of these CPUs is
+	  pre-allocated so at present U-Boot wants to know the maximum
+	  number of CPUs that may be present. Set this to at least as high
+	  as the number of CPUs in your system (it uses about 4KB of RAM for
+	  each CPU).
+
+config AP_STACK_SIZE
+	hex
+	depends on SMP
+	default 0x1000
+	help
+	  Each additional CPU started by U-Boot requires its own stack. This
+	  option sets the stack size used by each CPU and directly affects
+	  the memory used by this initialisation process. Typically 4KB is
+	  enough space.
+
+config CPU_INTEL_TURBO_NOT_PACKAGE_SCOPED
+	bool
+	help
+	  This option indicates that the turbo mode setting is not package
+	  scoped. i.e. turbo_enable() needs to be called on not just the
+	  bootstrap processor (BSP).
+
+config HAVE_VGA_BIOS
+	bool "Add a VGA BIOS image"
+	help
+	  Select this option if you have a VGA BIOS image that you would
+	  like to add to your ROM.
+
+config VGA_BIOS_FILE
+	string "VGA BIOS image filename"
+	depends on HAVE_VGA_BIOS
+	default "vga.bin"
+	help
+	  The filename of the VGA BIOS image in the board directory.
+
+config VGA_BIOS_ADDR
+	hex "VGA BIOS image location"
+	depends on HAVE_VGA_BIOS
+	default 0xfff90000
+	help
+	  The location of VGA BIOS image in the SPI flash. For example, base
+	  address of 0xfff90000 indicates that the image will be put at offset
+	  0x90000 from the beginning of a 1MB flash device.
+
+config HAVE_VBT
+	bool "Add a Video BIOS Table (VBT) image"
+	depends on HAVE_FSP
+	help
+	  Select this option if you have a Video BIOS Table (VBT) image that
+	  you would like to add to your ROM. This is normally required if you
+	  are using an Intel FSP firmware that is complaint with spec 1.1 or
+	  later to initialize the integrated graphics device (IGD).
+
+	  Video BIOS Table, or VBT, provides platform and board specific
+	  configuration information to the driver that is not discoverable
+	  or available through other means. By other means the most used
+	  method here is to read EDID table from the attached monitor, over
+	  Display Data Channel (DDC) using two pin I2C serial interface. VBT
+	  configuration is related to display hardware and is available via
+	  the ACPI OpRegion or, on older systems, in the PCI ROM (Option ROM).
+
+config VBT_FILE
+	string "Video BIOS Table (VBT) image filename"
+	depends on HAVE_VBT
+	default "vbt.bin"
+	help
+	  The filename of the file to use as Video BIOS Table (VBT) image
+	  in the board directory.
+
+config VBT_ADDR
+	hex "Video BIOS Table (VBT) image location"
+	depends on HAVE_VBT
+	default 0xfff90000
+	help
+	  The location of Video BIOS Table (VBT) image in the SPI flash. For
+	  example, base address of 0xfff90000 indicates that the image will
+	  be put at offset 0x90000 from the beginning of a 1MB flash device.
+
+config VIDEO_FSP
+	bool "Enable FSP framebuffer driver support"
+	depends on HAVE_VBT && DM_VIDEO
+	help
+	  Turn on this option to enable a framebuffer driver when U-Boot is
+	  using Video BIOS Table (VBT) image for FSP firmware to initialize
+	  the integrated graphics device.
+
+config ROM_TABLE_ADDR
+	hex
+	default 0xf0000
+	help
+	  All x86 tables happen to like the address range from 0x0f0000
+	  to 0x100000. We use 0xf0000 as the starting address to store
+	  those tables, including PIRQ routing table, Multi-Processor
+	  table and ACPI table.
+
+config ROM_TABLE_SIZE
+	hex
+	default 0x10000
+
+menu "System tables"
+	depends on !EFI && !SYS_COREBOOT
+
+config GENERATE_PIRQ_TABLE
+	bool "Generate a PIRQ table"
+	default n
+	help
+	  Generate a PIRQ routing table for this board. The PIRQ routing table
+	  is generated by U-Boot in the system memory from 0xf0000 to 0xfffff
+	  at every 16-byte boundary with a PCI IRQ routing signature ("$PIR").
+	  It specifies the interrupt router information as well how all the PCI
+	  devices' interrupt pins are wired to PIRQs.
+
+config GENERATE_SFI_TABLE
+	bool "Generate a SFI (Simple Firmware Interface) table"
+	help
+	  The Simple Firmware Interface (SFI) provides a lightweight method
+	  for platform firmware to pass information to the operating system
+	  via static tables in memory.  Kernel SFI support is required to
+	  boot on SFI-only platforms.  If you have ACPI tables then these are
+	  used instead.
+
+	  U-Boot writes this table in write_sfi_table() just before booting
+	  the OS.
+
+	  For more information, see http://simplefirmware.org
+
+config GENERATE_MP_TABLE
+	bool "Generate an MP (Multi-Processor) table"
+	default n
+	help
+	  Generate an MP (Multi-Processor) table for this board. The MP table
+	  provides a way for the operating system to support for symmetric
+	  multiprocessing as well as symmetric I/O interrupt handling with
+	  the local APIC and I/O APIC.
+
+config GENERATE_ACPI_TABLE
+	bool "Generate an ACPI (Advanced Configuration and Power Interface) table"
+	default n
+	select QFW if QEMU
+	help
+	  The Advanced Configuration and Power Interface (ACPI) specification
+	  provides an open standard for device configuration and management
+	  by the operating system. It defines platform-independent interfaces
+	  for configuration and power management monitoring.
+
+endmenu
+
+config HAVE_ACPI_RESUME
+	bool "Enable ACPI S3 resume"
+	select ENABLE_MRC_CACHE
+	help
+	  Select this to enable ACPI S3 resume. S3 is an ACPI-defined sleeping
+	  state where all system context is lost except system memory. U-Boot
+	  is responsible for restoring the machine state as it was before sleep.
+	  It needs restore the memory controller, without overwriting memory
+	  which is not marked as reserved. For the peripherals which lose their
+	  registers, U-Boot needs to write the original value. When everything
+	  is done, U-Boot needs to find out the wakeup vector provided by OSes
+	  and jump there.
+
+config S3_VGA_ROM_RUN
+	bool "Re-run VGA option ROMs on S3 resume"
+	depends on HAVE_ACPI_RESUME
+	help
+	  Execute VGA option ROMs in U-Boot when resuming from S3. Normally
+	  this is needed when graphics console is being used in the kernel.
+
+	  Turning it off can reduce some resume time, but be aware that your
+	  graphics console won't work without VGA options ROMs. Set it to N
+	  if your kernel is only on a serial console.
+
+config STACK_SIZE
+	hex
+	depends on HAVE_ACPI_RESUME
+	default 0x1000
+	help
+	  Estimated U-Boot's runtime stack size that needs to be reserved
+	  during an ACPI S3 resume.
+
+config MAX_PIRQ_LINKS
+	int
+	default 8
+	help
+	  This variable specifies the number of PIRQ interrupt links which are
+	  routable. On most older chipsets, this is 4, PIRQA through PIRQD.
+	  Some newer chipsets offer more than four links, commonly up to PIRQH.
+
+config IRQ_SLOT_COUNT
+	int
+	default 128
+	help
+	  U-Boot can support up to 254 IRQ slot info in the PIRQ routing table
+	  which in turns forms a table of exact 4KiB. The default value 128
+	  should be enough for most boards. If this does not fit your board,
+	  change it according to your needs.
+
+config PCIE_ECAM_BASE
+	hex
+	default 0xe0000000
+	help
+	  This is the memory-mapped address of PCI configuration space, which
+	  is only available through the Enhanced Configuration Access
+	  Mechanism (ECAM) with PCI Express. It can be set up almost
+	  anywhere. Before it is set up, it is possible to access PCI
+	  configuration space through I/O access, but memory access is more
+	  convenient. Using this, PCI can be scanned and configured. This
+	  should be set to a region that does not conflict with memory
+	  assigned to PCI devices - i.e. the memory and prefetch regions, as
+	  passed to pci_set_region().
+
+config PCIE_ECAM_SIZE
+	hex
+	default 0x10000000
+	help
+	  This is the size of memory-mapped address of PCI configuration space,
+	  which is only available through the Enhanced Configuration Access
+	  Mechanism (ECAM) with PCI Express. Each bus consumes 1 MiB memory,
+	  so a default 0x10000000 size covers all of the 256 buses which is the
+	  maximum number of PCI buses as defined by the PCI specification.
+
+config I8259_PIC
+	bool "Enable Intel 8259 compatible interrupt controller"
+	default y
+	help
+	  Intel 8259 ISA compatible chipset incorporates two 8259 (master and
+	  slave) interrupt controllers. Include this to have U-Boot set up
+	  the interrupt correctly.
+
+config APIC
+	bool "Enable Intel Advanced Programmable Interrupt Controller"
+	default y
+	help
+	  The (A)dvanced (P)rogrammable (I)nterrupt (C)ontroller is responsible
+	  for catching interrupts and distributing them to one or more CPU
+	  cores. In most cases there are some LAPICs (local) for each core and
+	  one I/O APIC. This conjunction is found on most modern x86 systems.
+
+config PINCTRL_ICH6
+	bool
+	help
+	  Intel ICH6 compatible chipset pinctrl driver. It needs to work
+	  together with the ICH6 compatible gpio driver.
+
+config I8254_TIMER
+	bool
+	default y
+	help
+	  Intel 8254 timer contains three counters which have fixed uses.
+	  Include this to have U-Boot set up the timer correctly.
+
+config SEABIOS
+	bool "Support booting SeaBIOS"
+	help
+	  SeaBIOS is an open source implementation of a 16-bit X86 BIOS.
+	  It can run in an emulator or natively on X86 hardware with the use
+	  of coreboot/U-Boot. By turning on this option, U-Boot prepares
+	  all the configuration tables that are necessary to boot SeaBIOS.
+
+	  Check http://www.seabios.org/SeaBIOS for details.
+
+config HIGH_TABLE_SIZE
+	hex "Size of configuration tables which reside in high memory"
+	default 0x10000
+	depends on SEABIOS
+	help
+	  SeaBIOS itself resides in E seg and F seg, where U-Boot puts all
+	  configuration tables like PIRQ/MP/ACPI. To avoid conflicts, U-Boot
+	  puts a copy of configuration tables in high memory region which
+	  is reserved on the stack before relocation. The region size is
+	  determined by this option.
+
+	  Increse it if the default size does not fit the board's needs.
+	  This is most likely due to a large ACPI DSDT table is used.
+
+endmenu

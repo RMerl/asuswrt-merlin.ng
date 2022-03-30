@@ -1,0 +1,91 @@
+// SPDX-License-Identifier: GPL-2.0+ OR X11
+
+/ {
+	chosen {
+		u-boot,dm-pre-reloc;
+	};
+
+	clocks {
+		u-boot,dm-pre-reloc;
+
+		altera_arria10_hps_eosc1 {
+			u-boot,dm-pre-reloc;
+		};
+
+		altera_arria10_hps_cb_intosc_ls {
+			u-boot,dm-pre-reloc;
+		};
+
+		altera_arria10_hps_f2h_free {
+			u-boot,dm-pre-reloc;
+		};
+	};
+
+	clock_manager@0xffd04000 {
+		u-boot,dm-pre-reloc;
+
+		mainpll {
+			u-boot,dm-pre-reloc;
+		};
+
+		perpll {
+			u-boot,dm-pre-reloc;
+		};
+
+		alteragrp {
+			u-boot,dm-pre-reloc;
+		};
+	};
+
+	pinmux@0xffd07000 {
+		u-boot,dm-pre-reloc;
+
+		shared {
+			u-boot,dm-pre-reloc;
+		};
+
+		dedicated {
+			u-boot,dm-pre-reloc;
+		};
+
+		dedicated_cfg {
+			u-boot,dm-pre-reloc;
+		};
+
+		fpga {
+			u-boot,dm-pre-reloc;
+		};
+	};
+
+	noc@0xffd10000 {
+		u-boot,dm-pre-reloc;
+
+		firewall {
+			u-boot,dm-pre-reloc;
+		};
+	};
+
+	fpgabridge@0 {
+		u-boot,dm-pre-reloc;
+	};
+
+	fpgabridge@1 {
+		u-boot,dm-pre-reloc;
+	};
+
+	fpgabridge@2 {
+		u-boot,dm-pre-reloc;
+	};
+
+	fpgabridge@3 {
+		u-boot,dm-pre-reloc;
+	};
+
+	fpgabridge@4 {
+		u-boot,dm-pre-reloc;
+	};
+
+	fpgabridge@5 {
+		u-boot,dm-pre-reloc;
+	};
+};

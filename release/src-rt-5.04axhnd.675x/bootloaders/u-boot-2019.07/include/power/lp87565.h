@@ -1,0 +1,12 @@
+#define LP87565	0x0
+#define LP87565_Q1	0x1
+
+#define LP87565_BUCK_NUM		6
+
+/* Drivers name */
+#define LP87565_BUCK_DRIVER	"lp87565_buck"
+
+#define LP87565_BUCK_VOLT_MASK		0xFF
+#define LP87565_BUCK_VOLT_MAX_HEX	0xFF
+#define LP87565_BUCK_VOLT_MAX		3360000
+#define LP87565_BUCK_MODE_MASK		0x80

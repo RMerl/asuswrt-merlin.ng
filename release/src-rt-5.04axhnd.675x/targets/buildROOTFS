@@ -1,0 +1,94 @@
+#!/bin/bash
+
+trap 'echo Error: command exited with code ["$?"]; exit 1' ERR
+
+if [[ -f $PROFILE_DIR/$PROFILE ]]; then
+        source $PROFILE_DIR/$PROFILE
+fi
+
+# make root file system images for squashfs, jffs2 and ubifs
+
+	#### SQUASHFS 
+
+function squashfs_enabled()
+{
+	[[ "$BRCM_FLASH_NAND_ROOTFS_SQUBI" = "y" ]] ||
+	[[ "$BRCM_ROOTFS_SQUASHFS" = "y" ]] ||
+	[[ "$BUILD_ROOTFS_SQUASHFS_HASH" = "y" ]]
+}
+
+function mksquashfs_img()
+{
+sqshimg_name="$1"
+if [ "$BRCM_IKOS" == "y" ]; then
+    $HOSTTOOLS_DIR/mksquashfs $TARGET_FS $PROFILE_DIR/$sqshimg_name -noappend -all-root
+    $HOSTTOOLS_DIR/mksquashfs $TARGET_FS $PROFILE_DIR/${sqshimg_name}.raw -noappend -all-root -noI -noD -noF -noX
+    #-noI			do not compress inode table
+    #-noD			do not compress data blocks
+    #-noF			do not compress fragment blocks
+    #-noX			do not compress extended attributes
+else
+    (ulimit -t 900 ; $HOSTTOOLS_DIR/mksquashfs $TARGET_FS $PROFILE_DIR/$sqshimg_name -noappend -all-root -comp xz) 
+    if [ $? -ne 0 ]; then
+        echo "mksquashfs failed once"
+        (ulimit -t 900 ; $HOSTTOOLS_DIR/mksquashfs $TARGET_FS $PROFILE_DIR/$sqshimg_name -noappend -all-root -comp xz) 
+        if [ $? -ne 0 ]; then
+            echo "mksquashfs failed twice"
+            exit 2
+        fi
+    fi
+fi
+}
+if squashfs_enabled; then
+    mksquashfs_img rootfs.img
+fi
+
+NANDSIZES=
+for a in ${!BUILD_NAND_IMG_BLKSIZE_*}
+do
+  eval v=\$$a
+  if [ -n "$v" ]
+  then 
+    a=${a#BUILD_NAND_IMG_BLKSIZE_}
+    a=${a%KB}
+    NANDSIZES="$NANDSIZES $a"
+  fi
+done
+echo "NANDSIZES is $NANDSIZES"
+
+if [ "$BRCM_KERNEL_ROOTFS" = "all" ]; then
+        SUMTOOL=`find $HOSTTOOLS_DIR/mtd-utils*/ -name 'sumtool' -print -quit`
+
+        mkdir -p $TARGET_FS/bootfs
+	for BLK in $NANDSIZES
+	do
+	   let "BYTES = $BLK * 1024"
+	   case $BLK in
+		128)
+             		PAGE=2048
+			;;
+		256|512)
+             		PAGE=4096
+			;;
+		1024)
+             		PAGE=8192
+			;;
+           esac
+           let "LEB = $BYTES - 2 * $PAGE"
+
+            $HOSTTOOLS_DIR/mtd-utils*/mkfs.ubifs --squash-uids -F -v -c 2048 -m $PAGE -e $LEB -x zlib -r $TARGET_FS -o $PROFILE_DIR/rootfs_${BLK}.ubifs
+
+        done
+fi
+
+if [ "$BRCM_FLASH_EMMC_ROOTFS_EXT4" = "y" ]; then
+   #### eMMC ext4 
+   FS_SIZE_INC=2
+   FS_SIZE=`du -sh $TARGET_FS | cut -d'M' -f1`
+   FS_SIZE_TARGET=$(( $FS_SIZE*$FS_SIZE_INC ))M
+   rm -f $PROFILE_DIR/rootfs.ext4
+   echo "Starting building ext4 actual-size:${FS_SIZE}M target-size:${FS_SIZE_TARGET}"
+   $HOSTTOOLS_DIR/local_install/make_ext4fs -l $FS_SIZE_TARGET $PROFILE_DIR/rootfs.ext4 $TARGET_FS
+   resize2fs -M $PROFILE_DIR/rootfs.ext4
+   echo "Done building ext4"
+fi

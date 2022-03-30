@@ -1,0 +1,31 @@
+#include "63146.dtsi"
+&switch0 {
+	ports {
+		port0@0 {
+			status = "okay";
+		};
+
+		port1@1 {
+			status = "okay";
+		};
+
+		port2@2 {
+			status = "okay";
+		};
+
+		port3@3 {
+			status = "okay";
+		};
+
+		port4@4 {
+			status = "okay";
+		};
+
+/* FIXME
+		port5@5 {
+			status = "okay";
+		};
+*/
+	};
+};
+

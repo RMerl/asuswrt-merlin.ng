@@ -1,0 +1,44 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * U-Boot additions
+ *
+ * Copyright Altera Corporation (C) 2015
+ * Copyright (c) 2018 Simon Goldschmidt
+ */
+
+#include "socfpga-common-u-boot.dtsi"
+
+/{
+	aliases {
+		udc0 = &usb1;
+	};
+};
+
+&watchdog0 {
+	status = "disabled";
+};
+
+&mmc {
+	u-boot,dm-pre-reloc;
+};
+
+&uart0 {
+	clock-frequency = <100000000>;
+	u-boot,dm-pre-reloc;
+};
+
+&uart1 {
+	clock-frequency = <100000000>;
+};
+
+&porta {
+	bank-name = "porta";
+};
+
+&portb {
+	bank-name = "portb";
+};
+
+&portc {
+	bank-name = "portc";
+};

@@ -1,0 +1,231 @@
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * (C) Copyright 2013 SAMSUNG Electronics
+ * SAMSUNG EXYNOS5420 SoC device tree source
+ */
+
+#include "exynos5.dtsi"
+#include "exynos54xx-pinctrl.dtsi"
+
+/ {
+	config {
+		machine-arch-id = <4151>;
+	};
+
+	aliases {
+		i2c0 = "/i2c@12C60000";
+		i2c1 = "/i2c@12C70000";
+		i2c2 = "/i2c@12C80000";
+		i2c3 = "/i2c@12C90000";
+		i2c4 = "/i2c@12CA0000";
+		i2c5 = "/i2c@12CB0000";
+		i2c6 = "/i2c@12CC0000";
+		i2c7 = "/i2c@12CD0000";
+		i2c8 = "/i2c@12E00000";
+		i2c9 = "/i2c@12E10000";
+		i2c10 = "/i2c@12E20000";
+		pinctrl0 = &pinctrl_0;
+		pinctrl1 = &pinctrl_1;
+		pinctrl2 = &pinctrl_2;
+		pinctrl3 = &pinctrl_3;
+		pinctrl4 = &pinctrl_4;
+		spi0 = "/spi@12d20000";
+		spi1 = "/spi@12d30000";
+		spi2 = "/spi@12d40000";
+		spi3 = "/spi@131a0000";
+		spi4 = "/spi@131b0000";
+		mmc0 = "/mmc@12200000";
+		mmc1 = "/mmc@12210000";
+		mmc2 = "/mmc@12220000";
+		xhci0 = "/xhci@12000000";
+		xhci1 = "/xhci@12400000";
+	};
+
+	adc@12D10000 {
+		compatible = "samsung,exynos-adc-v2";
+		reg = <0x12D10000 0x100>;
+		interrupts = <0 106 0>;
+		status = "disabled";
+	};
+
+	hsi2c_4: i2c@12CA0000 {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		compatible = "samsung,exynos5-hsi2c";
+		reg = <0x12CA0000 0x100>;
+		interrupts = <0 60 0>;
+	};
+
+	i2c@12CB0000 {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		compatible = "samsung,exynos5-hsi2c";
+		reg = <0x12CB0000 0x100>;
+		interrupts = <0 61 0>;
+	};
+
+	i2c@12CC0000 {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		compatible = "samsung,exynos5-hsi2c";
+		reg = <0x12CC0000 0x100>;
+		interrupts = <0 62 0>;
+	};
+
+	i2c@12CD0000 {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		compatible = "samsung,exynos5-hsi2c";
+		reg = <0x12CD0000 0x100>;
+		interrupts = <0 63 0>;
+	};
+
+	i2c@12E00000 {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		compatible = "samsung,exynos5-hsi2c";
+		reg = <0x12E00000 0x100>;
+		interrupts = <0 87 0>;
+	};
+
+	i2c@12E10000 {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		compatible = "samsung,exynos5-hsi2c";
+		reg = <0x12E10000 0x100>;
+		interrupts = <0 88 0>;
+	};
+
+	i2c@12E20000 {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		compatible = "samsung,exynos5-hsi2c";
+		reg = <0x12E20000 0x100>;
+		interrupts = <0 203 0>;
+	};
+
+	i2s0: i2s@3830000 {
+		compatible = "samsung,s5pv210-i2s";
+		reg = <0x03830000 0x100>;
+		#sound-dai-cells = <1>;
+		samsung,idma-addr = <0x03000000>;
+		samsung,i2s-epll-clock-frequency = <192000000>;
+		samsung,i2s-sampling-rate = <48000>;
+		samsung,i2s-bits-per-sample = <16>;
+		samsung,i2s-channels = <2>;
+		samsung,i2s-lr-clk-framesize = <256>;
+		samsung,i2s-bit-clk-framesize = <32>;
+		samsung,i2s-id = <0>;
+	};
+
+	mmc@12200000 {
+		samsung,bus-width = <8>;
+		samsung,timing = <1 3 3>;
+		samsung,removable = <0>;
+		samsung,pre-init;
+	};
+
+	mmc@12210000 {
+		status = "disabled";
+	};
+
+	mmc@12220000 {
+		samsung,bus-width = <4>;
+		samsung,timing = <1 2 3>;
+		samsung,removable = <1>;
+	};
+
+	mmc@12230000 {
+		status = "disabled";
+	};
+
+	fimdm0_sysmmu@0x14640000 {
+		compatible = "samsung,sysmmu-v3.3";
+		reg = <0x14640000 0x100>;
+	};
+
+	fimdm1_sysmmu@0x14680000 {
+		compatible = "samsung,sysmmu-v3.3";
+		reg = <0x14680000 0x100>;
+	};
+
+	pinctrl_0: pinctrl@13400000 {
+		compatible = "samsung,exynos5420-pinctrl";
+		reg = <0x13400000 0x1000>;
+		interrupts = <0 45 0>;
+
+		wakeup-interrupt-controller {
+			compatible = "samsung,exynos4210-wakeup-eint";
+			interrupt-parent = <&gic>;
+			interrupts = <0 32 0>;
+		};
+	};
+
+	pinctrl_1: pinctrl@13410000 {
+		compatible = "samsung,exynos5420-pinctrl";
+		reg = <0x13410000 0x1000>;
+		interrupts = <0 78 0>;
+	};
+
+	pinctrl_2: pinctrl@14000000 {
+		compatible = "samsung,exynos5420-pinctrl";
+		reg = <0x14000000 0x1000>;
+		interrupts = <0 46 0>;
+	};
+
+	pinctrl_3: pinctrl@14010000 {
+		compatible = "samsung,exynos5420-pinctrl";
+		reg = <0x14010000 0x1000>;
+		interrupts = <0 50 0>;
+	};
+
+	pinctrl_4: pinctrl@03860000 {
+		compatible = "samsung,exynos5420-pinctrl";
+		reg = <0x03860000 0x1000>;
+		interrupts = <0 47 0>;
+	};
+
+	fimd@14400000 {
+		/* sysmmu is not used in U-Boot */
+		samsung,disable-sysmmu;
+		samsung,pwm-out-gpio = <&gpb2 0 GPIO_ACTIVE_HIGH>;
+	};
+
+	dp: dp@145b0000 {
+		samsung,lt-status = <0>;
+
+		samsung,master-mode = <0>;
+		samsung,bist-mode = <0>;
+		samsung,bist-pattern = <0>;
+		samsung,h-sync-polarity = <0>;
+		samsung,v-sync-polarity = <0>;
+		samsung,interlaced = <0>;
+		samsung,color-space = <0>;
+		samsung,dynamic-range = <0>;
+		samsung,ycbcr-coeff = <0>;
+		samsung,color-depth = <1>;
+	};
+
+	dmc {
+		mem-type = "ddr3";
+	};
+
+	pwm: pwm@12dd0000 {
+		compatible = "samsung,exynos4210-pwm";
+		reg = <0x12dd0000 0x100>;
+		samsung,pwm-outputs = <0>, <1>, <2>, <3>;
+		#pwm-cells = <3>;
+	};
+
+	xhci1: xhci@12400000 {
+		compatible = "samsung,exynos5250-xhci";
+		reg = <0x12400000 0x10000>;
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		phy {
+			compatible = "samsung,exynos5250-usb3-phy";
+			reg = <0x12500000 0x100>;
+		};
+	};
+};

@@ -1,0 +1,9 @@
+#include <dt-bindings/gpio/gpio.h>
+
+compatible = "brcm,bca-gpio";
+gpio-controller;
+#gpio-cells = <2>;
+reg = <GPIO_DIR_OFFSET GPIO_DIR_SIZE>, <GPIO_DATA_OFFSET GPIO_DATA_SIZE>;
+reg-names = "gpio-dir", "gpio-data";
+ngpios = <NUM_OF_GPIOS>;
+gpio-ranges = <&pincontroller 0 0 NUM_OF_GPIOS>;

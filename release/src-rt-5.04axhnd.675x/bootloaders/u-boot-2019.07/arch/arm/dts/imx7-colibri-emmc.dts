@@ -1,0 +1,94 @@
+// SPDX-License-Identifier: GPL-2.0+ OR X11
+/*
+ * Copyright 2019 Toradex AG
+ */
+
+/dts-v1/;
+#include "imx7-colibri.dtsi"
+
+/ {
+	model = "Toradex Colibri iMX7D 1GB (eMMC)";
+	compatible = "toradex,imx7d-colibri-emmc", "fsl,imx7d";
+
+	aliases {
+		u-boot,dm-pre-reloc;
+		mmc0 = &usdhc3;
+		mmc1 = &usdhc1;
+		display1 = &lcdif;
+		usb0 = &usbotg1; /* required for ums */
+	};
+
+	chosen {
+		stdout-path = &uart1;
+	};
+
+	reg_5v0: regulator-5v0 {
+		compatible = "regulator-fixed";
+		regulator-name = "5V";
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
+	};
+
+	reg_usbh_vbus: regulator-usbh-vbus {
+		compatible = "regulator-fixed";
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_usbh_reg>;
+		regulator-name = "VCC_USB[1-4]";
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
+		gpio = <&gpio4 7 GPIO_ACTIVE_LOW>;
+		vin-supply = <&reg_5v0>;
+	};
+};
+
+&usdhc3 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_usdhc3>;
+	bus-width = <8>;
+	non-removable;
+	status = "okay";
+};
+
+&iomuxc {
+	pinctrl_usdhc3: usdhc3grp {
+		fsl,pins = <
+			MX7D_PAD_SD3_CMD__SD3_CMD		0x59
+			MX7D_PAD_SD3_CLK__SD3_CLK		0x19
+			MX7D_PAD_SD3_DATA0__SD3_DATA0		0x59
+			MX7D_PAD_SD3_DATA1__SD3_DATA1		0x59
+			MX7D_PAD_SD3_DATA2__SD3_DATA2		0x59
+			MX7D_PAD_SD3_DATA3__SD3_DATA3		0x59
+			MX7D_PAD_SD3_DATA4__SD3_DATA4		0x59
+			MX7D_PAD_SD3_DATA5__SD3_DATA5		0x59
+			MX7D_PAD_SD3_DATA6__SD3_DATA6		0x59
+			MX7D_PAD_SD3_DATA7__SD3_DATA7		0x59
+			MX7D_PAD_SD3_STROBE__SD3_STROBE         0x19
+		>;
+	};
+
+	pinctrl_usbh_reg: gpio-usbh-vbus {
+		fsl,pins = <
+			MX7D_PAD_UART3_CTS_B__GPIO4_IO7	0x14
+		>;
+	};
+};
+
+/* Colibri USBC */
+&usbotg1 {
+	/*
+	 * usbotg1 on Colibri iMX7 can function in both host/otg modes.
+	 * Gadget stack currently does not look at this at all while
+	 * the host stack refuses to bind/load if it is not set to host
+	 * (it obviously won't be enumerated during usb start invocation
+	 * if dr_mode = "otg")
+	 */
+	dr_mode = "host";
+	status = "okay";
+};
+
+/* Colibri USBH */
+&usbotg2 {
+	dr_mode = "host";
+	vbus-supply = <&reg_usbh_vbus>;
+	status = "okay";
+};

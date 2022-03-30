@@ -1,0 +1,87 @@
+/dts-v1/;
+
+/include/ "skeleton.dtsi"
+/include/ "serial.dtsi"
+/include/ "reset.dtsi"
+/include/ "rtc.dtsi"
+/include/ "tsc_timer.dtsi"
+
+/ {
+	model = "Google Panther";
+	compatible = "google,panther", "intel,haswell";
+
+	aliases {
+		spi0 = &spi;
+	};
+
+	config {
+		silent-console = <0>;
+		no-keyboard;
+	};
+
+	chosen {
+		stdout-path = "/serial";
+	};
+
+	pci {
+		compatible = "pci-x86";
+		#address-cells = <3>;
+		#size-cells = <2>;
+		u-boot,dm-pre-reloc;
+		ranges = <0x02000000 0x0 0xe0000000 0xe0000000 0 0x10000000
+			0x42000000 0x0 0xd0000000 0xd0000000 0 0x10000000
+			0x01000000 0x0 0x1000 0x1000 0 0xf000>;
+
+		pch@1f,0 {
+			reg = <0x0000f800 0 0 0 0>;
+			compatible = "intel,pch9";
+			#address-cells = <1>;
+			#size-cells = <1>;
+
+			spi: spi {
+				#address-cells = <1>;
+				#size-cells = <0>;
+				compatible = "intel,ich9-spi";
+				spi-flash@0 {
+					#size-cells = <1>;
+					#address-cells = <1>;
+					reg = <0>;
+					compatible = "winbond,w25q64",
+						"jedec,spi-nor";
+					memory-map = <0xff800000 0x00800000>;
+					rw-mrc-cache {
+						label = "rw-mrc-cache";
+						reg = <0x003e0000 0x00010000>;
+					};
+				};
+			};
+
+			gpioa {
+				compatible = "intel,ich6-gpio";
+				u-boot,dm-pre-reloc;
+				reg = <0 0x10>;
+				bank-name = "A";
+			};
+
+			gpiob {
+				compatible = "intel,ich6-gpio";
+				u-boot,dm-pre-reloc;
+				reg = <0x30 0x10>;
+				bank-name = "B";
+			};
+
+			gpioc {
+				compatible = "intel,ich6-gpio";
+				u-boot,dm-pre-reloc;
+				reg = <0x40 0x10>;
+				bank-name = "C";
+			};
+		};
+	};
+
+	tpm {
+		reg = <0xfed40000 0x5000>;
+		compatible = "infineon,slb9635lpc";
+	};
+
+};

@@ -1,0 +1,8 @@
+Package: libi2c
+Version: 2013-12-15-1
+Depends: libc
+Source: qca/feeds/oldpackages/utils/i2c-tools
+Section: libs
+Architecture: ipq806x
+Installed-Size: 1802
+Description:  I2C library

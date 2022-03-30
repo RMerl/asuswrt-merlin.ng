@@ -1,0 +1,9 @@
+Package: i2c-tools
+Version: 2013-12-15-1
+Depends: libc, libi2c
+Source: qca/feeds/oldpackages/utils/i2c-tools
+Section: utils
+Architecture: ipq806x
+Installed-Size: 16331
+Description:  This package contains an heterogeneous set of I2C tools for Linux. These tools
+ were originally part of the lm-sensors package.

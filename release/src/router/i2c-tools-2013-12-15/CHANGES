@@ -1,0 +1,135 @@
+i2c-tools CHANGES
+-----------------
+
+SVN HEAD
+  tools: Fix build with recent compilers (gcc 4.6+)
+  README: Clarify licenses
+  decode-dimms: Decode module configuration type of DDR2 SDRAM
+                Decode bus width extension of DDR3 SDRAM
+                Don't choke when no EEPROM is found
+                Don't make columns larger than they need to be
+                Make side-by-side output more robust
+                Print module organization of DDR SDRAM
+                Merge cells by default in side-by-side output
+                Print extra timing values of DDR SDRAM
+                Print DDR and DDR2 core timings for all supported CAS values
+                Print DDR2 equivalent speed of tCK max
+                Don't print undefined DDR2 SDRAM timings
+		Print SDR, DDR, DDR2, DDR3 core timings for all standard speeds
+                Update manufacturer IDs
+                Make DDR3 manufacturer count parity error non-fatal
+                Strip former manufacturer name in side-by-side output mode
+                Remove duplicate "ns" in SDR timings
+                Add section headers for SDR modules
+                Fix decoding of SDR SPD revision
+                Prevent hang on reserved DDR3 module type
+                Decode more DDR3 module types
+                Fix DDR3 tRAS decoding
+                Fix DDR3 core timings rounding
+                Round down PC3 numbers to comply with Jedec
+                Don't print the DDR3 time bases
+                Decode the FTB fields of DDR3 tCk, tAA, tRCD, tRP and tRC
+                Fix speed and PC3 number of high-speed DDR3 modules
+                Decode DDR3 reference card revision
+                Print width of all known DDR3 module types
+                Print physical characteristics for all DDR3 module types
+                Don't print raw SSTE32882 register values
+                Add support for Load Reduced DIMM (LRDIMM) DDR3 modules
+                Fully decode the DDR3 SDRAM Device Type field
+                Encode "degrees" to HTML degree symbol
+                Generate XHTML 1.1 compliant markup
+                Add a manual page
+  decode-vaio: Add a manual page
+  eeprog: Add a manual page
+  eeprom: Add a manual page
+  eepromer: Add a manual page
+  i2cdetect: Do a best effort detection if functionality is missing
+             Clarify the SMBus commands used for probing by default
+  i2c-dev.h: Minimize differences with kernel flavor
+             Move SMBus helper functions to include/i2c/smbus.h
+  i2c-stub-from-dump: Be more tolerant on input dump format
+  library: New libi2c library
+           Properly propagate real error codes on read errors
+           Use I2C_SMBUS_BLOCK_MAX instead of hard-coding 32
+  lib/smbus.c: Add missing include which was causing a build error
+  py-smbus: Fix module level docs
+
+3.1.0 (2011-12-04)
+  decode-dimms: Decode module configuration type of DDR SDRAM
+                Decode refresh rate of DDR SDRAM
+                Add support for the at24 kernel driver
+  i2c-dev.h: Make value arrays const for block write functions
+  i2cset: Add support for SMBus and I2C block writes
+          Removed obsolete method to specify value mask
+          More stringent parameter validation
+
+3.0.3 (2010-12-12)
+  Makefile: Let the environment set CC and CFLAGS
+            Integrate py-smbus into the build system
+  README: Point users to the linux-i2c mailing list
+  decode-dimms: Handle CRC of FB-DIMM and DDR3 SDRAM memory modules
+                Add support for DDR3 SDRAM
+                Fix decoding of SDR SDRAM bytes 12-14
+                Add side-by-side formatting option
+                Add merged cells formatting option
+                Try harder to decode the manufacturing date
+                Handle read errors on sysfs
+                Decode voltage interface level of DDR SDRAM
+  decode-xeon: Delete
+  eepromer: Fix array initialization overrun
+  i2cdetect: Drop legacy reference to ISA bus
+  i2cset: Add support for short writes with PEC
+  i2c-stub-from-dump: Use udev settle to speed up initialization
+                      Unload i2c-stub automatically if needed
+                      Add support for multiple dumps
+  tools: Properly handle /dev/i2c not being a directory
+         Increase limit on I2C bus number
+
+3.0.2 (2008-11-29)
+  i2c-dev.h: Drop I2C_FUNC_SMBUS_*I2C_BLOCK_2 defines
+  decode-dimms: Add support for little-endian word hexdumps
+                Only export the ceil function from POSIX
+  decode-vaio: Remove history
+  i2cdetect: Support i2c bus passed by name
+             Shorten the usage message
+  i2cdump: Support i2c bus passed by name
+           Shorten the usage message
+           Restrict the chip address to 0x03-0x77
+           Split the functionality checking code into a separate function
+           Better error message on missing adapter functionality
+  i2cget: Support i2c bus passed by name
+          Shorten the usage message
+          Better error message on missing adapter functionality
+  i2cset: Support i2c bus passed by name
+          Shorten the usage message
+          Restrict the chip address to 0x03-0x77
+          Split the code into several functions for clarity
+          Add support for short writes (SMBus send byte)
+          Better error message on missing adapter functionality
+          Set the data value mask with -m
+          Make reading back the written value optional
+  i2c-stub-from-dump: Add support for partial dumps
+                      Report if only garbage is found in dump file
+                      Behave properly when i2c-stub is already loaded
+                      Stop on i2cset error
+
+3.0.1 (2008-04-04)
+  Drop the trailing .pl from all perl script names
+  decode-dimms: Fix DDR2 SDRAM module speed decoding
+                Update manufacturer IDs
+                Don't print anything by default if checksum fails
+                Decode all DDR2 SDRAM timing information
+                Add support for reading SPD data from hexdumps
+                Make command line parsing more robust
+  decode-vaio: Private data might not be readable by non-root users
+               Print the asset tag
+               Fix the timestamp decoding
+  i2cdump: Fix I2C block mode error code
+           Remove man page reference to hardware monitoring chips
+           Let the user specify a register range
+  i2cset: Final status messages go to stdout
+          Return success even when readback fails or doesn't match
+  i2c-stub-from-dump: New helper script to use with i2c-stub
+
+3.0.0 (2007-10-14)
+  Initial release

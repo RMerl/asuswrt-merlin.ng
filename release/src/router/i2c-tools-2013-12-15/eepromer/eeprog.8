@@ -1,0 +1,103 @@
+.\"
+.\"  eeprog.8 - manpage for the i2c-tools/eeprog utility
+.\"  Copyright (C) 2013  Jaromir Capik
+.\"
+.\"  This program is free software; you can redistribute it and/or modify
+.\"  it under the terms of the GNU General Public License as published by
+.\"  the Free Software Foundation; either version 2 of the License, or
+.\"  (at your option) any later version.
+.\"
+.\"  This program is distributed in the hope that it will be useful,
+.\"  but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\"  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\"  GNU General Public License for more details.
+.\"
+.\"  You should have received a copy of the GNU General Public License along
+.\"  with this program; if not, write to the Free Software Foundation, Inc.,
+.\"  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+.\"
+.TH eeprog "8" "Jul 2013" "i2c-tools" "System Administration"
+.SH NAME
+eeprog \- reads and writes 24Cxx EEPROMs connected to I2C serial bus
+.SH SYNOPSIS
+.B eeprog
+[-fqxdh] [-16|-8] [-r addr[:count]|-w addr] <device> <i2c-addr>
+.SH DESCRIPTION
+.B eeprog
+uses the SMBus protocol used by most of the recent chipsets.
+.SH NOTE
+Don't forget to load your i2c chipset and the i2c-dev drivers.
+.P
+The following environment variables could be set instead of the command line arguments:
+.P
+    EEPROG_DEV              device
+.br
+    EEPROG_I2C_ADDR         i2c-addr
+.SH PARAMETERS
+.I Address modes
+.TP
+.B \-8
+Use 8bit address mode for 24c0x...24C16 [default]
+.TP
+.B \-16
+Use 16bit address mode for 24c32...24C256
+.TP
+.I Actions
+.TP
+.B \-r addr[:count]
+Read
+.B count
+(1 if omitted) bytes from
+.B addr
+and print them to the standard output
+.TP
+.B \-w addr
+Write input (stdin) at address
+.B addr
+of the EEPROM
+.TP
+.B \-h
+Print this help
+.TP
+.I Options
+.TP
+.B \-x
+Set hex output mode
+.TP
+.B \-d
+Dummy mode, display what *would* have been done
+.TP
+.B \-f
+Disable warnings and don't ask confirmation
+.TP
+.B \-q
+Quiet mode
+.TP
+.I Bus
+.TP
+.B device
+Device file representing the I2C bus (eg. /dev/i2c-0)
+.TP
+.B i2c-addr
+I2C bus address of the EEPROM (eg. 0x3A)
+.SH EXAMPLES
+Read 64 bytes from the EEPROM at address 0x54 on bus 0 starting at address 123 (decimal)
+.P
+.B 	eeprog
+/dev/i2c-0 0x54 -r 123:64
+.P
+Print the hex codes of the first 32 bytes read from bus 1 at address 0x22
+.P
+.B 	eeprog
+/dev/i2c-1 0x51 -x -r 0x22:0x20
+.P
+Write the current timestamp at address 0x200 of the EEPROM on bus 0 at address 0x33
+.P
+ 	date |
+.B eeprog
+/dev/i2c-0 0x33 -w 0x200
+.SH SEE ALSO
+.BR eeprom (8),
+.BR eepromer (8)
+.SH AUTHOR
+Stefano Barbato

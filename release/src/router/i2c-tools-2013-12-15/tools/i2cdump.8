@@ -1,0 +1,84 @@
+.TH I2CDUMP 8 "May 2008"
+.SH NAME
+i2cdump \- examine I2C registers
+
+.SH SYNOPSIS
+.B i2cdump
+.RB [ -f ]
+.RB [ "-r first-last" ]
+.RB [ -y ]
+.I i2cbus
+.I address
+.RI [ "mode " [ "bank " [ bankreg ]]]
+.br
+.B i2cdump
+.B -V
+
+.SH DESCRIPTION
+i2cdump is a small helper program to examine registers
+visible through the I2C bus.
+
+.SH OPTIONS
+.TP
+.B -V
+Display the version and exit.
+.TP
+.B -f
+Force access to the device even if it is already busy. By default, i2cdump
+will refuse to access a device which is already under the control of a
+kernel driver. Using this flag is dangerous, it can seriously confuse the
+kernel driver in question. It can also cause i2cdump to return invalid
+results. So use at your own risk and only if you know what you're doing.
+.TP
+.B -r first-last
+Limit the range of registers being accessed. This option is only available
+with modes \fBb\fP, \fBw\fP, \fBc\fP and \fBW\fP. For mode \fBW\fP,
+\fBfirst\fR must be even and \fBlast\fR must be odd.
+.TP
+.B -y
+Disable interactive mode. By default, i2cdump will wait for a confirmation
+from the user before messing with the I2C bus. When this flag is used, it
+will perform the operation directly. This is mainly meant to be used in
+scripts.
+.PP
+At least two options must be provided to i2cdump. \fIi2cbus\fR indicates the
+number or name of the I2C bus to be scanned. This number should correspond to one
+of the busses listed by \fIi2cdetect -l\fR. \fIaddress\fR indicates the
+address to be scanned on that bus, and is an integer between 0x03 and 0x77.
+.PP
+The \fImode\fR parameter, if specified, is one of the letters \fBb\fP, \fBw\fP,
+\fBs\fP, or \fBi\fP, corresponding to a read size of a single byte, a 16-bit
+word, an SMBus block, an I2C block, respectively. The \fBc\fP mode is a
+little different, it reads all bytes consecutively, and is useful for chips that
+have an address auto-increment feature, such as EEPROMs. The \fBW\fP mode is
+also special, it is similar to \fBw\fP except that a read command will only
+be issued on even register addresses; this is again mainly useful for EEPROMs.
+.PP
+A \fBp\fP can also be appended to the \fImode\fR parameter (except for
+\fBi\fP and \fBW\fP) to enable PEC. If the \fImode\fR parameter is omitted,
+i2cdump defaults to byte access without PEC.
+.PP
+The \fIbank\fR and \fIbankreg\fR parameters are useful on the W83781D and
+similar chips (at the time of writing, all Winbond and Asus chips).
+\fIbank\fR is an integer between 0 and 7, and \fIbankreg\fR is an integer
+between 0x00 and 0xFF (default value: 0x4E). The W83781D data sheet has more
+information on bank selection.
+
+.SH WARNING
+i2cdump can be dangerous if used improperly. Most notably, the \fBc\fP mode
+starts with WRITING a byte to the chip. On most chips it will be stored in the
+address pointer register, which is OK, but some chips with a single register
+or no (visible) register at all will most likely see this as a real WRITE,
+resulting in possible misbehavior or corruption. Do not use i2cdump
+on random addresses. Anyway, it is of little use unless you have good
+knowledge of the chip you're working with and an idea of what you are looking
+for.
+
+.SH SEE ALSO
+i2cset(8), i2cdetect(8), isadump(8)
+
+.SH AUTHOR
+Frodo Looijaard, Mark D. Studebaker and Jean Delvare
+
+This manual page was originally written by David Z Maze <dmaze@debian.org> for
+the Debian GNU/Linux system.

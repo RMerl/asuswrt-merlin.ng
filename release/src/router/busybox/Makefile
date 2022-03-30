@@ -316,7 +316,11 @@ AFLAGS_KERNEL	=
 
 # Use LINUXINCLUDE when you must reference the include/ directory.
 # Needed to be compatible with the O= option
-CFLAGS		:= $(CFLAGS)
+ifeq ("$(HND_ROUTER)","y")
+CFLAGS		:= -DHND_ROUTER
+else
+CFLAGS		:=
+endif
 # Added only to final link stage of busybox binary
 CFLAGS_busybox	:= $(CFLAGS_busybox)
 CPPFLAGS	:= $(CPPFLAGS)

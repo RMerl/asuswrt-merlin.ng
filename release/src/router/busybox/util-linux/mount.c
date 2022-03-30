@@ -2142,7 +2142,11 @@ int mount_main(int argc UNUSED_PARAM, char **argv)
 	char *O_optmatch = NULL;
 	char *storage_path;
 	llist_t *lst_o = NULL;
+#ifdef HND_ROUTER
+	const char *fstabname = "/rom/etc/fstab";
+#else
 	const char *fstabname = "/etc/fstab";
+#endif
 	FILE *fstab;
 	int i, j;
 	int rc = EXIT_SUCCESS;
@@ -2239,7 +2243,11 @@ int mount_main(int argc UNUSED_PARAM, char **argv)
 
 	// A malicious user could overmount /usr without this.
 	if (ENABLE_FEATURE_MOUNT_OTHERTAB && nonroot)
+#ifdef HND_ROUTER
+		fstabname = "/rom/etc/fstab";
+#else
 		fstabname = "/etc/fstab";
+#endif
 	// Open either fstab or mtab
 	if (cmdopt_flags & MS_REMOUNT) {
 		// WARNING. I am not sure this matches util-linux's

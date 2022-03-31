@@ -4981,7 +4981,7 @@ fi;
 		sed -i "/CONFIG_BCM_PKTRUNNER_WAR_SKIP_TUN/d" $(1); \
 		echo "CONFIG_BCM_PKTRUNNER_WAR_SKIP_TUN=y" >>$(1); \
 	fi;
-	if [ "$(TCPLUGIN)" = "y" ]; then \
+	if [ "$(TCPLUGIN)" = "y" ] || [ "$(IPSET)" = "y" ]; then \
 		sed -i "/CONFIG_NETFILTER_XT_SET/d" $(1); \
 		echo "CONFIG_NETFILTER_XT_SET=y" >>$(1); \
 		sed -i "/CONFIG_IP_SET/d" $(1); \

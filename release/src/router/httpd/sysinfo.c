@@ -132,6 +132,9 @@ int ej_show_sysinfo(int eid, webs_t wp, int argc, char_t ** argv)
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,36)
 				int count = 0;
 				char model[64];
+#if defined(BCM4912)
+				strcpy(model, "BCM4912 - Cortex A53 ARMv8");
+#else
 
 				char impl[8], arch[8], variant[8], part[10], revision[4];
 				impl[0]='\0'; arch[0]='\0'; variant[0]='\0'; part[0]='\0';
@@ -165,7 +168,7 @@ int ej_show_sysinfo(int eid, webs_t wp, int argc, char_t ** argv)
 					sprintf(model, "BCM470x - Cortex A7 ARMv7 revision %s", revision);
 				else
 					sprintf(model, "Implementer: %s, Part: %s, Variant: %s, Arch: %s, Rev: %s",impl, part, variant, arch, revision);
-
+#endif // BCM4912
 				count = sysconf(_SC_NPROCESSORS_CONF);
 				if (count > 1) {
 					tmp = nvram_safe_get("cpurev");
@@ -186,6 +189,11 @@ int ej_show_sysinfo(int eid, webs_t wp, int argc, char_t ** argv)
 
 		} else if(strcmp(type,"cpu.freq") == 0) {
 #ifdef HND_ROUTER
+#if defined(BCM4912)
+			if (1)
+				strcpy(result, "2000");
+			else
+#else
 			int freq = 0;
 			char *buffer;
 
@@ -199,6 +207,7 @@ int ej_show_sysinfo(int eid, webs_t wp, int argc, char_t ** argv)
 			else if (get_model() == MODEL_RTAX58U || get_model() == MODEL_RTAX56U)
 				strcpy(result, "1500");
 			else
+#endif // BCM4912
 #endif
 			{
 				tmp = nvram_safe_get("clkfreq");
@@ -308,8 +317,11 @@ int ej_show_sysinfo(int eid, webs_t wp, int argc, char_t ** argv)
 #endif
 		} else if(strcmp(type,"conn.total") == 0) {
 			FILE* fp;
-
-			fp = fopen ("/proc/sys/net/ipv4/netfilter/ip_conntrack_count", "r");
+#if defined(RTCONFIG_HND_ROUTER_AX_6756)
+			fp = fopen("/proc/sys/net/netfilter/nf_conntrack_count", "r");
+#else
+			fp = fopen("/proc/sys/net/ipv4/netfilter/ip_conntrack_count", "r");
+#endif
 			if (fp) {
 				if (fgets(result, sizeof(result), fp) == NULL)
 					strcpy(result, "error");
@@ -334,8 +346,11 @@ int ej_show_sysinfo(int eid, webs_t wp, int argc, char_t ** argv)
 
 		} else if(strcmp(type,"conn.max") == 0) {
 			FILE* fp;
-
-			fp = fopen ("/proc/sys/net/ipv4/netfilter/ip_conntrack_max", "r");
+#if defined(RTCONFIG_HND_ROUTER_AX_6756)
+			fp = fopen("/proc/sys/net/netfilter/nf_conntrack_max", "r");
+#else
+			fp = fopen("/proc/sys/net/ipv4/netfilter/ip_conntrack_max", "r");
+#endif
 			if (fp) {
 				if (fgets(result, sizeof(result), fp) == NULL)
 					strcpy(result, "error");
@@ -533,8 +548,11 @@ int ej_show_sysinfo(int eid, webs_t wp, int argc, char_t ** argv)
 				system("/bin/fc status | grep \"HW Acceleration\" >/tmp/output.txt");
 #endif
 			else if (!strcmp(&type[8], "fc"))
+#if defined(RTCONFIG_HND_ROUTER_AX_6756)
+				system("/bin/fc status | grep \"Flow Ucast Learning\" >/tmp/output.txt");
+#else
 				system("/bin/fc status | grep \"Flow Learning\" >/tmp/output.txt");
-
+#endif
 			char *buffer = read_whole_file("/tmp/output.txt");
 			if (buffer) {
 				if (strstr(buffer, "Enabled"))

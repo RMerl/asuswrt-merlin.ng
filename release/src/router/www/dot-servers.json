@@ -1,6 +1,90 @@
 ﻿{
 	"IPv4" : [
 		{
+			"dnspriv_label" : "AdGuard 1",
+			"dnspriv_server" : "94.140.14.14",
+			"dnspriv_port" : "",
+			"dnspriv_hostname" : "dns.adguard.com",
+			"dnspriv_spkipin" : ""
+		},
+		{
+			"dnspriv_label" : "AdGuard 2",
+			"dnspriv_server" : "94.140.15.15",
+			"dnspriv_port" : "",
+			"dnspriv_hostname" : "dns.adguard.com",
+			"dnspriv_spkipin" : ""
+		},
+		{
+			"dnspriv_label" : "AdGuard 1 (unfiltered)",
+			"dnspriv_server" : "94.140.14.140",
+			"dnspriv_port" : "",
+			"dnspriv_hostname" : "dns-unfiltered.adguard.com",
+			"dnspriv_spkipin" : ""
+		},
+		{
+			"dnspriv_label" : "AdGuard 2 (unfiltered)",
+			"dnspriv_server" : "94.140.14.141",
+			"dnspriv_port" : "",
+			"dnspriv_hostname" : "dns-unfiltered.adguard.com",
+			"dnspriv_spkipin" : ""
+		},
+		{
+			"dnspriv_label" : "AdGuard 1 (family)",
+			"dnspriv_server" : "94.140.14.15",
+			"dnspriv_port" : "",
+			"dnspriv_hostname" : "dns-family.adguard.com",
+			"dnspriv_spkipin" : ""
+		},
+		{
+			"dnspriv_label" : "AdGuard 2 (family)",
+			"dnspriv_server" : "94.140.15.16",
+			"dnspriv_port" : "",
+			"dnspriv_hostname" : "dns-family.adguard.com",
+			"dnspriv_spkipin" : ""
+		},
+		{
+			"dnspriv_label" : "Canadian Shield 1",
+			"dnspriv_server" : "149.112.121.10",
+			"dnspriv_port" : "",
+			"dnspriv_hostname" : "private.canadianshield.cira.ca",
+			"dnspriv_spkipin" : ""
+		},
+		{
+			"dnspriv_label" : "Canadian Shield 2",
+			"dnspriv_server" : "149.112.122.10",
+			"dnspriv_port" : "",
+			"dnspriv_hostname" : "private.canadianshield.cira.ca",
+			"dnspriv_spkipin" : ""
+		},
+		{
+			"dnspriv_label" : "Canadian Shield 1 (protected)",
+			"dnspriv_server" : "149.112.121.20",
+			"dnspriv_port" : "",
+			"dnspriv_hostname" : "protected.canadianshield.cira.ca",
+			"dnspriv_spkipin" : ""
+		},
+		{
+			"dnspriv_label" : "Canadian Shield 2 (protected)",
+			"dnspriv_server" : "149.112.122.20",
+			"dnspriv_port" : "",
+			"dnspriv_hostname" : "protected.canadianshield.cira.ca",
+			"dnspriv_spkipin" : ""
+		},
+		{
+			"dnspriv_label" : "Canadian Shield 1 (family)",
+			"dnspriv_server" : "149.112.121.30",
+			"dnspriv_port" : "",
+			"dnspriv_hostname" : "family.canadianshield.cira.ca",
+			"dnspriv_spkipin" : ""
+		},
+		{
+			"dnspriv_label" : "Canadian Shield 2 (family)",
+			"dnspriv_server" : "149.112.122.30",
+			"dnspriv_port" : "",
+			"dnspriv_hostname" : "family.canadianshield.cira.ca",
+			"dnspriv_spkipin" : ""
+		},
+		{
 			"dnspriv_label" : "CleanBrowsing 1 (security)",
 			"dnspriv_server" : "185.228.168.9",
 			"dnspriv_port" : "",
@@ -109,6 +193,90 @@
 		}
 	],
 	"IPv6" : [
+		{
+			"dnspriv_label" : "AdGuard 1",
+			"dnspriv_server" : "2a10:50c0::ad1:ff",
+			"dnspriv_port" : "",
+			"dnspriv_hostname" : "dns.adguard.com",
+			"dnspriv_spkipin" : ""
+		},
+		{
+			"dnspriv_label" : "AdGuard 2",
+			"dnspriv_server" : "2a10:50c0::ad2:ff",
+			"dnspriv_port" : "",
+			"dnspriv_hostname" : "dns.adguard.com",
+			"dnspriv_spkipin" : ""
+		},
+		{
+			"dnspriv_label" : "AdGuard 1 (unfiltered)",
+			"dnspriv_server" : "2a10:50c0::1:ff",
+			"dnspriv_port" : "",
+			"dnspriv_hostname" : "dns-unfiltered.adguard.com",
+			"dnspriv_spkipin" : ""
+		},
+		{
+			"dnspriv_label" : "AdGuard 2 (unfiltered)",
+			"dnspriv_server" : "2a10:50c0::2:ff",
+			"dnspriv_port" : "",
+			"dnspriv_hostname" : "dns-unfiltered.adguard.com",
+			"dnspriv_spkipin" : ""
+		},
+		{
+			"dnspriv_label" : "AdGuard 1 (family)",
+			"dnspriv_server" : "2a10:50c0::bad1:ff",
+			"dnspriv_port" : "",
+			"dnspriv_hostname" : "dns-family.adguard.com",
+			"dnspriv_spkipin" : ""
+		},
+		{
+			"dnspriv_label" : "AdGuard 2 (family)",
+			"dnspriv_server" : "2a10:50c0::bad2:ff",
+			"dnspriv_port" : "",
+			"dnspriv_hostname" : "dns-family.adguard.com",
+			"dnspriv_spkipin" : ""
+		},
+		{
+			"dnspriv_label" : "Canadian Shield 1",
+			"dnspriv_server" : "2620:10A:80BB::10",
+			"dnspriv_port" : "",
+			"dnspriv_hostname" : "private.canadianshield.cira.ca",
+			"dnspriv_spkipin" : ""
+		},
+		{
+			"dnspriv_label" : "Canadian Shield 2",
+			"dnspriv_server" : "2620:10A:80BC::10",
+			"dnspriv_port" : "",
+			"dnspriv_hostname" : "private.canadianshield.cira.ca",
+			"dnspriv_spkipin" : ""
+		},
+		{
+			"dnspriv_label" : "Canadian Shield 1 (protected)",
+			"dnspriv_server" : "2620:10A:80BB::20",
+			"dnspriv_port" : "",
+			"dnspriv_hostname" : "protected.canadianshield.cira.ca",
+			"dnspriv_spkipin" : ""
+		},
+		{
+			"dnspriv_label" : "Canadian Shield 2 (protected)",
+			"dnspriv_server" : "2620:10A:80BC::20",
+			"dnspriv_port" : "",
+			"dnspriv_hostname" : "protected.canadianshield.cira.ca",
+			"dnspriv_spkipin" : ""
+		},
+		{
+			"dnspriv_label" : "Canadian Shield 1 (family)",
+			"dnspriv_server" : "2620:10A:80BB::30",
+			"dnspriv_port" : "",
+			"dnspriv_hostname" : "family.canadianshield.cira.ca",
+			"dnspriv_spkipin" : ""
+		},
+		{
+			"dnspriv_label" : "Canadian Shield 2 (family)",
+			"dnspriv_server" : "2620:10A:80BC::30",
+			"dnspriv_port" : "",
+			"dnspriv_hostname" : "family.canadianshield.cira.ca",
+			"dnspriv_spkipin" : ""
+		},
 		{
 			"dnspriv_label" : "CleanBrowsing 1 (security)",
 			"dnspriv_server" : "2a0d:2a00:1::2",

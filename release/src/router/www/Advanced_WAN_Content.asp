@@ -96,7 +96,7 @@ if(yadns_support){
 }
 
 if(dnspriv_support){
-	var dot_servers_array = [<% get_dnsprivacy_presets("dot"); %>];
+	var dot_servers_array = [];
 	var dnspriv_rulelist_array = '<% nvram_get("dnspriv_rulelist"); %>';
 }
 
@@ -215,7 +215,6 @@ function initial(){
 			);
 */
 		});
-		build_dot_server_presets();
 	}
 	else{
 		inputCtrl(document.form.dnspriv_enable, 0);
@@ -1338,8 +1337,8 @@ function change_dnspriv_enable(flag){
 		inputCtrl(document.form.dnspriv_profile[1], 1);
 		document.getElementById("DNSPrivacy").style.display = "";
 		document.getElementById("dnspriv_rulelist_Block").style.display = "";
-//		if($("#dotPresets option").length > 1)
-//			document.getElementById("dot_presets_tr").style.display = "";
+		if($("#dotPresets option").length > 1)
+			document.getElementById("dot_presets_tr").style.display = "";
 		show_dnspriv_rulelist();
 	}
 	else{
@@ -1347,7 +1346,7 @@ function change_dnspriv_enable(flag){
 		inputCtrl(document.form.dnspriv_profile[1], 0);
 		document.getElementById("DNSPrivacy").style.display = "none";
 		document.getElementById("dnspriv_rulelist_Block").style.display = "none";
-//		document.getElementById("dot_presets_tr").style.display = "none";
+		document.getElementById("dot_presets_tr").style.display = "none";
 	}
 }
 
@@ -1458,48 +1457,6 @@ function show_dnspriv_rulelist(){
 	}
 	code +='</table>';
 	document.getElementById("dnspriv_rulelist_Block").innerHTML = code;
-}
-
-function build_dot_server_presets(){
-	var code = "";
-	var overlib_str;
-
-	for(var i = 0; i < dot_servers_array.length; i++) {
-		if (dot_servers_array[i].length == 1) {
-			if (i != 0)
-				code += "<br>";
-			code += '<span style="font-weight:bold;">' + dot_servers_array[i][0] + '</span><br>';
-		} else {
-			code += '<a title="' + dot_servers_array[i][1] + '">';
-			code += '<div onclick="apply_dot_server_preset(' + i +');">' + dot_servers_array[i][0] + '</div></a>';
-		}
-	}
-	document.getElementById("dot_server_list").innerHTML += code;
-	$(".dot_pull_arrow").show();
-}
-
-function pullDOTList(_this) {
-	event.stopPropagation();
-	var $element = $("#dot_server_list");
-	var isMenuopen = $element[0].offsetWidth > 0 || $element[0].offsetHeight > 0;
-	if(isMenuopen == 0) {
-		$(_this).attr("src","/images/arrow-top.gif");
-		$element.show();
-	}
-	else {
-		$(_this).attr("src","/images/arrow-down.gif");
-		$element.hide();
-	}
-}
-
-function apply_dot_server_preset(i){
-	document.form.dnspriv_server_0.value = dot_servers_array[i][1];
-	document.form.dnspriv_port_0.value = dot_servers_array[i][2];
-	document.form.dnspriv_hostname_0.value = dot_servers_array[i][3];
-	document.form.dnspriv_spkipin_0.value = dot_servers_array[i][4];
-
-	document.getElementById("dot_pull_arrow").src = "/images/arrow-down.gif";
-	document.getElementById('dot_server_list').style.display='none';
 }
 
 var cur_bond_port = /LAN-*\D* 4/;
@@ -2291,11 +2248,7 @@ function DNSList_match(ip1, ip2){
 				</tr>
 				<!-- server info -->
 				<tr>
-					<td width="27%">
-						<input type="text" <input type="text" style="float:left;" class="input_18_table" maxlength="64" id="dnspriv_server_0" name="dnspriv_server_0" onKeyPress="" autocorrect="off" autocapitalize="off">
-						<img id="dot_pull_arrow" class="pull_arrow" height="14px;" src="/images/arrow-down.gif" onclick="pullDOTList(this);">
-						<div id="dot_server_list" class="dns_server_list_dropdown"></div>
-					</td>
+					<td width="27%"><input type="text" class="input_18_table" maxlength="64" id="dnspriv_server_0" name="dnspriv_server_0" onKeyPress="" autocorrect="off" autocapitalize="off"></td>
 					<td width="10%"><input type="text" class="input_6_table" maxlength="5" name="dnspriv_port_0" onKeyPress="return validator.isNumber(this,event)" autocorrect="off" autocapitalize="off"></td>
 					<td width="27%"><input type="text" class="input_20_table" maxlength="64" name="dnspriv_hostname_0" onKeyPress="" autocorrect="off" autocapitalize="off"></td>
 					<td width="27%"><input type="text" class="input_20_table" maxlength="64" name="dnspriv_spkipin_0" onKeyPress="" autocorrect="off" autocapitalize="off"></td>
@@ -2306,6 +2259,8 @@ function DNSList_match(ip1, ip2){
 					</td>
 				</tr>
 			</table>
+			<!-- server block -->
+			<div id="dnspriv_rulelist_Block" style="word-break:break-all;"></div>
 
 			<table id="wan_DHCP_opt" width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
 			<thead>
@@ -2324,10 +2279,7 @@ function DNSList_match(ip1, ip2){
 					</td>
 				</tr>
 			</table>
-			<!-- server block -->
-			<div id="dnspriv_rulelist_Block" style="word-break:break-all;"></div>
-
-		  		<table id="PPPsetting" width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
+			<table id="PPPsetting" width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
             	<thead>
             	<tr>
               	<td colspan="2"><#PPPConnection_UserName_sectionname#></td>

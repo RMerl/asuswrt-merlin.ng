@@ -366,10 +366,6 @@ else
 	rm -f $(INSTALLDIR)/rom/etc/profile.hnd
 endif
 
-ifeq ($(RTCONFIG_DNSPRIVACY),y)
-	install -m 0644 dot-servers.dat $(INSTALLDIR)/rom/dot-servers.dat
-endif
-
 ifeq ($(RTCONFIG_TPVPN),y)
 	mkdir -p $(INSTALLDIR)/rom/vpn
 	install -m 0644 vpn/HMA_TCP.JSON $(INSTALLDIR)/rom/vpn/HMA_TCP.JSON

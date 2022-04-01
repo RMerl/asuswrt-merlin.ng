@@ -1,0 +1,26 @@
+#
+# This file listed Real-Time settings for the userspace applications.
+# See rt_settings_kthreads.txt for more setting details.
+#
+
+BEGIN
+  name         = smd
+  flags        = RT_SET_CGROUPS
+  cpuGroupName = normal/default
+END
+
+BEGIN
+  name          = ssk
+  flags         = RT_SET_CGROUPS|RT_SET_SCHED
+  schedPolicy   = SCHED_RR
+  schedPriority = BCM_RTPRIO_DATA
+  cpuGroupName  = rt/data
+END
+
+BEGIN
+  name          = eponapp
+  flags         = RT_SET_SCHED
+  schedPolicy   = SCHED_RR
+  schedPriority = BCM_RTPRIO_DATA_CONTROL
+END
+

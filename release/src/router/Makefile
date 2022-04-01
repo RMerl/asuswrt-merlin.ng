@@ -5653,7 +5653,7 @@ else
 	install $(SRC_PRE_WLEXE)/prebuilt/wl wlexe
 	-install $(SRC_PRE_WLEXE)/prebuilt/wl_server_socket wlexe
 endif
-ifeq ($(or $(HND_ROUTER_AX_675X),$(HND_ROUTER_AX_6710),$(BCM_502L07P2)),y)
+ifeq ($(or $(HND_ROUTER_AX_675X),$(HND_ROUTER_AX_6710),$(BCM_502L07P2),$(HND_ROUTER_AX_6756)),y)
 	install $(SRCBASE)/router-sysdep/hnd_extra/prebuilt/wl_server_socket wlexe
 else
 	-install $(SRCBASE)/router/hnd_extra/prebuilt/wl_server_socket wlexe

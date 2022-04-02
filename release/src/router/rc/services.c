@@ -18878,6 +18878,11 @@ void setup_leds()
 #ifdef RTCONFIG_USB
 		stop_usbled();
 #endif
+#if defined(RTCONFIG_RGBLED)
+		nvram_set_int("aurargb_enable", 0);
+		nvram_commit();
+		start_aurargb();
+#endif
 
 	} else {
 /*** Enable ***/
@@ -18912,6 +18917,14 @@ void setup_leds()
 		eval("ethctl", "phy", "ext", EXTPHY_ADDR_STR, "0x7fff0", "0x1");
 		eval("ethctl", "phy", "ext", EXTPHY_ADDR_STR, "0x1a832", "0x6");
 #endif
+#elif defined(GTAX6000)
+		if (nvram_get_int("ext_phy_model") == EXT_PHY_GPY211)
+			eval("ethctl", "phy", "ext", EXTPHY_GPY_ADDR_STR, "0x1e0001", "0x3f0");
+		else
+		{
+			eval("ethctl", "phy", "ext", EXTPHY_ADDR_STR, "0x1a832", "0x6");        // default. CTL LED3 MASK LOW
+			eval("ethctl", "phy", "ext", EXTPHY_ADDR_STR, "0x1a835", "0x40");       // default. CTL LED4 MASK LOW
+		}
 #endif
 
 #ifdef RTCONFIG_LAN4WAN_LED
@@ -18920,6 +18933,7 @@ void setup_leds()
 #ifdef RTAC87U
 		qcsapi_wifi_run_script("router_command.sh", "lan4_led_ctrl on");
 #endif
+
 		kill_pidfile_s("/var/run/wanduck.pid", SIGUSR2);
 
 
@@ -18945,6 +18959,8 @@ void setup_leds()
 			eval("wl", "ledbh", "9", "1");
 #elif defined(GTAXE11000)
 			eval("wl", "-i", "eth6", "ledbh", "9", "7");
+#elif defined(GTAX6000)
+			eval("wl", "-i", "eth6", "ledbh", "13", "7");
 #endif
 		}
 
@@ -18974,6 +18990,8 @@ void setup_leds()
 			eval("wl", "-i", "eth6", "ledbh", "0", "25");
 #elif defined(GTAXE11000)
 			eval("wl", "-i", "eth7", "ledbh", "9", "7");
+#elif defined(GTAX6000)
+			eval("wl", "-i", "eth7", "ledbh", "13", "7");
 #endif
 		}
 
@@ -18994,11 +19012,28 @@ void setup_leds()
 #ifdef RTCONFIG_LOGO_LED
 		led_control(LED_LOGO, LED_ON);
 #endif
-	}
-
 #if defined(RTCONFIG_RGBLED)
-	start_aurargb();
+		nvram_set_int("aurargb_enable", 1);
+		nvram_commit();
+		start_aurargb();
 #endif
+#ifdef GTAX6000
+		AntennaGroupReset(LED_ON);
+		setAntennaGroupOn();
+		eval("sw", "0xff803140", "0x0000e002", "0x00c34a24", "0x00000a24", "0x00800080");
+		eval("sw", "0xff80301c", "0x00040000");
+		eval("sw", "0xff803150", "0x0000e002", "0x00c34a24", "0x00000a24", "0x00800080");
+		eval("sw", "0xff80301c", "0x00080000");
+		eval("sw", "0xff803160", "0x0000e002", "0x00c34a24", "0x00000a24", "0x00800080");
+		eval("sw", "0xff80301c", "0x00100000");
+		eval("sw", "0xff803170", "0x0000e002", "0x00c34a24", "0x00000a24", "0x00800080");
+		eval("sw", "0xff80301c", "0x00200000");
+
+		start_ledg();
+		start_antled();
+#endif
+
+	}
 }
 
 #if !defined(HND_ROUTER)

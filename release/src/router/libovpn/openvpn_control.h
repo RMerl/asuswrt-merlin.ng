@@ -33,4 +33,8 @@ void _write_routing_rules(int unit, char *buffer, int verb);
 extern void ovpn_clear_exclusive_dns(int unit);
 extern int ovpn_need_dnsmasq_restart();
 extern void ovpn_update_exclusive_dns_rules();
+
+extern void start_ovpn_serverall();
+extern void stop_ovpn_serverall();
+
 #endif

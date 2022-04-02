@@ -3049,6 +3049,13 @@ endif
 openssl-stage:
 	@$(MAKE) $(OPENSSL)-stage
 
+ifeq ($(BRCM_CHIP),4908)
+export PRIORITY_CHACHA =
+else ifeq ($(BRCM_CHIP),4912)
+export PRIORITY_CHACHA =
+else
+export PRIORITY_CHACHA = -DOPENSSL_PREFER_CHACHA_OVER_GCM
+endif
 openssl-1.1/Makefile:
 	cd openssl-1.1 && \
 	./Configure $(HOSTCONFIG) --prefix=/usr --openssldir=/etc/ssl --cross-compile-prefix=' ' \
@@ -3056,7 +3063,7 @@ openssl-1.1/Makefile:
 	-ffunction-sections -fdata-sections -Wl,--gc-sections \
 	shared $(OPENSSL_CIPHERS) no-err no-async --api=1.0.0 \
 	no-aria no-sm2 no-sm3 no-sm4 \
-	$(if $(filter 4908,$(BCM_CHIP)),,-DOPENSSL_PREFER_CHACHA_OVER_GCM)
+	$(PRIORITY_CHACHA)
 	@$(MAKE) -C openssl-1.1 depend
 	@$(MAKE) -C openssl-1.1 clean
 	@touch $@

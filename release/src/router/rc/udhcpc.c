@@ -688,7 +688,7 @@ leasefail(void)
 int
 udhcpc_wan(int argc, char **argv)
 {
-	run_custom_script("dhcpc-event", 0, argv[1], NULL);
+	run_custom_script("dhcpc-event", 0, argv[1], "4");
 
 	if(argv[1] && !strstr(argv[1], "leasefail"))
 		_dprintf("%s:: %s\n", __func__, argv[1]);
@@ -1942,7 +1942,7 @@ ra_updated6(char *wan_ifname)
 int dhcp6c_wan(int argc, char **argv)
 {
 
-	if (argv[2]) run_custom_script("dhcpc-event", 0, argv[2], NULL);
+	if (argv[2]) run_custom_script("dhcpc-event", 0, argv[2], "6");
 
 	if (!argv[1] || !argv[2])
 		return EINVAL;

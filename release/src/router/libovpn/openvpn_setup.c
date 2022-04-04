@@ -303,9 +303,9 @@ int ovpn_write_server_config(ovpn_sconf_t *sconf, int unit) {
 			fprintf(fp, "topology subnet\n");
 			fprintf(fp, "server %s %s\n", sconf->network, sconf->netmask);
 #ifdef RTCONFIG_IPV6
-			if (ipv6_enabled()) {
+			if (ipv6_enabled() && sconf->ipv6_enable == 1) {
 				fprintf(fp, "push \"route-ipv6 %s/%s\"\n", nvram_safe_get(ipv6_nvname("ipv6_prefix")), nvram_safe_get(ipv6_nvname("ipv6_prefix_length")));
-				fprintf(fp, "server-ipv6 %s/%d\n", sconf->prefix_ipv6, sconf->prefix_len_ipv6);
+				fprintf(fp, "server-ipv6 %s\n", sconf->network6);
 			}
 #endif
 			fprintf(fp_client, "dev tun\n");
@@ -339,6 +339,17 @@ int ovpn_write_server_config(ovpn_sconf_t *sconf, int unit) {
 			fprintf(fp_client, "dev tun\n");
 			fprintf(fp_client, "ifconfig %s ", sconf->remote);
 			fprintf(fp_client, "%s\n", sconf->local);
+
+#ifdef RTCONFIG_IPV6
+			if (ipv6_enabled() && sconf->ipv6_enable == 1) {
+				fprintf(fp, "ifconfig-ipv6 %s ", sconf->local6);
+				fprintf(fp, "%s\n", sconf->remote6);
+
+				fprintf(fp_client, "ifconfig-ipv6 %s ", sconf->remote6);
+				fprintf(fp_client, "%s\n", sconf->local6);
+			}
+#endif
+
 		}
 		else if (sconf->if_type == OVPN_IF_TAP) {
 			fprintf(fp_client, "dev tap\n");
@@ -508,7 +519,7 @@ int ovpn_write_server_config(ovpn_sconf_t *sconf, int unit) {
 				fprintf(fp, "push \"dhcp-option DNS %s\"\n", sconf->lan_ipaddr);
 
 #ifdef RTCONFIG_IPV6
-			if (ipv6_enabled()) {
+			if (ipv6_enabled() && sconf->ipv6_enable == 1) {
 				if (nvram_get_int(ipv6_nvname("ipv6_dnsenable"))) {
 					nvp = nvram_safe_get_r(ipv6_nvname("ipv6_get_dns"), buffer2, sizeof(buffer2));
 
@@ -534,6 +545,14 @@ int ovpn_write_server_config(ovpn_sconf_t *sconf, int unit) {
 			if (sconf->if_type == OVPN_IF_TAP)
 				fprintf(fp, "push \"route-gateway %s\"\n", sconf->lan_ipaddr);
 			fprintf(fp, "push \"redirect-gateway def1\"\n");
+
+#ifdef RTCONFIG_IPV6
+			if (ipv6_enabled() && sconf->ipv6_enable == 1) {
+// TODO: TAP
+				if (sconf->if_type == OVPN_IF_TUN)
+					fprintf(fp, "push \"redirect-gateway ipv6 def1\"\n");
+			}
+#endif
 		}
 
 		// tls-crypt/tls-auth
@@ -579,9 +598,13 @@ int ovpn_write_server_config(ovpn_sconf_t *sconf, int unit) {
 		if (ovpn_key_exists(OVPN_TYPE_SERVER, unit, OVPN_SERVER_EXTRA))
 			fprintf(fp, "extra-certs extra.pem\n");
 	}
-	else if (sconf->auth_mode == OVPN_AUTH_STATIC)
+	else if (sconf->auth_mode == OVPN_AUTH_STATIC) {
 		fprintf(fp, "secret static.key\n");
-
+#ifdef RTCONFIG_IPV6
+		 if (ipv6_enabled() && sconf->ipv6_enable == 1 && sconf->push_lan != OVPN_CLT_ACCESS_LAN)
+			fprintf(fp_client, "redirect-gateway ipv6 def1\n");
+#endif
+	}
 	fprintf(fp, "script-security 2\n");
 
 	sprintf(buffer, "/etc/openvpn/server%d/ovpn-up", unit);
@@ -976,6 +999,7 @@ void ovpn_setup_client_fw(ovpn_cconf_t *cconf, int unit) {
 
 void ovpn_setup_server_fw(ovpn_sconf_t *sconf, int unit) {
 	char buffer[64], buffer2[64], filename[32];
+	char wan6_ifname[32] = {0};
 	int i;
 	FILE *fp;
 
@@ -1000,9 +1024,9 @@ void ovpn_setup_server_fw(ovpn_sconf_t *sconf, int unit) {
 		             sconf->if_name, sconf->lan_ipaddr,  convert_subnet_mask_to_cidr(sconf->lan_netmask));
 
 #ifdef RTCONFIG_IPV6
-	if (ipv6_enabled())
-		fprintf(fp, "ip6tables -I OVPN -i %s ! -d %s/%d -j ACCEPT\n",
-		             sconf->if_name, nvram_safe_get(ipv6_nvname("ipv6_prefix")), nvram_get_int(ipv6_nvname("ipv6_prefix_length")));
+		if (ipv6_enabled() && sconf->ipv6_enable == 1)
+			fprintf(fp, "ip6tables -I OVPN -i %s ! -d %s/%d -j ACCEPT\n",
+			             sconf->if_name, nvram_safe_get(ipv6_nvname("ipv6_prefix")), nvram_get_int(ipv6_nvname("ipv6_prefix_length")));
 #endif
 		if (sconf->push_dns) {
 			strlcpy(buffer, nvram_safe_get("dhcp_dns1_x"), sizeof (buffer));
@@ -1021,7 +1045,7 @@ void ovpn_setup_server_fw(ovpn_sconf_t *sconf, int unit) {
 				fprintf(fp, "iptables -I OVPN -i %s -m tcp -p tcp -d %s --dport 53 -j ACCEPT\n", sconf->if_name, sconf->lan_ipaddr);
 			}
 #ifdef RTCONFIG_IPV6
-			if (ipv6_enabled()) {
+			if (ipv6_enabled() && sconf->ipv6_enable == 1) {
 				for (i = 1; i <= 3; i++) {
 					snprintf(buffer, sizeof (buffer), "ipv6_dns%d", i);
 					strlcpy(buffer2, nvram_safe_get(buffer), sizeof (buffer2));
@@ -1043,7 +1067,7 @@ void ovpn_setup_server_fw(ovpn_sconf_t *sconf, int unit) {
 		fprintf(fp, "iptables -I OVPN -i %s -d %s/%d -j ACCEPT\n",
 		             sconf->if_name, sconf->lan_ipaddr,  convert_subnet_mask_to_cidr(sconf->lan_netmask));
 #ifdef RTCONFIG_IPV6
-		if (ipv6_enabled())
+		if (ipv6_enabled() && sconf->ipv6_enable == 1)
 			fprintf(fp, "ip6tables -I OVPN -i %s -d %s/%d -j ACCEPT\n",
 			        sconf->if_name, nvram_safe_get(ipv6_nvname("ipv6_prefix")), nvram_get_int(ipv6_nvname("ipv6_prefix_length")));
 // also router dns
@@ -1051,10 +1075,18 @@ void ovpn_setup_server_fw(ovpn_sconf_t *sconf, int unit) {
 	} else {	// WAN + LAN
 		fprintf(fp, "iptables -I OVPN -i %s -j ACCEPT\n", sconf->if_name);
 #ifdef RTCONFIG_IPV6
-		if (ipv6_enabled())
+		if (ipv6_enabled() && sconf->ipv6_enable == 1)
 			fprintf(fp, "ip6tables -I OVPN -i %s -j ACCEPT\n", sconf->if_name);
 #endif
 	}
+
+#ifdef RTCONFIG_IPV6
+	strlcpy(wan6_ifname, get_wan6_ifname(wan_primary_ifunit()), sizeof(wan6_ifname));
+
+	if (ipv6_enabled() && sconf->ipv6_enable && sconf->nat6)
+		fprintf(fp, "ip6tables -t nat -I POSTROUTING -s %s -o %s -j MASQUERADE\n",
+			sconf->network6, wan6_ifname);
+#endif
 
 #if !defined(HND_ROUTER)
 	if (nvram_match("cstats_enable", "1")) {

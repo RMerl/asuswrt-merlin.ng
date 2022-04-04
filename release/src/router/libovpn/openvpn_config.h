@@ -142,6 +142,8 @@ typedef struct ovpn_sconf {
 	char if_name[8];	//interface name
 	char local[16];
 	char remote[16];
+	char local6[64];
+	char remote6[64];
 	int verb;	//verbosity
 	char comp[16];	//LZO compression: "yes", "no", or "adaptive"
 	ovpn_auth_t auth_mode;	//authentication mode: static, tls
@@ -151,8 +153,7 @@ typedef struct ovpn_sconf {
 //Server mode
 	char network[16];
 	char netmask[16];
-	char prefix_ipv6[40];
-	int  prefix_len_ipv6;
+	char network6[64];
 	int dhcp;	//DHCP-proxy mode
 	char pool_start[16];	//--server-bridge gateway netmask pool-start-IP pool-end-IP
 	char pool_end[16];
@@ -179,6 +180,8 @@ typedef struct ovpn_sconf {
 //Router options and info
 	char lan_ipaddr[16];
 	char lan_netmask[16];
+	int ipv6_enable;
+	int nat6;
 
 	char custom[4096];
 }ovpn_sconf_t;

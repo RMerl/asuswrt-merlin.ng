@@ -561,8 +561,11 @@ ovpn_sconf_t *ovpn_get_sconf(int unit){
 	strlcpy(sconf->network, nvram_pf_safe_get(prefix, "sn"), sizeof(sconf->network));
 	strlcpy(sconf->netmask,	nvram_pf_safe_get(prefix, "nm"), sizeof(sconf->netmask));
 #ifdef RTCONFIG_IPV6
-        strlcpy(sconf->prefix_ipv6, nvram_pf_safe_get(prefix, "sn6"), sizeof(sconf->prefix_ipv6));
-        sconf->prefix_len_ipv6 = nvram_pf_get_int(prefix, "nm6");
+	strlcpy(sconf->network6, nvram_pf_safe_get(prefix, "sn6"), sizeof(sconf->network6));
+	sconf->ipv6_enable = nvram_pf_get_int(prefix, "ip6");
+	sconf->nat6 = nvram_pf_get_int(prefix, "nat6");
+	strlcpy(sconf->local6, nvram_pf_safe_get(prefix, "local6"), sizeof(sconf->local6));
+	strlcpy(sconf->remote6, nvram_pf_safe_get(prefix, "remote6"), sizeof(sconf->remote6));
 #endif
 
 	sconf->dhcp = nvram_pf_get_int(prefix, "dhcp");

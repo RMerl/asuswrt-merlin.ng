@@ -193,8 +193,24 @@ void adjust_merlin_config(void)
 		}
 	}
 
+/* Migrate vpn_server_nm6 (386.6) */
+#ifdef RTCONFIG_IPV6
+        for (unit = 1; unit <= OVPN_SERVER_MAX; unit++) {
+                sprintf(varname_ori, "vpn_server%d_nm6", unit);
 
+		if(!nvram_is_empty(varname_ori)) {
+			sprintf(varname_new, "vpn_server%d_sn6", unit);
+			need_commit = 1;
+			if (!strchr(nvram_safe_get(varname_new), '/')) {
+				snprintf(tmp, sizeof (tmp), "%s/%s", nvram_safe_get(varname_new), nvram_safe_get(varname_ori));
+				nvram_set(varname_new, tmp);
+			}
+			nvram_unset(varname_ori);
+		}
+	}
 #endif
+
+#endif	// RTCONFIG_OPENVPN
 
 /* migrate dhcpc_options to wanxxx_clientid */
 	char *oldclientid = nvram_safe_get("wan0_dhcpc_options");

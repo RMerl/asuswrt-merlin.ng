@@ -235,18 +235,18 @@ void ovpn_client_down_handler(int unit)
 
 	sprintf(dirname, "/etc/openvpn/client%d", unit);
 
-	sprintf(buffer, "%s/qos.sh", dirname);
+	snprintf(buffer, sizeof(buffer), "%s/qos.sh", dirname);
 	if (f_exists(buffer)) {
 		eval("sed", "-i", "s/-A/-D/g", buffer);
 		eval(buffer);
 		unlink(buffer);
 	}
 
-	sprintf(buffer, "%s/client.resolv", dirname);
+	snprintf(buffer, sizeof(buffer), "%s/client.resolv", dirname);
 	if (f_exists(buffer))
 		unlink(buffer);
 
-	sprintf(buffer, "%s/client.conf", dirname);
+	snprintf(buffer, sizeof(buffer), "%s/client.conf", dirname);
 	if (f_exists(buffer))
 		unlink(buffer);
 }

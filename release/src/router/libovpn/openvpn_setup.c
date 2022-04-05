@@ -1116,7 +1116,7 @@ void ovpn_setup_server_watchdog(ovpn_sconf_t *sconf, int unit) {
 		chmod(buffer, S_IRUSR|S_IWUSR|S_IXUSR);
 
 		sprintf(taskname, "CheckVPNServer%d", unit);
-		sprintf(buffer2, "*/2 * * * * %s", buffer);
+		snprintf(buffer2, sizeof (buffer2), "*/2 * * * * %s", buffer);
 		eval("cru", "a", taskname, buffer2);
 	}
 }

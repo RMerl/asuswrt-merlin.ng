@@ -2,7 +2,16 @@ Asuswrt-Merlin 386/NG Changelog
 ===============================
 
 386.6 (xx-xxx-2022)
+  - NOTE: This release is not available for all models.
+  - NEW: Added support for the GT-AX6000.
+  - NEW: Added support for the ZenWifi Pro XT12.
   - NEW: Added Cloudflare and AdGuard to DNSFilter services.
+  - NEW: Added option to enable/disable IPv6 support to OpenVPN
+         server.  This is disabled by default.
+  - NEW: Added NAT support for OpenVPN servers in IPv6 mode.
+         This allows to redirect IPv6 Internet traffic
+         through your OpenVPN server.
+  - UPDATED: Merged with GPL 386_47885.
   - CHANGED: Reworked DNSFilter page design.
   - CHANGED: Allow requesting bigger IPv6 subnets from
              your ISP (Tvlz)

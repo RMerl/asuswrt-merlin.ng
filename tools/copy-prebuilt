@@ -124,17 +124,52 @@ then
 	cp release/src-rt-5.02p1axhnd.675x/hostTools/prebuilt/lzmacmd $REPO/release/src-rt-5.02p1axhnd.675x/hostTools/prebuilt/
 	cp release/src-rt-5.02p1axhnd.675x/bcmdrivers/broadcom/net/wl/impl69/main/components/apps/acsdv2/prebuilt/* $REPO/release/src-rt-5.02p1axhnd.675x/bcmdrivers/broadcom/net/wl/impl69/main/components/apps/acsdv2/prebuilt/$BUILD_NAME/
 	rsync -a --del release/src-rt-5.02p1axhnd.675x/router-sysdep/ $REPO/release/src-rt-5.02p1axhnd.675x/router-sysdep.$BUILD_NAME_LC
+
+elif [ "$BUILD_NAME" == "GT-AX6000" ] || [ "$BUILD_NAME" == "XT12" ]
+then
+        SDK="_4912hnd"
+        ARCH="_arm"
+        HND="_axhnd"
+
+	rsync -a --del release/src-rt-5.04axhnd.675x/bootloaders/obj/ $REPO/release/src-rt-5.04axhnd.675x/bootloaders/obj.$BUILD_NAME_LC
+	cp release/src-rt-5.04axhnd.675x/hostTools/prebuilt/addvtoken $REPO/release/src-rt-5.04axhnd.675x/hostTools/prebuilt/$BUILD_NAME/
+	cp release/src-rt-5.04axhnd.675x/hostTools/prebuilt/cmplzma $REPO/release/src-rt-5.04axhnd.675x/hostTools/prebuilt/
+	cp release/src-rt-5.04axhnd.675x/hostTools/prebuilt/lzmacmd $REPO/release/src-rt-5.04axhnd.675x/hostTools/prebuilt/
+	cp release/src-rt-5.04axhnd.675x/hostTools/prebuilt//cmplzma $REPO/release/src-rt-5.04axhnd.675x/hostTools/prebuilt/
+	cp release/src-rt-5.04axhnd.675x/hostTools/prebuilt/mkfs.ubifs $REPO/release/src-rt-5.04axhnd.675x/hostTools/prebuilt/
+	cp release/src-rt-5.04axhnd.675x/hostTools/prebuilt/mksquashfs $REPO/release/src-rt-5.04axhnd.675x/hostTools/prebuilt/
+	cp release/src-rt-5.04axhnd.675x/hostTools/prebuilt/ubinize $REPO/release/src-rt-5.04axhnd.675x/hostTools/prebuilt/
+	cp release/src-rt-5.04axhnd.675x/bcmdrivers/broadcom/net/wl/impl87/main/components/apps/acsdv2/prebuilt/* $REPO/release/src-rt-5.04axhnd.675x/bcmdrivers/broadcom/net/wl/impl87/main/components/apps/acsdv2/prebuilt/$BUILD_NAME/
+
+	echo "Manually sync router-sysdep (since hnd_extra cannot be rsync'ed)"
+#        rsync -a --del release/src-rt-5.04axhnd.675x/router-sysdep/ $REPO/release/src-rt-5.04axhnd.675x/router-sysdep.$BUILD_NAME_LC
+
 else
 	echo "Unrecognized BUILD_NAME!"
 	exit
 fi
 
 
+# Skip these if no USB port
+
+echo "*** Copying USB-related files..."
+if [ "$BUILD_NAME" != "XT12" ]
+then
+	cp -ar release/src/router/tuxera/broadcom* $REPO/release/src/router/tuxera/
+	cp release/src/router/lighttpd-1.4.39/prebuild/* $REPO/release/src/router/lighttpd-1.4.39/prebuild/$BUILD_NAME/
+	cp release/src/router/dropbox_client/prebuild/* $REPO/release/src/router/dropbox_client/prebuild/$BUILD_NAME/
+	cp release/src/router/ftpclient/prebuild/* $REPO/release/src/router/ftpclient/prebuild/$BUILD_NAME/
+	cp release/src/router/sambaclient/prebuild/* $REPO/release/src/router/sambaclient/prebuild/$BUILD_NAME/
+	cp release/src/router/u2ec/prebuild/* $REPO/release/src/router/u2ec/prebuild/$BUILD_NAME/
+	cp release/src/router/webdav_client/prebuild/* $REPO/release/src/router/webdav_client/prebuild/$BUILD_NAME/
+	cp release/src/router/usbclient/prebuild/* $REPO/release/src/router/usbclient/prebuild/$BUILD_NAME/
+	cp release/src/router/asuswebstorage/prebuild/* $REPO/release/src/router/asuswebstorage/prebuild/$BUILD_NAME/
+	cp release/src/router/inotify/prebuild/* $REPO/release/src/router/inotify/prebuild/$BUILD_NAME/
+fi;
+
 # Common to all
 
 echo "*** Copying common files..."
-cp -ar release/src/router/tuxera/broadcom* $REPO/release/src/router/tuxera/
-cp release/src/router/lighttpd-1.4.39/prebuild/* $REPO/release/src/router/lighttpd-1.4.39/prebuild/$BUILD_NAME/
 rsync -a --del release/src/router/httpd/prebuild/ $REPO/release/src/router/httpd/prebuild/$BUILD_NAME
 rsync -a --del release/src/router/rc/prebuild/ $REPO/release/src/router/rc/prebuild/$BUILD_NAME
 rsync -a --del release/src/router/shared/prebuild/ $REPO/release/src/router/shared/prebuild/$BUILD_NAME
@@ -142,21 +177,13 @@ cp release/src/router/sw-hw-auth/prebuild/* $REPO/release/src/router/sw-hw-auth/
 cp release/src/router/bwdpi_source/asus/prebuild/* $REPO/release/src/router/bwdpi_source/asus/prebuild/$BUILD_NAME/
 cp release/src/router/bwdpi_source/asus_sql/prebuild/* $REPO/release/src/router/bwdpi_source/asus_sql/prebuild/$BUILD_NAME/
 cp release/src/router/bwdpi_source/prebuild/* $REPO/release/src/router/bwdpi_source/prebuild/$BUILD_NAME/
-cp release/src/router/dropbox_client/prebuild/* $REPO/release/src/router/dropbox_client/prebuild/$BUILD_NAME/
-cp release/src/router/ftpclient/prebuild/* $REPO/release/src/router/ftpclient/prebuild/$BUILD_NAME/
 cp release/src/router/protect_srv/prebuild/* $REPO/release/src/router/protect_srv/prebuild/$BUILD_NAME/
 cp release/src/router/protect_srv/lib/prebuild/* $REPO/release/src/router/protect_srv/lib/prebuild/$BUILD_NAME/
-cp release/src/router/sambaclient/prebuild/* $REPO/release/src/router/sambaclient/prebuild/$BUILD_NAME/
-cp release/src/router/u2ec/prebuild/* $REPO/release/src/router/u2ec/prebuild/$BUILD_NAME/
 cp release/src/router/wlc_nt/prebuild/* $REPO/release/src/router/wlc_nt/prebuild/$BUILD_NAME/
 cp release/src/router/networkmap/prebuild/* $REPO/release/src/router/networkmap/prebuild/$BUILD_NAME/
 cp release/src/router/nt_center/prebuild/* $REPO/release/src/router/nt_center/prebuild/$BUILD_NAME/
 cp release/src/router/nt_center/actMail/prebuild/* $REPO/release/src/router/nt_center/actMail/prebuild/$BUILD_NAME/
 cp release/src/router/nt_center/lib/prebuild/* $REPO/release/src/router/nt_center/lib/prebuild/$BUILD_NAME/
-cp release/src/router/webdav_client/prebuild/* $REPO/release/src/router/webdav_client/prebuild/$BUILD_NAME/
-cp release/src/router/usbclient/prebuild/* $REPO/release/src/router/usbclient/prebuild/$BUILD_NAME/
-cp release/src/router/asuswebstorage/prebuild/* $REPO/release/src/router/asuswebstorage/prebuild/$BUILD_NAME/
-cp release/src/router/inotify/prebuild/* $REPO/release/src/router/inotify/prebuild/$BUILD_NAME/
 cp release/src/router/libletsencrypt/prebuild/* $REPO/release/src/router/libletsencrypt/prebuild/$BUILD_NAME/
 cp release/src/router/libbcm/prebuilt/* $REPO/release/src/router/libbcm/prebuilt/$BUILD_NAME/
 cp release/src/router/infosvr/prebuild/* $REPO/release/src/router/infosvr/prebuild/$BUILD_NAME/
@@ -209,7 +236,7 @@ if [ "$BUILD_NAME" == "RT-AC88U" ]
 then
 	cp release/src/router/rtl_bin/prebuilt/* $REPO/release/src/router/rtl_bin/prebuilt/
 fi
-if [ "$BUILD_NAME" == "GT-AC2900" ] || [ "$BUILD_NAME" == "GT-AX11000" ] || [ "$BUILD_NAME" == "GT-AXE11000" ]
+if [ "$BUILD_NAME" == "GT-AC2900" ] || [ "$BUILD_NAME" == "GT-AX11000" ] || [ "$BUILD_NAME" == "GT-AXE11000" ] || [ "$BUILD_NAME" == "GT-AX6000" ]
 then
         cp release/src/router/aura_sw/prebuild/* $REPO/release/src/router/aura_sw/prebuild/$BUILD_NAME/
 fi
@@ -224,4 +251,3 @@ fi
 # Cleanup
 rm $REPO/release/src/router/rc/prebuild/$BUILD_NAME/init-broadcom.o
 rm $REPO/release/src/router/shared/prebuild/$BUILD_NAME/api-broadcom.o
-

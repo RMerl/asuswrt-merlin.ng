@@ -2717,9 +2717,6 @@ start_default_filter(int lanunit)
 		":OUTPUT ACCEPT [0:0]\n"
 		":FUPNP - [0:0]\n"
 		":ACCESS_RESTRICTION - [0:0]\n"
-#ifdef RTCONFIG_OPENVPN
-		":OVPN - [0:0]\n"
-#endif
 		":logaccept - [0:0]\n"
 		":logdrop - [0:0]\n");
 #ifdef RTCONFIG_PROTECTION_SERVER
@@ -3345,9 +3342,6 @@ filter_setting(int wan_unit, char *lan_if, char *lan_ip, char *logaccept, char *
 	    ":IControls - [0:0]\n"
 #endif
 	    ":other2wan - [0:0]\n"
-#ifdef RTCONFIG_OPENVPN
-	    ":OVPN - [0:0]\n"
-#endif
 #ifdef RTCONFIG_DNSFILTER
 	    ":DNSFILTER_DOT - [0:0]\n"
 #endif
@@ -3394,9 +3388,6 @@ filter_setting(int wan_unit, char *lan_if, char *lan_ip, char *logaccept, char *
 		    ":IControls - [0:0]\n"
 #endif
 		    ":UPNP - [0:0]\n"
-#ifdef RTCONFIG_OPENVPN
-		    ":OVPN - [0:0]\n"
-#endif
 #ifdef RTCONFIG_PARENTALCTRL
 		    ":WGNPControls - [0:0]\n"
 		    ":PControls - [0:0]\n"
@@ -3702,17 +3693,11 @@ TRACE_PT("writing Parental Control\n");
 			fprintf(fp, "-A INPUT -i %s -m state --state NEW -j %s\n", "pptp+", "ACCEPT");
 #endif
 		fprintf(fp, "-A INPUT -i %s -m state --state NEW -j %s\n", "lo", "ACCEPT");
-#ifdef RTCONFIG_OPENVPN
-		fprintf(fp, "-A INPUT -m state --state NEW -j OVPN\n");
-#endif
 #ifdef RTCONFIG_IPV6
 		if (ipv6_enabled()) {
 			fprintf(fp_ipv6, "-A INPUT -m state --state RELATED,ESTABLISHED -j %s\n", logaccept);
 			fprintf(fp_ipv6, "-A INPUT -i %s -m state --state NEW -j %s\n", lan_if, "ACCEPT");
 			fprintf(fp_ipv6, "-A INPUT -i %s -m state --state NEW -j %s\n", "lo", "ACCEPT");
-#ifdef RTCONFIG_OPENVPN
-			fprintf(fp_ipv6, "-A INPUT -m state --state NEW -j OVPN\n");
-#endif
 			fprintf(fp_ipv6, "-A INPUT -m state --state INVALID -j %s\n", logdrop);
 		}
 #endif
@@ -4522,13 +4507,6 @@ TRACE_PT("write wl filter\n");
 	}
 #endif
 
-#ifdef RTCONFIG_OPENVPN
-	fprintf(fp, "-A FORWARD -m state --state NEW -j OVPN\n");
-#ifdef RTCONFIG_IPV6
-	if (ipv6_enabled())
-		fprintf(fp_ipv6, "-A FORWARD -m state --state NEW -j OVPN\n");
-#endif
-#endif
 	/* SECURITY chain */
 	/* Skip DMZ */
 	if ((dstip = nvram_safe_get("dmz_ip")) && *dstip && inet_addr_(dstip))
@@ -4762,9 +4740,6 @@ filter_setting2(char *lan_if, char *lan_ip, char *logaccept, char *logdrop)
 #ifdef RTCONFIG_INTERNETCTRL
 	    ":IControls - [0:0]\n"
 #endif
-#ifdef RTCONFIG_OPENVPN
-	    ":OVPN - [0:0]\n"
-#endif
 #ifdef RTCONFIG_DNSFILTER
 	   ":DNSFILTER_DOT - [0:0]\n"
 #endif
@@ -4812,9 +4787,6 @@ filter_setting2(char *lan_if, char *lan_ip, char *logaccept, char *logdrop)
 #ifdef RTCONFIG_PARENTALCTRL
 		    ":WGNPControls - [0:0]\n"
 		    ":PControls - [0:0]\n"
-#endif
-#ifdef RTCONFIG_OPENVPN
-		    ":OVPN - [0:0]\n"
 #endif
 #ifdef RTCONFIG_WIREGUARD
 		    ":WGSI - [0:0]\n"
@@ -5108,17 +5080,11 @@ TRACE_PT("writing Parental Control\n");
 			fprintf(fp, "-A INPUT -i %s -m state --state NEW -j %s\n", "pptp+", "ACCEPT");
 #endif
 		fprintf(fp, "-A INPUT -i %s -m state --state NEW -j %s\n", "lo", "ACCEPT");
-#ifdef RTCONFIG_OPENVPN
-		fprintf(fp, "-A INPUT -m state --state NEW -j OVPN\n");
-#endif
 #ifdef RTCONFIG_IPV6
 		if (ipv6_enabled()) {
 			fprintf(fp_ipv6, "-A INPUT -m state --state RELATED,ESTABLISHED -j %s\n", logaccept);
 			fprintf(fp_ipv6, "-A INPUT -i %s -m state --state NEW -j %s\n", lan_if, "ACCEPT");
 			fprintf(fp_ipv6, "-A INPUT -i %s -m state --state NEW -j %s\n", "lo", "ACCEPT");
-#ifdef RTCONFIG_OPENVPN
-			fprintf(fp_ipv6, "-A INPUT -m state --state NEW -j OVPN\n");
-#endif
 			fprintf(fp_ipv6, "-A INPUT -m state --state INVALID -j %s\n", logdrop);
 		}
 #endif
@@ -5987,14 +5953,6 @@ TRACE_PT("write wl filter\n");
 			fprintf(fp_ipv6, "-A FORWARD -i %s -o %s -j %s\n", wan6face, lan_if, nvram_match("filter_wl_default_x", "DROP") ? logdrop : logaccept);
 #endif
 	}
-#endif
-
-#ifdef RTCONFIG_OPENVPN
-	fprintf(fp, "-A FORWARD -m state --state NEW -j OVPN\n");
-#ifdef RTCONFIG_IPV6
-	if (ipv6_enabled())
-		fprintf(fp_ipv6, "-A FORWARD -m state --state NEW -j OVPN\n");
-#endif
 #endif
 
 	/* SECURITY chain */

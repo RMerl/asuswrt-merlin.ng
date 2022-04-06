@@ -1264,6 +1264,9 @@ function exportCert() {
 	location.href = 'server_ovpn.cert';
 }
 function renewCert() {
+	if (!confirm("Do you want to regenerate your keys and certificates?  This will require updating your client config files afterward."))
+		return;
+
 	$("#renewCertToLocal").hide();
 	$(".renewLoadingIcon").show();
 	httpApi.nvramSet((openvpn_unit == 1 ? {

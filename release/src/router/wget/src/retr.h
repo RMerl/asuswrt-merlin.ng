@@ -1,5 +1,5 @@
 /* Declarations for retr.c.
-   Copyright (C) 1996-2011, 2015, 2018-2021 Free Software Foundation,
+   Copyright (C) 1996-2011, 2015, 2018-2022 Free Software Foundation,
    Inc.
 
 This file is part of GNU Wget.
@@ -37,7 +37,7 @@ extern int numurls;
 
 /* These global vars should be made static to retr.c and exported via
    functions! */
-extern SUM_SIZE_INT total_downloaded_bytes;
+extern wgint total_downloaded_bytes;
 extern double total_download_time;
 extern FILE *output_stream;
 extern bool output_stream_regular;

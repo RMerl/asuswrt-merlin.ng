@@ -1,5 +1,5 @@
-# errno_h.m4 serial 13
-dnl Copyright (C) 2004, 2006, 2008-2021 Free Software Foundation, Inc.
+# errno_h.m4 serial 14
+dnl Copyright (C) 2004, 2006, 2008-2022 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -68,13 +68,11 @@ booboo
       [gl_cv_header_errno_h_complete=yes])
   ])
   if test $gl_cv_header_errno_h_complete = yes; then
-    ERRNO_H=''
+    GL_GENERATE_ERRNO_H=false
   else
     gl_NEXT_HEADERS([errno.h])
-    ERRNO_H='errno.h'
+    GL_GENERATE_ERRNO_H=true
   fi
-  AC_SUBST([ERRNO_H])
-  AM_CONDITIONAL([GL_GENERATE_ERRNO_H], [test -n "$ERRNO_H"])
   gl_REPLACE_ERRNO_VALUE([EMULTIHOP])
   gl_REPLACE_ERRNO_VALUE([ENOLINK])
   gl_REPLACE_ERRNO_VALUE([EOVERFLOW])
@@ -88,7 +86,7 @@ booboo
 # Set the variables EOVERFLOW_HIDDEN and EOVERFLOW_VALUE.
 AC_DEFUN([gl_REPLACE_ERRNO_VALUE],
 [
-  if test -n "$ERRNO_H"; then
+  if $GL_GENERATE_ERRNO_H; then
     AC_CACHE_CHECK([for ]$1[ value], [gl_cv_header_errno_h_]$1, [
       AC_EGREP_CPP([yes],[
 #include <errno.h>

@@ -1,18 +1,18 @@
 /* An lseek() function that detects pipes.
-   Copyright (C) 2007, 2009-2021 Free Software Foundation, Inc.
+   Copyright (C) 2007, 2009-2022 Free Software Foundation, Inc.
 
-   This program is free software; you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 3, or (at your option)
-   any later version.
+   This file is free software: you can redistribute it and/or modify
+   it under the terms of the GNU Lesser General Public License as
+   published by the Free Software Foundation; either version 2.1 of the
+   License, or (at your option) any later version.
 
-   This program is distributed in the hope that it will be useful,
+   This file is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
+   GNU Lesser General Public License for more details.
 
-   You should have received a copy of the GNU General Public License along
-   with this program; if not, see <https://www.gnu.org/licenses/>.  */
+   You should have received a copy of the GNU Lesser General Public License
+   along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
 #include <config.h>
 
@@ -51,6 +51,24 @@ rpl_lseek (int fd, off_t offset, int whence)
     {
       errno = ESPIPE;
       return -1;
+    }
+#elif defined __APPLE__ && defined __MACH__ && defined SEEK_DATA
+  if (whence == SEEK_DATA)
+    {
+      /* If OFFSET points to data, macOS lseek+SEEK_DATA returns the
+         start S of the first data region that begins *after* OFFSET,
+         where the region from OFFSET to S consists of possibly-empty
+         data followed by a possibly-empty hole.  To work around this
+         portability glitch, check whether OFFSET is within data by
+         using lseek+SEEK_HOLE, and if so return to OFFSET by using
+         lseek+SEEK_SET.  Also, contrary to the macOS documentation,
+         lseek+SEEK_HOLE can fail with ENXIO if there are no holes on
+         or after OFFSET.  What a mess!  */
+      off_t next_hole = lseek (fd, offset, SEEK_HOLE);
+      if (next_hole < 0)
+        return errno == ENXIO ? offset : next_hole;
+      if (next_hole != offset)
+        whence = SEEK_SET;
     }
 #else
   /* BeOS lseek mistakenly succeeds on pipes...  */

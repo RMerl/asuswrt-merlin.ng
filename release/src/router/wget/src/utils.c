@@ -1,5 +1,5 @@
 /* Various utility functions.
-   Copyright (C) 1996-2011, 2015, 2018-2021 Free Software Foundation,
+   Copyright (C) 1996-2011, 2015, 2018-2022 Free Software Foundation,
    Inc.
 
 This file is part of GNU Wget.
@@ -45,14 +45,7 @@ as that of the covered work.  */
 #include <stdarg.h>
 #include <locale.h>
 #include <errno.h>
-
-#if HAVE_UTIME
-# include <sys/types.h>
-# include <utime.h>
-# ifdef HAVE_SYS_UTIME_H
-#  include <sys/utime.h>
-# endif
-#endif
+#include <utime.h>
 
 #include <sys/time.h>
 
@@ -718,7 +711,7 @@ char *
 unique_name_passthrough (const char *file, bool allow_passthrough)
 {
   /* Return the FILE itself, without modification, irregardful. */
-  return (char *) file);
+  return (char *) file;
 }
 char *
 
@@ -2204,6 +2197,13 @@ run_with_timeout (double timeout, void (*fun) (void *), void *arg)
 /* Sleep the specified amount of seconds.  On machines without
    nanosleep(), this may sleep shorter if interrupted by signals.  */
 
+#if defined FUZZING && defined TESTING
+void
+xsleep (double seconds)
+{
+  // Don't wait when fuzzing
+}
+#else
 void
 xsleep (double seconds)
 {
@@ -2246,6 +2246,7 @@ xsleep (double seconds)
      track sleeps is slow and unreliable due to clock skew.  */
 #endif
 }
+#endif
 
 #endif /* not WINDOWS */
 

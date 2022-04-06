@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnulib 3.0.0.6062.a6b16\n"
 "Report-Msgid-Bugs-To: bug-gnulib@gnu.org\n"
-"POT-Creation-Date: 2021-01-09 10:58+0100\n"
+"POT-Creation-Date: 2022-02-26 17:24+0100\n"
 "PO-Revision-Date: 2011-12-04 08:50+0100\n"
 "Last-Translator: Marek Černocký <marek@manet.cz>\n"
 "Language-Team: Czech <translation-team-cs@lists.sourceforge.net>\n"
@@ -102,26 +102,31 @@ msgstr "Neznámá chyba"
 
 #: lib/getopt.c:278
 #, fuzzy, c-format
+#| msgid "%s: option '-W %s' is ambiguous\n"
 msgid "%s: option '%s%s' is ambiguous\n"
 msgstr "%s: přepínač „-W %s“ není jednoznačný\n"
 
 #: lib/getopt.c:284
 #, fuzzy, c-format
+#| msgid "%s: option '%s' is ambiguous; possibilities:"
 msgid "%s: option '%s%s' is ambiguous; possibilities:"
 msgstr "%s: přepínač „%s“ není jednoznačný; možnosti:"
 
 #: lib/getopt.c:319
 #, fuzzy, c-format
+#| msgid "%s: unrecognized option '%c%s'\n"
 msgid "%s: unrecognized option '%s%s'\n"
 msgstr "%s: neznámý přepínač „%c%s“\n"
 
 #: lib/getopt.c:345
 #, fuzzy, c-format
+#| msgid "%s: option '%c%s' doesn't allow an argument\n"
 msgid "%s: option '%s%s' doesn't allow an argument\n"
 msgstr "%s: přepínač „%c%s“ musí být zadán bez argumentu\n"
 
 #: lib/getopt.c:360
 #, fuzzy, c-format
+#| msgid "%s: option '--%s' requires an argument\n"
 msgid "%s: option '%s%s' requires an argument\n"
 msgstr "%s: přepínač „--%s“ vyžaduje argument\n"
 
@@ -184,96 +189,97 @@ msgstr "„"
 msgid "'"
 msgstr "“"
 
-#: lib/regcomp.c:135
+#: lib/regcomp.c:122
 msgid "Success"
 msgstr "Úspěch"
 
-#: lib/regcomp.c:138
+#: lib/regcomp.c:125
 msgid "No match"
 msgstr "Žádná shoda"
 
-#: lib/regcomp.c:141
+#: lib/regcomp.c:128
 msgid "Invalid regular expression"
 msgstr "neplatný regulární výraz"
 
-#: lib/regcomp.c:144
+#: lib/regcomp.c:131
 msgid "Invalid collation character"
 msgstr "neplatný znak pro porovnávání"
 
-#: lib/regcomp.c:147
+#: lib/regcomp.c:134
 msgid "Invalid character class name"
 msgstr "neplatný název třídy znaku"
 
-#: lib/regcomp.c:150
+#: lib/regcomp.c:137
 msgid "Trailing backslash"
 msgstr "Zpětné lomítko na konci"
 
-#: lib/regcomp.c:153
+#: lib/regcomp.c:140
 msgid "Invalid back reference"
 msgstr "Neplatný zpětný odkaz"
 
-#: lib/regcomp.c:156
+#: lib/regcomp.c:143
 #, fuzzy
+#| msgid "Unmatched [ or [^"
 msgid "Unmatched [, [^, [:, [., or [="
 msgstr "Chybí odpovídající závorka k [ nebo [^"
 
-#: lib/regcomp.c:159
+#: lib/regcomp.c:146
 msgid "Unmatched ( or \\("
 msgstr "Chybí odpovídající závorka k ( nebo \\("
 
-#: lib/regcomp.c:162
+#: lib/regcomp.c:149
 msgid "Unmatched \\{"
 msgstr "Chybí odpovídající závorka k \\{"
 
-#: lib/regcomp.c:165
+#: lib/regcomp.c:152
 msgid "Invalid content of \\{\\}"
 msgstr "Neplatný obsah \\{\\}"
 
-#: lib/regcomp.c:168
+#: lib/regcomp.c:155
 msgid "Invalid range end"
 msgstr "Neplatný konec rozsahu"
 
-#: lib/regcomp.c:171
+#: lib/regcomp.c:158
 msgid "Memory exhausted"
 msgstr "Paměť byla vyčerpána"
 
-#: lib/regcomp.c:174
+#: lib/regcomp.c:161
 msgid "Invalid preceding regular expression"
 msgstr "Neplatný předchozí regulární výraz"
 
-#: lib/regcomp.c:177
+#: lib/regcomp.c:164
 msgid "Premature end of regular expression"
 msgstr "Předčasný konec regulárního výrazu"
 
-#: lib/regcomp.c:180
+#: lib/regcomp.c:167
 msgid "Regular expression too big"
 msgstr "Regulární výraz je příliš velký"
 
-#: lib/regcomp.c:183
+#: lib/regcomp.c:170
 msgid "Unmatched ) or \\)"
 msgstr "Chybí odpovídající závorka k ) nebo \\)"
 
-#: lib/regcomp.c:676
+#: lib/regcomp.c:650
 msgid "No previous regular expression"
 msgstr "Žádný předchozí regulární výraz"
 
-#: lib/spawn-pipe.c:218 lib/spawn-pipe.c:221 lib/spawn-pipe.c:460
-#: lib/spawn-pipe.c:463
+#: lib/spawn-pipe.c:217 lib/spawn-pipe.c:220 lib/spawn-pipe.c:459
+#: lib/spawn-pipe.c:462
 #, c-format
 msgid "cannot create pipe"
 msgstr "nelze vytvořit rouru"
 
-#: lib/spawn-pipe.c:598 lib/wait-process.c:290 lib/wait-process.c:364
+#: lib/spawn-pipe.c:597 lib/wait-process.c:291 lib/wait-process.c:365
 #, c-format
 msgid "%s subprocess failed"
 msgstr "selhal podřízený proces %s"
 
-#: lib/wait-process.c:231 lib/wait-process.c:263 lib/wait-process.c:325
+#: lib/wait-process.c:232 lib/wait-process.c:264 lib/wait-process.c:326
 #, c-format
 msgid "%s subprocess"
 msgstr "podřízený proces %s"
 
-#: lib/wait-process.c:282 lib/wait-process.c:354
+#: lib/wait-process.c:283 lib/wait-process.c:355
 #, c-format
 msgid "%s subprocess got fatal signal %d"
 msgstr "podřízený proces %s obdržel kritický signál %d"

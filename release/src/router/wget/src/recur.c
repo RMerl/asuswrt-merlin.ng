@@ -1,5 +1,5 @@
 /* Handling of recursive HTTP retrieving.
-   Copyright (C) 1996-2012, 2015, 2018-2021 Free Software Foundation,
+   Copyright (C) 1996-2012, 2015, 2018-2022 Free Software Foundation,
    Inc.
 
 This file is part of GNU Wget.
@@ -427,6 +427,7 @@ retrieve_tree (struct url *start_url_parsed, struct iri *pi)
 
           if (opt.use_robots && meta_disallow_follow)
             {
+              logprintf(LOG_VERBOSE, _("nofollow attribute found in %s. Will not follow any links on this page\n"), file);
               free_urlpos (children);
               children = NULL;
             }
@@ -744,8 +745,9 @@ download_child (const struct urlpos *upos, struct url *parent, int depth,
               specs = res_parse_from_file (rfile);
 
               /* Delete the robots.txt file if we chose to either delete the
-                 files after downloading or we're just running a spider. */
-              if (opt.delete_after || opt.spider)
+                 files after downloading or we're just running a spider or
+                 we use page requisites or pattern matching. */
+              if (opt.delete_after || opt.spider || match_tail(rfile, ".tmp", false))
                 {
                   logprintf (LOG_VERBOSE, _("Removing %s.\n"), rfile);
                   if (unlink (rfile))

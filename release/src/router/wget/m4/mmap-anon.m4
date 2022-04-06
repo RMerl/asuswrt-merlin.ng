@@ -1,5 +1,5 @@
-# mmap-anon.m4 serial 11
-dnl Copyright (C) 2005, 2007, 2009-2021 Free Software Foundation, Inc.
+# mmap-anon.m4 serial 12
+dnl Copyright (C) 2005, 2007, 2009-2022 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -13,7 +13,7 @@ dnl with or without modifications, as long as this notice is preserved.
 # - On IRIX, neither exists, and a file descriptor opened to /dev/zero must be
 #   used.
 
-AC_DEFUN([gl_FUNC_MMAP_ANON],
+AC_DEFUN_ONCE([gl_FUNC_MMAP_ANON],
 [
   dnl Persuade glibc <sys/mman.h> to define MAP_ANONYMOUS.
   AC_REQUIRE([gl_USE_SYSTEM_EXTENSIONS])

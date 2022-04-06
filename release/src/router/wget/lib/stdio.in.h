@@ -1,19 +1,19 @@
 /* A GNU-like <stdio.h>.
 
-   Copyright (C) 2004, 2007-2021 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2007-2022 Free Software Foundation, Inc.
 
-   This program is free software; you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 3, or (at your option)
-   any later version.
+   This file is free software: you can redistribute it and/or modify
+   it under the terms of the GNU Lesser General Public License as
+   published by the Free Software Foundation; either version 2.1 of the
+   License, or (at your option) any later version.
 
-   This program is distributed in the hope that it will be useful,
+   This file is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
+   GNU Lesser General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, see <https://www.gnu.org/licenses/>.  */
+   You should have received a copy of the GNU Lesser General Public License
+   along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
 #if __GNUC__ >= 3
 @PRAGMA_SYSTEM_HEADER@
@@ -55,6 +55,52 @@
    and eglibc 2.11.2.
    May also define off_t to a 64-bit type on native Windows.  */
 #include <sys/types.h>
+
+/* Solaris 10 and NetBSD 7.0 declare renameat in <unistd.h>, not in <stdio.h>.  */
+/* But in any case avoid namespace pollution on glibc systems.  */
+#if (@GNULIB_RENAMEAT@ || defined GNULIB_POSIXCHECK) && (defined __sun || defined __NetBSD__) \
+    && ! defined __GLIBC__
+# include <unistd.h>
+#endif
+
+/* Android 4.3 declares renameat in <sys/stat.h>, not in <stdio.h>.  */
+/* But in any case avoid namespace pollution on glibc systems.  */
+#if (@GNULIB_RENAMEAT@ || defined GNULIB_POSIXCHECK) && defined __ANDROID__ \
+    && ! defined __GLIBC__
+# include <sys/stat.h>
+#endif
+
+/* MSVC declares 'perror' in <stdlib.h>, not in <stdio.h>.  We must include
+   it before we  #define perror rpl_perror.  */
+/* But in any case avoid namespace pollution on glibc systems.  */
+#if (@GNULIB_PERROR@ || defined GNULIB_POSIXCHECK) \
+    && (defined _WIN32 && ! defined __CYGWIN__) \
+    && ! defined __GLIBC__
+# include <stdlib.h>
+#endif
+
+/* MSVC declares 'remove' in <io.h>, not in <stdio.h>.  We must include
+   it before we  #define remove rpl_remove.  */
+/* MSVC declares 'rename' in <io.h>, not in <stdio.h>.  We must include
+   it before we  #define rename rpl_rename.  */
+/* But in any case avoid namespace pollution on glibc systems.  */
+#if (@GNULIB_REMOVE@ || @GNULIB_RENAME@ || defined GNULIB_POSIXCHECK) \
+    && (defined _WIN32 && ! defined __CYGWIN__) \
+    && ! defined __GLIBC__
+# include <io.h>
+#endif
+
+
+/* _GL_ATTRIBUTE_DEALLOC (F, I) declares that the function returns pointers
+   that can be freed by passing them as the Ith argument to the
+   function F.  */
+#ifndef _GL_ATTRIBUTE_DEALLOC
+# if __GNUC__ >= 11
+#  define _GL_ATTRIBUTE_DEALLOC(f, i) __attribute__ ((__malloc__ (f, i)))
+# else
+#  define _GL_ATTRIBUTE_DEALLOC(f, i)
+# endif
+#endif
 
 /* The __attribute__ feature is available in gcc versions 2.5 and later.
    The __-protected variants of the attributes 'format' and 'printf' are
@@ -126,41 +172,6 @@
    ISO C99 and POSIX.  */
 #define _GL_ATTRIBUTE_FORMAT_SCANF_SYSTEM(formatstring_parameter, first_argument) \
   _GL_ATTRIBUTE_FORMAT ((__scanf__, formatstring_parameter, first_argument))
-
-/* Solaris 10 and NetBSD 7.0 declare renameat in <unistd.h>, not in <stdio.h>.  */
-/* But in any case avoid namespace pollution on glibc systems.  */
-#if (@GNULIB_RENAMEAT@ || defined GNULIB_POSIXCHECK) && (defined __sun || defined __NetBSD__) \
-    && ! defined __GLIBC__
-# include <unistd.h>
-#endif
-
-/* Android 4.3 declares renameat in <sys/stat.h>, not in <stdio.h>.  */
-/* But in any case avoid namespace pollution on glibc systems.  */
-#if (@GNULIB_RENAMEAT@ || defined GNULIB_POSIXCHECK) && defined __ANDROID__ \
-    && ! defined __GLIBC__
-# include <sys/stat.h>
-#endif
-
-/* MSVC declares 'perror' in <stdlib.h>, not in <stdio.h>.  We must include
-   it before we  #define perror rpl_perror.  */
-/* But in any case avoid namespace pollution on glibc systems.  */
-#if (@GNULIB_PERROR@ || defined GNULIB_POSIXCHECK) \
-    && (defined _WIN32 && ! defined __CYGWIN__) \
-    && ! defined __GLIBC__
-# include <stdlib.h>
-#endif
-
-/* MSVC declares 'remove' in <io.h>, not in <stdio.h>.  We must include
-   it before we  #define remove rpl_remove.  */
-/* MSVC declares 'rename' in <io.h>, not in <stdio.h>.  We must include
-   it before we  #define rename rpl_rename.  */
-/* But in any case avoid namespace pollution on glibc systems.  */
-#if (@GNULIB_REMOVE@ || @GNULIB_RENAME@ || defined GNULIB_POSIXCHECK) \
-    && (defined _WIN32 && ! defined __CYGWIN__) \
-    && ! defined __GLIBC__
-# include <io.h>
-#endif
-
 
 /* The definitions of _GL_FUNCDECL_RPL etc. are copied here.  */
 
@@ -242,7 +253,7 @@ _GL_WARN_ON_USE (fclose, "fclose is not always POSIX compliant - "
 _GL_CXXALIAS_MDA (fcloseall, int, (void));
 # else
 #  if @HAVE_DECL_FCLOSEALL@
-#   if defined __FreeBSD__
+#   if defined __FreeBSD__ || defined __DragonFly__
 _GL_CXXALIAS_SYS (fcloseall, void, (void));
 #   else
 _GL_CXXALIAS_SYS (fcloseall, int, (void));
@@ -260,8 +271,9 @@ _GL_CXXALIASWARN (fcloseall);
 #   undef fdopen
 #   define fdopen rpl_fdopen
 #  endif
-_GL_FUNCDECL_RPL (fdopen, FILE *, (int fd, const char *mode)
-                                  _GL_ARG_NONNULL ((2)));
+_GL_FUNCDECL_RPL (fdopen, FILE *,
+                  (int fd, const char *mode)
+                  _GL_ARG_NONNULL ((2)) _GL_ATTRIBUTE_DEALLOC (fclose, 1));
 _GL_CXXALIAS_RPL (fdopen, FILE *, (int fd, const char *mode));
 # elif defined _WIN32 && !defined __CYGWIN__
 #  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
@@ -270,28 +282,42 @@ _GL_CXXALIAS_RPL (fdopen, FILE *, (int fd, const char *mode));
 #  endif
 _GL_CXXALIAS_MDA (fdopen, FILE *, (int fd, const char *mode));
 # else
+#  if __GNUC__ >= 11
+/* For -Wmismatched-dealloc: Associate fdopen with fclose or rpl_fclose.  */
+_GL_FUNCDECL_SYS (fdopen, FILE *,
+                  (int fd, const char *mode)
+                  _GL_ARG_NONNULL ((2)) _GL_ATTRIBUTE_DEALLOC (fclose, 1));
+#  endif
 _GL_CXXALIAS_SYS (fdopen, FILE *, (int fd, const char *mode));
 # endif
 _GL_CXXALIASWARN (fdopen);
-#elif defined GNULIB_POSIXCHECK
-# undef fdopen
+#else
+# if @GNULIB_FCLOSE@ && __GNUC__ >= 11 && !defined fdopen
+/* For -Wmismatched-dealloc: Associate fdopen with fclose or rpl_fclose.  */
+_GL_FUNCDECL_SYS (fdopen, FILE *,
+                  (int fd, const char *mode)
+                  _GL_ARG_NONNULL ((2)) _GL_ATTRIBUTE_DEALLOC (fclose, 1));
+# endif
+# if defined GNULIB_POSIXCHECK
+#  undef fdopen
 /* Assume fdopen is always declared.  */
 _GL_WARN_ON_USE (fdopen, "fdopen on native Windows platforms is not POSIX compliant - "
                  "use gnulib module fdopen for portability");
-#elif @GNULIB_MDA_FDOPEN@
+# elif @GNULIB_MDA_FDOPEN@
 /* On native Windows, map 'fdopen' to '_fdopen', so that -loldnames is not
    required.  In C++ with GNULIB_NAMESPACE, avoid differences between
    platforms by defining GNULIB_NAMESPACE::fdopen always.  */
-# if defined _WIN32 && !defined __CYGWIN__
-#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
-#   undef fdopen
-#   define fdopen _fdopen
-#  endif
+#  if defined _WIN32 && !defined __CYGWIN__
+#   if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#    undef fdopen
+#    define fdopen _fdopen
+#   endif
 _GL_CXXALIAS_MDA (fdopen, FILE *, (int fd, const char *mode));
-# else
+#  else
 _GL_CXXALIAS_SYS (fdopen, FILE *, (int fd, const char *mode));
-# endif
+#  endif
 _GL_CXXALIASWARN (fdopen);
+# endif
 #endif
 
 #if @GNULIB_FFLUSH@
@@ -373,28 +399,43 @@ _GL_CXXALIASWARN (fileno);
 #endif
 
 #if @GNULIB_FOPEN@
-# if @REPLACE_FOPEN@
+# if (@GNULIB_FOPEN@ && @REPLACE_FOPEN@) \
+     || (@GNULIB_FOPEN_GNU@ && @REPLACE_FOPEN_FOR_FOPEN_GNU@)
 #  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
 #   undef fopen
 #   define fopen rpl_fopen
 #  endif
 _GL_FUNCDECL_RPL (fopen, FILE *,
                   (const char *restrict filename, const char *restrict mode)
-                  _GL_ARG_NONNULL ((1, 2)));
+                  _GL_ARG_NONNULL ((1, 2)) _GL_ATTRIBUTE_DEALLOC (fclose, 1));
 _GL_CXXALIAS_RPL (fopen, FILE *,
                   (const char *restrict filename, const char *restrict mode));
 # else
+#  if __GNUC__ >= 11
+/* For -Wmismatched-dealloc: Associate fopen with fclose or rpl_fclose.  */
+_GL_FUNCDECL_SYS (fopen, FILE *,
+                  (const char *restrict filename, const char *restrict mode)
+                  _GL_ARG_NONNULL ((1, 2)) _GL_ATTRIBUTE_DEALLOC (fclose, 1));
+#  endif
 _GL_CXXALIAS_SYS (fopen, FILE *,
                   (const char *restrict filename, const char *restrict mode));
 # endif
 # if __GLIBC__ >= 2
 _GL_CXXALIASWARN (fopen);
 # endif
-#elif defined GNULIB_POSIXCHECK
-# undef fopen
+#else
+# if @GNULIB_FCLOSE@ && __GNUC__ >= 11 && !defined fopen
+/* For -Wmismatched-dealloc: Associate fopen with fclose or rpl_fclose.  */
+_GL_FUNCDECL_SYS (fopen, FILE *,
+                  (const char *restrict filename, const char *restrict mode)
+                  _GL_ARG_NONNULL ((1, 2)) _GL_ATTRIBUTE_DEALLOC (fclose, 1));
+# endif
+# if defined GNULIB_POSIXCHECK
+#  undef fopen
 /* Assume fopen is always declared.  */
 _GL_WARN_ON_USE (fopen, "fopen on native Windows platforms is not POSIX compliant - "
                  "use gnulib module fopen for portability");
+# endif
 #endif
 
 #if @GNULIB_FPRINTF_POSIX@ || @GNULIB_FPRINTF@
@@ -1009,22 +1050,32 @@ _GL_WARN_ON_USE (perror, "perror is not always POSIX compliant - "
 #   undef popen
 #   define popen rpl_popen
 #  endif
-_GL_FUNCDECL_RPL (popen, FILE *, (const char *cmd, const char *mode)
-                                 _GL_ARG_NONNULL ((1, 2)));
+_GL_FUNCDECL_RPL (popen, FILE *,
+                  (const char *cmd, const char *mode)
+                  _GL_ARG_NONNULL ((1, 2)) _GL_ATTRIBUTE_DEALLOC (pclose, 1));
 _GL_CXXALIAS_RPL (popen, FILE *, (const char *cmd, const char *mode));
 # else
-#  if !@HAVE_POPEN@
-_GL_FUNCDECL_SYS (popen, FILE *, (const char *cmd, const char *mode)
-                                 _GL_ARG_NONNULL ((1, 2)));
+#  if !@HAVE_POPEN@ || __GNUC__ >= 11
+_GL_FUNCDECL_SYS (popen, FILE *,
+                  (const char *cmd, const char *mode)
+                  _GL_ARG_NONNULL ((1, 2)) _GL_ATTRIBUTE_DEALLOC (pclose, 1));
 #  endif
 _GL_CXXALIAS_SYS (popen, FILE *, (const char *cmd, const char *mode));
 # endif
 _GL_CXXALIASWARN (popen);
-#elif defined GNULIB_POSIXCHECK
-# undef popen
-# if HAVE_RAW_DECL_POPEN
+#else
+# if @GNULIB_PCLOSE@ && __GNUC__ >= 11 && !defined popen
+/* For -Wmismatched-dealloc: Associate popen with pclose or rpl_pclose.  */
+_GL_FUNCDECL_SYS (popen, FILE *,
+                  (const char *cmd, const char *mode)
+                  _GL_ARG_NONNULL ((1, 2)) _GL_ATTRIBUTE_DEALLOC (pclose, 1));
+# endif
+# if defined GNULIB_POSIXCHECK
+#  undef popen
+#  if HAVE_RAW_DECL_POPEN
 _GL_WARN_ON_USE (popen, "popen is buggy on some platforms - "
                  "use gnulib module popen or pipe for more portability");
+#  endif
 # endif
 #endif
 
@@ -1257,6 +1308,7 @@ _GL_CXXALIASWARN (scanf);
 #  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
 #   define snprintf rpl_snprintf
 #  endif
+#  define GNULIB_overrides_snprintf 1
 _GL_FUNCDECL_RPL (snprintf, int,
                   (char *restrict str, size_t size,
                    const char *restrict format, ...)
@@ -1302,6 +1354,7 @@ _GL_WARN_ON_USE (snprintf, "snprintf is unportable - "
 #  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
 #   define sprintf rpl_sprintf
 #  endif
+#  define GNULIB_overrides_sprintf 1
 _GL_FUNCDECL_RPL (sprintf, int,
                   (char *restrict str, const char *restrict format, ...)
                   _GL_ATTRIBUTE_FORMAT_PRINTF_STANDARD (2, 3)
@@ -1344,19 +1397,32 @@ _GL_CXXALIASWARN (tempnam);
 #  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
 #   define tmpfile rpl_tmpfile
 #  endif
-_GL_FUNCDECL_RPL (tmpfile, FILE *, (void));
+_GL_FUNCDECL_RPL (tmpfile, FILE *, (void)
+                                   _GL_ATTRIBUTE_DEALLOC (fclose, 1));
 _GL_CXXALIAS_RPL (tmpfile, FILE *, (void));
 # else
+#  if __GNUC__ >= 11
+/* For -Wmismatched-dealloc: Associate tmpfile with fclose or rpl_fclose.  */
+_GL_FUNCDECL_SYS (tmpfile, FILE *, (void)
+                                   _GL_ATTRIBUTE_DEALLOC (fclose, 1));
+#  endif
 _GL_CXXALIAS_SYS (tmpfile, FILE *, (void));
 # endif
 # if __GLIBC__ >= 2
 _GL_CXXALIASWARN (tmpfile);
 # endif
-#elif defined GNULIB_POSIXCHECK
-# undef tmpfile
-# if HAVE_RAW_DECL_TMPFILE
+#else
+# if @GNULIB_FCLOSE@ && __GNUC__ >= 11 && !defined tmpfile
+/* For -Wmismatched-dealloc: Associate tmpfile with fclose or rpl_fclose.  */
+_GL_FUNCDECL_SYS (tmpfile, FILE *, (void)
+                                   _GL_ATTRIBUTE_DEALLOC (fclose, 1));
+# endif
+# if defined GNULIB_POSIXCHECK
+#  undef tmpfile
+#  if HAVE_RAW_DECL_TMPFILE
 _GL_WARN_ON_USE (tmpfile, "tmpfile is not usable on mingw - "
                  "use gnulib module tmpfile for portability");
+#  endif
 # endif
 #endif
 
@@ -1369,6 +1435,7 @@ _GL_WARN_ON_USE (tmpfile, "tmpfile is not usable on mingw - "
 #  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
 #   define asprintf rpl_asprintf
 #  endif
+#  define GNULIB_overrides_asprintf
 _GL_FUNCDECL_RPL (asprintf, int,
                   (char **result, const char *format, ...)
                   _GL_ATTRIBUTE_FORMAT_PRINTF_STANDARD (2, 3)
@@ -1390,6 +1457,7 @@ _GL_CXXALIASWARN (asprintf);
 #  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
 #   define vasprintf rpl_vasprintf
 #  endif
+#  define GNULIB_overrides_vasprintf 1
 _GL_FUNCDECL_RPL (vasprintf, int,
                   (char **result, const char *format, va_list args)
                   _GL_ATTRIBUTE_FORMAT_PRINTF_STANDARD (2, 0)
@@ -1573,6 +1641,7 @@ _GL_CXXALIASWARN (vscanf);
 #  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
 #   define vsnprintf rpl_vsnprintf
 #  endif
+#  define GNULIB_overrides_vsnprintf 1
 _GL_FUNCDECL_RPL (vsnprintf, int,
                   (char *restrict str, size_t size,
                    const char *restrict format, va_list args)
@@ -1609,6 +1678,7 @@ _GL_WARN_ON_USE (vsnprintf, "vsnprintf is unportable - "
 #  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
 #   define vsprintf rpl_vsprintf
 #  endif
+#  define GNULIB_overrides_vsprintf 1
 _GL_FUNCDECL_RPL (vsprintf, int,
                   (char *restrict str,
                    const char *restrict format, va_list args)

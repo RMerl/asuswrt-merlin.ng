@@ -1,18 +1,18 @@
 /* base32.c -- Encode binary data using printable characters.
-   Copyright (C) 1999-2001, 2004-2006, 2009-2021 Free Software Foundation, Inc.
+   Copyright (C) 1999-2001, 2004-2006, 2009-2022 Free Software Foundation, Inc.
 
-   This program is free software; you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 3, or (at your option)
-   any later version.
+   This file is free software: you can redistribute it and/or modify
+   it under the terms of the GNU Lesser General Public License as
+   published by the Free Software Foundation; either version 2.1 of the
+   License, or (at your option) any later version.
 
-   This program is distributed in the hope that it will be useful,
+   This file is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
+   GNU Lesser General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, see <https://www.gnu.org/licenses/>.  */
+   You should have received a copy of the GNU Lesser General Public License
+   along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
 /* Adapted from Simon Josefsson's base64 code by Gijs van Tulder.
  *
@@ -28,7 +28,7 @@
  *   FAIL: memory allocation error
  * OK: data in OUT/OUTLEN
  *
- * size_t outlen = base32_encode_alloc (in, inlen, &out);
+ * idx_t outlen = base32_encode_alloc (in, inlen, &out);
  * if (out == NULL && outlen == 0 && inlen != 0)
  *   FAIL: input too long
  * if (out == NULL)
@@ -42,15 +42,17 @@
 /* Get prototype. */
 #include "base32.h"
 
-/* Get malloc. */
-#include <stdlib.h>
+/* Get imalloc. */
+#include <ialloc.h>
+
+#include <intprops.h>
 
 /* Get UCHAR_MAX. */
 #include <limits.h>
 
 #include <string.h>
 
-/* C89 compliant way to cast 'char' to 'unsigned char'. */
+/* Convert 'char' to 'unsigned char' without casting.  */
 static unsigned char
 to_uchar (char ch)
 {
@@ -62,8 +64,8 @@ to_uchar (char ch)
    possible.  If OUTLEN is larger than BASE32_LENGTH(INLEN), also zero
    terminate the output buffer. */
 void
-base32_encode (const char *restrict in, size_t inlen,
-               char *restrict out, size_t outlen)
+base32_encode (const char *restrict in, idx_t inlen,
+               char *restrict out, idx_t outlen)
 {
   static const char b32str[32] =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
@@ -136,24 +138,21 @@ base32_encode (const char *restrict in, size_t inlen,
    memory allocation failed, OUT is set to NULL, and the return value
    indicates length of the requested memory block, i.e.,
    BASE32_LENGTH(inlen) + 1. */
-size_t
-base32_encode_alloc (const char *in, size_t inlen, char **out)
+idx_t
+base32_encode_alloc (const char *in, idx_t inlen, char **out)
 {
-  size_t outlen = 1 + BASE32_LENGTH (inlen);
-
   /* Check for overflow in outlen computation.
-   *
-   * If there is no overflow, outlen >= inlen.
-   *
-   * TODO Is this a sufficient check?  (See the notes in base64.c.)
-   */
-  if (inlen > outlen)
+     Treat negative INLEN as overflow, for better compatibility with
+     pre-2021-08-27 API, which used size_t.  */
+  idx_t in_over_5 = inlen / 5 + (inlen % 5 != 0), outlen;
+  if (! INT_MULTIPLY_OK (in_over_5, 8, &outlen) || inlen < 0)
     {
       *out = NULL;
       return 0;
     }
+  outlen++;
 
-  *out = malloc (outlen);
+  *out = imalloc (outlen);
   if (!*out)
     return outlen;
 
@@ -305,7 +304,7 @@ base32_decode_ctx_init (struct base32_decode_context *ctx)
 static char *
 get_8 (struct base32_decode_context *ctx,
        char const *restrict *in, char const *restrict in_end,
-       size_t *n_non_newline)
+       idx_t *n_non_newline)
 {
   if (ctx->i == 8)
     ctx->i = 0;
@@ -357,14 +356,14 @@ get_8 (struct base32_decode_context *ctx,
    *OUT to point to the byte after the last one written, and decrement
    *OUTLEN to reflect the number of bytes remaining in *OUT.  */
 static bool
-decode_8 (char const *restrict in, size_t inlen,
-          char *restrict *outp, size_t *outleft)
+decode_8 (char const *restrict in, idx_t inlen,
+          char *restrict *outp, idx_t *outleft)
 {
   char *out = *outp;
   if (inlen < 8)
     return false;
 
-  if (!isbase32 (in[0]) || !isbase32 (in[1]) )
+  if (!isbase32 (in[0]) || !isbase32 (in[1]))
     return false;
 
   if (*outleft)
@@ -468,10 +467,10 @@ decode_8 (char const *restrict in, size_t inlen,
 
 bool
 base32_decode_ctx (struct base32_decode_context *ctx,
-                   const char *restrict in, size_t inlen,
-                   char *restrict out, size_t *outlen)
+                   const char *restrict in, idx_t inlen,
+                   char *restrict out, idx_t *outlen)
 {
-  size_t outleft = *outlen;
+  idx_t outleft = *outlen;
   bool ignore_newlines = ctx != NULL;
   bool flush_ctx = false;
   unsigned int ctx_i = 0;
@@ -485,7 +484,7 @@ base32_decode_ctx (struct base32_decode_context *ctx,
 
   while (true)
     {
-      size_t outleft_save = outleft;
+      idx_t outleft_save = outleft;
       if (ctx_i == 0 && !flush_ctx)
         {
           while (true)
@@ -559,17 +558,17 @@ base32_decode_ctx (struct base32_decode_context *ctx,
    undefined. */
 bool
 base32_decode_alloc_ctx (struct base32_decode_context *ctx,
-                         const char *in, size_t inlen, char **out,
-                         size_t *outlen)
+                         const char *in, idx_t inlen, char **out,
+                         idx_t *outlen)
 {
   /* This may allocate a few bytes too many, depending on input,
      but it's not worth the extra CPU time to compute the exact size.
      The exact size is 5 * inlen / 8, minus one or more bytes if the
      input is padded with one or more "=".
-     Dividing before multiplying avoids the possibility of overflow.  */
-  size_t needlen = 5 * (inlen / 8) + 5;
+     Shifting before multiplying avoids the possibility of overflow.  */
+  idx_t needlen = 5 * ((inlen >> 3) + 1);
 
-  *out = malloc (needlen);
+  *out = imalloc (needlen);
   if (!*out)
     return true;
 

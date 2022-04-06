@@ -3,7 +3,7 @@
 
 # Convert git log output to ChangeLog format.
 
-# Copyright (C) 2008-2021 Free Software Foundation, Inc.
+# Copyright (C) 2008-2022 Free Software Foundation, Inc.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -35,7 +35,7 @@
 eval 'exec perl -wSx "$0" "$@"'
      if 0;
 
-my $VERSION = '2020-04-04 15:07'; # UTC
+my $VERSION = '2022-01-27 18:49'; # UTC
 # The definition above must lie within the first 8 lines in order
 # for the Emacs time-stamp write hook (at end) to update it.
 # If you change this file with Emacs, please let the write hook
@@ -455,7 +455,8 @@ sub git_dir_option($)
           # If there were any lines
           if (@line == 0)
             {
-              warn "$ME: warning: empty commit message:\n  $date_line\n";
+              warn "$ME: warning: empty commit message:\n"
+                   . "  commit $sha\n  $date_line\n";
             }
           else
             {

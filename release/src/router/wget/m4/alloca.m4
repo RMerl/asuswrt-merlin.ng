@@ -1,5 +1,5 @@
-# alloca.m4 serial 20
-dnl Copyright (C) 2002-2004, 2006-2007, 2009-2021 Free Software Foundation,
+# alloca.m4 serial 21
+dnl Copyright (C) 2002-2004, 2006-2007, 2009-2022 Free Software Foundation,
 dnl Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
@@ -26,17 +26,15 @@ AC_DEFUN([gl_FUNC_ALLOCA],
       AC_DEFINE([HAVE_ALLOCA], [1],
         [Define to 1 if you have 'alloca' after including <alloca.h>,
          a header that may be supplied by this distribution.])
-      ALLOCA_H=alloca.h
+      GL_GENERATE_ALLOCA_H=true
     else
       dnl alloca exists as a library function, i.e. it is slow and probably
       dnl a memory leak. Don't define HAVE_ALLOCA in this case.
-      ALLOCA_H=
+      GL_GENERATE_ALLOCA_H=false
     fi
   else
-    ALLOCA_H=alloca.h
+    GL_GENERATE_ALLOCA_H=true
   fi
-  AC_SUBST([ALLOCA_H])
-  AM_CONDITIONAL([GL_GENERATE_ALLOCA_H], [test -n "$ALLOCA_H"])
 
   if test $ac_cv_working_alloca_h = yes; then
     HAVE_ALLOCA_H=1

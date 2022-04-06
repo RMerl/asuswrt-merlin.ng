@@ -1,17 +1,17 @@
 /* A C macro for emitting warnings if a function is used.
-   Copyright (C) 2010-2021 Free Software Foundation, Inc.
+   Copyright (C) 2010-2022 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify it
-   under the terms of the GNU General Public License as published
-   by the Free Software Foundation; either version 3 of the License, or
+   under the terms of the GNU Lesser General Public License as published
+   by the Free Software Foundation; either version 2 of the License, or
    (at your option) any later version.
 
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   General Public License for more details.
+   Lesser General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
+   You should have received a copy of the GNU Lesser General Public License
    along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
 /* _GL_WARN_ON_USE (function, "literal string") issues a declaration
@@ -84,20 +84,20 @@
 # if 4 < __GNUC__ || (__GNUC__ == 4 && 3 <= __GNUC_MINOR__)
 /* A compiler attribute is available in gcc versions 4.3.0 and later.  */
 #  define _GL_WARN_ON_USE(function, message) \
-extern __typeof__ (function) function __attribute__ ((__warning__ (message)))
+_GL_WARN_EXTERN_C __typeof__ (function) function __attribute__ ((__warning__ (message)))
 #  define _GL_WARN_ON_USE_ATTRIBUTE(message) \
   __attribute__ ((__warning__ (message)))
 # elif __clang_major__ >= 4
 /* Another compiler attribute is available in clang.  */
 #  define _GL_WARN_ON_USE(function, message) \
-extern __typeof__ (function) function \
+_GL_WARN_EXTERN_C __typeof__ (function) function \
   __attribute__ ((__diagnose_if__ (1, message, "warning")))
 #  define _GL_WARN_ON_USE_ATTRIBUTE(message) \
   __attribute__ ((__diagnose_if__ (1, message, "warning")))
 # elif __GNUC__ >= 3 && GNULIB_STRICT_CHECKING
 /* Verify the existence of the function.  */
 #  define _GL_WARN_ON_USE(function, message) \
-extern __typeof__ (function) function
+_GL_WARN_EXTERN_C __typeof__ (function) function
 #  define _GL_WARN_ON_USE_ATTRIBUTE(message)
 # else /* Unsupported.  */
 #  define _GL_WARN_ON_USE(function, message) \

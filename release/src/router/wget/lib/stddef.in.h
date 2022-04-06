@@ -1,19 +1,19 @@
 /* A substitute for POSIX 2008 <stddef.h>, for platforms that have issues.
 
-   Copyright (C) 2009-2021 Free Software Foundation, Inc.
+   Copyright (C) 2009-2022 Free Software Foundation, Inc.
 
-   This program is free software; you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 3, or (at your option)
-   any later version.
+   This file is free software: you can redistribute it and/or modify
+   it under the terms of the GNU Lesser General Public License as
+   published by the Free Software Foundation; either version 2.1 of the
+   License, or (at your option) any later version.
 
-   This program is distributed in the hope that it will be useful,
+   This file is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
+   GNU Lesser General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, see <https://www.gnu.org/licenses/>.  */
+   You should have received a copy of the GNU Lesser General Public License
+   along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
 /* Written by Eric Blake.  */
 
@@ -42,6 +42,13 @@
 #   define _GL_STDDEF_WINT_T
 #  endif
 #  @INCLUDE_NEXT@ @NEXT_STDDEF_H@
+   /* On TinyCC, make sure that the macros that indicate the special invocation
+      convention get undefined.  */
+#  undef __need_wchar_t
+#  undef __need_size_t
+#  undef __need_ptrdiff_t
+#  undef __need_NULL
+#  undef __need_wint_t
 # endif
 
 #else
@@ -51,7 +58,7 @@
 
 /* On AIX 7.2, with xlc in 64-bit mode, <stddef.h> defines max_align_t to a
    type with alignment 4, but 'long' has alignment 8.  */
-#  if defined _AIX && defined _ARCH_PPC64
+#  if defined _AIX && defined __LP64__
 #   if !GNULIB_defined_max_align_t
 #    ifdef _MAX_ALIGN_T
 /* /usr/include/stddef.h has already defined max_align_t.  Override it.  */
@@ -103,11 +110,13 @@ typedef long max_align_t;
    we are currently compiling with gcc.
    On MSVC, max_align_t is defined only in C++ mode, after <cstddef> was
    included.  Its definition is good since it has an alignment of 8 (on x86
-   and x86_64).  */
-#if defined _MSC_VER && defined __cplusplus
+   and x86_64).
+   Similarly on OS/2 kLIBC.  */
+#if (defined _MSC_VER || (defined __KLIBC__ && !defined __LIBCN__)) \
+    && defined __cplusplus
 # include <cstddef>
 #else
-# if ! (@HAVE_MAX_ALIGN_T@ || defined _GCC_MAX_ALIGN_T)
+# if ! (@HAVE_MAX_ALIGN_T@ || (defined _GCC_MAX_ALIGN_T && !defined __clang__))
 #  if !GNULIB_defined_max_align_t
 /* On the x86, the maximum storage alignment of double, long, etc. is 4,
    but GCC's C11 ABI for x86 says that max_align_t has an alignment of 8,

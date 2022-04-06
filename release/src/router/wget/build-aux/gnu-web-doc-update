@@ -2,9 +2,9 @@
 # Run this after each non-alpha release, to update the web documentation at
 # https://www.gnu.org/software/$pkg/manual/
 
-VERSION=2018-03-07.03; # UTC
+VERSION=2022-01-27.18; # UTC
 
-# Copyright (C) 2009-2021 Free Software Foundation, Inc.
+# Copyright (C) 2009-2022 Free Software Foundation, Inc.
 
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -41,6 +41,7 @@ Options:
   -C, --builddir=DIR  location of (configured) Makefile (default: .)
   -n, --dry-run       don't actually commit anything
   -m, --mirror        remove out of date files from document server
+  -u, --user          the name of the CVS user on Savannah
   --help              print this help, then exit
   --version           print version number, then exit
 
@@ -109,6 +110,7 @@ find_tool XARGS gxargs xargs
 builddir=.
 dryrun=
 rm_stale='echo'
+cvs_user="$USER"
 while test $# != 0
 do
   # Handle --option=value by splitting apart and putting back on argv.
@@ -126,6 +128,7 @@ do
     -C|--builddir) shift; builddir=$1; shift ;;
     -n|--dry-run) dryrun=echo; shift;;
     -m|--mirror) rm_stale=''; shift;;
+    -u|--user) shift; cvs_user=$1; shift ;;
     --*) die "unrecognized option: $1";;
     *) break;;
   esac
@@ -172,7 +175,7 @@ set +e
 
 tmp=$(mktemp -d web-doc-update.XXXXXX) || exit 1
 ( cd $tmp \
-    && $CVS -d $USER@cvs.sv.gnu.org:/webcvs/$pkg co $pkg )
+    && $CVS -d $cvs_user@cvs.sv.gnu.org:/webcvs/$pkg co $pkg )
 $RSYNC -avP "$builddir"/doc/manual/ $tmp/$pkg/manual
 
 (

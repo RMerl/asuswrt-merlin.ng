@@ -1,5 +1,5 @@
-# netinet_in_h.m4 serial 5
-dnl Copyright (C) 2006-2021 Free Software Foundation, Inc.
+# netinet_in_h.m4 serial 6
+dnl Copyright (C) 2006-2022 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -14,9 +14,9 @@ AC_DEFUN([gl_HEADER_NETINET_IN],
         [gl_cv_header_netinet_in_h_selfcontained=no])
     ])
   if test $gl_cv_header_netinet_in_h_selfcontained = yes; then
-    NETINET_IN_H=''
+    GL_GENERATE_NETINET_IN_H=false
   else
-    NETINET_IN_H='netinet/in.h'
+    GL_GENERATE_NETINET_IN_H=true
     AC_CHECK_HEADERS([netinet/in.h])
     gl_CHECK_NEXT_HEADERS([netinet/in.h])
     if test $ac_cv_header_netinet_in_h = yes; then
@@ -26,6 +26,4 @@ AC_DEFUN([gl_HEADER_NETINET_IN],
     fi
     AC_SUBST([HAVE_NETINET_IN_H])
   fi
-  AC_SUBST([NETINET_IN_H])
-  AM_CONDITIONAL([GL_GENERATE_NETINET_IN_H], [test -n "$NETINET_IN_H"])
 ])

@@ -1,17 +1,17 @@
 /* Unicode character classification and properties.
-   Copyright (C) 2002, 2005-2021 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2005-2022 Free Software Foundation, Inc.
 
-   This program is free software: you can redistribute it and/or modify it
-   under the terms of the GNU General Public License as published
-   by the Free Software Foundation; either version 3 of the License, or
-   (at your option) any later version.
+   This file is free software: you can redistribute it and/or modify
+   it under the terms of the GNU Lesser General Public License as
+   published by the Free Software Foundation; either version 2.1 of the
+   License, or (at your option) any later version.
 
-   This program is distributed in the hope that it will be useful,
+   This file is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   General Public License for more details.
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU Lesser General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
+   You should have received a copy of the GNU Lesser General Public License
    along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
 #ifndef _UNICTYPE_H
@@ -466,95 +466,110 @@ extern int
    This enumeration may be extended in the future.  */
 enum
 {
-  UC_JOINING_GROUP_NONE,                  /* No_Joining_Group */
-  UC_JOINING_GROUP_AIN,                   /* Ain */
-  UC_JOINING_GROUP_ALAPH,                 /* Alaph */
-  UC_JOINING_GROUP_ALEF,                  /* Alef */
-  UC_JOINING_GROUP_BEH,                   /* Beh */
-  UC_JOINING_GROUP_BETH,                  /* Beth */
-  UC_JOINING_GROUP_BURUSHASKI_YEH_BARREE, /* Burushaski_Yeh_Barree */
-  UC_JOINING_GROUP_DAL,                   /* Dal */
-  UC_JOINING_GROUP_DALATH_RISH,           /* Dalath_Rish */
-  UC_JOINING_GROUP_E,                     /* E */
-  UC_JOINING_GROUP_FARSI_YEH,             /* Farsi_Yeh */
-  UC_JOINING_GROUP_FE,                    /* Fe */
-  UC_JOINING_GROUP_FEH,                   /* Feh */
-  UC_JOINING_GROUP_FINAL_SEMKATH,         /* Final_Semkath */
-  UC_JOINING_GROUP_GAF,                   /* Gaf */
-  UC_JOINING_GROUP_GAMAL,                 /* Gamal */
-  UC_JOINING_GROUP_HAH,                   /* Hah */
-  UC_JOINING_GROUP_HE,                    /* He */
-  UC_JOINING_GROUP_HEH,                   /* Heh */
-  UC_JOINING_GROUP_HEH_GOAL,              /* Heh_Goal */
-  UC_JOINING_GROUP_HETH,                  /* Heth */
-  UC_JOINING_GROUP_KAF,                   /* Kaf */
-  UC_JOINING_GROUP_KAPH,                  /* Kaph */
-  UC_JOINING_GROUP_KHAPH,                 /* Khaph */
-  UC_JOINING_GROUP_KNOTTED_HEH,           /* Knotted_Heh */
-  UC_JOINING_GROUP_LAM,                   /* Lam */
-  UC_JOINING_GROUP_LAMADH,                /* Lamadh */
-  UC_JOINING_GROUP_MEEM,                  /* Meem */
-  UC_JOINING_GROUP_MIM,                   /* Mim */
-  UC_JOINING_GROUP_NOON,                  /* Noon */
-  UC_JOINING_GROUP_NUN,                   /* Nun */
-  UC_JOINING_GROUP_NYA,                   /* Nya */
-  UC_JOINING_GROUP_PE,                    /* Pe */
-  UC_JOINING_GROUP_QAF,                   /* Qaf */
-  UC_JOINING_GROUP_QAPH,                  /* Qaph */
-  UC_JOINING_GROUP_REH,                   /* Reh */
-  UC_JOINING_GROUP_REVERSED_PE,           /* Reversed_Pe */
-  UC_JOINING_GROUP_SAD,                   /* Sad */
-  UC_JOINING_GROUP_SADHE,                 /* Sadhe */
-  UC_JOINING_GROUP_SEEN,                  /* Seen */
-  UC_JOINING_GROUP_SEMKATH,               /* Semkath */
-  UC_JOINING_GROUP_SHIN,                  /* Shin */
-  UC_JOINING_GROUP_SWASH_KAF,             /* Swash_Kaf */
-  UC_JOINING_GROUP_SYRIAC_WAW,            /* Syriac_Waw */
-  UC_JOINING_GROUP_TAH,                   /* Tah */
-  UC_JOINING_GROUP_TAW,                   /* Taw */
-  UC_JOINING_GROUP_TEH_MARBUTA,           /* Teh_Marbuta */
-  UC_JOINING_GROUP_TEH_MARBUTA_GOAL,      /* Teh_Marbuta_Goal */
-  UC_JOINING_GROUP_TETH,                  /* Teth */
-  UC_JOINING_GROUP_WAW,                   /* Waw */
-  UC_JOINING_GROUP_YEH,                   /* Yeh */
-  UC_JOINING_GROUP_YEH_BARREE,            /* Yeh_Barree */
-  UC_JOINING_GROUP_YEH_WITH_TAIL,         /* Yeh_With_Tail */
-  UC_JOINING_GROUP_YUDH,                  /* Yudh */
-  UC_JOINING_GROUP_YUDH_HE,               /* Yudh_He */
-  UC_JOINING_GROUP_ZAIN,                  /* Zain */
-  UC_JOINING_GROUP_ZHAIN,                 /* Zhain */
-  UC_JOINING_GROUP_ROHINGYA_YEH,          /* Rohingya_Yeh */
-  UC_JOINING_GROUP_STRAIGHT_WAW,          /* Straight_Waw */
-  UC_JOINING_GROUP_MANICHAEAN_ALEPH,      /* Manichaean_Aleph */
-  UC_JOINING_GROUP_MANICHAEAN_BETH,       /* Manichaean_Beth */
-  UC_JOINING_GROUP_MANICHAEAN_GIMEL,      /* Manichaean_Gimel */
-  UC_JOINING_GROUP_MANICHAEAN_DALETH,     /* Manichaean_Daleth */
-  UC_JOINING_GROUP_MANICHAEAN_WAW,        /* Manichaean_Waw */
-  UC_JOINING_GROUP_MANICHAEAN_ZAYIN,      /* Manichaean_Zayin */
-  UC_JOINING_GROUP_MANICHAEAN_HETH,       /* Manichaean_Heth */
-  UC_JOINING_GROUP_MANICHAEAN_TETH,       /* Manichaean_Teth */
-  UC_JOINING_GROUP_MANICHAEAN_YODH,       /* Manichaean_Yodh */
-  UC_JOINING_GROUP_MANICHAEAN_KAPH,       /* Manichaean_Kaph */
-  UC_JOINING_GROUP_MANICHAEAN_LAMEDH,     /* Manichaean_Lamedh */
-  UC_JOINING_GROUP_MANICHAEAN_DHAMEDH,    /* Manichaean_Dhamedh */
-  UC_JOINING_GROUP_MANICHAEAN_THAMEDH,    /* Manichaean_Thamedh */
-  UC_JOINING_GROUP_MANICHAEAN_MEM,        /* Manichaean_Mem */
-  UC_JOINING_GROUP_MANICHAEAN_NUN,        /* Manichaean_Nun */
-  UC_JOINING_GROUP_MANICHAEAN_SAMEKH,     /* Manichaean_Aleph */
-  UC_JOINING_GROUP_MANICHAEAN_AYIN,       /* Manichaean_Ayin */
-  UC_JOINING_GROUP_MANICHAEAN_PE,         /* Manichaean_Pe */
-  UC_JOINING_GROUP_MANICHAEAN_SADHE,      /* Manichaean_Sadhe */
-  UC_JOINING_GROUP_MANICHAEAN_QOPH,       /* Manichaean_Qoph */
-  UC_JOINING_GROUP_MANICHAEAN_RESH,       /* Manichaean_Resh */
-  UC_JOINING_GROUP_MANICHAEAN_TAW,        /* Manichaean_Taw */
-  UC_JOINING_GROUP_MANICHAEAN_ONE,        /* Manichaean_One */
-  UC_JOINING_GROUP_MANICHAEAN_FIVE,       /* Manichaean_Five */
-  UC_JOINING_GROUP_MANICHAEAN_TEN,        /* Manichaean_Ten */
-  UC_JOINING_GROUP_MANICHAEAN_TWENTY,     /* Manichaean_Twenty */
-  UC_JOINING_GROUP_MANICHAEAN_HUNDRED,    /* Manichaean_Hundred */
-  UC_JOINING_GROUP_AFRICAN_FEH,           /* African_Feh */
-  UC_JOINING_GROUP_AFRICAN_QAF,           /* African_Qaf */
-  UC_JOINING_GROUP_AFRICAN_NOON           /* African_Noon */
+  UC_JOINING_GROUP_NONE,                     /* No_Joining_Group */
+  UC_JOINING_GROUP_AIN,                      /* Ain */
+  UC_JOINING_GROUP_ALAPH,                    /* Alaph */
+  UC_JOINING_GROUP_ALEF,                     /* Alef */
+  UC_JOINING_GROUP_BEH,                      /* Beh */
+  UC_JOINING_GROUP_BETH,                     /* Beth */
+  UC_JOINING_GROUP_BURUSHASKI_YEH_BARREE,    /* Burushaski_Yeh_Barree */
+  UC_JOINING_GROUP_DAL,                      /* Dal */
+  UC_JOINING_GROUP_DALATH_RISH,              /* Dalath_Rish */
+  UC_JOINING_GROUP_E,                        /* E */
+  UC_JOINING_GROUP_FARSI_YEH,                /* Farsi_Yeh */
+  UC_JOINING_GROUP_FE,                       /* Fe */
+  UC_JOINING_GROUP_FEH,                      /* Feh */
+  UC_JOINING_GROUP_FINAL_SEMKATH,            /* Final_Semkath */
+  UC_JOINING_GROUP_GAF,                      /* Gaf */
+  UC_JOINING_GROUP_GAMAL,                    /* Gamal */
+  UC_JOINING_GROUP_HAH,                      /* Hah */
+  UC_JOINING_GROUP_HE,                       /* He */
+  UC_JOINING_GROUP_HEH,                      /* Heh */
+  UC_JOINING_GROUP_HEH_GOAL,                 /* Heh_Goal */
+  UC_JOINING_GROUP_HETH,                     /* Heth */
+  UC_JOINING_GROUP_KAF,                      /* Kaf */
+  UC_JOINING_GROUP_KAPH,                     /* Kaph */
+  UC_JOINING_GROUP_KHAPH,                    /* Khaph */
+  UC_JOINING_GROUP_KNOTTED_HEH,              /* Knotted_Heh */
+  UC_JOINING_GROUP_LAM,                      /* Lam */
+  UC_JOINING_GROUP_LAMADH,                   /* Lamadh */
+  UC_JOINING_GROUP_MEEM,                     /* Meem */
+  UC_JOINING_GROUP_MIM,                      /* Mim */
+  UC_JOINING_GROUP_NOON,                     /* Noon */
+  UC_JOINING_GROUP_NUN,                      /* Nun */
+  UC_JOINING_GROUP_NYA,                      /* Nya */
+  UC_JOINING_GROUP_PE,                       /* Pe */
+  UC_JOINING_GROUP_QAF,                      /* Qaf */
+  UC_JOINING_GROUP_QAPH,                     /* Qaph */
+  UC_JOINING_GROUP_REH,                      /* Reh */
+  UC_JOINING_GROUP_REVERSED_PE,              /* Reversed_Pe */
+  UC_JOINING_GROUP_SAD,                      /* Sad */
+  UC_JOINING_GROUP_SADHE,                    /* Sadhe */
+  UC_JOINING_GROUP_SEEN,                     /* Seen */
+  UC_JOINING_GROUP_SEMKATH,                  /* Semkath */
+  UC_JOINING_GROUP_SHIN,                     /* Shin */
+  UC_JOINING_GROUP_SWASH_KAF,                /* Swash_Kaf */
+  UC_JOINING_GROUP_SYRIAC_WAW,               /* Syriac_Waw */
+  UC_JOINING_GROUP_TAH,                      /* Tah */
+  UC_JOINING_GROUP_TAW,                      /* Taw */
+  UC_JOINING_GROUP_TEH_MARBUTA,              /* Teh_Marbuta */
+  UC_JOINING_GROUP_TEH_MARBUTA_GOAL,         /* Teh_Marbuta_Goal */
+  UC_JOINING_GROUP_TETH,                     /* Teth */
+  UC_JOINING_GROUP_WAW,                      /* Waw */
+  UC_JOINING_GROUP_YEH,                      /* Yeh */
+  UC_JOINING_GROUP_YEH_BARREE,               /* Yeh_Barree */
+  UC_JOINING_GROUP_YEH_WITH_TAIL,            /* Yeh_With_Tail */
+  UC_JOINING_GROUP_YUDH,                     /* Yudh */
+  UC_JOINING_GROUP_YUDH_HE,                  /* Yudh_He */
+  UC_JOINING_GROUP_ZAIN,                     /* Zain */
+  UC_JOINING_GROUP_ZHAIN,                    /* Zhain */
+  UC_JOINING_GROUP_ROHINGYA_YEH,             /* Rohingya_Yeh */
+  UC_JOINING_GROUP_STRAIGHT_WAW,             /* Straight_Waw */
+  UC_JOINING_GROUP_MANICHAEAN_ALEPH,         /* Manichaean_Aleph */
+  UC_JOINING_GROUP_MANICHAEAN_BETH,          /* Manichaean_Beth */
+  UC_JOINING_GROUP_MANICHAEAN_GIMEL,         /* Manichaean_Gimel */
+  UC_JOINING_GROUP_MANICHAEAN_DALETH,        /* Manichaean_Daleth */
+  UC_JOINING_GROUP_MANICHAEAN_WAW,           /* Manichaean_Waw */
+  UC_JOINING_GROUP_MANICHAEAN_ZAYIN,         /* Manichaean_Zayin */
+  UC_JOINING_GROUP_MANICHAEAN_HETH,          /* Manichaean_Heth */
+  UC_JOINING_GROUP_MANICHAEAN_TETH,          /* Manichaean_Teth */
+  UC_JOINING_GROUP_MANICHAEAN_YODH,          /* Manichaean_Yodh */
+  UC_JOINING_GROUP_MANICHAEAN_KAPH,          /* Manichaean_Kaph */
+  UC_JOINING_GROUP_MANICHAEAN_LAMEDH,        /* Manichaean_Lamedh */
+  UC_JOINING_GROUP_MANICHAEAN_DHAMEDH,       /* Manichaean_Dhamedh */
+  UC_JOINING_GROUP_MANICHAEAN_THAMEDH,       /* Manichaean_Thamedh */
+  UC_JOINING_GROUP_MANICHAEAN_MEM,           /* Manichaean_Mem */
+  UC_JOINING_GROUP_MANICHAEAN_NUN,           /* Manichaean_Nun */
+  UC_JOINING_GROUP_MANICHAEAN_SAMEKH,        /* Manichaean_Aleph */
+  UC_JOINING_GROUP_MANICHAEAN_AYIN,          /* Manichaean_Ayin */
+  UC_JOINING_GROUP_MANICHAEAN_PE,            /* Manichaean_Pe */
+  UC_JOINING_GROUP_MANICHAEAN_SADHE,         /* Manichaean_Sadhe */
+  UC_JOINING_GROUP_MANICHAEAN_QOPH,          /* Manichaean_Qoph */
+  UC_JOINING_GROUP_MANICHAEAN_RESH,          /* Manichaean_Resh */
+  UC_JOINING_GROUP_MANICHAEAN_TAW,           /* Manichaean_Taw */
+  UC_JOINING_GROUP_MANICHAEAN_ONE,           /* Manichaean_One */
+  UC_JOINING_GROUP_MANICHAEAN_FIVE,          /* Manichaean_Five */
+  UC_JOINING_GROUP_MANICHAEAN_TEN,           /* Manichaean_Ten */
+  UC_JOINING_GROUP_MANICHAEAN_TWENTY,        /* Manichaean_Twenty */
+  UC_JOINING_GROUP_MANICHAEAN_HUNDRED,       /* Manichaean_Hundred */
+  UC_JOINING_GROUP_AFRICAN_FEH,              /* African_Feh */
+  UC_JOINING_GROUP_AFRICAN_QAF,              /* African_Qaf */
+  UC_JOINING_GROUP_AFRICAN_NOON,             /* African_Noon */
+  UC_JOINING_GROUP_MALAYALAM_NGA,            /* Malayalam_Nga */
+  UC_JOINING_GROUP_MALAYALAM_JA,             /* Malayalam_Ja */
+  UC_JOINING_GROUP_MALAYALAM_NYA,            /* Malayalam_Nya */
+  UC_JOINING_GROUP_MALAYALAM_TTA,            /* Malayalam_Tta */
+  UC_JOINING_GROUP_MALAYALAM_NNA,            /* Malayalam_Nna */
+  UC_JOINING_GROUP_MALAYALAM_NNNA,           /* Malayalam_Nnna */
+  UC_JOINING_GROUP_MALAYALAM_BHA,            /* Malayalam_Bha */
+  UC_JOINING_GROUP_MALAYALAM_RA,             /* Malayalam_Ra */
+  UC_JOINING_GROUP_MALAYALAM_LLA,            /* Malayalam_Lla */
+  UC_JOINING_GROUP_MALAYALAM_LLLA,           /* Malayalam_Llla */
+  UC_JOINING_GROUP_MALAYALAM_SSA,            /* Malayalam_Ssa */
+  UC_JOINING_GROUP_HANIFI_ROHINGYA_PA,       /* Hanifi_Rohingya_Pa */
+  UC_JOINING_GROUP_HANIFI_ROHINGYA_KINNA_YA, /* Hanifi_Rohingya_Kinna_Ya */
+  UC_JOINING_GROUP_THIN_YEH,                 /* Thin_Yeh */
+  UC_JOINING_GROUP_VERTICAL_TAIL             /* Vertical_Tail */
 };
 
 /* Return the name of a joining group.  */
@@ -654,6 +669,13 @@ extern const uc_property_t UC_PROPERTY_UNIFIED_IDEOGRAPH;
 extern const uc_property_t UC_PROPERTY_RADICAL;
 extern const uc_property_t UC_PROPERTY_IDS_BINARY_OPERATOR;
 extern const uc_property_t UC_PROPERTY_IDS_TRINARY_OPERATOR;
+/* Emoji.  */
+extern const uc_property_t UC_PROPERTY_EMOJI;
+extern const uc_property_t UC_PROPERTY_EMOJI_PRESENTATION;
+extern const uc_property_t UC_PROPERTY_EMOJI_MODIFIER;
+extern const uc_property_t UC_PROPERTY_EMOJI_MODIFIER_BASE;
+extern const uc_property_t UC_PROPERTY_EMOJI_COMPONENT;
+extern const uc_property_t UC_PROPERTY_EXTENDED_PICTOGRAPHIC;
 /* Misc.  */
 extern const uc_property_t UC_PROPERTY_ZERO_WIDTH;
 extern const uc_property_t UC_PROPERTY_SPACE;
@@ -680,6 +702,7 @@ extern const uc_property_t UC_PROPERTY_NUMERIC;
 extern const uc_property_t UC_PROPERTY_DIACRITIC;
 extern const uc_property_t UC_PROPERTY_EXTENDER;
 extern const uc_property_t UC_PROPERTY_IGNORABLE_CONTROL;
+extern const uc_property_t UC_PROPERTY_REGIONAL_INDICATOR;
 
 /* Return the property given by name, e.g. "White space".  */
 extern uc_property_t
@@ -813,6 +836,18 @@ extern bool uc_is_property_ids_binary_operator (ucs4_t uc)
        _UC_ATTRIBUTE_CONST;
 extern bool uc_is_property_ids_trinary_operator (ucs4_t uc)
        _UC_ATTRIBUTE_CONST;
+extern bool uc_is_property_emoji (ucs4_t uc)
+       _UC_ATTRIBUTE_CONST;
+extern bool uc_is_property_emoji_presentation (ucs4_t uc)
+       _UC_ATTRIBUTE_CONST;
+extern bool uc_is_property_emoji_modifier (ucs4_t uc)
+       _UC_ATTRIBUTE_CONST;
+extern bool uc_is_property_emoji_modifier_base (ucs4_t uc)
+       _UC_ATTRIBUTE_CONST;
+extern bool uc_is_property_emoji_component (ucs4_t uc)
+       _UC_ATTRIBUTE_CONST;
+extern bool uc_is_property_extended_pictographic (ucs4_t uc)
+       _UC_ATTRIBUTE_CONST;
 extern bool uc_is_property_zero_width (ucs4_t uc)
        _UC_ATTRIBUTE_CONST;
 extern bool uc_is_property_space (ucs4_t uc)
@@ -862,6 +897,8 @@ extern bool uc_is_property_diacritic (ucs4_t uc)
 extern bool uc_is_property_extender (ucs4_t uc)
        _UC_ATTRIBUTE_CONST;
 extern bool uc_is_property_ignorable_control (ucs4_t uc)
+       _UC_ATTRIBUTE_CONST;
+extern bool uc_is_property_regional_indicator (ucs4_t uc)
        _UC_ATTRIBUTE_CONST;
 
 /* ========================================================================= */

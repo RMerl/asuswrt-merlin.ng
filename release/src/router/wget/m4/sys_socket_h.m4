@@ -1,12 +1,12 @@
-# sys_socket_h.m4 serial 25
-dnl Copyright (C) 2005-2021 Free Software Foundation, Inc.
+# sys_socket_h.m4 serial 29
+dnl Copyright (C) 2005-2022 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
 
 dnl From Simon Josefsson.
 
-AC_DEFUN([gl_HEADER_SYS_SOCKET],
+AC_DEFUN_ONCE([gl_SYS_SOCKET_H],
 [
   AC_REQUIRE([gl_SYS_SOCKET_H_DEFAULTS])
   AC_REQUIRE([AC_CANONICAL_HOST])
@@ -22,6 +22,7 @@ AC_DEFUN([gl_HEADER_SYS_SOCKET],
       ;;
   esac
 
+  GL_GENERATE_SYS_SOCKET_H=false
   AC_CACHE_CHECK([whether <sys/socket.h> is self-contained],
     [gl_cv_header_sys_socket_h_selfcontained],
     [
@@ -44,7 +45,7 @@ AC_DEFUN([gl_HEADER_SYS_SOCKET],
             [gl_cv_header_sys_socket_h_shut=no])
         ])
       if test $gl_cv_header_sys_socket_h_shut = no; then
-        SYS_SOCKET_H='sys/socket.h'
+        GL_GENERATE_SYS_SOCKET_H=true
       fi
     fi
   fi
@@ -83,7 +84,7 @@ AC_DEFUN([gl_HEADER_SYS_SOCKET],
   fi
   if test $HAVE_STRUCT_SOCKADDR_STORAGE = 0 || test $HAVE_SA_FAMILY_T = 0 \
      || test $HAVE_STRUCT_SOCKADDR_STORAGE_SS_FAMILY = 0; then
-    SYS_SOCKET_H='sys/socket.h'
+    GL_GENERATE_SYS_SOCKET_H=true
   fi
   gl_PREREQ_SYS_H_WINSOCK2
 
@@ -156,32 +157,47 @@ AC_DEFUN([gl_PREREQ_SYS_H_WS2TCPIP],
   AC_SUBST([HAVE_WS2TCPIP_H])
 ])
 
+# gl_SYS_SOCKET_MODULE_INDICATOR([modulename])
+# sets the shell variable that indicates the presence of the given module
+# to a C preprocessor expression that will evaluate to 1.
+# This macro invocation must not occur in macros that are AC_REQUIREd.
 AC_DEFUN([gl_SYS_SOCKET_MODULE_INDICATOR],
 [
-  dnl Use AC_REQUIRE here, so that the default settings are expanded once only.
-  AC_REQUIRE([gl_SYS_SOCKET_H_DEFAULTS])
+  dnl Ensure to expand the default settings once only.
+  gl_SYS_SOCKET_H_REQUIRE_DEFAULTS
   gl_MODULE_INDICATOR_SET_VARIABLE([$1])
   dnl Define it also as a C macro, for the benefit of the unit tests.
   gl_MODULE_INDICATOR_FOR_TESTS([$1])
 ])
 
+# Initializes the default values for AC_SUBSTed shell variables.
+# This macro must not be AC_REQUIREd.  It must only be invoked, and only
+# outside of macros or in macros that are not AC_REQUIREd.
+AC_DEFUN([gl_SYS_SOCKET_H_REQUIRE_DEFAULTS],
+[
+  m4_defun(GL_MODULE_INDICATOR_PREFIX[_SYS_SOCKET_H_MODULE_INDICATOR_DEFAULTS], [
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_SOCKET])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_CONNECT])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_ACCEPT])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_BIND])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_GETPEERNAME])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_GETSOCKNAME])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_GETSOCKOPT])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_LISTEN])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_RECV])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_SEND])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_RECVFROM])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_SENDTO])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_SETSOCKOPT])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_SHUTDOWN])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_ACCEPT4])
+  ])
+  m4_require(GL_MODULE_INDICATOR_PREFIX[_SYS_SOCKET_H_MODULE_INDICATOR_DEFAULTS])
+  AC_REQUIRE([gl_SYS_SOCKET_H_DEFAULTS])
+])
+
 AC_DEFUN([gl_SYS_SOCKET_H_DEFAULTS],
 [
-  GNULIB_SOCKET=0;      AC_SUBST([GNULIB_SOCKET])
-  GNULIB_CONNECT=0;     AC_SUBST([GNULIB_CONNECT])
-  GNULIB_ACCEPT=0;      AC_SUBST([GNULIB_ACCEPT])
-  GNULIB_BIND=0;        AC_SUBST([GNULIB_BIND])
-  GNULIB_GETPEERNAME=0; AC_SUBST([GNULIB_GETPEERNAME])
-  GNULIB_GETSOCKNAME=0; AC_SUBST([GNULIB_GETSOCKNAME])
-  GNULIB_GETSOCKOPT=0;  AC_SUBST([GNULIB_GETSOCKOPT])
-  GNULIB_LISTEN=0;      AC_SUBST([GNULIB_LISTEN])
-  GNULIB_RECV=0;        AC_SUBST([GNULIB_RECV])
-  GNULIB_SEND=0;        AC_SUBST([GNULIB_SEND])
-  GNULIB_RECVFROM=0;    AC_SUBST([GNULIB_RECVFROM])
-  GNULIB_SENDTO=0;      AC_SUBST([GNULIB_SENDTO])
-  GNULIB_SETSOCKOPT=0;  AC_SUBST([GNULIB_SETSOCKOPT])
-  GNULIB_SHUTDOWN=0;    AC_SUBST([GNULIB_SHUTDOWN])
-  GNULIB_ACCEPT4=0;     AC_SUBST([GNULIB_ACCEPT4])
   HAVE_STRUCT_SOCKADDR_STORAGE=1; AC_SUBST([HAVE_STRUCT_SOCKADDR_STORAGE])
   HAVE_STRUCT_SOCKADDR_STORAGE_SS_FAMILY=1;
                         AC_SUBST([HAVE_STRUCT_SOCKADDR_STORAGE_SS_FAMILY])

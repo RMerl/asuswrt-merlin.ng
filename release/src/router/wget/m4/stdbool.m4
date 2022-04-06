@@ -1,15 +1,15 @@
 # Check for stdbool.h that conforms to C99.
 
-dnl Copyright (C) 2002-2006, 2009-2021 Free Software Foundation, Inc.
+dnl Copyright (C) 2002-2006, 2009-2022 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
 
-#serial 8
+#serial 9
 
 # Prepare for substituting <stdbool.h> if it is not supported.
 
-AC_DEFUN([AM_STDBOOL_H],
+AC_DEFUN([gl_STDBOOL_H],
 [
   AC_REQUIRE([AC_CHECK_HEADER_STDBOOL])
   AC_REQUIRE([AC_CANONICAL_HOST])
@@ -22,20 +22,18 @@ AC_DEFUN([AM_STDBOOL_H],
     case "$host_os" in
       solaris*)
         if test -z "$GCC"; then
-          STDBOOL_H='stdbool.h'
+          GL_GENERATE_STDBOOL_H=true
         else
-          STDBOOL_H=''
+          GL_GENERATE_STDBOOL_H=false
         fi
         ;;
       *)
-        STDBOOL_H=''
+        GL_GENERATE_STDBOOL_H=false
         ;;
     esac
   else
-    STDBOOL_H='stdbool.h'
+    GL_GENERATE_STDBOOL_H=true
   fi
-  AC_SUBST([STDBOOL_H])
-  AM_CONDITIONAL([GL_GENERATE_STDBOOL_H], [test -n "$STDBOOL_H"])
 
   if test "$ac_cv_type__Bool" = yes; then
     HAVE__BOOL=1
@@ -44,9 +42,6 @@ AC_DEFUN([AM_STDBOOL_H],
   fi
   AC_SUBST([HAVE__BOOL])
 ])
-
-# AM_STDBOOL_H will be renamed to gl_STDBOOL_H in the future.
-AC_DEFUN([gl_STDBOOL_H], [AM_STDBOOL_H])
 
 # This version of the macro is needed in autoconf <= 2.68.
 

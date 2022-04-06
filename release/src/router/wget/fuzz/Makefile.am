@@ -21,6 +21,8 @@ WGET_TESTS = \
  wget_robots_fuzzer$(EXEEXT) \
  wget_url_fuzzer$(EXEEXT)
 
+EXTRA_DIST = test-runner.sh
+
 if WITH_NTLM
   WGET_TESTS += wget_ntlm_fuzzer$(EXEEXT)
 endif
@@ -33,6 +35,7 @@ if FUZZING
 else
   AM_CPPFLAGS += -DTEST_RUN
   AM_TESTS_ENVIRONMENT = export VALGRIND_TESTS"=@VALGRIND_TESTS@";
+  LOG_COMPILER = $(top_srcdir)/fuzz/test-runner.sh
   TESTS = $(WGET_TESTS)
   check_PROGRAMS = $(WGET_TESTS)
   MAIN = main.c fuzzer.h
@@ -93,7 +96,7 @@ oss-fuzz:
 	XLIBS="-lpsl -lgnutls -lhogweed -lnettle -lidn2 -lunistring"; \
 	for ccfile in wget*_fuzzer.c; do \
 	fuzzer=$$(basename $$ccfile .c); \
-	$$CXX $$CXXFLAGS -I$(top_srcdir)/src -I$(top_srcdir) -I$(top_srcdir)/lib \
+	$$CC $$CFLAGS -I$(top_srcdir)/src -I$(top_srcdir) -I$(top_srcdir)/lib \
 	"$${fuzzer}.c" -o "$${fuzzer}" \
 	../src/libunittest.a ../lib/libgnu.a $${LIB_FUZZING_ENGINE} \
 	-Wl,-Bstatic $${XLIBS} -Wl,-Bdynamic; \

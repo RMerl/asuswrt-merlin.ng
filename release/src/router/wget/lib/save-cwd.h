@@ -1,11 +1,11 @@
 /* Save and restore current working directory.
 
-   Copyright (C) 1995, 1997-1998, 2003, 2009-2021 Free Software Foundation,
+   Copyright (C) 1995, 1997-1998, 2003, 2009-2022 Free Software Foundation,
    Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 3 of the License, or
+   the Free Software Foundation, either version 3 of the License, or
    (at your option) any later version.
 
    This program is distributed in the hope that it will be useful,

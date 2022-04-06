@@ -1,18 +1,18 @@
 /* Provide a replacement for the POSIX nanosleep function.
 
-   Copyright (C) 1999-2000, 2002, 2004-2021 Free Software Foundation, Inc.
+   Copyright (C) 1999-2000, 2002, 2004-2022 Free Software Foundation, Inc.
 
-   This program is free software: you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 3 of the License, or
-   (at your option) any later version.
+   This file is free software: you can redistribute it and/or modify
+   it under the terms of the GNU Lesser General Public License as
+   published by the Free Software Foundation; either version 2.1 of the
+   License, or (at your option) any later version.
 
-   This program is distributed in the hope that it will be useful,
+   This file is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
+   GNU Lesser General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
+   You should have received a copy of the GNU Lesser General Public License
    along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
 /* written by Jim Meyering
@@ -23,7 +23,6 @@
 #include <time.h>
 
 #include "intprops.h"
-#include "sig-handler.h"
 #include "verify.h"
 
 #include <stdbool.h>
@@ -32,7 +31,6 @@
 #include <sys/select.h>
 #include <signal.h>
 
-#include <sys/time.h>
 #include <errno.h>
 
 #include <unistd.h>
@@ -181,45 +179,9 @@ nanosleep (const struct timespec *requested_delay,
 }
 
 #else
-/* Unix platforms lacking nanosleep. */
-
-/* Some systems (MSDOS) don't have SIGCONT.
-   Using SIGTERM here turns the signal-handling code below
-   into a no-op on such systems. */
-# ifndef SIGCONT
-#  define SIGCONT SIGTERM
-# endif
-
-static sig_atomic_t volatile suspended;
-
-/* Handle SIGCONT. */
-
-static _GL_ASYNC_SAFE void
-sighandler (int sig)
-{
-  suspended = 1;
-}
-
-/* Suspend execution for at least *TS_DELAY seconds.  */
-
-static int
-my_usleep (const struct timespec *ts_delay)
-{
-  struct timeval tv_delay;
-  tv_delay.tv_sec = ts_delay->tv_sec;
-  tv_delay.tv_usec = (ts_delay->tv_nsec + 999) / 1000;
-  if (tv_delay.tv_usec == 1000000)
-    {
-      if (tv_delay.tv_sec == TYPE_MAXIMUM (time_t))
-        tv_delay.tv_usec = 1000000 - 1; /* close enough */
-      else
-        {
-          tv_delay.tv_sec++;
-          tv_delay.tv_usec = 0;
-        }
-    }
-  return select (0, NULL, NULL, NULL, &tv_delay);
-}
+/* Other platforms lacking nanosleep.
+   It's not clear whether these are still practical porting targets.
+   For now, just fall back on pselect.  */
 
 /* Suspend execution for at least *REQUESTED_DELAY seconds.  The
    *REMAINING_DELAY part isn't implemented yet.  */
@@ -228,49 +190,6 @@ int
 nanosleep (const struct timespec *requested_delay,
            struct timespec *remaining_delay)
 {
-  static bool initialized;
-
-  if (requested_delay->tv_nsec < 0 || BILLION <= requested_delay->tv_nsec)
-    {
-      errno = EINVAL;
-      return -1;
-    }
-
-  /* set up sig handler */
-  if (! initialized)
-    {
-      struct sigaction oldact;
-
-      sigaction (SIGCONT, NULL, &oldact);
-      if (get_handler (&oldact) != SIG_IGN)
-        {
-          struct sigaction newact;
-
-          newact.sa_handler = sighandler;
-          sigemptyset (&newact.sa_mask);
-          newact.sa_flags = 0;
-          sigaction (SIGCONT, &newact, NULL);
-        }
-      initialized = true;
-    }
-
-  suspended = 0;
-
-  if (my_usleep (requested_delay) == -1)
-    {
-      if (suspended)
-        {
-          /* Calculate time remaining.  */
-          /* FIXME: the code in sleep doesn't use this, so there's no
-             rush to implement it.  */
-
-          errno = EINTR;
-        }
-      return -1;
-    }
-
-  /* FIXME: Restore sig handler?  */
-
-  return 0;
+  return pselect (0, NULL, NULL, NULL, requested_delay, NULL);
 }
 #endif

@@ -1,5 +1,5 @@
 /* Messages logging.
-   Copyright (C) 1998-2011, 2015, 2018-2021 Free Software Foundation,
+   Copyright (C) 1998-2011, 2015, 2018-2022 Free Software Foundation,
    Inc.
 
 This file is part of GNU Wget.
@@ -569,11 +569,12 @@ logprintf (enum log_options o, const char *fmt, ...)
   bool done;
   int errno_saved = errno;
 
+  CHECK_VERBOSE (o);
+
   check_redirect_output ();
   errno = errno_saved;
   if (inhibit_logging)
     return;
-  CHECK_VERBOSE (o);
 
   xzero (lpstate);
   errno = 0;

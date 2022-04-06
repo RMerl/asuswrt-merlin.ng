@@ -1,10 +1,10 @@
 /* quote.h - prototypes for quote.c
 
-   Copyright (C) 1998-2001, 2003, 2009-2021 Free Software Foundation, Inc.
+   Copyright (C) 1998-2001, 2003, 2009-2022 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 3 of the License, or
+   the Free Software Foundation, either version 3 of the License, or
    (at your option) any later version.
 
    This program is distributed in the hope that it will be useful,

@@ -1,5 +1,5 @@
-# gl-openssl.m4 serial 5
-dnl Copyright (C) 2013-2021 Free Software Foundation, Inc.
+# gl-openssl.m4 serial 6
+dnl Copyright (C) 2013-2022 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -19,15 +19,20 @@ AC_DEFUN([gl_CRYPTO_CHECK],
   m4_divert_once([DEFAULTS], [LIB_CRYPTO=])
 
   AC_ARG_WITH([openssl],
-    [AS_HELP_STRING([--with-openssl],
-      [use libcrypto hash routines. Valid ARGs are:
-       'yes', 'no',
-       'auto' => use if any version available,
-       'auto-gpl-compat' => use if gpl compatible version available,
-       'optional' => use if available and warn if not available;
-       default is ']gl_CRYPTO_CHECK_DEFAULT['.
-       Note also --with-linux-crypto, which will enable
-       use of kernel crypto routines, which have precedence])],
+    [[  --with-openssl[=ARG]    use libcrypto hash routines for the hash functions
+                          MD5, SHA-1, SHA-224, SHA-256, SHA-384, SHA-512.
+                          Valid ARGs are:
+                            'yes',
+                            'no',
+                            'auto' => use if any version available,
+                            'auto-gpl-compat' => use if GPL compatible version
+                                                 available,
+                            'optional' => use if available
+                                          and warn if not available;
+                          Default is ']gl_CRYPTO_CHECK_DEFAULT['.]m4_ifdef([gl_AF_ALG], [
+                          Note also --with-linux-crypto, which will enable the
+                          use of Linux kernel crypto routines (if available),
+                          which has precedence for files.])],
     [],
     [with_openssl=$with_openssl_default])
 
@@ -56,10 +61,15 @@ AC_DEFUN([gl_CRYPTO_CHECK],
               [Define to 1 if libcrypto is used for $1.])])])
     fi
     if test "x$LIB_CRYPTO" = x; then
+      message='openssl development library not found for $1.
+  If you want to install it, first find the pre-built package name:
+    - On Debian and Debian-based systems: libssl-dev,
+    - On Red Hat distributions: openssl-devel.
+    - Other: https://repology.org/project/openssl/versions'
       if test "x$with_openssl" = xyes; then
-        AC_MSG_ERROR([openssl development library not found for $1])
+        AC_MSG_ERROR([$message])
       elif test "x$with_openssl" = xoptional; then
-        AC_MSG_WARN([openssl development library not found for $1])
+        AC_MSG_WARN([$message])
       fi
     fi
   fi

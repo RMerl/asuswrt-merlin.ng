@@ -1,5 +1,5 @@
 dnl Template file for GNU Autoconf
-dnl Copyright (C) 1995-1997, 2001, 2007-2014, 2018-2021 Free Software
+dnl Copyright (C) 1995-1997, 2001, 2007-2014, 2018-2022 Free Software
 dnl Foundation, Inc.
 
 dnl This program is free software; you can redistribute it and/or modify
@@ -30,6 +30,11 @@ dnl
 dnl Process this file with autoconf to produce a configure script.
 dnl
 
+dnl Error if AX_CODE_COVERAGE if missing (like on the 1.21 release).
+m4_pattern_forbid([^_?AX_])
+m4_pattern_allow([AX_CHECK_GNU_MAKE_HEADLINE])
+m4_pattern_allow([_AX_CODE_COVERAGE_GCOV_PROG_WITH])
+
 AC_INIT([wget],[m4_esyscmd(build-aux/git-version-gen .tarball-version)],[bug-wget@gnu.org])
 AC_PREREQ([2.64])
 
@@ -50,7 +55,6 @@ AM_INIT_AUTOMAKE([subdir-objects dist-lzip])
 
 AC_USE_SYSTEM_EXTENSIONS
 AC_PROG_CC
-AM_PROG_CC_C_O
 
 dnl
 dnl Get canonical host
@@ -258,10 +262,11 @@ dnl Gettext
 dnl
 AM_GNU_GETTEXT([external],[need-ngettext])
 AM_GNU_GETTEXT_VERSION([0.19.3])
+AM_GNU_GETTEXT_REQUIRE_VERSION([0.19.3])
 
 AC_PROG_RANLIB
 
-AC_PROG_LEX
+AC_PROG_LEX([noyywrap])
 
 dnl Turn on optimization by default.  Specifically:
 dnl
@@ -291,13 +296,6 @@ AC_C_CONST
 AC_C_INLINE
 AC_C_VOLATILE
 
-dnl Check for basic headers, even though we expect them to exist and
-dnl #include them unconditionally in the code.  Their detection is
-dnl still needed because test programs used by Autoconf macros check.
-dnl Without the checks they will fail to be included in test programs,
-dnl which will subsequently fail.
-AC_HEADER_STDC
-
 dnl Check for large file support.  This check needs to come fairly
 dnl early because it could (in principle) affect whether functions and
 dnl headers are available, whether they work, etc.
@@ -309,7 +307,7 @@ dnl Checks for system header files that might be missing.
 dnl
 AC_HEADER_STDBOOL
 AC_CHECK_HEADERS(unistd.h sys/time.h)
-AC_CHECK_HEADERS(termios.h sys/ioctl.h sys/select.h utime.h sys/utime.h)
+AC_CHECK_HEADERS(termios.h sys/ioctl.h sys/select.h)
 AC_CHECK_HEADERS(stdint.h inttypes.h pwd.h wchar.h dlfcn.h)
 
 AC_CHECK_DECLS(h_errno,,,[#include <netdb.h>])
@@ -349,24 +347,21 @@ AC_CHECK_FUNCS(strptime timegm vsnprintf vasprintf drand48 pathconf)
 AC_CHECK_FUNCS(strtoll usleep ftello sigblock sigsetjmp memrchr wcwidth mbtowc)
 AC_CHECK_FUNCS(sleep symlink utime strlcpy random fmemopen)
 
-if test x"$ENABLE_OPIE" = xyes; then
-  AC_LIBOBJ([ftp-opie])
-fi
-
 dnl We expect to have these functions on Unix-like systems configure
 dnl runs on.  The defines are provided to get them in config.h.in so
 dnl Wget can still be ported to non-Unix systems (such as Windows)
 dnl that lack some of these functions.
-AC_DEFINE([HAVE_STRDUP], 1, [Define to 1 if you have the `strdup' function.])
-AC_DEFINE([HAVE_ISATTY], 1, [Define to 1 if you have the `isatty' function.])
+AC_DEFINE([HAVE_STRDUP], 1, [Define to 1 if you have the 'strdup' function.])
+AC_DEFINE([HAVE_ISATTY], 1, [Define to 1 if you have the 'isatty' function.])
 
 dnl Deal with specific hosts
 case $host_os in
   *mingw32* )
     LIBS+=' -lws2_32'
-    AC_LIBOBJ([mswindows])
+    OS_USED="mswindows"
     ;;
 esac
+AM_CONDITIONAL([OS_MSWINDOWS], [test x"$OS_USED" = x"mswindows"])
 
 # enable all possible compiler warnings in WARN_FLAGS
 #
@@ -397,6 +392,10 @@ if test -n "$WARN_CFLAGS"; then
     nw="$nw -Wabi" # gcc 8, very noisy
     nw="$nw -Wunused-macros" # triggers in auto-generated lex css parser, #pragma doesn't work, conflicts with -Werror
 	nw="$nw -Wchkp" # Deprecated option
+    nw="$nw -Wswitch-enum" # Too noisy
+    nw="$nw -Wswitch-default" # TODO: Enable someday. Too noisy for now
+    nw="$nw -Wpedantic" # GCC 11. Too noisy, will never be supported
+    nw="$nw -Wnested-externs" # Stylistic choice and we do use it in hsts code
     if test "$cross_compiling" = yes; then
       nw="$nw -Wformat"
     fi
@@ -519,7 +518,7 @@ AS_IF([test x"$with_ssl" = xopenssl], [
   if [test x"$with_libssl_prefix" = x]; then
     PKG_CHECK_MODULES([OPENSSL], [openssl], [
       AC_MSG_NOTICE([compiling in support for SSL via OpenSSL])
-      AC_LIBOBJ([openssl])
+      ssl_library="openssl"
       LIBS="$OPENSSL_LIBS $LIBS"
       CFLAGS="$OPENSSL_CFLAGS -DHAVE_LIBSSL $CFLAGS"
       LIBSSL=" " # ntlm check below wants this
@@ -548,9 +547,9 @@ AS_IF([test x"$with_ssl" = xopenssl], [
           AC_CHECK_LIB(ssl32, SSL_connect, [
             ssl_found=yes
             AC_MSG_NOTICE([Enabling support for SSL via OpenSSL (shared)])
-            AC_LIBOBJ([openssl])
+            ssl_library="openssl"
             LIBS="${LIBS} -lssl32"
-            AC_DEFINE([HAVE_LIBSSL32], [1], [Define to 1 if you have the `ssl32' library (-lssl32).])
+            AC_DEFINE([HAVE_LIBSSL32], [1], [Define to 1 if you have the 'ssl32' library (-lssl32).])
           ],
           AC_MSG_ERROR([openssl not found: shared lib eay32 found but ssl32 not found]))
 
@@ -577,7 +576,7 @@ AS_IF([test x"$with_ssl" = xopenssl], [
       then
         ssl_found=yes
         AC_MSG_NOTICE([compiling in support for SSL via OpenSSL])
-        AC_LIBOBJ([openssl])
+        ssl_library="openssl"
         LIBS="$LIBSSL $LIBS"
         AC_CHECK_FUNCS([RAND_egd])
       elif test x"$with_ssl" != x
@@ -596,7 +595,7 @@ AS_IF([test x"$with_ssl" = xopenssl], [
     if [test x"$with_libgnutls_prefix" = x]; then
       PKG_CHECK_MODULES([GNUTLS], [gnutls], [
         AC_MSG_NOTICE([compiling in support for SSL via GnuTLS])
-        AC_LIBOBJ([gnutls])
+        ssl_library="gnutls"
         LIBS="$GNUTLS_LIBS $LIBS"
         CFLAGS="$GNUTLS_CFLAGS -DHAVE_LIBGNUTLS $CFLAGS"
         AC_DEFINE([HAVE_LIBGNUTLS], [1], [Define if using gnutls.])
@@ -611,7 +610,7 @@ AS_IF([test x"$with_ssl" = xopenssl], [
       then
         ssl_found=yes
         AC_MSG_NOTICE([compiling in support for SSL via GnuTLS])
-        AC_LIBOBJ([gnutls])
+        ssl_library="gnutls"
         LIBS="$LIBGNUTLS $LIBS"
       else
         AC_MSG_ERROR([GnuTLS has not been found. Use --with-ssl=openssl if you explicitly want OpenSSL.])
@@ -628,32 +627,29 @@ then
   if test x"$ENABLE_NTLM" != xno
   then
     ENABLE_NTLM=yes
-    AC_DEFINE([ENABLE_NTLM], 1,
-     [Define if you want the NTLM authorization support compiled in.])
-    AC_LIBOBJ([http-ntlm])
+    AC_DEFINE([ENABLE_NTLM], 1, [Define if you want the NTLM authorization support compiled in.])
   fi
 else
-  AC_CHECK_LIB(nettle, nettle_md4_init, [HAVE_NETTLE=yes], [HAVE_NETTLE=no; AC_MSG_WARN(*** libnettle was not found. You will not be able to use NTLM)])
-
-  if test x"$HAVE_NETTLE" = xyes
-  then
-    AC_SUBST(NETTLE_LIBS, "-lnettle")
-    AC_DEFINE([HAVE_NETTLE], [1], [Use libnettle])
-    if test x"$ENABLE_NTLM" != xno
-    then
-      ENABLE_NTLM=yes
-      AC_DEFINE([ENABLE_NTLM], 1,
-       [Define if you want the NTLM authorization support compiled in.])
-      AC_LIBOBJ([http-ntlm])
+  PKG_CHECK_MODULES([NETTLE], nettle, [
+    HAVE_NETTLE=yes
+    LIBS="$NETTLE_LIBS $LIBS"
+    CFLAGS="$NETTLE_CFLAGS $CFLAGS"
+  ], [
+    AC_CHECK_LIB(nettle, nettle_md4_init, [HAVE_NETTLE=yes], [HAVE_NETTLE=no; AC_MSG_WARN(*** libnettle was not found. You will not be able to use NTLM)])
+    if test x"$HAVE_NETTLE" != xyes; then
+      if  test x"$ENABLE_NTLM" = xyes; then
+        AC_MSG_ERROR([NTLM authorization requested and SSL not enabled; aborting])
+      fi
+    else
+      AC_SUBST(NETTLE_LIBS, "-lnettle")
       LIBS="$NETTLE_LIBS $LIBS"
     fi
-  else
-    dnl If SSL is unavailable and the user explicitly requested NTLM,
-    dnl abort.
-    if test x"$ENABLE_NTLM" = xyes
-    then
-      AC_MSG_ERROR([NTLM authorization requested and SSL not enabled; aborting])
-    fi
+  ])
+
+  if test x"$HAVE_NETTLE" = xyes; then
+    AC_DEFINE([HAVE_NETTLE], [1], [Use libnettle])
+    ENABLE_NTLM=yes
+    AC_DEFINE([ENABLE_NTLM], 1, [Define if you want the NTLM authorization support compiled in.])
   fi
 fi
 
@@ -691,7 +687,7 @@ AC_ARG_ENABLE(ipv6,
       ipv6=yes
       ;;
     *)
-      AC_MSG_ERROR([Invalid --enable-ipv6 argument \`$enable_ipv6'])
+      AC_MSG_ERROR([Invalid --enable-ipv6 argument '$enable_ipv6'])
       ;;
     esac
   ], [
@@ -709,7 +705,7 @@ fi
 
 if test "X$ipv6" = "Xyes"; then
   TYPE_STRUCT_SOCKADDR_IN6([],[
-    AC_MSG_NOTICE([Disabling IPv6 support: your system does not support \`struct sockaddr_in6'])
+    AC_MSG_NOTICE([Disabling IPv6 support: your system does not support 'struct sockaddr_in6'])
     ipv6=no
   ])
   if test "X$ipv6" = "Xyes"; then
@@ -727,9 +723,9 @@ fi
 
 dnl
 dnl Find makeinfo.  We used to provide support for Emacs processing
-dnl Texinfo using `emacs -batch -eval ...' where makeinfo is
+dnl Texinfo using 'emacs -batch -eval ...' where makeinfo is
 dnl unavailable, but that broke with the addition of makeinfo-specific
-dnl command-line options, such as `-I'.  Now we depend on makeinfo to
+dnl command-line options, such as '-I'.  Now we depend on makeinfo to
 dnl build the Info documentation.
 dnl
 
@@ -772,7 +768,7 @@ AC_ARG_ENABLE(iri,
       iri=yes
       ;;
     *)
-      AC_MSG_ERROR([Invalid --enable-iri argument \`$enable_iri'])
+      AC_MSG_ERROR([Invalid --enable-iri argument '$enable_iri'])
       ;;
     esac
   ], [
@@ -792,19 +788,18 @@ AS_IF([test "X$iri" != "Xno"],[
   fi
 ])
 
-AC_ARG_WITH(libidn, AS_HELP_STRING([--with-libidn=[DIR]],[Support IDN2008/IRIs (needs GNU libidn2 + libunicode)]),
-                                   libidn=$withval, libidn="")
 if test "X$iri" != "Xno"; then
   AS_IF([test "x$with_libidn2" != xno], [
-    AC_SEARCH_LIBS(idn2_lookup_u8, idn2,
-      [with_libidn2=yes; AC_DEFINE([ENABLE_IRI], 1, [Define if IRI support is enabled.])],
-      [with_libidn2=no; iri=no; AC_MSG_WARN(*** LIBIDN2 was not found. You will not be able to use IDN2008 support)])
-
-#    AS_IF([test "x$with_libidn2" = xyes], [
-#      AC_SEARCH_LIBS(u8_tolower, unistring,
-#        [AC_DEFINE([ENABLE_IRI], 1, [Define if IRI support is enabled.])],
-#        [iri=no; AC_MSG_WARN(*** LIBUNISTRING was not found. You will not be able to use IDN2008 support)])
-#    ])
+    PKG_CHECK_MODULES([LIBIDN2], [libidn2 >= 0.14.0], [
+      with_libidn2=yes
+      LIBS="$LIBIDN2_LIBS $LIBS"
+      CFLAGS="$LIBIDN2_CFLAGS $CFLAGS"
+      AC_DEFINE([ENABLE_IRI], 1, [Define if IRI support is enabled.])
+    ], [
+      AC_SEARCH_LIBS(idn2_lookup_u8, idn2,
+        [with_libidn2=yes; AC_DEFINE([ENABLE_IRI], 1, [Define if IRI support is enabled.])],
+        [with_libidn2=no; iri=no; AC_MSG_WARN(*** LIBIDN2 was not found. You will not be able to use IDN2008 support)])
+    ])
   ])
 fi
 
@@ -933,15 +928,22 @@ AS_IF([test x"$with_metalink" != xno], [
     dnl
     dnl Check for GPGME
     dnl
-    m4_ifdef([AM_PATH_GPGME], [
-      AM_PATH_GPGME([], [
-        # Put libgpgme to the end of the library list since it introduces a -L linker flags.
-        # That -L might break the build if there are two different version of
-        # a library (e.g. GnuTLS) in /usr/local and in the system directory.
-        LIBS="$LIBS $GPGME_LIBS"
-        CFLAGS="$GPGME_CFLAGS $CFLAGS"
-        AC_DEFINE([HAVE_GPGME], [1], [Define if GPGME is available.])
-        have_gpg=yes
+    PKG_CHECK_MODULES([GPGME], gpgme, [
+      LIBS="$LIBS $GPGME_LIBS"
+      CFLAGS="$GPGME_CFLAGS $CFLAGS"
+      AC_DEFINE([HAVE_GPGME], [1], [Define if GPGME is available.])
+      have_gpg=yes
+    ], [
+      m4_ifdef([AM_PATH_GPGME], [
+        AM_PATH_GPGME([], [
+          # Put libgpgme to the end of the library list since it introduces a -L linker flags.
+          # That -L might break the build if there are two different version of
+          # a library (e.g. GnuTLS) in /usr/local and in the system directory.
+          LIBS="$LIBS $GPGME_LIBS"
+          CFLAGS="$GPGME_CFLAGS $CFLAGS"
+          AC_DEFINE([HAVE_GPGME], [1], [Define if GPGME is available.])
+          have_gpg=yes
+        ])
       ])
     ])
   ])
@@ -974,11 +976,14 @@ test "X${ENABLE_XATTR}" = "Xyes" && AC_DEFINE([ENABLE_XATTR], 1,
     [Define if you want file meta-data storing into POSIX Extended Attributes compiled in.])
 
 dnl Needed by src/Makefile.am
-AM_CONDITIONAL([IRI_IS_ENABLED], [test "X$iri" != "Xno"])
+AM_CONDITIONAL([WITH_IRI], [test "X$iri" != "Xno"])
 AM_CONDITIONAL([WITH_SSL], [test "X$with_ssl" != "Xno"])
-AM_CONDITIONAL([METALINK_IS_ENABLED], [test "X$with_metalink" != "Xno"])
+AM_CONDITIONAL([WITH_METALINK], [test "X$with_metalink" != "Xno"])
 AM_CONDITIONAL([WITH_XATTR], [test "X$ENABLE_XATTR" != "Xno"])
 AM_CONDITIONAL([WITH_NTLM], [test "X$ENABLE_NTLM" = "Xyes"])
+AM_CONDITIONAL([WITH_OPIE], [test x"$ENABLE_OPIE" = x"yes"])
+AM_CONDITIONAL([WITH_OPENSSL], [test x"$ssl_library" = x"openssl"])
+AM_CONDITIONAL([WITH_GNUTLS], [test x"$ssl_library" = x"gnutls"])
 
 dnl
 dnl Create output

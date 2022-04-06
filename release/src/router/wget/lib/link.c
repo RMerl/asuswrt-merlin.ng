@@ -1,19 +1,19 @@
 /* Emulate link on platforms that lack it, namely native Windows platforms.
 
-   Copyright (C) 2009-2021 Free Software Foundation, Inc.
+   Copyright (C) 2009-2022 Free Software Foundation, Inc.
 
-   This program is free software; you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 3, or (at your option)
-   any later version.
+   This file is free software: you can redistribute it and/or modify
+   it under the terms of the GNU Lesser General Public License as
+   published by the Free Software Foundation; either version 2.1 of the
+   License, or (at your option) any later version.
 
-   This program is distributed in the hope that it will be useful,
+   This file is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
+   GNU Lesser General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, see <https://www.gnu.org/licenses/>.  */
+   You should have received a copy of the GNU Lesser General Public License
+   along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
 #include <config.h>
 
@@ -117,9 +117,7 @@ link (const char *file1, const char *file2)
     *p = '\0';
     if (p != dir && stat (dir, &st) != 0 && errno != EOVERFLOW)
       {
-        int saved_errno = errno;
         free (dir);
-        errno = saved_errno;
         return -1;
       }
     free (dir);
@@ -228,9 +226,7 @@ rpl_link (char const *file1, char const *file2)
           *p = '\0';
           if (stat (dir, &st) != 0 && errno != EOVERFLOW)
             {
-              int saved_errno = errno;
               free (dir);
-              errno = saved_errno;
               return -1;
             }
         }

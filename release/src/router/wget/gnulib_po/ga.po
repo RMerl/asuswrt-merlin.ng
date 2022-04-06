@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnulib 1.1\n"
 "Report-Msgid-Bugs-To: bug-gnulib@gnu.org\n"
-"POT-Creation-Date: 2021-01-09 10:58+0100\n"
+"POT-Creation-Date: 2022-02-26 17:24+0100\n"
 "PO-Revision-Date: 2007-07-20 12:24-0600\n"
 "Last-Translator: Kevin Scannell <kscanne@gmail.com>\n"
 "Language-Team: Irish <gaeilge-gnulinux@lists.sourceforge.net>\n"
@@ -101,36 +101,43 @@ msgstr "Earráid anaithnid"
 
 #: lib/getopt.c:278
 #, fuzzy, c-format
+#| msgid "%s: option `%s' is ambiguous\n"
 msgid "%s: option '%s%s' is ambiguous\n"
 msgstr "%s: Tá an rogha `%s' débhríoch\n"
 
 #: lib/getopt.c:284
 #, fuzzy, c-format
+#| msgid "%s: option `%s' is ambiguous\n"
 msgid "%s: option '%s%s' is ambiguous; possibilities:"
 msgstr "%s: Tá an rogha `%s' débhríoch\n"
 
 #: lib/getopt.c:319
 #, fuzzy, c-format
+#| msgid "%s: unrecognized option `%c%s'\n"
 msgid "%s: unrecognized option '%s%s'\n"
 msgstr "%s: rogha anaithnid `%c%s'\n"
 
 #: lib/getopt.c:345
 #, fuzzy, c-format
+#| msgid "%s: option `%c%s' doesn't allow an argument\n"
 msgid "%s: option '%s%s' doesn't allow an argument\n"
 msgstr "%s: ní cheadaítear argóint i ndiaidh na rogha `%c%s'\n"
 
 #: lib/getopt.c:360
 #, fuzzy, c-format
+#| msgid "%s: option `%s' requires an argument\n"
 msgid "%s: option '%s%s' requires an argument\n"
 msgstr "%s: tá argóint de dhíth i ndiaidh na rogha `%s'\n"
 
 #: lib/getopt.c:621
 #, fuzzy, c-format
+#| msgid "%s: invalid option -- %c\n"
 msgid "%s: invalid option -- '%c'\n"
 msgstr "%s: rogha neamhbhailí -- %c\n"
 
 #: lib/getopt.c:636 lib/getopt.c:682
 #, fuzzy, c-format
+#| msgid "%s: option requires an argument -- %c\n"
 msgid "%s: option requires an argument -- '%c'\n"
 msgstr "%s: tá argóint de dhíth i ndiaidh na rogha -- %c\n"
 
@@ -183,96 +190,97 @@ msgstr "`"
 msgid "'"
 msgstr "'"
 
-#: lib/regcomp.c:135
+#: lib/regcomp.c:122
 msgid "Success"
 msgstr "D'éirigh leis"
 
-#: lib/regcomp.c:138
+#: lib/regcomp.c:125
 msgid "No match"
 msgstr "Gan mheaitseáil"
 
-#: lib/regcomp.c:141
+#: lib/regcomp.c:128
 msgid "Invalid regular expression"
 msgstr "Slonn ionadaíochta neamhbhailí"
 
-#: lib/regcomp.c:144
+#: lib/regcomp.c:131
 msgid "Invalid collation character"
 msgstr "Carachtar neamhbhailí comhordaithe"
 
-#: lib/regcomp.c:147
+#: lib/regcomp.c:134
 msgid "Invalid character class name"
 msgstr "Ainm neamhbhailí ar aicme charachtar"
 
-#: lib/regcomp.c:150
+#: lib/regcomp.c:137
 msgid "Trailing backslash"
 msgstr "Cúlslais chun deiridh"
 
-#: lib/regcomp.c:153
+#: lib/regcomp.c:140
 msgid "Invalid back reference"
 msgstr "Cúltagairt neamhbhailí"
 
-#: lib/regcomp.c:156
+#: lib/regcomp.c:143
 #, fuzzy
+#| msgid "Unmatched [ or [^"
 msgid "Unmatched [, [^, [:, [., or [="
 msgstr "[ nó [^ corr"
 
-#: lib/regcomp.c:159
+#: lib/regcomp.c:146
 msgid "Unmatched ( or \\("
 msgstr "( nó \\( corr"
 
-#: lib/regcomp.c:162
+#: lib/regcomp.c:149
 msgid "Unmatched \\{"
 msgstr "\\{ corr"
 
-#: lib/regcomp.c:165
+#: lib/regcomp.c:152
 msgid "Invalid content of \\{\\}"
 msgstr "Ábhar neamhbhailí idir \\{ agus \\}"
 
-#: lib/regcomp.c:168
+#: lib/regcomp.c:155
 msgid "Invalid range end"
 msgstr "Deireadh raoin neamhbhailí"
 
-#: lib/regcomp.c:171
+#: lib/regcomp.c:158
 msgid "Memory exhausted"
 msgstr "Cuimhne ídithe"
 
-#: lib/regcomp.c:174
+#: lib/regcomp.c:161
 msgid "Invalid preceding regular expression"
 msgstr "Is neamhbhailí an slonn ionadaíochta roimhe seo"
 
-#: lib/regcomp.c:177
+#: lib/regcomp.c:164
 msgid "Premature end of regular expression"
 msgstr "Deireadh le slonn ionadaíochta gan choinne"
 
-#: lib/regcomp.c:180
+#: lib/regcomp.c:167
 msgid "Regular expression too big"
 msgstr "Slonn ionadaíochta rómhór"
 
-#: lib/regcomp.c:183
+#: lib/regcomp.c:170
 msgid "Unmatched ) or \\)"
 msgstr ") nó \\) corr"
 
-#: lib/regcomp.c:676
+#: lib/regcomp.c:650
 msgid "No previous regular expression"
 msgstr "Níl aon slonn ionadaíochta roimhe seo"
 
-#: lib/spawn-pipe.c:218 lib/spawn-pipe.c:221 lib/spawn-pipe.c:460
-#: lib/spawn-pipe.c:463
+#: lib/spawn-pipe.c:217 lib/spawn-pipe.c:220 lib/spawn-pipe.c:459
+#: lib/spawn-pipe.c:462
 #, c-format
 msgid "cannot create pipe"
 msgstr "ní féidir píopa a chruthú"
 
-#: lib/spawn-pipe.c:598 lib/wait-process.c:290 lib/wait-process.c:364
+#: lib/spawn-pipe.c:597 lib/wait-process.c:291 lib/wait-process.c:365
 #, c-format
 msgid "%s subprocess failed"
 msgstr "theip ar fhophróiseas %s"
 
-#: lib/wait-process.c:231 lib/wait-process.c:263 lib/wait-process.c:325
+#: lib/wait-process.c:232 lib/wait-process.c:264 lib/wait-process.c:326
 #, c-format
 msgid "%s subprocess"
 msgstr "fophróiseas %s"
 
-#: lib/wait-process.c:282 lib/wait-process.c:354
+#: lib/wait-process.c:283 lib/wait-process.c:355
 #, c-format
 msgid "%s subprocess got fatal signal %d"
 msgstr "fuair fophróiseas %s comhartha marfach %d"

@@ -20,7 +20,7 @@ from misc.wget_file import WgetFile
     - "no_proxy=mit.edu"
       - will match the domain and subdomains e.g. "www.mit.edu" or "www.subdomain.mit.edu" (Case #2)
       - will match the host "mit.edu" (Case #1)
-    - downside: can not match only the host
+    - downside: cannot match only the host
 """
 
 # Check whether the system supports translating localhost subdomains

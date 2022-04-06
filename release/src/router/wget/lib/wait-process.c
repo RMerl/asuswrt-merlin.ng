@@ -1,10 +1,10 @@
 /* Waiting for a subprocess to finish.
-   Copyright (C) 2001-2003, 2005-2021 Free Software Foundation, Inc.
+   Copyright (C) 2001-2003, 2005-2022 Free Software Foundation, Inc.
    Written by Bruno Haible <haible@clisp.cons.org>, 2001.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 3 of the License, or
+   the Free Software Foundation, either version 3 of the License, or
    (at your option) any later version.
 
    This program is distributed in the hope that it will be useful,
@@ -105,7 +105,7 @@ cleanup_slaves (void)
 /* The cleanup action, taking a signal argument.
    It gets called asynchronously.  */
 static _GL_ASYNC_SAFE void
-cleanup_slaves_action (int sig _GL_UNUSED)
+cleanup_slaves_action (_GL_UNUSED int sig)
 {
   cleanup_slaves ();
 }
@@ -121,7 +121,8 @@ register_slave_subprocess (pid_t child)
   if (!cleanup_slaves_registered)
     {
       atexit (cleanup_slaves);
-      at_fatal_signal (cleanup_slaves_action);
+      if (at_fatal_signal (cleanup_slaves_action) < 0)
+        xalloc_die ();
       cleanup_slaves_registered = true;
     }
 

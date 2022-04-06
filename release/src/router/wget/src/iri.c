@@ -1,5 +1,5 @@
 /* IRI related functions.
-   Copyright (C) 2008-2011, 2015, 2018-2021 Free Software Foundation,
+   Copyright (C) 2008-2011, 2015, 2018-2022 Free Software Foundation,
    Inc.
 
 This file is part of GNU Wget.
@@ -138,7 +138,7 @@ do_conversion (const char *tocode, const char *fromcode, char const *in_org, siz
   if (cd == (iconv_t)(-1))
     {
       logprintf (LOG_VERBOSE, _("Conversion from %s to %s isn't supported\n"),
-                 quote (fromcode), quote (tocode));
+                 quote_n (0, fromcode), quote_n (1, tocode));
       *out = NULL;
       return false;
     }

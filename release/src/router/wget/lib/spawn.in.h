@@ -1,30 +1,47 @@
 /* Definitions for POSIX spawn interface.
-   Copyright (C) 2000, 2003-2004, 2008-2021 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2003-2004, 2008-2022 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
-   This program is free software: you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 3 of the License, or
-   (at your option) any later version.
+   This file is free software: you can redistribute it and/or modify
+   it under the terms of the GNU Lesser General Public License as
+   published by the Free Software Foundation; either version 2.1 of the
+   License, or (at your option) any later version.
 
-   This program is distributed in the hope that it will be useful,
+   This file is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
+   GNU Lesser General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
+   You should have received a copy of the GNU Lesser General Public License
    along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
-
-#ifndef _@GUARD_PREFIX@_SPAWN_H
 
 #if __GNUC__ >= 3
 @PRAGMA_SYSTEM_HEADER@
 #endif
 @PRAGMA_COLUMNS@
 
+#if defined _GL_ALREADY_INCLUDING_SPAWN_H
+/* Special invocation convention:
+   On OS/2 kLIBC, <spawn.h> includes <signal.h>. Then <signal.h> ->
+   <pthread.h> -> <sched.h> -> <spawn.h> are included by GNULIB.
+   In this situation, struct sched_param is not yet defined.  */
+
+#@INCLUDE_NEXT@ @NEXT_SPAWN_H@
+
+#else
+
+#ifndef _@GUARD_PREFIX@_SPAWN_H
+/* Normal invocation convention.  */
+
 /* The include_next requires a split double-inclusion guard.  */
 #if @HAVE_SPAWN_H@
+
+# define _GL_ALREADY_INCLUDING_SPAWN_H
+
 # @INCLUDE_NEXT@ @NEXT_SPAWN_H@
+
+# define _GL_ALREADY_INCLUDING_SPAWN_H
+
 #endif
 
 #ifndef _@GUARD_PREFIX@_SPAWN_H
@@ -972,3 +989,4 @@ _GL_WARN_ON_USE (posix_spawn_file_actions_addfchdir,
 
 #endif /* _@GUARD_PREFIX@_SPAWN_H */
 #endif /* _@GUARD_PREFIX@_SPAWN_H */
+#endif

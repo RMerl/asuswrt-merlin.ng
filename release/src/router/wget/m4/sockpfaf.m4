@@ -1,5 +1,5 @@
-# sockpfaf.m4 serial 9
-dnl Copyright (C) 2004, 2006, 2009-2021 Free Software Foundation, Inc.
+# sockpfaf.m4 serial 10
+dnl Copyright (C) 2004, 2006, 2009-2022 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -13,7 +13,7 @@ dnl From Bruno Haible.
 
 AC_DEFUN([gl_SOCKET_FAMILIES],
 [
-  AC_REQUIRE([gl_HEADER_SYS_SOCKET])
+  AC_REQUIRE([gl_SYS_SOCKET_H])
   AC_CHECK_HEADERS_ONCE([netinet/in.h])
 
   AC_CACHE_CHECK([for IPv4 sockets],
@@ -60,7 +60,7 @@ AC_DEFUN([gl_SOCKET_FAMILIES],
 
 AC_DEFUN([gl_SOCKET_FAMILY_UNIX],
 [
-  AC_REQUIRE([gl_HEADER_SYS_SOCKET])
+  AC_REQUIRE([gl_SYS_SOCKET_H])
   AC_CHECK_HEADERS_ONCE([sys/un.h])
 
   AC_CACHE_CHECK([for UNIX domain sockets],

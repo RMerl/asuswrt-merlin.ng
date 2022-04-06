@@ -1,5 +1,5 @@
-# lib-ld.m4 serial 9
-dnl Copyright (C) 1996-2003, 2009-2021 Free Software Foundation, Inc.
+# lib-ld.m4 serial 10
+dnl Copyright (C) 1996-2003, 2009-2022 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -122,7 +122,7 @@ else
       *-*-aix*)
         AC_COMPILE_IFELSE(
           [AC_LANG_SOURCE(
-             [[#if defined __powerpc64__ || defined _ARCH_PPC64
+             [[#if defined __powerpc64__ || defined __LP64__
                 int ok;
                #else
                 error fail

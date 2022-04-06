@@ -1,5 +1,5 @@
 /* Download progress.
-   Copyright (C) 2001-2011, 2015, 2018-2021 Free Software Foundation,
+   Copyright (C) 2001-2011, 2015, 2018-2022 Free Software Foundation,
    Inc.
 
 This file is part of GNU Wget.
@@ -485,7 +485,7 @@ dot_finish (void *progress, double dltime)
 #else
   print_row_stats (dp, dltime, true);
 #endif
-  logputs (LOG_VERBOSE, "\n\n");
+  logputs (LOG_PROGRESS, "\n\n");
   log_set_flush (false);
 
   xfree (dp);

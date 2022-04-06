@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017-2021 Free Software Foundation, Inc.
+ * Copyright (c) 2017-2022 Free Software Foundation, Inc.
  *
  * This file is part of GNU Wget.
  *
@@ -19,6 +19,12 @@
 
 #include <stddef.h> // size_t
 #include <stdint.h> // uint8_t
+
+#if defined __clang__ || __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 5)
+	#pragma GCC diagnostic ignored "-Wunused"
+	#pragma GCC diagnostic ignored "-Wunused-parameter"
+	#pragma GCC diagnostic ignored "-Wpedantic"
+#endif
 
 #define CLOSE_STDERR \
 	int bak = dup(STDERR_FILENO); \

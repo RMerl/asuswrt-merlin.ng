@@ -1,6 +1,6 @@
-# canonicalize.m4 serial 35
+# canonicalize.m4 serial 37
 
-dnl Copyright (C) 2003-2007, 2009-2021 Free Software Foundation, Inc.
+dnl Copyright (C) 2003-2007, 2009-2022 Free Software Foundation, Inc.
 
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
@@ -78,68 +78,106 @@ AC_DEFUN([gl_CANONICALIZE_LGPL_SEPARATE],
 # so is the latter.
 AC_DEFUN([gl_FUNC_REALPATH_WORKS],
 [
-  AC_CHECK_FUNCS_ONCE([realpath])
+  AC_CHECK_FUNCS_ONCE([realpath lstat])
   AC_REQUIRE([AC_CANONICAL_HOST]) dnl for cross-compiles
   AC_CACHE_CHECK([whether realpath works], [gl_cv_func_realpath_works], [
     rm -rf conftest.a conftest.d
     touch conftest.a
+    # Assume that if we have lstat, we can also check symlinks.
+    if test $ac_cv_func_lstat = yes; then
+      ln -s conftest.a conftest.l
+    fi
     mkdir conftest.d
     AC_RUN_IFELSE([
       AC_LANG_PROGRAM([[
         ]GL_NOCRASH[
+        #include <errno.h>
         #include <stdlib.h>
         #include <string.h>
       ]], [[
         int result = 0;
+        /* This test fails on Solaris 10.  */
         {
           char *name = realpath ("conftest.a", NULL);
           if (!(name && *name == '/'))
             result |= 1;
           free (name);
         }
+        /* This test fails on older versions of Cygwin.  */
         {
           char *name = realpath ("conftest.b/../conftest.a", NULL);
           if (name != NULL)
             result |= 2;
           free (name);
         }
+        /* This test fails on Cygwin 2.9.  */
+        #if HAVE_LSTAT
         {
-          char *name = realpath ("conftest.a/", NULL);
-          if (name != NULL)
+          char *name = realpath ("conftest.l/../conftest.a", NULL);
+          if (name != NULL || errno != ENOTDIR)
             result |= 4;
           free (name);
         }
+        #endif
+        /* This test fails on Mac OS X 10.13, OpenBSD 6.0.  */
+        {
+          char *name = realpath ("conftest.a/", NULL);
+          if (name != NULL)
+            result |= 8;
+          free (name);
+        }
+        /* This test fails on AIX 7, Solaris 10.  */
         {
           char *name1 = realpath (".", NULL);
           char *name2 = realpath ("conftest.d//./..", NULL);
           if (! name1 || ! name2 || strcmp (name1, name2))
-            result |= 8;
+            result |= 16;
           free (name1);
           free (name2);
         }
+        #ifdef __linux__
+        /* On Linux, // is the same as /. See also double-slash-root.m4.
+           realpath() should respect this.
+           This test fails on musl libc 1.2.2.  */
+        {
+          char *name = realpath ("//", NULL);
+          if (! name || strcmp (name, "/"))
+            result |= 32;
+          free (name);
+        }
+        #endif
         return result;
       ]])
      ],
      [gl_cv_func_realpath_works=yes],
-     [gl_cv_func_realpath_works=no],
+     [case $? in
+        32) gl_cv_func_realpath_works=nearly ;;
+        *)  gl_cv_func_realpath_works=no ;;
+      esac
+     ],
      [case "$host_os" in
                        # Guess yes on glibc systems.
         *-gnu* | gnu*) gl_cv_func_realpath_works="guessing yes" ;;
-                       # Guess yes on musl systems.
-        *-musl*)       gl_cv_func_realpath_works="guessing yes" ;;
+                       # Guess 'nearly' on musl systems.
+        *-musl*)       gl_cv_func_realpath_works="guessing nearly" ;;
+                       # Guess no on Cygwin.
+        cygwin*)       gl_cv_func_realpath_works="guessing no" ;;
                        # Guess no on native Windows.
         mingw*)        gl_cv_func_realpath_works="guessing no" ;;
                        # If we don't know, obey --enable-cross-guesses.
         *)             gl_cv_func_realpath_works="$gl_cross_guess_normal" ;;
       esac
      ])
-    rm -rf conftest.a conftest.d
+    rm -rf conftest.a conftest.l conftest.d
   ])
   case "$gl_cv_func_realpath_works" in
     *yes)
-      AC_DEFINE([FUNC_REALPATH_WORKS], [1], [Define to 1 if realpath()
-        can malloc memory, always gives an absolute path, and handles
-        trailing slash correctly.])
+      AC_DEFINE([FUNC_REALPATH_WORKS], [1],
+        [Define to 1 if realpath() can malloc memory, always gives an absolute path, and handles leading slashes and a trailing slash correctly.])
+      ;;
+    *nearly)
+      AC_DEFINE([FUNC_REALPATH_NEARLY_WORKS], [1],
+        [Define to 1 if realpath() can malloc memory, always gives an absolute path, and handles a trailing slash correctly.])
       ;;
   esac
 ])

@@ -1,17 +1,17 @@
 /* Searching in a string.
-   Copyright (C) 2008-2021 Free Software Foundation, Inc.
+   Copyright (C) 2008-2022 Free Software Foundation, Inc.
 
-   This program is free software: you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 3 of the License, or
-   (at your option) any later version.
+   This file is free software: you can redistribute it and/or modify
+   it under the terms of the GNU Lesser General Public License as
+   published by the Free Software Foundation; either version 2.1 of the
+   License, or (at your option) any later version.
 
-   This program is distributed in the hope that it will be useful,
+   This file is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
+   GNU Lesser General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
+   You should have received a copy of the GNU Lesser General Public License
    along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
 #include <config.h>
@@ -19,68 +19,57 @@
 /* Specification.  */
 #include <string.h>
 
+/* A function definition is only needed if HAVE_RAWMEMCHR is not defined.  */
+#if !HAVE_RAWMEMCHR
+
+# include <limits.h>
+# include <stdalign.h>
+# include <stdint.h>
+
+# include "verify.h"
+
 /* Find the first occurrence of C in S.  */
 void *
 rawmemchr (const void *s, int c_in)
 {
-  /* On 32-bit hardware, choosing longword to be a 32-bit unsigned
-     long instead of a 64-bit uintmax_t tends to give better
-     performance.  On 64-bit hardware, unsigned long is generally 64
-     bits already.  Change this typedef to experiment with
-     performance.  */
-  typedef unsigned long int longword;
+  /* Change this typedef to experiment with performance.  */
+  typedef uintptr_t longword;
+  /* If you change the "uintptr_t", you should change UINTPTR_WIDTH to match.
+     This verifies that the type does not have padding bits.  */
+  verify (UINTPTR_WIDTH == UCHAR_WIDTH * sizeof (longword));
 
   const unsigned char *char_ptr;
-  const longword *longword_ptr;
-  longword repeated_one;
-  longword repeated_c;
-  unsigned char c;
-
-  c = (unsigned char) c_in;
+  unsigned char c = c_in;
 
   /* Handle the first few bytes by reading one byte at a time.
      Do this until CHAR_PTR is aligned on a longword boundary.  */
   for (char_ptr = (const unsigned char *) s;
-       (size_t) char_ptr % sizeof (longword) != 0;
+       (uintptr_t) char_ptr % alignof (longword) != 0;
        ++char_ptr)
     if (*char_ptr == c)
       return (void *) char_ptr;
 
-  longword_ptr = (const longword *) char_ptr;
-
-  /* All these elucidatory comments refer to 4-byte longwords,
-     but the theory applies equally well to any size longwords.  */
+  longword const *longword_ptr = s = char_ptr;
 
   /* Compute auxiliary longword values:
      repeated_one is a value which has a 1 in every byte.
      repeated_c has c in every byte.  */
-  repeated_one = 0x01010101;
-  repeated_c = c | (c << 8);
-  repeated_c |= repeated_c << 16;
-  if (0xffffffffU < (longword) -1)
-    {
-      repeated_one |= repeated_one << 31 << 1;
-      repeated_c |= repeated_c << 31 << 1;
-      if (8 < sizeof (longword))
-        {
-          size_t i;
-
-          for (i = 64; i < sizeof (longword) * 8; i *= 2)
-            {
-              repeated_one |= repeated_one << i;
-              repeated_c |= repeated_c << i;
-            }
-        }
-    }
+  longword repeated_one = (longword) -1 / UCHAR_MAX;
+  longword repeated_c = repeated_one * c;
+  longword repeated_hibit = repeated_one * (UCHAR_MAX / 2 + 1);
 
   /* Instead of the traditional loop which tests each byte, we will
-     test a longword at a time.  The tricky part is testing if *any of
-     the four* bytes in the longword in question are equal to NUL or
+     test a longword at a time.  The tricky part is testing if any of
+     the bytes in the longword in question are equal to
      c.  We first use an xor with repeated_c.  This reduces the task
-     to testing whether *any of the four* bytes in longword1 is zero.
+     to testing whether any of the bytes in longword1 is zero.
+
+     (The following comments assume 8-bit bytes, as POSIX requires;
+     the code's use of UCHAR_MAX should work even if bytes have more
+     than 8 bits.)
 
      We compute tmp =
-       ((longword1 - repeated_one) & ~longword1) & (repeated_one << 7).
+       ((longword1 - repeated_one) & ~longword1) & (repeated_one * 0x80).
      That is, we perform the following operations:
        1. Subtract repeated_one.
        2. & ~longword1.
@@ -114,23 +103,23 @@ rawmemchr (const void *s, int c_in)
     {
       longword longword1 = *longword_ptr ^ repeated_c;
 
-      if ((((longword1 - repeated_one) & ~longword1)
-           & (repeated_one << 7)) != 0)
+      if ((((longword1 - repeated_one) & ~longword1) & repeated_hibit) != 0)
         break;
       longword_ptr++;
     }
 
-  char_ptr = (const unsigned char *) longword_ptr;
+  char_ptr = s = longword_ptr;
 
   /* At this point, we know that one of the sizeof (longword) bytes
-     starting at char_ptr is == c.  On little-endian machines, we
+     starting at char_ptr is == c.  If we knew endianness, we
      could determine the first such byte without any further memory
      accesses, just by looking at the tmp result from the last loop
-     iteration.  But this does not work on big-endian machines.
-     Choose code that works in both cases.  */
+     iteration.  However, the following simple and portable code does
+     not attempt this potential optimization.  */
 
-  char_ptr = (unsigned char *) longword_ptr;
   while (*char_ptr != c)
     char_ptr++;
   return (void *) char_ptr;
 }
+
+#endif

@@ -1,18 +1,18 @@
 /* Type-safe arrays which grow dynamically.
-   Copyright (C) 2017-2021 Free Software Foundation, Inc.
+   Copyright (C) 2017-2022 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
-   modify it under the terms of the GNU General Public
+   modify it under the terms of the GNU Lesser General Public
    License as published by the Free Software Foundation; either
-   version 3 of the License, or (at your option) any later version.
+   version 2.1 of the License, or (at your option) any later version.
 
    The GNU C Library is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   General Public License for more details.
+   Lesser General Public License for more details.
 
-   You should have received a copy of the GNU General Public
+   You should have received a copy of the GNU Lesser General Public
    License along with the GNU C Library; if not, see
    <https://www.gnu.org/licenses/>.  */
 
@@ -192,7 +192,7 @@ DYNARRAY_NAME (free__array__) (struct DYNARRAY_STRUCT *list)
 
 /* Initialize a dynamic array object.  This must be called before any
    use of the object.  */
-__nonnull ((1))
+__attribute_nonnull__ ((1))
 static void
 DYNARRAY_NAME (init) (struct DYNARRAY_STRUCT *list)
 {
@@ -202,7 +202,7 @@ DYNARRAY_NAME (init) (struct DYNARRAY_STRUCT *list)
 }
 
 /* Deallocate the dynamic array and its elements.  */
-__attribute_maybe_unused__ __nonnull ((1))
+__attribute_maybe_unused__ __attribute_nonnull__ ((1))
 static void
 DYNARRAY_FREE (struct DYNARRAY_STRUCT *list)
 {
@@ -213,7 +213,7 @@ DYNARRAY_FREE (struct DYNARRAY_STRUCT *list)
 }
 
 /* Return true if the dynamic array is in an error state.  */
-__nonnull ((1))
+__attribute_nonnull__ ((1))
 static inline bool
 DYNARRAY_NAME (has_failed) (const struct DYNARRAY_STRUCT *list)
 {
@@ -222,7 +222,7 @@ DYNARRAY_NAME (has_failed) (const struct DYNARRAY_STRUCT *list)
 
 /* Mark the dynamic array as failed.  All elements are deallocated as
    a side effect.  */
-__nonnull ((1))
+__attribute_nonnull__ ((1))
 static void
 DYNARRAY_NAME (mark_failed) (struct DYNARRAY_STRUCT *list)
 {
@@ -236,7 +236,7 @@ DYNARRAY_NAME (mark_failed) (struct DYNARRAY_STRUCT *list)
 
 /* Return the number of elements which have been added to the dynamic
    array.  */
-__nonnull ((1))
+__attribute_nonnull__ ((1))
 static inline size_t
 DYNARRAY_NAME (size) (const struct DYNARRAY_STRUCT *list)
 {
@@ -245,7 +245,7 @@ DYNARRAY_NAME (size) (const struct DYNARRAY_STRUCT *list)
 
 /* Return a pointer to the array element at INDEX.  Terminate the
    process if INDEX is out of bounds.  */
-__nonnull ((1))
+__attribute_nonnull__ ((1))
 static inline DYNARRAY_ELEMENT *
 DYNARRAY_NAME (at) (struct DYNARRAY_STRUCT *list, size_t index)
 {
@@ -257,7 +257,7 @@ DYNARRAY_NAME (at) (struct DYNARRAY_STRUCT *list, size_t index)
 /* Return a pointer to the first array element, if any.  For a
    zero-length array, the pointer can be NULL even though the dynamic
    array has not entered the failure state.  */
-__nonnull ((1))
+__attribute_nonnull__ ((1))
 static inline DYNARRAY_ELEMENT *
 DYNARRAY_NAME (begin) (struct DYNARRAY_STRUCT *list)
 {
@@ -267,7 +267,7 @@ DYNARRAY_NAME (begin) (struct DYNARRAY_STRUCT *list)
 /* Return a pointer one element past the last array element.  For a
    zero-length array, the pointer can be NULL even though the dynamic
    array has not entered the failure state.  */
-__nonnull ((1))
+__attribute_nonnull__ ((1))
 static inline DYNARRAY_ELEMENT *
 DYNARRAY_NAME (end) (struct DYNARRAY_STRUCT *list)
 {
@@ -294,7 +294,7 @@ DYNARRAY_NAME (add__) (struct DYNARRAY_STRUCT *list, DYNARRAY_ELEMENT item)
 /* Add ITEM at the end of the array, enlarging it by one element.
    Mark *LIST as failed if the dynamic array allocation size cannot be
    increased.  */
-__nonnull ((1))
+__attribute_nonnull__ ((1))
 static inline void
 DYNARRAY_NAME (add) (struct DYNARRAY_STRUCT *list, DYNARRAY_ELEMENT item)
 {
@@ -348,7 +348,8 @@ DYNARRAY_NAME (emplace__) (struct DYNARRAY_STRUCT *list)
 /* Allocate a place for a new element in *LIST and return a pointer to
    it.  The pointer can be NULL if the dynamic array cannot be
    enlarged due to a memory allocation failure.  */
-__attribute_maybe_unused__ __attribute_warn_unused_result__ __nonnull ((1))
+__attribute_maybe_unused__ __attribute_warn_unused_result__
+__attribute_nonnull__ ((1))
 static
 /* Avoid inlining with the larger initialization code.  */
 #if !(defined (DYNARRAY_ELEMENT_INIT) || defined (DYNARRAY_ELEMENT_FREE))
@@ -372,7 +373,7 @@ DYNARRAY_NAME (emplace) (struct DYNARRAY_STRUCT *list)
    existing size, new elements are added (which can be initialized).
    Otherwise, the list is truncated, and elements are freed.  Return
    false on memory allocation failure (and mark *LIST as failed).  */
-__attribute_maybe_unused__ __nonnull ((1))
+__attribute_maybe_unused__ __attribute_nonnull__ ((1))
 static bool
 DYNARRAY_NAME (resize) (struct DYNARRAY_STRUCT *list, size_t size)
 {
@@ -417,7 +418,7 @@ DYNARRAY_NAME (resize) (struct DYNARRAY_STRUCT *list, size_t size)
 }
 
 /* Remove the last element of LIST if it is present.  */
-__attribute_maybe_unused__ __nonnull ((1))
+__attribute_maybe_unused__ __attribute_nonnull__ ((1))
 static void
 DYNARRAY_NAME (remove_last) (struct DYNARRAY_STRUCT *list)
 {
@@ -434,7 +435,7 @@ DYNARRAY_NAME (remove_last) (struct DYNARRAY_STRUCT *list)
 
 /* Remove all elements from the list.  The elements are freed, but the
    list itself is not.  */
-__attribute_maybe_unused__ __nonnull ((1))
+__attribute_maybe_unused__ __attribute_nonnull__ ((1))
 static void
 DYNARRAY_NAME (clear) (struct DYNARRAY_STRUCT *list)
 {
@@ -452,7 +453,8 @@ DYNARRAY_NAME (clear) (struct DYNARRAY_STRUCT *list)
    stored in *RESULT if LIST refers to an empty list.  On success, the
    pointer in *RESULT is heap-allocated and must be deallocated using
    free.  */
-__attribute_maybe_unused__ __attribute_warn_unused_result__ __nonnull ((1, 2))
+__attribute_maybe_unused__ __attribute_warn_unused_result__
+__attribute_nonnull__ ((1, 2))
 static bool
 DYNARRAY_NAME (finalize) (struct DYNARRAY_STRUCT *list,
                           DYNARRAY_FINAL_TYPE *result)
@@ -483,7 +485,8 @@ DYNARRAY_NAME (finalize) (struct DYNARRAY_STRUCT *list,
    have a sentinel at the end).  If LENGTHP is not NULL, the array
    length is written to *LENGTHP.  *LIST is re-initialized and can be
    reused.  */
-__attribute_maybe_unused__ __attribute_warn_unused_result__ __nonnull ((1))
+__attribute_maybe_unused__ __attribute_warn_unused_result__
+__attribute_nonnull__ ((1))
 static DYNARRAY_ELEMENT *
 DYNARRAY_NAME (finalize) (struct DYNARRAY_STRUCT *list, size_t *lengthp)
 {

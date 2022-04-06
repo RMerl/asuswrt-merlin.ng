@@ -3,7 +3,7 @@
 
 # Generate a release announcement message.
 
-# Copyright (C) 2002-2021 Free Software Foundation, Inc.
+# Copyright (C) 2002-2022 Free Software Foundation, Inc.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -35,11 +35,13 @@
 eval 'exec perl -wSx "$0" "$@"'
      if 0;
 
-my $VERSION = '2020-05-10 16:13'; # UTC
+my $VERSION = '2022-01-27 18:48'; # UTC
 # The definition above must lie within the first 8 lines in order
 # for the Emacs time-stamp write hook (at end) to update it.
 # If you change this file with Emacs, please let the write hook
 # do its job.  Otherwise, update this string manually.
+
+my $copyright_year = '2022';
 
 use strict;
 use Getopt::Long;
@@ -49,12 +51,6 @@ use POSIX qw(strftime);
 
 my %valid_release_types = map {$_ => 1} qw (alpha beta stable);
 my @archive_suffixes = qw (tar.gz tar.bz2 tar.lz tar.lzma tar.xz);
-my %digest_classes =
-  (
-   'md5' => (eval { require Digest::MD5; } and 'Digest::MD5'),
-   'sha1' => ((eval { require Digest::SHA; } and 'Digest::SHA')
-              or (eval { require Digest::SHA1; } and 'Digest::SHA1'))
-  );
 my $srcdir = '.';
 
 sub usage ($)
@@ -94,7 +90,7 @@ The following are optional:
                                 VERSION is the result of running git describe
                                 in the gnulib source directory.
                                 required if gnulib is in TOOL_LIST.
-   --no-print-checksums         do not emit MD5 or SHA1 checksums
+   --no-print-checksums         do not emit SHA1 or SHA256 checksums
    --archive-suffix=SUF         add SUF to the list of archive suffixes
    --mail-headers=HEADERS       a space-separated list of mail headers, e.g.,
                                 To: x\@example.com Cc: y-announce\@example.com,...
@@ -161,7 +157,7 @@ sub print_locations ($\@\%@)
 
 =item C<print_checksums (@file)
 
-Print the MD5 and SHA1 signature section for each C<@file>.
+Print the SHA1 and SHA256 signature section for each C<@file>.
 
 =cut
 
@@ -169,23 +165,18 @@ sub print_checksums (@)
 {
   my (@file) = @_;
 
-  print "Here are the MD5 and SHA1 checksums:\n";
+  print "Here are the SHA1 and SHA256 checksums:\n";
   print "\n";
 
-  foreach my $meth (qw (md5 sha1))
+  use Digest::file qw(digest_file_hex digest_file_base64);
+
+  foreach my $f (@file)
     {
-      my $class = $digest_classes{$meth} or next;
-      foreach my $f (@file)
-        {
-          open IN, '<', $f
-            or die "$ME: $f: cannot open for reading: $!\n";
-          binmode IN;
-          my $dig = $class->new->addfile(*IN)->hexdigest;
-          close IN;
-          print "$dig  $f\n";
-        }
+      print digest_file_hex($f, "SHA-1"), "  $f\n";
+      print digest_file_base64($f, "SHA-256"), "  $f\n";
     }
-  print "\n";
+  print "\nThe SHA256 checksum is base64 encoded, instead of the\n";
+  print "hexadecimal encoding that most checksum tools default to.\n\n";
 }
 
 =item C<print_news_deltas ($news_file, $prev_version, $curr_version)
@@ -413,7 +404,19 @@ sub get_tool_versions ($$)
      'archive-suffix=s'   => \@archive_suffixes,
 
      help => sub { usage 0 },
-     version => sub { print "$ME version $VERSION\n"; exit },
+     version =>
+       sub
+       {
+         print "$ME version $VERSION\n";
+         print "Copyright (C) $copyright_year Free Software Foundation, Inc.\n";
+         print "License GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>.\n"
+             . "This is free software: you are free to change and redistribute it.\n"
+             . "There is NO WARRANTY, to the extent permitted by law.\n";
+         print "\n";
+         my $author = "Jim Meyering";
+         print "Written by $author.\n";
+         exit
+       },
     ) or usage 1;
 
   my $fail = 0;

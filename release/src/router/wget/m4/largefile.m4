@@ -1,7 +1,7 @@
 # Enable large files on systems where this is not the default.
 # Enable support for files on Linux file systems with 64-bit inode numbers.
 
-# Copyright 1992-1996, 1998-2021 Free Software Foundation, Inc.
+# Copyright 1992-1996, 1998-2022 Free Software Foundation, Inc.
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
 # with or without modifications, as long as this notice is preserved.
@@ -22,7 +22,8 @@ AC_DEFUN([gl_SET_LARGEFILE_SOURCE],
   esac
 ])
 
-# The following implementation works around a problem in autoconf <= 2.69;
+# Work around a problem in Autoconf through at least 2.71 on glibc 2.34+
+# with _TIME_BITS.  Also, work around a problem in autoconf <= 2.69:
 # AC_SYS_LARGEFILE does not configure for large inodes on Mac OS X 10.5,
 # or configures them incorrectly in some cases.
 m4_version_prereq([2.70], [], [
@@ -40,6 +41,7 @@ m4_define([_AC_SYS_LARGEFILE_TEST_INCLUDES],
                        && LARGE_OFF_T % 2147483647 == 1)
                       ? 1 : -1]];[]dnl
 ])
+])# m4_version_prereq 2.70
 
 
 # _AC_SYS_LARGEFILE_MACRO_VALUE(C-MACRO, VALUE,
@@ -54,7 +56,8 @@ m4_define([_AC_SYS_LARGEFILE_MACRO_VALUE],
     [AC_LANG_PROGRAM([$5], [$6])],
     [$3=no; break])
   m4_ifval([$6], [AC_LINK_IFELSE], [AC_COMPILE_IFELSE])(
-    [AC_LANG_PROGRAM([#define $1 $2
+    [AC_LANG_PROGRAM([#undef $1
+#define $1 $2
 $5], [$6])],
     [$3=$2; break])
   $3=unknown
@@ -80,9 +83,8 @@ rm -rf conftest*[]dnl
 AC_DEFUN([AC_SYS_LARGEFILE],
 [AC_ARG_ENABLE(largefile,
                [  --disable-largefile     omit support for large files])
-if test "$enable_largefile" != no; then
-
-  AC_CACHE_CHECK([for special C compiler options needed for large files],
+AS_IF([test "$enable_largefile" != no],
+ [AC_CACHE_CHECK([for special C compiler options needed for large files],
     ac_cv_sys_largefile_CC,
     [ac_cv_sys_largefile_CC=no
      if test "$GCC" != yes; then
@@ -107,15 +109,15 @@ if test "$enable_largefile" != no; then
     ac_cv_sys_file_offset_bits,
     [Number of bits in a file offset, on hosts where this is settable.],
     [_AC_SYS_LARGEFILE_TEST_INCLUDES])
-  if test $ac_cv_sys_file_offset_bits = unknown; then
-    _AC_SYS_LARGEFILE_MACRO_VALUE(_LARGE_FILES, 1,
-      ac_cv_sys_large_files,
-      [Define for large files, on AIX-style hosts.],
-      [_AC_SYS_LARGEFILE_TEST_INCLUDES])
-  fi
-fi
+  AS_CASE([$ac_cv_sys_file_offset_bits],
+    [unknown],
+      [_AC_SYS_LARGEFILE_MACRO_VALUE([_LARGE_FILES], [1],
+         [ac_cv_sys_large_files],
+         [Define for large files, on AIX-style hosts.],
+         [_AC_SYS_LARGEFILE_TEST_INCLUDES])],
+    [64],
+      [gl_YEAR2038_BODY([])])])
 ])# AC_SYS_LARGEFILE
-])# m4_version_prereq 2.70
 
 # Enable large files on systems where this is implemented by Gnulib, not by the
 # system headers.

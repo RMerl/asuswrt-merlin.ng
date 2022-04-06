@@ -1,11 +1,12 @@
-# stdio_h.m4 serial 52
-dnl Copyright (C) 2007-2021 Free Software Foundation, Inc.
+# stdio_h.m4 serial 59
+dnl Copyright (C) 2007-2022 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
 
-AC_DEFUN([gl_STDIO_H],
+AC_DEFUN_ONCE([gl_STDIO_H],
 [
+  AC_REQUIRE([gl_STDIO_H_DEFAULTS])
   AH_VERBATIM([MINGW_ANSI_STDIO],
 [/* Use GNU style printf and scanf.  */
 #ifndef __USE_MINGW_ANSI_STDIO
@@ -13,7 +14,6 @@ AC_DEFUN([gl_STDIO_H],
 #endif
 ])
   AC_DEFINE([__USE_MINGW_ANSI_STDIO])
-  AC_REQUIRE([gl_STDIO_H_DEFAULTS])
   gl_NEXT_HEADERS([stdio.h])
 
   dnl Determine whether __USE_MINGW_ANSI_STDIO makes printf and
@@ -40,64 +40,32 @@ AC_DEFUN([gl_STDIO_H],
        attribute "__gnu_printf__" instead of "__printf__"])
   fi
 
-  dnl No need to create extra modules for these functions. Everyone who uses
-  dnl <stdio.h> likely needs them.
-  GNULIB_FSCANF=1
-  gl_MODULE_INDICATOR([fscanf])
-  GNULIB_SCANF=1
-  gl_MODULE_INDICATOR([scanf])
-  GNULIB_FGETC=1
-  GNULIB_GETC=1
-  GNULIB_GETCHAR=1
-  GNULIB_FGETS=1
-  GNULIB_FREAD=1
-  dnl This ifdef is necessary to avoid an error "missing file lib/stdio-read.c"
-  dnl "expected source file, required through AC_LIBSOURCES, not found". It is
-  dnl also an optimization, to avoid performing a configure check whose result
-  dnl is not used. But it does not make the test of GNULIB_STDIO_H_NONBLOCKING
-  dnl or GNULIB_NONBLOCKING redundant.
+  dnl This ifdef is an optimization, to avoid performing a configure check whose
+  dnl result is not used. But it does not make the test of
+  dnl GNULIB_STDIO_H_NONBLOCKING or GNULIB_NONBLOCKING redundant.
   m4_ifdef([gl_NONBLOCKING_IO], [
     gl_NONBLOCKING_IO
     if test $gl_cv_have_nonblocking != yes; then
       REPLACE_STDIO_READ_FUNCS=1
-      AC_LIBOBJ([stdio-read])
     fi
   ])
 
-  dnl No need to create extra modules for these functions. Everyone who uses
-  dnl <stdio.h> likely needs them.
-  GNULIB_FPRINTF=1
-  GNULIB_PRINTF=1
-  GNULIB_VFPRINTF=1
-  GNULIB_VPRINTF=1
-  GNULIB_FPUTC=1
-  GNULIB_PUTC=1
-  GNULIB_PUTCHAR=1
-  GNULIB_FPUTS=1
-  GNULIB_PUTS=1
-  GNULIB_FWRITE=1
-  dnl This ifdef is necessary to avoid an error "missing file lib/stdio-write.c"
-  dnl "expected source file, required through AC_LIBSOURCES, not found". It is
-  dnl also an optimization, to avoid performing a configure check whose result
-  dnl is not used. But it does not make the test of GNULIB_STDIO_H_SIGPIPE or
-  dnl GNULIB_SIGPIPE redundant.
+  dnl This ifdef is an optimization, to avoid performing a configure check whose
+  dnl result is not used. But it does not make the test of
+  dnl GNULIB_STDIO_H_SIGPIPE or GNULIB_SIGPIPE redundant.
   m4_ifdef([gl_SIGNAL_SIGPIPE], [
     gl_SIGNAL_SIGPIPE
     if test $gl_cv_header_signal_h_SIGPIPE != yes; then
       REPLACE_STDIO_WRITE_FUNCS=1
-      AC_LIBOBJ([stdio-write])
     fi
   ])
-  dnl This ifdef is necessary to avoid an error "missing file lib/stdio-write.c"
-  dnl "expected source file, required through AC_LIBSOURCES, not found". It is
-  dnl also an optimization, to avoid performing a configure check whose result
-  dnl is not used. But it does not make the test of GNULIB_STDIO_H_NONBLOCKING
-  dnl or GNULIB_NONBLOCKING redundant.
+  dnl This ifdef is an optimization, to avoid performing a configure check whose
+  dnl result is not used. But it does not make the test of
+  dnl GNULIB_STDIO_H_NONBLOCKING or GNULIB_NONBLOCKING redundant.
   m4_ifdef([gl_NONBLOCKING_IO], [
     gl_NONBLOCKING_IO
     if test $gl_cv_have_nonblocking != yes; then
       REPLACE_STDIO_WRITE_FUNCS=1
-      AC_LIBOBJ([stdio-write])
     fi
   ])
 
@@ -116,77 +84,93 @@ AC_DEFUN([gl_STDIO_H],
   fi
 ])
 
+# gl_STDIO_MODULE_INDICATOR([modulename])
+# sets the shell variable that indicates the presence of the given module
+# to a C preprocessor expression that will evaluate to 1.
+# This macro invocation must not occur in macros that are AC_REQUIREd.
 AC_DEFUN([gl_STDIO_MODULE_INDICATOR],
 [
-  dnl Use AC_REQUIRE here, so that the default settings are expanded once only.
-  AC_REQUIRE([gl_STDIO_H_DEFAULTS])
+  dnl Ensure to expand the default settings once only.
+  gl_STDIO_H_REQUIRE_DEFAULTS
   gl_MODULE_INDICATOR_SET_VARIABLE([$1])
   dnl Define it also as a C macro, for the benefit of the unit tests.
   gl_MODULE_INDICATOR_FOR_TESTS([$1])
 ])
 
+# Initializes the default values for AC_SUBSTed shell variables.
+# This macro must not be AC_REQUIREd.  It must only be invoked, and only
+# outside of macros or in macros that are not AC_REQUIREd.
+AC_DEFUN([gl_STDIO_H_REQUIRE_DEFAULTS],
+[
+  m4_defun(GL_MODULE_INDICATOR_PREFIX[_STDIO_H_MODULE_INDICATOR_DEFAULTS], [
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_DPRINTF])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_FCLOSE])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_FDOPEN])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_FFLUSH])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_FGETC])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_FGETS])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_FOPEN])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_FOPEN_GNU])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_FPRINTF])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_FPRINTF_POSIX])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_FPURGE])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_FPUTC])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_FPUTS])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_FREAD])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_FREOPEN])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_FSCANF])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_FSEEK])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_FSEEKO])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_FTELL])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_FTELLO])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_FWRITE])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_GETC])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_GETCHAR])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_GETDELIM])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_GETLINE])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_OBSTACK_PRINTF])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_OBSTACK_PRINTF_POSIX])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_PCLOSE])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_PERROR])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_POPEN])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_PRINTF])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_PRINTF_POSIX])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_PUTC])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_PUTCHAR])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_PUTS])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_REMOVE])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_RENAME])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_RENAMEAT])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_SCANF])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_SNPRINTF])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_SPRINTF_POSIX])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_STDIO_H_NONBLOCKING])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_STDIO_H_SIGPIPE])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_TMPFILE])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_VASPRINTF])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_VFSCANF])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_VSCANF])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_VDPRINTF])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_VFPRINTF])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_VFPRINTF_POSIX])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_VPRINTF])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_VPRINTF_POSIX])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_VSNPRINTF])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_VSPRINTF_POSIX])
+    dnl Support Microsoft deprecated alias function names by default.
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_MDA_FCLOSEALL], [1])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_MDA_FDOPEN], [1])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_MDA_FILENO], [1])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_MDA_GETW], [1])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_MDA_PUTW], [1])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_MDA_TEMPNAM], [1])
+  ])
+  m4_require(GL_MODULE_INDICATOR_PREFIX[_STDIO_H_MODULE_INDICATOR_DEFAULTS])
+  AC_REQUIRE([gl_STDIO_H_DEFAULTS])
+])
+
 AC_DEFUN([gl_STDIO_H_DEFAULTS],
 [
-  GNULIB_DPRINTF=0;              AC_SUBST([GNULIB_DPRINTF])
-  GNULIB_FCLOSE=0;               AC_SUBST([GNULIB_FCLOSE])
-  GNULIB_FDOPEN=0;               AC_SUBST([GNULIB_FDOPEN])
-  GNULIB_FFLUSH=0;               AC_SUBST([GNULIB_FFLUSH])
-  GNULIB_FGETC=0;                AC_SUBST([GNULIB_FGETC])
-  GNULIB_FGETS=0;                AC_SUBST([GNULIB_FGETS])
-  GNULIB_FOPEN=0;                AC_SUBST([GNULIB_FOPEN])
-  GNULIB_FPRINTF=0;              AC_SUBST([GNULIB_FPRINTF])
-  GNULIB_FPRINTF_POSIX=0;        AC_SUBST([GNULIB_FPRINTF_POSIX])
-  GNULIB_FPURGE=0;               AC_SUBST([GNULIB_FPURGE])
-  GNULIB_FPUTC=0;                AC_SUBST([GNULIB_FPUTC])
-  GNULIB_FPUTS=0;                AC_SUBST([GNULIB_FPUTS])
-  GNULIB_FREAD=0;                AC_SUBST([GNULIB_FREAD])
-  GNULIB_FREOPEN=0;              AC_SUBST([GNULIB_FREOPEN])
-  GNULIB_FSCANF=0;               AC_SUBST([GNULIB_FSCANF])
-  GNULIB_FSEEK=0;                AC_SUBST([GNULIB_FSEEK])
-  GNULIB_FSEEKO=0;               AC_SUBST([GNULIB_FSEEKO])
-  GNULIB_FTELL=0;                AC_SUBST([GNULIB_FTELL])
-  GNULIB_FTELLO=0;               AC_SUBST([GNULIB_FTELLO])
-  GNULIB_FWRITE=0;               AC_SUBST([GNULIB_FWRITE])
-  GNULIB_GETC=0;                 AC_SUBST([GNULIB_GETC])
-  GNULIB_GETCHAR=0;              AC_SUBST([GNULIB_GETCHAR])
-  GNULIB_GETDELIM=0;             AC_SUBST([GNULIB_GETDELIM])
-  GNULIB_GETLINE=0;              AC_SUBST([GNULIB_GETLINE])
-  GNULIB_OBSTACK_PRINTF=0;       AC_SUBST([GNULIB_OBSTACK_PRINTF])
-  GNULIB_OBSTACK_PRINTF_POSIX=0; AC_SUBST([GNULIB_OBSTACK_PRINTF_POSIX])
-  GNULIB_PCLOSE=0;               AC_SUBST([GNULIB_PCLOSE])
-  GNULIB_PERROR=0;               AC_SUBST([GNULIB_PERROR])
-  GNULIB_POPEN=0;                AC_SUBST([GNULIB_POPEN])
-  GNULIB_PRINTF=0;               AC_SUBST([GNULIB_PRINTF])
-  GNULIB_PRINTF_POSIX=0;         AC_SUBST([GNULIB_PRINTF_POSIX])
-  GNULIB_PUTC=0;                 AC_SUBST([GNULIB_PUTC])
-  GNULIB_PUTCHAR=0;              AC_SUBST([GNULIB_PUTCHAR])
-  GNULIB_PUTS=0;                 AC_SUBST([GNULIB_PUTS])
-  GNULIB_REMOVE=0;               AC_SUBST([GNULIB_REMOVE])
-  GNULIB_RENAME=0;               AC_SUBST([GNULIB_RENAME])
-  GNULIB_RENAMEAT=0;             AC_SUBST([GNULIB_RENAMEAT])
-  GNULIB_SCANF=0;                AC_SUBST([GNULIB_SCANF])
-  GNULIB_SNPRINTF=0;             AC_SUBST([GNULIB_SNPRINTF])
-  GNULIB_SPRINTF_POSIX=0;        AC_SUBST([GNULIB_SPRINTF_POSIX])
-  GNULIB_STDIO_H_NONBLOCKING=0;  AC_SUBST([GNULIB_STDIO_H_NONBLOCKING])
-  GNULIB_STDIO_H_SIGPIPE=0;      AC_SUBST([GNULIB_STDIO_H_SIGPIPE])
-  GNULIB_TMPFILE=0;              AC_SUBST([GNULIB_TMPFILE])
-  GNULIB_VASPRINTF=0;            AC_SUBST([GNULIB_VASPRINTF])
-  GNULIB_VFSCANF=0;              AC_SUBST([GNULIB_VFSCANF])
-  GNULIB_VSCANF=0;               AC_SUBST([GNULIB_VSCANF])
-  GNULIB_VDPRINTF=0;             AC_SUBST([GNULIB_VDPRINTF])
-  GNULIB_VFPRINTF=0;             AC_SUBST([GNULIB_VFPRINTF])
-  GNULIB_VFPRINTF_POSIX=0;       AC_SUBST([GNULIB_VFPRINTF_POSIX])
-  GNULIB_VPRINTF=0;              AC_SUBST([GNULIB_VPRINTF])
-  GNULIB_VPRINTF_POSIX=0;        AC_SUBST([GNULIB_VPRINTF_POSIX])
-  GNULIB_VSNPRINTF=0;            AC_SUBST([GNULIB_VSNPRINTF])
-  GNULIB_VSPRINTF_POSIX=0;       AC_SUBST([GNULIB_VSPRINTF_POSIX])
-  dnl Support Microsoft deprecated alias function names by default.
-  GNULIB_MDA_FCLOSEALL=1;        AC_SUBST([GNULIB_MDA_FCLOSEALL])
-  GNULIB_MDA_FDOPEN=1;           AC_SUBST([GNULIB_MDA_FDOPEN])
-  GNULIB_MDA_FILENO=1;           AC_SUBST([GNULIB_MDA_FILENO])
-  GNULIB_MDA_GETW=1;             AC_SUBST([GNULIB_MDA_GETW])
-  GNULIB_MDA_PUTW=1;             AC_SUBST([GNULIB_MDA_PUTW])
-  GNULIB_MDA_TEMPNAM=1;          AC_SUBST([GNULIB_MDA_TEMPNAM])
   dnl Assume proper GNU behavior unless another module says otherwise.
   HAVE_DECL_FCLOSEALL=1;         AC_SUBST([HAVE_DECL_FCLOSEALL])
   HAVE_DECL_FPURGE=1;            AC_SUBST([HAVE_DECL_FPURGE])
@@ -210,6 +194,7 @@ AC_DEFUN([gl_STDIO_H_DEFAULTS],
   REPLACE_FDOPEN=0;              AC_SUBST([REPLACE_FDOPEN])
   REPLACE_FFLUSH=0;              AC_SUBST([REPLACE_FFLUSH])
   REPLACE_FOPEN=0;               AC_SUBST([REPLACE_FOPEN])
+  REPLACE_FOPEN_FOR_FOPEN_GNU=0; AC_SUBST([REPLACE_FOPEN_FOR_FOPEN_GNU])
   REPLACE_FPRINTF=0;             AC_SUBST([REPLACE_FPRINTF])
   REPLACE_FPURGE=0;              AC_SUBST([REPLACE_FPURGE])
   REPLACE_FREOPEN=0;             AC_SUBST([REPLACE_FREOPEN])

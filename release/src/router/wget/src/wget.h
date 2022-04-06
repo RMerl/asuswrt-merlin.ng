@@ -1,5 +1,5 @@
 /* Miscellaneous declarations.
-   Copyright (C) 1996-2011, 2015, 2018-2021 Free Software Foundation,
+   Copyright (C) 1996-2011, 2015, 2018-2022 Free Software Foundation,
    Inc.
 
 This file is part of GNU Wget.
@@ -141,10 +141,10 @@ as that of the covered work.  */
 #include <stdint.h>
 
 typedef int64_t wgint;
+#define WGINT_MIN INT64_MIN
 #define WGINT_MAX INT64_MAX
-typedef wgint SUM_SIZE_INT;
 
-#define str_to_wgint strtol
+#define str_to_wgint strtoll
 
 #include "options.h"
 

@@ -1,15 +1,15 @@
-# sched_h.m4 serial 12
-dnl Copyright (C) 2008-2021 Free Software Foundation, Inc.
+# sched_h.m4 serial 15
+dnl Copyright (C) 2008-2022 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
 
 dnl Written by Bruno Haible.
 
-AC_DEFUN([gl_SCHED_H],
+AC_DEFUN_ONCE([gl_SCHED_H],
 [
-  dnl Use AC_REQUIRE here, so that the default behavior below is expanded
-  dnl once only, before all statements that occur in other macros.
+  dnl Ensure to expand the default settings once only, before all statements
+  dnl that occur in other macros.
   AC_REQUIRE([gl_SCHED_H_DEFAULTS])
 
   AC_REQUIRE([AC_CANONICAL_HOST])
@@ -73,18 +73,33 @@ AC_DEFUN([gl_SCHED_H],
     ]], [sched_yield])
 ])
 
+# gl_SCHED_MODULE_INDICATOR([modulename])
+# sets the shell variable that indicates the presence of the given module
+# to a C preprocessor expression that will evaluate to 1.
+# This macro invocation must not occur in macros that are AC_REQUIREd.
 AC_DEFUN([gl_SCHED_MODULE_INDICATOR],
 [
-  dnl Use AC_REQUIRE here, so that the default settings are expanded once only.
-  AC_REQUIRE([gl_SCHED_H_DEFAULTS])
+  dnl Ensure to expand the default settings once only.
+  gl_SCHED_H_REQUIRE_DEFAULTS
   gl_MODULE_INDICATOR_SET_VARIABLE([$1])
   dnl Define it also as a C macro, for the benefit of the unit tests.
   gl_MODULE_INDICATOR_FOR_TESTS([$1])
 ])
 
+# Initializes the default values for AC_SUBSTed shell variables.
+# This macro must not be AC_REQUIREd.  It must only be invoked, and only
+# outside of macros or in macros that are not AC_REQUIREd.
+AC_DEFUN([gl_SCHED_H_REQUIRE_DEFAULTS],
+[
+  m4_defun(GL_MODULE_INDICATOR_PREFIX[_SCHED_H_MODULE_INDICATOR_DEFAULTS], [
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_SCHED_YIELD])
+  ])
+  m4_require(GL_MODULE_INDICATOR_PREFIX[_SCHED_H_MODULE_INDICATOR_DEFAULTS])
+  AC_REQUIRE([gl_SCHED_H_DEFAULTS])
+])
+
 AC_DEFUN([gl_SCHED_H_DEFAULTS],
 [
-  GNULIB_SCHED_YIELD=0;  AC_SUBST([GNULIB_SCHED_YIELD])
   dnl Assume proper GNU behavior unless another module says otherwise.
   HAVE_SCHED_YIELD=1;    AC_SUBST([HAVE_SCHED_YIELD])
   REPLACE_SCHED_YIELD=0; AC_SUBST([REPLACE_SCHED_YIELD])

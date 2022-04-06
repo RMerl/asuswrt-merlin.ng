@@ -1,5 +1,5 @@
-# free.m4 serial 5
-# Copyright (C) 2003-2005, 2009-2021 Free Software Foundation, Inc.
+# free.m4 serial 6
+# Copyright (C) 2003-2005, 2009-2022 Free Software Foundation, Inc.
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
 # with or without modifications, as long as this notice is preserved.
@@ -40,7 +40,10 @@ AC_DEFUN([gl_FUNC_FREE],
     ])
 
   case $gl_cv_func_free_preserves_errno in
-   *yes) ;;
+   *yes)
+    AC_DEFINE([HAVE_FREE_POSIX], [1],
+      [Define if the 'free' function is guaranteed to preserve errno.])
+    ;;
    *) REPLACE_FREE=1 ;;
   esac
 ])

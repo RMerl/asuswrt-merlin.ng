@@ -1,18 +1,18 @@
 /* Emergency actions in case of a fatal signal.
-   Copyright (C) 2003-2004, 2009-2021 Free Software Foundation, Inc.
+   Copyright (C) 2003-2004, 2009-2022 Free Software Foundation, Inc.
    Written by Bruno Haible <bruno@clisp.org>, 2003.
 
-   This program is free software: you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 3 of the License, or
-   (at your option) any later version.
+   This file is free software: you can redistribute it and/or modify
+   it under the terms of the GNU Lesser General Public License as
+   published by the Free Software Foundation; either version 2.1 of the
+   License, or (at your option) any later version.
 
-   This program is distributed in the hope that it will be useful,
+   This file is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
+   GNU Lesser General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
+   You should have received a copy of the GNU Lesser General Public License
    along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
 
@@ -56,8 +56,10 @@ extern "C" {
 
    The cleanup function is executed asynchronously.  It is unspecified
    whether during its execution the catchable fatal signals are blocked
-   or not.  */
-extern void at_fatal_signal (_GL_ASYNC_SAFE void (*function) (int sig));
+   or not.
+
+   Return 0 upon success, or -1 if there was a memory allocation problem.  */
+extern int at_fatal_signal (_GL_ASYNC_SAFE void (*function) (int sig));
 
 
 /* Sometimes it is necessary to block the usually fatal signals while the

@@ -1,5 +1,5 @@
-# getopt.m4 serial 47
-dnl Copyright (C) 2002-2006, 2008-2021 Free Software Foundation, Inc.
+# getopt.m4 serial 48
+dnl Copyright (C) 2002-2006, 2008-2022 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -21,6 +21,8 @@ AC_DEFUN([gl_FUNC_GETOPT_POSIX],
       REPLACE_GETOPT=1
     fi
   ])
+  GL_GENERATE_GETOPT_H=false
+  GL_GENERATE_GETOPT_CDEFS_H=false
   if test $REPLACE_GETOPT = 1; then
     dnl Arrange for getopt.h to be created.
     gl_GETOPT_SUBSTITUTE_HEADER
@@ -374,8 +376,6 @@ AC_DEFUN([gl_GETOPT_SUBSTITUTE_HEADER],
   AC_DEFINE([__GETOPT_PREFIX], [[rpl_]],
     [Define to rpl_ if the getopt replacement functions and variables
      should be used.])
-  GETOPT_H=getopt.h
-  GETOPT_CDEFS_H=getopt-cdefs.h
-  AC_SUBST([GETOPT_H])
-  AC_SUBST([GETOPT_CDEFS_H])
+  GL_GENERATE_GETOPT_H=true
+  GL_GENERATE_GETOPT_CDEFS_H=true
 ])

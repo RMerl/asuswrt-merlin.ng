@@ -1,5 +1,5 @@
-# memrchr.m4 serial 10
-dnl Copyright (C) 2002-2003, 2005-2007, 2009-2021 Free Software Foundation,
+# memrchr.m4 serial 11
+dnl Copyright (C) 2002-2003, 2005-2007, 2009-2022 Free Software Foundation,
 dnl Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
@@ -10,7 +10,7 @@ AC_DEFUN([gl_FUNC_MEMRCHR],
   dnl Persuade glibc <string.h> to declare memrchr().
   AC_REQUIRE([AC_USE_SYSTEM_EXTENSIONS])
 
-  AC_REQUIRE([gl_HEADER_STRING_H_DEFAULTS])
+  AC_REQUIRE([gl_STRING_H_DEFAULTS])
   AC_CHECK_DECLS_ONCE([memrchr])
   if test $ac_cv_have_decl_memrchr = no; then
     HAVE_DECL_MEMRCHR=0

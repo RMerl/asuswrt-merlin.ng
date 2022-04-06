@@ -1,160 +1,182 @@
-# Mesajele �n limba rom�n� pentru pachetul mailutils.
+# Mesajele în limba română pentru pachetul mailutils.
 # Copyright (C) 2003 Free Software Foundation, Inc.
+# This file is distributed under the same license as the gnulib package.
+#
 # Eugen Hoanca <eugenh@urban-grafx.ro>, 2003.
+# Traducere făcută de EH, pentru versiunea mailutis 0.4/coreutils  5.2.1.
+# Notă, R-GC: se pare că în perioada 2000-2005 a făcut parte din suita altor
+# pachete, înainte de-a deveni un pachet de sine stătător.
+# Actualizare a mesajelor, de la fișierul „gnulib-4.0.0.2567.pot”.
+# Actualizare a codării caracteror, la codarea de caractere UTF-8.
+# Actualizare a diacriticelor de la „cu sedilă” la „cu virgulă”.
+# Actualizare a algoritmului formelor de plural (de la „două” la „trei”).
+# NU și a mesajelor traduse (acestea au rămas neschimbate).
+# Eliminare a mesajelor ce-au dispărut în ultima versiune.
+# Actualizări realizate de Remus-Gabriel Chelu <remusgabriel.chelu@disroot.org>, 15.01.2022.
+# Remus-Gabriel Chelu <remusgabriel.chelu@disroot.org>, 2022.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: mailutils 0.4\n"
+"Project-Id-Version: gnulib-4.0.0.2567\n"
 "Report-Msgid-Bugs-To: bug-gnulib@gnu.org\n"
-"POT-Creation-Date: 2021-01-09 10:58+0100\n"
-"PO-Revision-Date: 2003-12-10 08:55+0200\n"
-"Last-Translator: Eugen Hoanca <eugenh@urban-grafx.ro>\n"
+"POT-Creation-Date: 2022-02-26 17:24+0100\n"
+"PO-Revision-Date: 2022-02-19 23:11+0100\n"
+"Last-Translator: Remus-Gabriel Chelu <remusgabriel.chelu@disroot.org>\n"
 "Language-Team: Romanian <translation-team-ro@lists.sourceforge.net>\n"
 "Language: ro\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=ISO-8859-2\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n==1 ? 0 : (n==0 || (n%100 > 0 && n%100 < "
+"20)) ? 1 : 2);\n"
 "X-Bugs: Report translation errors to the Language-Team address.\n"
-"Plural-Forms: nplurals=2; plural=(n!=1);\n"
+"X-Generator: Poedit 3.0.1\n"
 
 #: lib/error.c:195
-#, fuzzy
 msgid "Unknown system error"
-msgstr "tip de mesaj necunoscut"
+msgstr "Eroare de sistem necunoscută"
 
 #: lib/gai_strerror.c:57
 msgid "Address family for hostname not supported"
-msgstr ""
+msgstr "Familia de adrese pentru numele de gazdă nu este suportată"
 
 #: lib/gai_strerror.c:58
 msgid "Temporary failure in name resolution"
-msgstr ""
+msgstr "Eșec temporar în rezolvarea numelui"
 
 #: lib/gai_strerror.c:59
 msgid "Bad value for ai_flags"
-msgstr ""
+msgstr "Valoare greșită pentru ai_flags"
 
 #: lib/gai_strerror.c:60
 msgid "Non-recoverable failure in name resolution"
-msgstr ""
+msgstr "Eșec nerecuperabil în rezolvarea numelui"
 
 #: lib/gai_strerror.c:61
 msgid "ai_family not supported"
-msgstr ""
+msgstr "ai_family nu este suportat"
 
 #: lib/gai_strerror.c:62
-#, fuzzy
 msgid "Memory allocation failure"
-msgstr "Opera�iune e�uat�"
+msgstr "Eșec la alocarea memoriei"
 
 #: lib/gai_strerror.c:63
 msgid "No address associated with hostname"
-msgstr ""
+msgstr "Nicio adresă asociată cu numele gazdei"
 
 #: lib/gai_strerror.c:64
 msgid "Name or service not known"
-msgstr ""
+msgstr "Nume sau serviciu necunoscut"
 
 #: lib/gai_strerror.c:65
 msgid "Servname not supported for ai_socktype"
-msgstr ""
+msgstr "Nume de server nesuportat pentru ai_socktype"
 
 #: lib/gai_strerror.c:66
 msgid "ai_socktype not supported"
-msgstr ""
+msgstr "ai_socktype nu este suportat"
 
 #: lib/gai_strerror.c:67
-#, fuzzy
 msgid "System error"
-msgstr "eroare regex"
+msgstr "Eroare de sistem"
 
 #: lib/gai_strerror.c:68
 msgid "Argument buffer too small"
-msgstr ""
+msgstr "Memoria tampon pentru argumente este prea mică"
 
 #: lib/gai_strerror.c:70
 msgid "Processing request in progress"
-msgstr ""
+msgstr "Procesarea cererii este în curs"
 
 #: lib/gai_strerror.c:71
 msgid "Request canceled"
-msgstr ""
+msgstr "Cerere anulată"
 
 #: lib/gai_strerror.c:72
 msgid "Request not canceled"
-msgstr ""
+msgstr "Cerere neanulată"
 
 #: lib/gai_strerror.c:73
 msgid "All requests done"
-msgstr ""
+msgstr "Toate cererile au fost procesate"
 
+# R-GC, scrie:
+# o altă variantă, ar fi:
+# „Întrerupt printr-un semnal”
+# bănuiesc că se referă la un proces sau
+# un program.
+# Idei ?
 #: lib/gai_strerror.c:74
 msgid "Interrupted by a signal"
-msgstr ""
+msgstr "Întrerupt de un semnal"
 
+# R-GC, scrie:
+# după ce-a revizat fișierul, DȘ îmi spune:
+# «→ ar fi de evitat folosirea lui „e” în loc de „este”»
+# corecție aplicată!; încă o dată, foamea :) ,
+# de data asta, de litere
 #: lib/gai_strerror.c:75
 msgid "Parameter string not correctly encoded"
-msgstr ""
+msgstr "Șirul parametrului este codificat greșit"
 
 #: lib/gai_strerror.c:87
-#, fuzzy
 msgid "Unknown error"
-msgstr "Escape necunoscut %s"
+msgstr "Eroare necunoscută"
 
 #: lib/getopt.c:278
-#, fuzzy, c-format
+#, c-format
 msgid "%s: option '%s%s' is ambiguous\n"
-msgstr "%s: op�iunea `%s' este ambigu�\n"
+msgstr "%s: opțiunea „%s%s” este ambiguă\n"
 
 #: lib/getopt.c:284
-#, fuzzy, c-format
+#, c-format
 msgid "%s: option '%s%s' is ambiguous; possibilities:"
-msgstr "%s: op�iunea `%s' este ambigu�\n"
+msgstr "%s: opțiunea „%s%s” este ambiguă; posibilități:"
 
 #: lib/getopt.c:319
-#, fuzzy, c-format
+#, c-format
 msgid "%s: unrecognized option '%s%s'\n"
-msgstr "%s: op�iune necunoscut� `%c%s'\n"
+msgstr "%s: opțiune nerecunoscută „%s%s”\n"
 
 #: lib/getopt.c:345
-#, fuzzy, c-format
+#, c-format
 msgid "%s: option '%s%s' doesn't allow an argument\n"
-msgstr "%s: op�iunea `%c%s' nu permite argumente\n"
+msgstr "%s: opțiunea „%s%s” nu permite un argument\n"
 
 #: lib/getopt.c:360
-#, fuzzy, c-format
+#, c-format
 msgid "%s: option '%s%s' requires an argument\n"
-msgstr "%s: op�iunea `%s' necesit� un argument\n"
+msgstr "%s: opțiunea „%s%s” necesită un argument\n"
 
 #: lib/getopt.c:621
-#, fuzzy, c-format
+#, c-format
 msgid "%s: invalid option -- '%c'\n"
-msgstr "%s: op�iune invalid� -- %c\n"
+msgstr "%s: opțiune nevalidă -- „%c”\n"
 
 #: lib/getopt.c:636 lib/getopt.c:682
-#, fuzzy, c-format
+#, c-format
 msgid "%s: option requires an argument -- '%c'\n"
-msgstr "%s: op�iunea necesit� un argument -- %c\n"
+msgstr "%s: opțiunea necesită un argument -- „%c”\n"
 
 #: lib/openat-die.c:38
 #, c-format
 msgid "unable to record current working directory"
-msgstr ""
+msgstr "nu s-a putut înregistra directorul de lucru curent"
 
 #: lib/openat-die.c:57
 #, c-format
 msgid "failed to return to initial working directory"
-msgstr ""
+msgstr "întoarcerea la directorul de lucru inițial a eșuat"
 
 #: lib/os2-spawn.c:46
 #, c-format
 msgid "_open_osfhandle failed"
-msgstr ""
+msgstr "_open_osfhandle a eșuat"
 
 #: lib/os2-spawn.c:83
 #, c-format
 msgid "cannot restore fd %d: dup2 failed"
-msgstr ""
+msgstr "nu se poate restaura fd %d: dup2 a eșuat"
 
 #. TRANSLATORS:
 #. Get translations for open and closing quotation marks.
@@ -179,132 +201,127 @@ msgstr ""
 #. and use glyphs suitable for your language.
 #: lib/quotearg.c:355
 msgid "`"
-msgstr ""
+msgstr "„"
 
 #: lib/quotearg.c:356
 msgid "'"
-msgstr ""
+msgstr "”"
 
-#: lib/regcomp.c:135
+#: lib/regcomp.c:122
 msgid "Success"
 msgstr "Succes"
 
-#: lib/regcomp.c:138
+#: lib/regcomp.c:125
 msgid "No match"
-msgstr ""
+msgstr "Nicio potrivire"
 
-#: lib/regcomp.c:141
-#, fuzzy
+#: lib/regcomp.c:128
 msgid "Invalid regular expression"
-msgstr "Nu exist� fi�ier anterior"
+msgstr "Expresie regulată nevalidă"
 
-#: lib/regcomp.c:144
+#: lib/regcomp.c:131
 msgid "Invalid collation character"
-msgstr ""
+msgstr "Caracter de colaționare nevalid"
 
-#: lib/regcomp.c:147
+#: lib/regcomp.c:134
 msgid "Invalid character class name"
-msgstr ""
+msgstr "Nume de clasă de caracter nevalid"
 
-#: lib/regcomp.c:150
+#: lib/regcomp.c:137
 msgid "Trailing backslash"
-msgstr ""
+msgstr "Bară oblică inversă la sfârșit"
 
-#: lib/regcomp.c:153
-#, fuzzy
+#: lib/regcomp.c:140
 msgid "Invalid back reference"
-msgstr "Num�r invalid"
+msgstr "Referință anterioară nevalidă"
 
-#: lib/regcomp.c:156
+#: lib/regcomp.c:143
 msgid "Unmatched [, [^, [:, [., or [="
-msgstr ""
+msgstr "[, [^, [:, [., sau [= fără pereche"
 
-#: lib/regcomp.c:159
+#: lib/regcomp.c:146
 msgid "Unmatched ( or \\("
-msgstr ""
+msgstr "( sau \\( fără pereche"
 
-#: lib/regcomp.c:162
+#: lib/regcomp.c:149
 msgid "Unmatched \\{"
-msgstr ""
+msgstr "\\{ fără pereche"
 
-#: lib/regcomp.c:165
+#: lib/regcomp.c:152
 msgid "Invalid content of \\{\\}"
-msgstr ""
+msgstr "Conținut nevalid al \\{\\}"
 
-#: lib/regcomp.c:168
-#, fuzzy
+#: lib/regcomp.c:155
 msgid "Invalid range end"
-msgstr "Tip de dat� invalid"
+msgstr "Sfârșit de interval nevalid"
 
-#: lib/regcomp.c:171
+#: lib/regcomp.c:158
 msgid "Memory exhausted"
-msgstr "Memorie plin�"
+msgstr "Memorie epuizată"
 
-#: lib/regcomp.c:174
-#, fuzzy
+#: lib/regcomp.c:161
 msgid "Invalid preceding regular expression"
-msgstr "Nu exist� fi�ier anterior"
+msgstr "Expresie regulată precedentă nevalidă"
 
-#: lib/regcomp.c:177
-#, fuzzy
+#: lib/regcomp.c:164
 msgid "Premature end of regular expression"
-msgstr "Nu exist� fi�ier anterior"
+msgstr "Terminare prematură a expresiei regulate"
 
-#: lib/regcomp.c:180
-#, fuzzy
+#: lib/regcomp.c:167
 msgid "Regular expression too big"
-msgstr "Nu exist� fi�ier anterior"
+msgstr "Expresie regulată prea lungă"
 
-#: lib/regcomp.c:183
+#: lib/regcomp.c:170
 msgid "Unmatched ) or \\)"
-msgstr ""
+msgstr ") sau \\) fără pereche"
 
-#: lib/regcomp.c:676
-#, fuzzy
+#: lib/regcomp.c:650
 msgid "No previous regular expression"
-msgstr "Nu exist� fi�ier anterior"
+msgstr "Nu există o expresie regulată precedentă"
 
-#: lib/spawn-pipe.c:218 lib/spawn-pipe.c:221 lib/spawn-pipe.c:460
-#: lib/spawn-pipe.c:463
-#, fuzzy, c-format
+#: lib/spawn-pipe.c:217 lib/spawn-pipe.c:220 lib/spawn-pipe.c:459
+#: lib/spawn-pipe.c:462
+#, c-format
 msgid "cannot create pipe"
-msgstr "nu se poate crea mailerul \"%s\""
+msgstr "nu se poate crea linia de conectare"
 
-#: lib/spawn-pipe.c:598 lib/wait-process.c:290 lib/wait-process.c:364
+#: lib/spawn-pipe.c:597 lib/wait-process.c:291 lib/wait-process.c:365
 #, c-format
 msgid "%s subprocess failed"
-msgstr ""
+msgstr "subprocesul %s a eșuat"
 
-#: lib/wait-process.c:231 lib/wait-process.c:263 lib/wait-process.c:325
+#: lib/wait-process.c:232 lib/wait-process.c:264 lib/wait-process.c:326
 #, c-format
 msgid "%s subprocess"
-msgstr ""
+msgstr "subprocesul %s"
 
-#: lib/wait-process.c:282 lib/wait-process.c:354
+#: lib/wait-process.c:283 lib/wait-process.c:355
 #, c-format
 msgid "%s subprocess got fatal signal %d"
-msgstr ""
+msgstr "subprocesul %s a primit semnalul fatal %d"
 
 #: lib/xalloc-die.c:34
-#, fuzzy
 msgid "memory exhausted"
-msgstr "Memorie plin�"
+msgstr "memorie epuizată"
 
-#, fuzzy, c-format
+#, c-format
 #~ msgid "invalid argument %s for %s"
-#~ msgstr "nume etichet�(tag) invalid `%s' pentru `%s'"
+#~ msgstr "argument nevalid %s pentru %s"
 
-#, fuzzy, c-format
+#, c-format
 #~ msgid "ambiguous argument %s for %s"
-#~ msgstr "lipse�te argumentul pentru %s"
+#~ msgstr "argument ambiguu %s pentru %s"
 
-#, fuzzy, c-format
 #~ msgid "Valid arguments are:"
-#~ msgstr "argumentele if valide sunt: s | r | t"
+#~ msgstr "Argumentele valide sunt:"
+
+#, c-format
+#~ msgid "ARGP_HELP_FMT: %s value is less than or equal to %s"
+#~ msgstr "ARGP_HELP_FMT: valoarea %s este mai mică sau egală cu %s"
 
 #, c-format
 #~ msgid "%.*s: ARGP_HELP_FMT parameter requires a value"
-#~ msgstr "%.*s: parametrul ARGP_HELP_FMT necesit� o valoare"
+#~ msgstr "%.*s: parametrul ARGP_HELP_FMT necesită o valoare"
 
 #, c-format
 #~ msgid "%.*s: Unknown ARGP_HELP_FMT parameter"
@@ -312,142 +329,763 @@ msgstr "Memorie plin�"
 
 #, c-format
 #~ msgid "Garbage in ARGP_HELP_FMT: %s"
-#~ msgstr "Gunoi(garbage) �n ARGP_HELP_FMT: %s"
+#~ msgstr "Gunoi(garbage) în ARGP_HELP_FMT: %s"
 
 #~ msgid ""
 #~ "Mandatory or optional arguments to long options are also mandatory or "
 #~ "optional for any corresponding short options."
 #~ msgstr ""
-#~ "Argumentele obligatorii sau op�ionale pentru op�iunile lungi sunt de "
-#~ "asemenea obligatorii sau op�ionale pentru toate op�iunile scurte "
-#~ "corespunz�toare."
+#~ "Argumentele obligatorii sau opționale pentru opțiunile lungi sunt de "
+#~ "asemenea, obligatorii sau opționale pentru oricare dintre opțiunile "
+#~ "scurte corespunzătoare."
 
 #~ msgid "Usage:"
-#~ msgstr "Folosire:"
+#~ msgstr "Utilizare:"
 
 #~ msgid "  or: "
 #~ msgstr "  sau: "
 
 #~ msgid " [OPTION...]"
-#~ msgstr " [OP�IUNE...]"
+#~ msgstr " [OPȚIUNE...]"
 
 #, c-format
-#~ msgid "Try `%s --help' or `%s --usage' for more information.\n"
+#~ msgid "Try '%s --help' or '%s --usage' for more information.\n"
 #~ msgstr ""
-#~ "�ncerca�i `%s --help' sau `%s --usage' pentru mai multe informa�ii.\n"
+#~ "Încercați «%s --help» sau «%s --usage» pentru mai multe informații.\n"
 
 #, c-format
 #~ msgid "Report bugs to %s.\n"
-#~ msgstr "Raporta�i bug-urile la %s.\n"
+#~ msgstr "Raportați erorile la %s.\n"
 
-#~ msgid "Give this help list"
-#~ msgstr "Afi�eaz� aceast� list� de ajutor"
+#~ msgid "give this help list"
+#~ msgstr "afișează această listă de ajutor"
 
-#~ msgid "Give a short usage message"
-#~ msgstr "Afi�eaz� un mesaj de folosire scurt"
+#~ msgid "give a short usage message"
+#~ msgstr "afișează un mesaj scurt de utlizare"
 
 #~ msgid "NAME"
 #~ msgstr "NUME"
 
-#~ msgid "Set the program name"
-#~ msgstr "Seteaz� numele programului"
+#~ msgid "set the program name"
+#~ msgstr "stabilește numele programului"
 
-#, fuzzy
 #~ msgid "SECS"
 #~ msgstr "SECUNDE"
 
-#~ msgid "Hang for SECS seconds (default 3600)"
-#~ msgstr "�ntrerupe(hang) pentru SECS secunde (implicit 3600)"
+#~ msgid "hang for SECS seconds (default 3600)"
+#~ msgstr "întrerupe(hang) pentru acest număr de secunde (implicit 3600)"
 
-#~ msgid "Print program version"
-#~ msgstr "Afi�eaz� versiunea programului"
+#~ msgid "print program version"
+#~ msgstr "imprimă versiunea programului"
 
 #~ msgid "(PROGRAM ERROR) No version known!?"
-#~ msgstr "(EROARE DE PROGRAM) Nici o versiune cunoscut�!?"
+#~ msgstr "(EROARE DE PROGRAM) Nici o versiune cunoscută!?"
 
 #, c-format
 #~ msgid "%s: Too many arguments\n"
 #~ msgstr "%s: Prea multe argumente\n"
 
 #~ msgid "(PROGRAM ERROR) Option should have been recognized!?"
-#~ msgstr "(EROARE DE PROGRAM) Op�iunea ar fi trebuit recunoscut�!?"
+#~ msgstr "(EROARE DE PROGRAM) Opțiunea ar fi trebuit recunoscută!?"
 
-#, fuzzy
+#, c-format
+#~ msgid "%u bitset_allocs, %u freed (%.2f%%).\n"
+#~ msgstr "%u bitset_allocs, %u eliberat (%.2f%%).\n"
+
+#, c-format
+#~ msgid "%u bitset_sets, %u cached (%.2f%%)\n"
+#~ msgstr "%u bitset_sets, %u în memoria tampon (%.2f%%)\n"
+
+#, c-format
+#~ msgid "%u bitset_resets, %u cached (%.2f%%)\n"
+#~ msgstr "%u bitset_resets, %u în memoria tampon (%.2f%%)\n"
+
+#, c-format
+#~ msgid "%u bitset_tests, %u cached (%.2f%%)\n"
+#~ msgstr "%u bitset_tests, %u în memoria tampon (%.2f%%)\n"
+
+#, c-format
+#~ msgid "%u bitset_lists\n"
+#~ msgstr "%u bitset_lists\n"
+
+# R-GC, scrie:
+# ținînd cont de referința acestui mesaj, și a
+# următoarelor două
+# mesaje(lib/bitset/stats.c),
+# am considerat că traducerea mot-a-mot a
+# mesajelor(tentantă), nu este cea corectă,
+# am început să investighez printre
+# traducerile celorlalte echipe, și cred că am
+# aflat „dezlegarea misterului”, în traducerea
+# făcută de Benno Schulenberg din echipa
+# olandeză:
+# „histogram van aantal gezette bits”
+#~ msgid "count log histogram\n"
+#~ msgstr "histograma numărului seturilor de biți»bitset«\n"
+
+#~ msgid "size log histogram\n"
+#~ msgstr "histograma dimensiunilor seturilor de biți»bitset«\n"
+
+#~ msgid "density histogram\n"
+#~ msgstr "histograma densității seturilor de biți»bitset«\n"
+
+#, c-format
+#~ msgid ""
+#~ "Bitset statistics:\n"
+#~ "\n"
+#~ msgstr ""
+#~ "Statistici set de biți»bitset«:\n"
+#~ "\n"
+
+#, c-format
+#~ msgid "Accumulated runs = %u\n"
+#~ msgstr "Cantitatea de execuții = %u\n"
+
+#~ msgid "cannot read stats file"
+#~ msgstr "nu se poate citi fișierul cu statistici"
+
+#, c-format
+#~ msgid "bad stats file size\n"
+#~ msgstr "dimensiunea fișierului cu statistici, este necorespunzătoare\n"
+
+#~ msgid "cannot write stats file"
+#~ msgstr "nu se poate scrie fișierul cu statistici"
+
+#~ msgid "cannot open stats file for writing"
+#~ msgstr "nu se poate deschide fișierul cu statistici pentru scriere"
+
 #~ msgid "program error"
-#~ msgstr "eroare de interval(range)"
+#~ msgstr "eroare de program"
 
-#, fuzzy
 #~ msgid "stack overflow"
-#~ msgstr "subrulare(underflow) a stivei(stack)"
+#~ msgstr "debordare de stivă"
 
-#, fuzzy
+#~ msgid "cannot find a temporary directory, try setting $TMPDIR"
+#~ msgstr ""
+#~ "nu se poate găsi un director temporar, încercați să stabiliți variabila "
+#~ "$TMPDIR"
+
+# R-GC, scrie:
+# după ce-a revizat fișierul, DȘ îmi spune:
+# «→ aici parcă lipsește un „se”, și ar deveni „nu se poate crea...”»
+# îmi pare rău, mi se făcuse foame de cuvinte..
+# :)
+# - corectare aplicată!
+#, c-format
+#~ msgid "cannot create a temporary directory using template \"%s\""
+#~ msgstr "nu se poate crea un director temporar utilizând șablonul „%s”"
+
+#, c-format
+#~ msgid "cannot remove temporary file %s"
+#~ msgstr "nu se poate elimina fișierul temporar %s"
+
+#, c-format
+#~ msgid "cannot remove temporary directory %s"
+#~ msgstr "nu se poate elimina directorul temporar %s"
+
+#~ msgid "error closing file"
+#~ msgstr "eroare la închiderea fișierului"
+
 #~ msgid "write error"
-#~ msgstr "eroare regex"
+#~ msgstr "eroare de scriere"
 
-#, fuzzy, c-format
-#~ msgid "cannot open backup file \"%s\" for writing"
-#~ msgstr "nu se poate deschide fi�ierul de ie�ire(output) \"%s\": %s"
+#, c-format
+#~ msgid "preserving permissions for %s"
+#~ msgstr "se păstrează permisiunile pentru %s"
 
-#, fuzzy, c-format
-#~ msgid "error reading \"%s\""
-#~ msgstr "eroare la cititrea din fi�ierul de intrare(input): %s"
+#, c-format
+#~ msgid "error while opening %s for reading"
+#~ msgstr "eroare la deschiderea lui %s pentru citire"
 
-#, fuzzy, c-format
-#~ msgid "error writing \"%s\""
-#~ msgstr "eroare �n scrierea �n mailbox: %s"
+#, c-format
+#~ msgid "cannot open backup file %s for writing"
+#~ msgstr "nu se poate deschide fișierul de copie de rezervă %s pentru scriere"
 
-#, fuzzy
+#, c-format
+#~ msgid "error reading %s"
+#~ msgstr "eroare la citirea din %s"
+
+#, c-format
+#~ msgid "error writing %s"
+#~ msgstr "eroare la scrierea în %s"
+
+#, c-format
+#~ msgid "error after reading %s"
+#~ msgstr "eroare după citirea %s"
+
 #~ msgid "fdopen() failed"
-#~ msgstr "fork e�uat"
+#~ msgstr "fdopen() a eșuat"
 
-#, fuzzy
+#~ msgid "C# compiler not found, try installing mono"
+#~ msgstr "Nu a fost găsit compilatorul C#, încercați să instalați mono"
+
+#~ msgid "C# virtual machine not found, try installing mono"
+#~ msgstr "Nu a fost găsită mașina virtuală C#, încercați să instalați mono"
+
+#~ msgid "unbalanced ["
+#~ msgstr "„[” fără pereche"
+
+#~ msgid "invalid character class"
+#~ msgstr "clasă de caractere nevalidă"
+
+#~ msgid "character class syntax is [[:space:]], not [:space:]"
+#~ msgstr "sintaxa de clasă de caractere este [[:spațiu:]], nu [:spațiu]"
+
+#~ msgid "unfinished \\ escape"
+#~ msgstr "eludare » \\ « neterminată"
+
+#~ msgid "invalid content of \\{\\}"
+#~ msgstr "conținut nevalid al \\{\\}"
+
+#~ msgid "regular expression too big"
+#~ msgstr "expresia regulată este prea lungă"
+
+#~ msgid "unbalanced ("
+#~ msgstr "„(” fără pereche"
+
+#~ msgid "no syntax specified"
+#~ msgstr "nu s-a specificat nicio sintaxă"
+
+#~ msgid "unbalanced )"
+#~ msgstr "„)” fără pereche"
+
+#~ msgid "regular empty file"
+#~ msgstr "fișier gol obișnuit"
+
+#~ msgid "regular file"
+#~ msgstr "fișier obișnuit"
+
+#~ msgid "directory"
+#~ msgstr "director"
+
+#~ msgid "symbolic link"
+#~ msgstr "legătură simbolică"
+
 #~ msgid "message queue"
-#~ msgstr "%d mesaj"
+#~ msgstr "coada de mesaje"
+
+#~ msgid "semaphore"
+#~ msgstr "semafor"
+
+#~ msgid "shared memory object"
+#~ msgstr "obiect de memorie partajată"
+
+# R-GC, scrie:
+# investigînd prin:
+# - http://www.opengroup.org/onlinepubs/000095399/functions/mmap.html
+# și
+# - http://www.opengroup.org/austin/papers/posix_faq.html
+# am ajuns la această traducere; cu o
+# posibilă variantă:
+# „obiect de memorie standardizat”
+# *********
+# Ideile sunt binevenite...!
+#~ msgid "typed memory object"
+#~ msgstr "obiect de memorie tipizat"
+
+#~ msgid "block special file"
+#~ msgstr "fișier special de blocuri"
+
+#~ msgid "character special file"
+#~ msgstr "fișier special de caractere"
+
+#~ msgid "contiguous data"
+#~ msgstr "date contigue"
+
+#~ msgid "fifo"
+#~ msgstr "primul intrat, primul ieșit(fifo)"
+
+# R-GC, scrie:
+# informații culese de la:
+# https://en.wikipedia.org/wiki/Unix_file_types#Door (adresă obținută din
+# comentariul făcut de Rafael Fontenelle, din
+# echipa braziliană, în fișierul «gnulib-*.pt_BR.po»)
+# și de la:
+# https://en.wikipedia.org/wiki/Doors_(computing) (adresă obținută prin
+# amabilitatea lui Jim Meyering, unul din
+# „băieții” din spatele proiectului «diffutils»)
+#~ msgid "door"
+#~ msgstr "poartă(de comunicare)"
+
+#~ msgid "multiplexed block special file"
+#~ msgstr "fișier special de blocuri, multiplexat"
+
+#~ msgid "multiplexed character special file"
+#~ msgstr "fișier special de caractere, multiplexat"
+
+#~ msgid "multiplexed file"
+#~ msgstr "fișier multiplexat"
+
+#~ msgid "named file"
+#~ msgstr "fișier numit"
+
+#~ msgid "network special file"
+#~ msgstr "fișier special de rețea"
+
+#~ msgid "migrated file with data"
+#~ msgstr "fișier migrat cu date"
+
+#~ msgid "migrated file without data"
+#~ msgstr "fișier migrat fără date"
+
+#~ msgid "port"
+#~ msgstr "port"
+
+#~ msgid "socket"
+#~ msgstr "soclu"
+
+# R-GC, scrie:
+# am găsit aici:
+# https://en.wikipedia.org/wiki/Union_mount
+# date despre «whiteout», folosit de UnionFS
+#~ msgid "whiteout"
+#~ msgstr "whiteout"
+
+#~ msgid "weird file"
+#~ msgstr "fișier ciudat"
+
+#~ msgid "invalid source_version argument to compile_java_class"
+#~ msgstr "argumentul source_version nu este valid pentru compile_java_class"
+
+#~ msgid "invalid target_version argument to compile_java_class"
+#~ msgstr "argumentul target_version nu este valid pentru compile_java_class"
 
 #, c-format
-#~ msgid "%s: option `--%s' doesn't allow an argument\n"
-#~ msgstr "%s: op�iunea `--%s' nu permite argumente\n"
+#~ msgid "failed to create \"%s\""
+#~ msgstr "nu s-a putut crea \"%s\""
 
 #, c-format
-#~ msgid "%s: unrecognized option `--%s'\n"
-#~ msgstr "%s: op�iune necunoscut� `--%s'\n"
+#~ msgid "error while writing \"%s\" file"
+#~ msgstr "eroare în timpul scrierii fișierului „%s”"
+
+#~ msgid "Java compiler not found, try installing gcj or set $JAVAC"
+#~ msgstr ""
+#~ "Nu a fost găsit compilatorul Java, încercați să instalați gcj sau "
+#~ "stabiliți variabila $JAVAC"
+
+#~ msgid "Java virtual machine not found, try installing gij or set $JAVA"
+#~ msgstr ""
+#~ "Nu a fost găsită mașina virtuală Java, încercați să instalați gij sau "
+#~ "stabiliți variabila $JAVA"
 
 #, c-format
-#~ msgid "%s: illegal option -- %c\n"
-#~ msgstr "%s: op�iune ilegal� -- %c\n"
+#~ msgid "%s subprocess I/O error"
+#~ msgstr "eroare de In/Ieș a subprocesului %s"
 
 #, c-format
-#~ msgid "%s: option `-W %s' is ambiguous\n"
-#~ msgstr "%s: op�iune `-W %s' este ambigu�\n"
+#~ msgid "cannot stat %s"
+#~ msgstr "nu se poate obține starea lui „%s”"
 
 #, c-format
-#~ msgid "%s: option `-W %s' doesn't allow an argument\n"
-#~ msgstr "%s: op�iune `-W %s' nu permite argumente\n"
-
-#, fuzzy, c-format
-#~ msgid "cannot change owner and/or group of %s"
-#~ msgstr "nu se poate trece �n uid %lu: %m"
-
-#, fuzzy, c-format
-#~ msgid "cannot create directory %s"
-#~ msgstr "nu se poate crea iterator: %s"
-
-#, fuzzy, c-format
-#~ msgid "cannot chdir to directory %s"
-#~ msgstr "nu se poate crea iterator: %s"
-
-#, fuzzy, c-format
 #~ msgid "cannot change permissions of %s"
-#~ msgstr "Permisiuni gre�ite la %s. Seta�i 0600."
+#~ msgstr "nu se pot schimba permisiunile pentru %s"
 
-#, fuzzy
+#, c-format
+#~ msgid "cannot create directory %s"
+#~ msgstr "nu se poate crea directorul %s"
+
+#~ msgid "Failed to open /dev/zero for read"
+#~ msgstr "Nu s-a putut deschide „/dev/zero” pentru citire"
+
+#~ msgid "creation of reading thread failed"
+#~ msgstr "crearea firului de citire a eșuat"
+
+#, c-format
+#~ msgid "cannot set up nonblocking I/O to %s subprocess"
+#~ msgstr "nu se poate configura In/Ieș neblocante la subprocesul %s"
+
+#, c-format
+#~ msgid "communication with %s subprocess failed"
+#~ msgstr "comunicarea cu subprocesul %s a eșuat"
+
+#, c-format
+#~ msgid "write to %s subprocess failed"
+#~ msgstr "scrierea în subprocesul %s a eșuat"
+
+#, c-format
+#~ msgid "read from %s subprocess failed"
+#~ msgstr "citirea din subprocesul %s a eșuat"
+
+#, c-format
+#~ msgid "subprocess %s terminated with exit code %d"
+#~ msgstr "subprocesul %s a terminat cu codul de ieșire %d"
+
+#~ msgid "creation of threads failed"
+#~ msgstr "crearea firelor a eșuat"
+
+#, c-format
+#~ msgid "%s subprocess terminated with exit code %d"
+#~ msgstr "subprocesul %s a terminat cu codul de ieșire %d"
+
+#~ msgid "^[yY]"
+#~ msgstr "^[dDyY]"
+
+#~ msgid "^[nN]"
+#~ msgstr "^[nN]"
+
+#, c-format
+#~ msgid "setting permissions for %s"
+#~ msgstr "se stabilesc permisiunile pentru %s"
+
+# R-GC, scrie:
+# - http://en.wikipedia.org/wiki/SIGHUP
+# aici, la sfîrșitul articolului, explicația/moti-
+# vația pentru traducerea aleasă.
+#~ msgid "Hangup"
+#~ msgstr "Terminare anormală(Hangup)"
+
+#~ msgid "Interrupt"
+#~ msgstr "Întrerupe"
+
+#~ msgid "Quit"
+#~ msgstr "Termină"
+
+#~ msgid "Illegal instruction"
+#~ msgstr "Instrucțiune ilegală"
+
+#~ msgid "Trace/breakpoint trap"
+#~ msgstr "Capturare punct de întrerupere/traseul(execuției)"
+
+#~ msgid "Aborted"
+#~ msgstr "Renuțare"
+
+#~ msgid "Floating point exception"
+#~ msgstr "Excepție de virgulă mobilă"
+
+#~ msgid "Killed"
+#~ msgstr "Omorît"
+
+#~ msgid "Bus error"
+#~ msgstr "Eroare de magistrală de date(bus)"
+
+#~ msgid "Segmentation fault"
+#~ msgstr "Eroare de segmentare"
+
+# R-GC, scrie:
+# mi s-a părut cea mai bună descriere a
+# termenilor din mesaj.
+# - Idei?
+#~ msgid "Broken pipe"
+#~ msgstr "Linie de conectare întreruptă"
+
+#~ msgid "Alarm clock"
+#~ msgstr "Ceas cu alarmă"
+
+#~ msgid "Terminated"
+#~ msgstr "Terminat"
+
+#~ msgid "Urgent I/O condition"
+#~ msgstr "Condiție In/Ieș urgentă"
+
+#~ msgid "Stopped (signal)"
+#~ msgstr "Oprit (semnal)"
+
+#~ msgid "Stopped"
+#~ msgstr "Oprit"
+
+#~ msgid "Continued"
+#~ msgstr "Continuare"
+
+#~ msgid "Child exited"
+#~ msgstr "Procesul copil a terminat"
+
+#~ msgid "Stopped (tty input)"
+#~ msgstr "Oprit (intrare tty)"
+
+#~ msgid "Stopped (tty output)"
+#~ msgstr "Oprit (ieșire tty)"
+
+#~ msgid "I/O possible"
+#~ msgstr "In/Ieș posibilă"
+
+#~ msgid "CPU time limit exceeded"
+#~ msgstr "S-a depășit limita de timp CPU"
+
+#~ msgid "File size limit exceeded"
+#~ msgstr "S-a depășit limita de dimensiune a fișierului"
+
+#~ msgid "Virtual timer expired"
+#~ msgstr "Cronometrul virtual a expirat"
+
+#~ msgid "Profiling timer expired"
+#~ msgstr "Cronometrul de creare a profilului a expirat"
+
+#~ msgid "Window changed"
+#~ msgstr "Fereastra s-a schimbat"
+
+#~ msgid "User defined signal 1"
+#~ msgstr "Semnalul »1« definit de utilizator"
+
+#~ msgid "User defined signal 2"
+#~ msgstr "Semnalul »2« definit de utilizator"
+
+# R-GC, scrie:
+# Traducere „copiată” de la italieni, cu
+# explicația aferentă:
+# http://en.wikipedia.org/wiki/SIGEMT
+#~ msgid "EMT trap"
+#~ msgstr "Detectare EMT"
+
+#~ msgid "Bad system call"
+#~ msgstr "Apel de sistem greșit"
+
+#~ msgid "Stack fault"
+#~ msgstr "Eroare de stivă"
+
+#~ msgid "Information request"
+#~ msgstr "Cerere de informații"
+
+#~ msgid "Power failure"
+#~ msgstr "Pană de curent"
+
+#~ msgid "Resource lost"
+#~ msgstr "Resursă pierdută"
+
+#~ msgid "error writing to a closed pipe or socket"
+#~ msgstr ""
+#~ "eroare de scriere într-o linie de conectare închisă sau într-un soclu "
+#~ "închis"
+
+#, c-format
+#~ msgid "Real-time signal %d"
+#~ msgstr "Semnal în timp real %d"
+
+#, c-format
+#~ msgid "Unknown signal %d"
+#~ msgstr "Semnal necunoscut %d"
+
+#~ msgid "Execution times (seconds)"
+#~ msgstr "Timpi de execuție (secunde)"
+
+#~ msgid "CPU user"
+#~ msgstr "CPU utilizator"
+
+#~ msgid "CPU system"
+#~ msgstr "CPU sistem"
+
+# R-GC, scrie:
+# traducere inspirată în munca echipelor
+# italiene și olandeze; traducerea mot-a-mot:
+# „ceas de perete”, nu mă convingea, Acum,
+# realizez că intenția autorului era de:
+# ceas etalon(aproximativ ca GMT).
+#~ msgid "wall clock"
+#~ msgstr "timpul real"
+
+#~ msgid "iconv function not usable"
+#~ msgstr "funcție «iconv» inutilizabilă"
+
+#~ msgid "iconv function not available"
+#~ msgstr "funcție «iconv» indisponibilă"
+
+#~ msgid "character out of range"
+#~ msgstr "caracter în afara intervalului"
+
+# R-GC, scrie:
+# varianta inițială, a traducerii acestui mesaj,
+# era:
+# „"U+%04X nu poate fi convertit în setul de caractere local”
+#, c-format
+#~ msgid "cannot convert U+%04X to local character set"
+#~ msgstr "nu se poate converti U+%04X în setul de caractere local"
+
+#, c-format
+#~ msgid "cannot convert U+%04X to local character set: %s"
+#~ msgstr "nu se poate converti U+%04X în setul de caractere local: %s"
+
 #~ msgid "invalid user"
-#~ msgstr "Num�r invalid"
+#~ msgstr "utilizator nevalid"
 
-#, fuzzy
 #~ msgid "invalid group"
-#~ msgstr "Deschide grup"
+#~ msgstr "grup nevalid"
 
-#, fuzzy
+#~ msgid "invalid spec"
+#~ msgstr "specificație nevalidă"
+
+#~ msgid "unable to display error message"
+#~ msgstr "imposibil de afișat mesajul de eroare"
+
+#, c-format
+#~ msgid "Packaged by %s (%s)\n"
+#~ msgstr "Împachetat de %s (%s)\n"
+
+#, c-format
+#~ msgid "Packaged by %s\n"
+#~ msgstr "Împachetat de %s\n"
+
+#~ msgid "(C)"
+#~ msgstr "©"
+
+#, c-format
+#~ msgid ""
+#~ "License GPLv3+: GNU GPL version 3 or later <%s>.\n"
+#~ "This is free software: you are free to change and redistribute it.\n"
+#~ "There is NO WARRANTY, to the extent permitted by law.\n"
+#~ msgstr ""
+#~ "Licența GPLv3+: GNU GPL versiunea 3 sau mai mare <%s>.\n"
+#~ "Acesta este software liber: sunteți liber să îl modificați și să îl "
+#~ "redistribuiți.\n"
+#~ "NU există NICIO GARANȚIE, în măsura permisă de lege.\n"
+
+#, c-format
+#~ msgid "Written by %s.\n"
+#~ msgstr "Scris de %s.\n"
+
+#, c-format
+#~ msgid "Written by %s and %s.\n"
+#~ msgstr "Scris de %s și %s.\n"
+
+#, c-format
+#~ msgid "Written by %s, %s, and %s.\n"
+#~ msgstr "Scris de %s, %s și %s.\n"
+
+#, c-format
+#~ msgid ""
+#~ "Written by %s, %s, %s,\n"
+#~ "and %s.\n"
+#~ msgstr ""
+#~ "Scris de %s, %s, %s\n"
+#~ "și %s.\n"
+
+#, c-format
+#~ msgid ""
+#~ "Written by %s, %s, %s,\n"
+#~ "%s, and %s.\n"
+#~ msgstr ""
+#~ "Scris de %s, %s, %s,\n"
+#~ "%s, și %s.\n"
+
+#, c-format
+#~ msgid ""
+#~ "Written by %s, %s, %s,\n"
+#~ "%s, %s, and %s.\n"
+#~ msgstr ""
+#~ "Scris de %s, %s, %s,\n"
+#~ "%s, %s, și %s.\n"
+
+#, c-format
+#~ msgid ""
+#~ "Written by %s, %s, %s,\n"
+#~ "%s, %s, %s, and %s.\n"
+#~ msgstr ""
+#~ "Scris de %s, %s, %s,\n"
+#~ "%s, %s, %s, și %s.\n"
+
+#, c-format
+#~ msgid ""
+#~ "Written by %s, %s, %s,\n"
+#~ "%s, %s, %s, %s,\n"
+#~ "and %s.\n"
+#~ msgstr ""
+#~ "Scris de %s, %s, %s,\n"
+#~ "%s, %s, %s, %s,\n"
+#~ "și %s.\n"
+
+#, c-format
+#~ msgid ""
+#~ "Written by %s, %s, %s,\n"
+#~ "%s, %s, %s, %s,\n"
+#~ "%s, and %s.\n"
+#~ msgstr ""
+#~ "Scris de %s, %s, %s,\n"
+#~ "%s, %s, %s, %s,\n"
+#~ "%s, și %s.\n"
+
+#, c-format
+#~ msgid ""
+#~ "Written by %s, %s, %s,\n"
+#~ "%s, %s, %s, %s,\n"
+#~ "%s, %s, and others.\n"
+#~ msgstr ""
+#~ "Scris de %s, %s, %s,\n"
+#~ "%s, %s, %s, %s,\n"
+#~ "%s, %s, și alții.\n"
+
+#, c-format
+#~ msgid "Report bugs to: %s\n"
+#~ msgstr "Raportați erorile la %s.\n"
+
+#, c-format
+#~ msgid "Report %s bugs to: %s\n"
+#~ msgstr "Raportați erorile %s la: %s\n"
+
+#, c-format
+#~ msgid "%s home page: <%s>\n"
+#~ msgstr "%s pagina principală: <%s>\n"
+
+#, c-format
+#~ msgid "General help using GNU software: <%s>\n"
+#~ msgstr "Ajutor general utilizând software GNU: <%s>\n"
+
+# R_GC, scrie:
+# altă posibilă traducere a mesajului, ar fi:
+# „nu s-a putut stabili modul de text/binar al descriptorului de fișier”
+# Opinii/Idei ?
+# ===========================
+# La sugestia făcută de DȘ, după revizarea
+# fișierului, a rămas mesaj valabil, traducerea
+# inițială a mesajului:
+# „nu s-a putut stabili descriptorul de fișier în modul text/binar”
+#~ msgid "failed to set file descriptor text/binary mode"
+#~ msgstr "nu s-a putut stabili descriptorul de fișier în modul text/binar"
+
+#~ msgid "stdin"
+#~ msgstr "stdin»intrarea standard«"
+
+#~ msgid "stdout"
+#~ msgstr "stdout»ieșirea standard«"
+
+#~ msgid "stderr"
+#~ msgstr "stderr»ieșirea standard de erori«"
+
+#~ msgid "unknown stream"
+#~ msgstr "flux necunoscut"
+
+#, c-format
+#~ msgid "failed to reopen %s with mode %s"
+#~ msgstr "nu s-a putut redeschide %s în modul %s"
+
 #~ msgid "string comparison failed"
-#~ msgstr "Autentificare e�uat�"
+#~ msgstr "compararea șirurilor a eșuat"
+
+#~ msgid "Set LC_ALL='C' to work around the problem."
+#~ msgstr "Stabiliți LC_ALL='C' pentru a rezolva problema."
+
+#, c-format
+#~ msgid "The strings compared were %s and %s."
+#~ msgstr "Șirurile comparate au fost %s și %s."
+
+#~ msgid "cannot perform formatted output"
+#~ msgstr "nu se poate afișa ieșirea formatată"
+
+#~ msgid "standard file descriptors"
+#~ msgstr "descriptoare de fișier standard"
+
+# R-GC, scrie:
+# traducerea acestui mesaj, și a celor două
+# mesaje următoare, a fost inspirată de
+# traducerile făcute de echipa italiană și cea
+# spaniolă.
+# Colegul de TP al echipei italiene, motivează
+# astfel traducerea făcută:
+# =========================
+# „(ndt)»italian«
+# quello che viene sostituito pare sia:
+#   * il primo, hypens (con valore '--')
+#   * il secondo, option
+#   * il terzo, arg
+# quindi qualche cosa del genere:
+#  invalid --option argument 'arg'
+# #
+# (altre idee sono benvenute!)”
+#, c-format
+#~ msgid "invalid %s%s argument '%s'"
+#~ msgstr "argumentul „%3$s” al %1$s%2$s nu este valid"
+
+#, c-format
+#~ msgid "invalid suffix in %s%s argument '%s'"
+#~ msgstr "sufixul din argumentul „%3$s” al %1$s%2$s nu este valid"
+
+#, c-format
+#~ msgid "%s%s argument '%s' too large"
+#~ msgstr "argumentul „%3$s” al %1$s%2$s este prea lung"

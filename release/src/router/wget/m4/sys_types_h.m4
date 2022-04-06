@@ -1,15 +1,16 @@
-# sys_types_h.m4 serial 11
-dnl Copyright (C) 2011-2021 Free Software Foundation, Inc.
+# sys_types_h.m4 serial 13
+dnl Copyright (C) 2011-2022 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
 
 AC_DEFUN_ONCE([gl_SYS_TYPES_H],
 [
+  AC_REQUIRE([gl_SYS_TYPES_H_DEFAULTS])
+
   dnl Use sane struct stat types in OpenVMS 8.2 and later.
   AC_DEFINE([_USE_STD_STAT], 1, [For standard stat data types on VMS.])
 
-  AC_REQUIRE([gl_SYS_TYPES_H_DEFAULTS])
   gl_NEXT_HEADERS([sys/types.h])
 
   dnl Ensure the type pid_t gets defined.
@@ -28,6 +29,17 @@ AC_DEFUN_ONCE([gl_SYS_TYPES_H],
     WINDOWS_STAT_INODES=0
   ])
   AC_SUBST([WINDOWS_STAT_INODES])
+])
+
+# Initializes the default values for AC_SUBSTed shell variables.
+# This macro must not be AC_REQUIREd.  It must only be invoked, and only
+# outside of macros or in macros that are not AC_REQUIREd.
+AC_DEFUN([gl_SYS_TYPES_H_REQUIRE_DEFAULTS],
+[
+  m4_defun(GL_MODULE_INDICATOR_PREFIX[_SYS_TYPE_H_MODULE_INDICATOR_DEFAULTS], [
+  ])
+  m4_require(GL_MODULE_INDICATOR_PREFIX[_SYS_TYPE_H_MODULE_INDICATOR_DEFAULTS])
+  AC_REQUIRE([gl_SYS_TYPES_H_DEFAULTS])
 ])
 
 AC_DEFUN([gl_SYS_TYPES_H_DEFAULTS],

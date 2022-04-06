@@ -1,4 +1,429 @@
+2022-02-26  Darshit Shah  <darnir@gnu.org>
+
+	* NEWS: Update NEWS items for release
+
+	* .gitignore: Remove empty line at EOF
+
+	* .gitignore: Update file
+
+	* src.hsts.c(hsts_read_database): Use SCNd64 for portable format flags
+
+	* configure.ac: Add some warning flags to ignore
+
+	* cfg.mk: Remove passing syntax-checks from skip list
+
+	Fix issues from syntax-check
+	* doc/wget.texi: s/time stamp/timestamp/
+	* src/ftp-ls.c(clean_line): Same
+	  (ftp_parse_vms_ls): Don't cast return value of x*alloc
+	* src/ftp.c: Don't cast return value of alloca
+	* src/css-url.c: wget.h should be the first include
+	* testenv/Makefile.am: Use $(PATH_SEPARATOR) instead of : when declaring
+	  a path
+	* testenv/Test-no_proxy-env.py: s/can not/cannot/
+
+	* Update Copyright years
+
+	* bootstrap: Update script
+
+	* gnulib: Pull forward
+
+	Cleanup some incorrect uses of AM Conditionals
+	    * configure.ac: Replace IRI_IS_ENABLED with WITH_IRI and
+	      METALINK_IS_ENABLED with WITH_METALINK
+	    * src/Makefile.am: Add the .c and .h files for IRI, Metalink and
+	      Xattr support to wget_SOURCES directly when needed instead of
+	      adding them as object files.
+	    * testenv/Makefile.am: Rename METALINK_IS_ENABLED to WITH_METALINK
+
+2022-02-26  Darshit Shah  <darnir@gnu.org>
+
+	Replace incorrect usage of AC_LIBOBJ in configure.ac
+	AC_LIBOBJ is to be used for providing replacement functions for
+	compatibility reasons. Not for conditional compilation of entire source
+	files. Autotools provides other methods for achieving that. However, our
+	build system has (ab-)used the AC_LIBOBJ macros for doing this for over
+	15 years. That stops today.
+
+	    * configure.ac: Replace uses of AC_LIBOBJ with automake conditionals
+	      that can be used in Makefiles
+	    * src/Makefile.am: Use the defined conditionals to select which
+	      files get built.
+
+2022-02-25  Darshit Shah  <darnir@gnu.org>
+
+	Fix case where installed gettext is newer than minimum version
+	* configure.ac: Use AM_GNU_GETTEXT_REQUIRE_VERSION to specify a minimum
+	  version of gettext needed. This should allow newer versions of gettext
+	  to be copied for autipoint to use when available.
+
+	This commit hopefully fixes the annoying issue when building from
+	source on a system that has a newer version of gettext.
+
+2022-02-13  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* src/netrc.c (test_parse_netrc): Free netrc structure
+
+	* .gitlab-ci.yml: Fix path to llvm-symbolizer
+
+	* src/netrc.c (test_parse_netrc): New unit test function
+
+2022-01-31  Aarni Koskela  <akx@iki.fi>  (tiny change)
+
+	* src/http.c (parse_strict_transport_security): Fix typo in string
+
+2022-01-23  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* .gitlab-ci.yml (Scan-Build): Allow failure due to two false positives
+
+	* configure.ac: Use pkg-config for gpgme, libidn2 and nettle
+
+2022-01-22  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* src/ftp.c: Small cleanups
+
+2022-01-16  Nik Soggia  <wget@niksoggia.it>  (tiny change)
+
+	Print newline after dot progress bar in non-verbose mode
+	* src/progress.c (dot_finish): Print new in all progress bar contexts
+	  instead of just verbose
+
+2022-01-12  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* .gitlab-ci.yml: Fix artifact path for the Scan-Build runner
+
+2022-01-09  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* src/main.c (main): Unlink output document when --unlink is given
+
+2021-12-22  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	fuzz/*.in: Update fuzzer corpora
+
+	* .gitlab-ci.yml (CoverageReports): Fix artifacts paths
+
+	* tests/valgrind-suppressions: Fix libidn rule
+
+	* .gitlab-ci.yml: Fix artifacts paths
+
+	* tests/valgrind-suppressions: Extend libidn rule
+
+	* src/log.c (logprintf): Check earlier for verbosity
+
+	* src/http.c (http_loop): Fix memleak
+
+2021-12-21  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	Switch fuzzing build from C++ to C
+	* Makefile.am (oss-fuzz): Build with $CC instead of $CXX.
+	* README.md: Remove CXX and CXXFLAGS exports.
+
+2021-12-01  Darshit Shah  <darnir@gnu.org>
+
+	* src/http.c (http_loop): Hide password when printing status with -nv
+	Reported-By: Per Lundberg <perlun@gmail.com>
+	Closes: #61492
+
+	* gnulib: Pull forward
+
+	* src/hsts.c (hsts_read_database): Read time_t values as long long
+
+2021-12-01  Thomas Niederberger  <thomas@niederb.ch>
+
+	* src/main.c (print_help): Add command line option for TLS 1.3
+
+2021-10-11  Darshit Shah  <darnir@gnu.org>
+
+	* retr.c (rotate_backups): Non existent files are not errors in this function
+
+2021-10-08  Darshit Shah  <darnir@gnu.org>
+
+	* ftp.c (ftp_loop_internal): Fix computation of total_downloaded_bytes
+	When continuing a FTP download, or not starting one because the file is
+	already fully retrieved, don't include the size of the file in the
+	total_downloaded_bytes. Only the actual amount of data retrieved over
+	the network should be considered there.
+
+	Fixes: #61277
+	Reported-By: Michal Ruprich <formaiko>
+
+2021-09-08  Darshit Shah  <darnir@gnu.org>
+
+	Remove suprious print statements
+	* src/gnutls.c: Remove fprintf statements. We should never print to
+	  console directly. Always honor the log levels.
+	  Fixes: #61125
+
+2021-09-07  Darshit Shah  <darnir@gnu.org>
+
+	maint: post-release administrivia
+	* NEWS: Add header line for next release.
+	* .prev-version: Record previous version.
+	* cfg.mk (old_NEWS_hash): Auto-update.
+
+	* NEWS: Update NEWS items for release
+
+	* cfg.mk: Disable the indent check
+
+	* gnulib: Pull forward
+
+2021-08-21  WB  <3572564-wadersgeek@users.noreply.gitlab.com>
+
+	Fix #60956 (improve --page-requisites)
+	* src/html_url.c (tag_handle_link): Check for "alternate stylesheet",
+	  "icon" and "manifest".
+
+2021-08-07  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* src/html-url.c (tag_handle_meta): Fix integer overflow
+
+2021-07-05  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* src/recur.c (download_child): Remove temporary robots.txt.tmp
+
+2021-06-14  Josef Moellers  <jmoellers@suse.de>
+
+	Long pathnames patch
+
+2021-06-07  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* .gitlab-ci.yml: Remove scan-build deps from pages stage
+
+	* .gitlab-ci.yml: Move scan-build/ to public/ only if it exists
+
+2021-06-06  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* .gitlab-ci.yml: Move scan-build results to parent directory
+
+	* .gitlab-ci.yml: Move coverage results to parent directory
+
+	* .gitlab-ci.yml: Don't allow failure of scan-build
+
+	* .gitlab-ci.yml: Pages needs Build-Tarball
+
+	* src/url.c (append_uri_pathel): Add cheap extra check to help static analyzers
+
+	* src/http.c (gethttp): Add cheap extra check to help static analyzers
+
+	* .gitlab-ci.yml: Exclude src/css_.o from scan-build
+
+	* src/main.c (main): Removed unused variable
+
+2021-06-06  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	Revert "Long pathnames patch"
+	This reverts commit affad27664afccdedafd94711d350f368e859be4.
+
+	Manual tests with very long path names did not work with this patch.
+	We have to wait for a patch including automated tests.
+
+2021-06-06  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* .lgtm.yml: Add autoconf-archive
+
+	* .gitlab-ci.yml: Re-arrange stages
+
+	Remove .git/, .gitmodules and gnulib/ from bootstrap artefacts
+
+2021-06-06  Darshit Shah  <darnir@gnu.org>
+
+	Updated Gitlab CI Pipeline
+	* .gitlab-ci.yml: COmpletely overhauled CI pipeline with dependencies
+	  for a faster and more robust CI.
+
+2021-05-29  jmoellers  <josef.moellers@suse.com>
+
+	Long pathnames patch
+
+2021-05-22  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* fuzz/wget_read_hunk_fuzzer.c: Add explicit cast for C++ compilation
+
+	* fuzz/wget_ntlm_fuzzer.c: Add explicit cast for C++ compilation
+
+2021-05-03  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* src/http.c (initialize_request): Send Host HTTP header first
+	This solves an issue where the server expects the Host: header
+	as first one. This seems plausible (ahem) as the Host: header is the
+	only one that is required.
+
+2021-05-02  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	Improve wget_options_fuzzer
+	* fuzz/fuzzer.h: Ignore -Wunused-parameter.
+	* fuzz/wget_options_fuzzer.c: Let getaddrinfo() fail in while fuzzing.
+	* fuzz/wget_options_fuzzer.in/*: Update corpora from OSS-Fuzz.
+
+2021-05-02  Nekun  <nekokun@firemail.cc>  (tiny change)
+
+	Fix typo in VMS support code
+	* src/utils.c: Remove unpaired brace
+
+2021-04-15  Nils  <nils@nilsand.re>  (tiny change)
+
+	Use "nofollow" instead of "no-follow" in messages
+	* src/html-url.c (get_urls_html_fm): Remove misleading debug message.
+	* src/recur.c (retrieve_tree): Fix no-follow -> follow in DEBUGP.
+
+	The attribute in html is "nofollow" so it is more consistent to call it
+	so than to hyphenate it.
+
+2021-04-15  Nils  <nils@nilsand.re>  (tiny change)
+
+	Print message for no-follow attribute only if norobots respected
+	* src/html-url.c (get_urls_html_fm): Remove misleading log message.
+	* src/recur.c (retrieve_tree): Add log message into correct if block.
+
+	Commit e39be3283836b8cb7b9ee320456eefb2a2fda173 added a message that
+	said links will not be followed whenever the nofollow attribute is found
+	in a page. It didn't take into account that with -e robots=off (and
+	equivalents) links will still be followed.
+
+	This bug has been noticed multiple times:
+	* https://www.reddit.com/r/DataHoarder/comments/mprq89/wget_respects_nofollow_attribute_despite_e/
+	* https://gist.github.com/simonw/27e810771137408fd7834ad153750c41#gistcomment-3648191
+	* https://superuser.com/questions/1494761/wget-wont-ignore-no-follow-attributes
+
+	This commits makes it so that this message is only printed when a
+	nofollow link is found and the norobots convention is respected.
+
+2021-04-15  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* configure.ac: Add AM_GNU_GETTEXT_VERSION
+
+2021-04-11  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* testenv/test/base_test.py: Rename valgrind-suppression-ssl -> valgrind-suppressions-ssl
+
+	* testenv/test/base_test.py: Add --show-leak-kinds=all valgrind argument
+
+	* tests/WgetTests.pm: Add --show-leak-kinds=all valgrind argument
+
+	Fix testenv valgrind suppression
+	* testenv/Makefile.am: Remove valgrind-suppressions from EXTRA_DIST.
+	* testenv/valgrind-suppression-ssl: Rename to testenv/valgrind-suppressions-ssl.
+
+2021-04-11  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* bootstrap.conf: Add 'rename' to gnulib modules
+	The missing module could be a reason for
+	https://savannah.gnu.org/bugs/?60346.
+
+	Reported-by: jrharris42@gmail.com
+
+2021-04-11  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* src/wget.h: Use strtoll() for str_to_wgint
+	This fixes a regression reported at https://savannah.gnu.org/bugs/?60353.
+
+	Reported-by: Michal Ruprich
+
+2021-04-11  Shamil Gumirov  <shamil@gumirov.com>  (tiny change)
+
+	Minor output fix to use quote_n() instead of quote()
+	* src/ftp.c (ftp_retrieve_list): change quote to quote_n
+	* src/iri.c (do_conversion): change quote to quote_n
+	* src/url.c (convert_fname): change quote to quote_n
+
+	The implementation quote() reuses the buffer it returns which
+	leads to printing the same string for each quote() call in one
+	output line. Instead, quote_n() should be used as highlighted in
+	the doc:
+	https://www.gnu.org/software/gnulib/manual/html_node/Quoting.html
+
+2021-04-05  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* src/Makefile.am: Add metalink.c and xattr.c to EXTRA_wget_SOURCES
+
+	* testenv/Makefile.am: Allow tarball build without python3
+
+2021-04-04  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	Fix spelling errors
+	* NEWS: trough -> through.
+	* README.checkout: Likewise.
+	* contrib/spell-checker: Add exclusion 'parm'
+
+	Remove gettext version requirements
+	* bootstrap.conf: Remove gettext version requirements
+	* configure.ac: Likewise.
+
+2021-03-16  Darshit Shah  <darnir@gnu.org>
+
+	Use a LOG_COMPILER for running fuzz tests
+	This prevents needing a special case in the fuzz tests to detect
+	valgrind usage and a new exec. Instead, we simply detect the environment
+	in a shell script and start the test with valgrind in the first place.
+
+	* fuzz/test-runner.sh: New script for running the fuzz tests
+	* fuzz/main.c (main): Remove code for re-running under valgrind
+	* fuzz/Makefile.am: Set the LOG_COMPILER to test-runner.sh and remember
+	  to add it to the list of extra files for packaging
+
+2021-03-07  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* configure.ac: Add AC_PROG_CC_C99
+
+2021-03-07  Darshit Shah  <darnir@gnu.org>
+
+	Bump gettext version to 0.20
+	* bootstrap.conf: Increase minimum version of gettext needed to 0.20
+	* configure.ac: Same
+
+	* bootstrap: Update script
+
+	* gnulib: Pull forward
+
+2021-03-02  Darshit Shah  <darnir@gnu.org>
+
+	Fix double free in FTP Code
+	* src/ftp.c(getftp): Don't free `target`. If it is not pointing to
+	  targetbuf, then it still pointing to its original location of u->dir.
+	  This location will be free'd later. Doing so now causes a double free
+	  and hence crashes Wget
+	* tests/Test-ftp-dir.px: New test to show double free error
+	* tests/Makefile.am: Add new test
+
+2021-01-31  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* doc/wget.texi: Replace '' with  in example
+	Needed to hide from texi2pod.pl replacement of '' -> ".
+
+	Reported-by: Vincent Lefevre
+
+2021-01-23  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	Use gnulib's utime.h
+	* bootstrap.conf: Remove utime-h (included by utime).
+	* configure.ac: Remove header checks for utime.h and sys/utime.h.
+	* src/utils.c: Simply #include <utime.h>.
+
+	* configure.ac: Detect unresolved AX_ macros
+
+2021-01-16  Tim Rühsen  <tim.ruehsen@gmx.de>
+
+	* configure.ac: Use noyywrap for AC_PROG_LEX
+
+	Fix --quota on systems with 32bit long type
+	* src/init.c (cmd_bytes_sum): Use WGINT_MIN and WGINT_MAX in check.
+	* src/options.h (struct options): Make 'quota' of type wgint.
+	* src/retr.c: Make 'total_downloaded_bytes' of type wgint.
+	* src/utils.h: Fix comment.
+	* src/wget.h: Add WGINT_MIN, remove SUM_SIZE_INT.
+
+	* configure.ac: Remove obsolete AC_HEADER_STDC
+
+	* configure.ac: Replace ` with '
+
+	* configure.ac: Use yywrap param for AC_PROG_LEX
+
 2021-01-09  Darshit Shah  <darnir@gnu.org>
+
+	maint: post-release administrivia
+	* NEWS: Add header line for next release.
+	* .prev-version: Record previous version.
+	* cfg.mk (old_NEWS_hash): Auto-update.
 
 	* NEWS: Update NEWS items for release
 

@@ -1,5 +1,5 @@
 # include_next.m4 serial 26
-dnl Copyright (C) 2006-2021 Free Software Foundation, Inc.
+dnl Copyright (C) 2006-2022 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -193,9 +193,9 @@ AC_DEFUN([gl_NEXT_HEADERS_INTERNAL],
              if test AS_VAR_GET([gl_header_exists]) = yes; then
              AS_VAR_POPDEF([gl_header_exists])
             ])
-           gl_ABSOLUTE_HEADER_ONE(gl_HEADER_NAME)
-           AS_VAR_COPY([gl_header], [gl_cv_absolute_]AS_TR_SH(gl_HEADER_NAME))
-           AS_VAR_SET([gl_next_header], ['"'$gl_header'"'])
+          gl_ABSOLUTE_HEADER_ONE(gl_HEADER_NAME)
+          AS_VAR_COPY([gl_header], [gl_cv_absolute_]AS_TR_SH(gl_HEADER_NAME))
+          AS_VAR_SET([gl_next_header], ['"'$gl_header'"'])
           m4_if([$2], [check],
             [else
                AS_VAR_SET([gl_next_header], ['<'gl_HEADER_NAME'>'])

@@ -1,17 +1,17 @@
 /* Read the contents of a symbolic link.
-   Copyright (C) 2003-2007, 2009-2021 Free Software Foundation, Inc.
+   Copyright (C) 2003-2007, 2009-2022 Free Software Foundation, Inc.
 
-   This program is free software: you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 3 of the License, or
-   (at your option) any later version.
+   This file is free software: you can redistribute it and/or modify
+   it under the terms of the GNU Lesser General Public License as
+   published by the Free Software Foundation; either version 2.1 of the
+   License, or (at your option) any later version.
 
-   This program is distributed in the hope that it will be useful,
+   This file is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
+   GNU Lesser General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
+   You should have received a copy of the GNU Lesser General Public License
    along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
 #include <config.h>
@@ -29,8 +29,8 @@
    such as DJGPP 2.03 and mingw32.  */
 
 ssize_t
-readlink (char const *file, char *buf _GL_UNUSED,
-          size_t bufsize _GL_UNUSED)
+readlink (char const *file, _GL_UNUSED char *buf,
+          _GL_UNUSED size_t bufsize)
 {
   struct stat statbuf;
 

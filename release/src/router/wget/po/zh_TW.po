@@ -1,26 +1,26 @@
 # Traditional Chinese translation of wget.
-# Copyright (C) 1998, 2000, 01, 02, 05 Free Software Foundation, Inc.
+# Copyright (C) 1998, 2000, 01, 02, 05, 20 Free Software Foundation, Inc.
 # This file is distributed under the same license as the wget package.
 # CD Chen <cdchen@linux.ntcic.edu.tw>, 1998.
 # Pofeng Lee <pofeng.lee@ms7.url.com.tw>, 1998.
 # Jing-Jong Shyue <shyue@sonoma.com.tw>, 2000.
 # Abel Cheung <abelcheung@gmail.com>, 2001-2002, 2005.
-# pan93412 <pan93412@gmail.com>, 2018.
+# pan93412 <pan93412@gmail.com>, 2018, 2020.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: wget 1.20\n"
+"Project-Id-Version: wget 1.21.2\n"
 "Report-Msgid-Bugs-To: bug-wget@gnu.org\n"
-"POT-Creation-Date: 2021-01-09 10:58+0100\n"
-"PO-Revision-Date: 2018-11-17 14:02+0800\n"
-"Last-Translator: pan93412 <pan93412@gmail.com>\n"
-"Language-Team: Chinese (traditional) <zh-l10n@linux.org.tw>\n"
+"POT-Creation-Date: 2022-02-26 17:24+0100\n"
+"PO-Revision-Date: 2021-09-15 22:24+0800\n"
+"Last-Translator: Yi-Jyun Pan <pan93412@gmail.com>\n"
+"Language-Team: Chinese (traditional) <zh-l10n@lists.linux.org.tw>\n"
 "Language: zh_TW\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Bugs: Report translation errors to the Language-Team address.\n"
-"X-Generator: Poedit 2.2\n"
+"X-Generator: Poedit 3.0\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
 #: src/connect.c:201
@@ -89,7 +89,7 @@ msgstr "不需進行任何操作。\n"
 #: src/convert.c:246
 #, c-format
 msgid "%d.\n"
-msgstr ""
+msgstr "%d。\n"
 
 #: src/convert.c:252 src/convert.c:276
 #, c-format
@@ -200,9 +200,8 @@ msgid " (unauthoritative)\n"
 msgstr " (非正式資料)\n"
 
 #: src/ftp.c:403
-#, fuzzy
 msgid "Could not initialize SSL. It will be disabled.\n"
-msgstr "無法初始化 SSL。將停用 SSL。"
+msgstr "無法初始化 SSL。SSL 將停用。\n"
 
 #: src/ftp.c:485
 #, c-format
@@ -210,8 +209,8 @@ msgid "Logging in as %s ... "
 msgstr "以 %s 的身分登入... "
 
 #: src/ftp.c:504 src/ftp.c:590 src/ftp.c:657 src/ftp.c:722 src/ftp.c:963
-#: src/ftp.c:1019 src/ftp.c:1066 src/ftp.c:1129 src/ftp.c:1190 src/ftp.c:1288
-#: src/ftp.c:1338
+#: src/ftp.c:1016 src/ftp.c:1063 src/ftp.c:1126 src/ftp.c:1187 src/ftp.c:1285
+#: src/ftp.c:1335
 msgid "Error in server response, closing control connection.\n"
 msgstr "伺服器回應訊息發生錯誤，會關閉控制連線。\n"
 
@@ -219,8 +218,8 @@ msgstr "伺服器回應訊息發生錯誤，會關閉控制連線。\n"
 msgid "Error in server greeting.\n"
 msgstr "伺服器訊息出現錯誤。\n"
 
-#: src/ftp.c:518 src/ftp.c:730 src/ftp.c:971 src/ftp.c:1074 src/ftp.c:1139
-#: src/ftp.c:1200 src/ftp.c:1298 src/ftp.c:1348
+#: src/ftp.c:518 src/ftp.c:730 src/ftp.c:971 src/ftp.c:1071 src/ftp.c:1136
+#: src/ftp.c:1197 src/ftp.c:1295 src/ftp.c:1345
 msgid "Write failed, closing control connection.\n"
 msgstr "無法寫入，會關閉控制連線。\n"
 
@@ -249,11 +248,11 @@ msgstr "伺服器不接受「PROT %c」指令。\n"
 msgid "Server error, can't determine system type.\n"
 msgstr "伺服器錯誤，無法決定作業系統的類型。\n"
 
-#: src/ftp.c:607 src/ftp.c:1109 src/ftp.c:1173 src/ftp.c:1216
+#: src/ftp.c:607 src/ftp.c:1106 src/ftp.c:1170 src/ftp.c:1213
 msgid "done.    "
 msgstr "完成。    "
 
-#: src/ftp.c:710 src/ftp.c:989 src/ftp.c:1036 src/ftp.c:1318 src/ftp.c:1367
+#: src/ftp.c:710 src/ftp.c:989 src/ftp.c:1033 src/ftp.c:1315 src/ftp.c:1364
 msgid "done.\n"
 msgstr "完成。\n"
 
@@ -294,37 +293,37 @@ msgstr ""
 "不存在的目錄「%s」。\n"
 "\n"
 
-#: src/ftp.c:1001
+#: src/ftp.c:998
 msgid "==> CWD not required.\n"
 msgstr "==> 不需要 CWD (切換路徑)。\n"
 
-#: src/ftp.c:1044
+#: src/ftp.c:1041
 msgid "File has already been retrieved.\n"
 msgstr "檔案已接收。\n"
 
-#: src/ftp.c:1080
+#: src/ftp.c:1077
 msgid "Cannot initiate PASV transfer.\n"
 msgstr "無法初始化 PASV 檔案傳送方式。\n"
 
-#: src/ftp.c:1084
+#: src/ftp.c:1081
 msgid "Cannot parse PASV response.\n"
 msgstr "無法分析 PASV 回應訊息。\n"
 
-#: src/ftp.c:1101
+#: src/ftp.c:1098
 #, c-format
 msgid "couldn't connect to %s port %d: %s\n"
 msgstr "無法連上 %s 的埠號 %d: %s\n"
 
-#: src/ftp.c:1155
+#: src/ftp.c:1152
 #, c-format
 msgid "Bind error (%s).\n"
 msgstr "Bind 發生錯誤(%s)。\n"
 
-#: src/ftp.c:1161
+#: src/ftp.c:1158
 msgid "Invalid PORT.\n"
 msgstr "PORT 指令無效。\n"
 
-#: src/ftp.c:1207
+#: src/ftp.c:1204
 msgid ""
 "\n"
 "REST failed, starting from scratch.\n"
@@ -332,17 +331,17 @@ msgstr ""
 "\n"
 "重設 (REST) 失敗，需要重新開始傳送。\n"
 
-#: src/ftp.c:1250
+#: src/ftp.c:1247
 #, c-format
 msgid "File %s exists.\n"
 msgstr "已存在 %s 檔案。\n"
 
-#: src/ftp.c:1256
+#: src/ftp.c:1253
 #, c-format
 msgid "No such file %s.\n"
 msgstr "不存在檔案 %s。\n"
 
-#: src/ftp.c:1306
+#: src/ftp.c:1303
 #, c-format
 msgid ""
 "No such file %s.\n"
@@ -351,7 +350,7 @@ msgstr ""
 "不存在檔案 %s。\n"
 "\n"
 
-#: src/ftp.c:1356
+#: src/ftp.c:1353
 #, c-format
 msgid ""
 "No such file or directory %s.\n"
@@ -360,40 +359,40 @@ msgstr ""
 "不存在檔案或目錄 %s。\n"
 "\n"
 
-#: src/ftp.c:1515 src/http.c:2597
+#: src/ftp.c:1512 src/http.c:2597
 #, c-format
 msgid "%s has sprung into existence.\n"
 msgstr "%s 突然出現。\n"
 
-#: src/ftp.c:1604
+#: src/ftp.c:1601
 #, c-format
 msgid "%s: %s, closing control connection.\n"
 msgstr "%s: %s，將會關閉控制連線。\n"
 
-#: src/ftp.c:1616
+#: src/ftp.c:1613
 #, c-format
 msgid "%s (%s) - Data connection: %s; "
 msgstr "%s (%s) ─ 數據連線: %s；"
 
-#: src/ftp.c:1631
+#: src/ftp.c:1628
 msgid "Control connection closed.\n"
 msgstr "已關閉控制連線。\n"
 
-#: src/ftp.c:1649
+#: src/ftp.c:1646
 msgid "Data transfer aborted.\n"
 msgstr "已中止傳送資料。\n"
 
-#: src/ftp.c:1873 src/main.c:1690
+#: src/ftp.c:1870 src/main.c:1690
 #, c-format
 msgid "File %s already there; not retrieving.\n"
 msgstr "已存在檔案「%s」；選擇不接收。\n"
 
-#: src/ftp.c:1958 src/http.c:4362
+#: src/ftp.c:1955 src/http.c:4362
 #, c-format
 msgid "(try:%2d)"
 msgstr "(嘗試第 %2d 次)"
 
-#: src/ftp.c:2050 src/http.c:4792
+#: src/ftp.c:2047 src/http.c:4792
 #, c-format
 msgid ""
 "%s (%s) - written to stdout %s[%s]\n"
@@ -402,7 +401,7 @@ msgstr ""
 "%s (%s) - 寫入到 stdout %s[%s]\n"
 "\n"
 
-#: src/ftp.c:2051 src/http.c:4793
+#: src/ftp.c:2048 src/http.c:4793
 #, c-format
 msgid ""
 "%s (%s) - %s saved [%s]\n"
@@ -411,33 +410,33 @@ msgstr ""
 "%s (%s) - 已儲存 %s [%s]\n"
 "\n"
 
-#: src/ftp.c:2111 src/main.c:2174 src/metalink.c:1135 src/recur.c:512
-#: src/recur.c:750 src/retr.c:1317
+#: src/ftp.c:2108 src/main.c:2179 src/metalink.c:1135 src/recur.c:513
+#: src/recur.c:752 src/retr.c:1317
 #, c-format
 msgid "Removing %s.\n"
 msgstr "刪除 %s。\n"
 
-#: src/ftp.c:2168
+#: src/ftp.c:2165
 #, c-format
 msgid "Using %s as listing tmp file.\n"
 msgstr "將 %s 使用為列出暫存檔案用途。\n"
 
-#: src/ftp.c:2185
+#: src/ftp.c:2182
 #, c-format
 msgid "Removed %s.\n"
 msgstr "已移除 %s。\n"
 
-#: src/ftp.c:2224
+#: src/ftp.c:2221
 #, c-format
 msgid "Recursion depth %d exceeded max. depth %d.\n"
 msgstr "鏈結深度 %d 超過最大值 %d。\n"
 
-#: src/ftp.c:2294
+#: src/ftp.c:2291
 #, c-format
 msgid "Remote file no newer than local file %s -- not retrieving.\n"
 msgstr "遠端檔案沒比本機檔案 %s 新 -- 選擇不接收。\n"
 
-#: src/ftp.c:2302
+#: src/ftp.c:2299
 #, c-format
 msgid ""
 "Remote file is newer than local file %s -- retrieving.\n"
@@ -446,7 +445,7 @@ msgstr ""
 "遠端檔案比本機檔案 %s 新 -- 選擇接收。\n"
 "\n"
 
-#: src/ftp.c:2309
+#: src/ftp.c:2306
 #, c-format
 msgid ""
 "The sizes do not match (local %s) -- retrieving.\n"
@@ -455,11 +454,11 @@ msgstr ""
 "檔案大小不符 (本機檔案為 %s) -- 下載檔案。\n"
 "\n"
 
-#: src/ftp.c:2327
+#: src/ftp.c:2324
 msgid "Invalid name of the symlink, skipping.\n"
 msgstr "略過名稱有誤的符號鏈結。\n"
 
-#: src/ftp.c:2356
+#: src/ftp.c:2353
 #, c-format
 msgid ""
 "Already have correct symlink %s -> %s\n"
@@ -468,213 +467,213 @@ msgstr ""
 "正確的符號鏈結 %s → %s 已經存在\n"
 "\n"
 
-#: src/ftp.c:2365
+#: src/ftp.c:2362
 #, c-format
 msgid "Creating symlink %s -> %s\n"
 msgstr "建立符號鏈結 %s → %s\n"
 
-#: src/ftp.c:2375
+#: src/ftp.c:2372
 #, c-format
 msgid "Symlinks not supported, skipping symlink %s.\n"
 msgstr "不支援符號連結，選擇跳過符號連結 %s。\n"
 
-#: src/ftp.c:2390
+#: src/ftp.c:2387
 #, c-format
 msgid "Skipping directory %s.\n"
 msgstr "選擇跳過目錄 %s。\n"
 
-#: src/ftp.c:2403
+#: src/ftp.c:2400
 #, c-format
 msgid "%s: unknown/unsupported file type.\n"
 msgstr "%s: 檔案類別不詳或不支援。\n"
 
-#: src/ftp.c:2427
+#: src/ftp.c:2424
 #, c-format
 msgid "Failed to set permissions for %s.\n"
 msgstr "無法設定 %s 的權限。\n"
 
-#: src/ftp.c:2448
+#: src/ftp.c:2445
 #, c-format
 msgid "%s: corrupt time-stamp.\n"
 msgstr "%s: 時間標記錯誤。\n"
 
-#: src/ftp.c:2472
+#: src/ftp.c:2469
 #, c-format
 msgid "Will not retrieve dirs since depth is %d (max %d).\n"
 msgstr "因為深度為 %d (最大值為 %d)，所以不下載。\n"
 
-#: src/ftp.c:2531
+#: src/ftp.c:2528
 #, c-format
 msgid "Not descending to %s as it is excluded/not-included.\n"
 msgstr "未進入到 %s 因其不包含或被排除\n"
 
-#: src/ftp.c:2647
+#: src/ftp.c:2644
 #, c-format
 msgid "Rejecting %s.\n"
 msgstr "拒絕 %s。\n"
 
-#: src/ftp.c:2657
+#: src/ftp.c:2654
 #, c-format
 msgid "Rejecting %s (Invalid Entry).\n"
 msgstr "拒絕 %s (無效項目)。\n"
 
-#: src/ftp.c:2678
+#: src/ftp.c:2675
 #, c-format
 msgid "%s is excluded/not-included through regex.\n"
 msgstr "%s 被從正規表達式排除或不包含。\n"
 
-#: src/ftp.c:2698
+#: src/ftp.c:2695
 #, c-format
 msgid "Error matching %s against %s: %s\n"
 msgstr "將 %s 與 %s 比較時發生錯誤：%s\n"
 
-#: src/ftp.c:2738
+#: src/ftp.c:2735
 #, c-format
 msgid "No matches on pattern %s.\n"
 msgstr "沒有符合 %s 樣式的結果。\n"
 
-#: src/ftp.c:2810
+#: src/ftp.c:2807
 #, c-format
 msgid "Wrote HTML-ized index to %s [%s].\n"
 msgstr "將 HTML 化的索引寫入至 %s [%s]。\n"
 
-#: src/ftp.c:2815
+#: src/ftp.c:2812
 #, c-format
 msgid "Wrote HTML-ized index to %s.\n"
 msgstr "將 HTML 化的索引寫至 %s。\n"
 
-#: src/gnutls.c:132
+#: src/gnutls.c:133
 #, c-format
 msgid "ERROR: Cannot open directory %s.\n"
 msgstr "錯誤：無法開啟 %s 目錄。\n"
 
-#: src/gnutls.c:178
+#: src/gnutls.c:179
 #, c-format
 msgid "ERROR: Failed to open cert %s: (%d).\n"
 msgstr "錯誤：無法開啟 %s 憑證：(%d)。\n"
 
-#: src/gnutls.c:183
+#: src/gnutls.c:184
 #, c-format
 msgid "Loaded CA certificate '%s'\n"
 msgstr "已載入 CA 憑證「%s」\n"
 
-#: src/gnutls.c:191
+#: src/gnutls.c:192
 #, c-format
 msgid "ERROR: Failed to load CRL file '%s': (%d)\n"
 msgstr "錯誤：無法載入 CRL 檔案「%s」：(%d)\n"
 
-#: src/gnutls.c:195
+#: src/gnutls.c:196
 #, c-format
 msgid "Loaded CRL file '%s'\n"
 msgstr "已載入 CRL 檔案「%s」\n"
 
-#: src/gnutls.c:219
+#: src/gnutls.c:220
 msgid "ERROR: GnuTLS requires the key and the cert to be of the same type.\n"
 msgstr "錯誤：GnuTLS 要求金鑰與憑證必須為同一格式。\n"
 
-#: src/gnutls.c:771 src/gnutls.c:835
+#: src/gnutls.c:777 src/gnutls.c:841
 msgid "Your GnuTLS version is too old to support TLS 1.3\n"
 msgstr "您的 OpenSSL 版本舊到不支援 TLS 1.3\n"
 
-#: src/gnutls.c:783
+#: src/gnutls.c:789
 #, c-format
 msgid "GnuTLS: unimplemented 'secure-protocol' option value %u\n"
 msgstr "GnuTLS：未實做「secure-protocol」選項的值 %u\n"
 
-#: src/gnutls.c:785 src/gnutls.c:841 src/host.c:158 src/openssl.c:288
+#: src/gnutls.c:791 src/gnutls.c:847 src/host.c:158 src/openssl.c:288
 msgid "Please report this issue to bug-wget@gnu.org\n"
 msgstr "請回報此問題至 bug-wget@gnu.org\n"
 
-#: src/gnutls.c:840
+#: src/gnutls.c:846
 #, c-format
 msgid "GnuTLS: unimplemented 'secure-protocol' option value %d\n"
 msgstr "GnuTLS：未實做「secure-protocol」選項的值 %d\n"
 
-#: src/gnutls.c:893
+#: src/gnutls.c:899
 msgid ""
 "GnuTLS: Cannot set prio string directly. Falling back to default priority.\n"
 msgstr "GnuTLS：無法直接設定優先級 (prio) 字串。選擇退回到預設的優先級。\n"
 
-#: src/gnutls.c:1021 src/openssl.c:1029
+#: src/gnutls.c:1027 src/openssl.c:1029
 msgid "ERROR"
 msgstr "錯誤"
 
-#: src/gnutls.c:1021 src/openssl.c:1029
+#: src/gnutls.c:1027 src/openssl.c:1029
 msgid "WARNING"
 msgstr "警告"
 
-#: src/gnutls.c:1032 src/openssl.c:1042
+#: src/gnutls.c:1038 src/openssl.c:1042
 #, c-format
 msgid "%s: No certificate presented by %s.\n"
 msgstr "%s：%s 沒有提供憑證。\n"
 
-#: src/gnutls.c:1038
+#: src/gnutls.c:1044
 #, c-format
 msgid "%s: The certificate of %s is not trusted.\n"
 msgstr "%s：%s 的憑證不受信任。\n"
 
-#: src/gnutls.c:1039
+#: src/gnutls.c:1045
 #, c-format
 msgid "%s: The certificate of %s doesn't have a known issuer.\n"
 msgstr "%s：%s 的憑證沒有已知的發行者。\n"
 
-#: src/gnutls.c:1040
+#: src/gnutls.c:1046
 #, c-format
 msgid "%s: The certificate of %s has been revoked.\n"
 msgstr "%s：%s 的憑證已被撤回。\n"
 
-#: src/gnutls.c:1041
+#: src/gnutls.c:1047
 #, c-format
 msgid "%s: The certificate signer of %s was not a CA.\n"
 msgstr "%s：%s 的憑證簽發者不是個憑證頒發機構 (CA)。\n"
 
-#: src/gnutls.c:1042
+#: src/gnutls.c:1048
 #, c-format
 msgid "%s: The certificate of %s was signed using an insecure algorithm.\n"
 msgstr "%s：%s 的憑證以不安全的算法簽名。\n"
 
-#: src/gnutls.c:1043
+#: src/gnutls.c:1049
 #, c-format
 msgid "%s: The certificate of %s is not yet activated.\n"
 msgstr "%s：%s 的憑證尚未啟用。\n"
 
-#: src/gnutls.c:1044
+#: src/gnutls.c:1050
 #, c-format
 msgid "%s: The certificate of %s has expired.\n"
 msgstr "%s：%s 的憑證已經到期。\n"
 
-#: src/gnutls.c:1056
+#: src/gnutls.c:1062
 #, c-format
 msgid "Error initializing X509 certificate: %s\n"
 msgstr "初始化 X509 憑證時出錯：%s\n"
 
-#: src/gnutls.c:1065
+#: src/gnutls.c:1071
 msgid "No certificate found\n"
 msgstr "找不到憑證\n"
 
-#: src/gnutls.c:1072
+#: src/gnutls.c:1078
 #, c-format
 msgid "Error parsing certificate: %s\n"
 msgstr "解析憑證時出錯：%s\n"
 
-#: src/gnutls.c:1079
+#: src/gnutls.c:1085
 msgid "The certificate has not yet been activated\n"
 msgstr "憑證尚未啟用\n"
 
-#: src/gnutls.c:1084
+#: src/gnutls.c:1090
 msgid "The certificate has expired\n"
 msgstr "憑證已過期\n"
 
-#: src/gnutls.c:1091
+#: src/gnutls.c:1097
 #, c-format
 msgid "The certificate's owner does not match hostname %s\n"
 msgstr "憑證所有者與主機名稱 %s 不相符\n"
 
-#: src/gnutls.c:1100 src/openssl.c:1238
+#: src/gnutls.c:1106 src/openssl.c:1238
 msgid "The public key does not match pinned public key!\n"
 msgstr "公鑰與釘選公鑰不符！\n"
 
-#: src/gnutls.c:1109
+#: src/gnutls.c:1115
 msgid "Certificate must be X.509\n"
 msgstr "憑證必須為 X.509 格式\n"
 
@@ -712,13 +711,7 @@ msgstr "失敗: 連線逾時。\n"
 msgid "%s: Cannot resolve incomplete link %s.\n"
 msgstr "%s: 無法解析不完整的符號鏈結 %s。\n"
 
-#: src/html-url.c:841
-#, c-format
-msgid ""
-"no-follow attribute found in %s. Will not follow any links on this page\n"
-msgstr ""
-
-#: src/html-url.c:944
+#: src/html-url.c:945
 #, c-format
 msgid "%s: Invalid URL %s: %s\n"
 msgstr "%s: URL ‘%s’ 無效: %s\n"
@@ -745,7 +738,7 @@ msgstr ""
 msgid "gmtime failed. This is probably a bug.\n"
 msgstr "gmtime 失敗，這可能是個 bug。\n"
 
-#: src/http.c:1897
+#: src/http.c:1918
 msgid ""
 "Cannot convert timestamp to http format. Falling back to time 0 as last "
 "modification time.\n"
@@ -1043,27 +1036,27 @@ msgstr ""
 "%s (%s) - 已儲存 %s [%s/%s]\n"
 "\n"
 
-#: src/http.c:4818
+#: src/http.c:4823
 #, c-format
 msgid "%s (%s) - Connection closed at byte %s. "
 msgstr "%s (%s) - 在 %s 位元組後連線突然中斷。 "
 
-#: src/http.c:4841
+#: src/http.c:4846
 #, c-format
 msgid "%s (%s) - Read error at byte %s (%s)."
 msgstr "%s (%s) - 讀取至 %s 位元組時發生錯誤 (%s)。"
 
-#: src/http.c:4850
+#: src/http.c:4855
 #, c-format
 msgid "%s (%s) - Read error at byte %s/%s (%s). "
 msgstr "%s (%s) - 讀取至 %s/%s 位元組時發生錯誤 (%s)。"
 
-#: src/http.c:5107
+#: src/http.c:5112
 #, c-format
 msgid "Unsupported quality of protection '%s'.\n"
 msgstr "不支援的「%s」保護品質。\n"
 
-#: src/http.c:5112
+#: src/http.c:5117
 #, c-format
 msgid "Unsupported algorithm '%s'.\n"
 msgstr "不支援的演算法「%s」。\n"
@@ -1159,9 +1152,9 @@ msgid "%s: %s: Invalid time period %s\n"
 msgstr "%s：%s：無效的時間期限 %s\n"
 
 #: src/init.c:1443
-#, fuzzy, c-format
+#, c-format
 msgid "%s: %s: Negative time period %s\n"
-msgstr "%s：%s：無效的時間期限 %s\n"
+msgstr "%s：%s：時間期限 %s 是負數\n"
 
 #: src/init.c:1471 src/main.c:1926
 #, c-format
@@ -1207,16 +1200,16 @@ msgstr ""
 msgid "Encoding %s isn't valid\n"
 msgstr "編碼方式 %s 無效\n"
 
-#: src/iri.c:140 src/url.c:1587
+#: src/iri.c:140 src/url.c:1615
 #, c-format
 msgid "Conversion from %s to %s isn't supported\n"
 msgstr "不支援從 %s 轉換到 %s\n"
 
-#: src/iri.c:180 src/url.c:1617
+#: src/iri.c:180 src/url.c:1645
 msgid "Incomplete or invalid multibyte sequence encountered\n"
 msgstr "遇到不完整或無效的多位元序列\n"
 
-#: src/iri.c:200 src/url.c:1634
+#: src/iri.c:200 src/url.c:1662
 #, c-format
 msgid "Unhandled errno %d\n"
 msgstr "未處理的 errno %d\n"
@@ -1235,7 +1228,7 @@ msgstr "idn_encode 失敗 (%d)：%s\n"
 msgid "Failed to convert to lower: %d: %s\n"
 msgstr "無法轉換至小寫：%d：%s\n"
 
-#: src/log.c:937 src/log.c:956
+#: src/log.c:938 src/log.c:957
 #, c-format
 msgid ""
 "\n"
@@ -1244,7 +1237,7 @@ msgstr ""
 "\n"
 "正重新導向輸出至「%s」。\n"
 
-#: src/log.c:949
+#: src/log.c:950
 #, c-format
 msgid "%s: %s; disabling logging.\n"
 msgstr "%s: %s；無法進行任何記錄。\n"
@@ -1493,24 +1486,25 @@ msgid "       --read-timeout=SECS         set the read timeout to SECS\n"
 msgstr "       --read-timeout=秒數         設定讀取逾時為 <秒數>\n"
 
 #: src/main.c:695
-#, fuzzy
 msgid ""
 "  -w,  --wait=SECONDS              wait SECONDS between retrievals\n"
 "                                     (applies if more then 1 URL is to be "
 "retrieved)\n"
-msgstr "  -w,  --wait=秒數               每次下載檔案之前等待指定秒數\n"
+msgstr ""
+"  -w,  --wait=秒數               每次下載檔案之前等待指定秒數\n"
+"                                     (會在要取得 1 個以上的 URL 時套用)\n"
 
 #: src/main.c:698
-#, fuzzy
 msgid ""
 "       --waitretry=SECONDS         wait 1..SECONDS between retries of a "
 "retrieval\n"
 "                                     (applies if more then 1 URL is to be "
 "retrieved)\n"
-msgstr "       --waitretry=秒數         在下次接收重試前等 1 到 <秒數> 秒\n"
+msgstr ""
+"       --waitretry=秒數         在下次接收重試前等 1 到 <秒數> 秒\n"
+"                        (會在要取得 1 個以上的 URL 時套用)\n"
 
 #: src/main.c:701
-#, fuzzy
 msgid ""
 "       --random-wait               wait from 0.5*WAIT...1.5*WAIT secs "
 "between retrievals\n"
@@ -1518,6 +1512,7 @@ msgid ""
 "retrieved)\n"
 msgstr ""
 "       --random-wait               每次下載之前等待 0.5*WAIT...1.5*WAIT 秒\n"
+"                          (會在要取得 1 個以上的 URL 時套用)\n"
 
 #: src/main.c:704
 msgid "       --no-proxy                  explicitly turn off proxy\n"
@@ -1652,12 +1647,11 @@ msgid ""
 msgstr "       --preferred-location        Metalink 資源的偏好位置\n"
 
 #: src/main.c:759
-#, fuzzy
 msgid ""
 "       --xattr                     turn on storage of metadata in extended "
 "file attributes\n"
 msgstr ""
-"       --no-xattr                  在延伸檔案屬性中關閉中繼資料的儲存。\n"
+"       --xattr                     開啟在延伸檔案屬性中儲存中繼資料的功能\n"
 
 #: src/main.c:764
 msgid "Directories:\n"
@@ -1859,10 +1853,17 @@ msgid "HTTPS (SSL/TLS) options:\n"
 msgstr "HTTPS (SSL/TLS) 選項：\n"
 
 #: src/main.c:847
+#, fuzzy
+#| msgid ""
+#| "       --secure-protocol=PR        choose secure protocol, one of auto, "
+#| "SSLv2,\n"
+#| "                                     SSLv3, TLSv1, TLSv1_1, TLSv1_2 and "
+#| "PFS\n"
 msgid ""
 "       --secure-protocol=PR        choose secure protocol, one of auto, "
 "SSLv2,\n"
-"                                     SSLv3, TLSv1, TLSv1_1, TLSv1_2 and PFS\n"
+"                                     SSLv3, TLSv1, TLSv1_1, TLSv1_2, TLSv1_3 "
+"and PFS\n"
 msgstr ""
 "       --secure-protocol=PR        選擇安全通訊協定，可以使用 auto, SSLv2,\n"
 "                                     SSLv3, TLSv1, TLSv1_1, TLSv1_2 和 PFS\n"
@@ -2269,13 +2270,14 @@ msgid ""
 msgstr "  -np, --no-parent                 不進入上層目錄\n"
 
 #: src/main.c:1031
-#, fuzzy
 msgid ""
 "Email bug reports, questions, discussions to <bug-wget@gnu.org>\n"
 "and/or open issues at https://savannah.gnu.org/bugs/?"
 "func=additem&group=wget.\n"
 msgstr ""
-"和/或在 https://savannah.gnu.org/bugs/?func=additem&group=wget 開啟議題。\n"
+"錯誤報告、問題與討論請寄到 <bug-wget@gnu.org>\n"
+"以及 (或是) 在 https://savannah.gnu.org/bugs/?func=additem&group=wget 開啟議"
+"題。\n"
 
 #: src/main.c:1037
 #, c-format
@@ -2529,7 +2531,7 @@ msgstr "不能同時指定 --ask-password 和 --password。\n"
 msgid ""
 "WARNING: No username set with --ask-password. This is usually not what you "
 "want.\n"
-msgstr ""
+msgstr "警告：--ask-password 未設定使用者名稱。這通常與您預期的行為不符。\n"
 
 #: src/main.c:1775
 #, c-format
@@ -2576,13 +2578,13 @@ msgstr "不能同時指定 --body-data 和 --body-file 選項。\n"
 msgid "This version does not have support for IRIs\n"
 msgstr "此版本不支援 IRI\n"
 
-#: src/main.c:2003
+#: src/main.c:2008
 #, c-format
 msgid ""
 "-k or -r can be used together with -O only if outputting to a regular file.\n"
 msgstr "假若輸出到一個正常檔案，-k 或 -r 只能與 -O 一起使用。\n"
 
-#: src/main.c:2009
+#: src/main.c:2014
 #, c-format
 msgid ""
 "--convert-links or --convert-file-only can be used together only if "
@@ -2591,42 +2593,42 @@ msgstr ""
 "假若輸出到一個正常檔案，--convert-links 或 --convert-file-only 只能一起使"
 "用。\n"
 
-#: src/main.c:2020
+#: src/main.c:2025
 #, c-format
 msgid "Failed to init libcares\n"
 msgstr "無法初始化 libcares\n"
 
-#: src/main.c:2026
+#: src/main.c:2031
 #, c-format
 msgid "Failed to init c-ares channel\n"
 msgstr "無法初始化 c-ares 頻道\n"
 
-#: src/main.c:2049
+#: src/main.c:2054
 #, c-format
 msgid "Failed to parse IP address '%s'\n"
 msgstr "無法解析 IP 位址「%s」\n"
 
-#: src/main.c:2060
+#: src/main.c:2065
 #, c-format
 msgid "Failed to set DNS server(s) '%s' (%d)\n"
 msgstr "無法設定 DNS 伺服器「%s」(%d)\n"
 
-#: src/main.c:2197
+#: src/main.c:2202
 #, c-format
 msgid "No URLs found in %s.\n"
 msgstr "在 %s 中找不到 URL。\n"
 
-#: src/main.c:2213
+#: src/main.c:2218
 #, c-format
 msgid "Unable to parse metalink file %s.\n"
 msgstr "無法解析 metalink 檔案 %s。\n"
 
-#: src/main.c:2243 src/metalink.c:337
+#: src/main.c:2248 src/metalink.c:337
 #, c-format
 msgid "Could not download all resources from %s.\n"
 msgstr "無法從 %s 下載所有資源。\n"
 
-#: src/main.c:2270
+#: src/main.c:2275
 #, c-format
 msgid ""
 "FINISHED --%s--\n"
@@ -2637,7 +2639,7 @@ msgstr ""
 "總計 clock 時間：%s\n"
 "已下載：%d 個檔案，%s 在 %s (%s) 中\n"
 
-#: src/main.c:2284
+#: src/main.c:2289
 #, c-format
 msgid "Download quota of %s EXCEEDED!\n"
 msgstr "%s 已達下載限額！\n"
@@ -2805,7 +2807,7 @@ msgstr "繼續在背景中執行。\n"
 msgid "Continuing in background, pid %lu.\n"
 msgstr "繼續在背景中執行，pid 為 %lu。\n"
 
-#: src/mswindows.c:291 src/utils.c:509
+#: src/mswindows.c:291 src/utils.c:502
 #, c-format
 msgid "Output will be written to %s.\n"
 msgstr "將會把輸出寫到 %s。\n"
@@ -2840,12 +2842,12 @@ msgstr "%s：%s:%d：警告：%s 令牌在機器名稱前出現\n"
 msgid "%s: %s:%d: unknown token \"%s\"\n"
 msgstr "%s: %s:%d: 不明的標記「%s」\n"
 
-#: src/netrc.c:500
+#: src/netrc.c:553
 #, c-format
 msgid "Usage: %s NETRC [HOSTNAME]\n"
 msgstr "用法: %s NETRC [主機名稱]\n"
 
-#: src/netrc.c:518
+#: src/netrc.c:571
 #, c-format
 msgid "%s: cannot stat %s: %s\n"
 msgstr "%s：無法 stat() %s：%s\n"
@@ -2884,11 +2886,11 @@ msgstr "OpenSSL：無效的密文列表：%s\n"
 
 #: src/openssl.c:360
 msgid "OpenSSL: Failed set trust to partial chain\n"
-msgstr ""
+msgstr "OpenSSL：無法將某些鏈結設定為信任\n"
 
 #: src/openssl.c:366
 msgid "OpenSSL: Failed to allocate verification param\n"
-msgstr ""
+msgstr "OpenSSL：無法配置驗證參數\n"
 
 #: src/openssl.c:844
 msgid "WARNING: Could not seed PRNG. Consider using --random-file.\n"
@@ -2980,15 +2982,21 @@ msgstr "  於 "
 msgid "Cannot get REALTIME clock frequency: %s\n"
 msgstr "無法讀取實時時鐘的頻率：%s\n"
 
-#: src/recur.c:513
+#: src/recur.c:430
+#, c-format
+msgid ""
+"nofollow attribute found in %s. Will not follow any links on this page\n"
+msgstr "%s 有 nofollow 屬性。將不進入這個頁面中的任何連結\n"
+
+#: src/recur.c:514
 #, c-format
 msgid "Removing %s since it should be rejected.\n"
 msgstr "刪除 %s，因為它應該被指定了拒絕下載。\n"
 
 #: src/res.c:394
-#, fuzzy, c-format
+#, c-format
 msgid "Cannot open %s: %s\n"
-msgstr "無法開啟 %s: %s"
+msgstr "無法開啟 %s：%s\n"
 
 #: src/res.c:556
 msgid "Loading robots.txt; please ignore errors.\n"
@@ -3086,101 +3094,99 @@ msgstr "IPv6 位址無效"
 msgid "HTTPS support not compiled in"
 msgstr "未編譯進 HTTPS 支援"
 
-#: src/url.c:1620
+#: src/url.c:1648
 msgid "Unconvertable multibyte sequence encountered\n"
 msgstr "遇到無法救援的多位元陣列\n"
 
-#: src/utils.c:129
+#: src/utils.c:122
 #, c-format
 msgid "%s: %s: Failed to allocate enough memory; memory exhausted.\n"
 msgstr "%s：%s：無法分配足夠的記憶體；記憶體資源已經耗盡。\n"
 
-#: src/utils.c:135
+#: src/utils.c:128
 #, c-format
 msgid "%s: %s: Failed to allocate %ld bytes; memory exhausted.\n"
 msgstr "%s：%s：無法分配 %ld 位元組，記憶體已耗盡。\n"
 
-#: src/utils.c:355
+#: src/utils.c:348
 #, c-format
 msgid "%s: aprintf: text buffer is too big (%d bytes), aborting.\n"
 msgstr "%s：aprintf：文字緩衝區過大 (%d 位元組)，選擇忽略。\n"
 
-#: src/utils.c:507
+#: src/utils.c:500
 #, c-format
 msgid "Continuing in background, pid %d.\n"
 msgstr "繼續在背景中執行，pid 為 %d。\n"
 
-#: src/utils.c:558
+#: src/utils.c:551
 #, c-format
 msgid "Failed to unlink symlink %s: %s\n"
 msgstr "無法取消符號連結 %s：%s\n"
 
-#: src/utils.c:879
+#: src/utils.c:872
 #, c-format
 msgid "Failed to Fopen file %s\n"
 msgstr "無法 Fopen 檔案 %s\n"
 
-#: src/utils.c:885
+#: src/utils.c:878
 #, c-format
 msgid "Failed to get FD for file %s\n"
 msgstr "無法取得檔案 %s 的檔案描述符 (FD)\n"
 
-#: src/utils.c:892
+#: src/utils.c:885
 #, c-format
 msgid "Failed to stat file %s, (check permissions)\n"
 msgstr "無法 stat 檔案 %s，（請檢查權限）\n"
 
-#: src/utils.c:902
-#, fuzzy, c-format
+#: src/utils.c:895
+#, c-format
 msgid "File %s changed since the last check. Security check failed.\n"
-msgstr "上次檢查以來發現 %s 檔案已變更。安全檢查失敗。"
+msgstr "繼上次檢查後發現 %s 檔案已經變更。安全檢查失敗。\n"
 
-#: src/utils.c:937
+#: src/utils.c:930
 #, c-format
 msgid "Failed to open file %s, reason :%s\n"
 msgstr "無法開啟檔案 %s，原因是：%s\n"
 
-#: src/utils.c:943
+#: src/utils.c:936
 #, c-format
 msgid "Failed to stat file %s, error: %s\n"
 msgstr "無法 stat 檔案 %s，錯誤為：%s\n"
 
-#: src/utils.c:953
-#, fuzzy, c-format
+#: src/utils.c:946
+#, c-format
 msgid ""
 "Trying to open file %s but it changed since last check. Security check "
 "failed.\n"
-msgstr "嘗試打開檔案 %s 但其在上次檢查後被修改過。安全檢查失敗。"
+msgstr "嘗試打開檔案 %s，但繼上次檢查後檔案已變更。安全檢查失敗。\n"
 
-#: src/utils.c:2442
+#: src/utils.c:2443
 #, c-format
 msgid "Invalid regular expression %s, PCRE2 error %d\n"
 msgstr "無效的正規表達式 %s，PCRE2 錯誤 %d\n"
 
-#: src/utils.c:2459 src/utils.c:2482
+#: src/utils.c:2460 src/utils.c:2483
 #, c-format
 msgid "Invalid regular expression %s, %s\n"
 msgstr "無效的正規表達式 %s，%s\n"
 
-#: src/utils.c:2512 src/utils.c:2534 src/utils.c:2558
+#: src/utils.c:2513 src/utils.c:2535 src/utils.c:2559
 #, c-format
 msgid "Error while matching %s: %d\n"
 msgstr "尋找 %s 符合項目時出錯：%d\n"
 
-#: src/utils.c:2851
+#: src/utils.c:2852
 #, c-format
 msgid "Skipping key with wrong size (%d/%d): %s\n"
 msgstr "跳過錯誤大小的金鑰 (%d/%d)：%s\n"
 
 #: src/warc.c:217
-#, fuzzy
 msgid "Error setting WARC file position.\n"
-msgstr "開啟 WARC 檔案 %s 時出錯。\n"
+msgstr "無法設定 WARC 檔案位置。\n"
 
 #: src/warc.c:224
-#, fuzzy
 msgid "Error flushing WARC file to disk.\n"
-msgstr "開啟 WARC 檔案 %s 時出錯。\n"
+msgstr "無法將 WARC 檔案從緩衝區寫入磁碟。\n"
 
 #: src/warc.c:234
 msgid "Error duplicating WARC file file descriptor.\n"
@@ -3315,31 +3321,24 @@ msgstr "在 CDX 檔案中找到精確符合項目。選擇儲存重新瀏覽紀�
 #~ msgid "Parameter string not correctly encoded"
 #~ msgstr "引數字串以不正確的方式編碼"
 
-#, c-format
 #~ msgid "%s: option '%s%s' is ambiguous\n"
 #~ msgstr "%s：「%s%s」選項不明確\n"
 
-#, c-format
 #~ msgid "%s: option '%s%s' is ambiguous; possibilities:"
 #~ msgstr "%s：選項「%s%s」不明確；可能值為："
 
-#, c-format
 #~ msgid "%s: unrecognized option '%s%s'\n"
 #~ msgstr "%s：無法識別的選項「%s%s」\n"
 
-#, c-format
 #~ msgid "%s: option '%s%s' doesn't allow an argument\n"
 #~ msgstr "%s：「%s%s」選項不允許引數\n"
 
-#, c-format
 #~ msgid "%s: option '%s%s' requires an argument\n"
 #~ msgstr "%s：「%s%s」選項需要引數\n"
 
-#, c-format
 #~ msgid "%s: invalid option -- '%c'\n"
 #~ msgstr "%s：無效的選項 --「%c」\n"
 
-#, c-format
 #~ msgid "%s: option requires an argument -- '%c'\n"
 #~ msgstr "%s：選項需要引數 --「%c」\n"
 
@@ -3403,27 +3402,21 @@ msgstr "在 CDX 檔案中找到精確符合項目。選擇儲存重新瀏覽紀�
 #~ msgid "No previous regular expression"
 #~ msgstr "沒有上一個正規表達式"
 
-#, c-format
 #~ msgid "cannot create pipe"
 #~ msgstr "無法建立管線"
 
-#, c-format
 #~ msgid "%s subprocess failed"
 #~ msgstr "%s 子執行程序失敗"
 
-#, c-format
 #~ msgid "_open_osfhandle failed"
 #~ msgstr "_open_osfhandle 失敗"
 
-#, c-format
 #~ msgid "cannot restore fd %d: dup2 failed"
 #~ msgstr "無法還原第 %d 個 fd：dup2 失敗"
 
-#, c-format
 #~ msgid "%s subprocess"
 #~ msgstr "%s 子執行程序"
 
-#, c-format
 #~ msgid "%s subprocess got fatal signal %d"
 #~ msgstr "%s 子執行程序取得嚴重錯誤信號 %d"
 

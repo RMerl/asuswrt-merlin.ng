@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnulib 3.0.0.6062.a6b16\n"
 "Report-Msgid-Bugs-To: bug-gnulib@gnu.org\n"
-"POT-Creation-Date: 2021-01-09 10:58+0100\n"
+"POT-Creation-Date: 2022-02-26 17:24+0100\n"
 "PO-Revision-Date: 2012-03-11 11:25+0100\n"
 "Last-Translator: Simos Xenitellis <simos.lists@googlemail.com>\n"
 "Language-Team: Greek <team@lists.gnome.gr>\n"
@@ -200,117 +200,117 @@ msgstr "`"
 msgid "'"
 msgstr "'"
 
-#: lib/regcomp.c:135
+#: lib/regcomp.c:122
 msgid "Success"
 msgstr ""
 
-#: lib/regcomp.c:138
+#: lib/regcomp.c:125
 msgid "No match"
 msgstr ""
 
 #
-#: lib/regcomp.c:141
+#: lib/regcomp.c:128
 #, fuzzy
 msgid "Invalid regular expression"
 msgstr "%s: μη έγκυρη κανονική έκφραση: %s"
 
 #
-#: lib/regcomp.c:144
+#: lib/regcomp.c:131
 #, fuzzy
 msgid "Invalid collation character"
 msgstr "μη έγκυρη τάξη χαρακτήρων `%s'"
 
 #
-#: lib/regcomp.c:147
+#: lib/regcomp.c:134
 #, fuzzy
 msgid "Invalid character class name"
 msgstr "μη έγκυρη τάξη χαρακτήρων `%s'"
 
-#: lib/regcomp.c:150
+#: lib/regcomp.c:137
 msgid "Trailing backslash"
 msgstr ""
 
-#: lib/regcomp.c:153
+#: lib/regcomp.c:140
 msgid "Invalid back reference"
 msgstr ""
 
-#: lib/regcomp.c:156
+#: lib/regcomp.c:143
 msgid "Unmatched [, [^, [:, [., or [="
 msgstr ""
 
-#: lib/regcomp.c:159
+#: lib/regcomp.c:146
 msgid "Unmatched ( or \\("
 msgstr ""
 
-#: lib/regcomp.c:162
+#: lib/regcomp.c:149
 msgid "Unmatched \\{"
 msgstr ""
 
-#: lib/regcomp.c:165
+#: lib/regcomp.c:152
 msgid "Invalid content of \\{\\}"
 msgstr ""
 
 #
-#: lib/regcomp.c:168
+#: lib/regcomp.c:155
 #, fuzzy
 msgid "Invalid range end"
 msgstr "%s: μη έγκυρη κανονική έκφραση: %s"
 
 #
-#: lib/regcomp.c:171
+#: lib/regcomp.c:158
 #, fuzzy
 msgid "Memory exhausted"
 msgstr "η μνήμη εξαντλήθηκε"
 
 #
-#: lib/regcomp.c:174
+#: lib/regcomp.c:161
 #, fuzzy
 msgid "Invalid preceding regular expression"
 msgstr "%s: μη έγκυρη κανονική έκφραση: %s"
 
 #
-#: lib/regcomp.c:177
+#: lib/regcomp.c:164
 #, fuzzy
 msgid "Premature end of regular expression"
 msgstr "σφάλμα στην ανεύρεση μέσω κανονικής έκφρασης"
 
 #
-#: lib/regcomp.c:180
+#: lib/regcomp.c:167
 #, fuzzy
 msgid "Regular expression too big"
 msgstr "%s: μη έγκυρη κανονική έκφραση: %s"
 
-#: lib/regcomp.c:183
+#: lib/regcomp.c:170
 msgid "Unmatched ) or \\)"
 msgstr ""
 
 #
-#: lib/regcomp.c:676
+#: lib/regcomp.c:650
 #, fuzzy
 msgid "No previous regular expression"
 msgstr "σφάλμα στην ανεύρεση μέσω κανονικής έκφρασης"
 
 #
-#: lib/spawn-pipe.c:218 lib/spawn-pipe.c:221 lib/spawn-pipe.c:460
-#: lib/spawn-pipe.c:463
+#: lib/spawn-pipe.c:217 lib/spawn-pipe.c:220 lib/spawn-pipe.c:459
+#: lib/spawn-pipe.c:462
 #, fuzzy, c-format
 msgid "cannot create pipe"
 msgstr "αδύνατη η δημιουργία καταλόγου `%s'"
 
 #
-#: lib/spawn-pipe.c:598 lib/wait-process.c:290 lib/wait-process.c:364
+#: lib/spawn-pipe.c:597 lib/wait-process.c:291 lib/wait-process.c:365
 #, fuzzy, c-format
 msgid "%s subprocess failed"
 msgstr "%s: μη έγκυρη μορφή"
 
 #
-#: lib/wait-process.c:231 lib/wait-process.c:263 lib/wait-process.c:325
+#: lib/wait-process.c:232 lib/wait-process.c:264 lib/wait-process.c:326
 #, fuzzy, c-format
 msgid "%s subprocess"
 msgstr "%s: μη έγκυρη μορφή"
 
 #
-#: lib/wait-process.c:282 lib/wait-process.c:354
+#: lib/wait-process.c:283 lib/wait-process.c:355
 #, fuzzy, c-format
 msgid "%s subprocess got fatal signal %d"
 msgstr "%s: μη έγκυρη μορφή"

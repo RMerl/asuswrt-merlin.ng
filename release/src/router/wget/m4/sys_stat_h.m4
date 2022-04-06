@@ -1,5 +1,5 @@
-# sys_stat_h.m4 serial 38   -*- Autoconf -*-
-dnl Copyright (C) 2006-2021 Free Software Foundation, Inc.
+# sys_stat_h.m4 serial 41   -*- Autoconf -*-
+dnl Copyright (C) 2006-2022 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -7,7 +7,7 @@ dnl with or without modifications, as long as this notice is preserved.
 dnl From Eric Blake.
 dnl Provide a GNU-like <sys/stat.h>.
 
-AC_DEFUN([gl_HEADER_SYS_STAT_H],
+AC_DEFUN_ONCE([gl_SYS_STAT_H],
 [
   AC_REQUIRE([gl_SYS_STAT_H_DEFAULTS])
 
@@ -52,38 +52,53 @@ AC_DEFUN([gl_HEADER_SYS_STAT_H],
   AC_REQUIRE([AC_C_RESTRICT])
 ])
 
+# gl_SYS_STAT_MODULE_INDICATOR([modulename])
+# sets the shell variable that indicates the presence of the given module
+# to a C preprocessor expression that will evaluate to 1.
+# This macro invocation must not occur in macros that are AC_REQUIREd.
 AC_DEFUN([gl_SYS_STAT_MODULE_INDICATOR],
 [
-  dnl Use AC_REQUIRE here, so that the default settings are expanded once only.
-  AC_REQUIRE([gl_SYS_STAT_H_DEFAULTS])
+  dnl Ensure to expand the default settings once only.
+  gl_SYS_STAT_H_REQUIRE_DEFAULTS
   gl_MODULE_INDICATOR_SET_VARIABLE([$1])
   dnl Define it also as a C macro, for the benefit of the unit tests.
   gl_MODULE_INDICATOR_FOR_TESTS([$1])
 ])
 
+# Initializes the default values for AC_SUBSTed shell variables.
+# This macro must not be AC_REQUIREd.  It must only be invoked, and only
+# outside of macros or in macros that are not AC_REQUIREd.
+AC_DEFUN([gl_SYS_STAT_H_REQUIRE_DEFAULTS],
+[
+  m4_defun(GL_MODULE_INDICATOR_PREFIX[_SYS_STAT_H_MODULE_INDICATOR_DEFAULTS], [
+    gl_UNISTD_H_REQUIRE_DEFAULTS dnl for REPLACE_FCHDIR
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_FCHMODAT])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_FSTAT])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_FSTATAT])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_FUTIMENS])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_GETUMASK])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_LCHMOD])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_LSTAT])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_MKDIR])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_MKDIRAT])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_MKFIFO])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_MKFIFOAT])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_MKNOD])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_MKNODAT])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_STAT])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_UTIMENSAT])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_OVERRIDES_STRUCT_STAT])
+    dnl Support Microsoft deprecated alias function names by default.
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_MDA_CHMOD], [1])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_MDA_MKDIR], [1])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_MDA_UMASK], [1])
+  ])
+  m4_require(GL_MODULE_INDICATOR_PREFIX[_SYS_STAT_H_MODULE_INDICATOR_DEFAULTS])
+  AC_REQUIRE([gl_SYS_STAT_H_DEFAULTS])
+])
+
 AC_DEFUN([gl_SYS_STAT_H_DEFAULTS],
 [
-  AC_REQUIRE([gl_UNISTD_H_DEFAULTS]) dnl for REPLACE_FCHDIR
-  GNULIB_FCHMODAT=0;    AC_SUBST([GNULIB_FCHMODAT])
-  GNULIB_FSTAT=0;       AC_SUBST([GNULIB_FSTAT])
-  GNULIB_FSTATAT=0;     AC_SUBST([GNULIB_FSTATAT])
-  GNULIB_FUTIMENS=0;    AC_SUBST([GNULIB_FUTIMENS])
-  GNULIB_GETUMASK=0;    AC_SUBST([GNULIB_GETUMASK])
-  GNULIB_LCHMOD=0;      AC_SUBST([GNULIB_LCHMOD])
-  GNULIB_LSTAT=0;       AC_SUBST([GNULIB_LSTAT])
-  GNULIB_MKDIR=0;       AC_SUBST([GNULIB_MKDIR])
-  GNULIB_MKDIRAT=0;     AC_SUBST([GNULIB_MKDIRAT])
-  GNULIB_MKFIFO=0;      AC_SUBST([GNULIB_MKFIFO])
-  GNULIB_MKFIFOAT=0;    AC_SUBST([GNULIB_MKFIFOAT])
-  GNULIB_MKNOD=0;       AC_SUBST([GNULIB_MKNOD])
-  GNULIB_MKNODAT=0;     AC_SUBST([GNULIB_MKNODAT])
-  GNULIB_STAT=0;        AC_SUBST([GNULIB_STAT])
-  GNULIB_UTIMENSAT=0;   AC_SUBST([GNULIB_UTIMENSAT])
-  GNULIB_OVERRIDES_STRUCT_STAT=0; AC_SUBST([GNULIB_OVERRIDES_STRUCT_STAT])
-  dnl Support Microsoft deprecated alias function names by default.
-  GNULIB_MDA_CHMOD=1;   AC_SUBST([GNULIB_MDA_CHMOD])
-  GNULIB_MDA_MKDIR=1;   AC_SUBST([GNULIB_MDA_MKDIR])
-  GNULIB_MDA_UMASK=1;   AC_SUBST([GNULIB_MDA_UMASK])
   dnl Assume proper GNU behavior unless another module says otherwise.
   HAVE_FCHMODAT=1;      AC_SUBST([HAVE_FCHMODAT])
   HAVE_FSTATAT=1;       AC_SUBST([HAVE_FSTATAT])

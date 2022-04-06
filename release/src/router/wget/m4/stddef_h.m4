@@ -1,12 +1,12 @@
-# stddef_h.m4 serial 9
-dnl Copyright (C) 2009-2021 Free Software Foundation, Inc.
+# stddef_h.m4 serial 12
+dnl Copyright (C) 2009-2022 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
 
 dnl A placeholder for <stddef.h>, for platforms that have issues.
 
-AC_DEFUN([gl_STDDEF_H],
+AC_DEFUN_ONCE([gl_STDDEF_H],
 [
   AC_REQUIRE([gl_STDDEF_H_DEFAULTS])
   AC_REQUIRE([gt_TYPE_WCHAR_T])
@@ -14,7 +14,7 @@ AC_DEFUN([gl_STDDEF_H],
   dnl Persuade OpenBSD <stddef.h> to declare max_align_t.
   AC_REQUIRE([gl_USE_SYSTEM_EXTENSIONS])
 
-  STDDEF_H=
+  GL_GENERATE_STDDEF_H=false
 
   dnl Test whether the type max_align_t exists and whether its alignment
   dnl "is as great as is supported by the implementation in all contexts".
@@ -41,12 +41,12 @@ AC_DEFUN([gl_STDDEF_H],
     ])
   if test $gl_cv_type_max_align_t = no; then
     HAVE_MAX_ALIGN_T=0
-    STDDEF_H=stddef.h
+    GL_GENERATE_STDDEF_H=true
   fi
 
   if test $gt_cv_c_wchar_t = no; then
     HAVE_WCHAR_T=0
-    STDDEF_H=stddef.h
+    GL_GENERATE_STDDEF_H=true
   fi
 
   AC_CACHE_CHECK([whether NULL can be used in arbitrary expressions],
@@ -58,21 +58,34 @@ AC_DEFUN([gl_STDDEF_H],
       [gl_cv_decl_null_works=no])])
   if test $gl_cv_decl_null_works = no; then
     REPLACE_NULL=1
-    STDDEF_H=stddef.h
+    GL_GENERATE_STDDEF_H=true
   fi
 
-  AC_SUBST([STDDEF_H])
-  AM_CONDITIONAL([GL_GENERATE_STDDEF_H], [test -n "$STDDEF_H"])
-  if test -n "$STDDEF_H"; then
+  if $GL_GENERATE_STDDEF_H; then
     gl_NEXT_HEADERS([stddef.h])
   fi
 ])
 
+# gl_STDDEF_MODULE_INDICATOR([modulename])
+# sets the shell variable that indicates the presence of the given module
+# to a C preprocessor expression that will evaluate to 1.
+# This macro invocation must not occur in macros that are AC_REQUIREd.
 AC_DEFUN([gl_STDDEF_MODULE_INDICATOR],
 [
-  dnl Use AC_REQUIRE here, so that the default settings are expanded once only.
-  AC_REQUIRE([gl_STDDEF_H_DEFAULTS])
+  dnl Ensure to expand the default settings once only.
+  gl_STDDEF_H_REQUIRE_DEFAULTS
   gl_MODULE_INDICATOR_SET_VARIABLE([$1])
+])
+
+# Initializes the default values for AC_SUBSTed shell variables.
+# This macro must not be AC_REQUIREd.  It must only be invoked, and only
+# outside of macros or in macros that are not AC_REQUIREd.
+AC_DEFUN([gl_STDDEF_H_REQUIRE_DEFAULTS],
+[
+  m4_defun(GL_MODULE_INDICATOR_PREFIX[_STDDEF_H_MODULE_INDICATOR_DEFAULTS], [
+  ])
+  m4_require(GL_MODULE_INDICATOR_PREFIX[_STDDEF_H_MODULE_INDICATOR_DEFAULTS])
+  AC_REQUIRE([gl_STDDEF_H_DEFAULTS])
 ])
 
 AC_DEFUN([gl_STDDEF_H_DEFAULTS],

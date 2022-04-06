@@ -1,5 +1,5 @@
 # mbrtowc.m4 serial 38  -*- coding: utf-8 -*-
-dnl Copyright (C) 2001-2002, 2004-2005, 2008-2021 Free Software Foundation,
+dnl Copyright (C) 2001-2002, 2004-2005, 2008-2022 Free Software Foundation,
 dnl Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,

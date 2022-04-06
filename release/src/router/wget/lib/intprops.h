@@ -1,21 +1,20 @@
 /* intprops.h -- properties of integer types
 
-   Copyright (C) 2001-2021 Free Software Foundation, Inc.
+   Copyright (C) 2001-2022 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify it
-   under the terms of the GNU General Public License as published
-   by the Free Software Foundation; either version 3 of the License, or
+   under the terms of the GNU Lesser General Public License as published
+   by the Free Software Foundation; either version 2.1 of the License, or
    (at your option) any later version.
 
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
+   GNU Lesser General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
+   You should have received a copy of the GNU Lesser General Public License
    along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
-/* Written by Paul Eggert.  */
 
 #ifndef _GL_INTPROPS_H
 #define _GL_INTPROPS_H
@@ -133,7 +132,8 @@
    operators might not yield numerically correct answers due to
    arithmetic overflow.  They do not rely on undefined or
    implementation-defined behavior.  Their implementations are simple
-   and straightforward, but they are a bit harder to use than the
+   and straightforward, but they are harder to use and may be less
+   efficient than the INT_<op>_WRAPV, INT_<op>_OK, and
    INT_<op>_OVERFLOW macros described below.
 
    Example usage:
@@ -157,6 +157,9 @@
    integer type after the usual arithmetic conversions, and the type
    must have minimum value MIN and maximum MAX.  Unsigned types should
    use a zero MIN of the proper type.
+
+   Because all arguments are subject to integer promotions, these
+   macros typically do not work on types narrower than 'int'.
 
    These macros are tuned for constant MIN and MAX.  For commutative
    operations such as A + B, they are also tuned for constant B.  */
@@ -226,18 +229,22 @@
 
 /* True if __builtin_add_overflow (A, B, P) and __builtin_sub_overflow
    (A, B, P) work when P is non-null.  */
-/* __builtin_{add,sub}_overflow exists but is not reliable in GCC 5.x and 6.x,
-   see <https://gcc.gnu.org/bugzilla/show_bug.cgi?id=98269>.  */
-#if 7 <= __GNUC__ && !defined __ICC
-# define _GL_HAS_BUILTIN_ADD_OVERFLOW 1
+#ifdef __EDG__
+/* EDG-based compilers like nvc 22.1 cannot add 64-bit signed to unsigned
+   <https://bugs.gnu.org/53256>.  */
+# define _GL_HAS_BUILTIN_ADD_OVERFLOW 0
 #elif defined __has_builtin
 # define _GL_HAS_BUILTIN_ADD_OVERFLOW __has_builtin (__builtin_add_overflow)
+/* __builtin_{add,sub}_overflow exists but is not reliable in GCC 5.x and 6.x,
+   see <https://gcc.gnu.org/bugzilla/show_bug.cgi?id=98269>.  */
+#elif 7 <= __GNUC__
+# define _GL_HAS_BUILTIN_ADD_OVERFLOW 1
 #else
 # define _GL_HAS_BUILTIN_ADD_OVERFLOW 0
 #endif
 
 /* True if __builtin_mul_overflow (A, B, P) works when P is non-null.  */
-#ifdef __clang__
+#if defined __clang_major__ && __clang_major__ < 14
 /* Work around Clang bug <https://bugs.llvm.org/show_bug.cgi?id=16404>.  */
 # define _GL_HAS_BUILTIN_MUL_OVERFLOW 0
 #else
@@ -246,9 +253,8 @@
 
 /* True if __builtin_add_overflow_p (A, B, C) works, and similarly for
    __builtin_sub_overflow_p and __builtin_mul_overflow_p.  */
-#if defined __clang__ || defined __ICC
-/* Clang 11 lacks __builtin_mul_overflow_p, and even if it did it
-   would presumably run afoul of Clang bug 16404.  ICC 2021.1's
+#ifdef __EDG__
+/* In EDG-based compilers like ICC 2021.3 and earlier,
    __builtin_add_overflow_p etc. are not treated as integral constant
    expressions even when all arguments are.  */
 # define _GL_HAS_BUILTIN_OVERFLOW_P 0
@@ -339,9 +345,15 @@
    arguments should not have side effects.
 
    The WRAPV macros are not constant expressions.  They support only
-   +, binary -, and *.  Because the WRAPV macros convert the result,
-   they report overflow in different circumstances than the OVERFLOW
-   macros do.
+   +, binary -, and *.
+
+   Because the WRAPV macros convert the result, they report overflow
+   in different circumstances than the OVERFLOW macros do.  For
+   example, in the typical case with 16-bit 'short' and 32-bit 'int',
+   if A, B and R are all of type 'short' then INT_ADD_OVERFLOW (A, B)
+   returns false because the addition cannot overflow after A and B
+   are converted to 'int', whereas INT_ADD_WRAPV (A, B, &R) returns
+   true or false depending on whether the sum fits into 'short'.
 
    These macros are tuned for their last input argument being a constant.
 
@@ -391,7 +403,7 @@
 #if _GL_HAS_BUILTIN_MUL_OVERFLOW
 # if ((9 < __GNUC__ + (3 <= __GNUC_MINOR__) \
        || (__GNUC__ == 8 && 4 <= __GNUC_MINOR__)) \
-      && !defined __ICC)
+      && !defined __EDG__)
 #  define INT_MULTIPLY_WRAPV(a, b, r) __builtin_mul_overflow (a, b, r)
 # else
    /* Work around GCC bug 91450.  */

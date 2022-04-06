@@ -1,18 +1,18 @@
 /* Guts of POSIX spawn interface.  Generic POSIX.1 version.
-   Copyright (C) 2000-2006, 2008-2021 Free Software Foundation, Inc.
+   Copyright (C) 2000-2006, 2008-2022 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
-   This program is free software: you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 3 of the License, or
-   (at your option) any later version.
+   This file is free software: you can redistribute it and/or modify
+   it under the terms of the GNU Lesser General Public License as
+   published by the Free Software Foundation; either version 2.1 of the
+   License, or (at your option) any later version.
 
-   This program is distributed in the hope that it will be useful,
+   This file is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
+   GNU Lesser General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
+   You should have received a copy of the GNU Lesser General Public License
    along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
 #include <config.h>
@@ -398,9 +398,7 @@ do_open (struct inheritable_handles *inh_handles, int newfd,
   HANDLE handle = open_handle (filename, flags, mode);
   if (handle == INVALID_HANDLE_VALUE)
     {
-      int saved_errno = errno;
       free (filename_to_free);
-      errno = saved_errno;
       return -1;
     }
   free (filename_to_free);
@@ -711,13 +709,10 @@ __spawni (pid_t *pid, const char *prog_filename,
   }
 
  failed_1:
-  {
-    int saved_errno = errno;
-    free (envblock);
-    free (command);
-    free (argv_mem_to_free);
-    return saved_errno;
-  }
+  free (envblock);
+  free (command);
+  free (argv_mem_to_free);
+  return errno;
 }
 
 #else

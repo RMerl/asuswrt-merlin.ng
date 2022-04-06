@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: wget 1.16.1.46\n"
 "Report-Msgid-Bugs-To: bug-wget@gnu.org\n"
-"POT-Creation-Date: 2021-01-09 10:58+0100\n"
+"POT-Creation-Date: 2022-02-26 17:24+0100\n"
 "PO-Revision-Date: 2015-08-04 09:23+0200\n"
 "Last-Translator: Jordi Mallach <jordi@gnu.org>\n"
 "Language-Team: Catalan <ca@dodds.net>\n"
@@ -74,11 +74,13 @@ msgstr ""
 
 #: src/convert.c:201
 #, fuzzy, c-format
+#| msgid "Converted %d files in %s seconds.\n"
 msgid "Converted links in %d files in %s seconds.\n"
 msgstr "S'han convertit %d fitxers en %s segons.\n"
 
 #: src/convert.c:230
 #, fuzzy, c-format
+#| msgid "Converting %s... "
 msgid "Converting links in %s... "
 msgstr "S'està convertint %s… "
 
@@ -212,8 +214,8 @@ msgid "Logging in as %s ... "
 msgstr "S'està entrant com a «%s» … "
 
 #: src/ftp.c:504 src/ftp.c:590 src/ftp.c:657 src/ftp.c:722 src/ftp.c:963
-#: src/ftp.c:1019 src/ftp.c:1066 src/ftp.c:1129 src/ftp.c:1190 src/ftp.c:1288
-#: src/ftp.c:1338
+#: src/ftp.c:1016 src/ftp.c:1063 src/ftp.c:1126 src/ftp.c:1187 src/ftp.c:1285
+#: src/ftp.c:1335
 msgid "Error in server response, closing control connection.\n"
 msgstr ""
 "S'ha produït un error en la resposta del servidor, es tanca la connexió de "
@@ -223,8 +225,8 @@ msgstr ""
 msgid "Error in server greeting.\n"
 msgstr "S'ha produït un error en el missatge de benvinguda del servidor.\n"
 
-#: src/ftp.c:518 src/ftp.c:730 src/ftp.c:971 src/ftp.c:1074 src/ftp.c:1139
-#: src/ftp.c:1200 src/ftp.c:1298 src/ftp.c:1348
+#: src/ftp.c:518 src/ftp.c:730 src/ftp.c:971 src/ftp.c:1071 src/ftp.c:1136
+#: src/ftp.c:1197 src/ftp.c:1295 src/ftp.c:1345
 msgid "Write failed, closing control connection.\n"
 msgstr ""
 "S'ha produït un error d'escriptura, s'està tancant la connexió de control.\n"
@@ -256,11 +258,11 @@ msgstr ""
 "S'ha produït un error del servidor, no es pot determinar el tipus de "
 "sistema.\n"
 
-#: src/ftp.c:607 src/ftp.c:1109 src/ftp.c:1173 src/ftp.c:1216
+#: src/ftp.c:607 src/ftp.c:1106 src/ftp.c:1170 src/ftp.c:1213
 msgid "done.    "
 msgstr "fet.     "
 
-#: src/ftp.c:710 src/ftp.c:989 src/ftp.c:1036 src/ftp.c:1318 src/ftp.c:1367
+#: src/ftp.c:710 src/ftp.c:989 src/ftp.c:1033 src/ftp.c:1315 src/ftp.c:1364
 msgid "done.\n"
 msgstr "fet.\n"
 
@@ -301,37 +303,37 @@ msgstr ""
 "El directori %s no existeix.\n"
 "\n"
 
-#: src/ftp.c:1001
+#: src/ftp.c:998
 msgid "==> CWD not required.\n"
 msgstr "==> CWD no requerit.\n"
 
-#: src/ftp.c:1044
+#: src/ftp.c:1041
 msgid "File has already been retrieved.\n"
 msgstr "El fitxer ja s'ha obtingut.\n"
 
-#: src/ftp.c:1080
+#: src/ftp.c:1077
 msgid "Cannot initiate PASV transfer.\n"
 msgstr "No s'ha pogut iniciar la transferència PASV.\n"
 
-#: src/ftp.c:1084
+#: src/ftp.c:1081
 msgid "Cannot parse PASV response.\n"
 msgstr "No s'ha pogut analitzar la resposta PASV.\n"
 
-#: src/ftp.c:1101
+#: src/ftp.c:1098
 #, c-format
 msgid "couldn't connect to %s port %d: %s\n"
 msgstr "no s'ha pogut connectar a %s port %d: %s\n"
 
-#: src/ftp.c:1155
+#: src/ftp.c:1152
 #, c-format
 msgid "Bind error (%s).\n"
 msgstr "S'ha produït un error en vincular (%s).\n"
 
-#: src/ftp.c:1161
+#: src/ftp.c:1158
 msgid "Invalid PORT.\n"
 msgstr "PORT incorrecte.\n"
 
-#: src/ftp.c:1207
+#: src/ftp.c:1204
 msgid ""
 "\n"
 "REST failed, starting from scratch.\n"
@@ -339,17 +341,17 @@ msgstr ""
 "\n"
 "REST ha fallat, s'està començant des del principi.\n"
 
-#: src/ftp.c:1250
+#: src/ftp.c:1247
 #, c-format
 msgid "File %s exists.\n"
 msgstr "El fitxer %s existeix.\n"
 
-#: src/ftp.c:1256
+#: src/ftp.c:1253
 #, c-format
 msgid "No such file %s.\n"
 msgstr "El fitxer %s no existeix.\n"
 
-#: src/ftp.c:1306
+#: src/ftp.c:1303
 #, c-format
 msgid ""
 "No such file %s.\n"
@@ -358,7 +360,7 @@ msgstr ""
 "El fitxer %s no existeix.\n"
 "\n"
 
-#: src/ftp.c:1356
+#: src/ftp.c:1353
 #, c-format
 msgid ""
 "No such file or directory %s.\n"
@@ -367,40 +369,40 @@ msgstr ""
 "El fitxer o directori %s no existeix.\n"
 "\n"
 
-#: src/ftp.c:1515 src/http.c:2597
+#: src/ftp.c:1512 src/http.c:2597
 #, c-format
 msgid "%s has sprung into existence.\n"
 msgstr "%s ha començat a existir.\n"
 
-#: src/ftp.c:1604
+#: src/ftp.c:1601
 #, c-format
 msgid "%s: %s, closing control connection.\n"
 msgstr "%s: %s, es tanca la connexió de control.\n"
 
-#: src/ftp.c:1616
+#: src/ftp.c:1613
 #, c-format
 msgid "%s (%s) - Data connection: %s; "
 msgstr "%s (%s) - Connexió de dades: %s; "
 
-#: src/ftp.c:1631
+#: src/ftp.c:1628
 msgid "Control connection closed.\n"
 msgstr "Connexió de control tancada.\n"
 
-#: src/ftp.c:1649
+#: src/ftp.c:1646
 msgid "Data transfer aborted.\n"
 msgstr "S'ha avortat la transferència de dades.\n"
 
-#: src/ftp.c:1873 src/main.c:1690
+#: src/ftp.c:1870 src/main.c:1690
 #, c-format
 msgid "File %s already there; not retrieving.\n"
 msgstr "El fitxer %s ja existeix, no es baixa.\n"
 
-#: src/ftp.c:1958 src/http.c:4362
+#: src/ftp.c:1955 src/http.c:4362
 #, c-format
 msgid "(try:%2d)"
 msgstr "(intent:%2d)"
 
-#: src/ftp.c:2050 src/http.c:4792
+#: src/ftp.c:2047 src/http.c:4792
 #, c-format
 msgid ""
 "%s (%s) - written to stdout %s[%s]\n"
@@ -409,7 +411,7 @@ msgstr ""
 "%s (%s) - imprimit per la sortida estàndard %s[%s]\n"
 "\n"
 
-#: src/ftp.c:2051 src/http.c:4793
+#: src/ftp.c:2048 src/http.c:4793
 #, c-format
 msgid ""
 "%s (%s) - %s saved [%s]\n"
@@ -418,33 +420,33 @@ msgstr ""
 "%s (%s) - s'ha desat %s [%s]\n"
 "\n"
 
-#: src/ftp.c:2111 src/main.c:2174 src/metalink.c:1135 src/recur.c:512
-#: src/recur.c:750 src/retr.c:1317
+#: src/ftp.c:2108 src/main.c:2179 src/metalink.c:1135 src/recur.c:513
+#: src/recur.c:752 src/retr.c:1317
 #, c-format
 msgid "Removing %s.\n"
 msgstr "S'està suprimint %s.\n"
 
-#: src/ftp.c:2168
+#: src/ftp.c:2165
 #, c-format
 msgid "Using %s as listing tmp file.\n"
 msgstr "S'utilitza %s com a fitxer de llistat temporal.\n"
 
-#: src/ftp.c:2185
+#: src/ftp.c:2182
 #, c-format
 msgid "Removed %s.\n"
 msgstr "S'ha suprimit %s.\n"
 
-#: src/ftp.c:2224
+#: src/ftp.c:2221
 #, c-format
 msgid "Recursion depth %d exceeded max. depth %d.\n"
 msgstr "La profunditat de recursió %d excedeix el màxim permès %d.\n"
 
-#: src/ftp.c:2294
+#: src/ftp.c:2291
 #, c-format
 msgid "Remote file no newer than local file %s -- not retrieving.\n"
 msgstr "El fitxer remot no és més nou que el local %s -- no es baixa.\n"
 
-#: src/ftp.c:2302
+#: src/ftp.c:2299
 #, c-format
 msgid ""
 "Remote file is newer than local file %s -- retrieving.\n"
@@ -453,7 +455,7 @@ msgstr ""
 "El fitxer remot és més nou que el local %s -- s'està baixant.\n"
 "\n"
 
-#: src/ftp.c:2309
+#: src/ftp.c:2306
 #, c-format
 msgid ""
 "The sizes do not match (local %s) -- retrieving.\n"
@@ -462,11 +464,11 @@ msgstr ""
 "Els fitxers no tenen la mateixa mida (local %s) -- s'està baixant.\n"
 "\n"
 
-#: src/ftp.c:2327
+#: src/ftp.c:2324
 msgid "Invalid name of the symlink, skipping.\n"
 msgstr "El nom de l'enllaç simbòlic no és correcte; s'omet.\n"
 
-#: src/ftp.c:2356
+#: src/ftp.c:2353
 #, c-format
 msgid ""
 "Already have correct symlink %s -> %s\n"
@@ -475,217 +477,228 @@ msgstr ""
 "Ja hi ha un enllaç simbòlic correcte %s -> %s\n"
 "\n"
 
-#: src/ftp.c:2365
+#: src/ftp.c:2362
 #, c-format
 msgid "Creating symlink %s -> %s\n"
 msgstr "S'està creant l'enllaç simbòlic %s -> %s\n"
 
-#: src/ftp.c:2375
+#: src/ftp.c:2372
 #, c-format
 msgid "Symlinks not supported, skipping symlink %s.\n"
 msgstr "No es suporten enllaços simbòlics; s'omet l'enllaç %s.\n"
 
-#: src/ftp.c:2390
+#: src/ftp.c:2387
 #, c-format
 msgid "Skipping directory %s.\n"
 msgstr "S'està ometent el directori %s.\n"
 
-#: src/ftp.c:2403
+#: src/ftp.c:2400
 #, c-format
 msgid "%s: unknown/unsupported file type.\n"
 msgstr "%s: tipus de fitxer desconegut o no suportat.\n"
 
-#: src/ftp.c:2427
+#: src/ftp.c:2424
 #, fuzzy, c-format
+#| msgid "Unable to get cookie for %s\n"
 msgid "Failed to set permissions for %s.\n"
 msgstr "No s'ha pogut obtenir la galeta per a %s\n"
 
-#: src/ftp.c:2448
+#: src/ftp.c:2445
 #, c-format
 msgid "%s: corrupt time-stamp.\n"
 msgstr "%s: la marca de temps és corrupta..\n"
 
-#: src/ftp.c:2472
+#: src/ftp.c:2469
 #, c-format
 msgid "Will not retrieve dirs since depth is %d (max %d).\n"
 msgstr "No es baixaran els directoris ja que la profunditat és %d (max %d).\n"
 
-#: src/ftp.c:2531
+#: src/ftp.c:2528
 #, c-format
 msgid "Not descending to %s as it is excluded/not-included.\n"
 msgstr "No es descendeix a %s ja que està exclòs, o no inclòs.\n"
 
-#: src/ftp.c:2647
+#: src/ftp.c:2644
 #, c-format
 msgid "Rejecting %s.\n"
 msgstr "S'està rebutjant %s.\n"
 
-#: src/ftp.c:2657
+#: src/ftp.c:2654
 #, fuzzy, c-format
+#| msgid "Rejecting %s.\n"
 msgid "Rejecting %s (Invalid Entry).\n"
 msgstr "S'està rebutjant %s.\n"
 
-#: src/ftp.c:2678
+#: src/ftp.c:2675
 #, fuzzy, c-format
+#| msgid "Not descending to %s as it is excluded/not-included.\n"
 msgid "%s is excluded/not-included through regex.\n"
 msgstr "No es descendeix a %s ja que està exclòs, o no inclòs.\n"
 
-#: src/ftp.c:2698
+#: src/ftp.c:2695
 #, c-format
 msgid "Error matching %s against %s: %s\n"
 msgstr "S'ha produït un error en comparar %s amb %s: %s\n"
 
-#: src/ftp.c:2738
+#: src/ftp.c:2735
 #, c-format
 msgid "No matches on pattern %s.\n"
 msgstr "Cap coincidència amb el patró %s.\n"
 
-#: src/ftp.c:2810
+#: src/ftp.c:2807
 #, c-format
 msgid "Wrote HTML-ized index to %s [%s].\n"
 msgstr "S'ha escrit un índex HTMLitzat a %s [%s].\n"
 
-#: src/ftp.c:2815
+#: src/ftp.c:2812
 #, c-format
 msgid "Wrote HTML-ized index to %s.\n"
 msgstr "S'ha escrit un índex HTMLitzat a %s.\n"
 
-#: src/gnutls.c:132
+#: src/gnutls.c:133
 #, c-format
 msgid "ERROR: Cannot open directory %s.\n"
 msgstr "ERROR: No es pot obrir el directori %s.\n"
 
-#: src/gnutls.c:178
+#: src/gnutls.c:179
 #, c-format
 msgid "ERROR: Failed to open cert %s: (%d).\n"
 msgstr "ERROR: No s'ha pogut obrir el certificat %s: (%d).\n"
 
-#: src/gnutls.c:183
+#: src/gnutls.c:184
 #, fuzzy, c-format
+#| msgid "Error parsing certificate: %s\n"
 msgid "Loaded CA certificate '%s'\n"
 msgstr "S'ha produït un error en analitzar el certificat: %s\n"
 
-#: src/gnutls.c:191
+#: src/gnutls.c:192
 #, c-format
 msgid "ERROR: Failed to load CRL file '%s': (%d)\n"
 msgstr "ERROR: No s'ha pogut carregar el fitxer CRL «%s»: (%d)\n"
 
-#: src/gnutls.c:195
+#: src/gnutls.c:196
 #, c-format
 msgid "Loaded CRL file '%s'\n"
 msgstr "S'ha carregat el fitxer CRL «%s»\n"
 
-#: src/gnutls.c:219
+#: src/gnutls.c:220
 msgid "ERROR: GnuTLS requires the key and the cert to be of the same type.\n"
 msgstr ""
 "ERROR: GnuTLS requereix que la clau i certificat siguen del mateix tipus.\n"
 
-#: src/gnutls.c:771 src/gnutls.c:835
+#: src/gnutls.c:777 src/gnutls.c:841
 #, fuzzy
+#| msgid "Your OpenSSL version is too old to support TLSv1.1\n"
 msgid "Your GnuTLS version is too old to support TLS 1.3\n"
 msgstr "La vostra versió d'OpenSSL és massa antiga per suportar TLSv1.1\n"
 
-#: src/gnutls.c:783
+#: src/gnutls.c:789
 #, fuzzy, c-format
+#| msgid "GnuTLS: unimplemented 'secure-protocol' option value %d\n"
 msgid "GnuTLS: unimplemented 'secure-protocol' option value %u\n"
 msgstr ""
 "GnuTLS: el valor %d per l'opció «secure-protocol» no està implementat\n"
 
-#: src/gnutls.c:785 src/gnutls.c:841 src/host.c:158 src/openssl.c:288
+#: src/gnutls.c:791 src/gnutls.c:847 src/host.c:158 src/openssl.c:288
 msgid "Please report this issue to bug-wget@gnu.org\n"
 msgstr "Informeu d'aquest problema a bug-wget@gnu.org\n"
 
-#: src/gnutls.c:840
+#: src/gnutls.c:846
 #, c-format
 msgid "GnuTLS: unimplemented 'secure-protocol' option value %d\n"
 msgstr ""
 "GnuTLS: el valor %d per l'opció «secure-protocol» no està implementat\n"
 
-#: src/gnutls.c:893
+#: src/gnutls.c:899
 msgid ""
 "GnuTLS: Cannot set prio string directly. Falling back to default priority.\n"
 msgstr ""
 
-#: src/gnutls.c:1021 src/openssl.c:1029
+#: src/gnutls.c:1027 src/openssl.c:1029
 msgid "ERROR"
 msgstr "ERROR"
 
-#: src/gnutls.c:1021 src/openssl.c:1029
+#: src/gnutls.c:1027 src/openssl.c:1029
 msgid "WARNING"
 msgstr "AVÍS"
 
-#: src/gnutls.c:1032 src/openssl.c:1042
+#: src/gnutls.c:1038 src/openssl.c:1042
 #, c-format
 msgid "%s: No certificate presented by %s.\n"
 msgstr "%s: %s no ha presentat cap certificat.\n"
 
-#: src/gnutls.c:1038
+#: src/gnutls.c:1044
 #, c-format
 msgid "%s: The certificate of %s is not trusted.\n"
 msgstr "%s: No es confia en el certificat de %s.\n"
 
-#: src/gnutls.c:1039
+#: src/gnutls.c:1045
 #, fuzzy, c-format
+#| msgid "%s: The certificate of %s hasn't got a known issuer.\n"
 msgid "%s: The certificate of %s doesn't have a known issuer.\n"
 msgstr "%s: El certificat de %s no té un emissor conegut.\n"
 
-#: src/gnutls.c:1040
+#: src/gnutls.c:1046
 #, c-format
 msgid "%s: The certificate of %s has been revoked.\n"
 msgstr "%s: El certificat de %s s'ha revocat.\n"
 
-#: src/gnutls.c:1041
+#: src/gnutls.c:1047
 #, fuzzy, c-format
+#| msgid "%s: The certificate of %s is not trusted.\n"
 msgid "%s: The certificate signer of %s was not a CA.\n"
 msgstr "%s: No es confia en el certificat de %s.\n"
 
-#: src/gnutls.c:1042
+#: src/gnutls.c:1048
 #, fuzzy, c-format
+#| msgid "%s: The certificate of %s hasn't got a known issuer.\n"
 msgid "%s: The certificate of %s was signed using an insecure algorithm.\n"
 msgstr "%s: El certificat de %s no té un emissor conegut.\n"
 
-#: src/gnutls.c:1043
+#: src/gnutls.c:1049
 #, fuzzy, c-format
+#| msgid "%s: The certificate of %s is not trusted.\n"
 msgid "%s: The certificate of %s is not yet activated.\n"
 msgstr "%s: No es confia en el certificat de %s.\n"
 
-#: src/gnutls.c:1044
+#: src/gnutls.c:1050
 #, fuzzy, c-format
+#| msgid "%s: The certificate of %s has been revoked.\n"
 msgid "%s: The certificate of %s has expired.\n"
 msgstr "%s: El certificat de %s s'ha revocat.\n"
 
-#: src/gnutls.c:1056
+#: src/gnutls.c:1062
 #, c-format
 msgid "Error initializing X509 certificate: %s\n"
 msgstr "S'ha produït un error en inicialitzar el certificat X509: %s\n"
 
-#: src/gnutls.c:1065
+#: src/gnutls.c:1071
 msgid "No certificate found\n"
 msgstr "No s'ha trobat cap certificat\n"
 
-#: src/gnutls.c:1072
+#: src/gnutls.c:1078
 #, c-format
 msgid "Error parsing certificate: %s\n"
 msgstr "S'ha produït un error en analitzar el certificat: %s\n"
 
-#: src/gnutls.c:1079
+#: src/gnutls.c:1085
 msgid "The certificate has not yet been activated\n"
 msgstr "El certificat encara no s'ha activat\n"
 
-#: src/gnutls.c:1084
+#: src/gnutls.c:1090
 msgid "The certificate has expired\n"
 msgstr "El certificat ha caducat\n"
 
-#: src/gnutls.c:1091
+#: src/gnutls.c:1097
 #, c-format
 msgid "The certificate's owner does not match hostname %s\n"
 msgstr "El propietari del certificat no concorda amb el nom del servidor %s\n"
 
-#: src/gnutls.c:1100 src/openssl.c:1238
+#: src/gnutls.c:1106 src/openssl.c:1238
 msgid "The public key does not match pinned public key!\n"
 msgstr ""
 
-#: src/gnutls.c:1109
+#: src/gnutls.c:1115
 msgid "Certificate must be X.509\n"
 msgstr "El certificat ha de ser X.509\n"
 
@@ -723,13 +736,7 @@ msgstr "error: s'ha exhaurit el temps.\n"
 msgid "%s: Cannot resolve incomplete link %s.\n"
 msgstr "%s: No s'ha pogut resoldre l'enllaç incomplet %s.\n"
 
-#: src/html-url.c:841
-#, c-format
-msgid ""
-"no-follow attribute found in %s. Will not follow any links on this page\n"
-msgstr ""
-
-#: src/html-url.c:944
+#: src/html-url.c:945
 #, c-format
 msgid "%s: Invalid URL %s: %s\n"
 msgstr "%s: L'URL %s no és vàlid: %s\n"
@@ -756,7 +763,7 @@ msgstr ""
 msgid "gmtime failed. This is probably a bug.\n"
 msgstr ""
 
-#: src/http.c:1897
+#: src/http.c:1918
 msgid ""
 "Cannot convert timestamp to http format. Falling back to time 0 as last "
 "modification time.\n"
@@ -764,6 +771,7 @@ msgstr ""
 
 #: src/http.c:2001
 #, fuzzy, c-format
+#| msgid "POST data file %s missing: %s\n"
 msgid "BODY data file %s missing: %s\n"
 msgstr "Manca el fitxer de dades POST %s: %s\n"
 
@@ -803,6 +811,7 @@ msgstr "L'esquema d'autenticació és desconegut.\n"
 
 #: src/http.c:2478
 #, fuzzy, c-format
+#| msgid "Unknown authentication scheme.\n"
 msgid "Authentication selected: %s\n"
 msgstr "L'esquema d'autenticació és desconegut.\n"
 
@@ -1049,33 +1058,35 @@ msgstr ""
 "%s (%s) - s'ha desat %s [%s/%s]\n"
 "\n"
 
-#: src/http.c:4818
+#: src/http.c:4823
 #, c-format
 msgid "%s (%s) - Connection closed at byte %s. "
 msgstr "%s (%s) - S'ha tancat la connexió a l'octet %s. "
 
-#: src/http.c:4841
+#: src/http.c:4846
 #, c-format
 msgid "%s (%s) - Read error at byte %s (%s)."
 msgstr "%s (%s) - S'ha produït un error de lectura a l'octet %s (%s)."
 
-#: src/http.c:4850
+#: src/http.c:4855
 #, c-format
 msgid "%s (%s) - Read error at byte %s/%s (%s). "
 msgstr "%s (%s) - S'ha produït un error de lectura a l'octet %s/%s (%s). "
 
-#: src/http.c:5107
+#: src/http.c:5112
 #, c-format
 msgid "Unsupported quality of protection '%s'.\n"
 msgstr "La qualitat de la protecció «%s» no és implementada.\n"
 
-#: src/http.c:5112
+#: src/http.c:5117
 #, fuzzy, c-format
+#| msgid "Unsupported quality of protection '%s'.\n"
 msgid "Unsupported algorithm '%s'.\n"
 msgstr "La qualitat de la protecció «%s» no és implementada.\n"
 
 #: src/init.c:583
 #, fuzzy, c-format
+#| msgid "%s: WGETRC points to %s, which doesn't exist.\n"
 msgid ""
 "%s: WGETRC points to %s, which couldn't be accessed because of error: %s.\n"
 msgstr "%s: La variable WGETRC apunta a %s, que no existeix.\n"
@@ -1142,6 +1153,7 @@ msgstr "%s: %s: El booleà %s no és vàlid; useu «on» o «off».\n"
 
 #: src/init.c:1099
 #, fuzzy, c-format
+#| msgid "%s: %s: Invalid boolean %s; use `on' or `off'.\n"
 msgid "%s: %s: Invalid %s; use `on', `off' or `quiet'.\n"
 msgstr "%s: %s: El booleà %s no és vàlid; useu «on» o «off».\n"
 
@@ -1167,6 +1179,7 @@ msgstr "%s: %s: El període de temps %s no és vàlid.\n"
 
 #: src/init.c:1443
 #, fuzzy, c-format
+#| msgid "%s: %s: Invalid time period %s\n"
 msgid "%s: %s: Negative time period %s\n"
 msgstr "%s: %s: El període de temps %s no és vàlid.\n"
 
@@ -1200,6 +1213,9 @@ msgstr "%s: %s: El tipus d'indicador de progrés %s no és vàlid.\n"
 
 #: src/init.c:1714
 #, fuzzy, c-format
+#| msgid ""
+#| "%s: %s: Invalid restriction %s,\n"
+#| "    use [unix|windows],[lowercase|uppercase],[nocontrol],[ascii].\n"
 msgid ""
 "%s: %s: Invalid restriction %s,\n"
 "    use [unix|vms|windows],[lowercase|uppercase],[nocontrol],[ascii].\n"
@@ -1212,16 +1228,17 @@ msgstr ""
 msgid "Encoding %s isn't valid\n"
 msgstr "La codificació %s no és vàlida\n"
 
-#: src/iri.c:140 src/url.c:1587
+#: src/iri.c:140 src/url.c:1615
 #, fuzzy, c-format
+#| msgid "Conversion from %s to %s isn't supported\n"
 msgid "Conversion from %s to %s isn't supported\n"
 msgstr "La conversió de %s a %s no és implementada\n"
 
-#: src/iri.c:180 src/url.c:1617
+#: src/iri.c:180 src/url.c:1645
 msgid "Incomplete or invalid multibyte sequence encountered\n"
 msgstr "S'ha trobat una seqüència multioctet incompleta o invàlida\n"
 
-#: src/iri.c:200 src/url.c:1634
+#: src/iri.c:200 src/url.c:1662
 #, c-format
 msgid "Unhandled errno %d\n"
 msgstr "Número d'error no gestionat %d\n"
@@ -1237,11 +1254,15 @@ msgstr "Ha fallat «idn_encode» (%d): %s\n"
 
 #: src/iri.c:290
 #, fuzzy, c-format
+#| msgid "couldn't connect to %s port %d: %s\n"
 msgid "Failed to convert to lower: %d: %s\n"
 msgstr "no s'ha pogut connectar a %s port %d: %s\n"
 
-#: src/log.c:937 src/log.c:956
+#: src/log.c:938 src/log.c:957
 #, fuzzy, c-format
+#| msgid ""
+#| "\n"
+#| "%s received, redirecting output to %s.\n"
 msgid ""
 "\n"
 "Redirecting output to %s.\n"
@@ -1249,7 +1270,7 @@ msgstr ""
 "\n"
 "%s rebut, la sortida es redirigeix a %s.\n"
 
-#: src/log.c:949
+#: src/log.c:950
 #, c-format
 msgid "%s: %s; disabling logging.\n"
 msgstr "%s: %s; s'està inhabilitant el registre.\n"
@@ -1274,22 +1295,26 @@ msgstr "Inici:\n"
 
 #: src/main.c:594
 #, fuzzy
+#| msgid "  -V,  --version           display the version of Wget and exit.\n"
 msgid ""
 "  -V,  --version                   display the version of Wget and exit\n"
 msgstr "  -V,  --version           mostra la versió del Wget i surt.\n"
 
 #: src/main.c:596
 #, fuzzy
+#| msgid "  -h,  --help              print this help.\n"
 msgid "  -h,  --help                      print this help\n"
 msgstr "  -h,  --help              mostra aquesta ajuda.\n"
 
 #: src/main.c:598
 #, fuzzy
+#| msgid "  -b,  --background        go to background after startup.\n"
 msgid "  -b,  --background                go to background after startup\n"
 msgstr "  -b,  --background        vés a segon terme després de l'inici.\n"
 
 #: src/main.c:600
 #, fuzzy
+#| msgid "  -e,  --execute=COMMAND   execute a `.wgetrc'-style command.\n"
 msgid "  -e,  --execute=COMMAND           execute a `.wgetrc'-style command\n"
 msgstr "  -e, --execute=ORDRE      executa una ordre d'estil «.wgetrc».\n"
 
@@ -1299,39 +1324,47 @@ msgstr "Registres i fitxer d'entrada:\n"
 
 #: src/main.c:606
 #, fuzzy
+#| msgid "  -o,  --output-file=FILE    log messages to FILE.\n"
 msgid "  -o,  --output-file=FILE          log messages to FILE\n"
 msgstr ""
 "  -o,  --output-file=FITXER   desa els missatges del programa a FITXER.\n"
 
 #: src/main.c:608
 #, fuzzy
+#| msgid "  -a,  --append-output=FILE  append messages to FILE.\n"
 msgid "  -a,  --append-output=FILE        append messages to FILE\n"
 msgstr "  -a,  --append-output=FITXER afegeix els missatges a FITXER.\n"
 
 #: src/main.c:611
 #, fuzzy
+#| msgid "  -d,  --debug               print lots of debugging information.\n"
 msgid ""
 "  -d,  --debug                     print lots of debugging information\n"
 msgstr "  -d,  --debug                mostra molta informació de depuració.\n"
 
 #: src/main.c:615
 #, fuzzy
+#| msgid "       --wdebug              print Watt-32 debug output.\n"
 msgid "       --wdebug                    print Watt-32 debug output\n"
 msgstr ""
 "      --wdebug                mostra informació de depuració de Watt-32.\n"
 
 #: src/main.c:618
 #, fuzzy
+#| msgid "  -q,  --quiet               quiet (no output).\n"
 msgid "  -q,  --quiet                     quiet (no output)\n"
 msgstr "  -q,  --quiet                mode silenciós (cap sortida).\n"
 
 #: src/main.c:620
 #, fuzzy
+#| msgid "  -v,  --verbose             be verbose (this is the default).\n"
 msgid "  -v,  --verbose                   be verbose (this is the default)\n"
 msgstr "  -v,  --verbose              mode detallat (per defecte).\n"
 
 #: src/main.c:622
 #, fuzzy
+#| msgid ""
+#| "  -nv, --no-verbose          turn off verboseness, without being quiet.\n"
 msgid ""
 "  -nv, --no-verbose                turn off verboseness, without being "
 "quiet\n"
@@ -1341,6 +1374,9 @@ msgstr ""
 
 #: src/main.c:624
 #, fuzzy
+#| msgid ""
+#| "       --report-speed=TYPE   Output bandwidth as TYPE.  TYPE can be "
+#| "bits.\n"
 msgid ""
 "       --report-speed=TYPE         output bandwidth as TYPE.  TYPE can be "
 "bits\n"
@@ -1350,6 +1386,9 @@ msgstr ""
 
 #: src/main.c:626
 #, fuzzy
+#| msgid ""
+#| "  -i,  --input-file=FILE     download URLs found in local or external "
+#| "FILE.\n"
 msgid ""
 "  -i,  --input-file=FILE           download URLs found in local or external "
 "FILE\n"
@@ -1359,6 +1398,9 @@ msgstr ""
 
 #: src/main.c:629
 #, fuzzy
+#| msgid ""
+#| "  -i,  --input-file=FILE     download URLs found in local or external "
+#| "FILE.\n"
 msgid ""
 "       --input-metalink=FILE       download files covered in local Metalink "
 "FILE\n"
@@ -1368,11 +1410,15 @@ msgstr ""
 
 #: src/main.c:632
 #, fuzzy
+#| msgid "  -F,  --force-html          treat input file as HTML.\n"
 msgid "  -F,  --force-html                treat input file as HTML\n"
 msgstr "  -F,  --force-html           tracta el fitxer d'entrada com a HTML.\n"
 
 #: src/main.c:634
 #, fuzzy
+#| msgid ""
+#| "  -B,  --base=URL            resolves HTML input-file links (-i -F)\n"
+#| "                             relative to URL.\n"
 msgid ""
 "  -B,  --base=URL                  resolves HTML input-file links (-i -F)\n"
 "                                     relative to URL\n"
@@ -1382,17 +1428,20 @@ msgstr ""
 
 #: src/main.c:637
 #, fuzzy
+#| msgid "       --config=FILE         Specify config file to use.\n"
 msgid "       --config=FILE               specify config file to use\n"
 msgstr ""
 "       --config=FITXER      Especifica el fitxer de configuració a emprar.\n"
 
 #: src/main.c:639
 #, fuzzy
+#| msgid "       --no-cookies            don't use cookies.\n"
 msgid "       --no-config                 do not read any config file\n"
 msgstr "       --no-cookies            no utilitzes galetes.\n"
 
 #: src/main.c:641
 #, fuzzy
+#| msgid "  -o,  --output-file=FILE    log messages to FILE.\n"
 msgid ""
 "       --rejected-log=FILE         log reasons for URL rejection to FILE\n"
 msgstr ""
@@ -1404,6 +1453,9 @@ msgstr "Baixada:\n"
 
 #: src/main.c:647
 #, fuzzy
+#| msgid ""
+#| "  -t,  --tries=NUMBER            set number of retries to NUMBER (0 "
+#| "unlimits).\n"
 msgid ""
 "  -t,  --tries=NUMBER              set number of retries to NUMBER (0 "
 "unlimits)\n"
@@ -1413,6 +1465,8 @@ msgstr ""
 
 #: src/main.c:649
 #, fuzzy
+#| msgid ""
+#| "       --retry-connrefused       retry even if connection is refused.\n"
 msgid ""
 "       --retry-connrefused         retry even if connection is refused\n"
 msgstr ""
@@ -1421,6 +1475,9 @@ msgstr ""
 
 #: src/main.c:651
 #, fuzzy
+#| msgid ""
+#| "       --ignore-tags=LIST          comma-separated list of ignored HTML "
+#| "tags.\n"
 msgid ""
 "       --retry-on-http-error=ERRORS    comma-separated list of HTTP errors "
 "to retry\n"
@@ -1431,11 +1488,15 @@ msgstr ""
 
 #: src/main.c:653
 #, fuzzy
+#| msgid "  -O,  --output-document=FILE    write documents to FILE.\n"
 msgid "  -O,  --output-document=FILE      write documents to FILE\n"
 msgstr "  -O,  --output-document=FITXER  escriu els documents a FITXER.\n"
 
 #: src/main.c:655
 #, fuzzy
+#| msgid ""
+#| "  -nc, --no-clobber              skip downloads that would download to\n"
+#| "                                 existing files (overwriting them).\n"
 msgid ""
 "  -nc, --no-clobber                skip downloads that would download to\n"
 "                                     existing files (overwriting them)\n"
@@ -1445,6 +1506,7 @@ msgstr ""
 
 #: src/main.c:658
 #, fuzzy
+#| msgid "       --no-cookies            don't use cookies.\n"
 msgid ""
 "       --no-netrc                  don't try to obtain credentials from ."
 "netrc\n"
@@ -1492,6 +1554,9 @@ msgstr ""
 
 #: src/main.c:671
 #, fuzzy
+#| msgid ""
+#| "  --no-use-server-timestamps     don't set the local file's timestamp by\n"
+#| "                                 the one on the server.\n"
 msgid ""
 "       --no-if-modified-since      don't use conditional if-modified-since "
 "get\n"
@@ -1504,6 +1569,9 @@ msgstr ""
 
 #: src/main.c:674
 #, fuzzy
+#| msgid ""
+#| "  --no-use-server-timestamps     don't set the local file's timestamp by\n"
+#| "                                 the one on the server.\n"
 msgid ""
 "       --no-use-server-timestamps  don't set the local file's timestamp by\n"
 "                                     the one on the server\n"
@@ -1515,16 +1583,20 @@ msgstr ""
 
 #: src/main.c:677
 #, fuzzy
+#| msgid "  -S,  --server-response         print server response.\n"
 msgid "  -S,  --server-response           print server response\n"
 msgstr "  -S,  --server-response         mostra les respostes del servidor.\n"
 
 #: src/main.c:679
 #, fuzzy
+#| msgid "       --spider                  don't download anything.\n"
 msgid "       --spider                    don't download anything\n"
 msgstr "       --spider                  no baixes res.\n"
 
 #: src/main.c:681
 #, fuzzy
+#| msgid ""
+#| "  -T,  --timeout=SECONDS         set all timeout values to SECONDS.\n"
 msgid "  -T,  --timeout=SECONDS           set all timeout values to SECONDS\n"
 msgstr ""
 "  -T,  --timeout=SEGONS          estableix tots els temps d'espera a "
@@ -1538,6 +1610,9 @@ msgstr ""
 
 #: src/main.c:686
 #, fuzzy
+#| msgid ""
+#| "       --bind-address=ADDRESS    bind to ADDRESS (hostname or IP) on "
+#| "local host.\n"
 msgid ""
 "       --bind-dns-address=ADDRESS  bind DNS resolver to ADDRESS (hostname or "
 "IP) on local host\n"
@@ -1548,6 +1623,8 @@ msgstr ""
 
 #: src/main.c:689
 #, fuzzy
+#| msgid ""
+#| "       --dns-timeout=SECS        set the DNS lookup timeout to SECS.\n"
 msgid "       --dns-timeout=SECS          set the DNS lookup timeout to SECS\n"
 msgstr ""
 "       --dns-timeout=SEGONS      estableix el temps d'espera de DNS a "
@@ -1555,6 +1632,7 @@ msgstr ""
 
 #: src/main.c:691
 #, fuzzy
+#| msgid "       --connect-timeout=SECS    set the connect timeout to SECS.\n"
 msgid "       --connect-timeout=SECS      set the connect timeout to SECS\n"
 msgstr ""
 "       --connect-timeout=SEGONS  estableix el temps d'espera de connexió a\n"
@@ -1562,6 +1640,7 @@ msgstr ""
 
 #: src/main.c:693
 #, fuzzy
+#| msgid "       --read-timeout=SECS       set the read timeout to SECS.\n"
 msgid "       --read-timeout=SECS         set the read timeout to SECS\n"
 msgstr ""
 "       --read-timeout=SEGONS     estableix el temps d'espera de lectura en\n"
@@ -1569,6 +1648,7 @@ msgstr ""
 
 #: src/main.c:695
 #, fuzzy
+#| msgid "  -w,  --wait=SECONDS            wait SECONDS between retrievals.\n"
 msgid ""
 "  -w,  --wait=SECONDS              wait SECONDS between retrievals\n"
 "                                     (applies if more then 1 URL is to be "
@@ -1578,6 +1658,9 @@ msgstr ""
 
 #: src/main.c:698
 #, fuzzy
+#| msgid ""
+#| "       --waitretry=SECONDS       wait 1..SECONDS between retries of a "
+#| "retrieval.\n"
 msgid ""
 "       --waitretry=SECONDS         wait 1..SECONDS between retries of a "
 "retrieval\n"
@@ -1589,6 +1672,9 @@ msgstr ""
 
 #: src/main.c:701
 #, fuzzy
+#| msgid ""
+#| "       --random-wait             wait from 0.5*WAIT...1.5*WAIT secs "
+#| "between retrievals.\n"
 msgid ""
 "       --random-wait               wait from 0.5*WAIT...1.5*WAIT secs "
 "between retrievals\n"
@@ -1601,6 +1687,7 @@ msgstr ""
 
 #: src/main.c:704
 #, fuzzy
+#| msgid "       --no-proxy                explicitly turn off proxy.\n"
 msgid "       --no-proxy                  explicitly turn off proxy\n"
 msgstr ""
 "       --no-proxy                inhabilita explícitament l'ús del servidor\n"
@@ -1608,12 +1695,16 @@ msgstr ""
 
 #: src/main.c:706
 #, fuzzy
+#| msgid "  -Q,  --quota=NUMBER            set retrieval quota to NUMBER.\n"
 msgid "  -Q,  --quota=NUMBER              set retrieval quota to NUMBER\n"
 msgstr ""
 "  -Q,  --quota=NOMBRE            estableix la quota de baixada a NOMBRE.\n"
 
 #: src/main.c:708
 #, fuzzy
+#| msgid ""
+#| "       --bind-address=ADDRESS    bind to ADDRESS (hostname or IP) on "
+#| "local host.\n"
 msgid ""
 "       --bind-address=ADDRESS      bind to ADDRESS (hostname or IP) on local "
 "host\n"
@@ -1624,12 +1715,14 @@ msgstr ""
 
 #: src/main.c:710
 #, fuzzy
+#| msgid "       --limit-rate=RATE         limit download rate to RATE.\n"
 msgid "       --limit-rate=RATE           limit download rate to RATE\n"
 msgstr ""
 "       --limit-rate=NOMBRE       estableix el límit d'octets per segon.\n"
 
 #: src/main.c:712
 #, fuzzy
+#| msgid "       --no-dns-cache            disable caching DNS lookups.\n"
 msgid "       --no-dns-cache              disable caching DNS lookups\n"
 msgstr ""
 "       --no-dns-cache            no uses memòria cau en la resolució de "
@@ -1638,6 +1731,9 @@ msgstr ""
 
 #: src/main.c:714
 #, fuzzy
+#| msgid ""
+#| "       --restrict-file-names=OS  restrict chars in file names to ones OS "
+#| "allows.\n"
 msgid ""
 "       --restrict-file-names=OS    restrict chars in file names to ones OS "
 "allows\n"
@@ -1649,6 +1745,9 @@ msgstr ""
 
 #: src/main.c:716
 #, fuzzy
+#| msgid ""
+#| "       --ignore-case             ignore case when matching files/"
+#| "directories.\n"
 msgid ""
 "       --ignore-case               ignore case when matching files/"
 "directories\n"
@@ -1659,16 +1758,22 @@ msgstr ""
 
 #: src/main.c:719
 #, fuzzy
+#| msgid "  -4,  --inet4-only              connect only to IPv4 addresses.\n"
 msgid "  -4,  --inet4-only                connect only to IPv4 addresses\n"
 msgstr "  -4,  --inet4-only              connecta només a adreces IPv4.\n"
 
 #: src/main.c:721
 #, fuzzy
+#| msgid "  -6,  --inet6-only              connect only to IPv6 addresses.\n"
 msgid "  -6,  --inet6-only                connect only to IPv6 addresses\n"
 msgstr "  -6,  --inet6-only              connecta només a adreces IPv6.\n"
 
 #: src/main.c:723
 #, fuzzy
+#| msgid ""
+#| "       --prefer-family=FAMILY    connect first to addresses of specified "
+#| "family,\n"
+#| "                                 one of IPv6, IPv4, or none.\n"
 msgid ""
 "       --prefer-family=FAMILY      connect first to addresses of specified "
 "family,\n"
@@ -1680,6 +1785,8 @@ msgstr ""
 
 #: src/main.c:727
 #, fuzzy
+#| msgid ""
+#| "       --user=USER               set both ftp and http user to USER.\n"
 msgid "       --user=USER                 set both ftp and http user to USER\n"
 msgstr ""
 "       --user=USUARI             estableix els usuaris de ftp i http a "
@@ -1687,6 +1794,8 @@ msgstr ""
 
 #: src/main.c:729
 #, fuzzy
+#| msgid ""
+#| "       --password=PASS           set both ftp and http password to PASS.\n"
 msgid ""
 "       --password=PASS             set both ftp and http password to PASS\n"
 msgstr ""
@@ -1695,6 +1804,7 @@ msgstr ""
 
 #: src/main.c:731
 #, fuzzy
+#| msgid "       --ask-password            prompt for passwords.\n"
 msgid "       --ask-password              prompt for passwords\n"
 msgstr "       --ask-password            demana la contrasenya.\n"
 
@@ -1711,11 +1821,14 @@ msgstr ""
 
 #: src/main.c:740
 #, fuzzy
+#| msgid "       --no-iri                  turn off IRI support.\n"
 msgid "       --no-iri                    turn off IRI support\n"
 msgstr "       --no-iri                  inhabilita el suport per a IRI.\n"
 
 #: src/main.c:742
 #, fuzzy
+#| msgid ""
+#| "       --local-encoding=ENC      use ENC as the local encoding for IRIs.\n"
 msgid ""
 "       --local-encoding=ENC        use ENC as the local encoding for IRIs\n"
 msgstr ""
@@ -1724,6 +1837,8 @@ msgstr ""
 
 #: src/main.c:744
 #, fuzzy
+#| msgid ""
+#| "       --remote-encoding=ENC     use ENC as the default remote encoding.\n"
 msgid ""
 "       --remote-encoding=ENC       use ENC as the default remote encoding\n"
 msgstr ""
@@ -1732,6 +1847,7 @@ msgstr ""
 
 #: src/main.c:746
 #, fuzzy
+#| msgid "       --unlink                  remove file before clobber.\n"
 msgid "       --unlink                    remove file before clobber\n"
 msgstr ""
 "       --unlink               suprimeix el fitxer abans de sobreescriure'l\n"
@@ -1762,6 +1878,7 @@ msgstr ""
 
 #: src/main.c:759
 #, fuzzy
+#| msgid "       --warc-cdx                write CDX index files.\n"
 msgid ""
 "       --xattr                     turn on storage of metadata in extended "
 "file attributes\n"
@@ -1773,33 +1890,42 @@ msgstr "Directoris:\n"
 
 #: src/main.c:766
 #, fuzzy
+#| msgid "  -nd, --no-directories           don't create directories.\n"
 msgid "  -nd, --no-directories            don't create directories\n"
 msgstr "  -nd, --no-directories           no crees directoris.\n"
 
 #: src/main.c:768
 #, fuzzy
+#| msgid "  -x,  --force-directories        force creation of directories.\n"
 msgid "  -x,  --force-directories         force creation of directories\n"
 msgstr "  -x,  --force-directories        força la creació de directoris.\n"
 
 #: src/main.c:770
 #, fuzzy
+#| msgid "  -nH, --no-host-directories      don't create host directories.\n"
 msgid "  -nH, --no-host-directories       don't create host directories\n"
 msgstr ""
 "  -nH, --no-host-directories       no crees els directoris del servidor.\n"
 
 #: src/main.c:772
 #, fuzzy
+#| msgid ""
+#| "       --protocol-directories     use protocol name in directories.\n"
 msgid "       --protocol-directories      use protocol name in directories\n"
 msgstr ""
 "       --protocol-directories     usa el nom del protocol als directoris.\n"
 
 #: src/main.c:774
 #, fuzzy
+#| msgid "  -P,  --directory-prefix=PREFIX  save files to PREFIX/...\n"
 msgid "  -P,  --directory-prefix=PREFIX   save files to PREFIX/..\n"
 msgstr "  -P,  --directory-prefix=PREFIX  desa els fitxers a PREFIX/…\n"
 
 #: src/main.c:776
 #, fuzzy
+#| msgid ""
+#| "       --cut-dirs=NUMBER          ignore NUMBER remote directory "
+#| "components.\n"
 msgid ""
 "       --cut-dirs=NUMBER           ignore NUMBER remote directory "
 "components\n"
@@ -1813,17 +1939,20 @@ msgstr "Opcions d'HTTP:\n"
 
 #: src/main.c:782
 #, fuzzy
+#| msgid "       --http-user=USER        set http user to USER.\n"
 msgid "       --http-user=USER            set http user to USER\n"
 msgstr "       --http-user=USUARI      estableix l'usuari http en USUARI.\n"
 
 #: src/main.c:784
 #, fuzzy
+#| msgid "       --http-password=PASS    set http password to PASS.\n"
 msgid "       --http-password=PASS        set http password to PASS\n"
 msgstr ""
 "       --http-passwd=PASS      estableix la contrasenya http en PASS.\n"
 
 #: src/main.c:786
 #, fuzzy
+#| msgid "       --no-cache              disallow server-cached data.\n"
 msgid "       --no-cache                  disallow server-cached data\n"
 msgstr ""
 "       --no-cache              no admetes dades de la memòria cau del "
@@ -1831,6 +1960,9 @@ msgstr ""
 
 #: src/main.c:788
 #, fuzzy
+#| msgid ""
+#| "       --default-page=NAME     Change the default page name (normally\n"
+#| "                               this is `index.html'.).\n"
 msgid ""
 "       --default-page=NAME         change the default page name (normally\n"
 "                                     this is 'index.html'.)\n"
@@ -1840,6 +1972,9 @@ msgstr ""
 
 #: src/main.c:791
 #, fuzzy
+#| msgid ""
+#| "  -E,  --adjust-extension      save HTML/CSS documents with proper "
+#| "extensions.\n"
 msgid ""
 "  -E,  --adjust-extension          save HTML/CSS documents with proper "
 "extensions\n"
@@ -1849,6 +1984,8 @@ msgstr ""
 
 #: src/main.c:793
 #, fuzzy
+#| msgid ""
+#| "       --ignore-length         ignore `Content-Length' header field.\n"
 msgid ""
 "       --ignore-length             ignore 'Content-Length' header field\n"
 msgstr ""
@@ -1856,6 +1993,7 @@ msgstr ""
 
 #: src/main.c:795
 #, fuzzy
+#| msgid "       --header=STRING         insert STRING among the headers.\n"
 msgid "       --header=STRING             insert STRING among the headers\n"
 msgstr "       --header=CADENA         insereix CADENA entre les capçaleres.\n"
 
@@ -1867,6 +2005,8 @@ msgstr ""
 
 #: src/main.c:801
 #, fuzzy
+#| msgid ""
+#| "       --max-redirect          maximum redirections allowed per page.\n"
 msgid ""
 "       --max-redirect              maximum redirections allowed per page\n"
 msgstr ""
@@ -1874,18 +2014,23 @@ msgstr ""
 
 #: src/main.c:803
 #, fuzzy
+#| msgid "       --proxy-user=USER       set USER as proxy username.\n"
 msgid "       --proxy-user=USER           set USER as proxy username\n"
 msgstr ""
 "       --proxy-user=USUARI     estableix l'usuari pel proxy a USUARI.\n"
 
 #: src/main.c:805
 #, fuzzy
+#| msgid "       --proxy-password=PASS   set PASS as proxy password.\n"
 msgid "       --proxy-password=PASS       set PASS as proxy password\n"
 msgstr ""
 "       --proxy-passwd=PASS     estableix la contrasenya pel proxy a PASS.\n"
 
 #: src/main.c:807
 #, fuzzy
+#| msgid ""
+#| "       --referer=URL           include `Referer: URL' header in HTTP "
+#| "request.\n"
 msgid ""
 "       --referer=URL               include 'Referer: URL' header in HTTP "
 "request\n"
@@ -1895,12 +2040,16 @@ msgstr ""
 
 #: src/main.c:809
 #, fuzzy
+#| msgid "       --save-headers          save the HTTP headers to file.\n"
 msgid "       --save-headers              save the HTTP headers to file\n"
 msgstr ""
 "       --save-headers          desa les capçaleres HTTP en un fitxer.\n"
 
 #: src/main.c:811
 #, fuzzy
+#| msgid ""
+#| "  -U,  --user-agent=AGENT      identify as AGENT instead of Wget/"
+#| "VERSION.\n"
 msgid ""
 "  -U,  --user-agent=AGENT          identify as AGENT instead of Wget/"
 "VERSION\n"
@@ -1910,6 +2059,9 @@ msgstr ""
 
 #: src/main.c:813
 #, fuzzy
+#| msgid ""
+#| "       --no-http-keep-alive    disable HTTP keep-alive (persistent "
+#| "connections).\n"
 msgid ""
 "       --no-http-keep-alive        disable HTTP keep-alive (persistent "
 "connections)\n"
@@ -1919,11 +2071,14 @@ msgstr ""
 
 #: src/main.c:815
 #, fuzzy
+#| msgid "       --no-cookies            don't use cookies.\n"
 msgid "       --no-cookies                don't use cookies\n"
 msgstr "       --no-cookies            no utilitzes galetes.\n"
 
 #: src/main.c:817
 #, fuzzy
+#| msgid ""
+#| "       --load-cookies=FILE     load cookies from FILE before session.\n"
 msgid ""
 "       --load-cookies=FILE         load cookies from FILE before session\n"
 msgstr ""
@@ -1932,6 +2087,7 @@ msgstr ""
 
 #: src/main.c:819
 #, fuzzy
+#| msgid "       --save-cookies=FILE     save cookies to FILE after session.\n"
 msgid "       --save-cookies=FILE         save cookies to FILE after session\n"
 msgstr ""
 "       --save-cookies=FITXER   desa les cookies a FITXER després de la "
@@ -1939,6 +2095,9 @@ msgstr ""
 
 #: src/main.c:821
 #, fuzzy
+#| msgid ""
+#| "       --keep-session-cookies  load and save session (non-permanent) "
+#| "cookies.\n"
 msgid ""
 "       --keep-session-cookies      load and save session (non-permanent) "
 "cookies\n"
@@ -1957,6 +2116,9 @@ msgstr ""
 
 #: src/main.c:825
 #, fuzzy
+#| msgid ""
+#| "       --post-file=FILE        use the POST method; send contents of "
+#| "FILE.\n"
 msgid ""
 "       --post-file=FILE            use the POST method; send contents of "
 "FILE\n"
@@ -1989,6 +2151,9 @@ msgstr ""
 
 #: src/main.c:833
 #, fuzzy
+#| msgid ""
+#| "       --content-disposition   honor the Content-Disposition header when\n"
+#| "                               choosing local file names (EXPERIMENTAL).\n"
 msgid ""
 "       --content-disposition       honor the Content-Disposition header "
 "when\n"
@@ -2002,6 +2167,9 @@ msgstr ""
 
 #: src/main.c:836
 #, fuzzy
+#| msgid ""
+#| "       --content-on-error      output the received content on server "
+#| "errors.\n"
 msgid ""
 "       --content-on-error          output the received content on server "
 "errors\n"
@@ -2011,6 +2179,11 @@ msgstr ""
 
 #: src/main.c:838
 #, fuzzy
+#| msgid ""
+#| "       --auth-no-challenge     send Basic HTTP authentication "
+#| "information\n"
+#| "                               without first waiting for the server's\n"
+#| "                               challenge.\n"
 msgid ""
 "       --auth-no-challenge         send Basic HTTP authentication "
 "information\n"
@@ -2027,21 +2200,29 @@ msgstr "Opcions d'HTTPS (SSL/TLS):\n"
 
 #: src/main.c:847
 #, fuzzy
+#| msgid ""
+#| "       --secure-protocol=PR     choose secure protocol, one of auto, "
+#| "SSLv2,\n"
+#| "                                SSLv3, and TLSv1.\n"
 msgid ""
 "       --secure-protocol=PR        choose secure protocol, one of auto, "
 "SSLv2,\n"
-"                                     SSLv3, TLSv1, TLSv1_1, TLSv1_2 and PFS\n"
+"                                     SSLv3, TLSv1, TLSv1_1, TLSv1_2, TLSv1_3 "
+"and PFS\n"
 msgstr ""
 "       --secure-protocol=PR     selecciona el protocol segur, d'entre auto,\n"
 "                                SSLv2, SSLv3, TLSv1.\n"
 
 #: src/main.c:850
 #, fuzzy
+#| msgid "  -L,  --relative                  follow relative links only.\n"
 msgid "       --https-only                only follow secure HTTPS links\n"
 msgstr "  -L,  --relative                  només segueix enllaços relatius.\n"
 
 #: src/main.c:852
 #, fuzzy
+#| msgid ""
+#| "       --no-check-certificate   don't validate the server's certificate.\n"
 msgid ""
 "       --no-check-certificate      don't validate the server's certificate\n"
 msgstr ""
@@ -2049,11 +2230,14 @@ msgstr ""
 
 #: src/main.c:854
 #, fuzzy
+#| msgid "       --certificate=FILE       client certificate file.\n"
 msgid "       --certificate=FILE          client certificate file\n"
 msgstr "       --certificat=FITXER      fitxer del certificat del client.\n"
 
 #: src/main.c:856
 #, fuzzy
+#| msgid ""
+#| "       --certificate-type=TYPE  client certificate type, PEM or DER.\n"
 msgid ""
 "       --certificate-type=TYPE     client certificate type, PEM or DER\n"
 msgstr ""
@@ -2061,21 +2245,27 @@ msgstr ""
 
 #: src/main.c:858
 #, fuzzy
+#| msgid "       --private-key=FILE       private key file.\n"
 msgid "       --private-key=FILE          private key file\n"
 msgstr "       --private-key=FITXER     fitxer de clau privada.\n"
 
 #: src/main.c:860
 #, fuzzy
+#| msgid "       --private-key-type=TYPE  private key type, PEM or DER.\n"
 msgid "       --private-key-type=TYPE     private key type, PEM or DER\n"
 msgstr "       --private-key-type=TIPUS tipus de clau privada, PEM o DER.\n"
 
 #: src/main.c:862
 #, fuzzy
+#| msgid "       --ca-certificate=FILE    file with the bundle of CA's.\n"
 msgid "       --ca-certificate=FILE       file with the bundle of CAs\n"
 msgstr "       --ca-certificate=FITXER  fitxer amb el conjunt de CA.\n"
 
 #: src/main.c:864
 #, fuzzy
+#| msgid ""
+#| "       --ca-directory=DIR       directory where hash list of CA's is "
+#| "stored.\n"
 msgid ""
 "       --ca-directory=DIR          directory where hash list of CAs is "
 "stored\n"
@@ -2085,6 +2275,7 @@ msgstr ""
 
 #: src/main.c:866
 #, fuzzy
+#| msgid "       --ca-certificate=FILE    file with the bundle of CA's.\n"
 msgid "       --crl-file=FILE             file with bundle of CRLs\n"
 msgstr "       --ca-certificate=FITXER  fitxer amb el conjunt de CA.\n"
 
@@ -2100,6 +2291,9 @@ msgstr ""
 
 #: src/main.c:874
 #, fuzzy
+#| msgid ""
+#| "       --random-file=FILE       file with random data for seeding the SSL "
+#| "PRNG.\n"
 msgid ""
 "       --random-file=FILE          file with random data for seeding the SSL "
 "PRNG\n"
@@ -2109,6 +2303,9 @@ msgstr ""
 
 #: src/main.c:878
 #, fuzzy
+#| msgid ""
+#| "       --egd-file=FILE          file naming the EGD socket with random "
+#| "data.\n"
 msgid ""
 "       --egd-file=FILE             file naming the EGD socket with random "
 "data\n"
@@ -2129,11 +2326,13 @@ msgstr ""
 
 #: src/main.c:889
 #, fuzzy
+#| msgid "HTTP options:\n"
 msgid "HSTS options:\n"
 msgstr "Opcions d'HTTP:\n"
 
 #: src/main.c:891
 #, fuzzy
+#| msgid "       --no-cache              disallow server-cached data.\n"
 msgid "       --no-hsts                   disable HSTS\n"
 msgstr ""
 "       --no-cache              no admetes dades de la memòria cau del "
@@ -2141,6 +2340,7 @@ msgstr ""
 
 #: src/main.c:893
 #, fuzzy
+#| msgid "  -v,  --verbose             be verbose (this is the default).\n"
 msgid ""
 "       --hsts-file                 path of HSTS database (will override "
 "default)\n"
@@ -2152,6 +2352,9 @@ msgstr "Opcions d'FTP:\n"
 
 #: src/main.c:901
 #, fuzzy
+#| msgid ""
+#| "       --ftp-stmlf             Use Stream_LF format for all binary FTP "
+#| "files.\n"
 msgid ""
 "       --ftp-stmlf                 use Stream_LF format for all binary FTP "
 "files\n"
@@ -2162,23 +2365,27 @@ msgstr ""
 
 #: src/main.c:904
 #, fuzzy
+#| msgid "       --ftp-user=USER         set ftp user to USER.\n"
 msgid "       --ftp-user=USER             set ftp user to USER\n"
 msgstr "       --ftp-user=USUARI       estableix l'usuari de ftp a USUARI.\n"
 
 #: src/main.c:906
 #, fuzzy
+#| msgid "       --ftp-password=PASS     set ftp password to PASS.\n"
 msgid "       --ftp-password=PASS         set ftp password to PASS\n"
 msgstr ""
 "       --ftp-password=PASS     estableix la contrasenya de ftp a PASS.\n"
 
 #: src/main.c:908
 #, fuzzy
+#| msgid "       --no-remove-listing     don't remove `.listing' files.\n"
 msgid "       --no-remove-listing         don't remove '.listing' files\n"
 msgstr ""
 "       --no-remove-listing     no suprimeixes els fitxers «.listing».\n"
 
 #: src/main.c:910
 #, fuzzy
+#| msgid "       --no-glob               turn off FTP file name globbing.\n"
 msgid "       --no-glob                   turn off FTP file name globbing\n"
 msgstr ""
 "       --no-glob               inhabilita l'ús de comodins de fitxers per a "
@@ -2186,6 +2393,8 @@ msgstr ""
 
 #: src/main.c:912
 #, fuzzy
+#| msgid ""
+#| "       --no-passive-ftp        disable the \"passive\" transfer mode.\n"
 msgid ""
 "       --no-passive-ftp            disable the \"passive\" transfer mode\n"
 msgstr ""
@@ -2194,12 +2403,16 @@ msgstr ""
 
 #: src/main.c:914
 #, fuzzy
+#| msgid "       --preserve-permissions  preserve remote file permissions.\n"
 msgid "       --preserve-permissions      preserve remote file permissions\n"
 msgstr ""
 "       --preserve-permissions  preserva els permisos dels fitxers remots.\n"
 
 #: src/main.c:916
 #, fuzzy
+#| msgid ""
+#| "       --retr-symlinks         when recursing, get linked-to files (not "
+#| "dir).\n"
 msgid ""
 "       --retr-symlinks             when recursing, get linked-to files (not "
 "dir)\n"
@@ -2211,11 +2424,15 @@ msgstr ""
 
 #: src/main.c:921
 #, fuzzy
+#| msgid "FTP options:\n"
 msgid "FTPS options:\n"
 msgstr "Opcions d'FTP:\n"
 
 #: src/main.c:923
 #, fuzzy
+#| msgid ""
+#| "       --ftp-stmlf             Use Stream_LF format for all binary FTP "
+#| "files.\n"
 msgid ""
 "       --ftps-implicit                 use implicit FTPS (default port is "
 "990)\n"
@@ -2226,6 +2443,10 @@ msgstr ""
 
 #: src/main.c:925
 #, fuzzy
+#| msgid ""
+#| "  --trust-server-names             use the name specified by the "
+#| "redirection\n"
+#| "                                   url last component.\n"
 msgid ""
 "       --ftps-resume-ssl               resume the SSL/TLS session started in "
 "the control connection when\n"
@@ -2252,6 +2473,9 @@ msgstr "Opcions de WARC:\n"
 
 #: src/main.c:936
 #, fuzzy
+#| msgid ""
+#| "       --warc-file=FILENAME      save request/response data to a .warc.gz "
+#| "file.\n"
 msgid ""
 "       --warc-file=FILENAME        save request/response data to a .warc.gz "
 "file\n"
@@ -2262,6 +2486,8 @@ msgstr ""
 
 #: src/main.c:938
 #, fuzzy
+#| msgid ""
+#| "       --warc-header=STRING      insert STRING into the warcinfo record.\n"
 msgid ""
 "       --warc-header=STRING        insert STRING into the warcinfo record\n"
 msgstr ""
@@ -2269,6 +2495,9 @@ msgstr ""
 
 #: src/main.c:940
 #, fuzzy
+#| msgid ""
+#| "       --warc-max-size=NUMBER    set maximum size of WARC files to "
+#| "NUMBER.\n"
 msgid ""
 "       --warc-max-size=NUMBER      set maximum size of WARC files to NUMBER\n"
 msgstr ""
@@ -2277,11 +2506,15 @@ msgstr ""
 
 #: src/main.c:942
 #, fuzzy
+#| msgid "       --warc-cdx                write CDX index files.\n"
 msgid "       --warc-cdx                  write CDX index files\n"
 msgstr "      --warc-cdx                 escriu fitxers d'índex CDX.\n"
 
 #: src/main.c:944
 #, fuzzy
+#| msgid ""
+#| "       --warc-dedup=FILENAME     do not store records listed in this CDX "
+#| "file.\n"
 msgid ""
 "       --warc-dedup=FILENAME       do not store records listed in this CDX "
 "file\n"
@@ -2292,6 +2525,8 @@ msgstr ""
 
 #: src/main.c:947
 #, fuzzy
+#| msgid ""
+#| "       --no-warc-compression     do not compress WARC files with GZIP.\n"
 msgid ""
 "       --no-warc-compression       do not compress WARC files with GZIP\n"
 msgstr ""
@@ -2299,11 +2534,15 @@ msgstr ""
 
 #: src/main.c:950
 #, fuzzy
+#| msgid "       --no-warc-digests         do not calculate SHA1 digests.\n"
 msgid "       --no-warc-digests           do not calculate SHA1 digests\n"
 msgstr "       --no-warc-digests         no calcules els resums SHA1.\n"
 
 #: src/main.c:952
 #, fuzzy
+#| msgid ""
+#| "       --no-warc-keep-log        do not store the log file in a WARC "
+#| "record.\n"
 msgid ""
 "       --no-warc-keep-log          do not store the log file in a WARC "
 "record\n"
@@ -2313,6 +2552,10 @@ msgstr ""
 
 #: src/main.c:954
 #, fuzzy
+#| msgid ""
+#| "       --warc-tempdir=DIRECTORY  location for temporary files created by "
+#| "the\n"
+#| "                                 WARC writer.\n"
 msgid ""
 "       --warc-tempdir=DIRECTORY    location for temporary files created by "
 "the\n"
@@ -2327,11 +2570,15 @@ msgstr "Baixada recursiva:\n"
 
 #: src/main.c:961
 #, fuzzy
+#| msgid "  -r,  --recursive          specify recursive download.\n"
 msgid "  -r,  --recursive                 specify recursive download\n"
 msgstr "  -r,  --recursive          baixa de forma recursiva.\n"
 
 #: src/main.c:963
 #, fuzzy
+#| msgid ""
+#| "  -l,  --level=NUMBER       maximum recursion depth (inf or 0 for "
+#| "infinite).\n"
 msgid ""
 "  -l,  --level=NUMBER              maximum recursion depth (inf or 0 for "
 "infinite)\n"
@@ -2340,6 +2587,8 @@ msgstr ""
 
 #: src/main.c:965
 #, fuzzy
+#| msgid ""
+#| "       --delete-after       delete files locally after downloading them.\n"
 msgid ""
 "       --delete-after              delete files locally after downloading "
 "them\n"
@@ -2348,6 +2597,10 @@ msgstr ""
 
 #: src/main.c:967
 #, fuzzy
+#| msgid ""
+#| "  -k,  --convert-links      make links in downloaded HTML or CSS point "
+#| "to\n"
+#| "                            local files.\n"
 msgid ""
 "  -k,  --convert-links             make links in downloaded HTML or CSS "
 "point to\n"
@@ -2365,6 +2618,7 @@ msgstr ""
 
 #: src/main.c:972
 #, fuzzy
+#| msgid "       --warc-cdx                write CDX index files.\n"
 msgid ""
 "       --backups=N                 before writing file X, rotate up to N "
 "backup files\n"
@@ -2372,6 +2626,8 @@ msgstr "      --warc-cdx                 escriu fitxers d'índex CDX.\n"
 
 #: src/main.c:976
 #, fuzzy
+#| msgid ""
+#| "  -K,  --backup-converted   before converting file X, back up as X_orig.\n"
 msgid ""
 "  -K,  --backup-converted          before converting file X, back up as "
 "X_orig\n"
@@ -2381,6 +2637,8 @@ msgstr ""
 
 #: src/main.c:979
 #, fuzzy
+#| msgid ""
+#| "  -K,  --backup-converted   before converting file X, back up as X.orig.\n"
 msgid ""
 "  -K,  --backup-converted          before converting file X, back up as X."
 "orig\n"
@@ -2390,6 +2648,9 @@ msgstr ""
 
 #: src/main.c:982
 #, fuzzy
+#| msgid ""
+#| "  -m,  --mirror             shortcut for -N -r -l inf --no-remove-"
+#| "listing.\n"
 msgid ""
 "  -m,  --mirror                    shortcut for -N -r -l inf --no-remove-"
 "listing\n"
@@ -2399,6 +2660,9 @@ msgstr ""
 
 #: src/main.c:984
 #, fuzzy
+#| msgid ""
+#| "  -p,  --page-requisites    get all images, etc. needed to display HTML "
+#| "page.\n"
 msgid ""
 "  -p,  --page-requisites           get all images, etc. needed to display "
 "HTML page\n"
@@ -2408,6 +2672,9 @@ msgstr ""
 
 #: src/main.c:986
 #, fuzzy
+#| msgid ""
+#| "       --strict-comments    turn on strict (SGML) handling of HTML "
+#| "comments.\n"
 msgid ""
 "       --strict-comments           turn on strict (SGML) handling of HTML "
 "comments\n"
@@ -2421,6 +2688,9 @@ msgstr "Inclusió/exclusió en mode recursiu:\n"
 
 #: src/main.c:992
 #, fuzzy
+#| msgid ""
+#| "  -A,  --accept=LIST               comma-separated list of accepted "
+#| "extensions.\n"
 msgid ""
 "  -A,  --accept=LIST               comma-separated list of accepted "
 "extensions\n"
@@ -2430,6 +2700,9 @@ msgstr ""
 
 #: src/main.c:994
 #, fuzzy
+#| msgid ""
+#| "  -R,  --reject=LIST               comma-separated list of rejected "
+#| "extensions.\n"
 msgid ""
 "  -R,  --reject=LIST               comma-separated list of rejected "
 "extensions\n"
@@ -2439,6 +2712,7 @@ msgstr ""
 
 #: src/main.c:996
 #, fuzzy
+#| msgid "       --accept-regex=REGEX        regex matching accepted URLs.\n"
 msgid "       --accept-regex=REGEX        regex matching accepted URLs\n"
 msgstr ""
 "       --accept-regex=EXPREG      expressió regular que coincideix amb URL\n"
@@ -2446,6 +2720,7 @@ msgstr ""
 
 #: src/main.c:998
 #, fuzzy
+#| msgid "       --reject-regex=REGEX        regex matching rejected URLs.\n"
 msgid "       --reject-regex=REGEX        regex matching rejected URLs\n"
 msgstr ""
 "       --reject-regex=EXPREG      expressió regular que coincideix amb URL\n"
@@ -2453,17 +2728,22 @@ msgstr ""
 
 #: src/main.c:1001
 #, fuzzy
+#| msgid "       --regex-type=TYPE           regex type (posix|pcre).\n"
 msgid "       --regex-type=TYPE           regex type (posix|pcre)\n"
 msgstr ""
 "       --regex-type=TIPUS          tipus d'expressió regular (posix|pcre).\n"
 
 #: src/main.c:1004
 #, fuzzy
+#| msgid "       --regex-type=TYPE           regex type (posix).\n"
 msgid "       --regex-type=TYPE           regex type (posix)\n"
 msgstr "       --regex-type=TYPE           regex type (posix).\n"
 
 #: src/main.c:1007
 #, fuzzy
+#| msgid ""
+#| "  -D,  --domains=LIST              comma-separated list of accepted "
+#| "domains.\n"
 msgid ""
 "  -D,  --domains=LIST              comma-separated list of accepted domains\n"
 msgstr ""
@@ -2472,6 +2752,9 @@ msgstr ""
 
 #: src/main.c:1009
 #, fuzzy
+#| msgid ""
+#| "       --exclude-domains=LIST      comma-separated list of rejected "
+#| "domains.\n"
 msgid ""
 "       --exclude-domains=LIST      comma-separated list of rejected domains\n"
 msgstr ""
@@ -2480,6 +2763,8 @@ msgstr ""
 
 #: src/main.c:1011
 #, fuzzy
+#| msgid ""
+#| "       --follow-ftp                follow FTP links from HTML documents.\n"
 msgid ""
 "       --follow-ftp                follow FTP links from HTML documents\n"
 msgstr ""
@@ -2487,6 +2772,9 @@ msgstr ""
 
 #: src/main.c:1013
 #, fuzzy
+#| msgid ""
+#| "       --follow-tags=LIST          comma-separated list of followed HTML "
+#| "tags.\n"
 msgid ""
 "       --follow-tags=LIST          comma-separated list of followed HTML "
 "tags\n"
@@ -2497,6 +2785,9 @@ msgstr ""
 
 #: src/main.c:1015
 #, fuzzy
+#| msgid ""
+#| "       --ignore-tags=LIST          comma-separated list of ignored HTML "
+#| "tags.\n"
 msgid ""
 "       --ignore-tags=LIST          comma-separated list of ignored HTML "
 "tags\n"
@@ -2507,6 +2798,8 @@ msgstr ""
 
 #: src/main.c:1017
 #, fuzzy
+#| msgid ""
+#| "  -H,  --span-hosts                go to foreign hosts when recursive.\n"
 msgid "  -H,  --span-hosts                go to foreign hosts when recursive\n"
 msgstr ""
 "  -H,  --span-hosts                segueix enllaços a altres llocs en mode\n"
@@ -2514,16 +2807,22 @@ msgstr ""
 
 #: src/main.c:1019
 #, fuzzy
+#| msgid "  -L,  --relative                  follow relative links only.\n"
 msgid "  -L,  --relative                  follow relative links only\n"
 msgstr "  -L,  --relative                  només segueix enllaços relatius.\n"
 
 #: src/main.c:1021
 #, fuzzy
+#| msgid "  -I,  --include-directories=LIST  list of allowed directories.\n"
 msgid "  -I,  --include-directories=LIST  list of allowed directories\n"
 msgstr "  -I,  --include-directories=LLISTA llista de directoris acceptats.\n"
 
 #: src/main.c:1023
 #, fuzzy
+#| msgid ""
+#| "  --trust-server-names             use the name specified by the "
+#| "redirection\n"
+#| "                                   url last component.\n"
 msgid ""
 "       --trust-server-names        use the name specified by the "
 "redirection\n"
@@ -2534,11 +2833,14 @@ msgstr ""
 
 #: src/main.c:1026
 #, fuzzy
+#| msgid "  -X,  --exclude-directories=LIST  list of excluded directories.\n"
 msgid "  -X,  --exclude-directories=LIST  list of excluded directories\n"
 msgstr "  -X,  --exclude-directories=LLISTA llista de directoris rebutjats.\n"
 
 #: src/main.c:1028
 #, fuzzy
+#| msgid ""
+#| "  -np, --no-parent                 don't ascend to the parent directory.\n"
 msgid ""
 "  -np, --no-parent                 don't ascend to the parent directory\n"
 msgstr "  -np, --no-parent                 no ascendeixes al directori pare.\n"
@@ -2567,6 +2869,7 @@ msgstr "Contrasenya: "
 
 #: src/main.c:1106
 #, fuzzy, c-format
+#| msgid "cannot create pipe"
 msgid "Cannot create pipe\n"
 msgstr "no es pot crear una canonada"
 
@@ -2592,6 +2895,7 @@ msgstr ""
 
 #: src/main.c:1180
 #, fuzzy, c-format
+#| msgid "Password for user %s: "
 msgid "Password for '%s%s@%s': "
 msgstr "Contrasenya per a l'usuari %s: "
 
@@ -2639,6 +2943,7 @@ msgstr "    %s (sistema)\n"
 #. (circle-c) should be used in preference to "(C)".
 #: src/main.c:1332
 #, fuzzy, c-format
+#| msgid "Copyright (C) 2011 Free Software Foundation, Inc.\n"
 msgid "Copyright (C) %s Free Software Foundation, Inc.\n"
 msgstr "Copyright © 2011 Free Software Foundation, Inc.\n"
 
@@ -2706,6 +3011,9 @@ msgstr ""
 
 #: src/main.c:1608
 #, fuzzy, c-format
+#| msgid ""
+#| "Both --no-clobber and --convert-links were specified, only --convert-"
+#| "links will be used.\n"
 msgid ""
 "Both --no-clobber and --convert-file-only were specified, only --convert-"
 "file-only will be used.\n"
@@ -2732,6 +3040,11 @@ msgstr "No es pot especificar --inet4-only i --inet6-only a l'hora.\n"
 
 #: src/main.c:1666
 #, fuzzy
+#| msgid ""
+#| "Cannot specify both -k and -O if multiple URLs are given, or in "
+#| "combination\n"
+#| "with -p or -r. See the manual for details.\n"
+#| "\n"
 msgid ""
 "Cannot specify both -k or --convert-file-only and -O if multiple URLs are "
 "given, or in combination\n"
@@ -2839,6 +3152,9 @@ msgstr "No es pot especificar --post-data i --post-file a l'hora.\n"
 
 #: src/main.c:1841
 #, fuzzy, c-format
+#| msgid ""
+#| "You cannot use --post-data or --post-file along with --method. --method "
+#| "expects data through --body-data and --body-file options"
 msgid ""
 "You cannot use --post-data or --post-file along with --method. --method "
 "expects data through --body-data and --body-file options\n"
@@ -2865,57 +3181,65 @@ msgstr "No es pot especificar --body-data i --body-file a l'hora.\n"
 msgid "This version does not have support for IRIs\n"
 msgstr "Aquesta versió no implementa IRI\n"
 
-#: src/main.c:2003
+#: src/main.c:2008
 #, fuzzy, c-format
+#| msgid ""
+#| "-k can be used together with -O only if outputting to a regular file.\n"
 msgid ""
 "-k or -r can be used together with -O only if outputting to a regular file.\n"
 msgstr ""
 "-k només es pot emprar amb -O si es desa la sortida a un fitxer normal.\n"
 
-#: src/main.c:2009
+#: src/main.c:2014
 #, fuzzy, c-format
+#| msgid ""
+#| "-k can be used together with -O only if outputting to a regular file.\n"
 msgid ""
 "--convert-links or --convert-file-only can be used together only if "
 "outputting to a regular file.\n"
 msgstr ""
 "-k només es pot emprar amb -O si es desa la sortida a un fitxer normal.\n"
 
-#: src/main.c:2020
+#: src/main.c:2025
 #, fuzzy, c-format
+#| msgid "Failed to unlink symlink %s: %s\n"
 msgid "Failed to init libcares\n"
 msgstr "No s'ha pogut suprimir l'enllaç simbòlic %s: %s\n"
 
-#: src/main.c:2026
+#: src/main.c:2031
 #, c-format
 msgid "Failed to init c-ares channel\n"
 msgstr ""
 
-#: src/main.c:2049
+#: src/main.c:2054
 #, fuzzy, c-format
+#| msgid "%s: unable to resolve host address %s\n"
 msgid "Failed to parse IP address '%s'\n"
 msgstr "%s: no s'ha pogut resoldre l'adreça del servidor «%s»\n"
 
-#: src/main.c:2060
+#: src/main.c:2065
 #, fuzzy, c-format
+#| msgid "ERROR: Failed to open cert %s: (%d).\n"
 msgid "Failed to set DNS server(s) '%s' (%d)\n"
 msgstr "ERROR: No s'ha pogut obrir el certificat %s: (%d).\n"
 
-#: src/main.c:2197
+#: src/main.c:2202
 #, c-format
 msgid "No URLs found in %s.\n"
 msgstr "No s'ha trobat cap URL a %s.\n"
 
-#: src/main.c:2213
+#: src/main.c:2218
 #, fuzzy, c-format
+#| msgid "Unable to delete %s: %s\n"
 msgid "Unable to parse metalink file %s.\n"
 msgstr "No s'ha pogut suprimir %s: %s\n"
 
-#: src/main.c:2243 src/metalink.c:337
+#: src/main.c:2248 src/metalink.c:337
 #, c-format
 msgid "Could not download all resources from %s.\n"
 msgstr ""
 
-#: src/main.c:2270
+#: src/main.c:2275
 #, c-format
 msgid ""
 "FINISHED --%s--\n"
@@ -2926,7 +3250,7 @@ msgstr ""
 "Temps total real: %s\n"
 "Baixat: %d fitxers, %s en %s (%s)\n"
 
-#: src/main.c:2284
+#: src/main.c:2289
 #, c-format
 msgid "Download quota of %s EXCEEDED!\n"
 msgstr "S'ha EXCEDIT la quota de baixada de %s.\n"
@@ -2942,6 +3266,7 @@ msgstr ""
 
 #: src/metalink.c:176
 #, fuzzy, c-format
+#| msgid "Proxy tunneling failed: %s"
 msgid "Planned metalink file: %s\n"
 msgstr "Ha fallat la tunelització del servidor intermediari: %s"
 
@@ -2971,6 +3296,7 @@ msgstr ""
 
 #: src/metalink.c:285
 #, fuzzy, c-format
+#| msgid "Unable to delete %s: %s\n"
 msgid "Unable to parse metaurl file %s.\n"
 msgstr "No s'ha pogut suprimir %s: %s\n"
 
@@ -2980,11 +3306,13 @@ msgstr ""
 
 #: src/metalink.c:386
 #, fuzzy, c-format
+#| msgid "ai_socktype not supported"
 msgid "Resource type %s not supported, ignoring...\n"
 msgstr "L'ai_socktype no està implementat"
 
 #: src/metalink.c:509
 #, fuzzy
+#| msgid "Cannot write to WARC file.\n"
 msgid "Could not open downloaded file.\n"
 msgstr "No s'ha pogut escriure al fitxer WARC.\n"
 
@@ -3003,6 +3331,7 @@ msgstr ""
 
 #: src/metalink.c:539
 #, fuzzy, c-format
+#| msgid "No such file %s.\n"
 msgid "Size mismatch for file %s.\n"
 msgstr "El fitxer %s no existeix.\n"
 
@@ -3026,6 +3355,7 @@ msgstr ""
 
 #: src/metalink.c:722
 #, fuzzy
+#| msgid "Could not open CDX file for output.\n"
 msgid "Could not open downloaded file for signature verification.\n"
 msgstr "No s'ha pogut obrir el fitxer CDX per escriure l'eixida.\n"
 
@@ -3057,6 +3387,7 @@ msgstr ""
 
 #: src/metalink.c:865
 #, fuzzy
+#| msgid "No certificate found\n"
 msgid "No checksums found.\n"
 msgstr "No s'ha trobat cap certificat\n"
 
@@ -3082,6 +3413,7 @@ msgstr ""
 
 #: src/metalink.c:1113
 #, fuzzy, c-format
+#| msgid "Removing %s.\n"
 msgid "Renaming %s to %s.\n"
 msgstr "S'està suprimint %s.\n"
 
@@ -3095,7 +3427,7 @@ msgstr "S'esta continuant en segon terme.\n"
 msgid "Continuing in background, pid %lu.\n"
 msgstr "S'està continuant en segon terme, pid %lu.\n"
 
-#: src/mswindows.c:291 src/utils.c:509
+#: src/mswindows.c:291 src/utils.c:502
 #, c-format
 msgid "Output will be written to %s.\n"
 msgstr "La sortida s'escriurà a %s.\n"
@@ -3131,12 +3463,12 @@ msgstr ""
 msgid "%s: %s:%d: unknown token \"%s\"\n"
 msgstr "%s: %s:%d: component desconegut \"%s\"\n"
 
-#: src/netrc.c:500
+#: src/netrc.c:553
 #, c-format
 msgid "Usage: %s NETRC [HOSTNAME]\n"
 msgstr "Forma d'ús: %s NETRC [HOST]\n"
 
-#: src/netrc.c:518
+#: src/netrc.c:571
 #, c-format
 msgid "%s: cannot stat %s: %s\n"
 msgstr "%s: no s'ha pogut determinar l'estat de %s: %s\n"
@@ -3152,6 +3484,7 @@ msgstr ""
 
 #: src/openssl.c:271
 #, fuzzy
+#| msgid "Your OpenSSL version is too old to support TLSv1.1\n"
 msgid "Your OpenSSL version is too old to support TLS 1.3\n"
 msgstr "La vostra versió d'OpenSSL és massa antiga per suportar TLSv1.1\n"
 
@@ -3171,6 +3504,7 @@ msgstr ""
 
 #: src/openssl.c:333
 #, fuzzy, c-format
+#| msgid "%s: Invalid URL %s: %s\n"
 msgid "OpenSSL: Invalid cipher list: %s\n"
 msgstr "%s: L'URL %s no és vàlid: %s\n"
 
@@ -3184,6 +3518,7 @@ msgstr ""
 
 #: src/openssl.c:844
 #, fuzzy
+#| msgid "Could not seed PRNG; consider using --random-file.\n"
 msgid "WARNING: Could not seed PRNG. Consider using --random-file.\n"
 msgstr ""
 "No s'ha pogut donar una llavor al PRNG; considereu emprar --random-file.\n"
@@ -3261,6 +3596,7 @@ msgstr "L'especificació de l'estil de progrés %s no és vàlida; no es canvia.
 #. be short, ideally 3 chars.  Abbreviate if necessary.
 #: src/progress.c:1006
 #, fuzzy, c-format
+#| msgid "   eta %s"
 msgid "    eta %s"
 msgstr "   eta %s"
 
@@ -3270,6 +3606,7 @@ msgstr "   eta %s"
 #. * available here (6 columns).  Abbreviate if necessary.
 #: src/progress.c:1312
 #, fuzzy
+#| msgid "   in "
 msgid "    in "
 msgstr "   en "
 
@@ -3278,13 +3615,20 @@ msgstr "   en "
 msgid "Cannot get REALTIME clock frequency: %s\n"
 msgstr "No es pot obtenir la frequència del rellotge en TEMPS REAL: %s\n"
 
-#: src/recur.c:513
+#: src/recur.c:430
+#, c-format
+msgid ""
+"nofollow attribute found in %s. Will not follow any links on this page\n"
+msgstr ""
+
+#: src/recur.c:514
 #, c-format
 msgid "Removing %s since it should be rejected.\n"
 msgstr "S'està suprimint %s ja que no s'hauria de baixar.\n"
 
 #: src/res.c:394
 #, fuzzy, c-format
+#| msgid "Cannot open %s: %s"
 msgid "Cannot open %s: %s\n"
 msgstr "No es pot obrir %s: %s"
 
@@ -3389,108 +3733,118 @@ msgstr "L'adreça numèrica IPv6 no és vàlida"
 msgid "HTTPS support not compiled in"
 msgstr "La implementació d'HTTPS no s'ha inclòs a la construcció"
 
-#: src/url.c:1620
+#: src/url.c:1648
 #, fuzzy
+#| msgid "Incomplete or invalid multibyte sequence encountered\n"
 msgid "Unconvertable multibyte sequence encountered\n"
 msgstr "S'ha trobat una seqüència multioctet incompleta o invàlida\n"
 
-#: src/utils.c:129
+#: src/utils.c:122
 #, c-format
 msgid "%s: %s: Failed to allocate enough memory; memory exhausted.\n"
 msgstr ""
 "%s: %s: No s'ha pogut la memòria suficient; s'ha exhaurit la memòria.\n"
 
-#: src/utils.c:135
+#: src/utils.c:128
 #, c-format
 msgid "%s: %s: Failed to allocate %ld bytes; memory exhausted.\n"
 msgstr "%s: %s: No s'ha pogut assignar %ld octets; s'ha exhaurit la memòria.\n"
 
-#: src/utils.c:355
+#: src/utils.c:348
 #, fuzzy, c-format
+#| msgid "%s: aprintf: text buffer is too big (%ld bytes), aborting.\n"
 msgid "%s: aprintf: text buffer is too big (%d bytes), aborting.\n"
 msgstr ""
 "%s: aprintf: la memòria intermèdia de text és massa gran (%ld octets), "
 "s'està avortant.\n"
 
-#: src/utils.c:507
+#: src/utils.c:500
 #, c-format
 msgid "Continuing in background, pid %d.\n"
 msgstr "Es continua en segon terme, pid %d.\n"
 
-#: src/utils.c:558
+#: src/utils.c:551
 #, c-format
 msgid "Failed to unlink symlink %s: %s\n"
 msgstr "No s'ha pogut suprimir l'enllaç simbòlic %s: %s\n"
 
-#: src/utils.c:879
+#: src/utils.c:872
 #, fuzzy, c-format
+#| msgid "ERROR: Failed to open cert %s: (%d).\n"
 msgid "Failed to Fopen file %s\n"
 msgstr "ERROR: No s'ha pogut obrir el certificat %s: (%d).\n"
 
-#: src/utils.c:885
+#: src/utils.c:878
 #, fuzzy, c-format
+#| msgid "Unable to get cookie for %s\n"
 msgid "Failed to get FD for file %s\n"
 msgstr "No s'ha pogut obtenir la galeta per a %s\n"
 
-#: src/utils.c:892
+#: src/utils.c:885
 #, c-format
 msgid "Failed to stat file %s, (check permissions)\n"
 msgstr ""
 
-#: src/utils.c:902
+#: src/utils.c:895
 #, c-format
 msgid "File %s changed since the last check. Security check failed.\n"
 msgstr ""
 
-#: src/utils.c:937
+#: src/utils.c:930
 #, fuzzy, c-format
+#| msgid "ERROR: Failed to open cert %s: (%d).\n"
 msgid "Failed to open file %s, reason :%s\n"
 msgstr "ERROR: No s'ha pogut obrir el certificat %s: (%d).\n"
 
-#: src/utils.c:943
+#: src/utils.c:936
 #, fuzzy, c-format
+#| msgid "Failed to unlink symlink %s: %s\n"
 msgid "Failed to stat file %s, error: %s\n"
 msgstr "No s'ha pogut suprimir l'enllaç simbòlic %s: %s\n"
 
-#: src/utils.c:953
+#: src/utils.c:946
 #, c-format
 msgid ""
 "Trying to open file %s but it changed since last check. Security check "
 "failed.\n"
 msgstr ""
 
-#: src/utils.c:2442
+#: src/utils.c:2443
 #, fuzzy, c-format
+#| msgid "Invalid regular expression %s, %s\n"
 msgid "Invalid regular expression %s, PCRE2 error %d\n"
 msgstr "L'expressió regular %s no és vàlida, %s\n"
 
-#: src/utils.c:2459 src/utils.c:2482
+#: src/utils.c:2460 src/utils.c:2483
 #, c-format
 msgid "Invalid regular expression %s, %s\n"
 msgstr "L'expressió regular %s no és vàlida, %s\n"
 
-#: src/utils.c:2512 src/utils.c:2534 src/utils.c:2558
+#: src/utils.c:2513 src/utils.c:2535 src/utils.c:2559
 #, c-format
 msgid "Error while matching %s: %d\n"
 msgstr "S'ha produït un error en la coincidència de %s: %d\n"
 
-#: src/utils.c:2851
+#: src/utils.c:2852
 #, c-format
 msgid "Skipping key with wrong size (%d/%d): %s\n"
 msgstr ""
 
 #: src/warc.c:217
 #, fuzzy
+#| msgid "Error opening WARC file %s.\n"
 msgid "Error setting WARC file position.\n"
 msgstr "S'ha produït un error en obrir el fitxer WARC %s.\n"
 
 #: src/warc.c:224
 #, fuzzy
+#| msgid "Error opening WARC file %s.\n"
 msgid "Error flushing WARC file to disk.\n"
 msgstr "S'ha produït un error en obrir el fitxer WARC %s.\n"
 
 #: src/warc.c:234
 #, fuzzy
+#| msgid "Error opening WARC file %s.\n"
 msgid "Error duplicating WARC file file descriptor.\n"
 msgstr "S'ha produït un error en obrir el fitxer WARC %s.\n"
 
@@ -3548,16 +3902,19 @@ msgstr "No s'ha pogut llegir el fitxer CDX %s per a deduplicar.\n"
 
 #: src/warc.c:1181
 #, fuzzy
+#| msgid "Cannot write to temporary WARC file.\n"
 msgid "Could not open temporary WARC manifest file.\n"
 msgstr "No s'ha pogut escriure al fitxer temporal WARC.\n"
 
 #: src/warc.c:1191
 #, fuzzy
+#| msgid "Cannot write to temporary WARC file.\n"
 msgid "Could not open temporary WARC log file.\n"
 msgstr "No s'ha pogut escriure al fitxer temporal WARC.\n"
 
 #: src/warc.c:1200
 #, fuzzy
+#| msgid "Cannot write to WARC file.\n"
 msgid "Could not open WARC file.\n"
 msgstr "No s'ha pogut escriure al fitxer WARC.\n"
 

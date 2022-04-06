@@ -1,19 +1,19 @@
 /* A GNU-like <limits.h>.
 
-   Copyright 2016-2021 Free Software Foundation, Inc.
+   Copyright 2016-2022 Free Software Foundation, Inc.
 
-   This program is free software; you can redistribute it and/or
-   modify it under the terms of the GNU General Public License
-   as published by the Free Software Foundation; either version 3, or
-   (at your option) any later version.
+   This file is free software: you can redistribute it and/or modify
+   it under the terms of the GNU Lesser General Public License as
+   published by the Free Software Foundation; either version 2.1 of the
+   License, or (at your option) any later version.
 
-   This program is distributed in the hope that it will be useful,
+   This file is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
+   GNU Lesser General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, see <https://www.gnu.org/licenses/>.  */
+   You should have received a copy of the GNU Lesser General Public License
+   along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
 #if __GNUC__ >= 3
 @PRAGMA_SYSTEM_HEADER@
@@ -99,10 +99,11 @@
 # endif
 #endif
 
-/* Macros specified by ISO/IEC TS 18661-1:2014.  */
+/* Macros specified by C2x and by ISO/IEC TS 18661-1:2014.  */
 
 #if (! defined ULLONG_WIDTH                                             \
-     && (defined _GNU_SOURCE || defined __STDC_WANT_IEC_60559_BFP_EXT__))
+     && (defined _GNU_SOURCE || defined __STDC_WANT_IEC_60559_BFP_EXT__ \
+         || (defined __STDC_VERSION__ && 201710 < __STDC_VERSION__)))
 # define CHAR_WIDTH _GL_INTEGER_WIDTH (CHAR_MIN, CHAR_MAX)
 # define SCHAR_WIDTH _GL_INTEGER_WIDTH (SCHAR_MIN, SCHAR_MAX)
 # define UCHAR_WIDTH _GL_INTEGER_WIDTH (0, UCHAR_MAX)
@@ -114,7 +115,16 @@
 # define ULONG_WIDTH _GL_INTEGER_WIDTH (0, ULONG_MAX)
 # define LLONG_WIDTH _GL_INTEGER_WIDTH (LLONG_MIN, LLONG_MAX)
 # define ULLONG_WIDTH _GL_INTEGER_WIDTH (0, ULLONG_MAX)
-#endif /* !ULLONG_WIDTH && (_GNU_SOURCE || __STDC_WANT_IEC_60559_BFP_EXT__) */
+#endif
+
+/* Macros specified by C2x.  */
+
+#if (! defined BOOL_WIDTH \
+     && (defined _GNU_SOURCE \
+         || (defined __STDC_VERSION__ && 201710 < __STDC_VERSION__)))
+# define BOOL_MAX 1
+# define BOOL_WIDTH 1
+#endif
 
 #endif /* _@GUARD_PREFIX@_LIMITS_H */
 #endif /* _@GUARD_PREFIX@_LIMITS_H */

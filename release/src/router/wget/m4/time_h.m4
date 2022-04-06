@@ -1,8 +1,8 @@
 # Configure a more-standard replacement for <time.h>.
 
-# Copyright (C) 2000-2001, 2003-2007, 2009-2021 Free Software Foundation, Inc.
+# Copyright (C) 2000-2001, 2003-2007, 2009-2022 Free Software Foundation, Inc.
 
-# serial 15
+# serial 19
 
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
@@ -10,16 +10,11 @@
 
 # Written by Paul Eggert and Jim Meyering.
 
-AC_DEFUN([gl_HEADER_TIME_H],
+AC_DEFUN_ONCE([gl_TIME_H],
 [
-  dnl Use AC_REQUIRE here, so that the default behavior below is expanded
-  dnl once only, before all statements that occur in other macros.
-  AC_REQUIRE([gl_HEADER_TIME_H_BODY])
-])
-
-AC_DEFUN([gl_HEADER_TIME_H_BODY],
-[
-  AC_REQUIRE([gl_HEADER_TIME_H_DEFAULTS])
+  dnl Ensure to expand the default settings once only, before all statements
+  dnl that occur in other macros.
+  AC_REQUIRE([gl_TIME_H_DEFAULTS])
 
   gl_NEXT_HEADERS([time.h])
   AC_REQUIRE([gl_CHECK_TYPE_STRUCT_TIMESPEC])
@@ -111,36 +106,53 @@ AC_DEFUN([gl_CHECK_TYPE_STRUCT_TIMESPEC],
   AC_SUBST([UNISTD_H_DEFINES_STRUCT_TIMESPEC])
 ])
 
+# gl_TIME_MODULE_INDICATOR([modulename])
+# sets the shell variable that indicates the presence of the given module
+# to a C preprocessor expression that will evaluate to 1.
+# This macro invocation must not occur in macros that are AC_REQUIREd.
 AC_DEFUN([gl_TIME_MODULE_INDICATOR],
 [
-  dnl Use AC_REQUIRE here, so that the default settings are expanded once only.
-  AC_REQUIRE([gl_HEADER_TIME_H_DEFAULTS])
+  dnl Ensure to expand the default settings once only.
+  gl_TIME_H_REQUIRE_DEFAULTS
   gl_MODULE_INDICATOR_SET_VARIABLE([$1])
   dnl Define it also as a C macro, for the benefit of the unit tests.
   gl_MODULE_INDICATOR_FOR_TESTS([$1])
 ])
 
-AC_DEFUN([gl_HEADER_TIME_H_DEFAULTS],
+# Initializes the default values for AC_SUBSTed shell variables.
+# This macro must not be AC_REQUIREd.  It must only be invoked, and only
+# outside of macros or in macros that are not AC_REQUIREd.
+AC_DEFUN([gl_TIME_H_REQUIRE_DEFAULTS],
 [
-  GNULIB_CTIME=0;                        AC_SUBST([GNULIB_CTIME])
-  GNULIB_MKTIME=0;                       AC_SUBST([GNULIB_MKTIME])
-  GNULIB_LOCALTIME=0;                    AC_SUBST([GNULIB_LOCALTIME])
-  GNULIB_NANOSLEEP=0;                    AC_SUBST([GNULIB_NANOSLEEP])
-  GNULIB_STRFTIME=0;                     AC_SUBST([GNULIB_STRFTIME])
-  GNULIB_STRPTIME=0;                     AC_SUBST([GNULIB_STRPTIME])
-  GNULIB_TIMEGM=0;                       AC_SUBST([GNULIB_TIMEGM])
-  GNULIB_TIMESPEC_GET=0;                 AC_SUBST([GNULIB_TIMESPEC_GET])
-  GNULIB_TIME_R=0;                       AC_SUBST([GNULIB_TIME_R])
-  GNULIB_TIME_RZ=0;                      AC_SUBST([GNULIB_TIME_RZ])
-  GNULIB_TZSET=0;                        AC_SUBST([GNULIB_TZSET])
-  dnl Support Microsoft deprecated alias function names by default.
-  GNULIB_MDA_TZSET=1;                    AC_SUBST([GNULIB_MDA_TZSET])
+  m4_defun(GL_MODULE_INDICATOR_PREFIX[_TIME_H_MODULE_INDICATOR_DEFAULTS], [
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_CTIME])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_MKTIME])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_LOCALTIME])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_NANOSLEEP])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_STRFTIME])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_STRPTIME])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_TIMEGM])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_TIMESPEC_GET])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_TIMESPEC_GETRES])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_TIME_R])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_TIME_RZ])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_TZSET])
+    dnl Support Microsoft deprecated alias function names by default.
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_MDA_TZSET], [1])
+  ])
+  m4_require(GL_MODULE_INDICATOR_PREFIX[_TIME_H_MODULE_INDICATOR_DEFAULTS])
+  AC_REQUIRE([gl_TIME_H_DEFAULTS])
+])
+
+AC_DEFUN([gl_TIME_H_DEFAULTS],
+[
   dnl Assume proper GNU behavior unless another module says otherwise.
   HAVE_DECL_LOCALTIME_R=1;               AC_SUBST([HAVE_DECL_LOCALTIME_R])
   HAVE_NANOSLEEP=1;                      AC_SUBST([HAVE_NANOSLEEP])
   HAVE_STRPTIME=1;                       AC_SUBST([HAVE_STRPTIME])
   HAVE_TIMEGM=1;                         AC_SUBST([HAVE_TIMEGM])
   HAVE_TIMESPEC_GET=1;                   AC_SUBST([HAVE_TIMESPEC_GET])
+  HAVE_TIMESPEC_GETRES=1;                AC_SUBST([HAVE_TIMESPEC_GETRES])
   dnl Even GNU libc does not have timezone_t yet.
   HAVE_TIMEZONE_T=0;                     AC_SUBST([HAVE_TIMEZONE_T])
   dnl If another module says to replace or to not replace, do that.

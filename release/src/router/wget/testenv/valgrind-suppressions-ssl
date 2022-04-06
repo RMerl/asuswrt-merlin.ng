@@ -1,0 +1,49 @@
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   ...
+   obj:*/libcrypto.so.*
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   ...
+   obj:*/libssl.so.*
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Value8
+   ...
+   obj:*/libcrypto.so.*
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Param
+   write(buf)
+   ...
+   obj:*/libcrypto.so.*
+}
+
+{
+   gnutls-false-positive
+   Memcheck:Cond
+   fun:decode_complex_string.isra.0
+   fun:_gnutls_x509_dn_to_string
+   ...
+}
+
+{
+   gnutls-false-positive
+   Memcheck:Cond
+   ...
+   fun:gnutls_x509_ext_import_subject_alt_names
+   fun:gnutls_x509_crt_import
+   fun:gnutls_x509_crt_list_import
+   fun:gnutls_x509_crt_list_import2
+   fun:gnutls_x509_trust_list_add_trust_mem
+   fun:gnutls_x509_trust_list_add_trust_file
+   fun:gnutls_x509_trust_list_add_system_trust
+}

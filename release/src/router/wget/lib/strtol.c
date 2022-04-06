@@ -1,22 +1,22 @@
 /* Convert string representation of a number into an integer value.
 
-   Copyright (C) 1991-1992, 1994-1999, 2003, 2005-2007, 2009-2021 Free Software
+   Copyright (C) 1991-1992, 1994-1999, 2003, 2005-2007, 2009-2022 Free Software
    Foundation, Inc.
 
    NOTE: The canonical source of this file is maintained with the GNU C
    Library.  Bugs can be reported to bug-glibc@gnu.org.
 
-   This program is free software: you can redistribute it and/or modify it
-   under the terms of the GNU General Public License as published by the
-   Free Software Foundation; either version 3 of the License, or any
-   later version.
+   This file is free software: you can redistribute it and/or modify
+   it under the terms of the GNU Lesser General Public License as
+   published by the Free Software Foundation, either version 3 of the
+   License, or (at your option) any later version.
 
-   This program is distributed in the hope that it will be useful,
+   This file is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
+   GNU Lesser General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
+   You should have received a copy of the GNU Lesser General Public License
    along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
 #ifdef _LIBC
@@ -51,6 +51,7 @@
 
 /* Determine the name.  */
 #ifdef USE_IN_EXTENDED_LOCALE_MODEL
+# undef strtol
 # if UNSIGNED
 #  ifdef USE_WIDE_CHAR
 #   ifdef QUAD
@@ -82,6 +83,7 @@
 # endif
 #else
 # if UNSIGNED
+#  undef strtol
 #  ifdef USE_WIDE_CHAR
 #   ifdef QUAD
 #    define strtol wcstoull
@@ -97,6 +99,7 @@
 #  endif
 # else
 #  ifdef USE_WIDE_CHAR
+#   undef strtol
 #   ifdef QUAD
 #    define strtol wcstoll
 #   else
@@ -104,6 +107,7 @@
 #   endif
 #  else
 #   ifdef QUAD
+#    undef strtol
 #    define strtol strtoll
 #   endif
 #  endif
@@ -130,6 +134,12 @@
 # define STRTOL_ULONG_MAX ULONG_MAX
 #endif
 
+
+#ifdef USE_NUMBER_GROUPING
+# define GROUP_PARAM_PROTO , int group
+#else
+# define GROUP_PARAM_PROTO
+#endif
 
 /* We use this code also for the extended locale handling where the
    function gets as an additional argument the locale which has to be
@@ -166,19 +176,23 @@
 # define UCHAR_TYPE unsigned char
 # define STRING_TYPE char
 # ifdef USE_IN_EXTENDED_LOCALE_MODEL
-#  define ISSPACE(Ch) __isspace_l ((Ch), loc)
-#  define ISALPHA(Ch) __isalpha_l ((Ch), loc)
-#  define TOUPPER(Ch) __toupper_l ((Ch), loc)
+#  define ISSPACE(Ch) __isspace_l ((unsigned char) (Ch), loc)
+#  define ISALPHA(Ch) __isalpha_l ((unsigned char) (Ch), loc)
+#  define TOUPPER(Ch) __toupper_l ((unsigned char) (Ch), loc)
 # else
-#  define ISSPACE(Ch) isspace (Ch)
-#  define ISALPHA(Ch) isalpha (Ch)
-#  define TOUPPER(Ch) toupper (Ch)
+#  define ISSPACE(Ch) isspace ((unsigned char) (Ch))
+#  define ISALPHA(Ch) isalpha ((unsigned char) (Ch))
+#  define TOUPPER(Ch) toupper ((unsigned char) (Ch))
 # endif
 #endif
 
-#define INTERNAL(X) INTERNAL1(X)
-#define INTERNAL1(X) __##X##_internal
-#define WEAKNAME(X) WEAKNAME1(X)
+#ifdef USE_NUMBER_GROUPING
+# define INTERNAL(X) INTERNAL1(X)
+# define INTERNAL1(X) __##X##_internal
+# define WEAKNAME(X) WEAKNAME1(X)
+#else
+# define INTERNAL(X) X
+#endif
 
 #ifdef USE_NUMBER_GROUPING
 /* This file defines a function to check for correct grouping.  */
@@ -196,7 +210,7 @@
 
 INT
 INTERNAL (strtol) (const STRING_TYPE *nptr, STRING_TYPE **endptr,
-                   int base, int group LOCALE_PARAM_PROTO)
+                   int base GROUP_PARAM_PROTO LOCALE_PARAM_PROTO)
 {
   int negative;
   register unsigned LONG int cutoff;
@@ -379,15 +393,16 @@ noconv:
   return 0L;
 }
 
+#ifdef USE_NUMBER_GROUPING
 /* External user entry point.  */
 
-
 INT
-#ifdef weak_function
+# ifdef weak_function
 weak_function
-#endif
+# endif
 strtol (const STRING_TYPE *nptr, STRING_TYPE **endptr,
         int base LOCALE_PARAM_PROTO)
 {
   return INTERNAL (strtol) (nptr, endptr, base, 0 LOCALE_PARAM);
 }
+#endif

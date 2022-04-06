@@ -2,7 +2,7 @@
 # The msgids must be ASCII and therefore cannot contain real quotation
 # characters, only substitutes like grave accent (0x60), apostrophe (0x27)
 # and double quote (0x22). These substitutes look strange; see
-# http://www.cl.cam.ac.uk/~mgk25/ucs/quotes.html
+# https://www.cl.cam.ac.uk/~mgk25/ucs/quotes.html
 #
 # This catalog translates grave accent (0x60) and apostrophe (0x27) to
 # left single quotation mark (U+2018) and right single quotation mark (U+2019).

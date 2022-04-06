@@ -1,18 +1,18 @@
 /* vsprintf with automatic memory allocation.
-   Copyright (C) 1999, 2002-2021 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2002-2022 Free Software Foundation, Inc.
 
-   This program is free software; you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 3, or (at your option)
-   any later version.
+   This file is free software: you can redistribute it and/or modify
+   it under the terms of the GNU Lesser General Public License as
+   published by the Free Software Foundation; either version 2.1 of the
+   License, or (at your option) any later version.
 
-   This program is distributed in the hope that it will be useful,
+   This file is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
+   GNU Lesser General Public License for more details.
 
-   You should have received a copy of the GNU General Public License along
-   with this program; if not, see <https://www.gnu.org/licenses/>.  */
+   You should have received a copy of the GNU Lesser General Public License
+   along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
 /* This file can be parametrized with the following macros:
      VASNPRINTF         The name of the function being defined.
@@ -60,9 +60,15 @@
 #ifndef VASNPRINTF
 # include <config.h>
 #endif
-#ifndef IN_LIBINTL
-# include <alloca.h>
+
+/* As of GCC 11.2.1, gcc -Wanalyzer-too-complex reports that main's
+   use of CHECK macros expands to code that is too complicated for gcc
+   -fanalyzer.  Suppress the resulting bogus warnings.  */
+#if 10 <= __GNUC__
+# pragma GCC diagnostic ignored "-Wanalyzer-null-argument"
 #endif
+
+#include <alloca.h>
 
 /* Specification.  */
 #ifndef VASNPRINTF
@@ -1859,6 +1865,7 @@ VASNPRINTF (DCHAR_T *resultbuf, size_t *lengthp,
     /* errno is already set.  */
     return NULL;
 
+  /* Frees the memory allocated by this function.  Preserves errno.  */
 #define CLEANUP() \
   if (d.dir != d.direct_alloc_dir)                                      \
     free (d.dir);                                                       \
@@ -1923,7 +1930,7 @@ VASNPRINTF (DCHAR_T *resultbuf, size_t *lengthp,
 
     /* Ensures that allocated >= needed.  Aborts through a jump to
        out_of_memory if needed is SIZE_MAX or otherwise too big.  */
-#define ENSURE_ALLOCATION(needed) \
+#define ENSURE_ALLOCATION_ELSE(needed, oom_statement) \
     if ((needed) > allocated)                                                \
       {                                                                      \
         size_t memory_size;                                                  \
@@ -1934,17 +1941,19 @@ VASNPRINTF (DCHAR_T *resultbuf, size_t *lengthp,
           allocated = (needed);                                              \
         memory_size = xtimes (allocated, sizeof (DCHAR_T));                  \
         if (size_overflow_p (memory_size))                                   \
-          goto out_of_memory;                                                \
+          oom_statement                                                      \
         if (result == resultbuf || result == NULL)                           \
           memory = (DCHAR_T *) malloc (memory_size);                         \
         else                                                                 \
           memory = (DCHAR_T *) realloc (result, memory_size);                \
         if (memory == NULL)                                                  \
-          goto out_of_memory;                                                \
+          oom_statement                                                      \
         if (result == resultbuf && length > 0)                               \
           DCHAR_CPY (memory, result, length);                                \
         result = memory;                                                     \
       }
+#define ENSURE_ALLOCATION(needed) \
+  ENSURE_ALLOCATION_ELSE((needed), goto out_of_memory; )
 
     for (cp = format, i = 0, dp = &d.dir[0]; ; cp = dp->dir_end, i++, dp++)
       {
@@ -2183,18 +2192,17 @@ VASNPRINTF (DCHAR_T *resultbuf, size_t *lengthp,
 #  endif
                         if (converted == NULL)
                           {
-                            int saved_errno = errno;
                             if (!(result == resultbuf || result == NULL))
                               free (result);
                             if (buf_malloced != NULL)
                               free (buf_malloced);
                             CLEANUP ();
-                            errno = saved_errno;
                             return NULL;
                           }
                         if (converted != result + length)
                           {
-                            ENSURE_ALLOCATION (xsum (length, converted_len));
+                            ENSURE_ALLOCATION_ELSE (xsum (length, converted_len),
+                                                    { free (converted); goto out_of_memory; });
                             DCHAR_CPY (result + length, converted, converted_len);
                             free (converted);
                           }
@@ -2309,18 +2317,17 @@ VASNPRINTF (DCHAR_T *resultbuf, size_t *lengthp,
 #  endif
                         if (converted == NULL)
                           {
-                            int saved_errno = errno;
                             if (!(result == resultbuf || result == NULL))
                               free (result);
                             if (buf_malloced != NULL)
                               free (buf_malloced);
                             CLEANUP ();
-                            errno = saved_errno;
                             return NULL;
                           }
                         if (converted != result + length)
                           {
-                            ENSURE_ALLOCATION (xsum (length, converted_len));
+                            ENSURE_ALLOCATION_ELSE (xsum (length, converted_len),
+                                                    { free (converted); goto out_of_memory; });
                             DCHAR_CPY (result + length, converted, converted_len);
                             free (converted);
                           }
@@ -2435,18 +2442,17 @@ VASNPRINTF (DCHAR_T *resultbuf, size_t *lengthp,
 #  endif
                         if (converted == NULL)
                           {
-                            int saved_errno = errno;
                             if (!(result == resultbuf || result == NULL))
                               free (result);
                             if (buf_malloced != NULL)
                               free (buf_malloced);
                             CLEANUP ();
-                            errno = saved_errno;
                             return NULL;
                           }
                         if (converted != result + length)
                           {
-                            ENSURE_ALLOCATION (xsum (length, converted_len));
+                            ENSURE_ALLOCATION_ELSE (xsum (length, converted_len),
+                                                    { free (converted); goto out_of_memory; });
                             DCHAR_CPY (result + length, converted, converted_len);
                             free (converted);
                           }
@@ -2852,14 +2858,12 @@ VASNPRINTF (DCHAR_T *resultbuf, size_t *lengthp,
                                               NULL, &tmpdst_len);
                   if (tmpdst == NULL)
                     {
-                      int saved_errno = errno;
                       free (tmpsrc);
                       if (!(result == resultbuf || result == NULL))
                         free (result);
                       if (buf_malloced != NULL)
                         free (buf_malloced);
                       CLEANUP ();
-                      errno = saved_errno;
                       return NULL;
                     }
                   free (tmpsrc);
@@ -2951,7 +2955,8 @@ VASNPRINTF (DCHAR_T *resultbuf, size_t *lengthp,
                         }
                     }
 #  else
-                  ENSURE_ALLOCATION (xsum (length, tmpdst_len));
+                  ENSURE_ALLOCATION_ELSE (xsum (length, tmpdst_len),
+                                          { free (tmpdst); goto out_of_memory; });
                   DCHAR_CPY (result + length, tmpdst, tmpdst_len);
                   free (tmpdst);
                   length += tmpdst_len;
@@ -3079,13 +3084,11 @@ VASNPRINTF (DCHAR_T *resultbuf, size_t *lengthp,
                                               NULL, &tmpdst_len);
                   if (tmpdst == NULL)
                     {
-                      int saved_errno = errno;
                       if (!(result == resultbuf || result == NULL))
                         free (result);
                       if (buf_malloced != NULL)
                         free (buf_malloced);
                       CLEANUP ();
-                      errno = saved_errno;
                       return NULL;
                     }
 # endif
@@ -3156,7 +3159,8 @@ VASNPRINTF (DCHAR_T *resultbuf, size_t *lengthp,
                         }
                     }
 # else
-                  ENSURE_ALLOCATION (xsum (length, tmpdst_len));
+                  ENSURE_ALLOCATION_ELSE (xsum (length, tmpdst_len),
+                                          { free (tmpdst); goto out_of_memory; });
                   DCHAR_CPY (result + length, tmpdst, tmpdst_len);
                   free (tmpdst);
                   length += tmpdst_len;
@@ -5449,15 +5453,14 @@ VASNPRINTF (DCHAR_T *resultbuf, size_t *lengthp,
                     /* Attempt to handle failure.  */
                     if (count < 0)
                       {
-                        /* SNPRINTF or sprintf failed.  Save and use the errno
-                           that it has set, if any.  */
-                        int saved_errno = errno;
-                        if (saved_errno == 0)
+                        /* SNPRINTF or sprintf failed.  Use the errno that it
+                           has set, if any.  */
+                        if (errno == 0)
                           {
                             if (dp->conversion == 'c' || dp->conversion == 's')
-                              saved_errno = EILSEQ;
+                              errno = EILSEQ;
                             else
-                              saved_errno = EINVAL;
+                              errno = EINVAL;
                           }
 
                         if (!(result == resultbuf || result == NULL))
@@ -5466,7 +5469,6 @@ VASNPRINTF (DCHAR_T *resultbuf, size_t *lengthp,
                           free (buf_malloced);
                         CLEANUP ();
 
-                        errno = saved_errno;
                         return NULL;
                       }
 
@@ -5602,16 +5604,15 @@ VASNPRINTF (DCHAR_T *resultbuf, size_t *lengthp,
                                                     NULL, &tmpdst_len);
                         if (tmpdst == NULL)
                           {
-                            int saved_errno = errno;
                             if (!(result == resultbuf || result == NULL))
                               free (result);
                             if (buf_malloced != NULL)
                               free (buf_malloced);
                             CLEANUP ();
-                            errno = saved_errno;
                             return NULL;
                           }
-                        ENSURE_ALLOCATION (xsum (length, tmpdst_len));
+                        ENSURE_ALLOCATION_ELSE (xsum (length, tmpdst_len),
+                                                { free (tmpdst); goto out_of_memory; });
                         DCHAR_CPY (result + length, tmpdst, tmpdst_len);
                         free (tmpdst);
                         count = tmpdst_len;

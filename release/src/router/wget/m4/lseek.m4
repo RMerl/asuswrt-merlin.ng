@@ -1,5 +1,5 @@
-# lseek.m4 serial 11
-dnl Copyright (C) 2007, 2009-2021 Free Software Foundation, Inc.
+# lseek.m4 serial 12
+dnl Copyright (C) 2007, 2009-2022 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -59,7 +59,7 @@ AC_DEFUN([gl_FUNC_LSEEK],
          ;;
      esac
     ])
-  if test $gl_cv_func_lseek_pipe = no; then
+  if test "$gl_cv_func_lseek_pipe" = no; then
     REPLACE_LSEEK=1
     AC_DEFINE([LSEEK_PIPE_BROKEN], [1],
       [Define to 1 if lseek does not detect pipes.])
@@ -69,4 +69,10 @@ AC_DEFUN([gl_FUNC_LSEEK],
   if test $WINDOWS_64_BIT_OFF_T = 1; then
     REPLACE_LSEEK=1
   fi
+
+  dnl macOS SEEK_DATA is incompatible with other platforms.
+  case $host_os in
+    darwin*)
+      REPLACE_LSEEK=1;;
+  esac
 ])

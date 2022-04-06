@@ -29,6 +29,7 @@
    ...
    fun:fillin_rpath.isra.0
    fun:decompose_rpath
+   ...
    fun:_dl_map_object
    fun:openaux
    fun:_dl_catch_exception

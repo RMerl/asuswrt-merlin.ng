@@ -1,19 +1,19 @@
 /* A substitute for ISO C99 <wchar.h>, for platforms that have issues.
 
-   Copyright (C) 2007-2021 Free Software Foundation, Inc.
+   Copyright (C) 2007-2022 Free Software Foundation, Inc.
 
-   This program is free software; you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 3, or (at your option)
-   any later version.
+   This file is free software: you can redistribute it and/or modify
+   it under the terms of the GNU Lesser General Public License as
+   published by the Free Software Foundation; either version 2.1 of the
+   License, or (at your option) any later version.
 
-   This program is distributed in the hope that it will be useful,
+   This file is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
+   GNU Lesser General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, see <https://www.gnu.org/licenses/>.  */
+   You should have received a copy of the GNU Lesser General Public License
+   along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
 /* Written by Eric Blake.  */
 
@@ -84,6 +84,35 @@
 #ifndef _@GUARD_PREFIX@_WCHAR_H
 #define _@GUARD_PREFIX@_WCHAR_H
 
+/* _GL_ATTRIBUTE_DEALLOC (F, I) declares that the function returns pointers
+   that can be freed by passing them as the Ith argument to the
+   function F.  */
+#ifndef _GL_ATTRIBUTE_DEALLOC
+# if __GNUC__ >= 11
+#  define _GL_ATTRIBUTE_DEALLOC(f, i) __attribute__ ((__malloc__ (f, i)))
+# else
+#  define _GL_ATTRIBUTE_DEALLOC(f, i)
+# endif
+#endif
+
+/* _GL_ATTRIBUTE_DEALLOC_FREE declares that the function returns pointers that
+   can be freed via 'free'; it can be used only after declaring 'free'.  */
+/* Applies to: functions.  Cannot be used on inline functions.  */
+#ifndef _GL_ATTRIBUTE_DEALLOC_FREE
+# define _GL_ATTRIBUTE_DEALLOC_FREE _GL_ATTRIBUTE_DEALLOC (free, 1)
+#endif
+
+/* _GL_ATTRIBUTE_MALLOC declares that the function returns a pointer to freshly
+   allocated memory.  */
+/* Applies to: functions.  */
+#ifndef _GL_ATTRIBUTE_MALLOC
+# if __GNUC__ >= 3 || defined __clang__
+#  define _GL_ATTRIBUTE_MALLOC __attribute__ ((__malloc__))
+# else
+#  define _GL_ATTRIBUTE_MALLOC
+# endif
+#endif
+
 /* The __attribute__ feature is available in gcc versions 2.5 and later.
    The attribute __pure__ was added in gcc 2.96.  */
 #ifndef _GL_ATTRIBUTE_PURE
@@ -111,7 +140,7 @@
 /* mingw and MSVC define wint_t as 'unsigned short' in <crtdefs.h> or
    <stddef.h>.  This is too small: ISO C 99 section 7.24.1.(2) says that
    wint_t must be "unchanged by default argument promotions".  Override it.  */
-# if @GNULIB_OVERRIDES_WINT_T@
+# if @GNULIBHEADERS_OVERRIDE_WINT_T@
 #  if !GNULIB_defined_wint_t
 #   if @HAVE_CRTDEFS_H@
 #    include <crtdefs.h>
@@ -146,6 +175,29 @@ typedef int rpl_mbstate_t;
 # endif
 #endif
 
+/* Make _GL_ATTRIBUTE_DEALLOC_FREE work, even though <stdlib.h> may not have
+   been included yet.  */
+#if @GNULIB_FREE_POSIX@
+# if (@REPLACE_FREE@ && !defined free \
+      && !(defined __cplusplus && defined GNULIB_NAMESPACE))
+/* We can't do '#define free rpl_free' here.  */
+_GL_EXTERN_C void rpl_free (void *);
+#  undef _GL_ATTRIBUTE_DEALLOC_FREE
+#  define _GL_ATTRIBUTE_DEALLOC_FREE _GL_ATTRIBUTE_DEALLOC (rpl_free, 1)
+# else
+#  if defined _MSC_VER
+_GL_EXTERN_C void __cdecl free (void *);
+#  else
+_GL_EXTERN_C void free (void *);
+#  endif
+# endif
+#else
+# if defined _MSC_VER
+_GL_EXTERN_C void __cdecl free (void *);
+# else
+_GL_EXTERN_C void free (void *);
+# endif
+#endif
 
 /* Convert a single-byte character to a wide character.  */
 #if @GNULIB_BTOWC@
@@ -941,36 +993,48 @@ _GL_WARN_ON_USE (wcsxfrm, "wcsxfrm is unportable - "
 #  endif
 _GL_CXXALIAS_MDA (wcsdup, wchar_t *, (const wchar_t *s));
 # else
-#  if !@HAVE_WCSDUP@
-_GL_FUNCDECL_SYS (wcsdup, wchar_t *, (const wchar_t *s));
+#  if !@HAVE_WCSDUP@ || __GNUC__ >= 11
+_GL_FUNCDECL_SYS (wcsdup, wchar_t *,
+                  (const wchar_t *s)
+                  _GL_ATTRIBUTE_MALLOC _GL_ATTRIBUTE_DEALLOC_FREE);
 #  endif
 _GL_CXXALIAS_SYS (wcsdup, wchar_t *, (const wchar_t *s));
 # endif
 _GL_CXXALIASWARN (wcsdup);
-#elif defined GNULIB_POSIXCHECK
-# undef wcsdup
-# if HAVE_RAW_DECL_WCSDUP
+#else
+# if __GNUC__ >= 11 && !defined wcsdup
+/* For -Wmismatched-dealloc: Associate wcsdup with free or rpl_free.  */
+_GL_FUNCDECL_SYS (wcsdup, wchar_t *,
+                  (const wchar_t *s)
+                  _GL_ATTRIBUTE_MALLOC _GL_ATTRIBUTE_DEALLOC_FREE);
+# endif
+# if defined GNULIB_POSIXCHECK
+#  undef wcsdup
+#  if HAVE_RAW_DECL_WCSDUP
 _GL_WARN_ON_USE (wcsdup, "wcsdup is unportable - "
                  "use gnulib module wcsdup for portability");
-# endif
-#elif @GNULIB_MDA_WCSDUP@
+#  endif
+# elif @GNULIB_MDA_WCSDUP@
 /* On native Windows, map 'wcsdup' to '_wcsdup', so that -loldnames is not
    required.  In C++ with GNULIB_NAMESPACE, avoid differences between
    platforms by defining GNULIB_NAMESPACE::wcsdup always.  */
-# if defined _WIN32 && !defined __CYGWIN__
-#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
-#   undef wcsdup
-#   define wcsdup _wcsdup
-#  endif
+#  if defined _WIN32 && !defined __CYGWIN__
+#   if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#    undef wcsdup
+#    define wcsdup _wcsdup
+#   endif
 _GL_CXXALIAS_MDA (wcsdup, wchar_t *, (const wchar_t *s));
-# else
-_GL_FUNCDECL_SYS (wcsdup, wchar_t *, (const wchar_t *s));
-#  if @HAVE_DECL_WCSDUP@
+#  else
+_GL_FUNCDECL_SYS (wcsdup, wchar_t *,
+                  (const wchar_t *s)
+                  _GL_ATTRIBUTE_MALLOC _GL_ATTRIBUTE_DEALLOC_FREE);
+#   if @HAVE_DECL_WCSDUP@
 _GL_CXXALIAS_SYS (wcsdup, wchar_t *, (const wchar_t *s));
+#   endif
 #  endif
-# endif
-# if (defined _WIN32 && !defined __CYGWIN__) || @HAVE_DECL_WCSDUP@
+#  if (defined _WIN32 && !defined __CYGWIN__) || @HAVE_DECL_WCSDUP@
 _GL_CXXALIASWARN (wcsdup);
+#  endif
 # endif
 #endif
 

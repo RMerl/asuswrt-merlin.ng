@@ -1,19 +1,19 @@
 /* A substitute for ISO C11 <stdalign.h>.
 
-   Copyright 2011-2021 Free Software Foundation, Inc.
+   Copyright 2011-2022 Free Software Foundation, Inc.
 
-   This program is free software; you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 3, or (at your option)
-   any later version.
+   This file is free software: you can redistribute it and/or modify
+   it under the terms of the GNU Lesser General Public License as
+   published by the Free Software Foundation; either version 2.1 of the
+   License, or (at your option) any later version.
 
-   This program is distributed in the hope that it will be useful,
+   This file is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
+   GNU Lesser General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, see <https://www.gnu.org/licenses/>.  */
+   You should have received a copy of the GNU Lesser General Public License
+   along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
 /* Written by Paul Eggert and Bruno Haible.  */
 
@@ -104,12 +104,13 @@
 #if !defined __STDC_VERSION__ || __STDC_VERSION__ < 201112
 # if defined __cplusplus && 201103 <= __cplusplus
 #  define _Alignas(a) alignas (a)
-# elif ((defined __APPLE__ && defined __MACH__                  \
-         ? 4 < __GNUC__ + (1 <= __GNUC_MINOR__)                 \
-         : __GNUC__ && !defined __ibmxl__)                      \
-        || (4 <= __clang_major__)                               \
-        || (__ia64 && (61200 <= __HP_cc || 61200 <= __HP_aCC))  \
-        || __ICC || 0x590 <= __SUNPRO_C || 0x0600 <= __xlC__)
+# elif (!defined __attribute__ \
+        && ((defined __APPLE__ && defined __MACH__ \
+             ? 4 < __GNUC__ + (1 <= __GNUC_MINOR__) \
+             : __GNUC__ && !defined __ibmxl__) \
+            || (4 <= __clang_major__) \
+            || (__ia64 && (61200 <= __HP_cc || 61200 <= __HP_aCC)) \
+            || __ICC || 0x590 <= __SUNPRO_C || 0x0600 <= __xlC__))
 #  define _Alignas(a) __attribute__ ((__aligned__ (a)))
 # elif 1300 <= _MSC_VER
 #  define _Alignas(a) __declspec (align (a))

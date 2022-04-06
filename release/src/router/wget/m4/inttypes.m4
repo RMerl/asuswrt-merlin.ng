@@ -1,5 +1,5 @@
-# inttypes.m4 serial 32
-dnl Copyright (C) 2006-2021 Free Software Foundation, Inc.
+# inttypes.m4 serial 36
+dnl Copyright (C) 2006-2022 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -7,7 +7,7 @@ dnl with or without modifications, as long as this notice is preserved.
 dnl From Derek Price, Bruno Haible.
 dnl Test whether <inttypes.h> is supported or must be substituted.
 
-AC_DEFUN([gl_INTTYPES_H],
+AC_DEFUN_ONCE([gl_INTTYPES_H],
 [
   AC_REQUIRE([gl_INTTYPES_INCOMPLETE])
   gl_INTTYPES_PRI_SCN
@@ -36,7 +36,7 @@ AC_DEFUN_ONCE([gl_INTTYPES_INCOMPLETE],
 AC_DEFUN([gl_INTTYPES_PRI_SCN],
 [
   PRIPTR_PREFIX=
-  if test -n "$STDINT_H"; then
+  if $GL_GENERATE_STDINT_H; then
     dnl Using the gnulib <stdint.h>. It defines intptr_t to 'long' or
     dnl 'long long', depending on _WIN64.
     AC_COMPILE_IFELSE(
@@ -136,19 +136,34 @@ AC_DEFUN([gl_INTTYPES_CHECK_LONG_LONG_INT_CONDITION],
   AC_SUBST([$1])
 ])
 
+# gl_INTTYPES_MODULE_INDICATOR([modulename])
+# sets the shell variable that indicates the presence of the given module
+# to a C preprocessor expression that will evaluate to 1.
+# This macro invocation must not occur in macros that are AC_REQUIREd.
 AC_DEFUN([gl_INTTYPES_MODULE_INDICATOR],
 [
-  dnl Use AC_REQUIRE here, so that the default settings are expanded once only.
-  AC_REQUIRE([gl_INTTYPES_H_DEFAULTS])
+  dnl Ensure to expand the default settings once only.
+  gl_INTTYPES_H_REQUIRE_DEFAULTS
   gl_MODULE_INDICATOR_SET_VARIABLE([$1])
+])
+
+# Initializes the default values for AC_SUBSTed shell variables.
+# This macro must not be AC_REQUIREd.  It must only be invoked, and only
+# outside of macros or in macros that are not AC_REQUIREd.
+AC_DEFUN([gl_INTTYPES_H_REQUIRE_DEFAULTS],
+[
+  m4_defun(GL_MODULE_INDICATOR_PREFIX[_INTTYPES_H_MODULE_INDICATOR_DEFAULTS], [
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_IMAXABS])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_IMAXDIV])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_STRTOIMAX])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_STRTOUMAX])
+  ])
+  m4_require(GL_MODULE_INDICATOR_PREFIX[_INTTYPES_H_MODULE_INDICATOR_DEFAULTS])
+  AC_REQUIRE([gl_INTTYPES_H_DEFAULTS])
 ])
 
 AC_DEFUN([gl_INTTYPES_H_DEFAULTS],
 [
-  GNULIB_IMAXABS=0;      AC_SUBST([GNULIB_IMAXABS])
-  GNULIB_IMAXDIV=0;      AC_SUBST([GNULIB_IMAXDIV])
-  GNULIB_STRTOIMAX=0;    AC_SUBST([GNULIB_STRTOIMAX])
-  GNULIB_STRTOUMAX=0;    AC_SUBST([GNULIB_STRTOUMAX])
   dnl Assume proper GNU behavior unless another module says otherwise.
   HAVE_DECL_IMAXABS=1;   AC_SUBST([HAVE_DECL_IMAXABS])
   HAVE_DECL_IMAXDIV=1;   AC_SUBST([HAVE_DECL_IMAXDIV])

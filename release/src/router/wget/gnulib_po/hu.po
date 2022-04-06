@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnulib 3.0.0.6062.a6b16\n"
 "Report-Msgid-Bugs-To: bug-gnulib@gnu.org\n"
-"POT-Creation-Date: 2021-01-09 10:58+0100\n"
+"POT-Creation-Date: 2022-02-26 17:24+0100\n"
 "PO-Revision-Date: 2014-06-25 19:51+0200\n"
 "Last-Translator: Balázs Úr <urbalazs@gmail.com>\n"
 "Language-Team: Hungarian <translation-team-hu@lists.sourceforge.net>\n"
@@ -103,26 +103,31 @@ msgstr "Ismeretlen hiba"
 
 #: lib/getopt.c:278
 #, fuzzy, c-format
+#| msgid "%s: option '-W %s' is ambiguous\n"
 msgid "%s: option '%s%s' is ambiguous\n"
 msgstr "%s: a „-W %s” kapcsoló nem egyértelmű\n"
 
 #: lib/getopt.c:284
 #, fuzzy, c-format
+#| msgid "%s: option '%s' is ambiguous; possibilities:"
 msgid "%s: option '%s%s' is ambiguous; possibilities:"
 msgstr "%s: a(z) „%s” kapcsoló nem egyértelmű; lehetőségek:"
 
 #: lib/getopt.c:319
 #, fuzzy, c-format
+#| msgid "%s: unrecognized option '%c%s'\n"
 msgid "%s: unrecognized option '%s%s'\n"
 msgstr "%s: a(z) „%c%s” kapcsoló ismeretlen\n"
 
 #: lib/getopt.c:345
 #, fuzzy, c-format
+#| msgid "%s: option '%c%s' doesn't allow an argument\n"
 msgid "%s: option '%s%s' doesn't allow an argument\n"
 msgstr "%s: a(z) „%c%s” kapcsoló nem enged meg argumentumot\n"
 
 #: lib/getopt.c:360
 #, fuzzy, c-format
+#| msgid "%s: option '--%s' requires an argument\n"
 msgid "%s: option '%s%s' requires an argument\n"
 msgstr "%s: a(z) „--%s” kapcsolóhoz egy argumentum szükséges\n"
 
@@ -185,96 +190,97 @@ msgstr "„"
 msgid "'"
 msgstr "”"
 
-#: lib/regcomp.c:135
+#: lib/regcomp.c:122
 msgid "Success"
 msgstr "Sikerült"
 
-#: lib/regcomp.c:138
+#: lib/regcomp.c:125
 msgid "No match"
 msgstr "Nincs találat"
 
-#: lib/regcomp.c:141
+#: lib/regcomp.c:128
 msgid "Invalid regular expression"
 msgstr "Érvénytelen szabályos kifejezés"
 
-#: lib/regcomp.c:144
+#: lib/regcomp.c:131
 msgid "Invalid collation character"
 msgstr "Érvénytelen leválogatási karakter"
 
-#: lib/regcomp.c:147
+#: lib/regcomp.c:134
 msgid "Invalid character class name"
 msgstr "Érvénytelen karakterosztálynév"
 
-#: lib/regcomp.c:150
+#: lib/regcomp.c:137
 msgid "Trailing backslash"
 msgstr "Záró visszaper"
 
-#: lib/regcomp.c:153
+#: lib/regcomp.c:140
 msgid "Invalid back reference"
 msgstr "Érvénytelen visszahivatkozás"
 
-#: lib/regcomp.c:156
+#: lib/regcomp.c:143
 #, fuzzy
+#| msgid "Unmatched [ or [^"
 msgid "Unmatched [, [^, [:, [., or [="
 msgstr "Pár nélküli [ vagy [^"
 
-#: lib/regcomp.c:159
+#: lib/regcomp.c:146
 msgid "Unmatched ( or \\("
 msgstr "Pár nélküli ( vagy \\("
 
-#: lib/regcomp.c:162
+#: lib/regcomp.c:149
 msgid "Unmatched \\{"
 msgstr "Pár nélküli \\{"
 
-#: lib/regcomp.c:165
+#: lib/regcomp.c:152
 msgid "Invalid content of \\{\\}"
 msgstr "A \\{\\} tartalma érvénytelen"
 
-#: lib/regcomp.c:168
+#: lib/regcomp.c:155
 msgid "Invalid range end"
 msgstr "Érvénytelen tartományvég"
 
-#: lib/regcomp.c:171
+#: lib/regcomp.c:158
 msgid "Memory exhausted"
 msgstr "Elfogyott a memória"
 
-#: lib/regcomp.c:174
+#: lib/regcomp.c:161
 msgid "Invalid preceding regular expression"
 msgstr "Érvénytelen megelőző szabályos kifejezés"
 
-#: lib/regcomp.c:177
+#: lib/regcomp.c:164
 msgid "Premature end of regular expression"
 msgstr "A szabályos kifejezés túl korán véget ért"
 
-#: lib/regcomp.c:180
+#: lib/regcomp.c:167
 msgid "Regular expression too big"
 msgstr "A szabályos kifejezés túl nagy"
 
-#: lib/regcomp.c:183
+#: lib/regcomp.c:170
 msgid "Unmatched ) or \\)"
 msgstr "Pár nélküli ) vagy \\)"
 
-#: lib/regcomp.c:676
+#: lib/regcomp.c:650
 msgid "No previous regular expression"
 msgstr "Nincs megelőző szabályos kifejezés"
 
-#: lib/spawn-pipe.c:218 lib/spawn-pipe.c:221 lib/spawn-pipe.c:460
-#: lib/spawn-pipe.c:463
+#: lib/spawn-pipe.c:217 lib/spawn-pipe.c:220 lib/spawn-pipe.c:459
+#: lib/spawn-pipe.c:462
 #, c-format
 msgid "cannot create pipe"
 msgstr "nem hozható létre adatcsatorna"
 
-#: lib/spawn-pipe.c:598 lib/wait-process.c:290 lib/wait-process.c:364
+#: lib/spawn-pipe.c:597 lib/wait-process.c:291 lib/wait-process.c:365
 #, c-format
 msgid "%s subprocess failed"
 msgstr "%s alfolyamat sikertelen"
 
-#: lib/wait-process.c:231 lib/wait-process.c:263 lib/wait-process.c:325
+#: lib/wait-process.c:232 lib/wait-process.c:264 lib/wait-process.c:326
 #, c-format
 msgid "%s subprocess"
 msgstr "%s alfolyamat"
 
-#: lib/wait-process.c:282 lib/wait-process.c:354
+#: lib/wait-process.c:283 lib/wait-process.c:355
 #, c-format
 msgid "%s subprocess got fatal signal %d"
 msgstr "%s alfolyamat végzetes %d szignált kapott"

@@ -1,18 +1,18 @@
 /* Auxiliary functions for the creation of subprocesses.  Native Windows API.
-   Copyright (C) 2001, 2003-2021 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2003-2022 Free Software Foundation, Inc.
    Written by Bruno Haible <bruno@clisp.org>, 2003.
 
-   This program is free software: you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 3 of the License, or
-   (at your option) any later version.
+   This file is free software: you can redistribute it and/or modify
+   it under the terms of the GNU Lesser General Public License as
+   published by the Free Software Foundation; either version 2.1 of the
+   License, or (at your option) any later version.
 
-   This program is distributed in the hope that it will be useful,
+   This file is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
+   GNU Lesser General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
+   You should have received a copy of the GNU Lesser General Public License
    along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
 #ifndef _WINDOWS_SPAWN_H
@@ -20,6 +20,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdlib.h>
 
 /* Get declarations of the native Windows API functions.  */
 #define WIN32_LEAN_AND_MEAN
@@ -72,14 +73,16 @@ extern const char ** prepare_spawn (const char * const *argv,
    prepare_spawn.
    Returns a freshly allocated string.  In case of memory allocation failure,
    NULL is returned, with errno set.  */
-extern char * compose_command (const char * const *argv);
+extern char * compose_command (const char * const *argv)
+  _GL_ATTRIBUTE_MALLOC _GL_ATTRIBUTE_DEALLOC_FREE;
 
 /* Composes the block of memory that contains the environment variables.
    ENVP must contain an environment (a NULL-terminated array of string of the
    form VARIABLE=VALUE).
    Returns a freshly allocated block of memory.  In case of memory allocation
    failure, NULL is returned, with errno set.  */
-extern char * compose_envblock (const char * const *envp);
+extern char * compose_envblock (const char * const *envp)
+  _GL_ATTRIBUTE_MALLOC _GL_ATTRIBUTE_DEALLOC_FREE;
 
 
 /* This struct keeps track of which handles to pass to a subprocess, and with
@@ -116,7 +119,7 @@ extern int init_inheritable_handles (struct inheritable_handles *inh_handles,
    Returns 0 upon success.  In case of failure, -1 is returned, with errno set.
  */
 extern int compose_handles_block (const struct inheritable_handles *inh_handles,
-                                  STARTUPINFO *sinfo);
+                                  STARTUPINFOA *sinfo);
 
 /* Frees the memory held by a set of inheritable handles.  */
 extern void free_inheritable_handles (struct inheritable_handles *inh_handles);

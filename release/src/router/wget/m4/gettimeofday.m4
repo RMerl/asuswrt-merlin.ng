@@ -1,6 +1,6 @@
-# serial 28
+# serial 29
 
-# Copyright (C) 2001-2003, 2005, 2007, 2009-2021 Free Software Foundation, Inc.
+# Copyright (C) 2001-2003, 2005, 2007, 2009-2022 Free Software Foundation, Inc.
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
 # with or without modifications, as long as this notice is preserved.
@@ -9,10 +9,10 @@ dnl From Jim Meyering.
 
 AC_DEFUN([gl_FUNC_GETTIMEOFDAY],
 [
-  AC_REQUIRE([gl_HEADER_SYS_TIME_H_DEFAULTS])
+  AC_REQUIRE([gl_SYS_TIME_H_DEFAULTS])
   AC_REQUIRE([AC_C_RESTRICT])
   AC_REQUIRE([AC_CANONICAL_HOST])
-  AC_REQUIRE([gl_HEADER_SYS_TIME_H])
+  AC_REQUIRE([gl_SYS_TIME_H])
   AC_CHECK_FUNCS_ONCE([gettimeofday])
 
   gl_gettimeofday_timezone=void

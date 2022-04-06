@@ -1,5 +1,5 @@
-# memchr.m4 serial 17
-dnl Copyright (C) 2002-2004, 2009-2021 Free Software Foundation, Inc.
+# memchr.m4 serial 18
+dnl Copyright (C) 2002-2004, 2009-2022 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -13,7 +13,7 @@ AC_DEFUN_ONCE([gl_FUNC_MEMCHR],
   AC_CHECK_HEADERS_ONCE([sys/mman.h])
   AC_CHECK_FUNCS_ONCE([mprotect])
 
-  AC_REQUIRE([gl_HEADER_STRING_H_DEFAULTS])
+  AC_REQUIRE([gl_STRING_H_DEFAULTS])
   # Detect platform-specific bugs in some versions of glibc:
   # memchr should not dereference anything with length 0
   #   https://bugzilla.redhat.com/show_bug.cgi?id=499689

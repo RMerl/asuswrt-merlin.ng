@@ -1,19 +1,19 @@
 /* group-member.c -- determine whether group id is in calling user's group list
 
-   Copyright (C) 1994, 1997-1998, 2003, 2005-2006, 2009-2021 Free Software
+   Copyright (C) 1994, 1997-1998, 2003, 2005-2006, 2009-2022 Free Software
    Foundation, Inc.
 
-   This program is free software: you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 3 of the License, or
-   (at your option) any later version.
+   This file is free software: you can redistribute it and/or modify
+   it under the terms of the GNU Lesser General Public License as
+   published by the Free Software Foundation; either version 2.1 of the
+   License, or (at your option) any later version.
 
-   This program is distributed in the hope that it will be useful,
+   This file is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
+   GNU Lesser General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
+   You should have received a copy of the GNU Lesser General Public License
    along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
 #include <config.h>
@@ -25,7 +25,7 @@
 #include <sys/types.h>
 #include <stdlib.h>
 
-#include "xalloc-oversized.h"
+#include "intprops.h"
 
 /* Most processes have no more than this many groups, and for these
    processes we can avoid using malloc.  */
@@ -53,10 +53,10 @@ get_group_info (struct group_info *gi)
   if (n_groups < 0)
     {
       int n_group_slots = getgroups (0, NULL);
-      if (0 <= n_group_slots
-          && ! xalloc_oversized (n_group_slots, sizeof *gi->group))
+      size_t nbytes;
+      if (! INT_MULTIPLY_WRAPV (n_group_slots, sizeof *gi->group, &nbytes))
         {
-          gi->group = malloc (n_group_slots * sizeof *gi->group);
+          gi->group = malloc (nbytes);
           if (gi->group)
             n_groups = getgroups (n_group_slots, gi->group);
         }

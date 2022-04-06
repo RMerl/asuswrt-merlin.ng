@@ -1,5 +1,5 @@
-# ioctl.m4 serial 5
-dnl Copyright (C) 2008-2021 Free Software Foundation, Inc.
+# ioctl.m4 serial 6
+dnl Copyright (C) 2008-2022 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -7,7 +7,7 @@ dnl with or without modifications, as long as this notice is preserved.
 AC_DEFUN([gl_FUNC_IOCTL],
 [
   AC_REQUIRE([gl_SYS_IOCTL_H_DEFAULTS])
-  AC_REQUIRE([gl_HEADER_SYS_SOCKET])
+  AC_REQUIRE([gl_SYS_SOCKET_H])
   HAVE_IOCTL=1
   if test "$ac_cv_header_winsock2_h" = yes; then
     dnl Even if the 'socket' module is not used here, another part of the

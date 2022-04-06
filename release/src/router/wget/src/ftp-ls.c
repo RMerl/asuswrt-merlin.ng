@@ -1,5 +1,5 @@
 /* Parsing FTP `ls' output.
-   Copyright (C) 1996-2011, 2015, 2018-2021 Free Software Foundation,
+   Copyright (C) 1996-2011, 2015, 2018-2022 Free Software Foundation,
    Inc.
 
 This file is part of GNU Wget.
@@ -88,7 +88,7 @@ clean_line (char *line, int len)
    output (whatever that might be).  BSD (no group) and SYSV (with
    group) listings are handled.
 
-   The time stamps are stored in a separate variable, time_t
+   The timestamps are stored in a separate variable, time_t
    compatible (I hope).  The timezones are ignored.  */
 static struct fileinfo *
 ftp_parse_unix_ls (FILE *fp, int ignore_perms)
@@ -960,7 +960,7 @@ ftp_parse_vms_ls (FILE *fp)
       /* Add the data for this item to the linked list, */
       if (!dir)
         {
-          l = dir = (struct fileinfo *)xmalloc (sizeof (struct fileinfo));
+          l = dir = xmalloc (sizeof (struct fileinfo));
           cur.prev = cur.next = NULL;
           memcpy (l, &cur, sizeof (cur));
         }
@@ -968,7 +968,7 @@ ftp_parse_vms_ls (FILE *fp)
         {
           cur.prev = l;
 			 cur.next = NULL;
-          l->next = (struct fileinfo *)xmalloc (sizeof (struct fileinfo));
+          l->next = xmalloc (sizeof (struct fileinfo));
           l = l->next;
           memcpy (l, &cur, sizeof (cur));
         }

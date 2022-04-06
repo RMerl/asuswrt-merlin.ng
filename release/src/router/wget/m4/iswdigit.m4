@@ -1,5 +1,5 @@
-# iswdigit.m4 serial 2
-dnl Copyright (C) 2020-2021 Free Software Foundation, Inc.
+# iswdigit.m4 serial 3
+dnl Copyright (C) 2020-2022 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -81,12 +81,12 @@ main (int argc, char *argv[])
     }
   if (setlocale (LC_ALL, "$LOCALE_FR_UTF8") != NULL)
     {
-      /* This fails on FreeBSD 12, NetBSD 8.0, MSVC 14.  */
+      /* This fails on FreeBSD 13.0, NetBSD 8.0, MSVC 14.  */
       /* U+0663 ARABIC-INDIC DIGIT THREE */
       is = for_character ("\331\243", 2);
       if (!(is == 0))
         result |= 4;
-      /* This fails on FreeBSD 12, NetBSD 8.0, MSVC 14.  */
+      /* This fails on FreeBSD 13.0, NetBSD 8.0, MSVC 14.  */
       /* U+FF11 FULLWIDTH DIGIT ONE */
       is = for_character ("\357\274\221", 3);
       if (!(is == 0))

@@ -1,5 +1,5 @@
 /* SSL support via GnuTLS library.
-   Copyright (C) 2005-2012, 2015, 2018-2021 Free Software Foundation,
+   Copyright (C) 2005-2012, 2015, 2018-2022 Free Software Foundation,
    Inc.
 
 This file is part of GNU Wget.
@@ -93,12 +93,13 @@ key_type_to_gnutls_type (enum keyfile_type type)
    confused with actual gnutls functions -- such as the gnutls_read
    preprocessor macro.  */
 
+static bool ssl_initialized = false;
+
 static gnutls_certificate_credentials_t credentials;
 bool
 ssl_init (void)
 {
   /* Becomes true if GnuTLS is initialized. */
-  static bool ssl_initialized = false;
   const char *ca_directory;
   DIR *dir;
   int ncerts = -1;
@@ -235,10 +236,15 @@ cert to be of the same type.\n"));
 void
 ssl_cleanup (void)
 {
+  if (!ssl_initialized)
+    return;
+
   if (credentials)
     gnutls_certificate_free_credentials(credentials);
 
   gnutls_global_deinit();
+
+  ssl_initialized = false;
 }
 
 struct wgnutls_transport_context

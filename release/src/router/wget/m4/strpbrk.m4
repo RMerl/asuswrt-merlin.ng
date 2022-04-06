@@ -1,12 +1,12 @@
-# strpbrk.m4 serial 6
-dnl Copyright (C) 2002-2003, 2007, 2009-2021 Free Software Foundation, Inc.
+# strpbrk.m4 serial 7
+dnl Copyright (C) 2002-2003, 2007, 2009-2022 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
 
 AC_DEFUN([gl_FUNC_STRPBRK],
 [
-  AC_REQUIRE([gl_HEADER_STRING_H_DEFAULTS])
+  AC_REQUIRE([gl_STRING_H_DEFAULTS])
   AC_CHECK_FUNCS([strpbrk])
   if test $ac_cv_func_strpbrk = no; then
     HAVE_STRPBRK=0

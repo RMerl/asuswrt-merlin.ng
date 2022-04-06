@@ -1,76 +1,60 @@
 /* realloc() function that is glibc compatible.
 
-   Copyright (C) 1997, 2003-2004, 2006-2007, 2009-2021 Free Software
+   Copyright (C) 1997, 2003-2004, 2006-2007, 2009-2022 Free Software
    Foundation, Inc.
 
-   This program is free software: you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 3 of the License, or
-   (at your option) any later version.
+   This file is free software: you can redistribute it and/or modify
+   it under the terms of the GNU Lesser General Public License as
+   published by the Free Software Foundation; either version 2.1 of the
+   License, or (at your option) any later version.
 
-   This program is distributed in the hope that it will be useful,
+   This file is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
+   GNU Lesser General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
+   You should have received a copy of the GNU Lesser General Public License
    along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
 /* written by Jim Meyering and Bruno Haible */
 
-#define _GL_USE_STDLIB_ALLOC 1
 #include <config.h>
-
-/* Only the AC_FUNC_REALLOC macro defines 'realloc' already in config.h.  */
-#ifdef realloc
-# define NEED_REALLOC_GNU 1
-/* Whereas the gnulib module 'realloc-gnu' defines HAVE_REALLOC_GNU.  */
-#elif GNULIB_REALLOC_GNU && !HAVE_REALLOC_GNU
-# define NEED_REALLOC_GNU 1
-#endif
-
-/* Infer the properties of the system's malloc function.
-   The gnulib module 'malloc-gnu' defines HAVE_MALLOC_GNU.  */
-#if GNULIB_MALLOC_GNU && HAVE_MALLOC_GNU
-# define SYSTEM_MALLOC_GLIBC_COMPATIBLE 1
-#endif
 
 #include <stdlib.h>
 
 #include <errno.h>
 
+#include "xalloc-oversized.h"
+
+/* Call the system's realloc below.  This file does not define
+   _GL_USE_STDLIB_ALLOC because it needs Gnulib's malloc if present.  */
+#undef realloc
+
 /* Change the size of an allocated block of memory P to N bytes,
-   with error checking.  If N is zero, change it to 1.  If P is NULL,
-   use malloc.  */
+   with error checking.  If P is NULL, use malloc.  Otherwise if N is zero,
+   free P and return NULL.  */
 
 void *
 rpl_realloc (void *p, size_t n)
 {
-  void *result;
+  if (p == NULL)
+    return malloc (n);
 
-#if NEED_REALLOC_GNU
   if (n == 0)
     {
-      n = 1;
-
-      /* In theory realloc might fail, so don't rely on it to free.  */
       free (p);
-      p = NULL;
+      return NULL;
     }
-#endif
 
-  if (p == NULL)
+  if (xalloc_oversized (n, 1))
     {
-#if GNULIB_REALLOC_GNU && !NEED_REALLOC_GNU && !SYSTEM_MALLOC_GLIBC_COMPATIBLE
-      if (n == 0)
-        n = 1;
-#endif
-      result = malloc (n);
+      errno = ENOMEM;
+      return NULL;
     }
-  else
-    result = realloc (p, n);
 
-#if !HAVE_REALLOC_POSIX
+  void *result = realloc (p, n);
+
+#if !HAVE_MALLOC_POSIX
   if (result == NULL)
     errno = ENOMEM;
 #endif

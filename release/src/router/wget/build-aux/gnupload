@@ -1,13 +1,13 @@
 #!/bin/sh
 # Sign files and upload them.
 
-scriptversion=2018-05-19.18; # UTC
+scriptversion=2022-01-27.18; # UTC
 
-# Copyright (C) 2004-2021 Free Software Foundation, Inc.
+# Copyright (C) 2004-2022 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 3, or (at your option)
+# the Free Software Foundation; either version 2, or (at your option)
 # any later version.
 #
 # This program is distributed in the hope that it will be useful,
@@ -27,8 +27,8 @@ set -e
 GPG=gpg
 # Choose the proper version of gpg, so as to avoid a
 # "gpg-agent is not available in this session" error
-# when gpg-agent is version 3 but gpg is still version 1.
-# FIXME-2020: remove, once all major distros ship gpg version 3 as /usr/bin/gpg
+# when gpg-agent is version 2 but gpg is still version 1.
+# FIXME-2020: remove, once all major distros ship gpg version 2 as /usr/bin/gpg
 gpg_agent_version=`(gpg-agent --version) 2>/dev/null | sed -e '2,$d' -e 's/^[^0-9]*//'`
 case "$gpg_agent_version" in
   2.*)
@@ -145,6 +145,12 @@ the build-aux/ directory of the gnulib package
 
 Send patches and bug reports to <bug-gnulib@gnu.org>."
 
+copyright_year=`echo "$scriptversion" | sed -e 's/[^0-9].*//'`
+copyright="Copyright (C) ${copyright_year} Free Software Foundation, Inc.
+License GPLv2+: GNU GPL version 2 or later <https://gnu.org/licenses/gpl.html>.
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law."
+
 # Read local configuration file
 if test -r "$conffile"; then
   echo "$0: Reading configuration file $conffile"
@@ -209,7 +215,8 @@ while test -n "$1"; do
       ;;
     --version)
       echo "gnupload $scriptversion"
-      exit $?
+      echo "$copyright"
+      exit 0
       ;;
     --)
       shift

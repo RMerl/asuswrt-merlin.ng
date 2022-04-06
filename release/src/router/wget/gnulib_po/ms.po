@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  coreutils 5.0.90\n"
 "Report-Msgid-Bugs-To: bug-gnulib@gnu.org\n"
-"POT-Creation-Date: 2021-01-09 10:58+0100\n"
+"POT-Creation-Date: 2022-02-26 17:24+0100\n"
 "PO-Revision-Date: 2003-08-10 16:00+0800\n"
 "Last-Translator: Hasbullah Bin Pit <sebol@ikhlas.com>\n"
 "Language-Team: Malay <translation-team-ms@lists.sourceforge.net>\n"
@@ -103,36 +103,43 @@ msgstr "Ralat sistem yang tidak diketahui"
 
 #: lib/getopt.c:278
 #, fuzzy, c-format
+#| msgid "%s: option `%s' is ambiguous\n"
 msgid "%s: option '%s%s' is ambiguous\n"
 msgstr "%s: opsyen `%s' adalah ambiguous\n"
 
 #: lib/getopt.c:284
 #, fuzzy, c-format
+#| msgid "%s: option `%s' is ambiguous\n"
 msgid "%s: option '%s%s' is ambiguous; possibilities:"
 msgstr "%s: opsyen `%s' adalah ambiguous\n"
 
 #: lib/getopt.c:319
 #, fuzzy, c-format
+#| msgid "%s: unrecognized option `%c%s'\n"
 msgid "%s: unrecognized option '%s%s'\n"
 msgstr "%s: opensyen tidak dikenali `%c%s'\n"
 
 #: lib/getopt.c:345
 #, fuzzy, c-format
+#| msgid "%s: option `%c%s' doesn't allow an argument\n"
 msgid "%s: option '%s%s' doesn't allow an argument\n"
 msgstr "%s: opsyen `%c%s' tidak mengizinkan hujah\n"
 
 #: lib/getopt.c:360
 #, fuzzy, c-format
+#| msgid "%s: option `%s' requires an argument\n"
 msgid "%s: option '%s%s' requires an argument\n"
 msgstr "%s: opsyen  `%s' memerlukan hujah\n"
 
 #: lib/getopt.c:621
 #, fuzzy, c-format
+#| msgid "%s: invalid option -- %c\n"
 msgid "%s: invalid option -- '%c'\n"
 msgstr "%s: opsyen tidak sah -- %c\n"
 
 #: lib/getopt.c:636 lib/getopt.c:682
 #, fuzzy, c-format
+#| msgid "%s: option requires an argument -- %c\n"
 msgid "%s: option requires an argument -- '%c'\n"
 msgstr "%s: opsyen memerlukan hujah -- %c\n"
 
@@ -185,104 +192,104 @@ msgstr "`"
 msgid "'"
 msgstr "`"
 
-#: lib/regcomp.c:135
+#: lib/regcomp.c:122
 msgid "Success"
 msgstr ""
 
-#: lib/regcomp.c:138
+#: lib/regcomp.c:125
 msgid "No match"
 msgstr ""
 
-#: lib/regcomp.c:141
+#: lib/regcomp.c:128
 #, fuzzy
 msgid "Invalid regular expression"
 msgstr "%s: ungkapan biasa (regexp) tidak sah: %s"
 
-#: lib/regcomp.c:144
+#: lib/regcomp.c:131
 #, fuzzy
 msgid "Invalid collation character"
 msgstr "aksara tidak sah pada %s pada rentetan mod %s"
 
-#: lib/regcomp.c:147
+#: lib/regcomp.c:134
 #, fuzzy
 msgid "Invalid character class name"
 msgstr "aksara tidak sah pada %s pada rentetan mod %s"
 
-#: lib/regcomp.c:150
+#: lib/regcomp.c:137
 msgid "Trailing backslash"
 msgstr ""
 
-#: lib/regcomp.c:153
+#: lib/regcomp.c:140
 msgid "Invalid back reference"
 msgstr ""
 
-#: lib/regcomp.c:156
+#: lib/regcomp.c:143
 msgid "Unmatched [, [^, [:, [., or [="
 msgstr ""
 
-#: lib/regcomp.c:159
+#: lib/regcomp.c:146
 msgid "Unmatched ( or \\("
 msgstr ""
 
-#: lib/regcomp.c:162
+#: lib/regcomp.c:149
 msgid "Unmatched \\{"
 msgstr ""
 
-#: lib/regcomp.c:165
+#: lib/regcomp.c:152
 msgid "Invalid content of \\{\\}"
 msgstr ""
 
-#: lib/regcomp.c:168
+#: lib/regcomp.c:155
 #, fuzzy
 msgid "Invalid range end"
 msgstr "%s: ungkapan biasa (regexp) tidak sah: %s"
 
-#: lib/regcomp.c:171
+#: lib/regcomp.c:158
 #, fuzzy
 msgid "Memory exhausted"
 msgstr "memori keletihan"
 
-#: lib/regcomp.c:174
+#: lib/regcomp.c:161
 #, fuzzy
 msgid "Invalid preceding regular expression"
 msgstr "%s: ungkapan biasa (regexp) tidak sah: %s"
 
-#: lib/regcomp.c:177
+#: lib/regcomp.c:164
 #, fuzzy
 msgid "Premature end of regular expression"
 msgstr "ralat pada carian ungkapan biasa (regexp)"
 
-#: lib/regcomp.c:180
+#: lib/regcomp.c:167
 #, fuzzy
 msgid "Regular expression too big"
 msgstr "%s: ungkapan biasa (regexp) tidak sah: %s"
 
-#: lib/regcomp.c:183
+#: lib/regcomp.c:170
 msgid "Unmatched ) or \\)"
 msgstr ""
 
-#: lib/regcomp.c:676
+#: lib/regcomp.c:650
 #, fuzzy
 msgid "No previous regular expression"
 msgstr "ralat pada carian ungkapan biasa (regexp)"
 
-#: lib/spawn-pipe.c:218 lib/spawn-pipe.c:221 lib/spawn-pipe.c:460
-#: lib/spawn-pipe.c:463
+#: lib/spawn-pipe.c:217 lib/spawn-pipe.c:220 lib/spawn-pipe.c:459
+#: lib/spawn-pipe.c:462
 #, fuzzy, c-format
 msgid "cannot create pipe"
 msgstr "tak boleh mencipta pautan %s"
 
-#: lib/spawn-pipe.c:598 lib/wait-process.c:290 lib/wait-process.c:364
+#: lib/spawn-pipe.c:597 lib/wait-process.c:291 lib/wait-process.c:365
 #, fuzzy, c-format
 msgid "%s subprocess failed"
 msgstr "fail istimewa blok"
 
-#: lib/wait-process.c:231 lib/wait-process.c:263 lib/wait-process.c:325
+#: lib/wait-process.c:232 lib/wait-process.c:264 lib/wait-process.c:326
 #, fuzzy, c-format
 msgid "%s subprocess"
 msgstr "fail istimewa blok"
 
-#: lib/wait-process.c:282 lib/wait-process.c:354
+#: lib/wait-process.c:283 lib/wait-process.c:355
 #, fuzzy, c-format
 msgid "%s subprocess got fatal signal %d"
 msgstr "fail istimewa blok"

@@ -1,8 +1,8 @@
-This is wget.info, produced by makeinfo version 6.7 from wget.texi.
+This is wget.info, produced by makeinfo version 6.8 from wget.texi.
 
 This file documents the GNU Wget utility for downloading network data.
 
-   Copyright © 1996–2011, 2015, 2018–2021 Free Software Foundation, Inc.
+   Copyright © 1996–2011, 2015, 2018–2022 Free Software Foundation, Inc.
 
    Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.3 or
@@ -18,12 +18,12 @@ END-INFO-DIR-ENTRY
 
 File: wget.info,  Node: Top,  Next: Overview,  Prev: (dir),  Up: (dir)
 
-Wget 1.21.1
+Wget 1.21.3
 ***********
 
 This file documents the GNU Wget utility for downloading network data.
 
-   Copyright © 1996–2011, 2015, 2018–2021 Free Software Foundation, Inc.
+   Copyright © 1996–2011, 2015, 2018–2022 Free Software Foundation, Inc.
 
    Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.3 or
@@ -258,7 +258,7 @@ sets ‘exclude_directories’ to ‘/cgi-bin’, the following example will
 first reset it, and then set it to exclude ‘/~nobody’ and ‘/~somebody’.
 You can also clear the lists in ‘.wgetrc’ (*note Wgetrc Syntax::).
 
-     wget -X '' -X /~nobody,/~somebody
+     wget -X "" -X /~nobody,/~somebody
 
    Most options that do not accept arguments are “boolean” options, so
 named because their state can be captured with a yes-or-no (“boolean”)
@@ -2716,7 +2716,7 @@ file so that it keeps its date of modification.
 
      wget -S http://www.gnu.ai.mit.edu/
 
-   A simple ‘ls -l’ shows that the time stamp on the local file equals
+   A simple ‘ls -l’ shows that the timestamp on the local file equals
 the state of the ‘Last-Modified’ header, as returned by the server.  As
 you can see, the time-stamping info is preserved locally, even without
 ‘-N’ (at least for HTTP).
@@ -3819,8 +3819,8 @@ File: wget.info,  Node: Distribution,  Next: Web Site,  Prev: Proxies,  Up: Vari
 
 Like all GNU utilities, the latest version of Wget can be found at the
 master GNU archive site ftp.gnu.org, and its mirrors.  For example, Wget
-1.21.1 can be found at
-<https://ftp.gnu.org/pub/gnu/wget/wget-1.21.1.tar.gz>
+1.21.3 can be found at
+<https://ftp.gnu.org/pub/gnu/wget/wget-1.21.3.tar.gz>
 
 
 File: wget.info,  Node: Web Site,  Next: Mailing Lists,  Prev: Distribution,  Up: Various
@@ -4257,7 +4257,7 @@ A.1 GNU Free Documentation License
 
                      Version 1.3, 3 November 2008
 
-     Copyright © 2000–2002, 2007–2008, 2015, 2018–2021 Free
+     Copyright © 2000–2002, 2007–2008, 2015, 2018–2022 Free
      Software Foundation, Inc.
      <http://fsf.org/>
 
@@ -5058,34 +5058,34 @@ Node: Relative Links122009
 Node: FTP Links122859
 Node: Time-Stamping123750
 Node: Time-Stamping Usage125422
-Node: HTTP Time-Stamping Internals127294
-Ref: HTTP Time-Stamping Internals-Footnote-1128642
-Node: FTP Time-Stamping Internals128845
-Node: Startup File130332
-Node: Wgetrc Location131272
-Node: Wgetrc Syntax132126
-Node: Wgetrc Commands132891
-Node: Sample Wgetrc149484
-Node: Examples155512
-Node: Simple Usage155873
-Node: Advanced Usage157322
-Node: Very Advanced Usage161138
-Node: Various162682
-Node: Proxies163391
-Node: Distribution166348
-Node: Web Site166692
-Node: Mailing Lists166992
-Node: Internet Relay Chat168729
-Node: Reporting Bugs169024
-Node: Portability171750
-Node: Signals173397
-Node: Appendices174104
-Node: Robot Exclusion174452
-Node: Security Considerations178314
-Node: Contributors179524
-Node: Copying this manual185500
-Node: GNU Free Documentation License185740
-Node: Concept Index211103
+Node: HTTP Time-Stamping Internals127293
+Ref: HTTP Time-Stamping Internals-Footnote-1128641
+Node: FTP Time-Stamping Internals128844
+Node: Startup File130331
+Node: Wgetrc Location131271
+Node: Wgetrc Syntax132125
+Node: Wgetrc Commands132890
+Node: Sample Wgetrc149483
+Node: Examples155511
+Node: Simple Usage155872
+Node: Advanced Usage157321
+Node: Very Advanced Usage161137
+Node: Various162681
+Node: Proxies163390
+Node: Distribution166347
+Node: Web Site166691
+Node: Mailing Lists166991
+Node: Internet Relay Chat168728
+Node: Reporting Bugs169023
+Node: Portability171749
+Node: Signals173396
+Node: Appendices174103
+Node: Robot Exclusion174451
+Node: Security Considerations178313
+Node: Contributors179523
+Node: Copying this manual185499
+Node: GNU Free Documentation License185739
+Node: Concept Index211102
 
 End Tag Table
 

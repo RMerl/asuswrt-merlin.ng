@@ -1,14 +1,14 @@
 # This file is distributed under the same license as the wget package.
 # Estonian translations for GNU wget.
 # Copyright (C) 1998 Free Software Foundation, Inc.
-# Toomas Soome <tsoome@me.com>, 2020.
+# Toomas Soome <tsoome@me.com>, 2021.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: GNU wget 1.21\n"
+"Project-Id-Version: GNU wget 1.21.2\n"
 "Report-Msgid-Bugs-To: bug-wget@gnu.org\n"
-"POT-Creation-Date: 2021-01-09 10:58+0100\n"
-"PO-Revision-Date: 2020-09-07 19:56+0300\n"
+"POT-Creation-Date: 2022-02-26 17:24+0100\n"
+"PO-Revision-Date: 2021-09-09 12:15+0300\n"
 "Last-Translator: Toomas Soome <tsoome@me.com>\n"
 "Language-Team: Estonian <linux-ee@lists.eenet.ee>\n"
 "Language: et\n"
@@ -204,8 +204,8 @@ msgid "Logging in as %s ... "
 msgstr "Meldin serverisse kasutajana %s ... "
 
 #: src/ftp.c:504 src/ftp.c:590 src/ftp.c:657 src/ftp.c:722 src/ftp.c:963
-#: src/ftp.c:1019 src/ftp.c:1066 src/ftp.c:1129 src/ftp.c:1190 src/ftp.c:1288
-#: src/ftp.c:1338
+#: src/ftp.c:1016 src/ftp.c:1063 src/ftp.c:1126 src/ftp.c:1187 src/ftp.c:1285
+#: src/ftp.c:1335
 msgid "Error in server response, closing control connection.\n"
 msgstr "Vigane serveri vastus, sulgen juhtühenduse.\n"
 
@@ -213,8 +213,8 @@ msgstr "Vigane serveri vastus, sulgen juhtühenduse.\n"
 msgid "Error in server greeting.\n"
 msgstr "Vigane serveri tervitus.\n"
 
-#: src/ftp.c:518 src/ftp.c:730 src/ftp.c:971 src/ftp.c:1074 src/ftp.c:1139
-#: src/ftp.c:1200 src/ftp.c:1298 src/ftp.c:1348
+#: src/ftp.c:518 src/ftp.c:730 src/ftp.c:971 src/ftp.c:1071 src/ftp.c:1136
+#: src/ftp.c:1197 src/ftp.c:1295 src/ftp.c:1345
 msgid "Write failed, closing control connection.\n"
 msgstr "Kirjutamine ebaõnnestus, sulgen juhtühenduse.\n"
 
@@ -243,11 +243,11 @@ msgstr "Server ei aktsepteeri 'PROT %c' käsku.\n"
 msgid "Server error, can't determine system type.\n"
 msgstr "Viga serveris, ei suuda tuvastada süsteemi tüüpi.\n"
 
-#: src/ftp.c:607 src/ftp.c:1109 src/ftp.c:1173 src/ftp.c:1216
+#: src/ftp.c:607 src/ftp.c:1106 src/ftp.c:1170 src/ftp.c:1213
 msgid "done.    "
 msgstr "tehtud.  "
 
-#: src/ftp.c:710 src/ftp.c:989 src/ftp.c:1036 src/ftp.c:1318 src/ftp.c:1367
+#: src/ftp.c:710 src/ftp.c:989 src/ftp.c:1033 src/ftp.c:1315 src/ftp.c:1364
 msgid "done.\n"
 msgstr "tehtud.\n"
 
@@ -288,37 +288,37 @@ msgstr ""
 "Kataloogi %s pole.\n"
 "\n"
 
-#: src/ftp.c:1001
+#: src/ftp.c:998
 msgid "==> CWD not required.\n"
 msgstr "==> CWD ei ole kohustuslik.\n"
 
-#: src/ftp.c:1044
+#: src/ftp.c:1041
 msgid "File has already been retrieved.\n"
 msgstr "Fail on juba olemas, ei tõmba.\n"
 
-#: src/ftp.c:1080
+#: src/ftp.c:1077
 msgid "Cannot initiate PASV transfer.\n"
 msgstr "Ei saa algatada PASV ülekannet.\n"
 
-#: src/ftp.c:1084
+#: src/ftp.c:1081
 msgid "Cannot parse PASV response.\n"
 msgstr "Ei suuda analüüsida PASV vastust.\n"
 
-#: src/ftp.c:1101
+#: src/ftp.c:1098
 #, c-format
 msgid "couldn't connect to %s port %d: %s\n"
 msgstr "ei õnnestu luua ühendust serveriga %s port %d: %s\n"
 
-#: src/ftp.c:1155
+#: src/ftp.c:1152
 #, c-format
 msgid "Bind error (%s).\n"
 msgstr "Bind operatsiooni viga (%s).\n"
 
-#: src/ftp.c:1161
+#: src/ftp.c:1158
 msgid "Invalid PORT.\n"
 msgstr "Vale PORT.\n"
 
-#: src/ftp.c:1207
+#: src/ftp.c:1204
 msgid ""
 "\n"
 "REST failed, starting from scratch.\n"
@@ -326,17 +326,17 @@ msgstr ""
 "\n"
 "REST ebaõnnestus, alustan algusest.\n"
 
-#: src/ftp.c:1250
+#: src/ftp.c:1247
 #, c-format
 msgid "File %s exists.\n"
 msgstr "Fail %s on olemas.\n"
 
-#: src/ftp.c:1256
+#: src/ftp.c:1253
 #, c-format
 msgid "No such file %s.\n"
 msgstr "Faili %s pole.\n"
 
-#: src/ftp.c:1306
+#: src/ftp.c:1303
 #, c-format
 msgid ""
 "No such file %s.\n"
@@ -345,7 +345,7 @@ msgstr ""
 "Faili %s pole.\n"
 "\n"
 
-#: src/ftp.c:1356
+#: src/ftp.c:1353
 #, c-format
 msgid ""
 "No such file or directory %s.\n"
@@ -354,40 +354,40 @@ msgstr ""
 "Faili või kataloogi %s pole.\n"
 "\n"
 
-#: src/ftp.c:1515 src/http.c:2597
+#: src/ftp.c:1512 src/http.c:2597
 #, c-format
 msgid "%s has sprung into existence.\n"
 msgstr "%s ilmus.\n"
 
-#: src/ftp.c:1604
+#: src/ftp.c:1601
 #, c-format
 msgid "%s: %s, closing control connection.\n"
 msgstr "%s: %s, sulgen juhtühenduse.\n"
 
-#: src/ftp.c:1616
+#: src/ftp.c:1613
 #, c-format
 msgid "%s (%s) - Data connection: %s; "
 msgstr "%s (%s) - andme ühendus: %s; "
 
-#: src/ftp.c:1631
+#: src/ftp.c:1628
 msgid "Control connection closed.\n"
 msgstr "Juhtühendus suletud.\n"
 
-#: src/ftp.c:1649
+#: src/ftp.c:1646
 msgid "Data transfer aborted.\n"
 msgstr "Andmete ülekanne katkestatud.\n"
 
-#: src/ftp.c:1873 src/main.c:1690
+#: src/ftp.c:1870 src/main.c:1690
 #, c-format
 msgid "File %s already there; not retrieving.\n"
 msgstr "Fail %s on juba olemas, ei tõmba.\n"
 
-#: src/ftp.c:1958 src/http.c:4362
+#: src/ftp.c:1955 src/http.c:4362
 #, c-format
 msgid "(try:%2d)"
 msgstr "(katse:%2d)"
 
-#: src/ftp.c:2050 src/http.c:4792
+#: src/ftp.c:2047 src/http.c:4792
 #, c-format
 msgid ""
 "%s (%s) - written to stdout %s[%s]\n"
@@ -396,7 +396,7 @@ msgstr ""
 "%s (%s) - kirjutatud standardväljundissse %s[%s]\n"
 "\n"
 
-#: src/ftp.c:2051 src/http.c:4793
+#: src/ftp.c:2048 src/http.c:4793
 #, c-format
 msgid ""
 "%s (%s) - %s saved [%s]\n"
@@ -405,33 +405,33 @@ msgstr ""
 "%s (%s) - %s salvestatud [%s]\n"
 "\n"
 
-#: src/ftp.c:2111 src/main.c:2174 src/metalink.c:1135 src/recur.c:512
-#: src/recur.c:750 src/retr.c:1317
+#: src/ftp.c:2108 src/main.c:2179 src/metalink.c:1135 src/recur.c:513
+#: src/recur.c:752 src/retr.c:1317
 #, c-format
 msgid "Removing %s.\n"
 msgstr "Kustutan %s.\n"
 
-#: src/ftp.c:2168
+#: src/ftp.c:2165
 #, c-format
 msgid "Using %s as listing tmp file.\n"
 msgstr "Kasutan %s ajutise listingu failina.\n"
 
-#: src/ftp.c:2185
+#: src/ftp.c:2182
 #, c-format
 msgid "Removed %s.\n"
 msgstr "Kustutatud %s.\n"
 
-#: src/ftp.c:2224
+#: src/ftp.c:2221
 #, c-format
 msgid "Recursion depth %d exceeded max. depth %d.\n"
 msgstr "Rekursiooni sügavus %d ületab maksimum sügavust %d.\n"
 
-#: src/ftp.c:2294
+#: src/ftp.c:2291
 #, c-format
 msgid "Remote file no newer than local file %s -- not retrieving.\n"
 msgstr "Kauge fail ei ole uuem, kui lokaalne fail %s -- ei lae.\n"
 
-#: src/ftp.c:2302
+#: src/ftp.c:2299
 #, c-format
 msgid ""
 "Remote file is newer than local file %s -- retrieving.\n"
@@ -440,7 +440,7 @@ msgstr ""
 "Kauge fail on uuem kui lokaalne fail %s -- laen uuesti.\n"
 "\n"
 
-#: src/ftp.c:2309
+#: src/ftp.c:2306
 #, c-format
 msgid ""
 "The sizes do not match (local %s) -- retrieving.\n"
@@ -449,11 +449,11 @@ msgstr ""
 "Suurused ei klapi (lokaalne %s) -- laen uuesti.\n"
 "\n"
 
-#: src/ftp.c:2327
+#: src/ftp.c:2324
 msgid "Invalid name of the symlink, skipping.\n"
 msgstr "Vigane nimeviide, jätan vahele.\n"
 
-#: src/ftp.c:2356
+#: src/ftp.c:2353
 #, c-format
 msgid ""
 "Already have correct symlink %s -> %s\n"
@@ -462,213 +462,213 @@ msgstr ""
 "Korrektne nimeviide on juba olemas %s -> %s\n"
 "\n"
 
-#: src/ftp.c:2365
+#: src/ftp.c:2362
 #, c-format
 msgid "Creating symlink %s -> %s\n"
 msgstr "Loon nimeviite %s -> %s\n"
 
-#: src/ftp.c:2375
+#: src/ftp.c:2372
 #, c-format
 msgid "Symlinks not supported, skipping symlink %s.\n"
 msgstr "Ei toeta nimeviiteid, jätan nimeviite %s vahele.\n"
 
-#: src/ftp.c:2390
+#: src/ftp.c:2387
 #, c-format
 msgid "Skipping directory %s.\n"
 msgstr "Jätan kataloogi %s vahele.\n"
 
-#: src/ftp.c:2403
+#: src/ftp.c:2400
 #, c-format
 msgid "%s: unknown/unsupported file type.\n"
 msgstr "%s: tundmatu faili tüüp.\n"
 
-#: src/ftp.c:2427
+#: src/ftp.c:2424
 #, c-format
 msgid "Failed to set permissions for %s.\n"
 msgstr "%s õiguseid ei õnnestu seada.\n"
 
-#: src/ftp.c:2448
+#: src/ftp.c:2445
 #, c-format
 msgid "%s: corrupt time-stamp.\n"
 msgstr "%s: vigane ajatempel.\n"
 
-#: src/ftp.c:2472
+#: src/ftp.c:2469
 #, c-format
 msgid "Will not retrieve dirs since depth is %d (max %d).\n"
 msgstr "Ei tõmba katalooge, kuna sügavus on %d (maks. %d).\n"
 
-#: src/ftp.c:2531
+#: src/ftp.c:2528
 #, c-format
 msgid "Not descending to %s as it is excluded/not-included.\n"
 msgstr "Jätame %s vahele, ta on välistatud või pole kaasatud.\n"
 
-#: src/ftp.c:2647
+#: src/ftp.c:2644
 #, c-format
 msgid "Rejecting %s.\n"
 msgstr "Keelame %s.\n"
 
-#: src/ftp.c:2657
+#: src/ftp.c:2654
 #, c-format
 msgid "Rejecting %s (Invalid Entry).\n"
 msgstr "Keelame %s (Vigane kirje).\n"
 
-#: src/ftp.c:2678
+#: src/ftp.c:2675
 #, c-format
 msgid "%s is excluded/not-included through regex.\n"
 msgstr "%s on välistatud või pole kaasatud tänu regulaaravaldisele.\n"
 
-#: src/ftp.c:2698
+#: src/ftp.c:2695
 #, c-format
 msgid "Error matching %s against %s: %s\n"
 msgstr "Viga %s otsimisel %s: %s\n"
 
-#: src/ftp.c:2738
+#: src/ftp.c:2735
 #, c-format
 msgid "No matches on pattern %s.\n"
 msgstr "Jokker %s ei anna midagi.\n"
 
-#: src/ftp.c:2810
+#: src/ftp.c:2807
 #, c-format
 msgid "Wrote HTML-ized index to %s [%s].\n"
 msgstr "Kirjutasin HTML-iseeritud indeksi faili %s [%s].\n"
 
-#: src/ftp.c:2815
+#: src/ftp.c:2812
 #, c-format
 msgid "Wrote HTML-ized index to %s.\n"
 msgstr "Kirjutasin HTML-iseeritud indeksi faili %s.\n"
 
-#: src/gnutls.c:132
+#: src/gnutls.c:133
 #, c-format
 msgid "ERROR: Cannot open directory %s.\n"
 msgstr "VIGA: Kataloogi %s ei saa avada.\n"
 
-#: src/gnutls.c:178
+#: src/gnutls.c:179
 #, c-format
 msgid "ERROR: Failed to open cert %s: (%d).\n"
 msgstr "VIGA: Ei õnnestu avada sertifikaati %s: (%d).\n"
 
-#: src/gnutls.c:183
+#: src/gnutls.c:184
 #, c-format
 msgid "Loaded CA certificate '%s'\n"
 msgstr "Laetud CA sertifikaat '%s'\n"
 
-#: src/gnutls.c:191
+#: src/gnutls.c:192
 #, c-format
 msgid "ERROR: Failed to load CRL file '%s': (%d)\n"
 msgstr "VIGA: Ei õnnestu laadida CRL faili '%s': (%d).\n"
 
-#: src/gnutls.c:195
+#: src/gnutls.c:196
 #, c-format
 msgid "Loaded CRL file '%s'\n"
 msgstr "Laetud CRL fail '%s'\n"
 
-#: src/gnutls.c:219
+#: src/gnutls.c:220
 msgid "ERROR: GnuTLS requires the key and the cert to be of the same type.\n"
 msgstr "VIGA: GnuTLS nõuab et võti ja sertifikaat oleks sama tüüpi.\n"
 
-#: src/gnutls.c:771 src/gnutls.c:835
+#: src/gnutls.c:777 src/gnutls.c:841
 msgid "Your GnuTLS version is too old to support TLS 1.3\n"
 msgstr "Teie OpenSSL versioon on TLS 1.3 jaoks liiga vana\n"
 
-#: src/gnutls.c:783
+#: src/gnutls.c:789
 #, c-format
 msgid "GnuTLS: unimplemented 'secure-protocol' option value %u\n"
 msgstr "GnuTLS: realiseerimata 'secure-protocol' parameetri väärtus %u\n"
 
-#: src/gnutls.c:785 src/gnutls.c:841 src/host.c:158 src/openssl.c:288
+#: src/gnutls.c:791 src/gnutls.c:847 src/host.c:158 src/openssl.c:288
 msgid "Please report this issue to bug-wget@gnu.org\n"
 msgstr "Palun saatke see viga aadressile bug-wget@gnu.org\n"
 
-#: src/gnutls.c:840
+#: src/gnutls.c:846
 #, c-format
 msgid "GnuTLS: unimplemented 'secure-protocol' option value %d\n"
 msgstr "GnuTLS: realiseerimata 'secure-protocol' parameetri väärtus %d\n"
 
-#: src/gnutls.c:893
+#: src/gnutls.c:899
 msgid ""
 "GnuTLS: Cannot set prio string directly. Falling back to default priority.\n"
 msgstr "GnuTLS: prio seadmine ebaõnnestus. Kasutan vaikimisi prioriteeti.\n"
 
-#: src/gnutls.c:1021 src/openssl.c:1029
+#: src/gnutls.c:1027 src/openssl.c:1029
 msgid "ERROR"
 msgstr "VIGA"
 
-#: src/gnutls.c:1021 src/openssl.c:1029
+#: src/gnutls.c:1027 src/openssl.c:1029
 msgid "WARNING"
 msgstr "HOIATUS"
 
-#: src/gnutls.c:1032 src/openssl.c:1042
+#: src/gnutls.c:1038 src/openssl.c:1042
 #, c-format
 msgid "%s: No certificate presented by %s.\n"
 msgstr "%s: %s ei esitanud sertifikaati.\n"
 
-#: src/gnutls.c:1038
+#: src/gnutls.c:1044
 #, c-format
 msgid "%s: The certificate of %s is not trusted.\n"
 msgstr "%s: Sertifikaat %s ei ole usaldatav.\n"
 
-#: src/gnutls.c:1039
+#: src/gnutls.c:1045
 #, c-format
 msgid "%s: The certificate of %s doesn't have a known issuer.\n"
 msgstr "%s: %s sertifikaat ei oma tuntud väljastajat.\n"
 
-#: src/gnutls.c:1040
+#: src/gnutls.c:1046
 #, c-format
 msgid "%s: The certificate of %s has been revoked.\n"
 msgstr "%s: Sertifikaat %s on kuulutatud kehtetuks.\n"
 
-#: src/gnutls.c:1041
+#: src/gnutls.c:1047
 #, c-format
 msgid "%s: The certificate signer of %s was not a CA.\n"
 msgstr "%s: Sertifikaadi %s allkirjastaja ei ole CA.\n"
 
-#: src/gnutls.c:1042
+#: src/gnutls.c:1048
 #, c-format
 msgid "%s: The certificate of %s was signed using an insecure algorithm.\n"
 msgstr "%s: %s sertifikaat on allkirjastatud ebaturvalise algoritmiga.\n"
 
-#: src/gnutls.c:1043
+#: src/gnutls.c:1049
 #, c-format
 msgid "%s: The certificate of %s is not yet activated.\n"
 msgstr "%s: %s sertifikaat ei ole veel aktiivne.\n"
 
-#: src/gnutls.c:1044
+#: src/gnutls.c:1050
 #, c-format
 msgid "%s: The certificate of %s has expired.\n"
 msgstr "%s: %s sertifikaat on aegunud.\n"
 
-#: src/gnutls.c:1056
+#: src/gnutls.c:1062
 #, c-format
 msgid "Error initializing X509 certificate: %s\n"
 msgstr "Viga X509 sertifikaadi initsialiseerimisel: %s\n"
 
-#: src/gnutls.c:1065
+#: src/gnutls.c:1071
 msgid "No certificate found\n"
 msgstr "Sertifikaati pole.\n"
 
-#: src/gnutls.c:1072
+#: src/gnutls.c:1078
 #, c-format
 msgid "Error parsing certificate: %s\n"
 msgstr "Viga sertifikaadi parsimisel: %s\n"
 
-#: src/gnutls.c:1079
+#: src/gnutls.c:1085
 msgid "The certificate has not yet been activated\n"
 msgstr "Sertifikaat pole veel kehtiv\n"
 
-#: src/gnutls.c:1084
+#: src/gnutls.c:1090
 msgid "The certificate has expired\n"
 msgstr "Sertifikaat on aegunud\n"
 
-#: src/gnutls.c:1091
+#: src/gnutls.c:1097
 #, c-format
 msgid "The certificate's owner does not match hostname %s\n"
 msgstr "Sertifikaadi omanik ja hosti nimi %s on erinevad\n"
 
-#: src/gnutls.c:1100 src/openssl.c:1238
+#: src/gnutls.c:1106 src/openssl.c:1238
 msgid "The public key does not match pinned public key!\n"
 msgstr "Avalik võti pole sama kui kinnitatud avalik võti!\n"
 
-#: src/gnutls.c:1109
+#: src/gnutls.c:1115
 msgid "Certificate must be X.509\n"
 msgstr "Sertifikaat peab olema X.509\n"
 
@@ -706,15 +706,7 @@ msgstr "ebaõnnestus: aegus.\n"
 msgid "%s: Cannot resolve incomplete link %s.\n"
 msgstr "%s: Ei õnnestu lahendada poolikut viidet %s.\n"
 
-#: src/html-url.c:841
-#, c-format
-msgid ""
-"no-follow attribute found in %s. Will not follow any links on this page\n"
-msgstr ""
-"%s sisaldab mitte-järgimise atribuuti. Sellel lehel ei järgita ühtegi "
-"viidet.\n"
-
-#: src/html-url.c:944
+#: src/html-url.c:945
 #, c-format
 msgid "%s: Invalid URL %s: %s\n"
 msgstr "%s: Vigane URL %s: %s\n"
@@ -741,7 +733,7 @@ msgstr ""
 msgid "gmtime failed. This is probably a bug.\n"
 msgstr "gmtime ebaõnnestus. See on tõenäoliselt viga.\n"
 
-#: src/http.c:1897
+#: src/http.c:1918
 msgid ""
 "Cannot convert timestamp to http format. Falling back to time 0 as last "
 "modification time.\n"
@@ -1041,27 +1033,27 @@ msgstr ""
 "%s (%s) - %s salvestatud [%s/%s]\n"
 "\n"
 
-#: src/http.c:4818
+#: src/http.c:4823
 #, c-format
 msgid "%s (%s) - Connection closed at byte %s. "
 msgstr "%s (%s) - Ühendus suletud baidil %s. "
 
-#: src/http.c:4841
+#: src/http.c:4846
 #, c-format
 msgid "%s (%s) - Read error at byte %s (%s)."
 msgstr "%s (%s) - Lugemise viga baidil %s (%s)."
 
-#: src/http.c:4850
+#: src/http.c:4855
 #, c-format
 msgid "%s (%s) - Read error at byte %s/%s (%s). "
 msgstr "%s (%s) - Lugemise viga baidil %s/%s (%s). "
 
-#: src/http.c:5107
+#: src/http.c:5112
 #, c-format
 msgid "Unsupported quality of protection '%s'.\n"
 msgstr "Mittetoetatud kaitse kvaliteet '%s'.\n"
 
-#: src/http.c:5112
+#: src/http.c:5117
 #, c-format
 msgid "Unsupported algorithm '%s'.\n"
 msgstr "Mittetoetatud algoritm '%s'.\n"
@@ -1200,16 +1192,16 @@ msgstr ""
 msgid "Encoding %s isn't valid\n"
 msgstr "Kodeering %s ei ole lubatud\n"
 
-#: src/iri.c:140 src/url.c:1587
+#: src/iri.c:140 src/url.c:1615
 #, c-format
 msgid "Conversion from %s to %s isn't supported\n"
 msgstr "Teisendamist %s -> %s ei toetata\n"
 
-#: src/iri.c:180 src/url.c:1617
+#: src/iri.c:180 src/url.c:1645
 msgid "Incomplete or invalid multibyte sequence encountered\n"
 msgstr "Leiti mittetäielik või vigane mitmebaidi järjestus\n"
 
-#: src/iri.c:200 src/url.c:1634
+#: src/iri.c:200 src/url.c:1662
 #, c-format
 msgid "Unhandled errno %d\n"
 msgstr "Käsitlemata errno %d\n"
@@ -1228,7 +1220,7 @@ msgstr "idn_encode ebaõnnestus (%d): %s\n"
 msgid "Failed to convert to lower: %d: %s\n"
 msgstr "Väiketähtedeks teisendamine ebaõnnestus: %d: %s\n"
 
-#: src/log.c:937 src/log.c:956
+#: src/log.c:938 src/log.c:957
 #, c-format
 msgid ""
 "\n"
@@ -1237,7 +1229,7 @@ msgstr ""
 "\n"
 "Suunan väljundi faili %s.\n"
 
-#: src/log.c:949
+#: src/log.c:950
 #, c-format
 msgid "%s: %s; disabling logging.\n"
 msgstr "%s: %s; blokeerin logimise.\n"
@@ -1492,15 +1484,15 @@ msgid "       --read-timeout=SECS         set the read timeout to SECS\n"
 msgstr "       --read-timeout=SEK          lugemise aegumine on SEK\n"
 
 #: src/main.c:695
-#, fuzzy
 msgid ""
 "  -w,  --wait=SECONDS              wait SECONDS between retrievals\n"
 "                                     (applies if more then 1 URL is to be "
 "retrieved)\n"
-msgstr "  -w,  --wait=SEKUNDEID            oota SEKUNDEID päringute vahel\n"
+msgstr ""
+"  -w,  --wait=SEKUNDEID            oota SEKUNDEID päringute vahel\n"
+"                                     (kasutatakse mitme URLi korral)\n"
 
 #: src/main.c:698
-#, fuzzy
 msgid ""
 "       --waitretry=SECONDS         wait 1..SECONDS between retries of a "
 "retrieval\n"
@@ -1508,9 +1500,9 @@ msgid ""
 "retrieved)\n"
 msgstr ""
 "       --waitretry=SEKUNDEID       oota 1..SEKUNDIT laadimise katsete vahel\n"
+"                                     (kasutatakse mitme URLi korral)\n"
 
 #: src/main.c:701
-#, fuzzy
 msgid ""
 "       --random-wait               wait from 0.5*WAIT...1.5*WAIT secs "
 "between retrievals\n"
@@ -1519,6 +1511,7 @@ msgid ""
 msgstr ""
 "       --random-wait               oota korduste vahel "
 "0.5*SEKUNDIT..1.5*SEKUNDIT\n"
+"                                     (kasutatakse mitme URLi korral)\n"
 
 #: src/main.c:704
 msgid "       --no-proxy                  explicitly turn off proxy\n"
@@ -1880,10 +1873,17 @@ msgid "HTTPS (SSL/TLS) options:\n"
 msgstr "HTTPS (SSL/TLS) võtmed:\n"
 
 #: src/main.c:847
+#, fuzzy
+#| msgid ""
+#| "       --secure-protocol=PR        choose secure protocol, one of auto, "
+#| "SSLv2,\n"
+#| "                                     SSLv3, TLSv1, TLSv1_1, TLSv1_2 and "
+#| "PFS\n"
 msgid ""
 "       --secure-protocol=PR        choose secure protocol, one of auto, "
 "SSLv2,\n"
-"                                     SSLv3, TLSv1, TLSv1_1, TLSv1_2 and PFS\n"
+"                                     SSLv3, TLSv1, TLSv1_1, TLSv1_2, TLSv1_3 "
+"and PFS\n"
 msgstr ""
 "       --secure-protocol=PR        vali turvaprotokoll, võimalikud auto, "
 "SSLv2,\n"
@@ -2590,6 +2590,8 @@ msgid ""
 "WARNING: No username set with --ask-password. This is usually not what you "
 "want.\n"
 msgstr ""
+"HOIATUS: Võtmele --ask-password ei ole kasutajat antud. See pole ilmselt "
+"see, mida te soovite.\n"
 
 #: src/main.c:1775
 #, c-format
@@ -2638,7 +2640,7 @@ msgstr "Võtmeid --body-data ja --body-file ei saa korraga kasutada.\n"
 msgid "This version does not have support for IRIs\n"
 msgstr "See versioon ei toeta IRIsid\n"
 
-#: src/main.c:2003
+#: src/main.c:2008
 #, c-format
 msgid ""
 "-k or -r can be used together with -O only if outputting to a regular file.\n"
@@ -2647,7 +2649,7 @@ msgstr ""
 "suunatud\n"
 "tavalisse faili.\n"
 
-#: src/main.c:2009
+#: src/main.c:2014
 #, c-format
 msgid ""
 "--convert-links or --convert-file-only can be used together only if "
@@ -2656,42 +2658,42 @@ msgstr ""
 "--convert-links või --convert-file-only saab koos kasutada ainult juhul, kui "
 "väljund on suunatud tavalisse faili.\n"
 
-#: src/main.c:2020
+#: src/main.c:2025
 #, c-format
 msgid "Failed to init libcares\n"
 msgstr "libcares initsialiseerimine ebaõnnestus\n"
 
-#: src/main.c:2026
+#: src/main.c:2031
 #, c-format
 msgid "Failed to init c-ares channel\n"
 msgstr "Ei õnnestu seadistada c-ares kanalit\n"
 
-#: src/main.c:2049
+#: src/main.c:2054
 #, c-format
 msgid "Failed to parse IP address '%s'\n"
 msgstr "IP aadressi '%s' ei õnnestu parsida\n"
 
-#: src/main.c:2060
+#: src/main.c:2065
 #, c-format
 msgid "Failed to set DNS server(s) '%s' (%d)\n"
 msgstr "Ei õnnestu seada DNS serverit '%s' (%d)\n"
 
-#: src/main.c:2197
+#: src/main.c:2202
 #, c-format
 msgid "No URLs found in %s.\n"
 msgstr "%s ei sisalda URLe.\n"
 
-#: src/main.c:2213
+#: src/main.c:2218
 #, c-format
 msgid "Unable to parse metalink file %s.\n"
 msgstr "Metalink faili %s parsimine ei õnnestu.\n"
 
-#: src/main.c:2243 src/metalink.c:337
+#: src/main.c:2248 src/metalink.c:337
 #, c-format
 msgid "Could not download all resources from %s.\n"
 msgstr "Kõiki ressursse ei õnnestunud %s pealt laadida.\n"
 
-#: src/main.c:2270
+#: src/main.c:2275
 #, c-format
 msgid ""
 "FINISHED --%s--\n"
@@ -2702,7 +2704,7 @@ msgstr ""
 "Täielik aeg: %s\n"
 "Alla laetud: %d faili, %s aeg %s (%s)\n"
 
-#: src/main.c:2284
+#: src/main.c:2289
 #, c-format
 msgid "Download quota of %s EXCEEDED!\n"
 msgstr "Allalaadimise kvoot %s ON ÜLETATUD!\n"
@@ -2868,7 +2870,7 @@ msgstr "Jätkan taustas.\n"
 msgid "Continuing in background, pid %lu.\n"
 msgstr "Jätkan taustal, pid %lu.\n"
 
-#: src/mswindows.c:291 src/utils.c:509
+#: src/mswindows.c:291 src/utils.c:502
 #, c-format
 msgid "Output will be written to %s.\n"
 msgstr "Väljund kirjutatakse faili %s.\n"
@@ -2903,12 +2905,12 @@ msgstr "%s: %s:%d: hoiatus: %s lekseem on enne masina nime\n"
 msgid "%s: %s:%d: unknown token \"%s\"\n"
 msgstr "%s: %s:%d: tundmatu lekseem \"%s\"\n"
 
-#: src/netrc.c:500
+#: src/netrc.c:553
 #, c-format
 msgid "Usage: %s NETRC [HOSTNAME]\n"
 msgstr "Kasuta: %s NETRC [HOSTINIMI]\n"
 
-#: src/netrc.c:518
+#: src/netrc.c:571
 #, c-format
 msgid "%s: cannot stat %s: %s\n"
 msgstr "%s: stat operatsioon ebaõnnestus %s: %s\n"
@@ -3044,7 +3046,15 @@ msgstr "    aeg "
 msgid "Cannot get REALTIME clock frequency: %s\n"
 msgstr "Ei õnnestu lugeda REAALAJA kella sagedust: %s\n"
 
-#: src/recur.c:513
+#: src/recur.c:430
+#, c-format
+msgid ""
+"nofollow attribute found in %s. Will not follow any links on this page\n"
+msgstr ""
+"%s sisaldab mittejärgimise atribuuti. Sellel lehel ei järgita ühtegi "
+"viidet.\n"
+
+#: src/recur.c:514
 #, c-format
 msgid "Removing %s since it should be rejected.\n"
 msgstr "Kustutan %s, kuna see peaks olema tagasi lükatud.\n"
@@ -3147,67 +3157,67 @@ msgstr "Vigane numbriline IPv6 aadress"
 msgid "HTTPS support not compiled in"
 msgstr "HTTPS tuge pole sisse kompileeritud"
 
-#: src/url.c:1620
+#: src/url.c:1648
 msgid "Unconvertable multibyte sequence encountered\n"
 msgstr "Leiti mitteteisendatav mitmebaidi järjestus\n"
 
-#: src/utils.c:129
+#: src/utils.c:122
 #, c-format
 msgid "%s: %s: Failed to allocate enough memory; memory exhausted.\n"
 msgstr "%s: %s: Mälu küsimine ebaõnnestus; mälu on otsas.\n"
 
-#: src/utils.c:135
+#: src/utils.c:128
 #, c-format
 msgid "%s: %s: Failed to allocate %ld bytes; memory exhausted.\n"
 msgstr "%s: %s: %ld baidi küsimine ebaõnnestus; mälu on otsas.\n"
 
-#: src/utils.c:355
+#: src/utils.c:348
 #, c-format
 msgid "%s: aprintf: text buffer is too big (%d bytes), aborting.\n"
 msgstr "%s: aprintf: teksti puhver on liiga suur (%d baiti), katkestan.\n"
 
-#: src/utils.c:507
+#: src/utils.c:500
 #, c-format
 msgid "Continuing in background, pid %d.\n"
 msgstr "Jätkan taustal, pid %d.\n"
 
-#: src/utils.c:558
+#: src/utils.c:551
 #, c-format
 msgid "Failed to unlink symlink %s: %s\n"
 msgstr "Ei õnnestu kustutada nimeviidet %s: %s\n"
 
-#: src/utils.c:879
+#: src/utils.c:872
 #, c-format
 msgid "Failed to Fopen file %s\n"
 msgstr "Faili %s fopen sai vea\n"
 
-#: src/utils.c:885
+#: src/utils.c:878
 #, c-format
 msgid "Failed to get FD for file %s\n"
 msgstr "Faili %s deskriptorit ei õnnestu saada\n"
 
-#: src/utils.c:892
+#: src/utils.c:885
 #, c-format
 msgid "Failed to stat file %s, (check permissions)\n"
 msgstr "Faili %s atribuute ei õnnestu lugeda (kontrollige õiguseid)\n"
 
-#: src/utils.c:902
+#: src/utils.c:895
 #, c-format
 msgid "File %s changed since the last check. Security check failed.\n"
 msgstr ""
 "Fail %s on peale viimast kontrolli muutunud. Turvakontroll ebaõnnestus.\n"
 
-#: src/utils.c:937
+#: src/utils.c:930
 #, c-format
 msgid "Failed to open file %s, reason :%s\n"
 msgstr "Faili %s ei õnnestu avada: %s\n"
 
-#: src/utils.c:943
+#: src/utils.c:936
 #, c-format
 msgid "Failed to stat file %s, error: %s\n"
 msgstr "Faili %s atribuute ei õnnestu lugeda, viga: %s\n"
 
-#: src/utils.c:953
+#: src/utils.c:946
 #, c-format
 msgid ""
 "Trying to open file %s but it changed since last check. Security check "
@@ -3216,22 +3226,22 @@ msgstr ""
 "Proovin avada faili %s aga see on peale viimast kontrolli muutunud. "
 "Turvakontroll ebaõnnestus.\n"
 
-#: src/utils.c:2442
+#: src/utils.c:2443
 #, c-format
 msgid "Invalid regular expression %s, PCRE2 error %d\n"
 msgstr "Vigane regulaaravaldis %s, PCRE2 viga %d\n"
 
-#: src/utils.c:2459 src/utils.c:2482
+#: src/utils.c:2460 src/utils.c:2483
 #, c-format
 msgid "Invalid regular expression %s, %s\n"
 msgstr "Vigane regulaaravaldis %s, %s\n"
 
-#: src/utils.c:2512 src/utils.c:2534 src/utils.c:2558
+#: src/utils.c:2513 src/utils.c:2535 src/utils.c:2559
 #, c-format
 msgid "Error while matching %s: %d\n"
 msgstr "Viga %s leidmisel: %d\n"
 
-#: src/utils.c:2851
+#: src/utils.c:2852
 #, c-format
 msgid "Skipping key with wrong size (%d/%d): %s\n"
 msgstr "Jätan vale suurusega võtme vahele (%d/%d): %s\n"
@@ -3327,172 +3337,3 @@ msgid "Found exact match in CDX file. Saving revisit record to WARC.\n"
 msgstr ""
 "Leidsin täpse vaste CDX failist. Salvestan uuesti külastamise kirje WARC "
 "faili.\n"
-
-#~ msgid "Unknown system error"
-#~ msgstr "Tundmatu süsteemne viga"
-
-#~ msgid "Address family for hostname not supported"
-#~ msgstr "Seda aadresside perekonda ei toetata"
-
-#~ msgid "Bad value for ai_flags"
-#~ msgstr "ai_flags vigane väärtus"
-
-#~ msgid "Non-recoverable failure in name resolution"
-#~ msgstr "Nime lahendamisel tekkis parandamatu viga"
-
-#~ msgid "ai_family not supported"
-#~ msgstr "ai_family ei ole toetatud"
-
-#~ msgid "Memory allocation failure"
-#~ msgstr "Mälu ei jätku"
-
-#~ msgid "No address associated with hostname"
-#~ msgstr "Serveri nimele ei leidu aadressi"
-
-#~ msgid "Name or service not known"
-#~ msgstr "Nimi või teenus on tundmatu"
-
-#~ msgid "Servname not supported for ai_socktype"
-#~ msgstr "Servname ei ole ai_socktype korral toetatud"
-
-#~ msgid "ai_socktype not supported"
-#~ msgstr "ai_socktype ei toetata"
-
-#~ msgid "System error"
-#~ msgstr "Süsteemne viga"
-
-#~ msgid "Argument buffer too small"
-#~ msgstr "Argumentide puhver on liiga väike"
-
-#~ msgid "Processing request in progress"
-#~ msgstr "Päringu töötlemine alles käib"
-
-#~ msgid "Request canceled"
-#~ msgstr "Päring katkestati"
-
-#~ msgid "Request not canceled"
-#~ msgstr "Päringut ei katkestatud"
-
-#~ msgid "All requests done"
-#~ msgstr "Kõik päringud on töödeldud"
-
-#~ msgid "Interrupted by a signal"
-#~ msgstr "Katkestatud signaali poolt"
-
-#~ msgid "Parameter string not correctly encoded"
-#~ msgstr "Parameetri sõne ei ole korrektselt kodeeritud"
-
-#, c-format
-#~ msgid "%s: option '%s%s' is ambiguous\n"
-#~ msgstr "%s: võti '%s%s' on segane\n"
-
-#, c-format
-#~ msgid "%s: option '%s%s' is ambiguous; possibilities:"
-#~ msgstr "%s: võti '%s%s' on arusaamatu; variandid:"
-
-#, c-format
-#~ msgid "%s: unrecognized option '%s%s'\n"
-#~ msgstr "%s: tundmatu võti '%s%s'\n"
-
-#, c-format
-#~ msgid "%s: option '%s%s' doesn't allow an argument\n"
-#~ msgstr "%s: võti '%s%s' ei luba argumenti\n"
-
-#, c-format
-#~ msgid "%s: option '%s%s' requires an argument\n"
-#~ msgstr "%s: võti '%s%s' nõuab argumenti\n"
-
-#, c-format
-#~ msgid "%s: invalid option -- '%c'\n"
-#~ msgstr "%s: vigane võti -- '%c'\n"
-
-#, c-format
-#~ msgid "%s: option requires an argument -- '%c'\n"
-#~ msgstr "%s: võti nõuab argumenti -- '%c'\n"
-
-#~ msgid "`"
-#~ msgstr "`"
-
-#~ msgid "'"
-#~ msgstr "'"
-
-#~ msgid "Success"
-#~ msgstr "Leitud"
-
-#~ msgid "No match"
-#~ msgstr "Ei leitud"
-
-#~ msgid "Invalid regular expression"
-#~ msgstr "Vigane regulaaravaldis"
-
-#~ msgid "Invalid collation character"
-#~ msgstr "Vigane järjestamise sümbol"
-
-#~ msgid "Invalid character class name"
-#~ msgstr "Vigane sümbolite klassi nimi"
-
-#~ msgid "Trailing backslash"
-#~ msgstr "Langkriips lõpus"
-
-#~ msgid "Invalid back reference"
-#~ msgstr "Vigane tagasi viide"
-
-#~ msgid "Unmatched [, [^, [:, [., or [="
-#~ msgstr "[, [^, [:, [. või [= paariline puudub"
-
-#~ msgid "Unmatched ( or \\("
-#~ msgstr "( või \\( paariline puudub"
-
-#~ msgid "Unmatched \\{"
-#~ msgstr "Sulgemata \\{"
-
-#~ msgid "Invalid content of \\{\\}"
-#~ msgstr "Vigane \\{\\} sisu"
-
-#~ msgid "Invalid range end"
-#~ msgstr "Vigane vahemiku lõpp"
-
-#~ msgid "Memory exhausted"
-#~ msgstr "Mälu on otsas"
-
-#~ msgid "Invalid preceding regular expression"
-#~ msgstr "Vigane eelnev regulaaravaldis"
-
-#~ msgid "Premature end of regular expression"
-#~ msgstr "Enneaegne regulaaravaldise lõpp"
-
-#~ msgid "Regular expression too big"
-#~ msgstr "Regulaaravaldis on liiga suur"
-
-#~ msgid "Unmatched ) or \\)"
-#~ msgstr ") või \\) paariline puudub"
-
-#~ msgid "No previous regular expression"
-#~ msgstr "Eelmist regulaaravaldist pole"
-
-#, c-format
-#~ msgid "cannot create pipe"
-#~ msgstr "toru ei õnnestu luua"
-
-#, c-format
-#~ msgid "%s subprocess failed"
-#~ msgstr "%s alamprotsess sai vea"
-
-#, c-format
-#~ msgid "_open_osfhandle failed"
-#~ msgstr "_open_osfhandle sai vea"
-
-#, c-format
-#~ msgid "cannot restore fd %d: dup2 failed"
-#~ msgstr "ei õnnestu taastada fd %d: dup2 sai vea"
-
-#, c-format
-#~ msgid "%s subprocess"
-#~ msgstr "%s alamprotsess"
-
-#, c-format
-#~ msgid "%s subprocess got fatal signal %d"
-#~ msgstr "%s alamprotsess sai fataalse signaali %d"
-
-#~ msgid "memory exhausted"
-#~ msgstr "mälu on otsas"

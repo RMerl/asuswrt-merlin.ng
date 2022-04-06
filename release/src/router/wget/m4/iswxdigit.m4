@@ -1,5 +1,5 @@
-# iswxdigit.m4 serial 2
-dnl Copyright (C) 2020-2021 Free Software Foundation, Inc.
+# iswxdigit.m4 serial 3
+dnl Copyright (C) 2020-2022 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -72,7 +72,7 @@ main (int argc, char *argv[])
     }
   if (setlocale (LC_ALL, "$LOCALE_FR_UTF8") != NULL)
     {
-      /* This fails on FreeBSD 12.  */
+      /* This fails on FreeBSD 13.0.  */
       /* U+0663 ARABIC-INDIC DIGIT THREE */
       is = for_character ("\331\243", 2);
       if (!(is == 0))

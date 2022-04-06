@@ -1,18 +1,18 @@
 /* Substitute for and wrapper around <unistd.h>.
-   Copyright (C) 2003-2021 Free Software Foundation, Inc.
+   Copyright (C) 2003-2022 Free Software Foundation, Inc.
 
-   This program is free software; you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 3, or (at your option)
-   any later version.
+   This file is free software: you can redistribute it and/or modify
+   it under the terms of the GNU Lesser General Public License as
+   published by the Free Software Foundation; either version 2.1 of the
+   License, or (at your option) any later version.
 
-   This program is distributed in the hope that it will be useful,
+   This file is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
+   GNU Lesser General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, see <https://www.gnu.org/licenses/>.  */
+   You should have received a copy of the GNU Lesser General Public License
+   along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
 #ifndef _@GUARD_PREFIX@_UNISTD_H
 
@@ -415,16 +415,30 @@ _GL_CXXALIASWARN (close);
 
 
 #if @GNULIB_COPY_FILE_RANGE@
-# if !@HAVE_COPY_FILE_RANGE@
+# if @REPLACE_COPY_FILE_RANGE@
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   undef copy_file_range
+#   define copy_file_range rpl_copy_file_range
+#  endif
+_GL_FUNCDECL_RPL (copy_file_range, ssize_t, (int ifd, off_t *ipos,
+                                             int ofd, off_t *opos,
+                                             size_t len, unsigned flags));
+_GL_CXXALIAS_RPL (copy_file_range, ssize_t, (int ifd, off_t *ipos,
+                                             int ofd, off_t *opos,
+                                             size_t len, unsigned flags));
+# else
+#  if !@HAVE_COPY_FILE_RANGE@
 _GL_FUNCDECL_SYS (copy_file_range, ssize_t, (int ifd, off_t *ipos,
                                              int ofd, off_t *opos,
                                              size_t len, unsigned flags));
+#  endif
 _GL_CXXALIAS_SYS (copy_file_range, ssize_t, (int ifd, off_t *ipos,
                                              int ofd, off_t *opos,
                                              size_t len, unsigned flags));
 # endif
 _GL_CXXALIASWARN (copy_file_range);
 #elif defined GNULIB_POSIXCHECK
+# undef copy_file_range
 # if HAVE_RAW_DECL_COPY_FILE_RANGE
 _GL_WARN_ON_USE (copy_file_range,
                  "copy_file_range is unportable - "
@@ -1409,7 +1423,8 @@ _GL_WARN_ON_USE (getpagesize, "getpagesize is unportable - "
      Read a password from /dev/tty or stdin.
    Function getpass() from module 'getpass-gnu':
      Read a password of arbitrary length from /dev/tty or stdin.  */
-# if @REPLACE_GETPASS@
+# if (@GNULIB_GETPASS@ && @REPLACE_GETPASS@) \
+     || (@GNULIB_GETPASS_GNU@ && @REPLACE_GETPASS_FOR_GETPASS_GNU@)
 #  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
 #   undef getpass
 #   define getpass rpl_getpass
@@ -1521,6 +1536,7 @@ _GL_WARN_ON_USE (group_member, "group_member is unportable - "
 #   undef isatty
 #   define isatty rpl_isatty
 #  endif
+#  define GNULIB_defined_isatty 1
 _GL_FUNCDECL_RPL (isatty, int, (int fd));
 _GL_CXXALIAS_RPL (isatty, int, (int fd));
 # elif defined _WIN32 && !defined __CYGWIN__
@@ -2027,15 +2043,23 @@ _GL_WARN_ON_USE (sleep, "sleep is unportable - "
 #if @GNULIB_MDA_SWAB@
 /* On native Windows, map 'swab' to '_swab', so that -loldnames is not
    required.  In C++ with GNULIB_NAMESPACE, avoid differences between
-   platforms by defining GNULIB_NAMESPACE::creat always.  */
+   platforms by defining GNULIB_NAMESPACE::swab always.  */
 # if defined _WIN32 && !defined __CYGWIN__
 #  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
 #   undef swab
 #   define swab _swab
 #  endif
-_GL_CXXALIAS_MDA (swab, void, (char *from, char *to, int n));
+/* Need to cast, because in old mingw the arguments are
+                             (const char *from, char *to, size_t n).  */
+_GL_CXXALIAS_MDA_CAST (swab, void, (char *from, char *to, int n));
 # else
+#  if defined __hpux /* HP-UX */
+_GL_CXXALIAS_SYS (swab, void, (const char *from, char *to, int n));
+#  elif defined __sun && !defined _XPG4 /* Solaris */
+_GL_CXXALIAS_SYS (swab, void, (const char *from, char *to, ssize_t n));
+#  else
 _GL_CXXALIAS_SYS (swab, void, (const void *from, void *to, ssize_t n));
+#  endif
 # endif
 _GL_CXXALIASWARN (swab);
 #endif

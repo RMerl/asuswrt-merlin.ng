@@ -1,19 +1,19 @@
 /* Extended regular expression matching and search library.
-   Copyright (C) 2002-2021 Free Software Foundation, Inc.
+   Copyright (C) 2002-2022 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Isamu Hasegawa <isamu@yamato.ibm.com>.
 
    The GNU C Library is free software; you can redistribute it and/or
-   modify it under the terms of the GNU General Public
+   modify it under the terms of the GNU Lesser General Public
    License as published by the Free Software Foundation; either
-   version 3 of the License, or (at your option) any later version.
+   version 2.1 of the License, or (at your option) any later version.
 
    The GNU C Library is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   General Public License for more details.
+   Lesser General Public License for more details.
 
-   You should have received a copy of the GNU General Public
+   You should have received a copy of the GNU Lesser General Public
    License along with the GNU C Library; if not, see
    <https://www.gnu.org/licenses/>.  */
 
@@ -32,7 +32,10 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include <dynarray.h>
+#ifndef _LIBC
+# include <dynarray.h>
+#endif
+
 #include <intprops.h>
 #include <verify.h>
 
@@ -50,14 +53,14 @@
 # define lock_fini(lock) ((void) 0)
 # define lock_lock(lock) __libc_lock_lock (lock)
 # define lock_unlock(lock) __libc_lock_unlock (lock)
-#elif defined GNULIB_LOCK && !defined USE_UNLOCKED_IO
+#elif defined GNULIB_LOCK && !defined GNULIB_REGEX_SINGLE_THREAD
 # include "glthread/lock.h"
 # define lock_define(name) gl_lock_define (, name)
 # define lock_init(lock) glthread_lock_init (&(lock))
 # define lock_fini(lock) glthread_lock_destroy (&(lock))
 # define lock_lock(lock) glthread_lock_lock (&(lock))
 # define lock_unlock(lock) glthread_lock_unlock (&(lock))
-#elif defined GNULIB_PTHREAD && !defined USE_UNLOCKED_IO
+#elif defined GNULIB_PTHREAD && !defined GNULIB_REGEX_SINGLE_THREAD
 # include <pthread.h>
 # define lock_define(name) pthread_mutex_t name;
 # define lock_init(lock) pthread_mutex_init (&(lock), 0)
@@ -113,10 +116,6 @@
 # define gettext_noop(String) String
 #endif
 
-#if (defined MB_CUR_MAX && HAVE_WCTYPE_H && HAVE_ISWCTYPE) || _LIBC
-# define RE_ENABLE_I18N
-#endif
-
 /* Number of ASCII characters.  */
 #define ASCII_CHARS 0x80
 
@@ -146,6 +145,11 @@
 # define __wcrtomb wcrtomb
 # define __regfree regfree
 #endif /* not _LIBC */
+
+/* Types related to integers.  Unless protected by #ifdef _LIBC, the
+   regex code should avoid exact-width types like int32_t and uint64_t
+   as some non-GCC platforms lack them, an issue when this code is
+   used in Gnulib.  */
 
 #ifndef SSIZE_MAX
 # define SSIZE_MAX ((ssize_t) (SIZE_MAX / 2))
@@ -243,10 +247,8 @@ typedef enum
   SIMPLE_BRACKET = 3,
   OP_BACK_REF = 4,
   OP_PERIOD = 5,
-#ifdef RE_ENABLE_I18N
   COMPLEX_BRACKET = 6,
   OP_UTF8_PERIOD = 7,
-#endif /* RE_ENABLE_I18N */
 
   /* We define EPSILON_BIT as a macro so that OP_OPEN_SUBEXP is used
      when the debugger shows values of this enum type.  */
@@ -284,30 +286,29 @@ typedef enum
 
 } re_token_type_t;
 
-#ifdef RE_ENABLE_I18N
 typedef struct
 {
   /* Multibyte characters.  */
   wchar_t *mbchars;
 
+#ifdef _LIBC
   /* Collating symbols.  */
-# ifdef _LIBC
   int32_t *coll_syms;
-# endif
+#endif
 
+#ifdef _LIBC
   /* Equivalence classes. */
-# ifdef _LIBC
   int32_t *equiv_classes;
-# endif
+#endif
 
   /* Range expressions. */
-# ifdef _LIBC
+#ifdef _LIBC
   uint32_t *range_starts;
   uint32_t *range_ends;
-# else /* not _LIBC */
+#else
   wchar_t *range_starts;
   wchar_t *range_ends;
-# endif /* not _LIBC */
+#endif
 
   /* Character classes. */
   wctype_t *char_classes;
@@ -330,7 +331,6 @@ typedef struct
   /* # of character classes. */
   Idx nchar_classes;
 } re_charset_t;
-#endif /* RE_ENABLE_I18N */
 
 typedef struct
 {
@@ -338,9 +338,7 @@ typedef struct
   {
     unsigned char c;		/* for CHARACTER */
     re_bitset_ptr_t sbcset;	/* for SIMPLE_BRACKET */
-#ifdef RE_ENABLE_I18N
     re_charset_t *mbcset;	/* for COMPLEX_BRACKET */
-#endif /* RE_ENABLE_I18N */
     Idx idx;			/* for BACK_REF */
     re_context_type ctx_type;	/* for ANCHOR */
   } opr;
@@ -352,12 +350,10 @@ typedef struct
   unsigned int constraint : 10;	/* context constraint */
   unsigned int duplicated : 1;
   unsigned int opt_subexp : 1;
-#ifdef RE_ENABLE_I18N
   unsigned int accept_mb : 1;
   /* These 2 bits can be moved into the union if needed (e.g. if running out
      of bits; move opr.c to opr.c.c and move the flags to opr.c.flags).  */
   unsigned int mb_partial : 1;
-#endif
   unsigned int word_char : 1;
 } re_token_t;
 
@@ -372,12 +368,10 @@ struct re_string_t
      REG_ICASE, upper cases of the string are stored, otherwise MBS points
      the same address that RAW_MBS points.  */
   unsigned char *mbs;
-#ifdef RE_ENABLE_I18N
   /* Store the wide character string which is corresponding to MBS.  */
   wint_t *wcs;
   Idx *offsets;
   mbstate_t cur_state;
-#endif
   /* Index in RAW_MBS.  Each character mbs[i] corresponds to
      raw_mbs[raw_mbs_idx + i].  */
   Idx raw_mbs_idx;
@@ -776,7 +770,6 @@ bitset_mask (bitset_t dest, const bitset_t src)
     dest[bitset_i] &= src[bitset_i];
 }
 
-#ifdef RE_ENABLE_I18N
 /* Functions for re_string.  */
 static int
 __attribute__ ((pure, unused))
@@ -800,15 +793,15 @@ re_string_wchar_at (const re_string_t *pstr, Idx idx)
   return (wint_t) pstr->wcs[idx];
 }
 
-# ifdef _LIBC
-#  include <locale/weight.h>
-# endif
+#ifdef _LIBC
+# include <locale/weight.h>
+#endif
 
 static int
 __attribute__ ((pure, unused))
 re_string_elem_size_at (const re_string_t *pstr, Idx idx)
 {
-# ifdef _LIBC
+#ifdef _LIBC
   const unsigned char *p, *extra;
   const int32_t *table, *indirect;
   uint_fast32_t nrules = _NL_CURRENT_WORD (LC_COLLATE, _NL_COLLATE_NRULES);
@@ -824,18 +817,19 @@ re_string_elem_size_at (const re_string_t *pstr, Idx idx)
       findidx (table, indirect, extra, &p, pstr->len - idx);
       return p - pstr->mbs - idx;
     }
-  else
-# endif /* _LIBC */
-    return 1;
-}
-#endif /* RE_ENABLE_I18N */
+#endif /* _LIBC */
 
-#ifndef FALLTHROUGH
-# if (__GNUC__ >= 7) || (__clang_major__ >= 10)
+  return 1;
+}
+
+#ifdef _LIBC
+# if __GNUC__ >= 7
 #  define FALLTHROUGH __attribute__ ((__fallthrough__))
 # else
 #  define FALLTHROUGH ((void) 0)
 # endif
+#else
+# include "attribute.h"
 #endif
 
 #endif /*  _REGEX_INTERNAL_H */

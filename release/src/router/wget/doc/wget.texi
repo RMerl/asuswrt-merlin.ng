@@ -31,7 +31,7 @@ This file documents the GNU Wget utility for downloading network
 data.
 
 @c man begin COPYRIGHT
-Copyright @copyright{} 1996--2011, 2015, 2018--2021 Free Software
+Copyright @copyright{} 1996--2011, 2015, 2018--2022 Free Software
 Foundation, Inc.
 
 @iftex
@@ -384,7 +384,7 @@ and @file{/~somebody}.  You can also clear the lists in @file{.wgetrc}
 (@pxref{Wgetrc Syntax}).
 
 @example
-wget -X '' -X /~nobody,/~somebody
+wget -X "" -X /~nobody,/~somebody
 @end example
 
 Most options that do not accept arguments are @dfn{boolean} options,
@@ -3046,7 +3046,7 @@ file so that it keeps its date of modification.
 wget -S http://www.gnu.ai.mit.edu/
 @end example
 
-A simple @code{ls -l} shows that the time stamp on the local file equals
+A simple @code{ls -l} shows that the timestamp on the local file equals
 the state of the @code{Last-Modified} header, as returned by the server.
 As you can see, the time-stamping info is preserved locally, even
 without @samp{-N} (at least for @sc{http}).

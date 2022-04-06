@@ -1,17 +1,17 @@
 /* fchdir replacement.
-   Copyright (C) 2006-2021 Free Software Foundation, Inc.
+   Copyright (C) 2006-2022 Free Software Foundation, Inc.
 
-   This program is free software: you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 3 of the License, or
-   (at your option) any later version.
+   This file is free software: you can redistribute it and/or modify
+   it under the terms of the GNU Lesser General Public License as
+   published by the Free Software Foundation, either version 3 of the
+   License, or (at your option) any later version.
 
-   This program is distributed in the hope that it will be useful,
+   This file is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
+   GNU Lesser General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
+   You should have received a copy of the GNU Lesser General Public License
    along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
 #include <config.h>
@@ -91,7 +91,6 @@ get_name (char const *dir)
 {
   char *cwd;
   char *result;
-  int saved_errno;
 
   if (IS_ABSOLUTE_FILE_NAME (dir))
     return strdup (dir);
@@ -102,9 +101,7 @@ get_name (char const *dir)
     return cwd;
 
   result = mfile_name_concat (cwd, dir, NULL);
-  saved_errno = errno;
   free (cwd);
-  errno = saved_errno;
   return result;
 }
 

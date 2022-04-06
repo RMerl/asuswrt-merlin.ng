@@ -1,10 +1,10 @@
-# signal_h.m4 serial 19
-dnl Copyright (C) 2007-2021 Free Software Foundation, Inc.
+# signal_h.m4 serial 22
+dnl Copyright (C) 2007-2022 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
 
-AC_DEFUN([gl_SIGNAL_H],
+AC_DEFUN_ONCE([gl_SIGNAL_H],
 [
   AC_REQUIRE([gl_SIGNAL_H_DEFAULTS])
   AC_REQUIRE([gl_CHECK_TYPE_SIGSET_T])
@@ -52,22 +52,37 @@ AC_DEFUN([gl_CHECK_TYPE_SIGSET_T],
   fi
 ])
 
+# gl_SIGNAL_MODULE_INDICATOR([modulename])
+# sets the shell variable that indicates the presence of the given module
+# to a C preprocessor expression that will evaluate to 1.
+# This macro invocation must not occur in macros that are AC_REQUIREd.
 AC_DEFUN([gl_SIGNAL_MODULE_INDICATOR],
 [
-  dnl Use AC_REQUIRE here, so that the default settings are expanded once only.
-  AC_REQUIRE([gl_SIGNAL_H_DEFAULTS])
+  dnl Ensure to expand the default settings once only.
+  gl_SIGNAL_H_REQUIRE_DEFAULTS
   gl_MODULE_INDICATOR_SET_VARIABLE([$1])
   dnl Define it also as a C macro, for the benefit of the unit tests.
   gl_MODULE_INDICATOR_FOR_TESTS([$1])
 ])
 
+# Initializes the default values for AC_SUBSTed shell variables.
+# This macro must not be AC_REQUIREd.  It must only be invoked, and only
+# outside of macros or in macros that are not AC_REQUIREd.
+AC_DEFUN([gl_SIGNAL_H_REQUIRE_DEFAULTS],
+[
+  m4_defun(GL_MODULE_INDICATOR_PREFIX[_SIGNAL_H_MODULE_INDICATOR_DEFAULTS], [
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_PTHREAD_SIGMASK])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_RAISE])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_SIGNAL_H_SIGPIPE])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_SIGPROCMASK])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_SIGACTION])
+  ])
+  m4_require(GL_MODULE_INDICATOR_PREFIX[_SIGNAL_H_MODULE_INDICATOR_DEFAULTS])
+  AC_REQUIRE([gl_SIGNAL_H_DEFAULTS])
+])
+
 AC_DEFUN([gl_SIGNAL_H_DEFAULTS],
 [
-  GNULIB_PTHREAD_SIGMASK=0;    AC_SUBST([GNULIB_PTHREAD_SIGMASK])
-  GNULIB_RAISE=0;              AC_SUBST([GNULIB_RAISE])
-  GNULIB_SIGNAL_H_SIGPIPE=0;   AC_SUBST([GNULIB_SIGNAL_H_SIGPIPE])
-  GNULIB_SIGPROCMASK=0;        AC_SUBST([GNULIB_SIGPROCMASK])
-  GNULIB_SIGACTION=0;          AC_SUBST([GNULIB_SIGACTION])
   dnl Assume proper GNU behavior unless another module says otherwise.
   HAVE_POSIX_SIGNALBLOCKING=1; AC_SUBST([HAVE_POSIX_SIGNALBLOCKING])
   HAVE_PTHREAD_SIGMASK=1;      AC_SUBST([HAVE_PTHREAD_SIGMASK])

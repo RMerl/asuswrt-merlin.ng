@@ -1,5 +1,5 @@
-# serial 35
-dnl Copyright (C) 2002-2003, 2005-2007, 2009-2021 Free Software Foundation,
+# serial 37
+dnl Copyright (C) 2002-2003, 2005-2007, 2009-2022 Free Software Foundation,
 dnl Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
@@ -82,7 +82,8 @@ spring_forward_gap ()
      instead of "TZ=America/Vancouver" in order to detect the bug even
      on systems that don't support the Olson extension, or don't have the
      full zoneinfo tables installed.  */
-  putenv ("TZ=PST8PDT,M4.1.0,M10.5.0");
+  if (putenv ("TZ=PST8PDT,M4.1.0,M10.5.0") != 0)
+    return -1;
 
   tm.tm_year = 98;
   tm.tm_mon = 3;
@@ -170,7 +171,8 @@ year_2050_test ()
      instead of "TZ=America/Vancouver" in order to detect the bug even
      on systems that don't support the Olson extension, or don't have the
      full zoneinfo tables installed.  */
-  putenv ("TZ=PST8PDT,M4.1.0,M10.5.0");
+  if (putenv ("TZ=PST8PDT,M4.1.0,M10.5.0") != 0)
+    return -1;
 
   t = mktime (&tm);
 
@@ -179,6 +181,25 @@ year_2050_test ()
      due to leap seconds.  */
   return (t == (time_t) -1
           || (0 < t && answer - 120 <= t && t <= answer + 120));
+}
+
+static int
+indiana_test ()
+{
+  if (putenv ("TZ=America/Indiana/Indianapolis") != 0)
+    return -1;
+  struct tm tm;
+  tm.tm_year = 1986 - 1900; tm.tm_mon = 4 - 1; tm.tm_mday = 28;
+  tm.tm_hour = 16; tm.tm_min = 24; tm.tm_sec = 50; tm.tm_isdst = 0;
+  time_t std = mktime (&tm);
+  if (! (std == 515107490 || std == 515107503))
+    return 1;
+
+  /* This platform supports TZDB, either without or with leap seconds.
+     Return true if GNU Bug#48085 is absent.  */
+  tm.tm_isdst = 1;
+  time_t dst = mktime (&tm);
+  return std - dst == 60 * 60;
 }
 
 int
@@ -236,7 +257,7 @@ main ()
     result |= 16;
   if (! spring_forward_gap ())
     result |= 32;
-  if (! year_2050_test ())
+  if (! year_2050_test () || ! indiana_test ())
     result |= 64;
   return result;
 }]])],
@@ -255,7 +276,7 @@ main ()
 dnl Main macro of module 'mktime'.
 AC_DEFUN([gl_FUNC_MKTIME],
 [
-  AC_REQUIRE([gl_HEADER_TIME_H_DEFAULTS])
+  AC_REQUIRE([gl_TIME_H_DEFAULTS])
   AC_REQUIRE([AC_CANONICAL_HOST])
   AC_REQUIRE([gl_FUNC_MKTIME_WORKS])
 

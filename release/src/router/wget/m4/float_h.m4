@@ -1,5 +1,5 @@
-# float_h.m4 serial 12
-dnl Copyright (C) 2007, 2009-2021 Free Software Foundation, Inc.
+# float_h.m4 serial 13
+dnl Copyright (C) 2007, 2009-2022 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -8,18 +8,18 @@ AC_DEFUN([gl_FLOAT_H],
 [
   AC_REQUIRE([AC_PROG_CC])
   AC_REQUIRE([AC_CANONICAL_HOST])
-  FLOAT_H=
+  GL_GENERATE_FLOAT_H=false
   REPLACE_FLOAT_LDBL=0
   case "$host_os" in
     aix* | beos* | openbsd* | mirbsd* | irix*)
-      FLOAT_H=float.h
+      GL_GENERATE_FLOAT_H=true
       ;;
     freebsd* | dragonfly*)
       case "$host_cpu" in
 changequote(,)dnl
         i[34567]86 )
 changequote([,])dnl
-          FLOAT_H=float.h
+          GL_GENERATE_FLOAT_H=true
           ;;
         x86_64 )
           # On x86_64 systems, the C compiler may still be generating
@@ -33,21 +33,21 @@ changequote([,])dnl
                  #endif
                ]])],
             [],
-            [FLOAT_H=float.h])
+            [GL_GENERATE_FLOAT_H=true])
           ;;
       esac
       ;;
     linux*)
       case "$host_cpu" in
         powerpc*)
-          FLOAT_H=float.h
+          GL_GENERATE_FLOAT_H=true
           ;;
       esac
       ;;
   esac
   case "$host_os" in
     aix* | freebsd* | dragonfly* | linux*)
-      if test -n "$FLOAT_H"; then
+      if $GL_GENERATE_FLOAT_H; then
         REPLACE_FLOAT_LDBL=1
       fi
       ;;
@@ -95,14 +95,12 @@ int main ()
       REPLACE_ITOLD=1
       dnl We add the workaround to <float.h> but also to <math.h>,
       dnl to increase the chances that the fix function gets pulled in.
-      FLOAT_H=float.h
+      GL_GENERATE_FLOAT_H=true
       ;;
   esac
 
-  if test -n "$FLOAT_H"; then
+  if $GL_GENERATE_FLOAT_H; then
     gl_NEXT_HEADERS([float.h])
   fi
-  AC_SUBST([FLOAT_H])
-  AM_CONDITIONAL([GL_GENERATE_FLOAT_H], [test -n "$FLOAT_H"])
   AC_SUBST([REPLACE_ITOLD])
 ])

@@ -1,5 +1,5 @@
-# ftello.m4 serial 13
-dnl Copyright (C) 2007-2021 Free Software Foundation, Inc.
+# ftello.m4 serial 14
+dnl Copyright (C) 2007-2022 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -129,6 +129,15 @@ main (void)
             [Define to 1 if the system's ftello function has the Solaris bug.])
           ;;
       esac
+    fi
+    if test $REPLACE_FTELLO = 0; then
+      dnl Detect bug on macOS >= 10.15.
+      gl_FUNC_UNGETC_WORKS
+      if test $gl_ftello_broken_after_ungetc = yes; then
+        REPLACE_FTELLO=1
+        AC_DEFINE([FTELLO_BROKEN_AFTER_UNGETC], [1],
+          [Define to 1 if the system's ftello function has the macOS bug.])
+      fi
     fi
   fi
 ])

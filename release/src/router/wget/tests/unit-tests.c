@@ -1,5 +1,5 @@
 /* Unit testing.
-   Copyright (C) 2005-2011, 2015, 2018-2021 Free Software Foundation,
+   Copyright (C) 2005-2011, 2015, 2018-2022 Free Software Foundation,
    Inc.
 
 This file is part of GNU Wget.
@@ -65,6 +65,7 @@ all_tests(void)
   mu_run_test (test_hsts_url_rewrite_congruent);
   mu_run_test (test_hsts_read_database);
 #endif
+  mu_run_test (test_parse_netrc);
 
   return NULL;
 }

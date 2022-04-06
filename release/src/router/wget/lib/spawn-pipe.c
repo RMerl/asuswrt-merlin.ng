@@ -1,10 +1,10 @@
 /* Creation of subprocesses, communicating via pipes.
-   Copyright (C) 2001-2004, 2006-2021 Free Software Foundation, Inc.
+   Copyright (C) 2001-2004, 2006-2022 Free Software Foundation, Inc.
    Written by Bruno Haible <haible@clisp.cons.org>, 2001.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 3 of the License, or
+   the Free Software Foundation, either version 3 of the License, or
    (at your option) any later version.
 
    This program is distributed in the hope that it will be useful,
@@ -180,9 +180,8 @@ create_pipe (const char *progname,
                 canonicalize_filename_mode (prog_path, CAN_MISSING | CAN_NOLINKS);
               if (absolute_prog == NULL)
                 {
-                  saved_errno = errno;
                   free (prog_path_to_free);
-                  goto fail_with_saved_errno;
+                  goto fail_with_errno;
                 }
               free (prog_path_to_free);
               prog_path_to_free = absolute_prog;
@@ -341,7 +340,7 @@ create_pipe (const char *progname,
     }
 
 # else /* __KLIBC__ */
-  if (!(directory == NULL && strcmp (directory, ".") == 0))
+  if (!(directory == NULL || strcmp (directory, ".") == 0))
     {
       /* A directory argument is not supported in this implementation.  */
       saved_errno = EINVAL;

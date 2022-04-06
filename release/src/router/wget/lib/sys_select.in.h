@@ -1,18 +1,18 @@
 /* Substitute for <sys/select.h>.
-   Copyright (C) 2007-2021 Free Software Foundation, Inc.
+   Copyright (C) 2007-2022 Free Software Foundation, Inc.
 
-   This program is free software; you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 3, or (at your option)
-   any later version.
+   This file is free software: you can redistribute it and/or modify
+   it under the terms of the GNU Lesser General Public License as
+   published by the Free Software Foundation; either version 2.1 of the
+   License, or (at your option) any later version.
 
-   This program is distributed in the hope that it will be useful,
+   This file is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
+   GNU Lesser General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, see <https://www.gnu.org/licenses/>.  */
+   You should have received a copy of the GNU Lesser General Public License
+   along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
 # if __GNUC__ >= 3
 @PRAGMA_SYSTEM_HEADER@
@@ -21,7 +21,7 @@
 
 /* On OSF/1 and Solaris 2.6, <sys/types.h> and <sys/time.h>
    both include <sys/select.h>.
-   On Cygwin, <sys/time.h> includes <sys/select.h>.
+   On Cygwin and OpenBSD, <sys/time.h> includes <sys/select.h>.
    Simply delegate to the system's header in this case.  */
 #if (@HAVE_SYS_SELECT_H@                                                \
      && !defined _GL_SYS_SELECT_H_REDIRECT_FROM_SYS_TYPES_H             \
@@ -39,6 +39,7 @@
            || (!defined _GL_SYS_SELECT_H_REDIRECT_FROM_SYS_TIME_H       \
                && ((defined __osf__ && defined _SYS_TIME_H_             \
                     && defined _OSF_SOURCE)                             \
+                   || (defined __OpenBSD__ && defined _SYS_TIME_H_)     \
                    || (defined __sun && defined _SYS_TIME_H             \
                        && (! (defined _XOPEN_SOURCE                     \
                               || defined _POSIX_C_SOURCE)               \
@@ -278,9 +279,13 @@ _GL_FUNCDECL_SYS (pselect, int,
                   (int, fd_set *restrict, fd_set *restrict, fd_set *restrict,
                    struct timespec const *restrict, const sigset_t *restrict));
 #  endif
-_GL_CXXALIAS_SYS (pselect, int,
-                  (int, fd_set *restrict, fd_set *restrict, fd_set *restrict,
-                   struct timespec const *restrict, const sigset_t *restrict));
+/* Need to cast, because on AIX 7, the second, third, fourth argument may be
+                        void *restrict,   void *restrict,   void *restrict.  */
+_GL_CXXALIAS_SYS_CAST (pselect, int,
+                       (int,
+                        fd_set *restrict, fd_set *restrict, fd_set *restrict,
+                        struct timespec const *restrict,
+                        const sigset_t *restrict));
 # endif
 _GL_CXXALIASWARN (pselect);
 #elif defined GNULIB_POSIXCHECK

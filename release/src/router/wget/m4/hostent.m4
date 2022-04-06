@@ -1,5 +1,5 @@
-# hostent.m4 serial 3
-dnl Copyright (C) 2008, 2010-2021 Free Software Foundation, Inc.
+# hostent.m4 serial 4
+dnl Copyright (C) 2008, 2010-2022 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -13,7 +13,7 @@ AC_DEFUN([gl_HOSTENT],
   dnl - On BeOS, they are in libnet.
   dnl - On native Windows, they are in ws2_32.dll.
   dnl - Otherwise they are in libc.
-  AC_REQUIRE([gl_HEADER_SYS_SOCKET])dnl for HAVE_SYS_SOCKET_H, HAVE_WINSOCK2_H
+  AC_REQUIRE([gl_SYS_SOCKET_H])dnl for HAVE_SYS_SOCKET_H, HAVE_WINSOCK2_H
   HOSTENT_LIB=
   gl_saved_libs="$LIBS"
   AC_SEARCH_LIBS([gethostbyname], [nsl network net],

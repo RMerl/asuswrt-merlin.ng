@@ -4,7 +4,7 @@
 # Detect instances of "if (p) free (p);".
 # Likewise "if (p != 0)", "if (0 != p)", or with NULL; and with braces.
 
-# Copyright (C) 2008-2021 Free Software Foundation, Inc.
+# Copyright (C) 2008-2022 Free Software Foundation, Inc.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -36,11 +36,13 @@
 eval 'exec perl -wSx "$0" "$@"'
      if 0;
 
-my $VERSION = '2020-04-04 15:07'; # UTC
+my $VERSION = '2022-01-27 18:51'; # UTC
 # The definition above must lie within the first 8 lines in order
 # for the Emacs time-stamp write hook (at end) to update it.
 # If you change this file with Emacs, please let the write hook
 # do its job.  Otherwise, update this string manually.
+
+my $copyright_year = '2022';
 
 use strict;
 use warnings;
@@ -118,7 +120,19 @@ sub is_NULL ($)
   GetOptions
     (
      help => sub { usage 0 },
-     version => sub { print "$ME version $VERSION\n"; exit },
+     version =>
+       sub
+       {
+         print "$ME version $VERSION\n";
+         print "Copyright (C) $copyright_year Free Software Foundation, Inc.\n";
+         print "License GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>.\n"
+             . "This is free software: you are free to change and redistribute it.\n"
+             . "There is NO WARRANTY, to the extent permitted by law.\n";
+         print "\n";
+         my $author = "Jim Meyering";
+         print "Written by $author.\n";
+         exit
+       },
      list => \$list,
      'name=s@' => \@name,
     ) or usage 1;

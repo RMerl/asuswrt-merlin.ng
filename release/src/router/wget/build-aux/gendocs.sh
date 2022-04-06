@@ -2,13 +2,13 @@
 # gendocs.sh -- generate a GNU manual in many formats.  This script is
 #   mentioned in maintain.texi.  See the help message below for usage details.
 
-scriptversion=2021-01-01.00
+scriptversion=2022-01-01.00
 
-# Copyright 2003-2021 Free Software Foundation, Inc.
+# Copyright 2003-2022 Free Software Foundation, Inc.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 3 of the License, or
+# the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
 # This program is distributed in the hope that it will be useful,
@@ -58,7 +58,7 @@ EMAIL=webmasters@gnu.org  # please override with --email
 commonarg= # passed to all makeinfo/texi2html invcations.
 dirargs=   # passed to all tools (-I dir).
 dirs=      # -I directories.
-htmlarg="--css-ref=/software/gnulib/manual.css -c TOP_NODE_UP_URL=/manual"
+htmlarg="--css-ref=https://www.gnu.org/software/gnulib/manual.css -c TOP_NODE_UP_URL=/manual"
 default_htmlarg=true
 infoarg=--no-split
 generate_ascii=true
@@ -73,7 +73,7 @@ texarg="-t @finalout"
 
 version="gendocs.sh $scriptversion
 
-Copyright 2021 Free Software Foundation, Inc.
+Copyright 2022 Free Software Foundation, Inc.
 There is NO warranty.  You may redistribute this software
 under the terms of the GNU General Public License.
 For more information about these matters, see the files named COPYING."
@@ -202,7 +202,7 @@ base=$PACKAGE
 
 if $default_htmlarg && test -n "$use_texi2html"; then
   # The legacy texi2html doesn't support TOP_NODE_UP_URL
-  htmlarg="--css-ref=/software/gnulib/manual.css"
+  htmlarg="--css-ref=https://www.gnu.org/software/gnulib/manual.css"
 fi
 
 if test -n "$srcfile"; then

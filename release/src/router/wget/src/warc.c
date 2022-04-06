@@ -1,5 +1,5 @@
 /* Utility functions for writing WARC files.
-   Copyright (C) 2011-2012, 2015, 2018-2021 Free Software Foundation,
+   Copyright (C) 2011-2012, 2015, 2018-2022 Free Software Foundation,
    Inc.
 
 This file is part of GNU Wget.

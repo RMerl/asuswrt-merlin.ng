@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: wget 1.14.128\n"
 "Report-Msgid-Bugs-To: bug-wget@gnu.org\n"
-"POT-Creation-Date: 2021-01-09 10:58+0100\n"
+"POT-Creation-Date: 2022-02-26 17:24+0100\n"
 "PO-Revision-Date: 2013-06-14 00:35+0100\n"
 "Last-Translator: Mikel Olasagasti Uranga <mikel@olasagasti.info>\n"
 "Language-Team: Basque <translation-team-eu@lists.sourceforge.net>\n"
@@ -78,6 +78,7 @@ msgstr "%d fitxategi %.2f segundutan bihurtuak.\n"
 
 #: src/convert.c:230
 #, fuzzy, c-format
+#| msgid "Converting %s... "
 msgid "Converting links in %s... "
 msgstr "%s bihurtzen... "
 
@@ -210,8 +211,8 @@ msgid "Logging in as %s ... "
 msgstr "%s bezala saioa hasten... "
 
 #: src/ftp.c:504 src/ftp.c:590 src/ftp.c:657 src/ftp.c:722 src/ftp.c:963
-#: src/ftp.c:1019 src/ftp.c:1066 src/ftp.c:1129 src/ftp.c:1190 src/ftp.c:1288
-#: src/ftp.c:1338
+#: src/ftp.c:1016 src/ftp.c:1063 src/ftp.c:1126 src/ftp.c:1187 src/ftp.c:1285
+#: src/ftp.c:1335
 msgid "Error in server response, closing control connection.\n"
 msgstr "Zerbitzariaren erantzunean errorea, konexio kontrol panela itxitzen.\n"
 
@@ -219,8 +220,8 @@ msgstr "Zerbitzariaren erantzunean errorea, konexio kontrol panela itxitzen.\n"
 msgid "Error in server greeting.\n"
 msgstr "Errorea zerbitzarikin agurtzerakoan.\n"
 
-#: src/ftp.c:518 src/ftp.c:730 src/ftp.c:971 src/ftp.c:1074 src/ftp.c:1139
-#: src/ftp.c:1200 src/ftp.c:1298 src/ftp.c:1348
+#: src/ftp.c:518 src/ftp.c:730 src/ftp.c:971 src/ftp.c:1071 src/ftp.c:1136
+#: src/ftp.c:1197 src/ftp.c:1295 src/ftp.c:1345
 msgid "Write failed, closing control connection.\n"
 msgstr "Idaztean huts egin da, kontrol konexioa itxitzen.\n"
 
@@ -249,11 +250,11 @@ msgstr ""
 msgid "Server error, can't determine system type.\n"
 msgstr "Zerbitzari errorea, ezin da sistema moeta determinatu.\n"
 
-#: src/ftp.c:607 src/ftp.c:1109 src/ftp.c:1173 src/ftp.c:1216
+#: src/ftp.c:607 src/ftp.c:1106 src/ftp.c:1170 src/ftp.c:1213
 msgid "done.    "
 msgstr "eginda.    "
 
-#: src/ftp.c:710 src/ftp.c:989 src/ftp.c:1036 src/ftp.c:1318 src/ftp.c:1367
+#: src/ftp.c:710 src/ftp.c:989 src/ftp.c:1033 src/ftp.c:1315 src/ftp.c:1364
 msgid "done.\n"
 msgstr "eginda.\n"
 
@@ -291,38 +292,38 @@ msgstr ""
 "Ez dago `%s' direktoriorik.\n"
 "\n"
 
-#: src/ftp.c:1001
+#: src/ftp.c:998
 msgid "==> CWD not required.\n"
 msgstr "==> CWD ez da beharrezkoa.\n"
 
-#: src/ftp.c:1044
+#: src/ftp.c:1041
 #, fuzzy
 msgid "File has already been retrieved.\n"
 msgstr "`%s' fitxategia dagoeneko badago, ez da jasoko.\n"
 
-#: src/ftp.c:1080
+#: src/ftp.c:1077
 msgid "Cannot initiate PASV transfer.\n"
 msgstr "Ezin da PASV transferentzia hasi.\n"
 
-#: src/ftp.c:1084
+#: src/ftp.c:1081
 msgid "Cannot parse PASV response.\n"
 msgstr "Ezin da PASV erantzuan parseatu.\n"
 
-#: src/ftp.c:1101
+#: src/ftp.c:1098
 #, fuzzy, c-format
 msgid "couldn't connect to %s port %d: %s\n"
 msgstr "ezin izan da %s-ra konektatu:%hu:%s\n"
 
-#: src/ftp.c:1155
+#: src/ftp.c:1152
 #, c-format
 msgid "Bind error (%s).\n"
 msgstr "Lotze errorea (%s).\n"
 
-#: src/ftp.c:1161
+#: src/ftp.c:1158
 msgid "Invalid PORT.\n"
 msgstr "PORTU desegokia.\n"
 
-#: src/ftp.c:1207
+#: src/ftp.c:1204
 msgid ""
 "\n"
 "REST failed, starting from scratch.\n"
@@ -330,19 +331,19 @@ msgstr ""
 "\n"
 "REST komanduak huts egin du, hutsetik hasten.\n"
 
-#: src/ftp.c:1250
+#: src/ftp.c:1247
 #, c-format
 msgid "File %s exists.\n"
 msgstr ""
 
-#: src/ftp.c:1256
+#: src/ftp.c:1253
 #, fuzzy, c-format
 msgid "No such file %s.\n"
 msgstr ""
 "Ez dago `%s' fitxategirik.\n"
 "\n"
 
-#: src/ftp.c:1306
+#: src/ftp.c:1303
 #, fuzzy, c-format
 msgid ""
 "No such file %s.\n"
@@ -351,7 +352,7 @@ msgstr ""
 "Ez dago `%s' fitxategirik.\n"
 "\n"
 
-#: src/ftp.c:1356
+#: src/ftp.c:1353
 #, fuzzy, c-format
 msgid ""
 "No such file or directory %s.\n"
@@ -360,47 +361,47 @@ msgstr ""
 "Ez dago `%s' fitxategi edo direktoriorik.\n"
 "\n"
 
-#: src/ftp.c:1515 src/http.c:2597
+#: src/ftp.c:1512 src/http.c:2597
 #, c-format
 msgid "%s has sprung into existence.\n"
 msgstr ""
 
-#: src/ftp.c:1604
+#: src/ftp.c:1601
 #, c-format
 msgid "%s: %s, closing control connection.\n"
 msgstr "%s: %s, konexio kontrola itxitzen.\n"
 
-#: src/ftp.c:1616
+#: src/ftp.c:1613
 #, c-format
 msgid "%s (%s) - Data connection: %s; "
 msgstr "%s (%s) - Datu konexioa: %s; "
 
-#: src/ftp.c:1631
+#: src/ftp.c:1628
 msgid "Control connection closed.\n"
 msgstr "Kontrol konexioa itxia.\n"
 
-#: src/ftp.c:1649
+#: src/ftp.c:1646
 msgid "Data transfer aborted.\n"
 msgstr "Datu transferentzia abortatua.\n"
 
-#: src/ftp.c:1873 src/main.c:1690
+#: src/ftp.c:1870 src/main.c:1690
 #, fuzzy, c-format
 msgid "File %s already there; not retrieving.\n"
 msgstr "`%s' fitxategia dagoeneko badago, ez da jasoko.\n"
 
-#: src/ftp.c:1958 src/http.c:4362
+#: src/ftp.c:1955 src/http.c:4362
 #, c-format
 msgid "(try:%2d)"
 msgstr "(saiatu:%2d)"
 
-#: src/ftp.c:2050 src/http.c:4792
+#: src/ftp.c:2047 src/http.c:4792
 #, c-format
 msgid ""
 "%s (%s) - written to stdout %s[%s]\n"
 "\n"
 msgstr ""
 
-#: src/ftp.c:2051 src/http.c:4793
+#: src/ftp.c:2048 src/http.c:4793
 #, c-format
 msgid ""
 "%s (%s) - %s saved [%s]\n"
@@ -409,41 +410,41 @@ msgstr ""
 "%s (%s) - %s gordeta [%s]\n"
 "\n"
 
-#: src/ftp.c:2111 src/main.c:2174 src/metalink.c:1135 src/recur.c:512
-#: src/recur.c:750 src/retr.c:1317
+#: src/ftp.c:2108 src/main.c:2179 src/metalink.c:1135 src/recur.c:513
+#: src/recur.c:752 src/retr.c:1317
 #, c-format
 msgid "Removing %s.\n"
 msgstr "%s ezabatzen.\n"
 
-#: src/ftp.c:2168
+#: src/ftp.c:2165
 #, fuzzy, c-format
 msgid "Using %s as listing tmp file.\n"
 msgstr "`%s' erabiltzen zerrenda tmp fitxategi bezala.\n"
 
-#: src/ftp.c:2185
+#: src/ftp.c:2182
 #, c-format
 msgid "Removed %s.\n"
 msgstr "%s ezabatua.\n"
 
-#: src/ftp.c:2224
+#: src/ftp.c:2221
 #, c-format
 msgid "Recursion depth %d exceeded max. depth %d.\n"
 msgstr "Inkurtsio sakonera %dk maximoa gainditzen du. Sakonera %d.\n"
 
-#: src/ftp.c:2294
+#: src/ftp.c:2291
 #, fuzzy, c-format
 msgid "Remote file no newer than local file %s -- not retrieving.\n"
 msgstr ""
 "`%s' fitxategi erremotoa ez da bertakoa baina berriagoa -- ez da jasoko.\n"
 
-#: src/ftp.c:2302
+#: src/ftp.c:2299
 #, fuzzy, c-format
 msgid ""
 "Remote file is newer than local file %s -- retrieving.\n"
 "\n"
 msgstr "`%s' fitxategi erremotoa bertakoa baina berriagoa da -- jasotzen.\n"
 
-#: src/ftp.c:2309
+#: src/ftp.c:2306
 #, fuzzy, c-format
 msgid ""
 "The sizes do not match (local %s) -- retrieving.\n"
@@ -452,11 +453,11 @@ msgstr ""
 "Tamainuak ez dute ezkontzen (lokalak %ld) -- jasotzen.\n"
 "\n"
 
-#: src/ftp.c:2327
+#: src/ftp.c:2324
 msgid "Invalid name of the symlink, skipping.\n"
 msgstr "Baliogabeko symlink izena, saltatzen.\n"
 
-#: src/ftp.c:2356
+#: src/ftp.c:2353
 #, c-format
 msgid ""
 "Already have correct symlink %s -> %s\n"
@@ -465,214 +466,216 @@ msgstr ""
 "Dagoeneko baduka link simboliko zuzena %s -> %s\n"
 "\n"
 
-#: src/ftp.c:2365
+#: src/ftp.c:2362
 #, c-format
 msgid "Creating symlink %s -> %s\n"
 msgstr "Link sinbolikoa sortzen %s -> %s\n"
 
-#: src/ftp.c:2375
+#: src/ftp.c:2372
 #, fuzzy, c-format
 msgid "Symlinks not supported, skipping symlink %s.\n"
 msgstr "Link sinbolikoak ez daude onartuak, `%s' link sinbolikoa baztetzen.\n"
 
-#: src/ftp.c:2390
+#: src/ftp.c:2387
 #, fuzzy, c-format
 msgid "Skipping directory %s.\n"
 msgstr "Direktorioa utzitzen `%s'.\n"
 
-#: src/ftp.c:2403
+#: src/ftp.c:2400
 #, c-format
 msgid "%s: unknown/unsupported file type.\n"
 msgstr "%s: ezagun/euskarririk gabeko fitxategi mota.\n"
 
-#: src/ftp.c:2427
+#: src/ftp.c:2424
 #, fuzzy, c-format
+#| msgid "Failed to get certificate key from %s\n"
 msgid "Failed to set permissions for %s.\n"
 msgstr "Huts egin da zertifikazio gakoa hartzerakoan %s-tik\n"
 
-#: src/ftp.c:2448
+#: src/ftp.c:2445
 #, c-format
 msgid "%s: corrupt time-stamp.\n"
 msgstr "%s: ordu zigilu okerra.\n"
 
-#: src/ftp.c:2472
+#: src/ftp.c:2469
 #, c-format
 msgid "Will not retrieve dirs since depth is %d (max %d).\n"
 msgstr "Ez dira direktorio gehiago jasoko, sakonera %d-koa delako (mas %d).\n"
 
-#: src/ftp.c:2531
+#: src/ftp.c:2528
 #, fuzzy, c-format
 msgid "Not descending to %s as it is excluded/not-included.\n"
 msgstr "Ez jaisten `%s'ra, ez baitago sartua edo exkluditua dago.\n"
 
-#: src/ftp.c:2647
+#: src/ftp.c:2644
 #, fuzzy, c-format
 msgid "Rejecting %s.\n"
 msgstr "`%s' ez onartzen.\n"
 
-#: src/ftp.c:2657
+#: src/ftp.c:2654
 #, fuzzy, c-format
 msgid "Rejecting %s (Invalid Entry).\n"
 msgstr "`%s' ez onartzen.\n"
 
-#: src/ftp.c:2678
+#: src/ftp.c:2675
 #, fuzzy, c-format
 msgid "%s is excluded/not-included through regex.\n"
 msgstr "Ez jaisten `%s'ra, ez baitago sartua edo exkluditua dago.\n"
 
-#: src/ftp.c:2698
+#: src/ftp.c:2695
 #, fuzzy, c-format
 msgid "Error matching %s against %s: %s\n"
 msgstr "Errorea `%s' idazterakoan: %s\n"
 
-#: src/ftp.c:2738
+#: src/ftp.c:2735
 #, fuzzy, c-format
 msgid "No matches on pattern %s.\n"
 msgstr "`%s' ereduarekin ez du lotzen.\n"
 
-#: src/ftp.c:2810
+#: src/ftp.c:2807
 #, fuzzy, c-format
 msgid "Wrote HTML-ized index to %s [%s].\n"
 msgstr "Idatzia HTMLizatutako index-a `%s'-en [%ld].\n"
 
-#: src/ftp.c:2815
+#: src/ftp.c:2812
 #, fuzzy, c-format
 msgid "Wrote HTML-ized index to %s.\n"
 msgstr "Idatzia HTMLzatutako index-a '%s'-en.\n"
 
-#: src/gnutls.c:132
+#: src/gnutls.c:133
 #, c-format
 msgid "ERROR: Cannot open directory %s.\n"
 msgstr ""
 
-#: src/gnutls.c:178
+#: src/gnutls.c:179
 #, c-format
 msgid "ERROR: Failed to open cert %s: (%d).\n"
 msgstr ""
 
-#: src/gnutls.c:183
+#: src/gnutls.c:184
 #, fuzzy, c-format
+#| msgid "Failed to load certificates from %s\n"
 msgid "Loaded CA certificate '%s'\n"
 msgstr "%s-tik zertifikazioak kargatzerakoan huts egin da\n"
 
-#: src/gnutls.c:191
+#: src/gnutls.c:192
 #, c-format
 msgid "ERROR: Failed to load CRL file '%s': (%d)\n"
 msgstr ""
 
-#: src/gnutls.c:195
+#: src/gnutls.c:196
 #, c-format
 msgid "Loaded CRL file '%s'\n"
 msgstr ""
 
-#: src/gnutls.c:219
+#: src/gnutls.c:220
 msgid "ERROR: GnuTLS requires the key and the cert to be of the same type.\n"
 msgstr ""
 
-#: src/gnutls.c:771 src/gnutls.c:835
+#: src/gnutls.c:777 src/gnutls.c:841
 msgid "Your GnuTLS version is too old to support TLS 1.3\n"
 msgstr ""
 
-#: src/gnutls.c:783
+#: src/gnutls.c:789
 #, c-format
 msgid "GnuTLS: unimplemented 'secure-protocol' option value %u\n"
 msgstr ""
 
-#: src/gnutls.c:785 src/gnutls.c:841 src/host.c:158 src/openssl.c:288
+#: src/gnutls.c:791 src/gnutls.c:847 src/host.c:158 src/openssl.c:288
 #, fuzzy
 msgid "Please report this issue to bug-wget@gnu.org\n"
 msgstr "Bidali bug-ak eta iradokizunak <bug-wget@gnu.org>-era.\n"
 
-#: src/gnutls.c:840
+#: src/gnutls.c:846
 #, c-format
 msgid "GnuTLS: unimplemented 'secure-protocol' option value %d\n"
 msgstr ""
 
-#: src/gnutls.c:893
+#: src/gnutls.c:899
 msgid ""
 "GnuTLS: Cannot set prio string directly. Falling back to default priority.\n"
 msgstr ""
 
-#: src/gnutls.c:1021 src/openssl.c:1029
+#: src/gnutls.c:1027 src/openssl.c:1029
 msgid "ERROR"
 msgstr "ERROREA"
 
-#: src/gnutls.c:1021 src/openssl.c:1029
+#: src/gnutls.c:1027 src/openssl.c:1029
 msgid "WARNING"
 msgstr ""
 
-#: src/gnutls.c:1032 src/openssl.c:1042
+#: src/gnutls.c:1038 src/openssl.c:1042
 #, c-format
 msgid "%s: No certificate presented by %s.\n"
 msgstr ""
 
-#: src/gnutls.c:1038
+#: src/gnutls.c:1044
 #, c-format
 msgid "%s: The certificate of %s is not trusted.\n"
 msgstr ""
 
-#: src/gnutls.c:1039
+#: src/gnutls.c:1045
 #, c-format
 msgid "%s: The certificate of %s doesn't have a known issuer.\n"
 msgstr ""
 
-#: src/gnutls.c:1040
+#: src/gnutls.c:1046
 #, c-format
 msgid "%s: The certificate of %s has been revoked.\n"
 msgstr ""
 
-#: src/gnutls.c:1041
+#: src/gnutls.c:1047
 #, c-format
 msgid "%s: The certificate signer of %s was not a CA.\n"
 msgstr ""
 
-#: src/gnutls.c:1042
+#: src/gnutls.c:1048
 #, c-format
 msgid "%s: The certificate of %s was signed using an insecure algorithm.\n"
 msgstr ""
 
-#: src/gnutls.c:1043
+#: src/gnutls.c:1049
 #, c-format
 msgid "%s: The certificate of %s is not yet activated.\n"
 msgstr ""
 
-#: src/gnutls.c:1044
+#: src/gnutls.c:1050
 #, c-format
 msgid "%s: The certificate of %s has expired.\n"
 msgstr ""
 
-#: src/gnutls.c:1056
+#: src/gnutls.c:1062
 #, c-format
 msgid "Error initializing X509 certificate: %s\n"
 msgstr ""
 
-#: src/gnutls.c:1065
+#: src/gnutls.c:1071
 msgid "No certificate found\n"
 msgstr ""
 
-#: src/gnutls.c:1072
+#: src/gnutls.c:1078
 #, fuzzy, c-format
 msgid "Error parsing certificate: %s\n"
 msgstr "Proxy URLa parseatzen errorea %s: %s.\n"
 
-#: src/gnutls.c:1079
+#: src/gnutls.c:1085
 msgid "The certificate has not yet been activated\n"
 msgstr ""
 
-#: src/gnutls.c:1084
+#: src/gnutls.c:1090
 msgid "The certificate has expired\n"
 msgstr ""
 
-#: src/gnutls.c:1091
+#: src/gnutls.c:1097
 #, c-format
 msgid "The certificate's owner does not match hostname %s\n"
 msgstr ""
 
-#: src/gnutls.c:1100 src/openssl.c:1238
+#: src/gnutls.c:1106 src/openssl.c:1238
 msgid "The public key does not match pinned public key!\n"
 msgstr ""
 
-#: src/gnutls.c:1109
+#: src/gnutls.c:1115
 msgid "Certificate must be X.509\n"
 msgstr ""
 
@@ -710,13 +713,7 @@ msgstr "huts·egin·da: denboraz kanpo.\n"
 msgid "%s: Cannot resolve incomplete link %s.\n"
 msgstr "%s: Ezin da osatu gabeko linka ebatzi %s.\n"
 
-#: src/html-url.c:841
-#, c-format
-msgid ""
-"no-follow attribute found in %s. Will not follow any links on this page\n"
-msgstr ""
-
-#: src/html-url.c:944
+#: src/html-url.c:945
 #, c-format
 msgid "%s: Invalid URL %s: %s\n"
 msgstr "%s: Baliogabeko URLa %s: %s\n"
@@ -741,7 +738,7 @@ msgstr "`%s' fitxategia dagoeneko badago, ez da jasoko.\n"
 msgid "gmtime failed. This is probably a bug.\n"
 msgstr ""
 
-#: src/http.c:1897
+#: src/http.c:1918
 msgid ""
 "Cannot convert timestamp to http format. Falling back to time 0 as last "
 "modification time.\n"
@@ -787,6 +784,7 @@ msgstr "Autentifikazio eskema ezezaguna.\n"
 
 #: src/http.c:2478
 #, fuzzy, c-format
+#| msgid "Unknown authentication scheme.\n"
 msgid "Authentication selected: %s\n"
 msgstr "Autentifikazio eskema ezezaguna.\n"
 
@@ -1026,33 +1024,34 @@ msgstr ""
 "%s (%s) - `%s' gordeta [%ld/%ld]\n"
 "\n"
 
-#: src/http.c:4818
+#: src/http.c:4823
 #, fuzzy, c-format
 msgid "%s (%s) - Connection closed at byte %s. "
 msgstr "%s (%s) - Konexioa itxia ondorengo bytean %ld. "
 
-#: src/http.c:4841
+#: src/http.c:4846
 #, fuzzy, c-format
 msgid "%s (%s) - Read error at byte %s (%s)."
 msgstr "%s (%s) - Irakurtze errorea %ld bytean (%s)."
 
-#: src/http.c:4850
+#: src/http.c:4855
 #, fuzzy, c-format
 msgid "%s (%s) - Read error at byte %s/%s (%s). "
 msgstr "%s (%s) - Irakurtze errorea %ld/%ld bytean (%s). "
 
-#: src/http.c:5107
+#: src/http.c:5112
 #, c-format
 msgid "Unsupported quality of protection '%s'.\n"
 msgstr ""
 
-#: src/http.c:5112
+#: src/http.c:5117
 #, fuzzy, c-format
 msgid "Unsupported algorithm '%s'.\n"
 msgstr "Sostengu gabeko eskema"
 
 #: src/init.c:583
 #, fuzzy, c-format
+#| msgid "%s: WGETRC points to %s, which doesn't exist.\n"
 msgid ""
 "%s: WGETRC points to %s, which couldn't be accessed because of error: %s.\n"
 msgstr "%s: WGETRC %sra apuntatzen du, ez dena existitzen.\n"
@@ -1178,16 +1177,16 @@ msgstr "%s: %s: Baliogabeko mugaketa `%s', erabili `unix' edo `windows'.\n"
 msgid "Encoding %s isn't valid\n"
 msgstr ""
 
-#: src/iri.c:140 src/url.c:1587
+#: src/iri.c:140 src/url.c:1615
 #, c-format
 msgid "Conversion from %s to %s isn't supported\n"
 msgstr ""
 
-#: src/iri.c:180 src/url.c:1617
+#: src/iri.c:180 src/url.c:1645
 msgid "Incomplete or invalid multibyte sequence encountered\n"
 msgstr ""
 
-#: src/iri.c:200 src/url.c:1634
+#: src/iri.c:200 src/url.c:1662
 #, c-format
 msgid "Unhandled errno %d\n"
 msgstr ""
@@ -1206,7 +1205,7 @@ msgstr ""
 msgid "Failed to convert to lower: %d: %s\n"
 msgstr "ezin izan da %s-ra konektatu:%hu:%s\n"
 
-#: src/log.c:937 src/log.c:956
+#: src/log.c:938 src/log.c:957
 #, fuzzy, c-format
 msgid ""
 "\n"
@@ -1215,7 +1214,7 @@ msgstr ""
 "\n"
 "%s jasota, irteera `%s'ra bideratzen.\n"
 
-#: src/log.c:949
+#: src/log.c:950
 #, c-format
 msgid "%s: %s; disabling logging.\n"
 msgstr "%s: %s; saio hasiera desgaitzen.\n"
@@ -1777,7 +1776,8 @@ msgstr ""
 msgid ""
 "       --secure-protocol=PR        choose secure protocol, one of auto, "
 "SSLv2,\n"
-"                                     SSLv3, TLSv1, TLSv1_1, TLSv1_2 and PFS\n"
+"                                     SSLv3, TLSv1, TLSv1_1, TLSv1_2, TLSv1_3 "
+"and PFS\n"
 msgstr ""
 
 #: src/main.c:850
@@ -2431,55 +2431,56 @@ msgstr ""
 msgid "This version does not have support for IRIs\n"
 msgstr ""
 
-#: src/main.c:2003
+#: src/main.c:2008
 #, c-format
 msgid ""
 "-k or -r can be used together with -O only if outputting to a regular file.\n"
 msgstr ""
 
-#: src/main.c:2009
+#: src/main.c:2014
 #, c-format
 msgid ""
 "--convert-links or --convert-file-only can be used together only if "
 "outputting to a regular file.\n"
 msgstr ""
 
-#: src/main.c:2020
+#: src/main.c:2025
 #, fuzzy, c-format
 msgid "Failed to init libcares\n"
 msgstr "Huts egin da `%s' link sinbolikoa askatzerakoan: %s\n"
 
-#: src/main.c:2026
+#: src/main.c:2031
 #, c-format
 msgid "Failed to init c-ares channel\n"
 msgstr ""
 
-#: src/main.c:2049
+#: src/main.c:2054
 #, c-format
 msgid "Failed to parse IP address '%s'\n"
 msgstr ""
 
-#: src/main.c:2060
+#: src/main.c:2065
 #, c-format
 msgid "Failed to set DNS server(s) '%s' (%d)\n"
 msgstr ""
 
-#: src/main.c:2197
+#: src/main.c:2202
 #, c-format
 msgid "No URLs found in %s.\n"
 msgstr "Ez da URLrik aurkitu %s-n.\n"
 
-#: src/main.c:2213
+#: src/main.c:2218
 #, fuzzy, c-format
 msgid "Unable to parse metalink file %s.\n"
 msgstr "Ezin da `%s' ezabatu: %s\n"
 
-#: src/main.c:2243 src/metalink.c:337
+#: src/main.c:2248 src/metalink.c:337
 #, fuzzy, c-format
+#| msgid "Failed to load certificates from %s\n"
 msgid "Could not download all resources from %s.\n"
 msgstr "%s-tik zertifikazioak kargatzerakoan huts egin da\n"
 
-#: src/main.c:2270
+#: src/main.c:2275
 #, fuzzy, c-format
 msgid ""
 "FINISHED --%s--\n"
@@ -2490,7 +2491,7 @@ msgstr ""
 "AMAITUTA --%s--\n"
 "Jatsitakoa: %s byte %d fitxategietan\n"
 
-#: src/main.c:2284
+#: src/main.c:2289
 #, fuzzy, c-format
 msgid "Download quota of %s EXCEEDED!\n"
 msgstr "Jaitsiera kuota (%s byte) GAINDITUA!\n"
@@ -2645,6 +2646,7 @@ msgstr ""
 
 #: src/metalink.c:1113
 #, fuzzy, c-format
+#| msgid "Removing %s.\n"
 msgid "Renaming %s to %s.\n"
 msgstr "%s ezabatzen.\n"
 
@@ -2658,7 +2660,7 @@ msgstr "Atzeko planoan jarraitzen.\n"
 msgid "Continuing in background, pid %lu.\n"
 msgstr "Atzeko planoan jarraitzen, pid %d.\n"
 
-#: src/mswindows.c:291 src/utils.c:509
+#: src/mswindows.c:291 src/utils.c:502
 #, fuzzy, c-format
 msgid "Output will be written to %s.\n"
 msgstr "Irteera `%s'-n idatziko da.\n"
@@ -2693,12 +2695,12 @@ msgstr "%s: %s:%d: abisua: \"%s\" tokena makina izenanen aurretik dago\n"
 msgid "%s: %s:%d: unknown token \"%s\"\n"
 msgstr "%s: %s:%d: token ezezaguna \"%s\"\n"
 
-#: src/netrc.c:500
+#: src/netrc.c:553
 #, c-format
 msgid "Usage: %s NETRC [HOSTNAME]\n"
 msgstr "Erabilera: %s NETRC [HOST-IZENA]\n"
 
-#: src/netrc.c:518
+#: src/netrc.c:571
 #, c-format
 msgid "%s: cannot stat %s: %s\n"
 msgstr "%s: ezin da identifikatu %s: %s\n"
@@ -2731,6 +2733,7 @@ msgstr ""
 
 #: src/openssl.c:333
 #, fuzzy, c-format
+#| msgid "%s: Invalid URL %s: %s\n"
 msgid "OpenSSL: Invalid cipher list: %s\n"
 msgstr "%s: Baliogabeko URLa %s: %s\n"
 
@@ -2740,6 +2743,7 @@ msgstr ""
 
 #: src/openssl.c:366
 #, fuzzy
+#| msgid "Failed to load certificates from %s\n"
 msgid "OpenSSL: Failed to allocate verification param\n"
 msgstr "%s-tik zertifikazioak kargatzerakoan huts egin da\n"
 
@@ -2830,7 +2834,13 @@ msgstr ""
 msgid "Cannot get REALTIME clock frequency: %s\n"
 msgstr ""
 
-#: src/recur.c:513
+#: src/recur.c:430
+#, c-format
+msgid ""
+"nofollow attribute found in %s. Will not follow any links on this page\n"
+msgstr ""
+
+#: src/recur.c:514
 #, c-format
 msgid "Removing %s since it should be rejected.\n"
 msgstr "%s ezabatzen ezestua izan behar zuelako.\n"
@@ -2935,88 +2945,92 @@ msgstr "Baliogabeko IPv6 zenbaki helbidea"
 msgid "HTTPS support not compiled in"
 msgstr "%s: ez dago debug euskarriarekin konpilatua.\n"
 
-#: src/url.c:1620
+#: src/url.c:1648
 msgid "Unconvertable multibyte sequence encountered\n"
 msgstr ""
 
-#: src/utils.c:129
+#: src/utils.c:122
 #, c-format
 msgid "%s: %s: Failed to allocate enough memory; memory exhausted.\n"
 msgstr ""
 
-#: src/utils.c:135
+#: src/utils.c:128
 #, c-format
 msgid "%s: %s: Failed to allocate %ld bytes; memory exhausted.\n"
 msgstr ""
 
-#: src/utils.c:355
+#: src/utils.c:348
 #, c-format
 msgid "%s: aprintf: text buffer is too big (%d bytes), aborting.\n"
 msgstr ""
 
-#: src/utils.c:507
+#: src/utils.c:500
 #, c-format
 msgid "Continuing in background, pid %d.\n"
 msgstr "Atzeko planoan jarraitzen, pid %d.\n"
 
-#: src/utils.c:558
+#: src/utils.c:551
 #, fuzzy, c-format
 msgid "Failed to unlink symlink %s: %s\n"
 msgstr "Huts egin da `%s' link sinbolikoa askatzerakoan: %s\n"
 
-#: src/utils.c:879
+#: src/utils.c:872
 #, fuzzy, c-format
+#| msgid "Failed to load certificates from %s\n"
 msgid "Failed to Fopen file %s\n"
 msgstr "%s-tik zertifikazioak kargatzerakoan huts egin da\n"
 
-#: src/utils.c:885
+#: src/utils.c:878
 #, fuzzy, c-format
+#| msgid "Failed to get certificate key from %s\n"
 msgid "Failed to get FD for file %s\n"
 msgstr "Huts egin da zertifikazio gakoa hartzerakoan %s-tik\n"
 
-#: src/utils.c:892
+#: src/utils.c:885
 #, c-format
 msgid "Failed to stat file %s, (check permissions)\n"
 msgstr ""
 
-#: src/utils.c:902
+#: src/utils.c:895
 #, c-format
 msgid "File %s changed since the last check. Security check failed.\n"
 msgstr ""
 
-#: src/utils.c:937
+#: src/utils.c:930
 #, fuzzy, c-format
+#| msgid "Failed to load certificates from %s\n"
 msgid "Failed to open file %s, reason :%s\n"
 msgstr "%s-tik zertifikazioak kargatzerakoan huts egin da\n"
 
-#: src/utils.c:943
+#: src/utils.c:936
 #, fuzzy, c-format
+#| msgid "Failed to load certificates from %s\n"
 msgid "Failed to stat file %s, error: %s\n"
 msgstr "%s-tik zertifikazioak kargatzerakoan huts egin da\n"
 
-#: src/utils.c:953
+#: src/utils.c:946
 #, c-format
 msgid ""
 "Trying to open file %s but it changed since last check. Security check "
 "failed.\n"
 msgstr ""
 
-#: src/utils.c:2442
+#: src/utils.c:2443
 #, c-format
 msgid "Invalid regular expression %s, PCRE2 error %d\n"
 msgstr ""
 
-#: src/utils.c:2459 src/utils.c:2482
+#: src/utils.c:2460 src/utils.c:2483
 #, c-format
 msgid "Invalid regular expression %s, %s\n"
 msgstr ""
 
-#: src/utils.c:2512 src/utils.c:2534 src/utils.c:2558
+#: src/utils.c:2513 src/utils.c:2535 src/utils.c:2559
 #, fuzzy, c-format
 msgid "Error while matching %s: %d\n"
 msgstr "Errorea `%s' idazterakoan: %s\n"
 
-#: src/utils.c:2851
+#: src/utils.c:2852
 #, c-format
 msgid "Skipping key with wrong size (%d/%d): %s\n"
 msgstr ""

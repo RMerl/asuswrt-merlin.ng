@@ -1,10 +1,10 @@
 /* quotearg.c - quote arguments for output
 
-   Copyright (C) 1998-2002, 2004-2021 Free Software Foundation, Inc.
+   Copyright (C) 1998-2002, 2004-2022 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 3 of the License, or
+   the Free Software Foundation, either version 3 of the License, or
    (at your option) any later version.
 
    This program is distributed in the hope that it will be useful,
@@ -787,7 +787,6 @@ quotearg_buffer (char *buffer, size_t buffersize,
   return r;
 }
 
-/* Equivalent to quotearg_alloc (ARG, ARGSIZE, NULL, O).  */
 char *
 quotearg_alloc (char const *arg, size_t argsize,
                 struct quoting_options const *o)
@@ -864,7 +863,8 @@ quotearg_free (void)
    OPTIONS specifies the quoting options.
    The returned value points to static storage that can be
    reused by the next call to this function with the same value of N.
-   N must be nonnegative.  N is deliberately declared with type "int"
+   N must be nonnegative; it is typically small, and must be
+   less than MIN (INT_MAX, IDX_MAX).  The type of N is signed
    to allow for future extensions (using negative values).  */
 static char *
 quotearg_n_options (int n, char const *arg, size_t argsize,
@@ -874,22 +874,21 @@ quotearg_n_options (int n, char const *arg, size_t argsize,
 
   struct slotvec *sv = slotvec;
 
-  if (n < 0)
+  int nslots_max = MIN (INT_MAX, IDX_MAX);
+  if (! (0 <= n && n < nslots_max))
     abort ();
 
   if (nslots <= n)
     {
       bool preallocated = (sv == &slotvec0);
-      int nmax = MIN (INT_MAX, MIN (PTRDIFF_MAX, SIZE_MAX) / sizeof *sv) - 1;
+      idx_t new_nslots = nslots;
 
-      if (nmax < n)
-        xalloc_die ();
-
-      slotvec = sv = xrealloc (preallocated ? NULL : sv, (n + 1) * sizeof *sv);
+      slotvec = sv = xpalloc (preallocated ? NULL : sv, &new_nslots,
+                              n - nslots + 1, nslots_max, sizeof *sv);
       if (preallocated)
         *sv = slotvec0;
-      memset (sv + nslots, 0, (n + 1 - nslots) * sizeof *sv);
-      nslots = n + 1;
+      memset (sv + nslots, 0, (new_nslots - nslots) * sizeof *sv);
+      nslots = new_nslots;
     }
 
   {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017-2021 Free Software Foundation, Inc.
+ * Copyright (c) 2017-2022 Free Software Foundation, Inc.
  *
  * This file is part of GNU Wget.
  *
@@ -27,6 +27,7 @@
 #include <fcntl.h>  // open flags
 #include <unistd.h>  // close
 #include <setjmp.h> // longjmp, setjmp
+#include <stdbool.h> // longjmp, setjmp
 
 #ifdef  __cplusplus
   extern "C" {
@@ -60,26 +61,45 @@ FILE *fopen_wgetrc(const char *pathname, const char *mode)
 #endif
 }
 
-static int do_jump;
+static bool fuzzing;
 static jmp_buf jmpbuf;
+
 #ifdef FUZZING
 void exit_wget(int status)
 {
 	longjmp(jmpbuf, 1);
 }
-#elif defined HAVE_DLFCN_H
+#endif
+#if defined HAVE_DLFCN_H
 #include <dlfcn.h> // dlsym
+#include <dlfcn.h>
+#include <sys/socket.h>
+#include <netdb.h>
+#if defined __OpenBSD__ || defined __FreeBSD__
+#include <netinet/in.h>
+#endif
 #ifndef RTLD_NEXT
 #define RTLD_NEXT RTLD_GLOBAL
 #endif
 void exit(int status)
 {
-	if (do_jump) {
+	if (fuzzing) {
 		longjmp(jmpbuf, 1);
 	} else {
 		void (*libc_exit)(int) = (void(*)(int)) dlsym (RTLD_NEXT, "exit");
 		libc_exit(status);
 	}
+}
+int getaddrinfo(const char *node, const char *service, const struct addrinfo *hints, struct addrinfo **res)
+{
+	if (fuzzing) {
+		return -1;
+	}
+
+	int(*libc_getaddrinfo)(const char *, const char *, const struct addrinfo *, struct addrinfo **) =
+		(int(*)(const char *, const char *, const struct addrinfo *, struct addrinfo **)) dlsym (RTLD_NEXT, "getaddrinfo");
+
+	return libc_getaddrinfo(node, service, hints, res);
 }
 #endif
 
@@ -95,17 +115,17 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 
 	CLOSE_STDERR
 
-	do_jump = 1;
+	fuzzing = true;
 
-	if (setjmp(jmpbuf))
+	if (setjmp(jmpbuf)) {
+		cleanup();
 		goto done;
+          }
 
 	main_wget(sizeof(argv)/sizeof(argv[0]), argv);
 
 done:
-	cleanup();
-
-	do_jump = 0;
+	fuzzing = false;
 
 	RESTORE_STDERR
 

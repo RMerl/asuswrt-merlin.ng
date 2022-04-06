@@ -1,18 +1,18 @@
 /* strerror_r.c --- POSIX compatible system error routine
 
-   Copyright (C) 2010-2021 Free Software Foundation, Inc.
+   Copyright (C) 2010-2022 Free Software Foundation, Inc.
 
-   This program is free software: you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 3 of the License, or
-   (at your option) any later version.
+   This file is free software: you can redistribute it and/or modify
+   it under the terms of the GNU Lesser General Public License as
+   published by the Free Software Foundation; either version 2.1 of the
+   License, or (at your option) any later version.
 
-   This program is distributed in the hope that it will be useful,
+   This file is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
+   GNU Lesser General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
+   You should have received a copy of the GNU Lesser General Public License
    along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
 /* Written by Bruno Haible <bruno@clisp.org>, 2010.  */
@@ -34,32 +34,25 @@
 
 #include "strerror-override.h"
 
-#if (__GLIBC__ >= 2 || defined __UCLIBC__ || defined __CYGWIN__) && HAVE___XPG_STRERROR_R /* glibc >= 2.3.4, cygwin >= 1.7.9 */
+#if STRERROR_R_CHAR_P
 
-# define USE_XPG_STRERROR_R 1
-extern
-#ifdef __cplusplus
-"C"
-#endif
-int __xpg_strerror_r (int errnum, char *buf, size_t buflen);
+# if HAVE___XPG_STRERROR_R
+_GL_EXTERN_C int __xpg_strerror_r (int errnum, char *buf, size_t buflen);
+# endif
 
-#elif HAVE_DECL_STRERROR_R && !(__GLIBC__ >= 2 || defined __UCLIBC__ || defined __CYGWIN__)
+#elif HAVE_DECL_STRERROR_R
 
-/* The system's strerror_r function is OK, except that its third argument
+/* The system's strerror_r function's API is OK, except that its third argument
    is 'int', not 'size_t', or its return type is wrong.  */
 
 # include <limits.h>
 
-# define USE_SYSTEM_STRERROR_R 1
-
-#else /* (__GLIBC__ >= 2 || defined __UCLIBC__ || defined __CYGWIN__ ? !HAVE___XPG_STRERROR_R : !HAVE_DECL_STRERROR_R) */
+#else
 
 /* Use the system's strerror().  Exclude glibc and cygwin because the
    system strerror_r has the wrong return type, and cygwin 1.7.9
    strerror_r clobbers strerror.  */
 # undef strerror
-
-# define USE_SYSTEM_STRERROR 1
 
 # if defined __NetBSD__ || defined __hpux || (defined _WIN32 && !defined __CYGWIN__) || defined __sgi || (defined __sun && !defined _LP64) || defined __CYGWIN__
 
@@ -166,22 +159,28 @@ strerror_r (int errnum, char *buf, size_t buflen)
     int ret;
     int saved_errno = errno;
 
-#if USE_XPG_STRERROR_R
+#if STRERROR_R_CHAR_P
 
     {
+      ret = 0;
+
+# if HAVE___XPG_STRERROR_R
       ret = __xpg_strerror_r (errnum, buf, buflen);
       if (ret < 0)
         ret = errno;
+# endif
+
       if (!*buf)
         {
           /* glibc 2.13 would not touch buf on err, so we have to fall
              back to GNU strerror_r which always returns a thread-safe
              untruncated string to (partially) copy into our buf.  */
-          safe_copy (buf, buflen, strerror_r (errnum, buf, buflen));
+          char *errstring = strerror_r (errnum, buf, buflen);
+          ret = errstring ? safe_copy (buf, buflen, errstring) : errno;
         }
     }
 
-#elif USE_SYSTEM_STRERROR_R
+#elif HAVE_DECL_STRERROR_R
 
     if (buflen > INT_MAX)
       buflen = INT_MAX;
@@ -245,7 +244,7 @@ strerror_r (int errnum, char *buf, size_t buflen)
       }
 # endif
 
-#else /* USE_SYSTEM_STRERROR */
+#else /* strerror_r is not declared.  */
 
     /* Try to do what strerror (errnum) does, but without clobbering the
        buffer used by strerror().  */

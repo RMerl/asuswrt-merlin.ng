@@ -1,17 +1,17 @@
 /* Program name management.
-   Copyright (C) 2016-2021 Free Software Foundation, Inc.
+   Copyright (C) 2016-2022 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 3 of the License, or
+   it under the terms of the GNU Lesser General Public License as published by
+   the Free Software Foundation; either version 2.1 of the License, or
    (at your option) any later version.
 
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
+   GNU Lesser General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
+   You should have received a copy of the GNU Lesser General Public License
    along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
 #include <config.h>
@@ -43,7 +43,7 @@
 # include <string.h>
 #endif
 
-#ifdef __sgi
+#if defined __sgi || defined __osf__
 # include <string.h>
 # include <unistd.h>
 # include <stdio.h>
@@ -224,11 +224,15 @@ getprogname (void)
       free (buf.ps_pathptr);
     }
   return p;
-# elif defined __sgi                                        /* IRIX */
+# elif defined __sgi || defined __osf__                     /* IRIX or Tru64 */
   char filename[50];
   int fd;
 
-  sprintf (filename, "/proc/pinfo/%d", (int) getpid ());
+  # if defined __sgi
+    sprintf (filename, "/proc/pinfo/%d", (int) getpid ());
+  # else
+    sprintf (filename, "/proc/%d", (int) getpid ());
+  # endif
   fd = open (filename, O_RDONLY | O_CLOEXEC);
   if (0 <= fd)
     {

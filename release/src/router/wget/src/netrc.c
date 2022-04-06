@@ -1,5 +1,5 @@
 /* Read and parse the .netrc file to get hosts, accounts, and passwords.
-   Copyright (C) 1996, 2007-2011, 2015, 2018-2021 Free Software
+   Copyright (C) 1996, 2007-2011, 2015, 2018-2022 Free Software
    Foundation, Inc.
 
 This file is part of GNU Wget.
@@ -478,6 +478,59 @@ free_netrc(acc_t *l)
       xfree (l);
       l = t;
     }
+}
+#endif
+
+#ifdef TESTING
+#include "../tests/unit-tests.h"
+const char *
+test_parse_netrc(void)
+{
+  static const struct test {
+    const char *pw_in;
+    const char *pw_expected;
+  } tests[] = {
+    { "a\\b", "ab" },
+    { "a\\\\b", "a\\b" },
+    { "\"a\\\\b\"", "a\\b" },
+    { "\"a\\\"b\"", "a\"b" },
+    { "a\"b", "a\"b" },
+    { "a\\\\\\\\b", "a\\\\b" },
+    { "a\\\\", "a\\" },
+    { "\"a\\\\\"", "a\\" },
+    { "a\\", "a" },
+    { "\"a b\"", "a b" },
+    { "a b", "a" },
+  };
+  unsigned i;
+  static char errmsg[128];
+
+  for (i = 0; i < countof(tests); ++i)
+    {
+      const struct test *t = &tests[i];
+      char netrc[128];
+      FILE *fp;
+      acc_t *acc;
+      int n;
+
+      n = snprintf (netrc, sizeof(netrc), "machine localhost\n\tlogin me\n\tpassword %s", t->pw_in);
+      mu_assert ("test_parse_netrc: failed to fmemopen() netrc", (fp = fmemopen(netrc, n, "r")) != NULL);
+
+      acc = parse_netrc_fp ("memory", fp);
+      fclose(fp);
+
+      if (strcmp(acc->passwd, t->pw_expected))
+        {
+          snprintf(errmsg, sizeof(errmsg), "test_parse_netrc: wrong result [%u]. Expected '%s', got '%s'",
+                   i, t->pw_expected, acc->passwd);
+          free_netrc(acc);
+          return errmsg;
+        }
+
+      free_netrc(acc);
+    }
+
+  return NULL;
 }
 #endif
 

@@ -145,7 +145,7 @@ sub run
     {
         $cmdline =
           'valgrind --suppressions=' . $VALGRIND_SUPP_FILE
-          . ' --error-exitcode=301 --leak-check=yes --track-origins=yes --gen-suppressions=all '
+          . ' --error-exitcode=301 --leak-check=full --track-origins=yes --show-leak-kinds=all --gen-suppressions=all '
           . $cmdline;
     }
     elsif ($valgrind ne q{} && $valgrind ne "0")

@@ -1,5 +1,5 @@
-# fopen.m4 serial 12
-dnl Copyright (C) 2007-2021 Free Software Foundation, Inc.
+# fopen.m4 serial 13
+dnl Copyright (C) 2007-2022 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -136,11 +136,12 @@ int main ()
        ])
      rm -f conftest.x
     ])
+  REPLACE_FOPEN_FOR_FOPEN_GNU="$REPLACE_FOPEN"
   case "$gl_cv_func_fopen_mode_x" in
-    *no) REPLACE_FOPEN=1 ;;
+    *no) REPLACE_FOPEN_FOR_FOPEN_GNU=1 ;;
   esac
   case "$gl_cv_func_fopen_mode_e" in
-    *no) REPLACE_FOPEN=1 ;;
+    *no) REPLACE_FOPEN_FOR_FOPEN_GNU=1 ;;
   esac
 ])
 

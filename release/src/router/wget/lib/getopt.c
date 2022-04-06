@@ -1,19 +1,19 @@
 /* Getopt for GNU.
-   Copyright (C) 1987-2021 Free Software Foundation, Inc.
+   Copyright (C) 1987-2022 Free Software Foundation, Inc.
    This file is part of the GNU C Library and is also part of gnulib.
    Patches to this file should be submitted to both projects.
 
    The GNU C Library is free software; you can redistribute it and/or
-   modify it under the terms of the GNU General Public
+   modify it under the terms of the GNU Lesser General Public
    License as published by the Free Software Foundation; either
-   version 3 of the License, or (at your option) any later version.
+   version 2.1 of the License, or (at your option) any later version.
 
    The GNU C Library is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   General Public License for more details.
+   Lesser General Public License for more details.
 
-   You should have received a copy of the GNU General Public
+   You should have received a copy of the GNU Lesser General Public
    License along with the GNU C Library; if not, see
    <https://www.gnu.org/licenses/>.  */
 
@@ -378,8 +378,8 @@ process_long_option (int argc, char **argv, const char *optstring,
 /* Initialize internal data upon the first call to getopt.  */
 
 static const char *
-_getopt_initialize (int argc _GL_UNUSED,
-		    char **argv _GL_UNUSED, const char *optstring,
+_getopt_initialize (_GL_UNUSED int argc,
+		    _GL_UNUSED char **argv, const char *optstring,
 		    struct _getopt_data *d, int posixly_correct)
 {
   /* Start processing options with ARGV-element 1 (since ARGV-element 0

@@ -1,5 +1,5 @@
-# wint_t.m4 serial 10
-dnl Copyright (C) 2003, 2007-2021 Free Software Foundation, Inc.
+# wint_t.m4 serial 11
+dnl Copyright (C) 2003, 2007-2022 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -34,14 +34,14 @@ AC_DEFUN([gt_TYPE_WINT_T],
          [gl_cv_type_wint_t_large_enough=yes],
          [gl_cv_type_wint_t_large_enough=no])])
     if test $gl_cv_type_wint_t_large_enough = no; then
-      GNULIB_OVERRIDES_WINT_T=1
+      GNULIBHEADERS_OVERRIDE_WINT_T=1
     else
-      GNULIB_OVERRIDES_WINT_T=0
+      GNULIBHEADERS_OVERRIDE_WINT_T=0
     fi
   else
-    GNULIB_OVERRIDES_WINT_T=0
+    GNULIBHEADERS_OVERRIDE_WINT_T=0
   fi
-  AC_SUBST([GNULIB_OVERRIDES_WINT_T])
+  AC_SUBST([GNULIBHEADERS_OVERRIDE_WINT_T])
 ])
 
 dnl Prerequisites of the 'wint_t' override.

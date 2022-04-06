@@ -1,5 +1,5 @@
 /* Declarations for utils.c.
-   Copyright (C) 1996-2011, 2015, 2018-2021 Free Software Foundation,
+   Copyright (C) 1996-2011, 2015, 2018-2022 Free Software Foundation,
    Inc.
 
 This file is part of GNU Wget.
@@ -121,8 +121,7 @@ void free_keys_and_values (struct hash_table *);
 
 const char *with_thousand_seps (wgint);
 
-/* human_readable must be able to accept wgint and SUM_SIZE_INT
-   arguments. */
+/* human_readable must be able to accept wgint arguments. */
 char *human_readable (wgint, const int, const int);
 
 

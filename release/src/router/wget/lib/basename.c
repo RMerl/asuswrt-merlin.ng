@@ -1,11 +1,11 @@
 /* basename.c -- return the last element in a file name
 
-   Copyright (C) 1990, 1998-2001, 2003-2006, 2009-2021 Free Software
+   Copyright (C) 1990, 1998-2001, 2003-2006, 2009-2022 Free Software
    Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 3 of the License, or
+   the Free Software Foundation, either version 3 of the License, or
    (at your option) any later version.
 
    This program is distributed in the hope that it will be useful,
@@ -22,37 +22,43 @@
 
 #include <string.h>
 #include "xalloc.h"
-#include "xstrndup.h"
 
 char *
 base_name (char const *name)
 {
   char const *base = last_component (name);
-  size_t length;
-
-  /* If there is no last component, then name is a file system root or the
-     empty string.  */
-  if (! *base)
-    return xstrndup (name, base_len (name));
-
-  /* Collapse a sequence of trailing slashes into one.  */
-  length = base_len (base);
-  if (ISSLASH (base[length]))
-    length++;
-
-  /* On systems with drive letters, "a/b:c" must return "./b:c" rather
-     than "b:c" to avoid confusion with a drive letter.  On systems
-     with pure POSIX semantics, this is not an issue.  */
-  if (FILE_SYSTEM_PREFIX_LEN (base))
+  idx_t length;
+  int dotslash_len;
+  if (*base)
     {
-      char *p = xmalloc (length + 3);
+      length = base_len (base);
+
+      /* Collapse a sequence of trailing slashes into one.  */
+      length += ISSLASH (base[length]);
+
+      /* On systems with drive letters, "a/b:c" must return "./b:c" rather
+         than "b:c" to avoid confusion with a drive letter.  On systems
+         with pure POSIX semantics, this is not an issue.  */
+      dotslash_len = FILE_SYSTEM_PREFIX_LEN (base) != 0 ? 2 : 0;
+    }
+  else
+    {
+      /* There is no last component, so NAME is a file system root or
+         the empty string.  */
+      base = name;
+      length = base_len (base);
+      dotslash_len = 0;
+    }
+
+  char *p = ximalloc (dotslash_len + length + 1);
+  if (dotslash_len)
+    {
       p[0] = '.';
       p[1] = '/';
-      memcpy (p + 2, base, length);
-      p[length + 2] = '\0';
-      return p;
     }
 
   /* Finally, copy the basename.  */
-  return xstrndup (base, length);
+  memcpy (p + dotslash_len, base, length);
+  p[dotslash_len + length] = '\0';
+  return p;
 }

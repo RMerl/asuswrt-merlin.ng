@@ -1,5 +1,5 @@
 /* struct options.
-   Copyright (C) 1996-2011, 2015, 2018-2021 Free Software Foundation,
+   Copyright (C) 1996-2011, 2015, 2018-2022 Free Software Foundation,
    Inc.
 
 This file is part of GNU Wget.
@@ -171,7 +171,7 @@ struct options
 
   wgint limit_rate;             /* Limit the download rate to this
                                    many bps. */
-  SUM_SIZE_INT quota;           /* Maximum file size to download and
+  wgint quota;                  /* Maximum file size to download and
                                    store. */
 
   bool server_response;         /* Do we print server response? */

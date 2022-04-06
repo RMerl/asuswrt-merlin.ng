@@ -1,5 +1,5 @@
 /* Command line parsing.
-   Copyright (C) 1996-2015, 2018-2021 Free Software Foundation, Inc.
+   Copyright (C) 1996-2015, 2018-2022 Free Software Foundation, Inc.
 
 This file is part of GNU Wget.
 
@@ -849,7 +849,7 @@ HTTP options:\n"),
 HTTPS (SSL/TLS) options:\n"),
     N_("\
        --secure-protocol=PR        choose secure protocol, one of auto, SSLv2,\n\
-                                     SSLv3, TLSv1, TLSv1_1, TLSv1_2 and PFS\n"),
+                                     SSLv3, TLSv1, TLSv1_1, TLSv1_2, TLSv1_3 and PFS\n"),
     N_("\
        --https-only                only follow secure HTTPS links\n"),
     N_("\
@@ -1547,8 +1547,8 @@ main (int argc, char **argv)
      option ("--config") and parse it before the other user options. */
   longindex = -1;
 
-  while ((retconf = getopt_long (argc, argv,
-                                short_options, long_options, &longindex)) != -1)
+  while ((getopt_long (argc, argv,
+                       short_options, long_options, &longindex)) != -1)
     {
       int confval;
       struct cmdline_option *config_opt;
@@ -2111,6 +2111,11 @@ for details.\n\n"));
 #else /* def __VMS */
 # define FOPEN_OPT_ARGS
 #endif /* def __VMS [else] */
+
+          if (opt.unlink_requested)
+            {
+              unlink(opt.output_document);
+            }
 
           output_stream = fopen (opt.output_document,
                                  opt.always_rest ? "ab" : "wb"

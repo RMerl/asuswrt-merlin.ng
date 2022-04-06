@@ -1,5 +1,5 @@
 /* Collect URLs from CSS source.
-   Copyright (C) 1998, 2000-2003, 2009-2011, 2014-2015, 2018-2021 Free
+   Copyright (C) 1998, 2000-2003, 2009-2011, 2014-2015, 2018-2022 Free
    Software Foundation, Inc.
 
 This file is part of GNU Wget.
@@ -38,7 +38,7 @@ as that of the covered work.  */
   a browser would ignore.  That might merit some more investigation.
  */
 
-#include <wget.h>
+#include "wget.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -46,7 +46,6 @@ as that of the covered work.  */
 #include <ctype.h>
 #include <errno.h>
 
-#include "wget.h"
 #include "utils.h"
 #include "convert.h"
 #include "html-url.h"

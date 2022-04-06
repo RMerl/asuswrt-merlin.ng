@@ -1,18 +1,18 @@
 /* Compile-time assert-like macros.
 
-   Copyright (C) 2005-2006, 2009-2021 Free Software Foundation, Inc.
+   Copyright (C) 2005-2006, 2009-2022 Free Software Foundation, Inc.
 
-   This program is free software: you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 3 of the License, or
-   (at your option) any later version.
+   This file is free software: you can redistribute it and/or modify
+   it under the terms of the GNU Lesser General Public License as
+   published by the Free Software Foundation; either version 2.1 of the
+   License, or (at your option) any later version.
 
-   This program is distributed in the hope that it will be useful,
+   This file is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
+   GNU Lesser General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
+   You should have received a copy of the GNU Lesser General Public License
    along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
 /* Written by Paul Eggert, Bruno Haible, and Jim Meyering.  */
@@ -22,16 +22,10 @@
 
 
 /* Define _GL_HAVE__STATIC_ASSERT to 1 if _Static_assert (R, DIAGNOSTIC)
-   works as per C11.  This is supported by GCC 4.6.0 and later, in C
-   mode, and by clang (also in C++ mode).
+   works as per C11.  This is supported by GCC 4.6.0+ and by clang 4+.
 
    Define _GL_HAVE__STATIC_ASSERT1 to 1 if _Static_assert (R) works as
-   per C2X.  This is supported by GCC 9.1 and later, and by clang in
-   C++1z mode.
-
-   Define _GL_HAVE_STATIC_ASSERT1 if static_assert (R) works as per
-   C++17.  This is supported by GCC 9.1 and later, and by clang in
-   C++1z mode.
+   per C2x.  This is supported by GCC 9.1+.
 
    Support compilers claiming conformance to the relevant standard,
    and also support GCC when not pedantic.  If we were willing to slow
@@ -46,18 +40,6 @@
 # if (202000L <= __STDC_VERSION__ \
       || (!defined __STRICT_ANSI__ && 9 <= __GNUC__))
 #  define _GL_HAVE__STATIC_ASSERT1 1
-# endif
-#else
-# if 4 <= __clang_major__
-#  define _GL_HAVE__STATIC_ASSERT 1
-# endif
-# if 4 <= __clang_major__ && 201411 <= __cpp_static_assert
-#  define _GL_HAVE__STATIC_ASSERT1 1
-# endif
-# if 201703L <= __cplusplus \
-     || 9 <= __GNUC__ \
-     || (4 <= __clang_major__ && 201411 <= __cpp_static_assert)
-#  define _GL_HAVE_STATIC_ASSERT1 1
 # endif
 #endif
 
@@ -220,12 +202,14 @@ template <int w>
 
    This macro requires three or more arguments but uses at most the first
    two, so that the _Static_assert macro optionally defined below supports
-   both the C11 two-argument syntax and the C2X one-argument syntax.
+   both the C11 two-argument syntax and the C2x one-argument syntax.
 
    Unfortunately, unlike C11, this implementation must appear as an
    ordinary declaration, and cannot appear inside struct { ... }.  */
 
-#if defined _GL_HAVE__STATIC_ASSERT
+#if 200410 <= __cpp_static_assert
+# define _GL_VERIFY(R, DIAGNOSTIC, ...) static_assert (R, DIAGNOSTIC)
+#elif defined _GL_HAVE__STATIC_ASSERT
 # define _GL_VERIFY(R, DIAGNOSTIC, ...) _Static_assert (R, DIAGNOSTIC)
 #else
 # define _GL_VERIFY(R, DIAGNOSTIC, ...)                                \
@@ -239,7 +223,7 @@ template <int w>
 #  define _Static_assert(...) \
      _GL_VERIFY (__VA_ARGS__, "static assertion failed", -)
 # endif
-# if !defined _GL_HAVE_STATIC_ASSERT1 && !defined static_assert
+# if __cpp_static_assert < 201411 && !defined static_assert
 #  define static_assert _Static_assert /* C11 requires this #define.  */
 # endif
 #endif

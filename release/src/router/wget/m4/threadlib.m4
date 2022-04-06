@@ -1,5 +1,5 @@
-# threadlib.m4 serial 29
-dnl Copyright (C) 2005-2021 Free Software Foundation, Inc.
+# threadlib.m4 serial 32
+dnl Copyright (C) 2005-2022 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -84,38 +84,48 @@ AC_DEFUN([gl_WEAK_SYMBOLS],
   AC_REQUIRE([AC_CANONICAL_HOST])
   AC_CACHE_CHECK([whether imported symbols can be declared weak],
     [gl_cv_have_weak],
-    [gl_cv_have_weak=no
-     dnl First, test whether the compiler accepts it syntactically.
-     AC_LINK_IFELSE(
-       [AC_LANG_PROGRAM(
-          [[extern void xyzzy ();
+    [case "$host_os" in
+       cygwin*)
+         dnl On Cygwin 3.2.0 with gcc 10.2, the test below would succeed, but
+         dnl programs that use pthread_in_use() with weak symbol references
+         dnl crash miserably at runtime.
+         gl_cv_have_weak="guessing no"
+         ;;
+       *)
+         gl_cv_have_weak=no
+         dnl First, test whether the compiler accepts it syntactically.
+         AC_LINK_IFELSE(
+           [AC_LANG_PROGRAM(
+              [[extern void xyzzy ();
 #pragma weak xyzzy]],
-          [[xyzzy();]])],
-       [gl_cv_have_weak=maybe])
-     if test $gl_cv_have_weak = maybe; then
-       dnl Second, test whether it actually works. On Cygwin 1.7.2, with
-       dnl gcc 4.3, symbols declared weak always evaluate to the address 0.
-       AC_RUN_IFELSE(
-         [AC_LANG_SOURCE([[
+              [[xyzzy();]])],
+           [gl_cv_have_weak=maybe])
+         if test $gl_cv_have_weak = maybe; then
+           dnl Second, test whether it actually works. On Cygwin 1.7.2, with
+           dnl gcc 4.3, symbols declared weak always evaluate to the address 0.
+           AC_RUN_IFELSE(
+             [AC_LANG_SOURCE([[
 #include <stdio.h>
 #pragma weak fputs
 int main ()
 {
   return (fputs == NULL);
 }]])],
-         [gl_cv_have_weak=yes],
-         [gl_cv_have_weak=no],
-         [dnl When cross-compiling, assume that only ELF platforms support
-          dnl weak symbols.
-          AC_EGREP_CPP([Extensible Linking Format],
-            [#ifdef __ELF__
-             Extensible Linking Format
-             #endif
-            ],
-            [gl_cv_have_weak="guessing yes"],
-            [gl_cv_have_weak="guessing no"])
-         ])
-     fi
+             [gl_cv_have_weak=yes],
+             [gl_cv_have_weak=no],
+             [dnl When cross-compiling, assume that only ELF platforms support
+              dnl weak symbols.
+              AC_EGREP_CPP([Extensible Linking Format],
+                [#ifdef __ELF__
+                 Extensible Linking Format
+                 #endif
+                ],
+                [gl_cv_have_weak="guessing yes"],
+                [gl_cv_have_weak="guessing no"])
+             ])
+         fi
+         ;;
+     esac
      dnl But when linking statically, weak symbols don't work.
      case " $LDFLAGS " in
        *" -static "*) gl_cv_have_weak=no ;;
@@ -126,7 +136,7 @@ int main ()
      case "$gl_cv_have_weak" in
        *yes)
          case "$host_os" in
-           freebsd* | dragonfly*)
+           freebsd* | dragonfly* | midnightbsd*)
              : > conftest1.c
              $CC $CPPFLAGS $CFLAGS $LDFLAGS -fPIC -shared -o libempty.so conftest1.c -lpthread >&AS_MESSAGE_LOG_FD 2>&1
              cat <<EOF > conftest2.c
@@ -212,6 +222,27 @@ AC_DEFUN([gl_PTHREADLIB_BODY],
         LIBS=$save_LIBS
         test $gl_pthread_api = yes && break
       done
+      echo "$as_me:__oline__: gl_pthread_api=$gl_pthread_api" >&AS_MESSAGE_LOG_FD
+      echo "$as_me:__oline__: LIBPTHREAD=$LIBPTHREAD" >&AS_MESSAGE_LOG_FD
+
+      gl_pthread_in_glibc=no
+      # On Linux with glibc >= 2.34, libc contains the fully functional
+      # pthread functions.
+      case "$host_os" in
+        linux*)
+          AC_EGREP_CPP([Lucky user],
+            [#include <features.h>
+             #ifdef __GNU_LIBRARY__
+              #if (__GLIBC__ == 2 && __GLIBC_MINOR__ >= 34) || (__GLIBC__ > 2)
+               Lucky user
+              #endif
+             #endif
+            ],
+            [gl_pthread_in_glibc=yes],
+            [])
+          ;;
+      esac
+      echo "$as_me:__oline__: gl_pthread_in_glibc=$gl_pthread_in_glibc" >&AS_MESSAGE_LOG_FD
 
       # Test for libpthread by looking for pthread_kill. (Not pthread_self,
       # since it is defined as a macro on OSF/1.)
@@ -219,18 +250,22 @@ AC_DEFUN([gl_PTHREADLIB_BODY],
         # The program links fine without libpthread. But it may actually
         # need to link with libpthread in order to create multiple threads.
         AC_CHECK_LIB([pthread], [pthread_kill],
-          [LIBPMULTITHREAD=-lpthread
-           # On Solaris and HP-UX, most pthread functions exist also in libc.
-           # Therefore pthread_in_use() needs to actually try to create a
-           # thread: pthread_create from libc will fail, whereas
-           # pthread_create will actually create a thread.
-           # On Solaris 10 or newer, this test is no longer needed, because
-           # libc contains the fully functional pthread functions.
-           case "$host_os" in
-             solaris | solaris2.[1-9] | solaris2.[1-9].* | hpux*)
-               AC_DEFINE([PTHREAD_IN_USE_DETECTION_HARD], [1],
-                 [Define if the pthread_in_use() detection is hard.])
-           esac
+          [if test $gl_pthread_in_glibc = yes; then
+             LIBPMULTITHREAD=
+           else
+             LIBPMULTITHREAD=-lpthread
+             # On Solaris and HP-UX, most pthread functions exist also in libc.
+             # Therefore pthread_in_use() needs to actually try to create a
+             # thread: pthread_create from libc will fail, whereas
+             # pthread_create will actually create a thread.
+             # On Solaris 10 or newer, this test is no longer needed, because
+             # libc contains the fully functional pthread functions.
+             case "$host_os" in
+               solaris | solaris2.[1-9] | solaris2.[1-9].* | hpux*)
+                 AC_DEFINE([PTHREAD_IN_USE_DETECTION_HARD], [1],
+                   [Define if the pthread_in_use() detection is hard.])
+             esac
+           fi
           ])
       elif test $gl_pthread_api != yes; then
         # Some library is needed. Try libpthread and libc_r.
@@ -246,6 +281,7 @@ AC_DEFUN([gl_PTHREADLIB_BODY],
              LIBPMULTITHREAD=-lc_r])
         fi
       fi
+      echo "$as_me:__oline__: LIBPMULTITHREAD=$LIBPMULTITHREAD" >&AS_MESSAGE_LOG_FD
     fi
     AC_MSG_CHECKING([whether POSIX threads API is available])
     AC_MSG_RESULT([$gl_pthread_api])
@@ -311,7 +347,8 @@ AC_DEFUN([gl_STDTHREADLIB_BODY],
           dnl glibc >= 2.29 has thrd_create in libpthread.
           dnl FreeBSD >= 10 has thrd_create in libstdthreads; this library depends
           dnl on libpthread (for the symbol 'pthread_mutexattr_gettype').
-          dnl AIX >= 7.1 and Solaris >= 11.4 have thrd_create in libc.
+          dnl glibc >= 2.34, AIX >= 7.1, and Solaris >= 11.4 have thrd_create in
+          dnl libc.
           AC_CHECK_FUNCS([thrd_create])
           if test $ac_cv_func_thrd_create = yes; then
             LIBSTDTHREAD=
@@ -481,14 +518,17 @@ AC_DEFUN([gl_THREADLIB_BODY],
           gl_threads_api=posix
           AC_DEFINE([USE_POSIX_THREADS], [1],
             [Define if the POSIX multithreading library can be used.])
-          if test -n "$LIBMULTITHREAD" || test -n "$LTLIBMULTITHREAD"; then
+          if test -z "$LIBMULTITHREAD" && test -z "$LTLIBMULTITHREAD"; then
+            AC_DEFINE([USE_POSIX_THREADS_FROM_LIBC], [1],
+              [Define if references to the POSIX multithreading library are satisfied by libc.])
+          else
             if case "$gl_cv_have_weak" in *yes) true;; *) false;; esac; then
               AC_DEFINE([USE_POSIX_THREADS_WEAK], [1],
                 [Define if references to the POSIX multithreading library should be made weak.])
               LIBTHREAD= LTLIBTHREAD=
             else
               case "$host_os" in
-                freebsd* | dragonfly*)
+                freebsd* | dragonfly* | midnightbsd*)
                   if test "x$LIBTHREAD" != "x$LIBMULTITHREAD"; then
                     dnl If weak symbols can't tell whether pthread_create(), pthread_key_create()
                     dnl etc. will succeed, we need a runtime test.
@@ -576,7 +616,9 @@ dnl                    flavours   option      weak       result
 dnl ---------------    ---------  ---------   --------   ---------
 dnl Linux 2.4/glibc    posix      -lpthread       Y      OK
 dnl
-dnl GNU Hurd/glibc     posix
+dnl Linux/glibc 2.34   posix                      Y      OK
+dnl
+dnl GNU Hurd/glibc     posix      -lpthread       Y      OK
 dnl
 dnl Ubuntu 14.04       posix      -pthread        Y      OK
 dnl

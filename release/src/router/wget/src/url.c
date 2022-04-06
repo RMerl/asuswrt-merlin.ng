@@ -1,5 +1,5 @@
 /* URL handling.
-   Copyright (C) 1996-2011, 2015, 2018-2021 Free Software Foundation,
+   Copyright (C) 1996-2011, 2015, 2018-2022 Free Software Foundation,
    Inc.
 
 This file is part of GNU Wget.
@@ -1466,6 +1466,7 @@ append_uri_pathel (const char *b, const char *e, bool escaped,
   char *unescaped = NULL;
   int quoted, outlen;
   int mask;
+  int max_length;
 
   if (!dest)
     return;
@@ -1516,7 +1517,24 @@ append_uri_pathel (const char *b, const char *e, bool escaped,
      string length.  Each quoted char introduces two additional
      characters in the string, hence 2*quoted.  */
   outlen = (e - b) + (2 * quoted);
+# ifdef WINDOWS
+  max_length = MAX_PATH;
+# else
+  max_length = get_max_length(dest->base, dest->tail, _PC_NAME_MAX);
+# endif
+  max_length -= CHOMP_BUFFER;
+  if (max_length > 0 && outlen > max_length)
+    {
+      logprintf (LOG_NOTQUIET, "The destination name is too long (%d), reducing to %d\n", outlen, max_length);
+
+      outlen = max_length;
+    }
   GROW (dest, outlen);
+
+  // This should not happen, but it's impossible to argue with static analysis that it can't happen
+  // (in theory it can). So give static analyzers a hint.
+  if (!dest->base)
+    return;
 
   if (!quoted)
     {
@@ -1527,19 +1545,29 @@ append_uri_pathel (const char *b, const char *e, bool escaped,
   else
     {
       char *q = TAIL (dest);
-      for (p = b; p < e; p++)
+      int i;
+
+      for (i = 0, p = b; p < e; p++)
         {
           if (!FILE_CHAR_TEST (*p, mask))
-            *q++ = *p;
-          else
+	    {
+	      if (i == outlen)
+	        break;
+	      *q++ = *p;
+	      i++;
+	    }
+          else if (i + 3 > outlen)
+	    break;
+	  else
             {
               unsigned char ch = *p;
               *q++ = '%';
               *q++ = XNUM_TO_DIGIT (ch >> 4);
               *q++ = XNUM_TO_DIGIT (ch & 0xf);
+	      i += 3;
             }
         }
-      assert (q - TAIL (dest) == outlen);
+      assert (q - TAIL (dest) <= outlen);
     }
 
   /* Perform inline case transformation if required.  */
@@ -1585,7 +1613,7 @@ convert_fname (char *fname)
   if (cd == (iconv_t) (-1))
     {
       logprintf (LOG_VERBOSE, _ ("Conversion from %s to %s isn't supported\n"),
-                 quote (from_encoding), quote (to_encoding));
+                 quote_n (0, from_encoding), quote_n (1, to_encoding));
       return fname;
     }
 
@@ -1686,6 +1714,7 @@ append_dir_structure (const struct url *u, struct growable *dest)
 
       if (dest->tail)
         append_char ('/', dest);
+
       append_uri_pathel (pathel, next, true, dest);
     }
 }
@@ -1702,7 +1731,6 @@ url_file_name (const struct url *u, char *replaced_filename)
   const char *u_file;
   char *fname, *unique, *fname_len_check;
   const char *index_filename = "index.html"; /* The default index file is index.html */
-  size_t max_length;
 
   fnres.base = NULL;
   fnres.size = 0;
@@ -1796,41 +1824,8 @@ url_file_name (const struct url *u, char *replaced_filename)
   temp_fnres.size = 0;
   temp_fnres.tail = 0;
   append_string (fname, &temp_fnres);
+
   xfree (fname);
-
-  /* Check that the length of the file name is acceptable. */
-#ifdef WINDOWS
-  if (MAX_PATH > (fnres.tail + CHOMP_BUFFER + 2))
-    {
-      max_length = MAX_PATH - (fnres.tail + CHOMP_BUFFER + 2);
-      /* FIXME: In Windows a filename is usually limited to 255 characters.
-      To really be accurate you could call GetVolumeInformation() to get
-      lpMaximumComponentLength
-      */
-      if (max_length > 255)
-        {
-          max_length = 255;
-        }
-    }
-  else
-    {
-      max_length = 0;
-    }
-#else
-  max_length = get_max_length (fnres.base, fnres.tail, _PC_NAME_MAX) - CHOMP_BUFFER;
-#endif
-  if (max_length > 0 && strlen (temp_fnres.base) > max_length)
-    {
-      logprintf (LOG_NOTQUIET, "The name is too long, %lu chars total.\n",
-          (unsigned long) strlen (temp_fnres.base));
-      logprintf (LOG_NOTQUIET, "Trying to shorten...\n");
-
-      /* Shorten the file name. */
-      temp_fnres.base[max_length] = '\0';
-
-      logprintf (LOG_NOTQUIET, "New name is %s.\n", temp_fnres.base);
-    }
-
   xfree (fname_len_check);
 
   /* The filename has already been 'cleaned' by append_uri_pathel() above.  So,

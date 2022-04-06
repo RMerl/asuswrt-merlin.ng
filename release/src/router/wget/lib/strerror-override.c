@@ -1,18 +1,18 @@
 /* strerror-override.c --- POSIX compatible system error routine
 
-   Copyright (C) 2010-2021 Free Software Foundation, Inc.
+   Copyright (C) 2010-2022 Free Software Foundation, Inc.
 
-   This program is free software: you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 3 of the License, or
-   (at your option) any later version.
+   This file is free software: you can redistribute it and/or modify
+   it under the terms of the GNU Lesser General Public License as
+   published by the Free Software Foundation; either version 2.1 of the
+   License, or (at your option) any later version.
 
-   This program is distributed in the hope that it will be useful,
+   This file is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
+   GNU Lesser General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
+   You should have received a copy of the GNU Lesser General Public License
    along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
 /* Written by Bruno Haible <bruno@clisp.org>, 2010.  */
@@ -29,6 +29,8 @@
 # endif
 #endif
 
+#if !GNULIB_defined_strerror_override_macro
+
 /* If ERRNUM maps to an errno value defined by gnulib, return a string
    describing the error.  Otherwise return NULL.  */
 const char *
@@ -37,12 +39,12 @@ strerror_override (int errnum)
   /* These error messages are taken from glibc/sysdeps/gnu/errlist.c.  */
   switch (errnum)
     {
-#if REPLACE_STRERROR_0
+# if REPLACE_STRERROR_0
     case 0:
       return "Success";
-#endif
+# endif
 
-#if GNULIB_defined_ESOCK /* native Windows platforms with older <errno.h> */
+# if GNULIB_defined_ESOCK /* native Windows platforms with older <errno.h> */
     case EINPROGRESS:
       return "Operation now in progress";
     case EALREADY:
@@ -89,8 +91,8 @@ strerror_override (int errnum)
       return "No route to host";
     case EWOULDBLOCK:
       return "Operation would block";
-#endif
-#if GNULIB_defined_ESTREAMS /* native Windows platforms with older <errno.h> */
+# endif
+# if GNULIB_defined_ESTREAMS /* native Windows platforms with older <errno.h> */
     case ETXTBSY:
       return "Text file busy";
     case ENODATA:
@@ -103,8 +105,8 @@ strerror_override (int errnum)
       return "Timer expired";
     case EOTHER:
       return "Other error";
-#endif
-#if GNULIB_defined_EWINSOCK /* native Windows platforms */
+# endif
+# if GNULIB_defined_EWINSOCK /* native Windows platforms */
     case ESOCKTNOSUPPORT:
       return "Socket type not supported";
     case EPFNOSUPPORT:
@@ -125,7 +127,7 @@ strerror_override (int errnum)
       return "Stale NFS file handle";
     case EREMOTE:
       return "Object is remote";
-# if HAVE_WINSOCK2_H
+#  if HAVE_WINSOCK2_H
       /* WSA_INVALID_HANDLE maps to EBADF */
       /* WSA_NOT_ENOUGH_MEMORY maps to ENOMEM */
       /* WSA_INVALID_PARAMETER maps to EINVAL */
@@ -213,90 +215,92 @@ strerror_override (int errnum)
     case WSANO_DATA:
       return "Valid name, no data record of requested type";
       /* WSA_QOS_* omitted */
+#  endif
 # endif
-#endif
 
-#if GNULIB_defined_ENOMSG
+# if GNULIB_defined_ENOMSG
     case ENOMSG:
       return "No message of desired type";
-#endif
+# endif
 
-#if GNULIB_defined_EIDRM
+# if GNULIB_defined_EIDRM
     case EIDRM:
       return "Identifier removed";
-#endif
+# endif
 
-#if GNULIB_defined_ENOLINK
+# if GNULIB_defined_ENOLINK
     case ENOLINK:
       return "Link has been severed";
-#endif
+# endif
 
-#if GNULIB_defined_EPROTO
+# if GNULIB_defined_EPROTO
     case EPROTO:
       return "Protocol error";
-#endif
+# endif
 
-#if GNULIB_defined_EMULTIHOP
+# if GNULIB_defined_EMULTIHOP
     case EMULTIHOP:
       return "Multihop attempted";
-#endif
+# endif
 
-#if GNULIB_defined_EBADMSG
+# if GNULIB_defined_EBADMSG
     case EBADMSG:
       return "Bad message";
-#endif
+# endif
 
-#if GNULIB_defined_EOVERFLOW
+# if GNULIB_defined_EOVERFLOW
     case EOVERFLOW:
       return "Value too large for defined data type";
-#endif
+# endif
 
-#if GNULIB_defined_ENOTSUP
+# if GNULIB_defined_ENOTSUP
     case ENOTSUP:
       return "Not supported";
-#endif
+# endif
 
-#if GNULIB_defined_ENETRESET
+# if GNULIB_defined_ENETRESET
     case ENETRESET:
       return "Network dropped connection on reset";
-#endif
+# endif
 
-#if GNULIB_defined_ECONNABORTED
+# if GNULIB_defined_ECONNABORTED
     case ECONNABORTED:
       return "Software caused connection abort";
-#endif
+# endif
 
-#if GNULIB_defined_ESTALE
+# if GNULIB_defined_ESTALE
     case ESTALE:
       return "Stale NFS file handle";
-#endif
+# endif
 
-#if GNULIB_defined_EDQUOT
+# if GNULIB_defined_EDQUOT
     case EDQUOT:
       return "Disk quota exceeded";
-#endif
+# endif
 
-#if GNULIB_defined_ECANCELED
+# if GNULIB_defined_ECANCELED
     case ECANCELED:
       return "Operation canceled";
-#endif
+# endif
 
-#if GNULIB_defined_EOWNERDEAD
+# if GNULIB_defined_EOWNERDEAD
     case EOWNERDEAD:
       return "Owner died";
-#endif
+# endif
 
-#if GNULIB_defined_ENOTRECOVERABLE
+# if GNULIB_defined_ENOTRECOVERABLE
     case ENOTRECOVERABLE:
       return "State not recoverable";
-#endif
+# endif
 
-#if GNULIB_defined_EILSEQ
+# if GNULIB_defined_EILSEQ
     case EILSEQ:
       return "Invalid or incomplete multibyte or wide character";
-#endif
+# endif
 
     default:
       return NULL;
     }
 }
+
+#endif

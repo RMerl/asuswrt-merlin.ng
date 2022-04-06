@@ -997,10 +997,10 @@ function update_visibility(){
 	showhide("server_dhcp",((auth == "tls") && (iface == "tap")));
 	showhide("server_range", ((dhcp == 0) && (auth == "tls") && (iface == "tap")));
 	showhide("server_tls_crypto_tr", ((auth == "tls") || (auth == "secret")));		//add by Viz
-	showhide("server_igncrt", (userpass == 1));
+	showhide("server_igncrt", (userpass == 1) && (auth == "tls"));
 	showhide("ncp_ciphers", (auth == "tls"));
 	showhide("server_cipher", (auth == "secret"));
-
+	showhide("server_userpass", (auth == "tls"));
 	update_visibility_ipv6();
 }
 
@@ -1797,7 +1797,7 @@ function handle_ipv6_submit_settings(){
 													<input type="button" onclick="edit_Keys();" value="Edit...">
 												</td>
 											</tr>
-											<tr>
+											<tr id="server_userpass">
 												<th>Username/Password Authentication</th>
 												<td>
 													<input type="radio" name="vpn_server_userpass_auth" class="input" value="1" onclick="enable_server_igncrt(this.value);;" <% nvram_match_x("", "vpn_server_userpass_auth", "1", "checked"); %>><#checkbox_Yes#>

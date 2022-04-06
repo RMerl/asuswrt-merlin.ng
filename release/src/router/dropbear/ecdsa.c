@@ -81,18 +81,25 @@ ecc_key *buf_get_ecdsa_pub_key(buffer* buf) {
 	struct dropbear_ecc_curve **curve;
 	ecc_key *new_key = NULL;
 
-	/* string   "ecdsa-sha2-[identifier]" */
+	/* string   "ecdsa-sha2-[identifier]" or "sk-ecdsa-sha2-nistp256@openssh.com" */
 	key_ident = (unsigned char*)buf_getstring(buf, &key_ident_len);
 	/* string   "[identifier]" */
 	identifier = (unsigned char*)buf_getstring(buf, &identifier_len);
 
-	if (key_ident_len != identifier_len + strlen("ecdsa-sha2-")) {
-		TRACE(("Bad identifier lengths"))
-		goto out;
-	}
-	if (memcmp(&key_ident[strlen("ecdsa-sha2-")], identifier, identifier_len) != 0) {
-		TRACE(("mismatching identifiers"))
-		goto out;
+	if (strcmp (key_ident, "sk-ecdsa-sha2-nistp256@openssh.com") == 0) {
+		if (strcmp (identifier, "nistp256") != 0) {
+			TRACE(("mismatching identifiers"))
+			goto out;
+		}
+	} else {
+		if (key_ident_len != identifier_len + strlen ("ecdsa-sha2-")) {
+			TRACE(("Bad identifier lengths"))
+			goto out;
+		}
+		if (memcmp(&key_ident[strlen ("ecdsa-sha2-")], identifier, identifier_len) != 0) {
+			TRACE(("mismatching identifiers"))
+			goto out;
+		}
 	}
 
 	for (curve = dropbear_ecc_curves; *curve; curve++) {

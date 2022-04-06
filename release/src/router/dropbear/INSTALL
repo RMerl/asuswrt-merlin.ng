@@ -6,11 +6,11 @@ Basic Dropbear build instructions:
   localoptions.h should be located in the build directory if you are
   building out of tree.
 
-- If using a Mercurial or Git checkout, "autoconf; autoheader"
-
 - Configure for your system:
   ./configure     (optionally with --disable-zlib or --disable-syslog,
                   or --help for other options)
+
+  (you'll need to first run "autoconf; autoheader" if you edit configure.ac)
 
 - Compile:
 

@@ -6,9 +6,8 @@
 #include "queue.h"
 
 enum dropbear_prio {
-	DROPBEAR_PRIO_DEFAULT = 10,
-	DROPBEAR_PRIO_LOWDELAY = 11,
-	DROPBEAR_PRIO_BULK = 12,
+	DROPBEAR_PRIO_NORMAL = 0, /* the rest - tcp-fwd, scp, rsync, git, etc */
+	DROPBEAR_PRIO_LOWDELAY, /* pty shell, x11 */
 };
 
 void set_sock_nodelay(int sock);
@@ -30,7 +29,8 @@ typedef void(*connect_callback)(int result, int sock, void* data, const char* er
 
 /* Always returns a progress connection, if it fails it will call the callback at a later point */
 struct dropbear_progress_connection * connect_remote (const char* remotehost, const char* remoteport,
-	connect_callback cb, void *cb_data, const char* bind_address, const char* bind_port);
+	connect_callback cb, void *cb_data, const char* bind_address, const char* bind_port,
+	enum dropbear_prio prio);
 
 /* Sets up for select() */
 void set_connect_fds(fd_set *writefd);

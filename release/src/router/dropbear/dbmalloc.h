@@ -1,9 +1,9 @@
 #ifndef DBMALLOC_H_
 #define DBMALLOC_H_
 
-#include "stdint.h"
-#include "stdlib.h"
 #include "options.h"
+#include <stdint.h>
+#include <stdlib.h>
 
 void * m_malloc(size_t size);
 void * m_calloc(size_t nmemb, size_t size);

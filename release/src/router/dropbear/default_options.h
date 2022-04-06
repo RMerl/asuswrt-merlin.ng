@@ -6,7 +6,7 @@
 default_options.h  documents compile-time options, and provides default values.
 
 Local customisation should be added to localoptions.h which is
-used if it exists in the build directory. Options defined there will override 
+used if it exists in the build directory. Options defined there will override
 any options in this file.
 
 Options can also be defined with -DDROPBEAR_XXX=[0,1] in Makefile CFLAGS
@@ -18,7 +18,9 @@ IMPORTANT: Some options will require "make clean" after changes */
 /* Listen on all interfaces */
 #define DROPBEAR_DEFADDRESS ""
 
-/* Default hostkey paths - these can be specified on the command line */
+/* Default hostkey paths - these can be specified on the command line.
+ * Homedir is prepended if path begins with ~/
+ */
 #define DSS_PRIV_FILENAME "/etc/dropbear/dropbear_dss_host_key"
 #define RSA_PRIV_FILENAME "/etc/dropbear/dropbear_rsa_host_key"
 #define ECDSA_PRIV_FILENAME "/etc/dropbear/dropbear_ecdsa_host_key"
@@ -37,8 +39,18 @@ IMPORTANT: Some options will require "make clean" after changes */
 #define NON_INETD_MODE 1
 #define INETD_MODE 1
 
-/* Include verbose debug output, enabled with -v at runtime. 
- * This will add a reasonable amount to your executable size. */
+/* By default Dropbear will re-execute itself for each incoming connection so
+   that memory layout may be re-randomised (ASLR) - exploiting
+   vulnerabilities becomes harder. Re-exec causes slightly more memory use
+   per connection.
+   This option is ignored on non-Linux platforms at present */
+#define DROPBEAR_REEXEC 1
+
+/* Include verbose debug output, enabled with -v at runtime (repeat to increase).
+ * define which level of debug output you compile in
+ * TRACE1 - TRACE3 = approx 4 Kb (connection, remote identity, algos, auth type info)
+ * TRACE4 = approx 17 Kb (detailed before connection)
+ * TRACE5 = approx 8 Kb (detailed after connection) */
 #define DEBUG_TRACE 0
 
 /* Set this if you want to use the DROPBEAR_SMALL_CODE option. This can save
@@ -66,7 +78,7 @@ IMPORTANT: Some options will require "make clean" after changes */
 /* Note: Both DROPBEAR_CLI_PROXYCMD and DROPBEAR_CLI_NETCAT must be set to
  * allow multihop dbclient connections */
 
-/* Allow using -J <proxycommand> to run the connection through a 
+/* Allow using -J <proxycommand> to run the connection through a
    pipe to a program, rather the normal TCP connection */
 #define DROPBEAR_CLI_PROXYCMD 1
 
@@ -80,13 +92,11 @@ IMPORTANT: Some options will require "make clean" after changes */
 /* Encryption - at least one required.
  * AES128 should be enabled, some very old implementations might only
  * support 3DES.
- * Including both AES keysize variants (128 and 256) will result in 
+ * Including both AES keysize variants (128 and 256) will result in
  * a minimal size increase */
 #define DROPBEAR_AES128 1
 #define DROPBEAR_AES256 1
 #define DROPBEAR_3DES 0
-#define DROPBEAR_TWOFISH256 0
-#define DROPBEAR_TWOFISH128 0
 
 /* Enable Chacha20-Poly1305 authenticated encryption mode. This is
  * generally faster than AES256 on CPU w/o dedicated AES instructions,
@@ -108,7 +118,7 @@ IMPORTANT: Some options will require "make clean" after changes */
  * Compiling in will add ~6kB to binary size on x86-64 */
 #define DROPBEAR_ENABLE_GCM_MODE 0
 
-/* Message integrity. sha2-256 is recommended as a default, 
+/* Message integrity. sha2-256 is recommended as a default,
    sha1 for compatibility */
 #define DROPBEAR_SHA1_HMAC 1
 #define DROPBEAR_SHA2_256_HMAC 1
@@ -117,18 +127,25 @@ IMPORTANT: Some options will require "make clean" after changes */
 /* Hostkey/public key algorithms - at least one required, these are used
  * for hostkey as well as for verifying signatures with pubkey auth.
  * Removing either of these won't save very much space.
- * RSA is recommended
+ * RSA is recommended.
  * DSS may be necessary to connect to some systems though
-   is not recommended for new keys */
+ * is not recommended for new keys.
+ * See: RSA_PRIV_FILENAME and DSS_PRIV_FILENAME */
 #define DROPBEAR_RSA 1
 #define DROPBEAR_DSS 1
 /* ECDSA is significantly faster than RSA or DSS. Compiling in ECC
  * code (either ECDSA or ECDH) increases binary size - around 30kB
- * on x86-64 */
+ * on x86-64.
+ * See: ECDSA_PRIV_FILENAME  */
 #define DROPBEAR_ECDSA 1
 /* Ed25519 is faster than ECDSA. Compiling in Ed25519 code increases
-   binary size - around 7,5kB on x86-64 */
+ * binary size - around 7,5kB on x86-64.
+ * See: ED25519_PRIV_FILENAME  */
 #define DROPBEAR_ED25519 1
+/* SK_ECDSA/SK_ED25519 allows u2f security keys for public key auth.
+ * This is currently server-only. */
+#define DROPBEAR_SK_ECDSA 1
+#define DROPBEAR_SK_ED25519 1
 
 /* RSA must be >=1024 */
 #define DROPBEAR_DEFAULT_RSA_SIZE 2048
@@ -162,13 +179,13 @@ IMPORTANT: Some options will require "make clean" after changes */
 
  * Small systems should generally include either curve25519 or ecdh for performance.
  * curve25519 is less widely supported but is faster
- */ 
+ */
 #define DROPBEAR_DH_GROUP14_SHA1 1
 #define DROPBEAR_DH_GROUP14_SHA256 1
 #define DROPBEAR_DH_GROUP16 0
 #define DROPBEAR_CURVE25519 1
 #define DROPBEAR_ECDH 1
-#define DROPBEAR_DH_GROUP1 1
+#define DROPBEAR_DH_GROUP1 0
 
 /* When group1 is enabled it will only be allowed by Dropbear client
 not as a server, due to concerns over its strength. Set to 0 to allow
@@ -203,7 +220,8 @@ group1 in Dropbear server too */
  * You can't enable both PASSWORD and PAM. */
 #define DROPBEAR_SVR_PAM_AUTH 0
 
-/* ~/.ssh/authorized_keys authentication */
+/* ~/.ssh/authorized_keys authentication.
+ * You must define DROPBEAR_SVR_PUBKEY_AUTH in order to use plugins. */
 #define DROPBEAR_SVR_PUBKEY_AUTH 1
 
 /* Whether to take public key options in 
@@ -219,9 +237,10 @@ group1 in Dropbear server too */
 #define DROPBEAR_CLI_PASSWORD_AUTH 1
 #define DROPBEAR_CLI_PUBKEY_AUTH 1
 
-/* A default argument for dbclient -i <privatekey>. 
-Homedir is prepended unless path begins with / */
-#define DROPBEAR_DEFAULT_CLI_AUTHKEY ".ssh/id_dropbear"
+/* A default argument for dbclient -i <privatekey>.
+ * Homedir is prepended if path begins with ~/
+ */
+#define DROPBEAR_DEFAULT_CLI_AUTHKEY "~/.ssh/id_dropbear"
 
 /* Allow specifying the password for dbclient via the DROPBEAR_PASSWORD
  * environment variable. */
@@ -256,8 +275,16 @@ Homedir is prepended unless path begins with / */
 /* -T server option overrides */
 #define MAX_AUTH_TRIES 10
 
+/* Delay introduced before closing an unauthenticated session (seconds).
+   Disabled by default, can be set to say 30 seconds to reduce the speed
+   of password brute forcing. Note that there is a risk of denial of 
+   service by setting this */
+#define UNAUTH_CLOSE_DELAY 0
+
 /* The default file to store the daemon's process ID, for shutdown
-   scripts etc. This can be overridden with the -P flag */
+ * scripts etc. This can be overridden with the -P flag.
+ * Homedir is prepended if path begins with ~/
+ */
 #define DROPBEAR_PIDFILE "/var/run/dropbear.pid"
 
 /* The command to invoke for xauth when using X11 forwarding.
@@ -265,9 +292,11 @@ Homedir is prepended unless path begins with / */
 #define XAUTH_COMMAND "/usr/bin/xauth -q"
 
 
-/* if you want to enable running an sftp server (such as the one included with
- * OpenSSH), set the path below and set DROPBEAR_SFTPSERVER. 
- * The sftp-server program is not provided by Dropbear itself */
+/* If you want to enable running an sftp server (such as the one included with
+ * OpenSSH), set the path below and set DROPBEAR_SFTPSERVER.
+ * The sftp-server program is not provided by Dropbear itself.
+ * Homedir is prepended if path begins with ~/
+ */
 #define DROPBEAR_SFTPSERVER 1
 #define SFTPSERVER_PATH "/usr/libexec/sftp-server"
 
@@ -310,5 +339,6 @@ be overridden at runtime with -I. 0 disables idle timeouts */
 
 /* The default path. This will often get replaced by the shell */
 #define DEFAULT_PATH "/usr/bin:/bin"
+#define DEFAULT_ROOT_PATH "/usr/sbin:/usr/bin:/sbin:/bin"
 
 #endif /* DROPBEAR_DEFAULT_OPTIONS_H_ */

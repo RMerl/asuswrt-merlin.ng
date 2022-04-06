@@ -69,7 +69,7 @@ int main(int argc, char ** argv) {
 
 #if DEBUG_TRACE
 	/* It's hard for it to get in the way _too_ much */
-	debug_trace = 1;
+	debug_trace = DROPBEAR_VERBOSE_LEVEL;
 #endif
 
 	/* get the commandline options */

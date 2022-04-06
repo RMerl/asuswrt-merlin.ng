@@ -2,7 +2,7 @@
  * Based on PuTTY's import.c for importing/exporting OpenSSH and SSH.com
  * keyfiles.
  *
- * Modifications copyright 2003 Matt Johnston
+ * Modifications copyright 2003-2022 Matt Johnston
  *
  * PuTTY is copyright 1997-2003 Simon Tatham.
  * 
@@ -39,6 +39,8 @@
 #include "rsa.h"
 #include "dss.h"
 #include "ed25519.h"
+#include "ecdsa.h"
+#include "signkey_ossh.h"
 
 static const unsigned char OSSH_PKEY_BLOB[] =
 	"openssh-key-v1\0"			/* AUTH_MAGIC */
@@ -47,7 +49,6 @@ static const unsigned char OSSH_PKEY_BLOB[] =
 	"\0\0\0\0"				/* kdf */
 	"\0\0\0\1";				/* key num */
 #define OSSH_PKEY_BLOBLEN (sizeof(OSSH_PKEY_BLOB) - 1)
-
 #if DROPBEAR_ECDSA
 static const unsigned char OID_SEC256R1_BLOB[] = {0x2a, 0x86, 0x48, 0xce, 0x3d, 0x03, 0x01, 0x07};
 static const unsigned char OID_SEC384R1_BLOB[] = {0x2b, 0x81, 0x04, 0x00, 0x22};
@@ -369,6 +370,7 @@ struct openssh_key {
 	int type;
 	int encrypted;
 	char iv[32];
+	/* keyblob is publickey1 onwards (ref OpenSSH PROTOCOL.key) */
 	unsigned char *keyblob;
 	unsigned int keyblob_len, keyblob_size;
 };
@@ -502,16 +504,14 @@ static struct openssh_key *load_openssh_key(const char *filename)
 	}
 
 	if (buf) {
-		buf_burn(buf);
-		buf_free(buf);
+		buf_burn_free(buf);
 	}
 	m_burn(buffer, sizeof(buffer));
 	return ret;
 
 error:
 	if (buf) {
-		buf_burn(buf);
-		buf_free(buf);
+		buf_burn_free(buf);
 	}
 	m_burn(buffer, sizeof(buffer));
 	if (ret) {
@@ -567,41 +567,8 @@ static sign_key *openssh_read(const char *filename, const char * UNUSED(passphra
 		return NULL;
 
 	if (key->encrypted) {
-		errmsg = "encrypted keys not supported currently";
+		errmsg = "Encrypted keys are not supported. Please convert with ssh-keygen first";
 		goto error;
-#if 0
-		/* matt TODO */
-		/*
-		 * Derive encryption key from passphrase and iv/salt:
-		 * 
-		 *  - let block A equal MD5(passphrase || iv)
-		 *  - let block B equal MD5(A || passphrase || iv)
-		 *  - block C would be MD5(B || passphrase || iv) and so on
-		 *  - encryption key is the first N bytes of A || B
-		 */
-		struct MD5Context md5c;
-		unsigned char keybuf[32];
-
-		MD5Init(&md5c);
-		MD5Update(&md5c, (unsigned char *)passphrase, strlen(passphrase));
-		MD5Update(&md5c, (unsigned char *)key->iv, 8);
-		MD5Final(keybuf, &md5c);
-
-		MD5Init(&md5c);
-		MD5Update(&md5c, keybuf, 16);
-		MD5Update(&md5c, (unsigned char *)passphrase, strlen(passphrase));
-		MD5Update(&md5c, (unsigned char *)key->iv, 8);
-		MD5Final(keybuf+16, &md5c);
-
-		/*
-		 * Now decrypt the key blob.
-		 */
-		des3_decrypt_pubkey_ossh(keybuf, (unsigned char *)key->iv,
-								 key->keyblob, key->keyblob_len);
-
-		memset(&md5c, 0, sizeof(md5c));
-		memset(keybuf, 0, sizeof(keybuf));
-#endif 
 	}
 
 	/*
@@ -613,9 +580,8 @@ static sign_key *openssh_read(const char *filename, const char * UNUSED(passphra
 		buf_putbytes(blobbuf, key->keyblob, key->keyblob_len);
 		buf_setpos(blobbuf, 0);
 
-		/* limit length of private key blob */
+		/* limit length of public key blob */
 		len = buf_getint(blobbuf);
-		buf_setlen(blobbuf, blobbuf->pos + len);
 
 		type = DROPBEAR_SIGNKEY_ANY;
 		if (buf_get_pub_key(blobbuf, retkey, &type)
@@ -627,29 +593,43 @@ static sign_key *openssh_read(const char *filename, const char * UNUSED(passphra
 		/* restore full length */
 		buf_setlen(blobbuf, key->keyblob_len);
 
-		if (type != DROPBEAR_SIGNKEY_NONE) {
-			retkey->type = type;
-			/* limit length of private key blob */
-			len = buf_getint(blobbuf);
-			buf_setlen(blobbuf, blobbuf->pos + len);
-#if DROPBEAR_ED25519
-			if (type == DROPBEAR_SIGNKEY_ED25519) {
-				buf_incrpos(blobbuf, 8);
-				buf_eatstring(blobbuf);
-				buf_eatstring(blobbuf);
-				buf_decrpos(blobbuf, SSH_SIGNKEY_ED25519_LEN+4);
-				if (buf_get_ed25519_priv_key(blobbuf, retkey->ed25519key)
-						== DROPBEAR_SUCCESS) {
-					errmsg = NULL;
-					retval = retkey;
-					goto error;
-				}
-			}
-#endif
-		}
+		/* length of private key part. we can discard it */
+		buf_getint(blobbuf);
+
+		/* discard checkkey1 */
+		buf_getint(blobbuf);
+		/* discard checkkey2 */
+		buf_getint(blobbuf);
 
 		errmsg = "Unsupported OpenSSH key type";
-		ossh_error:
+		retkey->type = type;
+		ret = DROPBEAR_FAILURE;
+		/* Parse private key part */
+#if DROPBEAR_RSA
+		if (type == DROPBEAR_SIGNKEY_RSA) {
+			errmsg = "Error parsing OpenSSH RSA key";
+			ret = buf_get_rsa_priv_ossh(blobbuf, retkey);
+		}
+#endif
+#if DROPBEAR_ED25519
+		if (type == DROPBEAR_SIGNKEY_ED25519) {
+			errmsg = "Error parsing OpenSSH ed25519 key";
+			ret = buf_get_ed25519_priv_ossh(blobbuf, retkey);
+		}
+#endif
+#if DROPBEAR_ECDSA
+		if (signkey_is_ecdsa(type)) {
+			errmsg = "Error parsing OpenSSH ecdsa key";
+			ret = buf_get_ecdsa_priv_ossh(blobbuf, retkey);
+		}
+#endif
+		if (ret == DROPBEAR_SUCCESS) {
+				errmsg = NULL;
+				retval = retkey;
+				goto error;
+		}
+
+ossh_error:
 		sign_key_free(retkey);
 		retkey = NULL;
 		goto error;
@@ -900,8 +880,7 @@ static sign_key *openssh_read(const char *filename, const char * UNUSED(passphra
 
 	error:
 	if (blobbuf) {
-		buf_burn(blobbuf);
-		buf_free(blobbuf);
+		buf_burn_free(blobbuf);
 	}
 	m_burn(key->keyblob, key->keyblob_size);
 	m_free(key->keyblob);
@@ -927,19 +906,8 @@ static int openssh_write(const char *filename, sign_key *key,
 	int ret = 0;
 	FILE *fp;
 
-#if DROPBEAR_RSA
-	mp_int dmp1, dmq1, iqmp, tmpval; /* for rsa */
-#endif
-
-	if (
-#if DROPBEAR_RSA
-			key->type == DROPBEAR_SIGNKEY_RSA ||
-#endif
 #if DROPBEAR_DSS
-			key->type == DROPBEAR_SIGNKEY_DSS ||
-#endif
-			0)
-	{
+	if (key->type == DROPBEAR_SIGNKEY_DSS) {
 		/*
 		 * Fetch the key blobs.
 		 */
@@ -955,102 +923,6 @@ static int openssh_write(const char *filename, sign_key *key,
 		 * key blob, and also decide on the header line.
 		 */
 		numbers[0].start = zero; numbers[0].bytes = 1; zero[0] = '\0';
-
-	#if DROPBEAR_RSA
-		if (key->type == DROPBEAR_SIGNKEY_RSA) {
-
-			if (key->rsakey->p == NULL || key->rsakey->q == NULL) {
-				fprintf(stderr, "Pre-0.33 Dropbear keys cannot be converted to OpenSSH keys.\n");
-				goto error;
-			}
-
-			/* e */
-			numbers[2].bytes = buf_getint(keyblob);
-			numbers[2].start = buf_getptr(keyblob, numbers[2].bytes);
-			buf_incrpos(keyblob, numbers[2].bytes);
-			
-			/* n */
-			numbers[1].bytes = buf_getint(keyblob);
-			numbers[1].start = buf_getptr(keyblob, numbers[1].bytes);
-			buf_incrpos(keyblob, numbers[1].bytes);
-			
-			/* d */
-			numbers[3].bytes = buf_getint(keyblob);
-			numbers[3].start = buf_getptr(keyblob, numbers[3].bytes);
-			buf_incrpos(keyblob, numbers[3].bytes);
-			
-			/* p */
-			numbers[4].bytes = buf_getint(keyblob);
-			numbers[4].start = buf_getptr(keyblob, numbers[4].bytes);
-			buf_incrpos(keyblob, numbers[4].bytes);
-			
-			/* q */
-			numbers[5].bytes = buf_getint(keyblob);
-			numbers[5].start = buf_getptr(keyblob, numbers[5].bytes);
-			buf_incrpos(keyblob, numbers[5].bytes);
-
-			/* now calculate some extra parameters: */
-			m_mp_init(&tmpval);
-			m_mp_init(&dmp1);
-			m_mp_init(&dmq1);
-			m_mp_init(&iqmp);
-
-			/* dmp1 = d mod (p-1) */
-			if (mp_sub_d(key->rsakey->p, 1, &tmpval) != MP_OKAY) {
-				fprintf(stderr, "Bignum error for p-1\n");
-				goto error;
-			}
-			if (mp_mod(key->rsakey->d, &tmpval, &dmp1) != MP_OKAY) {
-				fprintf(stderr, "Bignum error for dmp1\n");
-				goto error;
-			}
-
-			/* dmq1 = d mod (q-1) */
-			if (mp_sub_d(key->rsakey->q, 1, &tmpval) != MP_OKAY) {
-				fprintf(stderr, "Bignum error for q-1\n");
-				goto error;
-			}
-			if (mp_mod(key->rsakey->d, &tmpval, &dmq1) != MP_OKAY) {
-				fprintf(stderr, "Bignum error for dmq1\n");
-				goto error;
-			}
-
-			/* iqmp = (q^-1) mod p */
-			if (mp_invmod(key->rsakey->q, key->rsakey->p, &iqmp) != MP_OKAY) {
-				fprintf(stderr, "Bignum error for iqmp\n");
-				goto error;
-			}
-
-			extrablob = buf_new(2000);
-			buf_putmpint(extrablob, &dmp1);
-			buf_putmpint(extrablob, &dmq1);
-			buf_putmpint(extrablob, &iqmp);
-			buf_setpos(extrablob, 0);
-			mp_clear(&dmp1);
-			mp_clear(&dmq1);
-			mp_clear(&iqmp);
-			mp_clear(&tmpval);
-			
-			/* dmp1 */
-			numbers[6].bytes = buf_getint(extrablob);
-			numbers[6].start = buf_getptr(extrablob, numbers[6].bytes);
-			buf_incrpos(extrablob, numbers[6].bytes);
-			
-			/* dmq1 */
-			numbers[7].bytes = buf_getint(extrablob);
-			numbers[7].start = buf_getptr(extrablob, numbers[7].bytes);
-			buf_incrpos(extrablob, numbers[7].bytes);
-			
-			/* iqmp */
-			numbers[8].bytes = buf_getint(extrablob);
-			numbers[8].start = buf_getptr(extrablob, numbers[8].bytes);
-			buf_incrpos(extrablob, numbers[8].bytes);
-
-			nnumbers = 9;
-			header = "-----BEGIN RSA PRIVATE KEY-----\n";
-			footer = "-----END RSA PRIVATE KEY-----\n";
-		}
-	#endif /* DROPBEAR_RSA */
 
 	#if DROPBEAR_DSS
 		if (key->type == DROPBEAR_SIGNKEY_DSS) {
@@ -1119,116 +991,40 @@ static int openssh_write(const char *filename, sign_key *key,
 			memcpy(outblob+pos, numbers[i].start, numbers[i].bytes);
 			pos += numbers[i].bytes;
 		}
-	} /* end RSA and DSS handling */
+	} /* end DSS handling */
+#endif /* DROPBEAR_DSS */
 
-#if DROPBEAR_ECDSA
-	if (key->type == DROPBEAR_SIGNKEY_ECDSA_NISTP256
-		|| key->type == DROPBEAR_SIGNKEY_ECDSA_NISTP384
-		|| key->type == DROPBEAR_SIGNKEY_ECDSA_NISTP521) {
-
-		/*  SEC1 V2 appendix c.4
-		ECPrivateKey ::= SEQUENCE {
-			version INTEGER { ecPrivkeyVer1(1) } (ecPrivkeyVer1),
-			privateKey OCTET STRING,
-			parameters [0] ECDomainParameters {{ SECGCurveNames }} OPTIONAL, 
-			publicKey [1] BIT STRING OPTIONAL
-		}
-		*/
-		buffer *seq_buf = buf_new(400);
-		ecc_key **eck = (ecc_key**)signkey_key_ptr(key, key->type);
-		const long curve_size = (*eck)->dp->size;
-		int curve_oid_len = 0;
-		const void* curve_oid = NULL;
-		unsigned long pubkey_size = 2*curve_size+1;
-		int k_size;
-		int err = 0;
-		size_t written;
-
-		/* version. less than 10 bytes */
-		buf_incrwritepos(seq_buf,
-			ber_write_id_len(buf_getwriteptr(seq_buf, 10), 2, 1, 0));
-		buf_putbyte(seq_buf, 1);
-
-		/* privateKey */
-		k_size = mp_ubin_size((*eck)->k);
-		dropbear_assert(k_size <= curve_size);
-		buf_incrwritepos(seq_buf,
-			ber_write_id_len(buf_getwriteptr(seq_buf, 10), 4, k_size, 0));
-		if (mp_to_ubin((*eck)->k, buf_getwriteptr(seq_buf, k_size), k_size, &written) != MP_OKAY) {
-			dropbear_exit("ECC error");
-		}
-		buf_incrwritepos(seq_buf, written);
-
-		/* SECGCurveNames */
-		switch (key->type)
-		{
-			case DROPBEAR_SIGNKEY_ECDSA_NISTP256:
-				curve_oid_len = sizeof(OID_SEC256R1_BLOB);
-				curve_oid = OID_SEC256R1_BLOB;
-				break;
-			case DROPBEAR_SIGNKEY_ECDSA_NISTP384:
-				curve_oid_len = sizeof(OID_SEC384R1_BLOB);
-				curve_oid = OID_SEC384R1_BLOB;
-				break;
-			case DROPBEAR_SIGNKEY_ECDSA_NISTP521:
-				curve_oid_len = sizeof(OID_SEC521R1_BLOB);
-				curve_oid = OID_SEC521R1_BLOB;
-				break;
-			default:
-				dropbear_exit("Internal error");
-		}
-
-		buf_incrwritepos(seq_buf,
-			ber_write_id_len(buf_getwriteptr(seq_buf, 10), 0, 2+curve_oid_len, 0xa0));
-		/* object == 6 */
-		buf_incrwritepos(seq_buf,
-			ber_write_id_len(buf_getwriteptr(seq_buf, 10), 6, curve_oid_len, 0));
-		buf_putbytes(seq_buf, curve_oid, curve_oid_len);
-
-		buf_incrwritepos(seq_buf,
-			ber_write_id_len(buf_getwriteptr(seq_buf, 10), 1,
-			(pubkey_size +1 < 128 ? 2 : 3 ) +1 +pubkey_size, 0xa0));
-
-		buf_incrwritepos(seq_buf,
-			ber_write_id_len(buf_getwriteptr(seq_buf, 10), 3, 1+pubkey_size, 0));
-		buf_putbyte(seq_buf, 0);
-		err = ecc_ansi_x963_export(*eck, buf_getwriteptr(seq_buf, pubkey_size), &pubkey_size);
-		if (err != CRYPT_OK) {
-			dropbear_exit("ECC error");
-		}
-		buf_incrwritepos(seq_buf, pubkey_size);
-
-		buf_setpos(seq_buf, 0);
-			
-		outblob = (unsigned char*)m_malloc(1000);
-
-		pos = 0;
-		pos += ber_write_id_len(outblob+pos, 16, seq_buf->len, ASN1_CONSTRUCTED);
-		memcpy(&outblob[pos], seq_buf->data, seq_buf->len);
-		pos += seq_buf->len;
-		len = pos;
-		outlen = len;
-
-		buf_burn(seq_buf);
-		buf_free(seq_buf);
-		seq_buf = NULL;
-
-		header = "-----BEGIN EC PRIVATE KEY-----\n";
-		footer = "-----END EC PRIVATE KEY-----\n";
-	}
+	if (0
+#if DROPBEAR_RSA
+		|| key->type == DROPBEAR_SIGNKEY_RSA
 #endif
-
 #if DROPBEAR_ED25519
-	if (key->type == DROPBEAR_SIGNKEY_ED25519) {
-		buffer *buf = buf_new(300);
-		keyblob = buf_new(100);
-		extrablob = buf_new(200);
+		|| key->type == DROPBEAR_SIGNKEY_ED25519
+#endif
+#if DROPBEAR_ECDSA
+		|| signkey_is_ecdsa(key->type)
+#endif
+		) {
+		buffer *buf = buf_new(3200);
+		keyblob = buf_new(3000);
+		extrablob = buf_new(3100);
 
 		/* private key blob w/o header */
-		buf_put_priv_key(keyblob, key, key->type);
-		buf_setpos(keyblob, 0);
-		buf_incrpos(keyblob, buf_getint(keyblob));
-		len = buf_getint(keyblob);
+#if DROPBEAR_RSA
+		if (key->type == DROPBEAR_SIGNKEY_RSA) {
+			buf_put_rsa_priv_ossh(keyblob, key);
+		}
+#endif
+#if DROPBEAR_ED25519
+		if (key->type == DROPBEAR_SIGNKEY_ED25519) {
+			buf_put_ed25519_priv_ossh(keyblob, key);
+		}
+#endif
+#if DROPBEAR_ECDSA
+		if (signkey_is_ecdsa(key->type)) {
+			buf_put_ecdsa_priv_ossh(keyblob, key);
+		}
+#endif
 
 		/* header */
 		buf_putbytes(buf, OSSH_PKEY_BLOB, OSSH_PKEY_BLOBLEN);
@@ -1237,9 +1033,10 @@ static int openssh_write(const char *filename, sign_key *key,
 		buf_put_pub_key(buf, key, key->type);
 
 		/* private key */
-		buf_incrwritepos(extrablob, 4);
-		buf_put_pub_key(extrablob, key, key->type);
-		buf_putstring(extrablob, buf_getptr(keyblob, len), len);
+		buf_putint(extrablob, 0); /* checkint 1 */
+		buf_putint(extrablob, 0); /* checkint 2 */
+		/* raw openssh private key */
+		buf_putbytes(extrablob, keyblob->data, keyblob->len);
 		/* comment */
 		buf_putstring(extrablob, "", 0);
 		/* padding to cipher block length */
@@ -1254,14 +1051,12 @@ static int openssh_write(const char *filename, sign_key *key,
 		outblob = (unsigned char*)m_malloc(outlen);
 		memcpy(outblob, buf->data, buf->len);
 
-		buf_burn(buf);
-		buf_free(buf);
+		buf_burn_free(buf);
 		buf = NULL;
 
 		header = "-----BEGIN OPENSSH PRIVATE KEY-----\n";
 		footer = "-----END OPENSSH PRIVATE KEY-----\n";
 	}
-#endif
 
 	/*
 	 * Padding on OpenSSH keys is deterministic. The number of
@@ -1318,742 +1113,13 @@ static int openssh_write(const char *filename, sign_key *key,
 		m_free(outblob);
 	}
 	if (keyblob) {
-		buf_burn(keyblob);
-		buf_free(keyblob);
+		buf_burn_free(keyblob);
 	}
 	if (extrablob) {
-		buf_burn(extrablob);
-		buf_free(extrablob);
+		buf_burn_free(extrablob);
 	}
 	return ret;
 }
-
-#if 0
-/* XXX TODO ssh.com stuff isn't going yet */
-
-/* ----------------------------------------------------------------------
- * Code to read ssh.com private keys.
- */
-
-/*
- * The format of the base64 blob is largely ssh2-packet-formatted,
- * except that mpints are a bit different: they're more like the
- * old ssh1 mpint. You have a 32-bit bit count N, followed by
- * (N+7)/8 bytes of data.
- * 
- * So. The blob contains:
- * 
- *  - uint32 0x3f6ff9eb	   (magic number)
- *  - uint32 size			 (total blob size)
- *  - string key-type		 (see below)
- *  - string cipher-type	  (tells you if key is encrypted)
- *  - string encrypted-blob
- * 
- * (The first size field includes the size field itself and the
- * magic number before it. All other size fields are ordinary ssh2
- * strings, so the size field indicates how much data is to
- * _follow_.)
- * 
- * The encrypted blob, once decrypted, contains a single string
- * which in turn contains the payload. (This allows padding to be
- * added after that string while still making it clear where the
- * real payload ends. Also it probably makes for a reasonable
- * decryption check.)
- * 
- * The payload blob, for an RSA key, contains:
- *  - mpint e
- *  - mpint d
- *  - mpint n  (yes, the public and private stuff is intermixed)
- *  - mpint u  (presumably inverse of p mod q)
- *  - mpint p  (p is the smaller prime)
- *  - mpint q  (q is the larger)
- * 
- * For a DSA key, the payload blob contains:
- *  - uint32 0
- *  - mpint p
- *  - mpint g
- *  - mpint q
- *  - mpint y
- *  - mpint x
- * 
- * Alternatively, if the parameters are `predefined', that
- * (0,p,g,q) sequence can be replaced by a uint32 1 and a string
- * containing some predefined parameter specification. *shudder*,
- * but I doubt we'll encounter this in real life.
- * 
- * The key type strings are ghastly. The RSA key I looked at had a
- * type string of
- * 
- *   `if-modn{sign{rsa-pkcs1-sha1},encrypt{rsa-pkcs1v2-oaep}}'
- * 
- * and the DSA key wasn't much better:
- * 
- *   `dl-modp{sign{dsa-nist-sha1},dh{plain}}'
- * 
- * It isn't clear that these will always be the same. I think it
- * might be wise just to look at the `if-modn{sign{rsa' and
- * `dl-modp{sign{dsa' prefixes.
- * 
- * Finally, the encryption. The cipher-type string appears to be
- * either `none' or `3des-cbc'. Looks as if this is SSH2-style
- * 3des-cbc (i.e. outer cbc rather than inner). The key is created
- * from the passphrase by means of yet another hashing faff:
- * 
- *  - first 16 bytes are MD5(passphrase)
- *  - next 16 bytes are MD5(passphrase || first 16 bytes)
- *  - if there were more, they'd be MD5(passphrase || first 32),
- *	and so on.
- */
-
-#define SSHCOM_MAGIC_NUMBER 0x3f6ff9eb
-
-struct sshcom_key {
-	char comment[256];				 /* allowing any length is overkill */
-	unsigned char *keyblob;
-	int keyblob_len, keyblob_size;
-};
-
-static struct sshcom_key *load_sshcom_key(const char *filename)
-{
-	struct sshcom_key *ret;
-	FILE *fp;
-	char buffer[256];
-	int len;
-	char *errmsg, *p;
-	int headers_done;
-	char base64_bit[4];
-	int base64_chars = 0;
-
-	ret = snew(struct sshcom_key);
-	ret->comment[0] = '\0';
-	ret->keyblob = NULL;
-	ret->keyblob_len = ret->keyblob_size = 0;
-
-	fp = fopen(filename, "r");
-	if (!fp) {
-		errmsg = "Unable to open key file";
-		goto error;
-	}
-	if (!fgets(buffer, sizeof(buffer), fp) ||
-		0 != strcmp(buffer, "---- BEGIN SSH2 ENCRYPTED PRIVATE KEY ----\n")) {
-		errmsg = "File does not begin with ssh.com key header";
-		goto error;
-	}
-
-	headers_done = 0;
-	while (1) {
-		if (!fgets(buffer, sizeof(buffer), fp)) {
-			errmsg = "Unexpected end of file";
-			goto error;
-		}
-		if (!strcmp(buffer, "---- END SSH2 ENCRYPTED PRIVATE KEY ----\n"))
-			break;					 /* done */
-		if ((p = strchr(buffer, ':')) != NULL) {
-			if (headers_done) {
-				errmsg = "Header found in body of key data";
-				goto error;
-			}
-			*p++ = '\0';
-			while (*p && isspace((unsigned char)*p)) p++;
-			/*
-			 * Header lines can end in a trailing backslash for
-			 * continuation.
-			 */
-			while ((len = strlen(p)) > (int)(sizeof(buffer) - (p-buffer) -1) ||
-				   p[len-1] != '\n' || p[len-2] == '\\') {
-				if (len > (int)((p-buffer) + sizeof(buffer)-2)) {
-					errmsg = "Header line too long to deal with";
-					goto error;
-				}
-				if (!fgets(p+len-2, sizeof(buffer)-(p-buffer)-(len-2), fp)) {
-					errmsg = "Unexpected end of file";
-					goto error;
-				}
-			}
-			p[strcspn(p, "\n")] = '\0';
-			if (!strcmp(buffer, "Comment")) {
-				/* Strip quotes in comment if present. */
-				if (p[0] == '"' && p[strlen(p)-1] == '"') {
-					p++;
-					p[strlen(p)-1] = '\0';
-				}
-				strncpy(ret->comment, p, sizeof(ret->comment));
-				ret->comment[sizeof(ret->comment)-1] = '\0';
-			}
-		} else {
-			headers_done = 1;
-
-			p = buffer;
-			while (isbase64(*p)) {
-				base64_bit[base64_chars++] = *p;
-				if (base64_chars == 4) {
-					unsigned char out[3];
-
-					base64_chars = 0;
-
-					len = base64_decode_atom(base64_bit, out);
-
-					if (len <= 0) {
-						errmsg = "Invalid base64 encoding";
-						goto error;
-					}
-
-					if (ret->keyblob_len + len > ret->keyblob_size) {
-						ret->keyblob_size = ret->keyblob_len + len + 256;
-						ret->keyblob = sresize(ret->keyblob, ret->keyblob_size,
-											   unsigned char);
-					}
-
-					memcpy(ret->keyblob + ret->keyblob_len, out, len);
-					ret->keyblob_len += len;
-				}
-
-				p++;
-			}
-		}
-	}
-
-	if (ret->keyblob_len == 0 || !ret->keyblob) {
-		errmsg = "Key body not present";
-		goto error;
-	}
-
-	return ret;
-
-	error:
-	if (ret) {
-		if (ret->keyblob) {
-			memset(ret->keyblob, 0, ret->keyblob_size);
-			m_free(ret->keyblob);
-		}
-		memset(ret, 0, sizeof(*ret));
-		m_free(ret);
-	}
-	return NULL;
-}
-
-int sshcom_encrypted(const char *filename, char **comment)
-{
-	struct sshcom_key *key = load_sshcom_key(filename);
-	int pos, len, answer;
-
-	*comment = NULL;
-	if (!key)
-		return 0;
-
-	/*
-	 * Check magic number.
-	 */
-	if (GET_32BIT(key->keyblob) != 0x3f6ff9eb)
-		return 0;					  /* key is invalid */
-
-	/*
-	 * Find the cipher-type string.
-	 */
-	answer = 0;
-	pos = 8;
-	if (key->keyblob_len < pos+4)
-		goto done;					 /* key is far too short */
-	len = toint(GET_32BIT(key->keyblob + pos));
-	if (len < 0 || len > key->keyblob_len - pos - 4)
-		goto done;					 /* key is far too short */
-	pos += 4 + len;                    /* skip key type */
-	len = toint(GET_32BIT(key->keyblob + pos)); /* find cipher-type length */
-	if (len < 0 || len > key->keyblob_len - pos - 4)
-		goto done;					 /* cipher type string is incomplete */
-	if (len != 4 || 0 != memcmp(key->keyblob + pos + 4, "none", 4))
-		answer = 1;
-
-	done:
-	*comment = dupstr(key->comment);
-	memset(key->keyblob, 0, key->keyblob_size);
-	m_free(key->keyblob);
-	memset(key, 0, sizeof(*key));
-	m_free(key);
-	return answer;
-}
-
-static int sshcom_read_mpint(void *data, int len, struct mpint_pos *ret)
-{
-	unsigned bits, bytes;
-	unsigned char *d = (unsigned char *) data;
-
-	if (len < 4)
-		goto error;
-	bits = GET_32BIT(d);
-
-	bytes = (bits + 7) / 8;
-	if (len < 4+bytes)
-		goto error;
-
-	ret->start = d + 4;
-	ret->bytes = bytes;
-	return bytes+4;
-
-	error:
-	ret->start = NULL;
-	ret->bytes = -1;
-	return len;						/* ensure further calls fail as well */
-}
-
-static int sshcom_put_mpint(void *target, void *data, int len)
-{
-	unsigned char *d = (unsigned char *)target;
-	unsigned char *i = (unsigned char *)data;
-	int bits = len * 8 - 1;
-
-	while (bits > 0) {
-		if (*i & (1 << (bits & 7)))
-			break;
-		if (!(bits-- & 7))
-			i++, len--;
-	}
-
-	PUT_32BIT(d, bits+1);
-	memcpy(d+4, i, len);
-	return len+4;
-}
-
-sign_key *sshcom_read(const char *filename, char *passphrase)
-{
-	struct sshcom_key *key = load_sshcom_key(filename);
-	char *errmsg;
-	int pos, len;
-	const char prefix_rsa[] = "if-modn{sign{rsa";
-	const char prefix_dsa[] = "dl-modp{sign{dsa";
-	enum { RSA, DSA } type;
-	int encrypted;
-	char *ciphertext;
-	int cipherlen;
-	struct ssh2_userkey *ret = NULL, *retkey;
-	const struct ssh_signkey *alg;
-	unsigned char *blob = NULL;
-	int blobsize = 0, publen, privlen;
-
-	if (!key)
-		return NULL;
-
-	/*
-	 * Check magic number.
-	 */
-	if (GET_32BIT(key->keyblob) != SSHCOM_MAGIC_NUMBER) {
-		errmsg = "Key does not begin with magic number";
-		goto error;
-	}
-
-	/*
-	 * Determine the key type.
-	 */
-	pos = 8;
-	if (key->keyblob_len < pos+4 ||
-		(len = GET_32BIT(key->keyblob + pos)) > key->keyblob_len - pos - 4) {
-		errmsg = "Key blob does not contain a key type string";
-		goto error;
-	}
-	if (len > sizeof(prefix_rsa) - 1 &&
-		!memcmp(key->keyblob+pos+4, prefix_rsa, sizeof(prefix_rsa) - 1)) {
-		type = RSA;
-	} else if (len > sizeof(prefix_dsa) - 1 &&
-		!memcmp(key->keyblob+pos+4, prefix_dsa, sizeof(prefix_dsa) - 1)) {
-		type = DSA;
-	} else {
-		errmsg = "Key is of unknown type";
-		goto error;
-	}
-	pos += 4+len;
-
-	/*
-	 * Determine the cipher type.
-	 */
-	if (key->keyblob_len < pos+4 ||
-		(len = GET_32BIT(key->keyblob + pos)) > key->keyblob_len - pos - 4) {
-		errmsg = "Key blob does not contain a cipher type string";
-		goto error;
-	}
-	if (len == 4 && !memcmp(key->keyblob+pos+4, "none", 4))
-		encrypted = 0;
-	else if (len == 8 && !memcmp(key->keyblob+pos+4, "3des-cbc", 8))
-		encrypted = 1;
-	else {
-		errmsg = "Key encryption is of unknown type";
-		goto error;
-	}
-	pos += 4+len;
-
-	/*
-	 * Get hold of the encrypted part of the key.
-	 */
-	if (key->keyblob_len < pos+4 ||
-		(len = GET_32BIT(key->keyblob + pos)) > key->keyblob_len - pos - 4) {
-		errmsg = "Key blob does not contain actual key data";
-		goto error;
-	}
-	ciphertext = (char *)key->keyblob + pos + 4;
-	cipherlen = len;
-	if (cipherlen == 0) {
-		errmsg = "Length of key data is zero";
-		goto error;
-	}
-
-	/*
-	 * Decrypt it if necessary.
-	 */
-	if (encrypted) {
-		/*
-		 * Derive encryption key from passphrase and iv/salt:
-		 * 
-		 *  - let block A equal MD5(passphrase)
-		 *  - let block B equal MD5(passphrase || A)
-		 *  - block C would be MD5(passphrase || A || B) and so on
-		 *  - encryption key is the first N bytes of A || B
-		 */
-		struct MD5Context md5c;
-		unsigned char keybuf[32], iv[8];
-
-		if (cipherlen % 8 != 0) {
-			errmsg = "Encrypted part of key is not a multiple of cipher block"
-				" size";
-			goto error;
-		}
-
-		MD5Init(&md5c);
-		MD5Update(&md5c, (unsigned char *)passphrase, strlen(passphrase));
-		MD5Final(keybuf, &md5c);
-
-		MD5Init(&md5c);
-		MD5Update(&md5c, (unsigned char *)passphrase, strlen(passphrase));
-		MD5Update(&md5c, keybuf, 16);
-		MD5Final(keybuf+16, &md5c);
-
-		/*
-		 * Now decrypt the key blob.
-		 */
-		memset(iv, 0, sizeof(iv));
-		des3_decrypt_pubkey_ossh(keybuf, iv, (unsigned char *)ciphertext,
-								 cipherlen);
-
-		memset(&md5c, 0, sizeof(md5c));
-		memset(keybuf, 0, sizeof(keybuf));
-
-		/*
-		 * Hereafter we return WRONG_PASSPHRASE for any parsing
-		 * error. (But only if we've just tried to decrypt it!
-		 * Returning WRONG_PASSPHRASE for an unencrypted key is
-		 * automatic doom.)
-		 */
-		if (encrypted)
-			ret = SSH2_WRONG_PASSPHRASE;
-	}
-
-	/*
-	 * Strip away the containing string to get to the real meat.
-	 */
-	len = toint(GET_32BIT(ciphertext));
-	if (len < 0 || len > cipherlen-4) {
-		errmsg = "containing string was ill-formed";
-		goto error;
-	}
-	ciphertext += 4;
-	cipherlen = len;
-
-	/*
-	 * Now we break down into RSA versus DSA. In either case we'll
-	 * construct public and private blobs in our own format, and
-	 * end up feeding them to alg->createkey().
-	 */
-	blobsize = cipherlen + 256;
-	blob = snewn(blobsize, unsigned char);
-	privlen = 0;
-	if (type == RSA) {
-		struct mpint_pos n, e, d, u, p, q;
-		int pos = 0;
-		pos += sshcom_read_mpint(ciphertext+pos, cipherlen-pos, &e);
-		pos += sshcom_read_mpint(ciphertext+pos, cipherlen-pos, &d);
-		pos += sshcom_read_mpint(ciphertext+pos, cipherlen-pos, &n);
-		pos += sshcom_read_mpint(ciphertext+pos, cipherlen-pos, &u);
-		pos += sshcom_read_mpint(ciphertext+pos, cipherlen-pos, &p);
-		pos += sshcom_read_mpint(ciphertext+pos, cipherlen-pos, &q);
-		if (!q.start) {
-			errmsg = "key data did not contain six integers";
-			goto error;
-		}
-
-		alg = &ssh_rsa;
-		pos = 0;
-		pos += put_string(blob+pos, "ssh-rsa", 7);
-		pos += put_mp(blob+pos, e.start, e.bytes);
-		pos += put_mp(blob+pos, n.start, n.bytes);
-		publen = pos;
-		pos += put_string(blob+pos, d.start, d.bytes);
-		pos += put_mp(blob+pos, q.start, q.bytes);
-		pos += put_mp(blob+pos, p.start, p.bytes);
-		pos += put_mp(blob+pos, u.start, u.bytes);
-		privlen = pos - publen;
-	} else if (type == DSA) {
-		struct mpint_pos p, q, g, x, y;
-		int pos = 4;
-		if (GET_32BIT(ciphertext) != 0) {
-			errmsg = "predefined DSA parameters not supported";
-			goto error;
-		}
-		pos += sshcom_read_mpint(ciphertext+pos, cipherlen-pos, &p);
-		pos += sshcom_read_mpint(ciphertext+pos, cipherlen-pos, &g);
-		pos += sshcom_read_mpint(ciphertext+pos, cipherlen-pos, &q);
-		pos += sshcom_read_mpint(ciphertext+pos, cipherlen-pos, &y);
-		pos += sshcom_read_mpint(ciphertext+pos, cipherlen-pos, &x);
-		if (!x.start) {
-			errmsg = "key data did not contain five integers";
-			goto error;
-		}
-
-		alg = &ssh_dss;
-		pos = 0;
-		pos += put_string(blob+pos, "ssh-dss", 7);
-		pos += put_mp(blob+pos, p.start, p.bytes);
-		pos += put_mp(blob+pos, q.start, q.bytes);
-		pos += put_mp(blob+pos, g.start, g.bytes);
-		pos += put_mp(blob+pos, y.start, y.bytes);
-		publen = pos;
-		pos += put_mp(blob+pos, x.start, x.bytes);
-		privlen = pos - publen;
-	} else
-		return NULL;
-
-	dropbear_assert(privlen > 0);			   /* should have bombed by now if not */
-
-	retkey = snew(struct ssh2_userkey);
-	retkey->alg = alg;
-	retkey->data = alg->createkey(blob, publen, blob+publen, privlen);
-	if (!retkey->data) {
-		m_free(retkey);
-		errmsg = "unable to create key data structure";
-		goto error;
-	}
-	retkey->comment = dupstr(key->comment);
-
-	errmsg = NULL; /* no error */
-	ret = retkey;
-
-	error:
-	if (blob) {
-		memset(blob, 0, blobsize);
-		m_free(blob);
-	}
-	memset(key->keyblob, 0, key->keyblob_size);
-	m_free(key->keyblob);
-	memset(key, 0, sizeof(*key));
-	m_free(key);
-	return ret;
-}
-
-int sshcom_write(const char *filename, sign_key *key,
-				 char *passphrase)
-{
-	unsigned char *pubblob, *privblob;
-	int publen, privlen;
-	unsigned char *outblob;
-	int outlen;
-	struct mpint_pos numbers[6];
-	int nnumbers, initial_zero, pos, lenpos, i;
-	char *type;
-	char *ciphertext;
-	int cipherlen;
-	int ret = 0;
-	FILE *fp;
-
-	/*
-	 * Fetch the key blobs.
-	 */
-	pubblob = key->alg->public_blob(key->data, &publen);
-	privblob = key->alg->private_blob(key->data, &privlen);
-	outblob = NULL;
-
-	/*
-	 * Find the sequence of integers to be encoded into the OpenSSH
-	 * key blob, and also decide on the header line.
-	 */
-	if (key->alg == &ssh_rsa) {
-		int pos;
-		struct mpint_pos n, e, d, p, q, iqmp;
-
-		pos = 4 + GET_32BIT(pubblob);
-		pos += ssh2_read_mpint(pubblob+pos, publen-pos, &e);
-		pos += ssh2_read_mpint(pubblob+pos, publen-pos, &n);
-		pos = 0;
-		pos += ssh2_read_mpint(privblob+pos, privlen-pos, &d);
-		pos += ssh2_read_mpint(privblob+pos, privlen-pos, &p);
-		pos += ssh2_read_mpint(privblob+pos, privlen-pos, &q);
-		pos += ssh2_read_mpint(privblob+pos, privlen-pos, &iqmp);
-
-		dropbear_assert(e.start && iqmp.start); /* can't go wrong */
-
-		numbers[0] = e;
-		numbers[1] = d;
-		numbers[2] = n;
-		numbers[3] = iqmp;
-		numbers[4] = q;
-		numbers[5] = p;
-
-		nnumbers = 6;
-		initial_zero = 0;
-		type = "if-modn{sign{rsa-pkcs1-sha1},encrypt{rsa-pkcs1v2-oaep}}";
-	} else if (key->alg == &ssh_dss) {
-		int pos;
-		struct mpint_pos p, q, g, y, x;
-
-		pos = 4 + GET_32BIT(pubblob);
-		pos += ssh2_read_mpint(pubblob+pos, publen-pos, &p);
-		pos += ssh2_read_mpint(pubblob+pos, publen-pos, &q);
-		pos += ssh2_read_mpint(pubblob+pos, publen-pos, &g);
-		pos += ssh2_read_mpint(pubblob+pos, publen-pos, &y);
-		pos = 0;
-		pos += ssh2_read_mpint(privblob+pos, privlen-pos, &x);
-
-		dropbear_assert(y.start && x.start); /* can't go wrong */
-
-		numbers[0] = p;
-		numbers[1] = g;
-		numbers[2] = q;
-		numbers[3] = y;
-		numbers[4] = x;
-
-		nnumbers = 5;
-		initial_zero = 1;
-		type = "dl-modp{sign{dsa-nist-sha1},dh{plain}}";
-	} else {
-		dropbear_assert(0);					 /* zoinks! */
-	}
-
-	/*
-	 * Total size of key blob will be somewhere under 512 plus
-	 * combined length of integers. We'll calculate the more
-	 * precise size as we construct the blob.
-	 */
-	outlen = 512;
-	for (i = 0; i < nnumbers; i++)
-		outlen += 4 + numbers[i].bytes;
-	outblob = snewn(outlen, unsigned char);
-
-	/*
-	 * Create the unencrypted key blob.
-	 */
-	pos = 0;
-	PUT_32BIT(outblob+pos, SSHCOM_MAGIC_NUMBER); pos += 4;
-	pos += 4;							   /* length field, fill in later */
-	pos += put_string(outblob+pos, type, strlen(type));
-	{
-		char *ciphertype = passphrase ? "3des-cbc" : "none";
-		pos += put_string(outblob+pos, ciphertype, strlen(ciphertype));
-	}
-	lenpos = pos;					   /* remember this position */
-	pos += 4;							   /* encrypted-blob size */
-	pos += 4;							   /* encrypted-payload size */
-	if (initial_zero) {
-		PUT_32BIT(outblob+pos, 0);
-		pos += 4;
-	}
-	for (i = 0; i < nnumbers; i++)
-		pos += sshcom_put_mpint(outblob+pos,
-								numbers[i].start, numbers[i].bytes);
-	/* Now wrap up the encrypted payload. */
-	PUT_32BIT(outblob+lenpos+4, pos - (lenpos+8));
-	/* Pad encrypted blob to a multiple of cipher block size. */
-	if (passphrase) {
-		int padding = -(pos - (lenpos+4)) & 7;
-		while (padding--)
-			outblob[pos++] = random_byte();
-	}
-	ciphertext = (char *)outblob+lenpos+4;
-	cipherlen = pos - (lenpos+4);
-	dropbear_assert(!passphrase || cipherlen % 8 == 0);
-	/* Wrap up the encrypted blob string. */
-	PUT_32BIT(outblob+lenpos, cipherlen);
-	/* And finally fill in the total length field. */
-	PUT_32BIT(outblob+4, pos);
-
-	dropbear_assert(pos < outlen);
-
-	/*
-	 * Encrypt the key.
-	 */
-	if (passphrase) {
-		/*
-		 * Derive encryption key from passphrase and iv/salt:
-		 * 
-		 *  - let block A equal MD5(passphrase)
-		 *  - let block B equal MD5(passphrase || A)
-		 *  - block C would be MD5(passphrase || A || B) and so on
-		 *  - encryption key is the first N bytes of A || B
-		 */
-		struct MD5Context md5c;
-		unsigned char keybuf[32], iv[8];
-
-		MD5Init(&md5c);
-		MD5Update(&md5c, (unsigned char *)passphrase, strlen(passphrase));
-		MD5Final(keybuf, &md5c);
-
-		MD5Init(&md5c);
-		MD5Update(&md5c, (unsigned char *)passphrase, strlen(passphrase));
-		MD5Update(&md5c, keybuf, 16);
-		MD5Final(keybuf+16, &md5c);
-
-		/*
-		 * Now decrypt the key blob.
-		 */
-		memset(iv, 0, sizeof(iv));
-		des3_encrypt_pubkey_ossh(keybuf, iv, (unsigned char *)ciphertext,
-								 cipherlen);
-
-		memset(&md5c, 0, sizeof(md5c));
-		memset(keybuf, 0, sizeof(keybuf));
-	}
-
-	/*
-	 * And save it. We'll use Unix line endings just in case it's
-	 * subsequently transferred in binary mode.
-	 */
-	fp = fopen(filename, "wb");	  /* ensure Unix line endings */
-	if (!fp)
-		goto error;
-	fputs("---- BEGIN SSH2 ENCRYPTED PRIVATE KEY ----\n", fp);
-	fprintf(fp, "Comment: \"");
-	/*
-	 * Comment header is broken with backslash-newline if it goes
-	 * over 70 chars. Although it's surrounded by quotes, it
-	 * _doesn't_ escape backslashes or quotes within the string.
-	 * Don't ask me, I didn't design it.
-	 */
-	{
-		int slen = 60;					   /* starts at 60 due to "Comment: " */
-		char *c = key->comment;
-		while ((int)strlen(c) > slen) {
-			fprintf(fp, "%.*s\\\n", slen, c);
-			c += slen;
-			slen = 70;					   /* allow 70 chars on subsequent lines */
-		}
-		fprintf(fp, "%s\"\n", c);
-	}
-	base64_encode_fp(fp, outblob, pos, 70);
-	fputs("---- END SSH2 ENCRYPTED PRIVATE KEY ----\n", fp);
-	fclose(fp);
-	ret = 1;
-
-	error:
-	if (outblob) {
-		memset(outblob, 0, outlen);
-		m_free(outblob);
-	}
-	if (privblob) {
-		memset(privblob, 0, privlen);
-		m_free(privblob);
-	}
-	if (pubblob) {
-		memset(pubblob, 0, publen);
-		m_free(pubblob);
-	}
-	return ret;
-}
-#endif /* ssh.com stuff disabled */
 
 /* From PuTTY misc.c */
 static int toint(unsigned u)

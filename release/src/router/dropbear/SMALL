@@ -9,10 +9,7 @@ The same applies if you are compiling just a client.
 
 ---
 
-The following are set in options.h:
-
-	- You can safely disable blowfish and twofish ciphers, and MD5 hmac, without
-	  affecting interoperability
+The following are set in localoptions.h:
 
 	- If you're compiling statically, you can turn off host lookups
 

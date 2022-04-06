@@ -19,9 +19,11 @@
 /fuzzer-*.options
 /scp
 /scp-progress
-Makefile
 config.h
-config.h.in
-configure
 default_options_guard.h
+localoptions.h
+Makefile
 tags
+.pytest*
+*.pyc
+/test/venv

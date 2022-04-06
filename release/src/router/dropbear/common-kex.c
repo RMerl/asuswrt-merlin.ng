@@ -249,7 +249,7 @@ static void kexinitialise() {
 /* Helper function for gen_new_keys, creates a hash. It makes a copy of the
  * already initialised hash_state hs, which should already have processed
  * the dh_K and hash, since these are common. X is the letter 'A', 'B' etc.
- * out must have at least min(SHA1_HASH_SIZE, outlen) bytes allocated.
+ * out must have at least min(hash_size, outlen) bytes allocated.
  *
  * See Section 7.2 of rfc4253 (ssh transport) for details */
 static void hashkeys(unsigned char *out, unsigned int outlen, 
@@ -306,8 +306,7 @@ static void gen_new_keys() {
 	mp_clear(ses.dh_K);
 	m_free(ses.dh_K);
 	hash_desc->process(&hs, ses.hash->data, ses.hash->len);
-	buf_burn(ses.hash);
-	buf_free(ses.hash);
+	buf_burn_free(ses.hash);
 	ses.hash = NULL;
 
 	if (IS_DROPBEAR_CLIENT) {
@@ -803,8 +802,7 @@ void finish_kexhashbuf(void) {
 	}
 #endif
 
-	buf_burn(ses.kexhashbuf);
-	buf_free(ses.kexhashbuf);
+	buf_burn_free(ses.kexhashbuf);
 	m_burn(&hs, sizeof(hash_state));
 	ses.kexhashbuf = NULL;
 	
@@ -869,7 +867,7 @@ static void read_kex_algos() {
 		goto error;
 	}
 	TRACE(("kexguess2 %d", kexguess2))
-	TRACE(("kex algo %s", algo->name))
+	DEBUG3(("kex algo %s", algo->name))
 	ses.newkeys->algo_kex = algo->data;
 
 	/* server_host_key_algorithms */
@@ -879,7 +877,7 @@ static void read_kex_algos() {
 		erralgo = "hostkey";
 		goto error;
 	}
-	TRACE(("signature algo %s", algo->name))
+	DEBUG2(("hostkey algo %s", algo->name))
 	ses.newkeys->algo_signature = algo->val;
 	ses.newkeys->algo_hostkey = signkey_type_from_signature(ses.newkeys->algo_signature);
 
@@ -889,7 +887,7 @@ static void read_kex_algos() {
 		erralgo = "enc c->s";
 		goto error;
 	}
-	TRACE(("enc c2s is  %s", c2s_cipher_algo->name))
+	DEBUG2(("enc  c2s is %s", c2s_cipher_algo->name))
 
 	/* encryption_algorithms_server_to_client */
 	s2c_cipher_algo = buf_match_algo(ses.payload, sshciphers, 0, NULL);
@@ -897,7 +895,7 @@ static void read_kex_algos() {
 		erralgo = "enc s->c";
 		goto error;
 	}
-	TRACE(("enc s2c is  %s", s2c_cipher_algo->name))
+	DEBUG2(("enc  s2c is %s", s2c_cipher_algo->name))
 
 	/* mac_algorithms_client_to_server */
 	c2s_hash_algo = buf_match_algo(ses.payload, sshhashes, 0, NULL);
@@ -910,7 +908,7 @@ static void read_kex_algos() {
 		erralgo = "mac c->s";
 		goto error;
 	}
-	TRACE(("hash c2s is  %s", c2s_hash_algo ? c2s_hash_algo->name : "<implicit>"))
+	DEBUG2(("hmac c2s is %s", c2s_hash_algo ? c2s_hash_algo->name : "<implicit>"))
 
 	/* mac_algorithms_server_to_client */
 	s2c_hash_algo = buf_match_algo(ses.payload, sshhashes, 0, NULL);
@@ -923,7 +921,7 @@ static void read_kex_algos() {
 		erralgo = "mac s->c";
 		goto error;
 	}
-	TRACE(("hash s2c is  %s", s2c_hash_algo ? s2c_hash_algo->name : "<implicit>"))
+	DEBUG2(("hmac s2c is %s", s2c_hash_algo ? s2c_hash_algo->name : "<implicit>"))
 
 	/* compression_algorithms_client_to_server */
 	c2s_comp_algo = buf_match_algo(ses.payload, ses.compress_algos, 0, NULL);
@@ -931,7 +929,7 @@ static void read_kex_algos() {
 		erralgo = "comp c->s";
 		goto error;
 	}
-	TRACE(("hash c2s is  %s", c2s_comp_algo->name))
+	DEBUG2(("comp c2s is %s", c2s_comp_algo->name))
 
 	/* compression_algorithms_server_to_client */
 	s2c_comp_algo = buf_match_algo(ses.payload, ses.compress_algos, 0, NULL);
@@ -939,7 +937,7 @@ static void read_kex_algos() {
 		erralgo = "comp s->c";
 		goto error;
 	}
-	TRACE(("hash s2c is  %s", s2c_comp_algo->name))
+	DEBUG2(("comp s2c is %s", s2c_comp_algo->name))
 
 	/* languages_client_to_server */
 	buf_eatstring(ses.payload);

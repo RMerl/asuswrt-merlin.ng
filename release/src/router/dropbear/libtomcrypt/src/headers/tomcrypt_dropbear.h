@@ -16,12 +16,6 @@
 #if DROPBEAR_AES
 #define LTC_RIJNDAEL
 #endif
-/* _TABLES tells it to use tables during setup, _SMALL means to use the smaller scheduled key format
- * (saves 4KB of ram), _ALL_TABLES enables all tables during setup */
-#if DROPBEAR_TWOFISH
-#define LTC_TWOFISH
-#define LTC_TWOFISH_SMALL
-#endif
 
 #if DROPBEAR_3DES
 #define LTC_DES
@@ -56,7 +50,9 @@
 #define LTC_SHA256
 #endif
 
+#if DROPBEAR_SHA1
 #define LTC_SHA1
+#endif
 
 #if DROPBEAR_MD5
 #define LTC_MD5

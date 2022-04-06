@@ -55,10 +55,12 @@ void buf_free(buffer* buf) {
 	m_free(buf);
 }
 
-/* overwrite the contents of the buffer to clear it */
-void buf_burn(const buffer* buf) {
+/* overwrite the contents of the buffer then free it */
+void buf_burn_free(buffer* buf) {
 	m_burn(buf->data, buf->size);
+	m_free(buf);
 }
+
 
 /* resize a buffer, pos and len will be repositioned if required when
  * downsizing */

@@ -371,7 +371,7 @@ static void checkhostkey(const unsigned char* keyblob, unsigned int keybloblen) 
 
 		if (ret == DROPBEAR_SUCCESS) {
 			/* Good matching key */
-			TRACE(("good matching key"))
+			DEBUG1(("server match %s", fingerprint))
 			goto out;
 		}
 

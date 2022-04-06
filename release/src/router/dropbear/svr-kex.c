@@ -106,6 +106,7 @@ void recv_msg_kexdh_init() {
 static void svr_ensure_hostkey() {
 
 	const char* fn = NULL;
+	char *expand_fn = NULL;
 	enum signkey_type type = ses.newkeys->algo_hostkey;
 	void **hostkey = signkey_key_ptr(svr_opts.hostkey, type);
 	int ret = DROPBEAR_FAILURE;
@@ -142,15 +143,19 @@ static void svr_ensure_hostkey() {
 			dropbear_assert(0);
 	}
 
-	if (readhostkey(fn, svr_opts.hostkey, &type) == DROPBEAR_SUCCESS) {
-		return;
+	expand_fn = expand_homedir_path(fn);
+
+	ret = readhostkey(expand_fn, svr_opts.hostkey, &type);
+	if (ret == DROPBEAR_SUCCESS) {
+		goto out;
 	}
 
-	if (signkey_generate(type, 0, fn, 1) == DROPBEAR_FAILURE) {
+	if (signkey_generate(type, 0, expand_fn, 1) == DROPBEAR_FAILURE) {
 		goto out;
 	}
 	
-	ret = readhostkey(fn, svr_opts.hostkey, &type);
+	/* Read what we just generated (or another process raced us) */
+	ret = readhostkey(expand_fn, svr_opts.hostkey, &type);
 
 	if (ret == DROPBEAR_SUCCESS) {
 		char *fp = NULL;
@@ -161,16 +166,16 @@ static void svr_ensure_hostkey() {
 		len = key_buf->len - key_buf->pos;
 		fp = sign_key_fingerprint(buf_getptr(key_buf, len), len);
 		dropbear_log(LOG_INFO, "Generated hostkey %s, fingerprint is %s",
-			fn, fp);
+			expand_fn, fp);
 		m_free(fp);
 		buf_free(key_buf);
 	}
 
 out:
-	if (ret == DROPBEAR_FAILURE)
-	{
-		dropbear_exit("Couldn't read or generate hostkey %s", fn);
+	if (ret == DROPBEAR_FAILURE) {
+		dropbear_exit("Couldn't read or generate hostkey %s", expand_fn);
 	}
+    m_free(expand_fn);
 }
 #endif
 	

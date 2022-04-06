@@ -45,13 +45,6 @@ static void cleanup_tcp(const struct Listener *listener) {
 	m_free(tcpinfo);
 }
 
-int tcp_prio_inithandler(struct Channel* channel)
-{
-	TRACE(("tcp_prio_inithandler channel %d", channel->index))
-	channel->prio = DROPBEAR_CHANNEL_PRIO_UNKNOWABLE;
-	return 0;
-}
-
 static void tcp_acceptor(const struct Listener *listener, int sock) {
 
 	int fd;

@@ -23,20 +23,15 @@
  * SOFTWARE. */
 
 #include "includes.h"
+#include "dbutil.h"
 
-/* definitions are cleanest if we just put them here */
-int dropbear_main(int argc, char ** argv);
-int cli_main(int argc, char ** argv);
-int dropbearkey_main(int argc, char ** argv);
-int dropbearconvert_main(int argc, char ** argv);
-int scp_main(int argc, char ** argv);
-
-static int runprog(const char *progname, int argc, char ** argv, int *match) {
+static int runprog(const char *multipath,
+		const char *progname, int argc, char ** argv, int *match) {
 	*match = DROPBEAR_SUCCESS;
 
 #ifdef DBMULTI_dropbear
 		if (strcmp(progname, "dropbear") == 0) {
-			return dropbear_main(argc, argv);
+			return dropbear_main(argc, argv, multipath);
 		}
 #endif
 #ifdef DBMULTI_dbclient
@@ -67,12 +62,16 @@ static int runprog(const char *progname, int argc, char ** argv, int *match) {
 int main(int argc, char ** argv) {
 	int i;
 	for (i = 0; i < 2; i++) {
+		const char* multipath = NULL;
+		if (i == 1) {
+			multipath = argv[0];
+		}
 		/* Try symlink first, then try as an argument eg "dropbearmulti dbclient host ..." */
 		if (argc > i) {
 			int match, res;
 			/* figure which form we're being called as */
 			const char* progname = basename(argv[i]);
-			res = runprog(progname, argc-i, &argv[i], &match);
+			res = runprog(multipath, progname, argc-i, &argv[i], &match);
 			if (match == DROPBEAR_SUCCESS) {
 				return res;
 			}

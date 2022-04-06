@@ -139,7 +139,7 @@ struct Listener * get_listener(int type, const void* typedata,
 	struct Listener* listener;
 
 	for (i = 0, listener = ses.listeners[i]; i < ses.listensize; i++) {
-		if (listener->type == type
+		if (listener && listener->type == type
 				&& match(typedata, listener->typedata)) {
 			return listener;
 		}

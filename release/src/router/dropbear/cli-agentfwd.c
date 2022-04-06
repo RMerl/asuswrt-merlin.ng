@@ -47,7 +47,6 @@
 static int new_agent_chan(struct Channel * channel);
 
 const struct ChanType cli_chan_agent = {
-	0, /* sepfds */
 	"auth-agent@openssh.com",
 	new_agent_chan,
 	NULL,
@@ -94,6 +93,7 @@ static int new_agent_chan(struct Channel * channel) {
 
 	channel->readfd = fd;
 	channel->writefd = fd;
+	channel->bidir_fd = 1;
 
 	return 0;
 }

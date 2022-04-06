@@ -35,6 +35,12 @@ Don't fork into background.
 .B \-E
 Log to standard error rather than syslog.
 .TP
+.B \-e
+Pass on the server environment to all child processes. This is required, for example,
+if Dropbear is launched on the fly from a SLURM workload manager. The environment is not
+passed by default. Note that this could expose secrets in environment variables from 
+the calling process - use with caution.
+.TP
 .B \-m
 Don't display the message of the day on login.
 .TP
@@ -60,7 +66,7 @@ and TCP
 .I port.
 If just a port is given listen
 on all addresses.
-up to 10 can be specified (default 22 if none specified).
+Up to 10 can be specified (default 22 if none specified).
 .TP
 .B \-i
 Service program mode.
@@ -86,7 +92,7 @@ Ensure that traffic is transmitted at a certain interval in seconds. This is
 useful for working around firewalls or routers that drop connections after
 a certain period of inactivity. The trade-off is that a session may be
 closed if there is a temporary lapse of network connectivity. A setting
-if 0 disables keepalives. If no response is received for 3 consecutive keepalives the connection will be closed.
+of 0 disables keepalives. If no response is received for 3 consecutive keepalives the connection will be closed.
 .TP
 .B \-I \fIidle_timeout
 Disconnect the session if no traffic is transmitted or received for \fIidle_timeout\fR seconds.
@@ -96,7 +102,8 @@ Set the number of authentication attempts allowed per connection. If unspecified
 .TP
 .B \-c \fIforced_command
 Disregard the command provided by the user and always run \fIforced_command\fR. This also
-overrides any authorized_keys command= option.
+overrides any authorized_keys command= option. The original command is saved in the 
+SSH_ORIGINAL_COMMAND environment variable (see below).
 .TP
 .B \-V
 Print the version
@@ -132,6 +139,10 @@ Don't allow X11 forwarding for this connection
 .B no-pty
 Disable PTY allocation. Note that a user can still obtain most of the
 same functionality with other means even if no-pty is set.
+
+.TP
+.B restrict
+Applies all the no- restrictions listed above.
 
 .TP
 .B command=\fR"\fIforced_command\fR"

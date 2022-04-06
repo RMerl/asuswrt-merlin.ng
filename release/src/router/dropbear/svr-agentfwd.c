@@ -186,7 +186,6 @@ void svr_agentcleanup(struct ChanSess * chansess) {
 }
 
 static const struct ChanType chan_svr_agent = {
-	0, /* sepfds */
 	"auth-agent@openssh.com",
 	NULL,
 	NULL,

@@ -1,7 +1,0 @@
-repo: d7da3b1e15401eb234ec866d5eac992fc4cd5878
-node: 4b984c42372d01fcc2fd487c58af6a5aa65eb88e
-branch: default
-latesttag: github/main
-latesttag: github/master
-latesttagdistance: 1
-changessincelatesttag: 1

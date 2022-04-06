@@ -115,6 +115,9 @@ void svr_pubkey_options_cleanup() {
 		}
 		m_free(ses.authstate.pubkey_options);
 	}
+	if (ses.authstate.pubkey_info) {
+		m_free(ses.authstate.pubkey_info);
+	}
 }
 
 /* helper for svr_add_pubkey_options. returns DROPBEAR_SUCCESS if the option is matched,
@@ -163,6 +166,18 @@ int svr_add_pubkey_options(buffer *options_buf, int line_num, const char* filena
 		}
 		if (match_option(options_buf, "no-pty") == DROPBEAR_SUCCESS) {
 			dropbear_log(LOG_WARNING, "Pty allocation disabled.");
+			ses.authstate.pubkey_options->no_pty_flag = 1;
+			goto next_option;
+		}
+		if (match_option(options_buf, "restrict") == DROPBEAR_SUCCESS) {
+			dropbear_log(LOG_WARNING, "Restrict option set");
+			ses.authstate.pubkey_options->no_port_forwarding_flag = 1;
+#if DROPBEAR_SVR_AGENTFWD
+			ses.authstate.pubkey_options->no_agent_forwarding_flag = 1;
+#endif
+#if DROPBEAR_X11FWD
+			ses.authstate.pubkey_options->no_x11_forwarding_flag = 1;
+#endif
 			ses.authstate.pubkey_options->no_pty_flag = 1;
 			goto next_option;
 		}

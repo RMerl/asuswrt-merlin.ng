@@ -8,6 +8,7 @@ srcdir=@srcdir@
 # So that libtommath can include Dropbear headers for options and m_burn()
 CFLAGS += -I$(srcdir) -I../libtomcrypt/src/headers/ -I$(srcdir)/../libtomcrypt/src/headers/ -I../ -I$(srcdir)/../
 CFLAGS += -Wno-deprecated
+CFLAGS += $(CPPFLAGS)
 
 V = 1
 

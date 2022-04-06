@@ -155,7 +155,7 @@ void dropbear_log(int priority, const char* format, ...) {
 }
 
 
-#if DEBUG_TRACE
+#if DEBUG_TRACE 
 
 static double debug_start_time = -1;
 
@@ -185,39 +185,63 @@ static double time_since_start()
 	return nowf - debug_start_time;
 }
 
-void dropbear_trace(const char* format, ...) {
-	va_list param;
-
-	if (!debug_trace) {
+static void dropbear_tracelevel(int level, const char *format, va_list param)
+{
+	if (debug_trace == 0 || debug_trace < level) {
 		return;
 	}
 
-	va_start(param, format);
-	fprintf(stderr, "TRACE  (%d) %f: ", getpid(), time_since_start());
+	fprintf(stderr, "TRACE%d (%d) %f: ", level, getpid(), time_since_start());
 	vfprintf(stderr, format, param);
 	fprintf(stderr, "\n");
+}
+#if (DEBUG_TRACE>=1)
+void dropbear_trace1(const char* format, ...) {
+	va_list param;
+
+	va_start(param, format);
+	dropbear_tracelevel(1, format, param);
 	va_end(param);
 }
-
+#endif
+#if (DEBUG_TRACE>=2)
 void dropbear_trace2(const char* format, ...) {
-	static int trace_env = -1;
 	va_list param;
 
-	if (trace_env == -1) {
-		trace_env = getenv("DROPBEAR_TRACE2") ? 1 : 0;
-	}
-
-	if (!(debug_trace && trace_env)) {
-		return;
-	}
-
 	va_start(param, format);
-	fprintf(stderr, "TRACE2 (%d) %f: ", getpid(), time_since_start());
-	vfprintf(stderr, format, param);
-	fprintf(stderr, "\n");
+	dropbear_tracelevel(2, format, param);
 	va_end(param);
 }
-#endif /* DEBUG_TRACE */
+#endif
+#if (DEBUG_TRACE>=3)
+void dropbear_trace3(const char* format, ...) {
+	va_list param;
+
+	va_start(param, format);
+	dropbear_tracelevel(3, format, param);
+	va_end(param);
+}
+#endif
+#if (DEBUG_TRACE>=4)
+void dropbear_trace4(const char* format, ...) {
+	va_list param;
+
+	va_start(param, format);
+	dropbear_tracelevel(4, format, param);
+	va_end(param);
+}
+#endif
+#if (DEBUG_TRACE>=5)
+void dropbear_trace5(const char* format, ...) {
+	va_list param;
+
+	va_start(param, format);
+	dropbear_tracelevel(5, format, param);
+	va_end(param);
+}
+#endif
+#endif
+
 
 /* Connect to a given unix socket. The socket is blocking */
 #if ENABLE_CONNECT_UNIX
@@ -385,20 +409,37 @@ void run_shell_command(const char* cmd, unsigned int maxfd, char* usershell) {
 
 #if DEBUG_TRACE
 void printhex(const char * label, const unsigned char * buf, int len) {
-
-	int i;
+	int i, j;
 
 	fprintf(stderr, "%s\n", label);
-	for (i = 0; i < len; i++) {
-		fprintf(stderr, "%02x", buf[i]);
-		if (i % 16 == 15) {
-			fprintf(stderr, "\n");
+	/* for each 16 byte line */
+	for (j = 0; j < len; j += 16) {
+		const int linelen = MIN(16, len - j);
+
+		/* print hex digits */
+		for (i = 0; i < 16; i++) {
+			if (i < linelen) {
+				fprintf(stderr, "%02x", buf[j+i]);
+			} else {
+				fprintf(stderr, "  ");
+			}
+			// separator between pairs
+			if (i % 2 ==1) {
+				fprintf(stderr, " ");
+			}
 		}
-		else if (i % 2 == 1) {
-			fprintf(stderr, " ");
+
+		/* print characters */
+		fprintf(stderr, "  ");
+		for (i = 0; i < linelen; i++) {
+			char c = buf[j+i];
+			if (!isprint(c)) {
+				c = '.';
+			}
+			fputc(c, stderr);
 		}
+		fprintf(stderr, "\n");
 	}
-	fprintf(stderr, "\n");
 }
 
 void printmpint(const char *label, mp_int *mp) {
@@ -558,16 +599,28 @@ void setnonblocking(int fd) {
 }
 
 void disallow_core() {
-	struct rlimit lim;
-	lim.rlim_cur = lim.rlim_max = 0;
-	setrlimit(RLIMIT_CORE, &lim);
+	struct rlimit lim = {0};
+	if (getrlimit(RLIMIT_CORE, &lim) < 0) {
+		TRACE(("getrlimit(RLIMIT_CORE) failed"));
+	}
+	lim.rlim_cur = 0;
+	if (setrlimit(RLIMIT_CORE, &lim) < 0) {
+		TRACE(("setrlimit(RLIMIT_CORE) failed"));
+	}
 }
 
 /* Returns DROPBEAR_SUCCESS or DROPBEAR_FAILURE, with the result in *val */
 int m_str_to_uint(const char* str, unsigned int *val) {
 	unsigned long l;
-	errno = 0;
-	l = strtoul(str, NULL, 10);
+	char *endp;
+
+	l = strtoul(str, &endp, 10);
+
+	if (endp == str || *endp != '\0') {
+		/* parse error */
+		return DROPBEAR_FAILURE;
+	}
+
 	/* The c99 spec doesn't actually seem to define EINVAL, but most platforms
 	 * I've looked at mention it in their manpage */
 	if ((l == 0 && errno == EINVAL)
@@ -580,16 +633,24 @@ int m_str_to_uint(const char* str, unsigned int *val) {
 	}
 }
 
-/* Returns malloced path. inpath beginning with '/' is returned as-is,
-otherwise home directory is prepended */
+/* Returns malloced path. inpath beginning with '~/' expanded,
+   otherwise returned as-is */
 char * expand_homedir_path(const char *inpath) {
 	struct passwd *pw = NULL;
-	if (inpath[0] != '/') {
-		pw = getpwuid(getuid());
-		if (pw && pw->pw_dir) {
-			int len = strlen(inpath) + strlen(pw->pw_dir) + 2;
+	if (strncmp(inpath, "~/", 2) == 0) {
+		char *homedir = getenv("HOME");
+
+		if (!homedir) {
+			pw = getpwuid(getuid());
+			if (pw) {
+				homedir = pw->pw_dir;
+			}
+		}
+
+		if (homedir) {
+			int len = strlen(inpath)-2 + strlen(homedir) + 2;
 			char *buf = m_malloc(len);
-			snprintf(buf, len, "%s/%s", pw->pw_dir, inpath);
+			snprintf(buf, len, "%s/%s", homedir, inpath+2);
 			return buf;
 		}
 	}
@@ -690,4 +751,36 @@ void fsync_parent_dir(const char* fn) {
 
 	m_free(fn_dir);
 #endif
+}
+
+int fd_read_pending(int fd) {
+	fd_set fds;
+	struct timeval timeout;
+
+	DROPBEAR_FD_ZERO(&fds);
+	FD_SET(fd, &fds);
+	while (1) {
+		timeout.tv_sec = 0;
+		timeout.tv_usec = 0;
+		if (select(fd+1, &fds, NULL, NULL, &timeout) < 0) {
+			if (errno == EINTR) {
+				continue;
+			}
+			return 0;
+		}
+		return FD_ISSET(fd, &fds);
+	}
+}
+
+int m_snprintf(char *str, size_t size, const char *format, ...) {
+	va_list param;
+	int ret;
+
+	va_start(param, format);
+	ret = vsnprintf(str, size, format, param);
+	va_end(param);
+	if (ret < 0) {
+		dropbear_exit("snprintf failed");
+	}
+	return ret;
 }

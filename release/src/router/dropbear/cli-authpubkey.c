@@ -125,7 +125,7 @@ void recv_msg_userauth_pk_ok() {
 static void cli_buf_put_sign(buffer* buf, sign_key *key, enum signature_type sigtype,
 			const buffer *data_buf) {
 #if DROPBEAR_CLI_AGENTFWD
-	// TODO: rsa-sha256 agent
+	/* TODO: rsa-sha256 agent */
 	if (key->source == SIGNKEY_SOURCE_AGENT) {
 		/* Format the agent signature ourselves, as buf_put_sign would. */
 		buffer *sigblob;
@@ -147,7 +147,7 @@ static void send_msg_userauth_pubkey(sign_key *key, enum signature_type sigtype,
 	buffer* sigbuf = NULL;
 	enum signkey_type keytype = signkey_type_from_signature(sigtype);
 
-	TRACE(("enter send_msg_userauth_pubkey sigtype %d", sigtype))
+	DEBUG1(("enter send_msg_userauth_pubkey %s", signature_name_from_type(sigtype, NULL)))
 	CHECKCLEARTOWRITE();
 
 	buf_putbyte(ses.writepayload, SSH_MSG_USERAUTH_REQUEST);
@@ -176,6 +176,7 @@ static void send_msg_userauth_pubkey(sign_key *key, enum signature_type sigtype,
 		buf_putbytes(sigbuf, ses.writepayload->data, ses.writepayload->len);
 		cli_buf_put_sign(ses.writepayload, key, sigtype, sigbuf);
 		buf_free(sigbuf); /* Nothing confidential in the buffer */
+		cli_ses.is_trivial_auth = 0;
 	}
 
 	encrypt_packet();

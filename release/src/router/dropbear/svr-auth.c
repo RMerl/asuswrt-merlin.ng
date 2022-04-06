@@ -25,7 +25,6 @@
 /* This file (auth.c) handles authentication requests, passing it to the
  * particular type (auth-passwd, auth-pubkey). */
 
-#include <limits.h>
 
 #include "includes.h"
 #include "dbutil.h"

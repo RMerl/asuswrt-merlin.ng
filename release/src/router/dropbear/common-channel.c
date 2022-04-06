@@ -154,7 +154,6 @@ static struct Channel* newchannel(unsigned int remotechan,
 	newchan->readfd = FD_UNINIT;
 	newchan->errfd = FD_CLOSED; /* this isn't always set to start with */
 	newchan->await_open = 0;
-	newchan->flushing = 0;
 
 	newchan->writebuf = cbuf_new(opts.recv_window);
 	newchan->recvwindow = opts.recv_window;
@@ -163,7 +162,7 @@ static struct Channel* newchannel(unsigned int remotechan,
 	newchan->recvdonelen = 0;
 	newchan->recvmaxpacket = RECV_MAX_CHANNEL_DATA_LEN;
 
-	newchan->prio = DROPBEAR_CHANNEL_PRIO_EARLY; /* inithandler sets it */
+	newchan->prio = DROPBEAR_PRIO_NORMAL;
 
 	ses.channels[i] = newchan;
 	ses.chancount++;
@@ -284,22 +283,27 @@ static void check_close(struct Channel *channel) {
 				channel->writebuf ? cbuf_getused(channel->writebuf) : 0,
 				channel->extrabuf ? cbuf_getused(channel->extrabuf) : 0))
 
-	if (!channel->flushing 
-		&& !channel->sent_close
-		&& channel->type->check_close
-		&& channel->type->check_close(channel))
-	{
-		channel->flushing = 1;
-	}
-	
 	/* if a type-specific check_close is defined we will only exit
 	   once that has been triggered. this is only used for a server "session"
-	   channel, to ensure that the shell has exited (and the exit status 
+	   channel, to ensure that the shell has exited (and the exit status
 	   retrieved) before we close things up. */
-	if (!channel->type->check_close	
+	if (!channel->type->check_close
 		|| channel->sent_close
 		|| channel->type->check_close(channel)) {
 		close_allowed = 1;
+	}
+
+	/* In flushing mode we close FDs as soon as pipes are empty.
+	This is used to drain out FDs when the process exits, in the case
+	where the FD doesn't have EOF - "sleep 10&echo hello" case */
+	if (channel->flushing) {
+		if (channel->readfd >= 0 && !fd_read_pending(channel->readfd)) {
+			close_chan_fd(channel, channel->readfd, SHUT_RD);
+		}
+		if (ERRFD_IS_READ(channel)
+			&& channel->errfd >= 0 && !fd_read_pending(channel->errfd)) {
+			close_chan_fd(channel, channel->errfd, SHUT_RD);
+		}
 	}
 
 	if (channel->recv_close && !write_pending(channel) && close_allowed) {
@@ -315,22 +319,6 @@ static void check_close(struct Channel *channel) {
 		/* have a server "session" and child has exited */
 		|| (channel->type->check_close && close_allowed)) {
 		close_chan_fd(channel, channel->writefd, SHUT_WR);
-	}
-
-	/* Special handling for flushing read data after an exit. We
-	   read regardless of whether the select FD was set,
-	   and if there isn't data available, the channel will get closed. */
-	if (channel->flushing) {
-		TRACE(("might send data, flushing"))
-		if (channel->readfd >= 0 && channel->transwindow > 0) {
-			TRACE(("send data readfd"))
-			send_msg_channel_data(channel, 0);
-		}
-		if (ERRFD_IS_READ(channel) && channel->errfd >= 0 
-			&& channel->transwindow > 0) {
-			TRACE(("send data errfd"))
-			send_msg_channel_data(channel, 1);
-		}
 	}
 
 	/* If we're not going to send any more data, send EOF */
@@ -356,8 +344,7 @@ static void check_close(struct Channel *channel) {
  * if so, set up the channel properly. Otherwise, the channel is cleaned up, so
  * it is important that the channel reference isn't used after a call to this
  * function */
-void channel_connect_done(int result, int sock, void* user_data, const char* UNUSED(errstring)) {
-
+void channel_connect_done(int result, int sock, void* user_data, const char* errstring) {
 	struct Channel *channel = user_data;
 
 	TRACE(("enter channel_connect_done"))
@@ -365,6 +352,7 @@ void channel_connect_done(int result, int sock, void* user_data, const char* UNU
 	if (result == DROPBEAR_SUCCESS)
 	{
 		channel->readfd = channel->writefd = sock;
+		channel->bidir_fd = 1;
 		channel->conn_pending = NULL;
 		send_msg_channel_open_confirmation(channel, channel->recvwindow,
 				channel->recvmaxpacket);
@@ -373,9 +361,9 @@ void channel_connect_done(int result, int sock, void* user_data, const char* UNU
 	else
 	{
 		send_msg_channel_open_failure(channel->remotechan,
-				SSH_OPEN_CONNECT_FAILED, "", "");
+				SSH_OPEN_CONNECT_FAILED, errstring, "");
 		remove_channel(channel);
-		TRACE(("leave check_in_progress: fail"))
+		TRACE(("leave check_in_progress: fail. internal errstring: %s", errstring))
 	}
 }
 
@@ -780,14 +768,6 @@ static void send_msg_channel_data(struct Channel *channel, int isextended) {
 	channel->transwindow -= len;
 
 	encrypt_packet();
-	
-	/* If we receive less data than we requested when flushing, we've
-	   reached the equivalent of EOF */
-	if (channel->flushing && len < (ssize_t)maxlen)
-	{
-		TRACE(("closing from channel, flushing out."))
-		close_chan_fd(channel, fd, SHUT_RD);
-	}
 	TRACE(("leave send_msg_channel_data"))
 }
 
@@ -975,9 +955,7 @@ void recv_msg_channel_open() {
 		}
 	}
 
-	if (channel->prio == DROPBEAR_CHANNEL_PRIO_EARLY) {
-		channel->prio = DROPBEAR_CHANNEL_PRIO_BULK;
-	}
+	update_channel_prio();
 
 	/* success */
 	send_msg_channel_open_confirmation(channel, channel->recvwindow,
@@ -990,8 +968,6 @@ failure:
 
 cleanup:
 	m_free(type);
-	
-	update_channel_prio();
 
 	TRACE(("leave recv_msg_channel_open"))
 }
@@ -1073,7 +1049,7 @@ static void close_chan_fd(struct Channel *channel, int fd, int how) {
 
 	int closein = 0, closeout = 0;
 
-	if (channel->type->sepfds) {
+	if (channel->bidir_fd) {
 		TRACE(("SHUTDOWN(%d, %d)", fd, how))
 		shutdown(fd, how);
 		if (how == 0) {
@@ -1103,7 +1079,7 @@ static void close_chan_fd(struct Channel *channel, int fd, int how) {
 
 	/* if we called shutdown on it and all references are gone, then we 
 	 * need to close() it to stop it lingering */
-	if (channel->type->sepfds && channel->readfd == FD_CLOSED 
+	if (channel->bidir_fd && channel->readfd == FD_CLOSED 
 		&& channel->writefd == FD_CLOSED && channel->errfd == FD_CLOSED) {
 		TRACE(("CLOSE (finally) of %d", fd))
 		m_close(fd);
@@ -1136,6 +1112,7 @@ int send_msg_channel_open_init(int fd, const struct ChanType *type) {
 
 	chan->writefd = chan->readfd = fd;
 	ses.maxfd = MAX(ses.maxfd, fd);
+	chan->bidir_fd = 1;
 
 	chan->await_open = 1;
 
@@ -1152,7 +1129,7 @@ int send_msg_channel_open_init(int fd, const struct ChanType *type) {
 	return DROPBEAR_SUCCESS;
 }
 
-/* Confirmation that our channel open request (for forwardings) was 
+/* Confirmation that our channel open request was 
  * successful*/
 void recv_msg_channel_open_confirmation() {
 
@@ -1185,11 +1162,8 @@ void recv_msg_channel_open_confirmation() {
 		}
 	}
 
-	if (channel->prio == DROPBEAR_CHANNEL_PRIO_EARLY) {
-		channel->prio = DROPBEAR_CHANNEL_PRIO_BULK;
-	}
 	update_channel_prio();
-	
+
 	TRACE(("leave recv_msg_channel_open_confirmation"))
 }
 

@@ -28,6 +28,7 @@
 #include "includes.h"
 #include "buffer.h"
 #include "circbuffer.h"
+#include "netio.h"
 
 #define SSH_OPEN_ADMINISTRATIVELY_PROHIBITED    1
 #define SSH_OPEN_CONNECT_FAILED                 2
@@ -41,13 +42,6 @@
 
 struct ChanType;
 
-enum dropbear_channel_prio {
-	DROPBEAR_CHANNEL_PRIO_INTERACTIVE, /* pty shell, x11 */
-	DROPBEAR_CHANNEL_PRIO_UNKNOWABLE, /* tcp - can't know what's being forwarded */
-	DROPBEAR_CHANNEL_PRIO_BULK, /* the rest - probably scp or something */
-	DROPBEAR_CHANNEL_PRIO_EARLY, /* channel is still being set up */
-};
-
 struct Channel {
 
 	unsigned int index; /* the local channel index */
@@ -60,6 +54,9 @@ struct Channel {
 	int readfd; /* read from insecure side, written to wire */
 	int errfd; /* used like writefd or readfd, depending if it's client or server.
 				  Doesn't exactly belong here, but is cleaner here */
+	int bidir_fd; /* a boolean indicating that writefd/readfd are the same
+			file descriptor (bidirectional), such as a network socket or PTY.
+			That is handled differently when closing FDs */
 	circbuffer *writebuf; /* data from the wire, for local consumption. Can be
 							 initially NULL */
 	circbuffer *extrabuf; /* extended-data for the program - used like writebuf
@@ -68,6 +65,9 @@ struct Channel {
 	/* whether close/eof messages have been exchanged */
 	int sent_close, recv_close;
 	int recv_eof, sent_eof;
+	/* once flushing is set, readfd will close once no more data is available
+	(not waiting for EOF) */
+	int flushing;
 
 	struct dropbear_progress_connection *conn_pending;
 	int initconn; /* used for TCP forwarding, whether the channel has been
@@ -77,25 +77,22 @@ struct Channel {
 					   for this channel (and are awaiting a confirmation
 					   or failure). */
 
-	int flushing;
-
 	/* Used by client chansession to handle ~ escaping, NULL ignored otherwise */
 	void (*read_mangler)(const struct Channel*, const unsigned char* bytes, int *len);
 
 	const struct ChanType* type;
 
-	enum dropbear_channel_prio prio;
+	enum dropbear_prio prio;
 };
 
 struct ChanType {
 
-	int sepfds; /* Whether this channel has separate pipes for in/out or not */
 	const char *name;
 	/* Sets up the channel */
 	int (*inithandler)(struct Channel*);
-	/* Called to check whether a channel should close, separately from the FD being closed.
+	/* Called to check whether a channel should close, separately from the FD being EOF.
 	Used for noticing process exiting */
-	int (*check_close)(const struct Channel*);
+	int (*check_close)(struct Channel*);
 	/* Handler for ssh_msg_channel_request */
 	void (*reqhandler)(struct Channel*);
 	/* Called prior to sending ssh_msg_channel_close, used for sending exit status */
@@ -104,7 +101,7 @@ struct ChanType {
 	void (*cleanup)(const struct Channel*);
 };
 
-/* Callback for connect_remote */
+/* Callback for connect_remote. errstring may be NULL if result == DROPBEAR_SUCCESS */
 void channel_connect_done(int result, int sock, void* user_data, const char* errstring);
 
 void chaninitialise(const struct ChanType *chantypes[]);

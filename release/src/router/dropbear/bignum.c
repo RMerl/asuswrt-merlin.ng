@@ -100,5 +100,5 @@ void hash_process_mp(const struct ltc_hash_descriptor *hash_desc,
 								plus header + some leeway*/
 	buf_putmpint(buf, mp);
 	hash_desc->process(hs, buf->data, buf->len);
-	buf_free(buf);
+	buf_burn_free(buf);
 }

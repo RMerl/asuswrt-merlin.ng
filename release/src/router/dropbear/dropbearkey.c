@@ -195,7 +195,7 @@ int main(int argc, char ** argv) {
 					break;
 #if DEBUG_TRACE
 				case 'v':
-					debug_trace = 1;
+					debug_trace = DROPBEAR_VERBOSE_LEVEL;
 					break;
 #endif
 				default:
@@ -309,8 +309,7 @@ static int printpubfile(const char* filename) {
 	err = DROPBEAR_SUCCESS;
 
 out:
-	buf_burn(buf);
-	buf_free(buf);
+	buf_burn_free(buf);
 	buf = NULL;
 	if (key) {
 		sign_key_free(key);
@@ -342,7 +341,7 @@ static void printpubkey(sign_key * key, int keytype) {
 	err = base64_encode(buf_getptr(buf, len), len, base64key, &base64len);
 
 	if (err != CRYPT_OK) {
-		fprintf(stderr, "base64 failed");
+		dropbear_exit("base64 failed");
 	}
 
 	typestring = signkey_name_from_type(keytype, NULL);

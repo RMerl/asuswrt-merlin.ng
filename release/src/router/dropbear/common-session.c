@@ -64,7 +64,7 @@ void common_session_init(int sock_in, int sock_out) {
 		setnonblocking(sock_out);
 	}
 
-	ses.socket_prio = DROPBEAR_PRIO_DEFAULT;
+	ses.socket_prio = DROPBEAR_PRIO_NORMAL;
 	/* Sets it to lowdelay */
 	update_channel_prio();
 
@@ -285,8 +285,7 @@ static void cleanup_buf(buffer **buf) {
 	if (!*buf) {
 		return;
 	}
-	buf_burn(*buf);
-	buf_free(*buf);
+	buf_burn_free(*buf);
 	*buf = NULL;
 }
 
@@ -404,7 +403,7 @@ static void read_session_identification() {
 		dropbear_exit("Incompatible remote version '%s'", ses.remoteident);
 	}
 
-	TRACE(("remoteident: %s", ses.remoteident))
+	DEBUG1(("remoteident: %s", ses.remoteident))
 
 }
 
@@ -667,26 +666,16 @@ void update_channel_prio() {
 		return;
 	}
 
-	new_prio = DROPBEAR_PRIO_BULK;
+	new_prio = DROPBEAR_PRIO_NORMAL;
 	for (i = 0; i < ses.chansize; i++) {
 		struct Channel *channel = ses.channels[i];
-		if (!channel || channel->prio == DROPBEAR_CHANNEL_PRIO_EARLY) {
-			if (channel && channel->prio == DROPBEAR_CHANNEL_PRIO_EARLY) {
-				TRACE(("update_channel_prio: early %d", channel->index))
-			}
+		if (!channel) {
 			continue;
 		}
 		any = 1;
-		if (channel->prio == DROPBEAR_CHANNEL_PRIO_INTERACTIVE)
-		{
-			TRACE(("update_channel_prio: lowdelay %d", channel->index))
+		if (channel->prio == DROPBEAR_PRIO_LOWDELAY) {
 			new_prio = DROPBEAR_PRIO_LOWDELAY;
 			break;
-		} else if (channel->prio == DROPBEAR_CHANNEL_PRIO_UNKNOWABLE
-			&& new_prio == DROPBEAR_PRIO_BULK)
-		{
-			TRACE(("update_channel_prio: unknowable %d", channel->index))
-			new_prio = DROPBEAR_PRIO_DEFAULT;
 		}
 	}
 

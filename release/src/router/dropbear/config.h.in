@@ -93,6 +93,9 @@
 /* Define to 1 if you have the `explicit_bzero' function. */
 #undef HAVE_EXPLICIT_BZERO
 
+/* Define to 1 if you have the `fexecve' function. */
+#undef HAVE_FEXECVE
+
 /* Define to 1 if you have the `fork' function. */
 #undef HAVE_FORK
 
@@ -318,6 +321,9 @@
 /* Define to 1 if `ut_type' is a member of `struct utmp'. */
 #undef HAVE_STRUCT_UTMP_UT_TYPE
 
+/* Define to 1 if you have the <sys/prctl.h> header file. */
+#undef HAVE_SYS_PRCTL_H
+
 /* Define to 1 if you have the <sys/random.h> header file. */
 #undef HAVE_SYS_RANDOM_H
 
@@ -414,9 +420,6 @@
 /* Define to 1 if you have the ANSI C header files. */
 #undef STDC_HEADERS
 
-/* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
-#undef TIME_WITH_SYS_TIME
-
 /* Use /dev/ptmx */
 #undef USE_DEV_PTMX
 
@@ -427,6 +430,9 @@
 
 /* Number of bits in a file offset, on hosts where this is settable. */
 #undef _FILE_OFFSET_BITS
+
+/* Use GNU extensions if glibc */
+#undef _GNU_SOURCE
 
 /* Define for large files, on AIX-style hosts. */
 #undef _LARGE_FILES

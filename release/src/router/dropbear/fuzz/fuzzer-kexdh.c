@@ -6,33 +6,29 @@
 #include "algo.h"
 #include "bignum.h"
 
-int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
-	static int once = 0;
-	static struct key_context* keep_newkeys = NULL;
-	/* number of generated parameters is limited by the timeout for the first run.
-	   TODO move this to the libfuzzer initialiser function instead if the timeout
-	   doesn't apply there */
-	#define NUM_PARAMS 20
-	static struct kex_dh_param *dh_params[NUM_PARAMS];
+static struct key_context* keep_newkeys = NULL;
+#define NUM_PARAMS 80
+static struct kex_dh_param *dh_params[NUM_PARAMS];
 
-	if (!once) {
-		fuzz_common_setup();
-		fuzz_svr_setup();
+static void setup() __attribute__((constructor));
+// Perform initial setup here to avoid hitting timeouts on first run
+static void setup() {
+	fuzz_common_setup();
+	fuzz_svr_setup();
 
-		keep_newkeys = (struct key_context*)m_malloc(sizeof(struct key_context));
-		keep_newkeys->algo_kex = fuzz_get_algo(sshkex, "diffie-hellman-group14-sha256");
-		keep_newkeys->algo_hostkey = DROPBEAR_SIGNKEY_ECDSA_NISTP256;
-		ses.newkeys = keep_newkeys;
+	keep_newkeys = (struct key_context*)m_malloc(sizeof(struct key_context));
+	keep_newkeys->algo_kex = fuzz_get_algo(sshkex, "diffie-hellman-group14-sha256");
+	keep_newkeys->algo_hostkey = DROPBEAR_SIGNKEY_ECDSA_NISTP256;
+	ses.newkeys = keep_newkeys;
 
-		/* Pre-generate parameters */
-		int i;
-		for (i = 0; i < NUM_PARAMS; i++) {
-			dh_params[i] = gen_kexdh_param();
-		}
-
-		once = 1;
+	/* Pre-generate parameters */
+	int i;
+	for (i = 0; i < NUM_PARAMS; i++) {
+		dh_params[i] = gen_kexdh_param();
 	}
+}
 
+int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
 	if (fuzz_set_input(Data, Size) == DROPBEAR_FAILURE) {
 		return 0;
 	}

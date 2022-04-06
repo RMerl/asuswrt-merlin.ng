@@ -47,6 +47,7 @@ int main(int argc, char ** argv) {
 
 	int sock_in, sock_out;
 	struct dropbear_progress_connection *progress = NULL;
+	pid_t proxy_cmd_pid = 0;
 
 	_dropbear_exit = cli_dropbear_exit;
 	_dropbear_log = cli_dropbear_log;
@@ -64,14 +65,17 @@ int main(int argc, char ** argv) {
 	}
 #endif
 
-	TRACE(("user='%s' host='%s' port='%s' bind_address='%s' bind_port='%s'", cli_opts.username,
-				cli_opts.remotehost, cli_opts.remoteport, cli_opts.bind_address, cli_opts.bind_port))
+        if (cli_opts.bind_address) {
+		DEBUG1(("connect to: user=%s host=%s/%s bind_address=%s:%s", cli_opts.username,
+			cli_opts.remotehost, cli_opts.remoteport, cli_opts.bind_address, cli_opts.bind_port))
+	} else {
+		DEBUG1(("connect to: user=%s host=%s/%s",cli_opts.username,cli_opts.remotehost,cli_opts.remoteport))
+	}
 
 	if (signal(SIGPIPE, SIG_IGN) == SIG_ERR) {
 		dropbear_exit("signal() error");
 	}
 
-	pid_t proxy_cmd_pid = 0;
 #if DROPBEAR_CLI_PROXYCMD
 	if (cli_opts.proxycmd) {
 		cli_proxy_cmd(&sock_in, &sock_out, &proxy_cmd_pid);
@@ -84,8 +88,9 @@ int main(int argc, char ** argv) {
 	} else
 #endif
 	{
-		progress = connect_remote(cli_opts.remotehost, cli_opts.remoteport, 
-			cli_connected, &ses, cli_opts.bind_address, cli_opts.bind_port);
+		progress = connect_remote(cli_opts.remotehost, cli_opts.remoteport,
+			cli_connected, &ses, cli_opts.bind_address, cli_opts.bind_port,
+			DROPBEAR_PRIO_LOWDELAY);
 		sock_in = sock_out = -1;
 	}
 
@@ -134,6 +139,7 @@ static void cli_proxy_cmd(int *sock_in, int *sock_out, pid_t *pid_out) {
 
 	ret = spawn_command(exec_proxy_cmd, ex_cmd,
 			sock_out, sock_in, NULL, pid_out);
+	DEBUG1(("cmd: %s  pid=%d", ex_cmd,*pid_out))
 	m_free(ex_cmd);
 	if (ret == DROPBEAR_FAILURE) {
 		dropbear_exit("Failed running proxy command");

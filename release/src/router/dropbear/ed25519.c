@@ -38,14 +38,25 @@
  * The key will have the same format as buf_put_ed25519_key.
  * These should be freed with ed25519_key_free.
  * Returns DROPBEAR_SUCCESS or DROPBEAR_FAILURE */
-int buf_get_ed25519_pub_key(buffer *buf, dropbear_ed25519_key *key) {
+int buf_get_ed25519_pub_key(buffer *buf, dropbear_ed25519_key *key,
+	enum signkey_type expect_keytype) {
 
-	unsigned int len;
+
+	unsigned int len, typelen;
+	char *keytype = NULL;
+	enum signkey_type buf_keytype;
 
 	TRACE(("enter buf_get_ed25519_pub_key"))
 	dropbear_assert(key != NULL);
 
-	buf_incrpos(buf, 4+SSH_SIGNKEY_ED25519_LEN); /* int + "ssh-ed25519" */
+	/* consume and check the key string */
+	keytype = buf_getstring(buf, &typelen);
+	buf_keytype = signkey_type_from_name(keytype, typelen);
+	m_free(keytype);
+	if (buf_keytype != expect_keytype) {
+		TRACE(("leave buf_get_ed25519_pub_key: mismatch key type"))
+		return DROPBEAR_FAILURE;
+	}
 
 	len = buf_getint(buf);
 	if (len != CURVE25519_LEN || buf->len - buf->pos < len) {

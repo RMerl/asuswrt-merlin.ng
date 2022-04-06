@@ -20,6 +20,7 @@ struct dropbear_progress_connection {
 
 	char* errstring;
 	char *bind_address, *bind_port;
+	enum dropbear_prio prio;
 };
 
 /* Deallocate a progress connection. Removes from the pending list if iter!=NULL.
@@ -110,6 +111,7 @@ static void connect_try_next(struct dropbear_progress_connection *c) {
 
 		ses.maxfd = MAX(ses.maxfd, c->sock);
 		set_sock_nodelay(c->sock);
+		set_sock_priority(c->sock, c->prio);
 		setnonblocking(c->sock);
 
 #if DROPBEAR_CLIENT_TCP_FAST_OPEN
@@ -172,8 +174,8 @@ static void connect_try_next(struct dropbear_progress_connection *c) {
 
 /* Connect via TCP to a host. */
 struct dropbear_progress_connection *connect_remote(const char* remotehost, const char* remoteport,
-	connect_callback cb, void* cb_data, 
-	const char* bind_address, const char* bind_port)
+	connect_callback cb, void* cb_data,
+	const char* bind_address, const char* bind_port, enum dropbear_prio prio)
 {
 	struct dropbear_progress_connection *c = NULL;
 	int err;
@@ -185,8 +187,16 @@ struct dropbear_progress_connection *connect_remote(const char* remotehost, cons
 	c->sock = -1;
 	c->cb = cb;
 	c->cb_data = cb_data;
+	c->prio = prio;
 
 	list_append(&ses.conn_pending, c);
+
+#if DROPBEAR_FUZZ
+	if (fuzz.fuzzing) {
+		c->errstring = m_strdup("fuzzing connect_remote always fails");
+		return c;
+	}
+#endif
 
 	memset(&hints, 0, sizeof(hints));
 	hints.ai_socktype = SOCK_STREAM;
@@ -356,12 +366,7 @@ void set_listen_fast_open(int sock) {
 void set_sock_priority(int sock, enum dropbear_prio prio) {
 
 	int rc;
-#ifdef IPTOS_LOWDELAY
-	int iptos_val = 0;
-#endif
-#ifdef HAVE_LINUX_PKT_SCHED_H
-	int so_prio_val = 0;
-#endif
+	int val;
 
 #if DROPBEAR_FUZZ
 	if (fuzz.fuzzing) {
@@ -369,37 +374,51 @@ void set_sock_priority(int sock, enum dropbear_prio prio) {
 		return;
 	}
 #endif
-
 	/* Don't log ENOTSOCK errors so that this can harmlessly be called
 	 * on a client '-J' proxy pipe */
 
-	/* set the TOS bit for either ipv4 or ipv6 */
-#ifdef IPTOS_LOWDELAY
+#ifdef IP_TOS
+	/* Set the DSCP field for outbound IP packet priority.
+	rfc4594 has some guidance to meanings.
+
+	We set AF21 as "Low-Latency" class for interactive (tty session,
+	also handshake/setup packets). Other traffic is left at the default.
+
+	OpenSSH at present uses AF21/CS1, rationale
+	https://cvsweb.openbsd.org/src/usr.bin/ssh/readconf.c#rev1.284
+
+	Old Dropbear/OpenSSH and Debian/Ubuntu OpenSSH (at Jan 2022) use
+	IPTOS_LOWDELAY/IPTOS_THROUGHPUT
+
+	DSCP constants are from Linux headers, applicable to other platforms
+	such as macos.
+	*/
 	if (prio == DROPBEAR_PRIO_LOWDELAY) {
-		iptos_val = IPTOS_LOWDELAY;
-	} else if (prio == DROPBEAR_PRIO_BULK) {
-		iptos_val = IPTOS_THROUGHPUT;
+		val = 0x48; /* IPTOS_DSCP_AF21 */
+	} else {
+		val = 0; /* default */
 	}
 #if defined(IPPROTO_IPV6) && defined(IPV6_TCLASS)
-	rc = setsockopt(sock, IPPROTO_IPV6, IPV6_TCLASS, (void*)&iptos_val, sizeof(iptos_val));
+	rc = setsockopt(sock, IPPROTO_IPV6, IPV6_TCLASS, (void*)&val, sizeof(val));
 	if (rc < 0 && errno != ENOTSOCK) {
 		TRACE(("Couldn't set IPV6_TCLASS (%s)", strerror(errno)));
 	}
 #endif
-	rc = setsockopt(sock, IPPROTO_IP, IP_TOS, (void*)&iptos_val, sizeof(iptos_val));
+	rc = setsockopt(sock, IPPROTO_IP, IP_TOS, (void*)&val, sizeof(val));
 	if (rc < 0 && errno != ENOTSOCK) {
 		TRACE(("Couldn't set IP_TOS (%s)", strerror(errno)));
 	}
-#endif
+#endif /* IP_TOS */
 
 #ifdef HAVE_LINUX_PKT_SCHED_H
+	/* Set scheduling priority within the local Linux network stack */
 	if (prio == DROPBEAR_PRIO_LOWDELAY) {
-		so_prio_val = TC_PRIO_INTERACTIVE;
-	} else if (prio == DROPBEAR_PRIO_BULK) {
-		so_prio_val = TC_PRIO_BULK;
+		val = TC_PRIO_INTERACTIVE;
+	} else {
+		val = 0;
 	}
 	/* linux specific, sets QoS class. see tc-prio(8) */
-	rc = setsockopt(sock, SOL_SOCKET, SO_PRIORITY, (void*) &so_prio_val, sizeof(so_prio_val));
+	rc = setsockopt(sock, SOL_SOCKET, SO_PRIORITY, (void*) &val, sizeof(val));
 	if (rc < 0 && errno != ENOTSOCK) {
 		TRACE(("Couldn't set SO_PRIORITY (%s)", strerror(errno)))
     }
@@ -453,8 +472,16 @@ int dropbear_listen(const char* address, const char* port,
 	struct linger linger;
 	int val;
 	int sock;
-
+	uint16_t *allocated_lport_p = NULL;
+	int allocated_lport = 0;
+	
 	TRACE(("enter dropbear_listen"))
+
+#if DROPBEAR_FUZZ
+	if (fuzz.fuzzing) {
+		return fuzz_dropbear_listen(address, port, socks, sockcount, errstring, maxfd);
+	}
+#endif
 	
 	memset(&hints, 0, sizeof(hints));
 	hints.ai_family = AF_UNSPEC; /* TODO: let them flag v4 only etc */
@@ -490,20 +517,15 @@ int dropbear_listen(const char* address, const char* port,
 		return -1;
 	}
 
-	/*
-	 * when listening on server-assigned-port 0
+	/* When listening on server-assigned-port 0
 	 * the assigned ports may differ for address families (v4/v6)
-	 * causing problems for tcpip-forward
-	 * caller can do a get_socket_address to discover assigned-port
-	 * hence, use same port for all address families
-	 */
-	u_int16_t *allocated_lport_p = NULL;
-	int allocated_lport = 0;
-
+	 * causing problems for tcpip-forward.
+	 * Caller can do a get_socket_address to discover assigned-port
+	 * hence, use same port for all address families */
+	allocated_lport = 0;
 	nsock = 0;
 	for (res = res0; res != NULL && nsock < sockcount;
 			res = res->ai_next) {
-
 		if (allocated_lport > 0) {
 			if (AF_INET == res->ai_family) {
 				allocated_lport_p = &((struct sockaddr_in *)res->ai_addr)->sin_port;
@@ -514,11 +536,8 @@ int dropbear_listen(const char* address, const char* port,
 		}
 
 		/* Get a socket */
-		socks[nsock] = socket(res->ai_family, res->ai_socktype,
-				res->ai_protocol);
-
+		socks[nsock] = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
 		sock = socks[nsock]; /* For clarity */
-
 		if (sock < 0) {
 			err = errno;
 			TRACE(("socket() failed"))
@@ -542,7 +561,6 @@ int dropbear_listen(const char* address, const char* port,
 			}
 		}
 #endif
-
 		set_sock_nodelay(sock);
 
 		if (bind(sock, res->ai_addr, res->ai_addrlen) < 0) {
@@ -564,7 +582,6 @@ int dropbear_listen(const char* address, const char* port,
 		}
 
 		*maxfd = MAX(*maxfd, sock);
-
 		nsock++;
 	}
 

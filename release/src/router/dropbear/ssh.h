@@ -126,3 +126,8 @@
 #define SSH2_AGENT_SIGN_RESPONSE		14
 
 #define SSH2_AGENT_FAILURE			30
+
+/* Flags defined by OpenSSH U2F key/signature format */
+#define SSH_SK_USER_PRESENCE_REQD       0x01
+#define SSH_SK_USER_VERIFICATION_REQD   0x04
+#define SSH_SK_RESIDENT_KEY             0x20

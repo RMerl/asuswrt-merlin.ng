@@ -44,7 +44,7 @@ buffer * buf_new(unsigned int size);
 /* Possibly returns a new buffer*, like realloc() */
 buffer * buf_resize(buffer *buf, unsigned int newsize);
 void buf_free(buffer* buf);
-void buf_burn(const buffer* buf);
+void buf_burn_free(buffer* buf);
 buffer* buf_newcopy(const buffer* buf);
 void buf_setlen(buffer* buf, unsigned int len);
 void buf_incrlen(buffer* buf, unsigned int incr);

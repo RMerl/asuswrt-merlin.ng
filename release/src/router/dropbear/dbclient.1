@@ -19,7 +19,7 @@ dbclient \- lightweight SSH client
 
 .SH DESCRIPTION
 .B dbclient
-is a small SSH client 
+is the client part of Dropbear SSH
 .SH OPTIONS
 .TP
 .TP
@@ -44,27 +44,27 @@ from OpenSSH with dropbearconvert(1). The default path ~/.ssh/id_dropbear is use
 .TP
 .B \-L\fR [\fIlistenaddress\fR]:\fIlistenport\fR:\fIhost\fR:\fIport\fR
 Local port forwarding.
-Forward the port
+Forward 
 .I listenport
-on the local host through the SSH connection to port
+on the local host through the SSH connection to 
 .I port
-on the host
+on 
 .IR host .
 .TP
 .B \-R\fR [\fIlistenaddress\fR]:\fIlistenport\fR:\fIhost\fR:\fIport\fR
 Remote port forwarding.
-Forward the port
+Forward 
 .I listenport
-on the remote host through the SSH connection to port
+on the remote host through the SSH connection to 
 .I port
-on the host
+on 
 .IR host .
 .TP
 .B \-l \fIuser
 Username.
 Login as
 .I user
-on the remote host.
+on the remote host. An alternative is to specify user@host.
 .TP
 .B \-t
 Allocate a PTY. This is the default when no command is given, it gives a full
@@ -72,7 +72,7 @@ interactive remote session. The main effect is that keystrokes are sent remotely
 immediately as opposed to local line-based editing.
 .TP
 .B \-T
-Don't allocate a PTY. This is the default a command is given. See -t.
+Don't allocate a PTY. This is the default when a command is given. See -t.
 .TP
 .B \-N
 Don't request a remote shell or run any commands. Any command arguments are ignored.
@@ -149,10 +149,13 @@ The following options have currently been implemented:
 .RS
 .TP
 .B ExitOnForwardFailure
-Specifies whether dbclient should terminate the connection if it cannot set up all requested local and remote port forwardings. The argument must be “yes” or “no”.  The default is “no”.
+Specifies whether dbclient should terminate the connection if it cannot set up all requested local and remote port forwardings. The argument must be "yes" or "no".  The default is "no".
 .TP
 .B UseSyslog
 Send dbclient log messages to syslog in addition to stderr.
+.TP
+.B Port
+Specify a listening port, like the \fI-p\fR argument.
 .RE
 .TP
 .B \-s 

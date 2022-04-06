@@ -20,13 +20,13 @@ LIBTOM_LIBS=@LIBTOM_LIBS@
 ifeq (@BUNDLED_LIBTOM@, 1)
 LIBTOM_DEPS=$(STATIC_LTC) $(STATIC_LTM) 
 LIBTOM_CLEAN=ltc-clean ltm-clean
-CFLAGS+=-I$(srcdir)/libtomcrypt/src/headers/
+CPPFLAGS+=-I$(srcdir)/libtomcrypt/src/headers/
 LIBTOM_LIBS=$(STATIC_LTC) $(STATIC_LTM)
 endif
 
 OPTION_HEADERS = default_options_guard.h sysoptions.h
 ifneq ($(wildcard localoptions.h),)
-CFLAGS+=-DLOCALOPTIONS_H_EXISTS
+CPPFLAGS+=-DLOCALOPTIONS_H_EXISTS
 OPTION_HEADERS += localoptions.h
 endif
 
@@ -35,8 +35,8 @@ COMMONOBJS=dbutil.o buffer.o dbhelpers.o \
 		signkey.o rsa.o dbrandom.o \
 		queue.o \
 		atomicio.o compat.o fake-rfc2553.o \
-		ltc_prng.o ecc.o ecdsa.o crypto_desc.o \
-		curve25519.o ed25519.o \
+		ltc_prng.o ecc.o ecdsa.o sk-ecdsa.o crypto_desc.o \
+		curve25519.o ed25519.o sk-ed25519.o \
 		dbmalloc.o \
 		gensignkey.o gendss.o genrsa.o gened25519.o
 
@@ -57,12 +57,12 @@ CLISVROBJS=common-session.o packet.o common-algo.o common-kex.o \
 
 KEYOBJS=dropbearkey.o
 
-CONVERTOBJS=dropbearconvert.o keyimport.o
+CONVERTOBJS=dropbearconvert.o keyimport.o signkey_ossh.o
 
 SCPOBJS=scp.o progressmeter.o atomicio.o scpmisc.o compat.o
 
 ifeq (@DROPBEAR_FUZZ@, 1)
-	allobjs = $(COMMONOBJS) fuzz-common.o  fuzz-wrapfd.o $(CLISVROBJS) $(CLIOBJS) $(SVROBJS) @CRYPTLIB@
+	allobjs = $(COMMONOBJS) fuzz/fuzz-common.o  fuzz/fuzz-wrapfd.o $(CLISVROBJS) $(CLIOBJS) $(SVROBJS) @CRYPTLIB@
 	allobjs:=$(subst svr-main.o, ,$(allobjs))
 	allobjs:=$(subst cli-main.o, ,$(allobjs))
 
@@ -72,6 +72,7 @@ ifeq (@DROPBEAR_FUZZ@, 1)
 	dropbearconvertobjs=$(allobjs) $(CONVERTOBJS)
 	# CXX only set when fuzzing
 	CXX=@CXX@
+	FUZZ_CLEAN=fuzz-clean
 else
 	dropbearobjs=$(COMMONOBJS) $(CLISVROBJS) $(SVROBJS)
 	dbclientobjs=$(COMMONOBJS) $(CLISVROBJS) $(CLIOBJS)
@@ -106,8 +107,8 @@ AR=@AR@
 RANLIB=@RANLIB@
 STRIP=@STRIP@
 INSTALL=@INSTALL@
-CPPFLAGS=@CPPFLAGS@
-CFLAGS+=-I. -I$(srcdir) $(CPPFLAGS) @CFLAGS@
+CPPFLAGS+=@CPPFLAGS@ -I. -I$(srcdir)
+CFLAGS+=@CFLAGS@
 LIBS+=@LIBS@
 LDFLAGS=@LDFLAGS@
 
@@ -118,15 +119,16 @@ STATIC=@STATIC@
 # whether we're building client, server, or both for the common objects.
 # evilness so we detect 'dropbear' by itself as a word
 ifneq (,$(strip $(foreach prog, $(PROGRAMS), $(findstring ZdropbearZ, Z$(prog)Z))))
-	CFLAGS+= -DDROPBEAR_SERVER
+	CPPFLAGS+= -DDROPBEAR_SERVER
 endif
 ifneq (,$(strip $(foreach prog, $(PROGRAMS), $(findstring ZdbclientZ, Z$(prog)Z))))
-	CFLAGS+= -DDROPBEAR_CLIENT
+	CPPFLAGS+= -DDROPBEAR_CLIENT
 endif
 
 # these are exported so that libtomcrypt's makefile will use them
 export CC
 export CFLAGS
+export CPPFLAGS
 export RANLIB AR STRIP
 
 ifeq ($(STATIC), 1)
@@ -141,7 +143,7 @@ endif
 
 # for the scp progress meter. The -D doesn't affect anything else.
 ifeq ($(SCPPROGRESS), 1)
-	CFLAGS+=-DPROGRESS_METER
+	CPPFLAGS+=-DPROGRESS_METER
 endif
 
 all: $(TARGETS)
@@ -215,7 +217,7 @@ scp: $(SCPOBJS)  $(HEADERS) Makefile
 MULTIOBJS=
 ifeq ($(MULTI),1)
 	MULTIOBJS=dbmulti.o $(sort $(foreach prog, $(PROGRAMS), $($(prog)objs)))
-	CFLAGS+=$(addprefix -DDBMULTI_, $(PROGRAMS)) -DDROPBEAR_MULTI
+	CPPFLAGS+=$(addprefix -DDBMULTI_, $(PROGRAMS)) -DDROPBEAR_MULTI
 endif
 
 dropbearmulti$(EXEEXT): $(HEADERS) $(MULTIOBJS) $(LIBTOM_DEPS) Makefile
@@ -235,7 +237,7 @@ $(STATIC_LTC): $(OPTION_HEADERS)
 $(STATIC_LTM): $(OPTION_HEADERS)
 	$(MAKE) -C libtommath
 
-.PHONY : clean sizes thisclean distclean tidy ltc-clean ltm-clean lint
+.PHONY : clean sizes thisclean distclean tidy ltc-clean ltm-clean lint check
 
 ltc-clean:
 	$(MAKE) -C libtomcrypt clean
@@ -246,7 +248,7 @@ ltm-clean:
 sizes: dropbear
 	objdump -t dropbear|grep ".text"|cut -d "." -f 2|sort -rn
 
-clean: $(LIBTOM_CLEAN) thisclean
+clean: $(LIBTOM_CLEAN) $(FUZZ_CLEAN) thisclean
 
 thisclean:
 	-rm -f dropbear$(EXEEXT) dbclient$(EXEEXT) dropbearkey$(EXEEXT) \
@@ -264,54 +266,46 @@ tidy:
 lint:
 	cd $(srcdir); ./dropbear_lint.sh
 
+check: lint
+	make -C test
+
 ## Fuzzing targets
 
 # list of fuzz targets
 FUZZ_TARGETS=fuzzer-preauth fuzzer-pubkey fuzzer-verify fuzzer-preauth_nomaths \
-	fuzzer-kexdh fuzzer-kexecdh fuzzer-kexcurve25519 fuzzer-client fuzzer-client_nomaths
+	fuzzer-kexdh fuzzer-kexecdh fuzzer-kexcurve25519 fuzzer-client fuzzer-client_nomaths \
+	fuzzer-postauth_nomaths
 
 FUZZER_OPTIONS = $(addsuffix .options, $(FUZZ_TARGETS))
+FUZZ_OBJS = $(addprefix fuzz/,$(addsuffix .o,$(FUZZ_TARGETS))) \
+	fuzz/fuzz-sshpacketmutator.o
 
 list-fuzz-targets:
 	@echo $(FUZZ_TARGETS)
 
 # fuzzers that don't use libfuzzer, just a standalone harness that feeds inputs
-fuzzstandalone: FUZZLIB=fuzz-harness.o
-fuzzstandalone: fuzz-harness.o fuzz-targets
+fuzzstandalone: FUZZLIB=fuzz/fuzz-harness.o
+fuzzstandalone: fuzz/fuzz-harness.o fuzz-targets
 
-fuzz-harness.o: $(HEADERS) $(LIBTOM_DEPS) Makefile $(allobjs) fuzz-common.o
-
-# build all the fuzzers. This will require fail to link unless built with
-# make fuzz-targets FUZZLIB=-lFuzzer.a 
-# or similar - the library provides main().
+# Build all the fuzzers. Usually like
+#   make fuzz-targets FUZZLIB=-lFuzzer.a 
+# the library provides main(). Otherwise
+#   make fuzzstandalone
+# provides a main in fuzz-harness.c
 fuzz-targets: $(FUZZ_TARGETS) $(FUZZER_OPTIONS)
 
-fuzzer-preauth: fuzzer-preauth.o fuzz-harness.o
-	$(CXX) $(CXXFLAGS) $@.o $(LDFLAGS) $(allobjs) -o $@$(EXEEXT) $(LIBTOM_LIBS) $(LIBS) $(FUZZLIB) @CRYPTLIB@
+$(FUZZ_TARGETS): $(FUZZ_OBJS) $(allobjs) $(LIBTOM_DEPS) 
+	$(CXX) $(CXXFLAGS) fuzz/$@.o $(LDFLAGS) $(allobjs) -o $@$(EXEEXT) $(LIBTOM_LIBS) $(LIBS) $(FUZZLIB) @CRYPTLIB@
 
-fuzzer-preauth_nomaths: fuzzer-preauth_nomaths.o fuzz-harness.o
-	$(CXX) $(CXXFLAGS) $@.o $(LDFLAGS) $(allobjs) -o $@$(EXEEXT) $(LIBTOM_LIBS) $(LIBS) $(FUZZLIB) @CRYPTLIB@
+# fuzzers that use the custom mutator - these expect a SSH network stream
+MUTATOR_FUZZERS=fuzzer-client fuzzer-client_nomaths \
+	fuzzer-preauth fuzzer-preauth_nomaths fuzzer-postauth_nomaths
 
-fuzzer-pubkey: fuzzer-pubkey.o fuzz-harness.o
-	$(CXX) $(CXXFLAGS) $@.o $(LDFLAGS) $(allobjs) -o $@$(EXEEXT) $(LIBTOM_LIBS) $(LIBS) $(FUZZLIB) @CRYPTLIB@
-
-fuzzer-verify: fuzzer-verify.o fuzz-harness.o
-	$(CXX) $(CXXFLAGS) $@.o $(LDFLAGS) $(allobjs) -o $@$(EXEEXT) $(LIBTOM_LIBS) $(LIBS) $(FUZZLIB) @CRYPTLIB@
-
-fuzzer-kexdh: fuzzer-kexdh.o fuzz-harness.o
-	$(CXX) $(CXXFLAGS) $@.o $(LDFLAGS) $(allobjs) -o $@$(EXEEXT) $(LIBTOM_LIBS) $(LIBS) $(FUZZLIB) @CRYPTLIB@
-
-fuzzer-kexecdh: fuzzer-kexecdh.o fuzz-harness.o
-	$(CXX) $(CXXFLAGS) $@.o $(LDFLAGS) $(allobjs) -o $@$(EXEEXT) $(LIBTOM_LIBS) $(LIBS) $(FUZZLIB) @CRYPTLIB@
-
-fuzzer-kexcurve25519: fuzzer-kexcurve25519.o fuzz-harness.o
-	$(CXX) $(CXXFLAGS) $@.o $(LDFLAGS) $(allobjs) -o $@$(EXEEXT) $(LIBTOM_LIBS) $(LIBS) $(FUZZLIB) @CRYPTLIB@
-
-fuzzer-client: fuzzer-client.o fuzz-harness.o
-	$(CXX) $(CXXFLAGS) $@.o $(LDFLAGS) $(allobjs) -o $@$(EXEEXT) $(LIBTOM_LIBS) $(LIBS) $(FUZZLIB) @CRYPTLIB@
-
-fuzzer-client_nomaths: fuzzer-client_nomaths.o fuzz-harness.o
-	$(CXX) $(CXXFLAGS) $@.o $(LDFLAGS) $(allobjs) -o $@$(EXEEXT) $(LIBTOM_LIBS) $(LIBS) $(FUZZLIB) @CRYPTLIB@
+# Skip custom mutators for -fsanitize-memory since libfuzzer doesn't initialise memory
+# Pending fix for it https://github.com/google/oss-fuzz/issues/4605
+ifeq (,$(findstring fsanitize=memory, $(CFLAGS)))
+$(MUTATOR_FUZZERS): allobjs += fuzz/fuzz-sshpacketmutator.o
+endif
 
 fuzzer-%.options: Makefile
 	echo "[libfuzzer]"               > $@
@@ -329,3 +323,6 @@ fuzz-hostkeys:
 	/usr/bin/xxd -i -a keye >> hostkeys.c
 	/usr/bin/xxd -i -a keyd >> hostkeys.c
 	/usr/bin/xxd -i -a keyed25519 >> hostkeys.c
+
+fuzz-clean:
+	-rm -f fuzz/*.o $(FUZZ_TARGETS) $(FUZZER_OPTIONS)

@@ -44,9 +44,15 @@ enum signkey_type {
 	DROPBEAR_SIGNKEY_ECDSA_NISTP256,
 	DROPBEAR_SIGNKEY_ECDSA_NISTP384,
 	DROPBEAR_SIGNKEY_ECDSA_NISTP521,
+#if DROPBEAR_SK_ECDSA
+	DROPBEAR_SIGNKEY_SK_ECDSA_NISTP256,
+#endif /* DROPBEAR_SK_ECDSA */
 #endif /* DROPBEAR_ECDSA */
 #if DROPBEAR_ED25519
 	DROPBEAR_SIGNKEY_ED25519,
+#if DROPBEAR_SK_ED25519
+	DROPBEAR_SIGNKEY_SK_ED25519,
+#endif
 #endif
 	DROPBEAR_SIGNKEY_NUM_NAMED,
 	DROPBEAR_SIGNKEY_ECDSA_KEYGEN = 70, /* just "ecdsa" for keygen */
@@ -63,9 +69,15 @@ enum signature_type {
 	DROPBEAR_SIGNATURE_ECDSA_NISTP256 = DROPBEAR_SIGNKEY_ECDSA_NISTP256,
 	DROPBEAR_SIGNATURE_ECDSA_NISTP384 = DROPBEAR_SIGNKEY_ECDSA_NISTP384,
 	DROPBEAR_SIGNATURE_ECDSA_NISTP521 = DROPBEAR_SIGNKEY_ECDSA_NISTP521,
+#if DROPBEAR_SK_ECDSA
+	DROPBEAR_SIGNATURE_SK_ECDSA_NISTP256 = DROPBEAR_SIGNKEY_SK_ECDSA_NISTP256,
+#endif /* DROPBEAR_SK_ECDSA */
 #endif /* DROPBEAR_ECDSA */
 #if DROPBEAR_ED25519
 	DROPBEAR_SIGNATURE_ED25519 = DROPBEAR_SIGNKEY_ED25519,
+#if DROPBEAR_SK_ED25519
+	DROPBEAR_SIGNATURE_SK_ED25519 = DROPBEAR_SIGNKEY_SK_ED25519,
+#endif
 #endif
 #if DROPBEAR_RSA_SHA1
 	DROPBEAR_SIGNATURE_RSA_SHA1 = 100, /* ssh-rsa signature (sha1) */
@@ -110,6 +122,12 @@ struct SIGN_key {
 #if DROPBEAR_ED25519
 	struct dropbear_ED25519_Key * ed25519key;
 #endif
+
+#if DROPBEAR_SK_ECDSA || DROPBEAR_SK_ED25519
+	/* application ID for U2F/FIDO key types, a malloced string */
+	char * sk_app;
+	unsigned int sk_applen;
+#endif
 };
 
 typedef struct SIGN_key sign_key;
@@ -130,6 +148,7 @@ void sign_key_free(sign_key *key);
 void buf_put_sign(buffer* buf, sign_key *key, enum signature_type sigtype, const buffer *data_buf);
 #if DROPBEAR_SIGNKEY_VERIFY
 int buf_verify(buffer * buf, sign_key *key, enum signature_type expect_sigtype, const buffer *data_buf);
+int sk_buf_verify(buffer * buf, sign_key *key, enum signature_type expect_sigtype, const buffer *data_buf, char* app, unsigned int applen);
 char * sign_key_fingerprint(const unsigned char* keyblob, unsigned int keybloblen);
 #endif
 int cmp_base64_key(const unsigned char* keyblob, unsigned int keybloblen, 

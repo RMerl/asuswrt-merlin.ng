@@ -9,7 +9,7 @@ dropbearconvert \- convert between Dropbear and OpenSSH private key formats
 .I output_file
 .SH DESCRIPTION
 .B Dropbear
-and 
+and
 .B OpenSSH
 SSH implementations have different private key formats.
 .B dropbearconvert
@@ -24,15 +24,15 @@ first.
 .SH ARGUMENTS
 .TP
 .I input_type
-Either 
+Either
 .I dropbear
-or 
+or
 .I openssh
 .TP
 .I output_type
-Either 
+Either
 .I dropbear
-or 
+or
 .I openssh
 .TP
 .I input_file
@@ -40,6 +40,15 @@ An existing Dropbear or OpenSSH private key file
 .TP
 .I output_file
 The path to write the converted private key file. For client authentication ~/.ssh/id_dropbear is loaded by default
+.SH SUPPORTED FORMATS
+.B dropbearconvert
+can read OpenSSH format files, and older PEM format files (
+.B ssh-keygen
+.I -m PEM
+).
+.B dropbearconvert
+will write OpenSSH format files, usable with OpenSSH 6.5 and later.
+Reading OpenSSH format DSS files or PKCS8 files is not currently supported.
 .SH EXAMPLE
  # dropbearconvert openssh dropbear ~/.ssh/id_rsa ~/.ssh/id_dropbear
 .SH AUTHOR

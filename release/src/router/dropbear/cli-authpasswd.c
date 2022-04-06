@@ -120,7 +120,7 @@ void cli_auth_password() {
 	char* password = NULL;
 	char prompt[80];
 
-	TRACE(("enter cli_auth_password"))
+	DEBUG1(("enter cli_auth_password"))
 	CHECKCLEARTOWRITE();
 
 	snprintf(prompt, sizeof(prompt), "%s@%s's password: ", 
@@ -155,7 +155,7 @@ void cli_auth_password() {
 
 	encrypt_packet();
 	m_burn(password, strlen(password));
-
+	cli_ses.is_trivial_auth = 0;
 	TRACE(("leave cli_auth_password"))
 }
 #endif	/* DROPBEAR_CLI_PASSWORD_AUTH */

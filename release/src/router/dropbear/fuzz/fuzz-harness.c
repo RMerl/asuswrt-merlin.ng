@@ -7,14 +7,19 @@ extern int LLVMFuzzerTestOneInput(const unsigned char *data, size_t size);
 int main(int argc, char ** argv) {
     int i;
     buffer *input = buf_new(100000);
+    int quiet = 0;
 
     for (i = 1; i < argc; i++) {
 #if DEBUG_TRACE
         if (strcmp(argv[i], "-v") == 0) {
-            debug_trace = 1;
-            TRACE(("debug printing on"))
+            debug_trace++;
+            fprintf(stderr, "debug level -> %d\n", debug_trace);
         }
 #endif
+        if (strcmp(argv[i], "-q") == 0) {
+            printf("Running quiet\n");
+            quiet = 1;
+        }
     }
 
     int old_fuzz_wrapfds = 0;
@@ -31,11 +36,17 @@ int main(int argc, char ** argv) {
 
 		/* Run twice to catch problems with statefulness */
         fuzz.wrapfds = old_fuzz_wrapfds;
-        printf("Running %s once \n", fn);
+        if (!quiet) {
+            printf("Running %s once \n", fn);
+        }
         LLVMFuzzerTestOneInput(input->data, input->len);
-        printf("Running %s twice \n", fn);
+        if (!quiet) {
+            printf("Running %s twice \n", fn);
+        }
         LLVMFuzzerTestOneInput(input->data, input->len);
-        printf("Done %s\n", fn);
+        if (!quiet) {
+            printf("Done %s\n", fn);
+        }
 
         /* Disable wrapfd so it won't interfere with buf_readfile() above */
         old_fuzz_wrapfds = fuzz.wrapfds;
@@ -44,5 +55,12 @@ int main(int argc, char ** argv) {
 
     printf("Finished\n");
 
+    return 0;
+}
+
+// Just to let it link
+size_t LLVMFuzzerMutate(uint8_t *UNUSED(Data), size_t UNUSED(Size), size_t UNUSED(MaxSize)) {
+    printf("standalone fuzzer harness shouldn't call LLVMFuzzerMutate");
+    abort();
     return 0;
 }

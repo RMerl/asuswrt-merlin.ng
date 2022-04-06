@@ -181,8 +181,7 @@ int signkey_generate(enum signkey_type keytype, int bits, const char* filename, 
 
 out:
 	if (buf) {
-		buf_burn(buf);
-		buf_free(buf);
+		buf_burn_free(buf);
 	}
 	
 	if (fn_temp) {

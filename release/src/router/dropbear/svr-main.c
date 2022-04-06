@@ -35,25 +35,29 @@ static size_t listensockets(int *sock, size_t sockcount, int *maxfd);
 static void sigchld_handler(int dummy);
 static void sigsegv_handler(int);
 static void sigintterm_handler(int fish);
-#if INETD_MODE
 static void main_inetd(void);
-#endif
-#if NON_INETD_MODE
-static void main_noinetd(void);
-#endif
+static void main_noinetd(int argc, char ** argv, const char* multipath);
 static void commonsetup(void);
 
 #if defined(DBMULTI_dropbear) || !DROPBEAR_MULTI
 #if defined(DBMULTI_dropbear) && DROPBEAR_MULTI
-int dropbear_main(int argc, char ** argv)
+int dropbear_main(int argc, char ** argv, const char* multipath)
 #else
 int main(int argc, char ** argv)
 #endif
 {
+#if !DROPBEAR_MULTI
+	const char* multipath = NULL;
+#endif
+
 	_dropbear_exit = svr_dropbear_exit;
 	_dropbear_log = svr_dropbear_log;
 
 	disallow_core();
+
+	if (argc < 1) {
+		dropbear_exit("Bad argc");
+	}
 
 	/* get commandline options */
 	svr_getopts(argc, argv);
@@ -66,8 +70,21 @@ int main(int argc, char ** argv)
 	}
 #endif
 
+#if DROPBEAR_DO_REEXEC
+	if (svr_opts.reexec_child) {
+#ifdef PR_SET_NAME
+		/* Fix the "Name:" in /proc/pid/status, otherwise it's
+		a FD number from fexecve.
+		Failure doesn't really matter, it's mostly aesthetic */
+		prctl(PR_SET_NAME, basename(argv[0]), 0, 0);
+#endif
+		main_inetd();
+		/* notreached */
+	}
+#endif
+
 #if NON_INETD_MODE
-	main_noinetd();
+	main_noinetd(argc, argv, multipath);
 	/* notreached */
 #endif
 
@@ -76,7 +93,7 @@ int main(int argc, char ** argv)
 }
 #endif
 
-#if INETD_MODE
+#if INETD_MODE || DROPBEAR_DO_REEXEC
 static void main_inetd() {
 	char *host, *port = NULL;
 
@@ -85,23 +102,18 @@ static void main_inetd() {
 
 	seedrandom();
 
-#if DEBUG_TRACE
-	if (debug_trace) {
-		/* -v output goes to stderr which would get sent over the inetd network socket */
-		dropbear_exit("Dropbear inetd mode is incompatible with debug -v");
+	if (!svr_opts.reexec_child) {
+		/* In case our inetd was lax in logging source addresses */
+		get_socket_address(0, NULL, NULL, &host, &port, 0);
+			dropbear_log(LOG_INFO, "Child connection from %s:%s", host, port);
+		m_free(host);
+		m_free(port);
+
+		/* Don't check the return value - it may just fail since inetd has
+		 * already done setsid() after forking (xinetd on Darwin appears to do
+		 * this */
+		setsid();
 	}
-#endif
-
-	/* In case our inetd was lax in logging source addresses */
-	get_socket_address(0, NULL, NULL, &host, &port, 0);
-	dropbear_log(LOG_INFO, "Child connection from %s:%s", host, port);
-	m_free(host);
-	m_free(port);
-
-	/* Don't check the return value - it may just fail since inetd has
-	 * already done setsid() after forking (xinetd on Darwin appears to do
-	 * this */
-	setsid();
 
 	/* Start service program 
 	 * -1 is a dummy childpipe, just something we can close() without 
@@ -113,7 +125,7 @@ static void main_inetd() {
 #endif /* INETD_MODE */
 
 #if NON_INETD_MODE
-static void main_noinetd() {
+static void main_noinetd(int argc, char ** argv, const char* multipath) {
 	fd_set fds;
 	unsigned int i, j;
 	int val;
@@ -121,12 +133,17 @@ static void main_noinetd() {
 	int listensocks[MAX_LISTEN_ADDR];
 	size_t listensockcount = 0;
 	FILE *pidfile = NULL;
+	int execfd = -1;
 
 	int childpipes[MAX_UNAUTH_CLIENTS];
 	char * preauth_addrs[MAX_UNAUTH_CLIENTS];
 
 	int childsock;
 	int childpipe[2];
+
+	(void)argc;
+	(void)argv;
+	(void)multipath;
 
 	/* Note: commonsetup() must happen before we daemon()ise. Otherwise
 	   daemon() will chdir("/"), and we won't be able to find local-dir
@@ -138,7 +155,7 @@ static void main_noinetd() {
 		childpipes[i] = -1;
 	}
 	memset(preauth_addrs, 0x0, sizeof(preauth_addrs));
-	
+
 	/* Set up the listening sockets */
 	listensockcount = listensockets(listensocks, MAX_LISTEN_ADDR, &maxsock);
 	if (listensockcount == 0)
@@ -149,6 +166,18 @@ static void main_noinetd() {
 	for (i = 0; i < listensockcount; i++) {
 		FD_SET(listensocks[i], &fds);
 	}
+
+#if DROPBEAR_DO_REEXEC
+	if (multipath) {
+		execfd = open(multipath, O_CLOEXEC|O_RDONLY);
+	} else {
+		execfd = open(argv[0], O_CLOEXEC|O_RDONLY);
+	}
+	if (execfd < 0) {
+		/* Just fallback to straight fork */
+		TRACE(("Couldn't open own binary %s, disabling re-exec: %s", argv[0], strerror(errno)))
+	}
+#endif
 
 	/* fork */
 	if (svr_opts.forkbg) {
@@ -181,7 +210,7 @@ static void main_noinetd() {
 	for(;;) {
 
 		DROPBEAR_FD_ZERO(&fds);
-		
+
 		/* listening sockets */
 		for (i = 0; i < listensockcount; i++) {
 			FD_SET(listensocks[i], &fds);
@@ -201,7 +230,7 @@ static void main_noinetd() {
 			unlink(svr_opts.pidfile);
 			dropbear_exit("Terminated by signal");
 		}
-		
+
 		if (val == 0) {
 			/* timeout reached - shouldn't happen. eh */
 			continue;
@@ -286,7 +315,7 @@ static void main_noinetd() {
 			}
 
 			addrandom((void*)&fork_ret, sizeof(fork_ret));
-			
+
 			if (fork_ret > 0) {
 
 				/* parent */
@@ -315,6 +344,41 @@ static void main_noinetd() {
 				}
 
 				m_close(childpipe[0]);
+
+				if (execfd >= 0) {
+#if DROPBEAR_DO_REEXEC
+					/* Add "-2" to the args and re-execute ourself. */
+					char **new_argv = m_malloc(sizeof(char*) * (argc+3));
+					int pos0 = 0, new_argc = argc+1;
+
+					/* We need to specially handle "dropbearmulti dropbear". */
+					if (multipath) {
+						new_argv[0] = (char*)multipath;
+						pos0 = 1;
+						new_argc++;
+					}
+
+					memcpy(&new_argv[pos0], argv, sizeof(char*) * argc);
+					new_argv[new_argc-1] = "-2";
+					new_argv[new_argc] = NULL;
+
+					if ((dup2(childsock, STDIN_FILENO) < 0)) {
+						dropbear_exit("dup2 failed: %s", strerror(errno));
+					}
+					if (fcntl(childsock, F_SETFD, FD_CLOEXEC) < 0) {
+						TRACE(("cloexec for childsock %d failed: %s", childsock, strerror(errno)))
+					}
+					/* Re-execute ourself */
+					fexecve(execfd, new_argv, environ);
+					/* Not reached on success */
+
+					/* Fall back on plain fork otherwise.
+					 * To be removed in future once re-exec has been well tested */
+					dropbear_log(LOG_WARNING, "fexecve failed, disabling re-exec: %s", strerror(errno));
+					m_close(STDIN_FILENO);
+					m_free(new_argv);
+#endif /* DROPBEAR_DO_REEXEC */
+				}
 
 				/* start the session */
 				svr_session(childsock, childpipe[1]);

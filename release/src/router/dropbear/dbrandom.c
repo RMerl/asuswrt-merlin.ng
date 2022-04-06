@@ -34,7 +34,7 @@ static uint32_t counter = 0;
 /* the max value for the counter, so it won't integer overflow */
 #define MAX_COUNTER (1<<30)
 
-static unsigned char hashpool[SHA1_HASH_SIZE] = {0};
+static unsigned char hashpool[SHA256_HASH_SIZE] = {0};
 static int donerandinit = 0;
 
 #define INIT_SEED_SIZE 32 /* 256 bits */
@@ -100,7 +100,7 @@ process_file(hash_state *hs, const char *filename,
 			}
 			goto out;
 		}
-		sha1_process(hs, readbuf, readlen);
+		sha256_process(hs, readbuf, readlen);
 		readcount += readlen;
 	}
 	ret = DROPBEAR_SUCCESS;
@@ -120,13 +120,13 @@ void addrandom(const unsigned char * buf, unsigned int len)
 #endif
 
 	/* hash in the new seed data */
-	sha1_init(&hs);
+	sha256_init(&hs);
 	/* existing state (zeroes on startup) */
-	sha1_process(&hs, (void*)hashpool, sizeof(hashpool));
+	sha256_process(&hs, (void*)hashpool, sizeof(hashpool));
 
 	/* new */
-	sha1_process(&hs, buf, len);
-	sha1_done(&hs, hashpool);
+	sha256_process(&hs, buf, len);
+	sha256_done(&hs, hashpool);
 }
 
 static void write_urandom()
@@ -150,12 +150,12 @@ static void write_urandom()
 }
 
 #if DROPBEAR_FUZZ
-void fuzz_seed(void) {
+void fuzz_seed(const unsigned char* dat, unsigned int len) {
 	hash_state hs;
-	sha1_init(&hs);
-	sha1_process(&hs, "fuzzfuzzfuzz", strlen("fuzzfuzzfuzz"));
-	sha1_done(&hs, hashpool);
-
+	sha256_init(&hs);
+	sha256_process(&hs, "fuzzfuzzfuzz", strlen("fuzzfuzzfuzz"));
+	sha256_process(&hs, dat, len);
+	sha256_done(&hs, hashpool);
 	counter = 0;
 	donerandinit = 1;
 }
@@ -209,7 +209,7 @@ static int process_getrandom(hash_state *hs) {
 
 	if (ret == sizeof(buf)) {
 		/* Success, stir in the entropy */
-		sha1_process(hs, (void*)buf, sizeof(buf));
+		sha256_process(hs, (void*)buf, sizeof(buf));
 		return DROPBEAR_SUCCESS;
 	}
 
@@ -221,7 +221,6 @@ static int process_getrandom(hash_state *hs) {
 /* Initialise the prng from /dev/urandom or prngd. This function can
  * be called multiple times */
 void seedrandom() {
-		
 	hash_state hs;
 
 	pid_t pid;
@@ -236,10 +235,10 @@ void seedrandom() {
 #endif
 
 	/* hash in the new seed data */
-	sha1_init(&hs);
+	sha256_init(&hs);
 
 	/* existing state */
-	sha1_process(&hs, (void*)hashpool, sizeof(hashpool));
+	sha256_process(&hs, (void*)hashpool, sizeof(hashpool));
 
 #ifdef HAVE_GETRANDOM
 	if (process_getrandom(&hs) == DROPBEAR_SUCCESS) {
@@ -289,21 +288,21 @@ void seedrandom() {
 #endif
 
 	pid = getpid();
-	sha1_process(&hs, (void*)&pid, sizeof(pid));
+	sha256_process(&hs, (void*)&pid, sizeof(pid));
 
 	/* gettimeofday() doesn't completely fill out struct timeval on 
 	   OS X (10.8.3), avoid valgrind warnings by clearing it first */
 	memset(&tv, 0x0, sizeof(tv));
 	gettimeofday(&tv, NULL);
-	sha1_process(&hs, (void*)&tv, sizeof(tv));
+	sha256_process(&hs, (void*)&tv, sizeof(tv));
 
 	clockval = clock();
-	sha1_process(&hs, (void*)&clockval, sizeof(clockval));
+	sha256_process(&hs, (void*)&clockval, sizeof(clockval));
 
 	/* When a private key is read by the client or server it will
 	 * be added to the hashpool - see runopts.c */
 
-	sha1_done(&hs, hashpool);
+	sha256_done(&hs, hashpool);
 
 	counter = 0;
 	donerandinit = 1;
@@ -317,7 +316,7 @@ void seedrandom() {
 void genrandom(unsigned char* buf, unsigned int len) {
 
 	hash_state hs;
-	unsigned char hash[SHA1_HASH_SIZE];
+	unsigned char hash[SHA256_HASH_SIZE];
 	unsigned int copylen;
 
 	if (!donerandinit) {
@@ -325,17 +324,17 @@ void genrandom(unsigned char* buf, unsigned int len) {
 	}
 
 	while (len > 0) {
-		sha1_init(&hs);
-		sha1_process(&hs, (void*)hashpool, sizeof(hashpool));
-		sha1_process(&hs, (void*)&counter, sizeof(counter));
-		sha1_done(&hs, hash);
+		sha256_init(&hs);
+		sha256_process(&hs, (void*)hashpool, sizeof(hashpool));
+		sha256_process(&hs, (void*)&counter, sizeof(counter));
+		sha256_done(&hs, hash);
 
 		counter++;
 		if (counter > MAX_COUNTER) {
 			seedrandom();
 		}
 
-		copylen = MIN(len, SHA1_HASH_SIZE);
+		copylen = MIN(len, SHA256_HASH_SIZE);
 		memcpy(buf, hash, copylen);
 		len -= copylen;
 		buf += copylen;

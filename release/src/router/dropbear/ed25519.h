@@ -27,6 +27,7 @@
 
 #include "includes.h"
 #include "buffer.h"
+#include "signkey.h"
 
 #if DROPBEAR_ED25519 
 
@@ -43,7 +44,8 @@ void buf_put_ed25519_sign(buffer* buf, const dropbear_ed25519_key *key, const bu
 #if DROPBEAR_SIGNKEY_VERIFY
 int buf_ed25519_verify(buffer * buf, const dropbear_ed25519_key *key, const buffer *data_buf);
 #endif
-int buf_get_ed25519_pub_key(buffer* buf, dropbear_ed25519_key *key);
+int buf_get_ed25519_pub_key(buffer *buf, dropbear_ed25519_key *key,
+        enum signkey_type expect_keytype);
 int buf_get_ed25519_priv_key(buffer* buf, dropbear_ed25519_key *key);
 void buf_put_ed25519_pub_key(buffer* buf, const dropbear_ed25519_key *key);
 void buf_put_ed25519_priv_key(buffer* buf, const dropbear_ed25519_key *key);

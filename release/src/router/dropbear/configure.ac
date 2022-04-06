@@ -5,7 +5,7 @@
 # of the platform checks have been taken straight from OpenSSH's configure.ac
 # Huge thanks to them for dealing with the horrible platform-specifics :)
 
-AC_PREREQ(2.59)
+AC_PREREQ([2.59])
 AC_INIT
 AC_CONFIG_SRCDIR(buffer.c)
 
@@ -16,6 +16,7 @@ if test -s "`which hg`" && test -d "$srcdir/.hg"; then
 fi
 
 ORIGCFLAGS="$CFLAGS"
+LATE_CFLAGS=""
 # Checks for programs.
 AC_PROG_CC
 
@@ -46,6 +47,9 @@ DB_TRYADDCFLAGS([-Wno-pointer-sign])
 
 AC_MSG_NOTICE([Checking if compiler '$CC' supports -fno-strict-overflow])
 DB_TRYADDCFLAGS([-fno-strict-overflow])
+
+# needed for various extensions. define early before autoconf tests
+AC_DEFINE([_GNU_SOURCE], [], [Use GNU extensions if glibc])
 
 STATIC=0
 AC_ARG_ENABLE(static,
@@ -123,6 +127,17 @@ if test "$hardenbuild" -eq 1; then
 	DB_TRYADDCFLAGS([-mindirect-branch=thunk])
 
 fi
+
+AC_ARG_ENABLE(werror,
+	[  --enable-werror         Set -Werror when building],
+	[
+		if test "x$enableval" = "xyes"; then
+			# -Werror shouldn't be set when configure runs tests.
+			# We add it to the Makefile's CFLAGS
+			LATE_CFLAGS+="$LATE_CFLAGS -Werror"
+			AC_MSG_NOTICE(Enabling -Werror)
+		fi
+	], [])
 
 # large file support is useful for scp
 AC_SYS_LARGEFILE
@@ -347,6 +362,7 @@ AC_ARG_ENABLE(fuzz,
             DROPBEAR_FUZZ=1
             # libfuzzer needs linking with c++ libraries
             AC_PROG_CXX
+			mkdir -pv fuzz
         else
             AC_DEFINE(DROPBEAR_FUZZ, 0, Fuzzing)
             AC_MSG_NOTICE(Disabling fuzzing)
@@ -364,14 +380,13 @@ AC_SUBST(DROPBEAR_FUZZ)
 AC_SUBST(CXX)
 
 # Checks for header files.
-AC_HEADER_STDC
 AC_HEADER_SYS_WAIT
 AC_CHECK_HEADERS([netinet/in.h netinet/tcp.h \
 	crypt.h \
 	pty.h libutil.h libgen.h inttypes.h stropts.h utmp.h \
 	utmpx.h lastlog.h paths.h util.h netdb.h security/pam_appl.h \
 	pam/pam_appl.h netinet/in_systm.h sys/uio.h linux/pkt_sched.h \
-	sys/random.h])
+	sys/random.h sys/prctl.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
@@ -379,7 +394,6 @@ AC_TYPE_UID_T
 AC_TYPE_MODE_T
 AC_TYPE_PID_T
 AC_TYPE_SIZE_T
-AC_HEADER_TIME
 
 AC_CHECK_TYPES([uint8_t, u_int8_t, uint16_t, u_int16_t, uint32_t, u_int32_t])
 AC_CHECK_TYPES([struct sockaddr_storage])
@@ -827,7 +841,7 @@ AC_FUNC_MEMCMP
 AC_FUNC_SELECT_ARGTYPES
 AC_CHECK_FUNCS([getpass getspnam getusershell putenv])
 AC_CHECK_FUNCS([clearenv strlcpy strlcat daemon basename _getpty getaddrinfo ])
-AC_CHECK_FUNCS([freeaddrinfo getnameinfo fork writev getgrouplist])
+AC_CHECK_FUNCS([freeaddrinfo getnameinfo fork writev getgrouplist fexecve])
 
 AC_SEARCH_LIBS(basename, gen, AC_DEFINE(HAVE_BASENAME))
 
@@ -859,8 +873,11 @@ if test $BUNDLED_LIBTOM = 1 ; then
 LIBTOM_FILES="libtomcrypt/Makefile libtommath/Makefile"
 fi
 
-AC_CONFIG_HEADER(config.h)
-AC_CONFIG_FILES(Makefile $LIBTOM_FILES)
+# flags that should be set in Makefile but not for configure tests
+CFLAGS="$CFLAGS $LATE_CFLAGS"
+
+AC_CONFIG_HEADERS([config.h])
+AC_CONFIG_FILES(Makefile $LIBTOM_FILES test/Makefile)
 AC_OUTPUT
 
 AC_MSG_NOTICE()

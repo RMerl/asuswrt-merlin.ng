@@ -46,7 +46,6 @@ static int cli_init_netcat(struct Channel *channel);
 static void cli_tty_setup(void);
 
 const struct ChanType clichansess = {
-	0, /* sepfds */
 	"session", /* name */
 	cli_initchansess, /* inithandler */
 	NULL, /* checkclosehandler */
@@ -344,11 +343,11 @@ static int cli_init_stdpipe_sess(struct Channel *channel) {
 	setnonblocking(STDERR_FILENO);
 
 	channel->extrabuf = cbuf_new(opts.recv_window);
+	channel->bidir_fd = 0;
 	return 0;
 }
 
 static int cli_init_netcat(struct Channel *channel) {
-	channel->prio = DROPBEAR_CHANNEL_PRIO_UNKNOWABLE;
 	return cli_init_stdpipe_sess(channel);
 }
 
@@ -361,12 +360,9 @@ static int cli_initchansess(struct Channel *channel) {
 		cli_setup_agent(channel);
 	}
 #endif
-
 	if (cli_opts.wantpty) {
 		send_chansess_pty_req(channel);
-		channel->prio = DROPBEAR_CHANNEL_PRIO_INTERACTIVE;
-	} else {
-		channel->prio = DROPBEAR_CHANNEL_PRIO_BULK;
+		channel->prio = DROPBEAR_PRIO_LOWDELAY;
 	}
 
 	send_chansess_shell_req(channel);
@@ -375,7 +371,7 @@ static int cli_initchansess(struct Channel *channel) {
 		cli_tty_setup();
 		channel->read_mangler = cli_escape_handler;
 		cli_ses.last_char = '\r';
-	}	
+	}
 
 	return 0; /* Success */
 }
@@ -383,7 +379,6 @@ static int cli_initchansess(struct Channel *channel) {
 #if DROPBEAR_CLI_NETCAT
 
 static const struct ChanType cli_chan_netcat = {
-	0, /* sepfds */
 	"direct-tcpip",
 	cli_init_netcat, /* inithandler */
 	NULL,

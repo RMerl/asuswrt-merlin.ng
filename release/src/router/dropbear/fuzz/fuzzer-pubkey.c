@@ -27,7 +27,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
 		unsigned int algolen;
 		char* algoname = buf_getstring(keyblob, &algolen);
 
-		if (signature_type_from_name(algoname, algolen) == DROPBEAR_SIGNKEY_NONE) {
+		if (signature_type_from_name(algoname, algolen) == DROPBEAR_SIGNATURE_NONE) {
 			dropbear_exit("fuzzer imagined a bogus algorithm");
 		}
 

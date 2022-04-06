@@ -54,7 +54,7 @@ static void closechansess(const struct Channel *channel);
 static void cleanupchansess(const struct Channel *channel);
 static int newchansess(struct Channel *channel);
 static void chansessionrequest(struct Channel *channel);
-static int sesscheckclose(const struct Channel *channel);
+static int sesscheckclose(struct Channel *channel);
 
 static void send_exitsignalstatus(const struct Channel *channel);
 static void send_msg_chansess_exitstatus(const struct Channel * channel,
@@ -64,7 +64,6 @@ static void send_msg_chansess_exitsignal(const struct Channel * channel,
 static void get_termmodes(const struct ChanSess *chansess);
 
 const struct ChanType svrchansess = {
-	0, /* sepfds */
 	"session", /* name */
 	newchansess, /* inithandler */
 	sesscheckclose, /* checkclosehandler */
@@ -73,15 +72,26 @@ const struct ChanType svrchansess = {
 	cleanupchansess /* cleanup */
 };
 
-/* required to clear environment */
-extern char** environ;
-
-static int sesscheckclose(const struct Channel *channel) {
+/* Returns whether the channel is ready to close. The child process
+   must not be running (has never started, or has exited) */
+static int sesscheckclose(struct Channel *channel) {
 	struct ChanSess *chansess = (struct ChanSess*)channel->typedata;
-	TRACE(("sesscheckclose, pid is %d", chansess->exit.exitpid))
-	return chansess->exit.exitpid != -1;
+	TRACE(("sesscheckclose, pid %d, exitpid %d", chansess->pid, chansess->exit.exitpid))
+
+	if (chansess->exit.exitpid != -1) {
+		channel->flushing = 1;
+	}
+	return chansess->pid == 0 || chansess->exit.exitpid != -1;
 }
 
+/* Handler for childs exiting, store the state for return to the client */
+
+/* There's a particular race we have to watch out for: if the forked child
+ * executes, exits, and this signal-handler is called, all before the parent
+ * gets to run, then the childpids[] array won't have the pid in it. Hence we
+ * use the svr_ses.lastexit struct to hold the exit, which is then compared by
+ * the parent when it runs. This work correctly at least in the case of a
+ * single shell spawned (ie the usual case) */
 void svr_chansess_checksignal(void) {
 	int status;
 	pid_t pid;
@@ -127,18 +137,9 @@ void svr_chansess_checksignal(void) {
 			/* we use this to determine how pid exited */
 			ex->exitsignal = -1;
 		}
-		
 	}
 }
 
-/* Handler for childs exiting, store the state for return to the client */
-
-/* There's a particular race we have to watch out for: if the forked child
- * executes, exits, and this signal-handler is called, all before the parent
- * gets to run, then the childpids[] array won't have the pid in it. Hence we
- * use the svr_ses.lastexit struct to hold the exit, which is then compared by
- * the parent when it runs. This work correctly at least in the case of a
- * single shell spawned (ie the usual case) */
 static void sesssigchild_handler(int UNUSED(dummy)) {
 	struct sigaction sa_chld;
 
@@ -273,7 +274,8 @@ static int newchansess(struct Channel *channel) {
 	chansess->agentdir = NULL;
 #endif
 
-	channel->prio = DROPBEAR_CHANNEL_PRIO_INTERACTIVE;
+	/* Will drop to DROPBEAR_PRIO_NORMAL if a non-tty command starts */
+	channel->prio = DROPBEAR_PRIO_LOWDELAY;
 
 	return 0;
 
@@ -423,35 +425,37 @@ out:
 
 /* Send a signal to a session's process as requested by the client*/
 static int sessionsignal(const struct ChanSess *chansess) {
+	TRACE(("sessionsignal"))
 
 	int sig = 0;
 	char* signame = NULL;
 	int i;
 
 	if (chansess->pid == 0) {
+		TRACE(("sessionsignal: done no pid"))
 		/* haven't got a process pid yet */
 		return DROPBEAR_FAILURE;
 	}
 
 	signame = buf_getstring(ses.payload, NULL);
 
-	i = 0;
-	while (signames[i].name != 0) {
+	for (i = 0; signames[i].name != NULL; i++) {
 		if (strcmp(signames[i].name, signame) == 0) {
 			sig = signames[i].signal;
 			break;
 		}
-		i++;
 	}
 
 	m_free(signame);
 
+	TRACE(("sessionsignal: pid %d signal %d", (int)chansess->pid, sig))
 	if (sig == 0) {
 		/* failed */
 		return DROPBEAR_FAILURE;
 	}
 			
 	if (kill(chansess->pid, sig) < 0) {
+		TRACE(("sessionsignal: kill() errored"))
 		return DROPBEAR_FAILURE;
 	} 
 
@@ -656,12 +660,13 @@ static int sessioncommand(struct Channel *channel, struct ChanSess *chansess,
 	unsigned int cmdlen = 0;
 	int ret;
 
-	TRACE(("enter sessioncommand"))
+	TRACE(("enter sessioncommand %d", channel->index))
 
-	if (chansess->cmd != NULL) {
+	if (chansess->pid != 0) {
 		/* Note that only one command can _succeed_. The client might try
 		 * one command (which fails), then try another. Ie fallback
 		 * from sftp to scp */
+		TRACE(("leave sessioncommand, already have a command"))
 		return DROPBEAR_FAILURE;
 	}
 
@@ -673,18 +678,22 @@ static int sessioncommand(struct Channel *channel, struct ChanSess *chansess,
 			if (cmdlen > MAX_CMD_LEN) {
 				m_free(chansess->cmd);
 				/* TODO - send error - too long ? */
+				TRACE(("leave sessioncommand, command too long %d", cmdlen))
 				return DROPBEAR_FAILURE;
 			}
 		}
 		if (issubsys) {
 #if DROPBEAR_SFTPSERVER
 			if ((cmdlen == 4) && strncmp(chansess->cmd, "sftp", 4) == 0) {
+				char *expand_path = expand_homedir_path(SFTPSERVER_PATH);
 				m_free(chansess->cmd);
-				chansess->cmd = m_strdup(SFTPSERVER_PATH);
+				chansess->cmd = m_strdup(expand_path);
+				m_free(expand_path);
 			} else 
 #endif
 			{
 				m_free(chansess->cmd);
+				TRACE(("leave sessioncommand, unknown subsystem"))
 				return DROPBEAR_FAILURE;
 			}
 		}
@@ -725,7 +734,7 @@ static int sessioncommand(struct Channel *channel, struct ChanSess *chansess,
 		/* no pty */
 		ret = noptycommand(channel, chansess);
 		if (ret == DROPBEAR_SUCCESS) {
-			channel->prio = DROPBEAR_CHANNEL_PRIO_BULK;
+			channel->prio = DROPBEAR_PRIO_NORMAL;
 			update_channel_prio();
 		}
 	} else {
@@ -741,6 +750,7 @@ static int sessioncommand(struct Channel *channel, struct ChanSess *chansess,
 	if (ret == DROPBEAR_FAILURE) {
 		m_free(chansess->cmd);
 	}
+	TRACE(("leave sessioncommand, ret %d", ret))
 	return ret;
 }
 
@@ -762,6 +772,7 @@ static int noptycommand(struct Channel *channel, struct ChanSess *chansess) {
 	ses.maxfd = MAX(ses.maxfd, channel->writefd);
 	ses.maxfd = MAX(ses.maxfd, channel->readfd);
 	ses.maxfd = MAX(ses.maxfd, channel->errfd);
+	channel->bidir_fd = 0;
 
 	addchildpid(chansess, chansess->pid);
 
@@ -830,19 +841,26 @@ static int ptycommand(struct Channel *channel, struct ChanSess *chansess) {
 		pty_make_controlling_tty(&chansess->slave, chansess->tty);
 		
 		if ((dup2(chansess->slave, STDIN_FILENO) < 0) ||
-			(dup2(chansess->slave, STDERR_FILENO) < 0) ||
 			(dup2(chansess->slave, STDOUT_FILENO) < 0)) {
 			TRACE(("leave ptycommand: error redirecting filedesc"))
 			return DROPBEAR_FAILURE;
 			}
 
-		close(chansess->slave);
-
 		/* write the utmp/wtmp login record - must be after changing the
-		 * terminal used for stdout with the dup2 above */
+		 * terminal used for stdout with the dup2 above, otherwise
+		 * the wtmp login will not be recorded */
 		li = chansess_login_alloc(chansess);
 		login_login(li);
 		login_free_entry(li);
+
+		/* Can now dup2 stderr. Messages from login_login() have gone
+		to the parent stderr */
+		if (dup2(chansess->slave, STDERR_FILENO) < 0) {
+			TRACE(("leave ptycommand: error redirecting filedesc"))
+			return DROPBEAR_FAILURE;
+		}
+
+		close(chansess->slave);
 
 #if DO_MOTD
 		if (svr_opts.domotd && !chansess->cmd) {
@@ -855,9 +873,11 @@ static int ptycommand(struct Channel *channel, struct ChanSess *chansess) {
 			snprintf(hushpath, len, "%s/.hushlogin", ses.authstate.pw_dir);
 
 			if (stat(hushpath, &sb) < 0) {
+				char *expand_path = NULL;
 				/* more than a screenful is stupid IMHO */
 				motdbuf = buf_new(80 * 25);
-				if (buf_readfile(motdbuf, MOTD_FILENAME) == DROPBEAR_SUCCESS) {
+				expand_path = expand_homedir_path(MOTD_FILENAME);
+				if (buf_readfile(motdbuf, expand_path) == DROPBEAR_SUCCESS) {
 					buf_setpos(motdbuf, 0);
 					while (motdbuf->pos != motdbuf->len) {
 						len = motdbuf->len - motdbuf->pos;
@@ -866,7 +886,9 @@ static int ptycommand(struct Channel *channel, struct ChanSess *chansess) {
 						buf_incrpos(motdbuf, len);
 					}
 				}
+				m_free(expand_path);
 				buf_free(motdbuf);
+
 			}
 			m_free(hushpath);
 		}
@@ -888,6 +910,7 @@ static int ptycommand(struct Channel *channel, struct ChanSess *chansess) {
 		channel->readfd = chansess->master;
 		/* don't need to set stderr here */
 		ses.maxfd = MAX(ses.maxfd, chansess->master);
+		channel->bidir_fd = 1;
 
 		setnonblocking(chansess->master);
 
@@ -914,6 +937,7 @@ static void addchildpid(struct ChanSess *chansess, pid_t pid) {
 		svr_ses.childpidsize++;
 	}
 	
+	TRACE(("addchildpid %d pid %d for chansess %p", i, pid, chansess))
 	svr_ses.childpids[i].pid = pid;
 	svr_ses.childpids[i].chansess = chansess;
 
@@ -924,6 +948,11 @@ static void addchildpid(struct ChanSess *chansess, pid_t pid) {
 static void execchild(const void *user_data) {
 	const struct ChanSess *chansess = user_data;
 	char *usershell = NULL;
+	char *cp = NULL;
+	char *envcp = getenv("LANG");
+	if (envcp != NULL) {
+		cp = m_strdup(envcp);
+	}
 
 	/* with uClinux we'll have vfork()ed, so don't want to overwrite the
 	 * hostkey. can't think of a workaround to clear it */
@@ -936,19 +965,21 @@ static void execchild(const void *user_data) {
 	seedrandom();
 #endif
 
-	/* clear environment */
+	/* clear environment if -e was not set */
 	/* if we're debugging using valgrind etc, we need to keep the LD_PRELOAD
 	 * etc. This is hazardous, so should only be used for debugging. */
+	if ( !svr_opts.pass_on_env) {
 #ifndef DEBUG_VALGRIND
 #ifdef HAVE_CLEARENV
-	clearenv();
+		clearenv();
 #else /* don't HAVE_CLEARENV */
-	/* Yay for posix. */
-	if (environ) {
-		environ[0] = NULL;
-	}
+		/* Yay for posix. */
+		if (environ) {
+			environ[0] = NULL;
+		}
 #endif /* HAVE_CLEARENV */
 #endif /* DEBUG_VALGRIND */
+	}
 
 #if DROPBEAR_SVR_MULTIUSER
 	/* We can only change uid/gid as root ... */
@@ -981,7 +1012,15 @@ static void execchild(const void *user_data) {
 	addnewvar("LOGNAME", ses.authstate.pw_name);
 	addnewvar("HOME", ses.authstate.pw_dir);
 	addnewvar("SHELL", get_user_shell());
-	addnewvar("PATH", DEFAULT_PATH);
+	if (getuid() == 0) {
+		addnewvar("PATH", DEFAULT_ROOT_PATH);
+	} else {
+		addnewvar("PATH", DEFAULT_PATH);
+	}
+	if (cp != NULL) {
+		addnewvar("LANG", cp);
+		m_free(cp);
+	}	
 	if (chansess->term != NULL) {
 		addnewvar("TERM", chansess->term);
 	}
@@ -1001,11 +1040,19 @@ static void execchild(const void *user_data) {
 	if (chansess->original_command) {
 		addnewvar("SSH_ORIGINAL_COMMAND", chansess->original_command);
 	}
+        if (ses.authstate.pubkey_info != NULL) {
+                addnewvar("SSH_PUBKEYINFO", ses.authstate.pubkey_info);
+        }
 
 	/* change directory */
 	if (chdir(ses.authstate.pw_dir) < 0) {
-		dropbear_exit("Error changing directory");
+		int e = errno;
+		if (chdir("/") < 0) {
+			dropbear_exit("chdir(\"/\") failed");
+		}
+		fprintf(stderr, "Failed chdir '%s': %s\n", ses.authstate.pw_dir, strerror(e));
 	}
+
 
 #if DROPBEAR_X11FWD
 	/* set up X11 forwarding if enabled */

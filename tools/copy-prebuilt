@@ -142,7 +142,7 @@ then
 	cp release/src-rt-5.04axhnd.675x/bcmdrivers/broadcom/net/wl/impl87/main/components/apps/acsdv2/prebuilt/* $REPO/release/src-rt-5.04axhnd.675x/bcmdrivers/broadcom/net/wl/impl87/main/components/apps/acsdv2/prebuilt/$BUILD_NAME/
 
 	echo "Manually sync router-sysdep (since hnd_extra cannot be rsync'ed)"
-#        rsync -a --del release/src-rt-5.04axhnd.675x/router-sysdep/ $REPO/release/src-rt-5.04axhnd.675x/router-sysdep.$BUILD_NAME_LC
+#	rsync -a --del release/src-rt-5.04axhnd.675x/router-sysdep/ $REPO/release/src-rt-5.04axhnd.675x/router-sysdep.$BUILD_NAME_LC
 
 else
 	echo "Unrecognized BUILD_NAME!"

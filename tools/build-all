@@ -12,7 +12,7 @@
 
 ### Manual/hardcoded
 # Append git revision
-#export BUILDREV=1
+export BUILDREV=1
 
 # Enable update server support (don't use if you build a fork!)
 #export MERLINUPDATE=y
@@ -46,6 +46,8 @@ BAX68=y
 BGTAXE11000=y
 BAC68V4=y
 
+BGTAX6000=y
+BXT12=y
 
 ### Branches for each model
 BRANCH_AC68=master
@@ -67,6 +69,9 @@ BRANCH_AX86=master
 BRANCH_AX68=master
 BRANCH_GTAXE11000=master
 BRANCH_AC68V4=master
+
+BRANCH_GTAX6000=master
+BRANCH_XT12=master
 
 ### Paths
 # Store built images there
@@ -102,6 +107,9 @@ build_fw()
 		elif [ "$FWMODEL" = "rt-ax86u" ] || [ "$FWMODEL" = "rt-ax68u" ] || [ "$FWMODEL" = "rt-ax56u" ] || [ "$FWMODEL" = "gt-axe11000" ] ; then
 			FWNAME="$(find -- *_cferom_pureubi.w | head -n 1)"
 			ZIPNAME="$(echo "$FWNAME" | sed 's~_cferom_pureubi.w~~g').zip"
+		elif [ "$FWMODEL" = "gt-ax6000" ] || [ "$FWMODEL" = "xt12" ] ; then
+			FWNAME="$(find -- *_nand_squashfs.pkgtb | head -n 1)"
+			ZIPNAME="$(echo "$FWNAME" | sed 's~_nand_squashfs.pkgtb~~g').zip"
 		else
 			FWNAME="$(find -- *.trx | head -n 1)"
 			ZIPNAME="$(echo "$FWNAME" | sed 's~.trx~~g').zip"
@@ -196,13 +204,26 @@ fi
 if [ "$BAC68V4" = "y" ]; then
         clean_tree amng.ac68v4 release/src-rt-5.02p1axhnd.675x rt-ac68u_v4 $BRANCH_AC68V4
 fi
-
+if [ "$BGTAX6000" = "y" ]; then
+	clean_tree amng.gtax6000 release/src-rt-5.04axhnd.675x gt-ax6000 $BRANCH_GTAX6000
+fi
+if [ "$BXT12" = "y" ]; then
+	clean_tree amng.xt12 release/src-rt-5.04axhnd.675x xt12 $BRANCH_XT12
+fi
 
 echo "--- $(date +%R) - All trees ready!"
 
 # Launch parallel builds
 
 echo "--- $(date +%R) - Launching all builds"
+if [ "$BGTAX6000" = "y" ]; then
+        build_fw amng.gtax6000/release/src-rt-5.04axhnd.675x gt-ax6000 &
+fi
+
+if [ "$BXT12" = "y" ]; then
+        build_fw amng.xt12/release/src-rt-5.04axhnd.675x xt12 &
+fi
+
 if [ "$BAC86" = "y" ]; then
 	build_fw amng.ac86/release/src-rt-5.02hnd rt-ac86u &
 fi
@@ -290,7 +311,7 @@ sha256sum -- *.w; } 2>/dev/null | unix2dos > sha256sums-ng.txt
 # Copy everything to the host
 
 if [ -z "$FINAL_LOC" ]; then
-	scp -- *.zip *.trx *.txt *.w "$FINAL_LOC/" 2>/dev/null
+	scp -- *.zip *.trx *.txt *.w *.pkgtb "$FINAL_LOC/" 2>/dev/null
 fi
 
 echo "=== $(date +%R) - All done!"

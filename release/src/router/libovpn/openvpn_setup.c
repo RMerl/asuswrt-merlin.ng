@@ -1098,11 +1098,13 @@ void ovpn_setup_server_fw(ovpn_sconf_t *sconf, int unit) {
 	}
 
 #ifdef RTCONFIG_IPV6
+#ifdef HND_ROUTER
 	strlcpy(wan6_ifname, get_wan6_ifname(wan_primary_ifunit()), sizeof(wan6_ifname));
 
 	if (ipv6_enabled() && sconf->ipv6_enable && sconf->nat6)
 		fprintf(fp, "ip6tables -t nat -I POSTROUTING -s %s -o %s -j MASQUERADE\n",
 			sconf->network6, wan6_ifname);
+#endif
 #endif
 
 #if !defined(HND_ROUTER)

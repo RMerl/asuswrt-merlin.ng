@@ -681,10 +681,11 @@ sta_list:
 					arplistptr = strdup(arplist);
 					line = strtok(arplistptr, "\n");
 					while (line) {
-						if ( (sscanf(line,"%15s %*s %*s %17s",ipentry,macentry) == 2) &&
-						     (!strcasecmp(macentry, ether_etoa((void *)&auth->ea[ii], ea))) ) {
-							found = 1;
-							break;
+						if ( (sscanf(line,"%15s %*s %x %17s", ipentry, &flagentry, macentry) == 3) &&
+						     (!strcasecmp(macentry, ether_etoa((void *)&auth->ea[i], ea))) &&
+						     (flagentry != 0) ) {
+						         found = 1;
+						         break;
 						} else
 							line  = strtok(NULL, "\n");
 					}

@@ -1209,10 +1209,9 @@ static int start_tqos(void)
 		"# upload 1:60: LAN-to-LAN (vlan@%s)\n"
 		"\t$TCAUL parent 1:2 classid 1:60 htb rate 1000000kbit ceil 1000000kbit burst 10000 cburst 10000 prio 6\n"
 		"\t$TQAUL parent 1:60 handle 60: pfifo\n"
-		"\t$TFAUL parent 1: prio 6 protocol 802.1q u32 match mark 6 0x%x flowid 1:60\n",
+		"\t$TFAUL parent 1: prio 6 protocol 802.1q u32 match u32 0 0 flowid 1:60\n",
 			wan_ifname,
-			wan_ifname,
-			QOS_MASK
+			wan_ifname
 		);
 #endif
 

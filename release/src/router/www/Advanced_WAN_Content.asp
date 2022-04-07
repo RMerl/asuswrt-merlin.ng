@@ -2203,6 +2203,16 @@ function DNSList_match(ip1, ip2){
 					<input type="radio" value="0" name="dnssec_check_unsigned_x" <% nvram_match("dnssec_check_unsigned_x", "0", "checked"); %> /><#checkbox_No#>
 				</td>
 			</tr>
+			<tr id="dns_priv_override_tr">
+				<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(50,31);">Prevent client auto DoH</a></th>
+				<td>
+					<select id="dns_priv_override" class="input_option" name="dns_priv_override">
+						<option value="0" <% nvram_match("dns_priv_override", "0", "selected"); %>>Auto</option>
+						<option value="1" <% nvram_match("dns_priv_override", "1", "selected"); %>>Yes</option>
+						<option value="2" <% nvram_match("dns_priv_override", "2", "selected"); %>>No</option>
+					</select>
+				</td>
+			</tr>
 
 			<tr style="display:none">
 				<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,35);"><#WAN_DNS_Privacy#></a></th>

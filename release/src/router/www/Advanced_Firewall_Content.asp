@@ -195,7 +195,7 @@ function addRow_Group(upper){
 				srcip_flag_v4=1;
 			}
 		}
-		else if(!validator.ipv4cidr(document.form.filter_lw_srcip_x_0))
+		else if(!validator.ipv4cidr(document.form.filter_lw_srcip_x_0)){
 			if(!validator.isLegal_ipv6(document.form.filter_lw_srcip_x_0, 1)){
 				alert(document.form.filter_lw_srcip_x_0.value + ": <#JS_validip#>");
 				document.form.filter_lw_srcip_x_0.focus();

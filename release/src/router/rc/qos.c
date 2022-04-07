@@ -2112,7 +2112,7 @@ static int start_GeForce_QoS(void)
 	/* fixed ports */
 	fprintf(f, "$TFA parent 1: prio 10 protocol ip u32 match ip protocol 17 0xff match ip dport %d 0xffff flowid 1:10\n", nvfgn_GetQoSChannelPort("audio"));
 	fprintf(f, "$TFA parent 1: prio 10 protocol ip u32 match ip protocol 17 0xff match ip dport %d 0xffff flowid 1:10\n", nvfgn_GetQoSChannelPort("mic"));
-	fprintf(f, "$TFA parent 1: prio 10 protocol ip u32 match ip protocol 17 0xff match ip dport %d 0xffff flowid 1:10\n", nvfgn_GetQoSChannelPort("vedio"));
+	fprintf(f, "$TFA parent 1: prio 10 protocol ip u32 match ip protocol 17 0xff match ip dport %d 0xffff flowid 1:10\n", nvfgn_GetQoSChannelPort("video"));
 	fprintf(f, "$TFA parent 1: prio 10 protocol ip u32 match ip protocol 17 0xff match ip dport %d 0xffff flowid 1:10\n", nvfgn_GetQoSChannelPort("control"));
 	fprintf(f, "$TFA parent 1: prio 10 protocol ip u32 match ip protocol  6 0xff match ip dport %d 0xffff flowid 1:10\n", nvfgn_GetQoSChannelPort("control"));
 
@@ -2165,7 +2165,7 @@ static int start_GeForce_QoS(void)
 	/* fixed ports */
 	fprintf(f, "$TFAU parent 2: prio 10 protocol ip u32 match ip protocol 17 0xff match ip sport %d 0xffff flowid 2:10\n", nvfgn_GetQoSChannelPort("audio"));
 	fprintf(f, "$TFAU parent 2: prio 10 protocol ip u32 match ip protocol 17 0xff match ip sport %d 0xffff flowid 2:10\n", nvfgn_GetQoSChannelPort("mic"));
-	fprintf(f, "$TFAU parent 2: prio 10 protocol ip u32 match ip protocol 17 0xff match ip sport %d 0xffff flowid 2:10\n", nvfgn_GetQoSChannelPort("vedio"));
+	fprintf(f, "$TFAU parent 2: prio 10 protocol ip u32 match ip protocol 17 0xff match ip sport %d 0xffff flowid 2:10\n", nvfgn_GetQoSChannelPort("video"));
 	fprintf(f, "$TFAU parent 2: prio 10 protocol ip u32 match ip protocol 17 0xff match ip sport %d 0xffff flowid 2:10\n", nvfgn_GetQoSChannelPort("control"));
 	fprintf(f, "$TFAU parent 2: prio 10 protocol ip u32 match ip protocol  6 0xff match ip sport %d 0xffff flowid 2:10\n", nvfgn_GetQoSChannelPort("control"));
 

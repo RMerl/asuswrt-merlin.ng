@@ -540,6 +540,11 @@ function initial(){
 		}
 		show_boostkey_desc(<% nvram_get("turbo_mode"); %>);
 	}
+
+	if (based_modelid == "XT12" || based_modelid == "GT-AX6000") {
+		document.getElementById("jffs_format_tr").style.display = "none";
+/*		document.getElementById("ubifs_format_tr").style.display = ""; */
+	}
 }
 
 var time_zone_tmp="";
@@ -2447,11 +2452,18 @@ function build_boostkey_options() {
 						<td colspan="2">Persistent JFFS2 partition</td>
 					</tr>
 				</thead>
-				<tr>
+				<tr id="jffs_format_tr">
 					<th>Format JFFS partition at next boot</th>
 					<td>
 						<input type="radio" name="jffs2_format" value="1" onclick="warn_jffs_format();" <% nvram_match("jffs2_format", "1", "checked"); %>><#checkbox_Yes#>
 						<input type="radio" name="jffs2_format" value="0" <% nvram_match("jffs2_format", "0", "checked"); %>><#checkbox_No#>
+					</td>
+				</tr>
+				<tr id="ubifs_format_tr" style="display:none;">
+					<th>Format JFFS partition at next boot</th>
+					<td>
+						<input type="radio" name="ubifs_format" value="1" onclick="warn_jffs_format();" <% nvram_match("ubifs_format", "1", "checked"); %>><#checkbox_Yes#>
+						<input type="radio" name="ubifs_format" value="0" <% nvram_match("ubifs_format", "0", "checked"); %>><#checkbox_No#>
 					</td>
 				</tr>
 				<tr>

@@ -304,9 +304,10 @@ fi
 
 echo
 cd "$STAGE_LOC" || exit 1
-{ sha256sum -- *.trx
-sha256sum -- *.w; } 2>/dev/null | unix2dos > sha256sums-ng.txt
-
+rm sha256sums-ng.txt
+sha256sum *.trx  | unix2dos >> sha256sums-ng.txt
+sha256sum *.w  | unix2dos >> sha256sums-ng.txt
+sha256sum *.pkgtb  | unix2dos >> sha256sums-ng.txt
 
 # Copy everything to the host
 

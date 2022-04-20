@@ -1,7 +1,7 @@
 Asuswrt-Merlin 386/NG Changelog
 ===============================
 
-386.6 (xx-xxx-2022)
+386.6 (20-Apr-2022)
   - NOTE: This release is only available on the GT-AX6000
           and XT12.
   - NEW: Added support for the GT-AX6000.

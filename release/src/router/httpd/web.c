@@ -7210,7 +7210,7 @@ static void find_hostname_by_mac(char *mac, char *hostname, int hostname_len)
 	}
 	fclose(fp);
 END:
-	strlcpy(hostname, "<unknown>", sizeof(hostname));
+	strlcpy(hostname, "<unknown>", hostname_len);
 }
 
 void get_ipv6_client_info()

@@ -1260,7 +1260,7 @@ function refreshVPNIP() {
 				<table id="selectiveTable" width="100%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable_table" style="margin-top:8px;">
 					<thead>
 						<tr>
-							<td colspan="5">VPN Director rules related to this client</td>
+							<td colspan="5">VPN Director rules related to this client - <a href="Advanced_VPNDirector.asp" style="text-decoration:underline;">click here</a> to edit</td>
 						</tr>
 					</thead>
 					<tr>

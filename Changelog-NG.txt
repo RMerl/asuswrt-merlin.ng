@@ -1,6 +1,15 @@
 Asuswrt-Merlin 386/NG Changelog
 ===============================
 
+386.7 (xx-xxx-xxxx)
+  - UPDATED: openssl to 1.1.1o.
+  - CHANGED: dhcpc-event now has a second parameter that will
+             contain "4" or "6" depending on the IP protocol of
+             the event (dave14305)
+  - FIXED: JFFS backup/restore functions not working on XT12
+           and GT-AX6000.
+
+
 386.6 (20-Apr-2022)
   - NOTE: This release is only available on the GT-AX6000
           and XT12.

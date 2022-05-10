@@ -68,6 +68,9 @@ version 2.85
 	Tweak TFTP code to check sender of all received packets, as
 	specified in RFC 1350 para 4.
 
+	Fix write-after-free error in DHCPv6 server code.
+	CVE-2022-0934 refers.
+	
 	
 version 2.84
 	Fix a problem, introduced in 2.83, which could see DNS replies

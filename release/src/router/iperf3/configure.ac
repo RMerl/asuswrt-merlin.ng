@@ -106,12 +106,11 @@ AC_CHECK_HEADERS([netinet/sctp.h],
 # Check for TCP_CONGESTION sockopt (believed to be Linux and FreeBSD only)
 AC_CACHE_CHECK([TCP_CONGESTION socket option],
 [iperf3_cv_header_tcp_congestion],
-AC_EGREP_CPP(yes,
-[#include <netinet/tcp.h>
-#ifdef TCP_CONGESTION
-  yes
-#endif
-],iperf3_cv_header_tcp_congestion=yes,iperf3_cv_header_tcp_congestion=no))
+AC_COMPILE_IFELSE(
+  [AC_LANG_PROGRAM([[#include <sys/socket.h>]],
+                   [[int foo = SO_MAX_PACING_RATE;]])],
+  iperf3_cv_header_so_max_pacing_rate=yes,
+  iperf3_cv_header_so_max_pacing_rate=no))
 if test "x$iperf3_cv_header_tcp_congestion" = "xyes"; then
     AC_DEFINE([HAVE_TCP_CONGESTION], [1], [Have TCP_CONGESTION sockopt.])
 fi
@@ -122,13 +121,12 @@ fi
 # copy, see src/flowlabel.h for more details).
 AC_CACHE_CHECK([IPv6 flowlabel support],
 [iperf3_cv_header_flowlabel],
-AC_EGREP_CPP(yes,
-[#include <sys/types.h>
-#include <linux/in6.h>
-#ifdef IPV6_FLOWLABEL_MGR
-  yes
-#endif
-],iperf3_cv_header_flowlabel=yes,iperf3_cv_header_flowlabel=no))
+AC_COMPILE_IFELSE(
+  [AC_LANG_PROGRAM([[#include <sys/types.h>
+                     #include <linux/in6.h>]],
+                   [[int foo = IPV6_FLOWLABEL_MGR;]])],
+  iperf3_cv_header_flowlabel=yes,
+  iperf3_cv_header_flowlabel=no))
 if test "x$iperf3_cv_header_flowlabel" = "xyes"; then
     AC_DEFINE([HAVE_FLOWLABEL], [1], [Have IPv6 flowlabel support.])
 fi

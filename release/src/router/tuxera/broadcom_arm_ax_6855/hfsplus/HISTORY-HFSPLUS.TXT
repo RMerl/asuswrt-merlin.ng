@@ -1,0 +1,65 @@
+HISTORY OF TUXERA HFSPLUS
+
+HFSPLUS 3021.12.17
+
+- Documentation now provided in README-HFSPLUS.TXT and HISTORY-HFSPLUS.TXT.
+- Fix error handling during B-tree node split to correctly free the new node.
+- Update supported kernel versions. Now support kernels up to 5.15.
+- Work around user space problem causing the root directory of a freshly 
+  formatted volume to be inaccessible on 32-bit Linux kernels >= 4.18.
+- Make splice() system call work for kernels >= 5.10.
+- Remove error message when there is not enough free space to extend a file.
+- Fix possible file system corruption when a large extended attribute is
+  created.
+- Fix corruption of file birth time (as returned by statx()) when creating hard
+  links.
+- Fix direct IO read beyond end of file in kernels < 4.1.17.
+- Fixes fallocate() on kernels < 4.9 on which it could cause "No such device"
+  error.
+- Fix crash due to race condition when creating b-tree nodes.
+
+HFSPLUS 3021.10.7
+
+- Update supported kernel versions. Now support kernels up to 5.14.
+- Improve logic and add warnings when using utf8 together with nls= options.
+  Automatically disable default utf8 option if nls= option was specified at
+  mount time and print a warning.
+- Documentation update.
+- Use "utf8" option by default for mount. It enables extended Unicode characters
+  like Emojis for example. The mount option noutf8 can be used to disable the
+  new default.
+- Fix crash happened when deleting extended attributes.
+- Make special ".HFS+ Private Directory Data" directory hidden.
+- Fix Unicode issue with unsupported characters above U+10000.
+
+HFSPLUS 3017.6.20
+
+- Update supported kernel versions. Now support kernels up to 4.9.
+- Add kernel header mismatch warning message on module load.
+- Fix ctime not properly updated.
+- Init posix uid, gid and mode for the new inode.
+- When reading a directory from disk use the stored mode instead of wiping out
+  various permissions.
+- When mount with "nomode" wipe out the extended permissions bits.
+- Fix to make chmod/chown/chgrp work on directories.
+- Fix bug when POSIX read command returns an error when the software requests
+  more data than there is remaining in the file.
+- Check whether string conversion fails and if so abort the operation. This
+  fixes for example the case when the name is too long now creating such a file
+  returns an error ENAMETOOLONG instead of succeeding.
+- Fix B-tree corruption when a new record is inserted at position 0 in the node
+  in hfs_brec_insert().
+- Fix NULL pointer de-reference while clearing BTree node.
+- Fix "unused node is not erased" error.
+- Improve write performance with in-memory permissions.
+- Add nomode mount option (-o nomode). With "-o nomode" mount option all
+  permissions set from Mac OSX are retained. With in-memory permission
+  determined through uid, gid, fmask, dmask. All new files/directories created
+  have uid=gid=99 and mode = S_IRWXUGO & ~(sbi->umask) (or fmask, dmask,
+  depending on file, dir).
+- Fix expanding truncate when not enough available space.
+- NUL terminate volume label.
+
+This file contains the history since HFSPLUS 3014.7.28
+
+Copyright (c) 2008-2022 Tuxera Inc. All Rights Reserved.

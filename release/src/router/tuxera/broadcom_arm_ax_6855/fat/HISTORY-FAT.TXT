@@ -1,0 +1,100 @@
+HISTORY OF MICROSOFT FAT BY TUXERA
+
+FAT 3021.3.22.24
+
+- Documentation now provided in README-FAT.TXT and HISTORY-FAT.TXT.
+- Fix deadlock in fsync() on kernels < 3.1.
+- Fix very rare deadlock during inode eviction.
+- Fix failsafety bug when deleting multiple files from the same directory which
+  could result in cross links.
+- Fix bug on big endian systems causing files to be inaccessible.
+- Update supported kernel versions. Now support kernels up to 5.10.
+- Make the driver interruptible while extending initialized size of a file.
+- Fix a rare race condition which could lead to an unexpected partial write to a
+  regular file.
+- Improve logic and add warnings when using utf8 together with nls= options.
+  Automatically disable default utf8 option if nls= option was specified at
+  mount time and print a warning.
+- Output nls= instead of iocharset= in /proc/mounts.
+- Fix FITRIM ioctl in case it called with a length larger than the volume.
+
+FAT 3021.3.22.7
+
+- Fix multiple failsafe related issues found during internal testing.
+- New mount options: "-o tz=UTC": this option causes the driver to assume that
+  the system time zone is UTC. New option "-o time_offset=minutes" to set time
+  zone offset used when converting timestamps between local time which is used
+  on disk and UTC which is used by Linux.
+- New mount option "-o flush_inode_bytes=<size_with_suffix>" to force flush on
+  inode cache after specified amount of data has been written to inode.
+- New mount option "-o flush_inode_interval=<milliseconds>" to set specified
+  interval to force flush of inode cache.
+- Make "utf8" the default character set. New mount option "-o noutf8" to disable
+  the default behaviour during mount time.
+- Update documentation.
+- Added support for NFS exporting.
+- Fix a bug in time handling which cause file created time not shown in Windows
+  Explorer.
+- Improve handling of direct i/o for kernel processes.
+- Fix rare bug in handling very small size rename journal.
+- Disable use of movable memory on kernels with CONFIG_CMA=y.
+- Fix for exFAT directories which contain invalid directory entry sets so that
+  such directories can be deleted.
+- Fix bug which could cause file system mount to get stuck. Issue was found on a
+  kernel configured with BDI_CAP_STRICTLIMIT when a freshly formatted SD card
+  was inserted.
+- Improve stability when handling unplug related i/o error.
+- Reduce error logging in case block device is unplugged.
+- Improve stability in some scenarios related to case when a volume is remounted
+  read-only due to errors=remount-ro mount option.
+- Improve fdatasync behaviour.
+- Switch string printed for nocache mount option in /proc/mounts to be
+  "iostreaming" instead of "nocache".
+- Add configuration to boost directory lookup by pining in memory number of
+  inodes.
+- Add configuration to minimize resource usage even more for low cpu platform.
+- Add stability fix in TUXERA_GET_VOLUME_LABEL ioctl.
+- Add configuration to tune hot files.
+- Fix deadlock causing hang during file truncation on some kernels.
+- Fix rare crash in one hibernation scenario.
+- Add configuration to use allocate without __GFP_MOVABLE.
+- Add configuration to tell allocator always allocate sequentially. Add
+  configuration to set minimum preallocation size.
+- Fixed a rare race condition when unmounting volume.
+- Fixed crash which could happened during rename operation on some corrupted
+  volumes.
+- Discard preallocation in case a file is closed but not all the data yet
+  written.
+- Significant performance improvements when creating a large number of small
+  files within a single directory.
+- Add a new ioctl() TUXERA_GET_CLUSTER_SIZE which returns the cluster size in
+  bytes.
+- Always return -EROFS from all write related calls in case filesystem has been
+  remounted read-only.
+- Add configuration to force inode numbers to be 32-bit on 64-bit systems. Add
+  two new mount options - inode32/inode64.
+- Attempt to fix very rare kernel crash during file copy. We fixed imbalance by
+  adding missed call to blk_finish_plug to a code path which had blk_start_plug
+  without a blk_finish_plug.
+- Stop printing invalid error message about Unicode characters can't be
+  converted as it really is not an error in this use case.
+- Add configuration which makes memory shrinker optional.
+- Add configuration to enable driver use default system readahead for removable
+  volumes <= 32GiB.
+- Add support for r/w mount even if the volume size is larger than the actual
+  device size. Correctness enforced by operating with in-memory truncated number
+  of sectors/clusters which fits the device size. Any access outside the device
+  size will give an i/o error and a warning message to the kernel log.
+- Add configuration option to have both pid and process name printed in log.
+- Add configuration to enable start refusing read i/o immediately when device
+  goes away.
+- Add option to make updating the file size on end of write: boolean mount
+  option -o update_size_on_end_of_write.
+- Fix crash if doing concurrent truncate at the same time as reading.
+- Fix rare crash due to broken locking in some truncate scenarios.
+- Fix discard/trim requests on block devices where the sector size is not 512
+  bytes.
+
+This file contains the history since FAT 3017.7.24.1
+
+Copyright (c) 2008-2022 Tuxera Inc. All Rights Reserved.

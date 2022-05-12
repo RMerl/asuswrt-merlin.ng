@@ -1086,6 +1086,7 @@ void Pty_stop_wlc_connect(int band)
 #define PORT_UNITS 6
 #endif
 
+#ifdef RTCONFIG_AMAS_ETHDETECT
 //Aimesh RE: vport to eth name
 static const char *query_ifname[PORT_UNITS] = { //Aimesh RE
 #if defined(RTAX89U) || (GTAXY16000)
@@ -1102,6 +1103,7 @@ static const char *query_ifname[PORT_UNITS] = { //Aimesh RE
 	NULL,   NULL,   NULL,   NULL,   NULL,   NULL
 #endif
 };
+#endif
 
 void Pty_start_wlc_connect(int band, char *bssid)
 {
@@ -1651,6 +1653,242 @@ int wl_get_bw(int unit)
 	return bw;
 }
 
+/* Return bitmask, CFG_BW_XXM, of @bw
+ * @bw:		one of 20/40/80/160
+ * @return:	bitmask of one of CFG_BW_XXM
+ */
+int get_cfg_bw_mask_by_bw(int bw)
+{
+	int ret = 0;
+	if (bw == 20)
+		ret = CFG_BW_20M;
+	else if (bw == 40)
+		ret = CFG_BW_40M;
+	else if (bw == 80)
+		ret = CFG_BW_80M;
+	else if (bw == 160)
+		ret = CFG_BW_160M;
+	else {
+		dbg("%s: Unknown bandwidth %d\n", __func__, bw);
+	}
+
+	return ret;
+}
+
+/* Get supported bandwidth without checking /proc/athX/iv_config.
+ * @bwcap:	pointer to store bitmask of CFG_BW_XXM, e.g., CFG_BW_20M | CFG_BW_40M
+ * @return:
+ * 	0:	success
+ *     -1:	error
+ */
+int __wl_get_bw_cap(int unit, int *bwcap)
+{
+	if (unit < 0 || unit >= WL_NR_BANDS || !bwcap)
+		return -1;
+
+	if (unit == WL_2G_BAND)
+		*bwcap = CFG_BW_20M | CFG_BW_40M;		/* 40MHz */
+	else if (unit == WL_5G_BAND)
+		*bwcap = CFG_BW_20M | CFG_BW_40M | CFG_BW_80M;	/* 11AC 80MHz */
+#ifdef RTCONFIG_HAS_5G_2
+	else if (unit == WL_5G_2_BAND)
+		*bwcap = CFG_BW_20M | CFG_BW_40M | CFG_BW_80M;	/* 11AC 80MHz */
+#endif
+	else {
+		dbg("%s: unit %d is not supported yet!\n", __func__, unit);
+		return -1;
+	}
+#ifdef RTCONFIG_BW160M
+	if (unit == WL_5G_BAND || unit == WL_5G_2_BAND)
+		*bwcap |= CFG_BW_160M;
+#endif
+
+	return 0;
+}
+
+/* Return mode string that is used by "iwpriv athX mode XXX" command by bandwidth.
+ * @unit:	enum wl_band_id
+ * @bw:
+ * @nctrlsb:	40MHz only, specify direction of ext. channel
+ * 	1:	ext. ch. on lower channel
+ *  otherwise:	ext. ch. on higher channel
+ * @return:	pointer to internal buffer that contain string for private mode command.
+ */
+char *get_mode_str_by_bw(int unit, int channel, int bw, int nctrlsb)
+{
+	static char mode[32] = "";
+	char *p = mode;
+
+#if defined(RTCONFIG_WIFI_QCN5024_QCN5054) || defined(RTCONFIG_QCA_AXCHIP)
+	/* FIXME: Because user is capable to turn on/off 802.11ax support. We should select ax/ac,n by setting. */
+	if (unit == 0)
+		p += sprintf(p, "11GHE%d", bw);
+	else
+		p += sprintf(p, "11AHE%d", bw);
+#else
+	int bwcap = 0;
+
+	if (__wl_get_bw_cap(unit, &bwcap) < 0) {
+		if (unit == WL_2G_BAND)
+			bwcap = CFG_BW_20M | CFG_BW_40M;
+		else if (unit == WL_5G_BAND || unit == WL_5G_2_BAND)
+			bwcap = CFG_BW_20M | CFG_BW_40M | CFG_BW_80M;
+	}
+
+	if (bwcap & (0x08 | 0x04)) {				/* support BW160 || BW80 for AC */
+		p += sprintf(p, "11ACVHT%d", bw);
+	}
+	else if (bwcap & (0x02)) {				/* support  BW40 for NG OR NA */
+		if(unit == 0)
+			p += sprintf(p, "11NGHT%d", bw);
+		else
+			p += sprintf(p, "11NAHT%d", bw);
+	}
+	else {							/* support  BW20 for A OR G */
+		if(unit == 0)
+			p += sprintf(p, "11G");
+		else
+			p += sprintf(p, "11A");
+	}
+#endif
+
+	/* set extension channel when bw==40 and valid nctrlsb */
+	if (bw == 40 && nctrlsb >= 0) {
+		if(nctrlsb == 1)
+			p += sprintf(p, "MINUS");
+		else
+			p += sprintf(p, "PLUS");
+	}
+
+	return mode;
+}
+
+/* Reference to ieee80211_phymode and ieee80211_convert_mode() in qca-wifi. */
+static const char *phymode_str_tbl[IEEE80211_MODE_MAX] = {
+	"AUTO", "11A", "11B", "11G", "FH",
+	"TA", "TG", "11NAHT20", "11NGHT20", "11NAHT40PLUS",
+	"11NAHT40MINUS", "11NGHT40PLUS", "11NGHT40MINUS", "11NGHT40", "11NAHT40",
+	"11ACVHT20", "11ACVHT40PLUS", "11ACVHT40MINUS", "11ACVHT40", "11ACVHT80",
+	"11ACVHT160", "11ACVHT80_80", "11AHE20", "11GHE20", "11AHE40PLUS",
+	"11AHE40MINUS", "11GHE40PLUS", "11GHE40MINUS", "11AHE40", "11GHE40",
+	"11AHE80", "11AHE160", "11AHE80_80",
+};
+
+/* Get mode string of @phymode.
+ * @return:	pointer to mode string or "unknown phymode %d".
+ */
+const char *phymode_str(int phymode)
+{
+	static char mode[sizeof("Unknown phymode XXXXXX")];
+	const char *ret = mode;
+
+	if (phymode >= 0 && phymode < ARRAY_SIZE(phymode_str_tbl)) {
+		ret = phymode_str_tbl[phymode];
+	} else {
+		snprintf(mode, sizeof(mode), "Unknown phymode %d", phymode);
+	}
+	return ret;
+}
+
+/* Get bandwidth of @mode
+ * @mode:	parameter of private mode command, e.g., 11GHE20
+ * @return:	one of 20/40/80/160
+ */
+int get_bw_by_mode_str(char *mode)
+{
+	int r = 20;
+	if (!mode)
+		return r;
+
+	if (strstr(mode, "HE160") || strstr(mode, "HT160"))
+		r = 160;
+	else if (strstr(mode, "HE80") || strstr(mode, "HT80"))
+		r = 80;
+	else if (strstr(mode, "HE40") || strstr(mode, "HT40"))
+		r = 40;
+	else if (strstr(mode, "HE20") || strstr(mode, "HT20"))
+		r = 20;
+	else {
+		r = 20;
+		//dbg("%s: unknown mode [%s]\n", __func__, mode);
+	}
+
+	return r;
+}
+
+/* Get bandwidth of enum ieee80211_phymode
+ * @unit:	enum wl_band_id, not used unless phymode is auto.
+ * @phymode:	IEEE80211_MODE_11NA_XXX, e.g. IEEE80211_MODE_11NA_HT40PLUS
+ * @return:	one of 20/40/80/160
+ */
+int get_bw_by_phymode(int unit, int phymode)
+{
+	int ret = 20;
+
+	if (phymode == IEEE80211_MODE_AUTO && unit >= 0 && unit < WL_NR_BANDS) {
+		if (unit == WL_2G_BAND) {
+			return 40;
+		}
+		else if (unit == WL_5G_BAND || unit == WL_5G_2_BAND) {
+#if defined(RTCONFIG_BW160M)
+			return 160;
+#else
+			return 80;
+#endif
+		}
+	}
+
+	switch (phymode) {
+	case IEEE80211_MODE_11AC_VHT160:	/* fall-through */
+	case IEEE80211_MODE_11AXA_HE160:	/* fall-through */
+		ret = 160;
+		break;
+	case IEEE80211_MODE_11AC_VHT80:		/* fall-through */
+	case IEEE80211_MODE_11AC_VHT80_80:	/* fall-through */
+	case IEEE80211_MODE_11AXA_HE80:		/* fall-through */
+	case IEEE80211_MODE_11AXA_HE80_80:	/* fall-through */
+		ret = 80;
+		break;
+
+	case IEEE80211_MODE_11NA_HT40PLUS:	/* fall-through */
+	case IEEE80211_MODE_11NA_HT40MINUS:	/* fall-through */
+	case IEEE80211_MODE_11NG_HT40PLUS:	/* fall-through */
+	case IEEE80211_MODE_11NG_HT40MINUS:	/* fall-through */
+	case IEEE80211_MODE_11NG_HT40:		/* fall-through */
+	case IEEE80211_MODE_11NA_HT40:		/* fall-through */
+	case IEEE80211_MODE_11AC_VHT40PLUS:	/* fall-through */
+	case IEEE80211_MODE_11AC_VHT40MINUS:	/* fall-through */
+	case IEEE80211_MODE_11AC_VHT40:		/* fall-through */
+	case IEEE80211_MODE_11AXA_HE40PLUS:	/* fall-through */
+	case IEEE80211_MODE_11AXA_HE40MINUS:	/* fall-through */
+	case IEEE80211_MODE_11AXG_HE40PLUS:	/* fall-through */
+	case IEEE80211_MODE_11AXG_HE40MINUS:	/* fall-through */
+	case IEEE80211_MODE_11AXA_HE40:		/* fall-through */
+	case IEEE80211_MODE_11AXG_HE40:		/* fall-through */
+		ret = 40;
+		break;
+
+	case IEEE80211_MODE_AUTO:		/* fall-through */
+	case IEEE80211_MODE_11A:		/* fall-through */
+	case IEEE80211_MODE_11B:		/* fall-through */
+	case IEEE80211_MODE_11G:		/* fall-through */
+	case IEEE80211_MODE_FH:			/* fall-through */
+	case IEEE80211_MODE_TURBO_A:		/* fall-through */
+	case IEEE80211_MODE_TURBO_G:		/* fall-through */
+	case IEEE80211_MODE_11NA_HT20:		/* fall-through */
+	case IEEE80211_MODE_11NG_HT20:		/* fall-through */
+	case IEEE80211_MODE_11AC_VHT20:		/* fall-through */
+	case IEEE80211_MODE_11AXA_HE20:		/* fall-through */
+	case IEEE80211_MODE_11AXG_HE20:		/* fall-through */
+		ret = 20;
+		break;
+	default:
+		dbg("%s: Unknown phymode %d\n", __func__, phymode);
+	}
+
+	return ret;
+}
+
 /*
  * wl_get_bw_cap(unit, *bwcap)
  *
@@ -1665,22 +1903,35 @@ int wl_get_bw(int unit)
  */
 int wl_get_bw_cap(int unit, int *bwcap)
 {
-	if (bwcap == NULL)
-		return -1;
-	if (unit == 0)
-		*bwcap = 0x01 | 0x02;		/* 40MHz */
-	else if (unit == 1)
-		*bwcap = 0x01 | 0x02 | 0x04;	/* 11AC 80MHz */
-#ifdef RTCONFIG_HAS_5G_2
-	else if (unit == 2)
-		*bwcap = 0x01 | 0x02 | 0x04;	/* 11AC 80MHz */
-#endif
-	else
-		return -1;
-#ifdef RTCONFIG_BW160M
-	if (unit != 0)
-		*bwcap |= 0x08;
-#endif
+	int r, iv_des_hw_mode = 0, iv_cur_mode = 0, exp_bw, cur_bw;
+	char mode[32] = "", cmd[sizeof("cat /proc/XXX/iv_config") + IFNAMSIZ];
+
+	if ((r = __wl_get_bw_cap(unit, bwcap)) != 0)
+		return r;
+
+	/* Channel/bandwidth checking is executed per 30 seconds. Don't run full check if possible. */
+	if (unit != WL_2G_BAND || !nvram_match(WLREADY, "1"))
+		return 0;
+
+	strlcpy(mode, iwpriv_get(get_wififname(unit), "get_mode"), sizeof(mode));
+	if (strstr(mode, "HT40") || strstr(mode, "HE40")) {
+		return 0;
+	}
+
+	/* 2G is not 40MHz, remove 40MHz capability if it's failed to set as 40MHz. */
+	snprintf(cmd, sizeof(cmd), "cat /proc/%s/iv_config", get_wififname(unit));
+	if (exec_and_parse(cmd, "iv_des_hw_mode", "%*[^:]:%d", 1, &iv_des_hw_mode) || !iv_des_hw_mode
+	 || exec_and_parse(cmd, "iv_cur_mode", "%*[^:]:%d", 1, &iv_cur_mode) || !iv_cur_mode) {
+		dbg("%s: Failed to parse iv_des_hw_mode %d or iv_cur_mode %d from %s\n",
+			__func__, iv_des_hw_mode, iv_cur_mode, cmd + 4);
+		return 0;
+	}
+	if (iv_cur_mode == iv_des_hw_mode)
+		return 0;
+	exp_bw = get_bw_by_phymode(unit, iv_des_hw_mode);
+	cur_bw = get_bw_by_phymode(unit, iv_cur_mode);
+	if (exp_bw > cur_bw)
+		*bwcap &= ~(get_cfg_bw_mask_by_bw(exp_bw));
 
 	return 0;
 }

@@ -17,23 +17,39 @@
 	width: 100%;
 	height: 100%;
 	background-image: url(/images/New_ui/light_effect/light_effect_mask.png);
-	background-size: 95vw 229px;
+	background-size: 100% 100%;
 	background-repeat: no-repeat;
 }
-.logo_aura_rgb {
-	background-image: url(/images/New_ui/light_effect/logo_aura_rgb.png);
+.light_effect_mask.rog {
+	background-image: url(/images/New_ui/light_effect/light_effect_mask_rog.png);
+}
+.logo_container {
 	background-repeat: no-repeat;
 	width: 22vw;
 	height: 100px;
 	position: absolute;
 	background-size: contain;
 	bottom: 16px;
-	left: 5vw;
+	left: 2vw;
 	background-position-y: 100%;
+}
+.logo_container.support_switch_mode {
+	top: 0;
+	bottom: 0;
+	margin: auto;
+}
+.logo_aura_rgb {
+	background-image: url(/images/New_ui/light_effect/logo_aura_rgb.png);
+}
+.logo_antenna {
+	background-image: url(/images/New_ui/light_effect/logo_antenna.png);
 }
 .light_effect_mask.prePage {
 	background-size: 100% 100%;
 	background-image: url(/images/New_ui/light_effect/light_effect_mask_pre.png);
+}
+.light_effect_mask.prePage.rog {
+	background-image: url(/images/New_ui/light_effect/light_effect_mask_pre_rog.png);
 }
 .light_effect_bg > span  {
 	position: absolute;
@@ -300,6 +316,18 @@
 .setting_scheme #marquee.active .icon, .setting_scheme.support_hover #marquee:hover .icon {
 	background-image: url(/images/New_ui/light_effect/scheme-marquee_active.svg);
 }
+.setting_scheme.antenna #static .icon {
+	background-image: url(/images/New_ui/light_effect/antenna-scheme-static_resting.svg);
+}
+.setting_scheme.antenna #static.active .icon, .setting_scheme.antenna.support_hover #static:hover .icon {
+	background-image: url(/images/New_ui/light_effect/antenna-scheme-static_active.svg);
+}
+.setting_scheme.antenna #interaction .icon {
+	background-image: url(/images/New_ui/light_effect/antenna-scheme-interaction_resting.svg);
+}
+.setting_scheme.antenna #interaction.active .icon, .setting_scheme.antenna.support_hover #interaction:hover .icon {
+	background-image: url(/images/New_ui/light_effect/antenna-scheme-interaction_active.svg);
+}
 .setting_hue {
 	padding: 30px 0;
 	position: relative;
@@ -479,4 +507,47 @@
 	bottom: 1px;
 	cursor: pointer;
 	color: #FFF;
+}
+.switch_mode_list_bg {
+	width: 214px;
+	height: 40px;
+	position: absolute;
+	bottom: 0;
+	background-image: url(/images/New_ui/light_effect/tab_menu_bg.svg);
+}
+.switch_mode_list_bg .mode_list_bg {
+	display: flex;
+	height: 100%;
+	width: 170px;
+}
+.switch_mode_list_bg .mode_list_bg > div {
+	height: 100%;
+	width: 100%;
+	position: relative;
+	background-repeat: no-repeat;
+	background-position: 50%;
+	background-size: 100% 60%;
+	cursor: pointer;
+}
+.switch_mode_list_bg .mode_list_bg > div:not(:first-child):before {
+	position: absolute;
+	content: "";
+	height: 70%;
+	border-left: 1px solid rgba(255,255,255,0.08);
+	top: 15%;
+}
+.switch_mode_list_bg .mode_list_bg > div.panel {
+	background-size: 100% 80%;
+	background-image: url(/images/New_ui/light_effect/ic-roglogo-resting.svg);
+}
+.switch_mode_list_bg .mode_list_bg > div.panel.active,
+.switch_mode_list_bg .mode_list_bg > div.panel:hover {
+	background-image: url(/images/New_ui/light_effect/ic-roglogo-active.svg);
+}
+.switch_mode_list_bg .mode_list_bg > div.antenna {
+	background-image: url(/images/New_ui/light_effect/ic-antenna-resting.svg);
+}
+.switch_mode_list_bg .mode_list_bg > div.antenna.active,
+.switch_mode_list_bg .mode_list_bg > div.antenna:hover {
+	background-image: url(/images/New_ui/light_effect/ic-antenna-active.svg);
 }

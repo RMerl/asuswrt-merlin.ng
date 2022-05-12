@@ -1,1 +1,1 @@
-../../GT-AC5300/www/WiFi_Insight.asp
+../../FUNCTION/ROG_UI/WiFi_Insight.asp

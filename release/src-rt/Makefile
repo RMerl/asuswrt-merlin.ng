@@ -200,6 +200,12 @@ export EXTENDNO := 0-g$(shell git log --pretty=format:'%h' -n 1|sed -e "s,\([0-9
 endif
 endif
 
+ifeq ($(SECUREBOOT), y)
+$(shell cd $(HND_SRC)/targets/$(PROFILE) && rm -f $(PROFILE) && ln -sf $(PROFILE).$(BUILD_NAME)_sec $(PROFILE) && cd $(HND_SRC))
+include $(HND_SRC)/targets/$(PROFILE)/$(PROFILE)
+export EXTENDNO := $(EXTENDNO)_sec
+endif
+
 ifeq ($(HND_ROUTER),y)
 -include $(SRCBASE)/.config
 export CONFIG_BCMWL5=y
@@ -282,9 +288,7 @@ export $(MODEL):=y
 endif
 
 ifeq ($(and $(HND_ROUTER_AX_6756),$(BCM_MFG)),y)
-export BUILD_MFG := 1
 export WLTEST := 1
-export CFLAGS += -DWLTEST
 endif
 
 EXTRA_KERNEL_YES_CONFIGS_1 := $(filter %=y %=Y,$(EXTRA_KERNEL_CONFIGS))
@@ -770,12 +774,16 @@ ifeq ($(BCM),y)
 	@if [ ! -f "$(IMAGEDIR)/RT-AC68U_$(IMAGEVER).trx" ]; then \
 		echo "RT-AC68U_$(IMAGEVER).trx not found!"; \
 		exit 1; \
-	elif [ ! -f "$(IMAGEDIR)/RT-AC68U_V4_$(IMAGEVER)_cferom_puresqubi.w" ]; then \
-		echo "RT-AC68U_V4_$(IMAGEVER)_cferom_puresqubi.w not found!"; \
+	elif [ -f "$(IMAGEDIR)/RT-AC68U_V4_$(IMAGEVER)_puresqubi.w" ]; then \
+		mv $(IMAGEDIR)/RT-AC68U_$(IMAGEVER).trx $(IMAGEDIR)/RT-AC68U_$(IMAGEVER).trx_v123 ; \
+	        cat $(IMAGEDIR)/RT-AC68U_$(IMAGEVER).trx_v123 $(IMAGEDIR)/RT-AC68U_V4_$(IMAGEVER)_puresqubi.w > $(IMAGEDIR)/$(COMBINE_NAME)_$(IMAGEVER).trx ; \
+	elif [ -f "$(IMAGEDIR)/RT-AC68U_V4_$(IMAGEVER)_cferom_puresqubi.w" ]; then \
+                mv $(IMAGEDIR)/RT-AC68U_$(IMAGEVER).trx $(IMAGEDIR)/RT-AC68U_$(IMAGEVER).trx_v123 ; \
+                cat $(IMAGEDIR)/RT-AC68U_$(IMAGEVER).trx_v123 $(IMAGEDIR)/RT-AC68U_V4_$(IMAGEVER)_cferom_puresqubi.w > $(IMAGEDIR)/$(COMBINE_NAME)_$(IMAGEVER).trx ; \
+	else \
+		echo "RT-AC68U_V4 FW not found!"; \
 		exit 1; \
 	fi;
-	mv $(IMAGEDIR)/RT-AC68U_$(IMAGEVER).trx $(IMAGEDIR)/RT-AC68U_$(IMAGEVER).trx_v123
-	cat $(IMAGEDIR)/RT-AC68U_$(IMAGEVER).trx_v123 $(IMAGEDIR)/RT-AC68U_V4_$(IMAGEVER)_cferom_puresqubi.w > $(IMAGEDIR)/$(COMBINE_NAME)_$(IMAGEVER).trx;
 endif
 	md5sum $(IMAGEDIR)/$(COMBINE_NAME)_$(IMAGEVER).trx > $(IMAGEDIR)/$(COMBINE_NAME)_$(IMAGEVER).md5
 ifneq ($(LIVE_UPDATE_RSA),)
@@ -2405,6 +2413,13 @@ define RouterOptions
 		sed -i "/RTCONFIG_TEMPROOTFS/d" $(1); \
 		echo "# RTCONFIG_TEMPROOTFS is not set" >>$(1); \
 	fi;
+	if [ "$(SINGLEIMG_B)" = "y" ]; then \
+		sed -i "/RTCONFIG_SINGLEIMG_B/d" $(1); \
+		echo "RTCONFIG_SINGLEIMG_B=y" >>$(1); \
+	else \
+		sed -i "/RTCONFIG_SINGLEIMG_B/d" $(1); \
+		echo "# RTCONFIG_SINGLEIMG_B is not set" >>$(1); \
+	fi;
 	if [ "$(ATEUSB3_FORCE)" = "y" ]; then \
 		sed -i "/RTCONFIG_ATEUSB3_FORCE/d" $(1); \
 		echo "RTCONFIG_ATEUSB3_FORCE=y" >>$(1); \
@@ -2894,8 +2909,12 @@ define RouterOptions
 	if [ "$(TR_ISP)" = "OPTUS" ]; then \
 		sed -i "/RTCONFIG_ISP_OPTUS/d" $(1); \
 		echo "RTCONFIG_ISP_OPTUS=y" >>$(1); \
-		sed -i "/RTCONFIG_TR143_110/d" $(1); \
-		echo "RTCONFIG_TR143_110=y" >>$(1); \
+		sed -i "/RTCONFIG_TR181/d" $(1); \
+		echo "RTCONFIG_TR181=y" >>$(1); \
+	fi;
+	if [ "$(TR_ISP)" = "XLNPROVU" ]; then \
+		sed -i "/RTCONFIG_ISP_XLNPROVU/d" $(1); \
+		echo "RTCONFIG_ISP_XLNPROVU=y" >>$(1); \
 	fi;
 	if [ "$(STAINFO)" = "y" ]; then \
 		sed -i "/RTCONFIG_STAINFO/d" $(1); \
@@ -3475,7 +3494,7 @@ define RouterOptions
 		sed -i "/RTCONFIG_BTM_11V/d" $(1); \
 		echo "RTCONFIG_BTM_11V=y" >>$(1); \
 		if [ "$(CONFIG_BCMWL5)" = "y" ]; then \
-			if [ "$(BUILD_NAME)" != "RT-AC68U" ] && [ "$(BUILD_NAME)" != "DSL-AC68U" ] && [ "$(BUILD_NAME)" != "RT4G-AC68U" ]; then \
+			if [ "$(BUILD_NAME)" != "RT-AC68U" ] && [ "$(BUILD_NAME)" != "DSL-AC68U" ] && [ "$(BUILD_NAME)" != "4G-AC68U" ]; then \
 				sed -i "/RTCONFIG_BCMEVENTD/d" $(1); \
 				echo "RTCONFIG_BCMEVENTD=y" >>$(1); \
 			fi; \
@@ -3512,6 +3531,13 @@ define RouterOptions
 				echo "# RTCONFIG_BANDINDEX_NEW is not set" >>$(1); \
 			fi; \
 		fi; \
+		if [ "$(AMAS_UNII4_BH)" = "y" ]; then \
+			echo "RTCONFIG_AMAS_UNII4_BH=y" >>$(1); \
+		else \
+			echo "# RTCONFIG_AMAS_UNII4_BH is not set" >>$(1); \
+		fi; \
+		sed -i "/RTCONFIG_CONNDIAG/d" $(1); \
+		echo "RTCONFIG_CONNDIAG=y" >>$(1); \
 	fi;
 	sed -i "/RTCONFIG_BATMAN_ADV/d" $(1); \
 	if [ "$(BATMAN)" = "y" ]; then \
@@ -3863,6 +3889,10 @@ define RouterOptions
 	if [ "$(BUILD_NAME)" = "PL-AX56_XP4" ]; then \
 		sed -i "/RTCONFIG_AVOID_TZ_ENV/d" $(1); \
 		echo "RTCONFIG_AVOID_TZ_ENV=y" >>$(1); \
+	fi;
+	if [ "$(SECUREBOOT)" = "y" ]; then \
+		sed -i "/RTCONFIG_SECUREBOOT/d" $(1); \
+		echo "RTCONFIG_SECUREBOOT=y" >>$(1); \
 	fi;
 	$(call platformRouterOptions, $(1))
 endef
@@ -4218,7 +4248,7 @@ define BusyboxOptions
 		sed -i "/CONFIG_SPLIT/d" $(1); \
 		echo "CONFIG_SPLIT=y" >>$(1); \
 	fi;
-	if [ "$(CONNDIAG)" = "y" ]; then \
+	if [ "$(AMAS)" = "y" ] || [ "$(CONNDIAG)" = "y" ]; then \
 		sed -i "/CONFIG_IPCRM/d" $(1); \
 		echo "CONFIG_IPCRM=y" >>$(1); \
 		sed -i "/CONFIG_IPCS/d" $(1); \
@@ -4249,16 +4279,18 @@ define BusyboxOptions
 	if [ "$(HND_ROUTER_AX_6756)" = "y" ]; then \
 		sed -i "/CONFIG_SHA256SUM/d" $(1); \
 		echo "CONFIG_SHA256SUM=y" >>$(1); \
-	fi;
-	if [ "$(BUILD_NAND_UBIFS_SINGLE_IMAGE)" = "y" ]; then \
 		sed -i "/CONFIG_CHROOT/d" $(1); \
 		echo "CONFIG_CHROOT=y" >>$(1); \
 		sed -i "/CONFIG_PIVOT_ROOT/d" $(1); \
 		echo "CONFIG_PIVOT_ROOT=y" >>$(1); \
+		sed -i "/CONFIG_SWITCH_ROOT/d" $(1); \
+		echo "CONFIG_SWITCH_ROOT=y" >>$(1); \
 		sed -i "/CONFIG_LSOF/d" $(1); \
 		echo "CONFIG_LSOF=y" >>$(1); \
 		sed -i "/CONFIG_FUSER/d" $(1); \
 		echo "CONFIG_FUSER=y" >>$(1); \
+		sed -i "/CONFIG_FEATURE_MDEV_EXEC/d" $(1); \
+		echo "CONFIG_FEATURE_MDEV_EXEC=y" >>$(1); \
 	fi;
 	$(call platformBusyboxOptions, $(1))
 endef
@@ -5467,6 +5499,10 @@ fi;
 		sed -i "/CONFIG_BCM_PKTFLOW_MAX_FLOWS/d" $(1); \
 		echo "CONFIG_BCM_PKTFLOW_MAX_FLOWS=4096" >>$(1); \
 	fi;
+	if [ "$(BUILD_NAME)" = "RT-AX3000N" ]; then \
+		sed -i "/CONFIG_BCM_MAX_UCAST_FLOWS/d" $(1); \
+		echo "CONFIG_BCM_MAX_UCAST_FLOWS=4096" >>$(1); \
+	fi;
 	if [ "$(BUILD_NAME)" = "RT-AX95Q" ] || [ "$(BUILD_NAME)" = "RT-AXE95Q" ] || [ "$(BUILD_NAME)" = "RT-AX56U" ] || [ "$(BUILD_NAME)" = "RT-AX56_XD4" ]; then \
 		sed -i "/CONFIG_DEBUG_SLAB\b/d" $(1); \
 		echo "# CONFIG_DEBUG_SLAB is not set" >>$(1); \
@@ -5584,7 +5620,11 @@ ifneq (,$(wildcard $(LINUXDIR)/../dts/$(BCM_CHIP)/$(BCM_CHIP)_pinctrl.dtsi.$(BUI
 endif
 endif
 ifneq (,$(wildcard bootloaders/build/configs/options_$(CUR_CHIP_PROFILE)_nand.conf.$(BUILD_NAME)))
+ifeq ($(SECUREBOOT),y)
+	-cp bootloaders/build/configs/options_$(CUR_CHIP_PROFILE)_nand.conf.$(BUILD_NAME).sec bootloaders/build/configs/options_$(CUR_CHIP_PROFILE)_nand.conf
+else
 	-cp bootloaders/build/configs/options_$(CUR_CHIP_PROFILE)_nand.conf.$(BUILD_NAME) bootloaders/build/configs/options_$(CUR_CHIP_PROFILE)_nand.conf
+endif
 endif
 else
 	@cp $(LINUXDIR)/config_base.6a $(LINUXDIR)/config_$(lowercase_B)
@@ -5766,7 +5806,7 @@ ETJ etj:
 	$(call save_src_config,$@,_CFG)
 	$(MAKE) bin
 
-ET12 et12 XT12 xt12 XD4PRO xd4pro XT8PRO xt8pro ET8PRO et8pro:
+ET12 et12 XT12 xt12 XD4PRO xd4pro XT8PRO xt8pro ET8PRO et8pro GT10 gt10:
 	$(call save_src_config, $@,_CFG)
 ifeq ($(or $(HND_ROUTER_AX_675x),$(HND_ROUTER_AX)),y)
 	@echo "Copy router-sysdep.$(lowercase_B) content"
@@ -5933,6 +5973,12 @@ $(PLATFORM_ROUTER)/%-tags: dummy
 	[ ! -d $(PLATFORM_ROUTER)/$* ] || $(if $(QCA),TMPDIR=.) ctags -a -R $(CTAGS_EXCLUDE_OPT) $(PLATFORM_ROUTER)/$*
 endif
 
+get_extendno:
+	#@if [ "$(ID)" = "" ]; then echo "No ID is assigned"; exit 1; fi
+	git log --pretty=oneline asuswrt_$(KERNEL_VER).$(FS_VER).$(SERIALNO)..$(ID) | wc -l
+	@echo $(RC_EXT_NO)
+	@echo $(EXTENDNO)
+
 #
 # Generic rules
 #
@@ -5959,15 +6005,10 @@ endif
 # check extendno
 #
 
-get_extendno:
-	@if [ "$(ID)" = "" ]; then echo "No ID is assigned"; exit 1; fi
-	git log --pretty=oneline asuswrt_$(KERNEL_VER).$(FS_VER).$(SERIALNO)..$(ID) | wc -l
-	@echo $(RC_EXT_NO)
-	@echo $(EXTENDNO)
-
 .PHONY: all clean distclean cleanimage cleantools cleankernel prepk what setprofile libc help image default bin_file
 .PHONY: a b c d m Makefile allversions
 .PHONY: tags
 .PHONY: dummy
 .PHONY: pre_tools
+.PHONY: get_extendno
 

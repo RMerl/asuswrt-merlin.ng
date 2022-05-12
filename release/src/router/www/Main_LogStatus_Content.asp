@@ -118,7 +118,8 @@ function applySettings(){
 var filter = [
     "already exist in UDB, can't add it", 
     "not mesh client, can't update it's ip",
-    "not exist in UDB, can't update it"
+    "not exist in UDB, can't update it",
+    "send_redir_page",
 ]
 
 $.getJSON("/ajax/logFilter.json", function(data){

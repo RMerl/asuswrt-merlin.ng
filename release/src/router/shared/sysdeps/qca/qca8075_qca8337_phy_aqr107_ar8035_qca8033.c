@@ -1773,6 +1773,95 @@ void __post_config_switch(void)
 	_eval(p0_vegress, DBGOUT, 0, NULL);
 }
 
+/* Set acceleration type of 10G base-T/10G SFP+ as "PPE + NSS" or "NSS only"
+ * by setting MAC learning/packet action as "ENABLE"/"FORWARD" or "DISABLE"/"RDTCPU".
+ * When hardware NAT ON, 1Gbps LAN may get unstable download throughput, about 600Mbps,
+ * upload throughput is stable at 940Mbps at same time. Wireless TPT seems okay at same time.
+ * Some environment get stable 940Mbps download throughput after enable flowcontrol (pause-frame)
+ * manually after negotiation done. Another environment do need to change acceleration type of
+ * XGMAC from "PPE + NSS" to "NSS only".
+ */
+void __post_ecm(void)
+{
+	const char *enable_ppe_str[] = { "ENABLE", "FORWARD" };
+	const char *disable_ppe_str[] = { "DISABLE", "RDTCPU" };
+	int flush = 0, act, enable_ppe;
+	char xgmac_port[4], mac_learn[sizeof("DISABLEXXX")], pkt_act[sizeof("FORWARDXXX")];
+	char mac_learn_result[sizeof("DISABLEXXX")], pkt_act_result[sizeof("FORWARDXXX")];
+	char *set_cmd[] = { "ssdk_sh", SWID_IPQ807X, "fdb", "ptLearnCtrl", "set", xgmac_port, mac_learn, pkt_act, NULL };
+	char *flush_cmd[] = { "ssdk_sh", SWID_IPQ807X, "fdb", "entry", "flush", "1", NULL };
+	char get_cmd[sizeof("ssdk_sh " SWID_IPQ807X " fdb ptLearnCtrl get XXX")];
+	struct xgmac_defs_s {
+		int xgmac_port;
+		int wanscap;
+		char *nv;
+		int (*exist_func)(void);
+	} xgmac_defs_tbl[] = {
+		{ 6, WANSCAP_WAN2, "aqr_hwnat_type", is_aqr_phy_exist },
+		{ 5, WANSCAP_SFPP, "sfpp_hwnat_type", NULL },
+
+		{ -1, 0, NULL, NULL }
+	}, *p;
+
+	if (nvram_match("qca_sfe", "0"))
+		return;
+
+	for (p = &xgmac_defs_tbl[0]; p->nv != NULL; ++p) {
+		if (p->exist_func && !p->exist_func())
+			continue;
+
+		enable_ppe = act = nvram_get_int(p->nv);
+		if (act < 0 || act > 2) {
+			act = 0;
+			nvram_set_int(p->nv, act);
+		}
+		if (act == 2)
+			enable_ppe = 0;
+
+		if (!act) {
+			/* If 10G base-T/10G SFP+ is one of WAN port and acceleration type is auto, select "NSS only". */
+			if ((get_wans_dualwan() & p->wanscap) != 0)
+				enable_ppe = 0;
+			else
+				enable_ppe = 1;
+		}
+
+		/* Example:
+		 * SSDK Init OK![Learn Ctrl]:ENABLE[Action]:FORWARD
+		 *operation done.
+		 *
+		 * SSDK Init OK![Learn Ctrl]:DISABLE[Action]:RDTCPU
+		 *operation done.
+		 */
+		*mac_learn_result = *pkt_act_result = '\0';
+		snprintf(get_cmd, sizeof(get_cmd), "ssdk_sh " SWID_IPQ807X " fdb ptLearnCtrl get %d", p->xgmac_port);
+		if (parse_ssdk_sh(get_cmd, "%*[^:]:%[^[]%*[^:]:%s", 2, mac_learn_result, pkt_act_result)) {
+			dbg("%s: Execute and parse [%s] failed. (mac_learn_result [%s] pkt_act_result [%s])\n",
+				__func__, mac_learn_result, pkt_act_result);
+			continue;
+		}
+
+		snprintf(xgmac_port, sizeof(xgmac_port), "%d", p->xgmac_port);
+		if (enable_ppe) {
+			strlcpy(mac_learn, enable_ppe_str[0], sizeof(mac_learn));
+			strlcpy(pkt_act, enable_ppe_str[1], sizeof(pkt_act));
+		} else {
+			strlcpy(mac_learn, disable_ppe_str[0], sizeof(mac_learn));
+			strlcpy(pkt_act, disable_ppe_str[1], sizeof(pkt_act));
+		}
+
+		/* Don't set setting if it same as current. */
+		if (!strcmp(mac_learn, mac_learn_result) && !strcmp(pkt_act, pkt_act_result))
+			continue;
+
+		_eval(set_cmd, DBGOUT, 0, NULL);
+		flush++;
+	}
+
+	if (flush > 0)
+		_eval(flush_cmd, DBGOUT, 0, NULL);
+}
+
 void __post_start_lan(void)
 {
 	char br_if[IFNAMSIZ];
@@ -3104,6 +3193,16 @@ void __gen_switch_log(char *fn)
 	char path[64], *ate_cmd[] = { "ATE", "Get_WanLanStatus", NULL };
 	FILE *fp;
 	struct sw_port_name_s *swp;
+	struct xgmac_def_s {
+		char *name;
+		int xgmac_port;
+		char *nv;		/* nvram that is used to specify acceleration type. */
+	} xgmac_def_tbl[] = {
+		{ "10G base-T", 6, "aqr_hwnat_type" },
+		{ "10G SFP+", 5, "sfpp_hwnat_type" },
+
+		{ NULL, -1, NULL }
+	}, *pxgmac;
 
 	if (!fn || *fn == '\0')
 		return;
@@ -3148,6 +3247,27 @@ void __gen_switch_log(char *fn)
 	fprintf(fp, "IPv6: ");
 	dump_file(fp, v6_stop_fn);
 #endif
+
+	/* Check hardware NAT acceleration type of XGMAC
+	 *          MAC learning	Packet action
+	 * PPE+NSS: ENABLE		FORWARD
+	 * NSS:     DISABLE		RDTCPU
+	 */
+	fprintf(fp, "\n\n######## acceleration type of XGMAC ports? ########\n");
+	fprintf(fp, "PPE + NSS: ENABLE, FORWARD\n");
+	fprintf(fp, "NSS      : DISABLE, RDTCPU\n");
+	fprintf(fp, "wans_dualwan: [%s]\n", nvram_get("wans_dualwan")? : "NULL");
+	for (pxgmac = &xgmac_def_tbl[0]; pxgmac->name != NULL; ++pxgmac) {
+		char mac_learn_result[sizeof("DISABLEXXX")], pkt_act_result[sizeof("FORWARDXXX")];
+		char get_cmd[sizeof("ssdk_sh " SWID_IPQ807X " fdb ptLearnCtrl get XXX")];
+
+		strlcpy(mac_learn_result, "READ FAIL", sizeof(mac_learn_result));
+		strlcpy(pkt_act_result, "READ FAIL", sizeof(pkt_act_result));
+		snprintf(get_cmd, sizeof(get_cmd), "ssdk_sh " SWID_IPQ807X " fdb ptLearnCtrl get %d", pxgmac->xgmac_port);
+		parse_ssdk_sh(get_cmd, "%*[^:]:%[^[]%*[^:]:%s", 2, mac_learn_result, pkt_act_result);
+		fprintf(fp, "%10s: MAC learning: [%s], Packet action: [%s], %s=%s\n",
+			pxgmac->name, mac_learn_result, pkt_act_result, pxgmac->nv, nvram_get(pxgmac->nv)? : "NULL");
+	}
 
 	/* Check ebtables* kernel modules is loaded or not. */
 	fprintf(fp, "\n\n######## ebtables status ########\n");

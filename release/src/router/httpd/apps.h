@@ -51,6 +51,11 @@ struct apps_info{
 } ;
 #pragma pack() // End.
 
+struct app_list_file {
+	char *name;
+	char *list_file;
+};
+
 #ifdef DEBUG_USB
 #define apps_dbg(fmt, args...) do{ \
 		FILE *fp = fopen("/tmp/apps.log", "a+"); \

@@ -667,7 +667,12 @@ void setup_ct_timeout(int connflag)
 			if (scan_icmp_unreplied_conntrack() > 0)
 			{
 //				write_ct_timeout("generic", NULL, 0);
-				write_ct_timeout("icmp", NULL, 0);
+#if defined(RTCONFIG_DUALWAN)
+				if(nvram_get_int("wandog_enable"))
+					write_ct_timeout("icmp", NULL, 1);
+				else
+#endif
+					write_ct_timeout("icmp", NULL, 0);
 				sleep(2);
 			}
 		}

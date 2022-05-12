@@ -1187,6 +1187,10 @@ fail:
 #define PRE_COMMIT_KERNEL_NVRM_FILE "/var/.kernel_nvram.setting.prec"
 #define TEMP_KERNEL_NVRAM_FILE_NAME "/var/.kernel_nvram.setting.temp"
 #define KERNEL_NVRAM_FILE_NAME "/data/.kernel_nvram.setting"
+#ifdef RTCONFIG_HND_ROUTER_AX_6756
+#define PSI_FILE_NAME		"/data/psi"
+#define PSI_BACKUP_FILE_NAME	"/data/psibackup"
+#endif
 
 int hnd_nvram_erase()
 {
@@ -1219,7 +1223,13 @@ int hnd_nvram_erase()
 			KERNEL_NVRAM_FILE_NAME, strerror(errno));
 		err = errno;
 	}
+#ifdef RTCONFIG_HND_ROUTER_AX_6756
+	if (access(PSI_FILE_NAME, F_OK) != -1)
+		unlink(PSI_FILE_NAME);
 
+	if (access(PSI_BACKUP_FILE_NAME, F_OK) != -1)
+		unlink(PSI_BACKUP_FILE_NAME);
+#endif
 	sync();
 	_dprintf("Erasing nvram done\n");
 	return err;

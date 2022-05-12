@@ -370,6 +370,12 @@ enum {
 	SUBFT_PLC_MASTER,
 	SUBFT_LOCAL_ACCESS,
 
+	/* sub feature for Target Wake Time */
+	SUBFT_TWT_BAND1,
+	SUBFT_TWT_BAND2,
+	SUBFT_TWT_BAND3,
+	SUBFT_TWT_BAND4,
+
 	SUBFT_MAX
 };
 
@@ -607,6 +613,13 @@ static struct subfeature_mapping_s subfeature_mapping_list[] __attribute__ ((unu
 #ifdef RTCONFIG_QCA_PLC2
 	{ "plc_master",		SUBFT_PLC_MASTER,	FT_PLC_MASTER },
 #endif
+
+	/* Target Wake Time */
+	{ "twt_b1", SUBFT_TWT_BAND1, FT_WIRELESS },
+	{ "twt_b2", SUBFT_TWT_BAND2, FT_WIRELESS },
+	{ "twt_b3", SUBFT_TWT_BAND3, FT_WIRELESS },
+	{ "twt_b4", SUBFT_TWT_BAND4, FT_WIRELESS },
+
 	/* END */
 	{ NULL, 0, 0}
 };
@@ -1174,10 +1187,19 @@ static struct param_mapping_s param_mapping_list[] __attribute__ ((unused)) = {
 
 #if defined(RTCONFIG_FANCTRL)
 	{ "fanctrl_dutycycle",	FT_FANCTRL,	SUBFT_FANCTRL,		"0"},
+	{ "fanctrl_trip_points",	FT_FANCTRL,	SUBFT_FANCTRL,		"45>4<50>5<93>8<105>6"},
+	{ "fanctrl_inact_time",	FT_FANCTRL,	SUBFT_FANCTRL,		"00:00<00:00"},
 #endif
 #ifdef RTCONFIG_QCA_PLC2
 	{ "cfg_plc_master",	FT_PLC_MASTER,	SUBFT_PLC_MASTER,		""},
 #endif
+
+	/* Target Wake Time */
+	{ "wl0_twt", FT_WIRELESS, SUBFT_TWT_BAND1,		"0"},
+	{ "wl1_twt", FT_WIRELESS, SUBFT_TWT_BAND2,		"0"},
+	{ "wl2_twt", FT_WIRELESS, SUBFT_TWT_BAND3,		"0"},
+	{ "wl3_twt", FT_WIRELESS, SUBFT_TWT_BAND4,		"0"},
+
 	/* END */
 	{ NULL, 0, 0,		NULL}
 };

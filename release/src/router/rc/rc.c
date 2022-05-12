@@ -37,6 +37,12 @@
 #include <sys/reboot.h>
 #endif
 
+#ifdef RTCONFIG_COMFW
+#include <comfw.h>
+#endif
+
+#include <model.h>
+
 #ifndef ARRAYSIZE
 #define ARRAYSIZE(a) (sizeof(a) / sizeof(a[0]))
 #endif /* ARRAYSIZE */
@@ -61,6 +67,69 @@ typedef enum cmds_e {
 
 extern uint64_t hnd_ethswctl(ecmd_t act, unsigned int val, int len, int wr, unsigned long long regdata);
 #endif
+
+// led_str_ctrl
+enum led_id get_led_id(const char *led_str)
+{
+	enum led_id led = LED_ID_MAX;
+
+	if(!strcmp(led_str, "LED_POWER")){
+		return LED_POWER;
+	}
+	else if(!strcmp(led_str, "LED_WPS")){
+		return LED_WPS;
+	}
+	else if(!strcmp(led_str, "LED_WAN")){
+		return LED_WAN;
+	}
+#ifdef HND_ROUTER
+	else if(!strcmp(led_str, "LED_WAN_NORMAL")){
+		return LED_WAN_NORMAL;
+	}
+#endif
+#ifdef RTCONFIG_EXTPHY_BCM84880
+	else if(!strcmp(led_str, "LED_EXTPHY")){
+		return LED_EXTPHY;
+	}
+#endif
+#ifdef RTCONFIG_LAN4WAN_LED
+	else if(!strcmp(led_str, "LED_LAN1")){
+		return LED_LAN1;
+	}
+	else if(!strcmp(led_str, "LED_LAN2")){
+		return LED_LAN2;
+	}
+	else if(!strcmp(led_str, "LED_LAN3")){
+		return LED_LAN3;
+	}
+	else if(!strcmp(led_str, "LED_LAN4")){
+		return LED_LAN4;
+	}
+#endif
+#if 0
+	else if(!strcmp(led_str, "LED_LAN")){
+		return LED_LAN;
+	}
+	else if(!strcmp(led_str, "LED_USB")){
+		return LED_USB;
+	}
+	else if(!strcmp(led_str, "LED_USB3")){
+		return LED_USB3;
+	}
+	else if(!strcmp(led_str, "LED_2G")){
+		return LED_2G;
+	}
+	else if(!strcmp(led_str, "LED_5G")){
+		return LED_5G;
+	}
+#endif
+	else{
+		dbg("%s: Unknown LED: %s!\n", __func__, led_str);
+	}
+
+	return led;
+}
+
 
 #ifdef  __CONFIG_WBD__
 static void
@@ -358,6 +427,9 @@ static int rctest_main(int argc, char *argv[])
 	else if (strcmp(argv[1], "gpy211")==0) {
 		GPY211_INIT_SPEED();
 	}
+	else if (strcmp(argv[1], "gpy211_wan")==0) {
+		GPY211_WAN_SPEED();
+	}
 #endif
 #if defined(RTCONFIG_FRS_FEEDBACK)
 	else if (strcmp(argv[1], "sendfeedback")==0) {
@@ -535,10 +607,18 @@ static int rctest_main(int argc, char *argv[])
 	else if (strcmp(argv[1], "is_dpsta") == 0) {
 		printf("dpsta_mode=%d\n", dpsta_mode());
 	}
+	else if (strcmp(argv[1], "is_psta") == 0) {
+		printf("is_psta=(0:%d, 1:%d)\n", is_psta(0), is_psta(1));
+	}
 	else if (strcmp(argv[1], "is_rp") == 0) {
-		printf("rp_mode=%d(0:%d,1:%d)\n", rp_mode(), is_rp_unit(0), is_rp_unit(1));
+		printf("rp_mode=%d(0:%d, 1:%d)\n", rp_mode(), is_rp_unit(0), is_rp_unit(1));
 	}
 #endif
+        else if (strcmp(argv[1], "getbw") == 0) {
+                int unit = atoi(argv[2]);
+                int bw = wl_get_bw(unit);
+                printf("get wl_bw of unit_%d=%d\n", unit, bw);
+        }
 #ifdef HND_ROUTER
 	else if (strcmp(argv[1], "ptest")==0) {
 		pt_main(atoi(argv[2]));
@@ -685,6 +765,10 @@ static int rctest_main(int argc, char *argv[])
 			if (on) start_check_watchdog();
 			else stop_check_watchdog();
 		}
+		else if (strcmp(argv[1], "fwupg_flashing") == 0) {
+			printf("go rc applt: fwupg_flashing\n");
+			start_fwupg_flashing();
+		}
 #ifdef RTAC87U
 		else if (strcmp(argv[1], "watchdog02") == 0) {
 			if (on) start_watchdog02();
@@ -822,7 +906,7 @@ static int rctest_main(int argc, char *argv[])
 		else if (strcmp(argv[1], "gpior") == 0) {
 			printf("%d\n", get_gpio(atoi(argv[2])));
 		}
-#if defined(RTCONFIG_HND_ROUTER_AX_6710) || defined(RTAX58U) || defined(TUFAX3000) || defined(TUFAX5400) || defined(RTAX82U) || defined(RTAX82_XD6) || defined(RTAX82_XD6S) || defined(GSAX3000) || defined(GSAX5400) || defined(BCM6756) || defined(GTAX6000)
+#if defined(RTCONFIG_HND_ROUTER_AX_6710) || defined(RTAX58U) || defined(TUFAX3000) || defined(TUFAX5400) || defined(RTAX82U) || defined(RTAX82_XD6) || defined(RTAX82_XD6S) || defined(GSAX3000) || defined(GSAX5400) || defined(BCM6756) || defined(GTAX6000) || defined(RTAX86U_PRO) || defined(BCM6855)
 		else if (strcmp(argv[1], "gpio2r") == 0) {
 			printf("%d\n", get_gpio2(atoi(argv[2])));
 		}
@@ -888,6 +972,36 @@ static int rctest_main(int argc, char *argv[])
 			}
 		}
 #endif
+		else if (strcmp(argv[1], "dump_models") == 0) {
+			int i, cfd = 0;
+#ifdef RTCONFIG_COMFW
+			cfd = argv[2]?atoi(argv[2]):0;
+#endif
+
+			for(i=1; i<MODEL_MAX; ++i) {
+				_dprintf("%s: %d : %d\n", asus_models_str[i], i, cfd ? get_cf_id(i, NULL) : 0);
+			}		
+		}
+#ifdef RTCONFIG_COMFW
+		else if (strcmp(argv[1], "dump_cfid_byname") == 0) {
+			dump_cfid_from_modellist();
+		}
+		else if (strcmp(argv[1], "dump_cft") == 0) {
+			int i;
+
+			for(i=1; i<MAX_FTYPE; ++i) {
+				_dprintf("%s: %d \n", comfw_modid_s[i], i);
+			}
+		}
+		else if (strcmp(argv[1], "cfid") == 0) {
+			_dprintf("modelid:%d, model's cfid=%d\n", get_model(), get_cf_id(get_model(), NULL));
+
+			int target = argv[2]? atoi(argv[2]):0;
+
+			if(target)
+				_dprintf("chk target(%d)'s cfid=%d\n", target, get_cf_id(target, NULL));
+		}
+#endif
 		else {
 			printf("what?\n");
 		}
@@ -932,10 +1046,10 @@ char *fix_fw_name(char *orig_fw_name)
 static inline char *fix_fw_name(char *orig_fw_name) { return orig_fw_name; }
 #endif
 
-#if defined(RTCONFIG_QCA) || defined(RTCONFIG_LANTIQ) || defined(RTAX95Q) || defined(XT8PRO) || defined(RTAXE95Q) || defined(ET8PRO) || defined(RTAX56_XD4) || defined(XD4PRO) || defined(RTAX55) || defined(RTAX1800)
+#if defined(RTCONFIG_QCA) || defined(RTCONFIG_LANTIQ) || defined(RTAX95Q) || defined(XT8PRO) || defined(XT8_V2) || defined(RTAXE95Q) || defined(ET8PRO) || defined(RTAX56_XD4) || defined(XD4PRO) || defined(RTAX55) || defined(RTAX1800)
 /* download firmware */
 #ifndef FIRMWARE_DIR
-#if defined(RTCONFIG_QCA) || defined(RTAX95Q) || defined(XT8PRO) || defined(RTAXE95Q) || defined(ET8PRO) || defined(RTAX56_XD4) || defined(XD4PRO) || defined(RTAX55) || defined(RTAX1800)
+#if defined(RTCONFIG_QCA) || defined(RTAX95Q) || defined(XT8PRO) || defined(XT8_V2) || defined(RTAXE95Q) || defined(ET8PRO) || defined(RTAX56_XD4) || defined(XD4PRO) || defined(RTAX55) || defined(RTAX1800)
 #define FIRMWARE_DIR	"/lib/firmware"
 #else
 #define FIRMWARE_DIR	"/tmp"
@@ -1351,7 +1465,7 @@ static int hotplug_main(int argc, char *argv[])
 			return coma_uevent();
 #endif /* LINUX_2_6_36 */
 #endif
-#if defined(RTCONFIG_QCA) || defined(RTCONFIG_LANTIQ) || defined(RTAX95Q) || defined(XT8PRO) || defined(RTAXE95Q) || defined(ET8PRO) || defined(RTAX56_XD4) || defined(XD4PRO) || defined(RTAX55) || defined(RTAX1800)
+#if defined(RTCONFIG_QCA) || defined(RTCONFIG_LANTIQ) || defined(RTAX95Q) || defined(XT8PRO) || defined(XT8_V2) || defined(RTAXE95Q) || defined(ET8PRO) || defined(RTAX56_XD4) || defined(XD4PRO) || defined(RTAX55) || defined(RTAX1800)
 		else if(!strcmp(argv[1], "firmware")) {
 			hotplug_firmware();
 		}
@@ -1546,6 +1660,7 @@ static const applets_t applets[] = {
 #endif
 	{ "watchdog",			watchdog_main			},
 	{ "check_watchdog",		check_watchdog_main		},
+	{ "fwupg_flashing",		fwupg_flashing_main		},
 #ifdef RTCONFIG_CONNTRACK
 	{ "pctime",			pctime_main			},
 #endif
@@ -1594,7 +1709,7 @@ static const applets_t applets[] = {
 	{ "ddns_updated", 		ddns_updated_main		},
 	{ "ddns_custom_updated",	ddns_custom_updated_main	},
 	{ "radio",			radio_main			},
-	{ "udhcpc",			udhcpc_wan			},
+	{ "udhcpc_wan",			udhcpc_wan			},
 	{ "udhcpc_lan",			udhcpc_lan			},
 	{ "zcip",			zcip_wan			},
 #ifdef RTCONFIG_IPV6
@@ -1635,7 +1750,7 @@ static const applets_t applets[] = {
 #ifdef RTCONFIG_SOFTWIRE46
 	{ "s46map_rptd", 		s46map_rptd_main		},
 #endif
-#if defined(RTCONFIG_RALINK) || defined(RTCONFIG_EXT_RTL8365MB) || defined(RTCONFIG_EXT_RTL8370MB) || defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2)
+#if defined(RTCONFIG_RALINK) || defined(RTCONFIG_EXT_RTL8365MB) || defined(RTCONFIG_EXT_RTL8370MB) || defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N)
 	{ "rtkswitch",			config_rtkswitch		},
 #if defined(RTAC53) || defined(RTAC51UP)
 	{ "mtkswitch",			config_mtkswitch		},
@@ -1679,7 +1794,7 @@ static const applets_t applets[] = {
 	{ "firmware_enc_crc",		firmware_enc_crc_main		},
 	{ "fw_check",			fw_check_main			},
 #endif
-#if defined(RTAX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTAX6000)
+#if defined(RTAX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTAX6000) || defined(GT10)
 	{ "ledg",			ledg_main			},
 	{ "ledbtn",			ledbtn_main			},
 #endif
@@ -2684,7 +2799,7 @@ int main(int argc, char **argv)
 	else if (!strcmp(base, "amas_misc")) {
 		return amas_misc_main();
 	}
-#endif    
+#endif
 #endif
 #ifdef CONFIG_BCMWL5
 	else if (!strcmp(base, "setup_dnsmq")) {
@@ -2705,6 +2820,21 @@ int main(int argc, char **argv)
 			return 0;
 
 		return do_led_ctrl(atoi(argv[1]), atoi(argv[2]));
+	}
+	else if (!strcmp(base, "led_str_ctrl")) {
+		if(argc != 3){
+			if(argc == 2)
+				printf("Usage: led_str_ctrl %s [1/0]\n", argv[1]);
+			else
+				printf("Usage: led_str_ctrl LED_STRING [1/0]\n");
+			return 0;
+		}
+
+		int led_id = get_led_id(argv[1]);
+		int onoff = atoi(argv[2]);
+
+		printf("Switch %s(%d) %s...\n", argv[1], led_id, (onoff)?"on":"off");
+		return do_led_ctrl(led_id, atoi(argv[2]));
 	}
 #ifdef HND_ROUTER
 	else if (!strcmp(base, "hnd-erase")) {
@@ -3009,7 +3139,7 @@ int main(int argc, char **argv)
 
 		ret = extphy_bit_op(reg, val, wr, start_bit, end_bit, wait_ms);
 
-#if defined(RTAX86U) || defined(RTAX5700)
+#if defined(RTAX86U)
 		if(!strcmp(get_productid(), "RT-AX86S")) ;
 		else if(nvram_get_int("ext_phy_model") == EXT_PHY_GPY211)
 			_dprintf("addr=0x%02x, reg=0x%06x, val=0x%04x\n", EXTPHY_GPY_ADDR, reg, ret);
@@ -3022,7 +3152,7 @@ int main(int argc, char **argv)
 			_dprintf("addr=0x%02x, reg=0x%06x, val=0x%04x\n", EXTPHY_GPY_ADDR, reg, ret);
 		else
 #endif
-		    _dprintf("addr=0x%02x, reg=0x%06x, val=0x%04x\n", EXTPHY_ADDR, reg, ret);
+			_dprintf("addr=0x%02x, reg=0x%06x, val=0x%04x\n", EXTPHY_ADDR, reg, ret);
 
 		return 0;
 	}
@@ -3039,8 +3169,17 @@ int main(int argc, char **argv)
 		char rules[4096], *fmrs;
 		int k, offset, psidlen, psid, start, end;
 		int draft = argv[1] && strcmp(argv[1], "draft") == 0;
+		int wan_proto = -1;
+
+		if (!strcmp(argv[2], "map-e"))
+			wan_proto = WAN_MAPE;
+		else if (!strcmp(argv[2], "lw4o6"))
+			wan_proto = WAN_LW4O6;
+		else
+			wan_proto = WAN_V6PLUS;
+
 		while (fgets(rules, sizeof(rules), stdin) != NULL) {
-			if (s46_mapcalc(rules, peerbuf, sizeof(peerbuf), addr6buf, sizeof(addr6buf),
+			if (s46_mapcalc(wan_proto, rules, peerbuf, sizeof(peerbuf), addr6buf, sizeof(addr6buf),
 					addr4buf, sizeof(addr4buf), &offset, &psidlen, &psid, &fmrs, draft) <= 0) {
 				peerbuf[0] = addr6buf[0] = addr4buf[0] = '\0';
 				offset = 0, psidlen = 0, psid = 0;

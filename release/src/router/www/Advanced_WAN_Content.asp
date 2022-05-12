@@ -416,7 +416,7 @@ function genWANSoption(){
 				(productid == "DSL-N55U" || productid == "DSL-N55U-B" || productid == "DSL-AC68U" || productid == "DSL-AC68R"))
 			wans_dualwan_NAME = "Ethernet WAN";
 		else if(wans_dualwan_NAME == "LAN"){
-			if((productid == "GT-AX11000" || productid == "RT-AX86U" || productid == "GT-AXE11000" || productid == "GT-AX6000" || productid == "GT-AX11000_PRO" || productid == "GT-AXE16000") && wans_lanport == "5"){
+			if((productid == "GT-AX11000" || productid == "RT-AX86U" || productid == "GT-AXE11000" || productid == "GT-AX6000" || productid == "GT-AX11000_PRO" || productid == "GT-AXE16000" || productid == "RT-AX86U_PRO") && wans_lanport == "5"){
 				if(wans_extwan == "0")
 					wans_dualwan_NAME = "2.5G WAN";
 				else
@@ -425,7 +425,7 @@ function genWANSoption(){
 			else
 				wans_dualwan_NAME = "Ethernet LAN";
 		}
-		else if(wans_dualwan_NAME == "WAN" && (productid == "GT-AX11000" || productid == "RT-AX86U" || productid == "GT-AXE11000" || productid == "GT-AX6000"  || productid == "GT-AX11000_PRO" || productid == "GT-AXE16000") && wans_extwan == "1")
+		else if(wans_dualwan_NAME == "WAN" && (productid == "GT-AX11000" || productid == "RT-AX86U" || productid == "GT-AXE11000" || productid == "GT-AX6000"  || productid == "GT-AX11000_PRO" || productid == "GT-AXE16000" || productid == "RT-AX86U_PRO") && wans_extwan == "1")
 			wans_dualwan_NAME = "2.5G WAN";
 		else if(wans_dualwan_NAME == "USB" && (based_modelid == "4G-AC53U" || based_modelid == "4G-AC55U" || based_modelid == "4G-AC68U"))
 			wans_dualwan_NAME = "<#Mobile_title#>";
@@ -1589,7 +1589,7 @@ function create_DNSlist_view(){
 
 	var code="";
 
-	code += "<div style='margin-top:15px;margin-left:15px;float:left;font-size:15px;color:#93A9B1;'>DNS List</div>";	/* Untranslated */
+	code += "<div style='margin-top:15px;margin-left:15px;float:left;font-size:15px;color:#93A9B1;'><#IPConnection_x_DNS_List#></div>";
 	code += "<div style='float:right;'><img src='/images/button-close.gif' style='width:30px;cursor:pointer' onclick='closeDNSListView();'></div>";
 	code += "<table border='0' align='center' cellpadding='0' cellspacing='0' style='width:100%;padding:0 15px 15px 15px;'><tbody><tr><td>";
 
@@ -1604,7 +1604,7 @@ function create_DNSlist_view(){
 	code += "<tr id='tr_auto_option' height='40px'>";
 	code += "<td><input name='DNS_service_opt' id='dns_auto' type='radio' class='input'></td>";
 	code += "<td>ISP</td>";
-	code += "<td style='padding:10px;text-align:left;'>Get the DNS IP from your ISP automatically.</td></tr>"; /* Untranslated */
+	code += "<td style='padding:10px;text-align:left;'><#IPConnection_x_DNSServer_auto#></td></tr>";
 	code += "</table>";
 
 	code += "</td></tr>";
@@ -1810,7 +1810,7 @@ function Update_DNS_status(){
 	$("#DNS_status").empty();
 
 	if(document.form.wan_dnsenable_x.value == 1){
-		DSN_status_info="<b>Default status :</b> Get the DNS IP from your ISP automatically.";	/* Untranslated */
+		DSN_status_info="<b>Default status :</b> <#IPConnection_x_DNSServer_auto#>";
 	}
 	else{
 		DNS_list_index=DNSList_match(document.form.wan_dns1_x.value, document.form.wan_dns2_x.value);
@@ -2171,8 +2171,8 @@ function DNSList_match(ip1, ip2){
 					<td>
 						<div id="DNS_status"></div>
 						<div style="margin:10px 0 5px 5px;" class="splitLine_dns"></div>
-						<div class="assign_dns">Assign a DNS service to improve security, block advertisement and gain faster performance.</div>
-						<div style="margin:-38px 0 5px 0;text-align:right;"><input type="button" class="button_gen" onclick="Assign_DNS_service()" value="Assign"></div><!-- Untranslated -->
+						<div class="assign_dns"><#DNS_Assign_desc#></div>
+						<div style="margin:-38px 0 5px 0;text-align:right;"><input type="button" class="button_gen" onclick="Assign_DNS_service()" value="<#CTL_assign#>"></div>
 					</td>
           		</tr>
 			<tr>

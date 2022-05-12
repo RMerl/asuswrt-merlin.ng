@@ -1540,7 +1540,7 @@ char *get_wlifname(int unit, int subunit, int subunit_x, char *buf)
 #if 1
 	char wifbuf[32];
 	char prefix[] = "wlXXXXXX_", tmp[100];
-	int wlc_band = nvram_get_int("wlc_band");
+	int wlc_band __attribute__((unused)) = nvram_get_int("wlc_band");
 #if defined(RTCONFIG_WIRELESSREPEATER)
 	if (sw_mode() == SW_MODE_REPEATER
 #if !defined(RTCONFIG_CONCURRENTREPEATER)

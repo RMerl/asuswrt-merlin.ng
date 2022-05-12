@@ -43,6 +43,7 @@
 #include "shutils.h"
 #include "shared.h"
 #include "wlif_utils.h"
+#include "iboxcom.h"
 
 #ifndef ETHER_ADDR_LEN
 #define	ETHER_ADDR_LEN		6
@@ -2059,6 +2060,9 @@ int is_intf_up(const char* ifname)
 	int sfd;
 	int ret = 0;
 
+	if (!ifname || !strlen(ifname))
+		return 0;
+
 	if (!((sfd = socket(AF_INET, SOCK_RAW, IPPROTO_RAW)) < 0))
 	{
 		strlcpy(ifr.ifr_name, ifname, sizeof(ifr.ifr_name));
@@ -3315,6 +3319,10 @@ int is_psta(int unit)
 		(nvram_get_int("wlc_band") == unit))
 		return 1;
 
+#ifdef RPAX56
+	if(nvram_match("use_dpsta", "1") && rp_mode())	// shall not use it
+		return 1;
+#endif
 	return 0;
 }
 
@@ -4749,7 +4757,7 @@ int ch2bit(enum wl_band_id band, int ch)
 	else if (is_6g(band))
 		return ch6g2bit(ch);
 #endif
-	else if (band == WL_5G_BAND || WL_5G_2_BAND)
+	else if (band == WL_5G_BAND || band == WL_5G_2_BAND)
 		return ch5g2bit(ch);
 	else
 		return ch2g2bit(ch);
@@ -4772,7 +4780,7 @@ uint64_t ch2bitmask(enum wl_band_id band, int ch)
 	else if (is_6g(band))
 		return ch6g2bitmask(ch);
 #endif
-	else if (band == WL_5G_BAND || WL_5G_2_BAND)
+	else if (band == WL_5G_BAND || band == WL_5G_2_BAND)
 		return ch5g2bitmask(ch);
 	else
 		return ch2g2bitmask(ch);
@@ -4795,7 +4803,7 @@ int bit2ch(enum wl_band_id band, int bit)
 	else if (is_6g(band))
 		return bit2ch6g(bit);
 #endif
-	else if (band == WL_5G_BAND || WL_5G_2_BAND)
+	else if (band == WL_5G_BAND || band == WL_5G_2_BAND)
 		return bit2ch5g(bit);
 	else
 		return bit2ch2g(bit);
@@ -4817,7 +4825,7 @@ uint64_t chlist2bitmask(enum wl_band_id band, char *ch_list, char *sep)
 	else if (is_6g(band))
 		return chlist6g2bitmask(ch_list, sep);
 #endif
-	else if (band == WL_5G_BAND || WL_5G_2_BAND)
+	else if (band == WL_5G_BAND || band == WL_5G_2_BAND)
 		return chlist5g2bitmask(ch_list, sep);
 	else
 		return chlist2g2bitmask(ch_list, sep);
@@ -4837,7 +4845,7 @@ char *__bitmask2chlist(enum wl_band_id band, uint64_t mask, char *sep, char *ch_
 	else if (is_6g(band))
 		return __bitmask2chlist6g(mask, sep, ch_list, ch_list_len);
 #endif
-	else if (band == WL_5G_BAND || WL_5G_2_BAND)
+	else if (band == WL_5G_BAND || band == WL_5G_2_BAND)
 		return __bitmask2chlist5g(mask, sep, ch_list, ch_list_len);
 	else
 		return __bitmask2chlist2g(mask, sep, ch_list, ch_list_len);
@@ -4855,7 +4863,7 @@ char *bitmask2chlist(enum wl_band_id band, uint64_t mask, char *sep)
 	else if (is_6g(band))
 		return bitmask2chlist6g(mask, sep);
 #endif
-	else if (band == WL_5G_BAND || WL_5G_2_BAND)
+	else if (band == WL_5G_BAND || band == WL_5G_2_BAND)
 		return bitmask2chlist5g(mask, sep);
 	else
 		return bitmask2chlist2g(mask, sep);
@@ -5025,7 +5033,7 @@ void deauth_guest_sta(char *wlif_name, char *mac_addr)
 #endif
 }
 
-int FindBrifByWlif(char *wl_ifname, char *brif_name, int size)
+int FindBrifByWlif(const char *wl_ifname, char *brif_name, int size)
 {
 	char word[32]={0}, *next=NULL;
 
@@ -5129,8 +5137,9 @@ char *if_nametoalias(char *name, char *alias, int alias_len)
 				if ((repeater_mode()
 					|| dpsr_mode()
 #if defined(RTCONFIG_PROXYSTA) && defined(RTCONFIG_DPSTA)
-					|| dpsta_mode() || rp_mode()
+					|| dpsta_mode()
 #endif
+					|| rp_mode()
 					) && subunit == 1)
 					snprintf(alias, alias_len, "%s", band_prefix);
 				else
@@ -5977,3 +5986,100 @@ void update_wlx_psr_mbss(void)
 	return;
 }
 #endif	// #if defined(RTCONFIG_AMAS) && defined(RTCONFIG_PSR_GUEST)
+
+static char *rand_string(char *str, size_t size)
+{
+	const char charset[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJK...";
+	size_t n;
+	if (size) {
+		--size;
+		for (n = 0; n < size; n++) {
+			int key = rand() % (int) (sizeof charset - 1);
+			str[n] = charset[key];
+		}
+		str[size] = '\0';
+	}
+	return str;
+}
+
+char* rand_string_alloc(size_t size)
+{
+	char *s = malloc(size + 1);
+	if (s) {
+		rand_string(s, size);
+	}
+	return s;
+}
+
+void set_rannv(const char *nvname, size_t n)
+{
+	char *val = rand_string_alloc(n);
+
+	if(val) {
+		nvram_set(nvname, val);
+		free(val);
+	} else
+		_dprintf("%s:%s set fail\n", __func__, nvname);	
+
+}
+
+int get_ispctrl()
+{
+#if defined(RTCONFIG_ELINK)
+	if (nvram_get_int("elink_enable") && nvram_get_int("amas_disable"))
+		return 1;
+#endif
+#if defined(RTCONFIG_XLN_WIFI)
+	return 1;
+#endif
+	return 0;
+}
+
+unsigned short get_extend_cap()
+{
+	unsigned short extend_cap = 0;
+
+#ifdef RTCONFIG_WEBDAV
+	extend_cap |= __cpu_to_le16(EXTEND_CAP_WEBDAV);
+#else
+	extend_cap = 0;
+	if(check_if_file_exist("/opt/etc/init.d/S50aicloud"))
+		extend_cap |= __cpu_to_le16(EXTEND_CAP_WEBDAV);
+#endif
+
+#ifdef RTCONFIG_TUNNEL
+	extend_cap |= __cpu_to_le16(EXTEND_CAP_AAE_BASIC);
+#endif
+
+	extend_cap |= __cpu_to_le16(EXTEND_CAP_SWCTRL);
+
+#ifdef RTCONFIG_AMAS
+#ifdef RTCONFIG_SW_HW_AUTH
+	if (getAmasSupportMode() != 0)
+	{
+#endif
+		if (!repeater_mode()
+#if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
+			&& !psr_mode()
+#endif
+#ifdef RTCONFIG_DPSTA
+			&& !(dpsta_mode() && nvram_get_int("re_mode") == 0)
+#endif
+		)
+			extend_cap |= __cpu_to_le16(EXTEND_CAP_AMAS);
+#ifdef RTCONFIG_SW_HW_AUTH
+	}
+#endif
+	if (nvram_get_int("amas_bdl"))
+		extend_cap |= __cpu_to_le16(EXTEND_CAP_AMAS_BDL);
+#endif
+#if defined(RTCONFIG_CFGSYNC) && defined(RTCONFIG_MASTER_DET)
+	if (nvram_get_int("cfg_master"))
+		extend_cap |= __cpu_to_le16(EXTEND_CAP_MASTER);
+#endif
+
+	if (get_ispctrl())
+		extend_cap |= __cpu_to_le16(EXTEND_CAP_ISPCTRL_LOGIN);
+
+       return extend_cap;
+}

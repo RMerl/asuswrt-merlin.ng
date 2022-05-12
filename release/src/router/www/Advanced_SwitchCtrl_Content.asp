@@ -49,8 +49,18 @@ var no_jumbo_frame_support = isSupport("no_jumbo_frame");
 function disable_lacp_if_conflicts_with_iptv(){
 	if((based_modelid == "RT-AX89U" || based_modelid == "GT-AXY16000")){
 		// LAN1 and/or LAN2.
-		if(switch_wantag_orig == "none" && (switch_stb_x_orig == 1 || switch_stb_x_orig == 2 || switch_stb_x_orig == 5)){
+		if(switch_stb_x_orig == "1" || switch_stb_x_orig == "2" || switch_stb_x_orig == "5"){
 			var note_str = "This function is disabled because LAN1 or LAN2 is configured as IPTV STB port."; //untranslated
+			document.form.lacp_enabled.style.display = "none";
+			document.getElementById("lacp_note").innerHTML = note_str;
+			document.getElementById("lacp_desc").style.display = "";
+			document.form.lacp_enabled.value = "0";
+		}
+	}
+	else if(based_modelid == "XT8PRO"){
+		// LAN2 and/or LAN3.
+		if(switch_stb_x_orig == "2" || switch_stb_x_orig == "3" || switch_stb_x_orig == "5" || switch_stb_x_orig == "6" || switch_stb_x_orig == "8"){
+			var note_str = "This function is disabled because LAN2 or LAN3 is configured as IPTV STB port."; //untranslated
 			document.form.lacp_enabled.style.display = "none";
 			document.getElementById("lacp_note").innerHTML = note_str;
 			document.getElementById("lacp_desc").style.display = "";
@@ -61,12 +71,16 @@ function disable_lacp_if_conflicts_with_iptv(){
 
 function initial(){
 	if((based_modelid == "RT-AX89U" || based_modelid == "GT-AXY16000")){
+			document.form.aqr_hwnat_type.disabled = false;
 			document.form.aqr_link_speed.disabled = false;
 			document.form.aqr_ipg.disabled = false;
+			document.form.sfpp_hwnat_type.disabled = false;
 			document.form.sfpp_max_speed.disabled = false;
 			document.form.sfpp_force_on.disabled = false;
+			document.getElementById("aqr_hwnat_type_tr").style.display = "";
 			document.getElementById("aqr_link_speed_tr").style.display = "";
 			document.getElementById("aqr_ipg_tr").style.display = "";
+			document.getElementById("sfpp_hwnat_type_tr").style.display = "";
 			document.getElementById("sfpp_max_speed_tr").style.display = "";
 			document.getElementById("sfpp_force_on_tr").style.display = "";
 	}
@@ -144,6 +158,11 @@ function initial(){
 			new_str = document.getElementById("lacp_note").innerHTML.replace(/LAN1/g, "LAN5");
 			document.getElementById("lacp_note").innerHTML = new_str.replace(/LAN2/g, "LAN6");
 		}
+		else if(based_modelid == "XT8PRO"){
+			var new_str = "";
+			new_str = document.getElementById("lacp_note").innerHTML.replace(/LAN1/g, "LAN3");
+			document.getElementById("lacp_note").innerHTML = new_str;
+		}
 
 		if(hnd_support){
 			document.getElementById("ctf_tr").style.display = "none";
@@ -163,6 +182,8 @@ function initial(){
 			var bonding_port_settings = [{"val": "4", "text": "LAN5"}, {"val": "3", "text": "LAN6"}];
 		else if(based_modelid == "RT-AC86U" || based_modelid == "GT-AC2900")
 			var bonding_port_settings = [{"val": "4", "text": "LAN1"}, {"val": "3", "text": "LAN2"}];
+		else if(based_modelid == "XT8PRO")
+			var bonding_port_settings = [{"val": "2", "text": "LAN2"}, {"val": "3", "text": "LAN3"}];
 		else
 			var bonding_port_settings = [{"val": "1", "text": "LAN1"}, {"val": "2", "text": "LAN2"}];
 
@@ -383,6 +404,17 @@ function check_bonding_policy(obj){
 												</td>
 											</tr>
 
+											<tr id="aqr_hwnat_type_tr" style="display:none">
+												<th>10G base-T port acceleration type</th><!--untranslated-->
+												<td>
+													<select name="aqr_hwnat_type" class="input_option" disabled>
+														<option value="0" <% nvram_match("aqr_hwnat_type", "0","selected"); %>><#Auto#></option>
+														<option value="1" <% nvram_match("aqr_hwnat_type", "1","selected"); %>>PPE + NSS</option>
+														<option value="2" <% nvram_match("aqr_hwnat_type", "2","selected"); %>>NSS</option>
+													</select>
+												</td>
+											</tr>
+
 											<tr id="aqr_link_speed_tr" style="display:none">
 												<th>10G base-T port link speed</th><!--untranslated-->
 												<td>
@@ -402,6 +434,17 @@ function check_bonding_policy(obj){
 													<select name="aqr_ipg" class="input_option" disabled>
 														<option value="96" <% nvram_match("aqr_ipg", "96","selected"); %>><#CTL_Default#></option>
 														<option value="128" <% nvram_match("aqr_ipg", "128","selected"); %>>128 bit times</option>
+													</select>
+												</td>
+											</tr>
+
+											<tr id="sfpp_hwnat_type_tr" style="display:none">
+												<th>SFP+ port acceleration type</th><!--untranslated-->
+												<td>
+													<select name="sfpp_hwnat_type" class="input_option" disabled>
+														<option value="0" <% nvram_match("sfpp_hwnat_type", "0","selected"); %>><#Auto#></option>
+														<option value="1" <% nvram_match("sfpp_hwnat_type", "1","selected"); %>>PPE + NSS</option>
+														<option value="2" <% nvram_match("sfpp_hwnat_type", "2","selected"); %>>NSS</option>
 													</select>
 												</td>
 											</tr>

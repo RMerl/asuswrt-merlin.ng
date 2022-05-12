@@ -298,7 +298,7 @@ function genSteerPhyRateGreat(){
 }
 
 function genSteerCapability(){
-	let code = '<th>Capability</th>';
+	let code = '<th><#Capability#></th>';
 	for(let i=0; i<wl_info.wl_if_total; i++){
 		if(smart_connect_array[i] === ''){
 			code += '<td align="center">- -</td>';
@@ -407,7 +407,7 @@ function genStaPhyRateGreat(){
 }
 
 function genStaCapability(){
-	let code = '<th style="width:12%">Capability</th>';
+	let code = '<th style="width:12%"><#Capability#></th>';
 	for(let i=0; i<wl_info.wl_if_total; i++){
 		if(smart_connect_array[i] === ''){
 			code += '<td align="center">- -</td>';
@@ -468,7 +468,7 @@ function genIfQualityBWUtilization(){
 }
 
 function genIfQualityaCapability(){
-	let code = '<th style="width:12%">Capability</th>';
+	let code = '<th style="width:12%"><#Capability#></th>';
 	for(let i=0; i<wl_info.wl_if_total; i++){
 		if(smart_connect_array[i] === ''){
 			code += '<td align="center">- -</td>';

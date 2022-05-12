@@ -108,6 +108,11 @@ if [ "$hndwr_status" != "99" ] && [ "$hndwr_status" != "-100" ]; then
 	logger -t AUTO_UPGRADE "download fw failure"
 
 	nvram set $record=1	# fail to download the firmware
+	echo "---- URLFW To download fw/rsa, End ----" >> /tmp/webs_upgrade.log
+	logger -t AUTO_UPGRADE "URLFW To download fw/rsa, End"
+	rc rc_service stop_logger
+	rc rc_service "stop_jffs2 0"
+	sleep 1
 	if [ "$cfg_trigger" != "1" ]; then	# cfg_mnt skip
 		if [ "$force_upgrade" == "1" ]; then
 			webs_state_dl_error_count=$((webs_state_dl_error_count+1))
@@ -123,6 +128,11 @@ else
 
 	/sbin/ejusb -1 0
 	nvram set fwpath=2
+	echo "---- URLFW To download fw/rsa, End ----" >> /tmp/webs_upgrade.log
+	logger -t AUTO_UPGRADE "URLFW To download fw/rsa, End"
+	rc rc_service stop_logger
+	rc rc_service "stop_jffs2 0"
+	sleep 1
 	if [ "$cfg_trigger" != "1" ]; then	# cfg_mnt skip
 		nvram set auto_upgrade=0
 		nvram set webs_state_dl=0
@@ -132,7 +142,5 @@ else
 	fi # cfg_trigger!=1
 fi
 
-echo "---- URLFW To download fw/rsa, End ----" >> /tmp/webs_upgrade.log
-logger -t AUTO_UPGRADE "URLFW To download fw/rsa, End"
 nvram set webs_state_upgrade=1
 nvram commit

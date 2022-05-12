@@ -264,7 +264,6 @@ function initial(){
 
 		var mac_id = '<% get_lan_hwaddr(); %>'.replace(/:/g, "");
 		html = "";
-		html += "<tr style='height:15px;'></tr>";
 		html += "<tr>";
 		html += "<td class='aimesh_node_category_bg' colspan='2'><#AiMesh_Router#></td>";
 		html += "</tr>";
@@ -395,6 +394,7 @@ function initial(){
 		}
 	}
 	if(no_update_support){	//no live update
+		$("table").remove("#auto_upgrade_setting");
 		document.getElementById("update_div").style.display = "none";
 		document.getElementById("fw_tr").style.display = "none";
 		document.getElementById("linkpage_div").style.display = "none";
@@ -402,6 +402,7 @@ function initial(){
 	}
 	else{
 		if(!live_update_support || !HTTPS_support){
+			$("table").remove("#auto_upgrade_setting");
 			document.getElementById("update_div").style.display = "none";
 //			document.getElementById("fw_tr").style.display = "none";
 			document.getElementById("linkpage_div").style.display = "";
@@ -428,10 +429,16 @@ function initial(){
 				}
 			}
 		}
-	}
 
-	if(afwupg_support)
-		hide_upgrade_opt(webs_update_enable_orig);
+		if(afwupg_support){
+			hide_upgrade_opt(webs_update_enable_orig);
+			showclock();
+		}
+
+		if(!afwupg_support || support_site_modelid == "GT-AC2900_SH"){
+			$("table").remove("#auto_upgrade_setting");
+		}
+	}
 
 	if(based_modelid == "RT-AC68A"){        //MODELDEP : Spec special fine tune
 		document.getElementById("fw_note2").style.display = "none";
@@ -461,13 +468,6 @@ function initial(){
 	if(based_modelid == "DSL-N55U" || based_modelid == "DSL-N55U-B"){
 		$("#dsl_n55u_fwver").show();
 		$("#dsl_n55u_ras").show();
-	}
-
-	if(!afwupg_support || support_site_modelid == "GT-AC2900_SH"){
-		$("table").remove("#auto_upgrade_setting");
-	}
-	else{
-		showclock();
 	}
 
 	if(no_fw_manual_support || support_site_modelid == "GT-AC2900_SH"){	//No manual

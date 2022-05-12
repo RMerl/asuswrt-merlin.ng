@@ -66,7 +66,8 @@ function trafficTotalScale(byt){
 	return comma(value) + ' <small>'+ scale +'</small>';
 }
 
-function xpsb(byt){
+function xpsb(byt)
+{
 /* REMOVE-BEGIN
 	kbit/s = 1000 bits/s
 	125 = 1000 / 8
@@ -260,8 +261,6 @@ function showTab(name)
 	h = speed_history[ifname];
 	if (!h) return;
 
-
-
 	E('rx-current').innerHTML = xpsb(h.rx[h.rx.length - 1] / updateDiv); 
 	E('rx-avg').innerHTML = xpsb(h.rx_avg);
 	E('rx-max').innerHTML = xpsb(h.rx_max);
@@ -339,23 +338,33 @@ function loadData()
 			if (h.tx_max > xx_max) xx_max = h.tx_max;
 
 			if (i == "WIRELESS1"){
-				if(wl_info.band5g_2_support)
+				if(productid == "GT-AXE16000" && wl_info.band5g_2_support)
+					t = "<#tm_wireless#> (5GHz-2)";
+				else if(wl_info.band5g_2_support)
 					t = "<#tm_wireless#> (5GHz-1)";
-				else	
+				else
 					t = "<#tm_wireless#> (5GHz)";
 			}
-			else if (i == "WIRELESS0")
-				t = "<#tm_wireless#> (2.4GHz)";
+			else if (i == "WIRELESS0"){
+				if(productid == "GT-AXE16000" && wl_info.band5g_2_support)
+					t = "<#tm_wireless#> (5GHz-1)";
+				else
+					t = "<#tm_wireless#> (2.4GHz)";
+			}
 			else if (i == "WIRELESS2"){
 				if(wl_info.band6g_support){
 					t = "<#tm_wireless#> (6GHz)";
 				}
 				else{
 					t = "<#tm_wireless#> (5GHz-2)";
-				}				
+				}
 			}
-			else if (i == "WIRELESS3")
-				t = "<#tm_wireless#> (60GHz)";
+			else if (i == "WIRELESS3"){
+				if(productid == "GT-AXE16000")
+					t = "<#tm_wireless#> (2.4GHz)";
+				else
+					t = "<#tm_wireless#> (60GHz)";
+			}
 			else if (i == "WIRED")
 				t = "<#tm_wired#>";
 			else if (i == "BRIDGE")
@@ -385,7 +394,7 @@ function loadData()
 					else if(wans_dualwan_array[0] == "dsl")
 						t = "DSL WAN";
 					else if(wans_dualwan_array[0] == "sfp+")
-						t = "10G SFP+";	
+						t = "10G SFP+";
 					else
 						t = "<#dualwan_primary#>";
 				}				
@@ -410,10 +419,10 @@ function loadData()
 					else
 						t = "WAN2";
 				}
-				else if(wans_dualwan_array[1] == "sfp+")
-					t = "10G SFP+";		
 				else if(wans_dualwan_array[1] == "lan")
 					t = "LAN";
+				else if(wans_dualwan_array[1] == "sfp+")
+					t = "10G SFP+";
 				else
 					t = "<#dualwan_secondary#>";
 			}
@@ -443,7 +452,7 @@ function loadData()
 			else
 				t = i;			
  
-			if(t != "LAN" && t != "NotUsed"){ // hide Tabs
+			if(i != "BRIDGE" && t != "NotUsed"){ // hide Tabs
 				/*if(i == "INTERNET")
 					tabs.push(['speed-tab-' + i, t]);
 				else if(i == "INTERNET1")

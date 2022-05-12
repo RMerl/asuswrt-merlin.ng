@@ -36,6 +36,10 @@ if(wl_info.band5g_2_support || wl_info.band6g_support){
 }
 if(based_modelid === 'GT-AXE16000'){
 	var wl3_nmode_x = '<% nvram_get("wl3_nmode_x"); %>';
+	radio_2 = '<% nvram_get("wl3_radio"); %>';
+	radio_5 = '<% nvram_get("wl0_radio"); %>';
+	var radio_5_2 = '<% nvram_get("wl1_radio"); %>';
+	var radio_6 = '<% nvram_get("wl2_radio"); %>';
 }
 <% wl_get_parameter(); %>
 
@@ -99,9 +103,22 @@ function initial(){
 		document.getElementById('5g_radio_hint').style.display ="";
 	}
 
+	if(radio_5_2 && radio_5_2 != '1'){
+		document.getElementById('5g_2_radio_hint').style.display = "";		
+	}
+
+	if(radio_6 && radio_6 != '1'){
+		document.getElementById('6g_radio_hint').style.display = "";		
+	}
+
 	if(document.form.preferred_lang.value == "JP"){    //use unique font-family for JP
 		document.getElementById('2g_radio_hint').style.fontFamily = "MS UI Gothic,MS P Gothic";
 		document.getElementById('5g_radio_hint').style.fontFamily = "MS UI Gothic,MS P Gothic";
+		if(based_modelid === 'GT-AXE16000'){
+			document.getElementById('5g_2_radio_hint').style.fontFamily = "MS UI Gothic,MS P Gothic";
+			document.getElementById('6g_radio_hint').style.fontFamily = "MS UI Gothic,MS P Gothic";
+		}
+
 		$("#faq_amazon").attr("href", "https://www.amazon.co.jp//gp/help/customer/display.html/?nodeId=GMPKVYDBR223TRPY");
 	}	
 	
@@ -539,6 +556,7 @@ function gen_gntable(){
 		}
 	};
 
+
 	if(gn_array_2g_tmp.length > 0){
 		htmlcode += '<table style="margin-left:20px;margin-bottom:25px;" width="95%" align="center" cellpadding="4" cellspacing="0" class="gninfo_head_table" id="gninfo_table_2g">';
 		htmlcode += '<tr id="2g_title"><td align="left" style="color:#5AD;font-size:16px; border-bottom:1px dashed #AAA;"><span>2.4 GHz</span>';
@@ -676,8 +694,7 @@ function applyRule(){
 			document.form.wl_expire.value = document.form.wl_expire_day.value*86400 + document.form.wl_expire_hr.value*3600 + document.form.wl_expire_min.value*60;
 		else
 			document.form.wl_expire.value = 0;
-		
-			
+				
 		if(based_modelid == "RT-AC87U") //MODELDEP: RT-AC87U need to extend waiting time to get new wl value
 			document.form.action_wait.value = parseInt(document.form.action_wait.value)+5;
 		
@@ -797,8 +814,7 @@ function applyRule(){
 		inputCtrl(document.form.wl_key4, 1);
 		inputCtrl(document.form.wl_phrase_x, 1);
 
-		if(reboot_confirm==1){
-        	
+		if(reboot_confirm==1){        	
 			if(confirm("<#AiMesh_Node_Reboot#>")){
 				FormActions("start_apply2.htm", "apply_new", "saveNvram;reboot", "<% get_default_reboot_time(); %>");
 				showLoading();
@@ -806,7 +822,6 @@ function applyRule(){
 			}
 		}
 		else{
-
 			showLoading();
 			document.form.submit();
 		}
@@ -914,8 +929,13 @@ function guest_divctrl(flag){
 		if(band5g_support)
 			document.getElementById("guest_table5").style.display = "none";
 		
-		if(wl_info.band5g_2_support || wl_info.band6g_support)
+		if(wl_info.band5g_2_support || wl_info.band6g_support){
 			document.getElementById("guest_table5_2").style.display = "none";
+			if(wl_info.band5g_2_support && wl_info.band6g_support){
+				document.getElementById("guest_table6").style.display = "none";
+			}
+		}
+			
 
 		if(wl_info.band60g_support)
 			document.getElementById("guest_table60").style.display = "none";
@@ -940,8 +960,13 @@ function guest_divctrl(flag){
 			document.getElementById("guest_table5").style.display = "";
 		}		
 		
-		if(wl_info.band5g_2_support || wl_info.band6g_support)
+		if(wl_info.band5g_2_support || wl_info.band6g_support){
 			document.getElementById("guest_table5_2").style.display = "";
+			if(wl_info.band5g_2_support && wl_info.band6g_support){
+				document.getElementById("guest_table6").style.display = "";
+			}
+		}
+			
 
 		if(wl_info.band60g_support)
 			document.getElementById("guest_table60").style.display = "";
@@ -1144,6 +1169,7 @@ function create_guest_unit(_unit, _subunit){
 		change_guest_unit(_unit, _subunit);
 		document.form.wl_bss_enabled.value = "1";
 	}else{
+		
 		en_dis_guest_unit(_unit, _subunit, "1");
 	}
 }
@@ -1738,6 +1764,7 @@ function hide_qr_code(unit) {
 										<option id="wl_opt0" class="content_input_fd" value="0" <% nvram_match("wl_unit", "0","selected"); %>>2.4 GHz</option>
 										<option id="wl_opt1" class="content_input_fd" value="1" <% nvram_match("wl_unit", "1","selected"); %>>5 GHz</option>
 										<option id="wl_opt2" class="content_input_fd" value="2" <% nvram_match("wl_unit", "2","selected"); %>>5 GHz-2</option>
+										<option id="wl_opt3" class="content_input_fd" value="3" <% nvram_match("wl_unit", "3","selected"); %>>6 GHz</option>
 									</select>			
 									<p id="wl_ifname">2.4 GHz</p>
 								</td>

@@ -655,7 +655,11 @@ function applyRule(){
 			}
 		}
 		else{	//validate email
-			if(!isEmail(document.form.fb_email.value)){
+			var dstr = "debug:";
+			var chk_fb_email = document.form.fb_email.value;
+			if(document.form.fb_email.value.includes(dstr,0))
+				chk_fb_email = document.form.fb_email.value.substring(dstr.length, document.form.fb_email.value.length);
+			if(!isEmail(chk_fb_email)){
 				alert("<#feedback_email_alert#>");    					
 				document.form.fb_email.focus();
 				return false;

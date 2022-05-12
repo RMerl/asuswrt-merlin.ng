@@ -2411,7 +2411,7 @@ int num_of_wl_if()
 
 int num_of_5g_if()
 {
-#if defined(RTCONFIG_QCA)
+#if !defined(CONFIG_BCMWL5)
 	char prefix[] = "wlXXXXXXXXXXXX_";
 	int band, count = 0;
 
@@ -2421,7 +2421,6 @@ int num_of_5g_if()
 		if (nvram_pf_match(prefix, "nband", "1"))
 			count++;
 	}
-
 #else
 	char word[256], *next;
 	int count = 0;
@@ -2434,7 +2433,6 @@ int num_of_5g_if()
 		if(band == WLC_BAND_5G)
 			count++;
 	}
-
 #endif
 	return count;
 }
@@ -2775,3 +2773,19 @@ compare_lists(char *str1, char *str2)
 
        return 0;
 }
+#ifdef RTCONFIG_AMAS
+int check_if_exist_ifnames(char *need_check_ifname, char *ifname)
+{
+	char check_ifname[8] = {}, *next = NULL;
+	if(need_check_ifname && ifname){
+		if(nvram_safe_get(need_check_ifname)){
+			 foreach(check_ifname, nvram_safe_get(need_check_ifname), next) { // find target port interface name
+				if (!strncmp(check_ifname, ifname, strlen(check_ifname))) {
+				    return 1;
+				}
+			}
+		}
+        }
+	return 0;
+}
+#endif

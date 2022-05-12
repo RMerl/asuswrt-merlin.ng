@@ -710,6 +710,7 @@ var conndiag_support = (function(){
 })();
 var tencent_qmacc_support = isSupport("tencent_qmacc");
 var outfox_support = isSupport("outfox");
+var wtfast_v2_support = isSupport("wtfast_v2");
 
 var amazon_wss_support = isSupport("amazon_wss");
 

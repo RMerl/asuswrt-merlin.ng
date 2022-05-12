@@ -279,7 +279,7 @@ function gen_conflict_links(){
                         items += "<li><a href='/Advanced_VPN_OpenVPN.asp' target='_blank' style='text-decoration:underline;cursor:pointer;'>OpenVPN</a></li>";
                         break;
                 case "ftp" :
-                        items += "<li><a href='/Advanced_AiDisk_ftp.asp' target='_blank' style='text-decoration:underline;cursor:pointer;'><#NAT_passthrough_itemname#> - <#FTP_ALG_port#></a></li>";
+                        items += "<li><a href='/Advanced_NATPassThrough_Content.asp' target='_blank' style='text-decoration:underline;cursor:pointer;'><#NAT_passthrough_itemname#> - <#FTP_ALG_port#></a></li>";
                         break;
 		case "ipsec" :
 			if(ipsec_server_enable=='1'){

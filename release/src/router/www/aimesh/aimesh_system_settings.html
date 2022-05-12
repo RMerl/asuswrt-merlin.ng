@@ -60,6 +60,19 @@ function initial_system_settings() {
 				},1000);
 			}());
 		});
+
+		var plc_master_faq_href = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=160";
+		$("#plc_master_hint").unbind("click").click(function(e){
+			e = e || event;
+			e.stopPropagation();
+			popupHint.show_hint();
+			var hint = "<#AiMesh_Powerline_Master_Desc#>";
+			hint += "<br><br>";
+			hint += "<a  href='" + plc_master_faq_href + "' target='_blank' style='text-decoration:underline;color:#FC0;'>How to choose the best PLC master</a>";/* untranslated */
+			popupHint.set_text(hint);
+			popupHint.set_btn_ok();
+			popupHint.hide_btn("cancel");
+		});
 	}
 	else
 		$(".system_settings_bg.plc_master").hide();
@@ -691,11 +704,8 @@ $(document).ready(initial_system_settings);
 <div class="system_settings_bg plc_master">
 	<div class="system_icon"></div>
 	<div class="system_text">
-		<span>Powerline Master</span><!-- untranslated -->
-		<div class="bubble_icon info plc_master hover_pop_hint"></div>
-		<div class="hover_pop_hint_bg plc_master">
-			In a Powerline mesh network, we need one of the powerline devices to work as a Powerline Master, which can be a AiMesh router or a AiMesh node with a solid backhaul network to allow another mesh node to connect with it using powerline backhaul. In default , the mesh system select AiMesh router as Powerline Master. You can select another PLC capable node as Powerline Master if the PLC performance on AiMesh router not good enough.<!-- untranslated -->
-		</div>
+		<span><#AiMesh_Powerline_Master#></span>
+		<div id="plc_master_hint" class="bubble_icon info plc_master"></div>
 	</div>
 	<div class="select_option_bg"><select id="sel_plc_master"></select></select></div>
 </div>

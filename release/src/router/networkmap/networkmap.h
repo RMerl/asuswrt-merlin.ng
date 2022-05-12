@@ -59,6 +59,7 @@
 #define AMAS_WGN_BR_1	"br2"
 #define AMAS_WGN_BR_2	"br3"
 #define AMAS_WGN_BR_3	"br4"
+#define AMAS_WGN_BR_4	"br5"
 #endif
 
 //for Notification Center trigger flag

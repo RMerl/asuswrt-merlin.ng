@@ -182,10 +182,13 @@ else
 fi	
 
 if [ "$wget_result" != "0" ]; then
-	echo "---- download fw failure ----" >> /tmp/webs_upgrade.log
-	logger -t AUTO_UPGRADE "download fw failure"
+	echo "---- download fw failure, End ----" >> /tmp/webs_upgrade.log
+	logger -t AUTO_UPGRADE "download fw failure, End"
 	rm -f $firmware_path
 	nvram set $record=1	# fail to download the firmware
+	rc rc_service stop_logger
+	rc rc_service "stop_jffs2 0"
+	sleep 1
 	if [ "$cfg_trigger" != "1" ]; then	# cfg_mnt skip
 		if [ "$force_upgrade" == "1" ]; then
 			webs_state_dl_error_count=$((webs_state_dl_error_count+1))
@@ -195,10 +198,13 @@ if [ "$wget_result" != "0" ]; then
 		reboot
 	fi # cfg_trigger!=1
 elif [ "$wget_result2" != "0" ]; then
-	echo "---- download rsa failure ----" >> /tmp/webs_upgrade.log
-	logger -t AUTO_UPGRADE "download rsa failure"
+	echo "---- download rsa failure, End ----" >> /tmp/webs_upgrade.log
+	logger -t AUTO_UPGRADE "download rsa failure, End"
 	rm -f $firmware_path
 	nvram set $record=2	# fail to download the rsa
+	rc rc_service stop_logger
+	rc rc_service "stop_jffs2 0"
+	sleep 1
 	if [ "$cfg_trigger" != "1" ]; then	# cfg_mnt skip
 		if [ "$force_upgrade" == "1" ]; then
 			webs_state_dl_error_count=$((webs_state_dl_error_count+1))
@@ -227,6 +233,11 @@ else
 		logger -t AUTO_UPGRADE "fw check OK"
 		/sbin/ejusb -1 0
 		nvram set fwpath=2
+		echo "---- To download fw/rsa, End ----" >> /tmp/webs_upgrade.log
+		logger -t AUTO_UPGRADE "To download fw/rsa, End"
+		rc rc_service stop_logger
+		rc rc_service "stop_jffs2 0"
+		sleep 1
 		if [ "$cfg_trigger" != "1" ]; then	# cfg_mnt skip
 			nvram set auto_upgrade=0
 			nvram set webs_state_dl=0
@@ -238,6 +249,11 @@ else
 		logger -t AUTO_UPGRADE "fw check error, CRC: ${firmware_check_ret}  rsa: ${rsasign_check_ret}"
 		rm -f $firmware_path
 		nvram set $record=3	# wrong fw
+		echo "---- To download fw/rsa, End ----" >> /tmp/webs_upgrade.log
+		logger -t AUTO_UPGRADE "To download fw/rsa, End"
+		rc rc_service stop_logger
+		rc rc_service "stop_jffs2 0"
+		sleep 1
 		if [ "$cfg_trigger" != "1" ]; then	# cfg_mnt skip
 			if [ "$force_upgrade" == "1" ]; then
 				webs_state_dl_error_count=$((webs_state_dl_error_count+1))
@@ -252,7 +268,5 @@ fi
 
 fi # RT-AC68U fw_check
 
-echo "---- To download fw/rsa, End ----" >> /tmp/webs_upgrade.log
-logger -t AUTO_UPGRADE "To download fw/rsa, End"
 nvram set webs_state_upgrade=1
 nvram commit

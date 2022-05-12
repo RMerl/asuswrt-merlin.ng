@@ -239,6 +239,8 @@ typedef struct ws_info_t	{
 
 #define EXTEND_CAP_AMAS_BDL		0x0100
 
+#define EXTEND_CAP_ISPCTRL_LOGIN    0x0200
+
 #define EXTEND_WEBDAV_TYPE_HTTP		0x00
 #define EXTEND_WEBDAV_TYPE_HTTPS	0x01
 #define EXTEND_WEBDAV_TYPE_BOTH		0x02

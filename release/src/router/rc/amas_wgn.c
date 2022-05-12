@@ -813,6 +813,8 @@ void wgn_check_avalible_brif(
 	char brif_rule[256 * WGN_MAXINUM_VLAN_RULELIST];
 	char s[81], brx[81];
 	struct wgn_vlan_rule_t vlan_list[WGN_MAXINUM_VLAN_RULELIST];
+	int found1 = 0, found2 = 0;
+	char word[64], *next = NULL;
 
 	if (!IS_CAP() && !IS_RE())
 		return;
@@ -831,8 +833,18 @@ void wgn_check_avalible_brif(
 	{
         memset(brx, 0, sizeof(brx));
         snprintf(brx, sizeof(brx)-1, "br%d", j);
-        if (strstr(nvram_safe_get("wgn_ifnames"), brx) || strstr(br_ifnames, brx))
-        {
+		found1 = found2 = 0;
+		foreach (word, nvram_safe_get("wgn_ifnames"), next) {
+			if ((found1 = (strcmp(word,brx)==0)))
+				break;
+		}
+		foreach (word, br_ifnames, next) {
+			if ((found2 = (strcmp(word,brx)==0)))
+				break;
+		}
+
+        if (found1 == 1 || found2 == 1)
+		{
             // brif_rules
             strlcat(brif_rule, "<", sizeof(brif_rule));
 
@@ -1785,37 +1797,47 @@ char *get_eth_lan_ifnames(
 	char *buffer, 
 	size_t buffer_size)
 {
-	char *ptr = NULL;
-	char *end = NULL;
-	char *lan_ifnames = NULL;
-	char word[64];
-	char *next = NULL;
-	char *eth_ifnames = NULL;
+	char *ptr = NULL, *end = NULL;
+	char word[64], *next = NULL;
+	char lan_ifnames[512];
+	char eth_ifnames[512];
+	char nv_lan_ifnames[] = {"lan_ifnames"};
+	char nv_eth_ifnames[] = {"eth_ifnames"};
 	size_t size = 0;
-	int get_lan_ifnames = 0;
 
-	if (!buffer || buffer_size <= 0)
+#if !defined(RTCONFIG_AMAS_ETHDETECT)
+	char word2[64];
+	char *next2 = NULL;
+	int found = 0;
+#endif	// !defined(RTCONFIG_AMAS_ETHDETECT)
+
+	if (!buffer || buffer_size <= 0) 
 		return NULL;
 
 	memset(buffer, 0, buffer_size);
 	ptr = &buffer[0];
 	end = ptr + buffer_size;
 
-	if (!nvram_get("wired_ifnames"))
-		get_lan_ifnames = 1;
+	memset(lan_ifnames, 0, sizeof(lan_ifnames));
+	strlcpy(lan_ifnames, nvram_safe_get(nv_lan_ifnames), sizeof(lan_ifnames));
 
-	if (get_lan_ifnames == 0)
-		lan_ifnames = nvram_safe_get("wired_ifnames");
-	else
-		lan_ifnames = nvram_safe_get("lan_ifnames");
+	memset(eth_ifnames, 0, sizeof(eth_ifnames));
+	strlcpy(eth_ifnames, nvram_safe_get(nv_eth_ifnames), sizeof(eth_ifnames));
 
-	eth_ifnames = nvram_safe_get("eth_ifnames");
-	foreach(word, lan_ifnames, next) {
+	foreach (word, lan_ifnames, next) {
 		if (is_wlif(word) || guest_wlif(word))
 			continue;
 
-		if (strstr(eth_ifnames, word))
+#if !defined(RTCONFIG_AMAS_ETHDETECT)
+		found = 0;
+		foreach (word2, eth_ifnames, next2) {
+			if ((found = (strcmp(word,word2)==0)))
+				break;
+		}
+
+		if (found == 1)
 			continue;
+#endif // !RTCONFIG_AMAS_ETHDETECT
 
 		if (size >= buffer_size || (size + strlen(word) + 1) >= buffer_size) {
 			memset(buffer, 0, buffer_size);
@@ -1826,11 +1848,12 @@ char *get_eth_lan_ifnames(
 		size += strlen(word) + 1;
 	}
 
-    if (strlen(buffer) > 0)
-        buffer[strlen(buffer)-1] = '\0';    
+	if (strlen(buffer) > 0 && buffer[strlen(buffer)-1] == ' ')
+		buffer[strlen(buffer)-1] = '\0';
 
-    return (strlen(buffer) > 0) ? buffer : NULL;
+	return (strlen(buffer) > 0) ? buffer : NULL;
 }
+
 
 void destory_vlan(
 	void)
@@ -1922,7 +1945,6 @@ void destory_vlan(
 	return;
 }
 
-
 char *create_vlan(
 	int vlan_id, 
 	int type, 
@@ -1939,6 +1961,10 @@ char *create_vlan(
 	char *next = NULL;
 	size_t size = 0;
     int ret = -1;
+	
+	char word2[64];
+	char *next2 = NULL;
+	int found = 0;
 
 #if defined(HND_ROUTER)
 #if defined(WGN_HAVE_VLAN0)	
@@ -2104,7 +2130,12 @@ char *create_vlan(
 		
 		if (strlen(ret_ifnames) > 0)
 		{	
-			if(strstr(ret_ifnames,vif)) //remove duplicate vlan names 
+			found = 0;
+			foreach (word2, ret_ifnames, next2) {
+				if ((found = (strcmp(word2, vif) == 0)))
+					break;
+			}
+			if (found == 1)	//remove duplicate vlan names 
 				continue;
 		}	
 		ptr += snprintf(ptr, end-ptr, "%s ", vif);
@@ -2179,21 +2210,23 @@ int create_guest_bridge(
 	if (!guest_ifnames)
 		goto create_guest_bridge_failed;
 
-	memset(eth_bh_ifnames, 0, sizeof(eth_bh_ifnames));
-	eth_bh_vifnames = create_vlan(vlan_id, 0, eth_bh_ifnames, sizeof(eth_bh_ifnames));
 	memset(eth_ifnames, 0, sizeof(eth_ifnames));
 	eth_vifnames = create_vlan(vlan_id, 1, eth_ifnames, sizeof(eth_ifnames));
 	memset(wl_ifnames, 0, sizeof(wl_ifnames));
 	wl_vifnames = create_vlan(vlan_id, 2, wl_ifnames, sizeof(wl_ifnames));
-	memset(sta_ifnames, 0, sizeof(sta_ifnames));
-	sta_vifnames = create_vlan(vlan_id, 3, sta_ifnames, sizeof(sta_ifnames));
 
 	if (!eth_vifnames && !wl_vifnames)
 		goto create_guest_bridge_failed;
 
-	if (IS_RE())
+	if (IS_RE()) {
+		memset(eth_bh_ifnames, 0, sizeof(eth_bh_ifnames));
+		eth_bh_vifnames = create_vlan(vlan_id, 0, eth_bh_ifnames, sizeof(eth_bh_ifnames));
+		memset(sta_ifnames, 0, sizeof(sta_ifnames));
+		sta_vifnames = create_vlan(vlan_id, 3, sta_ifnames, sizeof(sta_ifnames));
+
 		if (!sta_vifnames || !eth_bh_vifnames)
 			goto create_guest_bridge_failed;
+	}
 
 	memset(nvram_val, 0, sizeof(nvram_val));
 	// create bridge interface

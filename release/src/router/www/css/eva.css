@@ -7,17 +7,18 @@
 }
 .gundam-footer-field{
     width: 100%;
-    height: 144px;
+    height: 142px;
     position: fixed;
     bottom: 0;
     display: flex;
     justify-content: center;
 }
 .GD-bg{
-    background-image: url('../images/eva01_bg.png');
+/*	background-image: url('../images/eva01_bg.png'); */
     background-repeat: no-repeat;
-    width: 1440px;
-    height: 1024px;					
+    width: 100%;
+    height: 1024px;
+	background-size: cover;				
 }
 .GD-logo{
     background-image: url('../images/eva-logo.png');
@@ -32,12 +33,12 @@
     animation-duration: 2s;
     animation-iteration-count: 3;
     position: absolute;
-    background-image: url('../images/gundam-head.png');
+    background-image: url('../images/eva-head.png');
     width: 120px;
     height: 120px;
     z-index: 9;
-    top: -125px;
-    left: 0;
+    top: -80px;
+    left: -140px;
     right: 0;
     bottom: 0;
     margin: auto;
@@ -70,33 +71,39 @@
 }
 .GD-wait > div{
     color:#FFF;
-    margin: 40px 0 0 60px;
+    margin: 30px 0 0 80px;
 }
 .GD-footer-left{
-    background-image: url('../images/gundam_bg_bottom03.png');
+    background-image: url('../images/eva_bg_bottom04.png');
     background-repeat: no-repeat;
     height: 144px;
-    width: 174px;
+    width: 198px;
+    z-index: 99;
 }
 .GD-footer-center{
-    background-image: url('../images/gundam_bg_bottom02.png');
+    background-image: url('../images/eva_bg_bottom02.png');
     background-repeat: no-repeat;
     height: 144px;
     width: 660px;
 }
 .GD-footer-right{
-    background-image: url('../images/gundam_bg_bottom04.png');
+    background-image: url('../images/eva_bg_bottom03.png');
     background-repeat: no-repeat;
     height: 144px;
-    width: 174px;
+    width: 198px;
 }
 .GD-footer-extend{
-    background-image: url('../images/gundam_bg_bottom01.png');
+    background-image: url('../images/eva_bg_bottom01.png');
     height: 144px;
     flex-grow: 1;
+	margin-left: -12px;
+}
+.eva-footer-extend_right{
+    background-image: url('../images/eva_bg_bottom05.png') !important;
+	margin-left: -55px !important;
 }
 .GD-law-label{
-    background-image: url('../images/gundam_lawlabel.png');
+    background-image: url('../images/eva_lawlabel.png');
     width: 150px;
     height: 24px;
     right: 7%;
@@ -136,7 +143,7 @@
 .icon_logo-1{
     width: 100%;
     height: 168px;
-    background: url('../images/gundam-logo-1.png') no-repeat;
+    background: url('../images/eva-logo.png') no-repeat;
     background-position-x: right;
     top: 0;
     position: absolute;
@@ -153,7 +160,7 @@
         background-repeat: no-repeat;
     }
     .gundam-header-1{
-        /* background-image:url('../images/Gundam_header_bg1.png'); */
+        background-image:url('../images/eva01_header_bg1.png');
         width: 99%;
         height: 80px;
         background-size: cover;
@@ -161,5 +168,11 @@
         background-repeat: no-repeat;
         background-position: center;
         z-index: -1;
+		margin-top: -35px;
     }
+	.body_eva{
+		background:url('../images/qis_eva_bg.png') no-repeat !important;
+		background-attachment: fixed !important;
+		background-size: cover !important;
+	}
 }

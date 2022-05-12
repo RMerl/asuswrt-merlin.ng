@@ -106,7 +106,6 @@ static void _wg_client_ep_route_add(char* prefix, int table)
 	char wan6_gateway[64] = {0};
 	char wan_ifname[8] = {0};
 	char wan6_ifname[8] = {0};
-	char ep_addr[64] = {0};
 	char buf[1024] = {0};
 	char addr[64] = {0};
 	char* p = NULL;
@@ -119,12 +118,7 @@ static void _wg_client_ep_route_add(char* prefix, int table)
 	snprintf(wan6_gateway, sizeof(wan6_gateway), "%s", ipv6_gateway_address());
 	snprintf(wan_ifname, sizeof(wan_ifname), "%s", get_wanface());
 	snprintf(wan6_ifname, sizeof(wan6_ifname), "%s", get_wan6face());
-	snprintf(ep_addr, sizeof(ep_addr), "%s", nvram_pf_safe_get(prefix, "ep_addr"));
-
-	if (_wg_resolv_ep(ep_addr, buf, sizeof(buf)))
-		return;
-	else
-		nvram_pf_set(prefix, "ep_addr_r", buf);
+	snprintf(buf, sizeof(buf), "%s", nvram_pf_safe_get(prefix, "ep_addr_r"));
 
 	foreach(addr, buf, p)
 	{
@@ -893,6 +887,7 @@ void start_wgc(int unit)
 	char path[128] = {0};
 	char ifname[8] = {0};
 	int table = 0;
+	char ep_addr_r[1024] = {0};
 
 	_dprintf("%s %d\n", __FUNCTION__, unit);
 
@@ -909,6 +904,10 @@ void start_wgc(int unit)
 
 	/// load module
 	eval("modprobe", "wireguard");
+
+	/// resolv endpoint domain
+	if (!_wg_resolv_ep(nvram_pf_safe_get(prefix, "ep_addr"), ep_addr_r, sizeof(ep_addr_r)))
+		nvram_pf_set(prefix, "ep_addr_r", ep_addr_r);
 
 	/// generate config
 	if (!d_exists(WG_DIR_CONF))
@@ -929,7 +928,7 @@ void start_wgc(int unit)
 	vpnc_set_policy_by_ifname(ifname, 1);
 #endif
 
-	/// resolv endpoint domain and set route
+	/// set endpoint route
 	_wg_client_ep_route_add(prefix, table);
 
 	/// dns

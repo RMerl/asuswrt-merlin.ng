@@ -901,7 +901,7 @@ extern int tdts_core_insert_suspect_list_entry(void *void_ptr, unsigned entry_nu
 												long (*get_curr_time)(void));
 
 extern int tdts_core_suspect_list_query(void *void_ptr, unsigned entry_num, pkt_info_t *pkt,
-									unsigned timeout, long (*get_curr_time)(void));
+									unsigned timeout, unsigned long (*get_curr_time)(void));
 
 //------------------------------------------------------------------------------
 

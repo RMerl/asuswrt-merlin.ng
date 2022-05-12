@@ -143,7 +143,7 @@ function update_ipsec_conn(){
 				if(itemRow[i] != "") {
 					var itemCol = itemRow[i].split('>');
 					var eachRuleArray = new Array();
-					if(itemCol[6] == "IG"){
+					if(itemCol[6].indexOf("IG") != -1){
 						eachRuleArray.push(itemCol[0]);//ipaddr
 						eachRuleArray.push(statusText[itemCol[1]]);//conn_status
 						eachRuleArray.push(itemCol[2]);//conn_period

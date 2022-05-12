@@ -1,0 +1,3528 @@
+# Korean translation of wget.
+# Copyright (C) 1996, 2001, 2002, 2021 Free Software Foundation, Inc.
+# This file is distributed under the same license as the wget package.
+# Bang Jun-Young <bangjy@nownuri.nowcom.co.kr>, 1996-1997.
+# Changwoo Ryu <cwryu@debian.org>, 2001-2002.
+# Seong-ho Cho <darkcircle.0426@gmail.com>, 2021.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: wget-1.21.2\n"
+"Report-Msgid-Bugs-To: bug-wget@gnu.org\n"
+"POT-Creation-Date: 2022-02-26 17:24+0100\n"
+"PO-Revision-Date: 2021-09-10 00:02+0900\n"
+"Last-Translator: Seong-ho Cho <darkcircle.0426@gmail.com>\n"
+"Language-Team: Korean <translation-team-ko@googlegroups.com>\n"
+"Language: ko\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Bugs: Report translation errors to the Language-Team address.\n"
+"X-Generator: Poedit 2.3.1\n"
+"X-Poedit-Basepath: .\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: src/connect.c:201
+#, c-format
+msgid "%s: unable to resolve bind address %s; disabling bind.\n"
+msgstr "%s: %s 바인딩 주소 해석 실패. 바인딩 기능을 사용하지 않음.\n"
+
+#: src/connect.c:282
+#, c-format
+msgid "Connecting to %s|%s|:%d... "
+msgstr "다음으로 연결 중: %s|%s|:%d... "
+
+#: src/connect.c:290
+#, c-format
+msgid "Connecting to %s:%d... "
+msgstr "다음으로 연결 중: %s:%d... "
+
+#: src/connect.c:293
+#, c-format
+msgid "Connecting to [%s]:%d... "
+msgstr "다음으로 연결 중: [%s]:%d... "
+
+#: src/connect.c:329
+#, c-format
+msgid "setsockopt SO_RCVBUF failed: %s\n"
+msgstr "setsockopt SO_RCVBUF 처리 실패: %s\n"
+
+#: src/connect.c:357
+msgid "connected.\n"
+msgstr "연결했습니다.\n"
+
+#: src/connect.c:376 src/host.c:915 src/host.c:953
+#, c-format
+msgid "failed: %s.\n"
+msgstr "실패: %s.\n"
+
+#: src/connect.c:400 src/http.c:2111
+#, c-format
+msgid "%s: unable to resolve host address %s\n"
+msgstr "%s: %s 호스트 주소를 해석할 수 없습니다\n"
+
+#: src/connect.c:470
+#, c-format
+msgid "setsockopt SO_REUSEADDR failed: %s\n"
+msgstr "setsockopt SO_REUSEADDR 실패: %s\n"
+
+#: src/connect.c:694 src/connect.c:756
+#, c-format
+msgid "Too many fds open.  Cannot use select on a fd >= %d\n"
+msgstr ""
+"너무 많은 파일 서술자를 열었습니다.  %d보다 큰 파일 서술자를 활용할 수 없습니"
+"다\n"
+
+#: src/convert.c:201
+#, c-format
+msgid "Converted links in %d files in %s seconds.\n"
+msgstr "링크를 파일 %d 개로 %s초 동안 변환했습니다.\n"
+
+#: src/convert.c:230
+#, c-format
+msgid "Converting links in %s... "
+msgstr "%s 링크 변환 중... "
+
+#: src/convert.c:243
+msgid "nothing to do.\n"
+msgstr "할 일 없음.\n"
+
+#: src/convert.c:246
+#, c-format
+msgid "%d.\n"
+msgstr "%d.\n"
+
+#: src/convert.c:252 src/convert.c:276
+#, c-format
+msgid "Cannot convert links in %s: %s\n"
+msgstr "%s의 링크를 변환할 수 없음: %s\n"
+
+#: src/convert.c:267
+#, c-format
+msgid "Unable to delete %s: %s\n"
+msgstr "%s을(를) 삭제할 수 없음: %s\n"
+
+#: src/convert.c:586
+#, c-format
+msgid "Cannot back up %s as %s: %s\n"
+msgstr "%s을(를) %s(으)로 백업할 수 없음: %s\n"
+
+#: src/cookies.c:311
+#, c-format
+msgid "Unable to get cookie for %s\n"
+msgstr "%s 쿠키를 가져올 수 없음\n"
+
+#: src/cookies.c:464
+#, c-format
+msgid "Syntax error in Set-Cookie: %s at position %d.\n"
+msgstr "Set-Cookie 문법 오류: %2$d 위치의 %1$s.\n"
+
+#: src/cookies.c:777
+#, c-format
+msgid "Cookie coming from %s attempted to set domain to "
+msgstr "%s의 쿠키에서 다음 도메인으로 설정하려고 합니다: "
+
+#: src/cookies.c:780 src/spider.c:94
+#, c-format
+msgid "%s\n"
+msgstr "%s\n"
+
+#: src/cookies.c:1259 src/cookies.c:1380
+#, c-format
+msgid "Cannot open cookies file %s: %s\n"
+msgstr "%s 쿠키 파일을 열 수 없습니다: %s\n"
+
+#: src/cookies.c:1417
+#, c-format
+msgid "Error writing to %s: %s\n"
+msgstr "%s에 쓰기 오류: %s\n"
+
+#: src/cookies.c:1420
+#, c-format
+msgid "Error closing %s: %s\n"
+msgstr "%s 닫기 오류: %s\n"
+
+#: src/ftp-ls.c:1045
+msgid "Unsupported listing type, trying Unix listing parser.\n"
+msgstr "지원하지 않는 열거 형식. 유닉스 열거 파서 동작을 시도합니다.\n"
+
+#: src/ftp-ls.c:1096 src/ftp-ls.c:1098
+#, c-format
+msgid "Index of /%s on %s:%d"
+msgstr "%2$s:%3$d의 /%1$s 인덱스"
+
+#: src/ftp-ls.c:1123
+#, c-format
+msgid "time unknown       "
+msgstr "시간 알 수 없음       "
+
+#: src/ftp-ls.c:1127
+#, c-format
+msgid "File        "
+msgstr "파일        "
+
+#: src/ftp-ls.c:1130
+#, c-format
+msgid "Directory   "
+msgstr "디렉터리   "
+
+#: src/ftp-ls.c:1133
+#, c-format
+msgid "Link        "
+msgstr "링크        "
+
+#: src/ftp-ls.c:1136
+#, c-format
+msgid "Not sure    "
+msgstr "알 수 없음    "
+
+#: src/ftp-ls.c:1159
+#, c-format
+msgid " (%s bytes)"
+msgstr " (%s 바이트)"
+
+#: src/ftp.c:225
+#, c-format
+msgid "Length: %s"
+msgstr "길이: %s"
+
+#: src/ftp.c:231 src/http.c:4092
+#, c-format
+msgid ", %s (%s) remaining"
+msgstr ", %s (%s) 남음"
+
+#: src/ftp.c:235 src/http.c:4096
+#, c-format
+msgid ", %s remaining"
+msgstr ", %s 남음"
+
+#: src/ftp.c:238
+msgid " (unauthoritative)\n"
+msgstr " (신뢰할 수 없음)\n"
+
+#: src/ftp.c:403
+msgid "Could not initialize SSL. It will be disabled.\n"
+msgstr "SSL을 초기화할 수 없습니다. SSL 기능을 사용하지 않습니다.\n"
+
+#: src/ftp.c:485
+#, c-format
+msgid "Logging in as %s ... "
+msgstr "%s 사용자로 로그인했습니다 ... "
+
+#: src/ftp.c:504 src/ftp.c:590 src/ftp.c:657 src/ftp.c:722 src/ftp.c:963
+#: src/ftp.c:1016 src/ftp.c:1063 src/ftp.c:1126 src/ftp.c:1187 src/ftp.c:1285
+#: src/ftp.c:1335
+msgid "Error in server response, closing control connection.\n"
+msgstr "서버 응답에 오류가 있습니다. 제어 연결을 끊습니다.\n"
+
+#: src/ftp.c:511
+msgid "Error in server greeting.\n"
+msgstr "서버 환영 메시지 오류.\n"
+
+#: src/ftp.c:518 src/ftp.c:730 src/ftp.c:971 src/ftp.c:1071 src/ftp.c:1136
+#: src/ftp.c:1197 src/ftp.c:1295 src/ftp.c:1345
+msgid "Write failed, closing control connection.\n"
+msgstr "쓰기 실패. 제어 연결을 끊습니다.\n"
+
+#: src/ftp.c:524
+msgid "The server refuses login.\n"
+msgstr "서버에서 로그인을 거부했습니다.\n"
+
+#: src/ftp.c:530
+msgid "Login incorrect.\n"
+msgstr "로그인 정보가 올바르지 않습니다.\n"
+
+#: src/ftp.c:536
+msgid "Logged in!\n"
+msgstr "로그인했습니다!\n"
+
+#: src/ftp.c:556
+msgid "Server did not accept the 'PBSZ 0' command.\n"
+msgstr "서버에서 'PBSZ 0' 명령을 받아들이지 않았습니다.\n"
+
+#: src/ftp.c:566
+#, c-format
+msgid "Server did not accept the 'PROT %c' command.\n"
+msgstr "서버에서 'PROT %c' 명령을 받아들이지 않았습니다.\n"
+
+#: src/ftp.c:598
+msgid "Server error, can't determine system type.\n"
+msgstr "서버 오류, 시스템 형식을 알 수 없습니다.\n"
+
+#: src/ftp.c:607 src/ftp.c:1106 src/ftp.c:1170 src/ftp.c:1213
+msgid "done.    "
+msgstr "완료.    "
+
+#: src/ftp.c:710 src/ftp.c:989 src/ftp.c:1033 src/ftp.c:1315 src/ftp.c:1364
+msgid "done.\n"
+msgstr "완료.\n"
+
+#: src/ftp.c:737
+#, c-format
+msgid "Unknown type `%c', closing control connection.\n"
+msgstr "알 수 없는 `%c' 형식. 제어 연결을 끊습니다.\n"
+
+#: src/ftp.c:749
+msgid "done.  "
+msgstr "완료.  "
+
+#: src/ftp.c:755
+msgid "==> CWD not needed.\n"
+msgstr "==> CWD 불필요.\n"
+
+#: src/ftp.c:946
+msgid "Logically impossible section reached in getftp()"
+msgstr "getftp()에서 논리적으로 불가능한 섹션에 도달했습니다"
+
+#: src/ftp.c:947
+#, c-format
+msgid ""
+"cwd_count: %d\n"
+"cwd_start: %d\n"
+"cwd_end: %d\n"
+msgstr ""
+"cwd_count: %d\n"
+"cwd_start: %d\n"
+"cwd_end: %d\n"
+
+#: src/ftp.c:977
+#, c-format
+msgid ""
+"No such directory %s.\n"
+"\n"
+msgstr ""
+"%s 디렉터리가 없습니다.\n"
+"\n"
+
+#: src/ftp.c:998
+msgid "==> CWD not required.\n"
+msgstr "==> CWD 필요 동작 아님.\n"
+
+#: src/ftp.c:1041
+msgid "File has already been retrieved.\n"
+msgstr "이미 파일을 받았습니다.\n"
+
+#: src/ftp.c:1077
+msgid "Cannot initiate PASV transfer.\n"
+msgstr "PASV 전송을 초기화할 수 없습니다.\n"
+
+#: src/ftp.c:1081
+msgid "Cannot parse PASV response.\n"
+msgstr "PASV 응답을 해석할 수 없습니다.\n"
+
+#: src/ftp.c:1098
+#, c-format
+msgid "couldn't connect to %s port %d: %s\n"
+msgstr "%s:%d에 연결할 수 없습니다: %s\n"
+
+#: src/ftp.c:1152
+#, c-format
+msgid "Bind error (%s).\n"
+msgstr "바인딩 오류(%s).\n"
+
+#: src/ftp.c:1158
+msgid "Invalid PORT.\n"
+msgstr "부적절한 포트 번호.\n"
+
+#: src/ftp.c:1204
+msgid ""
+"\n"
+"REST failed, starting from scratch.\n"
+msgstr ""
+"\n"
+"REST 실패. 처음부터 다시 시작합니다.\n"
+
+#: src/ftp.c:1247
+#, c-format
+msgid "File %s exists.\n"
+msgstr "%s 파일이 있습니다.\n"
+
+#: src/ftp.c:1253
+#, c-format
+msgid "No such file %s.\n"
+msgstr "%s 파일이 없습니다.\n"
+
+#: src/ftp.c:1303
+#, c-format
+msgid ""
+"No such file %s.\n"
+"\n"
+msgstr ""
+"%s 파일이 없습니다.\n"
+"\n"
+
+#: src/ftp.c:1353
+#, c-format
+msgid ""
+"No such file or directory %s.\n"
+"\n"
+msgstr ""
+"%s 파일 또는 디렉터리가 없습니다.\n"
+"\n"
+
+#: src/ftp.c:1512 src/http.c:2597
+#, c-format
+msgid "%s has sprung into existence.\n"
+msgstr "%s이(가) 갑자기 존재 대상으로 나타났습니다.\n"
+
+#: src/ftp.c:1601
+#, c-format
+msgid "%s: %s, closing control connection.\n"
+msgstr "%s: %s, 제어 연결을 끊습니다.\n"
+
+#: src/ftp.c:1613
+#, c-format
+msgid "%s (%s) - Data connection: %s; "
+msgstr "%s (%s) - 데이터 연결: %s; "
+
+#: src/ftp.c:1628
+msgid "Control connection closed.\n"
+msgstr "제어 연결을 끊었습니다.\n"
+
+#: src/ftp.c:1646
+msgid "Data transfer aborted.\n"
+msgstr "데이터 전송을 멈추었습니다.\n"
+
+#: src/ftp.c:1870 src/main.c:1690
+#, c-format
+msgid "File %s already there; not retrieving.\n"
+msgstr "%s 파일이 이미 있습니다. 가져오지 않음.\n"
+
+#: src/ftp.c:1955 src/http.c:4362
+#, c-format
+msgid "(try:%2d)"
+msgstr "(시도횟수:%2d)"
+
+#: src/ftp.c:2047 src/http.c:4792
+#, c-format
+msgid ""
+"%s (%s) - written to stdout %s[%s]\n"
+"\n"
+msgstr ""
+"%s (%s) - 표준 출력에 기록 %s[%s]\n"
+"\n"
+
+#: src/ftp.c:2048 src/http.c:4793
+#, c-format
+msgid ""
+"%s (%s) - %s saved [%s]\n"
+"\n"
+msgstr ""
+"%s (%s) - %s 저장함 [%s]\n"
+"\n"
+
+#: src/ftp.c:2108 src/main.c:2179 src/metalink.c:1135 src/recur.c:513
+#: src/recur.c:752 src/retr.c:1317
+#, c-format
+msgid "Removing %s.\n"
+msgstr "%s 제거 중.\n"
+
+#: src/ftp.c:2165
+#, c-format
+msgid "Using %s as listing tmp file.\n"
+msgstr "tmp 파일 확인에 %s을(를) 사용합니다.\n"
+
+#: src/ftp.c:2182
+#, c-format
+msgid "Removed %s.\n"
+msgstr "%s 제거함.\n"
+
+#: src/ftp.c:2221
+#, c-format
+msgid "Recursion depth %d exceeded max. depth %d.\n"
+msgstr "재귀 깊이 %d 단계가 최대 깊이 %d 단계에 도달했습니다.\n"
+
+#: src/ftp.c:2291
+#, c-format
+msgid "Remote file no newer than local file %s -- not retrieving.\n"
+msgstr "원격 파일이 %s 로컬 파일보다 최신이 아닙니다. 가져오지 않음.\n"
+
+#: src/ftp.c:2299
+#, c-format
+msgid ""
+"Remote file is newer than local file %s -- retrieving.\n"
+"\n"
+msgstr "원격 파일이 %s 로컬 파일보다 최신입니다. 가져오는 중.\n"
+
+#: src/ftp.c:2306
+#, c-format
+msgid ""
+"The sizes do not match (local %s) -- retrieving.\n"
+"\n"
+msgstr "크기가 일치하지 않습니다 (로컬 %s). 가져오는 중.\n"
+
+#: src/ftp.c:2324
+msgid "Invalid name of the symlink, skipping.\n"
+msgstr "심볼릭 링크의 이름이 잘못되었습니다. 건너뜀.\n"
+
+#: src/ftp.c:2353
+#, c-format
+msgid ""
+"Already have correct symlink %s -> %s\n"
+"\n"
+msgstr ""
+"이미 올바른 %s -> %s 심볼릭 링크가 있습니다\n"
+"\n"
+
+#: src/ftp.c:2362
+#, c-format
+msgid "Creating symlink %s -> %s\n"
+msgstr "심볼릭 링크 %s -> %s 만드는 중\n"
+
+#: src/ftp.c:2372
+#, c-format
+msgid "Symlinks not supported, skipping symlink %s.\n"
+msgstr "심볼릭 링크를 지원하지 않습니다. %s 심볼릭 링크 건너뜀.\n"
+
+#: src/ftp.c:2387
+#, c-format
+msgid "Skipping directory %s.\n"
+msgstr "%s 디렉터리 건너뜀.\n"
+
+#: src/ftp.c:2400
+#, c-format
+msgid "%s: unknown/unsupported file type.\n"
+msgstr "%s: 알 수 없는/지원하지 않는 파일 형식.\n"
+
+#: src/ftp.c:2424
+#, c-format
+msgid "Failed to set permissions for %s.\n"
+msgstr "%s 권한 설정에 실패했습니다.\n"
+
+#: src/ftp.c:2445
+#, c-format
+msgid "%s: corrupt time-stamp.\n"
+msgstr "%s: 잘못된 타임스탬프.\n"
+
+#: src/ftp.c:2469
+#, c-format
+msgid "Will not retrieve dirs since depth is %d (max %d).\n"
+msgstr "디렉터리 단계가 %d 단계이기 때문에 가져오지 않습니다(최대 %d단계).\n"
+
+#: src/ftp.c:2528
+#, c-format
+msgid "Not descending to %s as it is excluded/not-included.\n"
+msgstr "제외했거나 포함하지 않은 %s 거슬러 내려가지 않음.\n"
+
+#: src/ftp.c:2644
+#, c-format
+msgid "Rejecting %s.\n"
+msgstr "%s 거절함.\n"
+
+#: src/ftp.c:2654
+#, c-format
+msgid "Rejecting %s (Invalid Entry).\n"
+msgstr "%s 거절함 (부적절한 항목).\n"
+
+#: src/ftp.c:2675
+#, c-format
+msgid "%s is excluded/not-included through regex.\n"
+msgstr "%s 위치는 정규식으로 제외했거나 포함하지 않았습니다.\n"
+
+#: src/ftp.c:2695
+#, c-format
+msgid "Error matching %s against %s: %s\n"
+msgstr "%s의 %s 대조 오류: %s\n"
+
+#: src/ftp.c:2735
+#, c-format
+msgid "No matches on pattern %s.\n"
+msgstr "%s 패턴의 일치 항목이 없습니다.\n"
+
+#: src/ftp.c:2807
+#, c-format
+msgid "Wrote HTML-ized index to %s [%s].\n"
+msgstr "HTML 인덱스를 %s에 기록함 [%s].\n"
+
+#: src/ftp.c:2812
+#, c-format
+msgid "Wrote HTML-ized index to %s.\n"
+msgstr "HTML 인덱스를 %s에 기록함.\n"
+
+#: src/gnutls.c:133
+#, c-format
+msgid "ERROR: Cannot open directory %s.\n"
+msgstr "오류: %s 디렉터리를 열 수 없습니다.\n"
+
+#: src/gnutls.c:179
+#, c-format
+msgid "ERROR: Failed to open cert %s: (%d).\n"
+msgstr "오류: %s 인증서 열기에 실패했습니다: (%d).\n"
+
+#: src/gnutls.c:184
+#, c-format
+msgid "Loaded CA certificate '%s'\n"
+msgstr "'%s' CA 인증서를 불러왔습니다\n"
+
+#: src/gnutls.c:192
+#, c-format
+msgid "ERROR: Failed to load CRL file '%s': (%d)\n"
+msgstr "오류: '%s' CRL 파일 불러오기 실패: (%d)\n"
+
+#: src/gnutls.c:196
+#, c-format
+msgid "Loaded CRL file '%s'\n"
+msgstr "'%s' CRL 파일을 불러왔습니다\n"
+
+#: src/gnutls.c:220
+msgid "ERROR: GnuTLS requires the key and the cert to be of the same type.\n"
+msgstr "오류: GnuTLS에서 동일한 형식의 키와 인증서가 필요합니다.\n"
+
+#: src/gnutls.c:777 src/gnutls.c:841
+msgid "Your GnuTLS version is too old to support TLS 1.3\n"
+msgstr ""
+"TLSv1.3을 지원하기에는 GnuTLS 버전이 너무 오래되었습니다.\n"
+"\n"
+
+#: src/gnutls.c:789
+#, c-format
+msgid "GnuTLS: unimplemented 'secure-protocol' option value %u\n"
+msgstr "GnuTLS: 구현하지 않은 'secure-protocol' 옵션값 %u\n"
+
+#: src/gnutls.c:791 src/gnutls.c:847 src/host.c:158 src/openssl.c:288
+msgid "Please report this issue to bug-wget@gnu.org\n"
+msgstr "bug-wget@gnu.org에 문제점을 보고하십시오\n"
+
+#: src/gnutls.c:846
+#, c-format
+msgid "GnuTLS: unimplemented 'secure-protocol' option value %d\n"
+msgstr "GnuTLS: 구현하지 않은 'secure-protocol' 옵션값 %d\n"
+
+#: src/gnutls.c:899
+msgid ""
+"GnuTLS: Cannot set prio string directly. Falling back to default priority.\n"
+msgstr ""
+"GnuTLS: prio 문자열을 바로 설정할 수 없습니다. 기본 우선순위 설정으로 돌아갑"
+"니다.\n"
+
+#: src/gnutls.c:1027 src/openssl.c:1029
+msgid "ERROR"
+msgstr "오류"
+
+#: src/gnutls.c:1027 src/openssl.c:1029
+msgid "WARNING"
+msgstr "경고"
+
+#: src/gnutls.c:1038 src/openssl.c:1042
+#, c-format
+msgid "%s: No certificate presented by %s.\n"
+msgstr "%s: %s에서 제출한 인증서가 없습니다.\n"
+
+#: src/gnutls.c:1044
+#, c-format
+msgid "%s: The certificate of %s is not trusted.\n"
+msgstr "%s: %s 인증서를 신뢰할 수 없습니다.\n"
+
+#: src/gnutls.c:1045
+#, c-format
+msgid "%s: The certificate of %s doesn't have a known issuer.\n"
+msgstr "%s: %s 인증서에 알려진 발급자 정보가 없습니다.\n"
+
+#: src/gnutls.c:1046
+#, c-format
+msgid "%s: The certificate of %s has been revoked.\n"
+msgstr "%s: %s 인증서는 이미 파기했습니다.\n"
+
+#: src/gnutls.c:1047
+#, c-format
+msgid "%s: The certificate signer of %s was not a CA.\n"
+msgstr "%s: %s 인증서 서명 주체는 CA가 아닙니다.\n"
+
+#: src/gnutls.c:1048
+#, c-format
+msgid "%s: The certificate of %s was signed using an insecure algorithm.\n"
+msgstr "%s: %s 인증서는 보안이 취약한 알고리즘으로 서명했습니다.\n"
+
+#: src/gnutls.c:1049
+#, c-format
+msgid "%s: The certificate of %s is not yet activated.\n"
+msgstr "%s: %s 인증서를 아직 활성화하지 않았습니다.\n"
+
+#: src/gnutls.c:1050
+#, c-format
+msgid "%s: The certificate of %s has expired.\n"
+msgstr "%s: %s 인증서는 더이상 유효하지 않습니다.\n"
+
+#: src/gnutls.c:1062
+#, c-format
+msgid "Error initializing X509 certificate: %s\n"
+msgstr "X509 인증서 초기화 오류: %s\n"
+
+#: src/gnutls.c:1071
+msgid "No certificate found\n"
+msgstr "인증서가 없습니다\n"
+
+#: src/gnutls.c:1078
+#, c-format
+msgid "Error parsing certificate: %s\n"
+msgstr "인증서 해석 오류: %s\n"
+
+#: src/gnutls.c:1085
+msgid "The certificate has not yet been activated\n"
+msgstr "인증서를 아직 활성화하지 않았습니다\n"
+
+#: src/gnutls.c:1090
+msgid "The certificate has expired\n"
+msgstr "인증서가 더이상 유효하지 않습니다\n"
+
+#: src/gnutls.c:1097
+#, c-format
+msgid "The certificate's owner does not match hostname %s\n"
+msgstr "인증서 소유자가 %s 호스트 이름과 일치하지 않습니다\n"
+
+#: src/gnutls.c:1106 src/openssl.c:1238
+msgid "The public key does not match pinned public key!\n"
+msgstr "공개키가 고정 공개키와 일치하지 않습니다!\n"
+
+#: src/gnutls.c:1115
+msgid "Certificate must be X.509\n"
+msgstr "인증서 형식은 X.509여야 합니다\n"
+
+#: src/host.c:157
+msgid "Error in handling the address list.\n"
+msgstr "주소 목록 처리 오류.\n"
+
+#: src/host.c:368
+msgid "Unknown host"
+msgstr "알 수 없는 호스트"
+
+#: src/host.c:372
+msgid "Temporary failure in name resolution"
+msgstr "일시적 이름 해석 실패"
+
+#: src/host.c:374
+msgid "Unknown error"
+msgstr "알 수 없는 오류"
+
+#: src/host.c:850
+#, c-format
+msgid "Resolving %s... "
+msgstr "%s 해석 중... "
+
+#: src/host.c:926
+msgid "failed: No IPv4/IPv6 addresses for host.\n"
+msgstr "실패: 호스트의 IPv4/IPv6 주소가 없습니다.\n"
+
+#: src/host.c:956
+msgid "failed: timed out.\n"
+msgstr "실패: 시간 초과.\n"
+
+#: src/html-url.c:306
+#, c-format
+msgid "%s: Cannot resolve incomplete link %s.\n"
+msgstr "%s: 불완전한 %s 링크를 해석할 수 없습니다.\n"
+
+#: src/html-url.c:945
+#, c-format
+msgid "%s: Invalid URL %s: %s\n"
+msgstr "%s: 부적절한 %s URL: %s\n"
+
+#: src/http.c:380
+#, c-format
+msgid "Failed writing HTTP request: %s.\n"
+msgstr "HTTP 요청 기록 실패: %s.\n"
+
+#: src/http.c:795
+msgid "No headers, assuming HTTP/0.9"
+msgstr "헤더가 없습니다. HTTP/0.9로 간주함"
+
+#: src/http.c:1637
+#, c-format
+msgid ""
+"File %s already there; not retrieving.\n"
+"\n"
+msgstr ""
+"%s 파일이 이미 있습니다. 가져오지 않음.\n"
+"\n"
+
+#: src/http.c:1836
+msgid "gmtime failed. This is probably a bug.\n"
+msgstr "gmtime 실패. 아마 버그인 것 같습니다.\n"
+
+#: src/http.c:1918
+msgid ""
+"Cannot convert timestamp to http format. Falling back to time 0 as last "
+"modification time.\n"
+msgstr ""
+"타임스탬프를 http 형식으로 변환할 수 없습니다. 최근 수정 시각을 0으로 되돌립"
+"니다.\n"
+
+#: src/http.c:2001
+#, c-format
+msgid "BODY data file %s missing: %s\n"
+msgstr "%s BODY 데이터 파일이 빠졌습니다: %s\n"
+
+#: src/http.c:2093
+#, c-format
+msgid "Reusing existing connection to [%s]:%d.\n"
+msgstr "[%s]에 기존 연결 재활용:%d.\n"
+
+#: src/http.c:2098
+#, c-format
+msgid "Reusing existing connection to %s:%d.\n"
+msgstr "%s에 기존 연결 재활용:%d.\n"
+
+#: src/http.c:2164
+#, c-format
+msgid "Failed reading proxy response: %s\n"
+msgstr "프록시 응답 읽기 실패: %s\n"
+
+#: src/http.c:2183 src/http.c:3465 src/http.c:4588
+#, c-format
+msgid "%s ERROR %d: %s.\n"
+msgstr "%s 오류 %d: %s.\n"
+
+#: src/http.c:2185 src/http.c:3467 src/http.c:3668
+msgid "Malformed status line"
+msgstr "잘못된 상태 행"
+
+#: src/http.c:2196
+#, c-format
+msgid "Proxy tunneling failed: %s"
+msgstr "프록시 터널링 실패: %s"
+
+#: src/http.c:2460
+msgid "Unknown authentication scheme.\n"
+msgstr "알 수 없는 인증 스킴.\n"
+
+#: src/http.c:2478
+#, c-format
+msgid "Authentication selected: %s\n"
+msgstr "선택한 인증: %s\n"
+
+#: src/http.c:2612
+#, c-format
+msgid "Saving to: %s\n"
+msgstr "저장 위치: %s\n"
+
+#: src/http.c:2831
+#, c-format
+msgid ""
+"When downloading signature:\n"
+"%s: %s.\n"
+msgstr ""
+"서명 다운로드:\n"
+"%s: %s.\n"
+
+#: src/http.c:2867
+msgid "Unable to read signature content from temporary file. Skipping.\n"
+msgstr "임시 파일에서 서명 컨텐트를 읽을 수 없습니다. 건너뜀.\n"
+
+#: src/http.c:2890
+msgid "Could not create temporary file. Skipping signature download.\n"
+msgstr "임시 파일을 만들 수 없습니다. 서명 다운로드 건너뜀.\n"
+
+#: src/http.c:2924 src/http.c:3006
+#, c-format
+msgid "Invalid pri value. Assuming %d.\n"
+msgstr "PRI 값이 올바르지 않습니다. %d(으)로 간주함.\n"
+
+#: src/http.c:3120
+msgid ""
+"Could not find acceptable digest for Metalink resources.\n"
+"Ignoring them.\n"
+msgstr ""
+"메타링크 자원의 수용 할 수 있는 다이제스트가 없습니다.\n"
+"무시함.\n"
+
+#: src/http.c:3257
+msgid "Disabling SSL due to encountered errors.\n"
+msgstr "오류 현상이 여러번 나타나서 SSL 연결 기능을 끕니다.\n"
+
+#: src/http.c:3401
+#, c-format
+msgid "%s request sent, awaiting response... "
+msgstr "%s 요청을 보냈습니다. 응답 기다리는 중... "
+
+#: src/http.c:3441
+msgid "No data received.\n"
+msgstr "받은 데이터 없음.\n"
+
+#: src/http.c:3447
+#, c-format
+msgid "Read error (%s) in headers.\n"
+msgstr "헤더에서 읽기 오류 (%s).\n"
+
+#: src/http.c:3670
+msgid "(no description)"
+msgstr "(설명 없음)"
+
+#: src/http.c:3861
+#, c-format
+msgid "Location: %s%s\n"
+msgstr "위치: %s%s\n"
+
+#: src/http.c:3862 src/http.c:4102
+msgid "unspecified"
+msgstr "지정하지 않음"
+
+#: src/http.c:3863
+msgid " [following]"
+msgstr " [따라감]"
+
+#: src/http.c:3945
+#, c-format
+msgid ""
+"File %s not modified on server. Omitting download.\n"
+"\n"
+msgstr ""
+"%s 파일을 서버에서 수정하지 않았습니다. 다운로드 생략.\n"
+"\n"
+
+#: src/http.c:4018
+#, c-format
+msgid ""
+"Server ignored If-Modified-Since header for file %s.\n"
+"You might want to add --no-if-modified-since option.\n"
+"\n"
+msgstr ""
+"서버에서 %s 파일의 If-Modified-Since 헤더를 무시했습니다.\n"
+"--no-if-modified-since 옵션 추가를 고려해보십시오.\n"
+"\n"
+
+#: src/http.c:4038
+msgid ""
+"\n"
+"    The file is already fully retrieved; nothing to do.\n"
+"\n"
+msgstr ""
+"\n"
+"    이미 파일을 완전히 전송했습니다. 할 일 없음.\n"
+"\n"
+
+#: src/http.c:4082
+msgid "Length: "
+msgstr "길이: "
+
+#: src/http.c:4102
+msgid "ignored"
+msgstr "무시함"
+
+#: src/http.c:4270
+msgid "Warning: wildcards not supported in HTTP.\n"
+msgstr "경고: HTTP에 와일드카드 문자를 지원하지 않습니다.\n"
+
+#: src/http.c:4352
+msgid "Spider mode enabled. Check if remote file exists.\n"
+msgstr "스파이더 모드를 켰습니다. 원격 파일이 있는지 검사합니다.\n"
+
+#: src/http.c:4445
+#, c-format
+msgid "Cannot write to %s (%s).\n"
+msgstr "%s에 쓸 수 없음 (%s).\n"
+
+#: src/http.c:4467
+msgid "Required attribute missing from Header received.\n"
+msgstr "수신한 헤더에 필요한 속성이 빠졌습니다.\n"
+
+#: src/http.c:4472
+msgid "Username/Password Authentication Failed.\n"
+msgstr "사용자이름/암호 인증에 실패했습니다.\n"
+
+#: src/http.c:4478
+msgid "Cannot write to WARC file.\n"
+msgstr "WARC 파일에 쓸 수 없습니다.\n"
+
+#: src/http.c:4484
+msgid "Cannot write to temporary WARC file.\n"
+msgstr "임시 WARC 파일을 쓸 수 없습니다.\n"
+
+#: src/http.c:4489
+msgid "Unable to establish SSL connection.\n"
+msgstr "SSL 연결을 수립할 수 없습니다.\n"
+
+#: src/http.c:4495
+#, c-format
+msgid "Cannot unlink %s (%s).\n"
+msgstr "%s 링크를 끊을 수 없습니다(%s).\n"
+
+#: src/http.c:4505
+#, c-format
+msgid "ERROR: Redirection (%d) without location.\n"
+msgstr "오류: 위치 정보 없이 경로 전환함(%d).\n"
+
+#: src/http.c:4527
+msgid ""
+"Could not find Metalink data in HTTP response. Downloading file using HTTP "
+"GET.\n"
+msgstr ""
+"HTTP 응답에 메타링크 데이터가 없습니다. HTTP GET 방식으로 파일을 다운로드합니"
+"다.\n"
+
+#: src/http.c:4536
+msgid "Metalink headers found. Switching to Metalink mode.\n"
+msgstr "메타링크 헤더를 찾았습니다. 메타링크 모드로 전환합니다.\n"
+
+#: src/http.c:4577
+msgid "Remote file does not exist -- broken link!!!\n"
+msgstr "원격 파일이 없습니다. 깨진 링크입니다!!!\n"
+
+#: src/http.c:4605
+msgid "Last-modified header missing -- time-stamps turned off.\n"
+msgstr "Last-modified 헤더가 빠졌습니다. 타임스탬프를 끕니다.\n"
+
+#: src/http.c:4613
+msgid "Last-modified header invalid -- time-stamp ignored.\n"
+msgstr "Last-modified 헤더가 잘못되었습니다. 타임스탬프 무시.\n"
+
+#: src/http.c:4643
+#, c-format
+msgid ""
+"Server file no newer than local file %s -- not retrieving.\n"
+"\n"
+msgstr ""
+"%s 로컬 파일보다 최신의 파일이 서버에 없습니다. 가져오지 않음.\n"
+"\n"
+
+#: src/http.c:4651
+#, c-format
+msgid "The sizes do not match (local %s) -- retrieving.\n"
+msgstr "크기가 일치하지 않습니다 (로컬 %s). 가져오는 중.\n"
+
+#: src/http.c:4660
+msgid "Remote file is newer, retrieving.\n"
+msgstr "원격 파일이 최신입니다. 가져오는 중.\n"
+
+#: src/http.c:4678
+msgid ""
+"Remote file exists and could contain links to other resources -- "
+"retrieving.\n"
+"\n"
+msgstr ""
+"원격 파일이 있으며 다른 자료로의 링크가 있을 수 있습니다. 가져오는 중.\n"
+"\n"
+
+#: src/http.c:4684
+msgid ""
+"Remote file exists but does not contain any link -- not retrieving.\n"
+"\n"
+msgstr ""
+"원격 파일이 있지만 어떤 링크도 없습니다. 가져오지 않음.\n"
+"\n"
+
+#: src/http.c:4693
+msgid ""
+"Remote file exists and could contain further links,\n"
+"but recursion is disabled -- not retrieving.\n"
+"\n"
+msgstr ""
+"원격 파일이 있으며 링크가 더 있을 수 있습니다만,\n"
+"재귀 추적을 하지 않습니다. 가져오지 않음.\n"
+"\n"
+
+#: src/http.c:4699
+msgid ""
+"Remote file exists.\n"
+"\n"
+msgstr "원격 파일이 있습니다.\n"
+
+#: src/http.c:4708
+#, c-format
+msgid "%s URL: %s %2d %s\n"
+msgstr "%s URL: %s %2d %s\n"
+
+#: src/http.c:4756
+#, c-format
+msgid ""
+"%s (%s) - written to stdout %s[%s/%s]\n"
+"\n"
+msgstr ""
+"%s (%s) - 표준 출력에 기록: %s[%s/%s]\n"
+"\n"
+
+#: src/http.c:4757
+#, c-format
+msgid ""
+"%s (%s) - %s saved [%s/%s]\n"
+"\n"
+msgstr ""
+"%s (%s) - %s 저장함 [%s/%s]\n"
+"\n"
+
+#: src/http.c:4823
+#, c-format
+msgid "%s (%s) - Connection closed at byte %s. "
+msgstr "%s (%s) - %s 바이트에 연결 끊음. "
+
+#: src/http.c:4846
+#, c-format
+msgid "%s (%s) - Read error at byte %s (%s)."
+msgstr "%s (%s) - %s 바이트에서 읽기 오류 (%s)."
+
+#: src/http.c:4855
+#, c-format
+msgid "%s (%s) - Read error at byte %s/%s (%s). "
+msgstr "%s (%s) - %s/%s 바이트에서 읽기 오류 (%s). "
+
+#: src/http.c:5112
+#, c-format
+msgid "Unsupported quality of protection '%s'.\n"
+msgstr "'%s' 보호 수준을 지원하지 않습니다.\n"
+
+#: src/http.c:5117
+#, c-format
+msgid "Unsupported algorithm '%s'.\n"
+msgstr "'%s' 알고리즘을 지원하지 않습니다.\n"
+
+#: src/init.c:583
+#, c-format
+msgid ""
+"%s: WGETRC points to %s, which couldn't be accessed because of error: %s.\n"
+msgstr "%s: WGETRC에서 오류로 인해 접근할 수 없는 %s을(를) 가리킵니다: %s.\n"
+
+#: src/init.c:695 src/netrc.c:454
+#, c-format
+msgid "%s: Cannot read %s (%s).\n"
+msgstr "%s: %s을(를) 읽을 수 없습니다 (%s).\n"
+
+#: src/init.c:712
+#, c-format
+msgid "%s: Error in %s at line %d.\n"
+msgstr "%s: %s의 %d번째 줄 오류.\n"
+
+#: src/init.c:718
+#, c-format
+msgid "%s: Syntax error in %s at line %d.\n"
+msgstr "%s: %s의 %d번째 줄 문법 오류.\n"
+
+#: src/init.c:723
+#, c-format
+msgid "%s: Unknown command %s in %s at line %d.\n"
+msgstr "%1$s: %3$s의 %4$d번째 줄에 알 수 없는 명령 %2$s.\n"
+
+#: src/init.c:762
+#, c-format
+msgid ""
+"Parsing system wgetrc file (env SYSTEM_WGETRC) failed.  Please check\n"
+"'%s',\n"
+"or specify a different file using --config.\n"
+msgstr ""
+"시스템 wgetrc 파일 (env SYSTEM_WGETRC) 해석에 실패했습니다.\n"
+"'%s'을(를) 확인하거나,\n"
+"--config 옵션으로 다른 파일을 지정하십시오.\n"
+
+#: src/init.c:777
+#, c-format
+msgid ""
+"Parsing system wgetrc file failed.  Please check\n"
+"'%s',\n"
+"or specify a different file using --config.\n"
+msgstr ""
+"시스템 wgetrc 파일 해석에 실패했습니다.\n"
+"'%s'을(를) 확인하거나,\n"
+"--config 옵션으로 다른 파일을 지정하십시오.\n"
+
+#: src/init.c:793
+#, c-format
+msgid "%s: Warning: Both system and user wgetrc point to %s.\n"
+msgstr "%s: 경고: 시스템 wgetrc와 사용자 wgetrc가 %s을(를) 가리킵니다.\n"
+
+#: src/init.c:1006
+#, c-format
+msgid "%s: Invalid --execute command %s\n"
+msgstr "%s: 부적절한 --execute 명령 %s\n"
+
+#: src/init.c:1066
+#, c-format
+msgid "%s: %s: Invalid boolean %s; use `on' or `off'.\n"
+msgstr "%s: %s: 부적절한 %s 부울린 값. `on' 또는 `off'를 사용하십시오.\n"
+
+#: src/init.c:1099
+#, c-format
+msgid "%s: %s: Invalid %s; use `on', `off' or `quiet'.\n"
+msgstr ""
+"%s: %s: 부적절한 %s; `on', `off', `quiet' 중 한가지 값을 사용하십시오.\n"
+
+#: src/init.c:1119
+#, c-format
+msgid "%s: %s: Invalid number %s.\n"
+msgstr "%s: %s: 부적절한 %s 번호 값.\n"
+
+#: src/init.c:1201
+#, c-format
+msgid "%s: %s must only be used once\n"
+msgstr "%s: %s 값은 한번만 사용해야합니다\n"
+
+#: src/init.c:1356 src/init.c:1377
+#, c-format
+msgid "%s: %s: Invalid byte value %s\n"
+msgstr "%s: %s: 부적절한 바이트 값 %s\n"
+
+#: src/init.c:1402
+#, c-format
+msgid "%s: %s: Invalid time period %s\n"
+msgstr "%s: %s: 부적절한 시간 주기 %s\n"
+
+#: src/init.c:1443
+#, c-format
+msgid "%s: %s: Negative time period %s\n"
+msgstr "%s: %s: 음의 시간 간격 %s\n"
+
+#: src/init.c:1471 src/main.c:1926
+#, c-format
+msgid ""
+"use-askpass requires a string or either environment variable WGET_ASKPASS or "
+"SSH_ASKPASS to be set.\n"
+msgstr ""
+"use-askpass 옵션에 문자열을 지정하거나 WGET_ASKPASS 또는 SSH_ASKPASS 환경 변"
+"수를 설정해야합니다.\n"
+
+#: src/init.c:1489 src/init.c:1511 src/init.c:1619 src/init.c:1675
+#: src/init.c:1741 src/init.c:1761 src/init.c:1786
+#, c-format
+msgid "%s: %s: Invalid value %s.\n"
+msgstr "%s: %s: 부적절한 값, %s.\n"
+
+#: src/init.c:1545
+#, c-format
+msgid "%s: %s: Invalid header %s.\n"
+msgstr "%s: %s: 부적절한 헤더, %s.\n"
+
+#: src/init.c:1566
+#, c-format
+msgid "%s: %s: Invalid WARC header %s.\n"
+msgstr "%s: %s: 부적절한 WARC 헤더 %s.\n"
+
+#: src/init.c:1632
+#, c-format
+msgid "%s: %s: Invalid progress type %s.\n"
+msgstr "%s: %s: 부적절한 처리 형식, %s.\n"
+
+#: src/init.c:1714
+#, c-format
+msgid ""
+"%s: %s: Invalid restriction %s,\n"
+"    use [unix|vms|windows],[lowercase|uppercase],[nocontrol],[ascii].\n"
+msgstr ""
+"%s: %s: 부적절한 제약값 %s,\n"
+"    [unix|vms|windows],[lowercase|uppercase],[nocontrol],[ascii] 중 하나를 사"
+"용하십시오.\n"
+
+#: src/iri.c:114
+#, c-format
+msgid "Encoding %s isn't valid\n"
+msgstr "%s 인코딩 방식은 유효하지 않습니다\n"
+
+#: src/iri.c:140 src/url.c:1615
+#, c-format
+msgid "Conversion from %s to %s isn't supported\n"
+msgstr "%s -> %s 변환은 지원하지 않습니다\n"
+
+#: src/iri.c:180 src/url.c:1645
+msgid "Incomplete or invalid multibyte sequence encountered\n"
+msgstr "불완전하거나 부적절한 다중 바이트열이 있습니다\n"
+
+#: src/iri.c:200 src/url.c:1662
+#, c-format
+msgid "Unhandled errno %d\n"
+msgstr "처리하지 못한 오류 번호 %d\n"
+
+#: src/iri.c:237
+msgid "locale_to_utf8: locale is unset\n"
+msgstr ""
+"locale_to_utf8: 로캘을 지정하지 않았습니다\n"
+"\n"
+
+#: src/iri.c:283 src/iri.c:298
+#, c-format
+msgid "idn_encode failed (%d): %s\n"
+msgstr "idn_encode 실패 (%d): %s\n"
+
+#: src/iri.c:290
+#, c-format
+msgid "Failed to convert to lower: %d: %s\n"
+msgstr "소문자 변환 실패: %d: %s\n"
+
+#: src/log.c:938 src/log.c:957
+#, c-format
+msgid ""
+"\n"
+"Redirecting output to %s.\n"
+msgstr ""
+"\n"
+"%s 출력으로 전환합니다.\n"
+
+#: src/log.c:950
+#, c-format
+msgid "%s: %s; disabling logging.\n"
+msgstr "%s: %s; 로깅 중단함.\n"
+
+#: src/main.c:574
+#, c-format
+msgid "Usage: %s [OPTION]... [URL]...\n"
+msgstr "사용법: %s [<옵션>]... [URL]...\n"
+
+#: src/main.c:590
+msgid ""
+"Mandatory arguments to long options are mandatory for short options too.\n"
+"\n"
+msgstr ""
+"긴 옵션의 필수 인자 값은 짧은 옵션에서도 마찬가지입니다.\n"
+"\n"
+"\n"
+
+#: src/main.c:592
+msgid "Startup:\n"
+msgstr "시작:\n"
+
+#: src/main.c:594
+msgid ""
+"  -V,  --version                   display the version of Wget and exit\n"
+msgstr "  -V,  --version                   Wget 버전을 표시한 후 나갑니다\n"
+
+#: src/main.c:596
+msgid "  -h,  --help                      print this help\n"
+msgstr "  -h,  --help                      이 도움말을 출력합니다\n"
+
+#: src/main.c:598
+msgid "  -b,  --background                go to background after startup\n"
+msgstr ""
+"  -b,  --background                시작 후 백그라운드 동작으로 전환합니다\n"
+
+#: src/main.c:600
+msgid "  -e,  --execute=COMMAND           execute a `.wgetrc'-style command\n"
+msgstr "  -e,  --execute=<명령>           `.wgetrc' 방식 명령을 실행합니다\n"
+
+#: src/main.c:604
+msgid "Logging and input file:\n"
+msgstr "기록 및 파일 입력:\n"
+
+#: src/main.c:606
+msgid "  -o,  --output-file=FILE          log messages to FILE\n"
+msgstr "  -o,  --output-file=<파일>          <파일>에 메시지를 기록합니다\n"
+
+#: src/main.c:608
+msgid "  -a,  --append-output=FILE        append messages to FILE\n"
+msgstr ""
+"  -a,  --append-output=<파일>        <파일>에 메시지 내용을 추가합니다\n"
+
+#: src/main.c:611
+msgid ""
+"  -d,  --debug                     print lots of debugging information\n"
+msgstr "  -d,  --debug                     방대한 디버깅 정보를 출력합니다\n"
+
+#: src/main.c:615
+msgid "       --wdebug                    print Watt-32 debug output\n"
+msgstr ""
+"       --wdebug                    Watt-32 디버깅 출력 내용을 나타냅니다\n"
+
+#: src/main.c:618
+msgid "  -q,  --quiet                     quiet (no output)\n"
+msgstr "  -q,  --quiet                     어떤 내용도 출력하지 않습니다\n"
+
+#: src/main.c:620
+msgid "  -v,  --verbose                   be verbose (this is the default)\n"
+msgstr ""
+"  -v,  --verbose                   과정을 자세하게 나타냅니다 (기본 설정)\n"
+
+#: src/main.c:622
+msgid ""
+"  -nv, --no-verbose                turn off verboseness, without being "
+"quiet\n"
+msgstr ""
+"  -nv, --no-verbose                아무 내용도 출력하는건 아니지만, 출력 내용"
+"을 줄입니다\n"
+
+#: src/main.c:624
+msgid ""
+"       --report-speed=TYPE         output bandwidth as TYPE.  TYPE can be "
+"bits\n"
+msgstr ""
+"       --report-speed=<형식>         지정 <형식>에 따라 대역폭 정보를 출력합"
+"니다.  <형식>의 값은 bits일 수 있습니다\n"
+
+#: src/main.c:626
+msgid ""
+"  -i,  --input-file=FILE           download URLs found in local or external "
+"FILE\n"
+msgstr ""
+"  -i,  --input-file=<파일>           로컬 또는 외부 <파일>의 URL에서 다운로드"
+"합니다\n"
+
+#: src/main.c:629
+msgid ""
+"       --input-metalink=FILE       download files covered in local Metalink "
+"FILE\n"
+msgstr ""
+"       --input-metalink=<파일>       <파일>의 로컬 메타링크에 해당하는 파일"
+"을 다운로드합니다 \n"
+
+#: src/main.c:632
+msgid "  -F,  --force-html                treat input file as HTML\n"
+msgstr "  -F,  --force-html                입력 파일을 HTML로 취급합니다\n"
+
+#: src/main.c:634
+msgid ""
+"  -B,  --base=URL                  resolves HTML input-file links (-i -F)\n"
+"                                     relative to URL\n"
+msgstr ""
+"  -B,  --base=<URL>                  <URL>에 상대적인 위치에서 \n"
+"                                     HTML 입력 파일연결 (-i -F)을 해석합니"
+"다\n"
+
+#: src/main.c:637
+msgid "       --config=FILE               specify config file to use\n"
+msgstr "       --config=<파일>               활용할 설정 파일을 지정\n"
+
+#: src/main.c:639
+msgid "       --no-config                 do not read any config file\n"
+msgstr "       --no-config                 어떤 설정 파일도 읽지 않음\n"
+
+#: src/main.c:641
+msgid ""
+"       --rejected-log=FILE         log reasons for URL rejection to FILE\n"
+msgstr "       --rejected-log=<파일>         <파일> URL 거절 이유를 기록\n"
+
+#: src/main.c:645
+msgid "Download:\n"
+msgstr "다운로드:\n"
+
+#: src/main.c:647
+msgid ""
+"  -t,  --tries=NUMBER              set number of retries to NUMBER (0 "
+"unlimits)\n"
+msgstr ""
+"  -t,  --tries=<숫자>              재시도 횟수를 <숫자>로 지정 (0: 무한)\n"
+
+#: src/main.c:649
+msgid ""
+"       --retry-connrefused         retry even if connection is refused\n"
+msgstr ""
+"       --retry-connrefused         연결을 원격에서 거절해도 다시 시도\n"
+
+#: src/main.c:651
+msgid ""
+"       --retry-on-http-error=ERRORS    comma-separated list of HTTP errors "
+"to retry\n"
+msgstr ""
+"       --retry-on-http-error=<오류코드>    다시 시도할 경우의 쉼표 구분 HTTP "
+"오류 코드\n"
+
+#: src/main.c:653
+msgid "  -O,  --output-document=FILE      write documents to FILE\n"
+msgstr "  -O,  --output-document=<파일>      <파일>에 문서 쓰기\n"
+
+#: src/main.c:655
+msgid ""
+"  -nc, --no-clobber                skip downloads that would download to\n"
+"                                     existing files (overwriting them)\n"
+msgstr ""
+"  -nc, --no-clobber                기존 파일에 다운로드(덮어쓰기) 할 경우 \n"
+"                                     다운로드 건너뛰기\n"
+
+#: src/main.c:658
+msgid ""
+"       --no-netrc                  don't try to obtain credentials from ."
+"netrc\n"
+msgstr ""
+"       --no-netrc                  .netrc에서 인증 정보 가져오기 시도하지 않"
+"음\n"
+
+#: src/main.c:660
+msgid ""
+"  -c,  --continue                  resume getting a partially-downloaded "
+"file\n"
+msgstr ""
+"  -c,  --continue                  일부만 다운로드한 파일 가져오기 재개\n"
+
+#: src/main.c:662
+msgid ""
+"       --start-pos=OFFSET          start downloading from zero-based "
+"position OFFSET\n"
+msgstr ""
+"       --start-pos=<오프셋>          <오프셋> 위치를 영점으로 하여 다운로드 "
+"시작\n"
+
+#: src/main.c:664
+msgid "       --progress=TYPE             select progress gauge type\n"
+msgstr "       --progress=<형식>             진행 표시 형식 선택\n"
+
+#: src/main.c:666
+msgid ""
+"       --show-progress             display the progress bar in any verbosity "
+"mode\n"
+msgstr ""
+"       --show-progress             어떤 대량 출력 모드에서든 진행 표시줄 출"
+"력\n"
+
+#: src/main.c:668
+msgid ""
+"  -N,  --timestamping              don't re-retrieve files unless newer "
+"than\n"
+"                                     local\n"
+msgstr ""
+"  -N,  --timestamping              로컬 파일보다 최신이 아니면 파일을 다시\n"
+"                                     가져오지 않음\n"
+
+#: src/main.c:671
+msgid ""
+"       --no-if-modified-since      don't use conditional if-modified-since "
+"get\n"
+"                                     requests in timestamping mode\n"
+msgstr ""
+"       --no-if-modified-since      타임스탬프 모드로 조건부 if-modified-"
+"since\n"
+"                                     GET 요청을 하지 않음\n"
+
+#: src/main.c:674
+msgid ""
+"       --no-use-server-timestamps  don't set the local file's timestamp by\n"
+"                                     the one on the server\n"
+msgstr ""
+"       --no-use-server-timestamps  로컬 파일의 타임 스탬프를 서버 파일의\n"
+"                                     타임스탬프로 설정하지 않음\n"
+
+#: src/main.c:677
+msgid "  -S,  --server-response           print server response\n"
+msgstr "  -S,  --server-response           서버 응답 출력\n"
+
+#: src/main.c:679
+msgid "       --spider                    don't download anything\n"
+msgstr "       --spider                    아무것도 다운로드하지 않음\n"
+
+#: src/main.c:681
+msgid "  -T,  --timeout=SECONDS           set all timeout values to SECONDS\n"
+msgstr "  -T,  --timeout=<초>           모든 경우의 제한 시간을 <초>로 지정\n"
+
+#: src/main.c:684
+msgid ""
+"       --dns-servers=ADDRESSES     list of DNS servers to query (comma "
+"separated)\n"
+msgstr "       --dns-servers=<주소>     (쉼표로 구분한) 요청 대상 DNS 서버\n"
+
+#: src/main.c:686
+msgid ""
+"       --bind-dns-address=ADDRESS  bind DNS resolver to ADDRESS (hostname or "
+"IP) on local host\n"
+msgstr ""
+"       --bind-dns-address=<주소>  DNS 해석 서버를 로컬 호스트의 <주소>(호스"
+"트 이름/IP)로 바인딩\n"
+
+#: src/main.c:689
+msgid "       --dns-timeout=SECS          set the DNS lookup timeout to SECS\n"
+msgstr "       --dns-timeout=<초>          DNS 탐색 제한 시간을 <초>로 지정\n"
+
+#: src/main.c:691
+msgid "       --connect-timeout=SECS      set the connect timeout to SECS\n"
+msgstr "       --connect-timeout=<초>      연결 제한 시간을 <초>로 지정\n"
+
+#: src/main.c:693
+msgid "       --read-timeout=SECS         set the read timeout to SECS\n"
+msgstr "       --read-timeout=<초>         읽기 제한 시간을 <초>로 지정\n"
+
+#: src/main.c:695
+msgid ""
+"  -w,  --wait=SECONDS              wait SECONDS between retrievals\n"
+"                                     (applies if more then 1 URL is to be "
+"retrieved)\n"
+msgstr ""
+"  -w,  --wait=<초>              전송 동작간 대기 시간을 <초>로 지정\n"
+"                                     (하나 이상의 URL을 가져올 때 적용)\n"
+
+#: src/main.c:698
+msgid ""
+"       --waitretry=SECONDS         wait 1..SECONDS between retries of a "
+"retrieval\n"
+"                                     (applies if more then 1 URL is to be "
+"retrieved)\n"
+msgstr ""
+"       --waitretry=<초>         전송 재시도 시간 간격을 1..<초> 사이로 지정\n"
+"                                     (하나 이상의 URL을 가져올 때 적용)\n"
+
+#: src/main.c:701
+msgid ""
+"       --random-wait               wait from 0.5*WAIT...1.5*WAIT secs "
+"between retrievals\n"
+"                                     (applies if more then 1 URL is to be "
+"retrieved)\n"
+msgstr ""
+"       --random-wait               전송 동작간 대기 시간을 0.5*<대기>...1.5*<"
+"대기> 사이로 지정\n"
+"                                     (하나 이상의 URL을 가져올 때 적용)\n"
+
+#: src/main.c:704
+msgid "       --no-proxy                  explicitly turn off proxy\n"
+msgstr "       --no-proxy                  프록시를 완전히 사용하지 않음\n"
+
+#: src/main.c:706
+msgid "  -Q,  --quota=NUMBER              set retrieval quota to NUMBER\n"
+msgstr "  -Q,  --quota=<숫자>              <숫자>로 전송량 제한\n"
+
+#: src/main.c:708
+msgid ""
+"       --bind-address=ADDRESS      bind to ADDRESS (hostname or IP) on local "
+"host\n"
+msgstr ""
+"       --bind-address=<주소>      로컬 호스트를 <주소>(호스트 이름/IP)로 바인"
+"딩\n"
+
+#: src/main.c:710
+msgid "       --limit-rate=RATE           limit download rate to RATE\n"
+msgstr ""
+"       --limit-rate=<전송율>           다운로드 전송율을 <전송율>로 제한합니"
+"다\n"
+
+#: src/main.c:712
+msgid "       --no-dns-cache              disable caching DNS lookups\n"
+msgstr "       --no-dns-cache              DNS 탐색 캐싱을 끕니다\n"
+
+#: src/main.c:714
+msgid ""
+"       --restrict-file-names=OS    restrict chars in file names to ones OS "
+"allows\n"
+msgstr ""
+"       --restrict-file-names=<운영체제>    <운영체제>가 허용하는 파일 이름 문"
+"자로 제한\n"
+
+#: src/main.c:716
+msgid ""
+"       --ignore-case               ignore case when matching files/"
+"directories\n"
+msgstr ""
+"       --ignore-case               파일/디렉터리 검색시 대소문자 무시\n"
+
+#: src/main.c:719
+msgid "  -4,  --inet4-only                connect only to IPv4 addresses\n"
+msgstr "  -4,  --inet4-only                IPv4 주소로만 연결\n"
+
+#: src/main.c:721
+msgid "  -6,  --inet6-only                connect only to IPv6 addresses\n"
+msgstr "  -6,  --inet6-only                IPv6 주소로만 연결\n"
+
+#: src/main.c:723
+msgid ""
+"       --prefer-family=FAMILY      connect first to addresses of specified "
+"family,\n"
+"                                     one of IPv6, IPv4, or none\n"
+msgstr ""
+"       --prefer-family=<형식>      지정형식으로 주소로 우선 연결합니다.\n"
+"                                     IPv6, IPv4, none 중 하나.\n"
+
+#: src/main.c:727
+msgid "       --user=USER                 set both ftp and http user to USER\n"
+msgstr ""
+"       --user=<사용자>                 http/ftp 사용자를 <사용자>로 지정\n"
+
+#: src/main.c:729
+msgid ""
+"       --password=PASS             set both ftp and http password to PASS\n"
+msgstr "       --password=<암호>             http/ftp 암호를 <암호>로 지정\n"
+
+#: src/main.c:731
+msgid "       --ask-password              prompt for passwords\n"
+msgstr "       --ask-password              암호 물어보기\n"
+
+#: src/main.c:734
+msgid ""
+"       --use-askpass=COMMAND       specify credential handler for "
+"requesting \n"
+"                                     username and password.  If no COMMAND "
+"is \n"
+"                                     specified the WGET_ASKPASS or the "
+"SSH_ASKPASS \n"
+"                                     environment variable is used.\n"
+msgstr ""
+"       --use-askpass=<명령>       사용자 이름 및 암호를 요청할 인증 핸들러를 "
+"지정합니다.\n"
+"                                     <명령>이 없으면 WGET_ASKPASS 또는 "
+"SSH_ASKPASS 환경 변수에 \n"
+"                                     지정한 값을 사용합니다.\n"
+
+#: src/main.c:740
+msgid "       --no-iri                    turn off IRI support\n"
+msgstr "       --no-iri                    IRI 지원을 끕니다\n"
+
+#: src/main.c:742
+msgid ""
+"       --local-encoding=ENC        use ENC as the local encoding for IRIs\n"
+msgstr ""
+"       --local-encoding=<인코딩>        IRI 로컬 인코딩을 <인코딩> 값에 따"
+"릅\n"
+
+#: src/main.c:744
+msgid ""
+"       --remote-encoding=ENC       use ENC as the default remote encoding\n"
+msgstr ""
+"       --remote-encoding=<인코딩>       원격 기본 인코딩을 <인코딩> 값에 따"
+"름\n"
+
+#: src/main.c:746
+msgid "       --unlink                    remove file before clobber\n"
+msgstr "       --unlink                    파일에 손상을 가하지 않고 제거\n"
+
+#: src/main.c:749
+msgid ""
+"       --keep-badhash              keep files with checksum mismatch "
+"(append .badhash)\n"
+msgstr ""
+"       --keep-badhash              체크섬 불일치 파일 유지(.badhash 붙임)\n"
+
+#: src/main.c:751
+msgid ""
+"       --metalink-index=NUMBER     Metalink application/metalink4+xml "
+"metaurl ordinal NUMBER\n"
+msgstr ""
+"       --metalink-index=<숫자>     메타링크 application/metalink4+xml "
+"metaurl 서수 <숫자> 지정\n"
+
+#: src/main.c:753
+msgid ""
+"       --metalink-over-http        use Metalink metadata from HTTP response "
+"headers\n"
+msgstr ""
+"       --metalink-over-http        HTTP 응답 헤더의 메타링크 메타데이터 활"
+"용\n"
+
+#: src/main.c:755
+msgid ""
+"       --preferred-location        preferred location for Metalink "
+"resources\n"
+msgstr "       --preferred-location        메타링크 자원 선호 위치\n"
+
+#: src/main.c:759
+msgid ""
+"       --xattr                     turn on storage of metadata in extended "
+"file attributes\n"
+msgstr ""
+"       --xattr                     저장 장치의 파일 속성 확장 메타데이터 기능"
+"을 켭니다\n"
+
+#: src/main.c:764
+msgid "Directories:\n"
+msgstr "디렉터리:\n"
+
+#: src/main.c:766
+msgid "  -nd, --no-directories            don't create directories\n"
+msgstr "  -nd, --no-directories            디렉터리를 만들지 않음\n"
+
+#: src/main.c:768
+msgid "  -x,  --force-directories         force creation of directories\n"
+msgstr "  -x,  --force-directories         무조건 디렉터리를 만듬\n"
+
+#: src/main.c:770
+msgid "  -nH, --no-host-directories       don't create host directories\n"
+msgstr "  -nH, --no-host-directories       호스트 디렉터리를 만들지 않음\n"
+
+#: src/main.c:772
+msgid "       --protocol-directories      use protocol name in directories\n"
+msgstr ""
+"       --protocol-directories      디렉터리 이름을 프로토콜 이름으로 사용\n"
+
+#: src/main.c:774
+msgid "  -P,  --directory-prefix=PREFIX   save files to PREFIX/..\n"
+msgstr ""
+"  -P,  --directory-prefix=<접두부>   파일을 <접두부>/ 디렉터리에 저장..\n"
+
+#: src/main.c:776
+msgid ""
+"       --cut-dirs=NUMBER           ignore NUMBER remote directory "
+"components\n"
+msgstr ""
+"       --cut-dirs=<숫자>           <숫자> 만큼의 원격 디렉터리 갯수를 무시\n"
+
+#: src/main.c:780
+msgid "HTTP options:\n"
+msgstr "HTTP 옵션:\n"
+
+#: src/main.c:782
+msgid "       --http-user=USER            set http user to USER\n"
+msgstr ""
+"       --http-user=<사용자>            http 사용자 이름을 <사용자>로 지정\n"
+
+#: src/main.c:784
+msgid "       --http-password=PASS        set http password to PASS\n"
+msgstr "       --http-password=<암호>        http 암호를 <암호>로 지정\n"
+
+#: src/main.c:786
+msgid "       --no-cache                  disallow server-cached data\n"
+msgstr "       --no-cache                  서버 데이터 캐싱을 허용하지 않음\n"
+
+#: src/main.c:788
+msgid ""
+"       --default-page=NAME         change the default page name (normally\n"
+"                                     this is 'index.html'.)\n"
+msgstr ""
+"       --default-page=<이름>         기본 페이지 이름을 바꿉니다 (보통\n"
+"                                     'index.html' 입니다.)\n"
+
+#: src/main.c:791
+msgid ""
+"  -E,  --adjust-extension          save HTML/CSS documents with proper "
+"extensions\n"
+msgstr ""
+"  -E,  --adjust-extension          HTML/CSS 문서를 적절한 확장자로 저장\n"
+
+#: src/main.c:793
+msgid ""
+"       --ignore-length             ignore 'Content-Length' header field\n"
+msgstr "       --ignore-length             'Content-Length' 헤더 필드 무시\n"
+
+#: src/main.c:795
+msgid "       --header=STRING             insert STRING among the headers\n"
+msgstr "       --header=<문자열>             헤더에 <문자열>을 넣습니다\n"
+
+#: src/main.c:798
+msgid ""
+"       --compression=TYPE          choose compression, one of auto, gzip and "
+"none. (default: none)\n"
+msgstr ""
+"       --compression=<형식>          auto, gzip, none 중 압축 방식 선택. (기"
+"본값: none)\n"
+
+#: src/main.c:801
+msgid ""
+"       --max-redirect              maximum redirections allowed per page\n"
+msgstr ""
+"       --max-redirect              페이지당 최대 경로 재이동 허용 횟수\n"
+
+#: src/main.c:803
+msgid "       --proxy-user=USER           set USER as proxy username\n"
+msgstr ""
+"       --proxy-user=<사용자>           프록시 사용자 이름을 <사용자>로 지정\n"
+
+#: src/main.c:805
+msgid "       --proxy-password=PASS       set PASS as proxy password\n"
+msgstr "       --proxy-password=<암호>       프록시 암호를 <암호>로 지정\n"
+
+#: src/main.c:807
+msgid ""
+"       --referer=URL               include 'Referer: URL' header in HTTP "
+"request\n"
+msgstr ""
+"       --referer=<URL>               HTTP요청에 'Referer: URL' 헤더 추가\n"
+
+#: src/main.c:809
+msgid "       --save-headers              save the HTTP headers to file\n"
+msgstr "       --save-headers              HTTP 헤더를 파일로 저장\n"
+
+#: src/main.c:811
+msgid ""
+"  -U,  --user-agent=AGENT          identify as AGENT instead of Wget/"
+"VERSION\n"
+msgstr ""
+"  -U,  --user-agent=<에이전트>          wget/<버전> 대신 <에이전트>로 클라이"
+"언트 식별\n"
+
+#: src/main.c:813
+msgid ""
+"       --no-http-keep-alive        disable HTTP keep-alive (persistent "
+"connections)\n"
+msgstr ""
+"       --no-http-keep-alive        HTTP keep-alive (영구 연결)를 사용하지 않"
+"음\n"
+
+#: src/main.c:815
+msgid "       --no-cookies                don't use cookies\n"
+msgstr "       --no-cookies                쿠키 사용 안함\n"
+
+#: src/main.c:817
+msgid ""
+"       --load-cookies=FILE         load cookies from FILE before session\n"
+msgstr ""
+"       --load-cookies=<파일>         세션 수립 전 <파일>에서 쿠키 불러오기\n"
+
+#: src/main.c:819
+msgid "       --save-cookies=FILE         save cookies to FILE after session\n"
+msgstr ""
+"       --save-cookies=<파일>         세션 처리 후 쿠키를 <파일>에 저장\n"
+
+#: src/main.c:821
+msgid ""
+"       --keep-session-cookies      load and save session (non-permanent) "
+"cookies\n"
+msgstr ""
+"       --keep-session-cookies      (반영구) 세션 쿠키를 불러오고 저장\n"
+
+#: src/main.c:823
+msgid ""
+"       --post-data=STRING          use the POST method; send STRING as the "
+"data\n"
+msgstr ""
+"       --post-data=<문자열>          POST 요청 방식 사용. <문자열>을 데이터"
+"로 보냅니다.\n"
+
+#: src/main.c:825
+msgid ""
+"       --post-file=FILE            use the POST method; send contents of "
+"FILE\n"
+msgstr ""
+"       --post-file=<파일>            POST 요청 방식 사용. <파일>을 데이터로 "
+"보냅니다.\n"
+
+#: src/main.c:827
+msgid ""
+"       --method=HTTPMethod         use method \"HTTPMethod\" in the request\n"
+msgstr "       --method=<HTTP요청방식>         요청시 <HTTP요청방식> 사용\n"
+
+#: src/main.c:829
+msgid ""
+"       --body-data=STRING          send STRING as data. --method MUST be "
+"set\n"
+msgstr ""
+"       --body-data=<문자열>          <문자열>을 데이터로 보냅니다. --method"
+"를 반드시 지정해야 합니다.\n"
+
+#: src/main.c:831
+msgid ""
+"       --body-file=FILE            send contents of FILE. --method MUST be "
+"set\n"
+msgstr ""
+"       --body-file=<파일>            <파일> 컨텐츠를 보냅니다. --method를 반"
+"드시 지정해야 합니다.\n"
+
+#: src/main.c:833
+msgid ""
+"       --content-disposition       honor the Content-Disposition header "
+"when\n"
+"                                     choosing local file names "
+"(EXPERIMENTAL)\n"
+msgstr ""
+"       --content-disposition       로컬 파일 이름을 선택할 때 Content-"
+"Disposition\n"
+"                                     헤더 요청사항 이행 (시험 기능!!)\n"
+
+#: src/main.c:836
+msgid ""
+"       --content-on-error          output the received content on server "
+"errors\n"
+msgstr ""
+"       --content-on-error          서버 오류 발생시 전송 받은 컨텐트 출력\n"
+
+#: src/main.c:838
+msgid ""
+"       --auth-no-challenge         send Basic HTTP authentication "
+"information\n"
+"                                     without first waiting for the server's\n"
+"                                     challenge\n"
+msgstr ""
+"       --auth-no-challenge         서버의 첫 질문을 기다리지 않고 기본 HTTP "
+"인증\n"
+"                                     정보를 보냄\n"
+
+#: src/main.c:845
+msgid "HTTPS (SSL/TLS) options:\n"
+msgstr "HTTPS (SSL/TLS) 옵션:\n"
+
+#: src/main.c:847
+#, fuzzy
+#| msgid ""
+#| "       --secure-protocol=PR        choose secure protocol, one of auto, "
+#| "SSLv2,\n"
+#| "                                     SSLv3, TLSv1, TLSv1_1, TLSv1_2 and "
+#| "PFS\n"
+msgid ""
+"       --secure-protocol=PR        choose secure protocol, one of auto, "
+"SSLv2,\n"
+"                                     SSLv3, TLSv1, TLSv1_1, TLSv1_2, TLSv1_3 "
+"and PFS\n"
+msgstr ""
+"       --secure-protocol=<프로토콜>        auto, SSLv2, SSLv3, TLSv1, "
+"TLSv1_1,\n"
+"                                      TLSv1_2, PFS 중 보안 프로토콜 하나 선"
+"택\n"
+
+#: src/main.c:850
+msgid "       --https-only                only follow secure HTTPS links\n"
+msgstr "       --https-only                안전한 HTTPS 링크만 따라감\n"
+
+#: src/main.c:852
+msgid ""
+"       --no-check-certificate      don't validate the server's certificate\n"
+msgstr "       --no-check-certificate      서버 인증서 검증하지 않음\n"
+
+#: src/main.c:854
+msgid "       --certificate=FILE          client certificate file\n"
+msgstr "       --certificate=<파일>          클라이언트 인증 파일\n"
+
+#: src/main.c:856
+msgid ""
+"       --certificate-type=TYPE     client certificate type, PEM or DER\n"
+msgstr ""
+"       --certificate-type=<형식>     클라이언트 인증서 형식: PEM, DER\n"
+
+#: src/main.c:858
+msgid "       --private-key=FILE          private key file\n"
+msgstr "       --private-key=<파일>          개인 키 파일\n"
+
+#: src/main.c:860
+msgid "       --private-key-type=TYPE     private key type, PEM or DER\n"
+msgstr "       --private-key-type=<형식>     개인 키 형식: PEM, DER\n"
+
+#: src/main.c:862
+msgid "       --ca-certificate=FILE       file with the bundle of CAs\n"
+msgstr "       --ca-certificate=<파일>       CA 번들 파일\n"
+
+#: src/main.c:864
+msgid ""
+"       --ca-directory=DIR          directory where hash list of CAs is "
+"stored\n"
+msgstr "       --ca-directory=<디렉터리>          CA 해시 목록 저장 디렉터리\n"
+
+#: src/main.c:866
+msgid "       --crl-file=FILE             file with bundle of CRLs\n"
+msgstr "       --crl-file=<파일>             CRL 번들 파일\n"
+
+#: src/main.c:868
+msgid ""
+"       --pinnedpubkey=FILE/HASHES  Public key (PEM/DER) file, or any number\n"
+"                                   of base64 encoded sha256 hashes preceded "
+"by\n"
+"                                   'sha256//' and separated by ';', to "
+"verify\n"
+"                                   peer against\n"
+msgstr ""
+"       --pinnedpubkey=<파일>/<해시>  피어 검증에 활용할 공용 키(PEM/DER) 파"
+"일,\n"
+"                                   또는 'sha256//'로 시작하여 ';'로 구분하는 "
+"base64로 인코딩한\n"
+"                                   sha256 해시값\n"
+
+#: src/main.c:874
+msgid ""
+"       --random-file=FILE          file with random data for seeding the SSL "
+"PRNG\n"
+msgstr ""
+"       --random-file=<파일>          SSL PRNG 시딩에 필요한 임의 데이터 파"
+"일\n"
+
+#: src/main.c:878
+msgid ""
+"       --egd-file=FILE             file naming the EGD socket with random "
+"data\n"
+msgstr ""
+"       --egd-file=<파일>             임의 데이터로 채운 EGD 소켓 명명 파일\n"
+
+#: src/main.c:882
+msgid ""
+"       --ciphers=STR           Set the priority string (GnuTLS) or cipher "
+"list string (OpenSSL) directly.\n"
+"                                   Use with care. This option overrides --"
+"secure-protocol.\n"
+"                                   The format and syntax of this string "
+"depend on the specific SSL/TLS engine.\n"
+msgstr ""
+"       --ciphers=<STR>           문자열(GnuTLS) 또는 암호화 목록 문자열"
+"(OpenSSL) 우선 순위를 직접 지정합니다.\n"
+"                                   유의하여 사용하십시오. 이 옵션은 --secure-"
+"protocol 지정값을 덮어씁니다.\n"
+"                                   이 문자열의 형식과 문법은 지정 SSL/TLS 엔"
+"진에 따라 다릅니다.\n"
+
+#: src/main.c:889
+msgid "HSTS options:\n"
+msgstr "HSTS 옵션:\n"
+
+#: src/main.c:891
+msgid "       --no-hsts                   disable HSTS\n"
+msgstr "       --no-hsts                   HSTS 비활성\n"
+
+#: src/main.c:893
+msgid ""
+"       --hsts-file                 path of HSTS database (will override "
+"default)\n"
+msgstr ""
+"       --hsts-file                 HSTS 데이터베이스 경로(기본값 덮어쓰기 적"
+"용)\n"
+
+#: src/main.c:898
+msgid "FTP options:\n"
+msgstr "FTP 옵션:\n"
+
+#: src/main.c:901
+msgid ""
+"       --ftp-stmlf                 use Stream_LF format for all binary FTP "
+"files\n"
+msgstr ""
+"       --ftp-stmlf                 모든 바이너리 FTP 파일에 대해 Stream_LF 형"
+"식 사용\n"
+
+#: src/main.c:904
+msgid "       --ftp-user=USER             set ftp user to USER\n"
+msgstr ""
+"       --ftp-user=<사용자>             ftp 사용자 이름을 <사용자>로 지정\n"
+
+#: src/main.c:906
+msgid "       --ftp-password=PASS         set ftp password to PASS\n"
+msgstr "       --ftp-password=<암호>         ftp 암호를 <암호>로 지정\n"
+
+#: src/main.c:908
+msgid "       --no-remove-listing         don't remove '.listing' files\n"
+msgstr "       --no-remove-listing         '.listing' 파일을 제거하지 않음\n"
+
+#: src/main.c:910
+msgid "       --no-glob                   turn off FTP file name globbing\n"
+msgstr ""
+"       --no-glob                   FTP 파일 이름 일괄 수집 동작을 끕니다\n"
+
+#: src/main.c:912
+msgid ""
+"       --no-passive-ftp            disable the \"passive\" transfer mode\n"
+msgstr "       --no-passive-ftp            \"수동\" 전송 모드를 끕니다\n"
+
+#: src/main.c:914
+msgid "       --preserve-permissions      preserve remote file permissions\n"
+msgstr ""
+"       --preserve-permissions      원격 파일 권한 설정을 그대로 둡니다\n"
+
+#: src/main.c:916
+msgid ""
+"       --retr-symlinks             when recursing, get linked-to files (not "
+"dir)\n"
+msgstr ""
+"       --retr-symlinks             재귀 요청시, linked-to 파일을 가져옵니다"
+"(디렉터리 아님)\n"
+
+#: src/main.c:921
+msgid "FTPS options:\n"
+msgstr "FTPS 옵션:\n"
+
+#: src/main.c:923
+msgid ""
+"       --ftps-implicit                 use implicit FTPS (default port is "
+"990)\n"
+msgstr ""
+"       --ftps-implicit                 암시 FTPS 프로토콜 사용 (기본 포트 "
+"990)\n"
+
+#: src/main.c:925
+msgid ""
+"       --ftps-resume-ssl               resume the SSL/TLS session started in "
+"the control connection when\n"
+"                                         opening a data connection\n"
+msgstr ""
+"       --ftps-resume-ssl               데이터 연결을 열 때 제어 연결에서 시작"
+"하는\n"
+"                                         SSL/TLS 세션을 재개합니다\n"
+
+#: src/main.c:928
+msgid ""
+"       --ftps-clear-data-connection    cipher the control channel only; all "
+"the data will be in plaintext\n"
+msgstr ""
+"       --ftps-clear-data-connection    제어 채널 암호화 전용. 모든 데이터는 "
+"평문입니다\n"
+
+#: src/main.c:930
+msgid ""
+"       --ftps-fallback-to-ftp          fall back to FTP if FTPS is not "
+"supported in the target server\n"
+msgstr ""
+"       --ftps-fallback-to-ftp          대상 서버에서 FTPS를 지원하지 않으면 "
+"FTP를 대신 사용\n"
+
+#: src/main.c:934
+msgid "WARC options:\n"
+msgstr "WARC 옵션:\n"
+
+#: src/main.c:936
+msgid ""
+"       --warc-file=FILENAME        save request/response data to a .warc.gz "
+"file\n"
+msgstr ""
+"       --warc-file=<파일 이름>        요청 응답 데이터를 .warc.gz 파일에 저장"
+"합니다\n"
+
+#: src/main.c:938
+msgid ""
+"       --warc-header=STRING        insert STRING into the warcinfo record\n"
+msgstr ""
+"       --warc-header=<문자열>        warcinfo 레코드에 <문자열>을 추가합니"
+"다\n"
+
+#: src/main.c:940
+msgid ""
+"       --warc-max-size=NUMBER      set maximum size of WARC files to NUMBER\n"
+msgstr ""
+"       --warc-max-size=<숫자>      WARC 파일의 최대 크기를 <숫자>로 지정합니"
+"다\n"
+
+#: src/main.c:942
+msgid "       --warc-cdx                  write CDX index files\n"
+msgstr "       --warc-cdx                  CDX 인덱스 파일을 기록합니다\n"
+
+#: src/main.c:944
+msgid ""
+"       --warc-dedup=FILENAME       do not store records listed in this CDX "
+"file\n"
+msgstr ""
+"       --warc-dedup=<파일 이름>       이 CDX 파일에 있는 레코드를 저장하지 않"
+"음\n"
+
+#: src/main.c:947
+msgid ""
+"       --no-warc-compression       do not compress WARC files with GZIP\n"
+msgstr ""
+"       --no-warc-compression       WARC 파일을 GZIP 형식으로 압축하지 않음\n"
+
+#: src/main.c:950
+msgid "       --no-warc-digests           do not calculate SHA1 digests\n"
+msgstr "       --no-warc-digests           SHA1 다이제스트를 처리하지 않음\n"
+
+#: src/main.c:952
+msgid ""
+"       --no-warc-keep-log          do not store the log file in a WARC "
+"record\n"
+msgstr ""
+"       --no-warc-keep-log          WARC 레코드에 로그 파일을 저장하지 않음\n"
+
+#: src/main.c:954
+msgid ""
+"       --warc-tempdir=DIRECTORY    location for temporary files created by "
+"the\n"
+"                                     WARC writer\n"
+msgstr ""
+"       --warc-tempdir=<디렉터리>    WARC 라이터가 만든 임시 파일의 위치\n"
+"\n"
+
+#: src/main.c:959
+msgid "Recursive download:\n"
+msgstr "재귀 다운로드:\n"
+
+#: src/main.c:961
+msgid "  -r,  --recursive                 specify recursive download\n"
+msgstr "  -r,  --recursive                 다운로드 재귀 동작을 지정합니다\n"
+
+#: src/main.c:963
+msgid ""
+"  -l,  --level=NUMBER              maximum recursion depth (inf or 0 for "
+"infinite)\n"
+msgstr "  -l,  --level=<숫자>              최대 재귀 깊이 (inf, 0은 무한)\n"
+
+#: src/main.c:965
+msgid ""
+"       --delete-after              delete files locally after downloading "
+"them\n"
+msgstr ""
+"       --delete-after              파일을 다운로드 한 후 자체적으로 삭제합니"
+"다\n"
+
+#: src/main.c:967
+msgid ""
+"  -k,  --convert-links             make links in downloaded HTML or CSS "
+"point to\n"
+"                                     local files\n"
+msgstr ""
+"  -k,  --convert-links             다운로드한 HTML, CSS 파일을 로컬 파일로 가"
+"리키는\n"
+"                                     링크를 만듭니다\n"
+
+#: src/main.c:970
+msgid ""
+"       --convert-file-only         convert the file part of the URLs only "
+"(usually known as the basename)\n"
+msgstr ""
+"       --convert-file-only         URL을 파일 부분만 (보통 basename 이라고 "
+"함) 남도록 변환합니다\n"
+
+#: src/main.c:972
+msgid ""
+"       --backups=N                 before writing file X, rotate up to N "
+"backup files\n"
+msgstr ""
+"       --backups=<숫자>                 X 파일에 쓰기 전, <숫자>번 만큼의 백"
+"업 파일을 만듭니다\n"
+
+#: src/main.c:976
+msgid ""
+"  -K,  --backup-converted          before converting file X, back up as "
+"X_orig\n"
+msgstr ""
+"  -K,  --backup-converted          X 파일 변환 전, X_orig 처럼 백업합니다\n"
+
+#: src/main.c:979
+msgid ""
+"  -K,  --backup-converted          before converting file X, back up as X."
+"orig\n"
+msgstr ""
+"  -K,  --backup-converted          X 파일 변환 전, X.orig 처럼 백업합니다\n"
+
+#: src/main.c:982
+msgid ""
+"  -m,  --mirror                    shortcut for -N -r -l inf --no-remove-"
+"listing\n"
+msgstr ""
+"  -m,  --mirror                    -N -r -l inf --no-remove-listing 단축 옵"
+"션\n"
+
+#: src/main.c:984
+msgid ""
+"  -p,  --page-requisites           get all images, etc. needed to display "
+"HTML page\n"
+msgstr ""
+"  -p,  --page-requisites           HTML 페이지 표시에 필요한 모든 그림 등을 "
+"가져옵니다\n"
+
+#: src/main.c:986
+msgid ""
+"       --strict-comments           turn on strict (SGML) handling of HTML "
+"comments\n"
+msgstr ""
+"       --strict-comments           HTML 주석을 처리할 엄격한 (SGML) 처리 기능"
+"을 켭니다\n"
+
+#: src/main.c:990
+msgid "Recursive accept/reject:\n"
+msgstr "재귀 허용/거절:\n"
+
+#: src/main.c:992
+msgid ""
+"  -A,  --accept=LIST               comma-separated list of accepted "
+"extensions\n"
+msgstr "  -A,  --accept=<목록>               쉼표로 구분한 허용 확장자 목록\n"
+
+#: src/main.c:994
+msgid ""
+"  -R,  --reject=LIST               comma-separated list of rejected "
+"extensions\n"
+msgstr "  -R,  --reject=<목록>               쉼표로 구분한 거절 확장자 목록\n"
+
+#: src/main.c:996
+msgid "       --accept-regex=REGEX        regex matching accepted URLs\n"
+msgstr "       --accept-regex=<정규식>        허용 URL에 일치하는 정규식\n"
+
+#: src/main.c:998
+msgid "       --reject-regex=REGEX        regex matching rejected URLs\n"
+msgstr "       --reject-regex=<정규식>        거절 URL에 일치하는 정규식\n"
+
+#: src/main.c:1001
+msgid "       --regex-type=TYPE           regex type (posix|pcre)\n"
+msgstr "       --regex-type=<형식>           정규식 형식 (posix|pcre)\n"
+
+#: src/main.c:1004
+msgid "       --regex-type=TYPE           regex type (posix)\n"
+msgstr "       --regex-type=<형식>           정규식 형식 (posix)\n"
+
+#: src/main.c:1007
+msgid ""
+"  -D,  --domains=LIST              comma-separated list of accepted domains\n"
+msgstr "  -D,  --domains=<목록>              쉼표로 구분한 허용 도메인 목록\n"
+
+#: src/main.c:1009
+msgid ""
+"       --exclude-domains=LIST      comma-separated list of rejected domains\n"
+msgstr "       --exclude-domains=<목록>      쉼표로 구분한 거절 도메인 목록\n"
+
+#: src/main.c:1011
+msgid ""
+"       --follow-ftp                follow FTP links from HTML documents\n"
+msgstr "       --follow-ftp                HTML 문서의 FTP 링크를 따라감\n"
+
+#: src/main.c:1013
+msgid ""
+"       --follow-tags=LIST          comma-separated list of followed HTML "
+"tags\n"
+msgstr ""
+"       --follow-tags=<목록>          쉼표로 구분한 허용할 HTML 태그 목록\n"
+
+#: src/main.c:1015
+msgid ""
+"       --ignore-tags=LIST          comma-separated list of ignored HTML "
+"tags\n"
+msgstr ""
+"       --ignore-tags=<목록>          쉼표로 구분한 무시할 HTML 태그 목록\n"
+
+#: src/main.c:1017
+msgid "  -H,  --span-hosts                go to foreign hosts when recursive\n"
+msgstr "  -H,  --span-hosts                재귀 추적시 외부 호스트로 이동\n"
+
+#: src/main.c:1019
+msgid "  -L,  --relative                  follow relative links only\n"
+msgstr "  -L,  --relative                  상대 경로 링크만 따름\n"
+
+#: src/main.c:1021
+msgid "  -I,  --include-directories=LIST  list of allowed directories\n"
+msgstr "  -I,  --include-directories=<목록>  허용 디렉터리 목록\n"
+
+#: src/main.c:1023
+msgid ""
+"       --trust-server-names        use the name specified by the "
+"redirection\n"
+"                                     URL's last component\n"
+msgstr ""
+"       --trust-server-names        재이동 URL의 최종 요소로 지정한 이름을 활"
+"용합니다\n"
+
+#: src/main.c:1026
+msgid "  -X,  --exclude-directories=LIST  list of excluded directories\n"
+msgstr "  -X,  --exclude-directories=<목록>  거절 디렉터리 목록\n"
+
+#: src/main.c:1028
+msgid ""
+"  -np, --no-parent                 don't ascend to the parent directory\n"
+msgstr ""
+"  -np, --no-parent                 상위 디렉터리로 거슬러 올라가지 않습니다\n"
+
+#: src/main.c:1031
+msgid ""
+"Email bug reports, questions, discussions to <bug-wget@gnu.org>\n"
+"and/or open issues at https://savannah.gnu.org/bugs/?"
+"func=additem&group=wget.\n"
+msgstr ""
+"버그 보고, 질문, 토론 내용 전자메일을 <bug-wget@gnu.org>로 보내거나\n"
+"https://savannah.gnu.org/bugs/?func=additem&group=wget에 문제 보고를 올려주십"
+"시오.\n"
+
+#: src/main.c:1037
+#, c-format
+msgid "GNU Wget %s, a non-interactive network retriever.\n"
+msgstr "GNU Wget %s, 비대화식 네트워크 전송 프로그램.\n"
+
+#: src/main.c:1080
+#, c-format
+msgid "Password for user %s: "
+msgstr "%s 사용자 암호: "
+
+#: src/main.c:1082
+#, c-format
+msgid "Password: "
+msgstr "암호: "
+
+#: src/main.c:1106
+#, c-format
+msgid "Cannot create pipe\n"
+msgstr "파이프를 만들 수 없습니다\n"
+
+#: src/main.c:1114
+#, c-format
+msgid "Error initializing spawn file actions for use-askpass: %d\n"
+msgstr "use-askpass 파일 배포 동작 초기화 오류: %d\n"
+
+#: src/main.c:1123
+#, c-format
+msgid "Error setting spawn file actions for use-askpass: %d\n"
+msgstr "use-askpass 파일 배포 동작 설정 오류: %d\n"
+
+#: src/main.c:1147
+#, c-format
+msgid "Error reading response from command \"%s %s\": %s\n"
+msgstr "\"%s %s\" 명령 응답 읽기 오류: %s\n"
+
+#: src/main.c:1170
+#, c-format
+msgid "Username for '%s%s': "
+msgstr "'%s%s' 사용자 이름: "
+
+#: src/main.c:1180
+#, c-format
+msgid "Password for '%s%s@%s': "
+msgstr "'%s%s@%s' 암호:"
+
+#: src/main.c:1252
+msgid "Wgetrc: "
+msgstr "wgetrc: "
+
+#: src/main.c:1253
+msgid "Locale: "
+msgstr "로캘:"
+
+#: src/main.c:1254
+msgid "Compile: "
+msgstr "컴파일:"
+
+#: src/main.c:1255
+msgid "Link: "
+msgstr "링크:"
+
+#: src/main.c:1259
+#, c-format
+msgid ""
+"GNU Wget %s built on %s.\n"
+"\n"
+msgstr ""
+"GNU Wget %s. %s에 빌드함.\n"
+"\n"
+
+#: src/main.c:1292
+#, c-format
+msgid "    %s (env)\n"
+msgstr "    %s (env)\n"
+
+#: src/main.c:1299
+#, c-format
+msgid "    %s (user)\n"
+msgstr "    %s (user)\n"
+
+#: src/main.c:1304
+#, c-format
+msgid "    %s (system)\n"
+msgstr "    %s (system)\n"
+
+#. TRANSLATORS: When available, an actual copyright character
+#. (circle-c) should be used in preference to "(C)".
+#: src/main.c:1332
+#, c-format
+msgid "Copyright (C) %s Free Software Foundation, Inc.\n"
+msgstr "Copyright (C) %s Free Software Foundation, Inc.\n"
+
+#: src/main.c:1335
+msgid ""
+"License GPLv3+: GNU GPL version 3 or later\n"
+"<http://www.gnu.org/licenses/gpl.html>.\n"
+"This is free software: you are free to change and redistribute it.\n"
+"There is NO WARRANTY, to the extent permitted by law.\n"
+msgstr ""
+"라이선스 GPLv3+: GNU GPL 버전 3 이상\n"
+"<http://www.gnu.org/licenses/gpl.html>.\n"
+"이 프로그램은 자유 소프트웨어입니다: 자유롭게 바꾸고 재배포할 수 있습니다.\n"
+"법률이 허용하는 모든 범위내의 보증은 없습니다.\n"
+
+#. TRANSLATORS: When available, please use the proper diacritics for
+#. names such as this one. See en_US.po for reference.
+#: src/main.c:1343
+msgid ""
+"\n"
+"Originally written by Hrvoje Niksic <hniksic@xemacs.org>.\n"
+msgstr ""
+"\n"
+"초기 작성자: Hrvoje Niksic <hniksic@xemacs.org>.\n"
+
+#: src/main.c:1346
+msgid "Please send bug reports and questions to <bug-wget@gnu.org>.\n"
+msgstr "버그 보고 및 질문은 <bug-wget@gnu.org>로 보내십시오.\n"
+
+#: src/main.c:1399
+#, c-format
+msgid "Memory allocation problem\n"
+msgstr "메모리 할당 문제\n"
+
+#: src/main.c:1450
+#, c-format
+msgid "Exiting due to error in %s\n"
+msgstr "%s의 오류로 나갑니다\n"
+
+#: src/main.c:1480 src/main.c:1551 src/main.c:1793
+#, c-format
+msgid "Try `%s --help' for more options.\n"
+msgstr "자세한 옵션은 `%s --help'를 입력하십시오.\n"
+
+#: src/main.c:1547
+#, c-format
+msgid "%s: illegal option -- `-n%c'\n"
+msgstr "%s: 잘못된 옵션 -- `-n%c'\n"
+
+#: src/main.c:1593
+#, c-format
+msgid "Debugging support not compiled in. Ignoring --debug flag.\n"
+msgstr "디버깅 기능을 컴파일하지 않았습니다. --debug 플래그는 무시합니다.\n"
+
+#: src/main.c:1606
+#, c-format
+msgid ""
+"Both --no-clobber and --convert-links were specified, only --convert-links "
+"will be used.\n"
+msgstr ""
+"--no-clobber와 --convert-links를 지정했습니다만, --convert-links만 활용합니"
+"다.\n"
+
+#: src/main.c:1608
+#, c-format
+msgid ""
+"Both --no-clobber and --convert-file-only were specified, only --convert-"
+"file-only will be used.\n"
+msgstr ""
+"--no-clobber와 --convert-file-only를 지정했습니다만, --convert-file-only만 활"
+"용합니다.\n"
+
+#: src/main.c:1641
+#, c-format
+msgid "Can't be verbose and quiet at the same time.\n"
+msgstr "자세한 출력 기능과 출력 끄기 가능을 동시에 지정할 수 없습니다.\n"
+
+#: src/main.c:1647
+#, c-format
+msgid "Can't timestamp and not clobber old files at the same time.\n"
+msgstr "타임스탬핑 동작과 오래된 파일 처리를 동시에 수행할 수 없습니다.\n"
+
+#: src/main.c:1656
+#, c-format
+msgid "Cannot specify both --inet4-only and --inet6-only.\n"
+msgstr "--inet4-only와 --inet6-only를 동시에 지정할 수 없습니다.\n"
+
+#: src/main.c:1666
+msgid ""
+"Cannot specify both -k or --convert-file-only and -O if multiple URLs are "
+"given, or in combination\n"
+"with -p or -r. See the manual for details.\n"
+"\n"
+msgstr ""
+"다중 URL을 지정했을 경우 -k 또는 --convert-file-only와 -O를 혼용할 수 없고 -"
+"p 또는 -r을\n"
+"혼용할 수 없습니다. 자세한 내용은 설명서를 보십시오.\n"
+"\n"
+
+#: src/main.c:1675
+msgid ""
+"WARNING: combining -O with -r or -p will mean that all downloaded content\n"
+"will be placed in the single file you specified.\n"
+"\n"
+msgstr ""
+"경고: -O 옵션과 -r 또는 -p 옵션의 혼용은 모든 다운로드 내용을 지정한 단일 파"
+"일로\n"
+"모두 저장하겠다는 의미입니다.\n"
+"\n"
+
+#: src/main.c:1681
+msgid ""
+"WARNING: timestamping does nothing in combination with -O. See the manual\n"
+"for details.\n"
+"\n"
+msgstr ""
+"경고: 타임스탬핑은 -O 옵션과 동작하지 않습니다. 자세한 내용은 설명서를 보십시"
+"오.\n"
+"\n"
+
+#: src/main.c:1701
+#, c-format
+msgid ""
+"WARC output does not work with --no-clobber, --no-clobber will be disabled.\n"
+msgstr ""
+"WARC 출력은 --no-clobber 옵션과 동작하지 않으므로, --no-clobber를 무시합니"
+"다.\n"
+
+#: src/main.c:1708
+#, c-format
+msgid ""
+"WARC output does not work with timestamping, timestamping will be disabled.\n"
+msgstr ""
+"WARC 출력은 타임스탬핑 기능과 동작하지 않으므로, 타임스탬핑 지정 옵션은 무시"
+"합니다.\n"
+
+#: src/main.c:1715
+#, c-format
+msgid "WARC output does not work with --spider.\n"
+msgstr "WARC 출력은 --spider 옵션과 동작하지 않습니다.\n"
+
+#: src/main.c:1721
+#, c-format
+msgid ""
+"WARC output does not work with --continue or --start-pos, they will be "
+"disabled.\n"
+msgstr ""
+"WARC 출력은 --continue 또는 --start-pos 옵션과 동작하지 않습니다. 이 옵션은 "
+"무시합니다.\n"
+
+#: src/main.c:1729
+#, c-format
+msgid ""
+"Digests are disabled; WARC deduplication will not find duplicate records.\n"
+msgstr ""
+"다이제스트를 사용하지 않습니다. WARC 중복 제거 과정에서 중복 레코드를 찾지 않"
+"습니다.\n"
+
+#: src/main.c:1750
+#, c-format
+msgid ""
+"Compression does not work with --continue or --start-pos, they will be "
+"disabled.\n"
+msgstr ""
+"압축 옵션은 --continue 또는 --start-pos와 동작하지 않습니다. 이 옵션은 무시합"
+"니다.\n"
+
+#: src/main.c:1761
+#, c-format
+msgid "Cannot specify both --ask-password and --password.\n"
+msgstr "--ask-password와 --password를 동시에 지정할 수 없습니다.\n"
+
+#: src/main.c:1769
+#, c-format
+msgid ""
+"WARNING: No username set with --ask-password. This is usually not what you "
+"want.\n"
+msgstr ""
+"경고: --ask-password로 사용자 이름을 설정하지 않았습니다. 보통 원하는 방식은 "
+"아닙니다.\n"
+
+#: src/main.c:1775
+#, c-format
+msgid ""
+"Specifying both --start-pos and --continue is not recommended; --continue "
+"will be disabled.\n"
+msgstr ""
+"--start-pos와 --continue의 동시 지정을 추천하지 않습니다. --continue 옵션은 "
+"무시합니다.\n"
+
+#: src/main.c:1788
+#, c-format
+msgid "%s: missing URL\n"
+msgstr "%s: URL 빠짐\n"
+
+#: src/main.c:1836
+#, c-format
+msgid "You cannot specify both --post-data and --post-file.\n"
+msgstr "--post-data와 --post-file을 동시에 지정할 수 없습니다.\n"
+
+#: src/main.c:1841
+#, c-format
+msgid ""
+"You cannot use --post-data or --post-file along with --method. --method "
+"expects data through --body-data and --body-file options\n"
+msgstr ""
+"--post-data 또는 --post-file을 --method와 활용할 수 없습니다. --method 옵션"
+"은 --body-data와 --body-file 옵션의 데이터가 필요합니다\n"
+
+#: src/main.c:1850
+#, c-format
+msgid ""
+"You must specify a method through --method=HTTPMethod to use with --body-"
+"data or --body-file.\n"
+msgstr ""
+"--body-data 또는 --body-file 옵션을 활용하려면 --method=<HTTP요청방식>으로 "
+"HTTP 요청 방식을 지정해야합니다.\n"
+
+#: src/main.c:1856
+#, c-format
+msgid "You cannot specify both --body-data and --body-file.\n"
+msgstr "--body-data와 --body-file을 동시에 지정할 수 없습니다.\n"
+
+#: src/main.c:1908
+#, c-format
+msgid "This version does not have support for IRIs\n"
+msgstr "이 버전에서는 IRI를 지원하지 않습니다\n"
+
+#: src/main.c:2008
+#, c-format
+msgid ""
+"-k or -r can be used together with -O only if outputting to a regular file.\n"
+msgstr "-k 또는 -r은 일반 파일 출력시 -O 옵션만 병용할 수 있습니다.\n"
+
+#: src/main.c:2014
+#, c-format
+msgid ""
+"--convert-links or --convert-file-only can be used together only if "
+"outputting to a regular file.\n"
+msgstr ""
+"--convert-links 또는 --convert-file-only는 일반 파일 출력시에만 병용할 수 있"
+"습니다.\n"
+
+#: src/main.c:2025
+#, c-format
+msgid "Failed to init libcares\n"
+msgstr "libcares 초기화 실패\n"
+
+#: src/main.c:2031
+#, c-format
+msgid "Failed to init c-ares channel\n"
+msgstr "c-ares 채널 초기화 실패\n"
+
+#: src/main.c:2054
+#, c-format
+msgid "Failed to parse IP address '%s'\n"
+msgstr "'%s' IP 주소 해석 실패\n"
+
+#: src/main.c:2065
+#, c-format
+msgid "Failed to set DNS server(s) '%s' (%d)\n"
+msgstr "'%s' DNS 서버 지정 실패 (%d)\n"
+
+#: src/main.c:2202
+#, c-format
+msgid "No URLs found in %s.\n"
+msgstr "%s에 URL이 없습니다.\n"
+
+#: src/main.c:2218
+#, c-format
+msgid "Unable to parse metalink file %s.\n"
+msgstr "%s 메타링크 파일을 해석할 수 없습니다.\n"
+
+#: src/main.c:2248 src/metalink.c:337
+#, c-format
+msgid "Could not download all resources from %s.\n"
+msgstr "%s에서 모든 리소스를 다운로드할 수 없습니다.\n"
+
+#: src/main.c:2275
+#, c-format
+msgid ""
+"FINISHED --%s--\n"
+"Total wall clock time: %s\n"
+"Downloaded: %d files, %s in %s (%s)\n"
+msgstr ""
+"완료 --%1$s--\n"
+"총 wall 클록 시간: %2$s\n"
+"다운로드: %3$d 파일, %5$s중 %4$s (%6$s)\n"
+
+#: src/main.c:2289
+#, c-format
+msgid "Download quota of %s EXCEEDED!\n"
+msgstr "%s 다운로드 제한양을 초과했습니다!\n"
+
+#: src/metalink.c:93
+msgid "-O not supported for metalink download. Ignoring.\n"
+msgstr "메타링크 다운로드시 -O 옵션은 지원하지 않습니다. 무시함.\n"
+
+#: src/metalink.c:172
+#, c-format
+msgid "[--trust-server-names %s, --directory-prefix=%s]\n"
+msgstr "[--trust-server-names %s, --directory-prefix=%s]\n"
+
+#: src/metalink.c:176
+#, c-format
+msgid "Planned metalink file: %s\n"
+msgstr "계획 메타링크 파일: %s\n"
+
+#: src/metalink.c:179
+#, c-format
+msgid "Secured metalink file: %s\n"
+msgstr "보안 메타링크 파일: %s\n"
+
+#: src/metalink.c:184
+msgid "Rejecting metalink file. Unsafe name.\n"
+msgstr "메타링크 파일을 거절합니다. 안전하지 않은 명칭입니다.\n"
+
+#: src/metalink.c:238
+#, c-format
+msgid "Processing metaurl %s...\n"
+msgstr "%s 메타 URL 처리 중...\n"
+
+#: src/metalink.c:251
+#, c-format
+msgid "Rejecting metaurl file %s. Unsafe name.\n"
+msgstr "%s 메타 URL 파일을 거절합니다. 안전하지 않은 명칭입니다.\n"
+
+#: src/metalink.c:268
+#, c-format
+msgid "Failed to download %s. Skipping metaurl.\n"
+msgstr "%s 다운로드 실패. 메타 URL 건너뜀.\n"
+
+#: src/metalink.c:285
+#, c-format
+msgid "Unable to parse metaurl file %s.\n"
+msgstr "%s 메타 URL 파일을 해석할 수 없습니다.\n"
+
+#: src/metalink.c:354
+msgid "Metaurls processing returned with error.\n"
+msgstr "메타 URL 처리 중 오류를 반환했습니다.\n"
+
+#: src/metalink.c:386
+#, c-format
+msgid "Resource type %s not supported, ignoring...\n"
+msgstr "%s 자원 형식을 지원하지 않습니다. 무시함...\n"
+
+#: src/metalink.c:509
+msgid "Could not open downloaded file.\n"
+msgstr "다운로드한 파일을 열 수 없습니다.\n"
+
+#: src/metalink.c:514
+#, c-format
+msgid "Computing size for %s\n"
+msgstr "%s 크기 계산 중\n"
+
+#: src/metalink.c:519
+msgid "File size not declared. Skipping check.\n"
+msgstr "파일 크기를 알 수 없습니다. 검사 건너뜀.\n"
+
+#: src/metalink.c:527
+msgid "Could not get downloaded file's size.\n"
+msgstr "다운로드한 파일 크기를 알 수 없습니다.\n"
+
+#: src/metalink.c:539
+#, c-format
+msgid "Size mismatch for file %s.\n"
+msgstr "%s 파일 크기가 일치하지 않습니다.\n"
+
+#: src/metalink.c:547
+msgid "Size matches.\n"
+msgstr "크기가 일치합니다.\n"
+
+#: src/metalink.c:600
+#, c-format
+msgid "Computing checksum for %s\n"
+msgstr "%s 체크섬 확인 중\n"
+
+#: src/metalink.c:678
+msgid "Checksum matches.\n"
+msgstr "체크섬 일치합니다.\n"
+
+#: src/metalink.c:683
+#, c-format
+msgid "Checksum mismatch for file %s.\n"
+msgstr "%s 파일 체크섬이 일치하지 않습니다.\n"
+
+#: src/metalink.c:722
+msgid "Could not open downloaded file for signature verification.\n"
+msgstr "서명을 검증할 다운로드한 파일을 열 수 없습니다.\n"
+
+#: src/metalink.c:780
+#, c-format
+msgid "GPGME data_new_from_mem: %s\n"
+msgstr "GPGME data_new_from_mem: %s\n"
+
+#: src/metalink.c:792
+#, c-format
+msgid "GPGME op_verify: %s\n"
+msgstr "GPGME op_verify: %s\n"
+
+#: src/metalink.c:805
+msgid "GPGME op_verify_result: NULL\n"
+msgstr "GPGME op_verify_result: NULL\n"
+
+#: src/metalink.c:821
+msgid "Signature validation succeeded.\n"
+msgstr "서명 검증에 성공했습니다.\n"
+
+#: src/metalink.c:829
+msgid "Invalid signature. Rejecting resource.\n"
+msgstr "부적절한 서명입니다. 리소스 거절함.\n"
+
+#: src/metalink.c:838
+msgid "Data matches signature, but signature is not trusted.\n"
+msgstr "데이터와 서명이 일치하나, 서명을 신뢰할 수 없습니다.\n"
+
+#: src/metalink.c:865
+msgid "No checksums found.\n"
+msgstr "체크섬 없음.\n"
+
+#: src/metalink.c:871
+#, c-format
+msgid "Failed to download %s. Skipping resource.\n"
+msgstr "%s 다운로드 실패. 리소스 건너 뜀.\n"
+
+#: src/metalink.c:878
+#, c-format
+msgid "File %s retrieved but size does not match. \n"
+msgstr "%s 파일을 가져왔지만 크기가 일치하지 않습니다. \n"
+
+#: src/metalink.c:885
+#, c-format
+msgid "File %s retrieved but checksum does not match. \n"
+msgstr "%s 파일을 가져왔지만 체크섬이 일치하지 않습니다. \n"
+
+#: src/metalink.c:894
+#, c-format
+msgid "File %s retrieved but signature does not match. \n"
+msgstr "%s 파일을 가져왔지만 서명이 일치하지 않습니다. \n"
+
+#: src/metalink.c:1113
+#, c-format
+msgid "Renaming %s to %s.\n"
+msgstr "이름 바꾸기: %s -> %s.\n"
+
+#: src/mswindows.c:96
+#, c-format
+msgid "Continuing in background.\n"
+msgstr "백그라운드에서 계속합니다.\n"
+
+#: src/mswindows.c:289
+#, c-format
+msgid "Continuing in background, pid %lu.\n"
+msgstr "백그라운드에서 PID %lu(으)로 계속합니다.\n"
+
+#: src/mswindows.c:291 src/utils.c:502
+#, c-format
+msgid "Output will be written to %s.\n"
+msgstr "출력은 %s에 기록합니다.\n"
+
+#: src/mswindows.c:323
+#, c-format
+msgid "fake_fork_child() failed\n"
+msgstr "fake_fork_child() 실패\n"
+
+#: src/mswindows.c:331
+#, c-format
+msgid "fake_fork() failed\n"
+msgstr "fake_fork() 실패\n"
+
+#: src/mswindows.c:460 src/mswindows.c:467
+#, c-format
+msgid "%s: Couldn't find usable socket driver.\n"
+msgstr "%s: 가용 소켓 드라이버를 찾을 수 없습니다.\n"
+
+#: src/mswindows.c:647
+#, c-format
+msgid "ioctl() failed.  The socket could not be set as blocking.\n"
+msgstr "ioctl() 처리 실패.  소켓을 블로킹 상태로 설정할 수 없습니다.\n"
+
+#: src/netrc.c:373
+#, c-format
+msgid "%s: %s:%d: warning: %s token appears before any machine name\n"
+msgstr "%s: %s:%d: 경고: %s 토큰이 머신 이름 전에 나타났습니다\n"
+
+#: src/netrc.c:414
+#, c-format
+msgid "%s: %s:%d: unknown token \"%s\"\n"
+msgstr "%s: %s:%d: 알 수 없는 \"%s\" 토큰\n"
+
+#: src/netrc.c:553
+#, c-format
+msgid "Usage: %s NETRC [HOSTNAME]\n"
+msgstr "사용법: %s NETRC [<호스트이름>]\n"
+
+#: src/netrc.c:571
+#, c-format
+msgid "%s: cannot stat %s: %s\n"
+msgstr "%s: %s 상태 정보 확인 불가: %s\n"
+
+#: src/openssl.c:128
+msgid "WARNING: using a weak random seed.\n"
+msgstr "경고: 취약한 임의 시드를 사용합니다.\n"
+
+#: src/openssl.c:208
+msgid "Could not seed PRNG; consider using --random-file.\n"
+msgstr "PRNG를 시딩할 수 없습니다. --random-file 옵션 사용을 고려하십시오.\n"
+
+#: src/openssl.c:271
+msgid "Your OpenSSL version is too old to support TLS 1.3\n"
+msgstr "TLSv1.3을 지원하기에는 OpenSSL 버전이 너무 오래되었습니다.\n"
+
+#: src/openssl.c:277
+msgid "Your OpenSSL version is too old to support TLSv1.1\n"
+msgstr "TLSv1.1을 지원하기에는 OpenSSL 버전이 너무 오래되었습니다.\n"
+
+#: src/openssl.c:281
+msgid "Your OpenSSL version is too old to support TLSv1.2\n"
+msgstr "TLSv1.2를 지원하기에는 OpenSSL 버전이 너무 오래되었습니다.\n"
+
+#: src/openssl.c:287
+#, c-format
+msgid "OpenSSL: unimplemented 'secure-protocol' option value %d\n"
+msgstr "OpenSSL: 구현하지 않은 'secure-protocol' 옵션 값 %d\n"
+
+#: src/openssl.c:333
+#, c-format
+msgid "OpenSSL: Invalid cipher list: %s\n"
+msgstr "OpenSSL: 부적절한 암호화 목록: %s\n"
+
+#: src/openssl.c:360
+msgid "OpenSSL: Failed set trust to partial chain\n"
+msgstr "OpenSSL: 일부 체인으로의 신뢰 설정 실패\n"
+
+#: src/openssl.c:366
+msgid "OpenSSL: Failed to allocate verification param\n"
+msgstr "OpenSSL: 검증 매개변수 할당 실패\n"
+
+#: src/openssl.c:844
+msgid "WARNING: Could not seed PRNG. Consider using --random-file.\n"
+msgstr ""
+"경고: PRNG를 시딩할 수 없습니다. --random-file 옵션 사용을 고려하십시오.\n"
+
+#: src/openssl.c:1064
+#, c-format
+msgid "%s: cannot verify %s's certificate, issued by %s:\n"
+msgstr "%1$s: %3$s에서 발급한 %2$s 인증서를 검증할 수 없습니다:\n"
+
+#: src/openssl.c:1075
+msgid "  Unable to locally verify the issuer's authority.\n"
+msgstr "  발급자의 신뢰도를 로컬에서 검증할 수 없습니다.\n"
+
+#: src/openssl.c:1080
+msgid "  Self-signed certificate encountered.\n"
+msgstr "  자체 서명 인증서를 발견했습니다.\n"
+
+#: src/openssl.c:1083
+msgid "  Issued certificate not yet valid.\n"
+msgstr "  발급한 인증서가 아직 유효하지 않습니다.\n"
+
+#: src/openssl.c:1086
+msgid "  Issued certificate has expired.\n"
+msgstr "  발급한 인증서가 더이상 유효하지 않습니다.\n"
+
+#: src/openssl.c:1174
+#, c-format
+msgid ""
+"%s: no certificate subject alternative name matches\n"
+"\trequested host name %s.\n"
+msgstr ""
+"%s: 요청한 호스트 이름 %s에 일치하는 인증서의\n"
+"\t주체 대체 이름이 없습니다.\n"
+
+#: src/openssl.c:1193
+#, c-format
+msgid ""
+"    %s: certificate common name %s doesn't match requested host name %s.\n"
+msgstr ""
+"    %s: %s 인증서 일반 이름이 요청한 %s 호스트 이름과 일치하지 않습니다.\n"
+
+#: src/openssl.c:1225
+#, c-format
+msgid ""
+"    %s: certificate common name is invalid (contains a NUL character).\n"
+"    This may be an indication that the host is not who it claims to be\n"
+"    (that is, it is not the real %s).\n"
+msgstr ""
+"    %s: 인증서 일반 이름이 잘못되었습니다 (널 문자 있음).\n"
+"    아마도 호스트에서 이 인증서를 발급요청하지 않은 것 같습니다\n"
+"    (그 말인 즉슨, 실제로는 %s이(가) 아님).\n"
+
+#: src/openssl.c:1250
+#, c-format
+msgid "To connect to %s insecurely, use `--no-check-certificate'.\n"
+msgstr ""
+"%s에 안전하지 않게 연결하려면, `--no-check-certificate' 옵션을 활용하십시"
+"오.\n"
+
+#: src/progress.c:260
+#, c-format
+msgid ""
+"\n"
+"%*s[ skipping %sK ]"
+msgstr ""
+"\n"
+"%*s[ skipping %sK ]"
+
+#: src/progress.c:545
+#, c-format
+msgid "Invalid dot style specification %s; leaving unchanged.\n"
+msgstr "부적절한 점 방식 지정 %s. 바뀌지 않은 상태로 둡니다.\n"
+
+#. TRANSLATORS: "ETA" is English-centric, but this must
+#. be short, ideally 3 chars.  Abbreviate if necessary.
+#: src/progress.c:1006
+#, c-format
+msgid "    eta %s"
+msgstr "    약 %s"
+
+#. TRANSLATORS: The meaning is "elapsed time", and it is shown
+#. * next to the progress bar once the download is done.
+#. * This should not take up more room than
+#. * available here (6 columns).  Abbreviate if necessary.
+#: src/progress.c:1312
+msgid "    in "
+msgstr "    /  "
+
+#: src/ptimer.c:158
+#, c-format
+msgid "Cannot get REALTIME clock frequency: %s\n"
+msgstr "실시간 클록 주파수 정보를 가져올 수 없습니다: %s\n"
+
+#: src/recur.c:430
+#, c-format
+msgid ""
+"nofollow attribute found in %s. Will not follow any links on this page\n"
+msgstr ""
+"%s에 nofollow 속성이 있습니다. 이 페이지의 어떤 링크도 따라가지 않습니다\n"
+
+#: src/recur.c:514
+#, c-format
+msgid "Removing %s since it should be rejected.\n"
+msgstr "거절해야 하기에 %s을(를) 제거합니다.\n"
+
+#: src/res.c:394
+#, c-format
+msgid "Cannot open %s: %s\n"
+msgstr "%s을(를) 열 수 없음: %s\n"
+
+#: src/res.c:556
+msgid "Loading robots.txt; please ignore errors.\n"
+msgstr "robots.txt 불러오는 중. 오류는 무시하십시오.\n"
+
+#: src/retr.c:934
+#, c-format
+msgid "Error parsing proxy URL %s: %s.\n"
+msgstr "%s 프록시 URL 해석 오류: %s.\n"
+
+#: src/retr.c:948
+#, c-format
+msgid "Error in proxy URL %s: Must be HTTP.\n"
+msgstr "%s 프록시 URL 오류: HTTP여야 합니다.\n"
+
+#: src/retr.c:1079
+#, c-format
+msgid "%d redirections exceeded.\n"
+msgstr "재이동 횟수 %d 번 초과.\n"
+
+#: src/retr.c:1341
+msgid ""
+"Giving up.\n"
+"\n"
+msgstr ""
+"포기합니다.\n"
+"\n"
+
+#: src/retr.c:1341
+msgid ""
+"Retrying.\n"
+"\n"
+msgstr ""
+"다시 시도 중.\n"
+"\n"
+
+#: src/spider.c:77
+msgid ""
+"Found no broken links.\n"
+"\n"
+msgstr ""
+"깨진 링크가 없습니다.\n"
+"\n"
+
+#: src/spider.c:84
+#, c-format
+msgid ""
+"Found %d broken link.\n"
+"\n"
+msgid_plural ""
+"Found %d broken links.\n"
+"\n"
+msgstr[0] ""
+"깨진 링크 %d개 발견.\n"
+"\n"
+
+#: src/url.c:675
+msgid "No error"
+msgstr "오류 없음"
+
+#: src/url.c:677
+#, c-format
+msgid "Unsupported scheme %s"
+msgstr "지원하지 않는 %s 스킴"
+
+#: src/url.c:679
+msgid "Scheme missing"
+msgstr "스킴 빠짐"
+
+#: src/url.c:681
+msgid "Invalid host name"
+msgstr "부적절한 호스트 이름"
+
+#: src/url.c:683
+msgid "Bad port number"
+msgstr "잘못된 포트 번호"
+
+#: src/url.c:685
+msgid "Invalid user name"
+msgstr "부적절한 사용자 이름"
+
+#: src/url.c:687
+msgid "Unterminated IPv6 numeric address"
+msgstr "종결하지 않은 IPv6 숫자 주소"
+
+#: src/url.c:689
+msgid "IPv6 addresses not supported"
+msgstr "IPv6 주소를 지원하지 않습니다"
+
+#: src/url.c:691
+msgid "Invalid IPv6 numeric address"
+msgstr "부적절한 IPv6 숫자 주소"
+
+#: src/url.c:1007
+msgid "HTTPS support not compiled in"
+msgstr "HTTPS 지원 기능을 컴파일해 넣지 않았습니다"
+
+#: src/url.c:1648
+msgid "Unconvertable multibyte sequence encountered\n"
+msgstr "변환할 수 없는 다중 바이트열이 있습니다\n"
+
+#: src/utils.c:122
+#, c-format
+msgid "%s: %s: Failed to allocate enough memory; memory exhausted.\n"
+msgstr "%s: %s: 충분한 메모리 할당 실패. 메모리가 바닥남.\n"
+
+#: src/utils.c:128
+#, c-format
+msgid "%s: %s: Failed to allocate %ld bytes; memory exhausted.\n"
+msgstr "%s: %s: %ld 바이트 할당 실패. 메모리가 바닥남.\n"
+
+#: src/utils.c:348
+#, c-format
+msgid "%s: aprintf: text buffer is too big (%d bytes), aborting.\n"
+msgstr "%s: aprintf: 텍스트 버퍼가 너무 큽니다 (%d 바이트), 중단 중.\n"
+
+#: src/utils.c:500
+#, c-format
+msgid "Continuing in background, pid %d.\n"
+msgstr "백그라운드에서 PID %d(으)로 계속 진행.\n"
+
+#: src/utils.c:551
+#, c-format
+msgid "Failed to unlink symlink %s: %s\n"
+msgstr "%s 심볼링 링크 해제 실패: %s\n"
+
+#: src/utils.c:872
+#, c-format
+msgid "Failed to Fopen file %s\n"
+msgstr "%s 파일에 대한 Fopen 동작 실패\n"
+
+#: src/utils.c:878
+#, c-format
+msgid "Failed to get FD for file %s\n"
+msgstr "%s 파일에 대한 FD 가져오기 실패\n"
+
+#: src/utils.c:885
+#, c-format
+msgid "Failed to stat file %s, (check permissions)\n"
+msgstr "%s 파일의 명세 정보 가져오기 실패, (권한을 확인하십시오)\n"
+
+#: src/utils.c:895
+#, c-format
+msgid "File %s changed since the last check. Security check failed.\n"
+msgstr "최근 검사한 이후로 %s 파일이 바뀌었습니다. 보안 검사 실패.\n"
+
+#: src/utils.c:930
+#, c-format
+msgid "Failed to open file %s, reason :%s\n"
+msgstr "%s 파일 열기 실패. 이유 :%s\n"
+
+#: src/utils.c:936
+#, c-format
+msgid "Failed to stat file %s, error: %s\n"
+msgstr "%s 파일 상태정보 가져오기 실패, 오류: %s\n"
+
+#: src/utils.c:946
+#, c-format
+msgid ""
+"Trying to open file %s but it changed since last check. Security check "
+"failed.\n"
+msgstr ""
+"%s  파일 열기를 시도했지만 최근 검사한 이후로 바뀌었습니다. 보안 검사 실패.\n"
+
+#: src/utils.c:2443
+#, c-format
+msgid "Invalid regular expression %s, PCRE2 error %d\n"
+msgstr "부적절한 %s 정규 표현식, PCRE2 오류 %d\n"
+
+#: src/utils.c:2460 src/utils.c:2483
+#, c-format
+msgid "Invalid regular expression %s, %s\n"
+msgstr "부적절한 %s 정규 표현식, %s\n"
+
+#: src/utils.c:2513 src/utils.c:2535 src/utils.c:2559
+#, c-format
+msgid "Error while matching %s: %d\n"
+msgstr "%s 대응 중 오류: %d\n"
+
+#: src/utils.c:2852
+#, c-format
+msgid "Skipping key with wrong size (%d/%d): %s\n"
+msgstr "잘못된 길이의 키 건너 뛰는 중 (%d/%d): %s\n"
+
+#: src/warc.c:217
+msgid "Error setting WARC file position.\n"
+msgstr "WARC 파일 위치 설정 오류.\n"
+
+#: src/warc.c:224
+msgid "Error flushing WARC file to disk.\n"
+msgstr "WARC 파일의 디스크로의 플러싱 오류.\n"
+
+#: src/warc.c:234
+msgid "Error duplicating WARC file file descriptor.\n"
+msgstr "WARC 파일 서술자 복제 오류.\n"
+
+#: src/warc.c:245
+msgid "Error opening GZIP stream to WARC file.\n"
+msgstr "WARC 파일의 GZIP 스트림 열기 오류.\n"
+
+#: src/warc.c:830
+msgid "Error writing warcinfo record to WARC file.\n"
+msgstr "WARC 파일에 warcinfo 내용 기록 오류.\n"
+
+#: src/warc.c:893
+#, c-format
+msgid ""
+"Opening WARC file %s.\n"
+"\n"
+msgstr ""
+"%s WARC 파일 여는 중.\n"
+"\n"
+
+#: src/warc.c:899
+#, c-format
+msgid "Error opening WARC file %s.\n"
+msgstr "%s WARC 파일 열기 오류.\n"
+
+#: src/warc.c:1095
+msgid "CDX file does not list original urls. (Missing column 'a'.)\n"
+msgstr "CDX 파일에 원본 URL이 없습니다. ('a'열 빠짐.)\n"
+
+#: src/warc.c:1098
+msgid "CDX file does not list checksums. (Missing column 'k'.)\n"
+msgstr "CDX 파일에 체크섬이 없습니다 ('k'열 빠짐.)\n"
+
+#: src/warc.c:1101
+msgid "CDX file does not list record ids. (Missing column 'u'.)\n"
+msgstr "CDX 파일에 레코드 ID가 없습니다 ('u'열 빠짐.)\n"
+
+#: src/warc.c:1125
+#, c-format
+msgid ""
+"Loaded %d record from CDX.\n"
+"\n"
+msgid_plural ""
+"Loaded %d records from CDX.\n"
+"\n"
+msgstr[0] ""
+"CDX에서 %d 레코드를 불러왔습니다.\n"
+"\n"
+
+#: src/warc.c:1171
+#, c-format
+msgid "Could not read CDX file %s for deduplication.\n"
+msgstr "데이터 중복 제거할 %s CDX 파일을 읽을 수 없습니다.\n"
+
+#: src/warc.c:1181
+msgid "Could not open temporary WARC manifest file.\n"
+msgstr "임시 WARC 매니페스트 파일을 열 수 없습니다.\n"
+
+#: src/warc.c:1191
+msgid "Could not open temporary WARC log file.\n"
+msgstr "임시 WARC 로그 파일을 열 수 없습니다.\n"
+
+#: src/warc.c:1200
+msgid "Could not open WARC file.\n"
+msgstr "WARC 파일을 열 수 없습니다.\n"
+
+#: src/warc.c:1209
+msgid "Could not open CDX file for output.\n"
+msgstr "출력용 CDX 파일을 열 수 없습니다.\n"
+
+#: src/warc.c:1239
+msgid "Could not open temporary WARC file.\n"
+msgstr "임시 WARC 파일을 열 수 없습니다.\n"
+
+#: src/warc.c:1515
+msgid "Found exact match in CDX file. Saving revisit record to WARC.\n"
+msgstr ""
+"CDX 파일에 일치하는 내용을 찾았습니다. WARC에 재방문 기록을 저장합니다.\n"
+
+#~ msgid "Unknown system error"
+#~ msgstr "알 수 없는 시스템 오류"
+
+#~ msgid "Address family for hostname not supported"
+#~ msgstr "호스트 이름에 대한 이 주소 체계는 지원하지 않습니다"
+
+#~ msgid "Bad value for ai_flags"
+#~ msgstr "AI_FLAGS의 잘못된 값"
+
+#~ msgid "Non-recoverable failure in name resolution"
+#~ msgstr "복원할 수 없는 이름 해석 실패"
+
+#~ msgid "ai_family not supported"
+#~ msgstr "AI_FAMILY를 지원하지 않습니다"
+
+#~ msgid "Memory allocation failure"
+#~ msgstr "메모리 할당 실패"
+
+#~ msgid "No address associated with hostname"
+#~ msgstr "호스트 이름에 할당한 주소가 없습니다"
+
+#~ msgid "Name or service not known"
+#~ msgstr "알 수 없는 이름 또는 서비스"
+
+#~ msgid "Servname not supported for ai_socktype"
+#~ msgstr "AI_SOCKTYPE에 서버 이름을 지원하지 않습니다"
+
+#~ msgid "ai_socktype not supported"
+#~ msgstr "AI_SOCKTYPE을 지원하지 않습니다"
+
+#~ msgid "System error"
+#~ msgstr "시스템 오류"
+
+#~ msgid "Argument buffer too small"
+#~ msgstr "인자 버퍼가 너무 작습니다"
+
+#~ msgid "Processing request in progress"
+#~ msgstr "처리 요청 진행중"
+
+#~ msgid "Request canceled"
+#~ msgstr "요청을 취소했습니다"
+
+#~ msgid "Request not canceled"
+#~ msgstr "요청을 취소하지 않았습니다"
+
+#~ msgid "All requests done"
+#~ msgstr "모든 요청을 처리했습니다"
+
+#~ msgid "Interrupted by a signal"
+#~ msgstr "시그널로 중단함"
+
+#~ msgid "Parameter string not correctly encoded"
+#~ msgstr "매개변수 문자열을 제대로 인코딩할 수 없습니다"
+
+#~ msgid "%s: option '%s%s' is ambiguous\n"
+#~ msgstr "%s: '%s%s' 옵션이 모호합니다\n"
+
+#~ msgid "%s: option '%s%s' is ambiguous; possibilities:"
+#~ msgstr "%s: '%s%s' 옵션이 모호합니다. 가능한 옵션:"
+
+#~ msgid "%s: unrecognized option '%s%s'\n"
+#~ msgstr "%s: '%s%s' 옵션을 인식할 수 없습니다\n"
+
+#~ msgid "%s: option '%s%s' doesn't allow an argument\n"
+#~ msgstr "%s: '%s%s' 옵션은 인자를 허용하지 않습니다\n"
+
+#~ msgid "%s: option '%s%s' requires an argument\n"
+#~ msgstr "%s: '%s%s' 옵션에 인자가 필요합니다\n"
+
+#~ msgid "%s: invalid option -- '%c'\n"
+#~ msgstr "%s: 부적절한 '%c' 옵션\n"
+
+#~ msgid "%s: option requires an argument -- '%c'\n"
+#~ msgstr "%s: '%c' 옵션에 인자가 필요합니다\n"
+
+#~ msgid "`"
+#~ msgstr "`"
+
+#~ msgid "'"
+#~ msgstr "'"
+
+#~ msgid "Success"
+#~ msgstr "성공"
+
+#~ msgid "No match"
+#~ msgstr "일치하는 항목 없음"
+
+#~ msgid "Invalid regular expression"
+#~ msgstr "부적절한 정규 표현식"
+
+#~ msgid "Invalid collation character"
+#~ msgstr "부적절한 조합 문자"
+
+#~ msgid "Invalid character class name"
+#~ msgstr "부적절한 문자 클래스 이름"
+
+#~ msgid "Trailing backslash"
+#~ msgstr "백 슬래시 문자가 따라옴"
+
+#~ msgid "Invalid back reference"
+#~ msgstr "부적절한 후위 참조"
+
+#~ msgid "Unmatched [, [^, [:, [., or [="
+#~ msgstr "일치하지 않는 [, [^, [:, [., [="
+
+#~ msgid "Unmatched ( or \\("
+#~ msgstr "일치하지 않는 ( 또는 \\( 괄호"
+
+#~ msgid "Unmatched \\{"
+#~ msgstr "일치하지 않는 \\{ 괄호"
+
+#~ msgid "Invalid content of \\{\\}"
+#~ msgstr "부적절한 \\{\\} 내용"
+
+#~ msgid "Invalid range end"
+#~ msgstr "부적절한 범위 끝"
+
+#~ msgid "Memory exhausted"
+#~ msgstr "메모리가 바닥남"
+
+#~ msgid "Invalid preceding regular expression"
+#~ msgstr "부적절한 선행 정규 표현식"
+
+#~ msgid "Premature end of regular expression"
+#~ msgstr "정규 표현식 마감 표현이 앞서있습니다"
+
+#~ msgid "Regular expression too big"
+#~ msgstr "정규 표현식이 너무 깁니다"
+
+#~ msgid "Unmatched ) or \\)"
+#~ msgstr "일치하지 않는 ) 또는 \\) 괄호"
+
+#~ msgid "No previous regular expression"
+#~ msgstr "이전 정규 표현식 없음"
+
+#~ msgid "cannot create pipe"
+#~ msgstr "파이프를 만들 수 없습니다"
+
+#~ msgid "%s subprocess failed"
+#~ msgstr "%s 하위 프로세스 처리 실패"
+
+#~ msgid "_open_osfhandle failed"
+#~ msgstr "_open_osfhandle 실행 실패"
+
+#~ msgid "cannot restore fd %d: dup2 failed"
+#~ msgstr "파일 서술자 %d번을 복원할 수 없습니다: dup2 실패"
+
+#~ msgid "%s subprocess"
+#~ msgstr "%s 하위 프로세스"
+
+#~ msgid "%s subprocess got fatal signal %d"
+#~ msgstr "%s 하위 프로세스에서 중대한 시그널 %d번을 받았습니다"
+
+#~ msgid "memory exhausted"
+#~ msgstr "메모리가 바닥남"

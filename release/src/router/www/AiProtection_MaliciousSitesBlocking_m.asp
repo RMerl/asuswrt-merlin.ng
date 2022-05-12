@@ -82,6 +82,7 @@ var ctf_disable = '<% nvram_get("ctf_disable"); %>';
 var ctf_fa_mode = '<% nvram_get("ctf_fa_mode"); %>';
 
 function initial(){
+
 	if(document.form.wrs_protect_enable.value == '1' && document.form.wrs_mals_enable.value == '1'){
 		mals_check('1');
 	}
@@ -340,6 +341,7 @@ function getIPSDetailData(type, event){
 				dataObject = {};
 			}
 
+			
 			generateDetailTable(dataObject);
 		}
 	});
@@ -348,7 +350,7 @@ function getIPSDetailData(type, event){
 var cat_id_index = [["39", "Proxy Avoidance"], ["73", "Malicious Software"], ["74", "Spyware"], ["75", "Phishing"], ["76", "Spam"], 
 					["77", "Adware"], ["78", "Malware Accomplic"], ["79", "Disease Vector"], ["80", "Cookies"], ["81", "Dialers"], 
 					["82", "Hacking"], ["83", "Joke Program"], ["84", "Password Cracking Apps"], ["85", "Remote Access"], ["86", "Made for AdSense sites"],
-					["91", "C&C Server"], ["92", "Malicious Domain"], ["94", "Scam"], ["95", "Ransomware"]];
+					["91", "C&C Server"], ["92", "Malicious Domain"], ["94", "Scam"], ["95", "Ransomware"], ["2", "Illegal"]];
 var cat_id_array = new Array();
 for(i=0; i<cat_id_index.length;i++){
 	var index = "_" + cat_id_index[i][0];
@@ -364,8 +366,7 @@ function catID_Object(id, description){
 
 function generateDetailTable(dataObj){
 	var code = '';
-
-	if(Object.entries(dataObj) != ''){
+	if(Object.entries(dataObj) != ''){		
 		$('#deleteData').show();
 		code += '<div class="table-header">';
 		code += '<div class="table-cell"><#diskUtility_time#></div>';
@@ -376,6 +377,10 @@ function generateDetailTable(dataObj){
 		for(i=0; i<Object.keys(dataObj).length; i++){
 			var eventID = Object.keys(dataObj)[i];
 			var cat_id_index = "_" + dataObj[eventID].threat;
+			if(cat_id_array[cat_id_index] === undefined){
+				cat_id_array[cat_id_index] = new catID_Object(cat_id_index, 'others');
+			}
+
 			code += '<div class="table-row">';
 			code += '<div class="table-cell time-stamp">';
 			code += '<div class="flexbox flex-a-center">';
@@ -395,6 +400,7 @@ function generateDetailTable(dataObj){
 	else{
 		$('#deleteData').hide();
 		code += '<div class="no-data"><#AiProtection_eventnodetected#></div>';
+		
 	}
 	
 	$("#detail_info_table").html(code);

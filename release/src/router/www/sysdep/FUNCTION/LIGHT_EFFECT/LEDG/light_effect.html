@@ -29,6 +29,13 @@ $(function(){
 		$('link[href*="/light_effect/light_effect_' + theme + '.css"]').remove();
 		$('link').last().after('<link rel="stylesheet" type="text/css" href="/light_effect/light_effect_' + theme + '.css">');
 	}
+
+	if(isSupport("antled")){
+		$('<script />', { type : 'text/javascript', src : "/light_effect/antenna.js"}).appendTo('head');
+	}
+	if(model_info.productid.substr(0,2) == "GT"){
+		$("#light_effect_bg .light_effect_mask").addClass("rog");
+	}
 });
 var $light_effect_bg = $("#light_effect_bg");
 var $hue_bar = $("#hue_bar");
@@ -63,17 +70,17 @@ function initial_led_control() {
 	};
 
 	if(model_info.productid == "TUF-AX5400")
-		$(".scheme_bg:not(#static, #breathing, #wave, #rainbow)").remove();
+		$("#light_effect_setting .scheme_bg:not(#static, #breathing, #wave, #rainbow)").remove();
 
 	$light_effect_bg = $("#light_effect_bg");
 	$hue_bar = $("#hue_bar");
 	$hue_slider = $("#hue_slider");
-	if($(".light_effect_setting_bg .setting_enable_bg .schedule").css("display") != "none")
-		$(".light_effect_setting_bg .setting_enable_bg .switch").css("right", "20%");
+	if($("#light_effect_setting .light_effect_setting_bg .setting_enable_bg .schedule").css("display") != "none")
+		$("#light_effect_setting .light_effect_setting_bg .setting_enable_bg .switch").css("right", "20%");
 
 	if(!isMobile()) {
 		$hue_bar.mousedown(function(e) {
-			if($(".setting_hue").css("opacity") == "1") {
+			if($("#light_effect_setting .setting_hue").css("opacity") == "1") {
 				if(e.target.id == "hue_bar") {
 					hue_click = true;
 					set_hue_value(e);
@@ -97,10 +104,10 @@ function initial_led_control() {
 		});
 	}
 	else {
-		$(".setting_scheme").removeClass("support_hover");
-		$(".light_effect_setting_bg").addClass("no_highlights");
+		$("#light_effect_setting .setting_scheme").removeClass("support_hover");
+		$("#light_effect_setting .light_effect_setting_bg").addClass("no_highlights");
 		$hue_bar[0].addEventListener("touchstart", function (e) {
-			if($(".setting_hue").css("opacity") == "1") {
+			if($("#light_effect_setting .setting_hue").css("opacity") == "1") {
 				if(e.target.id == "hue_bar") {
 					hue_click = true;
 					set_hue_value(e);
@@ -124,22 +131,21 @@ function initial_led_control() {
 		});
 	}
 
-	$(".setting_enable_bg .switch").unbind("click");
-	$(".setting_enable_bg .switch").click(function(e){
+	$("#light_effect_setting .setting_enable_bg .switch").unbind("click").click(function(e){
 		e = e || event;
 		e.stopPropagation();
 		var AllLED = httpApi.nvramGet(["AllLED"]).AllLED;
 		if(AllLED == "1"){
-			$(".setting_enable_bg .switch").toggleClass("off on").promise().done(function(){
-				var switch_status = $(".setting_enable_bg .switch").hasClass("on");
+			$("#light_effect_setting .setting_enable_bg .switch").toggleClass("off on").promise().done(function(){
+				var switch_status = $("#light_effect_setting .setting_enable_bg .switch").hasClass("on");
 				lightl_effect_animate.clear($light_effect_bg);
 				if(switch_status){
-					$(".switch_off").show();
-					scheme_item_post.Mode = $(".scheme_bg.active").attr("Mode");
+					$(".light_effect_setting_bg .switch_off").show();
+					scheme_item_post.Mode = $("#light_effect_setting .scheme_bg.active").attr("Mode");
 					set_scheme_mode(scheme_item_post.Mode, scheme_item_post["LED_Set"]);
 				}
 				else{
-					$(".switch_off").hide();
+					$(".light_effect_setting_bg .switch_off").hide();
 					scheme_item_post.Mode = "0";
 					$light_effect_bg.removeClass().addClass("light_effect_bg");
 					$light_effect_bg.css("background", "initial");
@@ -147,11 +153,13 @@ function initial_led_control() {
 
 				var postData = {"ledg_scheme": scheme_item_post.Mode};
 				httpApi.set_ledg(postData);
+				if(isSupport("antled")){
+					antenna_switch_enable(switch_status);
+				}
 			});
 		}
 	});
-	$(".setting_scheme .scheme_bg").unbind("click");
-	$(".setting_scheme .scheme_bg").click(function(e){
+	$("#light_effect_setting .setting_scheme .scheme_bg").unbind("click").click(function(e){
 		e = e || event;
 		e.stopPropagation();
 		var id = e.currentTarget.id;
@@ -160,8 +168,8 @@ function initial_led_control() {
 		lightl_effect_animate.clear($light_effect_bg);
 		$light_effect_bg.removeClass().addClass("light_effect_bg");
 		var mode = e.currentTarget.getAttribute("mode");
-		$(".setting_scheme .scheme_bg").removeClass("active");
-		$(".setting_scheme #" + id + "").addClass("active");
+		$("#light_effect_setting .setting_scheme .scheme_bg").removeClass("active");
+		$("#light_effect_setting .setting_scheme #" + id + "").addClass("active");
 		var ledg_rgb = httpApi.nvramGet(["ledg_rgb" + mode + ""], true)["ledg_rgb" + mode + ""];
 		if(mode == "6")
 			ledg_rgb = retune_wave_color({"ledg_group":ledg_group, "productid":model_info.productid, "CoBrand":model_info.CoBrand});
@@ -179,8 +187,7 @@ function initial_led_control() {
 		}
 		httpApi.set_ledg(postData);
 	});
-	$(".scheme_list_bg .boundary").unbind("click");
-	$(".scheme_list_bg .boundary").click(function(e){
+	$("#light_effect_setting .scheme_list_bg .boundary").unbind("click").click(function(e){
 		e = e || event;
 		e.stopPropagation();
 		var id = e.currentTarget.id.replace("boundary_", "");
@@ -193,10 +200,10 @@ function initial_led_control() {
 	$("#default_set").unbind("click").click(function(e){
 		e = e || event;
 		e.stopPropagation();
-		if($(".setting_hue").css("opacity") == "1"){
+		if($("#light_effect_setting .setting_hue").css("opacity") == "1"){
 			lightl_effect_animate.clear($light_effect_bg);
 			$light_effect_bg.removeClass().addClass("light_effect_bg");
-			var mode = $(".scheme_list_bg .scheme_bg.active").attr("mode");
+			var mode = $("#light_effect_setting .scheme_list_bg .scheme_bg.active").attr("mode");
 			var ledg_rgb = httpApi.nvramDefaultGet(["ledg_rgb" + mode + ""])["ledg_rgb" + mode + ""];
 			if(mode == "6")
 				ledg_rgb = retune_wave_color({"ledg_group":ledg_group, "productid":model_info.productid, "CoBrand":model_info.CoBrand});
@@ -220,12 +227,12 @@ function initial_led_control() {
 	var ledg_scheme = ledg_info.ledg_scheme;
 	var AllLED = ledg_info.AllLED;
 	if(AllLED == "0"){
-		$(".all_led_off").show();
+		$("#light_effect_setting .all_led_off").show();
 		ledg_scheme = "0";
 	}
 	else{
 		if(ledg_scheme != "0"){
-			if($(".scheme_list_bg .setting_scheme .scheme_bg[mode=" + ledg_scheme + "]").length == 0){
+			if($("#light_effect_setting .scheme_list_bg .setting_scheme .scheme_bg[mode=" + ledg_scheme + "]").length == 0){
 				ledg_scheme = httpApi.nvramDefaultGet(["ledg_scheme"]).ledg_scheme;
 			}
 		}
@@ -250,16 +257,16 @@ function initial_led_control() {
 		scheme_item_post.Mode = ledg_scheme;
 	}
 
-	$(".scheme_list_bg .setting_scheme .scheme_bg[mode=" + scheme_item_post.Mode + "]").addClass("active");
+	$("#light_effect_setting .scheme_list_bg .setting_scheme .scheme_bg[mode=" + scheme_item_post.Mode + "]").addClass("active");
 	if(ledg_scheme == "0") {
-		$(".setting_enable_bg .switch").addClass("off");
+		$("#light_effect_setting .setting_enable_bg .switch").addClass("off");
 		lightl_effect_animate.clear($light_effect_bg);
-		$(".switch_off").hide();
+		$(".light_effect_setting_bg .switch_off").hide();
 		$light_effect_bg.removeClass().addClass("light_effect_bg");
 		$light_effect_bg.css("background", "initial");
 	}
 	else {
-		$(".setting_enable_bg .switch").addClass("on");
+		$("#light_effect_setting .setting_enable_bg .switch").addClass("on");
 		var count = 0;
 		var interval_check = setInterval(function() {
 			if(get_offset($hue_bar).width != 0) {
@@ -274,12 +281,26 @@ function initial_led_control() {
 		}, 50);
 	}
 
-	$(".scheme_list_bg .setting_scheme .scheme_bg").each(function(idx) {
+	$("#light_effect_setting .scheme_list_bg .setting_scheme .scheme_bg").each(function(idx) {
 		if($(this).hasClass("active"))
 			scheme_page_idx = Math.ceil((idx + 1) / scheme_page_max_count);
 	});
-	scheme_pages = Math.ceil(($(".scheme_list_bg .setting_scheme .scheme_bg").length / scheme_page_max_count));
+	scheme_pages = Math.ceil(($("#light_effect_setting .scheme_list_bg .setting_scheme .scheme_bg").length / scheme_page_max_count));
 	control_scheme_list(scheme_page_idx);
+
+	if(isSupport("antled")){
+		$(".logo_container").addClass("support_switch_mode");
+		$(".light_effect_bg .mode_list_bg div").unbind("click").click(function(e){
+			e = e || event;
+			e.stopPropagation();
+			switch_mode($(this).attr("mode"));
+		});
+		init_antenna_led(ledg_scheme);
+		switch_mode("panel");
+	}
+	else{
+		$("#antenna_bg, #antenna_setting, .switch_mode_list_bg").remove();
+	}
 }
 function set_scheme_mode(_type, _LED_Set_Obj){
 	Object.keys(_LED_Set_Obj).forEach(function(group_idx) {
@@ -294,27 +315,27 @@ function set_scheme_mode(_type, _LED_Set_Obj){
 		case "2" :
 			rgbToLeft(hue_slider_rgb);
 			$light_effect_bg.css("background", "rgb("+ group_rgb[1]["R"] + ", " + group_rgb[1]["G"] + ", " + group_rgb[1]["B"] + ")");
-			$(".setting_hue").fadeTo(0, 1);
+			$("#light_effect_setting .setting_hue").fadeTo(0, 1);
 			scheme_item_post.Mode = "2";//static
 			break;
 		case "3" :
 			rgbToLeft(hue_slider_rgb);
 			$light_effect_bg.css("background", "rgb("+ group_rgb[1]["R"] + ", " + group_rgb[1]["G"] + ", " + group_rgb[1]["B"] + ")");
 			lightl_effect_animate.breathing($light_effect_bg, hue_slider_rgb);
-			$(".setting_hue").fadeTo(0, 1);
+			$("#light_effect_setting .setting_hue").fadeTo(0, 1);
 			scheme_item_post.Mode = "3";//breathing
 			break;
 		case "6" :
 			$light_effect_bg.css("background", "rgb("+ group_rgb[1]["R"] + ", " + group_rgb[1]["G"] + ", " + group_rgb[1]["B"] + ")");
 			lightl_effect_animate.wave($light_effect_bg, hue_slider_rgb);
-			$(".setting_hue").fadeTo(0, 0);
+			$("#light_effect_setting .setting_hue").fadeTo(0, 0);
 			scheme_item_post.Mode = "6";//wave
 			break;
 		case "7" :
 			rgbToLeft(hue_slider_rgb);
 			$light_effect_bg.css("background", "rgb("+ group_rgb[1]["R"] + ", " + group_rgb[1]["G"] + ", " + group_rgb[1]["B"] + ")");
 			lightl_effect_animate.marquee($light_effect_bg, hue_slider_rgb);
-			$(".setting_hue").fadeTo(0, 1);
+			$("#light_effect_setting .setting_hue").fadeTo(0, 1);
 			scheme_item_post.Mode = "7";//marquee
 			break;
 		case "1" :
@@ -339,7 +360,7 @@ function set_scheme_mode(_type, _LED_Set_Obj){
 			$hue_slider.css("background" , "hsl(" + hsl.h + ", " + hsl.s + "%" + ", " + hsl.l + "%" + ")");
 			var gradient_css = set_gradient_css({"ledg_group":ledg_group, "rgb":gradient_display_rgb});
 			$light_effect_bg.css(gradient_css);
-			$(".setting_hue").fadeTo(0, 1);
+			$("#light_effect_setting .setting_hue").fadeTo(0, 1);
 			scheme_item_post.Mode = "1";//gradient
 			break;
 		case "4" :
@@ -348,12 +369,12 @@ function set_scheme_mode(_type, _LED_Set_Obj){
 				$light_effect_bg.addClass("CoBrand_2");
 			else if(model_info.CoBrand == "3")
 				$light_effect_bg.addClass("CoBrand_3");
-			$(".setting_hue").fadeTo(0, 0);
+			$("#light_effect_setting .setting_hue").fadeTo(0, 0);
 			scheme_item_post.Mode = "4";//evolution
 			break;
 		case "5" :
 			$light_effect_bg.addClass("rainbow");
-			$(".setting_hue").fadeTo(0, 0);
+			$("#light_effect_setting .setting_hue").fadeTo(0, 0);
 			scheme_item_post.Mode = "5";//rainbow
 			break;
 	}
@@ -506,20 +527,20 @@ function set_hue_value(e) {
 		$light_effect_bg.css("background" , "hsl(" + hsl.h + ", " + hsl.s + "%" + ", " + hsl.l + "%" + ")");
 }
 function set_light_effect() {
-	var select_rgb = $(".hue_slider").css("background-color").replace('rgb(', '').replace(')','' ).split(',').map(Number);
+	var select_rgb = $("#light_effect_setting .hue_slider").css("background-color").replace('rgb(', '').replace(')','' ).split(',').map(Number);
 	$hue_slider.removeClass("active");
 	hue_click = false;
-	if($(".scheme_bg.active")[0].id == "breathing") {
+	if($("#light_effect_setting .scheme_bg.active")[0].id == "breathing") {
 		rgbToLeft(select_rgb);
 		$light_effect_bg.css("background", "rgb("+ select_rgb[0] + ", " + select_rgb[1] + ", " + select_rgb[2] + ")");
 		lightl_effect_animate.breathing($light_effect_bg, select_rgb);
 	}
-	if($(".scheme_bg.active")[0].id == "marquee") {
+	if($("#light_effect_setting .scheme_bg.active")[0].id == "marquee") {
 		rgbToLeft(select_rgb);
 		$light_effect_bg.css("background", "rgb("+ select_rgb[0] + ", " + select_rgb[1] + ", " + select_rgb[2] + ")");
 		lightl_effect_animate.marquee($light_effect_bg, select_rgb);
 	}
-	if($(".scheme_bg.active")[0].id == "wave") {
+	if($("#light_effect_setting .scheme_bg.active")[0].id == "wave") {
 		rgbToLeft(select_rgb);
 		$light_effect_bg.css("background", "rgb("+ select_rgb[0] + ", " + select_rgb[1] + ", " + select_rgb[2] + ")");
 		lightl_effect_animate.wave($light_effect_bg, select_rgb);
@@ -653,15 +674,15 @@ var lightl_effect_animate = {
 }
 function control_scheme_list(_idx) {
 	var start_idx = ((_idx -1 ) * scheme_page_max_count);
-	$(".setting_scheme .scheme_bg").hide();
+	$("#light_effect_setting .setting_scheme .scheme_bg").hide();
 	for(var i = ((_idx -1 ) * scheme_page_max_count); i < ((_idx -1 ) * scheme_page_max_count) + scheme_page_max_count ; i += 1) {
-		$(".setting_scheme .scheme_bg").eq(i).show();
+		$("#light_effect_setting .setting_scheme .scheme_bg").eq(i).show();
 	}
-	$(".scheme_list_bg .boundary").addClass("arrow");
+	$("#light_effect_setting .scheme_list_bg .boundary").addClass("arrow");
 	if(_idx == 1)
-		$(".scheme_list_bg #boundary_left").removeClass("arrow");
+		$("#light_effect_setting .scheme_list_bg #boundary_left").removeClass("arrow");
 	if(_idx == scheme_pages)
-		$(".scheme_list_bg #boundary_right").removeClass("arrow");
+		$("#light_effect_setting .scheme_list_bg #boundary_right").removeClass("arrow");
 }
 function multiply_rgb(_value) {
 	return (Math.ceil(_value * 2) > 255) ? 255 : Math.ceil(_value * 2);
@@ -674,14 +695,24 @@ function gradient_transform_left(_left){
 	var screen_width = $hue_bar.outerWidth(true);
 	return parseInt((screen_width / 320) * _left);
 }
+function switch_mode(_type){
+	$("div[mode_group]").hide();
+	$("div[mode_group=" + _type + "]").show();
+}
 $(document).ready(initial_led_control);
 </script>
 <body style="margin:initial;">
-<div class="light_effect_bg" id="light_effect_bg">
-	<div class="logo_aura_rgb"></div>
+<div class="light_effect_bg" id="light_effect_bg" mode_group="panel">
+	<div class="logo_container logo_aura_rgb"></div>
+	<div class="switch_mode_list_bg">
+		<div class="mode_list_bg">
+			<div class="panel active" mode="panel"></div>
+			<div class="antenna" mode="antenna"></div>
+		</div>
+	</div>
 	<div class="light_effect_mask"></div>
 </div>
-<div class="light_effect_setting_bg">
+<div class="light_effect_setting_bg" id="light_effect_setting" mode_group="panel">
 	<div class="setting_enable_bg">
 		<div class="text"><span>Aura RGB <#WLANConfig11b_WirelessCtrl_button1name#></span></div>
 		<div class="switch"></div>
@@ -734,5 +765,39 @@ $(document).ready(initial_led_control);
 		</div>
 	</div>
 	<div class="all_led_off">Please enable the LED function by pressing the middle hardware button on the front cover about 3 seconds.</div><!-- untranslated -->
+</div>
+
+<div class="light_effect_bg" id="antenna_bg" mode_group="antenna">
+	<div class="logo_container logo_antenna"></div>
+	<div class="switch_mode_list_bg">
+		<div class="mode_list_bg">
+			<div class="panel" mode="panel"></div>
+			<div class="antenna active" mode="antenna"></div>
+		</div>
+	</div>
+	<div class="light_effect_mask"></div>
+</div>
+<div class="light_effect_setting_bg" id="antenna_setting" mode_group="antenna">
+	<div class="setting_enable_bg">
+		<div class="text"><span>Antenna Scheme</span></div>
+		<div class="switch" style="display: none;"></div>
+	</div>
+	<div class="switch_off">
+		<div class="horizontal_line "></div>
+		<div class="scheme_list_bg">
+			<div id="boundary_left" class="boundary"></div>
+			<div class="setting_scheme antenna support_hover">
+				<div id="static" class="scheme_bg" mode="1">
+					<div class="icon"></div>
+					<div class="text"><#BoostKey_AURA_state_static#></div>
+				</div>
+				<div id="interaction" class="scheme_bg" mode="2">
+					<div class="icon"></div>
+					<div class="text"><#Interaction#></div>
+				</div>
+			</div>
+			<div id="boundary_right" class="boundary"></div>
+		</div>
+	</div>
 </div>
 </body>

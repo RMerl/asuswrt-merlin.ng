@@ -125,8 +125,9 @@ print(const struct ebt_u_entry *entry,
         printf("WMM mapping to Tos");
     else if(ftosinfo->ftos_set == FTOS_8021Q)
         printf("802.1Q mapping to Tos");
-    else
+    else {
 	printf("TOS set 0x%x", ftosinfo->ftos);
+    }
 
 	if (ftosinfo->target == EBT_ACCEPT)
 		return;

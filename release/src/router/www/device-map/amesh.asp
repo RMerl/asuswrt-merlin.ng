@@ -2623,9 +2623,8 @@ function gen_conn_priority_select_option(_node_info, _eap_flag){
 					var if_text = "";
 					var rate_text = "";
 					var conn_type = "";
-					var idx_text = "";
 					var port_obj = value;
-					idx_text = port_obj.index;
+					var port_idx = parseInt(port_obj.index);
 					var if_type = interface_mapping.filter(function(item, index, _array){
 						return (item.value == port_obj.Type);
 					})[0];
@@ -2662,14 +2661,24 @@ function gen_conn_priority_select_option(_node_info, _eap_flag){
 					var option_value = port_obj.amas_ethernet;
 					var conn_prio_type = rate_text;
 					if(conn_type == "wifi"){
-						if(idx_text != "0")
-							conn_prio_type += "-" + idx_text;
+						if(port_idx >= 1){
+							conn_prio_type += "-" + (port_idx + 1);
+						}
+						else if(port_idx == 0){
+							if(rate_type.value == "2"){//5G
+								if(_node_info.capability["22"] != undefined){
+									var support_5G2 = (_node_info.capability["22"] & (1 << 2)) ? true : false;
+									if(support_5G2)
+										conn_prio_type += "-" + (port_idx + 1);//if support 5G-2, 5G need show 5G-1
+								}
+							}
+						}
 						conn_prio_type += " " + if_text;
 					}
 					else{
 						conn_prio_type += " " + if_text;
-						if(idx_text != "0")
-							conn_prio_type += idx_text;
+						if(port_idx >= 1)
+							conn_prio_type += port_idx;
 					}
 					var option_text = (_eap_flag) ? "<#AiMesh_BackhaulConnPrio_Only#>" : "<#AiMesh_BackhaulConnPrio_First#>";
 					option_text = option_text.replace("#CONNPRIOTYPE", conn_prio_type);

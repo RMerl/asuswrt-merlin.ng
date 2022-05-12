@@ -58,7 +58,7 @@ enum {
 };
 
 static const char *upstream_iptv_ifaces[16] = {
-#if defined(ETJ) || defined(RTAX57)
+#if defined(ETJ)
 	[WANS_DUALWAN_IF_WAN] = "eth0",
 #else
 #error Define WAN interfaces that can be used as upstream port of IPTV.
@@ -89,7 +89,7 @@ static const int lan_wan_partition[9][NR_WANLAN_PORT] = {
 static const int vport_to_phy_addr[MAX_WANLAN_PORT] = {
 	1, 2, 3, 4, 5,
 };
-#elif defined(ETJ) || defined(RTAX57)
+#elif defined(ETJ)
 static const int vport_to_phy_addr[MAX_WANLAN_PORT] = {
 	2, -1, -1, -1, 1,
 };
@@ -113,7 +113,7 @@ static const char *vport_to_iface[MAX_WANLAN_PORT] = {
 	"eth0", "eth1", "eth2", "eth3",		/* LAN1~4 */
 	"eth4" 					/* WAN1 */
 };
-#elif defined(ETJ) || defined(RTAX57)
+#elif defined(ETJ)
 static const char *vport_to_iface[MAX_WANLAN_PORT] = {
 	"eth1", NULL, NULL, NULL,	/* LAN1~4 */
 	"eth0" 				/* WAN1 */

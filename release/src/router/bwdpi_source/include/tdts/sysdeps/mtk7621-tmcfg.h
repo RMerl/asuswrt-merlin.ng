@@ -26,7 +26,7 @@
 
 /*
  * Automatically generated make config: don't edit
- * Date: Thu Apr  8 16:32:58 2021
+ * Date: Fri Feb 25 14:16:27 2022
  */
 #ifndef __TMCFG__AUTOCONF_OUTPUT_H_
 #define __TMCFG__AUTOCONF_OUTPUT_H_
@@ -47,7 +47,7 @@
 #define TMCFG_ARCH_POWERPC 0 // n
 #define TMCFG_CPU_BIG_ENDIAN 0 // n
 #define TMCFG_CPU_LITTLE_ENDIAN 1 // y
-#define TMCFG_KERN_DIR "/opt/ASUS/asuswrt_4G_AX56_382.41123/release/src-ra-openwrt-4110/linux/linux-4.4.198"
+#define TMCFG_KERN_DIR "/opt/ASUS/asuswrt_AX53U_GPL_382.44863/release/src-ra-openwrt-4210/linux/linux-4.4.198"
 #define TMCFG_KERN_ARCH "mips"
 #define TMCFG_CPU_32BITS 1 // y
 #define TMCFG_CPU_64BITS 0 // n
@@ -105,7 +105,7 @@
  */
 #define TMCFG_E_MAJ_VER 2
 #define TMCFG_E_MID_VER 0
-#define TMCFG_E_MIN_VER 1
+#define TMCFG_E_MIN_VER 3
 #define TMCFG_E_LOCAL_VER "r4031774"
 
 /*

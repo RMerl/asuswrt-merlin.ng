@@ -84,6 +84,14 @@ static unsigned int ipv6_qos_applied = 0;
 int etable_flag = 0;
 int manual_return = 0;
 
+static int qos_action_manual()
+{
+	int ret;
+	ret = 1;
+
+	return ret;
+}
+
 #ifdef RTCONFIG_AMAS_WGN
 static void WGN_ifname(int i, int j, char *wl_if)
 {
@@ -656,22 +664,14 @@ static int add_qos_rules(char *pcWANIF)
 	int lock;
 	int evalRet;
 	char *action = NULL;
-	int model = get_model();
 
-	switch (model) {
-		case MODEL_DSLAX82U:
-			action = "--set-mark";
-			manual_return = 1;
-			break;
-		default:
-#if defined(RTCONFIG_QCA)
-			action = "--set-mark";
-			manual_return = 1;
-#else
-			action = "--set-return";
-			manual_return = 0;
-#endif
-			break;
+	if (qos_action_manual() == 0) {
+		action = "--set-return";
+		manual_return = 0;
+	}
+	else if (qos_action_manual() == 1) {
+		action = "--set-mark";
+		manual_return = 1;
 	}
 
 	del_iQosRules(); // flush related rules in mangle table
@@ -1509,17 +1509,13 @@ static int add_bandwidth_limiter_rules(char *pcWANIF)
 	if ((fn = fopen(mangle_fn, "w")) == NULL) return -2;
 
 	lock = file_lock(qos_ipt_lock);
-	switch (get_model()){
-		case MODEL_DSLN55U:
-		case MODEL_RTN13U:
-		case MODEL_RTN56U:
-			action = "CONNMARK --set-return";
-			manual_return = 1;
-			break;
-		default:
-			action = "MARK --set-mark";
-			manual_return = 2;
-			break;
+	if (qos_action_manual() == 0) {
+		action = "CONNMARK --set-return";
+		manual_return = 1;
+	}
+	else if (qos_action_manual() == 1) {
+		action = "MARK --set-mark";
+		manual_return = 2;
 	}
 
 	/* ASUSWRT
@@ -1990,17 +1986,14 @@ static int add_rog_qos_rules(char *pcWANIF)
 	int lock;
 	int evalRet;
 	char *action = NULL;
-	int model = get_model();
 
-	switch (model) {
-		case MODEL_DSLAX82U:
-			action = "--set-mark";
-			manual_return = 1;
-			break;
-		default:
-			action = "--set-return";
-			manual_return = 0;
-			break;
+	if (qos_action_manual() == 0) {
+		action = "--set-return";
+		manual_return = 0;
+	}
+	else if (qos_action_manual() == 1) {
+		action = "--set-mark";
+		manual_return = 1;
 	}
 
 	del_iQosRules(); // flush related rules in mangle table

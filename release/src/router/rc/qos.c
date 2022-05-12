@@ -59,6 +59,14 @@ static const char *mangle_fn_ipv6 = "/tmp/mangle_rules_ipv6";
 int etable_flag = 0;
 int manual_return = 0;
 
+static int qos_action_manual()
+{
+	int ret;
+	ret = 1;
+
+	return ret;
+}
+
 #ifdef RTCONFIG_AMAS_WGN
 static void WGN_ifname(int i, int j, char *wl_if)
 {
@@ -545,58 +553,15 @@ static int add_qos_rules(char *pcWANIF)
 
 	/* action and manual_return */
 	char *action = NULL;
-	int model = get_model();
 	int evalRet;
 
-	switch (model) {
-		case MODEL_RTAC56S:
-		case MODEL_RTAC68U:
-		case MODEL_RTAC87U:
-		case MODEL_RTAC3200:
-		case MODEL_DSLAC68U:
-		case MODEL_RTAC88U:
-		case MODEL_RTAC5300:
-		case MODEL_RTAC3100:
-		case MODEL_GTAC5300:
-		case MODEL_RTAC86U:
-		case MODEL_RTAX88U:
-		case MODEL_GTAX11000:
-		case MODEL_RTAX92U:
-		case MODEL_RTAX95Q:
-		case MODEL_XT8PRO:
-		case MODEL_RTAXE95Q:
-		case MODEL_ET8PRO:
-		case MODEL_RTAX56_XD4:
-		case MODEL_XD4PRO:
-		case MODEL_CTAX56_XD4:
-		case MODEL_RTAX58U:
-		case MODEL_RTAX82_XD6S:
-		case MODEL_RTAX58U_V2:
-		case MODEL_RTAX55:
-		case MODEL_RTAX56U:
-		case MODEL_GTAXE11000:
-		case MODEL_GTAX6000:
-		case MODEL_GTAX11000_PRO:
-		case MODEL_GTAXE16000:
-		case MODEL_ET12:
-		case MODEL_XT12:
-		case MODEL_RTAC1200G:
-		case MODEL_RTAC1200GP:
-#if defined(RTCONFIG_LANTIQ)
-		case MODEL_BLUECAVE:
-#endif
-			action = "--set-mark";
-			manual_return = 1;
-			break;
-		default:
-#if defined(RTCONFIG_QCA)
-			action = "--set-mark";
-			manual_return = 1;
-#else
-			action = "--set-return";
-			manual_return = 0;
-#endif
-			break;
+	if (qos_action_manual() == 0) {
+		action = "--set-return";
+		manual_return = 0;
+	}
+	else if (qos_action_manual() == 1) {
+		action = "--set-mark";
+		manual_return = 1;
 	}
 
 	if(nvram_match("qos_sticky", "0"))
@@ -1446,17 +1411,13 @@ static int add_bandwidth_limiter_rules(char *pcWANIF)
 	if ((fn = fopen(mangle_fn, "w")) == NULL) return -2;
 	del_iQosRules(); // flush all rules in mangle table
 
-	switch (get_model()){
-		case MODEL_DSLN55U:
-		case MODEL_RTN13U:
-		case MODEL_RTN56U:
-			action = "CONNMARK --set-return";
-			manual_return = 0;
-			break;
-		default:
-			action = "MARK --set-mark";
-			manual_return = 1;
-			break;
+	if (qos_action_manual() == 0) {
+		action = "CONNMARK --set-return";
+		manual_return = 0;
+	}
+	else if (qos_action_manual() == 1) {
+		action = "MARK --set-mark";
+		manual_return = 1;
 	}
 
 	/* ASUSWRT
@@ -2255,50 +2216,14 @@ static int add_rog_qos_rules(char *pcWANIF)
 	int v4v6_ok;
 	int evalRet;
 	char *action = NULL;
-	int model = get_model();
 
-	switch (model) {
-		case MODEL_RTAC56S:
-		case MODEL_RTAC68U:
-		case MODEL_RTAC87U:
-		case MODEL_RTAC3200:
-		case MODEL_DSLAC68U:
-		case MODEL_RTAC88U:
-		case MODEL_RTAC5300:
-		case MODEL_RTAC3100:
-		case MODEL_GTAC5300:
-		case MODEL_RTAC86U:
-		case MODEL_RTAX88U:
-		case MODEL_GTAX11000:
-		case MODEL_RTAX92U:
-		case MODEL_RTAX95Q:
-		case MODEL_XT8PRO:
-		case MODEL_RTAXE95Q:
-		case MODEL_ET8PRO:
-		case MODEL_RTAX56_XD4:
-		case MODEL_XD4PRO:
-		case MODEL_CTAX56_XD4:
-		case MODEL_RTAX58U:
-		case MODEL_RTAX58U_V2:
-		case MODEL_RTAX55:
-		case MODEL_RTAX56U:
-		case MODEL_GTAXE11000:
-		case MODEL_GTAX6000:
-		case MODEL_GTAX11000_PRO:
-		case MODEL_GTAXE16000:
-		case MODEL_ET12:
-		case MODEL_XT12:
-		case MODEL_RTAC1200G:
-		case MODEL_RTAC1200GP:
-		case MODEL_BLUECAVE:
-		case MODEL_DSLAX82U:
-			action = "--set-mark";
-			manual_return = 1;
-			break;
-		default:
-			action = "--set-return";
-			manual_return = 0;
-			break;
+	if (qos_action_manual() == 0) {
+		action = "--set-return";
+		manual_return = 0;
+	}
+	else if (qos_action_manual() == 1) {
+		action = "--set-mark";
+		manual_return = 1;
 	}
 
 	del_iQosRules(); // flush related rules in mangle table

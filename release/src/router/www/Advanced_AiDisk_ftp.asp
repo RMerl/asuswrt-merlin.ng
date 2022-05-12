@@ -849,7 +849,7 @@ function secure_check(flag){
 					</td>
 				</tr>										
 				<tr>
-				<th>Enable WAN access</th>
+				<th><#enableWANaccess#></th>
 					<td>
 						<div class="left" style="width:94px; float:left; cursor:pointer;" id="radio_wan_ftp_enable"></div>
 						<div class="iphone_switch_container" style="height:32px; width:74px; position: relative; overflow: hidden">

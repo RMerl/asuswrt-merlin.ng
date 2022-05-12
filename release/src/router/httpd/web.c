@@ -2168,6 +2168,7 @@ websWriteCh(webs_t wp, char *ch, int count)
 #if !defined(RTCONFIG_QCA) && !defined(RTCONFIG_LANTIQ) && !defined(HND_ROUTER)
 const char *syslog_msg_filter[] = {
 	"net_ratelimit",
+	"exist in UDB, can't", "is used by someone else, can't use it", "not mesh client, can't update it", "not mesh client, can't delete it",
 	NULL
 };
 #endif
@@ -4223,7 +4224,8 @@ int validate_apply(webs_t wp, json_object *root) {
 				}
 #endif
 #if defined(RTCONFIG_AIHOME_TUNNEL)
-				if(!strcmp(name, "ddns_enable_x") || !strcmp(name, "ddns_hostname_x") || !strcmp(name, "misc_http_x") || !strcmp(name, "misc_httpsport_x")){
+				if(!strcmp(name, "ddns_enable_x") || !strcmp(name, "ddns_hostname_x") || !strcmp(name, "misc_http_x") || !strcmp(name, "misc_httpsport_x") || 
+				!strcmp(name, "https_lanport") || !strcmp(name, "http_enable")){
 #if defined(RTCONFIG_NOTIFICATION_CENTER) && (defined(RTCONFIG_IFTTT) || defined(RTCONFIG_ALEXA) || defined(RTCONFIG_GOOGLE_ASST))
 					IFTTT_DEBUG("[HTTPD] nvram=%s is change and notice mastiff update\n", name);
 #endif
@@ -11501,10 +11503,13 @@ json_unescape(char *s)
 	while ((s = strpbrk(s, "%+"))) {
 		/* Parse %xx */
 		if (*s == '%') {
-			sscanf(s + 1, "%02x", &c);
-			*s++ = (char) c;
-			strlcpy(s_tmp, s + 2, sizeof(s_tmp));
-			strncpy(s, s_tmp, strlen(s) + 1);
+			if(isxdigit(s[1]) && isxdigit(s[2])){
+				sscanf(s + 1, "%02x", &c);
+				*s++ = (char) c;
+				strlcpy(s_tmp, s + 2, sizeof(s_tmp));
+				strncpy(s, s_tmp, strlen(s) + 1);
+			}else
+				*s++;
 		}
 		/* Space is special */
 		else if (*s == '+')
@@ -11541,6 +11546,7 @@ int do_json_decode(struct json_object *root)
 {
 	char name_tmp[50] = {0};
 	struct json_object *tmp_obj = NULL;
+	struct json_object *copy_json = NULL;
 
 	decode_json_buffer(post_json_buf);
 
@@ -11548,7 +11554,8 @@ int do_json_decode(struct json_object *root)
 		json_object_object_foreach(tmp_obj, key, val){
 			memset(name_tmp, 0, sizeof(name_tmp));
 			wl_nband_to_wlx(key, name_tmp, sizeof(name_tmp));
-			json_object_object_add(root, name_tmp, json_object_new_string(json_object_get_string(val)));
+			copy_json = json_object_get(val);
+			json_object_object_add(root, name_tmp, copy_json);
 		}
 		json_object_put(tmp_obj);
 		return 1;
@@ -13347,6 +13354,16 @@ do_lang_post(char *url, FILE *stream, int len, char *boundary)
 		(((__u32)(x) & (__u32)0x00ff0000UL) >>  8) | \
 		(((__u32)(x) & (__u32)0xff000000UL) >> 24) ))
 
+int cf_force_write = 0;	// force write to fifo if cf magic is wrong, ie. COMFW defined but encounter not-comfw fw
+#ifdef RTCONFIG_COMFW
+int comfw_imglen = 0;
+int comfw_acclen = 0;
+int comfw_fin = 0;
+comfw_head cf_head;
+int comfw_idx = -1;
+int skip_comfw = 0;
+int non_comfw = 0;
+#endif
 int upgrade_err = 0;
 int stop_upgrade_once = 0;
 
@@ -13404,8 +13421,13 @@ sys_upgrade_bca(FILE *stream, int *total, char* boundary)
 	 * 2 is "--" (two hyphens) that usually boundary markers start with.
 	 * 4 is len of "--\r\n" appears at the end of "last boundary marker".
 	 */
+#ifdef RTCONFIG_COMFW
+	if(cf_force_write)
+		*total += sizeof(cf_head);
+#endif
 	*total = *total - (2 + 2 + boundary_len + 4);
 
+	cprintf("%s, chk total is %d\n", __func__, *total);
 	/* send actual image size to "write" process */
 	if ((count = safe_fwrite(total, 1, sizeof(*total), fifo)) != sizeof(*total)) {
 		cprintf("*** Error(pid:%d): %s@%d Failed to write %d bytes to pipe. Written bytes=%d\n",
@@ -13421,6 +13443,13 @@ sys_upgrade_bca(FILE *stream, int *total, char* boundary)
 		goto err;
 	}
 
+#ifdef RTCONFIG_COMFW
+	if(cf_force_write) {
+		cprintf("write the init-fetched part of non-comfw: %d\n", sizeof(cf_head));
+		safe_fwrite(&cf_head, 1, sizeof(cf_head), fifo);
+		*total -= sizeof(cf_head);
+	}
+#endif
 	/* Read image from HTTP content and pipe it to the child process */
 	while (*total) {
 		int readlen = MIN(*total, BUFSIZ);
@@ -13469,15 +13498,6 @@ sys_upgrade_bca(FILE *stream, int *total, char* boundary)
 #endif
 
 #ifdef RTCONFIG_COMFW
-int comfw_imglen = 0;
-int comfw_acclen = 0;
-int comfw_fin = 0;
-comfw_head cf_head;
-int comfw_idx = -1;
-int cf_force_write = 0;	// force write to fifo if cf magic is wrong
-int skip_comfw = 0;
-int non_comfw = 0;
-
 int get_imgidx(comfw_head *ch) 
 {
 	int ftype = nvram_get_int("comfw_type");
@@ -13580,42 +13600,6 @@ int parse_cf_head(FILE *stream, int *len, int *comfw_rem_len, int reset_len)
 	}
 	return comfw_idx;
 }
-
-// cannot slurp here due it affects uploadPtr.
-/*	
-void slurp_comfw_remained(FILE *stream, int *len)
-{
-	int i, ch;
-	int total_remained = 0;
-	int imglen;
-
-	_dprintf("%s, chk comfw_idx=%d, len=%d\n", __func__, comfw_idx, *len);
-
-	for(i=0; i<MAX_CF; ++i) {
-		if(i > comfw_idx)
-			total_remained += cf_head.fw_size[i];
-	}
-	_dprintf("\n%s, need to slurp %d bytes\n", __func__, total_remained);
-
-	imglen = total_remained;
-	if(imglen > *len) {
-		_dprintf("%s: comfw: unexpected imglen:%d(>%d)\n", __func__, imglen, *len);
-		return;
-	}
-
-	while (imglen-- > 0)
-		if((ch = fgetc(stream)) == EOF)
-			break;
-
-	if(imglen > 0) {
-		_dprintf("%s: comfw: slurp stream fail at img-%d, imglen\n", __func__, i, imglen);
-		*len -= total_remained - imglen;
-		return;
-	}
-	*len -= total_remained;
-	_dprintf("%s, after slurp, len=%d\n", __func__, *len);
-}
-*/
 
 #endif
 
@@ -13837,6 +13821,9 @@ static int get_single_char(FILE *stream)
 #define TMP_NEW_IMAGE_FILENAME "/tmp/newfirmware.pkgtb"
 #define SINGLE_IMAGE_SCRIPT "/etc/init.d/fwupg_create_tmprootfs.sh"
 #endif
+#ifdef RTCONFIG_SINGLEIMG_B
+#define SINGLE_IMAGE_SCRIPT "/usr/sbin/fwupg_create_tmprootfs.sh"
+#endif
 
 #define  FN_TOKEN          "filename="
 #define  FN_TOKEN_LEN      strlen(FN_TOKEN)
@@ -13870,6 +13857,7 @@ int inc_uploadImg(FILE * stream, int *len, uint32 *imageLen)
 	int i;
 	int fdt_head = 0;
 	char *model = NULL;
+	char *buildname = NULL;
 	char *prp = NULL;
 	char *descp = NULL;
 	int fget_null = 0;
@@ -14015,6 +14003,7 @@ int inc_uploadImg(FILE * stream, int *len, uint32 *imageLen)
 	/* Accumulated image size. */
 	imageSizeAcc = 0;
 	model = nvram_safe_get("model");
+	buildname = nvram_safe_get("build_name");
 
 #ifdef RTCONFIG_COMFW
 	int comfw_rem_len = 0;
@@ -14082,10 +14071,12 @@ int inc_uploadImg(FILE * stream, int *len, uint32 *imageLen)
 			prp = uploadBufPtr+FDT_PROPERTY_OFFSET;
 			descp = uploadBufPtr+FDT_DESCP_OFFSET;
 			
-			if(*prp==0 && *(prp+1)==0x3 && strncmp(model, descp, strlen(model)) == 0)
-				_dprintf("%s: model %s confirmed.\n", __func__, model);
-			else
-				_dprintf("%s: model %s(%d)/%s(%d) not matched. prp[%x][%x]\n", __func__, model, strlen(model), descp, strlen(descp), *prp, *(prp+1));
+			if(*prp==0 && *(prp+1)==0x3 && strncmp(buildname, descp, strlen(buildname)) == 0)
+				_dprintf("%s: model<%s> %s confirmed.\n", __func__, model, buildname);
+			else {
+				_dprintf("%s: <%s(%d)> model's buildname Not Matched w/ img-description: %s(%d)/%s(%d). chk prp [%x][%x]\n", __func__, model, strlen(model), buildname, strlen(buildname), descp, strlen(descp), *prp, *(prp+1));
+				return -1;
+			}
 		}
 
 #ifdef RTCONFIG_COMFW
@@ -14345,13 +14336,9 @@ do_upgrade_post(char *url, FILE *stream, int len, char *boundary)
 	_dprintf("%s: comfw stream len=%d\n", __func__, len);
 #endif
 	
-#ifdef RTCONFIG_HND_ROUTER_AX_6756
+#if defined(RTCONFIG_HND_ROUTER_AX_6756) && !defined(RTCONFIG_SINGLEIMG_B)
 	uint32 imageLen;
         int ret;
-	//int old_partition;
-
-	//old_partition = getBootPartition();
-	//_dprintf("Firmware Upgrade from partition %d\n", old_partition);
 
 	_dprintf("%s: stream len=%d\n", __func__, len);
 	nvram_set("upgrade_done", "0");
@@ -14398,7 +14385,7 @@ do_upgrade_post(char *url, FILE *stream, int len, char *boundary)
 	}
 
 	goto err;
-#endif
+#endif // ~RTCONFIG_HND_ROUTER_AX_6756
 
 #ifdef HND_ROUTER
 	int boundary_len = ((boundary != NULL) ? strlen(boundary) : 0);
@@ -14476,14 +14463,15 @@ do_upgrade_post(char *url, FILE *stream, int len, char *boundary)
 		goto err;
 	}
 	upgrade_err = 0;
+#ifndef defined(RTCONFIG_PIPEFW)
 	if(!nvram_match("skip_comfw", "1") && !cf_force_write) {
 		_dprintf("\n:%s, preadd exlen to len\n", __func__);
 		len += ex_len;
 	}
-
+#endif
 	_dprintf("%s, Chk len=%d(%d), comfw_remain=%d, ex_len=%d, cf_head_size=%d, total=%d\n", __func__, len, len-ex_len, comfw_rem_len, ex_len, sizeof(comfw_head), sizeof(comfw_head) + len + comfw_rem_len - ex_len);
 #endif
-
+	_dprintf("%s, Again chk len=%d, cf_force_write=%d\n", __func__, len, cf_force_write);
 	wait_rc_misc();
 
 #if defined(RTCONFIG_PIPEFW)
@@ -14683,12 +14671,18 @@ do_upgrade_cgi(char *url, FILE *stream)
 		_dprintf("\n%s, websApply Updateing asp\n", __func__);
 		websApply(stream, "Updating.asp");
 		shutdown(fileno(stream), SHUT_RDWR);
+#ifndef RTCONFIG_SINGLEIMG_B
 		while(etry-- && (err = upgrade_rc("start", autoreboot, reset, bootnew, 60)))
 		{
 			printf("%s, try agn upgrade...%d/3, err=%d\n", __FUNCTION__, etry, err);
 			upgrade_rc("stop", autoreboot, reset, bootnew, 10);
 			stop_upgrade_once = 1;
 		}
+#else // singleImg_b
+		_dprintf("Go create temp new-root env, show tmp fw\n");
+		system("ls -al /tmp");
+		system(SINGLE_IMAGE_SCRIPT);
+#endif
 	}
 	else
 	{
@@ -16163,7 +16157,7 @@ void get_ipsec_remote_id(char *remote_id, int remote_id_len)
 
 	strlcpy(ddns_name, nvram_safe_get("ddns_hostname_x"), sizeof(ddns_name));
 
-	if(strlen(ddns_name) == 0)
+	if(!nvram_get_int("ddns_enable_x") || strlen(ddns_name) == 0)
 	{
 		snprintf(prefix, sizeof(prefix), "wan%d_", get_active_wan_unit());
 		snprintf(remote_id, remote_id_len, "%s", nvram_pf_safe_get(prefix, "ipaddr"));
@@ -21236,7 +21230,7 @@ do_bandwidth_monitor_ej(char *url, FILE *stream) {
 }
 #endif
 
-#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX6000) || defined(GTAXE16000) || defined(GTAX11000_PRO)
+#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX6000) || defined(GTAXE16000) || defined(GTAX11000_PRO) || defined(GT10)
 static void
 do_set_ledg_cgi(char *url, FILE *stream) {
 
@@ -21264,6 +21258,10 @@ do_set_ledg_cgi(char *url, FILE *stream) {
 				nvram_set(ledg_rgb_name, ledg_rgb);
 			}
 		case LEDG_SCHEME_OFF:
+			if(nvram_get_int("antled_scheme") && ledg_scheme == LEDG_SCHEME_OFF){
+				nvram_set_int("antled_scheme_old", nvram_get_int("antled_scheme"));
+				nvram_set_int("antled_scheme", ledg_scheme);
+			}
 		case LEDG_SCHEME_COLOR_CYCLE:
 		case LEDG_SCHEME_RAINBOW:
 		case LEDG_SCHEME_WATER_FLOW:
@@ -21281,6 +21279,9 @@ do_set_ledg_cgi(char *url, FILE *stream) {
 
 	nvram_commit();
 	kill_pidfile_s("/var/run/ledg.pid", SIGTSTP);
+
+	if(ledg_scheme == LEDG_SCHEME_OFF)
+		kill_pidfile_s("/var/run/antled.pid", SIGTSTP);
 
 FINISH:
 	if(root)
@@ -21519,6 +21520,69 @@ do_chpass_cgi(char *url, FILE *stream)
 #endif
 }
 
+static void do_ModelProduct_png(char *url, FILE *stream)
+{
+    int brand = nvram_get_int("CoBrand");
+    char path[128] = {0};
+    char *productid = strdup(nvram_safe_get("productid"));
+    char *odmpid = strdup(nvram_safe_get("odmpid"));
+
+    //dbg("%s(%d): do_ModelProduct_png: brand = %d odmpid = %s productid = %s territory_code = %s\n",  __FUNCTION__, __LINE__, brand, nvram_safe_get("odmpid"), nvram_safe_get("productid"), nvram_safe_get("territory_code"));
+    if(brand > 0)
+        snprintf(path, sizeof(path), "images/Model_product_%d.png", brand);
+    else if(!strncmp(nvram_safe_get("territory_code"), "GD", 2))
+        snprintf(path, sizeof(path), "images/Model_product_1.png");
+    else if(strlen(odmpid) > 0 && strcmp(odmpid, productid)){
+        if(!strcmp(odmpid, "RT-N66W") || !strcmp(odmpid, "RT-AC66W") || !strcmp(odmpid, "RT-AC68W") || !strcmp(odmpid, "RT-AC68RW"))
+            snprintf(path, sizeof(path), "images/Model_product_5.png");
+        else if(!strcmp(odmpid, "RT-AC66U_B1") || !strcmp(odmpid, "RT-AC1750_B1") || !strcmp(odmpid, "RT-N66U_C1") || !strcmp(odmpid, "RT-AC1900U") || !strcmp(odmpid, "RT-AC67U"))
+            snprintf(path, sizeof(path), "images/RT-AC66U_V2/Model_product.png");
+        else if(!strcmp(odmpid, "RP-AC1900"))
+            snprintf(path, sizeof(path), "images/RP-AC1900/Model_product.png");
+        else if(!strcmp(odmpid, "RT-AX86S"))
+            snprintf(path, sizeof(path), "images/Model_product_rt-ax86s.png");
+    }
+    else if(!strcmp(productid, "RT-AC87U")){
+        if(nvram_match("territory_code", "JP/02"))
+            snprintf(path, sizeof(path), "images/Model_product_5.png");
+    }
+    else if(nvram_contains_word("rc_support", "odm"))
+        snprintf(path, sizeof(path), "images/Model_product_COD.png");
+
+//dbg("%s(%d): path: %s\n", __FUNCTION__, __LINE__, path);
+#ifdef RTCONFIG_UIDEBUG
+    char sysdepPath[128];
+    snprintf(sysdepPath, sizeof(sysdepPath), "sysdep/%s/www/", nvram_safe_get("productid"));
+    strlcat(sysdepPath, path, sizeof(sysdepPath));
+    if(check_if_file_exist(sysdepPath)){
+        //dbg("%s(%d): ### GET ### sysdepPath: %s\n", __FUNCTION__, __LINE__, sysdepPath);
+        snprintf(path, sizeof(path), "%s", sysdepPath);
+    }
+    else{
+        snprintf(sysdepPath, sizeof(sysdepPath), "sysdep/%s/www/images/Model_product.png", nvram_safe_get("productid"));
+        if(check_if_file_exist(sysdepPath)){
+            //dbg("%s(%d): use sysdep default image sysdepPath: %s\n", __FUNCTION__, __LINE__, sysdepPath);
+            snprintf(path, sizeof(path), "%s", sysdepPath);
+        }
+    }
+#endif
+
+    //dbg("%s(%d): do_ModelProduct_png: brand = %d path =%s (%d)\n",  __FUNCTION__, __LINE__, brand, path, strlen(path));
+    if(strlen(path) == 0 || !check_if_file_exist(path)){
+        //dbg("%s(%d): do_ModelProduct_png: no path or no such file\n",  __FUNCTION__, __LINE__);
+        snprintf(path, sizeof(path), "images/Model_product.png");
+    }
+
+    //dbg("%s(%d): do_ModelProduct_png: do_file %s\n", __FUNCTION__, __LINE__, path);
+    do_file(path, stream);
+
+    if(productid)
+        free(productid);
+
+    if(odmpid)
+        free(odmpid);
+}
+
 //2008.08 magic{
 struct mime_handler mime_handlers[] = {
 	{ "Main_Login.asp", "text/html", no_cache_IE7, do_html_post_and_get, do_ej, NULL },
@@ -21591,6 +21655,7 @@ struct mime_handler mime_handlers[] = {
 	{ "AdaptiveQoS_WebHistory.asp", "text/html", no_cache_IE7, do_html_post_and_get, do_web_history_ej, do_auth },
 	{ "AdaptiveQoS_Bandwidth_Monitor.asp", "text/html", no_cache_IE7, do_html_post_and_get, do_bandwidth_monitor_ej, do_auth },
 #endif
+    { "images/Model_product.png", "image/png", cache_object, do_html_post_and_get, do_ModelProduct_png, NULL },
 	{ "**.xml", "text/xml", no_cache_IE7, do_html_post_and_get, do_ej, do_auth },
 	{ "**.htm*", "text/html", no_cache_IE7, do_html_post_and_get, do_ej, do_auth },
 	{ "**.asp*", "text/html", no_cache_IE7, do_html_post_and_get, do_ej, do_auth },
@@ -21791,7 +21856,7 @@ struct mime_handler mime_handlers[] = {
 	{ "set_ookla_speedtest_start_time.cgi", "text/html", no_cache_IE7, do_html_post_and_get, set_ookla_speedtest_start_time_cgi, do_auth },
 #endif
 	{ "del_client_data.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_del_client_data_cgi, do_auth },
-#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX6000) || defined(GTAXE16000) || defined(GTAX11000_PRO)
+#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX6000) || defined(GTAXE16000) || defined(GTAX11000_PRO) || defined(GT10)
 	{ "set_ledg.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_set_ledg_cgi, do_auth },
 #endif
 #if defined(GTAX6000)
@@ -24695,42 +24760,6 @@ int ej_UI_rs_status(int eid, webs_t wp, int argc, char **argv){
 int ej_webdavInfo(int eid, webs_t wp, int argc, char **argv) {
 
 	char ssid[32];
-	unsigned short ExtendCap=0;
-#ifdef RTCONFIG_WEBDAV
-	ExtendCap |= EXTEND_CAP_WEBDAV;
-#else
-	ExtendCap = 0;
-	if(check_if_file_exist("/opt/etc/init.d/S50aicloud"))
-		ExtendCap |= EXTEND_CAP_WEBDAV;
-#endif
-#ifdef RTCONFIG_TUNNEL
-	ExtendCap |= EXTEND_CAP_AAE_BASIC;
-#endif
-	ExtendCap |= EXTEND_CAP_SWCTRL;
-#ifdef RTCONFIG_AMAS
-#ifdef RTCONFIG_SW_HW_AUTH
-	if (getAmasSupportMode() != 0)
-	{
-#endif
-		if (!repeater_mode()
-#if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
-			&& !psr_mode()
-#endif
-#ifdef RTCONFIG_DPSTA
-			&& !(dpsta_mode() && nvram_get_int("re_mode") == 0)
-#endif
-		)
-			ExtendCap |= EXTEND_CAP_AMAS;
-#ifdef RTCONFIG_SW_HW_AUTH
-        }
-#endif
-	if (nvram_get_int("amas_bdl"))
-		ExtendCap |= EXTEND_CAP_AMAS_BDL;
-#endif
-#if defined(RTCONFIG_CFGSYNC) && defined(RTCONFIG_MASTER_DET)
-	if (nvram_get_int("cfg_master"))
-		ExtendCap |= EXTEND_CAP_MASTER;
-#endif
 	get_discovery_ssid(ssid, sizeof(ssid));
 	websWrite(wp, "// pktInfo=['PrinterInfo','SSID','NetMask','ProductID','FWVersion','OPMode','MACAddr','Regulation'];\n");
 	websWrite(wp, "pktInfo=['','%s',", ssid);
@@ -24761,7 +24790,7 @@ int ej_webdavInfo(int eid, webs_t wp, int argc, char **argv) {
 
 	websWrite(wp, "// toAPPInfo=['Ver','ExtendCap', label_mac, odmpid, productid, extendno, rtinfo, w_Setting];\n");
 	websWrite(wp, "toAPPInfo=['%d'", WEBDEVINFO_VER);
-	websWrite(wp, ",'%u',", ExtendCap);
+	websWrite(wp, ",'%u',", get_extend_cap());
 	websWrite(wp, "'%s',", get_label_mac());
 	websWrite(wp, "'%s',", nvram_safe_get("odmpid"));
 	websWrite(wp, "'%s',", nvram_safe_get("productid"));
@@ -31753,30 +31782,30 @@ static int ej_dfs_remaining_time(int eid, webs_t wp, int argc, char_t **argv)
 static int
 ej_get_ethernet_wan_list(int eid, webs_t wp, int argc, char **argv) {
 	struct json_object *eth_wan_list = json_object_new_object();
-	struct json_object *eth_wan_setting = NULL;
-	struct json_object *extra_setting = NULL;
 
-#if defined(GTAXE11000) || defined(RTAX86U) || defined(GTAX11000)
-	//1G WAN
-	eth_wan_setting = json_object_new_object();
-	extra_setting = json_object_new_object();
-	json_object_object_add(eth_wan_setting, "wan_name", json_object_new_string("WAN"));
-	json_object_object_add(extra_setting, "wans_extwan", json_object_new_string("0"));
-	json_object_object_add(eth_wan_setting, "extra_settings", extra_setting);
-	json_object_object_add(eth_wan_list, "wan", eth_wan_setting);
+#if defined(GTAXE11000) || defined(RTAX86U) || defined(GTAX11000) || defined(RTAX86U_PRO)
+    if(strcasecmp(get_productid(), "RT-AX86S")){
+        //1G WAN
+        struct json_object *eth_wan_setting = json_object_new_object();
+        struct json_object *extra_setting = json_object_new_object();
+        json_object_object_add(eth_wan_setting, "wan_name", json_object_new_string("WAN"));
+        json_object_object_add(extra_setting, "wans_extwan", json_object_new_string("0"));
+        json_object_object_add(eth_wan_setting, "extra_settings", extra_setting);
+        json_object_object_add(eth_wan_list, "wan", eth_wan_setting);
 
-	//2.5G WAN
-	eth_wan_setting = json_object_new_object();
-	extra_setting = json_object_new_object();
-	json_object_object_add(eth_wan_setting, "wan_name", json_object_new_string("2.5G WAN"));
-	json_object_object_add(extra_setting, "wans_extwan", json_object_new_string("1"));
-	json_object_object_add(eth_wan_setting, "extra_settings", extra_setting);
-	json_object_object_add(eth_wan_setting, "wans_lanport", json_object_new_string("5"));
-	json_object_object_add(eth_wan_list, "2p5g", eth_wan_setting);
-#elif defined(GTAXE16000)
+        //2.5G WAN
+        eth_wan_setting = json_object_new_object();
+        extra_setting = json_object_new_object();
+        json_object_object_add(eth_wan_setting, "wan_name", json_object_new_string("2.5G WAN"));
+        json_object_object_add(extra_setting, "wans_extwan", json_object_new_string("1"));
+        json_object_object_add(eth_wan_setting, "extra_settings", extra_setting);
+        json_object_object_add(eth_wan_setting, "wans_lanport", json_object_new_string("5"));
+        json_object_object_add(eth_wan_list, "2p5g", eth_wan_setting);
+    }
+#elif defined(GTAXE16000) || defined(GTAX11000_PRO)
 	//2.5G/1G WAN
-	eth_wan_setting = json_object_new_object();
-	extra_setting = json_object_new_object();
+	struct json_object *eth_wan_setting = json_object_new_object();
+	struct json_object *extra_setting = json_object_new_object();
 	json_object_object_add(eth_wan_setting, "wan_name", json_object_new_string("2.5G/1G WAN"));
 	json_object_object_add(extra_setting, "wan_ifname_x", json_object_new_string("eth0"));
 	json_object_object_add(eth_wan_setting, "extra_settings", extra_setting);
@@ -31786,12 +31815,15 @@ ej_get_ethernet_wan_list(int eid, webs_t wp, int argc, char **argv) {
 	//10G Ethernet 1
 	eth_wan_setting = json_object_new_object();
 	extra_setting = json_object_new_object();
-	json_object_object_add(eth_wan_setting, "wan_name", json_object_new_string("10G Ethernet 1"));
+    if(!strcasecmp(get_productid(), "GT-AXE16000"))
+	   json_object_object_add(eth_wan_setting, "wan_name", json_object_new_string("10G Ethernet 1"));
+    else if(!strcasecmp(get_productid(), "GT-AX11000_Pro"))
+       json_object_object_add(eth_wan_setting, "wan_name", json_object_new_string("10G Ethernet"));
 	json_object_object_add(extra_setting, "wan_ifname_x", json_object_new_string("eth5"));
 	json_object_object_add(eth_wan_setting, "extra_settings", extra_setting);
 	json_object_object_add(eth_wan_setting, "wans_lanport", json_object_new_string("5"));
 	json_object_object_add(eth_wan_list, "10ge1", eth_wan_setting);
-
+#if defined(GTAXE16000)
 	//10G Ethernet 2
 	eth_wan_setting = json_object_new_object();
 	extra_setting = json_object_new_object();
@@ -31800,6 +31832,7 @@ ej_get_ethernet_wan_list(int eid, webs_t wp, int argc, char **argv) {
 	json_object_object_add(eth_wan_setting, "extra_settings", extra_setting);
 	json_object_object_add(eth_wan_setting, "wans_lanport", json_object_new_string("6"));
 	json_object_object_add(eth_wan_list, "10ge2", eth_wan_setting);
+#endif
 #endif
 
 	websWrite(wp, "%s\n", json_object_to_json_string(eth_wan_list));
@@ -32639,7 +32672,7 @@ struct log_pass_url_list log_pass_handlers[] = {
 	{ NULL, NULL }
 };	/* */
 
-#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX6000) || defined(GTAXE16000) || defined(GTAX11000_PRO)
+#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX6000) || defined(GTAXE16000) || defined(GTAX11000_PRO) || defined(GT10)
 void switch_ledg(int action)
 {
 	switch(action) {

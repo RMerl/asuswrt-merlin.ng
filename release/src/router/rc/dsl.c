@@ -125,6 +125,7 @@ static void convert_dsl_wan()
 {
 	char wan_prefix[16] = {0};
 	char dsl_prefix[16] = {0};
+	char *dsl_def_prefix = "dsl_";
 	char dsl_proto[16] = {0};
 	int wan_base_unit = WAN_UNIT_FIRST;
 	int i = 0;
@@ -196,29 +197,29 @@ static void convert_dsl_wan()
 		}
 
 		nvram_pf_set(wan_prefix, "enable", "1");
-		nvram_pf_set(wan_prefix, "nat_x", nvram_pf_safe_get(dsl_prefix, "nat"));
-		nvram_pf_set(wan_prefix, "upnp_enable", nvram_pf_safe_get(dsl_prefix, "upnp_enable"));
-		nvram_pf_set(wan_prefix, "dhcpenable_x", nvram_pf_safe_get(dsl_prefix, "DHCPClient"));
+		nvram_pf_set(wan_prefix, "nat_x", nvram_pf_get(dsl_prefix, "nat") ?: (nvram_pf_safe_get(dsl_def_prefix, "nat")));
+		nvram_pf_set(wan_prefix, "upnp_enable", nvram_pf_get(dsl_prefix, "upnp_enable") ?: nvram_pf_safe_get(dsl_def_prefix, "upnp_enable"));
+		nvram_pf_set(wan_prefix, "dhcpenable_x", nvram_pf_get(dsl_prefix, "DHCPClient") ?: nvram_pf_safe_get(dsl_def_prefix, "DHCPClient"));
 		nvram_pf_set(wan_prefix, "ipaddr_x", nvram_pf_safe_get(dsl_prefix, "ipaddr"));
 		nvram_pf_set(wan_prefix, "netmask_x", nvram_pf_safe_get(dsl_prefix, "netmask"));
 		nvram_pf_set(wan_prefix, "gateway_x", nvram_pf_safe_get(dsl_prefix, "gateway"));
-		nvram_pf_set(wan_prefix, "dnsenable_x", nvram_pf_safe_get(dsl_prefix, "dnsenable"));
+		nvram_pf_set(wan_prefix, "dnsenable_x", nvram_pf_get(dsl_prefix, "dnsenable") ?: nvram_pf_safe_get(dsl_def_prefix, "dnsenable"));
 		nvram_pf_set(wan_prefix, "dns1_x", nvram_pf_safe_get(dsl_prefix, "dns1"));
 		nvram_pf_set(wan_prefix, "dns2_x", nvram_pf_safe_get(dsl_prefix, "dns2"));
 		nvram_pf_set(wan_prefix, "pppoe_username", nvram_pf_safe_get(dsl_prefix, "pppoe_username"));
 		nvram_pf_set(wan_prefix, "pppoe_passwd", nvram_pf_safe_get(dsl_prefix, "pppoe_passwd"));
 		nvram_pf_set(wan_prefix, "pppoe_auth", nvram_pf_safe_get(dsl_prefix, "pppoe_auth"));
-		nvram_pf_set(wan_prefix, "pppoe_idletime", nvram_pf_safe_get(dsl_prefix, "pppoe_idletime"));
-		nvram_pf_set(wan_prefix, "pppoe_mtu", nvram_pf_safe_get(dsl_prefix, "pppoe_mtu"));
-		nvram_pf_set(wan_prefix, "pppoe_mru", nvram_pf_safe_get(dsl_prefix, "pppoe_mru"));
+		nvram_pf_set(wan_prefix, "pppoe_idletime", nvram_pf_get(dsl_prefix, "pppoe_idletime") ?: nvram_pf_safe_get(dsl_def_prefix, "pppoe_idletime"));
+		nvram_pf_set(wan_prefix, "pppoe_mtu", nvram_pf_get(dsl_prefix, "pppoe_mtu") ?: nvram_pf_safe_get(dsl_def_prefix, "pppoe_mtu"));
+		nvram_pf_set(wan_prefix, "pppoe_mru", nvram_pf_get(dsl_prefix, "pppoe_mru") ?: nvram_pf_safe_get(dsl_def_prefix, "pppoe_mru"));
 		nvram_pf_set(wan_prefix, "pppoe_service", nvram_pf_safe_get(dsl_prefix, "pppoe_service"));
 		nvram_pf_set(wan_prefix, "pppoe_ac", nvram_pf_safe_get(dsl_prefix, "pppoe_ac"));
 		nvram_pf_set(wan_prefix, "pppoe_hostuniq", nvram_pf_safe_get(dsl_prefix, "pppoe_hostuniq"));
 		nvram_pf_set(wan_prefix, "pppoe_options_x", nvram_pf_safe_get(dsl_prefix, "pppoe_options"));
 		nvram_pf_set(wan_prefix, "hwaddr_x", nvram_pf_safe_get(dsl_prefix, "hwaddr"));
 		nvram_pf_set(wan_prefix, "mtu", nvram_pf_safe_get(dsl_prefix, "mtu"));
-		nvram_pf_set(wan_prefix, "dhcp_qry", nvram_pf_safe_get(dsl_prefix, "dhcp_qry"));
-		nvram_pf_set(wan_prefix, "clientid_type", nvram_pf_safe_get(dsl_prefix, "dhcp_clientid_type"));
+		nvram_pf_set(wan_prefix, "dhcp_qry", nvram_pf_get(dsl_prefix, "dhcp_qry") ?: nvram_pf_safe_get(dsl_def_prefix, "dhcp_qry"));
+		nvram_pf_set(wan_prefix, "clientid_type", nvram_pf_get(dsl_prefix, "dhcp_clientid_type") ?: nvram_pf_safe_get(dsl_def_prefix, "dhcp_clientid_type"));
 		nvram_pf_set(wan_prefix, "clientid", nvram_pf_safe_get(dsl_prefix, "dhcp_clientid"));
 		nvram_pf_set(wan_prefix, "vendorid", nvram_pf_safe_get(dsl_prefix, "dhcp_vendorid"));
 		nvram_pf_set(wan_prefix, "hostname", nvram_pf_safe_get(dsl_prefix, "dhcp_hostname"));

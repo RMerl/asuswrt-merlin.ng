@@ -489,7 +489,14 @@ function turn_off_lacp_if_conflicts(){
 
 	if((based_modelid == "RT-AX89U" || based_modelid == "GT-AXY16000")){
 		// LAN1 and/or LAN2.
-		if(document.form.switch_wantag.value == "none" && (document.form.switch_stb_x0.value == 1 || document.form.switch_stb_x0.value == 2 || document.form.switch_stb_x0.value == 5)){
+		if(document.form.switch_wantag.value == "none" && (document.form.switch_stb_x0.value == "1" || document.form.switch_stb_x0.value == "2" || document.form.switch_stb_x0.value == "5")){
+			document.form.lacp_enabled.disabled = false;
+			document.form.lacp_enabled.value = "0";
+		}
+	}
+	else if(based_modelid == "XT8PRO"){
+		//LAN 2 and/or LAN3
+		if((document.form.switch_wantag.value == "none" && (document.form.switch_stb_x0.value == "2" || document.form.switch_stb_x0.value == "3" || document.form.switch_stb_x0.value == "5" || document.form.switch_stb_x0.value == "6"))){
 			document.form.lacp_enabled.disabled = false;
 			document.form.lacp_enabled.value = "0";
 		}

@@ -1232,6 +1232,20 @@ var httpApi ={
 		});
 	},
 
+	"set_antled" : function(postData, parmData){
+		var asyncDefault = true;
+		$.ajax({
+			url: '/set_antled.cgi',
+			dataType: 'json',
+			data: postData,
+			async: asyncDefault,
+			error: function(){},
+			success: function(response){
+				if(parmData != undefined && parmData.callBack) parmData.callBack.call(response);
+			}
+		});
+	},
+
 	"get_wl_sched": function(wl_unit, callBack){
 		var _wl_unit = "all";
 		if(wl_unit != undefined && wl_unit.toString() != "")

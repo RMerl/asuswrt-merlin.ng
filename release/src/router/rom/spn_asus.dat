@@ -793,7 +793,7 @@
 46020,CMCC HTTP,*99#,wap,wap,cmwap,CMCC HTTP
 46020,CMCC Internet,*99#,,,cmnet,CMCC Internet
 46601,Far EasTone,*99#,,,internet,Far EasTone
-46605,GT,*99#,,,Gent,KGT-Online
+46605,GT,*99#,,,gtnet,KGT-Online
 46689,T-Star,*99#,,,internet,T Star-internet
 46692,Chunghwa,*99***1#,,,internet,CHT Internet
 46693,TW Mobile,*99#,,,internet,TW Mobile

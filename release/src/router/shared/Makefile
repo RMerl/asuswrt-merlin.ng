@@ -220,6 +220,8 @@ else ifeq ($(RTCONFIG_QCN550X)$(RTCONFIG_SWITCH_QCA8337N),yy)
 OBJS += qca8337_ssdk_sh.o
 else ifeq ($(RTCONFIG_SOC_IPQ60XX),y)
 OBJS += ipq60xx.o
+else ifeq ($(RTCONFIG_SWITCH_IPQ50XX_QCA8337),y)
+OBJS += ipq50xx_qca8337.o
 else ifeq ($(RTCONFIG_SOC_IPQ50XX),y)
 OBJS += ipq50xx.o
 else
@@ -408,7 +410,7 @@ else
 vpath %.c sysdeps/broadcom  $(SRCBASE)/shared/bcmwifi/src
 ifeq ($(RTCONFIG_HND_ROUTER_AX),y)
 OBJS += bcmxtlv.o bcmutils.o
-ifeq ($(or $(RTAX55),$(RTAX1800),$(RTAX58U_V2)),y)
+ifeq ($(or $(RTAX55),$(RTAX1800),$(RTAX58U_V2),$(RTAX3000N)),y)
 OBJS += rtkswitch.o
 endif
 endif

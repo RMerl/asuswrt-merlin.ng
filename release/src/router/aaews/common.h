@@ -18,6 +18,9 @@
 #define URL_MAX_LEN	128
 #define FLAG_LEN	2
 #define MAC_LEN     20
+#define NVRAM_ODMPID     "odmpid"
+#define NVRAM_HTTPS_LANPORT     "https_lanport"
+#define NVRAM_HTTP_ENABLE     "http_enable"
 
 #define APP_DBG			1
 #define KAL_SEC			43200

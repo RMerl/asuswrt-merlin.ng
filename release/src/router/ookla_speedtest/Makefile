@@ -29,6 +29,11 @@ else
 endif # RTCONFIG_HND_ROUTER
 endif # RTCONFIG_BCMARM
 
+# MTK
+ifeq ($(RTCONFIG_RALINK),y)
+	-cp -f $(OOKLA_PATH)/ookla-MTK7621A prebuild/ookla     # MTK7621A
+endif # RTCONFIG_RALINK
+
 all: prebuild
 
 install: all

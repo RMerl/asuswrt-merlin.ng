@@ -529,9 +529,9 @@ start_igmpproxy(char *wan_ifname)
 	stop_igmpproxy();
 
 	if (nvram_get_int("udpxy_enable_x")) {
-		_dprintf("start udpxy [%s]\n", get_wanface());
+		_dprintf("start udpxy [%s]\n", nvram_get_int("udpxy_if_alt") ? get_wanface() : wan_ifname);
 		eval("/usr/sbin/udpxy",
-			"-m", get_wanface(),
+			"-m", nvram_get_int("udpxy_if_alt") ? get_wanface() : wan_ifname,
 			"-p", nvram_safe_get("udpxy_enable_x"),
 			"-B", "65536",
 			"-c", nvram_safe_get("udpxy_clients"),
@@ -1198,6 +1198,9 @@ start_wan_if(int unit)
 #endif
 	struct vlan_ioctl_args ifv;
 
+#if defined(BCM4912)
+	uint phy_pwr_skip = 0;
+#endif
 
 #ifdef RTCONFIG_HND_ROUTER_AX
 #ifdef RTCONFIG_BONDING_WAN
@@ -1242,6 +1245,24 @@ start_wan_if(int unit)
 #endif
 
 	update_wan_state(prefix, WAN_STATE_INITIALIZING, 0);
+
+#if defined(BCM4912)
+	snprintf(wan_ifname, sizeof(wan_ifname), "%s", nvram_safe_get(strcat_r(prefix, "ifname", tmp)));
+	if(strlen(wan_ifname) && strstr(wan_ifname, "eth") != NULL) {
+#ifdef RTCONFIG_DUALWAN
+		if(!nvram_contains_word("wans_dualwan", "none") &&
+			WAN_STATE_CONNECTED == nvram_get_int(strcat_r(prefix, "state_t", tmp))) {
+			phy_pwr_skip = 1;
+		}
+#endif
+		if(!phy_pwr_skip) {
+			nvram_set("freeze_duck", "5");
+				doSystem("ethctl %s phy-power down", wan_ifname);
+				sleep(1);
+				doSystem("ethctl %s phy-power up", wan_ifname);
+		}
+	}
+#endif
 
 #if defined(RTCONFIG_DUALWAN) || defined(RTCONFIG_USB_MODEM)
 	wan_type = get_dualwan_by_unit(unit);
@@ -2788,6 +2809,7 @@ void wan6_up(const char *pwan_ifname)
 		/* fall through */
 #endif
 	case IPV6_NATIVE_DHCP:
+		start_rdisc6();
 		start_dhcp6c();
 
 		if (nvram_match(ipv6_nvname("ipv6_ifdev"), "ppp")) {
@@ -2827,9 +2849,10 @@ void wan6_up(const char *pwan_ifname)
 			ipv6_sysconf(nvram_safe_get("lan_ifname"), "mtu", mtu);
 
 #ifdef RTCONFIG_SOFTWIRE46
+		int wan_proto = -1;
 		wan_unit = wan_primary_ifunit();
 		snprintf(prefix, sizeof(prefix), "wan%d_", wan_unit);
-		switch (get_wan_proto(prefix)) {
+		switch (wan_proto = get_wan_proto(prefix)) {
 			char peerbuf[INET6_ADDRSTRLEN];
 			char addr6buf[INET6_ADDRSTRLEN];
 			char addr4buf[INET_ADDRSTRLEN + sizeof("/32")];
@@ -2877,7 +2900,7 @@ void wan6_up(const char *pwan_ifname)
 				rules = NULL;
 			}
 		s46_mapcalc:
-			if (s46_mapcalc(rules, peerbuf, sizeof(peerbuf), addr6buf, sizeof(addr6buf),
+			if (s46_mapcalc(wan_proto, rules, peerbuf, sizeof(peerbuf), addr6buf, sizeof(addr6buf),
 					addr4buf, sizeof(addr4buf), &offset, &psidlen, &psid, NULL, draft) <= 0) {
 				peerbuf[0] = addr6buf[0] = addr4buf[0] = '\0';
 				offset = 0, psidlen = 0, psid = 0;
@@ -2984,6 +3007,11 @@ void wan6_up(const char *pwan_ifname)
 		start_mldproxy(wan_ifname);
 		break;
 	}
+
+#ifdef RTCONFIG_HTTPS
+	start_httpd_ipv6();
+#endif
+
 #ifdef RTCONFIG_OPENVPN
 	stop_ovpn_serverall();
 	start_ovpn_serverall();
@@ -2993,6 +3021,7 @@ void wan6_up(const char *pwan_ifname)
 void wan6_down(const char *wan_ifname)
 {
 	set_intf_ipv6_dad(wan_ifname, 0, 0);
+	stop_rdisc6();
 #if 0
 	stop_ecmh();
 #endif
@@ -3109,6 +3138,10 @@ wan_up(const char *pwan_ifname)
 	char prc[16] = {0};
 
 	prctl(PR_GET_NAME, prc);
+
+	strlcpy(wan_ifname, pwan_ifname, sizeof(wan_ifname));
+	if ((wan_unit = wan_ifunit(wan_ifname)) < 0)
+		wan_unit = 0;
 	snprintf(prefix, sizeof(prefix), "wan%d_", wan_unit);
 	wan_proto = get_wan_proto(prefix);
 
@@ -3118,9 +3151,6 @@ wan_up(const char *pwan_ifname)
 		default:
 			break;
 	}
-#endif
-#if defined(BCM4912)
-	uint phy_pwr_skip = 0;
 #endif
 	in_addr_t addr, mask;
 	int is_private_dns = 0;
@@ -3406,6 +3436,12 @@ NOIP:
 
 #ifdef RTCONFIG_SOFTWIRE46
 	switch (wan_proto) {
+	case WAN_MAPE:
+		if (nvram_invmatch(ipv6_nvname("ipv6_ra_route"), "")) {
+			eval("ip", "-6", "route", "add", "::/0", "via", nvram_safe_get(ipv6_nvname("ipv6_ra_route")), "dev", wan_ifname);
+			S46_DBG("[CMD]:[ip -6 route add ::/0 via %s dev %s]\n", nvram_safe_get(ipv6_nvname("ipv6_ra_route")), wan_ifname);
+		}
+		break;
 	case WAN_V6PLUS:
 		if (!strcmp(prc, "udhcpc") && nvram_get_int("s46_hgw_case") == S46_CASE_INIT) {
 			if (inet_addr_(nvram_safe_get(strcat_r(prefix, "gateway", tmp))) != INADDR_ANY) {
@@ -3449,23 +3485,6 @@ NOIP:
 
 	/* Kick syslog to re-resolve remote server */
 	reload_syslogd();
-
-#if defined(BCM4912)
-	if(strlen(wan_ifname) && strstr(wan_ifname, "eth") != NULL) {
-#ifdef RTCONFIG_DUALWAN
-		if(!nvram_contains_word("wans_dualwan", "none") && 
-		   WAN_STATE_CONNECTED == nvram_get_int(strcat_r(prefix, "state_t", tmp))) {
-			phy_pwr_skip = 1;
-		}
-#endif
-		if(!phy_pwr_skip) {
-			nvram_set("freeze_duck", "5");
-			doSystem("ethctl %s phy-power down", wan_ifname);
-			sleep(1);
-			doSystem("ethctl %s phy-power up", wan_ifname);
-		}
-	}
-#endif
 
 #if defined(RTCONFIG_USB_MODEM) && defined(RTCONFIG_INTERNAL_GOBI)
 	if(dualwan_unit__usbif(wan_unit)){
@@ -3899,6 +3918,7 @@ wan_ifunit(char *wan_ifname)
 		case WAN_DHCP:
 		case WAN_STATIC:
 #ifdef RTCONFIG_SOFTWIRE46
+		case WAN_MAPE:
 		case WAN_V6PLUS:
 #endif
 			if (nvram_match(strcat_r(prefix, "ifname", tmp), wan_ifname))
@@ -3950,6 +3970,7 @@ wanx_ifunit(char *wan_ifname)
 		case WAN_PPTP:
 		case WAN_L2TP:
 #ifdef RTCONFIG_SOFTWIRE46
+		case WAN_MAPE:
 		case WAN_V6PLUS:
 #endif
 			if (nvram_match(strcat_r(prefix, "ifname", tmp), wan_ifname))
@@ -4314,7 +4335,7 @@ start_wan(void)
 	symlink("/sbin/rc", "/etc/openvpn/ovpnc-route-pre-down");
 #endif
 #endif
-	symlink("/sbin/rc", "/tmp/udhcpc");
+	symlink("/sbin/rc", "/tmp/udhcpc_wan");
 	symlink("/sbin/rc", "/tmp/zcip");
 #ifdef RTCONFIG_EAPOL
 	symlink("/sbin/rc", "/tmp/wpa_cli");

@@ -1,11 +1,15 @@
 #ifndef __COMFW_H__
 #define __COMFW_H__
 
+#include <model.h>
+
 #define MAX_CF  4
 #define MAX_NAMELEN     128
 #define OUTPUT_DIR      "comfw_dir"
 #define BUFSIZE         4096
 #define COMFW_MAGIC     0x20210816
+#define CFID_BASE       6000
+#define CFID_BASE_2     12000
 
 /*
 CF_RTAC68U       // trx            
@@ -44,16 +48,28 @@ CF_RTAX95QV3     // pkgtb
 typedef enum COMFW_MODELID comfw_modid_e;
 #undef MODELID
 
-#define MODELID(a)       #a
-char *comfw_modid_s[] = COMFW_MODELID;
-#undef MODELID
+extern char *comfw_modid_s[];
 
 typedef struct _comfw
 {
         int magic;
-        int fw_type[MAX_CF];
+        int fw_type[MAX_CF];	// origianl is type id, now as cf model id
         int fw_size[MAX_CF];
 	char data[MAX_CF][16];
 } comfw_head;
+
+struct cf_data_desc {
+        int catid;
+        char *val;
+        char *dscp;
+};
+
+enum {
+	FW_386,
+	FW_384,
+	FW_38X,
+	MAX_FWID
+};
+
 
 #endif

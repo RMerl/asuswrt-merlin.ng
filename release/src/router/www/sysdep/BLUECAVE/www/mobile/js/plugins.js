@@ -131,17 +131,24 @@ function getScArray(mode){
 
 function getAllWlArray(){
 	if(isSupport("quadband")){
-		var wlArrayRet = [
-			{"title":"2.4 GHz", "ifname":get_wl_unit_by_band("2G"), "suffix": ""},
+		var wlArrayRet = [			
 			{"title":"5 GHz-1", "ifname":get_wl_unit_by_band("5G"), "suffix": "_5G-1"},
 			{"title":"5 GHz-2", "ifname":get_wl_unit_by_band("5G2"), "suffix": "_5G-2"},
 			{"title":"6 GHz", "ifname":get_wl_unit_by_band("6G"), "suffix": "_6G"},
+			{"title":"2.4 GHz", "ifname":get_wl_unit_by_band("2G"), "suffix": ""},
 		];
+		if(isSwMode('RP') || isSwMode('MB')){
+			wlArrayRet = [				
+				{ title: '5 GHz-1', ifname: get_wl_unit_by_band('5G'), suffix: '_5G-1' },
+				{ title: '5 GHz-2', ifname: get_wl_unit_by_band('5G2'), suffix: '_5G-2' },
+				{ title: '6 GHz', ifname: get_wl_unit_by_band('6G'), suffix: '_6G' },
+				{ title: '2.4 GHz', ifname: get_wl_unit_by_band('2G'), suffix: '' },				
+			];
+		}
 		document.querySelector('label[for="wireless_checkbox"]').innerHTML = 'Separate 2.4 GHz, 5 GHz-1, 5 GHz-2 and 6 GHz';
 	}
 	else{
 		var wlArrayRet = [{"title":"2.4 GHz", "ifname":"0", "suffix": ""}];
-		var amas_bdlkey = httpApi.nvramGet(["amas_bdlkey"]).amas_bdlkey;
 
 		if(isSupport("triband")){
 			if(isSupport('wifi6e')){
@@ -154,7 +161,7 @@ function getAllWlArray(){
 				wlArrayRet.push({"title":"5 GHz-2", "ifname":"2", "suffix": "_5G-2"});
 			}
 
-			if(isSupport("prelink") && amas_bdlkey.length > 0){
+			if(isSupport("prelink") && isSupport("amas_bdl")){
 				if(!isSupport("prelink_mssid")){
 					if(isSwMode("RT") || isSwMode("AP")){
 						var prelink_unit = isSupport("prelink_unit");
@@ -1063,6 +1070,7 @@ function handleSysDep(){
 		}
 		else if(isEva()){
 			$('head').append('<link rel="stylesheet" type="text/css" href="/css/eva.css">');
+			$('body').addClass("body_eva");
 		}
 		
 		$("#summary_page").append($("<div>").attr({"id": "gdContainer", "class": "gundam-footer-field"}).hide())
@@ -1079,7 +1087,7 @@ function handleSysDep(){
 		$("#gdContainer").append($("<div>").attr({"class": "GD-footer-left"}))
 		$("#gdContainer").append($("<div>").attr({"class": "GD-footer-extend"}))
 		$("#gdContainer").append($("<div>").attr({"class": "GD-footer-center"}))
-		$("#gdContainer").append($("<div>").attr({"class": "GD-footer-extend"}))
+		$("#gdContainer").append($("<div>").attr({"class": "GD-footer-extend eva-footer-extend_right"}))
 		$("#gdContainer").append($("<div>").attr({"class": "GD-footer-right"}))
 		$("#gdContainer").append($("<div>").attr({"class": "GD-law-label"}))
 		// systemVariable.imgContainer = [];
@@ -1118,70 +1126,79 @@ function handleModelIcon() {
 	var CoBrand = modelInfo.CoBrand;
 	var isGundam = (CoBrand == 1 || ttc.search('GD') == '0');
 	var isKimetsu = (CoBrand == 2);
+	var isEVA = (CoBrand == 3);
 	var based_modelid = modelInfo.productid;
 	var odmpid = modelInfo.odmpid;
 	var color = modelInfo.color.toUpperCase();
 	var odm_support = isSupport("odm");
-	$('#ModelPid_img').css('background-image', 'url(' + function() {	
-		var LinkCheck = function(url) {
-			var http = new XMLHttpRequest();
-			http.open('HEAD', url, false);
-			http.send();
-			return http.status!="404";
-		};
-	
-		var update_color = function() {
-			if(based_modelid == "RT-AC87U") { //MODELDEP: RT-AC87U
-				/* MODELDEP by Territory Code */
-				if(ttc == "JP/02" || ttc == "AP/02" || ttc == "SG/02")
-					return "R";
-				else if(ttc == "JP/02")
-					return "W";
-				else
-					return color;
-			}
-			if(odmpid.length > 0 && odmpid != based_modelid){	//odmpid MODELDEP
-				if(odmpid == "RT-N66W" || odmpid == "RT-AC66W" || odmpid == "RT-AC68W" || odmpid == "RT-AC68RW")
-					return "W";
-				else
-					return color;
-			}
-			else {
-				return color;
-			}
-		};
-		var default_png_path = "/images/Model_product.png";
-		var MP_png_path = default_png_path;
-		if(update_color().length > 0) {
-			MP_png_path = "/images/Model_product_"+ update_color() +".png";
-		}
-		else if(odmpid.length > 0 && odmpid != based_modelid) {
-			
-			if(odmpid == "RT-AC66U_B1" || odmpid == "RT-AC1750_B1" || odmpid == "RT-N66U_C1" || odmpid == "RT-AC1900U" || odmpid == "RT-AC67U")
-				MP_png_path = "/images/RT-AC66U_V2/Model_product.png";
-			else if(odmpid == "RP-AC1900")
-				MP_png_path = "/images/RP-AC1900/Model_product.png";
-			else if(odmpid == "RT-AX86S")
-				MP_png_path = "/images/Model_product_rt-ax86s.png";
-		}
-		
-		if(isGundam){
-			MP_png_path = "/images/Model_product_GD.png";
-		}
-		else if(isKimetsu){
-			MP_png_path = "/images/Model_product_KNY.png";
-		}
+	if(isSupport("cobrand_change")){
+		$('#ModelPid_img').css('background-image', 'url("/images/Model_product.png")');
+	}
+	else{
+		$('#ModelPid_img').css('background-image', 'url(' + function() {
+			var LinkCheck = function(url) {
+				var http = new XMLHttpRequest();
+				http.open('HEAD', url, false);
+				http.send();
+				return http.status!="404";
+			};
 
-		if(odm_support){
-			MP_png_path = "/images/Model_product_COD.png";
-		}
+			var update_color = function() {
+				if(based_modelid == "RT-AC87U") { //MODELDEP: RT-AC87U
+					/* MODELDEP by Territory Code */
+					if(ttc == "JP/02" || ttc == "AP/02" || ttc == "SG/02")
+						return "R";
+					else if(ttc == "JP/02")
+						return "W";
+					else
+						return color;
+				}
+				if(odmpid.length > 0 && odmpid != based_modelid){	//odmpid MODELDEP
+					if(odmpid == "RT-N66W" || odmpid == "RT-AC66W" || odmpid == "RT-AC68W" || odmpid == "RT-AC68RW")
+						return "W";
+					else
+						return color;
+				}
+				else {
+					return color;
+				}
+			};
+			var default_png_path = "/images/Model_product.png";
+			var MP_png_path = default_png_path;
 
-		if(LinkCheck(MP_png_path))
-			return MP_png_path;
-		else
-			return default_png_path;
-		
-	}() + ')');
+			if(update_color().length > 0) {
+				MP_png_path = "/images/Model_product_"+ update_color() +".png";
+			}
+			else if(odmpid.length > 0 && odmpid != based_modelid) {
+				if(odmpid == "RT-AC66U_B1" || odmpid == "RT-AC1750_B1" || odmpid == "RT-N66U_C1" || odmpid == "RT-AC1900U" || odmpid == "RT-AC67U")
+					MP_png_path = "/images/RT-AC66U_V2/Model_product.png";
+				else if(odmpid == "RP-AC1900")
+					MP_png_path = "/images/RP-AC1900/Model_product.png";
+				else if(odmpid == "RT-AX86S")
+					MP_png_path = "/images/Model_product_rt-ax86s.png";
+			}
+
+			if(isGundam){
+				MP_png_path = "/images/Model_product_GD.png";
+			}
+			else if(isKimetsu){
+				MP_png_path = "/images/Model_product_KNY.png";
+			}
+			else if(isEVA){
+				MP_png_path = "/images/Model_product_EVA.png";
+			}
+
+			if(odm_support){
+				MP_png_path = "/images/Model_product_COD.png";
+			}
+
+			if(LinkCheck(MP_png_path))
+				return MP_png_path;
+			else
+				return default_png_path;
+
+		}() + ')');
+	}
 
 	if(odmpid == 'RT-AX86S'){
 		$("#resetModem").removeClass('unplug').addClass("unplug-ax86s");
@@ -1589,10 +1606,10 @@ var isSupport = function(_ptn){
 			matchingResult = (ui_support["smart_connect"] == "1" || ui_support["smart_connect"] == "2" || ui_support["bandstr"] == "1") ? true : false;
 			break;
 		case "GUNDAM_UI":
-			matchingResult = ((isGundam() || isKimetsu()) && $(".desktop_left_field").is(":visible")) ? true : false;
+			matchingResult = ((isGundam() || isKimetsu() || isEva()) && $(".desktop_left_field").is(":visible")) ? true : false;
 			break;
 		case "amas_bdl":
-			matchingResult = (ui_support["amas_bdl"] == 1 && amas_bdlkey.length != 0) ? true : false;
+			matchingResult = (ui_support["amas_bdl"] >= 1 && amas_bdlkey.length != 0) ? true : false;
 			break;
 		case "FRONTHAUL_NETWORK":
 			matchingResult = ui_support["amas_fronthaul_network"] || false;
@@ -1607,7 +1624,7 @@ var isSupport = function(_ptn){
 				matchingResult = false;
 			break;
 		default:
-			matchingResult = ((ui_support[_ptn] == 1) || (systemVariable.productid.search(_ptn) !== -1)) ? true : false;
+			matchingResult = ((ui_support[_ptn] > 0) || (systemVariable.productid.search(_ptn) !== -1)) ? true : false;
 			break;
 	}
 

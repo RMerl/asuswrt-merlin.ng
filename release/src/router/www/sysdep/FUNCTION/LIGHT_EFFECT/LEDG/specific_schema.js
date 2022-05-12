@@ -84,7 +84,7 @@ function retune_wave_color(parm){
 	}
 	else if(parm.productid == "GT-AX6000"){
 		if(parm.CoBrand == "3"){
-			ledg_rgb = "0,128,0,0,128,0,0,128,0";
+			ledg_rgb = "128,100,0,128,100,0,128,100,0";
 		}
 		else
 			ledg_rgb = "128,0,0,128,0,0,128,0,0";

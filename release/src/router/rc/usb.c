@@ -293,7 +293,7 @@ void add_usb_host_modules(void)
 
 #ifdef RTCONFIG_HND_ROUTER_AX
 	eval("insmod",
-#if defined(BCM4912) || defined(BCM6756)
+#if defined(BCM4912) || defined(BCM6756) || defined(BCM6855)
 		"bcm_bca_usb"
 #else
 		"bcm_usb"
@@ -318,7 +318,7 @@ void add_usb_host_modules(void)
 #elif defined(RTCONFIG_ALPINE)
 	modprobe(USB30_MOD);
 #else
-#if !defined(BCM4912) && !defined(BCM6756)
+#if !defined(BCM4912) && !defined(BCM6756) && !defined(BCM6855)
 	if (nvram_get_int("usb_usb3") == 1) {
 #endif
 #ifdef RTCONFIG_HND_ROUTER
@@ -330,7 +330,7 @@ void add_usb_host_modules(void)
 #else
 		modprobe(USB30_MOD);
 #endif
-#if !defined(BCM4912) && !defined(BCM6756)
+#if !defined(BCM4912) && !defined(BCM6756) && !defined(BCM6855)
 	}
 #endif
 #endif
@@ -3518,7 +3518,7 @@ start_samba(void)
 #else
 	if(!nvram_match("stop_taskset", "1")){
 #if defined(RTCONFIG_HND_ROUTER_AX_6756)
-#if defined(BCM6756)
+#if defined(BCM6756) || defined(BCM6855)
 		cpu_num = 3;
 #endif
 #endif

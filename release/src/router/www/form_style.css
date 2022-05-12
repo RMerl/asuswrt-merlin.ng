@@ -2082,15 +2082,23 @@ padding-top:1px;
 	background: #475A5F;
 }
 .eula_panel_container{
-	margin: 20px 0 0 210px;
+	margin: 20px 0 0 200px;
 	display: none;
-	position: fixed;
+	position: absolute;
 	width: 600px;
 	z-index: 10000;
 	border: 3px solid #4D5C63;
 	border-radius: 8px;
 	background-color: #232E32;
 	text-align: left;
+}
+
+#tm_eula_content{
+	line-height: 20px;
+}
+
+#asus_eula_content{
+	line-height: 20px;
 }
 
 #bottom_border{

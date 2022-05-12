@@ -68,12 +68,18 @@ else ifeq ($(BUILD_NAME), RT-AX95Q)
 else ifeq ($(BUILD_NAME), XT8PRO)
 	install icon.xt8pro.ico $(INSTALLDIR)/usr/sbin/icon.ico
 	install icon.large.xt8pro.ico $(INSTALLDIR)/usr/sbin/icon.large.ico
+else ifeq ($(BUILD_NAME), XT8_V2)
+	install icon.xt8_v2.ico $(INSTALLDIR)/usr/sbin/icon.ico
+	install icon.large.xt8_v2.ico $(INSTALLDIR)/usr/sbin/icon.large.ico
 else ifeq ($(BUILD_NAME), RT-AXE95Q)
 	install icon.rtaxe95q.ico $(INSTALLDIR)/usr/sbin/icon.ico
 	install icon.large.rtaxe95q.ico $(INSTALLDIR)/usr/sbin/icon.large.ico
 else ifeq ($(BUILD_NAME), ET8PRO)
 	install icon.et8pro.ico $(INSTALLDIR)/usr/sbin/icon.ico
 	install icon.large.et8pro.ico $(INSTALLDIR)/usr/sbin/icon.large.ico
+else ifeq ($(BUILD_NAME), RT-AXE7800)
+	install icon.rtaxe7800.ico $(INSTALLDIR)/usr/sbin/icon.ico
+	install icon.large.rtaxe7800.ico $(INSTALLDIR)/usr/sbin/icon.large.ico
 else ifeq ($(BUILD_NAME), RT-AX56_XD4)
 	install icon.rtax56_xd4.ico $(INSTALLDIR)/usr/sbin/icon.ico
 	install icon.large.rtax56_xd4.ico $(INSTALLDIR)/usr/sbin/icon.large.ico
@@ -134,6 +140,8 @@ else ifeq ($(BUILD_NAME), XT12)
 else ifeq ($(BUILD_NAME), GT-AX6000)
 	install icon.gtax6000.ico $(INSTALLDIR)/usr/sbin/icon.ico
 	install icon.large.gtax6000.ico $(INSTALLDIR)/usr/sbin/icon.large.ico
+	install icon.gtax6000_eva.ico $(INSTALLDIR)/usr/sbin/icon_eva.ico
+	install icon.large.gtax6000_eva.ico $(INSTALLDIR)/usr/sbin/icon_eva.large.ico
 else
 	install icon.$(modelstr).ico $(INSTALLDIR)/usr/sbin/icon.ico
 	install icon.large.$(modelstr).ico $(INSTALLDIR)/usr/sbin/icon.large.ico

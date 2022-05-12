@@ -84,6 +84,7 @@ static void ledbtn(int sig)
 #else
 	int val = button_pressed(BTN_LED);
 #endif
+
 	if (val) {
 		if (!btn_led_pressed)
 		{
@@ -91,12 +92,18 @@ static void ledbtn(int sig)
 			btn_led_count = 0;
 
 			int ledg_scheme = nvram_get_int("ledg_scheme");
+			int antled_scheme = nvram_get_int("antled_scheme");
 
 			if ((ledg_scheme >= LEDG_SCHEME_BLINKING) || (ledg_scheme == LEDG_SCHEME_OFF)) {
 				if (ledg_scheme == LEDG_SCHEME_OFF)
 					LED_status = 1;
 				if (nvram_default_get("ledg_scheme"))
 					nvram_set("ledg_scheme", nvram_default_get("ledg_scheme"));
+#ifdef GTAX6000
+				if (antled_scheme == ANTLED_SCHEME_OFF){
+					nvram_set("antled_scheme", "1");
+				}
+#endif
 			} else {
 				ledg_scheme = (ledg_scheme + 1) % (LEDG_SCHEME_MAX - 2);
 				if (ledg_scheme == LEDG_SCHEME_OFF)
@@ -108,6 +115,7 @@ static void ledbtn(int sig)
 
 			dbg("switch effect\n");
 			kill_pidfile_s("/var/run/ledg.pid", SIGTSTP);
+
 		}
 		else if (++btn_led_count > LEDG_WAIT)
 		{
@@ -118,10 +126,14 @@ static void ledbtn(int sig)
 		if (btn_led_pressed == 2)
 		{
 			nvram_set_int("ledg_scheme", LEDG_SCHEME_OFF);
+#ifdef GTAX6000
+			nvram_set_int("antled_scheme",ANTLED_SCHEME_OFF);
+#endif
 			nvram_commit();
 
 			dbg("turn off cled\n");
 			kill_pidfile_s("/var/run/ledg.pid", SIGTSTP);
+			kill_pidfile_s("/var/run/antled.pid", SIGTSTP);
 
 			LED_status = 1;
 		}

@@ -25,7 +25,7 @@
 
 /*
  * Automatically generated make config: don't edit
- * Date: Wed Jun  2 14:44:47 2021
+ * Date: Fri Feb 25 14:22:45 2022
  */
 #ifndef __TMCFG__UDB_AUTOCONF_OUTPUT_H_
 #define __TMCFG__UDB_AUTOCONF_OUTPUT_H_
@@ -108,7 +108,7 @@
 #define TMCFG_CPU_64BITS 0 // n
 #define TMCFG_CPU_BIG_ENDIAN 0 // n
 #define TMCFG_CPU_LITTLE_ENDIAN 1 // y
-#define TMCFG_KERN_DIR "/opt/ASUS/asuswrt_4G_AX56_382.41123/release/src-ra-openwrt-4110/linux/linux-4.4.198"
+#define TMCFG_KERN_DIR "/opt/ASUS/asuswrt_AX53U_GPL_382.44863/release/src-ra-openwrt-4210/linux/linux-4.4.198"
 #define TMCFG_KERN_ARCH "mips"
 
 /*
@@ -157,8 +157,9 @@
 #define TMCFG_E_UDB_CORE_EXTRA_CFLAGS ""
 #define TMCFG_E_UDB_CORE_CONN_EXTRA 1 // y
 #define TMCFG_E_UDB_CORE_RULE_FORMAT_V2 0 // n
-#define TMCFG_E_UDB_CORE_MESH 1 // y
+#define TMCFG_E_UDB_CORE_MESH 0 // n
 #define TMCFG_E_UDB_CORE_URL_QUERY 1 // y
+#define TMCFG_E_UDB_CORE_DNS_BASE_URL 0 // n
 #define TMCFG_E_UDB_CORE_SHN_QUERY 0 // n
 #define TMCFG_E_UDB_CORE_WBL 1 // y
 #define TMCFG_E_UDB_CORE_WBL_MAJ_VER 2
@@ -182,13 +183,15 @@
 #define TMCFG_E_UDB_CORE_IQOS_RSV_DEF_CLS 1 // y
 #define TMCFG_E_UDB_CORE_GCTRL_SUPPORT 0 // n
 #define TMCFG_E_UDB_CORE_APP_PATROL 1 // y
-#define TMCFG_E_UDB_CORE_PATROL_TIME_QUOTA 0 // n
-#define TMCFG_E_UDB_CORE_APP_REDIRECT_URL 0 // n
+#define TMCFG_E_UDB_CORE_PATROL_TIME_QUOTA 1 // y
+#define TMCFG_E_UDB_CORE_APP_REDIRECT_URL 1 // y
+#define TMCFG_E_UDB_CORE_PATROL_TIME_GRP_NUM 32
+#define TMCFG_E_UDB_CORE_PATROL_TIME_DEV_NUM 6
 #define TMCFG_E_UDB_CORE_PROG_CTRL 1 // y
 #define TMCFG_E_UDB_CORE_PROG_LIC_CTRL_NONE 1 // y
 #define TMCFG_E_UDB_CORE_PROG_LIC_CTRL_V1 0 // n
 #define TMCFG_E_UDB_CORE_PROG_LIC_CTRL_V2 0 // n
-#define TMCFG_E_UDB_CORE_WPR_PAGE 0 // n
+#define TMCFG_E_UDB_CORE_WPR_PAGE 1 // y
 #define TMCFG_E_UDB_CORE_TMDBG 0 // n
 #define TMCFG_E_UDB_CORE_MEMTRACK 0 // n
 #define TMCFG_E_UDB_CORE_HTTP_REFER 0 // n
@@ -204,8 +207,8 @@
 #define TMCFG_E_UDB_SHELL_PROCFS 1 // y
 #define TMCFG_E_REL_PKG_MAJ_VER 2
 #define TMCFG_E_REL_PKG_MIN_VER 0
-#define TMCFG_E_REL_PKG_REV_VER 1
-#define TMCFG_E_REL_PKG_LOCAL_VER "b3a0331"
+#define TMCFG_E_REL_PKG_REV_VER 4
+#define TMCFG_E_REL_PKG_LOCAL_VER ""
 
 /*
  * Accompany applications or modules
@@ -281,6 +284,7 @@
 #define TMCFG_APP_U_WRED_TMUFE_RS_HOST "rgom10-asus-en.url.trendmicro.com"
 #define TMCFG_APP_U_WRED_TMUFE_CUSTOM 1 // y
 #define TMCFG_APP_U_TDTS_WRED_TMUFE21 0 // n
+#define TMCFG_APP_U_TDTS_WRED_TMUFE50 0 // n
 #define TMCFG_APP_U_WBL 1 // y
 
 /*

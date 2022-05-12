@@ -1841,7 +1841,7 @@ start_vpnc_by_unit(const int unit)
 		_dprintf("[%s, %d]Start to connect NordVPN(%d).\n", __FUNCTION__, __LINE__, prof->config.tpvpn.tpvpn_idx);
 		snprintf(cmd, sizeof(cmd), "nordvpn setconf '%s' %d &"
 			, prof->config.tpvpn.region
-			, prof->config.tpvpn.tpvpn_idx, unit
+			, prof->config.tpvpn.tpvpn_idx
 			);
 		system(cmd);
 		return 0;

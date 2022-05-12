@@ -278,7 +278,7 @@ function initial(){
 
 	if(is_RU_sku){
 		var ch_orig = parseInt(document.form.wl_channel_orig.value);
-		var _ch = '0';
+		var _ch = ch_orig;
 		var _array = [36, 44, 52, 60, 100, 108, 116, 124, 132, 140, 149, 157];
 		if(document.form.wl_nmode_x.value == 0 || document.form.wl_nmode_x.value == 8){    // Auto or N/AC mixed
 			if(document.form.wl_bw.value == 3){    // 80 MHz		

@@ -589,5 +589,7 @@ extern int hex2str(unsigned char *hex, char *str, int hex_len);
 extern void reset_stacksize(int new_stacksize);
 extern int arpcache(char *tgmac, char *tgip);
 extern int ether_inc(unsigned char *e, const unsigned char n);
-
+#ifdef RTCONFIG_AMAS
+extern int check_if_exist_ifnames(char *need_check_ifname, char *ifname);
+#endif
 #endif /* _shutils_h_ */

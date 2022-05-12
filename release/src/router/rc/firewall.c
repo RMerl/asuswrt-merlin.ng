@@ -1691,8 +1691,6 @@ void nat_setting(char *wan_if, char *wan_ip, char *wanx_if, char *wanx_ip, char 
 		case WAN_V6PLUS:
 			if (nvram_get_int("s46_hgw_case") == S46_CASE_MAP_HGW_ON)
 				break;
-		case WAN_LW4O6:
-		case WAN_MAPE:
 			fprintf(fp, "-A PREROUTING -i %s -d %s -j MAPE\n", lan_if, wan_ip);
 			foreach(proto, "tcp udp", next) {
 				nvp = nv = strdup(nvram_safe_get("ipv6_s46_ports"));
@@ -3743,6 +3741,11 @@ TRACE_PT("writing Parental Control\n");
 			if (enable != 0) {
 				fprintf(fp, "-A INPUT -m conntrack --ctstate DNAT -p tcp -m tcp -d %s --dport %d -j %s\n",
 					lan_ip, nvram_get_int("https_lanport") ? : 443, logaccept);
+#ifdef RTCONFIG_IPV6
+				if (ipv6_enabled() && nvram_match("ipv6_fw_enable", "1") && nvram_get_int("misc_http_x"))
+					fprintf(fp_ipv6, "-A INPUT -p tcp -m tcp --dport %d -j %s\n",
+						nvram_get_int("misc_httpsport_x") ? : 8443, logaccept);
+#endif
 			}
 			/* do not support http (enable != 1) */
 #else
@@ -3760,7 +3763,7 @@ TRACE_PT("writing Parental Control\n");
 			fprintf(fp, "-A INPUT -p tcp --dport %d -j %s\n",
 			        nvram_get_int("sshd_port") ? : 22, logaccept);
 #ifdef RTCONFIG_IPV6
-			if (ipv6_enabled())
+			if (ipv6_enabled() && nvram_match("ipv6_fw_enable", "1"))
 				fprintf(fp_ipv6, "-A INPUT -p tcp --dport %d -j %s\n",
 					nvram_get_int("sshd_port") ? : 22, logaccept);
 #endif
@@ -5159,6 +5162,11 @@ TRACE_PT("writing Parental Control\n");
 			if (enable != 0) {
 				fprintf(fp, "-A INPUT -p tcp -m tcp -d %s --dport %d -j %s\n",
 					lan_ip, nvram_get_int("https_lanport") ? : 443, logaccept);
+#ifdef RTCONFIG_IPV6
+				if (ipv6_enabled() && nvram_match("ipv6_fw_enable", "1") && nvram_get_int("misc_http_x"))
+					fprintf(fp_ipv6, "-A INPUT -p tcp -m tcp --dport %d -j %s\n",
+						nvram_get_int("misc_httpsport_x") ? : 8443, logaccept);
+#endif
 			}
 			/* do not support http (enable != 1) */
 #else
@@ -5168,13 +5176,14 @@ TRACE_PT("writing Parental Control\n");
 			}
 #endif
 		}
+
 #ifdef RTCONFIG_SSH
 		if (nvram_get_int("sshd_enable") == 1)
 		{
 			fprintf(fp, "-A INPUT -p tcp -m tcp --dport %d -j %s\n",
 				nvram_get_int("sshd_port") ? : 22, logaccept);
 #ifdef RTCONFIG_IPV6
-			if (ipv6_enabled())
+			if (ipv6_enabled() && nvram_match("ipv6_fw_enable", "1"))
 				fprintf(fp_ipv6, "-A INPUT -p tcp --dport %d -j %s\n",
 					nvram_get_int("sshd_port") ? : 22, logaccept);
 #endif
@@ -6305,15 +6314,18 @@ mangle_setting(char *wan_if, char *wan_ip, char *lan_if, char *lan_ip, char *log
 	/* mark connect to bypass CTF */
 	if (nvram_match("ctf_disable", "0")) {
 #endif
+#if 0
+/* remove mangle rules due to RU ISP DHCP issue */
 #if defined(RTCONFIG_BWDPI)
 		/* DPI engine */
 		if (IS_AQOS()) {
 				eval("iptables", "-t", "mangle", "-N", "BWDPI_FILTER");
 				eval("iptables", "-t", "mangle", "-F", "BWDPI_FILTER");
 				eval("iptables", "-t", "mangle", "-A", "BWDPI_FILTER", "-i", wan_if, "-p", "udp", "--sport", "68", "--dport", "67", "-j", "DROP");
-//				eval("iptables", "-t", "mangle", "-A", "BWDPI_FILTER", "-i", wan_if, "-p", "udp", "--sport", "67", "--dport", "68", "-j", "DROP");
+				eval("iptables", "-t", "mangle", "-A", "BWDPI_FILTER", "-i", wan_if, "-p", "udp", "--sport", "67", "--dport", "68", "-j", "DROP");
 				eval("iptables", "-t", "mangle", "-A", "PREROUTING", "-i", wan_if, "-p", "udp", "-j", "BWDPI_FILTER");
 		}
+#endif
 #endif
 		/* mark 80 port connection */
 		if (nvram_match("url_enable_x", "1") || nvram_match("keyword_enable_x", "1")) {
@@ -6567,6 +6579,8 @@ mangle_setting2(char *lan_if, char *lan_ip, char *logaccept, char *logdrop)
 	/* mark connect to bypass CTF */
 	if (nvram_match("ctf_disable", "0")) {
 #endif
+#if 0
+/* remove mangle rules due to RU ISP DHCP issue */
 #if defined(RTCONFIG_BWDPI)
 		/* DPI engine */
 		if (IS_AQOS()) {
@@ -6582,10 +6596,11 @@ mangle_setting2(char *lan_if, char *lan_ip, char *logaccept, char *logdrop)
 					continue;
 //#endif
 				eval("iptables", "-t", "mangle", "-A", "BWDPI_FILTER", "-i", wan_if, "-p", "udp", "--sport", "68", "--dport", "67", "-j", "DROP");
-//				eval("iptables", "-t", "mangle", "-A", "BWDPI_FILTER", "-i", wan_if, "-p", "udp", "--sport", "67", "--dport", "68", "-j", "DROP");
+				eval("iptables", "-t", "mangle", "-A", "BWDPI_FILTER", "-i", wan_if, "-p", "udp", "--sport", "67", "--dport", "68", "-j", "DROP");
 				eval("iptables", "-t", "mangle", "-A", "PREROUTING", "-i", wan_if, "-p", "udp", "-j", "BWDPI_FILTER");
 			}
 		}
+#endif
 #endif
 		/* mark 80 port connection */
 		if (nvram_match("url_enable_x", "1") || nvram_match("keyword_enable_x", "1")) {
@@ -6780,7 +6795,7 @@ int start_firewall(int wanunit, int lanunit)
 	char wan_if[IFNAMSIZ+1], wan_ip[32], lan_if[IFNAMSIZ+1], lan_ip[32];
 	char wanx_if[IFNAMSIZ+1], wanx_ip[32];
 	char prefix[] = "wanXXXXXXXXXX_", tmp[100];
-	int lock, wan_proto;
+	int lock;
 
 	if (!is_routing_enabled())
 		return -1;
@@ -6797,7 +6812,6 @@ int start_firewall(int wanunit, int lanunit)
 
 	//(void)wan_ifname(wanunit, wan_if);
 	strcpy(wan_if, get_wan_ifname(wanunit));
-	wan_proto = get_wan_proto(prefix);
 
 	strcpy(wan_ip, nvram_safe_get(strcat_r(prefix, "ipaddr", tmp)));
 	strcpy(wanx_if, nvram_safe_get(strcat_r(prefix, "ifname", tmp)));

@@ -60,8 +60,18 @@ function initial(){
 	if(outfox_support)
 		$("#outfox_div").css("display", "");
 	else{
-		if(wtfast_support) $("#wtfast_div").css("display", "");
+		if(wtfast_support || wtfast_v2_support){
+			if(wtfast_support)
+				document.getElementById("wtfast_faq").href = "https://www.wtfast.com/routers";
+			else if(wtfast_v2_support)
+				document.getElementById("wtfast_faq").href = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=161";
+
+			$("#wtfast_div").css("display", "");
+		}
 	}
+
+	if(!uu_support && !outfox_support && !wtfast_support && !wtfast_v2_support)
+		$("#level3_div").hide();
 }
 
 function sign_eula(){
@@ -122,12 +132,21 @@ function cancel(){
 }
 
 var faq_fref = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=152";
+var wtfast_v2_go = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=GO&lang="+ui_lang+"&kw=&num=";
 var siteInfo = [faq_fref,
 	     		'Advanced_WTFast_Content.asp',
 				'QoS_EZQoS.asp',
-				outfox_site];
+				outfox_site,
+				wtfast_v2_go];
 
 function redirectSite(url){
+	if(url == "wtfast"){
+		if(wtfast_support)
+			url = siteInfo[1];
+		else if(wtfast_v2_support)
+			url = siteInfo[4];
+	}
+
 	window.open(url, '_blank');
 }
 
@@ -313,7 +332,7 @@ function uuRegister(mac){
 						</div>
 					</div>
 
-					<div class="card-boder">
+					<div class="card-boder" id="level3_div">
 						<div class="flexbox border2-title">
 							<div class="flexbox title-container border2-title-container">
 								<div class="title-symbol"></div>
@@ -334,13 +353,14 @@ function uuRegister(mac){
 									<div class="content-desc-title">WTFast&reg;</div>
 									<div class="content-divide-line-sm"></div>
 									<div class="content-detail">
-										<a href="https://www.wtfast.com/routers" target="_blank">FAQ</a>
+										<a id = "wtfast_faq" href="https://www.wtfast.com/routers" target="_blank">FAQ</a>
 									</div>
 								</div>
 								<div class="content-desc"><#Game_WTFast_desc#></div>
+								<div class="content-desc">*Please be aware this is a third-party service provided by WTFast®, and WTFast® is fully responsible for warranties and liabilities of this game server acceleration service.</div><!--untranslated-->
 							</div>
 							<div class="content-divide-line"></div>
-							<div class="content-action-container" onclick="redirectSite(siteInfo[1]);">
+							<div class="content-action-container" onclick="redirectSite('wtfast');">
 								<div class="button-container button-container-sm">
 									<div class="button-icon icon-go"></div>
 									<div class="button-text"><#btn_go#></div>

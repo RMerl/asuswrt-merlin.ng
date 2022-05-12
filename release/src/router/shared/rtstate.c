@@ -1321,6 +1321,11 @@ char *get_default_ssid(int unit, int subunit)
 		strlcat(ssid, nvram_safe_get("model"), sizeof(ssid));
 #elif defined(XT8PRO)
 		strlcat(ssid, "_XT9", sizeof(ssid));
+#elif defined(XT8_V2)
+		strlcat(ssid, "_XT8", sizeof(ssid));
+#else
+		strlcat(ssid, "_", sizeof(ssid));
+		strlcat(ssid, get_productid(), sizeof(ssid));
 #endif
 
 #endif

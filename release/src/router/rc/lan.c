@@ -401,6 +401,9 @@ void start_wl(void)
 				if (nvram_match(strcat_r(prefix, "radio", tmp), "0"))
 				{
 					nvram_set_int(strcat_r(prefix, "timesched", tmp2), 0);	// disable wifi time-scheduler
+#ifdef GT10
+					ledbh_war(ifname);
+#endif
 					eval("wlconf", ifname, "down");
 					eval("wl", "-i", ifname, "radio", "off");
 				}
@@ -1298,8 +1301,9 @@ void start_lan(void)
 		|| mediabridge_mode()
 #endif
 #ifdef RTCONFIG_DPSTA
-		|| ((dpsta_mode()||rp_mode()) && nvram_get_int("re_mode") == 0)
+		|| (dpsta_mode() && nvram_get_int("re_mode") == 0)
 #endif
+		|| (rp_mode() && nvram_get_int("re_mode") == 0)
 	)
 	{
 #ifdef RTCONFIG_QTN
@@ -1331,6 +1335,18 @@ void start_lan(void)
 #endif
 #endif
 
+#ifdef RTAXE7800
+	// configure 6715 GPIO direction
+	eval("wl", "-i", "eth7", "gpioout", "0x2002", "0x2002");
+	eval("wl", "-i", "eth7", "ledbh", "13", "7");
+#endif
+
+#ifdef GT10
+	// configure 6715 GPIO direction
+	eval("wl", "-i", "eth5", "gpioout", "0x2002", "0x2002");
+	eval("wl", "-i", "eth6", "gpioout", "0x2002", "0x2002");
+#endif
+
 #ifdef GTAX6000
 	// configure 6715 GPIO direction
 	eval("wl", "-i", "eth6", "gpioout", "0x2002", "0x2002");
@@ -1359,6 +1375,12 @@ void start_lan(void)
 	eval("wl", "-i", "eth8", "ledbh", "13", "7");
 	eval("wl", "-i", "eth9", "ledbh", "13", "7");
 	eval("wl", "-i", "eth10", "ledbh", "13", "7");
+#endif
+
+#ifdef RTAX86U_PRO
+	// configure 6715 GPIO direction
+	eval("wl", "-i", "eth7", "gpioout", "0x2002", "0x2002");
+	eval("wl", "-i", "eth7", "ledbh", "13", "7");
 #endif
 
 #ifdef DSL_AX82U
@@ -1563,6 +1585,9 @@ void start_lan(void)
 					}
 					wl_vif_hwaddr_set(ifname);
 				}
+#endif
+#if defined(RTAXE7800) && !defined(RTCONFIG_BCM_MFG)
+				if (!nvram_get_int("x_Setting") && !strcmp(ifname, "eth1")) continue;
 #endif
 #ifdef RTCONFIG_CONCURRENTREPEATER
 				if (sw_mode() == SW_MODE_REPEATER) {
@@ -1930,7 +1955,7 @@ void start_lan(void)
 			// For Realtek use wlx-vxd as STA interface use wlx as AP interface, In old way the judgement will be wrong
 					(strstr(ifname, "vxd") || strstr(nvram_safe_get("eth_ifnames"), ifname)))
 #else
-					(strstr(nvram_safe_get("sta_ifnames"), ifname) || strstr(nvram_safe_get("eth_ifnames"), ifname) || strstr(nvram_safe_get("sta_phy_ifnames"), ifname)))
+					(check_if_exist_ifnames("sta_ifnames",ifname) || check_if_exist_ifnames("eth_ifnames",ifname) || check_if_exist_ifnames("sta_phy_ifnames",ifname)))
 #endif
 				{
 					continue;
@@ -2019,8 +2044,8 @@ void start_lan(void)
 							eval("brctl", "addif", BR_GUEST, ifname);
 						else
 #endif
-#if defined(RTCONFIG_EXTPHY_BCM84880) && (defined(GTAX11000) || defined(GTAXE11000) || defined(RTAX86U))
-						if(nvram_match("x_Setting", "0") && !strcmp(ifname, "eth5") && strcmp(get_productid(), "RT-AX86S"))
+#if defined(RTCONFIG_EXTPHY_BCM84880) && (defined(GTAX11000) || defined(GTAXE11000) || defined(RTAX86U) || defined(RTAX86U_PRO))
+						if(!ATE_BRCM_FACTORY_MODE() && nvram_match("x_Setting", "0") && !strcmp(ifname, "eth5") && strcmp(get_productid(), "RT-AX86S"))
 							;
 						else
 #endif
@@ -2264,8 +2289,9 @@ gmac3_no_swbr:
 			&& !psr_mode() && !mediabridge_mode()
 #endif
 #ifdef RTCONFIG_DPSTA
-			&& !((dpsta_mode()||rp_mode()) && nvram_get_int("re_mode") == 0)
+			&& !(dpsta_mode() && nvram_get_int("re_mode") == 0)
 #endif
+			&& !(rp_mode() && nvram_get_int("re_mode") == 0)
 	) {
 		char *dhcp_argv[] = { "udhcpc",
 					"-i", "br0",
@@ -2550,6 +2576,9 @@ void stop_lan(void)
 				if (nvram_get_int("LED_order"))
 #endif
 				{
+#ifdef GT10
+					ledbh_war(ifname);
+#endif
 					eval("wlconf", ifname, "down");
 					eval("wl", "-i", ifname, "radio", "off");
 				}
@@ -2709,8 +2738,9 @@ skip_br:
 		&& !psr_mode() && !mediabridge_mode()
 #endif
 #ifdef RTCONFIG_DPSTA
-		&& !((dpsta_mode()||rp_mode()) && nvram_get_int("re_mode") == 0)
+		&& !(dpsta_mode() && nvram_get_int("re_mode") == 0)
 #endif
+		&& !(rp_mode() && nvram_get_int("re_mode") == 0)
 	) {
 		if (pids("udhcpc")) {
 			killall("udhcpc", SIGUSR2);
@@ -3818,8 +3848,9 @@ update_lan_resolvconf(void)
 		|| mediabridge_mode()
 #endif
 #ifdef RTCONFIG_DPSTA
-		|| ((dpsta_mode()||rp_mode()) && nvram_get_int("re_mode") == 0)
+		|| (dpsta_mode() && nvram_get_int("re_mode") == 0)
 #endif
+		|| (rp_mode() && nvram_get_int("re_mode") == 0)
 		) && nvram_get_int("wlc_state") != WLC_STATE_CONNECTED)
 		fprintf(fp, "nameserver %s\n", nvram_default_get("lan_ipaddr"));
 	else
@@ -3941,8 +3972,9 @@ lan_up(char *lan_ifname)
 			|| mediabridge_mode()
 #endif
 #ifdef RTCONFIG_DPSTA
-			|| ((dpsta_mode()||rp_mode()) && nvram_get_int("re_mode") == 0)
+			|| (dpsta_mode() && nvram_get_int("re_mode") == 0)
 #endif
+			|| (rp_mode() && nvram_get_int("re_mode") == 0)
 #ifdef RTCONFIG_DPSR
 			|| dpsr_mode()
 #endif
@@ -4091,6 +4123,12 @@ lan_up(char *lan_ifname)
 			set_cap_apmode_filter();
 			start_dnsmasq();
 		}
+	}
+#endif
+#if defined(RTCONFIG_AMAS) && defined(HND_ROUTER)
+	if (nvram_get_int("re_mode") == 1) {
+		_dprintf("[%s(%d)] RE to do GPY211_INIT_SPEED ...\n", __func__, __LINE__);
+		GPY211_INIT_SPEED();
 	}
 #endif
 }
@@ -4301,8 +4339,12 @@ void stop_lan_wl(void)
 
 			if (strncmp(ifname, "wl", 2) == 0)
 				eval("wl", "-i", ifname, "maxassoc", "0");
-			else
+			else {
+#ifdef GT10
+				ledbh_war(ifname);
+#endif
 				eval("wlconf", ifname, "down");
+			}
 #elif defined RTCONFIG_RALINK
 			if (!strncmp(ifname, "ra", 2)) {
 #if defined (RTCONFIG_WLMODULE_MT7615E_AP)
@@ -4496,8 +4538,9 @@ void start_lan_wl(void)
 		|| mediabridge_mode()
 #endif
 #ifdef RTCONFIG_DPSTA
-		|| ((dpsta_mode()||rp_mode()) && nvram_get_int("re_mode") == 0)
+		|| (dpsta_mode() && nvram_get_int("re_mode") == 0)
 #endif
+		|| (rp_mode() && nvram_get_int("re_mode") == 0)
 	)
 	{
 #ifdef RTCONFIG_QTN
@@ -5180,6 +5223,9 @@ void restart_wl(void)
 			if (nvram_match(strcat_r(prefix, "radio", tmp), "0"))
 			{
 				nvram_set_int(strcat_r(prefix, "timesched", tmp2), 0);	// disable wifi time-scheduler
+#ifdef GT10
+				ledbh_war(ifname);
+#endif
 				eval("wlconf", ifname, "down");
 				eval("wl", "-i", ifname, "radio", "off");
 			}
@@ -5331,7 +5377,8 @@ void lanaccess_mssid(const char *limited_ifname, int mode)
 	eval("ebtables", "-t", "broute", mode ? "-A" : "-D", "BROUTING", "-i", (char*)limited_ifname, "-p", "ipv4", "--ip-proto", "icmp", "--ip-dst", nvram_safe_get("lan_ipaddr"), "-j", "ACCEPT");
 #endif	/* RTCONFIG_AMAS_WGN */
 	eval("ebtables", "-t", "broute", mode ? "-A" : "-D", "BROUTING", "-i", (char*)limited_ifname, "-p", "ipv4", "--ip-proto", "icmp", "--ip-dst", lan_subnet, "-j", "DROP");
-	eval("ebtables", "-t", "broute", mode ? "-A" : "-D", "BROUTING", "-i", (char*)limited_ifname, "-p", "ipv4", "--ip-proto", "icmp", "--ip-dst", cap_subnet, "-j", "DROP");
+	if (strcmp(lan_subnet, cap_subnet))
+		eval("ebtables", "-t", "broute", mode ? "-A" : "-D", "BROUTING", "-i", (char*)limited_ifname, "-p", "ipv4", "--ip-proto", "icmp", "--ip-dst", cap_subnet, "-j", "DROP");
 #ifdef RTCONFIG_FBWIFI
 	if(sw_mode() == SW_MODE_ROUTER){
 		eval("ebtables", "-t", "broute", mode ? "-A" : "-D", "BROUTING", "-i", (char*)limited_ifname, "-p", "ipv4", "--ip-dst", lan_subnet, "--ip-dport", "!", "8084", "--ip-proto", "tcp", "-j", "DROP");
@@ -5343,11 +5390,13 @@ void lanaccess_mssid(const char *limited_ifname, int mode)
 #ifdef RTCONFIG_DNSPRIVACY
 	if (nvram_get_int("dnspriv_enable")) {
 		eval("ebtables", "-t", "broute", mode ? "-A" : "-D", "BROUTING", "-i", (char*)limited_ifname, "-p", "ipv4", "--ip-dst", lan_subnet, "--ip-dport", "53", "--ip-proto", "tcp", "-j", "ACCEPT");
-		eval("ebtables", "-t", "broute", mode ? "-A" : "-D", "BROUTING", "-i", (char*)limited_ifname, "-p", "ipv4", "--ip-dst", cap_subnet, "--ip-dport", "53", "--ip-proto", "tcp", "-j", "ACCEPT");
+		if (strcmp(lan_subnet, cap_subnet))
+			eval("ebtables", "-t", "broute", mode ? "-A" : "-D", "BROUTING", "-i", (char*)limited_ifname, "-p", "ipv4", "--ip-dst", cap_subnet, "--ip-dport", "53", "--ip-proto", "tcp", "-j", "ACCEPT");
 	}
 #endif
 	eval("ebtables", "-t", "broute", mode ? "-A" : "-D", "BROUTING", "-i", (char*)limited_ifname, "-p", "ipv4", "--ip-dst", lan_subnet, "--ip-proto", "tcp", "-j", "DROP");
-	eval("ebtables", "-t", "broute", mode ? "-A" : "-D", "BROUTING", "-i", (char*)limited_ifname, "-p", "ipv4", "--ip-dst", cap_subnet, "--ip-proto", "tcp", "-j", "DROP");
+	if (strcmp(lan_subnet, cap_subnet))
+		eval("ebtables", "-t", "broute", mode ? "-A" : "-D", "BROUTING", "-i", (char*)limited_ifname, "-p", "ipv4", "--ip-dst", cap_subnet, "--ip-proto", "tcp", "-j", "DROP");
 #endif
 #endif	/* RTAC87U */
 }
@@ -6046,8 +6095,9 @@ void start_lan_wlport(void)
 #if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
 		&& !psr_mode()
 #ifdef RTCONFIG_DPSTA
-		&& !((dpsta_mode()||rp_mode()) && nvram_get_int("re_mode") == 0)
+		&& !(dpsta_mode() && nvram_get_int("re_mode") == 0)
 #endif
+		&& !(rp_mode() && nvram_get_int("re_mode") == 0)
 #endif
 	) return;
 
@@ -6126,8 +6176,9 @@ void stop_lan_wlport(void)
 #if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
 		&& !psr_mode()
 #ifdef RTCONFIG_DPSTA
-		&& !((dpsta_mode()||rp_mode()) && nvram_get_int("re_mode") == 0)
+		&& !(dpsta_mode() && nvram_get_int("re_mode") == 0)
 #endif
+		&& !(rp_mode() && nvram_get_int("re_mode") == 0)
 #endif
 	) return;
 

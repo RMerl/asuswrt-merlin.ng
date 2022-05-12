@@ -148,9 +148,9 @@ enum
 enum
 {
 	TDTS_SHELL_IOCTL_DIR_NA = 0x0,  //!< Not available.
-	TDTS_SHELL_IOCTL_DIR_WR,        //!< Write (0x1)
-	TDTS_SHELL_IOCTL_DIR_RD,        //!< Read (0x2)
-	TDTS_SHELL_IOCTL_DIR_WTRD,      //!< Write && Read (0x3)
+	TDTS_SHELL_IOCTL_DIR_WR = _IOC_WRITE,        //!< Write
+	TDTS_SHELL_IOCTL_DIR_RD = _IOC_READ,        //!< Read
+	TDTS_SHELL_IOCTL_DIR_WTRD = _IOC_READ | _IOC_WRITE,      //!< Write && Read
 	TDTS_SHELL_IOCTL_DIR_MAX = TDTS_SHELL_IOCTL_DIR_WTRD
 };
 

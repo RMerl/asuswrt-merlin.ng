@@ -218,8 +218,9 @@ int ntp_main(int argc, char *argv[])
 				|| mediabridge_mode()
 #endif
 #ifdef RTCONFIG_DPSTA
-				|| ((dpsta_mode()||rp_mode()) && nvram_get_int("re_mode") == 0)
+				|| (dpsta_mode() && nvram_get_int("re_mode") == 0)
 #endif
+				|| (rp_mode() && nvram_get_int("re_mode") == 0)
 			 ) && nvram_get_int("wlc_state") != WLC_STATE_CONNECTED)
 		{
 			alarm(SECONDS_TO_WAIT);

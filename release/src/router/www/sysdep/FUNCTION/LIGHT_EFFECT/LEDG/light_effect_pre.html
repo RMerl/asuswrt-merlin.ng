@@ -20,6 +20,11 @@ for(var i = 1; i <= ledg_group; i += 1){
 	led_group[i] = {"R" : 0, "G" : 0, "B" : 128};
 	$.extend(true, scheme_item_post.LED_Set, led_group);
 }
+$(function(){
+	if(model_info.productid.substr(0,2) == "GT"){
+		$("#light_effect_bg .light_effect_mask").addClass("rog");
+	}
+});
 
 function initial_led_control() {
 	var set_scheme_item_post = function(_ledg_rgb) {

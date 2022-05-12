@@ -923,7 +923,7 @@ function newProfileOK(){
 
 						<div id="localPort_field" class="game-p-s-field">
 							<div class="settings-filed-title"><#IPConnection_VSList_Internal_Port#></div>
-							<input id="new_profile_localPort" type="text" class="input-container" style="width:80px;" value="" maxlength="5" onkeypress="return validator.isNumber(this,event);" autocomplete="off" autocorrect="off" autocapitalize="off" >
+							<input id="new_profile_localPort" type="text" class="input-container" value="" maxlength="5" onkeypress="return validator.isNumber(this,event);" autocomplete="off" autocorrect="off" autocapitalize="off" >
 							<div class="hint"><#feedback_optional#></div>
 						</div>
 

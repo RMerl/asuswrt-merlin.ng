@@ -26,7 +26,7 @@ endif
  ifeq ($(HND_ROUTER_AX),y)
 export PLATFORM_ARCH := arm-glibc
 ifeq ($(HND_ROUTER_AX_6756),y)
-ifneq ($(findstring $(CUR_CHIP_PROFILE),47622 6750 6756),)
+ifneq ($(findstring $(CUR_CHIP_PROFILE),47622 6750 6756 6855),)
 export CROSS_COMPILE := /opt/toolchains/crosstools-arm-gcc-9.2-linux-4.19-glibc-2.30-binutils-2.32/usr/bin/arm-buildroot-linux-gnueabi-
 export CROSS_COMPILER := $(CROSS_COMPILE)
 export CONFIGURE := ./configure LD=$(CROSS_COMPILE)ld --host=arm-buildroot-linux-gnueabi
@@ -148,7 +148,7 @@ define platformRouterOptions
 		sed -i "/RTCONFIG_HAS_5G_2/d" $(1); \
 		echo "RTCONFIG_HAS_5G_2=y" >>$(1); \
 	fi; \
-	if [ "$(RTAX92U)" = "y" -o "$(GTAX11000)" = "y" -o "$(RTAX95Q)" = "y" -o "$(XT8PRO)" = "y" ]; then \
+	if [ "$(RTAX92U)" = "y" -o "$(GTAX11000)" = "y" -o "$(RTAX95Q)" = "y" -o "$(XT8PRO)" = "y" -o "$(XT8_V2)" = "y" ]; then \
 		sed -i "/RTCONFIG_HAS_5G_2/d" $(1); \
 		echo "RTCONFIG_HAS_5G_2=y" >>$(1); \
 	fi; \

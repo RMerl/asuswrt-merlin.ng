@@ -4379,6 +4379,9 @@ void post_ecm(void)
 		f_write_string("/sys/kernel/debug/ecm/ecm_nss_ipv6/db_limit_mode", "1", 0, 0);
 	}
 #endif
+
+	if (__post_ecm)
+		__post_ecm();
 }
 #endif	/* RTCONFIG_SOC_IPQ8064 || RTCONFIG_SOC_IPQ8074 */
 

@@ -429,14 +429,14 @@ function genElement(){
 			if(show_dwb_hint){
 				if(band6g_support){
 					code += '<div class="dwb_hint">6 GHz <#AiMesh_backhaul_band_5GHz-2_desc1#></div>';
-					code += '<div class="dwb_hint"><#AiMesh_backhaul_band_5GHz-2_desc2#></div>';
-					break;
 				}
 				else{
 					code += '<div class="dwb_hint">5 GHz-2 <#AiMesh_backhaul_band_5GHz-2_desc1#></div>';
-					code += '<div class="dwb_hint"><#AiMesh_backhaul_band_5GHz-2_desc2#></div>';
-					break;
 				}
+				var $dwb_hint = $("<div>").addClass("dwb_hint").html('<#AiMesh_backhaul_band_5GHz-2_desc2#>');
+				$dwb_hint.find(".faq-link").attr("onclick", "top.change_wl_unit_status(" + dwb_info.band + ");");
+				code += $dwb_hint[0].outerHTML;
+				break;
 			}
 		}
 
@@ -960,8 +960,11 @@ function updateVariable(id, value, flag){
 	else if(value == 'psk2sae' && nvram[prefix + '_mfp'] == '0'){	
 		variable[prefix + '_mfp'] = '1';
 	}
-	else if(value == 'psk2' || value == 'pskpsk2' || value == 'wpa' || value == 'wpa2'){
+	else if(value == 'psk2' || value == 'pskpsk2' || value == 'wpawpa2' || value == 'wpa2'){
 		if(mbo_support && nvram[prefix + '_mbo_enable'] == '1' && nvram[prefix + '_mfp'] == '0'){
+			variable[prefix + '_mfp'] = '1';
+		}
+		else if((value == 'pskpsk2' || value == 'wpawpa2') && nvram[prefix + '_mfp'] == '2'){
 			variable[prefix + '_mfp'] = '1';
 		}
 	}

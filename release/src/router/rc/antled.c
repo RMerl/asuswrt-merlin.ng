@@ -110,9 +110,9 @@ static void antled_init()
 static void antled_alarmtimer()
 {
 	int period = nvram_get_int("antled_period");
-	period = (period > 0) ? period : 5;
+	period = (period > 0) ? period : 2;
 	ANTLED_PRINT("period: %d\n", period);
-	alarmtimer(period, 0);	/* default: 5 seconds */
+	alarmtimer(period, 0);	/* default: 2 seconds */
 }
 
 extern sta_info_t *wl_sta_info(char *ifname, struct ether_addr *ea);
@@ -134,10 +134,21 @@ static int wl_rssi(int *rssi_export)
 	json_object *clientInList = NULL;
 	json_object *onlineObj = NULL, *macObj = NULL;
 	int clientListLen = 0;
+	unsigned char *macp;
+	unsigned char mac_binary[6];
+	char *macaddr_strp;
+	char macbuf2[13]; // For Store Original Mac Value (means without :)
+	char apmacbuf[18];
+	char apmac[18];
+	unsigned long long macorigvalue;
+
 
 	/* buffers and length */
 	mac_list_size = sizeof(auth->count) + MAX_STA_COUNT * sizeof(struct ether_addr);
 	auth = malloc(mac_list_size);
+
+	memset(mac_binary, 0x0, 6);
+
 	if (!auth) return 0;
 
 	strlcpy(wl_ifnames, nvram_safe_get("wl_ifnames"), sizeof(wl_ifnames));
@@ -156,6 +167,7 @@ static int wl_rssi(int *rssi_export)
 			continue;
 
 		/* build authenticated sta list */
+		ANTLED_print("\tAUTH COUNT: %d\n",auth->count);
 		for (i = 0; i < auth->count; i ++) {
 			sta = wl_sta_info(word, &auth->ea[i]);
 			if (!sta) continue;
@@ -195,35 +207,93 @@ static int wl_rssi(int *rssi_export)
 					char macbuf[32];
 					ether_etoa((void *)&auth->ea[i], macbuf);
 
+					ANTLED_print("\t Current Check RE MAC: %s : %d\n",ether_etoa((void *)&auth->ea[i], ea),scb_val.val);
+
+					memset(macbuf2, 0x0, 13);
 					/* At Most 4 Band 2G, 5G, 5G-2, 6G   Only RE Online Need To Be Check*/
-					for(int k=0;k<4;k++){
+					for(int k=0;k<8;k++){
+
+						//memset(macbuf3, 0x0, 24);
 
 						if(k==0){
 							json_object_object_get_ex(clientInList, "ap2g", &macObj);
+							strncpy(apmac,json_object_get_string(macObj),sizeof(apmac));
 						}
 						else if(k==1){
 							json_object_object_get_ex(clientInList, "ap5g", &macObj);
+							strncpy(apmac,json_object_get_string(macObj),sizeof(apmac));
 						}
 						else if(k==2){
 							json_object_object_get_ex(clientInList, "ap5g1", &macObj);
+							strncpy(apmac,json_object_get_string(macObj),sizeof(apmac));
+						}
+						else if(k==3){
+							json_object_object_get_ex(clientInList, "ap6g", &macObj);
+							strncpy(apmac,json_object_get_string(macObj),sizeof(apmac));
+						}
+						else if(k==4){
+							json_object_object_get_ex(clientInList, "ap2g", &macObj);
+							macaddr_strp=json_object_get_string(macObj);
+						}
+						else if(k==5){
+							json_object_object_get_ex(clientInList, "ap5g", &macObj);
+							macaddr_strp=json_object_get_string(macObj);
+
+						}
+						else if(k==6){
+							json_object_object_get_ex(clientInList, "ap5g1", &macObj);
+							macaddr_strp=json_object_get_string(macObj);
+
 						}
 						else{
 							json_object_object_get_ex(clientInList, "ap6g", &macObj);
+							macaddr_strp=json_object_get_string(macObj);
 						}
 
-						if (rssi_sta >= rssi_org && !strcmp(json_object_get_string(macObj),ether_etoa((void *)&auth->ea[i], ea))) {
+						if(k==4 || k==5 || k==6 || k==7){
+							/* original mac copy without : */
+							ether_atoe(macaddr_strp, mac_binary);
+
+							/* Hex value mac without : */
+							sprintf(macbuf2, "%02X%02X%02X%02X%02X%02X",
+							mac_binary[0],
+							mac_binary[1],
+							mac_binary[2],
+							mac_binary[3],
+							mac_binary[4],
+							mac_binary[5]);
+
+							/* Last Hex value Mac - 1*/
+							macorigvalue = strtoll(macbuf2, (char **) NULL, 16);
+							macp = (unsigned char*) &macorigvalue;
+							*(macp+5) = mac_binary[0];
+							*(macp+0) = mac_binary[5] - 1;
+
+							/* Combine To New Mac Value */
+							sprintf(apmacbuf, "%02X:%02X:%02X:%02X:%02X:%02X",
+							*(macp+5),
+							*(macp+4),
+							*(macp+3),
+							*(macp+2),
+							*(macp+1),
+							*(macp+0));
+							strncpy(apmac,apmacbuf,sizeof(apmac));
+						}
+
+						ANTLED_print("\t Current Check apXg MAC: %s : rssi_sta %d : rssi_orig %d : macp \n",apmac,rssi_sta,rssi_org);
+						if (rssi_sta >= rssi_org && !strcmp(apmac,ether_etoa((void *)&auth->ea[i], ea))) {
 							unit_g = unit;	
 							ANTLED_PRINT("UNIT: %d, MAC: %s, RSSI: %d\n", unit, ether_etoa((void *)&auth->ea[i], ea), rssi_sta);
 							if (sta->flags & WL_STA_SCBSTATS) {
 								for (ii = WL_ANT_IDX_1; ii < WL_RSSI_ANT_MAX; ii++) {
 									if (!unit)
-										rssi_export[ii] = dtoh32(sta->rssi[ii]);
+										rssi_export[ii] = dtoh32(sta->rx_lastpkt_rssi[ii]);
 									else
-										rssi_export[ii] = dtoh32(sta->rssi[3 - ii]);
+										rssi_export[ii] = dtoh32(sta->rx_lastpkt_rssi[3 - ii]);
 
 									if (ii == WL_ANT_IDX_1)
-										ANTLED_print("\t per antenna average rssi of rx data frames:");
-										ANTLED_print(" %d", dtoh32(sta->rssi[ii]));
+										ANTLED_print("\t per antenna last rssi of rx data frames:");
+										ANTLED_print(" %d", dtoh32(sta->rx_lastpkt_rssi[ii]));
 									if (ii == WL_RSSI_ANT_MAX-1)
 										ANTLED_print("\n");
 								}
@@ -255,13 +325,13 @@ static int wl_rssi(int *rssi_export)
 					if (sta->flags & WL_STA_SCBSTATS) {
 						for (ii = WL_ANT_IDX_1; ii < WL_RSSI_ANT_MAX; ii++) {
 							if (!unit)
-								rssi_export[ii] = dtoh32(sta->rssi[ii]);
+								rssi_export[ii] = dtoh32(sta->rx_lastpkt_rssi[ii]);
 							else
-								rssi_export[ii] = dtoh32(sta->rssi[3 - ii]);
+								rssi_export[ii] = dtoh32(sta->rx_lastpkt_rssi[3 - ii]);
 
 							if (ii == WL_ANT_IDX_1)
-								ANTLED_print("\t per antenna average rssi of rx data frames:");
-							ANTLED_print(" %d", dtoh32(sta->rssi[ii]));
+								ANTLED_print("\t per antenna last rssi of rx data frames:");
+							ANTLED_print(" %d", dtoh32(sta->rx_lastpkt_rssi[ii]));
 							if (ii == WL_RSSI_ANT_MAX-1)
 								ANTLED_print("\n");
 						}
@@ -283,6 +353,7 @@ static int wl_rssi(int *rssi_export)
 			if (wl_ioctl(name_vif, WLC_GET_VAR, auth, mac_list_size))
 				continue;
 
+			ANTLED_print("\t[VIF] AUTH COUNT: %d\n",auth->count);
 			for (ii = 0; ii < auth->count; ii++) {
 				sta = wl_sta_info(name_vif, &auth->ea[ii]);
 				if (!sta) continue;
@@ -325,37 +396,91 @@ static int wl_rssi(int *rssi_export)
 						char macbuf[32];
 						ether_etoa((void *)&auth->ea[i], macbuf);
 
+						memset(macbuf2, 0x0, 13);
+
+						ANTLED_print("\t[VIF] Current Check RE MAC: %s : %d\n",ether_etoa((void *)&auth->ea[i], ea),scb_val.val);
 						/* At Most 4 Band 2G, 5G, 5G-2, 6G   Only RE Online Need To Be Check*/
 						for(int k=0;k<4;k++){
 
 							if(k==0){
 								json_object_object_get_ex(clientInList, "ap2g", &macObj);
+								strncpy(apmac,json_object_get_string(macObj),sizeof(apmac));
 							}
 							else if(k==1){
 								json_object_object_get_ex(clientInList, "ap5g", &macObj);
+								strncpy(apmac,json_object_get_string(macObj),sizeof(apmac));
 							}
 							else if(k==2){
 								json_object_object_get_ex(clientInList, "ap5g1", &macObj);
+								strncpy(apmac,json_object_get_string(macObj),sizeof(apmac));
+							}
+							else if(k==3){
+								json_object_object_get_ex(clientInList, "ap6g", &macObj);
+								strncpy(apmac,json_object_get_string(macObj),sizeof(apmac));
+							}
+							else if(k==4){
+								json_object_object_get_ex(clientInList, "ap2g", &macObj);
+								macaddr_strp=json_object_get_string(macObj);
+							}
+							else if(k==5){
+								json_object_object_get_ex(clientInList, "ap5g", &macObj);
+								macaddr_strp=json_object_get_string(macObj);
+							}
+							else if(k==6){
+								json_object_object_get_ex(clientInList, "ap5g1", &macObj);
+								macaddr_strp=json_object_get_string(macObj);
 							}
 							else{
 								json_object_object_get_ex(clientInList, "ap6g", &macObj);
+								macaddr_strp=json_object_get_string(macObj);
+							}
+
+							if(k==4 || k==5 || k==6 || k==7){
+
+								/* original mac copy without : */
+								ether_atoe(macaddr_strp, mac_binary);
+
+								/* Hex value mac without : */
+								sprintf(macbuf2, "%02X%02X%02X%02X%02X%02X",
+								mac_binary[0],
+								mac_binary[1],
+								mac_binary[2],
+								mac_binary[3],
+								mac_binary[4],
+								mac_binary[5]);
+
+								/* Last Hex value Mac - 1*/
+								macorigvalue = strtoll(macbuf2, (char **) NULL, 16);
+								macp = (unsigned char*) &macorigvalue;
+								*(macp+5) = mac_binary[0];
+								*(macp+0) = mac_binary[5] - 1;
+
+								/* Combine To New Mac Value */
+								sprintf(apmacbuf, "%02X:%02X:%02X:%02X:%02X:%02X",
+								*(macp+5),
+								*(macp+4),
+								*(macp+3),
+								*(macp+2),
+								*(macp+1),
+								*(macp+0));
+								strncpy(apmac,apmacbuf,sizeof(apmac));
 							}
 							
-							if (rssi_sta >= rssi_org &&  !strcmp(json_object_get_string(macObj),ether_etoa((void *)&auth->ea[i], ea))) {
+							if (rssi_sta >= rssi_org &&  !strcmp(apmac,ether_etoa((void *)&auth->ea[i], ea))) {
 								unit_g = unit;	
 								ANTLED_PRINT("UNIT: %d, MAC: %s, RSSI: %d\n", unit, ether_etoa((void *)&auth->ea[i], ea), rssi_sta);
 								if (sta->flags & WL_STA_SCBSTATS) {
 									for (ii = WL_ANT_IDX_1; ii < WL_RSSI_ANT_MAX; ii++) {
 										if (!unit)
-											rssi_export[ii] = dtoh32(sta->rssi[ii]);
+											rssi_export[ii] = dtoh32(sta->rx_lastpkt_rssi[ii]);
 										else
-											rssi_export[ii] = dtoh32(sta->rssi[3 - ii]);
+											rssi_export[ii] = dtoh32(sta->rx_lastpkt_rssi[3 - ii]);
 
 										if (ii == WL_ANT_IDX_1)
-											ANTLED_print("\t per antenna average rssi of rx data frames:");
-											ANTLED_print(" %d", dtoh32(sta->rssi[ii]));
+											ANTLED_print("\t per antenna last rssi of rx data frames:");
+											ANTLED_print(" %d", dtoh32(sta->rx_lastpkt_rssi[ii]));
 										if (ii == WL_RSSI_ANT_MAX-1)
-											ANTLED_print("\n");
+											ANTLED_print(" %d", dtoh32(sta->rx_lastpkt_rssi[ii]));
 									}
 								}
 							}
@@ -385,13 +510,13 @@ static int wl_rssi(int *rssi_export)
 						if (sta->flags & WL_STA_SCBSTATS) {
 							for (ii = WL_ANT_IDX_1; ii < WL_RSSI_ANT_MAX; ii++) {
 								if (!unit)
-									rssi_export[ii] = dtoh32(sta->rssi[ii]);
+									rssi_export[ii] = dtoh32(sta->rx_lastpkt_rssi[ii]);
 								else
-									rssi_export[ii] = dtoh32(sta->rssi[3 - ii]);
+									rssi_export[ii] = dtoh32(sta->rx_lastpkt_rssi[3 - ii]);
 
 								if (ii == WL_ANT_IDX_1)
-									ANTLED_print("\t per antenna average rssi of rx data frames:");
-								ANTLED_print(" %d", dtoh32(sta->rssi[ii]));
+									ANTLED_print("\t per antenna last rssi of rx data frames:");
+								ANTLED_print(" %d", dtoh32(sta->rx_lastpkt_rssi[ii]));
 								if (ii == WL_RSSI_ANT_MAX-1)
 									ANTLED_print("\n");
 							}
@@ -435,6 +560,11 @@ static void antled(int sig)
 	} else
 		ledg_ant_mode = nvram_get_int("antled_scheme");
 
+
+	if(!nvram_get_int("AllLED")){
+		AntennaGroupReset(LED_OFF);
+		return;
+	}
 
 
 	/* Turn Off Ant LED IF WEB TAB Was Disabled */
@@ -482,7 +612,7 @@ no_adjust:
 	for (i = 0; i < 4; i++) {
 
 		//RSSI Brightness Mapping
-		if (-39 <= rssi[i] && rssi[i] <= -20)
+		if (-39 <= rssi[i] && rssi[i] <= -1)
 			bright = 128;
 		else if (rssi[i] == 0)
 			bright = 3;

@@ -12,7 +12,7 @@ apply.welcome = function(){
 	systemVariable.manualWanSetup = false;
 	systemVariable.advSetting = false;
 
-	if(isSupport("prelink"))
+	if(isSupport("prelink") && isSupport("amas_bdl"))
 		goTo.prelink_desc();
 	else if(!systemVariable.forceChangePw){
 		if(isOriginSwMode("RP")){
@@ -882,7 +882,7 @@ apply.getLink = function(){
 		}
 	}());
 	var key = systemVariable.selectedAP.thekey;
-	obj['rc_service'] = (selected_unit == 0) ? 'start_wpasupp 0' : 'start_wpasupp 1';
+	obj['rc_service'] = (selected_unit == 0) ? 'start_wpasupp_qis 0' : 'start_wpasupp_qis 1';
 	obj['wlc' + selected_unit + '_ssid'] = ssid;
 	obj['wlc' + selected_unit + '_auth_mode'] = auth_mode;
 	obj['wlc' + selected_unit + '_wpa_psk'] = key;
@@ -912,7 +912,7 @@ apply.getWLCPreLinkState = function (){
 						$('#wlc_field').append('<div id="wlc_pre_auth_hint" class="inputContainer" style="color:#FC0;font-size: 1.8rem;">CONNECTED</div>');
 						var obj = {
 							"action_mode": "apply",
-							"rc_service": "stop_wpasupp 0",
+							"rc_service": "stop_wpasupp_qis 0",
 							"wlc0_ssid": ""
 						}
 
@@ -946,7 +946,7 @@ apply.getWLCPreLinkState = function (){
 						$('#wlc_field').append('<div id="wlc_pre_auth_hint" class="inputContainer" style="color:#FC0;font-size: 1.8rem;">CONNECTED</div>');
 						var obj = {
 							"action_mode": "apply",
-							"rc_service": "stop_wpasupp 1",
+							"rc_service": "stop_wpasupp_qis 1",
 							"wlc1_ssid": ""
 						}
 
@@ -1005,8 +1005,14 @@ apply.wireless = function(){
 		qisPostData.wl0_wpa_psk = ($("#wireless_key_0").length) ? $("#wireless_key_0").val() : scProfile.wpa_psk;
 
 		if(isSupport('wifi6e') && qisPostData.smart_connect_x == '1'){
-			qisPostData.wl0_auth_mode_x = "psk2sae";
-			qisPostData.wl0_mfp = "1";
+			if(systemVariable.productid == 'GT-AXE16000'){
+				qisPostData.wl0_auth_mode_x = "psk2";
+				qisPostData.wl0_mfp = "0";
+			}
+			else{
+				qisPostData.wl0_auth_mode_x = "psk2sae";
+				qisPostData.wl0_mfp = "1";
+			}			
 		}
 		else if(isSupport('wifi6e') && qisPostData.smart_connect_x == '3'){
 			qisPostData.wl0_auth_mode_x = "psk2";
@@ -1026,8 +1032,14 @@ apply.wireless = function(){
 		qisPostData.wl1_wpa_psk = ($("#wireless_key_1").length) ? $("#wireless_key_1").val() : scProfile.wpa_psk;
 
 		if(isSupport('wifi6e') && qisPostData.smart_connect_x == '1'){
-			qisPostData.wl1_auth_mode_x = "psk2sae";
-			qisPostData.wl1_mfp = "1";
+			if(systemVariable.productid == 'GT-AXE16000'){
+				qisPostData.wl1_auth_mode_x = "psk2";
+				qisPostData.wl1_mfp = "0";
+			}
+			else{
+				qisPostData.wl1_auth_mode_x = "psk2sae";
+				qisPostData.wl1_mfp = "1";
+			}			
 		}
 		else if(isSupport('wifi6e') && qisPostData.smart_connect_x == '3'){
 			qisPostData.wl1_auth_mode_x = "psk2";
@@ -1061,14 +1073,13 @@ apply.wireless = function(){
 		if($("#wireless_ssid_3").length){if(!wirelessValidator(3)) return false;}
 
 		qisPostData.wl3_ssid = ($("#wireless_ssid_3").length) ? $("#wireless_ssid_3").val() : scProfile.ssid;
-		qisPostData.wl3_wpa_psk = ($("#wireless_key_3").length) ? $("#wireless_key_3").val() : scProfile.wpa_psk;
+		qisPostData.wl3_wpa_psk = ($("#wireless_key_3").length) ? $("#wireless_key_3").val() : scProfile.wpa_psk;		
 		qisPostData.wl3_auth_mode_x = "psk2";
 		qisPostData.wl3_crypto = "aes";
 	}
 
-	var amas_bdlkey = httpApi.nvramGet(["amas_bdlkey"]).amas_bdlkey;
 	var dwb_mode = httpApi.nvramGet(["dwb_mode"]).dwb_mode;
-	if(isSupport("prelink") && amas_bdlkey.length > 0){
+	if(isSupport("prelink") && isSupport("amas_bdl")){
 		if(isSupport("prelink_mssid")){
 			if(isSwMode("RT") || isSwMode("AP")){
 				if(check_dwb_ssid())
@@ -1117,6 +1128,10 @@ apply.submitQIS = function(){
 				return false;
 			}
 		})();
+		var current_SG_mode = (httpApi.nvramGet(["SG_mode"], true).SG_mode=="1")? true:false;
+		if(isSupport("dsl") && current_SG_mode){
+			qisPostData.dsl_upnp_enable = "0";
+		}
 
 		if(qisPostData.hasOwnProperty("http_username") || qisPostData.hasOwnProperty("http_passwd")){
 			var postData = {"restart_httpd": "0", "new_username":qisPostData.http_username, "new_passwd":qisPostData.http_passwd};
@@ -1645,7 +1660,7 @@ abort.wan = function(){
 };
 
 abort.nowan = function(){
-	if(isSupport("prelink"))
+	if(isSupport("prelink") && isSupport("amas_bdl"))
 		goTo.loadPage("prelink_desc", true);
 	else if(!systemVariable.forceChangePw)
 		abort.backToStartQIS();
@@ -1909,7 +1924,7 @@ abort.wireless = function(){
 				goTo.loadPage("amasrole_page", true);
 			else if(systemVariable.forceChangePw)
 				goTo.loadPage("login_name", true);
-			else if(isSupport("prelink"))
+			else if(isSupport("prelink") && isSupport("amas_bdl"))
 				goTo.loadPage("prelink_desc", true);
 			else
 				goTo.loadPage(systemVariable.historyPage[systemVariable.historyPage.length-2], true);
@@ -3605,6 +3620,23 @@ goTo.Finish = function(){
 				httpApi.isAlive("", updateSubnet(systemVariable.lanIpaddr), function(){
 					clearInterval(interval_isAlive); 
 					if($("#gdContainer").is(":visible")){
+						if(isEva()){
+							$(".GD-logo").hide();
+							$("#gd-logo").hide();
+							$(".GD-content").css({
+								"margin-top": "-125px",
+								"background-image": "url(../images/eva01_bg.png)",
+								"background-repeat": "no-repeat",
+								"width": "100%",
+								"background-size": "contain",
+								"overflow": "hidden",
+								"height": "2048px"
+							})
+							$("body").css({
+								"overflow": "hidden"
+							})
+						}
+
 						$("#GD-status").html("Finish!");
 
 						$('#summary_page').find(".tableContainer")

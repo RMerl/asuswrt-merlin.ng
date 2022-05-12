@@ -1014,7 +1014,7 @@ function shadeHandle(flag){
 </div>
 
 
-<div id="alert_preference" class="eula_panel_container border-container" style="width: 600px; position: fixed; display: block;background:rgba(0,0,0,0.9);display:none;">
+<div id="alert_preference" class="eula_panel_container border-container" style="width: 600px; margin-top: -200px;position: fixed; display: block;background:rgba(0,0,0,0.9);display:none;">
 	<div class="border-corner border-corner-top-left"></div>
 	<div class="border-corner border-corner-bottom-left"></div>
 	<div class="flexbox title-container">

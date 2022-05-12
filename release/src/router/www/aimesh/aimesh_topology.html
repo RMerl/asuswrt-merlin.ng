@@ -1830,11 +1830,25 @@ function network_set_fronthaul_info(_node_info){
 	var cfg_clientlist_ap_list = ["ap2g", "ap5g", "ap5g1", "ap6g"];
 	var ap_info_list = [];
 	var ap_list_idx = 0;
+	var isReNode = (_node_info.mac != cap_mac) ? true : false;
+	var wifi_radio_control = [];
+	if(isReNode)
+		wifi_radio_control = manage_get_wifi_radio_control(_node_info, select_node_capability);
+
 	cfg_clientlist_ap_list.forEach(function(item, index, array){
-		if(_node_info[item] == "" || _node_info[item] == undefined)
+		var specific_data = "";
+		if(wifi_radio_control.length > 0){
+			specific_data = wifi_radio_control.filter(function(wl_item){
+				return (wl_item.ap_name == item);
+			})[0];
+		}
+		else{
+			specific_data = _node_info[item];
+		}
+		if(specific_data == "" || specific_data == undefined)
 			$("#network_block .fronthaul_content").find("#fronthaul_wl_" + item + "").remove();
 		else{
-			var ap_info = {"name":"", "mac":"", "ssid":"", "type":"", "is_dwb":false};
+			var ap_info = {"name":"", "mac":"", "ssid":"", "type":"", "is_dwb":false, "radio_on":false};
 			ap_info["name"] = item;
 			ap_info["mac"] = function(){
 				var mac = "";
@@ -1871,6 +1885,12 @@ function network_set_fronthaul_info(_node_info){
 				}
 				return result;
 			}();
+			ap_info["radio_on"] = function(){
+				if(specific_data.value != undefined)
+					return (specific_data.value == "1") ? true : false;
+				else
+					return true;
+			}();
 			ap_info_list.push(ap_info);
 			ap_list_idx++;
 		}
@@ -1889,36 +1909,56 @@ function network_set_fronthaul_info(_node_info){
 		if(ap_band_total_count[type] > 1)
 			band_text += "-" + ap_current_band_count[type];
 		_obj.find("#fronthaul_connect_title").html(band_text);
+		if(_ap_info.radio_on){
+			_obj.find("#radio_info").hide();
 
-		_obj.find("#fronthaul_mac").html(_ap_info.mac);
-		if(_ap_info.ssid != ""){
-			_obj.find("#fronthaul_ssid").html(_ap_info.ssid);
-			_obj.find("#fronthaul_ssid").attr("title", _ap_info.ssid);
-			_obj.find(".bubble_icon").hide();
+			_obj.find("#fronthaul_mac").html(_ap_info.mac);
+			if(_ap_info.ssid != ""){
+				_obj.find("#fronthaul_ssid").html(_ap_info.ssid);
+				_obj.find("#fronthaul_ssid").attr("title", _ap_info.ssid);
+				_obj.find(".bubble_icon").hide();
+			}
+			else{
+				_obj.find("#fronthaul_ssid").html("N/A");
+				_obj.find(".bubble_icon").parent().find(".hover_pop_hint_bg").remove();
+				var hint_parm = {
+					"text": "<#AiMesh_Update_Latest_FW#>",
+					"css": "ssid_icon"
+				};
+				_obj.find(".bubble_icon").removeClass("hover_pop_hint").addClass("hover_pop_hint");
+				_obj.find(".bubble_icon").after(gen_hint_component(hint_parm));
+				_obj.find(".bubble_icon").css("display", "inline-block");
+			}
+			if(_ap_info.is_dwb){
+				_obj.find("#bh_info").show();
+				_obj.find("#fh_info").hide();
+				var dwb_hint = "* "+ band_text + ' <#AiMesh_backhaul_band_5GHz-2_desc1#> <#AiMesh_backhaul_band_5GHz-2_desc2#>';
+				_obj.find("#bh_info #dwb_hint").html(dwb_hint);
+				_obj.find("#bh_info #dwb_hint").find(".faq-link").removeAttr("onclick").click(function(e){
+					e = e || event;
+					e.stopPropagation();
+					change_wl_unit_status(dwb_info.band);
+				});
+			}
+			else{
+				_obj.find("#bh_info").hide();
+				_obj.find("#fh_info").show();
+			}
+			if(!conndiag_support)
+				_obj.find(".conndiag_data").hide();
 		}
 		else{
-			_obj.find("#fronthaul_ssid").html("N/A");
-			_obj.find(".bubble_icon").parent().find(".hover_pop_hint_bg").remove();
-			var hint_parm = {
-				"text": "<#AiMesh_Update_Latest_FW#>",
-				"css": "ssid_icon"
-			};
-			_obj.find(".bubble_icon").removeClass("hover_pop_hint").addClass("hover_pop_hint");
-			_obj.find(".bubble_icon").after(gen_hint_component(hint_parm));
-			_obj.find(".bubble_icon").css("display", "inline-block");
+			_obj.find("#radio_info").show();
+			_obj.find("#radio_info .faq-link").unbind("click").click(function(e){
+				closeAllSelect();
+				e = e || event;
+				e.stopPropagation();
+				control_category_block('manage');
+				if($("#manage_block").find(".manage_switch_wifi #switch_wifi").hasClass("down"))
+					$("#manage_block").find(".manage_switch_wifi #switch_wifi").click();
+			});
+			_obj.find("#bh_info, #fh_info").hide();
 		}
-		if(_ap_info.is_dwb){
-			_obj.find(".as_backhaul_info").show();
-			_obj.find(".fronthaul_info").hide();
-			var dwb_hint = "* "+ band_text + ' <#AiMesh_backhaul_band_5GHz-2_desc1#> <#AiMesh_backhaul_band_5GHz-2_desc2#>';
-			_obj.find(".as_backhaul_info #dwb_hint").html(dwb_hint);
-		}
-		else{
-			_obj.find(".as_backhaul_info").hide();
-			_obj.find(".fronthaul_info").show();
-		}
-		if(!conndiag_support)
-			_obj.find(".conndiag_data").hide();
 	};
 	$.each(ap_info_list, function(index, value){
 		var ap_info = value;
@@ -2521,6 +2561,7 @@ function manage_get_wifi_radio_control(_node_info, _node_capability){
 		this.text = "";
 		this.value = 0;
 		this.idx = 0;
+		this.ap_name = "";
 	};
 	var result = [];
 	if(_node_info.band_info){
@@ -2528,26 +2569,32 @@ function manage_get_wifi_radio_control(_node_info, _node_capability){
 			var wifi_radio_ctl_idx = "";
 			var wl_real_unit = value["unit"];
 			var wl_band_text = "";
+			var ap_name = "";
 			switch(index){
 				case "0":
 					wifi_radio_ctl_idx = "0";
 					wl_band_text = "2.4 GHz";
+					ap_name = "ap2g";
 					break;
 				case "1":
 					wifi_radio_ctl_idx = "1";
 					wl_band_text = "5 GHz";
+					ap_name = "ap5g";
 					break;
 				case "2":
 					wifi_radio_ctl_idx = "1";
 					wl_band_text = "5 GHz-1";
+					ap_name = "ap5g";
 					break;
 				case "3":
 					wifi_radio_ctl_idx = "2";
 					wl_band_text = "5 GHz-2";
+					ap_name = "ap5g1";
 					break;
 				case "4":
 					wifi_radio_ctl_idx = "3";
 					wl_band_text = "6 GHz";
+					ap_name = "ap6g";
 					break;
 			}
 			if(_node_capability["wifi_radio_" + wifi_radio_ctl_idx + ""]) {
@@ -2560,6 +2607,7 @@ function manage_get_wifi_radio_control(_node_info, _node_capability){
 						wifi_radio_obj.value = wl_radio;
 						wifi_radio_obj.idx = wl_real_unit;
 						wifi_radio_obj.text = wl_band_text;
+						wifi_radio_obj.ap_name = ap_name;
 						result.push(JSON.parse(JSON.stringify(wifi_radio_obj)));
 					}
 				}
@@ -2567,6 +2615,7 @@ function manage_get_wifi_radio_control(_node_info, _node_capability){
 		});
 	}
 	else{
+		var cfg_clientlist_ap_list = ["ap2g", "ap5g", "ap5g1", "ap6g"];
 		var wl_if = [0, 1, 2, 3];
 		if(_node_capability.wifi_radio) {
 			var set_wl_if_obj = function(_wl_if){
@@ -2579,6 +2628,7 @@ function manage_get_wifi_radio_control(_node_info, _node_capability){
 							var wifi_radio_obj = new wifi_radio_attr();
 							wifi_radio_obj.value = wl_radio;
 							wifi_radio_obj.idx = _wl_if;
+							wifi_radio_obj.ap_name = cfg_clientlist_ap_list[_wl_if];
 							result.push(JSON.parse(JSON.stringify(wifi_radio_obj)));
 						}
 					}
@@ -2590,13 +2640,19 @@ function manage_get_wifi_radio_control(_node_info, _node_capability){
 		}
 
 		var ap_band_total_count = {};
-		var cfg_clientlist_ap_list = ["ap2g", "ap5g", "ap5g1", "ap6g"];
 		var ap_info_list = [];
 		cfg_clientlist_ap_list.forEach(function(item, index, array){
-			if(_node_info[item] != "" && _node_info[item] != undefined){
+			if(_node_capability["wifi_radio_" + index + ""]){
 				var ap_info = {"type":""};
 				ap_info["type"] = item.substr(2,2);
 				ap_info_list.push(ap_info);
+			}
+			else if(_node_capability["wifi_radio_" + index + ""] == undefined){//if no capability 22
+				if(_node_info[item] != "" && _node_info[item] != undefined){
+					var ap_info = {"type":""};
+					ap_info["type"] = item.substr(2,2);
+					ap_info_list.push(ap_info);
+				}
 			}
 		});
 		$.each(ap_info_list, function(index, value){
@@ -3898,9 +3954,8 @@ function gen_conn_priority_select_option(_node_info, _eap_flag){
 					var if_text = "";
 					var rate_text = "";
 					var conn_type = "";
-					var idx_text = "";
 					var port_obj = value;
-					idx_text = port_obj.index;
+					var port_idx = parseInt(port_obj.index);
 					var if_type = interface_mapping.filter(function(item, index, _array){
 						return (item.value == port_obj.Type);
 					})[0];
@@ -3937,14 +3992,24 @@ function gen_conn_priority_select_option(_node_info, _eap_flag){
 					var option_value = port_obj.amas_ethernet;
 					var conn_prio_type = rate_text;
 					if(conn_type == "wifi"){
-						if(idx_text != "0")
-							conn_prio_type += "-" + idx_text;
+						if(port_idx >= 1){
+							conn_prio_type += "-" + (port_idx + 1);
+						}
+						else if(port_idx == 0){
+							if(rate_type.value == "2"){//5G
+								if(_node_info.capability["22"] != undefined){
+									var support_5G2 = (_node_info.capability["22"] & (1 << 2)) ? true : false;
+									if(support_5G2)
+										conn_prio_type += "-" + (port_idx + 1);//if support 5G-2, 5G need show 5G-1
+								}
+							}
+						}
 						conn_prio_type += " " + if_text;
 					}
 					else{
 						conn_prio_type += " " + if_text;
-						if(idx_text != "0")
-							conn_prio_type += idx_text;
+						if(port_idx >= 1)
+							conn_prio_type += port_idx;
 					}
 					var option_text = (_eap_flag) ? "<#AiMesh_BackhaulConnPrio_Only#>" : "<#AiMesh_BackhaulConnPrio_First#>";
 					option_text = option_text.replace("#CONNPRIOTYPE", conn_prio_type);

@@ -7,6 +7,24 @@
 #include <bcmdevs.h>
 #include "shared.h"
 
+#ifdef RTCONFIG_COMFW
+#include "comfw.h"
+#define MODELID(a)       #a
+char *comfw_modid_s[] = COMFW_MODELID;
+#undef MODELID
+
+struct cf_data_desc cf_data_table[] = {
+	{FW_386, "386_", "fw version"},
+	{FW_384, "384_", "fw version"},
+	{FW_38X, "38X_", "fw version"},
+	{MAX_FWID, NULL, NULL}
+};
+#endif
+
+#define MODELID(a)       #a
+char *asus_models_str[] = ASUS_MODELS;
+#undef MODELID
+
 struct model_s {
 	char *pid;
 	int model;
@@ -92,7 +110,7 @@ static const struct model_s model_list[] = {
 	{ "GT-AX6000N",		MODEL_GTAX6000N		},
 	{ "RT-AX89U",		MODEL_RTAX89U		},
 	{ "ETJ",		MODEL_ETJ		},
-	{ "RT-AX57",		MODEL_RTAX57		},
+	{ "RT-AX57Q",		MODEL_RTAX57Q		},
 #elif defined(RTCONFIG_ALPINE)
 	{ "GT-AC9600",		MODEL_GTAC9600		},
 #elif defined(RTCONFIG_LANTIQ)
@@ -122,6 +140,7 @@ static const struct model_s model_list[] = {
 	{ "RT-AX92U",		MODEL_RTAX92U		},
 	{ "RT-AX95Q",		MODEL_RTAX95Q		},
 	{ "XT8PRO",		MODEL_XT8PRO		},
+	{ "XT8_V2",		MODEL_XT8_V2		},
 	{ "RT-AXE95Q",		MODEL_RTAXE95Q		},
 	{ "ET8PRO",		MODEL_ET8PRO		},
 	{ "RT-AX56_XD4",	MODEL_RTAX56_XD4	},
@@ -135,16 +154,17 @@ static const struct model_s model_list[] = {
 	{ "GS-AX3000",		MODEL_RTAX58U		},
 	{ "GS-AX5400",		MODEL_RTAX58U		},
 	{ "RT-AX82_XD6S",	MODEL_RTAX82_XD6S	},
+	{ "RT-AX3000N",		MODEL_RTAX3000N		},
 	{ "RT-AX58U_V2",	MODEL_RTAX58U_V2	},
 	{ "TUF-AX3000_V2",	MODEL_TUFAX3000_V2	},
 	{ "RT-AXE7800",		MODEL_RTAXE7800		},
+	{ "GT10",		MODEL_GT10		},
 	{ "RT-AX56U",		MODEL_RTAX56U		},
 	{ "RP-AX56",            MODEL_RPAX56            },
 	{ "RP-AX58",            MODEL_RPAX58            },
 	{ "RT-AX55",		MODEL_RTAX55		},
 	{ "RT-AX1800",		MODEL_RTAX55		},
 	{ "RT-AX86U",		MODEL_RTAX86U		},
-	{ "RT-AX5700",		MODEL_RTAX86U		},
 	{ "RT-AX86S",		MODEL_RTAX86U		},
 	{ "RT-AX68U",		MODEL_RTAX68U		},
 	{ "RT-AC68U_V4",	MODEL_RTAC68U_V4	},
@@ -154,6 +174,7 @@ static const struct model_s model_list[] = {
 	{ "GT-AXE16000",	MODEL_GTAXE16000	},
 	{ "ET12",		MODEL_ET12		},
 	{ "XT12",		MODEL_XT12		},
+	{ "RT-AX86U_PRO",	MODEL_RTAX86U_PRO	},
 	{ "DSL-AX82U",		MODEL_DSLAX82U		},
 	{ "RT-N53",		MODEL_RTN53		},
 	{ "RT-N16",		MODEL_RTN16		},
@@ -315,3 +336,120 @@ int get_switch(void)
 	sw_model = get_switch_model();
 	return sw_model;
 }
+
+#ifdef RTCONFIG_COMFW
+
+int is_shared_modelid(int model, char *build_name)
+{
+	// assume each shared models at max share to 30 models
+        switch(model) {
+        case MODEL_RTAC68U:
+		if(strcmp(build_name, "4G-AC68U"))
+			return model + CFID_BASE_2 + 1;
+		if(strcmp(build_name, "RT-AC68U"))
+			return model + CFID_BASE_2 + 2;
+		if(strcmp(build_name, "RT-AC68A"))
+			return model + CFID_BASE_2 + 3;
+		break;
+        case MODEL_RTAC86U:
+		if(strcmp(build_name, "RT-AC86U"))
+			return model + CFID_BASE_2 + 1 + 30;
+		if(strcmp(build_name, "GT-AC2900"))
+			return model + CFID_BASE_2 + 2 + 30;
+		break;
+        case MODEL_RTAX58U:
+		if(strcmp(build_name, "RT-AX58U"))
+			return model + CFID_BASE_2 + 1 + 30*2;
+		if(strcmp(build_name, "TUF-AX3000"))
+			return model + CFID_BASE_2 + 2 + 30*2;
+		if(strcmp(build_name, "TUF-AX5400"))
+			return model + CFID_BASE_2 + 3 + 30*2;
+		if(strcmp(build_name, "RT-AX82U"))
+			return model + CFID_BASE_2 + 4 + 30*2;
+		if(strcmp(build_name, "RT-AX82_XD6"))
+			return model + CFID_BASE_2 + 5 + 30*2;
+		if(strcmp(build_name, "GS-AX3000"))
+			return model + CFID_BASE_2 + 6 + 30*2;
+		if(strcmp(build_name, "GS-AX5400"))
+			return model + CFID_BASE_2 + 7 + 30*2;
+		break;
+        case MODEL_RTAX55:
+		if(strcmp(build_name, "RT-AX55"))
+			return model + CFID_BASE_2 + 1 + 30*3;
+		if(strcmp(build_name, "RT-AX1800"))
+			return model + CFID_BASE_2 + 2 + 30*3;
+		break;
+        case MODEL_RTAX86U:
+		if(strcmp(build_name, "RT-AX86U"))
+			return model + CFID_BASE_2 + 1 + 30*4;
+		if(strcmp(build_name, "RT-AX86S"))
+			return model + CFID_BASE_2 + 2 + 30*4;
+		break;
+        case MODEL_RTN10P:
+		if(strcmp(build_name, "RT-N10+"))
+			return model + CFID_BASE_2 + 1 + 30*5;
+		if(strcmp(build_name, "RT-N10P"))
+			return model + CFID_BASE_2 + 2 + 30*5;
+		break;
+	}
+
+	return 0;
+}
+
+int get_cf_id(int model, char *name) {
+	int i, cfid_sp;
+	char tmp[64], *ptr;
+
+	snprintf(tmp, sizeof(tmp), "CF_%s", asus_models_str[model] + strlen("MODEL_"));
+
+	// some models use same modelid
+	if(model == MODEL_RTAX58U) {
+#ifdef RTAX82_XD6
+		return CF_RTAX82_XD6;
+#elif defined(TUFAX3000)
+		return CF_TUFAX3000;
+#else
+		return CF_RTAX58U;
+#endif
+	}
+
+	for(i = 0; i < MAX_FTYPE; ++i) {
+		if((strncmp(tmp, comfw_modid_s[i], strlen(tmp)) == 0) && (strlen(tmp)==strlen(comfw_modid_s[i])))
+			return i;
+	}
+
+	// for common models not in early cfid_table, use its modelid(could be shared) as cf_id
+	if(i == MAX_FTYPE) {
+		if(name && (cfid_sp = is_shared_modelid(model, name))) {
+			return cfid_sp;
+		}
+		return model + CFID_BASE;
+	}
+
+	return 0;
+}
+
+void dump_cfid_from_modellist() 
+{
+        const struct model_s *p;
+	int i;
+
+	_dprintf("%s:", __func__);
+        for (p = &model_list[0]; p->pid; ++p) {
+		_dprintf("[%d].[%s]-[%d]:cfid=%d\n", i, p->pid, p->model, get_cf_id(p->model, p->pid));
+		i++;
+        }
+
+	_dprintf("\n");
+}
+
+/*
+char *get_cf_name(int cfid) {
+	if(cfid > CFID_BASE && cfid < CFID_BASE_2)
+		return asus_models_str[cfid - CFID_BASE];
+	else
+		return comfw_modid_s[cfid];	
+}
+*/
+
+#endif

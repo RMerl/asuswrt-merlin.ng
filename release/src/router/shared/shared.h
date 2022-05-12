@@ -90,7 +90,10 @@ extern int PS_pclose(FILE *);
 #define EXTPHY_ADDR_STR "0x13"
 #define EXTPHY_ADDR_2 0x15
 #define EXTPHY_ADDR_STR_2 "0x15"
-#else
+#elif defined(RTAX86U_PRO)
+#define EXTPHY_ADDR 0x11
+#define EXTPHY_ADDR_STR "0x11"
+#else // RTAX86U
 #define EXTPHY_ADDR 0x1e
 #define EXTPHY_ADDR_STR "0x1e"
 #endif
@@ -100,11 +103,13 @@ extern int PS_pclose(FILE *);
 
 #if defined(GTAX11000)
 #define PHY_ID_54991E "3590:5099"
-#elif defined(RTAX86U) || defined(RTAX5700) || defined(GTAXE11000)
+#elif defined(RTAX86U) || defined(GTAXE11000)
 #define PHY_ID_54991EL "3590:5089"
 #define PHY_ID_50991EL "3590:50c9"
+#elif defined(RTAX86U_PRO)
+#define PHY_ID_50991EL "3590:51cd"
 #endif
-#endif
+#endif // RTCONFIG_EXTPHY_BCM84880
 #if defined(GTAX11000_PRO) || defined(ET12) || defined(XT12) || defined(GTAX6000)
 #define PHY_ID_50991EL "3590:50c9"
 #endif
@@ -220,7 +225,8 @@ extern int PS_pclose(FILE *);
 #define SYS_CLASS_MTD		"/sys/class/mtd"
 #define SYS_CLASS_NET		"/sys/class/net"
 #define SYS_CLASS_THERMAL	"/sys/class/thermal"
-#define FAN_CUR_STATE		"/sys/class/thermal/cooling_device0/cur_state"
+#define SYS_COOLINGDEV		"/sys/class/thermal/cooling_device0"
+#define FAN_CUR_STATE		SYS_COOLINGDEV "/cur_state"
 #define FAN_RPM			"/sys/devices/platform/gpio-fan/hwmon/hwmon0/fan1_input"
 
 #define LINUX_MTD_NAME		"linux"
@@ -502,6 +508,11 @@ enum {
 #define S_RTL8365MB		8365
 #define S_RTL8370MB		8370
 
+#define CFG_BW_20M	(1U << 0)
+#define CFG_BW_40M	(1U << 1)
+#define CFG_BW_80M	(1U << 2)
+#define CFG_BW_160M	(1U << 3)
+
 #ifdef RTCONFIG_CFGSYNC
 #define CFG_PREFIX      "CFG"
 #define AMAS_PORTSTATUS_PREFIX	"PORTSTATUS"
@@ -642,6 +653,7 @@ enum {
 	FROM_IFTTT,
 	FROM_ALEXA,
 	FROM_WebView,
+	FROM_ATE,
 	FROM_UNKNOWN
 };
 
@@ -1113,7 +1125,7 @@ enum led_id {
 #else
 	LED_LAN,
 #endif
-#if defined(RTAX86U) || defined(RTAX5700)
+#if defined(RTAX86U) || defined(RTAX86U_PRO)
 	LED_LAN,
 #endif
 #ifdef RTCONFIG_LOGO_LED
@@ -1246,7 +1258,7 @@ enum led_id {
  && (defined(RTAX89U) || defined(GTAXY16000))
 	PWR_USB2,
 #endif
-#if defined(RTAX95Q) || defined(XT8PRO) || defined(RTAXE95Q) || defined(ET8PRO) || defined(RTAX56_XD4) || defined(XD4PRO) || defined(RTAX82_XD6) || defined(RTAX82_XD6S) || defined(ET12) || defined(XT12)
+#if defined(RTAX95Q) || defined(XT8PRO) || defined(XT8_V2) || defined(RTAXE95Q) || defined(ET8PRO) || defined(RTAX56_XD4) || defined(XD4PRO) || defined(RTAX82_XD6) || defined(RTAX82_XD6S) || defined(ET12) || defined(XT12)
 	BT_RESET,
 	BT_DISABLE,
 	LED_RGB1_RED,
@@ -1264,6 +1276,12 @@ enum led_id {
 	LED_SIDE2_WHITE,
 	LED_SIDE3_WHITE,
 #endif
+#ifdef GT10
+	LED_RGB1_RED,
+	LED_RGB1_GREEN,
+	LED_RGB1_BLUE,
+	LED_WHITE,
+#endif
 #if defined(CTAX56_XD4)
 	BT_RESET,
 	BT_DISABLE,
@@ -1275,7 +1293,7 @@ enum led_id {
 	IND_BT,
 	IND_PA,
 #endif
-#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTAX6000)
+#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTAX6000) || defined(GT10)
 	LED_GROUP1_RED,
 	LED_GROUP1_GREEN,
 	LED_GROUP1_BLUE,
@@ -1286,7 +1304,7 @@ enum led_id {
 	LED_GROUP3_RED,
 	LED_GROUP3_GREEN,
 	LED_GROUP3_BLUE,
-#if !defined(GTAXE11000_PRO) && !defined(GTAXE16000) && !defined(GTAX6000)
+#if !defined(GTAXE11000_PRO) && !defined(GTAXE16000) && !defined(GTAX6000) && !defined(GT10)
 	LED_GROUP4_RED,
 	LED_GROUP4_GREEN,
 	LED_GROUP4_BLUE,
@@ -1419,18 +1437,30 @@ static inline int max_no_mssid(void)
 #define MAX_NR_WL_IF			1	/* Single 2G */
 #endif	/* ! RTCONFIG_HAS_5G */
 
+/* use the enum value as real wl%d unit number, but 5G_2_BAND does not really mean 5GH but means 6G  for 2/5/6 dut */
+/* brcm qualband machines need to re-define this table by its own case */
+/* wl_band_id must be 0, 1, 2 for 2G, 5G-1, 5G-2 on QCA/MTK platform respectively even some band don't exist. */
 enum wl_band_id {
 #ifdef GTAXE16000
 	WL_5G_BAND = 0,
 	WL_5G_2_BAND = 1,
 	WL_6G_BAND = 2,
 	WL_2G_BAND = 3,
+#elif defined(RTCONFIG_QCA) || defined(RTCONFIG_MTK)
+	WL_2G_BAND = 0,
+	WL_5G_BAND = 1,
+	WL_5G_2_BAND = 2,
+	WL_6G_BAND = 3,
 #else
 	WL_2G_BAND = 0,
 	WL_5G_BAND = 1,
 	WL_5G_2_BAND = 2,
 #if defined(RTCONFIG_WIFI6E)
+#if defined(RTCONFIG_BCMWL6)
+	WL_6G_BAND = 2,
+#else
 	WL_6G_BAND = 3,
+#endif
 #endif
 #endif
 	WL_60G_BAND,
@@ -2067,7 +2097,7 @@ extern int set_pwr_usb(int boolOn);
 extern int set_pwr_modem(int boolOn);
 #endif
 extern int button_pressed(int which);
-#if defined(RTAX86U) || defined(RTAX5700)
+#if defined(RTAX86U) || defined(RTAX86U_PRO)
 void config_ext_wan_led(int onoff);
 #endif
 extern int led_control(int which, int mode);
@@ -2076,7 +2106,7 @@ extern int led_control(int which, int mode);
 extern uint32_t gpio_dir(uint32_t gpio, int dir);
 extern uint32_t set_gpio(uint32_t gpio, uint32_t value);
 extern uint32_t get_gpio(uint32_t gpio);
-#if defined(RTCONFIG_HND_ROUTER_AX_6710) || defined(BCM6750) || defined(BCM6756) || defined(GTAX6000)
+#if defined(RTCONFIG_HND_ROUTER_AX_6710) || defined(BCM6750) || defined(BCM6756) || defined(GTAX6000) || defined(RTAX86U_PRO) || defined(BCM6855)
 extern uint32_t get_gpio2(uint32_t gpio);
 #endif
 extern int get_switch_model(void);
@@ -2161,6 +2191,7 @@ extern void post_start_lan_wl(void);
 extern void upgrade_aqr113c_fw(void);
 extern void __pre_config_switch(void) __attribute__((weak));
 extern void __post_config_switch(void) __attribute__((weak));
+extern void __post_ecm(void) __attribute__((weak));
 extern void __post_start_lan(void) __attribute__((weak));
 extern void __post_start_lan_wl(void) __attribute__((weak));
 extern int sw_based_iptv(void);
@@ -2312,6 +2343,14 @@ extern int get_wl_sta_list(void);
 extern int get_psta_status(int unit);
 #endif
 extern int wl_get_bw(int unit);
+#if defined(RTCONFIG_QCA)
+extern int get_cfg_bw_mask_by_bw(int bw);
+extern int __wl_get_bw_cap(int unit, int *bwcap);
+extern char *get_mode_str_by_bw(int unit, int channel, int bw, int nctrlsb);
+extern const char *phymode_str(int phymode);
+extern int get_bw_by_mode_str(char *mode);
+extern int get_bw_by_phymode(int unit, int phymode);
+#endif
 extern int wl_get_bw_cap(int unit, int *bwcap);
 
 #if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
@@ -2498,7 +2537,7 @@ static inline void set_power_save_mode(void) { }
 extern int get_fa_rev(void);
 extern int get_fa_dump(void);
 #endif
-#if defined(RTAX55) || defined(RTAX1800) || defined(RTCONFIG_EXT_RTL8365MB) || defined(RTCONFIG_EXT_RTL8370MB) || defined(RTAX58U_V2)
+#if defined(RTAX55) || defined(RTAX1800) || defined(RTCONFIG_EXT_RTL8365MB) || defined(RTCONFIG_EXT_RTL8370MB) || defined(RTAX58U_V2) || defined(RTAX3000N)
 /* port statistic counter structure */
 typedef struct rtk_stat_port_cntr_s
 {
@@ -2572,12 +2611,12 @@ extern uint32_t hnd_get_phy_status(char *ifname);
 extern uint32_t hnd_get_phy_speed(char *ifname);
 extern uint32_t hnd_get_phy_duplex(char *ifname);
 extern uint64_t hnd_get_phy_mib(char *ifname, char *type);
-#elif defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(BCM6756)
+#elif defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(BCM6756) || defined(BCM6855)
 extern uint32_t hnd_get_phy_status(int port);
 extern uint32_t hnd_get_phy_speed(int port);
 extern uint32_t hnd_get_phy_duplex(int port);
 extern uint64_t hnd_get_phy_mib(int port, char *type);
-#if defined(RTAX55) || defined(RTAX1800) || defined(RTCONFIG_EXT_RTL8365MB) || defined(RTCONFIG_EXT_RTL8370MB) || defined(RTAX58U_V2)
+#if defined(RTAX55) || defined(RTAX1800) || defined(RTCONFIG_EXT_RTL8365MB) || defined(RTCONFIG_EXT_RTL8370MB) || defined(RTAX58U_V2) || defined(RTAX3000N)
 extern int rtkswitch_port_speed(int port);
 extern int rtkswitch_port_duplex(int port);
 extern int rtkswitch_port_stat(int port);
@@ -2605,7 +2644,7 @@ extern int with_non_dfs_chspec(char *wif);
 extern chanspec_t select_band1_chspec_with_same_bw(char *wif, chanspec_t chanspec);
 extern chanspec_t select_band4_chspec_with_same_bw(char *wif, chanspec_t chanspec);
 extern chanspec_t select_chspec_with_band_bw(char *wif, int band, int bw, chanspec_t chanspec);
-extern void wl_list_5g_chans(int unit, int band, int war, char *buf, int len);
+extern void wl_list_5g_chans(int unit, int band, int war, char *buf, int len, int bw);
 #endif
 extern int wl_cap(int unit, char *cap_check);
 #endif
@@ -2954,6 +2993,8 @@ extern int isValid_digit_string(const char *string);
 extern int is_valid_hostname(const char *name);
 extern int is_valid_domainname(const char *name);
 extern char *get_ddns_hostname(void);
+extern int get_ispctrl();
+extern unsigned short get_extend_cap();
 
 #ifdef RTCONFIG_TOR
 /* scripts.c */
@@ -3345,7 +3386,8 @@ static inline int config_usbbus_bled(const char *led_gpio, char *bus_list)
 }
 
 /* model-specific helper function for bled */
-#if defined(RTCONFIG_SWITCH_QCA8075_QCA8337_PHY_AQR107_AR8035_QCA8033)
+#if defined(RTCONFIG_SWITCH_QCA8075_QCA8337_PHY_AQR107_AR8035_QCA8033) \
+ || defined(RTCONFIG_SWITCH_IPQ50XX_QCA8337)
 /* Implement below functions for bled in model-specific code if and only if
  * it has complex network infrastructure and virtual port mask is used to
  * simplify switch configuration code.
@@ -3463,7 +3505,7 @@ static inline int is_m2ssd_port(__attribute__ ((unused)) char *usb_node) { retur
 
 #ifdef RTCONFIG_CAPTIVE_PORTAL
 extern void deauth_guest_sta(char *, char *);
-extern int FindBrifByWlif(char *wl_ifname, char *brif_name, int size);
+extern int FindBrifByWlif(const char *wl_ifname, char *brif_name, int size);
 #endif
 
 #ifdef RTCONFIG_HTTPS
@@ -3793,7 +3835,7 @@ extern void firmware_downgrade_check(uint32_t sf);
 #define ANTLED_SCHEME_RSSI              2
 #endif
 
-#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTAX6000)
+#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTAX6000) || defined(GT10)
 #define LEDG_OFF			0
 #define LEDG_STEADY_MODE		1
 #define LEDG_FADING_REVERSE_MODE	2
@@ -3890,6 +3932,7 @@ enum {
 	BCMBSD_SELIF_MAX 	   = 12
 };
 
+/* which wlunit to set the corresponding rule */
 enum {
 #if defined(GTAXE16000)
 	WLIF_2G	 = 3,
@@ -3903,6 +3946,15 @@ enum {
 	WLIF_6G	 = 3,
 #endif
 	WLIF_MAX = 4
+};
+
+/* rule idx of bcmbsd_def_policy table */
+enum {
+	RULE_2G = 0,
+	RULE_5G1= 1,
+	RULE_5G2= 2,
+	RULE_6G = 3,
+	RULE_MAX= 4
 };
 
 #endif

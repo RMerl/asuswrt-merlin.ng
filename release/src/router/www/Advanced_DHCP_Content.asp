@@ -155,6 +155,16 @@ function initial(){
 	document.form.sip_server.disabled = true;
 	document.form.sip_server.parentNode.parentNode.style.display = "none";	
 
+	if(IPv6_support && ipv6_proto_orig != "disabled"){
+		document.form.ipv6_dns1_x.disabled = false;
+		document.form.ipv6_dns1_x.parentNode.parentNode.style.display = "";
+	}
+	else{
+		document.form.ipv6_dns1_x.disabled = true;
+		document.form.ipv6_dns1_x.parentNode.parentNode.style.display = "none";
+	}
+
+
 	if(vpn_fusion_support) {
 		vpnc_dev_policy_list_array = parse_vpnc_dev_policy_list('<% nvram_char_to_ascii("","vpnc_dev_policy_list"); %>');
 		vpnc_dev_policy_list_array_ori = vpnc_dev_policy_list_array.slice();
@@ -564,6 +574,12 @@ function validForm(){
 	document.form.dhcp_start.value = ipFilterZero(document.form.dhcp_start.value);
         document.form.dhcp_end.value = ipFilterZero(document.form.dhcp_end.value);
 
+	if(IPv6_support && ipv6_proto_orig != "disabled"){
+		if(document.form.ipv6_dns1_x.value != ""){
+			if(!validator.isLegal_ipv6(document.form.ipv6_dns1_x)) return false;
+		}
+	}
+
 	return true;
 }
 
@@ -953,6 +969,12 @@ function sortClientIP(){
                                   <input type="radio" value="0" name="dhcpd_dns_router" class="content_input_fd" onClick="return change_common_radio(this, 'LANHostConfig', 'dhcpd_dns_router', '0')" <% nvram_match("dhcpd_dns_router", "0", "checked"); %>><#checkbox_No#>
                                 </td>
                           </tr>
+			<tr style="display:none;">
+				<th width="200"><#ipv6_dns_serv#></th>
+				<td>
+					<input type="text" maxlength="39" class="input_32_table" name="ipv6_dns1_x" value="<% nvram_get("ipv6_dns1_x"); %>" autocorrect="off" autocapitalize="off">
+				</td>
+			</tr>
 			  <tr>
 				<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(5,8);"><#LANHostConfig_x_WINSServer_itemname#></a></th>
 				<td>

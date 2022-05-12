@@ -902,7 +902,7 @@ function insertExtChannelOption_5g(){
 		if(wl_channel_list_5g != ""){	//With wireless channel 5g hook
 			if('<% nvram_get("wl_unit"); %>' == '1'){
 				wl_channel_list_5g = eval('<% channel_list_5g(); %>');
-				if(amesh_support && !httpApi.hasAiMeshNode() && !wl_info.band5g_2_support){
+				if(amesh_support && httpApi.hasAiMeshNode() && !wl_info.band5g_2_support){
 					try{
 						var mesh_5g = JSON.parse('<% get_wl_channel_list_5g(); %>');
 						if(mesh_5g.auto.chanlist[0] === '0'){
@@ -1601,6 +1601,29 @@ function wl_auth_mode_change(isload){
 					document.form.wl_mfp[i].selected = true;
 			}
 		}
+
+		var _mfp = '<% nvram_get("wl_mfp"); %>';
+		if(mode === 'sae'){			
+			_temp = ['<#WLANConfig11b_x_mfp_opt2#>'];
+			_temp_value = ['2'];
+			add_options_x2(document.form.wl_mfp, _temp, _temp_value, _mfp);
+		}
+		
+		else if(mode === 'psk2sae'){
+			_temp = ['<#WLANConfig11b_x_mfp_opt1#>', '<#WLANConfig11b_x_mfp_opt2#>'];
+			_temp_value = ['1', '2'];
+			add_options_x2(document.form.wl_mfp, _temp, _temp_value, _mfp);
+		}
+		else if(mode === 'psk2' || mode === 'wpa2'){
+			_temp = ['<#WLANConfig11b_WirelessCtrl_buttonname#>', '<#WLANConfig11b_x_mfp_opt1#>', '<#WLANConfig11b_x_mfp_opt2#>'];
+			_temp_value = ['0', '1', '2'];
+			add_options_x2(document.form.wl_mfp, _temp, _temp_value, _mfp);
+		}
+		else if(mode === 'pskpsk2' || mode === 'wpawpa2'){
+			_temp = ['<#WLANConfig11b_WirelessCtrl_buttonname#>', '<#WLANConfig11b_x_mfp_opt1#>'];
+			_temp_value = ['0', '1'];
+			add_options_x2(document.form.wl_mfp, _temp, _temp_value, _mfp);
+		}		
 	}
 
 	if(current_url.indexOf("Guest_network") != 0){ //except Guest_network page

@@ -52,44 +52,6 @@ LDFLAGS += -L $(TOP)/sqlCipher/.libs -lsqlcipher
 LDFLAGS += -L$(TOP)/PMS_DBapis -lpms_sql
 endif
 
-# add rule for ProgControl3 new mechanism
-ifeq ($(RTCONFIG_SOC_IPQ8064),y)
-	# ipq806x
-else ifeq ($(RTCONFIG_SOC_IPQ8074),y)
-CFLAGS += -DPGCONTROL3
-else ifeq ($(RTCONFIG_SOC_IPQ40XX),y)
-	# ipq40xx
-CFLAGS += -DPGCONTROL3
-else ifeq ($(or $(RTCONFIG_QCA956X),$(RTCONFIG_QCN550X)),y)
-	# qca956x / qcn550x
-else ifeq ($(RTCONFIG_SOC_IPQ60XX),y)
-CFLAGS += -DPGCONTROL3
-else ifeq ($(RTCONFIG_RALINK),y)
-ifeq ($(RTCONFIG_RALINK_MT7622),y)
-	# mtk7622
-CFLAGS += -DPGCONTROL3
-else
-	# mtk
-endif
-else ifeq ($(RTCONFIG_LANTIQ),y)
-	# lantiq
-else ifeq ($(RTCONFIG_BCMARM),y)
-ifeq ($(RTCONFIG_BCM7),y)
-	# bcm7
-else ifeq ($(HND_ROUTER),y)
-	# hnd / axhnd
-CFLAGS += -DPGCONTROL3
-else ifeq ($(RTCONFIG_BCM_7114),y)
-	# bcm7114
-CFLAGS += -DPGCONTROL3
-else
-ifeq ($(RTCONFIG_BCMSMP),y)
-	# bcm6_smp
-CFLAGS += -DPGCONTROL3
-endif
-endif
-endif
-
 # for QCA toolchain compile issue, xxxx-ld has no pthead and dl in openwrt-toolchain
 ifeq ($(RTCONFIG_QCA),y)
 EXTRACC = -lpthread -ldl

@@ -1271,7 +1271,14 @@ function uuRegister(mac){
 														$("#light_effect_iframe").attr("src", "/light_effect/light_effect.html");
 														$("#light_effect_iframe").load(function(){
 															$("#light_effect_iframe").contents().find(".light_effect_bg").css("height", "160px");
-															$("#light_effect_iframe").contents().find(".light_effect_mask").css("background-size", "95vw 160px");
+															$("#light_effect_iframe").contents().find(".logo_container").css({"width":"18vw"});
+															if(isSupport("antled")){
+																$("#light_effect_iframe").contents().find(".switch_mode_list_bg")
+																	.css({"width":"160px", "height":"35px", "background-size":"190px 35px", "background-position":"100%"});
+																$("#light_effect_iframe").contents().find(".switch_mode_list_bg .mode_list_bg").css("width", "130px");
+																$("#light_effect_iframe").contents().find(".logo_container")
+																	.css({"width":"18vw", "background-position-y":"50%"});
+															}
 														});
 													}, 1000);
 												}

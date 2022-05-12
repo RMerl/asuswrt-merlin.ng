@@ -75,7 +75,9 @@ var classObj= {
                 return encodeURIComponent(str).replace(/%/g,"\\x").toLowerCase();
         },
         UnHexCode:function(str){
-                return decodeURIComponent(str.replace(/\\x/g, "%"));
+		return str.replace(/(?:\\x[\da-fA-F]{2})+/g, m =>
+decodeURIComponent(m.replace(/\\x/g, '%'))).replace(/\\n/g,
+'<br>').replace(/\\/g, '');
         }
 }
 

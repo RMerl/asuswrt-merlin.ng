@@ -104,6 +104,7 @@ unsigned int get_root_type(void)
 		case MODEL_RTAX92U:
 		case MODEL_RTAX95Q:
 		case MODEL_XT8PRO:
+		case MODEL_XT8_V2:
 		case MODEL_RTAXE95Q:
 		case MODEL_ET8PRO:
 		case MODEL_RTAX56_XD4:
@@ -112,6 +113,7 @@ unsigned int get_root_type(void)
 		case MODEL_RTAX58U:
 		case MODEL_RTAX82_XD6S:
 		case MODEL_RTAX58U_V2:
+		case MODEL_RTAX3000N:
 		case MODEL_RTAX55:
 		case MODEL_RTAX56U:
 		case MODEL_RPAX56:
@@ -122,6 +124,9 @@ unsigned int get_root_type(void)
 		case MODEL_GTAXE16000:
 		case MODEL_ET12:
 		case MODEL_XT12:
+		case MODEL_RTAX86U:
+		case MODEL_RTAX68U:
+		case MODEL_RTAX86U_PRO:
 			return 0x24051905;      /* ubifs */
 		case MODEL_DSLAX82U:
 		{
@@ -488,7 +493,6 @@ void stop_jffs2(int stop)
 #if defined(RTCONFIG_PSISTLOG) || defined(RTCONFIG_JFFS2LOG)
 	int restart_syslogd = 0;
 #endif
-
 	if (!wait_action_idle(10)) return;
 
 	if ((statfs("/jffs", &sf) == 0) && (sf.f_type != 0x73717368)) {

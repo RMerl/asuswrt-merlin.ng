@@ -2,12 +2,15 @@ Asuswrt-Merlin 386/NG Changelog
 ===============================
 
 386.7 (xx-xxx-xxxx)
+  - UPDATED: Merged with 386_48823 GPL.
   - UPDATED: openssl to 1.1.1o.
   - CHANGED: dhcpc-event now has a second parameter that will
              contain "4" or "6" depending on the IP protocol of
              the event (dave14305)
   - FIXED: JFFS backup/restore functions not working on XT12
            and GT-AX6000.
+  - FIXED: CVE-2022-0934 in dnsmasq (backport)
+  - FIXED: CVE-2022-26376 (reported by Cisco Talos, fixed by Asus)
 
 
 386.6 (20-Apr-2022)

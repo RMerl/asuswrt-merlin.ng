@@ -493,7 +493,7 @@ int build_temp_rootfs(const char *newroot)
 	const char *usrlib = "libnvram.so* libshared.so* libcrypto.so* libbcm.so*"
 #if defined(RTCONFIG_HND_ROUTER_AX)
 			     " libwpa_client.so* "
-			     " libsqlite3.so.0* libjson-c.so.2* libasc.so* libvpn.so* "
+			     " libsqlite3.so.0* libjson-c.so.2* libasc.so* libovpn.so* "
 #else
 			     " libjson*"
 #endif
@@ -622,7 +622,7 @@ int build_temp_rootfs(const char *newroot)
 	}
 #endif
 #if defined(RTCONFIG_OPENVPN)
-	__cp("", "/usr/lib", "libvpn.so", newroot);
+	__cp("", "/usr/lib", "libovpn.so", newroot);
 	if (nvram_match("VPNServer_enable", "1")) {
 		__cp("", "/usr/sbin", "openvpn", newroot);
 		__cp("", "/usr/lib", "libz.so* liblzo2.so* liblz4.so*", newroot);

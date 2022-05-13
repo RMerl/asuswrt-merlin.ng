@@ -5023,7 +5023,7 @@ dropbear-install:
 	cd $(INSTALLDIR)/dropbear/usr/bin && \
 	ln -sf dropbearmulti dropbearkey && \
 	ln -sf dropbearmulti dbclient && \
-	ln -sf dropbearmulti ssh & \
+	ln -sf dropbearmulti ssh && \
         ln -sf dropbearmulti scp
 	install -d $(INSTALLDIR)/dropbear/usr/sbin
 	cd $(INSTALLDIR)/dropbear/usr/sbin && \

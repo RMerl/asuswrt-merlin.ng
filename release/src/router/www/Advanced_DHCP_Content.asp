@@ -90,6 +90,7 @@ var backup_name = "";
 var sortfield, sortdir;
 var sorted_array = Array();
 
+var ipv6_proto_orig = httpApi.nvramGet(["ipv6_service"]).ipv6_service;
 var MaxRule_extend_limit = ((isSupport("MaxRule_extend_limit") != "") ? isSupport("MaxRule_extend_limit") : 64);
 var manually_dhcp_sort_type = 0;//0:increase, 1:decrease
 

@@ -59,12 +59,6 @@ var qos_default = 0;
 
 if ("<% nvram_get("qos_enable"); %>" == 0) {	// QoS disabled
 	qos_type = -1;
-}else if (bwdpi_support && (qos_type == 1)) {	// aQoS
-	qos_default = 4;
-} else if (qos_type == 0) {			// tQoS
-	qos_default = parseInt("<% nvram_get("qos_default"); %>");
-} else if (qos_type == 3) {			// GeForce Now
-	qos_default = 4;
 }
 
 if (qos_type == 1) {
@@ -78,6 +72,14 @@ if (qos_type == 1) {
 	var cat_id_array = [[9,20], [8], [4], [0,5,6,15,17], [4,13], [13,24], [1,3,14], [7,10,11,21,23]];
 } else {
 	var category_title = ["", "Highest", "High", "Medium", "Low", "Lowest"];
+}
+
+if (qos_type == 1) {	// aQoS
+	qos_default = bwdpi_app_rulelist_row.indexOf("0,5,6,15,17");
+} else if (qos_type == 0) {			// tQoS
+	qos_default = parseInt("<% nvram_get("qos_default"); %>");
+} else if (qos_type == 3) {			// GeForce Now
+	qos_default = 4;
 }
 
 var pie_obj_ul, pie_obj_dl;
@@ -348,14 +350,14 @@ function table_sort(a, b){
 			break;
 		case 5:		// Label
 			if (sortdir) {
-		                aa = a[sortfield];
-			        bb = b[sortfield];
+				aa = a[sortfield].toLowerCase();
+				bb = b[sortfield].toLowerCase();
 				if(aa == bb) return 0;
 				else if(aa > bb) return -1;
 				else return 1;
 			} else {
-				aa = a[sortfield];
-				bb = b[sortfield];
+				aa = a[sortfield].toLowerCase();
+				bb = b[sortfield].toLowerCase();
 				if(aa == bb) return 0;
 				else if(aa > bb) return 1;
 				else return -1;

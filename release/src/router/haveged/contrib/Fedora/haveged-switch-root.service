@@ -1,6 +1,7 @@
 [Unit]
 Description=Tell haveged about new root
 DefaultDependencies=no
+ConditionKernelVersion=<5.6
 ConditionPathExists=/etc/initrd-release
 Before=initrd-switch-root.service
 JoinsNamespaceOf=haveged.service

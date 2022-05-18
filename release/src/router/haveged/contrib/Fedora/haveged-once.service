@@ -2,20 +2,19 @@
 Description=Entropy Daemon based on the HAVEGE algorithm
 Documentation=man:haveged(8) http://www.issihosts.com/haveged/
 DefaultDependencies=no
-After=systemd-tmpfiles-setup-dev.service
-Before=sysinit.target shutdown.target systemd-journald.service
 
 [Service]
-ExecStart=@SBIN_DIR@/haveged -w 1024 -v 1 --Foreground
-Restart=always
+Type=oneshot
+ExecStart=@SBIN_DIR@/haveged -w 1024 -v 1 --once --Foreground
 SuccessExitStatus=137 143
 
 SecureBits=noroot-locked
-CapabilityBoundingSet=CAP_SYS_ADMIN
+CapabilityBoundingSet=CAP_SYS_ADMIN CAP_SYS_CHROOT
 # We can *not* set PrivateTmp=true as it can cause an ordering cycle.
 PrivateTmp=false
 PrivateDevices=true
-PrivateNetwork=true
+# We can *not* set PrivateNetwork=true to allow command mode (chroot when included in initramfs)
+#PrivateNetwork=true
 ProtectSystem=full
 ProtectHome=true
 ProtectHostname=true
@@ -30,6 +29,3 @@ SystemCallArchitectures=native
 SystemCallFilter=@system-service
 SystemCallFilter=~@mount
 SystemCallErrorNumber=EPERM
-
-[Install]
-WantedBy=sysinit.target

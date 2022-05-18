@@ -136,12 +136,10 @@ The following build options are available to "./configure":
 1.  --enable-clock_gettime (default 'no' for recognized hosts)
 2.  --enable-daemon (default 'yes' if Linux)
 3.  --enable-diagnostic (default 'no')
-4.  --enable-init (type, default 'no')
-5.  --enable-initdir (default '' unless enable--init="service.*")
-6.  --enable-nistest (default 'no' but recommended)
-7.  --enable-olt (default 'yes')
-8.  --enable-threads (experimental)
-9.  --enable-tune (default 'yes')
+4.  --enable-nistest (default 'no' but recommended)
+5.  --enable-olt (default 'yes')
+6.  --enable-threads (experimental)
+7.  --enable-tune (default 'yes')
 
 Detailed option information is available by typing "./configure --help". For
 options xxx that take "yes/no" arguments, --disable-xxx may be used as the
@@ -169,15 +167,6 @@ If --enable-diagnostic is 'yes', the capture and inject diagnostic interfaces
 are enabled. The capture or inject diagnostic may be enabled singly by setting
 the option to 'capture' or 'inject'. A setting for any value other than 'no'
 for this option forces --enable-daemon=no. See DIAGNOSTICS below for details.
-
-The --enable-init option is active only when --enable-daemon is 'yes'. This
-value can specify a template to be used in the installation of an init method
-by the build's install target. The default value, 'no', disables the feature.
-Other values can be used to install a traditional systemv init script or
-systemd unit definition. See INSTALLATION for details.
-
-The --enable-initdir is active only when --enable-init='service.*', i.e. a
-systemd install. See INSTALLATION for details.
 
 The --enable-nistest option enables more thorough testing for the check target.
 See CHECKING for details.
@@ -256,7 +245,7 @@ the haveged collection area to exercise all buffer logic.
 
 Users are encouraged to run their own external tests. The --number==0 option is
 a convenient means to pipe haveged output into external suites such as Dieharder,
-the TESTU01 batteries, or PractRand. 
+the TESTU01 batteries, or PractRand.
 
 
 RUNNING haveged
@@ -333,7 +322,7 @@ where
 
 build option flags represent the ./configure options as:
     C=clock_gettime, D=diagnostic I=tune with cpuid, M=multi-core, T=online tests, V=tune with vfs
-    
+
 tuning sources are:
     D=default value, P=instance parameter, C=cpuid present,
     H=hyperthreading, A=AMD cpuid, A5=AMD fn5, A6=AMD fn6, A8=AMD fn8
@@ -369,7 +358,7 @@ where
     <action>  is either 'retry' or 'fail'
     <bytes>   is number of bytes processed in procedure before failure
     <fill>    is the number of times the buffer was filled
-    
+
 The exec summary is logged upon error or signal terminations. Other log output is
 controlled by --verbose:
 
@@ -422,38 +411,6 @@ If the daemon interface is not enabled, the install places the executable in
 automake's bin_PROGRAMS directory and provides a man(8) page. A man(3) page
 is provided for the libtool build. If the daemon interface is enabled, the
 executable is installed in automake's sbin_PROGRAMS directory.
-
-If the daemon interface is enabled, the --enable-init setting provides a simple
-template system to setup the init method. If --enable-init is set to none
-no action is taken. Otherwise, the template must reside in the init.d build
-directory and is selected by the setting. Template names "service.*" indicate
-that a systemd style init, while template names "sysv.*" are used for sysv
-style init scripts.
-
-Sample sysv style templates are provided for linux standard base, sysv.lsb,
-and redhat systems, sysv.redhat , such as centos which have not moved to
-systemd style inits.
-
-For systemd style installs, --enable-initdir specifies the systemd unit
-directory. If the setting is not specified (or is ''), the default value is
-obtained from hosts pkg-config query for systemdsystemunitdir. Sample systemd
-templates are provided for forking, service.forking, and non-forking,
-service.fedora, configurations. The non-forking configuration is recommended to
-avoid the overhead of PID file and minimize start-up cost.
-
-Examples:
-
-./configure --enable-init=service.redhat
-./configure --enable-init=sysv.lsb
-
-Custom init scripts can be added as necessary by adding templates to the
-init.d directory.
-
-A sample file, haveged.spec, is provided in the build root as a guide for
-those who want to build a rpm. As with init scripts, the sample may need
-customization before use. Other SPEC file examples can be found in the
-contrib directory (see EXTRAS for details).
-
 
 EXTRAS
 

@@ -1,7 +1,24 @@
-v1.9.15 (TBD)
+v1.9.18 (Apr 09, 2022) [Jirka Hladky]
+* Round bits up and target full pool size [Jason A. Donenfeld]
+* Specify right kernel commit in README [Jason A. Donenfeld]
+
+v1.9.17 (Jan 08, 2022)
+* Added new verbose mode [Jirka Hladky]
+* haveged-once.service - use @SBIN_DIR@ instead of hard-coded path [Jirka Hladky]
+
+v1.9.16 (Jan 02, 2022)
+* Allow newuname syscall [Jirka Hladky]
+* Fix: haveged cannot be run as an application if also running as a daemon [Günther Brunthaler]
+* Add entropy unconditionally at the start and then every 60 seconds [Jirka Hladky]
+* New parameter --once to refill entropy once and quit immediately [Jirka Hladky]
+* Added haveged-once.service to provide entropy once (intended for initramfs) [Jirka Hladky]
+
+v1.9.15 (Sep 30, 2021)
 * Check for sys/auxv.h before using it. [Peter Seiderer]
 * fix build on uclibc (origin/pr/58) [Pierre-Jean Texier]
 * Improved make check tests [Jirka Hladky]
+* Removed old init.d files. Configs are under contrib directory [Jirka Hladky]
+* Support for Linux kernel LRNG patch set
 
 v1.9.14 (Jan 01, 2021)
 * made enttest configurable

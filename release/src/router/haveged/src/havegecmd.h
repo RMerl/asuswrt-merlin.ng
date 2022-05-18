@@ -1,7 +1,7 @@
 /**
  ** Provide HAVEGE socket communication API
  **
- ** Copyright 2018-2021 Jirka Hladky hladky DOT jiri AT gmail DOT com
+ ** Copyright 2018-2022 Jirka Hladky hladky DOT jiri AT gmail DOT com
  ** Copyright 2018 Werner Fink <werner@suse.de>
  **
  ** This program is free software: you can redistribute it and/or modify

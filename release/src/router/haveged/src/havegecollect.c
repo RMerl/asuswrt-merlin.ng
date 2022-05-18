@@ -1,7 +1,7 @@
 /**
  ** Simple entropy harvester based upon the havege RNG
  **
- ** Copyright 2018-2021 Jirka Hladky hladky DOT jiri AT gmail DOT com
+ ** Copyright 2018-2022 Jirka Hladky hladky DOT jiri AT gmail DOT com
  ** Copyright 2009-2014 Gary Wuertz gary@issiweb.com
  ** Copyright 2011-2012 BenEleventh Consulting manolson@beneleventh.com
  **

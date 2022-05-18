@@ -1,7 +1,7 @@
 %define dracutlibdir lib/dracut
 Summary:        A Linux entropy source using the HAVEGE algorithm
 Name:           haveged
-Version:        1.9.14
+Version:        1.9.17
 Release:        1%{?dist}
 License:        GPLv3+
 URL:            https://github.com/jirka-h/haveged
@@ -11,8 +11,7 @@ Requires(preun):  systemd
 Requires(postun): systemd
 
 BuildRequires:  gcc
-BuildRequires:  automake coreutils glibc-common systemd-units
-BuildRequires:  make
+BuildRequires:  make automake coreutils glibc-common systemd-units
 Enhances:       apache2 gpg2 openssl openvpn php5 smtp_daemon systemd
 
 %description
@@ -22,7 +21,7 @@ Haveged is a user space entropy daemon which is not dependent upon the
 standard mechanisms for harvesting randomness for the system entropy
 pool. This is important in systems with high entropy needs or limited
 user interaction (e.g. headless servers).
- 
+
 Haveged uses HAVEGE (HArdware Volatile Entropy Gathering and Expansion)
 to maintain a 1M pool of random bytes used to fill /dev/random
 whenever the supply of random bits in /dev/random falls below the low
@@ -61,8 +60,11 @@ chmod 0644 COPYING README ChangeLog AUTHORS
 
 #Install systemd service file
 sed -e 's:@SBIN_DIR@:%{_sbindir}:g' -i contrib/Fedora/*service
+sed -i '/^ConditionKernelVersion/d' contrib/Fedora/*service
+
 install -Dpm 0644 contrib/Fedora/haveged.service %{buildroot}%{_unitdir}/%{name}.service
 install -Dpm 0644 contrib/Fedora/haveged-switch-root.service %{buildroot}%{_unitdir}/%{name}-switch-root.service
+install -Dpm 0644 contrib/Fedora/haveged-once.service %{buildroot}%{_unitdir}/%{name}-once.service
 install -Dpm 0755 contrib/Fedora/haveged-dracut.module %{buildroot}/%{_prefix}/%{dracutlibdir}/modules.d/98%{name}/module-setup.sh
 install -Dpm 0644 contrib/Fedora/90-haveged.rules %{buildroot}%{_udevrulesdir}/90-%{name}.rules
 
@@ -102,7 +104,29 @@ cp -p COPYING README ChangeLog AUTHORS contrib/build/havege_sample.c %{buildroot
 
 
 %changelog
-* Sun Jan 3 2021 Jirka Hladky <hladky.jiri@gmail.com> - 1.9.14-1
+* Sat Jan 08 2022 Jirka Hladky <hladky.jiri@gmail.com> - 1.9.17-1
+ - Update to 1.9.17
+
+* Mon Jan 03 2022 Jirka Hladky <hladky.jiri@gmail.com> - 1.9.16-2
+ - Fixed ExecStart in haveged-once.service
+
+* Sun Jan 02 2022 Jirka Hladky <hladky.jiri@gmail.com> - 1.9.16-1
+ - Update to 1.9.16
+
+* Thu Sep 30 2021 Jirka Hladky <hladky.jiri@gmail.com> - 1.9.15-1
+ - Update to 1.9.15
+
+* Thu Jul 22 2021 Fedora Release Engineering <releng@fedoraproject.org> - 1.9.14-5
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_35_Mass_Rebuild
+
+* Tue Mar 02 2021 Zbigniew Jędrzejewski-Szmek <zbyszek@in.waw.pl> - 1.9.14-4
+- Rebuilt for updated systemd-rpm-macros
+  See https://pagure.io/fesco/issue/2583.
+
+* Tue Jan 26 2021 Fedora Release Engineering <releng@fedoraproject.org> - 1.9.14-3
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_34_Mass_Rebuild
+
+* Sun Jan 3 2021 Jirka Hladky <hladky.jiri@gmail.com> - 1.9.14-2
  - Update to 1.9.14
  - BZ1835006 - Added dracut module
  - Start the service as soon as the random device is available with

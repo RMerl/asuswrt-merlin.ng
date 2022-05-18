@@ -4,20 +4,19 @@ Haveged, an entropy source
 
 IMPORTANT UPDATE
 
-Starting from Linux kernel v5.6, the HAVEGED **service** has become obsolete. The userspace application as well as the haveged library are not affected. There are two main reasons for that:
+Starting from Linux kernel v5.4, the HAVEGED inspired algorithm has been included in the Linux kernel (see the [LKML article]( https://lore.kernel.org/lkml/alpine.DEB.2.21.1909290010500.2636@nanos.tec.linutronix.de/T/) and the Linux Kernel [commit](https://github.com/torvalds/linux/commit/50ee7529ec4500c88f8664560770a7a1b65db72b)). Additionally, since v5.6, as soon as the CRNG (the Linux cryptographic-strength random number generator) gets ready, `/dev/random` does not block on reads anymore (see [this commit](https://github.com/torvalds/linux/commit/30c08efec8884fb106b8e57094baa51bb4c44e32)).
 
-1) The mainline Linux Kernel has now HAVEGED algorithm build in internally, see the [LKML article.]( https://lore.kernel.org/lkml/alpine.DEB.2.21.1909290010500.2636@nanos.tec.linutronix.de/T/)
+I'm happy that these changes made it into the mainline kernel. It's pleasing to see that the main idea behind HAVEGED has sustained time test - it was published already in 2003 [here.](https://www.irisa.fr/caps/projects/hipsor/publications/havege-tomacs.pdf) I'm also glad that the HAVEGE algorithm is being further explored and examined - see the [CPU Jitter Random Number Generator.](https://www.chronox.de/jent.html)
 
-2) Furthermore, as soon as the CRNG (the Linux cryptographic-strength random number generator) gets ready, `/dev/random` does not block on reads anymore. See the [kernel commit.](https://github.com/torvalds/linux/commit/30c08efec8884fb106b8e57094baa51bb4c44e32)
+Please note that while the mainline Linux Kernel and HAVEGED are using the same concept to generate the entropy (utilizing the CPU jitter) the implementation is completely different. In this sense, HAVEGED can be viewed as another entropy source. 
 
-I'm happy that these changes made it into the mainline kernel. It's nice to see that the main idea behind HAVEGED has sustained time test- it was published already in 2003 [here.](https://www.irisa.fr/caps/projects/hipsor/publications/havege-tomacs.pdf)
+It means that HAVEGED **service** is now less relevant. However, it's still useful in the following situations, when you
+* need randomness early in the boot process, before the CRNG in the Linux kernel gets fully initialized.
+* want to deploy an additional entropy source. HAVEGED now inserts entropy into the kernel every 60 seconds, regardless of the entropy level reported by Linux Kernel. It does not affect the `/dev/random` read speed but it diversifies the entropy sources, making the Linux Kernel CRNG more robust. 
+* you are looking for userspace RNG to generate random numbers. See `man -S8 haveged` for examples or try running `haveged -n 0 | pv > /dev/null`
+* and last but not least, most Linux installations are still running on the older kernel versions.
 
-I'm also glad that the HAVEGE algorithm is being further explored and examined - see the [CPU Jitter Random Number Generator.](https://www.chronox.de/jent.html)
-
-I will keep maintaining HAVEGED - there are a couple of reasons for that:
-* Most Linux installations are still running on the older kernel versions. 
-* HAVEGED can also be used as the userspace RNG to generate random numbers. See `man -S8 haveged` for examples or try running `haveged -n 0 | pv > /dev/null`
-* Last but not least, HAVEGED can be used as the RNG library. 
+In any case, I will keep maintaining the HAVEGED project. The userspace application, as well as the haveged library, are not affected in any way by changes in the Linux kernel.
 
 INTRODUCTION
 
@@ -154,12 +153,10 @@ The following build options are available to "./configure":
 1.  --enable-clock_gettime (default 'no' for recognized hosts)
 2.  --enable-daemon (default 'yes' if Linux)
 3.  --enable-diagnostic (default 'no')
-4.  --enable-init (type, default 'no')
-5.  --enable-initdir (default '' unless enable--init="service.*")
-6.  --enable-nistest (default 'no' but recommended)
-7.  --enable-olt (default 'yes')
-8.  --enable-threads (experimental)
-9.  --enable-tune (default 'yes')
+4.  --enable-nistest (default 'no' but recommended)
+5.  --enable-olt (default 'yes')
+6.  --enable-threads (experimental)
+7.  --enable-tune (default 'yes')
 
 Detailed option information is available by typing "./configure --help". For
 options xxx that take "yes/no" arguments, --disable-xxx may be used as the
@@ -187,15 +184,6 @@ If --enable-diagnostic is 'yes', the capture and inject diagnostic interfaces
 are enabled. The capture or inject diagnostic may be enabled singly by setting
 the option to 'capture' or 'inject'. A setting for any value other than 'no'
 for this option forces --enable-daemon=no. See DIAGNOSTICS below for details.
-
-The --enable-init option is active only when --enable-daemon is 'yes'. This
-value can specify a template to be used in the installation of an init method
-by the build's install target. The default value, 'no', disables the feature.
-Other values can be used to install a traditional systemv init script or
-systemd unit definition. See INSTALLATION for details.
-
-The --enable-initdir is active only when --enable-init='service.*', i.e. a
-systemd install. See INSTALLATION for details.
 
 The --enable-nistest option enables more thorough testing for the check target.
 See CHECKING for details.
@@ -255,9 +243,9 @@ The build check target provides two test procedures for the build.
    NIST to review the detailed results. AIS31 provides recommendations for the
    NIST test suite as 'additional tests'. See testing documentation at
    http://www.issihosts.com/haveged/ais31.html for further information.
-   
+
 The "quick" test is always part of the check target. The NIST suite is run only
-when --enable-nistest is 'yes'. 
+when --enable-nistest is 'yes'.
 
 Both checks function the same way, haveged is run to collect a sample file in
 the test directory which is then analyzed by the test program. A pass-fail return
@@ -274,7 +262,7 @@ the haveged collection area to exercise all buffer logic.
 
 Users are encouraged to run their own external tests. The --number==0 option is
 a convenient means to pipe haveged output into external suites such as Dieharder,
-the TESTU01 batteries, or PractRand. 
+the TESTU01 batteries, or PractRand.
 
 
 RUNNING haveged
@@ -351,7 +339,7 @@ where
 
 build option flags represent the ./configure options as:
     C=clock_gettime, D=diagnostic I=tune with cpuid, M=multi-core, T=online tests, V=tune with vfs
-    
+
 tuning sources are:
     D=default value, P=instance parameter, C=cpuid present,
     H=hyperthreading, A=AMD cpuid, A5=AMD fn5, A6=AMD fn6, A8=AMD fn8
@@ -387,7 +375,7 @@ where
     <action>  is either 'retry' or 'fail'
     <bytes>   is number of bytes processed in procedure before failure
     <fill>    is the number of times the buffer was filled
-    
+
 The exec summary is logged upon error or signal terminations. Other log output is
 controlled by --verbose:
 
@@ -440,38 +428,6 @@ If the daemon interface is not enabled, the install places the executable in
 automake's bin_PROGRAMS directory and provides a man(8) page. A man(3) page
 is provided for the libtool build. If the daemon interface is enabled, the
 executable is installed in automake's sbin_PROGRAMS directory.
-
-If the daemon interface is enabled, the --enable-init setting provides a simple
-template system to setup the init method. If --enable-init is set to none
-no action is taken. Otherwise, the template must reside in the init.d build
-directory and is selected by the setting. Template names "service.*" indicate
-that a systemd style init, while template names "sysv.*" are used for sysv
-style init scripts.
-
-Sample sysv style templates are provided for linux standard base, sysv.lsb,
-and redhat systems, sysv.redhat , such as centos which have not moved to
-systemd style inits.
-
-For systemd style installs, --enable-initdir specifies the systemd unit
-directory. If the setting is not specified (or is ''), the default value is
-obtained from hosts pkg-config query for systemdsystemunitdir. Sample systemd
-templates are provided for forking, service.forking, and non-forking,
-service.fedora, configurations. The non-forking configuration is recommended to
-avoid the overhead of PID file and minimize start-up cost.
-
-Examples:
-
-./configure --enable-init=service.redhat
-./configure --enable-init=sysv.lsb
-
-Custom init scripts can be added as necessary by adding templates to the
-init.d directory.
-
-A sample file, haveged.spec, is provided in the build root as a guide for
-those who want to build a rpm. As with init scripts, the sample may need
-customization before use. Other SPEC file examples can be found in the
-contrib directory (see EXTRAS for details).
-
 
 EXTRAS
 

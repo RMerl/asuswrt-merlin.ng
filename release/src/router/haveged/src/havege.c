@@ -1,7 +1,7 @@
 /**
  ** Simple entropy harvester based upon the havege RNG
  **
- ** Copyright 2018-2021 Jirka Hladky hladky DOT jiri AT gmail DOT com
+ ** Copyright 2018-2022 Jirka Hladky hladky DOT jiri AT gmail DOT com
  ** Copyright 2009-2014 Gary Wuertz gary@issiweb.com
  ** Copyright 2011-2012 BenEleventh Consulting manolson@beneleventh.com
  **
@@ -317,7 +317,7 @@ int  havege_status_dump(   /* RETURN: output length   */
 {
    struct   h_status status;
    int      n = 0;
-   
+
    if (buf != 0) {
       *buf = 0;
       len -= 1;
@@ -346,7 +346,7 @@ int  havege_status_dump(   /* RETURN: output length   */
          case H_SD_TOPIC_TEST:
             {
                H_UINT   m;
-               
+
                if (strlen(status.tot_tests)>0) {
                   n += snprintf(buf+n, len-n, "tot tests(%s): ", status.tot_tests);
                   if ((m = status.n_tests[ H_OLT_TOT_A_P] + status.n_tests[ H_OLT_TOT_A_F])>0)
@@ -368,19 +368,29 @@ int  havege_status_dump(   /* RETURN: output length   */
          case H_SD_TOPIC_SUM:
             {
                char   units[] = {'T', 'G', 'M', 'K', 0};
-               double factor  = 1024.0 * 1024.0 * 1024.0 * 1024.0;
+               double factor[2];
+               factor[0] = 1024.0 * 1024.0 * 1024.0 * 1024.0;
+               factor[1] = factor[0];
                double sz = ((double)hptr->n_fills * hptr->i_collectSz) * sizeof(H_UINT);
-               int i;
-               
-               for (i=0;0 != units[i];i++) {
-                  if (sz >= factor)
+               double ent = ((double) hptr->n_entropy_bytes);
+               int i[2];
+
+               for (i[0]=0;0 != units[i[0]];i[0]++) {
+                  if (sz >= factor[0])
                      break;
-                  factor /= 1024.0;
+                  factor[0] /= 1024.0;
                   }
-               n = snprintf(buf, len, "fills: %u, generated: %.4g %c bytes",
+               for (i[1]=0;0 != units[i[1]];i[1]++) {
+                  if (ent >= factor[1])
+                     break;
+                  factor[1] /= 1024.0;
+                  }
+               n = snprintf(buf, len, "fills: %u, generated: %.4g %c bytes, RNDADDENTROPY: %.4g %c bytes",
                   hptr->n_fills,
-                  sz / factor,
-                  units[i]
+                  sz / factor[0],
+                  units[i[0]],
+                  ent / factor[1],
+                  units[i[1]]
                   );
             }
             break;

@@ -63,6 +63,9 @@ use "-" for stdout.
 -F , --Foreground
 Run daemon in foreground. Do not fork and detach.
 .TP
+-e , --once
+Provide entropy to the kernel once and quit immediatelly.
+.TP
 -i nnn, --inst=nnn
 Set instruction cache size to nnn KB. Default is 16 or as determined dynamically.
 .TP
@@ -115,14 +118,14 @@ Set file path for the daemon pid file. Default is "/var/run/haveged.pid",
 Set run level for daemon interface:
 
 n = 0 Run as daemon - must be root. Fills /dev/random when the supply of random bits
- falls below the low water mark of the device. 
+ falls below the low water mark of the device.
 
 n = 1 Display configuration info and terminate.
 
 n > 1 Write <n> kb of output. Deprecated (use --number instead), only provided for backward
 compatibility.
 
-If --number is specified, values other than 0,1 are ignored. Default is 0. 
+If --number is specified, values other than 0,1 are ignored. Default is 0.
 .TP
 -v n, --verbose=n
 Set diagnostic bitmap as sum of following options:
@@ -139,10 +142,15 @@ Set diagnostic bitmap as sum of following options:
 
 32=Show all online test completion detail
 
+64=Show info on RNDADDENTROPY operation
+
 Default is 0. Use -1 for all diagnostics.
 .TP
 -w nnn, --write=nnn
 Set write_wakeup_threshold of daemon interface to nnn bits. Applies only to run level 0.
+.TP
+-V, --version
+Print version information and exit
 .TP
 -?, --help
 This summary of program options.
@@ -188,7 +196,7 @@ If running as a daemon, access to the following files is required
 .I /proc/sys/kernel/osrelease
 .P
 .I /proc/sys/kernel/random/poolsize
-.P    
+.P
 .I /proc/sys/kernel/random/write_wakeup_threshold
 .RE
 
@@ -313,6 +321,9 @@ haveged -n 16T -o tba8cbw -f - | pv > /dev/null
 .TP
 Generate large amounts of data (16TB). Disable continuous tests for the maximum throughput but run the online tests at the startup to make sure that generator for properly initialized:
 haveged -n 16T -o tba8c -f - | pv > /dev/null
+.TP
+Create a password equivalent to a key strength of 256 bit
+haveged -f - -n 32 2>/dev/null | base64 | tr -d =
 
 .SH SEE ALSO
 .TP

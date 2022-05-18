@@ -192,9 +192,6 @@
 /* Define to the sub-directory where libtool stores uninstalled libraries. */
 #undef LT_OBJDIR
 
-/* Define to 1 to suppress daemon interface */
-#undef NO_DAEMON
-
 /* Define to single collection thread */
 #undef NUMBER_CORES
 

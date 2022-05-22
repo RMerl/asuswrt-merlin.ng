@@ -4438,6 +4438,8 @@ start_ddns(char *caller)
 		passwd = nvram_safe_get("secret_code");
 		asus_ddns = 1;
 	}
+	else if (strcmp(server, "WWW.CLOUDFLARE.COM") == 0)
+		service = "default@cloudflare.com";
 	else if (strcmp(server, "DOMAINS.GOOGLE.COM") == 0)
 		service = "default@domains.google.com";
 #endif

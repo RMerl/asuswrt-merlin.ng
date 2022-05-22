@@ -468,6 +468,8 @@ function openLink(s){
 			tourl = "https://freedns.afraid.org/";
 		else if (document.form.ddns_server_x.value == 'WWW.ORAY.COM')
 			tourl = "https://www.oray.com/";
+		else if (document.form.ddns_server_x.value == 'WWW.CLOUDFLARE.COM')
+			tourl = "https://www.cloudflare.com/";
 		else if (document.form.ddns_server_x.value == 'DOMAINS.GOOGLE.COM')
 			tourl = "https://domains.google/";
 		else	tourl = "";

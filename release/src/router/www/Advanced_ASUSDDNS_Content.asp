@@ -645,13 +645,13 @@ function change_ddns_setting(v){
 			else
 				inputCtrl(document.form.ddns_username_x, 1);
 			inputCtrl(document.form.ddns_passwd_x, 1);
-			if(v == "WWW.TUNNELBROKER.NET" || v == "DNS.HE.NET" || v == "WWW.SELFHOST.DE" || v == "DOMAINS.GOOGLE.COM")
+			if(v == "WWW.TUNNELBROKER.NET" || v == "DNS.HE.NET" || v == "WWW.SELFHOST.DE" || v == "WWW.CLOUDFLARE.COM" || v == "DOMAINS.GOOGLE.COM")
 				var disable_wild = 1;
 			else
 				var disable_wild = 0;
 			document.form.ddns_wildcard_x[0].disabled= disable_wild;
 			document.form.ddns_wildcard_x[1].disabled= disable_wild;
-			if(v == "WWW.ZONEEDIT.COM" || v == "DOMAINS.GOOGLE.COM" || v == "WWW.NAMECHEAP.COM"){
+			if(v == "WWW.ZONEEDIT.COM" || v == "WWW.CLOUDFLARE.COM" || v == "DOMAINS.GOOGLE.COM" || v == "WWW.NAMECHEAP.COM"){
 				showhide("link", 0);
 				showhide("linkToHome", 1);
 			}
@@ -674,6 +674,11 @@ function change_ddns_setting(v){
 	if(v == "WWW.NAMECHEAP.COM") {
 		document.getElementById("ddns_username_th").innerHTML = "Domain Name";
 		document.getElementById("ddns_password_th").innerHTML = "<#LANHostConfig_x_DDNSPassword_itemname#>";
+		document.getElementById("ddns_hostname_th").innerHTML = default_hostname_label;
+	}
+	else if(v == "WWW.CLOUDFLARE.COM") {
+		document.getElementById("ddns_username_th").innerHTML = "Domain Name";
+		document.getElementById("ddns_password_th").innerHTML = "API Token";
 		document.getElementById("ddns_hostname_th").innerHTML = default_hostname_label;
 	}
 	else if(v == "FREEDNS.AFRAID.ORG") {
@@ -992,6 +997,7 @@ function check_unregister_result(){
 					<select id="ddns_server_x" name="ddns_server_x" class="input_option" onchange="change_ddns_setting(this.value); change_cert_method();">
 						<option value="WWW.ASUS.COM" <% nvram_match("ddns_server_x", "WWW.ASUS.COM","selected"); %>>WWW.ASUS.COM</option>
 						<option value="WWW.ASUS.COM.CN" <% nvram_match("ddns_server_x", "WWW.ASUS.COM.CN","selected"); %>>WWW.ASUS.COM.CN</option>
+						<option value="WWW.CLOUDFLARE.COM" <% nvram_match("ddns_server_x", "WWW.CLOUDFLARE.COM","selected"); %>>WWW.CLOUDFLARE.COM</option>
 						<option value="DOMAINS.GOOGLE.COM" <% nvram_match("ddns_server_x", "DOMAINS.GOOGLE.COM","selected"); %>>DOMAINS.GOOGLE.COM</option>
 						<option value="WWW.DYNDNS.ORG" <% nvram_match("ddns_server_x", "WWW.DYNDNS.ORG","selected"); %>>WWW.DYNDNS.ORG</option>
 						<option value="WWW.DYNDNS.ORG(CUSTOM)" <% nvram_match("ddns_server_x", "WWW.DYNDNS.ORG(CUSTOM)","selected"); %>>WWW.DYNDNS.ORG(CUSTOM)</option>

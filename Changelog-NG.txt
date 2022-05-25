@@ -2,8 +2,9 @@ Asuswrt-Merlin 386/NG Changelog
 ===============================
 
 386.7 (xx-xxx-xxxx)
-  - UPDATED: Merged with 386_48823 GPL.
+  - UPDATED: Merged with 386_48966 GPL.
   - UPDATED: openssl to 1.1.1o.
+  - UPDATED: haveged to 1.9.18.
   - CHANGED: dhcpc-event now has a second parameter that will
              contain "4" or "6" depending on the IP protocol of
              the event (dave14305)

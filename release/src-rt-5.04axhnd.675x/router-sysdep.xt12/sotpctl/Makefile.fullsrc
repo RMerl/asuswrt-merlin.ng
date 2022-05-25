@@ -1,0 +1,18 @@
+OBJS := sotpctl.o
+
+LIBS :=
+
+
+$(EXE): $(OBJS)
+	$(CC) $(BCM_LD_FLAGS) -o $@ $(OBJS) -Wl,-rpath,$(LIBS)
+
+
+binaryonly_prepare:
+	-cp $(EXE) $(mdir)/$(SAVED)
+	-$(MAKE) -f $(name) clean
+	rm -f $(mdir)/*.c $(mdir)/*.h $(mdir)/Makefile.fullsrc
+
+
+# Generate and use dependencies.
+CFLAGS += -MD
+-include $(OBJS:%.o=%.d)

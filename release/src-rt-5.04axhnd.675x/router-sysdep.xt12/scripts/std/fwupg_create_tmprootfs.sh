@@ -74,6 +74,7 @@ cp /lib/libc.* /mnt/new-root/lib
 cp /lib/libbcm_flashutil.so /mnt/new-root/lib
 cp /lib/libbcm_boardctl.so /mnt/new-root/lib
 cp /lib/libbcm_util.so /mnt/new-root/lib
+cp /sbin/rc /mnt/new-root/bin
 cp /lib/libsys_util.so /mnt/new-root/lib
 cp /lib/libgen_util.so /mnt/new-root/lib
 cp /lib/librt.* /mnt/new-root/lib
@@ -83,6 +84,29 @@ cp /lib/ld-linux* /mnt/new-root/lib
 cp /lib/libm.so.6 /mnt/new-root/lib
 cp /usr/lib/libptcsrv.so /mnt/new-root/lib
 cp /lib/libgcc_s.so.1 /mnt/new-root/lib
+cp /usr/lib/libconn_diag.so /mnt/new-root/lib
+cp /lib/libnvram.so /mnt/new-root/lib
+cp /usr/lib/libshared.so /mnt/new-root/lib
+cp /lib/libcrypt.so.1 /mnt/new-root/lib
+cp /lib/libwlcsm.so /mnt/new-root/lib
+cp /usr/lib/libwpa_client.so /mnt/new-root/lib
+cp /lib/libbcm.so /mnt/new-root/lib
+cp /usr/lib/libbcm.so /mnt/new-root/lib
+cp /usr/lib/libcrypto.so.1.1 /mnt/new-root/lib
+cp /usr/lib/libssl.so.1.1 /mnt/new-root/lib
+cp /usr/lib/libbwdpi.so /mnt/new-root/lib
+cp /lib/libdisk.so /mnt/new-root/lib
+cp /usr/lib/libcfgmnt.so /mnt/new-root/lib
+cp /usr/lib/libvpn.so /mnt/new-root/lib
+cp /usr/lib/libasc.so /mnt/new-root/lib
+cp /usr/lib/libletsencrypt.so /mnt/new-root/lib
+cp /usr/lib/libcurl.so.4 /mnt/new-root/lib
+cp /usr/lib/libamas-utils.so /mnt/new-root/lib
+cp /usr/lib/liblldpctl.so.4 /mnt/new-root/lib
+cp /usr/lib/libjansson.so.4 /mnt/new-root/lib
+cp /lib/libasuslog.so /mnt/new-root/lib
+cp /usr/lib/libjson-c.so.2 /mnt/new-root/lib
+cp /usr/lib/libsqlite3.so.0 /mnt/new-root/lib
 cp /rom/etc/init.d/fwupg_flashing.sh /mnt/new-root/etc
 cp /rom/etc/get_rootfs_dev.sh /mnt/new-root/etc
 
@@ -136,10 +160,11 @@ ln -sf ../bin/busybox arp
 ln -sf ../bin/busybox chroot
 ln -sf ../bin/busybox halt
 ln -sf ../bin/busybox ifconfig
-ln -sf ../bin/busybox init
+#ln -sf ../bin/busybox init
 ln -sf ../bin/busybox pivot_root
 ln -sf ../bin/busybox reboot
 ln -sf ../bin/busybox expr
+ln -sf ../bin/rc init
 cd -
 
 

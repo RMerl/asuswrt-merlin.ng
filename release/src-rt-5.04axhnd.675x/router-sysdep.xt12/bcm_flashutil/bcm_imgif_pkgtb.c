@@ -45,7 +45,10 @@
 #include "bcm_flashutil_nand.h"
 #include "bcm_flashutil_emmc.h"
 #include "bcm_flashutil_nor.h"
+
+#include <rtconfig.h>
 #include "bcm_imgif.h"
+
 #include "bcm_imgif_pkgtb.h"
 #include "bcmTag.h"
 #include "bcm_hwdefs.h"
@@ -172,7 +175,7 @@ typedef struct
     imgif_img_info_t imgInfoExt;
     IMG_FORMAT_PARSER_CB fmtParserCb;
     CAL_CRC32_CB calCrc32Cb;
-#ifdef CUSTOM_NAND_SINGLE_IMAGE
+#if defined(CUSTOM_NAND_SINGLE_IMAGE) || defined(RTCONFIG_SINGLEIMG_B)
     unsigned force_upd_img_idx;
 #endif
 } imgif_ctx_t;
@@ -1399,7 +1402,7 @@ static int init_ctx(imgif_ctx_t *ctxP)
         }
     }
     
-#ifdef CUSTOM_NAND_SINGLE_IMAGE
+#if defined(CUSTOM_NAND_SINGLE_IMAGE) || defined(RTCONFIG_SINGLEIMG_B)
     if (ctxP->force_upd_img_idx) {
         ctxP->update_img_idx = ctxP->force_upd_img_idx;
         printf("%s: Single Image: Force to boote image 1 , update image to %d !!\n", __FUNCTION__, ctxP->update_img_idx);        
@@ -1780,7 +1783,7 @@ static int finalize_pkgtb_img_write(imgif_ctx_t *ctxP, unsigned char abortFlag)
     /* Set image as valid */
     //FIXME SPI NOR only support single image
     imgif_pkgtb_get_flash_info(&flashInfo);
-#ifdef CUSTOM_NAND_SINGLE_IMAGE
+#if defined(CUSTOM_NAND_SINGLE_IMAGE) || defined(RTCONFIG_SINGLEIMG_B)
     if ( flashInfo.flashType != FLASH_INFO_FLAG_NOR )
     {
         if (ctxP->force_upd_img_idx) {
@@ -1943,7 +1946,7 @@ int imgif_pkgtb_set_image_info(IMGIF_HANDLE h, imgif_img_info_t *imgInfoExtP)
 
     if ((ctxP != NULL) && (imgInfoExtP != NULL))
     {
-#ifdef CUSTOM_NAND_SINGLE_IMAGE
+#if defined(CUSTOM_NAND_SINGLE_IMAGE) || defined(RTCONFIG_SINGLEIMG_B)
         ctxP->imgInfoExt.bitmask = (imgInfoExtP->bitmask != 0)?
             imgInfoExtP->bitmask: ctxP->imgInfoExt.bitmask;
         ctxP->imgInfoExt.size = (imgInfoExtP->size != 0)?

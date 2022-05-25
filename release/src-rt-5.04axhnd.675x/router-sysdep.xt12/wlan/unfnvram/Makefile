@@ -50,6 +50,9 @@ LIBS += -lbcm_util -lsys_util
 CFLAGS += -DBASESHELL_BUILD
 NVRAM_LIBS = -lnvram -lbcm_util -lsys_util
 endif
+ifneq ($(strip $(BUILD_CUSTOMER)),)
+CFLAGS+=-DCUSTOMER_BUILD
+endif
 
 ifneq ($(strip $(CONFIG_MTD_NAND)),)
 CFLAGS += -DNAND_SYS

@@ -60,10 +60,10 @@ endef
 #	Replace ".o" with "${OBJ_EXT}"
 #	delete empty continuation lines
 #	delete blank lines
-#	replace "build/" with "${BUILD_DIR}/" when it's at the start of a line
-#	delete references to ${BUILD_DIR}/make/include, the "config.mk"
+#	replace "build/" with "${FRBUILD_DIR}/" when it's at the start of a line
+#	delete references to ${FRBUILD_DIR}/make/include, the "config.mk"
 #	file adds these dependencies automatically.
-#	replace "build/" with "${BUILD_DIR}/" when it's in the middle of a line
+#	replace "build/" with "${FRBUILD_DIR}/" when it's in the middle of a line
 #	
 #	remove sequential duplicate lines
 #	
@@ -77,32 +77,32 @@ endef
 #	remove sequential duplicate lines
 #
 define FILTER_DEPENDS
-	@mkdir -p $$(dir $${BUILD_DIR}/make/src/$$*)
-	@mkdir -p $$(dir $${BUILD_DIR}/objs/$$*)
+	@mkdir -p $$(dir $${FRBUILD_DIR}/make/src/$$*)
+	@mkdir -p $$(dir $${FRBUILD_DIR}/objs/$$*)
 	@sed  -e 's/#.*//' \
 	  -e 's,^$${top_srcdir},$$$${top_srcdir},' \
 	  -e 's, $${top_srcdir}, $$$${top_srcdir},' \
-	  -e 's,^$${BUILD_DIR},$$$${BUILD_DIR},' \
-	  -e 's, $${BUILD_DIR}/make/include/[^ :]*,,' \
-	  -e 's, $${BUILD_DIR}, $$$${BUILD_DIR},' \
+	  -e 's,^$${FRBUILD_DIR},$$$${FRBUILD_DIR},' \
+	  -e 's, $${FRBUILD_DIR}/make/include/[^ :]*,,' \
+	  -e 's, $${FRBUILD_DIR}, $$$${FRBUILD_DIR},' \
 	  -e 's, /[^: ]*,,g' \
 	  -e 's,^ *[^:]* *: *$$$$,,' \
 	  -e '/: </ d' \
 	  -e 's/\.o: /.$$$${OBJ_EXT}: /' \
 	  -e '/^ *\\$$$$/ d' \
-	  < $${BUILD_DIR}/objs/$$*.d | sed -e '$$$$!N; /^\(.*\)\n\1$$$$/!P; D' \
-	  >  $${BUILD_DIR}/make/src/$$*.mk
+	  < $${FRBUILD_DIR}/objs/$$*.d | sed -e '$$$$!N; /^\(.*\)\n\1$$$$/!P; D' \
+	  >  $${FRBUILD_DIR}/make/src/$$*.mk
 	@sed -e 's/#.*//' \
-	  -e 's, $${BUILD_DIR}/make/include/[^ :]*,,' \
+	  -e 's, $${FRBUILD_DIR}/make/include/[^ :]*,,' \
 	  -e 's, /[^: ]*,,g' \
 	  -e 's,^ *[^:]* *: *$$$$,,' \
 	  -e '/: </ d' \
 	  -e 's/^[^:]*: *//' \
 	  -e 's/ *\\$$$$//' \
 	  -e 's/$$$$/ :/' \
-	  < $${BUILD_DIR}/objs/$$*.d | sed -e '$$$$!N; /^\(.*\)\n\1$$$$/!P; D' \
-	 >> $${BUILD_DIR}/make/src/$$*.mk
-	 @rm -f $${BUILD_DIR}/objs/$$*.d
+	  < $${FRBUILD_DIR}/objs/$$*.d | sed -e '$$$$!N; /^\(.*\)\n\1$$$$/!P; D' \
+	 >> $${FRBUILD_DIR}/make/src/$$*.mk
+	 @rm -f $${FRBUILD_DIR}/objs/$$*.d
 endef
 
 # ADD_OBJECT_RULE - Parameterized "function" that adds a pattern rule, using
@@ -117,23 +117,23 @@ endef
 #
 ifeq "${CPP_MAKEDEPEND}" "yes"
 define ADD_OBJECT_RULE
-$${BUILD_DIR}/objs/%.${OBJ_EXT} $${BUILD_DIR}/objs/%.d: ${1} ${JLIBTOOL}
+$${FRBUILD_DIR}/objs/%.${OBJ_EXT} $${FRBUILD_DIR}/objs/%.d: ${1} ${JLIBTOOL}
 	${2}
 	$${CPP} $${CPPFLAGS} $${SRC_INCDIRS} $${SRC_DEFS} $$< | sed \
-	  -n 's,^\# *[0-9][0-9]* *"\([^"]*\)".*,$$@: \1,p' > $${BUILD_DIR}/objs/$$*.d
+	  -n 's,^\# *[0-9][0-9]* *"\([^"]*\)".*,$$@: \1,p' > $${FRBUILD_DIR}/objs/$$*.d
 ${FILTER_DEPENDS}
 endef
 
 else
 define ADD_OBJECT_RULE
-$${BUILD_DIR}/objs/%.${OBJ_EXT} $${BUILD_DIR}/objs/%.d: ${1} ${JLIBTOOL}
+$${FRBUILD_DIR}/objs/%.${OBJ_EXT} $${FRBUILD_DIR}/objs/%.d: ${1} ${JLIBTOOL}
 	${2}
 ${FILTER_DEPENDS}
 endef
 endif
 
 # ADD_TARGET_DIR - Parameterized "function" that makes a link from
-#   TARGET_DIR to the executable or library in the BUILD_DIR directory.
+#   TARGET_DIR to the executable or library in the FRBUILD_DIR directory.
 #
 #   USE WITH EVAL
 #
@@ -300,9 +300,9 @@ define INCLUDE_SUBMAKEFILE
         # This makefile defined a new target. Target variables defined by this
         # makefile apply to this new target. Initialize the target's variables.
 
-        # libs go into ${BUILD_DIR}/lib
-        # everything else goes into ${BUILD_DIR}/bin
-#        TGT := $$(strip $$(if $$(suffix $${TARGET}),$${BUILD_DIR}/lib,$${BUILD_DIR}/bin)/$${TARGET})
+        # libs go into ${FRBUILD_DIR}/lib
+        # everything else goes into ${FRBUILD_DIR}/bin
+#        TGT := $$(strip $$(if $$(suffix $${TARGET}),$${FRBUILD_DIR}/lib,$${FRBUILD_DIR}/bin)/$${TARGET})
         TGT := $${TARGET}
 
         # A "hook" to rewrite "libfoo.a" -> "libfoo.la" when using libtool
@@ -316,14 +316,14 @@ define INCLUDE_SUBMAKEFILE
         $${TGT}_POSTCLEAN := $${TGT_POSTCLEAN}
         $${TGT}_POSTINSTALL := $${TGT_POSTINSTALL}
         $${TGT}_PREREQS := $${TGT_PREREQS}
-        $${TGT}_PRBIN := $$(addprefix $${BUILD_DIR}/bin/,$$(filter-out %.a %.so %.la,$${TGT_PREREQS}))
-        $${TGT}_PRLIBS := $$(addprefix $${BUILD_DIR}/lib/,$$(filter %.a %.so %.la,$${TGT_PREREQS}))
+        $${TGT}_PRBIN := $$(addprefix $${FRBUILD_DIR}/bin/,$$(filter-out %.a %.so %.la,$${TGT_PREREQS}))
+        $${TGT}_PRLIBS := $$(addprefix $${FRBUILD_DIR}/lib/,$$(filter %.a %.so %.la,$${TGT_PREREQS}))
         $${TGT}_DEPS :=
         $${TGT}_OBJS :=
         $${TGT}_SOURCES :=
         $${TGT}_MAN := $${MAN}
         $${TGT}_SUFFIX := $$(if $$(suffix $${TGT}),$$(suffix $${TGT}),.exe)
-        $${TGT}_BUILD := $$(if $$(suffix $${TGT}),$${BUILD_DIR}/lib,$${BUILD_DIR}/bin)
+        $${TGT}_BUILD := $$(if $$(suffix $${TGT}),$${FRBUILD_DIR}/lib,$${FRBUILD_DIR}/bin)
         $${TGT}_MAKEFILES += ${1}
         $${TGT}_CHECK_HEADERS := $${TGT_CHECK_HEADERS}
         $${TGT}_CHECK_LIBS := $${TGT_CHECK_LIBS}
@@ -364,14 +364,14 @@ define INCLUDE_SUBMAKEFILE
 
         # Convert the source file names to their corresponding object file
         # names.
-        OBJS := $$(addprefix $${BUILD_DIR}/objs/,\
+        OBJS := $$(addprefix $${FRBUILD_DIR}/objs/,\
                    $$(addsuffix .${OBJ_EXT},$$(basename $${SOURCES})))
 
         # Add the objects to the current target's list of objects, and create
         # target-specific variables for the objects based on any source
         # variables that were defined.
         $${TGT}_OBJS += $${OBJS}
-        $${TGT}_DEPS += $$(addprefix $${BUILD_DIR}/make/src/,\
+        $${TGT}_DEPS += $$(addprefix $${FRBUILD_DIR}/make/src/,\
                    $$(addsuffix .mk,$$(basename $${SOURCES})))
 
         # A "hook" to define variables needed by the "legacy" makefiles.
@@ -511,15 +511,15 @@ ifeq "${top_builddir}" ""
     top_builddir := .
 endif
 
-# Ensure that valid values are set for BUILD_DIR
-ifeq "$(strip ${BUILD_DIR})" ""
+# Ensure that valid values are set for FRBUILD_DIR
+ifeq "$(strip ${FRBUILD_DIR})" ""
     ifeq "${top_builddir}" "${PWD}"
-        BUILD_DIR := build
+        FRBUILD_DIR := build
     else
-        BUILD_DIR := ${top_builddir}/build
+        FRBUILD_DIR := ${top_builddir}/build
     endif
 else
-    BUILD_DIR := $(call CANONICAL_PATH,${BUILD_DIR})
+    FRBUILD_DIR := $(call CANONICAL_PATH,${FRBUILD_DIR})
 endif
 
 # Define compilers and linkers

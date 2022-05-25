@@ -3202,7 +3202,7 @@ Setting_remove_passwd=Click on this checkbox if you want to share the config fil
 Settings=Nastavitve
 Setup_note=Kliknite <a id="redirect_to_setup">tukaj</a> da spremenite. Za več informacij si oglejte to <a id="redirect_to_FAQ">pogosto vprašanje</a>.
 Setup_node=Namestitev vozlišča
-Setup_node_desc_step1=Place your ZVMODELVZ router and node(s) in the same room and at least 1 meter apart during the setup process.
+Setup_node_desc_step1=Med postopkom nastavitve postavite usmerjevalnik ZVMODELVZ in vozlišča v isto sobo in vsaj en meter narazen.
 Setup_node_desc_step2=Za nastavitve sistema naj bo napajanje vklopljeno, naprava pa naj bo v stanju pripravljenosti.
 ShareNode_DeviceName_itemname=Ime naprave
 ShareNode_FTPLANG_itemdesc=Izberite pravilne jezikovne nastavitve, ki so primerne za kodiranje datoteke.
@@ -4195,8 +4195,7 @@ FreeWiFi_Image_Empty_Alert=Slikovna datoteka pozdravne spletne strani ne more bi
 FreeWiFi_Welcome=Dobrodošli v
 FreeWiFi_Agree_Terms_Service=Prebral(-a) sem <span id='terms_service_hyperlink'>pogoje storitve</span> in se strinjam z njimi
 FreeWiFi_Continue=Nadaljuj
-VPN_Fusion=Večkratna povezava VPN
-[###MODEL_DEP###][TUF-AX5400][GS-AX5400][GS-AX3000][GT-AXE16000][GT-AXE11000][GT-AX11000_BO4][GT-AX11000_PRO][GT-AX11000][GT-AX6000][GT-AC5300][TUF-AX3000][TUF-AX3000_V2][GT-AC2900_SH][GT-AC2900][GT-AXY16000][RT-AXE7800][RT-AX86U_PRO][GT10]VPN_Fusion=Funkcija VPN Fusion
+VPN_Fusion=Funkcija VPN Fusion
 VPN_Fusion_desc1=vam omogoča hkratno povezavo več strežnikov VPN ter dodeljevanje odjemalnih naprav za povezavo z različnimi tuneli VPN. Nekatere naprave, kot so Set-top Box, pametni TV in predvajalniki Blu-ray, ne podpirajo programske opreme VPN. Ta funkcija omogoča dostop VPN do takšnih naprav v domačem omrežju, ne da bi bilo treba namestiti programsko opremo VPN, medtem ko vaš pametni telefon ostane povezan z internetom in ne povezavo VPN.
 VPN_Fusion_desc2=Pri igranju igric povezava VPN izklopi napade DDoS,da prepreči, da bi se prekinila povezava med vašim računalnikom ali pretokom in igralnimi strežniki. Vzpostavitev povezave VPN vam omogoča tudi enostavno spreminjanje naslova IP v regijo, kjer se nahaja igralni strežnik, da bi izboljšali svoj ping do igralnih strežnikov.
 VPN_Fusion_desc_step=Za začetek sledite spodnjim korakom:
@@ -4218,8 +4217,7 @@ VPN_Fusion_Deactivate_Delete_Alert=Pred brisanjem profil deaktivirajte.
 VPN_Fusion_Exception_Policies_Delete_Alert=Ko boste profil izbrisali, bodo odstranjene tudi vse izjeme pravilnikov, določene za profil VPN. Ali ste prepričani, da želite izbrisati profil?
 VPN_Fusion_Delete_Alert=Ali ste prepričani, da želite izbrisati ta profil?
 VPN_Fusion_Exception_Policy_And_IP_Binding_Delete_Alert=Če boste izbrisali pravilnik odjemalca na seznamu izjem, boste izbrisali tudi IP povezavo odjemalca s strežnikom DHCP. Ali ste prepričani, da želite to izbrisati?
-VPN_Fusion_FAQ=<a id="faq1" href="" target="_blank" style="font-weight:bolder;text-decoration:underline;">Multiple VPN Connection FAQ.</a>
-[###MODEL_DEP###][TUF-AX5400][GS-AX5400][GS-AX3000][GT-AXE16000][GT-AXE11000][GT-AX11000_BO4][GT-AX11000_PRO][GT-AX11000][GT-AX6000][GT-AC5300][TUF-AX3000][TUF-AX3000_V2][GT-AC2900_SH][GT-AC2900][GT-AXY16000][RT-AXE7800][RT-AX86U_PRO][GT10]VPN_Fusion_FAQ=<a id="faq1" href="" target="_blank" style="font-weight:bolder;text-decoration:underline;">Pogosta vprašanja o funkciji VPN Fusion</a>
+VPN_Fusion_FAQ=<a id="faq1" href="" target="_blank" style="font-weight:bolder;text-decoration:underline;">Pogosta vprašanja o funkciji VPN Fusion</a>
 VPN_Fusion_Default_Alert=Ni mogoče nastaviti kot privzeto za ciljni pravilnik.
 Beta_test_only=Beta test only
 FIRM_fupgrade_desc=You can also select [Cancel], the device will automatically start downloading the update during the night time.
@@ -4235,14 +4233,14 @@ LED_Brightness=Svetlost LED
 WiFi_Network_List=Seznam omrežij WiFi
 Searching_WiFi_Network=Iskanje omrežij WiFi v bližini ...
 BoostKey=Tipka za izboljšanje delovanja
-[###MODEL_DEP###][GT-AX6000][GT-AXE16000]BoostKey=Tipka za LED delovanja
+[###MODEL_DEP###][GT-AX6000][GT-AX11000_PRO][GT-AXE16000]BoostKey=Tipka za LED delovanja
 BoostKey_desc=Povežite eno od teh funkcij s tipko za izboljšanje delovanja.
 [###MODEL_DEP###][GT-AC2900]BoostKey_desc=Povežite eno od teh funkcij s tipko za izboljšanje delovanja. Ko je funkcija okrepitve aktivirana, se vklopi lučka LED tipke za izboljšanje delovanja.
-[###MODEL_DEP###][GT-AX6000][GT-AXE16000]BoostKey_desc=Povežite eno od teh funkcij s tipko za LED delovanja.
+[###MODEL_DEP###][GT-AX6000][GT-AX11000_PRO][GT-AXE16000]BoostKey_desc=Povežite eno od teh funkcij s tipko za LED delovanja.
 BoostKey_enable=Enable Game Boost
 BoostKey_Aura_RGB=Aura RGB
 BoostKey_Aura_RGB_desc=Kontrolnik za sinhronizacijo Aura se uporablja za pridobitev nadzora Aura iz drugih naprav ROG; če je onemogočen, bo uporabljen Aura RGB po meri.
-[###MODEL_DEP###][GT-AX6000][GT-AXE16000]BoostKey_Aura_RGB_desc=Press LED Key to turn on/off Aura RGB LED.
+[###MODEL_DEP###][GT-AX6000][GT-AX11000_PRO][GT-AXE16000]BoostKey_Aura_RGB_desc=Press LED Key to turn on/off Aura RGB LED.
 BoostKey_AURA_Shuffle=Naključno Aura
 BoostKey_AURA_Shuffle_desc=Aura Shuffle vam omogoča, da s tipko za izboljšanje delovanja spremenite učinek osvetlitve Aura.
 BoostKey_AURA_state_breathing=Dihanje

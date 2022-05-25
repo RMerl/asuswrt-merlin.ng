@@ -3202,7 +3202,7 @@ Setting_remove_passwd=Click on this checkbox if you want to share the config fil
 Settings=Asetukset
 Setup_note=Napsauta <a id="redirect_to_setup">tässä</a> mukauttaaksesi. Katso lisätietoja tästä <a id="redirect_to_FAQ">Usein kysyttyä -osasta</a>.
 Setup_node=Aseta solmu
-Setup_node_desc_step1=Place your ZVMODELVZ router and node(s) in the same room and at least 1 meter apart during the setup process.
+Setup_node_desc_step1=Aseta ZVMODELVZ -reitittimesi ja solmusi samaan huoneeseen ja vähintään 1 metrin päähän toisistaan asennusprosessin ajaksi.
 Setup_node_desc_step2=Pidä virta päällä ja valmiustilassa järjestelmän asetusta varten.
 ShareNode_DeviceName_itemname=Laitenimi
 ShareNode_FTPLANG_itemdesc=Valitse oikeat, tiedostojen koodaukselle sopivat kieliasetukset.
@@ -4195,8 +4195,7 @@ FreeWiFi_Image_Empty_Alert=Aloitus-web-sivun kuvatiedosto ei voi olla tyhjä.
 FreeWiFi_Welcome=Tervetuloa
 FreeWiFi_Agree_Terms_Service=Olen lukenut ja hyväksyn <span id='terms_service_hyperlink'>palveluehdot</span>
 FreeWiFi_Continue=Jatka
-VPN_Fusion=Useita VPN-yhteyksiä
-[###MODEL_DEP###][TUF-AX5400][GS-AX5400][GS-AX3000][GT-AXE16000][GT-AXE11000][GT-AX11000_BO4][GT-AX11000_PRO][GT-AX11000][GT-AX6000][GT-AC5300][TUF-AX3000][TUF-AX3000_V2][GT-AC2900_SH][GT-AC2900][GT-AXY16000][RT-AXE7800][RT-AX86U_PRO][GT10]VPN_Fusion=VPN Fusion
+VPN_Fusion=VPN Fusion
 VPN_Fusion_desc1=mahdollistaa yhteyden luomisen useisiin VPN-palvelimiin samanaikaisesti ja asiakaslaitteen määrittämisen muodostamaan yhteyden eri VPN-käytäviin. Eräät laitteen, kuten digisovittimen, äly-TV:t ja Blu-ray-soittimet eivät tue VPN-ohjelmistoa. Tämä ominaisuus tarjoaa VPN-käytön tällaisille laitteille lähiverkossa ilman VPN-ohjelmiston asentamista älypuhelimen ollessa yhdistettynä internetiin, ei VPN:ään.
 VPN_Fusion_desc2=Pelaajilla VPN-yhteys suojaa DDoS-hyökkäyksiltä ja estää PC-pelin tai virtautuksen katkeamisen pelipalvelimilta. VPN-yhteyden rakentaminen voi myös yksinkertaisesti muuttaa IP-osoitteesi alueelle, jossa pelipalvelin sijaitsee, pelipalvelimiin kohdistuvan ping-toiminnan parantamiseksi.
 VPN_Fusion_desc_step=Aloita seuraavien ohjeiden mukaisesti:
@@ -4218,8 +4217,7 @@ VPN_Fusion_Deactivate_Delete_Alert=Deaktivoi profiili ennen sen poistamista.
 VPN_Fusion_Exception_Policies_Delete_Alert=Kaikki VPN-profiilille asetetut käytäntöpoikkeukset poistetaan, kun profiili poistetaan. Haluatko varmasti poistaa profiiliin?
 VPN_Fusion_Delete_Alert=Haluatko varmasti poistaa tämän profiilin?
 VPN_Fusion_Exception_Policy_And_IP_Binding_Delete_Alert=Asiakkaan käytännön poistaminen poikkeusluettelossa poistaa myös asiakkaan DHCP-palvelimen IP-sidonnan. Haluatko varmasti poistaa tämän?
-VPN_Fusion_FAQ=<a id="faq1" href="" target="_blank" style="font-weight:bolder;text-decoration:underline;">Multiple VPN Connection FAQ.</a>
-[###MODEL_DEP###][TUF-AX5400][GS-AX5400][GS-AX3000][GT-AXE16000][GT-AXE11000][GT-AX11000_BO4][GT-AX11000_PRO][GT-AX11000][GT-AX6000][GT-AC5300][TUF-AX3000][TUF-AX3000_V2][GT-AC2900_SH][GT-AC2900][GT-AXY16000][RT-AXE7800][RT-AX86U_PRO][GT10]VPN_Fusion_FAQ=<a id="faq1" href="" target="_blank" style="font-weight:bolder;text-decoration:underline;">VPN Fusion - Usein kysyttyä.</a>
+VPN_Fusion_FAQ=<a id="faq1" href="" target="_blank" style="font-weight:bolder;text-decoration:underline;">VPN Fusion - Usein kysyttyä.</a>
 VPN_Fusion_Default_Alert=Ei voi asettaa oletus WAN:ksi kohdekäytännön vuoksi.
 Beta_test_only=Beta test only
 FIRM_fupgrade_desc=You can also select [Cancel], the device will automatically start downloading the update during the night time.
@@ -4235,14 +4233,14 @@ LED_Brightness=LED-kirkkaus
 WiFi_Network_List=WiFi-verkkoluettelo
 Searching_WiFi_Network=Etsitään lähistöllä olevaa WiFi-verkkoa...
 BoostKey=Boost Key
-[###MODEL_DEP###][GT-AX6000][GT-AXE16000]BoostKey=LED Key
+[###MODEL_DEP###][GT-AX6000][GT-AX11000_PRO][GT-AXE16000]BoostKey=LED Key
 BoostKey_desc=Liitä jokin seuraavista toiminnoista Boost Key -näppäimeesi.
 [###MODEL_DEP###][GT-AC2900]BoostKey_desc=Liitä jokin seuraavista toiminnoista Boost Key -näppäimeesi. Boost Key -näppäimen LED-valo syttyy, kun liitetty toiminto on aktivoitu.
-[###MODEL_DEP###][GT-AX6000][GT-AXE16000]BoostKey_desc=Liitä jokin seuraavista toiminnoista LED Key -näppäimeesi.
+[###MODEL_DEP###][GT-AX6000][GT-AX11000_PRO][GT-AXE16000]BoostKey_desc=Liitä jokin seuraavista toiminnoista LED Key -näppäimeesi.
 BoostKey_enable=Enable Game Boost
 BoostKey_Aura_RGB=Aura RGB
 BoostKey_Aura_RGB_desc=Aura-synkronoinnin ohjausta käytetään Aura-ohjaukseen muista ROG-laitteista. Jos se ei ole käytössä, sen sijaan käytetään mukautettua Aura RGB:tä.
-[###MODEL_DEP###][GT-AX6000][GT-AXE16000]BoostKey_Aura_RGB_desc=Press LED Key to turn on/off Aura RGB LED.
+[###MODEL_DEP###][GT-AX6000][GT-AX11000_PRO][GT-AXE16000]BoostKey_Aura_RGB_desc=Press LED Key to turn on/off Aura RGB LED.
 BoostKey_AURA_Shuffle=Aura-sekoitus
 BoostKey_AURA_Shuffle_desc=Aura Shuffle -toiminnon ansiosta voit vaihtaa Aura-valaistusefektiä painamalla Boost Key -näppäintä.
 BoostKey_AURA_state_breathing=Hengitys

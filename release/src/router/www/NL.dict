@@ -3202,7 +3202,7 @@ Setting_remove_passwd=Click on this checkbox if you want to share the config fil
 Settings=Instellingen
 Setup_note=Klik <a id="redirect_to_setup">hier</a> om te wijzigen. Raadpleeg deze <a id="redirect_to_FAQ">FAQ</a> voor meer details.
 Setup_node=Uw knooppunt instellen
-Setup_node_desc_step1=Place your ZVMODELVZ router and node(s) in the same room and at least 1 meter apart during the setup process.
+Setup_node_desc_step1=Plaats tijdens het installatieproces uw ZVMODELVZ router en node(s) in dezelfde ruimte en op minstens 1 meter afstand van elkaar.
 Setup_node_desc_step2=Houd de voeding ingeschakeld en stand-by voor systeeminstelling.
 ShareNode_DeviceName_itemname=Apparaatnaam
 ShareNode_FTPLANG_itemdesc=Kies de correcte taalinstellingen die geschikt zijn voor uw bestandscodering.
@@ -4195,8 +4195,7 @@ FreeWiFi_Image_Empty_Alert=Het afbeeldingsbestand van de splashwebpagina kan nie
 FreeWiFi_Welcome=Welkom bij
 FreeWiFi_Agree_Terms_Service=Ik heb de <span id='terms_service_hyperlink'>servicevoorwaarden</span> gelezen en ga ermee akkoord
 FreeWiFi_Continue=Doorgaan
-VPN_Fusion=Meervoudige VPN-verbinding
-[###MODEL_DEP###][TUF-AX5400][GS-AX5400][GS-AX3000][GT-AXE16000][GT-AXE11000][GT-AX11000_BO4][GT-AX11000_PRO][GT-AX11000][GT-AX6000][GT-AC5300][TUF-AX3000][TUF-AX3000_V2][GT-AC2900_SH][GT-AC2900][GT-AXY16000][RT-AXE7800][RT-AX86U_PRO][GT10]VPN_Fusion=VPN-fusie
+VPN_Fusion=VPN-fusie
 VPN_Fusion_desc1=maakt het mogelijk verbinding te maken met meerdere VPN-servers tegelijk en uw clientapparaten toe te wijzen voor verbinding met verschillende VPN-tunnels. Sommige apparaten zoals set-top boxen, smart TV's en Blu-ray-spelers bieden geen ondersteuning van VPN-software. Deze functie biedt VPN toegang tot dergelijke apparaten in een thuisnetwerk zonder dat u VPN-software hoeft te installeren, terwijl uw smartphone verbonden blijft met internet en niet VPN.
 VPN_Fusion_desc2=Voor gamers bestrijdt de VPN-verbinding DDoS-aanvallen om te verhinderen dat de verbinding van uw pc-game of stream met de gameservers verloren gaat. Het tot stand brengen van een VPN-verbinding kunt u gewoon uw IP-adres wijzigen naar de regio waar de spelserver zich bevindt om uw ping naar gameservers te verbeteren.
 VPN_Fusion_desc_step=Om de starten volgt u de onderstaande stappen:
@@ -4218,8 +4217,7 @@ VPN_Fusion_Deactivate_Delete_Alert=Deactiveer het profiel voordat u het verwijde
 VPN_Fusion_Exception_Policies_Delete_Alert=Alle beleidsuitzonderingen die zijn ingesteld voor een VPN-profiel worden verwijderd wanneer het profiel wordt verwijderd. Weet u zeker dat u het profiel wilt verwijderen?
 VPN_Fusion_Delete_Alert=Weet u zeker dat u dit profiel wilt verwijderen?
 VPN_Fusion_Exception_Policy_And_IP_Binding_Delete_Alert=Het verwijderen van het clientbeleid in de uitzonderingenlijst zal ook de IP-verbinding van de client van de DHCP-server verwijderen. Weet u zeker dat u deze wilt verwijderen?
-VPN_Fusion_FAQ=<a id="faq1" href="" target="_blank" style="font-weight:bolder;text-decoration:underline;">Multiple VPN Connection FAQ.</a>
-[###MODEL_DEP###][TUF-AX5400][GS-AX5400][GS-AX3000][GT-AXE16000][GT-AXE11000][GT-AX11000_BO4][GT-AX11000_PRO][GT-AX11000][GT-AX6000][GT-AC5300][TUF-AX3000][TUF-AX3000_V2][GT-AC2900_SH][GT-AC2900][GT-AXY16000][RT-AXE7800][RT-AX86U_PRO][GT10]VPN_Fusion_FAQ=<a id="faq1" href="" target="_blank" style="font-weight:bolder;text-decoration:underline;">Veelgestelde vragen VPN Fusion.</a>
+VPN_Fusion_FAQ=<a id="faq1" href="" target="_blank" style="font-weight:bolder;text-decoration:underline;">Veelgestelde vragen VPN Fusion.</a>
 VPN_Fusion_Default_Alert=Kan niet worden ingesteld als het standaard WAN voor het doelbeleid.
 Beta_test_only=Beta test only
 FIRM_fupgrade_desc=You can also select [Cancel], the device will automatically start downloading the update during the night time.
@@ -4235,14 +4233,14 @@ LED_Brightness=Led-helderheid
 WiFi_Network_List=WiFi netwerklijst
 Searching_WiFi_Network=Zoeken naar een WiFi netwerk in de buurt...
 BoostKey=Boost-toets
-[###MODEL_DEP###][GT-AX6000][GT-AXE16000]BoostKey=LED-toets
+[###MODEL_DEP###][GT-AX6000][GT-AX11000_PRO][GT-AXE16000]BoostKey=LED-toets
 BoostKey_desc=Koppel een van de volgende functies aan uw Boost-toets (Versterking).
 [###MODEL_DEP###][GT-AC2900]BoostKey_desc=Koppel een van de volgende functies aan uw Boost-toets (Versterking). Wanneer de koppelfunctie werd geactiveerd, licht het Led-indicatielampje van de Boost-toets op.
-[###MODEL_DEP###][GT-AX6000][GT-AXE16000]BoostKey_desc=Koppel een van de volgende functies aan uw LED-toets (Versterking).
+[###MODEL_DEP###][GT-AX6000][GT-AX11000_PRO][GT-AXE16000]BoostKey_desc=Koppel een van de volgende functies aan uw LED-toets (Versterking).
 BoostKey_enable=Enable Game Boost
 BoostKey_Aura_RGB=Aura RGB
 BoostKey_Aura_RGB_desc=Aura-synchronisatieregeling wordt gebruikt om Aura-bediening van andere ROG-apparaten te gebruiken. Als deze optie is uitgeschakeld, wordt aangepaste Aura RGB gebruikt.
-[###MODEL_DEP###][GT-AX6000][GT-AXE16000]BoostKey_Aura_RGB_desc=Press LED Key to turn on/off Aura RGB LED.
+[###MODEL_DEP###][GT-AX6000][GT-AX11000_PRO][GT-AXE16000]BoostKey_Aura_RGB_desc=Press LED Key to turn on/off Aura RGB LED.
 BoostKey_AURA_Shuffle=Aura-shuffle
 BoostKey_AURA_Shuffle_desc=Met Aura Shuffle kunt u het Aura-verlichtingseffect wijzigen door op de Boost-toets te drukken.
 BoostKey_AURA_state_breathing=Ademen

@@ -21,7 +21,7 @@ ifneq "${LIBTOOL}" ""
 #   to build it.
 
 ifeq "${LIBTOOL}" "JLIBTOOL"
-    JLIBTOOL := ${BUILD_DIR}/make/jlibtool
+    JLIBTOOL := ${FRBUILD_DIR}/make/jlibtool
 
     # Add a rule to build jlibtool BEFORE any other targets.  This
     # means that we can use it to build the later targets.
@@ -53,7 +53,7 @@ clean: .libs_clean
 
 .PHONY: .libs_clean
 .libs_clean:
-	@rm -rf ${BUILD_DIR}/.libs/
+	@rm -rf ${FRBUILD_DIR}/.libs/
 
 # Re-define compilers and linkers
 #
@@ -148,7 +148,7 @@ ifeq "${bm_shared_libs}" "yes"
     # RELINL : flags use to build executables that can be run
     #          from the build directory / source tree.
     RPATH_FLAGS := -rpath ${libdir}
-    RELINK_FLAGS := -rpath $(abspath ${BUILD_DIR})/lib/${RELINK}/.libs
+    RELINK_FLAGS := -rpath $(abspath ${FRBUILD_DIR})/lib/${RELINK}/.libs
     
     RELINK_FLAGS_MIN := -rpath ${libdir}
 

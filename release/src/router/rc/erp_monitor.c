@@ -646,6 +646,7 @@ static void erp_standby_mode(int model)
 			break;
 		case MODEL_RTAX58U:
 		case MODEL_TUFAX3000_V2:
+		case MODEL_RTAX82U_V2:
 			eval("wl", "-i", "eth5", "down");
 			eval("wl", "-i", "eth6", "down"); // turn off 5g radio
 			break;
@@ -1024,6 +1025,7 @@ static void ERP_CHECK_MODE()
 		&& model != MODEL_XD4PRO
 		&& model != MODEL_CTAX56_XD4
 		&& model != MODEL_RTAX58U
+		&& model != MODEL_RTAX82U_V2
 		&& model != MODEL_RTAX82_XD6S
 		&& model != MODEL_GT10
 		&& model != MODEL_RTAX58U_V2
@@ -1083,7 +1085,7 @@ static void ERP_CHECK_MODE()
 #if defined(RTCONFIG_QCA)
 	erp_wl_sta_num = erp_check_wl_auth_stat();
 #else
-	if (model == MODEL_GTAC5300 || model == MODEL_RTAX88U || model == MODEL_GTAX11000 || model == MODEL_RTAX92U || model == MODEL_RTAX95Q || model == MODEL_XT8PRO || model == MODEL_XT8_V2 || model == MODEL_RTAXE95Q || model == MODEL_ET8PRO || model == MODEL_RTAX56_XD4 || model == MODEL_XD4PRO || model == MODEL_CTAX56_XD4 || model == MODEL_RTAX58U || model == MODEL_RTAX82_XD6S || model == MODEL_GT10 || model == MODEL_RTAX58U_V2 || model == MODEL_RTAX3000N || model == MODEL_TUFAX3000_V2 || model == MODEL_RTAXE7800 || model == MODEL_RTAX55 || model == MODEL_RTAX56U || model == MODEL_RPAX56 || model == MODEL_RPAX58 || model == MODEL_GTAXE11000 || model == MODEL_RTAX86U_PRO)
+	if (model == MODEL_GTAC5300 || model == MODEL_RTAX88U || model == MODEL_GTAX11000 || model == MODEL_RTAX92U || model == MODEL_RTAX95Q || model == MODEL_XT8PRO || model == MODEL_XT8_V2 || model == MODEL_RTAXE95Q || model == MODEL_ET8PRO || model == MODEL_RTAX56_XD4 || model == MODEL_XD4PRO || model == MODEL_CTAX56_XD4 || model == MODEL_RTAX58U || model == MODEL_RTAX82U_V2 || model == MODEL_RTAX82_XD6S || model == MODEL_GT10 || model == MODEL_RTAX58U_V2 || model == MODEL_RTAX3000N || model == MODEL_TUFAX3000_V2 || model == MODEL_RTAXE7800 || model == MODEL_RTAX55 || model == MODEL_RTAX56U || model == MODEL_RPAX56 || model == MODEL_RPAX58 || model == MODEL_GTAXE11000 || model == MODEL_RTAX86U_PRO)
 		erp_wl_sta_num = erp_check_wl_auth_stat();
 #endif
 
@@ -1215,6 +1217,7 @@ int erp_monitor_main(int argc, char **argv)
 		&& model != MODEL_XD4PRO
 		&& model != MODEL_CTAX56_XD4
 		&& model != MODEL_RTAX58U
+		&& model != MODEL_RTAX82U_V2
 		&& model != MODEL_RTAX82_XD6S
 		&& model != MODEL_GT10
 		&& model != MODEL_RTAX58U_V2

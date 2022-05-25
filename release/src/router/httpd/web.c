@@ -3009,7 +3009,7 @@ void del_upload_icon(char *value) {
 			if(check_if_file_exist(filename))
 				unlink(filename);
 
-			if(md5_obj)
+			if(md5_obj && json_object_get_type(md5_obj) == json_type_object)
 				json_object_object_del(md5_obj, mac_str);
 		}
 	}
@@ -3072,9 +3072,15 @@ void handle_upload_icon(char *value, char *usericon_mac) {
 
 				if((md5_obj = json_object_from_file(USERICON_MD5_FILE)) == NULL)
 					md5_obj = json_object_new_object();
+				else if(json_object_get_type(md5_obj) != json_type_object){
+					json_object_put(md5_obj);
+					md5_obj = json_object_new_object();
+				}
 
 				json_object_object_add(md5_obj, name, json_object_new_string(md5string));
 				json_object_to_file(USERICON_MD5_FILE, md5_obj);
+				if(md5_obj)
+					json_object_put(md5_obj);
 			}
 			FILE *fp;
 			if((fp = fopen(filename, "w")) != NULL) {
@@ -21230,7 +21236,7 @@ do_bandwidth_monitor_ej(char *url, FILE *stream) {
 }
 #endif
 
-#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX6000) || defined(GTAXE16000) || defined(GTAX11000_PRO) || defined(GT10)
+#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX6000) || defined(GTAXE16000) || defined(GTAX11000_PRO) || defined(GT10) || defined(RTAX82U_V2)
 static void
 do_set_ledg_cgi(char *url, FILE *stream) {
 
@@ -21345,7 +21351,7 @@ do_get_usericon_md5_cgi(char *url, FILE *stream) {
 
 	maclist = safe_get_cgi_json("maclist", root);
 
-	if(md5_obj){
+	if(md5_obj && json_object_get_type(md5_obj) == json_type_object){
 		if(strlen(maclist) > 0){
 			md5_mac_obj = json_object_new_object();
 			foreach_62(word, maclist, word_next){
@@ -21856,7 +21862,7 @@ struct mime_handler mime_handlers[] = {
 	{ "set_ookla_speedtest_start_time.cgi", "text/html", no_cache_IE7, do_html_post_and_get, set_ookla_speedtest_start_time_cgi, do_auth },
 #endif
 	{ "del_client_data.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_del_client_data_cgi, do_auth },
-#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX6000) || defined(GTAXE16000) || defined(GTAX11000_PRO) || defined(GT10)
+#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX6000) || defined(GTAXE16000) || defined(GTAX11000_PRO) || defined(GT10) || defined(RTAX82U_V2)
 	{ "set_ledg.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_set_ledg_cgi, do_auth },
 #endif
 #if defined(GTAX6000)
@@ -26900,6 +26906,11 @@ renew_upload_icon(void) {
 
 	if(!check_if_file_exist(USERICON_MD5_FILE) || (md5_obj = json_object_from_file(USERICON_MD5_FILE)) == NULL)
 		md5_obj = json_object_new_object();
+	else if(json_object_get_type(md5_obj) != json_type_object){
+		json_object_put(md5_obj);
+		md5_obj = json_object_new_object();
+	}
+
 
 	while ((entry = readdir(dirp)) != NULL) {
 		if (entry->d_type == DT_REG) { /* If the entry is a regular file */
@@ -32672,7 +32683,7 @@ struct log_pass_url_list log_pass_handlers[] = {
 	{ NULL, NULL }
 };	/* */
 
-#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX6000) || defined(GTAXE16000) || defined(GTAX11000_PRO) || defined(GT10)
+#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX6000) || defined(GTAXE16000) || defined(GTAX11000_PRO) || defined(GT10) || defined(RTAX82U_V2)
 void switch_ledg(int action)
 {
 	switch(action) {

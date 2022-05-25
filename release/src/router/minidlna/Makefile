@@ -37,7 +37,7 @@ LDFLAGS += -L$(TOP)/zlib -L$(TOP)/sqlite/.libs -L$(TOP)/jpeg -L$(TOP)/libvorbis/
 	-L$(TOP)/libogg/src/.libs -L$(TOP)/libexif/libexif/.libs -L$(TOP)/flac/src/libFLAC/.libs \
 	-L$(TOP)/ffmpeg/libavutil -L$(TOP)/ffmpeg/libavcodec -L$(TOP)/ffmpeg/libavformat \
 	-L$(TOP)/libid3tag/.libs
-ifeq ($(or $(RTAC68U),$(RTAX82U),$(GTAX6000)),y)
+ifeq ($(or $(RTAC68U),$(RTAX82U),$(GTAX6000),$(RTAX82U_V2)),y)
 LDFLAGS += -L$(TOP_PLATFORM)/nvram${BCMEX} -lnvram -L$(TOP)/shared -lshared
 endif
 else

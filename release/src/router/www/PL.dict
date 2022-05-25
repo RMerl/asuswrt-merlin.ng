@@ -3202,7 +3202,7 @@ Setting_remove_passwd=Click on this checkbox if you want to share the config fil
 Settings=Ustawienia
 Setup_note=Kliknij <a id="redirect_to_setup">tutaj</a> w celu modyfikacji. Szczegółowe informacje można znaleźć w <a id="redirect_to_FAQ">sekcji często zadawanych pytań</a>.
 Setup_node=Skonfiguruj węzeł
-Setup_node_desc_step1=Place your ZVMODELVZ router and node(s) in the same room and at least 1 meter apart during the setup process.
+Setup_node_desc_step1=W procesie instalacji ustaw swój router ZVMODELVZ i węzły w tym samym pomieszczeniu w odległości co najmniej 1 metra od siebie.
 Setup_node_desc_step2=Utrzymaj tryb zasilania i gotowości w celu konfiguracji systemu.
 ShareNode_DeviceName_itemname=Nazwa urządzenia
 ShareNode_FTPLANG_itemdesc=Wybierz prawidłowe ustawienia języka, odpowiednie do kodowania plików.
@@ -4195,8 +4195,7 @@ FreeWiFi_Image_Empty_Alert=Plik obrazu powitalnej strony internetowej nie może 
 FreeWiFi_Welcome=Zapraszamy!
 FreeWiFi_Agree_Terms_Service=Potwierdzam przeczytanie i akceptację dokumentu <span id='terms_service_hyperlink'>Warunki świadczenia usługi</span>
 FreeWiFi_Continue=Kontynuuj
-VPN_Fusion=Wiele połączeń VPN
-[###MODEL_DEP###][TUF-AX5400][GS-AX5400][GS-AX3000][GT-AXE16000][GT-AXE11000][GT-AX11000_BO4][GT-AX11000_PRO][GT-AX11000][GT-AX6000][GT-AC5300][TUF-AX3000][TUF-AX3000_V2][GT-AC2900_SH][GT-AC2900][GT-AXY16000][RT-AXE7800][RT-AX86U_PRO][GT10]VPN_Fusion=VPN Fusion
+VPN_Fusion=VPN Fusion
 VPN_Fusion_desc1=umożliwia równoczesne połączenie wielu serwerów VPN i przypisanie urządzeń klienta w celu połączenia z różnymi tunelami VPN. Niektóre urządzenia, takie jak przystawki telewizyjne, telewizory typu smart i odtwarzacze Blu-ray nie obsługują oprogramowania VPN. Ta funkcja zapewnia dostęp VPN do takich urządzeń w sieci domowej bez konieczności instalacji oprogramowania VPN, a smartfon pozostaje połączony z Internetem, a nie z VPN.
 VPN_Fusion_desc2=Dla graczy, połączenie VPN zapobiega atakom DDoS, uniemożliwiając rozłączeniu gry PC lub strumienia od serwerów gier. Budowanie połączenia VPN może także uprościć zmianę adresu IP do regionu w którym znajduje się serwer gry, aby poprawić ping do serwerów gier.
 VPN_Fusion_desc_step=Aby rozpocząć należy wykonać wymienione poniżej czynności:
@@ -4218,8 +4217,7 @@ VPN_Fusion_Deactivate_Delete_Alert=Przed usunięciem profil należy wyłączyć.
 VPN_Fusion_Exception_Policies_Delete_Alert=Po usunięciu profilu, usunięte zostaną wszystkie wyjątki zasad ustawione dla profilu VPN. Czy na pewno chcesz usunąć profil?
 VPN_Fusion_Delete_Alert=Czy na pewno chcesz usunąć ten profil?
 VPN_Fusion_Exception_Policy_And_IP_Binding_Delete_Alert=Usunięcie zasad klienta na liście wyjątków, spowoduje także usunięcie powiązania IP klienta serwera DHCP. Czy na pewno chcesz je usunąć?
-VPN_Fusion_FAQ=<a id="faq1" href="" target="_blank" style="font-weight:bolder;text-decoration:underline;">Multiple VPN Connection FAQ.</a>
-[###MODEL_DEP###][TUF-AX5400][GS-AX5400][GS-AX3000][GT-AXE16000][GT-AXE11000][GT-AX11000_BO4][GT-AX11000_PRO][GT-AX11000][GT-AX6000][GT-AC5300][TUF-AX3000][TUF-AX3000_V2][GT-AC2900_SH][GT-AC2900][GT-AXY16000][RT-AXE7800][RT-AX86U_PRO][GT10]VPN_Fusion_FAQ=<a id="faq1" href="" target="_blank" style="font-weight:bolder;text-decoration:underline;">Często zadawane pytania dotyczące funkcji VPN Fusion.</a>
+VPN_Fusion_FAQ=<a id="faq1" href="" target="_blank" style="font-weight:bolder;text-decoration:underline;">Często zadawane pytania dotyczące funkcji VPN Fusion.</a>
 VPN_Fusion_Default_Alert=Nie można ustawić, jako domyślnej sieci WAN dla docelowych zasad.
 Beta_test_only=Beta test only
 FIRM_fupgrade_desc=You can also select [Cancel], the device will automatically start downloading the update during the night time.
@@ -4235,14 +4233,14 @@ LED_Brightness=Jasność podświetlenia LED
 WiFi_Network_List=Lista sieci WiFi
 Searching_WiFi_Network=Wyszukiwanie sieci WiFi w pobliżu...
 BoostKey=Boost Key
-[###MODEL_DEP###][GT-AX6000][GT-AXE16000]BoostKey=LED Key
+[###MODEL_DEP###][GT-AX6000][GT-AX11000_PRO][GT-AXE16000]BoostKey=LED Key
 BoostKey_desc=Przypisz jedną z poniższych funkcji do przycisku Boost Key (Przycisk wzmocnienia).
 [###MODEL_DEP###][GT-AC2900]BoostKey_desc=Przypisz jedną z poniższych funkcji do przycisku Boost Key (Przycisk wzmocnienia). Po uaktywnieniu przypisanej funkcji zaświeci się wskaźnik LED przycisku Boost Key (Przycisk wzmocnienia).
-[###MODEL_DEP###][GT-AX6000][GT-AXE16000]BoostKey_desc=Przypisz jedną z poniższych funkcji do przycisku LED Key (Przycisk wzmocnienia).
+[###MODEL_DEP###][GT-AX6000][GT-AX11000_PRO][GT-AXE16000]BoostKey_desc=Przypisz jedną z poniższych funkcji do przycisku LED Key (Przycisk wzmocnienia).
 BoostKey_enable=Enable Game Boost
 BoostKey_Aura_RGB=Aura RGB
 BoostKey_Aura_RGB_desc=Synchronizacja oświetlenia Aura umożliwia sterowanie nim z innych urządzeń ROG. Jeśli ta opcja jest wyłączona, używane będzie dostosowane oświetlenie Aura RGB.
-[###MODEL_DEP###][GT-AX6000][GT-AXE16000]BoostKey_Aura_RGB_desc=Press LED Key to turn on/off Aura RGB LED.
+[###MODEL_DEP###][GT-AX6000][GT-AX11000_PRO][GT-AXE16000]BoostKey_Aura_RGB_desc=Press LED Key to turn on/off Aura RGB LED.
 BoostKey_AURA_Shuffle=Aura losowo
 BoostKey_AURA_Shuffle_desc=Funkcja Aura Shuffle (Aura losowo) umożliwia zmianę efektu podświetlenia Aura za pomocą przycisku Boost Key (Przycisk wzmocnienia).
 BoostKey_AURA_state_breathing=Pulsujące

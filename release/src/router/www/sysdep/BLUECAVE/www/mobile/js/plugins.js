@@ -1328,6 +1328,18 @@ function setupFronthaulNetwork(_smart_connect){
 				qisPostData.fh_ap_enabled = httpApi.nvramDefaultGet(["fh_ap_enabled"]).fh_ap_enabled;
 				break;
 		}
+
+		switch(parseInt(qisPostData.fh_ap_enabled)){
+			case 0:
+				qisPostData.acs_unii4 = "1";
+				break;
+			case 1:
+				qisPostData.acs_unii4 = "0";
+				break;
+			case 2:
+				qisPostData.acs_unii4 = "0";
+				break;
+		}
 	}
 }
 
@@ -1553,7 +1565,7 @@ var isWANLANChange = function(){
 				var extra_settings = wan_obj.extra_settings;
 				$.each(extra_settings, function(key) {
 					if(qisPostData.hasOwnProperty(key)){
-						if(qisPostData[key] != httpApi.nvramGet([key], true)[key]){
+						if(qisPostData[key] != systemVariable[key]){
 							isChanged = true;
 						}
 					}

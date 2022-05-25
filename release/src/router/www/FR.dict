@@ -3202,7 +3202,7 @@ Setting_remove_passwd=Click on this checkbox if you want to share the config fil
 Settings=Paramètres
 Setup_note=Cliquez <a id="redirect_to_setup">ici</a> pour modifier. Veuillez consulter la <a id="redirect_to_FAQ">FAQ</a> pour plus de détails.
 Setup_node=Configurez votre nœud
-Setup_node_desc_step1=Place your ZVMODELVZ router and node(s) in the same room and at least 1 meter apart during the setup process.
+Setup_node_desc_step1=Placez votre routeur ZVMODELVZ et le ou les nœuds dans la même pièce et à une distance d’au moins 1 mètre lors du processus de configuration.
 Setup_node_desc_step2=Gardez vos appareils sous tension et en attente pendant la configuration du système.
 ShareNode_DeviceName_itemname=Nom du périphérique
 ShareNode_FTPLANG_itemdesc=Sélectionnez les paramètres de langue correct pour votre encodage de fichier.
@@ -4195,8 +4195,7 @@ FreeWiFi_Image_Empty_Alert=Le fichier image de la page internet de démarrage ne
 FreeWiFi_Welcome=Bienvenue sur
 FreeWiFi_Agree_Terms_Service=J'ai lu et j'accepte les <span id='terms_service_hyperlink'>Conditions d'utilisation</span>
 FreeWiFi_Continue=Continuer
-VPN_Fusion=Connexion de plusieurs VPN
-[###MODEL_DEP###][TUF-AX5400][GS-AX5400][GS-AX3000][GT-AXE16000][GT-AXE11000][GT-AX11000_BO4][GT-AX11000_PRO][GT-AX11000][GT-AX6000][GT-AC5300][TUF-AX3000][TUF-AX3000_V2][GT-AC2900_SH][GT-AC2900][GT-AXY16000][RT-AXE7800][RT-AX86U_PRO][GT10]VPN_Fusion=VPN Fusion
+VPN_Fusion=VPN Fusion
 VPN_Fusion_desc1=vous permet de vous connecter à plusieurs serveurs VPN simultanément et d'affecter vos périphériques clients afin qu'ils se connectent à différents tunnels VPN. Certains périphériques tels que les "set-top box", les téléviseurs Smart ainsi que les lecteurs Blu-ray ne prennent pas en charge les logiciels VPN. Cette fonctionnalité fournit un accès VPN à de tels périphériques lorsqu'ils sont situés dans un réseau domestique, sans devoir installer de logiciel VPN, alors que votre smartphone reste connecté à Internet sans VPN.
 VPN_Fusion_desc2=Pour les gamers, la connexion VPN neutralise les attaques de déni de service distribué (DDoS) pour empêcher votre jeu PC ou votre streaming de se déconnecter des serveurs de jeu. Établir une connexion VPN peut aussi tout simplement changer votre adresse IP et la remplacer par une adresse située dans la région où se trouve le serveur de jeu afin d'améliorer votre ping vers les serveurs de jeu.
 VPN_Fusion_desc_step=Pour commencer, suivez les instructions ci-dessous :
@@ -4218,8 +4217,7 @@ VPN_Fusion_Deactivate_Delete_Alert=Veuillez désactiver le profil avant de le su
 VPN_Fusion_Exception_Policies_Delete_Alert=Toutes les exceptions de politique définies pour un profil VPN seront supprimées lors de la suppression du profil en question. Êtes-vous sûr de vouloir supprimer le profil ?
 VPN_Fusion_Delete_Alert=Êtes-vous sûr de vouloir supprimer ce profil ?
 VPN_Fusion_Exception_Policy_And_IP_Binding_Delete_Alert=La suppression de la politique client dans la liste des exceptions supprimera également la liaison d'adresse IP du client avec le serveur DHCP. Êtes-vous sûr de vouloir supprimer ?
-VPN_Fusion_FAQ=<a id="faq1" href="" target="_blank" style="font-weight:bolder;text-decoration:underline;">Multiple VPN Connection FAQ.</a>
-[###MODEL_DEP###][TUF-AX5400][GS-AX5400][GS-AX3000][GT-AXE16000][GT-AXE11000][GT-AX11000_BO4][GT-AX11000_PRO][GT-AX11000][GT-AX6000][GT-AC5300][TUF-AX3000][TUF-AX3000_V2][GT-AC2900_SH][GT-AC2900][GT-AXY16000][RT-AXE7800][RT-AX86U_PRO][GT10]VPN_Fusion_FAQ=<a id="faq1" href="" target="_blank" style="font-weight:bolder;text-decoration:underline;">FAQ VPN Fusion.</a>
+VPN_Fusion_FAQ=<a id="faq1" href="" target="_blank" style="font-weight:bolder;text-decoration:underline;">FAQ VPN Fusion.</a>
 VPN_Fusion_Default_Alert=Configuration en tant que connexion par défaut pour la politique cible impossible.
 Beta_test_only=Beta test only
 FIRM_fupgrade_desc=You can also select [Cancel], the device will automatically start downloading the update during the night time.
@@ -4235,14 +4233,14 @@ LED_Brightness=Luminosité de la LED
 WiFi_Network_List=Liste de réseau WiFi
 Searching_WiFi_Network=Recherche d'un réseau WiFi à proximité en cours...
 BoostKey=Touche Boost
-[###MODEL_DEP###][GT-AX6000][GT-AXE16000]BoostKey=Touche LED
+[###MODEL_DEP###][GT-AX6000][GT-AX11000_PRO][GT-AXE16000]BoostKey=Touche LED
 BoostKey_desc=Liez l’une des fonctions suivantes à votre touche Boost.
 [###MODEL_DEP###][GT-AC2900]BoostKey_desc=Liez l’une des fonctions suivantes à votre touche Boost. Lorsque la fonction liée est activée, la LED de la touche Boost s’allume.
-[###MODEL_DEP###][GT-AX6000][GT-AXE16000]BoostKey_desc=Liez l’une des fonctions suivantes à votre Touche LED.
+[###MODEL_DEP###][GT-AX6000][GT-AX11000_PRO][GT-AXE16000]BoostKey_desc=Liez l’une des fonctions suivantes à votre Touche LED.
 BoostKey_enable=Enable Game Boost
 BoostKey_Aura_RGB=Aura RGB
 BoostKey_Aura_RGB_desc=Le contrôle de synchronisation Aura est utilisé pour obtenir le contrôle Aura d'autres appareils ROG, s'il est désactivé, Aura RGB sera personnalisé.
-[###MODEL_DEP###][GT-AX6000][GT-AXE16000]BoostKey_Aura_RGB_desc=Press LED Key to turn on/off Aura RGB LED.
+[###MODEL_DEP###][GT-AX6000][GT-AX11000_PRO][GT-AXE16000]BoostKey_Aura_RGB_desc=Press LED Key to turn on/off Aura RGB LED.
 BoostKey_AURA_Shuffle=Mélange Aura
 BoostKey_AURA_Shuffle_desc=Aura Shuffle vous permet de modifier votre effet lumineux Aura en appuyant sur la touche Boost.
 BoostKey_AURA_state_breathing=Pulsation

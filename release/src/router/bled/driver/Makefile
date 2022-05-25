@@ -15,7 +15,7 @@ MT7621ESW_MODEL_LIST = $(addprefix _,$(addsuffix _,RT-N56UB1 RT-N56UB2 RT-AC85U 
 MT7628ESW_MODEL_LIST = $(addprefix _,$(addsuffix _,RT-N11P_B1 RT-N10P_V3))
 RTL8370M_MODEL_LIST = $(addprefix _,$(addsuffix _,BRT-AC828 RT-AC88Q RT-AC88S RT-AD7200))
 DAKOTA_MODEL_LIST = $(addprefix _,$(addsuffix _,RT-AC58U 4G-AC53U RT-AC82U))
-DUMMY_SWITCH_MODEL_LIST = $(addprefix _,$(addsuffix _,RT-AC88N PL-AX56_XP4 ETJ))
+DUMMY_SWITCH_MODEL_LIST = $(addprefix _,$(addsuffix _,RT-AC88N PL-AX56_XP4 ETJ RT-AX57Q))
 
 _BUILD_NAME_ = $(addprefix _,$(addsuffix _,$(BUILD_NAME)))
 

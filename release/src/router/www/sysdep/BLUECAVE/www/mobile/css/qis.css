@@ -667,7 +667,7 @@ a{
 }
 .ap_ssid{
 	display: table-cell;
-	width: 100%;
+	width: 80%;
 	padding-left: 20px;
 	color: #DBDBDB;
 	cursor: pointer;

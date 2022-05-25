@@ -3202,7 +3202,7 @@ Setting_remove_passwd=Click on this checkbox if you want to share the config fil
 Settings=Ayarlar
 Setup_note=Değiştirmek için <a id="redirect_to_setup">Buraya</a> tıklayın. Daha fazla bilgi için lütfen bu <a id="redirect_to_FAQ">SSS bölümüne</a> bakın.
 Setup_node=Düğümünüzü Ayarlama
-Setup_node_desc_step1=Place your ZVMODELVZ router and node(s) in the same room and at least 1 meter apart during the setup process.
+Setup_node_desc_step1=Kurulum işlemi sırasında lütfen ZVMODELVZ yönlendiricinizi ve düğümü/düğümleri aynı odaya en az 1 metre ara bırakarak yerleştirin.
 Setup_node_desc_step2=Gücü açık tutun ve sistem ayarları için bekleyin.
 ShareNode_DeviceName_itemname=Aygıt Adı
 ShareNode_FTPLANG_itemdesc=Dosya şifrelemeniz için uygun olan doğru dil ayarlarını seçin.
@@ -4195,8 +4195,7 @@ FreeWiFi_Image_Empty_Alert=Giriş web sayfasının görüntü dosyası boş olam
 FreeWiFi_Welcome=Hoş Geldiniz
 FreeWiFi_Agree_Terms_Service=<span id='terms_service_hyperlink'>Hizmet Hükümleri</span> içeriğini okudum ve kabul ediyorum
 FreeWiFi_Continue=Devam
-VPN_Fusion=Çoklu VPN Bağlantısı
-[###MODEL_DEP###][TUF-AX5400][GS-AX5400][GS-AX3000][GT-AXE16000][GT-AXE11000][GT-AX11000_BO4][GT-AX11000_PRO][GT-AX11000][GT-AX6000][GT-AC5300][TUF-AX3000][TUF-AX3000_V2][GT-AC2900_SH][GT-AC2900][GT-AXY16000][RT-AXE7800][RT-AX86U_PRO][GT10]VPN_Fusion=VPN Fusion
+VPN_Fusion=VPN Fusion
 VPN_Fusion_desc1=birden fazla VPN sunucusuna aynı anda bağlanmanıza ve istemci aygıtlarınızı farklı VPN tünellerine bağlanmak üzere atamanıza olanak tanır. Set üstü aygıtlar, akıllı televizyonlar ve Blu-ray oynatıcılar gibi bazı aygıtlar VPN yazılımını desteklemez. Bu özellik, akıllı telefonunuz VPN'ye değil Internet'e bağlı olmaya devam ederken, VPN yazılımı yüklemek zorunda kalmadan bir ev ağındaki bu tür aygıtlara VPN erişimi sağlar.
 VPN_Fusion_desc2=Oyuncular açısından, VPN bağlantısı, bilgisayar oyununun veya akışın oyun sunucularıyla bağlantısının kesilmesini önlemek için DDoS saldırılarına karşı koyar. Bir VPN bağlantısı oluşturmak, oyun sunucularına yönelik ping durumunuzu iyileştirmek için, IP adresinizi oyun sunucusunun bulunduğu bölgeye de değiştirebilir.
 VPN_Fusion_desc_step=Başlamak için lütfen aşağıdaki adımları izleyin:
@@ -4218,8 +4217,7 @@ VPN_Fusion_Deactivate_Delete_Alert=Silmeden önce lütfen profili devre dışı 
 VPN_Fusion_Exception_Policies_Delete_Alert=Bir VPN profili için ayarlanan tüm ilke özel durumları, profil silindiğinde kaldırılacaktır. Profili silmek istediğinizden emin misiniz?
 VPN_Fusion_Delete_Alert=Bu profili silmek istediğinizden emin misiniz?
 VPN_Fusion_Exception_Policy_And_IP_Binding_Delete_Alert=Özel durum listesinde istemcinin ilkesini silmek, DHCP Sunucusunun istemcinin IP ilişkilendirmesini de silecektir. Bunu silmek istediğinizden emin misiniz?
-VPN_Fusion_FAQ=<a id="faq1" href="" target="_blank" style="font-weight:bolder;text-decoration:underline;">Multiple VPN Connection FAQ.</a>
-[###MODEL_DEP###][TUF-AX5400][GS-AX5400][GS-AX3000][GT-AXE16000][GT-AXE11000][GT-AX11000_BO4][GT-AX11000_PRO][GT-AX11000][GT-AX6000][GT-AC5300][TUF-AX3000][TUF-AX3000_V2][GT-AC2900_SH][GT-AC2900][GT-AXY16000][RT-AXE7800][RT-AX86U_PRO][GT10]VPN_Fusion_FAQ=<a id="faq1" href="" target="_blank" style="font-weight:bolder;text-decoration:underline;">VPN Fusion SSS.</a>
+VPN_Fusion_FAQ=<a id="faq1" href="" target="_blank" style="font-weight:bolder;text-decoration:underline;">VPN Fusion SSS.</a>
 VPN_Fusion_Default_Alert=Hedef ilke için varsayılan WAN olarak ayarlanamaz.
 Beta_test_only=Beta test only
 FIRM_fupgrade_desc=You can also select [Cancel], the device will automatically start downloading the update during the night time.
@@ -4235,14 +4233,14 @@ LED_Brightness=LED Parlaklığı
 WiFi_Network_List=WiFi ağ listesi
 Searching_WiFi_Network=Yakındaki WiFi ağı için arıyor...
 BoostKey=Destek Anahtarı
-[###MODEL_DEP###][GT-AX6000][GT-AXE16000]BoostKey=LED Anahtarı
+[###MODEL_DEP###][GT-AX6000][GT-AX11000_PRO][GT-AXE16000]BoostKey=LED Anahtarı
 BoostKey_desc=Aşağıdaki işlevlerden birini Destek Anahtarınıza bağlayın.
 [###MODEL_DEP###][GT-AC2900]BoostKey_desc=Aşağıdaki işlevlerden birini Destek Anahtarınıza bağlayın. Sınırlama işlevi etkinleştirildiğinde, Destek Anahtarının LED'i yanacaktır.
-[###MODEL_DEP###][GT-AX6000][GT-AXE16000]BoostKey_desc=Aşağıdaki işlevlerden birini LED Anahtarınıza bağlayın.
+[###MODEL_DEP###][GT-AX6000][GT-AX11000_PRO][GT-AXE16000]BoostKey_desc=Aşağıdaki işlevlerden birini LED Anahtarınıza bağlayın.
 BoostKey_enable=Enable Game Boost
 BoostKey_Aura_RGB=Aura RGB
 BoostKey_Aura_RGB_desc=Aura senkronizasyon kontrolü, diğer ROG cihazlarından Auro kontrolü almak için kullanılır; devre dışı bırakıldığında, özelleştirilmiş Aura RGB olacaktır.
-[###MODEL_DEP###][GT-AX6000][GT-AXE16000]BoostKey_Aura_RGB_desc=Press LED Key to turn on/off Aura RGB LED.
+[###MODEL_DEP###][GT-AX6000][GT-AX11000_PRO][GT-AXE16000]BoostKey_Aura_RGB_desc=Press LED Key to turn on/off Aura RGB LED.
 BoostKey_AURA_Shuffle=Aura Karıştır
 BoostKey_AURA_Shuffle_desc=Aura Shuffle, Destek Anahtarına basarak Aura aydınlatma efektinizi değiştirmenize olanak sağlar.
 BoostKey_AURA_state_breathing=Yanıp sönme

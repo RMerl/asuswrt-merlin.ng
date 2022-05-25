@@ -118,7 +118,8 @@ static rlm_rcode_t mod_post_auth(void *instance, REQUEST *request)
 	rlm_wimax_t *inst = instance;
 	VALUE_PAIR *msk, *emsk, *vp;
 	VALUE_PAIR *mn_nai, *ip, *fa_rk;
-	HMAC_CTX hmac;
+	HMAC_CTX *hmac=NULL;
+	hmac= HMAC_CTX_new();
 	unsigned int rk1_len, rk2_len, rk_len;
 	uint32_t mip_spi;
 	uint8_t usage_data[24];
@@ -157,20 +158,20 @@ static rlm_rcode_t mod_post_auth(void *instance, REQUEST *request)
 	/*
 	 *	MIP-RK-1 = HMAC-SSHA256(EMSK, usage-data | 0x01)
 	 */
-	HMAC_CTX_init(&hmac);
-	HMAC_Init_ex(&hmac, emsk->vp_octets, emsk->length, EVP_sha256(), NULL);
+	HMAC_CTX_init(hmac);
+	HMAC_Init_ex(hmac, emsk->vp_octets, emsk->length, EVP_sha256(), NULL);
 
-	HMAC_Update(&hmac, &usage_data[0], sizeof(usage_data));
-	HMAC_Final(&hmac, &mip_rk_1[0], &rk1_len);
+	HMAC_Update(hmac, &usage_data[0], sizeof(usage_data));
+	HMAC_Final(hmac, &mip_rk_1[0], &rk1_len);
 
 	/*
 	 *	MIP-RK-2 = HMAC-SSHA256(EMSK, MIP-RK-1 | usage-data | 0x01)
 	 */
-	HMAC_Init_ex(&hmac, emsk->vp_octets, emsk->length, EVP_sha256(), NULL);
+	HMAC_Init_ex(hmac, emsk->vp_octets, emsk->length, EVP_sha256(), NULL);
 
-	HMAC_Update(&hmac, (uint8_t const *) &mip_rk_1, rk1_len);
-	HMAC_Update(&hmac, &usage_data[0], sizeof(usage_data));
-	HMAC_Final(&hmac, &mip_rk_2[0], &rk2_len);
+	HMAC_Update(hmac, (uint8_t const *) &mip_rk_1, rk1_len);
+	HMAC_Update(hmac, &usage_data[0], sizeof(usage_data));
+	HMAC_Final(hmac, &mip_rk_2[0], &rk2_len);
 
 	memcpy(mip_rk, mip_rk_1, rk1_len);
 	memcpy(mip_rk + rk1_len, mip_rk_2, rk2_len);
@@ -179,10 +180,10 @@ static rlm_rcode_t mod_post_auth(void *instance, REQUEST *request)
 	/*
 	 *	MIP-SPI = HMAC-SSHA256(MIP-RK, "SPI CMIP PMIP");
 	 */
-	HMAC_Init_ex(&hmac, mip_rk, rk_len, EVP_sha256(), NULL);
+	HMAC_Init_ex(hmac, mip_rk, rk_len, EVP_sha256(), NULL);
 
-	HMAC_Update(&hmac, (uint8_t const *) "SPI CMIP PMIP", 12);
-	HMAC_Final(&hmac, &mip_rk_1[0], &rk1_len);
+	HMAC_Update(hmac, (uint8_t const *) "SPI CMIP PMIP", 12);
+	HMAC_Final(hmac, &mip_rk_1[0], &rk1_len);
 
 	/*
 	 *	Take the 4 most significant octets.
@@ -242,12 +243,12 @@ static rlm_rcode_t mod_post_auth(void *instance, REQUEST *request)
 		 *	MN-HA-PMIP4 =
 		 *	   H(MIP-RK, "PMIP4 MN HA" | HA-IPv4 | MN-NAI);
 		 */
-		HMAC_Init_ex(&hmac, mip_rk, rk_len, EVP_sha1(), NULL);
+		HMAC_Init_ex(hmac, mip_rk, rk_len, EVP_sha1(), NULL);
 
-		HMAC_Update(&hmac, (uint8_t const *) "PMIP4 MN HA", 11);
-		HMAC_Update(&hmac, (uint8_t const *) &ip->vp_ipaddr, 4);
-		HMAC_Update(&hmac, (uint8_t const *) &mn_nai->vp_strvalue, mn_nai->length);
-		HMAC_Final(&hmac, &mip_rk_1[0], &rk1_len);
+		HMAC_Update(hmac, (uint8_t const *) "PMIP4 MN HA", 11);
+		HMAC_Update(hmac, (uint8_t const *) &ip->vp_ipaddr, 4);
+		HMAC_Update(hmac, (uint8_t const *) &mn_nai->vp_strvalue, mn_nai->length);
+		HMAC_Final(hmac, &mip_rk_1[0], &rk1_len);
 
 		/*
 		 *	Put MN-HA-PMIP4 into WiMAX-MN-hHA-MIP4-Key
@@ -292,12 +293,12 @@ static rlm_rcode_t mod_post_auth(void *instance, REQUEST *request)
 		 *	MN-HA-CMIP4 =
 		 *	   H(MIP-RK, "CMIP4 MN HA" | HA-IPv4 | MN-NAI);
 		 */
-		HMAC_Init_ex(&hmac, mip_rk, rk_len, EVP_sha1(), NULL);
+		HMAC_Init_ex(hmac, mip_rk, rk_len, EVP_sha1(), NULL);
 
-		HMAC_Update(&hmac, (uint8_t const *) "CMIP4 MN HA", 11);
-		HMAC_Update(&hmac, (uint8_t const *) &ip->vp_ipaddr, 4);
-		HMAC_Update(&hmac, (uint8_t const *) &mn_nai->vp_strvalue, mn_nai->length);
-		HMAC_Final(&hmac, &mip_rk_1[0], &rk1_len);
+		HMAC_Update(hmac, (uint8_t const *) "CMIP4 MN HA", 11);
+		HMAC_Update(hmac, (uint8_t const *) &ip->vp_ipaddr, 4);
+		HMAC_Update(hmac, (uint8_t const *) &mn_nai->vp_strvalue, mn_nai->length);
+		HMAC_Final(hmac, &mip_rk_1[0], &rk1_len);
 
 		/*
 		 *	Put MN-HA-CMIP4 into WiMAX-MN-hHA-MIP4-Key
@@ -342,12 +343,12 @@ static rlm_rcode_t mod_post_auth(void *instance, REQUEST *request)
 		 *	MN-HA-CMIP6 =
 		 *	   H(MIP-RK, "CMIP6 MN HA" | HA-IPv6 | MN-NAI);
 		 */
-		HMAC_Init_ex(&hmac, mip_rk, rk_len, EVP_sha1(), NULL);
+		HMAC_Init_ex(hmac, mip_rk, rk_len, EVP_sha1(), NULL);
 
-		HMAC_Update(&hmac, (uint8_t const *) "CMIP6 MN HA", 11);
-		HMAC_Update(&hmac, (uint8_t const *) &ip->vp_ipv6addr, 16);
-		HMAC_Update(&hmac, (uint8_t const *) &mn_nai->vp_strvalue, mn_nai->length);
-		HMAC_Final(&hmac, &mip_rk_1[0], &rk1_len);
+		HMAC_Update(hmac, (uint8_t const *) "CMIP6 MN HA", 11);
+		HMAC_Update(hmac, (uint8_t const *) &ip->vp_ipv6addr, 16);
+		HMAC_Update(hmac, (uint8_t const *) &mn_nai->vp_strvalue, mn_nai->length);
+		HMAC_Final(hmac, &mip_rk_1[0], &rk1_len);
 
 		/*
 		 *	Put MN-HA-CMIP6 into WiMAX-MN-hHA-MIP6-Key
@@ -389,11 +390,11 @@ static rlm_rcode_t mod_post_auth(void *instance, REQUEST *request)
 	 */
 	fa_rk = pairfind(request->reply->vps, 14, VENDORPEC_WIMAX, TAG_ANY);
 	if (fa_rk && (fa_rk->length <= 1)) {
-		HMAC_Init_ex(&hmac, mip_rk, rk_len, EVP_sha1(), NULL);
+		HMAC_Init_ex(hmac, mip_rk, rk_len, EVP_sha1(), NULL);
 
-		HMAC_Update(&hmac, (uint8_t const *) "FA-RK", 5);
+		HMAC_Update(hmac, (uint8_t const *) "FA-RK", 5);
 
-		HMAC_Final(&hmac, &mip_rk_1[0], &rk1_len);
+		HMAC_Final(hmac, &mip_rk_1[0], &rk1_len);
 
 		pairmemcpy(fa_rk, &mip_rk_1[0], rk1_len);
 	}
@@ -447,8 +448,8 @@ static rlm_rcode_t mod_post_auth(void *instance, REQUEST *request)
 	/*
 	 *	Wipe the context of all sensitive information.
 	 */
-	HMAC_CTX_cleanup(&hmac);
-
+	//HMAC_CTX_cleanup(hmac);
+	HMAC_CTX_free(hmac);
 	return RLM_MODULE_UPDATED;
 }
 

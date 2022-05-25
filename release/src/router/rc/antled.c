@@ -104,7 +104,7 @@ static void antled_init()
 	int cled_gpio[4] = { 18, 19, 20, 21 };
 
 	for (i = 0; i < 4; i++)
-		cled_set(cled_gpio[i], 0xa000, 0x0, 0x0, 0x0);
+		cled_set(cled_gpio[i], CLED_BRIGHTNESS_ON, 0x0, 0x0, 0x0);
 }
 
 static void antled_alarmtimer()

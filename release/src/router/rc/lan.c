@@ -396,23 +396,23 @@ void start_wl(void)
 					continue;
 
 				is_client |= wl_client(unit, subunit) && nvram_get_int(wl_nvname("radio", unit, 0));
-
+#ifdef CONFIG_BCMWL5
 				snprintf(prefix, sizeof(prefix), "wl%d_", unit);
-				if (nvram_match(strcat_r(prefix, "radio", tmp), "0"))
-				{
+				if (nvram_match(strcat_r(prefix, "radio", tmp), "0")
+#if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
+					|| psta_exist_except(unit)
+#endif
+				) {
 					nvram_set_int(strcat_r(prefix, "timesched", tmp2), 0);	// disable wifi time-scheduler
 #ifdef GT10
 					ledbh_war(ifname);
 #endif
 					eval("wlconf", ifname, "down");
 					eval("wl", "-i", ifname, "radio", "off");
-				}
-				else
-#if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
-				if (!psta_exist_except(unit)/* && !psr_exist_except(unit)*/)
-#endif
+				} else
 					eval("wlconf", ifname, "start"); /* start wl iface */
 				wlconf_post(ifname);
+#endif	// CONFIG_BCMWL5
 			}
 			free(lan_ifnames);
 		}
@@ -1333,6 +1333,12 @@ void start_lan(void)
 	led_control(LED_5G, LED_ON);
 	led_control(LED_2G, LED_ON);
 #endif
+#endif
+
+#ifdef RTAX82U_V2
+	// configure 6715 GPIO direction
+	eval("wl", "-i", "eth6", "gpioout", "0x2002", "0x2002");
+	eval("wl", "-i", "eth6", "ledbh", "13", "7");
 #endif
 
 #ifdef RTAXE7800
@@ -5217,22 +5223,20 @@ void restart_wl(void)
 				continue;
 
 			is_client |= wl_client(unit, subunit) && nvram_get_int(wl_nvname("radio", unit, 0));
-
 #ifdef CONFIG_BCMWL5
 			snprintf(prefix, sizeof(prefix), "wl%d_", unit);
-			if (nvram_match(strcat_r(prefix, "radio", tmp), "0"))
-			{
+			if (nvram_match(strcat_r(prefix, "radio", tmp), "0")
+#if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
+				|| psta_exist_except(unit)
+#endif
+			) {
 				nvram_set_int(strcat_r(prefix, "timesched", tmp2), 0);	// disable wifi time-scheduler
 #ifdef GT10
 				ledbh_war(ifname);
 #endif
 				eval("wlconf", ifname, "down");
 				eval("wl", "-i", ifname, "radio", "off");
-			}
-			else
-#if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
-			if (!psta_exist_except(unit)/* && !psr_exist_except(unit)*/)
-#endif
+			} else
 				eval("wlconf", ifname, "start"); /* start wl iface */
 			wlconf_post(ifname);
 #endif	// CONFIG_BCMWL5

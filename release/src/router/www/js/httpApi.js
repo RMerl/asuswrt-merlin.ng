@@ -939,7 +939,7 @@ var httpApi ={
 		else if(tcode != undefined && tcode != ""){
 			if(transformName == "RT-AX86U" && tcode == "GD/01")
 				transformName = "RT-AX86U_GD01";
-			else if(transformName == "RT-AX82U" && tcode == "GD/01")
+			else if((transformName == "RT-AX82U" || transformName == "RT-AX82U_V2") && tcode == "GD/01")
 				transformName = "RT-AX82U_GD01";
 		}
 		return transformName;

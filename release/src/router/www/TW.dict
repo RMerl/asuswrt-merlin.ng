@@ -3202,7 +3202,7 @@ Setting_remove_passwd=如果您想分享設定檔以供故障排除，請在方�
 Settings=設定
 Setup_note=點選<a id="redirect_to_setup">此處</a>進行設定；更多資訊，請參考 <a id="redirect_to_FAQ">「常見問題解答」</a>。
 Setup_node=設定節點
-Setup_node_desc_step1=Place your ZVMODELVZ router and node(s) in the same room and at least 1 meter apart during the setup process.
+Setup_node_desc_step1=在安裝過程中，請將您的 ZVMODELVZ 路由器和節點放在同一房室且至少相距 1 公尺。
 Setup_node_desc_step2=設定系統時，請保持路由器處於通電及待機狀態。
 ShareNode_DeviceName_itemname=裝置名稱
 ShareNode_FTPLANG_itemdesc=依據磁碟內檔名的編碼，選擇適合FTP伺服器的語系。
@@ -4195,8 +4195,7 @@ FreeWiFi_Image_Empty_Alert=請設定初始頁面的背景圖片檔。
 FreeWiFi_Welcome=歡迎
 FreeWiFi_Agree_Terms_Service=我已閱讀並同意 <span id='terms_service_hyperlink'>服務條款</span>
 FreeWiFi_Continue=繼續
-VPN_Fusion=多個 VPN 連線
-[###MODEL_DEP###][TUF-AX5400][GS-AX5400][GS-AX3000][GT-AXE16000][GT-AXE11000][GT-AX11000_BO4][GT-AX11000_PRO][GT-AX11000][GT-AX6000][GT-AC5300][TUF-AX3000][TUF-AX3000_V2][GT-AC2900_SH][GT-AC2900][GT-AXY16000][RT-AXE7800][RT-AX86U_PRO][GT10]VPN_Fusion=VPN Fusion
+VPN_Fusion=VPN Fusion
 VPN_Fusion_desc1=可讓您同時連線至多個 VPN 伺服器，並指定您的用戶端裝置連線至不同的 VPN 隧道。某些裝置，如機頂盒、智慧型電視及藍光播放器不支援 VPN 軟體。此功能讓您無需安裝 VPN 軟體即可在家庭網路中透過 VPN 存取用戶端裝置，而您的智慧型裝置則不是透過 VPN 連線，而是仍然透過一般網路連線。
 VPN_Fusion_desc2=對於玩家來說， VPN 連線能夠抵禦 DDoS 攻擊以保障 PC 遊戲或錄影正常進行，而不會與遊戲伺服器中斷連線。建立 VPN 連線還能夠將您的 IP 位址更改至遊戲伺服器的位址，以優化遊戲伺服器的 Ping 回應時間。
 VPN_Fusion_desc_step=請依照下列步驟設定：
@@ -4218,8 +4217,7 @@ VPN_Fusion_Deactivate_Delete_Alert=刪除例外清單前請先終止設定檔。
 VPN_Fusion_Exception_Policies_Delete_Alert=刪除設定檔後，所有此 VPN 設定檔相關的例外設定也將被刪除。確定要刪除此設定檔？
 VPN_Fusion_Delete_Alert=確定要刪除此設定檔？
 VPN_Fusion_Exception_Policy_And_IP_Binding_Delete_Alert=刪除用戶端例外清單中的原則將會同時刪除用戶端 DHCP 伺服器的 IP 綁定。確定刪除？
-VPN_Fusion_FAQ=<a id="faq1" href="" target="_blank" style="font-weight:bolder;text-decoration:underline;">Multiple VPN Connection FAQ.</a>
-[###MODEL_DEP###][TUF-AX5400][GS-AX5400][GS-AX3000][GT-AXE16000][GT-AXE11000][GT-AX11000_BO4][GT-AX11000_PRO][GT-AX11000][GT-AX6000][GT-AC5300][TUF-AX3000][TUF-AX3000_V2][GT-AC2900_SH][GT-AC2900][GT-AXY16000][RT-AXE7800][RT-AX86U_PRO][GT10]VPN_Fusion_FAQ=<a id="faq1" href="" target="_blank" style="font-weight:bolder;text-decoration:underline;">VPN Fusion 疑難解答</a>
+VPN_Fusion_FAQ=<a id="faq1" href="" target="_blank" style="font-weight:bolder;text-decoration:underline;">VPN Fusion 疑難解答</a>
 VPN_Fusion_Default_Alert=無法設定為目標原則的預設連線。
 Beta_test_only=Beta test only
 FIRM_fupgrade_desc=或是按下[取消]，系統將於夜間自動更新。
@@ -4235,14 +4233,14 @@ LED_Brightness=LED 指示燈亮度
 WiFi_Network_List=WiFi 網路清單
 Searching_WiFi_Network=正在搜尋附近的 WiFi 網路……
 BoostKey=Boost Key
-[###MODEL_DEP###][GT-AX6000][GT-AXE16000]BoostKey=LED Key
+[###MODEL_DEP###][GT-AX6000][GT-AX11000_PRO][GT-AXE16000]BoostKey=LED Key
 BoostKey_desc=選擇以下功能與 Boost Key 綁定。
 [###MODEL_DEP###][GT-AC2900]BoostKey_desc=選擇以下功能與 Boost Key 綁定。當 Boost Key 指示燈亮起後，綁定的功能即開始運作。
-[###MODEL_DEP###][GT-AX6000][GT-AXE16000]BoostKey_desc=選擇以下功能與 LED Key 綁定。
+[###MODEL_DEP###][GT-AX6000][GT-AX11000_PRO][GT-AXE16000]BoostKey_desc=選擇以下功能與 LED Key 綁定。
 BoostKey_enable=Enable Game Boost
 BoostKey_Aura_RGB=Aura RGB
 BoostKey_Aura_RGB_desc=Aura 同步控制可用於從其他 ROG 裝置取得 Aura 控制，如果停用，將會是自訂的 Aura RGB。
-[###MODEL_DEP###][GT-AX6000][GT-AXE16000]BoostKey_Aura_RGB_desc=Press LED Key to turn on/off Aura RGB LED.
+[###MODEL_DEP###][GT-AX6000][GT-AX11000_PRO][GT-AXE16000]BoostKey_Aura_RGB_desc=Press LED Key to turn on/off Aura RGB LED.
 BoostKey_AURA_Shuffle=Aura Shuffle
 BoostKey_AURA_Shuffle_desc=當您按下 Boost Key 時，Aura Shuffle 會改變 LED 燈效。
 BoostKey_AURA_state_breathing=呼吸燈

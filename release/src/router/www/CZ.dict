@@ -3202,7 +3202,7 @@ Setting_remove_passwd=Click on this checkbox if you want to share the config fil
 Settings=Nastavení
 Setup_note=Klikněte <a id="redirect_to_setup">zde</a> a upravte. Další podrobnosti najdete v <a id="redirect_to_FAQ">těchto odpovědích na časté dotazy</a>.
 Setup_node=Nastavte svůj uzel
-Setup_node_desc_step1=Place your ZVMODELVZ router and node(s) in the same room and at least 1 meter apart during the setup process.
+Setup_node_desc_step1=Během nastavení umístěte router a uzly ZVMODELVZ do stejné místnosti a alespoň 1 metr od sebe.
 Setup_node_desc_step2=Zachovejte zapnuté napájení a pohotovost pro systémová nastavení.
 ShareNode_DeviceName_itemname=Název zařízení
 ShareNode_FTPLANG_itemdesc=Zvolte správná nastavení jazyka, která jsou vhodná pro vaše kódování souborů.
@@ -4195,8 +4195,7 @@ FreeWiFi_Image_Empty_Alert=Soubor s obrázkem z úvodní webové stránky nemů�
 FreeWiFi_Welcome=Vítá vás
 FreeWiFi_Agree_Terms_Service=Přečetl/a jsem si a souhlasím s <span id='terms_service_hyperlink'>Podmínkami služby </span>
 FreeWiFi_Continue=Pokračovat
-VPN_Fusion=Připojení k vícero VPN
-[###MODEL_DEP###][TUF-AX5400][GS-AX5400][GS-AX3000][GT-AXE16000][GT-AXE11000][GT-AX11000_BO4][GT-AX11000_PRO][GT-AX11000][GT-AX6000][GT-AC5300][TUF-AX3000][TUF-AX3000_V2][GT-AC2900_SH][GT-AC2900][GT-AXY16000][RT-AXE7800][RT-AX86U_PRO][GT10]VPN_Fusion=Fúze VPN
+VPN_Fusion=Fúze VPN
 VPN_Fusion_desc1=umožňuje připojení k vícero serverům VPN současně a přiřazení zařízení pro připojení k různým tunelům VPN. Některá zařízení jako set-top boxy, chytré TV a Blu-ray přehrávače nepodporují software VPN. Tato funkce poskytuje přístup VPN k takovým zařízením v domácí síti bez nutnosti instalace softwaru VPN, zatímco váš smartphone zůstává připojen k internetu, nikoli k VPN.
 VPN_Fusion_desc2=U Gamer připojení VPN působí proti DDoS útokům tak, aby nedošlo k odpojení vaší PC hry nebo streamu od herních serverů. Vybudování připojení VPN může také změnit vaši IP adresu na region, kde se nachází herní server, pro zlepšení vašeho ping na herní servery.
 VPN_Fusion_desc_step=Pro zahájení prosím postupujte podle kroků níže:
@@ -4218,8 +4217,7 @@ VPN_Fusion_Deactivate_Delete_Alert=Před smazáním profilu prosím profil deakt
 VPN_Fusion_Exception_Policies_Delete_Alert=Veškeré výjimky ze zásad pro profil VPN budou při smazání profilu odstraněny. Opravdu chcete profil odstranit?
 VPN_Fusion_Delete_Alert=Opravdu chcete tento profil odstranit?
 VPN_Fusion_Exception_Policy_And_IP_Binding_Delete_Alert=Smazáním zásady klienta v seznamu výjimek smažete také klientovu IP vazbu serveru DHCP. Opravdu toto chcete odstranit?
-VPN_Fusion_FAQ=<a id="faq1" href="" target="_blank" style="font-weight:bolder;text-decoration:underline;">Multiple VPN Connection FAQ.</a>
-[###MODEL_DEP###][TUF-AX5400][GS-AX5400][GS-AX3000][GT-AXE16000][GT-AXE11000][GT-AX11000_BO4][GT-AX11000_PRO][GT-AX11000][GT-AX6000][GT-AC5300][TUF-AX3000][TUF-AX3000_V2][GT-AC2900_SH][GT-AC2900][GT-AXY16000][RT-AXE7800][RT-AX86U_PRO][GT10]VPN_Fusion_FAQ=<a id="faq1" href="" target="_blank" style="font-weight:bolder;text-decoration:underline;">Často kladené dotazy k fúzi VPN.</a>
+VPN_Fusion_FAQ=<a id="faq1" href="" target="_blank" style="font-weight:bolder;text-decoration:underline;">Často kladené dotazy k fúzi VPN.</a>
 VPN_Fusion_Default_Alert=Nelze nastavit jako výchozí WAN pro cílovou zásadu.
 Beta_test_only=Beta test only
 FIRM_fupgrade_desc=You can also select [Cancel], the device will automatically start downloading the update during the night time.
@@ -4235,14 +4233,14 @@ LED_Brightness=Jas LED
 WiFi_Network_List=Seznam sítí WiFi
 Searching_WiFi_Network=Hledání okolní sítě WiFi...
 BoostKey=Boost Key
-[###MODEL_DEP###][GT-AX6000][GT-AXE16000]BoostKey=LED Key
+[###MODEL_DEP###][GT-AX6000][GT-AX11000_PRO][GT-AXE16000]BoostKey=LED Key
 BoostKey_desc=Vytvořte vazbu mezi některou z následujících funkcí a tlačítkem Boost Key.
 [###MODEL_DEP###][GT-AC2900]BoostKey_desc=Vytvořte vazbu mezi některou z následujících funkcí a tlačítkem Boost Key. Když je navázaná funkce aktivována, rozsvítí se indikátor LED tlačítka Boost Key.
-[###MODEL_DEP###][GT-AX6000][GT-AXE16000]BoostKey_desc=Vytvořte vazbu mezi některou z následujících funkcí a tlačítkem LED Key.
+[###MODEL_DEP###][GT-AX6000][GT-AX11000_PRO][GT-AXE16000]BoostKey_desc=Vytvořte vazbu mezi některou z následujících funkcí a tlačítkem LED Key.
 BoostKey_enable=Enable Game Boost
 BoostKey_Aura_RGB=Aura RGB
 BoostKey_Aura_RGB_desc=Ovládání synchronizace Aura se používání pro ovládání funkce Aura z ostatních zařízení ROG; je-li tato funkce zakázána, lze Aura RGB upravit.
-[###MODEL_DEP###][GT-AX6000][GT-AXE16000]BoostKey_Aura_RGB_desc=Press LED Key to turn on/off Aura RGB LED.
+[###MODEL_DEP###][GT-AX6000][GT-AX11000_PRO][GT-AXE16000]BoostKey_Aura_RGB_desc=Press LED Key to turn on/off Aura RGB LED.
 BoostKey_AURA_Shuffle=Aura náhodně
 BoostKey_AURA_Shuffle_desc=Aura Shuffle umožňuje měnit efekt osvětlení Aura stisknutím tlačítka zesílení.
 BoostKey_AURA_state_breathing=Dýchání

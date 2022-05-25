@@ -4195,8 +4195,7 @@ FreeWiFi_Image_Empty_Alert=The image file of splash webpage cannot be blank.
 FreeWiFi_Welcome=Welcome to
 FreeWiFi_Agree_Terms_Service=I have read and agree to <span id='terms_service_hyperlink'>the Terms of Service</span>
 FreeWiFi_Continue=Continue
-VPN_Fusion=Multiple VPN Connection
-[###MODEL_DEP###][TUF-AX5400][GS-AX5400][GS-AX3000][GT-AXE16000][GT-AXE11000][GT-AX11000_BO4][GT-AX11000_PRO][GT-AX11000][GT-AX6000][GT-AC5300][TUF-AX3000][TUF-AX3000_V2][GT-AC2900_SH][GT-AC2900][GT-AXY16000][RT-AXE7800][RT-AX86U_PRO][GT10]VPN_Fusion=VPN Fusion
+VPN_Fusion=VPN Fusion
 VPN_Fusion_desc1=allows you to connect to multiple VPN servers simultaneously and assign your client devices to connect to different VPN tunnels. Some devices like set-top boxes, smart TVs and Blu-ray players do not support VPN software. This feature provides VPN access to such devices in a home network without having to install VPN software, while your smartphone remains connected to Internet not VPN.
 VPN_Fusion_desc2=For Gamer, VPN connection counteracts DDoS attacks to prevent your PC game or your stream from disconnecting with game servers. Building a VPN connection also can simply change your IP address to the region where the game server is located, to improve your ping to game servers.
 VPN_Fusion_desc_step=To start, please follow the steps below:
@@ -4218,8 +4217,7 @@ VPN_Fusion_Deactivate_Delete_Alert=Please deactivate the profile before deleting
 VPN_Fusion_Exception_Policies_Delete_Alert=All policy exceptions set for a VPN profile will be removed when the profile is deleted. Are you sure you want to delete the profile?
 VPN_Fusion_Delete_Alert=Are you sure you want to delete this profile?
 VPN_Fusion_Exception_Policy_And_IP_Binding_Delete_Alert=Deleting the client's policy in the exception list will also delete the client's IP binding of the DHCP Server. Are you sure you want to delete this?
-VPN_Fusion_FAQ=<a id="faq1" href="" target="_blank" style="font-weight:bolder;text-decoration:underline;">Multiple VPN Connection FAQ.</a>
-[###MODEL_DEP###][TUF-AX5400][GS-AX5400][GS-AX3000][GT-AXE16000][GT-AXE11000][GT-AX11000_BO4][GT-AX11000_PRO][GT-AX11000][GT-AX6000][GT-AC5300][TUF-AX3000][TUF-AX3000_V2][GT-AC2900_SH][GT-AC2900][GT-AXY16000][RT-AXE7800][RT-AX86U_PRO][GT10]VPN_Fusion_FAQ=<a id="faq1" href="" target="_blank" style="font-weight:bolder;text-decoration:underline;">VPN Fusion FAQ.</a>
+VPN_Fusion_FAQ=<a id="faq1" href="" target="_blank" style="font-weight:bolder;text-decoration:underline;">VPN Fusion FAQ.</a>
 VPN_Fusion_Default_Alert=Cannot be set as default WAN for the target policy.
 Beta_test_only=Beta test only
 FIRM_fupgrade_desc=You can also select [Cancel], the device will automatically start downloading the update during the night time.
@@ -4235,14 +4233,14 @@ LED_Brightness=LED Brightness
 WiFi_Network_List=WiFi network list
 Searching_WiFi_Network=Searching for WiFi network nearby...
 BoostKey=Boost Key
-[###MODEL_DEP###][GT-AX6000][GT-AXE16000]BoostKey=LED Key
+[###MODEL_DEP###][GT-AX6000][GT-AX11000_PRO][GT-AXE16000]BoostKey=LED Key
 BoostKey_desc=Bind one of the following functions to your Boost Key.
 [###MODEL_DEP###][GT-AC2900]BoostKey_desc=Bind one of the following functions to your Boost Key. When the bound function has been activated the Boost Key's LED will turn on.
-[###MODEL_DEP###][GT-AX6000][GT-AXE16000]BoostKey_desc=Bind one of the following functions to your LED Key.
+[###MODEL_DEP###][GT-AX6000][GT-AX11000_PRO][GT-AXE16000]BoostKey_desc=Bind one of the following functions to your LED Key.
 BoostKey_enable=Enable Game Boost
 BoostKey_Aura_RGB=Aura RGB
 BoostKey_Aura_RGB_desc=Aura sync control is used to get Aura control from other ROG devices, if disabled, it will be customized Aura RGB.
-[###MODEL_DEP###][GT-AX6000][GT-AXE16000]BoostKey_Aura_RGB_desc=Press LED Key to turn on/off Aura RGB LED.
+[###MODEL_DEP###][GT-AX6000][GT-AX11000_PRO][GT-AXE16000]BoostKey_Aura_RGB_desc=Press LED Key to turn on/off Aura RGB LED.
 BoostKey_AURA_Shuffle=Aura Shuffle
 BoostKey_AURA_Shuffle_desc=Aura Shuffle allows you to change your Aura lighting effect by pressing the Boost Key.
 BoostKey_AURA_state_breathing=Breathing

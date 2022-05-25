@@ -153,6 +153,7 @@ static const struct model_s model_list[] = {
 	{ "RT-AX82_XD6",	MODEL_RTAX58U		},
 	{ "GS-AX3000",		MODEL_RTAX58U		},
 	{ "GS-AX5400",		MODEL_RTAX58U		},
+	{ "RT-AX82U_V2",	MODEL_RTAX82U_V2	},
 	{ "RT-AX82_XD6S",	MODEL_RTAX82_XD6S	},
 	{ "RT-AX3000N",		MODEL_RTAX3000N		},
 	{ "RT-AX58U_V2",	MODEL_RTAX58U_V2	},
@@ -344,51 +345,51 @@ int is_shared_modelid(int model, char *build_name)
 	// assume each shared models at max share to 30 models
         switch(model) {
         case MODEL_RTAC68U:
-		if(strcmp(build_name, "4G-AC68U"))
+		if(!strcmp(build_name, "4G-AC68U"))
 			return model + CFID_BASE_2 + 1;
-		if(strcmp(build_name, "RT-AC68U"))
+		if(!strcmp(build_name, "RT-AC68U"))
 			return model + CFID_BASE_2 + 2;
-		if(strcmp(build_name, "RT-AC68A"))
+		if(!strcmp(build_name, "RT-AC68A"))
 			return model + CFID_BASE_2 + 3;
 		break;
         case MODEL_RTAC86U:
-		if(strcmp(build_name, "RT-AC86U"))
+		if(!strcmp(build_name, "RT-AC86U"))
 			return model + CFID_BASE_2 + 1 + 30;
-		if(strcmp(build_name, "GT-AC2900"))
+		if(!strcmp(build_name, "GT-AC2900"))
 			return model + CFID_BASE_2 + 2 + 30;
 		break;
         case MODEL_RTAX58U:
-		if(strcmp(build_name, "RT-AX58U"))
+		if(!strcmp(build_name, "RT-AX58U"))
 			return model + CFID_BASE_2 + 1 + 30*2;
-		if(strcmp(build_name, "TUF-AX3000"))
+		if(!strcmp(build_name, "TUF-AX3000"))
 			return model + CFID_BASE_2 + 2 + 30*2;
-		if(strcmp(build_name, "TUF-AX5400"))
+		if(!strcmp(build_name, "TUF-AX5400"))
 			return model + CFID_BASE_2 + 3 + 30*2;
-		if(strcmp(build_name, "RT-AX82U"))
+		if(!strcmp(build_name, "RT-AX82U"))
 			return model + CFID_BASE_2 + 4 + 30*2;
-		if(strcmp(build_name, "RT-AX82_XD6"))
+		if(!strcmp(build_name, "RT-AX82_XD6"))
 			return model + CFID_BASE_2 + 5 + 30*2;
-		if(strcmp(build_name, "GS-AX3000"))
+		if(!strcmp(build_name, "GS-AX3000"))
 			return model + CFID_BASE_2 + 6 + 30*2;
-		if(strcmp(build_name, "GS-AX5400"))
+		if(!strcmp(build_name, "GS-AX5400"))
 			return model + CFID_BASE_2 + 7 + 30*2;
 		break;
         case MODEL_RTAX55:
-		if(strcmp(build_name, "RT-AX55"))
+		if(!strcmp(build_name, "RT-AX55"))
 			return model + CFID_BASE_2 + 1 + 30*3;
-		if(strcmp(build_name, "RT-AX1800"))
+		if(!strcmp(build_name, "RT-AX1800"))
 			return model + CFID_BASE_2 + 2 + 30*3;
 		break;
         case MODEL_RTAX86U:
-		if(strcmp(build_name, "RT-AX86U"))
+		if(!strcmp(build_name, "RT-AX86U"))
 			return model + CFID_BASE_2 + 1 + 30*4;
-		if(strcmp(build_name, "RT-AX86S"))
+		if(!strcmp(build_name, "RT-AX86S"))
 			return model + CFID_BASE_2 + 2 + 30*4;
 		break;
         case MODEL_RTN10P:
-		if(strcmp(build_name, "RT-N10+"))
+		if(!strcmp(build_name, "RT-N10+"))
 			return model + CFID_BASE_2 + 1 + 30*5;
-		if(strcmp(build_name, "RT-N10P"))
+		if(!strcmp(build_name, "RT-N10P"))
 			return model + CFID_BASE_2 + 2 + 30*5;
 		break;
 	}

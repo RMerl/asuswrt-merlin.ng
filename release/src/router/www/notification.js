@@ -255,6 +255,14 @@ function cal_panel_s46_ports(obj, multiple) {
 	document.getElementById(obj).style.marginLeft = blockmarginLeft + "px";
 }
 
+function exist_v6plus_conflict(){	//0 for no issue
+	var count=0;
+	$.each(check_ipv6_s46_ports, function (key, data) {
+	if(data=='1'){count += 1;}
+	})
+	return count;
+}
+
 function gen_conflict_links(){
 	var items="";
 	$.each(check_ipv6_s46_ports, function (key, data) {
@@ -619,7 +627,8 @@ var notification = {
 		}
 
 		if(Softwire46_support && wan_proto=="v6plus"){
-			if(check_ipv6_s46_ports != "0"){
+			var exist_conflict = exist_v6plus_conflict();
+			if(check_ipv6_s46_ports != "0" && exist_conflict>0){
 				notification.s46_ports = 1;
 				notification.array[20] = 'noti_s46_ports';
 				notification.desc[20] = 'Port settings mismatch v6plus usable port range.';  /* Untranslated */

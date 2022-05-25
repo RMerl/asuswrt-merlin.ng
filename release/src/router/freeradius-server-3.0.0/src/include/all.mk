@@ -50,7 +50,7 @@ src/include/radpaths.h: src/include/build-radpaths-h
 	@$(ECHO) HEADER $@
 	@cd src/include && /bin/sh build-radpaths-h
 
-${BUILD_DIR}/make/jlibtool: $(HEADERS_DY)
+${FRBUILD_DIR}/make/jlibtool: $(HEADERS_DY)
 
 #
 #  Installation

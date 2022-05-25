@@ -3674,6 +3674,10 @@ define RouterOptions
 		sed -i "/RTCONFIG_FRS_LIVE_UPDATE/d" $(1); \
 		echo "# RTCONFIG_FRS_LIVE_UPDATE is not set" >>$(1); \
 	fi;
+	if [ "$(FRS_LIVE_UPDATE)" = "y" ]; then \
+		sed -i "/RTCONFIG_LIBASUSLOG/d" $(1); \
+		echo "RTCONFIG_LIBASUSLOG=y" >>$(1); \
+	fi;
 	if [ "$(ASUSDDNS_ACCOUNT_BASE)" = "y" ]; then \
 		sed -i "/RTCONFIG_ASUSDDNS_ACCOUNT_BASE/d" $(1); \
 		echo "RTCONFIG_ASUSDDNS_ACCOUNT_BASE=y" >>$(1); \

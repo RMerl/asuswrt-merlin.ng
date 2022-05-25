@@ -615,13 +615,17 @@ width:122px;
 	font-size:16px;
 	text-shadow: 1px 1px 0px black;
 }
-
+@font-face{
+	font-family: Xolonium;
+	src: url(/fonts/xolonium.regular.woff) format("woff"),
+	     url(./fonts/xolonium.regular.otf) format("opentype");
+}
 .modelName_top{
-	font-family: ROG;
-	font-size: 32px;
+	font-family: Xolonium;
+	font-size: 20px;
 	float:left;
 	font-weight:bolder;
-	margin: 7px 0 0 25px;
+	margin: 20px 0 0 0;
 	text-shadow: 3px 2px #000;
 }
 .cloud_main_radius{

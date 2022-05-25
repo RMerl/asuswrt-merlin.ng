@@ -38,7 +38,7 @@ define ADD_INSTALL_RULE.exe
     $${${1}_INSTALLDIR}/$(notdir ${1}): $${${1}_BUILD}/${1}
 	@$(ECHO) INSTALL ${1}
 	@$${PROGRAM_INSTALL} -d -m 755 $${${1}_INSTALLDIR}
-	@$${PROGRAM_INSTALL} -c -m 755 $${BUILD_DIR}/bin/${1} $${${1}_INSTALLDIR}/
+	@$${PROGRAM_INSTALL} -c -m 755 $${FRBUILD_DIR}/bin/${1} $${${1}_INSTALLDIR}/
 	@$${${1}_POSTINSTALL}
 
 endef
@@ -58,7 +58,7 @@ define ADD_INSTALL_RULE.a
     $${${1}_INSTALLDIR}/$(notdir ${1}): ${1}
 	@$(ECHO) INSTALL ${1}
 	@$${PROGRAM_INSTALL} -d -m 755 $${${1}_INSTALLDIR}
-	@$${PROGRAM_INSTALL} -c -m 755 $${BUILD_DIR}/lib/${1} $${${1}_INSTALLDIR}/
+	@$${PROGRAM_INSTALL} -c -m 755 $${FRBUILD_DIR}/lib/${1} $${${1}_INSTALLDIR}/
 	@$${${1}_POSTINSTALL}
 
 endef
@@ -81,7 +81,7 @@ define ADD_INSTALL_RULE.la
     $${${1}_INSTALLDIR}/$(notdir ${1}): $${${1}_BUILD}/${1}
 	@$(ECHO) INSTALL ${1}
 	@$${PROGRAM_INSTALL} -d -m 755 $${${1}_INSTALLDIR}
-	@$${PROGRAM_INSTALL} -c -m 755 $${RELINK_FLAGS_MIN} $${BUILD_DIR}/lib/${1} $${${1}_INSTALLDIR}/
+	@$${PROGRAM_INSTALL} -c -m 755 $${RELINK_FLAGS_MIN} $${FRBUILD_DIR}/lib/${1} $${${1}_INSTALLDIR}/
 	@$${${1}_POSTINSTALL}
 
 endef

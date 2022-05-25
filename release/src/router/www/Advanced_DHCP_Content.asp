@@ -257,11 +257,20 @@ function addRow_Group(){
 		manually_dhcp_list_array[document.form.dhcp_staticip_x_0.value.toUpperCase()] = item_para;
 
 		if(vpn_fusion_support) {
-			var newRuleArray = new Array();
-			newRuleArray.push(document.form.dhcp_staticip_x_0.value);
-			newRuleArray.push("0");
-			newRuleArray.push("0");
-			vpnc_dev_policy_list_array.push(newRuleArray);
+			var policy_flag = false;
+			$.each(vpnc_dev_policy_list_array, function(index, value){
+				if(value[0] == document.form.dhcp_staticip_x_0.value){
+					policy_flag = true;
+					return false;
+				}
+			});
+			if(!policy_flag){
+				var newRuleArray = new Array();
+				newRuleArray.push(document.form.dhcp_staticip_x_0.value);
+				newRuleArray.push("0");
+				newRuleArray.push("0");
+				vpnc_dev_policy_list_array.push(newRuleArray);
+			}
 		}
 
 		document.form.dhcp_staticip_x_0.value = "";
@@ -290,7 +299,15 @@ function del_Row(r){
 	var delIP = document.getElementById('dhcp_staticlist_table').rows[i].cells[1].innerHTML;
 
 	if(vpn_fusion_support) {
-		if(manually_dhcp_list_array_ori[delIP] != undefined) {
+		var policy_flag = false;
+		$.each(vpnc_dev_policy_list_array_ori, function(index, value){
+			if(value[0] == delIP){
+				policy_flag = true;
+				return false;
+			}
+		});
+
+		if(policy_flag){
 			if(!confirm("Remove the client's IP binding will also delete the client's policy in the exception list of <#VPN_Fusion#>. Are you sure you want to delete?"))/*untranslated*/
 				return false;
 		}

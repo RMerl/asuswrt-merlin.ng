@@ -1917,7 +1917,7 @@ int get_bonding_port_status(int port)
 	int ports[lan_ports+1];
 	/* 7 3	W0 L1 */
 	ports[0]=7; ports[1]=3;
-#elif defined(RTAX58U) || defined(TUFAX3000) || defined(TUFAX5400) || defined(RTAX82U) || defined(GSAX3000) || defined(GSAX5400)
+#elif defined(RTAX58U) || defined(TUFAX3000) || defined(TUFAX5400) || defined(RTAX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(RTAX82U_V2)
 	int lan_ports=4;
 	int ports[lan_ports+1];
 	/* 4 3 2 1 0	W0 L1 L2 L3 L4 */
@@ -2013,7 +2013,7 @@ int get_bonding_port_status(int port)
 	/* WAN port */
 #if defined(RTCONFIG_HND_ROUTER_AX_6710) || defined(BCM4912)
 	if (!hnd_get_phy_status(ports[port]))				/*Disconnect*/
-#elif defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(BCM6756) || defined(BCM6855)
+#elif defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(BCM6756) || defined(BCM6855) || defined(BCM6750)
 	if (!hnd_get_phy_status(ports[port]))				/*Disconnect*/
 #else
 	if (!hnd_get_phy_status(ports[port], extra_p0, regv, pmdv))	/*Disconnect*/
@@ -2023,7 +2023,7 @@ int get_bonding_port_status(int port)
 	}else{
 #if defined(RTCONFIG_HND_ROUTER_AX_6710) || defined(BCM4912)
 		ret = hnd_get_phy_speed(ports[port]);
-#elif defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(BCM6756) || defined(BCM6855)
+#elif defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(BCM6756) || defined(BCM6855) || defined(BCM6750)
 		ret = hnd_get_phy_speed(ports[port]);
 #else
 		ret = hnd_get_phy_speed(ports[port], extra_p0, regv2, pmdv2);
@@ -2232,11 +2232,11 @@ bcmbsd_policy bcmbsd_def_policy[BCMBSD_SELIF_MAX] = {
 			 {"","","",""}},
 			// 2G_5G1_5G2_6G (1)
 			{ 0xf, 
-			 {"0 5 3 -62 0 0 0x20",
+			 {"0 5 3 -62 0 0 0x22",
 			  "0 5 3 -82 0 0 0x820",
 			  "0 5 3 -82 0 0 0x420",
 			  "0 5 3 -82 0 0 0x20"},
-			 {"30 -62 0 0 0 1 1 0 0 0 0x20",
+			 {"30 -62 0 0 0 1 1 0 0 0 0x122",
 			  "30 -82 0 0 0 1 1 0 0 0 0x8020",
 			  "30 -82 0 0 0 1 1 0 0 0 0x4020",
 			  "30 -82 0 0 0 1 1 0 0 0 0x20"},
@@ -2246,11 +2246,11 @@ bcmbsd_policy bcmbsd_def_policy[BCMBSD_SELIF_MAX] = {
 			  "0 0x0 -100"}},
 			// 2G_5G1_6G (2)
 			{ 0xb,
-			 {"0 5 3 -62 0 0 0x20",
+			 {"0 5 3 -62 0 0 0x22",
 			  "0 5 3 -82 0 0 0x20",
 			  "",
 			  "0 5 3 -82 0 0 0x20"},
-			 {"30 -62 0 0 0 1 1 0 0 0 0x20",
+			 {"30 -62 0 0 0 1 1 0 0 0 0x122",
 			  "30 -82 0 0 0 1 1 0 0 0 0x20",
 			  "",
 			  "30 -82 0 0 0 1 1 0 0 0 0x20"},
@@ -2260,11 +2260,11 @@ bcmbsd_policy bcmbsd_def_policy[BCMBSD_SELIF_MAX] = {
 			  "0 0x0 -100"}},
 			// 2G_5G1_5G2 (3:QIS)
 			{ 0x7,
-			 {"0 5 3 -62 0 0 0x20",
+			 {"0 5 3 -62 0 0 0x22",
 			  "0 5 3 -82 0 0 0x820",
 			  "0 5 3 -82 0 0 0x420",
 			  ""},
-			 {"30 -62 0 0 0 1 1 0 0 0 0x20",
+			 {"30 -62 0 0 0 1 1 0 0 0 0x122",
 			  "30 -82 0 0 0 1 1 0 0 0 0x8020",
 			  "30 -82 0 0 0 1 1 0 0 0 0x4020",
 			  ""},
@@ -2274,11 +2274,11 @@ bcmbsd_policy bcmbsd_def_policy[BCMBSD_SELIF_MAX] = {
 			  ""}},
 			// 2G_5G1 (4)
 			{ 0x3,
-			 {"0 5 3 -62 0 0 0x20",
+			 {"0 5 3 -62 0 0 0x22",
 			  "0 5 3 -82 0 0 0x20",
 			  "",
 			  ""},
-			 {"30 -62 0 0 0 1 1 0 0 0 0x20",
+			 {"30 -62 0 0 0 1 1 0 0 0 0x122",
 			  "30 -82 0 0 0 1 1 0 0 0 0x20",
 			  "",
 			  ""},
@@ -2288,11 +2288,11 @@ bcmbsd_policy bcmbsd_def_policy[BCMBSD_SELIF_MAX] = {
 			  ""}},
 			// 2G_5G2_6G (5)
 			{ 0xd,
-			 {"0 5 3 -62 0 0 0x20",
+			 {"0 5 3 -62 0 0 0x22",
 			  "",
 			  "0 5 3 -82 0 0 0x20",
 			  "0 5 3 -82 0 0 0x20"},
-			 {"30 -62 0 0 0 1 1 0 0 0 0x20",
+			 {"30 -62 0 0 0 1 1 0 0 0 0x122",
 			  "",
 			  "30 -82 0 0 0 1 1 0 0 0 0x20",
 			  "30 -82 0 0 0 1 1 0 0 0 0x20"},
@@ -2302,11 +2302,11 @@ bcmbsd_policy bcmbsd_def_policy[BCMBSD_SELIF_MAX] = {
 			  "0 0x0 -100"}},
 			// 2G_6G (6) 
 			{ 0x9, 
-			 {"0 5 3 -62 0 0 0x20",
+			 {"0 5 3 -62 0 0 0x22",
 			  "",
 			  "",
 			  "0 5 3 -82 0 0 0x20"},
-			 {"30 -62 0 0 0 1 1 0 0 0 0x20",
+			 {"30 -62 0 0 0 1 1 0 0 0 0x122",
 			  "",
 			  "",
 			  "30 -82 0 0 0 1 1 0 0 0 0x20"},
@@ -2344,11 +2344,11 @@ bcmbsd_policy bcmbsd_def_policy[BCMBSD_SELIF_MAX] = {
 			  "0 0x0 -100"}},
 			// 2G_5G2 (9) 
 			{ 0x5,
-			 {"0 5 3 -62 0 0 0x20",
+			 {"0 5 3 -62 0 0 0x22",
 			  "",
 			  "0 5 3 -82 0 0 0x20",
 			  ""},
-			 {"30 -62 0 0 0 1 1 0 0 0 0x20",
+			 {"30 -62 0 0 0 1 1 0 0 0 0x12",
 			  "",
 			  "30 -82 0 0 0 1 1 0 0 0 0x20",
 			  ""},
@@ -2441,6 +2441,7 @@ void gen_bcmbsd_def_policy(int sel)
 	int i, tbi, unit_id, ruleid;
 	char namebuf[32];
 	int smart_connect_x = nvram_get_int("smart_connect_x");
+	int o_sel = sel;
 	
 	if(!sel)
 		sel = nvram_get_int("smart_connect_selif");
@@ -2449,7 +2450,7 @@ void gen_bcmbsd_def_policy(int sel)
 	if(tbi < 0)
 		return;
 	
-	_dprintf("%s: by selif val: %d(tbi_%d)\n", __func__, sel, tbi);
+	_dprintf("%s: by selif val: %d(tbi_%d)(o_sel=%d)\n", __func__, sel, tbi, o_sel);
 
 	for(i=0; i<RULE_MAX; ++i) {
 		ruleid = i;

@@ -253,18 +253,20 @@ function initial(){
 	}
 	for(var i = 0; i < vpnc_dev_policy_list_array.length; i += 1) {
 		var vpnc_dev_policy_ipaddr = vpnc_dev_policy_list_array[i][0];
-		var dhcp_staticlist_mac = dhcp_staticlist_array[vpnc_dev_policy_ipaddr].mac;
-		var dhcp_staticlist_dns = dhcp_staticlist_array[vpnc_dev_policy_ipaddr].dns;
-		if(dhcp_staticlist_dns == "")
-			dhcp_staticlist_dns = "<#Setting_factorydefault_value#>";
-		var dhcp_staticlist_hostname = dhcp_staticlist_array[vpnc_dev_policy_ipaddr].hostname;
-		if(dhcp_staticlist_mac != undefined) {
+		if(dhcp_staticlist_array[vpnc_dev_policy_ipaddr] != undefined){
+			var dhcp_staticlist_mac = dhcp_staticlist_array[vpnc_dev_policy_ipaddr].mac;
+			var dhcp_staticlist_dns = dhcp_staticlist_array[vpnc_dev_policy_ipaddr].dns;
+			if(dhcp_staticlist_dns == "")
+				dhcp_staticlist_dns = "<#Setting_factorydefault_value#>";
+			var dhcp_staticlist_hostname = dhcp_staticlist_array[vpnc_dev_policy_ipaddr].hostname;
 			vpnc_dev_policy_list_array[i].splice(0, 0, dhcp_staticlist_mac);
 			vpnc_dev_policy_list_array[i].splice(2, 0, dhcp_staticlist_dns);
 			vpnc_dev_policy_list_array[i].splice(5, 0, dhcp_staticlist_hostname);
 		}
-		else {
-			vpnc_dev_policy_list_array.splice(i, 1);
+		else{
+			vpnc_dev_policy_list_array[i].splice(0, 0, "");
+			vpnc_dev_policy_list_array[i].splice(2, 0, "<#Setting_factorydefault_value#>");
+			vpnc_dev_policy_list_array[i].splice(5, 0, "");
 		}
 	}
 	vpnc_dev_policy_list_array_ori = JSON.parse(JSON.stringify(vpnc_dev_policy_list_array));
@@ -2679,10 +2681,11 @@ function parseArrayToStr_dhcp_staticlist() {
 	var dhcp_staticlist = "";
 	for(var i = 0; i < vpnc_dev_policy_list_array.length; i += 1) {
 		if(vpnc_dev_policy_list_array[i].length != 0) {
-			dhcp_staticlist += "<";
-
 			if(vpnc_dev_policy_list_array[i].length == 6) {
 				var temp_mac = vpnc_dev_policy_list_array[i][0];
+				if(temp_mac == "")
+					continue;
+				dhcp_staticlist += "<";
 				var temp_ip = vpnc_dev_policy_list_array[i][1];
 				var temp_dns = vpnc_dev_policy_list_array[i][2];
 				var temp_hostname = vpnc_dev_policy_list_array[i][5];

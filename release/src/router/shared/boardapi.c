@@ -199,7 +199,7 @@ static const struct led_btn_table_s {
 	{ "led_white_gpio",	&led_gpio_table[LED_WHITE] },
 #endif
 #endif
-#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX6000) || defined(GT10)
+#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2)
 	{ "led_group1_red_gpio",	&led_gpio_table[LED_GROUP1_RED] },
 	{ "led_group1_green_gpio",	&led_gpio_table[LED_GROUP1_GREEN] },
 	{ "led_group1_blue_gpio",	&led_gpio_table[LED_GROUP1_BLUE] },
@@ -880,6 +880,15 @@ int do_led_control(int which, int mode)
 
 	if (which < 0 || which >= LED_ID_MAX || mode < 0 || mode >= LED_FAN_MODE_MAX)
 		return -1;
+
+#ifdef RTAX82U_V2
+	if (which == LED_WAN_NORMAL) {
+		eval("sw", "0xff800554", "0");
+		eval("sw", "0xff800558", mode == LED_ON ? "0x3015" : "0x2015");
+		eval("sw", "0xff80055c", "0x21");
+		return 0;
+	}
+#endif
 
 #if defined(RTAX86U) || defined(RTAX86U_PRO)
 	if(which == LED_LAN){

@@ -104,57 +104,47 @@ get_cgi(char *name)
 char *
 get_cgi_json(char *name, json_object *root)
 {
-	int obj_find = 0;
-	char *value;
+	char *value = NULL;
 
-	if(root){
-		json_object_object_foreach(root, key, val) {
-			obj_find = 1;
-			break;
-		}
-	}
-
-
-	if(obj_find == 0){
-		value = get_cgi(name);
-		return value;
-	}else{
+	if(json_object_get_type(root) == json_type_object && json_object_object_length(root)){
 		struct json_object *json_value = NULL;
 		if(json_object_object_get_ex(root, name, &json_value)){
 #ifdef RTCONFIG_CFGSYNC
 			if (json_object_is_type(json_value, json_type_object))
-				return (char *)json_object_to_json_string(json_value);
+				value = (char *)json_object_to_json_string(json_value);
 			else
-				return (char *)json_object_get_string(json_value);
+				value = (char *)json_object_get_string(json_value);
 #else
-			return (char *)json_object_get_string(json_value);
+			value = (char *)json_object_get_string(json_value);
 #endif
-		}else
-			return NULL;
-	}
+		}
+	}else
+		value = get_cgi(name);
+
+	return value;
 }
 
 char *
 safe_get_cgi_json(char *name, json_object *root)
 {
-	int obj_find = 0;
-	char *value;
+	char *value = NULL;
 
-	if(root){
-		json_object_object_foreach(root, key, val) {
-			obj_find = 1;
-			break;
-		}
-	}
-
-	if(obj_find == 0){
-		value = get_cgi(name);
-	}else{
+	if(json_object_get_type(root) == json_type_object && json_object_object_length(root)){
 		struct json_object *json_value = NULL;
 		json_object_object_get_ex(root, name, &json_value);
+		if(json_object_get_type(json_value) == json_type_string){
+			value = (char *)json_object_get_string(json_value);
+		}
+		else if(json_object_get_type(json_value) == json_type_int){
+			char int2str[16] = {0};
+			snprintf(int2str, sizeof(int2str), "%d", json_object_get_int(json_value));
+			json_object_object_add(root, name, json_object_new_string(int2str));
+			json_object_object_get_ex(root, name, &json_value);
+			value = (char *)json_object_get_string(json_value);
+		}
+	}else
+		value = get_cgi(name);
 
-		value = (char *) json_object_get_string(json_value);
-	}
 	return value ? value : "";
 }
 

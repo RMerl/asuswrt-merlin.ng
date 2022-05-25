@@ -55,6 +55,24 @@ $(function () {
 });
 wl_channel_list_2g = <% channel_list_2g(); %>;
 wl_channel_list_5g = <% channel_list_5g(); %>;
+//var meshBackhaulAutoSupport = based_modelid === 'XT8PRO' ? true : false;
+var meshBackhaulAutoSupport = false;
+var unii4Support = (function(){
+	wl_channel_list_5g2 = <% channel_list_5g_2(); %>;
+	for(item of wl_channel_list_5g){
+		if(parseInt(item) > 165){
+			return true;
+		}
+	}
+
+	for(item of wl_channel_list_5g2){
+		if(parseInt(item) > 165){
+			return true;
+		}
+	}
+
+	return false;
+})();
 var cur_control_channel = [<% wl_control_channel(); %>][0];
 var reboot_needed_time = eval("<% get_default_reboot_time(); %>");
 var wl_unit = <% nvram_get("wl_unit"); %>;
@@ -209,7 +227,7 @@ function initial(){
 			document.getElementById('acs_band3_checkbox').style.display = "";
 		}		
 	}
-	else if(based_modelid == 'RT-AX88U' || based_modelid == 'GT-AX11000' || (based_modelid == 'RT-AX92U' && wl_unit == '2') || (based_modelid == 'GT-AC2900' && wl_unit == '1') || ((based_modelid == 'RT-AX58U' || based_modelid == 'RT-AX58U_V2' || based_modelid == 'RT-AX3000N' || based_modelid == 'TUF-AX3000' || based_modelid == 'TUF-AX3000_V2' || based_modelid == 'TUF-AX5400' || based_modelid == "DSL-AX82U" || based_modelid == "RT-AX82U" || based_modelid == "GS-AX3000" || based_modelid == "GS-AX5400") && wl_unit == '1') || based_modelid == 'GT-AXE11000' || based_modelid == "GT-AX6000" || based_modelid == 'GT-AX11000_PRO' || based_modelid == 'ET12' || based_modelid == 'XT12' || based_modelid == 'GT-AXE16000' || (based_modelid == 'RT-AXE7800' && wl_unit != '0') || (based_modelid == 'GT10' && wl_unit != '0')){
+	else if(based_modelid == 'RT-AX88U' || based_modelid == 'GT-AX11000' || (based_modelid == 'RT-AX92U' && wl_unit == '2') || (based_modelid == 'GT-AC2900' && wl_unit == '1') || ((based_modelid == 'RT-AX58U' || based_modelid == 'RT-AX58U_V2' || based_modelid == 'RT-AX3000N' || based_modelid == 'TUF-AX3000' || based_modelid == 'TUF-AX3000_V2' || based_modelid == 'TUF-AX5400' || based_modelid == "DSL-AX82U" || based_modelid == "RT-AX82U" || based_modelid == "RT-AX82U_V2" || based_modelid == "GS-AX3000" || based_modelid == "GS-AX5400") && wl_unit == '1') || based_modelid == 'GT-AXE11000' || based_modelid == "GT-AX6000" || based_modelid == 'GT-AX11000_PRO' || based_modelid == 'ET12' || based_modelid == 'XT12' || based_modelid == 'GT-AXE16000' || (based_modelid == 'RT-AXE7800' && wl_unit != '0') || (based_modelid == 'GT10' && wl_unit != '0')){
 		if(bw_160_support){
 			document.getElementById('enable_160_field').style.display = "";
 			$("#enable_160mhz").attr("checked", enable_bw_160);
@@ -421,8 +439,26 @@ function initial(){
 									chkPass(this.value, "");
 								})
 
-}
+	if(meshBackhaulAutoSupport){
+		if(document.form.fh_ap_enabled.value === '1'){
+			document.form.fh_ap_enabled.value = '0';
+			document.querySelector('#fh_connection_hint').style.display = '';
+			document.querySelector('#fh_connection_hint_checkbox').checked = true;
+		}
+		else if(document.form.fh_ap_enabled.value === '0'){
+			document.querySelector('#fh_connection_hint').style.display = '';
+			document.querySelector('#fh_connection_hint_checkbox').checked = false;
+		}
+		else if(document.form.fh_ap_enabled.value === '2'){
+			document.querySelector('#fh_connection_hint').style.display = 'none';
+			document.querySelector('#fh_connection_hint_checkbox').checked = false;
+		}
+	}
 
+	if(unii4Support){
+		document.querySelector('#acs_unii4_field').style.display = '';
+	}
+}
 
 function wl_mode_change(mode){
 	if(wl_unit == '0'){
@@ -582,7 +618,7 @@ function genBWTable(_unit){
 				based_modelid == "RT-AC66U" || 
 				based_modelid == "RT-AC3200" || 
 				based_modelid == "RT-AC3100" || based_modelid == "RT-AC88U" || based_modelid == "RT-AX88U" || based_modelid == "RT-AC86U" || based_modelid == "GT-AC2900" ||
-				based_modelid == "RT-AC5300" || based_modelid == "GT-AC5300" || based_modelid == "GT-AX11000" || based_modelid == "RT-AX92U" || based_modelid == "RT-AX95Q" || based_modelid == "XT8PRO" || based_modelid == "XT8_V2" || based_modelid == "RT-AXE95Q" || based_modelid == "ET8PRO" || based_modelid == "RT-AX56_XD4" || based_modelid == "XD4PRO" || based_modelid == "CT-AX56_XD4" || based_modelid == "RT-AX58U" || based_modelid == 'RT-AX58U_V2' || based_modelid == 'RT-AX3000N' || based_modelid == "TUF-AX3000" || based_modelid == 'TUF-AX3000_V2' || based_modelid == 'TUF-AX5400' || based_modelid == "DSL-AX82U" || based_modelid == "RT-AX82U" || based_modelid == "RT-AX56U" || based_modelid == "GT-AXE11000" || based_modelid == "GS-AX3000" || based_modelid == "GS-AX5400" || based_modelid == "GT-AX6000" || based_modelid == 'GT-AX11000_PRO' || based_modelid == 'ET12' || based_modelid == 'XT12' || based_modelid == 'GT-AXE16000' || based_modelid == "RT-AXE7800" || based_modelid == "GT10" || based_modelid == "RT-AC53U") && document.form.wl_nmode_x.value == 1){		//N only
+				based_modelid == "RT-AC5300" || based_modelid == "GT-AC5300" || based_modelid == "GT-AX11000" || based_modelid == "RT-AX92U" || based_modelid == "RT-AX95Q" || based_modelid == "XT8PRO" || based_modelid == "XT8_V2" || based_modelid == "RT-AXE95Q" || based_modelid == "ET8PRO" || based_modelid == "RT-AX56_XD4" || based_modelid == "XD4PRO" || based_modelid == "CT-AX56_XD4" || based_modelid == "RT-AX58U" || based_modelid == 'RT-AX58U_V2' || based_modelid == 'RT-AX3000N' || based_modelid == "TUF-AX3000" || based_modelid == 'TUF-AX3000_V2' || based_modelid == 'TUF-AX5400' || based_modelid == "DSL-AX82U" || based_modelid == "RT-AX82U" || based_modelid == "RT-AX82U_V2" || based_modelid == "RT-AX56U" || based_modelid == "GT-AXE11000" || based_modelid == "GS-AX3000" || based_modelid == "GS-AX5400" || based_modelid == "GT-AX6000" || based_modelid == 'GT-AX11000_PRO' || based_modelid == 'ET12' || based_modelid == 'XT12' || based_modelid == 'GT-AXE16000' || based_modelid == "RT-AXE7800" || based_modelid == "GT10" || based_modelid == "RT-AC53U") && document.form.wl_nmode_x.value == 1){		//N only
 				bws = [0, 1, 2];
 				bwsDesc = ["20/40 MHz", "20 MHz", "40 MHz"];
 				
@@ -1005,6 +1041,22 @@ function applyRule(){
 			}
 		}
 		
+
+		if(meshBackhaulAutoSupport){
+			if(document.form.fh_ap_enabled.value === '0' && document.querySelector('#fh_connection_hint_checkbox').checked){
+				document.form.fh_ap_enabled.value = '1';
+			}
+		}
+
+		if(unii4Support){
+			if(document.querySelector('#acs_unii4_checkbox').checked){
+				document.form.acs_unii4.value = '1';
+			}
+			else{
+				document.form.acs_unii4.value = '0';
+			}		
+		}
+
 		if (based_modelid == "RT-AC87U" && wl_unit == "1"){
 			detect_qtn_ready();
 		}
@@ -2434,12 +2486,50 @@ function handleMFP(){
 	}
 }
 
+function handleAiMeshBackhaul(value){
+	if(value === '2'){
+		document.querySelector('#fh_connection_hint').style.display = 'none';
+		document.querySelector('#fh_ap_enabled').value = '2';
+		if(unii4Support){
+			document.querySelector('#acs_unii4_checkbox').checked =  true;
+		}
+	}
+	else if(value === '0'){
+		document.querySelector('#fh_connection_hint').style.display = '';		
+	}
+}
+
+function handleFhConnectionHint(value){
+	if(value){
+		document.querySelector('#fh_ap_enabled').value = '0';
+		if(unii4Support){
+			document.querySelector('#acs_unii4_checkbox').checked =  false;
+		}
+	}
+	else{
+		document.querySelector('#fh_ap_enabled').value = '0';
+		if(unii4Support){
+			document.querySelector('#acs_unii4_checkbox').checked =  true;
+		}
+	}
+}
+
+function handleUNII4Hint(value){
+	if(value){
+		alert("The compatibility issue may occur if your clients don't support U-NII-4 channels");
+	}
+}
+
 function gen_fronthaul_ap(_value){
 	if(isSupport("amas_fronthaul_network")){
 		$(".fronthaul_ap").remove();
 		var get_cfg_clientlist = httpApi.hookGet("get_cfg_clientlist");
 		if(get_cfg_clientlist[0] != undefined){
 			var $selectObj = $("<select/>").attr({"id":"fh_ap_enabled", "name":"fh_ap_enabled"}).addClass("input_option");
+			if(meshBackhaulAutoSupport){
+				$selectObj.attr('onChange', 'handleAiMeshBackhaul(this.value)');
+			}
+
 			var select_node_capability = httpApi.aimesh_get_node_capability(get_cfg_clientlist[0]);
 			if(select_node_capability.fronthaul_ap_option_on)
 				$selectObj.append($('<option>', {value: "2", text: "<#AiMesh_WiFi_Backhaul_both#>"}));
@@ -2447,11 +2537,21 @@ function gen_fronthaul_ap(_value){
 				$selectObj.append($('<option>', {value: "1", text: "<#Auto#>"}));
 			if(select_node_capability.fronthaul_ap_option_off)
 				$selectObj.append($('<option>', {value: "0", text: "<#AiMesh_WiFi_Backhaul_dedicated_backhaul#>"}));
+
+			if(meshBackhaulAutoSupport ){
+				$selectObj.append($('<option>', {value: "1", text: "", hidden: true}));			
+			}
+					
 			if($selectObj.find("option").length > 0){
 				var $trObj = $("<tr>").addClass("fronthaul_ap");
 				var $thObj = $("<th>").html("<#AiMesh_WiFi_Backhaul#>");
 				var $tdObj = $("<td>");
 				$trObj.append($thObj).append($tdObj.append($selectObj));
+				if(meshBackhaulAutoSupport ){
+					var fh_connect_obj ='<div id="fh_connection_hint" style="color:#FC0;"><input id="fh_connection_hint_checkbox" type="checkbox" onchange="handleFhConnectionHint(this.checked)">Release for fronthaul connection when wireless backhaul is not performing</div>';
+					$trObj.append($thObj).append($tdObj.append(fh_connect_obj));
+				}
+
 				$("#wl_ssid_field").after($trObj);
 				var fh_ap_enabled = httpApi.nvramGet(["fh_ap_enabled"]).fh_ap_enabled;
 				if(fh_ap_enabled != "" && $selectObj.children("option[value=" + fh_ap_enabled + "]").length > 0)
@@ -2547,7 +2647,6 @@ function gen_fronthaul_ap(_value){
 <input type="hidden" name="wl_gmode_protection" value="<% nvram_get("wl_gmode_protection"); %>">
 <input type="hidden" name="wl_wme" value="<% nvram_get("wl_wme"); %>">
 <input type="hidden" name="wl_mode_x" value="<% nvram_get("wl_mode_x"); %>">
-<input type="hidden" name="wl_nmode" value="<% nvram_get("wl_nmode"); %>">
 <input type="hidden" name="wl_nmode_x_orig" value="<% nvram_get("wl_nmode_x"); %>">
 <input type="hidden" name="wl_nctrlsb_old" value="<% nvram_get("wl_nctrlsb"); %>">
 <input type="hidden" name="wl_key_type" value='<% nvram_get("wl_key_type"); %>'> <!--Lock Add 2009.03.10 for ralink platform-->
@@ -2572,6 +2671,7 @@ function gen_fronthaul_ap(_value){
 <input type="hidden" name="acs_band3" value='<% nvram_get("acs_band3"); %>'>
 <input type="hidden" name="acs_ch13" value='<% nvram_get("acs_ch13"); %>'>
 <input type="hidden" name="psc6g" value='<% nvram_get("psc6g"); %>'>
+<input type="hidden" name="acs_unii4" value='<% nvram_get("acs_unii4"); %>'>
 <input type="hidden" name="wps_enable" value="<% nvram_get("wps_enable"); %>">
 <input type="hidden" name="wps_band" value="<% nvram_get("wps_band_x"); %>">
 <input type="hidden" name="wps_dualband" value="<% nvram_get("wps_dualband"); %>">
@@ -2768,6 +2868,7 @@ function gen_fronthaul_ap(_value){
 						<div><span id="acs_band3_checkbox" style="display:none;"><input type="checkbox" onClick="check_acs_band3_support(this);" <% nvram_match("acs_band3", "1", "checked"); %>><#WLANConfig11b_EChannel_band3#></span></div>
 						<div><span id="acs_ch13_checkbox" style="display:none;"><input type="checkbox" onClick="check_acs_ch13_support(this);" <% nvram_match("acs_ch13", "1", "checked"); %>><#WLANConfig11b_EChannel_acs_ch13#></span></div>
 						<div><span id="psc6g_field" style="display:none;"><input id="psc6g_checkbox" type="checkbox" onClick="wl_chanspec_list_change();" <% nvram_match("psc6g", "1", "checked"); %>><#Enable_PSC_Hint#> <#PSC_Faq#></span></div>
+						<div><span id="acs_unii4_field" style="display:none;"><input id="acs_unii4_checkbox" type="checkbox" onClick="handleUNII4Hint(this.checked)" <% nvram_match("acs_unii4", "1", "checked"); %>>Auto select channel including U-NII-4 channels</span></div>
 					</td>
 			  </tr> 
 		  	<!-- end -->

@@ -1631,9 +1631,6 @@ int mount_r(char *mnt_dev, char *mnt_dir, char *_type)
 						type, (flags & MS_RDONLY) ? " (ro)" : "", mnt_dev, mnt_dir);
 				logmessage("usb", "USB %s%s fs at %s mounted on %s.\n",
 						type, (flags & MS_RDONLY) ? " (ro)" : "", mnt_dev, mnt_dir);
-#if defined(RTCONFIG_SOC_IPQ8074)
-				f_write_string("/proc/net/skb_recycler/max_skbs", "12288", 0, 0);
-#endif
 				return (flags & MS_RDONLY) ? MOUNT_VAL_RONLY : MOUNT_VAL_RW;
 			}
 
@@ -3517,10 +3514,8 @@ start_samba(void)
 	taskset_ret = -1;
 #else
 	if(!nvram_match("stop_taskset", "1")){
-#if defined(RTCONFIG_HND_ROUTER_AX_6756)
-#if defined(BCM6756) || defined(BCM6855)
+#ifdef BCM6756
 		cpu_num = 3;
-#endif
 #endif
 		if(cpu_num > 1)
 		{

@@ -3202,7 +3202,7 @@ Setting_remove_passwd=Click on this checkbox if you want to share the config fil
 Settings=Indstillinger
 Setup_note=Klik <a id="redirect_to_setup">Her</a> for at ændre funktion. Se disse <a id="redirect_to_FAQ">Ofte spurte spørgsmål</a> for yderligere oplysninger.
 Setup_node=Opsætning af din node
-Setup_node_desc_step1=Place your ZVMODELVZ router and node(s) in the same room and at least 1 meter apart during the setup process.
+Setup_node_desc_step1=Placer din ZVMODELVZ router og node(r) i samme rum og mindst 1 meter fra hinanden under opsætningen.
 Setup_node_desc_step2=Hold enheden tændt og standby for systemopsætningen.
 ShareNode_DeviceName_itemname=Enhedsnavn
 ShareNode_FTPLANG_itemdesc=Vælg de rette sprogindstillinger, der passer til din filkodning.
@@ -4195,8 +4195,7 @@ FreeWiFi_Image_Empty_Alert=Billedfilen til splash-websiden må ikke være tom.
 FreeWiFi_Welcome=Velkommen til
 FreeWiFi_Agree_Terms_Service=Jeg har læst og accepterer<span id='terms_service_hyperlink'>servicevilkårene</span>
 FreeWiFi_Continue=Fortsæt
-VPN_Fusion=Flere VPN-forbindelser
-[###MODEL_DEP###][TUF-AX5400][GS-AX5400][GS-AX3000][GT-AXE16000][GT-AXE11000][GT-AX11000_BO4][GT-AX11000_PRO][GT-AX11000][GT-AX6000][GT-AC5300][TUF-AX3000][TUF-AX3000_V2][GT-AC2900_SH][GT-AC2900][GT-AXY16000][RT-AXE7800][RT-AX86U_PRO][GT10]VPN_Fusion=VPN Fusion
+VPN_Fusion=VPN Fusion
 VPN_Fusion_desc1=giver dig mulighed for, at oprette forbindelse til flere VPN-servere samtidigt, og tildele din klient-enheder for, at oprette forbindelse til forskellige VPN-tunneler. Nogle enheder, såsom tv-bokse, smart tv og Blu-ray-afspillere, understøtter ikke VPN-software. Denne funktion giver VPN-adgang til sådanne enheder på et hjemmenetværk uden, at skulle installere VPN-software, mens din smartphone stadig er forbundet til internettet, men ikke din VPN.
 VPN_Fusion_desc2=På indstillingen Gamer modvirker VPN-forbindelse DDoS-angreb, så dit pc-spil eller stram ikke afbrydes fra spilserverne. Med en VPN-forbindelse kan man også ændre sin IP-adresse til det land, hvor spilserveren er placeret, så din ping forbedres til spilserverne.
 VPN_Fusion_desc_step=For at starte, skal du gøre følgende:
@@ -4218,8 +4217,7 @@ VPN_Fusion_Deactivate_Delete_Alert=Profilen skal deaktiveres, inden den kan slet
 VPN_Fusion_Exception_Policies_Delete_Alert=Alle politik-undtagelserne, der er sat angivet en VPN-profil, fjernes, når profilen slettes. Er du sikker på, du vil slette profilen?
 VPN_Fusion_Delete_Alert=Er du sikker på, du vil slette denne profil?
 VPN_Fusion_Exception_Policy_And_IP_Binding_Delete_Alert=Hvis kundens politik på listen over undtagelser slettes, slettes kundens IP-binding på DHCP-serveren også. Er du sikker på du vil slette dette?
-VPN_Fusion_FAQ=<a id="faq1" href="" target="_blank" style="font-weight:bolder;text-decoration:underline;">Multiple VPN Connection FAQ.</a>
-[###MODEL_DEP###][TUF-AX5400][GS-AX5400][GS-AX3000][GT-AXE16000][GT-AXE11000][GT-AX11000_BO4][GT-AX11000_PRO][GT-AX11000][GT-AX6000][GT-AC5300][TUF-AX3000][TUF-AX3000_V2][GT-AC2900_SH][GT-AC2900][GT-AXY16000][RT-AXE7800][RT-AX86U_PRO][GT10]VPN_Fusion_FAQ=<a id="faq1" href="" target="_blank" style="font-weight:bolder;text-decoration:underline;">Ofte stillede spørgsmål om VPN Fusion.</a>
+VPN_Fusion_FAQ=<a id="faq1" href="" target="_blank" style="font-weight:bolder;text-decoration:underline;">Ofte stillede spørgsmål om VPN Fusion.</a>
 VPN_Fusion_Default_Alert=Kan ikke angives som standard WAN for målpolitikken.
 Beta_test_only=Beta test only
 FIRM_fupgrade_desc=You can also select [Cancel], the device will automatically start downloading the update during the night time.
@@ -4235,14 +4233,14 @@ LED_Brightness=LED-lysstyrke
 WiFi_Network_List=Liste over WiFi-netværker
 Searching_WiFi_Network=Søger efter WiFi-netværker i nærheden...
 BoostKey=Boost Key-binding
-[###MODEL_DEP###][GT-AX6000][GT-AXE16000]BoostKey=LED Key
+[###MODEL_DEP###][GT-AX6000][GT-AX11000_PRO][GT-AXE16000]BoostKey=LED Key
 BoostKey_desc=Bind én af de følgende funktioner til din Boost Key.
 [###MODEL_DEP###][GT-AC2900]BoostKey_desc=Bind én af de følgende funktioner til din Boost Key. Når bindefunktionen er blevet aktiveret, tændes Boost Key-lysdioden.
-[###MODEL_DEP###][GT-AX6000][GT-AXE16000]BoostKey_desc=Bind én af de følgende funktioner til din LED Key.
+[###MODEL_DEP###][GT-AX6000][GT-AX11000_PRO][GT-AXE16000]BoostKey_desc=Bind én af de følgende funktioner til din LED Key.
 BoostKey_enable=Enable Game Boost
 BoostKey_Aura_RGB=Aura RGB
 BoostKey_Aura_RGB_desc=Aura-synkroniseringskontrol bruges til at få Aura-kontrol fra andre ROG-enheder. Hvis den er deaktiveret, bliver den tilpasset Aura RGB.
-[###MODEL_DEP###][GT-AX6000][GT-AXE16000]BoostKey_Aura_RGB_desc=Press LED Key to turn on/off Aura RGB LED.
+[###MODEL_DEP###][GT-AX6000][GT-AX11000_PRO][GT-AXE16000]BoostKey_Aura_RGB_desc=Press LED Key to turn on/off Aura RGB LED.
 BoostKey_AURA_Shuffle=Aura Shuffle
 BoostKey_AURA_Shuffle_desc=Aura Shuffle sætter dig i stand til at ændre Aura-lyseffekten ved at trykke på din Boost Key.
 BoostKey_AURA_state_breathing=Ånder

@@ -125,7 +125,8 @@ var smartConnectObj = {
 }
 
 var fronthaulNetworkObj = {
-	"fh_ap_enabled": "2"
+	"fh_ap_enabled": "2",
+	"acs_unii4": "0"
 }
 
 var wlcObj = {

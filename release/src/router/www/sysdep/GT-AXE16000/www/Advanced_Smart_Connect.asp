@@ -686,6 +686,10 @@ function applyRule(){
 		if(smart_connect_array[i] === ''){
 			continue;
 		}
+
+		if(based_modelid == 'GT-AXE16000'){		// wireless介面順序變換調整
+			shift = (i + 3) % 4;		// wireless unit ['1', '2', '3', '0']			
+		}
 		/*
 			Steering policy
 			['Bandwidth Utilization', 'X', 'X', 'RSSI value', 'PHY rate less', 'PHY rate great', 'binary string']
@@ -738,7 +742,7 @@ function applyRule(){
 			return '0x' + parseInt(binary, 2).toString(16);
 		})();
 
-		variable['wl'+ i +'_bsd_steering_policy'] = bsd_steering_policy.join(' ');
+		variable['wl'+ shift +'_bsd_steering_policy'] = bsd_steering_policy.join(' ');
 
 		/*
 			STA Selection Policy
@@ -782,7 +786,7 @@ function applyRule(){
 			return '0x' + parseInt(binary, 2).toString(16);
 		})();
 
-		variable['wl'+ i +'_bsd_sta_select_policy'] = bsd_sta_select_policy.join(' ');
+		variable['wl'+ shift +'_bsd_sta_select_policy'] = bsd_sta_select_policy.join(' ');
 		
 		/*
 			Interface Quality
@@ -822,7 +826,7 @@ function applyRule(){
 			return '0x' + parseInt(binary, 2).toString(16);
 		})();
 
-		variable['wl'+ i +'_bsd_if_qualify_policy'] = bsd_if_qualify_policy.join(' ');
+		variable['wl'+ shift +'_bsd_if_qualify_policy'] = bsd_if_qualify_policy.join(' ');
 
 		let if_array = [];
 		if(smart_connect_array[i] !== ''){
@@ -840,7 +844,7 @@ function applyRule(){
 			}
 		}
 		
-		variable['wl'+ i +'_bsd_if_select_policy'] = if_array.join(' ');
+		variable['wl'+ shift +'_bsd_if_select_policy'] = if_array.join(' ');
 
 		/*
 			Bounce Detect 

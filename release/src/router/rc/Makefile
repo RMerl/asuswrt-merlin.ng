@@ -905,7 +905,7 @@ ifeq ($(BUILD_NAME), GT10)
 export GT10=y
 endif
 
-ifeq ($(or $(RTAX82U),$(GSAX3000),$(GSAX5400),$(TUFAX5400),$(GTAX11000_PRO),$(GTAXE16000),$(GTAX6000),$(GT10)),y)
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-AX82U RT-AX82U_V2 GS-AX3000 GS-AX5400 TUF-AX5400 GT-AX11000_PRO GT-AXE16000 GT-AX6000 GT10))
 LDFLAGS += -lm
 OBJS += ledg.o
 OBJS += ledbtn.o
@@ -1416,7 +1416,7 @@ ifeq ($(RTCONFIG_EXTPHY_BCM84880),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc get_ext_phy_id
 endif
 
-ifeq ($(or $(RTAX82U),$(DSL_AX82U),$(GSAX3000),$(GSAX5400),$(TUFAX5400),$(GTAX11000_PRO),$(GTAXE16000),$(GTAX6000),$(GT10)),y)
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-AX82U RT-AX82U_V2 GS-AX3000 GS-AX5400 TUF-AX5400 GT-AX11000_PRO GT-AXE16000 GT-AX6000 GT10))
 	@cd $(INSTALLDIR)/sbin && ln -sf rc ledg
 	@cd $(INSTALLDIR)/sbin && ln -sf rc ledbtn
 endif
@@ -1847,7 +1847,7 @@ endif
 endif
 endif
 
-ifeq ($(or $(RTAX82U),$(DSL_AX82U),$(GSAX3000),$(GSAX5400),$(TUF-AX5400),$(GTAX11000_PRO),$(GTAXE16000),$(GTAX6000),$(GT10)),y)
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-AX82U RT-AX82U_V2 GS-AX3000 GS-AX5400 TUF-AX5400 GT-AX11000_PRO GT-AXE16000 GT-AX6000 GT10))
 ifneq ($(wildcard ./prebuild/ledg.o),)
 ledg.o:
 	@-cp -f ./prebuild/ledg.o .

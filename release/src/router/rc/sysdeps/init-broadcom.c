@@ -94,6 +94,10 @@ void smart_connect_sync_config(int unit);
 
 int wan_phyid = -1;
 
+#if defined(XT8PRO) || defined(XT8_V2) || defined(ET8PRO)
+#define GPY211_IF_NAME "eth0"
+#endif
+
 void init_devs(void)
 {
 }
@@ -1235,6 +1239,7 @@ void generate_switch_para(void)
 		case MODEL_XD4PRO:
 		case MODEL_CTAX56_XD4:
 		case MODEL_RTAX58U:
+		case MODEL_RTAX82U_V2:
 		case MODEL_RTAX82_XD6S:
 		case MODEL_RTAX58U_V2:
 		case MODEL_GT10:
@@ -2086,6 +2091,34 @@ void init_switch_pre()
 		foreach(word, ifnames, next)
 			doSystem("ifconfig %s mtu 1500", word);
 #endif
+#if defined(XT8PRO) || defined(XT8_V2) || defined(ET8PRO)
+	if(hnd_boardid_cmp("XT8PRO_GPY211") == 0 ||
+		hnd_boardid_cmp("ET8PRO_GPY211") == 0 ||
+		hnd_boardid_cmp("XT8_V2") == 0){
+		doSystem("ethctl %s media-type 1000FD", GPY211_IF_NAME);
+		sleep(10);
+		doSystem("ethctl %s media-type auto", GPY211_IF_NAME);
+		sleep(10);
+	}
+#endif
+}
+
+void wl_dis_illegal_160m()
+{
+#if defined(XT8PRO)
+	if (strcmp(nvram_safe_get("model"), "ZenWiFi_XT8P") != 0){
+		_dprintf("it is not XT9\n");
+		nvram_set_int("wl1_bw_160", 0);
+		return;
+	}
+#elif defined(ET8PRO)
+	if (strcmp(nvram_safe_get("model"), "ZenWiFi_ET8P") != 0){
+		_dprintf("it is not ET9\n");
+		nvram_set_int("wl1_bw_160", 0);
+		return;
+	}
+#endif
+	return;
 }
 
 #define ARRAYSIZE(a)	(sizeof(a)/sizeof(a[0]))
@@ -2315,6 +2348,7 @@ void init_switch()
 		case MODEL_XD4PRO:
 		case MODEL_CTAX56_XD4:
 		case MODEL_RTAX58U:
+		case MODEL_RTAX82U_V2:
 		case MODEL_RTAX82_XD6S:
 		case MODEL_RTAX58U_V2:
 		case MODEL_RTAXE7800:
@@ -2539,7 +2573,7 @@ void init_switch()
 		{
 			/* set wanports in init_nvram for dualwan */
 			/* WAN L1 L2 L3 L4 L5 L6 */
-			int ports[6] = { 0, 1, 2, 3, 4, 5, 6};
+			int ports[7] = { 0, 1, 2, 3, 4, 5, 6};
 			char buf[64], *ptr;
 			int i, len, wancfg;
 			int tmp_type;
@@ -3188,7 +3222,6 @@ set_bcm4360ac_vars(void)
 unsigned char gen_mssid_hwaddr_mac0(unsigned char mac_binary[])
 {
 	char vif_addr[WLC_IOCTL_SMLEN];
-	int i = 0 ;
 
 	memcpy(vif_addr, mac_binary, ETHER_ADDR_LEN);
 
@@ -3288,6 +3321,7 @@ reset_mssid_hwaddr(int unit)
 			case MODEL_XD4PRO:
 			case MODEL_CTAX56_XD4:
 			case MODEL_RTAX58U:
+			case MODEL_RTAX82U_V2:
 			case MODEL_RTAX82_XD6S:
 			case MODEL_RTAX58U_V2:
 			case MODEL_RTAXE7800:
@@ -3363,7 +3397,7 @@ reset_mssid_hwaddr(int unit)
 
 #if (defined(RTCONFIG_FRONTHAUL_DWB) || defined(RTCONFIG_MSSID_PRELINK)) && !defined(RTCONFIG_MSSID_REALMAC)
 			/* virtual mac address generation */
-			vif_mac0 = gen_mssid_hwaddr_mac0(&mac_binary);
+			vif_mac0 = gen_mssid_hwaddr_mac0((unsigned char *) &mac_binary);
 #else
 			ETHER_SET_LOCALADDR(mac_binary);
 #endif
@@ -3672,8 +3706,14 @@ _dprintf("load_wl(): starting...\n");
 			memset(instance_base2, 0, sizeof(instance_base2));
 #if defined(RTCONFIG_BCM7) || defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER)
 			if ((strcmp(module, "dhd") == 0) || (strcmp(module, "dhd24") == 0))
-#ifdef RTAXE7800
+#if defined(RTCONFIG_BCM_MFG) && (defined(GT10) || defined(RTAX82U_V2))
+				snprintf(instance_base, sizeof(instance_base), "instance_base=%d dhd_msg_level=%d firmware_path=/rom/dhd/6715b0_mfg/rtecdc.bin", maxunit + 1, nvram_get_int("dhd_msg_level"));
+#elif defined(RTAXE7800)
+#ifdef RTCONFIG_BCM_MFG
+				snprintf(instance_base, sizeof(instance_base), "instance_base=%d dhd_msg_level=%d firmware_path=/rom/dhd/6715b0_mfg/rtecdc.bin", 1, nvram_get_int("dhd_msg_level"));
+#else
 				snprintf(instance_base, sizeof(instance_base), "instance_base=%d dhd_msg_level=%d", 1, nvram_get_int("dhd_msg_level"));
+#endif
 #else
 				snprintf(instance_base, sizeof(instance_base), "instance_base=%d dhd_msg_level=%d", maxunit + 1, nvram_get_int("dhd_msg_level"));
 #endif
@@ -3735,6 +3775,10 @@ _dprintf("load_wl(): end.\n");
 }
 #endif
 
+#if defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_HND_ROUTER_AX_6710) || defined(RTCONFIG_BCM_502L07P2)
+void wlaffinity(void);
+#endif
+
 void init_wl(void)
 {
 #ifdef RTCONFIG_BCMWL6
@@ -3772,6 +3816,9 @@ void init_wl(void)
 	check_wl_country();
 #if defined(RTAC3200) || defined(RTAC68U) || defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER) || defined(DSL_AC68U)
 	wl_disband5grp();
+#endif
+#ifdef HND_ROUTER
+	wl_dis_illegal_160m();
 #endif
 #if !defined(RTCONFIG_HND_ROUTER_AX)
 	set_wltxpower();
@@ -3925,6 +3972,9 @@ void init_wl_compact(void)
 #if defined(RTAC3200) || defined(RTAC68U) || defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER) || defined(DSL_AC68U)
 	wl_disband5grp();
 #endif
+#ifdef HND_ROUTER
+	wl_dis_illegal_160m();
+#endif
 #if !defined(RTCONFIG_HND_ROUTER_AX)
 	set_wltxpower();
 #endif
@@ -4003,6 +4053,10 @@ void fini_wl(void)
 	eval("rmmod", "cfg80211");
 #endif
 }
+
+#ifdef RTCONFIG_HND_ROUTER_AX_6756
+void sync_cfe_mac();
+#endif
 
 void init_syspara(void)
 {
@@ -4151,6 +4205,7 @@ void init_syspara(void)
 		case MODEL_XD4PRO:
 		case MODEL_CTAX56_XD4:
 		case MODEL_RTAX58U:
+		case MODEL_RTAX82U_V2:
 		case MODEL_RTAX82_XD6S:
 		case MODEL_RTAX58U_V2:
 		case MODEL_RTAXE7800:
@@ -4402,6 +4457,38 @@ void wlaffinity(void)
 	nvram_set("BCM_MODEL", "Broadcom BCM96756");
 #endif
 	eval("/bin/wlaffinity", "auto");
+
+	/* Set Affinities for the WL threads */
+#ifdef GT10
+	char word[256], *next;
+	int unit;
+	int pid;
+	char proc_wfd_thrd_name[10] = { 0 };
+	char proc_wl_kthrd_name[10] = { 0 };
+	int aff_wfd_thrd[] = { 4, 1, 2 };
+	int aff_wl_kthrd[] = { 4, -1, -1 };
+
+	foreach (word, nvram_safe_get("wl_ifnames"), next) {
+		if (wl_probe(word) || wl_ioctl(word, WLC_GET_INSTANCE, &unit, sizeof(unit)))
+			continue;
+
+		if (aff_wfd_thrd[unit] != -1) {
+			snprintf(proc_wfd_thrd_name, sizeof(proc_wfd_thrd_name), "wfd%d-thrd", unit);
+			if ((pid = get_pid_by_thrd_name(proc_wfd_thrd_name)) > 0) {
+				dbg("%s set %s pid:%d to aff:%d\n", __func__, proc_wfd_thrd_name, pid, aff_wfd_thrd[unit]);
+				doSystem("taskset -p %d %d", aff_wfd_thrd[unit], pid);
+			}
+		}
+
+		if (aff_wl_kthrd[unit] != -1) {
+			snprintf(proc_wl_kthrd_name, sizeof(proc_wl_kthrd_name), "wl%d-kthrd", unit);
+			if ((pid = get_pid_by_thrd_name(proc_wl_kthrd_name)) > 0) {
+				dbg("%s set %s pid:%d to aff:%d\n", __func__, proc_wl_kthrd_name, pid, aff_wl_kthrd[unit]);
+				doSystem("taskset -p %d %d", aff_wl_kthrd[unit], pid);
+			}
+		}
+	}
+#endif
 }
 #endif
 
@@ -4498,7 +4585,7 @@ void init_others(void)
 #if defined(RTCONFIG_HND_ROUTER_AX_675X)
 	update_cfe_675x();
 #endif
-#if defined(BCM6750) && !defined(RTAX82_XD6) && !defined(RTAX82_XD6S) && !defined(TUFAX5400)
+#if defined(BCM6750) && !defined(RTAX82_XD6) && !defined(RTAX82_XD6S) && !defined(TUFAX5400) && !defined(RTAX82U_V2)
 	update_cfe_ax58u();
 #endif
 #if defined(RTCONFIG_BCM_MFG) && (defined(RTAX55) || defined(RTAX1800) || defined(TUFAX5400))
@@ -7195,6 +7282,7 @@ _dprintf("*** Multicast IPTV: config Singtel TR069 on wan port ***\n");
 				/* WAN  L1						  */
 
 	case MODEL_RTAX58U:
+	case MODEL_RTAX82U_V2:
 				/* eth4 eth3 eth2 eth1 eth0					  */	
 				/* WAN  L1   L2   L3   L4					  */
 				/* XD6								  */
@@ -7277,7 +7365,7 @@ _dprintf("*** Multicast IPTV: config Singtel TR069 on wan port ***\n");
 			sprintf(vlanDev4, "eth1.v0");
 		}
 		/* Specific net devices order for RT-AX58U */
-		else if (model == MODEL_RTAX58U) {
+		else if (model == MODEL_RTAX58U || model == MODEL_RTAX82U_V2) {
 #ifdef RTAX82_XD6
 			sprintf(ethPort1, "eth0");
 			sprintf(ethPort2, "eth1");
@@ -7513,7 +7601,7 @@ _dprintf("*** Multicast IPTV: config Singtel TR069 on wan port ***\n");
 						nvram_set("wan0_gw_ifname", br_dev);
 					}
 					// enable softswitch for vlan forwarding(all internal switch)
-					if (model == MODEL_RTAX58U || model == MODEL_RTAX82_XD6S)
+					if (model == MODEL_RTAX58U || model == MODEL_RTAX82_XD6S || model == MODEL_RTAX82U_V2)
 						eval("ethswctl", "-c", "softswitch",  "-i",  wan_if, "-o", "enable");
 				} else {
 					set_wan_phy("");
@@ -7535,7 +7623,7 @@ _dprintf("*** Multicast IPTV: config Singtel TR069 on wan port ***\n");
 			eval("ifconfig", vlanDev4, "allmulti", "up");
 			eval("brctl", "addif", br_dev, vlanDev4);
 			// enable softswitch for vlan forwarding(all internal switch)
-			if (model == MODEL_RTAX58U)
+			if (model == MODEL_RTAX58U || model == MODEL_RTAX82U_V2)
 				eval("ethswctl", "-c", "softswitch",  "-i",  ethPort4, "-o", "enable");
 		} else if (nvram_match("switch_stb_x", "2") && nvram_match("switch_wantag", "none")) {
 			/* Just forward packets between wan & vlanDev1, no tag */
@@ -7547,7 +7635,7 @@ _dprintf("*** Multicast IPTV: config Singtel TR069 on wan port ***\n");
 			eval("ifconfig", vlanDev3, "allmulti", "up");
 			eval("brctl", "addif", br_dev, vlanDev3);
 			// enable softswitch for vlan forwarding(all internal switch)
-			if (model == MODEL_RTAX58U)
+			if (model == MODEL_RTAX58U || model == MODEL_RTAX82U_V2)
 				eval("ethswctl", "-c", "softswitch",  "-i",  ethPort3, "-o", "enable");
 		} else if (nvram_match("switch_stb_x", "3")) {
 			if (nvram_match("switch_wantag", "vodafone")) {
@@ -7570,7 +7658,7 @@ _dprintf("*** Multicast IPTV: config Singtel TR069 on wan port ***\n");
 				eval("ifconfig", vlanDev1, "allmulti", "up");
 				eval("brctl", "addif", br_dev, vlanDev1);
 				// enable softswitch for vlan forwarding(all internal switch)
-				if (model == MODEL_RTAX58U || model == MODEL_RTAX82_XD6S)
+				if (model == MODEL_RTAX58U || model == MODEL_RTAX82_XD6S || model == MODEL_RTAX82U_V2)
 					eval("ethswctl", "-c", "softswitch",  "-i",  ethPort1, "-o", "enable");
 			}
 			if (nvram_match("switch_wantag", "m1_fiber")
@@ -7589,7 +7677,7 @@ _dprintf("*** Multicast IPTV: config Singtel TR069 on wan port ***\n");
 				eval("ifconfig", vlanDev2, "allmulti", "up");
 				eval("brctl", "addif", br_dev, vlanDev2);
 				// enable softswitch for vlan forwarding(all internal switch)
-				if (model == MODEL_RTAX58U || model == MODEL_RTAX82_XD6S)
+				if (model == MODEL_RTAX58U || model == MODEL_RTAX82_XD6S || model == MODEL_RTAX82U_V2)
 					eval("ethswctl", "-c", "softswitch",  "-i",  ethPort2, "-o", "enable");
 			}
 			else if (nvram_match("switch_wantag", "maxis_fiber")) {
@@ -7603,7 +7691,7 @@ _dprintf("*** Multicast IPTV: config Singtel TR069 on wan port ***\n");
 				eval("ifconfig", vlanDev2, "allmulti", "up");
 				eval("brctl", "addif", br_dev, vlanDev2);
 				// enable softswitch for vlan forwarding(all internal switch)
-				if (model == MODEL_RTAX58U || model == MODEL_RTAX82_XD6S)
+				if (model == MODEL_RTAX58U || model == MODEL_RTAX82_XD6S || model == MODEL_RTAX82U_V2)
 					eval("ethswctl", "-c", "softswitch",  "-i",  ethPort2, "-o", "enable");
 			}
 			else if (nvram_match("switch_wantag", "none")) {
@@ -7636,7 +7724,7 @@ _dprintf("*** Multicast IPTV: config Singtel TR069 on wan port ***\n");
 				eval("ifconfig", vlanDev2, "allmulti", "up");
 				eval("brctl", "addif", br_dev, vlanDev2);
 				// enable softswitch for vlan forwarding(all internal switch)
-				if (model == MODEL_RTAX58U || model == MODEL_RTAX82_XD6S)
+				if (model == MODEL_RTAX58U || model == MODEL_RTAX82_XD6S || model == MODEL_RTAX82U_V2)
 					eval("ethswctl", "-c", "softswitch",  "-i",  ethPort2, "-o", "enable");
 			}
 			else {  /* Nomo case. */
@@ -7657,7 +7745,7 @@ _dprintf("*** Multicast IPTV: config Singtel TR069 on wan port ***\n");
 				eval("ifconfig", vlanDev2, "allmulti", "up");
 				eval("brctl", "addif", br_dev, vlanDev2);
 				// enable softswitch for vlan forwarding(all internal switch)
-				if (model == MODEL_RTAX58U || model == MODEL_RTAX82_XD6S)
+				if (model == MODEL_RTAX58U || model == MODEL_RTAX82_XD6S || model == MODEL_RTAX82U_V2)
 					eval("ethswctl", "-c", "softswitch",  "-i",  ethPort2, "-o", "enable");
 			}
 		} else if (nvram_match("switch_stb_x", "4")) {
@@ -7675,7 +7763,7 @@ _dprintf("*** Multicast IPTV: config Singtel TR069 on wan port ***\n");
 				eval("ifconfig", vlanDev1, "allmulti", "up");
 				eval("brctl", "addif", br_dev, vlanDev1);
 				// enable softswitch for vlan forwarding(all internal switch)
-				if (model == MODEL_RTAX58U || model == MODEL_RTAX82_XD6S)
+				if (model == MODEL_RTAX58U || model == MODEL_RTAX82_XD6S || model == MODEL_RTAX82U_V2)
 					eval("ethswctl", "-c", "softswitch",  "-i",  ethPort1, "-o", "enable");
 			}
 			else if (nvram_match("switch_wantag", "hinet")) {
@@ -7688,7 +7776,7 @@ _dprintf("*** Multicast IPTV: config Singtel TR069 on wan port ***\n");
 				eval("ifconfig", vlanDev1, "allmulti", "up");
 				eval("brctl", "addif", br_dev, vlanDev1);
 				// enable softswitch for vlan forwarding(all internal switch)
-				if (model == MODEL_RTAX58U || model == MODEL_RTAX82_XD6S)
+				if (model == MODEL_RTAX58U || model == MODEL_RTAX82_XD6S || model == MODEL_RTAX82U_V2)
 					eval("ethswctl", "-c", "softswitch",  "-i",  ethPort1, "-o", "enable");
 			}
 			else if (nvram_match("switch_wantag", "none")) {
@@ -7710,7 +7798,7 @@ _dprintf("*** Multicast IPTV: config Singtel TR069 on wan port ***\n");
 				eval("ifconfig", vlanDev1, "allmulti", "up");
 				eval("brctl", "addif", br_dev, vlanDev1);
 				// enable softswitch for vlan forwarding(all internal switch)
-				if (model == MODEL_RTAX58U || model == MODEL_RTAX82_XD6S)
+				if (model == MODEL_RTAX58U || model == MODEL_RTAX82_XD6S || model == MODEL_RTAX82U_V2)
 					eval("ethswctl", "-c", "softswitch",  "-i",  ethPort1, "-o", "enable");
 			}
 			else if (nvram_match("switch_wantag", "free")) {
@@ -7727,7 +7815,7 @@ _dprintf("*** Multicast IPTV: config Singtel TR069 on wan port ***\n");
 				eval("brctl", "addif", br_dev, wan_dev);
 				eval("brctl", "addif", br_dev, vlanDev1);
 				eval("brctl", "addif", "br0", ethPort1);
-				if (model == MODEL_RTAX58U || model == MODEL_RTAX82_XD6S)
+				if (model == MODEL_RTAX58U || model == MODEL_RTAX82_XD6S || model == MODEL_RTAX82U_V2)
 					eval("ethswctl", "-c", "softswitch",  "-i",  ethPort1, "-o", "enable");
 			}
 			else {  /* Nomo case, untag it. */
@@ -7751,7 +7839,7 @@ _dprintf("*** Multicast IPTV: config Singtel TR069 on wan port ***\n");
 				if (nvram_match("switch_wantag", "unifi_home"))
 					eval("ethswctl", "-c", "hwstp",  "-i",  vlanDev1, "-o",  "disable");
 				// enable softswitch for vlan forwarding(all internal switch)
-				if (model == MODEL_RTAX58U || model == MODEL_RTAX82_XD6S)
+				if (model == MODEL_RTAX58U || model == MODEL_RTAX82_XD6S || model == MODEL_RTAX82U_V2)
 					eval("ethswctl", "-c", "softswitch",  "-i",  ethPort1, "-o", "enable");
 			}
 		} else if (nvram_match("switch_stb_x", "5") && nvram_match("switch_wantag", "none")) {
@@ -7790,7 +7878,7 @@ _dprintf("*** Multicast IPTV: config Singtel TR069 on wan port ***\n");
 				sprintf(ethPort2, "eth2");
 				sprintf(vlanDev2, "eth2.v0");
 			}
-			else if (model == MODEL_RTAX58U) {
+			else if (model == MODEL_RTAX58U || model == MODEL_RTAX82U_V2) {
 #ifdef RTAX82_XD6
 				sprintf(ethPort1, "eth2");
 				sprintf(vlanDev1, "eth2.v0");
@@ -7818,7 +7906,7 @@ _dprintf("*** Multicast IPTV: config Singtel TR069 on wan port ***\n");
 			eval("ifconfig", vlanDev2, "allmulti", "up");
 			eval("brctl", "addif", br_dev, vlanDev2);
 			// enable softswitch for vlan forwarding(all internal switch)
-			if (model == MODEL_RTAX58U) {
+			if (model == MODEL_RTAX58U || model == MODEL_RTAX82U_V2) {
 				eval("ethswctl", "-c", "softswitch",  "-i",  ethPort1, "-o", "enable");
 				eval("ethswctl", "-c", "softswitch",  "-i",  ethPort2, "-o", "enable");
 			}
@@ -7835,7 +7923,7 @@ _dprintf("*** Multicast IPTV: config Singtel TR069 on wan port ***\n");
 				eval("ifconfig", vlanDev2, "allmulti", "up");
 				eval("brctl", "addif", br_dev, vlanDev2);
 				// enable softswitch for vlan forwarding(all internal switch)
-				if (model == MODEL_RTAX58U || model == MODEL_RTAX82_XD6S)
+				if (model == MODEL_RTAX58U || model == MODEL_RTAX82_XD6S || model == MODEL_RTAX82U_V2)
 					eval("ethswctl", "-c", "softswitch",  "-i",  ethPort2, "-o", "enable");
 			}
 			else if (nvram_match("switch_wantag", "meo_br")) {
@@ -7848,7 +7936,7 @@ _dprintf("*** Multicast IPTV: config Singtel TR069 on wan port ***\n");
 				eval("ifconfig", vlanDev2, "allmulti", "up");
 				eval("brctl", "addif", br_dev, vlanDev2);
 				// enable softswitch for vlan forwarding(all internal switch)
-				if (model == MODEL_RTAX58U || model == MODEL_RTAX82_XD6S)
+				if (model == MODEL_RTAX58U || model == MODEL_RTAX82_XD6S || model == MODEL_RTAX82U_V2)
 					eval("ethswctl", "-c", "softswitch",  "-i",  ethPort2, "-o", "enable");
 			}
 			else if (nvram_match("switch_wantag", "none")) {
@@ -7877,7 +7965,7 @@ _dprintf("*** Multicast IPTV: config Singtel TR069 on wan port ***\n");
 					sprintf(ethPort4, "eth4");
 					sprintf(vlanDev4, "eth4.v0");
 				}
-				else if (model == MODEL_RTAX58U) {
+				else if (model == MODEL_RTAX58U || model == MODEL_RTAX82U_V2) {
 					sprintf(ethPort3, "eth1");
 					sprintf(vlanDev3, "eth1.v0");
 					sprintf(ethPort4, "eth0");
@@ -7897,7 +7985,7 @@ _dprintf("*** Multicast IPTV: config Singtel TR069 on wan port ***\n");
 				eval("vlanctl", "--if", ethPort4, "--tx", "--tags", "0", "--filter-txif", vlanDev4, "--rule-append");
 				eval("ifconfig", vlanDev4, "allmulti", "up");
 				eval("brctl", "addif", br_dev, vlanDev4);
-				if (model == MODEL_RTAX58U) {
+				if (model == MODEL_RTAX58U || model == MODEL_RTAX82U_V2) {
 					eval("ethswctl", "-c", "softswitch",  "-i",  ethPort3, "-o", "enable");
 					eval("ethswctl", "-c", "softswitch",  "-i",  ethPort4, "-o", "enable");
 				}
@@ -7921,7 +8009,7 @@ _dprintf("*** Multicast IPTV: config Singtel TR069 on wan port ***\n");
 					eval("ifconfig", vlanDev2, "allmulti", "up");
 					eval("brctl", "addif", br_dev, vlanDev2);
 					// enable softswitch for vlan forwarding(all internal switch)
-					if (model == MODEL_RTAX58U || model == MODEL_RTAX82_XD6S)
+					if (model == MODEL_RTAX58U || model == MODEL_RTAX82_XD6S || model == MODEL_RTAX82U_V2)
 						eval("ethswctl", "-c", "softswitch",  "-i",  ethPort2, "-o", "enable");
 				}
 			}
@@ -7945,7 +8033,7 @@ _dprintf("*** Multicast IPTV: config Singtel TR069 on wan port ***\n");
 					eval("ifconfig", vlanDev1, "allmulti", "up");
 					eval("brctl", "addif", br_dev, vlanDev1);
 					// enable softswitch for vlan forwarding(all internal switch)
-					if (model == MODEL_RTAX58U || model == MODEL_RTAX82_XD6S)
+					if (model == MODEL_RTAX58U || model == MODEL_RTAX82_XD6S || model == MODEL_RTAX82U_V2)
 						eval("ethswctl", "-c", "softswitch",  "-i",  ethPort1, "-o", "enable");
 				}
 				else {
@@ -7964,7 +8052,7 @@ _dprintf("*** Multicast IPTV: config Singtel TR069 on wan port ***\n");
 					eval("ifconfig", vlanDev1, "allmulti", "up");
 					eval("brctl", "addif", br_dev, vlanDev1);
 					// enable softswitch for vlan forwarding(all internal switch)
-					if (model == MODEL_RTAX58U || model == MODEL_RTAX82_XD6S)
+					if (model == MODEL_RTAX58U || model == MODEL_RTAX82_XD6S || model == MODEL_RTAX82U_V2)
 						eval("ethswctl", "-c", "softswitch",  "-i",  ethPort1, "-o", "enable");
 				}
 			}
@@ -10210,14 +10298,7 @@ void set_acs_ifnames()
 #endif
 	char *p = strstr(list_5g_band4_bw160_chans, "0xeca3"); // drop chanspec 165/160
 	if (p) *(p-1) = '\0';
-	int excl_band4_bw160 =
-#ifdef RTCONFIG_AMAS_UNII4_BH
-		strlen(list_5g_band4_bw160_chans) && 
-			(!nvram_get_int("cfg_recount") || nvram_get_int("fh_ap_enabled") || nvram_get_int("fh_ap_bss"));
-#else
-		strlen(list_5g_band4_bw160_chans);
-#endif
-
+	int excl_band4_bw160 = strlen(list_5g_band4_bw160_chans) && !nvram_get_int("acs_unii4");
 #endif
 #ifdef RTCONFIG_AVBLCHAN
 	nvram_set("wl_acs_excl_chans_dfs", "");	
@@ -10302,7 +10383,10 @@ void set_acs_ifnames()
 	nvram_set("wl_acs_excl_chans_dfs", nvram_match("acs_dfs", "1") ? "" : list_5g_band2_chans);
 
 	/* band 4, UNII-4 */
-	snprintf(list, sizeof(list), strlen(list_5g_unii4_chans) ? "%s,%s" : "%s", list_ch165, list_5g_unii4_chans);
+	if (nvram_get_int("acs_unii4"))
+		snprintf(list, sizeof(list), "");
+	else
+		snprintf(list, sizeof(list), strlen(list_5g_unii4_chans) ? "%s,%s" : "%s", list_ch165, list_5g_unii4_chans);
 #ifdef RTCONFIG_AMAS
 	/* exclude band4 bw160 chanspecs once fronthaul ap provides */
 	if (excl_band4_bw160) {
@@ -10311,13 +10395,16 @@ void set_acs_ifnames()
 	}
 #endif
 	/* band 3 */
-	snprintf(list2, sizeof(list2), strlen(list_5g_band3_chans) ? "%s,%s" : "%s", list_5g_band3_chans, list);
+	snprintf(list2, sizeof(list2), strlen(list_5g_band3_chans) ? "%s,%s" : "%s", list, list_5g_band3_chans);
 
 	nvram_set(strcat_r(prefix_5g2, "acs_excl_chans", tmp), nvram_match("acs_band3", "1") ? list : list2);
 	nvram_set("wl_acs_excl_chans_dfs_2", nvram_match("acs_band3", "1") ? list : list2);
 #elif defined(RTCONFIG_WIFI6E)
 	/* band 4, UNII-4 */
-	snprintf(list, sizeof(list), strlen(list_5g_unii4_chans) ? "%s,%s" : "%s", list_ch165, list_5g_unii4_chans);
+	if (nvram_get_int("acs_unii4"))
+		snprintf(list, sizeof(list), "");
+	else
+		snprintf(list, sizeof(list), strlen(list_5g_unii4_chans) ? "%s,%s" : "%s", list_ch165, list_5g_unii4_chans);
 #ifdef RTCONFIG_AMAS
 	/* exclude band4 bw160 chanspecs once fronthaul ap provides */
 	if (excl_band4_bw160) {
@@ -10396,7 +10483,10 @@ void set_acs_ifnames()
 		nvram_set("wl_acs_excl_chans_dfs", nvram_match("acs_dfs", "1") ? (nvram_match("acs_band3", "1") ? "" : list) : list2);
 	} else if (nvram_match(strcat_r(prefix_5g, "band5grp", tmp), "1f")) {	// FCC-DFS including UNII-4
 		/* exclude acsd from selecting chanspec 100, 100l, 100/80, 100/160, 104, 104u, 104/80, 104/160, 108, 108l, 108/80, 108/160, 112, 112u, 112/80, 112/160, 116, 116l, 116/80, 116/160, 120, 120u, 120/80, 120/160, 124, 124l, 124/80, 124/160, 128, 128u, 128/80, 128/160, 132, 132l, 136, 136u, 140, 165, 165l, 165/80, 165/160, and UNII-4 chanspecs */
-		snprintf(list, sizeof(list), strlen(list_5g_unii4_chans) ? "%s,%s" : "%s", list_ch165, list_5g_unii4_chans);
+		if (!nvram_get_int("acs_unii4"))
+			snprintf(list, sizeof(list), "");
+		else
+			snprintf(list, sizeof(list), strlen(list_5g_unii4_chans) ? "%s,%s" : "%s", list_ch165, list_5g_unii4_chans);
 #ifdef RTCONFIG_AMAS
 		/* exclude band4 bw160 chanspecs once fronthaul ap provides */
 		if (excl_band4_bw160) {
@@ -10404,8 +10494,8 @@ void set_acs_ifnames()
 			strlcat(list, list_5g_band4_bw160_chans, sizeof(list));
 		}
 #endif
-		snprintf(list2, sizeof(list2), strlen(list_5g_band3_chans) ? "%s,%s" : "%s", list_5g_band3_chans, list);
-		snprintf(list3, sizeof(list3), strlen(list_5g_band2_chans) ? "%s,%s" : "%s", list_5g_band2_chans, list2);
+		snprintf(list2, sizeof(list2), strlen(list_5g_band3_chans) ? "%s,%s" : "%s", list, list_5g_band3_chans);
+		snprintf(list3, sizeof(list3), strlen(list_5g_band2_chans) ? "%s,%s" : "%s", list2, list_5g_band2_chans);
 		nvram_set(strcat_r(prefix_5g, "acs_excl_chans", tmp), nvram_match("acs_dfs", "1") ? (nvram_match("acs_band3", "1") ? list : list2) : list3);
 		nvram_set("wl_acs_excl_chans_dfs", nvram_match("acs_dfs", "1") ? (nvram_match("acs_band3", "1") ? list : list2) : list3);
 #else

@@ -939,7 +939,7 @@ get_uplinkports_linkrate(char *ifname)
 
 	//return lret > 0 ? lret : 0;
 #else // RTCONFIG_HND_ROUTER_AX_6710
-#if defined(HND_ROUTER) && !defined(RTCONFIG_HND_ROUTER_AX_675X) && !defined(BCM6756) && !defined(BCM6855)
+#if defined(HND_ROUTER) && !defined(RTCONFIG_HND_ROUTER_AX_675X) && !defined(BCM6756) && !defined(BCM6855) && !defined(BCM6750)
 	unsigned int regv=0, pmdv=0, regv2=0, pmdv2=0;
 #endif
 #ifdef RTCONFIG_EXT_BCM53134
@@ -1075,7 +1075,7 @@ get_uplinkports_linkrate(char *ifname)
 		sprintf(pif[4], "%s", "");
 		break;
 #else
-#if !defined(RTCONFIG_HND_ROUTER_AX_675X) && !defined(BCM6756) && !defined(BCM6855)
+#if !defined(RTCONFIG_HND_ROUTER_AX_675X) && !defined(BCM6756) && !defined(BCM6855) && !defined(BCM6750)
 	case MODEL_RTAC86U:
 		/* WAN L4 L3 L2 L1 */
 		ports[0]=7; ports[1]=3; ports[2]=2; ports[3]=1; ports[4]=0;
@@ -1236,6 +1236,7 @@ get_uplinkports_linkrate(char *ifname)
 		sprintf(pif[4], "%s", "eth0");
 		break;
 	case MODEL_RTAX58U:
+	case MODEL_RTAX82U_V2:
 #ifdef RTAX82_XD6
 		/* WAN L1 L2 L3 */
 		ports[0]=4; ports[1]=2; ports[2]=1; ports[3]=0;
@@ -1365,7 +1366,7 @@ get_uplinkports_linkrate(char *ifname)
 #ifndef HND_ROUTER
 		if (get_phy_status(mask)==0) /*Disconnect*/
 #else
-#if defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(BCM6756) || defined(BCM6855)
+#if defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(BCM6756) || defined(BCM6855) || defined(BCM6750)
 		if (hnd_get_phy_status(ports[i])==0) /*Disconnect*/
 #else
 		if (hnd_get_phy_status(ports[i], extra_p0, regv, pmdv)==0) /*Disconnect*/
@@ -1387,14 +1388,14 @@ get_uplinkports_linkrate(char *ifname)
 			ret=get_phy_speed(mask);
 			ret>>=(ports[i]*2);
 #else
-#if defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(BCM6756) || defined(BCM6855)
+#if defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(BCM6756) || defined(BCM6855) || defined(BCM6750)
 			ret = hnd_get_phy_speed(ports[i]);
 #else
 			ret = hnd_get_phy_speed(ports[i], extra_p0, regv2, pmdv2);
 #endif
 #endif
 			if (i==0) {
-#if defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(BCM6756) || defined(BCM6855)
+#if defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(BCM6756) || defined(BCM6855) || defined(BCM6750)
 				len = sprintf(out_buf, "W0=%s;", (ret == 2500) ? "Q" : ((ret == 1000) ? "G" : "M"));
 				lrate[i] = ret;
 #else
@@ -1416,7 +1417,7 @@ get_uplinkports_linkrate(char *ifname)
 				if (ports[i] >= extra_p0)
 					ext_lret = 1;
 
-#if defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(BCM6756) || defined(BCM6855)
+#if defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(BCM6756) || defined(BCM6855) || defined(BCM6750)
 				len += sprintf(out_buf + len, "L%d=%s;", i, (ret == 2500) ? "Q" : ((ret == 1000) ? "G" : "M"));
 				lrate[i] = ret;
 #else

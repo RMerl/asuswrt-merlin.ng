@@ -254,7 +254,7 @@ ifeq ($(HND_ROUTER_AX_6756),y)
 ifeq ($(RPAX58),y)
 export JFFS2_UBI_VOLUME_SIZE := 10
 else ifeq ($(XD4PRO),y)
-export JFFS2_UBI_VOLUME_SIZE := 20
+export JFFS2_UBI_VOLUME_SIZE := 12
 #else ifeq ($(TUFAX3000_V2),y)
 #export JFFS2_UBI_VOLUME_SIZE := 25
 else ifeq ($(RTAX3000N),y)
@@ -1639,6 +1639,9 @@ obj-$(HND_ROUTER) += mtd
 obj-$(HND_ROUTER) += urlfilterd
 obj-$(HND_ROUTER) += bpmctl
 obj-$(HND_ROUTER) += dnsspoof
+ifeq ($(RTCONFIG_HND_ROUTER_AX_6756),y)
+obj-$(RTCONFIG_SECUREBOOT) += sotpctl
+endif
 obj-$(HND_ROUTER) += ethctl
 obj-$(HND_ROUTER) += ethctl_lib
 obj-$(HND_ROUTER) += fcctl
@@ -8724,6 +8727,17 @@ endif
 	$(MAKE) -C $(TOPX_DIR) dynamic
 
 .PHONY : ethctl
+
+ifneq ($(PREBUILT_BCMBIN),1)
+sotpctl:
+else
+sotpctl:
+endif
+	$(eval TOPX_DIR:=$(firstword $(wildcard $(TOP_PLATFORM)/$@) $(wildcard $@)))
+	$(MAKE) -C $(TOPX_DIR)
+
+.PHONY : sotpctl
+
 
 ifneq ($(PREBUILT_BCMBIN),1)
 fcctl: fcctl_lib

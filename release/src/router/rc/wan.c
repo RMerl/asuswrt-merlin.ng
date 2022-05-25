@@ -1612,7 +1612,10 @@ TRACE_PT("3g begin with %s.\n", wan_ifname);
 			update_wan_state(prefix, WAN_STATE_STOPPED, WAN_STOPPED_REASON_SYSTEM_ERR);
 			return;
 		}
-
+#if defined(TUFAX3000_V2)
+		if (!strcmp(wan_ifname, "eth1"))
+			doSystem("ethswctl -c wan -i %s -o %s", wan_ifname, "enable");
+#endif
 #ifdef RTCONFIG_IPV6
 #if (defined(RTAX82_XD6) || defined(RTAX82_XD6S))
 		if ((wan_proto == WAN_STATIC) &&

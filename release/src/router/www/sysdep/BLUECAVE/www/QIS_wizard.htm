@@ -179,6 +179,18 @@
 						systemVariable.scMode = "SC_dwb_mode";
 
 					systemVariable.eth_wan_list = httpApi.hookGet("get_ethernet_wan_list", true);
+					if(Object.keys(systemVariable.eth_wan_list).length > 1){
+						Object.keys(systemVariable.eth_wan_list).forEach(function(eth_wan){
+							var wan_obj = systemVariable.eth_wan_list[eth_wan];
+							if(wan_obj.hasOwnProperty("extra_settings")){
+								var extra_settings = wan_obj.extra_settings;
+								$.each(extra_settings, function(key) {
+									if(!systemVariable.hasOwnProperty(key))
+										systemVariable[key] = httpApi.nvramGet([key], true)[key];
+								});
+							}
+						});
+					}
 					handleSysDep();
 
 					switch(getJsonFromUrl["flag"] || ""){

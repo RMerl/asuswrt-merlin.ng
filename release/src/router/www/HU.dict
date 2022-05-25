@@ -3202,7 +3202,7 @@ Setting_remove_passwd=Click on this checkbox if you want to share the config fil
 Settings=Beállítások
 Setup_note=Kattintson <a id="redirect_to_setup">ide</a> a módosításhoz. Bővebb részletekért lásd ezt a <a id="redirect_to_FAQ">GYIK-et</a>.
 Setup_node=Állítsa be a csomópontot
-Setup_node_desc_step1=Place your ZVMODELVZ router and node(s) in the same room and at least 1 meter apart during the setup process.
+Setup_node_desc_step1=Ugyanabban a helységben, egymástól legalább 1 m-es távolságra legyen(ek) elhelyezve a ZVMODELVZ routere és a csomópont(ok) a beállítási eljárás során.
 Setup_node_desc_step2=Tartsa bekapcsolva és legyen készenléti állapotban a rendszer beállításához.
 ShareNode_DeviceName_itemname=Eszköz neve
 ShareNode_FTPLANG_itemdesc=Válassza ki a fájlkódolásnak megfelelő nyelvbeállítást.
@@ -4195,8 +4195,7 @@ FreeWiFi_Image_Empty_Alert=A kezdőoldal képfájlja nem lehet üres.
 FreeWiFi_Welcome=Üdvözli Önt a(z)
 FreeWiFi_Agree_Terms_Service=Elolvastam és elfogadom a <span id='terms_service_hyperlink'>Szolgáltatási feltételeket</span>
 FreeWiFi_Continue=Folytatás
-VPN_Fusion=Több VPN-kapcsolat
-[###MODEL_DEP###][TUF-AX5400][GS-AX5400][GS-AX3000][GT-AXE16000][GT-AXE11000][GT-AX11000_BO4][GT-AX11000_PRO][GT-AX11000][GT-AX6000][GT-AC5300][TUF-AX3000][TUF-AX3000_V2][GT-AC2900_SH][GT-AC2900][GT-AXY16000][RT-AXE7800][RT-AX86U_PRO][GT10]VPN_Fusion=A VPN Fusion
+VPN_Fusion=A VPN Fusion
 VPN_Fusion_desc1=használatával egyszerre több VPN-kiszolgálóhoz csatlakozhat, és hozzárendelheti a klienskészülékeit, hogy azok különböző VPN-alagutakhoz csatlakozzanak. Bizonyos készülékek, például a set-top boxok, az intelligens televíziók és a Blu-ray-lejátszók nem támogatják a VPN szoftver használatát. Ez a funkció VPN-kapcsolaton keresztüli hozzáférést biztosít az ilyen készülékekhez egy otthoni hálózaton, amelyhez nem szükséges VPN-szoftvert telepíteni, és eközben az okostelefonja nem a VPN-hez, hanem az internethez csatlakozik.
 VPN_Fusion_desc2=Játékok esetében a VPN-kapcsolat kivédi a DDoS-támadásokat, hogy a PC-játékok és a lejátszott streamek közben ne szakadjon meg a kapcsolat a játékkiszolgálókkal. A VPN-kapcsolat létrehozása az IP-címet is arra a tartományra módosíthatja, ahol a játékkiszolgáló található, ami javítja a játékkiszolgálók pingelését.
 VPN_Fusion_desc_step=A kezdéshez végezze el az alábbi lépéseket:
@@ -4218,8 +4217,7 @@ VPN_Fusion_Deactivate_Delete_Alert=Kérjük, hogy törlés előtt inaktiválja a
 VPN_Fusion_Exception_Policies_Delete_Alert=A VPN-profilhoz beállított összes házirend-kivétel el lesz távolítva a profil törlésekor. Biztos, hogy törölni szeretné a profilt?
 VPN_Fusion_Delete_Alert=Biztos, hogy törölni szeretné ezt a profilt?
 VPN_Fusion_Exception_Policy_And_IP_Binding_Delete_Alert=Ha törli a kliens házirendjét a kivételek listáján, azzal a DHCP-kiszolgáló IP-kötését is törli a kliensnél. Biztos, hogy törölni szeretné ezt?
-VPN_Fusion_FAQ=<a id="faq1" href="" target="_blank" style="font-weight:bolder;text-decoration:underline;">Multiple VPN Connection FAQ.</a>
-[###MODEL_DEP###][TUF-AX5400][GS-AX5400][GS-AX3000][GT-AXE16000][GT-AXE11000][GT-AX11000_BO4][GT-AX11000_PRO][GT-AX11000][GT-AX6000][GT-AC5300][TUF-AX3000][TUF-AX3000_V2][GT-AC2900_SH][GT-AC2900][GT-AXY16000][RT-AXE7800][RT-AX86U_PRO][GT10]VPN_Fusion_FAQ=<a id="faq1" href="" target="_blank" style="font-weight:bolder;text-decoration:underline;">VPN Fusion – GYIK</a>
+VPN_Fusion_FAQ=<a id="faq1" href="" target="_blank" style="font-weight:bolder;text-decoration:underline;">VPN Fusion – GYIK</a>
 VPN_Fusion_Default_Alert=Nem lehet beállítani alapértelmezett WAN-ként a cél-házirendhez.
 Beta_test_only=Beta test only
 FIRM_fupgrade_desc=You can also select [Cancel], the device will automatically start downloading the update during the night time.
@@ -4235,14 +4233,14 @@ LED_Brightness=LED fényerő
 WiFi_Network_List=WiFi-hálózat lista
 Searching_WiFi_Network=Közeli WiFi hálózat keresése...
 BoostKey=Boost gomb
-[###MODEL_DEP###][GT-AX6000][GT-AXE16000]BoostKey=LED gomb
+[###MODEL_DEP###][GT-AX6000][GT-AX11000_PRO][GT-AXE16000]BoostKey=LED gomb
 BoostKey_desc=Kösse össze a következő funkciók egyikét a Boost gombbal.
 [###MODEL_DEP###][GT-AC2900]BoostKey_desc=Kösse össze a következő funkciók egyikét a Boost gombbal. Amikor a funkció összekötése aktiválódott, a Boost gomb LED felgyúl.
-[###MODEL_DEP###][GT-AX6000][GT-AXE16000]BoostKey_desc=Kösse össze a következő funkciók egyikét a LED gombbal.
+[###MODEL_DEP###][GT-AX6000][GT-AX11000_PRO][GT-AXE16000]BoostKey_desc=Kösse össze a következő funkciók egyikét a LED gombbal.
 BoostKey_enable=Enable Game Boost
 BoostKey_Aura_RGB=Aura RGB
 BoostKey_Aura_RGB_desc=Az Aura szinkronizálási vezérlés átveszi az Aura-vezérlést más ROG eszközöktől; ha le van tiltva, testreszabott Aura RGB-ként működik.
-[###MODEL_DEP###][GT-AX6000][GT-AXE16000]BoostKey_Aura_RGB_desc=Press LED Key to turn on/off Aura RGB LED.
+[###MODEL_DEP###][GT-AX6000][GT-AX11000_PRO][GT-AXE16000]BoostKey_Aura_RGB_desc=Press LED Key to turn on/off Aura RGB LED.
 BoostKey_AURA_Shuffle=Aura-keverés
 BoostKey_AURA_Shuffle_desc=Az Aura Shuffle lehetővé teszi az Aura fényeffektusok változtatását a Boost gomb megnyomásával.
 BoostKey_AURA_state_breathing=Lélegző

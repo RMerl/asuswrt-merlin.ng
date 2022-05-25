@@ -3202,7 +3202,7 @@ Setting_remove_passwd=Click on this checkbox if you want to share the config fil
 Settings=설정
 Setup_note=수정하려면 <a id="redirect_to_setup">여기를</a> 클릭하십시오. 자세한 내용은 이 <a id="redirect_to_FAQ">FAQ</a> 를 참조하십시오.
 Setup_node=노드 설정하기
-Setup_node_desc_step1=Place your ZVMODELVZ router and node(s) in the same room and at least 1 meter apart during the setup process.
+Setup_node_desc_step1=ZVMODELVZ 라우터와 노드를 같은 공간에 놓고, 설정 프로세스 동안 적어도 1 m 정도 떨어뜨려 두십시오.
 Setup_node_desc_step2=시스템 설정을 전원 켜기 및 대기로 유지합니다.
 ShareNode_DeviceName_itemname=장치 이름
 ShareNode_FTPLANG_itemdesc=당신의 설정 파일 인코딩에 알맞은 언어 설정을 선택하십시오.
@@ -4195,8 +4195,7 @@ FreeWiFi_Image_Empty_Alert=시작웹페이지의이미지파일은비워둘수�
 FreeWiFi_Welcome=환영합니다
 FreeWiFi_Agree_Terms_Service=본인은 <span id='terms_service_hyperlink'>서비스 약관</span>을 읽었으며 이에 동의합니다.
 FreeWiFi_Continue=계속
-VPN_Fusion=다중 VPN 연결
-[###MODEL_DEP###][TUF-AX5400][GS-AX5400][GS-AX3000][GT-AXE16000][GT-AXE11000][GT-AX11000_BO4][GT-AX11000_PRO][GT-AX11000][GT-AX6000][GT-AC5300][TUF-AX3000][TUF-AX3000_V2][GT-AC2900_SH][GT-AC2900][GT-AXY16000][RT-AXE7800][RT-AX86U_PRO][GT10]VPN_Fusion=VPN Fusion
+VPN_Fusion=VPN Fusion
 VPN_Fusion_desc1=여러 VPN 서버에동시에연결한후클라이언트장치를할당하여다른 VPN 터널에연결할수있습니다.셋톱박스,스마트 TV,블루레이플레이어와같은일부장치는 VPN 소프트웨어를지원하지않습니다.스마트폰이 VPN 이아니라인터넷에연결되어있는동안이기능으로 VPN 소프트웨어를설치하지않고도가정네트워크내에서이러한장치에 VPN 액세스를할수있습니다.
 VPN_Fusion_desc2=게이머의경우 VPN 연결이 DDoS 공격에대응하여PC게임이나스트림이게임서버와연결이끊어지는것을방지해줍니다.또한 VPN 연결을구축하면간단히 IP 주소를게임서버가위치한지역으로변경하여게임서버에대한 ping 을개선할수있습니다.
 VPN_Fusion_desc_step=시작하려면아래단계를따르십시오.
@@ -4218,8 +4217,7 @@ VPN_Fusion_Deactivate_Delete_Alert=프로필을삭제하기전에이를비활성
 VPN_Fusion_Exception_Policies_Delete_Alert=프로필이삭제되면VPN프로필에설정된모든정책예외가제거됩니다.프로필을삭제하시겠습니까?
 VPN_Fusion_Delete_Alert=이프로필을삭제하시겠습니까?
 VPN_Fusion_Exception_Policy_And_IP_Binding_Delete_Alert=또한예외목록에서클라이언트의정책을삭제하면클라이언트의DHCP서버IP바인딩이삭제됩니다.이정책을삭제하시겠습니까?
-VPN_Fusion_FAQ=<a id="faq1" href="" target="_blank" style="font-weight:bolder;text-decoration:underline;">Multiple VPN Connection FAQ.</a>
-[###MODEL_DEP###][TUF-AX5400][GS-AX5400][GS-AX3000][GT-AXE16000][GT-AXE11000][GT-AX11000_BO4][GT-AX11000_PRO][GT-AX11000][GT-AX6000][GT-AC5300][TUF-AX3000][TUF-AX3000_V2][GT-AC2900_SH][GT-AC2900][GT-AXY16000][RT-AXE7800][RT-AX86U_PRO][GT10]VPN_Fusion_FAQ=<a id="faq1" href="" target="_blank" style="font-weight:bolder;text-decoration:underline;">VPN Fusion FAQ.</a>
+VPN_Fusion_FAQ=<a id="faq1" href="" target="_blank" style="font-weight:bolder;text-decoration:underline;">VPN Fusion FAQ.</a>
 VPN_Fusion_Default_Alert=대상정책의기본WAN으로설정할수있습니다.
 Beta_test_only=Beta test only
 FIRM_fupgrade_desc=You can also select [Cancel], the device will automatically start downloading the update during the night time.
@@ -4235,14 +4233,14 @@ LED_Brightness=LED 밝기
 WiFi_Network_List=WiFi 네트워크 목록
 Searching_WiFi_Network=근처의 WiFi 네트워크를 검색하는 중...
 BoostKey=부스트 키
-[###MODEL_DEP###][GT-AX6000][GT-AXE16000]BoostKey=LED 키
+[###MODEL_DEP###][GT-AX6000][GT-AX11000_PRO][GT-AXE16000]BoostKey=LED 키
 BoostKey_desc=다음 기능 중 하나를 부스트 키에 바인딩하십시오.
 [###MODEL_DEP###][GT-AC2900]BoostKey_desc=다음 기능 중 하나를 부스트 키에 바인딩하십시오. 바인딩 기능이 활성화되면 부스트 키의 LED 가 켜집니다.
-[###MODEL_DEP###][GT-AX6000][GT-AXE16000]BoostKey_desc=다음 기능 중 하나를 LED 키에 바인딩하십시오.
+[###MODEL_DEP###][GT-AX6000][GT-AX11000_PRO][GT-AXE16000]BoostKey_desc=다음 기능 중 하나를 LED 키에 바인딩하십시오.
 BoostKey_enable=Enable Game Boost
 BoostKey_Aura_RGB=Aura RGB
 BoostKey_Aura_RGB_desc=Aura 동기 제어는 다른 ROG 장치로부터 get Aura 제어를 확보하는 데 사용되며, 비활성화된 경우 사용자 지정 Aura RGB 가 됩니다.
-[###MODEL_DEP###][GT-AX6000][GT-AXE16000]BoostKey_Aura_RGB_desc=Press LED Key to turn on/off Aura RGB LED.
+[###MODEL_DEP###][GT-AX6000][GT-AX11000_PRO][GT-AXE16000]BoostKey_Aura_RGB_desc=Press LED Key to turn on/off Aura RGB LED.
 BoostKey_AURA_Shuffle=Aura 셔플
 BoostKey_AURA_Shuffle_desc=Aura 셔플에서 부스트 키를 눌러 Aura 조명 효과를 변경할 수 있습니다.
 BoostKey_AURA_state_breathing=브리딩

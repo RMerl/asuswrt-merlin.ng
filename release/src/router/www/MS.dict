@@ -4195,8 +4195,7 @@ FreeWiFi_Image_Empty_Alert=Fail imej halaman web percikan tidak boleh kosong.
 FreeWiFi_Welcome=Selamat datang ke
 FreeWiFi_Agree_Terms_Service=Saya telah membaca dan bersetuju dengan <span id='terms_service_hyperlink'>Terma Perkhidmatan</span>
 FreeWiFi_Continue=Teruskan
-VPN_Fusion=Berbilang Sambungan VPN
-[###MODEL_DEP###][TUF-AX5400][GS-AX5400][GS-AX3000][GT-AXE16000][GT-AXE11000][GT-AX11000_BO4][GT-AX11000_PRO][GT-AX11000][GT-AX6000][GT-AC5300][TUF-AX3000][TUF-AX3000_V2][GT-AC2900_SH][GT-AC2900][GT-AXY16000][RT-AXE7800][RT-AX86U_PRO][GT10]VPN_Fusion=Gabungan VPN
+VPN_Fusion=Gabungan VPN
 VPN_Fusion_desc1=membenarkan anda menyambung ke berbilang pelayan VPN secara serentak dan menugaskan peranti klien anda untuk menyambung ke terowong VPN yang berbeza. Sesetengah peranti seperti kotak set-atas, TV pintar dan pemain Blu-ray tidak menyokong perisian VPN. Ciri ini menyediakan akses VPN ke peranti sedemikian dalam rangkaian rumah tanpa perlu memasang perisian VPN, manakala telefon pintar anda kekal bersambung ke Internet dan bukannya VPN.
 VPN_Fusion_desc2=Untuk Pemain, sambungan VPN mengurangkan serangan DDoS untuk menghalang permainan PC anda atau strim anda daripada terputus sambungan dengan pelayan permainan. Membina sambungan VPN juga boleh sahaja mengubah alamat IP anda ke rantau di mana terletaknya pelayan permainan, bagi meningkatkan ping anda ke pelayan permainan.
 VPN_Fusion_desc_step=Untuk bermula, sila ikuti langkah-langkah di bawah:
@@ -4218,8 +4217,7 @@ VPN_Fusion_Deactivate_Delete_Alert=Sila nyahaktifkan profil sebelum memadamnya.
 VPN_Fusion_Exception_Policies_Delete_Alert=Semua set pengecualian dasar untuk profil VPN akan dialih keluar apabila profil dipadamkan. Adakah anda pasti mahu memadam profil?
 VPN_Fusion_Delete_Alert=Adakah anda pasti mahu memadam profil ini?
 VPN_Fusion_Exception_Policy_And_IP_Binding_Delete_Alert=Memadam dasar klien dalam senarai pengecualian hanya akan memadam pengikatan Pelayan DHCP IP klien. Adakah anda pasti mahu memadam ini?
-VPN_Fusion_FAQ=<a id="faq1" href="" target="_blank" style="font-weight:bolder;text-decoration:underline;">Multiple VPN Connection FAQ.</a>
-[###MODEL_DEP###][TUF-AX5400][GS-AX5400][GS-AX3000][GT-AXE16000][GT-AXE11000][GT-AX11000_BO4][GT-AX11000_PRO][GT-AX11000][GT-AX6000][GT-AC5300][TUF-AX3000][TUF-AX3000_V2][GT-AC2900_SH][GT-AC2900][GT-AXY16000][RT-AXE7800][RT-AX86U_PRO][GT10]VPN_Fusion_FAQ=<a id="faq1" href="" target="_blank" style="font-weight:bolder;text-decoration:underline;">Soalan Lazim Gabungan VPN.</a>
+VPN_Fusion_FAQ=<a id="faq1" href="" target="_blank" style="font-weight:bolder;text-decoration:underline;">Soalan Lazim Gabungan VPN.</a>
 VPN_Fusion_Default_Alert=Tidak boleh ditetapkan sebagai WAN lalai untuk dasar sasaran.
 Beta_test_only=Beta test only
 FIRM_fupgrade_desc=You can also select [Cancel], the device will automatically start downloading the update during the night time.
@@ -4235,14 +4233,14 @@ LED_Brightness=Kecerahan LED
 WiFi_Network_List=Senarai rangkaian WiFi
 Searching_WiFi_Network=Mencari rangkaian WiFi berdekatan...
 BoostKey=Kunci Rangsangan
-[###MODEL_DEP###][GT-AX6000][GT-AXE16000]BoostKey=Kunci LED
+[###MODEL_DEP###][GT-AX6000][GT-AX11000_PRO][GT-AXE16000]BoostKey=Kunci LED
 BoostKey_desc=Ikat satu daripada fungsi berikut ke Kunci Rangsangan anda.
 [###MODEL_DEP###][GT-AC2900]BoostKey_desc=Ikat satu daripada fungsi berikut ke Kunci Rangsangan anda. Apabila fungsi yang terikat telah diaktifkan, LED Kunci Rangsangan akan menyala.
-[###MODEL_DEP###][GT-AX6000][GT-AXE16000]BoostKey_desc=Ikat satu daripada fungsi berikut ke Kunci LED anda.
+[###MODEL_DEP###][GT-AX6000][GT-AX11000_PRO][GT-AXE16000]BoostKey_desc=Ikat satu daripada fungsi berikut ke Kunci LED anda.
 BoostKey_enable=Enable Game Boost
 BoostKey_Aura_RGB=RGB Aura
 BoostKey_Aura_RGB_desc=Kawalan penyegerakan Aura digunakan untuk mendapatkan kawalan Aura daripada peranti ROG yang lain, jika dinyahdayakan, ia akan RGB Aura disesuaikan.
-[###MODEL_DEP###][GT-AX6000][GT-AXE16000]BoostKey_Aura_RGB_desc=Press LED Key to turn on/off Aura RGB LED.
+[###MODEL_DEP###][GT-AX6000][GT-AX11000_PRO][GT-AXE16000]BoostKey_Aura_RGB_desc=Press LED Key to turn on/off Aura RGB LED.
 BoostKey_AURA_Shuffle=Kocok Aura
 BoostKey_AURA_Shuffle_desc=Kocok Aura membolehkan anda mengubah kesan pencahayaan Aura anda dengan menekan Kunci Rangsangan.
 BoostKey_AURA_state_breathing=Bernafas

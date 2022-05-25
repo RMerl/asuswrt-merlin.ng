@@ -25,7 +25,7 @@
 #define MULTICAST_BIT  0x0001
 #define UNIQUE_OUI_BIT 0x0002
 
-#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAXE11000_PRO) || defined(GTAXE16000) || defined(GTAX6000) || defined(GT10)
+#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAXE11000_PRO) || defined(GTAXE16000) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2)
 extern int cled_gpio[];
 #endif
 
@@ -644,8 +644,10 @@ static int setAllSpecificColorLedOn(enum ate_led_color color)
 		}
 		break;
 #endif
+
 #ifdef BCM6750
 	case MODEL_RTAX58U:
+	case MODEL_RTAX82U_V2:
 		{
 #ifdef RTAX82_XD6
 			if (color == LED_COLOR_RED) {
@@ -667,7 +669,7 @@ static int setAllSpecificColorLedOn(enum ate_led_color color)
 			};
 			static enum led_id red_led[] = {
 				LED_WAN,
-#if defined(RTAX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400)
+#if defined(RTAX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(RTAX82U_V2)
 				LED_GROUP1_RED,
 #ifndef TUFAX5400
 				LED_GROUP2_RED,
@@ -680,7 +682,7 @@ static int setAllSpecificColorLedOn(enum ate_led_color color)
 #endif
 				LED_ID_MAX
 			};
-#if defined(RTAX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400)
+#if defined(RTAX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(RTAX82U_V2)
 			static enum led_id green_led[] = {
 				LED_GROUP1_GREEN,
 #ifndef TUFAX5400
@@ -708,13 +710,20 @@ static int setAllSpecificColorLedOn(enum ate_led_color color)
 #endif
 			all_led[LED_COLOR_WHITE] = white_led;
 			all_led[LED_COLOR_RED] = red_led;
-#if defined(RTAX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400)
+#if defined(RTAX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(RTAX82U_V2)
 			all_led[LED_COLOR_GREEN] = green_led;
 			all_led[LED_COLOR_BLUE] = blue_led;
+#ifdef RTAX82U_V2
+			wan_phy_led_pinmux(1);
+#else
 			LEDGroupReset(LED_ON);
 #endif
 #endif
+#endif
 			if (color == LED_COLOR_WHITE) {
+#ifdef RTAX82U_V2
+				LEDGroupReset(LED_OFF);
+#endif
 				eval("wl", "-i", "eth5", "ledbh", "0", "1");	// wl 2.4G
 #if defined(RTAX82U) && !defined(RTCONFIG_BCM_MFG)
 				if (!nvram_get_int("LED_order")) {
@@ -722,9 +731,16 @@ static int setAllSpecificColorLedOn(enum ate_led_color color)
 					eval("wl", "-i", "eth6", "ledbh", "15", "0");	// fake WAN
 				} else
 #endif
+#ifdef RTAX82U_V2
+				eval("wl", "-i", "eth6", "ledbh", "13", "1");
+#else
 				eval("wl", "-i", "eth6", "ledbh", "15", "1");	// wl 5G
+#endif
 			}
 			else {
+#ifdef RTAX82U_V2
+				LEDGroupColor(color);
+#endif
 				eval("wl", "-i", "eth5", "ledbh", "0", "21");	// wl 2.4G
 #if defined(RTAX82U) && !defined(RTCONFIG_BCM_MFG)
 				if (!nvram_get_int("LED_order")) {
@@ -732,7 +748,11 @@ static int setAllSpecificColorLedOn(enum ate_led_color color)
 					eval("wl", "-i", "eth6", "ledbh", "15", "1");	// fake WAN
 				} else
 #endif
+#ifdef RTAX82U_V2
+				eval("wl", "-i", "eth6", "ledbh", "13", "0");
+#else
 				eval("wl", "-i", "eth6", "ledbh", "15", "0");	// wl 5G
+#endif
 			}
 		}
 		break;
@@ -857,7 +877,7 @@ static int setAllSpecificColorLedOn(enum ate_led_color color)
 
 			if (color == LED_COLOR_WHITE) {
 				eval("wl", "-i", "eth5", "ledbh", "0", "1");	// wl 2.4G
-				eval("wl", "-i", "eth7", "ledbh", "15", "1");	// wl 5G
+				eval("wl", "-i", "eth7", "ledbh", "13", "1");	// wl 5G
 				eval("wl", "-i", "eth6", "ledbh", "0", "1");	// wl 6G
 				bcm53134_led_control(1);
 #ifdef RTCONFIG_EXTPHY_BCM84880
@@ -865,7 +885,7 @@ static int setAllSpecificColorLedOn(enum ate_led_color color)
 #endif
 			} else {
 				eval("wl", "-i", "eth5", "ledbh", "0", "0");	// wl 2.4G
-				eval("wl", "-i", "eth7", "ledbh", "15", "0");	// wl 5G
+				eval("wl", "-i", "eth7", "ledbh", "13", "0");	// wl 5G
 				eval("wl", "-i", "eth6", "ledbh", "0", "0");	// wl 6G
 				bcm53134_led_control(0);
 #ifdef RTCONFIG_EXTPHY_BCM84880
@@ -1910,23 +1930,23 @@ int asus_ate_command(const char *command, const char *value, const char *value2)
 	else if (!strcmp(command, "Set_AllOrangeLedOn")) {
 		return setAllSpecificColorLedOn(LED_COLOR_ORANGE);
 	}
-#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAXE11000_PRO) || defined(GTAXE16000) || defined(GTAX6000) || defined(GT10)
+#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAXE11000_PRO) || defined(GTAXE16000) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2)
 	else if (!strcmp(command, "Set_Red1LedOn")) {
 		setAllLedOff();
-		cled_set(cled_gpio[0], 0xa000, 0x0, 0x0, 0x0);
+		cled_set(cled_gpio[0], CLED_BRIGHTNESS_ON, 0x0, 0x0, 0x0);
 		led_control(LED_GROUP1_RED, LED_ON);
 		puts("1");
 		return 0;
 #ifndef TUFAX5400
 	} else if (!strcmp(command, "Set_Red2LedOn")) {
 		setAllLedOff();
-		cled_set(cled_gpio[3], 0xa000, 0x0, 0x0, 0x0);
+		cled_set(cled_gpio[3], CLED_BRIGHTNESS_ON, 0x0, 0x0, 0x0);
 		led_control(LED_GROUP2_RED, LED_ON);
 		puts("1");
 		return 0;
 	} else if (!strcmp(command, "Set_Red3LedOn")) {
 		setAllLedOff();
-		cled_set(cled_gpio[6], 0xa000, 0x0, 0x0, 0x0);
+		cled_set(cled_gpio[6], CLED_BRIGHTNESS_ON, 0x0, 0x0, 0x0);
 		led_control(LED_GROUP3_RED, LED_ON);
 		puts("1");
 		return 0;
@@ -1940,14 +1960,14 @@ int asus_ate_command(const char *command, const char *value, const char *value2)
 #elif !defined(GTAXE11000_PRO) && !defined(GTAXE16000) && !defined(GT10)
 	} else if (!strcmp(command, "Set_Red4LedOn")) {
 		setAllLedOff();
-		cled_set(cled_gpio[9], 0xa000, 0x0, 0x0, 0x0);
+		cled_set(cled_gpio[9], CLED_BRIGHTNESS_ON, 0x0, 0x0, 0x0);
 		led_control(LED_GROUP4_RED, LED_ON);
 		puts("1");
 		return 0;
 #if defined(GSAX3000) || defined(GSAX5400)
 	} else if (!strcmp(command, "Set_Red5LedOn")) {
 		setAllLedOff();
-		cled_set(cled_gpio[12], 0xa000, 0x0, 0x0, 0x0);
+		cled_set(cled_gpio[12], CLED_BRIGHTNESS_ON, 0x0, 0x0, 0x0);
 		led_control(LED_GROUP5_RED, LED_ON);
 		puts("1");
 		return 0;
@@ -1956,34 +1976,34 @@ int asus_ate_command(const char *command, const char *value, const char *value2)
 #endif
 	} else if (!strcmp(command, "Set_Green1LedOn")) {
 		setAllLedOff();
-		cled_set(cled_gpio[1], 0xa000, 0x0, 0x0, 0x0);
+		cled_set(cled_gpio[1], CLED_BRIGHTNESS_ON, 0x0, 0x0, 0x0);
 		led_control(LED_GROUP1_GREEN, LED_ON);
 		puts("1");
 		return 0;
 #ifndef TUFAX5400
 	} else if (!strcmp(command, "Set_Green2LedOn")) {
 		setAllLedOff();
-		cled_set(cled_gpio[4], 0xa000, 0x0, 0x0, 0x0);
+		cled_set(cled_gpio[4], CLED_BRIGHTNESS_ON, 0x0, 0x0, 0x0);
 		led_control(LED_GROUP2_GREEN, LED_ON);
 		puts("1");
 		return 0;
 	} else if (!strcmp(command, "Set_Green3LedOn")) {
 		setAllLedOff();
-		cled_set(cled_gpio[7], 0xa000, 0x0, 0x0, 0x0);
+		cled_set(cled_gpio[7], CLED_BRIGHTNESS_ON, 0x0, 0x0, 0x0);
 		led_control(LED_GROUP3_GREEN, LED_ON);
 		puts("1");
 		return 0;
 #if !defined(GTAXE11000_PRO) && !defined(GTAXE16000) && !defined(GTAX6000) && !defined(GT10)
 	} else if (!strcmp(command, "Set_Green4LedOn")) {
 		setAllLedOff();
-		cled_set(cled_gpio[10], 0xa000, 0x0, 0x0, 0x0);
+		cled_set(cled_gpio[10], CLED_BRIGHTNESS_ON, 0x0, 0x0, 0x0);
 		led_control(LED_GROUP4_GREEN, LED_ON);
 		puts("1");
 		return 0;
 #if defined(GSAX3000) || defined(GSAX5400)
 	} else if (!strcmp(command, "Set_Green5LedOn")) {
 		setAllLedOff();
-		cled_set(cled_gpio[13], 0xa000, 0x0, 0x0, 0x0);
+		cled_set(cled_gpio[13], CLED_BRIGHTNESS_ON, 0x0, 0x0, 0x0);
 		led_control(LED_GROUP5_GREEN, LED_ON);
 		puts("1");
 		return 0;
@@ -1992,34 +2012,34 @@ int asus_ate_command(const char *command, const char *value, const char *value2)
 #endif
 	} else if (!strcmp(command, "Set_Blue1LedOn")) {
 		setAllLedOff();
-		cled_set(cled_gpio[2], 0xa000, 0x0, 0x0, 0x0);
+		cled_set(cled_gpio[2], CLED_BRIGHTNESS_ON, 0x0, 0x0, 0x0);
 		led_control(LED_GROUP1_BLUE, LED_ON);
 		puts("1");
 		return 0;
 #ifndef TUFAX5400
 	} else if (!strcmp(command, "Set_Blue2LedOn")) {
 		setAllLedOff();
-		cled_set(cled_gpio[5], 0xa000, 0x0, 0x0, 0x0);
+		cled_set(cled_gpio[5], CLED_BRIGHTNESS_ON, 0x0, 0x0, 0x0);
 		led_control(LED_GROUP2_BLUE, LED_ON);
 		puts("1");
 		return 0;
 	} else if (!strcmp(command, "Set_Blue3LedOn")) {
 		setAllLedOff();
-		cled_set(cled_gpio[8], 0xa000, 0x0, 0x0, 0x0);
+		cled_set(cled_gpio[8], CLED_BRIGHTNESS_ON, 0x0, 0x0, 0x0);
 		led_control(LED_GROUP3_BLUE, LED_ON);
 		puts("1");
 		return 0;
 #if !defined(GTAXE11000_PRO) && !defined(GTAXE16000) && !defined(GTAX6000) && !defined(GT10)
 	} else if (!strcmp(command, "Set_Blue4LedOn")) {
 		setAllLedOff();
-		cled_set(cled_gpio[11], 0xa000, 0x0, 0x0, 0x0);
+		cled_set(cled_gpio[11], CLED_BRIGHTNESS_ON, 0x0, 0x0, 0x0);
 		led_control(LED_GROUP4_BLUE, LED_ON);
 		puts("1");
 		return 0;
 #if defined(GSAX3000) || defined(GSAX5400)
 	} else if (!strcmp(command, "Set_Blue5LedOn")) {
 		setAllLedOff();
-		cled_set(cled_gpio[14], 0xa000, 0x0, 0x0, 0x0);
+		cled_set(cled_gpio[14], CLED_BRIGHTNESS_ON, 0x0, 0x0, 0x0);
 		led_control(LED_GROUP5_BLUE, LED_ON);
 		puts("1");
 		return 0;

@@ -4,7 +4,7 @@
 #if defined(DHD_BUZZZ_LOG_ENABLED)
 /*
  * Broadcom proprietory logging system. Deleted performance counters.
- * Copyright (C) 2021, Broadcom. All Rights Reserved.
+ * Copyright (C) 2022, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -207,7 +207,7 @@ static inline void dhd_buzzz_fmt_init(void)
 #else  /* DHD_BUZZZ_LOG_ENABLED */
 /*
  * Broadcom logging system - Empty implementaiton
- * Copyright (C) 2021, Broadcom. All Rights Reserved.
+ * Copyright (C) 2022, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above

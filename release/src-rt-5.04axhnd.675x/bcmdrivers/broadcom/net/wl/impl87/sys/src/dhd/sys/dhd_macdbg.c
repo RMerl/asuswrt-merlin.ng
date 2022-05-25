@@ -1,7 +1,7 @@
 /* D11 macdbg functions for Broadcom 802.11abgn
  * Networking Adapter Device Drivers.
  *
- * Copyright (C) 2021, Broadcom. All Rights Reserved.
+ * Copyright (C) 2022, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: dhd_macdbg.c 799096 2021-05-20 06:46:32Z $
+ * $Id: dhd_macdbg.c 806979 2022-01-10 22:48:59Z $
  */
 
 #include <typedefs.h>
@@ -1488,7 +1488,11 @@ dhd_macdbg_dumpperuser(dhd_pub_t *dhdp, char *buf, int buflen, int *outbuflen)
 
 		/* per mpdu */
 		num_mpdus = (_dhd_get_ihr16(mi, 0xcc8, b, FALSE)) & 0x3f;
-		bcm_bprintf(b, "0   ihr 0xcc8  = 0x%x\n", num_mpdus);
+		if (b) {
+			bcm_bprintf(b, "0   ihr 0xcc8  = 0x%x\n", num_mpdus);
+		} else {
+			printf("0   ihr 0xcc8  = 0x%x\n", num_mpdus);
+		}
 		num_mpdus = MIN(num_mpdus, MPDUS_DUMP_NUM);
 		for (j = 0; j < num_mpdus; j++) {
 			_dhd_set_ihr16(mi, 0xd62, j, b, FALSE);
@@ -1499,7 +1503,11 @@ dhd_macdbg_dumpperuser(dhd_pub_t *dhdp, char *buf, int buflen, int *outbuflen)
 		/* txdbg_sel */
 		for (j = 0; j < num_txdbg; j++) {
 			_dhd_set_ihr16(mi, 0xa86, txdbg_sel[j], b, FALSE);
-			bcm_bprintf(b, "0x%x\n", _dhd_get_ihr16(mi, 0xa88, b, FALSE));
+			if (b) {
+				bcm_bprintf(b, "0x%x\n", _dhd_get_ihr16(mi, 0xa88, b, FALSE));
+			} else {
+				printf("0x%x\n", _dhd_get_ihr16(mi, 0xa88, b, FALSE));
+			}
 		}
 
 		/* aqmcsb */
@@ -1570,10 +1578,12 @@ dhd_macdbg_dumpratelinkmem(dhd_pub_t *dhdp, char *buf, int buflen,
 		return BCME_UNSUPPORTED;
 	}
 
-	if (buf && buflen > 0) {
-		bcm_binit(&bcmstrbuf, buf, buflen);
-		b = &bcmstrbuf;
+	if (buf == NULL || buflen <= 0) {
+		return BCME_ERROR;
 	}
+
+	bcm_binit(&bcmstrbuf, buf, buflen);
+	b = &bcmstrbuf;
 
 	_dhd_print_rlmemblk(mi, b, MACDBG_RLM_BCMC_ENTRY, TRUE, "");
 	_dhd_print_rlmemblk(mi, b, MACDBG_RLM_BCMC_ENTRY, FALSE, "");

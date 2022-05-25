@@ -33,7 +33,7 @@
  *    __ARM_ARCH_7A__ CA9: not reqd for dongle, uses ARMv7 apis as in CA7
  *
  *
- * Copyright (C) 2021, Broadcom. All Rights Reserved.
+ * Copyright (C) 2022, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above

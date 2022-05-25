@@ -168,7 +168,7 @@ FkbObjInfo_t fkb_obj_g[ FkbMaxType_e ] = {
         .extend_size    = FKBM_EXTEND_SIZE_ENGG,
         .extend_max     = FKBM_EXTEND_MAX_ENGG,
 #endif
-#if !(defined(CONFIG_BCM94912) && defined(CONFIG_BCM_JUMBO_FRAME))
+#if !((defined(CONFIG_BCM94912) || defined(CONFIG_BCM96855)) && defined(CONFIG_BCM_JUMBO_FRAME))
         .object_size    = BCM_PKTBUF_SIZE,     /* Rx Buffer wth in place FKB */
 #endif
         .name           = "Master",

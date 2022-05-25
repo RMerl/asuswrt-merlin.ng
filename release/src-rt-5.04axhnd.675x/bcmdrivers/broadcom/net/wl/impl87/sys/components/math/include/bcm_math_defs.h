@@ -2,7 +2,7 @@
  * Math component interface file.
  * Math definitions.
  *
- * Copyright (C) 2021, Broadcom. All Rights Reserved.
+ * Copyright (C) 2022, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -32,6 +32,12 @@ typedef struct _cint32 {
 } math_cint32;
 
 typedef math_cint32 cint32;
+
+typedef struct _cint16 {
+	int16 q;
+	int16 i;
+} math_cint16;
+typedef math_cint16 cint16;
 
 #ifndef ABS
 #define ABS(x) (((x) < 0) ? (-(x)) : (x))

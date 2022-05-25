@@ -1,7 +1,7 @@
 /*
  * HND generic pktq operation primitives
  *
- * Copyright (C) 2021, Broadcom. All Rights Reserved.
+ * Copyright (C) 2022, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: hnd_pktq.c 805645 2021-12-03 03:05:42Z $
+ * $Id: hnd_pktq.c 806972 2022-01-10 15:44:56Z $
  */
 
 #include <typedefs.h>
@@ -762,6 +762,10 @@ void
 pktq_set_max_plen(struct pktq *pq, int prec, int max_pkts)
 {
 	ASSERT(prec >= 0 && prec < pq->num_prec);
+
+	if (max_pkts > PKTQ_LEN_MAX) {
+		max_pkts = PKTQ_LEN_MAX;
+	}
 
 	/* protect shared resource */
 	if (HND_PKTQ_MUTEX_ACQUIRE(&pq->mutex, OSL_EXT_TIME_FOREVER) != OSL_EXT_SUCCESS)

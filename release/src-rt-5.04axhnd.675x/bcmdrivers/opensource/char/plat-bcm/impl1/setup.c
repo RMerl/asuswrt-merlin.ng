@@ -125,7 +125,7 @@ void __init get_mtusize(char *cmdline)
             mtusize = mtusize_input;
 #if defined(MAX_JUMBO_MTU_PAYLOAD_SIZE)
         if (mtusize > MAX_JUMBO_MTU_PAYLOAD_SIZE) {
-            printk("ERROR - mtusize > MAX_JUMBO_MTU_PAYLOAD_SIZEMAX_JUMBO_MTU_PAYLOAD_SIZE\n");
+            printk("ERROR - mtusize > MAX_JUMBO_MTU_PAYLOAD_SIZE\n");
             mtusize = MAX_JUMBO_MTU_PAYLOAD_SIZE;
 		}
 #endif

@@ -199,7 +199,7 @@ static const ofnode of_parse_phandle(const ofnode handle, const char *phandle_na
     return node;
 }
 
-#if defined(XD4PRO) || defined(XT8PRO) || defined(ET8PRO)
+#if defined(XD4PRO) || defined(XT8PRO) || defined(XT8_V2) || defined(ET8PRO)
 static void led_ch(uint32_t *init_mask, uint32_t led) {
     uint32_t mux_no = led / 4;
     uint32_t mux_index = led % 4;
@@ -326,13 +326,13 @@ static int bca_cled_ctrl_probe(struct udevice *dev)
     mux_output = (volatile uint32_t *)bca_cled->led_regs[CLED_MUX];
     if (mux_output)
     {
-#if defined(XD4PRO) || defined(XT8PRO) || defined(ET8PRO)
+#if defined(XD4PRO) || defined(XT8PRO) || defined(XT8_V2) || defined(ET8PRO)
         uint32_t init_mask[8];
         init_led_out_mux_mask(init_mask);
 #else
         uint32_t init_mask = (bca_cled->cntrl_ver == 1) ? 0x1F1F1F1F : 0x3F3F3F3F; 
 #endif
-#if defined(XD4PRO) || defined(XT8PRO) || defined(ET8PRO)
+#if defined(XD4PRO) || defined(XT8PRO) || defined(XT8_V2) || defined(ET8PRO)
         for (i = 0; i<8; i++)
             mux_output[i] = init_mask[i];
 #else

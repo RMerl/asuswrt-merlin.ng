@@ -1,7 +1,7 @@
 /*
  * OTP support.
  *
- * Copyright (C) 2021, Broadcom. All Rights Reserved.
+ * Copyright (C) 2022, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: bcmotp.h 802203 2021-08-19 05:55:51Z $
+ * $Id: bcmotp.h 808178 2022-02-11 08:42:59Z $
  */
 
 #ifndef	_bcmotp_h_
@@ -42,8 +42,12 @@
 
 /* OTP bit offset for HW config options */
 #define OTP_HW_CONFIG_OPTIONS_BITS	7
-#define OTP43684_HW_CONFIG_OPTIONS_0	500
-#define OTP6715_HW_CONFIG_OPTIONS_0	724
+#define OTP43684_HW_CONFIG_OPTIONS_0	500 /* OTP bit[500] */
+#define OTP6715_HW_CONFIG_OPTIONS_0	724 /* OTP bit[724] */
+
+/* OTP bit offset for FOUNDRY FAB which is set in FINAL Test sub-region of Manufacturer info */
+#define OTP_FOUNDRY_FAB_BITS		5
+#define OTP_FOUNDRY_FAB_0		256 /* OTP bit[256] */
 
 /* OTP usage */
 #define OTP4325_FM_DISABLED_OFFSET	188

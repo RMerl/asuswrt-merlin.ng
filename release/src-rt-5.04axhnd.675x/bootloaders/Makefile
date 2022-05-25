@@ -782,7 +782,6 @@ endif
 	# Generate RAW images for nand flash programmers
 	@$(call gen_nand_raw_imgs,"128","2048")
 	@$(call gen_nand_raw_imgs,"256","4096")
-	cp obj/binaries/bcm9$(CUR_CHIP_PROFILE)GW_nand_squashfs_loader_update.pkgtb obj/binaries/$(IMGNAME)_nand_squashfs_loader.pkgtb
 	cp obj/binaries/bcm9$(CUR_CHIP_PROFILE)GW_nand_squashfs_update.pkgtb obj/binaries/$(IMGNAME)_nand_squashfs.pkgtb
 
 # Image bundles for emmc

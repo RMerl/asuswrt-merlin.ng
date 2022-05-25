@@ -55,6 +55,9 @@
 #include "hs20.h"
 #include "airtime_policy.h"
 #include "wpa_auth_kay.h"
+#ifdef CONFIG_DRIVER_BRCM
+#include <linux/version.h>
+#endif /* CONFIG_DRIVER_BRCM */
 
 static int hostapd_flush_old_stations(struct hostapd_data *hapd, u16 reason);
 #ifdef CONFIG_WEP
@@ -2100,7 +2103,14 @@ static int hostapd_setup_interface_complete_sync(struct hostapd_iface *iface,
 		 * for CAC to complete.
 		 */
 		wpa_printf(MSG_DEBUG, "%s: Wait for CAC to complete", __func__);
+#if !defined(CONFIG_DRIVER_BRCM) || (defined(CONFIG_DRIVER_BRCM) && LINUX_VERSION_CODE \
+	>= KERNEL_VERSION(4, 19, 0))
 		return res_dfs_offload;
+#else
+		/* For older kernel version just enable the interface as driver does not
+		 * send NL80211_CMD_RADAR_DETECT event notification to hostapd.
+		 */
+#endif /* !defined(CONFIG_DRIVER_BRCM) || (defined(CONFIG_DRIVER_BRCM) && LINUX_VERSION_CODE >= KERNEL_VERSION(4, 19, 0)) */
 	}
 
 #ifdef NEED_AP_MLME

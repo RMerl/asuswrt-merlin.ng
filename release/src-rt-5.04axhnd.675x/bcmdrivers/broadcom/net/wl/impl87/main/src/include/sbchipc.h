@@ -5,9 +5,9 @@
  * JTAG, 0/1/2 UARTs, clock frequency control, a watchdog interrupt timer,
  * GPIO interface, extbus, and support for serial and parallel flashes.
  *
- * $Id: sbchipc.h 801587 2021-07-28 02:14:42Z $
+ * $Id: sbchipc.h 806372 2021-12-20 14:25:33Z $
  *
- * Copyright (C) 2021, Broadcom. All Rights Reserved.
+ * Copyright (C) 2022, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -344,8 +344,10 @@ typedef volatile struct {
 	uint8	uart1lsr;
 	uint8	uart1msr;
 	uint8	uart1scratch;		/* 0x407 */
-	uint32	PAD[62];
-
+	uint32	PAD[55];
+	uint32	wotp_rx_cmd;		/* 0x4e4, rev >= 130.2 */
+	uint32	wotp_rx_data;		/* 0x4e8, rev >= 130.2 */
+	uint32	PAD[5];
 	/* save/restore, corerev >= 48 */
 	uint32	sr_capability;		/* 0x500 */
 	uint32	sr_control0;		/* 0x504 */

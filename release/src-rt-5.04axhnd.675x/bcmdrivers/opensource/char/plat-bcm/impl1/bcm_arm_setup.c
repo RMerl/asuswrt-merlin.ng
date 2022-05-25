@@ -80,6 +80,7 @@ static void cci_coherent_enable(void)
 extern unsigned long getMemorySize(void);
 extern void check_if_rootfs_is_set(char *cmdline);
 extern void check_if_ikosboot(char *cmdline);
+extern void get_mtusize(char *cmdline);
 extern int bcm_early_scan_dt(unsigned long node, const char *uname, int depth, void *data);
 
 #if defined(CONFIG_BCM_B15_MEGA_BARRIER)
@@ -233,6 +234,10 @@ e.g. bootargs = "coherent_pool=2M"
 #endif
 
 	check_if_ikosboot(boot_command_line);
+#if defined(CONFIG_BCM96855) && defined(CONFIG_BCM_JUMBO_FRAME)
+	get_mtusize(boot_command_line);
+#endif
+
 #if !defined(CONFIG_BRCM_IKOS)
 	kerSysEarlyFlashInit();
 	kerSysFlashInit();

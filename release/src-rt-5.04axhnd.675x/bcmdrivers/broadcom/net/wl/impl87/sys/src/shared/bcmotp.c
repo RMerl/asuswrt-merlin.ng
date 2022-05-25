@@ -1,7 +1,7 @@
 /*
  * OTP support.
  *
- * Copyright (C) 2021, Broadcom. All Rights Reserved.
+ * Copyright (C) 2022, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: bcmotp.c 804469 2021-11-01 11:22:56Z $
+ * $Id: bcmotp.c 808178 2022-02-11 08:42:59Z $
  */
 
 #include <bcm_cfg.h>
@@ -4385,9 +4385,9 @@ BCMSROMCISDUMPATTACHFN(otp_init)(si_t *sih)
 	bool wasup = FALSE;
 	uint i;
 	uint16 tmp;
+#endif /* !BCMDONGLEHOST */
 
 	sih->otpflag = 0;
-#endif
 
 	oi = get_otpinfo();
 	bzero(oi, sizeof(otpinfo_t));
@@ -4417,6 +4417,13 @@ BCMSROMCISDUMPATTACHFN(otp_init)(si_t *sih)
 
 	if (EMBEDDED_2x2AX_CORE(sih->chip)) {
 		sih->otpflag = ((CHIPC_REG(sih, chipstatus, 0, 0) & 0x8) ? 1: 0);
+	}
+
+	if (EMBEDDED_2x2AX_160MHZ_CORE(sih->chip)) {
+		CHIPC_REG(sih, wotp_rx_cmd, 0xFFFFFFFF, 6);
+		if (CHIPC_REG(sih, wotp_rx_data, 0, 0) & 0x100000) {
+			sih->otpflag |= WIFI0_HWCFG_OPT0_IND;
+		}
 	}
 
 	if (ISSIM_ENAB(sih) && (BCM43684_CHIP(sih->chip) || BCM6710_CHIP(sih->chip) ||
@@ -4454,9 +4461,14 @@ BCMSROMCISDUMPATTACHFN(otp_init)(si_t *sih)
 
 	} else if (BCM6715_CHIP(sih->chip)) {
 		for (i = 0; i < OTP_HW_CONFIG_OPTIONS_BITS; i++) {
-			/* read HW config options */
+			/* read HW config options and map to otpflag bit[6:0] */
 			tmp = otp_read_bit(ret, OTP6715_HW_CONFIG_OPTIONS_0 + i);
 			sih->otpflag |= (tmp << i);
+		}
+		for (i = 0; i < OTP_FOUNDRY_FAB_BITS; i++) {
+			/* read foundry FABs and map to otpflag bit[11:7] */
+			tmp = otp_read_bit(ret, OTP_FOUNDRY_FAB_0 + i);
+			sih->otpflag |= (tmp << (OTP_HW_CONFIG_OPTIONS_BITS + i));
 		}
 	}
 #endif /* !BCMDONGLEHOST */

@@ -3,7 +3,7 @@
  *
  * Dependencies: bcmeth.h
  *
- * Copyright (C) 2021, Broadcom. All Rights Reserved.
+ * Copyright (C) 2022, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -20,7 +20,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: bcmevent.h 804961 2021-11-15 05:59:42Z $
+ * $Id: bcmevent.h 806831 2022-01-05 09:24:39Z $
  *
  */
 
@@ -485,7 +485,7 @@ typedef union bcm_event_msg_u {
 #define WLC_E_COLOR			202	/* Color (collision) information event. */
 #define WLC_E_CAPTURE_RXFRAME		203	/* Capture Rx frame */
 #define WLC_E_CAPTURE_TXFRAME		204	/* Capture Tx frame */
-#define WLC_E_INCUMBENT_SIGNAL_EVENT	206
+#define WLC_E_EDCRS_HI_EVENT		206	/* EDCRS_HI detected event */
 #define WLC_E_LAST			207
 
 /* define an API for getting the string name of an event */
@@ -1235,15 +1235,21 @@ typedef struct {
 	uint16 lock_life;	/* master lock expires after these many seconds */
 } wl_event_omnm_t;
 
-typedef struct  wl_incumbent_signal_event {
+typedef struct  wl_edcrs_hi_event {
 	uint16 version;
 	uint16 length;
 	uint16 type;
 	uint16 status;
-} wl_incumbent_signal_event_t;
+} wl_edcrs_hi_event_t;
 
-#define WLC_E_INCUMBENT_SIGNAL_VER       1
-#define WLC_E_INCUMBENT_SIGNAL_LEN       sizeof(wl_incumbent_signal_event_t)
+#define WLC_E_EDCRS_HI_VER       1
+#define WLC_E_EDCRS_HI_LEN       sizeof(wl_edcrs_hi_event_t)
+
+/* TODO: Old defines/synonyms with "_INCUMBENT_* to be removed after related precommit checkins */
+#define WLC_E_INCUMBENT_SIGNAL_EVENT	WLC_E_EDCRS_HI_EVENT
+#define wl_incumbent_signal_event_t	wl_edcrs_hi_event_t
+#define WLC_E_INCUMBENT_SIGNAL_VER	WLC_E_EDCRS_HI_VER
+#define WLC_E_INCUMBENT_SIGNAL_LEN      WLC_E_EDCRS_HI_LEN
 
 /* event data passed in WLC_E_MACDBG ratelinkmem update */
 #define WLC_E_MACDBG_RLM_VERSION	1

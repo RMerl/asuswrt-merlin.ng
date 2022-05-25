@@ -1,7 +1,7 @@
 /*
  * Routines to access SPROM and to parse SROM/CIS variables.
  *
- * Copyright (C) 2021, Broadcom. All Rights Reserved.
+ * Copyright (C) 2022, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -216,6 +216,7 @@ BCMATTACHFN(sprom_update_params)(si_t *sih, uint16 *buf)
 	for (i = 0; (i < adapter_num) && (pos < param_len); i++) {
 		adapter_ptr = (struct adapter_struct *)(params + pos);
 		strncpy(id, adapter_ptr->id, SI_DEVPATH_BUFSZ);
+		id[sizeof(id) - 1] = '\0';
 		entry_num = adapter_ptr->entry_num;
 		if (!strncmp(id, devpath, strlen(devpath))) {
 			entry_ptr = (struct entry_struct *)&(adapter_ptr->entry);
@@ -507,10 +508,10 @@ void BCMATTACHFN(reinit_loaded_srommap)(void)
 
 	memset(buff_loaded, 0, sizeof(buff_loaded));
 
-	nvramloaded_fp->f_pos = 0;
-	append_userspace_file(&nvramloaded_fp, buff_loaded, sizeof(buff_loaded));
-
-	if (nvramloaded_fp)
+	if (nvramloaded_fp) {
+		nvramloaded_fp->f_pos = 0;
+		append_userspace_file(&nvramloaded_fp, buff_loaded, sizeof(buff_loaded));
 		filp_close(nvramloaded_fp, NULL);
+	}
 }
 #endif /* BCA_SROMMAP */

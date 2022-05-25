@@ -895,12 +895,6 @@ ifneq ($(BUILD_NAND_UBIFS_SINGLE_IMAGE),)
 	$(MAKE) -f build/make.uboot INCLUDE_OPTEE=$(BCM_OPTEE) INCLUDE_ATF=$(BCM_ARMTF)
 endif
 
-ifneq ($(BUILD_NAND_UBIFS_SINGLE_IMAGE),)
-	cd $(TARGETS_DIR);	./buildFS_SINGLEIMAGE;
-	cd $(TARGETS_DIR);	./buildROOTFS
-	$(MAKE) -f build/make.uboot INCLUDE_OPTEE=$(BCM_OPTEE) INCLUDE_ATF=$(BCM_ARMTF)
-endif
-
 	@mkdir -p $(IMAGES_DIR)
 ifneq ($(BUILD_DYNAMIC_CFE),)
 	$(MAKE) -f build/Makefile buildimage_final

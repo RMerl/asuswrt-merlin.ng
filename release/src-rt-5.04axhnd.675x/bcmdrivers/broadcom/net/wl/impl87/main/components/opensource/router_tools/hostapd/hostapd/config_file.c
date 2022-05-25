@@ -961,6 +961,26 @@ static int rkh_derive_key(const char *pos, u8 *key, size_t key_len)
 	return ret;
 }
 
+#ifdef CONFIG_DRIVER_BRCM
+static struct ft_remote_r0kh *lookup_r0kh(struct hostapd_bss_config *bss,
+	const u8 *f_r0kh_id, size_t f_r0kh_id_len)
+{
+	struct ft_remote_r0kh *r0kh;
+
+	if (bss->r0kh_list)
+		r0kh = bss->r0kh_list;
+	else
+		r0kh = NULL;
+	for (; r0kh; r0kh = r0kh->next) {
+		if ((f_r0kh_id) && (r0kh->id_len == f_r0kh_id_len) &&
+		    (os_memcmp_const(f_r0kh_id, r0kh->id, f_r0kh_id_len) == 0))
+			return r0kh;
+	}
+
+	return NULL;
+}
+#endif /* CONFIG_DRIVER_BRCM */
+
 static int add_r0kh(struct hostapd_bss_config *bss, char *value)
 {
 	struct ft_remote_r0kh *r0kh;
@@ -993,6 +1013,14 @@ static int add_r0kh(struct hostapd_bss_config *bss, char *value)
 	r0kh->id_len = next - pos - 1;
 	os_memcpy(r0kh->id, pos, r0kh->id_len);
 
+#ifdef CONFIG_DRIVER_BRCM
+	if (lookup_r0kh(bss, r0kh->id, r0kh->id_len)) {
+		wpa_printf(MSG_DEBUG, "%s: R0KH-ID: '%s' Already added", bss->iface, pos);
+		os_free(r0kh);
+		return 0;
+	}
+#endif /* CONFIG_DRIVER_BRCM */
+
 	pos = next;
 	if (rkh_derive_key(pos, r0kh->key, sizeof(r0kh->key)) < 0) {
 		wpa_printf(MSG_ERROR, "Invalid R0KH key: '%s'", pos);
@@ -1005,6 +1033,26 @@ static int add_r0kh(struct hostapd_bss_config *bss, char *value)
 
 	return 0;
 }
+
+#ifdef CONFIG_DRIVER_BRCM
+static struct ft_remote_r1kh *lookup_r1kh(struct hostapd_bss_config *bss, const u8 *f_r1kh_id)
+{
+	struct ft_remote_r1kh *r1kh;
+
+	if (bss->r1kh_list)
+		r1kh = bss->r1kh_list;
+	else
+		r1kh = NULL;
+	for (; r1kh; r1kh = r1kh->next) {
+		if ((f_r1kh_id) &&
+		    (os_memcmp_const(r1kh->id, f_r1kh_id, FT_R1KH_ID_LEN) == 0)) {
+			return r1kh;
+		}
+	}
+
+	return NULL;
+}
+#endif /* CONFIG_DRIVER_BRCM */
 
 static int add_r1kh(struct hostapd_bss_config *bss, char *value)
 {
@@ -1036,6 +1084,14 @@ static int add_r1kh(struct hostapd_bss_config *bss, char *value)
 		os_free(r1kh);
 		return -1;
 	}
+
+#ifdef CONFIG_DRIVER_BRCM
+	if (lookup_r1kh(bss, r1kh->id)) {
+		wpa_printf(MSG_DEBUG, "%s: R1KH-ID: '%s' Already added", bss->iface, pos);
+		os_free(r1kh);
+		return 0;
+	}
+#endif /* CONFIG_DRIVER_BRCM */
 
 	pos = next;
 	if (rkh_derive_key(pos, r1kh->key, sizeof(r1kh->key)) < 0) {

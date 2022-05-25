@@ -3,21 +3,27 @@
     All Rights Reserved
 
     <:label-BRCM:2017:DUAL/GPL:standard
-    
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License, version 2, as published by
-    the Free Software Foundation (the "GPL").
-    
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-    
-    
-    A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
-    writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-    Boston, MA 02111-1307, USA.
-    
+
+    Unless you and Broadcom execute a separate written software license
+    agreement governing use of this software, this software is licensed
+    to you under the terms of the GNU General Public License version 2
+    (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
+    with the following added to such license:
+
+       As a special exception, the copyright holders of this software give
+       you permission to link this software with independent modules, and
+       to copy and distribute the resulting executable under terms of your
+       choice, provided that you also meet, for each linked independent
+       module, the terms and conditions of the license of that module.
+       An independent module is a module which is not derived from this
+       software.  The special exception does not apply to any modifications
+       of the software.
+
+    Not withstanding the above, under no circumstances may you combine
+    this software in any way with any other Broadcom software provided
+    under a license other than the GPL, without Broadcom's express prior
+    written consent.
+
     :>
 */
 
@@ -25,6 +31,11 @@
 #define _nbuff_pkt_h_
 
 #if defined(BCM_NBUFF_PKT)
+
+/* select new API if linux_pkt.c supports it */
+#ifdef PKTFREE_NEW_API_AVAIL
+#define PKTFREE_NEW_API
+#endif
 
 #include <typedefs.h>
 #include <linux/bcm_skb_defines.h>
@@ -76,6 +87,9 @@ extern void nbuff_pktsetflowid(void *pkt, uint x);
 #define PKTDUP(osh, pkt)        nbuff_pktdup((osh), (pkt))
 #define PKTDUP_CPY(osh, pkt)    nbuff_pktdup_cpy((osh), (pkt))
 #define PKTFREE(osh, pkt, send) nbuff_pktfree((osh), (pkt), (send))
+#ifdef PKTFREE_NEW_API
+#define PKTFREE_NOCB		PKTFREE
+#endif
 #define PKTLIST_DUMP(osh, buf)  BCM_REFERENCE(osh)
 #define PKTSETPOOL(osh, pkt, x, y)  BCM_REFERENCE(osh)
 #define PKTPOOL(osh, pkt)       ({BCM_REFERENCE(osh); BCM_REFERENCE(pkt); FALSE;})
@@ -127,9 +141,17 @@ extern void nbuff_pktsetflowid(void *pkt, uint x);
         skb_cpy = osl_pktdup_cpy(osh, skb);                                    \
         skb_cpy;                                        })
 
+#ifdef PKTFREE_NEW_API
+#define PKTFREE(osh, skb, send)                                                \
+        linux_pktfree((osh), (skb), TRUE, (send))
+#define PKTFREE_NOCB(osh, skb, send)                                           \
+        linux_pktfree((osh), (skb), FALSE, (send))
+#else
 #define PKTFREE(osh, skb, send)                                                \
         linux_pktfree((osh), (skb), (send))
-
+#define PKTFREE_NOCB(osh, skb, send)                                           \
+        linux_pktfree((osh), (skb), (send))
+#endif
 #define PKTLIST_DUMP(osh, buf)                          BCM_REFERENCE(osh)
 
 #define PKTSETPOOL(osh, skb, x, y)                      BCM_REFERENCE(osh)
@@ -212,7 +234,7 @@ extern void nbuff_pktsetflowid(void *pkt, uint x);
         BCM_REFERENCE(osh); SKB_DATA_PRISTINE(skb);     })
 
 #define PKTDATATAINTED(osh, skb)   PKTTAINTED((osh), (skb))
-        
+
 #endif /* NBUFF_IS_SKBUFF */
 
 /* MACROS NOT COMMON TO FKB and SKB */
@@ -268,7 +290,7 @@ struct chain_node {
 	for (; (skb) != NULL; (skb) = (nskb)) \
 		if ((nskb) = (PKTISCHAINED(skb) ? PKTCLINK(skb) : NULL), \
 			PKTSETCLINK((skb), NULL), 1)
-		
+
 #define PKTCFREE(osh, skb, send) \
 	(IS_SKBUFF_PTR(skb) ? \
 		({do { \
@@ -281,7 +303,20 @@ struct chain_node {
 			} \
 		} while (0); }) : \
 		PKTFREE(osh, skb, send))
-
+#ifdef PKTFREE_NEW_API
+#define PKTCFREE_NOCB(osh, skb, send) \
+	(IS_SKBUFF_PTR(skb) ? \
+		({do { \
+			void *nskb; \
+			ASSERT((skb) != NULL); \
+			FOREACH_CHAINED_PKT((skb), nskb) { \
+				PKTCLRCHAINED((osh), (skb)); \
+				PKTCCLRFLAGS((skb)); \
+				PKTFREE_NOCB((osh), (skb), (send)); \
+			} \
+		} while (0); }) : \
+		PKTFREE_NOCB(osh, skb, send))
+#endif /* PKTFREE_NEW_API */
 #define PKTCENQTAIL(h, t, p) \
 	(IS_SKBUFF_PTR(p) ? \
 		({do { \
@@ -367,7 +402,7 @@ struct chain_node {
 ({ skbuff_bcm_ext_wlan_get((struct sk_buff*)(pkt), wl_flag1) |= SKB_INTRABSS_FWD_PKT; })
 #define PKTCLRINTRABSS_FWD(pkt) \
 ({ skbuff_bcm_ext_wlan_get((struct sk_buff*)(pkt), wl_flag1) &= ~SKB_INTRABSS_FWD_PKT; })
-						  
+
 #endif /* BCM_NBUFF_PKT */
 
 #endif	/* _nbuff_pkt_h_ */

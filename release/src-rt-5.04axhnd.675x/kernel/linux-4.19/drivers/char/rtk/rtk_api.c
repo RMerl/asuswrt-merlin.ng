@@ -316,19 +316,21 @@ int rtk_ext_swctl_init(void)
     rtk_port_macForceLinkExt_set(EXT_PORT0, mode, &mac_cfg);
 #endif
 #else
-    rtk_cpu_enable_set(ENABLED);
-    rtk_cpu_tagPort_set(port, CPU_INSERT_TO_NONE);
-    rtk_cpu_tagPort_get(&cpuport, &cpumode);
-    printk("init switch %s:%d---cpuport:%d,mode:%d\n", __FUNCTION__, __LINE__, cpuport, cpumode);
 //  msleep(1000);
 //  rtk_port_sds_reset(port);
     /* to disable the Nway function */
     rtk_port_sgmiiNway_set(port, DISABLED);
     /* HSGMII amplitude */
+#ifdef RTAX58U_V2
     smi_write(0x6602, 0x31A2);
     smi_write(0x6601, 0x0502);
     smi_write(0x6600, 0x00C0);
 #endif
+#endif
+    rtk_cpu_enable_set(ENABLED);
+    rtk_cpu_tagPort_set(port, CPU_INSERT_TO_NONE);
+    rtk_cpu_tagPort_get(&cpuport, &cpumode);
+    printk("init switch %s:%d---cpuport:%d,mode:%d\n", __FUNCTION__, __LINE__, cpuport, cpumode);
     return 0;	
 }
 

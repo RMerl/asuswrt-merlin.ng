@@ -1,7 +1,7 @@
 /*
  * DHD Bus Module for PCIE
  *
- * Copyright (C) 2021, Broadcom. All Rights Reserved.
+ * Copyright (C) 2022, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: dhd_pcie.c 805890 2021-12-08 07:56:22Z $
+ * $Id: dhd_pcie.c 807970 2022-02-07 06:44:58Z $
  */
 
 /* include files */
@@ -1325,7 +1325,11 @@ bool dhd_bus_watchdog(dhd_pub_t *dhd)
 #endif /* PCIE_OOB */
 
 	/* Call the msgbuf module watchdog */
+#if defined(STB) && !defined(STBAP)
+	if ((dhd->busstate == DHD_BUS_DATA) && (dhd->iswl) && dhd->up) {
+#else
 	if ((dhd->busstate == DHD_BUS_DATA) && (dhd->iswl)) {
+#endif /* STB && !STBAP */
 		dhd_msgbuf_watchdog(dhd);
 	}
 
@@ -1471,7 +1475,7 @@ dhd_bus_download_firmware(struct dhd_bus *bus, osl_t *osh,
 	bus->fw_path = pfw_path;
 	bus->nv_path = pnv_path;
 
-#if defined(SUPPORT_MULTIPLE_REVISION)
+#if defined(SUPPORT_MULTIPLE_REVISION) && !defined(OEM_ANDROID)
 	if (concate_revision(bus, bus->fw_path, bus->nv_path) != 0) {
 		DHD_ERROR(("%s: fail to concatnate revison \n",
 			__FUNCTION__));
@@ -1538,7 +1542,7 @@ dhdpcie_download_firmware(struct dhd_bus *bus, osl_t *osh)
 		char *chip_name;
 		char *fw_name;
 		char *nv_name;
-	} static chip_reqfw_map_table [] __initdata  =
+	} static chip_reqfw_map_table [] =
 	{
 		{BCM43602_CHIP_ID, CHIP_43602_CHIPREV_A0,
 		"bcm43602a0", "bcm43602a0-firmware.bin", "bcm43602a0.nvm"},
@@ -1573,8 +1577,13 @@ dhdpcie_download_firmware(struct dhd_bus *bus, osl_t *osh)
 		/* {for a given chipid, chiprev, what is the index (the above enum) */
 		{CHIPID_NONE, 0, 0, 0, 0} /* CHIPID_NONE is -1, used to mark end of list */
 	};
+
+#if defined(OEM_ANDROID)
+	char ini_path[64] = "/vendor/firmware/broadcom/dhd/firmware/brcm/";      /* initial path */
+#else
 	char ini_path[64] = "/lib/firmware/brcm/";	/* initial path */
-	char fw_path[64];				/* path to firmware image */
+#endif
+	char fw_path[128];				/* path to firmware image */
 	char nv_path[64];				/* path to nvram vars file */
 	uint32 chipid, chiprev;
 	struct chip_reqfw_map *p_reqfw_index;
@@ -1612,7 +1621,7 @@ dhdpcie_download_firmware(struct dhd_bus *bus, osl_t *osh)
 	DHD_OS_WAKE_LOCK(bus->dhd);
 	ret = _dhdpcie_download_firmware(bus);
 
-#if defined(BCM_REQUEST_FW)
+#if defined(BCM_REQUEST_FW) && !defined(OEM_ANDROID)
 	if (ret) {
 		uint boardtype = bus->sih->boardtype;
 		uint boardrev = bus->sih->boardrev;
@@ -5996,6 +6005,7 @@ dhdpcie_bus_suspend(struct dhd_bus *bus, bool state)
 	int timeleft;
 	unsigned long flags;
 	int rc = 0;
+	int bcmerror = 0;
 
 	if (bus->dhd == NULL) {
 		DHD_ERROR(("bus not inited\n"));
@@ -6069,6 +6079,8 @@ dhdpcie_bus_suspend(struct dhd_bus *bus, bool state)
 				// writes D3hot to PMCSR, can cause isr of a neigboring device.
 				rc = dhdpcie_pci_suspend_resume(bus, state);
 				dhd_bus_set_device_wake(bus, FALSE);
+				dhd_prot_reset(bus->dhd);
+				bus->dhd->up = FALSE;
 			}
 			bus->dhd->d3ackcnt_timeout = 0;
 		} else if (timeleft == 0) {
@@ -6116,6 +6128,11 @@ dhdpcie_bus_suspend(struct dhd_bus *bus, bool state)
 			DHD_OS_WAKE_LOCK_RESTORE(bus->dhd);
 			dhd_bus_set_device_wake(bus, TRUE);
 		}
+		bcmerror = dhd_bus_start(bus->dhd);
+		if (bcmerror) {
+		      DHD_ERROR(("%s: dhd_bus_start: %d\n", __FUNCTION__, bcmerror));
+		}
+		bus->dhd->up = TRUE;
 		bus->suspended = FALSE;
 		DHD_GENERAL_LOCK(bus->dhd, flags);
 		bus->dhd->busstate = DHD_BUS_DATA;

@@ -69,7 +69,7 @@ written consent.
 #include <generated/autoconf.h>
 #include <linux/types.h>            /* include ISO C99 inttypes.h             */
 #include <linux/skbuff.h>           /* include corresponding BSD style mbuf   */
-#if !(defined(CONFIG_BCM94912) && defined(CONFIG_BCM_JUMBO_FRAME))
+#if !((defined(CONFIG_BCM94912) || defined(CONFIG_BCM96855)) && defined(CONFIG_BCM_JUMBO_FRAME))
 #include <bcm_pkt_lengths.h>
 #endif
 #include <linux/netdevice.h>
@@ -746,7 +746,7 @@ struct fkbuff
 
 } ____cacheline_aligned;   /* 2 cache lines wide */
 
-#if defined(CONFIG_BCM94912) && defined(CONFIG_BCM_JUMBO_FRAME)
+#if (defined(CONFIG_BCM94912) || defined(CONFIG_BCM96855)) && defined(CONFIG_BCM_JUMBO_FRAME)
 #include <bcm_pkt_lengths.h>
 #endif
 

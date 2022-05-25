@@ -478,21 +478,23 @@ fi
 mkdir -p ${TARGET_FS}/rom/etc/fw
 cp ${HND_SRC}/bcmdrivers/opensource/phy/firmware/*.bin ${TARGET_FS}/rom/etc/fw/
 
-if [ "$BUILD_NAME" == "RT-AX55" ] || [ "$BUILD_NAME" == "RT-AX1800" ]; then
-	rm -rf $TARGETS_DIR/$ROOTFS/lib/modules/4.1.52/extra/bcm_usb.ko
-	rm -rf $TARGETS_DIR/$ROOTFS/lib/modules/4.1.52/extra/dhd.ko
-	rm -rf $TARGETS_DIR/$ROOTFS/lib/modules/4.1.52/kernel/drivers/cdrom
-	rm -rf $TARGETS_DIR/$ROOTFS/lib/modules/4.1.52/kernel/drivers/scsi
-	rm -rf $TARGETS_DIR/$ROOTFS/lib/modules/4.1.52/kernel/drivers/usb
-	rm -rf $TARGETS_DIR/$ROOTFS/lib/modules/4.1.52/kernel/drivers/net/bonding/bonding.ko
-	rm -rf $TARGETS_DIR/$ROOTFS/lib/modules/4.1.52/kernel/fs
-	rm -rf $TARGETS_DIR/$ROOTFS/lib/modules/4.1.52/kernel/net/ipv4/tcp_bic.ko
-	rm -rf $TARGETS_DIR/$ROOTFS/lib/modules/4.1.52/kernel/net/ipv4/tcp_htcp.ko
-	rm -rf $TARGETS_DIR/$ROOTFS/lib/modules/4.1.52/kernel/net/ipv4/tcp_westwood.ko
-	rm -rf $TARGETS_DIR/$ROOTFS/rom/etc/wlan/dhd/43684b0
+if [ "$BUILD_NAME" == "RT-AX3000N" ]; then
+	find $TARGETS_DIR/$ROOTFS/lib/modules -name usb | xargs rm -rf
+	find $TARGETS_DIR/$ROOTFS/lib/modules -name cdrom | xargs rm -rf
+	find $TARGETS_DIR/$ROOTFS/lib/modules -name scsi | xargs rm -rf
+	find $TARGETS_DIR/$ROOTFS/lib/modules -name hid | xargs rm -rf
+	find $TARGETS_DIR/$ROOTFS/lib/modules -name fs | xargs rm -rf
+	find $TARGETS_DIR/$ROOTFS/lib/modules -name nls | xargs rm -rf
+	find $TARGETS_DIR/$ROOTFS/lib/modules -name bonding | xargs rm -rf
+	find $TARGETS_DIR/$ROOTFS/lib/modules -name bcm_bca_usb.ko | xargs rm -f
+	find $TARGETS_DIR/$ROOTFS/lib/modules -name tcp_bic.ko | xargs rm -f
+	find $TARGETS_DIR/$ROOTFS/lib/modules -name tcp_htcp.ko | xargs rm -f
+	find $TARGETS_DIR/$ROOTFS/lib/modules -name tcp_westwood.ko | xargs rm -f
 	rm -rf $TARGETS_DIR/$ROOTFS/rom/etc/wlan/nvram/9*.nvm
-	rm -rf $TARGETS_DIR/$ROOTFS/rom/etc/wlan/nvram/MAP-AX6600.nvm
-	rm -rf $TARGETS_DIR/$ROOTFS/usr/lib/libusb*
+	rm -rf $TARGETS_DIR/$ROOTFS/rom/etc/wlan/nvram/X*.nvm
+	rm -rf $TARGETS_DIR/$ROOTFS/rom/etc/wlan/nvram/E*.nvm
+	rm -rf $TARGETS_DIR/$ROOTFS/rom/etc/wlan/nvram/RP*.nvm
+	rm -rf $TARGETS_DIR/$ROOTFS/rom/etc/wlan/nvram/T*.nvm
 	rm -rf $TARGETS_DIR/$ROOTFS/usr/sbin/dhd
 fi
 

@@ -4,7 +4,7 @@
  * Code to operate on PCI/E core, in NIC or BMAC high driver mode. Note that this file is not used
  * in firmware builds.
  *
- * Copyright (C) 2021, Broadcom. All Rights Reserved.
+ * Copyright (C) 2022, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -21,7 +21,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: nicpci.c 790272 2020-08-20 08:31:27Z $
+ * $Id: nicpci.c 806633 2021-12-24 09:24:46Z $
  */
 
 #include <bcm_cfg.h>
@@ -157,6 +157,17 @@ pcicore_init(si_t *sih, osl_t *osh, volatile void *regs)
 			dummy = R_REG(osh, &pi->regs.pcieregs->control);
 			BCM_REFERENCE(dummy);
 		}
+#if defined(BCMDBG)
+		if (BCM43684_CHIP(pi->sih->chip) || BCM6710_CHIP(pi->sih->chip)) {
+			uint32 devctl;
+			devctl = OSL_PCI_READ_CONFIG(osh, PCIECFGREG_DEVCONTROL, sizeof(uint32));
+			PCI_ERROR(("%s: devctl from pcie_read_config %x\n", __FUNCTION__, devctl));
+
+			devctl = pcie_readreg(pi->sih, pi->regs.pcieregs, PCIE_CONFIGREGS,
+				PCIECFGREG_DEVCONTROL);
+			PCI_ERROR(("%s: devctl from ConfigIndAddr %x\n", __FUNCTION__, devctl));
+		}
+#endif
 	} else if (sih->buscoretype == PCIE_CORE_ID) {
 		pi->regs.pcieregs = (sbpcieregs_t*)regs;
 		cap_ptr = pcicore_find_pci_capability(pi->osh, PCI_CAP_PCIECAP_ID, NULL, NULL);

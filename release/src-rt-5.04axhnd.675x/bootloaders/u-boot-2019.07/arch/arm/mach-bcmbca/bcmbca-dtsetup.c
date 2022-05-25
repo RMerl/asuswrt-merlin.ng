@@ -218,11 +218,11 @@ static int set_bootargs(void *blob)
 			strncat(boot_args, extra_args, 1024-strlen(boot_args));
 		}
 
-#if defined(CONFIG_BCM4912) && defined(CONFIG_BCM_JUMBO_FRAME)
+#if (defined(CONFIG_BCM4912) || defined(CONFIG_BCM6855)) && defined(CONFIG_BCM_JUMBO_FRAME)
 {
         char *mtuSize;
         char mtuSizeBuf[16];
-        memset(mtuSizeBuf, 0, sizeof(mtuSizeBuf));
+		memset(mtuSizeBuf, 0, sizeof(mtuSizeBuf));
         mtuSize = env_get("mtusize");
         if (mtuSize) {
             snprintf(mtuSizeBuf, sizeof(mtuSizeBuf), " mtusize=%s", mtuSize);
@@ -318,6 +318,23 @@ static void set_reserved_memory(void *dtb_ptr, bd_t *bd)
 	if (!is_cma_rsvmem_enabled(dtb_ptr)){
 		return;
 	}	
+
+#if defined(XT8PRO) || defined(XT8_V2) || defined(ET8PRO)
+	printf("cathy force RSVD: dhd2=11\n");
+	env_set_ulong("dhd2", 11);
+	printf("cathy force RSVD: dhd0=0\n");
+	env_set_ulong("dhd0", 0);
+#endif
+
+#if defined(RTAX58U_V2) || defined(TUFAX3000_V2) || defined(RTAXE7800) || defined(GT10) || defined(RTAX3000N) || defined(RTAX82U_V2) || defined(RPAX58) || defined(XD4PRO)
+	env_set_ulong("dhd0", 0);
+#endif
+#if defined(GTAX6000) || defined(RTAXE7800) || defined(GT10) || defined(RTAX82U_V2)
+	env_set_ulong("dhd1", 11);
+#endif
+#if defined(GT10)
+	env_set_ulong("dhd2", 11);
+#endif
 
 	/*compute alocation memory*/
 	while (params_ptr->of_str){

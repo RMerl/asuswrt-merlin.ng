@@ -3,21 +3,27 @@
     All Rights Reserved
 
     <:label-BRCM:2017:DUAL/GPL:standard
-    
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License, version 2, as published by
-    the Free Software Foundation (the "GPL").
-    
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-    
-    
-    A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
-    writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-    Boston, MA 02111-1307, USA.
-    
+
+    Unless you and Broadcom execute a separate written software license
+    agreement governing use of this software, this software is licensed
+    to you under the terms of the GNU General Public License version 2
+    (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
+    with the following added to such license:
+
+       As a special exception, the copyright holders of this software give
+       you permission to link this software with independent modules, and
+       to copy and distribute the resulting executable under terms of your
+       choice, provided that you also meet, for each linked independent
+       module, the terms and conditions of the license of that module.
+       An independent module is a module which is not derived from this
+       software.  The special exception does not apply to any modifications
+       of the software.
+
+    Not withstanding the above, under no circumstances may you combine
+    this software in any way with any other Broadcom software provided
+    under a license other than the GPL, without Broadcom's express prior
+    written consent.
+
     :>
 */
 
@@ -168,6 +174,7 @@ int wl_handle_blog_sinit(struct wl_info *wl, struct sk_buff *skb)
 		skb->mark = 0;
 
 		hw_port = netdev_path_get_hw_port((struct net_device *)(skb->dev));
+		PKTSETFCDONE(skb);
 		blog_ret = blog_sinit(skb, skb->dev, TYPE_ETH, hw_port, BLOG_WLANPHY);
 		if (PKT_DONE == blog_ret) {
 			/* Doesnot need go to IP stack */
@@ -188,6 +195,7 @@ int wl_handle_blog_sinit(struct wl_info *wl, struct sk_buff *skb)
 			PKTFREE(NULL, skb, TRUE);
 			return 0;
 		}
+		PKTCLRFCDONE(skb);
 	}
 
 	return -1;
@@ -280,7 +288,7 @@ void wl_handle_blog_event(wl_info_t *wl, wlc_event_t *e)
 				struct scb *scb = wlc_scbfind_from_wlcif(wl->wlc, wlif->wlcif, e->event.addr.octet);
 				wlc_bsscfg_t *bsscfg = wl_bsscfg_find(wlif);
 				netdev_wlan_unset_dwds_client(wlif->d3fwd_wlif); /* reset first */
-				if (BSSCFG_STA(bsscfg) && SCB_DWDS(scb)) {
+				if (BSSCFG_STA(bsscfg) && scb && SCB_DWDS(scb)) {
 					netdev_wlan_set_dwds_client(wlif->d3fwd_wlif);
 				}
 			}

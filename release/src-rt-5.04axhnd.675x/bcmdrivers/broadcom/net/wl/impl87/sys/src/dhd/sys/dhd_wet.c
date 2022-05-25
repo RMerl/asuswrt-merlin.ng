@@ -31,7 +31,7 @@
  *		...
  *	};
  *
- * Copyright (C) 2021, Broadcom. All Rights Reserved.
+ * Copyright (C) 2022, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -84,21 +84,10 @@
  * One MAC can map to IP and IPv6
  */
 
-static int wet_maxip_per_sta = 2;
-/* Hard code configurable max ips to support for each sta */
-#define WET_MAXIP_PER_STA_MAXDEPTH 4
-#define WET_MAXIP_PER_STA_NVRAM "wet_maxip_per_sta"
-
 enum {
 	IPVER_4 = 0, /* must start with 0 as array index */
 	IPVER_6,
 	IPTYPE  /* indicates how many IPVERs */
-};
-
-typedef struct wet_sta_iplink wet_sta_iplink_t;
-struct wet_sta_iplink {
-	uint8 ip[IPV6_ADDR_LEN];	/* client IP addr */
-	wet_sta_iplink_t *next;		/* free STA link */
 };
 
 typedef struct wet_sta wet_sta_t;
@@ -111,10 +100,6 @@ struct wet_sta {
 	wet_sta_t *next;	/* free STA link */
 	wet_sta_t *next_ip[IPTYPE];	/* hash link by IP */
 	wet_sta_t *next_mac;	/* hash link by MAC */
-	wet_sta_iplink_t *ip_link[IPTYPE];	/* Multiple IP assgigned to this STA */
-	uint8 *cached_ip[IPTYPE]; /* as a cache to the the recently accessed ip */
-	uint8 depth[IPTYPE];
-	uint8 overwrite_pos[IPTYPE];
 	uint8 bss;
 };
 
@@ -200,9 +185,6 @@ static int wet_sta_find_mac(dhd_wet_info_t *weth,
 	struct ether_addr *eaddr, wet_sta_t **saddr);
 static void csum_fixup_16(uint8 *chksum,
 	uint8 *optr, int olen, uint8 *nptr, int nlen);
-static void
-dhd_wet_dump_iplink(dhd_wet_info_t *weth, struct bcmstrbuf *b, wet_sta_t *sta, int ipver);
-static void dhd_wet_free_iplink(dhd_wet_info_t *weth);
 
 /*
  * Protocol handler. 'ph' points to protocol specific header,
@@ -341,127 +323,11 @@ static uint8 llc_snap_hdr[SNAP_HDR_LEN] = {0xaa, 0xaa, 0x03, 0x00, 0x00, 0x00};
 static uint8 ipv4_bcast[IPV4_ADDR_LEN] = {0xff, 0xff, 0xff, 0xff}; /* IP v4 broadcast address */
 static uint8 ipv4_null[IPV4_ADDR_LEN] = {0x00, 0x00, 0x00, 0x00}; /* IP v4 NULL address */
 
-/* check if ip is in sta's iplink */
-static inline int
-wet_sta_ip_inlink(wet_sta_t *sta, uint8 ipver, uint8 *iaddr)
-{
-	wet_sta_iplink_t *p_sta = (sta->ip_link[ipver]);
-	while (p_sta) {
-		if (!bcmp(p_sta->ip, iaddr, IP_ADDR_LEN[ipver])) {
-			sta->cached_ip[ipver] = p_sta->ip;
-			return 1;
-		}
-		p_sta = p_sta->next;
-	}
-	return 0;
-}
-
-static inline void
-remove_sta_from_iphash(dhd_wet_info_t *weth, wet_sta_t *sta, uint8 *iaddr, uint ipver)
-{
-	wet_sta_t *sta2, **next;
-	int hash = WET_STA_HASH_IP(iaddr, ipver);
-	for (next = &weth->stahash_ip[ipver][hash], sta2 = *next;
-			sta2; sta2 = sta2->next_ip[ipver]) {
-		if (sta2 == sta)
-			break;
-		next = &sta2->next_ip[ipver];
-	}
-	if (sta2) {
-		*next = sta2->next_ip[ipver];
-		sta2->next_ip[ipver] = NULL;
-	}
-}
-
-/* add extra ipaddr into sta's ip linklist */
-static int
-wet_sta_add_ip(dhd_wet_info_t *weth, wet_sta_t *sta, uint8 ipver,
-		uint8 *iaddr) {
-	if (wet_sta_ip_inlink(sta, ipver, iaddr))
-		return WET_STA_HASH_OK;
-	else {
-		if (sta->depth[ipver] < wet_maxip_per_sta-1) {
-			/* no ip assigned to this sta, assign a new one */
-			wet_sta_iplink_t *p_sta = MALLOCZ(weth->pub->osh, sizeof(wet_sta_iplink_t));
-			if (p_sta == NULL) {
-				DHD_ERROR(("allocate ip space error!\n"));
-				return WET_STA_HASH_OK;
-			}
-			bcopy(iaddr, p_sta->ip, IP_ADDR_LEN[ipver]);
-			p_sta->next = sta->ip_link[ipver];
-			sta->ip_link[ipver] = p_sta;
-			sta->depth[ipver] += 1;
-
-		} else {
-
-			if (sta->overwrite_pos[ipver] == 0) {
-				/* first remove old ip out of ip hash table */
-				remove_sta_from_iphash(weth, sta, &(sta->ip[ipver][0]), ipver);
-				bcopy(iaddr, sta->ip[ipver], IP_ADDR_LEN[ipver]);
-			} else {
-				wet_sta_iplink_t *p_sta = sta->ip_link[ipver];
-				int  i = 0;
-				for (i = 1; i < sta->overwrite_pos[ipver]; i++) {
-					p_sta = p_sta->next;
-				}
-				if (p_sta) {
-					/* first remove old ip out of ip hash table */
-					remove_sta_from_iphash(weth, sta,
-							&(sta->ip[ipver][0]), ipver);
-					bcopy(iaddr, p_sta->ip, IP_ADDR_LEN[ipver]);
-				}
-			}
-			sta->overwrite_pos[ipver] ++;
-			if (sta->overwrite_pos[ipver] == wet_maxip_per_sta)
-				sta->overwrite_pos[ipver] = 0;
-
-		}
-		return  WET_STA_HASH_UNK;
-	}
-}
-
-/* remove ip from sta's ip linklist */
-static int
-wet_sta_remove_ip(dhd_wet_info_t *weth, wet_sta_t *sta, uint8 ipver,
-		uint8 *iaddr) {
-	wet_sta_iplink_t *p_sta = sta->ip_link[ipver];
-	wet_sta_iplink_t *prev_sta = p_sta;
-	while (p_sta) {
-		if (!bcmp((p_sta)->ip, iaddr, IP_ADDR_LEN[ipver])) {
-			if (prev_sta != (p_sta)) {
-				prev_sta->next = p_sta->next;
-			} else {
-				sta->ip_link[ipver] = prev_sta->next;
-			}
-
-			if (sta->cached_ip[ipver] == (void *)p_sta->ip)
-				sta->cached_ip[ipver] = NULL;
-			MFREE(weth->pub->osh, p_sta, sizeof(wet_sta_iplink_t));
-			sta->depth[ipver] -= 1;
-			sta->overwrite_pos[ipver] = 0;
-			return 0;
-		}
-		prev_sta = p_sta;
-		p_sta = p_sta->next;
-	}
-	return 1;
-}
 dhd_wet_info_t *
 dhd_get_wet_info(dhd_pub_t *pub)
 {
 	dhd_wet_info_t *p;
 	int i;
-#ifdef BCM_ROUTER_DHD
-	char *knvram = getvar(NULL, WET_MAXIP_PER_STA_NVRAM);
-	if (knvram) {
-		i = bcm_atoi(knvram);
-		if (i <= WET_MAXIP_PER_STA_MAXDEPTH && i > 0)
-			wet_maxip_per_sta = i;
-	}
-
-	DHD_ERROR(("WET:%s=%d\n", WET_MAXIP_PER_STA_NVRAM, wet_maxip_per_sta));
-#endif
-
 	p = (dhd_wet_info_t *)MALLOCZ(pub->osh, sizeof(dhd_wet_info_t));
 	if (p == NULL) {
 		return 0;
@@ -477,7 +343,6 @@ void
 dhd_free_wet_info(dhd_pub_t *pub, void *wet)
 {
 	if (wet) {
-		dhd_wet_free_iplink((dhd_wet_info_t *)wet);
 		MFREE(pub->osh, wet, sizeof(dhd_wet_info_t));
 	}
 }
@@ -1600,15 +1465,7 @@ wet_sta_alloc(dhd_wet_info_t *weth, int ifidx, wet_sta_t **saddr)
 	sta->next_ip[IPVER_4] = NULL;
 	sta->next_ip[IPVER_6] = NULL;
 	sta->next_mac = NULL;
-	sta->ip_link[IPVER_4] = NULL;
-	sta->ip_link[IPVER_6] = NULL;
 	sta->bss = BSSCFG_IDX_TO_WET_NWKID(ifidx);
-	sta->cached_ip[IPVER_4] = NULL;
-	sta->cached_ip[IPVER_6] = NULL;
-	sta->depth[IPVER_4] = 0;
-	sta->depth[IPVER_6] = 0;
-	sta->overwrite_pos[IPVER_4] = 0;
-	sta->overwrite_pos[IPVER_6] = 0;
 	*saddr = sta;
 	return 0;
 }
@@ -1622,46 +1479,37 @@ wet_sta_update_all(dhd_wet_info_t *weth, int ifidx, uint8 ipver,
 {
 	wet_sta_t *sta;
 	int i = WET_STA_HASH_OK;
-	char eabuf[ETHER_ADDR_STR_LEN], ipbuf[64];
+	char eabuf[ETHER_ADDR_STR_LEN];
 	BCM_REFERENCE(eabuf);
-	BCM_REFERENCE(ipbuf);
 
 	/* For ipv6, check addr null in wet_ipv6_proc */
 	if ((ipver == IPVER_4) && IPV4_ADDR_NULL(iaddr))
 		return 0;
 
-	/* find the existing one and remove it from the old IP hash link */
-	if (!wet_sta_find_mac(weth, eaddr, &sta)) {
-		if ((!(sta->cached_ip[ipver] &&
-			!bcmp(sta->cached_ip[ipver], iaddr, IP_ADDR_LEN[ipver]))) &&
-				bcmp(sta->ip[ipver], iaddr, IP_ADDR_LEN[ipver])) {
-			//when ip is different than the primary one
-			if (((ipver == IPVER_4) && IPV4_ADDR_NULL(sta->ip[ipver])) ||
-					((ipver == IPVER_6) && IPV6_ADDR_NULL(sta->ip[ipver]))) {
-				/* primary ip is not assigned yet */
-				bcopy(iaddr, sta->ip[ipver], IP_ADDR_LEN[ipver]);
-
-				i = WET_STA_HASH_UNK;
-			} else {
-				i = wet_sta_add_ip(weth, sta, ipver, iaddr);
+	/* find the existing one and remove it from the old mac hash link */
+	if (!wet_sta_find_ip(weth, ipver, iaddr, &sta)) {
+		i = WET_STA_HASH_MAC(eaddr->octet);
+		if (bcmp(&sta->mac, eaddr, ETHER_ADDR_LEN)) {
+			wet_sta_t *sta2, **next;
+			for (next = &weth->stahash_mac[i], sta2 = *next;
+				sta2; sta2 = sta2->next_mac) {
+				if (sta2 == sta)
+					break;
+				next = &sta2->next_mac;
 			}
-		}
-
-		if (i == WET_STA_HASH_UNK) {
-			/* remove the sta if this sta is in the list already, possible as
-			 * one sta could have two ip with the same hash value since now more
-			 * than one IP is supported
-			 */
-			remove_sta_from_iphash(weth, sta, iaddr, ipver);
+			if (sta2) {
+				*next = sta2->next_mac;
+				sta2->next_mac = NULL;
+			}
+			i = WET_STA_HASH_UNK;
 		}
 	}
-	/* allocate a new one and hash it by MAC */
+	/* allocate a new one and hash it by IP */
 	else if (!wet_sta_alloc(weth, ifidx, &sta)) {
-		i = WET_STA_HASH_MAC(eaddr->octet);
-		bcopy(eaddr, &sta->mac, ETHER_ADDR_LEN);
-		sta->next_mac = weth->stahash_mac[i];
-		weth->stahash_mac[i] = sta;
+		i = WET_STA_HASH_IP(iaddr, ipver);
 		bcopy(iaddr, sta->ip[ipver], IP_ADDR_LEN[ipver]);
+		sta->next_ip[ipver] = weth->stahash_ip[ipver][i];
+		weth->stahash_ip[ipver][i] = sta;
 		i = WET_STA_HASH_UNK;
 	}
 	/* bail out if we can't find nor create any */
@@ -1673,74 +1521,14 @@ wet_sta_update_all(dhd_wet_info_t *weth, int ifidx, uint8 ipver,
 		return -1;
 	}
 
-	/* update IP and hash by new IP */
+	/* update MAC and hash by new MAC */
 	if (i == WET_STA_HASH_UNK) {
-		i = WET_STA_HASH_IP(iaddr, ipver);
-		sta->next_ip[ipver] = weth->stahash_ip[ipver][i];
+		i = WET_STA_HASH_MAC(eaddr->octet);
+		bcopy(eaddr, &sta->mac, ETHER_ADDR_LEN);
+		sta->next_mac = weth->stahash_mac[i];
 		sta->bss = BSSCFG_IDX_TO_WET_NWKID(ifidx);
-		weth->stahash_ip[ipver][i] = sta;
-
-		/* start here and look for other entries with same IP address */
-		{
-			wet_sta_t *sta2, *prev;
-			prev = sta;
-			for (sta2 = sta->next_ip[ipver]; sta2; sta2 = sta2->next_ip[ipver]) {
-				/* does this entry have the same IP address? */
-				if (!bcmp(iaddr, sta2->ip[ipver], IP_ADDR_LEN[ipver])) {
-					if (sta2->ip_link[ipver] == NULL) {
-						/* sta2 currently points to the entry we need
-						 * to remove
-						 */
-						prev->next_ip[ipver] = sta2->next_ip[ipver];
-						sta2->next_ip[ipver] = NULL;
-						sta2->depth[ipver] = 0;
-						sta2->overwrite_pos[ipver] = 0;
-						/* now we need to find this guy in the MAC list and
-						   remove it from that list too.
-						   */
-						if (IPV6_ADDR_NULL(sta2->ip[
-							((ipver == IPVER_4)? IPVER_6 : IPVER_4)])) {
-							wet_sta_remove_mac_entry(weth,
-									&sta2->mac);
-							/* entry should be completely out of the
-							 * table now, add it to the free list
-							   */
-							memset(sta2, 0, sizeof(wet_sta_t));
-							sta2->next = weth->stafree;
-							weth->stafree = sta2;
-
-							sta2 = prev;
-						}
-						else {
-							memset(sta2->ip[ipver], 0, IPV6_ADDR_LEN);
-							sta2->cached_ip[ipver] = NULL;
-						}
-					} else {
-						/* move one ip out of iplinks */
-						void *tmp_p;
-						if ((uint8*)&sta2->ip_link[ipver]->ip ==
-								sta2->cached_ip[ipver])
-							sta2->cached_ip[ipver] =
-								(uint8 *)&sta2->ip[ipver][0];
-						bcopy(sta2->ip_link[ipver]->ip, sta2->ip[ipver],
-								IP_ADDR_LEN[ipver]);
-						tmp_p = sta2->ip_link[ipver];
-						sta2->ip_link[ipver] = sta2->ip_link[ipver]->next;
-						sta2->depth[ipver] -= 1;
-						sta2->overwrite_pos[ipver] = 0;
-						MFREE(weth->pub->osh, tmp_p,
-								sizeof(wet_sta_iplink_t));
-					}
-
-				}  else {
-					/* remove it from iplinks if there is */
-					wet_sta_remove_ip(weth, sta2, ipver, iaddr);
-				}
-				prev = sta2;
-			}
-		}
+		weth->stahash_mac[i] = sta;
 	}
-
 	*saddr = sta;
 	return 0;
 }
@@ -1828,23 +1616,12 @@ wet_sta_find_ip(dhd_wet_info_t *weth, uint8 ipver,
 
 	/* find the existing one by IP */
 	for (sta = weth->stahash_ip[ipver][i]; sta; sta = sta->next_ip[ipver]) {
-		if (!(sta->cached_ip[ipver] &&
-				!bcmp(sta->cached_ip[ipver], iaddr, IP_ADDR_LEN[ipver]))) {
-			/* if cached ip is not the same as lookup ip, check primary-- */
-			if (bcmp(sta->ip[ipver], iaddr, IP_ADDR_LEN[ipver])) {
-				/* if primary ip is not the same as lookup ip, check iplink
-				 * cached_ip also get uplinked inside wet_sta_ip_inlink if found
-				 */
-				if (!wet_sta_ip_inlink(sta, ipver, iaddr))
-					continue;
-			} else {
-				/* find primary ip is the same, update cached_ip pointer */
-				sta->cached_ip[ipver] = &sta->ip[ipver][0];
-			}
-		}
+		if (bcmp(sta->ip[ipver], iaddr, IP_ADDR_LEN[ipver]))
+			continue;
 		*saddr = sta;
 		return 0;
 	}
+
 	/* sta has not been learned */
 	DHD_INFO(("wet_sta_find_ip: unable to find STA (ipv%d) %u.%u.%u.%u\n",
 		((ipver == IPVER_4) ? 4 : 6), iaddr[0], iaddr[1], iaddr[2], iaddr[3]));
@@ -2017,40 +1794,6 @@ dhd_wet_sta_delete_list(dhd_pub_t *dhd_pub)
 		}
 	}
 }
-
-static void
-dhd_wet_dump_iplink(dhd_wet_info_t *weth, struct bcmstrbuf *b, wet_sta_t *sta, int ipver)
-{
-	wet_sta_iplink_t *p_sta = (sta->ip_link[ipver]);
-	while (p_sta) {
-		if (ipver == IPVER_4)
-			bcm_bprintf(b, "\t\t\t\t\t%pI4\n", p_sta->ip);
-		else
-			bcm_bprintf(b, "\t\t\t\t\t%pI6\n", p_sta->ip);
-		p_sta = p_sta->next;
-	}
-}
-
-static void
-dhd_wet_free_iplink(dhd_wet_info_t *weth)
-{
-	int i, ipver;
-	wet_sta_t *sta;
-	wet_sta_iplink_t *p_sta, *next_sta;
-	for (i = 0; i < WET_NUMSTAS; i++) {
-		sta = &weth->sta[i];
-		if (sta->next) continue;
-		for (ipver = 0; ipver < IPTYPE; ipver++) {
-			p_sta = sta->ip_link[ipver];
-			while (p_sta) {
-				next_sta = p_sta->next;
-				MFREE(weth->pub->osh, p_sta, sizeof(wet_sta_iplink_t));
-				p_sta = next_sta;
-			}
-		}
-	}
-}
-
 void
 dhd_wet_dump(dhd_pub_t *dhdp, struct bcmstrbuf *b)
 {
@@ -2079,10 +1822,6 @@ dhd_wet_dump(dhd_pub_t *dhdp, struct bcmstrbuf *b)
 						i, sta->bss, bcm_ether_ntoa(&sta->mac, eabuf),
 						sta->ip[IPVER_4][0], sta->ip[IPVER_4][1],
 						sta->ip[IPVER_4][2], sta->ip[IPVER_4][3]);
-				dhd_wet_dump_iplink(weth, b, sta, IPVER_4);
-				if (sta->cached_ip[IPVER_4])
-					bcm_bprintf(b, "\t\tcached:\t\t\t%pI4\n",
-							sta->cached_ip[IPVER_4]);
 			}
 			if (!IPV6_ADDR_NULL(sta->ip[IPVER_6])) {
 				bcm_bprintf(b,
@@ -2096,10 +1835,6 @@ dhd_wet_dump(dhd_pub_t *dhdp, struct bcmstrbuf *b)
 					sta->ip[IPVER_6][10], sta->ip[IPVER_6][11],
 					sta->ip[IPVER_6][12], sta->ip[IPVER_6][13],
 					sta->ip[IPVER_6][14], sta->ip[IPVER_6][15]);
-				dhd_wet_dump_iplink(weth, b, sta, IPVER_6);
-				if (sta->cached_ip[IPVER_6])
-					bcm_bprintf(b, "\t\tcached:\t\t\t%pI6\n",
-							sta->cached_ip[IPVER_6]);
 			}
 	}
 }

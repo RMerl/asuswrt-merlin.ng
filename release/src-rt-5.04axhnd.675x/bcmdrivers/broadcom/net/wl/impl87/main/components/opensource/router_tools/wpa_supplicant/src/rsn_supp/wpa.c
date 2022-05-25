@@ -2867,10 +2867,10 @@ static void wpa_sm_pmksa_free_cb(struct rsn_pmksa_cache_entry *entry,
 	if (reason == PMKSA_EXPIRE &&
 	    (sm->pmk_len == entry->pmk_len &&
 	     os_memcmp(sm->pmk, entry->pmk, sm->pmk_len) == 0)) {
-#ifndef CONFIG_DRIVER_BRCM
+#ifndef CONFIG_DRIVER_BRCM_SAE_FEATURE
 		wpa_dbg(sm->ctx->msg_ctx, MSG_DEBUG,
 			"RSN: deauthenticating due to expired PMK");
-#endif /* !CONFIG_DRIVER_BRCM */
+#endif /* !CONFIG_DRIVER_BRCM_SAE_FEATURE */
 		pmksa_cache_clear_current(sm);
 		deauth = 1;
 	}
@@ -2878,9 +2878,9 @@ static void wpa_sm_pmksa_free_cb(struct rsn_pmksa_cache_entry *entry,
 	if (deauth) {
 		sm->pmk_len = 0;
 		os_memset(sm->pmk, 0, sizeof(sm->pmk));
-#ifndef CONFIG_DRIVER_BRCM
+#ifndef CONFIG_DRIVER_BRCM_SAE_FEATURE
 		wpa_sm_deauthenticate(sm, WLAN_REASON_UNSPECIFIED);
-#endif /* !CONFIG_DRIVER_BRCM */
+#endif /* !CONFIG_DRIVER_BRCM_SAE_FEATURE */
 	}
 }
 

@@ -282,6 +282,12 @@ static bp_elem_t xt8pro_gpy211[] = {
     {bp_last}
 };
 
+static bp_elem_t xt8_v2[] = {
+    {bp_cpBoardId,               .u.cp = "XT8_V2"},
+
+    {bp_last}
+};
+
 static bp_elem_t et8pro_gpy211[] = {
     {bp_cpBoardId,               .u.cp = "ET8PRO_GPY211"},
 
@@ -296,6 +302,8 @@ static bp_elem_t xd4proipa[] = {
 
 static bp_elem_t TUF_AX3000_V2[] = {
     {bp_cpBoardId,               .u.cp = "TUF_AX3000_V2"},
+
+    {bp_last}
 };
 
 static bp_elem_t RT_AXE7800[] = {
@@ -304,5 +312,11 @@ static bp_elem_t RT_AXE7800[] = {
     {bp_last}
 };
 
-bp_elem_t * g_BoardParms[] = {g_bcm96756sv, g96756ref1, g96756ref1_sg, g_bcm96756rfdvt, g_bcm947623eap6l, g_bcm947623eap6ll,
-                              g_bcm96757sv, g_bcm96757ref1t, g_bcm96757ref2t, g_bcm96756rfdvt_fake, rt_ax55, xd4pro, RT_AX58U_V2, xt8pro, et8pro, RP_AX58, xt8pro_gpy211, et8pro_gpy211, xd4proipa, TUF_AX3000_V2, RT_AXE7800, 0};
+static bp_elem_t RT_AX3000N[] = {
+    {bp_cpBoardId,               .u.cp = "RT_AX3000N"},
+
+    {bp_last}
+};
+
+bp_elem_t * g_BoardParms[] = {g_bcm96756sv, /*g96756ref1, g96756ref1_sg, g_bcm96756rfdvt, g_bcm947623eap6l, g_bcm947623eap6ll,
+                              g_bcm96757sv, g_bcm96757ref1t, g_bcm96757ref2t, g_bcm96756rfdvt_fake, rt_ax55, */xd4pro, RT_AX58U_V2, xt8pro, et8pro, RP_AX58, xt8pro_gpy211, et8pro_gpy211, xd4proipa, TUF_AX3000_V2, RT_AXE7800, xt8_v2, RT_AX3000N, 0};

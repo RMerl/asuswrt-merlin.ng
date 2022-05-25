@@ -4,19 +4,25 @@
  *    Copyright (c) 2019 Broadcom 
  *    All Rights Reserved
  * 
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License, version 2, as published by
- * the Free Software Foundation (the "GPL").
+ * Unless you and Broadcom execute a separate written software license
+ * agreement governing use of this software, this software is licensed
+ * to you under the terms of the GNU General Public License version 2
+ * (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
+ * with the following added to such license:
  * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ *    As a special exception, the copyright holders of this software give
+ *    you permission to link this software with independent modules, and
+ *    to copy and distribute the resulting executable under terms of your
+ *    choice, provided that you also meet, for each linked independent
+ *    module, the terms and conditions of the license of that module.
+ *    An independent module is a module which is not derived from this
+ *    software.  The special exception does not apply to any modifications
+ *    of the software.
  * 
- * 
- * A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
- * writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
- * Boston, MA 02111-1307, USA.
+ * Not withstanding the above, under no circumstances may you combine
+ * this software in any way with any other Broadcom software provided
+ * under a license other than the GPL, without Broadcom's express prior
+ * written consent.
  * 
  * :>
  */
@@ -140,7 +146,7 @@ bdmf_skb_headerinit(struct sk_buff *skb, void *data, uint32_t len)
 #if defined(CC_NBUFF_FLUSH_OPTIMIZATION)
         SKB_DATA_ALIGN(len + BCM_SKB_TAILROOM),
 #else
-#if defined(CONFIG_BCM94912) && defined(CONFIG_BCM_JUMBO_FRAME)
+#if (defined(CONFIG_BCM94912) || defined(CONFIG_BCM96855)) && defined(CONFIG_BCM_JUMBO_FRAME)
         bcm_max_pkt_len,
 #else
         BCM_MAX_PKT_LEN,
@@ -223,7 +229,7 @@ bdmf_sysb_header_alloc(   bdmf_sysb_type      sysb_type,
 #if defined(ENET_CACHE_SMARTFLUSH)
             SKB_DATA_ALIGN(len+BCM_SKB_TAILROOM),
 #else
-#if defined(CONFIG_BCM94912) && defined(CONFIG_BCM_JUMBO_FRAME)
+#if (defined(CONFIG_BCM94912) || defined(CONFIG_BCM96855)) && defined(CONFIG_BCM_JUMBO_FRAME)
             bcm_max_pkt_len(),
 #else
             BCM_MAX_PKT_LEN,
@@ -266,7 +272,11 @@ static inline uint32_t bdmf_sysb_databuf_alloc( void **bufp, uint32_t num_buffs,
 #else
     uint32_t *datap;
        /* allocate from kernel directly */
+#if defined(CONFIG_BCM96855) && defined(CONFIG_BCM_JUMBO_FRAME)
+	datap = kmalloc(bcm_pktbuf_size(), GFP_ATOMIC);
+#else
     datap = kmalloc(BCM_PKTBUF_SIZE, GFP_ATOMIC);
+#endif
 
     if(!datap)
     {
@@ -277,7 +287,7 @@ static inline uint32_t bdmf_sysb_databuf_alloc( void **bufp, uint32_t num_buffs,
     bufp[0] = (void *)PFKBUFF_TO_PDATA((void *)(datap), BCM_PKT_HEADROOM);
 
     /* do a cache invalidate of the DMA-seen data area */
-#if defined(CONFIG_BCM94912) && defined(CONFIG_BCM_JUMBO_FRAME)
+#if (defined(CONFIG_BCM94912) || defined(CONFIG_BCM96855)) && defined(CONFIG_BCM_JUMBO_FRAME)
     bdmf_dcache_inv((unsigned long)bufp[0], bcm_max_pkt_len());
 #else
     bdmf_dcache_inv((unsigned long)bufp[0], BCM_MAX_PKT_LEN);
@@ -319,7 +329,7 @@ static inline void __bdmf_sysb_databuf_recycle(void *datap, unsigned long contex
 static inline void bdmf_sysb_databuf_free(void *datap, unsigned long context)
 {
      /*do cache invalidate */
-#if defined(CONFIG_BCM94912) && defined(CONFIG_BCM_JUMBO_FRAME)
+#if (defined(CONFIG_BCM94912) || defined(CONFIG_BCM96855)) && defined(CONFIG_BCM_JUMBO_FRAME)
       bdmf_dcache_inv((unsigned long)datap, bcm_max_pkt_len());
 #else
       bdmf_dcache_inv((unsigned long)datap, BCM_MAX_PKT_LEN);

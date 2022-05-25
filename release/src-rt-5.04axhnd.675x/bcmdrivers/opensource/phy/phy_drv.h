@@ -3,21 +3,27 @@
    All Rights Reserved
 
     <:label-BRCM:2015:DUAL/GPL:standard
-    
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License, version 2, as published by
-    the Free Software Foundation (the "GPL").
-    
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-    
-    
-    A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
-    writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-    Boston, MA 02111-1307, USA.
-    
+
+    Unless you and Broadcom execute a separate written software license
+    agreement governing use of this software, this software is licensed
+    to you under the terms of the GNU General Public License version 2
+    (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
+    with the following added to such license:
+
+       As a special exception, the copyright holders of this software give
+       you permission to link this software with independent modules, and
+       to copy and distribute the resulting executable under terms of your
+       choice, provided that you also meet, for each linked independent
+       module, the terms and conditions of the license of that module.
+       An independent module is a module which is not derived from this
+       software.  The special exception does not apply to any modifications
+       of the software.
+
+    Not withstanding the above, under no circumstances may you combine
+    this software in any way with any other Broadcom software provided
+    under a license other than the GPL, without Broadcom's express prior
+    written consent.
+
 :>
 */
 
@@ -112,12 +118,11 @@ typedef enum
     PHY_TYPE_UNKNOWN,
     PHY_TYPE_6858_EGPHY,
     PHY_TYPE_6846_EGPHY,
-    PHY_TYPE_6856_SGMII,
+    PHY_TYPE_SGMII,
     PHY_TYPE_EXT1,
     PHY_TYPE_EXT2,
     PHY_TYPE_EXT3,
     PHY_TYPE_LPORT_SERDES,
-    PHY_TYPE_53125,
     PHY_TYPE_PON,
     PHY_TYPE_DSL_GPHY,
     PHY_TYPE_138CLASS_SERDES,
@@ -1033,6 +1038,15 @@ static inline int phy_dev_inter_phy_types_get(phy_dev_t *phy_dev, inter_phy_type
 {
     int rc;
     *types = INTER_PHY_TYPE_UNKNOWN_M;
+
+    /* return inter_phy_type to let "ethctl media-type" support 100M/1G/2.5G */
+    if (!strcmp(phy_dev->phy_drv->name, "GPY211")
+        || !strcmp(phy_dev->phy_drv->name, "SGMII")) {
+        rc = phy_dev->phy_drv->inter_phy_types_get(phy_dev, if_dir, types);
+        phy_dev->inter_phy_types = *types;
+        //printk("[%s(%d)][GPY211/SGMII] types = 0x%x\n", __FUNCTION__, __LINE__, *types); // VANIC
+        return 0;
+    }
 
     if (phy_dev->inter_phy_types)
     {

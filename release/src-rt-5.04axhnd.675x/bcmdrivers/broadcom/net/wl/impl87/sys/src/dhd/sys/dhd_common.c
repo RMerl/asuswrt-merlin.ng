@@ -1,7 +1,7 @@
 /*
  * Broadcom Dongle Host Driver (DHD), common DHD core.
  *
- * Copyright (C) 2021, Broadcom. All Rights Reserved.
+ * Copyright (C) 2022, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: dhd_common.c 794018 2020-12-17 06:38:45Z $
+ * $Id: dhd_common.c 808279 2022-02-15 05:56:45Z $
  */
 #include <typedefs.h>
 #include <osl.h>
@@ -715,11 +715,11 @@ dhd_wl_ioctl(dhd_pub_t *dhd_pub, int ifidx, wl_ioctl_t *ioc, void *buf, int len)
 		char *pars = (char *)ioc->buf; // points at user buffer
 
 		/* blocking version and magic ioctl */
-		if (ioc->cmd == WLC_GET_VERSION && dhd_pub->wl_ioctl_version != 0) {
+		if (ioc->cmd == WLC_GET_VERSION && dhd_pub->wl_ioctl_version != 0 && buf) {
 			memcpy(buf, &(dhd_pub->wl_ioctl_version), sizeof(int));
 			dhd_os_proto_unblock(dhd_pub);
 			return BCME_OK;
-		} else if (ioc->cmd == WLC_GET_MAGIC && dhd_pub->wl_ioctl_magic != 0) {
+		} else if (ioc->cmd == WLC_GET_MAGIC && dhd_pub->wl_ioctl_magic != 0 && buf) {
 			memcpy(buf, &(dhd_pub->wl_ioctl_magic), sizeof(int));
 			dhd_os_proto_unblock(dhd_pub);
 			return BCME_OK;
@@ -790,9 +790,9 @@ dhd_wl_ioctl(dhd_pub_t *dhd_pub, int ifidx, wl_ioctl_t *ioc, void *buf, int len)
 		}
 
 		/* only cache the version and magic ioctl value at first time */
-		if (ioc->cmd == WLC_GET_VERSION && ret == BCME_OK) {
+		if (ioc->cmd == WLC_GET_VERSION && ret == BCME_OK && buf) {
 			memcpy(&(dhd_pub->wl_ioctl_version), buf, sizeof(int));
-		} else if (ioc->cmd == WLC_GET_MAGIC && ret == BCME_OK) {
+		} else if (ioc->cmd == WLC_GET_MAGIC && ret == BCME_OK && buf) {
 			memcpy(&(dhd_pub->wl_ioctl_magic), buf, sizeof(int));
 		}
 
@@ -2814,6 +2814,7 @@ wl_host_event(dhd_pub_t *dhd_pub, int *ifidx, void *pktdata, uint16 pktlen,
 		dhd_findadd_sta(dhd_pub,
 			dhd_ifname2idx(dhd_pub->info, event->ifname),
 			&event->addr.octet, TRUE);
+		/* fall through */
 #if defined(BCM_PKTFWD)
 	case WLC_E_ASSOC:
 		if (type != WLC_E_AUTH_IND)
@@ -2874,10 +2875,9 @@ wl_host_event(dhd_pub_t *dhd_pub, int *ifidx, void *pktdata, uint16 pktlen,
 			dhd_prot_rxpost_upd(dhd_pub);
 #endif
 		}
+#endif /* PCIE_FULL_DONGLE */
 
 		/* fall through */
-
-#endif /* PCIE_FULL_DONGLE */
 	case WLC_E_DEAUTH:
 	case WLC_E_DEAUTH_IND:
 	case WLC_E_DISASSOC:

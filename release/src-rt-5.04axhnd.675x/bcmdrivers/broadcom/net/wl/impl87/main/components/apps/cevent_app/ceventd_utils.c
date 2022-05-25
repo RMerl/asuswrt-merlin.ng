@@ -2,7 +2,7 @@
  * Cevent daemon utils
  *
  *
- * Copyright (C) 2021, Broadcom. All Rights Reserved.
+ * Copyright (C) 2022, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -20,7 +20,7 @@
  * <<Broadcom-WL-IPTag/Open:>>
  *
  *
- * $Id: ceventd_utils.c 791263 2020-09-22 07:25:59Z $
+ * $Id: ceventd_utils.c 806868 2022-01-06 10:33:39Z $
  */
 
 #include "ceventd.h"
@@ -1088,6 +1088,7 @@ ca_identify_d2c_reason(ca_wksp_t *cwksp, wl_cevent_t *ce, uint32 reason, char *p
 				snprintf(pheader, hsz, "%s", ca_btm_resp_str[reason]);
 				return BCME_OK;
 			}
+			break;
 		case CEVENT_D2C_MT_BTM_QUERY:
 			CA_MSG("ce msgtype: %u\n", ce->msgtype);
 			break;

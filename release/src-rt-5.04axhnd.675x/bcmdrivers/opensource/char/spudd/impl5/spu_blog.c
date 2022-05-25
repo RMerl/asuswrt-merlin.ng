@@ -190,6 +190,12 @@ void spu_blog_emit_aead(struct iproc_reqctx_s *rctx)
     {
         struct xfrm_state *xfrm;
 
+        if (pSkb->dev && !is_netdev_wan(pSkb->dev)) { /* ignore LAN side IPSec connections */
+            /* This use case is for IPsec tunnel started by the LAN device and terminated on the GW */
+            blog_skip(pSkb, blog_skip_reason_spudd_check_failure);
+            return;
+        }
+
         /* ignore udp encapsualted packets and packets requiring
            more than one transform */
         if ( !secpath_exists(pSkb) ||
@@ -290,6 +296,7 @@ static void spu_blog_fc_crypt_done_us(struct bcmspu_message *mssg)
         if (err == SPU_INVALID_ICV)
             atomic_inc(&iproc_priv.bad_icv);
         nbuff_free(rctx->pNBuf);
+        dst_release(rctx->dst);
         secpath_put(rctx->sp);
         kfree(rctx);
         flow_log("SPU process error\n");
@@ -329,6 +336,7 @@ static void spu_blog_fc_crypt_done_us(struct bcmspu_message *mssg)
         flow_log("%s:%d - blogAction == PKT_DROP\n", __func__, __LINE__);
         if (rctx->pNBuf)
             nbuff_free(rctx->pNBuf);
+        dst_release(rctx->dst);
         secpath_put(rctx->sp);
         kfree(rctx);
         return;
@@ -360,6 +368,7 @@ static void spu_blog_fc_crypt_done_us(struct bcmspu_message *mssg)
         atomic_inc(&iproc_priv.blogged[SPU_STREAM_US]);
         flow_log("%s:%d - blogged\n", __func__, __LINE__);
     }
+    dst_release(rctx->dst);
     secpath_put(rctx->sp);
     kfree(rctx);
 
@@ -538,6 +547,7 @@ static int spu_blog_xmit_us(pNBuff_t pNBuf, struct net_device *dev)
     struct scatterlist    *sg;
     int                    datalen;
     int                    padlen;
+    struct device *spu_dev = &iproc_priv.pdev->dev;
 
     flow_log("%s\n", __func__);
 
@@ -668,7 +678,7 @@ static int spu_blog_xmit_us(pNBuff_t pNBuf, struct net_device *dev)
 
     rctx->pNBuf          = pNBuf;
     rctx->iv_ctr_len     = blog_p->esptx.ivsize;
-    rctx->dst            = blog_p->esptx.dst_p;
+    rctx->dst            = dst_clone(blog_p->esptx.dst_p);
     rctx->sp             = NULL;
 
     rctx->gfp = GFP_ATOMIC;
@@ -710,8 +720,20 @@ static int spu_blog_xmit_us(pNBuff_t pNBuf, struct net_device *dev)
     ret = handle_aead_req(rctx);
     if (ret != -EINPROGRESS)
     {
+        if (rctx->mssg.src)
+        {
+            dma_unmap_sg(spu_dev, rctx->mssg.src, sg_nents(rctx->mssg.src), DMA_FROM_DEVICE);
+            kfree(rctx->mssg.src);
+        }
+        if (rctx->mssg.dst != rctx->mssg.src)
+        {
+            dma_unmap_sg(spu_dev, rctx->mssg.dst, sg_nents(rctx->mssg.dst), DMA_FROM_DEVICE);
+            kfree(rctx->mssg.dst);
+        }
         flow_log("Packet discarded, failed to queue packet to interface.\n");
         nbuff_free(pNBuf);
+        dst_release(rctx->dst);
+        kfree(rctx);
     }
 
     return 0;
@@ -737,6 +759,7 @@ static int spu_blog_xmit_ds(pNBuff_t pNBuf, struct net_device *dev)
     void                  *ctx_buf;
     struct scatterlist    *sg;
     int                    ret;
+    struct device *spu_dev = &iproc_priv.pdev->dev;
 
     flow_log("%s - start\n", __func__);
 
@@ -878,8 +901,19 @@ static int spu_blog_xmit_ds(pNBuff_t pNBuf, struct net_device *dev)
     if (ret != -EINPROGRESS)
     {
         flow_log("Packet discarded, failed to queue packet to interface.\n");
+        if (rctx->mssg.src)
+        {
+            dma_unmap_sg(spu_dev, rctx->mssg.src, sg_nents(rctx->mssg.src), DMA_FROM_DEVICE);
+            kfree(rctx->mssg.src);
+        }
+        if (rctx->mssg.dst != rctx->mssg.src)
+        {
+            dma_unmap_sg(spu_dev, rctx->mssg.dst, sg_nents(rctx->mssg.dst), DMA_FROM_DEVICE);
+            kfree(rctx->mssg.dst);
+        }
         secpath_put(secpath);
         nbuff_free(pNBuf);
+        kfree(rctx);
     }
 
     return 0;
@@ -919,11 +953,7 @@ static struct net_device *spu_blog_create_device(char *name, uint32_t dir)
         /* Set mtu to a huge value so that fcache will not fragment packets
          * destined to SPU device.
          */
-#if defined(CONFIG_BCM94912) && defined(CONFIG_BCM_JUMBO_FRAME)
-        dev->mtu = bcm_max_mtu_payload_size();
-#else
         dev->mtu = BCM_MAX_MTU_PAYLOAD_SIZE;
-#endif
 
         ret = register_netdev(dev);
         if (ret)

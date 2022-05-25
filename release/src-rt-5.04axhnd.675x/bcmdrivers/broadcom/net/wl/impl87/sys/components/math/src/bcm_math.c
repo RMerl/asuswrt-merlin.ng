@@ -2,7 +2,7 @@
  * Math component implementation file.
  * General API for calculation purposes.
  *
- * Copyright (C) 2021, Broadcom. All Rights Reserved.
+ * Copyright (C) 2022, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -625,8 +625,7 @@ math_fp_mult_64(uint64 val1, uint64 val2, uint8 nf1, uint8 nf2, uint8 nf_res)
 
 	shift_amt = nf1 + nf2 - nf_res;
 	/* 0.5 in 1.0.shift_amt */
-	rnd_val = math_shl_64(1, (shift_amt - 1));
-	rnd_val = (shift_amt == 0) ? 0 : rnd_val;
+	rnd_val = (shift_amt == 0) ? 0 : math_shl_64(1, (shift_amt - 1));
 	mult_out_tmp = (uint64)((uint64)val1 * (uint64)val2) + (uint64)rnd_val;
 	mult_out = math_shr_64(mult_out_tmp, shift_amt);
 
@@ -705,8 +704,7 @@ math_fp_round_64(uint64 num, uint8 rnd_pos)
 	uint32 rnd_out;
 
 	/* 0.5 in 1.0.rnd_pos */
-	rnd_val = math_shl_64(1, (rnd_pos - 1));
-	rnd_val = (rnd_pos == 0) ? 0 : rnd_val;
+	rnd_val = (rnd_pos == 0) ? 0 : math_shl_64(1, (rnd_pos - 1));
 	rnd_out_tmp = num + rnd_val;
 	rnd_out = (uint32)math_shr_64(rnd_out_tmp, rnd_pos);
 

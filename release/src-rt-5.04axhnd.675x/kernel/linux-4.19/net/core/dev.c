@@ -2034,6 +2034,9 @@ again:
 		 */
 		skb_reset_mac_header(skb2);
 
+		if (skb_network_header(skb2) == skb2->head)
+			skb_reset_network_header(skb2);
+
 		if (skb_network_header(skb2) < skb2->data ||
 		    skb_network_header(skb2) > skb_tail_pointer(skb2)) {
 			net_info_ratelimited("protocol %04x is buggy, dev %s\n",

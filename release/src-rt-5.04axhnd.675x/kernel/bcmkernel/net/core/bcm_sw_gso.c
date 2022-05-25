@@ -685,12 +685,20 @@ static int __init bcm_sw_gso_init(void)
 {
 #if !IS_ENABLED(CONFIG_BCM_BPM)
     /* create a slab cache for GSO buffers */
-    pktBufferCache = kmem_cache_create("pktBufferCache",
+#if defined(CONFIG_BCM96855) && defined(CONFIG_BCM_JUMBO_FRAME)
+	pktBufferCache = kmem_cache_create("pktBufferCache",
+                                       bcm_pktbuf_size(),
+                                       0, /* align */
+                                       SLAB_HWCACHE_ALIGN, /* flags */
+                                       NULL); /* ctor */
+#else
+	pktBufferCache = kmem_cache_create("pktBufferCache",
                                        BCM_PKTBUF_SIZE,
                                        0, /* align */
                                        SLAB_HWCACHE_ALIGN, /* flags */
                                        NULL); /* ctor */
-    if(pktBufferCache == NULL)
+#endif
+	if(pktBufferCache == NULL)
     {
         printk("%s %s: Failed to create packet buffer cache\n", __FILE__, __FUNCTION__);
 		BUG();

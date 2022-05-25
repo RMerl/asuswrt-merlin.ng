@@ -1,4 +1,0 @@
-#!/bin/bash
-
-bdmf_shell -c `cat /var/bdmf_sh_id` -cmd $*
-

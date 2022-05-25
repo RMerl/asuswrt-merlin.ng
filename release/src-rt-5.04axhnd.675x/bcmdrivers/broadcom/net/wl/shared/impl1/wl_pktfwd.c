@@ -3,21 +3,27 @@
     All Rights Reserved
 
     <:label-BRCM:2017:DUAL/GPL:standard
-    
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License, version 2, as published by
-    the Free Software Foundation (the "GPL").
-    
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-    
-    
-    A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
-    writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-    Boston, MA 02111-1307, USA.
-    
+
+    Unless you and Broadcom execute a separate written software license
+    agreement governing use of this software, this software is licensed
+    to you under the terms of the GNU General Public License version 2
+    (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
+    with the following added to such license:
+
+       As a special exception, the copyright holders of this software give
+       you permission to link this software with independent modules, and
+       to copy and distribute the resulting executable under terms of your
+       choice, provided that you also meet, for each linked independent
+       module, the terms and conditions of the license of that module.
+       An independent module is a module which is not derived from this
+       software.  The special exception does not apply to any modifications
+       of the software.
+
+    Not withstanding the above, under no circumstances may you combine
+    this software in any way with any other Broadcom software provided
+    under a license other than the GPL, without Broadcom's express prior
+    written consent.
+
     :>
 */
 
@@ -569,8 +575,6 @@ _wl_pktwd_free_wds_d3lut_elem(d3fwd_wlif_t * d3fwd_wlif)
         d3lut_sta_t *sta = NULL;
         d3lut_elem_t * d3lut_elem = NULL;;
 
-        D3LUT_LOCK(wl_pktfwd->d3lut); // ++++++++++++++++++++++++++++++++++++++++++
-
         d3lut_elem = d3fwd_wlif->wds_d3lut_elem;
         d3fwd_wlif->wds_d3lut_elem = NULL;
 
@@ -586,8 +590,20 @@ _wl_pktwd_free_wds_d3lut_elem(d3fwd_wlif_t * d3fwd_wlif)
 
         (void) d3lut_del(wl_pktfwd->d3lut, d3lut_elem->sym.v8, d3lut_elem->key.domain);
         ret = 1;
-        D3LUT_UNLK(wl_pktfwd->d3lut); // ------------------------------------------
     }
+
+    return ret;
+}
+
+static int
+wl_pktwd_free_wds_d3lut_elem(d3fwd_wlif_t * d3fwd_wlif)
+{
+    wl_pktfwd_t    * wl_pktfwd = &wl_pktfwd_g;
+    int ret = 0;
+
+    D3LUT_LOCK(wl_pktfwd->d3lut); // ++++++++++++++++++++++++++++++++++++++++++
+    ret = _wl_pktwd_free_wds_d3lut_elem(d3fwd_wlif);
+    D3LUT_UNLK(wl_pktfwd->d3lut); // ------------------------------------------
 
     return ret;
 }
@@ -683,7 +699,7 @@ wl_pktwd_d3fwd_wlif_reset(d3fwd_wlif_t * d3fwd_wlif)
 
     PKTFWD_UNLK();  // --------------------------------------------------------
 
-    _wl_pktwd_free_wds_d3lut_elem(d3fwd_wlif);
+    wl_pktwd_free_wds_d3lut_elem(d3fwd_wlif);
     _wl_pktwd_d3fwd_wlif_reset(d3fwd_wlif);
 
     wl_pktfwd->stats.pkts_dropped += pktlist_free.len;
@@ -769,7 +785,9 @@ wl_pktfwd_cache(uint8_t * d3addr, struct net_device * net_device)
 {
     bool is_wlan, cache_eligible;
     d3lut_elem_t * d3lut_elem;
+    unsigned long wfd_chain_idx = WL_PKTFWD_KEY_INVALID_UL;
     struct net_device * root_net_device = net_device;
+    wl_pktfwd_t * wl_pktfwd = &wl_pktfwd_g;
 
     PKTFWD_PTRACE(D3LUT_SYM_FMT "%s", D3LUT_SYM_VAL(d3addr), net_device->name);
 
@@ -827,11 +845,15 @@ wl_pktfwd_cache(uint8_t * d3addr, struct net_device * net_device)
     if (cache_eligible == false)
         goto wl_pktfwd_cache_failure;
 
+    D3LUT_LOCK(wl_pktfwd->d3lut); // ++++++++++++++++++++++++++++++++++++++++++
+
     /* Insert into D3LUT */
     d3lut_elem = wl_pktfwd_lut_ins(d3addr, net_device, is_wlan);
 
-    if (d3lut_elem == D3LUT_ELEM_NULL) /* collision maybe or a D3LUT error */
+    if (d3lut_elem == D3LUT_ELEM_NULL) { /* collision maybe or a D3LUT error */
+        D3LUT_UNLK(wl_pktfwd->d3lut); // ------------------------------------------
         goto wl_pktfwd_cache_failure;
+    }
 
     if (is_wlan) { /* audit D3LUT cached element ... no lock though */
         PKTFWD_ASSERT(d3lut_elem->ext.d3fwd_wlif != D3FWD_WLIF_NULL);
@@ -843,7 +865,11 @@ wl_pktfwd_cache(uint8_t * d3addr, struct net_device * net_device)
     PKTFWD_PTRACE(D3LUT_ELEM_FMT, D3LUT_ELEM_VAL(d3lut_elem));
 
     /* 2b wfdidx | 16 chainidx (2b domain, 2b incarn, 12b index) */
-    return (unsigned long) PKTC_WFD_CHAIN_IDX(d3lut_elem->key.domain, d3lut_elem->key.v16);
+    wfd_chain_idx = (unsigned long) PKTC_WFD_CHAIN_IDX(d3lut_elem->key.domain, d3lut_elem->key.v16);
+
+    D3LUT_UNLK(wl_pktfwd->d3lut); // ------------------------------------------
+
+    return wfd_chain_idx;
 
 wl_pktfwd_cache_failure:
 
@@ -1234,7 +1260,6 @@ wl_pktfwd_lut_ins(uint8_t * d3addr,
                 d3lut_sta_t *sta;
                 bool exist = false;
 
-                D3LUT_LOCK(wl_pktfwd->d3lut); // ++++++++++++++++++++++++++++++++++++++++++
                 /* check if exists */
                 sta = _d3lut_find_sta(&d3fwd_wlif->wds_d3lut_elem->sta_list, d3addr);
                 if (sta != NULL)
@@ -1249,13 +1274,10 @@ wl_pktfwd_lut_ins(uint8_t * d3addr,
                         dll_delete(&sta->node);
                         dll_prepend(&d3fwd_wlif->wds_d3lut_elem->sta_list, &sta->node);
                     } else {
-                        D3LUT_UNLK(wl_pktfwd->d3lut); // ------------------------------------------
                         PKTFWD_WARN("sta_free_list is empty");
                         goto wl_pktfwd_lut_ins_failure;
                     }
                 }
-                D3LUT_UNLK(wl_pktfwd->d3lut); // ------------------------------------------
-
                 return (void *) d3fwd_wlif->wds_d3lut_elem;
             }
         }
@@ -1274,9 +1296,7 @@ wl_pktfwd_lut_ins(uint8_t * d3addr,
         /* In order to avoid crash from calling wlc without WL_LOCK (due to softirq context), 
          * if d3lut_elem to the d3addr has been already created, just return it.
          */
-        D3LUT_LOCK(wl_pktfwd->d3lut); // ++++++++++++++++++++++++++++++++++++++++++
         d3lut_elem = d3lut_lkup(wl_pktfwd->d3lut, d3addr, d3domain);
-        D3LUT_UNLK(wl_pktfwd->d3lut); // ------------------------------------------
         if (d3lut_elem != D3LUT_ELEM_NULL) {
             if (d3lut_elem->ext.d3fwd_wlif->net_device == net_device)
                 return (void *) d3lut_elem;
@@ -1290,9 +1310,7 @@ wl_pktfwd_lut_ins(uint8_t * d3addr,
                     is_netdev_wlan_dwds_client(d3lut_elem->ext.d3fwd_wlif)) {
                     _wl_pktwd_free_wds_d3lut_elem(d3lut_elem->ext.d3fwd_wlif);
                 } else {
-                   D3LUT_LOCK(wl_pktfwd->d3lut); // ++++++++++++++++++++++++++++++++++++++++++
                    (void) d3lut_del(wl_pktfwd->d3lut, d3addr, d3domain);
-                   D3LUT_UNLK(wl_pktfwd->d3lut); // ------------------------------------------
                 }
             }
         }
@@ -1370,7 +1388,6 @@ wl_pktfwd_lut_ins(uint8_t * d3addr,
      * d3domain identifies the d3lut element pool (WLAN/LAN) from which an
      * d3 element will be selected with a 1:1 or free list allocation policy
      */
-    D3LUT_LOCK(wl_pktfwd->d3lut); // ++++++++++++++++++++++++++++++++++++++++++
     d3lut_elem = d3lut_ins(wl_pktfwd->d3lut, d3addr, d3domain, d3lut_policy);
 
     /* Save the virtual device pointer so that we                                                   
@@ -1380,8 +1397,6 @@ wl_pktfwd_lut_ins(uint8_t * d3addr,
         d3lut_elem->ext.virt_net_device = virt_net_device;      
     }
 
-    D3LUT_UNLK(wl_pktfwd->d3lut); // ------------------------------------------
-
     if (unlikely(d3lut_elem == D3LUT_ELEM_NULL)) {
         PKTFWD_WARN("d3lut_ins failure");
         ++wl_pktfwd->stats.ops_failures;
@@ -1389,9 +1404,7 @@ wl_pktfwd_lut_ins(uint8_t * d3addr,
         goto wl_pktfwd_lut_ins_failure;
     }
 
-    /* Data fill the d3lut extension */ 
-    PKTFWD_LOCK();
-
+    /* Data fill the d3lut extension */
     PKTFWD_ASSERT(d3lut_elem->ext.inuse == 1);
     if (is_wlan)
     {
@@ -1429,9 +1442,11 @@ wl_pktfwd_lut_ins(uint8_t * d3addr,
                  * Make sure pktlist is empty before allocating an
                  * d3lut element.
                  */ 
+#if 0
                 PKTFWD_ASSERT(__pktlist_fctable_get_credits(
                     WL_PKTLIST_CONTEXT(wl->unit), prio,
                     D3LUT_ELEM_IDX(d3lut_elem->ext.flow_key.index)) == 0);
+#endif
 
                 __pktlist_fctable_set_credits(
                     WL_PKTLIST_CONTEXT(wl->unit), prio,
@@ -1453,7 +1468,6 @@ wl_pktfwd_lut_ins(uint8_t * d3addr,
             d3lut_elem->key.incarn = 0; /* reset incarn as d3lut_elem is deleted due to roaming */
             d3fwd_wlif->wds_d3lut_elem = d3lut_elem;
 
-            D3LUT_LOCK(wl_pktfwd->d3lut); // ++++++++++++++++++++++++++++++++++++++++++
             /* add sta into list */
             if (!dll_empty(&d3fwd_wlif->sta_free_list)) {
                 sta = (d3lut_sta_t *) dll_head_p(&d3fwd_wlif->sta_free_list);
@@ -1462,12 +1476,9 @@ wl_pktfwd_lut_ins(uint8_t * d3addr,
                 dll_delete(&sta->node);
                 dll_append(&d3lut_elem->sta_list, &sta->node);
             } else {
-                D3LUT_UNLK(wl_pktfwd->d3lut); // ------------------------------------------
-                PKTFWD_UNLK();
                 PKTFWD_WARN("sta_free_list is empty");
                 goto wl_pktfwd_lut_ins_failure;
             }
-            D3LUT_UNLK(wl_pktfwd->d3lut); // ------------------------------------------
         }
     }
     else /* ! is_wlan */
@@ -1475,8 +1486,6 @@ wl_pktfwd_lut_ins(uint8_t * d3addr,
         d3lut_elem->ext.net_device  = (struct net_device *) if_handle;
         d3lut_elem->ext.ssid        = ssid;
     }
-
-    PKTFWD_UNLK();
 
     return (void *) d3lut_elem;
 
@@ -1796,7 +1805,7 @@ wl_pktfwd_lut_clr(struct net_device * net_device)
             PKTFWD_ASSERT(d3fwd_wlif->net_device == net_device);
 
             PKTFWD_ASSERT(d3fwd_wlif->ucast_bmap == 0U);
-            _wl_pktwd_free_wds_d3lut_elem(d3fwd_wlif);
+            wl_pktwd_free_wds_d3lut_elem(d3fwd_wlif);
             d3fwd_wlif->stations = 0;
             D3FWD_STATS_EXPR(
                 memset(d3fwd_wlif->stats, 0, sizeof(d3fwd_wlif->stats)));
@@ -4264,9 +4273,8 @@ wl_pktfwd_upstream(wl_info_t * wl, struct sk_buff * skb)
     if (ETHER_ISMULTI(d3_addr)) /* Only unicast packets are bridged via LUT */
         return BCME_UNSUPPORTED;
 
-    PKTFWD_LOCK(); // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    D3LUT_LOCK(wl_pktfwd->d3lut); // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    /* d3lut::lock is NOT taken !!! */
     d3lut_elem = d3lut_lkup(wl_pktfwd->d3lut, d3_addr, D3LUT_LKUP_GLOBAL_POOL);
 
     if (likely(d3lut_elem != D3LUT_ELEM_NULL))
@@ -4320,7 +4328,7 @@ wl_pktfwd_upstream(wl_info_t * wl, struct sk_buff * skb)
     else
         net_device = (struct net_device *) NULL;
 
-    PKTFWD_UNLK(); // ---------------------------------------------------------
+    D3LUT_UNLK(wl_pktfwd->d3lut); // ---------------------------------------------------------
 
 #if defined(WL_PKTFWD_INTRABSS)
     if (!ETHER_ISMULTI(d3_addr))

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021, Broadcom. All Rights Reserved.
+ * Copyright (C) 2022, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -29,13 +29,13 @@
 
 #define	EPI_RC_NUMBER		188
 
-#define	EPI_INCREMENTAL_NUMBER	55
+#define	EPI_INCREMENTAL_NUMBER	6401
 
 #define	EPI_BUILD_NUMBER	0
 
-#define	EPI_VERSION		17, 10, 188, 55
+#define	EPI_VERSION		17, 10, 188, 6401
 
-#define	EPI_VERSION_NUM		0x110abc37
+#define	EPI_VERSION_NUM		0x110abc19
 
 #define EPI_VERSION_DEV		17.10.188
 
@@ -48,11 +48,11 @@
 
 /* Driver Version String, ASCII, (32 char limit for ethtool) */
 #if defined(WLTEST)
-#define	EPI_VERSION_STR		"17.10.188.55 (r806225 WLTEST)" EPI_CUSTOM_VER
+#define	EPI_VERSION_STR		"17.10.188.6401 (r808804 WLTEST)" EPI_CUSTOM_VER
 #elif defined(BCMDBG)
-#define	EPI_VERSION_STR		"17.10.188.55 (r806225 BCMDBG)" EPI_CUSTOM_VER
+#define	EPI_VERSION_STR		"17.10.188.6401 (r808804 BCMDBG)" EPI_CUSTOM_VER
 #else
-#define	EPI_VERSION_STR		"17.10.188.55 (r806225)" EPI_CUSTOM_VER
+#define	EPI_VERSION_STR		"17.10.188.6401 (r808804)" EPI_CUSTOM_VER
 #endif
 
 #endif /* _epivers_h_ */

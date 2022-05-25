@@ -1,7 +1,7 @@
 /*
  * Linux OS Independent Layer
  *
- * Copyright (C) 2021, Broadcom. All Rights Reserved.
+ * Copyright (C) 2022, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: linux_osl.c 802113 2021-08-17 09:32:56Z $
+ * $Id: linux_osl.c 806648 2021-12-24 14:33:40Z $
  */
 
 #define LINUX_PORT
@@ -2156,8 +2156,10 @@ inline void osl_pcie_rreg(osl_t *osh, ulong addr, volatile void *v, uint size)
 		break;
 	}
 
-	if (pci_access && acp_war_enab)
+	if (pci_access && acp_war_enab) {
+		/* coverity[dead_error_line] */
 		spin_unlock_irqrestore(&l2x0_reg_lock, flags);
+	}
 } /* osl_pcie_rreg */
 #endif /* BCM47XX_CA9 || (STB && __arm__) */
 

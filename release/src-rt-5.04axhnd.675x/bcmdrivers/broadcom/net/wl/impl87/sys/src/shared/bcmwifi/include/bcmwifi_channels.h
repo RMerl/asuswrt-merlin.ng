@@ -3,7 +3,7 @@
  * This header file housing the define and function prototype use by
  * both the wl driver, tools & Apps.
  *
- * Copyright (C) 2021, Broadcom. All Rights Reserved.
+ * Copyright (C) 2022, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -20,7 +20,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: bcmwifi_channels.h 792572 2020-10-30 01:59:03Z $
+ * $Id: bcmwifi_channels.h 806825 2022-01-05 08:22:56Z $
  */
 
 #ifndef	_bcmwifi_channels_h_
@@ -79,6 +79,10 @@ typedef uint16 chanspec_subband_t;
 #define CHANVEC_LEN ((MAXCHANNEL + (8 - 1)) / 8)
 
 #define INVCHANNEL              255u     /* error value for a bad channel */
+
+#ifndef TPE_PSD_COUNT
+#define TPE_PSD_COUNT 16
+#endif /* TPE_PSD_COUNT */
 
 /** channel bitvec: bit[1] represents channel number 1, etc. */
 typedef struct {

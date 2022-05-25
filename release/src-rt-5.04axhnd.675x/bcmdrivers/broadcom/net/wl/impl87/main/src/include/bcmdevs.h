@@ -1,7 +1,7 @@
 /*
  * Broadcom device-specific manifest constants.
  *
- * Copyright (C) 2021, Broadcom. All Rights Reserved.
+ * Copyright (C) 2022, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: bcmdevs.h 805522 2021-11-30 05:26:54Z $
+ * $Id: bcmdevs.h 808178 2022-02-11 08:42:59Z $
  */
 
 #ifndef	_BCMDEVS_H
@@ -656,9 +656,14 @@
 #define BCM47622_CHIP_ID	0xba06		/* == 'd47622 */
 #define BCM6756_CHIP_ID		0x6756
 
-#define EMBEDDED_2x2AX_CORE(chipid)	((CHIPID(chipid) == BCM63178_CHIP_ID) || \
-					(CHIPID(chipid) == BCM47622_CHIP_ID) || \
-					(CHIPID(chipid) == BCM6756_CHIP_ID))
+#define EMBEDDED_2x2AX_80MHZ_CORE(chipid) \
+	(CHIPID(chipid) == BCM63178_CHIP_ID || CHIPID(chipid) == BCM47622_CHIP_ID)
+
+#define EMBEDDED_2x2AX_160MHZ_CORE(chipid) \
+	(CHIPID(chipid) == BCM6756_CHIP_ID) /**< is also 0x6756 for the 68552 */
+
+#define EMBEDDED_2x2AX_CORE(chipid) \
+	(EMBEDDED_2x2AX_80MHZ_CORE(chipid) || EMBEDDED_2x2AX_160MHZ_CORE(chipid))
 
 #define CASE_EMBEDDED_2x2AX_80MHZ_CORE	case BCM63178_CHIP_ID: \
 					case BCM47622_CHIP_ID
@@ -743,6 +748,14 @@
 #define BCM6715X_PKG_ID_MASK	(BCM6715X_PKG_ID | BCM6715X2_PKG_ID)
 #define BCM6715X_PKG(otpflag)	((otpflag & BCM6715X_PKG_ID_MASK) == BCM6715X_PKG_ID)
 #define BCM6715X2_PKG(otpflag)	((otpflag & BCM6715X_PKG_ID_MASK) == BCM6715X2_PKG_ID)
+
+#define BCM6715_FAB_ID_MASK	(0xF80)	/* OTP bit[260:256] map to otpflag bit[11:7] */
+#define BCM6715_TSMC_FAB14_ID	(0x000)	/* in Taiwan */
+#define BCM6715_TSMC_FAB16_ID	(0x080)	/* in China */
+#define BCM6715_TSMC_FAB14(otpflag)	((otpflag & BCM6715_FAB_ID_MASK) == BCM6715_TSMC_FAB14_ID)
+#define BCM6715_TSMC_FAB16(otpflag)	((otpflag & BCM6715_FAB_ID_MASK) == BCM6715_TSMC_FAB16_ID)
+
+#define WIFI0_HWCFG_OPT0_IND 0x100
 
 /* boardflags */
 #define	BFL_BTC2WIRE		0x00000001  /* old 2wire Bluetooth coexistence, OBSOLETE */

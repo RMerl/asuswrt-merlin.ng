@@ -153,7 +153,7 @@
 			phy-handle = <&phy_ge>;
 			status = "okay";
 			network-leds = <&led0>;
-			label = "eth0";
+			label = "eth1";
 		};
 		port1@1 {
 			phy-handle = <&phy_m2m>;
@@ -169,7 +169,7 @@
 		port5@5 {
 			phy-handle = <&phy_serdes0>;
 			status = "okay";
-			label = "eth4";
+			label = "eth0";
 		};
 	};
 };

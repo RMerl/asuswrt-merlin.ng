@@ -52,22 +52,22 @@
 
 /*Ethernet */
 /* Not chip specific but feature specific */
+extern int mtusize;
 #if defined(CONFIG_BCM_JUMBO_FRAME) && defined(CONFIG_BCM_MAX_MTU_SIZE)
 #define ENET_NON_JUMBO_MAX_MTU_PAYLOAD_SIZE  (1500)
-#if defined(CONFIG_BCM94912)
-    extern int mtusize;
+#if defined(CONFIG_BCM94912) || defined(CONFIG_BCM96855)
     static __inline__ int enet_max_mtu_payload_size(void)
     {
         return mtusize;
     }
-#else /* not CONFIG_BCM94912 */
+#else /* not CONFIG_BCM94912, CONFIG_BCM96855 */
     #if defined(MAX_JUMBO_MTU_PAYLOAD_SIZE)
         #if (CONFIG_BCM_MAX_MTU_SIZE > MAX_JUMBO_MTU_PAYLOAD_SIZE)
         #error "ERROR - CONFIG_BCM_MAX_MTU_SIZE > MAX_JUMBO_MTU_PAYLOAD_SIZE"
         #endif
     #endif
     #define ENET_MAX_MTU_PAYLOAD_SIZE  CONFIG_BCM_MAX_MTU_SIZE
-#endif /* CONFIG_BCM94912 */
+#endif /* CONFIG_BCM94912, CONFIG_BCM96855 */
 #else
 #define ENET_MAX_MTU_PAYLOAD_SIZE  (1500)  /* Ethernet Max Payload Size */
 #endif
@@ -104,8 +104,7 @@
 
 #else /* !CONFIG_BCM_USER_DEFINED_DEFAULT_MTU */
 
-#if defined(CONFIG_BCM94912)
-    extern int mtusize;
+#if defined(CONFIG_BCM94912) || defined(CONFIG_BCM96855)
     static __inline__ int bcm_enet_default_mtu_size(void)
     {
         return mtusize;
@@ -125,7 +124,7 @@
 /*TODO check if compiler is replacing these checks with a final value, if not
  select the MAX payload manually */
 
-#if defined(CONFIG_BCM94912) && defined(CONFIG_BCM_JUMBO_FRAME)
+#if (defined(CONFIG_BCM94912) || defined(CONFIG_BCM96855)) && defined(CONFIG_BCM_JUMBO_FRAME)
 static __inline__ int bcm_max_mtu_payload_size(void)
 {
     int mtu = enet_max_mtu_payload_size();
@@ -173,7 +172,7 @@ static __inline__ int bcm_max_mtu_payload_size(void)
 //#define BCM_PKT_TAILROOM	(BCM_SKB_TAILROOM +   BCM_SKB_SHAREDINFO)
 
 /* ############ space needed for FKB ############ */
-#if !(defined(CONFIG_BCM94912) && defined(CONFIG_BCM_JUMBO_FRAME))
+#if !((defined(CONFIG_BCM94912) || defined(CONFIG_BCM96855)) && defined(CONFIG_BCM_JUMBO_FRAME))
 #if defined(__KERNEL__)
 #define BCM_FKB_INPLACE     sizeof(FkBuff_t)
 #endif
@@ -209,7 +208,7 @@ static __inline__ int bcm_max_mtu_payload_size(void)
  It could be set to 1856 so that the headroom in the BPM buffer would be used. 
  But to keep things simple and safe, max pkt len is assigned to PKTBUFSZ from
  linux_osl.h */
-#if defined(CONFIG_BCM94912) && defined(CONFIG_BCM_JUMBO_FRAME)
+#if (defined(CONFIG_BCM94912) || defined(CONFIG_BCM96855)) && defined(CONFIG_BCM_JUMBO_FRAME)
 static __inline__ int bcm_max_pkt_len(void)
 {
     int pktlen = bcm_max_mtu_payload_size();
@@ -222,7 +221,7 @@ static __inline__ int bcm_max_pkt_len(void)
 
 /* ############ Toatal buf size i.e BCM_MAX_PKT_LEN + metadata(fkb,skb_sharedinfo etc..) ############ */
 /* BCM_FKB_INPLACE, BCM_PKT_HEADROOM are always to be at cache-aligned boundaries */
-#if defined(CONFIG_BCM94912) && defined(CONFIG_BCM_JUMBO_FRAME)
+#if (defined(CONFIG_BCM94912) || defined(CONFIG_BCM96855)) && defined(CONFIG_BCM_JUMBO_FRAME)
 extern int bcm_fkb_inplace;
 static __inline__ int bcm_pktbuf_size(void)
 {

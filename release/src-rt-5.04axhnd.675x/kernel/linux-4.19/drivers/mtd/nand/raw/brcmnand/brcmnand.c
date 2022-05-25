@@ -1434,6 +1434,12 @@ static int brcmnand_wait_cmd(struct brcmnand_host *host, unsigned long timeo)
 				udelay(1);
 		}
 
+		// because driver could be CPU cycle starved at any point and may timeout before getting the chance
+		// to verify the status we do one final check after the timeout
+		ready = brcmnand_read_reg(ctrl, BRCMNAND_INTFC_STATUS)&INTFC_CTLR_READY;
+		if (ready)
+			return ret;
+
 		ret = -1;
 
 	} else {

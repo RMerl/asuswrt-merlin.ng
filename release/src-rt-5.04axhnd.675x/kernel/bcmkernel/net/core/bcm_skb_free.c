@@ -1,15 +1,15 @@
 /*
 * <:copyright-BRCM:2012:DUAL/GPL:standard
-* 
-*    Copyright (c) 2012 Broadcom 
+*
+*    Copyright (c) 2012 Broadcom
 *    All Rights Reserved
-* 
+*
 * Unless you and Broadcom execute a separate written software license
 * agreement governing use of this software, this software is licensed
 * to you under the terms of the GNU General Public License version 2
 * (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
 * with the following added to such license:
-* 
+*
 *    As a special exception, the copyright holders of this software give
 *    you permission to link this software with independent modules, and
 *    to copy and distribute the resulting executable under terms of your
@@ -18,12 +18,12 @@
 *    An independent module is a module which is not derived from this
 *    software.  The special exception does not apply to any modifications
 *    of the software.
-* 
+*
 * Not withstanding the above, under no circumstances may you combine
 * this software in any way with any other Broadcom software provided
 * under a license other than the GPL, without Broadcom's express prior
 * written consent.
-* 
+*
 :>
 */
 
@@ -127,6 +127,7 @@ update_list:
 		while (free_list && budget) {
 			skb = free_list;
 			free_list = free_list->next;
+			skb->next = NULL;
 #if defined(CONFIG_BCM_BPM_BULK_FREE)
                         if (SKB_FAST_RELEASE_TO_BPM(skb)) {
 #if defined(CONFIG_BCM_XRDP)
@@ -317,7 +318,7 @@ void dev_kfree_skb_thread_bulk(struct sk_buff *head, struct sk_buff *tail, uint3
 {
 	unsigned long flags;
 
-	/* Assumption here is all the skb's in list have same refcount 
+	/* Assumption here is all the skb's in list have same refcount
 	 *  TODO: check if this is ok in all cases
          */
 	if (refcount_dec_and_test(&head->users)) {
@@ -346,7 +347,7 @@ void dev_kfree_skb_thread_bulk(struct sk_buff *skb)
 		/* +1 for first skb already done during init */
 		skbcnt++;
 	}
-	/* Assumption here is all the skb's in list have same refcount 
+	/* Assumption here is all the skb's in list have same refcount
 	 *  TODO: check if this is ok in all cases
      */
 
@@ -372,7 +373,7 @@ static int __init bcm_skb_free_init(void)
 
 	if(skb_free_task == NULL)
 		BUG();
-	
+
 	return 0;
 }
 

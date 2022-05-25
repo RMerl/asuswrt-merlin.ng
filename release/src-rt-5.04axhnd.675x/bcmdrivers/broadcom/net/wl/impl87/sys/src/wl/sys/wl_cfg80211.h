@@ -1,7 +1,7 @@
 /*
  * Linux cfg80211 driver
  *
- * Copyright (C) 2021, Broadcom. All Rights Reserved.
+ * Copyright (C) 2022, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: wl_cfg80211.h 805775 2021-12-07 11:25:46Z $
+ * $Id: wl_cfg80211.h 807137 2022-01-13 06:59:16Z $
  */
 
 /**
@@ -1039,9 +1039,9 @@ struct bcm_cfg80211 {
 	u32 roam_count;
 #endif /* DHD_ENABLE_BIGDATA_LOGGING */
 	u16 ap_oper_channel;
-#if defined(SUPPORT_RANDOM_MAC_SCAN)
+#if defined(SUPPORT_RANDOM_MAC)
 	bool random_mac_enabled;
-#endif /* SUPPORT_RANDOM_MAC_SCAN */
+#endif /* SUPPORT_RANDOM_MAC */
 #ifdef DHD_LOSSLESS_ROAMING
 	struct timer_list roam_timeout;   /* Timer for catch roam timeout */
 #endif
@@ -1556,6 +1556,9 @@ wl_get_netinfo_by_wdev(struct bcm_cfg80211 *cfg, struct wireless_dev *wdev)
 #define ndev_to_wdev(ndev) (ndev->ieee80211_ptr)
 #define wdev_to_ndev(wdev) (wdev->netdev)
 
+#define IS_STA_IFACE(wdev) (wdev && \
+		(wdev->iftype == NL80211_IFTYPE_STATION))
+
 #if defined(WL_ENABLE_P2P_IF)
 #define ndev_to_wlc_ndev(ndev, cfg)	((ndev == cfg->p2p_net) ? \
 	bcmcfg_to_prmry_ndev(cfg) : ndev)
@@ -1756,6 +1759,11 @@ extern s32 wl_cfg80211_get_best_channels(struct net_device *dev, char* command,
 
 extern int wl_cfg80211_ether_atoe(const char *a, struct ether_addr *n);
 extern int wl_cfg80211_hang(struct net_device *dev, u16 reason);
+#if defined(SUPPORT_RANDOM_MAC)
+extern void wl_cfg80211_disassoc(struct net_device *ndev, uint32 reason);
+extern s32 wl_cfg80211_handle_macaddr_change(struct net_device *dev, u8 *macaddr);
+extern bool wl_cfg80211_macaddr_sync_reqd(struct net_device *dev);
+#endif /* SUPPORT_RANDOM_MAC */
 extern s32 wl_mode_to_nl80211_iftype(s32 mode);
 int wl_cfg80211_do_driver_init(struct net_device *net);
 void wl_cfg80211_enable_trace(bool set, u32 level);
@@ -1972,11 +1980,11 @@ do {                                    \
 #define P2PO_COOKIE     65535
 u64 wl_cfg80211_get_new_roc_id(struct bcm_cfg80211 *cfg);
 
-#if defined(SUPPORT_RANDOM_MAC_SCAN)
+#if defined(SUPPORT_RANDOM_MAC)
 int wl_cfg80211_set_random_mac(struct net_device *dev, bool enable);
 int wl_cfg80211_random_mac_enable(struct net_device *dev);
 int wl_cfg80211_random_mac_disable(struct net_device *dev);
-#endif /* SUPPORT_RANDOM_MAC_SCAN */
+#endif /* SUPPORT_RANDOM_MAC */
 int wl_cfg80211_iface_count(struct net_device *dev);
 void wl_cfg80211_cleanup_virtual_ifaces(struct bcm_cfg80211 *cfg);
 

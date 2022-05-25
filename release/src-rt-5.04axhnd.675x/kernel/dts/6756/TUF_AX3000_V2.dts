@@ -256,6 +256,15 @@
         active_low;
         init_high;
     };
+
+    /* USB Power */
+    led7:led_gpio_80 {
+        compatible = "brcm,gpio-led";
+        software_led;
+        pin = <80>;
+        active_high;
+        init_low;
+    };
 };
 
 &usb_ctrl {

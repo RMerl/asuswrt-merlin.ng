@@ -6,7 +6,7 @@
  *
  * Definitions subject to change without notice.
  *
- * Copyright (C) 2021, Broadcom. All Rights Reserved.
+ * Copyright (C) 2022, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -21,7 +21,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: wlioctl.h 805196 2021-11-18 06:38:23Z $
+ * $Id: wlioctl.h 807773 2022-01-31 14:47:18Z $
  */
 
 #ifndef _wlioctl_h_
@@ -11912,7 +11912,8 @@ typedef enum wl_csimon_cfg_cmd_type {
 	CSIMON_CFG_CMD_ADD = 1,
 	CSIMON_CFG_CMD_ENB = 2,
 	CSIMON_CFG_CMD_DSB = 3,
-	CSIMON_CFG_CMD_RSTCNT = 4
+	CSIMON_CFG_CMD_RSTCNT = 4,
+	CSIMON_CFG_CMD_ADD_AP = 5
 } wl_csimon_cfg_cmd_type_t;
 
 typedef struct csimon_state {
@@ -11935,6 +11936,10 @@ typedef struct wlc_csimon_sta_config {
 	uint16	length;			/* Command structure length */
 	/* Time (ms) interval between successive CSI reports generated for STA */
 	uint32	monitor_interval;
+#ifdef BCM_CSIMON_AP
+	uint8	SSID[DOT11_MAX_SSID_LEN];
+	uint32	ssid_len;
+#endif
 } wlc_csimon_sta_config_t;
 
 /* ifdef SR_DEBUG */
@@ -14151,6 +14156,7 @@ typedef struct svmp_mem {
 #define EAP_ACK_RSSI_CAP			(1 << 21)
 #define EAP_AMPDU_RTS_RETRIES_CAP		(1 << 22)
 #define EAP_FTM_CAP				(1 << 23)
+#define EAP_RXWD_PER_STREAM			(1 << 24)
 
 // Keep in sync with above definitions
 typedef enum
@@ -14207,7 +14213,9 @@ typedef enum
 	// AMPDU's RTSs use SRL/LRL
 	C_FEAT_AMPDU_RTS_RETRIES_NBIT				= 6,
 	// Is EAP FTM AVB Capability present
-	C_UCODE_FEAT_FTM_NBIT					= 7
+	C_UCODE_FEAT_FTM_NBIT					= 7,
+	// EAP RXWD restart per MPDU for long, out of spec 11n frames
+	C_UCODE_FEAT_RXWD_PER_STREAM				= 8
 } ePsmFeatureSetRegBitDefinitions2;
 
 /** IOVAR 'mu_rate' parameter. read/set mu rate for upto four users */
@@ -17023,9 +17031,10 @@ typedef enum wlc_tx_pktdrop_reason_e {
 	TX_PKTDROP_RSN_LEN_TOO_SHORT			= 52,
 	TX_PKTDROP_RSN_BRIGE_FLOODING			= 53,
 	TX_PKTDROP_RSN_AP_IS_RAW			= 54,
+	TX_PKTDROP_RSN_BLOG_DROP			= 55,
 
 	/* always maintain this for array bound checking */
-	TX_PKTDROP_RSN_SIZE				= 55
+	TX_PKTDROP_RSN_SIZE				= 56
 
 } wlc_tx_pktdrop_reason_t;
 
@@ -17487,11 +17496,56 @@ typedef struct pktdrop_stats_ioctl_response_v1_s {
 #define WL_OVERRIDE_EIRP      1
 #define WL_OVERRIDE_EIRP_PSD  2
 
+#define TPE_PSD_COUNT 16
+
 typedef struct wlc_ioctl_tx_pwr {
 	int mode;
 	int len;
-	int pwr[8];
+	int pwr[TPE_PSD_COUNT];
 } wlc_ioctl_tx_pwr_t;
+
+typedef struct wl_reg_info {
+	uint16 ver;
+	uint16 len;
+	uint16 type;
+	uint16 flags;
+	chanspec_t chspec;
+	uint16 afc_bmp;
+	uint16 sp_bmp;
+	uint16 lpi_bmp;
+	uint8 reg_info_field;
+	uint8 reg_info_override;
+	int8 afc_eirp[TPE_PSD_COUNT];
+	int8 sp_eirp[TPE_PSD_COUNT];
+	int8 lpi_eirp[TPE_PSD_COUNT];
+	int8 afc_psd[TPE_PSD_COUNT];
+	int8 sp_psd[TPE_PSD_COUNT];
+	int8 lpi_psd[TPE_PSD_COUNT];
+} wl_reg_info_t;
+
+#define WL_REG_INFO_VER_1	1
+#define WL_REG_INFO_VER		WL_REG_INFO_VER_1
+
+#define WL_EDCRS_HI_EVENT_AUTO		(-1) /* driver toggles based on band and regulatory rules */
+#define WL_EDCRS_HI_EVENT_DISABLED	(0)  /* disables events and in-driver channel changes */
+#define WL_EDCRS_HI_EVENT_ENABLED	(1)  /* enables events only */
+#define WL_EDCRS_HI_EVENT_INDRIVER	(2)  /* enables (immediate) in-driver channel change only */
+/* enables event & (delayed) in-driver chan change */
+#define WL_EDCRS_HI_EVENT_BOTH		(WL_EDCRS_HI_EVENT_ENABLED | WL_EDCRS_HI_EVENT_INDRIVER)
+#define WL_EDCRS_HI_EVENT_SIMULATE	(4)  /* single shot simulation of EDCRS_HI */
+
+/* TODO: Old defines with "_INCUMBENT_* to be removed after all related precommit checkins */
+#define WL_INCUMBENT_EVENT_AUTO		(-1)
+#define WL_INCUMBENT_EVENT_DISABLED	(0)
+#define WL_INCUMBENT_EVENT_ENABLED	(1)
+#define WL_INCUMBENT_EVENT_SIMULATE	(2)
+
+#define WL_INDOOR_ACCESS_POINT			0u
+#define WL_STANDARD_PWR_ACCESS_POINT		1u
+#define WL_VERY_LOWPWR_ACCESS_POINT		2u
+#define WL_INDOOR_ENABLED_ACCESS_POINT		3u
+#define WL_INDOOR_STANDARD_PWR_ACCESS_POINT	4u
+#define WL_REG_INFO_RESERVED			0xFFu
 
 /* Color events, are events generated when colors of neighbouring bsses are detected */
 #define WL_COLOR_INVALID_VALUE			0
@@ -17507,5 +17561,22 @@ typedef struct wl_color_event {
 	uint8 pad2;
 	uint8 colors[WL_COLOR_MAX_VALUE];
 } wl_color_event_t;
+
+/*
+ * Extra long (in time) rx frame reception:
+ * Some 11N IOT devices rate-select-down without reducing AMPDU loading.
+ * This can cause abnormally large, out-of-spec frames, typically rejected or
+ * dropped by some MAC versions.
+ * To allow reception of these large frames, both the MAC's internal RX Watchdog,
+ * and the MAC's internal PSM Watchdog (ucode health) require extensions.
+ *
+ * The feature is enabled via new "extralongpkt" iovar, having no relationship
+ * with the exiting "longpkt" iovar.
+ */
+#define WL_EXTRA_LONG_RXFRAME_DISABLED		(0)
+#define WL_EXTRA_LONG_RXFRAME_MAC_RX_WATCHDOG	(1 << 0)
+#define WL_EXTRA_LONG_RXFRAME_MAC_PSM_WATCHDOG	(1 << 1)
+#define WL_EXTRA_LONG_RXFRAME_ENABLED           (WL_EXTRA_LONG_RXFRAME_MAC_RX_WATCHDOG | \
+						WL_EXTRA_LONG_RXFRAME_MAC_PSM_WATCHDOG)
 
 #endif /* _wlioctl_h_ */

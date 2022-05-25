@@ -3,7 +3,7 @@
  * Provides type definitions and function prototypes used to link the
  * DHD OS, bus, and protocol modules.
  *
- * Copyright (C) 2021, Broadcom. All Rights Reserved.
+ * Copyright (C) 2022, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -20,7 +20,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: dhd_msgbuf.c 805400 2021-11-24 06:02:40Z $
+ * $Id: dhd_msgbuf.c 807970 2022-02-07 06:44:58Z $
  */
 
 #include <typedefs.h>
@@ -1389,6 +1389,7 @@ dhd_csimon_watchdog(dhd_pub_t *dhd)
 	csimon_ring_elem_t * elem;
 	int elem_idx;
 
+	/* coverity[dead_error_line] */
 	if ((dhd->tickcnt % CSIMON_POLL_10MSEC_TICKS) != 0) return BCME_OK;
 
 	if ((dhd->csi_monitor == FALSE) || (csimon->ipc_hme == NULL))
@@ -3341,6 +3342,11 @@ dhd_prot_preinit(dhd_pub_t *dhdp, bool use_haddr64, uint32 host_physaddrhi,
 	dhd_prot_t *prot = dhdp->prot;
 	uint16 ringid, i;
 	uint16 type = 0, misc = 0, max = 0, size = 0; /* work item configuration */
+#if defined(STB) && !defined(STBAP)
+	/* Dont call preinit again(suspend-resume) */
+	if (prot->txpost_max_items)
+		return BCME_OK;
+#endif /* STB && !STBAP */
 
 	/* Common configuration for RxPost, TxPost, TxCpln and RxCpln */
 	prot->use_haddr64 = use_haddr64;

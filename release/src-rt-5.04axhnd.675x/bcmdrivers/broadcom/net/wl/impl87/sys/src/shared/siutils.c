@@ -2,7 +2,7 @@
  * Misc utility routines for accessing chip-specific features
  * of the SiliconBackplane-based Broadcom chips.
  *
- * Copyright (C) 2021, Broadcom. All Rights Reserved.
+ * Copyright (C) 2022, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -19,7 +19,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: siutils.c 805381 2021-11-23 21:03:54Z $
+ * $Id: siutils.c 806645 2021-12-24 13:35:25Z $
  */
 
 #include <bcm_cfg.h>
@@ -3389,6 +3389,7 @@ si_findcoreidx(si_t *sih, uint coreid, uint coreunit)
 	uint found;
 	uint i;
 
+	ASSERT(sii->numcores <= ARRAYSIZE(cores_info->coreid));
 	found = 0;
 
 	for (i = 0; i < sii->numcores; i++)

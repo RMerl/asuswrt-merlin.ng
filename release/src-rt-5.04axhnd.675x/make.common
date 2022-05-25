@@ -404,10 +404,10 @@ export BUILD_NAND_UBIFS_SINGLE_IMAGE
 endif # PROFILE
 endif #menuconfig
 
-ifeq ($(BUILD_NAME), $(filter $(BUILD_NAME), TUF-AX3000_V2))
-BUILD_NAND_UBIFS_SINGLE_IMAGE := y
-endif
-export BUILD_NAND_UBIFS_SINGLE_IMAGE
+#ifeq ($(BUILD_NAME), $(filter $(BUILD_NAME), TUF-AX3000_V2))
+#BUILD_NAND_UBIFS_SINGLE_IMAGE := y
+#endif
+#export BUILD_NAND_UBIFS_SINGLE_IMAGE
 
 ###########################################
 # Define Basic Variables
@@ -798,7 +798,7 @@ endif
 
 ifeq ($(ARCH),arm)
 ifeq ($(BUILD_IN_UBOOT),y)
-ifneq ($(findstring $(CUR_CHIP_PROFILE),47622 6750 6756),)
+ifneq ($(findstring $(CUR_CHIP_PROFILE),47622 6750 6756 6855),)
 BRCM_COMMON_CFLAGS := -Os -fomit-frame-pointer -mno-thumb-interwork -mabi=aapcs-linux -marm -fno-common -ffixed-r8 -msoft-float -D__ARM_ARCH_7A__ $(BRCM_WERROR_CFLAGS)
 else
 BRCM_COMMON_CFLAGS := -Os -fomit-frame-pointer -fno-common -ffixed-r8 -D__ARM_ARCH_7A__ $(BRCM_WERROR_CFLAGS)

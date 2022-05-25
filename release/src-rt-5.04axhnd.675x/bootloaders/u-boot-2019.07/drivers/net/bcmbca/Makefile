@@ -77,7 +77,7 @@ UBOOTINCLUDE += -I$(srctree)/arch/$(ARCH)/mach-bcmbca/pmc
 obj-y += bcm_ethsw_ext.o bcm_ethsw_phy.o bcm_ethsw_phy_afe.o
 endif
 
-ifdef RTAX58U_V2
+ifeq ($(or $(RTAX58U_V2),$(RTAX3000N)),y)
 obj-y += rtk/
 endif
 

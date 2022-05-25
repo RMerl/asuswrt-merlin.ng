@@ -2,7 +2,7 @@
  * Broadcom Dongle Host Driver (DHD), Linux-specific network interface
  * Basically selected code segments from usb-cdc.c and usb-rndis.c
  *
- * Copyright (C) 2021, Broadcom. All Rights Reserved.
+ * Copyright (C) 2022, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -19,7 +19,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: dhd_linux.c 806207 2021-12-15 05:08:28Z $
+ * $Id: dhd_linux.c 808017 2022-02-08 04:16:00Z $
  */
 
 #include <typedefs.h>
@@ -3467,8 +3467,8 @@ dhd_set_suspend(int value, dhd_pub_t *dhd)
 	int bcn_li_bcn;
 #endif /* CUSTOMER_HW4 && ENABLE_BCN_LI_BCN_WAKEUP */
 	uint nd_ra_filter = 0;
-	int ret = 0;
 #endif /* OEM_ANDROID */
+	int ret = BCME_OK;
 #if defined(PASS_ALL_MCAST_PKTS) && defined(CUSTOMER_HW4)
 	struct dhd_info *dhdinfo;
 	uint32 allmulti;
@@ -3507,8 +3507,13 @@ dhd_set_suspend(int value, dhd_pub_t *dhd)
 				DHD_ERROR(("%s: force extra Suspend setting \n", __FUNCTION__));
 
 #ifndef SUPPORT_PM2_ONLY
-				dhd_wl_ioctl_cmd(dhd, WLC_SET_PM, (char *)&power_mode,
-				                 sizeof(power_mode), TRUE, 0);
+				ret = dhd_wl_ioctl_cmd(dhd, WLC_SET_PM, (char *)&power_mode,
+				sizeof(power_mode), TRUE, 0);
+				if (ret < 0) {
+					DHD_ERROR(("%s: set WLC_SET_PM failed (%d)\n",
+						__FUNCTION__, ret));
+					goto exit;
+				}
 #endif /* SUPPORT_PM2_ONLY */
 
 #ifdef PKT_FILTER_SUPPORT
@@ -3519,8 +3524,14 @@ dhd_set_suspend(int value, dhd_pub_t *dhd)
 				allmulti = 0;
 				for (i = 0; i < DHD_MAX_IFS; i++) {
 					if (dhdinfo->iflist[i] && dhdinfo->iflist[i]->net)
-						dhd_iovar(dhd, i, "allmulti", (char *)&allmulti,
-							sizeof(allmulti), NULL, 0, TRUE);
+						ret = dhd_iovar(dhd, i, "allmulti",
+						(char *)&allmulti, sizeof(allmulti), NULL, 0, TRUE);
+				}
+
+				if (ret < 0) {
+					DHD_ERROR(("%s: set allmulti failed (%d)\n",
+						__FUNCTION__, ret));
+					goto exit;
 				}
 #endif /* PASS_ALL_MCAST_PKTS && CUSTOMER_HW4 */
 
@@ -3535,30 +3546,56 @@ dhd_set_suspend(int value, dhd_pub_t *dhd)
 				} else
 #endif /* WLTDLS */
 				bcn_li_dtim = dhd_get_suspend_bcn_li_dtim(dhd);
-				if (dhd_iovar(dhd, 0, "bcn_li_dtim", (char *)&bcn_li_dtim,
-						sizeof(bcn_li_dtim), NULL, 0, TRUE) < 0)
-					DHD_ERROR(("%s: set dtim failed\n", __FUNCTION__));
+				ret = dhd_iovar(dhd, 0, "bcn_li_dtim", (char *)&bcn_li_dtim,
+						sizeof(bcn_li_dtim), NULL, 0, TRUE);
+				if (ret < 0) {
+					DHD_ERROR(("%s: set dtim failed(%d)\n",
+						__FUNCTION__, ret));
+					goto exit;
+				}
 
 #ifdef OEM_ANDROID
 #ifdef CUSTOM_BCN_TIMEOUT_IN_SUSPEND
 				bcn_timeout = CUSTOM_BCN_TIMEOUT_IN_SUSPEND;
-				dhd_iovar(dhd, 0, "bcn_timeout", (char *)&bcn_timeout,
+				ret = dhd_iovar(dhd, 0, "bcn_timeout", (char *)&bcn_timeout,
 						sizeof(bcn_timeout), NULL, 0, TRUE);
+				if (ret < 0) {
+					DHD_ERROR(("%s: set bcn_timeout failed(%d)\n",
+					__FUNCTION__, ret));
+					goto exit;
+				}
 #endif /* CUSTOM_BCN_TIMEOUT_IN_SUSPEND */
 #ifdef CUSTOM_ROAM_TIME_THRESH_IN_SUSPEND
 				roam_time_thresh = CUSTOM_ROAM_TIME_THRESH_IN_SUSPEND;
-				dhd_iovar(dhd, 0, "roam_time_thresh", (char *)&roam_time_thresh,
-						sizeof(roam_time_thresh), NULL, 0, TRUE);
+				ret = dhd_iovar(dhd, 0, "roam_time_thresh",
+					(char *)&roam_time_thresh, sizeof(roam_time_thresh),
+					NULL, 0, TRUE);
+
+				if (ret < 0) {
+					DHD_ERROR(("%s: set roam_time_thresh failed (%d)\n",
+						__FUNCTION__, ret));
+					goto exit;
+				}
 #endif /* CUSTOM_ROAM_TIME_THRESH_IN_SUSPEND */
 #ifndef ENABLE_FW_ROAM_SUSPEND
 				/* Disable firmware roaming during suspend */
-				dhd_iovar(dhd, 0, "roam_off", (char *)&roamvar, sizeof(roamvar),
-						NULL, 0, TRUE);
+				ret = dhd_iovar(dhd, 0, "roam_off", (char *)&roamvar,
+					sizeof(roamvar), NULL, 0, TRUE);
+				if (ret < 0) {
+					DHD_ERROR(("%s: set roam_off failed (%d)\n",
+						__FUNCTION__, ret));
+					goto exit;
+				}
 #endif /* ENABLE_FW_ROAM_SUSPEND */
 #if defined(CUSTOMER_HW4) && defined(ENABLE_BCN_LI_BCN_WAKEUP)
 				bcn_li_bcn = 0;
-				dhd_iovar(dhd, 0, "bcn_li_bcn", (char *)&bcn_li_bcn,
+				ret = dhd_iovar(dhd, 0, "bcn_li_bcn", (char *)&bcn_li_bcn,
 						sizeof(bcn_li_bcn), NULL, 0, TRUE);
+				if (ret < 0) {
+					DHD_ERROR(("%s: set bcn_li_bcn failed (%d)\n",
+						__FUNCTION__, ret));
+					goto exit;
+				}
 #endif /* CUSTOMER_HW4 && ENABLE_BCN_LI_BCN_WAKEUP */
 				if (FW_SUPPORTED(dhd->wlcore, ndoe)) {
 					/* enable IPv6 RA filter in  firmware during suspend */
@@ -3566,16 +3603,20 @@ dhd_set_suspend(int value, dhd_pub_t *dhd)
 					ret = dhd_iovar(dhd, 0, "nd_ra_filter_enable",
 							(char *)&nd_ra_filter, sizeof(nd_ra_filter),
 							NULL, 0, TRUE);
-					if (ret < 0)
-						DHD_ERROR(("failed to set nd_ra_filter (%d)\n",
-							ret));
+					if (ret < 0) {
+						DHD_ERROR(("%s: failed to set nd_ra_filter (%d)\n",
+							__FUNCTION__, ret));
+						goto exit;
+					}
 				}
 #ifdef DYNAMIC_SWOOB_DURATION
 				intr_width = CUSTOM_INTR_WIDTH;
 				ret = dhd_iovar(dhd, 0, "bus:intr_width", (char *)&intr_width,
 						sizeof(intr_width), NULL, 0, TRUE);
 				if (ret < 0) {
-					DHD_ERROR(("failed to set intr_width (%d)\n", ret));
+					DHD_ERROR(("%s: failed to set intr_width (%d)\n",
+						__FUNCTION__, ret));
+					goto exit;
 				}
 #endif /* DYNAMIC_SWOOB_DURATION */
 #endif /* OEM_ANDROID */
@@ -3590,13 +3631,20 @@ dhd_set_suspend(int value, dhd_pub_t *dhd)
 				ret = dhd_iovar(dhd, 0, "bus:intr_width", (char *)&intr_width,
 						sizeof(intr_width), NULL, 0, TRUE);
 				if (ret < 0) {
-					DHD_ERROR(("failed to set intr_width (%d)\n", ret));
+					DHD_ERROR(("%s: failed to set intr_width (%d)\n",
+						__FUNCTION__, ret));
+					goto exit;
 				}
 #endif /* DYNAMIC_SWOOB_DURATION */
 #ifndef SUPPORT_PM2_ONLY
 				power_mode = PM_FAST;
-				dhd_wl_ioctl_cmd(dhd, WLC_SET_PM, (char *)&power_mode,
+				ret = dhd_wl_ioctl_cmd(dhd, WLC_SET_PM, (char *)&power_mode,
 				                 sizeof(power_mode), TRUE, 0);
+				if (ret < 0) {
+					DHD_ERROR(("%s: failed to set WLC_SET_PM (%d)\n",
+						__FUNCTION__, ret));
+					goto exit;
+				}
 #endif /* SUPPORT_PM2_ONLY */
 #ifdef PKT_FILTER_SUPPORT
 				/* disable pkt filter */
@@ -3606,34 +3654,68 @@ dhd_set_suspend(int value, dhd_pub_t *dhd)
 				allmulti = 1;
 				for (i = 0; i < DHD_MAX_IFS; i++) {
 					if (dhdinfo->iflist[i] && dhdinfo->iflist[i]->net)
-						dhd_iovar(dhd, i "allmulti", (char *)&allmulti,
-								sizeof(allmulti), NULL, 0, TRUE);
+						ret = dhd_iovar(dhd, i "allmulti",
+							(char *)&allmulti, sizeof(allmulti),
+							NULL, 0, TRUE);
 				}
+
+				if (ret < 0) {
+					DHD_ERROR(("%s: failed to set bcn_li_dtim (%d)\n",
+						__FUNCTION__, ret));
+					goto exit;
+				}
+
 #endif /* PASS_ALL_MCAST_PKTS && CUSTOMER_HW4 */
 
 				/* restore pre-suspend setting for dtim_skip */
-				dhd_iovar(dhd, 0, "bcn_li_dtim", (char *)&bcn_li_dtim,
+				ret = dhd_iovar(dhd, 0, "bcn_li_dtim", (char *)&bcn_li_dtim,
 						sizeof(bcn_li_dtim), NULL, 0, TRUE);
+				if (ret < 0) {
+					DHD_ERROR(("%s: set bcn_li_dtim failed (%d)\n",
+						__FUNCTION__, ret));
+					goto exit;
+				}
 #ifdef OEM_ANDROID
 #ifdef CUSTOM_BCN_TIMEOUT_IN_SUSPEND
 				bcn_timeout = CUSTOM_BCN_TIMEOUT;
-				dhd_iovar(dhd, 0, "bcn_timeout", (char *)&bcn_timeout,
+				ret = dhd_iovar(dhd, 0, "bcn_timeout", (char *)&bcn_timeout,
 						sizeof(bcn_timeout), NULL, 0, TRUE);
+				if (ret < 0) {
+					DHD_ERROR(("%s: set bcn_timeout failed (%d)\n",
+						__FUNCTION__, ret));
+					goto exit;
+				}
 #endif /* CUSTOM_BCN_TIMEOUT_IN_SUSPEND */
 #ifdef CUSTOM_ROAM_TIME_THRESH_IN_SUSPEND
 				roam_time_thresh = 2000;
-				dhd_iovar(dhd, 0, "roam_time_thresh", (char *)&roam_time_thresh,
-						sizeof(roam_time_thresh), NULL, 0, TRUE);
+				ret = dhd_iovar(dhd, 0, "roam_time_thresh",
+					(char *)&roam_time_thresh,
+					sizeof(roam_time_thresh), NULL, 0, TRUE);
+				if (ret < 0) {
+					DHD_ERROR(("%s: set roam_time_thresh failed (%d)\n",
+						__FUNCTION__, ret));
+					goto exit;
+				}
 #endif /* CUSTOM_ROAM_TIME_THRESH_IN_SUSPEND */
 #ifndef ENABLE_FW_ROAM_SUSPEND
 				roamvar = dhd_roam_disable;
-				dhd_iovar(dhd, 0, "roam_off", (char *)&roamvar, sizeof(roamvar),
-						NULL, 0, TRUE);
+				ret = dhd_iovar(dhd, 0, "roam_off", (char *)&roamvar,
+					sizeof(roamvar), NULL, 0, TRUE);
+				if (ret < 0) {
+					DHD_ERROR(("%s: set roam_off failed (%d)\n",
+						__FUNCTION__, ret));
+					goto exit;
+				}
 #endif /* ENABLE_FW_ROAM_SUSPEND */
 #if defined(CUSTOMER_HW4) && defined(ENABLE_BCN_LI_BCN_WAKEUP)
 				bcn_li_bcn = 1;
-				dhd_iovar(dhd, 0, "bcn_li_bcn", (char *)&bcn_li_bcn,
+				ret = dhd_iovar(dhd, 0, "bcn_li_bcn", (char *)&bcn_li_bcn,
 						sizeof(bcn_li_bcn), NULL, 0, TRUE);
+				if (ret < 0) {
+					DHD_ERROR(("%s set nd_ra_filter failed (%d)\n",
+						__FUNCTION__, ret));
+					goto exit;
+				}
 #endif /* CUSTOMER_HW4 && ENABLE_BCN_LI_BCN_WAKEUP */
 				if (FW_SUPPORTED(dhd->wlcore, ndoe)) {
 					/* disable IPv6 RA filter in  firmware during suspend */
@@ -3641,16 +3723,19 @@ dhd_set_suspend(int value, dhd_pub_t *dhd)
 					ret = dhd_iovar(dhd, 0, "nd_ra_filter_enable",
 							(char *)&nd_ra_filter, sizeof(nd_ra_filter),
 							NULL, 0, TRUE);
-					if (ret < 0)
-						DHD_ERROR(("failed to set nd_ra_filter (%d)\n",
-							ret));
+					if (ret < 0) {
+						DHD_ERROR(("%s: failed to set nd_ra_filter (%d)\n",
+							__FUNCTION__, ret));
+						goto exit;
+					}
 				}
 #endif /* OEM_ANDROID */
 			}
 	}
 	dhd_suspend_unlock(dhd);
 
-	return 0;
+exit:
+	return ret;
 }
 
 static int
@@ -5138,6 +5223,10 @@ dhd_set_mac_address(struct net_device *dev, void *addr)
 	struct sockaddr *sa = (struct sockaddr *)addr;
 	int ifidx;
 	dhd_if_t *dhdif;
+#if defined(SUPPORT_RANDOM_MAC)
+	bool addr_chngd = TRUE;
+	BCM_REFERENCE(addr_chngd);
+#endif /* SUPPORT_RANDOM_MAC */
 
 	if (!is_valid_ether_addr(sa->sa_data)) {
 		DHD_ERROR(("%s: mac address %pM is invalid\n", __FUNCTION__, sa->sa_data));
@@ -5156,11 +5245,36 @@ dhd_set_mac_address(struct net_device *dev, void *addr)
 	}
 
 	dhdif = dhd->iflist[ifidx];
+#if defined(SUPPORT_RANDOM_MAC)
+	if (memcmp(dhdif->mac_addr, sa->sa_data, ETHER_ADDR_LEN) == 0) {
+		addr_chngd = FALSE;
+	}
+#endif /* SUPPORT_RANDOM_MAC */
 	memcpy(dhdif->mac_addr, sa->sa_data, ETHER_ADDR_LEN);
 	dhdif->set_macaddress = TRUE;
 	DHD_UNLOCK(&dhd->pub);
 	DHD_OS_WAKE_UNLOCK(&dhd->pub);
 	dhd_net_if_unlock_local(dhd);
+
+#if defined(WL_CFG80211) && defined(SUPPORT_RANDOM_MAC)
+	/* Check wdev->iftype for the role */
+	if (wl_cfg80211_macaddr_sync_reqd(dev)) {
+		/* Supplicant and certain user layer applications expect macaddress to be
+		 * set once the context returns. so set it from the same context
+		 */
+		DHD_ERROR(("%s: iftype = %d macaddr = "MACDBG"\n",
+			__FUNCTION__, dev->ieee80211_ptr->iftype, MAC2STRDBG(&dhdif->mac_addr)));
+
+		wl_cfg80211_handle_macaddr_change(dev, dhdif->mac_addr);
+		ret = _dhd_set_mac_address(dhd, ifidx, dhdif->mac_addr);
+		if ((ret == BCME_OK) && (addr_chngd == TRUE)) {
+			/* Notify Dev/Address change to upperlayer */
+			netdev_state_change(dev);
+		}
+		return ret;
+	}
+#endif /* WL_CFG80211 && SUPPORT_RANDOM_MAC */
+
 	dhd_deferred_schedule_work(dhd->dhd_deferred_wq, (void *)(long)ifidx,
 		DHD_WQ_WORK_SET_MAC, dhd_set_mac_addr_handler, DHD_WORK_PRIORITY_LOW);
 
@@ -6685,7 +6799,6 @@ dhd_rx_frame(dhd_pub_t *dhdp, int ifidx, void *pktbuf, int numpkt, uint8 chan)
 			if (ETHER_ISUCAST(eh->ether_dhost)) {
 				if (dhd_find_sta(dhdp, ifidx, (void *)eh->ether_dhost)) {
 #if defined(BCM_BLOG)
-					PKTSETFCDONE(pktbuf);
 					if (DHD_PKT_GET_SKB_SKIP_BLOG(pktbuf)) {
 						DHD_PKT_CLR_SKB_SKIP_BLOG(pktbuf);
 					}
@@ -6703,15 +6816,12 @@ dhd_rx_frame(dhd_pub_t *dhdp, int ifidx, void *pktbuf, int numpkt, uint8 chan)
 								pktbuf);
 						}
 
-						if (ret == PKT_DONE) {
-							PKTCLRFCDONE(pktbuf);
+						if (ret == PKT_DONE)
 							continue;
-						}
 					}
 #endif /* BCM_BLOG */
 
 					DHD_PKT_SET_FKB_FLOW_UNHANDLED(pktbuf);
-					PKTCLRFCDONE(pktbuf);
 #if defined(BCM_NBUFF_PKT_BPM)
 					/* Converts to skb since blog_emit expects skb.
 					 * Otherwise blog will never be attached to this
@@ -6811,7 +6921,6 @@ dhd_rx_frame(dhd_pub_t *dhdp, int ifidx, void *pktbuf, int numpkt, uint8 chan)
 #endif /* BCM_ROUTER_DHD */
 
 #ifdef BCM_BLOG
-		PKTSETFCDONE(pktbuf);
 		if (DHD_PKT_GET_SKB_SKIP_BLOG(pktbuf)) {
 			DHD_PKT_CLR_SKB_SKIP_BLOG(pktbuf);
 		} else {
@@ -6871,13 +6980,11 @@ dhd_rx_frame(dhd_pub_t *dhdp, int ifidx, void *pktbuf, int numpkt, uint8 chan)
 				ret = dhd_handle_blog_sinit(dhdp, ifidx, pktbuf);
 			}
 
-			if (ret == PKT_DONE) {
-				PKTCLRFCDONE(pktbuf);
+			if (ret == PKT_DONE)
 				continue;
-			}
 		}
 #endif /* BCM_BLOG */
-		PKTCLRFCDONE(pktbuf);
+
 #if defined(BCM_NBUFF_PKT_BPM)
 		/* Legacy slow path through stack which accepts skb
 		 * Convert fkb to skb here
@@ -7233,6 +7340,8 @@ dhd_get_stats(struct net_device *net)
 	int ifidx;
 	DHD_TRACE(("%s: Enter\n", __FUNCTION__));
 
+	ASSERT(dhd != NULL);
+
 	ifidx = dhd_net2idx(dhd, net);
 	if (ifidx == DHD_BAD_IF) {
 		DHD_ERROR(("%s: BAD_IF\n", __FUNCTION__));
@@ -7249,7 +7358,7 @@ dhd_get_stats(struct net_device *net)
 #endif
 	ifp = dhd->iflist[ifidx];
 #ifndef BCA_HNDROUTER
-	ASSERT(dhd && ifp);
+	ASSERT(ifp != NULL);
 #else
 	if (!ifp) {
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 36))
@@ -9222,11 +9331,13 @@ dhd_allocate_if(dhd_pub_t *dhdpub, int ifidx, const char *name,
 	ifp->name[IFNAMSIZ - 1] = '\0';
 	dhdinfo->iflist[ifidx] = ifp;
 
-/* initialize the dongle provided if name */
+	/* initialize the dongle provided if name */
 	if (dngl_name)
 		strncpy(ifp->dngl_name, dngl_name, IFNAMSIZ);
-	else
+	else if (name)
 		strncpy(ifp->dngl_name, name, IFNAMSIZ);
+	else
+		ifp->dngl_name[0] = '\0';
 
 #ifdef PCIE_FULL_DONGLE
 	/* Initialize STA info list */
@@ -10416,7 +10527,11 @@ dhd_update_fw_nv_path(dhd_info_t *dhdinfo)
 
 #ifndef BCMEMBEDIMAGE
 	/* fw_path and nv_path are not mandatory for BCMEMBEDIMAGE */
-	if (dhdinfo->fw_path[0] == '\0') {
+	if ((dhdinfo->fw_path[0] == '\0') &&
+#if defined(BCM_REQUEST_FW) && defined(OEM_ANDROID)
+		(!dhd_download_fw_on_driverload) &&
+#endif
+		(TRUE)) {
 		DHD_ERROR(("firmware path not found\n"));
 		return FALSE;
 	}
@@ -10511,8 +10626,9 @@ dhd_bus_start(dhd_pub_t *dhdp)
 	DHD_TRACE(("Enter %s:\n", __FUNCTION__));
 
 	/* try to download image and nvram to the dongle */
-	if  (dhd->pub.busstate == DHD_BUS_DOWN && dhd_update_fw_nv_path(dhd)) {
-		DHD_INFO(("%s download fw %s, nv %s\n", __FUNCTION__, dhd->fw_path, dhd->nv_path));
+	if  (((dhd->pub.busstate == DHD_BUS_DOWN) || (dhd->pub.busstate == DHD_BUS_SUSPENDED)) &&
+		dhd_update_fw_nv_path(dhd)) {
+		DHD_ERROR(("%s download fw %s, nv %s\n", __FUNCTION__, dhd->fw_path, dhd->nv_path));
 		ret = dhd_bus_download_firmware(dhd->pub.bus, dhd->pub.osh,
 		                                dhd->fw_path, dhd->nv_path);
 		if (ret < 0) {
@@ -10589,7 +10705,7 @@ dhd_bus_start(dhd_pub_t *dhdp)
 	dhd_os_sdunlock(dhdp);
 #endif /* PCIE_FULL_DONGLE */
 	ret = dhd_prot_init(&dhd->pub);
-	if (unlikely(ret) != BCME_OK) {
+	if (ret != BCME_OK) {
 		DHD_OS_WD_WAKE_UNLOCK(&dhd->pub);
 		return ret;
 	}
@@ -11501,12 +11617,12 @@ dhd_preinit_ioctls(dhd_pub_t *dhd)
 
 	DHD_ERROR(("Firmware up: op_mode=0x%04x, MAC="MACDBG"\n",
 		dhd->wlcore->op_mode, MAC2STRDBG(dhd->mac.octet)));
-	#if defined(RXFRAME_THREAD) && defined(RXTHREAD_ONLYSTA)
+#if defined(RXFRAME_THREAD) && defined(RXTHREAD_ONLYSTA)
 	if (dhd->wlcore->op_mode == DHD_FLAG_HOSTAP_MODE)
 		dhd->info->rxthread_enabled = FALSE;
 	else
 		dhd->info->rxthread_enabled = TRUE;
-	#endif
+#endif
 	/* Set Country code  */
 	if (dhd->dhd_cspec.ccode[0] != 0) {
 		ret = dhd_iovar(dhd, 0, "country", (char *)&dhd->dhd_cspec, sizeof(wl_country_t),
@@ -11608,6 +11724,15 @@ dhd_preinit_ioctls(dhd_pub_t *dhd)
 	dhd_clear_wowl(dhd);
 #endif
 #endif /* STB && STBAP */
+
+#if defined(OEM_ANDROID)
+	/* Turn off MPC */
+	ret = dhd_iovar(dhd, 0, "mpc", (char *)&mpc, sizeof(mpc), NULL, 0,
+			TRUE);
+	if (ret < 0) {
+		DHD_ERROR(("%s set mpc failed  %d\n", __FUNCTION__, ret));
+	}
+#endif /* OEM_ANDROID */
 
 	/* Setup timeout if Beacons are lost and roam is off to report link down */
 	dhd_iovar(dhd, 0, "bcn_timeout", (char *)&bcn_timeout, sizeof(bcn_timeout), NULL, 0, TRUE);
@@ -18421,7 +18546,7 @@ dhd_rx_mon_pkt(dhd_pub_t *dhdp, host_rxbuf_cmpl_t* msg, void *pkt, int ifidx)
 {
 	dhd_info_t *dhd = (dhd_info_t *)dhdp->info;
 	uint16 len = 0;
-	monitor_pkt_info_t pkt_info;
+	monitor_pkt_info_t pkt_info = {0};
 	uint16 pkt_type;
 	int16 offset = 0;
 	uint8 dma_flags = 0xff;
@@ -18515,9 +18640,6 @@ dhd_rx_mon_pkt(dhd_pub_t *dhdp, host_rxbuf_cmpl_t* msg, void *pkt, int ifidx)
 		return;
 	}
 
-	if (!dhd->monitor_skb) {
-		return;
-	}
 	if (offset > 0) {
 		skb_push(dhd->monitor_skb, offset);
 	}
@@ -18899,20 +19021,3 @@ dhd_set_macdbg_dump_level(struct dhd_info *dhd, uint32 macdbg_dump_level)
 {
 	dhd->macdbg_dump_level = macdbg_dump_level;
 }
-
-#ifdef __arm__
-/*
- * Function fake_main will never be called by the Linux loader. It is supplied to the linker,
- * so the linker is able to create a call tree and thus determine which functions are used.
- */
-int fake_main(void);
-
-int
-fake_main(void)
-{
-	dhd_module_init();
-	dhd_module_exit();
-
-	return 0;
-}
-#endif /* __arm__ */

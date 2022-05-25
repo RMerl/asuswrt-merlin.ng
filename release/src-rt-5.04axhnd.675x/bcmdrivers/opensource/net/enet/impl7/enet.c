@@ -4,19 +4,25 @@
       Copyright (c) 2015 Broadcom 
       All Rights Reserved
    
-   This program is free software; you can redistribute it and/or modify
-   it under the terms of the GNU General Public License, version 2, as published by
-   the Free Software Foundation (the "GPL").
+   Unless you and Broadcom execute a separate written software license
+   agreement governing use of this software, this software is licensed
+   to you under the terms of the GNU General Public License version 2
+   (the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
+   with the following added to such license:
    
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
+      As a special exception, the copyright holders of this software give
+      you permission to link this software with independent modules, and
+      to copy and distribute the resulting executable under terms of your
+      choice, provided that you also meet, for each linked independent
+      module, the terms and conditions of the license of that module.
+      An independent module is a module which is not derived from this
+      software.  The special exception does not apply to any modifications
+      of the software.
    
-   
-   A copy of the GPL is available at http://www.broadcom.com/licenses/GPLv2.php, or by
-   writing to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-   Boston, MA 02111-1307, USA.
+   Not withstanding the above, under no circumstances may you combine
+   this software in any way with any other Broadcom software provided
+   under a license other than the GPL, without Broadcom's express prior
+   written consent.
    
    :>
  */
@@ -904,10 +910,9 @@ static inline netdev_tx_t __enet_xmit(pNBuff_t pNBuff, struct net_device *dev)
 #if defined(CC_DROP_PRECEDENCE) || defined(DSL_DEVICES) || defined(FLOW_BASED_PRIORITY)
     bool isDpConfigured = false;
 #endif
-	uint32_t ori_mark = 0, new_mark = 0;
+    uint32_t ori_mark = 0, new_mark = 0;
 
-
-	/* If Broadstream iqos enable, for WAN egress packets, need to call dev_queue_xmit */
+    /* If Broadstream iqos enable, for WAN egress packets, need to call dev_queue_xmit */
     if (BROADSTREAM_IQOS_ENABLE() && pNBuff && DEV_ISWAN(dev)) {
         if(IS_FKBUFF_PTR(pNBuff)) {
             /* From enet driver rx */
@@ -939,6 +944,7 @@ static inline netdev_tx_t __enet_xmit(pNBuff_t pNBuff, struct net_device *dev)
             nbuff_free(SKBUFF_2_PNBUFF(skb));
             return PKT_DROP;
         }
+        skb_reset_network_header(skb);
         dev_queue_xmit(skb);
         return 0;
     }
@@ -957,7 +963,7 @@ normal_path:
         enet_dbg_tx("The physical port_id is %d (%s)\n", port->p.mac->mac_id, port->obj_name);
 
         get_mark_pNbuff(pNBuff, &pMark);
-		ori_mark = *pMark;
+        ori_mark = *pMark;
         INC_STAT_TX_Q_IN(port,SKBMARK_GET_Q_PRIO(*pMark));
 
         /* adjust tx priority q based on packet type (ARP, LCP) */ 
@@ -1100,7 +1106,7 @@ normal_path:
                 if (BROADSTREAM_IQOS_ENABLE()) {
                     if (DEV_ISWAN(dev) ||
                         (PNBUFF_2_SKBUFF(pNBuff)->blog_p && !DEV_ISWAN(PNBUFF_2_SKBUFF(pNBuff)->blog_p->rx_dev_p))) {
-						new_mark = *pMark;
+                        new_mark = *pMark;
                         PNBUFF_2_SKBUFF(pNBuff)->mark = ori_mark;
                         blog_action = blog_emit(pNBuff, dev, TYPE_ETH, port->n.set_channel_in_mark ? dispatch_info.channel : port->n.blog_chnl, port->n.blog_phy);
                         PNBUFF_2_SKBUFF(pNBuff)->mark = new_mark;
@@ -1108,7 +1114,7 @@ normal_path:
                 }
                 else {
                     blog_action = blog_emit(pNBuff, dev, TYPE_ETH, port->n.set_channel_in_mark ? dispatch_info.channel : port->n.blog_chnl, port->n.blog_phy);
-				}
+                }
 
                 if (unlikely(blog_action == PKT_DROP))
                 {
@@ -1299,7 +1305,7 @@ static int enet_change_mtu(struct net_device *dev, int new_mtu)
     if (port->port_class != PORT_CLASS_PORT)
         return -EINVAL;
 
-#if defined(CONFIG_BCM94912) && defined(CONFIG_BCM_JUMBO_FRAME)
+#if (defined(CONFIG_BCM94912) || defined(CONFIG_BCM96855)) && defined(CONFIG_BCM_JUMBO_FRAME)
     if (new_mtu < ETH_ZLEN || new_mtu > enet_max_mtu_payload_size())
         return -EINVAL;
 #else
@@ -2193,7 +2199,7 @@ int enet_create_netdevice(enetx_port_t *p)
 
     strcpy(p->name, dev->name);
     _enet_dev_role_update(p, 1);
-#if defined(CONFIG_BCM94912)
+#if defined(CONFIG_BCM94912) || defined(CONFIG_BCM96855)
     enet_change_mtu(dev, bcm_enet_default_mtu_size());
 #else
     enet_change_mtu(dev, BCM_ENET_DEFAULT_MTU_SIZE);

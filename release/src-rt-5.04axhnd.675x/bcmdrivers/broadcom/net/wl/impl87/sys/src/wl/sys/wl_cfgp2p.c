@@ -1,7 +1,7 @@
 /*
  * Linux cfgp2p driver
  *
- * Copyright (C) 2021, Broadcom. All Rights Reserved.
+ * Copyright (C) 2022, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: wl_cfgp2p.c 790702 2020-09-01 07:51:41Z $
+ * $Id: wl_cfgp2p.c 807145 2022-01-13 08:39:51Z $
  *
  */
 #include <typedefs.h>
@@ -593,6 +593,7 @@ wl_cfgp2p_ifchange(struct bcm_cfg80211 *cfg, struct ether_addr *mac, u8 if_type,
 
 	struct net_device *netdev =  wl_to_p2p_bss_ndev(cfg, conn_idx);
 
+	memset(&ifreq, 0, sizeof(ifreq));
 	ifreq.type = if_type;
 	ifreq.chspec = chspec;
 	memcpy(ifreq.addr.octet, mac->octet, sizeof(ifreq.addr.octet));
@@ -1026,10 +1027,10 @@ wl_cfgp2p_escan_prep(struct bcm_cfg80211 *cfg, void *params,
 
 	for (i = 0; i < num_chans; i++) {
 		if (version == WL_SCAN_VERSION_MAJOR_V2) {
-			params_v1->channel_list[i] =
+			params_v2->channel_list[i] =
 				wl_ch_host_to_driver(cfg, cfg->p2p_wdev, channels[i]);
 		} else {
-			params_v2->channel_list[i] =
+			params_v1->channel_list[i] =
 				wl_ch_host_to_driver(cfg, cfg->p2p_wdev, channels[i]);
 		}
 	}

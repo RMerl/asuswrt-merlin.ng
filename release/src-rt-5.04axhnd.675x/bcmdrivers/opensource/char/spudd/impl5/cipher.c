@@ -1129,8 +1129,11 @@ static int spu_aead_rx_sg_create(struct bcmspu_message *mssg,
 		/*
 		 * Copy in each dst sg entry from request, up to chunksize.
 		 * dst sg catches just the data. digest caught in separate buf.
+		 * Do not update the original rctx->dst_sg and rctx->dst_skip.
 		 */
-		datalen = spu_msg_sg_add(&sg, &rctx->dst_sg, &rctx->dst_skip,
+		struct scatterlist *dst_sg = rctx->dst_sg;
+		u32 dst_skip = rctx->dst_skip;
+		datalen = spu_msg_sg_add(&sg, &dst_sg, &dst_skip,
 					 rctx->dst_nents, resp_len);
 		if (datalen < (resp_len)) {
 			pr_err("%s(): failed to copy dst sg to mbox msg. expected len %u, datalen %u",
@@ -2745,7 +2748,7 @@ static int aead_enqueue(struct aead_request *req, bool is_encrypt)
 		 * output data and ICV, if encrypt. So initialize dst_sg
 		 * to point beyond assoc len offset.
 		 */
-		if (spu_sg_at_offset(rctx->dst_sg, rctx->assoc_len, &rctx->dst_sg,
+		if (spu_sg_at_offset(req->dst, rctx->assoc_len, &rctx->dst_sg,
 				     &rctx->dst_skip) < 0) {
 			pr_err("%s() Error: Unable to find start of dst data\n",
 			       __func__);

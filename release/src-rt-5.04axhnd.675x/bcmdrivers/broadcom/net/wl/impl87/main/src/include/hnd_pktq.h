@@ -1,7 +1,7 @@
 /*
  * HND generic pktq operation primitives
  *
- * Copyright (C) 2021, Broadcom. All Rights Reserved.
+ * Copyright (C) 2022, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: hnd_pktq.h 805645 2021-12-03 03:05:42Z $
+ * $Id: hnd_pktq.h 806948 2022-01-10 10:13:03Z $
  */
 
 #ifndef _hnd_pktq_h_
@@ -48,7 +48,7 @@ extern "C" {
 /* osl multi-precedence packet queue */
 #define PKTQ_LEN_MAX            0xFFFF  /* Max uint16 65535 packets */
 #ifndef PKTQ_LEN_DEFAULT
-#define PKTQ_LEN_DEFAULT        128	/* Max 128 packets */
+#define PKTQ_LEN_DEFAULT        256	/* Max 256 packets */
 #endif
 #ifndef PKTQ_MAX_PREC
 #define PKTQ_MAX_PREC           16	/* Maximum precedence levels */

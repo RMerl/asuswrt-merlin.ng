@@ -12,26 +12,26 @@ endif
 endif
 
 install: all
-	cp -f prebuild/bccmd					tools/
-	cp -f prebuild/bluemoon					tools/
-	cp -f prebuild/ciptool					tools/
-	cp -f prebuild/hcitool					tools/
-	cp -f prebuild/hcidump					tools/
-	cp -f prebuild/hciattach				tools/
-	cp -f prebuild/hciconfig				tools/
-	cp -f prebuild/hid2hci					tools/
-	cp -f prebuild/l2ping					tools/
-	cp -f prebuild/l2test					tools/
-	cp -f prebuild/mpris-proxy				tools/
-	cp -f prebuild/rctest					tools/
-	cp -f prebuild/rfcomm					tools/
-	cp -f prebuild/sdptool					tools/
-	cp -f prebuild/btmgmt					tools/
-	cp -f prebuild/bluetoothctl				client/
-	cp -f prebuild/bluetoothd				src/
-	cp -f prebuild/gatttool					attrib/
+	cp -f prebuild/$(BUILD_NAME)/bccmd				tools/
+	cp -f prebuild/$(BUILD_NAME)/bluemoon				tools/
+	cp -f prebuild/$(BUILD_NAME)/ciptool				tools/
+	cp -f prebuild/$(BUILD_NAME)/hcitool				tools/
+	cp -f prebuild/$(BUILD_NAME)/hcidump				tools/
+	cp -f prebuild/$(BUILD_NAME)/hciattach				tools/
+	cp -f prebuild/$(BUILD_NAME)/hciconfig				tools/
+	cp -f prebuild/$(BUILD_NAME)/hid2hci				tools/
+	cp -f prebuild/$(BUILD_NAME)/l2ping				tools/
+	cp -f prebuild/$(BUILD_NAME)/l2test				tools/
+	cp -f prebuild/$(BUILD_NAME)/mpris-proxy			tools/
+	cp -f prebuild/$(BUILD_NAME)/rctest				tools/
+	cp -f prebuild/$(BUILD_NAME)/rfcomm				tools/
+	cp -f prebuild/$(BUILD_NAME)/sdptool				tools/
+	cp -f prebuild/$(BUILD_NAME)/btmgmt				tools/
+	cp -f prebuild/$(BUILD_NAME)/bluetoothctl			client/
+	cp -f prebuild/$(BUILD_NAME)/bluetoothd				src/
+	cp -f prebuild/$(BUILD_NAME)/gatttool				attrib/
 	mkdir -p lib/.libs
-	cp -f prebuild/libbluetooth.so.$(LIBBLUETOOTH_VER)	lib/.libs/
+	cp -f prebuild/$(BUILD_NAME)/libbluetooth.so.$(LIBBLUETOOTH_VER)	lib/.libs/
 
 clean:
 

@@ -147,6 +147,10 @@ ALLOWED_INCLUDE_PATHS += -I$(INC_BRCMDRIVER_PUB_PATH)/$(BRCM_BOARD)  \
 LIBS += -lwlcsm -lwlcsm_dm 
 LIBS += -lbcm_flashutil -lbcm_boardctl -lgen_util -lbcm_util -lsys_util
 
+ifneq ($(strip $(BUILD_CUSTOMER)),)
+include customer/Makefile
+endif
+
 ifeq ($(CONFIG_WBD),y)
 CFLAGS += -DBCM_WBD -DMULTIAP
 endif

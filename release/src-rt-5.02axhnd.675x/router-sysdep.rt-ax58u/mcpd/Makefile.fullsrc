@@ -25,6 +25,7 @@ endif
 endif
 ifneq ($(strip $(BRCM_OVS_SUPPORT_MCAST)),)
 CFLAGS += -DCONFIG_BCM_OVS_MCAST
+CFLAGS += -DSUPPORT_OVS_BRIDGE_WAN_MCAST
 OBJS += mcpd_ovs.o
 endif
 

@@ -55,7 +55,7 @@ CCOPTS = -O2 -pipe
 WFLAGS := -Wall -Wstrict-prototypes  -Wmissing-prototypes
 WFLAGS += -Wmissing-declarations -Wold-style-definition -Wformat=2
 
-ifeq ($(or $(findstring 2.6.33.19,$(LINUX_KERNEL)), $(findstring 2.6.36,$(LINUX_KERNEL)), $(findstring 4.1.27,$(LINUX_KERNEL)), $(findstring 4.1.51,$(LINUX_KERNEL)), $(findstring 4.1.52,$(LINUX_KERNEL))),)
+ifeq ($(or $(findstring 2.6.33.19,$(LINUX_KERNEL)), $(findstring 2.6.36,$(LINUX_KERNEL))),)
 DEFINES += -D__KERNEL_4_X__
 endif
 

@@ -73,6 +73,13 @@ static bus_type_t bp_parse_bus_type(const EMAC_PORT_INFO *port_info)
 void bp_parse_phy_ext(const EMAC_PORT_INFO *port_info, phy_dev_t *phy_dev)
 {
     phy_dev->disable_hd = 1;
+
+    if (port_info->switch_port == 8)
+    {
+        phy_dev->disable_10m = 1;
+        phy_dev->disable_100m = 1;
+        phy_dev->disable_5000m = 1;
+    }
 }
 
 void bp_parse_phy_driver(const EMAC_PORT_INFO *port_info, phy_drv_t *phy_drv)

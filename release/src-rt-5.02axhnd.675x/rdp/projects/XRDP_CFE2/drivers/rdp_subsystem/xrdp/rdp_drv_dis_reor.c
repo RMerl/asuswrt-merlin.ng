@@ -39,23 +39,36 @@ uint32_t g_rnr_grp_num;
 int drv_dis_reor_queues_init()
 {
     uint8_t i;
-    dsptchr_cngs_params congs_init = {.frst_lvl = (DIS_REOR_LINKED_LIST_BUFFER_NUM - 1), .scnd_lvl = (DIS_REOR_LINKED_LIST_BUFFER_NUM - 1), 
-        .hyst_thrs = ((DIS_REOR_LINKED_LIST_BUFFER_NUM / 4) - 1)};
-    dsptchr_glbl_cngs_params glbl_congs_init = {.frst_lvl = (DIS_REOR_CONGESTION_THRESHOLD - NUM_OF_PROCESSING_TASKS), 
-        .scnd_lvl = DIS_REOR_CONGESTION_THRESHOLD, .hyst_thrs = 10};
-    bdmf_error_t rc = BDMF_ERR_OK;
 
-    /* Ingress/Egress congestion mem */
-    for (i = 0; i < DSPTCHR_VIRTUAL_QUEUE_NUM; i++)
-    {
-        rc = rc ? rc : ag_drv_dsptchr_cngs_params_set(i, &congs_init);
-        rc = rc ? rc : ag_drv_dsptchr_congestion_egrs_congstn_set(i, &congs_init);
-        rc = rc ? rc : ag_drv_dsptchr_qdes_head_set(i, 0);
-        rc = rc ? rc : ag_drv_dsptchr_credit_cnt_set(i, 0);
-    }
+       dsptchr_cngs_params congs_init = {.frst_lvl = (DIS_REOR_LINKED_LIST_BUFFER_NUM - 1), .scnd_lvl = (DIS_REOR_LINKED_LIST_BUFFER_NUM - 1),
+           .hyst_thrs = ((DIS_REOR_LINKED_LIST_BUFFER_NUM / 4) - 1)};
+#if (defined BCM6878)
+       dsptchr_glbl_cngs_params glbl_congs_init = {.frst_lvl = (DIS_REOR_CONGESTION_THRESHOLD - NUM_OF_PROCESSING_TASKS),
+           .scnd_lvl = DIS_REOR_CONGESTION_THRESHOLD, .hyst_thrs = 10};
+   #else
+       dsptchr_cngs_params glbl_congs_init = {.frst_lvl = (DIS_REOR_CONGESTION_THRESHOLD - NUM_OF_PROCESSING_TASKS),
+           .scnd_lvl = DIS_REOR_CONGESTION_THRESHOLD, .hyst_thrs = 10};
+   #endif
+       bdmf_error_t rc = BDMF_ERR_OK;
 
-    rc = rc ? rc : ag_drv_dsptchr_congestion_total_egrs_congstn_set((dsptchr_glbl_cngs_params *)&congs_init);
-    return rc ? rc : ag_drv_dsptchr_glbl_cngs_params_set(&glbl_congs_init);
+       /* Ingress/Egress congestion mem */
+
+       for (i = 0; i < DSPTCHR_VIRTUAL_QUEUE_NUM; i++)
+       {
+           rc = rc ? rc : ag_drv_dsptchr_cngs_params_set(i, &congs_init);
+           rc = rc ? rc : ag_drv_dsptchr_congestion_egrs_congstn_set(i, &congs_init);
+           rc = rc ? rc : ag_drv_dsptchr_qdes_head_set(i, 0);
+           rc = rc ? rc : ag_drv_dsptchr_credit_cnt_set(i, 0);
+       }
+
+
+#if (defined BCM6878)
+       rc = rc ? rc : ag_drv_dsptchr_congestion_total_egrs_congstn_set((dsptchr_glbl_cngs_params *)&congs_init);
+       return rc ? rc : ag_drv_dsptchr_glbl_cngs_params_set(&glbl_congs_init);
+#else
+       rc = rc ? rc : ag_drv_dsptchr_congestion_total_egrs_congstn_set(0, &congs_init);
+       return rc ? rc : ag_drv_dsptchr_congestion_glbl_congstn_set(0, &glbl_congs_init);
+#endif
 };
 
 /* array of mapping returning tasks to groups init */
@@ -81,7 +94,7 @@ int drv_dis_reor_free_linked_list_init()
 
     for (i = 0; i < (DIS_REOR_LINKED_LIST_BUFFER_NUM - 1); i++)
     {
-#if defined(BCM6856) || defined(BCM6878)
+#if defined(BCM6856) || defined(BCM6878) || defined(BCM6855)
         rc = ag_drv_dsptchr_bdram_next_data_set(i, i+1);
 #else
         rc = ag_drv_dsptchr_bdram_data_set(i, i+1);
@@ -178,7 +191,7 @@ static int _drv_dis_reor_viq_cfg(uint8_t q_idx, dsptchr_ingress_queue *viq)
     rc = rc ? rc : ag_drv_dsptchr_qdes_head_set(q_idx, fll_entry.head);
     rc = rc ? rc : ag_drv_dsptchr_qdes_tail_set(q_idx, fll_entry.head);
     /* advance the FLL head pointer */
-#if defined(BCM6856) || defined(BCM6878)
+#if defined(BCM6856) || defined(BCM6878) || defined(BCM6855)
     rc = rc ? rc : ag_drv_dsptchr_bdram_next_data_get(fll_entry.head, &q_head);
 #else
     rc = rc ? rc : ag_drv_dsptchr_bdram_data_get(fll_entry.head, &q_head);

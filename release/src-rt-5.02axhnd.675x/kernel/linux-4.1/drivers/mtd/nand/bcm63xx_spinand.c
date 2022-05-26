@@ -737,9 +737,9 @@ static struct SpiNandChip SpiDevInfo[] =
         .chip_num_planes = 1,
         .chip_die_sel = 0,
         .chip_total_size = 64 * 2048 * 1024, // chip_block_size x chip_num_blocks
-        .ecclayout = &spinand_oob_etron,
-        .chip_ecc = 4, // ECC bits
-        .chip_ecc_corr = 3, // threshold to fix correctable bits (3/4)
+        .ecclayout = &spinand_oob_toshiba_micron_ab,
+        .chip_ecc = 1, // ECC bits
+        .chip_ecc_corr = 1, // threshold to fix correctable bits (1/1)
         .chip_ecc_enh = 0, // enhanced bad bit detection by chip
         .chip_subpage_shift = 2, // 2^ shift amount based on number of subpages (4)
         .chip_clock_speed = 104000000,
@@ -2064,7 +2064,7 @@ void bcmspinand_probe(struct mtd_info * mtd)
 
     spi_nand_device_reset(); // reset and set configuration information
 
-#if !defined(CONFIG_BCM96878)
+#if !defined(CONFIG_BCM96878) && !defined(CONFIG_BCM96855)
     spi_flash_clock = pchip->chip_clock_speed; /* switch to the max supported clock speed */
 #endif
 

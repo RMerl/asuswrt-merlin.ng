@@ -234,7 +234,7 @@ int rtk_ext_swctl_init(void)
     int port;
     
     kerSysSetGpioState(10, 0);
-    udelay(50);
+    mdelay(20);
     kerSysSetGpioState(10, 1);
     while(1)
     {

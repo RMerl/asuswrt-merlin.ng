@@ -38,9 +38,10 @@
 #include "port.h"
 
 int port_sysp_port_init(enetx_port_t *self);
-void port_sysp_port_open(enetx_port_t *self);
 int port_sysp_mib_dump(enetx_port_t *self, int all);
+#if 0   /* skip Andrew code */
 int port_sysp_mib_dump_us(enetx_port_t *self, void *e); // add by Andrew
+#endif
 int port_sysp_port_role_set(enetx_port_t *self, port_netdev_role_t role);
 int port_sysp_mtu_set(enetx_port_t *self, int mtu);
 

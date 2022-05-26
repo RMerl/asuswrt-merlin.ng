@@ -47,6 +47,7 @@ written consent.
 
 /******************************************** Defines ********************************************/
 #define TCPSPDTEST_GENL_MAX_FILE_NAME_LEN  256
+#define TCPSPDTEST_GENL_MAX_URL_LEN        128
 
 #define TCPSPDTEST_GENL_FAMILY_NAME        "TCPSPDTEST" /* Max Family name length is 16 chars including \0 */
 #define TCPSPDTEST_GENL_MAX_MSG_LEN        768
@@ -79,10 +80,12 @@ typedef enum
 typedef enum
 {
     /* Commad parameter */
+    TCPSPDTEST_GENL_CMD_PARAM_NONE,
     TCPSPDTEST_GENL_CMD_PARAM_SET,
     TCPSPDTEST_GENL_CMD_PARAM_GET,
     TCPSPDTEST_GENL_CMD_PARAM_ALLOC,
-    TCPSPDTEST_GENL_CMD_PARAM_FREE
+    TCPSPDTEST_GENL_CMD_PARAM_FREE,
+    TCPSPDTEST_GENL_CMD_PARAM_BLOCKING_END_OF_TEST
 } tcpspdtest_genl_cmd_param_t;
 
 typedef spdtest_genl_cmd_t tcpspdtest_genl_cmd_t;
@@ -91,7 +94,10 @@ typedef enum
 {
     TCPSPDTEST_GENL_CMD_STATUS_OK = 0,
     TCPSPDTEST_GENL_CMD_STATUS_IN_PROCESS,
+    TCPSPDTEST_GENL_CMD_STATUS_INTERRUPTED,
     TCPSPDTEST_GENL_CMD_STATUS_ERR,
+    TCPSPDTEST_GENL_CMD_STATUS_REDIRECT,
+    TCPSPDTEST_GENL_CMD_STATUS_OTHER,
 } tcpspdtest_genl_cmd_status_t;
 
 /* TCPSPDTEST GENL families */
@@ -118,6 +124,7 @@ typedef struct
     spdt_stream_params_t         stream_params;
     uint64_t                     dn_up_size;
     char                         file_name[TCPSPDTEST_GENL_MAX_FILE_NAME_LEN];
+    char                         host_str[TCPSPDTEST_GENL_MAX_URL_LEN];
 } __attribute__ ((packed)) tcpspdtest_genl_req_msg_t;
 
 typedef struct

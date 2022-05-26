@@ -50,7 +50,9 @@ static bus_type_t bp_parse_bus_type(const EMAC_PORT_INFO *port_info)
     {
     case MAC_IF_MII:
     case MAC_IF_GMII:
-    case MAC_IF_RGMII:
+    case MAC_IF_RGMII_1P8V:
+    case MAC_IF_RGMII_2P5V:
+    case MAC_IF_RGMII_3P3V:
     case MAC_IF_SGMII:
     case MAC_IF_HSGMII:
     case MAC_IF_XFI:
@@ -80,10 +82,15 @@ void bp_parse_phy_ext(const EMAC_PORT_INFO *port_info, phy_dev_t *phy_dev)
         phy_drv_init(phy_sgmii->phy_drv);
         phy_dev->cascade_prev = phy_sgmii;
         phy_sgmii->cascade_next = phy_dev;
+        phy_dev->disable_hd = 1;
     }
 
     if (port_info->switch_port == 8)
+    {
         phy_dev->disable_hd = 1;
+        phy_dev->disable_10m = 1;
+        phy_dev->disable_100m = 1;
+    }
 }
 
 void bp_parse_phy_driver(const EMAC_PORT_INFO *port_info, phy_drv_t *phy_drv)
@@ -108,7 +115,9 @@ phy_type_t bp_parse_phy_type(const EMAC_PORT_INFO *port_info)
         phy_type = PHY_TYPE_6846_EGPHY;
         break;
     }
-    case MAC_IF_RGMII:
+    case MAC_IF_RGMII_1P8V:
+    case MAC_IF_RGMII_2P5V:
+    case MAC_IF_RGMII_3P3V:
     {
         if (phy_id & PHY_EXTERNAL)
             phy_type = PHY_TYPE_EXT1;
@@ -138,7 +147,7 @@ phy_type_t bp_parse_phy_type(const EMAC_PORT_INFO *port_info)
 
 void *bp_parse_phy_priv(const EMAC_PORT_INFO *port_info)
 {
-    return (void *)(uint64_t)port_info->switch_port;
+    return (void *)(uintptr_t)port_info->switch_port;
 }
 
 mac_type_t bp_parse_mac_type(const ETHERNET_MAC_INFO *emac_info, uint32_t port)
@@ -156,6 +165,7 @@ void *bp_parse_mac_priv(const ETHERNET_MAC_INFO *emac_info, uint32_t port)
 }
 
 #define RGMII_CTRL_REG              RGMII_BASE + 0x0000
+#define RGMII_IB_STATUS             RGMII_BASE + 0x0004
 #define RGMII_RX_CLOCK_DELAY_CNTRL  RGMII_BASE + 0x0008
 
 void bp_parse_mac_ext(const ETHERNET_MAC_INFO *emac_info, uint32_t port, mac_dev_t *mac_dev)
@@ -186,3 +196,37 @@ void bp_parse_mac_ext(const ETHERNET_MAC_INFO *emac_info, uint32_t port, mac_dev
 
     WRITE_32(RGMII_RX_CLOCK_DELAY_CNTRL, val);
 }
+
+
+#if defined(XRDP_LED_EXT)
+void xrdp_led_set_status(uint32_t port, mac_speed_t speed, mac_duplex_t duplex)
+{
+    uint32_t val = 0;
+
+    if (port != 4)
+        return;
+
+    val |= (1 << 4); /* IB_STATUS_OVRD=1 */
+
+    if (speed != MAC_SPEED_UNKNOWN)
+        val |= (1 << 3); /* LINK_DECODE=1 */
+
+    if (duplex == MAC_DUPLEX_FULL)
+        val |= (1 << 2); /* DUPLEX_DECODE=1 */
+
+    if (speed == MAC_SPEED_10)
+        val |= (0 << 0); /* SPEED_DECODE=0 */
+
+    if (speed == MAC_SPEED_100)
+        val |= (1 << 0); /* SPEED_DECODE=1 */
+
+    if (speed == MAC_SPEED_1000)
+        val |= (2 << 0); /* SPEED_DECODE=2 */
+
+    if (speed == MAC_SPEED_2500)
+        val |= (3 << 0); /* SPEED_DECODE=3 */
+
+    WRITE_32(RGMII_IB_STATUS, val);
+}
+#endif
+

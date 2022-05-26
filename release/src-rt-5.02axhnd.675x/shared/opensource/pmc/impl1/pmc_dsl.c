@@ -304,7 +304,9 @@ int pmc_dsl_power_down(void)
 	int ret = 0;
 
 #if defined(CONFIG_BCM963158)
-	pmc_wan_interface_power_control(WAN_INTF_XDSL, 0);
+   /* WAN interface power control interferes with traffic permanently. So no
+   ** need to control. It is not an option for power saving.
+   **/
 
 	ret |= PowerOffDevice(PMB_ADDR_VDSL3_PMD, 0);
 	ret |= PowerOffDevice(PMB_ADDR_VDSL3_CORE, 0);

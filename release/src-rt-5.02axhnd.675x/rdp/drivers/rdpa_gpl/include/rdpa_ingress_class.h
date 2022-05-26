@@ -39,7 +39,7 @@
  *
  * @{
  */
-#define RDPA_IC_MAX_PRIORITY 63
+#define RDPA_IC_MAX_PRIORITY 127
 
 /** ACL classifier mode */
 typedef enum {

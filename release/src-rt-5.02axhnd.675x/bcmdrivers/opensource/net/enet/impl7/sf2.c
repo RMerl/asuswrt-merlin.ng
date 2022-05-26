@@ -34,6 +34,8 @@
 
 #include <bcmnet.h>
 #include "phy_drv_sf2.h"
+#include "phy_drv_brcm.h"
+#include "phy_macsec_common.h"
 #include "crossbar_dev.h"
 #include <bcm/bcmswapitypes.h>
 
@@ -65,7 +67,6 @@
 #include "bcmmii.h"
 #include "bcmmii_xtn.h"
 
-
 #define DATA_TYPE_HOST_ENDIAN   (0x00<<24)
 #define DATA_TYPE_BYTE_STRING   (0x01<<24)
 #define DATA_TYPE_VID_MAC       (0x02<<24)
@@ -73,7 +74,9 @@
 // =========== global/static variables ====================
 struct semaphore bcm_link_handler_config;
 
-enetx_port_t *sf2_sw;   /* external SF2 switch */
+enetx_port_t *sf2_sw;       /* 1st SF2 switch */
+enetx_port_t *sf2_sw_ext;   /* 2nd SF2 switch */
+uint32_t sf2_unit_bmap;
 
 #define SF2SW_RREG      extsw_rreg_wrap
 #define SF2SW_WREG      extsw_wreg_wrap
@@ -144,15 +147,15 @@ static inline void dumpHexData1(uint8_t *pHead, uint32_t len)
     printk("\n");
 }
 
-static void _fast_age_start_done_ext(uint8_t ctrl)
+static void _fast_age_start_done_ext(int unit, uint8_t ctrl)
 {
     uint8_t timeout = 100;
 
-    SF2SW_WREG(PAGE_CONTROL, REG_FAST_AGING_CTRL, &ctrl, 1);
-    SF2SW_RREG(PAGE_CONTROL, REG_FAST_AGING_CTRL, &ctrl, 1);
+    SF2SW_WREG(unit, PAGE_CONTROL, REG_FAST_AGING_CTRL, &ctrl, 1);
+    SF2SW_RREG(unit, PAGE_CONTROL, REG_FAST_AGING_CTRL, &ctrl, 1);
     while (ctrl & FAST_AGE_START_DONE) {
         mdelay(1);
-        SF2SW_RREG(PAGE_CONTROL, REG_FAST_AGING_CTRL, &ctrl, 1);
+        SF2SW_RREG(unit, PAGE_CONTROL, REG_FAST_AGING_CTRL, &ctrl, 1);
         if (!timeout--) {
             printk("Timeout of fast aging \n");
             break;
@@ -161,7 +164,7 @@ static void _fast_age_start_done_ext(uint8_t ctrl)
 
     /* Restore DYNAMIC bit for normal aging */
     ctrl = FAST_AGE_DYNAMIC;
-    SF2SW_WREG(PAGE_CONTROL, REG_FAST_AGING_CTRL, &ctrl, 1);
+    SF2SW_WREG(unit, PAGE_CONTROL, REG_FAST_AGING_CTRL, &ctrl, 1);
 }
 
 static int _ethsw_phy_access(struct ethswctl_data *e, enetx_port_t *port)
@@ -260,7 +263,7 @@ static int _get_next_queue(int cur_que, int for_wan, int reverse)
 #define GET_PREV_WAN_QUE(CUR_QUE) _get_next_queue(CUR_QUE, 1, 1)
 #define GET_PREV_LAN_QUE(CUR_QUE) _get_next_queue(CUR_QUE, 0, 1)
 
-static void _sf2_conf_thred_2reg(int page, int reg, uint16_t tbl[][FC_LAN_TXQ_QUEUES])
+static void _sf2_conf_thred_2reg(int unit, int page, int reg, uint16_t tbl[][FC_LAN_TXQ_QUEUES])
 {
     int t, q;
 
@@ -268,7 +271,7 @@ static void _sf2_conf_thred_2reg(int page, int reg, uint16_t tbl[][FC_LAN_TXQ_QU
     {
         for (q = 0; q < FC_LAN_TXQ_QUEUES; q++)
         {
-            SF2SW_WREG(page, reg + t*0x10 + q*2, &tbl[t][q], sizeof(tbl[0][0]));
+            SF2SW_WREG(unit, page, reg + t*0x10 + q*2, &tbl[t][q], sizeof(tbl[0][0]));
         }
     }
 }
@@ -293,10 +296,12 @@ int speed_macro_2_mbps(phy_speed_t spd)
 static void _port_sf2_print_status(enetx_port_t *p, int speed_change)
 {
     phy_dev_t *phy = get_active_phy(p->p.phy);
+    char *name = p->dev? p->dev->name: "<IntrnlDev>";
+
     if (phy->link)
     {
         printk((KERN_CRIT "%s (%s switch port: %d) (Logical Port: %d) (phyId: %x) Link %s %d mbps %s duplex\n"),
-                p->dev->name, PORT_ON_ROOT_SW(p)?"Int":"Ext", p->p.mac->mac_id, 
+                name, PORT_ON_ROOT_SW(p)?"Int":"Ext", p->p.mac->mac_id, 
                 PHYSICAL_PORT_TO_LOGICAL_PORT(p->p.mac->mac_id, PORT_ON_ROOT_SW(p)?0:1), phy->addr,
                 speed_change? "Speed/Duplex changed to": "Up at",
                 speed_macro_2_mbps(phy->speed), (phy->duplex==PHY_DUPLEX_FULL)?"full":"half");
@@ -304,7 +309,7 @@ static void _port_sf2_print_status(enetx_port_t *p, int speed_change)
     else
     {
         printk((KERN_CRIT "%s (%s switch port: %d) (Logical Port: %d) (phyId: %x) Link DOWN.\n"),
-                p->dev->name, PORT_ON_ROOT_SW(p)?"Int":"Ext", p->p.mac->mac_id, 
+                name, PORT_ON_ROOT_SW(p)?"Int":"Ext", p->p.mac->mac_id, 
                     PHYSICAL_PORT_TO_LOGICAL_PORT(p->p.mac->mac_id, PORT_ON_ROOT_SW(p)?0:1), phy->addr);
     }
 }
@@ -314,10 +319,10 @@ void port_sf2_print_status(enetx_port_t *p)
     _port_sf2_print_status(p, 0);
 }
 
-static void _sf2_conf_que_thred(void);
+static void _sf2_conf_que_thred(int unit);
 #if defined(CONFIG_BCM_ENET_MULTI_IMP_SUPPORT)
-static void _extsw_set_port_imp_map_2_5g(void);
-static void _extsw_set_port_imp_map_non_2_5g(void);
+static void _extsw_set_port_imp_map_2_5g(int unit);
+static void _extsw_set_port_imp_map_non_2_5g(int unit);
 #endif
 
 void _sf2_set_mac_eee_by_phy(enetx_port_t *p)
@@ -337,17 +342,39 @@ void _sf2_set_mac_eee_by_phy(enetx_port_t *p)
     mac_dev_eee_set(mac_dev, enabled);
 }
 
+void link_change_led_config(enetx_port_t *port, int linkstatus, int speed)
+{
+#if defined(CONFIG_BCM963158)
+    // workaround sf2.p6 link LED issue
+    if (port == unit_port_array[1][6])
+    {
+        volatile u32 *p6_led_ctrl_reg = (void*)(SWITCH_P6_LED_CTRL_REG);
+        u32 val = *p6_led_ctrl_reg & ~ETHSW_LED_CTRL_LNK_SPD_MASK;
+        
+        switch (speed) {
+        case 2500:    val |= ETHSW_LED_CTRL_SPD_OVRD_2P5G;   break;
+        case 1000:    val |= ETHSW_LED_CTRL_SPD_OVRD_1G;     break;
+        case 100:     val |= ETHSW_LED_CTRL_SPD_OVRD_100M;   break;
+        default:      val |= ETHSW_LED_CTRL_SPD_OVRD_10M;
+        }
+        *p6_led_ctrl_reg = ETHSW_LED_CTRL_SPD_OVRD_EN | val |
+                           ETHSW_LED_CTRL_LNK_OVRD_EN | (linkstatus ? ETHSW_LED_CTRL_LNK_STATUS_OVRD : 0);
+    }
+#endif
+}
+
 extern u8 eth_internal_pause_addr[];
 /*
  * handle_link_status_change
  */
 void link_change_handler(enetx_port_t *port, int linkstatus, int speed, int duplex)
 {
+    int unit = PORT_ON_ROOT_SW(port)?0:1;
     phy_dev_t *phy_dev = get_active_phy(port->p.phy);
     phy_dev_t *end_phy = cascade_phy_get_last(phy_dev);
     mac_dev_t *mac_dev = port->p.mac;
-    mac_cfg_t mac_cfg = {};
-    int i, old_link;
+    mac_cfg_t mac_cfg = {}, old_mac_cfg;
+    int i, old_link = 0;
     phy_duplex_t old_duplex;
     phy_speed_t old_speed;
 #if defined(CONFIG_BCM_ETH_PWRSAVE)
@@ -369,7 +396,7 @@ void link_change_handler(enetx_port_t *port, int linkstatus, int speed, int dupl
 #endif
 
 #if defined(ARCHER_DEVICE)
-    {
+    if (port->dev) {    /* Skip inter-connection device */
         bcmFun_t *enet_phy_speed_set = bcmFun_get(BCM_FUN_ID_ENET_PHY_SPEED_SET);
         bcmSysport_PhySpeed_t info;
 
@@ -383,11 +410,15 @@ void link_change_handler(enetx_port_t *port, int linkstatus, int speed, int dupl
 #endif // ARCHER_DEVICE
 
     down(&bcm_link_handler_config);
+    link_change_led_config(port, linkstatus, speed);
 
-    old_link = netif_carrier_ok(port->dev);
+    if(port->dev)
+        old_link = netif_carrier_ok(port->dev);
     old_speed = phy_dev->speed;
     old_duplex = phy_dev->duplex;
     phy_dev->link = linkstatus;
+
+    mac_dev_cfg_get(mac_dev, &old_mac_cfg);
     if (linkstatus) {
 
 #if defined(CONFIG_BCM_ETH_DEEP_GREEN_MODE)
@@ -430,11 +461,11 @@ void link_change_handler(enetx_port_t *port, int linkstatus, int speed, int dupl
 #if defined(CONFIG_BCM_ENET_MULTI_IMP_SUPPORT)
         if (speed == 2500)
         {
-            _extsw_set_port_imp_map_2_5g();
+            _extsw_set_port_imp_map_2_5g(1);
         }
 #endif
 
-        if (!old_link && phy_dev_cable_diag_is_supported(end_phy) && phy_dev_cable_diag_is_enabled(end_phy))
+        if (port->dev && !old_link && phy_dev_cable_diag_is_supported(end_phy) && phy_dev_cable_diag_is_enabled(end_phy))
         {
             int result, pair_len[4];
             phy_dev_cable_diag_run(end_phy, &result, pair_len);
@@ -455,7 +486,7 @@ void link_change_handler(enetx_port_t *port, int linkstatus, int speed, int dupl
         }
 
         /* notify linux after we have finished setting our internal state */
-        if (!old_link || old_speed != phy_dev->speed || old_duplex != phy_dev->duplex)
+        if (port->dev && (!old_link || old_speed != phy_dev->speed || old_duplex != phy_dev->duplex))
         {
             if (!old_link && port->p.parent_sw == sf2_sw) 
             {
@@ -463,9 +494,12 @@ void link_change_handler(enetx_port_t *port, int linkstatus, int speed, int dupl
                     sf2WanUpPorts_g++;
                 else
                     sf2LanUpPorts_g++;
-                _sf2_conf_que_thred();
+                _sf2_conf_que_thred(unit);
             }
+        }
 
+        if(port->dev)
+        { 
             if (netif_carrier_ok(port->dev) == 0) {
                 char link[16];
                 char *env[] = {link, NULL};
@@ -475,6 +509,11 @@ void link_change_handler(enetx_port_t *port, int linkstatus, int speed, int dupl
             }
 
             _port_sf2_print_status(port, old_link == phy_dev->link);
+        }
+        else
+        {   /* For internal inter connection device */
+            if (old_mac_cfg.speed != mac_cfg.speed) /* Duplex is ignored in hardware */
+                port_sf2_print_status(port);
         }
 
         mac_dev_enable(mac_dev);
@@ -487,7 +526,7 @@ void link_change_handler(enetx_port_t *port, int linkstatus, int speed, int dupl
 #if defined(CONFIG_BCM_ENET_MULTI_IMP_SUPPORT)
         if (speed == 2500)
         {
-            _extsw_set_port_imp_map_non_2_5g();
+            _extsw_set_port_imp_map_non_2_5g(1);
         }
 #endif /* CONFIG_BCM_ENET_MULTI_IMP_SUPPORT */
 
@@ -501,23 +540,31 @@ void link_change_handler(enetx_port_t *port, int linkstatus, int speed, int dupl
 #endif
         // ethsw_eee_port_enable(sw_port, 0, 0);
         /* notify linux after we have finished setting our internal state */
-        if (netif_carrier_ok(port->dev) != 0)
+        if (port->dev)
         {
-            char link[16];
-            char *env[] = {link, NULL};
-            snprintf(link, sizeof(link), "LINK=down");
-
-            if (port->p.parent_sw == sf2_sw) 
+            if (netif_carrier_ok(port->dev) != 0)
             {
-                if (PORT_ROLE_IS_WAN(port))
-                    sf2WanUpPorts_g--;
-                else
-                    sf2LanUpPorts_g--;
-                _sf2_conf_que_thred();
+                char link[16];
+                char *env[] = {link, NULL};
+                snprintf(link, sizeof(link), "LINK=down");
+
+                if (port->p.parent_sw == sf2_sw) 
+                {
+                    if (PORT_ROLE_IS_WAN(port))
+                        sf2WanUpPorts_g--;
+                    else
+                        sf2LanUpPorts_g--;
+                    _sf2_conf_que_thred(unit);
+                }
+                kobject_uevent_env(&port->dev->dev.kobj, KOBJ_CHANGE, env);
+                netif_carrier_off(port->dev);
+                port_sf2_print_status(port);
             }
-            kobject_uevent_env(&port->dev->dev.kobj, KOBJ_CHANGE, env);
-            netif_carrier_off(port->dev);
-            port_sf2_print_status(port);
+        }
+        else
+        {   /* For internal inter connection device, just in case */
+            if (old_mac_cfg.speed != mac_cfg.speed) /* Duplex is ignored in hardware */
+                port_sf2_print_status(port);
         }
 
         mac_dev_cfg_set(mac_dev, &mac_cfg);
@@ -633,7 +680,7 @@ int inline sf2_nonimp_port_cnt (void)
 }
 
 #if defined(SF2_EXTERNAL)
-static void _sf2_conf_que_thred(void)
+static void _sf2_conf_que_thred(int unit)
 {
     static int sf2_fc_configured = 0;
     uint16_t val;
@@ -642,7 +689,7 @@ static void _sf2_conf_que_thred(void)
     
     if (sf2_fc_configured) return;
 
-    SF2SW_RREG(PAGE_MANAGEMENT, REG_DEV_ID, &val, sizeof(val));
+    SF2SW_RREG(unit, PAGE_MANAGEMENT, REG_DEV_ID, &val, sizeof(val));
 
     if (val==DEV_ID_BCM53134_A0 || val==DEV_ID_BCM53134_B0_B1)
     {
@@ -664,7 +711,7 @@ static void _sf2_conf_que_thred(void)
                     case FC_THRED_TTL_PAUSE_TYPE:   val = 357+ 8*q; break;
                     case FC_THRED_TTL_DROP_TYPE:    val = 498;      break;
                     }
-                    SF2SW_WREG(page, offset, &val, sizeof(val));
+                    SF2SW_WREG(unit, page, offset, &val, sizeof(val));
                 }
             }
         }
@@ -682,7 +729,7 @@ static int acb_port_xoff_threshold;
 #define PORT_PAUSE_MAX_FACTOR 3/100    /* Max Port Pause Thread reduction from Port Pause Thread in percentage of total buffer */
 #define TXQ_RSRVD_MAX_FACTOR  5/100     /* Max TXQ Reserved Thread percentage to total buffer */
 
-static void _sf2_conf_que_thred(void)
+static void _sf2_conf_que_thred(int unit)
 {
     int q, q1, t;
     int thredBase[FC_THRED_TOTAL_TYPES],
@@ -893,9 +940,9 @@ static void _sf2_conf_que_thred(void)
         }
     }
 
-    _sf2_conf_thred_2reg(PAGE_FC_LAN_TXQ, REG_FC_LAN_TXQ_THD_RSV_QN0, sf2_sw_port_thred);
-    _sf2_conf_thred_2reg(PAGE_FC_IMP0_TXQ, REG_FC_IMP0_TXQ_THD_RSV_QN0, sf2_imp0_thred);
-    _sf2_conf_thred_2reg(PAGE_FC_IMP1_TXQ, REG_FC_IMP0_TXQ_THD_RSV_QN0, sf2_wan_imp1_thred);
+    _sf2_conf_thred_2reg(unit, PAGE_FC_LAN_TXQ, REG_FC_LAN_TXQ_THD_RSV_QN0, sf2_sw_port_thred);
+    _sf2_conf_thred_2reg(unit, PAGE_FC_IMP0_TXQ, REG_FC_IMP0_TXQ_THD_RSV_QN0, sf2_imp0_thred);
+    _sf2_conf_thred_2reg(unit, PAGE_FC_IMP1_TXQ, REG_FC_IMP0_TXQ_THD_RSV_QN0, sf2_wan_imp1_thred);
 }
 #endif //!SF2_EXTERNAL
 
@@ -905,6 +952,7 @@ static void _sf2_conf_que_thred(void)
 
 static int tr_imp_ports_op(enetx_port_t *port, void *ctx)
 {
+    int unit = PORT_ON_ROOT_SW(port)?0:1;
     int *op = ctx;
     int id = port->p.mac->mac_id;
     uint8_t val8, reg, bit;
@@ -923,9 +971,9 @@ static int tr_imp_ports_op(enetx_port_t *port, void *ctx)
         reg = (id < P5_PORT_ID) ? REG_BRCM_HDR_CTRL2 : REG_BRCM_HDR_CTRL;
         bit = (id < P5_PORT_ID) ? 1 << id : (id == IMP_PORT_ID) ? BRCM_HDR_EN_IMP_PORT : (id == P7_PORT_ID) ? BRCM_HDR_EN_GMII_PORT_7 : BRCM_HDR_EN_GMII_PORT_5;
         spin_lock_bh(&sf2_reg_config);
-        SF2SW_RREG(PAGE_MANAGEMENT, reg, &val8, sizeof(val8));
+        SF2SW_RREG(unit, PAGE_MANAGEMENT, reg, &val8, sizeof(val8));
         val8 |= bit;
-        SF2SW_WREG(PAGE_MANAGEMENT, reg, &val8, sizeof(val8));
+        SF2SW_WREG(unit, PAGE_MANAGEMENT, reg, &val8, sizeof(val8));
         spin_unlock_bh(&sf2_reg_config);
         
         // enable link - port override register
@@ -933,21 +981,21 @@ static int tr_imp_ports_op(enetx_port_t *port, void *ctx)
             val8 = IMP_LINK_OVERRIDE_2000FDX /*| REG_CONTROL_MPSO_FLOW_CONTROL*/; /* FIXME : Enabling flow control creates some issues */
         else 
             val8 = (id == P4_PORT_ID) ? LINK_OVERRIDE_1000FDX : LINK_OVERRIDE_1000FDX | REG_PORT_GMII_SPEED_UP_2G;
-        SF2SW_WREG(PORT_OVERIDE_PAGE, PORT_OVERIDE_REG(id), &val8, sizeof(val8));
+        SF2SW_WREG(unit, PORT_OVERIDE_PAGE, PORT_OVERIDE_REG(id), &val8, sizeof(val8));
         
         // intentional fall thru to _ENABLE
     case IMP_PORTS_ENABLE:
         spin_lock_bh(&sf2_reg_config);
-        SF2SW_RREG(PAGE_CONTROL, REG_PORT_CTRL+id, &val8, 1);
+        SF2SW_RREG(unit, PAGE_CONTROL, REG_PORT_CTRL+id, &val8, 1);
         val8 &= ~REG_PORT_CTRL_DISABLE;
-        SF2SW_WREG(PAGE_CONTROL, REG_PORT_CTRL+id, &val8, 1);
+        SF2SW_WREG(unit, PAGE_CONTROL, REG_PORT_CTRL+id, &val8, 1);
         spin_unlock_bh(&sf2_reg_config);
         break;
     case IMP_PORTS_DISABLE:
         spin_lock_bh(&sf2_reg_config);
-        SF2SW_RREG(PAGE_CONTROL, REG_PORT_CTRL+id, &val8, 1);
+        SF2SW_RREG(unit, PAGE_CONTROL, REG_PORT_CTRL+id, &val8, 1);
         val8 |= REG_PORT_CTRL_DISABLE;
-        SF2SW_WREG(PAGE_CONTROL, REG_PORT_CTRL+id, &val8, 1);
+        SF2SW_WREG(unit, PAGE_CONTROL, REG_PORT_CTRL+id, &val8, 1);
         spin_unlock_bh(&sf2_reg_config);
         break;
     }
@@ -960,7 +1008,7 @@ static void _imp_ports_op(int op)
     port_traverse_ports(sf2_sw, tr_imp_ports_op, PORT_CLASS_PORT,  &operation);
 }
 
-static void _extsw_setup_imp_ports(void)
+static void _extsw_setup_imp_ports(int unit)
 {
     // based on impl5:extsw_setup_imp_ports()
 #if defined(CONFIG_BCM_ENET_MULTI_IMP_SUPPORT) || !defined(CONFIG_BCM_SWMDK)
@@ -980,33 +1028,37 @@ static void _extsw_setup_imp_ports(void)
 
     /* Enable IMP Port */
     val8 = ENABLE_MII_PORT | RECEIVE_BPDU;
-    SF2SW_WREG(PAGE_MANAGEMENT, REG_GLOBAL_CONFIG, &val8, sizeof(val8));
+    SF2SW_WREG(unit, PAGE_MANAGEMENT, REG_GLOBAL_CONFIG, &val8, sizeof(val8));
 
     /* management mode, enable forwarding */
     spin_lock_bh(&sf2_reg_config);
-    SF2SW_RREG(PAGE_CONTROL, REG_SWITCH_MODE, &val8, sizeof(val8));
+    SF2SW_RREG(unit, PAGE_CONTROL, REG_SWITCH_MODE, &val8, sizeof(val8));
     val8 |= REG_SWITCH_MODE_FRAME_MANAGE_MODE | REG_SWITCH_MODE_SW_FWDG_EN;
-    SF2SW_WREG(PAGE_CONTROL, REG_SWITCH_MODE, &val8, sizeof(val8));
+    SF2SW_WREG(unit, PAGE_CONTROL, REG_SWITCH_MODE, &val8, sizeof(val8));
     spin_unlock_bh(&sf2_reg_config);
+
+    /* clear dumb mode */
+    val16 = 0;
+    SF2SW_WREG(unit, PAGE_CONTROL, REG_SWITCH_CONTROL, &val16, sizeof(val16));
 
     /* enable rx bcast, ucast and mcast of imp port */
     val8 = REG_MII_PORT_CONTROL_RX_UCST_EN | REG_MII_PORT_CONTROL_RX_MCST_EN |
            REG_MII_PORT_CONTROL_RX_BCST_EN;
-    SF2SW_WREG(PAGE_CONTROL, REG_MII_PORT_CONTROL, &val8, sizeof(val8));
+    SF2SW_WREG(unit, PAGE_CONTROL, REG_MII_PORT_CONTROL, &val8, sizeof(val8));
 
     /* Forward lookup failure to use ULF/MLF/IPMC lookup fail registers */
     val8 = REG_PORT_FORWARD_MCST | REG_PORT_FORWARD_UCST | REG_PORT_FORWARD_IP_MCST;
-    SF2SW_WREG(PAGE_CONTROL, REG_PORT_FORWARD, &val8, sizeof(val8));
+    SF2SW_WREG(unit, PAGE_CONTROL, REG_PORT_FORWARD, &val8, sizeof(val8));
 
     /* Forward unlearned unicast and unresolved mcast to the MIPS */
     val16 = PBMAP_MIPS;
-    SF2SW_WREG(PAGE_CONTROL, REG_UCST_LOOKUP_FAIL, &val16, sizeof(val16));
-    SF2SW_WREG(PAGE_CONTROL, REG_MCST_LOOKUP_FAIL, &val16, sizeof(val16));
-    SF2SW_WREG(PAGE_CONTROL, REG_IPMC_LOOKUP_FAIL, &val16, sizeof(val16));
+    SF2SW_WREG(unit, PAGE_CONTROL, REG_UCST_LOOKUP_FAIL, &val16, sizeof(val16));
+    SF2SW_WREG(unit, PAGE_CONTROL, REG_MCST_LOOKUP_FAIL, &val16, sizeof(val16));
+    SF2SW_WREG(unit, PAGE_CONTROL, REG_IPMC_LOOKUP_FAIL, &val16, sizeof(val16));
 
     /* Disable learning on MIPS*/
     val16 = PBMAP_MIPS;
-    SF2SW_WREG(PAGE_CONTROL, REG_DISABLE_LEARNING, &val16, sizeof(val16));
+    SF2SW_WREG(unit, PAGE_CONTROL, REG_DISABLE_LEARNING, &val16, sizeof(val16));
 
     /* NOTE : All regular setup for P8 IMP is done above ; Same as what SWMDK would do*/
 #endif /* CONFIG_BCM_ENET_MULTI_IMP_SUPPORT */
@@ -1014,18 +1066,18 @@ static void _extsw_setup_imp_ports(void)
 
 #include "bcm_chip_arch.h"
 
-static void _extsw_set_pbvlan(int port, uint16_t fwdMap)
+static void _extsw_set_pbvlan(int unit, int port, uint16_t fwdMap)
 {
-    SF2SW_WREG(PAGE_PORT_BASED_VLAN, REG_VLAN_CTRL_P0 + (port * 2), (uint8_t *)&fwdMap, 2);
+    SF2SW_WREG(unit, PAGE_PORT_BASED_VLAN, REG_VLAN_CTRL_P0 + (port * 2), (uint8_t *)&fwdMap, 2);
 }
 
 #if defined(CONFIG_BCM_ENET_MULTI_IMP_SUPPORT)
 
-static uint16_t _extsw_get_pbvlan(int port)
+static uint16_t _extsw_get_pbvlan(int unit, int port)
 {
     uint16_t val16;
 
-    SF2SW_RREG(PAGE_PORT_BASED_VLAN, REG_VLAN_CTRL_P0 + (port * 2), (uint8_t *)&val16, 2);
+    SF2SW_RREG(unit, PAGE_PORT_BASED_VLAN, REG_VLAN_CTRL_P0 + (port * 2), (uint8_t *)&val16, 2);
     return val16;
 }
 
@@ -1033,13 +1085,14 @@ static uint16_t _extsw_get_pbvlan(int port)
     Use CFP to force Reserved Multicast Address to be received by
     IMP port correctly overriding Port Based VLAN set for load balancing.
 */
-static int _bcmsw_add_cfp_rsvd_multicast_support(void)
+static int _bcmsw_add_cfp_rsvd_multicast_support(int unit)
 {
     // based on impl5:bcmsw_add_cfp_rsvd_multicast_support()
     struct ethswctl_data _e, *e = &_e;
     cfpArg_t *cfpArg = &e->cfpArgs;
 
     memset(e, 0, sizeof(*e));
+    e->unit = unit;
 
     cfpArg->da = 0x0180c2000000LL;
     cfpArg->da_mask = 0xffffff000000;
@@ -1094,14 +1147,14 @@ static void _bcmsw_print_imp_port_grouping(unsigned long port_map, int port_imp_
 }
 
 static int *cur_port_imp_map;
-static void _extsw_cfg_port_imp_grouping(int port_imp_map[])
+static void _extsw_cfg_port_imp_grouping(int unit, int port_imp_map[])
 {
     // based on impl5:extsw_cfg_port_imp_grouping()
     unsigned char port;
     unsigned long port_map;
     uint16 v16;
     const ETHERNET_MAC_INFO *EnetInfo = BpGetEthernetMacInfoArrayPtr();
-    const ETHERNET_MAC_INFO *info = &EnetInfo[SF2_ETHSWCTL_UNIT];
+    const ETHERNET_MAC_INFO *info = &EnetInfo[1];
 
     if (cur_port_imp_map == port_imp_map) return;
 
@@ -1115,10 +1168,10 @@ static void _extsw_cfg_port_imp_grouping(int port_imp_map[])
         v16 = 0;
         if ( !(DEFAULT_IMP_PBMAP & (1<<port)) && (port_imp_map[port] != -1) && ( (1<<port) & port_map ) )
         {
-            v16 = _extsw_get_pbvlan(port) & chip_arch_all_portmap[1]; /* Get current PBVLAN Map */
+            v16 = _extsw_get_pbvlan(unit, port) & chip_arch_all_portmap[1]; /* Get current PBVLAN Map */
             v16 &= ~(imp_pbmap[1]); /* Remove all IMP Ports from PBVLAN Map for external switch*/
             v16 |= (1<<port_imp_map[port]); /* Add back the desired IMP Port */
-            _extsw_set_pbvlan(port, v16);
+            _extsw_set_pbvlan(unit, port, v16);
             port_imp_emac_map[port] = imp_to_emac[port_imp_map[port]];
         }
         else if ( DEFAULT_IMP_PBMAP & (1<<port) ) 
@@ -1128,46 +1181,46 @@ static void _extsw_cfg_port_imp_grouping(int port_imp_map[])
              * Broadcom tag (that has destination port as other IMP), this results in packet getting 
              * looped back; In order to avoid this issue temporarily, following is done. 
              * Below change could be kept as permanent, though not needed. */ 
-            v16 = _extsw_get_pbvlan(port) & chip_arch_all_portmap[1]; /* Get current PBVLAN Map */
+            v16 = _extsw_get_pbvlan(unit, port) & chip_arch_all_portmap[1]; /* Get current PBVLAN Map */
             v16 &= ~(imp_pbmap[1]); /* Remove all IMP Ports from PBVLAN Map for external switch*/
             v16 |= (1<<port); /* Add back this IMP Port - Not required though */
-            _extsw_set_pbvlan(port, v16);
+            _extsw_set_pbvlan(unit, port, v16);
         }
     }
     
     _bcmsw_print_imp_port_grouping(port_map, port_imp_map);
 }
 
-static void _extsw_set_port_imp_map_2_5g(void)
+static void _extsw_set_port_imp_map_2_5g(int unit)
 {
-    _extsw_cfg_port_imp_grouping(port_imp_map_2_5g);
+    _extsw_cfg_port_imp_grouping(unit, port_imp_map_2_5g);
 }
 
-static void _extsw_set_port_imp_map_non_2_5g(void)
+static void _extsw_set_port_imp_map_non_2_5g(int unit)
 {
-    _extsw_cfg_port_imp_grouping(port_imp_map_non_2_5g);
+    _extsw_cfg_port_imp_grouping(unit, port_imp_map_non_2_5g);
 }
 
 
-static void _extsw_setup_imp_fwding(void)
+static void _extsw_setup_imp_fwding(int unit)
 {
     // based on impl5:extsw_setup_imp_fwding()
     uint16 v16;
 
     /* Configure the Lookup failure registers to all IMP ports */
     v16 = DEFAULT_IMP_PBMAP;
-    SF2SW_WREG(PAGE_CONTROL, REG_UCST_LOOKUP_FAIL, &v16, sizeof(v16));
-    SF2SW_WREG(PAGE_CONTROL, REG_MCST_LOOKUP_FAIL, &v16, sizeof(v16));
-    SF2SW_WREG(PAGE_CONTROL, REG_IPMC_LOOKUP_FAIL, &v16, sizeof(v16));
+    SF2SW_WREG(unit, PAGE_CONTROL, REG_UCST_LOOKUP_FAIL, &v16, sizeof(v16));
+    SF2SW_WREG(unit, PAGE_CONTROL, REG_MCST_LOOKUP_FAIL, &v16, sizeof(v16));
+    SF2SW_WREG(unit, PAGE_CONTROL, REG_IPMC_LOOKUP_FAIL, &v16, sizeof(v16));
     /* Disable learning on all IMP ports */
-    SF2SW_WREG(PAGE_CONTROL, REG_DISABLE_LEARNING, &v16, sizeof(v16));
+    SF2SW_WREG(unit, PAGE_CONTROL, REG_DISABLE_LEARNING, &v16, sizeof(v16));
 
-    _extsw_set_port_imp_map_non_2_5g(); /* By default we start with assuming no 2.5G port */
+    _extsw_set_port_imp_map_non_2_5g(unit); /* By default we start with assuming no 2.5G port */
 
-    _bcmsw_add_cfp_rsvd_multicast_support();
+    _bcmsw_add_cfp_rsvd_multicast_support(unit);
 }
 #else
-static void _extsw_setup_imp_fwding(void) {}
+static void _extsw_setup_imp_fwding(int unit) {}
 #endif //!defined(CONFIG_BCM_ENET_MULTI_IMP_SUPPORT)
 
 static rgmii_registers_t *get_rgmii_regs(int ext_port)
@@ -1226,6 +1279,7 @@ static void phy_config_rgmii(phy_dev_t *phy_dev, int physical_port)
 
 static int tr_port_for_rgmii(enetx_port_t *p, void *ctx)
 {
+    int unit = PORT_ON_ROOT_SW(p)?0:1;
     phy_dev_t *phy_dev;
     int sw_override = 0;
 
@@ -1259,7 +1313,7 @@ static int tr_port_for_rgmii(enetx_port_t *p, void *ctx)
         uint8_t v8;
         // set override, and clear old link info
         v8 = REG_PORT_STATE_OVERRIDE;
-        SF2SW_WREG(PORT_OVERIDE_PAGE, PORT_OVERIDE_REG(p->p.mac->mac_id), &v8, 1);
+        SF2SW_WREG(unit, PORT_OVERIDE_PAGE, PORT_OVERIDE_REG(p->p.mac->mac_id), &v8, 1);
     }
     return 0;
 }
@@ -1270,7 +1324,7 @@ void sf2_rgmii_config(void)
     port_traverse_ports(root_sw, tr_port_for_rgmii, PORT_CLASS_PORT, NULL);
 }
 
-static void _extsw_port_trunk_init(void)
+static void _extsw_port_trunk_init(int unit)
 {
     // based on impl5:extsw_port_runk_init()
     int enable_trunk = 0;
@@ -1282,17 +1336,17 @@ static void _extsw_port_trunk_init(void)
     {
         unsigned char v8;
         spin_lock_bh(&sf2_reg_config);
-        SF2SW_RREG(PAGE_MAC_BASED_TRUNK, REG_MAC_TRUNK_CTL, &v8, 1);
+        SF2SW_RREG(unit, PAGE_MAC_BASED_TRUNK, REG_MAC_TRUNK_CTL, &v8, 1);
         v8 |= ( (1 & TRUNK_EN_LOCAL_M) << TRUNK_EN_LOCAL_S ); /* Enable Trunking */
         v8 |= ( (TRUNK_HASH_DA_SA_VID & TRUNK_HASH_SEL_M) << TRUNK_HASH_SEL_S ); /* Default VID+DA+SA Hash */
-        SF2SW_WREG(PAGE_MAC_BASED_TRUNK, REG_MAC_TRUNK_CTL, &v8, 1);
-        SF2SW_RREG(PAGE_MAC_BASED_TRUNK, REG_MAC_TRUNK_CTL, &v8, 1);
+        SF2SW_WREG(unit, PAGE_MAC_BASED_TRUNK, REG_MAC_TRUNK_CTL, &v8, 1);
+        SF2SW_RREG(unit, PAGE_MAC_BASED_TRUNK, REG_MAC_TRUNK_CTL, &v8, 1);
         spin_unlock_bh(&sf2_reg_config);
         printk("LAG/Trunking enabled <0x%02x>\n",v8);
     }
 }
 
-static void _sf2_tc_to_cos_default(void)
+static void _sf2_tc_to_cos_default(int unit)
 {
     int i, j;
     uint16_t reg_addr;
@@ -1308,31 +1362,31 @@ static void _sf2_tc_to_cos_default(void)
             //  TC to COS one-one mapping
             val32 |= (j & SF2_QOS_COS_MASK) << (j * SF2_QOS_COS_SHIFT);
         }
-        SF2SW_WREG(PAGE_QOS, reg_addr, &val32, 4);
+        SF2SW_WREG(unit, PAGE_QOS, reg_addr, &val32, 4);
     }
 }
 
-static void _sf2_qos_default(void)
+static void _sf2_qos_default(int unit)
 {
     uint32_t val32;
     uint32_t port;
     spin_lock_bh(&sf2_reg_config);
     /* Set Global QoS Control */
-    SF2SW_RREG(PAGE_QOS, SF2_REG_QOS_GLOBAL_CTRL, &val32, 4);
+    SF2SW_RREG(unit, PAGE_QOS, SF2_REG_QOS_GLOBAL_CTRL, &val32, 4);
     val32 |= SF2_QOS_P8_AGGREGATION_MODE;
-    SF2SW_WREG(PAGE_QOS, SF2_REG_QOS_GLOBAL_CTRL, &val32, 4);
+    SF2SW_WREG(unit, PAGE_QOS, SF2_REG_QOS_GLOBAL_CTRL, &val32, 4);
     /* set SP scheduling on all ports (including IMP) by default */
     for (port=0; port <= BP_MAX_SWITCH_PORTS;  port++)
     {
         if (port == SF2_INEXISTANT_PORT) continue;
-        SF2SW_RREG(PAGE_QOS_SCHEDULER, REG_PN_QOS_PRI_CTL_PORT_0 + (port), &val32, 4);
+        SF2SW_RREG(unit, PAGE_QOS_SCHEDULER, REG_PN_QOS_PRI_CTL_PORT_0 + (port), &val32, 4);
         val32 &= ~(PN_QOS_SCHED_SEL_M<<PN_QOS_SCHED_SEL_S); /* Clear Bits */
         val32 |= (SF2_ALL_Q_SP<<PN_QOS_SCHED_SEL_S); /* Set SP for all */
-        SF2SW_WREG(PAGE_QOS_SCHEDULER, REG_PN_QOS_PRI_CTL_PORT_0 + (port), &val32, 4);
+        SF2SW_WREG(unit, PAGE_QOS_SCHEDULER, REG_PN_QOS_PRI_CTL_PORT_0 + (port), &val32, 4);
     }
     spin_unlock_bh(&sf2_reg_config);
     /* Set default TC to COS config */
-    _sf2_tc_to_cos_default();
+    _sf2_tc_to_cos_default(unit);
 }
 
 static void config_wan_queue_acb_map(void)
@@ -1461,10 +1515,10 @@ void _sf2_conf_acb_conges_profile(int profile)
 }
 #endif //!SF2_EXTERNAL
 
-void sf2_rreg(int page, int reg, void *data_out, int len);
-void sf2_wreg(int page, int reg, void *data_in, int len);
+void sf2_sw_rreg(int unit, int page, int reg, void *data_out, int len);
+void sf2_sw_wreg(int unit, int page, int reg, void *data_in, int len);
 
-void extsw_rreg_wrap(int page, int reg, void *vptr, int len)
+void extsw_rreg_wrap(int unit, int page, int reg, void *vptr, int len)
 {
     uint8 val[8];
     uint8 *data = (uint8*)vptr;
@@ -1473,7 +1527,7 @@ void extsw_rreg_wrap(int page, int reg, void *vptr, int len)
     len &= ~(SWAP_TYPE_MASK);
 
     /* Lower level driver always returnes in Little Endian data from history */
-    sf2_rreg(page, reg, val, len);
+    sf2_sw_rreg(unit, page, reg, val, len);
 
     switch (len) {
         case 1:
@@ -1544,7 +1598,7 @@ void extsw_rreg_wrap(int page, int reg, void *vptr, int len)
     }
 }
 
-void extsw_wreg_wrap(int page, int reg, void *vptr, int len)
+void extsw_wreg_wrap(int unit, int page, int reg, void *vptr, int len)
 {
     uint8 val[8];
     uint8 *data = (uint8*)vptr;
@@ -1621,7 +1675,7 @@ void extsw_wreg_wrap(int page, int reg, void *vptr, int len)
             printk("Length %d not supported\n", len);
             break;
     } // switch len
-    sf2_wreg(page, reg, val, len);
+    sf2_sw_wreg(unit, page, reg, val, len);
 }
 
 // =========== public ioctl functions =====================
@@ -1650,7 +1704,7 @@ int ioctl_extsw_cosq_sched(enetx_port_t *self, struct ethswctl_data *e)
     down(&self->p.parent_sw->s.conf_sem);
 
     reg = REG_PN_QOS_PRI_CTL_PORT_0 + e->port * REG_PN_QOS_PRI_CTL_SZ;
-    SF2SW_RREG(PAGE_QOS_SCHEDULER, reg, &val8, REG_PN_QOS_PRI_CTL_SZ);
+    SF2SW_RREG(e->unit, PAGE_QOS_SCHEDULER, reg, &val8, REG_PN_QOS_PRI_CTL_SZ);
     if (e->type == TYPE_GET) {
         switch ((val8 >> PN_QOS_SCHED_SEL_S ) & PN_QOS_SCHED_SEL_M)
         {
@@ -1671,7 +1725,7 @@ int ioctl_extsw_cosq_sched(enetx_port_t *self, struct ethswctl_data *e)
         e->port_qos_sched.max_egress_spq = MAX_EGRESS_SPQ;
         e->port_qos_sched.wrr_type = (val8 >> PN_QOS_WDRR_GRAN_S) & PN_QOS_WDRR_GRAN_M?
                        QOS_ENUM_WRR_PKT: QOS_ENUM_WDRR_PKT;
-        SF2SW_RREG(PAGE_QOS_SCHEDULER, REG_PN_QOS_WEIGHT_PORT_0 +
+        SF2SW_RREG(e->unit, PAGE_QOS_SCHEDULER, REG_PN_QOS_WEIGHT_PORT_0 +
                        e->port * REG_PN_QOS_WEIGHTS, data, DATA_TYPE_HOST_ENDIAN|REG_PN_QOS_WEIGHTS);
         for (i = 0; i < BCM_COS_COUNT; i++) {
             e->weights[i] = data[i];
@@ -1710,17 +1764,17 @@ int ioctl_extsw_cosq_sched(enetx_port_t *self, struct ethswctl_data *e)
         } else if (e->port_qos_sched.wrr_type == QOS_ENUM_WDRR_PKT) {
             val8 &= ~(SF2_WRR_PKT << PN_QOS_WDRR_GRAN_S);
         }
-        SF2SW_WREG(PAGE_QOS_SCHEDULER, reg, &val8, REG_PN_QOS_PRI_CTL_SZ);
+        SF2SW_WREG(e->unit, PAGE_QOS_SCHEDULER, reg, &val8, REG_PN_QOS_PRI_CTL_SZ);
  // programming queue weights.
         if (e->port_qos_sched.num_spq || e->port_qos_sched.sched_mode == BCM_COSQ_WRR) {
                       // some or all queues in weighted mode.
-            SF2SW_RREG(PAGE_QOS_SCHEDULER, REG_PN_QOS_WEIGHT_PORT_0 +
+            SF2SW_RREG(e->unit, PAGE_QOS_SCHEDULER, REG_PN_QOS_WEIGHT_PORT_0 +
                            e->port * REG_PN_QOS_WEIGHTS, data, DATA_TYPE_HOST_ENDIAN | REG_PN_QOS_WEIGHTS);
             i = e->port_qos_sched.weights_upper? (BCM_COS_COUNT/2): 0;
             for (j = 0; j < BCM_COS_COUNT/2; i++, j++) {
                 data[i] = e->weights[i];
             }
-            SF2SW_WREG(PAGE_QOS_SCHEDULER, REG_PN_QOS_WEIGHT_PORT_0 + e->port * REG_PN_QOS_WEIGHTS,
+            SF2SW_WREG(e->unit, PAGE_QOS_SCHEDULER, REG_PN_QOS_WEIGHT_PORT_0 + e->port * REG_PN_QOS_WEIGHTS,
                             data, DATA_TYPE_HOST_ENDIAN | REG_PN_QOS_WEIGHTS);
         }
     } // SET
@@ -1880,7 +1934,7 @@ int ioctl_extsw_info(struct ethswctl_data *e)
         }
     }
 
-    if (e->val == SF2_ETHSWCTL_UNIT) {
+    if (IS_UNIT_SF2(e->val)) {
         for (i = 0; i < BP_MAX_SWITCH_PORTS; i++) {
             uint32_t meta_id;
 
@@ -1939,7 +1993,7 @@ int ioctl_extsw_regaccess(struct ethswctl_data *e, enetx_port_t *port)
         enet_err("Invalid length");
         return -EINVAL;
     }
-    if (e->unit != SF2_ETHSWCTL_UNIT)
+    if (!IS_UNIT_SF2(e->unit))
                        /* Offset checks are not valid below for SF2 because all offsets
                        * are converted to 4-byte accesses later down the road. */
     {
@@ -1956,8 +2010,8 @@ int ioctl_extsw_regaccess(struct ethswctl_data *e, enetx_port_t *port)
     }
 
     if (e->type == TYPE_GET) {
-        if (e->unit == SF2_ETHSWCTL_UNIT) {
-            SF2SW_RREG(((e->offset & 0xFF00)>>8), (e->offset & 0xFF), data, e->length);
+        if (IS_UNIT_SF2(e->unit)) {
+            SF2SW_RREG(e->unit, ((e->offset & 0xFF00)>>8), (e->offset & 0xFF), data, e->length);
         }
         else
         {
@@ -1968,8 +2022,8 @@ int ioctl_extsw_regaccess(struct ethswctl_data *e, enetx_port_t *port)
         memcpy((void*)(&e->data), (void*)&data, e->length);
 
     } else {
-        if (e->unit == SF2_ETHSWCTL_UNIT) {
-            SF2SW_WREG(((e->offset & 0xFF00)>>8), (e->offset & 0xFF), e->data, e->length);
+        if (IS_UNIT_SF2(e->unit)) {
+            SF2SW_WREG(e->unit, ((e->offset & 0xFF00)>>8), (e->offset & 0xFF), e->data, e->length);
         }
         else
         {
@@ -1993,15 +2047,15 @@ int ioctl_extsw_port_mirror_ops(struct ethswctl_data *e)
         e->port_mirror_cfg.tx_port = -1;
         e->port_mirror_cfg.rx_port = -1;
 
-        SF2SW_RREG(PAGE_MANAGEMENT, REG_MIRROR_CAPTURE_CTRL, &v16, sizeof(v16));
+        SF2SW_RREG(e->unit, PAGE_MANAGEMENT, REG_MIRROR_CAPTURE_CTRL, &v16, sizeof(v16));
         if (v16 & REG_MIRROR_ENABLE)
         {
             e->port_mirror_cfg.enable = 1;
             e->port_mirror_cfg.mirror_port = v16 & REG_CAPTURE_PORT_M;
             e->port_mirror_cfg.blk_no_mrr = v16 & REG_BLK_NOT_MIRROR;
-            SF2SW_RREG(PAGE_MANAGEMENT, REG_MIRROR_INGRESS_CTRL, &v16, sizeof(v16));
+            SF2SW_RREG(e->unit, PAGE_MANAGEMENT, REG_MIRROR_INGRESS_CTRL, &v16, sizeof(v16));
             e->port_mirror_cfg.ing_pmap = v16 & REG_INGRESS_MIRROR_M;
-            SF2SW_RREG(PAGE_MANAGEMENT, REG_MIRROR_EGRESS_CTRL, &v16, sizeof(v16));
+            SF2SW_RREG(e->unit, PAGE_MANAGEMENT, REG_MIRROR_EGRESS_CTRL, &v16, sizeof(v16));
             e->port_mirror_cfg.eg_pmap = v16 & REG_EGRESS_MIRROR_M;
         }
         else
@@ -2015,16 +2069,16 @@ int ioctl_extsw_port_mirror_ops(struct ethswctl_data *e)
             v16 |= (e->port_mirror_cfg.mirror_port & REG_CAPTURE_PORT_M);
             v16 |= e->port_mirror_cfg.blk_no_mrr?REG_BLK_NOT_MIRROR:0;
 
-            SF2SW_WREG(PAGE_MANAGEMENT, REG_MIRROR_CAPTURE_CTRL, &v16, sizeof(v16));
+            SF2SW_WREG(e->unit, PAGE_MANAGEMENT, REG_MIRROR_CAPTURE_CTRL, &v16, sizeof(v16));
             v16 = e->port_mirror_cfg.ing_pmap & REG_INGRESS_MIRROR_M;
-            SF2SW_WREG(PAGE_MANAGEMENT, REG_MIRROR_INGRESS_CTRL, &v16, sizeof(v16));
+            SF2SW_WREG(e->unit, PAGE_MANAGEMENT, REG_MIRROR_INGRESS_CTRL, &v16, sizeof(v16));
             v16 = e->port_mirror_cfg.eg_pmap & REG_INGRESS_MIRROR_M;
-            SF2SW_WREG(PAGE_MANAGEMENT, REG_MIRROR_EGRESS_CTRL, &v16, sizeof(v16));
+            SF2SW_WREG(e->unit, PAGE_MANAGEMENT, REG_MIRROR_EGRESS_CTRL, &v16, sizeof(v16));
         }
         else
         {
             v16  = 0;
-            SF2SW_WREG(PAGE_MANAGEMENT, REG_MIRROR_CAPTURE_CTRL, &v16, sizeof(v16));
+            SF2SW_WREG(e->unit, PAGE_MANAGEMENT, REG_MIRROR_CAPTURE_CTRL, &v16, sizeof(v16));
         }
     }
 
@@ -2039,19 +2093,19 @@ int ioctl_extsw_port_trunk_ops(struct ethswctl_data *e)
     uint8_t v8;
 
     if (e->type == TYPE_GET) {
-        SF2SW_RREG(PAGE_MAC_BASED_TRUNK, REG_TRUNK_GRP_CTL , &v16, 2);
+        SF2SW_RREG(e->unit, PAGE_MAC_BASED_TRUNK, REG_TRUNK_GRP_CTL , &v16, 2);
         e->port_trunk_cfg.grp0_pmap = (v16 >> TRUNK_EN_GRP_S) & TRUNK_EN_GRP_M ;
-        SF2SW_RREG(PAGE_MAC_BASED_TRUNK, REG_TRUNK_GRP_CTL+2 , &v16, 2);
+        SF2SW_RREG(e->unit, PAGE_MAC_BASED_TRUNK, REG_TRUNK_GRP_CTL+2 , &v16, 2);
         e->port_trunk_cfg.grp1_pmap = (v16 >> TRUNK_EN_GRP_S) & TRUNK_EN_GRP_M ;
 
-        SF2SW_RREG(PAGE_MAC_BASED_TRUNK, REG_MAC_TRUNK_CTL, &v8, 1);
+        SF2SW_RREG(e->unit, PAGE_MAC_BASED_TRUNK, REG_MAC_TRUNK_CTL, &v8, 1);
         e->port_trunk_cfg.enable = (v8 >> TRUNK_EN_LOCAL_S) & TRUNK_EN_LOCAL_M;
         e->port_trunk_cfg.hash_sel = (v8 >> TRUNK_HASH_SEL_S) & TRUNK_HASH_SEL_M;
     } else {
-        SF2SW_RREG(PAGE_MAC_BASED_TRUNK, REG_MAC_TRUNK_CTL, &v8, 1);
+        SF2SW_RREG(e->unit, PAGE_MAC_BASED_TRUNK, REG_MAC_TRUNK_CTL, &v8, 1);
         v8 &= ~(TRUNK_HASH_SEL_M<<TRUNK_HASH_SEL_S); /* Clear old hash selection first */
         v8 |= ( (e->port_trunk_cfg.hash_sel & TRUNK_HASH_SEL_M) << TRUNK_HASH_SEL_S ); /* Set Hash Selection */
-        SF2SW_WREG(PAGE_MAC_BASED_TRUNK, REG_MAC_TRUNK_CTL, &v8, 1);
+        SF2SW_WREG(e->unit, PAGE_MAC_BASED_TRUNK, REG_MAC_TRUNK_CTL, &v8, 1);
         printk("LAG/Trunking hash selection changed <0x%01x>\n",v8);
     }
 
@@ -2076,11 +2130,11 @@ static int _sf2_pause_drop_ctrl(struct ethswctl_data *e)
     uint16_t val = 0;
     uint16_t val2 = 0;
     if (e->type == TYPE_SET)    { // SET
-        SF2SW_RREG(PAGE_FLOW_CTRL_XTN, REG_FC_PAUSE_DROP_CTRL, &val, 2);
+        SF2SW_RREG(e->unit, PAGE_FLOW_CTRL_XTN, REG_FC_PAUSE_DROP_CTRL, &val, 2);
         switch (e->sub_type) {
             case bcmSwitchFcMode:
                 val2 = e->val? FC_CTRL_MODE_PORT: 0;
-                SF2SW_WREG(PAGE_FLOW_CTRL_XTN, REG_FC_CTRL_MODE, &val2, 2);
+                SF2SW_WREG(e->unit, PAGE_FLOW_CTRL_XTN, REG_FC_CTRL_MODE, &val2, 2);
                 return 0;
             case bcmSwitchQbasedpauseEn:
                 val &= ~FC_QUEUE_BASED_PAUSE_EN;
@@ -2123,11 +2177,11 @@ static int _sf2_pause_drop_ctrl(struct ethswctl_data *e)
                 return -BCM_E_ERROR;
                 break;
         }
-        SF2SW_WREG(PAGE_FLOW_CTRL_XTN, REG_FC_PAUSE_DROP_CTRL, &val, 2);
+        SF2SW_WREG(e->unit, PAGE_FLOW_CTRL_XTN, REG_FC_PAUSE_DROP_CTRL, &val, 2);
     } else {
         //   GET
         val2 = 0;
-        SF2SW_RREG(PAGE_FLOW_CTRL_XTN, REG_FC_PAUSE_DROP_CTRL, &val, 2);
+        SF2SW_RREG(e->unit, PAGE_FLOW_CTRL_XTN, REG_FC_PAUSE_DROP_CTRL, &val, 2);
         val2 |= val & FC_QUEUE_BASED_PAUSE_EN? 1 << bcmSwitchQbasedpauseEn: 0;
         val2 |= val & FC_TX_BASED_CTRL_EN? 1 << bcmSwitchTxBasedFc: 0;
         val2 |= val & FC_TX_TXQ_DROP_EN? 1 << bcmSwitchTxQdropEn: 0;
@@ -2137,7 +2191,7 @@ static int _sf2_pause_drop_ctrl(struct ethswctl_data *e)
         val2 |= val & FC_TX_IMP0_TXQ_PAUSE_EN? 1 << bcmSwitchTxQpauseEnImp0: 0;
         val2 |= val & FC_TX_IMP0_TOTAL_PAUSE_EN? 1 << bcmSwitchTxTotPauseEnImp0: 0;
 
-        SF2SW_RREG(PAGE_FLOW_CTRL_XTN, REG_FC_CTRL_MODE, &val, 2);
+        SF2SW_RREG(e->unit, PAGE_FLOW_CTRL_XTN, REG_FC_CTRL_MODE, &val, 2);
         val2 |= val & FC_CTRL_MODE_PORT? 1 << bcmSwitchFcMode: 0;
         e->val = val2;
         //enet_dbg("%s: val2 = 0x%x \n", __FUNCTION__, val2);
@@ -2164,7 +2218,7 @@ int ioctl_extsw_control(struct ethswctl_data *e)
 
         case bcmSwitch8021QControl:
             /* Read the 802.1Q control register */
-            SF2SW_RREG(PAGE_8021Q_VLAN, REG_VLAN_GLOBAL_8021Q, &val8, 1);
+            SF2SW_RREG(e->unit, PAGE_8021Q_VLAN, REG_VLAN_GLOBAL_8021Q, &val8, 1);
             if (e->type == TYPE_GET) {
                 val = (val8 >> VLAN_EN_8021Q_S) & VLAN_EN_8021Q_M;
                 if (val && ((val8 >> VLAN_IVL_SVL_S) & VLAN_IVL_SVL_M))
@@ -2182,7 +2236,7 @@ int ioctl_extsw_control(struct ethswctl_data *e)
                     else if (e->val == 2) // IVL
                         val8 |= (VLAN_IVL_SVL_M << VLAN_IVL_SVL_S);
                 }
-                SF2SW_WREG(PAGE_8021Q_VLAN, REG_VLAN_GLOBAL_8021Q, &val8, 1);
+                SF2SW_WREG(e->unit, PAGE_8021Q_VLAN, REG_VLAN_GLOBAL_8021Q, &val8, 1);
             }
             break;
 
@@ -2268,11 +2322,11 @@ static int _sf2_prio_control(struct ethswctl_data *e)
     /* select port if port based threshold configuration in force */
     if (page == PAGE_FC_LAN_TXQ)
     {
-        SF2SW_RREG(PAGE_FLOW_CTRL_XTN, REG_FC_CTRL_MODE, &val16, 2);
+        SF2SW_RREG(e->unit, PAGE_FLOW_CTRL_XTN, REG_FC_CTRL_MODE, &val16, 2);
         if (val16 & FC_CTRL_MODE_PORT) {
             /* port number to port select register */
             val16 = 1 << (REG_FC_CTRL_PORT_P0 + e->port);
-            SF2SW_WREG(PAGE_FLOW_CTRL_XTN, REG_FC_CTRL_PORT_SEL, &val16, 2);
+            SF2SW_WREG(e->unit, PAGE_FLOW_CTRL_XTN, REG_FC_CTRL_PORT_SEL, &val16, 2);
         }
     }
 
@@ -2302,7 +2356,7 @@ static int _sf2_prio_control(struct ethswctl_data *e)
                 e->val = active_queue_number_per_port;
                 break;
             default:
-                SF2SW_RREG(page, reg, &val16, 2);
+                SF2SW_RREG(e->unit, page, reg, &val16, 2);
                 //enet_dbg("Threshold read = %4x", val16);
                 e->val = val16;
         }
@@ -2316,7 +2370,7 @@ static int _sf2_prio_control(struct ethswctl_data *e)
                 queThreConfMode = (uint32_t)e->val;
                 if (curThreConfMode != queThreConfMode && queThreConfMode != ThreModeManual )
                 {
-                    _sf2_conf_que_thred();
+                    _sf2_conf_que_thred(e->unit);
                 }
                 break;
             case bcmSwitchMaxStreams:
@@ -2325,20 +2379,20 @@ static int _sf2_prio_control(struct ethswctl_data *e)
                 if (maxStreamNumber == -1) maxStreamNumber = MaxStreamNumber;
                 if (curMaxStreamNumber != maxStreamNumber && queThreConfMode != ThreModeManual )
                 {
-                    _sf2_conf_que_thred();
+                    _sf2_conf_que_thred(e->unit);
                 }
                 break;
             case bcmSwitchActQuePerPort:
                 if(active_queue_number_per_port != e->val)
                 {
                     active_queue_number_per_port = e->val;
-                    _sf2_conf_que_thred();
+                    _sf2_conf_que_thred(e->unit);
                 }
                 break;
             default:
                 val16 = (uint32_t)e->val;
                 //ent_dbg("e->val is = %4x", e->val);
-                SF2SW_WREG(page, reg, &val16, 2);
+                SF2SW_WREG(e->unit, page, reg, &val16, 2);
         }
     }
     up(&sf2_sw->s.conf_sem);
@@ -2409,7 +2463,7 @@ int ioctl_extsw_que_map(struct ethswctl_data *e)
 #endif
             queRemap = e->priority;
         }
-        _sf2_conf_que_thred();
+        _sf2_conf_que_thred(e->unit);
     }
     e->val = wanQueMap;
     e->priority = queRemap;
@@ -2418,14 +2472,14 @@ int ioctl_extsw_que_map(struct ethswctl_data *e)
 }
 
 // ----------- SIOCETHSWCTLOPS ETHSWQUEMON functions ---
-static void _check_que_mon_port(int port)
+static void _check_que_mon_port(int unit, int port)
 {
     /* based on impl5: check_que_mon_port() */
     static uint16 last_port = -1;
 
     if (last_port == port) return;
     last_port = port;
-    SF2SW_WREG(PAGE_FLOW_CTRL_XTN, REG_FC_DIAG_CTRL, &last_port, 2);
+    SF2SW_WREG(unit, PAGE_FLOW_CTRL_XTN, REG_FC_DIAG_CTRL, &last_port, 2);
     return;
 }
 
@@ -2441,45 +2495,45 @@ int ioctl_extsw_que_mon(struct ethswctl_data *e)
     switch(type)
     {
         case QUE_CUR_COUNT:
-            _check_que_mon_port(port);
-            SF2SW_RREG(PAGE_FLOW_CTRL_XTN, REG_FC_QUE_CUR_COUNT + que*2, &v16, 2);
+            _check_que_mon_port(e->unit, port);
+            SF2SW_RREG(e->unit, PAGE_FLOW_CTRL_XTN, REG_FC_QUE_CUR_COUNT + que*2, &v16, 2);
             break;
         case QUE_PEAK_COUNT:
-            _check_que_mon_port(port);
-            SF2SW_RREG(PAGE_FLOW_CTRL_XTN, REG_FC_QUE_PEAK_COUNT + que*2, &v16, 2);
+            _check_que_mon_port(e->unit, port);
+            SF2SW_RREG(e->unit, PAGE_FLOW_CTRL_XTN, REG_FC_QUE_PEAK_COUNT + que*2, &v16, 2);
             break;
         case SYS_TOTAL_PEAK_COUNT:
-            SF2SW_RREG(PAGE_FLOW_CTRL_XTN, REG_FC_SYS_TOTAL_PEAK_COUNT, &v16, 2);
+            SF2SW_RREG(e->unit, PAGE_FLOW_CTRL_XTN, REG_FC_SYS_TOTAL_PEAK_COUNT, &v16, 2);
             break;
         case SYS_TOTAL_USED_COUNT:
-            SF2SW_RREG(PAGE_FLOW_CTRL_XTN, REG_FC_SYS_TOTAL_USED_COUNT, &v16, 2);
+            SF2SW_RREG(e->unit, PAGE_FLOW_CTRL_XTN, REG_FC_SYS_TOTAL_USED_COUNT, &v16, 2);
             break;
 
         case PORT_PEAK_RX_BUFFER:
-            _check_que_mon_port(port);
-            SF2SW_RREG(PAGE_FLOW_CTRL_XTN, REG_FC_PORT_PEAK_RX_BUFFER, &v16, 2);
+            _check_que_mon_port(e->unit, port);
+            SF2SW_RREG(e->unit, PAGE_FLOW_CTRL_XTN, REG_FC_PORT_PEAK_RX_BUFFER, &v16, 2);
             break;
         case QUE_FINAL_CONGESTED_STATUS:
-            SF2SW_RREG(PAGE_FLOW_CTRL_XTN, REG_FC_QUE_FINAL_CONG_STAT + 2*port, &v16, 2);
+            SF2SW_RREG(e->unit, PAGE_FLOW_CTRL_XTN, REG_FC_QUE_FINAL_CONG_STAT + 2*port, &v16, 2);
             break;
         case PORT_PAUSE_HISTORY:
-            SF2SW_RREG(PAGE_FLOW_CTRL_XTN, REG_FC_PORT_PAUSE_HISTORY, &v16, 2);
+            SF2SW_RREG(e->unit, PAGE_FLOW_CTRL_XTN, REG_FC_PORT_PAUSE_HISTORY, &v16, 2);
             break;
         case PORT_PAUSE_QUAN_HISTORY:
-            SF2SW_RREG(PAGE_FLOW_CTRL_XTN, REG_FC_PORT_PAUSE_QUAN_HISTORY, &v16, 2);
+            SF2SW_RREG(e->unit, PAGE_FLOW_CTRL_XTN, REG_FC_PORT_PAUSE_QUAN_HISTORY, &v16, 2);
             break;
 
         case PORT_RX_BASE_PAUSE_HISTORY:
-            SF2SW_RREG(PAGE_FLOW_CTRL_XTN, REG_FC_PORT_RXBASE_PAUSE_HISTORY, &v16, 2);
+            SF2SW_RREG(e->unit, PAGE_FLOW_CTRL_XTN, REG_FC_PORT_RXBASE_PAUSE_HISTORY, &v16, 2);
             break;
         case PORT_RX_BUFFER_ERROR_HISTORY:
-            SF2SW_RREG(PAGE_FLOW_CTRL_XTN, REG_FC_PORT_RX_BUFFER_ERR_HISTORY, &v16, 2);
+            SF2SW_RREG(e->unit, PAGE_FLOW_CTRL_XTN, REG_FC_PORT_RX_BUFFER_ERR_HISTORY, &v16, 2);
             break;
         case QUE_CONGESTED_STATUS:
-            SF2SW_RREG(PAGE_FLOW_CTRL_XTN, REG_FC_QUE_CONG_STATUS + 2*port, &v16, 2);
+            SF2SW_RREG(e->unit, PAGE_FLOW_CTRL_XTN, REG_FC_QUE_CONG_STATUS + 2*port, &v16, 2);
             break;
         case QUE_TOTAL_CONGESTED_STATUS:
-            SF2SW_RREG(PAGE_FLOW_CTRL_XTN, REG_FC_QUE_TOTAL_CONG_STATUS + 2*port, &v16, 2);
+            SF2SW_RREG(e->unit, PAGE_FLOW_CTRL_XTN, REG_FC_QUE_TOTAL_CONG_STATUS + 2*port, &v16, 2);
             break;
     }
 
@@ -2501,35 +2555,35 @@ int ioctl_extsw_maclmt(struct ethswctl_data *e)
     if (e->type == TYPE_SET) {      // SET
         switch(type) {
         case PORT_LIMIT_EN:
-            SF2SW_RREG(PAGE_SA_LIMIT, REG_SA_LIMIT_EN, &val32, 4);
+            SF2SW_RREG(e->unit, PAGE_SA_LIMIT, REG_SA_LIMIT_EN, &val32, 4);
             val32 = (e->val)? val32 | (1<<port) : val32 & ~(1<<port);
-            SF2SW_WREG(PAGE_SA_LIMIT, REG_SA_LIMIT_EN, &val32, 4);
+            SF2SW_WREG(e->unit, PAGE_SA_LIMIT, REG_SA_LIMIT_EN, &val32, 4);
             break;
         case PORT_LIMIT:
-            SF2SW_RREG(PAGE_SA_LIMIT, REG_SA_LIMIT_CTRL_P(port), &val32, 4);
+            SF2SW_RREG(e->unit, PAGE_SA_LIMIT, REG_SA_LIMIT_CTRL_P(port), &val32, 4);
             val32 &= ~(MACLMT_LIMIT_M <<MACLMT_LIMIT_S);
             val32 |= (e->val & MACLMT_LIMIT_M) << MACLMT_LIMIT_S;
-            SF2SW_WREG(PAGE_SA_LIMIT, REG_SA_LIMIT_CTRL_P(port), &val32, 4);
+            SF2SW_WREG(e->unit, PAGE_SA_LIMIT, REG_SA_LIMIT_CTRL_P(port), &val32, 4);
             break;
        case PORT_ACTION:
-            SF2SW_RREG(PAGE_SA_LIMIT, REG_SA_LIMIT_CTRL_P(port), &val32, 4);
+            SF2SW_RREG(e->unit, PAGE_SA_LIMIT, REG_SA_LIMIT_CTRL_P(port), &val32, 4);
             val32 &= ~(MACLMT_ACTION_M <<MACLMT_ACTION_S);
             val32 |= (e->val & MACLMT_ACTION_M) << MACLMT_ACTION_S;
-            SF2SW_WREG(PAGE_SA_LIMIT, REG_SA_LIMIT_CTRL_P(port), &val32, 4);
+            SF2SW_WREG(e->unit, PAGE_SA_LIMIT, REG_SA_LIMIT_CTRL_P(port), &val32, 4);
             break;
         case PORT_RST_OVER_LIMIT_PKT_COUNT:
             val32 = 1 << port;
-            SF2SW_WREG(PAGE_SA_LIMIT, REG_SA_OVRLIMIT_CNTR_RST, &val32, 4);
+            SF2SW_WREG(e->unit, PAGE_SA_LIMIT, REG_SA_OVRLIMIT_CNTR_RST, &val32, 4);
             break;
         case GLOBAL_RST_OVER_LIMIT_PKT_COUNT:
             val32 = (1 << SF2_IMP0_PORT)-1;
-            SF2SW_WREG(PAGE_SA_LIMIT, REG_SA_OVRLIMIT_CNTR_RST, &val32, 4);
+            SF2SW_WREG(e->unit, PAGE_SA_LIMIT, REG_SA_OVRLIMIT_CNTR_RST, &val32, 4);
             break;
         case GLOBAL_LIMIT:
-            SF2SW_RREG(PAGE_SA_LIMIT, REG_TOTAL_SA_LIMIT_CTL, &val32, 4);
+            SF2SW_RREG(e->unit, PAGE_SA_LIMIT, REG_TOTAL_SA_LIMIT_CTL, &val32, 4);
             val32 &= ~(MACLMT_LIMIT_M <<MACLMT_LIMIT_S);
             val32 |= (e->val & MACLMT_LIMIT_M) << MACLMT_LIMIT_S;
-            SF2SW_WREG(PAGE_SA_LIMIT, REG_TOTAL_SA_LIMIT_CTL, &val32, 4);
+            SF2SW_WREG(e->unit, PAGE_SA_LIMIT, REG_TOTAL_SA_LIMIT_CTL, &val32, 4);
             break;
         default: return -BCM_E_PARAM;
         }
@@ -2537,31 +2591,31 @@ int ioctl_extsw_maclmt(struct ethswctl_data *e)
     } else {                        // GET
         switch(type) {
         case PORT_LIMIT_EN:
-            SF2SW_RREG(PAGE_SA_LIMIT, REG_SA_LIMIT_EN, &val32, 4);
+            SF2SW_RREG(e->unit, PAGE_SA_LIMIT, REG_SA_LIMIT_EN, &val32, 4);
             e->val = (val32 & 1<<port) ? 1:0;
             break;
         case PORT_LIMIT:
-            SF2SW_RREG(PAGE_SA_LIMIT, REG_SA_LIMIT_CTRL_P(port), &val32, 4);
+            SF2SW_RREG(e->unit, PAGE_SA_LIMIT, REG_SA_LIMIT_CTRL_P(port), &val32, 4);
             e->val = (val32 >> MACLMT_LIMIT_S) & MACLMT_LIMIT_M;
             break;
         case PORT_ACTION:
-            SF2SW_RREG(PAGE_SA_LIMIT, REG_SA_LIMIT_CTRL_P(port), &val32, 4);
+            SF2SW_RREG(e->unit, PAGE_SA_LIMIT, REG_SA_LIMIT_CTRL_P(port), &val32, 4);
             e->val = (val32 >> MACLMT_ACTION_S) & MACLMT_ACTION_M;
             break;
         case PORT_LEARNED_COUNT:
-            SF2SW_RREG(PAGE_SA_LIMIT, REG_SA_LRN_CNTR_P(port), &val32, 4);
+            SF2SW_RREG(e->unit, PAGE_SA_LIMIT, REG_SA_LRN_CNTR_P(port), &val32, 4);
             e->val = (val32 >> MACLMT_LIMIT_S) & MACLMT_LIMIT_M;
             break;
         case PORT_OVER_LIMIT_PKT_COUNT:
-            SF2SW_RREG(PAGE_SA_LIMIT, REG_SA_OVRLIMIT_CNTR_P(port), &val32, 4);
+            SF2SW_RREG(e->unit, PAGE_SA_LIMIT, REG_SA_OVRLIMIT_CNTR_P(port), &val32, 4);
             e->val = val32;
             break;
         case GLOBAL_LIMIT:
-            SF2SW_RREG(PAGE_SA_LIMIT, REG_TOTAL_SA_LIMIT_CTL, &val32, 4);
+            SF2SW_RREG(e->unit, PAGE_SA_LIMIT, REG_TOTAL_SA_LIMIT_CTL, &val32, 4);
             e->val = (val32 >> MACLMT_LIMIT_S) & MACLMT_LIMIT_M;
             break;
         case GLOBAL_LEARNED_COUNT:
-            SF2SW_RREG(PAGE_SA_LIMIT, REG_TOTAL_SA_LRN_CNTR, &val32, 4);
+            SF2SW_RREG(e->unit, PAGE_SA_LIMIT, REG_TOTAL_SA_LRN_CNTR, &val32, 4);
             e->val = (val32 >> MACLMT_LIMIT_S) & MACLMT_LIMIT_M;
             break;
         default: return -BCM_E_PARAM;
@@ -2584,7 +2638,7 @@ int ioctl_extsw_pbvlan(struct ethswctl_data *e)
 
     if (e->type == TYPE_GET) {
         down(&sf2_sw->s.conf_sem);
-        SF2SW_RREG(PAGE_PORT_BASED_VLAN, REG_VLAN_CTRL_P0 + (e->port*2), &val16, 2);
+        SF2SW_RREG(e->unit, PAGE_PORT_BASED_VLAN, REG_VLAN_CTRL_P0 + (e->port*2), &val16, 2);
         up(&sf2_sw->s.conf_sem);
         e->fwd_map = val16;
         //enet_dbg("get e->fwd_map is = %4x\n", e->fwd_map);
@@ -2592,7 +2646,7 @@ int ioctl_extsw_pbvlan(struct ethswctl_data *e)
         val16 = (uint32_t)e->fwd_map;
         //enet_dbg("set e->fwd_map is = %4x\n", e->fwd_map);
         down(&sf2_sw->s.conf_sem);
-        SF2SW_WREG(PAGE_PORT_BASED_VLAN, REG_VLAN_CTRL_P0 + (e->port*2), &val16, 2);
+        SF2SW_WREG(e->unit, PAGE_PORT_BASED_VLAN, REG_VLAN_CTRL_P0 + (e->port*2), &val16, 2);
         up(&sf2_sw->s.conf_sem);
     }
 
@@ -2640,7 +2694,7 @@ int ioctl_extsw_cosq_port_mapping(struct ethswctl_data *e)
     down(&sf2_sw->s.conf_sem);
 
     if (e->type == TYPE_GET) {
-        SF2SW_RREG(PAGE_QOS, reg_addr, (uint8_t *)&val, reg_len);
+        SF2SW_RREG(e->unit, PAGE_QOS, reg_addr, (uint8_t *)&val, reg_len);
         //enet_dbg("REG_QOS_PORT_PRIO_MAP_Px = %px\n", (void*)&val);
         /* Get the queue */
         queue = (val.val32 >> (e->priority * cos_shift)) & cos_mask;
@@ -2648,10 +2702,10 @@ int ioctl_extsw_cosq_port_mapping(struct ethswctl_data *e)
         //enet_dbg("%s queue is = %4x\n", __FUNCTION__, retval);
     } else {
         //enet_dbg("Given queue: 0x%02x \n ", e->queue);
-        SF2SW_RREG(PAGE_QOS, reg_addr, (uint8_t *)&val, reg_len);
+        SF2SW_RREG(e->unit, PAGE_QOS, reg_addr, (uint8_t *)&val, reg_len);
         val.val32 &= ~(cos_mask << (e->priority * cos_shift));
         val.val32 |= (e->queue & cos_mask) << (e->priority * cos_shift);
-        SF2SW_WREG(PAGE_QOS, reg_addr, (uint8_t *)&val, reg_len);
+        SF2SW_WREG(e->unit, PAGE_QOS, reg_addr, (uint8_t *)&val, reg_len);
     }
     up(&sf2_sw->s.conf_sem);
     return retval;
@@ -2703,18 +2757,18 @@ static void _sf2_set_acb_algorithm(int algorithm)
 }
 #endif /* defined(ACB_ALGORITHM2) */
 
-static void dump_sf2_fc_info(void)
+static void dump_sf2_fc_info(int unit)
 {
 #if defined(ACB_ALGORITHM2)   // For 138, Algorithm2 is applied
     volatile uint32_t *sf2_acb_que_in_flight = (void *)(SF2_ACB_QUE0_PKTS_IN_FLIGHT);
 #endif
     uint32_t diag_ctrl, val, i, j;
-    SF2SW_RREG(PAGE_FLOW_CTRL_XTN, REG_FC_DIAG_CTRL, &diag_ctrl, 4);  // save current diag control
+    SF2SW_RREG(unit, PAGE_FLOW_CTRL_XTN, REG_FC_DIAG_CTRL, &diag_ctrl, 4);  // save current diag control
 
     printk("Note: Congested Status fields: F-final(@0a-60) C-congest(@0a-80) T-total(@0a-9a)\n"
            "                       level: .< reserved_thd < R < hyst_thd < pause_thd < P < drop_thd < D\n\n");
-    SF2SW_RREG(PAGE_FLOW_CTRL_XTN, REG_FC_SYS_TOTAL_PEAK_COUNT, &i, 4);
-    SF2SW_RREG(PAGE_FLOW_CTRL_XTN, REG_FC_SYS_TOTAL_USED_COUNT, &j, 4);
+    SF2SW_RREG(unit, PAGE_FLOW_CTRL_XTN, REG_FC_SYS_TOTAL_PEAK_COUNT, &i, 4);
+    SF2SW_RREG(unit, PAGE_FLOW_CTRL_XTN, REG_FC_SYS_TOTAL_USED_COUNT, &j, 4);
     printk(
 #if defined(ACB_ALGORITHM2)
            "        in flight         |    mon TX    total=%4d|    peak TX        total=%4d| Congested Status FCT\n"
@@ -2733,7 +2787,7 @@ static void dump_sf2_fc_info(void)
 #endif
         uint32_t mon[8];
 
-        SF2SW_WREG(PAGE_FLOW_CTRL_XTN, REG_FC_DIAG_CTRL, &i, 4);
+        SF2SW_WREG(unit, PAGE_FLOW_CTRL_XTN, REG_FC_DIAG_CTRL, &i, 4);
         printk("p%d", i);
         // read in flight & mon values right next to each other to get more accurate values
         for (j = 0; j < 8; j++)
@@ -2742,7 +2796,7 @@ static void dump_sf2_fc_info(void)
             if (i < 8)
                 inflight[j]= *(sf2_acb_que_in_flight + i*8 + j);
 #endif
-            SF2SW_RREG(PAGE_FLOW_CTRL_XTN, REG_FC_QUE_CUR_COUNT+j*2, &(mon[j]), 4);
+            SF2SW_RREG(unit, PAGE_FLOW_CTRL_XTN, REG_FC_QUE_CUR_COUNT+j*2, &(mon[j]), 4);
         }
 #if defined(ACB_ALGORITHM2)
         // dump in flight regs
@@ -2766,15 +2820,15 @@ static void dump_sf2_fc_info(void)
         // dump peak tx regs
         for (j = 0; j < 8; j++)
         {
-            SF2SW_RREG(PAGE_FLOW_CTRL_XTN, REG_FC_QUE_PEAK_COUNT+j*2, &val, 4);
+            SF2SW_RREG(unit, PAGE_FLOW_CTRL_XTN, REG_FC_QUE_PEAK_COUNT+j*2, &val, 4);
             pr_cont("%3d", val & 0x7ff);
         }
-        SF2SW_RREG(PAGE_FLOW_CTRL_XTN, REG_FC_PORT_PEAK_RX_BUFFER, &val, 4);
+        SF2SW_RREG(unit, PAGE_FLOW_CTRL_XTN, REG_FC_PORT_PEAK_RX_BUFFER, &val, 4);
         pr_cont(" %4d|", val & 0x7ff);
 
-        SF2SW_RREG(PAGE_FLOW_CTRL_XTN,REG_FC_QUE_FINAL_CONG_STAT+i*2, &final, 4);
-        SF2SW_RREG(PAGE_FLOW_CTRL_XTN,REG_FC_QUE_CONG_STATUS+i*2, &congest, 4);
-        SF2SW_RREG(PAGE_FLOW_CTRL_XTN,REG_FC_QUE_TOTAL_CONG_STATUS+i*2, &total, 4);
+        SF2SW_RREG(unit, PAGE_FLOW_CTRL_XTN,REG_FC_QUE_FINAL_CONG_STAT+i*2, &final, 4);
+        SF2SW_RREG(unit, PAGE_FLOW_CTRL_XTN,REG_FC_QUE_CONG_STATUS+i*2, &congest, 4);
+        SF2SW_RREG(unit, PAGE_FLOW_CTRL_XTN,REG_FC_QUE_TOTAL_CONG_STATUS+i*2, &total, 4);
         for (j = 0; j < 8; j++)
         {
             char *lvl_str=".RPD";
@@ -2784,7 +2838,7 @@ static void dump_sf2_fc_info(void)
         pr_cont("\n");
     }
 
-    SF2SW_WREG(PAGE_FLOW_CTRL_XTN, REG_FC_DIAG_CTRL, &diag_ctrl, 4);  // restore current diag control
+    SF2SW_WREG(unit, PAGE_FLOW_CTRL_XTN, REG_FC_DIAG_CTRL, &diag_ctrl, 4);  // restore current diag control
 }
 
 int ioctl_extsw_cfg_acb(struct ethswctl_data *e)
@@ -2900,7 +2954,7 @@ int ioctl_extsw_cfg_acb(struct ethswctl_data *e)
 #endif
                 break;
             case 100:
-                dump_sf2_fc_info();
+                dump_sf2_fc_info(e->unit);
                 break;
             default:
                 printk("%s: Get op %#x Unsupported \n", __FUNCTION__, e->sw_ctrl_type);
@@ -2998,19 +3052,19 @@ int ioctl_extsw_cfg_acb(struct ethswctl_data *e)
 #endif //!SF2_EXTERNAL
 
 // ----------- SIOCETHSWCTLOPS ETHSWVLAN functions ---
-static int _read_vlan_table(bcm_vlan_t vid, uint32_t *val32)
+static int _read_vlan_table(int unit, bcm_vlan_t vid, uint32_t *val32)
 {
     uint8_t val8;
     int i, timeout = 200;
 
-    SF2SW_WREG(PAGE_AVTBL_ACCESS, REG_VLAN_TBL_INDX_531xx, (uint8_t *)&vid, 2);
+    SF2SW_WREG(unit, PAGE_AVTBL_ACCESS, REG_VLAN_TBL_INDX_531xx, (uint8_t *)&vid, 2);
     val8 = 0x81;
-    SF2SW_WREG(PAGE_AVTBL_ACCESS, REG_VLAN_TBL_CTRL_531xx, (uint8_t *)&val8, 1);
+    SF2SW_WREG(unit, PAGE_AVTBL_ACCESS, REG_VLAN_TBL_CTRL_531xx, (uint8_t *)&val8, 1);
 
     for (i = 0; i < timeout; i++) {
-        SF2SW_RREG(PAGE_AVTBL_ACCESS, REG_VLAN_TBL_CTRL_531xx, (uint8_t *)&val8, 1);
+        SF2SW_RREG(unit, PAGE_AVTBL_ACCESS, REG_VLAN_TBL_CTRL_531xx, (uint8_t *)&val8, 1);
         if ((val8 & 0x80) == 0) {
-            SF2SW_RREG(PAGE_AVTBL_ACCESS, REG_VLAN_TBL_ENTRY_531xx, (uint8_t *)val32, 4);
+            SF2SW_RREG(unit, PAGE_AVTBL_ACCESS, REG_VLAN_TBL_ENTRY_531xx, (uint8_t *)val32, 4);
             return 0;
         }
         udelay(100);
@@ -3018,18 +3072,18 @@ static int _read_vlan_table(bcm_vlan_t vid, uint32_t *val32)
     return -BCM_E_ERROR;
 }
 
-static int _write_vlan_table(bcm_vlan_t vid, uint32_t val32)
+static int _write_vlan_table(int unit, bcm_vlan_t vid, uint32_t val32)
 {
     uint8_t val8;
     int i, timeout = 200;
 
-    SF2SW_WREG(PAGE_AVTBL_ACCESS, REG_VLAN_TBL_INDX_531xx, (uint8_t *)&vid, 2);
-    SF2SW_WREG(PAGE_AVTBL_ACCESS, REG_VLAN_TBL_ENTRY_531xx, (uint8_t *)&val32, 4);
+    SF2SW_WREG(unit, PAGE_AVTBL_ACCESS, REG_VLAN_TBL_INDX_531xx, (uint8_t *)&vid, 2);
+    SF2SW_WREG(unit, PAGE_AVTBL_ACCESS, REG_VLAN_TBL_ENTRY_531xx, (uint8_t *)&val32, 4);
     val8 = 0x80;
-    SF2SW_WREG(PAGE_AVTBL_ACCESS, REG_VLAN_TBL_CTRL_531xx, (uint8_t *)&val8, 1);
+    SF2SW_WREG(unit, PAGE_AVTBL_ACCESS, REG_VLAN_TBL_CTRL_531xx, (uint8_t *)&val8, 1);
 
     for (i = 0; i < timeout; i++) {
-        SF2SW_RREG(PAGE_AVTBL_ACCESS, REG_VLAN_TBL_CTRL_531xx, (uint8_t *)&val8, 1);
+        SF2SW_RREG(unit, PAGE_AVTBL_ACCESS, REG_VLAN_TBL_CTRL_531xx, (uint8_t *)&val8, 1);
         if ((val8 & 0x80) == 0) {
             return 0;
         }
@@ -3046,7 +3100,7 @@ int ioctl_extsw_vlan(struct ethswctl_data *e)
     down(&sf2_sw->s.conf_sem);
     vid = e->vid & BCM_NET_VLAN_VID_M;
     if (e->type == TYPE_GET) {
-        if (_read_vlan_table(vid, &val32)) {
+        if (_read_vlan_table(e->unit, vid, &val32)) {
             up(&sf2_sw->s.conf_sem);
             enet_err("SF2 VLAN Table read failed\n");
             return -BCM_E_ERROR;
@@ -3055,7 +3109,7 @@ int ioctl_extsw_vlan(struct ethswctl_data *e)
         e->untag_map = (val32 >> VLAN_UNTAG_MAP_S) & VLAN_UNTAG_MAP_M;
     } else {
         val32 = e->fwd_map | (e->untag_map << VLAN_UNTAG_MAP_S);
-        if (_write_vlan_table(vid, val32)) {
+        if (_write_vlan_table(e->unit, vid, val32)) {
             up(&sf2_sw->s.conf_sem);
             enet_err("SF2 VLAN Table write failed\n");
             return -BCM_E_ERROR;
@@ -3074,20 +3128,20 @@ int ioctl_extsw_vlan(struct ethswctl_data *e)
 static inline int enet_arl_remove(char *mac) {return 0;}
 
 // based on bcmsw.h
-int _enet_arl_search_ext(uint8_t *mac, uint32_t *vid, uint32_t *val, int op);
-#define _enet_arl_dump_ext() _enet_arl_search_ext(0, 0, 0, TYPE_DUMP)
-#define _enet_arl_read_ext(mc, vd, vl) _enet_arl_search_ext(mc, vd, vl, TYPE_GET)
-#define _enet_arl_remove_ext(mc) _enet_arl_search_ext(mc, 0, 0, TYPE_SET)
+int _enet_arl_search_ext(int unit, uint8_t *mac, uint32_t *vid, uint32_t *val, int op);
+#define _enet_arl_dump_ext(u) _enet_arl_search_ext(u, 0, 0, 0, TYPE_DUMP)
+#define _enet_arl_read_ext(u, mc, vd, vl) _enet_arl_search_ext(u, mc, vd, vl, TYPE_GET)
+#define _enet_arl_remove_ext(u, mc) _enet_arl_search_ext(u, mc, 0, 0, TYPE_SET)
 
 
-static int _enet_arl_access_reg_op(uint8_t v8)
+static int _enet_arl_access_reg_op(int unit, uint8_t v8)
 {
     int timeout;
 
-    SF2SW_WREG(PAGE_AVTBL_ACCESS, REG_ARL_TBL_CTRL, &v8, 1);
-    for ( timeout = 10, SF2SW_RREG(PAGE_AVTBL_ACCESS, REG_ARL_TBL_CTRL, &v8, 1);
+    SF2SW_WREG(unit, PAGE_AVTBL_ACCESS, REG_ARL_TBL_CTRL, &v8, 1);
+    for ( timeout = 10, SF2SW_RREG(unit, PAGE_AVTBL_ACCESS, REG_ARL_TBL_CTRL, &v8, 1);
             (v8 & ARL_TBL_CTRL_START_DONE) && timeout;
-            --timeout, SF2SW_RREG(PAGE_AVTBL_ACCESS, REG_ARL_TBL_CTRL, &v8, 1))
+            --timeout, SF2SW_RREG(unit, PAGE_AVTBL_ACCESS, REG_ARL_TBL_CTRL, &v8, 1))
     {
         mdelay(1);
     }
@@ -3102,7 +3156,7 @@ static int _enet_arl_access_reg_op(uint8_t v8)
 
 /* v32: b31 is raw bit,
     If raw: register format; etherwise: b15 is Valid bit */
-int _enet_arl_write_ext(uint8_t *mac, uint16_t vid, uint32_t v32)
+int _enet_arl_write_ext(int unit, uint8_t *mac, uint16_t vid, uint32_t v32)
 {
     uint8_t mac_vid[8];
     uint32_t cur_v32;
@@ -3113,15 +3167,15 @@ int _enet_arl_write_ext(uint8_t *mac, uint16_t vid, uint32_t v32)
     v32 &= ~(1<<31);
 
     /* Write the MAC Address and VLAN ID */
-    SF2SW_WREG(PAGE_AVTBL_ACCESS, REG_ARL_MAC_INDX_LO, mac, 6|DATA_TYPE_BYTE_STRING);
-    SF2SW_WREG(PAGE_AVTBL_ACCESS, REG_ARL_VLAN_INDX, &vid, 2);
-    if (!_enet_arl_access_reg_op(ARL_TBL_CTRL_START_DONE | ARL_TBL_CTRL_READ)) return 0;
+    SF2SW_WREG(unit, PAGE_AVTBL_ACCESS, REG_ARL_MAC_INDX_LO, mac, 6|DATA_TYPE_BYTE_STRING);
+    SF2SW_WREG(unit, PAGE_AVTBL_ACCESS, REG_ARL_VLAN_INDX, &vid, 2);
+    if (!_enet_arl_access_reg_op(unit, ARL_TBL_CTRL_START_DONE | ARL_TBL_CTRL_READ)) return 0;
 
     for (bin = 0; bin < REG_ARL_BINS_PER_HASH; bin++)
     {
         /* Read transaction complete - get the MAC + VID */
-        SF2SW_RREG(PAGE_AVTBL_ACCESS, REG_ARL_MAC_LO_ENTRY + bin*0x10, &mac_vid[0], 8|DATA_TYPE_VID_MAC);
-        SF2SW_RREG(PAGE_AVTBL_ACCESS, REG_ARL_DATA_ENTRY + bin*0x10,(uint8_t *)&cur_v32, 4);
+        SF2SW_RREG(unit, PAGE_AVTBL_ACCESS, REG_ARL_MAC_LO_ENTRY + bin*0x10, &mac_vid[0], 8|DATA_TYPE_VID_MAC);
+        SF2SW_RREG(unit, PAGE_AVTBL_ACCESS, REG_ARL_DATA_ENTRY + bin*0x10,(uint8_t *)&cur_v32, 4);
         ent_vid = *(uint16_t*)mac_vid;
 
         if (!(v32 & ARL_DATA_ENTRY_VALID_531xx))
@@ -3145,18 +3199,18 @@ int _enet_arl_write_ext(uint8_t *mac, uint16_t vid, uint32_t v32)
         /* Modify the data entry for this ARL */
         *(uint16 *)(&mac_vid[0]) = (vid & 0xFFF);
         memcpy(&mac_vid[2], &mac[0], 6);
-        SF2SW_WREG(PAGE_AVTBL_ACCESS, REG_ARL_MAC_LO_ENTRY + bin*0x10, mac_vid, 8|DATA_TYPE_VID_MAC);
-        SF2SW_WREG(PAGE_AVTBL_ACCESS, REG_ARL_DATA_ENTRY + bin*0x10,(uint8_t *)&v32, 4);
+        SF2SW_WREG(unit, PAGE_AVTBL_ACCESS, REG_ARL_MAC_LO_ENTRY + bin*0x10, mac_vid, 8|DATA_TYPE_VID_MAC);
+        SF2SW_WREG(unit, PAGE_AVTBL_ACCESS, REG_ARL_DATA_ENTRY + bin*0x10,(uint8_t *)&v32, 4);
 
         /* Initiate a write transaction */
-        if (!_enet_arl_access_reg_op(ARL_TBL_CTRL_START_DONE)) return 0;
+        if (!_enet_arl_access_reg_op(unit, ARL_TBL_CTRL_START_DONE)) return 0;
         return 1;
     }
     enet_err("Error - can't find the requested ARL entry\n");
     return 0;
 }
 
-int _enet_arl_entry_op(uint8_t *mac, uint32_t *vid, uint32_t *val, int op, int *count, u8 *mac_vid, u32 data)
+int _enet_arl_entry_op(int unit, uint8_t *mac, uint32_t *vid, uint32_t *val, int op, int *count, u8 *mac_vid, u32 data)
 {
     switch(op)
     {
@@ -3175,7 +3229,7 @@ int _enet_arl_entry_op(uint8_t *mac, uint32_t *vid, uint32_t *val, int op, int *
         case TYPE_SET:
             if (memcmp(&mac[0], &mac_vid[2], 6) == 0)
             {
-                _enet_arl_write_ext(mac, *(u16*)mac_vid, 0);
+                _enet_arl_write_ext(unit, mac, *(u16*)mac_vid, 0);
                 (*count)++;
             }
             break;
@@ -3201,18 +3255,18 @@ int _enet_arl_entry_op(uint8_t *mac, uint32_t *vid, uint32_t *val, int op, int *
     return FALSE;
 }
 
-int _enet_arl_search_ext(uint8_t *mac, uint32_t *vid, uint32_t *val, int op)
+int _enet_arl_search_ext(int unit, uint8_t *mac, uint32_t *vid, uint32_t *val, int op)
 {
     int timeout = 1000, count = 0, hash_ent;
     uint32_t cur_data;
     uint8_t v8, mac_vid[8];
 
     v8 = ARL_SRCH_CTRL_START_DONE;
-    SF2SW_WREG(PAGE_AVTBL_ACCESS, REG_ARL_SRCH_CTRL_531xx, (uint8_t *)&v8, 1);
+    SF2SW_WREG(unit, PAGE_AVTBL_ACCESS, REG_ARL_SRCH_CTRL_531xx, (uint8_t *)&v8, 1);
 
-    for( SF2SW_RREG(PAGE_AVTBL_ACCESS, REG_ARL_SRCH_CTRL_531xx, (uint8_t *)&v8, 1);
+    for( SF2SW_RREG(unit, PAGE_AVTBL_ACCESS, REG_ARL_SRCH_CTRL_531xx, (uint8_t *)&v8, 1);
             (v8 & ARL_SRCH_CTRL_START_DONE);
-            SF2SW_RREG(PAGE_AVTBL_ACCESS, REG_ARL_SRCH_CTRL_531xx, (uint8_t *)&v8, 1))
+            SF2SW_RREG(unit, PAGE_AVTBL_ACCESS, REG_ARL_SRCH_CTRL_531xx, (uint8_t *)&v8, 1))
     {
         /* Now read the Search Ctrl Reg Until :
          * Found Valid ARL Entry --> ARL_SRCH_CTRL_SR_VALID, or
@@ -3220,15 +3274,15 @@ int _enet_arl_search_ext(uint8_t *mac, uint32_t *vid, uint32_t *val, int op)
         for(timeout = 1000;
                 (v8 & ARL_SRCH_CTRL_SR_VALID) == 0 && (v8 & ARL_SRCH_CTRL_START_DONE) && timeout-- > 0;
                 mdelay(1),
-                SF2SW_RREG(PAGE_AVTBL_ACCESS, REG_ARL_SRCH_CTRL_531xx, (uint8_t *)&v8, 1));
+                SF2SW_RREG(unit, PAGE_AVTBL_ACCESS, REG_ARL_SRCH_CTRL_531xx, (uint8_t *)&v8, 1));
 
         if ((v8 & ARL_SRCH_CTRL_SR_VALID) == 0 || timeout <= 0) break;
 
         /* Found a valid entry */
         for (hash_ent = 0; hash_ent < REG_ARL_SRCH_HASH_ENTS; hash_ent++)
         {
-            SF2SW_RREG(PAGE_AVTBL_ACCESS, REG_ARL_SRCH_MAC_LO_ENTRY0_531xx + hash_ent*0x10,&mac_vid[0], 8|DATA_TYPE_VID_MAC);
-            SF2SW_RREG(PAGE_AVTBL_ACCESS, REG_ARL_SRCH_DATA_ENTRY0_531xx + hash_ent*0x10,(uint8_t *)&cur_data, 4);
+            SF2SW_RREG(unit, PAGE_AVTBL_ACCESS, REG_ARL_SRCH_MAC_LO_ENTRY0_531xx + hash_ent*0x10,&mac_vid[0], 8|DATA_TYPE_VID_MAC);
+            SF2SW_RREG(unit, PAGE_AVTBL_ACCESS, REG_ARL_SRCH_DATA_ENTRY0_531xx + hash_ent*0x10,(uint8_t *)&cur_data, 4);
 
 //            enet_dbg("ARL_SRCH_result (%02x%02x%02x%02x%02x%02x%02x%02x) \n",
 //                    mac_vid[0],mac_vid[1],mac_vid[2],mac_vid[3],mac_vid[4],mac_vid[5],mac_vid[6],mac_vid[7]);
@@ -3236,7 +3290,7 @@ int _enet_arl_search_ext(uint8_t *mac, uint32_t *vid, uint32_t *val, int op)
 
             if ((cur_data & ARL_DATA_ENTRY_VALID_531xx))
             {
-                if (_enet_arl_entry_op(mac, vid, val, op, &count, mac_vid, cur_data)) return TRUE;
+                if (_enet_arl_entry_op(unit, mac, vid, val, op, &count, mac_vid, cur_data)) return TRUE;
             }
         }
     }
@@ -3251,7 +3305,7 @@ int _enet_arl_search_ext(uint8_t *mac, uint32_t *vid, uint32_t *val, int op)
     return TRUE;
 }
 
-void _enet_arl_dump_ext_multiport_arl(void)
+void _enet_arl_dump_ext_multiport_arl(int unit)
 {
     uint16 v16;
     uint8 addr[8];
@@ -3259,7 +3313,7 @@ void _enet_arl_dump_ext_multiport_arl(void)
     uint32 vect;
     static char *cmp_type[] = {"Disabled", "Etype", "MAC Addr", "MAC Addr & Etype"};
 
-    SF2SW_RREG(PAGE_ARLCTRL, REG_MULTIPORT_CTRL, &v16, 2);
+    SF2SW_RREG(unit, PAGE_ARLCTRL, REG_MULTIPORT_CTRL, &v16, 2);
     enabled = v16 & ((MULTIPORT_CTRL_EN_M << (5*2))| (MULTIPORT_CTRL_EN_M << (4*2))| (MULTIPORT_CTRL_EN_M << (3*2))|
             (MULTIPORT_CTRL_EN_M << (2*2))| (MULTIPORT_CTRL_EN_M << (1*2))| (MULTIPORT_CTRL_EN_M << (0*2)));
 
@@ -3270,8 +3324,8 @@ void _enet_arl_dump_ext_multiport_arl(void)
     for (i=0; i<6; i++)
     {
         enabled = (v16 & (MULTIPORT_CTRL_EN_M << (5*i)));
-        SF2SW_RREG(PAGE_ARLCTRL, REG_MULTIPORT_ADDR1_LO + i*16, (uint8 *)&addr, sizeof(addr)|DATA_TYPE_VID_MAC);
-        SF2SW_RREG(PAGE_ARLCTRL, REG_MULTIPORT_VECTOR1 + i*16, (uint8 *)&vect, sizeof(vect));
+        SF2SW_RREG(unit, PAGE_ARLCTRL, REG_MULTIPORT_ADDR1_LO + i*16, (uint8 *)&addr, sizeof(addr)|DATA_TYPE_VID_MAC);
+        SF2SW_RREG(unit, PAGE_ARLCTRL, REG_MULTIPORT_VECTOR1 + i*16, (uint8 *)&vect, sizeof(vect));
         printk("Mport Eth Type: 0x%04x, Mport Addrs: %02x:%02x:%02x:%02x:%02x:%02x, Port Map %04x, Cmp Type: %s\n",
                 *(uint16 *)(addr),
                 addr[2],
@@ -3296,15 +3350,15 @@ int ioctl_extsw_arl_access(struct ethswctl_data *e)
             enet_dbg("get e->mac: %02x %02x %02x %02x %02x %02x e->vid: %d\n", e->mac[5],
                     e->mac[4], e->mac[3], e->mac[2], e->mac[1], e->mac[0], e->vid);
 
-            if (e->unit == SF2_ETHSWCTL_UNIT)
+            if (IS_UNIT_SF2(e->unit))
             {
-                ret = _enet_arl_read_ext(e->mac, &e->vid, &e->val );
+                ret = _enet_arl_read_ext(e->unit, e->mac, &e->vid, &e->val );
             }
             else
             {
                 if ((ret = _enet_arl_read( e->mac, &e->vid, &e->val )) == FALSE)
                 {
-                    ret = _enet_arl_read_ext(e->mac, &e->vid, &e->val );
+                    ret = _enet_arl_read_ext(e->unit, e->mac, &e->vid, &e->val );
                 }
             }
 
@@ -3318,15 +3372,15 @@ int ioctl_extsw_arl_access(struct ethswctl_data *e)
             enet_dbg("set e->mac: %02x %02x %02x %02x %02x %02x e->vid: %d\n", e->mac[5],
                     e->mac[4], e->mac[3], e->mac[2], e->mac[1], e->mac[0], e->vid);
 
-            if (e->unit == SF2_ETHSWCTL_UNIT)
+            if (IS_UNIT_SF2(e->unit))
             {
                 if(e->vid == 0xffff && (e->val & ARL_DATA_ENTRY_VALID) == 0)
                 {
-                    _enet_arl_remove_ext(e->mac);
+                    _enet_arl_remove_ext(e->unit, e->mac);
                 }
                 else
                 {
-                    _enet_arl_write_ext(e->mac, e->vid, e->val);
+                    _enet_arl_write_ext(e->unit, e->mac, e->vid, e->val);
                 }
             }
             else
@@ -3346,8 +3400,8 @@ int ioctl_extsw_arl_access(struct ethswctl_data *e)
             _enet_arl_dump();
             _enet_arl_dump_multiport_arl();
 
-            _enet_arl_dump_ext();                           // TODO_DSL? probably should move arl access to per switch object
-            _enet_arl_dump_ext_multiport_arl();
+            _enet_arl_dump_ext(e->unit);
+            _enet_arl_dump_ext_multiport_arl(e->unit);
             break;
 
         case TYPE_FLUSH:
@@ -3361,6 +3415,7 @@ int ioctl_extsw_arl_access(struct ethswctl_data *e)
     return BCM_E_NONE;
 }
 
+#if 0   /* skip Andrew code */
 // add by Andrew
 int _enet_arl_entry_op_us(struct ethswctl_data *e, int *count, u8 *mac_vid, u32 data)
 {
@@ -3431,12 +3486,16 @@ int ioctl_extsw_arl_dump(struct ethswctl_data *e)
     return BCM_E_NONE;
 }
 // end of add
+#endif
 
 int remove_arl_entry_wrapper(void *ptr)
 {
     int ret = 0;
     ret = enet_arl_remove(ptr);         /* remove entry from internal switch */
-    ret = _enet_arl_remove_ext(ptr);    /* remove entry from external switch */
+    if (IS_UNIT_SF2(0))
+        ret |= _enet_arl_remove_ext(0, ptr);
+    if (IS_UNIT_SF2(1))
+        ret |= _enet_arl_remove_ext(1, ptr);
     return ret;
 }
 
@@ -3454,40 +3513,40 @@ int remove_arl_entry_wrapper(void *ptr)
  *** Output params
  * Returns 0 for Success, Negative value for failure.
  */
-static int _qos_dscp_is_enabled(int port)
+static int _qos_dscp_is_enabled(int unit, int port)
 {
     u16 val16;
-    SF2SW_RREG(PAGE_QOS, REG_QOS_DSCP_EN, (void *)&val16, 2);
+    SF2SW_RREG(unit, PAGE_QOS, REG_QOS_DSCP_EN, (void *)&val16, 2);
     return (val16 >> port) & 1;
 }
 
-static int _qos_8021p_is_enabled(int port)
+static int _qos_8021p_is_enabled(int unit, int port)
 {
     u16 val16;
-    SF2SW_RREG(PAGE_QOS, REG_QOS_8021P_EN, (void *)&val16, 2);
+    SF2SW_RREG(unit, PAGE_QOS, REG_QOS_8021P_EN, (void *)&val16, 2);
     return (val16 >> port) & 1;
 }
 
-static void _enable_dscp_qos(int port, int enable)
+static void _enable_dscp_qos(int unit, int port, int enable)
 {
     u16 val16;
-    SF2SW_RREG(PAGE_QOS, REG_QOS_DSCP_EN, (void *)&val16, 2);
+    SF2SW_RREG(unit, PAGE_QOS, REG_QOS_DSCP_EN, (void *)&val16, 2);
     val16 &= ~(1 << port);
     val16 |= enable << port;
-    SF2SW_WREG(PAGE_QOS, REG_QOS_DSCP_EN, (void *)&val16, 2);
+    SF2SW_WREG(unit, PAGE_QOS, REG_QOS_DSCP_EN, (void *)&val16, 2);
 }
 
-static void _enable_8021p_qos(int port, int enable)
+static void _enable_8021p_qos(int unit, int port, int enable)
 {
     u16 val16;
-    SF2SW_RREG(PAGE_QOS, REG_QOS_8021P_EN, (void *)&val16, 2);
+    SF2SW_RREG(unit, PAGE_QOS, REG_QOS_8021P_EN, (void *)&val16, 2);
     val16 &= ~(1 << port);
     val16 |= enable << port;
-    SF2SW_WREG(PAGE_QOS, REG_QOS_8021P_EN, (void *)&val16, 2);
+    SF2SW_WREG(unit, PAGE_QOS, REG_QOS_8021P_EN, (void *)&val16, 2);
 }
 
 /* Note: Method values are UAPI definition */
-static int _isQoSMethodEnabled(int port, int method)
+static int _isQoSMethodEnabled(int unit, int port, int method)
 {
     switch(method)
     {
@@ -3495,15 +3554,15 @@ static int _isQoSMethodEnabled(int port, int method)
         case MAC_QOS:
             return 1;
         case IEEE8021P_QOS:
-            return _qos_8021p_is_enabled(port);
+            return _qos_8021p_is_enabled(unit, port);
         case DIFFSERV_QOS:
-            return _qos_dscp_is_enabled(port);
+            return _qos_dscp_is_enabled(unit, port);
     }
     return 0;
 }
 
 /* Note: Method values are UAPI definition */
-static void _enableQosMethod(int port, int method, int enable)
+static void _enableQosMethod(int unit, int port, int method, int enable)
 {
     switch(method)
     {
@@ -3513,21 +3572,21 @@ static void _enableQosMethod(int port, int method, int enable)
         case IEEE8021P_QOS:
             if (enable)
             {
-                _enable_8021p_qos(port, 1); // Enable PCP for the port
+                _enable_8021p_qos(unit, port, 1); // Enable PCP for the port
             }
             else
             {
-                _enable_8021p_qos(port, 0);
+                _enable_8021p_qos(unit, port, 0);
             }
             return;
         case DIFFSERV_QOS:
             if (enable)
             {
-                _enable_dscp_qos(port, 1); // Enable DSCP for the port
+                _enable_dscp_qos(unit, port, 1); // Enable DSCP for the port
             }
             else
             {
-                _enable_dscp_qos(port, 0);
+                _enable_dscp_qos(unit, port, 0);
             }
             return;
     }
@@ -3553,21 +3612,21 @@ int ioctl_extsw_cos_priority_method_cfg(struct ethswctl_data *e)
     reg_addr = SF2_REG_PORTN_TC_SELECT_TABLE + e->port * 2;
     pkt_type_mask = e->pkt_type_mask;
     if (e->type == TYPE_GET) {
-        SF2SW_RREG(PAGE_QOS, reg_addr, &val16, 2);
+        SF2SW_RREG(e->unit, PAGE_QOS, reg_addr, &val16, 2);
         if (e->pkt_type_mask == SF2_QOS_TC_SRC_SEL_PKT_TYPE_ALL)
         {
             val32 = QOS_METHODS_CNVT_UAPI_AND_REG(val16);
             for (i = 0; i < e->pkt_type_mask; i++)
             {
                 tc_sel_src = (val16 >> (i * 2)) & SF2_QOS_TC_SRC_SEL_VAL_MASK;
-                enable_qos = _isQoSMethodEnabled(e->port, QOS_METHOD_CNVT_UAPI_AND_REG(tc_sel_src));
+                enable_qos = _isQoSMethodEnabled(e->unit, e->port, QOS_METHOD_CNVT_UAPI_AND_REG(tc_sel_src));
                 val32 |= !enable_qos << (16+i);
             }
         } else {
             pkt_type_mask &=  SF2_QOS_TC_SRC_SEL_PKT_TYPE_MASK;
             val16 =  (val16 >> (pkt_type_mask * 2)) & SF2_QOS_TC_SRC_SEL_VAL_MASK;
             val16 = QOS_METHOD_CNVT_UAPI_AND_REG(val16);
-            enable_qos = _isQoSMethodEnabled(e->port, val16);
+            enable_qos = _isQoSMethodEnabled(e->unit, e->port, val16);
             val32 = (!enable_qos << 16) | val16;
         }
         // bits programmed in TC Select Table registers and software notion are bit inversed.
@@ -3580,14 +3639,14 @@ int ioctl_extsw_cos_priority_method_cfg(struct ethswctl_data *e)
         if (e->pkt_type_mask != SF2_QOS_TC_SRC_SEL_PKT_TYPE_ALL)
         {
             tc_sel_src = QOS_METHOD_CNVT_UAPI_AND_REG(e->val);
-            SF2SW_RREG(PAGE_QOS, reg_addr, &val16, 2);
+            SF2SW_RREG(e->unit, PAGE_QOS, reg_addr, &val16, 2);
             pkt_type_mask = e->pkt_type_mask & SF2_QOS_TC_SRC_SEL_PKT_TYPE_MASK;
             val16 &= ~(SF2_QOS_TC_SRC_SEL_VAL_MASK << (pkt_type_mask * 2));
             val16 |=  (tc_sel_src & SF2_QOS_TC_SRC_SEL_VAL_MASK ) << (pkt_type_mask * 2);
             enable_qos = !((e->val >> 16) & 1);
             //enet_dbg("%s: Write to: len %d page 0x%x reg 0x%x val 0x%x\n",
             //        __FUNCTION__, 2, PAGE_QOS, reg_addr, val16);
-            _enableQosMethod(e->port, e->val & SF2_QOS_TC_SRC_SEL_VAL_MASK, enable_qos);
+            _enableQosMethod(e->unit, e->port, e->val & SF2_QOS_TC_SRC_SEL_VAL_MASK, enable_qos);
         }
         else    /* SF2_QOS_TC_SRC_SEL_PKT_TYPE_ALL */
         /* when pkt_type_mask is SF2_QOS_TC_SRC_SEL_PKT_TYPE_ALL,
@@ -3599,10 +3658,10 @@ int ioctl_extsw_cos_priority_method_cfg(struct ethswctl_data *e)
             {
                 tc_sel_src = ((e->val) >> (i * 2)) & SF2_QOS_TC_SRC_SEL_VAL_MASK;
                 enable_qos = !((e->val >> (16 + i)) & 1);
-                _enableQosMethod(e->port, tc_sel_src, enable_qos);
+                _enableQosMethod(e->unit, e->port, tc_sel_src, enable_qos);
             }
         }
-        SF2SW_WREG(PAGE_QOS, reg_addr, &val16, 2);
+        SF2SW_WREG(e->unit, PAGE_QOS, reg_addr, &val16, 2);
     }
 
     up(&sf2_sw->s.conf_sem);
@@ -3679,19 +3738,19 @@ int ioctl_extsw_port_jumbo_control(struct ethswctl_data *e)
     if (e->type == TYPE_GET)
     {
         // Read & log current JUMBO configuration control register.
-        SF2SW_RREG(PAGE_JUMBO, REG_JUMBO_PORT_MASK, (uint8 *)&val32, 4);
+        SF2SW_RREG(e->unit, PAGE_JUMBO, REG_JUMBO_PORT_MASK, (uint8 *)&val32, 4);
         enet_dbg("JUMBO_PORT_MASK = 0x%08X", (unsigned int)val32);
         e->ret_val = val32;
     }
     else
     {
         // Read & log current JUMBO configuration control register.
-        SF2SW_RREG(PAGE_JUMBO, REG_JUMBO_PORT_MASK, (uint8 *)&val32, 4);
+        SF2SW_RREG(e->unit, PAGE_JUMBO, REG_JUMBO_PORT_MASK, (uint8 *)&val32, 4);
         enet_dbg("Old JUMBO_PORT_MASK = 0x%08X", (unsigned int)val32);
 
         // Setup JUMBO configuration control register.
         val32 = _ConfigureJumboPort(val32, e->port, e->val);
-        SF2SW_WREG(PAGE_JUMBO, REG_JUMBO_PORT_MASK, (uint8 *)&val32, 4);
+        SF2SW_WREG(e->unit, PAGE_JUMBO, REG_JUMBO_PORT_MASK, (uint8 *)&val32, 4);
 
         // Attempt to transfer register write value to user space & test for success.
         e->ret_val = val32;
@@ -3734,7 +3793,7 @@ int ioctl_extsw_pcp_to_priority_mapping(struct ethswctl_data *e)
     down(&sf2_sw->s.conf_sem);
 
     if (e->type == TYPE_GET) {
-        SF2SW_RREG(PAGE_QOS, reg_addr, (void *)&val32, 4);
+        SF2SW_RREG(e->unit, PAGE_QOS, reg_addr, (void *)&val32, 4);
         e->priority = (val32 >> (e->val * QOS_TC_S)) & QOS_TC_M;
         enet_dbg("pcp %d is mapped to priority: %d \n ", e->val, e->priority);
     } else {
@@ -3744,10 +3803,10 @@ int ioctl_extsw_pcp_to_priority_mapping(struct ethswctl_data *e)
             up(&sf2_sw->s.conf_sem);
             return BCM_E_ERROR;
         }
-        SF2SW_RREG(PAGE_QOS, reg_addr, (void *)&val32, 4);
+        SF2SW_RREG(e->unit, PAGE_QOS, reg_addr, (void *)&val32, 4);
         val32 &= ~(QOS_TC_M << (e->val * QOS_TC_S));
         val32 |= (e->priority & QOS_TC_M) << (e->val * QOS_TC_S);
-        SF2SW_WREG(PAGE_QOS, reg_addr, (void *)&val32, 4);
+        SF2SW_WREG(e->unit, PAGE_QOS, reg_addr, (void *)&val32, 4);
     }
 
     up(&sf2_sw->s.conf_sem);
@@ -3779,15 +3838,15 @@ int ioctl_extsw_pid_to_priority_mapping(struct ethswctl_data *e)
     down(&sf2_sw->s.conf_sem);
 
     if (e->type == TYPE_GET) {
-        SF2SW_RREG(PAGE_QOS, SF2_REG_PORT_ID_PRIO_MAP, (void *)&val32, 4);
+        SF2SW_RREG(e->unit, PAGE_QOS, SF2_REG_PORT_ID_PRIO_MAP, (void *)&val32, 4);
         e->priority = (val32 >> (e->port * QOS_TC_S)) & QOS_TC_M;
         enet_dbg("port %d is mapped to priority: %d \n ", e->port, e->priority);
     } else {
         enet_dbg("Given port: %02d priority: %02d \n ", e->port, e->priority);
-        SF2SW_RREG(PAGE_QOS, SF2_REG_PORT_ID_PRIO_MAP, (void *)&val32, 4);
+        SF2SW_RREG(e->unit, PAGE_QOS, SF2_REG_PORT_ID_PRIO_MAP, (void *)&val32, 4);
         val32 &= ~(QOS_TC_M << (e->port * QOS_TC_S));
         val32 |= (e->priority & QOS_TC_M) << (e->port * QOS_TC_S);
-        SF2SW_WREG(PAGE_QOS, SF2_REG_PORT_ID_PRIO_MAP, (void *)&val32, 4);
+        SF2SW_WREG(e->unit, PAGE_QOS, SF2_REG_PORT_ID_PRIO_MAP, (void *)&val32, 4);
     }
 
     up(&sf2_sw->s.conf_sem);
@@ -3824,7 +3883,7 @@ int ioctl_extsw_dscp_to_priority_mapping(struct ethswctl_data *e)
     mapnum = (e->val >> QOS_DSCP_MAP_S) & QOS_DSCP_MAP_M;
 
     if (e->type == TYPE_GET) {
-        SF2SW_RREG(PAGE_QOS, REG_QOS_DSCP_PRIO_MAP0LO + mapnum * QOS_DSCP_MAP_REG_SZ,
+        SF2SW_RREG(e->unit, PAGE_QOS, REG_QOS_DSCP_PRIO_MAP0LO + mapnum * QOS_DSCP_MAP_REG_SZ,
                                  (void *)&val64, QOS_DSCP_MAP_REG_SZ | DATA_TYPE_HOST_ENDIAN);
         e->priority = (val64 >> (dscplsbs * QOS_TC_S)) & QOS_TC_M;
         enet_dbg("dscp %d is mapped to priority: %d \n ", e->val, e->priority);
@@ -3836,7 +3895,7 @@ int ioctl_extsw_dscp_to_priority_mapping(struct ethswctl_data *e)
             return BCM_E_ERROR;
         }
         // LE assumptions below, TODO
-        SF2SW_RREG(PAGE_QOS, REG_QOS_DSCP_PRIO_MAP0LO + mapnum * QOS_DSCP_MAP_REG_SZ,
+        SF2SW_RREG(e->unit, PAGE_QOS, REG_QOS_DSCP_PRIO_MAP0LO + mapnum * QOS_DSCP_MAP_REG_SZ,
                                      (void *)&val64, QOS_DSCP_MAP_REG_SZ | DATA_TYPE_HOST_ENDIAN);
         val64 &= ~(((uint64)(QOS_TC_M)) << (dscplsbs * QOS_TC_S));
         val64 |= ((uint64)(e->priority & QOS_TC_M)) << (dscplsbs * QOS_TC_S);
@@ -3844,7 +3903,7 @@ int ioctl_extsw_dscp_to_priority_mapping(struct ethswctl_data *e)
                                 (REG_QOS_DSCP_PRIO_MAP0LO + mapnum * QOS_DSCP_MAP_REG_SZ),
                                 (uint64) val64);
 
-        SF2SW_WREG(PAGE_QOS, REG_QOS_DSCP_PRIO_MAP0LO + mapnum * QOS_DSCP_MAP_REG_SZ,
+        SF2SW_WREG(e->unit, PAGE_QOS, REG_QOS_DSCP_PRIO_MAP0LO + mapnum * QOS_DSCP_MAP_REG_SZ,
                                             (void *)&val64, QOS_DSCP_MAP_REG_SZ | DATA_TYPE_HOST_ENDIAN);
     }
 
@@ -3866,9 +3925,9 @@ int ioctl_extsw_port_irc_set(struct ethswctl_data *e)
     down(&sf2_sw->s.conf_sem);
 
     if (e->limit == 0) { /* Disable ingress rate control */
-        SF2SW_RREG(PAGE_PORT_STORM_CONTROL, REG_PN_STORM_CTL_RATE_PORT_0 + e->port * 4, &val32, 4);
+        SF2SW_RREG(e->unit, PAGE_PORT_STORM_CONTROL, REG_PN_STORM_CTL_RATE_PORT_0 + e->port * 4, &val32, 4);
         val32 &= ~REG_PN_BUCK1_ENABLE_MASK;
-        SF2SW_WREG(PAGE_PORT_STORM_CONTROL, REG_PN_STORM_CTL_RATE_PORT_0 + e->port * 4, &val32, 4);
+        SF2SW_WREG(e->unit, PAGE_PORT_STORM_CONTROL, REG_PN_STORM_CTL_RATE_PORT_0 + e->port * 4, &val32, 4);
     } else {    /* Enable ingress rate control */
         bs = e->burst_size / 8;
         if (bs <= 4)
@@ -3912,16 +3971,16 @@ int ioctl_extsw_port_irc_set(struct ethswctl_data *e)
             if ( rf > 240) rf = 240;
         }
 
-        SF2SW_RREG(PAGE_PORT_STORM_CONTROL, REG_PN_STORM_CTL_RATE_PORT_0 + e->port * 4, &val32, 4);
+        SF2SW_RREG(e->unit, PAGE_PORT_STORM_CONTROL, REG_PN_STORM_CTL_RATE_PORT_0 + e->port * 4, &val32, 4);
         val32 &= ~((REG_PN_BUCK1_SIZE_M << REG_PN_BUCK1_SIZE_S)| (REG_PN_BUCK1_REF_CNT_M << REG_PN_BUCK1_REF_CNT_S));
         val32 |= REG_PN_BUCK1_ENABLE_MASK | REG_PN_BUCK1_MODE_MASK; // use bucket 1
         val32 |= (rf & REG_PN_BUCK1_REF_CNT_M) << REG_PN_BUCK1_REF_CNT_S;
         val32 |= bs  << REG_PN_BUCK1_SIZE_S;
-        SF2SW_WREG(PAGE_PORT_STORM_CONTROL, REG_PN_STORM_CTL_RATE_PORT_0 + e->port * 4, &val32, 4);
+        SF2SW_WREG(e->unit, PAGE_PORT_STORM_CONTROL, REG_PN_STORM_CTL_RATE_PORT_0 + e->port * 4, &val32, 4);
 
-        SF2SW_RREG(PAGE_PORT_STORM_CONTROL, REG_PN_STORM_CTL_CFG_PORT_0 + e->port * 2, &val32, 4);
+        SF2SW_RREG(e->unit, PAGE_PORT_STORM_CONTROL, REG_PN_STORM_CTL_CFG_PORT_0 + e->port * 2, &val32, 4);
 	    val32 |= REG_PN_BUCK1_IFG_BYTES_MASK | (REG_PN_BUCK1_PKT_SEL_M << REG_PN_BUCK1_PKT_SEL_S);
-        SF2SW_WREG(PAGE_PORT_STORM_CONTROL, REG_PN_STORM_CTL_CFG_PORT_0 + e->port * 2, &val32, 4);
+        SF2SW_WREG(e->unit, PAGE_PORT_STORM_CONTROL, REG_PN_STORM_CTL_CFG_PORT_0 + e->port * 2, &val32, 4);
     }
 
     up(&sf2_sw->s.conf_sem);
@@ -3938,7 +3997,7 @@ int ioctl_extsw_port_irc_get(struct ethswctl_data *e)
 
     down(&sf2_sw->s.conf_sem);
 
-    SF2SW_RREG(PAGE_PORT_STORM_CONTROL, REG_PN_STORM_CTL_RATE_PORT_0 + e->port * 4, &val32, 4);
+    SF2SW_RREG(e->unit, PAGE_PORT_STORM_CONTROL, REG_PN_STORM_CTL_RATE_PORT_0 + e->port * 4, &val32, 4);
     if ((val32 & REG_PN_BUCK1_ENABLE_MASK) == 0)
     {
         e->limit = 0;
@@ -4020,7 +4079,7 @@ int ioctl_extsw_port_erc_config(struct ethswctl_data *e)
         }
         reg  =   pkt_flag == SHAPER_PACKET_MODE? SF2_REG_PN_SHAPER_RATE_PKT:
                                                   SF2_REG_PN_SHAPER_RATE_BYTE;
-        SF2SW_WREG(page, reg + e->port * 4, &val32, 4);
+        SF2SW_WREG(e->unit, page, reg + e->port * 4, &val32, 4);
 
         /* configure shaper burst size */
         val32 = 0; /* reset burst size by default */
@@ -4038,19 +4097,25 @@ int ioctl_extsw_port_erc_config(struct ethswctl_data *e)
         }
         reg  =   pkt_flag == SHAPER_PACKET_MODE? SF2_REG_PN_SHAPER_BURST_SZ_PKT:
                                                   SF2_REG_PN_SHAPER_BURST_SZ_BYTE;
-        SF2SW_WREG(page, reg + e->port * 4, &val32, 4);
+        SF2SW_WREG(e->unit, page, reg + e->port * 4, &val32, 4);
 
         /* enable shaper for byte mode or pkt mode as the case may be. */
-        SF2SW_RREG(page, SF2_REG_SHAPER_ENB_PKT_BASED, &val16, 2);
+        SF2SW_RREG(e->unit, page, SF2_REG_SHAPER_ENB_PKT_BASED, &val16, 2);
         val16 &= ~(1 << e->port);
         val16 |= pkt_flag == SHAPER_PACKET_MODE? (1 << e->port): 0;
-        SF2SW_WREG(page, SF2_REG_SHAPER_ENB_PKT_BASED, &val16, 2);
+        SF2SW_WREG(e->unit, page, SF2_REG_SHAPER_ENB_PKT_BASED, &val16, 2);
 
         /* Enable/disable shaper */
-        SF2SW_RREG(page, SF2_REG_SHAPER_ENB, &val16, 2);
+        SF2SW_RREG(e->unit, page, SF2_REG_SHAPER_ENB, &val16, 2);
         val16 &= ~(1 << e->port); /* Disable Shaper */
         val16 |= e->limit? (1 << e->port): 0; /* Enable Shaper, if needed */
-        SF2SW_WREG(page, SF2_REG_SHAPER_ENB, &val16, 2);
+        SF2SW_WREG(e->unit, page, SF2_REG_SHAPER_ENB, &val16, 2);
+
+        /* Enable/disable IFG Correction Control */
+        SF2SW_RREG(e->unit, page, SF2_REG_SHAPER_IFG_BYTES, &val16, 2);
+        val16 &= ~(1 << e->port); /* Disable Shaper */
+        val16 |= e->limit? (1 << e->port): 0; /* Enable IFG BYTE correction, if needed */
+        SF2SW_WREG(e->unit, page, SF2_REG_SHAPER_IFG_BYTES, &val16, 2);
 
         return 0;
     } else {
@@ -4059,34 +4124,34 @@ int ioctl_extsw_port_erc_config(struct ethswctl_data *e)
 
         page = q_shaper? PAGE_Q0_EGRESS_SHAPER + e->queue:
                                     PAGE_PORT_EGRESS_SHAPER;
-        SF2SW_RREG(page, SF2_REG_SHAPER_ENB_PKT_BASED, &val16, 2);
+        SF2SW_RREG(e->unit, page, SF2_REG_SHAPER_ENB_PKT_BASED, &val16, 2);
         pkt_flag = (val16 & (1 << e->port))? 1: 0;
         stats.egress_shaper_flags = 0;
         stats.egress_shaper_flags |= pkt_flag? SHAPER_RATE_PACKET_MODE: 0;
 
         reg = pkt_flag? SF2_REG_PN_SHAPER_RATE_PKT: SF2_REG_PN_SHAPER_RATE_BYTE;
-        SF2SW_RREG(page, reg + e->port * 4, &val32, 4);
+        SF2SW_RREG(e->unit, page, reg + e->port * 4, &val32, 4);
         stats.egress_rate_cfg = val32 & SHAPER_RATE_BURST_VAL_MASK;
 
         reg = pkt_flag? SF2_REG_PN_SHAPER_BURST_SZ_PKT: SF2_REG_PN_SHAPER_BURST_SZ_BYTE;
-        SF2SW_RREG(page, reg + e->port * 4, &val32, 4);
+        SF2SW_RREG(e->unit, page, reg + e->port * 4, &val32, 4);
         stats.egress_burst_sz_cfg = val32 & SHAPER_RATE_BURST_VAL_MASK;
 
         reg = SF2_REG_PN_SHAPER_STAT;
-        SF2SW_RREG(page, reg + e->port * 4, &val32, 4);
+        SF2SW_RREG(e->unit, page, reg + e->port * 4, &val32, 4);
         stats.egress_cur_tokens = val32 & SHAPER_STAT_COUNT_MASK;
         stats.egress_shaper_flags |= val32 & SHAPER_STAT_OVF_MASK? SHAPER_OVF_FLAG: 0;
         stats.egress_shaper_flags |= val32 & SHAPER_STAT_INPF_MASK? SHAPER_INPF_FLAG: 0;
 
-        SF2SW_RREG(page, SF2_REG_SHAPER_ENB, &val16, 2);
+        SF2SW_RREG(e->unit, page, SF2_REG_SHAPER_ENB, &val16, 2);
         stats.egress_shaper_flags |= (val16 & (1 << e->port))? SHAPER_ENABLE: 0;
 
-        SF2SW_RREG(page, SF2_REG_SHAPER_BLK_CTRL_ENB, &val16, 2);
+        SF2SW_RREG(e->unit, page, SF2_REG_SHAPER_BLK_CTRL_ENB, &val16, 2);
         stats.egress_shaper_flags |= (val16 & (1 << e->port))? SHAPER_BLOCKING_MODE: 0;
 
         // applies only for port shaper
         if (!q_shaper) {
-            SF2SW_RREG(page, SF2_REG_SHAPER_INC_IFG_CTRL, &val16, 2);
+            SF2SW_RREG(e->unit, page, SF2_REG_SHAPER_INC_IFG_CTRL, &val16, 2);
             stats.egress_shaper_flags |= (val16 & (1 << e->port))? SHAPER_INCLUDE_IFG: 0;
         }
 
@@ -4114,14 +4179,14 @@ int ioctl_extsw_port_erc_config(struct ethswctl_data *e)
 }
 
 // ----------- SIOCETHSWCTLOPS ETHSWPORTSHAPERCFG functions ---
-inline static void _extsw_reg16_bit_ops(uint16 page, uint16 reg, int bit, int on)
+inline static void _extsw_reg16_bit_ops(int unit, uint16 page, uint16 reg, int bit, int on)
 {
     uint16 val16;
 
-    SF2SW_RREG(page, reg, &val16, 2);
+    SF2SW_RREG(unit, page, reg, &val16, 2);
     val16 &= ~(1 << bit);
     val16 |= on << bit;
-    SF2SW_WREG(page, reg, &val16, 2);
+    SF2SW_WREG(unit, page, reg, &val16, 2);
 }
 
 
@@ -4154,21 +4219,21 @@ int ioctl_extsw_port_shaper_config(struct ethswctl_data *e)
                                     PAGE_PORT_EGRESS_SHAPER;
         if (e->sub_type & SHAPER_ENABLE) {
             reg = SF2_REG_SHAPER_ENB;
-            _extsw_reg16_bit_ops(page, reg, e->port, e->val);
+            _extsw_reg16_bit_ops(e->unit, page, reg, e->port, e->val);
         }
         if (e->sub_type & SHAPER_RATE_PACKET_MODE) {
             reg = SF2_REG_SHAPER_ENB_PKT_BASED;
-            _extsw_reg16_bit_ops(page, reg, e->port, e->val);
+            _extsw_reg16_bit_ops(e->unit, page, reg, e->port, e->val);
         }
         if (e->sub_type & SHAPER_BLOCKING_MODE) {
             reg = SF2_REG_SHAPER_BLK_CTRL_ENB;
-            _extsw_reg16_bit_ops(page, reg, e->port, e->val);
+            _extsw_reg16_bit_ops(e->unit, page, reg, e->port, e->val);
         }
         if (e->sub_type & SHAPER_INCLUDE_IFG) {
             // applies only for port shaper
             if (!q_shaper) {
                 reg = SF2_REG_SHAPER_INC_IFG_CTRL;
-                _extsw_reg16_bit_ops(page, reg, e->port, e->val);
+                _extsw_reg16_bit_ops(e->unit, page, reg, e->port, e->val);
             }
         }
     }
@@ -4185,7 +4250,7 @@ int ioctl_extsw_dos_ctrl(struct ethswctl_data *e)
         uint32_t v32 = 0;
         uint8_t v8 = 0;
 
-        SF2SW_RREG(PAGE_DOS_PREVENT_531xx, REG_DOS_CTRL, (uint8 *)&v32, 4);
+        SF2SW_RREG(e->unit, PAGE_DOS_PREVENT_531xx, REG_DOS_CTRL, (uint8 *)&v32, 4);
         /* Taking short-cut : Not following BCM coding guidelines */
         if (v32 & DOS_CTRL_DA_SA_DROP_EN)  e->dosCtrl.da_eq_sa_drop_en = 1;
         if (v32 & IP_LAN_DROP_EN)  e->dosCtrl.ip_lan_drop_en = 1;
@@ -4202,7 +4267,7 @@ int ioctl_extsw_dos_ctrl(struct ethswctl_data *e)
         if (v32 & ICMPv4_LONGPING_DROP_EN)  e->dosCtrl.icmpv4_longping_drop_en = 1;
         if (v32 & ICMPv6_LONGPING_DROP_EN)  e->dosCtrl.icmpv6_longping_drop_en = 1;
 
-        SF2SW_RREG(PAGE_DOS_PREVENT_531xx, REG_DOS_DISABLE_LRN, (uint8 *)&v8, 1);
+        SF2SW_RREG(e->unit, PAGE_DOS_PREVENT_531xx, REG_DOS_DISABLE_LRN, (uint8 *)&v8, 1);
         if (v8 & DOS_DISABLE_LRN) e->dosCtrl.dos_disable_lrn = 1;
     }
     else if (e->type == TYPE_SET)
@@ -4226,7 +4291,7 @@ int ioctl_extsw_dos_ctrl(struct ethswctl_data *e)
         if (e->dosCtrl.icmpv6_longping_drop_en) v32 |= ICMPv6_LONGPING_DROP_EN;
 
         /* Enable DOS attack blocking functions) */
-        SF2SW_WREG(PAGE_DOS_PREVENT_531xx, REG_DOS_CTRL, (uint8 *)&v32, 4);
+        SF2SW_WREG(e->unit, PAGE_DOS_PREVENT_531xx, REG_DOS_CTRL, (uint8 *)&v32, 4);
         if (e->dosCtrl.dos_disable_lrn)
         { /* Enable */
             v8 = DOS_DISABLE_LRN;
@@ -4235,7 +4300,7 @@ int ioctl_extsw_dos_ctrl(struct ethswctl_data *e)
         {
             v8 = 0;
         }
-        SF2SW_WREG(PAGE_DOS_PREVENT_531xx, REG_DOS_DISABLE_LRN, (uint8 *)&v8, 1);
+        SF2SW_WREG(e->unit, PAGE_DOS_PREVENT_531xx, REG_DOS_DISABLE_LRN, (uint8 *)&v8, 1);
     }
     return BCM_E_NONE;
 }
@@ -4247,14 +4312,14 @@ void _ethsw_set_stp_mode(unsigned int unit, unsigned int port, unsigned char stp
     // based on impl5:bcmeapi_ethsw_set_stp_mode()
    unsigned char portInfo;
 
-   if(unit == SF2_ETHSWCTL_UNIT) // SF2
+   if(IS_UNIT_SF2(unit)) // SF2
    {
       spin_lock_bh(&sf2_reg_config);
-      SF2SW_RREG(PAGE_CONTROL, REG_PORT_CTRL + (port),
+      SF2SW_RREG(unit, PAGE_CONTROL, REG_PORT_CTRL + (port),
                  &portInfo, sizeof(portInfo));
       portInfo &= ~REG_PORT_STP_MASK;
       portInfo |= stpState;
-      SF2SW_WREG(PAGE_CONTROL, REG_PORT_CTRL + (port),
+      SF2SW_WREG(unit, PAGE_CONTROL, REG_PORT_CTRL + (port),
                  &portInfo, sizeof(portInfo));
       spin_unlock_bh(&sf2_reg_config);
    }
@@ -4264,9 +4329,9 @@ int _ethsw_get_stp_state(unsigned int unit, unsigned int port)
 {
    unsigned char portInfo;
 
-   if(unit == SF2_ETHSWCTL_UNIT) // SF2
+   if(IS_UNIT_SF2(unit)) // SF2
    {
-      SF2SW_RREG(PAGE_CONTROL, REG_PORT_CTRL + (port),
+      SF2SW_RREG(unit, PAGE_CONTROL, REG_PORT_CTRL + (port),
                  &portInfo, sizeof(portInfo));
       return (portInfo & REG_PORT_STP_MASK);
    }
@@ -4282,23 +4347,23 @@ int ioctl_extsw_port_storm_ctrl(struct ethswctl_data *e)
     down(&sf2_sw->s.conf_sem);
     if (e->type == TYPE_SET) {
         /* configure storm control rate & burst size */
-        SF2SW_RREG(PAGE_PORT_STORM_CONTROL, REG_PN_STORM_CTL_RATE_PORT_0 + e->port * 4, &val32, 4);
+        SF2SW_RREG(e->unit, PAGE_PORT_STORM_CONTROL, REG_PN_STORM_CTL_RATE_PORT_0 + e->port * 4, &val32, 4);
         val32 |= REG_PN_BUCK0_ENABLE_MASK | REG_PN_BUCK0_MODE_MASK; // use bucket 0
         val32 |= (e->limit & REG_PN_BUCK0_REF_CNT_M) << REG_PN_BUCK0_REF_CNT_S;
         val32 |= (e->burst_size & REG_PN_BUCK0_SIZE_M) << REG_PN_BUCK0_SIZE_S;
-        SF2SW_WREG(PAGE_PORT_STORM_CONTROL, REG_PN_STORM_CTL_RATE_PORT_0 + e->port * 4, &val32, 4);
+        SF2SW_WREG(e->unit, PAGE_PORT_STORM_CONTROL, REG_PN_STORM_CTL_RATE_PORT_0 + e->port * 4, &val32, 4);
 
         /* pkt type */
-        SF2SW_RREG(PAGE_PORT_STORM_CONTROL, REG_PN_STORM_CTL_CFG_PORT_0 + e->port * 2, &val32, 4);
+        SF2SW_RREG(e->unit, PAGE_PORT_STORM_CONTROL, REG_PN_STORM_CTL_CFG_PORT_0 + e->port * 2, &val32, 4);
 	    val32 &= ~(REG_PN_BUCK0_PKT_SEL_M << REG_PN_BUCK0_PKT_SEL_S);
 	    val32 |= (e->pkt_type_mask & REG_PN_BUCK0_PKT_SEL_M) << REG_PN_BUCK0_PKT_SEL_S;
-        SF2SW_WREG(PAGE_PORT_STORM_CONTROL, REG_PN_STORM_CTL_CFG_PORT_0 + e->port * 2, &val32, 4);
+        SF2SW_WREG(e->unit, PAGE_PORT_STORM_CONTROL, REG_PN_STORM_CTL_CFG_PORT_0 + e->port * 2, &val32, 4);
     } else {
-        SF2SW_RREG(PAGE_PORT_STORM_CONTROL, REG_PN_STORM_CTL_RATE_PORT_0 + e->port * 4, &val32, 4);
+        SF2SW_RREG(e->unit, PAGE_PORT_STORM_CONTROL, REG_PN_STORM_CTL_RATE_PORT_0 + e->port * 4, &val32, 4);
         e->limit = (val32 >> REG_PN_BUCK0_REF_CNT_S) & REG_PN_BUCK0_REF_CNT_M;
         e->burst_size = (val32 >> REG_PN_BUCK0_SIZE_S) & REG_PN_BUCK0_SIZE_M;
 
-        SF2SW_RREG(PAGE_PORT_STORM_CONTROL, REG_PN_STORM_CTL_CFG_PORT_0 + e->port * 2, &val32, 4);
+        SF2SW_RREG(e->unit, PAGE_PORT_STORM_CONTROL, REG_PN_STORM_CTL_CFG_PORT_0 + e->port * 2, &val32, 4);
         e->pkt_type_mask = (val32 >> REG_PN_BUCK0_PKT_SEL_S) & REG_PN_BUCK0_PKT_SEL_M;
     }
 
@@ -4307,7 +4372,7 @@ int ioctl_extsw_port_storm_ctrl(struct ethswctl_data *e)
 }
 
 // ----------- SIOCETHSWCTLOPS ETHSWMULTIPORT functions ---
-int ioctl_extsw_set_multiport_address(uint8_t *addr)
+int ioctl_extsw_set_multiport_address(int unit, uint8_t *addr)
 {
     // based on impl5:bcmsw_set_multiport_address_ext()
     int i;
@@ -4321,7 +4386,7 @@ int ioctl_extsw_set_multiport_address(uint8_t *addr)
     /* check if address is set already */
     for ( i = 0; i < MULTIPORT_CTRL_COUNT; i++ )
     {
-       SF2SW_RREG(PAGE_ARLCTRL, (REG_MULTIPORT_ADDR1_LO + (i * 0x10)), (uint8 *)&cur64, sizeof(cur64)|DATA_TYPE_VID_MAC);
+       SF2SW_RREG(unit, PAGE_ARLCTRL, (REG_MULTIPORT_ADDR1_LO + (i * 0x10)), (uint8 *)&cur64, sizeof(cur64)|DATA_TYPE_VID_MAC);
        if ( 0 == memcmp(&v64[0], &cur64[0], 8) )
        {
            return 0;
@@ -4331,26 +4396,26 @@ int ioctl_extsw_set_multiport_address(uint8_t *addr)
     /* add new entry */
     for ( i = 0; i < MULTIPORT_CTRL_COUNT; i++ )
     {
-        SF2SW_RREG(PAGE_ARLCTRL, REG_MULTIPORT_CTRL, (uint8 *)&v16, 2);
+        SF2SW_RREG(unit, PAGE_ARLCTRL, REG_MULTIPORT_CTRL, (uint8 *)&v16, 2);
         if ( 0 == (v16 & (MULTIPORT_CTRL_EN_M << (i << 1))))
         {
             v16 |= (1<<MULTIPORT_CTRL_DA_HIT_EN) | (MULTIPORT_CTRL_ADDR_CMP << (i << 1));
-            SF2SW_WREG(PAGE_ARLCTRL, REG_MULTIPORT_CTRL, (uint8 *)&v16, 2);
+            SF2SW_WREG(unit, PAGE_ARLCTRL, REG_MULTIPORT_CTRL, (uint8 *)&v16, 2);
             *(uint16*)(&v64[0]) = 0;
             memcpy(&v64[2], addr, 6);
-            SF2SW_WREG(PAGE_ARLCTRL, (REG_MULTIPORT_ADDR1_LO + (i * 0x10)), (uint8 *)&v64, sizeof(v64)|DATA_TYPE_VID_MAC);
+            SF2SW_WREG(unit, PAGE_ARLCTRL, (REG_MULTIPORT_ADDR1_LO + (i * 0x10)), (uint8 *)&v64, sizeof(v64)|DATA_TYPE_VID_MAC);
 #if defined(CONFIG_BCM_ENET_MULTI_IMP_SUPPORT)
             v32 = imp_pbmap[1];
 #else
             v32 = PBMAP_MIPS;
 #endif
-            SF2SW_WREG(PAGE_ARLCTRL, (REG_MULTIPORT_VECTOR1 + (i * 0x10)), (uint8 *)&v32, sizeof(v32));
+            SF2SW_WREG(unit, PAGE_ARLCTRL, (REG_MULTIPORT_VECTOR1 + (i * 0x10)), (uint8 *)&v32, sizeof(v32));
 
             /* Set multiport VLAN control based on U/V_FWD_MAP;
                This is required so that VLAN tagged frames matching Multiport Address are forwarded according to V/U forwarding map */
-            SF2SW_RREG(PAGE_8021Q_VLAN, REG_VLAN_MULTI_PORT_ADDR_CTL, &v16, sizeof(v16));
+            SF2SW_RREG(unit, PAGE_8021Q_VLAN, REG_VLAN_MULTI_PORT_ADDR_CTL, &v16, sizeof(v16));
             v16 |=  (EN_MPORT_V_FWD_MAP | EN_MPORT_U_FWD_MAP) << (i*EN_MPORT_V_U_FWD_MAP_S) ;
-            SF2SW_WREG(PAGE_8021Q_VLAN, REG_VLAN_MULTI_PORT_ADDR_CTL, &v16, sizeof(v16));
+            SF2SW_WREG(unit, PAGE_8021Q_VLAN, REG_VLAN_MULTI_PORT_ADDR_CTL, &v16, sizeof(v16));
 
             return 0;
         }
@@ -4389,6 +4454,7 @@ static void _ethsw_deep_green_mode_activate(void)
 {
     // based on impl5:ethsw_deep_green_mode_activate()
     uint32 reg_val32;
+    int unit = IS_ROOT_SW(sf2_sw)?0:1;
 
     printk("===> Activate Deep Green Mode\n");
 
@@ -4398,34 +4464,35 @@ static void _ethsw_deep_green_mode_activate(void)
     _imp_ports_op(IMP_PORTS_DISABLE);
 
     /* Disable all ports' MAC TX/RX clocks (IMPORTANT: prevent all traffic into Switch while its clock is lowered) */
-    SF2SW_RREG(PAGE_CONTROL, REG_LOW_POWER_EXP1, &reg_val32, 4);
+    SF2SW_RREG(unit, PAGE_CONTROL, REG_LOW_POWER_EXP1, &reg_val32, 4);
     reg_low_power_exp1 = reg_val32;    //Store register's value so that we can restore this value when we disable Deep Green Mode
     reg_val32 |= REG_LOW_POWER_EXP1_SLEEP_MACCLK_PORT_MASK;
-    SF2SW_WREG(PAGE_CONTROL, REG_LOW_POWER_EXP1, &reg_val32, 4);
+    SF2SW_WREG(unit, PAGE_CONTROL, REG_LOW_POWER_EXP1, &reg_val32, 4);
 
-    platform_set_clock_slow();
+    platform_set_clock_slow(unit);
 }
 
 static void _ethsw_deep_green_mode_deactivate(void)
 {
     // based on impl5:ethsw_deep_green_mode_deactivate()
     uint32 reg_val32;
+    int unit = IS_ROOT_SW(sf2_sw)?0:1;
 
     printk("<=== Deactivate Deep Green Mode\n");
 
-    platform_set_clock_normal();
+    platform_set_clock_normal(unit);
 
     /* Enable IMP port */
     _imp_ports_op(IMP_PORTS_ENABLE);
 
     /* Set IMP port to link up */
-    SF2SW_RREG(PORT_OVERIDE_PAGE, PORT_OVERIDE_REG(IMP_PORT_ID), &reg_val32, 4);
+    SF2SW_RREG(unit, PORT_OVERIDE_PAGE, PORT_OVERIDE_REG(IMP_PORT_ID), &reg_val32, 4);
     reg_val32 |= REG_CONTROL_MPSO_LINKPASS;
-    SF2SW_WREG(PORT_OVERIDE_PAGE, PORT_OVERIDE_REG(IMP_PORT_ID), &reg_val32, 4);
+    SF2SW_WREG(unit, PORT_OVERIDE_PAGE, PORT_OVERIDE_REG(IMP_PORT_ID), &reg_val32, 4);
 
     /* Re-enable in-use ports' MAC TX/RX clocks (leave unused port's MAC TX/RX clock disabled) */
     reg_val32 = reg_low_power_exp1;    //Restore register's previous value from before we enabled Deep Green Mode
-    SF2SW_WREG(PAGE_CONTROL, REG_LOW_POWER_EXP1, &reg_val32, 4);
+    SF2SW_WREG(unit, PAGE_CONTROL, REG_LOW_POWER_EXP1, &reg_val32, 4);
 
     port_traverse_ports(sf2_sw, tr_imp_port_up, PORT_CLASS_PORT, NULL);
 }
@@ -4501,6 +4568,7 @@ int ioctl_pwrmngt_set_deepgreenmode(int enable)
 void extsw_set_mac_address(enetx_port_t *port)
 {
     uint8_t *addr;
+    int unit = 1;
     // only operate if port is on sf2
     if (port != sf2_sw  && port->p.parent_sw != sf2_sw)
         return;
@@ -4508,9 +4576,13 @@ void extsw_set_mac_address(enetx_port_t *port)
 #if defined(CONFIG_BCM_ENET_MULTI_IMP_SUPPORT)
     /* Static MAC works for all scenarios, so just add multiport
      * MAC only when multiple IMP ports are in use. */
-    ioctl_extsw_set_multiport_address(addr);
+    ioctl_extsw_set_multiport_address(unit, addr);
 #else
-    _enet_arl_write_ext(addr, 0, ARL_DATA_ENTRY_VALID|ARL_DATA_ENTRY_STATIC|IMP_PORT_ID);
+    if (port == sf2_sw)
+        unit = IS_ROOT_SW(port)?0:1;
+    else
+        unit = PORT_ON_ROOT_SW(port)?0:1;
+    _enet_arl_write_ext(unit, addr, 0, ARL_DATA_ENTRY_VALID|ARL_DATA_ENTRY_STATIC|IMP_PORT_ID);
 #endif
 }
 
@@ -4531,7 +4603,7 @@ int sf2_set_mac_port_state(int phy_port, int link, int speed, int duplex)
         v8 |= REG_PORT_STATE_100;
 
     down(&sf2_sw->s.conf_sem);
-    SF2SW_WREG(PORT_OVERIDE_PAGE, PORT_OVERIDE_REG(phy_port), &v8, 1);
+    SF2SW_WREG(1, PORT_OVERIDE_PAGE, PORT_OVERIDE_REG(phy_port), &v8, 1);
     up(&sf2_sw->s.conf_sem);
 
     return 0;
@@ -4542,9 +4614,9 @@ void sf2_force_mac_up(int port)
     // based on imp5\eth_pwrmngt.c:ethsw_force_mac_up()
     uint32 reg_val32 = 0;
     
-    SF2SW_RREG(PAGE_CONTROL, REG_LOW_POWER_EXP1, &reg_val32, 4);
+    SF2SW_RREG(1, PAGE_CONTROL, REG_LOW_POWER_EXP1, &reg_val32, 4);
     reg_val32 &= ~((1<<port) << REG_LOW_POWER_EXP1_SLEEP_MACCLK_PORT_SHIFT);
-    SF2SW_WREG(PAGE_CONTROL, REG_LOW_POWER_EXP1, &reg_val32, 4);
+    SF2SW_WREG(1, PAGE_CONTROL, REG_LOW_POWER_EXP1, &reg_val32, 4);
 #if defined(CONFIG_BCM_ETH_DEEP_GREEN_MODE)
     reg_low_power_exp1 &= ~((1<<port) << REG_LOW_POWER_EXP1_SLEEP_MACCLK_PORT_SHIFT);
 #endif
@@ -4645,8 +4717,10 @@ static int tr_fill_sysp_conf(enetx_port_t *port, void *ctxt)
     if (port->has_interface) {
         bcmSysport_BlogChnl_t *ch = &(conf->blog_chnl[port->n.blog_chnl]);
         conf->nbr_of_blog_channels++;
+        conf->switch_parent_port = NO_EXT_SWITCH;
 #if defined(CONFIG_BCM963178) || defined(CONFIG_BCM963158)
         ch->sysport = 0;
+        ch->switch_id = 0;
         ch->port = port->p.mac->mac_id;
 #if defined(PORT_WITH_8TXQ)
         ch->nbr_of_queues = (port->p.mac->mac_id == PORT_WITH_8TXQ) ? 8 : 4;
@@ -4661,6 +4735,7 @@ static int tr_fill_sysp_conf(enetx_port_t *port, void *ctxt)
             ch->sysport = port->p.parent_sw->s.parent_port->p.mac->mac_id;
             ch->port = port->p.mac->mac_id;
         }
+        ch->switch_id = 0;
         ch->nbr_of_queues = 8;
 #endif
         blog_chnl_array[port->n.blog_chnl] = port;
@@ -4683,6 +4758,7 @@ static int bcmenet_sysport_config(void)
     }
 
     memset(&conf, 0, sizeof(conf));
+    conf.switch_parent_port = NO_EXT_SWITCH;
 #if defined(CONFIG_BCM963178) || defined(CONFIG_BCM963158)
     conf.nbr_of_sysports = 1;
     conf.sysport[0].mode = BCM_ENET_SYSPORT_MODE_INTERNAL_BRCM_SW;
@@ -4733,9 +4809,7 @@ int enetxapi_post_sf2_config(void)
 {
     char *buf;
     int sz = 0;
-#if defined(CONFIG_BCM_IEEE1905)
     uint8_t ieee1905_multicast_mac[6] = {0x01, 0x80, 0xc2, 0x00, 0x00, 0x13};
-#endif
 
     serdes_work_around(NULL); 
 
@@ -4754,9 +4828,9 @@ int enetxapi_post_sf2_config(void)
     port_sf2_deep_green_mode_handler();
 #endif
 
-#if defined(CONFIG_BCM_IEEE1905)
-    ioctl_extsw_set_multiport_address(ieee1905_multicast_mac);
-#endif
+    if (IS_UNIT_SF2(0)) ioctl_extsw_set_multiport_address(0, ieee1905_multicast_mac);
+    if (IS_UNIT_SF2(1)) ioctl_extsw_set_multiport_address(1, ieee1905_multicast_mac);
+
 
 #if defined(ARCHER_DEVICE)
     bcmFun_reg(BCM_FUN_ID_ENET_IS_WAN_PORT, bcmenet_is_wan_port);
@@ -4779,20 +4853,20 @@ static int bcmenet_tm_enable_set(void *ctxt)
     
     if (enable) {
         // turn off 53134 to 47622 flowcontrol
-        SF2SW_RREG(PORT_OVERIDE_PAGE, PORT_OVERIDE_REG(IMP_PORT_ID), &val8, sizeof(val8));
+        SF2SW_RREG(1, PORT_OVERIDE_PAGE, PORT_OVERIDE_REG(IMP_PORT_ID), &val8, sizeof(val8));
         val8 &= ~REG_PORT_STATE_TX_FLOWCTL;
-        SF2SW_WREG(PORT_OVERIDE_PAGE, PORT_OVERIDE_REG(IMP_PORT_ID), &val8, sizeof(val8));
+        SF2SW_WREG(1, PORT_OVERIDE_PAGE, PORT_OVERIDE_REG(IMP_PORT_ID), &val8, sizeof(val8));
         
     } else {
         // turn on 53134 to 47622 flowcontrol
-        SF2SW_RREG(PORT_OVERIDE_PAGE, PORT_OVERIDE_REG(IMP_PORT_ID), &val8, sizeof(val8));
+        SF2SW_RREG(1, PORT_OVERIDE_PAGE, PORT_OVERIDE_REG(IMP_PORT_ID), &val8, sizeof(val8));
         val8 |= REG_PORT_STATE_TX_FLOWCTL;
-        SF2SW_WREG(PORT_OVERIDE_PAGE, PORT_OVERIDE_REG(IMP_PORT_ID), &val8, sizeof(val8));
+        SF2SW_WREG(1, PORT_OVERIDE_PAGE, PORT_OVERIDE_REG(IMP_PORT_ID), &val8, sizeof(val8));
 
         // 53134 only gen IMP0 tx pause using total pause mechanism
-        SF2SW_RREG(PAGE_FLOW_CTRL, REG_FC_PAUSE_DROP_CTRL, &val, sizeof(val));
+        SF2SW_RREG(1, PAGE_FLOW_CTRL, REG_FC_PAUSE_DROP_CTRL, &val, sizeof(val));
         val &= ~FC_PAUSE_TX_IMP0_TXQ_EN;
-        SF2SW_WREG(PAGE_FLOW_CTRL, REG_FC_PAUSE_DROP_CTRL, &val, sizeof(val));
+        SF2SW_WREG(1, PAGE_FLOW_CTRL, REG_FC_PAUSE_DROP_CTRL, &val, sizeof(val));
     }
     return 0;
 }
@@ -4801,34 +4875,47 @@ static int bcmenet_tm_enable_set(void *ctxt)
 // =========== sf2 switch ops =============================
 void port_sf2_sw_fast_age(enetx_port_t *sw)
 {
+    int unit = IS_ROOT_SW(sw)?0:1;
     //enet_dbgv(" sw=%s\n", sw->obj_name);
-    _fast_age_start_done_ext(FAST_AGE_START_DONE | FAST_AGE_DYNAMIC);
+    _fast_age_start_done_ext(unit, FAST_AGE_START_DONE | FAST_AGE_DYNAMIC);
 }
 
 int port_sf2_sw_init(enetx_port_t *self)
 {
-    sf2_sw = self;    /* init sf2_sw shortcut */
+    int unit = IS_ROOT_SW(self)?0:1;
+    uint8_t val8;
+
+	if (sf2_unit_bmap)
+		sf2_sw_ext = self;
+	else
+		sf2_sw = self;
+    sf2_unit_bmap |= 1 << unit;
 
     SW_SET_HW_FWD(self);	/* initially hw fwd for all ports on switch */
     platform_enable_p8_rdp_sel();
-    platform_set_imp_speed();
+    platform_set_imp_speed(self);
 
-    _extsw_setup_imp_ports();
-    _extsw_setup_imp_fwding();
+    _extsw_setup_imp_ports(unit);
+    _extsw_setup_imp_fwding(unit);
 
     // configure trunk groups if required.
-    _extsw_port_trunk_init();
+    _extsw_port_trunk_init(unit);
 
     // set ARL AGE_DYNAMIC bit for aging operations
     port_sf2_sw_fast_age(self);
 
-    _sf2_qos_default();
+    // set VLAN_CTRL1.EN_RSV_MCAST_UNTAG
+    SF2SW_RREG(unit, PAGE_8021Q_VLAN, REG_VLAN_GLOBAL_CTRL1, &val8, 1);
+    val8 |= (VLAN_EN_RSV_MCAST_UNTAG_M << VLAN_EN_RSV_MCAST_UNTAG_S);
+    SF2SW_WREG(unit, PAGE_8021Q_VLAN, REG_VLAN_GLOBAL_CTRL1, &val8, 1);
+
+    _sf2_qos_default(unit);
 #if !defined(SF2_EXTERNAL)
     _sf2_conf_acb_conges_profile(0);
 #endif
     if (queThreConfMode != ThreModeManual)
     {
-        _sf2_conf_que_thred(); // for acb testing
+        _sf2_conf_que_thred(unit); // for acb testing
     }
 
     /* Register ARL Entry clear routine */
@@ -4853,8 +4940,9 @@ int port_sf2_sw_uninit(enetx_port_t *self)
 void port_sf2_sw_stats_clear(enetx_port_t *self)
 {
     uint32_t global_cfg, rst_mib_en;
+    int unit = IS_ROOT_SW(self)?0:1;
 
-    if (self != sf2_sw)
+    if (!IS_UNIT_SF2(unit))
         return;
 
 #if defined(CONFIG_BCM_KERNEL_BONDING)
@@ -4872,14 +4960,14 @@ void port_sf2_sw_stats_clear(enetx_port_t *self)
 #endif 
 
     rst_mib_en = 0xffff;    // enable clearing of all ports
-    SF2SW_WREG(PAGE_MANAGEMENT, REG_RST_MIB_CNT_EN, (uint8_t*)&rst_mib_en, 4);
+    SF2SW_WREG(unit, PAGE_MANAGEMENT, REG_RST_MIB_CNT_EN, (uint8_t*)&rst_mib_en, 4);
 
     // toggle global reset mib bit
-    SF2SW_RREG(PAGE_MANAGEMENT, REG_GLOBAL_CONFIG, &global_cfg, 4);
+    SF2SW_RREG(unit, PAGE_MANAGEMENT, REG_GLOBAL_CONFIG, &global_cfg, 4);
     global_cfg |= GLOBAL_CFG_RESET_MIB;
-    SF2SW_WREG(PAGE_MANAGEMENT, REG_GLOBAL_CONFIG, (uint8_t*)&global_cfg, 4);
+    SF2SW_WREG(unit, PAGE_MANAGEMENT, REG_GLOBAL_CONFIG, (uint8_t*)&global_cfg, 4);
     global_cfg &= ~GLOBAL_CFG_RESET_MIB;
-    SF2SW_WREG(PAGE_MANAGEMENT, REG_GLOBAL_CONFIG, (uint8_t*)&global_cfg, 4);
+    SF2SW_WREG(unit, PAGE_MANAGEMENT, REG_GLOBAL_CONFIG, (uint8_t*)&global_cfg, 4);
 
     udelay(50);  // hw need time to clear mibs
 }
@@ -4924,11 +5012,11 @@ int sw_config_trunk_chnl_rx(enetx_port_t *sw, enetx_port_t *port, int grp_no, in
 
 int port_sf2_sw_config_trunk(enetx_port_t *sw, enetx_port_t *port, int grp_no, int add)
 {
-    /* based on impl5:bcmsw_config_trunk() */
+    int unit = IS_ROOT_SW(sw)?0:1;
     uint16_t v16;
 
     down(&sf2_sw->s.conf_sem);
-    SF2SW_RREG(PAGE_MAC_BASED_TRUNK, REG_TRUNK_GRP_CTL + (2*grp_no), &v16, 2);
+    SF2SW_RREG(unit, PAGE_MAC_BASED_TRUNK, REG_TRUNK_GRP_CTL + (2*grp_no), &v16, 2);
     if (add)
     {
         v16 |= ( ( (1<< port->p.mac->mac_id) & TRUNK_EN_GRP_M ) << TRUNK_EN_GRP_S );
@@ -4939,7 +5027,7 @@ int port_sf2_sw_config_trunk(enetx_port_t *sw, enetx_port_t *port, int grp_no, i
         v16 &= ~( ( (1<< port->p.mac->mac_id) & TRUNK_EN_GRP_M ) << TRUNK_EN_GRP_S );
         enet_dbg("REM : port %s to group <%d>; New pmap <0x%02x>\n", port->obj_name, grp_no, v16);
     }
-    SF2SW_WREG(PAGE_MAC_BASED_TRUNK, REG_TRUNK_GRP_CTL + (2*grp_no), &v16, 2);
+    SF2SW_WREG(unit, PAGE_MAC_BASED_TRUNK, REG_TRUNK_GRP_CTL + (2*grp_no), &v16, 2);
     up(&sf2_sw->s.conf_sem);
 
     return sw_config_trunk_chnl_rx(sw, port, grp_no, add);
@@ -4947,6 +5035,7 @@ int port_sf2_sw_config_trunk(enetx_port_t *sw, enetx_port_t *port, int grp_no, i
 
 int port_sf2_sw_update_pbvlan(enetx_port_t *sw, unsigned int pmap)
 {
+    int unit = IS_ROOT_SW(sw)?0:1;
     int i;
 
     if (pmap == 0) return 0;    //nothing to do
@@ -4956,9 +5045,9 @@ int port_sf2_sw_update_pbvlan(enetx_port_t *sw, unsigned int pmap)
         if (pmap & (1<<i))
         {
 #if defined(CONFIG_BCM_ENET_MULTI_IMP_SUPPORT)
-            _extsw_set_pbvlan(i, pmap | (1 << cur_port_imp_map[i]));
+            _extsw_set_pbvlan(unit, i, pmap | (1 << cur_port_imp_map[i]));
 #else
-            _extsw_set_pbvlan(i, pmap | (1 << IMP_PORT_ID));
+            _extsw_set_pbvlan(unit, i, pmap | (1 << IMP_PORT_ID));
 #endif
         }
     }
@@ -4972,7 +5061,7 @@ static uint16_t dis_learning_ext = 0x0100; /* This default value does not matter
 int port_sf2_sw_hw_sw_state_set(enetx_port_t *sw, unsigned long state)
 {
     uint16_t val;
-    /* based on impl5:ethsw_set_hw_switching() */
+    int unit = IS_ROOT_SW(sw)?0:1;
 
     if (SW_IS_HW_FWD(sw) == state) {
         return 0;
@@ -4981,16 +5070,16 @@ int port_sf2_sw_hw_sw_state_set(enetx_port_t *sw, unsigned long state)
     down(&sw->s.conf_sem);
     if (state == HW_SWITCHING_ENABLED) {
         /* restore disable learning register */
-        SF2SW_WREG(PAGE_CONTROL, REG_DISABLE_LEARNING, &dis_learning_ext, 2);
+        SF2SW_WREG(unit, PAGE_CONTROL, REG_DISABLE_LEARNING, &dis_learning_ext, 2);
         SW_SET_HW_FWD(sw);
     }
     else {
         /* Save disable_learning_reg setting */
-        SF2SW_RREG(PAGE_CONTROL, REG_DISABLE_LEARNING, &dis_learning_ext, 2);
+        SF2SW_RREG(unit, PAGE_CONTROL, REG_DISABLE_LEARNING, &dis_learning_ext, 2);
 
         /* disable learning on all ports */
         val = PBMAP_ALL;
-        SF2SW_WREG(PAGE_CONTROL, REG_DISABLE_LEARNING, &val, 2);
+        SF2SW_WREG(unit, PAGE_CONTROL, REG_DISABLE_LEARNING, &val, 2);
 
         /* flush arl table dynamic entries */
         port_sf2_sw_fast_age(sw);
@@ -5008,16 +5097,48 @@ int port_sf2_sw_hw_sw_state_get(enetx_port_t *sw)
 
 
 // =========== sf2 port ops =============================
+void dsl_mac2mac_port_handle(enetx_port_t *self)
+{
+    phy_dev_t *phy_dev;
+
+    if (self->p.phy && (phy_is_mac_to_mac(self->p.phy) || IsPortConnectedToExternalSwitch(self->p.phy->meta_id))
+        && self->p.handle_phy_link_change)
+    {
+        phy_dev = phy_is_crossbar(self->p.phy)? crossbar_phy_dev_first(self->p.phy):self->p.phy;
+        if (phy_dev == NULL)    /* Empty PHY under a crossbar port by phy-crossbar move in run time */
+            return;
+        phy_dev = cascade_phy_get_last(phy_dev);
+        self->p.phy->speed = phy_dev->speed;
+        self->p.phy->duplex = phy_dev->duplex;
+        self->p.phy->link = 1;
+        link_change_handler(self, self->p.phy->link, speed_macro_2_mbps(self->p.phy->speed), self->p.phy->duplex == PHY_DUPLEX_FULL);
+    }
+}
+
+void port_sf2_generic_open(enetx_port_t *self)
+{
+    if (self->p.parent_sw == sf2_sw)
+    {
+        PORT_SET_EXT_SW(self);
+        // port is on external switch, also enable connected runner/sysp port
+        if (sf2_sw->s.parent_port)
+            port_open(sf2_sw->s.parent_port);
+    }
+
+    dsl_mac2mac_port_handle(self);
+    port_generic_open(self); 
+}
 
 void port_sf2_fast_age(enetx_port_t *port)
 {
     uint8_t ctrl;
+    int unit = PORT_ON_ROOT_SW(port)?0:1;
 
     //enet_dbgv(" port=%s\n", port->obj_name);
     ctrl = port->p.mac->mac_id;
-    SF2SW_WREG(PAGE_CONTROL, REG_FAST_AGING_PORT, &ctrl, 1);
+    SF2SW_WREG(unit, PAGE_CONTROL, REG_FAST_AGING_PORT, &ctrl, 1);
     ctrl = FAST_AGE_START_DONE | FAST_AGE_DYNAMIC | FAST_AGE_PORT;
-    _fast_age_start_done_ext(ctrl);
+    _fast_age_start_done_ext(unit, ctrl);
 }
 
 #ifdef EMBEDDED_BRCMTAG_TX_INSERT
@@ -5222,28 +5343,35 @@ int port_sf2_rx_pkt_mod(enetx_port_t *port, struct sk_buff *skb)
 }
 #endif // EMBEDDED_BRCMTAG_RX_REMOVE
 
+// REG_WAN_PORT_MAP when bit is set
+//      - port has WAN role self->n.port_ndev_role == PORT_NETDEV_ROLE_WAN
+//   or - port has LAN role but is hw-switching disabled
 int port_sf2_port_role_set(enetx_port_t *self, port_netdev_role_t role)
 {
     /* based on impl5:bcmsw_config_wan() */
+    int unit = PORT_ON_ROOT_SW(self)?0:1;
     uint16_t wan_port_map;
     bcmFun_t *enet_port_role_notify = bcmFun_get(BCM_FUN_ID_ENET_PORT_ROLE_NOTIFY);
 
-   /* Configure WAN port */
-    SF2SW_RREG(PAGE_CONTROL, REG_WAN_PORT_MAP, &wan_port_map, sizeof(wan_port_map));
+    if (role < PORT_NETDEV_ROLE_NONE || role > PORT_NETDEV_ROLE_WAN)
+        return 0;
 
-    if (role == PORT_NETDEV_ROLE_WAN)
-    {
-        wan_port_map |= (1<<self->p.mac->mac_id); /* Add the WAN port in the port map */
-    }
-    else
+   /* Configure WAN port */
+    SF2SW_RREG(unit, PAGE_CONTROL, REG_WAN_PORT_MAP, &wan_port_map, sizeof(wan_port_map));
+
+    if (role == PORT_NETDEV_ROLE_LAN)
     {
         wan_port_map &= ~(1<<self->p.mac->mac_id); /* remove the WAN port in the port map */
     }
-    SF2SW_WREG(PAGE_CONTROL, REG_WAN_PORT_MAP, &wan_port_map, sizeof(wan_port_map));
+    else
+    {
+        wan_port_map |= (1<<self->p.mac->mac_id); /* Add the WAN port in the port map */
+    }
+    SF2SW_WREG(unit, PAGE_CONTROL, REG_WAN_PORT_MAP, &wan_port_map, sizeof(wan_port_map));
 
-    enet_dbg(" %s port %s as WAN; wan_pmap <0x%02x>\n", (role==PORT_NETDEV_ROLE_WAN)?"Add":"Remove", self->obj_name, wan_port_map);
+    enet_dbg(" %s port %s as WAN; wan_pmap <0x%02x>\n", (role!=PORT_NETDEV_ROLE_LAN)?"Add":"Remove", self->obj_name, wan_port_map);
     /* Disable learning */
-    SF2SW_WREG(PAGE_CONTROL, REG_DISABLE_LEARNING, &wan_port_map, sizeof(wan_port_map));
+    SF2SW_WREG(unit, PAGE_CONTROL, REG_DISABLE_LEARNING, &wan_port_map, sizeof(wan_port_map));
 
     /* NOTE : No need to change the PBVLAN map -- switch logic does not care about pbvlan when the port is WAN */
 
@@ -5252,15 +5380,17 @@ int port_sf2_port_role_set(enetx_port_t *self, port_netdev_role_t role)
        TBD */
 
     /* registered modules need to be aware of port role changes */
-    if (enet_port_role_notify)
+    if (enet_port_role_notify && (role != PORT_NETDEV_ROLE_NONE))
     {
         BCM_EnetPortRole_t port_role;
 
 #if defined(CONFIG_BCM963178) || defined(CONFIG_BCM963158)
         port_role.sysport = 0;
+        port_role.switch_id = 0;
         port_role.port = self->p.mac->mac_id;
 #elif defined(CONFIG_BCM947622)
         port_role.sysport = self->p.parent_sw->s.parent_port->p.mac->mac_id;
+        port_role.switch_id = 0;
         port_role.port = self->p.mac->mac_id;
 #endif
         port_role.is_wan = (self->n.port_netdev_role == PORT_NETDEV_ROLE_WAN);
@@ -5294,7 +5424,7 @@ int port_sf2_port_stp_set(enetx_port_t *self, int mode, int state)
         break;
     case STP_MODE_DISABLE:
         root_sw->s.stpDisabledPortMap |= (1 << swPort);
-        _ethsw_set_stp_mode(unit, port, REG_PORT_NO_SPANNING_TREE);
+        _ethsw_set_stp_mode(unit, port, REG_PORT_STP_STATE_FORWARDING);
         break;
     default:    // STP_MODE_UNCHANGED
         if (state == STP_STATE_UNCHANGED)
@@ -5323,6 +5453,7 @@ int port_sf2_port_stp_set(enetx_port_t *self, int mode, int state)
     return 0;
 }
 
+#if 0   /* skip Andrew code */
 // add by Andrew
 // ----------- SIOCETHSWCTLOPS ETHSWMIBDUMP functions ---
 int port_sf2_mib_dump_us(enetx_port_t *self, void *ethswctl)
@@ -5376,6 +5507,7 @@ int port_sf2_mib_dump_us(enetx_port_t *self, void *ethswctl)
     return 0;
 }
 // end of add
+#endif
 
 // ----------- SIOCETHSWCTLOPS ETHSWDUMPMIB functions ---
 
@@ -5386,180 +5518,182 @@ int port_sf2_mib_dump(enetx_port_t *self, int all)
     unsigned int v32, errcnt;
     uint8_t data[8] = {0};
     int port = self->p.mac->mac_id;
+    int unit = PORT_ON_ROOT_SW(self)?0:1;
 
     {
-        SF2SW_RREG(PAGE_CONTROL, REG_LOW_POWER_EXP1, &v32, 4);
+        SF2SW_RREG(unit, PAGE_CONTROL, REG_LOW_POWER_EXP1, &v32, 4);
         if (v32 & (1<<port)) {
             enet_err("port=%d is in low power mode - mib counters not accessible!!\n", port);    // SLEEP_SYSCLK_PORT for specified port is set
             return 0;
         }
     }
+
     /* Display Tx statistics */
-    printk("External Switch Stats : Port# %d\n",port);
-    SF2SW_RREG(PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_TXUPKTS, &v32, 4);  // Get TX unicast packet count
+    printk("\nSF2 Switch Stats: Unit# %d Port# %d\n", unit, port);
+    SF2SW_RREG(unit, PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_TXUPKTS, &v32, 4);  // Get TX unicast packet count
     printk("TxUnicastPkts:          %10u \n", v32);
-    SF2SW_RREG(PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_TXMPKTS, &v32, 4);  // Get TX multicast packet count
+    SF2SW_RREG(unit, PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_TXMPKTS, &v32, 4);  // Get TX multicast packet count
     printk("TxMulticastPkts:        %10u \n",  v32);
-    SF2SW_RREG(PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_TXBPKTS, &v32, 4);  // Get TX broadcast packet count
+    SF2SW_RREG(unit, PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_TXBPKTS, &v32, 4);  // Get TX broadcast packet count
     printk("TxBroadcastPkts:        %10u \n", v32);
-    SF2SW_RREG(PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_TXDROPS, &v32, 4);
+    SF2SW_RREG(unit, PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_TXDROPS, &v32, 4);
     printk("TxDropPkts:             %10u \n", v32);
 
     if (all)
     {
-        SF2SW_RREG(PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_TXOCTETS, data, DATA_TYPE_HOST_ENDIAN|8);
+        SF2SW_RREG(unit, PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_TXOCTETS, data, DATA_TYPE_HOST_ENDIAN|8);
         v32 = *((uint64 *)data);
         printk("TxOctetsLo:             %10u \n", v32);
         v32 = *((uint64 *)data) >> 32;
         printk("TxOctetsHi:             %10u \n", v32);
 //
-        SF2SW_RREG(PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_TX64OCTPKTS, &v32, 4);
+        SF2SW_RREG(unit, PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_TX64OCTPKTS, &v32, 4);
         printk("TxPkts64Octets:         %10u \n", v32);
-        SF2SW_RREG(PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_TX127OCTPKTS, &v32, 4);
+        SF2SW_RREG(unit, PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_TX127OCTPKTS, &v32, 4);
         printk("TxPkts65to127Octets:    %10u \n", v32);
-        SF2SW_RREG(PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_TX255OCTPKTS, &v32, 4);
+        SF2SW_RREG(unit, PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_TX255OCTPKTS, &v32, 4);
         printk("TxPkts128to255Octets:   %10u \n", v32);
-        SF2SW_RREG(PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_TX511OCTPKTS, &v32, 4);
+        SF2SW_RREG(unit, PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_TX511OCTPKTS, &v32, 4);
         printk("TxPkts256to511Octets:   %10u \n", v32);
-        SF2SW_RREG(PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_TX1023OCTPKTS, &v32, 4);
+        SF2SW_RREG(unit, PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_TX1023OCTPKTS, &v32, 4);
         printk("TxPkts512to1023Octets:  %10u \n", v32);
-        SF2SW_RREG(PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_TXMAXOCTPKTS, &v32, 4);
+        SF2SW_RREG(unit, PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_TXMAXOCTPKTS, &v32, 4);
         printk("TxPkts1024OrMoreOctets: %10u \n", v32);
 //
-        SF2SW_RREG(PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_TXQ0PKT, &v32, 4);
+        SF2SW_RREG(unit, PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_TXQ0PKT, &v32, 4);
         printk("TxQ0Pkts:               %10u \n", v32);
-        SF2SW_RREG(PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_TXQ1PKT, &v32, 4);
+        SF2SW_RREG(unit, PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_TXQ1PKT, &v32, 4);
         printk("TxQ1Pkts:               %10u \n", v32);
-        SF2SW_RREG(PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_TXQ2PKT, &v32, 4);
+        SF2SW_RREG(unit, PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_TXQ2PKT, &v32, 4);
         printk("TxQ2Pkts:               %10u \n", v32);
-        SF2SW_RREG(PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_TXQ3PKT, &v32, 4);
+        SF2SW_RREG(unit, PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_TXQ3PKT, &v32, 4);
         printk("TxQ3Pkts:               %10u \n", v32);
-        SF2SW_RREG(PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_TXQ4PKT, &v32, 4);
+        SF2SW_RREG(unit, PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_TXQ4PKT, &v32, 4);
         printk("TxQ4Pkts:               %10u \n", v32);
-        SF2SW_RREG(PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_TXQ5PKT, &v32, 4);
+        SF2SW_RREG(unit, PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_TXQ5PKT, &v32, 4);
         printk("TxQ5Pkts:               %10u \n", v32);
-        SF2SW_RREG(PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_TXQ6PKT, &v32, 4);
+        SF2SW_RREG(unit, PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_TXQ6PKT, &v32, 4);
         printk("TxQ6Pkts:               %10u \n", v32);
-        SF2SW_RREG(PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_TXQ7PKT, &v32, 4);
+        SF2SW_RREG(unit, PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_TXQ7PKT, &v32, 4);
         printk("TxQ7Pkts:               %10u \n", v32);
-        SF2SW_RREG(PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_TXCOL, &v32, 4);
+        SF2SW_RREG(unit, PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_TXCOL, &v32, 4);
         printk("TxCol:                  %10u \n", v32);
-        SF2SW_RREG(PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_TXSINGLECOL, &v32, 4);
+        SF2SW_RREG(unit, PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_TXSINGLECOL, &v32, 4);
         printk("TxSingleCol:            %10u \n", v32);
-        SF2SW_RREG(PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_TXMULTICOL, &v32, 4);
+        SF2SW_RREG(unit, PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_TXMULTICOL, &v32, 4);
         printk("TxMultipleCol:          %10u \n", v32);
-        SF2SW_RREG(PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_TXDEFERREDTX, &v32, 4);
+        SF2SW_RREG(unit, PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_TXDEFERREDTX, &v32, 4);
         printk("TxDeferredTx:           %10u \n", v32);
-        SF2SW_RREG(PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_TXLATECOL, &v32, 4);
+        SF2SW_RREG(unit, PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_TXLATECOL, &v32, 4);
         printk("TxLateCol:              %10u \n", v32);
-        SF2SW_RREG(PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_TXEXCESSCOL, &v32, 4);
+        SF2SW_RREG(unit, PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_TXEXCESSCOL, &v32, 4);
         printk("TxExcessiveCol:         %10u \n", v32);
-        SF2SW_RREG(PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_TXFRAMEINDISC, &v32, 4);
+        SF2SW_RREG(unit, PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_TXFRAMEINDISC, &v32, 4);
         printk("TxFrameInDisc:          %10u \n", v32);
-        SF2SW_RREG(PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_TXPAUSEPKTS, &v32, 4);
+        SF2SW_RREG(unit, PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_TXPAUSEPKTS, &v32, 4);
         printk("TxPausePkts:            %10u \n", v32);
     }
     else
     {
         errcnt=0;
-        SF2SW_RREG(PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_TXCOL, &v32, 4);
+        SF2SW_RREG(unit, PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_TXCOL, &v32, 4);
         errcnt += v32;
-        SF2SW_RREG(PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_TXSINGLECOL, &v32, 4);
+        SF2SW_RREG(unit, PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_TXSINGLECOL, &v32, 4);
         errcnt += v32;
-        SF2SW_RREG(PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_TXMULTICOL, &v32, 4);
+        SF2SW_RREG(unit, PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_TXMULTICOL, &v32, 4);
         errcnt += v32;
-        SF2SW_RREG(PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_TXDEFERREDTX, &v32, 4);
+        SF2SW_RREG(unit, PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_TXDEFERREDTX, &v32, 4);
         errcnt += v32;
-        SF2SW_RREG(PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_TXLATECOL, &v32, 4);
+        SF2SW_RREG(unit, PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_TXLATECOL, &v32, 4);
         errcnt += v32;
-        SF2SW_RREG(PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_TXEXCESSCOL, &v32, 4);
+        SF2SW_RREG(unit, PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_TXEXCESSCOL, &v32, 4);
         errcnt += v32;
-        SF2SW_RREG(PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_TXFRAMEINDISC, &v32, 4);
+        SF2SW_RREG(unit, PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_TXFRAMEINDISC, &v32, 4);
         errcnt += v32;
         printk("TxOtherErrors:          %10u \n", errcnt);
     }
 
     /* Display Rx statistics */
-    SF2SW_RREG(PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_RXUPKTS, &v32, 4);  // Get RX unicast packet count
+    SF2SW_RREG(unit, PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_RXUPKTS, &v32, 4);  // Get RX unicast packet count
     printk("RxUnicastPkts:          %10u \n", v32);
-    SF2SW_RREG(PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_RXMPKTS, &v32, 4);  // Get RX multicast packet count
+    SF2SW_RREG(unit, PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_RXMPKTS, &v32, 4);  // Get RX multicast packet count
     printk("RxMulticastPkts:        %10u \n",v32);
-    SF2SW_RREG(PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_RXBPKTS, &v32, 4);  // Get RX broadcast packet count
+    SF2SW_RREG(unit, PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_RXBPKTS, &v32, 4);  // Get RX broadcast packet count
     printk("RxBroadcastPkts:        %10u \n",v32);
-    SF2SW_RREG(PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_RXDROPS, &v32, 4);
+    SF2SW_RREG(unit, PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_RXDROPS, &v32, 4);
     printk("RxDropPkts:             %10u \n",v32);
-    SF2SW_RREG(PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_RXDISCARD, &v32, 4);
+    SF2SW_RREG(unit, PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_RXDISCARD, &v32, 4);
     printk("RxDiscard:              %10u \n", v32);
 
     if (all)
     {
-        SF2SW_RREG(PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_RXOCTETS, data,  DATA_TYPE_HOST_ENDIAN|8);
+        SF2SW_RREG(unit, PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_RXOCTETS, data,  DATA_TYPE_HOST_ENDIAN|8);
         v32 = *((uint64 *)data);
         printk("RxOctetsLo:             %10u \n", v32);
         v32 = *((uint64 *)data) >> 32;
         printk("RxOctetsHi:             %10u \n", v32);
-        SF2SW_RREG(PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_RXGOODOCT, data,  DATA_TYPE_HOST_ENDIAN|8);
+        SF2SW_RREG(unit, PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_RXGOODOCT, data,  DATA_TYPE_HOST_ENDIAN|8);
         v32 = *((uint64 *)data);
         printk("RxGoodOctetsLo:         %10u \n", v32);
         v32 = *((uint64 *)data) >> 32;
         printk("RxGoodOctetsHi:         %10u \n", v32);
-        SF2SW_RREG(PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_RXJABBERS, &v32, 4);
+        SF2SW_RREG(unit, PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_RXJABBERS, &v32, 4);
         printk("RxJabbers:              %10u \n", v32);
-        SF2SW_RREG(PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_RXALIGNERRORS, &v32, 4);
+        SF2SW_RREG(unit, PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_RXALIGNERRORS, &v32, 4);
         printk("RxAlignErrs:            %10u \n", v32);
-        SF2SW_RREG(PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_RXFCSERRORS, &v32, 4);
+        SF2SW_RREG(unit, PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_RXFCSERRORS, &v32, 4);
         printk("RxFCSErrs:              %10u \n", v32);
-        SF2SW_RREG(PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_RXFRAGMENTS, &v32, 4);
+        SF2SW_RREG(unit, PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_RXFRAGMENTS, &v32, 4);
         printk("RxFragments:            %10u \n", v32);
-        SF2SW_RREG(PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_RXOVERSIZE, &v32, 4);
+        SF2SW_RREG(unit, PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_RXOVERSIZE, &v32, 4);
         printk("RxOversizePkts:         %10u \n", v32);
-        SF2SW_RREG(PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_RXUNDERSIZEPKTS, &v32, 4);
+        SF2SW_RREG(unit, PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_RXUNDERSIZEPKTS, &v32, 4);
         printk("RxUndersizePkts:        %10u \n", v32);
-        SF2SW_RREG(PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_RXPAUSEPKTS, &v32, 4);
+        SF2SW_RREG(unit, PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_RXPAUSEPKTS, &v32, 4);
         printk("RxPausePkts:            %10u \n", v32);
-        SF2SW_RREG(PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_RXSACHANGES, &v32, 4);
+        SF2SW_RREG(unit, PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_RXSACHANGES, &v32, 4);
         printk("RxSAChanges:            %10u \n", v32);
-        SF2SW_RREG(PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_RXSYMBOLERRORS, &v32, 4);
+        SF2SW_RREG(unit, PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_RXSYMBOLERRORS, &v32, 4);
         printk("RxSymbolError:          %10u \n", v32);
-        SF2SW_RREG(PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_RX64OCTPKTS, &v32, 4);
+        SF2SW_RREG(unit, PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_RX64OCTPKTS, &v32, 4);
         printk("RxPkts64Octets:         %10u \n", v32);
-        SF2SW_RREG(PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_RX127OCTPKTS, &v32, 4);
+        SF2SW_RREG(unit, PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_RX127OCTPKTS, &v32, 4);
         printk("RxPkts65to127Octets:    %10u \n", v32);
-        SF2SW_RREG(PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_RX255OCTPKTS, &v32, 4);
+        SF2SW_RREG(unit, PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_RX255OCTPKTS, &v32, 4);
         printk("RxPkts128to255Octets:   %10u \n", v32);
-        SF2SW_RREG(PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_RX511OCTPKTS, &v32, 4);
+        SF2SW_RREG(unit, PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_RX511OCTPKTS, &v32, 4);
         printk("RxPkts256to511Octets:   %10u \n", v32);
-        SF2SW_RREG(PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_RX1023OCTPKTS, &v32, 4);
+        SF2SW_RREG(unit, PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_RX1023OCTPKTS, &v32, 4);
         printk("RxPkts512to1023Octets:  %10u \n", v32);
-        SF2SW_RREG(PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_RXMAXOCTPKTS, &v32, 4);
+        SF2SW_RREG(unit, PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_RXMAXOCTPKTS, &v32, 4);
         printk("RxPkts1024OrMoreOctets: %10u \n", v32);
-        SF2SW_RREG(PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_RXJUMBOPKT , &v32, 4);
+        SF2SW_RREG(unit, PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_RXJUMBOPKT , &v32, 4);
         printk("RxJumboPkts:            %10u \n", v32);
-        SF2SW_RREG(PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_RXOUTRANGEERR, &v32, 4);
+        SF2SW_RREG(unit, PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_RXOUTRANGEERR, &v32, 4);
         printk("RxOutOfRange:           %10u \n", v32);
-        SF2SW_RREG(PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_RXINRANGEERR, &v32, 4);
+        SF2SW_RREG(unit, PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_RXINRANGEERR, &v32, 4);
         printk("RxInRangeErr:           %10u \n", v32);
     }
     else
     {
         errcnt=0;
-        SF2SW_RREG(PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_RXJABBERS, &v32, 4);
+        SF2SW_RREG(unit, PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_RXJABBERS, &v32, 4);
         errcnt += v32;
-        SF2SW_RREG(PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_RXALIGNERRORS, &v32, 4);
+        SF2SW_RREG(unit, PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_RXALIGNERRORS, &v32, 4);
         errcnt += v32;
-        SF2SW_RREG(PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_RXFCSERRORS, &v32, 4);
+        SF2SW_RREG(unit, PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_RXFCSERRORS, &v32, 4);
         errcnt += v32;
-        SF2SW_RREG(PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_RXFRAGMENTS, &v32, 4);
+        SF2SW_RREG(unit, PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_RXFRAGMENTS, &v32, 4);
         errcnt += v32;
-        SF2SW_RREG(PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_RXOVERSIZE, &v32, 4);
+        SF2SW_RREG(unit, PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_RXOVERSIZE, &v32, 4);
         errcnt += v32;
-        SF2SW_RREG(PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_RXUNDERSIZEPKTS, &v32, 4);
+        SF2SW_RREG(unit, PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_RXUNDERSIZEPKTS, &v32, 4);
         errcnt += v32;
-        SF2SW_RREG(PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_RXSYMBOLERRORS, &v32, 4);
+        SF2SW_RREG(unit, PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_RXSYMBOLERRORS, &v32, 4);
         errcnt += v32;
-        SF2SW_RREG(PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_RXOUTRANGEERR, &v32, 4);
+        SF2SW_RREG(unit, PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_RXOUTRANGEERR, &v32, 4);
         errcnt += v32;
-        SF2SW_RREG(PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_RXINRANGEERR, &v32, 4);
+        SF2SW_RREG(unit, PAGE_MIB_P0 + (port), SF2_REG_MIB_P0_RXINRANGEERR, &v32, 4);
         errcnt += v32;
         printk("RxOtherErrors:          %10u \n", errcnt);
 
@@ -5603,6 +5737,12 @@ void dslbase_phy_link_change_cb(void *ctx)
     if (!phy->link)
         serdes_work_around(first_phy);
 
+    if (active_end_phy->link && active_end_phy->macsec_dev)
+    {
+        macsec_api_data data = { .op = MACSEC_OPER_RESTART };
+        phy_dev_macsec_oper(active_end_phy, &data);
+    }
+
     if (p->dev)
     {
         /* Print new status to console */
@@ -5615,3 +5755,47 @@ void dslbase_phy_link_change_cb(void *ctx)
 #endif
     }
 }
+
+#if defined(CONFIG_BCM963138)
+
+#include "bcm_led.h"
+#include "bcm_pinmux.h"
+
+static void _handle_phy_move_led(enetx_port_t *port, unsigned short gpionum, enum bp_id id)
+{
+    // assume when GPHY4 when configured for LAN is on sf2 p4
+    short lkup_port = PORT_ON_ROOT_SW(port) ? 0 : 4;
+    short reverse_lkup = PORT_ON_ROOT_SW(port) ? 4 : 0;
+    unsigned int mux_info, mux_cur;
+
+    if ((gpionum != BP_GPIO_NONE) && (BpGrepPinmuxListByPort(id, lkup_port, gpionum, &mux_info) == 0)) {
+        // update new pinmux and update optled map
+        bcm_set_pinmux(gpionum, (mux_info & BP_PINMUX_VAL_MASK) >> BP_PINMUX_VAL_SHIFT);
+        bcm_pinmux_update_optled_map(gpionum, mux_info);
+
+        if (BpGrepPinmuxListByPort(id, reverse_lkup, gpionum, &mux_cur) == 0) {
+            unsigned short led_cur, led_new;
+            led_cur = (mux_cur & BP_PINMUX_OPTLED_VALID) ? ((mux_cur & BP_PINMUX_OPTLED_MASK) >> BP_PINMUX_OPTLED_SHIFT): gpionum;
+            led_new = (mux_info & BP_PINMUX_OPTLED_VALID) ? ((mux_info & BP_PINMUX_OPTLED_MASK) >> BP_PINMUX_OPTLED_SHIFT): gpionum;
+            if ((led_cur != led_new) && (mux_cur & BP_PINMUX_HWLED) && (mux_info & BP_PINMUX_HWLED)) {
+                // update LED mapping and disable flashing
+                bcm_led_update_source(0, 0, 1UL<<led_new, 1UL<<led_cur);
+                bcm_led_zero_flash_rate(led_new);
+            }
+            
+        }
+    }
+}
+
+void handle_phy_move(enetx_port_t *port, phy_dev_t *phy_dev, int external_endpoint)
+{
+    // handle GPHY4 LAN/WAN move updating link/speed LED pinmux
+    if (external_endpoint == 1 && phy_dev->priv) {
+        LED_INFO *led = phy_dev->priv;
+
+        _handle_phy_move_led(port, led->LedLink & BP_GPIO_NUM_MASK, bp_usLinkLed);
+        _handle_phy_move_led(port, led->speedLed100 & BP_GPIO_NUM_MASK, bp_usSpeedLed100);
+        _handle_phy_move_led(port, led->speedLed1000 & BP_GPIO_NUM_MASK, bp_usSpeedLed1000);
+    }
+}
+#endif // 63138

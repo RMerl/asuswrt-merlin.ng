@@ -64,7 +64,7 @@ written consent.
 	defined(CONFIG_BCM963178) || defined(_BCM963178_) || \
 	defined(CONFIG_BCM947622) || defined(_BCM947622_)
 #define PMC_IMPL_3_X
-#elif defined(_BCM96878_) || defined(CONFIG_BCM96878)
+#elif defined(_BCM96878_) || defined(CONFIG_BCM96878) || defined(_BCM96855_) || defined(CONFIG_BCM96855)
 #define PMC_ON_HOSTCPU      1
 #else
 #define PMC_CPU_BIG_ENDIAN   1
@@ -1042,6 +1042,90 @@ enum {
 
 #endif /* defined(_BCM96878_) || defined(CONFIG_BCM96878) */
 
+#if defined(_BCM96855_) || defined(CONFIG_BCM96855)
+#define PMB_BUS_MAX              2
+#define PMB_BUS_ID_SHIFT         12
+
+#define PMB_BUS_PERIPH           0
+#define PMB_ADDR_PERIPH          (0 | PMB_BUS_PERIPH << PMB_BUS_ID_SHIFT)
+#define PMB_ZONES_PERIPH         4
+
+#define PMB_BUS_CHIP_CLKRST      0
+#define PMB_ADDR_CHIP_CLKRST     (1 | PMB_BUS_CHIP_CLKRST << PMB_BUS_ID_SHIFT)
+#define PMB_ZONES_CHIP_CLKRST    0
+
+#define PMB_BUS_SYSPLL           0
+#define PMB_ADDR_SYSPLL          (3 | PMB_BUS_SYSPLL << PMB_BUS_ID_SHIFT)
+#define PMB_ZONES_SYSPLL         0
+
+#define PMB_BUS_PVTMON           1
+#define PMB_ADDR_PVTMON          (6 | PMB_BUS_PVTMON << PMB_BUS_ID_SHIFT)
+#define PMB_ZONES_PVTMON         0
+
+#define PMB_BUS_MEMC             0
+#define PMB_ADDR_MEMC            (8 | PMB_BUS_MEMC << PMB_BUS_ID_SHIFT)
+#define PMB_ZONES_MEMC           1
+
+#define PMB_BUS_USB20_2X         1
+#define PMB_ADDR_USB20_2X        (10 | PMB_BUS_USB20_2X << PMB_BUS_ID_SHIFT)
+#define PMB_ZONES_USB20_2X       4
+
+#define PMB_BUS_WAN              1
+#define PMB_ADDR_WAN             (11 | PMB_BUS_WAN << PMB_BUS_ID_SHIFT)
+#define PMB_ZONES_WAN            6
+
+#define PMB_BUS_XRDP              1
+#define PMB_ADDR_XRDP             (12 | PMB_BUS_XRDP << PMB_BUS_ID_SHIFT)
+#define PMB_ZONES_XRDP            3
+
+#define PMB_BUS_PCIE0             1
+#define PMB_ADDR_PCIE0            (17 | PMB_BUS_PCIE0 << PMB_BUS_ID_SHIFT)
+#define PMB_ZONES_PCIE0           1
+
+#define PMB_BUS_PCIE1             1
+#define PMB_ADDR_PCIE1            (18 | PMB_BUS_PCIE1 << PMB_BUS_ID_SHIFT)
+#define PMB_ZONES_PCIE1           1
+
+#define PMB_BUS_WLAN0            1
+#define PMB_ADDR_WLAN0           (19 | PMB_BUS_WLAN0 << PMB_BUS_ID_SHIFT)
+#define PMB_ZONES_WLAN0          1
+
+#define PMB_BUS_WLAN0_PHY1       1
+#define PMB_ADDR_WLAN0_PHY1      (20 | PMB_BUS_WLAN0_PHY1 << PMB_BUS_ID_SHIFT)
+#define PMB_ZONES_WLAN0_PHY1     1
+
+#define PMB_BUS_WLAN0_PHY2       1
+#define PMB_ADDR_WLAN0_PHY2      (21 | PMB_BUS_WLAN0_PHY2 << PMB_BUS_ID_SHIFT)
+#define PMB_ZONES_WLAN0_PHY2     1
+
+
+
+#define PMB_BUS_ORION_CPU0       0
+#define PMB_ADDR_ORION_CPU0      (32 | PMB_BUS_ORION_CPU0 << PMB_BUS_ID_SHIFT)
+#define PMB_ZONES_ORION_CPU0     1
+
+#define PMB_BUS_ORION_CPU1       0
+#define PMB_ADDR_ORION_CPU1      (33 | PMB_BUS_ORION_CPU1 << PMB_BUS_ID_SHIFT)
+#define PMB_ZONES_ORION_CPU1     1
+
+#define PMB_BUS_ORION_CPU2       0
+#define PMB_ADDR_ORION_CPU2      (34 | PMB_BUS_ORION_CPU2 << PMB_BUS_ID_SHIFT)
+#define PMB_ZONES_ORION_CPU2     1
+
+#define PMB_BUS_ORION_NONCPU     0
+#define PMB_ADDR_ORION_NONCPU    (36 | PMB_BUS_ORION_NONCPU << PMB_BUS_ID_SHIFT)
+#define PMB_ZONES_ORION_NONCPU   1
+
+#define PMB_BUS_BIU_PLL          0
+#define PMB_ADDR_BIU_PLL         (38 | PMB_BUS_BIU_PLL << PMB_BUS_ID_SHIFT)
+#define PMB_ZONES_BIU_PLL        0
+
+#define PMB_BUS_BIU_BPCM         0
+#define PMB_ADDR_BIU_BPCM        (39 | PMB_BUS_BIU_BPCM << PMB_BUS_ID_SHIFT)
+#define PMB_ZONES_BIU_BPCM       1
+
+#endif /* defined(_BCM96855_) || defined(CONFIG_BCM96855) */
+
 #if defined(_BCM94908_) || defined(CONFIG_BCM94908)
 #define PMB_BUS_MAX			2
 #define PMB_BUS_ID_SHIFT		8
@@ -1758,7 +1842,7 @@ void pmc_log_dump(void);
 #if !(defined(_BCM96838_) || defined(CONFIG_BCM96838))
 int GetRevision(unsigned int *change, unsigned int *revision);
 int GetPVT(int sel, int island, int *value);
-#if !defined(_BCM96846_) && !defined(CONFIG_BCM96846) && !defined(_BCM96856_) && !defined(CONFIG_BCM96856) && !defined(_BCM96878_) && !defined(CONFIG_BCM96878)
+#if !defined(_BCM96846_) && !defined(CONFIG_BCM96846) && !defined(_BCM96856_) && !defined(CONFIG_BCM96856) && !defined(_BCM96878_) && !defined(CONFIG_BCM96878) && !defined(_BCM96855_) && !defined(CONFIG_BCM96855)
 int GetRCalSetting(int resistor, int* rcal);
 #endif
 #endif

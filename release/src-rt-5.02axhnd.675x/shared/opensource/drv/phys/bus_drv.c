@@ -43,8 +43,6 @@ extern bus_drv_t bus_6848_ext_drv;
 extern bus_drv_t bus_6858_lport_drv;
 extern bus_drv_t bus_6846_int_drv;
 extern bus_drv_t bus_6846_ext_drv;
-extern bus_drv_t bus_6878_int_drv;
-extern bus_drv_t bus_6878_ext_drv;
 extern bus_drv_t bus_47189_gmac0_drv;
 extern bus_drv_t bus_47189_gmac1_drv;
 extern bus_drv_t bus_i2c_drv;
@@ -84,7 +82,7 @@ bus_drv_t *bus_drv_get(bus_type_t bus_type)
         bus_drv = &bus_6858_lport_drv;
         break;
 #endif
-#if defined(CONFIG_BCM96846) || defined(CONFIG_BCM96856) || defined(CONFIG_BCM96878)     
+#if defined(CONFIG_BCM96846) || defined(CONFIG_BCM96856) || defined(CONFIG_BCM96878) || defined(CONFIG_BCM96855)    
     case BUS_TYPE_6846_INT:
         bus_drv = &bus_6846_int_drv;
         break;

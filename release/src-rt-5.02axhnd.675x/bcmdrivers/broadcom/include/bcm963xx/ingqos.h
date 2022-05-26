@@ -55,6 +55,7 @@ written consent.
 #define IQ_KEYMASKTBL_SIZE	16
 #define IQ_HASHTBL_SIZE		512
 #define IQ_HASH_BIN_SIZE	4
+#define IQ_HASHTBL_IDX(_idx)	((_idx) & (IQ_HASHTBL_SIZE - 1))
 
 /* the key field is sorted from port -> L2 -> L3 -> L4 -> MISC.
  * This is done for the sake of sorting the key mask table

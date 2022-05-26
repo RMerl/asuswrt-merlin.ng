@@ -61,7 +61,6 @@ int lport_set_rgmii_cfg(uint32_t portid, lport_rgmii_cfg_s *rgmii_cfg);
 int lport_get_port_status(uint32_t port, lport_port_status_s *port_status);
 int lport_get_port_link_status(uint32_t port, uint8_t *link_up);
 int lport_port_eee_set(uint32_t portid, uint8_t enable);
-int lport_reset_phy_cfg(uint32_t port, lport_port_phycfg_s *phycfg);
 int lport_rgmii_ate_config(uint32_t port, lport_rgmii_ate_s *rgmii_ate_conf);
 int lport_rgmii_ate_start(uint32_t port, uint32_t num_of_packets, uint8_t pkt_gen_en);
 int lport_get_brcm_phy_status(uint16_t phyid,lport_port_status_s *port_status);

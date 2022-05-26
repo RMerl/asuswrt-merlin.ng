@@ -33,7 +33,7 @@ unsigned int BcmHalMapInterruptEx(FN_HANDLER pfunc, void* param,
     unsigned long irqflags = 0x00;
     unsigned int retval;
     struct cpumask mask;
-#if !defined(CONFIG_BCM947189)
+#if !defined(CONFIG_BCM947189) && !defined(CONFIG_BRCM_IKOS)
     unsigned long flags;
 #endif
 
@@ -52,13 +52,13 @@ unsigned int BcmHalMapInterruptEx(FN_HANDLER pfunc, void* param,
         irqflags |= IRQF_TIMER;
 #endif
 
-    if(kerSysIsIkosBootSet() == 0) {
+#if !defined(CONFIG_BRCM_IKOS)
         /* For external interrupt, check if it is shared */
         if (irq >= INTERRUPT_ID_EXTERNAL_0 && irq <= INTERRUPT_ID_EXTERNAL_MAX) {
             if (IsExtIntrShared(kerSysGetExtIntInfo(irq)))
                 irqflags |= IRQF_SHARED;
         }
-    }
+#endif
 
     retval = request_irq(irq, (void*)pfunc, irqflags, devname,
             (void *)param);
@@ -115,7 +115,7 @@ unsigned int BcmHalMapInterruptEx(FN_HANDLER pfunc, void* param,
         }
     }
 
-#if !defined(CONFIG_BCM947189)
+#if !defined(CONFIG_BCM947189) && !defined(CONFIG_BRCM_IKOS)
     if(kerSysIsIkosBootSet() == 0) {
         if (irq >= INTERRUPT_ID_EXTERNAL_0 && irq <= INTERRUPT_ID_EXTERNAL_MAX)
         {
@@ -144,7 +144,7 @@ unsigned int BcmHalMapInterruptEx(FN_HANDLER pfunc, void* param,
                 | (1 << (EI_CLEAR_SHFT + ein))
 #endif
                 | (bothEdge << (EI_INSENS_SHFT + ein));
-#if defined(CONFIG_BCM96858) || defined(CONFIG_BCM963158) || defined(CONFIG_BCM96846) || defined(CONFIG_BCM96856) || defined(CONFIG_BCM947622) || defined(CONFIG_BCM963178) || defined(CONFIG_BCM96878)
+#if defined(CONFIG_BCM96858) || defined(CONFIG_BCM963158) || defined(CONFIG_BCM96846) || defined(CONFIG_BCM96856) || defined(CONFIG_BCM947622) || defined(CONFIG_BCM963178) || defined(CONFIG_BCM96878) || defined(CONFIG_BCM96855)
             PERF->ExtIrqMaskSet = (1 << ein);
 #else
             PERF->ExtIrqStatus |= (1 << (EI_MASK_SHFT + ein));
@@ -308,7 +308,7 @@ void BcmHalExternalIrqMask(unsigned int irq)
 {
     unsigned long flags;
     spin_lock_irqsave(&brcm_irqlock, flags);
-#if defined(CONFIG_BCM96858) || defined(CONFIG_BCM963158) || defined(CONFIG_BCM96846) || defined(CONFIG_BCM96856) || defined(CONFIG_BCM947622) || defined(CONFIG_BCM963178) || defined(CONFIG_BCM96878)
+#if defined(CONFIG_BCM96858) || defined(CONFIG_BCM963158) || defined(CONFIG_BCM96846) || defined(CONFIG_BCM96856) || defined(CONFIG_BCM947622) || defined(CONFIG_BCM963178) || defined(CONFIG_BCM96878) || defined(CONFIG_BCM96855)
     PERF->ExtIrqMaskClear = (1 << (irq - INTERRUPT_ID_EXTERNAL_0));
 #else
     PERF->ExtIrqStatus &= ~(1 << (EI_MASK_SHFT + irq - INTERRUPT_ID_EXTERNAL_0));
@@ -320,7 +320,7 @@ void BcmHalExternalIrqUnmask(unsigned int irq)
 {
     unsigned long flags;
     spin_lock_irqsave(&brcm_irqlock, flags);
-#if defined(CONFIG_BCM96858) || defined(CONFIG_BCM963158) || defined(CONFIG_BCM96846) || defined(CONFIG_BCM96856) || defined(CONFIG_BCM947622) || defined(CONFIG_BCM963178) || defined(CONFIG_BCM96878)
+#if defined(CONFIG_BCM96858) || defined(CONFIG_BCM963158) || defined(CONFIG_BCM96846) || defined(CONFIG_BCM96856) || defined(CONFIG_BCM947622) || defined(CONFIG_BCM963178) || defined(CONFIG_BCM96878) || defined(CONFIG_BCM96855)
     PERF->ExtIrqMaskSet = (1 << (irq - INTERRUPT_ID_EXTERNAL_0));
 #else
     PERF->ExtIrqStatus |= (1 << (EI_MASK_SHFT + irq - INTERRUPT_ID_EXTERNAL_0));

@@ -394,7 +394,20 @@ typedef enum
    CMS_MSG_IEEE1905_SET_CFG             = 0x10003571, /**< Save ieee parms TO MDM */
 
    CMS_MSG_MDM_POST_ACTIVATING          = 0x10003700, /**< MDM Post Activating */
-   
+
+   CMS_MSG_DBUS_PROPERTIES_CHANGED      = 0x1000A000, /**< DBus properties changed message */
+   CMS_MSG_DBUS_OBJECT_ADD              = 0x1000A001, /**< DBus object add message */
+   CMS_MSG_DBUS_OBJECT_DELETE           = 0x1000A002, /**< DBus object delete message */
+   CMS_MSG_DBUS_MULTI_PROPERTIES_CHANGED= 0x1000A003, /**< DBus Multiple properties changed message */
+   CMS_MSG_ECMS_WIFI_CONN_FAILURE        = 0x1000A004, /**< ECMS WIFI Connection Failure message */
+   CMS_MSG_ECMS_OMDIAG_RES_CPUMEM        = 0x1000A005, /**< ECMS exceed cpu memory alarm per resource */
+   CMS_MSG_ECMS_WLAN_APRSSI_QUERY_RESP   = 0x1000A006, /**< ECMS HTTPD APRSSI Query response */
+   CMS_MSG_ECMS_WLAN_STARSSI_QUERY_RESP  = 0x1000A007, /**< ECMS HTTPD STARSSI Query response */
+   CMS_MSG_ECMS_WLAN_STA_BSSTRANS_RESP   = 0x1000A008, /**< ECMS HTTPD Sta BSS Transition response */
+   CMS_MSG_ECMS_WLAN_STARSSI_LOW_ALARM   = 0x1000A009, /**< ECMS Sta Rssi lower threshold alarm */
+   CMS_MSG_ECMS_SYS_VOICE_EVENTS         = 0x1000A00A, /**< ECMS VOICE Events message */
+   CMS_MSG_ECMS_TO_WLCTDM                = 0x1000A00B, /**< ECMS to WLCTM*/
+
    CMS_MSG_CUSTOMER_RESERVED_BEGIN      = 0x20000000, /**< This range of messages are reserved for customer use */
    CMS_MSG_CUSTOMER_RESERVED_END        = 0x2FFFFFFF, /**< End of customer reserved range */
 
@@ -587,6 +600,116 @@ typedef struct
    char ifName[BUFLEN_32];  /** < the interface which receives the RA */
 } RAStatus6MsgBody;
 
+
+/* ECMS Reverse Message Begin */
+/* Data body for CMS_MSG_DBUS_PROPERTIES_CHANGED message type */
+typedef struct
+{
+   char objectPath[BUFLEN_128];      /**< object path of service */
+   char interfaceName[BUFLEN_64];    /**< interface name of object */
+   char propName[BUFLEN_64];         /**< property name of interface */
+   char propType[BUFLEN_32];         /**< property type of interface */
+   char propValue[BUFLEN_1024];      /**< property value of interface */
+} PropertiesChangedMsgBody;
+
+/* Data body for CMS_MSG_DBUS_MULTI_PROPERTIES_CHANGED message type. 
+ *
+ * {'MemAlarm': <byte 0x46>, 'InternalPort': <uint32 20>, 'TxPkts': <uint64 0>}
+ * {'Enable': <false>, 'Temperature': <0.0>, 'UserName':<'test123'>}
+ *
+ */
+typedef struct
+{
+   char objectPath[BUFLEN_128];      /**< object path of service */
+   char interfaceName[BUFLEN_64];    /**< interface name of object */
+   char propertiesText[BUFLEN_1024]; /**< Multiple changed properties via text patten */
+} MultiPropertiesChangedMsgBody;
+
+/* Data body for CMS_MSG_DBUS_OBJECT_ADD message type */
+typedef struct
+{
+   char objectPath[BUFLEN_128];       /**< object path of service */
+   char toAddObjPath[BUFLEN_128];     /**< to added object path */
+} ObjectAddMsgBody;
+
+/* Data body for CMS_MSG_DBUS_OBJECT_DELETE message type */
+typedef struct
+{
+   char objectPath[BUFLEN_128];       /**< object path of service */
+   char toDeleteObjPath[BUFLEN_128];  /**< to deleted object path */
+} ObjectDeleteMsgBody;
+
+/*Data body of CMS_MSG_ECMS_WIFI_CONN_FAILURE message type */
+typedef struct
+{
+   char ssid[BUFLEN_64];
+   char bssid[BUFLEN_32];
+   char reason[BUFLEN_128];
+}WifiConnFailureMsgBody;
+
+/*Data body of CMS_MSG_ECMS_SYS_VOICE_EVENTS message type*/
+typedef struct
+{
+   char event[BUFLEN_64];
+   char description[BUFLEN_128];
+}SysVoiceEventsMsgBody;
+
+/* Data body for CMS_MSG_ECMS_WLAN_APRSSI_QUERY_RESP message type */
+#define MAX_AP_NUMS 16 
+typedef struct
+{
+   char bssid[BUFLEN_32];
+   int rssi;
+} ApRssiResult;
+
+typedef struct
+{
+   unsigned int result;
+   char errdesc[BUFLEN_64];
+   char mac[BUFLEN_32];
+   ApRssiResult rssiResult[MAX_AP_NUMS];
+   unsigned int RFBand;
+   int nums;
+} ApRssiMsgBody;
+
+/* Data body for CMS_MSG_ECMS_WLAN_STARSSI_QUERY_RESP message type */
+#define MAX_STA_NUMS 32 
+typedef struct
+{
+   char mac[BUFLEN_32];
+   int rssi;
+} StaRssiResult;
+
+typedef struct
+{
+   unsigned int result;
+   char errdesc[BUFLEN_64];
+   StaRssiResult rssiResult[MAX_STA_NUMS];
+   unsigned int RFBand;
+   int nums;
+} StaRssiMsgBody;
+
+/* Data body for CMS_MSG_ECMS_WLAN_STA_BSSTRANS_RESP message type */
+typedef struct
+{
+   unsigned int result;
+   char errdesc[BUFLEN_64];
+   char mac[BUFLEN_32];
+   unsigned int statusCode;
+   unsigned int RFBand;
+} StaBssTransResultMsgBody;
+
+/* Data body for CMS_MSG_ECMS_WLAN_STARSSI_LOW_ALARM message type */
+typedef struct
+{
+   char objectPath[BUFLEN_128]; /**< object path of STA */
+   char mac[BUFLEN_32];
+   int type;
+   int rssi;
+   unsigned int RFBand;
+} StaRssiAlarmMsgBody;
+
+/* ECMS Reverse Message End */
 
 /*!\PPPOE state defines 
  * (was in syscall.h before)

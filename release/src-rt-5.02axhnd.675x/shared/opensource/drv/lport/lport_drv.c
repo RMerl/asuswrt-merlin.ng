@@ -553,6 +553,8 @@ int lport_set_rgmii_cfg(uint32_t portid, lport_rgmii_cfg_s *rgmii_cfg)
     return rc;
 }
 
+static uint16_t qgphy_base_addr = 1;
+
 static int qgphy_init(lport_init_s *init_params)
 {
     uint32_t i;
@@ -617,6 +619,8 @@ static int qgphy_init(lport_init_s *init_params)
         return LPORT_ERR_OK;
     }
 
+    qegphy_cntrl.phy_phyad = qgphy_base_addr;
+
     qegphy_cntrl.ext_pwr_down = ~ports_enabled & 0x0f;
     ag_drv_lport_ctrl_qegphy_cntrl_set(&qegphy_cntrl);
     UDELAY(900);
@@ -636,6 +640,11 @@ static int qgphy_init(lport_init_s *init_params)
         pr_info("LPORT QEGPHY PLL is not Locked!");
 
     return LPORT_ERR_OK;
+}
+
+void lport_qgphy_base_addr_set(uint16_t base_addr)
+{
+    qgphy_base_addr = base_addr;
 }
 
 /* default leds configuration:
@@ -1214,51 +1223,6 @@ int  lport_get_phyid(uint32_t port, uint16_t *phyid)
             return LPORT_ERR_STATE;
         }
     }
-    return rc;
-}
-
-int lport_reset_phy_cfg(uint32_t port, lport_port_phycfg_s *phycfg)
-{
-    int rc = LPORT_ERR_OK;
-    uint16_t phyid;
-    uint16_t reg_val;
-
-    rc = lport_get_phyid(port, &phyid);
-    if (rc)
-        return rc;
-
-    /*handle Phy Down */
-    if (!phycfg->port_up)
-    {
-        rc = lport_mdio22_wr(phyid, MII_BMCR, BMCR_POWERDOWN);
-        return rc;
-    }
-
-    /*now reset and config phy*/
-    rc = lport_mdio22_wr(phyid, MII_BMCR, BMCR_RESET);
-
-    UDELAY(200);
-    if (phycfg->autoneg_en)
-    {
-        reg_val = PSB_802_3|ANAR_10HD|ANAR_10FD|ANAR_TXHD|ANAR_TXFD;
-        reg_val |= phycfg->rx_pause_en ? ANAR_PAUSE|ANAR_ASYPAUSE:0;
-        rc  = rc ? rc : lport_mdio22_wr(phyid, MII_ANAR, reg_val);
-
-        if (phycfg->rate_adv_map & LPORT_RATE_1000MB)
-        {
-            reg_val = K1TCR_1000BT_FDX | K1TCR_RPTR | K1TCR_1000BT_HDX;
-            rc = rc ? rc : lport_mdio22_wr(phyid, MII_K1CTL, reg_val);
-        }
-    }
-
-    UDELAY(200);
-    /*finalize by writing again BMCR*/
-    reg_val = (phycfg->rate_adv_map & LPORT_RATE_1000MB) ? BMCR_SPEED1000:BMCR_SPEED100;
-    reg_val |= phycfg->duplex ? BMCR_DUPLEX : 0;
-    reg_val |= phycfg->autoneg_en ? BMCR_ANENABLE|BMCR_RESTARTAN: 0;
-
-    rc = rc ? rc : lport_mdio22_wr(phyid, MII_BMCR, reg_val);
-
     return rc;
 }
 

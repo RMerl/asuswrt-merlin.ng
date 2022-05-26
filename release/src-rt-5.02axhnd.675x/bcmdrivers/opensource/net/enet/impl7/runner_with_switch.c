@@ -49,6 +49,7 @@
 #endif
 
 #include <bcmnet.h>
+#include <bcmenet.h>
 #include "bcmenet_common.h"
 
 #if (defined(CONFIG_BCM_SPDSVC) || defined(CONFIG_BCM_SPDSVC_MODULE))
@@ -89,6 +90,16 @@ static int port_sf2_port_init(enetx_port_t *self)
     }
     else
     {
+#if defined(CONFIG_BCM_SWMDK)
+        /* port_is_ent_link_handling determination simple type handle by mdk */
+        phy_dev_t *phy = self->p.phy;
+        if (!(phy &&
+                (phy->phy_drv->phy_type == PHY_TYPE_SF2_SERDES || 
+                 phy->phy_drv->phy_type == PHY_TYPE_XGAE ||
+                 (phy_is_crossbar(phy)))))
+            self->p.handle_phy_link_change = 0;
+#endif
+        
         /* get the rdpa switch port in order to configure as owner to extswitch lan ports */
         rc = rdpa_port_get(rdpa_if_switch, &switch_port_obj);
         if (rc)
@@ -519,6 +530,12 @@ int port_sf2_mux_get_rx_index(enetx_port_t *sw, enetx_rx_info_t *rx_info, FkBuff
     return mux_get_rx_index(sw, rx_info, fkb, out_port);
 }
 
+static void port_dsl_runner_open(enetx_port_t *self)
+{ 
+    dsl_mac2mac_port_handle(self);
+    port_generic_open(self);
+}
+
 sw_ops_t port_runner_sw =
 {
     .init = port_runner_with_switch_sw_init,
@@ -551,18 +568,13 @@ port_ops_t port_runner_port =
     .mib_dump = port_runner_mib_dump,
     .print_status = port_sf2_print_status,
     .print_priv = port_runner_print_priv,
+    .open = port_dsl_runner_open,
+#if 0   /* skip Andrew code */
     .mib_dump_us = port_runner_mib_dump_us, // add by Andrew
+#endif
 };
 
 // =========== sf2 port ops =============================
-static void port_sf2_port_open(enetx_port_t *self)
-{
-    PORT_SET_EXT_SW(self);
-    // port is on external switch, also enable connected runner port
-    port_open(sf2_sw->s.parent_port);
-    port_generic_open(self);
-}
-
 // based on impl5\bcmenet_runner_inline.h:bcmeapi_pkt_xmt_dispatch()
 static int dispatch_pkt_sf2_lan(dispatch_info_t *dispatch_info)
 {
@@ -736,7 +748,7 @@ port_ops_t port_sf2_port =
     .print_priv = port_runner_print_priv,
     .pause_get = port_generic_pause_get,
     .pause_set = port_generic_pause_set,
-    .open = port_sf2_port_open,
+    .open = port_sf2_generic_open,
     .mtu_set = port_generic_mtu_set,
     .tx_q_remap = port_sf2_tx_q_remap,
 #if defined(CONFIG_BCM_ENET_MULTI_IMP_SUPPORT)
@@ -754,7 +766,9 @@ port_ops_t port_sf2_port =
         .switchdev_port_attr_set = sf2_switchdev_port_attr_set, 
     }
 #endif
+#if 0   /* skip Andrew code */
     .mib_dump_us = port_sf2_mib_dump_us, // add by Andrew
+#endif
 };
 
 port_ops_t port_sf2_port_mac =
@@ -766,7 +780,9 @@ port_ops_t port_sf2_port_mac =
     .mtu_set = port_generic_mtu_set,
     .mib_dump = port_sf2_mib_dump,
     .print_status = port_sf2_print_status,
+#if 0   /* skip Andrew code */
     .mib_dump_us = port_sf2_mib_dump_us, // add by Andrew
+#endif
 };
 
 port_ops_t port_sf2_port_imp =
@@ -778,7 +794,6 @@ port_ops_t port_sf2_port_imp =
     .stats_clear = port_generic_stats_clear,
     .pause_get = port_generic_pause_get,
     .pause_set = port_generic_pause_set,
-    //.open = port_sf2_port_open,
     .mtu_set = port_generic_mtu_set,
     .tx_q_remap = port_sf2_tx_q_remap,
     .tx_pkt_mod = port_sf2_tx_pkt_mod,  /* insert brcm tag for port on external switch */
@@ -788,7 +803,9 @@ port_ops_t port_sf2_port_imp =
     .role_set = port_sf2_port_role_set,
     .stp_set = port_sf2_port_stp_set,
     .fast_age = port_sf2_fast_age,
+#if 0   /* skip Andrew code */
     .mib_dump_us = port_sf2_mib_dump_us, // add by Andrew
+#endif
 };
 
 

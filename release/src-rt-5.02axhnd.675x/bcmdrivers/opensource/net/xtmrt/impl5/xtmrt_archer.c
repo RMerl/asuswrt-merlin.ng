@@ -1086,12 +1086,30 @@ void bcmxapi_SetPtmBonding(UINT32 bonding)
  * Returns: void
  *---------------------------------------------------------------------------
  */
-void bcmxapi_XtmGetStats(UINT8 vport, UINT32 *rxDropped, UINT32 *txDropped)
+void bcmxapi_XtmGetStats(PBCMXTMRT_DEV_CONTEXT pDevCtx, UINT8 vport, UINT32 *rxDropped, UINT32 *txDropped)
 {
-    //FIXME: This Will be fixed in the future releases as this logic needs to
-    //be added to map the netdevice to corresponding queues.
+    int rc;
+    uint32_t index;
+    archer_txq_stats_t egress_tm_stat = {};
+    rc = -1;
     *rxDropped = 0;
     *txDropped = 0;
+    BCM_LOG_INFO(BCM_LOG_ID_XTM, "num queues:%u", pDevCtx->ulTxQInfosSize);
+
+    for (index=0;index < pDevCtx->ulTxQInfosSize; index++)
+    {
+        egress_tm_stat.droppedPackets = 0;
+        if (archer_xtm_hooks.txdmaGetQStats)
+            rc = archer_xtm_hooks.txdmaGetQStats(pDevCtx->pTxQids[index]->ulDmaIndex,&egress_tm_stat);
+        if(!rc)
+        {
+           *txDropped += egress_tm_stat.droppedPackets;
+        }
+        else 
+        {
+           BCM_XTM_ERROR("rdpa_egress_tm_queue_stat_get failed rc %d", rc);
+        }
+    }
 
 }  /* bcmxapi_XtmGetStats() */
 
@@ -1240,7 +1258,7 @@ int archer_xtm_tx_queue_not_empty (int q_id)
     return bcm_async_queue_not_empty (&xtm_cpu_queues->txq);
 }
 
-int archer_xtm_rx_queue_write (int q_id, uint8_t **pData, int data_len, int ingress_port, int desc_status)
+int archer_xtm_rx_queue_write (int q_id, uint8_t *pData, int data_len, int ingress_port, int desc_status)
 {
     int rc = 0;
     /* assume this is received from queue 0 for now */
@@ -1250,7 +1268,7 @@ int archer_xtm_rx_queue_write (int q_id, uint8_t **pData, int data_len, int ingr
         xtm_queue_rx_info_t *rx_info = (xtm_queue_rx_info_t *)
             bcm_async_queue_entry_write (&xtm_cpu_queues->rxq[q_id]);
 
-        WRITE_ONCE(rx_info->pData, *pData);
+        WRITE_ONCE(rx_info->pData, pData);
         WRITE_ONCE(rx_info->length, data_len);
         WRITE_ONCE(rx_info->ingress_port, ingress_port);
         WRITE_ONCE(rx_info->desc_status, desc_status);

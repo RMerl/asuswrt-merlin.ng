@@ -36,6 +36,9 @@
 
 extern int phy_devices_internal_index(phy_dev_t *phy_dev);
 extern int mac_devices_internal_index(mac_dev_t *mac_dev);
+#ifdef CONFIG_BRCM_QEMU
+extern int run_qemu_test(int argc, char *argv[]);
+#endif
 
 static const char *port_type_string[] =
 {
@@ -53,6 +56,11 @@ static const char *net_port_type_string[] =
 static struct proc_dir_entry *proc_dir;
 static struct proc_dir_entry *cmd_proc_file;
 
+
+#ifdef CONFIG_BRCM_QEMU  
+#define QEMU_TEST_PROC_FILE  "qemu_mod"
+static struct proc_dir_entry *qemu_cmd_proc_file;
+#endif
 
 #ifdef ENET_DEBUG_RX_CPU_TRAFFIC
 #define DEBUG_MODE_PROC_FILE        "debug_mode"
@@ -148,6 +156,22 @@ static struct proc_cmd_table debug_mode_command_table =
     .module_name = "debug_mode_masters",
     .size = sizeof(debug_mode_command_entries) / sizeof(debug_mode_command_entries[0]),
     .ops = debug_mode_command_entries
+};
+#endif
+
+#ifdef CONFIG_BRCM_QEMU 
+static struct proc_cmd_ops qemu_mode_command_entries[] = 
+{
+    { 
+        .name = "run_qemu_test", .do_command = run_qemu_test
+    }
+};
+
+static struct proc_cmd_table qemu_mode_command_table = 
+{
+    .module_name = "run_qemu_test",
+    .size = sizeof(qemu_mode_command_entries) / sizeof(qemu_mode_command_entries[0]),
+    .ops = qemu_mode_command_entries
 };
 #endif
 
@@ -311,8 +335,8 @@ static ssize_t proc_get_crossbar_status(struct file *file, char *buff, size_t le
             continue;
         crossbar_current_status(phy_crossbar, &intPort, &extPort);
         *offset += sprintf(buff + *offset, "%s is connected to: %s at Port %d\n", 
-            intPortName[intPort], extPortName[extPort], 
-            extPort+BP_CROSSBAR_PORT_BASE);
+            intPortName[intPort], extPort==-1? "Floating": extPortName[extPort], 
+            extPort==-1? -1: extPort+BP_CROSSBAR_PORT_BASE);
 
     }
     return *offset;
@@ -386,6 +410,15 @@ void enet_proc_exit(void)
         debug_cmd_proc_file = NULL;
     }
 #endif
+
+#ifdef CONFIG_BRCM_QEMU
+    if (qemu_cmd_proc_file) 
+    {
+        remove_proc_entry(QEMU_TEST_PROC_FILE, proc_dir);
+        qemu_cmd_proc_file = NULL;
+    }
+#endif
+
     if (proc_dir)
     {
         remove_proc_entry(PROC_DIR, NULL);
@@ -423,9 +456,19 @@ int __init enet_proc_init(void)
     g_debug_mode_pckt_rx = 0;
     do_gettimeofday(&g_start_time);
 #endif
+
+#ifdef CONFIG_BRCM_QEMU
+    qemu_cmd_proc_file = proc_create_cmd(QEMU_TEST_PROC_FILE, proc_dir, &qemu_mode_command_table);
+    if (!qemu_cmd_proc_file) 
+    {
+        pr_err("Failed to create %s\n", QEMU_TEST_PROC_FILE);
+        goto error;
+    }
+#endif
+
     proc_dir = proc_mkdir(PROC_ETHERNET_DIR, NULL);
     if (!proc_create(PROC_CROSSBAR_STATUS, 0644, proc_dir, &crossbar_status_fops))
-		goto error;
+        goto error;
   
     return 0;
 

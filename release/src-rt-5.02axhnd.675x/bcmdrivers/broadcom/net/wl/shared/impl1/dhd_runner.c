@@ -223,8 +223,13 @@ extern char * nvram_get(const char *name);
 #else /* !DOR_NPM_DEFAULT */
 #define DHD_RNR_BCMC_TXOFFL_PRIORITY        1                /* Normal */
 #endif /* !DOR_NPM_DEFAULT */
+#ifdef BCM_DHD_LOCK
 #define DHD_RNR_INIT_PERIM_UNLOCK(dhdp)     DHD_UNLOCK(dhdp)
 #define DHD_RNR_INIT_PERIM_LOCK(dhdp)       DHD_LOCK(dhdp)
+#else
+#define DHD_RNR_INIT_PERIM_UNLOCK(dhdp)     DHD_PERIM_UNLOCK(dhdp)
+#define DHD_RNR_INIT_PERIM_LOCK(dhdp)       DHD_PERIM_LOCK(dhdp)
+#endif /* BCM_DHD_LOCK */
 #else /* !BCA_HNDROUTER */
 /* N+M feature default, disabled from REL_5.04L.01 and REL_5.02L.07P1 */
 #define DOR_NPM_DEFAULT                     0
@@ -593,6 +598,7 @@ typedef struct dhd_runner_hlp {
 
 	/* local counters */
 	ulong h2r_txpost_notif;        /* Host notifies Runner to post tx packets */
+	ulong h2r_txp_fail;            /* Number of Tx Post Notification failures */
 	ulong h2r_rx_compl_notif;      /* Host notifies Runner to process D2H RxCompl */
 	ulong h2r_tx_compl_notif;      /* Host notifies Runner to process D2H TxCompl */
 	ulong r2h_rx_compl_req;        /* Runner requests Host to receive a packet */
@@ -897,9 +903,10 @@ dhd_runner_get_ring_mem_alloc_type(dhd_runner_hlp_t *dhd_hlp,
  * +----------------------------------------------------------------------------
  */
 int
-dhd_runner_txpost(dhd_pub_t *dhd, void *txp, uint32 ifindex)
+dhd_runner_txpost(dhd_runner_hlp_t *dhd_hlp, void *txp, uint32 ifindex)
 {
 	int rc;
+	dhd_pub_t *dhd = dhd_hlp->dhd;
 	int pktlen = PKTLEN(dhd->osh, txp);
 	rdpa_dhd_tx_post_info_t info = {};
 #if (defined(CONFIG_BCM_SPDSVC) || defined(CONFIG_BCM_SPDSVC_MODULE))
@@ -932,6 +939,9 @@ dhd_runner_txpost(dhd_pub_t *dhd, void *txp, uint32 ifindex)
 	    DHD_TRACE(("dor%d %s (0x%p, %d, 0x%p) returned %d\r\n",
 	        dhd->unit, "rdpa_dhd_helper_send_packet_to_dongle",
 	        txp, pktlen, &info, rc));
+	    dhd_hlp->h2r_txp_fail++;
+	} else {
+	    dhd_hlp->h2r_txpost_notif++;
 	}
 
 	return rc;
@@ -1448,32 +1458,35 @@ dhd_runner_cfg_cpu_queue(struct dhd_runner_hlp *dhd_hlp, int init)
 	            dhd_hlp->dhd->unit, &system_obj, rc));
 	    }
 
-	    rc = rdpa_system_cpu_reason_to_tc_set(system_obj,
-	        rdpa_cpu_rx_reason_pci_ip_flow_miss_1 + dhd_hlp->dhd->unit,
-	        dhd_hlp->cpu_queue_id);
-	    bdmf_put(system_obj);
-	    if (rc != 0) {
-	        DHD_ERROR(("dor%d rdpa_system_cpu_reason_to_tc_set(0x%p, %d, %d) returned %d\r\n",
-	            dhd_hlp->dhd->unit, &system_obj,
-	            rdpa_cpu_rx_reason_pci_ip_flow_miss_1 + dhd_hlp->dhd->unit,
-	        dhd_hlp->cpu_queue_id, rc));
-	        return rc;
-	    }
+        if (DHD_RNR_OFFL_RXCMPL(dhd_hlp->dhd))
+        {
+		    rc = rdpa_system_cpu_reason_to_tc_set(system_obj,
+		    rdpa_cpu_rx_reason_pci_ip_flow_miss_1 + dhd_hlp->dhd->unit,
+		    dhd_hlp->cpu_queue_id);
+		    bdmf_put(system_obj);
+		    if (rc != 0) {
+		        DHD_ERROR(("dor%d rdpa_system_cpu_reason_to_tc_set(0x%px, %d, %d) returned %d\r\n",
+		        dhd_hlp->dhd->unit, &system_obj,
+		        rdpa_cpu_rx_reason_pci_ip_flow_miss_1 + dhd_hlp->dhd->unit,
+		        dhd_hlp->cpu_queue_id, rc));
+		        return rc;
+		    }
 
-	    rc = rdpa_cpu_tc_to_rxq_set(dhd_hlp->cpu_obj, dhd_hlp->cpu_queue_id,
-	        dhd_hlp->cpu_queue_id);
-	    if (rc != 0) {
-	        DHD_ERROR(("dor%d rdpa_cpu_tc_to_rxq_set(0x%p, %d, %d) returned %d\r\n",
-	            dhd_hlp->dhd->unit, dhd_hlp->cpu_obj,
-	            dhd_hlp->cpu_queue_id, dhd_hlp->cpu_queue_id, rc));
-	    }
+		    rc = rdpa_cpu_tc_to_rxq_set(dhd_hlp->cpu_obj, dhd_hlp->cpu_queue_id,
+		        dhd_hlp->cpu_queue_id);
+		    if (rc != 0) {
+		        DHD_ERROR(("dor%d rdpa_cpu_tc_to_rxq_set(0x%px, %d, %d) returned %d\r\n",
+		        dhd_hlp->dhd->unit, dhd_hlp->cpu_obj,
+		        dhd_hlp->cpu_queue_id, dhd_hlp->cpu_queue_id, rc));
+		    }
 
-	    rc = rc ? rc : rdpa_dhd_helper_cpu_data_set(dhd_hlp->dhd_helper_obj, &cpu_data);
-	    if (rc) {
-	        DHD_ERROR(("dor%d rdpa_dhd_helper_cpu_data_set(0x%p, 0x%p) returned %d\r\n",
-	            dhd_hlp->dhd->unit, dhd_hlp->dhd_helper_obj,  &cpu_data, rc));
-	        return rc;
-	    }
+		    rc = rc ? rc : rdpa_dhd_helper_cpu_data_set(dhd_hlp->dhd_helper_obj, &cpu_data);
+		    if (rc) {
+		        DHD_ERROR(("dor%d rdpa_dhd_helper_cpu_data_set(0x%px, 0x%px) returned %d\r\n",
+		            dhd_hlp->dhd->unit, dhd_hlp->dhd_helper_obj,  &cpu_data, rc));
+		        return rc;
+		    }
+		}
 	}
 #else /* RDP */
 	for (i = 0; i < 2; i++) {
@@ -3222,8 +3235,7 @@ dhd_runner_notify(struct dhd_runner_hlp *dhd_hlp,
 	            DHD_PKT_GET_FLOWID((void*)arg1), (uint32)arg2));
 	        RPR1("H2R_TXPOST_NOTIF pkt<0x%p> ifid<%d>", (void*)arg1, (int)arg2);
 
-	        rc = dhd_runner_txpost(dhd, (void*)arg1, (uint32)arg2);
-	        dhd_hlp->h2r_txpost_notif++;
+	        rc = dhd_runner_txpost(dhd_hlp, (void*)arg1, (uint32)arg2);
 	        return rc;
 
 	    /* Host notifies Runner to process D2H TxCompl */
@@ -3572,10 +3584,18 @@ dhd_runner_request(struct dhd_runner_hlp *dhd_hlp,
 	            (void*)arg1, (int)arg2));
 	        if (DHD_RNR_RX_OFFLOAD(dhd_hlp)) {
 	            RPR1("dhd_bus_rx_frame pkt<0x%p> if<%d>", (void*)arg1, (int)arg2);
+#ifdef BCM_DHD_LOCK
 	            DHD_LOCK(dhd);
+#else
+	            DHD_PERIM_LOCK_ALL((dhd->fwder_unit % FWDER_MAX_UNIT));
+#endif
 	            dhd_hlp->r2h_rx_compl_req++;
 	            dhd_bus_rx_frame(dhd->bus, (void *)arg1, (int)arg2, 1);
+#ifdef BCM_DHD_LOCK
 	            DHD_UNLOCK(dhd);
+#else
+	            DHD_PERIM_UNLOCK_ALL((dhd->fwder_unit % FWDER_MAX_UNIT));
+#endif
 	        } else {
 	            DHD_ERROR(("dhd%d: unexpected R2H_RX_COMPL_REQUEST <0x%lx> <0x%lx>\n",
 	                  dhd->unit, arg1, arg2));
@@ -4851,9 +4871,9 @@ dhd_runner_iovar_dump(dhd_runner_hlp_t *dhd_hlp, char *buff,
 	  * tx_compl         Runner requests Host to free a packet
 	  * wake_dngl        Runner requests Host to wake dongle
 	  */
-	bcm_bprintf(b, "  h2r_notif  : tx_post %lu rx_cmpl %lu tx_cmpl %lu\n",
+	bcm_bprintf(b, "  h2r_notif  : tx_post %lu rx_cmpl %lu tx_cmpl %lu txp_fail %lu\n",
 	    dhd_hlp->h2r_txpost_notif, dhd_hlp->h2r_rx_compl_notif,
-	    dhd_hlp->h2r_tx_compl_notif);
+	    dhd_hlp->h2r_tx_compl_notif, dhd_hlp->h2r_txp_fail);
 	bcm_bprintf(b, "  r2h_req    : rx_cmpl %lu tx_cmpl %lu wk_dngl %lu\n",
 	    dhd_hlp->r2h_rx_compl_req, dhd_hlp->r2h_tx_compl_req,
 	    dhd_hlp->r2h_wake_dngl_req);

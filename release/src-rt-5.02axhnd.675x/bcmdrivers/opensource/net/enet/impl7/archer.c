@@ -670,7 +670,7 @@ int archer_enet_tx_queue_not_empty (int q_id)
     return bcm_async_queue_not_empty (&enet_cpu_queues->txq[q_id]);
 }
 
-int archer_enet_rx_queue_write (int q_id, uint8_t **pData, int data_len, int ingress_port, int rx_csum_verified)
+int archer_enet_rx_queue_write (int q_id, uint8_t *pData, int data_len, int ingress_port, int rx_csum_verified)
 {
     int rc = 0;
 
@@ -679,7 +679,7 @@ int archer_enet_rx_queue_write (int q_id, uint8_t **pData, int data_len, int ing
         cpu_queue_rx_info_t *rx_info = (cpu_queue_rx_info_t *)
             bcm_async_queue_entry_write (&enet_cpu_queues->rxq[q_id]);
 
-        WRITE_ONCE(rx_info->pData, *pData);
+        WRITE_ONCE(rx_info->pData, pData);
         WRITE_ONCE(rx_info->length, data_len);
         WRITE_ONCE(rx_info->ingress_port, ingress_port);
         WRITE_ONCE(rx_info->rx_csum_verified, rx_csum_verified);
@@ -736,6 +736,31 @@ void archer_enet_recycle_queue_write(pNBuff_t pNBuff)
     ENET_CPU_QUEUE_WAKEUP_RECYCLE_WORKER(enet_cpu_queues);
 }
 
+static int archer_enet_cpu_affinity_set(struct task_struct *task_p)
+{
+    int retry = 10;
+    int rc;
+
+    do {
+        rc = set_cpus_allowed_ptr(task_p, cpumask_of(CONFIG_BCM_ARCHER_CPU_AFFINITY));
+        udelay(500);
+    } while(rc && --retry);
+
+    if(rc)
+    {
+        enet_err("Could not set Archer CPU Affinity = %d, ret %d\n",
+                 CONFIG_BCM_ARCHER_CPU_AFFINITY, rc);
+        BUG();
+    }
+    else
+    {
+        printk("Archer CPU Affinity = %d\n",
+               CONFIG_BCM_ARCHER_CPU_AFFINITY);
+    }
+
+    return rc;
+}
+
 static int archer_enet_host_bind(void)
 {
     bcmFun_t *archer_driver_host_bind = bcmFun_get(BCM_FUN_ID_ARCHER_HOST_BIND);
@@ -756,14 +781,19 @@ static int archer_enet_host_bind(void)
     hooks.rx_queue_write = archer_enet_rx_queue_write;
     hooks.recycle_queue_write = archer_enet_recycle_queue_write;
     hooks.queue_stats = archer_enet_cpu_queue_stats;
+    hooks.archer_task_p = NULL;
 
     rc = archer_driver_host_bind(&hooks);
     if(rc)
     {
         enet_err("Could not bind to Archer\n");
+
+        return rc;
     }
 
-    return rc;
+    BCM_ASSERT(hooks.archer_task_p);
+
+    return archer_enet_cpu_affinity_set(hooks.archer_task_p);
 }
 
 #if defined(CC_ARCHER_ENET_DEBUG)

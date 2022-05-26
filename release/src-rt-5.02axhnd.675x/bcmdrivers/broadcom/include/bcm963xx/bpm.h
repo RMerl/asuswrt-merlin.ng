@@ -296,7 +296,6 @@ typedef struct {
 /* Used to compute the number of skbuff(s) as a percent of total BPM buffers */
 #define BPM_SKB_POOL_PCT_INIT             80
 
-/* Extend BPM SKB pool by 16 skbuffs, on depleted BPM Pool */
-#define BPM_SKB_POOL_EXTEND               16
+#define BPM_PRINT_FREQ(val)      (((val) & ((val) -1)) == 0)
 
 #endif /*  __BPM_H_INCLUDED__ */

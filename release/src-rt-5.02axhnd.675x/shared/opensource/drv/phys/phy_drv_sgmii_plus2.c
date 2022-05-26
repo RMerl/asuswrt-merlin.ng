@@ -144,6 +144,11 @@ static prog_entry_t forced_speed_2p5g_phy[] = {
     { NULL,                             0x00, 0x0000 }
 };
 
+#ifndef mdelay
+#define mdelay(n) (\
+    ({unsigned long __ms=(n); while (__ms--) udelay(1000);}))
+#endif
+
 int sgmii_read(phy_dev_t *phy_dev, uint16_t reg, uint16_t *val)
 {
     int ret;
@@ -287,7 +292,7 @@ int sgmii_speed_set(phy_dev_t *phy_dev, phy_speed_t speed)
     if ((ret = sgmii_write(phy_dev, 0x00, 0x8000)))
         goto Exit;
 
-    udelay(10000);
+    mdelay(10);
 
     phy_dev_prog(phy_dev, disable_pll);
     phy_dev_prog(phy_dev, refclk50m_vco6p25g);
@@ -300,9 +305,9 @@ int sgmii_speed_set(phy_dev_t *phy_dev, phy_speed_t speed)
 
     phy_dev_prog(phy_dev, enable_pll);
 
-    udelay(10000);
-    udelay(10000);
+    mdelay(20);
 
 Exit:
     return ret;
 }
+

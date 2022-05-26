@@ -42,7 +42,10 @@
 void sf2_pseudo_mdio_switch_read(int page, int reg, void *data_out, int len);
 void sf2_pseudo_mdio_switch_write(int page, int reg, void *data_in, int len);
 
-extern enetx_port_t *sf2_sw;   /* external SF2 switch */
+extern enetx_port_t *sf2_sw;       /* 1st SF2 switch */
+extern enetx_port_t *sf2_sw_ext;   /* 2nd SF2 switch */
+extern uint32_t sf2_unit_bmap;
+
 #define PORT_ON_EXTERNAL_SW(port) ((port)->p.parent_sw == sf2_sw)
 
 extern sw_ops_t port_sf2_sw;
@@ -60,7 +63,9 @@ int ioctl_extsw_pmdioaccess(struct ethswctl_data *e);
 int ioctl_extsw_info(struct ethswctl_data *e);
 int ioctl_extsw_vlan(struct ethswctl_data *e);
 int ioctl_extsw_arl_access(struct ethswctl_data *e);
+#if 0   /* skip Andrew code */
 int ioctl_extsw_arl_dump(struct ethswctl_data *e);  // add by Andrew
+#endif
 int ioctl_extsw_regaccess(struct ethswctl_data *e, enetx_port_t *port);
 int ioctl_extsw_cfg_acb(struct ethswctl_data *e);
 int ioctl_extsw_port_mirror_ops(struct ethswctl_data *e);
@@ -71,7 +76,7 @@ int ioctl_extsw_cosq_port_mapping(struct ethswctl_data *e);
 int ioctl_extsw_control(struct ethswctl_data *e);
 int ioctl_extsw_pcp_to_priority_mapping(struct ethswctl_data *e);
 int ioctl_extsw_pid_to_priority_mapping(struct ethswctl_data *e);
-int ioctl_extsw_set_multiport_address(uint8_t *addr);
+int ioctl_extsw_set_multiport_address(int unit, uint8_t *addr);
 int ioctl_extsw_que_mon(struct ethswctl_data *e);
 int ioctl_extsw_maclmt(struct ethswctl_data *e);
 int ioctl_extsw_prio_control(struct ethswctl_data *e);
@@ -90,11 +95,13 @@ void extsw_set_mac_address(enetx_port_t *port);
 
 void link_change_handler(enetx_port_t *port, int linkstatus, int speed, int duplex);
 
-#if defined(ARCHER_DEVICE) && !defined(SYSPVSW_DEVICE)
-#define SF2_ETHSWCTL_UNIT 0
+#if defined(CONFIG_BCM963138)
+void handle_phy_move(enetx_port_t *port, phy_dev_t *phy_dev, int external_endpoint);
 #else
-#define SF2_ETHSWCTL_UNIT 1
+#define handle_phy_move(port, phy, ee)
 #endif
+
+#define IS_UNIT_SF2(u)  (sf2_unit_bmap & (1 << (u)))
 
 #define IS_PHY_ADDR_FLAG 0x80000000
 #define IS_SPI_ACCESS    0x40000000

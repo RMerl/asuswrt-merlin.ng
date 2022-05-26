@@ -9,7 +9,7 @@
    features at a common place */
 #if defined(CONFIG_BCM963148) || defined(CONFIG_BCM94908) || defined(CONFIG_BCM96858) || defined(CONFIG_BCM963158) || \
     defined(CONFIG_BCM96846)  || defined(CONFIG_BCM947189) || defined(CONFIG_BCM96856) || defined(CONFIG_BCM963178) || \
-    defined(CONFIG_BCM947622) || defined(CONFIG_BCM96878)
+    defined(CONFIG_BCM947622) || defined(CONFIG_BCM96878)  ||defined(CONFIG_BCM96855)
 
 #define BCM_DCACHE_LINE_LEN	64ul
 #define BCM_DCACHE_ALIGN_LEN	63ul
@@ -135,7 +135,7 @@
 
 /* ############ Tailroom needed in the packet ############ */
 
-#define BCM_SKB_TAILROOM	32
+#define BCM_SKB_TAILROOM	BCM_DCACHE_ALIGN(32)
 
 
 

@@ -43,6 +43,15 @@ extern "C" {
 #define UBI_EC_HDR_SIZE  sizeof(struct ubi_ec_hdr)
 #define UBI_VID_HDR_SIZE sizeof(struct ubi_vid_hdr)
 
+/*
+ * Volume type constants used in the volume identifier header.
+ *
+ */
+enum {
+	UBI_VID_DYNAMIC = 1,
+	UBI_VID_STATIC  = 2
+};
+
 /* struct ubi_ec_hdr - UBI erase counter header. */
 struct ubi_ec_hdr {
 	unsigned int magic;

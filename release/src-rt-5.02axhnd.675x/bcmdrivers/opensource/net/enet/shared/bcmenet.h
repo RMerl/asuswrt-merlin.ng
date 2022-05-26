@@ -247,6 +247,7 @@ int bcm63xx_enet_getPortmapFromName(char *pIfName, int *pUnit, unsigned int *pPo
 int enet_send_dying_gasp_pkt(void);
 #endif /* DYING_GASP_API */
 
+typedef struct enetx_port_t enetx_port_t;
 void bcmeapi_reset_mib_cnt(uint32_t sw_port);
 struct net_device *enet_phyport_to_vport_dev(int port);
 struct net_device *phyPortId_to_netdev(int logical_port, int gemid);
@@ -257,7 +258,7 @@ unsigned int bcm63xx_enet_extSwId(void);
 void bcmeapi_enet_module_cleanup(void);
 uint32 ConfigureJumboPort(uint32 regVal, int portVal, unsigned int configVal);
 void bcmeapi_module_init2(void);
-void link_change_handler(int port, int cb_port, int linkstatus, int speed, int duplex);
+void link_change_handler(enetx_port_t *port, int linkstatus, int speed, int duplex);
 int enet_get_next_crossbar_port(int logPort, int cb_port);
 #define enet_get_first_crossbar_port(logPort) enet_get_next_crossbar_port(logPort, BP_CROSSBAR_NOT_DEFINED)
 #endif /* !ENET_4908_GMAC */

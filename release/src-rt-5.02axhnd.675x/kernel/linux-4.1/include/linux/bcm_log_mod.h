@@ -261,6 +261,7 @@ typedef struct {
 
 typedef struct {
     unsigned int sysport;
+    unsigned int switch_id;
     unsigned int port;
     unsigned int is_wan;
 } BCM_EnetPortRole_t;
@@ -273,6 +274,7 @@ typedef enum {
     BCM_ENET_SYSPORT_MODE_PORT,
     BCM_ENET_SYSPORT_MODE_INTERNAL_BRCM_SW,
     BCM_ENET_SYSPORT_MODE_EXTERNAL_BRCM_SW,
+    BCM_ENET_SYSPORT_MODE_STACKED_BRCM_SW,
     BCM_ENET_SYSPORT_MODE_MAX
 } bcmSysport_Mode_t;
 
@@ -283,6 +285,7 @@ typedef struct {
 typedef struct {
     struct net_device *dev;
     int sysport;
+    int switch_id;
     int port;
     int nbr_of_queues;
 } bcmSysport_BlogChnl_t;
@@ -292,6 +295,8 @@ typedef struct {
     bcmSysport_Sysport_t sysport[BCM_ENET_SYSPORT_INTF_MAX];
     int nbr_of_blog_channels;
     bcmSysport_BlogChnl_t blog_chnl[BCM_ENET_SYSPORT_BLOG_CHNL_MAX];
+    int switch_parent_port; /* parent port number if external switch exists, otherwise NO_EXT_SWITCH */
+#define         NO_EXT_SWITCH           -1
 } bcmSysport_Config_t;
 
 #define BCM_ENET_SYSPORT_QUEUE_MAP_PRIORITY_MAX  8

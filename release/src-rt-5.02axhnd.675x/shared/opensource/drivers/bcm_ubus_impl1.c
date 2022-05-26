@@ -170,6 +170,18 @@ ub_mst_addr_map_t ub_mst_addr_map_tbl[] =
     {UBUS_PORT_ID_QM,        MST_PORT_NODE_QM_PHYS_BASE},
     {UBUS_PORT_ID_DMA0,      MST_PORT_NODE_DMA0_PHYS_BASE},
     {UBUS_PORT_ID_RQ0,       MST_PORT_NODE_RQ0_PHYS_BASE},
+#elif defined (CONFIG_BCM96855) || defined(_BCM96855_)
+    {UBUS_PORT_ID_BIU,       MST_PORT_NODE_B53_PHYS_BASE},
+    {UBUS_PORT_ID_PER,       MST_PORT_NODE_PER_PHYS_BASE},
+    {UBUS_PORT_ID_USB,       MST_PORT_NODE_USB_PHYS_BASE},
+    {UBUS_PORT_ID_WIFI,      MST_PORT_NODE_WIFI_PHYS_BASE},
+    {UBUS_PORT_ID_PCIE0,     MST_PORT_NODE_PCIE0_PHYS_BASE},
+    {UBUS_PORT_ID_DMA0,      MST_PORT_NODE_DMA0_PHYS_BASE},
+    {UBUS_PORT_ID_DMA1,      MST_PORT_NODE_DMA1_PHYS_BASE},
+    {UBUS_PORT_ID_DMA2,      MST_PORT_NODE_DMA2_PHYS_BASE},
+    {UBUS_PORT_ID_QM,        MST_PORT_NODE_QM_PHYS_BASE},
+    {UBUS_PORT_ID_RQ0,       MST_PORT_NODE_RQ0_PHYS_BASE},
+    {UBUS_PORT_ID_RQ1,       MST_PORT_NODE_RQ1_PHYS_BASE},
 #elif defined (CONFIG_BCM96846) || defined(_BCM96846_)
     {UBUS_PORT_ID_BIU,       MST_PORT_NODE_B53_PHYS_BASE},
     {UBUS_PORT_ID_PER,       MST_PORT_NODE_PER_PHYS_BASE},
@@ -199,7 +211,7 @@ ub_mst_addr_map_t ub_mst_addr_map_tbl[] =
 
 #ifndef _CFE_
 val_to_str_t ubus_port_id_to_str[] = {
-#if !defined(CONFIG_BCM96878)
+#if !defined(CONFIG_BCM96878) && !defined(CONFIG_BCM96855)
     {UBUS_PORT_ID_MEMC, "MEMC"},
 #endif
     {UBUS_PORT_ID_BIU, "BIU"},     
@@ -223,7 +235,7 @@ val_to_str_t ubus_port_id_to_str[] = {
     {UBUS_PORT_ID_SPU, "SPU"},
 #else
     {UBUS_PORT_ID_DMA0, "DMA0"},   
-#if !defined(CONFIG_BCM96878)
+#if !defined(CONFIG_BCM96878) && !defined(CONFIG_BCM96855)
     {UBUS_PORT_ID_DQM, "DQM"},    
     {UBUS_PORT_ID_NATC, "NATC"},   
 #endif
@@ -258,7 +270,12 @@ val_to_str_t ubus_port_id_to_str[] = {
 #elif defined (CONFIG_BCM96856)
     {UBUS_PORT_ID_PCIE2, "PCIE2"},
     {UBUS_PORT_ID_DMA1, "DMA1"}, 
-    {UBUS_PORT_ID_RQ1, "RQ1"},  
+    {UBUS_PORT_ID_RQ1, "RQ1"},
+#elif defined (CONFIG_BCM96855)
+    {UBUS_PORT_ID_WIFI, "WIFI"},
+    {UBUS_PORT_ID_DMA1, "DMA1"},
+    {UBUS_PORT_ID_DMA2, "DMA2"},
+    {UBUS_PORT_ID_RQ1, "RQ1"},
 #endif
 #endif
 };
@@ -399,7 +416,7 @@ static int ubus_master_decode_wnd_cfg(int master_port_id, int win, unsigned int 
     if(master_addr)
     {
 #if defined(CONFIG_BCM963158) || defined(_BCM963158_) || defined(CONFIG_BCM963178) || defined(_BCM963178_) ||\
-    defined(CONFIG_BCM947622) || defined(_BCM947622_)
+    defined(CONFIG_BCM947622) || defined(_BCM947622_) || defined(CONFIG_BCM96855) || defined(_BCM96855_)
         /* 63158 has the all the master connected to the CCI as default so no need to
         configure the map. Just turn on the cache configuration */
         if( cache_bit_en )
@@ -464,7 +481,7 @@ EXPORT_SYMBOL(ubus_decode_pcie_wnd_cfg);
 #endif
 
 
-#if defined(CONFIG_BCM963158) || defined(CONFIG_BCM963178) || defined(CONFIG_BCM947622)
+#if defined(CONFIG_BCM963158) || defined(CONFIG_BCM963178) || defined(CONFIG_BCM947622) || defined(CONFIG_BCM96855)
 int ubus_remap_to_biu_cfg_wlu_srcpid(int srcpid, int enable)
 {
     volatile CoherencyPortCfgReg_t* cpcfg_reg = (volatile CoherencyPortCfgReg_t * const)UBUS_COHERENCY_PORT_CFG_BASE;
@@ -494,101 +511,86 @@ int ubus_remap_to_biu_cfg_wlu_srcpid(int srcpid, int enable)
 #if !defined(CONFIG_BCM963158) && !defined(CONFIG_BCM963178) && !defined(CONFIG_BCM947622)
 static int ubus_remap_to_biu_cfg_queue_srcpid(unsigned long lut_idx, unsigned int *p_srcpid_queus_value)
 {
-    CoherencyPortCfgReg_t *reg_addr = 
-        (CoherencyPortCfgReg_t*)(UBUS_COHERENCY_PORT_CFG_LUT_BASE + lut_idx * SIZE_OF_REG_BYTES); 
-
     if((lut_idx > 31) || (NULL == p_srcpid_queus_value))
         return -1;
 
-    reg_addr->queue_cfg = (((p_srcpid_queus_value[0] & 0xf) << SRCPID_TO_QUEUE_0_BITS_SHIFT) |
-                           ((p_srcpid_queus_value[1] & 0xf) << SRCPID_TO_QUEUE_1_BITS_SHIFT) |
-                           ((p_srcpid_queus_value[2] & 0xf) << SRCPID_TO_QUEUE_2_BITS_SHIFT) |
-                           ((p_srcpid_queus_value[3] & 0xf) << SRCPID_TO_QUEUE_3_BITS_SHIFT) |
-                           ((p_srcpid_queus_value[4] & 0xf) << SRCPID_TO_QUEUE_4_BITS_SHIFT) |
-                           ((p_srcpid_queus_value[5] & 0xf) << SRCPID_TO_QUEUE_5_BITS_SHIFT) |
-                           ((p_srcpid_queus_value[6] & 0xf) << SRCPID_TO_QUEUE_6_BITS_SHIFT) |
-                           ((p_srcpid_queus_value[7] & 0xf) << SRCPID_TO_QUEUE_7_BITS_SHIFT));
+    CohPortCfg->lut[lut_idx] = (((p_srcpid_queus_value[0] & 0xf) << SRCPID_TO_QUEUE_0_BITS_SHIFT) |
+                               ((p_srcpid_queus_value[1] & 0xf) << SRCPID_TO_QUEUE_1_BITS_SHIFT) |
+                               ((p_srcpid_queus_value[2] & 0xf) << SRCPID_TO_QUEUE_2_BITS_SHIFT) |
+                               ((p_srcpid_queus_value[3] & 0xf) << SRCPID_TO_QUEUE_3_BITS_SHIFT) |
+                               ((p_srcpid_queus_value[4] & 0xf) << SRCPID_TO_QUEUE_4_BITS_SHIFT) |
+                               ((p_srcpid_queus_value[5] & 0xf) << SRCPID_TO_QUEUE_5_BITS_SHIFT) |
+                               ((p_srcpid_queus_value[6] & 0xf) << SRCPID_TO_QUEUE_6_BITS_SHIFT) |
+                               ((p_srcpid_queus_value[7] & 0xf) << SRCPID_TO_QUEUE_7_BITS_SHIFT));
 
     UBUS_REMAP_DEBUG_LOG("\x1b[35m reg_addr[0x%p] reg_value[0x%x]\x1b[0m\n",
-                         (unsigned int*)(reg_addr), reg_addr->queue_cfg); 
+                         (unsigned int*)&(CohPortCfg->lut[lut_idx]), CohPortCfg->lut[lut_idx]); 
     
     return 0;                        
 }
 
 static int ubus_remap_to_biu_cfg_queue_depth(unsigned long q_depth_idx, unsigned int *p_depth_queus_value)
 {
-    CoherencyPortCfgReg_t *reg_addr = 
-        (CoherencyPortCfgReg_t*)(UBUS_COHERENCY_PORT_CFG_DEPTH_BASE + q_depth_idx * SIZE_OF_REG_BYTES); 
-
     if((q_depth_idx > 3) || (NULL == p_depth_queus_value))
         return -1;
 
-    reg_addr->queue_cfg = (((p_depth_queus_value[0] & 0xff) << DEPTH_TO_QUEUE_0_BITS_SHIFT) |
-                           ((p_depth_queus_value[1] & 0xff) << DEPTH_TO_QUEUE_1_BITS_SHIFT) |
-                           ((p_depth_queus_value[2] & 0xff) << DEPTH_TO_QUEUE_2_BITS_SHIFT) |
-                           ((p_depth_queus_value[3] & 0xff) << DEPTH_TO_QUEUE_3_BITS_SHIFT));
+    CohPortCfg->queue_depth[q_depth_idx] = (((p_depth_queus_value[0] & 0xff) << DEPTH_TO_QUEUE_0_BITS_SHIFT) |
+                                           ((p_depth_queus_value[1] & 0xff) << DEPTH_TO_QUEUE_1_BITS_SHIFT) |
+                                           ((p_depth_queus_value[2] & 0xff) << DEPTH_TO_QUEUE_2_BITS_SHIFT) |
+                                           ((p_depth_queus_value[3] & 0xff) << DEPTH_TO_QUEUE_3_BITS_SHIFT));
 
     UBUS_REMAP_DEBUG_LOG("\x1b[35m reg_addr[0x%p] reg_value[0x%x]\x1b[0m\n",
-                         (unsigned int*)(reg_addr), reg_addr->queue_cfg); 
+                         (unsigned int*)&(CohPortCfg->queue_depth[q_depth_idx]), CohPortCfg->queue_depth[q_depth_idx]); 
 
     return 0;                        
 }
 
 static int ubus_remap_to_biu_cfg_queue_thresh(unsigned long q_thresh_idx, unsigned int *p_thresh_queus_value)
 {
-    CoherencyPortCfgReg_t *reg_addr = 
-        (CoherencyPortCfgReg_t*)(UBUS_COHERENCY_PORT_CFG_CBS_BASE + q_thresh_idx * SIZE_OF_REG_BYTES); 
-
     if((q_thresh_idx > 8) || (NULL == p_thresh_queus_value))
         return -1;
 
-    reg_addr->queue_cfg = (((p_thresh_queus_value[0] & 0xffff) << THRESH_TO_QUEUE_0_BITS_SHIFT) |
-                          ((p_thresh_queus_value [1] & 0xffff) << THRESH_TO_QUEUE_1_BITS_SHIFT));
+    CohPortCfg->cbs_thresh[q_thresh_idx] = (((p_thresh_queus_value[0] & 0xffff) << THRESH_TO_QUEUE_0_BITS_SHIFT) |
+                                           ((p_thresh_queus_value [1] & 0xffff) << THRESH_TO_QUEUE_1_BITS_SHIFT));
                     
     UBUS_REMAP_DEBUG_LOG("\x1b[35m reg_addr[0x%p] reg_value[0x%x]\x1b[0m\n",
-                         (unsigned int*)(reg_addr), reg_addr->queue_cfg); 
+                         (unsigned int*)&(CohPortCfg->cbs_thresh[q_thresh_idx]), CohPortCfg->cbs_thresh[q_thresh_idx]); 
 
     return 0;                        
 }
 
 static int ubus_remap_to_biu_cfg_cir_incr(unsigned long q_cirinc_idx, unsigned int *p_cirinc_queus_value)
 {
-    CoherencyPortCfgReg_t *reg_addr =
-         (CoherencyPortCfgReg_t*)(UBUS_COHERENCY_PORT_CFG_CIR_INCR_BASE + q_cirinc_idx * SIZE_OF_REG_BYTES); 
-
     if((q_cirinc_idx > 3) || (NULL == p_cirinc_queus_value))
         return -1;
 
-    reg_addr->queue_cfg = (((p_cirinc_queus_value[0] & 0xff) << CIR_INCR_TO_QUEUE_0_BITS_SHIFT) |
-                          ((p_cirinc_queus_value [1] & 0xff) << CIR_INCR_TO_QUEUE_1_BITS_SHIFT) |
-                          ((p_cirinc_queus_value [2] & 0xff) << CIR_INCR_TO_QUEUE_2_BITS_SHIFT) |
-                          ((p_cirinc_queus_value [3] & 0xff) << CIR_INCR_TO_QUEUE_3_BITS_SHIFT));
+    CohPortCfg->cir_incr[q_cirinc_idx] = (((p_cirinc_queus_value[0] & 0xff) << CIR_INCR_TO_QUEUE_0_BITS_SHIFT) |
+                                         ((p_cirinc_queus_value [1] & 0xff) << CIR_INCR_TO_QUEUE_1_BITS_SHIFT) |
+                                         ((p_cirinc_queus_value [2] & 0xff) << CIR_INCR_TO_QUEUE_2_BITS_SHIFT) |
+                                         ((p_cirinc_queus_value [3] & 0xff) << CIR_INCR_TO_QUEUE_3_BITS_SHIFT));
 
     UBUS_REMAP_DEBUG_LOG("\x1b[35m reg_addr[0x%p] reg_value[0x%x]\x1b[0m\n",
-                         (unsigned int*)(reg_addr), reg_addr->queue_cfg); 
+                         (unsigned int*)&(CohPortCfg->cir_incr[q_cirinc_idx]), CohPortCfg->cir_incr[q_cirinc_idx]); 
 
     return 0;                        
 }
 
 static int ubus_remap_to_biu_cfg_ref_cnt(unsigned long q_ref_cnt_idx, unsigned int *p_ref_cnt_value)
 {
-    CoherencyPortCfgReg_t *reg_addr = 
-       (CoherencyPortCfgReg_t*)(UBUS_COHERENCY_PORT_CFG_REF_COUNT_BASE + q_ref_cnt_idx * SIZE_OF_REG_BYTES); 
-
-    if((q_ref_cnt_idx > 1) || (NULL == p_ref_cnt_value))
+    if((q_ref_cnt_idx > 3) || (NULL == p_ref_cnt_value))
         return -1;
 
-    reg_addr->queue_cfg = (((p_ref_cnt_value[0] & 0xf) << REF_CNT_0_BITS_SHIFT) |
-                           ((p_ref_cnt_value[1] & 0xf) << REF_CNT_1_BITS_SHIFT) |
-                           ((p_ref_cnt_value[2] & 0xf) << REF_CNT_2_BITS_SHIFT) |
-                           ((p_ref_cnt_value[3] & 0xf) << REF_CNT_3_BITS_SHIFT) |
-                           ((p_ref_cnt_value[4] & 0xf) << REF_CNT_4_BITS_SHIFT) |
-                           ((p_ref_cnt_value[5] & 0xf) << REF_CNT_5_BITS_SHIFT) |
-                           ((p_ref_cnt_value[6] & 0xf) << REF_CNT_6_BITS_SHIFT) |
-                           ((p_ref_cnt_value[7] & 0xf) << REF_CNT_7_BITS_SHIFT));
+    CohPortCfg->ref_cnt[q_ref_cnt_idx] = (((p_ref_cnt_value[0] & 0xf) << REF_CNT_0_BITS_SHIFT) |
+                                         ((p_ref_cnt_value[1] & 0xf) << REF_CNT_1_BITS_SHIFT) |
+                                         ((p_ref_cnt_value[2] & 0xf) << REF_CNT_2_BITS_SHIFT) |
+                                         ((p_ref_cnt_value[3] & 0xf) << REF_CNT_3_BITS_SHIFT) |
+                                         ((p_ref_cnt_value[4] & 0xf) << REF_CNT_4_BITS_SHIFT) |
+                                         ((p_ref_cnt_value[5] & 0xf) << REF_CNT_5_BITS_SHIFT) |
+                                         ((p_ref_cnt_value[6] & 0xf) << REF_CNT_6_BITS_SHIFT) |
+                                         ((p_ref_cnt_value[7] & 0xf) << REF_CNT_7_BITS_SHIFT));
                     
     UBUS_REMAP_DEBUG_LOG("\x1b[35m  reg_addr[0x%p] reg_value[0x%x]\x1b[0m\n",
-                         (unsigned int*)(reg_addr), reg_addr->queue_cfg); 
+                         (unsigned int*)&(CohPortCfg->ref_cnt[q_ref_cnt_idx]), CohPortCfg->ref_cnt[q_ref_cnt_idx]); 
     
     return 0;                        
 }
@@ -613,6 +615,226 @@ static int configure_biu_pid_to_queue(void)
     unsigned long cir_incr_idx;
     unsigned long ref_cnt_idx;
 
+#if defined(CONFIG_BCM96855)
+    lut_idx = 1;
+    srcpid_queus_value[0] = 0;
+    srcpid_queus_value[1] = 0;
+    srcpid_queus_value[2] = 4;
+    srcpid_queus_value[3] = 0;
+    srcpid_queus_value[4] = 3;
+    srcpid_queus_value[5] = 0;
+    srcpid_queus_value[6] = 0;
+    srcpid_queus_value[7] = 0;
+    rc = ubus_remap_to_biu_cfg_queue_srcpid(lut_idx, srcpid_queus_value);
+    if (rc < 0)
+    {
+        printk("Error %s line[%d]\n",__FILE__, __LINE__);
+        goto exit_;
+    }
+
+    lut_idx = 2;
+    srcpid_queus_value[0] = 5;
+    srcpid_queus_value[1] = 6;
+    srcpid_queus_value[2] = 7;
+    srcpid_queus_value[3] = 8;
+    srcpid_queus_value[4] = 0xa;
+    srcpid_queus_value[5] = 9;
+    srcpid_queus_value[6] = 0;
+    srcpid_queus_value[7] = 0;
+    rc = ubus_remap_to_biu_cfg_queue_srcpid(lut_idx, srcpid_queus_value);
+    if (rc < 0)
+    {
+        printk("Error %s line[%d]\n",__FILE__, __LINE__);
+        goto exit_;
+    }
+
+    depth_idx = 0;
+    depth_queus_value[0] = 6;
+    depth_queus_value[1] = 0;
+    depth_queus_value[2] = 0;
+    depth_queus_value[3] = 6;
+    rc = ubus_remap_to_biu_cfg_queue_depth(depth_idx, depth_queus_value);
+    if (rc < 0)
+    {
+        printk("Error %s line[%d]\n",__FILE__, __LINE__);
+        goto exit_;
+    }
+
+    depth_idx = 1;
+    depth_queus_value[0] = 7;
+    depth_queus_value[1] = 7;
+    depth_queus_value[2] = 9;
+    depth_queus_value[3] = 0;
+    rc = ubus_remap_to_biu_cfg_queue_depth(depth_idx, depth_queus_value);
+    if (rc < 0)
+    {
+        printk("Error %s line[%d]\n",__FILE__, __LINE__);
+        goto exit_;
+    }
+
+    depth_idx = 2;
+    depth_queus_value[0] = 0xa;
+    depth_queus_value[1] = 9;
+    depth_queus_value[2] = 0xa;
+    depth_queus_value[3] = 0;
+    rc = ubus_remap_to_biu_cfg_queue_depth(depth_idx, depth_queus_value);
+    if (rc < 0)
+    {
+        printk("Error %s line[%d]\n",__FILE__, __LINE__);
+        goto exit_;
+    }
+
+
+    thresh_idx = 0;
+    thresh_queus_value[0] = 0x0080;
+    thresh_queus_value[1] = 0x0080;
+    rc = ubus_remap_to_biu_cfg_queue_thresh(thresh_idx, thresh_queus_value);
+    if (rc < 0)
+    {
+        printk("Error %s line[%d]\n",__FILE__, __LINE__);
+        goto exit_;
+    }
+
+    thresh_idx = 1;
+    rc = ubus_remap_to_biu_cfg_queue_thresh(thresh_idx, thresh_queus_value);
+    if (rc < 0)
+    {
+        printk("Error %s line[%d]\n",__FILE__, __LINE__);
+        goto exit_;
+    }
+
+    thresh_idx = 2;
+    rc = ubus_remap_to_biu_cfg_queue_thresh(thresh_idx, thresh_queus_value);
+    if (rc < 0)
+    {
+        printk("Error %s line[%d]\n",__FILE__, __LINE__);
+        goto exit_;
+    }
+
+    thresh_idx = 3;
+    rc = ubus_remap_to_biu_cfg_queue_thresh(thresh_idx, thresh_queus_value);
+    if (rc < 0)
+    {
+        printk("Error %s line[%d]\n",__FILE__, __LINE__);
+        goto exit_;
+    }
+
+    thresh_idx = 6;
+    rc = ubus_remap_to_biu_cfg_queue_thresh(thresh_idx, thresh_queus_value);
+    if (rc < 0)
+    {
+        printk("Error %s line[%d]\n",__FILE__, __LINE__);
+        goto exit_;
+    }
+
+    thresh_idx = 7;
+    rc = ubus_remap_to_biu_cfg_queue_thresh(thresh_idx, thresh_queus_value);
+    if (rc < 0)
+    {
+        printk("Error %s line[%d]\n",__FILE__, __LINE__);
+        goto exit_;
+    }
+
+    thresh_idx = 4;
+    thresh_queus_value[0] = 0x0080;
+    thresh_queus_value[1] = 0x0180;
+    rc = ubus_remap_to_biu_cfg_queue_thresh(thresh_idx, thresh_queus_value);
+    if (rc < 0)
+    {
+        printk("Error %s line[%d]\n",__FILE__, __LINE__);
+        goto exit_;
+    }
+
+    thresh_idx = 5;
+    thresh_queus_value[0] = 0x0180;
+    thresh_queus_value[1] = 0x0080;
+    rc = ubus_remap_to_biu_cfg_queue_thresh(thresh_idx, thresh_queus_value);
+    if (rc < 0)
+    {
+        printk("Error %s line[%d]\n",__FILE__, __LINE__);
+        goto exit_;
+    }
+
+    cir_incr_idx = 0;
+    cir_incr_queus_value[0] = 0x1a;
+    cir_incr_queus_value[1] = 0x0;
+    cir_incr_queus_value[2] = 0x0;
+    cir_incr_queus_value[3] = 0x19;
+    rc = ubus_remap_to_biu_cfg_cir_incr(cir_incr_idx, cir_incr_queus_value);
+    if (rc < 0)
+    {
+        printk("Error %s line[%d]\n",__FILE__, __LINE__);
+        goto exit_;
+    }
+
+    cir_incr_idx = 1;
+    cir_incr_queus_value[0] = 0x19;
+    cir_incr_queus_value[1] = 0x1d;
+    cir_incr_queus_value[2] = 0x19;
+    cir_incr_queus_value[3] = 0x0;
+    rc = ubus_remap_to_biu_cfg_cir_incr(cir_incr_idx, cir_incr_queus_value);
+    if (rc < 0)
+    {
+        printk("Error %s line[%d]\n",__FILE__, __LINE__);
+        goto exit_;
+    }
+
+    cir_incr_idx = 2;
+    rc = ubus_remap_to_biu_cfg_cir_incr(cir_incr_idx, cir_incr_queus_value);
+    if (rc < 0)
+    {
+        printk("Error %s line[%d]\n",__FILE__, __LINE__);
+        goto exit_;
+    }
+
+    ref_cnt_idx = 0;
+    ref_cnt_value[0] = 0xb;
+    ref_cnt_value[1] = 1;
+    ref_cnt_value[2] = 0;
+    ref_cnt_value[3] = 0;
+    ref_cnt_value[4] = 0;
+    ref_cnt_value[5] = 0;
+    ref_cnt_value[6] = 0xb;
+    ref_cnt_value[7] = 0;
+    rc = ubus_remap_to_biu_cfg_ref_cnt(ref_cnt_idx, ref_cnt_value);
+    if (rc < 0)
+    {
+        printk("Error %s line[%d]\n",__FILE__, __LINE__);
+        goto exit_;
+    }
+
+    ref_cnt_idx = 1;
+    ref_cnt_value[0] = 8;
+    ref_cnt_value[1] = 0;
+    ref_cnt_value[2] = 6;
+    ref_cnt_value[3] = 0;
+    ref_cnt_value[4] = 4;
+    ref_cnt_value[5] = 0;
+    ref_cnt_value[6] = 4;
+    ref_cnt_value[7] = 0;
+    rc = ubus_remap_to_biu_cfg_ref_cnt(ref_cnt_idx, ref_cnt_value);
+    if (rc < 0)
+    {
+        printk("Error %s line[%d]\n",__FILE__, __LINE__);
+        goto exit_;
+    }
+
+    ref_cnt_idx = 2;
+    ref_cnt_value[0] = 8;
+    ref_cnt_value[1] = 0;
+    ref_cnt_value[2] = 6;
+    ref_cnt_value[3] = 0;
+    ref_cnt_value[4] = 8;
+    ref_cnt_value[5] = 0;
+    ref_cnt_value[6] = 0;
+    ref_cnt_value[7] = 0;
+    rc = ubus_remap_to_biu_cfg_ref_cnt(ref_cnt_idx, ref_cnt_value);
+    if (rc < 0)
+    {
+        printk("Error %s line[%d]\n",__FILE__, __LINE__);
+        goto exit_;
+    }
+#else
     lut_idx = 0;
     srcpid_queus_value[0] = 0;
     srcpid_queus_value[1] = 0;
@@ -738,6 +960,7 @@ static int configure_biu_pid_to_queue(void)
         printk("Error %s line[%d]\n",__FILE__, __LINE__);
         goto exit_;
     }
+#endif
 
 exit_:
     if (rc < 0)
@@ -1545,7 +1768,7 @@ void bcm_ubus_config(void)
 #endif
 #ifdef CONFIG_BCM_UBUS_DECODE_REMAP
     remap_ubus_masters_biu();
-#if defined(CONFIG_BCM963158) || defined(CONFIG_BCM963178) || defined(CONFIG_BCM947622)
+#if defined(CONFIG_BCM963158) || defined(CONFIG_BCM963178) || defined(CONFIG_BCM947622) || defined(CONFIG_BCM96855)
     ubus_remap_to_biu_cfg_wlu_srcpid(MAX_WLU_SRCPID_NUM, 1);
 #endif
 #if !defined(CONFIG_BCM963178) && !defined(CONFIG_BCM947622)

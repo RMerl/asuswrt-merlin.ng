@@ -196,7 +196,7 @@ void mapportmap_delete( u32 idx, u32 proto )
     mapportmap_free(pmap_p);
 
     if (proto & (1 << MAPPORTMAP_PROTO_TCP))
-        refresh_map_list(&tcp_list, idx);
+        refresh_tcp_map_list(0, idx);
 
     if (proto & (1 << MAPPORTMAP_PROTO_UDP))
         refresh_map_list(&udp_list, idx);

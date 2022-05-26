@@ -161,7 +161,8 @@ static void mdio_cfg_clause_mode(uint32_t *p, mdio_clause_t mdio_clause)
     mdio_cfg_reg_t cfg;
 
     READ_32(p, cfg);
-#if defined(CONFIG_BCM963158) || defined(CONFIG_BCM963178) || defined(CONFIG_BCM947622) || defined(CONFIG_BCM96846) || defined(CONFIG_BCM96856) || defined(CONFIG_BCM96878)
+#if defined(CONFIG_BCM963158) || defined(CONFIG_BCM963178) || defined(CONFIG_BCM947622) || defined(CONFIG_BCM96846) || \
+    defined(CONFIG_BCM96856) || defined(CONFIG_BCM96878) || defined(CONFIG_BCM96855)
     cfg.free_run_clk_enable = 1;
 #if defined(RTAX95Q) || defined(RTAXE95Q) || defined(RTAX56U) || defined(RTAX56_XD4) || defined(CTAX56_XD4) || defined(RTAX55) || defined(RTAX1800)
     cfg.mdio_clk_divider = 0x31;

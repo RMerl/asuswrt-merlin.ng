@@ -27,7 +27,7 @@
 #endif
 #endif /* CONFIG_BCM_KF_SPECTRE_PATCH && CONFIG_BCM_SPECTRE_PATCH_ENABLE */
 
-#if defined(CONFIG_BCM_KF_ARM_BCM963XX) && !defined(CONFIG_BCM947189) && !defined(CONFIG_BCM96846) && !defined(CONFIG_BCM947622) && !defined(CONFIG_BCM963178) && !defined(CONFIG_BCM96878)
+#if defined(CONFIG_BCM_KF_ARM_BCM963XX) && !defined(CONFIG_BCM947189) && !defined(CONFIG_BCM96846) && !defined(CONFIG_BCM947622) && !defined(CONFIG_BCM963178) && !defined(CONFIG_BCM96878) && !defined(CONFIG_BCM96855)
 #include <mach/barriers.h>
 #else /*!(defined(CONFIG_BCM_KF_ARM_BCM963XX)*/
 

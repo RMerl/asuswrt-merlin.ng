@@ -11,6 +11,19 @@
 #include <pmc_drv.h>
 #include <bcm_map_part.h>
 #include <linux/version.h>
+#include <linux/reboot.h>
+
+#ifdef CONFIG_BRCM_QEMU
+int pmc_convert_pvtmon(int sel, int value)
+{
+    return 0;
+}
+
+int GetPVT(int sel, int island, int *value)
+{
+	return 0;
+}
+#endif
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 19, 0)
 typedef unsigned long tempmc_t;
@@ -27,7 +40,7 @@ void cpufreq_set_freq_max(unsigned maxdiv);
 	!(defined(CONFIG_CPU_FREQ) && defined(CONFIG_BCM_KF_ARM_BCM963XX))
 void cpufreq_set_freq_max(unsigned maxdiv)
 {
-#if !defined (CONFIG_BCM963158) && !defined (CONFIG_BCM947622) && !defined (CONFIG_BCM963178)
+#if !defined (CONFIG_BCM963158) && !defined (CONFIG_BCM947622) && !defined (CONFIG_BCM963178) && !defined (CONFIG_BCM_PON)
 	BIUCTRL->cluster_clk_pattern[0] = maxdiv == 1 ? 0xffffffff : 0x55555555;
 	BIUCTRL->cluster_clk_ctrl[0] = 1 << 4;	// enable user clock-patterns
 #endif
@@ -35,7 +48,7 @@ void cpufreq_set_freq_max(unsigned maxdiv)
 #endif
 
 // TEMPERATURE LIMITS
-#define BROADCOM_THERMAL_NUM_TRIP_TEMPERATURES                         5
+#define BROADCOM_THERMAL_NUM_TRIP_TEMPERATURES                         6
 
 #define BROADCOM_THERMAL_LOW_TEMPERATURE_COMPENSATION_MILLICELSIUS     15000
 #define BROADCOM_THERMAL_LOW_TEMPERATURE_HYSTERESIS_MILLICELSIUS       10000
@@ -49,6 +62,8 @@ void cpufreq_set_freq_max(unsigned maxdiv)
 #define BROADCOM_THERMAL_HIGH_TEMPERATURE_DUAL_CPU_COMPENSATION_2_MILLICELSIUS  110000
 
 #define BROADCOM_THERMAL_HIGH_TEMPERATURE_HYSTERESIS_MILLICELSIUS      5000
+
+int reboot_temperature = -1; /* Will be read from device tree */
 
 /*-------------------------*
  *   CPU Cooling Devices   *
@@ -158,16 +173,20 @@ int broadcom_cpu_cooling_set_cur_state (struct thermal_cooling_device *dev, unsi
         break;
       if (cpu_online(cpuIndex)) {
         dev_crit(&dev->device,"take CPU#%d offline\n", cpuIndex);
+#if defined(CONFIG_HOTPLUG_CPU)
         if ((rc = cpu_down(cpuIndex)) == 0)
           brcm_cpu_absent(cpuIndex);
+#endif
       }
       break;
     case 3:
       for (cpuIndex = 1; cpuIndex < num_possible_cpus(); cpuIndex++) {
           if (cpu_online(cpuIndex)) {
             dev_crit(&dev->device,"take CPU#%d offline\n", cpuIndex);
+#if defined(CONFIG_HOTPLUG_CPU)
 	  if ((rc = cpu_down(cpuIndex)) == 0)
 	    brcm_cpu_absent(cpuIndex);
+#endif
         }
       }
       break;
@@ -227,6 +246,52 @@ struct thermal_cooling_device_ops broadcomCpuFreqCoolingOps =
   .get_cur_state = broadcom_cpufreq_cooling_get_cur_state,
   .set_cur_state = broadcom_cpufreq_cooling_set_cur_state,
 };
+
+
+/* REBOOT COOLING DEVICE */
+
+static int broadcom_reboot_cooling_lastAnnouncement = 0;
+
+int broadcom_reboot_cooling_get_max_state(struct thermal_cooling_device *dev, unsigned long *states)
+{
+  *states = 2;
+  return 0;
+}
+
+int broadcom_reboot_cooling_get_cur_state(struct thermal_cooling_device *dev, unsigned long *currentState)
+{
+  *currentState = 0;
+  return 0;
+}
+
+int broadcom_reboot_cooling_set_cur_state(struct thermal_cooling_device *dev, unsigned long state)
+{
+  switch (state)
+  {
+    case 0:
+      if (broadcom_reboot_cooling_lastAnnouncement != 0) {
+        broadcom_reboot_cooling_lastAnnouncement = 0;
+      }
+    case 1:
+      break;
+    case 2:
+      if (broadcom_reboot_cooling_lastAnnouncement != 2) {
+        broadcom_reboot_cooling_lastAnnouncement = 2;
+        dev_crit(&dev->device,"Temperature above %d millicelsius, rebooting...\n", reboot_temperature);
+        orderly_reboot();
+      }
+      break;
+  }
+  return 0;
+}
+
+struct thermal_cooling_device_ops broadcomRebootCoolingOps =
+{
+  .get_max_state = broadcom_reboot_cooling_get_max_state,
+  .get_cur_state = broadcom_reboot_cooling_get_cur_state,
+  .set_cur_state = broadcom_reboot_cooling_set_cur_state,
+};
+
 /*------------------------*
  * End CPU Cooling Device *
  *------------------------*/
@@ -253,7 +318,7 @@ int broadcomTempDrv_get_temp (struct thermal_zone_device *thermDev, tempmc_t *te
   int tempMC;
 #ifdef DEBUG_TEMPERATURE
   *tempMillicelsius = (dbg_temperature > -999 ? dbg_temperature : 40) * 1000;
-#elif defined (CONFIG_BCM963158) || defined (CONFIG_BCM947622) || defined (CONFIG_BCM963178)
+#elif defined (CONFIG_BCM963158) || defined (CONFIG_BCM947622) || defined (CONFIG_BCM963178) || defined(CONFIG_BCM_PON)
   int ret, adc = -1;
 
   ret = GetPVT(kTEMPERATURE, 0, &adc);
@@ -263,6 +328,7 @@ int broadcomTempDrv_get_temp (struct thermal_zone_device *thermDev, tempmc_t *te
   }
   *tempMillicelsius = pmc_convert_pvtmon(kTEMPERATURE, adc);
 
+#ifndef CONFIG_BCM_PON // Not all PON have a sensor for ARM temperature
   ret = BIUCFG->bac.cpu_therm_temp;
   if (!(ret & (1<<31))) {
     dev_err(&thermDev->device, "Failed to get CPU temperature, ret=%d\n", ret);
@@ -271,6 +337,7 @@ int broadcomTempDrv_get_temp (struct thermal_zone_device *thermDev, tempmc_t *te
   ret = pmc_convert_pvtmon(kTEMPERATURE, ret & 0x3ff);
   if (ret > (int)*tempMillicelsius)
     *tempMillicelsius = ret;
+#endif
 #else
   struct volatile_thermal *tempSensor = (struct volatile_thermal * ) thermDev->devdata;
   int regVal = *tempSensor->tempSensor;
@@ -354,6 +421,7 @@ static struct {
   struct thermal_cooling_device *cpuCoolDev;
   struct thermal_cooling_device *cpuFreqDev;
   struct thermal_zone_device *thermalZoneDev;
+  struct thermal_cooling_device *rebootDev;
 } broadcomTempDrv_data;
 
 static void broadcomTempDrv_cleanup(void)
@@ -366,6 +434,8 @@ static void broadcomTempDrv_cleanup(void)
     thermal_cooling_device_unregister(broadcomTempDrv_data.cpuCoolDev);
   if (!IS_ERR_OR_NULL(broadcomTempDrv_data.cpuFreqDev))
     thermal_cooling_device_unregister(broadcomTempDrv_data.cpuFreqDev);
+  if (!IS_ERR_OR_NULL(broadcomTempDrv_data.rebootDev))
+    thermal_cooling_device_unregister(broadcomTempDrv_data.rebootDev);
   if (!IS_ERR_OR_NULL(broadcomTempDrv_data.thermalZoneDev))
     thermal_zone_device_unregister(broadcomTempDrv_data.thermalZoneDev);
 
@@ -375,6 +445,8 @@ static void broadcomTempDrv_cleanup(void)
 // the activate and register function
 int broadcomTempDrv_init (struct platform_device *platDev)
 {
+  struct device *dev = &platDev->dev;
+  struct device_node *np = dev->of_node;
   /* structs allocated by devm_ are automatically freed when device exits */
   struct volatile_thermal *tempSensor = NULL;
   struct thermal_zone_params *zoneParams = NULL;
@@ -408,6 +480,12 @@ int broadcomTempDrv_init (struct platform_device *platDev)
     goto error_out;
   }
 
+  if (of_property_read_u32(np, "reboot-temperature", &reboot_temperature))
+    reboot_temperature = -1;
+
+  if (reboot_temperature > 0)
+    broadcomTempDrv_set_trip_temp(NULL, 5, reboot_temperature);
+
   tempSensor = devm_kzalloc(&platDev->dev, sizeof(struct volatile_thermal), GFP_KERNEL);
   zoneParams = devm_kzalloc(&platDev->dev, sizeof(struct thermal_zone_params), GFP_KERNEL);
   if (!tempSensor || !zoneParams)
@@ -431,6 +509,7 @@ int broadcomTempDrv_init (struct platform_device *platDev)
   }
 #endif
 
+#ifndef CONFIG_BCM_PON
   broadcomTempDrv_data.cpuCoolDev =
     thermal_cooling_device_register("passive", platDev, &broadcomCpuCoolingOps);
   if (IS_ERR(broadcomTempDrv_data.cpuCoolDev))
@@ -450,16 +529,28 @@ int broadcomTempDrv_init (struct platform_device *platDev)
       goto error_out;
     }
   }  
+#endif
+
+  if (reboot_temperature > 0)
+  {
+    broadcomTempDrv_data.rebootDev =
+      thermal_cooling_device_register("reboot", platDev, &broadcomRebootCoolingOps);
+    if (IS_ERR(broadcomTempDrv_data.rebootDev))
+    {
+      dev_err(&platDev->dev, "Can't create cooling device Reboot\n");
+      goto error_out;
+    }
+  }
 
   broadcomTempDrv_data.thermalZoneDev = thermal_zone_device_register(
-    "broadcomThermalDrv", /* name */
-    5,                    /* trips */
-    0,                    /* mask */
-    (void *)tempSensor,   /* device data */ 
+    "broadcomThermalDrv",                   /* name */
+    BROADCOM_THERMAL_NUM_TRIP_TEMPERATURES, /* trips */
+    0,                                      /* mask */
+    (void *)tempSensor,                     /* device data */ 
     &thermalOps,
-    zoneParams,           /* thermal zone params */
-    1000,                 /* passive delay */
-    1000                  /* polling delay */
+    zoneParams,                             /* thermal zone params */
+    1000,                                   /* passive delay */
+    1000                                    /* polling delay */
     );
 
   if (IS_ERR(broadcomTempDrv_data.thermalZoneDev))
@@ -481,6 +572,7 @@ int broadcomTempDrv_init (struct platform_device *platDev)
                                    2, 2); // Go to normal gain
 #endif
 
+#ifndef CONFIG_BCM_PON
   if (numCpus == 4 || numCpus == 3)
   {
     // configure heat compensation for 4908 (and other 4 or 3 CPU units)
@@ -510,6 +602,17 @@ int broadcomTempDrv_init (struct platform_device *platDev)
     Thermal_zone_bind_cooling_device(broadcomTempDrv_data.thermalZoneDev, 4 /*trip*/,
                                      broadcomTempDrv_data.cpuFreqDev,
                                      2, 2); // Turn down CPU freq on last CPU
+  }
+#endif
+
+  if (reboot_temperature > 0)
+  {
+    // Configure reboot for all known boards
+    Thermal_zone_bind_cooling_device(broadcomTempDrv_data.thermalZoneDev, 5 /*trip*/,
+      broadcomTempDrv_data.rebootDev,
+      2, 2); // soft reboot
+
+    dev_crit(&platDev->dev, "Registered a cooling device to reboot when temperature exceeds %d millicelsius\n", reboot_temperature);
   }
 
   return 0;

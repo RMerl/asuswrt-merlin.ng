@@ -101,5 +101,12 @@
     ((MARK & SKBMARK_DPIQ_MARK_M) >> SKBMARK_DPIQ_MARK_S)
 #define SKBMARK_SET_DPIQ_MARK(MARK, DPIQ_MARK) \
     ((MARK & ~SKBMARK_DPIQ_MARK_M) | (DPIQ_MARK << SKBMARK_DPIQ_MARK_S))
+/* service_queue_enable_mark = mark[4] --  DS BRCM defined-- */
+#define SKBMARK_SQ_MARK_S    4
+#define SKBMARK_SQ_MARK_M    (0x01 << SKBMARK_SQ_MARK_S)
+#define SKBMARK_GET_SQ_MARK(MARK) \
+    ((MARK & SKBMARK_SQ_MARK_M) >> SKBMARK_SQ_MARK_S)
+#define SKBMARK_SET_SQ_MARK(MARK, SQ_MARK) \
+    ((MARK & ~SKBMARK_SQ_MARK_M) | (SQ_MARK << SKBMARK_SQ_MARK_S))
 
 #endif /* __SKB_DEFINES_H__ */

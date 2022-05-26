@@ -42,9 +42,10 @@
  * based on configuration profile and other object attributes.
  * @{
  */
-/** RDPA sw version struct */
 
 #define RDPA_FW_VER_LEN 128 /**< Length of firmware version string */
+
+/** RDPA sw version struct */
 typedef struct
 {
     uint8_t rdpa_version_major; /**< Major */
@@ -230,6 +231,14 @@ typedef struct
     rdpa_drop_counter_mode counter_type; /**<  [packet,byte] / [green,yellow] / [queue watermark] \XRDP_LIMITED */
 } rdpa_system_cfg_t;
 
+/** RDPA parser configuration.
+ * This is the underlying structure of system aggregate.
+ */
+typedef struct
+{
+    bdmf_boolean dos_attack_detection; /**< Is DOS ATTACK detection enabled/disabled */
+} rdpa_parser_cfg_t;
+
 /** Time Of Day. */
 typedef struct {
     uint16_t sec_ms;    /**< ToD Seconds, MS bits   */
@@ -250,8 +259,9 @@ typedef struct
     bdmf_boolean triple_en; /**< Triple tag (most inner tag), Enabled Detection flag */
 } rdpa_tpid_detect_cfg_t;
 
-/** NAT Cache counter */
 #define RDPA_SYSTEM_NATC_TABLES_NUM    8
+
+/** NAT Cache counter */
 typedef struct
 {
     uint32_t cache_hit_count;                   /**< NAT Cache cache hit count */
@@ -261,6 +271,7 @@ typedef struct
     uint32_t ddr_block_count;                   /**< NAT Cache DDR block count */
 } rdpa_natc_cntr_t;
 
+/** RDPA system resources */
 typedef struct
 {
 #if defined(CONFIG_BCM_PON)  || defined(BCM_PON_XRDP) || defined(BCM_PON) || defined(BCM63158) || defined(CHIP_63158) 

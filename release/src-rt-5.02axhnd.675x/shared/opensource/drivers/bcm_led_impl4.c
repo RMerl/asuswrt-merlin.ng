@@ -240,7 +240,7 @@ void bcm_common_led_setAllSoftLedsOff(void)
                     printk("off: LED %d is HW\n",led);
 #endif
                 } else {
-#if defined(_CFE_) || !(defined(RTAX82U) || defined(DSLAX82U) || defined(RTAX82_XD6) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400))
+#if defined(_CFE_) || !(defined(RTAX82U) || defined(DSLAX82U) || defined(RTAX82_XD6) || defined(RTAX82_XD6S) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400))
                     bcm_led_driver_set( gpio, 0 );
 #ifdef BCM_LED_DEBUG
                     printk("off: LED %d is OFF\n",led);

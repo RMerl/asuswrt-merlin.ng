@@ -1392,7 +1392,7 @@ int kerSysGetSequenceNumber(int imageNumber)
             if (bcm_otp_is_boot_secure())
                strcpy(fname, NAND_CFE_RAM_SECBT_NAME);
 #if defined(CONFIG_BCM94908)  || defined(CONFIG_BCM96858) || \
-    defined(CONFIG_BCM963158) || defined(CONFIG_BCM96846) || defined(CONFIG_BCM947622) || defined(CONFIG_BCM963178) || defined(CONFIG_BCM96856) || defined(CONFIG_BCM96878)
+    defined(CONFIG_BCM963158) || defined(CONFIG_BCM96846) || defined(CONFIG_BCM947622) || defined(CONFIG_BCM963178) || defined(CONFIG_BCM96856) || defined(CONFIG_BCM96878) || defined(CONFIG_BCM96855)
             else
             {
                if (bcm_otp_is_boot_mfg_secure())

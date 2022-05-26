@@ -112,6 +112,20 @@ typedef enum
     MAC_SPEED_10000,
 } mac_speed_t;
 
+static inline char *mac_get_speed_string(mac_speed_t speed)
+{
+    static char *speedStr[] = {
+        [MAC_SPEED_UNKNOWN] = "Unkn", 
+        [MAC_SPEED_10] = "10M", 
+        [MAC_SPEED_100] = "100M", 
+        [MAC_SPEED_1000] = "1G", 
+        [MAC_SPEED_2500] = "2.5G", 
+        [MAC_SPEED_5000] = "5G", 
+        [MAC_SPEED_10000] = "10G"
+    };
+    return speedStr[speed];
+}
+
 typedef enum
 {
     MAC_DUPLEX_UNKNOWN,

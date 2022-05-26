@@ -40,6 +40,7 @@
 #include <linux/nbuff.h>
 #include <linux/etherdevice.h>
 #include <linux/kthread.h>
+#include <linux/spinlock.h>
 #include "enet_dbg.h"
 #ifdef CONFIG_BCM_PTP_1588
 #include "ptp_1588.h"
@@ -178,11 +179,13 @@ static inline void _rdpa_reason_set_tc_and_queue(rdpa_cpu_reason reason, uint8_t
     case rdpa_cpu_rx_reason_etype_pppoe_s:
     case rdpa_cpu_rx_reason_etype_arp:
     case rdpa_cpu_rx_reason_etype_802_1ag_cfm:
+#ifndef XRDP
     case rdpa_cpu_rx_reason_l4_icmp:
+    case rdpa_cpu_rx_reason_l4_udef_0:
+#endif
     case rdpa_cpu_rx_reason_icmpv6:
     case rdpa_cpu_rx_reason_igmp:
     case rdpa_cpu_rx_reason_dhcp:
-    case rdpa_cpu_rx_reason_l4_udef_0:
 #if defined(CONFIG_BCM_DSL_XRDP) || defined(CONFIG_BCM_DSL_RDP)
     case rdpa_cpu_rx_reason_hit_trap_high:
     case rdpa_cpu_rx_reason_ingqos:
@@ -782,7 +785,7 @@ inline int _rdpa_cpu_send_sysb(bdmf_sysb sysb, rdpa_cpu_tx_info_t *info)
 #endif
 static int rdpa_get_queue_idx(int is_wan, int qid, int q_count)
 {
-#if defined(DSL_RUNNER_DEVICE) && !defined(XRDP) /* DSL RDP Platforms */
+#if defined(DSL_DEVICES)
     if (is_wan)
     {
         return qid;
@@ -875,19 +878,8 @@ Exit:
 
 #if defined(CONFIG_BCM_DSL_XRDP)
 int default_filter_init(bdmf_object_handle port_obj)
-{
-    rdpa_filter_ctrl_t filter_ctrl;
-    int rc;
-
-    filter_ctrl.enabled = TRUE;
-    filter_ctrl.action = rdpa_forward_action_host;
-
-    /* adding default entry to always trap IP_FRAG packet */
-    rc = rdpa_port_ingress_filter_set(port_obj, RDPA_FILTER_IP_FRAG, &filter_ctrl);
-    enet_dbg("Adding filter '%u' for port %s, rc=%d\n", RDPA_FILTER_IP_FRAG,
-             bdmf_object_name(port_obj), rc);
-               
-    return rc;
+{              
+    return 0;
 }
 #endif
 
@@ -1260,6 +1252,7 @@ int port_runner_mib_dump(enetx_port_t *self, int all)
     return 0;
 }
 
+#if 0   /* skip Andrew code */
 // add by Andrew
 /* mib dump for ports on internal runner switch */
 int port_runner_mib_dump_us(enetx_port_t *self, void *ethswctl)
@@ -1288,6 +1281,7 @@ int port_runner_mib_dump_us(enetx_port_t *self, void *ethswctl)
     return 0;
 }
 // end of add
+#endif
 
 int port_runner_sw_port_id_on_sw(port_info_t *port_info, int *port_id, port_type_t *port_type)
 {
@@ -1305,7 +1299,7 @@ int port_runner_sw_port_id_on_sw(port_info_t *port_info, int *port_id, port_type
 #endif
     
 #ifdef EPON
-    if (port_info->is_epon)
+    if (port_info->is_epon || port_info->is_epon_ae)
     {
         *port_type = PORT_TYPE_RUNNER_EPON;
         *port_id = rdpa_wan_type_to_if(rdpa_wan_epon);
@@ -1330,7 +1324,7 @@ int port_runner_sw_port_id_on_sw(port_info_t *port_info, int *port_id, port_type
         return 0;
     }
 
-    if (port_info->port == init_cfg.gbe_wan_emac && init_cfg.gbe_wan_emac != rdpa_emac_none)
+    if (!port_info->is_detect && port_info->port == init_cfg.gbe_wan_emac && init_cfg.gbe_wan_emac != rdpa_emac_none)
         port_info->is_wan = 1;
 
     if (port_info->is_wan)
@@ -1401,8 +1395,183 @@ int enetxapi_rx_pkt_dump_on_demux_err(enetx_rx_info_t *rx_info)
     return 1;
 }
 
+#if defined(CONFIG_BCM963146) || defined(CONFIG_BCM94912) || defined(CONFIG_BCM96855)
+// ----------- SIOCETHSWCTLOPS ETHSWDOSCTRL functions ---
+int _runner_rdpa_dos_ctrl(struct ethswctl_data *e)
+{
+    bdmf_object_handle system_obj;
+    rdpa_parser_cfg_t parser_cfg;
+    bdmf_number dos_attack_reason;
+    int rc;
+
+    enet_dbg("_runner_rdpa_dos_ctrl e->type=%s\n", (e->type == TYPE_SET) ? "SET" : "GET");
+
+    if ((rc = rdpa_system_get(&system_obj)))
+    {
+        enet_err("Failed to get RDPA System object\n");
+        goto exit;
+    }
+    if ((rc = rdpa_system_parser_cfg_get(system_obj, &parser_cfg)))
+    {
+        enet_err("Failed to get RDPA System parser configure, rc=%d\n", rc);
+        goto exit;
+    }
+    if ((rc = rdpa_system_dos_attack_reason_get(system_obj, &dos_attack_reason)))
+    {
+        enet_err("Failed to get RDPA System dos attack reason configure, rc=%d\n", rc);
+        goto exit;
+    }
+
+    if (e->type == TYPE_GET)
+    {
+        if (dos_attack_reason & (1 << rdpa_dos_reason_mac_sa_eq_da))  e->dosCtrl.da_eq_sa_drop_en = 1;
+        if (dos_attack_reason & (1 << rdpa_dos_reason_ip_land))  e->dosCtrl.ip_lan_drop_en = 1;
+        if (dos_attack_reason & (1 << rdpa_dos_reason_tcp_blat))  e->dosCtrl.tcp_blat_drop_en = 1;
+        if (dos_attack_reason & (1 << rdpa_dos_reason_udp_blat))  e->dosCtrl.udp_blat_drop_en = 1;
+        if (dos_attack_reason & (1 << rdpa_dos_reason_tcp_null_scan))  e->dosCtrl.tcp_null_scan_drop_en = 1;
+        if (dos_attack_reason & (1 << rdpa_dos_reason_tcp_xmas_scan))  e->dosCtrl.tcp_xmas_scan_drop_en = 1;
+        if (dos_attack_reason & (1 << rdpa_dos_reason_tcp_synfin_scan))  e->dosCtrl.tcp_synfin_scan_drop_en = 1;
+        if (dos_attack_reason & (1 << rdpa_dos_reason_tcp_syn_error))  e->dosCtrl.tcp_synerr_drop_en = 1;
+        if (dos_attack_reason & (1 << rdpa_dos_reason_tcp_short_hdr))  e->dosCtrl.tcp_shorthdr_drop_en = 1;
+        if (dos_attack_reason & (1 << rdpa_dos_reason_tcp_frag_error))  e->dosCtrl.tcp_fragerr_drop_en = 1;
+        if (dos_attack_reason & (1 << rdpa_dos_reason_icmpv4_fragment))  e->dosCtrl.icmpv4_frag_drop_en = 1;
+        if (dos_attack_reason & (1 << rdpa_dos_reason_icmpv6_fragment))  e->dosCtrl.icmpv6_frag_drop_en = 1;
+        if (dos_attack_reason & (1 << rdpa_dos_reason_icmpv4_long_ping))  e->dosCtrl.icmpv4_longping_drop_en = 1;
+        if (dos_attack_reason & (1 << rdpa_dos_reason_icmpv6_long_ping))  e->dosCtrl.icmpv6_longping_drop_en = 1;
+    }
+    else if (e->type == TYPE_SET)
+    {
+        dos_attack_reason = 0;
+        if (e->dosCtrl.da_eq_sa_drop_en) dos_attack_reason |= (1 << rdpa_dos_reason_mac_sa_eq_da);
+        if (e->dosCtrl.ip_lan_drop_en) dos_attack_reason |= (1 << rdpa_dos_reason_ip_land);
+        if (e->dosCtrl.tcp_blat_drop_en) dos_attack_reason |= (1 << rdpa_dos_reason_tcp_blat);
+        if (e->dosCtrl.udp_blat_drop_en) dos_attack_reason |= (1 << rdpa_dos_reason_udp_blat);
+        if (e->dosCtrl.tcp_null_scan_drop_en) dos_attack_reason |= (1 << rdpa_dos_reason_tcp_null_scan);
+        if (e->dosCtrl.tcp_xmas_scan_drop_en) dos_attack_reason |= (1 << rdpa_dos_reason_tcp_xmas_scan);
+        if (e->dosCtrl.tcp_synfin_scan_drop_en) dos_attack_reason |= (1 << rdpa_dos_reason_tcp_synfin_scan);
+        if (e->dosCtrl.tcp_synerr_drop_en) dos_attack_reason |= (1 << rdpa_dos_reason_tcp_syn_error);
+        if (e->dosCtrl.tcp_shorthdr_drop_en) dos_attack_reason |= (1 << rdpa_dos_reason_tcp_short_hdr);
+        if (e->dosCtrl.tcp_fragerr_drop_en) dos_attack_reason |= (1 << rdpa_dos_reason_tcp_frag_error);
+        if (e->dosCtrl.icmpv4_frag_drop_en) dos_attack_reason |= (1 << rdpa_dos_reason_icmpv4_fragment);
+        if (e->dosCtrl.icmpv6_frag_drop_en) dos_attack_reason |= (1 << rdpa_dos_reason_icmpv6_fragment);
+        if (e->dosCtrl.icmpv4_longping_drop_en) dos_attack_reason |= (1 << rdpa_dos_reason_icmpv4_long_ping);
+        if (e->dosCtrl.icmpv6_longping_drop_en) dos_attack_reason |= (1 << rdpa_dos_reason_icmpv6_long_ping);
+
+        printk("SET dos_val 0x%04x \n", (uint16_t)dos_attack_reason);
+        rc = rdpa_system_dos_attack_reason_set(system_obj, dos_attack_reason);
+        if (rc)
+        {
+            enet_err("Failed to set dos attack reason, v=0x%04x, rc=%d\n", (uint16_t)dos_attack_reason, rc);
+            goto exit;
+        }
+    }
+
+exit:
+    if (system_obj)
+        bdmf_put(system_obj);
+
+    return rc ? -EFAULT : BCM_E_NONE;
+}
+#endif
+
 #ifdef GPON
 #if !defined(CONFIG_BCM963158) 
+
+#ifdef CONFIG_BCM_FTTDP_G9991 
+static struct rtnl_link_stats64 gpon_net_stats, old_gpon_net_stats;
+
+static void port_runner_gpon_stats_clear_g9991(enetx_port_t *self)
+{
+    rdpa_port_stat_t wan_port_stat = {};
+    rdpa_gem_stat_t gem_stat = {};
+    bdmf_object_handle gem = NULL;
+
+    rdpa_port_stat_set(self->priv, &wan_port_stat);
+    while ((gem = bdmf_get_next(rdpa_gem_drv(), gem, NULL)))
+    {
+        if (rdpa_gem_stat_set(gem, &gem_stat))
+            break;
+    }
+
+    if (gem)
+        bdmf_put(gem);
+
+    memset(&gpon_net_stats, 0, sizeof(gpon_net_stats));
+    memset(&old_gpon_net_stats, 0, sizeof(old_gpon_net_stats));
+}
+
+DEFINE_SPINLOCK(stats_lock);
+
+static void port_runner_gpon_stats_g9991(enetx_port_t *self, struct rtnl_link_stats64 *_net_stats)
+{
+#define CACHE_STATS_ADD(field) \
+    do { \
+        if (net_stats->field < old_gpon_net_stats.field) \
+            gpon_net_stats.field += U32_MAX - old_gpon_net_stats.field + new_gpon_net_stats.field; \
+        else \
+            gpon_net_stats.field += new_gpon_net_stats.field - old_gpon_net_stats.field; \
+    } while (0)
+
+    struct rtnl_link_stats64 new_gpon_net_stats = {}, *net_stats = &new_gpon_net_stats;
+    rdpa_gem_stat_t gem_stat;
+    bdmf_object_handle gem = NULL;
+    rdpa_port_stat_t wan_port_stat;
+    int delta;
+
+    spin_lock(&stats_lock);
+    if (rdpa_port_stat_get(self->priv, &wan_port_stat))
+        goto Exit;
+
+    net_stats->multicast = wan_port_stat.rx_multicast_pkt;
+#ifdef CONFIG_BCM_KF_EXTSTATS
+    net_stats->rx_broadcast_packets = wan_port_stat.rx_broadcast_pkt;
+    net_stats->tx_multicast_packets = wan_port_stat.tx_multicast_pkt;
+    net_stats->tx_broadcast_packets = wan_port_stat.tx_broadcast_pkt;
+#endif
+    net_stats->tx_packets = wan_port_stat.tx_valid_pkt;
+    net_stats->rx_packets = wan_port_stat.rx_valid_pkt;
+
+    delta = (net_stats->rx_packets - net_stats->multicast - net_stats->rx_broadcast_packets) - 
+        (old_gpon_net_stats.rx_packets - old_gpon_net_stats.multicast - old_gpon_net_stats.rx_broadcast_packets);
+    if (delta < 0)
+        net_stats->rx_packets -= delta;
+
+    while ((gem = bdmf_get_next(rdpa_gem_drv(), gem, NULL)))
+    {
+        if (rdpa_gem_stat_get(gem, &gem_stat))
+            break;
+
+        net_stats->rx_bytes += gem_stat.rx_bytes;
+        net_stats->rx_dropped += gem_stat.rx_packets_discard;
+        net_stats->tx_bytes += gem_stat.tx_bytes;
+        net_stats->tx_dropped += gem_stat.tx_packets_discard;
+    }
+
+    if (gem)
+        bdmf_put(gem);
+
+    CACHE_STATS_ADD(multicast);
+#ifdef CONFIG_BCM_KF_EXTSTATS
+    CACHE_STATS_ADD(rx_broadcast_packets);
+    CACHE_STATS_ADD(tx_multicast_packets);
+    CACHE_STATS_ADD(tx_broadcast_packets);
+#endif
+    CACHE_STATS_ADD(rx_bytes);
+    CACHE_STATS_ADD(rx_packets);
+    CACHE_STATS_ADD(rx_dropped);
+    CACHE_STATS_ADD(tx_packets);
+    CACHE_STATS_ADD(tx_bytes);
+    CACHE_STATS_ADD(tx_dropped);
+
+    *_net_stats = gpon_net_stats;
+    old_gpon_net_stats = new_gpon_net_stats;
+
+Exit:
+    spin_unlock(&stats_lock);
+}
+
+#else /* CONFIG_BCM_FTTDP_G9991 */
+
 static void port_runner_gpon_stats_clear(enetx_port_t *self)
 {
    rdpa_gem_stat_t gem_stat = {};
@@ -1441,10 +1610,6 @@ static void port_runner_gpon_stats(enetx_port_t *self, struct rtnl_link_stats64 
    bdmf_object_handle gem = NULL;
    rdpa_iptv_stat_t iptv_stat;
    bdmf_object_handle iptv = NULL;
-#ifdef CONFIG_BCM_FTTDP_G9991   
-   rdpa_port_stat_t   wan_port_stat;
-#endif
-   
    int rc;
 
     while ((gem = bdmf_get_next(rdpa_gem_drv(), gem, NULL)))
@@ -1478,25 +1643,13 @@ gem_exit:
     net_stats->rx_multicast_bytes = iptv_stat.rx_valid_bytes;
 #endif
 
-#ifdef CONFIG_BCM_FTTDP_G9991
-    rc = rdpa_port_stat_get(self->priv, &wan_port_stat);
-    if (rc)
-        goto iptv_exit;
-
-    net_stats->multicast = wan_port_stat.rx_multicast_pkt;
-#ifdef CONFIG_BCM_KF_EXTSTATS
-    net_stats->rx_broadcast_packets = wan_port_stat.rx_broadcast_pkt;
-    net_stats->tx_multicast_packets = wan_port_stat.tx_multicast_pkt;
-    net_stats->tx_broadcast_packets = wan_port_stat.tx_broadcast_pkt;
-#endif /* CONFIG_BCM_KF_EXTSTATS */    
-
-#endif /* CONFIG_BCM_FTTDP_G9991 */
-
 iptv_exit:
     if (iptv)
         bdmf_put(iptv);
 }
-#endif //!63158
+
+#endif /* CONFIG_BCM_FTTDP_G9991 */
+#endif /* !63158 */
 
 static int port_runner_gpon_init(enetx_port_t *self)
 {
@@ -1556,6 +1709,9 @@ static int port_runner_gpon_uninit(enetx_port_t *self)
     return 0;
 }
 
+#if defined(CONFIG_BCM_FTTDP_G9991) && defined(XRDP)
+extern void __dispatch_pkt_skb_check_bcast_mcast(dispatch_info_t *dispatch_info);
+#endif
 static int dispatch_pkt_gpon(dispatch_info_t *dispatch_info)
 {
     int rc;
@@ -1574,6 +1730,11 @@ static int dispatch_pkt_gpon(dispatch_info_t *dispatch_info)
         nbuff_flushfree(dispatch_info->pNBuff);
         return 0;
     }
+
+#if defined(CONFIG_BCM_FTTDP_G9991) && defined(XRDP)
+    if (IS_SKBUFF_PTR(dispatch_info->pNBuff))
+        __dispatch_pkt_skb_check_bcast_mcast(dispatch_info);
+#endif
 
     rc = _rdpa_cpu_send_sysb((bdmf_sysb)dispatch_info->pNBuff, &info);
     if (unlikely(rc != 0))
@@ -1609,15 +1770,22 @@ port_ops_t port_runner_gpon =
 #if defined(CONFIG_BCM963158)
     .stats_get = port_generic_sw_stats_get,
 #else
-    .stats_get = port_runner_gpon_stats,
+#ifdef CONFIG_BCM_FTTDP_G9991 
+    .stats_get = port_runner_gpon_stats_g9991,
+    .stats_clear = port_runner_gpon_stats_clear_g9991,
+#else
     .stats_clear = port_runner_gpon_stats_clear,
+    .stats_get = port_runner_gpon_stats,
+#endif
 #endif
     .mtu_set = port_runner_mtu_set,
     /* TODO: stats_clear */
     .mib_dump = port_runner_mib_dump,
     .print_status = port_runner_print_status,
     .print_priv = port_runner_print_priv,
+#if 0   /* skip Andrew code */
     .mib_dump_us = port_runner_mib_dump_us, // add by Andrew
+#endif
 };
 #endif /* GPON */
 
@@ -1629,7 +1797,9 @@ port_ops_t port_runner_port_mac =
     .pause_set = port_generic_pause_set,
     .mtu_set = port_runner_mtu_set,
     .mib_dump = port_runner_mib_dump,
+#if 0   /* skip Andrew code */
     .mib_dump_us = port_runner_mib_dump_us, // add by Andrew
+#endif
 };
 
 #ifdef EPON
@@ -1831,7 +2001,9 @@ port_ops_t port_runner_epon =
     .print_status = port_runner_print_status,
     .print_priv = port_runner_print_priv,
     .link_change = port_runner_link_change,
+#if 0   /* skip Andrew code */
     .mib_dump_us = port_runner_mib_dump_us, // add by Andrew
+#endif
 };
 #endif /* EPON */
 

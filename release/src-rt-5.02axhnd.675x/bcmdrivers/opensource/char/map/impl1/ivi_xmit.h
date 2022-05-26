@@ -60,9 +60,7 @@
 #include "ivi_rule.h"
 #include "ivi_rule6.h"
 #include "ivi_map.h"
-#if 0
 #include "ivi_map_tcp.h"
-#endif
 #include "ivi_nf.h"
 
 extern __be32 v4address;

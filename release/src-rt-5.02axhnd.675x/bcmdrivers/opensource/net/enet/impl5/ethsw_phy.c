@@ -1679,6 +1679,7 @@ int bcmeapi_ioctl_ethsw_phy_mode(struct ethswctl_data *e, int phy_id)
         {
             unsigned short bmcr = 0;
             unsigned short nway_advert, gig_ctrl, gig_cap = 0;
+            int flags = 0;
 
             switch (e->speed) 
             {
@@ -1706,8 +1707,11 @@ int bcmeapi_ioctl_ethsw_phy_mode(struct ethswctl_data *e, int phy_id)
                 bmcr |= (e->duplex == 1) ? BMCR_FULLDPLX : 0;
             }
 
-            ethsw_phyport_rreg2(phy_id, MII_ADVERTISE, &nway_advert, 0);
-            ethsw_phyport_rreg2(phy_id, MII_CTRL1000, &gig_ctrl, 0);
+            if(phy_id & CONNECTED_TO_EXTERN_SW)
+                flags = ETHCTL_FLAG_ACCESS_EXTSW_PHY;
+
+            ethsw_phyport_rreg2(phy_id, MII_ADVERTISE, &nway_advert, flags);
+            ethsw_phyport_rreg2(phy_id, MII_CTRL1000, &gig_ctrl, flags);
             gig_ctrl |= (ADVERTISE_1000FULL | ADVERTISE_1000HALF);
 
             if (e->speed == 1000)
@@ -1728,9 +1732,9 @@ int bcmeapi_ioctl_ethsw_phy_mode(struct ethswctl_data *e, int phy_id)
                             ADVERTISE_10HALF );
             }
 
-            ethsw_phyport_wreg2(phy_id, MII_ADVERTISE, &nway_advert, 0);
-            ethsw_phyport_wreg2(phy_id, MII_CTRL1000, &gig_ctrl, 0);
-            ethsw_phyport_wreg2(phy_id, MII_BMCR, &bmcr, 0);
+            ethsw_phyport_wreg2(phy_id, MII_ADVERTISE, &nway_advert, flags);
+            ethsw_phyport_wreg2(phy_id, MII_CTRL1000, &gig_ctrl, flags);
+            ethsw_phyport_wreg2(phy_id, MII_BMCR, &bmcr, flags);
         }
     }
 

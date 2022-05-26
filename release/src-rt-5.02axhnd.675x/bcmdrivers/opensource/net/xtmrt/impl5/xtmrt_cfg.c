@@ -142,7 +142,7 @@ static const struct net_device_ops bcmXtmRt_netdevops =
       .ndo_do_ioctl        = bcmxtmrt_ioctl,
       .ndo_set_mac_address = bcmxtmrt_set_MacAddress,
       .ndo_tx_timeout      = bcmxtmrt_timeout,
-      .ndo_get_stats64       = bcmxtmrt_query,
+      .ndo_get_stats64     = bcmxtmrt_query,
       .ndo_change_mtu      = bcmxtmrt_change_mtu
    };
 
@@ -340,7 +340,7 @@ static struct rtnl_link_stats64 *bcmxtmrt_query(struct net_device *dev,
       support extended statistics (i.e. multicast, broadcast, unicast 
       packets and other data). */
    UINT32 i;
-   UINT32 found      = 0;
+   UINT32 found = 0;
    UINT32 rxDropped  = 0;
    UINT32 txDropped  = 0;
    UINT64 rxTotalDropped = 0;
@@ -353,17 +353,23 @@ static struct rtnl_link_stats64 *bcmxtmrt_query(struct net_device *dev,
    {
       if (pGi->pDevCtxsByMatchId[i] == pDevCtx)
       {
-         bcmxapi_XtmGetStats(i, &rxDropped, &txDropped); 
+         bcmxapi_XtmGetStats(pDevCtx, i, &rxDropped, &txDropped); 
          rxTotalDropped += rxDropped;
          txTotalDropped += txDropped;
          found = 1;
+         break;
+
       }
    }
 
-   if (found)
+   if(found)
    {
-      pStats->rx_dropped += rxTotalDropped;
-      pStats->tx_dropped += txTotalDropped;
+#if defined(CONFIG_BCM963138) || defined(CONFIG_BCM963148)
+       pDevCtx->DevStats.rx_dropped += rxTotalDropped;
+       pDevCtx->DevStats.tx_dropped += txTotalDropped;
+#endif
+       pStats->rx_dropped += rxTotalDropped;
+       pStats->tx_dropped += txTotalDropped;
    }
 
    return (pStats);

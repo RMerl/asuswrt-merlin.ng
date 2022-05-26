@@ -139,6 +139,9 @@ $(eval $(call LN_RULE, $(CONFIG_BCM_BOARD), opensource/char/board/$(BRCM_BOARD),
 #ifneq ($(CONFIG_BCM_NVRAM),)
 $(eval $(call LN_RULE,$(CONFIG_BCM_NVRAM), broadcom/char/wlcsm_ext,$(LN_NAME), 1))
 #endif
+#ifneq ($(CONFIG_BCM_WLCXC),)
+$(eval $(call LN_RULE,$(CONFIG_BCM_WLCXC), broadcom/char/customer/wlcxc,$(LN_NAME), $(CONFIG_BCM_WLCXC_IMPL)))
+#endif
 $(eval $(call LN_RULE, $(CONFIG_BCM_CHIPINFO), broadcom/char/chipinfo, $(LN_NAME), $(CONFIG_BCM_CHIPINFO_IMPL)))
 $(eval $(call LN_RULE, $(CONFIG_BCM_SERIAL), opensource/char/serial, $(LN_NAME), $(CONFIG_BCM_SERIAL_IMPL)))
 $(eval $(call LN_RULE, $(CONFIG_BCM_EXT_TIMER), opensource/char/timer, $(LN_NAME), $(CONFIG_BCM_EXT_TIMER_IMPL)))
@@ -146,6 +149,7 @@ $(eval $(call LN_RULE, $(CONFIG_BCM_I2C_BUS), opensource/char/i2c/busses, $(LN_N
 $(eval $(call LN_RULE, $(CONFIG_BCM_I2C_CHIP), opensource/char/i2c/chips, $(LN_NAME), $(CONFIG_BCM_I2C_CHIP_IMPL)))
 $(eval $(call LN_RULE, $(CONFIG_BCM_PLATFORM), opensource/char/plat-bcm, $(LN_NAME), $(CONFIG_BCM_PLATFORM_IMPL)))
 $(eval $(call LN_RULE, $(CONFIG_BCM_OPTICALDET), opensource/char/opticaldet, $(LN_NAME), $(CONFIG_BCM_OPTICALDET_IMPL)))
+$(eval $(call LN_RULE, $(CONFIG_BCM_SMTC), opensource/char/smtc, $(LN_NAME), $(CONFIG_BCM_SMTC_IMPL)))
 $(eval $(call LN_RULE, $(CONFIG_BCM_WANTYPEDET), opensource/char/wantypedet, $(LN_NAME), $(CONFIG_BCM_WANTYPEDET_IMPL)))
 $(eval $(call LN_RULE, $(CONFIG_BCM_PKTFLOW), broadcom/char/pktflow, $(LN_NAME), $(CONFIG_BCM_PKTFLOW_IMPL)))
 $(eval $(call LN_RULE, $(CONFIG_BCM_PKTCMF), broadcom/char/pktcmf, $(LN_NAME), $(CONFIG_BCM_PKTCMF_IMPL)))

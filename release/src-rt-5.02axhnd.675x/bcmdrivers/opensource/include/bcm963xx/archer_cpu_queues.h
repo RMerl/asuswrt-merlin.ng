@@ -72,9 +72,10 @@ typedef struct {
     int (* tx_queue_notifier_register)(int q_id, TX_NOTIFIER tx_notifier);
     int (* tx_queue_read)(int q_id, pNBuff_t *ppNBuff, int *param_p, int *egress_queue_p);
     int (* tx_queue_not_empty)(int q_id);
-    int (* rx_queue_write)(int q_id, uint8_t **pData, int data_len, int ingress_port, int param);
+    int (* rx_queue_write)(int q_id, uint8_t *pData, int data_len, int ingress_port, int param);
     void (* recycle_queue_write)(pNBuff_t pNBuff);
     void (* queue_stats)(void);
+    struct task_struct *archer_task_p;
 } archer_host_hooks_t;
 
 typedef struct {
@@ -100,6 +101,7 @@ typedef struct {
     int (* txdmaEnable)(uint32_t dmaIndex, uint32_t txVcid);
     int (* txdmaDisable)(uint32_t dmaIndex);
     int (* setTxChanDropAlg)(int queue_id, archer_drop_config_t *cfg);
+    int (* txdmaGetQStats)(int queue_id, archer_txq_stats_t *pstats);
     uint32_t (* txdmaGetQSize)(void);
 } archer_xtm_hooks_t;
 

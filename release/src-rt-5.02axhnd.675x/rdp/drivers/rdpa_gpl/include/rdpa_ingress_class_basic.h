@@ -232,6 +232,7 @@ typedef struct
     uint8_t wan_flow;  /**< WAN flow : Gem Flow or LLID */
     rdpa_forward_action  action; /**< forward/drop/cpu */
     bdmf_object_handle policer; /**< Policer object */
+    bdmf_object_handle tunnel; /**< Tunnel object */
     rdpa_forwarding_mode forw_mode;  /**< flow/packet based */
     rdpa_if egress_port; /**< Egress port */
     uint8_t ssid; /**< SSID, in use when egress port is WLAN */

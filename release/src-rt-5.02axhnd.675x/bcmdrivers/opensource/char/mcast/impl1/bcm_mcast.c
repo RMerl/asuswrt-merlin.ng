@@ -66,6 +66,8 @@ bcm_mcast_ctrl *mcast_ctrl;
    of this setting */
 #define BCM_MCAST_ERR_DISCARD 1
 
+#define IGMPV1_HDR_LEN 8
+
 /* this module does not support non-linear buffers - if the data in the linear
    part of the buffer is not sufficient to process the packet this packet is 
    returned to Linux without processing */
@@ -318,21 +320,21 @@ static int bcm_mcast_skb_is_ip_multicast(const struct sk_buff *skb, int iph_offs
    return is_ip_multicast;
 }
 
-static int bcm_mcast_receive_igmp_filter(bcm_mcast_ifdata *pif, struct igmphdr *pigmp, int flags)
+static int bcm_mcast_receive_igmp_filter(bcm_mcast_ifdata *pif, struct igmphdr *pigmp, unsigned int igmp_len, int flags)
 {
    if (pigmp != NULL)
    {
 #if defined(CONFIG_BCM_GPON_MODULE)
       /* drop IGMP v1 report packets */
-      if (pigmp->type == IGMP_HOST_MEMBERSHIP_REPORT)
+      if (pigmp->type == IGMP_HOST_MEMBERSHIP_REPORT && igmp_len == IGMPV1_HDR_LEN)
       {
          /* discard packet */
          return -1;
       }
 
       /* drop IGMP v1 query packets */
-      if ((pigmp->type == IGMP_HOST_MEMBERSHIP_QUERY) &&
-          (pigmp->code == 0))
+      if (pigmp->type == IGMP_HOST_MEMBERSHIP_QUERY &&
+          igmp_len == IGMPV1_HDR_LEN && pigmp->code == 0)
       {
          /* discard packet */
          return -1;
@@ -425,6 +427,7 @@ static int bcm_mcast_receive_igmp(bcm_mcast_ifdata *pif,
    struct igmphdr *pigmp;
    int             len;
    int             rv;
+   unsigned int    igmp_len;
    unsigned int    grpaddr=0;
 
    pip = (struct iphdr *)(skb_network_header(skb_org) + iph_offset);
@@ -438,6 +441,7 @@ static int bcm_mcast_receive_igmp(bcm_mcast_ifdata *pif,
       return 0;
    }
 
+   igmp_len = ntohs(pip->tot_len) - (pip->ihl * 4);
    pigmp = (struct igmphdr *)(skb_network_header(skb_org) + iph_offset + (pip->ihl * 4));
 
    if (pigmp->type == IGMPV2_HOST_MEMBERSHIP_REPORT) 
@@ -450,7 +454,7 @@ static int bcm_mcast_receive_igmp(bcm_mcast_ifdata *pif,
        grpaddr = ntohl(pigmpv3rep->grec[0].grec_mca);
    }
 
-   __logDebug("Received IGMP %s in_dev %s dstip 0x%x srcip 0x%x", 
+   __logInfo("Received IGMP %s in_dev %s dstip 0x%x srcip 0x%x", 
               IGMP_TYPE_STR(pigmp->type), skb_org->in_dev->name, 
               ntohl(pip->daddr), ntohl(pip->saddr));
 
@@ -485,7 +489,7 @@ static int bcm_mcast_receive_igmp(bcm_mcast_ifdata *pif,
          return 0;
    }
 
-   rv = bcm_mcast_receive_igmp_filter(pif, pigmp, flags);
+   rv = bcm_mcast_receive_igmp_filter(pif, pigmp, igmp_len, flags);
 #if defined(CONFIG_BR_IGMP_SNOOP)
    if ( 0 == rv )
    {
@@ -569,7 +573,7 @@ static int bcm_mcast_receive_icmp(bcm_mcast_ifdata *pif,
    /* verify that we can read the ICMP header */
    picmpv6 = (struct icmp6hdr *)(skb_network_header(skb_org) + icmpv6_offset);
 
-   __logDebug("Received MLD %s rxdev %s dstip %x...%x srcip %x...%x", 
+   __logInfo("Received MLD %s rxdev %s dstip %x...%x srcip %x...%x", 
               MLD_TYPE_STR(picmpv6->icmp6_type),
               skb_org->in_dev->name, 
               ntohs(pipv6->daddr.s6_addr16[0]), pipv6->daddr.s6_addr[15],
@@ -682,7 +686,7 @@ static int bcm_mcast_receive(int ifindex, struct sk_buff *skb, int is_routed)
           return rv;
       }
 
-      __logInfo("Mcast pkt received from indev %s ifindex %d protocol 0x%x\n", 
+      __logDebug("Mcast pkt received from indev %s ifindex %d protocol 0x%x\n", 
                 skb->in_dev->name, skb->in_dev->ifindex, htons(proto));
       do
       {
@@ -888,7 +892,8 @@ int bcm_mcast_should_deliver(int ifindex, const struct sk_buff *skb, struct net_
                   /* do not forward anything to LAN ports except queries and reports toward querying LAN ports*/
                   if ( pif->igmp_snooping && 
                       (pigmp->type != IGMP_HOST_MEMBERSHIP_QUERY) && 
-                      (((NULL == destLowerPort) || (0 == destLowerPort->querying_port)) && !dst_mrouter) )
+                      (((NULL == destLowerPort) || (0 == destLowerPort->querying_port)) && !dst_mrouter 
+                       && !is_netdev_mcastrouter(dst_dev)) )
                   {
                      __logDebug("do not forward IGMP %s to dev %s dstip 0x%x", 
                                 IGMP_TYPE_STR(pigmp->type), dst_dev->name, ntohl(pip->daddr));
@@ -967,7 +972,8 @@ int bcm_mcast_should_deliver(int ifindex, const struct sk_buff *skb, struct net_
                      destLowerPort = bcm_mcast_if_get_lower_port_by_ifindex(pif, dst_dev->ifindex);
                      /* do not forward anything to LAN ports except queries and reports toward querying LAN ports*/
                      if ( pif->mld_snooping && (picmp->icmp6_type != ICMPV6_MGM_QUERY) && 
-                         (((NULL == destLowerPort) || (0 == destLowerPort->mld_querying_port)) && !dst_mrouter) )
+                         (((NULL == destLowerPort) || (0 == destLowerPort->mld_querying_port)) && !dst_mrouter 
+                          && !is_netdev_mcastrouter(dst_dev)) )
                      {
                         rv = 0;
                      }
@@ -989,6 +995,8 @@ int bcm_mcast_should_deliver(int ifindex, const struct sk_buff *skb, struct net_
       } while (0 );
    }
    rcu_read_unlock();
+   __logDebug("source device %s, dst device %s should_deliver %d", 
+              skb->dev->name, dst_dev->name, rv);
    return rv;
 }
 

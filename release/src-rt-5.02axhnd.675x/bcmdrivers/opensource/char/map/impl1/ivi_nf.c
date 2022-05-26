@@ -33,9 +33,41 @@
  *
  ************************************************************************/
 
+#include <linux/notifier.h>
 #include "ivi_nf.h"
 
 struct net_device *v4_dev, *v6_dev;
+
+int ivi_netdev_event_handler(struct notifier_block *this,
+                            unsigned long event, void *ptr)
+{
+    struct net_device *dev = netdev_notifier_info_to_dev(ptr);
+
+	switch (event) {
+
+	case NETDEV_UNREGISTER:
+		if (dev == v4_dev)
+		{
+			v4_dev = NULL;
+			dev_put(dev);
+		}
+		if (dev == v6_dev)
+		{
+			v6_dev = NULL;
+			dev_put(dev);
+		}
+		break;
+
+	default:
+		break;
+	}
+
+	return NOTIFY_DONE;
+}
+
+struct notifier_block ivi_netdev_notifier = {
+	.notifier_call = ivi_netdev_event_handler,
+};
 
 static int running;
 
@@ -44,7 +76,9 @@ static unsigned int nf_hook4(const struct nf_hook_ops *ops,
     		                const struct nf_hook_state *state) {
 	unsigned int ret;
 
-	if ((!running) || (state->in != v4_dev)) {
+	if ((!running) ||
+	    ((ops->hooknum == NF_INET_LOCAL_OUT) && (state->out != v6_dev)) ||
+	    ((ops->hooknum == NF_INET_PRE_ROUTING) && (state->in != v4_dev))) {
 		return NF_ACCEPT;
 	}
 
@@ -77,6 +111,16 @@ static unsigned int nf_hook6(const struct nf_hook_ops *ops,
 		return NF_ACCEPT;
 }
 
+// Service for gateway its own needs
+struct nf_hook_ops l4_ops = {
+	list	:	{ NULL, NULL },
+	hook	:	(nf_hookfn *)nf_hook4,
+	owner	:	THIS_MODULE,
+	pf	:	PF_INET,
+	hooknum	:	NF_INET_LOCAL_OUT,
+	priority:	NF_IP_PRI_FIRST,
+};
+
 struct nf_hook_ops v4_ops = {
 	list	:	{ NULL, NULL },
 	hook	:	(nf_hookfn *)nf_hook4,
@@ -104,11 +148,19 @@ int nf_running(const int run) {
 }
 
 int nf_getv4dev(struct net_device *dev) {
+
+	if (v4_dev)
+		dev_put(v4_dev);
+		
 	v4_dev = dev;
 	return 0;
 }
 
 int nf_getv6dev(struct net_device *dev) {
+
+	if (v6_dev)
+		dev_put(v6_dev);
+
 	v6_dev = dev;
 	return 0;
 }
@@ -118,8 +170,11 @@ int ivi_nf_init(void) {
 	v4_dev = NULL;
 	v6_dev = NULL;
 
+	nf_register_hook(&l4_ops);
 	nf_register_hook(&v4_ops);
 	nf_register_hook(&v6_ops);
+
+	register_netdevice_notifier(&ivi_netdev_notifier);
 
 #ifdef IVI_DEBUG
 	printk(KERN_DEBUG "IVI: ivi_nf loaded.\n");
@@ -130,6 +185,9 @@ int ivi_nf_init(void) {
 void ivi_nf_exit(void) {
 	running = 0;
 
+	unregister_netdevice_notifier(&ivi_netdev_notifier);
+
+	nf_unregister_hook(&l4_ops);
 	nf_unregister_hook(&v4_ops);
 	nf_unregister_hook(&v6_ops);
 	

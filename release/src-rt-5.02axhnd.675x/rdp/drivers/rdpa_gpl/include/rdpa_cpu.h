@@ -192,7 +192,7 @@ typedef struct
     uint8_t omci_encrypted_key_index; /**< encryption key-index in NGPON modes */
 } rdpa_cpu_rx_info_t;
 
-/* Extended CPU info (debugging) */
+/** Extended CPU info (debugging) */
 typedef struct
 {
     uint8_t valid;                      /**< 1 means that the following fields contain valid data */
@@ -390,6 +390,7 @@ void *rdpa_cpu_data_get(int rdpa_cpu_type);
  * @{
  */
 
+#if defined(BCM_DSL_RDP) || defined(BCM63158)
 /** Extra data that can be passed along with the packet to be transmitted */
 typedef union
 {
@@ -401,6 +402,7 @@ typedef union
         uint32_t unused                 :23;
     };
 } rdpa_cpu_tx_extra_info_t;
+#endif 
 
 /** Transmit statistics */
 typedef struct

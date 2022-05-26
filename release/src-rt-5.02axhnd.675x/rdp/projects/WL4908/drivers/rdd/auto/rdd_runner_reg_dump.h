@@ -250,11 +250,11 @@ void dump_RDD_DHD_RADIO_INSTANCE_COMMON_A_ENTRY(bdmf_session_handle session, uns
 void dump_RDD_DHD_FLOW_RING_CACHE_LKP_ENTRY(bdmf_session_handle session, unsigned char *p);
 void dump_RDD_INGRESS_CLASSIFICATION_LONG_LOOKUP_ENTRY(bdmf_session_handle session, unsigned char *p);
 void dump_RDD_PM_COUNTERS(bdmf_session_handle session, unsigned char *p);
-void dump_RDD_INTERRUPT_COALESCING_CONFIG(bdmf_session_handle session, unsigned char *p);
 void dump_RDD_CONNECTION_ENTRY(bdmf_session_handle session, unsigned char *p);
+void dump_RDD_INTERRUPT_COALESCING_CONFIG(bdmf_session_handle session, unsigned char *p);
 void dump_RDD_CPU_RX_DESCRIPTOR(bdmf_session_handle session, unsigned char *p);
-void dump_RDD_RING_DESCRIPTOR(bdmf_session_handle session, unsigned char *p);
 void dump_RDD_DDR_QUEUE_ADDRESS_ENTRY(bdmf_session_handle session, unsigned char *p);
+void dump_RDD_RING_DESCRIPTOR(bdmf_session_handle session, unsigned char *p);
 void dump_RDD_MAC_EXTENSION_ENTRY(bdmf_session_handle session, unsigned char *p);
 void dump_RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR(bdmf_session_handle session, unsigned char *p);
 void dump_RDD_SERVICE_QUEUES_CFG_ENTRY(bdmf_session_handle session, unsigned char *p);

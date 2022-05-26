@@ -253,6 +253,29 @@ int port_runner_port_init(enetx_port_t *self)
     return 0;
 }
 
+#if defined(CONFIG_BCM_FTTDP_G9991) && defined(XRDP)
+void __dispatch_pkt_skb_check_bcast_mcast(dispatch_info_t *dispatch_info)
+{
+    struct sk_buff *skb = (struct sk_buff *)dispatch_info->pNBuff;
+    struct ethhdr *eth = (struct ethhdr *)skb_mac_header(skb);
+    uint8_t def_bcast[6] = { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff };
+    uint8_t *bcast;
+
+    if (unlikely(*eth->h_dest & 1))
+    {
+        if (dispatch_info->port && dispatch_info->port->dev)
+            bcast = dispatch_info->port->dev->broadcast;
+        else
+            bcast = def_bcast;
+
+        if (memcmp(eth->h_dest, bcast, ETH_ALEN) == 0)
+            skb->pkt_type=PACKET_BROADCAST;
+        else
+            skb->pkt_type=PACKET_MULTICAST;
+    }
+}
+#endif
+
 int port_runner_dispatch_pkt_lan(dispatch_info_t *dispatch_info)
 {
     rdpa_cpu_tx_info_t info = {};
@@ -266,13 +289,18 @@ int port_runner_dispatch_pkt_lan(dispatch_info_t *dispatch_info)
     info.x.lan.queue_id = dispatch_info->egress_queue;
     info.drop_precedence = dispatch_info->drop_eligible;
     info.flags = 0;
+    info.bits.no_lock = dispatch_info->no_lock;
 
     enet_dbg_tx("rdpa_cpu_send: port %d queue %d\n", info.port, dispatch_info->egress_queue);
 
 #ifdef CONFIG_BCM_PTP_1588
     if (unlikely(is_pkt_ptp_1588(dispatch_info->pNBuff, &info, &ptp_offset)))
         return ptp_1588_cpu_send_sysb((bdmf_sysb)dispatch_info->pNBuff, &info, ptp_offset);
-    else
+#endif
+
+#if defined(CONFIG_BCM_FTTDP_G9991) && defined(XRDP)
+    if (IS_SKBUFF_PTR(dispatch_info->pNBuff))
+        __dispatch_pkt_skb_check_bcast_mcast(dispatch_info);
 #endif
     return _rdpa_cpu_send_sysb((bdmf_sysb)dispatch_info->pNBuff, &info);
 }
@@ -286,9 +314,14 @@ static int dispatch_pkt_gbe_wan(dispatch_info_t *dispatch_info)
     info.cpu_port = rdpa_cpu_host;
     info.x.wan.queue_id = dispatch_info->egress_queue;
     info.drop_precedence = dispatch_info->drop_eligible;
+    info.bits.no_lock = dispatch_info->no_lock;
 
     enet_dbg_tx("rdpa_cpu_send: port %d queue %d\n", info.port, dispatch_info->egress_queue);
 
+#if defined(CONFIG_BCM_FTTDP_G9991) && defined(XRDP)
+    if (IS_SKBUFF_PTR(dispatch_info->pNBuff))
+        __dispatch_pkt_skb_check_bcast_mcast(dispatch_info);
+#endif
     return _rdpa_cpu_send_sysb((bdmf_sysb)dispatch_info->pNBuff, &info);
 }
 
@@ -316,7 +349,9 @@ port_ops_t port_runner_port =
     .print_status = port_runner_print_status,
     .print_priv = port_runner_print_priv,
     .link_change = port_runner_link_change,
+#if 0   /* skip Andrew code */
     .mib_dump_us = port_runner_mib_dump_us, // add by Andrew
+#endif
 };
 
 port_ops_t port_runner_port_wan_gbe =
@@ -333,6 +368,8 @@ port_ops_t port_runner_port_wan_gbe =
     .print_status = port_runner_print_status,
     .print_priv = port_runner_print_priv,
     .link_change = port_runner_link_change,
+#if 0   /* skip Andrew code */
     .mib_dump_us = port_runner_mib_dump_us, // add by Andrew
+#endif
 };
 

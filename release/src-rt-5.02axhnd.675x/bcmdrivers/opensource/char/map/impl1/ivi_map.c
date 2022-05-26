@@ -42,7 +42,6 @@
 #include <linux/blog.h>
 #endif
 
-struct map_list tcp_list;
 struct map_list udp_list;
 struct map_list icmp_list;
 
@@ -132,8 +131,8 @@ static struct map_tuple* add_new_map(u32 portmapidx, __be32 oldaddr, __be16 oldp
 	map->dstaddr = dstaddr;
 	map->newport = newp;
 #if defined(CONFIG_BCM_KF_BLOG) && defined(CONFIG_BLOG)
-    map->blog_key[BLOG_PARAM1_MAP_DIR_US] = BLOG_KEY_FC_INVALID;
-    map->blog_key[BLOG_PARAM1_MAP_DIR_DS] = BLOG_KEY_FC_INVALID;
+	map->blog_key[BLOG_PARAM1_MAP_DIR_US] = BLOG_KEY_FC_INVALID;
+	map->blog_key[BLOG_PARAM1_MAP_DIR_DS] = BLOG_KEY_FC_INVALID;
 #endif
 	do_gettimeofday(&map->timer);
 	
@@ -269,14 +268,14 @@ void free_map_list(struct map_list *list)
 			printk(KERN_INFO "free_map_list: delete map " NIP4_FMT ":%d -> " NIP4_FMT " ------> %d on out_chain[%d]\n", NIP4(iter->oldaddr), iter->oldport, NIP4(iter->dstaddr), iter->newport, i);
 #endif
 #if defined(CONFIG_BCM_KF_BLOG) && defined(CONFIG_BLOG)
-            blog_lock();
-            if (iter->blog_key[BLOG_PARAM1_MAP_DIR_US] != BLOG_KEY_FC_INVALID || 
-                iter->blog_key[BLOG_PARAM1_MAP_DIR_DS] != BLOG_KEY_FC_INVALID) {
-                blog_notify(DESTROY_MAP_TUPLE, (void*)iter, 
-                            iter->blog_key[BLOG_PARAM1_MAP_DIR_US],
-                            iter->blog_key[BLOG_PARAM1_MAP_DIR_DS]);
+			blog_lock();
+			if (iter->blog_key[BLOG_PARAM1_MAP_DIR_US] != BLOG_KEY_FC_INVALID || 
+			    iter->blog_key[BLOG_PARAM1_MAP_DIR_DS] != BLOG_KEY_FC_INVALID) {
+				blog_notify(DESTROY_MAP_TUPLE, (void*)iter, 
+				            iter->blog_key[BLOG_PARAM1_MAP_DIR_US],
+				            iter->blog_key[BLOG_PARAM1_MAP_DIR_DS]);
 			}
-            blog_unlock();
+			blog_unlock();
 #endif
 
 			kfree(iter);
@@ -318,7 +317,7 @@ int get_outflow_map_port(struct map_list *list, __be32 oldaddr, __be16 oldp, __b
 					retport = iter->newport;
 					do_gettimeofday(&iter->timer);
 #if defined(CONFIG_BCM_KF_BLOG) && defined(CONFIG_BLOG)
-                    blog_link(MAP_TUPLE, blog_ptr(skb), (void*)iter, BLOG_PARAM1_MAP_DIR_US, 0);
+					blog_link(MAP_TUPLE, blog_ptr(skb), (void*)iter, BLOG_PARAM1_MAP_DIR_US, 0);
 #endif
 #ifdef IVI_DEBUG_MAP
 					//printk(KERN_INFO "get_outflow_map_port: find map " NIP4_FMT ":%d -> " NIP4_FMT " ------> %d on out_chain[%d]\n", NIP4(iter->oldaddr), iter->oldport, NIP4(iter->dstaddr), iter->newport, hash);
@@ -467,7 +466,7 @@ int get_outflow_map_port(struct map_list *list, __be32 oldaddr, __be16 oldp, __b
 	}
 
 #if defined(CONFIG_BCM_KF_BLOG) && defined(CONFIG_BLOG)
-    blog_link(MAP_TUPLE, blog_ptr(skb), (void*)tuple, BLOG_PARAM1_MAP_DIR_US, 0);
+	blog_link(MAP_TUPLE, blog_ptr(skb), (void*)tuple, BLOG_PARAM1_MAP_DIR_US, 0);
 #endif
 	
 	if (status == 0 && reusing == 0) { // we generated a new mapping port
@@ -505,7 +504,7 @@ int get_inflow_map_port(struct map_list *list, __be16 newp, __be32 dstaddr, __be
 			*oldp = iter->oldport;
 			do_gettimeofday(&iter->timer);
 #if defined(CONFIG_BCM_KF_BLOG) && defined(CONFIG_BLOG)
-            blog_link(MAP_TUPLE, blog_ptr(skb), (void*)iter, BLOG_PARAM1_MAP_DIR_DS, 0);
+			blog_link(MAP_TUPLE, blog_ptr(skb), (void*)iter, BLOG_PARAM1_MAP_DIR_DS, 0);
 #endif
 #ifdef IVI_DEBUG_MAP
 			//printk(KERN_INFO "get_inflow_map_port: find map " NIP4_FMT ":%d -> " NIP4_FMT 
@@ -780,7 +779,6 @@ int init_mapfrag_list( time_t timeout )
 }
 
 int ivi_map_init(void) {
-	init_map_list(&tcp_list, 15, MAPPORTMAP_PROTO_TCP);
 	init_map_list(&udp_list, 15, MAPPORTMAP_PROTO_UDP);
 	init_map_list(&icmp_list, 15, MAPPORTMAP_PROTO_ICMP);
 	init_mapfrag_list(15);
@@ -791,7 +789,6 @@ int ivi_map_init(void) {
 }
 
 void ivi_map_exit(void) {
-	free_map_list(&tcp_list);
 	free_map_list(&udp_list);
 	free_map_list(&icmp_list);
 #ifdef IVI_DEBUG

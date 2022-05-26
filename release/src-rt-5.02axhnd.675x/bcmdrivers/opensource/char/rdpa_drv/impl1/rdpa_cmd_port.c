@@ -41,6 +41,7 @@
 #include <linux/jiffies.h>
 #include <linux/delay.h>
 #include <linux/bcm_log.h>
+#include <bdmf_dev.h>
 #include "bcmenet.h"
 #include "bcmtypes.h"
 #include "bcmnet.h"
@@ -125,6 +126,22 @@ int rdpa_cmd_port_ioctl(unsigned long arg)
 
         case RDPA_IOCTL_PORT_CMD_SA_LIMIT_SET:
         {
+            bdmf_link_handle us_link = NULL;
+            rdpa_bridge_cfg_t br_config;
+
+            /* sa_limit is not for bridge port links to a Q bridge */
+            while ((us_link = bdmf_get_next_us_link(port_obj, us_link)))
+            {
+                if (bdmf_us_link_to_object(us_link)->drv == rdpa_bridge_drv())
+                    break;
+            }
+            if (!us_link)
+                break;
+
+            rdpa_bridge_config_get(bdmf_us_link_to_object(us_link), &br_config);
+            if (br_config.type == rdpa_bridge_802_1q)
+                break;
+
             rc = rdpa_port_sa_limit_get(port_obj, &sa_limit);
             if (!rc)
             {

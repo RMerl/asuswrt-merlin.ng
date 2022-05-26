@@ -221,6 +221,7 @@ enum bp_id {
   bp_ulOpticalWan,
   bp_ulSimInterfaces,
   bp_ulSlicInterfaces,
+  bp_usGpioSMTCTxDis,
   bp_usGpioPonTxEn,
   bp_usGpioPonRxEn,
   bp_usRogueOnuEn,

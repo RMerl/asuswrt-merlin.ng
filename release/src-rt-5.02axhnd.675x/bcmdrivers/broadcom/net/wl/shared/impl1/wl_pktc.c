@@ -880,8 +880,6 @@ unsigned long wl_pktc_req(int req_id, unsigned long param0, unsigned long param1
 		}
 #endif
 
-		/* update associated station numbers */
-		g_pktc_tbl[0].g_stats->total_stas = wl_pktc_get_sta_num();
 
 #if defined(BCM_WFD)
 {

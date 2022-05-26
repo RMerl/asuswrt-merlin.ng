@@ -503,6 +503,32 @@ static int f_rdd_context_entry_write ( rdd_fc_context_t            *context_entr
 
             RDD_CONTEXT_CONTINUATION_ENTRY_VALID_WRITE ( context_entry->fc_ucast_flow_context_entry.valid, context_cont_entry_ptr );
         }
+#if defined(CONFIG_BCM_DPI_WLAN_QOS)
+	else {
+            if (context_entry->fc_ucast_flow_context_entry.egress_phy == rdd_egress_phy_wlan)
+            {
+                if (context_entry->fc_ucast_flow_context_entry.is_unicast_wfd_any)
+                {
+                    if (context_entry->fc_ucast_flow_context_entry.is_unicast_wfd_nic)
+                    {
+		        RDD_FC_NATC_UCAST_FLOW_CONTEXT_ENTRY_PRIORITY_WRITE(context_entry->fc_ucast_flow_context_entry.priority, natc_context_entry_ptr);
+                    }
+                    else
+                    {
+                        RDD_FC_UCAST_FLOW_CONTEXT_WFD_DHD_ENTRY_FLOW_RING_ID_WRITE(context_entry->fc_ucast_flow_context_wfd_dhd_entry.flow_ring_id, natc_context_entry_ptr);
+			RDD_FC_NATC_UCAST_FLOW_CONTEXT_ENTRY_PRIORITY_WRITE(context_entry->fc_ucast_flow_context_entry.priority, natc_context_entry_ptr);
+                    }
+                }
+#if defined(CONFIG_DHD_RUNNER)
+                else
+                {
+                    RDD_FC_UCAST_FLOW_CONTEXT_RNR_DHD_ENTRY_FLOW_RING_ID_WRITE(context_entry->fc_ucast_flow_context_rnr_dhd_entry.flow_ring_id, natc_context_entry_ptr);
+		    RDD_FC_NATC_UCAST_FLOW_CONTEXT_ENTRY_PRIORITY_WRITE(context_entry->fc_ucast_flow_context_entry.priority, natc_context_entry_ptr);
+                }
+#endif
+            }
+	}
+#endif /* CONFIG_BCM_DPI_WLAN_QOS */
 
         RDD_FC_NATC_UCAST_FLOW_CONTEXT_ENTRY_SERVICE_QUEUE_ID_WRITE( context_entry->fc_ucast_flow_context_entry.service_queue_id, natc_context_entry_ptr );
     }
@@ -2438,7 +2464,7 @@ int rdd_fc_mcast_connection_entry_search ( rdd_mcast_flow_t  *get_connection,
     mcast_connection2_entry_ptr = &( g_fc_mcast_connection2_table_ptr->entry[ connection2_entry_index ] );
     RDD_FC_MCAST_CONNECTION2_ENTRY_CONTEXT_INDEX_READ ( context_entry_index, mcast_connection2_entry_ptr );
 
-    context_cont_entry_ptr = &( context_cont_table_ptr->entry[ nat_cache_entry_index ] );
+    context_cont_entry_ptr = &( context_cont_table_ptr->entry[ context_entry_index ] );
     RDD_CONTEXT_CONTINUATION_ENTRY_FLOW_INDEX_READ ( flow_entry_index, context_cont_entry_ptr );
 
     if (g_free_flow_entries[flow_entry_index] != (RDD_FLOW_ENTRY_VALID | context_entry_index)) {
@@ -3047,6 +3073,11 @@ int rdd_fc_mcast_connection_entry_add(rdd_mcast_flow_t *add_connection)
         hash_index = bdmf_rand16() & ( RDD_NAT_CACHE_TABLE_SIZE / (RDD_NAT_CACHE_LOOKUP_DEPTH_SIZE/2) - 1 );
         hash_index = hash_index * (RDD_NAT_CACHE_LOOKUP_DEPTH_SIZE/2);
 
+        /* TBD. Remove restriction that forces hash range between 0 - 32K.
+         *      The NAT Cache table is 64K but hash values above 32K do not work.
+         */
+        hash_index &= 0x7fff;
+
         bdmf_error = rdd_fc_mcast_nat_cache_lkp_entry_alloc ( hash_index, &tries);
         if ( tries == RDD_NAT_CACHE_LOOKUP_DEPTH_SIZE )
         {
@@ -3320,14 +3351,24 @@ int rdd_fc_mcast_connection_entry_delete ( bdmf_index flow_entry_index )
         if (vlan_head_index != new_vlan_head_index)
         {
             /* head of the list was deleted, update the vlan head index */
-            RDD_FC_MCAST_CONNECTION_ENTRY_VLAN_HEAD_INDEX_WRITE( new_vlan_head_index, nat_cache_lkp_entry_ptr );
+            RDD_FC_MCAST_CONNECTION_ENTRY_VLAN_HEAD_INDEX_WRITE( new_vlan_head_index, master_nat_cache_lkp_entry_ptr );
         }
-
-        memset(nat_cache_lkp_entry_ptr, 0, sizeof(RDD_NAT_CACHE_LKP_ENTRY_DTS));
-
+        /* Do not delete mcast lookup key in NATC until all connection2 nodes are deleted */
+        if ( master_nat_cache_lkp_entry_ptr !=  nat_cache_lkp_entry_ptr)
+        {
+            __debug_mcast("%s, %u: Do not delete mcast lookup key in NATC until all connection2 nodes are deleted \n", 
+                __FUNCTION__, __LINE__);            
+            memset(nat_cache_lkp_entry_ptr, 0, sizeof(RDD_NAT_CACHE_LKP_ENTRY_DTS));
+        }
+        /* All the nodes are deleted */
         if (new_vlan_head_index == RDD_FC_MCAST_CONNECTION2_NEXT_INVALID )
         {
-            __debug_mcast("%s, %u: mcast connection entry=%u deleted.\n", __FUNCTION__, __LINE__, master_nat_cache_entry_index);
+            __debug_mcast("%s, %u: All the nodes are deleted, remove NATC and MASTER NATC \n", 
+                __FUNCTION__, __LINE__); 
+            memset(nat_cache_lkp_entry_ptr, 0, sizeof(RDD_NAT_CACHE_LKP_ENTRY_DTS));
+            memset(master_nat_cache_lkp_entry_ptr, 0, sizeof(RDD_NAT_CACHE_LKP_ENTRY_DTS));
+
+            __debug_mcast("%s, %u: mcast Master/Primary NATC key entry=%u deleted.\n", __FUNCTION__, __LINE__, master_nat_cache_entry_index);
         }
 
         f_rdd_free_context_entry ( context_entry_index );

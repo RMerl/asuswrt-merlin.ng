@@ -359,10 +359,6 @@ config NF_NAT_PT
 
 	  To compile it as a module, choose M here.  If unsure, say Y.
 
-config NF_NAT_RTSP
-	tristate
-	depends on BCM_KF_NETFILTER && IP_NF_IPTABLES && NF_CONNTRACK && NF_NAT_IPV4
-	default NF_NAT_IPV4 && NF_CONNTRACK_RTSP
 # mangle + specific targets
 config IP_NF_MANGLE
 	tristate "Packet mangling"

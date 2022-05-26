@@ -54,6 +54,10 @@ static inline int addr_in_v4network(const unsigned int *addr) {
 	return ((ntohl(*addr) & v4mask) == (v4address & v4mask));
 }
 
+static inline int addr_is_v4address(const unsigned int *addr) {
+	return (ntohl(*addr) == v4address);
+}
+
 u8 ivi_mode = 0;  // working mode for IVI translation
 
 /*
@@ -447,7 +451,9 @@ int ivi_v4v6_xmit(struct sk_buff *skb, unsigned int mtu, unsigned int _mtu) {
 	struct in6_addr tempaddr;
 	
 	eth4 = eth_hdr(skb);
-	if (unlikely(eth4->h_proto != __constant_ntohs(ETH_P_IP))) {
+
+	ip4h = ip_hdr(skb);
+	if (!addr_is_v4address(&(ip4h->saddr)) && unlikely(eth4->h_proto != __constant_ntohs(ETH_P_IP))) {
 		// This should not happen since we are hooked on PF_INET.
 #ifdef IVI_DEBUG
 		printk(KERN_ERR "ivi_v4v6_xmit: non-IPv4 packet type %x received on IPv4 hook.\n", ntohs(eth4->h_proto));
@@ -455,7 +461,14 @@ int ivi_v4v6_xmit(struct sk_buff *skb, unsigned int mtu, unsigned int _mtu) {
 		return -EINVAL;  // Just accept.
 	}
 
-	ip4h = ip_hdr(skb);
+	orig_dev = skb->dev;
+	if (addr_is_v4address(&(ip4h->saddr)) && orig_dev) {
+		// This should not happen since we are listened for L4 raw ipv4.
+#ifdef IVI_DEBUG
+		printk(KERN_ERR "ivi_v4v6_xmit: weird IPv4 gateway-originated packet received on IPv4 hook.\n");
+#endif
+		return -EINVAL;  // Just accept.
+	}
 	
 	// By pass multicast packet
 	if (ipv4_is_multicast(ip4h->daddr) || ipv4_is_lbcast(ip4h->daddr) || ipv4_is_loopback(ip4h->daddr)) {
@@ -480,7 +493,14 @@ int ivi_v4v6_xmit(struct sk_buff *skb, unsigned int mtu, unsigned int _mtu) {
 		return -EINVAL;  // Just accept.
 	}
 
-	if (ip4h->ttl <= 1) {
+	if (!addr_in_v4network(&(ip4h->saddr))) {
+#ifdef IVI_DEBUG
+		printk(KERN_DEBUG "ivi_v4v6_xmit: IPv4 packet not from the v4 network bypassed in HGW mode.\n");
+#endif
+		return -EINVAL;  // Just accept.
+	}
+
+	if (ip4h->ttl <= 1 && orig_dev) {
 		return -EINVAL;  // Just accept.
 	}
 
@@ -491,7 +511,11 @@ int ivi_v4v6_xmit(struct sk_buff *skb, unsigned int mtu, unsigned int _mtu) {
 		return -EINVAL;  // Just accept.
 	}
 	
-	if (transport == MAP_E || ip4h->protocol == IPPROTO_ICMP) {
+	if (!orig_dev) {
+		/*
+		 * On L4 raw ipv4, ignore to check for defragmentation.
+		 */
+	} else if (transport == MAP_E || ip4h->protocol == IPPROTO_ICMP) {
 		if ((ip4h->frag_off & htons(IP_MF)) || (ip4h->frag_off & htons(IP_OFFSET))) {
 			int err;
 
@@ -517,7 +541,6 @@ int ivi_v4v6_xmit(struct sk_buff *skb, unsigned int mtu, unsigned int _mtu) {
 	payload = (__u8 *)(ip4h) + (ip4h->ihl << 2);
 	s_port = d_port = newp = 0;
 	flag_udp_nullcheck = 0;
-	orig_dev = skb->dev;
 
 	/*
 	 * RFC 6145:
@@ -533,7 +556,14 @@ int ivi_v4v6_xmit(struct sk_buff *skb, unsigned int mtu, unsigned int _mtu) {
 	 *      corresponding IPv4 fragment info.
 	 *    - If translated IPv6 packet exceeds mtu, fragment IPv6 packet to fit mtu
 	 */
-	if (ip4h->frag_off & htons(IP_DF))
+	if (ip4h->frag_off == 0 || !orig_dev)
+	{
+		if ((transport == MAP_T ? plen : ntohs(ip4h->tot_len)) + sizeof(struct ipv6hdr) + (transport == MAP_T ? sizeof(struct frag_hdr) : (extension ? 8 : 0)) > mtu)
+			frag_mode = 2;
+		else
+			frag_mode = 1;
+	}
+	else if (ip4h->frag_off & htons(IP_DF))
 	{
 		if (plen + sizeof(struct ipv6hdr) > mtu)
 		{
@@ -545,13 +575,6 @@ int ivi_v4v6_xmit(struct sk_buff *skb, unsigned int mtu, unsigned int _mtu) {
 			return 0;
 		}
 		frag_mode = 0;
-	}
-	else if (ip4h->frag_off == 0)
-	{
-		if ((transport == MAP_T ? plen : ntohs(ip4h->tot_len)) + sizeof(struct ipv6hdr) + (transport == MAP_T ? sizeof(struct frag_hdr) : (extension ? 8 : 0)) > mtu)
-			frag_mode = 2;
-		else
-			frag_mode = 1;
 	}
 	else
 	{
@@ -577,6 +600,20 @@ int ivi_v4v6_xmit(struct sk_buff *skb, unsigned int mtu, unsigned int _mtu) {
 		case IPPROTO_TCP:
 			tcph = (struct tcphdr *)payload;
 
+			if (transport == MAP_E && !orig_dev) {
+				__wsum csum = skb_checksum(skb, ip4h->ihl << 2, plen, 0);
+
+				if (likely(csum_tcpudp_magic(ip4h->saddr, ip4h->daddr, plen, IPPROTO_TCP, csum))) {
+					/* 
+					 * receive error checksum:
+					 * Need to recalculate it before processing.
+					*/
+					tcph->check = 0;
+					csum = skb_checksum(skb, ip4h->ihl << 2, plen, 0);
+					tcph->check = csum_tcpudp_magic(ip4h->saddr, ip4h->daddr, plen, IPPROTO_TCP, csum);
+				}
+			}
+
 			if (tcph->syn && (tcph->doff > 5)) {
 				__u16 *option = (__u16*)tcph;
 				if (option[10] == htons(0x0204)) {
@@ -591,13 +628,8 @@ int ivi_v4v6_xmit(struct sk_buff *skb, unsigned int mtu, unsigned int _mtu) {
 				newp = ntohs(tcph->source);
 			}
 			
-#if 0
 			else if (get_outflow_tcp_map_port(ntohl(ip4h->saddr), ntohs(tcph->source), ntohl(ip4h->daddr), \
 				ntohs(tcph->dest), hgw_ratio, hgw_adjacent, hgw_offset, tcph, plen, &newp, skb) == -1) {
-#else
-			else if (get_outflow_map_port(&tcp_list, ntohl(ip4h->saddr), ntohs(tcph->source), \
-				ntohl(ip4h->daddr), hgw_ratio, hgw_adjacent, hgw_offset, &newp, skb) == -1) {
-#endif
 #ifdef IVI_DEBUG
 				printk(KERN_ERR "ivi_v4v6_xmit: fail to perform nat44 mapping for " NIP4_FMT \
 				                ":%d (TCP).\n", NIP4(ip4h->saddr), ntohs(tcph->source));
@@ -622,6 +654,19 @@ int ivi_v4v6_xmit(struct sk_buff *skb, unsigned int mtu, unsigned int _mtu) {
 			udph = (struct udphdr *)payload;
 			if (udph->check == 0) 
 				flag_udp_nullcheck = 1;
+			else if (transport == MAP_E && !orig_dev) {
+				__wsum csum = skb_checksum(skb, ip4h->ihl << 2, plen, 0);
+
+				if (likely(csum_tcpudp_magic(ip4h->saddr, ip4h->daddr, plen, IPPROTO_UDP, csum))) {
+					/* 
+					 * receive error checksum:
+					 * Need to recalculate it before processing.
+					*/
+					udph->check = 0;
+					csum = skb_checksum(skb, ip4h->ihl << 2, plen, 0);
+					udph->check = csum_tcpudp_magic(ip4h->saddr, ip4h->daddr, plen, IPPROTO_UDP, csum);
+				}
+			}
 			
 			if (ivi_mode == IVI_MODE_HGW && ntohs(udph->source) < 1024) {
 				newp = ntohs(udph->source);
@@ -724,12 +769,15 @@ int ivi_v4v6_xmit(struct sk_buff *skb, unsigned int mtu, unsigned int _mtu) {
 		printk(KERN_ERR "ivi_v4v6_xmit: failed to allocate new socket buffer.\n");
 		return 0;  // Drop packet on low memory
 	}
+	if (orig_dev)
+	{
 	skb_reserve(newskb, 2);  // Align IP header on 16 byte boundary (ETH_LEN + 2)
 
 	eth6 = (struct ethhdr *)skb_put(newskb, ETH_HLEN);
 	// Keep mac unchanged
 	memcpy(eth6, eth4, 12);
 	eth6->h_proto  = __constant_ntohs(ETH_P_IPV6);
+	}
 
 	ip6h = (struct ipv6hdr *)skb_put(newskb, hlen);
 
@@ -745,7 +793,7 @@ int ivi_v4v6_xmit(struct sk_buff *skb, unsigned int mtu, unsigned int _mtu) {
 
 	*(__u32 *)ip6h = __constant_htonl(0x60000000);
 
-	if (frag_mode == 2 || frag_mode == 3) {
+	if ((frag_mode == 2 && transport == MAP_T) || frag_mode == 3) {
 		u16 j, k, m, A;
 
 		/*
@@ -781,7 +829,7 @@ int ivi_v4v6_xmit(struct sk_buff *skb, unsigned int mtu, unsigned int _mtu) {
 		ip6h->payload_len = extension ? htons(ntohs(ip4h->tot_len) + 8/* dest(8) */) : ip4h->tot_len;
 		plen = ntohs(ip4h->tot_len);
 		ip6h->nexthdr = IPPROTO_IPIP;
-		ip6h->hop_limit = 64 + 1; // we have to put translated IPv6 packet into the protocol stack again
+		ip6h->hop_limit = 64 + (orig_dev ? 1 : 0); // we have to put translated IPv6 packet into the protocol stack again
 		if (extension) {
 			// Making Destination Options Header, constant and 8 bytes long
 			fh = (struct frag_hdr *)skb_put(newskb, sizeof(struct frag_hdr));
@@ -792,13 +840,7 @@ int ivi_v4v6_xmit(struct sk_buff *skb, unsigned int mtu, unsigned int _mtu) {
 		payload = (__u8 *)skb_put(newskb, plen);
 		skb_copy_bits(skb, 0, payload, plen);
 
-		if (frag_mode == 2)
-		{
-			newskb->map_id = htons(newp);
-			newskb->map_forward = MAP_FORWARD_MODE3;
-		} 
-		else
-			newskb->map_forward = MAP_FORWARD_MODE1;
+		newskb->map_forward = (frag_mode == 2) ? MAP_FORWARD_MODE3 : MAP_FORWARD_MODE1;
 	} 
 	
 	else {
@@ -834,7 +876,7 @@ int ivi_v4v6_xmit(struct sk_buff *skb, unsigned int mtu, unsigned int _mtu) {
 		else
 			ip6h->payload_len = htons(plen);
 
-		payload = (__u8 *)skb_put(newskb, plen+(hlen-sizeof(struct iphdr)));
+		payload = (__u8 *)skb_put(newskb, plen);
 		if (!(ip4h->frag_off & htons(IP_OFFSET)))
 		{
 		switch (ip6h->nexthdr) {
@@ -979,6 +1021,8 @@ int ivi_v4v6_xmit(struct sk_buff *skb, unsigned int mtu, unsigned int _mtu) {
 							__u8 *icmp_payload;
 							u16 icmp_newp = 0;
 
+							skb_put(newskb, hlen - sizeof(struct iphdr));
+
 							// translation of ipv4 header embeded in icmpv4
 							icmp_ip4h = (struct iphdr *)((__u8 *)icmph + 8); //skb
 							icmp_ip6h = (struct ipv6hdr *)((__u8 *)icmp6h + sizeof(struct icmp6hdr)); //newskb
@@ -998,8 +1042,8 @@ int ivi_v4v6_xmit(struct sk_buff *skb, unsigned int mtu, unsigned int _mtu) {
 							switch (icmp_ip6h->nexthdr) {
 								case IPPROTO_TCP:
 									icmp_tcph = (struct tcphdr *)icmp_payload;
-									get_outflow_map_port(&tcp_list, ntohl(icmp_ip4h->daddr), ntohs(icmp_tcph->dest), \
-									    ntohl(icmp_ip4h->saddr), hgw_ratio, hgw_adjacent, hgw_offset, &icmp_newp, skb);
+									get_outflow_tcp_map_port(ntohl(icmp_ip4h->daddr), ntohs(icmp_tcph->dest), ntohl(icmp_ip4h->saddr), \
+									    ntohl(icmp_tcph->source), hgw_ratio, hgw_adjacent, hgw_offset, icmp_tcph, ntohs(icmp_ip6h->payload_len),&icmp_newp, skb);
 
 									if (icmp_newp == 0) { // Many ICMP packets have an uncomplete inside TCP structure:
 									                      // return value is -1 alone cannot imply a fail lookup.
@@ -1149,25 +1193,55 @@ int ivi_v4v6_xmit(struct sk_buff *skb, unsigned int mtu, unsigned int _mtu) {
 		{
 			newskb->map_forward = MAP_FORWARD_MODE2;
 
-			if (ip4h->frag_off) {
-				newskb->map_offset = ((ntohs(ip4h->frag_off) & IP_OFFSET) << 3) & IP6_OFFSET;
-				newskb->map_id = htonl(newp);
+			if (orig_dev) {
+				if (ip4h->frag_off) {
+					newskb->map_offset = ((ntohs(ip4h->frag_off) & IP_OFFSET) << 3) & IP6_OFFSET;
+					newskb->map_id = htonl(newp);
+				}
+				if (ip4h->frag_off & htons(IP_MF))
+					newskb->map_mf = 1;
 			}
-			if (ip4h->frag_off & htons(IP_MF))
-				newskb->map_mf = 1;
 		}
 	}
 
 	// Prepare to re-enter the protocol stack
-	newskb->protocol = eth_type_trans(newskb, orig_dev);
+	if (orig_dev)
+		newskb->protocol = eth_type_trans(newskb, orig_dev);
+	else {
+		struct net *net = dev_net(v6_dev);
+		struct dst_entry *dst;
+		struct flowi6 fl6;
+
+		memset(&fl6, 0, sizeof(fl6));
+		fl6.daddr = ip6h->daddr;
+
+		dst = ip6_route_output(net, NULL, &fl6);
+		if (dst->error) {
+			dst_release(dst);
+			kfree_skb(newskb);
+			return 0;
+		}
+		skb_dst_set(newskb, dst);
+		skb_reset_network_header(newskb);
+
+		// hack: avoid icmpv6_send in ip6_fragment
+		newskb->ignore_df = 1;
+	}
 	newskb->ip_summed = CHECKSUM_NONE;
 
 #if defined(CONFIG_BCM_KF_BLOG) && defined(CONFIG_BLOG)
-		blog_xfer(newskb, skb);
+	blog_xfer(newskb, skb);
 #endif
 
-	netif_rx(newskb);
-	return 0;
+	if (orig_dev) {
+		netif_rx(newskb);
+		return 0;
+	}
+	else {
+		ip6_local_out(newskb);
+		kfree_skb(skb);
+		return NF_STOLEN;
+	}
 }
 
 
@@ -1298,9 +1372,6 @@ int ivi_v6v4_xmit(struct sk_buff *skb) {
 			if ((ip4h->frag_off & htons(IP_MF)) || (ip4h->frag_off & htons(IP_OFFSET))) {
 				int err;
 
-				memcpy(skb_mac_header(skb) + poffset, skb_mac_header(skb), ETH_HLEN);
-				skb->mac_header += poffset;
-				skb->transport_header += ip4h->ihl << 2;
 				skb_pull(skb, poffset);
 				skb_reset_network_header(skb);
 
@@ -1353,13 +1424,8 @@ int ivi_v6v4_xmit(struct sk_buff *skb) {
 					oldp = ntohs(tcph->dest);
 				}
 				
-#if 0
 				else if (get_inflow_tcp_map_port(ntohs(tcph->dest), ntohl(ip4h->saddr), ntohs(tcph->source), \
 				                            tcph, plen, &oldaddr, &oldp, skb) == -1) {
-#else
-				else if (get_inflow_map_port(&tcp_list,  ntohs(tcph->dest), ntohl(ip4h->saddr), \
-				                        &oldaddr, &oldp, skb) == -1) {
-#endif
 					//printk(KERN_ERR "ivi_v6v4_xmit: fail to perform nat44 mapping for %d (TCP).\n",
 					//	               ntohs(tcph->dest));
 					kfree_skb(newskb);
@@ -1454,8 +1520,8 @@ int ivi_v6v4_xmit(struct sk_buff *skb) {
 						case IPPROTO_TCP:
 							icmp_tcph = (struct tcphdr *)((__u8 *)icmp_ip4h + (icmp_ip4h->ihl << 2));
 							oldaddr = oldp = 0;
-							get_inflow_map_port(&tcp_list, ntohs(icmp_tcph->source), \
-							               ntohl(icmp_ip4h->daddr), &oldaddr, &oldp, skb);
+							get_inflow_tcp_map_port(ntohs(icmp_tcph->source), ntohl(icmp_ip4h->daddr), \
+							    ntohs(icmp_tcph->dest), icmp_tcph, ntohs(icmp_ip4h->tot_len) - (icmp_ip4h->ihl << 2),&oldaddr, &oldp, skb);
 							if (oldaddr == 0 && oldp == 0) { // Many ICMP packets have an uncomplete inside TCP structure:
 							                                 // return value is -1 alone cannot imply a fail lookup.
 #ifdef IVI_DEBUG
@@ -1588,13 +1654,8 @@ int ivi_v6v4_xmit(struct sk_buff *skb) {
 					oldp = ntohs(tcph->dest);
 				}
 				
-#if 0
 				else if (get_inflow_tcp_map_port(ntohs(tcph->dest), ntohl(ip4h->saddr), ntohs(tcph->source), \
 				                            tcph, plen, &oldaddr, &oldp, skb) == -1) {
-#else
-				else if (get_inflow_map_port(&tcp_list, ntohs(tcph->dest), ntohl(ip4h->saddr), \
-				                        &oldaddr, &oldp, skb) == -1) {
-#endif
 					//printk(KERN_ERR "ivi_v6v4_xmit: fail to perform nat44 mapping for %d (TCP).\n", 
 					//                 ntohs(tcph->dest));                 
 					kfree_skb(newskb);
@@ -1768,8 +1829,8 @@ int ivi_v6v4_xmit(struct sk_buff *skb) {
 					icmp_ip4h->ttl = icmp_ip6h->hop_limit;		
 					icmp_ip4h->protocol = icmp_ip6h->nexthdr;				
 					icmp_ip4h->check = 0;
-					ipaddr_6to4(&(icmp_ip6h->saddr), ADDR_DIR_SRC, &(icmp_ip4h->saddr), &s_ratio, &s_adj, &s_offset);
-					ipaddr_6to4(&(icmp_ip6h->daddr), ADDR_DIR_DST, &(icmp_ip4h->daddr), &d_ratio, &d_adj, &d_offset);
+					ipaddr_6to4(&(icmp_ip6h->saddr), ADDR_DIR_DST, &(icmp_ip4h->saddr), &s_ratio, &s_adj, &s_offset);
+					ipaddr_6to4(&(icmp_ip6h->daddr), ADDR_DIR_SRC, &(icmp_ip4h->daddr), &d_ratio, &d_adj, &d_offset);
 					payload = (__u8 *)icmp_ip4h + sizeof(struct iphdr);
 					
 					ip4h->tot_len = htons(ntohs(ip4h->tot_len)-20);
@@ -1781,13 +1842,8 @@ int ivi_v6v4_xmit(struct sk_buff *skb) {
 						case IPPROTO_TCP:
 							icmp_tcph = (struct tcphdr *)((__u8 *)icmp_ip4h + 20);
 							oldaddr = oldp = 0;
-#if 0
 							get_inflow_tcp_map_port(ntohs(icmp_tcph->source), ntohl(icmp_ip4h->daddr), 
 							    ntohs(icmp_tcph->dest), icmp_tcph, ntohs(icmp_ip4h->tot_len) - 20,&oldaddr, &oldp, skb);
-#else
-							get_inflow_map_port(&tcp_list, ntohs(icmp_tcph->source), ntohl(icmp_ip4h->daddr), \
-							                        &oldaddr, &oldp, skb);
-#endif
 							    
 							if (oldaddr == 0 && oldp == 0) { // Many ICMP packets have an uncomplete inside TCP structure:
 							                                 // return value is -1 alone cannot imply a fail lookup. 
@@ -1901,17 +1957,36 @@ int ivi_v6v4_xmit(struct sk_buff *skb) {
 	}
 
 	// Prepare to re-enter the protocol stack
+	if (!addr_is_v4address(&(ip4h->daddr)))
+		skb_reset_mac_header(newskb);
+	else {
+		struct net *net = dev_net(v4_dev);
+		struct rtable *rt = ip_route_output(net,
+		                                    ip4h->daddr,
+		                                    0, 0, 0);
+		if (IS_ERR(rt)) {
+			kfree_skb(newskb);
+			return 0;
+		}
+		skb_dst_set(newskb, &rt->dst);
+		skb_reset_network_header(newskb);
+		skb_set_transport_header(newskb, ip4h->ihl << 2);
+	}
 	newskb->dev  = skb->dev;
-	skb_reset_mac_header(newskb);
 	newskb->protocol  = __constant_ntohs(ETH_P_IP);
-	newskb->pkt_type = 0;    
+	newskb->pkt_type = 0;
 	newskb->ip_summed = CHECKSUM_NONE;
 
 #if defined(CONFIG_BCM_KF_BLOG) && defined(CONFIG_BLOG)
-		blog_xfer(newskb, skb);
+	blog_xfer(newskb, skb);
 #endif
- 
-	netif_rx(newskb);
+
+	if (!addr_is_v4address(&(ip4h->daddr)))
+		netif_rx(newskb);
+	else {
+		ip_local_deliver(newskb);
+		frag_icmpv6 = 1;
+	}
 
 out:
 	if (!frag_icmpv6)

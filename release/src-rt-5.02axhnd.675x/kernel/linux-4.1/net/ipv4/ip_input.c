@@ -257,6 +257,9 @@ int ip_local_deliver(struct sk_buff *skb)
 		       skb->dev, NULL,
 		       ip_local_deliver_finish);
 }
+#if defined(CONFIG_BCM_KF_MAP) && (defined(CONFIG_BCM_MAP) || defined(CONFIG_BCM_MAP_MODULE))
+EXPORT_SYMBOL_GPL(ip_local_deliver);
+#endif
 
 static inline bool ip_rcv_options(struct sk_buff *skb)
 {

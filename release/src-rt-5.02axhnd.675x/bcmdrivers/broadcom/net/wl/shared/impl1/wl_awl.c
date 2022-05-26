@@ -132,9 +132,9 @@
 #include <pktHdr.h>
 #include <bcm_archer.h>
 
-#if defined(CONFIG_BCM_SPDSVC) || defined(CONFIG_BCM_SPDSVC_MODULE)
+#if defined(CONFIG_BCM_SPDSVC) || defined(CONFIG_BCM_SPDSVC_MODULE) || defined(WLBIN_COMPAT)
 #include <bcm_spdsvc.h>
-#endif /* CONFIG_BCM_SPDSVC || CONFIG_BCM_SPDSVC_MODULE */
+#endif /* CONFIG_BCM_SPDSVC || CONFIG_BCM_SPDSVC_MODULE || WLBIN_COMPAT */
 
 #include <wl_awl.h>
 
@@ -467,11 +467,11 @@ wl_awl_rx_sendup(struct wl_info *wl, struct sk_buff *skb)
 {
 
 	/* Copied essesntial from wl_sendup() */
-#if defined(CONFIG_BCM_SPDSVC) || defined(CONFIG_BCM_SPDSVC_MODULE)
+#if defined(CONFIG_BCM_SPDSVC) || defined(CONFIG_BCM_SPDSVC_MODULE) || defined(WLBIN_COMPAT)
 	if (wl_spdsvc_rx(skb) == BCME_OK) {
 		return PKT_DONE;
 	}
-#endif /* CONFIG_BCM_SPDSVC || CONFIG_BCM_SPDSVC_MODULE */
+#endif /* CONFIG_BCM_SPDSVC || CONFIG_BCM_SPDSVC_MODULE || WLBIN_COMPAT */
 
 	PKTSETFCDONE(skb);
 #ifdef BCM_BLOG
@@ -487,15 +487,6 @@ wl_awl_rx_sendup(struct wl_info *wl, struct sk_buff *skb)
 	    return PKT_DONE;
 	}
 #endif /* WL_AWL_INTRABSS */
-
-	if (!skb->dev)
-		return -1;
-
-	if (skb->dev->reg_state != NETREG_REGISTERED) {
-		printk("%s: invalid dev(%s) reg_state %d\n", __FUNCTION__, skb->dev->name,
-	        skb->dev->reg_state);
-	        return -1;
-	}
 
 	skb->protocol = eth_type_trans(skb, skb->dev);
 
@@ -1164,14 +1155,14 @@ wl_awl_detach(struct wl_info *wl, void *ctxt)
 	archer_wlan_rx_register(wl->unit, NULL, NULL);
 
 	pktlist = WL_AWL_RX_A2W_PKTL(awl);
-	npkts = pktlist->len;
-
-	if (npkts) {
+	if (pktlist->len) {
 	    /* Free A2W packet SLL under lock */
 	    WL_AWL_PKTLIST_LOCK(awl->rx.a2w_pktl_lock);
+	    npkts = pktlist->len;
 	    wl_awl_pktlist_free(wl, pktlist);
 	    WL_AWL_PKTLIST_UNLK(awl->rx.a2w_pktl_lock);
-	    atomic_sub(npkts, &wl->callbacks);
+	    if (npkts)
+		atomic_sub(npkts, &wl->callbacks);
 	}
 
 	/* Free Lock-less W2A packet SLL */

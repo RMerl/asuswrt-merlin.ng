@@ -38,7 +38,7 @@ Boston, MA 02111-1307, USA.
 #include <bcm_map_part.h>
 #include <board.h>
 #include <bcm_rsvmem.h>
-#if !defined(CONFIG_BCM96858) && !defined(CONFIG_BCM96846) && !defined(CONFIG_BCM96856) && !defined(CONFIG_BCM96878)
+#if !defined(CONFIG_BCM96858) && !defined(CONFIG_BCM96846) && !defined(CONFIG_BCM96856) && !defined(CONFIG_BCM96878) && !defined(CONFIG_BCM96855)
 #include <pmc_drv.h>
 #endif
 

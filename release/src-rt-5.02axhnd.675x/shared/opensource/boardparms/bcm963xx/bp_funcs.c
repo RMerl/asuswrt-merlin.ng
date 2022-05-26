@@ -170,6 +170,7 @@ static enum bp_id bpGpioList[] = {
   bp_usGpioBoardReset,
   bp_usGpioUsb0,  
   bp_usGpioUsb1, 
+  bp_usGpioSMTCTxDis,
   bp_usGpioPonTxEn,
   bp_usGpioPonRxEn,
   bp_usGpioTsyncPonUnstable,
@@ -264,7 +265,9 @@ static enum bp_id bpExtIntrList[] = {
 static PETHERNET_MAC_INFO pEnetMacInfo = NULL;
 static ETHERNET_MAC_INFO EnetMacInfoGbl[BP_MAX_ENET_MACS];
 
-#if defined(CONFIG_BCM96858) || defined(_BCM96858_) || defined(CONFIG_BCM96856) || defined(_BCM96856_) || defined(CONFIG_BCM96846) || defined(_BCM96846_) || defined(CONFIG_BCM96878) || defined(_BCM96878_)
+#if defined(CONFIG_BCM96858) || defined(_BCM96858_) || defined(CONFIG_BCM96856) || defined(_BCM96856_) || \
+    defined(CONFIG_BCM96846) || defined(_BCM96846_) || defined(CONFIG_BCM96878) || defined(_BCM96878_) || \
+    defined(CONFIG_BCM96855) || defined(_BCM96855_)
 #define PHYID_LIST  {bp_ulPhyId0, bp_ulPhyId1, bp_ulPhyId2, bp_ulPhyId3, bp_ulPhyId4, bp_ulPhyId5, bp_ulPhyId6, bp_ulPhyId7, bp_ulPhyId8, bp_last}
 #else
 #define PHYID_LIST  {bp_ulPhyId0, bp_ulPhyId1, bp_ulPhyId2, bp_ulPhyId3, bp_ulPhyId4, bp_ulPhyId5, bp_ulPhyId6, bp_ulPhyId7, bp_last}
@@ -1141,7 +1144,9 @@ int BpGetBoardId( char *pszBoardId )
     pszBoardId[BP_BOARD_ID_LEN - 1] = '\0';
     return 0;
 }
-
+#ifdef CONFIG_BRCM_QEMU
+EXPORT_SYMBOL(BpGetBoardId);
+#endif
 /**************************************************************************
 * Name       : BpGetBoardIdNameByIndex
 *
@@ -1543,6 +1548,7 @@ static int GetEthernetMacInfo( PETHERNET_MAC_INFO pEnetInfos, int nNumEnetInfos 
                 pE->sw.ledInfo[j].speedLed100 = BP_NOT_DEFINED;
                 pE->sw.ledInfo[j].speedLed1000 = BP_NOT_DEFINED;
                 pE->sw.ledInfo[j].LedLan = BP_NOT_DEFINED;
+                pE->sw.ledInfo[j].LedLink = BP_NOT_DEFINED;
             }
         }
 
@@ -1553,6 +1559,7 @@ static int GetEthernetMacInfo( PETHERNET_MAC_INFO pEnetInfos, int nNumEnetInfos 
                 pE->sw.crossbar[j].ledInfo.speedLed100 = BP_NOT_DEFINED;
                 pE->sw.crossbar[j].ledInfo.speedLed1000 = BP_NOT_DEFINED;
                 pE->sw.crossbar[j].ledInfo.LedLan = BP_NOT_DEFINED;
+                pE->sw.crossbar[j].ledInfo.LedLink = BP_NOT_DEFINED;
                 pE->sw.crossbar[j].phyReset = BP_GPIO_NONE;
         }
     }
@@ -1586,6 +1593,7 @@ static int GetEthernetMacInfo( PETHERNET_MAC_INFO pEnetInfos, int nNumEnetInfos 
                 pE->sw.port_flags[j] = 0;
                 pE->sw.oamIndex[j] = -1;
                 pE->sw.ledInfo[j].duplexLed = BP_GPIO_NONE;
+                pE->sw.ledInfo[j].LedLink = BP_GPIO_NONE;
                 pE->sw.ledInfo[j].LedLan = BP_GPIO_NONE;
                 pE->sw.ledInfo[j].speedLed100 = BP_GPIO_NONE;
                 pE->sw.ledInfo[j].speedLed1000 = BP_GPIO_NONE;
@@ -1619,6 +1627,10 @@ static int GetEthernetMacInfo( PETHERNET_MAC_INFO pEnetInfos, int nNumEnetInfos 
                                     break;
                                 case bp_usGpioLedLan:
                                     pE->sw.ledInfo[j].LedLan = pPhyId->u.us;
+                                    ++pPhyId;
+                                    break;
+                                case bp_usLinkLed:
+                                    pE->sw.ledInfo[j].LedLink = pPhyId->u.us;
                                     ++pPhyId;
                                     break;
                                 case bp_ucPhyDevName:
@@ -1689,6 +1701,10 @@ static int GetEthernetMacInfo( PETHERNET_MAC_INFO pEnetInfos, int nNumEnetInfos 
                                     break;
                                 case bp_usGpioLedLan:
                                     pE->sw.crossbar[crossbar_port].ledInfo.LedLan = pPhyId->u.us;
+                                    ++pPhyId;
+                                    break;
+                                case bp_usLinkLed:
+                                    pE->sw.crossbar[crossbar_port].ledInfo.LedLink = pPhyId->u.us;
                                     ++pPhyId;
                                     break;
                                 case bp_ucPhyDevName:
@@ -1765,6 +1781,9 @@ const ETHERNET_MAC_INFO* BpGetEthernetMacInfoArrayPtr( void )
     }
     return pEnetMacInfo;
 }
+#ifdef CONFIG_BRCM_QEMU
+EXPORT_SYMBOL(BpGetEthernetMacInfoArrayPtr);
+#endif
 /**************************************************************************
  * Name       : BpGetEthernetMacInfo
  *
@@ -1868,7 +1887,9 @@ int BpGetAttachedInfo(int attached_port_idx, BP_ATTACHED_INFO *bp_attached_info)
 
     return BP_VALUE_NOT_DEFINED;
 }
-
+#ifdef CONFIG_BRCM_QEMU
+EXPORT_SYMBOL(BpGetAttachedInfo);
+#endif
 /**************************************************************************
 * Name       : BpGetMiiOverGpioFlag
 *
@@ -5034,6 +5055,24 @@ int BpGetAePolarity( unsigned short *pusValue )
 
 
 /**************************************************************************
+* Name       : BpGetPonSMTCTxDisGpio
+*
+* Description: This function returns the SMTC PMD Tx DISable gpio number.
+*
+* Parameters : [OUT] pusValue - Address of short word that the
+*                  gpio number is returned in.
+*
+* Returns    : BP_SUCCESS - Success, value is returned.
+*              BP_BOARD_ID_NOT_SET - Error, BpSetBoardId has not been called.
+*              BP_VALUE_NOT_DEFINED - At least one return value is not defined
+*                  for the board.
+***************************************************************************/
+int BpGetPonSMTCTxDisGpio( unsigned short *pusValue )
+{
+    return( BpGetGpio(bp_usGpioSMTCTxDis, pusValue ) );
+} /* BpGetPonSMTCTxDisGpio */
+
+/**************************************************************************
 * Name       : BpGetPonTxEnGpio
 *
 * Description: This function returns the pon tx enable gpio number.
@@ -5448,6 +5487,23 @@ static int BpGrepPinmuxListOnly(enum bp_id id, unsigned short gpionum, unsigned 
     return(BP_VALUE_NOT_DEFINED);
 }
 
+int BpGrepPinmuxListByPort(enum bp_id id, short port, unsigned short gpionum, unsigned int *pulMuxInfo)
+{
+    int i;
+    if (0 == g_pinmux_defs) {
+        printk("ERROR:BpGrepPinmuxListByPort called before pinmux table selected\n");
+        return(BP_VALUE_NOT_DEFINED);
+    }
+    for (i = 0 ; g_pinmux_defs[i].id  != bp_last ; i++) {
+        if ((g_pinmux_defs[i].id == id) && (g_pinmux_defs[i].port == port || port == -1) && \
+            (g_pinmux_defs[i].func == gpionum)) {
+            *pulMuxInfo = g_pinmux_defs[i].mux_info | BP_PINMUX_VALID;
+            return(BP_SUCCESS);
+        }
+    }
+    return(BP_VALUE_NOT_DEFINED);
+}
+
 int BpGetIfacePinmux(unsigned int interface, int maxnum, int *outcnt, int *errcnt, unsigned short *pusFunction, unsigned int *pulMuxInfo)
 {
     int i;
@@ -5529,7 +5585,8 @@ int BpGetAllPinmux(int maxnum, int *outcnt, int *errcnt, unsigned short *pusFunc
             if ((Enet[i].sw.port_map >> j) & 0x01)  {
                  // printf("switch %d port %d\n",i,j);
                      u = j;
-#if defined(CONFIG_BCM96858) || defined(_BCM96858_) || defined(CONFIG_BCM96846) || defined(_BCM96846_) || defined(CONFIG_BCM96856) || defined(_BCM96856_) || defined(CONFIG_BCM96878) || defined(_BCM96878_)
+#if defined(CONFIG_BCM96858) || defined(_BCM96858_) || defined(CONFIG_BCM96846) || defined(_BCM96846_) || defined(CONFIG_BCM96856) || defined(_BCM96856_) ||\
+    defined(CONFIG_BCM96878) || defined(_BCM96878_) || defined(CONFIG_BCM96855) || defined(_BCM96855_)
                  if (IsRGMII(Enet[i].sw.phy_id[j])) {
 #else
                  if (Enet[i].sw.phy_id[j] & MAC_IFACE) {
@@ -5643,16 +5700,51 @@ int BpGetAllPinmux(int maxnum, int *outcnt, int *errcnt, unsigned short *pusFunc
                     || ((BP_GPIO_SERIAL == (current_bp->u.us & BP_GPIO_SERIAL))
                        && ((g_pinmux_defs[i].mux_info & (BP_PINMUX_OPTLED_MASK | BP_PINMUX_OPTLED_VALID)) 
                           == (BP_PINMUX_OPTLED_VALID | BP_PINMUX_OPTLED_NUM(current_bp->u.us & BP_GPIO_NUM_MASK))))
-                       ) 
+#if defined(CONFIG_BCM96855) || defined (_BCM96855_)                       
+                    || ((g_pinmux_defs[i].func == -1) && 
+                        ((this_id == bp_usNetLed0) || (this_id == bp_usNetLed1) || 
+                        (this_id == bp_usNetLed2) || (this_id == bp_usNetLed3) ||
+                        (this_id == bp_usGpioLedAggregateLnk) || (this_id == bp_usGpioLedAggregateAct)))
+#endif
+                    ) 
                 {
                     check++;
                     if(this_id == bp_usSpiSlaveSelectNum)
                         pusFunction[*outcnt] = g_pinmux_defs[i].func;
                     else
                         pusFunction[*outcnt] = current_bp->u.us;
+
+#if defined(CONFIG_BCM96855) || defined (_BCM96855_)
+                    if ((g_pinmux_defs[i].func == -1) && 
+                        ((this_id == bp_usNetLed0) || (this_id == bp_usNetLed1) || 
+                        (this_id == bp_usNetLed2) || (this_id == bp_usNetLed3) ||
+                        (this_id == bp_usGpioLedAggregateLnk) || (this_id == bp_usGpioLedAggregateAct)))
+                    {
+                        int j, found = 0;
+                        extern unsigned int bp_cled_muxing_table[];
+
+                        for (j = 0; bp_cled_muxing_table[j] != -1; j++)
+                        {
+                            if ((bp_cled_muxing_table[j] & BP_GPIO_NUM_MASK) == (current_bp->u.us & BP_GPIO_NUM_MASK))
+                            {
+                                g_pinmux_defs[i].mux_info |= bp_cled_muxing_table[j];
+                                found = 1;
+                                break;
+                            }
+                        }
+                        if (!found)
+                        {
+#ifdef PRINT_ERRORS
+                            printf("error - no matching pinmux for HW LED %d\n", this_id);
+#endif
+                            return (BP_INVALID_GPIO);
+                        }
+                    }
+#endif
                     pulMuxInfo[*outcnt] = g_pinmux_defs[i].mux_info | BP_PINMUX_VALID;
                     (*outcnt)++;
-                    if (*outcnt >= maxnum) {
+                    if (*outcnt >= maxnum) 
+                    {
                         return(BP_MAX_ITEM_EXCEEDED);
                     }
                 }
@@ -5721,6 +5813,33 @@ int BpGetAllPinmux(int maxnum, int *outcnt, int *errcnt, unsigned short *pusFunc
     return(BP_SUCCESS);
 
 }
+
+#if defined(CONFIG_BCM96855) || defined(_BCM96855_)
+int BpMapGpioToLed(unsigned int gpio, unsigned int *led)
+{
+    int j, found = 0;
+    extern unsigned int led_per_map_table[];
+
+    for (j = 0; led_per_map_table[j] != -1; j++)
+    {
+        if ((led_per_map_table[j] & BP_GPIO_NUM_MASK) == gpio)
+        {
+            *led = (led_per_map_table[j] & BP_PINMUX_OPTLED_MASK) >> BP_PINMUX_OPTLED_SHIFT; 
+            found = 1;
+            break;
+        }
+    }
+
+    if (!found)
+    {
+#ifdef PRINT_ERRORS
+        printf("error - no matching LED function for GPIO %d\n", gpio);
+#endif
+        return (BP_INVALID_GPIO);
+    }
+    return BP_SUCCESS;
+}
+#endif
 
 /**************************************************************************
 * Name       : BpGetIntAFELDModeDslCtl
@@ -5876,7 +5995,8 @@ int BpGetIntAFELDClkDslCtl( unsigned short *pusValue )
 
 #endif
 
-#if defined(_BCM96838_) || defined(_BCM96848_) || defined(_BCM96858_) || defined(_BCM96846_) || defined(_BCM96856_) || defined(CONFIG_BCM_PON) || defined(_BCM963158_) || defined(CONFIG_BCM963158) || defined(_BCM96878_)
+#if defined(_BCM96838_) || defined(_BCM96848_) || defined(_BCM96858_) || defined(_BCM96846_) || defined(_BCM96856_) || \
+    defined(CONFIG_BCM_PON) || defined(_BCM963158_) || defined(CONFIG_BCM963158) || defined(_BCM96878_) || defined(_BCM96855_)
 /****************************************************************************
 * Name       : BpGetPmdMACEwakeEn
 *

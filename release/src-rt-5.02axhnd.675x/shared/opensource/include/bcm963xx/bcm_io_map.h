@@ -38,7 +38,7 @@ written consent.
 #ifdef _CFE_
 #define BCM_IO_ADDR(x)           (x)
 #elif defined(__KERNEL__)
-#if defined(CONFIG_ARM) && !defined(CONFIG_BCM947189) && !defined(CONFIG_BCM96846) && !defined(CONFIG_BCM947622) && !defined(CONFIG_BCM963178) && !defined(CONFIG_BCM96878)
+#if defined(CONFIG_ARM) && !defined(CONFIG_BCM947189) && !defined(CONFIG_BCM96846) && !defined(CONFIG_BCM947622) && !defined(CONFIG_BCM963178) && !defined(CONFIG_BCM96878) && !defined(CONFIG_BCM96855)
 #include <mach/hardware.h>
 #define BCM_IO_ADDR(x)           IO_ADDRESS(x)
 #else

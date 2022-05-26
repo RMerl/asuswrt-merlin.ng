@@ -38,7 +38,8 @@
 int xrdp_led_init(int port)
 {
     int ret = 0;
-#if defined(_BCM96878_) || defined (CONFIG_BCM96878)
+#if defined(_BCM96878_) || defined (CONFIG_BCM96878) || \
+    defined(_BCM96855_) || defined (CONFIG_BCM96855) 
     int j;
     XRDP_LED_CTRL led_ctrl;
     XRDP_LED_LINK_SPEED_ENC_SEL spdlnk_sel;

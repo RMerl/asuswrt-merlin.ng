@@ -235,6 +235,10 @@ void irq_disable(struct irq_desc *desc)
 		desc->irq_data.chip->irq_disable(&desc->irq_data);
 		irq_state_set_masked(desc);
 	}
+#if defined(CONFIG_BCM_KF_MISC_BACKPORTS)
+	else
+		desc->irq_data.chip->irq_mask(&desc->irq_data);
+#endif		
 }
 
 void irq_percpu_enable(struct irq_desc *desc, unsigned int cpu)

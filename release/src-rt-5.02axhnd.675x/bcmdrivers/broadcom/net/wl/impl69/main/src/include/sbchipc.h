@@ -7,7 +7,7 @@
  *
  * $Id: sbchipc.h 793495 2020-11-30 15:16:32Z $
  *
- * Copyright (C) 2020, Broadcom. All Rights Reserved.
+ * Copyright (C) 2021, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above

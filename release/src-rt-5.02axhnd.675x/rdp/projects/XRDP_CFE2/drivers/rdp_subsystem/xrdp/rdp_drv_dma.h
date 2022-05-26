@@ -42,7 +42,7 @@ extern "C"
 /*                                                                           */
 /*****************************************************************************/
 #include "xrdp_drv_dma_ag.h"
-#if defined(BCM6836) || defined(BCM6846) || defined(BCM6856) || defined(BCM63158) || defined(BCM6878)
+#if defined(BCM6836) || defined(BCM6846) || defined(BCM6856) || defined(BCM63158) || defined(BCM6878) || defined(BCM6855)
 #define NUM_OF_PERIPHERALS_PER_DMA 7
 #else
 #define NUM_OF_PERIPHERALS_PER_DMA 6

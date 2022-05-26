@@ -38,11 +38,11 @@ written consent.
 #define __BCM_ASYNC_QUEUE_H_INCLUDED__
 
 typedef struct {
-    int writes;
-    int write_bytes;
-    int reads;
-    int discards;
-    int discard_bytes;
+    uint32_t writes;
+    uint64_t write_bytes;
+    uint32_t reads;
+    uint32_t discards;
+    uint64_t discard_bytes;
 } bcm_async_queue_stats_t;
 
 typedef struct {

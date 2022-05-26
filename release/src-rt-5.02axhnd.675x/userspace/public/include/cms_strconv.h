@@ -626,6 +626,16 @@ CmsRet cmsUtl_strncat(char *prefix, UINT32 prefixLen, const char *suffix);
 SINT32 cmsUtl_strlen(const char *src);
 
 
+/** locate a substring.
+ *
+ * @param haystack (IN) the main C string to be scanned.
+ * @param needle (IN) the small string to be searched with-in haystack string.
+ *
+ * @return a pointer to the first occurrence in haystack of needle.
+ */
+char *cmsUtl_findInList(const char *haystack, const char *needle);
+
+
 /** locate a sub-option string in a string of sub-options separated by commas.
  * 
  * This function is useful if you have a parameter string that looks like:

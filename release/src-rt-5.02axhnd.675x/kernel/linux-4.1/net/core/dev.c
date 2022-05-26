@@ -135,7 +135,6 @@
 #include <linux/if_macvlan.h>
 #include <linux/errqueue.h>
 #include <linux/hrtimer.h>
-#include <linux/nbuff.h>
 
 #if defined(CONFIG_IMQ) || defined(CONFIG_IMQ_MODULE)
 #include <linux/imq.h>
@@ -152,6 +151,7 @@
 #endif
 
 #if defined(CONFIG_BCM_KF_SW_GSO) && defined(CONFIG_BCM_SW_GSO)
+#include <linux/nbuff.h>
 #include <net/ip6_checksum.h>
 
 int is_bcm_sw_gso_recycle_func(void *pNBuff);
@@ -5378,6 +5378,30 @@ struct net_device *netdev_master_upper_dev_get(struct net_device *dev)
 	return NULL;
 }
 EXPORT_SYMBOL(netdev_master_upper_dev_get);
+
+#ifdef CONFIG_BCM_KF_NETDEV_PATH
+/**
+ * netdev_master_upper_dev_get_nolock - Get master upper device without holding rtnl_lock
+ * @dev: device
+ *
+ * Find a master upper device and return pointer to it or NULL in case
+ * it's not there. It may return old value, when master is being updated
+ */
+struct net_device *bcm_netdev_master_upper_dev_get_nolock(struct net_device *dev)
+{
+	struct netdev_adjacent *upper;
+
+	if (list_empty(&dev->adj_list.upper))
+		return NULL;
+
+	upper = list_first_entry(&dev->adj_list.upper,
+				 struct netdev_adjacent, list);
+	if (likely(upper->master))
+		return upper->dev;
+	return NULL;
+}
+EXPORT_SYMBOL(bcm_netdev_master_upper_dev_get_nolock);
+#endif /* CONFIG_BCM_KF_NETDEV_PATH */
 
 void *netdev_adjacent_get_private(struct list_head *adj_list)
 {

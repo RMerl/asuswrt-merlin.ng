@@ -290,15 +290,10 @@ static int __die(const char *str, int err, struct pt_regs *regs)
 	if (ret == NOTIFY_STOP)
 		return 1;
 
-#ifdef CRASHLOG
-	print_modules();
-#endif
 	__show_regs(regs);
 	pr_emerg("Process %.*s (pid: %d, stack limit = 0x%p)\n",
 		 TASK_COMM_LEN, tsk->comm, task_pid_nr(tsk), end_of_stack(tsk));
-#ifndef CRASHLOG
 	print_modules();
-#endif
 
 	if (!user_mode(regs) || in_interrupt()) {
 		dump_mem(KERN_EMERG, "Stack: ", regs->ARM_sp,

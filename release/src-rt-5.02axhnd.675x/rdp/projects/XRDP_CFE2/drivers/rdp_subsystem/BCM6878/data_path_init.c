@@ -538,9 +538,6 @@ static int runner_init(int is_basic)
 
     /* scheduler configuration */
     ag_drv_rnr_regs_cfg_sch_cfg_set(get_runner_idx(0), DRV_RNR_16SP);
-    ag_drv_rnr_regs_cfg_sch_cfg_set(get_runner_idx(2), DRV_RNR_8SP_8RR);
-    ag_drv_rnr_regs_cfg_sch_cfg_set(get_runner_idx(1), DRV_RNR_8SP_8RR);
-
     fpm_base_phys_addr = RDD_RSV_VIRT_TO_PHYS(p_dpi_cfg->rdp_ddr_pkt_base_virt);
     GET_ADDR_HIGH_LOW(addr_hi, addr_lo, fpm_base_phys_addr);
 
@@ -586,6 +583,9 @@ static int runner_init(int is_basic)
         general_config_dma_arb_cfg.psram_congest_threshold = RNR_QUAD_DMA_ARB_CONJEST_THRESHOLD;
         general_config_dma_arb_cfg.flow_ctrl_clear_token   = 0;
         general_config_dma_arb_cfg.enable_reply_threshold  = 0;
+        general_config_dma_arb_cfg.ddr_reply_threshold = 0x20;
+        general_config_dma_arb_cfg.psram_reply_threshold = 0x20;
+
 
         /* change dynamic clock threshold in each quad */
         rc = rc ? rc : ag_drv_rnr_quad_general_config_dma_arb_cfg_set(quad_idx, &general_config_dma_arb_cfg);
@@ -785,10 +785,10 @@ static void rdp_block_enable(void)
     rc = rc ? rc : ag_drv_qm_enable_ctrl_set(&qm_enable);
     rc = rc ? rc : ag_drv_ubus_mstr_en_set(0, 1);
 
+    
 
     /* enable RNR */
-    for (idx = 0; idx <= RNR_LAST; idx++)
-        rc = rc ? rc : ag_drv_rnr_regs_rnr_enable_set(idx, 1);
+    rc = rc ? rc : ag_drv_rnr_regs_rnr_enable_set(0, 1);
 
 #ifdef XRDP_EMULATION
      /* enable unimac */

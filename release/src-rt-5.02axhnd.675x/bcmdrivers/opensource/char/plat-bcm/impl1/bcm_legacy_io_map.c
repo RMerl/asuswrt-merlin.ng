@@ -3,7 +3,7 @@
 #include <linux/clocksource.h>
 #include <dt-bindings/interrupt-controller/arm-gic.h>
 #include <board.h>
-#if defined (CONFIG_BCM947189) || defined(CONFIG_BCM96846) || defined(CONFIG_BCM947622) || defined(CONFIG_BCM963178) || defined(CONFIG_BCM96878)
+#if defined (CONFIG_BCM947189) || defined(CONFIG_BCM96846) || defined(CONFIG_BCM947622) || defined(CONFIG_BCM963178) || defined(CONFIG_BCM96878) || defined(CONFIG_BCM96855)
 #define __BOARD_DRV_ARMV7__
 #else
 #define __BOARD_DRV_AARCH64__

@@ -836,7 +836,7 @@ static int spi_nand_read_cfg(PCFE_SPI_NAND_CHIP pchip)
     pchip->chip_num_planes = 1;
     pchip->chip_die_sel = 0;
 #if defined(CFG_RAMAPP)
-#if defined(_BCM96878_)
+#if defined(_BCM96878_) || defined(_BCM96855_)
     pchip->chip_flash_clock = 50000000; // 50 MHz
 #else
     pchip->chip_flash_clock = 100000000; // 100 MHz
@@ -1193,7 +1193,7 @@ static int spi_nand_read_cfg(PCFE_SPI_NAND_CHIP pchip)
     }
     }
 
-#if defined(CFG_RAMAPP) && defined(_BCM96878_)
+#if defined(CFG_RAMAPP) && (defined(_BCM96878_) || defined(_BCM96855_))
     pchip->chip_flash_clock = 50000000; // 50 MHz
 #endif
 

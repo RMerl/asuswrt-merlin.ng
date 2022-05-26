@@ -46,6 +46,17 @@ written consent.
 #include "bcm_map_part.h"
 #include "bcm_ubus4.h"
 
+#if defined(_CFE_) && defined(_BCM96855_)
+extern void cfe_usleep(int);
+void pmc_xrdp_reset(void)
+{
+   /* Reset PMB XRDP block */
+    WriteBPCMRegister(PMB_ADDR_XRDP, BPCMRegOffset(sr_control), 0x7);
+    cfe_usleep(5000);
+    WriteBPCMRegister(PMB_ADDR_XRDP, BPCMRegOffset(sr_control), 0xfffffff);
+}
+#endif // #if defined(_CFE_) && defined(_BCM96855_)
+
 int pmc_xrdp_init(void)
 {
 
@@ -371,7 +382,7 @@ int pmc_xrdp_init(void)
         PRINTK("failed Toggle reset of XRDP core to 0xffffffff...\n");
         return status;
     }
-#elif defined(_BCM96878_) || defined(CONFIG_BCM96878)
+#elif defined(_BCM96878_) || defined(CONFIG_BCM96878) || defined(_BCM96855_) || defined(CONFIG_BCM96855)
     status = PowerOnDevice(PMB_ADDR_XRDP);
     if(status)
     {

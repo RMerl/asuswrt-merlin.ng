@@ -11,7 +11,7 @@ bcmmcast-objs += bcm_mcast_mld.o
 endif
 
 ifneq ($(and $(strip $(CONFIG_BR_IGMP_SNOOP))$(strip $(CONFIG_BR_MLD_SNOOP)), $(strip $(CONFIG_BLOG))),)
-bcmmcast-objs += bcm_mcast_blog.o
+bcmmcast-objs += bcm_mcast_blog.o bcm_mcast_sysfs.o
 endif
 
 obj-$(CONFIG_BCM_MCAST) += bcmmcast.o

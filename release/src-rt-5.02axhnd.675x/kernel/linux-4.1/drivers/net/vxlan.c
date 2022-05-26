@@ -50,6 +50,10 @@
 #include <net/ip6_checksum.h>
 #endif
 
+#if defined(CONFIG_BCM_KF_BLOG) && defined(CONFIG_BLOG)
+#include <linux/blog.h>
+#endif
+
 #define VXLAN_VERSION	"0.1"
 
 #define PORT_HASH_BITS	8
@@ -1320,6 +1324,13 @@ static void vxlan_rcv(struct vxlan_sock *vs, struct sk_buff *skb,
 		}
 	}
 
+#if defined(CONFIG_BCM_KF_BLOG) && defined(CONFIG_BLOG)
+	blog_lock();
+	//blog_link(TOS_MODE, blog_ptr(skb), NULL, DIR_RX, BLOG_TOS_FIXED);
+	blog_link(IF_DEVICE, blog_ptr(skb), (void*)(vxlan->dev), DIR_RX, skb->len);
+	blog_unlock();
+#endif
+
 	stats = this_cpu_ptr(vxlan->dev->tstats);
 	u64_stats_update_begin(&stats->syncp);
 	stats->rx_packets++;
@@ -1959,6 +1970,13 @@ static void vxlan_xmit_one(struct sk_buff *skb, struct net_device *dev,
 		md.vni = htonl(vni << 8);
 		md.gbp = skb->mark;
 
+#if defined(CONFIG_BCM_KF_BLOG) && defined(CONFIG_BLOG)
+		blog_lock();
+		blog_link(TOS_MODE, blog_ptr(skb), NULL, DIR_TX, vxlan->tos == 1 ? BLOG_TOS_INHERIT : BLOG_TOS_FIXED);
+		blog_link(IF_DEVICE, blog_ptr(skb), (void*)dev, DIR_TX, skb->len);
+		blog_unlock();
+#endif
+
 		err = vxlan_xmit_skb(rt, sk, skb, fl4.saddr,
 				     dst->sin.sin_addr.s_addr, tos, ttl, df,
 				     src_port, dst_port, &md,
@@ -2017,6 +2035,13 @@ static void vxlan_xmit_one(struct sk_buff *skb, struct net_device *dev,
 		ttl = ttl ? : ip6_dst_hoplimit(ndst);
 		md.vni = htonl(vni << 8);
 		md.gbp = skb->mark;
+
+#if defined(CONFIG_BCM_KF_BLOG) && defined(CONFIG_BLOG)
+		blog_lock();
+		blog_link(TOS_MODE, blog_ptr(skb), NULL, DIR_TX, vxlan->tos == 1 ? BLOG_TOS_INHERIT : BLOG_TOS_FIXED);
+		blog_link(IF_DEVICE, blog_ptr(skb), (void*)vxlan->dev, DIR_TX, skb->len);
+		blog_unlock();
+#endif
 
 		err = vxlan6_xmit_skb(ndst, sk, skb, dev, &fl6.saddr, &fl6.daddr,
 				      0, ttl, src_port, dst_port, &md,
@@ -2370,6 +2395,10 @@ static void vxlan_setup(struct net_device *dev)
 	dev->hw_features |= NETIF_F_HW_VLAN_CTAG_TX | NETIF_F_HW_VLAN_STAG_TX;
 	netif_keep_dst(dev);
 	dev->priv_flags |= IFF_LIVE_ADDR_CHANGE;
+
+#if defined(CONFIG_BCM_KF_BLOG) && defined(CONFIG_BLOG)
+	dev->blog_stats_flags |= BLOG_DEV_STAT_FLAG_INCLUDE_ALL;
+#endif
 
 	INIT_LIST_HEAD(&vxlan->next);
 	spin_lock_init(&vxlan->hash_lock);

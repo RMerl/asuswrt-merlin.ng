@@ -36,6 +36,10 @@
  * Phy drivers for 63138, 63148, 4908
  */
 #include "phy_drv_xgae.h"
+#ifdef MACSEC_SUPPORT
+#include "phy_macsec_api.h"
+extern int phy_macsec_support(phy_dev_t *phy_dev);
+#endif
 
 static void config_serdes(phy_dev_t *phy_dev, u32 seq[], int seqSize);
 static int ethsw_phy_enable_an(phy_dev_t *phy_dev);
@@ -167,6 +171,7 @@ int dsl_runner_ext3_phy_init(phy_dev_t *phy_dev)
         phy_drv->eee_get = _phy_drv.eee_get;
         phy_drv->eee_set = _phy_drv.eee_set;
         phy_drv->eee_resolution_get = _phy_drv.eee_resolution_get;
+        phy_drv->macsec_oper = _phy_drv.macsec_oper;
     }
 
     phy_cl45 = phy_dev->priv = &phys_cl45[init++];
@@ -203,6 +208,14 @@ int dsl_runner_ext3_phy_init(phy_dev_t *phy_dev)
     phy_dev_pair_swap_set(phy_dev, phy_dev->swap_pair);
     phy_dev_speed_set(phy_dev, PHY_SPEED_AUTO, PHY_DUPLEX_FULL);
     phy_dev_super_isolate_phy(phy_dev, 0);
+
+#ifdef MACSEC_SUPPORT
+    if (phy_macsec_support(phy_dev))
+    {
+        phy_macsec_pu_init(phy_dev);
+        printk("phy 0x%x is macsec capable, initializing macsec module\n", phy_dev->addr);
+    }
+#endif    
 
     return 0;
 }
@@ -758,7 +771,6 @@ static void sgmiiResCal(phy_dev_t *phy_dev)
     init = 1;
 }
 
-static int sf2_serdes_cfg_speed_set(phy_dev_t *phy_dev, phy_speed_t speed, phy_duplex_t duplex);
 static int sf2_2p5g_serdes_init(phy_dev_t *phy_dev)
 {
     uint16_t v16;
@@ -779,7 +791,7 @@ static int sf2_2p5g_serdes_init(phy_dev_t *phy_dev)
         phy_dev->phy_drv->read_status(phy_dev);
     }
 
-	sf2_serdes_cfg_speed_set(phy_dev, phy_serdes->config_speed, PHY_DUPLEX_FULL);
+	ethsw_serdes_cfg_speed_set(phy_dev, phy_serdes->config_speed, PHY_DUPLEX_FULL);
     return 0;
 }
 
@@ -864,11 +876,12 @@ int sf2_serdes_init(phy_dev_t *phy_dev)
 
     if (IsPortConnectedToExternalSwitch(phy_dev->meta_id)) {
         phy_serdes->power_mode = SERDES_NO_POWER_SAVING,
-        phy_serdes->config_speed = phy_serdes->highest_speed;
+        phy_dev->speed = phy_serdes->config_speed = phy_serdes->highest_speed;
+        phy_dev->duplex = PHY_DUPLEX_FULL;
         phy_serdes->signal_detect_gpio = -1;
         phy_drv_sf2_serdes_extsw.bus_drv = phy_drv->bus_drv;
         memcpy(phy_drv, &phy_drv_sf2_serdes_extsw, sizeof(*phy_drv));
-        phy_dev->flag |= PHY_FLAG_TO_EXTSW;
+        phy_dev->flag |= PHY_FLAG_TO_EXTSW | PHY_FLAG_POWER_SET_ENABLED;
         goto end;
     }
 
@@ -1216,7 +1229,7 @@ static void ethsw_serdes_speed_detect(phy_dev_t *phy_dev)
         msleep(1000 * (rnd%100) / 100);
     }
 
-    if (retry == 0)
+    if (retry == 0 && phy_serdes->sfp_status >= SFP_MODULE_IN)
     {
         phy_serdes->link_stats(phy_dev);
         if (phy_dev->link) goto end;
@@ -1296,6 +1309,9 @@ static int ethsw_serdes_speed_set(phy_dev_t *phy_dev, phy_speed_t speed, phy_dup
     if (phy_serdes->current_speed == speed)
         return 0;
 
+    if (phy_dev->cascade_next && (phy_dev->cascade_next->flag & PHY_FLAG_DYNAMIC) && (phy_serdes->sfp_module_type == SFP_NO_MODULE))
+        return 0;
+
     phy_serdes->sgmii_mode = NONSGMII_MODE;
     if (phy_serdes->sfp_module_type == SFP_COPPER && speed <= PHY_SPEED_1000) {
         cascade_next->phy_drv->speed_set(cascade_next, speed, duplex);
@@ -1351,7 +1367,9 @@ int ethsw_serdes_cfg_speed_set(phy_dev_t *phy_dev, phy_speed_t speed, phy_duplex
     }
 
     phy_serdes->config_speed = speed;
-    phy_serdes->speed_set(phy_dev, speed, duplex);
+    // only perform serdes speed_set when power is enabled
+    if (phy_dev->flag & PHY_FLAG_POWER_SET_ENABLED)
+        phy_serdes->speed_set(phy_dev, speed, duplex);
 
 end:
     mutex_unlock(&serdes_mutex);
@@ -1495,61 +1513,55 @@ void phy_drv_sfp_group_list(void)
         printk(" No SFP design in this board\n");
 }
 
-static int phy_i2c_save_registers[] = {0, 4, 9, 0x1b};
-/*
-    When we are in AutoDetection mode, configure SFP as Fiber mode/AN all speed,
-    so that any speed can be matched without changing SFP configuration taking very long time.
-    When we are configured fixed speed mode, configure SFP module in Fiber/AN specific mode.
-*/
 static int ethsw_conf_copper_sfp(phy_dev_t *phy_dev, phy_speed_t speed, phy_duplex_t duplex)
 {
-    uint16_t v16;
     phy_i2c_priv_t *phy_i2c_priv = phy_dev->priv;
     phy_serdes_t *phy_serdes = phy_dev->cascade_prev->priv;
-    int i;
 
-    if (phy_i2c_priv->saved == 0) { /* Save default I2C PHY values for X-BaseX mode */
-        for (i=0; i<ARRAY_SIZE(phy_i2c_save_registers); i++) {
-            phy_bus_read(phy_dev, phy_i2c_save_registers[i], &v16);
-            phy_i2c_priv->saved_registers[i] = v16;
-        }
-        phy_i2c_priv->saved = 1;
-    }
-
-    phy_i2c_priv->current_speed = speed;
-    phy_i2c_priv->config_speed = phy_serdes->config_speed;
-    if (speed > PHY_SPEED_1000) {
-        if (phy_i2c_priv->sgmii_mode == NONSGMII_MODE)
-            return 0;
-        phy_i2c_priv->sgmii_mode = NONSGMII_MODE;
-        /* Restore default I2C PHY values for X-BaseX Fiber and AN mode */
-        for (i=0; i<ARRAY_SIZE(phy_i2c_save_registers); i++)
-            phy_bus_write(phy_dev, phy_i2c_save_registers[i], phy_i2c_priv->saved_registers[i]);
-    }
-    else if (phy_serdes->config_speed == PHY_SPEED_AUTO) {
+    if (speed > PHY_SPEED_1000)
+        return 0;
+    else 
+    {
         /* Configure SFP PHY into SGMII mode */
-        if (phy_i2c_priv->sgmii_mode == SGMII_AUTO)
-            return 0;
+        if (phy_i2c_priv->sgmii_mode == NONSGMII_MODE)
+        {
+            phy_bus_write(phy_dev, 0x1b, 0x9084);    /* Enable SGMII mode */
+            phy_bus_write(phy_dev, MII_CONTROL, 0x8000);
+            phy_i2c_priv->sgmii_mode = SGMII_AUTO;
+        }
 
-        phy_bus_write(phy_dev, 0x1b, 0x9084);    /* Enable SGMII mode */
-        phy_bus_write(phy_dev, MII_CONTROL, 0x8000);
-        msleep(100);
-        phy_i2c_priv->sgmii_mode = SGMII_AUTO;
-        phy_bus_write(phy_dev, 0x9, 0x0f00);     /* Advertise 1kBase-T Full/Half-Duplex */
-        phy_bus_write(phy_dev, 0x4, 0x0de1);     /* Adverstize 100/10Base-T Full/Half-Duplex */
-        phy_bus_write(phy_dev, MII_CONTROL, 0x1140);
-    } else {  /* Fixed speed configuration */
-        phy_bus_write(phy_dev, 0x1b, 0x9084);    /* Enable SGMII mode */
-        phy_i2c_priv->sgmii_mode = SGMII_FORCE;
-        v16 = (speed==PHY_SPEED_1000)? MII_CONTROL_SPEED_1000: MII_CONTROL_SPEED_100;
-        v16 |= MII_CONTROL_DUPLEX_MODE;
-        phy_bus_write(phy_dev, MII_CONTROL, v16);
+        if (phy_serdes->config_speed == PHY_SPEED_AUTO || !phy_i2c_priv->inited)
+        {
+            if (phy_i2c_priv->sgmii_mode == SGMII_AUTO && phy_i2c_priv->inited)
+                return 0;
+            phy_bus_write(phy_dev, 0x9, 0x0f00);     /* Advertise 1kBase-T Full/Half-Duplex */
+            phy_bus_write(phy_dev, 0x4, 0x0de1);     /* Adverstize 100/10Base-T Full/Half-Duplex */
+            phy_bus_write(phy_dev, MII_CONTROL, 0x9140);
+            phy_i2c_priv->sgmii_mode = SGMII_AUTO;
+            phy_i2c_priv->inited = 1;
+        }
+        else
+        {
+            // if (phy_serdes->config_speed == PHY_SPEED_AUTO)
+            switch(speed)
+            {
+                case PHY_SPEED_1000:
+                    phy_bus_write(phy_dev, 0x9, 0x0f00);     /* Advertise 1kBase-T Full/Half-Duplex */
+                    phy_bus_write(phy_dev, 0x4, 0x0000);     /* Adverstize 100/10Base-T Full/Half-Duplex */
+                    break;
+                case PHY_SPEED_100:
+                    phy_bus_write(phy_dev, 0x4, 0x0de1);     /* Adverstize 100/10Base-T Full/Half-Duplex */
+                    phy_bus_write(phy_dev, 0x9, 0x0000); 
+                    break;
+                default:
+                    break;
+            }
+            phy_bus_write(phy_dev, MII_CONTROL, 0x1340);
+            phy_bus_write(phy_dev, MII_CONTROL, 0x9140);
+            phy_i2c_priv->sgmii_mode = SGMII_FORCE;
+        }
     }
 
-    /* Do a final PHY reset to make configuration valid */
-    phy_bus_read(phy_dev, MII_CONTROL, &v16);
-    phy_bus_write(phy_dev, MII_CONTROL, v16|MII_CONTROL_RESET);
-    msleep(100);
     return 0;
 }
 
@@ -1651,6 +1663,9 @@ static int ethsw_sfp_module_detect(phy_dev_t *phy_dev)
     int sfp_module_detected;
     TRX_TYPE trx_type = TRX_TYPE_ETHERNET;
     uint32_t speed_caps;
+#if defined(CONFIG_I2C) && defined(CONFIG_BCM_OPTICALDET)
+    phy_i2c_priv_t *phy_i2c_priv = phy_dev->cascade_next->priv;
+#endif
 
     // don't do module detect when connected to external switch
     if (IsPortConnectedToExternalSwitch(phy_dev->meta_id))
@@ -1694,6 +1709,10 @@ static int ethsw_sfp_module_detect(phy_dev_t *phy_dev)
         else
             printk("GPON SFP Module is Plugged in\n");
 
+#if defined(CONFIG_I2C) && defined(CONFIG_BCM_OPTICALDET)
+        phy_i2c_priv->sgmii_mode = NONSGMII_MODE;
+        phy_i2c_priv->inited = 0;
+#endif
         phy_serdes->sfp_module_type = sfp_module_type;
         return 0;
     }
@@ -1868,6 +1887,7 @@ static int sf2_serdes_power_get(phy_dev_t *phy_dev, int *enable)
 static int sf2_serdes_power_set(phy_dev_t *phy_dev, int enable)
 {
     phy_serdes_t *phy_serdes = phy_dev->priv;
+    mutex_lock(&serdes_mutex);
 
     phy_serdes->power_admin_on = enable > 0;
 
@@ -1878,24 +1898,14 @@ static int sf2_serdes_power_set(phy_dev_t *phy_dev, int enable)
     else
         ethsw_powerdown_serdes(phy_dev);
 
+    mutex_unlock(&serdes_mutex);
     return 0;
 }
 
 static int sf2_serdes_apd_get(phy_dev_t *phy_dev, int *enable)
 {
-    phy_dev_t *cur;
-    int tmp;
-
-    *enable = 0;
-    ethsw_serdes_power_mode_get(phy_dev, &tmp);
-    if (tmp != SERDES_BASIC_POWER_SAVING)
-        return 0;
-
-    tmp = 1;
-    for (cur = phy_dev->cascade_next; cur && tmp; cur = cur->cascade_next)
-        phy_dev_apd_get(cur, &tmp);
-
-    *enable = tmp;
+    ethsw_serdes_power_mode_get(phy_dev, enable);
+    *enable = *enable == SERDES_BASIC_POWER_SAVING;
     return 0;
 }
 
@@ -1951,18 +1961,6 @@ static int sf2_serdes_eee_resolution_get(phy_dev_t *phy_dev, int *enable)
     return 0;
 }
 
-static int sf2_serdes_cfg_speed_set(phy_dev_t *phy_dev, phy_speed_t speed,
-                phy_duplex_t duplex)
-{
-    int enabled;
-
-    phy_dev_power_get(phy_dev, &enabled);
-    if (!enabled)
-        return -1;
-
-    return ethsw_serdes_cfg_speed_set(phy_dev, speed, PHY_DUPLEX_FULL);
-}
-
 static  int ethsw_serdes_caps_set(phy_dev_t *phy_dev, uint32_t caps)
 {
     phy_speed_t speed;
@@ -1971,7 +1969,7 @@ static  int ethsw_serdes_caps_set(phy_dev_t *phy_dev, uint32_t caps)
         speed = PHY_SPEED_AUTO;
     else
         speed = phy_caps_to_max_speed(caps);
-    return sf2_serdes_cfg_speed_set(phy_dev, speed, PHY_DUPLEX_FULL);
+    return ethsw_serdes_cfg_speed_set(phy_dev, speed, PHY_DUPLEX_FULL);
 }
 
 phy_drv_t phy_drv_sf2_serdes =
@@ -1986,7 +1984,7 @@ phy_drv_t phy_drv_sf2_serdes =
     .eee_set = sf2_serdes_eee_set,
     .eee_get = sf2_serdes_eee_get,
     .eee_resolution_get = sf2_serdes_eee_resolution_get,
-    .speed_set = sf2_serdes_cfg_speed_set,
+    .speed_set = ethsw_serdes_cfg_speed_set,
     .caps_get = ethsw_serdes_caps_get,
     .caps_set = ethsw_serdes_caps_set,
     .isolate_phy = mii_isolate_phy,

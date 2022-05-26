@@ -3962,7 +3962,6 @@ typedef struct I2s {
 
 typedef struct
 {
-    uint32 queue_cfg;
 /*SRC_PID_CFG */
 #define SRCPID_TO_QUEUE_0_BITS_SHIFT       (0)
 #define SRCPID_TO_QUEUE_1_BITS_SHIFT       (4)
@@ -4020,7 +4019,29 @@ typedef struct
 #define REF_CNT_5                  (1 << REF_CNT_5_BITS_SHIFT) 
 #define REF_CNT_6                  (1 << REF_CNT_6_BITS_SHIFT)
 #define REF_CNT_7                  (1 << REF_CNT_7_BITS_SHIFT)         
+   uint32 lut[32];           /* 0x00 */
+   uint32 queue_depth[4];    /* 0x80 */
+   uint32 cbs_thresh[8];     /* 0x90 */
+   uint32 cir_incr[4];       /* 0xb0 */
+   uint32 ref_cnt[4];        /* 0xc0 */
+   uint32 max_bonus[2];      /* 0xd0 */
+#define QUE_ID_NUM_BITS     (4) /* Number of queue_id bits per source port */
+#define DEPTH_NUM_BITS      (8) /* Number of depth bits per queue id */
+#define CBS_NUM_BITS        (16)/* Number of CBS bits per queue id */
+#define CIR_INCR_NUM_BITS   (8) /* Number of CIS_INCR bits per queue id */
+#define REF_CNT_NUM_BITS    (8) /* Number of refresh cnt bits per queue id */
+#define MAX_BONUS_NUM_BITS  (4) /* Number of max bonus bits per queue id
+                                   Actually 3-bits but 4th is reserved */
+
+#define MAX_WLU_SRCPID_NUM                    256
+#define MAX_WLU_SRCPID_REG_NUM                8
+#define WLU_SRCPID_TO_REG_OFFSET(srcpid)      ((srcpid)>>5)
+#define WLU_SRCPID_TO_REG_BIT(srcpid)         ((srcpid)%32)
+   uint32 wlu_srcpid[MAX_WLU_SRCPID_REG_NUM];     /* 0xd8 */
+   uint32 qos_reg[2];        /* 0xf8 */
 }CoherencyPortCfgReg_t;
+
+#define CohPortCfg ((volatile CoherencyPortCfgReg_t * const) UBUS_COHERENCY_PORT_CFG_BASE)
 
 typedef struct BIUCFG_Access {
     uint32 permission;        /* 0x0 */

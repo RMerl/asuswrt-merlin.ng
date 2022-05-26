@@ -422,7 +422,8 @@ int spi_flash_init(flash_device_info_t **flash_info)
 #if defined(_BCM94908_) || defined(CONFIG_BCM94908) || defined(_BCM96858_) || defined(CONFIG_BCM96858) || \
     defined(_BCM963158_) || defined(CONFIG_BCM963158) || defined(_BCM963178_) || defined(CONFIG_BCM963178) || \
     defined(_BCM96846_) || defined(CONFIG_BCM96846) || defined(_BCM96856_) || defined(CONFIG_BCM96856) || \
-    defined(_BCM947622_) || defined(CONFIG_BCM947622) || defined(_BCM96878_) || defined(CONFIG_BCM96878)
+    defined(_BCM947622_) || defined(CONFIG_BCM947622) || defined(_BCM96878_) || defined(CONFIG_BCM96878) || \
+    defined(_BCM96855_) || defined(CONFIG_BCM96855)
        spi_flash_busnum = HS_SPI_BUS_NUM;
        spi_flash_clock = 50000000;
 #endif

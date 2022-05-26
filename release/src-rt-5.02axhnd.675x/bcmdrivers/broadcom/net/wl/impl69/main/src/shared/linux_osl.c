@@ -1,7 +1,7 @@
 /*
  * Linux OS Independent Layer
  *
- * Copyright (C) 2020, Broadcom. All Rights Reserved.
+ * Copyright (C) 2021, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: linux_osl.c 789673 2020-08-04 20:37:18Z $
+ * $Id: linux_osl.c 794810 2021-01-19 10:12:34Z $
  */
 
 #define LINUX_PORT
@@ -1261,12 +1261,9 @@ osl_malloc_failed(osl_t *osh)
 	return (osh->failed);
 }
 
-uint
-osl_dma_consistent_align(void)
-{
-	return (PAGE_SIZE);
-}
-
+/* Note that this function (despite what its parameters may suggest) does NOT guarantee alignment
+ * of the returned buffer. It does allocate sufficient bytes for caller to honor the requirement
+ */
 void*
 osl_dma_alloc_consistent(osl_t *osh, uint size, uint16 align_bits, uint *alloced, dmaaddr_t *pap)
 {
@@ -1274,8 +1271,10 @@ osl_dma_alloc_consistent(osl_t *osh, uint size, uint16 align_bits, uint *alloced
 	uint16 align = (1 << align_bits);
 	ASSERT((osh && (osh->magic == OS_HANDLE_MAGIC)));
 
-	if (!ISALIGNED(DMA_CONSISTENT_ALIGN, align))
+	if (align_bits != 0) {
+		/* We cannot guarantee alignment so overallocate to allow caller to compensate */
 		size += align;
+	}
 	*alloced = size;
 
 #ifndef	BCM_SECURE_DMA
@@ -1305,7 +1304,7 @@ osl_dma_alloc_consistent(osl_t *osh, uint size, uint16 align_bits, uint *alloced
 	}
 #endif /* STB || STBAP */
 
-#else
+#else /* BCA_HNDROUTER || ((STB || STBAP) && !DHD_USE_COHERENT_MEM_FOR_RING) */
 	{
 		dma_addr_t pap_lin;
 		struct pci_dev *hwdev = osh->pdev;

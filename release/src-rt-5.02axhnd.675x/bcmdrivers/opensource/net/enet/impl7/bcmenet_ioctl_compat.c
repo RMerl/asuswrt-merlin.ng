@@ -38,6 +38,7 @@
 #include <bcm/bcmswapitypes.h>
 #include <board.h>
 #include <bcmnet.h>
+#include <bcmenet.h>
 #include <boardparms.h>
 #ifdef RUNNER
 #include "runner.h"
@@ -58,6 +59,7 @@
 #include "bcmenet_common.h"
 #include "crossbar_dev.h"
 #include "phy_drv.h"
+#include "phy_drv_brcm.h"
 #include "phy_macsec_common.h"
 
 extern int apd_enabled;
@@ -165,14 +167,26 @@ static int _handle_epon(enetx_port_t **port)
 
     epon_port->has_interface = 1;
     if ((epon_port->p.phy = phy_dev_add(PHY_TYPE_PON, 0, NULL)) == NULL)
+    {
+        printk("Error adding PON PHY device\n");
+        sw_free(&epon_port);
         return -1;
+    }
 
     if (phy_driver_init(PHY_TYPE_PON))
+    {
+        printk("Error initializing PON PHY driver\n");
+        sw_free(&epon_port);
         return -1;
+    }
 
     if ((epon_port->p.mac = mac_dev_add(MAC_TYPE_xEPON, 0, NULL)) == NULL)
+    {
+        printk("Error adding EPON MAC device\n");
+        sw_free(&epon_port);
         return -1;
-    
+    }
+
     strcpy(epon_port->name, "epon0");
 
     *port = epon_port;
@@ -194,8 +208,14 @@ static int tr_port_by_net_port(enetx_port_t *port, void *_ctx)
             }
             break;
         case NET_PORT_EPON:
-        case NET_PORT_EPON_AE:
             if (port->port_info.is_epon)
+            {
+                *(enetx_port_t **)_ctx = port;
+                return 1;
+            }
+            break;
+        case NET_PORT_EPON_AE:
+            if (port->port_info.is_epon_ae)
             {
                 *(enetx_port_t **)_ctx = port;
                 return 1;
@@ -240,13 +260,25 @@ static int _handle_add_port_gpon(struct net_port_t *net_port, enetx_port_t **_p)
 
     p->has_interface = 1;
     if ((p->p.phy = phy_dev_add(PHY_TYPE_PON, 0, NULL)) == NULL)
+    {
+        printk("Error adding PON PHY device\n");
+        sw_free(&p);
         return -1;
+    }
 
     if (phy_driver_init(PHY_TYPE_PON))
+    {
+        printk("Error initializing PON PHY driver\n");
+        sw_free(&p);
         return -1;
+    }
 
     if ((p->p.mac = mac_dev_add(MAC_TYPE_xGPON, net_port->sub_type, NULL)) == NULL)
+    {
+        printk("Error adding GPON MAC device\n");
+        sw_free(&p);
         return -1;
+    }
 
     switch (net_port->speed)
     {
@@ -268,12 +300,13 @@ static int _handle_add_port_gpon(struct net_port_t *net_port, enetx_port_t **_p)
 static int _handle_add_port_ae(enetx_port_t **_p)
 {
     enetx_port_t *p = *_p;
+    void *priv = NULL;
 
     if (!p)
     {
         port_info_t port_info =
         {
-            .is_epon = 1,
+            .is_epon_ae = 1,
             .is_detect = 1,
         };
 
@@ -281,10 +314,24 @@ static int _handle_add_port_ae(enetx_port_t **_p)
             return -1;
 
         if ((p->p.phy = phy_dev_add(PHY_TYPE_PON, 0, NULL)) == NULL)
+        {
+            printk("Error adding PON PHY device\n");
+            sw_free(&p);
             return -1;
+        }
 
         if (phy_driver_init(PHY_TYPE_PON))
+        {
+            printk("Error initializing PON PHY driver\n");
+            sw_free(&p);
             return -1;
+        }
+    }
+
+    /* internal PHY or external PHY */
+    if (p->p.phy != NULL)
+    {
+        priv = p->p.phy;
     }
 
     /* put port into tail of unit_port_array */
@@ -292,8 +339,12 @@ static int _handle_add_port_ae(enetx_port_t **_p)
     p->has_interface = 1;
 
     /* Skip creating mac if device was already enabled */
-    if (!p->p.mac && (p->p.mac = mac_dev_add(MAC_TYPE_EPON_AE, 0, p->p.phy)) == NULL)
+    if (!p->p.mac && (p->p.mac = mac_dev_add(MAC_TYPE_EPON_AE, 0, priv)) == NULL)
+    {
+        printk("Error adding AE MAC device\n");
+        sw_free(&p);
         return -1;
+    }
 
     *_p = p;
 
@@ -484,6 +535,7 @@ struct tr_portphy_info {
     int  mapping;
 };
 
+#ifdef DSL_DEVICES
 static int tr_get_next_portphy_info(enetx_port_t *port, void *_ctx)
 {
     struct tr_portphy_info *info = (struct tr_portphy_info *)_ctx;
@@ -517,6 +569,7 @@ static int tr_get_subport_info(enetx_port_t *port, void *_ctx)
     }
     return 0;
 }
+#endif
 
 static int tr_stats_clear(enetx_port_t *self, void *_ctx)
 {
@@ -890,7 +943,7 @@ void add_unspecified_ports(enetx_port_t *sw, uint32_t port_map, uint32_t imp_map
             enet_err("Failed to create unit %d port %d\n", unit, ndx);
             return;
         }
-        if (SF2_ETHSWCTL_UNIT == unit)
+        if (sw->port_type == PORT_TYPE_SF2_SW)
         {
             emac_info.ucPhyType = BP_ENET_EXTERNAL_SWITCH; /* SF2 */
         }
@@ -948,13 +1001,33 @@ end:
     va_end(valist);
     return *sz;
 }
-static char *print_net_dev_info(struct net_device *dev)
+
+static char *print_net_dev_info(enetx_port_t *port)
 {
     static char buf[256];
-    snprintf(buf, sizeof(buf), "%s: %4s <%02X:%02X:%02X:%02X:%02X:%02X>",
-                dev->name, netif_carrier_ok(dev)?"Up":"Down",
+    struct net_device *dev = port->dev;
+    mac_dev_t *mac_dev = port->p.mac;
+    mac_cfg_t mac_cfg;
+    int netdev_link;
+
+    if (mac_dev)
+        mac_dev_cfg_get(mac_dev, &mac_cfg);
+
+    if (dev)
+    {
+        netdev_link = netif_carrier_ok(dev);
+        snprintf(buf, sizeof(buf), "%-10s: %4s %4s <%02X:%02X:%02X:%02X:%02X:%02X>",
+                dev->name, netdev_link?"Up":"Down",
+                netdev_link? mac_get_speed_string(mac_cfg.speed): "",
                 dev->dev_addr[0], dev->dev_addr[1], dev->dev_addr[2],
                 dev->dev_addr[3], dev->dev_addr[4], dev->dev_addr[5]);
+    }
+    else
+    {   /* Internal device */
+        snprintf(buf, sizeof(buf), "%-10s: %4s %4s <%02X:%02X:%02X:%02X:%02X:%02X>",
+                "<IntnlDev>", "Up", mac_dev?mac_get_speed_string(mac_cfg.speed):"", 0, 0, 0, 0, 0, 0);
+    }
+
     return buf;
 }
 
@@ -965,9 +1038,17 @@ static char *print_phy_link(phy_dev_t *phy_dev)
     phy_speed_t max_spd;
     int an;
 
-    phy_dev_caps_get(phy_dev, CAPS_TYPE_ADVERTISE, &caps);
-    an = (caps & PHY_CAP_AUTONEG) > 0;
-    max_spd = phy_caps_to_max_speed(caps);
+    if (phy_dev->phy_drv && !phy_dev->phy_drv->caps_get)
+    {
+        an = 0;
+        max_spd = phy_dev->speed;
+    }
+    else
+    {
+        phy_dev_caps_get(phy_dev, CAPS_TYPE_ADVERTISE, &caps);
+        an = (caps & PHY_CAP_AUTONEG) > 0;
+        max_spd = phy_caps_to_max_speed(caps);
+    }
     snprintf(buf, sizeof(buf), "Cfg: %s%s; %s %s", an?"ANG.":"FIX.", phy_get_speed_string(max_spd),
         phy_dev->link?"Up":"Down", phy_dev->link?phy_get_speed_string(phy_dev->speed):"");
     return buf;
@@ -999,6 +1080,7 @@ static char *_print_phy_info(phy_dev_t *phy_dev, char *bf, int indent)
             phy_get_speed_string(max_spd),
             phy_dev->phy_drv->name,
             print_phy_link(phy_dev));
+
     if (phy_dev->cascade_next)
         _print_phy_info(phy_dev->cascade_next, bf, indent);
 
@@ -1055,7 +1137,6 @@ int sw_print_mac_phy_info(enetx_port_t *sw, char **buf, int *sz)
 {
     int i, j;
     enetx_port_t *p;
-    struct net_device *dev;
     int indent, s1;
 
     for (j = 0; j < 2; j++)
@@ -1070,13 +1151,14 @@ int sw_print_mac_phy_info(enetx_port_t *sw, char **buf, int *sz)
 
             if (j == 0)    /* Parent round */
             {
-                if (p->p.child_sw || !(dev = p->dev) || !p->p.phy)
-                    continue;
-
                 s1 = *sz;
-                if (cat_snprintf(buf, sz, "%s %s ", print_net_dev_info(dev),
+                if (cat_snprintf(buf, sz, "%s %s ", print_net_dev_info(p),
                     print_port_info(p)) == 0)
                     return 0;
+                 if (!p->p.phy) {
+                    cat_snprintf(buf, sz, "\n");
+                    continue;
+                }
                 indent = *sz - s1 - 1;
                 if (cat_snprintf(buf, sz, "%s\n", print_cphy_info(p->p.phy, indent)) == 0)
                     return 0;
@@ -1399,7 +1481,6 @@ cd_end:
 
     case ETHGETMIIREG: /* Read MII PHY register */
     case ETHSETMIIREG: /* Write MII PHY register */
-#if defined(DSL_DEVICES)
         {
             int ret = 0;
             phy_dev_t *phy_dev;
@@ -1428,13 +1509,9 @@ cd_end:
             if (ethctl->flags == ETHCTL_FLAG_ACCESS_SERDES_POWER_MODE)
             {
                 if (ethctl->op == ETHSETMIIREG)
-                    ret = phy_dev->phy_drv->apd_set ?
-                        phy_dev->phy_drv->apd_set(phy_dev, ethctl->phy_reg) : 0;
+                    ret = cascade_phy_dev_apd_set(phy_dev, ethctl->phy_reg);
                 else
-                {
-                    ret = phy_dev->phy_drv->apd_get ?
-                        phy_dev->phy_drv->apd_get(phy_dev, &ethctl->val) : 0;
-                }
+                    ret = cascade_phy_dev_apd_get(phy_dev, &ethctl->val);
             }
 #if defined(PHY_SERDES_10G_CAPABLE)
             else if (ethctl->flags & ETHCTL_FLAG_ACCESS_10GSERDES)
@@ -1477,82 +1554,7 @@ cd_end:
 
             return 0;
         }
-#elif defined(CONFIG_BCM_PON)
-        {
-            uint16_t val = ethctl->val;
-            bus_drv_t *bus_drv = NULL;
-
-            if (ethctl->flags == ETHCTL_FLAG_ACCESS_INT_PHY)
-            {
-#ifdef CONFIG_BCM96838
-                bus_drv = bus_drv_get(BUS_TYPE_6838_EGPHY);
-#endif
-#ifdef CONFIG_BCM96848
-                bus_drv = bus_drv_get(BUS_TYPE_6848_INT);
-#endif
-#ifdef CONFIG_BCM96858
-                bus_drv = bus_drv_get(BUS_TYPE_6858_LPORT);
-#endif
-#ifdef CONFIG_BCM96856
-                bus_drv = bus_drv_get(BUS_TYPE_6846_INT);
-#endif
-#ifdef CONFIG_BCM96846
-                bus_drv = bus_drv_get(BUS_TYPE_6846_INT);
-#endif
-#ifdef CONFIG_BCM96878
-                bus_drv = bus_drv_get(BUS_TYPE_6846_INT);
-#endif
-            }
-            else if (ethctl->flags == ETHCTL_FLAG_ACCESS_EXT_PHY)
-            {
-#ifdef CONFIG_BCM96838
-                bus_drv = bus_drv_get(BUS_TYPE_6838_EXT);
-#endif
-#ifdef CONFIG_BCM96848
-                bus_drv = bus_drv_get(BUS_TYPE_6848_EXT);
-#endif
-#ifdef CONFIG_BCM96858
-                bus_drv = bus_drv_get(BUS_TYPE_6858_LPORT);
-#endif
-#ifdef CONFIG_BCM96856
-                bus_drv = bus_drv_get(BUS_TYPE_6846_EXT);
-#endif
-#ifdef CONFIG_BCM96846
-                bus_drv = bus_drv_get(BUS_TYPE_6846_EXT);
-#endif
-#ifdef CONFIG_BCM96878
-                bus_drv = bus_drv_get(BUS_TYPE_6846_EXT);
-#endif
-            }
-
-            if (!bus_drv)
-            {
-                enet_err("cannot resolve phy bus driver for phy_addr %d, flags %d\n", ethctl->phy_addr, ethctl->flags);
-                return -EFAULT;
-            }
-
-            if (ethctl->op == ETHGETMIIREG)
-            {
-                if (bus_read(bus_drv, ethctl->phy_addr, ethctl->phy_reg, &val))
-                    return -EFAULT;
-
-                ethctl->val = val;
-                enet_dbg("get phy_id: %d; reg_num = %d; val = 0x%x \n", ethctl->phy_addr, ethctl->phy_reg, val);
-
-                if (copy_to_user(rq->ifr_data, ethctl, sizeof(struct ethctl_data)))
-                    return -EFAULT;
-            }
-            else
-            {
-                if (bus_write(bus_drv, ethctl->phy_addr, ethctl->phy_reg, ethctl->val))
-                    return -EFAULT;
-
-                enet_dbg("set phy_id: %d; reg_num = %d; val = 0x%x \n", ethctl->phy_addr, ethctl->phy_reg, ethctl->val);
-            }
-
-            return 0;
-        }
-#endif /* defined(CONFIG_BCM96838) || defined(CONFIG_BCM96848) || defined(CONFIG_BCM96858) */
+#ifdef DSL_DEVICES
     case ETHMOVESUBPORT:
         {
             port = ((enetx_netdev *)netdev_priv(dev))->port;
@@ -1588,12 +1590,14 @@ cd_end:
 
                     info.phy->sw_port = port;
                     crossbar_phy_add(port->p.phy, info.phy, info.external_endpoint);
+                    handle_phy_move(port, info.phy, info.external_endpoint);
                     crossbar_finalize();
                 }
             }
 
             return copy_to_user(rq->ifr_data, ethctl, sizeof(struct ethctl_data)) ? -EFAULT : 0;
         }
+#endif
     case ETHGETPHYPWR:
         phy_dev = enet_dev_get_phy_dev(dev, ethctl->sub_port);
         if (!phy_dev)
@@ -1632,7 +1636,7 @@ cd_end:
         phy_dev = enet_dev_get_phy_dev(dev, ethctl->sub_port);
         if (!phy_dev)
             return -EFAULT;
-        phy_dev_apd_get(phy_dev, &ethctl->ret_val);
+        cascade_phy_dev_apd_get(phy_dev, &ethctl->ret_val);
         return copy_to_user(rq->ifr_data, ethctl, sizeof(struct ethctl_data)) ? -EFAULT : 0;
     case ETHSETPHYAPDON:
     case ETHSETPHYAPDOFF:
@@ -1671,6 +1675,28 @@ cd_end:
         phy_dev_macsec_oper(port->p.phy, &data);
         return copy_to_user(rq->ifr_data + sizeof(struct ethctl_data), &data, sizeof(macsec_api_data)) ? -EFAULT : 0;
     }
+
+    case ETHWIRESPEEDGET:
+    case ETHWIRESPEEDSET:
+    {
+        ret = 0;
+
+        phy_dev = enet_dev_get_phy_dev(dev, ethctl->sub_port);
+        if (!phy_dev)
+            return -EFAULT;
+        phy_dev = cascade_phy_get_last(phy_dev);
+
+        if (ethctl->op == ETHWIRESPEEDSET)
+            ret |= phy_dev_wirespeed_set(phy_dev, ethctl->val);
+
+        if (ethctl->op == ETHWIRESPEEDGET || ethctl->op == ETHWIRESPEEDSET)
+            ret |= phy_dev_wirespeed_get(phy_dev, &ethctl->ret_val);
+
+        if (copy_to_user(rq->ifr_data, ethctl, sizeof(struct ethctl_data)))
+            return -EFAULT;
+
+        return ret;
+    }
     default:
         return -EOPNOTSUPP;
     }
@@ -1701,6 +1727,11 @@ static int tr_net_dev_hw_switching_set(enetx_port_t *port, void *_ctx)
         PORT_SET_HW_FWD(port);
     else
         PORT_CLR_HW_FWD(port);
+
+    if (port->p.ops->stp_set && (port->p.port_cap != PORT_CAP_MGMT)) {
+        port->p.ops->stp_set(port, (ethswctl->type == TYPE_ENABLE)? STP_MODE_ENABLE:STP_MODE_DISABLE, STP_STATE_UNCHANGED);
+        port->p.ops->role_set(port,(ethswctl->type == TYPE_ENABLE)? PORT_NETDEV_ROLE_LAN:PORT_NETDEV_ROLE_NONE);
+    }
     return 0;
 }
 
@@ -1757,6 +1788,17 @@ static void _enet_ioctl_hw_switch_flag_set(struct ethswctl_data *ethswctl)
 
 #define ethswctl_field_len_copy_to_user(f,l)      \
     copy_to_user((void*)((char*)rq->ifr_data +((char*)&(ethswctl->f) - (char*)&rq_data)), &(ethswctl->f), ethswctl->l)
+
+static int tr_port_mib_dump(enetx_port_t *port, void *_ctx)
+{
+    struct ethswctl_data *ethswctl = (struct ethswctl_data *) _ctx;
+    switch (ethswctl->unit) {
+    case 0:  if (!PORT_ON_ROOT_SW(port)) return 0; break;
+    case 1:  if (PORT_ON_ROOT_SW(port)) return 0; break;
+    }
+    port_mib_dump(port, ethswctl->type);
+    return 0;
+}
 
 int enet_ioctl_compat_ethswctl(struct net_device *dev, struct ifreq *rq, int cmd)
 {
@@ -1816,6 +1858,11 @@ int enet_ioctl_compat_ethswctl(struct net_device *dev, struct ifreq *rq, int cmd
 
         case ETHSWDUMPMIB:
             {
+                if (ethswctl->port == -1)
+                {
+                    port_traverse_ports(root_sw, tr_port_mib_dump, PORT_CLASS_PORT, ethswctl);
+                    return 0;
+                }
                 if (!(port = _compat_port_object_from_unit_port(ethswctl->unit, ethswctl->port)))
                     return -EFAULT;
                 return port_mib_dump(port, ethswctl->type);
@@ -1825,7 +1872,7 @@ int enet_ioctl_compat_ethswctl(struct net_device *dev, struct ifreq *rq, int cmd
 #if !defined(SF2_EXTERNAL)
         case ETHSWDUMPPAGE:
             /* only support ext sw and page 0 */
-            if ((ethswctl->unit == SF2_ETHSWCTL_UNIT) && (ethswctl->page == 0))
+            if (IS_UNIT_SF2(ethswctl->unit) && (ethswctl->page == 0))
                 ioctl_extsw_dump_page0();
             return 0;
         case ETHSWACBCONTROL:
@@ -1833,7 +1880,7 @@ int enet_ioctl_compat_ethswctl(struct net_device *dev, struct ifreq *rq, int cmd
             return ioctl_extsw_cfg_acb(ethswctl);
 #endif //!SF2_EXTERNAL
         case ETHSWCONTROL:
-            if (ethswctl->unit != SF2_ETHSWCTL_UNIT || !sf2_sw) return -(EOPNOTSUPP);
+            if (!IS_UNIT_SF2(ethswctl->unit)) return -(EOPNOTSUPP);
 
             ret = ioctl_extsw_control(ethswctl);
             if (!ret && copy_to_user(rq->ifr_data , ethswctl, sizeof(struct ethswctl_data)))
@@ -1841,7 +1888,7 @@ int enet_ioctl_compat_ethswctl(struct net_device *dev, struct ifreq *rq, int cmd
 
             return ret;
         case ETHSWPRIOCONTROL:
-            if (ethswctl->unit != SF2_ETHSWCTL_UNIT || !sf2_sw) return -(EOPNOTSUPP);
+            if (!IS_UNIT_SF2(ethswctl->unit)) return -(EOPNOTSUPP);
 
             ret = ioctl_extsw_prio_control(ethswctl);
             if (!ret && copy_to_user(rq->ifr_data , ethswctl, sizeof(struct ethswctl_data)))
@@ -1857,7 +1904,7 @@ int enet_ioctl_compat_ethswctl(struct net_device *dev, struct ifreq *rq, int cmd
 
             return ret;
         case ETHSWQUEMON:
-            if (ethswctl->unit != SF2_ETHSWCTL_UNIT || !sf2_sw) return -(EOPNOTSUPP);
+            if (!IS_UNIT_SF2(ethswctl->unit)) return -(EOPNOTSUPP);
 
             ret = ioctl_extsw_que_mon(ethswctl);
             if (!ret && copy_to_user(rq->ifr_data , ethswctl, sizeof(struct ethswctl_data)))
@@ -1865,7 +1912,7 @@ int enet_ioctl_compat_ethswctl(struct net_device *dev, struct ifreq *rq, int cmd
 
             return ret;
         case ETHSWMACLMT:
-            if (ethswctl->unit != SF2_ETHSWCTL_UNIT || !sf2_sw) return -(EOPNOTSUPP);
+            if (!IS_UNIT_SF2(ethswctl->unit)) return -(EOPNOTSUPP);
 
             ret = ioctl_extsw_maclmt(ethswctl);
             if (!ret && (ethswctl->type == TYPE_GET) && ethswctl_field_copy_to_user(val))
@@ -1880,7 +1927,7 @@ int enet_ioctl_compat_ethswctl(struct net_device *dev, struct ifreq *rq, int cmd
             return 0;
 #endif
         case ETHSWPBVLAN:
-            if (ethswctl->unit != SF2_ETHSWCTL_UNIT || !sf2_sw) return -(EOPNOTSUPP);
+            if (!IS_UNIT_SF2(ethswctl->unit)) return -(EOPNOTSUPP);
 
             ret = ioctl_extsw_pbvlan(ethswctl);
             if (!ret && (ethswctl->type == TYPE_GET))
@@ -1889,7 +1936,7 @@ int enet_ioctl_compat_ethswctl(struct net_device *dev, struct ifreq *rq, int cmd
 
             return ret;
         case ETHSWMIRROR:
-            if (ethswctl->unit != SF2_ETHSWCTL_UNIT || !sf2_sw) {
+            if (!IS_UNIT_SF2(ethswctl->unit)) {
                 return -(EOPNOTSUPP);
             }
 
@@ -1899,7 +1946,7 @@ int enet_ioctl_compat_ethswctl(struct net_device *dev, struct ifreq *rq, int cmd
                     return -EFAULT;
             return ret;
         case ETHSWPORTTRUNK:
-            if (ethswctl->unit != SF2_ETHSWCTL_UNIT || !sf2_sw) return -(EOPNOTSUPP);
+            if (!IS_UNIT_SF2(ethswctl->unit)) return -(EOPNOTSUPP);
 
             ret = ioctl_extsw_port_trunk_ops(ethswctl);
             if (!ret && (ethswctl->type == TYPE_GET))
@@ -1907,7 +1954,7 @@ int enet_ioctl_compat_ethswctl(struct net_device *dev, struct ifreq *rq, int cmd
                     return -EFAULT;
             return ret;
         case ETHSWREGACCESS:
-            if (ethswctl->unit != SF2_ETHSWCTL_UNIT || !sf2_sw) return -(EOPNOTSUPP);
+            if (!IS_UNIT_SF2(ethswctl->unit)) return -(EOPNOTSUPP);
             if ((ethswctl->offset & IS_PHY_ADDR_FLAG) &&
                     !(port = _compat_port_object_from_unit_port(ethswctl->unit, ethswctl->offset & PORT_ID_M)))
                 return BCM_E_ERROR;
@@ -1936,7 +1983,7 @@ int enet_ioctl_compat_ethswctl(struct net_device *dev, struct ifreq *rq, int cmd
 
         case ETHSWCOSSCHED:
             /* only valid for ports on external SF2 switch */
-            if (ethswctl->unit != SF2_ETHSWCTL_UNIT || !sf2_sw) return -(EOPNOTSUPP);
+            if (!IS_UNIT_SF2(ethswctl->unit)) return -(EOPNOTSUPP);
 
             if (!(port = _compat_port_object_from_unit_port(ethswctl->unit, ethswctl->port)))
                 return -EFAULT;
@@ -1956,7 +2003,7 @@ int enet_ioctl_compat_ethswctl(struct net_device *dev, struct ifreq *rq, int cmd
             enet_dbg("ETHSWCOSSCHED: error ret=%d\n", ret);
             return ret;
         case ETHSWCOSPORTMAP:
-            if (ethswctl->unit != SF2_ETHSWCTL_UNIT || !sf2_sw) return -(EOPNOTSUPP);
+            if (!IS_UNIT_SF2(ethswctl->unit)) return -(EOPNOTSUPP);
 
             ret = ioctl_extsw_cosq_port_mapping(ethswctl);
             if (ret < 0) return ret;
@@ -1985,6 +2032,7 @@ int enet_ioctl_compat_ethswctl(struct net_device *dev, struct ifreq *rq, int cmd
                 return -EFAULT;
             return ret;
 
+#if 0   /* skip Andrew code */
 // add by Andrew
         case ETHSWARLDUMP:
             if (!sf2_sw) return -(EOPNOTSUPP);
@@ -2002,9 +2050,10 @@ int enet_ioctl_compat_ethswctl(struct net_device *dev, struct ifreq *rq, int cmd
                 return -EFAULT;
            return ret;
 // end of add
+#endif
 
         case ETHSWCOSPRIORITYMETHOD:
-            if (ethswctl->unit != SF2_ETHSWCTL_UNIT  || !sf2_sw) {
+            if (!IS_UNIT_SF2(ethswctl->unit)) {
                 enet_err("runner COS priority method config not supported yet.\n");    //TODO_DSL?
                 return -(EOPNOTSUPP);
             }
@@ -2015,7 +2064,7 @@ int enet_ioctl_compat_ethswctl(struct net_device *dev, struct ifreq *rq, int cmd
                     return -EFAULT;
             return ret;
         case ETHSWJUMBO:
-            if (ethswctl->unit != SF2_ETHSWCTL_UNIT || !sf2_sw) return -(EOPNOTSUPP);
+            if (!IS_UNIT_SF2(ethswctl->unit)) return -(EOPNOTSUPP);
 
             ret = ioctl_extsw_port_jumbo_control(ethswctl);
             if (!ret && ethswctl_field_copy_to_user(ret_val))
@@ -2023,7 +2072,7 @@ int enet_ioctl_compat_ethswctl(struct net_device *dev, struct ifreq *rq, int cmd
             return ret;
 
         case ETHSWCOSPCPPRIOMAP:
-            if (ethswctl->unit != SF2_ETHSWCTL_UNIT || !sf2_sw) return 0;
+            if (!IS_UNIT_SF2(ethswctl->unit)) return 0;
 
             ret = ioctl_extsw_pcp_to_priority_mapping(ethswctl);
             if (!ret && (ethswctl->type == TYPE_GET))
@@ -2031,7 +2080,7 @@ int enet_ioctl_compat_ethswctl(struct net_device *dev, struct ifreq *rq, int cmd
                     return -EFAULT;
             return ret;
         case ETHSWCOSPIDPRIOMAP:
-            if (ethswctl->unit != SF2_ETHSWCTL_UNIT || !sf2_sw) {
+            if (!IS_UNIT_SF2(ethswctl->unit)) {
                 enet_err("runner COS PID priority mapping not supported yet.\n");    //TODO_DSL?
                 return -(EOPNOTSUPP);
             }
@@ -2042,7 +2091,7 @@ int enet_ioctl_compat_ethswctl(struct net_device *dev, struct ifreq *rq, int cmd
                     return -EFAULT;
             return ret;
         case ETHSWCOSDSCPPRIOMAP:
-            if (ethswctl->unit != SF2_ETHSWCTL_UNIT || !sf2_sw) return 0;
+            if (!IS_UNIT_SF2(ethswctl->unit)) return 0;
 
             ret = ioctl_extsw_dscp_to_priority_mapping(ethswctl);
             if (!ret && (ethswctl->type == TYPE_GET))
@@ -2051,11 +2100,11 @@ int enet_ioctl_compat_ethswctl(struct net_device *dev, struct ifreq *rq, int cmd
             return ret;
 
         case ETHSWPORTSHAPERCFG:
-            if (ethswctl->unit != SF2_ETHSWCTL_UNIT || !sf2_sw) return -(EOPNOTSUPP);
+            if (!IS_UNIT_SF2(ethswctl->unit)) return -(EOPNOTSUPP);
 
             return ioctl_extsw_port_shaper_config(ethswctl);
         case ETHSWDOSCTRL:
-            if (ethswctl->unit != SF2_ETHSWCTL_UNIT || !sf2_sw) return -(EOPNOTSUPP);
+            if (!IS_UNIT_SF2(ethswctl->unit)) return -(EOPNOTSUPP);
 
             ret = ioctl_extsw_dos_ctrl(ethswctl);
             if (!ret && (ethswctl->type == TYPE_GET))
@@ -2111,7 +2160,7 @@ int enet_ioctl_compat_ethswctl(struct net_device *dev, struct ifreq *rq, int cmd
                 return -EFAULT;
 
         case ETHSWPORTSTORMCTRL:
-            if (ethswctl->unit != SF2_ETHSWCTL_UNIT || !sf2_sw) return -(EOPNOTSUPP);
+            if (!IS_UNIT_SF2(ethswctl->unit)) return -(EOPNOTSUPP);
 
             ret = ioctl_extsw_port_storm_ctrl(ethswctl);
             if (!ret && copy_to_user(rq->ifr_data , ethswctl, sizeof(struct ethswctl_data)))
@@ -2119,10 +2168,10 @@ int enet_ioctl_compat_ethswctl(struct net_device *dev, struct ifreq *rq, int cmd
             return ret;
 
         case ETHSWMULTIPORT:
-            if (ethswctl->unit == SF2_ETHSWCTL_UNIT || !sf2_sw) return BCM_E_NONE;
+            if (!IS_UNIT_SF2(ethswctl->unit)) return BCM_E_NONE;
 
             if (ethswctl->type == TYPE_SET) {
-                ioctl_extsw_set_multiport_address(ethswctl->mac);
+                ioctl_extsw_set_multiport_address(ethswctl->unit, ethswctl->mac);
             }
             return BCM_E_NONE;
 #endif // SF2_DEVICE
@@ -2133,6 +2182,19 @@ int enet_ioctl_compat_ethswctl(struct net_device *dev, struct ifreq *rq, int cmd
                 return -EFAULT;
 
             return 0;
+
+#if defined(CONFIG_BCM963146) || defined(CONFIG_BCM94912) || defined(CONFIG_BCM96855)
+        case ETHSWDOSCTRL:
+            {
+                int ret = _runner_rdpa_dos_ctrl(ethswctl);
+                if (!ret && (ethswctl->type == TYPE_GET))
+                    if (ethswctl_field_copy_to_user(dosCtrl))
+                        return -EFAULT;
+
+                return ret;
+            }
+#endif
+
 #if defined(DSL_DEVICES)
 
 
@@ -2240,7 +2302,7 @@ int enet_ioctl_compat_ethswctl(struct net_device *dev, struct ifreq *rq, int cmd
 #endif /* !defined(DSL_DEVICES) */
         case ETHSWPORTRXRATE:
 #if defined(DSL_DEVICES)
-            if (ethswctl->unit != SF2_ETHSWCTL_UNIT) return -(EOPNOTSUPP);
+            if (!IS_UNIT_SF2(ethswctl->unit)) return -(EOPNOTSUPP);
 
             if (ethswctl->type == TYPE_GET)
             {
@@ -2316,7 +2378,7 @@ int enet_ioctl_compat_ethswctl(struct net_device *dev, struct ifreq *rq, int cmd
 #endif /* !defined(DSL_DEVICES) */
         case ETHSWPORTTXRATE:
 #if defined(DSL_DEVICES)
-            if (ethswctl->unit != SF2_ETHSWCTL_UNIT) return -(EOPNOTSUPP);
+            if (!IS_UNIT_SF2(ethswctl->unit)) return -(EOPNOTSUPP);
 
             BCM_IOC_PTR_ZERO_EXT(ethswctl->vptr);
             ret = ioctl_extsw_port_erc_config(ethswctl);
@@ -2352,7 +2414,7 @@ int enet_ioctl_compat_ethswctl(struct net_device *dev, struct ifreq *rq, int cmd
                         return -EFAULT;
                     }
 
-                    tm_rl_cfg.af_rate = ethswctl->limit*1000;
+                    tm_rl_cfg.af_rate = ethswctl->limit*1000LL;
                     if (rdpa_egress_tm_rl_set(port_tm_cfg.sched, &tm_rl_cfg) != 0)
                     {
                         enet_err("rdpa_egress_tm_rl_set failed\n");
@@ -2705,7 +2767,7 @@ int enet_ioctl_compat_ethswctl(struct net_device *dev, struct ifreq *rq, int cmd
 
             // only allow enable/disable hw switching if port has interface, and port is role LAN, and on external switch
 #if defined(SF2_DEVICE)
-            if (!port->dev || port->n.port_netdev_role == PORT_NETDEV_ROLE_WAN || ethswctl->unit != SF2_ETHSWCTL_UNIT)
+            if (!port->dev || port->n.port_netdev_role == PORT_NETDEV_ROLE_WAN || !IS_UNIT_SF2(ethswctl->unit))
 #else
             if (!port->dev || port->n.port_netdev_role == PORT_NETDEV_ROLE_WAN || ethswctl->unit == 0)
 #endif
@@ -2713,13 +2775,17 @@ int enet_ioctl_compat_ethswctl(struct net_device *dev, struct ifreq *rq, int cmd
             // use role_set to setup switch WAN for software switching, and LAN for hw switching
             if (ethswctl->type == TYPE_ENABLE) {
                 PORT_CLR_HW_FWD(port);
-                port->p.ops->role_set(port, PORT_NETDEV_ROLE_WAN);
+                port->p.ops->role_set(port, PORT_NETDEV_ROLE_NONE);
                 if (port->p.ops->fast_age)
                     port->p.ops->fast_age(port);
+                if (port->p.ops->stp_set)
+				    port->p.ops->stp_set(port, STP_MODE_DISABLE, STP_STATE_UNCHANGED);
             }
             else {
                 PORT_SET_HW_FWD(port);
                 port->p.ops->role_set(port, PORT_NETDEV_ROLE_LAN);
+                if (port->p.ops->stp_set)
+                    port->p.ops->stp_set(port, STP_MODE_ENABLE, STP_STATE_UNCHANGED);
             }
             return 0;
         }
@@ -3039,7 +3105,9 @@ int enet_ioctl_compat_ethswctl(struct net_device *dev, struct ifreq *rq, int cmd
                     return -EFAULT;
                 }
 
+#if !defined(DSL_DEVICES)
                 if (ethswctl->addressing_flag == 0)
+#endif
                     return cascade_phy_dev_speed_set(phy_dev, speed, duplex) ? -EFAULT : 0;
 
                 adCaps = supported_caps;
@@ -3373,6 +3441,8 @@ int enet_ioctl_compat(struct net_device *dev, struct ifreq *rq, int cmd)
                     mib.ulIfSpeed = SPEED_1000MBIT;
                 else if (phy_dev->speed == PHY_SPEED_2500)
                     mib.ulIfSpeed = SPEED_2500MBIT;
+                else if (phy_dev->speed == PHY_SPEED_5000)
+                    mib.ulIfSpeed = SPEED_5000MBIT;
                 else if (phy_dev->speed == PHY_SPEED_10000)
                     mib.ulIfSpeed = SPEED_10000MBIT;
                 else

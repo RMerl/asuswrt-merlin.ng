@@ -61,12 +61,6 @@ static int port_sf2_port_init(enetx_port_t *self)
     return 0;
 }
 
-static void port_sf2_port_open(enetx_port_t *self)
-{
-    PORT_SET_EXT_SW(self);
-    port_generic_open(self);
-}
-
 // based on impl5\bcmenet_runner_inline.h:bcmeapi_pkt_xmt_dispatch()
 static int dispatch_pkt_sf2_lan(dispatch_info_t *dispatch_info)
 {
@@ -127,7 +121,7 @@ port_ops_t port_sf2_port =
     .stats_get = port_generic_stats_get,
     .pause_get = port_generic_pause_get,
     .pause_set = port_generic_pause_set,
-    .open = port_sf2_port_open,
+    .open = port_sf2_generic_open,
     .mtu_set = port_generic_mtu_set,
     .tx_q_remap = port_sf2_tx_q_remap,
     .mib_dump = port_sf2_mib_dump,
@@ -142,7 +136,9 @@ port_ops_t port_sf2_port =
         .switchdev_port_attr_set = sf2_switchdev_port_attr_set, 
     }
 #endif
+#if 0	/* skip Andrew code */
     .mib_dump_us = port_sf2_mib_dump_us,  // add by Andrew
+#endif	/* skip Andrew code */
 };
 
 port_ops_t port_sf2_port_mac =
@@ -154,7 +150,9 @@ port_ops_t port_sf2_port_mac =
     .mtu_set = port_generic_mtu_set,
     .mib_dump = port_sf2_mib_dump,
     .print_status = port_sf2_print_status,
+#if 0	/* skip Andrew code */
     .mib_dump_us = port_sf2_mib_dump_us,  // add by Andrew
+#endif	/* skip Andrew code */
 };
 
 int enetxapi_post_config(void)

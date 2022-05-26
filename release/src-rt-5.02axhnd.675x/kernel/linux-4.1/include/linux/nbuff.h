@@ -1816,7 +1816,10 @@ static inline int nbuff_pad(pNBuff_t pNBuff, int padLen)
 {
     if ( IS_SKBUFF_PTR(pNBuff) )
     {
-        return skb_pad((struct sk_buff *)pNBuff, padLen);
+        int ret = skb_put_padto((struct sk_buff *)pNBuff, padLen + ((struct sk_buff *)pNBuff)->len);
+        if (ret)
+            printk(KERN_ERR "nbuff_pad() skb_put_padto err=%d!!\n", ret);
+        return ret;
     }
     else
     {

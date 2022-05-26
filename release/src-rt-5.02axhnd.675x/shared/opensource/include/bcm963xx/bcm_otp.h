@@ -7,7 +7,7 @@
 #if defined(CONFIG_BCM963381) || defined(CONFIG_BCM963148) || defined(CONFIG_BCM963138) || defined(CONFIG_BCM96858) || defined(CONFIG_BCM96848) || defined(CONFIG_BCM96838) || defined(CONFIG_BCM94908)  || defined(_BCM963381_) || defined(_BCM963148_) || defined(_BCM963138_) || defined(_BCM96858_) || defined(_BCM96848_) || defined(_BCM96838_) || defined(_BCM94908_)
 #define OTP_TYPE_B
 #else
-#if defined(CONFIG_BCM963158) || defined(CONFIG_BCM963178) || defined(CONFIG_BCM947622) || defined(CONFIG_BCM96856) || defined(CONFIG_BCM96846) || defined(CONFIG_BCM96878) || defined(_BCM963158_) || defined(_BCM963178_) || defined(_BCM947622_) || defined(_BCM96856_) || defined(_BCM96846_) || defined(_BCM96878_)
+#if defined(CONFIG_BCM963158) || defined(CONFIG_BCM963178) || defined(CONFIG_BCM947622) || defined(CONFIG_BCM96856) || defined(CONFIG_BCM96846) || defined(CONFIG_BCM96878) || defined(CONFIG_BCM96855) || defined(_BCM963158_) || defined(_BCM963178_) || defined(_BCM947622_) || defined(_BCM96856_) || defined(_BCM96846_) || defined(_BCM96878_) || defined(_BCM96855_)
 #define OTP_TYPE_C
 #else
 #error "OTP TYPE NOT SUPPORTED!!"
@@ -87,6 +87,7 @@ int bcm_otp_get_chipid(unsigned int* val);
 #if defined(CONFIG_BCM96858) || defined(_BCM96858_) || \
     defined(CONFIG_BCM96846) || defined(_BCM96846_) || \
     defined(CONFIG_BCM96878) || defined(_BCM96878_) || \
+    defined(CONFIG_BCM96855) || defined(_BCM96855_) || \
     defined(CONFIG_BCM96856) || defined(_BCM96856_) || \
     defined(CONFIG_BCM947622) || defined(_BCM947622_)
 int bcm_otp_get_cpu_clk(unsigned int* val);
@@ -97,6 +98,7 @@ int bcm_otp_get_cpu_clk(unsigned int* val);
     defined(CONFIG_BCM963158) || defined(_BCM963158_) || \
     defined(CONFIG_BCM96846) || defined(_BCM96846_) || \
     defined(CONFIG_BCM96878) || defined(_BCM96878_) || \
+    defined(CONFIG_BCM96855) || defined(_BCM96855_) || \
     defined(CONFIG_BCM96856) || defined(_BCM96856_) || \
     defined(CONFIG_BCM963178) || defined(_BCM963178_) || \
     defined(CONFIG_BCM947622) || defined(_BCM947622_)
@@ -107,7 +109,7 @@ int bcm_otp_get_pmc_boot_sts(unsigned int* val);
 int bcm_otp_get_nr_cpus(unsigned int* val);
 int bcm_otp_is_boot_mfg_secure(void);
 int bcm_otp_is_pcm_disabled(unsigned int* val);
-#if !defined(_BCM96846_) && !defined(CONFIG_BCM96846) && !defined(_BCM96878_) && !defined(CONFIG_BCM96878)
+#if !defined(_BCM96846_) && !defined(CONFIG_BCM96846) && !defined(_BCM96878_) && !defined(CONFIG_BCM96878) && !defined(_BCM96855_) && !defined(CONFIG_BCM96855)
 int bcm_otp_is_sata_disabled(unsigned int* val);
 #endif
 #endif
@@ -119,6 +121,10 @@ int bcm_otp_get_usb_port_disabled(int port, unsigned int* val);
 
 #if defined(_BCM947622_) || defined(CONFIG_BCM947622) || defined(_BCM963178_) || defined(CONFIG_BCM963178)
 int bcm_otp_get_ldo_trim(unsigned int* val);
+#endif
+
+#if defined(_BCM96856_) || defined(CONFIG_BCM96856)
+int bcm_otp_get_chipvar(unsigned int* val);
 #endif
 
 #endif  /* _BCM_OTP_H_ */

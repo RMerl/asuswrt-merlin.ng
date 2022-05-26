@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020, Broadcom. All Rights Reserved.
+ * Copyright (C) 2021, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -20,8 +20,6 @@
  */
 #include <rtecdc_43602a3.h>
 #define DLIMAGE_43602a3
-#include <rtecdc_6715a0.h>
-#define DLIMAGE_6715a0
 #include <rtecdc_43684b0.h>
 #define DLIMAGE_43684b0
 #include <rtecdc_4363c0.h>
@@ -30,3 +28,5 @@
 #define DLIMAGE_4366c0
 #include <rtecdc_43684c0.h>
 #define DLIMAGE_43684c0
+#include <rtecdc_6715a0.h>
+#define DLIMAGE_6715a0

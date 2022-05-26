@@ -166,6 +166,16 @@ t_mld_grp_entry *bcm_mcast_mld_fdb_copy(bcm_mcast_ifdata       *pif,
                                           const t_mld_grp_entry *mld_fdb);
 void bcm_mcast_mld_process_blog_enable( bcm_mcast_ifdata *pif, int enable);
 #endif  
+void bcm_mcast_mld_wipe_grp_reporter_for_port (bcm_mcast_ifdata *pif,
+                                               struct in6_addr *grp, 
+                                               struct in6_addr *rep, 
+                                               struct net_device *rep_dev);
+#define BCM_MCAST_DBG_PRINT_V6_ADDR(addrname, v6addr_u16) \
+               __logDebug("%s %x:%x:%x:%x:%x:%x:%x:%x", addrname, \
+                            htons(v6addr_u16[0]), htons(v6addr_u16[1]), \
+                            htons(v6addr_u16[2]), htons(v6addr_u16[3]), \
+                            htons(v6addr_u16[4]), htons(v6addr_u16[5]), \
+                            htons(v6addr_u16[6]), htons(v6addr_u16[7]))
 
 #endif /* _BCM_MCAST_IPV6_H_ */
 

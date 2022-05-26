@@ -28,6 +28,7 @@
 #if defined(CONFIG_BCM_KF_NETFILTER_SIP)
 #include <net/netfilter/nf_conntrack_tuple.h>
 #include <linux/iqos.h>
+extern spinlock_t ct_derived_conn_lock;
 #endif
 
 MODULE_LICENSE("GPL");
@@ -1243,6 +1244,7 @@ static int process_bye_request(struct sk_buff *skb, unsigned int protoff,
 	struct nf_conn *child;
 
 	/* cdrouter_sip_60 */
+	spin_lock_bh(&ct_derived_conn_lock);
 	list_for_each_entry(child, &ct->derived_connections, derived_list) {
 		struct nf_conn_help *child_help = nfct_help(child);
 
@@ -1266,6 +1268,7 @@ static int process_bye_request(struct sk_buff *skb, unsigned int protoff,
 		child->derived_timeout = 5*HZ;
 		nf_ct_refresh(child, skb, 5*HZ);
 	}
+	spin_unlock_bh(&ct_derived_conn_lock);
 #endif
 
 	flush_expectations(ct, true);

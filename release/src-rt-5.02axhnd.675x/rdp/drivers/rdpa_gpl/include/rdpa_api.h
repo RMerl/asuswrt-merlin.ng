@@ -86,7 +86,7 @@
 #include <rdpa_spdsvc.h>
 #include <rdpa_ag_spdsvc.h>
 #endif
-#if (!defined(G9991) && (defined(__OREN__) || defined(XRDP)))
+#if ((defined(__OREN__) || defined(XRDP)))
 #include <rdpa_tunnel.h>
 #include <rdpa_ag_tunnel.h>
 #endif
@@ -134,6 +134,9 @@
 #include <rdpa_ag_iptv.h>
 #include <rdpa_ag_pbit_to_gem.h>
 #include <rdpa_ag_pbit_to_queue.h>
+#ifdef RULE_BASED_GRE
+#include <rdpa_ag_pbit_to_dscp.h>
+#endif
 #include <rdpa_ag_tc_to_queue.h>
 #endif /* DSL_138 */
 

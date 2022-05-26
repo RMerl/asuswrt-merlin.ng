@@ -71,6 +71,18 @@ CFE_RAM:=$(CFE_RAM_EMMC_FILE)
 IMG_SCRIPT:=$(SCRIPT_DIR)/image.emmc
 WDIR:=$(PROFILE_DIR)/imagebuild/EMMC
 endif
+
+#
+ifneq ($(findstring emmc_trapeze,$(MAKECMDGOALS)),)
+CFE_ROM_BN:=$(notdir $(strip $(CFE_ROM_EMMC_FILE)))
+CFE_ROM:=$(strip $(CFE_ROM_EMMC_FILE))
+CFE_RAM:=$(CFE_RAM_EMMC_FILE)
+IMG_SCRIPT:=$(SCRIPT_DIR)/image.emmc_trapeze
+WDIR:=$(PROFILE_DIR)/imagebuild/EMMC_TRAPEZE
+FS_KERNEL_IMAGE_NAME:=$(FS_KERNEL_IMAGE_NAME)_trapeze
+CFE_FS_KERNEL_IMAGE_NAME:=$(CFE_FS_KERNEL_IMAGE_NAME)_trapeze
+endif
+
 #
 # If full target is specified - select corresponding script
 ifneq ($(findstring full,$(MAKECMDGOALS)),)
@@ -88,7 +100,7 @@ export
 #
 #
 #
-nand emmc:
+nand emmc emmc_trapeze:
 	$(SCRIPT_DIR)/image.setup
 #
 #Showcasing steps

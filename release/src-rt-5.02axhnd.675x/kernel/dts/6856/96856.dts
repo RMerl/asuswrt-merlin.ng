@@ -157,9 +157,9 @@
 
 		};
 
-		watchdog@ff800428 {
+		watchdog@ff800480 {
 			compatible = "brcm,bcm96xxx-wdt";
-			reg = <0x0 0x428 0x0 0x10>;
+			reg = <0x0 0x480 0x0 0x10>;
 			timeout-sec = <80>;
 		};
 
@@ -271,4 +271,11 @@
 		brcm,coreid = <2>;
 	};
 #endif
+
+	therm0: brcm-therm {
+		compatible = "brcm,therm";
+		reboot-temperature = <130000>; /* millicelsius */
+		status = "okay";
+	};
+
 };

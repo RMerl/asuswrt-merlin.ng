@@ -1,7 +1,7 @@
 /*
  * Linux Packet (skb) interface
  *
- * Copyright (C) 2020, Broadcom. All Rights Reserved.
+ * Copyright (C) 2021, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -875,6 +875,10 @@ for (nskb = (struct sk_buff *)skb; nskb; nskb = nskb->next) \
 
 #define PKTALLOCED(osh)		osl_pktalloced(osh)
 extern uint osl_pktalloced(osl_t *osh);
+
+#define PKTALLOCED_PERSISTENTLY(osh)	({BCM_REFERENCE(osh); 0;})
+#define PKTALLOCED_PERSISTENTLY_INC(osh, cnt)	do {} while (0)
+#define PKTALLOCED_PERSISTENTLY_DEC(osh, cnt)	do {} while (0)
 
 #ifdef PKTC
 #ifndef BCM_NBUFF_PKT

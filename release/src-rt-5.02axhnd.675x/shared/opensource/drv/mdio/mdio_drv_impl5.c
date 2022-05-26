@@ -33,7 +33,7 @@
  */
 
 /*
- * MDIO driver for BCM96846 6856 and 6878
+ * MDIO driver for BCM96846 6856 and 6878 and 6855
  */
 
 #include "bcm_map_part.h"

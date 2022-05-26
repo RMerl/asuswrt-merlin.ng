@@ -501,7 +501,8 @@ typedef enum {
 #define BLOG_PARAM2_IPV6        1U
 #define BLOG_PARAM2_GRE_IPV4    2U
 #define BLOG_PARAM2_L2TP_IPV4   3U
-#define BLOG_PARAM2_MAX         4U
+#define BLOG_PARAM2_VXLAN_IPV4  4U
+#define BLOG_PARAM2_MAX         5U
 #define BLOG_CT_VER_MAX         2U
 
 /* MAP_TUPLE: param1 is US=0 or DS=1 direction */
@@ -628,7 +629,6 @@ typedef enum {
         BLOG_DECL(BRIDGEFDB_KEY_SET)    /* Set Client key into bridge FDB     */
         BLOG_DECL(BRIDGEFDB_KEY_GET)    /* Get Client key into bridge FDB     */
         BLOG_DECL(BRIDGEFDB_TIME_SET)   /* Refresh bridge FDB time            */
-        BLOG_DECL(BRIDGEFDB_IFIDX_GET)  /* Get bridge FDB's device ifindex    */
         BLOG_DECL(SYS_TIME_GET)         /* Get the system time in jiffies     */
         BLOG_DECL(GRE_TUNL_XMIT)        /* GRE Tunnel tx                      */
         BLOG_DECL(GRE6_TUNL_XMIT)       /* GRE6 Tunnel tx                      */
@@ -678,7 +678,8 @@ typedef struct {
         struct {
             uint32_t is_downstream      :1;
             uint32_t flow_event_type    :2;
-            uint32_t reserved           :21;
+            uint32_t is_upstream        :1;
+            uint32_t reserved           :20;
             uint32_t skb_mark_flow_id   :8;
         };
         uint32_t u32;
@@ -693,7 +694,7 @@ typedef struct {
  */
 
 #define BLOG_ENCAP_MAX          6       /* Maximum number of L2 encaps        */
-#define BLOG_HDRSZ_MAX          32      /* Maximum size of L2 encaps          */
+#define BLOG_HDRSZ_MAX          38      /* Maximum size of L2 encaps          */
 
 typedef enum {
         BLOG_DECL(GRE_ETH)             /* e.g. BLOG_XTMPHY, BLOG_GPONPHY     */
@@ -719,8 +720,11 @@ typedef enum {
         BLOG_DECL(GREoESP_type)         /* GRE over ESP type                  */
         BLOG_DECL(GREoESP_type_resvd)   /* GRE over ESP type                  */
         BLOG_DECL(GREoESP)              /* GRE over ESP                       */
-        BLOG_DECL(unused1)              /* unused1                            */
+        BLOG_DECL(NPT6)                 /* NPT6                               */
         BLOG_DECL(PASS_THRU)            /* pass-through                       */
+        BLOG_DECL(MAPE)                 /* MAPE-through                       */
+        BLOG_DECL(LLC_SNAP)             /* LLC_SNAP                           */
+        BLOG_DECL(VXLAN)                /* VXLAN Header                       */
         BLOG_DECL(unused)               /* unused                             */
         BLOG_DECL(PROTO_MAX)
 } BlogEncap_t;
@@ -815,6 +819,10 @@ typedef enum {
     BLOG_DECL(blog_skip_reason_map_tcp)
     BLOG_DECL(blog_skip_reason_blog)
     BLOG_DECL(blog_skip_reason_l2_local_termination)
+    BLOG_DECL(blog_skip_reason_local_tcp_termination)
+    BLOG_DECL(blog_skip_reason_blog_xfer)
+    BLOG_DECL(blog_skip_reason_skb_segment)
+    BLOG_DECL(blog_skip_reason_skb_morph)
     BLOG_DECL(blog_skip_reason_mega_multi_output_ports)
     BLOG_DECL(blog_skip_reason_mega_attr_mismatch)
     BLOG_DECL(blog_skip_reason_mega_field_mismatch)
@@ -1005,7 +1013,6 @@ extern void blog_support_gre(int enable);
 /* L2TP Support */
 #define BLOG_L2TP_DISABLE             0
 #define BLOG_L2TP_TUNNEL              1
-#define BLOG_L2TP_TUNNEL_WITHCHKSUM   2
 
 #ifdef CONFIG_BLOG_L2TP
 #define CC_BLOG_SUPPORT_L2TP       BLOG_L2TP_TUNNEL
@@ -1365,11 +1372,13 @@ typedef struct {
     union {
         struct {
             BE_DECL(
-                uint32_t         unused      : 6;
+                uint32_t         unused      : 4;
+                uint32_t         VXLAN       : 1;
+                uint32_t         LLC_SNAP    : 1;
                 uint32_t         MAPE        : 1;
                 uint32_t         PASS_THRU   : 1;
 
-                uint32_t         unused1     : 1;
+                uint32_t         NPT6        : 1;
                 uint32_t         GREoESP     : 1; 
                 uint32_t         GREoESP_type: 2;
                 uint32_t         HDR0_L2     : 1;
@@ -1420,11 +1429,13 @@ typedef struct {
                 uint32_t         HDR0_L2     : 1;
                 uint32_t         GREoESP_type: 2;
                 uint32_t         GREoESP     : 1;
-                uint32_t         unused1     : 1;
+                uint32_t         NPT6        : 1;
 
                 uint32_t         PASS_THRU   : 1;
                 uint32_t         MAPE        : 1;
-                uint32_t         unused      : 6;
+                uint32_t         LLC_SNAP    : 1;
+                uint32_t         VXLAN       : 1;
+                uint32_t         unused      : 4;
             )
         }               bmap;/* as per order of BlogEncap_t enums declaration */
         uint32_t        hdrs;
@@ -1467,7 +1478,7 @@ typedef struct blogTuple_t BlogTuple_t;
 #define HDRS_IPinIP     ((1<<GREoESP) | (3<<GREoESP_type) | (1<<GRE) | (1<<ESP) | \
                          (1<<PLD_IPv4) | (1<<PLD_IPv6) | (1<<PLD_L2) | \
                          (1<<HDR0_IPv4) | (1<<HDR0_IPv6) | (1<<HDR0_L2) |  \
-                         (1<<DEL_IPv4) | (1<<DEL_IPv6) | (1<<DEL_L2))
+                         (1<<DEL_IPv4) | (1<<DEL_IPv6) | (1<<DEL_L2) | (1<<VXLAN))
 #define HDRS_IP4in4     ((1<<PLD_IPv4) | (1<<DEL_IPv4))
 #define HDRS_IP6in4     ((1<<PLD_IPv6) | (1<<DEL_IPv4))
 #define HDRS_IP4in6     ((1<<PLD_IPv4) | (1<<DEL_IPv6))
@@ -1478,6 +1489,7 @@ typedef struct blogTuple_t BlogTuple_t;
 #define HDRS_EIP4       ((1<<PLD_IPv4) | (1<<ESP))
 #define HDRS_IP2in4     ((1<<PLD_L2) | (1<<DEL_IPv4))
 #define HDRS_IP2in6     ((1<<PLD_L2) | (1<<DEL_IPv6))
+#define HDRS_EIP4in6    ((1<<PLD_IPv4) | (1<<DEL_IPv6) | (1<<ESP))
 
 #define RX_IP4in6(b)    (((b)->rx.info.hdrs & HDRS_IPinIP)==HDRS_IP4in6)
 #define RX_IP6in4(b)    (((b)->rx.info.hdrs & HDRS_IPinIP)==HDRS_IP6in4)
@@ -1500,6 +1512,9 @@ typedef struct blogTuple_t BlogTuple_t;
 #define TX_ESP(b)       ((b)->tx.info.bmap.ESP)
 #define RX_GRE_ETH(b)   ((b)->rx.info.bmap.GRE_ETH)
 #define TX_GRE_ETH(b)   ((b)->tx.info.bmap.GRE_ETH)
+#define TX_VXLAN(b)     ((b)->tx.info.bmap.VXLAN)
+#define RX_VXLAN(b)     ((b)->rx.info.bmap.VXLAN)
+#define VXLAN(b)        (TX_VXLAN(b) || RX_VXLAN(b))
 
 #define RX_IPV4ONLY(b)  (((b)->rx.info.hdrs & HDRS_IPinIP)==(1 << PLD_IPv4))
 #define TX_IPV4ONLY(b)  (((b)->tx.info.hdrs & HDRS_IPinIP)==(1 << PLD_IPv4))
@@ -1523,10 +1538,6 @@ typedef struct blogTuple_t BlogTuple_t;
 #define HDRS_IPV4       ((1 << PLD_IPv4) | (1 << DEL_IPv4))
 #define HDRS_IPV6       ((1 << PLD_IPv6) | (1 << DEL_IPv6))
 
-#define MAPT_UP(b)      (RX_IPV4ONLY(b) && TX_IPV6ONLY(b))
-#define MAPT_DN(b)      (RX_IPV6ONLY(b) && TX_IPV4ONLY(b))
-#define MAPT(b)         (MAPT_DN(b) || MAPT_UP(b))
-
 #define T4in6UP(b)      (RX_IPV4ONLY(b) && TX_IP4in6(b))
 #define T4in6DN(b)      (RX_IP4in6(b) && TX_IPV4ONLY(b))
 
@@ -1537,6 +1548,18 @@ typedef struct blogTuple_t BlogTuple_t;
 #define CHK6in4(b)      (T6in4UP(b) || T6in4DN(b)) 
 #define CHK4to4(b)      (RX_IPV4ONLY(b) && TX_IPV4ONLY(b))
 #define CHK6to6(b)      (RX_IPV6ONLY(b) && TX_IPV6ONLY(b))
+
+/* RX/TX is ESPv4 */
+#define RX_E4(b)        (((b)->rx.info.hdrs & HDRS_IPinIP)==((1 << PLD_IPv4)|(1 << ESP)))
+#define TX_E4(b)        (((b)->tx.info.hdrs & HDRS_IPinIP)==((1 << PLD_IPv4)|(1 << ESP)))
+
+/* RX/TX ESPv4 over DSLite tunnel WAN side */
+#define RX_E4in6(b)    (((b)->rx.info.hdrs & HDRS_IPinIP)==HDRS_EIP4in6)
+#define TX_E4in6(b)    (((b)->tx.info.hdrs & HDRS_IPinIP)==HDRS_EIP4in6)
+
+/* ESPv4 pass-thru over DSLite tunnel */
+#define EoT4in6UP(b)  (RX_E4(b) && TX_E4in6(b))
+#define EoT4in6DN(b)  (RX_E4in6(b) && TX_E4(b))
 
 #define HDRS_GIP4in4    ((1<<GRE) | HDRS_IP4in4)
 #define HDRS_GIP6in4    ((1<<GRE) | HDRS_IP6in4)
@@ -1571,8 +1594,8 @@ typedef struct blogTuple_t BlogTuple_t;
 #define RX_GIP46in6(b)  (RX_GIP4in6(b) || RX_GIP6in6(b))
 #define TX_GIP46in6(b)  (TX_GIP4in6(b) || TX_GIP6in6(b))
 
-#define TG4in4UP(b)     (RX_IPV4ONLY(b) && TX_GIP4in4(b))
-#define TG4in4DN(b)     (RX_GIP4in4(b) && TX_IPV4ONLY(b))
+#define TG4in4UP(b)     ((RX_IPV4ONLY(b) || RX_IPV6ONLY(b)) && TX_GIP4in4(b))
+#define TG4in4DN(b)     (RX_GIP4in4(b) && (TX_IPV4ONLY(b) || TX_IPV6ONLY(b)))
 #define TG6in4UP(b)     (RX_IPV6ONLY(b) && TX_GIP6in4(b))
 #define TG6in4DN(b)     (RX_GIP6in4(b) && TX_IPV6ONLY(b))
 #define TG2in4UP(b)     (RX_L2ONLY(b) && TX_GIP2in4(b))
@@ -1722,6 +1745,10 @@ typedef struct blogTuple_t BlogTuple_t;
 #define TX_PPPOE(b)       ((b)->tx.info.bmap.PPPoE_2516)
 #define PT_PPPOE(b)       (RX_PPPOE(b) && TX_PPPOE(b))
 
+#define MAPT_UP(b)       ((RX_IPV4ONLY(b) || RX_GIP4in4(b)) && TX_IPV6ONLY(b))
+#define MAPT_DN(b)       (RX_IPV6ONLY(b) && (TX_IPV4ONLY(b) || TX_GIP4in4(b)))
+#define MAPT(b)          (MAPT_DN(b) || MAPT_UP(b))
+
 
 #define PKT_IPV6_GET_TOS_WORD(word)       \
    ((ntohl(word) & 0x0FF00000) >> 20)
@@ -1792,6 +1819,7 @@ struct blogTupleV6_t {
         uint64_t ip6_ExtHdr;
     }; 
 
+    ip6_addr_t      addr_npt6;
 } ____cacheline_aligned;
 typedef struct blogTupleV6_t BlogTupleV6_t;
 
@@ -1919,10 +1947,12 @@ struct blogL2tp_t {
 };
 typedef struct blogL2tp_t BlogL2tp_t;
 
-#define BLOG_L2TP_PPP_LEN  4
-#define BLOG_L2TP_PORT     1701
+#define BLOG_PPP_ADDR_CTL       0xFF03
+#define BLOG_L2TP_PPP_LEN       4   /* used when PPP address and control is 0xFF03 */
+#define BLOG_L2TP_PPP_LEN2      2   /* used when PPP address and control is NOT 0xFF03 */
+#define BLOG_L2TP_PORT          1701
 
-#define BLOG_PPTP_PPP_LEN  4
+#define BLOG_PPTP_PPP_LEN       4
 #define BLOG_PPTP_NOAC_PPPINFO  0X2145  /* pptp packet without ppp address control field 0xff03 */
 
 #define BLOG_ESP_SPI_LEN         4
@@ -1960,6 +1990,33 @@ struct blogEsp_t {
 };
 typedef struct blogEsp_t BlogEsp_t;
 
+#define BLOG_VXLAN_PORT          4789
+#define BLOG_VXLAN_TUNNEL_MAX_LEN (BLOG_HDRSZ_MAX + BLOG_IPV6_HDR_LEN + BLOG_UDP_HDR_LEN + BLOG_VXLAN_HDR_LEN)
+
+struct blogVxlan_t {
+    uint32_t vni;
+    union {
+        uint16_t u16;
+        struct {
+            BE_DECL(
+                uint16_t reserved   :  6;
+                uint16_t ipv6       :  1;
+                uint16_t ipv4       :  1;
+                uint16_t length     :  8;
+            )
+            LE_DECL(
+                uint16_t length     :  8;
+                uint16_t ipv4       :  1;
+                uint16_t ipv6       :  1;
+                uint16_t reserved   :  6;              
+            )
+        };
+    };
+    uint8_t     l2len;
+    uint8_t     unused; /*for alignment */
+    uint8_t     tunnel_data[BLOG_VXLAN_TUNNEL_MAX_LEN];
+};
+typedef struct blogVxlan_t BlogVxlan_t;
 
 /*
  *------------------------------------------------------------------------------
@@ -1993,7 +2050,14 @@ struct blogHeader_t {
     uint8_t /*BlogEncap_t*/ encap[ BLOG_ENCAP_MAX ];/* All L2 header types */
 
     uint8_t             l2hdr[ BLOG_HDRSZ_MAX ];    /* Data of all L2 headers */
-
+    struct {
+        uint8_t             unused;
+        uint8_t             len_offset;
+        union {
+            uint16_t        frame_len;
+            int16_t         len_delta;
+        };
+    } llc_snap;
 } ____cacheline_aligned;
 
 typedef struct blogHeader_t BlogHeader_t;           /* L2 and L3+4 tuple */
@@ -2005,7 +2069,8 @@ union blogHash_t {
         union {
             struct {
                 uint8_t  tcp_pure_ack : 1;
-                uint8_t  unused       : 7;
+                uint8_t  llc_snap     : 1;
+                uint8_t  unused       : 6;
             };
             uint8_t ext_match;
         };
@@ -2209,6 +2274,7 @@ struct blog_t {
     /* --- [ARM64]64 byte cacheline boundary --- */
 
     void                * fdb[2];       /* fdb_src and fdb_dst */
+    uint32_t            ifidx[2];       /* fdb src and fdb dst bridge ifidx */
     int8_t              delta[MAX_VIRT_DEV];  /* octet delta info */
     int8_t              tx_dev_delta; /* octet delta of TX dev */
     uint8_t             l2_dirty_offset;
@@ -2394,6 +2460,7 @@ struct blog_t {
         struct {
             BlogL2tp_t l2tptx;
         };
+        BlogVxlan_t     vxlan;
     };
     /* --- [ARM32]32 byte cacheline boundary (was 24 bytes ago)--- */
     BlogTuple_t         *esprx_tuple_p; /* ESP proto RX Tuple pointer */
@@ -2940,6 +3007,11 @@ do {                                                                \
     spin_unlock_bh(&((x)->wakeup_lock));                            \
 } while (0)
 
+
+extern int (*blog_netdev_register_dummy_fn)(void *dev_p);
+extern int (*blog_netdev_unregister_dummy_fn)(void *dev_p);
+void blog_netdev_register_dummy(void *dev);
+void blog_netdev_unregister_dummy(void *dev);
 
 #endif /* defined(__BLOG_H_INCLUDED__) */
 

@@ -33,7 +33,7 @@
  */
 
 /*
- * MDIO driver for BCM96846 ,BCM96878 and BCM96856 
+ * MDIO driver for BCM96846 ,BCM96878 and BCM96856 BCM6855
  */
 
 #ifndef __MDIO_DRV_IMPL5_H__

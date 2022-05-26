@@ -94,7 +94,11 @@
 
 	/* increase coherent_pool size */
 	chosen {
+#ifdef TRAPEZE_BOOT
+		bootargs = "coherent_pool=4M cpuidle_sysfs_switch pci=pcie_bus_safe init=/re-image/init rootwait";
+#else
 		bootargs = "coherent_pool=4M cpuidle_sysfs_switch pci=pcie_bus_safe rootwait";
+#endif		
 	};
 
 	gic: interrupt-controller@81000000 {

@@ -1213,6 +1213,8 @@ __pktlist_xfer_pktlist(dll_t * work_list, pktlist_t * pktlist,
 
         PKTLIST_RESET( &work_elem->pktlist );
 
+        item = next; /* advance src work list iterator */
+
     } /* for each work list elem */
 
 }   /* __pktlist_xfer_pktlist() */
@@ -2665,11 +2667,15 @@ extern d3lut_key_t      d3lut_e2k(d3lut_t * d3lut, d3lut_elem_t * elem);
 /** D3LUT Pool configuration */
 extern void             d3lut_policy_set(d3lut_t * d3lut,
                                   uint32_t pool, uint32_t d3lut_policy);
-/** D3LUT element allocation. Not for general use. Used by dictionary  */
+/** D3LUT element allocation. */
 extern d3lut_elem_t   * d3lut_get(d3lut_t * d3lut,
                                   uint32_t pool, d3lut_policy_t d3lut_policy);
-/** D3LUT element deallocation. Not for general use. Used by dictionary  */
+extern d3lut_elem_t   * d3lut_get_nolock(d3lut_t * d3lut,
+                                  uint32_t pool, d3lut_policy_t d3lut_policy);
+/** D3LUT element deallocation. */
 extern void             d3lut_put(d3lut_t * d3lut,
+                                  d3lut_elem_t * d3lut_elem); /* dealloc */
+extern void             d3lut_put_nolock(d3lut_t * d3lut,
                                   d3lut_elem_t * d3lut_elem); /* dealloc */
 
 

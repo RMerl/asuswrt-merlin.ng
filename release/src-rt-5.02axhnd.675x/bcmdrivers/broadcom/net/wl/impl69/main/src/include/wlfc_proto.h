@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020, Broadcom. All Rights Reserved.
+ * Copyright (C) 2021, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -16,7 +16,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: wlfc_proto.h 785456 2020-03-26 16:11:05Z $
+ * $Id: wlfc_proto.h 798122 2021-04-26 07:45:44Z $
  *
  */
 
@@ -118,13 +118,13 @@ typedef enum {
 
 #define WLFC_CTL_VALUE_LEN_FLOWID		2
 
-#define WLFC_CTL_VALUE_LEN_MACDESC		8	/** handle, interface, MAC */
+#define WLFC_CTL_VALUE_LEN_MACDESC		9	/** handle(2), interface, MAC(6) */
 
-#define WLFC_CTL_VALUE_LEN_MAC			1	/** MAC-handle */
+#define WLFC_CTL_VALUE_LEN_MAC			2	/** MAC-handle(2) */
 
 #define WLFC_MAC_OPEN_CLOSE_FROM_PS		1
 #define WLFC_MAC_OPEN_CLOSE_NON_PS		0
-#define WLFC_CTL_VALUE_LEN_MAC_FLAGS	2	/** MAC-handle, PS flags */
+#define WLFC_CTL_VALUE_LEN_MAC_FLAGS		3	/** MAC-handle(2), PS flags */
 
 #define WLFC_CTL_VALUE_LEN_RSSI			1
 
@@ -149,8 +149,8 @@ typedef enum {
 /* enough space to host all 4 ACs, bc/mc and atim fifo credit */
 #define WLFC_CTL_VALUE_LEN_FIFO_CREDITBACK	6
 
-#define WLFC_CTL_VALUE_LEN_REQUEST_CREDIT	3	/* credit, MAC-handle, prec_bitmap */
-#define WLFC_CTL_VALUE_LEN_REQUEST_PACKET	3	/* credit, MAC-handle, prec_bitmap */
+#define WLFC_CTL_VALUE_LEN_REQUEST_CREDIT	4	/* credit, MAC-handle(2), prec_bitmap */
+#define WLFC_CTL_VALUE_LEN_REQUEST_PACKET	4	/* credit, MAC-handle(2), prec_bitmap */
 
 /* XXX:
 	WLFC packet identifier: b[31:0] (WLFC_CTL_TYPE_PKTTAG)
@@ -323,10 +323,21 @@ typedef enum {
 /* 32 STA should be enough??, 6 bits; Must be power of 2 */
 #define WLFC_MAC_DESC_TABLE_SIZE	32
 #define WLFC_MAX_IFNUM			16
+#ifndef BCMDHDUSB
+#define WLFC_MAC_DESC_ID_INVALID	0xffff
+/* b[11:9] replay counter, b[8:0] -value (0x1ff) */
+#define WLFC_MAC_DESC_GET_LOOKUP_INDEX(x) ((x) & 0x1ff)
+#else
 #define WLFC_MAC_DESC_ID_INVALID	0xff
 
 /* b[7:5] -reuse guard, b[4:0] -value */
 #define WLFC_MAC_DESC_GET_LOOKUP_INDEX(x) ((x) & 0x1f)
+#endif /* BCMDHDUSB */
+/* Max supported bitmap size is 512 (32*16) */
+#define MAX_BITMAP_NDWORD		16
+
+/* To support MAXSCB STA's */
+#define WLFC_BITMAP_NDWORD		((MAXSCB / 32) + ((MAXSCB % 32) ? 1 : 0))
 
 #define WLFC_PKTFLAG_SET_PKTREQUESTED(x)	(x) |= \
 	(WLFC_PKTFLAG_PKT_REQUESTED << WL_TXSTATUS_FLAGS_SHIFT)

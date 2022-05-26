@@ -38,6 +38,7 @@
 #include "port.h"
 #include "enet.h"
 #include <rdpa_api.h>
+#include "bcm/bcmswapitypes.h"
 
 extern int configure_bc_rate_limit_meter(int port_id, unsigned int rate_limit);
 
@@ -74,6 +75,10 @@ static inline int _port_rdpa_if_by_port(enetx_port_t *port, rdpa_if *index)
 #define BCM_ENET_IFG        20 /* bytes */
 #define BCM_ENET_CRC_LEN    4  /* bytes */
 #define BCM_ENET_OVERHEAD   (BCM_ENET_CRC_LEN + BCM_ENET_IFG) /* bytes */
+#endif
+
+#if defined(CONFIG_BCM963146) || defined(CONFIG_BCM94912) || defined(CONFIG_BCM96855)
+int _runner_rdpa_dos_ctrl(struct ethswctl_data *e);
 #endif
 
 #endif

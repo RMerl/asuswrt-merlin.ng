@@ -148,7 +148,7 @@ static Bool sesBtn_pressed(void)
     {
 #if defined(CONFIG_BCM96838) || defined(CONFIG_BCM94908) 
         if ((sesBtn_irq >= INTERRUPT_ID_EXTERNAL_0) && (sesBtn_irq <= INTERRUPT_ID_EXTERNAL_5)) {
-#elif defined(CONFIG_BCM963158) || defined(CONFIG_BCM96846) || defined(CONFIG_BCM96858) || defined(CONFIG_BCM96856) || defined(CONFIG_BCM96878)
+#elif defined(CONFIG_BCM963158) || defined(CONFIG_BCM96846) || defined(CONFIG_BCM96858) || defined(CONFIG_BCM96856) || defined(CONFIG_BCM96878) || defined(CONFIG_BCM96855)
         if ((sesBtn_irq >= INTERRUPT_ID_EXTERNAL_0) && (sesBtn_irq <= INTERRUPT_ID_EXTERNAL_7)) {
 #elif defined(CONFIG_BCM947189)
         if (sesBtn_irq == INTERRUPT_ID_EXTERNAL_0) {
@@ -160,7 +160,7 @@ static Bool sesBtn_pressed(void)
 #elif defined(CONFIG_BCM963381) || defined(CONFIG_BCM96848)
             intSts = PERF->ExtIrqSts & (1 << (sesBtn_irq - INTERRUPT_ID_EXTERNAL_0 + EI_STATUS_SHFT));
 #elif defined(CONFIG_BCM96858) || defined(CONFIG_BCM94908) || \
-      defined(CONFIG_BCM963158) || defined(CONFIG_BCM96846) || defined(CONFIG_BCM96856) || defined (CONFIG_BCM947622) || defined(CONFIG_BCM963178) || defined(CONFIG_BCM96878)
+      defined(CONFIG_BCM963158) || defined(CONFIG_BCM96846) || defined(CONFIG_BCM96856) || defined (CONFIG_BCM947622) || defined(CONFIG_BCM963178) || defined(CONFIG_BCM96878) || defined(CONFIG_BCM96855)
 //#warinig Verify 
             intSts = PERF->ExtIrqStatus & (1 << (sesBtn_irq - INTERRUPT_ID_EXTERNAL_0 + EI_STATUS_SHFT));
 #elif defined(CONFIG_BCM947189)
@@ -173,7 +173,7 @@ static Bool sesBtn_pressed(void)
             return 0;
 
         extIntr = extIntrInfo[sesBtn_irq-INTERRUPT_ID_EXTERNAL_0];
-#if defined(CONFIG_BCM94908) || defined(CONFIG_BCM963158) || defined(CONFIG_BCM96858) || defined(CONFIG_BCM96846) || defined(CONFIG_BCM96856) || defined(CONFIG_BCM96878)
+#if defined(CONFIG_BCM94908) || defined(CONFIG_BCM963158) || defined(CONFIG_BCM96858) || defined(CONFIG_BCM96846) || defined(CONFIG_BCM96856) || defined(CONFIG_BCM96878) || defined(CONFIG_BCM96855)
         /* 4908 simplifies the interrupt status reporting. ExtIrqStatus report the actual interrupt state,
          * not the interupt pin high/low value as in the old chip, so no need to check interrupt detection polarity */
         if( intSts ) {
@@ -231,7 +231,7 @@ static void sesBtn_timer_handler(struct timer_list *arg)
         atomic_set(&sesBtn_active, 0);
         doPushButtonRelease(PB_BUTTON_1, currentJiffies);
 #if defined(CONFIG_BCM963138) || defined(CONFIG_BCM963148) || defined(CONFIG_BCM94908) || defined(CONFIG_BCM96858) || \
-    defined(CONFIG_BCM963158) || defined(CONFIG_BCM96846) || defined(CONFIG_BCM96856) || defined(CONFIG_BCM96878)
+    defined(CONFIG_BCM963158) || defined(CONFIG_BCM96846) || defined(CONFIG_BCM96856) || defined(CONFIG_BCM96878) || defined(CONFIG_BCM96855)
         BcmHalExternalIrqUnmask(sesBtn_irq);
 #elif defined(CONFIG_BCM947189)
         GPIO->gpiointmask |= (1 << sesBtn_gpio);
@@ -292,7 +292,7 @@ static irqreturn_t sesBtn_isr(int irq, void *dev_id)
         BcmHalExternalIrqClear(irq);
 #endif
 #if defined(CONFIG_BCM963138) || defined(CONFIG_BCM963148) || defined(CONFIG_BCM94908) || defined(CONFIG_BCM96858) || \
-    defined(CONFIG_BCM963158) || defined(CONFIG_BCM96846) || defined(CONFIG_BCM96856) || defined(CONFIG_BCM96878)
+    defined(CONFIG_BCM963158) || defined(CONFIG_BCM96846) || defined(CONFIG_BCM96856) || defined(CONFIG_BCM96878) || defined(CONFIG_BCM96855)
         BcmHalExternalIrqMask(irq);
 #endif
 #if defined(CONFIG_BCM947189)

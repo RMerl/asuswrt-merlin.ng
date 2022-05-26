@@ -42,6 +42,7 @@ static bp_elem_t g_bcm968781ref[] = {
   {bp_usUsbPwrOn0,             .u.us = BP_GPIO_67_AL},
   {bp_ucDspType0,              .u.uc = BP_VOIP_DSP},
   {bp_ucDspAddress,            .u.uc = 0},
+  {bp_usUsbDis,                .u.us = 0},
   {bp_last}
 };
 
@@ -227,6 +228,14 @@ static bp_elem_t g_bcm968782ref2[] = {
   {bp_last}
 };
 
+static bp_elem_t g_bcm968782refp4[] = {
+  {bp_cpBoardId,               .u.cp = "968782REFP4"},
+  {bp_usExtIntrPmdAlarm,       .u.us = BP_EXT_INTR_2 | BP_EXT_INTR_TYPE_IRQ_HIGH_LEVEL | BP_EXT_INTR_TYPE_IRQ_SENSE_EDGE},
+  {bp_usGpio_Intr,             .u.us = BP_GPIO_13_AH},
+  {bp_elemTemplate,            .u.bp_elemp = g_bcm968782ref},
+  {bp_last}
+};
+
 static bp_elem_t g_bcm968782gref[] = {
   {bp_cpBoardId,               .u.cp = "968782GREF"},
   {bp_usPcmSdin,                .u.us = BP_GPIO_0_AH},
@@ -387,6 +396,26 @@ static bp_elem_t g_bcm968782xsv[] = {
   {bp_last}
 };
 
+static bp_elem_t g_bcm968782sv2[] = {
+  {bp_cpBoardId,               .u.cp = "968782SV2"},
+  {bp_usGpioWanSignalDetected, .u.us = BP_GPIO_12_AH},
+  {bp_usGpioWlanReserved,      .u.us = BP_GPIO_14_AH},
+  {bp_usGpioWlanReserved,      .u.us = BP_GPIO_15_AH},
+  {bp_usGpioWlanReserved,      .u.us = BP_GPIO_16_AH},
+  {bp_usGpioWlanReserved,      .u.us = BP_GPIO_17_AH},
+  {bp_usGpioWlanReserved,      .u.us = BP_GPIO_18_AH},
+  {bp_usGpioWlanReserved,      .u.us = BP_GPIO_19_AH},
+  {bp_usGpioWlanReserved,      .u.us = BP_GPIO_20_AH},
+  {bp_usGpioWlanReserved,      .u.us = BP_GPIO_21_AH},
+  {bp_usGpioWlanReserved,      .u.us = BP_GPIO_22_AH},
+  {bp_usGpioWlanReserved,      .u.us = BP_GPIO_23_AH},
+  {bp_usGpioWlanReserved,      .u.us = BP_GPIO_24_AH},
+  {bp_usGpioWlanReserved,      .u.us = BP_GPIO_25_AH},
+  {bp_elemTemplate,            .u.bp_elemp = g_bcm968782xsv},
+  {bp_last}
+};
+
+
 static bp_elem_t g_bcm968780rfdvt[] = {
   {bp_cpBoardId,               .u.cp = "968780RFDVT"},
   {bp_usGpioWlanReserved,      .u.us = BP_GPIO_0_AH},
@@ -432,6 +461,6 @@ static bp_elem_t g_bcm968780rfdvt[] = {
   {bp_last}
 };
 
-bp_elem_t * g_BoardParms[] = {g_bcm968781ref, g_bcm968781ref_4gphy, g_bcm968781href, g_bcm968781xsv, g_bcm968781refs, g_bcm968782ref, g_bcm968782xsv,g_bcm968780rfdvt, g_bcm968782gref, g_bcm968782ref2, g_bcm968782gfm, 0};
+bp_elem_t * g_BoardParms[] = {g_bcm968781ref, g_bcm968781ref_4gphy, g_bcm968781href, g_bcm968781xsv, g_bcm968781refs, g_bcm968782ref, g_bcm968782xsv, g_bcm968780rfdvt, g_bcm968782gref, g_bcm968782ref2, g_bcm968782gfm, g_bcm968782sv2, g_bcm968782refp4, 0};
 
 

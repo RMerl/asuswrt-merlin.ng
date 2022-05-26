@@ -487,7 +487,7 @@ static struct ctl_table kern_table[] = {
 		.maxlen		= SYSCTL_CRASHLOG_MTD_LEN,
 		.mode		= 0644,
 		.proc_handler	= proc_dostring,
-	},
+	},	
 #endif /* CRASHLOG */
 
 #ifdef CONFIG_COREDUMP

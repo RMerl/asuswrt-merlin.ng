@@ -73,29 +73,30 @@ inline void platform_init_rgmii_regs_array(void)
 #endif
 }
 
-inline void platform_set_imp_speed(void)
+inline void platform_set_imp_speed(enetx_port_t *self)
 {
-#if defined(SF2_EXTERNAL)
+#if defined(SF2_EXTERNAL) || defined(SF2_DUAL)
+    int unit = IS_ROOT_SW(self)?0:1;
     uint32 val32;
     // if sf2 connect thru serdes program SGMII sequences
-    if (sf2_sw->s.parent_port->p.phy->phy_drv->phy_type == PHY_TYPE_SF2_SERDES) {
+    if (self->s.parent_port && self->s.parent_port->p.phy->phy_drv->phy_type == PHY_TYPE_SF2_SERDES) {
         // program 53134 IMP SMGII force 2.5G fiber (sequence provided by 53134 AE)
-        val32 = 0x0001; SF2SW_WREG(0xe6, 0x00, &val32, 1);
-        val32 = 0x8000; SF2SW_WREG(0x14, 0x3e, &val32, 2);  // BLK0 Block Address
-        val32 = 0x0c2f; SF2SW_WREG(0x14, 0x20, &val32, 2);  // disable pll start sequencer
-        val32 = 0x8300; SF2SW_WREG(0x14, 0x3e, &val32, 2);  // Digital Block Address
-        val32 = 0x010d; SF2SW_WREG(0x14, 0x20, &val32, 2);  // enable fiber mode
-        val32 = 0xc010; SF2SW_WREG(0x14, 0x30, &val32, 2);  // force 2.5G fiber enable, 50Mhz refclk
+        val32 = 0x0001; SF2SW_WREG(unit, 0xe6, 0x00, &val32, 1);
+        val32 = 0x8000; SF2SW_WREG(unit, 0x14, 0x3e, &val32, 2);  // BLK0 Block Address
+        val32 = 0x0c2f; SF2SW_WREG(unit, 0x14, 0x20, &val32, 2);  // disable pll start sequencer
+        val32 = 0x8300; SF2SW_WREG(unit, 0x14, 0x3e, &val32, 2);  // Digital Block Address
+        val32 = 0x010d; SF2SW_WREG(unit, 0x14, 0x20, &val32, 2);  // enable fiber mode
+        val32 = 0xc010; SF2SW_WREG(unit, 0x14, 0x30, &val32, 2);  // force 2.5G fiber enable, 50Mhz refclk
 
-        val32 = 0x8340; SF2SW_WREG(0x14, 0x3e, &val32, 2);  // Digital5 Block Addres
-        val32 = 0x0001; SF2SW_WREG(0x14, 0x34, &val32, 2);  // set os2 mode
-        val32 = 0x8000; SF2SW_WREG(0x14, 0x3e, &val32, 2);  // BLK0 Block Address
-        val32 = 0x0140; SF2SW_WREG(0x14, 0x00, &val32, 2);  // disable AN, set 1G mode
-        val32 = 0x2c2f; SF2SW_WREG(0x14, 0x20, &val32, 2);  // enable pll start sequencer
+        val32 = 0x8340; SF2SW_WREG(unit, 0x14, 0x3e, &val32, 2);  // Digital5 Block Addres
+        val32 = 0x0001; SF2SW_WREG(unit, 0x14, 0x34, &val32, 2);  // set os2 mode
+        val32 = 0x8000; SF2SW_WREG(unit, 0x14, 0x3e, &val32, 2);  // BLK0 Block Address
+        val32 = 0x0140; SF2SW_WREG(unit, 0x14, 0x00, &val32, 2);  // disable AN, set 1G mode
+        val32 = 0x2c2f; SF2SW_WREG(unit, 0x14, 0x20, &val32, 2);  // enable pll start sequencer
 
         // override p5 & IMP port status
-        val32 = 0x004a; SF2SW_WREG(PAGE_CONTROL, 0x5d, &val32, 1);  // port 5 override  no override
-        val32 = 0x008b; SF2SW_WREG(PAGE_CONTROL, 0x0e, &val32, 1);  // imp port override 2.5g duplex link up
+        val32 = 0x004a; SF2SW_WREG(unit, PAGE_CONTROL, 0x5d, &val32, 1);  // port 5 override  no override
+        val32 = 0x008b; SF2SW_WREG(unit, PAGE_CONTROL, 0x0e, &val32, 1);  // imp port override 2.5g duplex link up
     }
     
 #else //!SF2_EXTERNAL
@@ -132,23 +133,23 @@ inline void platform_enable_p8_rdp_sel(void)
 #endif
 }
 
-inline void platform_set_clock_normal(void)
+inline void platform_set_clock_normal(int unit)
 {
     uint32 reg_val32;
 
 #if defined(CONFIG_BCM963138) || defined(CONFIG_BCM963148) || defined(CONFIG_BCM94908)
     /* From PLL low power mode to Normal mode */
     reg_val32 = 0xc0;
-    SF2SW_WREG(PAGE_CONTROL, 0xdc, &reg_val32, 4);
+    SF2SW_WREG(unit, PAGE_CONTROL, 0xdc, &reg_val32, 4);
     reg_val32 = 0x0;
-    SF2SW_WREG(PAGE_CONTROL, 0xdc, &reg_val32, 4);
+    SF2SW_WREG(unit, PAGE_CONTROL, 0xdc, &reg_val32, 4);
 
     /* Bring back system clock and mac clocks */
-    SF2SW_RREG(PAGE_CONTROL, REG_LOW_POWER_CTRL, &reg_val32, 4);
+    SF2SW_RREG(unit, PAGE_CONTROL, REG_LOW_POWER_CTRL, &reg_val32, 4);
     reg_val32 &= ~(REG_LOW_POWER_CTR_SLEEP_P8     | REG_LOW_POWER_CTR_SLEEP_P5                 |
                    REG_LOW_POWER_CTR_SLEEP_P4     | REG_LOW_POWER_CTR_TIMER_DISABLE            |
                    REG_LOW_POWER_CTR_EN_LOW_POWER | REG_LOW_POWER_CTR_LOW_POWER_DIVIDER_6P25MHZ);
-    SF2SW_WREG(PAGE_CONTROL, REG_LOW_POWER_CTRL, &reg_val32, 4);
+    SF2SW_WREG(unit, PAGE_CONTROL, REG_LOW_POWER_CTRL, &reg_val32, 4);
 #else
     /* change switch clock back to operation mode */
 #if defined(CONFIG_BCM963158)
@@ -166,32 +167,32 @@ inline void platform_set_clock_normal(void)
 #endif
 
     /* Bring back system clock and mac clocks */
-    SF2SW_RREG(PAGE_CONTROL, REG_LOW_POWER_CTRL, &reg_val32, 4);
+    SF2SW_RREG(unit, PAGE_CONTROL, REG_LOW_POWER_CTRL, &reg_val32, 4);
     reg_val32 &= ~(REG_LOW_POWER_CTR_TIMER_DISABLE);
-    SF2SW_WREG(PAGE_CONTROL, REG_LOW_POWER_CTRL, &reg_val32, 4);
+    SF2SW_WREG(unit, PAGE_CONTROL, REG_LOW_POWER_CTRL, &reg_val32, 4);
 #endif
 }
 
-inline void platform_set_clock_slow(void)
+inline void platform_set_clock_slow(int unit)
 {
     uint32 reg_val32;
 
 #if defined(CONFIG_BCM963138) || defined(CONFIG_BCM963148) || defined(CONFIG_BCM94908)
     /* Slow down system clock, stop port5 and port 8 mac clock */
-    SF2SW_RREG(PAGE_CONTROL, REG_LOW_POWER_CTRL, &reg_val32, 4);
+    SF2SW_RREG(unit, PAGE_CONTROL, REG_LOW_POWER_CTRL, &reg_val32, 4);
     reg_val32 |= REG_LOW_POWER_CTR_SLEEP_P8     | REG_LOW_POWER_CTR_SLEEP_P5                 |
                  REG_LOW_POWER_CTR_SLEEP_P4     | REG_LOW_POWER_CTR_TIMER_DISABLE            |
                  REG_LOW_POWER_CTR_EN_LOW_POWER | REG_LOW_POWER_CTR_LOW_POWER_DIVIDER_6P25MHZ;
-    SF2SW_WREG(PAGE_CONTROL, REG_LOW_POWER_CTRL, &reg_val32, 4);
+    SF2SW_WREG(unit, PAGE_CONTROL, REG_LOW_POWER_CTRL, &reg_val32, 4);
 
     /* Shut Down Channel 2 PLL */
     reg_val32 = 0x1f;
-    SF2SW_WREG(PAGE_CONTROL, 0xdc, &reg_val32, 4);
+    SF2SW_WREG(unit, PAGE_CONTROL, 0xdc, &reg_val32, 4);
 #else /* defined(CONFIG_BCM963158) || defined(CONFIG_BCM963158) */
     /* Slow down system clock */
-    SF2SW_RREG(PAGE_CONTROL, REG_LOW_POWER_CTRL, &reg_val32, 4);
+    SF2SW_RREG(unit, PAGE_CONTROL, REG_LOW_POWER_CTRL, &reg_val32, 4);
     reg_val32 |= REG_LOW_POWER_CTR_TIMER_DISABLE;
-    SF2SW_WREG(PAGE_CONTROL, REG_LOW_POWER_CTRL, &reg_val32, 4);
+    SF2SW_WREG(unit, PAGE_CONTROL, REG_LOW_POWER_CTRL, &reg_val32, 4);
 
     /* change switch clock back to lowpower mode */
 #if defined(CONFIG_BCM963158)

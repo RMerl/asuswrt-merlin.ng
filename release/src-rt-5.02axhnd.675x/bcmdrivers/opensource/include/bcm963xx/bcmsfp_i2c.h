@@ -62,11 +62,39 @@
 #define SFP_I2C_EEPROM_ADDR     0x50
 #define SFP_I2C_DIAG_ADDR       0x51 /* SFP/SFF only */
 #define SFP_I2C_PHY_ADDR        0x56 /* SFP/SFF only */
+#define SFP_I2C_SMTC_EEPROMLESS_ADDR        0x55 /* SMTC only */
 
 /* SFP/SFF I2C client number assignment for above address */
 #define SFP_CLIENT_EEPROM       0x0
 #define SFP_CLIENT_DIAG         0x1
 #define SFP_CLIENT_PHY          0x2
+#define SFP_CLIENT_SMTC_EEPROMLESS          0x3
+
+/* monitoring information based on INF specs 8472, 8074, 8077 */
+#define TRANSCEIVER_IDENTIFIER_OFFSET          0
+#define TRANSCEIVER_IDENTIFIER_SFF             2
+#define TRANSCEIVER_IDENTIFIER_SFP             3
+#define TRANSCEIVER_IDENTIFIER_XFP             6 /* INF 8077 */
+#define TRANSCEIVER_AUX_MON_OFFSET             222
+#define TRANSCEIVER_AUX_MON_TYPE_VOLT          0b0001
+#define TRANSCEIVER_AUX_MON_DATA1_MSB_OFFSET   106
+#define TRANSCEIVER_AUX_MON_DATA2_MSB_OFFSET   108
+#define LASER_DEV_NP_TX_PWR_MSB_OFFSET         102
+#define LASER_DEV_NP_TX_PWR_LSB_OFFSET         103
+#define LASER_DEV_NP_TX_PWR_OFFSET             LASER_DEV_NP_TX_PWR_MSB_OFFSET
+#define LASER_DEV_NP_RX_PWR_MSB_OFFSET         104
+#define LASER_DEV_NP_RX_PWR_LSB_OFFSET         105
+#define LASER_DEV_NP_RX_PWR_OFFSET             LASER_DEV_NP_RX_PWR_MSB_OFFSET
+#define LASER_DEV_NP_TEMP_MSB_OFFSET           96
+#define LASER_DEV_NP_TEMP_LSB_OFFSET           97
+#define LASER_DEV_NP_TEMP_OFFSET               LASER_DEV_NP_TEMP_MSB_OFFSET
+#define LASER_DEV_NP_VOLTAGE_MSB_OFFSET        98
+#define LASER_DEV_NP_VOLTAGE_LSB_OFFSET        99
+#define LASER_DEV_NP_VOLTAGE_OFFSET            LASER_DEV_NP_VOLTAGE_MSB_OFFSET
+#define LASER_DEV_NP_BIAS_CURRENT_MSB_OFFSET   100
+#define LASER_DEV_NP_BIAS_CURRENT_LSB_OFFSET   101
+#define LASER_DEV_NP_BIAS_CURRENT_OFFSET       LASER_DEV_NP_BIAS_CURRENT_MSB_OFFSET
+#define STATUS_CONTROL                         0x6E
 
 
 /* BCM PMD I2C client address. These addresses are 7-bit addresses without the LSB bit */

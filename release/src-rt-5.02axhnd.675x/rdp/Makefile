@@ -137,11 +137,13 @@ run_ALL:
 	$(MAKE) PROJECT=PON_6846 clean $(ALL)
 	$(MAKE) PROJECT=PON_6878 clean $(ALL)
 	$(MAKE) PROJECT=PON_6856 clean $(ALL)
+	$(MAKE) PROJECT=PON_6855 clean $(ALL)
 	$(MAKE) PROJECT=DSL_63158 clean $(ALL)
 	$(MAKE) PROJECT=DSL_63138 clean $(ALL)
 	$(MAKE) PROJECT=DSL_63148 clean $(ALL)
 	$(MAKE) PROJECT=WL4908 clean $(ALL)
 	$(MAKE) PROJECT=WL4908_EAP clean $(ALL)
+        
 	
 run_XRDP:
 	@echo "********************************************"
@@ -152,6 +154,7 @@ run_XRDP:
 	$(MAKE) PROJECT=PON_6846 clean $(XRDP)
 	$(MAKE) PROJECT=PON_6878 clean $(XRDP)
 	$(MAKE) PROJECT=PON_6856 clean $(XRDP)
+	$(MAKE) PROJECT=PON_6855 clean $(XRDP)
 	$(MAKE) PROJECT=DSL_63158 clean $(XRDP)
 	
 run_RDP:

@@ -247,6 +247,7 @@ static int conntrack_ipsec_help(struct sk_buff *skb, unsigned int protoff,
                return NF_DROP;
             }
             
+            nf_conntrack_get(&ct->ct_general);
             ipsec_entry->ct = ct; /* KT: Guess it should be here */
             ipsec_entry->initcookie = isakmph->initcookie; /* KT: Update our cookie information - moved to here */
             ipsec_entry->lan_ip = ct->tuplehash[dir].tuple.src.u3.ip;
@@ -313,6 +314,7 @@ static void ipsec_destroy(struct nf_conn *ct)
 	spin_lock_bh(&nf_ipsec_lock);
 	pr_debug("DEL IPsec entry ct(%p)\n", ct);
 	if ((ipsec_entry = search_ipsec_entry_by_ct(ct))) {
+		nf_conntrack_put(&ipsec_entry->ct->ct_general);
 		memset(ipsec_entry, 0, sizeof(struct _ipsec_table));
 	} else {
 		pr_debug("DEL IPsec entry failed: ct(%p)\n", ct);

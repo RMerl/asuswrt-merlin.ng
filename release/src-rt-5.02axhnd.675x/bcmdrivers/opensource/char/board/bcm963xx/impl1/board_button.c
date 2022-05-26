@@ -481,7 +481,7 @@ static void btnEnableIrq(BtnInfo *btn) {
     BcmHalExternalIrqUnmask(btn->extIrqMap);
 #elif defined(CONFIG_BCM94908) || defined(CONFIG_BCM96858) || \
       defined(CONFIG_BCM963158) || defined(CONFIG_BCM96846) || defined(CONFIG_BCM96856) || \
-      defined(CONFIG_BCM963178) || defined(CONFIG_BCM947622) || defined(CONFIG_BCM96878)
+      defined(CONFIG_BCM963178) || defined(CONFIG_BCM947622) || defined(CONFIG_BCM96878) || defined(CONFIG_BCM96855)
     BcmHalExternalIrqClear(btn->extIrqMap);
     BcmHalExternalIrqUnmask(btn->extIrqMap);
 #elif defined(CONFIG_BCM947189)
@@ -499,7 +499,7 @@ static void btnDisableIrq(BtnInfo *btn) {
     BcmHalExternalIrqMask(btn->extIrqMap);
 #elif defined(CONFIG_BCM94908) || defined(CONFIG_BCM96858) || \
       defined(CONFIG_BCM963158) || defined(CONFIG_BCM96846) || defined(CONFIG_BCM96856) || \
-      defined(CONFIG_BCM963178) || defined(CONFIG_BCM947622) || defined(CONFIG_BCM96878)
+      defined(CONFIG_BCM963178) || defined(CONFIG_BCM947622) || defined(CONFIG_BCM96878) || defined(CONFIG_BCM96855)
     BcmHalExternalIrqMask(btn->extIrqMap);
     BcmHalExternalIrqClear(btn->extIrqMap);
 #elif defined(CONFIG_BCM947189)

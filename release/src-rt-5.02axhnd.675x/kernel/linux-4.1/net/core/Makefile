@@ -10,6 +10,10 @@ endif # BCM_KF
 obj-y := sock.o request_sock.o skbuff.o datagram.o stream.o scm.o \
 	 gen_stats.o gen_estimator.o net_namespace.o secure_seq.o flow_dissector.o
 
+ifdef BCM_KF # defined(CONFIG_BCM_KF_DPI)
+obj-$(CONFIG_BCM_DPI:m=y)	+= dpi.o
+endif # BCM_KF
+
 obj-$(CONFIG_SYSCTL) += sysctl_net_core.o
 
 obj-y		     += dev.o ethtool.o dev_addr_lists.o dst.o netevent.o \

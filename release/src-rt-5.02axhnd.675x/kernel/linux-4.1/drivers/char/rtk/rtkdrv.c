@@ -40,6 +40,8 @@
 #include <rtk_error.h>
 #include <rtk_switch.h>
 #include <vlan.h>
+#include "bcm_OS_Deps.h"
+#include <board.h>
 
 #ifdef CONFIG_DEVFS_FS
 #include <linux/devfs_fs_kernel.h>
@@ -453,7 +455,12 @@ static int rtkswitch_ioctl(struct file *file, unsigned int cmd, unsigned long ar
 		copy_from_user(&is_singtel_mio, (unsigned int __user *)arg, sizeof(unsigned int));
 
 		break;
-
+	case 44:
+		printk("hardware reset rtl8367s\n");
+		kerSysSetGpioState(10, 0);
+		mdelay(20);
+		kerSysSetGpioState(10, 1);
+		break;
 	default:
 		return -EINVAL;
 	}

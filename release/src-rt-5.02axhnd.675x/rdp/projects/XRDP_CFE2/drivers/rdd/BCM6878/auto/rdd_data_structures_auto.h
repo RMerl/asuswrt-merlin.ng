@@ -921,26 +921,26 @@ typedef struct
 		};
 		/* Sub Union 1 */
 		struct{
-			uint32_t	key_index                   	:2	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of pd_info union */
-			uint32_t	fragment_type               	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of pd_info union */
-			uint32_t	options                     	:18	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of pd_info union */
 			uint32_t	reserved0                   	:11	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of pd_info union */
+			uint32_t	options                     	:18	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of pd_info union */
+			uint32_t	fragment_type               	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of pd_info union */
+			uint32_t	key_index                   	:2	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of pd_info union */
 		};
 		/* Sub Union 2 */
 		struct{
-			uint32_t	ctrl_key_index              	:2	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of pd_info union */
-			uint32_t	ctrl_fragment_type          	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of pd_info union */
-			uint32_t	sfc                         	:10	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of pd_info union */
 			uint32_t	reserved1                   	:19	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of pd_info union */
+			uint32_t	sfc                         	:10	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of pd_info union */
+			uint32_t	ctrl_fragment_type          	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of pd_info union */
+			uint32_t	ctrl_key_index              	:2	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of pd_info union */
 		};
 		/* Sub Union 3 */
 		struct{
-			uint32_t	g9991_tci_sof               	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of pd_info union */
-			uint32_t	g9991_tci_eof               	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of pd_info union */
-			uint32_t	g9991_tci_const             	:4	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of pd_info union */
-			uint32_t	g9991_tci_sid_1_0           	:2	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of pd_info union */
-			uint32_t	g9991_tci_sid_9_2           	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of pd_info union */
 			uint32_t	g9991_length_time           	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of pd_info union */
+			uint32_t	g9991_tci_sid_9_2           	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of pd_info union */
+			uint32_t	g9991_tci_sid_1_0           	:2	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of pd_info union */
+			uint32_t	g9991_tci_const             	:4	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of pd_info union */
+			uint32_t	g9991_tci_eof               	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of pd_info union */
+			uint32_t	g9991_tci_sof               	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of pd_info union */
 		};
 		/* Sub Union 4 */
 		struct{
@@ -1062,8 +1062,8 @@ typedef struct
 		struct{
 			uint32_t	reserved2_bn0_first         	:18	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
 			uint32_t	reserved2_sop               	:7	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-			uint32_t	cpu_tx                      	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of error_type_or_cpu_tx union */
 			uint32_t	reserved2                   	:3	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of error_type_or_cpu_tx union */
+			uint32_t	cpu_tx                      	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of error_type_or_cpu_tx union */
 			uint32_t	reserved2_abs               	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
 			uint32_t	reserved2_target_mem_0      	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
 			uint32_t	reserved2_agg_pd            	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
@@ -1934,16 +1934,16 @@ typedef struct
 			uint32_t	source_port             	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of ingress_port union */
 			uint32_t	reserved2_lan           	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
 			uint32_t	reserved2_ingress_cong  	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-			uint32_t	mcst_packet             	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of mcst_bcst_union union */
 			uint32_t	bcst_packet             	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of mcst_bcst_union union */
+			uint32_t	mcst_packet             	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of mcst_bcst_union union */
 			uint32_t	reserved2_target_mem_1  	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
 			uint32_t	reserved2_drop          	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
 		};
 		/* Sub Union 3 */
 		struct{
 			uint32_t	reserved3_union3        	:18	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-			uint32_t	lag_port                	:2	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of ingress_port union */
 			uint32_t	lan_vport               	:6	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of ingress_port union */
+			uint32_t	lag_port                	:2	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of ingress_port union */
 			uint32_t	reserved3_lan           	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
 			uint32_t	reserved3_ingress_cong  	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
 			uint32_t	reserved3_mcst_bcst_union	:2	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
@@ -3063,10 +3063,10 @@ typedef struct
 		};
 		/* Sub Union 1 */
 		struct{
-			uint32_t	ssid                          	:4	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of bn1_or_abs2_or_1588 union */
-			uint32_t	fpm_fallback                  	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of bn1_or_abs2_or_1588 union */
-			uint32_t	sbpm_copy                     	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of bn1_or_abs2_or_1588 union */
 			uint32_t	bn1_first                     	:12	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of bn1_or_abs2_or_1588 union */
+			uint32_t	sbpm_copy                     	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of bn1_or_abs2_or_1588 union */
+			uint32_t	fpm_fallback                  	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of bn1_or_abs2_or_1588 union */
+			uint32_t	ssid                          	:4	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of bn1_or_abs2_or_1588 union */
 			uint32_t	reserved1_wan_flow_source_port	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
 			uint32_t	reserved1_lan                 	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
 			uint32_t	reserved1_reserved1           	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
@@ -3077,10 +3077,10 @@ typedef struct
 		};
 		/* Sub Union 2 */
 		struct{
-			uint32_t	_ssid                         	:4	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of bn1_or_abs2_or_1588 union */
-			uint32_t	_fpm_fallback                 	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of bn1_or_abs2_or_1588 union */
-			uint32_t	_sbpm_copy                    	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of bn1_or_abs2_or_1588 union */
 			uint32_t	abs2                          	:12	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of bn1_or_abs2_or_1588 union */
+			uint32_t	_sbpm_copy                    	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of bn1_or_abs2_or_1588 union */
+			uint32_t	_fpm_fallback                 	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of bn1_or_abs2_or_1588 union */
+			uint32_t	_ssid                         	:4	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of bn1_or_abs2_or_1588 union */
 			uint32_t	reserved2_wan_flow_source_port	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
 			uint32_t	reserved2_lan                 	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
 			uint32_t	reserved2_reserved1           	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
@@ -4999,34 +4999,34 @@ typedef struct
 		};
 		/* Sub Union 1 */
 		struct{
-			uint32_t	incoming_task_num                	:4	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of trace_event_info union */
-			uint32_t	reserved                         	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of trace_event_info union */
 			uint32_t	task_pc                          	:13	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of trace_event_info union */
+			uint32_t	reserved                         	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of trace_event_info union */
+			uint32_t	incoming_task_num                	:4	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of trace_event_info union */
 			uint32_t	reserved1_event_id               	:2	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
 			uint32_t	reserved1_timestamp              	:12	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
 		};
 		/* Sub Union 2 */
 		struct{
-			uint32_t	incoming_bbhrx_src_addr          	:6	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of trace_event_info union */
-			uint32_t	dma_wr                           	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of trace_event_info union */
-			uint32_t	dma_rd                           	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of trace_event_info union */
-			uint32_t	dma_wr_reply                     	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of trace_event_info union */
-			uint32_t	ramrd                            	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of trace_event_info union */
-			uint32_t	parser                           	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of trace_event_info union */
-			uint32_t	bbhtx                            	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of trace_event_info union */
-			uint32_t	bbhrx_async                      	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of trace_event_info union */
-			uint32_t	bbhrx_sync                       	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of trace_event_info union */
-			uint32_t	cpu                              	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of trace_event_info union */
-			uint32_t	fw_self                          	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of trace_event_info union */
-			uint32_t	fw                               	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of trace_event_info union */
 			uint32_t	timer                            	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of trace_event_info union */
+			uint32_t	fw                               	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of trace_event_info union */
+			uint32_t	fw_self                          	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of trace_event_info union */
+			uint32_t	cpu                              	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of trace_event_info union */
+			uint32_t	bbhrx_sync                       	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of trace_event_info union */
+			uint32_t	bbhrx_async                      	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of trace_event_info union */
+			uint32_t	bbhtx                            	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of trace_event_info union */
+			uint32_t	parser                           	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of trace_event_info union */
+			uint32_t	ramrd                            	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of trace_event_info union */
+			uint32_t	dma_wr_reply                     	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of trace_event_info union */
+			uint32_t	dma_rd                           	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of trace_event_info union */
+			uint32_t	dma_wr                           	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of trace_event_info union */
+			uint32_t	incoming_bbhrx_src_addr          	:6	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of trace_event_info union */
 			uint32_t	reserved2_event_id               	:2	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
 			uint32_t	reserved2_timestamp              	:12	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
 		};
 		/* Sub Union 3 */
 		struct{
-			uint32_t	reserved2                        	:6	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of trace_event_info union */
 			uint32_t	acc_type                         	:12	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of trace_event_info union */
+			uint32_t	reserved2                        	:6	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of trace_event_info union */
 			uint32_t	reserved3_event_id               	:2	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
 			uint32_t	reserved3_timestamp              	:12	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
 		};
@@ -5366,8 +5366,8 @@ typedef struct
 		};
 		/* Sub Union 2 */
 		struct{
-			uint32_t	fpm_idx                           	:18	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of cpu_rx_data_ptr0_union union */
 			uint32_t	reserved0                         	:14	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of cpu_rx_data_ptr0_union union */
+			uint32_t	fpm_idx                           	:18	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of cpu_rx_data_ptr0_union union */
 		};
 		/* Sub Union 3 */
 		struct{
@@ -5446,8 +5446,8 @@ typedef struct
 		struct{
 			uint32_t	reserved3_reason                  	:6	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
 			uint32_t	reserved3_data_offset             	:7	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-			uint32_t	ssid                              	:4	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of cpu_rx_src_union union */
 			uint32_t	reserved4                         	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of cpu_rx_src_union union */
+			uint32_t	ssid                              	:4	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of cpu_rx_src_union union */
 			uint32_t	reserved3_vport                   	:5	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
 			uint32_t	reserved3_reserved7               	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
 			uint32_t	reserved3_is_src_lan              	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
@@ -5466,17 +5466,17 @@ typedef struct
 		/* Sub Union 1 */
 		struct{
 			uint32_t	dst_ssid_vector                   	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of cpu_rx_metadata_union union */
-			uint32_t	mcast_tx_prio                     	:3	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of mcast_tx_prio_union union */
 			uint32_t	reserved5                         	:10	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of mcast_tx_prio_union union */
+			uint32_t	mcast_tx_prio                     	:3	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of mcast_tx_prio_union union */
 			uint32_t	reserved1_is_ucast                	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
 			uint32_t	reserved1_is_rx_offload           	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
 			uint32_t	reserved1_is_exception            	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
 		};
 		/* Sub Union 2 */
 		struct{
-			uint32_t	reserved8                         	:2	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of cpu_rx_metadata_union union */
-			uint32_t	metadata_0                        	:4	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of cpu_rx_metadata_union union */
 			uint32_t	metadata_1                        	:10	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of cpu_rx_metadata_union union */
+			uint32_t	metadata_0                        	:4	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of cpu_rx_metadata_union union */
+			uint32_t	reserved8                         	:2	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of cpu_rx_metadata_union union */
 			uint32_t	reserved6                         	:13	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of mcast_tx_prio_union union */
 			uint32_t	reserved2_is_ucast                	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
 			uint32_t	reserved2_is_rx_offload           	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
@@ -5484,8 +5484,8 @@ typedef struct
 		};
 		/* Sub Union 3 */
 		struct{
-			uint32_t	egress_queue                      	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of cpu_rx_metadata_union union */
 			uint32_t	wan_flow                          	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of cpu_rx_metadata_union union */
+			uint32_t	egress_queue                      	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__; /* Member of cpu_rx_metadata_union union */
 			uint32_t	reserved3_mcast_tx_prio_union     	:13	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
 			uint32_t	reserved3_is_ucast                	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
 			uint32_t	reserved3_is_rx_offload           	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;

@@ -560,7 +560,7 @@ if ( ($unsecurehdr) || ($securehdr) ) {
 	# Build the beginning of the boot partition that is common to all bootrom-boot-only flash layouts
 	$nvramalloc = 1024*4;
         $imgsizealloc = 1024*$ENV{BTRM_IMAGE_SIZE_ALLOCATION};
-	if ($ENV{BRCM_CHIP} == "6878" && $ENV{AVS_IMAGE_PATH}) {
+	if (($ENV{BRCM_CHIP} == "6878" or $ENV{BRCM_CHIP} == "6855") && $ENV{AVS_IMAGE_PATH}) {
 	    $ENV{AVS_IMAGE_PATH} = $ENV{BUILD_DIR} . "/" . nrmz($ENV{AVS_IMAGE_PATH});
             die ("ERROR: $ENV{AVS_IMAGE_PATH} is not existing") unless ( (-e $ENV{AVS_IMAGE_PATH}) && $ENV{AVS_IMAGE_MAX_SIZE});
             $imgsizealloc += $ENV{AVS_IMAGE_MAX_SIZE}*1024;
@@ -590,7 +590,7 @@ if ( ($unsecurehdr) || ($securehdr) ) {
         if ( ! (-e $sbi_unsec) ) {
             die("The file $sbi_unsec not successfully created. Exiting.");
         }
-	if ($ENV{BRCM_CHIP} == "6878" && $ENV{AVS_IMAGE_PATH}) {
+	if (($ENV{BRCM_CHIP} == "6878" or $ENV{BRCM_CHIP} == "6855") && $ENV{AVS_IMAGE_PATH}) {
             $sbi_utils->fdump($sbi_unsec, $sbi_utils->cat(($sbi_unsec,$ENV{AVS_IMAGE_PATH})));
         }
 
@@ -598,7 +598,7 @@ if ( ($unsecurehdr) || ($securehdr) ) {
 		my $images = gen_sbi_image_v3($securehdr, $mediatype, $cferom, $storedir );
 		$images->{'sbi_unsec'} = $sbi_unsec;
 		
-	        if ($ENV{BRCM_CHIP} == "6878") { 
+	        if ($ENV{BRCM_CHIP} == "6878" or $ENV{BRCM_CHIP} == "6855") { 
 		    if (-e $images->{sbi_mfg}) {
                         $sbi_utils->fdump($images->{sbi_mfg}, $sbi_utils->cat(($images->{sbi_mfg},$ENV{AVS_IMAGE_PATH})));
                     }

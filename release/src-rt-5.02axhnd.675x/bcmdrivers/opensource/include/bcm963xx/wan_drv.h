@@ -54,7 +54,9 @@ typedef enum
     SERDES_WAN_TYPE_NGPON_10G_10G,
     SERDES_WAN_TYPE_NGPON_10G_10G_8B10B,
     SERDES_WAN_TYPE_NGPON_10G_2_5G_8B10B,
-    SERDES_WAN_TYPE_NGPON_10G_2_5G
+    SERDES_WAN_TYPE_NGPON_10G_2_5G,
+    SERDES_WAN_TYPE_AE_5G,
+    SERDES_WAN_TYPE_AE_2_5G_R,
 } serdes_wan_type_t;
 
 typedef enum
@@ -92,6 +94,9 @@ void pll_ppm_adj_FracN_10G(uint8_t mode, int16_t ppm_target, bool pll_adj_en);
 #define     AE_10_1     0x23
 #define     AE_10_10    0x24
 #define     AE_2_2      0x25
+#define     AE_2_2_R    0x26
+#define     AE_5_5      0x27
+
 
 void pon_wan_top_reset_gearbox_tx(void);
 
@@ -132,7 +137,7 @@ typedef struct pon_serdes_fixup_fifo_t
     int (*gearbox_drift_test)(const int just_synced);
 } pon_serdes_lof_fixup_fifo_t;
 typedef void (*pon_serdes_lof_fixup_reset_cdr_t)(void);
-int pon_serdes_lof_fixup_cfg(pon_serdes_lof_fixup_fifo_t *_fifo_cb, pon_serdes_lof_fixup_reset_cdr_t reset_cb);
+int pon_serdes_lof_fixup_cfg(pon_serdes_lof_fixup_fifo_t *_fifo_cb, pon_serdes_lof_fixup_reset_cdr_t reset_cb, void (*pmd_rx_restart_cb)(void), void (*reset_rx_fifo_cb)(void), void (*reset_tx_fifo_cb)(void), void (*reset_gb_cb)(void));
 void pon_serdes_lof_fixup_irq(int lof);
 #endif
 

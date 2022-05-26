@@ -309,6 +309,8 @@ static bp_elem_t g_bcm968460rgw[] = {
   {bp_usGpio_Intr,             .u.us = BP_GPIO_14_AH},
   {bp_usGpioPmdReset,          .u.us = BP_GPIO_40_AL},
   {bp_pmdFunc,                 .u.us = BP_PMD_APD_REG_DISABLED | BP_PMD_APD_TYPE_BOOST},
+  {bp_ucDspType0,              .u.uc = BP_VOIP_DSP},
+  {bp_ucDspAddress,            .u.uc = 0},
   {bp_last}
 };
 
@@ -340,6 +342,7 @@ static bp_elem_t g_bcm968462egr[] = {
   {bp_usExtIntrPmdAlarm,       .u.us = BP_EXT_INTR_2 | BP_EXT_INTR_TYPE_IRQ_HIGH_LEVEL | BP_EXT_INTR_TYPE_IRQ_SENSE_EDGE},
   {bp_usGpio_Intr,             .u.us = BP_GPIO_14_AH},
   {bp_usGpioPmdReset,          .u.us = BP_GPIO_40_AL},
+  {bp_usPonLbe,                .u.us = BP_GPIO_67_AL},
   {bp_pmdFunc,                 .u.us = BP_PMD_APD_REG_DISABLED | BP_PMD_APD_TYPE_BOOST},
   {bp_usPcmSdin,                .u.us = BP_GPIO_0_AH},
   {bp_usPcmSdout,               .u.us = BP_GPIO_1_AH},

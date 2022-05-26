@@ -6,6 +6,7 @@
 /bdmf/code/gen vlan_action AG_INC_DIR/rdpa_ag_vlan_action.h rdpa what_generate:1 children:yes action_mask:0x3e
 /bdmf/code/gen dscp_to_pbit AG_INC_DIR/rdpa_ag_dscp_to_pbit.h rdpa what_generate:1 children:yes action_mask:0x3e
 /bdmf/code/gen pbit_to_queue AG_INC_DIR/rdpa_ag_pbit_to_queue.h rdpa what_generate:1 children:yes action_mask:0x3e
+/bdmf/code/gen pbit_to_dscp AG_INC_DIR/rdpa_ag_pbit_to_dscp.h rdpa what_generate:1 children:yes action_mask:0x3e
 /bdmf/code/gen tc_to_queue AG_INC_DIR/rdpa_ag_tc_to_queue.h rdpa what_generate:1 children:yes action_mask:0x3e
 /bdmf/code/gen ip_class AG_INC_DIR/rdpa_ag_ip_class.h rdpa what_generate:1 children:yes action_mask:0x3e
 /bdmf/code/gen l2_class AG_INC_DIR/rdpa_ag_l2_class.h rdpa what_generate:1 children:yes action_mask:0x3e
@@ -42,6 +43,7 @@
 /bdmf/code/gen vlan_action AG_GPL_DIR/rdpa_gpl_vlan_action.c rdpa what_generate:2 children:yes action_mask:0x3e
 /bdmf/code/gen dscp_to_pbit AG_GPL_DIR/rdpa_gpl_dscp_to_pbit.c rdpa what_generate:2 children:yes action_mask:0x3e
 /bdmf/code/gen pbit_to_queue AG_GPL_DIR/rdpa_gpl_pbit_to_queue.c rdpa what_generate:2 children:yes action_mask:0x3e
+/bdmf/code/gen pbit_to_dscp AG_GPL_DIR/rdpa_gpl_pbit_to_dscp.c rdpa what_generate:2 children:yes action_mask:0x3e
 /bdmf/code/gen tc_to_queue AG_GPL_DIR/rdpa_gpl_tc_to_queue.c rdpa what_generate:2 children:yes action_mask:0x3e
 /bdmf/code/gen ip_class AG_GPL_DIR/rdpa_gpl_ip_class.c rdpa what_generate:2 children:yes action_mask:0x3e
 /bdmf/code/gen l2_class AG_GPL_DIR/rdpa_gpl_l2_class.c rdpa what_generate:2 children:yes action_mask:0x3e
@@ -81,6 +83,7 @@
 /bdmf/code/gen ingress_class AG_USR_DIR/rdpa_ingress_class_user_ag.h rdpa what_generate:4 children:yes action_mask:0x3e
 /bdmf/code/gen policer AG_USR_DIR/rdpa_policer_user_ag.h rdpa what_generate:4 children:yes action_mask:0x3e
 /bdmf/code/gen pbit_to_queue AG_USR_DIR/rdpa_pbit_to_queue_user_ag.h rdpa what_generate:4 children:yes action_mask:0x3e
+/bdmf/code/gen pbit_to_dscp AG_USR_DIR/rdpa_pbit_to_dscp_user_ag.h rdpa what_generate:4 children:yes action_mask:0x3e
 /bdmf/code/gen pbit_to_gem AG_USR_DIR/rdpa_pbit_to_gem_user_ag.h rdpa what_generate:4 children:yes action_mask:0x3e
 /bdmf/code/gen dscp_to_pbit AG_USR_DIR/rdpa_dscp_to_pbit_user_ag.h rdpa what_generate:4 children:yes action_mask:0x3e
 /bdmf/code/gen udpspdtest AG_USR_DIR/rdpa_udpspdtest_user_ag.h rdpa what_generate:4 children:yes action_mask:0x3e

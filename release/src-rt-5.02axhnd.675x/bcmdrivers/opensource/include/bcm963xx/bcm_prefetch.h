@@ -1,7 +1,7 @@
 #ifndef _BCM_PREFETCH_H
 #define _BCM_PREFETCH_H
 
-#if (defined(CONFIG_BCM963138) || defined(CONFIG_BCM963148) || defined(CONFIG_BCM96846) || defined(CONFIG_BCM947189) || defined(CONFIG_BCM963178) || defined(CONFIG_BCM947622) || defined(CONFIG_BCM96878))
+#if (defined(CONFIG_BCM963138) || defined(CONFIG_BCM963148) || defined(CONFIG_BCM96846) || defined(CONFIG_BCM947189) || defined(CONFIG_BCM963178) || defined(CONFIG_BCM947622) || defined(CONFIG_BCM96878) || defined(CONFIG_BCM96855)) 
 static inline void _bcm_prefetch(const void * addr)
 {
 	__asm__ __volatile__("pld\t%a0" : : "p"(addr) : "cc");

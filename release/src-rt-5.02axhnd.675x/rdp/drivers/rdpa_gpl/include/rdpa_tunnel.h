@@ -33,25 +33,29 @@
 
 #include <bdmf_interface.h>
 
-/** \defgroup Tunnel
+/** \defgroup tunnel Tunnel Object
+ * Tunnel object use do configure accelration parameters
+ * for the supported \ref rdpa_tunnel_type "tunnel types"
+ *
  * @{
  */
 
 #ifdef XRDP
 #define RDPA_MAX_TUNNEL_HEADER_LEN	96
-#define RDPA_MAX_TUNNELS 2
 #else
 #define RDPA_MAX_TUNNEL_HEADER_LEN	80
 #define RDPA_MAX_TUNNELS 1
 #endif
 
 
-/** Tunnel Type */
+/** Tunnel Types */
 typedef enum
 {
-    rdpa_tunnel_l2gre,
-    rdpa_tunnel_l3gre,
-    rdpa_tunnel_dslite,
+    rdpa_tunnel_l2gre,                          /**< L2 GRE  tunnel */
+    rdpa_tunnel_l3gre,                          /**< L3 GRE  tunnel */
+    rdpa_tunnel_dslite,                          /**< DS Lite tunnel */
+    rdpa_tunnel_vxlan = 4,                      /**< VxLAN   tunnel */
+
 } rdpa_tunnel_type;
 
 /** Tunnel configuration .\n */
@@ -62,7 +66,9 @@ typedef struct
     bdmf_ip_t         local_ip;                  /**< Local IP: used for DS packet tunnel validation */
     uint8_t           layer3_offset;             /**< Layer3 offset: used for US packet modification */
     uint8_t           gre_proto_offset;          /**< GRE protocol offset: used for US packet modification (L3_GRE, IPv6 payload) */   
-    uint8_t           tunnel_header[RDPA_MAX_TUNNEL_HEADER_LEN];
+    uint8_t           layer4_offset;             /** UDP header offset -  (VxLAN) */ 
+    uint32_t          tunnel_info;               /**< VXLAN protocol:  VNI - extended VLAN ID.  */ 
+    uint8_t           tunnel_header[RDPA_MAX_TUNNEL_HEADER_LEN]; /**< Tunnel header template. */
 } rdpa_tunnel_cfg_t;
 
 /* @} end of tunnel Doxygen group */

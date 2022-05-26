@@ -82,10 +82,12 @@ int brcm_egphy_write(phy_dev_t *phy_dev, uint16_t reg, uint16_t val);
 int brcm_egphy_force_auto_mdix_set(phy_dev_t *phy_dev, int enable);
 int brcm_egphy_force_auto_mdix_get(phy_dev_t *phy_dev, int *enable);
 
+int brcm_egphy_eth_wirespeed_get(phy_dev_t *phy_dev, int *enable);
 int brcm_egphy_eth_wirespeed_set(phy_dev_t *phy_dev, int enable);
 
 int brcm_egphy_apd_get(phy_dev_t *phy_dev, int *enable);
 int brcm_egphy_apd_set(phy_dev_t *phy_dev, int enable);
+
 int brcm_egphy_eee_get(phy_dev_t *phy_dev, int *enable);
 int brcm_egphy_eee_set(phy_dev_t *phy_dev, int enable);
 int brcm_egphy_eee_resolution_get(phy_dev_t *phy_dev, int *enable);
@@ -104,7 +106,9 @@ int brcm_shadow_1c_write(phy_dev_t *phy_dev, uint16_t reg, uint16_t val);
 int brcm_shadow_18_force_auto_mdix_set(phy_dev_t *phy_dev, int enable);
 int brcm_shadow_18_force_auto_mdix_get(phy_dev_t *phy_dev, int *enable);
 
+int brcm_shadow_18_eth_wirespeed_get(phy_dev_t *phy_dev, int *enable);
 int brcm_shadow_18_eth_wirespeed_set(phy_dev_t *phy_dev, int enable);
+
 int brcm_shadow_1c_apd_get(phy_dev_t *phy_dev, int *enable);
 int brcm_shadow_1c_apd_set(phy_dev_t *phy_dev, int enable);
 int brcm_shadow_rgmii_init(phy_dev_t *phy_dev);
@@ -112,5 +116,37 @@ int brcm_shadow_rgmii_init(phy_dev_t *phy_dev);
 int brcm_loopback_set(phy_dev_t *phy_dev, int enable, phy_speed_t speed);
 int brcm_loopback_get(phy_dev_t *phy_dev, int *enable, phy_speed_t *speed);
 
-#endif
+static inline int phy_bus_c45_read32(phy_dev_t *phy_dev, uint32_t reg32, uint16_t *val_p)
+{
+    return phy_bus_c45_read(phy_dev, ((reg32)>>16)&0xffff, reg32&0xffff, val_p) +
+           phy_bus_c45_read(phy_dev, ((reg32)>>16)&0xffff, reg32&0xffff, val_p);
+}
+#define phy_bus_c45_write32(phy_dev, reg32, val) \
+    phy_bus_c45_write(phy_dev, ((reg32)>>16)&0xffff, reg32&0xffff, val)
 
+#if defined(RTAX95Q) || defined(RTAXE95Q)
+#define IsC45Phy(phy) (phy->phy_drv->phy_type == PHY_TYPE_EXT3 || phy->phy_drv->phy_type == PHY_TYPE_RTL8226)
+#else
+#define IsC45Phy(phy) (phy->phy_drv->phy_type == PHY_TYPE_EXT3)
+#endif
+int ethsw_phy_exp_rw(phy_dev_t *phy_dev, uint32_t reg, uint16_t *v16_p, int rd);
+
+static inline int ethsw_phy_exp_read32(phy_dev_t *phy_dev, uint32_t reg, uint32_t *v32_p)
+{
+    uint16_t v16; 
+    int rc;
+    rc = ethsw_phy_exp_rw(phy_dev, reg, &v16, 1); 
+    *v32_p = v16;
+    return rc;
+}
+
+#define ethsw_phy_exp_read(phy_dev, reg, v16_p) ethsw_phy_exp_rw(phy_dev, reg, v16_p, 1)
+static inline int ethsw_phy_exp_write(phy_dev_t *phy_dev, uint32_t reg, uint32_t v)
+{
+    uint16_t v16 = v; 
+    int rc;
+    rc = ethsw_phy_exp_rw(phy_dev, reg, &v16, 0); 
+    return rc;
+}
+
+#endif

@@ -199,10 +199,10 @@ void dump_RDD_RUNNER_FLOW_IH_RESPONSE(bdmf_session_handle session, unsigned char
 void dump_RDD_ETH_TX_MAC_DESCRIPTOR(bdmf_session_handle session, unsigned char *p);
 void dump_RDD_CSO_BUFFER_ENTRY(bdmf_session_handle session, unsigned char *p);
 void dump_RDD_CSO_PSEUDO_HEADER_BUFFER_ENTRY(bdmf_session_handle session, unsigned char *p);
+void dump_RDD_US_QUEUE_ENTRY(bdmf_session_handle session, unsigned char *p);
 void dump_RDD_WAN_CHANNEL_8_39_DESCRIPTOR(bdmf_session_handle session, unsigned char *p);
 void dump_RDD_WAN_TX_SERVICE_QUEUE_SCHEDULER_DESCRIPTOR(bdmf_session_handle session, unsigned char *p);
 void dump_RDD_US_WAN_FLOW_ENTRY(bdmf_session_handle session, unsigned char *p);
-void dump_RDD_US_QUEUE_ENTRY(bdmf_session_handle session, unsigned char *p);
 void dump_RDD_US_INGRESS_CLASSIFICATION_CONTEXT_ENTRY(bdmf_session_handle session, unsigned char *p);
 void dump_RDD_WAN_CHANNEL_0_7_DESCRIPTOR(bdmf_session_handle session, unsigned char *p);
 void dump_RDD_INGRESS_RATE_LIMITER_ENTRY(bdmf_session_handle session, unsigned char *p);
@@ -238,11 +238,11 @@ void dump_RDD_WLAN_MCAST_SSID_STATS_ENTRY(bdmf_session_handle session, unsigned 
 void dump_RDD_INTERRUPT_COALESCING_CONFIG(bdmf_session_handle session, unsigned char *p);
 void dump_RDD_INGRESS_CLASSIFICATION_LONG_LOOKUP_ENTRY(bdmf_session_handle session, unsigned char *p);
 void dump_RDD_PM_COUNTERS(bdmf_session_handle session, unsigned char *p);
+void dump_RDD_CONNECTION_ENTRY(bdmf_session_handle session, unsigned char *p);
 void dump_RDD_MAC_EXTENSION_ENTRY(bdmf_session_handle session, unsigned char *p);
 void dump_RDD_SERVICE_QUEUES_CFG_ENTRY(bdmf_session_handle session, unsigned char *p);
 void dump_RDD_PM_COUNTERS_BUFFER(bdmf_session_handle session, unsigned char *p);
 void dump_RDD_CAPWAPF_STATS_ENTRY(bdmf_session_handle session, unsigned char *p);
-void dump_RDD_CONNECTION_ENTRY(bdmf_session_handle session, unsigned char *p);
 void dump_RDD_RING_DESCRIPTOR(bdmf_session_handle session, unsigned char *p);
 void dump_RDD_CPU_RX_DESCRIPTOR(bdmf_session_handle session, unsigned char *p);
 void dump_RDD_DDR_QUEUE_ADDRESS_ENTRY(bdmf_session_handle session, unsigned char *p);

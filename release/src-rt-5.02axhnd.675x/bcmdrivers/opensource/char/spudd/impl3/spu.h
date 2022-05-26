@@ -58,7 +58,7 @@ extern struct spu_info *spuinfo;
 
 #define SPU_MAX_PAYLOAD          ((1 << 14) - 1)
 
-#define SPU_NUM_DESCR            128
+#define SPU_NUM_DESCR            64
 #define SPU_NUM_TRANS_REQ        64 /*128*/
 #define SPU_TRANS_REQ_BASE_IDX   0x1000
 

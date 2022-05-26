@@ -33,8 +33,13 @@ FIRMWARE_DIR ?= $(TOP_DIR)/firmware
 DRIVERS_DIR := $(TOP_DIR)/drivers
 PROJECTS_DIR := $(TOP_DIR)/projects
 PROJECT_DIR := $(PROJECTS_DIR)/$(PROJECT)
+ifeq ($(BUILD_TOOLS), yes)
+TOOLS_DIR := $(TOP_DIR)/../tools
+TOOLS_BIN := $(TOOLS_DIR)/bin
+else
 TOOLS_DIR := $(TOP_DIR)/tools
 TOOLS_BIN := $(TOP_DIR)/tools/bin
+endif
 SIM_DIR := $(TOOLS_DIR)/src/Sim
 COVERAGE_DIR := $(SIM_DIR)/Coverage
 ASM_TOOLS_DIR := $(TOOLS_DIR)/src/AsmTools/
@@ -126,7 +131,14 @@ ifdef PROJECT
 PROJ_XML_FILES := $(foreach src,$(shell grep "\.xml" $(PROJ_XML_SRC_LIST)), $(src))
 HW_DTS = hw_data_structures
 HW_HDR_FILE := $(SIM_DIR)/$(RDP_PROJ)/autogen/$(CHIP_TYPE)/$(HW_DTS)_auto.h
+
+ifeq ($(RGEN),6)
+HW_XML_FILES = $(SIM_DIR)/$(RDP_PROJ)/$(HW_DTS)_6g.xml $(SIM_DIR)/$(RDP_PROJ)/$(CHIP_TYPE)_$(HW_DTS).xml
+else
 HW_XML_FILES = $(SIM_DIR)/$(RDP_PROJ)/$(HW_DTS).xml $(SIM_DIR)/$(RDP_PROJ)/$(CHIP_TYPE)_$(HW_DTS).xml
+endif
+
+
 HW_XML_FILES_ARGS := $(foreach src, $(HW_XML_FILES), $(addprefix -l , $(src)))
 CHIP_OUTPUT:=$(TOOLS_DIR)/hal_generator/$(CHIP_TYPE)/output
 RDP_SUBSYSTEM_DIR_PROJECT_AUTOGEN:=$(RDP_SUBSYSTEM_DIR)/$(PLATFORM)$(CHIP_VER)/autogen
@@ -248,10 +260,12 @@ $(HW_HDR_FILE): $(HW_XML_FILES)
 	$(RM) runner_copyright.h
 	touch $(HW_HDR_FILE)
 
-hw_dts_gen: 
 ifeq ($(BUILD_TOOLS), yes)
-	$(HW_HDR_FILE)
+hw_dts_gen: $(HW_HDR_FILE)
+else
+hw_dts_gen:
 endif
+
 run_table_manager: $(AGH_DONE)
 
 $(AGH_DONE): $(PROJ_XML_FILES)

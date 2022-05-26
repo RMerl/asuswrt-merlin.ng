@@ -164,6 +164,7 @@ typedef struct XtmrtTransmitQueueId
     UINT32 ulShapingRate;        /* 0 indicates no shaping */
     UINT16 usShapingBurstSize;
     UINT16 usQueueSize;
+    UINT32 ulMBR;
     UINT32 ulQueueIndex;
 #if (defined(CONFIG_BCM_BPM) || defined(CONFIG_BCM_BPM_MODULE))
     UINT32 ulLoThresh;

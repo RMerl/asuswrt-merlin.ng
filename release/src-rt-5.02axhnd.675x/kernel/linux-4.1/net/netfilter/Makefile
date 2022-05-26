@@ -76,6 +76,9 @@ obj-$(CONFIG_NF_NAT_FTP) += nf_nat_ftp.o
 obj-$(CONFIG_NF_NAT_IRC) += nf_nat_irc.o
 obj-$(CONFIG_NF_NAT_SIP) += nf_nat_sip.o
 obj-$(CONFIG_NF_NAT_TFTP) += nf_nat_tftp.o
+ifdef BCM_KF # defined(CONFIG_BCM_KF_NETFILTER)
+obj-$(CONFIG_NF_NAT_RTSP) += nf_nat_rtsp.o
+endif #BCM_KF # defined(CONFIG_BCM_KF_NETFILTER)
 
 # SYNPROXY
 obj-$(CONFIG_NETFILTER_SYNPROXY) += nf_synproxy_core.o
@@ -138,7 +141,6 @@ obj-$(CONFIG_NETFILTER_XT_TARGET_TRACE) += xt_TRACE.o
 obj-$(CONFIG_NETFILTER_XT_TARGET_IDLETIMER) += xt_IDLETIMER.o
 ifdef BCM_KF # defined(CONFIG_BCM_KF_NETFILTER)
 obj-$(CONFIG_NETFILTER_XT_TARGET_SKIPLOG) += xt_SKIPLOG.o
-obj-$(CONFIG_NETFILTER_XT_TARGET_DC)      += xt_DC.o
 endif #BCM_KF # defined(CONFIG_BCM_KF_NETFILTER)
 
 # matches
@@ -187,7 +189,6 @@ obj-$(CONFIG_NETFILTER_XT_MATCH_TCPMSS) += xt_tcpmss.o
 obj-$(CONFIG_NETFILTER_XT_MATCH_TIME) += xt_time.o
 obj-$(CONFIG_NETFILTER_XT_MATCH_U32) += xt_u32.o
 ifdef BCM_KF # defined(CONFIG_BCM_KF_NETFILTER)
-obj-$(CONFIG_NETFILTER_XT_MATCH_LAYER7) += xt_layer7.o
 obj-$(CONFIG_NETFILTER_XT_MATCH_BLOG) += xt_blog.o
 obj-$(CONFIG_NETFILTER_XT_MATCH_MAC) += xt_mac_extend.o
 obj-$(CONFIG_NETFILTER_XT_MATCH_FLOWLABEL) += xt_flowlabel.o

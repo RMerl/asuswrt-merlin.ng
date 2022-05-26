@@ -32,6 +32,9 @@ static int validate_nla(const struct nlattr *nla, int maxtype,
 {
 	const struct nla_policy *pt;
 	int minlen = 0, attrlen = nla_len(nla), type = nla_type(nla);
+#ifdef CONFIG_BCM_KF_CFG80211_BACKPORT
+	int err = -ERANGE;
+#endif /* CONFIG_BCM_KF_CFG80211_BACKPORT */
 
 	if (type <= 0 || type > maxtype)
 		return 0;
@@ -102,6 +105,21 @@ static int validate_nla(const struct nlattr *nla, int maxtype,
 		if (attrlen < minlen)
 			return -ERANGE;
 	}
+#ifdef CONFIG_BCM_KF_CFG80211_BACKPORT
+        /* further validation */
+        switch (pt->validation_type) {
+	case NLA_VALIDATE_NONE:
+                /* nothing to do */
+                break;
+        case NLA_VALIDATE_FUNCTION:
+                if (pt->validate) {
+                        err = pt->validate(nla);
+                        if (err)
+                                return err;
+                }
+                break;
+        }
+#endif /* CONFIG_BCM_KF_CFG80211_BACKPORT */
 
 	return 0;
 }

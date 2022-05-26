@@ -132,6 +132,12 @@ int brcm_read_status(phy_dev_t *phy_dev)
     phy_dev->pause_rx = ((val >> 1) & 0x1);
     phy_dev->pause_tx = ((val >> 0) & 0x1);
 
+    if (phy_dev->flag & PHY_FLAG_CONF_PAUSE_VALID)
+    {
+        phy_dev->pause_rx &= (phy_dev->flag & PHY_FLAG_CONF_PAUSE_RX) ? 1 : 0;
+        phy_dev->pause_tx &= (phy_dev->flag & PHY_FLAG_CONF_PAUSE_TX) ? 1 : 0;
+    }
+
     return 0;
 }
 
@@ -411,6 +417,20 @@ int brcm_egphy_force_auto_mdix_get(phy_dev_t *phy_dev, int *enable)
         goto Exit;
 
     *enable = val & (1 << 9) ? 1 : 0; /* Force Auto MDIX Enabled */
+
+Exit:
+    return ret;
+}
+
+int brcm_egphy_eth_wirespeed_get(phy_dev_t *phy_dev, int *enable)
+{
+    int ret;
+    uint16_t val;
+
+    if ((ret = phy_dev_read(phy_dev, RDB_ACCESS | CORE_SHD18_111, &val)))
+        goto Exit;
+
+    *enable = val & (1 << 4) ? 1 : 0; /* Ethernet@Wirespeed Enabled */
 
 Exit:
     return ret;
@@ -763,6 +783,20 @@ Exit:
     return ret;
 }
 
+int brcm_shadow_18_eth_wirespeed_get(phy_dev_t *phy_dev, int *enable)
+{
+    uint16_t val;
+    int ret;
+
+    if ((ret = brcm_shadow_18_read(phy_dev, REG_18_MISC_CTRL, &val)))
+        goto Exit;
+
+    *enable = val & (1 << 4) ? 1 : 0; /* Ethernet@Wirespeed Enabled */
+
+Exit:
+    return ret;
+}
+
 int brcm_shadow_18_eth_wirespeed_set(phy_dev_t *phy_dev, int enable)
 {
     uint16_t val;
@@ -867,22 +901,6 @@ Exit:
     return ret;
 }
 
-static int mii_exp_write(phy_dev_t *phy_dev, int reg, int val)
-{
-    int ret;
-    ret = phy_bus_write(phy_dev, MII_EXPAND_REG_REG, reg|MII_EXPAND_REG_MARK);
-    ret |= phy_bus_write(phy_dev, MII_EXPAND_REG_VAL, val);
-    return ret;
-}
-
-static int mii_exp_read(phy_dev_t *phy_dev, int reg, uint16_t *val)
-{
-    int ret;
-    ret = phy_bus_write(phy_dev, MII_EXPAND_REG_REG, reg|MII_EXPAND_REG_MARK);
-    ret |= phy_bus_read(phy_dev, MII_EXPAND_REG_VAL, val);
-    return ret;
-}
-
 static void phy_cable_diag_init(phy_dev_t *phy_dev)
 {
 #define TH_1_0	0x0102
@@ -919,79 +937,79 @@ static void phy_cable_diag_init(phy_dev_t *phy_dev)
     if (phy_dev->flag & PHY_FLAG_CABLE_DIAG_INITED)
         return;
 
-    mii_exp_write(phy_dev, 0xC0, 0x0000);    /* disable Autoneg ECD */
-    mii_exp_write(phy_dev, 0xC7, 0xA01A);    /* EXPC7 frct_i_2 = 240, frct_i_1 = 4 */
-    mii_exp_write(phy_dev, 0xC8, 0x0300);    /* EXPC8 th_silent = 1 for 54382 ADC */
-    mii_exp_write(phy_dev, 0xC9, 0x00EF);    /* EXPC9 silent_c_th = 13, block_width_i = 9 */
-    mii_exp_write(phy_dev, 0xCB, 0x1304);    /* EXPCB  */
-    mii_exp_write(phy_dev, 0xCC, 0x0000);    /* EXPCC temp using 5 probe */
-    mii_exp_write(phy_dev, 0xCE, 0x4000);    /* EXPCE lp_drop_wait = 1, lp_safe_time = 5 */
-    mii_exp_write(phy_dev, 0xCF, 0x3000);    /* EXPCF disable both types of random starts */
+    brcm_exp_write(phy_dev, 0xC0, 0x0000);    /* disable Autoneg ECD */
+    brcm_exp_write(phy_dev, 0xC7, 0xA01A);    /* EXPC7 frct_i_2 = 240, frct_i_1 = 4 */
+    brcm_exp_write(phy_dev, 0xC8, 0x0300);    /* EXPC8 th_silent = 1 for 54382 ADC */
+    brcm_exp_write(phy_dev, 0xC9, 0x00EF);    /* EXPC9 silent_c_th = 13, block_width_i = 9 */
+    brcm_exp_write(phy_dev, 0xCB, 0x1304);    /* EXPCB  */
+    brcm_exp_write(phy_dev, 0xCC, 0x0000);    /* EXPCC temp using 5 probe */
+    brcm_exp_write(phy_dev, 0xCE, 0x4000);    /* EXPCE lp_drop_wait = 1, lp_safe_time = 5 */
+    brcm_exp_write(phy_dev, 0xCF, 0x3000);    /* EXPCF disable both types of random starts */
 
     /* --------------------------------------------------------------------------------- */
     /* ------- page '01' */
     /* --------------------------------------------------------------------------------- */
-    mii_exp_write(phy_dev, 0xE0, TH_1_0);    /* EXPE0 set th[1] and th[0] value */
-    mii_exp_write(phy_dev, 0xE1, TH_3_2);    /* EXPE1 set th[3] & th[2] value */
-    mii_exp_write(phy_dev, 0xE2, TH_5_4);    /* EXPE2 restore exp. E2 */
+    brcm_exp_write(phy_dev, 0xE0, TH_1_0);    /* EXPE0 set th[1] and th[0] value */
+    brcm_exp_write(phy_dev, 0xE1, TH_3_2);    /* EXPE1 set th[3] & th[2] value */
+    brcm_exp_write(phy_dev, 0xE2, TH_5_4);    /* EXPE2 restore exp. E2 */
 
-    mii_exp_write(phy_dev, 0xE3, PPW_1_0);    /* EXPE3 increase ppw[1] to 3, keep ppw[0] To 3 */
-    mii_exp_write(phy_dev, 0xE4, PPW_5_4_3_2);    /* EXPE4 default ppw[3] to 6 and default ppw[2] to 4 */
-    mii_exp_write(phy_dev, 0xE5, PPWI_5_4_3_2_1_0);    /* EXPE5  */
-    mii_exp_write(phy_dev, 0xE6, PROBE_TYPE_6_5_4_3_2_1_0);    /* EXPE6  */
-    mii_exp_write(phy_dev, 0xE7, 0xAA00);    /* EXPE7  */
+    brcm_exp_write(phy_dev, 0xE3, PPW_1_0);    /* EXPE3 increase ppw[1] to 3, keep ppw[0] To 3 */
+    brcm_exp_write(phy_dev, 0xE4, PPW_5_4_3_2);    /* EXPE4 default ppw[3] to 6 and default ppw[2] to 4 */
+    brcm_exp_write(phy_dev, 0xE5, PPWI_5_4_3_2_1_0);    /* EXPE5  */
+    brcm_exp_write(phy_dev, 0xE6, PROBE_TYPE_6_5_4_3_2_1_0);    /* EXPE6  */
+    brcm_exp_write(phy_dev, 0xE7, 0xAA00);    /* EXPE7  */
     /* --------------------------------------------------------------------------------- */
     /* --- Now load values */
-    mii_exp_write(phy_dev, 0xEF, 0x40FF);    /* EXPEF write to shadow page 01' word 'E7', 'E6', 'E5', 'E4', 'E3', 'E2', 'E1', & ' E0' */
-    mii_exp_write(phy_dev, 0xCD, 0x1000);    /* EXPCD write strobe 1 */
-    mii_exp_write(phy_dev, 0xCD, 0x0000);    /* EXPCD write strobe 0 */
-    mii_exp_write(phy_dev, 0xE0, 0x0000);    /* EXPE0 restore exp. E0 */
-    mii_exp_write(phy_dev, 0xE1, 0x0000);    /* EXPE1 restore exp. E1 */
-    mii_exp_write(phy_dev, 0xE2, 0x0000);    /* EXPE2 restore exp. E2 */
-    mii_exp_write(phy_dev, 0xE3, 0x0000);    /* EXPE3 restore exp. E3 */
-    mii_exp_write(phy_dev, 0xE4, 0x0000);    /* EXPE4 restore exp. E4 */
-    mii_exp_write(phy_dev, 0xE5, 0x0000);    /* EXPE5 restore exp. E5 */
-    mii_exp_write(phy_dev, 0xE6, 0x0000);    /* EXPE6 restore exp. E6 */
-    mii_exp_write(phy_dev, 0xE7, 0x0000);    /* EXPE7 restore exp. E7 */
-    mii_exp_write(phy_dev, 0xEF, 0x0000);    /* EXPEF restore exp. EF */
+    brcm_exp_write(phy_dev, 0xEF, 0x40FF);    /* EXPEF write to shadow page 01' word 'E7', 'E6', 'E5', 'E4', 'E3', 'E2', 'E1', & ' E0' */
+    brcm_exp_write(phy_dev, 0xCD, 0x1000);    /* EXPCD write strobe 1 */
+    brcm_exp_write(phy_dev, 0xCD, 0x0000);    /* EXPCD write strobe 0 */
+    brcm_exp_write(phy_dev, 0xE0, 0x0000);    /* EXPE0 restore exp. E0 */
+    brcm_exp_write(phy_dev, 0xE1, 0x0000);    /* EXPE1 restore exp. E1 */
+    brcm_exp_write(phy_dev, 0xE2, 0x0000);    /* EXPE2 restore exp. E2 */
+    brcm_exp_write(phy_dev, 0xE3, 0x0000);    /* EXPE3 restore exp. E3 */
+    brcm_exp_write(phy_dev, 0xE4, 0x0000);    /* EXPE4 restore exp. E4 */
+    brcm_exp_write(phy_dev, 0xE5, 0x0000);    /* EXPE5 restore exp. E5 */
+    brcm_exp_write(phy_dev, 0xE6, 0x0000);    /* EXPE6 restore exp. E6 */
+    brcm_exp_write(phy_dev, 0xE7, 0x0000);    /* EXPE7 restore exp. E7 */
+    brcm_exp_write(phy_dev, 0xEF, 0x0000);    /* EXPEF restore exp. EF */
 
     /* --------------------------------------------------------------------------------- */
     /* ------- page '10' */
     /* --------------------------------------------------------------------------------- */
 
-    mii_exp_write(phy_dev, 0xE0, OFFSET_1_0);    /* EXPE0  */
-    mii_exp_write(phy_dev, 0xE1, OFFSET_3_2);    /* EXPE1  */
-    mii_exp_write(phy_dev, 0xE2, OFFSET_5_4);    /* EXPE2  */
+    brcm_exp_write(phy_dev, 0xE0, OFFSET_1_0);    /* EXPE0  */
+    brcm_exp_write(phy_dev, 0xE1, OFFSET_3_2);    /* EXPE1  */
+    brcm_exp_write(phy_dev, 0xE2, OFFSET_5_4);    /* EXPE2  */
     /* --------------------------------------------------------------------------------- */
     /* --- Now load values */
-    mii_exp_write(phy_dev, 0xEF, 0x8007);    /* EXPEF write to shadow page */
-    mii_exp_write(phy_dev, 0xCD, 0x1000);    /* EXPCD write strobe 1 */
-    mii_exp_write(phy_dev, 0xCD, 0x0000);    /* EXPCD write strobe 0 */
+    brcm_exp_write(phy_dev, 0xEF, 0x8007);    /* EXPEF write to shadow page */
+    brcm_exp_write(phy_dev, 0xCD, 0x1000);    /* EXPCD write strobe 1 */
+    brcm_exp_write(phy_dev, 0xCD, 0x0000);    /* EXPCD write strobe 0 */
 
-    mii_exp_write(phy_dev, 0xE0, 0x0000);    /* EXPE0 restore exp. E0 */
-    mii_exp_write(phy_dev, 0xE1, 0x0000);    /* EXPE1 restore exp. E1 */
-    mii_exp_write(phy_dev, 0xE2, 0x0000);    /* EXPE2 restore exp. E2 */
-    mii_exp_write(phy_dev, 0xEF, 0x0000);    /* EXPEF restore exp. EF */
+    brcm_exp_write(phy_dev, 0xE0, 0x0000);    /* EXPE0 restore exp. E0 */
+    brcm_exp_write(phy_dev, 0xE1, 0x0000);    /* EXPE1 restore exp. E1 */
+    brcm_exp_write(phy_dev, 0xE2, 0x0000);    /* EXPE2 restore exp. E2 */
+    brcm_exp_write(phy_dev, 0xEF, 0x0000);    /* EXPEF restore exp. EF */
     /* --------------------------------------------------------------------------------- */
     /* ------- page '00' */
     /* --------------------------------------------------------------------------------- */
-    mii_exp_write(phy_dev, 0xE0, 0x0001);    /* EXPE0  */
-    mii_exp_write(phy_dev, 0xE1, RX_CONFIG_1);    /* EXPE1  */
-    mii_exp_write(phy_dev, 0xE2, RX_CONFIG_2);    /* EXPE2  */
-    mii_exp_write(phy_dev, 0xE3, RX_CONFIG_3);    /* EXPE3  */
-    mii_exp_write(phy_dev, 0xE4, RX_CONFIG_4);    /* EXPE4  */
-    mii_exp_write(phy_dev, 0xE5, RX_CONFIG_5);    /* EXPE5  */
+    brcm_exp_write(phy_dev, 0xE0, 0x0001);    /* EXPE0  */
+    brcm_exp_write(phy_dev, 0xE1, RX_CONFIG_1);    /* EXPE1  */
+    brcm_exp_write(phy_dev, 0xE2, RX_CONFIG_2);    /* EXPE2  */
+    brcm_exp_write(phy_dev, 0xE3, RX_CONFIG_3);    /* EXPE3  */
+    brcm_exp_write(phy_dev, 0xE4, RX_CONFIG_4);    /* EXPE4  */
+    brcm_exp_write(phy_dev, 0xE5, RX_CONFIG_5);    /* EXPE5  */
     /* App.WrExp 0, 0x00E7, START_0 */
-    mii_exp_write(phy_dev, 0xE8, START_3_2_1);    /* EXPE8  */
-    mii_exp_write(phy_dev, 0xE9, START_4_3);    /* EXPE9  */
-    mii_exp_write(phy_dev, 0xEA, START_5_4);    /* EXPEA  */
+    brcm_exp_write(phy_dev, 0xE8, START_3_2_1);    /* EXPE8  */
+    brcm_exp_write(phy_dev, 0xE9, START_4_3);    /* EXPE9  */
+    brcm_exp_write(phy_dev, 0xEA, START_5_4);    /* EXPEA  */
     /* --------------------------------------------------------------------------------- */
-    mii_exp_write(phy_dev, 0xCD, 0x00D0);    /* EXPCD  */
+    brcm_exp_write(phy_dev, 0xCD, 0x00D0);    /* EXPCD  */
     /* --------------------------------------------------------------------------------- */
     /* --Now we have finished ECD parameter loading. */
     /* flush out old results */
-    mii_exp_read(phy_dev, 0xC0, &v16);    /* dummy read to flush out sticky bit in exp.C0 */
-    mii_exp_write(phy_dev, 0xC0, 0x0000);    /* EXPC0 disable Autoneg ECD */
+    brcm_exp_read(phy_dev, 0xC0, &v16);    /* dummy read to flush out sticky bit in exp.C0 */
+    brcm_exp_write(phy_dev, 0xC0, 0x0000);    /* EXPC0 disable Autoneg ECD */
 
     phy_dev->flag |= PHY_FLAG_CABLE_DIAG_INITED;
 }
@@ -1000,12 +1018,15 @@ static void phy_cable_diag_init(phy_dev_t *phy_dev)
    Work around some hardware inconsistency
    Pick up the most popular length from 4 pairs
  */
-static void cable_length_pick_link_up(int *pair_len)
+static void cable_length_pick_link_up(int *pair_len, int excluded_pair)
 {
     int len[4]={0};
     int i, j, k, m;
 
     for (i=0, k=0; i<4; i++) {
+        if (excluded_pair & (1<<i))  /* Exclude failed CD pair */
+            continue;
+        
         for(j=0; j<k; j++) 
             if (pair_len[j] == pair_len[i]) 
                 break;
@@ -1014,11 +1035,15 @@ static void cable_length_pick_link_up(int *pair_len)
         len[j]++;
     }
 
-    for (i=0, j=0, m=0; i<k; i++)
+    for (i=0, j=0, m=0; i<k; i++) {
+        if (len[i] == 0)    /* If result is zero, exclude the pair from picking */
+            continue;
+        
         if(len[i]>j) {
             j=len[i];
             m=i;
         }
+    }
 
     m = pair_len[m];
     for (i=0; i<4; i++)
@@ -1034,24 +1059,38 @@ static unsigned long _jiffies;
 int brcm_cable_diag_run(phy_dev_t *phy_dev, int *result, int *pair_len)
 {
     uint16_t v16;
-    int i, j, ret = 0;
-    int apd_enabled;
+    int i, j, ret = 0, excluded_pair = 0;
+    int apd_enabled, phy_link;
     unsigned long jiffie;
-    int old_link;
+    int retries = 0;
 #define ECD_CHECK_SECS 3
+#define ECD_MAX_RETRIES 3
 
     phy_dev_apd_get(phy_dev, &apd_enabled);
     if (apd_enabled)
         phy_dev_apd_set(phy_dev, 0);
 
     phy_cable_diag_init(phy_dev);
+
+TryAgain:
+    if (retries) for(i=0, jiffie = jiffies; jiffies < (jiffie + msecs_to_jiffies(2*1000)););
+    if (++retries > ECD_MAX_RETRIES)  /* If we did retry more than certain time, declares it as faiure */
+        goto end;
+
     v16 = ECD_RUN_IMMEDIATE;
-    if (phy_dev->link)
+    if ((phy_link = phy_dev->link))
         v16 |= ECD_BREAK_LINK; 
-    mii_exp_write(phy_dev, MII_ECD_CTRL_STATUS, v16);
+    brcm_exp_write(phy_dev, MII_ECD_CTRL_STATUS, v16);
+
+    if (phy_link) { /* If link is up, Write RUN first and wait until link goes down */
+        for(;;) {
+            phy_dev_read_status(phy_dev);
+            if (!phy_dev->link) break;
+        }
+    }
 
     for(i=0, jiffie = jiffies; jiffies < (jiffie + msecs_to_jiffies(ECD_CHECK_SECS*1000)); ) {
-        mii_exp_read(phy_dev, MII_ECD_CTRL_STATUS, &v16);
+        brcm_exp_read(phy_dev, MII_ECD_CTRL_STATUS, &v16);
         if (!(v16 & ECD_DIAG_IN_PROG)) {
             i = 1;
             break;
@@ -1061,53 +1100,66 @@ int brcm_cable_diag_run(phy_dev_t *phy_dev, int *result, int *pair_len)
     if (!i) {
         *result = PA_CD_CODE_INVALID;
         ret = -1;
-        goto end;
+        goto TryAgain;
     }
 
-    for(i=0, jiffie = jiffies; jiffies < (jiffie + msecs_to_jiffies(ECD_CHECK_SECS*1000)); ) {
-        ret = mii_exp_read(phy_dev, MII_ECD_CTRL_FAULT_TYPE, &v16);
+    for(i=0, jiffie = jiffies; jiffies < (jiffie + msecs_to_jiffies(ECD_CHECK_SECS*1000)); ) { /* Check if all four pairs of diags are done */
+        ret = brcm_exp_read(phy_dev, MII_ECD_CTRL_FAULT_TYPE, &v16);
         *result = v16;
-        /* Check if we finished with no error */
-        for(j=0; j<4; j++) {
-            if( PA_CD_CODE_PAIR_GET(*result, j) > PA_CD_CODE_PAIR_INTER_SHORT ||
-                PA_CD_CODE_PAIR_GET(*result, j) == PA_CD_CODE_INVALID) 
+        excluded_pair = 0;
+        for(j=0; j<4; j++) { /* Check if all four pairs of diags are done */
+            if( PA_CD_CODE_PAIR_GET(*result, j) > PA_CD_CODE_PAIR_INTER_SHORT) 
                 break;
+
+            /* If link is up, excluded failed measuring result */
+            if( phy_link && ( PA_CD_CODE_PAIR_GET(*result, j) != PA_CD_CODE_PAIR_OK))
+                excluded_pair |= (1<<j); 
         }
 
-        /* If invalid happens, continue next round check */
-        if (j<4)
-            continue;
-
-        i=1;
-        break;
+        /* If all pair of diags finish, check the results */
+        if (j==4) {
+            /* If in link up, all pair diag failed, try again */
+            if (*result == PA_CD_CODE_INVALID || excluded_pair == 0xf ) 
+                goto TryAgain;
+            /* Otherwise, we are done with CD */
+            i=1;
+            break;
+        }
     }
 
-    if (!i) {
+    if (phy_link)
+        *result = PA_CD_CODE_PAIR_ALL_OK;
+
+    if (*result == PA_CD_CODE_INVALID || !i) {
         *result = PA_CD_CODE_INVALID;
         ret = -1;
-        goto end;
+        goto TryAgain;
     }
 
+#define CABLE_LEN_OFFSET_LINK_DOWN 100
     for(i=0; i<4; i++) {
-        ret |= mii_exp_read(phy_dev, MII_ECD_CABLE_LEN+i, &v16);
-        pair_len[i] = v16;
+        ret |= brcm_exp_read(phy_dev, MII_ECD_CABLE_LEN+i, &v16);
+        if (*result == PA_CD_CODE_PAIR_ALL_OPEN)
+            pair_len[i] = (v16> CABLE_LEN_OFFSET_LINK_DOWN ? v16 - CABLE_LEN_OFFSET_LINK_DOWN : 0); /* To guarrantee no cable result correct based on testing */
+        else
+            pair_len[i] = v16;
     }
+
+    /* If link is up, but alll pair length is zero, try again */
+    if (phy_link && (pair_len[0] + pair_len[1] + pair_len[2] + pair_len[3] == 0))
+        goto TryAgain;
 
 end:
     /* If link was up, poll until link comes back due to CD */
-    old_link = phy_dev->link;
     if (phy_dev->link) {
         for(jiffie = jiffies; jiffies < (jiffie + msecs_to_jiffies(3*ECD_CHECK_SECS*1000)); ) {
             phy_dev_read_status(phy_dev);
             if (phy_dev->link) break;
         }
     }
-
-    if (old_link && !phy_dev->link)
-        printk("Link down due to Cable Diag Operation.\n");
             
-    if (phy_dev->link)
-        cable_length_pick_link_up(pair_len);
+    if (*result == PA_CD_CODE_PAIR_ALL_OK || phy_dev->link)
+        cable_length_pick_link_up(pair_len, excluded_pair);
 
     if (apd_enabled)
         phy_dev_apd_set(phy_dev, apd_enabled);
@@ -1115,4 +1167,68 @@ end:
     return ret;
 }
 
+#ifdef _CFE_
+#define mutex_lock(x)
+#define mutex_unlock(x)
+#else
+#include <linux/spinlock.h>
+DEFINE_MUTEX(bcm_phy_exp_mutex);
+#endif
 
+#define BRCM_MIIEXT_BANK            0x1f
+#define BRCM_MIIEXT_BANK_MASK       0xfff0
+#define BRCM_MIIEXT_ADDR_RANGE      0xffe0
+#define BRCM_MIIEXT_DEF_BANK        0x8000
+#define BRCM_MIIEXT_OFFSET          0x10
+#define BRCM_MIIEXT_OFF_MASK        0x0f
+
+int ethsw_phy_exp_rw(phy_dev_t *phy_dev, uint32_t reg, uint16_t *v16_p, int rd)
+{
+    uint32_t bank, offset;
+    int rc = 0;
+
+    if (reg < 0x20) {   /* CL22 space */
+        if (IsC45Phy(phy_dev)) {
+            printk("phy_id: %d does not support Clause 22\n", phy_dev->addr);
+            return rc;
+        }
+        if (rd)
+            rc = phy_bus_read(phy_dev, reg, v16_p);
+        else
+            rc = phy_bus_write(phy_dev, reg, *v16_p);
+        return rc;
+    }
+    else if (reg < 0x10000) /* expanded MDIO space */
+    {
+        bank = reg & BRCM_MIIEXT_BANK_MASK;
+        offset = (reg & BRCM_MIIEXT_OFF_MASK) + BRCM_MIIEXT_OFFSET;
+        mutex_lock(&bcm_phy_exp_mutex);
+        /* Set Bank Address */
+        rc = phy_bus_write(phy_dev, BRCM_MIIEXT_BANK, bank);
+
+        if (!rd)
+            rc += phy_bus_write(phy_dev, offset, *v16_p);
+        else
+            rc += phy_bus_read(phy_dev, offset, v16_p);
+
+        /* Set Bank back to default for standard access */
+        if(bank != BRCM_MIIEXT_DEF_BANK || offset == BRCM_MIIEXT_OFFSET)
+            rc += phy_bus_write(phy_dev, BRCM_MIIEXT_BANK, BRCM_MIIEXT_DEF_BANK);
+        mutex_unlock(&bcm_phy_exp_mutex);
+    }
+    else if (reg < 0x200000) /* CL45 space */
+    {
+        if (!IsC45Phy(phy_dev)) {
+            printk("phy_id=%d does not support Clause 45\n", phy_dev->addr);
+            return rc;
+        }
+
+        if (rd)
+            rc = phy_bus_c45_read32(phy_dev, reg, v16_p);
+        else
+            rc = phy_bus_c45_write32(phy_dev, reg, *v16_p);
+    }
+
+    return rc;
+}
+EXPORT_SYMBOL(ethsw_phy_exp_rw);

@@ -77,7 +77,7 @@ int  bcmxapi_SetTxPortShaperInfo(PBCMXTMRT_GLOBAL_INFO pGi,
                              PXTMRT_PORT_SHAPER_INFO pShaperInfo);
 void bcmxapi_SetPtmBondPortMask(UINT32 portMask);
 void bcmxapi_SetPtmBonding(UINT32 bonding);
-void bcmxapi_XtmGetStats(UINT8 vport, UINT32 *rxDropped, UINT32 *txDropped);
+void bcmxapi_XtmGetStats(PBCMXTMRT_DEV_CONTEXT pDevCtx, UINT8 vport, UINT32 *rxDropped, UINT32 *txDropped);
 void bcmxapi_XtmResetStats(UINT8 vport);
 void bcmxapi_blog_ptm_us_bonding(UINT32 ulTxPafEnabled, struct sk_buff *skb) ;
 

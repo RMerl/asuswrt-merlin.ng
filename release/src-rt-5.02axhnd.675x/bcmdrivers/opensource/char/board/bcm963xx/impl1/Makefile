@@ -3,8 +3,12 @@
 
 
 obj-y := board.o bcm63xx_flash.o bcm63xx_led.o bcm63xx_gpio.o pushbutton.o board_button.o \
-	board_wl.o board_dg.o board_proc.o board_image.o board_util.o \
+	board_wl.o board_proc.o board_image.o board_util.o \
  	board_ioctl.o board_wd.o
+
+ifeq ($(strip $(CONFIG_BRCM_QEMU)),)
+    obj-y +=board_dg.o
+endif
 
 obj-$(CONFIG_BCM_ROOTFS_SQUASHFS_HASH) += bcm63xx_sec.o
 

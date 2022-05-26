@@ -73,7 +73,7 @@ typedef struct igmp_grp_entry
 
 int bcm_mcast_igmp_process_ignore_group_list (int count, t_BCM_MCAST_IGNORE_GROUP_ENTRY* ignoreMsgPtr);
 int bcm_mcast_igmp_wipe_group(bcm_mcast_ifdata *parent_if, int dest_ifindex, struct in_addr *gpAddr);
-void bcm_mcast_igmp_del_entry(bcm_mcast_ifdata *pif, 
+int bcm_mcast_igmp_del_entry(bcm_mcast_ifdata *pif,
                               t_igmp_grp_entry *igmp_fdb,
                               struct in_addr   *rep,
                               unsigned char    *repMac);
@@ -127,6 +127,9 @@ t_igmp_grp_entry *bcm_mcast_igmp_fdb_copy(bcm_mcast_ifdata       *pif,
                                           const t_igmp_grp_entry *igmp_fdb);
 void bcm_mcast_igmp_process_blog_enable( bcm_mcast_ifdata *pif, int enable );
 #endif
-
+void bcm_mcast_igmp_wipe_grp_reporter_for_port (bcm_mcast_ifdata *pif,
+                                                struct in_addr *grp, 
+                                                struct in_addr *rep, 
+                                                struct net_device *rep_dev);
 #endif /* _BCM_MCAST_IPV4_H_ */
 

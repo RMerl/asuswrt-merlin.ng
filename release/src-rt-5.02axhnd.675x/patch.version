@@ -1,0 +1,20 @@
+--- # YAML format
+ignore: 1 # Delete this line and other comments below when adding a patch for the first time
+
+version: '5'
+release: '02'
+extraversion: '07_P2'
+
+platforms_in_use:
+# one row per platform starting with hiphen+space e.g. - 63138
+- 63178
+- 6750
+- 6755
+- 4908
+
+patches:
+# one row per patch starting with hiphen+space e.g.:
+- {csp: CS00012227707, ref: SWBCACPE-49992, chg: CL376574} # refacor ULA filtering for use in IPv6 NAT scenario
+- {csp: CS00012229410, ref: SWBCACPE-49210, chg: CL382061} # ipv6 MASQUERADE
+- {csp: CS00012241158, ref: SWBCACPE-40737, chg: CL390032} # L2TP UDP checksum
+- {csp: CS00012241158, ref: SWBCACPE-46651, chg: CL390035} # L2TP UDP checksum

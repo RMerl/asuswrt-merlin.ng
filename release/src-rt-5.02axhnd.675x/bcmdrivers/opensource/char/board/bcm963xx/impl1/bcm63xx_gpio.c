@@ -116,11 +116,13 @@ void kerSysSetGpioStateLocked(unsigned short bpGpio, GPIO_STATE_t state)
 
 void kerSysSetGpioState(unsigned short bpGpio, GPIO_STATE_t state)
 {
+#ifndef CONFIG_BRCM_QEMU    
     unsigned long flags;
 
     spin_lock_irqsave(&bcm_gpio_spinlock, flags);
     kerSysSetGpioStateLocked(bpGpio, state);
     spin_unlock_irqrestore(&bcm_gpio_spinlock, flags);
+#endif    
 }
 
 
@@ -142,11 +144,13 @@ void kerSysSetGpioDirLocked(unsigned short bpGpio)
 
 void kerSysSetGpioDir(unsigned short bpGpio)
 {
+#ifndef CONFIG_BRCM_QEMU    
     unsigned long flags;
 
     spin_lock_irqsave(&bcm_gpio_spinlock, flags);
     kerSysSetGpioDirLocked(bpGpio);
     spin_unlock_irqrestore(&bcm_gpio_spinlock, flags);
+#endif    
 }
 
 

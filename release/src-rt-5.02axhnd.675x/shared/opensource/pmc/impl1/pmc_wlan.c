@@ -43,7 +43,7 @@ written consent.
 #define MAX_WLAN_PMB_ADDR   8
 #if defined(CONFIG_BCM947622)
 #define MAX_WLAN_UNIT       2
-#elif defined(CONFIG_BCM963178) || defined(CONFIG_BCM96878)
+#elif defined(CONFIG_BCM963178) || defined(CONFIG_BCM96878) || defined(CONFIG_BCM96855)
 #define MAX_WLAN_UNIT       1
 #endif
 
@@ -52,7 +52,7 @@ static int pmc_wlan_pmb_addr[][MAX_WLAN_PMB_ADDR]= {
 #if defined(CONFIG_BCM947622)
 	{ PMB_ADDR_WLAN0, PMB_ADDR_WLAN0_PHY1, PMB_ADDR_WLAN0_PHY2, -1},
 	{ PMB_ADDR_WLAN1, PMB_ADDR_WLAN1_PHY1, PMB_ADDR_WLAN1_PHY2, -1},
-#elif defined(CONFIG_BCM963178)
+#elif defined(CONFIG_BCM963178) || defined(CONFIG_BCM96855)
 	{ PMB_ADDR_WLAN0, PMB_ADDR_WLAN0_PHY1, PMB_ADDR_WLAN0_PHY2, -1},
 #elif defined(CONFIG_BCM96878)
 	{ PMB_ADDR_WLAN0, -1},

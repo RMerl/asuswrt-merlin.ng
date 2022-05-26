@@ -50,8 +50,12 @@ typedef struct {
     rdpa_traffic_dir dir;/**< Traffic direction */
     rdpa_if ingress_if;  /**< Ingress RDPA interface */
     uint8_t lookup_port; /**< Ingress bridge port \RDP_LIMITED */
+#if defined(BCM_DSL_RDP)
+    uint8_t ingress_radio_idx;
+#endif
     uint16_t wan_flow;   /**< WAN Flow, used f ingress port is wan (e.g. gem_flow), ignored otherwise \XRDP_LIMITED */
     uint8_t tcp_pure_ack;/**< TCP pure ack flow */
+    uint8_t is_llc_snap; /**< LLC_SNAP flag */
 } rdpa_l2_flow_key_t;
 
 typedef enum

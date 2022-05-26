@@ -91,7 +91,9 @@ port_ops_t port_sysp_port =
     .mib_dump = port_sysp_mib_dump,
     .print_status = port_sysp_print_status,
     .role_set = port_sysp_port_role_set,
+#if 0   /* skip Andrew code */
     .mib_dump_us = port_sysp_mib_dump_us, // add by Andrew
+#endif
 };
 
 int enetxapi_post_config(void)

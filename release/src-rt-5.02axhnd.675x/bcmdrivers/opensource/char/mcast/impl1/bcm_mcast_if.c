@@ -572,6 +572,8 @@ static int bcm_mcast_if_netdev_notifier(struct notifier_block *this, unsigned lo
          break;
 
       case NETDEV_REGISTER:
+         bcm_mcast_sysfs_create_file(dev);
+
       case NETDEV_UP:
          __logDebug("NETDEV_REGISTER/NETDEV_UP for dev %s", dev ? dev->name : "all");
          if ( dev->priv_flags & IFF_EBRIDGE )
@@ -598,12 +600,24 @@ static int bcm_mcast_if_netdev_notifier(struct notifier_block *this, unsigned lo
 
       case NETDEV_UNREGISTER:
          __logDebug("NETDEV_UNREGISTER for dev %s", dev ? dev->name : "all");
-         if ( dev->priv_flags & IFF_EBRIDGE )
+         bcm_mcast_sysfs_remove_file(dev);
+         rcu_read_lock();
+         pif = bcm_mcast_if_lookup(dev->ifindex);
+         if (pif)
          {
-            /* remove the interface */
-            bcm_mcast_if_delete(dev->ifindex);
-            break;
+            switch(pif->brtype)
+            {
+                case BRTYPE_LINUX:
+                case BRTYPE_OVS:
+                   /* remove the interface */
+                   bcm_mcast_if_delete(dev->ifindex);
+                  break;
+
+                default:
+                  break;
+            }
          }
+         rcu_read_unlock();
          break;
          
            

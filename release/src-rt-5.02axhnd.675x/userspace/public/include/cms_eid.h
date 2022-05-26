@@ -165,6 +165,8 @@ typedef enum {
    EID_TR69C_2=114,        /* TR69C instance 2 */
    EID_VOICE=150,
    EID_ECMS=160,
+   EID_WLCTDM=161,
+   EID_WLCTDM_TEST=162,
    EID_DECTDBGD=199,
    EID_SEND_CMS_MSG=280,
    EID_OSGID=500,              /* Begin BCM Modular Software EID range */

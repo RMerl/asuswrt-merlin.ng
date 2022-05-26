@@ -37,6 +37,7 @@
  * - PBIT to queue
  * - Traffic class to queue
  * - PBIT to GEM
+ * - PBIT to DSCP
  * @{
  */
 #if defined(XRDP) || defined(BCM_XRDP)
@@ -64,6 +65,10 @@
  */
 
 /** \defgroup pbit_to_gem PBIT to GEM Mapper
+ * \ingroup pkt_mapper
+ */
+
+/** \defgroup pbit_to_dscp PBIT to DSCP Mapper
  * \ingroup pkt_mapper
  */
 

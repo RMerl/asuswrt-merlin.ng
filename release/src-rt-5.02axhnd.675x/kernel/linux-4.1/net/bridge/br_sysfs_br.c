@@ -110,6 +110,9 @@ static ssize_t ageing_time_show(struct device *d,
 static int set_ageing_time(struct net_bridge *br, unsigned long val)
 {
 	br->ageing_time = clock_t_to_jiffies(val);
+#if defined(CONFIG_BCM_KF_RUNNER)
+	mod_timer(&br->gc_timer, round_jiffies_up(jiffies + br->ageing_time));
+#endif
 	return 0;
 }
 

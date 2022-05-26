@@ -235,18 +235,7 @@ int bcm_timer_init(bcm_timer_user_t *user_p, bcm_timer_mode_t mode, uint32_t int
 
 int bcm_timer_add(bcm_timer_user_t *user_p, uint32_t expiration)
 {
-    uint32_t jiffies_32;
     unsigned long flags;
-
-    jiffies_32 = BCM_TIMER_JIFFIES_32(bcm_timer_g.jiffies_64);
-
-    if(BCM_TIMER_IS_TIME_AFTER_EQ(jiffies_32, expiration))
-    {
-        __error("Timer expiration occurs in the past <%d> (jiffies_32 <%d>)\n",
-                expiration, jiffies_32);
-
-        return -1;
-    }
 
     BCM_TIMER_LOCK(flags);
 

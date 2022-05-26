@@ -45,7 +45,7 @@
 #define RDPA_DHD_HELPER_FEATURE_MSGFORMAT_SUPPORT
 
 #if !defined(__OREN__)
-#define RDPA_DHD_HELPER_FEATURE_FAST_FLOWRING_DELETE_SUPPORT
+/* #define RDPA_DHD_HELPER_FEATURE_FAST_FLOWRING_DELETE_SUPPORT */
 #define RDPA_DHD_HELPER_FEATURE_BACKUP_QUEUE_SUPPORT
 #define RDPA_DHD_TX_POST_PHY_RING_SIZE 512
 #define RDPA_DHD_HELPER_FEATURE_HWA_WAKEUP_SUPPORT
@@ -81,6 +81,9 @@ typedef uint32_t rdpa_dhd_ssid_tx_dropped_t[DHD_MAX_SSID_NUM];
 #else
 #define RDPA_MAX_RADIOS 1
 #endif
+
+#define RDPA_MAX_HOST_RADIOS 3
+#define RDPA_INVALID_RADIO_IDX ((uint32_t)(-1))
 
 #define RDPA_MAX_AC 4 /* exclude BC/MC */
 
@@ -133,7 +136,8 @@ typedef struct
 /** Extra data that can be passed along with the packet to be posted for transmission */
 typedef struct
 {
-    uint32_t radio_idx;
+    uint32_t radio_idx;    /**< host_radio_idx - Radio Index as seen by Linux Host */
+    uint32_t rnr_radio_idx; /**< for internal use by Runner */
     uint32_t flow_ring_id; /**< Destination Flow-Ring */
     uint32_t ssid_if_idx; /**< SSID index */
     int is_spdsvc_setup_packet; /**<when set, indicates that a Speed Service Setup packet is being transmitted */
@@ -163,7 +167,7 @@ typedef struct
 /** Runner wakeup information returned to DHD by RDD */
 typedef struct
 {
-    uint32_t radio_idx;
+    uint32_t radio_idx;    /* host_radio_idx */
     bdmf_phys_addr_t tx_complete_wakeup_register;
     uint32_t tx_complete_wakeup_value;
     bdmf_phys_addr_t rx_complete_wakeup_register;

@@ -387,14 +387,15 @@ export BRCM_AUXFS_PERCENT BRCM_GPON_SERIAL_NUMBER BRCM_GPON_PASSWORD
 export BRCM_VOICE_BOARD_ID BRCM_MAIN_TP_NUM
 export BRCM_DRIVER_FBOND_DEBUG
 export BRCM_MISC1_PARTITION_SIZE BRCM_MISC2_PARTITION_SIZE BRCM_MISC3_PARTITION_SIZE BRCM_MISC4_PARTITION_SIZE
-export BUILD_BRCM_CMS BUILD_BRCM_HNDROUTER BUILD_HND_MFG BUILD_HND_NIC BUILD_HND_EAP BUILD_BRCM_CPEROUTER BUILD_BRCM_AIRIQ BUILD_HND_EAP_AP1 BUILD_BRCM_HOSTAPD
+export BUILD_BRCM_CMS BUILD_BRCM_HNDROUTER BUILD_HND_MFG BUILD_HND_NIC
+export BUILD_HND_EAP BUILD_BRCM_CPEROUTER BUILD_BRCM_AIRIQ BUILD_HND_EAP_AP1 BUILD_BRCM_HOSTAPD
 export BRCM_INCREMENTAL_IMAGE_LOAD
 export SECURE_BOOT_ARCH SECURE_BOOT_KEY_DIR SECURE_BOOT_TURNKEY SECURE_BOOT_TK_ABORT_TIMEOUT SECURE_BOOT_TK_REQ_FLD SECURE_BOOT_TK_MODE_REQ SECURE_BOOT_TK_MID SECURE_BOOT_TK_KS_OFFS SECURE_BOOT_TK_OID BUILD_SBI_NOHDR BUILD_SBI_SIGN BUILD_SBI_NOHDR_MFG AVS_IMAGE_MAX_SIZE AVS_IMAGE_PATH
 
 endif # PROFILE
 endif #menuconfig
 
-ifeq ($(BUILD_NAME), $(filter $(BUILD_NAME), DSL-AX53))
+ifeq ($(BUILD_NAME), $(filter $(BUILD_NAME), DSL-AX53 RT-AX82_XD6S))
 SINGLE_IMAGE := 1
 endif
 export SINGLE_IMAGE
@@ -436,7 +437,7 @@ ifeq ($(strip $(BRCM_CHIP)),6848)
     RDP_PROJECT=PON_6838
 endif
 
-ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_6858_6846_63158_6856_6878_),)
+ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_6858_6846_63158_6856_6878_6855_),)
 export BRCM_FULL_CHIP_NAME=$(strip $(BRCM_CHIP)$(subst $\",,$(BRCM_CHIP_REV)))
 endif
 
@@ -471,6 +472,10 @@ endif
 
 ifeq ($(strip $(BRCM_CHIP)),6856)
     RDP_PROJECT=PON_6856
+endif
+
+ifeq ($(strip $(BRCM_CHIP)),6855)
+    RDP_PROJECT=PON_6855
 endif
 
 ifneq ($(strip $(RDP_PROJECT)),)
@@ -582,7 +587,7 @@ BUILD_SBI_SIGN=$(HOSTTOOLS_DIR)/SecureBootUtils/build_sbi.pl --sec_mode "$(SEC_M
 BUILD_SBI=$(HOSTTOOLS_DIR)/SecureBootUtils/build_sbi.pl --sec_mode "$(SEC_MODE)" --sec_arch "$(SECURE_BOOT_ARCH)" --cred_dir "$(SEC_CRED_DIR)" --byteorder "$(ARCH_ENDIAN)" --chip "$(BRCM_CHIP)"
 BUILD_SBI_NOHDR=$(HOSTTOOLS_DIR)/SecureBootUtils/build_sbi.pl --sec_arch "$(SECURE_BOOT_ARCH)" --build_top "$(BUILD_DIR)" --sec_mode "$(SEC_MODE)" --cred_dir "$(SEC_CRED_DIR)" --byteorder "$(ARCH_ENDIAN)" --chip "$(BRCM_CHIP)" --sec_opt "$(NOHDR_SECOPT)"
 
-ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_4908_6838_6848_6858_63158_6856_6878_47622_63178_),)
+ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_4908_6838_6848_6858_63158_6856_6878_6855_47622_63178_),)
 CFESEC_ROM_FILE = $(CFE_ROM_FILE)
 CFESEC_RAM_FILE = $(CFE_RAM_FILE)
 else
@@ -598,7 +603,7 @@ CFESEC_RAM_EMMC_FILE = $(CFE_RAM_EMMC_FILE)
 endif
 endif
 
-ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_63158_47622_),)
+ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_63158_47622_6855_),)
 CFE_DDR_TYPE_CHECK=y
 endif
 
@@ -697,6 +702,10 @@ export HNDDRIVER_BASE
 export HNDAPPS_BASE
 
 endif # BCA_HNDROUTER
+
+ifneq ($(strip $(BUILD_EMMC_TRAPEZE)),)
+export BUILD_EMMC_TRAPEZE
+endif
 
 ###########################################
 #
@@ -858,7 +867,7 @@ FLASH_NAND_BLOCK_256KB=262144
 FLASH_NAND_BLOCK_512KB=524288
 FLASH_NAND_BLOCK_1024KB=1048576
 FLASH_NAND_BLOCK_2048KB=2097152
-ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_63138_63148_4908_6858_63158_6856_6846_63178_47622_6878_),)
+ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_63138_63148_4908_6858_63158_6856_6846_63178_47622_6878_6855_),)
 FLASH_BOOT_OFS=65536
 else
 FLASH_BOOT_OFS=0
@@ -1241,6 +1250,7 @@ endif
 #
 ifneq ($(strip $(BUILD_PURE181_PROFILES)),)
 CMS_DMP_FLAGS += -DDMP_DEVICE2_BRIDGE_1 -DDMP_DEVICE2_VLANBRIDGE_1
+CMS_DMP_FLAGS += -DDMP_DEVICE2_BRIDGEFILTER_1
 CMS_DMP_FLAGS += -DDMP_DEVICE2_ROUTING_1 -DDMP_DEVICE2_ROUTING_2
 CMS_DMP_FLAGS += -DDMP_DEVICE2_NAT_1 -DDMP_DEVICE2_PROCESSORS_1
 CMS_DMP_FLAGS += -DDMP_DEVICE2_HOSTS_1 -DDMP_DEVICE2_HOSTS_2
@@ -1455,14 +1465,14 @@ endif
 # Various technologies as WAN interface selections
 #
 
-ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_6838_6848_6858_6846_6856_6878_),)
+ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_6838_6848_6858_6846_6856_6878_6855_),)
 ifeq ($(BUILD_GPON),y)
 export BCM_PON=y
 endif
 ifeq ($(BUILD_EPON_SDK),y)
 export BCM_PON=y
 endif
-ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_6858_6846_6856_6878_),)
+ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_6858_6846_6856_6878_6855_),)
 export BCM_PON_XRDP=y
 endif
 ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_6838_6848_),)
@@ -1477,7 +1487,7 @@ ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_63158_),)
 export BCM_DSL_XRDP=y
 endif
 endif
-ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_6858_63158_6846_6856_6878_),)
+ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_6858_63158_6846_6856_6878_6855_),)
 export BCM_XRDP=y
 endif
 ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_6838_6848_63138_63148_4908_),)
@@ -2328,10 +2338,6 @@ CMS_DMP_FLAGS += -DSUPPORT_BMU -DDMP_X_BROADCOM_COM_BMU_1
 BUILD_LIB_STLPORT=y
 endif
 
-ifneq ($(strip $(BUILD_GPTFDISK)),)
-BUILD_LIB_STLPORT=y
-endif
-
 ifneq ($(strip $(BRCM_STANDBY)),)
 CMS_DMP_FLAGS += -DDMP_X_BROADCOM_COM_STANDBY_1
 endif
@@ -2550,10 +2556,6 @@ ifneq ($(strip $(BRCM_KERNEL_NF_NAT_ALG_SIP)),)
 	CMS_DMP_FLAGS += -DSUPPORT_SIP
 endif
 
-ifneq ($(strip $(BRCM_KERNEL_NF_LAYER7_FILTER)),)
-	CMS_DMP_FLAGS += -DSUPPORT_L7_FILTER
-endif
-
 ifneq ($(strip $(BRCM_KERNEL_NF_MANGLE)),)
 	CMS_DMP_FLAGS += -DSUPPORT_NF_MANGLE
 endif
@@ -2675,11 +2677,18 @@ endif
 endif
 endif
 
-# Do not enable DMP_X_BROADCOM_COM_TM_1 for PURE181 until the relevant objects are added to the PURE181 data model in merge-dev2.d. 
 ifneq ($(strip $(BUILD_PURE181_PROFILES)),)
 CMS_DMP_FLAGS += -DDMP_DEVICE2_QOS_1 -DDMP_DEVICE2_QOS_2
 CMS_DMP_FLAGS += -DDMP_DEVICE2_QOSSTATS_1
 CMS_DMP_FLAGS += -DDMP_X_BROADCOM_COM_DEVICE2_QOS_1
+ifeq ($(BCM_PON),y)
+CMS_DMP_FLAGS += -DDMP_X_BROADCOM_COM_TM_1
+endif
+ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_63158_),)
+ifeq ($(BUILD_RDPA),y)
+CMS_DMP_FLAGS += -DDMP_X_BROADCOM_COM_TM_1
+endif
+endif
 endif
 
 
@@ -3095,6 +3104,10 @@ export WAN_AUTODETECT=y
 ifeq ($(BCM_PON_XRDP),y)
 export BCM_PON=y
 endif
+endif
+
+ifneq ($(strip $(WAN_AUTODETECT)),)
+BUILD_CMS_UTIL=y
 endif
 
 ifneq ($(strip $(BRCM_MIPS_RATE_LIMIT)),)

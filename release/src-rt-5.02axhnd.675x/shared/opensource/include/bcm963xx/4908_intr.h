@@ -143,6 +143,7 @@ extern "C" {
 /*  must be placed in bcm_phys_irqs_to_map array below                    */
 /*========================================================================*/
 
+#define INTERRUPT_ID_RANGE_CHECK          (bcm_legacy_irq_map[INTERRUPT_MEMC_SEC_IRQ - SPI_TABLE_OFFSET])
 #define INTERRUPT_ID_DG                   (bcm_legacy_irq_map[INTERRUPT_DYING_GASP_IRQ - SPI_TABLE_OFFSET])
 #define INTERRUPT_ID_UART0                (bcm_legacy_irq_map[INTERRUPT_PER_UARTINT0 - SPI_TABLE_OFFSET])
 #define INTERRUPT_ID_UART                 INTERRUPT_ID_UART0
@@ -186,6 +187,7 @@ extern "C" {
 // add here any legacy driver's (driver that have no device tree node) interrupt to be mapped
 unsigned int bcm_phys_irqs_to_map[] =
 {
+    INTERRUPT_MEMC_SEC_IRQ,
     INTERRUPT_DYING_GASP_IRQ,
     INTERRUPT_PER_UARTINT0,
     INTERRUPT_PER_HS_UARTINT,

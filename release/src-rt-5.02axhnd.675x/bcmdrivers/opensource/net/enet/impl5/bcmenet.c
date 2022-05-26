@@ -131,6 +131,7 @@ extern int bcm_tcp_v4_recv(pNBuff_t pNBuff, BlogFcArgs_t *fc_args);
 #include "bcmenet_ethtool.h"
 #endif
 
+static void _link_change_handler(int port, int cb_port, int linkstatus, int speed, int duplex);
 /* vnet_dev[0] is bcmsw device not attached to any physical port */
 #define port_id_from_dev(dev) ((dev->base_addr == vnet_dev[0]->base_addr) ? MAX_TOTAL_SWITCH_PORTS : \
         ((BcmEnet_devctrl *)netdev_priv(dev))->sw_port_id)
@@ -984,7 +985,7 @@ static int bcm63xx_enet_change_mtu(struct net_device *dev, int new_mtu)
 /*
  * handle_link_status_change
  */
-void link_change_handler(int port, int cb_port, int linkstatus, int speed, int duplex)
+static void _link_change_handler(int port, int cb_port, int linkstatus, int speed, int duplex)
 {
     IOCTL_MIB_INFO *mib;
     int mask, vport;
@@ -1219,7 +1220,7 @@ static int link_change_handler_wrapper(void *ctxt)
     if (args->activeELink) {
         bcmeapi_aelink_handler(args->linkstatus);
     }
-    link_change_handler(args->port,
+    _link_change_handler(args->port,
                         BP_CROSSBAR_NOT_DEFINED,
             args->linkstatus,
             args->speed,
@@ -1303,7 +1304,7 @@ static int bcm63xx_enet_poll_timer(void * arg)
                     tmp = (phys.lnk != 0) ? mask : 0;
                     if ((priv->linkState & mask) != tmp)
                     {
-                        link_change_handler(log_port, BP_CROSSBAR_NOT_DEFINED, phys.lnk, 
+                        _link_change_handler(log_port, BP_CROSSBAR_NOT_DEFINED, phys.lnk, 
                             phys.spd1000 ? 1000 : (phys.spd100 ? 100:10), phys.fdx);
 
                         /* if the phy connects to 47189 mac directly, need to reconfgiure mac by link speed */
@@ -4208,7 +4209,7 @@ static int bcm63xx_enet_ioctl(struct net_device *dev, struct ifreq *rq, int cmd)
                             gmac_link_status_changed(e->status, e->speed, e->duplex);
                         }
 #endif
-                        link_change_handler(swPort, BP_CROSSBAR_NOT_DEFINED, e->status, e->speed, e->duplex);
+                        _link_change_handler(swPort, BP_CROSSBAR_NOT_DEFINED, e->status, e->speed, e->duplex);
                         val = 0;
                     break;
 
@@ -4568,7 +4569,15 @@ static int bcm63xx_enet_ioctl(struct net_device *dev, struct ifreq *rq, int cmd)
                     break;
 
                 case ETHGETMIIREG:       /* Read MII PHY register. */
-                    BCM_ENET_DEBUG("phy_id: %d; reg_num = %d \n", ethctl->phy_addr, ethctl->phy_reg);
+                    if(ethctl->flags == ETHCTL_FLAG_ACCESS_INT_PHY)
+                    {
+                        if(IsExtPhyId(ethctl->phy_addr))
+                            ethctl->flags = ETHCTL_FLAG_ACCESS_EXT_PHY;
+                        else if(ethctl->phy_addr & CONNECTED_TO_EXTERN_SW)
+                            ethctl->flags = ETHCTL_FLAG_ACCESS_EXTSW_PHY;
+                    }
+                        
+                    BCM_ENET_DEBUG("phy_id: %d; reg_num = %d , flags = 0x%x\n", ethctl->phy_addr, ethctl->phy_reg, ethctl->flags);
                     {
                         down(&bcm_ethlock_switch_config);
                         ethctl->ret_val = ethsw_phy_rreg32(ethctl->phy_addr,
@@ -4581,8 +4590,16 @@ static int bcm63xx_enet_ioctl(struct net_device *dev, struct ifreq *rq, int cmd)
                     break;
 
                 case ETHSETMIIREG:       /* Write MII PHY register. */
-                    BCM_ENET_DEBUG("phy_id: %d; reg_num = %d; val = 0x%x \n", ethctl->phy_addr,
-                            ethctl->phy_reg, ethctl->val);
+                    if(ethctl->flags == ETHCTL_FLAG_ACCESS_INT_PHY)
+                    {
+                        if(IsExtPhyId(ethctl->phy_addr))
+                            ethctl->flags = ETHCTL_FLAG_ACCESS_EXT_PHY;
+                        else if(ethctl->phy_addr & CONNECTED_TO_EXTERN_SW)
+                            ethctl->flags = ETHCTL_FLAG_ACCESS_EXTSW_PHY;
+                    }
+
+                    BCM_ENET_DEBUG("phy_id: %d; reg_num = %d; flags = 0x%x, val = 0x%x \n", ethctl->phy_addr, ethctl->flags,
+                             ethctl->phy_reg, ethctl->val);
                     {
                         down(&bcm_ethlock_switch_config);
                         ethctl->ret_val = ethsw_phy_wreg32(ethctl->phy_addr,

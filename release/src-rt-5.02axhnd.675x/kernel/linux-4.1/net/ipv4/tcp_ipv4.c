@@ -1957,6 +1957,11 @@ process:
 		skb->dev = tmpdev;
         skb_pull(skb,offset);
 	}
+	else{
+		/*unsupported local tcp */
+      blog_skip(skb, blog_skip_reason_local_tcp_termination);
+	}
+	
 #endif
 
 #if defined(CONFIG_BCM_MPTCP) && defined(CONFIG_BCM_KF_MPTCP)

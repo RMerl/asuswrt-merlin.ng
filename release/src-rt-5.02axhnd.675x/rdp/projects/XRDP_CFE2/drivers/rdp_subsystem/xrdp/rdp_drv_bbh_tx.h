@@ -48,6 +48,10 @@ extern "C"
 #define BBH_TX_BLOCK_COUNT BBH_TX_ID_NUM
 #define BBH_TX_WAN_ID      BBH_TX_ID_PON
 #define BBH_TX_DS_ID       BBH_TX_LAN
+#elif defined(BCM6855)
+#define BBH_TX_BLOCK_COUNT BBH_TX_ID_NUM
+#define BBH_TX_WAN_ID      BBH_TX_ID_PON
+#define BBH_TX_DS_ID       BBH_TX_ID_LAN
 #else
 #define BBH_TX_BLOCK_COUNT 2
 #define BBH_TX_WAN_ID      1
@@ -106,6 +110,10 @@ typedef struct
 {
     bdmf_boolean q0;
     bdmf_boolean q1;
+#if !(defined BCM6878) 
+    bdmf_boolean dis0;
+    bdmf_boolean dis1;
+#endif
 } queue_to_rnr_t;
 
 typedef struct

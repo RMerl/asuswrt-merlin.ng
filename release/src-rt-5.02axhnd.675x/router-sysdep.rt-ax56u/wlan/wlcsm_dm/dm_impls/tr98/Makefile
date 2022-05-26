@@ -8,8 +8,7 @@ BUILD_DIR:=$(word 1, $(BUILD_DIR))
 OUTPUT_LIB:= libwlcsm_dm_tr98.so
 
 
-WLCSM_FILES := wlcsm_dm_tr98.c wlmngr.c wlmdm.c  wlutil.c wldsltr.c nvram_mdm.c  wlsyscall.c 
-
+WLCSM_FILES := wlcsm_dm_tr98.c wlmngr.c wlmdm.c  wlutil.c wldsltr.c nvram_mdm.c  wlsyscall.c
 #$(info $(WLCSM_FILES))
 
 WLCSM_OBJS = $(foreach x, $(WLCSM_FILES),$(x:.c=.o))
@@ -128,8 +127,6 @@ ifneq ($(strip $(MFP)),)
 	CFLAGS += -DMFP
 endif
 
-                                                                                   
-
 
 ifeq ($(DSLCPE_WLCSM_EXT),1)
 	LIBS += -lwlcsm
@@ -157,6 +154,10 @@ ALLOWED_LIB_DIRS := /lib:/lib/public:/lib/private
 #CUSTOM_CFLAGS += -Wno-error=unused-function -Wno-error=unused-but-set-variable -Werror -Wfatal-errors  # NEW_FORBID_WARNINGS
 CUSTOM_CFLAGS += -Werror  -Wunused-function -Wunused-variable
 vpath %.c $(CURR_DIR)/src 
+
+ifneq ($(strip $(BUILD_CUSTOMER)),)
+include customer/Makefile
+endif
 
 %.o: %.c
 	$(CC) -c $(CFLAGS) -o $@ $<

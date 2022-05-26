@@ -45,7 +45,7 @@ int __init init_linkwatch(void)
 	return 0;
 }
 
-__initcall(init_linkwatch);
+subsys_initcall(init_linkwatch);
 #endif
 
 enum lw_bits {

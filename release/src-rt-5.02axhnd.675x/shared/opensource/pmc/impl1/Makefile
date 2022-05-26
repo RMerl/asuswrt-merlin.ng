@@ -55,6 +55,7 @@ obj-$(CONFIG_BCM96856) += clk_rst.o pmc_sysfs.o pmc_pcie.o pmc_xrdp.o  pmc_usb.o
 obj-$(CONFIG_BCM963178) += clk_rst.o pmc_sysfs.o pmc_pcie.o pmc_switch.o pmc_dsl.o pmc_usb.o pmc_dgasp.o pmc_pcm.o pmc_wlan.o
 obj-$(CONFIG_BCM947622) += clk_rst.o pmc_sysfs.o pmc_pcie.o pmc_sysport.o pmc_wlan.o pmc_usb.o  pmc_pcm.o pmc_spu.o
 obj-$(CONFIG_BCM96878) += clk_rst.o pmc_usb.o pmc_xrdp.o pmc_pcie.o pmc_pcm.o pmc_sysfs.o pmc_wlan.o pmc_wan.o pmc_avs.o
+obj-$(CONFIG_BCM96855) += clk_rst.o pmc_sysfs.o pmc_usb.o pmc_pcie.o pmc_wlan.o pmc_wan.o pmc_pcm.o pmc_avs.o
 endif
 
 -include $(TOPDIR)/Rules.make

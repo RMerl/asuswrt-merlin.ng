@@ -56,9 +56,16 @@ dhd_handle_blog_sinit(struct dhd_pub *dhdp, int ifidx, struct sk_buff *skb)
 {
 	BlogAction_t blog_ret;
 	unsigned int pktlen = PKTLEN(dhdp->osh, skb);
+	uint32_t hw_port;
 
+#ifdef BCM_DHD_LOCK
 	DHD_UNLOCK(dhdp);
-	blog_ret = blog_sinit(skb, skb->dev, TYPE_ETH, 0, BLOG_WLANPHY);
+#else
+	DHD_PERIM_UNLOCK_ALL((dhdp->fwder_unit % FWDER_MAX_UNIT));
+#endif
+
+	hw_port = netdev_path_get_hw_port((struct net_device *)(skb->dev));
+	blog_ret = blog_sinit(skb, skb->dev, TYPE_ETH, hw_port, BLOG_WLANPHY);
 	
 #if defined(BCM_DHD_RUNNER)
 	if (PKT_BLOG == blog_ret) {
@@ -68,7 +75,11 @@ dhd_handle_blog_sinit(struct dhd_pub *dhdp, int ifidx, struct sk_buff *skb)
 	}
 #endif /* BCM_DHD_RUNNER */
 
+#ifdef BCM_DHD_LOCK
 	DHD_LOCK(dhdp);
+#else
+	DHD_PERIM_LOCK_ALL((dhdp->fwder_unit % FWDER_MAX_UNIT));
+#endif
 	if (PKT_DONE == blog_ret) {
 		/* Doesnot need go to IP stack */
 #if defined(DSLCPE) || defined(PKTC_TBL)
@@ -109,13 +120,23 @@ INLINE BCMFASTPATH int
 dhd_handle_blog_finit(struct dhd_pub *dhdp, int ifidx, struct fkbuff *fkb, struct net_device *dev)
 {
     BlogAction_t blog_ret;
+    uint32_t hw_port;
     unsigned int pktlen = fkb->len;
-    
+
+#ifdef BCM_DHD_LOCK
     DHD_UNLOCK(dhdp);
+#else
+    DHD_PERIM_UNLOCK_ALL((dhdp->fwder_unit % FWDER_MAX_UNIT));
+#endif
     /* No need for blog_link for fkb */
-    blog_ret = blog_finit(fkb, dev, TYPE_ETH, 0, BLOG_WLANPHY);
-    
+    hw_port = netdev_path_get_hw_port((struct net_device *)(dev));
+    blog_ret = blog_finit(fkb, dev, TYPE_ETH, hw_port, BLOG_WLANPHY);
+
+#ifdef BCM_DHD_LOCK
     DHD_LOCK(dhdp);
+#else
+    DHD_PERIM_LOCK_ALL((dhdp->fwder_unit % FWDER_MAX_UNIT));
+#endif
     
     if (PKT_DONE == blog_ret) {
         /* Doesnot need go to IP stack */
@@ -158,6 +179,7 @@ dhd_handle_blog_emit(dhd_pub_t *dhdp, struct net_device *net, int ifidx,
 	struct sk_buff *skb = NULL;
 	struct blog_t *blog_p = NULL;
 	uint prio = 0, flowid = 0;
+	uint32_t hw_port;
 
 	if (IS_SKBUFF_PTR(pktbuf)) {
 		skb = PNBUFF_2_SKBUFF(pktbuf);
@@ -201,9 +223,18 @@ dhd_handle_blog_emit(dhd_pub_t *dhdp, struct net_device *net, int ifidx,
 				blog_p->wfd.dhd_ucast.is_tx_hw_acc_en = 0;
 			}
 #endif
+#ifdef BCM_DHD_LOCK
 			DHD_UNLOCK(dhdp);
-			blog_emit(pktbuf, dhd_idx2net(dhdp, ifidx), TYPE_ETH, 0, BLOG_WLANPHY);
+#else
+			DHD_PERIM_UNLOCK(dhdp);
+#endif
+			hw_port = netdev_path_get_hw_port((struct net_device *)(dhd_idx2net(dhdp, ifidx)));
+			blog_emit(pktbuf, dhd_idx2net(dhdp, ifidx), TYPE_ETH, hw_port, BLOG_WLANPHY);
+#ifdef BCM_DHD_LOCK
 			DHD_LOCK(dhdp);
+#else
+			DHD_PERIM_LOCK(dhdp);
+#endif
 		}
 	}
 
@@ -322,8 +353,11 @@ dhd_blog_flush_flowring(struct dhd_pub *dhdp, uint16 flowid)
 	}
 
 	/* Need to unlock perim lock before calling system function */
+#ifdef BCM_DHD_LOCK
 	DHD_UNLOCK(dhdp);
-
+#else
+	DHD_PERIM_UNLOCK_ALL((dhdp->fwder_unit % FWDER_MAX_UNIT));
+#endif
 	/* Fill parameters for device + metadata based flush mechanism */
 	params.flush_dev = 1;
 	params.flush_meta = 1;
@@ -335,7 +369,11 @@ dhd_blog_flush_flowring(struct dhd_pub *dhdp, uint16 flowid)
 	blog_notify_async_wait(FLUSH, dev, (unsigned long)&params, 0);
 
 	/* Lock back */
+#ifdef BCM_DHD_LOCK
 	DHD_LOCK(dhdp);
+#else
+	DHD_PERIM_LOCK_ALL((dhdp->fwder_unit % FWDER_MAX_UNIT));
+#endif
 
 	return BCME_OK;
 }
@@ -358,7 +396,11 @@ dhd_handle_blog_disconnect_event(struct dhd_pub *dhdp, wl_event_msg_t *event)
 	 * as tx direction will require this lock which on that cpu, the lock in the
 	 * action handler may be holded
 	 */
+#ifdef BCM_DHD_LOCK
 	DHD_UNLOCK(dhdp);
+#else
+	DHD_PERIM_UNLOCK_ALL((dhdp->fwder_unit % FWDER_MAX_UNIT));
+#endif
 
 #if defined(BCM_PKTFWD)
     dhd_pktfwd_request(dhd_pktfwd_req_assoc_sta_e,
@@ -380,7 +422,11 @@ dhd_handle_blog_disconnect_event(struct dhd_pub *dhdp, wl_event_msg_t *event)
 	memcpy(&params.mac[0], &event->addr.octet[0], sizeof(event->addr.octet));
 	blog_notify_async_wait(FLUSH, dev, (unsigned long)&params, 0);
 
+#ifdef BCM_DHD_LOCK
 	DHD_LOCK(dhdp);
+#else
+	DHD_PERIM_LOCK_ALL((dhdp->fwder_unit % FWDER_MAX_UNIT));
+#endif
 
 	return;
 }

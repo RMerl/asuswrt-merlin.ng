@@ -1921,6 +1921,9 @@ struct net_device {
 #endif
 	struct phy_device *phydev;
 	struct lock_class_key *qdisc_tx_busylock;
+#ifdef CONFIG_BCM_KF_MCAST
+    int bcm_mcastrouter;
+#endif
 };
 #define to_net_dev(d) container_of(d, struct net_device, dev)
 
@@ -4089,6 +4092,7 @@ void netdev_path_dump(struct net_device *dev);
 int netdev_path_set_hw_subport_mcast_idx(struct net_device *dev,
 									 unsigned int subport_idx);
 
+struct net_device *bcm_netdev_master_upper_dev_get_nolock(struct net_device *dev);
 #endif /* CONFIG_BCM_KF_NETDEV_PATH */
 
 

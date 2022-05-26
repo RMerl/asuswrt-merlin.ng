@@ -39,11 +39,13 @@ written consent.
 #include "BPCM.h"
 #include "pmc_usb.h"
 #include "bcm_ubus4.h"
+#include <board.h>
 
 /*TODO add functions to power on/off the USB blocks selectively */
 int pmc_usb_power_up(unsigned int usb_block)
 {
     int ret;
+
 #if defined CONFIG_BCM963138 || defined CONFIG_BCM963148
     if( usb_block == PMC_USB_HOST_ALL)
     {
@@ -76,7 +78,7 @@ int pmc_usb_power_up(unsigned int usb_block)
         ubus_register_port(UCB_NODE_ID_SLV_USB);
         ubus_register_port(UCB_NODE_ID_MST_USB);
     }
-#elif defined(CONFIG_BCM96846) || defined(CONFIG_BCM96878)
+#elif defined(CONFIG_BCM96846) || defined(CONFIG_BCM96878) || defined(CONFIG_BCM96855)
     if( usb_block == PMC_USB_HOST_ALL)
     {
         ret = PowerOnDevice(PMB_ADDR_USB20_2X);
@@ -156,7 +158,7 @@ int pmc_usb_power_down(unsigned int usb_block)
         ubus_deregister_port(UCB_NODE_ID_MST_USB);
         return PowerOffDevice(PMB_ADDR_USB30_2X, 0);
     }
-#elif defined CONFIG_BCM96846 || defined CONFIG_BCM96878
+#elif defined(CONFIG_BCM96846) || defined(CONFIG_BCM96878) || defined(CONFIG_BCM96855)
     if( usb_block == PMC_USB_HOST_ALL)
     {
         return PowerOffDevice(PMB_ADDR_USB20_2X,0);

@@ -1827,13 +1827,13 @@ void bcmxapi_SetPtmBonding(UINT32 bonding)
 
 
 /*---------------------------------------------------------------------------
- * void bcmxapi_XtmGetStats(UINT8 vport, UINT32 *rxDropped, UINT32 *txDropped)
+ * void bcmxapi_XtmGetStats(PBCMXTMRT_DEV_CONTEXT pDevCtx, UINT8 vport, UINT32 *rxDropped, UINT32 *txDropped)
  * Description:
  *
  * Returns: void
  *---------------------------------------------------------------------------
  */
-void bcmxapi_XtmGetStats(UINT8 vport, UINT32 *rxDropped, UINT32 *txDropped)
+void bcmxapi_XtmGetStats(PBCMXTMRT_DEV_CONTEXT pDevCtx, UINT8 vport, UINT32 *rxDropped, UINT32 *txDropped)
 {
    bcmPktDma_XtmGetStats(vport, rxDropped, txDropped);
    

@@ -954,5 +954,24 @@ typedef enum
     RDPA_FLOW_MC,
 } rdpa_flow_t;
 
+typedef enum
+{
+    rdpa_dos_reason_mac_sa_eq_da      = 0,    /*< MAC SA==DA */
+    rdpa_dos_reason_ip_land           = 1,    /*< IPDA=IPSA in an IP(v4/v6) datagram */
+    rdpa_dos_reason_tcp_blat          = 2,    /*< DPort=SPort in a TCP header */
+    rdpa_dos_reason_udp_blat          = 3,    /*< DPort=SPort in a UDP header */
+    rdpa_dos_reason_tcp_null_scan     = 4,    /*< Seq_Num=0 & All TCP_FLAGs=0 */
+    rdpa_dos_reason_tcp_xmas_scan     = 5,    /*< Seq_Num=0 & FIN=1 & URG=1 & PSH=1 */
+    rdpa_dos_reason_tcp_synfin_scan   = 6,    /*< SYN=1 & FIN=1 */
+    rdpa_dos_reason_tcp_syn_error     = 7,    /*< SYN=1 & ACK=0 & SRC_Port<1024 */
+    rdpa_dos_reason_tcp_short_hdr     = 8,    /*< Length of TCP header < MIN_TCP_Header_Size */
+    rdpa_dos_reason_tcp_frag_error    = 9,    /*< Fragment_Offset=1 in any fragment of a fragmented IP datagram carring part of TCP data */
+    rdpa_dos_reason_icmpv4_fragment   = 10,   /*< ICMPv4 protocol data unit carrier in a fragmented IPv4 datagram */
+    rdpa_dos_reason_icmpv6_fragment   = 11,   /*< ICMPv6 protocol data unit carrier in a fragmented IPv6 datagram */
+    rdpa_dos_reason_icmpv4_long_ping  = 12,   /*< ICMPv4 Ping(Echo Request) > MAX_ICMPv4_Size + size of IPv4 header */
+    rdpa_dos_reason_icmpv6_long_ping  = 13,   /*< ICMPv6 Ping(Echo Request) > MAX_ICMPv4_Size + size of IPv6 header */
+
+} rdpa_dos_attack_reason_t;
+
 #endif /* _RDPA_TYPES_H_ */
 

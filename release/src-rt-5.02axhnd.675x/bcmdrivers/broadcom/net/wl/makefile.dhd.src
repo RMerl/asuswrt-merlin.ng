@@ -300,6 +300,8 @@ else
 EXTRA_CFLAGS += -DDSLCPE_WLAN_VERSION=\"$(DSLCPE_WLAN_VERSION)\"
 EXTRA_CFLAGS += -Wno-date-time
 #EXTRA_CFLAGS += $(BRCM_WERROR_CFLAGS)
+# new dhd lock flag
+EXTRA_CFLAGS += -DBCM_DHD_LOCK
 
 ###########################################
 #

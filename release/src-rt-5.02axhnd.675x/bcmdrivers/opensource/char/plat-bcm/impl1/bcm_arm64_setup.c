@@ -133,10 +133,12 @@ static int __init bcm_arch_early_init(void)
     /* Setup external irqs */
     bcm_extirq_init();
 #endif
+#if !defined(CONFIG_BRCM_IKOS)
     bcm_init_pinmux();
 
 #if !defined(CONFIG_BCM94908)
     ubus_master_port_init();
+#endif
 #endif
     return 0;
 }

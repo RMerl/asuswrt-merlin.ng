@@ -50,7 +50,7 @@
 #include <linux/delay.h>
 #include "board.h"
 #include "bcm_rsvmem.h"
-#if !defined(CONFIG_BCM963178) && !defined(_BCM963178_) && !defined(CONFIG_BCM947622) && !defined(_BCM947622_) && (NONETWORK==0)
+#if !defined(CONFIG_BCM963178) && !defined(_BCM963178_) && !defined(CONFIG_BCM947622) && !defined(_BCM947622_) && !defined(CONFIG_BCM96855) && (NONETWORK==0)
 #include "rdpa_types.h"
 #include "lport_defs.h"
 #endif
@@ -132,7 +132,7 @@ static void bcm_misc_hw_rcal(void)
 #endif
 
 #if defined(_BCM94908_) || defined(CONFIG_BCM94908) || defined(CONFIG_BCM96846) || defined(_BCM96846_) || defined(CONFIG_BCM96856) || defined(_BCM96856_) || defined(_BCM947622_) || \
-    defined(CONFIG_BCM947622) || defined(CONFIG_BCM96878) || defined(_BCM96878_)
+    defined(CONFIG_BCM947622) || defined(CONFIG_BCM96878) || defined(_BCM96878_) || defined(CONFIG_BCM96855) || defined(_BCM96855_)
 static void bcm_set_padctrl(unsigned int pin_num, unsigned int pad_ctrl)
 {
     unsigned int tp_blk_data_lsb;
@@ -207,17 +207,18 @@ found_rgmii:
 }
 #endif
 
-#if defined(CONFIG_BCM96846) || defined(_BCM96846_) || defined(CONFIG_BCM96856) || defined(_BCM96856_) || defined(CONFIG_BCM96878) || defined(_BCM96878_)
+#if defined(CONFIG_BCM96846) || defined(_BCM96846_) || defined(CONFIG_BCM96856) || defined(_BCM96856_) || defined(CONFIG_BCM96878) || defined(_BCM96878_) || defined(CONFIG_BCM96855) || defined(_BCM96855_)
 static void bcm_misc_hw_xmii_pads_init(void)
 {
     int i, n, errcnt;
     int pin_num;
     uint32_t tp_data;
     uint32_t pad_ctrl;
-    uint32_t pad_sel = 3; /* 8mA */
+    uint32_t pad_sel = 6; /* 14mA */
     unsigned short Function[BP_PINMUX_MAX];
     unsigned int Muxinfo[BP_PINMUX_MAX];
     const ETHERNET_MAC_INFO *Enet;
+    int is_1p8v;
 
     if ((Enet = BpGetEthernetMacInfoArrayPtr()) == NULL)
         return;
@@ -225,8 +226,21 @@ static void bcm_misc_hw_xmii_pads_init(void)
     if (!((Enet->sw.port_map & (1 << 4)) && IsRGMII(Enet->sw.phy_id[4])))
         return;
 
+    is_1p8v = IsRGMII_1P8V(Enet->sw.phy_id[4]);
+
     pad_ctrl = GPIO->PadCtrl;
-    pad_ctrl |= (1 << 8); /* rgmii_0_pad_modehv = 1 */
+
+    if (is_1p8v)
+    {
+        pad_ctrl &= ~(1 << 8); /* MISC_XMII_PAD_MODEHV = 0 */
+        pad_ctrl |= (1 << 10); /* MISC_XMII_PAD_AMP_EN = 1 */
+    }
+    else
+    {
+        pad_ctrl |= (1 << 8); /* MISC_XMII_PAD_MODEHV = 1 */
+        pad_ctrl &= ~(1 << 10); /* MISC_XMII_PAD_AMP_EN = 0 */
+    }
+
     GPIO->PadCtrl = pad_ctrl;
 
     if (BpGetIfacePinmux (BP_PINMUX_FNTYPE_xMII | 4, BP_PINMUX_MAX,  &n, &errcnt, Function, Muxinfo) != BP_SUCCESS)
@@ -240,7 +254,10 @@ static void bcm_misc_hw_xmii_pads_init(void)
         pin_num = Muxinfo[i] & BP_PINMUX_PIN_MASK;
         tp_data = 0;
         tp_data |= (pad_sel << 12);
-        tp_data |= ((i < 6 ? 0 : 1) << 16);
+        tp_data |= ((i < 6 ? 0 : 1) << 16); /* pad_ind = 0 for RX pads */
+
+        if (is_1p8v)
+            tp_data |= ((i < 6 ? 1 : 0) << 15); /* pad_amp_en = 1 for RX pads */
 
         bcm_set_padctrl(pin_num, tp_data);
     }
@@ -531,7 +548,7 @@ void bcm_misc_hw_intr_mux_init(void)
     return;
 }
 
-#if !defined(_CFE_) && !defined(CONFIG_BCM963178) && !defined(_BCM963178_) && !defined(CONFIG_BCM947622) && !defined(_BCM947622_) && !defined(CONFIG_BCM96878)
+#if !defined(_CFE_) && !defined(CONFIG_BCM963178) && !defined(_BCM963178_) && !defined(CONFIG_BCM947622) && !defined(_BCM947622_) && !defined(CONFIG_BCM96878) && !defined(CONFIG_BCM96855)
 int bcm_misc_xfi_port_get(void)
 {
     int iter;
@@ -682,19 +699,24 @@ static void configure_xfi_optic_phy(void)
 }
 #endif
 
-
 int bcm_misc_hw_init(void)
 {
+#ifndef CONFIG_BRCM_QEMU
     bcm_misc_hw_intr_mux_init();
+#endif
 #if defined(_BCM94908_) || defined(CONFIG_BCM94908) || defined(CONFIG_BCM96846) || defined(_BCM96846_) || defined(CONFIG_BCM963158) || defined(_BCM963158_) || \
-    defined(CONFIG_BCM96856) || defined(_BCM96856_) || defined(CONFIG_BCM96858) || defined(_BCM96858_) || defined(_BCM947622_) || defined(CONFIG_BCM947622) || defined(CONFIG_BCM96878) || defined(_BCM96878_)
-    bcm_misc_hw_xmii_pads_init();
+    defined(CONFIG_BCM96856) || defined(_BCM96856_) || defined(CONFIG_BCM96858) || defined(_BCM96858_) || defined(_BCM947622_) || defined(CONFIG_BCM947622) || \
+    defined(CONFIG_BCM96878) || defined(_BCM96878_) || defined(CONFIG_BCM96855) || defined(_BCM96855_)
+#ifndef CONFIG_BRCM_QEMU
+   bcm_misc_hw_xmii_pads_init();
+#endif
 #endif
 #if defined(CONFIG_BCM94908) || defined(CONFIG_BCM963158)
     bcm_misc_hw_rcal();
 #endif
-#if !defined( _CFE_) && (defined(CONFIG_BCM96858) || defined(CONFIG_BCM96846) || defined(CONFIG_BCM963158) || defined(CONFIG_BCM96856) || defined(CONFIG_BCM96878))
-    alloc_rdp_dummy_device();
+#if !defined( _CFE_) && (defined(CONFIG_BCM96858) || defined(CONFIG_BCM96846) || defined(CONFIG_BCM963158) || defined(CONFIG_BCM96856) || defined(CONFIG_BCM96878) || \
+    defined(CONFIG_BCM96855)) 
+   alloc_rdp_dummy_device();
 #endif
 
 #if defined(_BCM96858_) || defined(CONFIG_BCM96858)

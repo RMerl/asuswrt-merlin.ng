@@ -74,6 +74,45 @@ int bcm_mcast_blog_get_rep_info(struct net_device *repDev, unsigned char *repMac
    return 0;
 }
 
+/* Compare info_1 with info_2.
+** if the info is for blog_p->wl, ignore the prio/flowring_idx in comparing.
+** Return 0: ==, others: !=
+*/
+int bcm_mcast_blog_cmp_rep_info(struct net_device *repDev, uint32_t info_1, uint32_t info_2)
+{
+   uint32_t  phyType = netdev_path_get_hw_port_type(repDev);   
+   wlan_client_info_t wlInfo_1 = { 0 };
+   wlan_client_info_t wlInfo_2 = { 0 };
+
+   wlInfo_1.wl = info_1;
+   wlInfo_2.wl = info_2;
+
+   /* not wlan */
+   if ((BLOG_WLANPHY != BLOG_GET_PHYTYPE(phyType)) && (BLOG_NETXLPHY != BLOG_GET_PHYTYPE(phyType)))
+      goto exit;
+
+   if (wlInfo_1.wfd.mcast.is_wfd != wlInfo_2.wfd.mcast.is_wfd)
+      return 1;
+
+   if (wlInfo_1.wfd.mcast.is_wfd)
+   {
+      wlInfo_1.wfd.mcast.wfd_prio = 0;
+      wlInfo_2.wfd.mcast.wfd_prio = 0;
+      goto exit;
+   }
+   else
+   {
+      wlInfo_1.rnr.priority = 0;      
+      wlInfo_2.rnr.priority = 0;
+      wlInfo_1.rnr.flowring_idx = 0;
+      wlInfo_2.rnr.flowring_idx = 0;
+      goto exit;
+   }
+
+exit:
+   return (wlInfo_1.wl == wlInfo_2.wl) ? 0 : 1;
+   
+}
 
 void bcm_mcast_blog_release(int proto, void *mc_fdb)
 {
@@ -327,6 +366,12 @@ static void bcm_mcast_blog_process_lan(blogRule_t         *rule_p,
 
     while(1)
     {
+        if (netif_is_bond_master(dev_p))
+        {
+            *lan_dev_pp = dev_p;
+            break;
+        }
+
         if(netdev_path_is_root(dev_p))
         {
             *lan_dev_pp = dev_p;
@@ -342,7 +387,7 @@ static void bcm_mcast_blog_process_lan(blogRule_t         *rule_p,
         dev_p = netdev_path_next_dev(dev_p);
     }
 
-    if (to_accel_devp) 
+    if (to_accel_devp && !netif_is_bond_master(*lan_dev_pp)) 
     {
         *lan_dev_pp = to_accel_devp;
     }
@@ -507,6 +552,19 @@ static void bcm_mcast_blog_link_devices(bcm_mcast_ifdata  *pif,
     }
 }
 
+static int bcm_mcast_blog_rule_count(blogRule_t *rule_p)
+{
+    blogRule_t *temp_rule_p = rule_p;
+    int count = 0;
+
+    while ( temp_rule_p )
+    {
+        count++;
+        temp_rule_p = temp_rule_p->next_p;
+    }
+    return count;
+}
+
 static int bcm_mcast_blog_vlan_process(bcm_mcast_ifdata *pif,
                                        void             *mc_fdb,
                                        int               proto,
@@ -538,6 +596,13 @@ static int bcm_mcast_blog_vlan_process(bcm_mcast_ifdata *pif,
 
     firstRule = 1;
     rule_p = (blogRule_t *)blog_p->blogRule_p;
+
+    __logDebug("blogrule count %d grp 0x%x dstdev %s srcdev %s",
+              bcm_mcast_blog_rule_count(rule_p),
+              htonl(((t_igmp_grp_entry *)mc_fdb)->rxGrp.s_addr), 
+              ((t_igmp_grp_entry *)mc_fdb)->dst_dev->name,
+              ((t_igmp_grp_entry *)mc_fdb)->from_dev->name);
+
     while( rule_p )
     {
         blogRuleFilter_t *filter_p;
@@ -556,6 +621,8 @@ static int bcm_mcast_blog_vlan_process(bcm_mcast_ifdata *pif,
                 if (proto != blog_p->key.protocol)
                 {
                     /* skip this rule */
+                    __logDebug("proto in blog rule %d different from proto in blog %d",
+                               proto, blog_p->key.protocol);
                     blog_p->blogRule_p = rule_p->next_p;
                     blog_rule_free(rule_p);
                     rule_p = blog_p->blogRule_p;
@@ -576,6 +643,8 @@ static int bcm_mcast_blog_vlan_process(bcm_mcast_ifdata *pif,
                 if (nxtHdr != blog_p->key.protocol)
                 {
                     /* skip this rule */
+                    __logDebug("nxtHdr in blog rule %d different from nxtHdr in blog %d",
+                               nxtHdr, blog_p->key.protocol);
                     blog_p->blogRule_p = rule_p->next_p;
                     blog_rule_free(rule_p);
                     rule_p = blog_p->blogRule_p;
@@ -622,12 +691,23 @@ static int bcm_mcast_blog_vlan_process(bcm_mcast_ifdata *pif,
 #if defined(CONFIG_BR_IGMP_SNOOP)
                if ( BCM_MCAST_PROTO_IPV4 == proto)
                {
+                   __logInfo("blog_get failure, Invoke bcm_mcast_igmp_del_entry for grp 0x%x dstdev %s srcdev %s num_tags %d",
+                             htonl(((t_igmp_grp_entry *)mc_fdb)->rxGrp.s_addr), 
+                             ((t_igmp_grp_entry *)mc_fdb)->dst_dev->name,
+                             ((t_igmp_grp_entry *)mc_fdb)->from_dev->name,
+                             ((t_igmp_grp_entry *)mc_fdb)->num_tags);
                   bcm_mcast_igmp_del_entry(pif, mc_fdb, NULL, NULL);
                }
 #endif
 #if defined(CONFIG_BR_MLD_SNOOP)
                if ( BCM_MCAST_PROTO_IPV6 == proto)
                {
+                   __logInfo("blog_get failure, Invoke bcm_mcast_mld_del_entry for grp %x...%x dstdev %s srcdev %s num_tags %d",
+                             htons(((t_mld_grp_entry *)mc_fdb)->grp.s6_addr16[0]), 
+                             htons(((t_mld_grp_entry *)mc_fdb)->grp.s6_addr16[7]),
+                             ((t_mld_grp_entry *)mc_fdb)->dst_dev->name,
+                             ((t_mld_grp_entry *)mc_fdb)->from_dev->name,
+                             ((t_mld_grp_entry *)mc_fdb)->num_tags);
                   bcm_mcast_mld_del_entry(pif, mc_fdb, NULL, NULL);
                }
 #endif
@@ -693,35 +773,85 @@ static int bcm_mcast_blog_vlan_process(bcm_mcast_ifdata *pif,
 #endif
         bcm_mcast_blog_link_devices(pif, new_blog_p, rxDev, txDev, wanType);
 
+        __logInfo("Invoking blog_activate() vlan0 0x%x vlan1 0x%x numtags %d wlinfo 0x%x", 
+                  new_blog_p->vtag[0], new_blog_p->vtag[1], new_blog_p->vtag_num, new_blog_p->wl);
         blog_key_p = blog_activate(new_blog_p, traffic, BlogClient_fcache);
         if ( blog_key_p == NULL )
         {
             blog_rule_free_list(new_blog_p);
+            if (BCM_MCAST_PROTO_IPV4 == proto) 
+            {
+                __logDebug("blog_activate() failed Grp 0x%x vlan0 0x%x vlan1 0x%x numtags %d wlinfo 0x%x",
+                           htonl(new_blog_p->rx.tuple.daddr), htonl(new_blog_p->vtag[0]), htonl(new_blog_p->vtag[1]), 
+                           new_blog_p->vtag_num, new_blog_p->wl);
+            }
+            else
+            {
+                __logDebug("blog_activate() failed vlan0 0x%x vlan1 0x%x numtags %d wlinfo 0x%x",
+                           htonl(new_blog_p->vtag[0]), htonl(new_blog_p->vtag[1]), new_blog_p->vtag_num, 
+                           new_blog_p->wl);
+                BCM_MCAST_DBG_PRINT_V6_ADDR("Group", blog_p->tupleV6.daddr.p16);
+            }
             blog_put(new_blog_p);
+
             if ( new_mc_fdb != mc_fdb )
             {
 #if defined(CONFIG_BR_IGMP_SNOOP)
                if ( BCM_MCAST_PROTO_IPV4 == proto)
                {
-                  bcm_mcast_igmp_del_entry(pif, new_mc_fdb, NULL, NULL);
+                   __logInfo("blog_activate failure, Invoke bcm_mcast_igmp_del_entry for grp 0x%x dstdev %s srcdev %s "
+                             "num_tags %d wlinfo 0x%x",
+                             htonl(((t_igmp_grp_entry *)new_mc_fdb)->rxGrp.s_addr),
+                             ((struct net_device *)txDev)->name, 
+                             ((struct net_device *)rxDev)->name, 
+                             ((t_igmp_grp_entry *)new_mc_fdb)->num_tags,
+                             ((t_igmp_grp_entry *)new_mc_fdb)->info);
+                   bcm_mcast_igmp_del_entry(pif, new_mc_fdb, NULL, NULL);
                }
 #endif
 #if defined(CONFIG_BR_MLD_SNOOP)
                if ( BCM_MCAST_PROTO_IPV6 == proto)
                {
-                  bcm_mcast_mld_del_entry(pif, new_mc_fdb, NULL, NULL);
+                   __logInfo("blog_activate failure, Invoke bcm_mcast_mld_del_entry for grp %x...%x dstdev %s srcdev %s "
+                             "num_tags %d wlinfo 0x%x",
+                             htons(((t_mld_grp_entry *)new_mc_fdb)->grp.s6_addr16[0]), 
+                             htons(((t_mld_grp_entry *)new_mc_fdb)->grp.s6_addr16[7]),
+                             ((struct net_device *)txDev)->name, 
+                             ((struct net_device *)rxDev)->name, 
+                             ((t_mld_grp_entry *)new_mc_fdb)->num_tags,
+                             ((t_mld_grp_entry *)new_mc_fdb)->info);
+                   bcm_mcast_mld_del_entry(pif, new_mc_fdb, NULL, NULL);
                }
 #endif
             }
         }
         else
         {
+           if (BCM_MCAST_PROTO_IPV4 == proto) 
+           {
+               __logDebug("blog_activate() successful Group 0x%x vlan0 0x%x vlan1 0x%x numtags %d wlinfo 0x%x",
+                          htonl(new_blog_p->rx.tuple.daddr), htonl(new_blog_p->vtag[0]), htonl(new_blog_p->vtag[1]), 
+                          new_blog_p->vtag_num, new_blog_p->wl);
+           }
+           else
+           {
+               __logDebug("blog_activate() successful vlan0 0x%x vlan1 0x%x numtags %d wlinfo 0x%x",
+                          htonl(new_blog_p->vtag[0]), htonl(new_blog_p->vtag[1]), new_blog_p->vtag_num,
+                          new_blog_p->wl);
+               BCM_MCAST_DBG_PRINT_V6_ADDR("Group", blog_p->tupleV6.daddr.p16);
+           }
            do
            {
 #if defined(CONFIG_BR_IGMP_SNOOP)
               if ( BCM_MCAST_PROTO_IPV4 == proto)
               {
                  ((t_igmp_grp_entry *)new_mc_fdb)->blog_idx = *blog_key_p;
+                   __logInfo("blog_activate success for grp 0x%x rxDev %s txDev %s num_tags %d wlinfo 0x%x",
+                          htonl(((t_igmp_grp_entry *)new_mc_fdb)->rxGrp.s_addr),
+                             ((struct net_device *)rxDev)->name,
+                             ((struct net_device *)txDev)->name,
+                             ((t_igmp_grp_entry *)new_mc_fdb)->num_tags,
+                             ((t_igmp_grp_entry *)new_mc_fdb)->info);
                  break;
               }
 #endif
@@ -729,6 +859,13 @@ static int bcm_mcast_blog_vlan_process(bcm_mcast_ifdata *pif,
               if ( BCM_MCAST_PROTO_IPV6 == proto)
               {
                  ((t_mld_grp_entry *)new_mc_fdb)->blog_idx = *blog_key_p;
+                   __logInfo("blog_activate success for grp %x...%x rxDev %s txDev %s num_tags %d wlinfo 0x%x",
+                             htons(((t_mld_grp_entry *)new_mc_fdb)->grp.s6_addr16[0]), 
+                             htons(((t_mld_grp_entry *)new_mc_fdb)->grp.s6_addr16[7]),
+                             ((struct net_device *)rxDev)->name,
+                             ((struct net_device *)txDev)->name, 
+                             ((t_mld_grp_entry *)new_mc_fdb)->num_tags, 
+                             ((t_mld_grp_entry *)new_mc_fdb)->info);
                  break;
               }
 #endif
@@ -1010,8 +1147,12 @@ int bcm_mcast_blog_process(bcm_mcast_ifdata *pif, void *mc_fdb, int proto, struc
       }
 
       blog_p->mark = SKBMARK_SET_Q(blog_p->mark, mcastDefTxPriorityQ);
+      __logInfo("blog_p->mark 0x%x mcastDefTxPriorityQ %d mcast_ctrl->mcastPriQueue %d", 
+                blog_p->mark, mcastDefTxPriorityQ, mcast_ctrl->mcastPriQueue);
    }
 
+   __logInfo("wan_vlan_dev_p %s lan_vlan_dev_p %s", 
+             wan_vlan_dev_p ? wan_vlan_dev_p->name:"NULL", lan_vlan_dev_p ? lan_vlan_dev_p->name:"NULL");
    /* add vlan blog rules, if any vlan interfaces were found */
    if(blogRuleVlanHook && (wan_vlan_dev_p || lan_vlan_dev_p)) {
       if(blogRuleVlanHook(blog_p, wan_vlan_dev_p, lan_vlan_dev_p) < 0) {

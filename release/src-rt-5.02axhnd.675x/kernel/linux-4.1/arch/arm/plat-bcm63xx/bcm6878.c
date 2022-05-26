@@ -39,6 +39,7 @@ written consent.
 
 static void __init neon_enable(void *data)
 {
+#ifndef CONFIG_BRCM_QEMU
 	u32 access;
 	(void)data;
 	
@@ -51,6 +52,7 @@ static void __init neon_enable(void *data)
 
 	/* mov r0, 0x40000000; vmsr fpexc, r0 */
 	asm volatile ("mov r0, #0x40000000; .word 0xeee80a10" : : : "r0" );
+#endif
 }
 
 static int __init bcm6878_neon_fixup(void)

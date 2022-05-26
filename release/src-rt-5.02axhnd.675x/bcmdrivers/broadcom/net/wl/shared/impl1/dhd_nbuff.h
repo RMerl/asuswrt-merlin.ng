@@ -43,6 +43,7 @@
 #define FKB_IS_CLONED(pkt) ((_is_fkb_cloned_pool_(PNBUFF_2_FKBUFF(pkt))))
 
 #ifndef BCM_NBUFF_PKT
+#include <linux/bcm_skb_defines.h>
 
 extern void *osl_pkt_get_tag(void *pkt);
 extern int osl_pkttag_attach(void *osh, void *pkt);
@@ -400,7 +401,6 @@ int dhd_nbuff_attach(void);
 
 #define FKB_IS_FKBPOOL(pkt)  (DHD_PKT_GET_FKBPOOL(pkt))
 #define FKB_IS_WMF_UCAST(pkt) (DHD_PKT_GET_WMF_FKB_UCAST(pkt))
-#define PRIO_LOC_NFMARK 16
 #include <dhd_nic_common.h>
 
 #else

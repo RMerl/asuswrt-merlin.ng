@@ -459,7 +459,8 @@ typedef struct XtmTransmitQueueParms
 #else    
     UINT16 usSize;
 #endif    
-    UINT32 ulTxQueueIdx;            /* transmit channel index */
+    UINT32 ulMBR;
+    UINT32 ulTxQueueIdx;            /* RD-Only. transmit channel index. O/P parameter. */
 } XTM_TRANSMIT_QUEUE_PARMS, *PXTM_TRANSMIT_QUEUE_PARMS;
 
 typedef struct XtmConnArb
@@ -642,11 +643,14 @@ BCMXTM_STATUS BcmXtm_GetErrorStatistics( PXTM_ERROR_STATS pStatistics );
 #define XTM_ADSL_QUEUE_DROP_THRESHOLD          64    /* ADSL ATM,PTM, PTM_BONDED   */
 #define XTM_VDSL_QUEUE_DROP_THRESHOLD         128    /* VDSL PTM, PTM_BONDED       */
 #define XTM_VDSL_RTX_QUEUE_DROP_THRESHOLD     512    /* VDSL PTM, PTM_BONDED, ReTx */
-#define XTM_GFAST_QUEUE_DROP_THRESHOLD       1024    /* GFAST PTM, PTM_BONDED      */
+#define XTM_GFAST_QUEUE_DROP_THRESHOLD        512    /* GFAST PTM, PTM_BONDED      */
 
 #define XTMCFG_QUEUE_DROP_THRESHOLD          XTM_VDSL_RTX_QUEUE_DROP_THRESHOLD /* For Non RDP/XRDP platforms. For RDP/XRDP platforms, the above feature of
                                                                                   varying thresholds based on mode is active */
 /* in ms */
+
+/* Minimum Buffer Reservation Configurations */
+#define XTM_TXQ_DEFAULT_MBR                   100 /* per every 100Mbps traffic served in bursts */
 
 /*
 In rtx mode (G.inp and G.fast) you don't have fixed delay between the lines, so maxBondlingDelay from DSL MIB is useless. 

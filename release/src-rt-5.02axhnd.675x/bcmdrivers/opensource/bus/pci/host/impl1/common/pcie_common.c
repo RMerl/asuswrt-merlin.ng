@@ -213,7 +213,7 @@ int hcd_log_level = HCD_LOG_LVL_ERROR;
  */
 int bcm963xx_pcie_nvram_get_u32(char *key, uint32 *pval)
 {
-#if defined(CONFIG_BCM_NVRAM) || defined(CONFIG_BCM_NVRAM_MODULE)
+#if !defined(CONFIG_BRCM_QEMU) && (defined(CONFIG_BCM_NVRAM) || defined(CONFIG_BCM_NVRAM_MODULE))
 	char *valstr;
 	uint32 val;
 

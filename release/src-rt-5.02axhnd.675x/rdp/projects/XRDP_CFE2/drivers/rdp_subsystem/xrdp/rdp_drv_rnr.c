@@ -57,10 +57,17 @@ int drv_rnr_dma_cfg(rnr_dma_regs_cfg_t *rnr_dma_cfg)
 
     for (rnr_idx = 0; rnr_idx < _num_of_cores; rnr_idx++)
     {
+
+#if (defined BCM6878)
         rc = ag_drv_rnr_regs_cfg_ddr_cfg_set(rnr_idx, rnr_dma_cfg->ddr.dma_base, rnr_dma_cfg->ddr.dma_buf_size, rnr_dma_cfg->ddr.dma_static_offset);
+#else
+        rc = ag_drv_rnr_regs_cfg_ddr_cfg_set(rnr_idx, rnr_dma_cfg->ddr.dma_base, rnr_dma_cfg->ddr.dma_buf_size, 0, rnr_dma_cfg->ddr.dma_static_offset);
+#endif
         /* each quad should go to a different UBUS slave in PSRAM */
 #if defined(BCM6858)
         rc = rc ? rc : ag_drv_rnr_regs_cfg_psram_cfg_set(rnr_idx, (rnr_dma_cfg->psram.dma_base + (rnr_idx/4)), rnr_dma_cfg->psram.dma_buf_size, rnr_dma_cfg->psram.dma_static_offset);
+#elif !(defined BCM6878)
+        rc = rc ? rc : ag_drv_rnr_regs_cfg_psram_cfg_set(rnr_idx, rnr_dma_cfg->psram.dma_base, rnr_dma_cfg->psram.dma_buf_size, 0, rnr_dma_cfg->psram.dma_static_offset);
 #else
         rc = rc ? rc : ag_drv_rnr_regs_cfg_psram_cfg_set(rnr_idx, rnr_dma_cfg->psram.dma_base, rnr_dma_cfg->psram.dma_buf_size, rnr_dma_cfg->psram.dma_static_offset);
 #endif
@@ -226,6 +233,9 @@ void rdp_rnr_write_context(void *__to, void *__from, unsigned int __n)
 #if defined(BCM6858) || defined(BCM6836)
         if ((i & 0x3) == 3)
             continue;
+#endif
+#if  defined(BCM6855) && !defined (RDP_SIM)
+        if (*(volatile unsigned int *)src != 0)
 #endif
         MWRITE_32(dst, *(volatile unsigned int *)src);
     }
@@ -432,17 +442,17 @@ bdmf_error_t drv_rnr_quad_parser_configure_outer_qtag(rnr_quad_id_e quad_id,
 
     if (profile == DRV_PARSER_QTAG_PROFILE_0)
     {
-        rc =  ag_drv_rnr_quad_parser_hardcoded_ethtype_prof0_get(quad_id, &hard_nest);
+        rc =  ag_drv_rnr_quad_parser_hardcoded_ethtype_prof0_get(quad_id, (void *) &hard_nest);
         rc = rc ? rc : ag_drv_rnr_quad_parser_qtag_nest_prof0_get(quad_id, &qtag_nest_0, &qtag_nest_1);
     }
     else if (profile == DRV_PARSER_QTAG_PROFILE_1)
     {
-        rc =  ag_drv_rnr_quad_parser_hardcoded_ethtype_prof1_get(quad_id, &hard_nest);
+        rc =  ag_drv_rnr_quad_parser_hardcoded_ethtype_prof1_get(quad_id, (void *) &hard_nest);
         rc = rc ? rc : ag_drv_rnr_quad_parser_qtag_nest_prof1_get(quad_id, &qtag_nest_0, &qtag_nest_1);
     }
     else if (profile == DRV_PARSER_QTAG_PROFILE_2)
     {
-        rc =  ag_drv_rnr_quad_parser_hardcoded_ethtype_prof2_get(quad_id, &hard_nest);
+        rc =  ag_drv_rnr_quad_parser_hardcoded_ethtype_prof2_get(quad_id, (void *) &hard_nest);
         rc = rc ? rc : ag_drv_rnr_quad_parser_qtag_nest_prof2_get(quad_id, &qtag_nest_0, &qtag_nest_1);
     }
 
@@ -473,17 +483,29 @@ bdmf_error_t drv_rnr_quad_parser_configure_outer_qtag(rnr_quad_id_e quad_id,
 
     if (profile == DRV_PARSER_QTAG_PROFILE_0)
     {
+#if (defined BCM6878)
         rc = rc ? rc : ag_drv_rnr_quad_parser_hardcoded_ethtype_prof0_set(quad_id, hard_nest);
+#else
+        rc = rc ? rc : ag_drv_rnr_quad_parser_hardcoded_ethtype_prof0_set(quad_id, (rnr_quad_parser_hardcoded_ethtype_prof0 *) &hard_nest);
+#endif
         rc = rc ? rc : ag_drv_rnr_quad_parser_qtag_nest_prof0_set(quad_id, qtag_nest_0, qtag_nest_1);
     }
     else if (profile == DRV_PARSER_QTAG_PROFILE_1)
     {
+#if (defined BCM6878)
         rc = rc ? rc : ag_drv_rnr_quad_parser_hardcoded_ethtype_prof1_set(quad_id, hard_nest);
+#else
+        rc = rc ? rc : ag_drv_rnr_quad_parser_hardcoded_ethtype_prof1_set(quad_id, (rnr_quad_parser_hardcoded_ethtype_prof0 *) &hard_nest);
+#endif
         rc = rc ? rc : ag_drv_rnr_quad_parser_qtag_nest_prof1_set(quad_id, qtag_nest_0, qtag_nest_1);
     }
     else if (profile == DRV_PARSER_QTAG_PROFILE_2)
     {
+#if (defined BCM6878)
         rc = rc ? rc : ag_drv_rnr_quad_parser_hardcoded_ethtype_prof2_set(quad_id, hard_nest);
+#else
+        rc = rc ? rc : ag_drv_rnr_quad_parser_hardcoded_ethtype_prof2_set(quad_id, (rnr_quad_parser_hardcoded_ethtype_prof0 *) &hard_nest);
+#endif
         rc = rc ? rc : ag_drv_rnr_quad_parser_qtag_nest_prof2_set(quad_id, qtag_nest_0, qtag_nest_1);
     }
     return rc;
@@ -498,17 +520,17 @@ bdmf_error_t drv_rnr_quad_parser_configure_inner_qtag(rnr_quad_id_e quad_id,
 
     if (profile == DRV_PARSER_QTAG_PROFILE_0)
     {
-        rc =  ag_drv_rnr_quad_parser_hardcoded_ethtype_prof0_get(quad_id, &hard_nest);
+        rc =  ag_drv_rnr_quad_parser_hardcoded_ethtype_prof0_get(quad_id, (void *) &hard_nest);
         rc = rc ? rc : ag_drv_rnr_quad_parser_qtag_nest_prof0_get(quad_id, &qtag_nest_0, &qtag_nest_1);
     }
     else if (profile == DRV_PARSER_QTAG_PROFILE_1)
     {
-        rc =  ag_drv_rnr_quad_parser_hardcoded_ethtype_prof1_get(quad_id, &hard_nest);
+        rc =  ag_drv_rnr_quad_parser_hardcoded_ethtype_prof1_get(quad_id, (void *) &hard_nest);
         rc = rc ? rc : ag_drv_rnr_quad_parser_qtag_nest_prof1_get(quad_id, &qtag_nest_0, &qtag_nest_1);
     }
     else if (profile == DRV_PARSER_QTAG_PROFILE_2)
     {
-        rc =  ag_drv_rnr_quad_parser_hardcoded_ethtype_prof2_get(quad_id, &hard_nest);
+        rc =  ag_drv_rnr_quad_parser_hardcoded_ethtype_prof2_get(quad_id, (void *) &hard_nest);
         rc = rc ? rc : ag_drv_rnr_quad_parser_qtag_nest_prof2_get(quad_id, &qtag_nest_0, &qtag_nest_1);
     }
 
@@ -539,17 +561,29 @@ bdmf_error_t drv_rnr_quad_parser_configure_inner_qtag(rnr_quad_id_e quad_id,
 
     if (profile == DRV_PARSER_QTAG_PROFILE_0)
     {
+#if (defined BCM6878)
         rc = rc ? rc : ag_drv_rnr_quad_parser_hardcoded_ethtype_prof0_set(quad_id, hard_nest);
+#else
+        rc = rc ? rc : ag_drv_rnr_quad_parser_hardcoded_ethtype_prof0_set(quad_id, (rnr_quad_parser_hardcoded_ethtype_prof0 *) &hard_nest);
+#endif
         rc = rc ? rc : ag_drv_rnr_quad_parser_qtag_nest_prof0_set(quad_id, qtag_nest_0, qtag_nest_1);
     }
     else if (profile == DRV_PARSER_QTAG_PROFILE_1)
     {
+#if (defined BCM6878)
         rc = rc ? rc : ag_drv_rnr_quad_parser_hardcoded_ethtype_prof1_set(quad_id, hard_nest);
+#else
+        rc = rc ? rc : ag_drv_rnr_quad_parser_hardcoded_ethtype_prof1_set(quad_id, (rnr_quad_parser_hardcoded_ethtype_prof0 *) &hard_nest);
+#endif
         rc = rc ? rc : ag_drv_rnr_quad_parser_qtag_nest_prof1_set(quad_id, qtag_nest_0, qtag_nest_1);
     }
     else if (profile == DRV_PARSER_QTAG_PROFILE_2)
     {
+#if (defined BCM6878)
         rc = rc ? rc : ag_drv_rnr_quad_parser_hardcoded_ethtype_prof2_set(quad_id, hard_nest);
+#else
+        rc = rc ? rc : ag_drv_rnr_quad_parser_hardcoded_ethtype_prof2_set(quad_id, (rnr_quad_parser_hardcoded_ethtype_prof0 *) &hard_nest);
+#endif
         rc = rc ? rc : ag_drv_rnr_quad_parser_qtag_nest_prof2_set(quad_id, qtag_nest_0, qtag_nest_1);
     }
     return rc;
@@ -564,17 +598,17 @@ bdmf_error_t drv_rnr_quad_parser_configure_3rd_qtag(rnr_quad_id_e quad_id,
 
     if (profile == DRV_PARSER_QTAG_PROFILE_0)
     {
-        rc =  ag_drv_rnr_quad_parser_hardcoded_ethtype_prof0_get(quad_id, &hard_nest);
+        rc =  ag_drv_rnr_quad_parser_hardcoded_ethtype_prof0_get(quad_id, (void *) &hard_nest);
         rc = rc ? rc : ag_drv_rnr_quad_parser_qtag_nest_prof0_get(quad_id, &qtag_nest_0, &qtag_nest_1);
     }
     else if (profile == DRV_PARSER_QTAG_PROFILE_1)
     {
-        rc =  ag_drv_rnr_quad_parser_hardcoded_ethtype_prof1_get(quad_id, &hard_nest);
+        rc =  ag_drv_rnr_quad_parser_hardcoded_ethtype_prof1_get(quad_id, (void *) &hard_nest);
         rc = rc ? rc : ag_drv_rnr_quad_parser_qtag_nest_prof1_get(quad_id, &qtag_nest_0, &qtag_nest_1);
     }
     else if (profile == DRV_PARSER_QTAG_PROFILE_2)
     {
-        rc =  ag_drv_rnr_quad_parser_hardcoded_ethtype_prof2_get(quad_id, &hard_nest);
+        rc =  ag_drv_rnr_quad_parser_hardcoded_ethtype_prof2_get(quad_id, (void *) &hard_nest);
         rc = rc ? rc : ag_drv_rnr_quad_parser_qtag_nest_prof2_get(quad_id, &qtag_nest_0, &qtag_nest_1);
     }
 
@@ -605,17 +639,29 @@ bdmf_error_t drv_rnr_quad_parser_configure_3rd_qtag(rnr_quad_id_e quad_id,
 
     if (profile == DRV_PARSER_QTAG_PROFILE_0)
     {
+#if (defined BCM6878)
         rc = rc ? rc : ag_drv_rnr_quad_parser_hardcoded_ethtype_prof0_set(quad_id, hard_nest);
+#else
+        rc = rc ? rc : ag_drv_rnr_quad_parser_hardcoded_ethtype_prof0_set(quad_id, (rnr_quad_parser_hardcoded_ethtype_prof0 *) &hard_nest);
+#endif
         rc = rc ? rc : ag_drv_rnr_quad_parser_qtag_nest_prof0_set(quad_id, qtag_nest_0, qtag_nest_1);
     }
     else if (profile == DRV_PARSER_QTAG_PROFILE_1)
     {
+#if (defined BCM6878)
         rc = rc ? rc : ag_drv_rnr_quad_parser_hardcoded_ethtype_prof1_set(quad_id, hard_nest);
+#else
+        rc = rc ? rc : ag_drv_rnr_quad_parser_hardcoded_ethtype_prof1_set(quad_id, (rnr_quad_parser_hardcoded_ethtype_prof0 *) &hard_nest);
+#endif
         rc = rc ? rc : ag_drv_rnr_quad_parser_qtag_nest_prof1_set(quad_id, qtag_nest_0, qtag_nest_1);
     }
     else if (profile == DRV_PARSER_QTAG_PROFILE_2)
     {
+#if (defined BCM6878)
         rc = rc ? rc : ag_drv_rnr_quad_parser_hardcoded_ethtype_prof2_set(quad_id, hard_nest);
+#else
+        rc = rc ? rc : ag_drv_rnr_quad_parser_hardcoded_ethtype_prof2_set(quad_id, (rnr_quad_parser_hardcoded_ethtype_prof0 *) &hard_nest);
+#endif
         rc = rc ? rc : ag_drv_rnr_quad_parser_qtag_nest_prof2_set(quad_id, qtag_nest_0, qtag_nest_1);
     }
     return rc;

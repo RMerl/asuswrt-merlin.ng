@@ -27,7 +27,7 @@
 * :>
 */
 
-#if defined(CONFIG_BLOG)
+
 
 #include "bcm_OS_Deps.h"
 #include "rdpa_mw_blog_parse.h"
@@ -36,72 +36,10 @@
 #include "rdpa_mw_qos.h"
 #include "bcm_wlan_defs.h"
 
+#if defined(CONFIG_BLOG)
 int rdpa_mw_set_mcast_dscp_remark = -1;
 EXPORT_SYMBOL(rdpa_mw_set_mcast_dscp_remark);
 
-rdpa_if rdpa_mw_root_dev2rdpa_if(struct net_device *root_dev)
-{
-    uint32_t hw_port, hw_port_type, physical_hw_port;
-
-    hw_port = netdev_path_get_hw_port(root_dev);
-    /* In case of external switch netdev_path_get_hw_port return logical port and not HW port.  
-       It is assumed that hw port cvalues are 0-7 and logical port values are 8-15*/
-    physical_hw_port = LOGICAL_PORT_TO_PHYSICAL_PORT(hw_port);
-
-    hw_port_type = netdev_path_get_hw_port_type(root_dev);
-
-    switch (hw_port_type)
-    {
-    case BLOG_SIDPHY:
-        return rdpa_if_lan0 + hw_port;
-    case BLOG_ENETPHY:
-        return rdpa_port_map_from_hw_port(physical_hw_port, 1);
-    case BLOG_WLANPHY:
-#ifdef XRDP
-        return rdpa_if_wlan0 + WLAN_RADIO_GET(hw_port);
-#else
-        return rdpa_if_ssid0 + hw_port;
-#endif
-    case BLOG_GPONPHY:
-        return rdpa_wan_type_to_if(rdpa_wan_gpon);
-    case BLOG_EPONPHY:        
-        return rdpa_wan_type_to_if(rdpa_wan_epon);
-    case BLOG_NETXLPHY:
-        return rdpa_if_wlan0 + (hw_port & 0xff);
-    case BLOG_NOPHY:
-        break;
-    default:
-        BCM_LOG_ERROR(BCM_LOG_ID_RDPA, "Unknown HW port type %u\n", hw_port_type);
-        break;
-    }
-    return rdpa_if_none;
-}
-EXPORT_SYMBOL(rdpa_mw_root_dev2rdpa_if);
-
-uint8_t rdpa_mw_root_dev2rdpa_ssid(struct net_device *root_dev)
-{
-    uint32_t hw_port, hw_port_type;
-
-    hw_port = netdev_path_get_hw_port(root_dev);
-    hw_port_type = netdev_path_get_hw_port_type(root_dev);
-
-    switch (hw_port_type)
-    {
-    case BLOG_WLANPHY:
-#ifdef XRDP
-        return WLAN_SSID_GET(hw_port);
-#else
-        return rdpa_if_none;
-#endif
-    case BLOG_NETXLPHY:
-        return (hw_port >> 16) & 0xff;
-    default:
-        break;
-    }
-
-    return (uint8_t)-1;
-}
-EXPORT_SYMBOL(rdpa_mw_root_dev2rdpa_ssid);
 
 static int blog_commands_parse_qos(Blog_t *blog, rdpa_ic_result_t *mcast_result)
 {
@@ -233,3 +171,66 @@ void blog_parse_policer_get(Blog_t *blog_p, bdmf_object_handle *policer)
 EXPORT_SYMBOL(blog_parse_policer_get);
 #endif
 #endif
+rdpa_if rdpa_mw_root_dev2rdpa_if(struct net_device *root_dev)
+{
+    uint32_t hw_port, hw_port_type, physical_hw_port;
+
+    hw_port = netdev_path_get_hw_port(root_dev);
+    /* In case of external switch netdev_path_get_hw_port return logical port and not HW port.  
+       It is assumed that hw port cvalues are 0-7 and logical port values are 8-15*/
+    physical_hw_port = LOGICAL_PORT_TO_PHYSICAL_PORT(hw_port);
+
+    hw_port_type = netdev_path_get_hw_port_type(root_dev);
+
+    switch (hw_port_type)
+    {
+    case BLOG_SIDPHY:
+        return rdpa_if_lan0 + hw_port;
+    case BLOG_ENETPHY:
+        return rdpa_port_map_from_hw_port(physical_hw_port, 1);
+    case BLOG_WLANPHY:
+#ifdef XRDP
+        return rdpa_if_wlan0 + WLAN_RADIO_GET(hw_port);
+#else
+        return rdpa_if_ssid0 + hw_port;
+#endif
+    case BLOG_GPONPHY:
+        return rdpa_wan_type_to_if(rdpa_wan_gpon);
+    case BLOG_EPONPHY:        
+        return rdpa_wan_type_to_if(rdpa_wan_epon);
+    case BLOG_NETXLPHY:
+        return rdpa_if_wlan0 + (hw_port & 0xff);
+    case BLOG_NOPHY:
+        break;
+    default:
+        BCM_LOG_ERROR(BCM_LOG_ID_RDPA, "Unknown HW port type %u\n", hw_port_type);
+        break;
+    }
+    return rdpa_if_none;
+}
+EXPORT_SYMBOL(rdpa_mw_root_dev2rdpa_if);
+
+uint8_t rdpa_mw_root_dev2rdpa_ssid(struct net_device *root_dev)
+{
+    uint32_t hw_port, hw_port_type;
+
+    hw_port = netdev_path_get_hw_port(root_dev);
+    hw_port_type = netdev_path_get_hw_port_type(root_dev);
+
+    switch (hw_port_type)
+    {
+    case BLOG_WLANPHY:
+#ifdef XRDP
+        return WLAN_SSID_GET(hw_port);
+#else
+        return rdpa_if_none;
+#endif
+    case BLOG_NETXLPHY:
+        return (hw_port >> 16) & 0xff;
+    default:
+        break;
+    }
+
+    return (uint8_t)-1;
+}
+EXPORT_SYMBOL(rdpa_mw_root_dev2rdpa_ssid);

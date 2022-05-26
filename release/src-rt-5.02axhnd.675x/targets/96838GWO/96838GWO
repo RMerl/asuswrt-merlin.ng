@@ -15,6 +15,7 @@ BRCM_6838=y
 # BRCM_6858 is not set
 # BRCM_6846 is not set
 # BRCM_6878 is not set
+# BRCM_6855 is not set
 # BRCM_47622 is not set
 # BRCM_63178 is not set
 # BRCM_6856 is not set
@@ -131,6 +132,7 @@ BRCM_DRIVER_PCI=y
 # BRCM_PCIE_SSC is not set
 BRCM_DRIVER_I2C=y
 BRCM_DRIVER_OPTICALDET=y
+# BRCM_DRIVER_SMTC is not set
 # BRCM_DRIVER_ISDN is not set
 BRCM_DRIVER_EXT_TIMER=y
 # BRCM_DRIVER_WDT is not set
@@ -177,6 +179,7 @@ BUILD_VCONFIG=dynamic
 # BRCM_DRIVER_SPDTEST is not set
 # BRCM_DRIVER_LICENSE is not set
 # BUILD_BOOT_BLOCK_HOUSEKEEPING is not set
+# BUILD_EMMC_TRAPEZE is not set
 
 #
 # GPON Selection
@@ -311,6 +314,7 @@ BUILD_WSC=dynamic
 # BUILD_BCM_CPEPKTC is not set
 # BUILD_BCM_PKTFWD is not set
 # BUILD_HND_MFG is not set
+# BUILD_WLAN_TESTBED_AP is not set
 # BUILD_BCM_WLAN_NO_MFGBIN is not set
 # BUILD_BCM_WLAN_REMOVE_INTERNAL_DEBUG is not set
 # BUILD_HND_EAP is not set
@@ -332,7 +336,6 @@ BUILD_WANVLANMUX=y
 # BUILD_IPSEC_TOOLS is not set
 # BUILD_OPENVPN is not set
 # BUILD_L2TPAC is not set
-# BUILD_PPTPAC is not set
 BUILD_GRE_TUNNEL=y
 # BUILD_ACCEL_PPTP is not set
 
@@ -348,7 +351,6 @@ BRCM_KERNEL_NF_FIREWALL=m
 BRCM_KERNEL_NF_MANGLE=m
 BRCM_KERNEL_NF_NAT=m
 # BRCM_KERNEL_NF_DYNDSCP is not set
-# BRCM_KERNEL_NF_LAYER7_FILTER is not set
 BRCM_KERNEL_NF_NAT_ALG_FTP=m
 BRCM_KERNEL_NF_NAT_ALG_SIP=m
 BRCM_KERNEL_NF_NAT_ALG_TFTP=m
@@ -470,6 +472,7 @@ BRCM_DHD_PARAM3_SIZE=
 # Software Buffer Pool Manager
 #
 BRCM_DRIVER_BPM=y
+# BRCM_BPM_DYNAMIC is not set
 BRCM_BUF_MEM_PRCNT=10
 # BRCM_BPM_BUF_TRACKING is not set
 BUILD_BPMCTL=dynamic
@@ -638,6 +641,7 @@ BCM_MAGIC_SYSRQ=y
 # BRCM_KERNEL_VMTOOLS is not set
 # BRCM_KERNEL_CSTAT is not set
 # BRCM_IKOS is not set
+# BRCM_QEMU is not set
 # BRCM_DRIVER_BCMPROF is not set
 BUILD_DEBUG_TOOLS=y
 # BUILD_GDBSERVER is not set

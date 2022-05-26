@@ -180,6 +180,7 @@ typedef struct port_info_t
     int is_detect;
     int is_gpon;
     int is_epon;
+    int is_epon_ae;
     int is_undef;
     int is_wan;
 } port_info_t;
@@ -344,7 +345,9 @@ typedef struct port_ops_t
 #if defined(CONFIG_NET_SWITCHDEV)
     struct switchdev_ops switchdev_ops;
 #endif
+#if 0   /* skip Andrew code */
     int (*mib_dump_us)(enetx_port_t *self, void *e);   /* ETHSWMIBDUMP */  // add by Andrew
+#endif
 } port_ops_t;
 
 typedef struct sw_ops_t
@@ -380,8 +383,8 @@ typedef struct sw_ops_t
     int (*update_pbvlan)(enetx_port_t *sw, unsigned int pmap);
 
     /* access switch registers */
-    void (*rreg)(int page, int reg, void *data_out, int len);
-    void (*wreg)(int page, int reg, void *data_in,  int len);
+    void (*rreg)(int unit, int page, int reg, void *data_out, int len);
+    void (*wreg)(int unit, int page, int reg, void *data_in,  int len);
     /* fast ager ARL for entire switch */
     void (*fast_age)(enetx_port_t *sw);
     /* Return private data string for proc interface */
@@ -624,6 +627,7 @@ static inline int port_mib_dump(enetx_port_t *self, int all)
     return -1;
 }
 
+#if 0  /* skip Andrew code */
 // add by Andrew
 static inline int port_mib_dump_us(enetx_port_t *self, void *e)
 {
@@ -640,6 +644,7 @@ static inline int port_mib_dump_us(enetx_port_t *self, void *e)
     return -1;
 }
 // end of add
+#endif
 
 static inline void port_mib_clear(enetx_port_t *self)
 {

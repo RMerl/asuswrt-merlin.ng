@@ -745,10 +745,12 @@ static int GetPdFromRamFifo(uint32_t *word0, uint32_t *word1, uint32_t *word2, u
     static int total_rx_packets = 0;
     static int idx = 0;
 
-    GROUP_MREAD_32(RDD_SRAM_PD_FIFO_ADDRESS_ARR, (idx+0)*sizeof(uint32_t), (*word0));
+
     GROUP_MREAD_32(RDD_SRAM_PD_FIFO_ADDRESS_ARR, (idx+1)*sizeof(uint32_t), (*word1));
+    GROUP_MREAD_32(RDD_SRAM_PD_FIFO_ADDRESS_ARR, (idx+0)*sizeof(uint32_t), (*word0));
     GROUP_MREAD_32(RDD_SRAM_PD_FIFO_ADDRESS_ARR, (idx+2)*sizeof(uint32_t), (*word2));
     GROUP_MREAD_32(RDD_SRAM_PD_FIFO_ADDRESS_ARR, (idx+3)*sizeof(uint32_t), (*word3));
+
     //bdmf_trace("reading from address %d\n", RDD_SRAM_PD_FIFO_ADDRESS_ARR[1]);
     //bdmf_trace("GetPdFromRamFifo at index = %d with value 0x%x 0x%x 0x%x 0x%x\n", idx, (*word0), (*word1), (*word2), (*word3));
 
@@ -815,13 +817,13 @@ static inline int ReadPacketFromFpmFwDirect(CPU_RX_PARAMS *rx_params)
 #endif//CONFIG_ARM64
 
     rx_params->packet_size = rx_desc.fpm.packet_length;
-    fpm_ptr = ((uint8_t *)drv_fpm_buffer_get_address(rx_desc.fpm.fpm_idx & 0xFFFF));
+    fpm_ptr = ((uint8_t *)drv_fpm_buffer_get_address(rx_desc.fpm.fpm_idx & FPM_INDX_MASK));
 
     //bdmf_trace("data_ptr=%p, fpm=%d\n", rx_params->data_ptr, rx_desc.fpm.fpm_idx & 0xFFFF);
     INV_RANGE(fpm_ptr , rx_params->packet_size);
     MREAD_BLK_8(&rx_params->data_ptr[0], fpm_ptr, rx_params->packet_size);
 
-    drv_fpm_free_buffer(rx_params->packet_size, rx_desc.fpm.fpm_idx & 0xFFFF);
+    drv_fpm_free_buffer(rx_params->packet_size, rx_desc.fpm.fpm_idx & FPM_INDX_MASK);
 
     /* The place of data_ofset is the same in all structures in this union we could use any.*/
     rx_params->data_offset = rx_desc.wan.data_offset;

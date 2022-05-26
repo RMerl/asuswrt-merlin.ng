@@ -55,6 +55,5 @@ int sgmii_write(phy_dev_t *phy_dev, uint16_t reg, uint16_t val);
 int sgmii_speed_set(phy_dev_t *phy_dev, phy_speed_t speed);
 int sgmii_refclk_init(phy_dev_t *phy_dev, sgmii_refclk_t refclk);
 int sgmii_read_status(phy_dev_t *phy_dev);
-
 #endif
 

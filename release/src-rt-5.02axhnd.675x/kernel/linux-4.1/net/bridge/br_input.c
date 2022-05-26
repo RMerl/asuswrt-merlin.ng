@@ -262,10 +262,10 @@ int br_handle_frame_finish(struct sock *sk, struct sk_buff *skb)
 		src = __br_fdb_get(br, eth_hdr(skb)->h_source, vid);
 		blog_lock();
 		if (src)
-			blog_link(BRIDGEFDB, blog_ptr(skb), (void*)src, BLOG_PARAM1_SRCFDB, 0);
+			blog_link(BRIDGEFDB, blog_ptr(skb), (void*)src, BLOG_PARAM1_SRCFDB, br->dev->ifindex);
 
 		if (dst)
-			blog_link(BRIDGEFDB, blog_ptr(skb), (void*)dst, BLOG_PARAM1_DSTFDB, 0);
+			blog_link(BRIDGEFDB, blog_ptr(skb), (void*)dst, BLOG_PARAM1_DSTFDB, br->dev->ifindex);
 
 		blog_unlock();
 
@@ -291,7 +291,7 @@ int br_handle_frame_finish(struct sock *sk, struct sk_buff *skb)
 			    (dstPhyType == BLOG_ENETPHY)) {
 				from_wl_to_switch = 1;
 			} else if ((srcPhyType == BLOG_ENETPHY || srcPhyType == BLOG_XTMPHY || srcPhyType == BLOG_EPONPHY || srcPhyType == BLOG_GPONPHY ||
-				((src->dst->dev->rtnl_link_ops != NULL) && (strstr(src->dst->dev->rtnl_link_ops->kind, "gre") != NULL))) &&
+				((src->dst->dev->rtnl_link_ops != NULL) && ((strstr(src->dst->dev->rtnl_link_ops->kind, "gre") != NULL) || (strstr(src->dst->dev->rtnl_link_ops->kind, "vxlan") != NULL)))) &&
  				(dstPhyType == BLOG_WLANPHY) && pktc_tx_enabled)
   			{ 
 				from_switch_to_wl = 1;

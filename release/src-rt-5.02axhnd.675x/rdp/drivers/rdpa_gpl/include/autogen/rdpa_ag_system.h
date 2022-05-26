@@ -64,7 +64,9 @@ typedef enum {
     rdpa_system_attr_natc_counter = 17, /* natc_counter : RWF : aggregate[] natc_cntr(rdpa_natc_cntr_t) : NAT Cache counters */
     rdpa_system_attr_ih_cong_threshold = 18, /* ih_cong_threshold : RW : number : IH Buffer threshold for congestion state (congested when IH buffer is below the configured v */
     rdpa_system_attr_ingress_congestion_ctrl = 19, /* ingress_congestion_ctrl : RW : bool : Enable/Disable ingress congestion control */
-    rdpa_system_attr_system_resources = 20, /* system_resources : R : aggregate system_resources(rdpa_system_resources_t) : Return system resources */
+    rdpa_system_attr_parser_cfg = 20, /* parser_cfg : RW : aggregate parser_config(rdpa_parser_cfg_t) : Parser Configuration */
+    rdpa_system_attr_dos_attack_reason = 21, /* dos_attack_reason : RW : enum_mask : Vector of DOS attack reasons */
+    rdpa_system_attr_system_resources = 22, /* system_resources : R : aggregate system_resources(rdpa_system_resources_t) : Return system resources */
 } rdpa_system_attr_types;
 
 extern int (*f_rdpa_system_get)(bdmf_object_handle *pmo);
@@ -674,6 +676,66 @@ static inline int rdpa_system_ingress_congestion_ctrl_get(bdmf_object_handle mo_
 static inline int rdpa_system_ingress_congestion_ctrl_set(bdmf_object_handle mo_, bdmf_boolean ingress_congestion_ctrl_)
 {
     return bdmf_attr_set_as_num(mo_, rdpa_system_attr_ingress_congestion_ctrl, ingress_congestion_ctrl_);
+}
+
+
+/** Get system/parser_cfg attribute.
+ *
+ * Get Parser Configuration.
+ * \param[in]   mo_ system object handle or mattr transaction handle
+ * \param[out]  parser_cfg_ Attribute value
+ * \return 0 or error code < 0
+ * The function can be called in task context only.
+ */
+static inline int rdpa_system_parser_cfg_get(bdmf_object_handle mo_, rdpa_parser_cfg_t * parser_cfg_)
+{
+    return bdmf_attr_get_as_buf(mo_, rdpa_system_attr_parser_cfg, parser_cfg_, sizeof(*parser_cfg_));
+}
+
+
+/** Set system/parser_cfg attribute.
+ *
+ * Set Parser Configuration.
+ * \param[in]   mo_ system object handle or mattr transaction handle
+ * \param[in]   parser_cfg_ Attribute value
+ * \return 0 or error code < 0
+ * The function can be called in task context only.
+ */
+static inline int rdpa_system_parser_cfg_set(bdmf_object_handle mo_, const rdpa_parser_cfg_t * parser_cfg_)
+{
+    return bdmf_attr_set_as_buf(mo_, rdpa_system_attr_parser_cfg, parser_cfg_, sizeof(*parser_cfg_));
+}
+
+
+/** Get system/dos_attack_reason attribute.
+ *
+ * Get Vector of DOS attack reasons.
+ * \param[in]   mo_ system object handle or mattr transaction handle
+ * \param[out]  dos_attack_reason_ Attribute value
+ * \return 0 or error code < 0
+ * The function can be called in task context only.
+ */
+static inline int rdpa_system_dos_attack_reason_get(bdmf_object_handle mo_, bdmf_number *dos_attack_reason_)
+{
+    bdmf_number _nn_;
+    int _rc_;
+    _rc_ = bdmf_attr_get_as_num(mo_, rdpa_system_attr_dos_attack_reason, &_nn_);
+    *dos_attack_reason_ = (bdmf_number)_nn_;
+    return _rc_;
+}
+
+
+/** Set system/dos_attack_reason attribute.
+ *
+ * Set Vector of DOS attack reasons.
+ * \param[in]   mo_ system object handle or mattr transaction handle
+ * \param[in]   dos_attack_reason_ Attribute value
+ * \return 0 or error code < 0
+ * The function can be called in task context only.
+ */
+static inline int rdpa_system_dos_attack_reason_set(bdmf_object_handle mo_, bdmf_number dos_attack_reason_)
+{
+    return bdmf_attr_set_as_num(mo_, rdpa_system_attr_dos_attack_reason, dos_attack_reason_);
 }
 
 

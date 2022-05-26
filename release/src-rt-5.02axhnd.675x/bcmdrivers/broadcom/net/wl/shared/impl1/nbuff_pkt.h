@@ -33,6 +33,7 @@
 #if defined(BCM_NBUFF_PKT)
 
 #include <typedefs.h>
+#include <linux/bcm_skb_defines.h>
 
 #if (defined(CONFIG_BCM_BPM) || defined(CONFIG_BCM_BPM_MODULE))
 #include <linux/gbpm.h>
@@ -62,6 +63,7 @@ extern void *nbuff_pkt_get_tag(void *pkt);
 extern int nbuff_pkttag_attach(void *osh, void *pkt);
 extern uint nbuff_pktflowid(void *pkt);
 extern void nbuff_pktsetflowid(void *pkt, uint x);
+
 #endif /* !BCM_EAPFWD */
 /* packet primitives */
 
@@ -193,10 +195,6 @@ extern void nbuff_pktsetflowid(void *pkt, uint x);
 
 #define PKTSETLINK(skb, x)                                                     \
         (((struct sk_buff*)(skb))->prev = (struct sk_buff*)(x))
-
-#ifndef PRIO_LOC_NFMARK
-#define PRIO_LOC_NFMARK 16 /* FIXME */
-#endif
 
 #define PKTPRIO(skb)                                    ({                     \
         uint32 prio = ((struct sk_buff*)(skb))->mark >> PRIO_LOC_NFMARK & 0x7; \

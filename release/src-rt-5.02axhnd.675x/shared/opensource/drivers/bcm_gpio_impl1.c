@@ -61,10 +61,12 @@ EXPORT_SYMBOL(bcm_gpio_get_dir);
 
 void bcm_gpio_set_dir(unsigned int gpio_num, unsigned int dir)
 {
+#ifndef CONFIG_BRCM_QEMU    
     if(dir)	
         GPIO->GPIODir[GPIO_NUM_TO_ARRAY_IDX(gpio_num)] |= GPIO_NUM_TO_MASK(gpio_num);	
     else
-        GPIO->GPIODir[GPIO_NUM_TO_ARRAY_IDX(gpio_num)] &= ~GPIO_NUM_TO_MASK(gpio_num);	
+        GPIO->GPIODir[GPIO_NUM_TO_ARRAY_IDX(gpio_num)] &= ~GPIO_NUM_TO_MASK(gpio_num);
+#endif        	
 }
 #ifndef _CFE_
 EXPORT_SYMBOL(bcm_gpio_set_dir);
@@ -80,10 +82,12 @@ EXPORT_SYMBOL(bcm_gpio_get_data);
 
 void bcm_gpio_set_data(unsigned int gpio_num, unsigned int data)
 {
+#ifndef CONFIG_BRCM_QEMU     
     if (data)	
         GPIO->GPIOio[GPIO_NUM_TO_ARRAY_IDX(gpio_num)] |= GPIO_NUM_TO_MASK(gpio_num);	
     else
         GPIO->GPIOio[GPIO_NUM_TO_ARRAY_IDX(gpio_num)] &= ~GPIO_NUM_TO_MASK(gpio_num);
+#endif    
 }
 #ifndef _CFE_
 EXPORT_SYMBOL(bcm_gpio_set_data);

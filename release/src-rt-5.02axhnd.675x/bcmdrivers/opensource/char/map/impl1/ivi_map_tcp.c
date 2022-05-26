@@ -681,9 +681,14 @@ FILTER_STATUS UpdateTcpStateContext(struct tcphdr *th, __u32 len, PACKET_DIR dir
 					memset(StateContext, 0, sizeof(TCP_STATE_CONTEXT));
 					
 					/* Port Mapping list information MUST NOT be dropped */
+#if defined(CONFIG_BCM_KF_BLOG) && defined(CONFIG_BLOG)
+					StateContext->blog_key[BLOG_PARAM1_MAP_DIR_US] = iter.blog_key[BLOG_PARAM1_MAP_DIR_US];
+					StateContext->blog_key[BLOG_PARAM1_MAP_DIR_DS] = iter.blog_key[BLOG_PARAM1_MAP_DIR_DS];
+#endif
 					StateContext->out_node = iter.out_node;
 					StateContext->in_node = iter.in_node;
 					StateContext->dest_node = iter.dest_node;
+					StateContext->portmapidx = iter.portmapidx;
 					StateContext->oldaddr = iter.oldaddr;
 					StateContext->oldport = iter.oldport;
 					StateContext->dstaddr = iter.dstaddr;
@@ -795,12 +800,13 @@ void init_tcp_map_list(void)
 	}
 	tcp_list.size = 0;
 	tcp_list.port_num = 0;
+	tcp_list.portmap_num = 0;
 	tcp_list.state_seq = 0;
 	tcp_list.last_alloc_port = 0;
 }
 
 // Refresh the timer for each map_tuple, must NOT acquire spin lock when calling this function
-void refresh_tcp_map_list(int threshold)
+void refresh_tcp_map_list(int threshold, u32 portmapidx)
 {
 	PTCP_STATE_CONTEXT iter, i0;
 	struct hlist_node *loop;
@@ -810,35 +816,45 @@ void refresh_tcp_map_list(int threshold)
 	do_gettimeofday(&now);
 	
 	spin_lock_bh(&tcp_list.lock);
+	if (portmapidx != MAPPORTMAP_IX_INVALID && tcp_list.portmap_num == 0) {
+		spin_unlock_bh(&tcp_list.lock);
+		return;
+	}
 	// Iterate all the map_tuple through out_chain only, in_chain contains the same info.
 	for (i = 0; i < IVI_HTABLE_SIZE; i++) {
 		hlist_for_each_entry_safe(iter, loop, &tcp_list.out_chain[i], out_node) {
-			delta = now.tv_sec - iter->StateSetTime.tv_sec;
+			if (portmapidx == MAPPORTMAP_IX_INVALID)
+				delta = now.tv_sec - iter->StateSetTime.tv_sec;
+			else if (portmapidx != iter->portmapidx)
+				continue;
+
 			//if (delta >= iter->StateTimeOut || iter->Status == TCP_STATUS_TIME_WAIT || iter->state_seq <= threshold) {
-			if (delta >= iter->StateTimeOut) {
+			if (portmapidx != MAPPORTMAP_IX_INVALID || delta >= iter->StateTimeOut) {
 #if defined(CONFIG_BCM_KF_BLOG) && defined(CONFIG_BLOG)
-	            blog_lock();
-                if (iter->blog_key[BLOG_PARAM1_MAP_DIR_US] != BLOG_KEY_FC_INVALID || 
-		            iter->blog_key[BLOG_PARAM1_MAP_DIR_DS] != BLOG_KEY_FC_INVALID) {
-		            if (blog_query(QUERY_MAP_TUPLE, (void*)iter, 
-                            iter->blog_key[BLOG_PARAM1_MAP_DIR_US],
-                            iter->blog_key[BLOG_PARAM1_MAP_DIR_DS], 0)) {
-	                    blog_unlock();
-                        continue;
-                    }
-                }
-                else {
-                    // flow cache flow might have disassociated itself from map tuple.
-                    if (iter->evict_time.tv_sec) {
-			            iter->StateSetTime.tv_sec = iter->evict_time.tv_sec;
-			            delta = now.tv_sec - iter->StateSetTime.tv_sec;
-			            if (delta < iter->StateTimeOut) {
-	                        blog_unlock();
-                            continue;
-                        }
-                    }
-                }
-	            blog_unlock();
+				if (portmapidx == MAPPORTMAP_IX_INVALID) {
+					blog_lock();
+					if (iter->blog_key[BLOG_PARAM1_MAP_DIR_US] != BLOG_KEY_FC_INVALID || 
+					    iter->blog_key[BLOG_PARAM1_MAP_DIR_DS] != BLOG_KEY_FC_INVALID) {
+						if (blog_query(QUERY_MAP_TUPLE, (void*)iter, 
+						    iter->blog_key[BLOG_PARAM1_MAP_DIR_US],
+						    iter->blog_key[BLOG_PARAM1_MAP_DIR_DS], 0)) {
+							blog_unlock();
+							continue;
+						}
+					}
+					else {
+						// flow cache flow might have disassociated itself from map tuple.
+						if (iter->evict_time.tv_sec) {
+							iter->StateSetTime.tv_sec = iter->evict_time.tv_sec;
+							delta = now.tv_sec - iter->StateSetTime.tv_sec;
+							if (delta < iter->StateTimeOut) {
+								blog_unlock();
+								continue;
+							}
+						}
+					}
+					blog_unlock();
+				}
 #endif
 
 				hlist_del(&iter->out_node);
@@ -847,8 +863,8 @@ void refresh_tcp_map_list(int threshold)
 				tcp_list.size--;
 				
 #ifdef IVI_DEBUG_MAP_TCP
-				printk(KERN_INFO "refresh_tcp_map_list: time out map " NIP4_FMT ":%d -> %d (dst " NIP4_FMT ":%d) "
-				                 "on out_chain[%d], TCP state %d\n", NIP4(iter->oldaddr), iter->oldport, iter->newport, 
+				printk(KERN_INFO "refresh_tcp_map_list: %s map " NIP4_FMT ":%d -> %d (dst " NIP4_FMT ":%d) "
+				                 "on out_chain[%d], TCP state %d\n", portmapidx == MAPPORTMAP_IX_INVALID ? "time out" : "delete", NIP4(iter->oldaddr), iter->oldport, iter->newport, 
 				                 NIP4(iter->dstaddr), iter->dstport, i, iter->Status);
 				                 
 				//if (iter->Status == TCP_STATUS_TIME_WAIT)
@@ -882,16 +898,21 @@ void refresh_tcp_map_list(int threshold)
 #endif
  				}				
 #if defined(CONFIG_BCM_KF_BLOG) && defined(CONFIG_BLOG)
-	            blog_lock();
-                if (iter->blog_key[BLOG_PARAM1_MAP_DIR_US] != BLOG_KEY_FC_INVALID || 
-		            iter->blog_key[BLOG_PARAM1_MAP_DIR_DS] != BLOG_KEY_FC_INVALID) {
-		            blog_notify(DESTROY_MAP_TUPLE, (void*)iter, 
-                            iter->blog_key[BLOG_PARAM1_MAP_DIR_US],
-                            iter->blog_key[BLOG_PARAM1_MAP_DIR_DS]);
-                }
-	            blog_unlock();
+				blog_lock();
+				if (iter->blog_key[BLOG_PARAM1_MAP_DIR_US] != BLOG_KEY_FC_INVALID || 
+				    iter->blog_key[BLOG_PARAM1_MAP_DIR_DS] != BLOG_KEY_FC_INVALID) {
+					blog_notify(DESTROY_MAP_TUPLE, (void*)iter, 
+					            iter->blog_key[BLOG_PARAM1_MAP_DIR_US],
+					            iter->blog_key[BLOG_PARAM1_MAP_DIR_DS]);
+				}
+				blog_unlock();
 #endif
 				kfree(iter);
+
+				if (portmapidx != MAPPORTMAP_IX_INVALID && --tcp_list.portmap_num == 0) {
+					spin_unlock_bh(&tcp_list.lock);
+					return;
+				}
 			}
 		}
 	}
@@ -915,15 +936,28 @@ void free_tcp_map_list(void)
 				hlist_del(&iter->dest_node);
 				tcp_list.size--;
 
+#ifdef IVI_DEBUG_MAP_TCP
 				printk(KERN_INFO "free_tcp_map_list: delete map " NIP4_FMT ":%d -> %d (dst " NIP4_FMT ":%d) on out_chain[%d], TCP state %d\n", 
 					NIP4(iter->oldaddr), iter->oldport, iter->newport, NIP4(iter->dstaddr), iter->dstport, i, iter->Status);
+#endif
+
+#if defined(CONFIG_BCM_KF_BLOG) && defined(CONFIG_BLOG)
+				blog_lock();
+				if (iter->blog_key[BLOG_PARAM1_MAP_DIR_US] != BLOG_KEY_FC_INVALID || 
+				    iter->blog_key[BLOG_PARAM1_MAP_DIR_DS] != BLOG_KEY_FC_INVALID) {
+					blog_notify(DESTROY_MAP_TUPLE, (void*)iter, 
+					            iter->blog_key[BLOG_PARAM1_MAP_DIR_US],
+					            iter->blog_key[BLOG_PARAM1_MAP_DIR_DS]);
+				}
+				blog_unlock();
+#endif
 
 				kfree(iter);
 			}
 
 		}
 	}
-	tcp_list.port_num = tcp_list.state_seq = 0;
+	tcp_list.port_num = tcp_list.portmap_num = tcp_list.state_seq = 0;
 	spin_unlock_bh(&tcp_list.lock);
 }
 
@@ -943,6 +977,9 @@ static inline int tcp_port_in_use(__be16 port)
 			}
 		}
 	}
+
+	if (ret == 0)
+		ret = mapportmap_port(port, (1<<MAPPORTMAP_PROTO_TCP));
 
 	return ret;
 }
@@ -997,7 +1034,7 @@ static inline int new_tcp_map_port(u16 ratio, u16 adjacent, u16 offset, int star
 // MUST NOT acquire spin lock when calling this function
 // multiplexflag: 0 -> no multiplex (generate a new unused port)
 //                1 -> multiplex
-static inline int create_tcp_mapping(u32 oldaddr, u16 oldp, u32 dstaddr, u16 dstp, u16 newport, 
+static inline int create_tcp_mapping(u32 portmapidx, u32 oldaddr, u16 oldp, u32 dstaddr, u16 dstp, u16 newport, 
                                      struct tcphdr *th, unsigned int len, int multiplexflag) 
 {
 	PTCP_STATE_CONTEXT StateContext;
@@ -1029,11 +1066,16 @@ static inline int create_tcp_mapping(u32 oldaddr, u16 oldp, u32 dstaddr, u16 dst
 	}
 
 	// Routine to add new map-info
+	StateContext->portmapidx = portmapidx;
 	StateContext->oldaddr = oldaddr;
 	StateContext->oldport = oldp;
 	StateContext->dstaddr = dstaddr;
 	StateContext->dstport = dstp;
 	StateContext->newport = newport;
+#if defined(CONFIG_BCM_KF_BLOG) && defined(CONFIG_BLOG)
+	StateContext->blog_key[BLOG_PARAM1_MAP_DIR_US] = BLOG_KEY_FC_INVALID;
+	StateContext->blog_key[BLOG_PARAM1_MAP_DIR_DS] = BLOG_KEY_FC_INVALID;
+#endif
 	hash = v4addr_port_hashfn(oldaddr, oldp);
 	hlist_add_head(&StateContext->out_node, &tcp_list.out_chain[hash]);
 	hash = port_hashfn(newport);
@@ -1046,6 +1088,8 @@ static inline int create_tcp_mapping(u32 oldaddr, u16 oldp, u32 dstaddr, u16 dst
 	if (!multiplexflag) {
 		tcp_list.port_num++;
 		tcp_list.last_alloc_port = newport;
+		if (portmapidx != MAPPORTMAP_IX_INVALID)
+			tcp_list.portmap_num++;
 	}
 	
 	StateContext->state_seq = tcp_list.state_seq;
@@ -1146,7 +1190,7 @@ int get_outflow_tcp_map_port(__be32 oldaddr, __be16 oldp, __be32 dstaddr, __be16
 	adjacent = fls(adjacent) - 1;
 	start_port = ((1 << (ratio + adjacent)) > 1024) ? 1 << (ratio + adjacent) : 1024; // the ports below start_port are reserved for system ports.
 	
-	refresh_tcp_map_list(0);
+	refresh_tcp_map_list(0, MAPPORTMAP_IX_INVALID);
 	spin_lock_bh(&tcp_list.lock);
 
 	hash = v4addr_port_hashfn(oldaddr, oldp);
@@ -1154,12 +1198,15 @@ int get_outflow_tcp_map_port(__be32 oldaddr, __be16 oldp, __be32 dstaddr, __be16
 		hlist_for_each_entry_safe(StateContext, loop, &tcp_list.out_chain[hash], out_node) {
 			if (StateContext->oldport == oldp && StateContext->oldaddr == oldaddr) {
 				if (StateContext->dstaddr == dstaddr && StateContext->dstport == dstp) {
+					PACKET_DIR dir = (StateContext->portmapidx == MAPPORTMAP_IX_INVALID) ? PACKET_DIR_LOCAL : PACKET_DIR_REMOTE;
+
 					// Update state context.
-					ftState = UpdateTcpStateContext(th, len, PACKET_DIR_LOCAL, StateContext, skb);
+					ftState = UpdateTcpStateContext(th, len, dir, StateContext, skb);
 			
 					if (ftState == FILTER_ACCEPT) {
 						retport = StateContext->newport;
-						StateContext->state_seq = tcp_list.state_seq;
+						if (dir == PACKET_DIR_LOCAL)
+							StateContext->state_seq = tcp_list.state_seq;
 						
 #ifdef IVI_DEBUG_MAP_TCP
 						//printk(KERN_INFO "get_outflow_tcp_map_port: Found map " NIP4_FMT ":%d -> " 
@@ -1206,6 +1253,17 @@ int get_outflow_tcp_map_port(__be32 oldaddr, __be16 oldp, __be32 dstaddr, __be16
 							                 tcp_list.port_num, StateContext->newport);
 #endif
 						}
+
+#if defined(CONFIG_BCM_KF_BLOG) && defined(CONFIG_BLOG)
+						blog_lock();
+						if (StateContext->blog_key[BLOG_PARAM1_MAP_DIR_US] != BLOG_KEY_FC_INVALID || 
+						    StateContext->blog_key[BLOG_PARAM1_MAP_DIR_DS] != BLOG_KEY_FC_INVALID) {
+							blog_notify(DESTROY_MAP_TUPLE, (void*)StateContext,
+							            StateContext->blog_key[BLOG_PARAM1_MAP_DIR_US],
+							            StateContext->blog_key[BLOG_PARAM1_MAP_DIR_DS]);
+						}
+						blog_unlock();
+#endif
 						
                     	kfree(StateContext);
                     	
@@ -1218,7 +1276,7 @@ int get_outflow_tcp_map_port(__be32 oldaddr, __be16 oldp, __be32 dstaddr, __be16
                		*newp = retport;
 
 #if defined(CONFIG_BCM_KF_BLOG) && defined(CONFIG_BLOG)
-                    blog_link(MAP_TUPLE, blog_ptr(skb), (void*)StateContext, BLOG_PARAM1_MAP_DIR_US, 0);
+					blog_link(MAP_TUPLE, blog_ptr(skb), (void*)StateContext, BLOG_PARAM1_MAP_DIR_US, 0);
 #endif
 					spin_unlock_bh(&tcp_list.lock);
 					return (retport == 0 ? -1 : 0);
@@ -1239,7 +1297,7 @@ int get_outflow_tcp_map_port(__be32 oldaddr, __be16 oldp, __be32 dstaddr, __be16
 	
 	if (reusing == 1 && retport > 0) {
 		spin_unlock_bh(&tcp_list.lock);
-		if (create_tcp_mapping(oldaddr, oldp, dstaddr, dstp, retport, th, len, 1) < 0) {
+		if (create_tcp_mapping(MAPPORTMAP_IX_INVALID, oldaddr, oldp, dstaddr, dstp, retport, th, len, 1) < 0) {
 #ifdef IVI_DEBUG_MAP_TCP
 			printk(KERN_ERR "get_outflow_tcp_map_port: create_tcp_mapping when multiplexing1 failed.\n");
 #endif
@@ -1255,7 +1313,7 @@ int get_outflow_tcp_map_port(__be32 oldaddr, __be16 oldp, __be32 dstaddr, __be16
 		retport = tcp_dest_multiplex_port(dstaddr, dstp);
 		if (retport > 0) { // multiplex port found
 			spin_unlock_bh(&tcp_list.lock);
-			if (create_tcp_mapping(oldaddr, oldp, dstaddr, dstp, retport, th, len, 1) < 0) {
+			if (create_tcp_mapping(MAPPORTMAP_IX_INVALID, oldaddr, oldp, dstaddr, dstp, retport, th, len, 1) < 0) {
 #ifdef IVI_DEBUG_MAP_TCP
 				printk(KERN_ERR "get_outflow_tcp_map_port: create_tcp_mapping when multiplexing2 failed\n");
 #endif
@@ -1268,7 +1326,9 @@ int get_outflow_tcp_map_port(__be32 oldaddr, __be16 oldp, __be32 dstaddr, __be16
 			// If it's so lucky to reach here, we have to generate a new port
 			if (tcp_list.port_num >= ((65536 - start_port)>>ratio)) {
 				spin_unlock_bh(&tcp_list.lock);
+#ifdef IVI_DEBUG_MAP_TCP
 				printk(KERN_ERR "get_outflow_tcp map_port: tcp map list full, port_num = %d\n", tcp_list.port_num);
+#endif
 				return -1;
 				
 				/*spin_unlock_bh(&tcp_list.lock);
@@ -1286,12 +1346,14 @@ int get_outflow_tcp_map_port(__be32 oldaddr, __be16 oldp, __be32 dstaddr, __be16
 			
 			else if ((retport = new_tcp_map_port(ratio, adjacent, offset, start_port)) < 0) {
 				spin_unlock_bh(&tcp_list.lock);
+#ifdef IVI_DEBUG_MAP_TCP
 				printk(KERN_ERR "get_outflow_tcp_map_port: failed to assign a new map port.\n");
+#endif
 				return -1;
 			}
 			
 			spin_unlock_bh(&tcp_list.lock);
-			if (create_tcp_mapping(oldaddr, oldp, dstaddr, dstp, retport, th, len, 0) < 0) {
+			if (create_tcp_mapping(MAPPORTMAP_IX_INVALID, oldaddr, oldp, dstaddr, dstp, retport, th, len, 0) < 0) {
 #ifdef IVI_DEBUG_MAP_TCP
 				printk(KERN_ERR "get_outflow_tcp_map_port: create_tcp_mapping failed.\n");
 #endif
@@ -1310,7 +1372,7 @@ int get_inflow_tcp_map_port(__be16 newp, __be32 dstaddr,  __be16 dstp, struct tc
 	struct hlist_node  *loop;
 	int ret, hash, flag;
 	
-	refresh_tcp_map_list(0);
+	refresh_tcp_map_list(0, MAPPORTMAP_IX_INVALID);
 	spin_lock_bh(&tcp_list.lock);
 	ret = 1;
 	*oldp = 0;
@@ -1321,17 +1383,21 @@ int get_inflow_tcp_map_port(__be16 newp, __be32 dstaddr,  __be16 dstp, struct tc
 		// Found existing mapping info
 		if (StateContext->newport == newp && StateContext->dstaddr == dstaddr && StateContext->dstport == dstp)
 		{
+			PACKET_DIR dir = (StateContext->portmapidx == MAPPORTMAP_IX_INVALID) ? PACKET_DIR_REMOTE : PACKET_DIR_LOCAL;
+
 			*oldaddr = StateContext->oldaddr;
 			*oldp = StateContext->oldport;
 			
 			// Update state context.
-			ftState = UpdateTcpStateContext(th, len, PACKET_DIR_REMOTE, StateContext, skb);
+			ftState = UpdateTcpStateContext(th, len, dir, StateContext, skb);
 
 			if (ftState == FILTER_ACCEPT) {
 				ret = 0;
+				if (dir == PACKET_DIR_LOCAL)
+					StateContext->state_seq = tcp_list.state_seq;
 
 #if defined(CONFIG_BCM_KF_BLOG) && defined(CONFIG_BLOG)
-                blog_link(MAP_TUPLE, blog_ptr(skb), (void*)StateContext, BLOG_PARAM1_MAP_DIR_DS, 0);
+				blog_link(MAP_TUPLE, blog_ptr(skb), (void*)StateContext, BLOG_PARAM1_MAP_DIR_DS, 0);
 #endif
 #ifdef IVI_DEBUG_MAP_TCP
 				printk(KERN_INFO "get_inflow_tcp_map_port: Found map " NIP4_FMT ":%d -> " NIP4_FMT ":%d -----> %d "
@@ -1380,6 +1446,16 @@ int get_inflow_tcp_map_port(__be16 newp, __be32 dstaddr,  __be16 dstp, struct tc
 #endif
 
  				}
+#if defined(CONFIG_BCM_KF_BLOG) && defined(CONFIG_BLOG)
+				blog_lock();
+				if (StateContext->blog_key[BLOG_PARAM1_MAP_DIR_US] != BLOG_KEY_FC_INVALID || 
+				    StateContext->blog_key[BLOG_PARAM1_MAP_DIR_DS] != BLOG_KEY_FC_INVALID) {
+					blog_notify(DESTROY_MAP_TUPLE, (void*)StateContext, 
+					            StateContext->blog_key[BLOG_PARAM1_MAP_DIR_US],
+					            StateContext->blog_key[BLOG_PARAM1_MAP_DIR_DS]);
+				}
+				blog_unlock();
+#endif
 				kfree(StateContext);
 				ret = -1;
 				
@@ -1395,21 +1471,21 @@ int get_inflow_tcp_map_port(__be16 newp, __be32 dstaddr,  __be16 dstp, struct tc
 	}
 	
 	if (ret == 1) {	// fail to find a mapping either in tcp_list.
-		u32 idx;
+		u32 idx, oldp0 = 0;
 #ifdef IVI_DEBUG_MAP_TCP
 		printk(KERN_INFO "get_inflow_tcp_map_port: in_chain[%d] empty.\n", hash);
 #endif
-		idx = mapportmap_lookup(oldaddr, dstaddr, newp, (1<<MAPPORTMAP_PROTO_TCP), MAPPORTMAP_MODE_FIND);
+		idx = mapportmap_lookup(oldaddr, dstaddr, newp, &oldp0, (1<<MAPPORTMAP_PROTO_TCP), MAPPORTMAP_MODE_FIND);
 		if (idx != MAPPORTMAP_IX_INVALID) {
 
+			*oldp = oldp0;
 			spin_unlock_bh(&tcp_list.lock);
-			if (create_tcp_mapping(*oldaddr, *oldp, dstaddr, dstp, newp, th, len, 0) < 0) {
+			if (create_tcp_mapping(idx, *oldaddr, *oldp, dstaddr, dstp, newp, th, len, 0) < 0) {
 #ifdef IVI_DEBUG_MAP_TCP
 				printk(KERN_ERR "fail add new map for portmap TCP case\n");
 #endif
 				return -1;
 			}
-			*oldp = newp;
 
 			goto out;
 		}

@@ -120,5 +120,10 @@ int bcm_mcast_get_lan2lan_snooping(int proto, bcm_mcast_ifdata *pif);
 void bcm_mcast_process_blog_enable(int enable);
 #endif
 
+void bcm_mcast_sysfs_create_file(struct net_device *dev);
+void bcm_mcast_sysfs_remove_file(struct net_device *dev);
+#define netdev_mcastrouter_set(_dev)        ((_dev)->bcm_mcastrouter = 1)
+#define netdev_mcastrouter_unset(_dev)      ((_dev)->bcm_mcastrouter = 0)
+#define is_netdev_mcastrouter(_dev)         ((_dev)->bcm_mcastrouter)
 #endif /* _BCM_MCAST_PRIV_H_ */
 

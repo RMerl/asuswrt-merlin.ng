@@ -1,7 +1,7 @@
 /*
  * HND Minimal OS Abstraction Layer.
  *
- * Copyright (C) 2020, Broadcom. All Rights Reserved.
+ * Copyright (C) 2021, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -239,6 +239,9 @@ extern int osl_error(int);
 #define	PKTSETPRIO(lb, x)		BCM_REFERENCE(lb)
 #define PKTSHARED(lb)			({BCM_REFERENCE(lb); 1;})
 #define PKTALLOCED(osh)			({BCM_REFERENCE(osh); 0;})
+#define PKTALLOCED_PERSISTENTLY(osh)	({BCM_REFERENCE(osh); 0;})
+#define PKTALLOCED_PERSISTENTLY_INC(osh, cnt)	do {} while (0)
+#define PKTALLOCED_PERSISTENTLY_DEC(osh, cnt)	do {} while (0)
 #define PKTLIST_DUMP(osh, buf)		BCM_REFERENCE(osh)
 #define PKTFRMNATIVE(osh, lb)		({BCM_REFERENCE(osh); ((void *)NULL);})
 #define PKTTONATIVE(osh, p)		({BCM_REFERENCE(osh); ((struct lbuf *)NULL);})

@@ -36,6 +36,7 @@ Boston, MA 02111-1307, USA.
 #include <linux/skbuff.h>
 #include <linux/nbuff.h>
 #include <linux/ip.h>
+#include <net/xfrm.h>
 
 #include <bcmspudrv.h>
 #include <bcm_mm.h>
@@ -184,6 +185,7 @@ void spu_free_trans_req(struct spu_trans_req *pTransReq)
    unsigned long         flags;
    struct spu_trans_req *pReqFree;
 
+   secpath_put(pTransReq->sp);
    spin_lock_irqsave(&spuinfo->spuListLock, flags);
    list_for_each_entry(pReqFree, &spuinfo->transReqList, entry)
    {

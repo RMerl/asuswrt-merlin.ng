@@ -44,7 +44,7 @@
 
 #if defined(XRDP)
 #define RDPA_UCAST_MAX_PATHS 64
-#define RDPA_L2_KEY_EXCLUDE_FIELDS rdpa_l2_flow_key_exclude_dei_field
+#define RDPA_L2_KEY_EXCLUDE_FIELDS 0
 #else
 #define RDPA_UCAST_MAX_PATHS 64
 #endif

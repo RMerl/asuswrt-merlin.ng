@@ -169,10 +169,56 @@ int ddr_freq_set(unsigned long freq)
 #define VCO0_FREQ	1200
 #define VCO2_FREQ	1600
 
+#if defined(_BCM96855_) || defined(CONFIG_BCM96855)
+int pll_vco_config(unsigned int pll_addr, unsigned int ndivider, unsigned int pdivider)
+{
+    int ret = 0;
+    PLL_CTRL_REG pll_ctrl;
+    PLL_STAT_REG pll_stat;
+    PLL_NDIV_REG pll_ndiv;
+    PLL_PDIV_REG pll_pdiv;
+
+    //  reset pll
+    ReadBPCMRegister(pll_addr, PLLBPCMRegOffset(resets), &pll_ctrl.Reg32);
+    pll_ctrl.Bits.resetb = 0;
+    pll_ctrl.Bits.post_resetb = 0;
+    WriteBPCMRegister(pll_addr, PLLBPCMRegOffset(resets), pll_ctrl.Reg32);
+
+    // change ndiv and pdiv
+    ret = ReadBPCMRegister(pll_addr, PLLBPCMRegOffset(pdiv), &pll_pdiv.Reg32);
+    pll_pdiv.Bits.pdiv = pdivider;
+    pll_pdiv.Bits.ndiv_pdiv_override = 1;
+    ret |= WriteBPCMRegister(pll_addr, PLLBPCMRegOffset(pdiv), pll_pdiv.Reg32);
+
+    ret = ReadBPCMRegister(pll_addr, PLLBPCMRegOffset(ndiv), &pll_ndiv.Reg32);
+    pll_ndiv.Bits.ndiv_int = ndivider;
+    pll_ndiv.Bits.ndiv_override = 1;
+    ret |= WriteBPCMRegister(pll_addr, PLLBPCMRegOffset(ndiv), pll_ndiv.Reg32);
+
+    // release restb
+    ReadBPCMRegister(pll_addr, PLLBPCMRegOffset(resets), &pll_ctrl.Reg32);
+    pll_ctrl.Bits.resetb = 1;
+    WriteBPCMRegister(pll_addr, PLLBPCMRegOffset(resets), pll_ctrl.Reg32);
+
+    // wait untill pll is locked
+    do {
+        ReadBPCMRegister(pll_addr, PLLBPCMRegOffset(stat), &pll_stat.Reg32);
+    } while (pll_stat.Bits.lock == 0);
+
+	// release post_resetb
+    ReadBPCMRegister(pll_addr, PLLBPCMRegOffset(resets), &pll_ctrl.Reg32);
+    pll_ctrl.Bits.post_resetb = 1;
+    WriteBPCMRegister(pll_addr, PLLBPCMRegOffset(resets), pll_ctrl.Reg32);
+
+    return ret;
+}
+#endif
+
 #if defined(_BCM96848_) || defined(CONFIG_BCM96848) || defined(_BCM96858_) || defined(CONFIG_BCM96858)    || \
     defined(_BCM963158_) || defined(CONFIG_BCM963158) || defined(_BCM96856_) || defined(CONFIG_BCM96856) || \
     defined(_BCM96846_) || defined(CONFIG_BCM96846) || defined(_BCM963178_) || defined(CONFIG_BCM963178) || \
-    defined(_BCM947622_) || defined(CONFIG_BCM947622) || defined(_BCM96878_) || defined(CONFIG_BCM96878)
+    defined(_BCM947622_) || defined(CONFIG_BCM947622) || defined(_BCM96878_) || defined(CONFIG_BCM96878) || \
+    defined(_BCM96855_) || defined(CONFIG_BCM96855)
 #define PLL_REFCLK  50 
 int pll_vco_freq_get(unsigned int pll_addr, unsigned int* fvco)
 {
@@ -180,7 +226,7 @@ int pll_vco_freq_get(unsigned int pll_addr, unsigned int* fvco)
 	PLL_DECNDIV_REG pll_decndiv;
 	PLL_DECPDIV_REG pll_decpdiv;
 #if defined(_BCM963158_) || defined(CONFIG_BCM963158) || defined(_BCM963178_) || defined(CONFIG_BCM963178) || \
-    defined(_BCM947622_) || defined(CONFIG_BCM947622)
+    defined(_BCM947622_) || defined(CONFIG_BCM947622) || defined(_BCM96855_) || defined(CONFIG_BCM96855)
 	PLL_NDIV_REG ndiv_reg;
 	PLL_PDIV_REG pdiv_reg;
 #endif
@@ -199,7 +245,7 @@ int pll_vco_freq_get(unsigned int pll_addr, unsigned int* fvco)
 	*fvco = (PLL_REFCLK * (pll_decndiv.Bits.ndiv_int))/pll_decpdiv.Bits.pdiv;
 
 #if defined(_BCM963158_) || defined(CONFIG_BCM963158) || defined(_BCM963178_) || defined(CONFIG_BCM963178) || \
-    defined(_BCM947622_) || defined(CONFIG_BCM947622)
+    defined(_BCM947622_) || defined(CONFIG_BCM947622) || defined(_BCM96855_) || defined(CONFIG_BCM96855)
 	if (!ReadBPCMRegister(pll_addr, PLLBPCMRegOffset(pdiv), &pdiv_reg.Reg32) &&
 		pdiv_reg.Bits.ndiv_pdiv_override &&
 		!ReadBPCMRegister(pll_addr, PLLBPCMRegOffset(ndiv), &ndiv_reg.Reg32))
@@ -439,6 +485,15 @@ unsigned long get_rdp_freq(unsigned int* rdp_freq)
 
     return ret;
 }
+#elif defined(_BCM96855_) || defined(CONFIG_BCM96855)
+unsigned long get_rdp_freq(unsigned int* rdp_freq)
+{
+    int ret;
+
+    ret = pll_ch_freq_get(PMB_ADDR_SYSPLL, XRDPPLL_RUNNER_CHANNEL, rdp_freq);
+
+    return ret;
+}
 
 #elif defined(_BCM963178_) || defined(CONFIG_BCM963178)
 unsigned long get_rdp_freq(unsigned int* rdp_freq)
@@ -497,7 +552,7 @@ unsigned long get_rdp_freq(unsigned int *rdp_freq)
 
 #if defined(_BCM96858_) || defined(CONFIG_BCM96858) || defined(_BCM96856_) || defined(CONFIG_BCM96856) || defined(_BCM96846_) || defined(CONFIG_BCM96846) || \
    defined(_BCM963158_) || defined(CONFIG_BCM963158) || defined(_BCM963178_) || defined(CONFIG_BCM963178) || defined(_BCM947622_) || defined(CONFIG_BCM947622) || \
-   defined(_BCM96878_) || defined(CONFIG_BCM96878)
+   defined(_BCM96878_) || defined(CONFIG_BCM96878) || defined(_BCM96855_) || defined(CONFIG_BCM96855)
 int pll_ch_freq_set(unsigned int pll_addr, unsigned int ch, unsigned int mdiv)
 {
     int ret;
@@ -684,7 +739,7 @@ EXPORT_SYMBOL(clk_divide_50mhz_to_25mhz);
 #endif
 #endif
 
-#if defined(CONFIG_BCM96858) || defined(CONFIG_BCM96846) || defined(CONFIG_BCM96856) || defined(CONFIG_BCM96878)
+#if defined(CONFIG_BCM96858) || defined(CONFIG_BCM96846) || defined(CONFIG_BCM96856) || defined(CONFIG_BCM96878) || defined(CONFIG_BCM963158)
 #if defined(CONFIG_BCM96878)
 #define PMD_CLOCK_REG pmd_xtal_cntl
 #define CLOCK_RESET_XTAL_CONTROL_BIT_PD_DRV (2)
@@ -733,8 +788,38 @@ void disable_25mhz_clk_to_pmd(void)
 
 #endif
 }
+
+int bcm_enable_xtal_clk(void)
+{
+    uint32 data;
+    int ret = 0;
+
+    ret = ReadBPCMRegister(PMB_ADDR_CHIP_CLKRST, CLKRSTBPCMRegOffset(PMD_CLOCK_REG), &data);
+
+    data &=  ~(0x1 << CLOCK_RESET_XTAL_CONTROL_BIT_PD_DRV);
+#if defined(CONFIG_BCM96878)
+    data |= (0x1 << CLOCK_RESET_XTAL_CONTROL_BIT_PWRON);
+#endif
+
+    ret |= WriteBPCMRegister(PMB_ADDR_CHIP_CLKRST, CLKRSTBPCMRegOffset(PMD_CLOCK_REG), data);
+
+#if defined(CONFIG_BCM96878)
+    ret |= ReadBPCMRegister(PMB_ADDR_CHIP_CLKRST, CLKRSTBPCMRegOffset(PMD_CLOCK_REG2), &data);
+
+    data &=  ~(0x1 << CLOCK_RESET_XTAL_CONTROL2_BIT_PD);
+
+    ret |= WriteBPCMRegister(PMB_ADDR_CHIP_CLKRST, CLKRSTBPCMRegOffset(PMD_CLOCK_REG2), data);
+#endif
+
+    if (ret)
+        printk("Failed to enable 25Mhz xtal clk\n");
+
+    return ret;
+}
+
 #ifndef _CFE_
 EXPORT_SYMBOL(disable_25mhz_clk_to_pmd);
+EXPORT_SYMBOL(bcm_enable_xtal_clk);
 #endif
 #endif
 

@@ -493,7 +493,7 @@ static PBCMXTMRT_DEV_CONTEXT FindDevCtx(short vpi, int vci)
 
 /*---------------------------------------------------------------------------
  * BcmPktDma_XtmTxDma *find_xmit_channel(PBCMXTMRT_DEV_CONTEXT pDevCtx,
- *                                       UINT32 uMark, int is_blog_mark)
+ *                                       UINT32 uMark)
  * Description:
  *    Finds the XTM TX iudma channel based on the skb->mark.
  * Returns:
@@ -501,16 +501,13 @@ static PBCMXTMRT_DEV_CONTEXT FindDevCtx(short vpi, int vci)
  *---------------------------------------------------------------------------
  */
 static inline BcmPktDma_XtmTxDma *find_xmit_channel(PBCMXTMRT_DEV_CONTEXT pDevCtx,
-                                                    UINT32 uMark, int is_blog_mark)
+                                                    UINT32 uMark)
 {
    BcmPktDma_XtmTxDma *txdma = NULL;
 
 #ifdef CONFIG_NETFILTER
    /* See if this is a classified flow */
-   /* is_blog_mark determines whether the mark field from skb or blog, 
-   ** if it is from blog then mark field is already updated with priority
-   ** of the selected channel so even for classified flow */
-   if (SKBMARK_GET_FLOW_ID(uMark) && (is_blog_mark == 0))
+   if (SKBMARK_GET_FLOW_ID(uMark))
    {
       /* Non-zero flow id implies classified packet.
        * Find tx queue based on its qid.
@@ -683,7 +680,6 @@ int bcmxtmrt_xmit(pNBuff_t pNBuf, struct net_device *dev)
    struct sk_buff     *skb    = NULL; /* If pNBuf is sk_buff: protocol access */
    BcmPktDma_XtmTxDma *txdma  = NULL;
    int is_spdsvc_setup_packet = 0 ;
-   int is_fkb                 = 0;
    UINT32 *pMark = NULL;
    void *pTcpSpdTestInfo = NULL;
    spin_lock_bh(xtmlock);
@@ -737,23 +733,15 @@ int bcmxtmrt_xmit(pNBuff_t pNBuf, struct net_device *dev)
 #endif
 
    }
-   else
-   {
-      is_fkb = 1;
-   }
 
    BCM_XTM_TX_DEBUG("XTM TX: pNBuf<0x%08x> skb<0x%08x> pData<0x%08x>\n", (int)pNBuf,(int)skb, (int)pData);
 
    /* Find the transmit queue to send on. */
-   txdma = find_xmit_channel(pDevCtx, skbMark, is_fkb);
+   txdma = find_xmit_channel(pDevCtx, skbMark);
 
    if (txdma && txdma->txEnabled == 1)
    {
        txAvailable = bcmxapi_xmit_available(txdma, skbMark);
-       if(IS_SKBUFF_PTR(pNBuf) && (pMark != NULL))
-       {
-          *pMark = SKBMARK_SET_Q_PRIO(*pMark,txdma->ulSubPriority);
-       }
    }
 
    if (!txAvailable || !bcmxapi_queue_packet(txdma, isAtmCell))
@@ -1171,6 +1159,9 @@ UINT32 bcmxtmrt_processRxPkt(PBCMXTMRT_DEV_CONTEXT pDevCtx, void *rxdma,
    {
       if (rxdma)
          bcmxapi_rx_pkt_drop(rxdma, pBuf, len);
+      else
+         fkb_free(pFkb);
+
       pDevCtx->DevStats.rx_dropped++;
       retStatus = PACKET_NORMAL;
    }
@@ -1186,7 +1177,7 @@ UINT32 bcmxtmrt_processRxPkt(PBCMXTMRT_DEV_CONTEXT pDevCtx, void *rxdma,
       skb = bcmxapi_skb_alloc(rxdma, pNBuf, delLen, trailerDelLen);
       if (skb == NULL)
       {
-         fkb_release(pFkb);  /* releases allocated blog */
+         fkb_free(pFkb);
          pDevCtx->DevStats.rx_dropped++;
       }
       if (skb)
@@ -1286,8 +1277,6 @@ void bcmxtmrt_processRxCell(UINT8 *pData)
       /* Possibly OAM Cell type */
       Cell.ConnAddr.ulTrafficType = TRAFFIC_TYPE_ATM;
 
-/* Some 63268 processors have problems in their bonding hardware.  In those
-   cases, hard code the OAM as an F5END.  */
 #if defined(CONFIG_BCM963268)
       if (pGi->atmBondSidMode != ATMBOND_ASM_MESSAGE_TYPE_NOSID)
       {
@@ -1313,17 +1302,8 @@ void bcmxtmrt_processRxCell(UINT8 *pData)
       else
 #endif
       {
-         /* Get the port number depending on whether we're in bonding mode or not. */ 
-         if (pGi->bondConfig.sConfig.atmBond == BC_ATM_BONDING_ENABLE)
-         {
-            /* In bonding mode, only port 0 is configured - use it instead of reading port from hardware */
-            ucLogPort = PORT_PHYS_TO_LOG(PHY_PORTID_0);  /* Only Port 0/1 in bonding mode */
-         }
-         else
-         {
-            /* Read port from hardware in nobonded mode */
-            ucLogPort = PORT_PHYS_TO_LOG((ucCHdr & CHDR_PORT_MASK) >> CHDR_PORT_SHIFT);
-         }
+         /* Read port from hardware in nobonded mode */
+         ucLogPort = PORT_PHYS_TO_LOG((ucCHdr & CHDR_PORT_MASK) >> CHDR_PORT_SHIFT);
 
          /* Get port mask form port number */
          Cell.ConnAddr.u.Vcc.ulPortMask = PORT_TO_PORTID(ucLogPort);

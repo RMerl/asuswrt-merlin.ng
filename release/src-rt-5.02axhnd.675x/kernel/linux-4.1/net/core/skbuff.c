@@ -249,7 +249,7 @@ EXPORT_SYMBOL(skb_shinforeset);
 static inline void bcm_skb_set_end_pointer(struct sk_buff *skb, const int end_offset)
 {
 #ifdef NET_SKBUFF_DATA_USES_OFFSET
-	skb->end = end_offset;
+	skb->end = end_offset; 
 #else
 	skb->end = skb->head + end_offset;
 #endif
@@ -282,12 +282,9 @@ void skb_headerinit(unsigned int headroom, unsigned int datalen,
 	skb->head = data - headroom;
 	skb->data = data;
 	skb_set_tail_pointer(skb, datalen);
-	/* FIXME!! check if this alignment is to ensure cache line aligned?
-	 * make sure skb buf ends at 16 bytes boudary */
-
-	bcm_skb_set_end_pointer(skb, SKB_DATA_ALIGN(headroom + datalen));
-
 	skb->len = datalen;
+	bcm_skb_set_end_pointer(skb, SKB_DATA_ALIGN(headroom + datalen));
+	skb->truesize = SKB_TRUESIZE(skb_end_offset(skb));
 
 #if defined (CONFIG_BCM_KF_BPM_BUF_TRACKING)
 	GBPM_INC_REF(data);
@@ -1170,11 +1167,10 @@ struct sk_buff *skb_xlate_dp(struct fkbuff * fkb_p, uint8_t *dirty_p)
 	skb_p->data = fkb_p->data;
 	skb_p->head = (unsigned char *)(fkb_p + 1 );
 	skb_set_tail_pointer(skb_p, fkb_p->len);
-	/* FIXME!! check whether this has to do with the cache line size
-	 * make sure skb buf ends at 16 bytes boudary */
 
 	bcm_skb_set_end_pointer(skb_p, SKB_DATA_ALIGN((skb_p->data -skb_p->head) +
 				fkb_p->len + BCM_SKB_TAILROOM));
+	skb_p->truesize = SKB_TRUESIZE(skb_end_offset(skb_p));
 
 #if defined (CONFIG_BCM_KF_BPM_BUF_TRACKING)
 	GBPM_INC_REF(skb_p->data);
@@ -1879,6 +1875,11 @@ struct sk_buff *skb_morph(struct sk_buff *dst, struct sk_buff *src)
 	recycle_hook = dst->recycle_hook;
 	recycle_context = dst->recycle_context;
 
+#if defined(CONFIG_BCM_KF_BLOG) && defined(CONFIG_BLOG)
+	if(dst->blog_p)
+		blog_skip(dst, blog_skip_reason_skb_morph);
+#endif
+		
 	if (unlikely((src->recycle_flags & SKB_DATA_RECYCLE) &&
 	   ((recycle_hook != src->recycle_hook) ||
 	    (recycle_context != src->recycle_context))))
@@ -2002,7 +2003,9 @@ struct sk_buff *skb_clone(struct sk_buff *skb, gfp_t gfp_mask)
 		kmemcheck_annotate_bitfield(n, flags1);
 		n->fclone = SKB_FCLONE_UNAVAILABLE;
 	}
-
+#if defined(CONFIG_BCM_KF_BLOG) && defined(CONFIG_BLOG)
+	n->blog_p = NULL;
+#endif
 	return __skb_clone(n, skb);
 }
 EXPORT_SYMBOL(skb_clone);
@@ -4128,6 +4131,9 @@ struct sk_buff *skb_segment(struct sk_buff *head_skb,
 			nskb->truesize += skb_end_offset(nskb) - hsize;
 			skb_release_head_state(nskb);
 			__skb_push(nskb, doffset);
+#if defined(CONFIG_BCM_KF_BLOG) && defined(CONFIG_BLOG)
+			blog_skip(nskb, blog_skip_reason_skb_segment);
+#endif
 		} else {
 			nskb = __alloc_skb(hsize + doffset + headroom,
 					   GFP_ATOMIC, skb_alloc_rx_flag(head_skb),

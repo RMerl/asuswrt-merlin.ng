@@ -601,7 +601,7 @@ int wan_serdes_config(serdes_wan_type_t wan_type)
             .gearbox_drift_test = &pon_gearbox_drift_test,
             .reset_fifo = &wan_reset_rx_and_tx,
         };
-        pon_serdes_lof_fixup_cfg(&fifo_cb, &pon_reset_cdr);
+        pon_serdes_lof_fixup_cfg(&fifo_cb, &pon_reset_cdr, NULL, NULL, NULL, NULL);
     }
 
     onu2g_init(wan_type);

@@ -996,9 +996,7 @@ int bcm_gre_rcv_check(struct net_device *dev, struct iphdr *iph,
 				  iph->saddr, iph->daddr, tpi.key);
 
     if (tunnel) {
-        rcu_read_lock();
         ret =  __bcm_gre_rcv_check(tunnel, iph, len, pkt_seqno);
-        rcu_read_unlock();
     }
 
 	*tunl = (void *) tunnel;

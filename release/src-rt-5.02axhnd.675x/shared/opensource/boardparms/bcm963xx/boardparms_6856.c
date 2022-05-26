@@ -407,6 +407,61 @@ static bp_elem_t g_bcm968560xsv21[] = {
   {bp_last}
 };
 
+static bp_elem_t g_bcm968560chgu[] = {
+  {bp_cpBoardId,               .u.cp = "968560CHGU"},
+  {bp_ucPhyType0,              .u.uc = BP_ENET_INTERNAL_PHY},
+  {bp_ucPhyAddress,            .u.uc = 0x0},
+  {bp_usConfigType,            .u.us = BP_ENET_CONFIG_MMAP},
+  {bp_ulPortMap,               .u.ul = 0xf},
+  {bp_ulPhyId0,                .u.ul = 0x01 | MAC_IF_GMII},
+  {bp_usNetLed0,               .u.us = BP_SERIAL_GPIO_3_AL},
+  {bp_ulNetLedLink,            .u.ul = BP_NET_LED_SPEED_GBE},
+  {bp_usNetLed1,               .u.us = BP_SERIAL_GPIO_4_AL},
+  {bp_ulNetLedActivity,        .u.ul = BP_NET_LED_SPEED_GBE},
+  {bp_ulPhyId1,                .u.ul = 0x02 | MAC_IF_GMII},
+  {bp_usNetLed0,               .u.us = BP_SERIAL_GPIO_5_AL},
+  {bp_ulNetLedLink,            .u.ul = BP_NET_LED_SPEED_GBE},
+  {bp_usNetLed1,               .u.us = BP_SERIAL_GPIO_6_AL},
+  {bp_ulNetLedActivity,        .u.ul = BP_NET_LED_SPEED_GBE},
+  {bp_ulPhyId2,                .u.ul = 0x03 | MAC_IF_GMII},
+  {bp_usNetLed0,               .u.us = BP_SERIAL_GPIO_7_AL},
+  {bp_ulNetLedLink,            .u.ul = BP_NET_LED_SPEED_GBE},
+  {bp_usNetLed1,               .u.us = BP_SERIAL_GPIO_8_AL},
+  {bp_ulNetLedActivity,        .u.ul = BP_NET_LED_SPEED_GBE},
+  {bp_ulPhyId3,                .u.ul = 0x04 | MAC_IF_GMII},
+  {bp_usNetLed0,               .u.us = BP_SERIAL_GPIO_9_AL},
+  {bp_ulNetLedLink,            .u.ul = BP_NET_LED_SPEED_GBE},
+  {bp_usNetLed1,               .u.us = BP_SERIAL_GPIO_10_AL},
+  {bp_ulNetLedActivity,        .u.ul = BP_NET_LED_SPEED_GBE},
+  {bp_usGpioWanSignalDetected, .u.us = BP_GPIO_8_AH},
+  {bp_usRogueOnuEn,            .u.us = BP_GPIO_10_AH},
+  {bp_usGpioPonTxEn,           .u.us = BP_GPIO_12_AH},
+  {bp_usGpioI2cSda,            .u.us = BP_GPIO_19_AL},
+  {bp_usGpioI2cScl,            .u.us = BP_GPIO_20_AL},
+  {bp_usGpioSMTCTxDis,         .u.us = BP_GPIO_21_AH},
+  {bp_usPonLbe,                .u.us = BP_GPIO_22_AH},
+  {bp_usPmdMACEwakeEn,         .u.us = BP_GPIO_24_AH},
+  {bp_usSerialLedData,         .u.us = BP_GPIO_26_AH},
+  {bp_usSerialLedClk,          .u.us = BP_GPIO_27_AH},
+  {bp_usSerialLedMask,         .u.us = BP_GPIO_28_AH},
+  {bp_usPcmSdin,               .u.us = BP_GPIO_45_AH},
+  {bp_usPcmSdout,              .u.us = BP_GPIO_46_AH},
+  {bp_usPcmClk,                .u.us = BP_GPIO_47_AH},
+  {bp_usPcmFs,                 .u.us = BP_GPIO_75_AH},
+  {bp_usUsbPwrFlt0,            .u.us = BP_GPIO_76_AL},
+  {bp_usUsbPwrOn0,             .u.us = BP_GPIO_77_AL},
+  {bp_usUsbPwrFlt1,            .u.us = BP_GPIO_78_AL},
+  {bp_usUsbPwrOn1,             .u.us = BP_GPIO_79_AL},
+  {bp_usExtIntrSesBtnWireless, .u.us = BP_EXT_INTR_0 | BP_EXT_INTR_TYPE_IRQ_LOW_LEVEL | BP_EXT_INTR_TYPE_IRQ_SENSE_EDGE},
+  {bp_usGpio_Intr,             .u.us = BP_GPIO_83_AL},
+  {bp_usExtIntrResetToDefault, .u.us = BP_EXT_INTR_1 | BP_EXT_INTR_TYPE_IRQ_LOW_LEVEL | BP_EXT_INTR_TYPE_IRQ_SENSE_EDGE},
+  {bp_usGpio_Intr,             .u.us = BP_GPIO_82_AL},
+  {bp_ulMemoryConfig,          .u.ul = BP_DDR_SPEED_800_11_11_11 | BP_DDR_TOTAL_SIZE_512MB| BP_DDR_DEVICE_WIDTH_16 | BP_DDR_TOTAL_WIDTH_16BIT | BP_DDR_SSC_CONFIG_1},
+  {bp_ucDspType0,              .u.uc = BP_VOIP_DSP},
+  {bp_ucDspAddress,            .u.uc = 0},
+  {bp_last}
+};
+
 static bp_elem_t g_bcm968360bsff[] = {
   {bp_cpBoardId,               .u.cp = "968360BSFF"},
   {bp_InvSerdesRxPol,          .u.us = BP_NOT_DEFINED},
@@ -477,11 +532,29 @@ static bp_elem_t g_bcm968360bg2[] = {
   {bp_ucPhyType0,              .u.uc = BP_ENET_INTERNAL_PHY},
   {bp_ucPhyAddress,            .u.uc = 0x0},
   {bp_usConfigType,            .u.us = BP_ENET_CONFIG_MMAP},
-  {bp_ulPortMap,               .u.ul = 0x2f},
+  {bp_ulPortMap,               .u.ul = 0x3f},
   {bp_ulPhyId0,                .u.ul = 0x01 | MAC_IF_GMII},
+  {bp_usNetLed0,               .u.us = BP_SERIAL_GPIO_3_AL},
+  {bp_ulNetLedLink,            .u.ul = BP_NET_LED_SPEED_GBE},
+  {bp_usNetLed1,               .u.us = BP_SERIAL_GPIO_4_AL},
+  {bp_ulNetLedActivity,        .u.ul = BP_NET_LED_SPEED_GBE},
   {bp_ulPhyId1,                .u.ul = 0x02 | MAC_IF_GMII},
+  {bp_usNetLed0,               .u.us = BP_SERIAL_GPIO_5_AL},
+  {bp_ulNetLedLink,            .u.ul = BP_NET_LED_SPEED_GBE},
+  {bp_usNetLed1,               .u.us = BP_SERIAL_GPIO_6_AL},
+  {bp_ulNetLedActivity,        .u.ul = BP_NET_LED_SPEED_GBE},
   {bp_ulPhyId2,                .u.ul = 0x03 | MAC_IF_GMII},
+  {bp_usNetLed0,               .u.us = BP_SERIAL_GPIO_7_AL},
+  {bp_ulNetLedLink,            .u.ul = BP_NET_LED_SPEED_GBE},
+  {bp_usNetLed1,               .u.us = BP_SERIAL_GPIO_8_AL},
+  {bp_ulNetLedActivity,        .u.ul = BP_NET_LED_SPEED_GBE},
   {bp_ulPhyId3,                .u.ul = 0x04 | MAC_IF_GMII},
+  {bp_usNetLed0,               .u.us = BP_SERIAL_GPIO_9_AL},
+  {bp_ulNetLedLink,            .u.ul = BP_NET_LED_SPEED_GBE},
+  {bp_usNetLed1,               .u.us = BP_SERIAL_GPIO_10_AL},
+  {bp_ulNetLedActivity,        .u.ul = BP_NET_LED_SPEED_GBE},
+  {bp_ulPhyId4,                .u.ul = 0x07 | MAC_IF_RGMII | PHY_EXTERNAL | PHY_INTEGRATED_VALID},
+  {bp_ulPortFlags,             .u.ul = PORT_FLAG_TX_INTERNAL_DELAY},
   {bp_ulPhyId5,                .u.ul = 0x1e | MAC_IF_HSGMII | PHY_EXTERNAL | PHY_INTEGRATED_VALID},
   {bp_elemTemplate,            .u.bp_elemp = g_bcm968360bsfp},
   {bp_last}
@@ -554,5 +627,30 @@ static bp_elem_t g_bcm94910ref_pci2[] = {
   {bp_last}
 };
 
-bp_elem_t * g_BoardParms[] = {g_bcm968560sv, g_bcm968560sv_opt, g_bcm968360bg, g_bcm968360bsff, g_bcm968360b_pci0x2, g_bcm968360bsff_pci0x2, g_bcm968360bsfp, g_bcm968360b_4g, g_bcm968360b_4gsff, g_bcm968560ref, g_bcm968560xsv21, g_bcm968560ref_ng2, g_bcm968560ref_pci2, g_bcm968560bob, g_bcm968560bob_4g, g_bcm968560bob_4gsff, g_bcm968360bg2, g_bcm94910ref, g_bcm94910ref_pci2, 0};
+static bp_elem_t g_bcm94910ref_91m[] = {
+    {bp_cpBoardId,               .u.cp = "94910REF91M"},
+    {bp_ucPhyType0,              .u.uc = BP_ENET_INTERNAL_PHY},
+    {bp_ucPhyAddress,            .u.uc = 0x0},
+    {bp_usConfigType,            .u.us = BP_ENET_CONFIG_MMAP},
+    {bp_ulPortMap,               .u.ul = 0x12f},
+    {bp_ulPhyId0,                .u.ul = 0x01 | MAC_IF_GMII},
+    {bp_ulPhyId1,                .u.ul = 0x02 | MAC_IF_GMII},
+    {bp_ulPhyId2,                .u.ul = 0x03 | MAC_IF_GMII},
+    {bp_ulPhyId3,                .u.ul = 0x04 | MAC_IF_GMII},
+    {bp_ulPhyId5,                .u.ul = 0x1e | MAC_IF_HSGMII | PHY_EXTERNAL | PHY_INTEGRATED_VALID},
+    {bp_ulPortFlags,             .u.ul = PORT_FLAG_SWAP_PAIR},
+    {bp_ulPhyId8,                .u.ul = 0x1c | MAC_IF_XFI | PHY_EXTERNAL | PHY_INTEGRATED_VALID},
+    {bp_ulPortFlags,             .u.ul = PORT_FLAG_DETECT | PORT_FLAG_SWAP_PAIR | PORT_FLAG_WAN_ONLY | PORT_FLAG_BASE_R },
+    {bp_elemTemplate,            .u.bp_elemp = g_bcm94910ref},
+    {bp_last}
+};
+
+static bp_elem_t g_bcm94910ref_91m_pci2[] = {
+  {bp_cpBoardId,               .u.cp = "94910REF91M_PCI2"},
+  {bp_ulPciFlags,              .u.ul =  BP_PCI0_DUAL_LANE},  
+  {bp_elemTemplate,            .u.bp_elemp = g_bcm94910ref_91m},
+  {bp_last}
+};
+
+bp_elem_t * g_BoardParms[] = {g_bcm968560sv, g_bcm968560sv_opt, g_bcm968360bg, g_bcm968360bsff, g_bcm968360b_pci0x2, g_bcm968360bsff_pci0x2, g_bcm968360bsfp, g_bcm968360b_4g, g_bcm968360b_4gsff, g_bcm968560ref, g_bcm968560chgu, g_bcm968560xsv21, g_bcm968560ref_ng2, g_bcm968560ref_pci2, g_bcm968560bob, g_bcm968560bob_4g, g_bcm968560bob_4gsff, g_bcm968360bg2, g_bcm94910ref, g_bcm94910ref_pci2, g_bcm94910ref_91m, g_bcm94910ref_91m_pci2, 0};
 

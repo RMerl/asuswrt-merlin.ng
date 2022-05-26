@@ -35,6 +35,7 @@
 #include <linux/slab.h>
 #include "port.h"
 #include "phy_drv.h"
+#include "crossbar_dev.h"
 #include "enet.h"
 #include "enet_dbg.h"
 #if defined(CONFIG_BCM_PON_RDP) || defined(CONFIG_BCM_PON_XRDP)
@@ -202,6 +203,7 @@ int port_create(port_info_t *port_info, enetx_port_t *parent_sw, enetx_port_t **
         if (ret)
         {
             enet_err("cannot resolve port_info (port %d) on %s\n", port_info->port, parent_sw->obj_name);
+            sw_free(&port);
             return ret;
         }
     }
@@ -300,6 +302,10 @@ void _sw_free(enetx_port_t **_p, int free_port)
         kfree(p);
         *_p = NULL;
     }
+    else
+    {
+        p->port_class = PORT_CLASS_PORT_DETECT;
+    }
 }
 
 void sw_free(enetx_port_t **_p)
@@ -332,7 +338,9 @@ int port_init(enetx_port_t *port)
     /* PORT_DETECT cannot be init from sw_init; they should be init by port_activate() */
     if (port->port_class == PORT_CLASS_PORT_DETECT)
     {
-        phy_dev_power_set(port->p.phy, 0);
+        if (port->p.phy)
+            phy_dev_power_set(port->p.phy, 0);
+
         return 0;
     }
 
@@ -369,13 +377,10 @@ int port_init(enetx_port_t *port)
         if ((rc = phy_dev_init(port->p.phy)) ||
             (rc = phy_dev_power_set(port->p.phy, 0)))
         {
-            phy_dev_del(port->p.phy);
-            port->p.phy = NULL;
-
             enet_err("failed to initialize phy for port: %s. ignoring...\n", port->obj_name);
 #if !defined(HALT_ON_ANY_PORT_FAILURE)
             rc = 0;
-            sw_free(&port);
+            _sw_free(&port, 0);
 #endif
             goto exit;
         }
@@ -676,6 +681,9 @@ int port_activate(enetx_port_t *port)
         return -1;
     }
 
+    /* For dynamic ports, skip looking for GBE WAN in scratchpad */
+    port->port_info.is_detect = 0;
+
     return 0;
 }
 
@@ -711,6 +719,8 @@ int port_deactivate(enetx_port_t *p)
     if (_assign_port_class(p, PORT_TYPE_DETECT))
         return -1;
 
+    p->port_info.is_detect = 1;
+
     return 0;
 }
 
@@ -726,7 +736,7 @@ static int tr_port_stats_get(enetx_port_t *port, void *_ctx)
 void port_generic_stats_get(enetx_port_t *self, struct rtnl_link_stats64 *net_stats)
 {
     int rc;
-    mac_stats_t mac_stats = { };
+    mac_stats_t *mac_stats;
     
     if (self->port_class == PORT_CLASS_SW)
     {
@@ -740,46 +750,54 @@ void port_generic_stats_get(enetx_port_t *self, struct rtnl_link_stats64 *net_st
     if (!self->p.mac)
         return;
 
-    if ((rc = mac_dev_stats_get(self->p.mac, &mac_stats)))
+    if (!(mac_stats = kzalloc(sizeof(mac_stats_t), GFP_KERNEL)))
     {
-        enet_err("error getting mac stats for %s (rc=%d)\n", self->obj_name, rc);
+        enet_err("failed to allocate mac stats object\n");
         return;
     }
 
-    net_stats->collisions += mac_stats.tx_total_collision;
-    net_stats->multicast += mac_stats.rx_multicast_packet;
-    net_stats->rx_bytes += mac_stats.rx_byte;
-    net_stats->rx_packets += mac_stats.rx_packet;
-    net_stats->rx_dropped += mac_stats.rx_dropped;
-    net_stats->rx_crc_errors += mac_stats.rx_fcs_error;
-    net_stats->rx_errors += mac_stats.rx_alignment_error +
-        mac_stats.rx_fcs_error +
-        mac_stats.rx_code_error +
-        mac_stats.rx_frame_length_error +
-        mac_stats.rx_fifo_errors;
-    net_stats->rx_length_errors += mac_stats.rx_frame_length_error;
+    if ((rc = mac_dev_stats_get(self->p.mac, mac_stats)))
+    {
+        enet_err("error getting mac stats for %s (rc=%d)\n", self->obj_name, rc);
+        kfree(mac_stats);
+        return;
+    }
 
-    net_stats->tx_bytes += mac_stats.tx_byte;
-    net_stats->tx_packets += mac_stats.tx_packet;
-    net_stats->tx_dropped += mac_stats.tx_dropped;
-    net_stats->tx_errors += mac_stats.tx_error +
-        mac_stats.tx_single_collision +
-        mac_stats.tx_multiple_collision +
-        mac_stats.tx_late_collision +
-        mac_stats.tx_excessive_collision +
-        mac_stats.tx_fcs_error +
-        mac_stats.tx_oversize_frame +
-        mac_stats.tx_fifo_errors;
+    net_stats->collisions += mac_stats->tx_total_collision;
+    net_stats->multicast += mac_stats->rx_multicast_packet;
+    net_stats->rx_bytes += mac_stats->rx_byte;
+    net_stats->rx_packets += mac_stats->rx_packet;
+    net_stats->rx_dropped += mac_stats->rx_dropped;
+    net_stats->rx_crc_errors += mac_stats->rx_fcs_error;
+    net_stats->rx_errors += mac_stats->rx_alignment_error +
+        mac_stats->rx_fcs_error +
+        mac_stats->rx_code_error +
+        mac_stats->rx_frame_length_error +
+        mac_stats->rx_fifo_errors;
+    net_stats->rx_length_errors += mac_stats->rx_frame_length_error;
+
+    net_stats->tx_bytes += mac_stats->tx_byte;
+    net_stats->tx_packets += mac_stats->tx_packet;
+    net_stats->tx_dropped += mac_stats->tx_dropped;
+    net_stats->tx_errors += mac_stats->tx_error +
+        mac_stats->tx_single_collision +
+        mac_stats->tx_multiple_collision +
+        mac_stats->tx_late_collision +
+        mac_stats->tx_excessive_collision +
+        mac_stats->tx_fcs_error +
+        mac_stats->tx_oversize_frame +
+        mac_stats->tx_fifo_errors;
     
-    net_stats->rx_frame_errors = mac_stats.rx_alignment_error;
-    net_stats->rx_fifo_errors = mac_stats.rx_fifo_errors;
-    net_stats->tx_fifo_errors = mac_stats.tx_fifo_errors;
+    net_stats->rx_frame_errors = mac_stats->rx_alignment_error;
+    net_stats->rx_fifo_errors = mac_stats->rx_fifo_errors;
+    net_stats->tx_fifo_errors = mac_stats->tx_fifo_errors;
 
 #if defined(CONFIG_BCM_KF_EXTSTATS)
-    net_stats->tx_multicast_packets += mac_stats.tx_multicast_packet;
-    net_stats->rx_broadcast_packets += mac_stats.rx_broadcast_packet;
-    net_stats->tx_broadcast_packets += mac_stats.tx_broadcast_packet;
+    net_stats->tx_multicast_packets += mac_stats->tx_multicast_packet;
+    net_stats->rx_broadcast_packets += mac_stats->rx_broadcast_packet;
+    net_stats->tx_broadcast_packets += mac_stats->tx_broadcast_packet;
 #endif
+    kfree(mac_stats);
 }
 
 void port_generic_sw_stats_get(enetx_port_t *self, struct rtnl_link_stats64 *net_stats)
@@ -806,6 +824,7 @@ void port_generic_sw_stats_get(enetx_port_t *self, struct rtnl_link_stats64 *net
 int port_generic_pause_get(enetx_port_t *self, int *rx_enable, int *tx_enable)
 {
     int rc;
+    phy_dev_t *phy = get_active_phy(self->p.phy);
 
     if (!self->p.mac)
     {
@@ -813,10 +832,10 @@ int port_generic_pause_get(enetx_port_t *self, int *rx_enable, int *tx_enable)
         return -1;
     }
 
-    if (self->p.phy && !IsPortConnectedToExternalSwitch(self->p.phy->meta_id))
+    if (phy && phy->phy_drv->caps_get && !IsPortConnectedToExternalSwitch(phy->meta_id))
     {
         uint32_t caps;
-        rc = phy_dev_caps_get(self->p.phy, CAPS_TYPE_ADVERTISE, &caps);
+        rc = phy_dev_caps_get(phy, CAPS_TYPE_ADVERTISE, &caps);
         if (rc) return -1;
 
         *rx_enable = 0; *tx_enable = 0; rc = 0;
@@ -840,6 +859,7 @@ int port_generic_pause_get(enetx_port_t *self, int *rx_enable, int *tx_enable)
 int port_generic_pause_set(enetx_port_t *self, int rx_enable, int tx_enable)
 {
     int rc = 0;
+    phy_dev_t *phy = get_active_phy(self->p.phy);
 
     if (!self->p.mac)
     {
@@ -847,10 +867,10 @@ int port_generic_pause_set(enetx_port_t *self, int rx_enable, int tx_enable)
         return -1;
     }
 
-    if (self->p.phy && !IsPortConnectedToExternalSwitch(self->p.phy->meta_id))
+    if (phy && phy->phy_drv->caps_get && !IsPortConnectedToExternalSwitch(phy->meta_id))
     {
         uint32_t caps, new_caps;
-        phy_dev_caps_get(self->p.phy, CAPS_TYPE_ADVERTISE, &caps);
+        phy_dev_caps_get(phy, CAPS_TYPE_ADVERTISE, &caps);
         new_caps = caps & ~(PHY_CAP_PAUSE | PHY_CAP_PAUSE_ASYM);
 
         if (rx_enable && tx_enable)
@@ -859,11 +879,18 @@ int port_generic_pause_set(enetx_port_t *self, int rx_enable, int tx_enable)
             new_caps |= PHY_CAP_PAUSE | PHY_CAP_PAUSE_ASYM;
         else if (tx_enable)
             new_caps |= PHY_CAP_PAUSE_ASYM;
-            
+
+        phy->flag &= ~(PHY_FLAG_CONF_PAUSE_RX | PHY_FLAG_CONF_PAUSE_TX);
+        phy->flag |= PHY_FLAG_CONF_PAUSE_VALID;
+        if (rx_enable)
+            phy->flag |= PHY_FLAG_CONF_PAUSE_RX;
+        if (tx_enable)
+            phy->flag |= PHY_FLAG_CONF_PAUSE_TX;
+
         if (new_caps != caps)
-            rc = phy_dev_caps_set(self->p.phy, new_caps);
+            rc = phy_dev_caps_set(phy, new_caps);
         
-        phy_dev_caps_get(self->p.phy, CAPS_TYPE_ADVERTISE, &caps);
+        phy_dev_caps_get(phy, CAPS_TYPE_ADVERTISE, &caps);
         if (caps != new_caps)
             return -1;
     }

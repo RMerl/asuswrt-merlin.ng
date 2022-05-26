@@ -300,6 +300,26 @@ static const struct bpcm_device bpcm_devs[] = {
         { "orion_noncpu",      PMB_ADDR_ORION_NONCPU,      PMB_ZONES_ORION_NONCPU      },
         { "biu_pll",           PMB_ADDR_BIU_PLL,           PMB_ZONES_BIU_PLL           },
         { "biu",               PMB_ADDR_BIU_BPCM,          PMB_ZONES_BIU_BPCM          },
+#elif defined(CONFIG_BCM96855)
+        { "periph",            PMB_ADDR_PERIPH,            PMB_ZONES_PERIPH            },
+        { "chip_clkrst",       PMB_ADDR_CHIP_CLKRST,       PMB_ZONES_CHIP_CLKRST       },
+        { "syspll",            PMB_ADDR_SYSPLL,            PMB_ZONES_SYSPLL            },
+        { "pvtmon",            PMB_ADDR_PVTMON,            PMB_ZONES_PVTMON            },
+        { "memc",              PMB_ADDR_MEMC,              PMB_ZONES_MEMC              },
+        { "usb20",             PMB_ADDR_USB20_2X,          PMB_ZONES_USB20_2X,         },
+        { "wan",               PMB_ADDR_WAN,               PMB_ZONES_WAN,              },
+        { "xrdp",              PMB_ADDR_XRDP,              PMB_ZONES_XRDP,             },
+        { "pcie0",             PMB_ADDR_PCIE0,             PMB_ZONES_PCIE0             },
+        { "pcie1",             PMB_ADDR_PCIE1,             PMB_ZONES_PCIE1             },
+        { "wlan0",             PMB_ADDR_WLAN0,             PMB_ZONES_WLAN0             },
+        { "wlan0_phy1",        PMB_ADDR_WLAN0_PHY1,        PMB_ZONES_WLAN0_PHY1        },
+        { "wlan0_phy2",        PMB_ADDR_WLAN0_PHY2,        PMB_ZONES_WLAN0_PHY2        },
+        { "orion_cpu0",        PMB_ADDR_ORION_CPU0,        PMB_ZONES_ORION_CPU0        },
+        { "orion_cpu1",        PMB_ADDR_ORION_CPU1,        PMB_ZONES_ORION_CPU1        },
+        { "orion_cpu2",        PMB_ADDR_ORION_CPU2,        PMB_ZONES_ORION_CPU2        },
+        { "orion_noncpu",      PMB_ADDR_ORION_NONCPU,      PMB_ZONES_ORION_NONCPU      },
+        { "biu_pll",           PMB_ADDR_BIU_PLL,           PMB_ZONES_BIU_PLL           },
+        { "biu",               PMB_ADDR_BIU_BPCM,          PMB_ZONES_BIU_BPCM          },
 #endif
 };
 
@@ -307,7 +327,7 @@ static const struct bpcm_device bpcm_devs[] = {
 static const struct attribute blockreg_attrs[] = {
         { "id",                  0644 }, /* offset = 0x00, actual offset =  0 */
         { "capabilities",        0644 }, /* offset = 0x04, actual offset =  1 */
-#if defined(CONFIG_BCM96846) || defined(CONFIG_BCM96856) || defined(CONFIG_BCM963178) || defined(CONFIG_BCM947622) || defined(CONFIG_BCM96878)
+#if defined(CONFIG_BCM96846) || defined(CONFIG_BCM96856) || defined(CONFIG_BCM963178) || defined(CONFIG_BCM947622) || defined(CONFIG_BCM96878) || defined(CONFIG_BCM96855)
         { "rsvd2",               0644 }, /* offset = 0x08, actual offset = 2 */
         { "rsvd3",               0644 }, /* offset = 0x0c, actual offset = 3 */
         { "control",             0644 }, /* offset = 0x10, actual offset = 4 */
@@ -902,7 +922,7 @@ static const struct bpcm_attribute root_attrs[] = {
 #endif
 };
 
-#if defined(PMC_IMPL_3_X) || defined(CONFIG_BCM96878) 
+#if defined(PMC_IMPL_3_X) || defined(CONFIG_BCM96878) || defined(CONFIG_BCM96855)
 #define PMC_LOG_BUF_AD	0x040fc000
 #define PMC_LOG_BUF_MK	0xc0ffee55
 #define PMC_LOG_BUF_SZ	0x4000
@@ -957,7 +977,7 @@ static int __init pmc_sysfs_init(void)
                 pmcattr[d] = root_attrs[d];
                 error = sysfs_create_file(bpcmkobj, (struct attribute *)&pmcattr[d]);
         }
-#if defined(PMC_IMPL_3_X) || defined(CONFIG_BCM96878) 
+#if defined(PMC_IMPL_3_X) || defined(CONFIG_BCM96878) || defined(CONFIG_BCM96855)
         sysfs_create_bin_file(bpcmkobj, &bin_attr_pmc_log);
 #endif
 

@@ -41,7 +41,7 @@ written consent.
 #include "bcm_map_part.h"
 
 static const int pmc_pcie_pmb_addr[]= {
-#if defined(CONFIG_BCM963138) || defined(CONFIG_BCM963148) || defined(CONFIG_BCM96846)
+#if defined(CONFIG_BCM963138) || defined(CONFIG_BCM963148) || defined(CONFIG_BCM96846) || defined(CONFIG_BCM96855)
 	PMB_ADDR_PCIE0,
 	PMB_ADDR_PCIE1
 #elif defined(CONFIG_BCM94908) || defined(CONFIG_BCM96856)
@@ -164,7 +164,7 @@ static void pmc_pcie_ubus_init(int unit)
     /* These credits of PCIe to Runner quads are requiered to Wakeup runner
      * in case of DHD Offload RxComplete */    
     ubus_master_set_token_credits(unit2mst_node_tbl[unit], 9, 1);
-#elif defined(CONFIG_BCM963178) || defined(CONFIG_BCM947622)
+#elif defined(CONFIG_BCM963178) || defined(CONFIG_BCM947622) || defined(CONFIG_BCM96855)
     int unit2mst_node_tbl[] = {UBUS_PORT_ID_PCIE0};
 #endif
 
@@ -223,6 +223,16 @@ void pmc_pcie_power_up(int unit)
 	pmc_pcie_ubus_init(unit);
 }
 
+static void do_power_down(int addr, uint32 sr_ctrl)
+{
+	if (WriteBPCMRegister(addr, BPCMRegOffset(sr_control), sr_ctrl))
+		BUG_ON(1);
+
+	mdelay(10);
+	if (PowerOffZone(addr, 0))
+		BUG_ON(1);
+}
+
 void pmc_pcie_power_down(int unit)
 {
 	BPCM_SR_CONTROL sr_ctrl = {
@@ -246,29 +256,22 @@ void pmc_pcie_power_down(int unit)
 	if (addr == PMB_ADDR_PCIE3) {
 		sr_ctrl.Reg32 |= 1 << 29 | 1 << 30;
 	}
+#endif
 
+#if defined(CONFIG_BCM963158) || defined(CONFIG_BCM96855)
 	{
 		int dual_lane, bifur_addr;
 		/* Power down the other bi-furcated port if this supports dual lane */
 		if ((BpGetPciPortDualLane(unit, &dual_lane) == BP_SUCCESS) && dual_lane) {
 			/* Identify other bifurcated port address */
 			bifur_addr = pmc_pcie_pmb_addr[unit+1];
-			if (WriteBPCMRegister(bifur_addr, BPCMRegOffset(sr_control), sr_ctrl.Reg32))
-				BUG_ON(1);
-			if (PowerOffZone(bifur_addr, 0))
-				BUG_ON(1);
+			do_power_down(bifur_addr,  sr_ctrl.Reg32);
 		}
 	}
 #endif
-	if (WriteBPCMRegister(addr, BPCMRegOffset(sr_control), sr_ctrl.Reg32))
-		BUG_ON(1);
-
-	mdelay(10);
+	do_power_down(addr, sr_ctrl.Reg32);
 
 	pmc_pcie_deregister_ubus(unit);
-
-	if (PowerOffZone(addr, 0))
-		BUG_ON(1);
 }
 
 #ifndef _CFE_

@@ -505,10 +505,6 @@ static ssize_t ppp_write(struct file *file, const char __user *buf,
 		goto out;
 	}
 
-#if defined(CONFIG_BCM_KF_PPP)
-	skb->mark = 7;    /* mark with the highest subpriority value */
-#endif	
-
 	skb_queue_tail(&pf->xq, skb);
 
 	switch (pf->kind) {

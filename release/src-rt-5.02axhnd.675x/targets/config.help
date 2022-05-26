@@ -333,6 +333,10 @@ BUILD_HND_MFG
    Build a Wireless driver with additional debug support for manufacturing
 END
 
+BUILD_WLAN_TESTBED_AP
+   Build a Wireless driver suitable for WFA .11AX plugfest testbed AP
+END
+
 BUILD_BCM_WLAN_NO_MFGBIN
    Build an image without containing wlan mfgtest binaries in the image.
 END
@@ -518,6 +522,63 @@ END
 
 BRCM_DRIVER_BPM
   Build Software Buffer Pool Manager (BPM) driver.
+END
+
+BRCM_BPM_BUF_MEM_PRCNT
+  This option defines the % of memory to use for BPM buffers in Static mode.
+END
+
+BRCM_BPM_DYNAMIC
+  This option enables Dynamic BPM Buffer Pool with ability to expand and shrink.
+END
+
+BRCM_BPM_DYNAMIC_TYPE_PRCNT
+  This option enables % based buffers for Dynamic BPM Buffer Pool.
+  Applicable only when Dynamic BPM mode is enabled.
+END
+
+BRCM_BPM_DYNAMIC_PRCNT_MAX_BUF
+  This option enables % of memory for max buffers for Dynamic BPM Buffer Pool.
+  Applicable only when Dynamic BPM mode is enabled.
+END
+
+BRCM_BPM_DYNAMIC_PRCNT_INIT_BUF
+  This option enables % of memory for initial buffers for Dynamic BPM Buffer Pool.
+  Applicable only when Dynamic BPM mode is enabled.
+END
+
+BRCM_BPM_DYNAMIC_TYPE_ABS
+  This option enables absolute number based buffers for Dynamic BPM Buffer Pool.
+  Applicable only when Dynamic BPM mode is enabled.
+END
+
+BRCM_BPM_DYNAMIC_ABS_MAX_BUF
+  This option enables Max Number of Buffers for Dynamic BPM Buffer Pool.
+  Applicable only when Dynamic BPM mode is enabled.
+END
+
+BRCM_BPM_DYNAMIC_ABS_INIT_BUF
+  This option enables initial Number of Buffers for Dynamic BPM Buffer Pool.
+  Applicable only when Dynamic BPM mode is enabled.
+END
+
+BRCM_BPM_DYNAMIC_AVAIL_LOW_TH
+  This option configures threshold for available buffers that triggers expansion.
+  Applicable only when Dynamic BPM mode is enabled.
+END
+
+BRCM_BPM_DYNAMIC_EXPAND_STEP_SIZE
+  This option configures number of buffers to allocate during each expansion cycle.
+  Applicable only when Dynamic BPM mode is enabled.
+END
+
+BRCM_BPM_DYNAMIC_SHRINK_STEP_SIZE
+  This option configures number of buffers to free during each shrink cycle.
+  Applicable only when Dynamic BPM mode is enabled.
+END
+
+BRCM_BPM_BUF_TRACKING
+   This option enables Buffer Tracking for debug purposes.
 END
 
 BUILD_PMD

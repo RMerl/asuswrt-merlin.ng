@@ -19,6 +19,7 @@ with the following added to such license:
    software.  The special exception does not apply to any modifications
    of the software.
 
+
 Not withstanding the above, under no circumstances may you combine
 this software in any way with any other Broadcom software provided
 under a license other than the GPL, without Broadcom's express prior
@@ -38,5 +39,6 @@ written consent.
 
 int pmc_xrdp_init(void);
 int pmc_xrdp_shutdown(void);
+void pmc_xrdp_reset(void);
 
 #endif /* _PMC_XRDP_H_ */

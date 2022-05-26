@@ -129,6 +129,7 @@ int enetxapi_post_config(void);
 void set_mac_cfg_by_phy(enetx_port_t *p);
 void set_mac_eee_by_phy(enetx_port_t *p);
 int sw_print_mac_phy_info(enetx_port_t *sw, char **buf, int *sz);
+netdev_tx_t enet_xmit(pNBuff_t pNBuff, struct net_device *dev);
 #ifdef DT
 /* Open Firmware driver initialization function */
 int enetxapi_of_platform_enet_probe(struct platform_device *ofdev);
@@ -148,6 +149,10 @@ int enetxapi_rx_pkt_dump_on_demux_err(enetx_rx_info_t *rx_info);
 #define ETH_GBPM_TRACK_BUF(buf, value, info)         do{}while(0)
 #define ETH_GBPM_TRACK_SKB(skb, value, info)         do{}while(0)
 #define ETH_GBPM_TRACK_FKB(fkb, value, info)         do{}while(0)
+#endif
+
+#ifdef CONFIG_BRCM_QEMU 
+int qemu_enet_rx_pkt(int budget);
 #endif
 
 #endif /* _ENET_H_ */

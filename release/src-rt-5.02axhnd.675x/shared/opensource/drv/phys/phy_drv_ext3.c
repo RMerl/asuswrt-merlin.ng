@@ -39,8 +39,12 @@
 #include "phy_drv.h"
 #include "phy_drv_mii.h"
 #include "bcm_gpio.h"
-#ifndef _CFE_
+#ifdef MACSEC_SUPPORT
 #include "phy_macsec_api.h"
+#endif
+
+#if !defined(KERN_CONT)
+#define KERN_CONT
 #endif
 
 typedef struct firmware_s firmware_t;
@@ -193,6 +197,8 @@ static phy_desc_t phy_desc[] = {
 };
 
 static uint32_t enabled_phys;
+static uint32_t macsec_phys;
+bus_drv_t *bus_drv;
 
 #define BUS_WRITE(a, b, c, d)       if ((ret = _bus_write(a, b, c, d))) goto Exit;
 #define BUS_WRITE_ALL(a, b, c, d)   if ((ret = _bus_write_all(a, b, c, d))) goto Exit;
@@ -256,6 +262,8 @@ static uint32_t enabled_phys;
 #define CMD_SET_CUSTOMER_REQUESTED_TX_PWR_ADJUST    0x8041
 #define CMD_GET_DYNAMIC_PARTITION_SELECT            0x8042
 #define CMD_SET_DYNAMIC_PARTITION_SELECT            0x8043
+#define CMD_SET_MACSEC_ENABLE                       0x805E
+#define CMD_GET_MACSEC_ENABLE                       0x805F
 #define CMD_RESET_STAT_LOG                          0xC017
 
 /* Command hanlder status codes */
@@ -316,7 +324,7 @@ Exit:
     return val;
 }
 
-static int cmd_handler(phy_dev_t *phy_dev, uint16_t cmd_code, uint16_t *data1, uint16_t *data2, uint16_t *data3, uint16_t *data4, uint16_t *data5)
+int cmd_handler(phy_dev_t *phy_dev, uint16_t cmd_code, uint16_t *data1, uint16_t *data2, uint16_t *data3, uint16_t *data4, uint16_t *data5)
 {
     int ret;
     uint16_t cmd_status = 0;
@@ -352,6 +360,7 @@ static int cmd_handler(phy_dev_t *phy_dev, uint16_t cmd_code, uint16_t *data1, u
     case CMD_SET_HW_FR_EMI_MODE_ENABLE:
     case CMD_SET_CUSTOMER_REQUESTED_TX_PWR_ADJUST:
     case CMD_SET_DYNAMIC_PARTITION_SELECT:
+    case CMD_SET_MACSEC_ENABLE:
     {
         if (data1)
             PHY_WRITE(phy_dev, 0x1e, 0x4038, *data1);
@@ -396,6 +405,7 @@ static int cmd_handler(phy_dev_t *phy_dev, uint16_t cmd_code, uint16_t *data1, u
     case CMD_GET_HW_FR_EMI_MODE_ENABLE:
     case CMD_GET_CUSTOMER_REQUESTED_TX_PWR_ADJUST:
     case CMD_GET_DYNAMIC_PARTITION_SELECT:
+    case CMD_GET_MACSEC_ENABLE:
     case CMD_RESET_STAT_LOG:
     {
         PHY_WRITE(phy_dev, 0x1e, 0x4005, cmd_code);
@@ -467,6 +477,13 @@ Exit:
     return ret;
 }
 
+#ifdef MACSEC_SUPPORT
+int phy_macsec_support(phy_dev_t *phy_dev)
+{
+    return macsec_phys & (1 << (phy_dev->addr));
+}
+#endif
+
 static int _phy_power_get(phy_dev_t *phy_dev, int *enable)
 {
     uint16_t val;
@@ -498,14 +515,30 @@ Exit:
     return ret;
 }
 
-static int _phy_idle_stuffing_mode_set(phy_dev_t *phy_dev, int enable)
+#define XFI_MODE_IDLE_STUFFING           0 /* Idle Stuffing mode over XFI interface */
+#define XFI_MODE_BASE_X                  1 /* 2.5GBase-X or 5GBase-X */
+#define XFI_MODE_BASE_R                  2 /* 2.5GBase-R or 5GBase-R */
+
+static int _phy_inter_phy_types_set(phy_dev_t *phy_dev, inter_phy_type_t inter_phy_types)
 {
     int ret;
-    uint16_t val = enable ? 0 : 1;
-    uint16_t const_disabled = 1;
+    uint16_t data1 = XFI_MODE_BASE_X ; /* XFI mode in 2.5G speed */
+    uint16_t data2 = XFI_MODE_BASE_X ; /* XFI mode in 5G speed */
 
-    /* Set idle stuffing mode in 2.5GBASE-T and 5GBASE-T modes */
-    if ((ret = cmd_handler(phy_dev, CMD_SET_XFI_2P5G_5G_MODE, &const_disabled, &val, NULL, NULL, NULL)))
+    if (inter_phy_types & INTER_PHY_TYPE_2P5GBASE_R_M)
+        data1 = XFI_MODE_BASE_R;
+
+    if (inter_phy_types & INTER_PHY_TYPE_2P5GIDLE_M)
+        data1 = XFI_MODE_IDLE_STUFFING;
+
+    if (inter_phy_types & INTER_PHY_TYPE_5GBASE_R_M)
+        data2 = XFI_MODE_BASE_R;
+    
+    if (inter_phy_types & INTER_PHY_TYPE_5GIDLE_M)
+        data2 = XFI_MODE_IDLE_STUFFING;
+
+    /* Set XFI modes for 2.5G and 5G */
+    if ((ret = cmd_handler(phy_dev, CMD_SET_XFI_2P5G_5G_MODE, &data1, &data2, NULL, NULL, NULL)))
         goto Exit;
 
 Exit:
@@ -514,13 +547,13 @@ Exit:
 static int _phy_led_control_mode_set(phy_dev_t *phy_dev, int user_control)
 {
     int ret = 0;
-    /* uint16_t val = user_control ? 1 : 0; */
+    uint16_t val = user_control ? 1 : 0;
 
-    /* Set led control to user or firmware */
-    /*if ((ret = cmd_handler(phy_dev, CMD_SET_LED_TYPE, &val, NULL, NULL, NULL, NULL)))
+    /* Set LED control to user or firmware */
+    if ((ret = cmd_handler(phy_dev, CMD_SET_LED_TYPE, &val, NULL, NULL, NULL, NULL)))
         goto Exit;
 
-Exit:*/
+Exit:
     return ret;
 }
 
@@ -568,6 +601,19 @@ static int _phy_eth_wirespeed_set(phy_dev_t *phy_dev, int enable)
         val &= ~(1 << 4); /* Ethernet@Wirespeed disabled */
 
     PHY_WRITE(phy_dev, 0x07, 0x902f, val);
+
+Exit:
+    return ret;
+}
+
+static int _phy_eth_wirespeed_get(phy_dev_t *phy_dev, int *enable)
+{
+    int ret;
+    uint16_t val;
+
+    PHY_READ(phy_dev, 0x07, 0x902f, &val);
+
+    *enable = val & (1 << 4) ? 1 : 0; /* Ethernet@Wirespeed Enabled */
 
 Exit:
     return ret;
@@ -703,25 +749,36 @@ Exit:
     return ret;
 }
 
+#define EEE_MODE_DISABLED               0 /* EEE Disabled*/
+#define EEE_MODE_NATIVE_EEE             1 /* Native EEE */
+#define EEE_MODE_AUTOGREEEN_FIXED       2 /* AutoGrEEEn Fixed Latency */
+#define EEE_MODE_AUTOGREEEN_VARIABLE    3 /* AutoGrEEEn Variable Latency */
+
+/* Note: AutoGrEEEn mode is not supported when idle stuffing is enabled on 2.5/5G rates */
+
 static int _phy_eee_mode_set(phy_dev_t *phy_dev, uint32_t caps)
 {
     int ret;
-    uint16_t val, data1, data2, data3, data4;
-    uint8_t mode;
+    uint16_t val = 0, data1, data2, data3, data4;
+    uint8_t mode = EEE_MODE_AUTOGREEEN_FIXED;
 
-    val = 0;
-    mode = 1; /* Native EEE */
+    if ((ret = cmd_handler(phy_dev, CMD_GET_XFI_2P5G_5G_MODE, &data1, &data2, NULL, NULL, NULL)))
+        goto Exit;
 
-    val |= ((caps & PHY_CAP_100_HALF) || (caps & PHY_CAP_100_FULL)) ? (mode << 2) : 0;
+    /* 10G          bits 0:1 */
+    /* 100M/1G      bits 2:3 */
+    /* 2.5G         bits 4:5 */
+    /* 5G           bits 6:7 */
+  val |= ((caps & PHY_CAP_100_HALF) || (caps & PHY_CAP_100_FULL)) ? (mode << 2) : 0;
     val |= ((caps & PHY_CAP_1000_HALF) || (caps & PHY_CAP_1000_FULL)) ? (mode << 2) : 0;
-    val |= ((caps & PHY_CAP_2500) ? (mode << 4) : 0);
-    val |= ((caps & PHY_CAP_5000) ? (mode << 6) : 0);
+    val |= ((caps & PHY_CAP_2500) ? ((data1 == XFI_MODE_IDLE_STUFFING ? EEE_MODE_NATIVE_EEE : mode) << 4) : 0);
+    val |= ((caps & PHY_CAP_5000) ? ((data2 == XFI_MODE_IDLE_STUFFING ? EEE_MODE_NATIVE_EEE : mode) << 6) : 0);
     val |= ((caps & PHY_CAP_10000)) ? (mode << 0) : 0;
 
-    data1 = val;
-    data2 = 0;
-    data3 = 0;
-    data4 = 0;
+    data1 = val;    /* Bitmap of EEE modes per speed */
+    data2 = 0;      /* AutoGrEEEn High Threshold */
+    data3 = 0x7a12; /* AutoGrEEEn Low Threshold */
+    data4 = 0x0480; /* AutoGrEEEn Latency */
 
     /* Set EEE mode */
     if ((ret = cmd_handler(phy_dev, CMD_SET_EEE_MODE, &data1, &data2, &data3, &data4, NULL)))
@@ -844,6 +901,18 @@ int _phy_caps_get(phy_dev_t *phy_dev, int caps_type, uint32_t *pcaps)
         if (phy_dev->disable_hd)
             caps &= ~(PHY_CAP_100_HALF | PHY_CAP_1000_HALF);
 
+        if (phy_dev->disable_10000m)
+            caps &= ~(PHY_CAP_10000);
+
+        if (phy_dev->disable_5000m)
+            caps &= ~(PHY_CAP_5000);
+
+        if (phy_dev->disable_1000m)
+            caps &= ~(PHY_CAP_1000_HALF | PHY_CAP_1000_FULL);
+
+        if (phy_dev->disable_100m)
+            caps &= ~(PHY_CAP_100_HALF | PHY_CAP_100_FULL);
+
         *pcaps = caps;
 
         return 0;
@@ -917,6 +986,18 @@ int _phy_caps_set(phy_dev_t *phy_dev, uint32_t caps)
 
     if (phy_dev->disable_hd)
         caps &= ~(PHY_CAP_100_HALF | PHY_CAP_1000_HALF);
+
+    if (phy_dev->disable_10000m)
+        caps &= ~(PHY_CAP_10000);
+
+    if (phy_dev->disable_5000m)
+        caps &= ~(PHY_CAP_5000);
+
+    if (phy_dev->disable_1000m)
+        caps &= ~(PHY_CAP_1000_HALF | PHY_CAP_1000_FULL);
+
+    if (phy_dev->disable_100m)
+        caps &= ~(PHY_CAP_100_HALF | PHY_CAP_100_FULL);
 
     /* Copper auto-negotiation advertisement */
     PHY_READ(phy_dev, 0x07, 0xffe4, &val);
@@ -1142,6 +1223,197 @@ Exit:
     return ret;
 }
 
+#if defined(_CFE_)
+static unsigned long _jiffies;
+#define jiffies (_jiffies++)
+#define msecs_to_jiffies(j) ((j)*10)
+#else
+#include <linux/jiffies.h>
+#endif
+
+#define EXT3_ECD_CTRL_STATUS_D  0x1e
+#define EXT3_ECD_CTRL_STATUS_R  0x4006
+    #define EXT3_ECDRUN_IMMEDIATE   (1<<15)
+    #define EXT3_ECDBREAK_LINK      (1<<12)
+    #define EXT3_ECDDIAG_IN_PROG    (1<<11)
+
+#define EXT3_ECD_RESULTS_D      0x1
+#define EXT3_ECD_RESULTS_R      0xa896
+    #define EXT3_PACD_CODE_SHIFT            4
+    #define EXT3_PACD_CODE_MASK             0xf
+    #define EXT3_PACD_CODE_INVALID          0x0
+    #define EXT3_PACD_CODE_PAIR_OK          0x1
+    #define EXT3_PACD_CODE_PAIR_OPEN        0x2
+    #define EXT3_PACD_CODE_PAIR_INTRA_SHORT 0x3
+    #define EXT3_PACD_CODE_PAIR_INTER_SHORT 0x4
+    #define EXT3_PACD_CODE_PAIR_GET(v, p)          (((v)>>((p)*4))&0xf)
+    #define EXT3_PACD_CODE_PAIR_SET(v, p)          (((v)&0xf)<<((p)*4))
+    #define EXT3_PACD_CODE_PAIR_ALL_OK      0x1111
+    #define EXT3_PACD_CODE_PAIR_ALL_OPEN    0x2222
+
+#define EXT3_ECD_CABLE_LEN_D 0x1
+#define EXT3_ECD_CABLE_LEN_R 0xa897
+
+/*
+    Work around some hardware inconsistency
+    Pick up the most popular length from 4 pairs
+*/
+static void cable_length_pick_link_up(int *pair_len, int excluded_pair)
+{
+    int len[4]={0};
+    int i, j, k, m;
+
+    for (i=0, k=0; i<4; i++) {
+        if (excluded_pair & (1<<i))  /* Exclude failed CD pair */
+            continue;
+
+        for(j=0; j<k; j++)
+            if (pair_len[j] == pair_len[i])
+                break;
+
+        if (j==k)
+            k++;
+        len[j]++;
+    }
+
+    for (i=0, j=0, m=0; i<k; i++) {
+        if (len[i] == 0)    /* If result is zero, exclude the pair from picking */
+            continue;
+
+        if(len[i]>j) {
+            j=len[i];
+            m=i;
+        }
+    }
+
+    m = pair_len[m];
+    for (i=0; i<4; i++)
+        pair_len[i] = m;
+}
+
+int _phy_enhanced_cable_diag_run(phy_dev_t *phy_dev, int *result, int *pair_len)
+{
+    uint16_t v16, ctl_reg;
+    int i, j, ret = 0, excluded_pair = 0;
+    int apd_enabled, phy_link;
+    unsigned long jiffie;
+    int retries = 0;
+#define EXT3_ECDCHECK_SECS 3
+#define EXT3_ECDMAX_RETRIES 3
+
+    phy_dev_apd_get(phy_dev, &apd_enabled);
+    if (apd_enabled)
+        phy_dev_apd_set(phy_dev, 0);
+
+    v16 = EXT3_ECDRUN_IMMEDIATE;
+    if ((phy_link = phy_dev->link)) {  /* Save initial PHY link status */
+        PHY_READ(phy_dev, 0x07, 0xffe0, &ctl_reg);
+    }
+
+    if (phy_link) { /* If link is up, Write RUN first and wait until link goes down */
+        PHY_WRITE(phy_dev, EXT3_ECD_CTRL_STATUS_D, EXT3_ECD_CTRL_STATUS_R, v16);
+        for(;;) {
+            phy_dev_read_status(phy_dev);
+            if (!phy_dev->link) break;
+        }
+    }
+
+TryAgain:
+    if (retries) for(i=0, jiffie = jiffies; jiffies < (jiffie + msecs_to_jiffies(2*1000)););
+    if (++retries > EXT3_ECDMAX_RETRIES)  /* If we did retry more than certain time, declares it as faiure */
+        goto end;
+
+    PHY_WRITE(phy_dev, EXT3_ECD_CTRL_STATUS_D, EXT3_ECD_CTRL_STATUS_R, v16);
+    ret = phy_bus_c45_read(phy_dev, EXT3_ECD_CTRL_STATUS_D, EXT3_ECD_CTRL_STATUS_R, &v16);
+    for(i=0, jiffie = jiffies; jiffies < (jiffie + msecs_to_jiffies(EXT3_ECDCHECK_SECS*1000)); ) {
+        PHY_READ(phy_dev, EXT3_ECD_CTRL_STATUS_D, EXT3_ECD_CTRL_STATUS_R, &v16);
+        if (!(v16 & EXT3_ECDDIAG_IN_PROG)) {
+            ret = 0;
+            i = 1;
+            break;
+        }
+    }
+
+    if (!i) {    /* If CD is still in progress after certain time, retry it */
+        *result = EXT3_PACD_CODE_INVALID;
+        ret = -1;
+        goto TryAgain;
+    }
+
+    for(i=0, jiffie = jiffies; jiffies < (jiffie + msecs_to_jiffies(EXT3_ECDCHECK_SECS*1000)); ) {
+        PHY_READ(phy_dev, EXT3_ECD_RESULTS_D, EXT3_ECD_RESULTS_R, &v16);
+        *result = v16;
+        excluded_pair = 0;
+        for(j=0; j<4; j++) { /* Check if all four pairs of diags are done */
+            if( EXT3_PACD_CODE_PAIR_GET(*result, j) > EXT3_PACD_CODE_PAIR_INTER_SHORT)
+                break;
+
+            /* If link is up, excluded failed measuring result */
+            if( phy_link && ( EXT3_PACD_CODE_PAIR_GET(*result, j) != EXT3_PACD_CODE_PAIR_OK))
+                excluded_pair |= (1<<j);
+        }
+
+        /* If all pair of diags finish, check the results */
+        if (j==4) {
+            /* If in link up, all pair diag failed, try again */
+            if (*result == EXT3_PACD_CODE_INVALID || excluded_pair == 0xf )
+                goto TryAgain;
+            /* Otherwise, we are done with CD */
+            i=1;
+            break;
+        }
+    }
+
+    if (phy_link)
+        *result = EXT3_PACD_CODE_PAIR_ALL_OK;
+
+    if (*result == EXT3_PACD_CODE_INVALID || !i) {  /* If CD ends with INVALID result, retry it */
+        *result = EXT3_PACD_CODE_INVALID;
+        ret = -1;
+        goto TryAgain;
+    }
+
+#define EXT3_CABLE_LEN_OFFSET_LINK_DOWN 200
+    for(i=0; i<4; i++) {
+        PHY_READ(phy_dev, EXT3_ECD_CABLE_LEN_D, (EXT3_ECD_CABLE_LEN_R + i), &v16);
+        if (*result == EXT3_PACD_CODE_PAIR_ALL_OPEN)
+            pair_len[i] = (v16> EXT3_CABLE_LEN_OFFSET_LINK_DOWN ? v16 - EXT3_CABLE_LEN_OFFSET_LINK_DOWN : 0); /* To guarrantee no cable result correct based on testing */
+        else if (*result == EXT3_PACD_CODE_PAIR_ALL_OK)
+            pair_len[i] = v16 + EXT3_CABLE_LEN_OFFSET_LINK_DOWN;
+        else
+            pair_len[i] = v16;
+    }
+
+    /* If link is up, but alll pair length is zero, try again */
+    if (phy_link && (pair_len[0] + pair_len[1] + pair_len[2] + pair_len[3] == 0))
+        goto TryAgain;
+
+end:
+    /* Reset PHY after CD */
+    ctl_reg |= (1<<15);
+    if (ctl_reg & (1<<12))
+        ctl_reg |= (1<<9);  /* If AN is on, set AN restart bit */
+    PHY_WRITE(phy_dev, 0x07, 0xffe0, ctl_reg);
+
+    /* Wait the link come back up */
+    if (phy_link) {
+        for(jiffie = jiffies; jiffies < (jiffie + msecs_to_jiffies(3*EXT3_ECDCHECK_SECS*1000)); ) {
+            phy_dev_read_status(phy_dev);
+            if (phy_dev->link) break;
+        }
+    }
+
+    if (phy_link)
+        cable_length_pick_link_up(pair_len, excluded_pair);
+
+    if (apd_enabled)
+        phy_dev_apd_set(phy_dev, apd_enabled);
+
+    return ret;
+Exit:
+    return -1;
+}
+
 static int _phy_set_mode(phy_dev_t *phy_dev, int line_side)
 {
     int ret;
@@ -1185,8 +1457,8 @@ static int _phy_init(phy_dev_t *phy_dev)
     if ((ret = _phy_set_mode(phy_dev, 1)))
         goto Exit;
 
-    /* Set idle stuffing mode */
-    if ((ret = _phy_idle_stuffing_mode_set(phy_dev, phy_dev->idle_stuffing)))
+    /* Set SerDes mode for 2.5G/5G speeds */
+    if ((ret = _phy_inter_phy_types_set(phy_dev, phy_dev->inter_phy_types)))
         goto Exit;
 
     /* Enable Force Auto-MDIX mode */
@@ -1232,21 +1504,14 @@ static int _phy_init(phy_dev_t *phy_dev)
     if ((ret = _phy_speed_set(phy_dev, speed, PHY_DUPLEX_FULL)))
         goto Exit;
 
-#ifndef _CFE_
+#ifdef MACSEC_SUPPORT
+    if (macsec_phys & (1 << (phy_dev->addr)))
     {
-        uint32_t phyid;
-        _phy_phyid_get(phy_dev, &phyid);
-        for (i = 0; i < sizeof(phy_desc)/sizeof(phy_desc[0]); i++)
-        {
-            if ((((phyid >> 16) & 0xffff) == phy_desc[i].phyid1) && ((phyid & 0xffff) == phy_desc[i].phyid2) && phy_desc[i].firmware->macsec_capable)
-            {
-                printk("phy %s is macsec capable, initializing macsec module\n", phy_desc[i].name);
-                ret = phy_macsec_pu_init(phy_dev);
-                break;
-            }
-        }
+        printk("phy 0x%x is macsec capable, initializing macsec module\n", phy_dev->addr);
+        ret = phy_macsec_pu_init(phy_dev);
     }
 #endif    
+
 Exit:
     return ret;
 }
@@ -1461,13 +1726,14 @@ static int load_mako(firmware_t *firmware)
     BUS_WRITE(base_phy_addr, 0x01, 0xa819, 0x0000);
     BUS_WRITE(base_phy_addr, 0x01, 0xa817, 0x0038);
 
+    printk("\n");
     for (i = 0; i < cnt; i++)
     {
         BUS_WRITE(base_phy_addr, 0x01, 0xa81c, firmware_data[i] >> 16); /* upper 16 bits */
         BUS_WRITE(base_phy_addr, 0x01, 0xa81b, firmware_data[i] & 0xffff); /* lower 16 bits */
 
         if (i == i / step * step)
-            printk("\r%d%%", i / step);
+            printk(KERN_CONT "\r%d%%", i / step);
     }
     printk("\n");
 
@@ -1576,13 +1842,14 @@ static int load_orca(firmware_t *firmware)
     BUS_WRITE(base_phy_addr, 0x01, 0xa819, 0x0000);
     BUS_WRITE(base_phy_addr, 0x01, 0xa817, 0x0038);
 
+    printk("\n");
     for (i = 0; i < cnt; i++)
     {
         BUS_WRITE(base_phy_addr, 0x01, 0xa81c, firmware_data[i] >> 16); /* upper 16 bits */
         BUS_WRITE(base_phy_addr, 0x01, 0xa81b, firmware_data[i] & 0xffff); /* lower 16 bits */
 
         if (i == i / step * step)
-            printk("\r%d%%", i / step);
+            printk(KERN_CONT "\r%d%%", i / step);
     }
     printk("\n");
 
@@ -1688,13 +1955,14 @@ static int load_blackfin(firmware_t *firmware)
     BUS_WRITE(base_phy_addr, 0x01, 0xa819, 0x0000);
     BUS_WRITE(base_phy_addr, 0x01, 0xa817, 0x0038);
 
+    printk("\n");
     for (i = 0; i < cnt; i++)
     {
         BUS_WRITE(base_phy_addr, 0x01, 0xa81c, firmware_data[i] >> 16); /* upper 16 bits */
         BUS_WRITE(base_phy_addr, 0x01, 0xa81b, firmware_data[i] & 0xffff); /* lower 16 bits */
 
         if (i == i / step * step)
-            printk("\r%d%%", i / step);
+            printk(KERN_CONT "\r%d%%", i / step);
     }
     printk("\n");
 
@@ -1796,30 +2064,50 @@ static int _phy_cfg(uint32_t enabled_phys)
     printk("\nDetecting PHYs...\n");
 
 	phys_reset_lift(enabled_phys);
-
-    for (i = 0; i < sizeof(firmware_list)/sizeof(firmware_list[0]); i++)
     {
-        for (j = 0; j < sizeof(phy_desc)/sizeof(phy_desc[0]); j++)
+        uint16_t rd_phyid1[32], rd_phyid2[32];
+
+        for (i = 0; i < 32; i++)
         {
-            if (phy_desc[j].firmware != firmware_list[i])
+            rd_phyid1[i] = rd_phyid2[i] = 0;
+            if (!(enabled_phys & (1 << i)))
+                continue;
+            if ((_bus_read(i, 1, 2, &rd_phyid1[i])))
                 continue;
 
-            phy_map = (_bus_read_all(enabled_phys, 0x01, 0x0002, phy_desc[j].phyid1, 0xffff)) &
-                (_bus_read_all(enabled_phys, 0x01, 0x0003, phy_desc[j].phyid2, 0xffff));
+            if ((_bus_read(i, 1, 3, &rd_phyid2[i])))
+                continue;
+        }
 
-            firmware_list[i]->map |= phy_map;
-
-            if (phy_map)
+        for (i = 0; i < sizeof(firmware_list)/sizeof(firmware_list[0]); i++)
+        {
+            for (j = 0; j < sizeof(phy_desc)/sizeof(phy_desc[0]); j++)
             {
-                printk("%s %x:%x --> ", phy_desc[j].name, phy_desc[j].phyid1, phy_desc[j].phyid2);
-                for (k = 0; k < 32 ; k++)
-                {
-                    if (!(phy_map & (1 << k)))
-                        continue;
+                if (phy_desc[j].firmware != firmware_list[i])
+                    continue;
 
-                    printk("0x%x ", k);
+                for (k = 0, phy_map = 0; k < 32; k++)
+                {
+                    if (!(enabled_phys & (1 << k)))
+                        continue;
+                    if (phy_desc[j].phyid1 == rd_phyid1[k] && phy_desc[j].phyid2 == rd_phyid2[k])
+                        phy_map |= (1 << k);
                 }
-                printk("\n");
+
+                firmware_list[i]->map |= phy_map;
+
+                if (phy_map)
+                {
+                    printk("%s %x:%x --> ", phy_desc[j].name, phy_desc[j].phyid1, phy_desc[j].phyid2);
+                    for (k = 0; k < 32 ; k++)
+                    {
+                        if (!(phy_map & (1 << k)))
+                            continue;
+
+                        printk("0x%x ", k);
+                    }
+                    printk("\n");
+                }
             }
         }
     }
@@ -1833,6 +2121,9 @@ static int _phy_cfg(uint32_t enabled_phys)
         if (!phy_map)
             continue;
 
+        if (firmware_list[i]->macsec_capable)
+            macsec_phys |= phy_map;
+
         printk("Firmware version: %s\n", firmware_list[i]->version);
         printk("Loading firmware into PHYs: map=0x%x count=%d\n", phy_map, phy_count(phy_map));
 
@@ -1844,6 +2135,7 @@ static int _phy_cfg(uint32_t enabled_phys)
 
 static int _phy_dev_add(phy_dev_t *phy_dev)
 {
+    bus_drv = phy_dev->phy_drv->bus_drv;
     enabled_phys |= (1 << (phy_dev->addr));
     return 0;
 }
@@ -1886,6 +2178,8 @@ phy_drv_t phy_drv_ext3 =
     .phyid_get = _phy_phyid_get,
     .auto_mdix_set = _phy_force_auto_mdix_set,
     .auto_mdix_get = _phy_force_auto_mdix_get,
+    .wirespeed_set = _phy_eth_wirespeed_set,
+    .wirespeed_get = _phy_eth_wirespeed_get,
     .init = _phy_init,
     .dev_add = _phy_dev_add,
     .dev_del = _phy_dev_del,
@@ -1893,7 +2187,8 @@ phy_drv_t phy_drv_ext3 =
     .pair_swap_set = _phy_pair_swap_set,
     .isolate_phy = _phy_isolate,
     .super_isolate_phy = _phy_super_isolate,
-#ifndef _CFE_
+    .cable_diag_run = _phy_enhanced_cable_diag_run,
+#ifdef MACSEC_SUPPORT
     .macsec_oper = phy_macsec_oper,
 #endif    
 };

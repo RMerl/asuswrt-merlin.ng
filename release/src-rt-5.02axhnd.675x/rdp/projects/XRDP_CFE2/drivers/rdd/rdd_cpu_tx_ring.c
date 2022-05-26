@@ -59,8 +59,8 @@ static int tx_pd_idx;
 static uint8_t bbh_ingress_counter[8];
 
 
-#define RDD_CPU_TX_MAX_ITERS    2
-#define RDD_CPU_TX_ITER_DELAY   1000
+#define RDD_CPU_TX_MAX_ITERS    200
+#define RDD_CPU_TX_ITER_DELAY   5
 #define QM_QUEUE_INDEX_DS_FIRST QM_QUEUE_DS_START
 
 #define RDD_CPU_TX_MAX_BUF_SIZE 2048
@@ -102,7 +102,7 @@ int rdd_cpu_tx(uint32_t fpm_bn, uint32_t length, uint8_t tx_port)
     RDD_BBH_TX_EGRESS_COUNTER_ENTRY_COUNTER_READ(egress_counter_val,p);
     //XRDP_ERR_MSG("egress 0 = %d\n", egress_counter_val);
 
-    for (iter = 0; ((old_packet_size!=0) || ((bbh_ingress_counter[tx_port] - egress_counter_val) >= 8)/*BBH_TX_FIFO_SIZE*/) && (iter < RDD_CPU_TX_MAX_ITERS); iter++)
+    for (iter = 0; ((old_packet_size !=0) || ((bbh_ingress_counter[tx_port] - egress_counter_val) >= 8)/*BBH_TX_FIFO_SIZE*/) && (iter < RDD_CPU_TX_MAX_ITERS); iter++)
     {
        XRDP_USLEEP(RDD_CPU_TX_ITER_DELAY);
        RDD_BBH_TX_DESCRIPTOR_PACKET_LENGTH_READ(old_packet_size, tx_pd);
@@ -120,8 +120,13 @@ int rdd_cpu_tx(uint32_t fpm_bn, uint32_t length, uint8_t tx_port)
     RDD_BBH_TX_DESCRIPTOR_LAST_WRITE(1, tx_pd);
     RDD_BBH_TX_DESCRIPTOR_AGG_PD_WRITE(0, tx_pd);
     RDD_BBH_TX_DESCRIPTOR_ABS_WRITE(0, tx_pd);
+#if (defined BCM6878)
     RDD_BBH_TX_DESCRIPTOR_SOP_WRITE(0, tx_pd);
     RDD_BBH_TX_DESCRIPTOR_BN0_FIRST_WRITE(fpm_bn, tx_pd);
+#else
+    RDD_BBH_TX_DESCRIPTOR_SOP_FPM_WRITE(0, tx_pd);
+    RDD_BBH_TX_DESCRIPTOR_BN_FPM_WRITE(fpm_bn, tx_pd);
+#endif
     RDD_BBH_TX_DESCRIPTOR_BN1_FIRST_WRITE(0, tx_pd);
 
     RDD_BB_DESTINATION_ENTRY_BB_DESTINATION_WRITE(BB_ID_TX_LAN + (tx_port<<6),bb_dest);

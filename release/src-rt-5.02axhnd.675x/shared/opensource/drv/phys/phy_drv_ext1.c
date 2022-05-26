@@ -84,5 +84,7 @@ phy_drv_t phy_drv_ext1 =
     .phyid_get = mii_phyid_get,
     .auto_mdix_set = brcm_shadow_18_force_auto_mdix_set,
     .auto_mdix_get = brcm_shadow_18_force_auto_mdix_get,
+    .wirespeed_set = brcm_shadow_18_eth_wirespeed_set,
+    .wirespeed_get = brcm_shadow_18_eth_wirespeed_get,
     .init = _phy_init,
 };

@@ -86,6 +86,13 @@ obj-$(CONFIG_BCM96878) += bcm_pinmux_impl1.o
 obj-$(CONFIG_BCM96878) += bcm_misc_hw_init_impl6.o
 obj-$(CONFIG_BCM96878) += bcm_ubus_impl1.o
 
+obj-$(CONFIG_BCM96855) += bcm_gpio_impl1.o
+obj-$(CONFIG_BCM96855) += bcm_led_impl5.o
+obj-$(CONFIG_BCM96855) += bcm_otp_impl1.o
+obj-$(CONFIG_BCM96855) += bcm_pinmux_impl1.o
+obj-$(CONFIG_BCM96855) += bcm_misc_hw_init_impl6.o
+obj-$(CONFIG_BCM96855) += bcm_ubus_impl1.o
+
 obj-$(CONFIG_BCM947622) += bcm_gpio_impl1.o
 obj-$(CONFIG_BCM947622) += bcm_led_impl4.o
 obj-$(CONFIG_BCM947622) += bcm_swled_impl2.o
@@ -103,7 +110,7 @@ obj-$(CONFIG_BCM96856) += bcm_ubus_impl1.o
 
 EXTRA_CFLAGS += -DCONFIG_BCM9$(BRCM_CHIP) -I$(INC_BRCMSHARED_PUB_PATH)/$(BRCM_BOARD)  -I$(INC_BRCMDRIVER_PUB_PATH)/$(BRCM_BOARD)
 
-ifeq ($(findstring _$(strip $(BRCM_CHIP))_,_63268_6838_6848_6858_63138_63148_4908_47189_63158_6846_6856_47622_63178_6878_),_$(strip $(BRCM_CHIP))_)
+ifeq ($(findstring _$(strip $(BRCM_CHIP))_,_63268_6838_6848_6858_63138_63148_4908_47189_63158_6846_6856_47622_63178_6878_6855_),_$(strip $(BRCM_CHIP))_)
 	EXTRA_CFLAGS += -I$(INC_BRCMSHARED_PUB_PATH)/drv/mdio
 	EXTRA_CFLAGS += -I$(INC_BRCMSHARED_PUB_PATH)/drv/unimac
 	EXTRA_CFLAGS += -I$(INC_BRCMSHARED_PUB_PATH)/drv/phys
@@ -113,7 +120,7 @@ ifeq ($(findstring _$(strip $(BRCM_CHIP))_,_63268_6838_6848_6858_63138_63148_490
 	EXTRA_CFLAGS += $(INC_RDP_FLAGS)
 endif 
 
-ifeq ($(findstring _$(strip $(BRCM_CHIP))_,_6838_6848_6858_63158_6846_6856_6878_),_$(strip $(BRCM_CHIP))_)
+ifeq ($(findstring _$(strip $(BRCM_CHIP))_,_6838_6848_6858_63158_6846_6856_6878_6855_),_$(strip $(BRCM_CHIP))_)
 obj-y += wan_drv_shared.o
 endif
 
@@ -123,3 +130,9 @@ obj-y += bcm_nvram_data_impl.o
 
 endif
 
+ifneq ($(strip $(CONFIG_BRCM_QEMU)),)
+EXTRA_CFLAGS += -DCONFIG_BCM9$(BRCM_CHIP) -I$(INC_BRCMSHARED_PUB_PATH)/$(BRCM_BOARD)  -I$(INC_BRCMDRIVER_PUB_PATH)/$(BRCM_BOARD)
+EXTRA_CFLAGS += $(INC_RDP_FLAGS)
+obj-$(CONFIG_BCM96878) += bcm_misc_hw_init_impl6.o
+obj-$(CONFIG_BCM96855) += bcm_misc_hw_init_impl6.o
+endif

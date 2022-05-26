@@ -17,7 +17,7 @@ struct ebt_ftos_t_info
 #define FTOS_8021QFTOS    0x08
 
 #define DSCP_MASK_SHIFT   5
-#define PRIO_LOC_NFMARK   16
+#define PRIO_LOC_NFMARK   0
 #define PRIO_LOC_NFMASK   7
 
 #endif

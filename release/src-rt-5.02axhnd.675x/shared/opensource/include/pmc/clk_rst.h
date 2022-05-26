@@ -49,11 +49,21 @@ int viper_freq_set(unsigned long freq);
 int rdp_freq_set(unsigned long freq);
 unsigned long get_rdp_freq(unsigned int* rdp_freq);
 #if defined(_BCM96848_) || defined(CONFIG_BCM96848) || defined(_BCM96858_) || defined(CONFIG_BCM96858) || \
-    defined(_BCM96856_) || defined(CONFIG_BCM96856) || defined(_BCM96878_) || defined(CONFIG_BCM96878)
+    defined(_BCM96856_) || defined(CONFIG_BCM96856) || defined(_BCM96878_) || defined(CONFIG_BCM96878) || \
+    defined(_BCM96855_) || defined(CONFIG_BCM96855)
 int pll_vco_freq_get(unsigned int pll_addr, unsigned int* fvco);
-#if defined(_BCM96858_) || defined(CONFIG_BCM96858) || defined(_BCM96856_) || defined(CONFIG_BCM96856) || defined(_BCM96878_) || defined(CONFIG_BCM96878)
+#if defined(_BCM96858_) || defined(CONFIG_BCM96858) || defined(_BCM96856_) || defined(CONFIG_BCM96856) || defined(_BCM96878_) || defined(CONFIG_BCM96878) || defined(_BCM96855_) || defined(CONFIG_BCM96855)
 int pll_ch_freq_vco_set(unsigned int pll_addr, unsigned int ch, unsigned int mdiv, unsigned int use_vco);
 #endif
+#endif
+
+#if defined(CONFIG_BCM96858) || defined(CONFIG_BCM96846) || defined(CONFIG_BCM96856) || defined(CONFIG_BCM96878) || defined(CONFIG_BCM963158)
+void disable_25mhz_clk_to_pmd(void);
+int bcm_enable_xtal_clk(void);
+#endif
+
+#if defined(_BCM96855_) || defined(CONFIG_BCM96855)
+int pll_vco_config(unsigned int pll_addr, unsigned int ndivider, unsigned int pdivider);
 #endif
 
 void set_vreg_clk(void);
@@ -79,7 +89,7 @@ int bcm_change_cpu_clk(BCM_CPU_CLK clock);
 #define SYSPLL0_RGMII_CHANNEL    5
 #endif
 
-#if defined(_BCM96858_) || defined(CONFIG_BCM96858)
+#if defined(_BCM96858_) || defined(CONFIG_BCM96858) || defined(_BCM96855_) || defined(CONFIG_BCM96855)
 #define XRDPPLL_RUNNER_CHANNEL   0
 #endif
 #if defined(_BCM96856_) || defined(CONFIG_BCM96856) || defined(_BCM96846_) || defined(CONFIG_BCM96846)

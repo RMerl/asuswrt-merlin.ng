@@ -30,24 +30,38 @@
 #include "bcm_ext_timer.h"
 #include "bl_os_wraper.h"
 #include <linux/spinlock.h>
+#include <linux/jiffies.h>
 
 static pon_serdes_lof_fixup_fifo_t fifo_cb;
 static pon_serdes_lof_fixup_reset_cdr_t reset_cdr;
+static void (*pmd_rx_restart)(void);
+static void (*reset_rx_fifo)(void);
+static void (*reset_tx_fifo)(void);
+static void (*reset_gb)(void);
 static int state_tracking, is_init = TRUE, sd_timer_id = -1;
 DEFINE_SPINLOCK(state_lock);
 #define STATE_NO_SYNC   0
 #define STATE_SYNC      1
 #define STATE_JUST_SYNC 2
 
-static void restart_sd_timer(void)
+#if defined (CONFIG_BCM96848)
+#define ASAP 10
+#else
+#define ASAP 1
+#endif
+
+static void restart_sd_timer(int now)
 {
-    ext_timer_set_period(sd_timer_id, 1000*1000);
+    ext_timer_set_period(sd_timer_id, now ? ASAP : 1000*1000);
     ext_timer_start(sd_timer_id);
 }
 
 static void fixup_func(unsigned long data)
 {
     int current_state_tracking;
+    static uint64_t prev_stamp; /* time of previous sync */
+    const uint64_t  now_stamp = jiffies;
+    const uint64_t  gap_stamp = now_stamp - prev_stamp; /* time since last sync */
 
     spin_lock(&state_lock);
     current_state_tracking = state_tracking;
@@ -64,14 +78,50 @@ static void fixup_func(unsigned long data)
     {
         if (fifo_cb.gearbox_drift_test && fifo_cb.gearbox_drift_test(current_state_tracking == STATE_JUST_SYNC))
             fifo_cb.reset_fifo();
+        if (current_state_tracking == STATE_JUST_SYNC)
+        {
+            prev_stamp = now_stamp;
+            if (gap_stamp > msecs_to_jiffies(100))
+            {
+                wd_log_debug("\nJUST_SYNC");
+                /* if (pmd_rx_restart)
+                {
+                    (*pmd_rx_restart)();
+                    wd_log_debug("\nJUST_SYNC");
+                    mdelay(10);
+                }
+                if (reset_rx_fifo)
+                {
+                    (*reset_rx_fifo)();
+                    mdelay(50); // wait to recover from reset_rx_fifo before reset_tx_fifo
+                }
+                if (reset_tx_fifo)
+                    (*reset_tx_fifo)(); */
+                if (reset_gb)
+                {
+                    mdelay(20); /* wait for sync to be processed before reset_gb */
+                    (*reset_gb)();
+                }
+            }
+            else
+                wd_log_debug("\nIGNORING JUST_SYNC");
+        }
     }
     else
     {
-        if (reset_cdr)
-            (*reset_cdr)();
+        if (gap_stamp > msecs_to_jiffies(100))
+        {
+            wd_log_debug("\nDISC");
+               /* if (pmd_rx_restart)
+                (*pmd_rx_restart)(); */
+            if (reset_cdr)
+                (*reset_cdr)();
+        }
+        else
+            wd_log_debug("\nIGNORING DISC");
     }
 
-    restart_sd_timer();
+    restart_sd_timer(0);
 }
 
 DECLARE_TASKLET(fixup_tasklet, fixup_func, (unsigned long)0);
@@ -95,17 +145,20 @@ void pon_serdes_lof_fixup_irq(int lof)
     if (fifo_cb.reset_fifo && state_tracking)
         tasklet_hi_schedule(&fixup_tasklet);
     else
-        restart_sd_timer();
+        restart_sd_timer(1);
     spin_unlock(&state_lock);
 }
 EXPORT_SYMBOL(pon_serdes_lof_fixup_irq);
 
-int pon_serdes_lof_fixup_cfg(pon_serdes_lof_fixup_fifo_t *_fifo_cb, pon_serdes_lof_fixup_reset_cdr_t reset_cb)
+int pon_serdes_lof_fixup_cfg(pon_serdes_lof_fixup_fifo_t *_fifo_cb, pon_serdes_lof_fixup_reset_cdr_t reset_cb, void (*pmd_rx_restart_cb)(void), void (*reset_rx_fifo_cb)(void), void (*reset_tx_fifo_cb)(void), void (*reset_gb_cb)(void))
 {
     if (_fifo_cb)
         fifo_cb = *_fifo_cb;
-    if (reset_cb)
-        reset_cdr = reset_cb;
+    reset_cdr = reset_cb;
+    pmd_rx_restart = pmd_rx_restart_cb;
+    reset_rx_fifo = reset_rx_fifo_cb;
+    reset_tx_fifo = reset_tx_fifo_cb;
+    reset_gb = reset_gb_cb;
 
     if (sd_timer_id != -1)
         return 0;
@@ -117,7 +170,7 @@ int pon_serdes_lof_fixup_cfg(pon_serdes_lof_fixup_fifo_t *_fifo_cb, pon_serdes_l
         return -1;
     }
 
-    restart_sd_timer();
+    restart_sd_timer(0);
 
     return 0;
 }

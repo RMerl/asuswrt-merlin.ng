@@ -83,5 +83,20 @@ int crossbar_current_status(phy_dev_t *phy_crossbar, int *internal_endpoint, int
 #define phy_is_crossbar(phy)    ((phy) && (phy)->phy_drv->phy_type == PHY_TYPE_CROSSBAR)
 #define get_active_phy(phy)     (phy_is_crossbar(phy)? crossbar_phy_dev_active(phy):(phy)? cascade_phy_get_last_active(phy):phy)
  
+static inline int phy_is_mac_to_mac(phy_dev_t *phy_dev)
+{
+    if (phy_is_crossbar(phy_dev))
+    {
+        phy_dev = crossbar_phy_dev_first(phy_dev);
+        if (phy_dev == NULL)    /* Empty PHY under a crossbar port by phy-crossbar move in run time */
+            return 0;
+    }
+ 
+    phy_dev = get_active_phy(phy_dev);
+    if(phy_dev->phy_drv && phy_dev->phy_drv->phy_type == PHY_TYPE_MAC2MAC)
+        return 1;
+    return 0;
+}
+
 #endif
 

@@ -39,6 +39,9 @@
 
 #define PHY_READ(a, b, c, d)        if ((ret = phy_bus_c45_read(a, b, c, d))) goto Exit;
 #define PHY_WRITE(a, b, c, d)       if ((ret = phy_bus_c45_write(a, b, c, d))) goto Exit;
+#define CMD_SET_MACSEC_ENABLE                       0x805E
+#define CMD_GET_MACSEC_ENABLE                       0x805F
+extern int cmd_handler(phy_dev_t *phy_dev, uint16_t cmd_code, uint16_t *data1, uint16_t *data2, uint16_t *data3, uint16_t *data4, uint16_t *data5);
 
 static int phy_macsec_init(phy_dev_t *phy_dev, macsec_settings_t* settings);
 static int phy_macsec_restart(phy_dev_t *phy_dev);
@@ -62,7 +65,7 @@ static int phy_macsec_rxcam_statistics_get(secy_device_t *secy_device, uint32_t 
 static int phy_macsec_sa_e_statistics_get(secy_device_t *secy_device, uint32_t sa_index, macsec_api_secy_sa_e_stats *stats_p, uint8_t fSync);
 static int phy_macsec_sa_i_statistics_get(secy_device_t *secy_device, uint32_t sa_index, macsec_api_secy_sa_i_stats *stats_p, uint8_t fSync);
 
-static int macsec_prepare_fw(phy_dev_t *phy_dev, int enable);
+static int macsec_prepare_fw(phy_dev_t *phy_dev, uint16_t enable, uint16_t user_controls_bypass);
 static int macsec_xlmac_powerup_init(phy_dev_t *phy_dev, macsec_port_loc_t port_loc);
 static int macsec_xlmac_init(phy_dev_t *phy_dev, macsec_port_loc_t port_loc);
 static int macsec_xlmac_restart(phy_dev_t *phy_dev, macsec_port_loc_t port_loc);
@@ -253,9 +256,6 @@ int phy_macsec_pu_init(phy_dev_t *phy_dev)
     /* Set default CLK_MACSEC for 10G speed to make XLMAC works. CLK_MACSEC must be changed according to the SerDes speed when enabling MACSEC */
     temp = (temp & (~CRG_CORE_CONFIG_LONGFIN_A0_INIT_MASK)) | CRG_CORE_CONFIG_LONGFIN_A0_INIT;
     PHY_WRITE(phy_dev, 0x1E, CRG_CORE_CONFIGr, temp);
-    
-    /* bypass MACSEC from datapath by default  (Reg. 30.0x813C MacSec Control Register) */
-    PHY_WRITE(phy_dev, 0x1E, CFG_MACSEC_CTRLr, CFG_MACSEC_CTRL__INIT);
 
     phy_macsec_log(LOG_DEBUG, "\nmacsec_xlmac_powerup_init system side\n");
     ret = macsec_xlmac_powerup_init(phy_dev, macsecPortLocSys);
@@ -267,13 +267,15 @@ int phy_macsec_pu_init(phy_dev_t *phy_dev)
     if (ret)
         phy_macsec_log(LOG_ERROR, "macsec_xlmac_powerup_init macsecPortLocLine failed\n"); 
 
-    macsec_prepare_fw(phy_dev, 1);
+    macsec_prepare_fw(phy_dev, true, true);
 
     phy_macsec_log(LOG_INFO, "macsec init DONE\n");
 
 Exit:
     return ret;
 }
+
+extern int phy_macsec_support(phy_dev_t *phy_dev);
 
 int phy_macsec_oper(phy_dev_t *phy_dev, void *data)
 {
@@ -298,6 +300,13 @@ int phy_macsec_oper(phy_dev_t *phy_dev, void *data)
         case MACSEC_OPER_INIT:
         {
             macsec_settings_t Settings;
+
+            if (!phy_macsec_support(phy_dev))
+            {
+                phy_macsec_log(LOG_ERROR, "macsec is not supported on this phy\n");
+                ret = -1;
+                goto EXIT;
+            }
             
             memset(&Settings, 0, sizeof(macsec_settings_t));
 
@@ -503,8 +512,6 @@ static int phy_macsec_restart(phy_dev_t *phy_dev)
         macsec_xlmac_restart(phy_dev, macsecPortLocSys);
         macsec_xlmac_restart(phy_dev, macsecPortLocLine);
 
-        if (macsec_dev->enabled)
-            phy_macsec_enable_disable(phy_dev, 1);
     }
 
     phy_macsec_log(LOG_DEBUG, "phy_macsec_restart DONE\n\n");
@@ -523,10 +530,12 @@ static int phy_macsec_enable_disable(phy_dev_t *phy_dev, int enable)
     if ( !enable ) 
     {
         data |= ( PHY_REG_MACSEC_CTRL_BYPASS);      /* 30.0x813C[4]=1 :   set  MAcSEC bypass */
+        macsec_prepare_fw(phy_dev, true, true);
     } 
     else 
     {
         data &= (~PHY_REG_MACSEC_CTRL_BYPASS);      /* 30.0x813C[4]=0 : remove MAcSEC bypass */
+        macsec_prepare_fw(phy_dev, true, false);
     }
 
     PHY_WRITE(phy_dev, 0x1E, PHY_REG_MACSEC_CTRL, data);
@@ -1597,7 +1606,7 @@ static int phy_macsec_rule_enable(secy_device_t* secy_device, uint32_t rule_inde
     return 0;
 }
 
-static int macsec_prepare_fw(phy_dev_t *phy_dev, int enable)
+static int macsec_prepare_fw(phy_dev_t *phy_dev, uint16_t enable, uint16_t user_controls_bypass)
 {
     int ret = 0;
     uint16_t  data = 0, temp = 0;
@@ -1635,9 +1644,7 @@ static int macsec_prepare_fw(phy_dev_t *phy_dev, int enable)
         return -1;
     }
 
-    PHY_READ(phy_dev, 0x1E, PHY_REG_FW_NOTIFY, &data);
-    data &= ~PHY_REG_FW_NOTIFY_MACSEC;
-    PHY_WRITE(phy_dev, 0x1E, PHY_REG_FW_NOTIFY, data | enable);
+    ret = cmd_handler(phy_dev, CMD_SET_MACSEC_ENABLE, &enable, &user_controls_bypass, NULL, NULL, NULL);
 
     PHY_READ(phy_dev, 0x1E, 0x401c, &temp);
     temp &= (~0x100);
@@ -1668,7 +1675,7 @@ static int macsec_prepare_fw(phy_dev_t *phy_dev, int enable)
         return -1;
     }
 
-    phy_macsec_log(LOG_INFO, "firmware clock monitor enabled\n");
+    phy_macsec_log(LOG_DEBUG, "firmware clock monitor enabled\n");
 
 Exit:
     return 0;

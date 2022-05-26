@@ -86,17 +86,36 @@ typedef enum
     rdpa_cpu_rx_reason_tcp_flags           = 42, /**< TCP flag indication */
     rdpa_cpu_rx_reason_ttl_expired         = 43, /**< TTL expired indication */
     rdpa_cpu_rx_reason_mtu_exceeded        = 44, /**< MTU exceeded indication */
-    rdpa_cpu_rx_reason_l4_icmp             = 45, /**< Layer-4 ICMP protocol */
-    rdpa_cpu_rx_reason_l4_esp              = 46, /**< Layer-4 ESP protocol */
-    rdpa_cpu_rx_reason_l4_gre              = 47, /**< Layer-4 GRE protocol */
-    rdpa_cpu_rx_reason_l4_ah               = 48, /**< Layer-4 AH protocol */
-    rdpa_cpu_rx_reason_parser_error        = 49, /**< Error when parsing packet \XRDP_LIMITED */
-    rdpa_cpu_rx_reason_l4_ipv6             = 50, /**< Layer-4 IPV6 protocol */
-    rdpa_cpu_rx_reason_l4_udef_0           = 51, /**< User defined layer-4 1 */
-    rdpa_cpu_rx_reason_l4_udef_1           = 52, /**< User defined layer-4 2 */
-    rdpa_cpu_rx_reason_l4_udef_2           = 53, /**< User defined layer-4 3 */
-    rdpa_cpu_rx_reason_l4_udef_3           = 54, /**< User defined layer-4 4 */
-    rdpa_cpu_rx_reason_cpu_redirect        = 55, /**< CPU redirect */
+    rdpa_cpu_rx_reason_parser_error        = 45, /**< Error when parsing packet \XRDP_LIMITED */
+    rdpa_cpu_rx_reason_cpu_redirect        = 46, /**< CPU redirect */
+#ifdef XRDP
+    rdpa_cpu_rx_reason_l4_esp              = 47, /**< Layer-4 ESP protocol */
+    rdpa_cpu_rx_reason_udef_0              = 48, /**< User defined 1 */
+    rdpa_cpu_rx_reason_udef_1              = 49, /**< User defined 2 */
+    rdpa_cpu_rx_reason_udef_2              = 50, /**< User defined 3 */
+    rdpa_cpu_rx_reason_udef_3              = 51, /**< User defined 4 */
+    rdpa_cpu_rx_reason_udef_4              = 52, /**< User defined 5 */
+    rdpa_cpu_rx_reason_udef_5              = 53, /**< User defined 6 */
+    rdpa_cpu_rx_reason_udef_6              = 54, /**< User defined 7 */
+    rdpa_cpu_rx_reason_udef_7              = 55, /**< User defined 8 \XRDP_LIMITED */
+    rdpa_cpu_rx_reason_udef_8              = 56, /**< User defined 9 \XRDP_LIMITED */
+    rdpa_cpu_rx_reason_udef_9              = 57, /**< User defined 10 \XRDP_LIMITED */
+    rdpa_cpu_rx_reason_udef_10             = 58, /**< User defined 11 \XRDP_LIMITED */
+    rdpa_cpu_rx_reason_udef_11             = 59, /**< User defined 12 \XRDP_LIMITED */
+    rdpa_cpu_rx_reason_udef_12             = 60, /**< User defined 13 \XRDP_LIMITED */
+    rdpa_cpu_rx_reason_udef_13             = 61, /**< User defined 14 \XRDP_LIMITED */
+    rdpa_cpu_rx_reason_udef_14             = 62, /**< User defined 15 \XRDP_LIMITED */
+    rdpa_cpu_rx_reason_udef_15             = 63, /**< User defined 16 \XRDP_LIMITED */
+#else
+    rdpa_cpu_rx_reason_l4_icmp             = 47, /**< Layer-4 ICMP protocol */
+    rdpa_cpu_rx_reason_l4_esp              = 48, /**< Layer-4 ESP protocol */
+    rdpa_cpu_rx_reason_l4_gre              = 49, /**< Layer-4 GRE protocol */
+    rdpa_cpu_rx_reason_l4_ah               = 50, /**< Layer-4 AH protocol */
+    rdpa_cpu_rx_reason_l4_ipv6             = 51, /**< Layer-4 IPV6 protocol */
+    rdpa_cpu_rx_reason_l4_udef_0           = 52, /**< User defined layer-4 1 */
+    rdpa_cpu_rx_reason_l4_udef_1           = 53, /**< User defined layer-4 2 */
+    rdpa_cpu_rx_reason_l4_udef_2           = 54, /**< User defined layer-4 3 */
+    rdpa_cpu_rx_reason_l4_udef_3           = 55, /**< User defined layer-4 4 */
     rdpa_cpu_rx_reason_udef_0              = 56, /**< User defined 1 */
     rdpa_cpu_rx_reason_udef_1              = 57, /**< User defined 2 */
     rdpa_cpu_rx_reason_udef_2              = 58, /**< User defined 3 */
@@ -105,6 +124,7 @@ typedef enum
     rdpa_cpu_rx_reason_udef_5              = 61, /**< User defined 6 */
     rdpa_cpu_rx_reason_udef_6              = 62, /**< User defined 7 */
     rdpa_cpu_rx_reason_udef_7              = 63, /**< User defined 8 */
+#endif
     rdpa_cpu_reason__num_of
 } rdpa_cpu_reason;
 

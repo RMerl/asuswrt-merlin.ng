@@ -51,8 +51,25 @@ extern "C"
 #define FPM_BUF_SIZE_1K                     1024
 #define FPM_BUF_SIZE_2K                     2048
 #define FPM_BUF_MAX_BASE_BUFFS              8
-#define TOTAL_FPM_TOKENS                    ((64*1024) - 1)
 #define FPM_DDR_BUFFER_SIZE                 512
+
+/* All following definitions must be 100*k since they are percent-wise divided */
+
+
+#if (defined BCM6878)
+
+#define TOTAL_FPM_TOKENS                    ((64*1024) - 1)
+
+#define FPM_INDX_MASK                       (0xFFFF)
+#define FPM_POOL_ID_SHIFT                        16
+
+#else
+
+#define TOTAL_FPM_TOKENS                   120000
+#define FPM_INDX_MASK                       (0x1FFFF)
+#define FPM_POOL_ID_SHIFT                        17
+#endif
+
 
 /** Boolean value */
 typedef char bdmf_boolean;

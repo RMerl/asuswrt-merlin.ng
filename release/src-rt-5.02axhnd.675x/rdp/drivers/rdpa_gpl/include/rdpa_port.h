@@ -76,6 +76,7 @@ typedef struct
     rdpa_if control_sid; /**< Control SID on LAG iface (relevent for G9991 only) */
     bdmf_boolean ae_enable; /**< Indicates active ethernet port */
     uint8_t min_packet_size; /**< Minimum packet size \XRDP_LIMITED */
+    bdmf_boolean dos_attack_detection_disable; /**< disable DOS attack prevention */
 } rdpa_port_dp_cfg_t;
 
 
@@ -125,14 +126,17 @@ typedef struct {
     uint32_t tx_discard;                 /**< TX discarded packets (TX FIFO full) */
     uint32_t discard_pkt;                /**< Dropped filtered Packets */
     uint32_t rx_valid_bytes;             /**< FTTdp only: Received valid bytes */
+    uint32_t rx_unicast_pkt;             /**< FTTdp only: Received unicast Packets */
     uint32_t rx_multicast_pkt;           /**< FTTdp only: Received multicast Packets */    
     uint32_t rx_broadcast_pkt;           /**< FTTdp only: Received broadcast Packets */    
     uint32_t tx_valid_bytes;             /**< FTTdp only: Sent valid bytes */
     uint32_t tx_multicast_pkt;           /**< FTTdp only: Sent multicast Packets */    
     uint32_t tx_broadcast_pkt;           /**< FTTdp only: Sent broadcast Packets */
+    uint32_t tx_unicast_pkt;             /**< FTTdp only: Sent unicast Packets, applicable for WAN port only */
     uint32_t rx_frag_discard;            /**< FTTdp only: G.9991 RX fragments reassembly drop counter */
 } rdpa_port_stat_t;
 
+/** Port Debug statistics */
 typedef struct {
     uint32_t bbh_rx_crc_err_ploam_drop;  /**< PLOAMs drops due to CRC error */
     uint32_t bbh_rx_third_flow_drop;     /**< Drop due to third flow error */

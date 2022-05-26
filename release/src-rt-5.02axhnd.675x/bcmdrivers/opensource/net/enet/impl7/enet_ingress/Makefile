@@ -4,7 +4,7 @@
 
 NAME = bcm_enet_ingress
 
-ifneq (,$(filter $(BRCM_CHIP),6858 6846 6856 6878))
+ifneq (,$(filter $(BRCM_CHIP),6858 6846 6856 6878 6855))
 obj-$(CONFIG_BCM_ENET) = $(NAME).o
 endif
 
@@ -23,7 +23,7 @@ EXTRA_CFLAGS += -DRUNNER
 enet_objs += runner.o runner_standalone.o
 endif
 
-ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_6858_6846_6856_6878_),)
+ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_6858_6846_6856_6878_6855_),)
 RDP_RING = 1
 endif
 
@@ -49,7 +49,7 @@ EXTRA_CFLAGS += -Werror -Wall
 
 $(NAME)-objs += $(enet_objs)
 
-ifneq (,$(filter $(BRCM_CHIP),6858 6846 6856 6878))
+ifneq (,$(filter $(BRCM_CHIP),6858 6846 6856 6878 6855))
 SHARED_TARGETS = $(addprefix $(src)/,$(enet_objs:.o=.c))
 endif
 $(SHARED_TARGETS):

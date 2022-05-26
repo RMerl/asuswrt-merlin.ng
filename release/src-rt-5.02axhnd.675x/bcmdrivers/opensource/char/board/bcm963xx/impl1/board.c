@@ -407,7 +407,8 @@ EXPORT_SYMBOL(BpGetNumFePorts);
 EXPORT_SYMBOL(BpGetNumGePorts);
 EXPORT_SYMBOL(BpGetNumVoipPorts);
 #endif
-#if defined(CONFIG_BCM_PON) || defined(CONFIG_BCM963158)
+#if defined(CONFIG_BCM_PON) || defined(CONFIG_BCM96855) || defined(CONFIG_BCM963158)
+EXPORT_SYMBOL(BpGetPonSMTCTxDisGpio);
 EXPORT_SYMBOL(BpGetPonTxEnGpio);
 EXPORT_SYMBOL(BpGetPonRxEnGpio);
 EXPORT_SYMBOL(BpGetPonResetGpio);
@@ -527,5 +528,8 @@ EXPORT_SYMBOL(BpGetPciDis);
 EXPORT_SYMBOL(BpGetSataDis);
 
 EXPORT_SYMBOL(BpGetMemoryConfig);
+#if !defined(CONFIG_BCM963268) && !defined(CONFIG_BCM96838) && !defined(CONFIG_BCM947189)
+EXPORT_SYMBOL(BpGrepPinmuxListByPort);
+#endif
 
 MODULE_LICENSE("GPL");

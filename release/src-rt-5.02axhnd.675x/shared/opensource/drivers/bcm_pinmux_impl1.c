@@ -51,7 +51,17 @@
 #include <linux/string.h>
 #endif
 
+void bcm_get_pinmux(unsigned int pin_num, unsigned int *mux_num)
+{
+    unsigned int tp_blk_data_lsb;
+    tp_blk_data_lsb= 0;
+    tp_blk_data_lsb |= pin_num;
+    GPIO->TestPortBlockDataMSB = 0;
+    GPIO->TestPortBlockDataLSB = tp_blk_data_lsb;
+    GPIO->TestPortCmd = 0x23;
 
+    *mux_num = (GPIO->DiagReadBack >> PINMUX_DATA_SHIFT) & 0x7;
+}
 
 void bcm_set_pinmux(unsigned int pin_num, unsigned int mux_num)
 {
@@ -79,16 +89,31 @@ void bcm_init_pinmux_interface(unsigned int interface) {
     }
 }
 
+int bcm_pinmux_update_optled_map(unsigned short led_gpio_num, unsigned int muxinfo)
+{
+    short *optled_map;
+    int led_chn_num = led_gpio_num;
+    
+    optled_map = bcm_led_driver_get_optled_map();
+
+    if (muxinfo & BP_PINMUX_OPTLED_VALID) {
+        led_chn_num = (muxinfo & BP_PINMUX_OPTLED_MASK) >> BP_PINMUX_OPTLED_SHIFT;
+        optled_map[led_gpio_num] = led_chn_num;
+    } else {
+        optled_map[led_gpio_num] = led_gpio_num;
+    }
+
+    return led_chn_num;
+}
+
 int bcm_init_pinmux(void)
 {
-    int i, j, n, errcnt, op;
+    int i, n, errcnt, op;
     int lednum;
     unsigned int serial = 0;
     unsigned int ledsrc = 0;
     unsigned short Function[BP_PINMUX_MAX];
     unsigned int Muxinfo[BP_PINMUX_MAX];
-    short *optled_map;
-    optled_map = bcm_led_driver_get_optled_map();
 
     if (BP_SUCCESS != BpGetAllPinmux (BP_PINMUX_MAX, &n, &errcnt, Function, Muxinfo)) {
         return 0;
@@ -96,22 +121,30 @@ int bcm_init_pinmux(void)
 
     for (i = n-1 ; 0 <= i ; i--) {
         lednum = Function[i] & BP_GPIO_NUM_MASK;
-        if (Muxinfo[i] & BP_PINMUX_OPTLED_VALID) {
-            j = (Muxinfo[i] & BP_PINMUX_OPTLED_MASK) >> BP_PINMUX_OPTLED_SHIFT;
-            optled_map[lednum] = j;
-            lednum = j;
-        } else {
-            optled_map[lednum] = lednum;
-        }
+        lednum = bcm_pinmux_update_optled_map(lednum, Muxinfo[i]);
         op = Muxinfo[i] & BP_PINMUX_OP_MASK;
         if (Function[i] & BP_GPIO_SERIAL) {
             serial |= 1 << (Function[i] & BP_GPIO_NUM_MASK);
             bcm_led_zero_flash_rate(Function[i] & BP_GPIO_NUM_MASK);
+#if defined(CONFIG_BCM96855) || defined(_BCM96855_)
+            bcm_cled_mux_leds(Function[i] & BP_GPIO_NUM_MASK, Function[i] & BP_GPIO_NUM_MASK, lednum,
+                op == BP_PINMUX_HWLED);
+#endif
         } else {
             bcm_set_pinmux( Muxinfo[i] & BP_PINMUX_PIN_MASK, (Muxinfo[i] & BP_PINMUX_VAL_MASK) >> BP_PINMUX_VAL_SHIFT );
             if ((op == BP_PINMUX_HWLED) || (op == BP_PINMUX_SWLED)) {
                 // zero the flash rate for any LED that needs to be on/off
                 bcm_led_zero_flash_rate(lednum);
+#if defined(CONFIG_BCM96855) || defined(_BCM96855_)
+                {
+                    unsigned int led_src;
+                    if (BP_SUCCESS == BpMapGpioToLed(Function[i] & BP_GPIO_NUM_MASK, &led_src))
+                    {
+                        bcm_cled_mux_leds(Function[i] & BP_GPIO_NUM_MASK, led_src, lednum,
+                            op == BP_PINMUX_HWLED);
+                    }
+                }
+#endif
             }
         }
         if ((op == BP_PINMUX_HWLED) || (op == BP_PINMUX_PWMLED)) {
@@ -142,5 +175,7 @@ int bcm_init_pinmux(void)
 }
 
 #ifndef _CFE_ 
-EXPORT_SYMBOL(bcm_set_pinmux );
+EXPORT_SYMBOL(bcm_get_pinmux);
+EXPORT_SYMBOL(bcm_set_pinmux);
+EXPORT_SYMBOL(bcm_pinmux_update_optled_map);
 #endif

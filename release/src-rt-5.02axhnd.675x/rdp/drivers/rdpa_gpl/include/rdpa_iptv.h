@@ -129,12 +129,14 @@ typedef struct
     uint32_t iptv_first_repl_disp_nack_drop;    /**< Drop due to unavilable dispatcher buffer - first replication */
     uint32_t iptv_exception_drop;               /**< Drop due to IPTV exception */
     uint32_t iptv_other_repl_disp_nack_drop;    /**< Drop due to unavilable dispatcher buffer - other replication */
-    uint32_t discard_bytes;                     /**< IPTV total discard packets length in bytes*/
+    uint32_t discard_bytes;                     /**< IPTV total discard packets length in bytes */
 #ifdef BCM6858
     uint32_t iptv_congestion_drop;              /**< IPTV congestion drops */
 #endif
+    uint32_t iptv_fpm_below_threshold_drop;     /**< Drop due to FPM buffers below threshold */
 } rdpa_iptv_stat_t;
 
+/** IPTV Chanel key */
 typedef struct {
     bdmf_index channel_index; /**< Channel index */
     rdpa_if port; /**< Port */

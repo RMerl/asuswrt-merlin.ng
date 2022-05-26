@@ -102,6 +102,7 @@ static int _phy_init(phy_dev_t *phy_dev)
     int ret;
     phy_speed_t speed;;
 
+    
     if (phy_dev->mii_type == PHY_MII_TYPE_HSGMII)
         speed = PHY_SPEED_2500;
     else

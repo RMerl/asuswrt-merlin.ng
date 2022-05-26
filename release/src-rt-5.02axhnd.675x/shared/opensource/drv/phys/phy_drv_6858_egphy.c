@@ -116,6 +116,55 @@ Exit:
     return ret;
 }
 
+static uint16_t base_addr = 1;
+extern phy_drv_t phy_drv_6858_egphy;
+
+static int _phy_afe_all(void)
+{
+    int i, ret = 0;
+    phy_dev_t phy_dev = {};
+    phy_dev.phy_drv = &phy_drv_6858_egphy;
+
+    for (i = 0; i < 4; i++)
+    {
+        phy_dev.addr = base_addr + i;
+        ret |= _phy_afe(&phy_dev);
+    }
+
+    return ret;
+}
+
+int lport_qgphy_base_addr_set(uint16_t addr);
+
+static int _phy_dev_add(phy_dev_t *phy_dev)
+{
+    static int done = 0;
+    uint64_t port = (uint64_t)phy_dev->priv;
+
+    /* Set base address according to the first PHY device */
+    if (!done && phy_dev->addr > port)
+    {
+        base_addr = phy_dev->addr - port;
+        lport_qgphy_base_addr_set(base_addr);
+        done = 1;
+    }
+
+    return 0;
+}
+
+static int _phy_drv_init(phy_drv_t *phy_drv)
+{
+    if (_phy_afe_all())
+    {
+        printk("Failed to initialize the phy AFE settings\n");
+        return -1;
+    }
+
+    phy_drv->initialized = 1;
+
+    return 0;
+}
+
 phy_drv_t phy_drv_6858_egphy =
 {
     .phy_type = PHY_TYPE_6858_EGPHY,
@@ -136,5 +185,10 @@ phy_drv_t phy_drv_6858_egphy =
     .phyid_get = mii_phyid_get,
     .auto_mdix_set = brcm_egphy_force_auto_mdix_set,
     .auto_mdix_get = brcm_egphy_force_auto_mdix_get,
+    .wirespeed_set = brcm_egphy_eth_wirespeed_set,
+    .wirespeed_get = brcm_egphy_eth_wirespeed_get,
     .init = _phy_init,
+    .dev_add = _phy_dev_add,
+    .drv_init = _phy_drv_init,
+    .cable_diag_run = brcm_cable_diag_run,
 };

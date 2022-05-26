@@ -62,7 +62,7 @@
 #define PHYS_TO_UNCACHED(_addr)				cache_to_uncache((uintptr_t)_addr)
 #if defined(BCM6858) || defined(CONFIG_BCM963148) || \
     defined(CONFIG_BCM96846) || defined(BCM6846) ||\
-    defined(CONFIG_BCM96856) || defined(BCM6856) || defined(CONFIG_BCM96878) || defined(BCM6878)
+    defined(CONFIG_BCM96856) || defined(BCM6856) || defined(CONFIG_BCM96878) || defined(BCM6878) || defined(BCM6855)
 #define DMA_CACHE_LINE					64
 #else
 #define DMA_CACHE_LINE					32

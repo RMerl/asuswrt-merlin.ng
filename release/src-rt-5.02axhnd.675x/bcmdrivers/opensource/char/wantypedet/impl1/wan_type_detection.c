@@ -71,6 +71,10 @@ static int is_gpon_lof_synced(uint16_t optics_type, pmd_calibration_parameters *
 #define GPON_RCVR_STATUS_REG_ADDRESS            (0x80150000)
 #define GPON_RCVR_CONFIG_REG_ADDRESS            (0x80150004)
 #define GPON_RCVR_CONFIG_LOF_PARAMS_REG_ADDRESS (0x80150008)
+#elif defined(CONFIG_BCM96855)
+#define GPON_RCVR_STATUS_REG_ADDRESS            (0x828B9000)
+#define GPON_RCVR_CONFIG_REG_ADDRESS            (0x828B9004)
+#define GPON_RCVR_CONFIG_LOF_PARAMS_REG_ADDRESS (0x828B9008)
 #else
 #define GPON_RCVR_STATUS_REG_ADDRESS            (0x82db1000)
 #define GPON_RCVR_CONFIG_REG_ADDRESS            (0x82db1004)
@@ -83,7 +87,8 @@ static int is_gpon_lof_synced(uint16_t optics_type, pmd_calibration_parameters *
 #define GPON_RCVR_CONFIG_LOF_ALPHA_SHIFT        (         4)
 #define GPON_RCVR_CONFIG_LOF_ALPHA              (         1)
 #define GPON_RCVR_CONFIG_LOF_PARAMS_CLEAR_MASK  (     ~0xFF)
-    unsigned int ret, reg_value, *reg_address, is_sensed;
+    unsigned int ret, reg_value, is_sensed;
+    volatile unsigned int *reg_address;
 
     ret = configure_pmd_wan_type(optics_type, PMD_GPON_2_1_WAN, calibration_parameters_from_json);
     if (SKIP_SENSING_WAN_TYPE == ret) return SENSE_RESULT_FALSE;
@@ -123,6 +128,15 @@ static int is_gpon_lof_synced(uint16_t optics_type, pmd_calibration_parameters *
 #define LIF_SEC_CONTROL_REG_ADDRESS     (0x8014180c)
 #define LIF_INT_STATUS_REG_ADDRESS      (0x80141814)
 #define LIF_RX_AGG_MPCP_FRM_REG_ADDRESS (0x80141900)
+#elif defined(CONFIG_BCM96855)
+#define EPON_PHYS_BASE  XRDP_PHYS_BASE
+#define EPON_IDX        XRDP_IDX
+#define EPON_TOP_RESET_REG_ADDRESS      (0x828B4004)
+#define EPON_TOP_CONTROL_REG_ADDRESS    (0x828B4010)
+#define LIF_PON_CONTROL_REG_ADDRESS     (0x828B5800)
+#define LIF_SEC_CONTROL_REG_ADDRESS     (0x828B580C)
+#define LIF_INT_STATUS_REG_ADDRESS      (0x828B5814)
+#define LIF_RX_AGG_MPCP_FRM_REG_ADDRESS (0x828B58C0)
 #else
 #define EPON_PHYS_BASE  XRDP_PHYS_BASE
 #define EPON_IDX        XRDP_IDX
@@ -149,7 +163,8 @@ static int is_epon_ae_in_sync(SUPPORTED_WAN_TYPES_BITMAP wan_type, uint16_t opti
 #define LIF_INT_STATUS_ALL_CLR          (0x003fffff)
 #define LIF_INT_RX_OUT_OF_SYNCH_STAT    (         1)
 
-    unsigned int reg_value, *reg_address, is_sensed;
+    unsigned int reg_value, is_sensed;
+    volatile unsigned int *reg_address;
     char *wan_type_string;
     int ret;
 
@@ -170,8 +185,10 @@ static int is_epon_ae_in_sync(SUPPORTED_WAN_TYPES_BITMAP wan_type, uint16_t opti
 
     if (SKIP_SENSING_WAN_TYPE == ret) return SENSE_RESULT_FALSE;
 
+#if !defined(CONFIG_BCM96855)
     reg_address = (unsigned int *)(EPON_TOP_RESET_REG_ADDRESS - EPON_PHYS_BASE + bcm_io_block_address[EPON_IDX]);
     *reg_address = EPON_TOP_RESET_ALL;
+#endif
     msleep(SLEEP_IN_MILI_SECONDS);
 
     switch (wan_type)
@@ -230,11 +247,14 @@ static int is_epon_ae_in_sync(SUPPORTED_WAN_TYPES_BITMAP wan_type, uint16_t opti
 }
 
 
-#if defined(CONFIG_BCM96858) || defined(CONFIG_BCM96856)
+#if defined(CONFIG_BCM96858) || defined(CONFIG_BCM96856) || defined(CONFIG_BCM96855)
 
 #if defined(CONFIG_BCM96858)
 #define XPCSRX_RST_REG_ADDRESS          (0x80143000)
 #define XPCSRX_FRAMER_CTL_REG_ADDRESS   (0x8014300c)
+#elif defined(CONFIG_BCM96855)
+#define XPCSRX_RST_REG_ADDRESS          (0x828B7000)
+#define XPCSRX_FRAMER_CTL_REG_ADDRESS   (0x828B700C)
 #else
 #define XPCSRX_RST_REG_ADDRESS          (0x82daf000)
 #define XPCSRX_FRAMER_CTL_REG_ADDRESS   (0x82daf00c)
@@ -242,7 +262,7 @@ static int is_epon_ae_in_sync(SUPPORTED_WAN_TYPES_BITMAP wan_type, uint16_t opti
 
 static void disable_10g_epon_ae_mac(void)
 {
-    unsigned int *reg_address;
+    volatile unsigned int *reg_address;
 
     reg_address = (unsigned int *)(XPCSRX_FRAMER_CTL_REG_ADDRESS - EPON_PHYS_BASE + bcm_io_block_address[EPON_IDX]);
     *reg_address = XPCSRX_FRAMER_CTL_DISABLE_VALUE;
@@ -264,6 +284,15 @@ static int is_10g_epon_ae_in_sync(SUPPORTED_WAN_TYPES_BITMAP wan_type, uint16_t 
 #define XPCSRX_64B_66B_START_CNT_REG_ADDRESS    (0x801430dc)
 #define XPCSRX_IDLE_GOOD_PKT_CNT_REG_ADDRESS    (0x801430e0)
 #define EPON_TOP_RESET_XPCS_RX_RST_CLR          (0x00000040)
+#elif defined(CONFIG_BCM96855)
+#define XPCSRX_RAM_ECC_INT_STAT_REG_ADDRESS     (0x828B7108)
+#define XPCSRX_FEC_CTL_REG_ADDRESS              (0x828B7010)
+#define XPCSRX_INT_STAT_REG_ADDRESS             (0x828B7004)
+#define XPCSRX_64B_66B_START_CNT_REG_ADDRESS    (0x828B70DC)
+#define XPCSRX_IDLE_GOOD_PKT_CNT_REG_ADDRESS    (0x828B70E0)
+#define EPON_TOP_RESET_XPCS_RX_RST_CLR          (0x00000080)
+#define XPCSRX_STATUS_REG_ADDRESS               (0x828B7048)
+#define XPCSRX_STATUS_STATRXFRAMERCWLOCK        (0x00000020)
 #else
 #define XPCSRX_RAM_ECC_INT_STAT_REG_ADDRESS     (0x82daf108)
 #define XPCSRX_FEC_CTL_REG_ADDRESS              (0x82daf010)
@@ -282,7 +311,8 @@ static int is_10g_epon_ae_in_sync(SUPPORTED_WAN_TYPES_BITMAP wan_type, uint16_t 
 #define XPCSRX_INT_STAT_CLR                     (0x7fcfffff)
 #define XPCSRX_INT_STAT_RX_FRAMER_CW_LOCK       (0x00000020)
 
-    unsigned int reg_value, *reg_address, is_sensed;
+    unsigned int reg_value, is_sensed, is_locked;
+    volatile unsigned int *reg_address;
     char *wan_type_string;
     int ret;
 
@@ -297,11 +327,13 @@ static int is_10g_epon_ae_in_sync(SUPPORTED_WAN_TYPES_BITMAP wan_type, uint16_t 
 
     if (SKIP_SENSING_WAN_TYPE == ret) return SENSE_RESULT_FALSE;
 
+#if !defined(CONFIG_BCM96855)
     reg_address = (unsigned int *)(EPON_TOP_RESET_REG_ADDRESS - EPON_PHYS_BASE + bcm_io_block_address[EPON_IDX]);
     *reg_address = EPON_TOP_RESET_ALL;
 
     reg_address = (unsigned int *)(XPCSRX_RST_REG_ADDRESS - EPON_PHYS_BASE + bcm_io_block_address[EPON_IDX]);
     *reg_address = XPCSRX_RST_ACTIVE_LOW_RESET;
+#endif
 
     msleep(SLEEP_IN_MILI_SECONDS);
 
@@ -345,9 +377,16 @@ static int is_10g_epon_ae_in_sync(SUPPORTED_WAN_TYPES_BITMAP wan_type, uint16_t 
     *reg_address = XPCSRX_INT_STAT_CLR;
 
     msleep(LONG_SLEEP_IN_MILI_SECONDS);
+#if defined(CONFIG_BCM96855)
+    reg_address = (unsigned int *)(XPCSRX_STATUS_REG_ADDRESS - EPON_PHYS_BASE + bcm_io_block_address[EPON_IDX]);
     reg_value = *reg_address;
+    is_locked = ((reg_value & XPCSRX_STATUS_STATRXFRAMERCWLOCK) == XPCSRX_STATUS_STATRXFRAMERCWLOCK);
+#else
+    reg_value = *reg_address;
+    is_locked = ((reg_value & XPCSRX_INT_STAT_RX_FRAMER_CW_LOCK) == XPCSRX_INT_STAT_RX_FRAMER_CW_LOCK);
+#endif
 
-    if ((reg_value & XPCSRX_INT_STAT_RX_FRAMER_CW_LOCK) == XPCSRX_INT_STAT_RX_FRAMER_CW_LOCK)
+    if (is_locked)
     {
         reg_value = *(unsigned int *)(XPCSRX_64B_66B_START_CNT_REG_ADDRESS - EPON_PHYS_BASE + bcm_io_block_address[EPON_IDX]);
         if (reg_value > 0)
@@ -411,6 +450,10 @@ static int is_10g_itu_pon_frame_sync(SUPPORTED_WAN_TYPES_BITMAP wan_type, uint16
 #define NGPON_RX_GEN_RCVRSTAT_REG_ADDRESS           (0x80160000)
 #define NGPON_RX_GEN_RCVRCFG_REG_ADDRESS            (0x80160004)
 #define NGPON_RX_GEN_SYNC_CFG_REG_ADDRESS           (0x80160008)
+#elif defined(CONFIG_BCM96855)
+#define NGPON_RX_GEN_RCVRSTAT_REG_ADDRESS           (0x828BC000)
+#define NGPON_RX_GEN_RCVRCFG_REG_ADDRESS            (0x828BC004)
+#define NGPON_RX_GEN_SYNC_CFG_REG_ADDRESS           (0x828BC008)
 #else
 #define NGPON_RX_GEN_RCVRSTAT_REG_ADDRESS           (0x82db4000)
 #define NGPON_RX_GEN_RCVRCFG_REG_ADDRESS            (0x82db4004)
@@ -431,7 +474,8 @@ static int is_10g_itu_pon_frame_sync(SUPPORTED_WAN_TYPES_BITMAP wan_type, uint16
 #define NGPON_RX_GEN_SYNC_CFG_PONID_ACQ_THR         (         2)
 #define NGPON_RX_GEN_SYNC_CFG_CLEAR_MASK            (    ~0xFFF)
 
-    unsigned int reg_value, *reg_address, is_sensed, mac_mode;
+    unsigned int reg_value, is_sensed, mac_mode;
+    volatile unsigned int *reg_address;
     char *wan_type_string;
     int ret;
 
@@ -452,6 +496,7 @@ static int is_10g_itu_pon_frame_sync(SUPPORTED_WAN_TYPES_BITMAP wan_type, uint16
             break;
         case SUPPORTED_WAN_TYPES_BIT_NGPON2_10_10:
             wan_type_string = "NGPON2 10G/10G";
+            /* fallthru */
         case SUPPORTED_WAN_TYPES_BIT_XGSPON:
             mac_mode = GPON_RX_GEN_RCVRCFG_MAC_MODE_NGPON2_10G;
             wan_serdes_config(SERDES_WAN_TYPE_NGPON_10G_10G);
@@ -548,7 +593,7 @@ static int is_specific_wan_type_sensed(SUPPORTED_WAN_TYPES_BITMAP wan_type, uint
         case SUPPORTED_WAN_TYPES_BIT_EPON_1_1:
         case SUPPORTED_WAN_TYPES_BIT_AE_1_1:
             return is_epon_ae_in_sync(wan_type, optics_type, calibration_parameters_from_json);
-#if defined(CONFIG_BCM96858) || defined(CONFIG_BCM96856)
+#if defined(CONFIG_BCM96858) || defined(CONFIG_BCM96856) || defined(CONFIG_BCM96855)
         case SUPPORTED_WAN_TYPES_BIT_EPON_10_10:
         case SUPPORTED_WAN_TYPES_BIT_EPON_10_1:
         case SUPPORTED_WAN_TYPES_BIT_AE_10_10:

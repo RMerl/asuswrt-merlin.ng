@@ -283,6 +283,14 @@ const uint32 pcie_wifi_6878_dev_cfg[PCIE_VDEV_CFG_SIZEW] = {
 };
 #endif /* CONFIG_BCM96878 */
 
+#if defined(CONFIG_BCM96855)
+const uint32 pcie_wifi_6855_dev_cfg[PCIE_VDEV_CFG_SIZEW] = {
+	/* 1 -  WIFI device, 1 - Virtual Core */
+	/* 0:1:0.0 */ PCIE_VDEV_INIT_CFG(0x6756, 0x2, WLAN0_PHYS_BASE, 0, WLAN0_SIZE, 1, 0)
+};
+#endif /* CONFIG_BCM96855 */
+
+
 /*
  * List of available wifi device configurations
  *
@@ -299,6 +307,10 @@ struct pcie_vdev_cfg_info pcie_vdev_cfg_list[] = {
 #if defined(CONFIG_BCM96878)
 	PCIE_VDEV_LIST_ELEM(0x6878, 0xA0, pcie_wifi_6878_dev_cfg),
 #endif /* CONFIG_BCM96878 */
+#if defined(CONFIG_BCM96855)
+	PCIE_VDEV_LIST_ELEM(0x6855, 0xA0, pcie_wifi_6855_dev_cfg),
+#endif /* CONFIG_BCM96878 */
+
 	PCIE_VDEV_LIST_ELEM(0x0, 0x0, pcie_wifidefdev_cfg) /* Delimiter, default */
 };
 

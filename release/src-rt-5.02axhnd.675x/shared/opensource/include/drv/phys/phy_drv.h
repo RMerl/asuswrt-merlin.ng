@@ -63,6 +63,20 @@ typedef enum
     PHY_SPEED_10000,
 } phy_speed_t;
 
+static inline char *phy_get_speed_string(phy_speed_t speed)
+{
+    static char *speedStr[] = {
+        [PHY_SPEED_UNKNOWN] = "Auto", 
+        [PHY_SPEED_10] = "10M", 
+        [PHY_SPEED_100] = "100M", 
+        [PHY_SPEED_1000] = "1G", 
+        [PHY_SPEED_2500] = "2.5G", 
+        [PHY_SPEED_5000] = "5G", 
+        [PHY_SPEED_10000] = "10G"
+    };
+    return speedStr[speed];
+}
+
 typedef enum
 {
     PHY_DUPLEX_UNKNOWN,
@@ -115,6 +129,16 @@ typedef enum
 
 typedef void (*link_change_cb_t)(void *ctx);
 
+typedef enum {
+    INTER_PHY_TYPE_UNKNOWN,
+    INTER_PHY_TYPE_2P5GBASE_X,
+    INTER_PHY_TYPE_2P5GBASE_R,
+    INTER_PHY_TYPE_2P5GIDLE,
+    INTER_PHY_TYPE_5GBASE_R,
+    INTER_PHY_TYPE_5GBASE_X,
+    INTER_PHY_TYPE_5GIDLE,
+} inter_phy_type_t;
+
 /* Phy device */
 typedef struct phy_dev_s
 {
@@ -133,12 +157,18 @@ typedef struct phy_dev_s
     int delay_rx;
     int delay_tx;
     int disable_hd;
+    int disable_10m;
+    int disable_100m;
+    int disable_1000m;
+    int disable_2500m;
+    int disable_5000m;
+    int disable_10000m;
     int swap_pair;
     int flag;
     int loopback_save;
     int reset_gpio;
     int reset_gpio_active_hi;
-    int idle_stuffing;
+    inter_phy_type_t inter_phy_types;
     void *macsec_dev;
     /* For cascaded PHY */
     void *sw_port;
@@ -152,10 +182,21 @@ typedef struct phy_dev_s
 #define PHY_FLAG_CABLE_DIAG_ENABLED (1<<3)
 #define PHY_FLAG_TO_EXTSW           (1<<4)
 #define PHY_FLAG_CABLE_DIAG_INITED  (1<<5)
+#define PHY_FLAG_CONF_PAUSE_RX      (1<<6)
+#define PHY_FLAG_CONF_PAUSE_TX      (1<<7)
+#define PHY_FLAG_CONF_PAUSE_VALID   (1<<8)
 
 #define CAPS_TYPE_ADVERTISE      0
 #define CAPS_TYPE_SUPPORTED      1
 #define CAPS_TYPE_LP_ADVERTISED  2
+
+#define INTER_PHY_TYPE_2P5GBASE_X_M     (1<<INTER_PHY_TYPE_2P5GBASE_X)
+#define INTER_PHY_TYPE_2P5GBASE_R_M     (1<<INTER_PHY_TYPE_2P5GBASE_R)
+#define INTER_PHY_TYPE_2P5GIDLE_M       (1<<INTER_PHY_TYPE_2P5GIDLE)
+
+#define INTER_PHY_TYPE_5GBASE_X_M       (1<<INTER_PHY_TYPE_5GBASE_X)
+#define INTER_PHY_TYPE_5GBASE_R_M       (1<<INTER_PHY_TYPE_5GBASE_R)
+#define INTER_PHY_TYPE_5GIDLE_M         (1<<INTER_PHY_TYPE_5GIDLE)
 
 /* Phy driver */
 typedef struct phy_drv_s
@@ -195,6 +236,8 @@ typedef struct phy_drv_s
     int (*cable_diag_get) (phy_dev_t *phy_dev, int *enable);
     int (*auto_mdix_set) (phy_dev_t *phy_dev, int enable);
     int (*auto_mdix_get) (phy_dev_t *phy_dev, int *enable);
+    int (*wirespeed_set) (phy_dev_t *phy_dev, int enable);
+    int (*wirespeed_get) (phy_dev_t *phy_dev, int *enable);
     int (*macsec_oper) (phy_dev_t *phy_dev, void *data);
 } phy_drv_t;
 
@@ -374,12 +417,51 @@ static inline int phy_dev_apd_get(phy_dev_t *phy_dev, int *enable)
     return phy_dev->phy_drv->apd_get(phy_dev, enable);
 }
 
+static inline int cascade_phy_dev_apd_get(phy_dev_t *phy_dev, int *enable)
+{
+    int _enable;
+    int rc = 0;
+    phy_dev_t *cascade;
+
+    if (is_cascade_phy(phy_dev))
+    {
+        for (*enable = 0, cascade = cascade_phy_get_first(phy_dev); 
+            cascade; cascade = cascade_phy_get_next(cascade))
+        {
+            if (cascade->flag & PHY_FLAG_NOT_PRESENTED)
+                break;
+            rc |= phy_dev_apd_get(cascade, &_enable);
+            *enable |= _enable;
+        }
+        return rc;
+    }
+    return phy_dev_apd_get(phy_dev, enable);
+}
+
 static inline int phy_dev_apd_set(phy_dev_t *phy_dev, int enable)
 {
     if (!phy_dev->phy_drv->apd_set)
         return 0;
 
     return phy_dev->phy_drv->apd_set(phy_dev, enable);
+}
+
+static inline int cascade_phy_dev_apd_set(phy_dev_t *phy_dev, int enable)
+{
+    int rc = 0;
+    phy_dev_t *cascade;
+
+    if (is_cascade_phy(phy_dev))
+    {
+        for (cascade = cascade_phy_get_first(phy_dev); cascade; cascade = cascade_phy_get_next(cascade))
+        {
+            if (cascade->flag & PHY_FLAG_NOT_PRESENTED)
+                break;
+            rc |= phy_dev_apd_set(cascade, enable);
+        }
+        return rc;
+    }
+    return phy_dev_apd_set(phy_dev, enable);
 }
 
 static inline int phy_dev_cable_diag_run(phy_dev_t *phy_dev, int *result, int *pair_len)
@@ -521,6 +603,23 @@ static inline int phy_dev_auto_mdix_get(phy_dev_t *phy_dev, int *enable)
     return phy_dev->phy_drv->auto_mdix_get(phy_dev, enable);
 }
 
+static inline int phy_dev_wirespeed_set(phy_dev_t *phy_dev, int enable)
+{
+    if (!phy_dev->phy_drv->wirespeed_set)
+        return -1;
+
+    return phy_dev->phy_drv->wirespeed_set(phy_dev, enable);
+}
+
+static inline int phy_dev_wirespeed_get(phy_dev_t *phy_dev, int *enable)
+{
+    if (!phy_dev->phy_drv->wirespeed_get)
+        return -1;
+
+    return phy_dev->phy_drv->wirespeed_get(phy_dev, enable);
+}
+
+
 static inline void phy_dev_status_propagate(phy_dev_t *end_phy)
 {
     phy_dev_t *phy_dev;
@@ -650,19 +749,6 @@ static inline int cascade_phy_dev_isolate_phy(phy_dev_t *phy_dev, int isolate)
         return rc;
     }
     return phy_dev_isolate_phy(phy_dev, isolate);
-}
-
-static inline int cascade_phy_dev_apd_set(phy_dev_t *phy_dev, int enable)
-{
-    if (is_cascade_phy(phy_dev))
-    {
-        int rc = 0;
-        phy_dev_t *cascade;
-        for (cascade = cascade_phy_get_first(phy_dev); cascade; cascade = cascade_phy_get_next(cascade))
-            rc |= phy_dev_apd_set(cascade, enable);
-        return rc;
-    }
-    return phy_dev_apd_set(phy_dev, enable);
 }
 
 static inline int cascade_phy_dev_eee_set(phy_dev_t *phy_dev, int enable)
@@ -909,12 +995,6 @@ static inline phy_speed_t phy_mbps_2_speed(uint32_t speed_mbps)
             return (phy_speed_t)speeds[i];
     }
     return 0;
-}
-
-static inline char *phy_get_speed_string(phy_speed_t speed)
-{
-    static char *speedStr[] = {"Auto", "10M", "100M", "1G", "2.5G", "5G", "10G"};
-    return speedStr[speed];
 }
 
 static inline int phy_dev_macsec_oper(phy_dev_t *phy_dev, void *data)

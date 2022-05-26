@@ -201,6 +201,29 @@ void bcm_led_set_source(unsigned int serial_sel, unsigned int hwled_sel)
     return;
 }
 
+/* 
+ * Some LED can be updated at run time when system config chagnes. For example,
+ * in 63138 when GPHY4 switch from LAN port to WAN port, the HW LED channel 
+ * changes. Network driver use this function to update LED setting
+ */
+void bcm_led_update_source(unsigned int serial_sel, unsigned int serial_mask,
+        unsigned int hwled_sel, unsigned int hwled_mask)
+{
+    unsigned int val;
+    val = LED->serialLedShiftSel;
+    val &= ~serial_mask;
+    val |= serial_sel;
+    LED->serialLedShiftSel = val;
+
+    val = LED->hWLedEn;
+    val &= ~hwled_mask;
+    val |= hwled_sel;
+    LED->mask = val;
+    LED->hWLedEn = val;
+
+    return;
+}
+
 void bcm_common_led_init(void) {
     int i;
     int j;
@@ -380,8 +403,13 @@ static int bcm_common_led_linux_init(void)
     bcm_common_led_init();
     bcm_common_led_setAllSoftLedsOff();
     bcm_common_led_setInitial();
-
+#if defined(CONFIG_BCM963158)
+    bcm_ethsw_led_init(); 
+#endif
     return 0;
 }
 subsys_initcall(bcm_common_led_linux_init);
+
+EXPORT_SYMBOL(bcm_led_update_source);
+EXPORT_SYMBOL(bcm_led_zero_flash_rate);
 #endif /* ! _CFE_ */

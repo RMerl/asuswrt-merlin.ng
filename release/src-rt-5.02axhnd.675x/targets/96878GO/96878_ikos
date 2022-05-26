@@ -43,9 +43,9 @@ BRCM_KERNEL_DEBUG=y
 #
 # Toolchain selection
 #
-USER_ARCH_ARM=y
 PROFILE_ARCH=arm
-BRCM_UCLIBC=y
+BRCM_USE_STD_TOOLCHAIN=y
+BRCM_GLIBC=y
 
 
 # Root file system selection
@@ -323,7 +323,7 @@ BUILD_DPROXYWITHPROBE=
 #
 # BRCM_DRIVER_PWRMNGT is not set
 # BRCM_DRIVER_SIM_CARD is not set
-BRCM_DRIVER_PMD=m
+# BRCM_DRIVER_PMD is not set
 # BRCM_ETH_PWRSAVE is not set
 # BRCM_HOSTMIPS_PWRSAVE is not set
 # BUILD_WL_IDLE_PWRSAVE is not set
@@ -359,7 +359,8 @@ BRCM_DEFAULTCFG=""
 #
 # Management Protocols and User Interface Selection
 #
-BRCM_DRIVER_SERIAL=y
+# BRCM_DRIVER_SERIAL is not set
+ARM_PL011_SERIAL=y
 # BUILD_CONSOLED is not set
 # BUILD_CLI_MENU is not set
 # BUILD_CLI_CMD is not set

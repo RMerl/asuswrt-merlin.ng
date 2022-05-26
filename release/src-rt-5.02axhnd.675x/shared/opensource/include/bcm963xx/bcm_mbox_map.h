@@ -102,6 +102,7 @@ if used for io regiser */
 #if defined(_BCM96858_) || defined(CONFIG_BCM96858) \
    || defined(_BCM96846_) || defined(CONFIG_BCM96846) \
    || defined(_BCM96878_) || defined(CONFIG_BCM96878) \
+   || defined(_BCM96855_) || defined(CONFIG_BCM96855) \
    || defined(_BCM96856_) || defined(CONFIG_BCM96856) \
    || defined(_BCM963158_) || defined(CONFIG_BCM963158) \
    || defined(_BCM963178_) || defined(CONFIG_BCM963178) \
@@ -109,8 +110,8 @@ if used for io regiser */
 
 #define MISC_SW_DEBUG MISC->miscSWdebugNW
 /* bit 31 of this register is used for BOOT_INACTIVE_IMAGE_ONCE_REG */
-#define BCM_MBOX       MISC_SW_DEBUG[1]
-#define BCM_MBOX1      MISC_SW_DEBUG[0]
+#define BCM_MBOX       MISC_SW_DEBUG[0]
+#define BCM_MBOX1      MISC_SW_DEBUG[1]
 #define BCM_MBOX_STATUS    BCM_MBOX1
 #define BCM_MBOX_SOFT_RESET_SAFE_EN
 
@@ -166,7 +167,7 @@ MBOX not exceeding 32 bits
 #define BCM_MBOX_MSG1_SHIFT                      9
 
 #define BCM_MBOX1                                HS_SPI_PROFILES[7].polling_timeout
-#define BCM_MBOX                                 HS_SPI_PROFILES[7].polling_compare
+#define BCM_MBOX                                 HS_SPI_PROFILES[7].polling_and_mask
 
 #define HS_SPI_GLB_CTRL                          HS_SPI->hs_spiGlobalCtrl
 #define HS_SPI_GLB_CTRL_WD_RESET_SAFE_SHIFT      22
@@ -193,7 +194,7 @@ MBOX not exceeding 32 bits
 #define BCM_MBOX_SAFEMODE_SHIFT                  8
 #define BCM_MBOX_SAFEMODE_MASK                   0x1
 
-#define BCM_MBOX_INACTIVE_IMAGE_ONCE_SHIFT       30
+#define BCM_MBOX_INACTIVE_IMAGE_ONCE_SHIFT       31
 #define BCM_MBOX_INACTIVE_IMAGE_ONCE_MASK        0x1
 
 

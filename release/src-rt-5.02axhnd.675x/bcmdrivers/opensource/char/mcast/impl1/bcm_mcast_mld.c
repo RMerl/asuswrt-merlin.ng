@@ -262,6 +262,14 @@ int bcm_mcast_mld_wipe_group(bcm_mcast_ifdata *parent_if, int dest_ifindex, stru
             {
                if (BCM_IN6_ARE_ADDR_EQUAL(&mcast_group->grp, gpAddr) && (mcast_group->dst_dev == destDev))
                {
+                   __logInfo("Invoke bcm_mcast_mld_del_entry for grp %x...%x dstdev %s srcdev %s num_tags %d rep %x...%x",
+                             htons(mcast_group->grp.s6_addr16[0]), 
+                             htons(mcast_group->grp.s6_addr16[7]),
+                             mcast_group->dst_dev->name,
+                             mcast_group->from_dev->name,
+                             mcast_group->num_tags,
+                             htons(reporter_group->rep.s6_addr16[0]),
+                             htons(reporter_group->rep.s6_addr16[7]));
                   bcm_mcast_mld_del_entry(parent_if, mcast_group, &reporter_group->rep, NULL);
                }
             }
@@ -291,7 +299,15 @@ static void bcm_mcast_mld_reporter_timeout(bcm_mcast_ifdata *pif)
          {
             if (time_after_eq(jiffies, reporter->tstamp))
             {
-               bcm_mcast_mld_del_entry(pif, mcast_group, &reporter->rep, NULL);
+                __logInfo("Invoke bcm_mcast_mld_del_entry for grp %x...%x dstdev %s srcdev %s num_tags %d rep %x...%x",
+                          htons(mcast_group->grp.s6_addr16[0]), 
+                          htons(mcast_group->grp.s6_addr16[7]),
+                          mcast_group->dst_dev->name,
+                          mcast_group->from_dev->name,
+                          mcast_group->num_tags,
+                          htons(reporter->rep.s6_addr16[0]),
+                          htons(reporter->rep.s6_addr16[7]));
+                bcm_mcast_mld_del_entry(pif, mcast_group, &reporter->rep, NULL);
             }
          }
       }
@@ -454,6 +470,12 @@ void bcm_mcast_mld_update_bydev( bcm_mcast_ifdata *pif, struct net_device *dev, 
       {
          if (NULL == dev)
          {
+             __logInfo("Invoke bcm_mcast_mld_del_entry for grp %x...%x dstdev %s srcdev %s num_tags %d dev NULL",
+                       htons(mc_fdb->grp.s6_addr16[0]), 
+                       htons(mc_fdb->grp.s6_addr16[7]),
+                       mc_fdb->dst_dev->name,
+                       mc_fdb->from_dev->name,
+                       mc_fdb->num_tags);
             bcm_mcast_mld_del_entry(pif, mc_fdb, NULL, NULL);
          }
          else if ( (mc_fdb->dst_dev == dev) ||
@@ -462,10 +484,24 @@ void bcm_mcast_mld_update_bydev( bcm_mcast_ifdata *pif, struct net_device *dev, 
 #if defined(CONFIG_BLOG)
             if ((0 == mc_fdb->root) || (0 == activate))
             {
+                __logInfo("Invoke bcm_mcast_mld_del_entry for grp %x...%x dstdev %s srcdev %s num_tags %d dev %s",
+                          htons(mc_fdb->grp.s6_addr16[0]), 
+                          htons(mc_fdb->grp.s6_addr16[7]),
+                          mc_fdb->dst_dev->name,
+                          mc_fdb->from_dev->name,
+                          mc_fdb->num_tags,
+                          dev->name);
                bcm_mcast_mld_del_entry(pif, mc_fdb, NULL, NULL);
             }
             else
             {
+                __logInfo("Invoke bcm_mcast_blog_release for grp %x...%x dstdev %s srcdev %s num_tags %d dev %s",
+                          htons(mc_fdb->grp.s6_addr16[0]), 
+                          htons(mc_fdb->grp.s6_addr16[7]),
+                          mc_fdb->dst_dev->name,
+                          mc_fdb->from_dev->name,
+                          mc_fdb->num_tags,
+                          dev->name);
                bcm_mcast_blog_release(BCM_MCAST_PROTO_IPV6, (void *)mc_fdb);
                mc_fdb->blog_idx.fc.word = BLOG_KEY_FC_INVALID;
                mc_fdb->blog_idx.mc.word = BLOG_KEY_MCAST_INVALID;
@@ -500,8 +536,14 @@ void bcm_mcast_mld_update_bydev( bcm_mcast_ifdata *pif, struct net_device *dev, 
                    * which may be a valid scenario, in which case we delete the
                    * multicast entry.
                    */
+                __logInfo("Unable to activate blog, Invoke bcm_mcast_mld_del_entry for grp %x...%x dstdev %s srcdev %s num_tags %d dev %s",
+                          htons(mc_fdb->grp.s6_addr16[0]), 
+                          htons(mc_fdb->grp.s6_addr16[7]),
+                          mc_fdb->dst_dev->name,
+                          mc_fdb->from_dev->name,
+                          mc_fdb->num_tags,
+                          dev->name);
                   bcm_mcast_mld_del_entry(pif, mc_fdb, NULL, NULL);
-                  __logInfo("Unable to activate blog");
                }
             }
          }
@@ -544,6 +586,9 @@ void bcm_mcast_mld_wipe_reporter_for_port (bcm_mcast_ifdata *pif,
     struct hlist_head *head = NULL;
     t_mld_grp_entry *mc_fdb;
     
+    __logInfo("Wiping MLD snoop entries for Reporter %x...%x reporter dev %s pif %s", 
+              rep->s6_addr16[0], rep->s6_addr16[7], rep_dev ? rep_dev->name:"NULL", pif ? pif->dev->name : "NULL");
+
     spin_lock_bh(&pif->mc_mld_lock);
     for (hashIndex = 0 ; hashIndex < BCM_MCAST_HASH_SIZE ; hashIndex++)
     {
@@ -555,6 +600,14 @@ void bcm_mcast_mld_wipe_reporter_for_port (bcm_mcast_ifdata *pif,
             {
                 /* The reporter we're looking for has been found
                    in a record pointing to its old port */
+                __logInfo("Invoke bcm_mcast_mld_del_entry for grp %x...%x dstdev %s srcdev %s num_tags %d rep %x...%x",
+                          htons(mc_fdb->grp.s6_addr16[0]), 
+                          htons(mc_fdb->grp.s6_addr16[7]),
+                          mc_fdb->dst_dev->name,
+                          mc_fdb->from_dev->name,
+                          mc_fdb->num_tags,
+                          rep ? htons(rep->s6_addr16[0]):0,
+                          rep ? htons(rep->s6_addr16[7]):0);
                 bcm_mcast_mld_del_entry (pif, mc_fdb, rep, NULL);
             }
         }
@@ -571,6 +624,9 @@ void bcm_mcast_mld_wipe_reporter_by_mac (bcm_mcast_ifdata *pif,
     struct hlist_head *head = NULL;
     t_mld_grp_entry *mc_fdb;
 
+    __logInfo("Wiping MLD snoop entries for MAC %pM pif %s", 
+              repMac, pif ? pif->dev->name : "NULL");
+
     for (hashIndex = 0; hashIndex < BCM_MCAST_HASH_SIZE ; hashIndex++)
     {
         head = &pif->mc_ipv6_hash[hashIndex];
@@ -578,11 +634,59 @@ void bcm_mcast_mld_wipe_reporter_by_mac (bcm_mcast_ifdata *pif,
         {
             if (bcm_mcast_mld_rep_find(mc_fdb, NULL, repMac))
             {
+                __logInfo("Invoke bcm_mcast_mld_del_entry for grp %x...%x dstdev %s srcdev %s num_tags %d repMac %pM",
+                          htons(mc_fdb->grp.s6_addr16[0]), 
+                          htons(mc_fdb->grp.s6_addr16[7]),
+                          mc_fdb->dst_dev->name,
+                          mc_fdb->from_dev->name,
+                          mc_fdb->num_tags,
+                          repMac);
                 bcm_mcast_mld_del_entry (pif, mc_fdb, NULL, repMac);
             }
         }
     }
     bcm_mcast_mld_set_timer(pif);
+}
+
+void bcm_mcast_mld_wipe_grp_reporter_for_port (bcm_mcast_ifdata *pif,
+                                               struct in6_addr *grp, 
+                                               struct in6_addr *rep, 
+                                               struct net_device *rep_dev)
+{
+    int hashIndex;
+    struct hlist_node *n = NULL;
+    struct hlist_head *head = NULL;
+    t_mld_grp_entry *mc_fdb;
+    
+    __logInfo("Wiping MLD snoop entries for Reporter %x...%x reporter dev %s pif %s", 
+              rep->s6_addr16[0], rep->s6_addr16[7], rep_dev ? rep_dev->name:"NULL", pif ? pif->dev->name : "NULL");
+
+    spin_lock_bh(&pif->mc_mld_lock);
+    for (hashIndex = 0 ; hashIndex < BCM_MCAST_HASH_SIZE ; hashIndex++)
+    {
+        head = &pif->mc_ipv6_hash[hashIndex];
+        hlist_for_each_entry_safe(mc_fdb, n, head, hlist)
+        {
+            if (BCM_IN6_ARE_ADDR_EQUAL(&mc_fdb->grp, grp) &&
+                (bcm_mcast_mld_rep_find(mc_fdb, rep, NULL)) &&
+                (mc_fdb->dst_dev == rep_dev))
+            {
+                /* The reporter we're looking for has been found
+                   in a record pointing to its old port */
+                __logInfo("Invoke bcm_mcast_mld_del_entry for grp %x...%x dstdev %s srcdev %s num_tags %d rep %x...%x",
+                          htons(mc_fdb->grp.s6_addr16[0]), 
+                          htons(mc_fdb->grp.s6_addr16[7]),
+                          mc_fdb->dst_dev->name,
+                          mc_fdb->from_dev->name,
+                          mc_fdb->num_tags,
+                          rep ? htons(rep->s6_addr16[0]):0,
+                          rep ? htons(rep->s6_addr16[7]):0);
+                bcm_mcast_mld_del_entry (pif, mc_fdb, rep, NULL);
+            }
+        }
+    }
+    bcm_mcast_mld_set_timer(pif);
+    spin_unlock_bh(&pif->mc_mld_lock);
 }
 
 #if defined(CONFIG_BLOG)
@@ -661,6 +765,12 @@ void bcm_mcast_mld_process_blog_enable( bcm_mcast_ifdata *pif, int enable)
          {
             if (0 == mc_fdb->root)
             {
+                __logInfo("Invoke bcm_mcast_mld_del_entry for grp %x...%x dstdev %s srcdev %s num_tags %d",
+                          htons(mc_fdb->grp.s6_addr16[0]), 
+                          htons(mc_fdb->grp.s6_addr16[7]),
+                          mc_fdb->dst_dev->name,
+                          mc_fdb->from_dev->name,
+                          mc_fdb->num_tags);
                bcm_mcast_mld_del_entry(pif, mc_fdb, NULL, NULL);
             }
             else
@@ -684,8 +794,13 @@ void bcm_mcast_mld_process_blog_enable( bcm_mcast_ifdata *pif, int enable)
                    * which may be a valid scenario, in which case we delete the
                    * multicast entry.
                    */
+                   __logInfo("Unable to activate blog, Invoke bcm_mcast_mld_del_entry for grp %x...%x dstdev %s srcdev %s num_tags %d",
+                             htons(mc_fdb->grp.s6_addr16[0]), 
+                             htons(mc_fdb->grp.s6_addr16[7]),
+                             mc_fdb->dst_dev->name,
+                             mc_fdb->from_dev->name,
+                             mc_fdb->num_tags);
                   bcm_mcast_mld_del_entry(pif, mc_fdb, NULL, NULL);
-                  __logInfo("Unable to activate blog");
                }
             }
          }
@@ -710,54 +825,47 @@ static int bcm_mcast_mld_update(bcm_mcast_ifdata *pif,
                                      struct net_device *from_dev,
                                      uint32_t info)
 {
-   t_mld_grp_entry *dst;
-   int ret = 0;
-   struct hlist_head *head;
+    t_mld_grp_entry *dst;
+    int ret = 0;
+    struct hlist_head *head;
 
-   if (pif->brtype == BRTYPE_OVS) 
-   {
-       /* No snoop aging timers required for OvS bridges. OvS will handle snooping.
-          Only acceleration support is needed in multicast driver */
-       return ret;
-   }
-
-   head = &pif->mc_ipv6_hash[bcm_mcast_mld_hash(grp)];
-   hlist_for_each_entry(dst, head, hlist)
-   {
-      if (BCM_IN6_ARE_ADDR_EQUAL(&dst->grp, grp))
-      {
-         if((BCM_IN6_ARE_ADDR_EQUAL(src, &dst->src_entry.src)) &&
-            (mode == dst->src_entry.filt_mode) && 
-            (dst->from_dev == from_dev) &&
-            (dst->dst_dev == dst_dev) &&
-            (dst->info == info))
-         {
-            /* found entry - update TS */
-            t_mld_rep_entry *reporter = bcm_mcast_mld_rep_find(dst, rep, NULL);
-            if(reporter == NULL)
+    head = &pif->mc_ipv6_hash[bcm_mcast_mld_hash(grp)];
+    hlist_for_each_entry(dst, head, hlist)
+    {
+        if ( BCM_IN6_ARE_ADDR_EQUAL(&dst->grp, grp) )
+        {
+            if ( (BCM_IN6_ARE_ADDR_EQUAL(src, &dst->src_entry.src)) &&
+                 (mode == dst->src_entry.filt_mode) &&
+                 (dst->from_dev == from_dev) &&
+                 (dst->dst_dev == dst_dev) &&
+                 (dst->info == info) )
             {
-               reporter = kmem_cache_alloc(mcast_ctrl->ipv6_rep_cache, GFP_ATOMIC);
-               if(reporter)
-               {
-                  BCM_IN6_ASSIGN_ADDR(&reporter->rep, rep);
-                  reporter->tstamp = jiffies + (mcast_ctrl->mld_general_query_timeout_secs * HZ);
-                  memcpy(reporter->repMac, repMac, ETH_ALEN);
-                  reporter->rep_proto_ver = rep_proto_ver;
-                  list_add_tail(&reporter->list, &dst->rep_list);
-                  bcm_mcast_notify_event(BCM_MCAST_EVT_SNOOP_ADD, BCM_MCAST_PROTO_IPV6, dst, reporter);
-                  bcm_mcast_mld_set_timer(pif);
-               }
+                /* found entry - update TS */
+                t_mld_rep_entry *reporter = bcm_mcast_mld_rep_find(dst, rep, NULL);
+                if ( reporter == NULL )
+                {
+                    reporter = kmem_cache_alloc(mcast_ctrl->ipv6_rep_cache, GFP_ATOMIC);
+                    if ( reporter )
+                    {
+                        BCM_IN6_ASSIGN_ADDR(&reporter->rep, rep);
+                        reporter->tstamp = jiffies + (mcast_ctrl->mld_general_query_timeout_secs * HZ);
+                        memcpy(reporter->repMac, repMac, ETH_ALEN);
+                        reporter->rep_proto_ver = rep_proto_ver;
+                        list_add_tail(&reporter->list, &dst->rep_list);
+                        bcm_mcast_notify_event(BCM_MCAST_EVT_SNOOP_ADD, BCM_MCAST_PROTO_IPV6, dst, reporter);
+                        bcm_mcast_mld_set_timer(pif);
+                    }
+                } 
+                else
+                {
+                    reporter->tstamp = jiffies + (mcast_ctrl->mld_general_query_timeout_secs * HZ);
+                    bcm_mcast_mld_set_timer(pif);
+                }
+                ret = 1;
             }
-            else 
-            {
-               reporter->tstamp = jiffies + (mcast_ctrl->mld_general_query_timeout_secs * HZ);
-               bcm_mcast_mld_set_timer(pif);
-            }
-            ret = 1;
-         }
-      }
-   }
-   return ret;
+        }
+    }
+    return ret;
 }
 
 int bcm_mcast_mld_add(struct net_device *from_dev,
@@ -785,12 +893,32 @@ int bcm_mcast_mld_add(struct net_device *from_dev,
    if(!pif || !dst_dev || !grp|| !rep || !from_dev)
       return 0;
 
-   if(!(bcm_mcast_mld_control_filter(grp) ||
-      BCM_IN6_IS_ADDR_L2_MCAST(grp)))
+   __logInfo("from %s pif %s dst %s to_accel_dev %s mode %d info 0x%x clientmac %pM",
+              from_dev ? from_dev->name:"NULL", pif ? (pif->dev?pif->dev->name:"NULL"):"NULL",
+              dst_dev ? dst_dev->name:"NULL", to_accel_dev?to_accel_dev->name:"NULL",
+              mode, info, repMac);
+
+   BCM_MCAST_DBG_PRINT_V6_ADDR("RxGrp", grp->s6_addr16);
+   BCM_MCAST_DBG_PRINT_V6_ADDR("Client", rep->s6_addr16);
+   BCM_MCAST_DBG_PRINT_V6_ADDR("Src", src->s6_addr16);
+
+   if(!(bcm_mcast_mld_control_filter(grp)))
+   {
+      __logInfo("MLD control filter applied");
       return 0;
+   }
+
+   if(BCM_IN6_IS_ADDR_L2_MCAST(grp))
+   {
+      __logInfo("MLD L2 MCAST address, processing skipped");
+      return 0;
+   }
 
    if((MCAST_INCLUDE != mode) && (MCAST_EXCLUDE != mode))
+   {
+       __logInfo("MLD mode not supported");
       return 0;
+   }
 
    spin_lock_bh(&pif->mc_mld_lock);
    if (bcm_mcast_mld_update(pif, dst_dev, grp, rep, repMac, rep_proto_ver, mode, src, from_dev, info))
@@ -870,13 +998,26 @@ int bcm_mcast_mld_add(struct net_device *from_dev,
                (dst->src_entry.filt_mode == filt_mode) && 
                (dst->from_dev == from_dev))
          {
+             __logInfo("VLAN conflict or found a snoop entry that could not be accelerated");
             // HANDLE CONFLICT - REMOVE CONFLICTER UNLESS ROOT
             if (0 == dst->root)
             {
+                __logInfo("Invoke bcm_mcast_mld_del_entry for grp %x...%x dstdev %s srcdev %s num_tags %d",
+                             htons(dst->grp.s6_addr16[0]), 
+                             htons(dst->grp.s6_addr16[7]),
+                             dst->dst_dev->name,
+                             dst->from_dev->name,
+                             dst->num_tags);
                bcm_mcast_mld_del_entry(pif, dst, NULL, NULL);
             } 
             else if (dst->blog_idx.mc.word != BLOG_KEY_INVALID)
             {
+                __logInfo("Invoke bcm_mcast_blog_release for grp %x...%x dstdev %s srcdev %s num_tags %d",
+                             htons(dst->grp.s6_addr16[0]), 
+                             htons(dst->grp.s6_addr16[7]),
+                             dst->dst_dev->name,
+                             dst->from_dev->name,
+                             dst->num_tags);
                bcm_mcast_blog_release(BCM_MCAST_PROTO_IPV6, (void *)dst);
                dst->blog_idx.mc.word = BLOG_KEY_INVALID;
             }
@@ -906,12 +1047,31 @@ int bcm_mcast_mld_remove(struct net_device *from_dev,
    if(!pif || !dst_dev || !grp|| !rep || !from_dev)
       return 0;
 
-   if(!(bcm_mcast_mld_control_filter(grp) ||
-      BCM_IN6_IS_ADDR_L2_MCAST(grp)))
+   __logInfo("from %s pif %s dst %s mode %d info 0x%x",
+              from_dev ? from_dev->name:"NULL", pif ? (pif->dev?pif->dev->name:"NULL"):"NULL",
+              dst_dev ? dst_dev->name:"NULL", mode, info);
+
+   BCM_MCAST_DBG_PRINT_V6_ADDR("Group", grp->s6_addr16);
+   BCM_MCAST_DBG_PRINT_V6_ADDR("Client", rep->s6_addr16);
+   BCM_MCAST_DBG_PRINT_V6_ADDR("Src", src->s6_addr16);
+
+   if(!(bcm_mcast_mld_control_filter(grp)))
+   {
+       __logInfo("MLD control filter applied");
       return 0;
+   }
+
+   if(BCM_IN6_IS_ADDR_L2_MCAST(grp))
+   {
+      __logInfo("MLD L2 MCAST address, processing skipped");
+      return 0;
+   }
 
    if((MCAST_INCLUDE != mode) && (MCAST_EXCLUDE != mode))
+   {
+       __logInfo("MLD mode not supported");
       return 0;
+   }
 
    spin_lock_bh(&pif->mc_mld_lock);
    head = &pif->mc_ipv6_hash[bcm_mcast_mld_hash(grp)];
@@ -922,8 +1082,16 @@ int bcm_mcast_mld_remove(struct net_device *from_dev,
           (BCM_IN6_ARE_ADDR_EQUAL(&mc_fdb->src_entry.src, src)) &&
           (mc_fdb->from_dev == from_dev) &&
           (mc_fdb->dst_dev == dst_dev) &&
-          (mc_fdb->info == info))
+          (bcm_mcast_blog_cmp_rep_info(dst_dev, mc_fdb->info, info) == 0))
       {
+          __logInfo("Invoke bcm_mcast_mld_del_entry for grp %x...%x dstdev %s srcdev %s num_tags %d rep %x...%x",
+                    htons(mc_fdb->grp.s6_addr16[0]), 
+                    htons(mc_fdb->grp.s6_addr16[7]),
+                    mc_fdb->dst_dev->name,
+                    mc_fdb->from_dev->name,
+                    mc_fdb->num_tags,
+                    rep ? htons(rep->s6_addr16[0]):0,
+                    rep ? htons(rep->s6_addr16[7]):0);
          bcm_mcast_mld_del_entry(pif, mc_fdb, rep, NULL);
       }
    }
@@ -1051,7 +1219,7 @@ static void bcm_mcast_mld_display_entry(struct seq_file *seq,
    int               first;
    int               tstamp;
 
-   seq_printf(seq, "%-6s %-6s %-6s %-7s %02d    0x%04x   0x%04x%04x", 
+   seq_printf(seq, "%-6s %-6s %-6s %-7s %02d    0x%04x   0x%04x%04x 0x%x", 
               pif->dev->name, 
               dst->dst_dev->name, 
               dst->to_accel_dev->name, 
@@ -1059,7 +1227,8 @@ static void bcm_mcast_mld_display_entry(struct seq_file *seq,
               dst->num_tags,
               ntohs(dst->lan_tci),
               ((dst->wan_tci >> 16) & 0xFFFF),
-              (dst->wan_tci & 0xFFFF));
+              (dst->wan_tci & 0xFFFF),
+              dst->info);
 
    seq_printf(seq, " %08x:%08x:%08x:%08x",
               htonl(dst->grp.s6_addr32[0]),
@@ -1145,7 +1314,7 @@ int bcm_mcast_mld_display(struct seq_file *seq, bcm_mcast_ifdata *pif)
          dev_put(lowerDev);
       }
    }
-   seq_printf(seq, "bridge dstdev dstaccdev src-dev #tags lan-tci  wan-tci");
+   seq_printf(seq, "bridge dstdev dstaccdev src-dev #tags lan-tci  wan-tci info");
    seq_printf(seq, "    group                               mode source");
 #if defined(CONFIG_BLOG)
    seq_printf(seq, "                              timeout reporter");

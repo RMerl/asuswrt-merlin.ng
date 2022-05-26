@@ -344,6 +344,14 @@ CmsRet cmsNet_subnetIp6SitePrefix(const char *sp, UINT8 subnetId, UINT32 snPlen,
  */
 CmsRet cmsUtl_prefixMacToAddress(const char *prefix, UINT8 *mac, char *addr);
 
+/** Generate a EUI64 format address by prefix for a interface
+ *
+ * @param prefix     (IN)  prefix
+ * @param ifname     (IN)  name of interface
+ * @param ulAddr     (OUT) unqiue local address
+ * @param prefixLen  (OUT) prefix Length
+ */
+CmsRet cmsUtl_genEui64AddrByPrefix(const char *prefix, const char *ifName, char *ulAddr, UINT32 *prefixLen);
 
 /** Get unique local address of the interface by the prefix
  *

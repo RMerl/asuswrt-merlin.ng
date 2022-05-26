@@ -37,7 +37,6 @@ obj-$(CONFIG_NF_NAT_MASQUERADE_IPV4) += nf_nat_masquerade_ipv4.o
 
 ifdef BCM_KF # defined(CONFIG_BCM_KF_NETFILTER)
 obj-$(CONFIG_NF_NAT_PT) += nf_nat_pt.o
-obj-$(CONFIG_NF_NAT_RTSP) += nf_nat_rtsp.o
 endif #BCM_KF # defined(CONFIG_BCM_KF_NETFILTER)
 
 # NAT protocols (nf_nat)

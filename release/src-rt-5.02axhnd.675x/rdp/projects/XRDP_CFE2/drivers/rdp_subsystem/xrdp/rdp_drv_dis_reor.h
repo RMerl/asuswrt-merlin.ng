@@ -107,6 +107,7 @@ typedef struct
 	dsptchr_rnr_addr_cfg	dsptchr_rnr_cfg[NUM_OF_RUNNER_CORES];
 	uint8_t	                rg_available_tasks[RUNNER_GROUP_MAX_TASK_NUM];
 	uint32_t 				queue_en_vec;
+	uint16_t                total_viq_guaranteed_buf;
 } dsptchr_config;
 
 typedef struct

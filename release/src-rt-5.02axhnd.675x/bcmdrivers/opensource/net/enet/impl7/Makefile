@@ -6,7 +6,7 @@ NAME = bcm_enet
 
 obj-$(CONFIG_BCM_ENET) = $(NAME).o
 
-ifneq (,$(filter $(BRCM_CHIP),6858 6846 6856 6878))
+ifneq (,$(filter $(BRCM_CHIP),6858 6846 6856 6878 6855))
 ifneq ($(wildcard $(BRCMDRIVERS_DIR)/opensource/net/enet/impl7/enet_ingress),)
 obj-y += enet_ingress/
 endif
@@ -44,6 +44,10 @@ $(NAME)-objs += stub.o
 $(NAME)-objs += bcmenet_proc.o
 EXTRA_CFLAGS += -DENET_PROC
 
+ifneq ($(strip $(CONFIG_BRCM_QEMU)),)
+$(NAME)-objs += bcmenet_proc_qemu.o
+endif
+
 # Debug capability rx cpu traffic; depends on proc interface
 # EXTRA_CFLAGS += -DENET_DEBUG_RX_CPU_TRAFFIC
 
@@ -74,13 +78,13 @@ EXTRA_CFLAGS += -I$(SHARED_DIR)/opensource/drv/lport -I$(SHARED_DIR)/opensource/
 ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_6838_6848_),)
 $(NAME)-objs += ptp_1588_oren.o
 endif
-ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_6858_6846_6856_63158_6878_),)
+ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_6858_6846_6856_63158_6878_6855_),)
 $(NAME)-objs += ptp_1588_hwts.o
 endif
 endif
 
 # CPU ring implementation
-ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_6858_6846_6856_63158_6878_),)
+ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_6858_6846_6856_63158_6878_6855_),)
 RDP_RING = 1
 endif
 ifneq ($(strip $(RDP_RING)),)
@@ -120,7 +124,7 @@ ifneq ($(strip $(CONFIG_BCM_EPON)),)
 EXTRA_CFLAGS += -DEPON
 endif
 
-ifneq (,$(filter $(BRCM_CHIP),6838 6848 6858 6846 6856 63158 6878))
+ifneq (,$(filter $(BRCM_CHIP),6838 6848 6858 6846 6856 63158 6878 6855))
 ifeq ($(strip $(CONFIG_BCM_ARCHER)),)
 $(NAME)-objs += phy_drv_pon.o
 EXTRA_CFLAGS += -DPHY_PON
@@ -141,6 +145,12 @@ endif
 
 ifneq (,$(filter $(BRCM_CHIP),63158))
     EXTRA_CFLAGS += -DRUNNER_PFC_TX
+endif
+
+ifeq ($(strip $(CONFIG_BCM_PON)),)
+ifeq ($(strip $(CONFIG_BCM_DSL_XRDP)),)
+EXTRA_CFLAGS += -DENET_ARP_LCP_HI_PRIO
+endif
 endif
 
 ifneq (,$(filter $(BRCM_CHIP),63138 63148 4908 63158))

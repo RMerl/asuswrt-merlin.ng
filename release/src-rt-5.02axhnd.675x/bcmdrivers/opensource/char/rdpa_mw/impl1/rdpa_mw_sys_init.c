@@ -58,7 +58,6 @@
 #define RDPA_QM_SERVICE_QUEUE_SIZE "QmServiceSize"
 
 #define FC_TCP_ACK_PRIO_ENABLE "FcTcpAckPrioEn"
-#define FW_CLANG_DISABLE "FwClangDis"
 
 
 typedef enum
@@ -78,10 +77,11 @@ static int emac_map = 0;
 static int ext_sw_pid = BP_NO_EXT_SW;
 #if !defined(CONFIG_BCM963138) && !defined(CONFIG_BCM963148) && !defined(CONFIG_BCM94908) && !defined(CONFIG_BCM963158)
 /* scratchpad defaults */
+#ifndef CONFIG_BRCM_QEMU
 static char *wan_default_type = "GPON";
 static char *wan_oe_default_emac = "EMAC0";
 static char *gbe_wan_defautl_emac = "NONE";
-
+#endif
 #define base(x) ((x >= '0' && x <= '9') ? '0' : \
     (x >= 'a' && x <= 'f') ? 'a' - 10 : \
     (x >= 'A' && x <= 'F') ? 'A' - 10 : \
@@ -95,6 +95,7 @@ extern int drv_qm_get_max_dynamic_queue_number(void);
 static int rdpa_get_init_system_bp_params(rdpa_emac *gbe_wan_emac)
 {
     int rc = 0;
+#ifndef CONFIG_BRCM_QEMU
     int i;
     const ETHERNET_MAC_INFO* EnetInfos;
     EnetInfos = BpGetEthernetMacInfoArrayPtr();
@@ -120,7 +121,9 @@ static int rdpa_get_init_system_bp_params(rdpa_emac *gbe_wan_emac)
 #endif /* CONFIG_BCM_ETHWAN */
         }
     }
-
+#else
+    emac_map = 0xF; 
+#endif
     return rc;
 }
 
@@ -181,7 +184,7 @@ Exit:
     return count;
 }
 
-#if !defined(CONFIG_BCM963158) /* All PON Platforms */
+#if !defined(CONFIG_BCM963158) && !defined(CONFIG_BRCM_QEMU)/* All PON Platforms */
 static int wan_scratchpad_get(mw_wan_type *wan_type, rdpa_emac *wan_emac)
 {
     int rc;
@@ -366,36 +369,7 @@ int fc_tcp_ack_prio_ena_get(int *tcp_ack_prio_ena)
 
 int fw_clang_dis_get(int *fw_clang_dis)
 {
-#if defined(CONFIG_BCM96878) || defined(CONFIG_BCM96858) || defined(CONFIG_BCM963146)
-    int rc;
-    char buf[PSP_BUFLEN_16];
-#endif
-
-#ifdef CONFIG_BCM96878
-    *fw_clang_dis = 0; /* By Default 96878 chip runs C based FW */
-#else
-    *fw_clang_dis = 1; /* By Default Gen3 and Gen4 chips, and 963146, run Assembler based FW 
-						  Among all 4G platforms only 96858 can be switched to C version.
-						  Other platforms don't have C code compiled in.
-                       */
-#endif 
-
-    /* For 96858, 96878 and 963146 we allow to change the default */
-#if defined(CONFIG_BCM96878) || defined(CONFIG_BCM96858) || defined(CONFIG_BCM963146)
-    rc = scratchpad_get_or_init(FW_CLANG_DISABLE, buf, sizeof(buf), NULL, scratchpad_func_get);
-    if (rc < 0)
-        return rc;
-
-    if (!strcmp(buf ,"1"))
-    {
-        *fw_clang_dis = 1;
-    }
-    else if (!strcmp(buf ,"0")) 
-    {
-        *fw_clang_dis = 0;
-    }
-
-#endif 
+    *fw_clang_dis = 1; /* All platforms in this version don't have C code compiled in and can not be switched to C version. */
 
     return 0;
 }
@@ -552,7 +526,11 @@ int rdpa_init_system(void)
 
     /* Default values */
     sys_init_cfg.enabled_emac = 0;
+#ifndef CONFIG_BRCM_QEMU
     sys_init_cfg.gbe_wan_emac = rdpa_emac_none;
+#else
+    sys_init_cfg.gbe_wan_emac = rdpa_emac1; 
+#endif
     sys_init_cfg.ip_class_method = rdpa_method_fc;
     sys_init_cfg.runner_ext_sw_cfg.enabled = 0;
     sys_init_cfg.switching_mode = rdpa_switching_none;
@@ -561,8 +539,11 @@ int rdpa_init_system(void)
     rc = rdpa_get_init_system_bp_params(&sys_init_cfg.gbe_wan_emac);
     if (rc)
         goto exit;
-
-    wan_scratchpad_get(&wan_type, &sys_init_cfg.gbe_wan_emac);
+#ifndef CONFIG_BRCM_QEMU    
+   wan_scratchpad_get(&wan_type, &sys_init_cfg.gbe_wan_emac);
+#else
+    wan_type = mw_wan_type_gbe;
+#endif
 
     sys_cfg.mtu_size = RDPA_MTU;
 
@@ -603,8 +584,9 @@ int rdpa_init_system(void)
     rc = fc_tcp_ack_prio_ena_get(&tcp_ack_prio_ena);
     if (rc)
         goto exit;
+#ifndef CONFIG_BRCM_QEMU    
     blog_support_set_tcp_ack_mflows(tcp_ack_prio_ena);
-    
+#endif    
     rc = fw_clang_dis_get(&fw_clang_dis);
     if (rc)
         goto exit;

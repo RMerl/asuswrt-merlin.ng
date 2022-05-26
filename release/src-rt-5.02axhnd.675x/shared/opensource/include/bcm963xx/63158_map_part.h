@@ -38,6 +38,7 @@ extern "C" {
 #include "bcm_io_map.h"
 
 #define CHIP_FAMILY_ID_HEX 0x63158
+#define CHIP_63152_ID_HEX 0x63152
 
 #ifndef __ASSEMBLER__
 enum 
@@ -591,6 +592,7 @@ enum
 #define SWITCH_DIRECT_DATA_WR_REG   (SWITCH_REG_BASE + 0x00008UL)
 #define SWITCH_DIRECT_DATA_RD_REG   (SWITCH_REG_BASE + 0x0000cUL)
 #define SWITCH_CROSSBAR_REG         (SWITCH_REG_BASE + 0x000ccUL)
+#define SWITCH_P6_LED_CTRL_REG      (SWITCH_REG_BASE + 0x00088UL)
 
 /* XRDP UNIMAC */
 #define UNIMAC_BASE         BCM_IO_MAP(XRDP_IDX, XRDP_PHYS_BASE, UNIMAC_OFFSET)
@@ -10177,6 +10179,15 @@ typedef struct EthernetSwitchReg
     uint32 reserved2[4];                     /* 0x0030 - 0x003f */
     LED_CFG led_ctrl[9];                     /* 0x0040 - 0x00ab */
     LED_CFG led_wan_ctrl;                    /* 0x00ac - 0x00b7 */
+#define ETHSW_LED_CTRL_LNK_OVRD_EN           0x8000
+#define ETHSW_LED_CTRL_SPD_OVRD_EN           0x4000
+#define ETHSW_LED_CTRL_LNK_STATUS_OVRD       0x2000
+#define ETHSW_LED_CTRL_SPD_OVRD_10M          0x0000
+#define ETHSW_LED_CTRL_SPD_OVRD_100M         0x0400
+#define ETHSW_LED_CTRL_SPD_OVRD_1G           0x0800
+#define ETHSW_LED_CTRL_SPD_OVRD_2P5G         0x0c00
+#define ETHSW_LED_CTRL_LNK_SPD_MASK          0x3c00
+
 #define ETHSW_LED_CTRL_SPD0_ON               0x0
 #define ETHSW_LED_CTRL_SPD0_OFF              0x1
 #define ETHSW_LED_CTRL_SPD1_ON               0x0

@@ -135,7 +135,7 @@ int kerSysGetResetReason(void)
     int resetReason = 0;
 
 #if !defined(CONFIG_BCM96838) && !defined(CONFIG_BCM963268) && !defined(CONFIG_BCM960333) && !defined(CONFIG_BCM947189) && !defined(CONFIG_BCM963138) && !defined(CONFIG_BCM963148) 
-#if defined(CONFIG_BCM963158) || defined(CONFIG_BCM96846) || defined(CONFIG_BCM96856) || defined (CONFIG_947622) || defined (CONFIG_BCM963178) || defined(CONFIG_BCM94908)  || defined(CONFIG_BCM96858) || defined(CONFIG_BCM96848) || defined(CONFIG_BCM96878)
+#if defined(CONFIG_BCM963158) || defined(CONFIG_BCM96846) || defined(CONFIG_BCM96856) || defined (CONFIG_947622) || defined (CONFIG_BCM963178) || defined(CONFIG_BCM94908)  || defined(CONFIG_BCM96858) || defined(CONFIG_BCM96848) || defined(CONFIG_BCM96878) || defined(CONFIG_BCM96855)
     resetReason = TIMER->ResetReason;
 #endif    
 #endif    
@@ -149,7 +149,7 @@ int kerSysGetResetStatus(void)
     int resetStatus = 0;
 #if !defined(CONFIG_BCM96838) && !defined(CONFIG_BCM963268) && !defined(CONFIG_BCM960333) && !defined(CONFIG_BCM947189) 
 
-#if defined(CONFIG_BCM96846) || defined(CONFIG_BCM96878) || defined(CONFIG_BCM96856) || defined(CONFIG_947622) || defined(CONFIG_BCM963178) || (defined(CONFIG_BCM963158) && (CONFIG_BRCM_CHIP_REV != 0x63158A0))
+#if defined(CONFIG_BCM96846) || defined(CONFIG_BCM96878) || defined(CONFIG_BCM96856) || defined(CONFIG_947622) || defined(CONFIG_BCM963178) || defined(CONFIG_BCM96855) || (defined(CONFIG_BCM963158) && (CONFIG_BRCM_CHIP_REV != 0x63158A0))
     resetStatus = TOPCTRL->ResetStatus & RESET_STATUS_MASK;
 #elif defined(CONFIG_BCM94908) || defined(CONFIG_BCM96858) || defined(CONFIG_BCM96848) || defined(CONFIG_BCM963158) || defined(CONFIG_BCM963138) || defined(CONFIG_BCM963148) 
     resetStatus = TIMER->ResetStatus & RESET_STATUS_MASK;
@@ -464,7 +464,8 @@ void stopOtherCpu(void)
 #elif defined(CONFIG_BCM947622)
 #elif defined(CONFIG_BCM963178)
 #elif defined(CONFIG_BCM96878)
-    // FIXMET 6846 47622 63178 6878
+#elif defined(CONFIG_BCM96855)
+    // FIXMET 6846 47622 63178 6878 6855
 #else
 #if defined(CONFIG_SMP)
     stop_other_cpu();
@@ -552,7 +553,7 @@ void resetPwrmgmtDdrMips(void)
     GPIO_WATCHDOG->watchdog = 1;
 #elif defined(CONFIG_BCM96858) || defined(CONFIG_BCM963158) || defined(CONFIG_BCM96846) || defined(CONFIG_BCM96856)
     WDTIMER0->SoftRst = 1;
-#elif defined(CONFIG_BCM947622) || defined(CONFIG_BCM963178) || defined(CONFIG_BCM96878)
+#elif defined(CONFIG_BCM947622) || defined(CONFIG_BCM963178) || defined(CONFIG_BCM96878) || defined(CONFIG_BCM96855)
     WDTIMER0->WDTimerCtl = 1;
 #else
     TIMER->SoftRst = 1;
@@ -1014,7 +1015,7 @@ static DEFINE_SPINLOCK(pinmux_spinlock);
 void kerSysInitPinmuxInterface(unsigned int interface) {
     unsigned long flags;
     spin_lock_irqsave(&pinmux_spinlock, flags); 
-#if defined(CONFIG_BCM963138) || defined(CONFIG_BCM963148) || defined(CONFIG_BCM963381) || defined(CONFIG_BCM96848) || defined(CONFIG_BCM94908) || defined(CONFIG_BCM963158) || defined(CONFIG_BCM96846) || defined(CONFIG_BCM96878)
+#if defined(CONFIG_BCM963138) || defined(CONFIG_BCM963148) || defined(CONFIG_BCM963381) || defined(CONFIG_BCM96848) || defined(CONFIG_BCM94908) || defined(CONFIG_BCM963158) || defined(CONFIG_BCM96846) || defined(CONFIG_BCM96878) || defined(CONFIG_BCM96855)
     bcm_init_pinmux_interface(interface);
 #endif
     spin_unlock_irqrestore(&pinmux_spinlock, flags); 
@@ -1055,6 +1056,8 @@ int kerSysGetChipId() {
         r = 0x68460;
 #elif defined(CONFIG_BCM96878)
         r = 0x6878;
+#elif defined(CONFIG_BCM96855)
+        r = 0x6855;
 #elif defined(CONFIG_BCM96856)
         r = 0x68560;
 #elif defined(CONFIG_BCM960333)
@@ -1212,6 +1215,7 @@ int kerSysGetPciePortEnable(int port)
     {
         case 0x68460:
         case 0x68461:
+        case 0x68464:    // 68461S
             if ((port==0) || (port==1))
                 ret = 1;
             else
@@ -1250,10 +1254,17 @@ int kerSysGetPciePortEnable(int port)
             break;
     }
 #elif defined (CONFIG_BCM96856)
-    if ((port==0) || (port==1) || (port==2))
-        ret = 1;
-    else
+    unsigned int chipId = UtilGetChipId();
+
+    if (chipId==0x68560B)
         ret = 0;
+    else
+    {
+        if ((port==0) || (port==1) || (port==2))
+            ret = 1;
+        else
+            ret = 0;
+    }
 #endif
 
     /* In case of dual lane on PCIe0, PCIe1 isn't used */
@@ -1408,6 +1419,7 @@ int kerSysGetUsbHostPortEnable(int port)
         case 0x68460:
         case 0x68461:
         case 0x68463:    // 6846U
+        case 0x68464:    // 68461S
             if ((port==0) || (port==1))
                 ret = 1;
             else
@@ -1451,10 +1463,35 @@ int kerSysGetUsbHostPortEnable(int port)
             break;
     }
 #elif defined(CONFIG_BCM96856)
-    if ((port==0) || (port==1))
-        ret = 1;
-    else
+    unsigned int chipId = UtilGetChipId();
+
+    if (chipId==0x68560B)
         ret = 0;
+    else
+    {
+        if ((port==0) || (port==1))
+            ret = 1;
+        else
+            ret = 0;
+    }
+#elif defined(CONFIG_BCM96855)
+    unsigned int chipId = UtilGetChipId();
+
+    switch (chipId)
+    {
+        case 0x68552:    // 68552
+        case 0x68552C:   // 68552C
+        case 0x68252:    // 68252
+        case 0x68252C:   // 68252C
+            if ((port==0) || (port==1))
+                ret = 1;
+            else
+                ret = 0;
+            break;
+        default:
+            ret = 0;
+            break;
+    }
 #endif	
 
     if (BpGetUsbDis(&usb_dis) == BP_SUCCESS && usb_dis)
@@ -1467,7 +1504,7 @@ EXPORT_SYMBOL(kerSysGetUsbHostPortEnable);
 int kerSysGetUsbDeviceEnable(void)
 {
     int ret = 1;
-#if defined (CONFIG_BCM96838) || defined (CONFIG_BCM96848) || defined(CONFIG_BCM96858) || defined(CONFIG_BCM96846) || defined(CONFIG_BCM96856) || defined (CONFIG_BCM96878)
+#if defined (CONFIG_BCM96838) || defined (CONFIG_BCM96848) || defined(CONFIG_BCM96858) || defined(CONFIG_BCM96846) || defined(CONFIG_BCM96856) || defined (CONFIG_BCM96878) || defined (CONFIG_BCM96855)
     ret = 0;
 #endif    
 

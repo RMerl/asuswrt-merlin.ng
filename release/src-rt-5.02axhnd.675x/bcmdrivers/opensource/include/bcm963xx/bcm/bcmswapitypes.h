@@ -170,10 +170,12 @@ enum {
     ETHSWIFSTP,
     ETHSWMACLMT, /* 90 */
 
+#if 0   /* skip Andrew code */
     // add by Andrew
     ETHSWARLDUMP = 201,
     ETHSWMIBDUMP,
     ETHSWPORTDUMP,
+#endif
 };
 
 typedef struct cfpArg_s {
@@ -387,6 +389,7 @@ enum phy_cfg_flag {
 #define IFNAMSIZ  16
 #endif
 
+#if 0   /* skip Andrew code */
 /* eth switch mac entry -- add by Andrew 2020/05/04 */
 typedef struct ethsw_mac_entry_s {
     unsigned char mac[6];
@@ -413,6 +416,7 @@ typedef struct ethsw_port_stats_s {
     uint32 rxDiscards;
 } ethsw_port_stats;
 /* end of add */
+#endif
 
 struct ethswctl_data
 {
@@ -446,8 +450,10 @@ struct ethswctl_data
     {
         cfpArg_t cfpArgs;
 
+#if 0   /* skip Andrew code */
         ethsw_mac_table mac_table;  // add by Andrew
 		ethsw_port_stats port_stats; // add by Andrew
+#endif
 
         struct
         {

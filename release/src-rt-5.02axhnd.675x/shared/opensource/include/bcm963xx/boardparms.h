@@ -590,7 +590,8 @@ extern "C" {
 #if defined(CONFIG_BCM96858) || defined(_BCM96858_) || \
     defined(CONFIG_BCM96856) || defined(_BCM96856_) || \
     defined(CONFIG_BCM96846) || defined(_BCM96846_) || \
-    defined(CONFIG_BCM96878) || defined(_BCM96878_)
+    defined(CONFIG_BCM96878) || defined(_BCM96878_) || \
+    defined(CONFIG_BCM96855) || defined(_BCM96855_)
 #define BP_MAX_SWITCH_PORTS                     9
 #else
 #define BP_MAX_SWITCH_PORTS                     8
@@ -791,6 +792,7 @@ typedef struct {
   unsigned short speedLed100;
   unsigned short speedLed1000;
   unsigned short LedLan;
+  unsigned short LedLink;
 } LED_INFO;
 
 /* boardparms-based PHY initialization mechanism */
@@ -1027,17 +1029,18 @@ typedef struct {
 #define PORT_FLAG_SWAP_PAIR         (1 << 5)
 #define PORT_FLAG_DETECT            (1 << 6)
 #define PORT_FLAG_AGGREGATE_SKIP    (1 << 7)
+#define PORT_FLAG_BASE_R            (1 << 8)
 
-#define ATTACHED_FLAG_SHIFT    8
-#define ATTACHED_FLAG_CONTROL  (1 << ATTACHED_FLAG_SHIFT)
-#define ATTACHED_FLAG_ES       (2 << ATTACHED_FLAG_SHIFT)
-
-#define PORT_FLAG_LANWAN_SHIFT      7
+#define PORT_FLAG_LANWAN_SHIFT      9
 #define PORT_FLAG_LANWAN_M          (3 << PORT_FLAG_LANWAN_SHIFT)
 #define PORT_FLAG_LANWAN_BOTH       (0 << PORT_FLAG_LANWAN_SHIFT)
 #define PORT_FLAG_WAN_ONLY          (1 << PORT_FLAG_LANWAN_SHIFT)
 #define PORT_FLAG_WAN_PREFERRED     (2 << PORT_FLAG_LANWAN_SHIFT)
 #define PORT_FLAG_LAN_ONLY          (3 << PORT_FLAG_LANWAN_SHIFT)
+
+#define ATTACHED_FLAG_SHIFT         11
+#define ATTACHED_FLAG_CONTROL       (1 << ATTACHED_FLAG_SHIFT)
+#define ATTACHED_FLAG_ES            (2 << ATTACHED_FLAG_SHIFT)
 
 #define EXTSW_CONNECTED_M       1
 #define EXTSW_CONNECTED_S       27
@@ -1066,8 +1069,10 @@ typedef struct {
 
 /* MII - RvMII connection. Force Link to 100FD */
 #define MII_DIRECT               (PHY_LNK_CFG_VALID | FORCE_LINK_100FD | MAC_CONN_VALID | MAC_MAC_IF | MAC_IF_MII)
-#define RGMII_DIRECT             (PHY_LNK_CFG_VALID | FORCE_LINK_1000FD | MAC_CONN_VALID | MAC_MAC_IF | MAC_IF_RGMII)
+#define RGMII_DIRECT_1P8V        (PHY_LNK_CFG_VALID | FORCE_LINK_1000FD | MAC_CONN_VALID | MAC_MAC_IF | MAC_IF_RGMII_1P8V)
+#define RGMII_DIRECT_2P5V        (PHY_LNK_CFG_VALID | FORCE_LINK_1000FD | MAC_CONN_VALID | MAC_MAC_IF | MAC_IF_RGMII_2P5V)
 #define RGMII_DIRECT_3P3V        (PHY_LNK_CFG_VALID | FORCE_LINK_1000FD | MAC_CONN_VALID | MAC_MAC_IF | MAC_IF_RGMII_3P3V)
+#define RGMII_DIRECT             RGMII_DIRECT_2P5V
 #define GMII_DIRECT              (PHY_LNK_CFG_VALID | FORCE_LINK_1000FD | MAC_CONN_VALID | MAC_MAC_IF | MAC_IF_GMII)
 #define TMII_DIRECT              (PHY_LNK_CFG_VALID | FORCE_LINK_200FD | MAC_CONN_VALID | MAC_MAC_IF | MAC_IF_TMII)
 
@@ -1082,8 +1087,10 @@ typedef struct {
 #define IsWanPort(id)       (((id) & PHYCFG_VALID)?((id) & BCM_WAN_PORT):(((id) & BCM_WAN_PORT) && (((id) & PHYID_LSBYTE_M) != 0xFF)))
 #define IsPhyConnected(id)  (((id) & MAC_CONN_VALID)?(((id) & MAC_CONNECTION) != MAC_MAC_IF):(((id) & PHYID_LSBYTE_M) != 0xFF))
 #define IsExtPhyId(id)      (((id) & PHY_INTEGRATED_VALID)?((id) & PHY_EXTERNAL):(((id) & BCM_PHY_ID_M) >= 0x10))
-#define IsRgmiiDirect(id)   (((id) & RGMII_DIRECT) == RGMII_DIRECT)
+#define IsRgmiiDirect_1P8V(id)   (((id) & RGMII_DIRECT_1P8V) == RGMII_DIRECT_1P8V)
+#define IsRgmiiDirect_2P5V(id)   (((id) & RGMII_DIRECT_2P5V) == RGMII_DIRECT_2P5V)
 #define IsRgmiiDirect_3P3V(id)   (((id) & RGMII_DIRECT_3P3V) == RGMII_DIRECT_3P3V)
+#define IsRgmiiDirect(id)   IsRgmiiDirect_2P5V(id)
 #define IsRGMII_1P8V(id)    (((id) & MAC_IFACE) == MAC_IF_RGMII_1P8V)
 #define IsRGMII_2P5V(id)    (((id) & MAC_IFACE) == MAC_IF_RGMII_2P5V)
 #define IsRGMII_3P3V(id)    (((id) & MAC_IFACE) == MAC_IF_RGMII_3P3V)
@@ -1212,6 +1219,8 @@ enum pmd_polarity
 #define BP_DDR_SPEED_933_13_13_13       15
 #define BP_DDR_SPEED_1067_15_15_15      16   /* For DDR4 */
 #define BP_DDR_SPEED_1067_16_16_16      17   /* For DDR4 */
+#define BP_DDR_SPEED_1200_17_17_17      18   /* For DDR4 */
+#define BP_DDR_SPEED_1200_18_18_18      19   /* For DDR4 */
 #define BP_DDR_SPEED_CUSTOM_1           27
 #define BP_DDR_SPEED_CUSTOM_2           28
 #define BP_DDR_SPEED_CUSTOM_3           29
@@ -1693,6 +1702,7 @@ int BpGetSpiSlaveProtoRev( unsigned short *pusValue );
 int BpGetSimInterfaces( unsigned short *pusValue );
 int BpGetSlicInterfaces( unsigned short *pusValue );
 int BpGetAePolarity( unsigned short *pusValue );
+int BpGetPonSMTCTxDisGpio( unsigned short *pusValue );
 int BpGetPonTxEnGpio( unsigned short *pusValue );
 int BpGetPonRxEnGpio( unsigned short *pusValue );
 int BpGetPonResetGpio( unsigned short *pusValue );
@@ -1723,6 +1733,7 @@ int BpGetTsync1ppsPin( unsigned short *pusValue );
 int BpGetTsyncPonUnstableGpio( unsigned short *pusValue );
 
 int BpGetAllPinmux(int maxnum, int *outcnt, int *errcnt, unsigned short *pusFunction, unsigned int *pulMuxInfo);
+int BpGrepPinmuxListByPort(enum bp_id id, short port, unsigned short gpionum, unsigned int *pulMuxInfo); 
 int BpGetIfacePinmux(unsigned int interface, int maxnum, int *outcnt, int *errcnt, unsigned short *pusFunction, unsigned int *pulMuxInfo);
 int BpGetMemoryConfig( unsigned int *pulValue );
 int BpGetBatteryEnable( unsigned short *pusValue );
@@ -1829,6 +1840,10 @@ int BpGetSpiMosiGpio( unsigned short *pusValue );
 
 int BpGetWL0ActLedGpio( unsigned short *pusValue );
 int BpGetWL1ActLedGpio( unsigned short *pusValue );
+
+#if defined(CONFIG_BCM96855) || defined(_BCM96855_)
+int BpMapGpioToLed(unsigned int gpio, unsigned int *led);
+#endif 
 
 #endif /* __ASSEMBLER__ */
 

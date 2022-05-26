@@ -95,6 +95,9 @@ static inline u64 arch_counter_get_cntvct(void)
 {
 #if defined(CONFIG_BCM_KF_ARM_BCM963XX) && defined(LVCNT)
 	u64 cval, snap_lvcnt;
+	register unsigned long irq;
+
+	local_irq_save(irq);
 	snap_lvcnt = lvcnt;
 	isb();
 	asm volatile("mrrc p15, 1, %Q0, %R0, c14" : "=r" (lvcnt));
@@ -107,6 +110,8 @@ static inline u64 arch_counter_get_cntvct(void)
 		cval = snap_lvcnt;
 	    }
 	}
+	local_irq_restore(irq);
+
 	return cval;
 #else
 	u64 cval;

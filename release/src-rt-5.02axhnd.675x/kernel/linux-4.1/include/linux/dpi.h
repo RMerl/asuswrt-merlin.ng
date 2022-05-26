@@ -17,11 +17,15 @@
 #define DPI_URL_STOP_CLASSIFY_BIT	9
 #define DPI_CLASSIFICATION_STOP_BIT	14
 #define DPI_CT_INIT_FROM_WAN_BIT	15
+#define DPI_CT_DS_BYPASS_BIT		29
+#define DPI_CT_US_BYPASS_BIT		30
 #define DPI_CT_BLOCK_BIT		31
 
 #define DPI_NL_CHANGE_MASK		(1 << DPI_CT_BLOCK_BIT)
 
 #define DPI_URLINFO_MAX_HOST_LEN	64
+/* 256 was chosen as the max length of a hostname in a DHCP packet is 255. */
+#define DPI_HOSTNAME_MAX_LEN		256
 
 #define dpi_ct_init_from_wan(ct) \
 	test_bit(DPI_CT_INIT_FROM_WAN_BIT, &(ct)->dpi.flags)
@@ -46,6 +50,8 @@ struct dpi_dev {
 	u16			vendor;
 	u16			os;
 	u16			os_class;
+	u16			prio;
+	char			hostname[DPI_HOSTNAME_MAX_LEN];
 
 	struct dpi_ct_stats	us;
 	struct dpi_ct_stats	ds;
@@ -84,6 +90,15 @@ struct dpi_hooks {
 };
 
 struct nf_conn;
+
+/* dpi notification chain */
+struct notifier_block;
+enum {
+	DPI_NOTIFY_DEVICE,
+};
+int dpi_register_notifier(struct notifier_block *nb);
+int dpi_unregister_notifier(struct notifier_block *nb);
+int dpi_notify(long event, void *data);
 
 /* ----- dpicore driver functions ----- */
 struct dpi_info *dpi_info_get(struct nf_conn *conn);

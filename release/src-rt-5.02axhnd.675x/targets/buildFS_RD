@@ -6,8 +6,12 @@ source $KERNEL_DIR/.config
 if [ "$BRCM_IKOS" = "y" ]; then
 # ikos need a simple init to just run the busybox shell
    rm -f $TARGET_FS/etc/inittab
-   sed -e 's/^::respawn.*sh.*/::respawn:-\/bin\/sh/' -e 's/^::sysinit.*sh.*/::sysinit:\/bin\/sh -l -c \/etc\/init.sh/' $FSSRC_DIR/etc/inittab > $TARGET_FS/etc/inittab
-   echo -e "\x23\x21bin/sh\nmount -t proc /proc /proc\nmount -t sysfs none /sys" > $TARGET_FS/etc/init.sh
+   sed -e 's/^::respawn.*sh.*/::respawn:-\/bin\/sh/' -e 's/^::sysinit.*sh.*/::sysinit:\/bin\/sh -l -c \/etc\/init.sh/' $BUILD_DIR/userspace/public/apps/scripts/consoled/inittab > $TARGET_FS/etc/inittab
+   echo -e "\x23\x21bin/sh\nmount -t proc /proc /proc\nmount -t sysfs none /sys\n" > $TARGET_FS/etc/init.sh
+   if [ "$CONFIG_BRCM_QEMU" = "y" ]; then   
+        cat $SHARED_DIR/opensource/drv/qemu/qemu_init.sh >> $TARGET_FS/etc/init.sh
+        cp $SHARED_DIR/opensource/drv/qemu/passwd $TARGET_FS/data/
+   fi
    chmod +x $TARGET_FS/etc/init.sh
 # ikos is too slow for using compressed SquashFS, so we are disabling the compression. Make sure kernel creates large enough ramdisk for the uncompressed fs image
    $HOSTTOOLS_DIR/mksquashfs $TARGET_FS $PROFILE_DIR/ramdisk -noappend -all-root -noI -noD -noF

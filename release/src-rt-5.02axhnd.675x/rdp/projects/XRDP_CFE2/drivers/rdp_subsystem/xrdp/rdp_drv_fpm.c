@@ -125,10 +125,10 @@ bdmf_error_t drv_fpm_alloc_buffer(uint32_t packet_len, uint32_t *buff_num)
         return BDMF_ERR_NOMEM;
 
 #if defined (BCM6858) || defined (BCM6836)
-    fpm_pool = fpm_pool; /* fix error in CFE compilation */
+    fpm_pool = fpm_pool; 
     *buff_num = (ddr_pool << 16) | token_index;
 #else
-    *buff_num = (fpm_pool << 16) | token_index;
+    *buff_num = (fpm_pool << FPM_POOL_ID_SHIFT) | token_index;
 #endif
 
     return rc;
@@ -142,8 +142,8 @@ bdmf_error_t drv_fpm_free_buffer(uint32_t packet_len, uint32_t buff_num)
 {
 #ifndef RDP_SIM  
     bdmf_boolean token_valid = 1;
-    bdmf_boolean ddr_pool = (buff_num >> 16) & 1;
-    uint32_t token_index = buff_num & 0xFFFF;
+    bdmf_boolean ddr_pool = 0;
+    uint32_t token_index = buff_num & FPM_INDX_MASK;
     bdmf_error_t rc = 0;
 
     if (packet_len <= fpm_cfg.buf_size)
@@ -157,7 +157,7 @@ bdmf_error_t drv_fpm_free_buffer(uint32_t packet_len, uint32_t buff_num)
 
     return rc;
 #else
-    rdp_cpu_fpm_free(buff_num);   
+    rdp_cpu_fpm_free(buff_num & FPM_INDX_MASK);
     return 0;
 #endif    
 }

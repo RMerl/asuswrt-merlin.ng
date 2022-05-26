@@ -404,7 +404,7 @@ int wl_wfd_registerdevice(int wfd_idx, struct net_device *dev)
         WL_ERROR(("%s failed wfd_idx %d\n", __FUNCTION__, wfd_idx));
     return ret;
 #else /* BCM_AWL */
-	wl_awl_register_dev(dev);
+    wl_awl_register_dev(dev);
     return 0;
 #endif /* BCM_AWL */
 }
@@ -421,7 +421,7 @@ int wl_wfd_unregisterdevice(int wfd_idx, struct net_device *dev)
 
     return ret;
 #else /* BCM_AWL */
-	wl_awl_unregister_dev(dev);
+    wl_awl_unregister_dev(dev);
     return 0;
 #endif /* BCM_AWL */
 }

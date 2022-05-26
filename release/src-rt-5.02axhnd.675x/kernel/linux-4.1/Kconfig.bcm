@@ -3,6 +3,9 @@ if (BCM_KF_MISC_MAKEFILE)
 config BRCM_IKOS
 	bool "IKOS"
 
+config BRCM_QEMU
+	bool "QEMU"
+
 config BCM_CHIP_NUMBER
 	int "numerical value of chipid"
 
@@ -61,6 +64,16 @@ config BCM96846
 
 config BCM96878
     bool "96878"
+    depends on ARM
+    depends on BCM_KF_ARM_BCM963XX
+    select ARM_AMBA
+    select ARCH_MULTIPLATFORM
+    select EMBEDDED
+    select COMMON_CLK
+    select BCM_CA7_SMP
+
+config BCM96855
+    bool "96855"
     depends on ARM
     depends on BCM_KF_ARM_BCM963XX
     select ARM_AMBA
@@ -214,7 +227,7 @@ config DEBUG_UART_ADDR
 	hex
 	default 0xfffe8600 if (BCM963138) || (BCM963148)
 	default 0xff800640 if (BCM96846)
-	default 0xff812000 if (BCM947622) || (BCM963178) || (BCM96878)
+	default 0xff812000 if (BCM947622) || (BCM963178) || (BCM96878) || (BCM96855)
 	depends on BCM_KF_ARM_BCM963XX
 	depends on ARM
 	help
@@ -247,6 +260,13 @@ config BCM6878_SIM
     depends on BCM96878
     help
       BCM6878 for simulation
+
+config BCM6855_SIM
+    bool "6855 SIM"
+    default n
+    depends on BCM96855
+    help
+      BCM6855 for simulation
 
 config BCM47622_SIM
 	bool "47622 SIM"
@@ -394,6 +414,10 @@ config BCM_ARCHER_WLAN
 config BCM_ARCHER_GSO
 	bool "Archer Generic Segmentation Offload (GSO)"
 
+config BCM_ARCHER_CPU_AFFINITY
+	int "Archer Thread CPU Affinity"
+	depends on BCM_ARCHER
+
 config BCM_ARCHER_SIM
 	bool "Archer Simulation"
 
@@ -464,7 +488,79 @@ config BCM_BPM_BUF_MEM_PRCNT
 	int "Buffer Memory as % of Total Memory"
 	range 1 100
 	default 15
+	depends on BCM_BPM && (!BCM_BPM_DYNAMIC)
+	help
+	  This option defines the % of memory to use for BPM buffers.
+
+config BCM_BPM_DYNAMIC
+	bool "Dynamic BPM Buffer Pool"
 	depends on BCM_BPM
+	default n
+	help
+	  This option enables Dynamic BPM Buffer Pool with ability to expand and shrink.
+
+config BCM_BPM_DYNAMIC_TYPE_PRCNT
+	bool "% based Dynamic BPM Buffer Pool"
+	default y
+	depends on BCM_BPM_DYNAMIC
+	help
+	  This option enables % based buffers for Dynamic BPM Buffer Pool.
+
+config BCM_BPM_DYNAMIC_PRCNT_MAX_BUF
+	int "Max Buffer allocation as % of Total memory"
+	range 1 100
+	depends on BCM_BPM_DYNAMIC_TYPE_PRCNT
+	help
+	  This option enables % for max buffers for Dynamic BPM Buffer Pool.
+
+config BCM_BPM_DYNAMIC_PRCNT_INIT_BUF
+	int "Initial Buffer allocation as % of Total memory"
+	range 1 100
+	depends on BCM_BPM_DYNAMIC_TYPE_PRCNT
+	help
+	  This option enables % for initial buffers for Dynamic BPM Buffer Pool.
+
+config BCM_BPM_DYNAMIC_TYPE_ABS
+	bool "Abs Number based Dynamic BPM Buffer Pool"
+	default n
+	depends on BCM_BPM_DYNAMIC
+	help
+	  This option enables absolute number based buffers for Dynamic BPM Buffer Pool.
+
+config BCM_BPM_DYNAMIC_ABS_MAX_BUF
+	int "Max Number of Buffers for Dynamic BPM Buffer Pool"
+	range 512 262144
+	depends on BCM_BPM_DYNAMIC_TYPE_ABS
+	help
+	  This option enables Max Number of Buffers for Dynamic BPM Buffer Pool.
+
+config BCM_BPM_DYNAMIC_ABS_INIT_BUF
+	int "Initial Number of Buffers for Dynamic BPM Buffer Pool"
+	range 512 262144
+	depends on BCM_BPM_DYNAMIC_TYPE_ABS
+	help
+	  This option enables initial Number of Buffers for Dynamic BPM Buffer Pool.
+
+config BCM_BPM_DYNAMIC_AVAIL_LOW_TH
+	int "Threshold for available buffers that triggers expansion"
+	range 128 32768
+	depends on BCM_BPM_DYNAMIC
+	help
+	  This option configures threshold for available buffers that triggers expansion.
+
+config BCM_BPM_DYNAMIC_EXPAND_STEP_SIZE
+	int "Number of buffers to allocate during each expansion cycle"
+	range 128 32768
+	depends on BCM_BPM_DYNAMIC
+	help
+	  This option configures number of buffers to allocate during each expansion cycle.
+
+config BCM_BPM_DYNAMIC_SHRINK_STEP_SIZE
+	int "Number of buffers to free during each shrink cycle"
+	range 8 32768
+	depends on BCM_BPM_DYNAMIC
+	help
+	  This option configures number of buffers to free during each shrink cycle.
 
 config BCM_BPM_BUF_TRACKING
 	bool "Buffer Tracking Enabled"
@@ -539,7 +635,7 @@ config BCM_IUDMA
 
 config BCM_RDPA_BRIDGE
 	tristate "Support for Runner bridge"
-	depends on BCM96838 || BCM96848 || BCM96858 || BCM96846 || BCM96856 || BCM96878
+	depends on BCM96838 || BCM96848 || BCM96858 || BCM96846 || BCM96856 || BCM96878 || BCM96855
 	depends on BCM_RDPA
 
 config BCM_RDPA_MCAST
@@ -610,14 +706,14 @@ config EPON_DS_DLF_FORWARD
 
 config BCM_GPON
 	tristate "Support for GPON"
-	depends on BCM96838 || BCM96848 || BCM96858 || BCM963158 || BCM96846 || BCM96856 || BCM96878
+	depends on BCM96838 || BCM96848 || BCM96858 || BCM963158 || BCM96846 || BCM96856 || BCM96878 || BCM96855
 
 config  BCM_WLCLED
 	bool "Support for WLAN LED"
 
 config BCM_NGPON
 	tristate "Support for XGPON1/XGS/NGPON2 stack"
-	depends on BCM96858 || BCM96856 || BCM963158
+	depends on BCM96858 || BCM96856 || BCM963158 || BCM96855
 
 config BCM_OPTICALDET
 	tristate "Support for optical device detection"
@@ -628,6 +724,16 @@ config BCM_OPTICALDET_IMPL
 	int "Implementation index for BRCM optical device detection"
 	depends on BCM_OPTICALDET
 	default 1
+
+config BCM_SMTC
+        tristate "Support SMTC PMD driver"
+        depends on BCM_I2C_CHIP
+        default m
+
+config BCM_SMTC_IMPL
+        int "Implementation index for SMTC PMD driver"
+        depends on BCM_SMTC
+        default 1
 
 config BCM_WANTYPEDET
     tristate "Support for WAN type auto-detection"
@@ -640,13 +746,13 @@ config BCM_WANTYPEDET_IMPL
     default 1
 
 config BCM_PON_WAN_TYPE_AUTO_DETECT
-    bool "Enable WAN type auto-detection on BCM96858, BCM96856, BCM96846, BCM96878"
-    depends on BCM_WANTYPEDET && (BCM96858 || BCM96856 || BCM96846 || BCM96878)
+    bool "Enable WAN type auto-detection on BCM96858, BCM96856, BCM96846, BCM96878, BCM96855"
+    depends on BCM_WANTYPEDET && (BCM96858 || BCM96856 || BCM96846 || BCM96878 || BCM96855)
     default y
 
 config BCM_BUILD_NGPON_AMD2
     bool "989.3AMD2 / 9807.1AMD1 support"
-    depends on (BCM96858 || BCM96856 || BCM963158)
+    depends on (BCM96858 || BCM96856 || BCM963158 || BCM96855)
     default y
 
 config BCM_SFP
@@ -673,7 +779,7 @@ config BCM_LASER
 
 config BCM_MAX_GEM_PORTS
 	int "Number of Gem Ports"
-	range 32 256 if BCM96838 || BCM96848 || BCM96858 || BCM963158 || BCM96846 || BCM96878
+	range 32 256 if BCM96838 || BCM96848 || BCM96858 || BCM963158 || BCM96846 || BCM96878 || BCM96855
 	default 32
 
 config BCM_MoCA
@@ -727,7 +833,7 @@ config BCM_VLAN
 
 config BCM_EPON
 	tristate "Support for EPON LUE"
-	depends on BCM96838 || BCM96848 || BCM96858 || BCM96846 || BCM96856 || BCM96878 || BCM963158
+	depends on BCM96838 || BCM96848 || BCM96858 || BCM96846 || BCM96856 || BCM96878 || BCM963158 || BCM96855
 
 config BCM_EPON_STACK
 	tristate "Support for EPON STACK"
@@ -759,12 +865,12 @@ config BCM_SPEEDYGET
 config BCM_REASON_TO_SKB_MARK
 	bool "Support for trap reason to skb mark"
     default y
-	depends on BCM96858 || BCM96846 || BCM96856 || BCM96878
+	depends on BCM96858 || BCM96846 || BCM96856 || BCM96878 || BCM96855
 
 config BCM_DW_CXC_DATA_MODE
 	bool "Support for CXC data mode"
     default y
-	depends on BCM96858 || BCM96846 || BCM96856 || BCM96878 || BCM96838 || BCM96848
+	depends on BCM96858 || BCM96846 || BCM96856 || BCM96878 || BCM96838 || BCM96848 || BCM96855
 
 config BCM_ISDN
 	tristate "Support for ISDN"
@@ -811,6 +917,11 @@ config JFFS_NVRAM
 	default n
 	depends on BCM_WLAN
 
+config JFFS_NVRAM_HND_OLD
+	bool "old patch of NVRAM on JFFS support"
+	default n
+	depends on BCM_WLAN
+
 config BCM_PCI
 	bool "Support for PCI"
 	select PCI
@@ -834,7 +945,7 @@ config BCM_PCIE_HCD_IMPL
 config BCM_PCIE_VCD
 	bool "Support for PCIe Virtual Core Device for internal WiFi devices"
 	depends on BCM_PCIE_HCD && BCM_WLAN
-	depends on BCM963178 || BCM947622 || BCM96878
+	depends on BCM963178 || BCM947622 || BCM96878 || BCM96855
 	default y
 
 config BCM_PCIE_PMC_BRD_STUBS
@@ -866,6 +977,15 @@ config BCM_NVRAM_IMPL
 	depends on BCM_NVRAM
 	default 1
 
+config BCM_WLCXC
+	tristate "Kernel wlcxc driver"
+	default  n
+
+config BCM_WLCXC_IMPL
+	int "Kernel wlcxc driver implementation selection"
+	depends on BCM_WLCXC
+	default 1
+	
 config BCM_WLAN_USBAP
 	bool "Support for Wireless USBAP"
 
@@ -1008,7 +1128,7 @@ config BCM_TMS
 
 config BCM_PMC
 	bool "PMC"
-	depends on BCM96838 || BCM963138 || BCM963148 || BCM963381 || BCM96848 || BCM94908 || BCM96858 || BCM963158 || BCM96846 || BCM96856 || BCM947622 || BCM963178 || BCM96878
+	depends on BCM96838 || BCM963138 || BCM963148 || BCM963381 || BCM96848 || BCM94908 || BCM96858 || BCM963158 || BCM96846 || BCM96856 || BCM947622 || BCM963178 || BCM96878 || BCM96855
 
 config BCM_PLC_BOOT
 	tristate "PLC boot support"
@@ -1131,7 +1251,7 @@ config BCM_PKTDMA_IMPL
 config BCM_RDPA_BRIDGE_IMPL
 	int "Implementation index for Runner bridge"
 	depends on BCM_RDPA_BRIDGE
-	depends on BCM96838 || BCM96848 || BCM96858 || BCM96846 || BCM96856 || BCM96878
+	depends on BCM96838 || BCM96848 || BCM96858 || BCM96846 || BCM96856 || BCM96878 || BCM96855
 
 config BCM_ENET_IMPL
 	int "Implementation index for Ethernet"
@@ -1288,7 +1408,7 @@ config BCM_MAX_MTU_SIZE
 	range 64 10000
 	default 2044 if (BCM963138 || BCM963148 || BCM94908 || BCM963158 || BCM947622 || BCM963178)
 	default 2048 if (BCM963268 || BCM963381)
-	default 1998 if (BCM96838 || BCM96848 || BCM96858 || BCM96846 || BCM96856 || BCM96878) 
+	default 1998 if (BCM96838 || BCM96848 || BCM96858 || BCM96846 || BCM96856 || BCM96878 || BCM96855) 
 
 config BCM_USER_DEFINED_DEFAULT_MTU
 	bool "User Defined Default Linux Device Interface MTU"
@@ -1358,12 +1478,12 @@ config BCM_BDMF
 
 config BCM_PON
 	bool
-	depends on ( BCM96838 || BCM96848 || BCM96858 || BCM96846 || BCM96856 || BCM96878) && !BRCM_IKOS
+	depends on  (BCM96838 || BCM96848 || BCM96858 || BCM96846 || BCM96856 || BCM96878 || BCM96855) && (!BRCM_IKOS || BRCM_QEMU)
 	default y
 
 config BCM_PON_XRDP
 	bool
-	depends on ( BCM96858 || BCM96846 || BCM96856 || BCM96878) && !BRCM_IKOS
+	depends on ( BCM96858 || BCM96846 || BCM96856 || BCM96878 || BCM96855) && (!BRCM_IKOS || BRCM_QEMU)
 	default y
 
 config BCM_DSL_XRDP
@@ -1383,7 +1503,7 @@ config BCM_DSL_RDP
 
 config BCM_XRDP
 	bool
-	depends on ( BCM96858 || BCM963158 || BCM96846 || BCM96856 || BCM96878) && !BRCM_IKOS
+	depends on ( BCM96858 || BCM963158 || BCM96846 || BCM96856 || BCM96878 || BCM96855) && (!BRCM_IKOS || BRCM_QEMU)
 	default y
 
 config BCM_RDP
@@ -1406,7 +1526,7 @@ config BCM_SIM_CARD
 
 config BCM_PMD
 	tristate 'Support for PMD'
-	depends on BCM96838 || BCM96848 || BCM96858 || BCM963158 || BCM96846 || BCM96856 || BCM947622 || BCM963178 || BCM96878
+	depends on BCM96838 || BCM96848 || BCM96858 || BCM963158 || BCM96846 || BCM96856 || BCM947622 || BCM963178 || BCM96878 || BCM96855
 	help
 		Say 'M' to include support for PMD.
 		Static compile not supported.
@@ -1425,7 +1545,7 @@ config BCM_RDPA_GPL_EXT
 
 config BCM_GPON_STACK
 	tristate 'Support for GPON Stack Driver'
-	depends on BCM96838 || BCM96848 || BCM96858 || BCM963158 || BCM96846 || BCM96878
+	depends on BCM96838 || BCM96848 || BCM96858 || BCM963158 || BCM96846 || BCM96878 || BCM6855
 	help
 		Say 'M' to include support for GPON Stack driver.
 		Static compile not supported.
@@ -1563,7 +1683,7 @@ config EPON_10G_SUPPORT
 # Time Synchronization: Feature
 config BCM_TIME_SYNC
 	tristate 'Support for Time Synchronization'
-	depends on BCM96838 || BCM96848 || BCM96858 || BCM96846 || BCM96856 || BCM963158
+	depends on BCM96838 || BCM96848 || BCM96858 || BCM96846 || BCM96856 || BCM963158 || BCM96855
 	help
 		Say 'M' to include support for Time Synchronization driver.
 		Static compile not supported.
@@ -1773,7 +1893,7 @@ config BP_PHYS_INTF
 config BCM_GLB_COHERENCY
 	bool "Global Hardware Cache Coherency"
 	default n
-	depends on BCM963158 || BCM96846 || BCM96858 || BCM96856 || BCM963178 || BCM947622
+	depends on BCM963158 || BCM96846 || BCM96858 || BCM96856 || BCM963178 || BCM947622 || BCM96855
 
 config BCM_CMA_RSVMEM
 	bool "Linux CMA based memory reservation"
@@ -1788,7 +1908,8 @@ config BCM_FPM_COHERENCY_EXCLUDE
 config BCM_UBUS_DECODE_REMAP
 	bool "Remap UBUS decode window"
 	default n
-	depends on BCM963158 || BCM96846 || BCM96858 || BCM96856 || BCM963178 || BCM947622
+	depends on BCM963158 || BCM96846 || BCM96858 || BCM96856 || BCM963178 || BCM947622 || BCM96855
+	depends on (!BRCM_IKOS && !BRCM_QEMU)
 
 config BCM_UBUS4_DCM
 	bool "UBUS4 Dynamic Clock Management"
@@ -1802,13 +1923,13 @@ config BCM_RNR_CPU_RX_DYN_METER
 
 config BCM_FCACHE_CLASSIFICATION_BYPASS
     bool "Enable Sw Flow bypass"
-	depends on BCM96858 || BCM96846 || BCM96856 || BCM963158 || BCM963138 || BCM963148 || BCM94908 || BCM96878
+	depends on BCM96858 || BCM96846 || BCM96856 || BCM963158 || BCM963138 || BCM963148 || BCM94908 || BCM96878 || BCM96855
 
 
 config BCM_XRDP_AUTOGATE
 	bool "XRDP Dynamic Clock Management/Gating"
 	default n
-	depends on BCM963158 || BCM96846 || BCM96856 || BCM96858 || BCM96878
+	depends on BCM963158 || BCM96846 || BCM96856 || BCM96858 || BCM96878 || BCM96855
 
 config BCM_WLCSM_DEBUG
 	bool "enable WLCSM Ddebug"

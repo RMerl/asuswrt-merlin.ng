@@ -213,7 +213,7 @@ typedef enum {
 #define BLOG_LLC_SNAP_8023_DSAP (BLOG_LLC_SAP_SNAP)
 #define BLOG_LLC_SNAP_8023_SSAP (BLOG_LLC_SAP_SNAP)
 #define BLOG_LLC_SNAP_8023_Ctrl (0x3)
-#define BLOG_LLC_SNAP_8023_LEN  6
+#define BLOG_LLC_SNAP_8023_LEN  8
 
 #define BLOG_ETH_ADDR_LEN       6
 #define BLOG_ETH_TYPE_LEN       sizeof(uint16_t)
@@ -727,6 +727,22 @@ typedef struct BlogGreHdr {
     };
 } BlogGreHdr_t;
 
+/*----- VXLAN: RFC 7348 definitions --------------------------------------------------*/
+#define BLOG_VXLAN_PORT     4789
+#define BLOG_VXLAN_HDR_LEN  8
+#define BLOG_VXLAN_HF_VNI (1UL << 27)
+#define BLOG_VXLAN_VNI_OFFSET 8
+typedef struct BlogVxlanHdr {
+    union {
+        uint8_t      u8[BLOG_VXLAN_HDR_LEN];
+        uint16_t    u16[BLOG_VXLAN_HDR_LEN/sizeof(uint16_t)];
+        uint32_t    u32[BLOG_VXLAN_HDR_LEN/sizeof(uint32_t)];
+        struct {
+            uint32_t flags;
+            uint32_t vni;
+        };
+    };
+} BlogVxlanHdr_t;
 /*
  *------------------------------------------------------------------------------
  *  Assert that headers are properly packed (without using attribute packed) 
@@ -763,6 +779,7 @@ static inline int blog_net_audit_hdrs(void)
     BLOG_NET_AUDIT( BLOG_UDP_HDR_LEN, BlogUdpHdr_t );
     BLOG_NET_AUDIT( BLOG_L2TP_HDR_LEN, BlogL2tpHdr_t );
     BLOG_NET_AUDIT( BLOG_GRE_HDR_LEN, BlogGreHdr_t );
+    BLOG_NET_AUDIT( BLOG_VXLAN_HDR_LEN, BlogVxlanHdr_t);
 
     return 0;
 }

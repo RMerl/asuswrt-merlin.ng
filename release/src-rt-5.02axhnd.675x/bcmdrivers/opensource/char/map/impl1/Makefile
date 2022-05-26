@@ -1,5 +1,4 @@
-#ivi-objs    :=  ivi_rule.o ivi_rule6.o ivi_map.o ivi_map_tcp.o ivi_xmit.o ivi_nf.o ivi_ioctl.o ivi_module.o ivi_portmap.o
-ivi-objs    :=  ivi_rule.o ivi_rule6.o ivi_map.o ivi_xmit.o ivi_nf.o ivi_ioctl.o ivi_module.o ivi_portmap.o
+ivi-objs    :=  ivi_rule.o ivi_rule6.o ivi_map.o ivi_map_tcp.o ivi_xmit.o ivi_nf.o ivi_ioctl.o ivi_module.o ivi_portmap.o
 
 obj-$(CONFIG_BCM_MAP) += ivi.o
 

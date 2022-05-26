@@ -39,7 +39,7 @@
 #define RDPA_IC_GPON_RX_IRQ   INTERRUPT_ID_WAN_GPON_RX   /**< GPON rx IRQ in IC */
 #define RDPA_IC_GPON_TX_IRQ   INTERRUPT_ID_WAN_GPON_TX   /**< GPON tx IRQ in IC */
 
-#if defined(CONFIG_BCM96858) || defined(CONFIG_BCM96856)
+#if defined(CONFIG_BCM96858) || defined(CONFIG_BCM96856) || defined(CONFIG_BCM96855)
 #define RDPA_IC_NGPON_RX_IRQ     INTERRUPT_ID_WAN_XGRX         /**< XGPON/NGPON rx IRQ in IC */
 #define RDPA_IC_NGPON_TX_1_IRQ   INTERRUPT_ID_WAN_XGTX_INTR1   /**< XGPON/NGPON tx IRQ #1 in IC */
 #define RDPA_IC_NGPON_TX_0_IRQ   INTERRUPT_ID_WAN_XGTX_INTR0   /**< XGPON/NGPON tx IRQ #0 in IC */
@@ -98,6 +98,8 @@ typedef enum
     rdpa_indication_rogue_onu,                      /**< Rogue ONU indication */
     rdpa_indication_pmd_alarm,                      /**< PMD alarm indication */
     rdpa_indication_reboot_msg,                     /**< Reboot Message */
+    rdpa_indication_save_o_state,
+    rdpa_indication_save_act_dbg_ploam,
     rdpa_indication_none = 0xffff
 }rdpa_pon_indication;
 
@@ -275,7 +277,11 @@ typedef struct
     bdmf_boolean esc_alarm;
 }rdpa_pmd_alarm_param;
 
-/** GPON Callback Indication */
+typedef UINT32 PON_SAVE_O_STATE_VAL;
+
+typedef UINT32 PON_SAVE_ACT_DBG_PLOAM_VAL;
+
+/* GPON Callback Indication */
 typedef union
 {
     rdpa_pon_status_indication lof_status;                      /* LOF status */
@@ -297,6 +303,8 @@ typedef union
     rdpa_rogue_onu_param rogue_onu;                             /* Rogue ONU parameters */
     rdpa_pmd_alarm_param pmd_alarm;                             /* PMD Alarm parameters */
     PON_REBOOT_PLOAM_FLAGS reboot_ploam_flags;                  /* reboot ploam flags */
+    PON_SAVE_O_STATE_VAL o_state_val;
+    PON_SAVE_ACT_DBG_PLOAM_VAL act_dbg_ploam_val;
 } rdpa_callback_indication;
 
 /** PON-level counters.

@@ -8,7 +8,7 @@
 #define WMM_MARK_DSCP_STR	"dscp"
 #define WMM_MARK_8021D_STR	"vlan"
 
-#define PRIO_LOC_NFMARK		16
+#define PRIO_LOC_NFMARK		0
 #define PRIO_LOC_NFMASK		7	
 
 #define WMM_DSCP_MASK_SHIFT	5

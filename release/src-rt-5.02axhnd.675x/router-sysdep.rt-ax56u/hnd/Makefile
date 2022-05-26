@@ -1,7 +1,7 @@
 #
 # Makefile for the Broadcom HND Layer
 #
-# Copyright (C) 2020, Broadcom. All Rights Reserved.
+# Copyright (C) 2021, Broadcom. All Rights Reserved.
 #
 # Permission to use, copy, modify, and/or distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above
@@ -80,7 +80,7 @@ ifneq ($(strip $(BUILD_HND_NIC)),)
     EXTRA_CFLAGS += -DBCA_HNDNIC
 endif
     EXTRA_CFLAGS += -I$(COMMON_SHARED_DIR)
-ifneq (,$(filter $(MODEL),RTAX58U TUFAX3000 TUFAX5400 RTAX82U RTAX82_XD6 GSAX3000 GSAX5400))
+ifneq (,$(filter $(MODEL),RTAX58U TUFAX3000 TUFAX5400 RTAX82U RTAX82_XD6 RTAX82_XD6S GSAX3000 GSAX5400))
     EXTRA_CFLAGS += -g -DBCMDBG -DWLMSG_ASSOC
 endif
 

@@ -1024,8 +1024,8 @@ static int nand_adjust_cfg(PCFE_NAND_CHIP pchip)
         (4 * (1 << ((cfg & NC_DEV_SIZE_MASK) >> NC_DEV_SIZE_SHIFT))) << 20;
 
     /* block size and page size move to ext config register in NAND controller rev7.1 and later */
-#if defined(_BCM963148_) || defined(_BCM96848_) || defined(_BCM94908_) || defined(_BCM96858_) || \
-    defined(_BCM963158_) || defined(_BCM96846_) || defined(_BCM96856_) || defined(_BCM963178_) || defined(_BCM947622_) || defined(_BCM96878_)
+#if defined(_BCM963148_) || defined(_BCM96848_) || defined(_BCM94908_) || defined(_BCM96858_) || defined(_BCM96855_) || \
+    defined(_BCM963158_) || defined(_BCM96846_) || defined(_BCM96856_) || defined(_BCM963178_) || defined(_BCM947622_) || defined(_BCM96878_) || defined(_BCM96855_)
     cfg = NAND->NandConfigExt;
 #endif
     switch( (cfg & NC_BLK_SIZE_MASK) )

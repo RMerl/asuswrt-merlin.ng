@@ -1009,7 +1009,7 @@ static int get_xtm_channel_q_cfg(
     }
     q_info->tm_id = tm_idx;
     q_info->index = 0;
-    q_info->qsize = q_cfg.drop_threshold;
+    q_info->qsize  = getUsrQueueSize(q_cfg.drop_threshold);
     q_info->weight = q_cfg.weight;
     q_info->minBufs = q_cfg.reserved_packet_buffers;
     q_info->found = TRUE;
@@ -2922,7 +2922,7 @@ static int set_q_drop_alg(rdpa_drv_ioctl_tm_t *ptm)
             goto q_cfg_exit;
         }
         qinfo.weight = queue_cfg.weight;
-        qinfo.qsize = queue_cfg.drop_threshold;
+        qinfo.qsize = getUsrQueueSize(queue_cfg.drop_threshold) ;
         qinfo.index = 0;
 #else
         return RDPA_DRV_PORT_GET;
@@ -3172,7 +3172,7 @@ int rdpa_cmd_drv_get_q_size(
         return RDPA_DRV_Q_CFG_GET;
     }
    
-    *pqsize  = q_cfg.drop_threshold;
+    *pqsize  = getUsrQueueSize(q_cfg.drop_threshold);
 
     bdmf_put(sched);
     return ret;

@@ -42,7 +42,7 @@
 #if !defined(WL_NUM_OF_SSID_PER_UNIT)
 #if defined(CONFIG_BCM_PON_XRDP) || defined(CONFIG_BCM963158)
 #define WL_NUM_OF_SSID_PER_UNIT                   16
-#elif defined(CONFIG_BCM_PON)
+#else
 #define WL_NUM_OF_SSID_PER_UNIT                   8
 #endif /* CONFIG_BCM_PON_XRDP || CONFIG_BCM963158 */
 #endif /* !WL_NUM_OF_SSID_PER_UNIT */

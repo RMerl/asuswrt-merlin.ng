@@ -59,6 +59,7 @@ struct tcp_map_list {
 	struct     hlist_head dest_chain[IVI_HTABLE_SIZE];   // Map table with destination and newport
 	int        size;                                     // Number of mappings in the list
 	int        port_num;                                 // Number of MAP ports allocated in the map list
+	int        portmap_num;                              // Number of MAP ports used for port forwarding
 	int        state_seq;                                // Sequence number of the mapping(never decreased)                                  
 	__be16     last_alloc_port;                         // Save the last allocated port number
 };
@@ -103,6 +104,7 @@ typedef struct _TCP_STATE_CONTEXT {
 	struct hlist_node in_node;   // Inserted to in_chain
 	struct hlist_node dest_node;   // Inserted to dest_chain
 	
+	u32 portmapidx;
 	int state_seq;
 	
 	// Indexes pointing back to port hash table
@@ -133,7 +135,7 @@ extern struct hlist_node *tcp_state;
 
 extern void init_tcp_map_list(void);
 
-extern void refresh_tcp_map_list(int);
+extern void refresh_tcp_map_list(int, u32);
 
 extern void free_tcp_map_list(void);
 

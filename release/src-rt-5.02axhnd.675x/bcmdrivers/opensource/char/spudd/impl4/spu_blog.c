@@ -177,9 +177,9 @@ void spu_blog_emit_aead(struct iproc_reqctx_s *rctx)
         blog_emit(rctx->pNBuf, iproc_priv.spu_dev_us, TYPE_IP, rctx->iv_ctr_len, BLOG_SPU_US);
         pSkb->dev = skb_dev;
 
-        if ( 0 == rctx->ctx->ipdaddr )
+        esph = (struct ip_esp_hdr *)(pdata + BLOG_IPV4_HDR_LEN);
+        if ( _read32_align16((uint16_t *)&esph->spi) != rctx->ctx->spi )
         {
-            esph = (struct ip_esp_hdr *)(pdata + BLOG_IPV4_HDR_LEN);
             rctx->ctx->ipdaddr = _read32_align16((uint16_t *)&iph->daddr);
             rctx->ctx->ipsaddr = _read32_align16((uint16_t *)&iph->saddr);
             rctx->ctx->spi     = _read32_align16((uint16_t *)&esph->spi);
@@ -195,7 +195,7 @@ void spu_blog_emit_aead(struct iproc_reqctx_s *rctx)
         /* ignore udp encapsualted packets and packets requiring
            more than one transform */
         if ( !secpath_exists(pSkb) ||
-            (pSkb->sp->len > 1) )
+            (pSkb->sp->len != 1) )
         {
 		    blog_skip(pSkb, blog_skip_reason_spudd_check_failure);
             return;
@@ -233,17 +233,17 @@ void spu_blog_emit_aead(struct iproc_reqctx_s *rctx)
             return;
         }
 
-        blog_ptr(pSkb)->esptx.secPath_p = secpath_get(pSkb->sp);
-        blog_ptr(pSkb)->tx.info.bmap.ESP = 1;
+        blog_ptr(pSkb)->esprx.secPath_p = secpath_get(pSkb->sp);
+        blog_ptr(pSkb)->rx.info.bmap.ESP = 1;
 
         /* insert spu_dev_ds as transmit device */
         skb_dev = pSkb->dev;
         pSkb->dev = iproc_priv.spu_dev_ds;
 
-        if ( 0 == rctx->ctx->ipdaddr )
+        iph = (struct iphdr *)pdata;
+        esph = (struct ip_esp_hdr *)(pdata + BLOG_IPV4_HDR_LEN);
+        if ( _read32_align16((uint16_t *)&esph->spi) != rctx->ctx->spi )
         {
-            iph = (struct iphdr *)pdata;
-            esph = (struct ip_esp_hdr *)(pdata + BLOG_IPV4_HDR_LEN);
             rctx->ctx->ipdaddr = _read32_align16((uint16_t *)&iph->daddr);
             rctx->ctx->ipsaddr = _read32_align16((uint16_t *)&iph->saddr);
             rctx->ctx->spi     = _read32_align16((uint16_t *)&esph->spi);
@@ -288,6 +288,7 @@ static void spu_blog_fc_crypt_done_us(struct brcm_message *msg)
         if (err == SPU_INVALID_ICV)
             atomic_inc(&iproc_priv.bad_icv);
         nbuff_free(rctx->pNBuf);
+        secpath_put(rctx->sp);
         kfree(rctx);
         flow_log("SPU process error\n");
         return;
@@ -324,6 +325,7 @@ static void spu_blog_fc_crypt_done_us(struct brcm_message *msg)
         flow_log("%s:%d - blogAction == PKT_DROP\n", __func__, __LINE__);
         if (rctx->pNBuf)
             nbuff_free(rctx->pNBuf);
+        secpath_put(rctx->sp);
         kfree(rctx);
         return;
     }
@@ -347,14 +349,13 @@ static void spu_blog_fc_crypt_done_us(struct brcm_message *msg)
         skb_dst_set(skb, dst_clone(rctx->dst));
         skb_reset_network_header(skb);
         skb->dev = iproc_priv.spu_dev_us;
-        local_bh_disable();
         xfrm_output_resume(skb, 0);
-        local_bh_enable();
     }
     else
     {
         flow_log("%s:%d - blogged\n", __func__, __LINE__);
     }
+    secpath_put(rctx->sp);
     kfree(rctx);
 
 } /* spu_blog_fc_crypt_done_us */
@@ -394,6 +395,7 @@ static void spu_blog_fc_crypt_done_ds(struct brcm_message *msg)
         if (err == SPU_INVALID_ICV)
             atomic_inc(&iproc_priv.bad_icv);
         nbuff_free(rctx->pNBuf);
+        secpath_put(rctx->sp);
         flow_log("SPU process error\n");
         kfree(rctx);
         return;
@@ -407,6 +409,7 @@ static void spu_blog_fc_crypt_done_ds(struct brcm_message *msg)
     {
         flow_log("spu_blog_fc_crypt_done_ds: xfrm is NULL\n");
         nbuff_free(rctx->pNBuf);
+        secpath_put(rctx->sp);
         kfree(rctx);
         return;
     }
@@ -447,6 +450,7 @@ static void spu_blog_fc_crypt_done_ds(struct brcm_message *msg)
         flow_log("%s:%d - blogAction == PKT_DROP\n", __func__, __LINE__);
         if (rctx->pNBuf)
             nbuff_free(rctx->pNBuf);
+        secpath_put(rctx->sp);
         kfree(rctx);
         return;
     }
@@ -484,10 +488,8 @@ static void spu_blog_fc_crypt_done_ds(struct brcm_message *msg)
         skb_set_transport_header(skb, 0);
 
         skb->sp = secpath_get(rctx->sp);
-        local_bh_disable();
         dev_hold(skb->dev);
         xfrm_input_resume(skb, nexthdr);
-        local_bh_enable();
     }
     else
     {
@@ -501,6 +503,7 @@ static void spu_blog_fc_crypt_done_ds(struct brcm_message *msg)
         spin_unlock(&xfrm->lock); 
     }
     /* free the request context */
+    secpath_put(rctx->sp);
     kfree(rctx);
 }  /* spu_blog_fc_crypt_done_ds */
 
@@ -657,6 +660,7 @@ static int spu_blog_xmit_us(pNBuff_t pNBuf, struct net_device *dev)
     rctx->pNBuf          = pNBuf;
     rctx->iv_ctr_len     = blog_p->esptx.ivsize;
     rctx->dst            = blog_p->esptx.dst_p;
+    rctx->sp             = NULL;
 
     rctx->is_encrypt     = true;
     rctx->bd_suppress    = false;
@@ -695,6 +699,11 @@ static int spu_blog_xmit_us(pNBuff_t pNBuf, struct net_device *dev)
     rctx->hash_carry_len = 0;
 
     ret = handle_aead_req(rctx);
+    if (ret != -EINPROGRESS)
+    {
+        flow_log("Packet discarded, failed to queue packet to interface.\n");
+        nbuff_free(pNBuf);
+    }
 
     return 0;
 } /* spu_blog_xmit_us */
@@ -710,7 +719,7 @@ static int spu_blog_xmit_ds(pNBuff_t pNBuf, struct net_device *dev)
     uint32_t               spi;
     struct iproc_ctx_s    *ctx;
     struct sec_path       *secpath;
-    struct xfrm_state     *xfrm;
+    struct xfrm_state     *xfrm = NULL;
     struct net            *net;
     unsigned int           hlen;
     unsigned int           seqno;
@@ -761,10 +770,12 @@ static int spu_blog_xmit_ds(pNBuff_t pNBuf, struct net_device *dev)
     }
 
     /* validate sequence number and xfrm state */
-    secpath = blog_p->esptx.secPath_p;
-    xfrm = secpath->xvec[secpath->len-1];
+    secpath = secpath_get(blog_p->esprx.secPath_p);
+    if (secpath && (secpath->len == 1))
+        xfrm = secpath->xvec[secpath->len-1];
     if (NULL == xfrm)
     {
+        secpath_put(secpath);
         flow_log("Packet discarded! blog's xfrm state for this flow doesn't exist.\n");
         nbuff_free(pNBuf);
         return -1;
@@ -806,6 +817,7 @@ static int spu_blog_xmit_ds(pNBuff_t pNBuf, struct net_device *dev)
     spin_unlock(&xfrm->lock);
     if ( ret )
     {
+        secpath_put(secpath);
         return -1;
     }
 
@@ -814,6 +826,7 @@ static int spu_blog_xmit_ds(pNBuff_t pNBuf, struct net_device *dev)
     if (NULL == ctx_buf)
     {
         flow_log("Packet discarded! Failed to allocate memory for iproc request.\n");
+        secpath_put(secpath);
         nbuff_free(pNBuf);
         return -1;        
     }
@@ -854,6 +867,12 @@ static int spu_blog_xmit_ds(pNBuff_t pNBuf, struct net_device *dev)
     sg_init_one(rctx->assoc_sg, &pdata[BLOG_IPV4_HDR_LEN], rctx->assoc_len);
 
     ret = handle_aead_req(rctx);
+    if (ret != -EINPROGRESS)
+    {
+        flow_log("Packet discarded, failed to queue packet to interface.\n");
+        secpath_put(secpath);
+        nbuff_free(pNBuf);
+    }
 
     return 0;
 }  /* spu_blog_xmit_ds */

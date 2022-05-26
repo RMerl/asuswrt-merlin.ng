@@ -1373,6 +1373,7 @@ static bp_elem_t g_bcm96750ref1[] = {
   {bp_last}
 };
 
+#if 0
 static bp_elem_t g_bcm96752ref1[] = {
   {bp_cpBoardId,               .u.cp = "96752REF1"},
   {bp_usButtonIdx,             .u.us = 0},
@@ -1453,6 +1454,87 @@ static bp_elem_t g_bcm96752ref1[] = {
   {bp_usPcmFs,                 .u.us = BP_GPIO_16_AH},
   {bp_usSpiSlaveSelectNum,     .u.us = 1}, /* define the SPI select for voice */
   {bp_usSpiSlaveSelectGpioNum, .u.us = BP_GPIO_80_AL},
+  {bp_usUsbPwrOn1,             .u.us = BP_GPIO_86_AL},
+  {bp_usUsbPwrFlt1,            .u.us = BP_GPIO_85_AL},
+  {bp_usUsbPwrOn0,             .u.us = BP_GPIO_84_AL},
+  {bp_usUsbPwrFlt0,            .u.us = BP_GPIO_83_AL},
+
+  {bp_ulMemoryConfig,          .u.ul = BP_DDR_SPEED_800_11_11_11 | BP_DDR_TOTAL_SIZE_512MB| BP_DDR_DEVICE_WIDTH_16 | BP_DDR_TOTAL_WIDTH_16BIT | BP_DDR_63178_DEFAULT},
+  {bp_last}
+};
+#endif
+
+static bp_elem_t g_bcm96752ref1[] = {
+  {bp_cpBoardId,               .u.cp = "96752REF1"},
+  {bp_usButtonIdx,             .u.us = 0},
+  {bp_usButtonExtIntr,         .u.us = BP_EXT_INTR_0|BP_EXT_INTR_TYPE_IRQ_SENSE_EDGE|BP_EXT_INTR_TYPE_IRQ_LOW_LEVEL},
+  {bp_usGpio_Intr,             .u.us = BP_GPIO_4_AL},
+#if defined(_CFE_)
+  {bp_usButtonAction,          .u.us = BP_BTN_ACTION_PRINT | BP_BTN_TRIG_PRESS },
+  {bp_ulButtonActionParm,      .u.ptr = (void*)"Button Press -- Hold for 5s to do restore to default" },
+  {bp_usButtonAction,          .u.us = BP_BTN_ACTION_RESET | BP_BTN_TRIG_RELEASE | BP_BTN_TRIG_0S  },
+  {bp_usButtonAction,          .u.us = BP_BTN_ACTION_RESTORE_DEFAULTS | BP_BTN_TRIG_HOLD | BP_BTN_TRIG_5S},
+#endif
+  {bp_usButtonIdx,             .u.us = 1},
+  {bp_usButtonExtIntr,         .u.us = BP_EXT_INTR_1|BP_EXT_INTR_TYPE_IRQ_SENSE_EDGE|BP_EXT_INTR_TYPE_IRQ_LOW_LEVEL},
+  {bp_usGpio_Intr,             .u.us = BP_GPIO_5_AL},
+#if defined(_CFE_)
+  {bp_usButtonAction,          .u.us = BP_BTN_ACTION_SES | BP_BTN_TRIG_PRESS  },
+#endif
+#if !defined(_CFE_)
+  {bp_usVregSync,              .u.us = BP_GPIO_2_AH},
+#endif
+  {bp_usGpioLedWL0Act,         .u.us = BP_GPIO_31_AL | BP_LED_USE_GPIO},  /* WLAN_2G_ACT, must use BP_LED_USE_GPIO */
+  {bp_usGpioLedReserved,       .u.us = BP_GPIO_84_AL},	// USB power
+  {bp_usButtonIdx,             .u.us = 2},
+  {bp_usGpio_Intr,             .u.us = BP_GPIO_7_AL},	// 4T4R
+  {bp_usButtonIdx,             .u.us = 3},
+  {bp_usGpio_Intr,             .u.us = BP_GPIO_9_AL},	// ePA
+
+  {bp_usGphyBaseAddress,       .u.us = BCM963178_PHY_BASE},  // use phy addressses on SF2 with base address 0x8
+  {bp_ucPhyType0,              .u.uc = BP_ENET_EXTERNAL_SWITCH},
+  {bp_usConfigType,            .u.us = BP_ENET_CONFIG_MMAP}, // Accessing SF2 as MMapped external switch
+  {bp_ulPortMap,               .u.ul = 0x03},
+  {bp_ulPhyId0,                .u.ul = (BCM963178_PHY_BASE + 0x00) | (ADVERTISE_ALL_GMII | PHY_ADV_CFG_VALID)},
+  {bp_ulPhyId1,                .u.ul = (BCM963178_PHY_BASE + 0x01) | (ADVERTISE_ALL_GMII | PHY_ADV_CFG_VALID)},
+
+  {bp_usIntfId,                .u.us = 0},
+  {bp_usIntfType,              .u.us = BP_INTF_TYPE_GPHY},
+  {bp_usPortNum,               .u.us = 0},
+  {bp_usIntfEnd},
+  {bp_usIntfId,                .u.us = 1},
+  {bp_usIntfType,              .u.us = BP_INTF_TYPE_GPHY},
+  {bp_usPortNum,               .u.us = 1},
+  {bp_usIntfEnd},
+  {bp_usIntfId,                .u.us = 2}, /* HS_UART for BT */
+  {bp_usIntfType,              .u.us = BP_INTF_TYPE_UART},
+  {bp_usPortNum,               .u.us = 1},
+  {bp_usUartSdin,              .u.us = BP_GPIO_21_AH},
+  {bp_usUartSdout,             .u.us = BP_GPIO_20_AH},
+  {bp_usUartRts,               .u.us = BP_GPIO_12_AH},
+  {bp_usUartCts,               .u.us = BP_GPIO_22_AH},
+  {bp_usIntfEnd},
+
+  /* wlan fem_ctrl reserved signals*/
+  {bp_usGpioWlanReserved,      .u.us = BP_GPIO_34_AH},
+  {bp_usGpioWlanReserved,      .u.us = BP_GPIO_35_AH},
+  {bp_usGpioWlanReserved,      .u.us = BP_GPIO_36_AH},
+  {bp_usGpioWlanReserved,      .u.us = BP_GPIO_37_AH},
+  {bp_usGpioWlanReserved,      .u.us = BP_GPIO_38_AH},
+  {bp_usGpioWlanReserved,      .u.us = BP_GPIO_39_AH},
+  {bp_usGpioWlanReserved,      .u.us = BP_GPIO_40_AH},
+  {bp_usGpioWlanReserved,      .u.us = BP_GPIO_41_AH},
+  {bp_usGpioWlanReserved,      .u.us = BP_GPIO_42_AH},
+  {bp_usGpioWlanReserved,      .u.us = BP_GPIO_43_AH},
+  {bp_usGpioWlanReserved,      .u.us = BP_GPIO_44_AH},
+  {bp_usGpioWlanReserved,      .u.us = BP_GPIO_45_AH},
+
+  {bp_usGpioLedReserved,       .u.us = BP_GPIO_16_AL},	// BT RESET
+  {bp_usGpioLedReserved,       .u.us = BP_GPIO_33_AL},	// BT DISABLE
+  {bp_usGpioLedReserved,       .u.us = BP_GPIO_13_AL},	// LED Group Red, CLED 12
+  {bp_usGpioLedReserved,       .u.us = BP_GPIO_14_AL},	// LED Group Green, CLED 13
+  {bp_usGpioLedReserved,       .u.us = BP_GPIO_17_AL},	// LED Group Blue, CLDE 20
+
   {bp_usUsbPwrOn1,             .u.us = BP_GPIO_86_AL},
   {bp_usUsbPwrFlt1,            .u.us = BP_GPIO_85_AL},
   {bp_usUsbPwrOn0,             .u.us = BP_GPIO_84_AL},

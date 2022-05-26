@@ -1,7 +1,7 @@
 /*
  * Fundamental types and constants relating to 802.11
  *
- * Copyright (C) 2020, Broadcom. All Rights Reserved.
+ * Copyright (C) 2021, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: 802.11.h 792631 2020-10-30 15:20:26Z $
+ * $Id: 802.11.h 800684 2021-07-02 07:16:08Z $
  */
 
 #ifndef _802_11_H_
@@ -3735,6 +3735,22 @@ typedef struct dot11_ngbr_bss_term_dur_se dot11_ngbr_bss_term_dur_se_t;
 #define DOT11_NGBR_BI_OCT_WITH_REP_AP	0x00080000 /**< on-channel tunneling supported */
 #define DOT11_NGBR_BI_COLOC_6G_AP	0x00100000 /**< colocated with a 6G AP */
 
+/* Neighbor Report Phytype Field (8 bits) */
+#define DOT11_PHYTYPE_FHSS		1
+#define DOT11_PHYTYPE_DSSS		2
+#define DOT11_PHYTYPE_IRBASEBAND	3
+#define DOT11_PHYTYPE_OFDM		4
+#define DOT11_PHYTYPE_HRDSSS		5
+#define DOT11_PHYTYPE_ERP		6
+#define DOT11_PHYTYPE_HT		7
+#define DOT11_PHYTYPE_DMG		8
+#define DOT11_PHYTYPE_VHT		9
+#define DOT11_PHYTYPE_TVHT		10
+#define DOT11_PHYTYPE_S1G		11
+#define DOT11_PHYTYPE_CDMG		12
+#define DOT11_PHYTYPE_CMMG		13
+#define DOT11_PHYTYPE_HE		14
+
 /** Neighbor Report element (11k & 11v) */
 BWL_PRE_PACKED_STRUCT struct dot11_neighbor_rep_ie {
 	uint8 id;
@@ -4793,6 +4809,10 @@ typedef struct vht_features_ie_hdr vht_features_ie_hdr_t;
 #define WFA_OUI_TYPE_OSEN	0x12
 #define WFA_OUI_TYPE_MBO	0x16
 #define WFA_OUI_TYPE_MBO_OCE	0x16
+
+/* DPP Action frame fixed params */
+#define DOT11_DPP_AF_FIXED_PARAMS	"\x04\x09\x50\x6F\x9A\x1A"
+#define DOT11_DPP_AF_FIXED_PARAMS_LEN	6
 
 /* RSN authenticated key managment suite */
 #define RSN_AKM_NONE		0	/* None (IBSS) */

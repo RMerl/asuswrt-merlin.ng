@@ -294,6 +294,8 @@ typedef struct {
         #define REG_PORT_FORWARD_UCST                     0x40
         #define REG_PORT_FORWARD_IP_MCST                  0x01
 
+    #define REG_SWITCH_CONTROL                            0x22
+
     #define REG_PORT_ENABLE                               0x23
 
     #define REG_PROTECTED_PORT_MAP                        0x24 
@@ -819,6 +821,8 @@ typedef struct {
         #define PRIO_TAG_FRAME_CTRL_M                     0x3
         #define PRIO_TAG_FRAME_CTRL_S                     0
     #define REG_VLAN_GLOBAL_CTRL1                         0x01
+        #define VLAN_EN_RSV_MCAST_UNTAG_M                 0x1
+        #define VLAN_EN_RSV_MCAST_UNTAG_S                 3
     #define REG_VLAN_GLOBAL_CTRL2                         0x02
     #define REG_VLAN_GLOBAL_CTRL3                         0x03
     #define REG_VLAN_GLOBAL_CTRL4                         0x05

@@ -1,7 +1,7 @@
 /*
  * pcicfg.h: PCI configuration constants and structures.
  *
- * Copyright (C) 2020, Broadcom. All Rights Reserved.
+ * Copyright (C) 2021, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: pcicfg.h 785561 2020-03-31 04:29:43Z $
+ * $Id: pcicfg.h 800971 2021-07-12 09:43:48Z $
  */
 
 #ifndef	_h_pcicfg_
@@ -477,6 +477,7 @@ typedef struct _pcie_enhanced_caphdr {
 	uint16	next_ptr : 12;
 } pcie_enhanced_caphdr;
 
+#define PCI_REVID		0x6c	/* indicates current revision of PCIE core */
 #define	PCI_BAR0_WIN		0x80	/* backplane addres space accessed by BAR0 */
 #define	PCI_BAR1_WIN		0x84	/* backplane addres space accessed by BAR1 */
 #define	PCI_SPROM_CONTROL	0x88	/* sprom property control */
@@ -626,6 +627,11 @@ typedef struct _pcie_enhanced_caphdr {
 
 /* On AI chips we have a second window to map DMP regs are mapped: */
 #define	PCI_16KB0_WIN2_OFFSET	(4 * 1024)	/* bar0 + 4K is "Window 2" */
+
+/* PCI_REVID */
+#define PCI_CORETYPE_SHIFT	8
+#define PCI_CORETYPE_MASK	0xf00
+#define PCI_REVISION_MASK	0xff
 
 /* PCI_INT_STATUS */
 #define	PCI_SBIM_STATUS_SERR	0x4	/* backplane SBErr interrupt status */

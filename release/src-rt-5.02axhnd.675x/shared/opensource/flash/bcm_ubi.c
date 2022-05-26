@@ -141,11 +141,17 @@ RETRY:
                 if(!readblk(start, i, be32_to_cpu(ec->vid_hdr_offset) + UBI_VID_HDR_SIZE, blk_size, buf, blk_size - (be32_to_cpu(ec->vid_hdr_offset) + UBI_VID_HDR_SIZE), mtd, mtd_fd))
                     continue;
 
-                if ( (!vid->data_size) || (getCrc32((void *)buf + be32_to_cpu(ec->data_offset), be32_to_cpu(vid->data_size), CRC_INIT) == be32_to_cpu(vid->data_crc)) )
+                if ( (vid->vol_type == UBI_VID_DYNAMIC) || (getCrc32((void *)buf + be32_to_cpu(ec->data_offset), be32_to_cpu(vid->data_size), CRC_INIT) == be32_to_cpu(vid->data_crc)) )
                 { // if dynamic volume or data crc matches
                     retry = 1; // found our block, allow for spin through blocks again if we get to the end just in case they are out of order
 
-                    if (vid->data_size)
+                    /* Dynamic volumes can have the data_size set to non zero after being scrubbed
+                     * by UBI (copy_flag set). In this case the data_size can be unreliable as
+                     * UBI truncates the ending 0xff from the byte count (see ubi_eba_copy_leb() in
+                     * drivers/mtd/ubi/eba.c). Instead, keep using the block size as the files stored
+                     * in UBI raw volumes and their offset/size are calculated based on the block size
+                     */
+                    if ((vid->vol_type == UBI_VID_STATIC) && vid->data_size)
                         end = be32_to_cpu(vid->data_size) + be32_to_cpu(ec->data_offset);
                     else
                         end = blk_size; // assume data takes the rest of block if not told otherwise
@@ -272,6 +278,12 @@ CONT:
                                 next_entry--;
                             }
 
+                            if (from >= end) // get more data
+                            {
+                                lnum++;
+                                break;
+                            }
+
                             if (crc_calc != crc_grab)
                                 return(0);
 
@@ -354,7 +366,7 @@ CONT:
 #ifndef CFEROM
                             if (writeblk && to && (from >= end))
                             { // update only if we touched data and are at the end of the block
-                                if ((volume_id != -1) && vid->data_size)
+                                if ((volume_id != -1) && (vid->vol_type == UBI_VID_STATIC) && vid->data_size)
                                 { // only update the CRC's if static volume, otherwise changing data CRC or size from zero on dynamic volume will cause kernel panic
                                     vid->data_crc = be32_to_cpu(getCrc32((void *)buf, be32_to_cpu(vid->data_size), CRC_INIT));
                                     vid->hdr_crc = be32_to_cpu(getCrc32((void *)vid, UBI_VID_HDR_SIZE-4, CRC_INIT));
@@ -398,7 +410,7 @@ CONT:
 #ifndef CFEROM
                             if (writeblk)
                             { // we fell through, write back since data would have been updated in previous state
-                                if ((volume_id != -1) && vid->data_size)
+                                if ((volume_id != -1) && (vid->vol_type == UBI_VID_STATIC) && vid->data_size)
                                 { // only update the CRC's if static volume, otherwise changing data CRC or size from zero on dynamic volume will cause kernel panic
                                     vid->data_crc = be32_to_cpu(getCrc32((void *)buf, be32_to_cpu(vid->data_size), CRC_INIT));
                                     vid->hdr_crc = be32_to_cpu(getCrc32((void *)vid, UBI_VID_HDR_SIZE-4, CRC_INIT));

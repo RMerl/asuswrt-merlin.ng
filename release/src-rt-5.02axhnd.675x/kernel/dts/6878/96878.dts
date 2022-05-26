@@ -177,6 +177,11 @@
 	};
 #endif
 
+	therm0: brcm-therm {
+		compatible = "brcm,therm";
+		reboot-temperature = <130000>; /* millicelsius */
+		status = "okay";
+	};
 };
 
 

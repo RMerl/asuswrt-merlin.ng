@@ -32,7 +32,7 @@ typedef struct
     bdmf_boolean transceiver_power_calibration_mode;  /**< Transceiver power calibration mode */
     uint32_t transceiver_power_calibration_pattern;   /**< Transceiver power calibration pattern */
     uint32_t transceiver_power_calibration_size;                /**< Transceiver power calibration size */
-    bdmf_boolean rx_din_polarity;                     /**< RX Data Polarity */
+    rdpa_polarity rx_din_polarity;                    /**< RX Data Polarity */
     uint32_t ber_threshold_for_sd_assertion;          /**< BER threshold for SD assertion */
     uint32_t ber_threshold_for_sf_assertion;          /**< BER threshold for SF assertion */
     uint32_t number_of_psyncs_for_lof_assertion;      /**< Number of PSYNCs for LOF assertion */

@@ -221,6 +221,8 @@ phy_drv_t phy_drv_ext2 =
     .caps_set = mii_caps_set,
     .auto_mdix_set = brcm_egphy_force_auto_mdix_set,
     .auto_mdix_get = brcm_egphy_force_auto_mdix_get,
+    .wirespeed_set = brcm_egphy_eth_wirespeed_set,
+    .wirespeed_get = brcm_egphy_eth_wirespeed_get,
     .phyid_get = mii_phyid_get,
     .init = _phy_init,
 };

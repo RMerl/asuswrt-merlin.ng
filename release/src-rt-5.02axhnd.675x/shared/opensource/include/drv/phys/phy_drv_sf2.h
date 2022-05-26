@@ -59,38 +59,6 @@ typedef struct phy_cl45_s {
     void *descriptor;
 } phy_cl45_t;
 
-static inline int phy_bus_c45_read32(phy_dev_t *phy_dev, uint32_t reg32, uint16_t *val_p)
-{
-    return phy_bus_c45_read(phy_dev, ((reg32)>>16)&0xffff, reg32&0xffff, val_p) +
-           phy_bus_c45_read(phy_dev, ((reg32)>>16)&0xffff, reg32&0xffff, val_p);
-}
-#define phy_bus_c45_write32(phy_dev, reg32, val) \
-    phy_bus_c45_write(phy_dev, ((reg32)>>16)&0xffff, reg32&0xffff, val)
-#if defined(RTAX95Q) || defined(RTAXE95Q)
-#define IsC45Phy(phy) (phy->phy_drv->phy_type == PHY_TYPE_EXT3 || phy->phy_drv->phy_type == PHY_TYPE_RTL8226)
-#else
-#define IsC45Phy(phy) (phy->phy_drv->phy_type == PHY_TYPE_EXT3)
-#endif
-
-int ethsw_phy_exp_rw(phy_dev_t *phy_dev, u32 reg, u16 *v16_p, int rd);
-static inline int ethsw_phy_exp_read32(phy_dev_t *phy_dev, u32 reg, u32 *v32_p)
-{
-    u16 v16; 
-    int rc;
-    rc = ethsw_phy_exp_rw(phy_dev, reg, &v16, 1); 
-    *v32_p = v16;
-    return rc;
-}
-
-#define ethsw_phy_exp_read(phy_dev, reg, v16_p) ethsw_phy_exp_rw(phy_dev, reg, v16_p, 1)
-static inline int ethsw_phy_exp_write(phy_dev_t *phy_dev, u32 reg, u32 v)
-{
-    u16 v16=v; 
-    int rc;
-    rc = ethsw_phy_exp_rw(phy_dev, reg, &v16, 0); 
-    return rc;
-}
-
 #ifdef PHY_SF2_SERDES
 typedef enum
 {
@@ -109,8 +77,7 @@ typedef enum
 
 typedef struct phy_i2c_priv_s {
     phy_sf2_priv_m;
-    int saved_registers[8];
-    int saved;
+    int inited;
     int sgmii_mode;
 } phy_i2c_priv_t;
 

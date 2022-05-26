@@ -932,6 +932,18 @@ static bp_elem_t g_bcm968580xpmd[] = {
   {bp_last}
 };
 
+static bp_elem_t g_bcm968580smtc[] = {
+  {bp_cpBoardId,               .u.cp = "968580SMTC"},
+  {bp_usExtIntrOpticalModulePresence, .u.us = BP_EXT_INTR_NONE},
+  {bp_usGpio_Intr,             .u.us = BP_GPIO_NONE},
+  {bp_usGpioOpticalModuleTxPwrDown, .u.us = BP_GPIO_NONE},
+  {bp_usGpioSMTCTxDis,         .u.us = BP_GPIO_32_AH},
+  {bp_usRogueOnuEn,            .u.us = BP_GPIO_56_AH},
+  {bp_usGpioPonTxEn,           .u.us = BP_GPIO_51_AH},
+  {bp_elemTemplate,            .u.bp_elemp = g_bcm968580xref_p500_phy},
+  {bp_last}
+};
+
 static bp_elem_t g_bcm955045dpu[] = {
   {bp_cpBoardId,                .u.cp = "955045DPU"},
   {bp_usSpiSlaveBusNum,        .u.us = HS_SPI_BUS_NUM},
@@ -1255,7 +1267,7 @@ bp_elem_t * g_BoardParms[] = {g_bcm968580xsv,           g_bcm968580xsv_rgmii_phy
                               g_bcm968580xpmd,          g_bcm955045dpu,             g_bcm949508eapax,
                               g_bcm949508eapax_pci2,    g_bcm955045dpu16,           g_bcm968580xref_moca,
                               g_bcm968580xref_p500_phy, g_bcm965450_424,            g_bcm965450_424_xfi, 
-                              g_bcm965450_212,          g_bcm965450_212_xfi,
+                              g_bcm965450_212,          g_bcm965450_212_xfi,        g_bcm968580smtc,
                               0};
 
 

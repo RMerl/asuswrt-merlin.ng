@@ -54,7 +54,11 @@ extern "C" {
 #elif defined(_BCM96858_) || defined(CONFIG_BCM96858)
 #define DRAM_DEF_SIZE           0x20000000      /* 6858 512MB*/
 #else
-#define DRAM_DEF_SIZE           0x04000000      /* Universal value across all bcm93xx 128 MB*/
+#ifndef CONFIG_BRCM_QEMU
+#define DRAM_DEF_SIZE           0x04000000      /* Universal value across all bcm93xx 64 MB*/
+#else
+#define DRAM_DEF_SIZE           0x08000000      /* Universal value across all bcm93xx 128 MB*/
+#endif
 #endif
 #define PHYS_DRAM_BASE          0x00000000      /* Dynamic RAM Base */
 #if defined(_BCM963158_) || defined(CONFIG_BCM963158)
@@ -159,7 +163,7 @@ mappaed address is for NAND in the kerSysEarlyFlashInit in board driver bcm63xx_
 /*****************************************************************************/
 #if defined(_BCM96846_) || defined(CONFIG_BCM96846) || defined(_BCM963178_) || defined(CONFIG_BCM963178) || defined(_BCM963158_) || defined(CONFIG_BCM963158) || defined(_BCM96878_) || defined(CONFIG_BCM96878) || \
 	defined(CONFIG_BCM96858) || defined(_BCM96858_) || defined(_BCM96856_) || defined(CONFIG_BCM96856) || \
-	defined(_BCM947622_) || defined(CONFIG_BCM947622)
+	defined(_BCM947622_) || defined(CONFIG_BCM947622) || defined(_BCM96855_) || defined(CONFIG_BCM96855)
     /* defined(_BCM96858_) || defined(CONFIG_BCM96858) */ /* A0 is 50MHz, B0 will be to 200MHz ... how to handle that ?*/
 #define FPERIPH            200000000
 #else
@@ -219,6 +223,7 @@ mappaed address is for NAND in the kerSysEarlyFlashInit in board driver bcm63xx_
     defined(_BCM963158_) || defined(CONFIG_BCM963158) || \
     defined(_BCM96846_) || defined(CONFIG_BCM96846) || \
     defined(_BCM96878_) || defined(CONFIG_BCM96878) || \
+    defined(_BCM96855_) || defined(CONFIG_BCM96855) || \
     defined(_BCM963178_) || defined(CONFIG_BCM963178) || \
     defined(_BCM947622_) || defined(CONFIG_BCM947622) || \
     defined(_BCM96856_) || defined(CONFIG_BCM96856)
@@ -378,7 +383,7 @@ mappaed address is for NAND in the kerSysEarlyFlashInit in board driver bcm63xx_
 #define DEFAULT_NVRAM_RDP_RNRTBLSSIZE    4
 #define DEFAULT_NVRAM_RDP_PARAM1 DEFAULT_NVRAM_RDP_FPMPOOLSIZE
 #define DEFAULT_NVRAM_RDP_PARAM2 DEFAULT_NVRAM_RDP_RNRTBLSSIZE
-#elif defined(_BCM96878_)
+#elif defined(_BCM96878_) 
 #define MAX_FPMPOOL_SIZE 32
 #define MAX_RNRTBLS_SIZE 8
 #define MAX_RDP_PARAM1_SIZE MAX_FPMPOOL_SIZE
@@ -386,6 +391,16 @@ mappaed address is for NAND in the kerSysEarlyFlashInit in board driver bcm63xx_
 #define MIN_RDP_PARAM2_SIZE MIN_RNRTBLS_SIZE
 #define DEFAULT_NVRAM_RDP_FPMPOOLSIZE    16
 #define DEFAULT_NVRAM_RDP_RNRTBLSSIZE    4
+#define DEFAULT_NVRAM_RDP_PARAM1 DEFAULT_NVRAM_RDP_FPMPOOLSIZE
+#define DEFAULT_NVRAM_RDP_PARAM2 DEFAULT_NVRAM_RDP_RNRTBLSSIZE
+#elif defined(_BCM96855_)
+#define MAX_FPMPOOL_SIZE 256
+#define MAX_RNRTBLS_SIZE 23
+#define MAX_RDP_PARAM1_SIZE MAX_FPMPOOL_SIZE
+#define MAX_RDP_PARAM2_SIZE MAX_RNRTBLS_SIZE
+#define MIN_RDP_PARAM2_SIZE MIN_RNRTBLS_SIZE
+#define DEFAULT_NVRAM_RDP_FPMPOOLSIZE    32
+#define DEFAULT_NVRAM_RDP_RNRTBLSSIZE    8
 #define DEFAULT_NVRAM_RDP_PARAM1 DEFAULT_NVRAM_RDP_FPMPOOLSIZE
 #define DEFAULT_NVRAM_RDP_PARAM2 DEFAULT_NVRAM_RDP_RNRTBLSSIZE
 #else

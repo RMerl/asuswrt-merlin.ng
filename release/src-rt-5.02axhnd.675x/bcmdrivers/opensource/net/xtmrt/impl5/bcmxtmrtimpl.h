@@ -355,6 +355,7 @@ typedef struct BcmXtm_TxQueue
     UINT8  ucLoMaxThresh;        /* RED/WRED Low Class max threshold in % of queue size */
     UINT8  ucHiMinThresh;        /* WRED High Class min threshold in % of queue size */
     UINT8  ucHiMaxThresh;        /* WRED High Class max threshold in % of queue size */
+    UINT32 ulMBR;                /* Minimum Buffer Reservation Attribute */
 } BcmXtm_TxQueue;
 
 #define BcmPktDma_XtmTxDma BcmXtm_TxQueue

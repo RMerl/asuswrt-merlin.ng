@@ -29,7 +29,9 @@
 
 #include <linux/bcm_log.h>
 #include <rdpa_api.h>
-
+rdpa_if rdpa_mw_root_dev2rdpa_if(struct net_device *root_dev);
+uint8_t rdpa_mw_root_dev2rdpa_ssid(struct net_device *root_dev);
+#ifdef CONFIG_BLOG
 int blog_parse_mcast_result_get(Blog_t *blog, rdpa_ic_result_t *mcast_result);
 void blog_parse_mcast_result_put(rdpa_ic_result_t *mcast_result);
 rdpa_if rdpa_mw_root_dev2rdpa_if(struct net_device *root_dev);
@@ -39,4 +41,4 @@ rdpa_if blog_parse_ingress_port_get(Blog_t *blog);
 #if defined(CONFIG_BCM_PON)
 void blog_parse_policer_get(Blog_t *blog_p, bdmf_object_handle *policer);
 #endif
-
+#endif

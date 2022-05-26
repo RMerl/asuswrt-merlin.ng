@@ -430,7 +430,7 @@ if [ "$BUILD_NAME" == "RT-AX55" ] || [ "$BUILD_NAME" == "RT-AX1800" ]; then
 	rm -rf $TARGETS_DIR/$ROOTFS/lib/modules/4.1.52/kernel/drivers/cdrom
 	rm -rf $TARGETS_DIR/$ROOTFS/lib/modules/4.1.52/kernel/drivers/scsi
 	rm -rf $TARGETS_DIR/$ROOTFS/lib/modules/4.1.52/kernel/drivers/usb
-	rm -rf $TARGETS_DIR/$ROOTFS/lib/modules/4.1.52/kernel/drivers/net/bonding/bonding.ko
+	rm -rf $TARGETS_DIR/$ROOTFS/lib/modules/4.1.52/kernel/drivers/net/bonding
 	rm -rf $TARGETS_DIR/$ROOTFS/lib/modules/4.1.52/kernel/fs
 	rm -rf $TARGETS_DIR/$ROOTFS/lib/modules/4.1.52/kernel/net/ipv4/tcp_bic.ko
 	rm -rf $TARGETS_DIR/$ROOTFS/lib/modules/4.1.52/kernel/net/ipv4/tcp_htcp.ko
@@ -440,6 +440,22 @@ if [ "$BUILD_NAME" == "RT-AX55" ] || [ "$BUILD_NAME" == "RT-AX1800" ]; then
 	rm -rf $TARGETS_DIR/$ROOTFS/rom/etc/wlan/nvram/MAP-AX6600.nvm
 	rm -rf $TARGETS_DIR/$ROOTFS/usr/lib/libusb*
 	rm -rf $TARGETS_DIR/$ROOTFS/usr/sbin/dhd
+fi
+
+if [ "$BUILD_NAME" == "RT-AX82_XD6" ] || [ "$BUILD_NAME" == "RT-AX82_XD6S" ]; then
+	rm -rf $TARGETS_DIR/$ROOTFS/lib/modules/4.1.52/kernel/drivers/cdrom
+	rm -rf $TARGETS_DIR/$ROOTFS/lib/modules/4.1.52/kernel/drivers/net/phy
+	rm -rf $TARGETS_DIR/$ROOTFS/lib/modules/4.1.52/kernel/drivers/scsi
+	rm -rf $TARGETS_DIR/$ROOTFS/lib/modules/4.1.52/kernel/drivers/usb/host/ehci*
+	rm -rf $TARGETS_DIR/$ROOTFS/lib/modules/4.1.52/kernel/drivers/usb/host/xhci*
+	rm -rf $TARGETS_DIR/$ROOTFS/lib/modules/4.1.52/kernel/drivers/usb/mon
+	rm -rf $TARGETS_DIR/$ROOTFS/lib/modules/4.1.52/kernel/drivers/usb/storage
+	rm -rf $TARGETS_DIR/$ROOTFS/lib/modules/4.1.52/kernel/drivers/net/bonding
+	rm -rf $TARGETS_DIR/$ROOTFS/lib/modules/4.1.52/kernel/fs
+	rm -rf $TARGETS_DIR/$ROOTFS/rom/etc/wlan/nvram
+	rm -rf $TARGETS_DIR/$ROOTFS/usr/lib/libusb*
+	rm -rf $TARGETS_DIR/$ROOTFS/usr/sbin/mk*
+	rm -rf $TARGETS_DIR/$ROOTFS/usr/sbin/*fsck*
 fi
 
 # strip userspace binaries is sstrip is "enabled"

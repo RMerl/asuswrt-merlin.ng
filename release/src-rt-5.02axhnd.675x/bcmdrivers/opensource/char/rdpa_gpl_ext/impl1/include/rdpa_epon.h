@@ -45,7 +45,7 @@
  */
 
 /** Max number of PHY LLIDs */
-#if defined(CONFIG_BCM96858) || defined(CONFIG_BCM96856)
+#if defined(CONFIG_BCM96858) || defined(CONFIG_BCM96856) || defined(CONFIG_BCM96855)
 #define RDPA_EPON_MAX_PHY_LLID      32
 #else
 #define RDPA_EPON_MAX_PHY_LLID      24

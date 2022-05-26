@@ -106,12 +106,21 @@ static void bp_parse_reset_gpio(const EMAC_PORT_INFO *port_info, phy_dev_t *phy_
     }
 }
 
-static void bp_parse_idle_stuffing(const EMAC_PORT_INFO *port_info, phy_dev_t *phy_dev)
+static void bp_parse_inter_phy_types(const EMAC_PORT_INFO *port_info, phy_dev_t *phy_dev)
 {
-    if (port_info->port_flags & PORT_FLAG_WAN_ONLY)
-        phy_dev->idle_stuffing = 0;
+#if !defined(DSL_DEVICES)
+    uint32_t port_flags_base_r = port_info->port_flags & PORT_FLAG_BASE_R;
+
+    if (port_flags_base_r)
+        phy_dev->inter_phy_types |= INTER_PHY_TYPE_2P5GBASE_R_M;
     else
-        phy_dev->idle_stuffing = (phy_dev->mii_type == PHY_MII_TYPE_XFI);
+        phy_dev->inter_phy_types |= INTER_PHY_TYPE_2P5GBASE_X_M;
+
+    if (port_info->switch_port == 8)
+        phy_dev->inter_phy_types |= INTER_PHY_TYPE_5GBASE_R_M;
+    else
+        phy_dev->inter_phy_types |= INTER_PHY_TYPE_5GIDLE_M;
+#endif
 }
 
 phy_dev_t *bp_parse_phy_dev(const EMAC_PORT_INFO *port_info)
@@ -138,15 +147,43 @@ phy_dev_t *bp_parse_phy_dev(const EMAC_PORT_INFO *port_info)
     bp_parse_port_flags(port_info, phy_dev);
     bp_parse_phy_driver(port_info, phy_dev->phy_drv);
     bp_parse_phy_ext(port_info, phy_dev);
-    bp_parse_idle_stuffing(port_info, phy_dev);
+    bp_parse_inter_phy_types(port_info, phy_dev);
     bp_parse_reset_gpio(port_info, phy_dev);
+
+    if (phy_type == PHY_TYPE_MAC2MAC)
+    {
+        switch (meta_id & (PHY_LNK_CFG_M<<PHY_LNK_CFG_S))
+        {
+            case FORCE_LINK_10HD:
+                phy_dev->speed = PHY_SPEED_10;
+                phy_dev->duplex = PHY_DUPLEX_HALF;
+                break;
+            case FORCE_LINK_10FD:
+                phy_dev->speed = PHY_SPEED_10;
+                phy_dev->duplex = PHY_DUPLEX_FULL;
+                break;
+            case FORCE_LINK_100HD:
+                phy_dev->speed = PHY_SPEED_100;
+                phy_dev->duplex = PHY_DUPLEX_HALF;
+                break;
+            case FORCE_LINK_100FD:
+                phy_dev->speed = PHY_SPEED_100;
+                phy_dev->duplex = PHY_DUPLEX_FULL;
+                break;
+            case FORCE_LINK_1000FD:
+                phy_dev->speed = PHY_SPEED_1000;
+                phy_dev->duplex = PHY_DUPLEX_FULL;
+                break;
+        }
+        phy_dev->link = 1;
+    }
 
 Exit:
     return phy_dev;
 }
 EXPORT_SYMBOL(bp_parse_phy_dev);
 
-#if !(defined(CONFIG_BCM96838) || defined(CONFIG_BCM96846) || defined(CONFIG_BCM96856) || defined(CONFIG_BCM96878))
+#if !(defined(CONFIG_BCM96838) || defined(CONFIG_BCM96846) || defined(CONFIG_BCM96856) || defined(CONFIG_BCM96878) || defined(CONFIG_BCM96855))
 void bp_parse_mac_ext(const ETHERNET_MAC_INFO *emac_info, uint32_t port, mac_dev_t *mac_dev)
 {
     /* stub for chips that do not implement this function */

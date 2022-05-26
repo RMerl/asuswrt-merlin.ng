@@ -98,6 +98,7 @@ eap_xmit_schedule_hook_t    eap_xmit_schedule_hook = NULL;
 EXPORT_SYMBOL(eap_xmit_schedule_hook);
 #endif /* BCM_EAPFWD */
 
+
 /**
  * =============================================================================
  * Section: ENET Global System Object(s)
@@ -888,16 +889,23 @@ static inline netdev_tx_t __enet_xmit(pNBuff_t pNBuff, struct net_device *dev)
     int ret = 0;
     uint32_t *pMark;
     uint32_t len = 0, priority, rflags, mark = 0;
-    uint8_t *data;
+    uint8_t *data = NULL;
     dispatch_info_t dispatch_info = {};
+#ifdef ENET_ARP_LCP_HI_PRIO
     int hiPrioFlag=0;
+#endif
     struct sk_buff *skb = NULL;
 #ifdef CONFIG_BCM_BPM_BUF_TRACKING
     FkBuff_t *fkb = NULL;
 #endif
 #if defined(CC_DROP_PRECEDENCE)
-    UBOOL8 (*vlan_look)(struct net_device *dev, uint8 *data, unsigned int len);
+    UBOOL8 (*vlan_lookup_dp)(struct net_device *dev, uint8 *data, unsigned int len, bool *isDpConfigured);
 #endif /* CC_DROP_PRECEDENCE */
+#if defined(CC_DROP_PRECEDENCE) || defined(DSL_DEVICES)
+    bool isDpConfigured = false;
+#endif
+	uint32_t ori_mark = 0, new_mark = 0;
+
 
 	/* If Broadstream iqos enable, for WAN egress packets, need to call dev_queue_xmit */
     if (BROADSTREAM_IQOS_ENABLE() && pNBuff && DEV_ISWAN(dev)) {
@@ -929,6 +937,7 @@ static inline netdev_tx_t __enet_xmit(pNBuff_t pNBuff, struct net_device *dev)
             nbuff_free(SKBUFF_2_PNBUFF(skb));
             return PKT_DROP;
         }
+        skb_reset_network_header(skb);
         dev_queue_xmit(skb);
         return 0;
     }
@@ -947,6 +956,7 @@ normal_path:
         enet_dbg_tx("The physical port_id is %d (%s)\n", port->p.mac->mac_id, port->obj_name);
 
         get_mark_pNbuff(pNBuff, &pMark);
+		ori_mark = *pMark;
         INC_STAT_TX_Q_IN(port,SKBMARK_GET_Q_PRIO(*pMark));
 
         /* adjust tx priority q based on packet type (ARP, LCP) */ 
@@ -961,6 +971,7 @@ normal_path:
                 ETH_GBPM_TRACK_SKB( skb, GBPM_VAL_ENTER, 0 );
                 ETH_GBPM_TRACK_SKB( skb, GBPM_VAL_TX, 0 );
 
+#ifdef ENET_ARP_LCP_HI_PRIO
                 check_arp_lcp_pkt(skb->data, hiPrioFlag);
                 if (hiPrioFlag)
                 {
@@ -971,6 +982,7 @@ normal_path:
 #endif                    
                     *pMark = SKBMARK_SET_Q_PRIO(*pMark, hiPrioQ);
                 }
+#endif
             }
         }
 #ifdef CONFIG_BCM_BPM_BUF_TRACKING
@@ -1035,6 +1047,38 @@ normal_path:
         ///enet_dbgv("%s/%s/q%d len:%d imp=%d\n", port->obj_name, port->dev->name, dispatch_info.egress_queue, len, dispatch_info.lag_port); /// one line tx info
 #endif
 
+        dispatch_info.drop_eligible = 0;
+
+        if (unlikely(dg_in_context))
+            dispatch_info.no_lock = 1;
+#if defined(CC_DROP_PRECEDENCE)
+        else 
+        {
+            vlan_lookup_dp = (void *) bcmFun_get(BCM_FUN_ID_VLAN_LOOKUP_DP);
+            if (vlan_lookup_dp)
+                dispatch_info.drop_eligible = vlan_lookup_dp(dev, data, len, &isDpConfigured);
+        }
+#endif /* CC_DROP_PRECEDENCE */
+
+#if defined(DSL_DEVICES)
+        if ( SKBMARK_GET_TC_ID(mark) != 0 )
+        {
+            dispatch_info.drop_eligible = SKBMARK_GET_TC_ID(mark);
+        }
+        else if ( isDpConfigured )
+        {
+            /* This means the drop precedence has been configured in vlanctl module.
+               For GPON implementations, the drop precedence is set via the vlanctl module
+               and typically the TC ID value in the skb->mark is not set.
+               So, pass down the drop eligibility value to runner as a TC value with
+               possible TC values of 0 and 1 with TC value 0 being high priority and  1
+               being low priority. Note that to enforce this TC priority, the priority mask
+               in the queue configuration must be set and for GPON the omci sdk
+               sets the priority mask */
+            *pMark = SKBMARK_SET_TC_ID(*pMark, dispatch_info.drop_eligible);
+        }
+#endif
+
 #ifdef CONFIG_BLOG
         /* Pass to blog->fcache, so it can construct the customized fcache based execution stack */
         /* TODO: blog_chnl is based on network device attached to xmit port, not egress_port ? */
@@ -1048,11 +1092,15 @@ normal_path:
                 PNBUFF_2_SKBUFF(pNBuff)->blog_p->lag_port = dispatch_info.lag_port;
                 if (BROADSTREAM_IQOS_ENABLE()) {
                     if (((dev->priv_flags & IFF_WANDEV) && !PKTISFKBTOQMIT(skb)) ||
-                        !DEV_ISWAN(PNBUFF_2_SKBUFF(pNBuff)->blog_p->rx_dev_p))
+                        !DEV_ISWAN(PNBUFF_2_SKBUFF(pNBuff)->blog_p->rx_dev_p)) {
+						new_mark = *pMark;
+                        PNBUFF_2_SKBUFF(pNBuff)->mark = ori_mark;
                         blog_emit(pNBuff, dev, TYPE_ETH, port->n.set_channel_in_mark ? dispatch_info.channel : port->n.blog_chnl, port->n.blog_phy);
+                        PNBUFF_2_SKBUFF(pNBuff)->mark = new_mark;
+                    }
                 }
                 else
-                    blog_emit(pNBuff, dev, TYPE_ETH, port->n.set_channel_in_mark ? dispatch_info.channel : port->n.blog_chnl, port->n.blog_phy);
+                blog_emit(pNBuff, dev, TYPE_ETH, port->n.set_channel_in_mark ? dispatch_info.channel : port->n.blog_chnl, port->n.blog_phy);
             }
         }
 #endif /* CONFIG_BLOG */
@@ -1070,12 +1118,11 @@ normal_path:
             ret = nbuff_pad(pNBuff, ETH_ZLEN - len);
             if (unlikely(ret))
             {
-                /* if skb can't pad, skb is freed on error */
+               /* if skb can't pad, skb is freed on error */
                 INC_STAT_TX_DROP(port->p.parent_sw,tx_dropped_no_skb);
                 return 0;
             }
-            if (IS_SKBUFF_PTR(pNBuff))
-                (PNBUFF_2_SKBUFF(pNBuff))->len = ETH_ZLEN;
+
             /*
              * nbuff_pad might call pskb_expand_head() which can
              * create an identical copy of the sk_buff. &sk_buff itself is not
@@ -1088,23 +1135,6 @@ normal_path:
                 return 0;
             }
         }
-
-        dispatch_info.drop_eligible = 0;
-
-#if defined(DSL_DEVICES)
-        dispatch_info.drop_eligible = SKBMARK_GET_TC_ID(mark);
-#endif
-
-        if (unlikely(dg_in_context))
-            dispatch_info.no_lock = 1;
-#if defined(CC_DROP_PRECEDENCE)
-        else 
-        {
-            vlan_look = (void *) bcmFun_get(BCM_FUN_ID_VLAN_LOOKUP_DP);
-            if (vlan_look)
-                dispatch_info.drop_eligible = vlan_look(dev, data, len);
-        }
-#endif /* CC_DROP_PRECEDENCE */
 
         dispatch_info.pNBuff = pNBuff;
         dispatch_info.port = egress_port;
@@ -1161,7 +1191,7 @@ drop_exit:
     return 0;
 }
 
-static netdev_tx_t enet_xmit(pNBuff_t pNBuff, struct net_device *dev)
+netdev_tx_t enet_xmit(pNBuff_t pNBuff, struct net_device *dev)
 {
 #if defined(CONFIG_BCM_SW_GSO)
     if (IS_SKBUFF_PTR(pNBuff) && (NETDEV_PRIV(dev)->priv_feat & BCMENET_PRIV_FEAT_SW_GSO))
@@ -1172,6 +1202,13 @@ static netdev_tx_t enet_xmit(pNBuff_t pNBuff, struct net_device *dev)
 #endif
 		return  __enet_xmit(pNBuff, dev);
 }
+
+#ifdef CONFIG_BRCM_QEMU 
+int qemu_enet_rx_pkt(int budget)
+{
+    return rx_pkt(enetx_channels, budget);
+}
+#endif
 
 #if !defined(DSL_DEVICES)
 int enetxapi_post_parse(void)
@@ -1301,6 +1338,15 @@ static int enet_set_mac_addr(struct net_device *dev, void *p)
     return 0;
 }
 
+static int enet_set_features(struct net_device *dev, netdev_features_t features)
+{
+    netdev_features_t changed = features ^ dev->features;
+
+    dev->features &= ~ changed;
+    dev->features |= features;
+    return 0;
+}
+
 #if defined(CONFIG_BCM_KERNEL_BONDING) && !defined(CONFIG_BCM_ETHTOOL)
 #error "CONFIG_BCM_ETHTOOL/BUILD_ETHTOOL must be defined with CONFIG_BCM_KERNEL_BONDING"
 #endif
@@ -1317,6 +1363,7 @@ static const struct net_device_ops enet_netdev_ops_port =
     .ndo_get_stats64 = enet_get_stats64,
     .ndo_change_mtu = enet_change_mtu,
     .ndo_set_mac_address  = enet_set_mac_addr,
+    .ndo_set_features = enet_set_features,
 };
 
 static const struct net_device_ops enet_netdev_ops_sw =
@@ -1943,12 +1990,16 @@ static int enet_dev_mac_set(enetx_port_t *p, int set)
     struct sockaddr sockaddr;
 
 #ifdef SEPARATE_MAC_FOR_WAN_INTERFACES
-    if (p->n.port_netdev_role == PORT_NETDEV_ROLE_WAN)
+    if (!(p->port_class & PORT_CLASS_PORT))
+        return -1; // don't set/get separate MAC for switch
+    if ((p->p.port_cap == PORT_CAP_WAN_ONLY) || (p->p.port_cap == PORT_CAP_WAN_PREFERRED))
         mac_group = p->dev->ifindex;
 #endif
 
 #ifdef SEPARATE_MAC_FOR_LAN_INTERFACES
-    if (p->n.port_netdev_role == PORT_NETDEV_ROLE_LAN)
+    if (!(p->port_class & PORT_CLASS_PORT))
+        return -1; // don't set/get separate MAC for switch
+    if ((p->p.port_cap == PORT_CAP_LAN_ONLY) || (p->p.port_cap == PORT_CAP_LAN_WAN))
         mac_group = p->dev->ifindex;
 #endif
 
@@ -2065,6 +2116,7 @@ int enet_create_netdevice(enetx_port_t *p)
          case PORT_CAP_LAN_ONLY:
              dev->features       |= NETIF_F_SG | NETIF_F_IP_CSUM | NETIF_F_IPV6_CSUM | NETIF_F_TSO | NETIF_F_TSO6;
              dev->vlan_features  |= NETIF_F_SG | NETIF_F_IP_CSUM | NETIF_F_IPV6_CSUM | NETIF_F_TSO | NETIF_F_TSO6;
+             dev->hw_features    |= NETIF_F_SG | NETIF_F_IP_CSUM | NETIF_F_IPV6_CSUM | NETIF_F_TSO | NETIF_F_TSO6;
         #if !defined(CONFIG_BCM_PKTRUNNER_GSO) && defined(CONFIG_BCM_SW_GSO)
              ndev->priv_feat |= BCMENET_PRIV_FEAT_SW_GSO;
         #endif
@@ -2074,6 +2126,7 @@ int enet_create_netdevice(enetx_port_t *p)
          case PORT_CAP_WAN_ONLY:
              dev->features       |= NETIF_F_SG | NETIF_F_IP_CSUM | NETIF_F_IPV6_CSUM | NETIF_F_TSO | NETIF_F_TSO6;
              dev->vlan_features  |= NETIF_F_SG | NETIF_F_IP_CSUM | NETIF_F_IPV6_CSUM | NETIF_F_TSO | NETIF_F_TSO6;
+             dev->hw_features    |= NETIF_F_SG | NETIF_F_IP_CSUM | NETIF_F_IPV6_CSUM | NETIF_F_TSO | NETIF_F_TSO6;
              ndev->priv_feat |= BCMENET_PRIV_FEAT_SW_GSO;
              break;
         #endif
@@ -2095,6 +2148,7 @@ int enet_create_netdevice(enetx_port_t *p)
 #else
      dev->features       |= NETIF_F_SG | NETIF_F_IP_CSUM | NETIF_F_IPV6_CSUM | NETIF_F_TSO | NETIF_F_TSO6 | NETIF_F_UFO;
      dev->vlan_features  |= NETIF_F_SG | NETIF_F_IP_CSUM | NETIF_F_IPV6_CSUM | NETIF_F_TSO | NETIF_F_TSO6 | NETIF_F_UFO;
+     dev->hw_features    |= NETIF_F_SG | NETIF_F_IP_CSUM | NETIF_F_IPV6_CSUM | NETIF_F_TSO | NETIF_F_TSO6 | NETIF_F_UFO;
 #endif
 #endif
 
@@ -2704,7 +2758,7 @@ enet_swqueue_flush_complete(void * driver)
  *              egress port (net_device) using pktfwd_key tagged to packet.
  * -----------------------------------------------------------------------------
  */
-
+#if !defined(CONFIG_BCM_HND_EAP)
 static inline uint32_t
 enet_swqueue_xmit(enet_swqueue_t  * enet_swqueue,
                   pktqueue_t      * pktqueue,
@@ -2788,6 +2842,63 @@ enet_swqueue_xmit(enet_swqueue_t  * enet_swqueue,
     return rx_pktcnt;
 
 }   /* enet_swqueue_xmit() */
+
+#else /* defined(CONFIG_BCM_HND_EAP) */
+static inline uint32_t
+enet_swqueue_xmit(enet_swqueue_t  * enet_swqueue,
+                  pktqueue_t      * pktqueue,
+                  uint32_t          budget,
+                  const NBuffPtrType_t NBuffPtrType)
+{
+    uint32_t            rx_pktcnt;
+    d3lut_key_t         d3lut_key;
+    d3lut_elem_t      * d3lut_elem;
+    pktqueue_pkt_t    * pkt;
+
+    ENET_SWQUEUE_LOCK(enet_swqueue); // +++++++++++++++++++++++++++++++++++++++
+
+
+    d3lut_key.v16 = 0; /* 2b-radio, 2b-incarn, 12b-dest */
+    rx_pktcnt = 0;
+
+    while (budget)
+    {
+        if (pktqueue->len != 0U)
+        {
+            pkt             = pktqueue->head;
+            pktqueue->head  = PKTQUEUE_PKT_SLL(pkt, NBuffPtrType);
+            PKTQUEUE_PKT_SET_SLL(pkt, PKTQUEUE_PKT_NULL, NBuffPtrType);
+            pktqueue->len--;
+
+            d3lut_key.v16 = PKTQUEUE_PKT_KEY(pkt, NBuffPtrType);
+
+            d3lut_elem = d3lut_k2e(d3lut_gp, d3lut_key);
+            if (likely(d3lut_elem != D3LUT_ELEM_NULL))
+            {
+                 __enet_xmit((pNBuff_t) pkt, d3lut_elem->ext.net_device);
+                 ++rx_pktcnt;
+            }
+            else
+            {
+                PKTQUEUE_PKT_FREE(pkt);
+                enet_swqueue->pkts_dropped++;
+            }
+        }
+        else /* pktqueue->len == 0 : No more packets to read */
+        {
+            break;
+        }
+
+        --budget;
+    } /* while (budget) */
+
+    ENET_SWQUEUE_UNLK(enet_swqueue); // ---------------------------------------
+
+    return rx_pktcnt;
+
+}   /* enet_swqueue_xmit() */
+
+#endif /* if !defined(CONFIG_BCM_HND_EAP) */
 
 #endif /* ENET_SWQUEUE */
 

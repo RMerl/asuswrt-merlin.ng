@@ -36,6 +36,11 @@
 #include "mac_drv_unimac.h"
 #include "unimac_drv.h"         // for MAX_NUM_OF_EMACS
 
+#if defined(XRDP_LED_EXT)
+#include "xrdp_led_init.h"
+void xrdp_led_set_status(uint32_t port, mac_speed_t speed, mac_duplex_t duplex);
+#endif
+
 static mac_stats_t cached_stats[MAX_NUM_OF_EMACS];
 
 static int port_unimac_init(mac_dev_t *mac_dev)
@@ -43,11 +48,15 @@ static int port_unimac_init(mac_dev_t *mac_dev)
     rdpa_emac emac = mac_dev->mac_id;
     unsigned long flags = (unsigned long)(mac_dev->priv);
 
+#if defined(XRDP_LED_EXT)
+    xrdp_led_init(emac);
+#endif
+
     mac_hwapi_init_emac(emac);
     mac_hwapi_set_external_conf(emac, 0);
-#if !defined(CONFIG_BCM947622)
+#if !defined(CONFIG_BCM947622) && !defined (CONFIG_BCM96855)
     mac_hwapi_set_unimac_cfg(emac, flags & UNIMAC_DRV_PRIV_FLAG_GMII_DIRECT);
-#endif //!47622
+#endif //!47622 && !96855
 
     if (flags & UNIMAC_DRV_PRIV_FLAG_EXTSW_CONNECTED)
     {
@@ -114,6 +123,10 @@ static int port_unimac_cfg_set(mac_dev_t *mac_dev, mac_cfg_t *mac_cfg)
     rdpa_emac emac = mac_dev->mac_id;
     rdpa_emac_cfg_t emac_cfg = {};
 
+#if defined(XRDP_LED_EXT)
+    xrdp_led_set_status(emac, mac_cfg->speed, mac_cfg->duplex);
+#endif
+
     mac_hwapi_get_configuration(emac, &emac_cfg);
 
     if (mac_cfg->speed == MAC_SPEED_10)
@@ -166,7 +179,7 @@ static int port_unimac_pause_set(mac_dev_t *mac_dev, int rx_enable, int tx_enabl
 
 static int port_unimac_stats_get(mac_dev_t *mac_dev, mac_stats_t *mac_stats)
 {
-    rdpa_emac_stat_t stats;
+    rdpa_emac_stat_t stats = {};
     rdpa_emac emac = mac_dev->mac_id;
 
     /* TODO: lock */

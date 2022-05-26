@@ -91,12 +91,14 @@ port_ops_t port_sysp_port =
     .stats_get = port_generic_stats_get,
     .pause_get = port_generic_pause_get,
     .pause_set = port_generic_pause_set,
-    .open = port_sysp_port_open,
+    .open = port_sf2_generic_open,
     .mtu_set = port_sysp_mtu_set,
     .mib_dump = port_sysp_mib_dump,
     .print_status = port_sf2_print_status,
     .role_set = port_sysp_port_role_set,
+#if 0   /* skip Andrew code */
     .mib_dump_us = port_sysp_mib_dump_us, // add by Andrew
+#endif
 };
 
 // =========== sf2 port ops =============================
@@ -119,14 +121,6 @@ static int port_sf2_port_init(enetx_port_t *self)
     enet_dbg("Initialized %s role %s\n", self->obj_name, (self->n.port_netdev_role==PORT_NETDEV_ROLE_WAN)?"wan":"lan" );
 
     return 0;
-}
-
-static void port_sf2_port_open(enetx_port_t *self)
-{
-    PORT_SET_EXT_SW(self);
-    // port is on external switch, also enable connected sysp port
-    port_open(sf2_sw->s.parent_port);
-    port_generic_open(self);
 }
 
 // based on impl5\bcmenet_runner_inline.h:bcmeapi_pkt_xmt_dispatch()
@@ -189,7 +183,7 @@ port_ops_t port_sf2_port =
     .stats_get = port_generic_stats_get,
     .pause_get = port_generic_pause_get,
     .pause_set = port_generic_pause_set,
-    .open = port_sf2_port_open,
+    .open = port_sf2_generic_open,
     .mtu_set = port_generic_mtu_set,
     .tx_q_remap = port_sf2_tx_q_remap,
     .mib_dump = port_sf2_mib_dump,
@@ -204,7 +198,9 @@ port_ops_t port_sf2_port =
         .switchdev_port_attr_set = sf2_switchdev_port_attr_set, 
     }
 #endif
+#if 0   /* skip Andrew code */
     .mib_dump_us = port_sf2_mib_dump_us, // add by Andrew
+#endif
 };
 
 port_ops_t port_sf2_port_mac =
@@ -216,7 +212,9 @@ port_ops_t port_sf2_port_mac =
     .mtu_set = port_generic_mtu_set,
     .mib_dump = port_sf2_mib_dump,
     .print_status = port_sf2_print_status,
-    .mib_dump_us = port_sf2_mib_dump_us,
+#if 0   /* skip Andrew code */
+    .mib_dump_us = port_sf2_mib_dump_us, // add by Andrew
+#endif
 };
 
 int enetxapi_post_config(void)

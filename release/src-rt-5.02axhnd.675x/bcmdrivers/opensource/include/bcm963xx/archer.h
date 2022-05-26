@@ -124,13 +124,6 @@ typedef struct {
 } archer_mpd_cfg_t;
 
 typedef enum {
-    ARCHER_DPI_CMD_ENABLE,
-    ARCHER_DPI_CMD_DISABLE,
-    ARCHER_DPI_CMD_STATS,
-    ARCHER_DPI_CMD_MAX
-} archer_dpi_cmd_t;
-
-typedef enum {
     SYSPORT_TM_CMD_ENABLE,
     SYSPORT_TM_CMD_DISABLE,
     SYSPORT_TM_CMD_STATS,
@@ -178,6 +171,41 @@ typedef struct {
     sysport_tm_mode_t mode;
     sysport_tm_txq_stats_t stats;
 } sysport_tm_arg_t;
+
+typedef enum {
+    ARCHER_DPI_CMD_MODE_SET,
+    ARCHER_DPI_CMD_MODE_GET,
+    ARCHER_DPI_CMD_STATS,
+    ARCHER_SQ_CMD_QUEUE_SET,
+    ARCHER_SQ_CMD_QUEUE_GET,
+    ARCHER_SQ_CMD_PORT_SET,
+    ARCHER_SQ_CMD_PORT_GET,
+    ARCHER_SQ_CMD_ARBITER_SET,
+    ARCHER_SQ_CMD_ARBITER_GET,
+    ARCHER_DPI_CMD_MAX
+} archer_dpi_cmd_t;
+
+typedef enum {
+    ARCHER_DPI_MODE_DISABLE = 0,
+    ARCHER_DPI_MODE_ENABLE,
+    ARCHER_DPI_MODE_SERVICE_QUEUE,
+    ARCHER_DPI_MODE_MAX
+} archer_dpi_mode_t;
+
+typedef enum {
+    ARCHER_SQ_ARBITER_SP,
+    ARCHER_SQ_ARBITER_RR,
+    ARCHER_SQ_ARBITER_MAX
+} archer_sq_arbiter_t;
+
+typedef struct {
+    archer_dpi_cmd_t cmd;
+    archer_dpi_mode_t mode;
+    archer_sq_arbiter_t arbiter;
+    int queue_index;
+    int min_kbps;
+    int max_kbps;
+} archer_dpi_arg_t;
 
 typedef enum {
     ARCHER_DROP_PROFILE_LOW = 0,
@@ -240,6 +268,5 @@ typedef struct {
     uint32_t pkt_prio_favor;
 
 } archer_wlflctl_config_t;
-
 
 #endif  /* __ARCHER_H_INCLUDED__ */

@@ -59,24 +59,6 @@ static void xtm_rdpa_rx_dump_data_cb(bdmf_index queue, bdmf_boolean enabled);
 static void xtm_rdpa_rxq_stat_cb(int qid, extern_rxq_stat_t *stat, bdmf_boolean clear);
 static inline int xtm_rdpa_rxq_queued_get(int qidx);
 RING_DESCRIPTOR_S xtm_ring[XTM_RNR_CPU_RX_QUEUES]  = {};
-
-
-static int service_queues_enabled;
-static bdmf_object_handle svc_queues_scheduler;
-static bdmf_object_handle svc_queues[32];
-static int     create_service_queues(bdmf_object_handle tm);
-static int     delete_service_queues(bdmf_object_handle tm);
-static int     svc_q_open(struct inode *inode, struct file *file);
-static ssize_t svc_q_write(struct file *file, const char __user *buf, size_t len, loff_t *offset);
-
-static const struct file_operations svc_queues_fops = {
-   .open    = svc_q_open,
-   .read    = seq_read,
-   .llseek  = seq_lseek,
-   .write   = svc_q_write,
-   .release = single_release
-};
-
 #endif
 
                                     /* RDP functions are listed here */
@@ -172,7 +154,6 @@ int bcmxapiex_get_pkt_from_ring(int hw_q_id, FkBuff_t **ppFkb, rdpa_cpu_rx_info_
 int bcmxapiex_add_proc_files(void)
 {
    xtm_dir = proc_mkdir("driver/xtm", NULL);
-   proc_create("svc-queues", 0440, xtm_dir, &svc_queues_fops);
    return 0;
 }
 
@@ -186,12 +167,10 @@ int bcmxapiex_add_proc_files(void)
  */
 int bcmxapiex_del_proc_files(void)
 {
-   remove_proc_entry("svc-queues", xtm_dir);
    proc_remove(xtm_dir);
-   xtm_dir = NULL ;
+   xtm_dir = NULL;
    return 0;
-    
-}  /* bcmxapi_del_proc_files() */
+} /* bcmxapi_del_proc_files() */
 
 
 int bcmxapiex_runner_xtm_objects_init(bdmf_object_handle wan, bdmf_object_handle *pXtm_orl_tm)
@@ -222,171 +201,12 @@ int bcmxapiex_cfg_cpu_ds_queues (rdpa_cpu_reason reason, uint8_t tc, uint8_t que
    
 }
 
-/*---------------------------------------------------------------------------
- * int create_service_queues(bdmf_object_handle tm)
- *
- * Description:
- *    When DPI is enabled, this function adds DPI queues under the best-effort
- *    egress_tm object passed in the arguments.
- * Returns:
- *    0 on succes, error condition otherwise
- *---------------------------------------------------------------------------
- */
-static int create_service_queues(bdmf_object_handle tm)
-{
-   BDMF_MATTR(sched_attrs, rdpa_egress_tm_drv());
-   rdpa_tm_service_queue_t service_queue = {.enable = 1};
-   bdmf_object_handle sub_sched = NULL;
-   int i, rc;
-
-   if (!service_queues_enabled || !tm || svc_queues_scheduler)
-      return 0;
-
-   rc = rdpa_egress_tm_subsidiary_get(tm, 0, &sub_sched);
-   if (rc)
-   {
-      BCM_LOG_NOTICE(BCM_LOG_ID_XTM, "rdpa_egress_tm_subsidiary_get() failed: rc(%d)", rc);
-      return rc;
-   }
-   /* if someone else programmed our service queues scheduler, save a reference
-    * to it and ignore creating anything further */
-   if (sub_sched)
-   {
-      svc_queues_scheduler = sub_sched;
-      return 0;
-   }
-
-   /* Create service queue scheduler */
-   rdpa_egress_tm_dir_set(sched_attrs, rdpa_dir_us);
-   rdpa_egress_tm_level_set(sched_attrs, rdpa_tm_level_egress_tm);
-   rdpa_egress_tm_mode_set(sched_attrs, rdpa_tm_sched_sp);
-   rdpa_egress_tm_service_queue_set(sched_attrs, &service_queue);
-
-   rc = bdmf_new_and_set(rdpa_egress_tm_drv(), tm, sched_attrs, &svc_queues_scheduler);
-   if (rc || !svc_queues_scheduler)
-   {
-      BCM_LOG_ERROR(BCM_LOG_ID_XTM, "Failed to create service queues scheduler, rc %d\n", rc);
-      return rc;
-   }
-
-   rc = rdpa_egress_tm_subsidiary_set(tm, 0, svc_queues_scheduler);
-   if (rc)
-   {
-      BCM_LOG_ERROR(BCM_LOG_ID_XTM, "rdpa_egress_tm_subsidiary_set() failed: rc(%d)", rc);
-      return rc;
-   }
-
-   /* Create queues under scheduler */
-   for (i = 0; i < ARRAY_SIZE(svc_queues); i++)
-   {
-      BDMF_MATTR(attrs, rdpa_egress_tm_drv());
-      rdpa_tm_queue_cfg_t queue_cfg = {};
-
-      /* Create service queue scheduler */
-      rdpa_egress_tm_dir_set(attrs, rdpa_dir_us);
-      rdpa_egress_tm_level_set(attrs, rdpa_tm_level_queue);
-      rdpa_egress_tm_mode_set(attrs, rdpa_tm_sched_disabled);
-      rdpa_egress_tm_service_queue_set(attrs, &service_queue);
-
-      rc = bdmf_new_and_set(rdpa_egress_tm_drv(), tm, attrs, &svc_queues[i]);
-      if (rc || !svc_queues[i])
-      {
-         BCM_LOG_ERROR(BCM_LOG_ID_XTM, "Failed to create service queue %d, rc %d\n", i, rc);
-         continue;
-      }
-
-      rc = rdpa_egress_tm_subsidiary_set(svc_queues_scheduler, i, svc_queues[i]);
-      if (rc) {
-         BCM_LOG_ERROR(BCM_LOG_ID_XTM, "rdpa_egress_tm_subsidiary_set() failed: rc(%d)", rc);
-         continue;
-      }
-
-      queue_cfg.queue_id = i;
-
-      rc = rdpa_egress_tm_queue_cfg_set(svc_queues[i], 0, &queue_cfg);
-      if (rc)
-         BCM_LOG_ERROR(BCM_LOG_ID_XTM, "rdpa_egress_tm_queue_cfg_set() failed: rc(%d)", rc);
-   }
-
-   return 0;
-}
-
-/*---------------------------------------------------------------------------
- * int delete_service_queues(bdmf_object_handle tm)
- *
- * Description:
- *    When DPI is enabled, this function adds DPI queues under the best-effort
- *    egress_tm object passed in the arguments.
- * Returns:
- *    0 on succes, error condition otherwise
- *---------------------------------------------------------------------------
- */
-static int delete_service_queues(bdmf_object_handle tm)
-{
-   int i;
-
-   /* destroy service queues */
-   for (i = 0; i < ARRAY_SIZE(svc_queues); i++)
-   {
-      if (!svc_queues[i])
-         continue;
-
-      bdmf_destroy(svc_queues[i]);
-      svc_queues[i] = NULL;
-   }
-
-   /* destroy svc queue scheduler */
-   if (svc_queues_scheduler)
-   {
-      bdmf_destroy(svc_queues_scheduler);
-      svc_queues_scheduler = NULL;
-   }
-
-   return 0;
-}
-
-static int svc_q_seq_show(struct seq_file *s, void *v)
-{
-   return seq_printf(s, "%d\n", service_queues_enabled);
-}
-static int svc_q_open(struct inode *inode, struct file *file)
-{
-   return single_open(file, svc_q_seq_show, NULL);
-};
-static ssize_t svc_q_write(struct file *file, const char __user *buf, size_t len, loff_t *offset)
-{
-   int changed;
-   long val = 0;
-   ssize_t ret;
-
-   ret = kstrtol_from_user(buf, len, 10, &val);
-   if (ret < 0)
-      return ret;
-   val = val ? 1 : 0;
-
-   changed = (service_queues_enabled != val);
-   service_queues_enabled = val;
-   if (!changed)
-      return len;
-
-   if (service_queues_enabled)
-      create_service_queues(g_GlobalInfo.txBdmfObjs[0].egress_tm);
-   else
-      delete_service_queues(g_GlobalInfo.txBdmfObjs[0].egress_tm);
-
-   return len;
-}
-
 void bcmxapiex_SetOrStartTxQueue (rdpa_tm_queue_cfg_t *pQueueCfg, bdmf_object_handle egress_tm)
 {
-   if (pQueueCfg->best_effort)
-      create_service_queues(egress_tm);
 }
 
 void bcmxapiex_StopTxQueue (rdpa_tm_queue_cfg_t *pQueueCfg, bdmf_object_handle egress_tm)
 {
-   //if (pQueueCfg->best_effort)
-      //delete_service_queues(egress_tm);
 }
 
 
@@ -485,8 +305,6 @@ int bcmxapiex_runner_xtm_objects_init(bdmf_object_handle wan, bdmf_object_handle
    bdmf_object_handle system_obj = NULL;
    XTMRT_PORT_SHAPER_INFO portRateShaperInfo = {0, 0} ;
 
-   rdpa_filter_ctrl_t filter_ctrl;
-
    BDMF_MATTR(xtm_orl_tm_attr, rdpa_egress_tm_drv());
 
    if ((rc = rdpa_system_get(&system_obj)) || (system_obj == NULL)) {
@@ -523,17 +341,6 @@ int bcmxapiex_runner_xtm_objects_init(bdmf_object_handle wan, bdmf_object_handle
       bdmf_destroy (xtm_orl_tm) ;
       *pXtm_orl_tm = NULL ;
       return rc ;
-   }
-
-   /* adding default entry to always trap IP_FRAG packet */
-   filter_ctrl.enabled = TRUE;
-   filter_ctrl.action = rdpa_forward_action_host;
-   rc = rdpa_port_ingress_filter_set(wan, RDPA_FILTER_IP_FRAG, &filter_ctrl);
-   if (rc) {
-      BCM_LOG_ERROR(BCM_LOG_ID_XTM, "Failed to add filter '%u' for port %s, error %d\n",
-                     RDPA_FILTER_IP_FRAG, bdmf_object_name(wan), rc);
-      bdmf_destroy (xtm_orl_tm) ;
-      *pXtm_orl_tm = NULL ;
    }
 
    return rc;

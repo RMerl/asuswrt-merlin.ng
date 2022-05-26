@@ -81,6 +81,12 @@ netdev_tx_t br_dev_xmit(struct sk_buff *skb, struct net_device *dev)
 			if (skb == NULL) {
 				return NETDEV_TX_OK;
 			}
+			goto skb_from_fastpath;
+		} else if (IS_SKBUFF_PTR(skb) && (skb->dev == NULL)) {
+			/*from fc_stack(), frag_fkb_dev4: skb->dev is NULL */
+			skb->dev = dev;
+skb_from_fastpath:
+			skb_reset_network_header(skb);
 			BR_INPUT_SKB_CB(skb)->brdev = dev;
 			PKTSETDEVQXMIT(skb);
 			/* For broadstream iqos cb function */
@@ -89,7 +95,7 @@ netdev_tx_t br_dev_xmit(struct sk_buff *skb, struct net_device *dev)
 				goto lock_return;
 			}
 			dev_queue_xmit(skb);
-	lock_return:
+lock_return:
 			return NETDEV_TX_OK;
 		}
 	}
@@ -100,7 +106,7 @@ netdev_tx_t br_dev_xmit(struct sk_buff *skb, struct net_device *dev)
 		return NETDEV_TX_OK;
 	}
 
-#if defined(CONFIG_BCM_KF_BLOG)
+#if defined(CONFIG_BCM_KF_BLOG) && defined(CONFIG_BLOG)
 	blog_lock();
 	blog_link(IF_DEVICE, blog_ptr(skb), (void*)dev, DIR_TX, skb->len);
 	blog_unlock();
@@ -143,7 +149,7 @@ netdev_tx_t br_dev_xmit(struct sk_buff *skb, struct net_device *dev)
 #if defined(CONFIG_BCM_KF_BLOG) && defined(CONFIG_BLOG)
 	{
 		blog_lock();
-		blog_link(BRIDGEFDB, blog_ptr(skb), (void*)dst, BLOG_PARAM1_DSTFDB, 0);
+		blog_link(BRIDGEFDB, blog_ptr(skb), (void*)dst, BLOG_PARAM1_DSTFDB, br->dev->ifindex);
 		blog_unlock();
 #if defined(CONFIG_BCM_KF_WL)
 #if defined(PKTC) || defined(PKTC_TBL)

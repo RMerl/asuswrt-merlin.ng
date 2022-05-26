@@ -64,18 +64,26 @@
 #define RDPA_WLAN_MCAST_DHD_STATION_INDEX_INVALID  RDPA_WLAN_MCAST_MAX_DHD_STATIONS
 #define RDPA_WLAN_MCAST_FWD_TABLE_INDEX_INVALID    RDPA_WLAN_MCAST_MAX_FLOWS
 
-#define RDPA_WLAN_MCAST_SSID_MAC_ADDRESS_ENTRY_INDEX(_radio_index, _ssid) \
-    ((((_radio_index) & 0x3) << 4) | ((_ssid) & 0xF))
+uint32_t rdpa_dhd_helper_get_rnr_radio_idx(uint32_t host_radio_idx);
 
-#define RDPA_WLAN_MCAST_SSID_STATS_ENTRY_INDEX(_radio_index, _ssid) \
-    ((((_radio_index) & 0x3) << 4) | ((_ssid) & 0xF))
+static inline uint32_t rdpa_wlan_mcast_ssid_entry_index(uint32_t host_radio_idx, uint32_t ssid)
+{
+    uint32_t rnr_radio_idx = rdpa_dhd_helper_get_rnr_radio_idx(host_radio_idx);
+    return ((((rnr_radio_idx)&0x3) << 4) | ((ssid)&0xF));
+}
+
+#define RDPA_WLAN_MCAST_SSID_MAC_ADDRESS_ENTRY_INDEX(_host_radio_idx, _ssid) \
+    rdpa_wlan_mcast_ssid_entry_index(_host_radio_idx, _ssid)
+
+#define RDPA_WLAN_MCAST_SSID_STATS_ENTRY_INDEX(_host_radio_idx, _ssid) \
+    rdpa_wlan_mcast_ssid_entry_index(_host_radio_idx, _ssid)
 
 
 /** Wi-Fi Station information is only used when DHD mode is enabled.\n
  */
 typedef struct {
     bdmf_mac_t mac_address;          /**< MAC address for multicast->unicast translation */
-    uint8_t radio_index;             /**< Radio index that the station is connected to */
+    uint8_t host_radio_idx;             /**< Radio index that the station is connected to */
     uint8_t ssid;                    /**< SSID index that the station is connected to */
     uint16_t flowring_index;         /**< FlowRing index */
     uint8_t tx_priority;             /**< Packet egress priority */
@@ -102,7 +110,7 @@ typedef struct {
 /** SSID MAC Address Table.\n
  */
 typedef struct {
-    uint8_t radio_index;             /**< Radio index that the station is connected to */
+    uint8_t host_radio_idx;          /**< Radio index that the station is connected to */
     uint8_t ssid;                    /**< SSID index that the station is connected to */
     bdmf_mac_t mac_address;          /**< SSID MAC address for proxy mode */
     uint8_t reference_count;         /**< Reference count (READ ONLY) */
@@ -111,7 +119,7 @@ typedef struct {
 /** SSID Statistics Table.\n
  */
 typedef struct {
-    uint8_t radio_index;             /**< Radio index that the station is connected to */
+    uint8_t host_radio_idx;          /**< Radio index that the station is connected to */
     uint8_t ssid;                    /**< SSID index that the station is connected to */
     uint32_t packets;                /**< Packets (READ ONLY) */
     uint32_t bytes;                  /**< Bytes (READ ONLY) */

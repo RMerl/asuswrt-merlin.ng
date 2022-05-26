@@ -51,7 +51,23 @@ extern "C"
 #define FPM_BUF_SIZE_1K                     1024
 #define FPM_BUF_SIZE_2K                     2048
 #define FPM_BUF_MAX_BASE_BUFFS              8
-#define TOTAL_FPM_TOKENS                    ((64*1024) - 1)
+
+
+/* All following definitions must be 100*k since they are percent-wise divided */
+#if (defined BCM6878)
+#define TOTAL_DYNAMIC_FPM                   61000           /* ( 2 (FPM per DQM) * ( 287 (no. of queues) + 16 (prefetch) ) + 
+                                                               ( 64K (maximal number of PDs in Queue) / (2K / 16) number of PDs in FPM) ) * 4(2K allocation )
+                                                               = 4472 FPMs (basic size of 512). Worst case DQM FPM allocation.  */
+
+#define FPM_INDX_MASK                       (0xFFFF)
+#define FPM_POOL_ID_SHIFT                        16
+
+#else
+
+#define TOTAL_DYNAMIC_FPM                   120000
+#define FPM_INDX_MASK                       (0x1FFFF)
+#define FPM_POOL_ID_SHIFT                        17
+#endif
 
 void drv_fpm_init(void *virt_base, unsigned int fpm_buf_size);
 

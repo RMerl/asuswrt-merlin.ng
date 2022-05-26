@@ -37,7 +37,6 @@
  */
 #ifndef _UBOOT_
 #include <linux/kernel.h>
-#include <linux/spinlock.h>
 #include <linux/module.h>
 #endif
 #include "bus_drv.h"
@@ -127,59 +126,6 @@
     #define SERDES_SIGNAL_DETECTE_EN    (1<<2)
     #define SERDES_INVERT_SIGNAL_DET    (1<<3)
 
-
-DEFINE_MUTEX(bcm_phy_exp_mutex);
-
-int ethsw_phy_exp_rw(phy_dev_t *phy_dev, u32 reg, u16 *v16_p, int rd)
-{
-    u32 bank, offset;
-    int rc = 0;
-
-    if (reg < 0x20) {   /* CL22 space */
-        if (IsC45Phy(phy_dev)) {
-            printk("phy_id: %d does not support Clause 22\n", phy_dev->addr);
-            return rc;
-        }
-        if (rd)
-            rc = phy_bus_read(phy_dev, reg, v16_p);
-        else
-            rc = phy_bus_write(phy_dev, reg, *v16_p);
-        return rc;
-    }
-    else if (reg < 0x10000) /* expanded MDIO space */
-    {
-        bank = reg & BRCM_MIIEXT_BANK_MASK;
-        offset = (reg & BRCM_MIIEXT_OFF_MASK) + BRCM_MIIEXT_OFFSET;
-        mutex_lock(&bcm_phy_exp_mutex);
-        /* Set Bank Address */
-        rc = phy_bus_write(phy_dev, BRCM_MIIEXT_BANK, bank);
-
-        if (!rd)
-            rc += phy_bus_write(phy_dev, offset, *v16_p);
-        else
-            rc += phy_bus_read(phy_dev, offset, v16_p);
-
-        /* Set Bank back to default for standard access */
-        if(bank != BRCM_MIIEXT_DEF_BANK || offset == BRCM_MIIEXT_OFFSET)
-            rc += phy_bus_write(phy_dev, BRCM_MIIEXT_BANK, BRCM_MIIEXT_DEF_BANK);
-        mutex_unlock(&bcm_phy_exp_mutex);
-    }
-    else if (reg < 0x200000) /* CL45 space */
-    {
-        if (!IsC45Phy(phy_dev)) {
-            printk("phy_id=%d does not support Clause 45\n", phy_dev->addr);
-            return rc;
-        }
-
-        if (rd)
-            rc = phy_bus_c45_read32(phy_dev, reg, v16_p);
-        else
-            rc = phy_bus_c45_write32(phy_dev, reg, *v16_p);
-    }
-
-    return rc;
-}
-EXPORT_SYMBOL(ethsw_phy_exp_rw);
 
 /* Enable forced MDIX auto detection */
 static void ethsw_phy_force_mdix_auto(phy_dev_t *phy_dev)
@@ -372,6 +318,8 @@ phy_drv_t phy_drv_sf2_gphy =
     .eee_set = brcm_egphy_eee_set,
     .eee_get = brcm_egphy_eee_get,
     .eee_resolution_get = brcm_egphy_eee_resolution_get,
+    .wirespeed_set = brcm_egphy_eth_wirespeed_set,
+    .wirespeed_get = brcm_egphy_eth_wirespeed_get,
     .read_status = _phy_read_status,
     .speed_set = mii_speed_set,
     .caps_get = mii_caps_get,

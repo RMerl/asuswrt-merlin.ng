@@ -90,6 +90,8 @@ typedef enum bcm_mcast_msgtype
     BCM_MCAST_MSG_QUERY_TRIGGER,
     BCM_MCAST_MSG_OVS_BRINFO_UPDATE,
     BCM_MCAST_MSG_PORT_DOWN,
+    BCM_MCAST_MSG_IGMP_PURGE_GRP_REPORTER,
+    BCM_MCAST_MSG_MLD_PURGE_GRP_REPORTER,
     BCM_MCAST_MSG_MAX
 } t_BCM_MCAST_MSGTYPES;
 #define BCM_MCAST_NR_MSGTYPES (BCM_MCAST_MSG_MAX - BCM_MCAST_MSG_BASE)
@@ -132,7 +134,20 @@ typedef struct bcm_mcast_igmp_purge_entry
     int                       rep_ifi;
     unsigned short            tci;
     unsigned char             rep_proto_ver;
+    int                       last_rep;
 } t_BCM_MCAST_IGMP_PURGE_ENTRY;
+
+typedef struct bcm_mcast_mld_purge_entry
+{
+    struct in6_addr        ipv6grp;
+    struct in6_addr        ipv6rep;
+    struct in6_addr        ipv6src;
+    int                    parent_ifi;
+    int                    rep_ifi;
+    unsigned short         tci;
+    unsigned char          rep_proto_ver;
+    int                    last_rep;
+} t_BCM_MCAST_MLD_PURGE_ENTRY;
 
 typedef struct bcm_mcast_query_trigger
 {
@@ -152,6 +167,22 @@ typedef struct bcm_mcast_mld_purge_reporter
    int                       dstdev_ifi;
    struct in6_addr           rep;
 } t_BCM_MCAST_MLD_PURGE_REPORTER;
+
+typedef struct bcm_mcast_igmp_purge_grp_reporter
+{
+   int                       parent_ifi;
+   int                       dstdev_ifi;
+   struct in_addr            rep;   
+   struct in_addr            grp;
+} t_BCM_MCAST_IGMP_PURGE_GRP_REPORTER;
+
+typedef struct bcm_mcast_mld_purge_grp_reporter
+{
+   int                       parent_ifi;
+   int                       dstdev_ifi;
+   struct in6_addr           rep;
+   struct in6_addr           grp;
+} t_BCM_MCAST_MLD_PURGE_GRP_REPORTER;
 
 typedef struct bcm_mcast_admission_filter
 {

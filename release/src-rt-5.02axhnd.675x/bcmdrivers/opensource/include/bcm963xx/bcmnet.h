@@ -121,6 +121,8 @@ enum {
     ETHPORTDELETE,
     ETHPORTMCASTGEMSET,
     ETHPHYMACSEC,
+    ETHWIRESPEEDGET,
+    ETHWIRESPEEDSET,
 };
 
 struct ethctl_data {
@@ -274,6 +276,7 @@ enum
 #define SPEED_200MBIT       200000000
 #define SPEED_1000MBIT      1000000000
 #define SPEED_2500MBIT      2500000000u
+#define SPEED_5000MBIT      5000000000ull
 #define SPEED_10000MBIT     10000000000ull
 #define SPEED_DOWN          0
 

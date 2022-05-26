@@ -344,7 +344,7 @@ static int __init bp_parse_port(enetx_port_t *sw, const ETHERNET_MAC_INFO *emac_
         .is_management = is_management,
         .is_attached = is_attached,
         .is_detect = is_detect,
-        .is_epon = is_detect && port == 8,
+        .is_epon_ae = is_detect && port == 8,
         .is_wan = port_flags & PORT_FLAG_WAN_ONLY,
     };
 
@@ -385,7 +385,7 @@ static int __init bp_parse_port(enetx_port_t *sw, const ETHERNET_MAC_INFO *emac_
         if (p->p.phy) p->p.handle_phy_link_change = port_is_enet_link_handling(p);
 #endif
         if (p->p.phy) p->p.phy->sw_port = p;
-        if (p->p.phy) enet_dbgv("bp_parse_phy_dev: phyId=%x (%s) %px bus_drv:%px\n", p->p.phy->addr, p->p.phy->phy_drv->name, p->p.phy, p->p.phy->bus_drv);
+        if (p->p.phy) enet_dbgv("bp_parse_phy_dev: phyId=%x (%s) %px bus_drv:%px\n", p->p.phy->addr, p->p.phy->phy_drv->name, p->p.phy, p->p.phy->phy_drv->bus_drv);
         
         p->p.mac = bp_parse_mac_dev(emac_info, port); 
         if (p->p.mac) enet_dbgv("bp_parse_mac_dev: port %px macId=%x (%s) %px\n", p, p->p.mac->mac_id, p->p.mac->mac_drv->name, p->p.mac);
@@ -453,6 +453,43 @@ static int __init bp_parse_port(enetx_port_t *sw, const ETHERNET_MAC_INFO *emac_
     return 0;
 }
 
+#ifdef CONFIG_BRCM_QEMU
+static int __init bp_parse_qemu(void)
+{
+    enetx_port_t *p_0;
+    enetx_port_t *p_1;
+    enetx_port_t *sw;
+    port_info_t port_info_0 ={
+        .port = 0,
+    };
+
+    port_info_t port_info_1 ={
+        .port = 1,
+    };
+
+    sw = bp_create_sw(PORT_TYPE_RUNNER_SW, "bcmsw", NULL);
+    if (port_create(&port_info_0, sw, &p_0) != 0)
+       printk("Port Create Error:[%s:%d]\n",__FUNCTION__,__LINE__);
+
+    p_0->has_interface = 1;
+    p_0->p.mac = mac_dev_add(MAC_TYPE_UNIMAC, 0, (void*)(1<<0)/*UNIMAC_DRV_PRIV_FLAG_GMII_DIRECT*/);
+    if (p_0->p.mac == NULL)
+       printk("Add MAC to dev Error:[%s:%d]\n",__FUNCTION__,__LINE__); 
+
+    if (port_create(&port_info_1, sw, &p_1) != 0)
+       printk("Port Create Error:[%s:%d]\n",__FUNCTION__,__LINE__);
+
+    p_1->has_interface = 1;
+    p_1->p.mac = mac_dev_add(MAC_TYPE_UNIMAC, 1, (void*)(1<<0)/*UNIMAC_DRV_PRIV_FLAG_GMII_DIRECT*/);
+    if (p_1->p.mac == NULL)
+       printk("Add MAC to dev Error:[%s:%d]\n",__FUNCTION__,__LINE__); 
+        
+    root_sw = sw;
+
+    return 0;
+}
+#endif
+
 int __init bp_parse(void)
 {
     char boardIdStr[20];
@@ -460,6 +497,10 @@ int __init bp_parse(void)
     BpGetBoardId(boardIdStr);
     enet_dbg("Parsing board configuration for %s\n", boardIdStr);
 
+#ifdef CONFIG_BRCM_QEMU
+    return bp_parse_qemu();
+#else
     return bp_parse_unit(NULL, SWITCH_UNIT_ROOT);
+#endif
 }
 

@@ -180,23 +180,9 @@ void sf2_pseudo_mdio_switch_write(int page, int reg, void *data_in, int len)    
 }
 EXPORT_SYMBOL(sf2_pseudo_mdio_switch_write);
 
-#if defined(MAC_SF2_EXTERNAL)   // TODO47622: use mdio first
-void sf2_rreg(int page, int reg, void *data_out, int len)   //mdio
-{
-    sf2_pseudo_mdio_switch_read(page, reg, data_out, len);
-}
-EXPORT_SYMBOL(sf2_rreg);
-
-void sf2_wreg(int page, int reg, void *data_in, int len)    //mdio
-{
-    sf2_pseudo_mdio_switch_write(page, reg, data_in, len);
-}
-EXPORT_SYMBOL(sf2_wreg);
-
-#else // !MAC_SF2_EXTERNAL
-
+#if !defined(MAC_SF2_EXTERNAL)
 #define SF2_REG_SHIFT (sizeof(((EthernetSwitchCore *)0)->port_traffic_ctrl[0])/4)
-void sf2_rreg(int page, int reg, void *data_out, int len)   //mmap
+void sf2_mmap_rreg(int page, int reg, void *data_out, int len)   //mmap
 {
     // based on impl5\bcmsw.c:extsw_rreg_mmap()
     uint32_t val;
@@ -225,9 +211,9 @@ void sf2_rreg(int page, int reg, void *data_out, int len)   //mmap
     spin_unlock_bh(&sf2_reg_access);
     memcpy(data_out, data, len);
 }
-EXPORT_SYMBOL(sf2_rreg);
+EXPORT_SYMBOL(sf2_mmap_rreg);
 
-void sf2_wreg(int page, int reg, void *data_in, int len)    //mmap
+void sf2_mmap_wreg(int page, int reg, void *data_in, int len)    //mmap
 {
     // based on impl5\bcmsw.c:extsw_wreg_mmap()
     uint32_t val;
@@ -261,10 +247,41 @@ void sf2_wreg(int page, int reg, void *data_in, int len)    //mmap
     *base = val;
     spin_unlock_bh(&sf2_reg_access);
 }
-EXPORT_SYMBOL(sf2_wreg);
+EXPORT_SYMBOL(sf2_mmap_wreg);
+#endif //!MAC_SF2_EXTERNAL
+
+#if defined(MAC_SF2_DUAL)
+void sf2_sw_rreg(int unit, int page, int reg, void *data_out, int len)
+{
+    if (unit)
+        sf2_pseudo_mdio_switch_read(page, reg, data_out, len);
+    else
+        sf2_mmap_rreg(page, reg, data_out, len);
+}
+
+void sf2_sw_wreg(int unit, int page, int reg, void *data_in, int len)
+{
+    if (unit)
+        sf2_pseudo_mdio_switch_write(page, reg, data_in, len);
+    else
+        sf2_mmap_wreg(page, reg, data_in, len);
+}
+
+#elif defined(MAC_SF2_EXTERNAL)   // 47622: use mdio base
+void sf2_sw_rreg(int unit, int page, int reg, void *data_out, int len) { sf2_pseudo_mdio_switch_read(page, reg, data_out, len); }
+void sf2_sw_wreg(int unit, int page, int reg, void *data_in, int len)  { sf2_pseudo_mdio_switch_write(page, reg, data_in, len); }
+
+#else // !MAC_SF2_EXTERNAL - use memory mapped
+void sf2_sw_rreg(int unit, int page, int reg, void *data_out, int len) { sf2_mmap_rreg(page, reg, data_out, len); }
+void sf2_sw_wreg(int unit, int page, int reg, void *data_in, int len)  { sf2_mmap_wreg(page, reg, data_in, len); }
 
 #endif // !MAC_SF2_EXTERNAL
 
+EXPORT_SYMBOL(sf2_sw_rreg);
+EXPORT_SYMBOL(sf2_sw_wreg);
+
+#define sf2_rreg(p,r,d,l) ((sf2_mac_dev_priv_data_t *)mac_dev->priv)->rreg(p,r,d,l)
+#define sf2_wreg(p,r,d,l) ((sf2_mac_dev_priv_data_t *)mac_dev->priv)->wreg(p,r,d,l)
 
 
 /********** MAC API **********/
@@ -637,9 +654,54 @@ static int port_sf2mac_mtu_set(mac_dev_t *mac_dev, int mtu)
 
 static int port_sf2mac_eee_set(mac_dev_t *mac_dev, int enable)
 {
+    int ret = 0;
     uint16 v16;
+    mac_cfg_t mac_cfg;
+    uint16_t wake_timer = 0;
+
+    /* Determine EEE timers only when EEE is enabled */
+    /* Worst cases from IEEE 802.3 spec:
+     * 30us for 100Mbps
+     * 16.5us for 1Gb/s
+     * 17.92us for 2.5Gb/s
+     * 14.72us for 5Gb/s
+     * 17.38us for 10Gb/s KR with FEC
+     */
+    
+    if (enable)
+    {
+        if (ret = port_sf2mac_cfg_get(mac_dev, &mac_cfg))
+            return ret;
+
+        switch (mac_cfg.speed) {
+        case MAC_SPEED_10:  /* 10Mbps */
+            /* No EEE support on 10Mbps */
+            return 0;
+        case MAC_SPEED_100:  /* 100Mbps */
+            /* Just continue, this is preconfigured in a different register */
+            break;
+        case MAC_SPEED_1000: /* 1Gbps */
+            wake_timer = 17; /* 17 uS */
+            break;
+        case MAC_SPEED_2500: /* 2.5Gbps */
+            wake_timer = 20; /* 20 uS (better results in testing than 18 us) */
+            break;
+        case MAC_SPEED_5000: /* 5Gbps */
+            wake_timer = 17; /* 17 uS (padded up from 15 us) */
+            break;
+        case MAC_SPEED_10000: /* 10Gbps */
+            wake_timer = 19; /* 19 uS (padded up from 17 us) */
+            break;
+        default:
+            printk("%s: Unexpected speed %d\n", __FUNCTION__, mac_cfg.speed);
+            return -1;
+        }
+    }
 
     spin_lock_bh(&sf2_reg_config);
+    if (wake_timer)
+        sf2_wreg(PAGE_EEE, REG_EEE_WAKE_TIMER_G + mac_dev->mac_id*2, (uint8_t*)&wake_timer, 2);
+
     sf2_rreg (PAGE_EEE, REG_EEE_EN_CTRL, (uint8_t *)&v16, 2);
 
     /* enable / disable the corresponding port */
@@ -662,6 +724,17 @@ static int port_sf2mac_dev_add(mac_dev_t *mac_dev)
     p_priv->priv_flags = (unsigned long)mac_dev->priv;
     memset(&p_priv->mac_stats, 0, sizeof(p_priv->mac_stats));
     memset(&p_priv->last_mac_stats, 0, sizeof(p_priv->last_mac_stats));
+#if defined(MAC_SF2_DUAL)
+    p_priv->rreg = (p_priv->priv_flags & SF2MAC_DRV_PRIV_FLAG_SW_EXT) ? sf2_pseudo_mdio_switch_read : sf2_mmap_rreg;
+    p_priv->wreg = (p_priv->priv_flags & SF2MAC_DRV_PRIV_FLAG_SW_EXT) ? sf2_pseudo_mdio_switch_write : sf2_mmap_wreg;
+#elif defined(MAC_SF2_EXTERNAL)
+    p_priv->rreg = sf2_pseudo_mdio_switch_read;
+    p_priv->wreg = sf2_pseudo_mdio_switch_write;
+#else
+    p_priv->rreg = sf2_mmap_rreg;
+    p_priv->wreg = sf2_mmap_wreg;
+#endif
+
     /* assign private data */
     mac_dev->priv = p_priv;
     return 0;
@@ -677,17 +750,13 @@ static int port_sf2mac_dev_del(mac_dev_t *mac_dev)
 
 static int port_sf2mac_drv_init(mac_drv_t *mac_drv)
 {
-#if !defined(MAC_SF2_EXTERNAL)          // TODO47622: temp comment out 
-    // Init EEE Wake delay per spec for 2.5G port #6 (0x1e instead of 0x11)
-    // If port is used for 1G Ethernet, 0x1e is OK too.
-    uint32_t wake_delay = 0x1e;
-    sf2_wreg(PAGE_EEE, REG_EEE_WAKE_TIMER_G+6*2, (uint8_t*)&wake_delay, 2);
-#endif
-
     mac_drv->initialized = 1;
     return 0;
 }
 
+#if defined(MAC_SF2_DUAL)
+  TODO_DUAL: priv_flags |= SF2MAC_DRV_PRIV_FLAG_SW_EXT
+#endif
 
 mac_drv_t mac_drv_sf2 =
 {

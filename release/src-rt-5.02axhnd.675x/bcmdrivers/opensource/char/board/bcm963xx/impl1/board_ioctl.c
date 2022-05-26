@@ -1189,7 +1189,7 @@ int board_ioctl( struct inode *inode, struct file *flip,
 
     case BOARD_IOCTL_GET_BOOT_MFG_SECURE:
 #if defined(CONFIG_BCM94908)  || defined(CONFIG_BCM96858) || \
-    defined(CONFIG_BCM963158) || defined(CONFIG_BCM96846) || defined(CONFIG_BCM96856) || defined(CONFIG_BCM96878)
+    defined(CONFIG_BCM963158) || defined(CONFIG_BCM96846) || defined(CONFIG_BCM96856) || defined(CONFIG_BCM96878) || defined(CONFIG_BCM96855)
         ctrlParms.result = bcm_otp_is_boot_mfg_secure();
 #else
         ctrlParms.result = 0;

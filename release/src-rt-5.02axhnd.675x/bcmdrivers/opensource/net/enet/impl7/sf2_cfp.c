@@ -34,8 +34,10 @@
 #include "bcmsw_cfp.h"
 #include "sf2.h"
 
-static void (*sf2_rreg)(int page, int reg, void *data_out, int len);
-static void (*sf2_wreg)(int page, int reg, void *data_in,  int len);
+static void (*sf2_rreg_p)(int unit, int page, int reg, void *data_out, int len);
+static void (*sf2_wreg_p)(int unit, int page, int reg, void *data_in,  int len);
+#define sf2_rreg(p,r,d,l)   sf2_rreg_p(1,p,r,d,l)
+#define sf2_wreg(p,r,d,l)   sf2_wreg_p(1,p,r,d,l)
 
 #define UDF_TOTAL_ENTRIES (CFP_L3_FRAME_TYPES*CFP_SLICES + 1)
 udfCtl_t udfCtls[UDF_TOTAL_ENTRIES];    /* UDF Control Structrure */
@@ -420,8 +422,8 @@ static int cfp_init(void)
     u32 v32;
 
     {
-        sf2_rreg = sf2_sw->s.ops->rreg;
-        sf2_wreg = sf2_sw->s.ops->wreg;
+        sf2_rreg_p = sf2_sw->s.ops->rreg;
+        sf2_wreg_p = sf2_sw->s.ops->wreg;
     }
     for (i = 0; i<ARRAY_SIZE(tcamCtls); i++)
     {

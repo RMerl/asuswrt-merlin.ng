@@ -93,6 +93,11 @@ typedef struct {
     uint32_t peak_burst_size;               /**< PEAK Burst Size (PBS) - bytes (1K-100M) */
     uint8_t dei_mode;                       /**< DEI remark - Used for dual bucket only, affects outer dei only */
     rdpa_policer_factor_bytes factor_bytes; /**< Policer factor to be added for every packet */
+#ifdef G9991
+    uint8_t pbit_mode;                      /**< Pbit remark - Used for dual bucket only, affects outer Pbit only */
+    uint8_t pbit_green_val;                 /**< Pbit green value - Used for green packets */
+    uint8_t pbit_yellow_val;                /**< Pbit yellow value - Used for yellow packets */
+#endif
 } rdpa_tm_policer_cfg_t;
 
 /** Policer statistics.

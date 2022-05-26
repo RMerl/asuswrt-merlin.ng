@@ -182,6 +182,7 @@ int phy_drivers_init(void)
 {
     int ret = 0;
 
+#ifndef CONFIG_BRCM_QEMU
     ret |= phy_driver_init(PHY_TYPE_6848_EPHY);
     ret |= phy_driver_init(PHY_TYPE_6848_EGPHY);
     ret |= phy_driver_init(PHY_TYPE_6848_SGMII);
@@ -200,6 +201,7 @@ int phy_drivers_init(void)
 #if defined(RTAX95Q) || defined(RTAXE95Q)
     ret |= phy_driver_init(PHY_TYPE_RTL8226);
 #endif
+#endif    
     return ret;
 }
 EXPORT_SYMBOL(phy_drivers_init);

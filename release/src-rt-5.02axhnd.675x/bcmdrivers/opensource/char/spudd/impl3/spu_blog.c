@@ -145,10 +145,10 @@ void spu_blog_emit(struct spu_trans_req *pTransReq)
         blog_emit(pTransReq->pNBuf, spuinfo->spu_dev_us, TYPE_IP, pTransReq->ivsize, BLOG_SPU_US);
         pSkb->dev = skb_dev;
 
-        if ( 0 == pTransReq->pSpuCtx->ipdaddr )
+        esph = (struct ip_esp_hdr *)(pdata + BLOG_IPV4_HDR_LEN);
+        if ( _read32_align16((uint16_t *)&esph->spi) != pTransReq->pSpuCtx->spi )
         {
             int seqno;
-            esph = (struct ip_esp_hdr *)(pdata + BLOG_IPV4_HDR_LEN);
             pTransReq->pSpuCtx->ipdaddr = _read32_align16((uint16_t *)&iph->daddr);
             pTransReq->pSpuCtx->ipsaddr = _read32_align16((uint16_t *)&iph->saddr);
             pTransReq->pSpuCtx->spi     = _read32_align16((uint16_t *)&esph->spi);
@@ -163,7 +163,7 @@ void spu_blog_emit(struct spu_trans_req *pTransReq)
         /* ignore udp encapsualted packets and packets requiring
            more than one transform */
         if ( !secpath_exists(pSkb) ||
-             (pSkb->sp->len > 1) )
+             (pSkb->sp->len != 1) )
         {
 		   blog_skip(pSkb, blog_skip_reason_spudd_check_failure);
            return;
@@ -201,17 +201,17 @@ void spu_blog_emit(struct spu_trans_req *pTransReq)
             return;
         }
 
-        blog_ptr(pSkb)->esptx.secPath_p = secpath_get(pSkb->sp);
-        blog_ptr(pSkb)->tx.info.bmap.ESP = 1;
+        blog_ptr(pSkb)->esprx.secPath_p = secpath_get(pSkb->sp);
+        blog_ptr(pSkb)->rx.info.bmap.ESP = 1;
 
         /* insert spu_dev_ds as transmit device */
         skb_dev = pSkb->dev;
         pSkb->dev = spuinfo->spu_dev_ds;
         
-        if ( 0 == pTransReq->pSpuCtx->ipdaddr )
+        iph = (struct iphdr *)pdata;
+        esph = (struct ip_esp_hdr *)(pdata + BLOG_IPV4_HDR_LEN);
+        if ( _read32_align16((uint16_t *)&esph->spi) != pTransReq->pSpuCtx->spi )
         {
-            iph = (struct iphdr *)pdata;
-            esph = (struct ip_esp_hdr *)(pdata + BLOG_IPV4_HDR_LEN);
             pTransReq->pSpuCtx->ipdaddr = _read32_align16((uint16_t *)&iph->daddr);
             pTransReq->pSpuCtx->ipsaddr = _read32_align16((uint16_t *)&iph->saddr);
             pTransReq->pSpuCtx->spi     = _read32_align16((uint16_t *)&esph->spi);
@@ -320,9 +320,9 @@ static void spu_blog_fc_crypt_done_ds(struct spu_trans_req *pTransReq)
       else
       {
          skb = nbuff_xlate(pTransReq->pNBuf);
-         skb->dev = pTransReq->dev;
       }
-
+      /* populate skb->dev as kernel stack needs it in error handling path */
+      skb->dev = pTransReq->dev;
       skb->sp = secpath_get(pTransReq->sp);
       skb_reset_network_header(skb);
       /* pull data to the ESP header */
@@ -623,7 +623,7 @@ static int spu_blog_xmit_ds(pNBuff_t pNBuf, struct net_device *dev)
    uint32_t              ipda;
    uint32_t              spi;
    int                   ret;
-   struct xfrm_state    *xfrm;
+   struct xfrm_state    *xfrm = NULL;
    struct net           *net;
    unsigned int          hlen;
    unsigned int          seqno;
@@ -671,10 +671,12 @@ static int spu_blog_xmit_ds(pNBuff_t pNBuf, struct net_device *dev)
    }
 
    /* validate sequence number and xfrm state */
-   secpath = blog_p->esptx.secPath_p;
-   xfrm = secpath->xvec[secpath->len-1];
+   secpath = secpath_get(blog_p->esprx.secPath_p);
+   if (secpath && (secpath->len == 1))
+      xfrm = secpath->xvec[secpath->len-1];
    if ( NULL == xfrm )
    {
+      secpath_put(secpath);
       spuinfo->stats.decErrors++;
       cache_invalidate_len(pdata, nbuflen);
       nbuff_free(pNBuf);
@@ -716,6 +718,7 @@ static int spu_blog_xmit_ds(pNBuff_t pNBuf, struct net_device *dev)
    spin_unlock_bh(&xfrm->lock);
    if ( ret )
    {
+      secpath_put(secpath);
       return -1;
    }
 
@@ -724,6 +727,7 @@ static int spu_blog_xmit_ds(pNBuff_t pNBuf, struct net_device *dev)
    if (IS_ERR(pTransReq))
    {
       SPU_TRACE(("spu_blog_xmit_ds failed to alloacte transfer request\n"));
+      secpath_put(secpath);
       spuinfo->stats.decDrops++;
       cache_invalidate_len(pdata, nbuflen);
       nbuff_free(pNBuf);

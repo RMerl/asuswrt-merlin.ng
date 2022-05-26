@@ -48,7 +48,7 @@ Boston, MA 02111-1307, USA.
 #include "board.h"
 #include <asm/mach/map.h>
 #endif
-#if defined(CONFIG_BCM96846) || defined(CONFIG_BCM963178) || defined(CONFIG_BCM947622) || defined(CONFIG_BCM96878)
+#if defined(CONFIG_BCM96846) || defined(CONFIG_BCM963178) || defined(CONFIG_BCM947622) || defined(CONFIG_BCM96878) || defined(CONFIG_BCM96855)
 #include <bcm_ubus4.h>
 extern void __init create_mapping(struct map_desc *md);
 #endif
@@ -107,7 +107,7 @@ int __init bcm_dt_postinit(void)
 
 int __init bcm_reserve_memory(void)
 {
-#if defined(CONFIG_BCM96846) || defined(CONFIG_BCM963178) || defined(CONFIG_BCM947622) || defined(CONFIG_BCM96878)
+#if defined(CONFIG_BCM96846) || defined(CONFIG_BCM963178) || defined(CONFIG_BCM947622) || defined(CONFIG_BCM96878) || defined(CONFIG_BCM96855)
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 19, 0)
     struct map_desc desc;
     void* virt;
@@ -170,11 +170,12 @@ EXPORT_SYMBOL(bcm_reserve_memory);
 
 #endif
 
-#if defined(CONFIG_BCM947189) || defined(CONFIG_BCM96846) ||defined(CONFIG_BCM947622) || defined(CONFIG_BCM963178) || defined(CONFIG_BCM96878)
+#if defined(CONFIG_BCM947189) || defined(CONFIG_BCM96846) ||defined(CONFIG_BCM947622) || defined(CONFIG_BCM963178) || defined(CONFIG_BCM96878) || defined(CONFIG_BCM96855)
 static void bcm_sys_restart(enum reboot_mode reboot_mode, const char *cmd)
 {
-	if(kerSysIsIkosBootSet() == 0)
-		kerSysSoftReset();
+#if !defined(CONFIG_BRCM_IKOS)
+	kerSysSoftReset();
+#endif
 }
 
 int __init bcm_arch_early_init(void)
@@ -185,11 +186,11 @@ int __init bcm_arch_early_init(void)
 #ifdef CONFIG_OF
 	memset(reserve_mem, 0x0, sizeof(reserve_mem_t)*TOTAL_RESERVE_MEM_NUM);
 	of_scan_flat_dt(bcm_early_scan_dt, NULL);
-#if defined (CONFIG_BCM96846) || defined(CONFIG_BCM963178) || defined(CONFIG_BCM947622) || defined(CONFIG_BCM96878)
+#if defined (CONFIG_BCM96846) || defined(CONFIG_BCM963178) || defined(CONFIG_BCM947622) || defined(CONFIG_BCM96878) || defined(CONFIG_BCM96855)
 	bcm_reserve_memory();
 #endif
 #endif
-#ifdef CONFIG_BCM96878
+#if defined (CONFIG_BCM96878) || defined(CONFIG_BCM96855)
     init_dma_coherent_pool_size(SZ_2M);
 #endif
 
@@ -199,24 +200,24 @@ int __init bcm_arch_early_init(void)
 	cci_coherent_enable();
 #endif
 
-#if defined(CONFIG_BCM96846) || defined(CONFIG_BCM963178) || defined(CONFIG_BCM947622) || defined(CONFIG_BCM96878)
+#if defined(CONFIG_BCM96846) || defined(CONFIG_BCM963178) || defined(CONFIG_BCM947622) || defined(CONFIG_BCM96878) || \
+	defined(CONFIG_BCM96855)
 	pmc_init();
 #endif
 
 	check_if_ikosboot(boot_command_line);
-	if(kerSysIsIkosBootSet() == 0)
-	{
-		kerSysEarlyFlashInit();
-		kerSysFlashInit();
+#if !defined(CONFIG_BRCM_IKOS)
+	kerSysEarlyFlashInit();
+	kerSysFlashInit();
 
-		/* Setup external irqs */
-		bcm_extirq_init();
-	}
+	/* Setup external irqs */
+	bcm_extirq_init();
+#endif
 
-#if !defined(CONFIG_BCM947189)
+#if !defined(CONFIG_BCM947189) && !defined(CONFIG_BRCM_IKOS)
 	bcm_init_pinmux();
 
-#if defined(CONFIG_BCM96846) || defined(CONFIG_BCM963178) || defined(CONFIG_BCM947622) || defined(CONFIG_BCM96878)
+#if defined(CONFIG_BCM96846) || defined(CONFIG_BCM963178) || defined(CONFIG_BCM947622) || defined(CONFIG_BCM96878) || defined(CONFIG_BCM96855)
 	ubus_master_port_init();
 #endif
 #endif // !defined(CONFIG_BRCM_IKOS)

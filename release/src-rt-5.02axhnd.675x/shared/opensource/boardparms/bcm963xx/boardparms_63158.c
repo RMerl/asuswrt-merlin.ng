@@ -722,7 +722,6 @@ static bp_elem_t g_bcm963158ref1[] = {
   {bp_usIntfMgmtType,          .u.us = BP_INTF_MGMT_TYPE_I2C},
   {bp_usIntfMgmtBusNum,        .u.us = 0},
   {bp_usSfpSigDetect,          .u.us = BP_GPIO_10_AH },
-  {bp_usTsync1pps,             .u.us = BP_GPIO_13_AH },
   {bp_usIntfEnd},
   {bp_usIntfId,                .u.us = 9},
   {bp_usIntfType,              .u.us = BP_INTF_TYPE_I2C},

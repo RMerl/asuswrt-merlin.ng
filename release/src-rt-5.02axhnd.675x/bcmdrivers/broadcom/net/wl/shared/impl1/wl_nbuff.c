@@ -36,10 +36,6 @@
 
 #include <nbuff_pkt.h>
 
-#ifndef PRIO_LOC_NFMARK
-#define PRIO_LOC_NFMARK 16
-#endif
-
 /* GENERIC NBUFF */
 uint
 nbuff_pktprio(void *pkt)

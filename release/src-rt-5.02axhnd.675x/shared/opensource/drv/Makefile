@@ -11,11 +11,11 @@ ifeq ($(strip ${CONFIG_MERLIN_SDK}),)
 endif
 endif
 
-ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_6838_6848_63138_63148_4908_47622_63158_6846_6856_6878_),)
+ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_6838_6848_63138_63148_4908_47622_63158_6846_6856_6878_6855_),)
     DRV_OBJS += unimac/unimac_drv_impl1.o
 endif
 
-ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_6838_6848_6858_47189_63138_63148_4908_63158_63178_47622_6846_6856_6878_),)
+ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_6838_6848_6858_47189_63138_63148_4908_63158_63178_47622_6846_6856_6878_6855_),)
     EXTRA_CFLAGS += -DPHY_CROSSBAR
     DRV_OBJS += phys/phy_drv_crossbar.o
     DRV_OBJS += phys/mac_drv.o
@@ -67,7 +67,7 @@ ifeq ($(strip ${BRCM_CHIP}),6858)
     EXTRA_CFLAGS += -DMAC_LPORT
     EXTRA_CFLAGS += -DPHY_6858_EGPHY -DPHY_EXT1 -DPHY_EXT2 -DPHY_EXT3 -DPHY_LPORT_SERDES
     EXTRA_CFLAGS += -D_MAKO_A0_ -D_ORCA_A0_ -D_ORCA_B0_ -D_BLACKFIN_A0_ -D_BLACKFIN_B0_ -D_LONGFIN_A0_
-    EXTRA_CFLAGS += -DLPORT_SERDES_POWER_SAVING
+    EXTRA_CFLAGS += -DLPORT_SERDES_POWER_SAVING -DMACSEC_SUPPORT
 ifeq ($(strip $(CONFIG_BCM_FTTDP_G9991)),)
     EXTRA_CFLAGS += -DLPORT_SERDES_LINK_POWER_DOWN -DLPORT_SERDES_SPEED_DETECT -DLPORT_SERDES_EXTERNAL_SIGNAL_DETECT
 endif
@@ -89,7 +89,7 @@ ifeq ($(strip ${BRCM_CHIP}),6856)
     DRV_OBJS += phys/phy_mac_sec_list.o
     DRV_OBJS += phys/sha256.o
     EXTRA_CFLAGS += -DMAC_UNIMAC
-    EXTRA_CFLAGS += -DPHY_6846_EGPHY -DPHY_6856_SGMII -DPHY_EXT1 -DPHY_EXT3 
+    EXTRA_CFLAGS += -DPHY_6846_EGPHY -DPHY_6856_SGMII -DPHY_EXT1 -DPHY_EXT3 -DMACSEC_SUPPORT
     EXTRA_CFLAGS += -D_MAKO_A0_ -D_ORCA_A0_ -D_ORCA_B0_ -D_BLACKFIN_A0_ -D_BLACKFIN_B0_ -D_LONGFIN_A0_
 endif
 ifeq ($(strip ${BRCM_CHIP}),6846)
@@ -172,7 +172,7 @@ ifeq ($(strip ${BRCM_CHIP}),63158)
 
     EXTRA_CFLAGS += -DMAC_UNIMAC -DMAC_SF2 -DPHY_SF2 -DPHY_SF2_SERDES -DPHY_M2M -DDSL_DEVICES
     EXTRA_CFLAGS += -DMAC_XPORT
-    EXTRA_CFLAGS += -DPHY_SERDES_2P5G_CAPABLE -DPHY_SERDES_10G_CAPABLE -DPHY_EXT3
+    EXTRA_CFLAGS += -DPHY_SERDES_2P5G_CAPABLE -DPHY_SERDES_10G_CAPABLE -DPHY_EXT3 -DMACSEC_SUPPORT
     EXTRA_CFLAGS += -D_MAKO_A0_ -D_ORCA_A0_ -D_ORCA_B0_ -D_BLACKFIN_A0_ -D_BLACKFIN_B0_ -D_LONGFIN_A0_ -D_LONGFIN_B0_
 ifeq ($(CONFIG_BRCM_CHIP_REV),0x63158A0)
     DRV_OBJS += $(patsubst %.c, %.o, $(shell cd $(src) && find xport/impl1/ag/63158A0  -type f -name '*.c')) 
@@ -196,7 +196,7 @@ ifeq ($(strip ${BRCM_CHIP}),4908)
     DRV_OBJS += phys/sha256.o
     DRV_OBJS += ../drivers/bcm_ethsw_impl1.o
     EXTRA_CFLAGS += -DMAC_UNIMAC -DMAC_SF2 -DPHY_SF2 -DPHY_SF2_SERDES -DPHY_M2M -DDSL_DEVICES
-    EXTRA_CFLAGS += -DPHY_SERDES_2P5G_CAPABLE -DPHY_EXT3
+    EXTRA_CFLAGS += -DPHY_SERDES_2P5G_CAPABLE -DPHY_EXT3 -DMACSEC_SUPPORT
     EXTRA_CFLAGS += -D_MAKO_A0_ -D_ORCA_A0_ -D_ORCA_B0_ -D_BLACKFIN_A0_ -D_BLACKFIN_B0_ -D_LONGFIN_A0_ -D_LONGFIN_B0_
 endif
 ifeq ($(strip ${BRCM_CHIP}),63178)
@@ -231,12 +231,36 @@ endif
     DRV_OBJS += phys/sha256.o
     DRV_OBJS += ../drivers/bcm_ethsw_impl1.o
     EXTRA_CFLAGS += -DMAC_UNIMAC -DMAC_SF2_EXTERNAL -DPHY_SF2 -DPHY_SF2_SERDES -DPHY_M2M -DARCHER_DEVICE -DDSL_DEVICES
-    EXTRA_CFLAGS += -DPHY_SERDES_2P5G_CAPABLE -DPHY_EXT3
+    EXTRA_CFLAGS += -DPHY_SERDES_2P5G_CAPABLE -DPHY_EXT3 -DMACSEC_SUPPORT
 
     EXTRA_CFLAGS += -I$(BRCMDRIVERS_DIR)/broadcom/include/bcm963xx
     EXTRA_CFLAGS += -I$(SHARED_DIR)/opensource/include/rdp
     EXTRA_CFLAGS += -D_MAKO_A0_ -D_ORCA_A0_ -D_ORCA_B0_ -D_BLACKFIN_A0_ -D_BLACKFIN_B0_ -D_LONGFIN_A0_ -D_LONGFIN_B0_
 endif
+ifeq ($(strip ${BRCM_CHIP}),6855)
+    DRV_OBJS += mdio/mdio_drv_common.o
+    DRV_OBJS += mdio/mdio_drv_impl5.o
+    DRV_OBJS += phys/bus_drv_6846.o
+    DRV_OBJS += phys/mac_drv_unimac.o
+    DRV_OBJS += phys/phy_bp_parsing_6856.o
+    DRV_OBJS += phys/phy_drv_6846_egphy.o
+    DRV_OBJS += phys/phy_drv_6856_sgmii.o
+    DRV_OBJS += phys/xrdp_led_init.o
+    DRV_OBJS += phys/phy_drv_sgmii_plus2.o
+    DRV_OBJS += phys/phy_drv_ext1.o
+    DRV_OBJS += phys/phy_drv_ext3.o
+    DRV_OBJS += phys/phy_mac_sec.o
+    DRV_OBJS += phys/phy_mac_sec_list.o
+    DRV_OBJS += phys/sha256.o
+    EXTRA_CFLAGS += -DMAC_UNIMAC
+    EXTRA_CFLAGS += -DPHY_6846_EGPHY -DPHY_6856_SGMII -DPHY_EXT1 -DPHY_EXT3 -DMACSEC_SUPPORT
+    EXTRA_CFLAGS += -D_MAKO_A0_ -D_ORCA_A0_ -D_ORCA_B0_ -D_BLACKFIN_A0_ -D_BLACKFIN_B0_ -D_LONGFIN_A0_
+    EXTRA_CFLAGS += -DXRDP_LED_EXT
+endif
+endif
+
+ifneq ($(strip $(CONFIG_BRCM_QEMU)),)
+    DRV_OBJS += qemu/qemu_stubs.o
 endif
 
 obj-y +=  $(DRV_OBJS) stub.o

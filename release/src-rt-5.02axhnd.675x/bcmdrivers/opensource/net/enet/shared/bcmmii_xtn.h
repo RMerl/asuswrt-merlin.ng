@@ -668,6 +668,7 @@ enum {
     #define SF2_REG_SHAPER_ENB_PKT_BASED                       0xE8
     #define SF2_REG_SHAPER_BLK_CTRL_ENB                        0xEA
     #define SF2_REG_SHAPER_INC_IFG_CTRL                        0xEC   // On port shaper only
+    #define SF2_REG_SHAPER_IFG_BYTES                           0xEE
 
 /****************************************************************************
    Egress Per QUEUE Shaper control : Page (0x48)

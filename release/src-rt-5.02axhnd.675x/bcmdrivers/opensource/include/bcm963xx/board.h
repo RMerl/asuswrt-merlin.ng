@@ -512,6 +512,15 @@ unsigned int  bcm_get_blparms_size(void);
 #define RDPA_EPON_SPEED_PSP_KEY         "EponSpeed"
 #define RDPA_WAN_RATE_PSP_KEY           "WanRate"
 #define RDPA_GBE_WAN_EMAC_PSP_KEY       "GbeWanEMac"
+//BPM Dynamic Buffer Grow/Shrink variables
+#define BPM_MAX_PRCNT_BUFFER_PSP_KEY      "BpmMaxPrcntBuff"
+#define BPM_INITIAL_PRCNT_BUFFER_PSP_KEY  "InitPrcntBuff"
+#define BPM_MAX_NUM_BUFFER_PSP_KEY      "BpmMaxNumBuff"
+#define BPM_INITIAL_NUM_BUFFER_PSP_KEY  "InitNumBuff"
+#define BPM_BUF_AVAIL_LOWER_THRESHOLD_PSP_KEY "BufAvailLowTh"
+#define BPM_BUF_EXPAND_STEP_PSP_KEY     "BufExpandStep"
+#define BPM_BUF_SHRINK_STEP_PSP_KEY     "BufShrinkStep"
+#define BPM_SOAK_TIMER_DURATION_PSP_KEY "BpmSoakTimer"
 #define PSP_BUFLEN_16                   16
 
 /* value sets for epon_speed */

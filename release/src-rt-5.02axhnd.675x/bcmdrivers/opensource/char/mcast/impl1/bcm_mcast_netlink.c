@@ -324,6 +324,7 @@ static int bcm_mcast_netlink_process_igmp_snoop_entry(struct nlmsghdr *nlh, unsi
    int                           idx = 0;
    uint32_t                      info = 0;
    int                           filter_mode;
+   int                           dbgVar=0;
 
    /* make sure length is correct, read is not accepted */
    if ( (nlh->nlmsg_len != NLMSG_SPACE(sizeof(*snoop_entry))) ||
@@ -386,6 +387,7 @@ static int bcm_mcast_netlink_process_igmp_snoop_entry(struct nlmsghdr *nlh, unsi
    {
        if(snoop_entry->wan_info[idx].if_ops)
        {
+           dbgVar = 1;
            from_dev = dev_get_by_index(&init_net, 
                                        snoop_entry->wan_info[idx].ifi);
            if (NULL == from_dev)
@@ -401,20 +403,20 @@ static int bcm_mcast_netlink_process_igmp_snoop_entry(struct nlmsghdr *nlh, unsi
               (snoop_entry->mode == BCM_MCAST_SNOOP_EX_CLEAR)) 
            {
                bcm_mcast_igmp_remove(from_dev,
-                                         pif, 
-                                         to_dev,
-                                         &snoop_entry->rxGrp, 
-                                         &snoop_entry->txGrp, 
-                                         &snoop_entry->rep,
-                                         filter_mode, 
-                                         &snoop_entry->src,
-                                         info);
+                                     pif, 
+                                     to_dev,
+                                     &snoop_entry->rxGrp, 
+                                     &snoop_entry->txGrp, 
+                                     &snoop_entry->rep,
+                                     filter_mode, 
+                                     &snoop_entry->src,
+                                     info);
            }
            else
            {
                if((snoop_entry->wan_info[idx].if_ops == BCM_MCAST_IF_BRIDGED) && 
-                  (0 == bcm_mcast_if_is_associated_dev(from_dev, pif->ifindex) && 
-                   pif->brtype == BRTYPE_LINUX))
+                  ((0 == bcm_mcast_if_is_associated_dev(from_dev, pif->ifindex) && 
+                   pif->brtype == BRTYPE_LINUX) || (from_dev == to_dev)))
                {
                   dev_put(from_dev);
                   continue;
@@ -444,6 +446,11 @@ static int bcm_mcast_netlink_process_igmp_snoop_entry(struct nlmsghdr *nlh, unsi
        {
            continue;
        }
+   }
+
+   if (!dbgVar) 
+   {
+       __logInfo("No entries in WAN info array");
    }
 
    /* if LAN-2-LAN snooping enabled make an entry                         *
@@ -507,6 +514,7 @@ static int bcm_mcast_netlink_process_mld_snoop_entry(struct nlmsghdr *nlh, unsig
    int                          idx = 0;
    uint32_t                     info = 0;
    int                          filter_mode;
+   int                           dbgVar=0;
 
    /* make sure length is correct, read is not accepted */
    if ( (nlh->nlmsg_len != NLMSG_SPACE(sizeof(*snoop_entry))) ||
@@ -569,6 +577,7 @@ static int bcm_mcast_netlink_process_mld_snoop_entry(struct nlmsghdr *nlh, unsig
    {
        if(snoop_entry->wan_info[idx].if_ops)
        {
+           dbgVar = 1;
            from_dev = dev_get_by_index(&init_net, 
                                        snoop_entry->wan_info[idx].ifi);
            if(NULL == from_dev)
@@ -595,8 +604,8 @@ static int bcm_mcast_netlink_process_mld_snoop_entry(struct nlmsghdr *nlh, unsig
            else
            {
                if ((snoop_entry->wan_info[idx].if_ops == BCM_MCAST_IF_BRIDGED) && 
-                   (0 == bcm_mcast_if_is_associated_dev(from_dev, pif->ifindex) && 
-                    pif->brtype == BRTYPE_LINUX))
+                   ((0 == bcm_mcast_if_is_associated_dev(from_dev, pif->ifindex) && 
+                    pif->brtype == BRTYPE_LINUX) || (from_dev == to_dev)))
                {
                   dev_put(from_dev);
                   continue;
@@ -623,6 +632,11 @@ static int bcm_mcast_netlink_process_mld_snoop_entry(struct nlmsghdr *nlh, unsig
        {
            continue;
        }
+   }
+
+   if (!dbgVar) 
+   {
+       __logInfo("No entries in WAN info array");
    }
 
    /* if LAN-2-LAN snooping enabled make an entry */
@@ -822,6 +836,81 @@ static int bcm_mcast_netlink_process_mld_purge_reporter(struct nlmsghdr *nlh, un
    }
 
    bcm_mcast_mld_wipe_reporter_for_port(pif, &purge_data->rep, rep_dev);
+   dev_put(rep_dev);
+   rcu_read_unlock();
+#endif
+   return 0;
+}
+
+static int bcm_mcast_netlink_process_igmp_purge_grp_reporter(struct nlmsghdr *nlh, unsigned char *pdata)
+{
+#if defined(CONFIG_BR_IGMP_SNOOP)
+   t_BCM_MCAST_IGMP_PURGE_GRP_REPORTER* purge_data = NULL;
+   bcm_mcast_ifdata *pif;
+   struct net_device *rep_dev = NULL;   
+
+   /* make sure length is correct, read is not accepted */
+   if ( (nlh->nlmsg_len != NLMSG_SPACE(sizeof(*purge_data))) ||
+        ((NLM_F_CREATE|NLM_F_REPLACE|NLM_F_REQUEST) != nlh->nlmsg_flags) )
+   {
+       return -EINVAL;
+   }
+
+   purge_data = (t_BCM_MCAST_IGMP_PURGE_GRP_REPORTER*)pdata;
+
+   rcu_read_lock();
+   pif = bcm_mcast_if_lookup(purge_data->parent_ifi);
+   if ( NULL == pif )
+   {
+      rcu_read_unlock();
+      return -ENODEV;
+   }
+
+   rep_dev = dev_get_by_index(&init_net, purge_data->dstdev_ifi);
+   if (rep_dev == NULL)
+   {
+      rcu_read_unlock();
+      return -ENODEV;
+   }
+
+   bcm_mcast_igmp_wipe_grp_reporter_for_port(pif, &purge_data->grp, &purge_data->rep, rep_dev);
+   dev_put(rep_dev);
+   rcu_read_unlock();
+#endif
+   return 0;
+}
+
+static int bcm_mcast_netlink_process_mld_purge_grp_reporter(struct nlmsghdr *nlh, unsigned char *pdata)
+{
+#if defined(CONFIG_BR_MLD_SNOOP)
+   t_BCM_MCAST_MLD_PURGE_GRP_REPORTER* purge_data;
+   bcm_mcast_ifdata *pif;
+   struct net_device *rep_dev;
+
+   /* make sure length is correct, read is not accepted */
+   if ( (nlh->nlmsg_len != NLMSG_SPACE(sizeof(*purge_data))) ||
+        ((NLM_F_CREATE|NLM_F_REPLACE|NLM_F_REQUEST) != nlh->nlmsg_flags) )
+   {
+       return -EINVAL;
+   }
+
+   purge_data = (t_BCM_MCAST_MLD_PURGE_GRP_REPORTER*)pdata;
+   rcu_read_lock();
+   pif = bcm_mcast_if_lookup(purge_data->parent_ifi);
+   if ( NULL == pif )
+   {
+      rcu_read_unlock();
+      return -ENODEV;
+   }
+
+   rep_dev = dev_get_by_index(&init_net, purge_data->dstdev_ifi);
+   if (rep_dev == NULL)
+   {
+      rcu_read_unlock();
+      return -ENODEV;
+   }
+
+   bcm_mcast_mld_wipe_grp_reporter_for_port(pif, &purge_data->grp, &purge_data->rep, rep_dev);
    dev_put(rep_dev);
    rcu_read_unlock();
 #endif
@@ -1310,6 +1399,8 @@ process_rcv_func bcm_mcast_netlink_dispatch[BCM_MCAST_NR_MSGTYPES] =
    [BCM_MCAST_MSG_SET_TIMEOUT          - BCM_MCAST_MSG_BASE] = bcm_mcast_netlink_process_set_timeout,
    [BCM_MCAST_MSG_BLOG_ENABLE          - BCM_MCAST_MSG_BASE] = bcm_mcast_netlink_process_blog_enable,
    [BCM_MCAST_MSG_OVS_BRINFO_UPDATE    - BCM_MCAST_MSG_BASE] = bcm_mcast_netlink_process_ovs_brinfo_update,
+   [BCM_MCAST_MSG_IGMP_PURGE_GRP_REPORTER  - BCM_MCAST_MSG_BASE] = bcm_mcast_netlink_process_igmp_purge_grp_reporter,
+   [BCM_MCAST_MSG_MLD_PURGE_GRP_REPORTER   - BCM_MCAST_MSG_BASE] = bcm_mcast_netlink_process_mld_purge_grp_reporter,
 };
 
 static int bcm_mcast_netlink_rcv_msg(struct sk_buff *skb, struct nlmsghdr *nl_msgHdr)

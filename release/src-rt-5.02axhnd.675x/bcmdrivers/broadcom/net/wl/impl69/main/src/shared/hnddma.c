@@ -2,7 +2,7 @@
  * Generic Broadcom Home Networking Division (HND) DMA module.
  * This supports the following chips: BCM42xx, 44xx, 47xx .
  *
- * Copyright (C) 2020, Broadcom. All Rights Reserved.
+ * Copyright (C) 2021, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -19,7 +19,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: hnddma.c 787302 2020-05-26 07:57:10Z $
+ * $Id: hnddma.c 794810 2021-01-19 10:12:34Z $
  */
 
 /**
@@ -1973,6 +1973,9 @@ BCMATTACHFN_DMA_ATTACH(dma64_alloc)(dma_info_t *di, uint direction)
 		/* find the alignment offset that was used */
 		di->txdalign = (uint)(PHYSADDRLO(di->txdpa) - PHYSADDRLO(di->txdpaorig));
 
+		/* make sure we don't cross our boundaries */
+		ASSERT(size + di->txdalign <= alloced);
+
 		/* adjust the va by the same offset */
 		di->txd64 = (dma64dd_t *)((uintptr)va + di->txdalign);
 
@@ -1998,6 +2001,9 @@ BCMATTACHFN_DMA_ATTACH(dma64_alloc)(dma_info_t *di, uint direction)
 
 		/* find the alignment offset that was used */
 		di->rxdalign = (uint)(PHYSADDRLO(di->rxdpa) - PHYSADDRLO(di->rxdpaorig));
+
+		/* make sure we don't cross our boundaries */
+		ASSERT(size + di->rxdalign <= alloced);
 
 		/* adjust the va by the same offset */
 		di->rxd64 = (dma64dd_t *)((uintptr)va + di->rxdalign);

@@ -175,11 +175,27 @@ enum {
 	NLA_S16,
 	NLA_S32,
 	NLA_S64,
+#ifdef CONFIG_BCM_KF_CFG80211_BACKPORT 
+	NLA_BITFIELD32,
+	NLA_REJECT,
+	NLA_EXACT_LEN,
+	NLA_EXACT_LEN_WARN,
+	NLA_MIN_LEN,
+#endif /* CONFIG_BCM_KF_CFG80211_BACKPORT */
 	__NLA_TYPE_MAX,
 };
 
 #define NLA_TYPE_MAX (__NLA_TYPE_MAX - 1)
 
+#ifdef CONFIG_BCM_KF_CFG80211_BACKPORT 
+enum nla_policy_validation {
+	NLA_VALIDATE_NONE,
+	NLA_VALIDATE_RANGE,
+	NLA_VALIDATE_MIN,
+	NLA_VALIDATE_MAX,
+	NLA_VALIDATE_FUNCTION,
+};
+#endif /* CONFIG_BCM_KF_CFG80211_BACKPORT */
 /**
  * struct nla_policy - attribute validation policy
  * @type: Type of attribute or NLA_UNSPEC
@@ -214,9 +230,78 @@ enum {
  */
 struct nla_policy {
 	u16		type;
+#ifdef CONFIG_BCM_KF_CFG80211_BACKPORT
+	u8		validation_type; 
+#endif /* CONFIG_BCM_KF_CFG80211_BACKPORT */
 	u16		len;
+#ifdef CONFIG_BCM_KF_CFG80211_BACKPORT
+	union {
+		const void *validation_data;
+		struct {
+			s16 min, max;
+		};
+		int (*validate)(const struct nlattr *attr);
+		/* This entry is special, and used for the attribute at index 0
+		 * only, and specifies special data about the policy, namely it
+		 * specifies the "boundary type" where strict length validation
+		 * starts for any attribute types >= this value, also, strict
+		 * nesting validation starts here.
+		 *
+		 * Additionally, it means that NLA_UNSPEC is actually NLA_REJECT
+		 * for any types >= this, so need to use NLA_MIN_LEN to get the
+		 * previous pure { .len = xyz } behaviour. The advantage of this
+		 * is that types not specified in the policy will be rejected.
+		 *
+		 * For completely new families it should be set to 1 so that the
+		 * validation is enforced for all attributes. For existing ones
+		 * it should be set at least when new attributes are added to
+		 * the enum used by the policy, and be set to the new value that
+		 * was added to enforce strict validation from thereon.
+		 */
+		u16 strict_start_type;
+	};
+#endif /* CONFIG_BCM_KF_CFG80211_BACKPORT */
 };
 
+#ifdef CONFIG_BCM_KF_CFG80211_BACKPORT 
+#define __NLA_ENSURE(condition) BUILD_BUG_ON_ZERO(!(condition))
+#define NLA_ENSURE_INT_TYPE(tp)				\
+	(__NLA_ENSURE(tp == NLA_S8 || tp == NLA_U8 ||	\
+		      tp == NLA_S16 || tp == NLA_U16 ||	\
+		      tp == NLA_S32 || tp == NLA_U32 ||	\
+		      tp == NLA_S64 || tp == NLA_U64) + tp)
+#define NLA_ENSURE_NO_VALIDATION_PTR(tp)		\
+	(__NLA_ENSURE(tp != NLA_BITFIELD32 &&		\
+		      tp != NLA_REJECT &&		\
+		      tp != NLA_NESTED &&		\
+		      tp != NLA_NESTED_COMPAT) + tp)
+
+#define NLA_POLICY_RANGE(tp, _min, _max) {		\
+	.type = NLA_ENSURE_INT_TYPE(tp),		\
+	.validation_type = NLA_VALIDATE_RANGE,		\
+	.min = _min,					\
+	.max = _max					\
+}
+
+#define NLA_POLICY_MIN(tp, _min) {			\
+	.type = NLA_ENSURE_INT_TYPE(tp),		\
+	.validation_type = NLA_VALIDATE_MIN,		\
+	.min = _min,					\
+}
+
+#define NLA_POLICY_MAX(tp, _max) {			\
+	.type = NLA_ENSURE_INT_TYPE(tp),		\
+	.validation_type = NLA_VALIDATE_MAX,		\
+	.max = _max,					\
+}
+
+#define NLA_POLICY_VALIDATE_FN(tp, fn, ...) {		\
+	.type = NLA_ENSURE_NO_VALIDATION_PTR(tp),	\
+	.validation_type = NLA_VALIDATE_FUNCTION,	\
+	.validate = fn,					\
+	.len = __VA_ARGS__ + 0,				\
+}
+#endif /* CONFIG_BCM_KF_CFG80211_BACKPORT */
 /**
  * struct nl_info - netlink source information
  * @nlh: Netlink message header of original request

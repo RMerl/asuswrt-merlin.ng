@@ -9,21 +9,11 @@ RCS_SIGN = $$$$
 ENDLINE = $$
 LD_LIBRARY_PATH = /tools/oss/packages/x86_64-rhel6/gcc/4.8.2/lib64/
 
-ifeq ("$(USE_LLVM_SRC)", "y")
-	LLVM_TOOLS_DEP = llvm_tools
-	CLANG_EXE = $$(TOOLS_DIR)/bin/llvm/clang_link
-else
-	CLANG_EXE ?= /projects/firepath/tools/releases/fp_llvm/dev-runner-4/x86_64-rhel6/bin/clang
-endif
 
 ifeq ("$(ENABLE_FW_OPT)", "y")
 	OPT_FLAGS = --optimize $(PORTABLE_PROJ_FW_OUTPUT)$(RUNNER_FW)_$(1).opt.txt
 	OPT_RENAME = $(TOOLS_BIN)/rename -v .opt. . $(PROJ_FW_OUTPUT)runner_fw_*.opt.*
 endif
-
-ifeq ("$(RUNNER_SUPPORT_64_BIT_LD_ST)", "y")
-    CLANG_EXTRA_PARAMS += -mllvm -runner-support-64bit-ldst
-endif    
 
 define build_runner_fw_3G
 $(RUNNER_FW)_$(1)_$(2)_$(3)_3G:
@@ -69,8 +59,8 @@ $(RUNNER_FW)_$(1)_4G:
 	$(CP) $(FW_COMMON_SRC_DIR)/runner_proprietary.h $(PROJ_FW_TARGET)/fw_output/
 	cat $(PROJ_FW_OUTPUT)/runner_copyright.h > $(PROJ_FW_OUTPUT)/$(RUNNER_FW)_$(1).c
 	cat $(PROJ_FW_OUTPUT)/runner_copyright.h > $(PROJ_FW_OUTPUT)/predict_$(RUNNER_FW)_$(1).c
-	@echo -e 'char *rdpa_version_fw_$(1) = "$(RCS_SIGN)Change: 00000 $(RCS_SIGN)";\n' >> $(PROJ_FW_OUTPUT)/$(RUNNER_FW)_$(1).c
-	$(PERL) $(TOOLS_BIN)/put_fw_version.pl $(PROJ_FW_OUTPUT)/$(RUNNER_FW)_$(1).c $(PROJ_FW_BIN)/$(RUNNER_FW)_$(1).c $(DRIVERS_DIR)/rdpa/rdp_version.h
+	cat $(PROJ_FW_BIN)/$(RUNNER_FW)_$(1).c | grep Change >> $(PROJ_FW_OUTPUT)/$(RUNNER_FW)_$(1).c
+	@echo >> $(PROJ_FW_OUTPUT)/$(RUNNER_FW)_$(1).c
 	@echo 'uint32_t fw_binary_$(1)[] = {' >> $(PROJ_FW_OUTPUT)/$(RUNNER_FW)_$(1).c
 	@echo 'uint16_t fw_predict_$(1)[] = {' >> $(PROJ_FW_OUTPUT)/predict_$(RUNNER_FW)_$(1).c
 	@cat $(PROJ_FW_OUTPUT)/$(RUNNER_FW)_$(1).binary | sed -r 's/(^0x[A-F0-9]*)/\1,/g' >> $(PROJ_FW_OUTPUT)/$(RUNNER_FW)_$(1).c
@@ -83,13 +73,6 @@ $(RUNNER_FW)_$(1)_4G:
 	$(CP) $(PROJ_FW_TARGET)/fw_output/*.c $(PROJ_FW_BIN)
 	$(CP) $(PROJ_FW_TARGET)/fw_output/fw_binary_auto.h $(PROJ_FW_BIN)
 	$(MV) $(PROJ_FW_TARGET)/fw_output/*.c $(PROJ_FW_TARGET)/
-endef
-
-define build_runner_c_fw
-$(RUNNER_C_FW)_$(1): $(LLVM_TOOLS_DEP)
-	@echo "Building C FW for Runner" $(1)
-	$(CLANG_EXE) $(PROJ_DEFS) $(FW_PROJ_DEFS) -I$(COMMON_INCLUDE_FLAGS) -I$(PROJ_FW_TARGET) -fno-delete-null-pointer-checks --target=runner$(RGEN)g $(CLANG_EXTRA_PARAMS) -O3 -Wall -S $(PROJ_FW_TARGET)/$(RUNNER_C_FW)_$(1).c -o $(PROJ_FW_TARGET)/$(RUNNER_C_FW)_$(1).s 
-	gawk -f $(TOOLS_DIR)/bin/llvm/llvm_pp.awk -v runner_version=$(RGEN) $(PROJ_FW_TARGET)/$(RUNNER_C_FW)_$(1).s > $(PROJ_FW_TARGET)/$(RUNNER_C_FW)_$(1).uc
 endef
 
 $(eval $(call build_runner_fw_3G,0_main,a,MAIN_INSTR_SIZE))
@@ -106,11 +89,3 @@ $(eval $(call build_runner_fw_4G,5))
 $(eval $(call build_runner_fw_4G,6))
 $(eval $(call build_runner_fw_4G,7))
 
-$(eval $(call build_runner_c_fw,0))
-$(eval $(call build_runner_c_fw,1))
-$(eval $(call build_runner_c_fw,2))
-$(eval $(call build_runner_c_fw,3))
-$(eval $(call build_runner_c_fw,4))
-$(eval $(call build_runner_c_fw,5))
-$(eval $(call build_runner_c_fw,6))
-$(eval $(call build_runner_c_fw,7))

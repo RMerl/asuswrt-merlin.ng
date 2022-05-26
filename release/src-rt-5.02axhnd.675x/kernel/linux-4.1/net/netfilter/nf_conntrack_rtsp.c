@@ -39,6 +39,7 @@ MODULE_ALIAS("ip_conntrack_rtsp");
 static char *rtsp_buffer;
 
 static DEFINE_SPINLOCK(nf_rtsp_lock);
+extern spinlock_t ct_derived_conn_lock;
 
 #define MAX_PORTS 8
 static u_int16_t ports[MAX_PORTS];
@@ -217,12 +218,13 @@ static int get_next_client_port(const char *tcpdata, int tpoff, int tplen,
  * products.
  */
 static int get_next_dest_ipport(const char *tcpdata, int tpoff, int tplen,
-				int *destoff, int *destlen, __be32 *dest,
-				int *portoff, int *portlen, __be16 *port)
+				int *destoff, int *destlen, union nf_inet_addr *dest,
+				int *portoff, int *portlen, __be16 *port, u_int16_t l3num)
 {
 	int off;
 	char *p;
-
+	int ret;
+	
 	if (*destlen == 0) { /* The first destination */
 		*destoff = tpoff;
 	} else {
@@ -237,8 +239,16 @@ static int get_next_dest_ipport(const char *tcpdata, int tpoff, int tplen,
 		return 0;
 	*destoff += off + 13;
 
-        if (in4_pton(tcpdata+*destoff, tplen-(*destoff-tpoff), (u8 *)dest,
-                     -1, (const char **)&p) == 0) {
+	if (l3num == AF_INET6) {
+		ret = in6_pton(tcpdata+*destoff, tplen-(*destoff-tpoff), (u8 *)&dest->ip6,
+	                     -1, (const char **)&p);
+	}
+	else {
+		ret = in4_pton(tcpdata+*destoff, tplen-(*destoff-tpoff), (u8 *)&dest->ip,
+	                     -1, (const char **)&p);
+	}
+	
+	if (!ret) {
 		return 0;
 	}
 	*destlen = p - tcpdata - *destoff;
@@ -256,11 +266,12 @@ static int get_next_dest_ipport(const char *tcpdata, int tpoff, int tplen,
 
 /* Get next destination parameter in a Transport header */
 static int get_next_destination(const char *tcpdata, int tpoff, int tplen,
-				int *destoff, int *destlen, __be32 *dest)
+				int *destoff, int *destlen, union nf_inet_addr *dest, u_int16_t l3num)
 {
 	int off;
 	char *p;
-
+	int ret;
+	
 	if (*destlen == 0) { /* The first destination */
 		*destoff = tpoff;
 	} else {
@@ -275,11 +286,20 @@ static int get_next_destination(const char *tcpdata, int tpoff, int tplen,
 		return 0;
 	*destoff += off + 13;
 
-        if (in4_pton(tcpdata+*destoff, tplen-(*destoff-tpoff), (u8 *)dest,
-                     -1, (const char **)&p)) {
+	if (l3num == AF_INET6) {
+		ret = in6_pton(tcpdata+*destoff, tplen-(*destoff-tpoff), (u8 *)&dest->ip6,
+	                     -1, (const char **)&p);
+	}
+	else {
+		ret = in4_pton(tcpdata+*destoff, tplen-(*destoff-tpoff), (u8 *)&dest->ip,
+	                     -1, (const char **)&p);
+	}
+						 
+	if (ret) {
 		*destlen = p - tcpdata - *destoff;
 		return 1;
-	} else {
+	} 
+	else {
 		return 0;
 	}
 }
@@ -386,10 +406,12 @@ static void set_normal_timeout(struct nf_conn *ct, struct sk_buff *skb)
 
 	/* nf_conntrack_lock is locked inside __nf_ct_refresh_acct, locking here results in a deadlock */
 	/* write_lock_bh(&nf_conntrack_lock); */ 
+	spin_lock_bh(&ct_derived_conn_lock);
 	list_for_each_entry(child, &ct->derived_connections, derived_list) {
 		child->derived_timeout = 5*HZ;
 		nf_ct_refresh(child, skb, 5*HZ);
 	}
+	spin_unlock_bh(&ct_derived_conn_lock);
 	/* write_unlock_bh(&nf_conntrack_lock); */
 }
 
@@ -398,6 +420,7 @@ static void set_long_timeout(struct nf_conn *ct, struct sk_buff *skb)
 	struct nf_conn *child;
 
 	/* write_lock_bh(&nf_conntrack_lock); */
+	spin_lock_bh(&ct_derived_conn_lock);
 	list_for_each_entry(child, &ct->derived_connections, derived_list) {
 #if defined(CONFIG_BCM_KF_BLOG) && defined(CONFIG_BLOG)
 		blog_lock();
@@ -414,6 +437,7 @@ static void set_long_timeout(struct nf_conn *ct, struct sk_buff *skb)
 #endif
 		nf_ct_refresh(child, skb, 3600*HZ);
 	}
+	spin_unlock_bh(&ct_derived_conn_lock);
 	/*	write_unlock_bh(&nf_conntrack_lock); */
 }
 
@@ -438,8 +462,8 @@ static int help(struct sk_buff *skb, unsigned int protoff,
 	char dash = 0;
 	int destlen = 0;
 	int destoff = 0;
-    int totaldelta = 0;
-	__be32 dest = 0;
+	int totaldelta = 0;
+	union nf_inet_addr dest;
 	typeof(nat_rtsp_modify_addr_hook) nat_rtsp_modify_addr;
 	typeof(nat_rtsp_modify_port_hook) nat_rtsp_modify_port;
 	typeof(nat_rtsp_modify_port2_hook) nat_rtsp_modify_port2;
@@ -669,7 +693,7 @@ static int help(struct sk_buff *skb, unsigned int protoff,
  		 */
 		while(get_next_dest_ipport(tcpdata, tpoff, tplen,
 					   &destoff, &destlen, &dest,
-					   &portoff, &portlen, &rtpport)) {
+					   &portoff, &portlen, &rtpport, nf_ct_l3num(ct))) {
 			int ret = 0, delta;
 
 			/* Process the port part */
@@ -720,8 +744,15 @@ static int help(struct sk_buff *skb, unsigned int protoff,
 			}
 
 			/* Then the IP part */
-			if (dest != ct->tuplehash[dir].tuple.src.u3.ip)
-				continue;
+			if (nf_ct_l3num(ct) == AF_INET6) {
+			    if (memcmp(dest.ip6, ct->tuplehash[dir].tuple.src.u3.ip6,sizeof(dest.ip6)))
+					continue;
+			}
+			else {		
+				if (dest.ip != ct->tuplehash[dir].tuple.src.u3.ip)
+					continue;
+			}
+			
 			if ((nat_rtsp_modify_addr =
 			     rcu_dereference(nat_rtsp_modify_addr_hook)) &&
 			    ct->status & IPS_NAT_MASK) {
@@ -755,12 +786,17 @@ static int help(struct sk_buff *skb, unsigned int protoff,
 		    ct->status & IPS_NAT_MASK) {
 			destoff = destlen = 0;
 			while(get_next_destination(tcpdata, tpoff, tplen,
-					   	   &destoff, &destlen, &dest)) {
+					   	   &destoff, &destlen, &dest, nf_ct_l3num(ct))) {
 				int ret, delta;
 				
-				if (dest != ct->tuplehash[dir].tuple.src.u3.ip)
-					continue;
-
+				if (nf_ct_l3num(ct) == AF_INET6) {
+					if (memcmp(dest.ip6, ct->tuplehash[dir].tuple.src.u3.ip6,sizeof(dest.ip6)))
+						continue;
+				}
+				else {
+					if (dest.ip != ct->tuplehash[dir].tuple.src.u3.ip)
+						continue;
+				}
 				/* NAT needed */
 				ret = nat_rtsp_modify_addr(skb, protoff, ct, ctinfo,
 							   destoff, destlen,
@@ -796,25 +832,24 @@ end:
 	return NF_ACCEPT;
 }
 
-static struct nf_conntrack_helper rtsp[MAX_PORTS];
+static struct nf_conntrack_helper rtsp[MAX_PORTS][2];
 static char rtsp_names[MAX_PORTS][sizeof("rtsp-65535")];
 static struct nf_conntrack_expect_policy rtsp_exp_policy;
 
 /* don't make this __exit, since it's called from __init ! */
 static void nf_conntrack_rtsp_fini(void)
 {
-	int i;
+	int i,j = -1;
 
 	for (i = 0; i < ports_c; i++) {
-		if (rtsp[i].me == NULL)
-			continue;
+		for (j = 0; j < 2; j++) {
+			if (rtsp[i][j].me == NULL)
+				continue;
+			nf_conntrack_helper_unregister(&rtsp[i][j]);
+		}
 
-        /* unregister the RTSP ports with ingress QoS classifier */
-        iqos_rem_L4port( rtsp[i].tuple.dst.protonum, 
-                         rtsp[i].tuple.src.u.tcp.port, IQOS_ENT_STAT );
-		pr_debug("nf_ct_rtsp: unregistering helper for port %d\n",
-		       	 ports[i]);
-		nf_conntrack_helper_unregister(&rtsp[i]);
+		/* unregister the RTSP ports with ingress QoS classifier */
+		iqos_rem_L4port( IPPROTO_TCP, ports[i], IQOS_ENT_STAT );
 	}
 
 	kfree(rtsp_buffer);
@@ -822,7 +857,7 @@ static void nf_conntrack_rtsp_fini(void)
 
 static int __init nf_conntrack_rtsp_init(void)
 {
-	int i, ret = 0;
+	int i, j = -1, ret = 0;
 	char *tmpname;
 
 	rtsp_buffer = kmalloc(4000, GFP_KERNEL);
@@ -835,33 +870,35 @@ static int __init nf_conntrack_rtsp_init(void)
 	rtsp_exp_policy.max_expected = max_outstanding;
 	rtsp_exp_policy.timeout	= 5 * 60;
 	for (i = 0; i < ports_c; i++) {
-		rtsp[i].tuple.src.l3num = PF_INET;
-		rtsp[i].tuple.src.u.tcp.port = htons(ports[i]);
-		rtsp[i].tuple.dst.protonum = IPPROTO_TCP;
-		rtsp[i].data_len = sizeof(struct nf_ct_rtsp_master);
-		rtsp[i].expect_policy = &rtsp_exp_policy;
-		rtsp[i].expect_class_max = 1;
-		rtsp[i].me = THIS_MODULE;
-		rtsp[i].help = help;
-		tmpname = &rtsp_names[i][0];
-		if (ports[i] == RTSP_PORT)
-			sprintf(tmpname, "rtsp");
-		else
-			sprintf(tmpname, "rtsp-%d", ports[i]);
-		strncpy(rtsp[i].name, tmpname, NF_CT_HELPER_NAME_LEN); 
+		rtsp[i][0].tuple.src.l3num = PF_INET;
+		rtsp[i][1].tuple.src.l3num = PF_INET6;
+		for (j = 0; j < 2; j++) {
+			rtsp[i][j].tuple.src.u.tcp.port = htons(ports[i]);
+			rtsp[i][j].tuple.dst.protonum = IPPROTO_TCP;
+			rtsp[i][j].data_len = sizeof(struct nf_ct_rtsp_master);
+			rtsp[i][j].expect_policy = &rtsp_exp_policy;
+			rtsp[i][j].expect_class_max = 1;
+			rtsp[i][j].me = THIS_MODULE;
+			rtsp[i][j].help = help;
+			tmpname = &rtsp_names[i][0];
+			if (ports[i] == RTSP_PORT)
+				sprintf(tmpname, "rtsp");
+			else
+				sprintf(tmpname, "rtsp-%d", ports[i]);
+			strncpy(rtsp[i][j].name, tmpname, NF_CT_HELPER_NAME_LEN); 
 
-		pr_debug("nf_ct_rtsp: registering helper for port %d\n",
-		       	 ports[i]);
-		ret = nf_conntrack_helper_register(&rtsp[i]);
-		if (ret) {
-			printk("nf_ct_rtsp: failed to register helper "
-			       "for port %d\n", ports[i]);
-			nf_conntrack_rtsp_fini();
-			return ret;
+			pr_debug("nf_ct_rtsp: registering helper for port %d\n",
+			       	 ports[i]);
+			ret = nf_conntrack_helper_register(&rtsp[i][j]);
+			if (ret) {
+				printk("nf_ct_rtsp: failed to register helper "
+				       "for port %d\n", ports[i]);
+				nf_conntrack_rtsp_fini();
+				return ret;
+			}
 		}
-
-        /* register the RTSP ports with ingress QoS classifier */
-        iqos_add_L4port( IPPROTO_TCP, ports[i], IQOS_ENT_STAT, IQOS_PRIO_HIGH );
+		/* register the RTSP ports with ingress QoS classifier */
+		iqos_add_L4port( IPPROTO_TCP, ports[i], IQOS_ENT_STAT, IQOS_PRIO_HIGH );
 	}
 
 	return 0;

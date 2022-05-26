@@ -43,6 +43,7 @@ projects/DSL_63138/drivers/rdd/rdd_common.h
 projects/DSL_63138/drivers/rdd/rdd_cpu.c
 projects/DSL_63138/drivers/rdd/rdd_cpu.h
 projects/DSL_63138/drivers/rdd/rdd_data_structures.h
+drivers/rdd/rdd_fw_defs.h
 projects/DSL_63138/drivers/rdd/rdd_defs.h
 projects/DSL_63138/drivers/rdd/rdd_init.c
 projects/DSL_63138/drivers/rdd/rdd_init.h
@@ -227,6 +228,7 @@ drivers/rdpa_gpl/include/rdpa_system.h
 drivers/rdpa_gpl/include/rdpa_tm.h
 drivers/rdpa_gpl/include/rdpa_types.h
 drivers/rdpa_gpl/include/rdpa_vlan.h
+drivers/rdpa_gpl/include/rdpa_vlan_action_basic.h
 drivers/rdpa_gpl/include/rdpa_vlan_action.h
 drivers/rdpa_gpl/include/rdpa_cmd_list.h
 drivers/rdpa_gpl/include/rdpa_mcast.h

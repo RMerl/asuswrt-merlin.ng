@@ -1,7 +1,7 @@
 /*
  * Linux OS Independent Layer
  *
- * Copyright (C) 2020, Broadcom. All Rights Reserved.
+ * Copyright (C) 2021, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: linux_osl.h 793388 2020-11-25 00:43:22Z $
+ * $Id: linux_osl.h 794810 2021-01-19 10:12:34Z $
  */
 
 #ifndef _linux_osl_h_
@@ -231,8 +231,10 @@ extern bool osl_is_flag_set(osl_t *osh, uint32 mask);
 #define	MALLOC_FAILED(osh)	osl_malloc_failed((osh))
 extern uint osl_malloc_failed(osl_t *osh);
 
-/* allocate/free shared (dma-able) consistent memory */
-#define	DMA_CONSISTENT_ALIGN	osl_dma_consistent_align()
+/* allocate/free shared (dma-able) consistent memory (NOTE: allocated buffer is not guaranteed
+ * to follow alignment request; it IS guaranteed however to be large enough for caller to honour
+ * the requirement)
+ */
 #define	DMA_ALLOC_CONSISTENT(osh, size, align, tot, pap, dmah) \
 	osl_dma_alloc_consistent((osh), (size), (align), (tot), (pap))
 #define	DMA_FREE_CONSISTENT(osh, va, size, pa, dmah) \
@@ -243,7 +245,9 @@ extern uint osl_malloc_failed(osl_t *osh);
 #define	DMA_FREE_CONSISTENT_FORCE32(osh, va, size, pa, dmah) \
 	osl_dma_free_consistent((osh), (void*)(va), (size), (pa))
 
-extern uint osl_dma_consistent_align(void);
+/* Note that this function (despite what its parameters may suggest) does NOT guarantee alignment
+ * of the returned buffer. It does allocate sufficient bytes for caller to honour the requirement.
+ */
 extern void *osl_dma_alloc_consistent(osl_t *osh, uint size, uint16 align,
 	uint *tot, dmaaddr_t *pap);
 extern void osl_dma_free_consistent(osl_t *osh, void *va, uint size, dmaaddr_t pa);

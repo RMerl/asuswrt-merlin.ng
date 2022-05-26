@@ -133,7 +133,8 @@ static int strap_check_spinand(void)
 #elif defined(_BCM94908_) || defined(CONFIG_BCM94908) || \
       defined(_BCM963158_) || defined(CONFIG_BCM963158) || defined(_BCM96846_) || defined(CONFIG_BCM96846) || \
       defined(_BCM96856_) || defined(CONFIG_BCM96856) || defined(_BCM963178_) || defined(CONFIG_BCM963178) || \
-      defined(_BCM947622_) || defined(CONFIG_BCM947622) || defined(_BCM96878_) || defined(CONFIG_BCM96878)
+      defined(_BCM947622_) || defined(CONFIG_BCM947622) || defined(_BCM96878_) || defined(CONFIG_BCM96878) || \
+      defined(_BCM96855_) || defined(CONFIG_BCM96855)
     return ((MISC->miscStrapBus&MISC_STRAP_BUS_BOOT_SEL_MASK) == MISC_STRAP_BUS_BOOT_SPI_NAND);
 #elif defined(_BCM96858_) || defined(CONFIG_BCM96858)
     {
@@ -284,6 +285,7 @@ int flash_init(void)
     defined(_BCM963158_) || defined(CONFIG_BCM963158) || \
     defined(_BCM96846_) || defined(CONFIG_BCM96846) || \
     defined(_BCM96878_) || defined(CONFIG_BCM96878) || \
+    defined(_BCM96855_) || defined(CONFIG_BCM96855) || \
     defined(_BCM963178_) || defined(CONFIG_BCM963178) || \
     defined(_BCM947622_) || defined(CONFIG_BCM947622) || \
     defined(_BCM96856_) || defined(CONFIG_BCM96856)

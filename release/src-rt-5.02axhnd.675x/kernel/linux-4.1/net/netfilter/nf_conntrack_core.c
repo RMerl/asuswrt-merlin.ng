@@ -185,6 +185,8 @@ struct safe_list ct_safe_lists = {
 #endif
 };
 
+__cacheline_aligned_in_smp DEFINE_SPINLOCK(ct_derived_conn_lock);
+EXPORT_SYMBOL(ct_derived_conn_lock);
 #endif
 
 static u32 hash_conntrack_raw(const struct nf_conntrack_tuple *tuple, u16 zone)
@@ -414,14 +416,6 @@ destroy_conntrack(struct nf_conntrack *nfct)
 #endif /* CONFIG_BCM_RUNNER */
 #endif /* CONFIG_BCM_KF_RUNNER */
 
-#if defined(CONFIG_BCM_KF_XT_MATCH_LAYER7) && \
-	(defined(CONFIG_NETFILTER_XT_MATCH_LAYER7) || defined(CONFIG_NETFILTER_XT_MATCH_LAYER7_MODULE))
-	if (ct->layer7.app_proto)
-		kfree(ct->layer7.app_proto);
-	if (ct->layer7.app_data)
-		kfree(ct->layer7.app_data);
-#endif
-
 
 	NF_CT_STAT_INC(net, delete);
 	local_bh_enable();
@@ -429,7 +423,9 @@ destroy_conntrack(struct nf_conntrack *nfct)
 	if (ct->master)
 #if defined(CONFIG_BCM_KF_NETFILTER)
 	{
+		spin_lock_bh(&ct_derived_conn_lock);
 		list_del(&ct->derived_list);
+		spin_unlock_bh(&ct_derived_conn_lock);
 #endif
 		nf_ct_put(ct->master);
 #if defined(CONFIG_BCM_KF_NETFILTER)
@@ -1357,13 +1353,6 @@ __nf_conntrack_alloc(struct net *net, u16 zone,
 	setup_timer(&ct->timeout, death_by_timeout, (unsigned long)ct);
 #endif
 
-#if defined(CONFIG_BCM_KF_XT_MATCH_LAYER7) && \
-	(defined(CONFIG_NETFILTER_XT_MATCH_LAYER7) || defined(CONFIG_NETFILTER_XT_MATCH_LAYER7_MODULE))
-	ct->layer7.app_proto = NULL;
-	ct->layer7.app_data = NULL;
-	ct->layer7.app_data_len = 0;
-#endif
-
 #if defined(CONFIG_BCM_KF_DPI) && defined(CONFIG_BCM_DPI_MODULE)
 	memset(&ct->dpi, 0, sizeof(ct->dpi));
 
@@ -1530,10 +1519,12 @@ init_conntrack(struct net *net, struct nf_conn *tmpl,
 			/* exp->master safe, refcnt bumped in nf_ct_find_expectation */
 			ct->master = exp->master;
 #if defined(CONFIG_BCM_KF_NETFILTER)
-		list_add(&ct->derived_list,
-			 &exp->master->derived_connections);
-		if (exp->flags & NF_CT_EXPECT_DERIVED_TIMEOUT)
-			ct->derived_timeout = exp->derived_timeout;
+			spin_lock(&ct_derived_conn_lock);
+			list_add(&ct->derived_list,
+				 &exp->master->derived_connections);
+			spin_unlock(&ct_derived_conn_lock);
+			if (exp->flags & NF_CT_EXPECT_DERIVED_TIMEOUT)
+				ct->derived_timeout = exp->derived_timeout;
 #endif
 			if (exp->helper) {
 				help = nf_ct_helper_ext_add(ct, exp->helper,
@@ -1640,7 +1631,6 @@ resolve_normal_ct(struct net *net, struct nf_conn *tmpl,
 	{
 		struct nf_conn_help * help = nfct_help(ct);
 
-		blog_lock();
 		if ((help != (struct nf_conn_help *)NULL) &&
 		    (help->helper != (struct nf_conntrack_helper *)NULL) &&
 		    (help->helper->name && strcmp(help->helper->name, "BCM-NAT"))) {
@@ -1658,6 +1648,9 @@ resolve_normal_ct(struct net *net, struct nf_conn *tmpl,
 
 			if(ntohs(ct->tuplehash[IP_CT_DIR_ORIGINAL].tuple.dst.u.udp.port) == BLOG_L2TP_PORT)				
 				ct_type = BLOG_PARAM2_L2TP_IPV4;
+
+			if((IPPROTO_UDP == protonum) && (ntohs(ct->tuplehash[IP_CT_DIR_ORIGINAL].tuple.dst.u.udp.port) == BLOG_VXLAN_PORT))
+				ct_type = BLOG_PARAM2_VXLAN_IPV4;
 					
 			blog_link(FLOWTRACK, blog_ptr(skb),
 					(void*)ct, CTINFO2DIR(skb->nfctinfo), ct_type);
@@ -1666,7 +1659,6 @@ resolve_normal_ct(struct net *net, struct nf_conn *tmpl,
 					skb, ct, blog_ptr(skb));
 			blog_skip(skb, blog_skip_reason_ct_status_donot_blog); /* No blogging */
 		}
-		blog_unlock();
 	}
 #endif
 

@@ -4,7 +4,7 @@
  *
  * Definitions subject to change without notice.
  *
- * Copyright (C) 2020, Broadcom. All Rights Reserved.
+ * Copyright (C) 2021, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -21,7 +21,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: wlioctl_defs.h 793706 2020-12-07 22:43:49Z $
+ * $Id: wlioctl_defs.h 794771 2021-01-18 17:29:28Z $
  */
 
 #ifndef wlioctl_defs_h
@@ -175,6 +175,7 @@
 #define WL_STA_MAP		0x04000000	/* MultiAP Backhaul STA */
 #define WL_STA_MBO_CAP		0x08000000	/* MBO  CAP */
 #define WL_WDS_LINKUP		WL_STA_WDS_LINKUP	/* deprecated */
+#define WL_STA_DTPC_CAP		0x20000000	/* STA DTPC capable */
 
 /* STA HT cap fields */
 #define WL_STA_CAP_LDPC_CODING		0x0001	/* Support for rx of LDPC coded pkts */

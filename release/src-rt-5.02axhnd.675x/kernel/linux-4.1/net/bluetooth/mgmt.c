@@ -1062,7 +1062,7 @@ static u8 create_instance_adv_data(struct hci_dev *hdev, u8 instance, u8 *ptr)
 		ptr += 3;
 	}
 
-#if defined(RTAX95Q) || defined(RTAXE95Q) || defined(RTAX56_XD4) || defined(RTAX82_XD6)
+#if defined(RTAX95Q) || defined(RTAXE95Q) || defined(RTAX56_XD4) || defined(RTAX82_XD6) || defined(RTAX82_XD6S)
 	// from base UUID 0x0000000000001000800000805F9B34FB
 	ptr[0] = 17;
 	ptr[1] = EIR_UUID128_ALL;
@@ -1086,6 +1086,8 @@ static u8 create_instance_adv_data(struct hci_dev *hdev, u8 instance, u8 *ptr)
 	ptr[14] = 0x07;
 #elif defined(RTAX82_XD6)
 	ptr[14] = 0x08;
+#elif defined(RTAX82_XD6S)
+	ptr[14] = 0x0d;
 #else
 	ptr[14] = 0x00;
 #endif

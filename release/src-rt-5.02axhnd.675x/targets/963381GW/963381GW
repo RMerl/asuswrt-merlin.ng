@@ -15,6 +15,7 @@
 # BRCM_6858 is not set
 # BRCM_6846 is not set
 # BRCM_6878 is not set
+# BRCM_6855 is not set
 # BRCM_47622 is not set
 # BRCM_63178 is not set
 # BRCM_6856 is not set
@@ -172,6 +173,7 @@ BUILD_VCONFIG=dynamic
 # BUILD_BRCM_INTERNAL is not set
 # BRCM_DRIVER_SPDSVC is not set
 # BUILD_BOOT_BLOCK_HOUSEKEEPING is not set
+# BUILD_EMMC_TRAPEZE is not set
 
 #
 # DSL/XTM selection
@@ -283,6 +285,7 @@ BUILD_WSC=dynamic
 # BUILD_BCM_CPEPKTC is not set
 # BUILD_BCM_PKTFWD is not set
 # BUILD_HND_MFG is not set
+# BUILD_WLAN_TESTBED_AP is not set
 # BUILD_BCM_WLAN_NO_MFGBIN is not set
 # BUILD_BCM_WLAN_REMOVE_INTERNAL_DEBUG is not set
 # BUILD_HND_EAP is not set
@@ -304,7 +307,6 @@ BUILD_WANVLANMUX=y
 BUILD_IPSEC_TOOLS=dynamic
 # BUILD_OPENVPN is not set
 BUILD_L2TPAC=y
-# BUILD_PPTPAC is not set
 BUILD_GRE_TUNNEL=y
 # BUILD_ACCEL_PPTP is not set
 
@@ -320,7 +322,6 @@ BRCM_KERNEL_NF_FIREWALL=m
 BRCM_KERNEL_NF_MANGLE=m
 BRCM_KERNEL_NF_NAT=m
 BRCM_KERNEL_NF_DYNDSCP=m
-# BRCM_KERNEL_NF_LAYER7_FILTER is not set
 BRCM_KERNEL_NF_NAT_ALG_FTP=m
 BRCM_KERNEL_NF_NAT_ALG_SIP=m
 BRCM_KERNEL_NF_NAT_ALG_TFTP=m
@@ -408,6 +409,7 @@ BUILD_BLOGCTL=dynamic
 # Software Buffer Pool Manager
 #
 BRCM_DRIVER_BPM=m
+# BRCM_BPM_DYNAMIC is not set
 BRCM_BUF_MEM_PRCNT=15
 # BRCM_BPM_BUF_TRACKING is not set
 BUILD_BPMCTL=dynamic
@@ -565,6 +567,7 @@ BCM_MAGIC_SYSRQ=y
 # BRCM_KERNEL_VMTOOLS is not set
 # BRCM_KERNEL_CSTAT is not set
 # BRCM_IKOS is not set
+# BRCM_QEMU is not set
 # BRCM_DRIVER_BCMPROF is not set
 BUILD_DEBUG_TOOLS=y
 # BUILD_GDBSERVER is not set

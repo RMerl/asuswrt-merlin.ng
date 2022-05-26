@@ -105,7 +105,7 @@ static struct bcmspi BcmHsSpi = {
 #define HS_SPI_PLL_FREQ     375000000
 #elif defined(_BCM960333_) || defined(CONFIG_BCM960333)
 #define HS_SPI_PLL_FREQ     133333333
-#elif defined(_BCM963178_) || defined(CONFIG_BCM963178) || defined(_BCM947622_) || defined(CONFIG_BCM947622) || defined(CONFIG_BCM96878) || defined(_BCM96878_)
+#elif defined(_BCM963178_) || defined(CONFIG_BCM963178) || defined(_BCM947622_) || defined(CONFIG_BCM947622) || defined(CONFIG_BCM96878) || defined(_BCM96878_) || defined(CONFIG_BCM96855) || defined(_BCM96855_)
 #define HS_SPI_PLL_FREQ     200000000
 #else
 #define HS_SPI_PLL_FREQ     400000000

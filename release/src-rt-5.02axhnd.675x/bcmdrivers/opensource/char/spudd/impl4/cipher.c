@@ -1137,7 +1137,7 @@ spu_aead_rx_sg_create(struct brcm_message *mssg,
 		incl_icv = true;
 		db_size += ctx->digestsize;
 	}
-	else if (0 == rctx->is_encrypt)
+	else if ((0 == rctx->is_encrypt) && (!ctx->alg->dtls_hmac))
 	{
 		/* for decrypt, catch ICV in a separate buffer */
 		incl_icv = true;
@@ -1538,7 +1538,10 @@ int handle_aead_req(struct iproc_reqctx_s *rctx)
 		/* For other modes, include digest in response buf
 		 * if encrypting
 		 */
-		resp_len += ctx->digestsize;
+		if (!ctx->alg->dtls_hmac)
+		{
+			resp_len += ctx->digestsize;
+		}
 	}
 	else
 	{
@@ -1547,8 +1550,12 @@ int handle_aead_req(struct iproc_reqctx_s *rctx)
 		if ( chunksize < ctx->digestsize ) {
 			return -EINVAL;
 		}
-		resp_len = chunksize - ctx->digestsize;
-		rx_frag_num++;
+
+		if (!ctx->alg->dtls_hmac)
+		{
+			resp_len = chunksize - ctx->digestsize;
+			rx_frag_num++;
+		}
 	}
 	rctx->dst_nents = spu_sg_count(rctx->dst_sg, resp_len, rctx->dst_skip);
 	rx_frag_num += rctx->dst_nents;
@@ -3325,6 +3332,29 @@ static struct iproc_alg_s driver_algs[] = {
 	 .auth_first = 0,
 	 .dtls_hmac = 0,
 	 },
+	 {
+	 /* DTLS AEAD MtE support (An old implementation of DTLS opposing current AEAD using EtM) */
+	 .type = CRYPTO_ALG_TYPE_AEAD,
+	 .alg.crypto = {
+			.cra_name = "dtls(hmac(sha1),cbc(aes))",
+			.cra_driver_name = "dtls(hmac(sha1-iproc),cbc(aes-iproc))",
+			.cra_blocksize = AES_BLOCK_SIZE,
+			.cra_aead = {
+				     .ivsize = AES_BLOCK_SIZE,
+				     .maxauthsize = SHA1_DIGEST_SIZE,
+				     },
+			},
+	 .cipher_info = {
+			 .alg = CIPHER_ALG_AES,
+			 .mode = CIPHER_MODE_CBC,
+			 },
+	 .auth_info = {
+		       .alg = HASH_ALG_SHA1,
+		       .mode = HASH_MODE_HMAC,
+		       },
+	 .auth_first = 1,
+	 .dtls_hmac = 1,
+	 },
 	{
 	 .type = CRYPTO_ALG_TYPE_AEAD,
 	 .alg.crypto = {
@@ -3370,6 +3400,29 @@ static struct iproc_alg_s driver_algs[] = {
 		       },
 	 .auth_first = 0,
 	 .dtls_hmac = 0,
+	 },
+	 {
+	 /* DTLS AEAD MtE support (An old implementation of DTLS opposing current AEAD using EtM) */
+	 .type = CRYPTO_ALG_TYPE_AEAD,
+	 .alg.crypto = {
+			.cra_name = "dtls(hmac(sha256),cbc(aes))",
+			.cra_driver_name = "dtls(hmac(sha256-iproc),cbc(aes-iproc))",
+			.cra_blocksize = AES_BLOCK_SIZE,
+			.cra_aead = {
+				     .ivsize = AES_BLOCK_SIZE,
+				     .maxauthsize = SHA256_DIGEST_SIZE,
+				     },
+			},
+	 .cipher_info = {
+			 .alg = CIPHER_ALG_AES,
+			 .mode = CIPHER_MODE_CBC,
+			 },
+	 .auth_info = {
+		       .alg = HASH_ALG_SHA256,
+		       .mode = HASH_MODE_HMAC,
+		       },
+	 .auth_first = 1,
+	 .dtls_hmac = 1,
 	 },
 	{
 	 .type = CRYPTO_ALG_TYPE_AEAD,

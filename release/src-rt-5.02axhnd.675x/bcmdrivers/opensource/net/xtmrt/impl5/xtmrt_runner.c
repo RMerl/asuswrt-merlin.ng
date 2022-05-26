@@ -630,13 +630,15 @@ int bcmxapi_module_init(void)
           reason == rdpa_cpu_rx_reason_etype_pppoe_s ||
           reason == rdpa_cpu_rx_reason_etype_arp ||
           reason == rdpa_cpu_rx_reason_etype_802_1ag_cfm ||
-          reason == rdpa_cpu_rx_reason_l4_icmp ||
           reason == rdpa_cpu_rx_reason_icmpv6 ||
           reason == rdpa_cpu_rx_reason_igmp ||
           reason == rdpa_cpu_rx_reason_dhcp ||
           reason == rdpa_cpu_rx_reason_hit_trap_high ||
-          reason == rdpa_cpu_rx_reason_ingqos ||
-          reason == rdpa_cpu_rx_reason_l4_udef_0)
+#ifndef XRDP
+          reason == rdpa_cpu_rx_reason_l4_icmp ||
+          reason == rdpa_cpu_rx_reason_l4_udef_0 ||
+#endif
+          reason == rdpa_cpu_rx_reason_ingqos)
       {
          tc = rdpa_cpu_tc_high ;
          queue_id = RDPA_XTM_CPU_HI_RX_QUEUE_ID ;
@@ -1019,7 +1021,7 @@ int bcmxapi_DoGlobUninitReq(void)
 int bcmxapi_DoSetTxQueue(PBCMXTMRT_DEV_CONTEXT pDevCtx,
                          PXTMRT_TRANSMIT_QUEUE_ID pTxQId)
 {
-   int rc = 0, queueIdx;
+   int rc = 0, queueIdx, resvBuffers;
    UINT32 ulPort;
    BcmPktDma_XtmTxDma  *txdma;
    bdmf_object_handle   egress_tm ;
@@ -1060,11 +1062,15 @@ int bcmxapi_DoSetTxQueue(PBCMXTMRT_DEV_CONTEXT pDevCtx,
 
          queue_cfg.queue_id       = queueIdx;
          queue_cfg.weight         = 0;
-         printk ("\n bcmxtmrt:  Tx Q Size = %d \n", pTxQId->usQueueSize) ;
+         printk(" bcmxtmrt:  Tx Q(%d) Size = %d \n", queueIdx, pTxQId->usQueueSize) ;
          queue_cfg.drop_threshold = QUEUE_DROP_THRESHOLD(pTxQId->usQueueSize) ;
          queue_cfg.stat_enable    = 1;
          queue_cfg.best_effort    = (queueIdx == 0);
-         queue_cfg.reserved_packet_buffers = QUEUE_RESV_BUFFERS(pTxQId->ucSubPriority);
+         printk(" bcmxtmrt:  Tx Q(%d) CMBR = %d, Prio-%d \n", queueIdx, pTxQId->ulMBR,
+                  pTxQId->ucSubPriority);
+         resvBuffers = (int) QUEUE_RESV_BUFFERS(pTxQId->ulMBR,pTxQId->ucSubPriority);
+         queue_cfg.reserved_packet_buffers = (resvBuffers<0) ? 0 : resvBuffers;
+         printk(" bcmxtmrt:  Tx Q(%d) Actual MBR = %d \n", queueIdx, queue_cfg.reserved_packet_buffers) ;
 
          if (pTxQId->ucDropAlg == WA_RED)
          {
@@ -1123,6 +1129,7 @@ int bcmxapi_DoSetTxQueue(PBCMXTMRT_DEV_CONTEXT pDevCtx,
             txdma->ucHiMinThresh = pTxQId->ucHiMinThresh;
             txdma->ucHiMaxThresh = pTxQId->ucHiMaxThresh;
             txdma->ulQueueSize   = pTxQId->usQueueSize ;
+            txdma->ulMBR         = pTxQId->ulMBR ;
            
             if ((pDevCtx->Addr.ulTrafficType == TRAFFIC_TYPE_PTM) ||
                 (pDevCtx->Addr.ulTrafficType == TRAFFIC_TYPE_PTM_BONDED))
@@ -1292,6 +1299,7 @@ void bcmxapi_StartTxQueue(PBCMXTMRT_DEV_CONTEXT pDevCtx,
    PBCMXTMRT_GLOBAL_INFO pGi = &g_GlobalInfo;
    UINT32   queueIdx;
    bdmf_object_handle   egress_tm;
+   int resvBuffers;
 
    queueIdx  = txdma->ulDmaIndex;
    
@@ -1303,12 +1311,17 @@ void bcmxapi_StartTxQueue(PBCMXTMRT_DEV_CONTEXT pDevCtx,
       
       queue_cfg.queue_id       = queueIdx;
       queue_cfg.weight         = 0;
-      printk ("\n bcmxtmrt:  Start Tx Q Size = %d \n", txdma->ulQueueSize) ;
+      printk(" bcmxtmrt:  Start Tx Q(%d) Size = %d ", queueIdx, txdma->ulQueueSize) ;
       queue_cfg.drop_threshold = QUEUE_DROP_THRESHOLD(txdma->ulQueueSize) ;
       queue_cfg.stat_enable    = 1;
       queue_cfg.best_effort    = (queueIdx == 0);
-      queue_cfg.reserved_packet_buffers = QUEUE_RESV_BUFFERS(txdma->ulSubPriority);
+      printk(" bcmxtmrt:  Tx Q(%d) CMBR = %d, Prio-%d \n", queueIdx, txdma->ulMBR,
+            txdma->ulSubPriority);
+      resvBuffers = (int) QUEUE_RESV_BUFFERS(txdma->ulMBR,txdma->ulSubPriority);
+      queue_cfg.reserved_packet_buffers = (resvBuffers<0) ? 0 : resvBuffers;
+      printk(" bcmxtmrt:  Tx Q(%d) Actual MBR = %d \n", queueIdx, queue_cfg.reserved_packet_buffers) ;
 
+      //printk(" bcmxtmrt:  DropAlg = %d ", txdma->ucDropAlg) ;
       if (txdma->ucDropAlg == WA_RED)
       {
          /* Currently Runner firmware does not support RED.
@@ -1406,44 +1419,39 @@ void bcmxapi_SetPtmBonding(UINT32 bonding)
 
 
 /*---------------------------------------------------------------------------
- * void bcmxapi_XtmGetStats(UINT8 vport, UINT32 *rxDropped, UINT32 *txDropped)
+ * void bcmxapi_XtmGetStats(PBCMXTMRT_DEV_CONTEXT pDevCtx, UINT8 vport, UINT32 *rxDropped, UINT32 *txDropped)
  * Description:
  *
  * Returns: void
  *---------------------------------------------------------------------------
  */
-void bcmxapi_XtmGetStats(UINT8 vport, UINT32 *rxDropped, UINT32 *txDropped)
+void bcmxapi_XtmGetStats(PBCMXTMRT_DEV_CONTEXT pDevCtx, UINT8 vport, UINT32 *rxDropped, UINT32 *txDropped)
 {
-    //FIXME: This Will be fixed in the future releases as this logic needs to
-    //be added to map the netdevice to corresponding queues.
-    rdpa_port_stat_t stat = {};
     int rc;
-
-    /* rxDiscards not supported */
+    uint32_t index;
+    rdpa_tm_queue_index_t ai = {};
+    rdpa_stat_1way_t egress_tm_stat = {};
     *rxDropped = 0;
-
-    /* only vport 0 is supported on Runner */
-    if (vport != 0)
+    *txDropped = 0;
+    BCM_LOG_INFO(BCM_LOG_ID_XTM, "num queues:%u", pDevCtx->ulTxQInfosSize);
+    for (index=0;index < pDevCtx->ulTxQInfosSize; index++)
     {
-       *txDropped = 0;
-       return;
+        egress_tm_stat.discarded.packets = 0;
+        ai.channel  = 0;
+        ai.queue_id = 0;
+        rc = rdpa_egress_tm_queue_stat_get(g_GlobalInfo.txBdmfObjs[pDevCtx->pTxQids[index]->ulDmaIndex].egress_tm,
+                                           &ai,
+                                           &egress_tm_stat);
+        if(!rc)
+        {
+           *txDropped += egress_tm_stat.discarded.packets;
+        }
+        else 
+        {
+           BCM_XTM_ERROR("rdpa_egress_tm_queue_stat_get failed rc %d", rc);
+        }
     }
-    
-    bdmf_lock();
 
-    /* Read RDPA statistic */
-    rc = rdpa_port_stat_get(g_GlobalInfo.bdmfWan, &stat);
-    if (rc )
-    {
-       printk("rdpa_port_stat_get returned error rc %d\n",rc);
-       goto unlock_exit;
-    }
-
-    /* Add up the TX discards */
-    *txDropped += stat.tx_discard + stat.discard_pkt;
-
-unlock_exit:
-    bdmf_unlock();
 }  /* bcmxapi_XtmGetStats() */
 
 /*---------------------------------------------------------------------------

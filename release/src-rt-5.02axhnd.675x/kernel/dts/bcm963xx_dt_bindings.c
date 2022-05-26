@@ -94,3 +94,7 @@ build_string_clause(#define,"OOPSLOG_PARTITION_NAME",OOPSLOG_PARTITION_NAME)
 #endif
 
 #endif
+
+#if defined (TRAPEZE_BOOT)
+build_clause(#define,"TRAPEZE_BOOT",1)
+#endif

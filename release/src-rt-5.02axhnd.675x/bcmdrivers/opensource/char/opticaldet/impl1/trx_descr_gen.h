@@ -159,6 +159,19 @@ static TRX_DESCRIPTOR trx_lst[] = {
     .wan_types_bitmap      = SUPPORTED_WAN_TYPES_BIT_NGPON2_10_10
   },
   {
+    .form_factor           = TRX_SFF,
+    .type                  = TRX_TYPE_XPON,
+    .vendor_name           = "Semtech",
+    .vendor_pn             = "GN28L96 A",
+    .lbe_polarity          = TRX_ACTIVE_HIGH, /* A2 table 0x80 0x87:6 */
+    .tx_sd_polarity        = TRX_ACTIVE_HIGH, /* A2 table 0x80 0x81:0 */
+    .tx_sd_supported       = TRX_SIGNAL_SUPPORTED,
+    .tx_pwr_down_polarity  = TRX_ACTIVE_LOW,
+    .tx_pwr_down_cfg_req   = false,
+    .activation_func       = (f_activation) NULL,
+    .wan_types_bitmap      = SUPPORTED_WAN_TYPES_BIT_EPON_10_10 | SUPPORTED_WAN_TYPES_BIT_XGSPON
+  },
+  {
     .form_factor           = TRX_SFP,
     .type                  = TRX_TYPE_XPON,
     .vendor_name           = "Ligent Photonics",
@@ -197,7 +210,7 @@ static TRX_DESCRIPTOR trx_lst[] = {
     .tx_pwr_down_cfg_req   = false,
     .tx_sd_supported       = TRX_SIGNAL_SUPPORTED,
     .activation_func       = (f_activation) NULL,
-    .wan_types_bitmap      = SUPPORTED_WAN_TYPES_BIT_EPON_10_10 | SUPPORTED_WAN_TYPES_BIT_EPON_10_1 | SUPPORTED_WAN_TYPES_BIT_XGSPON,
+    .wan_types_bitmap      = SUPPORTED_WAN_TYPES_BIT_EPON_10_10 | SUPPORTED_WAN_TYPES_BIT_XGSPON,
     .rx_wavlen             = 1577,
     .power_budget          = TRX_PB_PR30
   },  
@@ -361,6 +374,19 @@ static TRX_DESCRIPTOR trx_lst[] = {
     .tx_pwr_down_polarity  = TRX_ACTIVE_HIGH,
     .tx_pwr_down_cfg_req   = true,
     .tx_sd_supported       = TRX_SIGNAL_SUPPORTED,
+    .activation_func       = (f_activation) NULL,
+    .wan_types_bitmap      = SUPPORTED_WAN_TYPES_BIT_XGSPON
+  },
+  {
+    .form_factor           = TRX_SFP,
+    .type                  = TRX_TYPE_XPON,
+    .vendor_name           = "Hisense",
+    .vendor_pn             = "LTF7225-BH+",
+    .lbe_polarity          = TRX_ACTIVE_LOW,
+    .tx_sd_polarity        = TRX_ACTIVE_HIGH,
+    .tx_pwr_down_polarity  = TRX_ACTIVE_HIGH,
+    .tx_pwr_down_cfg_req   = true,
+    .tx_sd_supported       = TRX_SIGNAL_NOT_SUPPORTED,
     .activation_func       = (f_activation) NULL,
     .wan_types_bitmap      = SUPPORTED_WAN_TYPES_BIT_XGSPON
   },

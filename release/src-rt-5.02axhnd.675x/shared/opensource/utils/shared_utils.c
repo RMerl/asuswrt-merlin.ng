@@ -44,7 +44,7 @@
 #include <linux/string.h>
 #endif
 
-#if defined (CONFIG_BCM96848) || defined(_BCM96848_) || defined (CONFIG_BCM96858) || defined(_BCM96858_)
+#if defined (CONFIG_BCM96848) || defined(_BCM96848_) || defined (CONFIG_BCM96858) || defined(_BCM96858_) || defined (CONFIG_BCM96856) || defined(_BCM96856_)
 #include "bcm_otp.h"
 #endif
 
@@ -66,6 +66,12 @@ unsigned int UtilGetChipId(void)
     unsigned int chipId = (PERF->RevID & CHIP_ID_MASK) >> CHIP_ID_SHIFT;
 #endif
 
+#if defined (CONFIG_BCM96855) || defined (_BCM96855_)
+    unsigned int chipIdLC = (TOP->OtpChipidLC & CHIP_ID_LC_MASK);
+    if (chipIdLC)
+        chipId = (chipId << CHIP_ID_LC_SIZE) | chipIdLC;
+#endif
+
 #if defined(CONFIG_BCM94908) || defined(_BCM94908_)
     // 62118 and 62116 use 20 bits to represent the chip id 
     // as compared to 16 in case of 4908/4906
@@ -73,6 +79,13 @@ unsigned int UtilGetChipId(void)
     {
         chipId = chipId >> 4;
     }
+#endif
+
+#if defined (CONFIG_BCM96856) || defined(_BCM96856_)
+    unsigned int chipvar;
+    bcm_otp_get_chipvar(&chipvar);
+    if ((chipId==0x68560) && (chipvar==3))
+        chipId=0x68560B;    
 #endif
 
     return  chipId;
@@ -281,6 +294,8 @@ char *UtilGetChipName(char *buf, int len) {
     case(0x68463):
         mktname = "68460U";
         break;
+    case(0x68464):
+        mktname = "68461S";
     default:
         mktname = NULL;
     }

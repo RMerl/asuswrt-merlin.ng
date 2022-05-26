@@ -66,6 +66,10 @@
 
 #define MSG_NETLINK_BRCM_CALLBACK_DSL_DRV	0X0100
 
+#ifdef BUILD_CUSTOMER
+#define MSG_NETLINK_BRCM_WIFI_ONOFF_BTN_TASK 0x0200
+#endif
+
 extern void kerSysSendtoMonitorTask(int msgType, char *msgData, int msgDataLen);
 
 #endif /*_BCMNETLINK_H */

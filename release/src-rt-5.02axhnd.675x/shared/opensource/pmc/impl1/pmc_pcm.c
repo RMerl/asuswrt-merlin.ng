@@ -42,19 +42,19 @@ extern void msleep (unsigned int);
 
 void pmc_pcm_power_up(void)
 {
-#if !(defined(CONFIG_BCM96856) || defined(CONFIG_BCM963158) || defined(CONFIG_BCM96846) || defined(CONFIG_BCM96878) || defined(CONFIG_BCM963178) || defined(CONFIG_BCM947622))
+#if !(defined(CONFIG_BCM96856) || defined(CONFIG_BCM963158) || defined(CONFIG_BCM96846) || defined(CONFIG_BCM96878) || defined(CONFIG_BCM963178) || defined(CONFIG_BCM947622) || defined(CONFIG_BCM96855))
    BPCM_PWR_ZONE_N_CONTROL bpcmPwrZoneControl;
    BPCM_SR_CONTROL sr_control;
 #endif
 
-#if defined(CONFIG_BCM96858) || defined(CONFIG_BCM963158) || defined(CONFIG_BCM96846) || defined(CONFIG_BCM96878) || defined(CONFIG_BCM96856) || defined(CONFIG_BCM963178) || defined(CONFIG_BCM947622)
-   printk("Configuring PCM bus mux\n"); 
+#if defined(CONFIG_BCM96858) || defined(CONFIG_BCM963158) || defined(CONFIG_BCM96846) || defined(CONFIG_BCM96878) || defined(CONFIG_BCM96856) || defined(CONFIG_BCM963178) || defined(CONFIG_BCM947622) || defined(CONFIG_BCM96855)
+   printk("Configuring PCM bus mux\n");
    /* This is needed to swap the endianness on the BUS */
    *(unsigned int*)PCM_BUS_BASE = 0x5;
    msleep(5);
 #endif
 
-#if !(defined(CONFIG_BCM963158) || defined(CONFIG_BCM96846) || defined(CONFIG_BCM96878) || defined(CONFIG_BCM96856) || defined(CONFIG_BCM963178) || defined(CONFIG_BCM947622))
+#if !(defined(CONFIG_BCM963158) || defined(CONFIG_BCM96846) || defined(CONFIG_BCM96878) || defined(CONFIG_BCM96856) || defined(CONFIG_BCM963178) || defined(CONFIG_BCM947622) || defined(CONFIG_BCM96855))
    /* Enable power only if it is currently down */
    ReadZoneRegister(PMB_ADDR_PCM, PCM_Zone_Main, BPCMZoneRegOffset(control), &bpcmPwrZoneControl.Reg32);
 
@@ -88,7 +88,7 @@ void pmc_pcm_power_up(void)
 
 void pmc_pcm_power_down(void)
 {
-#if !(defined(CONFIG_BCM963158) || defined(CONFIG_BCM96846) || defined(CONFIG_BCM96878) || defined(CONFIG_BCM96856) || defined(CONFIG_BCM963178) || defined(CONFIG_BCM947622))
+#if !(defined(CONFIG_BCM963158) || defined(CONFIG_BCM96846) || defined(CONFIG_BCM96878) || defined(CONFIG_BCM96856) || defined(CONFIG_BCM963178) || defined(CONFIG_BCM947622) || defined(CONFIG_BCM96855))
    BPCM_SR_CONTROL sr_control;
 
    /* Assert PCM SoftResets via BPCM */

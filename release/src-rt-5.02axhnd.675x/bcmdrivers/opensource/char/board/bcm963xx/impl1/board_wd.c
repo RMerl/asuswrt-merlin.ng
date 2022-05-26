@@ -73,7 +73,7 @@ int bcm_suspend_watchdog()
 #if defined (CONFIG_BCM96838)
         WDTIMER->WD0Ctl = 0xEE00;
         WDTIMER->WD0Ctl = 0x00EE;
-#elif defined(CONFIG_BCM96858) || defined (CONFIG_BCM963158) || defined(CONFIG_BCM96846) || defined(CONFIG_BCM947622) || defined(CONFIG_BCM963178) || defined(CONFIG_BCM96878)
+#elif defined(CONFIG_BCM96858) || defined (CONFIG_BCM963158) || defined(CONFIG_BCM96846) || defined(CONFIG_BCM947622) || defined(CONFIG_BCM963178) || defined(CONFIG_BCM96878) || defined(CONFIG_BCM96855)
         WDTIMER0->WatchDogCtl = 0xEE00;
         WDTIMER0->WatchDogCtl = 0x00EE;
 #else
@@ -242,7 +242,7 @@ static void watchdog_isr(int param)
     WDTIMER->WD0Ctl = 0x00EE;
     WDTIMER->WD0Ctl = 0xFF00;
     WDTIMER->WD0Ctl = 0x00FF;
-#elif defined(CONFIG_BCM96858) || defined (CONFIG_BCM963158) || defined(CONFIG_BCM96846) || defined(CONFIG_BCM96878)
+#elif defined(CONFIG_BCM96858) || defined (CONFIG_BCM963158) || defined(CONFIG_BCM96846) || defined(CONFIG_BCM96878) || defined(CONFIG_BCM96855)
     WDTIMER0->WatchDogCtl = 0xEE00;
     WDTIMER0->WatchDogCtl = 0x00EE;
     WDTIMER0->WatchDogCtl = 0xFF00;
@@ -428,7 +428,7 @@ void start_watchdog(unsigned int timer, unsigned int reset)
     WDTIMER->WD0DefCount = timer * (FPERIPH_WD/1000000);
     WDTIMER->WD0Ctl = 0xFF00;
     WDTIMER->WD0Ctl = 0x00FF;
-#elif defined(CONFIG_BCM96858) || defined (CONFIG_BCM963158) || defined(CONFIG_BCM96846) || defined(CONFIG_BCM96856) || defined(CONFIG_BCM947622) || defined(CONFIG_BCM963178)  || defined(CONFIG_BCM96878)
+#elif defined(CONFIG_BCM96858) || defined (CONFIG_BCM963158) || defined(CONFIG_BCM96846) || defined(CONFIG_BCM96856) || defined(CONFIG_BCM947622) || defined(CONFIG_BCM963178)  || defined(CONFIG_BCM96878) || defined(CONFIG_BCM96855)
 //#warning Verify WDTIMER 
     WDTIMER0->WatchDogCtl = 0xEE00;
     WDTIMER0->WatchDogCtl = 0x00EE;

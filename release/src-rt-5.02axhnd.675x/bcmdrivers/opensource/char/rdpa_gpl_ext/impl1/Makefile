@@ -28,6 +28,8 @@ else ifeq ("$(CONFIG_BCM96856)" ,"y")
 	PLATFORM=BCM6856
 else ifeq ("$(CONFIG_BCM96878)" ,"y")
 	PLATFORM=BCM6878
+else ifeq ("$(CONFIG_BCM96855)" ,"y")
+    PLATFORM=BCM6855
 else
 	PLATFORM=sim
 endif

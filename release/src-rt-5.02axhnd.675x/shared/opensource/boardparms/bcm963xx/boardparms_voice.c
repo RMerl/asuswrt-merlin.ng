@@ -2956,6 +2956,16 @@ static bp_elem_t g_voice_bcm968462spw[] = {
    {bp_daughterCardList,        .u.ptr = g_968461PRW_dCardList},
    {bp_last}
 };
+static bp_elem_t g_voice_bcm968462egr[] = {
+   {bp_cpBoardId,               .u.cp = "968462EGR"},
+   {bp_daughterCardList,        .u.ptr = g_968461PRW_dCardList},
+   {bp_last}
+};
+static bp_elem_t g_voice_bcm968460rgw[] = {
+   {bp_cpBoardId,               .u.cp = "968460RGW"},
+   {bp_daughterCardList,        .u.ptr = g_968461PRW_dCardList},
+   {bp_last}
+};
 static bp_elem_t * g_VoiceBoardParms[] = {
    g_voice_bcm968460sv,
    g_voice_bcm96846refp,
@@ -2963,6 +2973,8 @@ static bp_elem_t * g_VoiceBoardParms[] = {
    g_voice_bcm968461prw,
    g_voice_bcm968462ref,
    g_voice_bcm968462spw,
+   g_voice_bcm968462egr,
+   g_voice_bcm968460rgw,
    0
 };
 
@@ -3065,8 +3077,67 @@ static bp_elem_t * g_VoiceBoardParms[] = {
 
 #endif
 
+#if defined(_BCM96855_) || defined(CONFIG_BCM96855)
+
+static VOICE_DAUGHTER_BOARD_PARMS * g_96855_9641zsi_dCardList[] = {
+   &g_voiceBoard_NOSLIC,
+   &g_voiceBoard_LE9641_ZSI_BB,
+   0
+};
+
+static VOICE_DAUGHTER_BOARD_PARMS * g_96855_9642zsi_dCardList[] = {
+   &g_voiceBoard_NOSLIC,
+   &g_voiceBoard_LE9642_ZSI_BB,
+   0
+};
+
+static VOICE_DAUGHTER_BOARD_PARMS * g_96855_dCardList[] = {
+   SLICSLAC_LIST_COMMON_NOFXO,
+   0
+};
+
+static bp_elem_t g_voice_bcm968550xsv[] = {
+   {bp_cpBoardId,               .u.cp = "968550XSV"},
+   {bp_usFxsFxo1SpiSSNum,       .u.us = SPI_DEV_0},
+   {bp_usGpioFxsFxoRst1,        .u.us = BP_GPIO_15_AL},
+   {bp_daughterCardList,        .u.ptr = g_96855_dCardList},
+   {bp_last}
+};
+
+/* The following board uses ZSI interface which is multiplexed internally with PCM */
+/* It does not need SPI pins */
+static bp_elem_t g_voice_bcm968550dv21[] = {
+   {bp_cpBoardId,               .u.cp = "968550DV21"},
+   {bp_daughterCardList,        .u.ptr = g_96855_9642zsi_dCardList},
+   {bp_last}
+};
+static bp_elem_t g_voice_bcm968552cref[] = {
+   {bp_cpBoardId,               .u.cp = "968552CREF"},
+   {bp_daughterCardList,        .u.ptr = g_96855_9641zsi_dCardList},
+   {bp_last}
+};
+static bp_elem_t g_voice_bcm968552cref2[] = {
+   {bp_cpBoardId,               .u.cp = "968552CREF2"},
+   {bp_daughterCardList,        .u.ptr = g_96855_9641zsi_dCardList},
+   {bp_last}
+};
+static bp_elem_t * g_VoiceBoardParms[] = {
+   g_voice_bcm968550xsv,
+   g_voice_bcm968550dv21,
+   g_voice_bcm968552cref,
+   g_voice_bcm968552cref2,
+   0
+};
+
+#endif
+
 #if defined(_BCM96856_) || defined(CONFIG_BCM96856)
 
+static VOICE_DAUGHTER_BOARD_PARMS * g_96856chgu_dCardList[] = {
+   &g_voiceBoard_NOSLIC,
+   &g_voiceBoard_LE9641_ZSI_BB,
+   0
+};
 static VOICE_DAUGHTER_BOARD_PARMS * g_96856_dCardList[] = {
    SLICSLAC_LIST_COMMON_NOFXO,
    0
@@ -3076,6 +3147,13 @@ static bp_elem_t g_voice_bcm968560sv[] = {
    {bp_usFxsFxo1SpiSSNum,       .u.us = SPI_DEV_1},
    {bp_usGpioFxsFxoRst1,        .u.us = BP_GPIO_11_AL},
    {bp_daughterCardList,        .u.ptr = g_96856_dCardList},
+   {bp_last}
+};
+/* The following board uses ZSI interface which is multiplexed internally with PCM */
+/* It does not need SPI pins */
+static bp_elem_t g_voice_bcm968560chgu[] = {
+   {bp_cpBoardId,               .u.cp = "968560CHGU"},
+   {bp_daughterCardList,        .u.ptr = g_96856chgu_dCardList},
    {bp_last}
 };
 static bp_elem_t g_voice_bcm968360bg[] = {
@@ -3104,6 +3182,7 @@ static bp_elem_t g_voice_bcm968360bsfp[] = {
 };
 static bp_elem_t * g_VoiceBoardParms[] = {
    g_voice_bcm968560sv,
+   g_voice_bcm968560chgu,
    g_voice_bcm968360bg,
    g_voice_bcm968560ref,
    g_voice_bcm968360bsff,
@@ -3260,6 +3339,11 @@ static bp_elem_t g_voice_bcm968782ref2[] = {
    {bp_daughterCardList,        .u.ptr = g_968781REF_dCardList},
    {bp_last}
 };
+static bp_elem_t g_voice_bcm968782refp4[] = {
+   {bp_cpBoardId,               .u.cp = "968782REFP4"},
+   {bp_daughterCardList,        .u.ptr = g_968781REF_dCardList},
+   {bp_last}
+};
 static bp_elem_t g_voice_bcm968781HREF[] = {
    {bp_cpBoardId,               .u.cp = "968781HREF"},
    {bp_daughterCardList,        .u.ptr = g_968781REF_dCardList},
@@ -3280,6 +3364,11 @@ static bp_elem_t g_voice_bcm968782xsv[] = {
    {bp_elemTemplate,            .u.bp_elemp = g_voice_bcm968781xsv},
    {bp_last}
 };
+static bp_elem_t g_voice_bcm968782sv2[] = {
+   {bp_cpBoardId,               .u.cp = "968782SV2"},
+   {bp_elemTemplate,            .u.bp_elemp = g_voice_bcm968782xsv},
+   {bp_last}
+};
 static bp_elem_t g_voice_bcm968782gfm[] = {
    {bp_cpBoardId,               .u.cp = "968782GFM"},
    {bp_daughterCardList,        .u.ptr = g_968782GREF_dCardList},
@@ -3291,17 +3380,19 @@ static bp_elem_t * g_VoiceBoardParms[] = {
    g_voice_bcm968781refs,
    g_voice_bcm968782ref,
    g_voice_bcm968782ref2,
+   g_voice_bcm968782refp4,
    g_voice_bcm968781HREF,
    g_voice_bcm968781REF_4GPHY,
    g_voice_bcm968782gref,
    g_voice_bcm968782xsv,
+   g_voice_bcm968782sv2,
    g_voice_bcm968782gfm,
    0
 };
 
 #endif
 
-#if !defined(_BCM963268_) && !defined(CONFIG_BCM963268) && !defined(_BCM96838_) && !defined(CONFIG_BCM96838) && !defined(_BCM963138_) && !defined(CONFIG_BCM963138) && !defined(_BCM963381_) && !defined(CONFIG_BCM963381) && !defined(_BCM963148_) && !defined(CONFIG_BCM963148) && !defined(CONFIG_BCM96848) && !defined(_BCM94908_) && !defined(CONFIG_BCM94908) && !defined(_BCM96858_) && !defined(CONFIG_BCM96858) && !defined(_BCM963158_) && !defined(CONFIG_BCM963158) && !defined(CONFIG_BCM96846) && !defined(CONFIG_BCM96856) && !defined(CONFIG_BCM963178) && !defined(CONFIG_BCM947622) && !defined(CONFIG_BCM96878)
+#if !defined(_BCM963268_) && !defined(CONFIG_BCM963268) && !defined(_BCM96838_) && !defined(CONFIG_BCM96838) && !defined(_BCM963138_) && !defined(CONFIG_BCM963138) && !defined(_BCM963381_) && !defined(CONFIG_BCM963381) && !defined(_BCM963148_) && !defined(CONFIG_BCM963148) && !defined(CONFIG_BCM96848) && !defined(_BCM94908_) && !defined(CONFIG_BCM94908) && !defined(_BCM96858_) && !defined(CONFIG_BCM96858) && !defined(_BCM963158_) && !defined(CONFIG_BCM963158) && !defined(CONFIG_BCM96846) && !defined(CONFIG_BCM96856) && !defined(CONFIG_BCM963178) && !defined(CONFIG_BCM947622) && !defined(CONFIG_BCM96878) && !defined(CONFIG_BCM96855)
 
 static bp_elem_t * g_VoiceBoardParms[]=
 {

@@ -18,10 +18,11 @@ my $usage = qq[usage: $0 boot_region_file
    --ek              # cbc128 AES encryption key   
    --ev              # cbc128 AES IV vector  
    --la              # link address for AVS 
+   --partid          # partid number
 ];
 
 my %X = ();
-GetOptions( \%X, 'in=s', 'out=s', 'sign=s', 'ek=s', 'iv=s', 'la:o','verify', 'ssldir:s')
+GetOptions( \%X, 'in=s', 'out=s', 'sign=s', 'ek=s', 'iv=s', 'la:o','verify', 'ssldir:s', 'partid=s')
 
   or die(" $usage ");
 if (!defined($X{la})) {
@@ -32,7 +33,7 @@ my $u = new BRCM::SBI(
         {
             sec_mode  => 'UNSEC',
             byteorder => 'little',
-            chip      => '6878',
+            chip      => $X{partid},
             cred      => '' 
         }
     );
@@ -40,6 +41,7 @@ sub build {
     my $image = $enc->cipher($u->f2var($X{in}), {'ek',unpack("H32",$u->f2var($X{ek})),'iv',unpack("H32",$u->f2var($X{iv}))}); 
     my $sig = $enc->sign($u->f2var($X{sign}),$image);
     my $hdr = $u->prepare_header_avs( length($image), length($sig), $X{la} );
+    printf ("\n ENC for $X{partid}\n");
 printf ("Hdr length %d out to $X{out} sig length %d image len %d\n",length $hdr, length $sig, length $image);
     $u->fdump($X{out}, $hdr . $image . $sig);
     verify($X{out});

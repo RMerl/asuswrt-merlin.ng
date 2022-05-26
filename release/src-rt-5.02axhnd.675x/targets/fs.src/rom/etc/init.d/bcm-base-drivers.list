@@ -25,6 +25,7 @@ extra/i2cmux_i2c.ko
 extra/bcm_i2c.ko
 
 # PON Driver
+-CONFIG_BCM_SMTC extra/smtc.ko
 extra/opticaldet.ko
 extra/bcm_pondrv.ko
 
@@ -49,7 +50,6 @@ extra/bcmbrfp.ko
 # General
 extra/bcm_license.ko
 extra/bcm_spdsvc.ko
--BUILD_SPDTEST extra/bcm_tcpspdtest.ko
 extra/chipinfo.ko
 
 # Ingress QOS module
@@ -65,9 +65,6 @@ extra/cmdlist.ko
 extra/archer.ko
 extra/bcmxtmrtdrv.ko
 extra/bcmfap.ko
-extra/tdts.ko
-extra/dpicore.ko
-extra/dpiqos.ko
 extra/flowbond.ko
 extra/profdrvdd.ko
 extra/bcmxtmcfg.ko
@@ -81,12 +78,18 @@ kernel/net/atm/br2684.ko
 extra/linux-kernel-bde.ko
 extra/linux-user-bde.ko
 
+# insert bcm_tcpspdtest after pkflow.ko
+-BUILD_SPDTEST extra/bcm_tcpspdtest.ko
+
  # enet depends on moca depends on i2c
 
 extra/bcmmoca.ko
 
 extra/bcm_enet.ko
 extra/bcm_enet_sysport.ko
+extra/tdts.ko
+extra/dpicore.ko
+extra/dpiqos.ko
 # moving pktrunner after bcm_enet to get better FlowCache ICache performance
 extra/pktrunner.ko
 extra/nciLservices.ko

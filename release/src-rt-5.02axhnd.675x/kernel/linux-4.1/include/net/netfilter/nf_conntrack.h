@@ -185,22 +185,6 @@ struct nf_conn {
 	void *bl_ctx;
 #endif /* CONFIG_BCM_RDPA || CONFIG_BCM_RDPA_MODULE */
 #endif /* CONFIG_BCM_KF_RUNNER */
-
-#if defined(CONFIG_BCM_KF_XT_MATCH_LAYER7) && \
-	(defined(CONFIG_NETFILTER_XT_MATCH_LAYER7) || defined(CONFIG_NETFILTER_XT_MATCH_LAYER7_MODULE))
-	struct {
-		/*
-		* e.g. "http". NULL before decision. "unknown" after decision
-		* if no match.
-		*/
-		char *app_proto;
-		/*
-		* application layer data so far. NULL after match decision.
-		*/
-		char *app_data;
-		unsigned int app_data_len;
-	} layer7;
-#endif 
 	biqos_cb_t cb;
 };
 

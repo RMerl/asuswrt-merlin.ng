@@ -83,9 +83,16 @@ phy_type_t bp_parse_phy_type(const EMAC_PORT_INFO *port_info)
 
 void *bp_parse_phy_priv(const EMAC_PORT_INFO *port_info)
 {
-    uint32_t priv = 0;
+    static LED_INFO gphy4_led;
 
-    return (void *)priv;
+    // store gphy4 led gpio info, to be used to change pinmux when dynamic moving gphy4 between LAN and WAN ports
+    if (port_info->switch_port == BP_CROSSBAR_PORT_BASE + 1)
+    {
+        gphy4_led = port_info->ledInfo;
+        return (void *)&gphy4_led;
+    }
+
+    return (void *)0;
 }
 
 mac_type_t bp_parse_mac_type(const ETHERNET_MAC_INFO *emac_info, uint32_t port)

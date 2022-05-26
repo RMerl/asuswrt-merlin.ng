@@ -411,7 +411,7 @@ clean_bcmdrivers_autogen: kernel_clean
 
 .PHONY: bcmdrivers_autogen kernellinks
 
-pre_kernelbuild: $(KERNEL_DIR)/.pre_kernelbuild;
+pre_kernelbuild: $(KERNEL_DIR)/.pre_kernelbuild create_install
 
 ifdef BCM_KF
 $(KERNEL_DIR)/.pre_kernelbuild: $(BCM_SWVERSION_FILE) $(BCM_KF_KCONFIG_FILE) bcmdrivers_autogen kernellinks 
@@ -421,9 +421,9 @@ endif
 	CURRENT_ARCH=$(KERNEL_ARCH) TOOLCHAIN_TOP= $(MAKE) -f build/pre_kernelbuild.mk
 
 ifdef BCM_KF
-kernelbuild: $(KERNEL_DIR)/.pre_kernelbuild hnd_dongle rdp_link
+kernelbuild: pre_kernelbuild hnd_dongle rdp_link
 else
-kernelbuild: $(KERNEL_DIR)/.pre_kernelbuild
+kernelbuild: pre_kernelbuild
 endif
 	CURRENT_ARCH=$(KERNEL_ARCH) TOOLCHAIN_TOP= $(MAKE) $(PARALLEL_BUILD) -C $(BUILD_DIR)/build -f Bcmkernel.mk
 
@@ -617,9 +617,9 @@ endif
 ifneq ($(strip $(BCA_HNDROUTER)),)
 hnd_dongle: version_info
 ifneq ($(strip $(BUILD_HND_NIC)),)
-	$(MAKE) -C $(BRCMDRIVERS_DIR)/broadcom/net/wl/bcm9$(BRCM_CHIP) version
+	$(MAKE) -C $(BRCMDRIVERS_DIR)/broadcom/net/wl/bcm9$(BRCM_CHIP) PROFILE_FILE=$(PROFILE_FILE) version
 else 
-	$(MAKE) -C $(BRCMDRIVERS_DIR)/broadcom/net/wl/bcm9$(BRCM_CHIP) pciefd
+	$(MAKE) -C $(BRCMDRIVERS_DIR)/broadcom/net/wl/bcm9$(BRCM_CHIP) PROFILE_FILE=$(PROFILE_FILE) pciefd
 endif
 else
 hnd_dongle:
@@ -811,6 +811,17 @@ ifeq ($(strip $(BTRM_BOOT_ONLY)),y)
 BLD_EMMC_BTROM_BOOT_IMAGES=y
 endif
 endif
+endif
+
+# Override variables for trapeze build
+ifneq ($(strip $(TRAPEZE_ROOTFS)),)
+EMMC_ROOTFS_IMG_SQUASH := $(TRAPEZE_ROOTFS)
+EMMC_FS_KERNEL_IMAGE_NAME := $(FS_KERNEL_IMAGE_NAME)_trapeze
+EMMC_CFE_FS_KERNEL_IMAGE_NAME := $(CFE_FS_KERNEL_IMAGE_NAME)_trapeze
+else
+EMMC_ROOTFS_IMG_SQUASH := $(PROFILE_DIR)/rootfs.img
+EMMC_FS_KERNEL_IMAGE_NAME := $(FS_KERNEL_IMAGE_NAME)
+EMMC_CFE_FS_KERNEL_IMAGE_NAME := $(CFE_FS_KERNEL_IMAGE_NAME)
 endif
 
 # build_images_unsecure and build_images_secure functions takes 6 argmuments
@@ -1114,6 +1125,7 @@ endif
 
 endif
 
+
 ######################
 # EMMC IMAGES        #
 ######################
@@ -1126,19 +1138,21 @@ ifeq ($(strip $(BLD_EMMC_BTROM_BOOT_IMAGES)),y)
 	cp -vf $(CFE_RAM_EMMC_FILE) $(TARGET_BOOTFS)/cferam.000
 	cd $(TARGETS_DIR); ./buildFS_EMMC $(TARGET_BOOTFS)
 	if [ -f $(PROFILE_DIR)/filestruct_full_emmc.bin ]; then \
-		$(BUILD_SBI_UNSEC) --in $(CFE_ROM_EMMC_FILE) --out $(PROFILE_DIR)/.tmpimage; \
+		$(BUILD_SBI_UNSEC) --in $(CFE_ROM_EMMC_FILE) --out $(PROFILE_DIR)/.cferom_emmc_hdr;           \
+		cat $(PROFILE_DIR)/.cferom_emmc_hdr $(if $(AVS_IMAGE_PATH),$(subst ",,$(AVS_IMAGE_PATH)),) > $(PROFILE_DIR)/.tmpimage; \
+		rm -f $(PROFILE_DIR)/.cferom_emmc_hdr; \
 		cd $(PROFILE_DIR); \
 		echo "Creating fs_kernel eMMC images"; \
 		$(HOSTTOOLS_DIR)/bcmImageBuilder $(BRCM_ENDIAN_FLAGS) --output $(FS_KERNEL_IMAGE_NAME)_emmc_ext4 --chip $(or $(TAG_OVERRIDE),$(BRCM_CHIP)) --board $(BRCM_BOARD_ID) --blocksize 2048 --image-version $(IMAGE_VERSION) --cfefile $(PROFILE_DIR)/.tmpimage --rootfsfile $(PROFILE_DIR)/rootfs.ext4 --bootfsfile $(PROFILE_DIR)/filestruct_full_emmc.bin --mdatafile $(PROFILE_DIR)/metadata.bin ; \
-		$(HOSTTOOLS_DIR)/bcmImageBuilder $(BRCM_ENDIAN_FLAGS) --output $(FS_KERNEL_IMAGE_NAME)_emmc_squashfs --chip $(or $(TAG_OVERRIDE),$(BRCM_CHIP)) --board $(BRCM_BOARD_ID) --blocksize 2048 --image-version $(IMAGE_VERSION) --cfefile $(PROFILE_DIR)/.tmpimage --rootfsfile $(PROFILE_DIR)/rootfs.img --bootfsfile $(PROFILE_DIR)/filestruct_full_emmc.bin --mdatafile $(PROFILE_DIR)/metadata.bin ; \
+		$(HOSTTOOLS_DIR)/bcmImageBuilder $(BRCM_ENDIAN_FLAGS) --output $(EMMC_FS_KERNEL_IMAGE_NAME)_emmc_squashfs --chip $(or $(TAG_OVERRIDE),$(BRCM_CHIP)) --board $(BRCM_BOARD_ID) --blocksize 2048 --image-version $(IMAGE_VERSION) --cfefile $(PROFILE_DIR)/.tmpimage --rootfsfile $(EMMC_ROOTFS_IMG_SQUASH) --bootfsfile $(PROFILE_DIR)/filestruct_full_emmc.bin --mdatafile $(PROFILE_DIR)/metadata.bin ; \
 		echo "Creating cfe_fs_kernel eMMC images"; \
 		$(HOSTTOOLS_DIR)/bcmImageBuilder $(BRCM_ENDIAN_FLAGS) --output $(CFE_FS_KERNEL_IMAGE_NAME)_emmc_ext4 --chip $(or $(TAG_OVERRIDE),$(BRCM_CHIP)) --board $(BRCM_BOARD_ID) --blocksize 2048 --image-version $(IMAGE_VERSION) --cfefile $(PROFILE_DIR)/.tmpimage --rootfsfile $(PROFILE_DIR)/rootfs.ext4 --bootfsfile $(PROFILE_DIR)/filestruct_full_emmc.bin --mdatafile $(PROFILE_DIR)/metadata.bin --include-cfe $(IMG_DDR_TYPE_OPT); \
-		$(HOSTTOOLS_DIR)/bcmImageBuilder $(BRCM_ENDIAN_FLAGS) --output $(CFE_FS_KERNEL_IMAGE_NAME)_emmc_squashfs --chip $(or $(TAG_OVERRIDE),$(BRCM_CHIP)) --board $(BRCM_BOARD_ID) --blocksize 2048 --image-version $(IMAGE_VERSION) --cfefile $(PROFILE_DIR)/.tmpimage --rootfsfile $(PROFILE_DIR)/rootfs.img --bootfsfile $(PROFILE_DIR)/filestruct_full_emmc.bin --mdatafile $(PROFILE_DIR)/metadata.bin --include-cfe $(IMG_DDR_TYPE_OPT); \
+		$(HOSTTOOLS_DIR)/bcmImageBuilder $(BRCM_ENDIAN_FLAGS) --output $(EMMC_CFE_FS_KERNEL_IMAGE_NAME)_emmc_squashfs --chip $(or $(TAG_OVERRIDE),$(BRCM_CHIP)) --board $(BRCM_BOARD_ID) --blocksize 2048 --image-version $(IMAGE_VERSION) --cfefile $(PROFILE_DIR)/.tmpimage --rootfsfile $(EMMC_ROOTFS_IMG_SQUASH) --bootfsfile $(PROFILE_DIR)/filestruct_full_emmc.bin --mdatafile $(PROFILE_DIR)/metadata.bin --include-cfe $(IMG_DDR_TYPE_OPT); \
 		echo "Generating default NVRAM binary"; \
 		$(HOSTTOOLS_DIR)/createimg.pl --set  boardid=$(BRCM_BOARD_ID) voiceboardid=$(BRCM_VOICE_BOARD_ID) numbermac=$(BRCM_NUM_MAC_ADDRESSES) macaddr=$(BRCM_BASE_MAC_ADDRESS) tp=$(BRCM_MAIN_TP_NUM) psisize=$(BRCM_PSI_SIZE) logsize=$(BRCM_LOG_SECTION_SIZE) auxfsprcnt=$(BRCM_AUXFS_PERCENT) gponsn=$(BRCM_GPON_SERIAL_NUMBER) gponpw=$(BRCM_GPON_PASSWORD) --nvramfile $(HOSTTOOLS_DIR)/nvram.h --nvramdefsfile $(HOSTTOOLS_DIR)/nvram_defaults.h --config=$(HOSTTOOLS_DIR)/local_install/conf/$(TOOLCHAIN_PREFIX).conf --outputfile=$(BRCM_BOARD_ID)_nvram.bin --output_nvram_bin_only; \
 		echo "Generating eMMC raw whole partition images"; \
 		$(HOSTTOOLS_DIR)/create_emmc_rawimg.py --rootfs_file $(PROFILE_DIR)/rootfs.ext4 --bootfs_file $(PROFILE_DIR)/filestruct_full_emmc.bin --mdata_file $(PROFILE_DIR)/metadata.bin --nvram_file $(PROFILE_DIR)/$(BRCM_BOARD_ID)_nvram.bin --data_sizeMB 10  --rawfullimg_file $(FLASH_IMAGE_NAME_EMMC_DATA_PHYSPART)_ext4.w --cferom_file $(PROFILE_DIR)/.tmpimage --cferom_offsetkB 64 --rawcfeimg_file $(FLASH_IMAGE_NAME_EMMC_BOOT_PHYSPART).w --emmcdefs_file $(INC_BRCMSHARED_PUB_PATH)/$(BRCM_BOARD)/emmc_base_defs.h; \
-		$(HOSTTOOLS_DIR)/create_emmc_rawimg.py --rootfs_file $(PROFILE_DIR)/rootfs.img --bootfs_file $(PROFILE_DIR)/filestruct_full_emmc.bin --mdata_file $(PROFILE_DIR)/metadata.bin --nvram_file $(PROFILE_DIR)/$(BRCM_BOARD_ID)_nvram.bin --data_sizeMB 10 --rawfullimg_file $(FLASH_IMAGE_NAME_EMMC_DATA_PHYSPART)_squash.w --emmcdefs_file $(INC_BRCMSHARED_PUB_PATH)/$(BRCM_BOARD)/emmc_base_defs.h; \
+		$(HOSTTOOLS_DIR)/create_emmc_rawimg.py --rootfs_file $(EMMC_ROOTFS_IMG_SQUASH) --bootfs_file $(PROFILE_DIR)/filestruct_full_emmc.bin --mdata_file $(PROFILE_DIR)/metadata.bin --nvram_file $(PROFILE_DIR)/$(BRCM_BOARD_ID)_nvram.bin --data_sizeMB 10 --rawfullimg_file $(FLASH_IMAGE_NAME_EMMC_DATA_PHYSPART)_squash.w --emmcdefs_file $(INC_BRCMSHARED_PUB_PATH)/$(BRCM_BOARD)/emmc_base_defs.h; \
 		rm -vf $(PROFILE_DIR)/.tmpimage; \
 	fi;
 #######################################
@@ -1159,15 +1173,15 @@ endif
 		cd $(PROFILE_DIR); \
 		echo "Creating Secure fs_kernel eMMC images"; \
 		$(HOSTTOOLS_DIR)/bcmImageBuilder $(BRCM_ENDIAN_FLAGS) --output $(FS_KERNEL_IMAGE_NAME)_emmc_ext4_secureboot --chip $(or $(TAG_OVERRIDE),$(BRCM_CHIP)) --board $(BRCM_BOARD_ID) --blocksize 2048  --image-version $(IMAGE_VERSION) --cfefile $(PROFILE_DIR)/.tmpimage.bin --rootfsfile $(PROFILE_DIR)/rootfs.ext4 --bootfsfile $(PROFILE_DIR)/filestruct_full_emmc.bin --mdatafile $(PROFILE_DIR)/metadata.bin ; \
-		$(HOSTTOOLS_DIR)/bcmImageBuilder $(BRCM_ENDIAN_FLAGS) --output $(FS_KERNEL_IMAGE_NAME)_emmc_squashfs_secureboot --chip $(or $(TAG_OVERRIDE),$(BRCM_CHIP))	--board $(BRCM_BOARD_ID) --blocksize 2048 --image-version $(IMAGE_VERSION) --cfefile $(PROFILE_DIR)/.tmpimage.bin --rootfsfile $(PROFILE_DIR)/rootfs.img --bootfsfile $(PROFILE_DIR)/filestruct_full_emmc.bin --mdatafile $(PROFILE_DIR)/metadata.bin ; \
+		$(HOSTTOOLS_DIR)/bcmImageBuilder $(BRCM_ENDIAN_FLAGS) --output $(EMMC_FS_KERNEL_IMAGE_NAME)_emmc_squashfs_secureboot --chip $(or $(TAG_OVERRIDE),$(BRCM_CHIP))	--board $(BRCM_BOARD_ID) --blocksize 2048 --image-version $(IMAGE_VERSION) --cfefile $(PROFILE_DIR)/.tmpimage.bin --rootfsfile $(EMMC_ROOTFS_IMG_SQUASH) --bootfsfile $(PROFILE_DIR)/filestruct_full_emmc.bin --mdatafile $(PROFILE_DIR)/metadata.bin ; \
 		echo "Creating Secure cfe_fs_kernel eMMC images"; \
 		$(HOSTTOOLS_DIR)/bcmImageBuilder $(BRCM_ENDIAN_FLAGS) --output $(CFE_FS_KERNEL_IMAGE_NAME)_emmc_ext4_secureboot --chip $(or $(TAG_OVERRIDE),$(BRCM_CHIP)) --board $(BRCM_BOARD_ID) --blocksize 2048 --image-version $(IMAGE_VERSION) --cfefile $(PROFILE_DIR)/.tmpimage.bin --rootfsfile $(PROFILE_DIR)/rootfs.ext4 --bootfsfile $(PROFILE_DIR)/filestruct_full_emmc.bin --mdatafile $(PROFILE_DIR)/metadata.bin --include-cfe $(IMG_DDR_TYPE_OPT); \
-		$(HOSTTOOLS_DIR)/bcmImageBuilder $(BRCM_ENDIAN_FLAGS) --output $(CFE_FS_KERNEL_IMAGE_NAME)_emmc_squashfs_secureboot --chip $(or $(TAG_OVERRIDE),$(BRCM_CHIP)) --board $(BRCM_BOARD_ID) --blocksize 2048 --image-version $(IMAGE_VERSION) --cfefile $(PROFILE_DIR)/.tmpimage.bin --rootfsfile $(PROFILE_DIR)/rootfs.img --bootfsfile $(PROFILE_DIR)/filestruct_full_emmc.bin --mdatafile $(PROFILE_DIR)/metadata.bin --include-cfe $(IMG_DDR_TYPE_OPT); \
+		$(HOSTTOOLS_DIR)/bcmImageBuilder $(BRCM_ENDIAN_FLAGS) --output $(EMMC_CFE_FS_KERNEL_IMAGE_NAME)_emmc_squashfs_secureboot --chip $(or $(TAG_OVERRIDE),$(BRCM_CHIP)) --board $(BRCM_BOARD_ID) --blocksize 2048 --image-version $(IMAGE_VERSION) --cfefile $(PROFILE_DIR)/.tmpimage.bin --rootfsfile $(EMMC_ROOTFS_IMG_SQUASH) --bootfsfile $(PROFILE_DIR)/filestruct_full_emmc.bin --mdatafile $(PROFILE_DIR)/metadata.bin --include-cfe $(IMG_DDR_TYPE_OPT); \
 		echo "Generating default NVRAM binary"; \
 		$(HOSTTOOLS_DIR)/createimg.pl --set  boardid=$(BRCM_BOARD_ID) voiceboardid=$(BRCM_VOICE_BOARD_ID) numbermac=$(BRCM_NUM_MAC_ADDRESSES) macaddr=$(BRCM_BASE_MAC_ADDRESS) tp=$(BRCM_MAIN_TP_NUM) psisize=$(BRCM_PSI_SIZE) logsize=$(BRCM_LOG_SECTION_SIZE) auxfsprcnt=$(BRCM_AUXFS_PERCENT) gponsn=$(BRCM_GPON_SERIAL_NUMBER) gponpw=$(BRCM_GPON_PASSWORD) --nvramfile $(HOSTTOOLS_DIR)/nvram.h --nvramdefsfile $(HOSTTOOLS_DIR)/nvram_defaults.h --config=$(HOSTTOOLS_DIR)/local_install/conf/$(TOOLCHAIN_PREFIX).conf --outputfile=$(BRCM_BOARD_ID)_nvram.bin --output_nvram_bin_only; \
 		echo "Generating Secure eMMC raw whole partition images"; \
 		$(HOSTTOOLS_DIR)/create_emmc_rawimg.py --rootfs_file $(PROFILE_DIR)/rootfs.ext4 --bootfs_file $(PROFILE_DIR)/filestruct_full_emmc.bin --mdata_file $(PROFILE_DIR)/metadata.bin --nvram_file $(PROFILE_DIR)/$(BRCM_BOARD_ID)_nvram.bin --data_sizeMB 10 --rawfullimg_file $(FLASH_IMAGE_NAME_EMMC_DATA_PHYSPART)_ext4_secureboot.w --cferom_file $(PROFILE_DIR)/.tmpimage.bin --cferom_offsetkB 0 --rawcfeimg_file $(FLASH_IMAGE_NAME_EMMC_BOOT_PHYSPART)_secureboot.w --emmcdefs_file $(INC_BRCMSHARED_PUB_PATH)/$(BRCM_BOARD)/emmc_base_defs.h; \
-		$(HOSTTOOLS_DIR)/create_emmc_rawimg.py --rootfs_file $(PROFILE_DIR)/rootfs.img --bootfs_file $(PROFILE_DIR)/filestruct_full_emmc.bin --mdata_file $(PROFILE_DIR)/metadata.bin --nvram_file $(PROFILE_DIR)/$(BRCM_BOARD_ID)_nvram.bin --data_sizeMB 10 --rawfullimg_file $(FLASH_IMAGE_NAME_EMMC_DATA_PHYSPART)_squash_secureboot.w --emmcdefs_file $(INC_BRCMSHARED_PUB_PATH)/$(BRCM_BOARD)/emmc_base_defs.h; \
+		$(HOSTTOOLS_DIR)/create_emmc_rawimg.py --rootfs_file $(EMMC_ROOTFS_IMG_SQUASH) --bootfs_file $(PROFILE_DIR)/filestruct_full_emmc.bin --mdata_file $(PROFILE_DIR)/metadata.bin --nvram_file $(PROFILE_DIR)/$(BRCM_BOARD_ID)_nvram.bin --data_sizeMB 10 --rawfullimg_file $(FLASH_IMAGE_NAME_EMMC_DATA_PHYSPART)_squash_secureboot.w --emmcdefs_file $(INC_BRCMSHARED_PUB_PATH)/$(BRCM_BOARD)/emmc_base_defs.h; \
 		rm -f $(PROFILE_DIR)/.tmpimage.bin; \
 	fi;
 endif
@@ -1282,9 +1296,11 @@ ifeq ($(strip $(BLD_EMMC_BTROM_BOOT_IMAGES)),y)
 	echo "Building Filestruct"; \
 	cd $(TARGETS_DIR); ./buildFS_EMMC $(TARGET_BOOTFS) cfeonly 
 	echo "Generating unsecure CFEROM"; \
-	$(BUILD_SBI_UNSEC) --in $(CFE_ROM_EMMC_FILE) -out $(PROFILE_DIR)/.tmpimage; \
-	echo "Generating unsecure raw images"; \
-	$(HOSTTOOLS_DIR)/create_emmc_rawimg.py --bootfs_file $(PROFILE_DIR)/filestruct_full_emmc.bin --mdata_file $(PROFILE_DIR)/metadata.bin --nvram_file $(PROFILE_DIR)/$(BRCM_BOARD_ID)_nvram.bin --rawfullimg_file $(PROFILE_DIR)/$(FLASH_IMAGE_NAME_EMMC_DATA_PHYSPART)_cfeonly.w --cferom_file $(PROFILE_DIR)/.tmpimage --cferom_offsetkB 64 --rawcfeimg_file $(PROFILE_DIR)/$(FLASH_IMAGE_NAME_EMMC_BOOT_PHYSPART).w --emmcdefs_file $(INC_BRCMSHARED_PUB_PATH)/$(BRCM_BOARD)/emmc_base_defs.h; 
+	$(BUILD_SBI_UNSEC) --in $(CFE_ROM_EMMC_FILE) --out $(PROFILE_DIR)/.cferom_emmc_hdr; \
+	cat $(PROFILE_DIR)/.cferom_emmc_hdr $(if $(AVS_IMAGE_PATH),$(subst ",,$(AVS_IMAGE_PATH)),) > $(PROFILE_DIR)/.tmpimage;\
+	rm -f $(PROFILE_DIR)/.cferom_emmc_hdr; \
+	echo "Generating unsecure raw cfe only images"; \
+	$(HOSTTOOLS_DIR)/create_emmc_rawimg.py --bootfs_file $(PROFILE_DIR)/filestruct_full_emmc.bin --mdata_file $(PROFILE_DIR)/metadata.bin --nvram_file $(PROFILE_DIR)/$(BRCM_BOARD_ID)_nvram.bin --rawfullimg_file $(PROFILE_DIR)/$(FLASH_IMAGE_NAME_EMMC_DATA_PHYSPART)_cfeonly.w --cferom_file $(PROFILE_DIR)/.tmpimage --cferom_offsetkB 64 --rawcfeimg_file $(PROFILE_DIR)/$(FLASH_IMAGE_NAME_EMMC_BOOT_PHYSPART).w --emmcdefs_file $(INC_BRCMSHARED_PUB_PATH)/$(BRCM_BOARD)/emmc_base_defs.h;
 ifeq ($(strip $(BUILD_SECURE_BOOT)),y)
 	echo "Generating encrypted CFERAM"; \
 	$(BUILD_SBI_NOHDR) --in $(CFESEC_RAM_EMMC_FILE) -out $(PROFILE_DIR)/fs/secram.000
@@ -1523,7 +1539,7 @@ hosttools_clean:
 hnd_dongle_clean:
 ifneq ($(strip $(BCA_HNDROUTER)),)
 	# need to make sure soft link still exists
-	-$(MAKE) -C $(BRCMDRIVERS_DIR)/broadcom/net/wl/bcm9$(BRCM_CHIP) clean
+	-$(MAKE) -C $(BRCMDRIVERS_DIR)/broadcom/net/wl/bcm9$(BRCM_CHIP) PROFILE_FILE=$(PROFILE_FILE) clean
 endif
 
 .PHONY : $(CLEAN_WITH_SANITY_CHECK)

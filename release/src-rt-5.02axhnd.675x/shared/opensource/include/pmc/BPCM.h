@@ -39,7 +39,7 @@ written consent.
 typedef union
 {
 	struct {
-#if defined(_BCM96846_) || defined(CONFIG_BCM96846) || defined(_BCM96856_) || defined(CONFIG_BCM96856) || defined(_BCM963178_) || defined(CONFIG_BCM963178) || defined(_BCM96878_) || defined(CONFIG_BCM96878)
+#if defined(_BCM96846_) || defined(CONFIG_BCM96846) || defined(_BCM96856_) || defined(CONFIG_BCM96856) || defined(_BCM963178_) || defined(CONFIG_BCM963178) || defined(_BCM96878_) || defined(CONFIG_BCM96878) || defined(_BCM96855_) || defined(CONFIG_BCM96855)
         uint32  pmbAddr     : 12;   // [11:00]
         uint32  map_rev     : 4;    // [15:12] always non-zero for AVS3 devices (see CLASSIC_BPCM_ID_REG below)
         uint32  island      : 4;    // [19:16]
@@ -74,7 +74,7 @@ typedef union
 } CLASSIC_BPCM_ID_REG; 
 #endif
 
-#if !defined(CONFIG_BCM96878)
+#if !defined(CONFIG_BCM96878) && !defined(CONFIG_BCM96855)
 // types of PMB devices
 enum {
 	kPMB_BPCM = 0,
@@ -473,7 +473,7 @@ typedef union
 #elif defined(_BCM96848_) || defined(CONFIG_BCM96848) || defined(_BCM96858_) || defined(CONFIG_BCM96858) || \
       defined(CONFIG_BCM96846) || defined(_BCM96846_) || defined(_BCM96856_) || defined(CONFIG_BCM96856) || \
       defined(_BCM963178_) || defined(CONFIG_BCM963178) || defined(_BCM947622_) || defined(CONFIG_BCM947622) || \
-      defined(CONFIG_BCM96878) || defined(_BCM96878_)
+      defined(CONFIG_BCM96878) || defined(_BCM96878_) || defined(_BCM96855_) || defined(CONFIG_BCM96855)
 
 typedef union
 {
@@ -913,7 +913,7 @@ typedef union
 #elif defined(_BCM96858_) || defined(CONFIG_BCM96858) || defined(_BCM963158_) || defined(CONFIG_BCM93158) || \
       defined(_BCM96846_) || defined(CONFIG_BCM96846) || defined(_BCM96856_) || defined(CONFIG_BCM96856)  || \
       defined(_BCM963178_) || defined(CONFIG_BCM963178) || defined(_BCM947622_) || defined(CONFIG_BCM947622) || \
-      defined(CONFIG_BCM96878) || defined(_BCM96878_)
+      defined(CONFIG_BCM96878) || defined(_BCM96878_) || defined(_BCM96855_) || defined(CONFIG_BCM96855)
 #ifdef PMC_LITTLE_ENDIAN
 		uint32  cpu_reset_n         :  8;   // 07:00    R/W
 		uint32  c0l2_reset          :  1;   // 08:08    R/W
@@ -1046,9 +1046,19 @@ typedef union
 #ifdef PMC_LITTLE_ENDIAN
 		uint32 ndiv_int		: 10;	// 09:00
 		uint32 ndiv_frac	: 20;	// 29:10
-		uint32 reserved0	: 2;
+#if defined(_BCM96855_) || defined(CONFIG_BCM96855)
+		uint32 reserved0	: 1;    // 30
+		uint32 ndiv_override : 1;   // 31
 #else
-		uint32 reserved0	: 2;
+		uint32 reserved0    : 2;    // 31:30
+#endif
+#else
+#if defined(_BCM96855_) || defined(CONFIG_BCM96855)
+		uint32 ndiv_override : 1;   // 31
+		uint32 reserved0	: 1;    // 30
+#else
+        uint32 reserved0    : 2;    // 31:30
+#endif
 		uint32 ndiv_frac	: 20;	// 29:10
 		uint32 ndiv_int		: 10;	// 09:00
 #endif
@@ -1269,7 +1279,8 @@ typedef union
 #if defined(_BCM96848_) || defined(CONFIG_BCM96848) || defined(_BCM96858_) || defined(CONFIG_BCM96858) || \
     defined(_BCM963158_) || defined(CONFIG_BCM963158) || defined(_BCM96846_) || \
     defined(CONFIG_BCM96846) || defined(_BCM96856_) || defined(CONFIG_BCM96856)  || defined(_BCM963178_) || defined(CONFIG_BCM963178) || \
-    defined(_BCM947622_) || defined(CONFIG_BCM947622) || defined(_BCM96878_) || defined(CONFIG_BCM96878)
+    defined(_BCM947622_) || defined(CONFIG_BCM947622) || defined(_BCM96878_) || defined(CONFIG_BCM96878) || \
+    defined(_BCM96855_) || defined(CONFIG_BCM96855)
 typedef union
 {
     struct {
@@ -1462,7 +1473,7 @@ typedef struct
 	BPCM_PWR_ZONE_N_CONTROL		control;
 	BPCM_PWR_ZONE_N_CONFIG1		config1;
 	BPCM_PWR_ZONE_N_CONFIG2		config2;
-#if defined(_BCM963178_) || defined(CONFIG_BCM963178) || defined(_BCM947622_) || defined(CONFIG_BCM947622) || defined (_BCM96878_) || defined(CONFIG_BCM96878)
+#if defined(_BCM963178_) || defined(CONFIG_BCM963178) || defined(_BCM947622_) || defined(CONFIG_BCM947622) || defined (_BCM96878_) || defined(CONFIG_BCM96878) || defined(_BCM96855_) || defined(CONFIG_BCM96855)
 	uint32				reserved0;
 	uint32				timer_control;
 	uint32				timer_status;
@@ -1641,7 +1652,7 @@ typedef struct
 	BPCM_ZONE			zones[1020];	// offset = 0x40..0x3FFC, actual offset = 16..4095 (1020 * 4 = 4080 + 16 = 4096)
 #elif  defined(_BCM96846_) || defined(CONFIG_BCM96846) || defined(_BCM96856_) || defined(CONFIG_BCM96856) || \
        defined(_BCM963178_) || defined(CONFIG_BCM963178) || defined(_BCM947622_) || defined(CONFIG_BCM947622) || \
-       defined(CONFIG_BCM96878) || defined(_BCM96878_)
+       defined(CONFIG_BCM96878) || defined(_BCM96878_) || defined(_BCM96855_) || defined(CONFIG_BCM96855)
 	// PMB-slave:
 	BPCM_ID_REG			id_reg;		// offset 0x00, PMB reg index 0
 	BPCM_CAPABILITES_REG		capabilities;	// offset 0x04, PMB reg index 1
@@ -1687,7 +1698,8 @@ typedef struct
 #define BPCM_OFFSET(reg) (offsetof(BPCM_REGS,reg)>>2)
 
 #if !defined(_BCM96838_) && !defined(CONFIG_BCM96838) && !defined(_BCM96878_) && !defined(CONFIG_BCM96878)  && \
-    !defined(_BCM96846_) && !defined(CONFIG_BCM96846) && !defined(_BCM96856_) && !defined(CONFIG_BCM96856)
+    !defined(_BCM96846_) && !defined(CONFIG_BCM96846) && !defined(_BCM96856_) && !defined(CONFIG_BCM96856)  && \
+    !defined(_BCM96855_) && !defined(CONFIG_BCM96855)
 typedef struct
 {
 #if !defined(_BCM963178_) && !defined(CONFIG_BCM963178)
@@ -1784,7 +1796,7 @@ typedef struct
 #define ARMBPCMOffset(reg)  offsetof(ARM_BPCM_REGS,reg)
 #define ARMBPCMRegOffset(reg)   (ARMBPCMOffset(reg) >> 2)
 
-#elif defined(_BCM963178_) || defined(CONFIG_BCM963178) || defined(_BCM947622_) || defined(CONFIG_BCM947622) || defined(_BCM96878_) || defined(CONFIG_BCM96878)
+#elif defined(_BCM963178_) || defined(CONFIG_BCM963178) || defined(_BCM947622_) || defined(CONFIG_BCM947622) || defined(_BCM96878_) || defined(CONFIG_BCM96878) || defined(_BCM96855_) || defined(CONFIG_BCM96855)
 typedef struct
 {
     BPCM_ID_REG                   id_reg;          // offset = 0x00, actual offset = 0
@@ -1901,7 +1913,7 @@ typedef struct
 	uint32				strap;		// offset = 0x40, actual offset = 0x10
 #if defined(_BCM96848_) || defined(CONFIG_BCM96848) || defined(_BCM96858_) || defined(CONFIG_BCM96858) ||\
     defined(_BCM963178_) || defined(CONFIG_BCM963178) || defined(_BCM947622_) || defined(CONFIG_BCM947622) || \
-    defined(_BCM96878_) || defined(CONFIG_BCM96878)
+    defined(_BCM96878_) || defined(CONFIG_BCM96878) || defined(_BCM96855_) || defined(CONFIG_BCM96855)
 	PLL_DECNDIV_REG			decndiv;	// offset = 0x44, actual offset = 0x11
 	PLL_DECPDIV_REG			decpdiv;	// offset = 0x48, actual offset = 0x12
 	PLL_DECCH25_REG			decch25;	// offset = 0x4c, actual offset = 0x13
@@ -1917,7 +1929,7 @@ typedef struct
 #define PLLBPCMRegOffset(reg)	(PLLBPCMOffset(reg) >> 2)
 #endif
 
-#if defined(CONFIG_BCM96878)
+#if defined(CONFIG_BCM96878) || defined(CONFIG_BCM96855)
 typedef union {
     struct {
         uint32 dac_data        : 10; // [09:00]
@@ -1933,6 +1945,30 @@ typedef union {
     } Bits;
     uint32 Reg32;
 } APVTMON_DATA_REG;
+
+#if defined(CONFIG_BCM96855)
+
+typedef union {
+    struct {
+        uint32 threshold_low   : 10; // [09:00]
+        uint32 reserved        :  6; // [10:15]
+        uint32 threshold_hi    : 10; // [25:16]
+        uint32 reserved1       :  6; // [31:26]
+    } Bits;
+    uint32 Reg32;
+} APVTMON_AVS_THESHOLD_REG;
+
+typedef union {
+    struct {
+        uint32 lock_addr       :  8; // [07:00]
+        uint32 lock_bit        :  1; // [08:08]
+        uint32 lock_mode       :  1; // [09:09]
+        uint32 reserved        : 22; // [31:10]
+    } Bits;
+    uint32 Reg32;
+} APVTMON_AVS_LOCK_REG;
+
+#endif
 
 typedef union
 {
@@ -2080,10 +2116,19 @@ typedef struct
     APVTMON_CONTROL_REG         control;            // offset 0x40, PMB reg index 16
     APVTMON_CONFIG_STATUS_REG   config;             // offset 0x44, PMB reg index 17
     APVTMON_DATA_REG            adc_data;           // offset 0x48, PMB reg index 18
+#if defined(CONFIG_BCM96855)
+    APVTMON_AVS_LOCK_REG        avs_lock;           // offset 0x4c, PMB reg index 19
+#else
     uint32                      reserved2;          // offset 0x4c, PMB reg index 19
+#endif
     APVTMON_ACQ_CONFIG_REG      accum_config;       // offset 0x50, PMB reg index 20
     APVTMON_TEMP_WARN_RESET_REG warn_rst;           // offset 0x54, PMB reg index 21
-    uint32                      reserved3[2];       // offset 0x58, PMB reg index 23
+#if defined(CONFIG_BCM96855)
+    APVTMON_AVS_THESHOLD_REG    avs_threshold;      // offset 0x58, PMB reg index 22
+    uint32                      reserved3;          // offset 0x5c, PMB reg index 23
+#else
+    uint32                      reserved3[2];       // offset 0x58, PMB reg index 22-23
+#endif
     APVTMON_ACCUM_REG           acq_accum_regs[8];  // offset 0x60, PMB reg index 24-31
     ROSC_CTRL_STS_REG           rosc_ctrl_sts;      // offset 0x80, PMB reg index 32
     uint32                      rosc_en_lo;         // offset 0x84, PMB reg index 33

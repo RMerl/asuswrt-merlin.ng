@@ -71,6 +71,9 @@
 #define UART_DR_ERROR		(UART011_DR_OE|UART011_DR_BE|UART011_DR_PE|UART011_DR_FE)
 #define UART_DUMMY_DR_RX	(1 << 16)
 
+#if defined(CONFIG_BCM_KF_CONSOLE_BAUD)
+extern int kerSysIsIkosBootSet(void);
+#endif
 /* There is by now at least one vendor with differing details, so handle it */
 struct vendor_data {
 	unsigned int		ifls;
@@ -1774,8 +1777,16 @@ pl011_set_termios(struct uart_port *port, struct ktermios *termios,
 	/*
 	 * Ask the core to calculate the divisor for us.
 	 */
+#if defined(CONFIG_BCM_KF_CONSOLE_BAUD)
+	if (kerSysIsIkosBootSet() == 1)
+		baud = 1562500;
+	else
+		baud = uart_get_baud_rate(port, termios, old, 0,
+                  port->uartclk / clkdiv);
+#else
 	baud = uart_get_baud_rate(port, termios, old, 0,
 				  port->uartclk / clkdiv);
+#endif
 #ifdef CONFIG_DMA_ENGINE
 	/*
 	 * Adjust RX DMA polling rate with baud rate if not specified.

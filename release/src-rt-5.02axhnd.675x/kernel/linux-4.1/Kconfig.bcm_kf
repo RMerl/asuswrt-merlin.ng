@@ -339,14 +339,6 @@ config BCM_KF_MCAST_RP_FILTER
 	bool
 	default y
 
-config BCM_KF_XT_MATCH_LAYER7
-	bool
-	default y
-
-config BCM_KF_XT_TARGET_DC
-	bool
-	default y
-
 config BCM_KF_VLAN_AGGREGATION
 	bool
 	default y
@@ -580,6 +572,10 @@ config BCM_KF_WL_HOSTAPD
 	default y
 
 config BCM_KF_NL80211_6G_BAND_SUPPORT
+	bool
+	default y
+
+config BCM_KF_CONSOLE_BAUD
 	bool
 	default y
 

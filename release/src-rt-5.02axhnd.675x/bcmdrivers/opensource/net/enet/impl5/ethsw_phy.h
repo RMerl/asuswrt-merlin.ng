@@ -65,8 +65,8 @@ int ethsw_phy_write_reg(int phy_id, u32 reg, u16 *data, int ext_bit);
 int _ethsw_phy_exp_rw_reg_flag(int phy_id, u32 reg, u32 *data, int ext, int write);
 #define ethsw_phy_rreg32(phy_id, reg, data_p32, ext_bit) _ethsw_phy_exp_rw_reg_flag(phy_id, reg, data_p32, ext_bit, 0)
 #define ethsw_phy_wreg32(phy_id, reg, data_p32, ext_bit) _ethsw_phy_exp_rw_reg_flag(phy_id, reg, data_p32, ext_bit, 1)
-#define ethsw_phy_rreg(phy_id, reg, data_p16) ethsw_phy_read_reg(phy_id, reg, data_p16, IsExtPhyId(phy_id))
-#define ethsw_phy_wreg(phy_id, reg, data_p16) ethsw_phy_write_reg(phy_id, reg, data_p16, IsExtPhyId(phy_id))
+#define ethsw_phy_rreg(phy_id, reg, data_p16) ethsw_phy_read_reg(phy_id, reg, data_p16, IsExtPhyId(phy_id)||(phy_id & CONNECTED_TO_EXTERN_SW))
+#define ethsw_phy_wreg(phy_id, reg, data_p16) ethsw_phy_write_reg(phy_id, reg, data_p16, IsExtPhyId(phy_id)||(phy_id & CONNECTED_TO_EXTERN_SW))
 #define ethsw_ephy_shadow_read(phy_id, bannk, reg, data) ethsw_ephy_shadow_rw(phy_id, bannk, reg, data, 0)
 #define ethsw_ephy_shadow_write(phy_id, bannk, reg, data) ethsw_ephy_shadow_rw(phy_id, bannk, reg, data, 1)
 void ethsw_ephy_shadow_rw(int phy_id, int bank, uint16 reg, uint16 *data, int write);

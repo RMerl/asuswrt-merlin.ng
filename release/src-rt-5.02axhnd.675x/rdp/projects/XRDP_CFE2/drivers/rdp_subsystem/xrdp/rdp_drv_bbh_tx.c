@@ -101,8 +101,13 @@ int drv_bbh_tx_wan_queue_cfg_set(uint8_t bbh_id, pd_queue_cfg_t *wan_queue_cfg)
         rc = rc ? rc : ag_drv_bbh_tx_wan_configurations_pd_byte_th_set(bbh_id, wan_queue_cfg->pd_bytes_threshold[0].threshold0, wan_queue_cfg->pd_bytes_threshold[0].threshold1);
         for (i = 0; i < TX_QEUEU_PAIRS; i++)
         {
-            rc = rc ? rc : ag_drv_bbh_tx_wan_configurations_q2rnr_set(bbh_id, i, wan_queue_cfg->queue_to_rnr[i].q0, wan_queue_cfg->queue_to_rnr[i].q1);
-            rc = rc ? rc : ag_drv_bbh_tx_wan_configurations_qprof_set(bbh_id, i, wan_queue_cfg->queue_profile[i].q0, wan_queue_cfg->queue_profile[i].q1);
+        	rc = rc ? rc : ag_drv_bbh_tx_wan_configurations_q2rnr_set(bbh_id, i, wan_queue_cfg->queue_to_rnr[i].q0, wan_queue_cfg->queue_to_rnr[i].q1);
+#if !(defined BCM6878)
+        	rc = rc ? rc : ag_drv_bbh_tx_wan_configurations_qprof_set(bbh_id, i, wan_queue_cfg->queue_profile[i].q0, wan_queue_cfg->queue_profile[i].q1,
+                wan_queue_cfg->queue_profile[i].dis0, wan_queue_cfg->queue_profile[i].dis1);
+#else
+        	rc = rc ? rc : ag_drv_bbh_tx_wan_configurations_qprof_set(bbh_id, i, wan_queue_cfg->queue_profile[i].q0, wan_queue_cfg->queue_profile[i].q1);
+#endif
             rc = rc ? rc : ag_drv_bbh_tx_wan_configurations_qmq_set(bbh_id, i, wan_queue_cfg->qm_q[i].q0, wan_queue_cfg->qm_q[i].q1);
         }
 #endif
@@ -130,8 +135,13 @@ static int drv_bbh_tx_wan_queue_cfg_get(uint8_t bbh_id, pd_queue_cfg_t *wan_queu
     for (i = 0; i < TX_QEUEU_PAIRS; i++)
     {
         rc = rc ? rc : drv_bbh_tx_common_configurations_q2rnr_get_wan(bbh_id, i, &wan_queue_cfg->queue_to_rnr[i].q0, &wan_queue_cfg->queue_to_rnr[i].q1);
+#if !(defined BCM6878)
+        rc = rc ? rc : ag_drv_bbh_tx_wan_configurations_qprof_get(bbh_id, i, &wan_queue_cfg->queue_profile[i].q0, &wan_queue_cfg->queue_profile[i].q1,
+                &wan_queue_cfg->queue_profile[i].dis0, &wan_queue_cfg->queue_profile[i].dis1);
+#else
         rc = rc ? rc : ag_drv_bbh_tx_wan_configurations_qprof_get(bbh_id, i, &wan_queue_cfg->queue_profile[i].q0, &wan_queue_cfg->queue_profile[i].q1);
-        rc = rc ? rc : ag_drv_bbh_tx_wan_configurations_qmq_get(bbh_id, i, &wan_queue_cfg->qm_q[i].q0, &wan_queue_cfg->qm_q[i].q1);
+#endif
+        rc = rc ? rc : ag_drv_bbh_tx_wan_configurations_qmq_get(bbh_id, i, &wan_queue_cfg->qm_q[i].q0, &wan_queue_cfg->qm_q[i].q1);    
     }
 #endif
     return rc;
@@ -149,8 +159,14 @@ static int drv_bbh_tx_lan_queue_cfg_set(uint8_t bbh_id, pd_queue_cfg_t *lan_queu
     rc = rc ? rc : ag_drv_bbh_tx_lan_configurations_pdbase_set(bbh_id, lan_queue_cfg->pd_fifo_base[0].base0,
         lan_queue_cfg->pd_fifo_base[0].base1);
 #else
+    rc = rc ? rc : ag_drv_bbh_tx_common_configurations_gpr_set(bbh_id , 3);
     rc = ag_drv_bbh_tx_lan_configurations_q2rnr_set(bbh_id,  lan_queue_cfg->queue_to_rnr[0].q0, lan_queue_cfg->queue_to_rnr[0].q1);
+#if !(defined BCM6878)
+    rc = rc ? rc : ag_drv_bbh_tx_lan_configurations_qprof_set(bbh_id,  lan_queue_cfg->queue_profile[0].q0, lan_queue_cfg->queue_profile[0].q1,
+                lan_queue_cfg->queue_profile[0].dis0, lan_queue_cfg->queue_profile[0].dis1);
+#else
     rc = rc ? rc : ag_drv_bbh_tx_lan_configurations_qprof_set(bbh_id,  lan_queue_cfg->queue_profile[0].q0, lan_queue_cfg->queue_profile[0].q1);
+#endif
     rc = rc ? rc : ag_drv_bbh_tx_lan_configurations_qmq_set(bbh_id,  lan_queue_cfg->qm_q[0].q0, lan_queue_cfg->qm_q[0].q1);
 #endif
     rc = rc ? rc : ag_drv_bbh_tx_lan_configurations_pdsize_set(bbh_id, lan_queue_cfg->pd_fifo_size[0].size0,
@@ -176,8 +192,12 @@ static int drv_bbh_tx_lan_queue_cfg_set(uint8_t bbh_id, pd_queue_cfg_t *lan_queu
         rc = rc ? rc : ag_drv_bbh_tx_unified_configurations_pdwkuph_set(bbh_id, i, lan_queue_cfg->pd_wkup_threshold[i].threshold0, lan_queue_cfg->pd_wkup_threshold[i].threshold1);
         rc = rc ? rc : ag_drv_bbh_tx_unified_configurations_pd_byte_th_set(bbh_id, i, DRV_BBH_TX_MAXIMAL_PD_PREFETCH_BYTE_THRESHOLD_IN_32_BYTE, DRV_BBH_TX_MAXIMAL_PD_PREFETCH_BYTE_THRESHOLD_IN_32_BYTE);
 #else
-        rc = rc ? rc : ag_drv_bbh_tx_common_configurations_gpr_set(bbh_id , 3);
+#if !(defined BCM6878)
+        rc = rc ? rc : ag_drv_bbh_tx_unified_configurations_qprof_set(bbh_id, i, lan_queue_cfg->queue_profile[i].q0, lan_queue_cfg->queue_profile[i].q1,
+                lan_queue_cfg->queue_profile[i].dis0, lan_queue_cfg->queue_profile[i].dis1);
+#else
         rc = rc ? rc : ag_drv_bbh_tx_unified_configurations_qprof_set(bbh_id, i, lan_queue_cfg->queue_profile[i].q0, lan_queue_cfg->queue_profile[i].q1);
+#endif
         rc = rc ? rc : ag_drv_bbh_tx_unified_configurations_qmq_set(bbh_id, i, lan_queue_cfg->qm_q[i].q0, lan_queue_cfg->qm_q[i].q1);
         rc = rc ? rc : ag_drv_bbh_tx_unified_configurations_pdsize_set(bbh_id, lan_queue_cfg->pd_fifo_size[0].size0, lan_queue_cfg->pd_fifo_size[0].size1);
         rc = rc ? rc : ag_drv_bbh_tx_unified_configurations_pdwkuph_set(bbh_id, lan_queue_cfg->pd_wkup_threshold[0].threshold0, lan_queue_cfg->pd_wkup_threshold[0].threshold1);
@@ -223,7 +243,12 @@ static int drv_bbh_tx_lan_queue_cfg_get(uint8_t bbh_id, pd_queue_cfg_t *lan_queu
         rc = drv_bbh_tx_common_configurations_q2rnr_get_lan(bbh_id, i, &lan_queue_cfg->queue_to_rnr[i].q0, &lan_queue_cfg->queue_to_rnr[i].q1);
         rc = rc ? rc : ag_drv_bbh_tx_unified_configurations_pdsize_get(bbh_id, &lan_queue_cfg->pd_fifo_size[i].size0, &lan_queue_cfg->pd_fifo_size[i].size1);
         rc = rc ? rc : ag_drv_bbh_tx_unified_configurations_pd_byte_th_get(bbh_id, &lan_queue_cfg->pd_bytes_threshold[i].threshold0, &lan_queue_cfg->pd_bytes_threshold[i].threshold1);
-        rc = rc ? rc : ag_drv_bbh_tx_unified_configurations_qprof_get(bbh_id, i, &lan_queue_cfg->queue_profile[i].q0, &lan_queue_cfg->queue_profile[i].q1);
+#if !(defined BCM6878)
+	    rc = rc ? rc : ag_drv_bbh_tx_unified_configurations_qprof_get(bbh_id, i, &lan_queue_cfg->queue_profile[i].q0, &lan_queue_cfg->queue_profile[i].q1,
+                &lan_queue_cfg->queue_profile[i].dis0, &lan_queue_cfg->queue_profile[i].dis1);
+#else
+	    rc = rc ? rc : ag_drv_bbh_tx_unified_configurations_qprof_get(bbh_id, i, &lan_queue_cfg->queue_profile[i].q0, &lan_queue_cfg->queue_profile[i].q1);
+#endif
         rc = rc ? rc : ag_drv_bbh_tx_unified_configurations_qmq_get(bbh_id, i, &lan_queue_cfg->qm_q[i].q0, &lan_queue_cfg->qm_q[i].q1);
 
 #endif

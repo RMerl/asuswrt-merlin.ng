@@ -42,8 +42,6 @@ struct wl_info;
 struct wl_if;
 struct wlc_event;
 
-#define PRIO_LOC_NFMARK 16
-
 extern struct sk_buff *wl_xlate_to_skb(struct wl_info *wl, struct sk_buff *s);
 extern int wl_handle_blog_emit(struct wl_info *wl, struct wl_if *wlif, struct sk_buff *skb,
 	struct net_device *dev);

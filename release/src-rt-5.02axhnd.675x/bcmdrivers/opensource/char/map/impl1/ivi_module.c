@@ -38,9 +38,7 @@
 #include "ivi_rule.h"
 #include "ivi_rule6.h"
 #include "ivi_map.h"
-#if 0
 #include "ivi_map_tcp.h"
-#endif
 #include "ivi_portmap.h"
 #include "ivi_nf.h"
 #include "ivi_ioctl.h"
@@ -56,11 +54,9 @@ static int __init ivi_module_init(void) {
 	if ((retval = ivi_map_init()) < 0) {
 		return retval;
 	}
-#if 0
 	if ((retval = ivi_map_tcp_init()) < 0) {
 		return retval;
 	}
-#endif
 	if ((retval = init_mapportmap_list()) < 0) {
 		return retval;
 	}
@@ -77,9 +73,7 @@ module_init(ivi_module_init);
 static void __exit ivi_module_exit(void) {
 	ivi_ioctl_exit();
 	ivi_nf_exit();
-#if 0
 	ivi_map_tcp_exit();
-#endif
 	ivi_map_exit();
 	ivi_rule6_exit();
 	ivi_rule_exit();

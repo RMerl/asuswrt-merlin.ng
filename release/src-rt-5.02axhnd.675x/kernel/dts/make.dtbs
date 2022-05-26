@@ -73,11 +73,17 @@ ifneq ($(strip $(OOPSLOG_PARTITION_NAME)),)
 LOCAL_CFLAGS += -DOOPSLOG_PARTITION_NAME="$(OOPSLOG_PARTITION_NAME)"
 endif
 
+ifneq ($(BUILD_EMMC_TRAPEZE),) 
+LOCAL_CFLAGS += -DTRAPEZE_BOOT=1
+endif
+
 ifneq ($(wildcard $(DTS_DIR)/dts/prebuilt/bcm963xx_dt_bindings.o),)
 GEN_BIND_CMD := cp -f $(DTS_DIR)/dts/prebuilt/bcm963xx_dt_bindings.o $(DTS_DIR)/dts/
 else
 GEN_BIND_CMD := $(CC) -E $(LOCAL_CFLAGS) $(PP_OUT).c -o $(PP_OUT).o
 endif
+
+$(warning "$(GEN_BIND_CMD)")
 
 9$(CONFIG_BCM_CHIP_NUMBER).dtb := $(shell $(GEN_BIND_CMD); \
 			$(GEN_BIND) $(PP_OUT).o $(DT_BIND_OUT); echo "$(GEN_BIND_CMD)">$(PP_OUT).o.cmd) 

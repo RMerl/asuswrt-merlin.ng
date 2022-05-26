@@ -36,6 +36,7 @@ written consent.
 /********* Definitons and Data Structures **************/
 
 #define SPDT_NUM_OF_STREAMS           4
+#define SPDT_OTHER_STAT_MAX_LEN       256
 
 /*< Generic data structures to open connections (streams) */
 
@@ -43,7 +44,6 @@ written consent.
 typedef enum
 {
     SPDT_NONE,
-    SPDT_OOKLA,
     SPDT_HTTP,
     SPDT_FTP,
     SPDT_TCP_BASIC = SPDT_FTP, /*< Basic TCP data */
@@ -52,17 +52,6 @@ typedef enum
     SPDT_IPERF3_UDP, /* Not supported yet, placeholder for future support */
     SPDT_MAX,
 } spdt_proto_t;
-
-static inline int is_spdt_proto_udp(spdt_proto_t proto)
-{
-    return proto == SPDT_UDP_BASIC || proto == SPDT_IPERF3_UDP;
-}
-
-static inline int is_spdt_proto_tcp(spdt_proto_t proto)
-{
-    return proto == SPDT_OOKLA || proto == SPDT_HTTP || proto == SPDT_FTP || proto == SPDT_TCP_BASIC
-        || proto == SPDT_IPERF3_TCP;
-}
 
 /*< Connection parameters for each stream (=socket) */
 typedef struct
@@ -105,6 +94,7 @@ typedef struct
         struct {
             uint64_t size;
             char *file_name; /* For http GET request */
+            char *host_name;
         } tcp;
 
         /* Currently not in use for UDP */
@@ -138,7 +128,11 @@ typedef struct
     uint64_t num_bytes;
     uint64_t expected_bytes;
     uint32_t time_ms;
-    tcp_spdt_time_rep_t tr143_ts[SPDT_TR143_TS_REPORT_MAX];
+    union
+    {
+        tcp_spdt_time_rep_t tr143_ts[SPDT_TR143_TS_REPORT_MAX];
+        char                other[SPDT_OTHER_STAT_MAX_LEN];
+    } msg;
     int32_t status;
 } __attribute__ ((packed)) tcp_spdt_rep_t; 
 

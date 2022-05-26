@@ -117,7 +117,7 @@ static inline int bcm_mcast_igmp_hash(const u32 grp)
    return (jhash_1word(grp, mcast_ctrl->ipv4_hash_salt) & (BCM_MCAST_HASH_SIZE - 1));
 }
 
-void bcm_mcast_igmp_del_entry(bcm_mcast_ifdata *pif, 
+int bcm_mcast_igmp_del_entry(bcm_mcast_ifdata *pif,
                               t_igmp_grp_entry *igmp_fdb,
                               struct in_addr   *rep,
                               unsigned char    *repMac)
@@ -134,7 +134,7 @@ void bcm_mcast_igmp_del_entry(bcm_mcast_ifdata *pif,
       {
          if ( pif->igmp_snooping )
          {
-            bcm_mcast_netlink_send_igmp_purge_entry(pif, igmp_fdb, rep_entry);
+             bcm_mcast_netlink_send_igmp_purge_entry(pif, igmp_fdb, rep_entry);
          }
          bcm_mcast_notify_event(BCM_MCAST_EVT_SNOOP_DEL, BCM_MCAST_PROTO_IPV4, igmp_fdb, rep_entry);
          list_del(&rep_entry->list);
@@ -152,9 +152,10 @@ void bcm_mcast_igmp_del_entry(bcm_mcast_ifdata *pif,
       bcm_mcast_blog_release(BCM_MCAST_PROTO_IPV4, (void *)igmp_fdb);
 #endif
       kmem_cache_free(mcast_ctrl->ipv4_grp_cache, igmp_fdb);
+      return -ENOENT;
    }
 
-   return;
+   return 0;
 }
 
 static void bcm_mcast_igmp_set_timer( bcm_mcast_ifdata *pif)
@@ -248,7 +249,12 @@ int bcm_mcast_igmp_wipe_group(bcm_mcast_ifdata *parent_if, int dest_ifindex, str
             {
                if ((mcast_group->rxGrp.s_addr == gpAddr->s_addr) && (mcast_group->dst_dev == destDev))
                {
-                  bcm_mcast_igmp_del_entry(parent_if, mcast_group, &reporter_group->rep, NULL);
+                   __logInfo("Invoke bcm_mcast_igmp_del_entry for grp 0x%x rep 0x%x dst_dev %s",
+                             htonl(gpAddr->s_addr), htonl(reporter_group->rep.s_addr), destDev->name);
+                   if (bcm_mcast_igmp_del_entry(parent_if, mcast_group, &reporter_group->rep, NULL))
+                   {
+                       break;
+                   }
                }
             }
          }
@@ -275,7 +281,12 @@ static void bcm_mcast_igmp_reporter_timeout(bcm_mcast_ifdata *pif)
          {
             if (time_after_eq(jiffies, reporter_group->tstamp)) 
             {
-               bcm_mcast_igmp_del_entry(pif, mcast_group, &reporter_group->rep, NULL);
+                __logInfo("Invoke bcm_mcast_igmp_del_entry for grp 0x%x rep 0x%x",
+                          htonl(mcast_group->rxGrp.s_addr), htonl(reporter_group->rep.s_addr));
+               if (bcm_mcast_igmp_del_entry(pif, mcast_group, &reporter_group->rep, NULL))
+               {
+		   break;
+               }
             }
          }
       }
@@ -425,7 +436,7 @@ void bcm_mcast_igmp_update_bydev( bcm_mcast_ifdata *pif, struct net_device *dev,
    int ret;
 #endif
 
-   __logDebug("flushing entries for dev %s", dev ? dev->name : "all");
+   __logInfo("flushing entries for dev %s", dev ? dev->name : "all");
 
    if(NULL == pif)
    {
@@ -442,6 +453,11 @@ void bcm_mcast_igmp_update_bydev( bcm_mcast_ifdata *pif, struct net_device *dev,
       {
          if (NULL == dev)
          {
+             __logInfo("Invoke bcm_mcast_igmp_del_entry for grp 0x%x dstdev %s srcdev %s num_tags %d dev NULL",
+                       htonl(((t_igmp_grp_entry *)mc_fdb)->rxGrp.s_addr),
+                       ((t_igmp_grp_entry *)mc_fdb)->dst_dev->name,
+                       ((t_igmp_grp_entry *)mc_fdb)->from_dev->name,
+                       ((t_igmp_grp_entry *)mc_fdb)->num_tags);
             bcm_mcast_igmp_del_entry(pif, mc_fdb, NULL, NULL);
          }
          else if ( (mc_fdb->dst_dev == dev) ||
@@ -450,10 +466,22 @@ void bcm_mcast_igmp_update_bydev( bcm_mcast_ifdata *pif, struct net_device *dev,
 #if defined(CONFIG_BLOG)
             if ((0 == mc_fdb->root) || (0 == activate))
             {
+                __logInfo("Invoke bcm_mcast_igmp_del_entry for grp 0x%x dstdev %s srcdev %s num_tags %d dev %s",
+                          htonl(((t_igmp_grp_entry *)mc_fdb)->rxGrp.s_addr),
+                          ((t_igmp_grp_entry *)mc_fdb)->dst_dev->name,
+                          ((t_igmp_grp_entry *)mc_fdb)->from_dev->name,
+                          ((t_igmp_grp_entry *)mc_fdb)->num_tags,
+                          dev->name);
                bcm_mcast_igmp_del_entry(pif, mc_fdb, NULL, NULL);
             }
             else
             {
+                __logInfo("Invoke bcm_mcast_blog_release for grp 0x%x dstdev %s srcdev %s num_tags %d dev %s",
+                          htonl(((t_igmp_grp_entry *)mc_fdb)->rxGrp.s_addr),
+                          ((t_igmp_grp_entry *)mc_fdb)->dst_dev->name,
+                          ((t_igmp_grp_entry *)mc_fdb)->from_dev->name,
+                          ((t_igmp_grp_entry *)mc_fdb)->num_tags,
+                          dev->name);
                bcm_mcast_blog_release(BCM_MCAST_PROTO_IPV4, (void *)mc_fdb);
                mc_fdb->blog_idx.fc.word = BLOG_KEY_FC_INVALID;
                mc_fdb->blog_idx.mc.word = BLOG_KEY_MCAST_INVALID;
@@ -488,8 +516,13 @@ void bcm_mcast_igmp_update_bydev( bcm_mcast_ifdata *pif, struct net_device *dev,
                    * which may be a valid scenario, in which case we delete the
                    * multicast entry.
                    */
-                  bcm_mcast_igmp_del_entry(pif, mc_fdb, NULL, NULL);
-                  __logInfo("Unable to activate blog");
+                   __logInfo("Unable to activate blog, Invoke bcm_mcast_igmp_del_entry for grp 0x%x dstdev %s srcdev %s num_tags %d dev %s",
+                             htonl(((t_igmp_grp_entry *)mc_fdb)->rxGrp.s_addr),
+                             ((t_igmp_grp_entry *)mc_fdb)->dst_dev->name,
+                             ((t_igmp_grp_entry *)mc_fdb)->from_dev->name,
+                             ((t_igmp_grp_entry *)mc_fdb)->num_tags,
+                             dev->name);
+                   bcm_mcast_igmp_del_entry(pif, mc_fdb, NULL, NULL);
                }
             }
          }
@@ -528,6 +561,8 @@ void bcm_mcast_igmp_wipe_reporter_for_port (bcm_mcast_ifdata *pif,
     struct hlist_head *head = NULL;
     t_igmp_grp_entry *mc_fdb;
 
+    __logInfo("Wiping IGMP snoop entries for Reporter 0x%x reporter dev %s pif %s", 
+              rep->s_addr, rep_dev ? rep_dev->name:"NULL", pif ? pif->dev->name : "NULL");
     spin_lock_bh(&pif->mc_igmp_lock);
     for (hashIndex = 0; hashIndex < BCM_MCAST_HASH_SIZE ; hashIndex++)
     {
@@ -539,6 +574,12 @@ void bcm_mcast_igmp_wipe_reporter_for_port (bcm_mcast_ifdata *pif,
             {
                 /* The reporter we're looking for has been found
                    in a record pointing to its old port */
+                __logInfo("Invoke bcm_mcast_igmp_del_entry for grp 0x%x dstdev %s srcdev %s num_tags %d client 0x%x",
+                          htonl(((t_igmp_grp_entry *)mc_fdb)->rxGrp.s_addr),
+                          ((t_igmp_grp_entry *)mc_fdb)->dst_dev->name,
+                          ((t_igmp_grp_entry *)mc_fdb)->from_dev->name,
+                          ((t_igmp_grp_entry *)mc_fdb)->num_tags,
+                          rep->s_addr);
                 bcm_mcast_igmp_del_entry(pif, mc_fdb, rep, NULL);
             }
         }
@@ -556,6 +597,8 @@ void bcm_mcast_igmp_wipe_reporter_by_mac(bcm_mcast_ifdata *pif,
     struct hlist_head *head = NULL;
     t_igmp_grp_entry *mc_fdb;
 
+    __logInfo("Wiping IGMP snoop entries for MAC %pM pif %s", 
+              repMac, pif ? pif->dev->name : "NULL");
     for ( hashIndex = 0; hashIndex < BCM_MCAST_HASH_SIZE ; hashIndex++)
     {
         head = &pif->mc_ipv4_hash[hashIndex];
@@ -563,11 +606,57 @@ void bcm_mcast_igmp_wipe_reporter_by_mac(bcm_mcast_ifdata *pif,
         {
             if ((bcm_mcast_igmp_rep_find(mc_fdb, NULL, repMac) != NULL))
             {
+                __logInfo("Invoke bcm_mcast_igmp_del_entry for grp 0x%x dstdev %s srcdev %s num_tags %d repMac %pM",
+                          htonl(((t_igmp_grp_entry *)mc_fdb)->rxGrp.s_addr),
+                          ((t_igmp_grp_entry *)mc_fdb)->dst_dev->name,
+                          ((t_igmp_grp_entry *)mc_fdb)->from_dev->name,
+                          ((t_igmp_grp_entry *)mc_fdb)->num_tags,
+                          repMac);
                 bcm_mcast_igmp_del_entry(pif, mc_fdb, NULL, repMac);
             }
         }
     }
     bcm_mcast_igmp_set_timer(pif);
+}
+
+void bcm_mcast_igmp_wipe_grp_reporter_for_port (bcm_mcast_ifdata *pif,
+                                                struct in_addr *grp, 
+                                                struct in_addr *rep, 
+                                                struct net_device *rep_dev)
+{
+    int hashIndex;
+    struct hlist_node *n = NULL;
+    struct hlist_head *head = NULL;
+    t_igmp_grp_entry *mc_fdb;
+
+    __logInfo("Wiping IGMP snoop entries for Grp 0x%x Reporter 0x%x reporter dev %s pif %s", 
+              grp->s_addr, rep->s_addr, rep_dev ? rep_dev->name:"NULL", pif ? pif->dev->name : "NULL");
+
+    spin_lock_bh(&pif->mc_igmp_lock);
+    for (hashIndex = 0; hashIndex < BCM_MCAST_HASH_SIZE ; hashIndex++)
+    {
+        head = &pif->mc_ipv4_hash[hashIndex];
+        hlist_for_each_entry_safe(mc_fdb, n, head, hlist)
+        {
+            if ((mc_fdb->dst_dev == rep_dev) &&
+                (grp && (mc_fdb->rxGrp.s_addr == grp->s_addr)) &&
+                (bcm_mcast_igmp_rep_find(mc_fdb, rep, NULL) != NULL))
+            {
+                /* The reporter we're looking for has been found
+                   in a record pointing to its old port */
+                __logInfo("Invoke bcm_mcast_igmp_del_entry for grp 0x%x dstdev %s srcdev %s num_tags %d client 0x%x",
+                          htonl(((t_igmp_grp_entry *)mc_fdb)->rxGrp.s_addr),
+                          ((t_igmp_grp_entry *)mc_fdb)->dst_dev->name,
+                          ((t_igmp_grp_entry *)mc_fdb)->from_dev->name,
+                          ((t_igmp_grp_entry *)mc_fdb)->num_tags,
+                          rep->s_addr);
+                bcm_mcast_igmp_del_entry(pif, mc_fdb, rep, NULL);
+            }
+        }
+    }
+
+    bcm_mcast_igmp_set_timer(pif);
+    spin_unlock_bh(&pif->mc_igmp_lock);
 }
 
 #if defined(CONFIG_BLOG)
@@ -630,7 +719,7 @@ void bcm_mcast_igmp_process_blog_enable( bcm_mcast_ifdata *pif, int enable )
    int i;
    int ret;
 
-   __logDebug("process blog enable setting %d", enable);
+   __logInfo("process blog enable setting %d", enable);
 
    if(NULL == pif)
    {
@@ -648,10 +737,20 @@ void bcm_mcast_igmp_process_blog_enable( bcm_mcast_ifdata *pif, int enable )
          {
             if (0 == mc_fdb->root)
             {
+                __logInfo("Invoke bcm_mcast_igmp_del_entry for grp 0x%x dstdev %s srcdev %s num_tags %d",
+                          htonl(((t_igmp_grp_entry *)mc_fdb)->rxGrp.s_addr),
+                          ((t_igmp_grp_entry *)mc_fdb)->dst_dev->name,
+                          ((t_igmp_grp_entry *)mc_fdb)->from_dev->name,
+                          ((t_igmp_grp_entry *)mc_fdb)->num_tags);
                bcm_mcast_igmp_del_entry(pif, mc_fdb, NULL, NULL);
             }
             else
             {
+                __logInfo("Invoke bcm_mcast_blog_release for grp 0x%x dstdev %s srcdev %s num_tags %d",
+                          htonl(((t_igmp_grp_entry *)mc_fdb)->rxGrp.s_addr),
+                          ((t_igmp_grp_entry *)mc_fdb)->dst_dev->name,
+                          ((t_igmp_grp_entry *)mc_fdb)->from_dev->name,
+                          ((t_igmp_grp_entry *)mc_fdb)->num_tags);
                bcm_mcast_blog_release(BCM_MCAST_PROTO_IPV4, (void *)mc_fdb);
                mc_fdb->blog_idx.fc.word = BLOG_KEY_FC_INVALID;
                mc_fdb->blog_idx.mc.word = BLOG_KEY_MCAST_INVALID;
@@ -671,8 +770,12 @@ void bcm_mcast_igmp_process_blog_enable( bcm_mcast_ifdata *pif, int enable )
                    * which may be a valid scenario, in which case we delete the
                    * multicast entry.
                    */
+                __logInfo("Unable to activate blog, Invoke bcm_mcast_igmp_del_entry for grp 0x%x dstdev %s srcdev %s num_tags %d",
+                          htonl(((t_igmp_grp_entry *)mc_fdb)->rxGrp.s_addr),
+                          ((t_igmp_grp_entry *)mc_fdb)->dst_dev->name,
+                          ((t_igmp_grp_entry *)mc_fdb)->from_dev->name,
+                          ((t_igmp_grp_entry *)mc_fdb)->num_tags);
                   bcm_mcast_igmp_del_entry(pif, mc_fdb, NULL, NULL);
-                  __logInfo("Unable to activate blog");
                }
             }
          }
@@ -696,54 +799,48 @@ static int bcm_mcast_igmp_update(bcm_mcast_ifdata *pif,
                                  struct net_device *from_dev,
                                  uint32_t info)
 {
-   t_igmp_grp_entry *dst;
-   int ret = 0;
-   struct hlist_head *head;
+    t_igmp_grp_entry *dst;
+    int ret = 0;
+    struct hlist_head *head;
 
-   if (pif->brtype == BRTYPE_OVS) 
-   {
-       /* No snoop aging timers required for OvS bridges. OvS will handle snooping.
-          Only acceleration support is needed in multicast driver */
-       return ret;
-   }
-
-   head = &pif->mc_ipv4_hash[bcm_mcast_igmp_hash(txGrp->s_addr)];
-   hlist_for_each_entry(dst, head, hlist) {
-      if ((dst->txGrp.s_addr == txGrp->s_addr) && (dst->rxGrp.s_addr == rxGrp->s_addr))
-      {
-         if((src->s_addr == dst->src_entry.src.s_addr) &&
-            (mode == dst->src_entry.filt_mode) && 
-            (dst->from_dev == from_dev) &&
-            (dst->dst_dev == dst_dev) &&
-            (dst->info == info))
-         {
-            /* found entry - update TS */
-            t_igmp_rep_entry *reporter = bcm_mcast_igmp_rep_find(dst, rep, NULL);
-            if(reporter == NULL)
+    head = &pif->mc_ipv4_hash[bcm_mcast_igmp_hash(txGrp->s_addr)];
+    hlist_for_each_entry(dst, head, hlist)
+    {
+        if ( (dst->txGrp.s_addr == txGrp->s_addr) && (dst->rxGrp.s_addr == rxGrp->s_addr) )
+        {
+            if ( (src->s_addr == dst->src_entry.src.s_addr) &&
+                 (mode == dst->src_entry.filt_mode) &&
+                 (dst->from_dev == from_dev) &&
+                 (dst->dst_dev == dst_dev) &&
+                 (dst->info == info) )
             {
-               reporter = kmem_cache_alloc(mcast_ctrl->ipv4_rep_cache, GFP_ATOMIC);
-               if(reporter)
-               {
-                  reporter->rep.s_addr = rep->s_addr;
-                  reporter->tstamp = jiffies + (mcast_ctrl->igmp_general_query_timeout_secs * HZ);
-                  memcpy(reporter->repMac, repMac, ETH_ALEN);
-                  reporter->rep_proto_ver = rep_proto_ver;
-                  list_add_tail(&reporter->list, &dst->rep_list);
-                  bcm_mcast_notify_event(BCM_MCAST_EVT_SNOOP_ADD, BCM_MCAST_PROTO_IPV4, dst, reporter);
-                  bcm_mcast_igmp_set_timer(pif);
-               }
+                /* found entry - update TS */
+                t_igmp_rep_entry *reporter = bcm_mcast_igmp_rep_find(dst, rep, NULL);
+                if ( reporter == NULL )
+                {
+                    reporter = kmem_cache_alloc(mcast_ctrl->ipv4_rep_cache, GFP_ATOMIC);
+                    if ( reporter )
+                    {
+                        reporter->rep.s_addr = rep->s_addr;
+                        reporter->tstamp = jiffies + (mcast_ctrl->igmp_general_query_timeout_secs * HZ);
+                        memcpy(reporter->repMac, repMac, ETH_ALEN);
+                        reporter->rep_proto_ver = rep_proto_ver;
+                        list_add_tail(&reporter->list, &dst->rep_list);
+                        bcm_mcast_notify_event(BCM_MCAST_EVT_SNOOP_ADD, BCM_MCAST_PROTO_IPV4, dst, reporter);
+                        bcm_mcast_igmp_set_timer(pif);
+                    }
+                } 
+                else
+                {
+                    reporter->tstamp = jiffies + (mcast_ctrl->igmp_general_query_timeout_secs * HZ);
+                    bcm_mcast_igmp_set_timer(pif);
+                }
+                ret = 1;
             }
-            else
-            {
-               reporter->tstamp = jiffies + (mcast_ctrl->igmp_general_query_timeout_secs * HZ);
-               bcm_mcast_igmp_set_timer(pif);
-            }
-            ret = 1;
-         }
-      }
-   }
+        }
+    }
 
-   return ret;
+    return ret;
 }
 
 int bcm_mcast_igmp_add(struct net_device *from_dev,
@@ -774,12 +871,28 @@ int bcm_mcast_igmp_add(struct net_device *from_dev,
    if(!pif || !dst_dev || !rxGrp || !txGrp || !rep || !from_dev)
       return 0;
 
-   if( !bcm_mcast_igmp_control_filter(rxGrp->s_addr) || 
-       !bcm_mcast_igmp_control_filter(txGrp->s_addr) )
+   __logInfo("from %s pif %s dst %s to_accel_dev %s rxGrp 0x%x txGrp 0x%x Client 0x%x mode %d src 0x%x info 0x%x clientMac %pM",
+              from_dev ? from_dev->name:"NULL", pif ? (pif->dev?pif->dev->name:"NULL"):"NULL",
+              dst_dev ? dst_dev->name : "NULL", to_accel_dev ? to_accel_dev->name:"NULL",
+              htonl(rxGrp->s_addr), htonl(txGrp->s_addr), htonl(rep->s_addr), mode, htonl(src->s_addr), info, repMac);
+
+   if( !bcm_mcast_igmp_control_filter(rxGrp->s_addr) )
+   {
+      __logInfo("IGMP control filter applied rxGrp->s_addr 0x%x", htonl(rxGrp->s_addr));
       return 0;
+   }
+
+   if( !bcm_mcast_igmp_control_filter(txGrp->s_addr) )
+   {
+      __logInfo("IGMP control filter applied txGrp->s_addr 0x%x", htonl(txGrp->s_addr));
+      return 0;
+   }
 
    if((MCAST_INCLUDE != mode) && (MCAST_EXCLUDE != mode))
+   {
+      __logInfo("mode %d not supported", mode);
       return 0;
+   }
 
    spin_lock_bh(&pif->mc_igmp_lock);
    if (bcm_mcast_igmp_update(pif, dst_dev, rxGrp, txGrp, rep, repMac, rep_proto_ver, mode, src, from_dev, info))
@@ -861,13 +974,24 @@ int bcm_mcast_igmp_add(struct net_device *from_dev,
                (filt_mode == dst->src_entry.filt_mode) &&
                (dst->from_dev == from_dev))
          {
+             __logInfo("VLAN conflict or found a snoop entry that could not be accelerated");
             // HANDLE CONFLICT - REMOVE CONFLICTER UNLESS ROOT
             if (0 == dst->root)
             {
+                __logInfo("Invoke bcm_mcast_igmp_del_entry for grp 0x%x dstdev %s srcdev %s num_tags %d",
+                          htonl(((t_igmp_grp_entry *)dst)->rxGrp.s_addr),
+                          ((t_igmp_grp_entry *)dst)->dst_dev->name,
+                          ((t_igmp_grp_entry *)dst)->from_dev->name,
+                          ((t_igmp_grp_entry *)dst)->num_tags);
                bcm_mcast_igmp_del_entry(pif, dst, NULL, NULL);
             }
             else if (dst->blog_idx.mc.word != BLOG_KEY_INVALID)
             {
+                __logInfo("Invoke bcm_mcast_blog_release for grp 0x%x dstdev %s srcdev %s num_tags %d",
+                          htonl(((t_igmp_grp_entry *)dst)->rxGrp.s_addr),
+                          ((t_igmp_grp_entry *)dst)->dst_dev->name,
+                          ((t_igmp_grp_entry *)dst)->from_dev->name,
+                          ((t_igmp_grp_entry *)dst)->num_tags);
                bcm_mcast_blog_release(BCM_MCAST_PROTO_IPV4, (void *)dst);
                dst->blog_idx.mc.word = BLOG_KEY_INVALID;
             }
@@ -898,14 +1022,30 @@ int bcm_mcast_igmp_remove(struct net_device *from_dev,
    if(!pif || !dst_dev || !txGrp || !rxGrp || !rep || !from_dev)
       return 0;
 
+   __logInfo("from %s pif %s dst %s rxGrp 0x%x txGrp 0x%x Client 0x%x mode %d src 0x%x info 0x%x",
+              from_dev ? from_dev->name:"NULL", pif ? (pif->dev?pif->dev->name:"NULL"):"NULL",
+              dst_dev ? dst_dev->name : "NULL", htonl(rxGrp->s_addr), htonl(txGrp->s_addr), 
+              htonl(rep->s_addr), mode, htonl(src->s_addr), info);
+
    if(!bcm_mcast_igmp_control_filter(txGrp->s_addr))
+   {
+      __logInfo("IGMP control filter applied txGrp->s_addr 0x%x", 
+                 htonl(txGrp->s_addr));
       return 0;
+   }
 
    if(!bcm_mcast_igmp_control_filter(rxGrp->s_addr))
+   {
+      __logInfo("IGMP control filter applied rxGrp->s_addr 0x%x", 
+                 htonl(rxGrp->s_addr));
       return 0;
+   }
 
    if((MCAST_INCLUDE != mode) && (MCAST_EXCLUDE != mode))
+   {
+      __logInfo("mode %d not supported", mode);
       return 0;
+   }
 
    spin_lock_bh(&pif->mc_igmp_lock);
    head = &pif->mc_ipv4_hash[bcm_mcast_igmp_hash(txGrp->s_addr)];
@@ -917,9 +1057,11 @@ int bcm_mcast_igmp_remove(struct net_device *from_dev,
           (mc_fdb->src_entry.src.s_addr == src->s_addr) &&
           (mc_fdb->from_dev == from_dev) &&
           (mc_fdb->dst_dev == dst_dev) &&
-          (mc_fdb->info == info))
+          (bcm_mcast_blog_cmp_rep_info(dst_dev, mc_fdb->info, info) == 0))
       {
-         bcm_mcast_igmp_del_entry(pif, mc_fdb, rep, NULL);
+          __logInfo("Invoke bcm_mcast_igmp_del_entry for grp 0x%x dstdev %s srcdev %s num_tags %d",
+                          htonl(mc_fdb->rxGrp.s_addr), mc_fdb->dst_dev->name, mc_fdb->from_dev->name, mc_fdb->num_tags);
+          bcm_mcast_igmp_del_entry(pif, mc_fdb, rep, NULL);
       }
    }
    bcm_mcast_igmp_set_timer(pif);
@@ -938,11 +1080,10 @@ int bcm_mcast_igmp_should_deliver(bcm_mcast_ifdata *pif,
    int                should_deliver;
    int                is_routed;
 
-   __logDebug("source device %s, dst device %s", src_dev->name, dst_dev->name);
-
    if (0 == bcm_mcast_igmp_control_filter(pip->daddr))
    {
       /* accept packet */
+      __logDebug("source device %s, dst device %s control filter applied", src_dev->name, dst_dev->name);
       return 1;
    }
 
@@ -1050,7 +1191,7 @@ static void bcm_mcast_igmp_display_entry(struct seq_file *seq,
    unsigned char    *rxAddressP = (unsigned char *)&(dst->rxGrp.s_addr);
    unsigned char    *srcAddressP = (unsigned char *)&(dst->src_entry.src.s_addr);
 
-   seq_printf(seq, "%-6s %-6s %-6s %-7s %4d %02d    0x%04x   0x%04x%04x",
+   seq_printf(seq, "%-6s %-6s %-6s %-7s %4d %02d    0x%04x   0x%04x%04x 0x%x",
               pif->dev->name, 
               dst->dst_dev->name, 
               dst->to_accel_dev->name, 
@@ -1059,7 +1200,8 @@ static void bcm_mcast_igmp_display_entry(struct seq_file *seq,
               dst->num_tags,
               ntohs(dst->lan_tci),
               ((dst->wan_tci >> 16) & 0xFFFF),
-              (dst->wan_tci & 0xFFFF));
+              (dst->wan_tci & 0xFFFF),
+              dst->info);
 
    seq_printf(seq, " %03u.%03u.%03u.%03u", txAddressP[0],txAddressP[1],txAddressP[2],txAddressP[3]);
 
@@ -1131,7 +1273,7 @@ int bcm_mcast_igmp_display(struct seq_file *seq, bcm_mcast_ifdata *pif)
          dev_put(lowerDev);
       }
    }
-   seq_printf(seq, "bridge dstdev dstaccdev src-dev type #tags lan-tci  wan-tci");
+   seq_printf(seq, "bridge dstdev dstaccdev src-dev type #tags lan-tci  wan-tci info");
 #if defined(CONFIG_BLOG)
    seq_printf(seq, "    group           mode RxGroup         source          reporter        timeout ExcludPt Index      \n");
 #else

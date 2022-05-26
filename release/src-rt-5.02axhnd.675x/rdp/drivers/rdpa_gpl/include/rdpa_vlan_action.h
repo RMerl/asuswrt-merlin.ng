@@ -38,28 +38,7 @@
  * @{
  */
 
-/* ToDo: check constants */
-#ifdef XRDP
-#if !defined(BCM6878)
-#define RDPA_MAX_VLAN_ACTION        129  /**< Max number of VLAN actions per direction */
-#else
-#define RDPA_MAX_VLAN_ACTION        33  /**< Max number of VLAN actions per direction */
-#endif
-#define RDPA_DROP_ACTION RDPA_MAX_VLAN_ACTION
-#else
-#define RDPA_MAX_VLAN_ACTION        128  /**< Max number of VLAN actions per direction */
-#define RDPA_DROP_ACTION RDPA_MAX_VLAN_ACTION
-#endif
-
-/** Max number of tags supported by vlan_action */
-#define RDPA_VLAN_MAX_TAGS          2
-
-/** Outer tag index */
-#define RDPA_VLAN_TAG_OUT   0 
-/** Inner tag index */
-#define RDPA_VLAN_TAG_IN    1 
-
-#define RDPA_VLAN_ACTION_TPID_DONT_CARE (0xffff)
+#include "rdpa_vlan_action_basic.h"
 
 /* Per VLAN tag Command bits */
 typedef enum
@@ -69,7 +48,7 @@ typedef enum
     RDPA_VLAN_CMD_BIT_POP,          /* Remove VLAN tag */
     RDPA_VLAN_CMD_BIT_REPLACE,      /* Replace VLAN tag */
     RDPA_VLAN_CMD_BIT_PUSH2,        /* Add 2 VLAN tags */
-    RDPA_VLAN_CMD_BIT_PUSH2_ALWAYS, /* Add 2 VLAN tag always (even if packet is double-tagged) */
+    RDPA_VLAN_CMD_BIT_PUSH2_ALWAYS, /* Add 2 VLAN tags always (even if packet is double-tagged) */
     RDPA_VLAN_CMD_BIT_POP2,         /* Remove 2 VLAN tags */
     RDPA_VLAN_CMD_BIT_REPLACE2,     /* Replace 2 VLAN tags */
     RDPA_VLAN_CMD_BIT_REMARK,       /* P-Bit re-marking in VLAN tag*/
@@ -95,7 +74,7 @@ typedef enum {
     RDPA_VLAN_CMD_REPLACE = (1 << RDPA_VLAN_CMD_BIT_REPLACE),
     /** Add 2 VLAN tags */
     RDPA_VLAN_CMD_PUSH2 = (1 << RDPA_VLAN_CMD_BIT_PUSH2),
-    /** Add 2 VLAN tag always (even if packet is double-tagged) */
+    /** Add 2 VLAN tags always (even if packet is double-tagged) */
     RDPA_VLAN_CMD_PUSH2_ALWAYS = (1 << RDPA_VLAN_CMD_BIT_PUSH2_ALWAYS),
     /** Remove 2 VLAN tags */
     RDPA_VLAN_CMD_POP2 = (1 << RDPA_VLAN_CMD_BIT_POP2),
@@ -112,21 +91,6 @@ typedef enum {
     /** Remark TPID in VLAN tag */
     RDPA_VLAN_CMD_TPID_REMARK = (1 << RDPA_VLAN_CMD_BIT_TPID_REMARK),
 } rdpa_vlan_command;
-
-/** VLAN tag + pbit */
-typedef struct {
-    uint16_t vid;       /**< VID */
-    rdpa_pbit pbit;     /**< PBIT */
-    uint16_t tpid;      /**< TPID */
-} rdpa_vtag_cmd_parm_t;
-
-/** VLAN action parameters */
-typedef struct {
-    uint32_t cmd;       /**< Action command - combination of ::rdpa_vlan_command bits */
-    rdpa_vtag_cmd_parm_t parm[RDPA_VLAN_MAX_TAGS];    /**< Command parameters */
-} rdpa_vlan_action_cfg_t;
-
-/** @} end of vlan_action Doxygen group */
 
 /* VID command groups */
 #define RDPA_VLAN_CMD_GROUP_1VID \
@@ -147,6 +111,20 @@ typedef struct {
 
 /* PBIT command groups */
 #define RDPA_VLAN_CMD_GROUP_PBIT (RDPA_VLAN_CMD_REMARK | RDPA_VLAN_CMD_REMAP | RDPA_VLAN_CMD_DSCP)
+/** VLAN tag + pbit */
+typedef struct {
+    uint16_t vid;       /**< VID */
+    rdpa_pbit pbit;     /**< PBIT */
+    uint16_t tpid;      /**< TPID */
+} rdpa_vtag_cmd_parm_t;
+
+/** VLAN action parameters */
+typedef struct {
+    uint32_t cmd;       /**< Action command - combination of ::rdpa_vlan_command bits */
+    rdpa_vtag_cmd_parm_t parm[RDPA_VLAN_MAX_TAGS];    /**< Command parameters */
+} rdpa_vlan_action_cfg_t;
+
+/** @} end of vlan_action Doxygen group */
 
 /* #define __RDPA_VLAN_ACTION_DBG__ */
 

@@ -56,7 +56,12 @@
 #define NETLINK_WLCSM            31       /*  for brcm wireless cfg[nvram]/statics/management extention */
 #endif
 
+#if defined(CONFIG_BCM_KF_WL) && defined(CONFIG_BCM_WLCXC_MODULE)
+#define NETLINK_WLCT             32
+#define MAX_LINKS 33
+#else
 #define MAX_LINKS 32		
+#endif
 
 struct sockaddr_nl {
 	__kernel_sa_family_t	nl_family;	/* AF_NETLINK	*/

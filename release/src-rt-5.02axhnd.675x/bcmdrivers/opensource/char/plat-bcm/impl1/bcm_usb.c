@@ -105,8 +105,9 @@ static struct usb_ohci_pdata bcm_ohci_pdata = {0};
 static struct platform_device *ehci_dev;
 static struct platform_device *ohci_dev;
 
-#if defined(CONFIG_BCM96858) || defined(CONFIG_BCM96846) || defined(CONFIG_BCM963158) \
-	|| defined(CONFIG_BCM96856) || defined(CONFIG_BCM963178) || defined(CONFIG_BCM947622) || defined(CONFIG_BCM96878)
+#if defined(CONFIG_BCM96858) || defined(CONFIG_BCM96846) || defined(CONFIG_BCM963158) || \
+	defined(CONFIG_BCM96856) || defined(CONFIG_BCM963178) || defined(CONFIG_BCM947622) || \
+    defined(CONFIG_BCM96878) || defined(CONFIG_BCM96855)
 static struct usb_ehci_pdata bcm_ehci1_pdata = {0};
 static struct usb_ohci_pdata bcm_ohci1_pdata = {0};
 static struct platform_device *ehci1_dev;
@@ -195,7 +196,8 @@ static uint32_t usb_mdio_read(volatile uint32_t *mdio, uint32_t reg, int mode)
 
 #if defined(CONFIG_BCM963138) || defined(CONFIG_BCM94908) || defined(CONFIG_BCM96858) || \
     defined(CONFIG_BCM96846) || defined(CONFIG_BCM963158) || defined(CONFIG_BCM96856) || \
-    defined(CONFIG_BCM963178) || defined(CONFIG_BCM947622) || defined(CONFIG_BCM96878)
+    defined(CONFIG_BCM963178) || defined(CONFIG_BCM947622) || defined(CONFIG_BCM96878) || \
+    defined(CONFIG_BCM96855)
 #define XHCI_ECIRA_BASE USB_XHCI_BASE + 0xf90
 
 uint32_t xhci_ecira_read(uint32_t reg)
@@ -269,9 +271,9 @@ static void  usb3_uas_fix(void)
 #endif
 
 
-#if defined(CONFIG_BCM94908) || defined(CONFIG_BCM96858) || \
-    defined(CONFIG_BCM96846) || defined(CONFIG_BCM963158) || \
-    defined(CONFIG_BCM96856) || defined(CONFIG_BCM963178) || defined(CONFIG_BCM947622) || defined(CONFIG_BCM96878)
+#if defined(CONFIG_BCM94908) || defined(CONFIG_BCM96858) || defined(CONFIG_BCM96846) || \
+    defined(CONFIG_BCM963158) || defined(CONFIG_BCM96856) || defined(CONFIG_BCM963178) || \
+    defined(CONFIG_BCM947622) || defined(CONFIG_BCM96878) || defined(CONFIG_BCM96855)
 static void usb3_enable_pipe_reset(void)
 {
     uint32_t val;
@@ -696,8 +698,12 @@ static int bcm_usb_host_hw_init_6858(void)
     return 0;
 }
 
-#elif defined(CONFIG_BCM96856)
+#elif defined(CONFIG_BCM96856) || defined(CONFIG_BCM96855)
+#if defined(CONFIG_BCM96856)
 static int bcm_usb_host_hw_init_6856(void)
+#else
+static int bcm_usb_host_hw_init_6855(void)
+#endif
 {
     short usb_gpio;
     uint32_t val;
@@ -848,6 +854,7 @@ static int bcm_usb_host_hw_init_6846(void)
 
     return 0;
 }
+
 #elif defined(CONFIG_BCM96878)
 static int bcm_usb_host_hw_init_6878(void)
 {
@@ -1013,6 +1020,7 @@ static int bcm_usb_host_hw_init_63158(void)
 
     return 0;
 }
+
 #elif defined(CONFIG_BCM963178) || defined(CONFIG_BCM947622)
 /* there is no difference between 63178 & 47622,, just resue the function */
 #if defined(CONFIG_BCM963178)
@@ -1329,8 +1337,9 @@ static __init int bcm_add_usb_hosts(void)
         0x100, INTERRUPT_ID_USB_EHCI, "ehci-platform", &bcm_ehci_pdata);
     ohci_dev = bcm_add_usb_host(CAP_TYPE_OHCI, 0, USB_OHCI_PHYS_BASE,
         0x100, INTERRUPT_ID_USB_OHCI, "ohci-platform", &bcm_ohci_pdata);
-#if defined(CONFIG_BCM96858) || defined(CONFIG_BCM96846) || defined(CONFIG_BCM963158) \
-	|| defined(CONFIG_BCM96856) || defined(CONFIG_BCM963178) || defined(CONFIG_BCM947622) || defined(CONFIG_BCM96878)
+#if defined(CONFIG_BCM96858) || defined(CONFIG_BCM96846) || defined(CONFIG_BCM963158) || \
+	defined(CONFIG_BCM96856) || defined(CONFIG_BCM963178) || defined(CONFIG_BCM947622) || \
+    defined(CONFIG_BCM96878) || defined(CONFIG_BCM96855)
     ehci1_dev = bcm_add_usb_host(CAP_TYPE_EHCI, 1, USB_EHCI1_PHYS_BASE,
         0x100, INTERRUPT_ID_USB_EHCI1, "ehci-platform", &bcm_ehci1_pdata);
     ohci1_dev = bcm_add_usb_host(CAP_TYPE_OHCI, 1, USB_OHCI1_PHYS_BASE,
@@ -1340,9 +1349,9 @@ static __init int bcm_add_usb_hosts(void)
 #if defined(CONFIG_USB_XHCI_PLATFORM) || defined(CONFIG_USB_XHCI_PLATFORM_MODULE)
      if(usb3_enable)
      {
-#if defined(CONFIG_BCM94908) || defined(CONFIG_BCM96858) || defined(CONFIG_BCM96856) \
-         || defined(CONFIG_BCM96846) || defined(CONFIG_BCM963158) \
-		 || defined(CONFIG_BCM963178) || defined(CONFIG_BCM947622) || defined(CONFIG_BCM96878)
+#if defined(CONFIG_BCM94908) || defined(CONFIG_BCM96858) || defined(CONFIG_BCM96856) || \
+         defined(CONFIG_BCM96846) || defined(CONFIG_BCM963158) || defined(CONFIG_BCM963178) || \
+         defined(CONFIG_BCM947622) || defined(CONFIG_BCM96878) || defined(CONFIG_BCM96855)
          usb3_enable_recovery_pipe_reset();
 #endif
      }
@@ -1364,9 +1373,8 @@ static void bcm_mod_cleanup(void)
     platform_device_del(ehci_dev);
     platform_device_del(ohci_dev);
 #if defined(CONFIG_BCM96858) || defined(CONFIG_BCM96846) || \
-    defined(CONFIG_BCM963158) || defined(CONFIG_BCM96856) || \
-   defined(CONFIG_BCM963178) || defined(CONFIG_BCM947622) || defined(CONFIG_BCM96878)
-   
+    defined(CONFIG_BCM963158) || defined(CONFIG_BCM96856) || defined(CONFIG_BCM96855) || \
+    defined(CONFIG_BCM963178) || defined(CONFIG_BCM947622) || defined(CONFIG_BCM96878)
     platform_device_del(ehci1_dev);
     platform_device_del(ohci1_dev);
 #endif

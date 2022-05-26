@@ -633,14 +633,24 @@ bool cfg80211_chandef_usable(struct wiphy *wiphy,
 		width = 10;
 		break;
 	case NL80211_CHAN_WIDTH_20:
+#ifdef CONFIG_BCM_KF_NL80211_6G_BAND_SUPPORT
+		if (chandef->chan->band != IEEE80211_BAND_6GHZ) {
+#endif /* CONFIG_BCM_KF_NL80211_6G_BAND_SUPPORT */
 		if (!ht_cap->ht_supported)
 			return false;
+#ifdef CONFIG_BCM_KF_NL80211_6G_BAND_SUPPORT
+		}
+#endif /* CONFIG_BCM_KF_NL80211_6G_BAND_SUPPORT */
 	case NL80211_CHAN_WIDTH_20_NOHT:
 		prohibited_flags |= IEEE80211_CHAN_NO_20MHZ;
 		width = 20;
 		break;
 	case NL80211_CHAN_WIDTH_40:
 		width = 40;
+#ifdef CONFIG_BCM_KF_NL80211_6G_BAND_SUPPORT
+		if (chandef->chan->band == IEEE80211_BAND_6GHZ)
+			break;
+#endif /* CONFIG_BCM_KF_NL80211_6G_BAND_SUPPORT */
 		if (!ht_cap->ht_supported)
 			return false;
 		if (!(ht_cap->cap & IEEE80211_HT_CAP_SUP_WIDTH_20_40) ||
@@ -655,21 +665,39 @@ bool cfg80211_chandef_usable(struct wiphy *wiphy,
 		break;
 	case NL80211_CHAN_WIDTH_80P80:
 		cap = vht_cap->cap & IEEE80211_VHT_CAP_SUPP_CHAN_WIDTH_MASK;
+#ifdef CONFIG_BCM_KF_NL80211_6G_BAND_SUPPORT
+		if (chandef->chan->band != IEEE80211_BAND_6GHZ) {
+#endif /* CONFIG_BCM_KF_NL80211_6G_BAND_SUPPORT */
 		if (cap != IEEE80211_VHT_CAP_SUPP_CHAN_WIDTH_160_80PLUS80MHZ)
 			return false;
+#ifdef CONFIG_BCM_KF_NL80211_6G_BAND_SUPPORT
+		}
+#endif /* CONFIG_BCM_KF_NL80211_6G_BAND_SUPPORT */
 	case NL80211_CHAN_WIDTH_80:
+#ifdef CONFIG_BCM_KF_NL80211_6G_BAND_SUPPORT
+		if (chandef->chan->band != IEEE80211_BAND_6GHZ) {
+#endif /* CONFIG_BCM_KF_NL80211_6G_BAND_SUPPORT */
 		if (!vht_cap->vht_supported)
 			return false;
+#ifdef CONFIG_BCM_KF_NL80211_6G_BAND_SUPPORT
+		}
+#endif /* CONFIG_BCM_KF_NL80211_6G_BAND_SUPPORT */
 		prohibited_flags |= IEEE80211_CHAN_NO_80MHZ;
 		width = 80;
 		break;
 	case NL80211_CHAN_WIDTH_160:
+#ifdef CONFIG_BCM_KF_NL80211_6G_BAND_SUPPORT
+		if (chandef->chan->band != IEEE80211_BAND_6GHZ) {
+#endif /* CONFIG_BCM_KF_NL80211_6G_BAND_SUPPORT */
 		if (!vht_cap->vht_supported)
 			return false;
 		cap = vht_cap->cap & IEEE80211_VHT_CAP_SUPP_CHAN_WIDTH_MASK;
 		if (cap != IEEE80211_VHT_CAP_SUPP_CHAN_WIDTH_160MHZ &&
 		    cap != IEEE80211_VHT_CAP_SUPP_CHAN_WIDTH_160_80PLUS80MHZ)
 			return false;
+#ifdef CONFIG_BCM_KF_NL80211_6G_BAND_SUPPORT
+		}
+#endif /* CONFIG_BCM_KF_NL80211_6G_BAND_SUPPORT */
 		prohibited_flags |= IEEE80211_CHAN_NO_160MHZ;
 		width = 160;
 		break;

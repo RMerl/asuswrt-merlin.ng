@@ -7,7 +7,7 @@
 #        Then run by specifying the BUILD_NAME number as argument.
 #        REPO will contain the location of your local repository
 
-BUILD_NAME=$1
+BUILD_NAME=$(echo $1 | tr "[:lower:]" "[:upper:]")
 BUILD_NAME_LC=$(echo $BUILD_NAME | tr "[:upper:]" "[:lower:]")
 REPO=/home/merlin/amng
 

@@ -126,6 +126,22 @@ static int ip6_finish_output2(struct sock *sk, struct sk_buff *skb)
 
 static int ip6_finish_output(struct sock *sk, struct sk_buff *skb)
 {
+#if defined(CONFIG_BCM_KF_IP)
+	struct ipv6hdr *hdr = ipv6_hdr(skb);
+	struct net_device *dev = skb_dst(skb)->dev;
+	struct inet6_dev *idev = ip6_dst_idev(skb_dst(skb));
+
+	/* No traffic with ULA address should be forwarded to WAN intf */
+	if ( isULA(&hdr->daddr) || isULA(&hdr->saddr) ) {
+		if (dev->priv_flags & IFF_WANDEV) {
+			IP6_INC_STATS(dev_net(dev), idev,
+				      IPSTATS_MIB_OUTDISCARDS);
+			kfree_skb(skb);
+			return 0;
+		}
+	}
+#endif
+
 	if ((skb->len > ip6_skb_dst_mtu(skb) && !skb_is_gso(skb)) ||
 	    dst_allfrag(skb_dst(skb)) ||
 	    (IP6CB(skb)->frag_max_size && skb->len > IP6CB(skb)->frag_max_size))
@@ -334,35 +350,6 @@ static inline int ip6_forward_finish(struct sock *sk, struct sk_buff *skb)
 	return dst_output_sk(sk, skb);
 }
 
-#if defined(CONFIG_BCM_KF_IP)
-static inline int isULA(const struct in6_addr *addr)
-{
-	__be32 st;
-
-	st = addr->s6_addr32[0];
-
-	/* RFC 4193 */
-	if ((st & htonl(0xFE000000)) == htonl(0xFC000000))
-		return	1;
-	else
-		return	0;
-}
-
-static inline int isSpecialAddr(const struct in6_addr *addr)
-{
-	__be32 st;
-
-	st = addr->s6_addr32[0];
-
-	/* RFC 5156 */
-	if (((st & htonl(0xFFFFFFFF)) == htonl(0x20010db8)) ||
-		((st & htonl(0xFFFFFFF0)) == htonl(0x20010010)))
-		return	1;
-	else
-		return	0;
-}
-#endif
-
 static unsigned int ip6_dst_mtu_forward(const struct dst_entry *dst)
 {
 	unsigned int mtu;
@@ -464,14 +451,6 @@ int ip6_forward(struct sk_buff *skb)
 		kfree_skb(skb);
 		return -ETIMEDOUT;
 	}
-
-#if defined(CONFIG_BCM_KF_IP)
-    /* No traffic with ULA address should be forwarded at WAN intf */
-	if ( isULA(&hdr->daddr) || isULA(&hdr->saddr) )
-		if ((skb->dev->priv_flags & IFF_WANDEV) || 
-			(dst->dev->priv_flags & IFF_WANDEV) )
-			goto drop;
-#endif
 
 	/* XXX: idev->cnf.proxy_ndp? */
 	if (net->ipv6.devconf_all->proxy_ndp &&

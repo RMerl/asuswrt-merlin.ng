@@ -37,7 +37,7 @@ if [[ $# -eq 1 ]] && [[ $1 == "--help" ]]; then
 fi
 
 # Invalid # of parameters
-if [[ $# -ne 3 ]]; then
+if [[ $# -ne 3 ]] && [[ $# -ne 4 ]]; then
 echo "Invalid number of parameters!"
 show_help
 exit 0
@@ -69,6 +69,14 @@ if [[ $mode != "nic" ]] && [[ $mode != "dhd" ]]; then
 echo "Invalid driver mode!"
 show_help
 exit 0
+fi
+
+# Argument 4 is skip dump nvram
+skip_nvram=$4
+if [[ $skip_nvram == "1" ]]; then
+       skip_nvram="1"
+else
+       skip_nvram="0"
 fi
 
 ifconfig $ifname 1>/dev/null 2>&1
@@ -467,12 +475,14 @@ echo -n op_mode=; echo $(dhd -i $ifname op_mode)
 echo -n pciecfgreg offset 0xb4=; echo $(dhd -i $ifname pciecfgreg 0xb4)
 fi
 
+if [[ $skip_nvram != "1" ]]; then
 echo ""
 echo ""
 echo "-----------------------"
 echo "NVRAM config parameters"
 echo "-----------------------"
 nvram show
+fi
 # restore msglevel
 wl -i $ifname msglevel $WLMSGLVL
 if [[ $mode == "dhd" ]]; then

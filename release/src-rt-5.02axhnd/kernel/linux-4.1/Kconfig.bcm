@@ -654,6 +654,11 @@ config JFFS_NVRAM
 	default n
 	depends on BCM_WLAN
 
+config JFFS_NVRAM_HND_OLD
+	bool "old patch of NVRAM on JFFS support"
+	default n
+	depends on BCM_WLAN
+
 config BCM_PCI
 	bool "Support for PCI"
 	select PCI

@@ -72,11 +72,19 @@ netdev_tx_t br_dev_xmit(struct sk_buff *skb, struct net_device *dev)
 
 	if (BROADSTREAM_IQOS_ENABLE())
 	{
+		bool is_iqos_fwd = false;
 		if (IS_FKBUFF_PTR(skb)){
 			skb = bcm_iqoshdl_wrapper(dev, skb);
 			if (skb == NULL) {
 				return NETDEV_TX_OK;
 			}
+			is_iqos_fwd = true;
+		} else if (IS_SKBUFF_PTR(skb) && (skb->dev == NULL)) {
+			skb->dev = dev;
+			is_iqos_fwd = true;
+		}
+		
+		if (is_iqos_fwd) {
 			skb_reset_network_header(skb);
 			BR_INPUT_SKB_CB(skb)->brdev = dev;
 			PKTSETDEVQXMIT(skb);

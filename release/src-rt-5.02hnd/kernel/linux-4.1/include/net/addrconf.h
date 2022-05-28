@@ -354,6 +354,35 @@ static inline bool ipv6_addr_is_solict_mult(const struct in6_addr *addr)
 #endif
 }
 
+#if defined(CONFIG_BCM_KF_IP)
+static inline int isULA(const struct in6_addr *addr)
+{
+	__be32 st;
+
+	st = addr->s6_addr32[0];
+
+	/* RFC 4193 */
+	if ((st & htonl(0xFE000000)) == htonl(0xFC000000))
+		return	1;
+	else
+		return	0;
+}
+
+static inline int isSpecialAddr(const struct in6_addr *addr)
+{
+	__be32 st;
+
+	st = addr->s6_addr32[0];
+
+	/* RFC 5156 */
+	if (((st & htonl(0xFFFFFFFF)) == htonl(0x20010db8)) ||
+		((st & htonl(0xFFFFFFF0)) == htonl(0x20010010)))
+		return	1;
+	else
+		return	0;
+}
+#endif
+
 #ifdef CONFIG_PROC_FS
 int if6_proc_init(void);
 void if6_proc_exit(void);

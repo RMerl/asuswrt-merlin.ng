@@ -9,17 +9,23 @@ BUILD_DIR := $(HND_SRC)
 include ${BUILD_DIR}/make.common
 include $(SRCBASE)/.config
 
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),XD4PRO))
+BRCM_DATA_VOLUME_SIZE=8
+else
 BRCM_DATA_VOLUME_SIZE=20
+endif
 ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RP-AX58))
+BRCM_DEFAULTS_VOLUME_SIZE=2
+else ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),XD4PRO))
 BRCM_DEFAULTS_VOLUME_SIZE=2
 else
 BRCM_DEFAULTS_VOLUME_SIZE=8
 endif
-ifeq ($(BUILD_NAME),TUF-AX3000_V2)
-DATA_MOUNT_INSTALL_PATH=/rom/etc/init.d
-else
+#ifeq ($(BUILD_NAME),TUF-AX3000_V2)
+#DATA_MOUNT_INSTALL_PATH=/rom/etc/init.d
+#else
 DATA_MOUNT_INSTALL_PATH=/etc/init.d
-endif
+#endif
 DATA_MOUNT_INSTALL_PATH_FOR_SED=$(shell (echo $(DATA_MOUNT_INSTALL_PATH) | sed 's/\//\\\//g'))
 
 RC3:= S25mount-fs K95mount-fs

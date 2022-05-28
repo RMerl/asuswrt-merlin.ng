@@ -59,6 +59,7 @@
 #include <linux/kernel.h>
 #include <inttypes.h>
 #include <asm/setup.h>
+#include <rtconfig.h>
 
 #define IS_ERR_OR_NULL(x) ((x)==0)
 #define IS_ERR(x) ((x)<0)
@@ -632,13 +633,13 @@ int nandGetBootPartition(void)
     else
     {
         /* Use get_rootfs_dev script */
-#ifdef CUSTOM_NAND_SINGLE_IMAGE
+#if defined(CUSTOM_NAND_SINGLE_IMAGE) || defined(RTCONFIG_SINGLEIMG_B)
 	fp = popen("/etc/get_rootfs_dev.sh", "r");
 #else
         fp = popen("/rom/etc/get_rootfs_dev.sh", "r");
 #endif
         if (fp == NULL) {
-#ifdef CUSTOM_NAND_SINGLE_IMAGE
+#if defined(CUSTOM_NAND_SINGLE_IMAGE) || defined(RTCONFIG_SINGLEIMG_B)
             fprintf(stderr, "Failed to run /etc/get_rootfs_dev.sh command\n" );
 #else
             fprintf(stderr, "Failed to run /rom/etc/get_rootfs_dev.sh command\n" );
@@ -2580,13 +2581,13 @@ int nandIsBootDevice(void)
 #ifndef DESKTOP_LINUX
     FILE *fp;
     char line[COMMAND_LINE_SIZE]={0};
-#ifdef CUSTOM_NAND_SINGLE_IMAGE
+#if defined(CUSTOM_NAND_SINGLE_IMAGE) || defined(RTCONFIG_SINGLEIMG_B)
     fp = popen("/etc/get_rootfs_dev.sh", "r");
 #else
     fp = popen("/rom/etc/get_rootfs_dev.sh", "r");
 #endif
     if (fp == NULL) {
-#ifdef CUSTOM_NAND_SINGLE_IMAGE
+#if defined(CUSTOM_NAND_SINGLE_IMAGE) || defined(RTCONFIG_SINGLEIMG_B)
         printf("Failed to run /etc/get_rootfs_dev.sh command\n" );
 #else
     	printf("Failed to run /rom/etc/get_rootfs_dev.sh command\n" );

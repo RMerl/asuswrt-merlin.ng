@@ -1,0 +1,8 @@
+<PUBLISH>
+@@ -383,7 +383,8 @@
+ # BRCM_TC_RATE_LIMIT is not set
+ # BRCM_TC_POLICING is not set
+ # BUILD_DPI is not set
+-# BUILD_MAP is not set
++BUILD_MAP=y
++BRCM_DRIVER_MAP=m

@@ -26,7 +26,7 @@
 
 /*
  * Automatically generated make config: don't edit
- * Date: Mon Feb 10 11:16:35 2020
+ * Date: Thu Jan 13 18:26:24 2022
  */
 #ifndef __TMCFG__AUTOCONF_OUTPUT_H_
 #define __TMCFG__AUTOCONF_OUTPUT_H_
@@ -42,12 +42,12 @@
 #define TMCFG_ARCH_X86 0 // n
 #define TMCFG_ARCH_X86_64 0 // n
 #define TMCFG_ARCH_MIPS 0 // n
-#define TMCFG_ARCH_ARM 0 // n
-#define TMCFG_ARCH_ARM_64 1 // y
+#define TMCFG_ARCH_ARM 1 // y
+#define TMCFG_ARCH_ARM_64 0 // n
 #define TMCFG_ARCH_POWERPC 0 // n
 #define TMCFG_CPU_BIG_ENDIAN 0 // n
 #define TMCFG_CPU_LITTLE_ENDIAN 1 // y
-#define TMCFG_KERN_DIR "/opt/ASUS/asuswrt_AX86U_GPL_384_8256/release/src-rt-5.02axhnd.675x/kernel/linux-4.1/"
+#define TMCFG_KERN_DIR "/opt/ASUS/asuswrt_AX86U_GPL_386_47113/release/src-rt-5.02L.07p2axhnd/kernel/linux-4.1"
 #define TMCFG_KERN_ARCH "arm64"
 #define TMCFG_CPU_32BITS 0 // n
 #define TMCFG_CPU_64BITS 1 // y

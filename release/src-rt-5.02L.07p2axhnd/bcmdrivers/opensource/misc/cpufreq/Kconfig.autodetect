@@ -1,0 +1,11 @@
+config BCM_CPUFREQ
+	tristate "BCM63XX CPUfreq driver"
+	depends on BCM_COMMON_CLK
+	default n
+	help
+	  This add the CPUFreq driver support for BCM63XX SOCs.
+
+config BCM_CPUFREQ_IMPL
+	int "Implementation index for CPUFreq driver"
+	depends on BCM_CPUFREQ
+	default 1

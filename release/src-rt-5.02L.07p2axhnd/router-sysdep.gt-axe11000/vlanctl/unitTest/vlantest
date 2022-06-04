@@ -1,0 +1,149 @@
+#!/bin/sh
+
+bcmlog l vlan 3
+
+fap learn --disable
+
+ethswctl -c hw-switching -o disable
+
+brctl delif br0 eth0
+brctl delif br0 eth1
+
+vlanctl --if-create eth0 0
+vlanctl --if-create eth0 1
+vlanctl --if-create eth1 0
+vlanctl --if-create eth1 1
+
+ifconfig eth0.v0 up
+ifconfig eth0.v1 up
+ifconfig eth1.v0 up
+ifconfig eth1.v1 up
+
+brctl addbr br_vlan
+brctl addif br_vlan eth0
+brctl addif br_vlan eth0.v0
+brctl addif br_vlan eth0.v1
+brctl addif br_vlan eth1
+brctl addif br_vlan eth1.v0
+brctl addif br_vlan eth1.v1
+
+ifconfig br_vlan up
+
+brctl show br_vlan
+
+vlanctl --if eth0 --cfg-tpid 0x8100 0x9100 0x9200 0x8100
+vlanctl --if eth0 --show-tpid
+
+vlanctl --if eth1 --cfg-tpid 0x8100 0x9100 0x9200 0x8100
+vlanctl --if eth1 --show-tpid
+
+# enable debug level log
+echo l vlan 3 > /proc/bcmlog
+
+##############
+# 0 VLAN Tags
+# ===========
+##############
+
+### RX eth0 ###
+# 198.19.0.100
+vlanctl --if eth0 --rx --tags 0 --filter-ethertype 0x8863 --push-tag --set-pbits 7 0 --set-cfi 1 0 --set-rxif eth0.v1 --rule-append
+# redundant with previous, just to make sure will never execute
+vlanctl --if eth0 --rx --tags 0 --filter-ethertype 0x8863 --drop-frame --rule-append
+# 198.19.0.101, 198.19.0.106
+vlanctl --if eth0 --rx --tags 0 --filter-ethertype 0x8864 --push-tag --push-tag --set-pbits 3 0 --set-cfi 1 0 --set-vid 30 0 --set-pbits 4 1 --set-cfi 1 1 --set-vid 40 1 --set-dscp 59 --rule-append
+# 198.19.0.102
+vlanctl --if eth0 --rx --tags 0 --filter-ethertype 0x8888 --drop-frame --rule-append
+# 198.19.0.103
+vlanctl --if eth0 --rx --tags 0 --rule-append
+
+vlanctl --if eth0 --rx --tags 0 --show-table
+
+
+### RX eth1 ###
+# 198.19.0.200
+vlanctl --if eth1 --rx --tags 0 --filter-dscp 0 --set-rxif eth1.v0 --rule-append
+vlanctl --if eth1 --rx --tags 0 --filter-dscp 63 --set-rxif eth1.v1 --rule-append
+
+vlanctl --if eth1 --rx --tags 0 --show-table
+
+
+### TX eth0 ###
+# 198.19.1.109
+vlanctl --if eth0 --tx --tags 0 --filter-skb-prio 100 --filter-skb-mark-port 10 --filter-skb-mark-flowid 200 --set-skb-prio 0 --set-skb-mark-port 0 --set-skb-mark-flowid 0 --set-skb-mark-queue 0 --rule-append
+
+vlanctl --if eth0 --tx --tags 0 --show-table
+
+
+### TX eth1 ###
+# 198.19.0.104
+vlanctl --if eth1 --tx --tags 0 --filter-dscp 15 --push-tag --set-pbits 4 0 --set-vid 40 0 --rule-append
+# 198.19.0.105
+vlanctl --if eth1 --cfg-dscp2pbits 17 4
+vlanctl --if eth1 --tx --tags 0 --filter-dscp 17 --push-tag --dscp2pbits 0 --set-vid 55 0 --rule-append
+# 198.19.0.X
+vlanctl --if eth1 --tx --tags 0 --push-tag --push-tag --dscp2pbits 1 --set-vid 55 0 --set-vid 66 1 --continue --rule-append
+# 198.19.1.109
+vlanctl --if eth1 --tx --tags 0 --filter-skb-prio 100 --filter-skb-mark-port 10 --filter-skb-mark-flowid 200 --set-skb-prio 0 --set-skb-mark-port 0 --set-skb-mark-flowid 0 --set-skb-mark-queue 0 --rule-append
+
+vlanctl --if eth1 --tx --tags 0 --show-table
+
+
+#############
+# 1 VLAN Tag
+# ==========
+#############
+
+### RX eth0 ###
+# 198.19.1.100 -> ERROR
+vlanctl --if eth0 --rx --tags 1 --filter-dscp 19 --set-pbits 7 1 --set-cfi 1 0 --rule-append
+# 198.19.1.101 -> ERROR
+vlanctl --if eth0 --rx --tags 1 --filter-dscp 20 --set-ethertype 0x0801 --set-tag-ethertype 0x9100 0 --set-dscp 43 --rule-append
+# 198.19.1.102
+vlanctl --if eth0 --rx --tags 1 --filter-vid 500 0 --push-tag --set-pbits 6 1 --copy-vid 1 0 --copy-pbits 1 0 --rule-append
+# 198.19.1.106
+vlanctl --if eth0 --rx --tags 1 --filter-dscp 21 --push-tag --set-ethertype 0x9200 --set-tag-ethertype 0x9100 0 --set-dscp 43 --rule-append
+# 198.19.1.107
+vlanctl --if eth0 --rx --tags 1 --filter-dscp 23 --pop-tag --set-dscp 11 --rule-append
+# 198.19.1.109
+vlanctl --if eth0 --rx --tags 1 --filter-pbits 5 0 --filter-cfi 1 0 --filter-vid 900 0 --set-skb-prio 100 --set-skb-mark-port 10 --set-skb-mark-flowid 200 --set-skb-mark-queue 5 --continue --rule-append
+# 198.19.1.109 will NOT match this rule
+vlanctl --if eth0 --rx --tags 1 --filter-skb-prio 101 --filter-skb-mark-port 10 --filter-skb-mark-flowid 200 --push-tag --rule-append
+# 198.19.1.109 will match this rule
+vlanctl --if eth0 --rx --tags 1 --filter-skb-prio 100 --filter-skb-mark-port 10 --filter-skb-mark-flowid 200 --pop-tag --continue --rule-append
+# 198.19.1.109 will match this rule
+vlanctl --if eth0 --rx --tags 1 --filter-skb-prio 100 --filter-skb-mark-port 10 --filter-skb-mark-flowid 200 --set-dscp 32 --continue --rule-append
+# 198.19.1.109 will NOT match this rule
+vlanctl --if eth0 --rx --tags 1 --filter-skb-prio 102 --filter-skb-mark-port 10 --filter-skb-mark-flowid 200 --push-tag --rule-append
+
+vlanctl --if eth0 --rx --tags 1 --show-table
+
+
+### TX eth1 ###
+# 198.19.1.103 -> ERROR
+vlanctl --if eth1 --tx --tags 1 --filter-dscp 15 --push-tag --set-pbits 4 0 --set-vid 40 0 --set-tag-ethertype 0x9200 1 --rule-append
+# 198.19.1.104
+vlanctl --if eth1 --tx --tags 1 --filter-vid 100 0 --filter-dscp 35 --dscp2pbits 0 --set-vid 200 0 --rule-append
+# 198.19.1.105
+vlanctl --if eth1 --tx --tags 1 --filter-vid 100 0 --set-pbits 4 0 --set-vid 300 0 --rule-append
+# 198.19.0.100 should match, 198.19.1.108 should not match
+vlanctl --if eth1 --tx --tags 1 --filter-txif eth1.v1 --rule-append
+
+vlanctl --if eth1 --tx --tags 1 --show-table
+
+##############
+# 2 VLAN Tags
+# ===========
+##############
+
+### RX eth0 ###
+# 198.19.2.100
+vlanctl --if eth0 --rx --tags 2 --filter-pbits 3 0 --filter-vid 100 0 --filter-pbits 7 1 --filter-vid 200 1 --pop-tag --pop-tag --set-dscp 50 --rule-append
+
+# 198.19.2.101
+vlanctl --if eth0 --rx --tags 2 --filter-pbits 3 0 --filter-vid 100 0 --filter-pbits 0 1 --filter-vid 200 1 --pop-tag --dscp2pbits 0 --rule-append
+
+# 198.19.2.101
+vlanctl --if eth0 --rx --tags 2 --filter-vid 357 1 --pop-tag --push-tag --dscp2pbits 0 --rule-append
+
+vlanctl --if eth0 --rx --tags 2 --show-table

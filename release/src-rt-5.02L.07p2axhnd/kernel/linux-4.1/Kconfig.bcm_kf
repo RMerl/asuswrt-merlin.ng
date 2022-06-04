@@ -1,0 +1,585 @@
+#
+# Automatically Generated Kconfig File.  DO NOT MODIFY
+#
+
+
+config BCM_KF_MISC_MAKEFILE
+	bool
+	default y
+
+config BCM_KF_MIPS_BCM963XX
+	bool
+	default y
+
+config BCM_KF_ARM_BCM963XX
+	bool
+	default y
+
+config BCM_KF_ARM64_BCM963XX
+	bool
+	default y
+
+config BCM_KF_LINKER_WORKAROUND
+	bool
+	default y
+
+config BCM_KF_KERN_WARNING
+	bool
+	default y
+
+config BCM_KF_DOUBLE_INCLUSION
+	bool
+	default y
+
+config BCM_KF_FIXADDR_TOP
+	bool
+	default y
+
+config BCM_KF_NBUFF
+	bool
+	default y
+
+config BCM_KF_VLAN
+	bool
+	default y
+
+config BCM_KF_NETDEV_PATH
+	bool
+	default y
+
+config BCM_KF_SKB_DEFINES
+	bool
+	default y
+
+config BCM_KF_BLOG
+	bool
+	default y
+
+config BCM_KF_VLANCTL_BIND
+	bool
+	default y
+
+config BCM_KF_WANDEV
+	bool
+	default y
+
+config BCM_KF_FAP
+	bool
+	default y
+
+config BCM_KF_CSUM_UNALIGNED
+	bool
+	default y
+
+config BCM_KF_THREAD_SIZE_FIX
+	bool
+	default y
+
+config BCM_KF_TSTAMP
+	bool
+	default y
+
+config BCM_KF_UNALIGNED_EXCEPTION
+	bool
+	default y
+
+config BCM_KF_MIPS_IOPORT_BASE
+	bool
+	default y
+
+config BCM_KF_SHOW_RAW_BACKTRACE
+	bool
+	default y
+
+config BCM_KF_DCACHE_SHARED
+	bool
+	default y
+
+config BCM_KF_CPU_DATA_CPUID
+	bool
+	default y
+
+config BCM_KF_PCI_FIXUP
+	bool
+	default y
+
+config BCM_KF_PCI_RESET_DOMAIN_NR
+	bool
+	default y
+
+config BCM_KF_SYSRQ_AUX_CHAR
+	bool
+	default y
+
+config BCM_KF_CHAR_SYSRQ
+	bool
+	default y
+
+config BCM_KF_MTD_BCMNAND
+	bool
+	default y
+
+config BCM_KF_MTD_BCM963XX
+	bool
+	default y
+
+config BCM_KF_MTD_OOB_AUTO
+	bool
+	default y
+
+config BCM_KF_MTD_OOPS
+	bool
+	default y
+
+config BCM_KF_PPP
+	bool
+	default y
+
+config BCM_KF_PROC_BCM
+	bool
+	default y
+
+config BCM_KF_LOG
+	bool
+	default y
+
+config BCM_KF_TRACE_CUSTOM
+	bool
+	default y
+
+config BCM_KF_CGROUP
+	bool
+	default y
+
+config BCM_KF_HARDIRQ_CYCLES
+	bool
+	default n
+
+config BCM_KF_SHOW_HEAP_STACK
+	bool
+	default y
+
+config BCM_KF_BYPASS_SMP_WARNING
+	bool
+	default y
+
+config BCM_KF_OOM_REBOOT
+	bool
+	default y
+
+config BCM_KF_VMSCAN_OPT
+	bool
+	default y
+
+config BCM_KF_IGMP
+	bool
+	default y
+
+config BCM_KF_IGMP_RATE_LIMIT
+	bool
+	default y
+
+config BCM_KF_MLD
+	bool
+	default y
+
+config BCM_KF_MROUTE
+	bool
+	default y
+
+config BCM_KF_IGMP_RIP_ROUTER
+	bool
+	default y
+
+config BCM_KF_MCAST_GR_SUPPRESSION
+	bool
+	default y
+
+config BCM_KF_MCAST
+	bool
+	default y
+
+config BCM_KF_MISC_IOCTLS
+	bool
+	default y
+
+config BCM_KF_MISALIGN_MQS
+	bool
+	default n
+
+config BCM_KF_NETFILTER
+	bool
+	default y
+
+config BCM_KF_ENET_SWITCH
+	bool
+	default y
+
+config BCM_KF_FAIL_CONFIG_ON_EOF
+	bool
+	default y
+
+config BCM_KF_RUNNER
+	bool
+	default y
+
+config BCM_KF_WL
+	bool
+	default y
+
+config BCM_KF_LINKWATCH_WQ
+	bool
+	default y
+
+config BCM_KF_IP
+	bool
+	default y
+
+config BCM_KF_SPU
+	bool
+	default y
+
+config BCM_KF_80211
+	bool
+	default y
+
+config BCM_KF_BUZZZ
+	bool
+	default y
+
+config BCM_KF_ATM_BACKEND
+	bool
+	default y
+
+config BCM_KF_EXTRA_DEBUG
+	bool
+	default y
+
+config BCM_KF_SUPPRESS_DEBUG
+	bool
+	default y
+
+config BCM_KF_SPI
+	bool
+	default y
+
+config BCM_KF_POWER_SAVE
+	bool
+	default y
+
+config BCM_KF_RCU_CONSTANT_BUG
+	bool
+	default y
+
+config BCM_KF_JFFS
+	bool
+	default y
+
+config BCM_KF_PROC_DEFAULT
+	bool
+	default y
+
+config BCM_KF_EXTSTATS
+	bool
+	default y
+
+config BCM_KF_USB_STORAGE
+	bool
+	default y
+
+config BCM_KF_USBNET
+	bool
+	default y
+
+config BCM_KF_FAP_GSO_LOOPBACK
+	bool
+	default y
+
+config BCM_KF_SW_GSO
+	bool
+	default y
+
+config BCM_KF_PROTO_IPSEC
+	bool
+	default y
+
+config BCM_KF_PROTO_ESP
+	bool
+	default y
+
+config BCM_KF_PRINTK_INT_ENABLED
+	bool
+	default y
+
+config BCM_KF_LIMITED_IFINDEX
+	bool
+	default y
+
+config BCM_KF_BRIDGE_PORT_ISOLATION
+	bool
+	default y
+
+config BCM_KF_BRIDGE_STP
+	bool
+	default y
+
+config BCM_KF_BRIDGE_STATIC_FDB_MOVE
+	bool
+	default y
+
+config BCM_KF_BRIDGE_MAC_FDB_LIMIT
+	bool
+	default y
+
+config BCM_KF_IEEE1905
+	bool
+	default y
+
+config BCM_KF_MCAST_RP_FILTER
+	bool
+	default y
+
+config BCM_KF_XT_MATCH_LAYER7
+	bool
+	default y
+
+config BCM_KF_XT_TARGET_DC
+	bool
+	default y
+
+config BCM_KF_VLAN_AGGREGATION
+	bool
+	default y
+
+config BCM_KF_ETHTOOL
+	bool
+	default y
+
+config BCM_KF_DEBUGGING_DISABLED_FIX
+	bool
+	default y
+
+config BCM_KF_IPV6RD_SECURITY
+	bool
+	default y
+
+config BCM_KF_DPI
+	bool
+	default y
+
+config BCM_KF_ARM_ERRATA_798181
+	bool
+	default y
+
+config BCM_KF_MISC_3_4_CVE_PORTS
+	bool
+	default y
+
+config BCM_KF_MISC_BACKPORTS
+	bool
+	default y
+
+config BCM_KF_SCHED_RT
+	bool
+	default y
+
+config BCM_KF_SCHED_RT_SHARE
+	bool
+	default y
+
+config BCM_KF_ONDEMAND
+	bool
+	default y
+
+config BCM_KF_INTERACTIVE
+	bool
+	default y
+
+config BCM_KF_EMMC
+	bool
+	default y
+
+config BCM_KF_USB_HOSTS
+	bool
+	default y
+
+config BCM_KF_ACCEL_PPTP
+	bool
+	default y
+
+config BCM_KF_RTPRIO_DEF
+	bool
+	default y
+
+config BCM_KF_LEDS
+	bool
+	default y
+
+config BCM_KF_BRIDGE_COUNTERS
+	bool
+	default y
+
+config BCM_KF_IRQ_AFFINITY
+	bool
+	default y
+
+config BCM_KF_ANDROID
+	bool
+	default y
+
+config BCM_KF_MHI
+	bool
+	default y
+
+config BCM_KF_PHONET
+	bool
+	default y
+
+config BCM_KF_M2M_DMA
+	bool
+	default y
+
+config BCM_KF_RECVFILE
+	bool
+	default y
+
+config BCM_KF_FILENAME_CHECK
+	bool
+	default y
+
+config BCM_KF_BLUETOOTH_VENDOR_ID
+	bool
+	default y
+
+config BCM_KF_SPEEDYGET
+	bool
+	default y
+
+config BCM_KF_512MB_DDR
+	bool
+	default y
+
+config BCM_KF_TCP_NO_TSQ
+	bool
+	default y
+
+config BCM_KF_TMS
+	bool
+	default y
+
+config BCM_KF_UBI
+	bool
+	default y
+
+config BCM_KF_HNDROUTER
+	bool
+	default y
+
+config BCM_KF_WDT
+	bool
+	default y
+
+config BCM_KF_INTF_BRG
+	bool
+	default y
+
+config BCM_KF_MPTCP
+	bool
+	default y
+
+config BCM_KF_KBONDING
+	bool
+	default y
+
+config BCM_KF_MAP
+	bool
+	default y
+
+config BCM_KF_OPTEE
+	bool
+	default y
+
+config BCM_KF_OPTEE_414_BACKPORTS
+	bool
+	default y
+
+config BCM_KF_SPECTRE_PATCH
+	bool
+	default y
+
+config BCM_KF_OVERLAYFS_BACKPORTS
+	bool
+	default y
+
+config BCM_KF_GLB_COHERENCY
+	bool
+	default y
+
+config BCM_KF_JFFS2_OVERLAY
+	bool
+	default y
+
+config BCM_KF_UBIFS_OVERLAY_BACKPORTS
+	bool
+	default y
+
+config BCM_KF_NETFILTER_SIP
+	bool
+	default y
+
+config BCM_KF_RUNNER_FLOODING
+	bool
+	default y
+
+config BCM_KF_LOCAL_SWITCHING_DISABLE
+	bool
+	default y
+
+config BCM_KF_CPU_AFFINITY_HINT
+	bool
+	default y
+
+config BCM_KF_BPM_BUF_TRACKING
+	bool
+	default y
+
+config BCM_KF_BCM63XX_CPUFREQ
+	bool
+	default y
+
+config BCM_KF_MIPS_4350
+	bool
+	default y
+
+config BCM_KF_BIN_CONFIG_INDEP
+	bool
+	default y
+
+config BCM_KF_CFG80211_BACKPORT
+	bool
+	default y
+
+config BCM_KF_OVS
+	bool
+	default y
+
+config BCM_KF_GPIO
+	bool
+	default y
+
+config BCM_KF_HWRNG
+	bool
+	default y
+
+config BCM_KF_VETH_IPV6_DISABLE
+	bool
+	default y
+
+config BCM_KF_WL_HOSTAPD
+	bool
+	default y
+
+config BCM_KF_NL80211_6G_BAND_SUPPORT
+	bool
+	default y
+

@@ -1,0 +1,38 @@
+#!/bin/bash
+
+export LD_LIBRARY_PATH=$HOSTTOOLS_DIR/libelf/lib:$LD_LIBRARY_PATH 
+source $KERNEL_DIR/.config
+
+TARGETS_DIR=`pwd`
+ROOTFS_TARBALL="openwrt-rootfs.tar.gz"
+PKG_TARBALL_NAME="openwrt.tar.gz"
+
+if [ "$INSTALL_DIR" == "" ]; then
+    INSTALL_DIR=./$PROFILE/fs.install
+fi
+
+if [ -d $PROFILE/fs ]; then
+  ROOTFS=$PROFILE/fs
+else # Alternative path for DESKTOP_LINUX
+  ROOTFS=$PROFILE/fs.install
+fi
+
+USERSPACE_DL_MODULES_BEEP_DIR=$BUILD_DIR/userspace/dlModules/beep
+EEMNGR_DIR=$BUILD_DIR/userspace/gpl/apps/openwrt
+USERSPACE_DL_MODULES_EEMNGR_DIR=$EEMNGR_DIR/openwrtEEDir
+
+
+#Obtain openwrt EE base filesystem
+echo "obtain openwrt EE base filesystem"
+mkdir -p $USERSPACE_DL_MODULES_EEMNGR_DIR
+cp $EEMNGR_DIR/$ROOTFS_TARBALL $USERSPACE_DL_MODULES_EEMNGR_DIR/$PKG_TARBALL_NAME
+
+
+cd $EEMNGR_DIR
+cp -av ./openwrt.manifest $USERSPACE_DL_MODULES_EEMNGR_DIR
+$HOSTTOOLS_DIR/beep/beepPkgBuilder -f ./openwrt-pkginfo.txt
+
+mv ./pkg_beep_*_*.tar.gz $USERSPACE_DL_MODULES_BEEP_DIR
+$HOSTTOOLS_DIR/beep/reposcan -d $USERSPACE_DL_MODULES_BEEP_DIR
+rm -rf $USERSPACE_DL_MODULES_EEMNGR_DIR
+

@@ -1,0 +1,225 @@
+#!/usr/bin/env perl
+use strict;
+use warnings;
+use bytes;
+####
+#### Assembles images for GEN3 devices with; emmc squashfs
+####
+unless ((defined $ENV{SECURE_BOOT_ARCH}) && $ENV{SECURE_BOOT_ARCH} eq 'GEN3' ) {
+    die "Not supported $ENV{SECURE_BOOT_ARCH}";
+}
+
+sub shell {
+
+    #if (defined $_[1]) {
+    print "$_[0]\n";
+
+    #}
+    my $res = `$_[0]`;
+    ( $? == 0 ) or die "ERROR: $!";
+    print "$res";
+    return $res;
+}
+
+#
+# Staging of the script
+#
+# Stage 1: prepare -  generates authenticated headers and hashes, prepares non-secure cferom then exit
+#   !!! must be complete by stage 2
+#
+# Stage 2: complete - expects hashes/headers/bootloader signatures generated outside of the scope of this script
+#           before this stage is executed 
+#
+
+print "-- args @ARGV --- \n";
+
+my @args = @ARGV;
+
+my $image_alloc_size = $ENV{BTRM_IMAGE_SIZE_ALLOCATION} * 1024;
+
+#
+#
+# starting offset where first image is placed
+my $offset = 65536;
+#
+# number of unsecured images:
+# 2 copies of unsec images + one headerless XIP cferom 
+my $num_unsec_images = 3;
+#
+# 2 copies of fld secure images 
+my $num_sec_images = 2;
+
+#
+# we want to insert secure+unsecure images in 1MB
+# let's  guard against overflow
+# account for 65k reserved block from the beginning of the boot area
+(  ((1024*1024 - $offset) - ($image_alloc_size * ($num_unsec_images + $num_sec_images)) ) >= 0 )
+  or die "this number of images will not fit to a boot area";
+
+#
+# prepare an array of offsets for non-secure images
+#
+my @unsec_offset = map{ $offset + $image_alloc_size * $_} (0..$num_unsec_images-1);
+
+$offset = $unsec_offset[-1] + $image_alloc_size;
+#
+# set an array of offsets for secure images
+#  
+my @sec_offset = map{ $offset + $image_alloc_size * $_} (0..$num_sec_images-1);
+
+#
+### IF YOU WANT CUSTOM OFFSETS, replace values in @unsec_offset amd @sec_offset 
+#
+
+print " unsecure images offsets : @unsec_offset \n secure images offsets: @sec_offset \n";
+
+if ( ( defined $args[0] ) and $args[0] eq "prepare" ) {
+    if ( $ENV{BUILD_SECURE_BOOT} eq 'y' ) {
+
+        #
+        #
+        # Create the block of hashes
+        shell(
+            "$ENV{HOSTTOOLS_DIR}/imagetools/mkhashes \\
+	--out=$ENV{WDIR}/.hashes.fld --item rootfs=$ENV{PROFILE_DIR}/squashfs.img --file secram.000 --boot $ENV{WDIR}/bootfs"
+        );
+
+
+        #
+        # Generate the FLD auth headers for CFEROM
+        shell(
+	# adding original non-tk capable CFE_ROM 
+            "$ENV{HOSTTOOLS_DIR}/imagetools/insertboot --arch $ENV{SECURE_BOOT_ARCH} --cfe $ENV{WDIR}/$ENV{CFE_ROM_BN}  \\
+		--field --cred=$ENV{FLD_CRED_LIST}  --chip=$ENV{BRCM_CHIP} --out=$ENV{WDIR}/.header.fld"
+        );
+    }
+    print "$0 Executed  $args[0] stage\n";
+    exit 0;
+}
+
+# Building
+# Non-secure and/or FLD secure image
+#
+# This demonstrates how to finalize an image.   Here, one would insert any additional components to be included
+# in the signature block for the boot filesystem
+# Create the block of hashes
+shell(
+    "$ENV{HOSTTOOLS_DIR}/imagetools/mkhashes \\
+	--out=$ENV{WDIR}/hashes.bin --item rootfs=$ENV{PROFILE_DIR}/squashfs.img --file cferam.000 --boot $ENV{WDIR}/bootfs"
+);
+
+#
+# Get rid of the non-hash signature
+shell("rm -f $ENV{WDIR}/bootfs/vmlinux.sig");
+
+#
+#
+#
+# build boot region where multiple  cferom with header are placed
+#
+# start with a 1meg empty region
+shell("$ENV{HOSTTOOLS_DIR}/imagetools/gen1meg $ENV{WDIR}/region");
+
+
+#
+# and put 2 copies of cferom in flash with nonsecure headers
+#
+foreach (@unsec_offset) {
+	shell(
+    		"$ENV{HOSTTOOLS_DIR}/imagetools/insertboot --arch $ENV{SECURE_BOOT_ARCH} --cfe $ENV{WDIR}/$ENV{CFE_ROM_BN} --nonsec \\
+		--chip=$ENV{BRCM_CHIP} --offset $_  $ENV{WDIR}/region"
+	);
+}
+
+if ( $ENV{BUILD_SECURE_BOOT} eq 'y' ) {
+
+# For every openssl call in this script there is an opportunity to replace it with a call to a remote server, HSM  or web portal
+# In such case it is assumed that header hashes or will be sent and returned sign to resume image assemble
+#
+# Below is a local openssl implementaion
+#
+
+
+    shell(
+        "cat $ENV{WDIR}/.hashes.fld.sig $ENV{WDIR}/.hashes.fld > $ENV{WDIR}/hashes.fld"
+    );
+
+    #
+    # insert num_sec_images of the FLD signed cferom into flash image
+    foreach (@sec_offset) {
+    	shell(
+        	"$ENV{HOSTTOOLS_DIR}/imagetools/insertboot --arch $ENV{SECURE_BOOT_ARCH} --cfe $ENV{WDIR}/$ENV{CFE_ROM_BN}  --field=$ENV{WDIR}/.auth.header.fld.sig  \\
+		--cred=$ENV{FLD_CRED_LIST} --chip=$ENV{BRCM_CHIP} --offset $_  $ENV{WDIR}/region"
+    	);
+    }
+    shell("cp -f $ENV{WDIR}/hashes.fld $ENV{WDIR}/bootfs");
+    # cleanup
+    #shell(
+    #    "rm -f $ENV{WDIR}/.hashes.fld $ENV{WDIR}/.hashes.mfg $ENV{WDIR}/.hashes.mfg.sig $ENV{WDIR}/.hashes.fld.sig $ENV{WDIR}/auth_header $ENV{WDIR}/auth_header.sig"
+    #);
+}
+
+
+#
+# Copy hashes for Non-Secure,  FLD to bootfs
+shell("cp -f $ENV{WDIR}/hashes.bin $ENV{WDIR}/bootfs");
+
+#
+# Create the pureubi "blob.bin" file with cferam, vmlinux, dtbs, etc...
+shell(
+    "$ENV{HOSTTOOLS_DIR}/imagetools/mkfs.nada --out=$ENV{WDIR}/head/blob.bin $ENV{WDIR}/bootfs"
+);
+
+# Then create the metadata for the image
+shell(
+    "$ENV{HOSTTOOLS_DIR}/imagetools/mkfs.nada --out=$ENV{WDIR}/head/meta.bin --extra cferam.000=998 --extra squash=1 --extra committed=0"
+);
+
+#
+# dump out a binary containing default NVRAM contents
+#
+#
+shell("$ENV{HOSTTOOLS_DIR}/createimg.pl --set boardid=$ENV{BRCM_BOARD_ID} voiceboardid=$ENV{BRCM_VOICE_BOARD_ID} \\
+	numbermac=$ENV{BRCM_NUM_MAC_ADDRESSES} macaddr=$ENV{BRCM_BASE_MAC_ADDRESS} tp=$ENV{BRCM_MAIN_TP_NUM} \\
+	psisize=$ENV{BRCM_PSI_SIZE} logsize=$ENV{BRCM_LOG_SECTION_SIZE} auxfsprcnt=$ENV{BRCM_AUXFS_PERCENT} \\
+	gponsn=$ENV{BRCM_GPON_SERIAL_NUMBER} gponpw=$ENV{BRCM_GPON_PASSWORD} --nvramfile $ENV{HOSTTOOLS_DIR}/nvram.h \\
+	--nvramdefsfile $ENV{HOSTTOOLS_DIR}/nvram_defaults.h --config=$ENV{HOSTTOOLS_DIR}/local_install/conf/$ENV{TOOLCHAIN_PREFIX}.conf \\
+	--outputfile=$ENV{WDIR}/$ENV{BRCM_BOARD_ID}_nvram.bin --output_nvram_bin_only");
+#
+#build_ubi
+# 
+my $BRCM_CHIP  = (!defined( $ENV{TAG_OVERRIDE}))?$ENV{BRCM_CHIP} : die "Chip is undefined"; 
+# create tagged-image-format based eMMC image
+# Remove leading offset space from cferom region ( we need this for cfe_fs_kernel image format )
+# Note that this offset should match the offset of the 1st CFEROM image from the start of flash
+shell("dd if=$ENV{WDIR}/region skip=65536 bs=1 of=$ENV{WDIR}/region_nooffset");
+
+#
+# Create emmc fs_kernel image
+#
+shell("$ENV{HOSTTOOLS_DIR}/bcmImageBuilder $ENV{BRCM_ENDIAN_FLAGS} \\
+	--output $ENV{WDIR}/custom_$ENV{FS_KERNEL_IMAGE_NAME}_emmc_squashfs --chip $BRCM_CHIP \\
+	--board $ENV{BRCM_BOARD_ID} --blocksize 2048  --image-version $ENV{IMAGE_VERSION}_blah --cfefile $ENV{WDIR}/region_nooffset \\
+	--rootfsfile $ENV{PROFILE_DIR}/squashfs.img --bootfsfile $ENV{WDIR}/head/blob.bin --mdatafile $ENV{WDIR}/head/meta.bin "); 
+#
+# Create emmc cfe_fs_kernel image
+#
+shell("$ENV{HOSTTOOLS_DIR}/bcmImageBuilder $ENV{BRCM_ENDIAN_FLAGS} --output \\
+	$ENV{WDIR}/custom_$ENV{CFE_FS_KERNEL_IMAGE_NAME}_emmc_squashfs --chip $BRCM_CHIP \\
+	--board $ENV{BRCM_BOARD_ID} --blocksize 2048 --image-version $ENV{IMAGE_VERSION}_blah --cfefile $ENV{WDIR}/region_nooffset \\
+	--rootfsfile $ENV{PROFILE_DIR}/squashfs.img --bootfsfile $ENV{WDIR}/head/blob.bin --mdatafile $ENV{WDIR}/head/meta.bin --include-cfe \\
+	$ENV{IMG_DDR_TYPE_OPT}"); 
+#
+# Generate whole flash image for eMMC Boot and Data partition
+#
+shell("$ENV{HOSTTOOLS_DIR}/create_emmc_rawimg.py --rootfs_file $ENV{PROFILE_DIR}/squashfs.img \\
+	--bootfs_file $ENV{WDIR}/head/blob.bin --mdata_file $ENV{WDIR}/head/meta.bin \\
+	--nvram_file $ENV{WDIR}/$ENV{BRCM_BOARD_ID}_nvram.bin --data_sizeMB 10 \\
+	--rawfullimg_file $ENV{WDIR}/custom_$ENV{FLASH_IMAGE_NAME_EMMC_DATA_PHYSPART}_squashfs.w  \\
+	--cferom_file $ENV{WDIR}/region --cferom_offsetkB 0 --rawcfeimg_file $ENV{WDIR}/custom_$ENV{FLASH_IMAGE_NAME_EMMC_BOOT_PHYSPART}.w \\
+	--emmcdefs_file $ENV{INC_BRCMSHARED_PUB_PATH}/$ENV{BRCM_BOARD}/emmc_base_defs.h");
+	
+
+shell("mv $ENV{WDIR}/bootfs  $ENV{WDIR}/bootfs.$$");
+shell("mv $ENV{WDIR}/head  $ENV{WDIR}/head.$$");
+print "$0 completed \n";

@@ -1,0 +1,6 @@
+# fstab file - used to mount file systems
+proc		/proc	proc	defaults			0	0
+tmpfs		/var	tmpfs	defaults
+tmpfs		/mnt	tmpfs	size=16k,mode=0755
+sysfs		/sys	sysfs	defaults			0	0
+

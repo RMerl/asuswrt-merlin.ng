@@ -1,0 +1,131 @@
+#if defined(CONFIG_BCM_MPTCP) && defined(CONFIG_BCM_KF_MPTCP)
+#
+# MPTCP configuration
+#
+config MPTCP
+        bool "MPTCP protocol"
+        depends on (IPV6=y || IPV6=n)
+        ---help---
+          This replaces the normal TCP stack with a Multipath TCP stack,
+          able to use several paths at once.
+
+menuconfig MPTCP_PM_ADVANCED
+	bool "MPTCP: advanced path-manager control"
+	depends on MPTCP=y
+	---help---
+	  Support for selection of different path-managers. You should choose 'Y' here,
+	  because otherwise you will not actively create new MPTCP-subflows.
+
+if MPTCP_PM_ADVANCED
+
+config MPTCP_FULLMESH
+	tristate "MPTCP Full-Mesh Path-Manager"
+	depends on MPTCP=y
+	---help---
+	  This path-management module will create a full-mesh among all IP-addresses.
+
+config MPTCP_NDIFFPORTS
+	tristate "MPTCP ndiff-ports"
+	depends on MPTCP=y
+	---help---
+	  This path-management module will create multiple subflows between the same
+	  pair of IP-addresses, modifying the source-port. You can set the number
+	  of subflows via the mptcp_ndiffports-sysctl.
+
+config MPTCP_BINDER
+	tristate "MPTCP Binder"
+	depends on (MPTCP=y)
+	---help---
+	  This path-management module works like ndiffports, and adds the sysctl
+	  option to set the gateway (and/or path to) per each additional subflow
+	  via Loose Source Routing (IPv4 only).
+
+choice
+	prompt "Default MPTCP Path-Manager"
+	default DEFAULT
+	help
+	  Select the Path-Manager of your choice
+
+	config DEFAULT_FULLMESH
+		bool "Full mesh" if MPTCP_FULLMESH=y
+
+	config DEFAULT_NDIFFPORTS
+		bool "ndiff-ports" if MPTCP_NDIFFPORTS=y
+
+	config DEFAULT_BINDER
+		bool "binder" if MPTCP_BINDER=y
+
+	config DEFAULT_DUMMY
+		bool "Default"
+
+endchoice
+
+endif
+
+config DEFAULT_MPTCP_PM
+	string
+	default "default" if DEFAULT_DUMMY
+	default "fullmesh" if DEFAULT_FULLMESH 
+	default "ndiffports" if DEFAULT_NDIFFPORTS
+	default "binder" if DEFAULT_BINDER
+	default "default"
+
+menuconfig MPTCP_SCHED_ADVANCED
+	bool "MPTCP: advanced scheduler control"
+	depends on MPTCP=y
+	---help---
+	  Support for selection of different schedulers. You should choose 'Y' here,
+	  if you want to choose a different scheduler than the default one.
+
+if MPTCP_SCHED_ADVANCED
+
+config MPTCP_ROUNDROBIN
+	tristate "MPTCP Round-Robin"
+	depends on (MPTCP=y)
+	---help---
+	  This is a very simple round-robin scheduler. Probably has bad performance
+	  but might be interesting for researchers.
+
+config MPTCP_REDUNDANT
+	tristate "MPTCP Redundant"
+	depends on (MPTCP=y)
+	---help---
+	  This scheduler sends all packets redundantly over all subflows to decreases
+	  latency and jitter on the cost of lower throughput.
+
+choice
+	prompt "Default MPTCP Scheduler"
+	default DEFAULT
+	help
+	  Select the Scheduler of your choice
+
+	config DEFAULT_SCHEDULER
+		bool "Default"
+		---help---
+		  This is the default scheduler, sending first on the subflow
+		  with the lowest RTT.
+
+	config DEFAULT_ROUNDROBIN
+		bool "Round-Robin" if MPTCP_ROUNDROBIN=y
+		---help---
+		  This is the round-rob scheduler, sending in a round-robin
+		  fashion..
+
+	config DEFAULT_REDUNDANT
+		bool "Redundant" if MPTCP_REDUNDANT=y
+		---help---
+		  This is the redundant scheduler, sending packets redundantly over
+		  all the subflows.
+
+endchoice
+endif
+
+config DEFAULT_MPTCP_SCHED
+	string
+	depends on (MPTCP=y)
+	default "default" if DEFAULT_SCHEDULER
+	default "roundrobin" if DEFAULT_ROUNDROBIN
+	default "redundant" if DEFAULT_REDUNDANT
+	default "default"
+
+#endif

@@ -1,0 +1,30 @@
+#!/bin/sh
+# acmlibtool is a simple script that finds the appropriate invocation of
+# mlibtool for an autoconf build
+
+MLIBTOOL="mlibtool"
+
+# Make sure the invocation is correct
+if [ ! -e config.status ]; then
+    echo 'acmlibtool must be run from the build directory of an autoconf-using package.' >&2
+    exit 1
+fi
+
+# Look for --enable-static or --enable-shared in config.log
+if grep '^enable_static=.*yes' config.status > /dev/null 2> /dev/null; then
+    MLIBTOOL="$MLIBTOOL --enable-static"
+fi
+if grep '^enable_shared=.*yes' config.status > /dev/null 2> /dev/null; then
+    MLIBTOOL="$MLIBTOOL --enable-shared"
+fi
+
+# Try to find the locally-built libtool
+LIBTOOL=`find "$PWD" -name libtool -print -quit`
+if [ -z "$LIBTOOL" ]; then
+    LIBTOOL=libtool
+fi
+
+MLIBTOOL="$MLIBTOOL $LIBTOOL"
+
+# And tell them what we found
+echo "$MLIBTOOL"

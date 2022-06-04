@@ -1,0 +1,7 @@
+#include "94908.dts"
+
+/ {
+	compatible = "brcm,brcm94908ref", "brcm,brcm-v8A";
+	model = "94908REF";
+
+};

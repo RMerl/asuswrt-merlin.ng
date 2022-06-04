@@ -1,0 +1,981 @@
+#!/bin/sh
+# This script configures interrupt & thread affinity regarding to WLAN.
+#
+
+MAX_WLAN_ADAPTER=4
+NUM_PROCESSOR=`cat /proc/cpuinfo | grep -c "processor"`
+NUM_WL_INTF=`ls -al /sys/class/net/wl* 2>&1 | grep -c "wl. "`
+
+#$(getStrByPos "12 33 44" " " 2) will return 33
+getStrByPos() {
+        local num=$3;
+        IFS="$2"
+        set -- $1
+        eval result='$'$num;
+        echo $result;
+}
+
+getPidByName() 
+{
+    local pid=$(getStrByPos "`ps | grep -v grep | grep $1`" " " 1);
+    if [ -z $pid ]; then 
+        echo 0;
+    else
+        echo $pid;
+    fi
+}
+
+#trim leading and trailing space
+trim() {
+    if [ ! -z $* ]; then
+        local var="$*"
+        var="${var#"${var%%[![:space:]]*}"}"
+        var="${var%"${var##*[![:space:]]}"}"   
+        echo -n "$var"
+    fi
+}
+
+#change bitmask number to string mark of bit postion string
+getBitmaskStr() {
+    local affinity=$((0x$1));
+    local cpu cpu_mask cpus="";
+    local cpu=0;
+    if [ ! -z $affinity ]; then
+        while [ ${cpu} -lt ${NUM_PROCESSOR} ];
+        do
+            cpu_mask=$((1 << $cpu)) 
+            if [ $((affinity&cpu_mask)) -gt 0 ]; then
+                if [ "$cpus" = "" ]; then
+                    cpus=$cpu
+                else
+                    cpus=$cpus"-$cpu"
+                fi
+            fi
+            cpu=$((cpu+1));
+        done
+    fi
+    echo $cpus;
+}
+
+process_name() 
+{
+    local radio=$2;
+    case "$1" in 
+        wl)
+            echo "wl${radio}-kthrd"
+            ;;
+        dhd)
+            echo "dhd${radio}_dpc";
+            ;;
+        wfd)
+            echo "wfd${radio}-thrd";
+            ;;
+        events)
+            echo "events/${radio}";
+            ;;
+    esac
+}
+
+#get radio D11 MAC interupt with inputted
+# $1 - radio number:  0/1/2
+# $2 - handler name:  dhdpcie/wlpcie
+getRadioInterrupt() {
+  if [ -z "$2" ]; then
+    hndler="wl"
+  else
+    hndler=$2
+  fi
+  local interrupt_line=`cat /proc/interrupts |grep "wl$1" |grep $hndler`
+  if [ ! -z "$interrupt_line" ]; then
+      interrupt=$(getStrByPos "${interrupt_line}" ":" 1)
+      echo $(trim $interrupt);
+  fi
+}
+
+#get radio D11 MAC interrupt affinity with inputted radio number :0/1/2
+#get radio D11 MAC interupt affinity with inputted
+# $1 - radio number:  0/1/2
+# $2 - handler name:  dhdpcie/wlpcie
+getRadioIntAffinity() {
+    local interrupt=$(getRadioInterrupt $1 $2);
+    if [ ! -z $interrupt ]; then
+        local affinity="/proc/irq/$interrupt/smp_affinity";
+        echo `cat $affinity 2>/dev/NULL`
+    fi
+}
+
+#get radio M2M interupt with inputted radio number :0/1/2
+getRadioM2MInterrupt() {
+  local interrupt_line=`cat /proc/interrupts |grep "wlan_${1}_m2m"`
+  if [ ! -z "$interrupt_line" ]; then
+      interrupt=$(getStrByPos "${interrupt_line}" ":" 1)
+      echo $(trim $interrupt);
+  fi
+}
+
+#get radio M2M interrupt affinity with inputted radio number :0/1/2
+getRadioM2MIntAffinity() {
+    local interrupt=$(getRadioM2MInterrupt $1);
+    if [ ! -z $interrupt ]; then
+        local affinity="/proc/irq/$interrupt/smp_affinity";
+        echo `cat $affinity 2>/dev/NULL`
+    fi
+}
+
+getPidAffinityNum() {
+    echo $(getStrByPos "`taskset -p $1`" " " 6);
+}
+
+getPidAffinity() {
+    local pid=$1;
+    echo $(getBitmaskStr $(getPidAffinityNum $pid));
+}
+
+getPidPriority() {
+    echo $(getStrByPos "`chrt -p $1 | grep priority`" " " 6)
+}
+
+setProcPriority() {
+    local nvram_name=$1
+    local proc_name=$2
+    local pid=$3
+    local prio=$4
+    echo "set $proc_name and pid:$pid to prio:$prio"
+    chrt -p $prio $pid> /dev/null 2>&1
+    if [ "$?" != "0" ]; then
+        echo "Failed to set $proc_name to realtime priority $prio"
+    fi
+    #nvram kset $nvram_name=$prio;
+}
+
+setProcAffinity() {
+    local nvram_name=$1
+    local proc_name=$2
+    local pid=$3
+    local affinity=$4
+    echo "set $proc_name $pid to aff:$affinity"
+    taskset -p $affinity $pid> /dev/null 2>&1
+    if [ "$?" != "0" ]; then
+        echo "pin $proc_name failed, rc=$?, pid_wl0=$pid"
+    fi
+    #nvram kset $nvram_name=$affinity
+}
+
+process_list() 
+{
+    local radio=0;
+    local title="$1 |";
+    local affinity="";
+    local priority=0;
+    while [ $radio -lt $NUM_WL_INTF ];
+    do
+        if [ $1 == "Process" ];  then
+            title="$title wl$radio(PID:CPUS:PRIO)	|"
+        else
+            proc_name=$(process_name $1 $radio)
+            pid_wfd=$(getPidByName ${proc_name})
+            if [ $pid_wfd -gt 0 ]; then
+                affinity=$(getPidAffinity $pid_wfd)
+                priority=$(getPidPriority $pid_wfd)
+                title="$title	 $pid_wfd:$affinity:$priority	|"
+            else
+                title="$title 	   -           	|"
+            fi
+        fi
+        radio=`expr $radio + 1`
+    done
+    echo "${title}"
+}
+
+#### command shows the affinity ######
+list_interrupt_affinity() {
+    local interrupt=0;
+    local affinity=0;
+    local radio=0;
+
+    # Listing WLAN D11 MAC interrupts
+    title="D11 Intr  |";
+    while [ $radio -lt $NUM_WL_INTF ];
+    do
+        interrupt=$(getRadioInterrupt $radio)
+        if [ ! -z $interrupt ]; then
+            interrpt="int:"$interrupt
+            affinity="cpu:"$(getBitmaskStr $(getRadioIntAffinity $radio))
+            title="$title	$interrpt($affinity)	|";
+        else
+            title="$title 	   -           	|"
+        fi
+        radio=`expr $radio + 1`
+    done
+    echo "$title";
+
+    # Listing WLAN M2M interrupts
+    radio=0;
+    title="M2M Intr  |";
+    while [ $radio -lt $NUM_WL_INTF ];
+    do
+        interrupt=$(getRadioM2MInterrupt $radio)
+        if [ ! -z $interrupt ]; then
+            interrpt="int:"$interrupt
+            affinity="cpu:"$(getBitmaskStr $(getRadioM2MIntAffinity $radio))
+            title="$title	$interrpt($affinity)	|";
+        else
+            title="$title 	   -           	|"
+        fi
+        radio=`expr $radio + 1`
+    done
+    echo "$title";
+}
+
+list_nvram_settings() {
+
+    local affinity radio proc_name proc_pid prio name;
+    for ctl_item in wfd dhd wl
+    do
+        radio=0;
+        while [ $radio -lt $NUM_WL_INTF ];
+        do
+            proc_name=$(process_name $ctl_item $radio);
+            proc_pid=$(getPidByName $proc_name);
+            if [ $proc_pid -gt 0 ]; then
+                name="wl${radio}_${ctl_item}_affinity"
+                affinity=`nvram kget ${name}`;
+                if [ ! -z ${affinity} ]; then
+                    echo $name=$affinity;
+                else
+                    echo "$name is not defined, use default";
+                fi
+                name="wl${radio}_${ctl_item}_prio"
+                prio=`nvram kget ${name}`;
+                if [ ! -z ${prio} ]; then
+                    echo $name=$prio;
+                else
+                    echo "$name is not defined, use default";
+                fi
+            fi
+            radio=$((radio+1))
+        done
+    done
+
+    # List WLAN D11 MAC interrupt NVRAM settings
+    radio=0;
+    while [ $radio -lt $NUM_WL_INTF ];
+    do
+        name="wl${radio}_interrupt_affinity"
+        affinity=`nvram kget ${name}`;
+        if [ ! -z $affinity ]; then 
+            echo "$name=$affinity";
+        else
+            echo "$name is not defined,use default";
+        fi
+        radio=$((radio+1))
+    done
+
+    # List WLAN M2M interrupt NVRAM settings
+    radio=0;
+    while [ $radio -lt $NUM_WL_INTF ];
+    do
+        name="wlan_${radio}_m2m_interrupt_affinity"
+        affinity=`nvram kget ${name}`;
+        if [ ! -z $affinity ]; then 
+            echo "$name=$affinity";
+        fi
+        radio=$((radio+1))
+    done
+}
+
+list_wifi_process()
+{
+    echo ""
+    echo "	      WiFi Processes on System (Total CPU:${NUM_PROCESSOR})	";
+    echo "-------------------------------------------------------------------------";
+    process_list "Process  ";
+    echo "-------------------------------------------------------------------------";
+    process_list "wfd      ";
+    process_list "dhd      ";
+    process_list "wl       ";
+    echo "-------------------------------------------------------------------------";
+    list_interrupt_affinity;
+    echo "-------------------------------------------------------------------------";
+
+    echo ""
+}
+
+### command set #####
+
+#Set WLAN D11 MAC interrupt affinity with inputted radio number :0/1/2
+setRadioIntAffinity() {
+    local radio=$1;
+    local affinity=$2;
+    local irq=$(getRadioInterrupt $radio);
+    if [ ! -z $affinity ]; then
+        echo $affinity >/proc/irq/$irq/smp_affinity 2>/dev/NULL
+        #nvram kset wl${radio}_interrupt_affinity=${affinity}
+    fi
+}
+
+#Set WLAN M2M interrupt affinity with inputted radio number :0/1/2
+setRadioM2MIntAffinity() {
+    local radio=$1;
+    local affinity=$2;
+    local irq=$(getRadioM2MInterrupt $radio);
+    if [ ! -z $affinity ] && [ ! -z $irq ]; then
+        echo $affinity >/proc/irq/$irq/smp_affinity 2>/dev/NULL
+        #nvram kset wlan_${radio}_m2m_interrupt_affinity=${affinity}
+    fi
+}
+
+pin_wifi_processes() 
+{
+    local radio=0;
+    local num_wl_toconf=$NUM_WL_INTF;
+    local prompt proc_name prio_nvram_name affi_nvram_name;
+
+    if [ ! -z $1 ]; then
+        radio=$1;
+        num_wl_toconf=$((radio+1))
+        prompt="Config WiFi Radio $radio's Threads onto CPUs";
+    else
+        prompt="Config WiFi Radios Threads onto CPUs";
+
+    fi
+    echo ""
+    echo "${prompt}(Total CPU:${NUM_PROCESSOR})" 
+	echo "-------------------------------------------------------------------------";
+	while [ $radio -lt $num_wl_toconf ];
+	do
+       for ctl_item in wfd dhd wl;
+       do
+           proc_name=$(process_name $ctl_item $radio);
+           pid_wfd=$(getPidByName ${proc_name});
+           if [ $pid_wfd -gt 0 ]; then
+               local affinity=0
+               local cpu=0;
+               while [ ${cpu} -lt ${NUM_PROCESSOR} ];
+               do
+                   echo "Pin $ctl_item on radio $radio ($proc_name) onto CPU${cpu}(y/n):"
+                   read answer
+                   if [ $answer == "y" ]; then
+                       affinity=$((affinity|(1<<cpu)))
+                   fi
+                   cpu=$((cpu+1))
+               done
+
+               echo "Assign $ctl_item on radio $radio real time priority[1-99]:"
+               read priority;
+               echo "Sure to change it?(y/n)"
+               read answer;
+               if [ $answer == "y" ]; then
+                   prio_nvram_name="wl${radio}_${ctl_item}_prio";
+                   setProcPriority $prio_nvram_name $proc_name $pid_wfd $priority
+                   affi_nvram_name="wl${radio}_${ctl_item}_affinity"
+                   setProcAffinity $affi_nvram_name $proc_name $pid_wfd $affinity
+               fi
+           fi
+       done
+       radio=$((radio+1))
+    done
+}
+
+pin_wifi_interrupt()
+{
+    local radio=0;
+    local m2m_radio=0;
+    local num_wl_toconf=$NUM_WL_INTF;
+    local prompt cpu affinity;
+    if [ ! -z $1 ]; then
+        radio=$1;
+        m2m_radio=$1;
+        num_wl_toconf=$((radio+1))
+        prompt="Config WiFi Radio $radio's Interrupt onto CPUs";
+    else
+        prompt="Config WiFi Radios Interrupt onto CPUs";
+
+    fi
+
+    echo ""
+    echo "${prompt}(Total CPU:${NUM_PROCESSOR})"
+    echo "-------------------------------------------------------------------------";
+
+    # WLAN D11 MAC interrupt configuration
+    while [ $radio -lt $num_wl_toconf ];
+    do
+        affinity=0
+        cpu=0;
+        while [ ${cpu} -lt ${NUM_PROCESSOR} ];
+        do
+            echo "Assign wl${radio}'s interrupt(tasklet) onto CPU${cpu}(y/n):"
+            read answer
+            if [ $answer == "y" ]; then
+                affinity=$((affinity|(1<<cpu)))
+            fi
+            cpu=$((cpu+1))
+        done
+
+        echo "Sure to change it?(y/n)"
+        read answer;
+        if [ $answer == "y" ]; then
+            setRadioIntAffinity $radio $affinity;
+        fi
+        radio=$((radio+1))
+    done
+
+        # WLAN M2M interrupt configuration
+    radio=$m2m_radio;
+    while [ $radio -lt $num_wl_toconf ];
+    do
+        affinity=0
+        cpu=0;
+        while [ ${cpu} -lt ${NUM_PROCESSOR} ];
+        do
+            echo "Assign wlan_${radio}_m2m's interrupt(tasklet) onto CPU${cpu}(y/n):"
+            read answer
+            if [ $answer == "y" ]; then
+                affinity=$((affinity|(1<<cpu)))
+            fi
+            cpu=$((cpu+1))
+        done
+        echo "Sure to change it?(y/n)"
+        read answer;
+        if [ $answer == "y" ]; then
+            setRadioM2MIntAffinity $radio $affinity;
+        fi
+        radio=$((radio+1))
+    done
+}
+
+save_wifi_pin_cfg() {
+    local to_save=0;
+    local affinity radio proc_name proc_pid prio name;
+
+    for ctl_item in wfd dhd wl
+    do
+        radio=0;
+        while [ $radio -lt $NUM_WL_INTF ];
+        do
+            proc_name=$(process_name $ctl_item $radio);
+            proc_pid=$(getPidByName $proc_name);
+            if [ $proc_pid -gt 0 ]; then
+                to_save=1;
+                affinity=$(getPidAffinityNum $proc_pid);
+                prio=$(getPidPriority $proc_pid);
+                name="wl${radio}_${ctl_item}_affinity"
+                nvram kset $name=$affinity
+                name="wl${radio}_${ctl_item}_prio"
+                nvram kset $name=$prio
+            fi
+            radio=$((radio+1))
+        done
+    done
+
+    # Set WLAN D11 MAC interrupt affinity
+    radio=0;
+    while [ $radio -lt $NUM_WL_INTF ];
+    do
+        name="wl${radio}_interrupt_affinity"
+        affinity=$(getRadioIntAffinity $radio);
+        if [ ! -z $affinity ]; then 
+            to_save=1;
+            nvram kset $name=$affinity;
+        fi
+        radio=$((radio+1))
+    done
+
+    # Set WLAN M2M interrupt affinity
+    radio=0;
+    while [ $radio -lt $NUM_WL_INTF ];
+    do
+        name="wlan_${radio}_m2m_interrupt_affinity"
+        affinity=$(getRadioM2MIntAffinity $radio);
+        if [ ! -z $affinity ]; then 
+            to_save=1;
+            nvram kset $name=$affinity;
+        fi
+        radio=$((radio+1))
+    done
+
+    if [ $to_save -gt 0 ]; then
+        nvram kcommit
+    else
+        echo "!There is nothing to save actually!"
+    fi
+}
+
+unset_wifi_pin_cfg() {
+    local radio name ctl_item;
+
+    for ctl_item in wfd dhd wl
+    do
+        radio=0;
+        while [ $radio -lt $NUM_WL_INTF ];
+        do
+            name="wl${radio}_${ctl_item}_affinity"
+            nvram kunset $name
+            name="wl${radio}_${ctl_item}_prio"
+            nvram kunset $name
+            radio=$((radio+1))
+        done
+    done
+
+    # Unset WLAN D11 MAC interrupt affinity
+    radio=0;
+    while [ $radio -lt $NUM_WL_INTF ];
+    do
+        name="wl${radio}_interrupt_affinity"
+        nvram kunset $name
+        radio=$((radio+1))
+    done
+
+    # Unset WLAN M2M interrupt affinity
+    radio=0;
+    while [ $radio -lt $NUM_WL_INTF ];
+    do
+        name="wlan_${radio}_m2m_interrupt_affinity"
+        nvram kunset $name
+        radio=$((radio+1))
+    done
+
+    nvam kunset wlthread_pinned
+    nvram kcommit
+}
+
+save_config_default() {
+
+    local radio=0;
+    local irq name prio affinity proc_name proc_pid;
+    local KERNEL_NVRAM_FILE="/etc/wlan/kernel_nvram.setting";
+    mount -t ubifs ubi:rootfs_ubifs / -o remount,rw
+    for ctl_item in wfd dhd wl
+    do
+        radio=0;
+        while [ $radio -lt $NUM_WL_INTF ];
+        do
+            proc_name=$(process_name $ctl_item $radio);
+            proc_pid=$(getPidByName $proc_name);
+            if [ $proc_pid -gt 0 ]; then
+                name="wl${radio}_${ctl_item}_affinity"
+                affinity=`nvram kget ${name}`
+                if [ ! -z $affinity ]; then 
+                    echo $name=$affinity >> ${KERNEL_NVRAM_FILE}
+                fi
+                name="wl${radio}_${ctl_item}_prio"
+                prio=`nvram kget ${name}`
+                if [ ! -z $affinity ]; then 
+                    echo $name=$prio >>${KERNEL_NVRAM_FILE}
+                fi
+            fi
+            radio=$((radio+1))
+        done
+    done
+
+    # WLAN D11 MAC Interrupt pinning
+    radio=0;
+    while [ $radio -lt $NUM_WL_INTF ];
+    do
+        name="wl${radio}_interrupt_affinity"
+        affinity=`nvram kget ${name}`
+        if [ ! -z $affinity ]; then 
+            echo $name=$affinity >> ${KERNEL_NVRAM_FILE}
+        fi	
+        radio=$((radio+1))
+    done
+
+    # WLAN M2M Interrupt pinning
+    radio=0;
+    while [ $radio -lt $NUM_WL_INTF ];
+    do
+        name="wlan_${radio}_m2m_interrupt_affinity"
+        affinity=`nvram kget ${name}`
+        if [ ! -z $affinity ]; then 
+            echo $name=$affinity >> ${KERNEL_NVRAM_FILE}
+        fi	
+        radio=$((radio+1))
+    done
+
+    mount -t ubifs ubi:rootfs_ubifs / -o remount,ro
+}
+
+apply_wifi_pin_cfg() {
+
+    local applied=0 radio=0;
+    local irq name prio affinity proc_name proc_pid;
+    for ctl_item in wfd dhd wl
+    do
+        radio=0;
+        while [ $radio -lt $NUM_WL_INTF ];
+        do
+            proc_name=$(process_name $ctl_item $radio);
+            proc_pid=$(getPidByName $proc_name);
+            if [ $proc_pid -gt 0 ]; then
+                name="wl${radio}_${ctl_item}_affinity"
+                affinity=`nvram kget ${name}`
+                if [ ! -z $affinity ]; then 
+                    applied=1;
+                    setProcAffinity  $name $proc_name $proc_pid $affinity
+                fi
+                name="wl${radio}_${ctl_item}_prio"
+                prio=`nvram kget ${name}`
+                if [ ! -z $prio ]; then 
+                    applied=1;
+                    setProcPriority $name $proc_name $proc_pid $prio
+                fi
+            fi
+            radio=$((radio+1))
+        done
+    done
+
+    #apply WLAN D11 MAC interrupt(tasklet) affinity
+    radio=0;
+    while [ $radio -lt $NUM_WL_INTF ];
+    do
+        name="wl${radio}_interrupt_affinity"
+        affinity=`nvram kget ${name}`
+        if [ ! -z $affinity ]; then 
+            applied=1;
+            setRadioIntAffinity $radio $affinity
+        fi	
+        radio=$((radio+1))
+    done
+
+    #apply WLAN M2M interrupt(tasklet) affinity
+    radio=0;
+    while [ $radio -lt $NUM_WL_INTF ];
+    do
+        name="wlan_${radio}_m2m_interrupt_affinity"
+        affinity=`nvram kget ${name}`
+        if [ ! -z $affinity ]; then 
+            applied=1;
+            setRadioM2MIntAffinity $radio $affinity
+        fi	
+        radio=$((radio+1))
+    done
+
+    #echo $applied;
+    if [ ! -z "$1" ]; then
+        eval $1=$applied
+    fi
+}
+
+set_default_affinity_plat1()
+{
+    ps | grep -v "grep" | grep -e "wl.-kthrd" > /dev/null 2>&1
+    [ "$?" == "0" ] || exit 0;
+
+    local tp=0
+    cat /proc/version  | grep "SMP" > /dev/null 2>&1
+    if [ "$?" == "0" ]; then
+        tp=1
+    fi
+
+    if [ $NUM_WL_INTF -ge 2 ]; then
+        wlctl -i wl0 tp_id 0
+        wlctl -i wl1 tp_id $tp
+        if [ $NUM_WL_INTF -eq 3 ]; then
+            wlctl -i wl2 tp_id 0
+        fi
+    elif [ $NUM_WL_INTF -eq 1 ]; then
+        for i in $(seq 0 $((MAX_WLAN_ADAPTER-1)))
+        do
+            intf="wl$i"
+            if [ "x`cat /sys/class/net/$intf/operstate 2>/dev/null`" != "xdown" ]; then
+                wlctl -i $intf tp_id $tp
+                break;
+            fi
+        done
+    fi
+}
+
+set_default_affinity_platFAP()
+{
+    local ctl_item radio affinity
+
+    if [ $NUM_WL_INTF -ge 2 ]; then
+        radio=0
+        while [ $radio -lt $NUM_WL_INTF ];
+        do
+            # /* bind to CPU{x} */
+            affinity=$((1 << (radio%NUM_PROCESSOR)))
+            # echo "affinity=$affinity"
+            for ctl_item in wfd dhd wl
+            do
+                proc_name=$(process_name $ctl_item $radio);
+                proc_pid=$(getPidByName $proc_name);
+                if [ $proc_pid -gt 0 ]; then
+                    setProcAffinity "" $proc_name $proc_pid $affinity
+                fi
+            done
+            radio=$((radio+1))
+        done
+    elif [ $NUM_WL_INTF -eq 1 ]; then
+        radio=0
+        for ctl_item in dhd wl wfd
+        do
+            proc_name=$(process_name $ctl_item $radio);
+            proc_pid=$(getPidByName $proc_name);
+            if [ $proc_pid -gt 0 ]; then
+                if [ "$ctl_item" == "dhd" ]; then
+                    affinity=$((1 << 0)) # bind dhd0_dpc to CPU0
+                elif [ "$ctl_item" == "wl" ]; then
+                    affinity=$((1 << 1)) # bind wl0-kthrd to CPU1
+                fi
+                setProcAffinity "" $proc_name $proc_pid $affinity
+            fi
+        done
+    fi
+}
+
+set_default_affinity_plat3()
+{
+    local ctl_item radio affinity
+
+    radio=0
+    while [ $radio -lt $NUM_WL_INTF ];
+    do
+        # /* bind to CPU{x} */
+        affinity=$((1 << (radio%NUM_PROCESSOR)))
+        # echo "affinity=$affinity"
+        for ctl_item in wfd dhd wl
+        do
+            proc_name=$(process_name $ctl_item $radio);
+            proc_pid=$(getPidByName $proc_name);
+            if [ $proc_pid -gt 0 ]; then
+                setProcAffinity "" $proc_name $proc_pid $affinity
+            fi
+        done
+        radio=$((radio+1))
+    done
+}
+
+set_default_affinity_platArcher63178()
+{
+    local radio affinity
+
+    # /* bind bcm_archer_us to cpu#2 */
+    affinity=$((1 << 2))
+    proc_name=bcm_archer_us
+    proc_pid=$(getPidByName $proc_name);
+    if [ $proc_pid -gt 0 ]; then
+        setProcAffinity "" $proc_name $proc_pid $affinity
+    fi
+
+    # /* bind bcmsw_recycle to cpu#1 */
+    affinity=$((1 << 1))
+    proc_name=bcmsw_recycle
+    proc_pid=$(getPidByName $proc_name);
+    if [ $proc_pid -gt 0 ]; then
+        setProcAffinity "" $proc_name $proc_pid $affinity
+    fi
+
+    # /* bind bcm_archer_wlan to cpu#1 */
+    affinity=$((1 << 1))
+    proc_name=bcm_archer_wlan
+    proc_pid=$(getPidByName $proc_name);
+    if [ $proc_pid -gt 0 ]; then
+        setProcAffinity "" $proc_name $proc_pid $affinity
+    fi
+
+    radio=0
+    while [ $radio -lt $NUM_WL_INTF ];
+    do
+        # /* bind wl/dhd to cpu#1. */
+        affinity=$((1 << 1))
+        #echo "affinity=$affinity"
+        for ctl_item in dhd wl
+        do
+            proc_name=$(process_name $ctl_item $radio);
+            proc_pid=$(getPidByName $proc_name);
+            if [ $proc_pid -gt 0 ]; then
+                setProcAffinity "" $proc_name $proc_pid $affinity
+            fi
+        done
+
+        #Set WLAN D11 MAC interrupt affinity
+        setRadioIntAffinity $radio $affinity;
+
+        #Set WLAN M2M interrupt affinity
+        setRadioM2MIntAffinity $radio $affinity;
+
+        radio=$((radio+1))
+    done
+}
+
+set_default_affinity_platArcher47622()
+{
+    local radio affinity
+
+    # /* bind bcm_archer_us to cpu#3 */
+    affinity=$((1 << 3))
+    proc_name=bcm_archer_us
+    proc_pid=$(getPidByName $proc_name);
+    if [ $proc_pid -gt 0 ]; then
+        setProcAffinity "" $proc_name $proc_pid $affinity
+    fi
+
+    radio=0
+    while [ $radio -lt $NUM_WL_INTF ];
+    do
+        # /* bind to CPU{x} */
+        affinity=$((1 << (radio%NUM_PROCESSOR)))
+        #echo "affinity=$affinity"
+        for ctl_item in dhd wl
+        do
+            proc_name=$(process_name $ctl_item $radio);
+            proc_pid=$(getPidByName $proc_name);
+            if [ $proc_pid -gt 0 ]; then
+                setProcAffinity "" $proc_name $proc_pid $affinity
+            fi
+        done
+
+        #Set WLAN D11 MAC interrupt affinity
+        setRadioIntAffinity $radio $affinity;
+
+        #Set WLAN M2M interrupt affinity
+        setRadioM2MIntAffinity $radio $affinity;
+
+        radio=$((radio+1))
+    done
+
+    # /* bind bcm_archer_wlan to cpu#dhd if exists */
+    proc_name=bcm_archer_wlan
+    proc_pid=$(getPidByName $proc_name);
+    if [ $proc_pid -gt 0 ]; then
+        radio=0
+        hdlr_name=dhdpcie
+        while [ $radio -lt $NUM_WL_INTF ];
+        do
+            affinity=$(getRadioIntAffinity $radio $hdlr_name);
+            if [ ! -z $affinity ]; then 
+                setProcAffinity "" $proc_name $proc_pid $affinity
+                break
+            fi
+            radio=$((radio+1))
+        done
+    fi
+}
+
+set_default_priority()
+{
+    local ctl_item radio priority
+
+    radio=0
+    priority=5
+    while [ $radio -lt $NUM_WL_INTF ];
+    do
+        for ctl_item in wfd wl
+        do
+            proc_name=$(process_name $ctl_item $radio);
+            proc_pid=$(getPidByName $proc_name);
+            if [ $proc_pid -gt 0 ]; then
+                setProcPriority "" $proc_name $proc_pid $priority
+            fi
+        done
+        radio=$((radio+1))
+    done
+}
+
+# configuring with default policy
+pin_wifi_processes_default() {
+    local BCM_MODEL=`cat /proc/device-tree/model`
+
+    if [ -e /usr/sbin/escand ]; then
+        echo "Skip Wlan related processes pinning for EAP"
+        return
+    else
+        echo "Wlan related processes are pinned by default"
+        if [ $NUM_WL_INTF -gt 0 ]; then
+            if [ "$BCM_MODEL" == "Broadcom BCM963381" ]; then  # Low end old platforms (no-fap, no-wfd)
+                set_default_affinity_plat1
+            elif [ "$BCM_MODEL" == "Broadcom BCM963268" ]; then  # FAP based platforms
+                set_default_affinity_platFAP
+            elif [ "$BCM_MODEL" == "Broadcom BCM963178" ]; then  # Archer based platforms with 3 cpu cores.
+                set_default_affinity_platArcher63178
+            elif [ "$BCM_MODEL" == "Broadcom BCM947622" ]; then  # Archer based platforms with 4 cpu cores.
+                set_default_affinity_platArcher47622
+            else  # High-end wfd based platforms
+                set_default_affinity_plat3
+            fi
+            # set priority
+            set_default_priority
+        fi
+    fi
+}
+
+auto_config() {
+    local apply_configed=0
+    echo "Configuring wlan related threads..."
+
+    apply_wifi_pin_cfg apply_configed
+
+    if [ $apply_configed -eq 0 ]; then
+        echo "no thread pin applied"
+        pin_wifi_processes_default
+    else
+        echo "Wlan related processes are pinned by configuration";
+    fi
+}
+
+# Check for arguments.
+# User should give at least one argument to the program.
+if [ $# -lt 1 ]; then
+    echo "Usage: $0 operation  ..."
+    echo "       operation:  show, set, unset, save, apply"
+    echo "       [option]: nvram for show; default for save  "
+    exit 64
+
+fi
+
+# Parse the first argument
+case "$1" in
+    auto)
+        auto_config
+        exit 0
+        ;;
+
+    unset) 
+        unset_wifi_pin_cfg;
+        ;;
+    set)
+        case "$2" in
+            interrupt)
+                pin_wifi_interrupt $3
+                ;;
+            thread)
+                pin_wifi_processes $3
+                ;;
+            *)
+                pin_wifi_interrupt 
+                pin_wifi_processes 
+                ;;
+        esac
+        list_wifi_process
+        ;;
+    save) 
+        case "$2" in
+            asdefault)
+                echo "save config default";
+                save_config_default;
+                ;;
+            *)
+                echo "save config nvram";
+                save_wifi_pin_cfg;
+                ;;
+        esac
+        ;;
+    apply)
+        apply_wifi_pin_cfg;
+        ;;
+    show) 
+        case "$2" in
+            nvram)
+                list_nvram_settings
+                ;;
+            *)
+                list_wifi_process
+                ;;
+        esac 
+        ;;
+    *)
+        echo "unrecognized option [$1]"
+        exit 1
+        ;;
+esac

@@ -1,0 +1,31 @@
+config BCM_SOUND
+	bool "Broadcom 63xx sound support"
+	default n
+	help
+	  Enable ALSA framework for Broadcom 63xx SoCs
+
+config BCM_SOUND_IMPL
+	int "Implementation index for sound driver"
+	depends on BCM_SOUND
+	default 1
+
+config SND_SOC_MAPLELEAF
+	bool "TI TLV320DAC3203 TLV320ADC3101 CODECS"
+	help
+	  Say Y if you want to add support for codecs attached to
+	  the  I2S interface. You will also need
+	  to select the audio interfaces to support it.
+
+config SND_SOC_CS4345
+	bool "Cirrus Logic CS4345 CODEC"
+	help
+	  Say Y if you want to add support for codecs attached to
+	  the  I2S interface. You will also need
+	  to select the audio interfaces to support it.
+
+config SND_SOC_PCM5100
+	bool "Cirrus Logic CS4345 CODEC"
+	help
+	  Say Y if you want to add support for codecs attached to
+	  the  I2S interface. You will also need
+	  to select the audio interfaces to support it.

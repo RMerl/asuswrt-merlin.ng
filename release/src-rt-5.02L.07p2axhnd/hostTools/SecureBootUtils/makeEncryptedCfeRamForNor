@@ -1,0 +1,91 @@
+#!/bin/sh
+
+print_help()
+{
+   echo "error: A minimum of two arguments is required"
+   echo "usage: makeEncryptedCfeRamForNor  <63268 | 63138 | 63148 | 6838 | 63381> <inf> <outf> <btrm_dir>"
+   exit 1
+}
+
+if test $# -lt 4
+then
+	print_help
+        exit -1
+fi
+
+#$1 program                                                                                                                       
+#$2 message
+exit_on_error()                                                                                                            
+{
+        echo "$1 : ERROR $2"                                                                                                      
+        print_help
+        exit -1
+}
+
+check_dir()
+{
+	local DIR=$1
+	[ ! -d $DIR ] && exit_on_error "$DIR is not existing" 
+}
+
+check_file()
+{
+	local FL=$1
+	[ ! -f $FL ] && exit_on_error "$FL is not existing" 
+}
+
+PROGRAM_DIR=${0/`basename $0`/}../
+
+echo "Run in $PROGRAM_DIR of `basename $0` "
+
+CHIP=$1
+IF=$2
+OF=$3
+BTRM=$4
+
+BTRM_DATA=${BTRM}/data
+BTRM_SEC_TOOLS=${BTRM}/tools/bin
+check_dir $PROGRAM_DIR
+check_dir $BTRM_DATA
+check_file $IF
+check_file $BTRM_SEC_TOOLS/dec2bin
+check_file $BTRM_DATA/mfg.ek.bin
+check_file $BTRM_DATA/mfg.iv.bin
+
+[[ _63138_63148_63268_6838_63381_ != *_${CHIP}_* ]] && exit_on_error $0 "${1} not supported"
+
+# create an compressed, encrypted, signed version of the cfe ram
+
+FSZ=`wc -c ${IF} | cut -d " " -f1`
+
+if [[ _63138_63148_ != *_${CHIP}_* ]]
+then
+	echo $FSZ | $BTRM_SEC_TOOLS/dec2bin arm
+else
+	echo $FSZ | $BTRM_SEC_TOOLS/dec2bin mips
+fi
+
+cat ./size.tmp | head --bytes=4 | cat - ${IF} > ${OF}.unenc
+
+# Retrieve the customer encryption key and initialization vector 
+bek=`od -Ax -tx1 < ${BTRM_DATA}/mfg.ek.bin | cut -d " " -f2-17 | sed "s/ //g" | head --bytes=32`
+biv=`od -Ax -tx1 < ${BTRM_DATA}/mfg.iv.bin | cut -d " " -f2-17 | sed "s/ //g" | head --bytes=32`
+
+# Encrypt the compressed CFE RAM
+openssl enc -aes-128-cbc -K $bek -iv $biv -in ${IF}.unenc -out ${OF}.enc
+
+[ ! $?  -eq 0 ] && exit_on_error "Encryption "   
+
+# Paranoid verification
+#openssl enc -d -aes-128-cbc -K $bek -iv $biv -in ${ram_infile}.enc -out ${ram_outfile}.dec
+#cmp ${ram_infile}.dec  ${ram_infile}
+#[ ! $?  -eq 0 ] && exit_on_error "Files don't match"   
+
+cp -vf ${IF}.enc ${OF}
+encfilesize=`wc -c ${OF} | cut -d " " -f1`
+echo "Encrypted file is $encfilesize bytes"
+
+# Cleanup
+rm -f ./size.tmp ${ram_infile}.unenc ${ram_infile}.enc
+
+exit 0

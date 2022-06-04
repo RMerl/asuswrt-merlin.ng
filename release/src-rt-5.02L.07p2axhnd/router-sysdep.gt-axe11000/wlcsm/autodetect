@@ -1,0 +1,4 @@
+
+condition: ifneq ($(strip $(WIRELESS)),)
+makeflags: all 
+

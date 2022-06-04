@@ -1,0 +1,101 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+use bytes;
+use Getopt::Long;
+use File::Find;
+use Digest::CRC;
+use File::Temp qw[ tempfile ];
+use File::Basename;
+use Data::Dumper;
+
+my $output = "blob.bin";
+my @files;
+my %extra;
+
+GetOptions( "output=s", \$output, "extra=s", \%extra ) or die("bad option");
+print Dumper((%extra)); 
+
+open( FO, ">", $output );
+
+if (@ARGV) {
+
+    # generate list of paths
+    find(
+        sub {
+            if ( -f $_ ) {
+                push @files, $File::Find::name;
+            }
+        },
+        @ARGV
+    );
+
+    foreach my $file (@files) {
+        my (
+            $dev,  $ino,   $mode,  $nlink, $uid,     $gid, $rdev,
+            $size, $atime, $mtime, $ctime, $blksize, $blocks
+        ) = stat($file);
+        my $content;
+        open( F, "<", $file );
+        {
+            local $/;
+            $content = <F>;
+        }
+        die("content and size dont match") if ( $size != ( length($content) ) );
+        close(F);
+        my $fname = basename($file);
+        my $row = pack_row( $fname, $content );
+        print FO $row;
+    }
+}
+foreach my $key (keys %extra) {
+  print FO pack_row( $key, $extra{$key} );
+}
+print FO pack_row();
+
+print "------\n";
+print Dumper(@files);
+
+sub pack_row {
+    my $fname   = shift;
+    my $content = shift;
+    my $row;
+    if ($fname) {
+        my $flen   = ( length($fname) + 1 );
+        my $size   = length($content);
+        my $totlen = ( 16 + $flen + $size + 4 + 7 ) & ( ~7 );
+        $row = pack( '(LLL)>', $totlen - 4, $flen + 8, $size );
+        my $ctx = new Digest::CRC(
+            width  => 32,
+            poly   => 0x04c11db7,
+            init   => 0xffffffff,
+            xorout => 0,
+            refin  => 1,
+            refout => 1
+        );
+        $ctx->add($row);
+
+        my $crc = $ctx->digest;
+        $row .= pack( 'L>', $crc );
+        $row .= substr( $fname . "\0" x 8, 0, $flen );    # padded filename
+        $row .= substr( $content,          0, $size );    # data
+        $ctx = new Digest::CRC(
+            width  => 32,
+            poly   => 0x04c11db7,
+            init   => 0xffffffff,
+            xorout => 0,
+            refin  => 1,
+            refout => 1
+        );
+        $ctx->add( substr( $row, 16 ) );
+        $crc = $ctx->digest;
+        $row .= pack( 'L>', $crc );
+        $row .= "\0" x 8;
+        substr( $row, $totlen ) = '';
+    }
+    else {
+        $row = pack( 'LLLL', 0, 0, 0, 0 );
+    }
+    return $row;
+}

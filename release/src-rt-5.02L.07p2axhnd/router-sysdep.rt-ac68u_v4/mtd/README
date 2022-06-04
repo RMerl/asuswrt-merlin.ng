@@ -1,0 +1,12 @@
+GIT_REPO=git://git.infradead.org/mtd-utils.git
+BRANCH: origin/master
+LATEST COMMIT: commit 43369d456c4d7d7ec4625269c2ba838363e8af7b
+
+Steps followed to create mtd-utils-2.0.2+43369d4.tar.bz2 
+git clone $(GIT_REPO) -b origin/master
+cd mtd-utils
+git reset --hard 43369d456c4d7d7ec4625269c2ba838363e8af7b
+./autogen.sh
+./configure --enable-test --enable-unit-test
+make dist-bzip2 # this creates the bz2 file
+

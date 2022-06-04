@@ -1,0 +1,18 @@
+#!/bin/sh
+
+vid="$1"
+flags="$2"
+
+cd /proc
+echo "05 62 02:" "$vid" > switch
+
+if [ "$#" -gt 1 ]; then
+  echo "05 64 04:" "$flags" > switch
+  echo "05 60 01:80" > switch
+else
+  echo "05 60 01:81" > switch
+fi
+
+sleep 1
+echo "05 64 04" > switch
+echo "$vid: flags -> `cat switch`"

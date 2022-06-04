@@ -1,0 +1,15 @@
+#include "947622.dts"
+
+&i2c {
+				#address-cells = <1>;
+				#size-cells = <0>;
+				codec_playback:codec_palyback@18{
+				compatible = "ti,tlv320dac3203";
+				reg = <0x18>;
+				};
+				codec_capture:codec_capture@19{
+				compatible = "ti,tlv320adc3101";
+				reg = <0x19>;
+				};
+
+};

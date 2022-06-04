@@ -1,0 +1,121 @@
+* Broadcom 963XX PCIe host controller for ARM/ARM64 based SoC's
+
+Properties of the host controller node:
+
+- compatible         : Must be "brcm,bcm963xx-pcie"
+
+- device_type        : Must be "pci".
+
+- bus-range          : Optional property (also described in IEEE Std 1275-1994)
+                       to indicate the range of bus numbers for this controller.
+                       If absent, defaults to <0 255> (i.e. all buses).
+
+- #address-cells     : Must be 3.
+
+- #size-cells        : Must be 2.
+
+- #interrupt-cells   : Must be 1
+
+- reg                : The PCIe core register base and size
+
+- ranges             : ranges for the PCI memory regions (I/O space region is not supported by hardware)
+                       <flags:1> <pci addr:2> <cpu addr:2> <size:2>
+                       Please refer to the standard PCI bus binding document for a more detailed explanation
+
+- interrupt-names    : Set to "intr" to use PCIe core interrupts
+                     : Add "msi" to use in-band (MSI) interrupts
+
+- interrupts         : Must be set to use in-band (MSI) interrupts.
+                       In-band interrupt number is same as out-band interrupt number
+                       Also need to enable MSI in the build profile
+
+- interrupt-map      : <see aforementioned specification>
+
+- interrupt-map-mask : <see aforementioned specification>
+
+- linux,pci-domain   : <see aforementioned specification>
+
+
+Broadcom 963xx specific properties
+
+- brcm,coreid        : Must be set to PCIe core id as defined in the SoC
+
+- brcm,ssc           : Optional property. Spread Spectrum Clock feature (non-zero: Enable)
+                       Default disabled.
+
+- brcm,speed         : Optional property. To force PCIe speed (0: auto (set by SoC), 1: 2.5Gbps, 2: 5Gbps)
+                       Default as set by SoC
+
+- brcm,apon          : Optional property. To force PCIe core powered on even if there is no link found (0: power down on no link, 1: Keep powered ON)
+                       Default disabled
+
+- brcm,phypwrmode    : Optional property. To operate PCIe PHY at different power levels (0: Full Power, 1: Reduced Power)
+                       Default "Full Power"
+
+How to enable device tree entries for PCIe driver
+- Remove the static interrupt mapping for INTERRUPT_ID_PCIE<X> in shared/opensource/include/bcm963xx/<SoC>_intr.h
+- Add device tree entry to kernel/dts/<SoC>.dts file. Below is an example for 6836 SoC
+  For other SoC's please check SoC specification and update the core register base and size, memory window base and size, and Interrupt number if needed 
+
+	pcie0: pcie@80040000 {
+		compatible = "brcm,bcm963xx-pcie";
+		device_type = "pci";
+		status = "okay";
+
+		reg = <0 0x80040000 0 0x0000A000>;
+
+		#address-cells = <3>;
+		#size-cells = <2>;
+		ranges = <0x02000000 0 0x90000000 0 0x90000000 0 0x10000000>;
+
+		interrupt-names = "intr";
+		interrupts = <0 60 0x4>;   /* core error log interrupts */
+
+		#interrupt-cells = <1>;
+		interrupt-map-mask = <0 0 0 0>;
+		interrupt-map = <0 0 0 0 &gic GIC_SPI 60 IRQ_TYPE_LEVEL_HIGH>;
+		linux,pci-domain = <0>;
+		brcm,coreid = <0>;
+	};
+
+	pcie1: pcie@80050000 {
+		compatible = "brcm,bcm963xx-pcie";
+		device_type = "pci";
+		status = "okay";
+
+		reg = <0 0x80050000 0 0x0000A000>;
+
+		#address-cells = <3>;
+		#size-cells = <2>;
+		ranges = <0x02000000 0 0xA0000000 0 0xA0000000 0 0x10000000>;
+
+		interrupt-names = "intr";
+		interrupts = <0 61 0x4>;
+
+		#interrupt-cells = <1>;
+		interrupt-map-mask = <0 0 0 0>;
+		interrupt-map = <0 0 0 0 &gic GIC_SPI 61 IRQ_TYPE_LEVEL_HIGH>;
+		linux,pci-domain = <1>;
+		brcm,coreid = <1>;
+	};
+
+	pcie2: pcie@80060000 {
+		compatible = "brcm,bcm963xx-pcie";
+		device_type = "pci";
+		status = "okay";
+
+		reg = <0 0x80060000 0 0x0000A000>;
+
+		#address-cells = <3>;
+		#size-cells = <2>;
+		ranges = <0x02000000 0 0xB0000000 0 0xB0000000 0 0x10000000>;
+
+		interrupt-names = "intr", "msi";
+		interrupts = <0 62 0x4>; /* msi and core error log interrupts */
+
+		#interrupt-cells = <1>;
+		interrupt-map-mask = <0 0 0 0>;
+		interrupt-map = <0 0 0 0 &gic GIC_SPI 62 IRQ_TYPE_LEVEL_HIGH>;
+		linux,pci-domain = <2>;
+		brcm,coreid = <2>;
+	};

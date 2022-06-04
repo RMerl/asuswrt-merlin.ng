@@ -1,0 +1,32 @@
+/*
+ * Broadcom BCM63148 Reference Board DTS
+ */
+
+#include <dt-bindings/soc/bcm963xx_dt_bindings.h> 
+
+/ {
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	/* disable system default cma */
+	chosen {
+		bootargs = "console=ttyS0,115200 debug irqaffinity=0 rootwait";
+	};
+
+	memory {
+		device_type = "memory";
+		reg = <DRAM_BASE DRAM_DEF_SIZE>;
+	};
+
+#if (CONFIG_BCM_CHIP_NUMBERs==63138) || (CONFIG_BCM_CHIP_NUMBERs==63148)
+	rng: rng@fffe8300 {
+		compatible = "brcm,iproc-rng200";
+		reg = <0xfffe8300 0x28>;
+	};
+#else
+	rng: rng@ff800b80 {
+		compatible = "brcm,iproc-rng200";
+		reg = <0xff800b80 0x28>;
+	};
+#endif 
+};

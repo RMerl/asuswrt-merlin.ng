@@ -1,0 +1,547 @@
+Only in bridge-utils-1.5: autom4te.cache
+diff -ur bridge-utils-1.5.ori/brctl/brctl.c bridge-utils-1.5/brctl/brctl.c
+--- bridge-utils-1.5.ori/brctl/brctl.c	2011-03-29 02:52:54.000000000 +0200
++++ bridge-utils-1.5/brctl/brctl.c	2019-03-20 10:41:50.247468972 +0200
+@@ -70,7 +70,8 @@
+ 	argv += optind;
+ 	if ((cmd = command_lookup(*argv)) == NULL) {
+ 		fprintf(stderr, "never heard of command [%s]\n", argv[1]);
+-		goto help;
++		/* brcm goto help; */
++		return 1;
+ 	}
+ 	
+ 	if (argc < cmd->nargs + 1) {
+diff -ur bridge-utils-1.5.ori/brctl/brctl_cmd.c bridge-utils-1.5/brctl/brctl_cmd.c
+--- bridge-utils-1.5.ori/brctl/brctl_cmd.c	2011-03-29 02:52:54.000000000 +0200
++++ bridge-utils-1.5/brctl/brctl_cmd.c	2019-03-20 10:41:50.247468972 +0200
+@@ -24,6 +24,13 @@
+ #include <asm/param.h>
+ #include "libbridge.h"
+ #include "brctl.h"
++#include <sys/ioctl.h>
++#include <unistd.h>
++#include <linux/sockios.h>
++#include <linux/netlink.h>
++#include <linux/neighbour.h>
++#include <linux/rtnetlink.h>
++#include <linux/version.h>
+ 
+ static int strtotimeval(struct timeval *tv, const char *time)
+ {
+@@ -280,6 +287,281 @@
+ 	return err != 0;
+ }
+ 
++// brcm begin
++static int dump_port_mac_limits(const char *br, const char *p,  void *arg)
++{
++	int err;
++	int maxfdb;
++	int minfdb;
++	int usedfdb;
++
++	err = br_get_port_fdb_limits(p, &maxfdb, &minfdb, &usedfdb);
++	if ( err == 0 )
++	{
++		printf("interface    max         min        used\n");
++		printf("%-12s %-11d% -11d %d\n", p, maxfdb, minfdb, usedfdb);
++	}
++	return err;
++}
++
++static int br_cmd_show_mac_lmt(int argc, char *const* argv)
++{
++	const char *brname = argv[1];
++	int         err;
++	int         maxfdb;
++	int         usedfdb;
++
++	err = br_get_fdb_limits(brname, &maxfdb, &usedfdb);
++	if ( err == 0 )
++	{
++		printf("bridge       max         used\n");
++		printf("%-12s %-11d %d\n", brname, maxfdb, usedfdb);
++		err = br_foreach_port(brname, dump_port_mac_limits, NULL);
++	}
++	return err != 0;
++}
++
++static int br_cmd_local_switch_disable(int argc, char *const* argv)
++{
++	int disable, err;
++
++	if (!strcmp(argv[2], "on") || !strcmp(argv[2], "yes") 
++	    || !strcmp(argv[2], "1"))
++		disable = 1;
++	else if (!strcmp(argv[2], "off") || !strcmp(argv[2], "no") 
++		 || !strcmp(argv[2], "0"))
++		disable = 0;
++	else {
++		fprintf(stderr, "expect on/off for argument\n");
++		return 1;
++	}
++
++	err = br_set_local_switching_disable(argv[1], disable);
++	if (err)
++		fprintf(stderr, "set local switch disable status failed: %s\n", 
++			strerror(errno));
++	return err != 0;
++}
++
++#define SYSFS_PATH_MAX        256
++
++static int get_ifindex_from_name(const char *ifname)
++{
++   char           sfspath[SYSFS_PATH_MAX];
++   int            rt;
++   FILE          *fp;
++   int            ifindex = 0; 
++
++   snprintf(sfspath, SYSFS_PATH_MAX, "/sys/class/net/%s/ifindex", ifname);
++   fp = fopen(sfspath, "r");
++   if (fp != NULL)
++   {
++      rt = fscanf(fp, "%i", &ifindex);
++      fclose(fp);
++      if (rt == 1)
++      {
++         return ifindex;
++      }
++   }
++   return 0;
++}
++
++int ll_addr_a2n(char *lladdr, int len, const char *arg)
++{
++    int i;
++
++	for (i=0; i<len; i++) {
++		int temp;
++		char *cp = strchr(arg, ':');
++		if (cp) {
++			*cp = 0;
++			cp++;
++		}
++		if (sscanf(arg, "%x", &temp) != 1) {
++			fprintf(stderr, "\"%s\" is invalid lladdr.\n", arg);
++			return -1;
++		}
++		if (temp < 0 || temp > 255) {
++			fprintf(stderr, "\"%s\" is invalid lladdr.\n", arg);
++			return -1;
++		}
++		lladdr[i] = temp;
++		if (!cp)
++			break;
++		arg = cp;
++	}
++	return i+1;
++}
++
++static int br_cmd_addmacs(int argc, char *const* argv)
++{
++	const char *brname;
++	const char *ifname;
++    const char *macaddr;
++    struct nlmsghdr   *nlh;
++    struct ndmsg      *ndm;
++    struct rtattr     *rta;
++    char               buf[NLMSG_HDRLEN + NLMSG_ALIGN(sizeof(*ndm)) + 
++                          RTA_ALIGN(sizeof(*rta)) + RTA_ALIGN(ETH_ALEN)];
++    int                fd;
++    char               llabuf[20];
++    int                err;
++
++	brname = *++argv;
++    (void) brname;
++	ifname = *++argv;
++    macaddr = *++argv;
++
++#if LINUX_VERSION_CODE > KERNEL_VERSION(3,8,0)
++
++    memset(&buf[0], 0, sizeof(buf));
++    nlh = (struct nlmsghdr *)&buf[0];
++    nlh->nlmsg_len = sizeof(buf);
++    nlh->nlmsg_flags = NLM_F_REQUEST|NLM_F_CREATE|NLM_F_REPLACE; /* create or replace */
++    nlh->nlmsg_type = RTM_NEWNEIGH;
++    nlh->nlmsg_seq = 0;
++
++    ndm = (struct ndmsg *)NLMSG_DATA(nlh);
++    ndm->ndm_ifindex = get_ifindex_from_name(ifname);
++    if ( 0 == ndm->ndm_ifindex )
++    {
++        printf("get index from name returns error\n");
++        return -1;
++    }
++    ndm->ndm_family = PF_BRIDGE;
++    ndm->ndm_flags  = NTF_MASTER;
++    // add static FDB entry
++    ndm->ndm_state = NUD_NOARP;
++
++    rta = (struct rtattr *)(NLMSG_DATA(nlh) + NLMSG_ALIGN(sizeof(*ndm)));
++    rta->rta_type = NDA_LLADDR;
++    rta->rta_len = RTA_LENGTH(ETH_ALEN);
++    err = ll_addr_a2n(llabuf, sizeof(llabuf), macaddr);
++    if (err < 0)
++        printf("err in mac addr conversion\n");
++    memcpy(RTA_DATA(rta), llabuf, ETH_ALEN);
++
++    fd = socket(AF_NETLINK, SOCK_RAW | SOCK_CLOEXEC, NETLINK_ROUTE);
++    if (fd < 0)
++    {
++        printf("Cannot open netlink socket\n");
++        return -1;
++    }
++    else
++    {
++        int status;
++        struct sockaddr_nl nladdr;
++        struct iovec iov = {
++            .iov_base = (void*)nlh,
++            .iov_len = nlh->nlmsg_len
++        };
++        struct msghdr msg = {
++            .msg_name = &nladdr,
++            .msg_namelen = sizeof(nladdr),
++            .msg_iov = &iov,
++            .msg_iovlen = 1,
++        };
++
++        memset(&nladdr, 0, sizeof(nladdr));
++        nladdr.nl_family = AF_NETLINK;
++
++        status = sendmsg(fd, &msg, 0);
++        if (status < 0)
++        {
++            printf("Cannot talk to rtnetlink");
++        }
++        close(fd);
++    }
++#else /* LINUX_VERSION_CODE */
++    printf ("requested API not supported in kernel version\n");
++#endif /* LINUX_VERSION_CODE */
++
++	return 0;
++}
++
++static int br_cmd_delmacs(int argc, char *const* argv)
++{
++	const char *brname;
++	const char *ifname;
++    const char *macaddr;
++ #if LINUX_VERSION_CODE > KERNEL_VERSION(3,8,0)
++    struct nlmsghdr   *nlh;
++    struct ndmsg      *ndm;
++    struct rtattr     *rta;
++    char               buf[NLMSG_HDRLEN + NLMSG_ALIGN(sizeof(*ndm)) + 
++                          RTA_ALIGN(sizeof(*rta)) + RTA_ALIGN(ETH_ALEN)];
++    int                fd;
++    char               llabuf[20];
++    int                err;
++
++	brname = *++argv;
++    (void) brname;
++	ifname = *++argv;
++    macaddr = *++argv;
++
++    memset(&buf[0], 0, sizeof(buf));
++    nlh = (struct nlmsghdr *)&buf[0];
++    nlh->nlmsg_len = sizeof(buf);
++    nlh->nlmsg_flags = NLM_F_REQUEST|NLM_F_CREATE|NLM_F_REPLACE; /* create or replace */
++    nlh->nlmsg_type = RTM_DELNEIGH;
++    nlh->nlmsg_seq = 0;
++
++    ndm = (struct ndmsg *)NLMSG_DATA(nlh);
++    ndm->ndm_ifindex = get_ifindex_from_name(ifname);
++    if ( 0 == ndm->ndm_ifindex )
++    {
++        return -1;
++    }
++    ndm->ndm_family = PF_BRIDGE;
++    ndm->ndm_flags  = NTF_MASTER;
++
++    rta = (struct rtattr *)(NLMSG_DATA(nlh) + NLMSG_ALIGN(sizeof(*ndm)));
++    rta->rta_type = NDA_LLADDR;
++    rta->rta_len = RTA_LENGTH(ETH_ALEN);
++    err = ll_addr_a2n(llabuf, sizeof(llabuf), macaddr);
++    if (err < 0)
++        printf("err in mac addr conversion\n");
++    memcpy(RTA_DATA(rta), llabuf, ETH_ALEN);
++
++    fd = socket(AF_NETLINK, SOCK_RAW | SOCK_CLOEXEC, NETLINK_ROUTE);
++    if (fd < 0)
++    {
++        printf("Cannot open netlink socket\n");
++        return -1;
++    }
++    else
++    {
++        int status;
++        struct sockaddr_nl nladdr;
++        struct iovec iov = {
++            .iov_base = (void*)nlh,
++            .iov_len = nlh->nlmsg_len
++        };
++        struct msghdr msg = {
++            .msg_name = &nladdr,
++            .msg_namelen = sizeof(nladdr),
++            .msg_iov = &iov,
++            .msg_iovlen = 1,
++        };
++
++        memset(&nladdr, 0, sizeof(nladdr));
++        nladdr.nl_family = AF_NETLINK;
++
++        status = sendmsg(fd, &msg, 0);
++        if (status < 0)
++        {
++            printf("Cannot talk to rtnetlink");
++        }
++        close(fd);
++    }
++#else
++    printf("requested API not supported in kernel version\n");
++#endif /* LINUX_VERSION_CODE */
++
++    return 0;
++}
++// brcm end
++
+ static int br_cmd_stp(int argc, char *const* argv)
+ {
+ 	int stp, err;
+@@ -387,11 +669,17 @@
+ 	}
+ 
+ 	qsort(fdb, offset, sizeof(struct fdb_entry), compare_fdbs);
+-
++#if defined(CONFIG_BCM_VLAN_AGGREGATION)
++	printf("port no\tvid\tmac addr\t\tis local?\tageing timer\n");
++#else
+ 	printf("port no\tmac addr\t\tis local?\tageing timer\n");
++#endif
+ 	for (i = 0; i < offset; i++) {
+ 		const struct fdb_entry *f = fdb + i;
+ 		printf("%3i\t", f->port_no);
++#if defined(CONFIG_BCM_VLAN_AGGREGATION)
++		printf("%4i\t", f->vid);
++#endif
+ 		printf("%.2x:%.2x:%.2x:%.2x:%.2x:%.2x\t",
+ 		       f->mac_addr[0], f->mac_addr[1], f->mac_addr[2],
+ 		       f->mac_addr[3], f->mac_addr[4], f->mac_addr[5]);
+@@ -469,6 +757,16 @@
+ 	  "<bridge>\t\tshow bridge stp info"},
+ 	{ 2, "stp", br_cmd_stp,
+ 	  "<bridge> {on|off}\tturn stp on/off" },
++// brcm begin
++	{ 1, "showmaclmt", br_cmd_show_mac_lmt, 
++	  "<bridge>\t\tshow a mac limit of bridge"},
++	{ 2, "localswitchingdisable", br_cmd_local_switch_disable, 
++	  "<bridge> {on|off}\t\tLocal switching disable on bridge on/off"},
++	{ 3, "addmacs", br_cmd_addmacs, 
++	  "<bridge> <ifname> <mac>\t\tadd mac addresses to the bridge table"},
++	{ 3, "delmacs", br_cmd_delmacs, 
++	  "<bridge> <ifname> <mac>\t\tremove mac addresses from the bridge table"}
++// brcm end
+ };
+ 
+ const struct command *command_lookup(const char *cmd)
+diff -ur bridge-utils-1.5.ori/brctl/Makefile.in bridge-utils-1.5/brctl/Makefile.in
+--- bridge-utils-1.5.ori/brctl/Makefile.in	2011-03-29 02:52:54.000000000 +0200
++++ bridge-utils-1.5/brctl/Makefile.in	2019-03-20 10:41:50.247468972 +0200
+@@ -1,10 +1,12 @@
+ 
+ KERNEL_HEADERS=-I@KERNEL_HEADERS@
+ 
++srcdir=@srcdir@
++
+ CC=@CC@
+ CFLAGS= -Wall @CFLAGS@
+ LDFLAGS=@LDFLAGS@
+-INCLUDE=-I../libbridge $(KERNEL_HEADERS) 
++INCLUDE=-I$(srcdir)/../libbridge -I../libbridge $(KERNEL_HEADERS) 
+ LIBS= -L ../libbridge -lbridge @LIBS@
+ 
+ prefix=@prefix@
+@@ -36,7 +38,7 @@
+ brctl:	$(brctl_OBJECTS) ../libbridge/libbridge.a
+ 	$(CC) $(LDFLAGS) $(brctl_OBJECTS) $(LIBS) -o brctl
+ 
+-%.o: %.c brctl.h
++%.o: $(srcdir)/%.c $(srcdir)/brctl.h
+ 	$(CC) $(CFLAGS) $(INCLUDE) -c $< 
+ 
+ clean:
+Only in bridge-utils-1.5: configure
+diff -ur bridge-utils-1.5.ori/configure.in bridge-utils-1.5/configure.in
+--- bridge-utils-1.5.ori/configure.in	2011-03-29 02:52:54.000000000 +0200
++++ bridge-utils-1.5/configure.in	2019-03-20 10:41:50.247468972 +0200
+@@ -15,7 +15,6 @@
+ AC_CHECK_HEADERS(sys/ioctl.h sys/time.h)
+ 
+ dnl Checks for typedefs, structures, and compiler characteristics.
+-AC_C_CONST
+ AC_HEADER_TIME
+ 
+ dnl Checks for library functions.
+diff -ur bridge-utils-1.5.ori/doc/Makefile.in bridge-utils-1.5/doc/Makefile.in
+--- bridge-utils-1.5.ori/doc/Makefile.in	2011-03-29 02:52:54.000000000 +0200
++++ bridge-utils-1.5/doc/Makefile.in	2019-03-20 10:41:50.247468972 +0200
+@@ -17,5 +17,5 @@
+ clean:
+ 
+ install:
+-	mkdir -p $(DESTDIR)$(mandir)/man8
+-	$(INSTALL) -m 644 brctl.8 $(DESTDIR)$(mandir)/man8
++#	mkdir -p $(DESTDIR)$(mandir)/man8
++#	$(INSTALL) -m 644 brctl.8 $(DESTDIR)$(mandir)/man8
+diff -ur bridge-utils-1.5.ori/libbridge/libbridge_devif.c bridge-utils-1.5/libbridge/libbridge_devif.c
+--- bridge-utils-1.5.ori/libbridge/libbridge_devif.c	2011-03-29 02:52:54.000000000 +0200
++++ bridge-utils-1.5/libbridge/libbridge_devif.c	2019-03-20 10:41:50.247468972 +0200
+@@ -288,7 +288,7 @@
+ 	char path[SYSFS_PATH_MAX];
+ 	FILE *f;
+ 
+-	snprintf(path, SYSFS_PATH_MAX, SYSFS_CLASS_NET "%s/%s", bridge, name);
++	snprintf(path, SYSFS_PATH_MAX, SYSFS_CLASS_NET "%s/bridge/%s", bridge, name);
+ 
+ 	f = fopen(path, "w");
+ 	if (f) {
+@@ -342,6 +342,11 @@
+ 		      BRCTL_SET_BRIDGE_PRIORITY);
+ }
+ 
++int br_set_local_switching_disable(const char *br, int disable_state)
++{
++	return br_set(br, "local_switching_disable", disable_state, BRCTL_GET_VERSION);
++}
++
+ static int port_set(const char *bridge, const char *ifname, 
+ 		    const char *name, unsigned long value, 
+ 		    unsigned long oldcode)
+@@ -395,6 +400,9 @@
+ 	ent->port_no = f->port_no;
+ 	ent->is_local = f->is_local;
+ 	__jiffies_to_tv(&ent->ageing_timer_value, f->ageing_timer_value);
++#if defined(CONFIG_BCM_VLAN_AGGREGATION)
++	ent->vid = f->vid;
++#endif
+ }
+ 
+ int br_read_fdb(const char *bridge, struct fdb_entry *fdbs, 
+@@ -438,3 +446,37 @@
+ 
+ 	return n;
+ }
++
++int br_get_fdb_limits(const char *brname, int *maxfdb, int *usedfdb )
++{
++	DIR *d;
++	char path[SYSFS_PATH_MAX];
++
++	snprintf(path, SYSFS_PATH_MAX, SYSFS_CLASS_NET "%s/bridge", brname);
++	d = opendir(path);
++	if (!d)
++	{
++		return -1;
++	}
++	*maxfdb = fetch_int(path, "max_fdb_entries");
++	*usedfdb = fetch_int(path, "used_fdb_entries");
++	return 0;
++}
++
++int br_get_port_fdb_limits(const char *portname, int *maxfdb, int *minfdb, int *usedfdb )
++{
++	DIR *d;
++	char path[SYSFS_PATH_MAX];
++
++	snprintf(path, SYSFS_PATH_MAX, SYSFS_CLASS_NET "%s/brport", portname);
++	d = opendir(path);
++	if (!d)
++	{
++		return -1;
++	}
++	*maxfdb = fetch_int(path, "max_fdb_entries");
++	*minfdb = fetch_int(path, "min_fdb_entries");
++	*usedfdb = fetch_int(path, "used_fdb_entries");
++	return 0;
++}
++
+diff -ur bridge-utils-1.5.ori/libbridge/libbridge.h bridge-utils-1.5/libbridge/libbridge.h
+--- bridge-utils-1.5.ori/libbridge/libbridge.h	2011-03-29 02:52:54.000000000 +0200
++++ bridge-utils-1.5/libbridge/libbridge.h	2019-03-20 10:41:50.247468972 +0200
+@@ -21,7 +21,7 @@
+ 
+ #include <sys/socket.h>
+ #include <linux/if.h>
+-#include <linux/if_bridge.h>
++#include <bcm_local_kernel_include/linux/if_bridge.h>
+ 
+ /* defined in net/if.h but that conflicts with linux/if.h... */
+ extern unsigned int if_nametoindex (const char *__ifname);
+@@ -62,6 +62,9 @@
+ 	u_int16_t port_no;
+ 	unsigned char is_local;
+ 	struct timeval ageing_timer_value;
++#if defined(CONFIG_BCM_VLAN_AGGREGATION)
++	u_int16_t vid;  
++#endif
+ };
+ 
+ struct port_info
+@@ -116,4 +119,13 @@
+ 		       unsigned long skip, int num);
+ extern int br_set_hairpin_mode(const char *bridge, const char *dev,
+ 			       int hairpin_mode);
++// brcm begin
++int br_get_fdb_limits(const char *brname, int *maxfdb, int *usedfdb );
++int br_get_port_fdb_limits(const char *portname, int *maxfdb, int *minfdb, int *usedfdb );
++
++extern int br_block_stp(const char *bridge, const char *ifName);
++extern int br_mark_dedicated_stp_port(const char *bridge, 
++                                      const char *ifName, int setting);
++extern int br_set_local_switching_disable(const char *br, int disable_state);
++// brcm end
+ #endif
+diff -ur bridge-utils-1.5.ori/libbridge/Makefile.in bridge-utils-1.5/libbridge/Makefile.in
+--- bridge-utils-1.5.ori/libbridge/Makefile.in	2011-03-29 02:52:54.000000000 +0200
++++ bridge-utils-1.5/libbridge/Makefile.in	2019-03-20 10:41:50.247468972 +0200
+@@ -1,11 +1,12 @@
+ 
+ KERNEL_HEADERS=-I@KERNEL_HEADERS@
++srcdir=@srcdir@
+ 
+ AR=ar
+ RANLIB=@RANLIB@
+ 
+ CC=@CC@
+-CFLAGS = -Wall -g $(KERNEL_HEADERS)
++CFLAGS = -Wall -g $(KERNEL_HEADERS) @CFLAGS@ -I.
+ 
+ prefix=@prefix@
+ exec_prefix=@exec_prefix@
+@@ -33,9 +34,9 @@
+ 	$(AR) rcs $@ $(libbridge_OBJECTS)
+ 	$(RANLIB) $@
+ 
+-%.o: %.c libbridge.h libbridge_private.h
++%.o: $(srcdir)/%.c $(srcdir)/libbridge.h $(srcdir)/libbridge_private.h
+ 	$(CC) $(CFLAGS) $(INCLUDE) -c $<
+ 
+-libbridge_compat.o:	libbridge_compat.c if_index.c
++libbridge_compat.o:	$(srcdir)/libbridge_compat.c $(srcdir)/if_index.c
+ 	$(CC) $(CFLAGS) -c libbridge_compat.c
+ 
+diff -ur bridge-utils-1.5.ori/libbridge/libbridge_private.h bridge-utils-1.5/libbridge/libbridge_private.h
+--- bridge-utils-1.5.ori/libbridge/libbridge_private.h	2011-03-29 02:52:54.000000000 +0200
++++ bridge-utils-1.5/libbridge/libbridge_private.h	2019-03-20 10:42:57.518470666 +0200
+@@ -24,7 +24,7 @@
+ #include <linux/sockios.h>
+ #include <sys/time.h>
+ #include <sys/ioctl.h>
+-#include <linux/if_bridge.h>
++#include <bcm_local_kernel_include/linux/if_bridge.h>
+ 
+ #define MAX_BRIDGES	1024
+ #define MAX_PORTS	1024

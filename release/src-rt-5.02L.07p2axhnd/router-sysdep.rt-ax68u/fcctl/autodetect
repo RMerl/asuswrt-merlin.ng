@@ -1,0 +1,5 @@
+
+dependson: private/libs/fcctl
+condition: ifneq ($(strip $(BUILD_FCCTL)),)
+makeflags: $(BUILD_FCCTL)
+

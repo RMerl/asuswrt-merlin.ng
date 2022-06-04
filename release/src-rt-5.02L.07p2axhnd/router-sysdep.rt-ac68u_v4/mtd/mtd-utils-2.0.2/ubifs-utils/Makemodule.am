@@ -1,0 +1,40 @@
+mkfs_ubifs_SOURCES = \
+	ubifs-utils/mkfs.ubifs/mkfs.ubifs.c \
+	ubifs-utils/mkfs.ubifs/defs.h \
+	ubifs-utils/mkfs.ubifs/lpt.h \
+	ubifs-utils/mkfs.ubifs/mkfs.ubifs.h \
+	ubifs-utils/mkfs.ubifs/crc16.h \
+	ubifs-utils/mkfs.ubifs/key.h \
+	ubifs-utils/mkfs.ubifs/compr.h \
+	ubifs-utils/mkfs.ubifs/ubifs.h \
+	ubifs-utils/mkfs.ubifs/crc16.c \
+	ubifs-utils/mkfs.ubifs/lpt.c \
+	ubifs-utils/mkfs.ubifs/compr.c \
+	ubifs-utils/mkfs.ubifs/hashtable/hashtable.h \
+	ubifs-utils/mkfs.ubifs/hashtable/hashtable_itr.h \
+	ubifs-utils/mkfs.ubifs/hashtable/hashtable_private.h \
+	ubifs-utils/mkfs.ubifs/hashtable/hashtable.c \
+	ubifs-utils/mkfs.ubifs/hashtable/hashtable_itr.c \
+	ubifs-utils/mkfs.ubifs/devtable.c
+mkfs_ubifs_LDADD = libmtd.a libubi.a $(ZLIB_LIBS) $(LZO_LIBS) $(UUID_LIBS) $(LIBSELINUX_LIBS) -lm
+mkfs_ubifs_CPPFLAGS = $(AM_CPPFLAGS) $(ZLIB_CFLAGS) $(LZO_CFLAGS) $(UUID_CFLAGS) $(LIBSELINUX_CFLAGS)\
+	-I$(top_srcdir)/ubi-utils/include -I$(top_srcdir)/ubifs-utils/mkfs.ubifs/
+
+UBIFS_BINS = \
+	mkfs.ubifs
+
+UBIFS_HEADER = \
+	ubifs-utils/mkfs.ubifs/compr.h ubifs-utils/mkfs.ubifs/crc16.h \
+	ubifs-utils/mkfs.ubifs/defs.h ubifs-utils/mkfs.ubifs/key.h \
+	ubifs-utils/mkfs.ubifs/lpt.h ubifs-utils/mkfs.ubifs/mkfs.ubifs.h \
+	ubifs-utils/mkfs.ubifs/ubifs.h \
+	ubifs-utils/mkfs.ubifs/hashtable/hashtable.h \
+	ubifs-utils/mkfs.ubifs/hashtable/hashtable_itr.h \
+	ubifs-utils/mkfs.ubifs/hashtable/hashtable_private.h
+
+UBIFS_EXTRA = \
+	ubifs-utils/mkfs.ubifs/README
+
+EXTRA_DIST += $(UBIFS_HEADER) $(UBIFS_EXTRA)
+
+sbin_PROGRAMS += $(UBIFS_BINS)

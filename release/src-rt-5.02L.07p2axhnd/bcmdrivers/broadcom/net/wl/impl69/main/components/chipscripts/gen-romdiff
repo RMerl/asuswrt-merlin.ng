@@ -1,0 +1,309 @@
+#!/usr/bin/perl
+#
+# This script diffs current romtable.S assembly against ROM library.
+# It checks ROM signatures first.  If there are changes, then do a full
+# diff.
+#
+# Diffs romtable.md5sign and romdobjs.tgz against
+# chipimages/xyz/(romtable.md5sign and romdobjs.tgz).
+#
+# $ Copyright Broadcom Corporation $
+#
+# <<Broadcom-WL-IPTag/Proprietary:>>
+#
+# $Id: gen-romdiff,v 1.6 2010-04-26 23:00:58 csm Exp $
+#
+
+if (@ARGV < 5) {
+     die "Usage: perl gen-romdiff <asm-base-dir> <asm-dir> <chipimages-dir> <rom-sign> <rom-xref> <log>\n";
+}
+
+my $romdasmbase = $ARGV[0];
+my $romdasm = $ARGV[1];
+my $chipimgdir = $ARGV[2];
+my $fromsign = $ARGV[3];
+my $fromxref = $ARGV[4];
+my $statslog = $ARGV[5];
+my $jmptbl_full = $ARGV[6];
+
+open(LOGFILE,">$statslog") or die "Unable to open file $statslog: $!\n";
+
+# These are expected to exist in $chipimgdir
+# Check ROM archive
+if (!(-e "$chipimgdir/$fromsign")) { 
+	print "ROM signature file does not exist: $chipimgdir/$fromsign\n";
+	exit(0);
+}
+
+if (!(-e "$chipimgdir/$fromxref")) { 
+	print "ROM signature file does not exist: $chipimgdir/$fromxref\n";
+	exit(0);
+}
+
+# Check current 
+if (!(-e "$romdasmbase")) { 
+	print "Current ROM asm dir does not exist: $romdasmbase\n";
+	exit(0);
+}
+
+if (!(-e "$romdasm")) { 
+	print "Current ROM asm dir does not exist: $romdasm\n";
+	exit(0);
+}
+
+if (!(-e "$fromsign")) { 
+	print "ROM signature file not found in archive: $fromsign\n";
+	exit(0);
+}
+
+my $fhromxref;
+open($fhromxref, "<$chipimgdir/$fromxref") or die "Unable to open file $chipimgdir/$fromxref: $!\n";
+my @xrefs = grep(/:/, <$fhromxref>);
+close($fhromxref);
+
+my $fhromsign;
+open($fhromsign, "<$fromsign") or die "Unable to open file $fromsign: $!\n";
+my @signatures = grep(/\n/, <$fhromsign>);
+close($fhromsign);
+
+my @g_objdump = grep(/\n/, <STDIN>);
+my @signdiff = `/bin/bash -c "diff <(sort -k2,2 $chipimgdir/$fromsign) <(sort -k2,2 $fromsign)"`;
+my @fbans = ();
+my @dbans = ();
+my @fsigns = ();
+my @dsigns = ();
+my @basesigns = ();
+my @cursigns = ();
+
+sub get_sym_size {
+	my($sym) = @_;
+	my @fnd = ();
+
+	if ($jmptbl_full == 0) {
+		@fnd = grep(/ \Q$sym\E(|__bcmromfn)$/, @g_objdump);
+	} else {
+		@fnd = grep(/ \Q$sym\E$/, @g_objdump);
+	}
+
+	if ($#fnd == 0) {
+		my ($addr, $glob, $attr, $sect, $size, $sym) = split(/\s+/, $fnd[0]);
+		return $size;
+	} elsif ($#fnd > 0) {
+		printf STDERR ("Unexpected: Found multiple: %s (%d)\n", $sym, $#fnd);
+	} else {
+		printf STDERR ("Error: Not found: %s\n", $sym);
+	}
+
+	return 0;
+}
+
+sub get_sym_sign {
+	my($sym) = @_;
+	my @modsign = ();
+
+	my $sign = "";
+	@modsign = grep(/^[0-9a-fA-F]{32}\s+\Q$sym\E\./, @signatures);
+	if ($#modsign == 0) {
+		($sign, $fname) = split(/\s+/, $modsign[0]);
+	}
+
+	return $sign;
+}
+
+sub process_sym {
+	my ($sym, $isdat) = @_;
+
+	my @drefs = grep(/^\Q$sym\E/, @xrefs);
+	if ($#drefs >= 0) {
+		foreach my $dref (@drefs) {
+			chop($dref);
+			my($data, $sectall, $file) = split(/:/, $dref);
+			my($h, $sect, $func) = split(/\./, $sectall);
+			if ($jmptbl_full == 0) {
+				$sect =~ s/textrom/BCMROM/;
+				$sect =~ s/datarom/BCMROM/;
+				$sect =~ s/text/RAM/;
+				$sect =~ s/rodata/RAM/;
+			} else {
+				$sect =~ s/text/BCMROM/;
+				$sect =~ s/rodata/BCMROM/;
+			}
+
+			$func =~ s/__bcmromfn//;
+			$needfix = "";
+			if ($isdat == 1) {
+				if (grep(/\Q$func\E/, @fbans)) {
+					$needfix = "--> Already Abandoned";
+				} else {
+					if ($sectall =~ /textrom/) {
+						$needfix = "--> Not Fixed";
+					}
+				}
+			}
+			printf LOGFILE ("        + %s (%s:%s) %s\n", $func, $sect, $file, $needfix);
+		}
+	}
+}
+
+# Parse signature diff output
+foreach $line (@signdiff) {
+	chop($line);
+
+	if ($line =~ /^[0-9]+/ || $line =~ /^---/) {
+		next;
+	} elsif ($line =~ /^[<>] #/) {
+		next;
+	}
+
+	$tmp = $line;
+	$tmp =~ s/^[\<\>] //;
+	($sign, $sym) = split("  ", $tmp);
+
+	if ($line =~ /^\< /) {
+		# Baseline contains all romtable symbols
+		push(@basesigns, $sym);
+	} elsif ($line =~ /^\> /) {
+		# Current excludes symbols abandoned/deleted
+		# which would not appear in the baseline dir/
+		if (-e "$romdasmbase/$sym") {
+			push(@cursigns, $sym);
+		}
+	}
+}
+
+if ($#cursigns > $#basesigns) {
+	printf("Warning: Symbols in romdasm(%d) > romdasm-base(%d)\n", $#cursigns+1, $#basesigns+1);
+}
+
+foreach my $line (@basesigns) {
+	($ident, $fname, $tag) = split(/\./, $line);
+
+	if (grep(/\Q$line\E/, @cursigns)) {
+		# Modified from ROM
+		if ($tag =~ /data/) {
+			push(@dsigns, $ident);
+		} elsif ($tag =~ /func/) {
+			push(@fsigns, $ident);
+		}
+	} else {
+		# Deleted/abandoned since taped-out
+		if ($tag =~ /func/) {
+			push(@fbans, $ident);
+		} elsif ($tag =~ /data/) {
+			push(@dbans, $ident);
+		}
+	}
+}
+
+printf LOGFILE ("+------------------------------------------+\n");
+printf LOGFILE ("+--------- ROM Library Diff Stats ---------+\n");
+printf LOGFILE ("+------------------------------------------+\n");
+
+my $dtot = `grep \.data\.S $chipimgdir/$fromsign | wc -l`;
+my $ftot = `grep \.func\.S $chipimgdir/$fromsign | wc -l`;
+my $dchg = $#dbans+1 + $#dsigns+1;
+my $fchg = $#fbans+1 + $#fsigns+1;
+my $dctot = $dtot - $dchg;
+my $fctot = $ftot - $fchg;
+
+printf LOGFILE ("Symbols fixed in ROM Baseline: %d\n", $dtot+$ftot);
+printf LOGFILE ("  Number of data: %d\n", $dtot);
+printf LOGFILE ("  Number of funcs: %d\n", $ftot);
+printf LOGFILE ("\n");
+printf LOGFILE ("Current symbols: %d\n", $dctot+$fctot);
+printf LOGFILE ("  Number of data: %d\n", $dctot);
+printf LOGFILE ("  Number of funcs: %d\n", $fctot);
+
+if ($dchg > 0) {
+	printf LOGFILE ("  Data changes: %d\n", $dchg);
+}
+
+if ($fchg > 0) {
+	printf LOGFILE ("  Func changes: %d\n", $fchg);
+}
+
+$chgtot = ($#dsigns+1) + ($#fsigns+1) + ($#fbans+1) + ($#dbans+1); 
+printf LOGFILE ("\nTotal Changes from ROM Baseline: %d out of %d (%d%%)\n\n",
+	$chgtot, $dtot+$ftot, ($chgtot/($dtot+$ftot)*100));
+
+if ($#dsigns >= 0 || $#fsigns >= 0) {
+	# Found differences so do full diff
+	`diff $romdasm $romdasmbase > romdiff-detail.log`;
+}
+
+my $chg_total = 0;
+my $aban_total = 0;
+
+if ($#dsigns >= 0) {
+	printf LOGFILE ("\nData Changes [ new sign ]: %d\n", $#dsigns+1);
+	printf LOGFILE ("=============================\n");
+	my $total = 0;
+	foreach $line (@dsigns) {
+		my $size = get_sym_size($line);
+		$total += hex($size);
+		printf LOGFILE ("   %s [ %s ], %d\n", $line, get_sym_sign($line), hex($size));
+		process_sym($line, 1);
+	}
+	printf LOGFILE ("Total size: %d (%dK)\n", $total, $total/1024);
+	$chg_total += $total;
+}
+
+if ($#fsigns >= 0) {
+	printf LOGFILE ("\nFunction Changes [ new sign ]: %d\n", $#fsigns+1);
+	printf LOGFILE ("=================================\n");
+	my $total = 0;
+	foreach $line (@fsigns) {
+		my $size = get_sym_size($line);
+		$total += hex($size);
+		printf LOGFILE ("   %s [ %s ], %d\n", $line, get_sym_sign($line), hex($size));
+		process_sym($line, 0);
+	}
+	printf LOGFILE ("Total size: %d (%dK)\n", $total, $total/1024);
+	$chg_total += $total;
+}
+
+# Abandoned symbols be can explicit from .abandon or
+# they no longer exist in latest code base since last
+# ROM tape-out
+#
+if ($#fbans >= 0) {
+	printf LOGFILE ("\nFunction Symbols Abandoned: %d\n", $#fbans+1);
+	printf LOGFILE ("==============================\n");
+	my $total = 0;
+	foreach $line (@fbans) {
+		my $size = get_sym_size($line);
+		$total += hex($size);
+		printf LOGFILE ("   %s, %d\n", $line, hex($size));
+		process_sym($line, 0);
+	}
+	printf LOGFILE ("Total size: %d (%dK)\n", $total, $total/1024);
+	$aban_total += $total;
+}
+
+if ($#dbans >= 0) {
+	printf LOGFILE ("\nData Symbols Abandoned: %d\n", $#dbans+1);
+	printf LOGFILE ("==========================\n");
+	my $total = 0;
+	foreach $line (@dbans) {
+		my $size = get_sym_size($line);
+		$total += hex($size);
+		printf LOGFILE ("   %s, %d\n", $line, hex($size));
+		process_sym($line, 1);
+	}
+	printf LOGFILE ("Total size: %d (%dK)\n", $total, $total/1024);
+	$aban_total += $total;
+}
+
+my @textval = grep(/ text_(start|end)$/, @g_objdump);
+my $romsize = 0;
+$romsize = hex($textval[0]) ^ hex($textval[1]) if ($#textval == 1);
+
+printf LOGFILE ("\n");
+printf LOGFILE ("ROM image size    : %d (%dK)\n", $romsize, $romsize/1024);
+printf LOGFILE ("ROM change size   : %d (%dK), %d%% of image\n",
+	$chg_total, $chg_total/1024, $chg_total/$romsize*100);
+printf LOGFILE ("ROM abandon size  : %d (%dK), %d%% of image\n",
+	$aban_total, $aban_total/1024, $aban_total/$romsize*100);
+printf LOGFILE ("---------- ROM Library Diff Done -----------\n");
+
+close(LOGFILE);

@@ -1,0 +1,46 @@
+config BCM_SOUND
+	bool "Broadcom 63xx sound support"
+	default n
+	help
+	  Enable ALSA framework for Broadcom 63xx SoCs
+
+config BCM_SOUND_IMPL
+	int "Implementation index for sound driver"
+	depends on BCM_SOUND
+	default 1
+
+config SND_BCM63xx_I2S_WHISTLER
+	bool "SoC Audio Broadcom WHISTLER I2S module"
+	help
+	  Say Y if you want to add support for SoC audio on
+	  I2S WHISTLER.
+
+config SND_BCM63xx_SOC_I2S_ENG
+	bool "SoC Audio Broadcom BLACKCOMB I2S module"
+	help
+	  Say Y if you want to add support for SoC audio on
+	  I2S Blackcomb module.
+
+config SND_BCM63XX_SOC_I2S_MACH
+	bool "SoC Audio Broadcom BCM63158/178/47622 I2S machine"
+	select REGMAP_MMIO
+	help
+	  Say Y if you want to add support for SoC audio on
+	  BCM63158/178/47622.
+
+config SND_BCM6856_SOC_I2S
+	bool "SoC Audio Broadcom BCM6856 I2S module"
+	select REGMAP_MMIO
+	select SND_BCM63xx_SOC_I2S_ENG
+	help
+	  Say Y if you want to add support for SoC audio on
+	  BCM6856.
+
+config SND_BCM63148_SOC_I2S
+	bool "SoC Audio Broadcom BCM63138/148 I2S module"
+	select REGMAP_MMIO
+	select SND_BCM63xx_SOC_I2S_ENG
+	help
+	  Say Y if you want to add support for SoC audio on
+	  BCM63138/148.
+	  

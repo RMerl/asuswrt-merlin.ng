@@ -1,0 +1,118 @@
+#!/bin/bash
+
+TARGETS_DIR=`pwd`
+
+if [ "$INSTALL_DIR" == "" ]; then
+    INSTALL_DIR=./$PROFILE/fs.install
+fi
+
+if [ -d $PROFILE/fs ]; then
+  ROOTFS=$PROFILE/fs
+else # Alternative path for DESKTOP_LINUX
+  ROOTFS=$PROFILE/fs.install
+fi
+
+USERSPACE_DL_MODULES_BEEP_DIR=$BUILD_DIR/userspace/dlModules/beep
+OPT_EE_DIR=$INSTALL_DIR/opt/ee
+OPT_EE_BEE_DIR=$OPT_EE_DIR/BEE
+OPT_EE_BEE_DU_DIR=$OPT_EE_BEE_DIR/du
+
+OPT_EE_HOSTEE_DIR=$OPT_EE_DIR/HOSTEE
+OPT_EE_HOSTEE_DU_DIR=$OPT_EE_HOSTEE_DIR/du
+
+OPT_EE_EXAMPLEEE_DIR=$OPT_EE_DIR/ExampleEE
+OPT_EE_EXAMPLEEE_DU_DIR=$OPT_EE_EXAMPLEEE_DIR/du
+
+function cpHostEEDu()
+{
+  if [ -d $OPT_EE_HOSTEE_DU_DIR  ]; then
+    echo "$OPT_EE_HOSTEE_DU_DIR directory exists!"
+  else
+    echo "$OPT_EE_HOSTEE_DU_DIR directory not found and create this directory" 
+    mkdir -p $OPT_EE_HOSTEE_DU_DIR
+  fi
+  cp -avR $1 $OPT_EE_HOSTEE_DU_DIR
+}
+
+
+### BEE preinstall
+if [ "$BUILD_MODSW_BEE_PREINSTALL" = "y" ]; then
+  echo "mkdir $OPT_EE_BEE_DIR"
+  rm -rf $OPT_EE_BEE_DIR  
+  mkdir -p $OPT_EE_BEE_DIR
+  cp -avR $USERSPACE_DL_MODULES_BEEP_DIR/pkg_beep_BEE_?.?.tar.gz $OPT_EE_BEE_DIR
+
+  mkdir -p $OPT_EE_BEE_DU_DIR
+
+  if [ "$BUILD_BRCM_BEE_AIRIQ_PREINSTALL" = "y" ]; then
+	cp -avR $USERSPACE_DL_MODULES_BEEP_DIR/pkg_beep_BEE_*_airiq*.tar.gz $OPT_EE_BEE_DU_DIR
+  fi
+  if [ "$BUILD_BRCM_BEE_CWMPC_PREINSTALL" = "y" ]; then
+	cp -avR $USERSPACE_DL_MODULES_BEEP_DIR/pkg_beep_BEE_*_cwmp*.tar.gz $OPT_EE_BEE_DU_DIR
+  fi	  
+  if [ "$BUILD_BRCM_BEE_DAD_PREINSTALL" = "y" ]; then
+	cp -avR $USERSPACE_DL_MODULES_BEEP_DIR/pkg_beep_BEE_*_dad*.tar.gz $OPT_EE_BEE_DU_DIR
+  fi	
+  if [ "$BUILD_BRCM_BEE_DMACTL_PREINSTALL" = "y" ]; then
+	cp -avR $USERSPACE_DL_MODULES_BEEP_DIR/pkg_beep_BEE_*_dmactl*.tar.gz $OPT_EE_BEE_DU_DIR
+  fi
+  if [ "$BUILD_BRCM_BEE_DSLDIAGD_PREINSTALL" = "y" ]; then
+	cp -avR $USERSPACE_DL_MODULES_BEEP_DIR/pkg_beep_BEE_*_dsldiagd*.tar.gz $OPT_EE_BEE_DU_DIR
+  fi
+
+  if [ "$BUILD_BRCM_BEE_IPERFV2_PREINSTALL" = "y" ]; then
+	cp -avR $USERSPACE_DL_MODULES_BEEP_DIR/pkg_beep_BEE_*_iPerf2*.tar.gz $OPT_EE_BEE_DU_DIR
+  fi
+  if [ "$BUILD_BRCM_BEE_SAMBA_PREINSTALL" = "y" ]; then
+	cp -avR $USERSPACE_DL_MODULES_BEEP_DIR/pkg_beep_BEE_*_sambaservice*.tar.gz $OPT_EE_BEE_DU_DIR
+  fi  
+  if [ "$BUILD_BRCM_BEE_TR69C_PREINSTALL" = "y" ]; then
+	cp -avR $USERSPACE_DL_MODULES_BEEP_DIR/pkg_beep_BEE_*_tr69c*.tar.gz $OPT_EE_BEE_DU_DIR
+  fi	
+  if [ "$BUILD_BRCM_BEE_SPTESTSUITE_PREINSTALL" = "y" ]; then
+	cp -avR $USERSPACE_DL_MODULES_BEEP_DIR/pkg_beep_BEE_*_spTestSuite*.tar.gz $OPT_EE_BEE_DU_DIR
+  fi	
+
+fi
+
+
+### HOSTEE preinstall
+rm -rf $OPT_EE_HOSTEE_DIR
+
+if [ "$BUILD_BRCM_HOSTEE_AIRIQ_PREINSTALL" = "y" ]; then
+  cpHostEEDu $USERSPACE_DL_MODULES_BEEP_DIR/pkg_beep_BEEP_HOSTEE_*_airiq*.tar.gz 
+fi
+if [ "$BUILD_BRCM_HOSTEE_CWMPC_PREINSTALL" = "y" ]; then
+  cpHostEEDu $USERSPACE_DL_MODULES_BEEP_DIR/pkg_beep_BEEP_HOSTEE_*_cwmp*.tar.gz 
+fi
+if [ "$BUILD_BRCM_HOSTEE_DAD_PREINSTALL" = "y" ]; then
+  cpHostEEDu $USERSPACE_DL_MODULES_BEEP_DIR/pkg_beep_BEEP_HOSTEE_*_dad*.tar.gz 
+fi	
+if [ "$BUILD_BRCM_HOSTEE_DMACTL_PREINSTALL" = "y" ]; then
+ cp -avR $USERSPACE_DL_MODULES_BEEP_DIR/pkg_beep_BEEP_HOSTEE_*_dmactl*.tar.gz 
+fi
+if [ "$BUILD_BRCM_HOSTEE_DSLDIAGD_PREINSTALL" = "y" ]; then
+  cpHostEEDu $USERSPACE_DL_MODULES_BEEP_DIR/pkg_beep_BEEP_HOSTEE_*_dsldiagd*.tar.gz 
+fi
+if [ "$BUILD_BRCM_HOSTEE_IPERFV2_PREINSTALL" = "y" ]; then
+  cpHostEEDu $USERSPACE_DL_MODULES_BEEP_DIR/pkg_beep_BEEP_HOSTEE_*_iPerf2*.tar.gz 
+fi
+if [ "$BUILD_BRCM_HOSTEE_SAMBA_PREINSTALL" = "y" ]; then
+  cpHostEEDu $USERSPACE_DL_MODULES_BEEP_DIR/pkg_beep_BEEP_HOSTEE_*_sambaservice*.tar.gz 
+fi  
+if [ "$BUILD_BRCM_HOSTEE_SPTESTSUITE_PREINSTALL" = "y" ]; then
+  cpHostEEDu $USERSPACE_DL_MODULES_BEEP_DIR/pkg_beep_BEEP_HOSTEE_*_spTestSuite*.tar.gz 
+fi	
+if [ "$BUILD_BRCM_HOSTEE_TR69C_PREINSTALL" = "y" ]; then
+  cpHostEEDu $USERSPACE_DL_MODULES_BEEP_DIR/pkg_beep_BEEP_HOSTEE_*_tr69c*.tar.gz 
+fi	
+
+
+### ExampleEE preinstall
+if [ "$BUILD_MODSW_EXAMPLEEE_PREINSTALL" = "y" ]; then
+  echo "mkdir $OPT_EE_EXAMPLEEE_DIR"
+  rm -rf $OPT_EE_EXAMPLEEE_DIR  
+  mkdir -p $OPT_EE_EXAMPLEEE_DIR
+  cp -avR $USERSPACE_DL_MODULES_BEEP_DIR/pkg_beep_ExampleEE_*.tar.gz $OPT_EE_EXAMPLEEE_DIR
+fi
+

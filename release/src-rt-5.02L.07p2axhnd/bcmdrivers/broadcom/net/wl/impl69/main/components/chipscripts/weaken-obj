@@ -1,0 +1,23 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+
+sub usage {
+	print STDERR "Usage: $0 file.o\n";
+	exit 1;
+}
+
+my $objcopy = shift or &usage;
+my $fname = shift or &usage;
+shift and &usage;
+
+my $rc = 0;
+
+# Weaken all symbols in object file except for the patch object file
+
+if ($fname !~ /^wlc_patch_/) {
+	$rc = system("$objcopy --weaken $fname $fname") >> 8;
+}
+
+exit $rc;

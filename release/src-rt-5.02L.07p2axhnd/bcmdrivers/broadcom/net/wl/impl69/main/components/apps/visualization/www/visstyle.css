@@ -1,0 +1,610 @@
+/*
+ * CSS styles used in Site Survey Tab and Some common styles used in all the tabs
+ *
+ * Copyright (C) 2020, Broadcom. All Rights Reserved.
+ *
+ * Permission to use, copy, modify, and/or distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+ * SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
+ * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
+ * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *
+ *
+ * <<Broadcom-WL-IPTag/Open:>>
+ *
+ * $Id: visstyle.css 672681 2016-11-29 11:26:01Z $
+ */
+
+*{
+	margin:0px;
+	padding:0px;
+}
+
+header,footer,section,article,nav,hgroup,aside{
+	display:block;
+}
+
+body{
+	background:white;
+	color:black;
+	font-family:arial, sans-serif;
+	text-align:center;
+	font-size:12pt;
+	padding:8px;
+}
+
+.edge {
+	background-image:url(repeat_edge_new.gif);
+	line-height:0px;
+}
+
+.logotable{
+	border:0px;
+	border-collapse:collapse;
+	border-spacing:0px;
+	padding:0;
+	margin:0;
+	width:100%;
+}
+
+.logotable td{
+	padding:0px;
+}
+
+#main_div{
+	width:99.9%;
+	margin-bottom:20px;
+	text-align:left;
+}
+
+#topnav{
+	margin-top:0px;
+	width:100%;
+}
+
+#containerdiv{
+	height:18px;
+}
+
+#contentarea{
+	height:auto;
+	width:99.8%;
+	background:#FFFFFF;
+}
+
+ul.custommenu{
+	list-style:none;
+	padding:0px;
+	font-family:Arial;
+	font-size:14px;
+	font-weight:bold;
+	margin:0px;
+	padding-left:2%;
+}
+
+ul.custommenu:after{
+	content:"";
+	clear:both;
+	overflow:hidden;
+	visibility:hidden;
+	display:block;
+	width:0;
+	height:0;
+}
+
+ul.custommenu li{
+	float:left;
+	margin:0 0 0 5%;
+	position:relative;
+	border-right: dotted 0px #A1B3B9;
+}
+
+ul.custommenu li:first-child{
+	margin:0px;
+	border-left: dotted 0px #A1B3B9;
+}
+
+ul.custommenu li a,ul.custommenu a:link{
+	color:#FBEFEF;
+	text-decoration:none;
+	display:block;
+	text-align:center;
+	text-shadow:0 1px 0 #4b433e;
+	width:100%;
+	height:18px;
+
+	-webkit-border-radius: 4px;
+	-moz-border-radius: 4px;
+	border-radius: 4px;
+
+	-webkit-transition: all 1s ease;
+	-moz-transition: all 1s ease;
+	-o-transition: all 1s ease;
+	-ms-transition: all 1s ease;
+	transition: all 1s ease;
+}
+
+ul.custommenu li ul{
+	display:none;
+}
+
+ul.custommenu li:hover ul{
+	position:absolute;
+	display:block;
+	z-index:1000;
+	left:0;
+	top:25px;
+	padding:5px 0px;
+	list-style:none;
+	background:black;
+
+	-webkit-border-radius: 4px;
+	-moz-border-radius: 4px;
+	border-radius: 4px;
+}
+
+ul.custommenu li ul:before{
+	content:"";
+	position:absolute;
+	display:block;
+	z-index:1500;
+	left:0;
+	top:-10px;
+	height:10px;
+	width:100%;
+}
+
+#rssigraphplaceholder{
+	width:98%;
+	height:400px;
+	margin-left:10px;
+	margin-top:10px;
+}
+
+#frequencybandselector{
+	margin-bottom:40px;
+}
+
+#frequencybandform input{
+	width:50px;
+	padding:5px;
+}
+
+#frequencybandform{
+	width:auto;
+	margin-left:60px;
+	color:black;
+}
+
+#frequencybandform legend{
+	margin-bottom:10px;
+	margin-top:5px;
+	color:white;
+}
+
+#frequencybandform fieldset{
+	color:black;
+	font-weight:bold;
+	display:inline;
+}
+
+#scanbutton{
+	margin-left:50px;
+	width:150px;
+}
+
+.dspstyle{
+	display:block;
+}
+
+.tooltip{
+	display:none;
+	position:absolute;
+	background-color:#4687A3;
+	color:white;
+	padding:10px;
+	width:150px;
+	z-index:1;
+}
+
+.border{
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+	border-radius: 10px;
+}
+
+.fontfamly{
+	font-family:Arial, Helvetica, sans-serif;
+}
+
+.cmclr{
+	background-color:#4873A8;
+}
+
+.cmnbrdr{
+	border: 2px solid #4873A8;
+}
+
+.cmtxtclr{
+	color:#005568;
+}
+
+.red{
+	background-color:#F10529;
+}
+
+.grn{
+	background-color:#07FE49;
+}
+
+.blu{
+	background-color:blue;
+}
+
+.brcm{
+	background-color:#990000;
+}
+
+.yllw{
+	background-color:#FEE507;
+}
+
+.wtht1{
+	display:table-cell;
+	height:8px;
+	margin-bottom:2px;
+	margin-left:2px;
+	border:1px solid black;
+}
+
+.legend table, .legend > div {
+	height: auto;
+	right: -18%;
+	top: 10px;
+	width: 150px;
+}
+
+.legend table {
+	border: 2px solid #4873A8;
+	padding: 1px;
+	border-collapse: separate;
+	border-spacing: 0px;
+
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+	border-radius: 5px;
+	box-shadow:3px 3px 3px #999;
+}
+
+.btmbrdr{
+	border-bottom-left-radius:5px;
+	border-bottom-right-radius:5px;
+	-moz-border-radius-bottomleft:5px;
+	-moz-border-radius-bottomright:5px;
+	-webkit-border-radius-bottomleft: 5px;
+	-webkit-border-radius-bottomright: 5px;
+}
+
+.dspblk{
+	display:inline-block;
+}
+
+.zerobrdr{
+	border:0;
+}
+
+.blackbrdrd{
+	background:black;
+}
+
+.selectctrl{
+	padding:5px;
+	font-size:1.2em;
+	height:auto;
+	margin:8px;
+}
+
+.selectbandctrl{
+	padding:5px;
+	font-size:1.2em;
+	width:auto;
+	height:auto;
+	margin:8px;
+}
+
+.errormsg{
+	margin-top:10px;
+	margin-left:60px;
+	font-size:1.2em;
+	font-family: arial, sans-serif;
+	color:red;
+}
+
+.cmgraphbgcolor{
+	background: #E6EDF0;
+}
+
+.tickLabel{
+	font-size: 12pt;
+	font-weight: bold;
+}
+
+#TextHeading{
+	position:relative;
+	width:98%;
+	font-size: 13pt;
+	color:black;
+	font-family: arial, sans-serif;
+	font-weight:bold;
+	text-align:left;
+	text-shadow:0px 0px 0px #000;
+}
+
+#TextHeadingDesc{
+	position:relative;
+	width:98%;
+	font-size: 11pt;
+	color:black;
+	font-family: arial, sans-serif;
+	text-align:left;
+	font-weight:normal;
+	text-shadow:0px 0px 0px #000;
+}
+
+.fontonwhite{
+	color:#005568;
+	font-weight:bold;
+	font-size:13pt;
+}
+
+.progressbarclass{
+	position:relative;
+	left:85%;
+}
+
+.cmncheckboxclass{
+	position:relative;
+	font-size:14pt;
+	width:17px;
+	height:17px;
+	margin:2px;
+}
+
+.cmnbtnclass {
+	font-size:21px;
+	font-weight:bold;
+	height:40px;
+	color:white;
+	border-radius: 10px;
+	font-weight:bold;
+	border:0px;
+	box-shadow:2px 2px 2px #999;
+	background: rgb(82,132,147); /* Old browsers */
+	background: -moz-linear-gradient(top,  rgba(82,132,147,1) 0%, rgba(12,31,51,1) 72%); /* FF3.6+ */
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(82,132,147,1)), color-stop(72%,rgba(12,31,51,1))); /* Chrome,Safari4+ */
+	background: -webkit-linear-gradient(top,  rgba(82,132,147,1) 0%,rgba(12,31,51,1) 72%); /* Chrome10+,Safari5.1+ */
+	background: -o-linear-gradient(top,  rgba(82,132,147,1) 0%,rgba(12,31,51,1) 72%); /* Opera 11.10+ */
+	background: -ms-linear-gradient(top,  rgba(82,132,147,1) 0%,rgba(12,31,51,1) 72%); /* IE10+ */
+	background: linear-gradient(to bottom,  rgba(82,132,147,1) 0%,rgba(12,31,51,1) 72%); /* W3C */
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#528493', endColorstr='#0c1f33',GradientType=0 ); /* IE6-9 */
+}
+
+.cmnbtnclass:hover {
+	background: rgb(12,31,51); /* Old browsers */
+	background: -moz-linear-gradient(top,  rgba(12,31,51,1) 28%, rgba(82,132,147,1) 100%); /* FF3.6+ */
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(28%,rgba(12,31,51,1)), color-stop(100%,rgba(82,132,147,1))); /* Chrome,Safari4+ */
+	background: -webkit-linear-gradient(top,  rgba(12,31,51,1) 28%,rgba(82,132,147,1) 100%); /* Chrome10+,Safari5.1+ */
+	background: -o-linear-gradient(top,  rgba(12,31,51,1) 28%,rgba(82,132,147,1) 100%); /* Opera 11.10+ */
+	background: -ms-linear-gradient(top,  rgba(12,31,51,1) 28%,rgba(82,132,147,1) 100%); /* IE10+ */
+	background: linear-gradient(to bottom,  rgba(12,31,51,1) 28%,rgba(82,132,147,1) 100%); /* W3C */
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#0c1f33', endColorstr='#528493',GradientType=0 ); /* IE6-9 */
+}
+.cmnbtnclass:active {
+	position:relative;
+	top:1px;
+}
+
+.cmngraphboxbkgrnd-h1 {
+	background: rgb(110,127,201); /* Old browsers */
+	background: -moz-linear-gradient(top,  rgba(110,127,201,1) 0%, rgba(16,40,66,1) 62%); /* FF3.6+ */
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(110,127,201,1)), color-stop(62%,rgba(16,40,66,1))); /* Chrome,Safari4+ */
+	background: -webkit-linear-gradient(top,  rgba(110,127,201,1) 0%,rgba(16,40,66,1) 62%); /* Chrome10+,Safari5.1+ */
+	background: -o-linear-gradient(top,  rgba(110,127,201,1) 0%,rgba(16,40,66,1) 62%); /* Opera 11.10+ */
+	background: -ms-linear-gradient(top,  rgba(110,127,201,1) 0%,rgba(16,40,66,1) 62%); /* IE10+ */
+	background: linear-gradient(to bottom,  rgba(110,127,201,1) 0%,rgba(16,40,66,1) 62%); /* W3C */
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#6e7fc9', endColorstr='#102842',GradientType=0 ); /* IE6-9 */
+}
+
+.cmngraphboxbkgrnd-h2 {
+	background: rgb(82,134,150); /* Old browsers */
+	background: -moz-linear-gradient(top,  rgba(82,134,150,1) 1%, rgba(21,60,86,1) 63%); /* FF3.6+ */
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(1%,rgba(82,134,150,1)), color-stop(63%,rgba(21,60,86,1))); /* Chrome,Safari4+ */
+	background: -webkit-linear-gradient(top,  rgba(82,134,150,1) 1%,rgba(21,60,86,1) 63%); /* Chrome10+,Safari5.1+ */
+	background: -o-linear-gradient(top,  rgba(82,134,150,1) 1%,rgba(21,60,86,1) 63%); /* Opera 11.10+ */
+	background: -ms-linear-gradient(top,  rgba(82,134,150,1) 1%,rgba(21,60,86,1) 63%); /* IE10+ */
+	background: linear-gradient(to bottom,  rgba(82,134,150,1) 1%,rgba(21,60,86,1) 63%); /* W3C */
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#528696', endColorstr='#153c56',GradientType=0 ); /* IE6-9 */
+}
+
+.cmnfilterclass {
+	background:-webkit-gradient(linear, left top, left bottom, color-stop(0.05, #acaab3), color-stop(1, #2e333d));
+	background:-moz-linear-gradient(top, #acaab3 5%, #2e333d 100%);
+	background:-webkit-linear-gradient(top, #acaab3 5%, #2e333d 100%);
+	background:-o-linear-gradient(top, #acaab3 5%, #2e333d 100%);
+	background:-ms-linear-gradient(top, #acaab3 5%, #2e333d 100%);
+	background:linear-gradient(to bottom, #acaab3 5%, #2e333d 100%);
+	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#acaab3', endColorstr='#2e333d',GradientType=0);
+	background-color:#acaab3;
+	border-radius:10px;
+	box-shadow:3px 3px 3px #999;
+}
+
+.cmnctrlborder {
+	border-radius:3px;
+	box-shadow:3px 3px 3px #444;
+}
+
+.cmngraphbox {
+	background-color:#FFFFFF;
+	border: 2px solid #4873A8;
+	border-collapse: separate;
+	border-spacing: 0px;
+}
+
+.cmngraphbox  thead{
+	color:white;
+}
+
+.cmngraphbox th {
+	height:30px;
+	font-size:18px;
+	font-weight:bold;
+	text-align:left;
+	padding-left:10px;
+}
+
+.cmngraphbox tbody{
+	padding:5px 1px;
+	background-color:#F7FBFC;
+}
+
+.cmntable {
+	width:100%;
+	border-collapse:collapse;
+	border-spacing:0px;
+	padding:0;
+}
+
+.cmntable tbody tr{
+	padding:0px;
+}
+
+/* Styles for AP STA relationship diagram starts here */
+.apstamappingtbl{
+	border-collapse:collapse;
+	border-spacing:0px;
+	margin-left:0px;
+	margin-right:0px;
+	margin-bottom:40px;
+	padding:0;
+}
+
+.apstamappingtbl tr{
+	height:40px;
+	padding:0px;
+	text-align:center;
+}
+
+.staseparator{
+	width:5px;
+	background:#610B0B;
+	box-shadow:0px 3px 3px #999;
+}
+
+.staapconnectorgood{
+	width:200px;
+	height:5px;
+	background:#27801F;
+	box-shadow:3px 3px 3px #999;
+}
+
+.staapconnectormedium{
+	width:200px;
+	height:5px;
+	background:#FAF203;
+	box-shadow:3px 3px 3px #999;
+}
+
+.staapconnectorlow{
+	width:200px;
+	height:5px;
+	background:#F7082C;
+	box-shadow:3px 3px 3px #999;
+}
+
+.stabox{
+	padding:5px;
+	height:35px;
+	color:#005568;
+	font-size:13pt;
+}
+
+.selectedstabox{
+	padding:5px;
+	height:35px;
+	color:blue;
+	font-weight:bold;
+	font-size:13pt;
+}
+
+.apbox{
+	padding:5px;
+	color:white;
+	width:200px;
+	height:200px;
+	text-align:center;
+	background:#403F7E;
+}
+
+.centerap{
+	border-collapse:collapse;
+	border-spacing:0px;
+	font-size:12pt;
+	text-align:right;
+	font-weight:normal;
+}
+
+.centerap tbody tr{
+	text-align:left;
+	padding:0px;
+	height:auto;
+}
+
+.boxdiv {
+	border: 2px solid #610B0B;
+	box-shadow:3px 3px 3px #999;
+	padding:5px;
+	width:250px;
+	margin-left:40px;
+	margin-right:40px;
+}
+
+.horizontalline{
+	width:100%;
+	height:5px;
+		background:#610B0B;
+	box-shadow:0px 3px 3px #999;
+}
+
+.verticalline{
+	width:5px;
+	height:34px;
+	background:#610B0B;
+	box-shadow:3px 0px 3px #999;
+}
+
+.errorstyle{
+	margin-left:1em;
+	font-size:1.2em;
+	font-family: arial, sans-serif;
+	color:red;
+}
+
+#errmsg {
+	float:left;
+	margin-top:1.4em;
+}
+
+#clearflt {
+	clear:both;
+}
+
+.formcls {
+	float:left;
+}

@@ -1,0 +1,132 @@
+#!/bin/bash
+
+export LD_LIBRARY_PATH=$HOSTTOOLS_DIR/libelf/lib:$LD_LIBRARY_PATH 
+source $KERNEL_DIR/.config
+
+TARGETS_DIR=`pwd`
+
+if [ "$INSTALL_DIR" == "" ]; then
+    INSTALL_DIR=./$PROFILE/fs.install
+fi
+
+if [ -d $PROFILE/fs ]; then
+  ROOTFS=$PROFILE/fs
+else # Alternative path for DESKTOP_LINUX
+  ROOTFS=$PROFILE/fs.install
+fi
+
+USERSPACE_DL_MODULES_BEEP_DIR=$BUILD_DIR/userspace/dlModules/beep
+PMD_DIR=$BUILD_DIR/userspace/private/apps/pmd
+DMAD_DIR=$BUILD_DIR/userspace/private/apps/dmad
+USERSPACE_DL_MODULES_BEE_DIR=$PMD_DIR/bee
+
+
+if [ "$ARCH" == "arm64" ]; then
+	LIBDIR_NAME="lib64"
+else
+	LIBDIR_NAME="lib"
+fi
+
+#construct BEE base filesystem
+echo "construct BEE base filesystem"
+mkdir -p $USERSPACE_DL_MODULES_BEE_DIR/opt/bee/rootfs/bin
+mkdir -p $USERSPACE_DL_MODULES_BEE_DIR/opt/bee/rootfs/data
+mkdir -p $USERSPACE_DL_MODULES_BEE_DIR/opt/bee/rootfs/dev
+mkdir -p $USERSPACE_DL_MODULES_BEE_DIR/opt/bee/rootfs/etc/data
+mkdir -p $USERSPACE_DL_MODULES_BEE_DIR/opt/bee/rootfs/lib
+if [ "$ARCH" == "arm64" ]; then
+mkdir -p $USERSPACE_DL_MODULES_BEE_DIR/opt/bee/rootfs/lib64
+fi
+mkdir -p $USERSPACE_DL_MODULES_BEE_DIR/opt/bee/rootfs/local
+mkdir -p $USERSPACE_DL_MODULES_BEE_DIR/opt/bee/rootfs/mnt
+mkdir -p $USERSPACE_DL_MODULES_BEE_DIR/opt/bee/rootfs/proc
+mkdir -p $USERSPACE_DL_MODULES_BEE_DIR/opt/bee/rootfs/sbin
+mkdir -p $USERSPACE_DL_MODULES_BEE_DIR/opt/bee/rootfs/sys
+mkdir -p $USERSPACE_DL_MODULES_BEE_DIR/opt/bee/rootfs/tmp
+mkdir -p $USERSPACE_DL_MODULES_BEE_DIR/opt/bee/rootfs/usr/bin
+mkdir -p $USERSPACE_DL_MODULES_BEE_DIR/opt/bee/rootfs/var
+mkdir -p $USERSPACE_DL_MODULES_BEE_DIR/opt/bee/rootfs/libexec
+mkdir -p $USERSPACE_DL_MODULES_BEE_DIR/opt/bee/rootfs/run
+mkdir -p $USERSPACE_DL_MODULES_BEE_DIR/opt/bee/rootfs/share
+mkdir -p $USERSPACE_DL_MODULES_BEE_DIR/opt/bee/rootfs/include
+mkdir -p $USERSPACE_DL_MODULES_BEE_DIR/opt/bee/rootfs/opt
+
+mkdir -p $USERSPACE_DL_MODULES_BEE_DIR/bin
+
+cp -av $TARGETS_DIR/$ROOTFS/bin/busybox $USERSPACE_DL_MODULES_BEE_DIR/opt/bee/rootfs/bin
+cp -av $TARGETS_DIR/$ROOTFS/bin/dhcpclient $USERSPACE_DL_MODULES_BEE_DIR/opt/bee/rootfs/bin
+cp -av $TARGETS_DIR/$ROOTFS/bin/bash $USERSPACE_DL_MODULES_BEE_DIR/opt/bee/rootfs/bin
+cp -av $TARGETS_DIR/$ROOTFS/bin/cat $USERSPACE_DL_MODULES_BEE_DIR/opt/bee/rootfs/bin
+cp -av $TARGETS_DIR/$ROOTFS/bin/cp $USERSPACE_DL_MODULES_BEE_DIR/opt/bee/rootfs/bin
+cp -av $TARGETS_DIR/$ROOTFS/bin/echo $USERSPACE_DL_MODULES_BEE_DIR/opt/bee/rootfs/bin
+cp -av $TARGETS_DIR/$ROOTFS/bin/ip $USERSPACE_DL_MODULES_BEE_DIR/opt/bee/rootfs/bin
+cp -av $TARGETS_DIR/$ROOTFS/bin/kill $USERSPACE_DL_MODULES_BEE_DIR/opt/bee/rootfs/bin
+cp -av $TARGETS_DIR/$ROOTFS/bin/ln $USERSPACE_DL_MODULES_BEE_DIR/opt/bee/rootfs/bin
+cp -av $TARGETS_DIR/$ROOTFS/bin/ls $USERSPACE_DL_MODULES_BEE_DIR/opt/bee/rootfs/bin
+cp -av $TARGETS_DIR/$ROOTFS/bin/mkdir $USERSPACE_DL_MODULES_BEE_DIR/opt/bee/rootfs/bin
+cp -av $TARGETS_DIR/$ROOTFS/bin/mknod $USERSPACE_DL_MODULES_BEE_DIR/opt/bee/rootfs/bin
+cp -av $TARGETS_DIR/$ROOTFS/bin/mount $USERSPACE_DL_MODULES_BEE_DIR/opt/bee/rootfs/bin
+cp -av $TARGETS_DIR/$ROOTFS/bin/ping $USERSPACE_DL_MODULES_BEE_DIR/opt/bee/rootfs/bin
+cp -av $TARGETS_DIR/$ROOTFS/bin/ps $USERSPACE_DL_MODULES_BEE_DIR/opt/bee/rootfs/bin
+cp -av $TARGETS_DIR/$ROOTFS/bin/pwd $USERSPACE_DL_MODULES_BEE_DIR/opt/bee/rootfs/bin
+cp -av $TARGETS_DIR/$ROOTFS/bin/rm $USERSPACE_DL_MODULES_BEE_DIR/opt/bee/rootfs/bin
+cp -av $TARGETS_DIR/$ROOTFS/bin/sh $USERSPACE_DL_MODULES_BEE_DIR/opt/bee/rootfs/bin
+cp -av $TARGETS_DIR/$ROOTFS/bin/sleep $USERSPACE_DL_MODULES_BEE_DIR/opt/bee/rootfs/bin
+cp -av $TARGETS_DIR/$ROOTFS/bin/tar $USERSPACE_DL_MODULES_BEE_DIR/opt/bee/rootfs/bin
+cp -av $TARGETS_DIR/$ROOTFS/bin/umount $USERSPACE_DL_MODULES_BEE_DIR/opt/bee/rootfs/bin
+cp -av $TARGETS_DIR/$ROOTFS/bin/uname $USERSPACE_DL_MODULES_BEE_DIR/opt/bee/rootfs/bin
+
+cp -av $TARGETS_DIR/$ROOTFS/usr/bin/timeout $USERSPACE_DL_MODULES_BEE_DIR/opt/bee/rootfs/usr/bin
+
+cp -av $TARGETS_DIR/$ROOTFS/sbin/init $USERSPACE_DL_MODULES_BEE_DIR/opt/bee/rootfs/sbin
+cp -av $TARGETS_DIR/$ROOTFS/sbin/init.lxc $USERSPACE_DL_MODULES_BEE_DIR/opt/bee/rootfs/sbin
+
+cp -av $TARGETS_DIR/$ROOTFS/lib/ld-linux* $USERSPACE_DL_MODULES_BEE_DIR/opt/bee/rootfs/lib
+cp -av $TARGETS_DIR/$ROOTFS/$LIBDIR_NAME/libbcm_boardctl.* $USERSPACE_DL_MODULES_BEE_DIR/opt/bee/rootfs/$LIBDIR_NAME
+cp -av $TARGETS_DIR/$ROOTFS/$LIBDIR_NAME/libbcm_util.* $USERSPACE_DL_MODULES_BEE_DIR/opt/bee/rootfs/$LIBDIR_NAME
+cp -av $TARGETS_DIR/$ROOTFS/$LIBDIR_NAME/libbcm_flashutil.* $USERSPACE_DL_MODULES_BEE_DIR/opt/bee/rootfs/$LIBDIR_NAME
+cp -av $TARGETS_DIR/$ROOTFS/$LIBDIR_NAME/libc.* $USERSPACE_DL_MODULES_BEE_DIR/opt/bee/rootfs/$LIBDIR_NAME
+cp -av $TARGETS_DIR/$ROOTFS/$LIBDIR_NAME/libcms_msg.* $USERSPACE_DL_MODULES_BEE_DIR/opt/bee/rootfs/$LIBDIR_NAME
+cp -av $TARGETS_DIR/$ROOTFS/$LIBDIR_NAME/libcms_util.* $USERSPACE_DL_MODULES_BEE_DIR/opt/bee/rootfs/$LIBDIR_NAME
+cp -av $TARGETS_DIR/$ROOTFS/$LIBDIR_NAME/libcrypt.* $USERSPACE_DL_MODULES_BEE_DIR/opt/bee/rootfs/$LIBDIR_NAME
+cp -av $TARGETS_DIR/$ROOTFS/$LIBDIR_NAME/libcrypto.* $USERSPACE_DL_MODULES_BEE_DIR/opt/bee/rootfs/$LIBDIR_NAME
+cp -av $TARGETS_DIR/$ROOTFS/$LIBDIR_NAME/libdbus-1.* $USERSPACE_DL_MODULES_BEE_DIR/opt/bee/rootfs/$LIBDIR_NAME
+cp -av $TARGETS_DIR/$ROOTFS/$LIBDIR_NAME/libdl.* $USERSPACE_DL_MODULES_BEE_DIR/opt/bee/rootfs/$LIBDIR_NAME
+cp -av $TARGETS_DIR/$ROOTFS/$LIBDIR_NAME/libexpat.* $USERSPACE_DL_MODULES_BEE_DIR/opt/bee/rootfs/$LIBDIR_NAME
+cp -av $TARGETS_DIR/$ROOTFS/$LIBDIR_NAME/libffi.* $USERSPACE_DL_MODULES_BEE_DIR/opt/bee/rootfs/$LIBDIR_NAME
+cp -av $TARGETS_DIR/$ROOTFS/$LIBDIR_NAME/libgcc_s.* $USERSPACE_DL_MODULES_BEE_DIR/opt/bee/rootfs/$LIBDIR_NAME
+cp -av $TARGETS_DIR/$ROOTFS/$LIBDIR_NAME/libgio-2.* $USERSPACE_DL_MODULES_BEE_DIR/opt/bee/rootfs/$LIBDIR_NAME
+cp -av $TARGETS_DIR/$ROOTFS/$LIBDIR_NAME/libglib-2.* $USERSPACE_DL_MODULES_BEE_DIR/opt/bee/rootfs/$LIBDIR_NAME
+cp -av $TARGETS_DIR/$ROOTFS/$LIBDIR_NAME/libgmodule-2.* $USERSPACE_DL_MODULES_BEE_DIR/opt/bee/rootfs/$LIBDIR_NAME
+cp -av $TARGETS_DIR/$ROOTFS/$LIBDIR_NAME/libgobject-2.* $USERSPACE_DL_MODULES_BEE_DIR/opt/bee/rootfs/$LIBDIR_NAME
+cp -av $TARGETS_DIR/$ROOTFS/$LIBDIR_NAME/libgthread-2.* $USERSPACE_DL_MODULES_BEE_DIR/opt/bee/rootfs/$LIBDIR_NAME
+cp -av $TARGETS_DIR/$ROOTFS/$LIBDIR_NAME/libjson-c.* $USERSPACE_DL_MODULES_BEE_DIR/opt/bee/rootfs/$LIBDIR_NAME
+cp -av $TARGETS_DIR/$ROOTFS/$LIBDIR_NAME/liblxc.* $USERSPACE_DL_MODULES_BEE_DIR/opt/bee/rootfs/$LIBDIR_NAME
+cp -av $TARGETS_DIR/$ROOTFS/$LIBDIR_NAME/libm.* $USERSPACE_DL_MODULES_BEE_DIR/opt/bee/rootfs/$LIBDIR_NAME
+cp -av $TARGETS_DIR/$ROOTFS/$LIBDIR_NAME/libnss*.* $USERSPACE_DL_MODULES_BEE_DIR/opt/bee/rootfs/$LIBDIR_NAME
+cp -av $TARGETS_DIR/$ROOTFS/$LIBDIR_NAME/libpthread.* $USERSPACE_DL_MODULES_BEE_DIR/opt/bee/rootfs/$LIBDIR_NAME
+cp -av $TARGETS_DIR/$ROOTFS/$LIBDIR_NAME/libresolv.* $USERSPACE_DL_MODULES_BEE_DIR/opt/bee/rootfs/$LIBDIR_NAME
+cp -av $TARGETS_DIR/$ROOTFS/$LIBDIR_NAME/librt.* $USERSPACE_DL_MODULES_BEE_DIR/opt/bee/rootfs/$LIBDIR_NAME
+cp -av $TARGETS_DIR/$ROOTFS/$LIBDIR_NAME/libutil.* $USERSPACE_DL_MODULES_BEE_DIR/opt/bee/rootfs/$LIBDIR_NAME
+cp -av $TARGETS_DIR/$ROOTFS/$LIBDIR_NAME/libz.* $USERSPACE_DL_MODULES_BEE_DIR/opt/bee/rootfs/$LIBDIR_NAME
+cp -av $TARGETS_DIR/$ROOTFS/$LIBDIR_NAME/libssl.* $USERSPACE_DL_MODULES_BEE_DIR/opt/bee/rootfs/$LIBDIR_NAME
+cp -av $TARGETS_DIR/$ROOTFS/$LIBDIR_NAME/libsqlite* $USERSPACE_DL_MODULES_BEE_DIR/opt/bee/rootfs/$LIBDIR_NAME
+cp -av $TARGETS_DIR/$ROOTFS/$LIBDIR_NAME/libcurl* $USERSPACE_DL_MODULES_BEE_DIR/opt/bee/rootfs/$LIBDIR_NAME
+cp -av $TARGETS_DIR/$ROOTFS/$LIBDIR_NAME/libnghttp2* $USERSPACE_DL_MODULES_BEE_DIR/opt/bee/rootfs/$LIBDIR_NAME
+cp -av $TARGETS_DIR/$ROOTFS/$LIBDIR_NAME/libseccomp* $USERSPACE_DL_MODULES_BEE_DIR/opt/bee/rootfs/$LIBDIR_NAME
+cp -av $TARGETS_DIR/$ROOTFS/$LIBDIR_NAME/libgen_util* $USERSPACE_DL_MODULES_BEE_DIR/opt/bee/rootfs/$LIBDIR_NAME
+cp -av $TARGETS_DIR/$ROOTFS/$LIBDIR_NAME/libsys_util* $USERSPACE_DL_MODULES_BEE_DIR/opt/bee/rootfs/$LIBDIR_NAME
+
+cp -av $PMD_DIR/pmd $USERSPACE_DL_MODULES_BEE_DIR/bin
+cp -av $DMAD_DIR/dmad $USERSPACE_DL_MODULES_BEE_DIR/bin
+
+tar zcf bee.tar.gz -C $USERSPACE_DL_MODULES_BEE_DIR .
+mv bee.tar.gz $USERSPACE_DL_MODULES_BEE_DIR
+
+cd $PMD_DIR
+cp -av ./bee.manifest $USERSPACE_DL_MODULES_BEE_DIR
+$HOSTTOOLS_DIR/beep/beepPkgBuilder -f ./pmd-pkginfo.txt
+
+mv ./pkg_beep_*_*.tar.gz $USERSPACE_DL_MODULES_BEEP_DIR
+$HOSTTOOLS_DIR/beep/reposcan -d $USERSPACE_DL_MODULES_BEEP_DIR
+rm -rf $USERSPACE_DL_MODULES_BEE_DIR

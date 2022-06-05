@@ -2003,6 +2003,22 @@ void nat_setting(char *wan_if, char *wan_ip, char *wanx_if, char *wanx_ip, char 
 	}
 #endif
 
+#if defined(RTCONFIG_DNSFILTER) && defined(HND_ROUTER)
+	if (nvram_get_int("dnsfilter_enable_x") && ipv6_enabled()) {
+		FILE *fp_ipv6;
+
+		fp_ipv6 = fopen("/tmp/nat_rules_ipv6.dnsfilter", "w");
+		if (fp_ipv6 != NULL) {
+			fprintf(fp_ipv6, "*nat\n"
+			                 ":DNSFILTER - [0:0]\n");
+			dnsfilter6_settings(fp_ipv6);
+			fprintf(fp_ipv6, "COMMIT\n");
+			fclose(fp_ipv6);
+			eval("ip6tables-restore", "/tmp/nat_rules_ipv6.dnsfilter");
+		}
+	}
+#endif
+
 	fprintf(fp, "COMMIT\n");
 	fclose(fp);
 
@@ -2467,6 +2483,22 @@ void nat_setting2(char *lan_if, char *lan_ip, char *logaccept, char *logdrop)	//
 				}
 			}
 			free(nv);
+		}
+	}
+#endif
+
+#if defined(RTCONFIG_DNSFILTER) && defined(HND_ROUTER)
+	if (nvram_get_int("dnsfilter_enable_x") && ipv6_enabled()) {
+		FILE *fp_ipv6;
+
+		fp_ipv6 = fopen("/tmp/nat_rules_ipv6.dnsfilter", "w");
+		if (fp_ipv6 != NULL) {
+			fprintf(fp_ipv6, "*nat\n"
+			                 ":DNSFILTER - [0:0]\n");
+			dnsfilter6_settings(fp_ipv6);
+			fprintf(fp_ipv6, "COMMIT\n");
+			fclose(fp_ipv6);
+			eval("ip6tables-restore", "/tmp/nat_rules_ipv6.dnsfilter");
 		}
 	}
 #endif
@@ -3402,6 +3434,9 @@ filter_setting(int wan_unit, char *lan_if, char *lan_ip, char *logaccept, char *
 		    ":OVPNSF - [0:0]\n"
 		    ":OVPNCI - [0:0]\n"
 		    ":OVPNCF - [0:0]\n"
+#endif
+#ifdef RTCONFIG_DNSFILTER
+		    ":DNSFILTER_DOT - [0:0]\n"
 #endif
 		    ":ICMP_V6 - [0:0]\n"
 		    ":ICMP_V6_LOCAL - [0:0]\n"
@@ -4634,6 +4669,10 @@ TRACE_PT("write wl filter\n");
 
 #ifdef RTCONFIG_DNSFILTER
 	dnsfilter_dot_rules(fp);
+#ifdef RTCONFIG_IPv6
+	if (ipv6_enabled())
+		dnsfilter6_dot_rules(fp_ipv6);
+#endif
 #endif
 
 #ifdef RTCONFIG_WIREGUARD
@@ -4802,6 +4841,9 @@ filter_setting2(char *lan_if, char *lan_ip, char *logaccept, char *logdrop)
 		    ":OVPNSF - [0:0]\n"
 		    ":OVPNCI - [0:0]\n"
 		    ":OVPNCF - [0:0]\n"
+#endif
+#ifdef RTCONFIG_DNSFILTER
+		    ":DNSFILTER_DOT - [0:0]\n"
 #endif
 		    ":ICMP_V6 - [0:0]\n"
 		    ":ICMP_V6_LOCAL - [0:0]\n"
@@ -6060,6 +6102,10 @@ TRACE_PT("write wl filter\n");
 
 #ifdef RTCONFIG_DNSFILTER
 	dnsfilter_dot_rules(fp);
+#if defined(RTCONFIG_IPv6) && defined(HND_ROUTER)
+	if (ipv6_enabled())
+		dnsfilter6_dot_rules(fp_ipv6);
+#endif
 #endif
 
 #ifdef RTCONFIG_WIREGUARD
@@ -6234,6 +6280,7 @@ mangle_setting(char *wan_if, char *wan_ip, char *lan_if, char *lan_ip, char *log
 
 #ifdef RTCONFIG_DNSFILTER
 #ifdef RTCONFIG_IPV6
+#ifndef HND_ROUTER
 	if (nvram_get_int("dnsfilter_enable_x") && ipv6_enabled()) {
 		FILE *fp;
 
@@ -6252,6 +6299,7 @@ mangle_setting(char *wan_if, char *wan_ip, char *lan_if, char *lan_ip, char *log
 			eval("ip6tables-restore", "/tmp/mangle_rules_ipv6.dnsfilter");
 		}
 	}
+#endif /* HND_ROUTER */
 #endif /* RTCONFIG_IPV6 */
 #endif /* RTCONFIG_DNSFILTER */
 
@@ -6442,6 +6490,7 @@ mangle_setting2(char *lan_if, char *lan_ip, char *logaccept, char *logdrop)
 
 #ifdef RTCONFIG_DNSFILTER
 #ifdef RTCONFIG_IPV6
+#ifndef HND_ROUTER
 	if (nvram_get_int("dnsfilter_enable_x") && ipv6_enabled()) {
 		FILE *fp;
 
@@ -6460,6 +6509,7 @@ mangle_setting2(char *lan_if, char *lan_ip, char *logaccept, char *logdrop)
 			eval("ip6tables-restore", "/tmp/mangle_rules_ipv6.dnsfilter");
 		}
 	}
+#endif /* HND_ROUTER */
 #endif /* RTCONFIG_IPV6 */
 #endif /* RTCONFIG_DNSFILTER */
 

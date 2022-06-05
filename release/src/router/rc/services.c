@@ -1926,7 +1926,7 @@ void start_dnsmasq(void)
 		}
 #endif /* RTCONFIG_YANDEXDNS */
 
-#ifdef RTCONFIG_DNSFILTER
+#if defined(RTCONFIG_DNSFILTER) && !defined(HND_ROUTER)
 		if (nvram_get_int("dnsfilter_enable_x"))
 			dnsfilter_setup_dnsmasq(fp);
 #endif

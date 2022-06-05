@@ -61,6 +61,10 @@ ifeq ($(findstring $(HND_ROUTER)$(PLATFORM_ROUTER), y spf11.1 ipq807x ipq60xx ip
 pf6_build_mod := $(filter-out MASQUERADE, ${pf6_build_mod})
 endif
 endif
+ifneq ($(HND_ROUTER),y)
+pf6_build_mod := $(filter-out DNAT, ${pf6_build_mod})
+endif
+
 pf4_build_mod := $(filter-out webmon, ${pf4_build_mod})
 pf6_build_mod := $(filter-out webmon, ${pf6_build_mod})
 pf4_build_mod := $(filter-out @blacklist_modules@,${pf4_build_mod})

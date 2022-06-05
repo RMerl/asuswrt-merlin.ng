@@ -1,13 +1,6 @@
 # This Makefile builds bdmf_shell application that enables
 # CLI capabilities in BDMF-based management system (ie, RDPA)
 #
-
-ifneq ($(wildcard prebuilt/bdmf_shell),)
-REBUILD_MODULE=0
-else
-REBUILD_MODULE=1
-endif
-
 EXE=bdmf_shell
 OBJS=bdmf_shell_client.o
 LIBS = -lpthread
@@ -20,10 +13,6 @@ BDMF_DIR=$(BRCMDRIVERS_DIR)/opensource/char/bdmf/bcm9$(BRCM_CHIP)
 
 include $(BUILD_DIR)/make.common
 
-ALLOWED_INCLUDE_PATHS := -I.
-ALLOWED_LIB_DIRS := /lib:/lib/private:/lib/public
-CUSTOM_CFLAGS += -Werror -Wfatal-errors -DBDMF_SYSTEM_LINUX $(INC_RDP_FLAGS)
-
 ifneq ($(strip $(BUILD_BDMF_SHELL)),)
 build: $(EXE) generic_exe_install
 	install scripts/rdpa_init.sh $(INSTALL_DIR)/rom/rom/etc
@@ -35,13 +24,8 @@ build:
 	@echo "skipping $@ (not configured)"
 endif
 
-ifeq ($(REBUILD_MODULE),1)
-$(EXE): $(OBJS)
-	$(CC) $(BCM_LD_FLAGS) -o $@ $(OBJS) $(LIBS)
-else
 $(EXE):
 	cp -f prebuilt/$(EXE) .
-endif
 
 clean: generic_clean
 	rm -f $(INSTALL_DIR)/bin/$(EXE)

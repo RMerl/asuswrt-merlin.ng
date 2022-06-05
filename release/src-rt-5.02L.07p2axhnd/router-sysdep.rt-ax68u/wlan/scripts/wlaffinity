@@ -4,7 +4,7 @@
 
 MAX_WLAN_ADAPTER=4
 NUM_PROCESSOR=`cat /proc/cpuinfo | grep -c "processor"`
-NUM_WL_INTF=`ls -al /sys/class/net/wl* 2>&1 | grep -c "wl. "`
+NUM_WL_INTF=`ls -al /sys/class/net/*/wireless 2>&1 | grep -c "eth"`
 
 #$(getStrByPos "12 33 44" " " 2) will return 33
 getStrByPos() {
@@ -750,13 +750,7 @@ set_default_affinity_platArcher63178()
 {
     local radio affinity
 
-    # /* bind bcm_archer_us to cpu#2 */
-    affinity=$((1 << 2))
-    proc_name=bcm_archer_us
-    proc_pid=$(getPidByName $proc_name);
-    if [ $proc_pid -gt 0 ]; then
-        setProcAffinity "" $proc_name $proc_pid $affinity
-    fi
+    # /* The bcm_archer_us thread affinity is defined in ARCHER_CPU_AFFINITY */
 
     # /* bind bcmsw_recycle to cpu#1 */
     affinity=$((1 << 1))
@@ -803,13 +797,7 @@ set_default_affinity_platArcher47622()
 {
     local radio affinity
 
-    # /* bind bcm_archer_us to cpu#3 */
-    affinity=$((1 << 3))
-    proc_name=bcm_archer_us
-    proc_pid=$(getPidByName $proc_name);
-    if [ $proc_pid -gt 0 ]; then
-        setProcAffinity "" $proc_name $proc_pid $affinity
-    fi
+    # /* The bcm_archer_us thread affinity is defined in ARCHER_CPU_AFFINITY */
 
     radio=0
     while [ $radio -lt $NUM_WL_INTF ];
@@ -875,7 +863,7 @@ set_default_priority()
 
 # configuring with default policy
 pin_wifi_processes_default() {
-    local BCM_MODEL=`cat /proc/device-tree/model`
+    local BCM_MODEL=`nvram get BCM_MODEL`
 
     if [ -e /usr/sbin/escand ]; then
         echo "Skip Wlan related processes pinning for EAP"

@@ -1,7 +1,7 @@
 #
 # Makefile for the Broadcom IGS Layer
 #
-# Copyright (C) 2020, Broadcom. All Rights Reserved.
+# Copyright (C) 2021, Broadcom. All Rights Reserved.
 #
 # Permission to use, copy, modify, and/or distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above
@@ -39,11 +39,7 @@ COMPONENTSBASE_OFFSET := ../../bcmdrivers/broadcom/net/wl/bcm9$(BCM_CHIP)/main/c
 COMPONENTSBASE := $(src)/$(COMPONENTSBASE_OFFSET)
 SRCBASE_ROUTER := $(COMPONENTSBASE)/router-sysdep
 
-ifeq ($(PREBUILT_EXTRAMOD),1)
-REBUILD_IGS_MODULE=0
-else
 REBUILD_IGS_MODULE=$(shell if [ -d "$(src)/$(IGSSRCDIR)" -a "$(REUSE_PREBUILT_IGS)" != "1" ]; then echo 1; else echo 0; fi)
-endif
 
 ifneq ($(wildcard $(src)/../../router-sysdep/hnd_igs/../hnd_extra/prebuilt/igs.o),)
 REBUILD_IGS_MODULE=0

@@ -119,11 +119,13 @@ then
 	ARCH="_arm"
 	HND="_axhnd"
 
-	cp release/src-rt-5.02p1axhnd.675x/hostTools/prebuilt/addvtoken $REPO/release/src-rt-5.02p1axhnd.675x/hostTools/prebuilt/$BUILD_NAME/
-	cp release/src-rt-5.02p1axhnd.675x/hostTools/prebuilt/cmplzma $REPO/release/src-rt-5.02p1axhnd.675x/hostTools/prebuilt/
-	cp release/src-rt-5.02p1axhnd.675x/hostTools/prebuilt/lzmacmd $REPO/release/src-rt-5.02p1axhnd.675x/hostTools/prebuilt/
-	cp release/src-rt-5.02p1axhnd.675x/bcmdrivers/broadcom/net/wl/impl69/main/components/apps/acsdv2/prebuilt/* $REPO/release/src-rt-5.02p1axhnd.675x/bcmdrivers/broadcom/net/wl/impl69/main/components/apps/acsdv2/prebuilt/$BUILD_NAME/
-	rsync -a --del release/src-rt-5.02p1axhnd.675x/router-sysdep/ $REPO/release/src-rt-5.02p1axhnd.675x/router-sysdep.$BUILD_NAME_LC
+	cp release/src-rt-5.02L.07p2axhnd/hostTools/prebuilt/addvtoken $REPO/release/src-rt-5.02L.07p2axhnd/hostTools/prebuilt/$BUILD_NAME/
+	cp release/src-rt-5.02L.07p2axhnd/hostTools/prebuilt/cmplzma $REPO/release/src-rt-5.02L.07p2axhnd/hostTools/prebuilt/
+	cp release/src-rt-5.02L.07p2axhnd/hostTools/prebuilt/lzmacmd $REPO/release/src-rt-5.02L.07p2axhnd/hostTools/prebuilt/
+	cp release/src-rt-5.02L.07p2axhnd/bcmdrivers/broadcom/net/wl/impl69/main/components/apps/acsdv2/prebuilt/* $REPO/release/src-rt-5.02L.07p2axhnd/bcmdrivers/broadcom/net/wl/impl69/main/components/apps/acsdv2/prebuilt/$BUILD_NAME/
+	cp -ar release/src-rt-5.02L.07p2axhnd/bcmdrivers/broadcom/net/wl/impl69/sys/src/dongle/sysdeps/default/* $REPO/release/src-rt-5.02L.07p2axhnd/bcmdrivers/broadcom/net/wl/impl69/sys/src/dongle/sysdeps/$BUILD_NAME/
+	cp release/src-rt-5.02L.07p2axhnd/targets/cfe/prebuilt/* $REPO/release/src-rt-5.02L.07p2axhnd/targets/cfe/sysdeps/$BUILD_NAME/
+	rsync -a --del release/src-rt-5.02L.07p2axhnd/router-sysdep/ $REPO/release/src-rt-5.02L.07p2axhnd/router-sysdep.$BUILD_NAME_LC
 
 elif [ "$BUILD_NAME" == "GT-AX6000" ] || [ "$BUILD_NAME" == "XT12" ]
 then

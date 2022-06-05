@@ -39,7 +39,7 @@
 #include <asm/exception.h>
 #include <asm/system_misc.h>
 
-#define CATHY_DUMP_MEM_AROUND_REGS
+//#define CATHY_DUMP_MEM_AROUND_REGS
 
 static const char *handler[]= {
 	"Synchronous Abort",

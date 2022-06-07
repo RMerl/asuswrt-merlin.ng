@@ -51,6 +51,10 @@
 #include <openssl/rand.h>
 #include <openssl/ssl.h>
 
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+#include <openssl/provider.h>
+#endif
+
 #if defined(_WIN32) && defined(OPENSSL_NO_EC)
 #error Windows build with OPENSSL_NO_EC: disabling EC key is not supported.
 #endif
@@ -142,6 +146,34 @@ crypto_init_lib_engine(const char *engine_name)
     }
 #else  /* if HAVE_OPENSSL_ENGINE */
     msg(M_WARN, "Note: OpenSSL hardware crypto engine functionality is not available");
+#endif
+}
+
+provider_t *
+crypto_load_provider(const char *provider)
+{
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+    /* Load providers into the default (NULL) library context */
+    OSSL_PROVIDER *prov = OSSL_PROVIDER_load(NULL, provider);
+    if (!prov)
+    {
+        crypto_msg(M_FATAL, "failed to load provider '%s'", provider);
+    }
+    return prov;
+#else  /* OPENSSL_VERSION_NUMBER >= 0x30000000L */
+    msg(M_WARN, "Note: OpenSSL provider functionality is not available");
+    return NULL;
+#endif
+}
+
+void
+crypto_unload_provider(const char *provname, provider_t *provider)
+{
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+    if (!OSSL_PROVIDER_unload(provider))
+    {
+        crypto_msg(M_FATAL, "failed to unload provider '%s'", provname);
+    }
 #endif
 }
 
@@ -308,7 +340,11 @@ show_available_ciphers(void)
                        || cipher_kt_mode_aead(cipher)
                        ))
         {
-            cipher_list[num_ciphers++] = cipher;
+            /* Check explicit availibility (for OpenSSL 3.0) */
+            if (cipher_kt_get(cipher_kt_name(cipher)))
+            {
+                cipher_list[num_ciphers++] = cipher;
+            }
         }
         if (num_ciphers == (sizeof(cipher_list)/sizeof(*cipher_list)))
         {
@@ -341,6 +377,13 @@ show_available_ciphers(void)
 }
 
 void
+print_digest(EVP_MD *digest, void *unused)
+{
+    printf("%s %d bit digest size\n", md_kt_name(digest),
+           EVP_MD_size(digest) * 8);
+}
+
+void
 show_available_digests(void)
 {
     int nid;
@@ -353,16 +396,21 @@ show_available_digests(void)
            "the --auth option.\n\n");
 #endif
 
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+    EVP_MD_do_all_provided(NULL, print_digest, NULL);
+#else
     for (nid = 0; nid < 10000; ++nid)
     {
         const EVP_MD *digest = EVP_get_digestbynid(nid);
         if (digest)
         {
-            printf("%s %d bit digest size\n",
-                   OBJ_nid2sn(nid), EVP_MD_size(digest) * 8);
+            /* We cast the const away so we can keep the function prototype
+             * compatible with EVP_MD_do_all_provided */
+            print_digest((EVP_MD *)digest, NULL);
         }
     }
     printf("\n");
+#endif
 }
 
 void
@@ -592,6 +640,19 @@ cipher_kt_get(const char *ciphername)
 
     ciphername = translate_cipher_name_from_openvpn(ciphername);
     cipher = EVP_get_cipherbyname(ciphername);
+
+    /* This is a workaround for OpenSSL 3.0 to infer if the cipher is valid
+     * without doing all the refactoring that OpenVPN 2.6 has. This will
+     * not support custom algorithm from providers but at least ignore
+     * algorithms that are not available without providers (legacy) */
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+    EVP_CIPHER *tmpcipher = EVP_CIPHER_fetch(NULL, ciphername, NULL);
+    if (!tmpcipher)
+    {
+        cipher = NULL;
+    }
+    EVP_CIPHER_free(tmpcipher);
+#endif
 
     if (NULL == cipher)
     {
@@ -893,6 +954,20 @@ md_kt_get(const char *digest)
     const EVP_MD *md = NULL;
     ASSERT(digest);
     md = EVP_get_digestbyname(digest);
+
+    /* This is a workaround for OpenSSL 3.0 to infer if the digest is valid
+     * without doing all the refactoring that OpenVPN 2.6 has. This will
+     * not support custom algorithm from providers but at least ignore
+     * algorithms that are not available without providers (legacy) */
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+    EVP_MD *tmpmd = EVP_MD_fetch(NULL, digest, NULL);
+    if (!tmpmd)
+    {
+        md = NULL;
+    }
+    EVP_MD_free(tmpmd);
+#endif
+
     if (!md)
     {
         crypto_msg(M_FATAL, "Message hash algorithm '%s' not found", digest);
@@ -907,6 +982,28 @@ md_kt_get(const char *digest)
     return md;
 }
 
+/* Since we used the OpenSSL <=1.1 names as part of our OCC message, they
+ * are now unfortunately part of our wire protocol.
+ *
+ * OpenSSL 3.0 will still accept the "old" names so we do not need to use
+ * this translation table for forward lookup, only for returning the name
+ * with md_kt_name() */
+const cipher_name_pair digest_name_translation_table[] = {
+    { "BLAKE2s256", "BLAKE2S-256"},
+    { "BLAKE2b512", "BLAKE2B-512"},
+    { "RIPEMD160", "RIPEMD-160" },
+    { "SHA224", "SHA2-224"},
+    { "SHA256", "SHA2-256"},
+    { "SHA384", "SHA2-384"},
+    { "SHA512", "SHA2-512"},
+    { "SHA512-224", "SHA2-512/224"},
+    { "SHA512-256", "SHA2-512/256"},
+    { "SHAKE128", "SHAKE-128"},
+    { "SHAKE256", "SHAKE-256"},
+};
+const size_t digest_name_translation_table_count =
+    sizeof(digest_name_translation_table) / sizeof(*digest_name_translation_table);
+
 const char *
 md_kt_name(const EVP_MD *kt)
 {
@@ -914,7 +1011,20 @@ md_kt_name(const EVP_MD *kt)
     {
         return "[null-digest]";
     }
-    return EVP_MD_name(kt);
+
+    const char *name = EVP_MD_name(kt);
+
+    /* Search for a digest name translation */
+    for (size_t i = 0; i < digest_name_translation_table_count; i++)
+    {
+        const cipher_name_pair *pair = &digest_name_translation_table[i];
+        if (!strcmp(name, pair->lib_name))
+        {
+            name = pair->openvpn_name;
+        }
+    }
+
+    return name;
 }
 
 unsigned char

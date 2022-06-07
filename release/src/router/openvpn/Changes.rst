@@ -1,3 +1,51 @@
+Overview of changes in 2.5.7
+============================
+
+New features
+------------
+- Limited OpenSSL 3.0 support
+    OpenSSL 3.0 support has been added. OpenSSL 3.0 support in 2.5 relies
+    on the compatiblity layer and full OpenSSL 3.0 support is coming with
+    OpenVPN 2.6. Only features that impact usage directly have been
+    backported:
+
+    ``--tls-cert-profile insecure``  has been added to allow selecting the
+    lowest  OpenSSL security level (not recommended, use only if you must).
+
+    OpenSSL 3.0 no longer supports the Blowfish (and other deprecated)
+    algorithm by default and the new option ``--providers`` allows loading
+    the legacy provider to renable these algorithms.  Most notably,
+    reading of many PKCS#12 files encrypted with the RC2 algorithm fails
+    unless ``--providers legacy default`` is configured.
+
+    The OpenSSL engine feature ``--engine`` is not enabled by default
+    anymore if OpenSSL 3.0 is detected.
+
+- print OpenSSL error stack if decoding PKCS12 file fails
+
+User-visible Changes
+--------------------
+- windows vcpkg building includes pkcs11-helper 1.29 now
+
+- add MSVC build options to harden windows binaries (HW-enforced
+  stack protection, SHA256 object hashes, SDL).
+
+Bugfixes
+--------
+- fix omission of cipher-negotiation.rst in tarballs
+
+- fix errno handling on Windows (Windows has different classes of
+  error codes, GetLastError() and C runtime errno, these should now
+  be handled correctly)
+
+- fix PATH_MAX build failure in auth-pam.c
+
+- fix t_net.sh self-test leaving around stale "ovpn-dummy0" interface
+
+- fix overlong path names, leading to missing pkcs11-helper patch
+  in tarball
+
+
 Overview of changes in 2.5.6
 ============================
 

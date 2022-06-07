@@ -658,6 +658,18 @@ be unable to re-read protected key files.</p>
 resets, so they don't need to be re-read.</p>
 </td></tr>
 <tr><td class="option-group" colspan="2">
+<kbd><span class="option">--providers <var>providers</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td><p class="first">Load the list of (OpenSSL) providers. This is mainly useful for using an
+external provider for key management like tpm2-openssl or to load the
+legacy provider with</p>
+<pre class="literal-block">
+--providers legacy default
+</pre>
+<p class="last">Behaviour of changing this option between SIGHUP might not be well behaving.
+If you need to change/add/remove this option, fully restart OpenVPN.</p>
+</td></tr>
+<tr><td class="option-group" colspan="2">
 <kbd><span class="option">--remap-usr1 <var>signal</var></span></kbd></td>
 </tr>
 <tr><td>&nbsp;</td><td><p class="first">Control whether internally or externally generated <code>SIGUSR1</code> signals
@@ -2938,6 +2950,8 @@ will disable TLS 1.3.</p>
 <tt class="docutils literal">profile</tt>.</p>
 <p>The following profiles are supported:</p>
 <dl class="docutils">
+<dt><code>insecure</code></dt>
+<dd>Identical for mbed TLS to <cite>legacy</cite></dd>
 <dt><code>legacy</code> (default)</dt>
 <dd>SHA1 and newer, RSA 2048-bit+, any elliptic curve.</dd>
 <dt><code>preferred</code></dt>
@@ -2948,6 +2962,8 @@ will disable TLS 1.3.</p>
 <p>This option is only fully supported for mbed TLS builds. OpenSSL builds
 use the following approximation:</p>
 <dl class="docutils">
+<dt><code>insecure</code></dt>
+<dd>sets &quot;security level 0&quot;</dd>
 <dt><code>legacy</code> (default)</dt>
 <dd>sets &quot;security level 1&quot;</dd>
 <dt><code>preferred</code></dt>

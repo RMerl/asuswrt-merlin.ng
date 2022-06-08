@@ -3166,7 +3166,7 @@ wan_up(const char *pwan_ifname)
 	/* Figure out nvram variable name prefix for this i/f */
 	if ((wan_unit = wan_ifunit(wan_ifname)) < 0
 #ifdef RTCONFIG_SOFTWIRE46
-	    || (nvram_get_int("s46_hgw_case") == S46_CASE_MAP_HGW_OFF && !strcmp(prc, "udhcpc"))
+	    || (nvram_get_int("s46_hgw_case") == S46_CASE_MAP_HGW_OFF && !strcmp(prc, "udhcpc_wan"))
 #endif
 	)
 	{
@@ -3446,7 +3446,7 @@ NOIP:
 		}
 		break;
 	case WAN_V6PLUS:
-		if (!strcmp(prc, "udhcpc") && nvram_get_int("s46_hgw_case") == S46_CASE_INIT) {
+		if (!strcmp(prc, "udhcpc_wan") && nvram_get_int("s46_hgw_case") == S46_CASE_INIT) {
 			if (inet_addr_(nvram_safe_get(strcat_r(prefix, "gateway", tmp))) != INADDR_ANY) {
 				snprintf(cmd, sizeof(cmd), "ip route replace %s dev %s proto kernel", nvram_safe_get(strcat_r(prefix, "gateway", tmp)), wan_ifname);
 				S46_DBG("[CMD]:[%s]\n", cmd);
@@ -3463,8 +3463,8 @@ NOIP:
 				hgwret = nvram_get_int("s46_debug_hgwret");
 			}
 			if (hgwret == 1) {
-				wan6_up(get_wan6face());
 				nvram_set_int("s46_hgw_case", S46_CASE_MAP_HGW_ON);
+				wan6_up(get_wan6face());
 			} else {
 				if (hgwret < 0)
 					S46_DBG("HGW did not respond[%d].\n", hgwret);
@@ -4490,7 +4490,7 @@ stop_wan(void)
 #ifdef RTCONFIG_EAPOL
 	unlink("/tmp/wpa_cli");
 #endif
-	unlink("/tmp/udhcpc");
+	unlink("/tmp/udhcpc_wan");
 	unlink("/tmp/zcip");
 	unlink("/tmp/ppp/ip-up");
 	unlink("/tmp/ppp/ip-down");

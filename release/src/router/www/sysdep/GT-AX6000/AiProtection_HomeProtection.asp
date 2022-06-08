@@ -1,1 +1,0 @@
-../../GT-AC5300/www/AiProtection_HomeProtection.asp

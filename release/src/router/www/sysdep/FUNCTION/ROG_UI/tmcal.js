@@ -60,10 +60,10 @@ function trafficTotalScale(byt){
 		scale = 'TB';
 	}
 	else{	// unit == 9
-		value = (byt/1000).toFixed(2);
+		return scaleSize(byt);
 	}
 
-	return comma(value) + ' <small>'+ scale +'</small>';
+	return value + ' <small>'+ scale +'</small>';
 }
 
 function xpsb(byt)
@@ -92,7 +92,7 @@ REMOVE-END */
 		value = (byt/1000).toFixed(2);
 	}
 
-	return comma(value) + ' <small>'+ scale +'</small>';
+	return value + ' <small>'+ scale +'</small>';
 }
 
 function showCTab()

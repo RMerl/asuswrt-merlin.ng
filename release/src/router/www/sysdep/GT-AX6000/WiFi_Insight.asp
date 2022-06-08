@@ -1,1 +1,0 @@
-../../GT-AC5300/www/WiFi_Insight.asp

@@ -1,1 +1,1 @@
-../../RT-AC86U/www/Main_Analysis_Content.asp
+../../FUNCTION/ROG_UI/Main_Analysis_Content.asp

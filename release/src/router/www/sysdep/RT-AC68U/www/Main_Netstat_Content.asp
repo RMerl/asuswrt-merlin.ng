@@ -1,1 +1,1 @@
-../../RT-AC86U/www/Main_Netstat_Content.asp
+../../FUNCTION/ROG_UI/Main_Netstat_Content.asp

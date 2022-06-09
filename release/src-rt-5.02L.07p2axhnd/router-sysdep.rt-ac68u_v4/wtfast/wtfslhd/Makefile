@@ -7,9 +7,10 @@ include ../../common.mak
 LIBS = -lev -lwtf -lgpnutils -lcurl -lssl -lcrypto -lm
 
 ifeq ($(ROUTER_BUILD), y)
-	LIBS += -lshared -lgcc_s -lnvram
+LIBS += -lshared -lgcc_s -lnvram
+LIBS += -L$(TOP_PLATFORM)/ethctl_lib -lethctl
 ifeq ($(RTCONFIG_AMAS),y)
-	LIBS += -L$(TOP)/json-c/.libs -ljson-c
+LIBS += -L$(TOP)/json-c/.libs -ljson-c
 endif		
 endif
 

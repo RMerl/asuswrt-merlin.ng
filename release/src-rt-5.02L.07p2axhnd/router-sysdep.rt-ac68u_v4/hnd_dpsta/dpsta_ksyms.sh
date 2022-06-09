@@ -2,7 +2,7 @@
 #
 # Script file for generating symbols of DPSTA module
 #
-# Copyright (C) 2019, Broadcom. All Rights Reserved.
+# Copyright (C) 2021, Broadcom. All Rights Reserved.
 #
 # Permission to use, copy, modify, and/or distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above
@@ -25,7 +25,7 @@ cat <<EOF
 #include <linux/version.h>
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,36)
 #include <linux/config.h>
-#endif // endif
+#endif
 #include <linux/module.h>
 EOF
 

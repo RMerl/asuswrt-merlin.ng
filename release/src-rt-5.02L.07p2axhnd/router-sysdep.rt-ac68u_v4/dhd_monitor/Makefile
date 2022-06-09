@@ -1,7 +1,7 @@
 #
 # Router dhd_monitor Makefile
 #
-# Copyright (C) 2019, Broadcom. All Rights Reserved.
+# Copyright (C) 2021, Broadcom. All Rights Reserved.
 #
 # Permission to use, copy, modify, and/or distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above
@@ -20,29 +20,6 @@
 #
 #
 
-include $(TOP)/.config
-
-ifneq ($(wildcard prebuilt/debug_monitor),)
-REBUILD_MODULE=0
-else
-REBUILD_MODULE=1
-endif
-
-CFLAGS += -I. -I$(TOP)/shared -I$(SRCBASE)/include -I$(SRCBASE)/../components/shared -I$(SRCBASE)/../components/wlioctl/include -I$(SRCBASE)/../components/proto/include -I$(SRCBASE)/common/include
-
-ifeq ($(strip $(BCA_HNDROUTER)),)
-CFLAGS += -I$(TOP)/busybox-1.x
-endif
-
-# LDFLAGS += -L$(TOP)/nvram -L$(PLATFORMDIR)/install/nvram/usr/lib -lnvram
-# LDFLAGS += -L$(TOP)/shared -L$(PLATFORMDIR)/install/shared/usr/lib -lshared -lpthread
-LDFLAGS += -L$(TOP_PLATFORM)/wlcsm -lwlcsm
-LDFLAGS += -L$(TOP_PLATFORM)/nvram -L$(PLATFORMDIR)/install/nvram/usr/lib -lnvram -lpthread
-LDFLAGS += -L$(TOP)/shared -L$(PLATFORMDIR)/install/shared/usr/lib -lshared
-LDFLAGS += $(EXTRA_LDFLAGS)
-
-OBJS := dhd_monitor.o
-
 all: debug_monitor
 
 clean:
@@ -53,24 +30,5 @@ install: all
 	install debug_monitor $(INSTALLDIR)/usr/sbin
 	$(STRIP) $(INSTALLDIR)/usr/sbin/debug_monitor
 
-ifeq ($(REBUILD_MODULE),1)
-
-ifneq ($(PREBUILT_BCMBIN),1)
-debug_monitor: $(OBJS)
-	$(CC) -o $@ $(OBJS) $(LDFLAGS)
-else
-debug_monitor:
-	cp -f $(TOP_PLATFORM)/$(shell pwd | sed 's/\(.*router-sysdep\/\)//')/$(PRBM_DIR)/$@ ./
-endif
-
-%.o: .%.depend
-.%.depend: %.c
-	$(CC) $(CFLAGS) -M $< > $@
-
--include $(OBJS:%.o=.%.depend)
-
-else
 debug_monitor:
 	cp -f prebuilt/debug_monitor .
-endif
-

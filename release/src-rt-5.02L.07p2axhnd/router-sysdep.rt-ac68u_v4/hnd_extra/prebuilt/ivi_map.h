@@ -46,9 +46,7 @@
 #include <linux/brcm_dll.h>
 
 #include "ivi_config.h"
-#if 0
 #include "ivi_map_tcp.h"
-#endif
 
 /* map entry structure */
 struct map_tuple {
@@ -110,7 +108,6 @@ extern u16 hgw_offset;
 extern u16 hgw_suffix;
 extern u16 hgw_adjacent;
 
-extern struct map_list tcp_list;
 extern struct map_list udp_list;
 extern struct map_list icmp_list;
 

@@ -16,9 +16,15 @@ all install : $(EXE)
 	install -m 755 $(EXE) $(INSTALL_DIR)/bin;
 
 
+ifeq ($(strip $(BUILD_EMMC_TRAPEZE)),y)
+BUILD_TYPE_FLAG="-static"
+else
+BUILD_TYPE_FLAG=
+endif
+
 ifneq ($(wildcard $(mdir)/*.c),)
 $(EXE): $(OBJS)
-	$(CC) $(BCM_LD_FLAGS) -o $@ $(OBJS) -Wl,-rpath,$(LIBS)
+	$(CC) $(BUILD_TYPE_FLAG) $(BCM_LD_FLAGS) -o $@ $(OBJS) -Wl,-rpath,$(LIBS)
 
 else
 $(EXE): $(SAVED)

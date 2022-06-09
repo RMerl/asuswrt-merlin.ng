@@ -9,6 +9,7 @@ CFLAGS += -pedantic-errors
 endif
 LDFLAGS += -Wl,-rpath -Wl,$(LIB)
 LIBS = -lgpnutils -lgpnclient -lrt -lshared -lnvram -lssl -lcrypto
+LIBS += -L$(TOP_PLATFORM)/ethctl_lib -lethctl
 
 ifeq ($(RTCONFIG_AMAS),y)
 LDFLAGS += -L$(TOP)/json-c/.libs -ljson-c

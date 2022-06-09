@@ -1,7 +1,7 @@
 #
 # Makefile for the Broadcom HND Layer
 #
-# Copyright (C) 2020, Broadcom. All Rights Reserved.
+# Copyright (C) 2021, Broadcom. All Rights Reserved.
 #
 # Permission to use, copy, modify, and/or distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above
@@ -153,6 +153,9 @@ endif
 include $(SRCBASE)/.config
 MODEL = $(subst -,,$(BUILD_NAME))
 EXTRA_CFLAGS += -D$(MODEL)
+ifneq ($(strip $(BCM_WIFI_NIC_DEBUG)),)
+EXTRA_CFLAGS += -g -DBCMDBG -DBCMDBG_DUMP
+endif
 
 -include $(SRCBASE_ROUTER)/hnd/Makefile.shared
 

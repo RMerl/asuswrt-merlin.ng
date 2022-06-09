@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020, Broadcom. All Rights Reserved.
+ * Copyright (C) 2021, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -44,5 +44,6 @@ typedef struct psta_if_api {
 extern psta_if_t *dpsta_register(uint32 unit, psta_if_api_t *inst);
 extern int32 dpsta_unregister(uint32 unit);
 extern int32 dpsta_recv(void *p);
+extern void dpsta_flush_stalist(void);
 
 #endif /* _DPSTA_H_ */

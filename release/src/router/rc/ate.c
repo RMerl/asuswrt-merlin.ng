@@ -877,7 +877,7 @@ static int setAllSpecificColorLedOn(enum ate_led_color color)
 
 			if (color == LED_COLOR_WHITE) {
 				eval("wl", "-i", "eth5", "ledbh", "0", "1");	// wl 2.4G
-				eval("wl", "-i", "eth7", "ledbh", "13", "1");	// wl 5G
+				eval("wl", "-i", "eth7", "ledbh", "15", "1");	// wl 5G
 				eval("wl", "-i", "eth6", "ledbh", "0", "1");	// wl 6G
 				bcm53134_led_control(1);
 #ifdef RTCONFIG_EXTPHY_BCM84880
@@ -885,7 +885,7 @@ static int setAllSpecificColorLedOn(enum ate_led_color color)
 #endif
 			} else {
 				eval("wl", "-i", "eth5", "ledbh", "0", "0");	// wl 2.4G
-				eval("wl", "-i", "eth7", "ledbh", "13", "0");	// wl 5G
+				eval("wl", "-i", "eth7", "ledbh", "15", "0");	// wl 5G
 				eval("wl", "-i", "eth6", "ledbh", "0", "0");	// wl 6G
 				bcm53134_led_control(0);
 #ifdef RTCONFIG_EXTPHY_BCM84880

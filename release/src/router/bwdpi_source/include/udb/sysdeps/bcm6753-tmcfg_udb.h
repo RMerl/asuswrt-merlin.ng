@@ -25,7 +25,7 @@
 
 /*
  * Automatically generated make config: don't edit
- * Date: Mon Dec  6 16:31:25 2021
+ * Date: Mon Apr 25 17:01:29 2022
  */
 #ifndef __TMCFG__UDB_AUTOCONF_OUTPUT_H_
 #define __TMCFG__UDB_AUTOCONF_OUTPUT_H_
@@ -93,8 +93,8 @@
 
 #define TMCFG_BRAND_ASUS 1 // y
 #define TMCFG_BRAND "asus"
-#define TMCFG_MODEL_RT_AX58U_V2 1 // y
-#define TMCFG_MODEL "rt-ax58u_v2"
+#define TMCFG_MODEL_GT10 1 // y
+#define TMCFG_MODEL "gt10"
 #define TMCFG_OEM_SRC 1 // y
 #define TMCFG_OEM_SRC_BRCM_FC_504L0X 1 // y
 
@@ -109,13 +109,13 @@
 #define TMCFG_CPU_64BITS 0 // n
 #define TMCFG_CPU_BIG_ENDIAN 0 // n
 #define TMCFG_CPU_LITTLE_ENDIAN 1 // y
-#define TMCFG_KERN_DIR "/opt/ASUS/asuswrt_AX58U_V2_GPL_386_46737/release/src-rt-5.04axhnd.675x/kernel/linux-4.19"
+#define TMCFG_KERN_DIR "/opt/ASUS/asuswrt_GPL_GT10_3.0.0.4.386.48238/kernel/linux-4.19"
 #define TMCFG_KERN_ARCH "arm"
 
 /*
  * Toolchain (TC) configurations
  */
-#define TMCFG_TC_PFX "/opt/ASUS/toolchains/asus-toolchain-arm-rt_ax58u_v2/bin/arm-linux-"
+#define TMCFG_TC_PFX "/opt/toolchains/crosstools-arm-gcc-9.2-linux-4.19-glibc-2.30-binutils-2.32/bin/arm-buildroot-linux-gnueabi-"
 
 /*
  * Advanced Build Options
@@ -128,7 +128,7 @@
 #define TMCFG_TC_RANLIB "$(TMCFG_TC_PFX)ranlib"
 #define TMCFG_TC_STRIP "$(TMCFG_TC_PFX)strip"
 #define TMCFG_TC_OBJDUMP "$(TMCFG_TC_PFX)objdump"
-#define TMCFG_TC_EXTRA_CFLAGS "-fsigned-char -Wno-incompatible-pointer-types -I/opt/ASUS/asuswrt_AX58U_V2_GPL_386_46737/release/src-rt-5.04axhnd.675x/kernel/bcmkernel/include"
+#define TMCFG_TC_EXTRA_CFLAGS "-fsigned-char -Wno-incompatible-pointer-types"
 #define TMCFG_TC_EXTRA_LDFLAGS ""
 #define TMCFG_TC_RUN_STRIP 1 // y
 
@@ -155,12 +155,18 @@
 #define TMCFG_E_UDB_CORE_REV_VER 20
 #define TMCFG_E_UDB_CORE_SHN_REV_NUM 0
 #define TMCFG_E_UDB_CORE_USE_KBUILD 1 // y
-#define TMCFG_E_UDB_CORE_EXTRA_CFLAGS ""
+#define TMCFG_E_UDB_CORE_EXTRA_CFLAGS "-I/opt/ASUS/asuswrt_GPL_GT10_3.0.0.4.386.48238/kernel/bcmkernel/include -Wno-incompatible-pointer-types"
 #define TMCFG_E_UDB_CORE_CONN_EXTRA 1 // y
 #define TMCFG_E_UDB_CORE_RULE_FORMAT_V2 0 // n
 #define TMCFG_E_UDB_CORE_MESH 1 // y
 #define TMCFG_E_UDB_CORE_URL_QUERY 1 // y
-#define TMCFG_E_UDB_CORE_DNS_BASE_URL 0 // n
+#define TMCFG_E_UDB_CORE_DNS_BASE_URL 1 // y
+
+/*
+ * DNS Based WRS Configs
+ */
+#define TMCFG_E_UDB_CORE_DEF_REDIR_DOMAIN "blocking.asus.hns.tm"
+#define TMCFG_E_UDB_CORE_MAX_DNS_ENTRY 1000
 #define TMCFG_E_UDB_CORE_SHN_QUERY 0 // n
 #define TMCFG_E_UDB_CORE_WBL 1 // y
 #define TMCFG_E_UDB_CORE_WBL_MAJ_VER 2
@@ -177,7 +183,7 @@
 #define TMCFG_E_UDB_CORE_WBL_URL_NUM 1024
 #define TMCFG_E_UDB_CORE_WEB_FUNC 1 // y
 #define TMCFG_E_UDB_CORE_DC 1 // y
-#define TMCFG_E_UDB_CORE_DC_UNKNOWN_DEVID 0 // n
+#define TMCFG_E_UDB_CORE_DC_UNKNOWN_DEVID 1 // y
 #define TMCFG_E_UDB_CORE_ANOMALY_PREVENT 1 // y
 #define TMCFG_E_UDB_CORE_VIRTUAL_PATCH 1 // y
 #define TMCFG_E_UDB_CORE_SWNAT 0 // n
@@ -187,18 +193,20 @@
 #define TMCFG_E_UDB_CORE_HWNAT 0 // n
 #define TMCFG_E_UDB_CORE_HWQOS 0 // n
 #define TMCFG_E_UDB_CORE_APP_PATROL 1 // y
-#define TMCFG_E_UDB_CORE_PATROL_TIME_QUOTA 0 // n
+#define TMCFG_E_UDB_CORE_PATROL_TIME_QUOTA 1 // y
 #define TMCFG_E_UDB_CORE_APP_REDIRECT_URL 1 // y
+#define TMCFG_E_UDB_CORE_PATROL_TIME_GRP_NUM 32
+#define TMCFG_E_UDB_CORE_PATROL_TIME_DEV_NUM 6
 #define TMCFG_E_UDB_CORE_PROG_CTRL 1 // y
 #define TMCFG_E_UDB_CORE_PROG_LIC_CTRL_NONE 1 // y
 #define TMCFG_E_UDB_CORE_PROG_LIC_CTRL_V1 0 // n
 #define TMCFG_E_UDB_CORE_PROG_LIC_CTRL_V2 0 // n
-#define TMCFG_E_UDB_CORE_WPR_PAGE 0 // n
+#define TMCFG_E_UDB_CORE_WPR_PAGE 1 // y
 #define TMCFG_E_UDB_CORE_TMDBG 0 // n
 #define TMCFG_E_UDB_CORE_MEMTRACK 0 // n
 #define TMCFG_E_UDB_CORE_HTTP_REFER 0 // n
 #define TMCFG_E_UDB_SHELL 1 // y
-#define TMCFG_E_UDB_SHELL_EXTRA_CFLAGS ""
+#define TMCFG_E_UDB_SHELL_EXTRA_CFLAGS "-Wno-incompatible-pointer-types"
 #define TMCFG_E_UDB_SHELL_KMOD_NAME "tdts_udb"
 #define TMCFG_E_UDB_SHELL_IOCTL_DEV_NAME "idpfw"
 #define TMCFG_E_UDB_SHELL_IOCTL_DEV_MAJ 191
@@ -210,7 +218,7 @@
 #define TMCFG_E_REL_PKG_MAJ_VER 2
 #define TMCFG_E_REL_PKG_MIN_VER 0
 #define TMCFG_E_REL_PKG_REV_VER 2
-#define TMCFG_E_REL_PKG_LOCAL_VER "0a0b3ae7"
+#define TMCFG_E_REL_PKG_LOCAL_VER "0236719_fix_blocking_page_DNS_Base_fix_ERROR_Send_Redirect_page_Mash_Enable"
 
 /*
  * Accompany applications or modules
@@ -219,7 +227,7 @@
 /*
  * Kernel
  */
-#define TMCFG_APP_K_EXTRA_CFLAGS "-I/opt/ASUS/asuswrt_AX58U_V2_GPL_386_46737/release/src-rt-5.04axhnd.675x/kernel/bcmkernel/include -I/opt/ASUS/asuswrt_AX58U_V2_GPL_386_46737/release/src-rt-5.04axhnd.675x/shared/opensource/include/bcm963xx -I/opt/ASUS/asuswrt_AX58U_V2_GPL_386_46737/release/src-rt-5.04axhnd.675x/bcmdrivers/broadcom/include/bcm963xx -I/opt/ASUS/asuswrt_AX58U_V2_GPL_386_46737/release/src-rt-5.04axhnd.675x/bcmdrivers/opensource/include/bcm963xx"
+#define TMCFG_APP_K_EXTRA_CFLAGS "-I/opt/ASUS/asuswrt_GPL_GT10_3.0.0.4.386.48238/kernel/bcmkernel/include -I/opt/ASUS/asuswrt_GPL_GT10_3.0.0.4.386.48238/kernel/shared/opensource/include/bcm963xx -I/opt/ASUS/asuswrt_GPL_GT10_3.0.0.4.386.48238/kernel/bcmdrivers/broadcom/include/bcm963xx -I/opt/ASUS/asuswrt_GPL_GT10_3.0.0.4.386.48238/kernel/bcmdrivers/opensource/include/bcm963xx"
 #define TMCFG_APP_K_TDTS_NFFW 0 // n
 #define TMCFG_APP_K_TDTS_UDBFW 1 // y
 #define TMCFG_APP_K_TDTS_UDBFW_EXTRA_SYMBOLS ""
@@ -238,7 +246,7 @@
 /*
  * Userspace toolchain
  */
-#define TMCFG_APP_U_TC_PFX "/opt/ASUS/toolchains/asus-toolchain-arm-rt_ax58u_v2/bin/arm-linux-"
+#define TMCFG_APP_U_TC_PFX "/opt/toolchains/crosstools-arm-gcc-9.2-linux-4.19-glibc-2.30-binutils-2.32/bin/arm-buildroot-linux-gnueabi-"
 #define TMCFG_APP_U_TC_CC "$(TMCFG_APP_U_TC_PFX)gcc"
 #define TMCFG_APP_U_TC_AR "$(TMCFG_APP_U_TC_PFX)ar"
 #define TMCFG_APP_U_TC_LD "$(TMCFG_APP_U_TC_PFX)ld"

@@ -90,6 +90,9 @@ var le_sbstate_t = '<% nvram_get("le_sbstate_t"); %>';
 var le_auxstate_t = '<% nvram_get("le_auxstate_t"); %>';
 var le_re_ddns = '<% nvram_get("le_re_ddns"); %>';
 var faq_href = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=105";
+var oauth_auth_status = httpApi.nvramGet(["oauth_auth_status"], true).oauth_auth_status;
+var aae_ddnsinfo = httpApi.nvramGet(["aae_ddnsinfo"], true).aae_ddnsinfo;
+var ipv6_service = httpApi.nvramGet(["ipv6_service"], true).ipv6_service;
 
 function init(){
 	show_menu();
@@ -109,8 +112,15 @@ function init(){
 	setTimeout(show_warning_message, 1000);
 
 	ASUS_EULA.config(applyRule, refreshpage);
-	if(ddns_enable_x == "1" && ddns_server_x == "WWW.ASUS.COM"){
+	if(ddns_enable_x == "1" && ddns_server_x.indexOf("WWW.ASUS.COM") != -1){
 		ASUS_EULA.check('asus');
+	}
+
+	if(oauth_auth_status == "2"){
+		if(aae_ddnsinfo == "ns1.asuscomm.com")
+			$("#ddns_server_x option[value='WWW.ASUS.COM.CN']").remove();
+		else if(aae_ddnsinfo == "ns1.asuscomm.cn")
+			$("#ddns_server_x option[value='WWW.ASUS.COM']").remove();
 	}
 }
 
@@ -128,6 +138,7 @@ function update_ddns_wan_unit_option(){
 
 var MAX_RETRY_NUM = 5;
 var external_ip_retry_cnt = MAX_RETRY_NUM;
+var privateIP_warning = 0;
 function show_warning_message(){
 	if(realip_support && (based_modelid == "BRT-AC828" || wans_mode != "lb")){
 		if(realip_state != "2" && external_ip_retry_cnt > 0){
@@ -137,20 +148,26 @@ function show_warning_message(){
 				setTimeout("get_real_ip();", 3000);
 		}
 		else if(realip_state != "2"){
-			if(cur_wan_ipaddr == "0.0.0.0" || validator.isPrivateIP(cur_wan_ipaddr))
+			if(cur_wan_ipaddr == "0.0.0.0" || validator.isPrivateIP(cur_wan_ipaddr)){
+				privateIP_warning = 1;
 				showhide("wan_ip_hide2", 1);
+			}
 			else
 				showhide("wan_ip_hide2", 0);
 		}
 		else{
-			if(!external_ip)
+			if(!external_ip){
+				privateIP_warning = 1;
 				showhide("wan_ip_hide2", 1);
+			}
 			else
 				showhide("wan_ip_hide2", 0);
 		}
 	}
-	else if(cur_wan_ipaddr == "0.0.0.0" || validator.isPrivateIP(cur_wan_ipaddr))
+	else if(cur_wan_ipaddr == "0.0.0.0" || validator.isPrivateIP(cur_wan_ipaddr)){
+		privateIP_warning = 1;
 		showhide("wan_ip_hide2", 1);
+	}
 }
 
 function get_real_ip(){
@@ -216,14 +233,25 @@ function force_update() {
 	submitForm();
 }
 
+function change_ddns_realip(v){
+	if(ipv6_service != "disabled" && v == "0")
+		showhide("ddns_ipv6update_tr", 1);
+	else
+		showhide("ddns_ipv6update_tr", 0);
+}
+
 function ddns_load_body(){
     if(ddns_enable_x == 1){
         inputCtrl(document.form.ddns_server_x, 1);
         document.getElementById('ddns_hostname_tr').style.display = "";
-        if(ddns_server_x == "WWW.ASUS.COM" || ddns_server_x == ""){
+        if(ddns_server_x.indexOf("WWW.ASUS.COM") != -1 || ddns_server_x == ""){
             document.form.ddns_hostname_x.parentNode.style.display = "none";
             document.form.DDNSName.parentNode.style.display = "";
-            var ddns_hostname_title = ddns_hostname_x_t.substring(0, ddns_hostname_x_t.indexOf('.asuscomm.com'));
+			if(ddns_server_x.indexOf(".CN") != -1)
+				$("#domain_text").text(".asuscomm.cn");
+			else
+				$("#domain_text").text(".asuscomm.com");
+            var ddns_hostname_title = ddns_hostname_x_t.substring(0, ddns_hostname_x_t.indexOf($("#domain_text").text()));
             if(ddns_hostname_x_t != '' && ddns_hostname_title)
                 document.getElementById("DDNSName").value = ddns_hostname_title;
             else
@@ -241,7 +269,7 @@ function ddns_load_body(){
         }
 	inputCtrl(document.form.ddns_refresh_x, 1);
 	showhide("ddns_ipcheck_tr", 1);
-
+		change_ddns_realip(document.form.ddns_realip_x.value);
         change_ddns_setting(document.form.ddns_server_x.value);
 
 	    if(document.form.ddns_server_x.value == "WWW.ORAY.COM"){
@@ -284,7 +312,7 @@ function ddns_load_body(){
 		if((ddns_return_code.indexOf('200')!=-1 || ddns_return_code.indexOf('220')!=-1 || ddns_return_code == 'register,230') ||
 		   (ddns_return_code_chk.indexOf('200')!=-1 || ddns_return_code_chk.indexOf('220')!=-1 || ddns_return_code_chk == 'register,230')){
 			showhide("wan_ip_hide2", 0);
-			if(ddns_server_x == "WWW.ASUS.COM"){
+			if(ddns_server_x.indexOf("WWW.ASUS.COM") != -1){
 				showhide("wan_ip_hide3", 1);
 				document.getElementById("ddns_status").innerHTML = "<#Status_Active#>";
 				if(inadyn)
@@ -292,7 +320,7 @@ function ddns_load_body(){
 			}
 		}
 		else{
-			if(ddns_server_x == "WWW.ASUS.COM"){
+			if(ddns_server_x.indexOf("WWW.ASUS.COM") != -1){
 				document.getElementById("ddns_status").innerHTML = "<#Status_Inactive#>";
 				if(ddnsStatus != "")
 					$("#ddns_status_detail").css("display", "inline");
@@ -318,7 +346,7 @@ function get_cert_info(){
 }
 
 function apply_eula_check(){
-	if(document.form.ddns_enable_x[0].checked == true && document.form.ddns_server_x.value == "WWW.ASUS.COM"){
+	if(document.form.ddns_enable_x[0].checked == true && document.form.ddns_server_x.value.indexOf("WWW.ASUS.COM") != -1){
 		if(!ASUS_EULA.check("asus")) return false;
 	}
 	
@@ -327,8 +355,8 @@ function apply_eula_check(){
 
 function applyRule(){
 	if(validForm()){
-		if(document.form.ddns_enable_x[0].checked == true && document.form.ddns_server_x.selectedIndex == 0){
-			document.form.ddns_hostname_x.value = document.form.DDNSName.value+".asuscomm.com";
+		if(document.form.ddns_enable_x[0].checked == true && (document.form.ddns_server_x.value.indexOf("WWW.ASUS.COM") != -1)){
+			document.form.ddns_hostname_x.value = document.form.DDNSName.value+$("#domain_text").text();
 		}
 
 		check_update();
@@ -346,7 +374,14 @@ function validForm(){
 	}
 
 	if(document.form.ddns_enable_x[0].checked){		//ddns enable
-		if(document.form.ddns_server_x.selectedIndex == 0){		//WWW.ASUS.COM	
+		if(privateIP_warning && document.form.ddns_realip_x != undefined && document.form.ddns_realip_x.value == "0"){
+			alert("The wireless router currently uses a private WAN IP address. Please change method to retrieve WAN IP to \'External\'.");//untranslated
+			document.form.ddns_realip_x.focus();
+			$("#ddns_realip_hint").show();
+			return false;
+		}
+
+		if(document.form.ddns_server_x.value.indexOf("WWW.ASUS.COM") != -1){		//WWW.ASUS.COM	or WWW.ASUS.COM.CN
 			if(document.form.DDNSName.value == ""){
 				alert("<#LANHostConfig_x_DDNS_alarm_14#>");
 				document.form.DDNSName.focus();
@@ -547,12 +582,16 @@ function change_ddns_setting(v){
 	document.getElementById("ddns_status_tr").style.display = "none";
 	if(inadyn)
 		$("#deregister_btn").css("display", "none");
-	if (v == "WWW.ASUS.COM"){
+	if (v.indexOf("WWW.ASUS.COM") != -1){
 			document.getElementById("ddns_hostname_info_tr").style.display = "none";
 			document.getElementById("ddns_hostname_tr").style.display="";
 			document.form.ddns_hostname_x.parentNode.style.display = "none";
 			document.form.DDNSName.parentNode.style.display = "";
-			var ddns_hostname_title = ddns_hostname_x_t.substring(0, ddns_hostname_x_t.indexOf('.asuscomm.com'));
+			if(v.indexOf(".CN") != -1)
+				$("#domain_text").text(".asuscomm.cn");
+			else
+				$("#domain_text").text(".asuscomm.com");
+			var ddns_hostname_title = ddns_hostname_x_t.substring(0, ddns_hostname_x_t.indexOf($("#domain_text").text()));
 			if(ddns_hostname_x_t != '' && ddns_hostname_title)
 					document.getElementById("DDNSName").value = ddns_hostname_title;
 			else
@@ -572,7 +611,7 @@ function change_ddns_setting(v){
 			showhide("need_custom_scripts", 0);
 			document.getElementById("ddns_status_tr").style.display = "";
 
-			if(ddns_enable_x == "1" && ddns_server_x_t == "WWW.ASUS.COM" &&
+			if(ddns_enable_x == "1" && ddns_server_x_t.indexOf("WWW.ASUS.COM") != -1 &&
 				(ddns_return_code_chk.indexOf('200')!=-1 || ddns_return_code_chk.indexOf('220')!=-1 || ddns_return_code_chk == 'register,230')){
 				document.getElementById("ddns_status").innerHTML = "<#Status_Active#>";
 				if(inadyn)
@@ -956,17 +995,26 @@ function check_unregister_result(){
 			<tr id="ddns_ipcheck_tr">
 				<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(5,17);">Method to retrieve WAN IP</a></th>
                                 <td>
-				<select name="ddns_realip_x" class="input_option">
-					<option class="content_input_fd" value="0" <% nvram_match("ddns_realip_x", "0","selected"); %>>Internal</option>
-					<option class="content_input_fd" value="1" <% nvram_match("ddns_realip_x", "1","selected"); %>>External</option>
+				<select name="ddns_realip_x" class="input_option" onchange="change_ddns_realip(this.value);">
+					<option class="content_input_fd" value="0" <% nvram_match("ddns_realip_x", "0","selected"); %>><#IPConnection_VSList_Internal#></option>
+					<option class="content_input_fd" value="1" <% nvram_match("ddns_realip_x", "1","selected"); %>><#IPConnection_VSList_External#></option>
 				</select>
+				<span id="ddns_realip_hint" style="display: none; color:#FFCC00; margin-left: 5px;">Please change method to retrieve WAN IP to 'External'</span><!--untranslated-->
+				</td>
+			</tr>
+			<tr id="ddns_ipv6update_tr" style="display: none;">
+				<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(5,18);">IPv6 Update</a></th>
+				<td>
+					<input type="radio" name="ddns_ipv6_update" class="input" value="1" <% nvram_match("ddns_ipv6_update", "1", "checked"); %>><#checkbox_Yes#>
+					<input type="radio" name="ddns_ipv6_update" class="input" value="0" <% nvram_match("ddns_ipv6_update", "0", "checked"); %>><#checkbox_No#>
 				</td>
 			</tr>
 			<tr>
 				<th><#LANHostConfig_x_DDNSServer_itemname#></th>
 				<td>
-					<select name="ddns_server_x"class="input_option" onchange="change_ddns_setting(this.value); change_cert_method();">
+					<select id="ddns_server_x" name="ddns_server_x" class="input_option" onchange="change_ddns_setting(this.value); change_cert_method();">
 						<option value="WWW.ASUS.COM" <% nvram_match("ddns_server_x", "WWW.ASUS.COM","selected"); %>>WWW.ASUS.COM</option>
+						<option value="WWW.ASUS.COM.CN" <% nvram_match("ddns_server_x", "WWW.ASUS.COM.CN","selected"); %>>WWW.ASUS.COM.CN</option>
 						<option value="DOMAINS.GOOGLE.COM" <% nvram_match("ddns_server_x", "DOMAINS.GOOGLE.COM","selected"); %>>DOMAINS.GOOGLE.COM</option>
 						<option value="WWW.DYNDNS.ORG" <% nvram_match("ddns_server_x", "WWW.DYNDNS.ORG","selected"); %>>WWW.DYNDNS.ORG</option>
 						<option value="WWW.DYNDNS.ORG(CUSTOM)" <% nvram_match("ddns_server_x", "WWW.DYNDNS.ORG(CUSTOM)","selected"); %>>WWW.DYNDNS.ORG(CUSTOM)</option>
@@ -995,7 +1043,7 @@ function check_unregister_result(){
 						<input type="text" maxlength="63" class="input_25_table" name="ddns_hostname_x" id="ddns_hostname_x" value="<% nvram_get("ddns_hostname_x"); %>" onKeyPress="return validator.isString(this, event)" autocorrect="off" autocapitalize="off">
 					</div>
 					<div id="asusddnsname_input" style="display:none;">
-						<input type="text" maxlength="50" class="input_32_table" name="DDNSName" id="DDNSName" class="inputtext" onKeyPress="return validator.isString(this, event)" OnClick="cleandef();" autocorrect="off" autocapitalize="off">.asuscomm.com
+						<input type="text" maxlength="50" class="input_32_table" name="DDNSName" id="DDNSName" class="inputtext" onKeyPress="return validator.isString(this, event)" OnClick="cleandef();" autocorrect="off" autocapitalize="off"><span id="domain_text" style="color: #FFFFFF;">.asuscomm.com</span>
 						<div id="alert_block" style="color:#FFCC00; margin-left:5px; font-size:11px;display:none;">
 								<span id="alert_str"></span>
 						</div>

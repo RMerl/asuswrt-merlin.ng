@@ -254,6 +254,11 @@ start_emf(char *lan_ifname)
 		nvram_commit();
 	}
 #endif
+	if (nvram_match("switch_wantag", "hinet_mesh")) {
+		eval("bcmmcastctl", "mode", "-i",  "br0",  "-p", "1",  "-m", "1");
+		eval("bcmmcastctl", "mode", "-i",  "br0",  "-p", "2",  "-m", "1");
+		return;
+	}
 #ifdef RTCONFIG_PROXYSTA
 #ifdef RTCONFIG_HND_ROUTER_AX
 	eval("bcmmcastctl", "mode", "-i",  "br0",  "-p", "1",  "-m", (psta_exist() || psr_exist() || (sw_mode() == SW_MODE_AP && !nvram_get_int("bcm_snooping"))) ? "0" : "2");
@@ -1344,7 +1349,7 @@ void start_lan(void)
 #ifdef RTAXE7800
 	// configure 6715 GPIO direction
 	eval("wl", "-i", "eth7", "gpioout", "0x2002", "0x2002");
-	eval("wl", "-i", "eth7", "ledbh", "13", "7");
+	eval("wl", "-i", "eth7", "ledbh", "15", "7");
 #endif
 
 #ifdef GT10
@@ -1592,9 +1597,6 @@ void start_lan(void)
 					wl_vif_hwaddr_set(ifname);
 				}
 #endif
-#if defined(RTAXE7800) && !defined(RTCONFIG_BCM_MFG)
-				if (!nvram_get_int("x_Setting") && !strcmp(ifname, "eth1")) continue;
-#endif
 #ifdef RTCONFIG_CONCURRENTREPEATER
 				if (sw_mode() == SW_MODE_REPEATER) {
 					/* ignore wlc if in sw_mode = 2 and wlc_express = 0 */
@@ -1822,7 +1824,9 @@ void start_lan(void)
 					if (ifconfig(ifname, IFUP | IFF_ALLMULTI, NULL, NULL) != 0)
 						continue;
 				}
-
+#if defined(RTAXE7800) && !defined(RTCONFIG_BCM_MFG)
+				if (!nvram_get_int("x_Setting") && !strcmp(ifname, "eth1")) continue;
+#endif
 				/* Set the logical bridge address to that of the first interface */
 				strlcpy(ifr.ifr_name, ifname, IFNAMSIZ);
 				if (ioctl(sfd, SIOCGIFHWADDR, &ifr) == 0) {
@@ -5197,6 +5201,8 @@ void restart_wl(void)
 	int is_client = 0;
 	char tmp[100], tmp2[100], prefix[] = "wlXXXXXXXXXXXXXX";
 
+	_dprintf("%s, chkchk\n", __func__);
+
 	if ((wl_ifnames = strdup(nvram_safe_get("lan_ifnames"))) != NULL) {
 		p = wl_ifnames;
 		while ((ifname = strsep(&p, " ")) != NULL) {
@@ -5520,6 +5526,46 @@ void lanaccess_wl(void)
 #elif defined(RTCONFIG_QCA)
 			if (guest_wlif(ifname))
 				;
+#if defined(PLAX56_XP4)
+			else if (strchr(ifname, '.') != NULL) {
+				/* XP4 has two BH path on switch side (ETH and PLC).
+				 * A broadcast packet may go from a RE client to CAP via ETH BH
+				 * and back to RE via PLC (not into the RE bridge).
+				 * Then the RE switch may not handle where the client is and error. 
+				 * 
+				 * So STOP forward packets that from guest network not allow to access lan. */
+
+				char wgn_ifnames[32];
+				char word[64], *next = NULL;
+				int if_idx;
+				char br_name[32];
+				char *brX_ifnames;
+				char brX_1st[32], *pSpace;
+				char nv[40];
+
+				strlcpy(wgn_ifnames, nvram_safe_get("wgn_ifnames"), sizeof(wgn_ifnames));
+				foreach (word, wgn_ifnames, next)
+				{
+					if (sscanf(word, "br%d", &if_idx) != 1)
+						continue;
+					snprintf(br_name, sizeof(br_name), "br%d_ifnames", if_idx);
+					brX_ifnames = nvram_safe_get(br_name);
+					if (strstr(brX_ifnames, ifname) == NULL)
+						continue;
+					/* the ifname in one of the brX_ifnames */
+					if ((pSpace = strchr(brX_ifnames, ' ')) && pSpace - brX_ifnames < sizeof(brX_1st) - 1)
+					{
+						/* get the first name in brX_ifnames as guest ifname to check */
+						memcpy(brX_1st, brX_ifnames, pSpace - brX_ifnames);
+						brX_1st[pSpace - brX_ifnames] = '\0';
+
+						snprintf(nv, sizeof(nv) - 1, "%s_lanaccess", wif_to_vif(brX_1st));
+						lanaccess_mssid(ifname, !strcmp(nvram_safe_get(nv), "off"));
+					}
+				}
+				continue;
+			}
+#endif	/* PLAX56_XP4 */
 			else
 				continue;
 #elif defined(RTCONFIG_REALTEK)

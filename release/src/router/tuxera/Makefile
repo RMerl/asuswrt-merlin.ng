@@ -73,7 +73,11 @@ endif # RTCONFIG_BCM7
 ifeq ($(RTCONFIG_HND_ROUTER_AX),y)
 ifeq ($(or $(HND_ROUTER_AX_675X),$(HND_ROUTER_AX_6756),$(HND_ROUTER_AX_6710),$(BCM_502L07P2)),y)
 ifneq ($(BCM_CHIP),)
+ifeq ($(BUILD_NAME),RT-AX82U_V2)
+SRCFILE = broadcom_arm_ax_$(BCM_CHIP)_src-rt-5.04axhnd.675x
+else
 SRCFILE = broadcom_arm_ax_$(BCM_CHIP)
+endif
 endif
 else
 SRCFILE = broadcom_arm_ax

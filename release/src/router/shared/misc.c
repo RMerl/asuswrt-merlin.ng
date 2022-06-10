@@ -5955,6 +5955,121 @@ int is_passwd_default(){
 	return 0;
 }
 
+int find_clientlist_groupid(char *groupid_list, char *groupname, char *groupid, size_t groupid_len) {
+
+	int have_data = 0;
+	char *buf, *g, *p;
+	char *groupname_t, *groupid_t;
+
+	g = buf = strdup(groupid_list);
+
+	if(strcmp(buf, "") != 0) {
+		while (buf) {
+			if ((p = strsep(&g, "<")) == NULL) break;
+
+			if((vstrsep(p, ">", &groupname_t, &groupid_t)) != 2)
+				continue;
+
+			if(!strcmp(groupname_t, groupname)){
+				strlcpy(groupid, groupid_t, groupid_len);
+				have_data = 1;
+				break;
+			}
+		}
+	}
+	free(buf);
+	return have_data;
+}
+
+int gen_random_num(int max)
+{
+	int i, ret;
+
+	srand(time(NULL));
+	ret = rand() % max;
+
+        printf("%d\n", ret);
+
+	return ret;
+}
+
+void gen_random_string(char *out, size_t len)
+{
+	int i = 0;
+	FILE *fp = NULL;
+	char *rand_buf = NULL, *rand_str = NULL;
+
+	rand_buf = malloc(sizeof(char) * (len/2 + 1));
+	rand_str = malloc(sizeof(char) * (len + 2));
+
+	if ((fp = fopen("/dev/urandom", "r")) != NULL) {
+		fread(rand_buf, 1, len/2 + 1, fp);
+		fclose(fp);
+	}
+
+	for(i=0;i<len/2+1;i++)
+		snprintf(&rand_str[i*2], len + 2, "%02x", rand_buf[i]);
+
+	strlcpy(out, rand_str, len);
+	free(rand_buf);
+	free(rand_str);
+}
+
+void gen_custom_clientlist_groupid(void) {
+	int data_count = 0, isfirst = 1, tmp_len = 0;
+	char custom_clientlist[CKN_STR_MAX]={0}, init_str[1] = {0}, client_buf[256] = {0}, gen_groupid[11] = {0};
+	char *buf, *g, *p, *gvalue;
+	char *name, *mac, *group, *type, *callback, *keeparp, *groupname, *age, *groupid;
+	g = buf = strdup(nvram_safe_get("custom_clientlist"));
+	tmp_len = strlen(buf) + 1;
+	gvalue = malloc(tmp_len);
+
+	if(strcmp(buf, "") != 0) {
+		while (buf) {
+			if ((p = strsep(&g, "<")) == NULL) break;
+
+			data_count = vstrsep(p, ">", &name, &mac, &group, &type, &callback, &keeparp, &groupname, &age, &groupid);
+			switch(data_count) {
+				case 6:
+					groupname = init_str;
+				case 7:
+					age = init_str;
+				case 8:
+					groupid = init_str;
+				case 9:
+					break;
+				default:
+					continue;
+			}
+
+			if(*groupname != '\0' && *groupid == '\0'){
+				memset(client_buf, 0, sizeof(client_buf));
+				memset(gen_groupid, 0, sizeof(gen_groupid));
+				if(find_clientlist_groupid(gvalue, groupname, gen_groupid, sizeof(gen_groupid)) == 0)
+					gen_random_string(gen_groupid, sizeof(gen_groupid));
+
+				groupid = gen_groupid;
+				snprintf(client_buf, sizeof(client_buf), "<%s>%s", groupname, groupid);
+				strlcat(gvalue, client_buf, tmp_len);
+			}
+
+			memset(client_buf, 0, sizeof(client_buf));
+			if(isfirst == 0)
+				strlcat(custom_clientlist, "<", sizeof(custom_clientlist));
+			else
+				isfirst = 0;
+
+			snprintf(client_buf, sizeof(client_buf), "%s>%s>%s>%s>%s>%s>%s>%s>%s", name, mac, group, type, callback, keeparp, groupname, age, groupid);
+			strlcat(custom_clientlist, client_buf, sizeof(custom_clientlist));
+		}
+	}
+
+	nvram_set("custom_clientlist", custom_clientlist);
+
+	free(buf);
+	free(gvalue);
+}
+
 #if defined(RTCONFIG_AMAS) && defined(RTCONFIG_PSR_GUEST)
 void update_wlx_psr_mbss(void)
 {

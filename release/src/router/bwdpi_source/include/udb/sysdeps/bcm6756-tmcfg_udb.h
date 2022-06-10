@@ -25,7 +25,7 @@
 
 /*
  * Automatically generated make config: don't edit
- * Date: Mon Dec  6 16:31:25 2021
+ * Date: Tue May 17 14:20:01 2022
  */
 #ifndef __TMCFG__UDB_AUTOCONF_OUTPUT_H_
 #define __TMCFG__UDB_AUTOCONF_OUTPUT_H_
@@ -109,7 +109,7 @@
 #define TMCFG_CPU_64BITS 0 // n
 #define TMCFG_CPU_BIG_ENDIAN 0 // n
 #define TMCFG_CPU_LITTLE_ENDIAN 1 // y
-#define TMCFG_KERN_DIR "/opt/ASUS/asuswrt_AX58U_V2_GPL_386_46737/release/src-rt-5.04axhnd.675x/kernel/linux-4.19"
+#define TMCFG_KERN_DIR "/opt/ASUS/asuswrt_AX58U_V2_GPL_386_48892/release/src-rt-5.04axhnd.675x/kernel/linux-4.19"
 #define TMCFG_KERN_ARCH "arm"
 
 /*
@@ -128,7 +128,7 @@
 #define TMCFG_TC_RANLIB "$(TMCFG_TC_PFX)ranlib"
 #define TMCFG_TC_STRIP "$(TMCFG_TC_PFX)strip"
 #define TMCFG_TC_OBJDUMP "$(TMCFG_TC_PFX)objdump"
-#define TMCFG_TC_EXTRA_CFLAGS "-fsigned-char -Wno-incompatible-pointer-types -I/opt/ASUS/asuswrt_AX58U_V2_GPL_386_46737/release/src-rt-5.04axhnd.675x/kernel/bcmkernel/include"
+#define TMCFG_TC_EXTRA_CFLAGS "-fsigned-char -Wno-incompatible-pointer-types"
 #define TMCFG_TC_EXTRA_LDFLAGS ""
 #define TMCFG_TC_RUN_STRIP 1 // y
 
@@ -155,12 +155,18 @@
 #define TMCFG_E_UDB_CORE_REV_VER 20
 #define TMCFG_E_UDB_CORE_SHN_REV_NUM 0
 #define TMCFG_E_UDB_CORE_USE_KBUILD 1 // y
-#define TMCFG_E_UDB_CORE_EXTRA_CFLAGS ""
+#define TMCFG_E_UDB_CORE_EXTRA_CFLAGS "-Wno-incompatible-pointer-types -I/opt/ASUS/asuswrt_AX58U_V2_GPL_386_48892/release/src-rt-5.04axhnd.675x/kernel/bcmkernel/include"
 #define TMCFG_E_UDB_CORE_CONN_EXTRA 1 // y
 #define TMCFG_E_UDB_CORE_RULE_FORMAT_V2 0 // n
 #define TMCFG_E_UDB_CORE_MESH 1 // y
 #define TMCFG_E_UDB_CORE_URL_QUERY 1 // y
-#define TMCFG_E_UDB_CORE_DNS_BASE_URL 0 // n
+#define TMCFG_E_UDB_CORE_DNS_BASE_URL 1 // y
+
+/*
+ * DNS Based WRS Configs
+ */
+#define TMCFG_E_UDB_CORE_DEF_REDIR_DOMAIN "blocking.asus.hns.tm"
+#define TMCFG_E_UDB_CORE_MAX_DNS_ENTRY 1000
 #define TMCFG_E_UDB_CORE_SHN_QUERY 0 // n
 #define TMCFG_E_UDB_CORE_WBL 1 // y
 #define TMCFG_E_UDB_CORE_WBL_MAJ_VER 2
@@ -198,7 +204,7 @@
 #define TMCFG_E_UDB_CORE_MEMTRACK 0 // n
 #define TMCFG_E_UDB_CORE_HTTP_REFER 0 // n
 #define TMCFG_E_UDB_SHELL 1 // y
-#define TMCFG_E_UDB_SHELL_EXTRA_CFLAGS ""
+#define TMCFG_E_UDB_SHELL_EXTRA_CFLAGS "-I/opt/ASUS/asuswrt_AX58U_V2_GPL_386_48892/release/src-rt-5.04axhnd.675x/kernel/bcmkernel/include"
 #define TMCFG_E_UDB_SHELL_KMOD_NAME "tdts_udb"
 #define TMCFG_E_UDB_SHELL_IOCTL_DEV_NAME "idpfw"
 #define TMCFG_E_UDB_SHELL_IOCTL_DEV_MAJ 191
@@ -209,8 +215,8 @@
 #define TMCFG_E_UDB_SHELL_PROCFS 1 // y
 #define TMCFG_E_REL_PKG_MAJ_VER 2
 #define TMCFG_E_REL_PKG_MIN_VER 0
-#define TMCFG_E_REL_PKG_REV_VER 2
-#define TMCFG_E_REL_PKG_LOCAL_VER "0a0b3ae7"
+#define TMCFG_E_REL_PKG_REV_VER 3
+#define TMCFG_E_REL_PKG_LOCAL_VER "77b1a29"
 
 /*
  * Accompany applications or modules
@@ -219,7 +225,7 @@
 /*
  * Kernel
  */
-#define TMCFG_APP_K_EXTRA_CFLAGS "-I/opt/ASUS/asuswrt_AX58U_V2_GPL_386_46737/release/src-rt-5.04axhnd.675x/kernel/bcmkernel/include -I/opt/ASUS/asuswrt_AX58U_V2_GPL_386_46737/release/src-rt-5.04axhnd.675x/shared/opensource/include/bcm963xx -I/opt/ASUS/asuswrt_AX58U_V2_GPL_386_46737/release/src-rt-5.04axhnd.675x/bcmdrivers/broadcom/include/bcm963xx -I/opt/ASUS/asuswrt_AX58U_V2_GPL_386_46737/release/src-rt-5.04axhnd.675x/bcmdrivers/opensource/include/bcm963xx"
+#define TMCFG_APP_K_EXTRA_CFLAGS "-I/opt/ASUS/asuswrt_AX58U_V2_GPL_386_48892/release/src-rt-5.04axhnd.675x/kernel/bcmkernel/include -I/opt/ASUS/asuswrt_AX58U_V2_GPL_386_48892/release/src-rt-5.04axhnd.675x/shared/opensource/include/bcm963xx -I/opt/ASUS/asuswrt_AX58U_V2_GPL_386_48892/release/src-rt-5.04axhnd.675x/bcmdrivers/broadcom/include/bcm963xx -I/opt/ASUS/asuswrt_AX58U_V2_GPL_386_48892/release/src-rt-5.04axhnd.675x/bcmdrivers/opensource/include/bcm963xx"
 #define TMCFG_APP_K_TDTS_NFFW 0 // n
 #define TMCFG_APP_K_TDTS_UDBFW 1 // y
 #define TMCFG_APP_K_TDTS_UDBFW_EXTRA_SYMBOLS ""

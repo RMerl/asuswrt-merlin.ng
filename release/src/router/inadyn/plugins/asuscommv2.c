@@ -279,7 +279,7 @@ static int request(ddns_t *ctx, ddns_info_t *info, ddns_alias_t *alias)
 #ifdef USE_IPV6
 	char ip6_addr[INET6_ADDRSTRLEN] = {0};
 
-	if(!_get_ipv6_addr(iface, ip6_addr, sizeof(ip6_addr))) {
+	if(nvram_get_int("ddns_ipv6_update") && !_get_ipv6_addr(iface, ip6_addr, sizeof(ip6_addr))) {
 		logit(LOG_WARNING, "%s ipv6 address=<%s>", iface, ip6_addr);
 		memset(alias->ipv6_address, 0, sizeof(alias->ipv6_address));
 		strlcpy(alias->ipv6_address, ip6_addr, sizeof(alias->ipv6_address));

@@ -79,6 +79,11 @@
 #include <lp5523led.h>
 #endif
 
+#ifdef RTCONFIG_BSC_SR
+#include <bcmparams.h>
+#include <wlioctl.h>
+#endif
+
 #ifdef RTCONFIG_CFGSYNC
 #include <cfg_event.h>
 #endif
@@ -2324,6 +2329,91 @@ void qca_wps_state_check(void)
 #endif /* RTCONFIG_CONCURRENTREPEATER */
 #endif /* RTCONFIG_REALTEK */
 
+#ifdef RTCONFIG_BSC_SR
+int
+wl_sr_config(char *ifname)
+{
+	FILE *fp;
+	int sz = 0;
+        char cmd[32], *ptr = NULL, *val = NULL;
+	char buf[16] = {0};
+	int bsc_dbg = nvram_get_int("bsc_dbg");
+
+        snprintf(cmd, sizeof(cmd), "wl -i %s sr_config options", ifname);
+	//_dprintf("%s, ifname is %s\n", __func__, ifname);
+
+        fp = popen(cmd, "r");
+        if (fp == NULL) {
+                dprintf("Err: shared %s failed to open cmd = [%s] \n", __func__, cmd);
+                return -1;
+        }
+
+ 	sz = sizeof(buf) - 1;
+	if (!fgets(buf, sz, fp)) {
+		if(bsc_dbg) _dprintf("set sr_config option as 1\n");
+		eval("wl", "-i", ifname, "sr_config", "options", "1");
+	} else {
+		buf[strcspn(buf, "\r\n")] = 0;
+		if(*buf && bsc_dbg)
+			_dprintf("sr_config:[%s]\n", buf);
+	} 
+
+        pclose(fp);
+
+        return 1;
+}
+
+#define BSC_INTERVAL 	8
+
+void bsc_sr_check(void)
+{
+        char lan_ifname[16], *lan_ifnames, *ifname, *p;
+        int unit, subunit;
+        char tmp[100], tmp2[100], prefix[] = "wlXXXXXXXXXXXXXX";
+	static int chki = 0;
+	int bsc_interval = nvram_get_int("bsc_interval")?:BSC_INTERVAL;
+	int bsc_dbg = nvram_get_int("bsc_dbg");
+
+	if(chki++ == bsc_interval) {
+		chki = 0;	
+	} else
+		return 0;
+
+        if(bsc_dbg) _dprintf("%s.....(c:%d)\n", __func__, client_mode());
+        snprintf(lan_ifname, sizeof(lan_ifname), "%s", nvram_safe_get("lan_ifname"));
+        if ((lan_ifnames = strdup(nvram_safe_get("lan_ifnames"))) != NULL) {
+                p = lan_ifnames;
+                while ((ifname = strsep(&p, " ")) != NULL) {
+                        while (*ifname == ' ') ++ifname;
+                        if (*ifname == 0) break;
+
+                        unit = -1; subunit = -1;
+
+                        // ignore disabled wl vifs
+                        if (strncmp(ifname, "wl", 2) == 0) {
+                                if (get_ifname_unit(ifname, &unit, &subunit) < 0) {
+                                        continue;
+				}
+                        }
+                        // get the instance number of the wl i/f
+                        else if (wl_ioctl(ifname, WLC_GET_INSTANCE, &unit, sizeof(unit))) {
+                                continue;
+			}
+
+			if(nvram_match("disable_sr", "1")) {
+        			if(bsc_dbg) _dprintf("%s disable reset sr conifg\n", __func__);	
+			} else
+                        	wl_sr_config(ifname);
+
+			if(nvram_match("disable_bsc", "1")) {
+        			if(bsc_dbg) _dprintf("%s disable sync bsscolor\n", __func__);	
+			} else
+				record_bsscolor(ifname, unit, subunit, client_mode());
+                }
+        }
+}
+#endif
+
 void service_check(void)
 {
 	static int boot_ready = 0;
@@ -3878,7 +3968,7 @@ void btn_check(void)
 #elif defined(TUFAX3000_V2)
 				eval("wl", "-i", "eth6", "ledbh", "0", "25");
 #elif defined(RTAXE7800)
-				eval("wl", "-i", "eth7", "ledbh", "13", "7");
+				eval("wl", "-i", "eth7", "ledbh", "15", "7");
 #elif defined(GTAX6000)
 				eval("wl", "-i", "eth7", "ledbh", "13", "7");
 #elif defined(GTAX11000_PRO)
@@ -4808,7 +4898,7 @@ end_of_wl_sched:
 			if (expire)
 			{
 #if defined(RTCONFIG_AMAS_WGN) && defined(RTCONFIG_QCA)
-				clear_wgn_wloff_vifs(word);
+				clear_wgn_wloff_vifs(wif_to_vif(word));
 #endif				
 				if (expire <= 30)
 				{
@@ -4846,7 +4936,7 @@ end_of_wl_sched:
 					}
 #endif
 #ifdef RTCONFIG_AMAS_WGN
-					p_vifs += snprintf(p_vifs, sizeof(wloff_vifs) - (p_vifs - wloff_vifs), "%s ", word);
+					p_vifs += snprintf(p_vifs, sizeof(wloff_vifs) - (p_vifs - wloff_vifs), "%s ", wif_to_vif(word));
 #endif						
 				}
 				else
@@ -4867,12 +4957,14 @@ end_of_wl_sched:
 #ifdef RTCONFIG_AMAS_WGN
 		if (strlen(wloff_vifs) > 0)
 		{
+			if (wloff_vifs[strlen(wloff_vifs)-1] == ' ')
+				wloff_vifs[strlen(wloff_vifs)-1] = '\0';
 			nvram_set("wgn_wloff_vifs", wloff_vifs);
-	        	/* update cfg_ver info */
-	        	srand(time(NULL));
-	        	snprintf(cfgVer, sizeof(cfgVer), "%d%d", rand(), rand());
-	        	nvram_set("cfg_ver", cfgVer);
-	        	nvram_commit();
+	        /* update cfg_ver info */
+	        srand(time(NULL));
+	        snprintf(cfgVer, sizeof(cfgVer), "%d%d", rand(), rand());
+	        nvram_set("cfg_ver", cfgVer);
+	        nvram_commit();
 			kill_pidfile_s("/var/run/cfg_server.pid", SIGUSR2);			
 		}		
 #endif
@@ -9482,6 +9574,9 @@ void watchdog(int sig)
 #endif
 	}
 
+#ifdef RTCONFIG_BSC_SR
+	bsc_sr_check();
+#endif
 #ifdef RTAC88U
 	rtkl_check();
 #endif

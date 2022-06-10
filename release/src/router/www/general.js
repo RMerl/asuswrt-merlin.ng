@@ -307,9 +307,10 @@ function change_common_radio(o, s, v, r){
 	if(v == "ddns_enable_x"){
 		var hostname_x = '<% nvram_get("ddns_hostname_x"); %>';
 		var ddns_updated = '<% nvram_get("ddns_updated"); %>';
+		var ddns_server_x = '<% nvram_get("ddns_server_x"); %>';
 		if(r == 1){
 			inputCtrl(document.form.ddns_server_x, 1);
-			if('<% nvram_get("ddns_server_x"); %>' == 'WWW.ASUS.COM'){
+			if(ddns_server_x == 'WWW.ASUS.COM'){
 				document.form.DDNSName.disabled = false;
 				document.form.DDNSName.parentNode.parentNode.parentNode.style.display = "";
 				if(hostname_x != ''){
@@ -323,7 +324,10 @@ function change_common_radio(o, s, v, r){
 				}
 				showhide("wildcard_field",0);
 			}else{
-				if(document.form.ddns_server_x.value == "WWW.ORAY.COM"){
+				if(is_CN && ddns_server_x == ""){
+					$("#ddns_server_x").val("WWW.ASUS.COM.CN");
+				}
+				else if(document.form.ddns_server_x.value == "WWW.ORAY.COM"){
 					if(ddns_updated == "1")
 						document.getElementById("ddns_hostname_info_tr").style.display = "";
 				}
@@ -340,6 +344,7 @@ function change_common_radio(o, s, v, r){
 			change_ddns_setting(document.form.ddns_server_x.value);
 			inputCtrl(document.form.ddns_refresh_x, 1);
 			showhide("ddns_ipcheck_tr", 1);
+			change_ddns_realip(document.form.ddns_realip_x.value);
 		}else{
 			if(document.form.ddns_server_x.value == "WWW.ASUS.COM"){
 				document.form.DDNSName.parentNode.parentNode.parentNode.style.display = "none";
@@ -360,6 +365,7 @@ function change_common_radio(o, s, v, r){
 			inputCtrl(document.form.ddns_regular_period, 0);
 			inputCtrl(document.form.ddns_refresh_x, 0);
 			showhide("ddns_ipcheck_tr", 0);
+			showhide("ddns_ipv6update_tr", 0);
 
 			document.getElementById("ddns_status_tr").style.display = "none";
 			document.getElementById("ddns_result_tr").style.display = "none";

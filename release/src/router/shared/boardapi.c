@@ -1260,10 +1260,8 @@ int lanport_ctrl(int ctrl)
 			ctrl && (atoi(word) == 5)) {
 			if (bootup_skip)
 				bootup_skip = 0;
-			else {
+			else
 				doSystem("ethctl eth%d phy-reset", atoi(word));
-				continue;
-			}
 		}
 #endif
 #if defined(GTAXE16000) || defined(GTAX11000_PRO)

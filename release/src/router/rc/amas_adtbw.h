@@ -63,8 +63,9 @@ typedef struct	amas_adtbw_config {
 	int rssi_bw80_unii4;
 	int rssi_bw160_unii4;
 	int eu_force_bw160;
-	uint dwb_mode;
-	uint acs_unii4;
+	uint dwb_mode;	// fh_ap_enabled option
+	uint acs_unii4;	// acs_unii4 opition
+	uint unii4_dwb_activate; // check for backhaul ssid "_dwb" && closed = 1
 #ifdef RTCONFIG_FRONTHAUL_AP_AUTO_OPT
 	uint8 auto_fh_mode;
 #endif

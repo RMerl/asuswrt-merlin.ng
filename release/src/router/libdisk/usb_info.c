@@ -1507,14 +1507,8 @@ int set_usb_common_nvram(const char *action, const char *device_name, const char
 }
 
 char *find_port_paths_by_nvram(char *target_type, char *str, int str_len){
-	char *ptr_type;
-	int i;
-	char cmd[128], ret[PATH_MAX];
-	char *p, w, *ptr;
-	int len;
-	FILE *fp;
-	char port_path[8];
-	int first_set = 1;
+	char *ptr, *ptr_type, cmd[128];
+	int i, j, len, first_set = 1;
 
 	memset(str, 0, str_len);
 	len = 0;
@@ -1526,42 +1520,24 @@ char *find_port_paths_by_nvram(char *target_type, char *str, int str_len){
 		if(target_type != NULL && strcmp(ptr_type, target_type))
 			continue;
 
-		snprintf(cmd, sizeof(cmd), "nvram show |grep =%s$", ptr_type);
-		if((fp = popen(cmd, "r")) == NULL)
-			continue;
+		for(j = 1; j <= MAX_USB_PORT; ++j){
+			snprintf(cmd, sizeof(cmd), "usb_path%d", j);
 
-		while(fgets(ret, sizeof(ret), fp) != NULL){
-			if((p = strchr(ret, '=')) != NULL){
-				w = *p;
-				*p = '\0';
-			}
-			else
-				w = -1;
-
-			if(strncmp(ret, "usb_path", 8) || strlen(ret) == strlen("usb_path")){
-				if(w != -1)
-					*p = w;
+			if(strcmp(ptr_type, nvram_safe_get(cmd)))
 				continue;
-			}
-
-			snprintf(port_path, sizeof(port_path), "%s", ret+strlen("usb_path"));
 
 			if(first_set){
 				first_set = 0;
 
-				snprintf(ptr, str_len-len, ">");
+				snprintf(ptr, str_len, ">");
 				len = strlen(str);
 				ptr = str+len;
 			}
 
-			snprintf(ptr, str_len-len, "%s>", port_path);
+			snprintf(ptr, str_len-len, "%d>", j);
 			len = strlen(str);
 			ptr = str+len;
-
-			if(w != -1)
-				*p = w;
 		}
-		pclose(fp);
 	}
 
 	if(!len)

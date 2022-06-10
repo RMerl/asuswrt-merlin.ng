@@ -118,6 +118,8 @@ extern int get_wifi_chanim(char *ifname, char *output, int outputlen);
 extern char *diag_get_wifi_fh_ifnames(int wifi_unit, char *buffer, size_t buffer_size);
 extern char *diag_get_eth_bh_ifnames(char *buffer, size_t buffer_size);
 extern char *diag_get_eth_fh_ifnames(char *buffer, size_t buffer_size);
+extern int diag_is_wlif(char *ifname);
+extern int diag_is_uplink_ethif(char *ifname);
 extern int get_plc_phy_rate(unsigned long *tx_rate, unsigned long *rx_rate);
 
 // non-sysdep

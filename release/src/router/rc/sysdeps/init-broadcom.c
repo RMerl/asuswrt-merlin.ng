@@ -3251,7 +3251,7 @@ reset_mssid_hwaddr(int unit)
 #endif
 	char tmp[100], prefix[]="wlXXXXXXX_";
 	int unit_total = num_of_wl_if();
-#if (defined(RTAX82_XD6) || defined(RTAX82_XD6S))
+#if (defined(RTAX82_XD6) || defined(RTAX82_XD6S)) && !defined(RTCONFIG_MSSID_REALMAC)
 	int max_no_vifs = wl_max_no_vifs(unit);
 #endif
 #if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
@@ -3417,6 +3417,20 @@ reset_mssid_hwaddr(int unit)
 				macvalue_local++;
 			}
 
+#if (defined(RTAX82_XD6) || defined(RTAX82_XD6S)) && defined(RTCONFIG_MSSID_REALMAC)
+			if (unit == 1) {
+				macvalue += 4;
+				macvalue_local += 4;
+
+				memset(macaddr_str, 0, sizeof(macaddr_str));
+				macp = (unsigned char*) &macvalue;
+				sprintf(macaddr_str, "%02X:%02X:%02X:%02X:%02X:%02X", *(macp+5), *(macp+4), *(macp+3), *(macp+2), *(macp+1), *(macp+0));
+				snprintf(prefix, sizeof(prefix), "wl%d_", unit);
+				nvram_set(strcat_r(prefix, "hwaddr", tmp), macaddr_str);
+				nvram_set("1:macaddr", macaddr_str);
+			}
+#endif
+
 #ifdef RTCONFIG_PSR_GUEST
 			snprintf(prefix, sizeof(prefix), "wl%d_", unit);
 			if (is_psr(unit) && nvram_match(strcat_r(prefix, "psr_mbss", tmp), "1") && dpsta_mode()) {
@@ -3428,7 +3442,7 @@ reset_mssid_hwaddr(int unit)
 #endif
 
 			/* including primary ssid */
-#if (defined(RTAX82_XD6) || defined(RTAX82_XD6S))
+#if (defined(RTAX82_XD6) || defined(RTAX82_XD6S)) && !defined(RTCONFIG_MSSID_REALMAC)
 			for (subunit = 1; subunit < max_no_vifs /* WL_MAXBSSCFG */; subunit++)
 #else
 			for (subunit = 1; subunit < WL_MAXBSSCFG; subunit++)
@@ -3502,7 +3516,7 @@ reset_mssid_hwaddr(int unit)
 							*(macp+0) =  0x0;
 						}
 					}
-#if (defined(RTAX82_XD6) || defined(RTAX82_XD6S))
+#if (defined(RTAX82_XD6) || defined(RTAX82_XD6S)) && !defined(RTCONFIG_MSSID_REALMAC)
 				}else if(unit == 1){
 					*(macp+0) = *(macp+0) + 4;
 #endif
@@ -3651,7 +3665,9 @@ void load_wl()
 		chk_reboot = 1;
 #endif
 _dprintf("load_wl(): starting...\n");
-
+#if (defined(RTAX82_XD6) || defined(RTAX82_XD6S)) && defined(RTCONFIG_MSSID_REALMAC)
+	reset_mssid_hwaddr(1);
+#endif
 	memset(modules, 0, sizeof(modules));
 #if defined(RTAX92U) || defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_HND_ROUTER_AX_6710) && !defined(BCM4912)
 	add_to_list("wl", modules, sizeof(modules));
@@ -4054,7 +4070,11 @@ void fini_wl(void)
 #endif
 }
 
-#ifdef RTCONFIG_HND_ROUTER_AX_6756
+#if defined(RTAX86U)
+void fill_cfe_block();
+#endif
+#if defined(RTCONFIG_HND_ROUTER_AX_6756) \
+		|| defined(RTAX86U)
 void sync_cfe_mac();
 #endif
 
@@ -4266,7 +4286,12 @@ void init_syspara(void)
 			break;
 	}
 
-#ifdef RTCONFIG_HND_ROUTER_AX_6756
+#if defined(RTAX86U)
+	fill_cfe_block();
+#endif
+
+#if defined(RTCONFIG_HND_ROUTER_AX_6756) \
+		|| defined(RTAX86U)
 	sync_cfe_mac();
 #endif
 
@@ -4505,6 +4530,8 @@ void tweak_usb_affinity(int enable)
 	int usb_irqs[] = {45, 46, 47, -1};	// BCM6755
 #elif defined(BCM6756)
 	int usb_irqs[] = {47, 48, 49, -1};	// BCM6756
+#elif defined(RTAX82U_V2)
+	int usb_irqs[] = {37, 38, 39, -1};	// BCM6750
 #elif defined(BCM6750) || defined(BCM63178)
 	int usb_irqs[] = {41, 42, 43, -1};	// BCM6750
 #elif defined(RTAX86U_PRO)
@@ -4519,7 +4546,7 @@ void tweak_usb_affinity(int enable)
 	int on, off, i;
 	int cpu_num = sysconf(_SC_NPROCESSORS_CONF);
 
-#if defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(BCM6756) || defined(BCM6855)
+#if defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(BCM6756) || defined(BCM6855) || defined(RTAX82U_V2)
 	if(cpu_num > 2)
 		on = 1 << (cpu_num - 2);
 	else
@@ -5323,69 +5350,7 @@ void generate_wl_para(char *ifname, int unit, int subunit)
 	memset(tmp, 0, sizeof(tmp));
 	memset(tmp2, 0, sizeof(tmp2));
 
-	if (nvram_match(strcat_r(prefix, "auth_mode_x", tmp), "shared"))
-		nvram_set(strcat_r(prefix, "auth", tmp), "1");
-	else nvram_set(strcat_r(prefix, "auth", tmp), "0");
-#ifdef RTAC68U_V4
-	if (strstr(nvram_safe_get(strcat_r(prefix, "auth_mode_x", tmp)), "sae"))
-		nvram_set(strcat_r(prefix, "auth_mode_x", tmp), "psk2");
-#endif
-	if (nvram_match(strcat_r(prefix, "auth_mode_x", tmp), "psk"))
-		nvram_set(strcat_r(prefix, "akm", tmp), "psk");
-	else if (nvram_match(strcat_r(prefix, "auth_mode_x", tmp), "psk2"))
-	{
-#if defined(HND_ROUTER) && defined(WLHOSTFBT)
-		nvram_set(strcat_r(prefix, "akm", tmp), "psk2 psk2ft");
-#else
-		nvram_set(strcat_r(prefix, "akm", tmp), "psk2");
-#endif
-	}
-	else if (nvram_match(strcat_r(prefix, "auth_mode_x", tmp), "pskpsk2"))
-	{
-#if defined(HND_ROUTER) && defined(WLHOSTFBT)
-		nvram_set(strcat_r(prefix, "akm", tmp), "psk psk2 psk2ft");
-#else
-		nvram_set(strcat_r(prefix, "akm", tmp), "psk psk2");
-#endif
-#ifdef RTCONFIG_HND_ROUTER_AX
-		if (nvram_match(strcat_r(prefix, "mfp", tmp), "2"))
-			nvram_set(strcat_r(prefix, "mfp", tmp), "1");
-#endif
-	}
-#ifndef RTAC68U_V4
-	else if (nvram_match(strcat_r(prefix, "auth_mode_x", tmp), "sae"))
-	{
-		nvram_set(strcat_r(prefix, "akm", tmp), "sae");
-	}
-	else if (nvram_match(strcat_r(prefix, "auth_mode_x", tmp), "psk2sae"))
-	{
-		nvram_set(strcat_r(prefix, "akm", tmp), "psk2 sae");
-	}
-#endif
-	else if (nvram_match(strcat_r(prefix, "auth_mode_x", tmp), "wpa"))
-	{
-		nvram_set(strcat_r(prefix, "akm", tmp), "wpa");
-	}
-	else if (nvram_match(strcat_r(prefix, "auth_mode_x", tmp), "wpa2"))
-	{
-		nvram_set(strcat_r(prefix, "akm", tmp), "wpa2");
-	}
-	else if (nvram_match(strcat_r(prefix, "auth_mode_x", tmp), "wpawpa2"))
-	{
-		nvram_set(strcat_r(prefix, "akm", tmp), "wpa wpa2");
-	}
-	else if (nvram_match(strcat_r(prefix, "auth_mode_x", tmp), "owe"))
-	{
-		nvram_set(strcat_r(prefix, "akm", tmp), "owe");
-	}
-#ifdef RTCONFIG_OWE_TRANS
-	else if (nvram_match(strcat_r(prefix, "auth_mode_x", tmp), "openowe")) //OWE-Trainsition mode
-	{
-		// early convert owe-transition settings in wl_defaults()::set_owe_transition_bss_enabled(),
-		// in order to bring up owe vif properly
-	}
-#endif
-	else nvram_set(strcat_r(prefix, "akm", tmp), "");
+	wl_apply_akm_by_auth_mode(unit, subunit, NULL);
 
 	if (nvram_match(strcat_r(prefix, "auth_mode_x", tmp), "radius"))
 	{
@@ -6104,6 +6069,11 @@ void generate_wl_para(char *ifname, int unit, int subunit)
 #endif
 
 #ifdef RTCONFIG_BCMARM
+#ifdef RTCONFIG_HND_ROUTER_AX
+		if (nvram_match(strcat_r(prefix, "akm", tmp), "sae"))
+			nvram_set_int(strcat_r(prefix, "mfp", tmp), 2);
+		else
+#endif
 		if (is_ure(unit)
 #if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
 			|| is_psta(unit) || is_psr(unit)
@@ -6195,10 +6165,15 @@ void generate_wl_para(char *ifname, int unit, int subunit)
 			nvram_set(strcat_r(prefix, "dwds", tmp), "1");
 #else
 			nvram_set(strcat_r(prefix, "dwds", tmp), is_ure(unit) ? "0" : "1");
-
-			if (nvram_match(strcat_r(prefix, "auth_mode_x", tmp), "sae"))
-				nvram_set_int(strcat_r(prefix, "mfp", tmp), 2); // Set PFM as required for WPA3-SAE
 #endif
+#ifdef RTCONFIG_HND_ROUTER_AX
+			if (nvram_match(strcat_r(prefix, "akm", tmp), "sae"))
+				nvram_set_int(strcat_r(prefix, "mfp", tmp), 2); // Set PMF as required for WPA3-SAE
+			else if (nvram_match(strcat_r(prefix, "akm", tmp), "psk2 sae"))
+				nvram_set_int(strcat_r(prefix, "mfp", tmp), 1);
+			else
+#endif
+				nvram_set_int(strcat_r(prefix, "mfp", tmp), 0);
 #endif
 		}
 		else
@@ -6249,7 +6224,7 @@ void generate_wl_para(char *ifname, int unit, int subunit)
 		if (unit == 1) runtime_config_qtn(unit, subunit);
 	}
 #endif
-
+#if 0
 	/* configure mfp for wireless backhaul and guest network */
 	if (nvram_get_int("re_mode") == 1
 		&& (subunit == 1 || subunit == 2 || subunit == 3) ){
@@ -6261,6 +6236,7 @@ void generate_wl_para(char *ifname, int unit, int subunit)
 			nvram_set_int(strcat_r(prefix, "mfp", tmp), 0);
 		}
 	}
+#endif
 }
 
 #define BCM5325_ventry(vid, inet_vid, iptv_vid, voip_vid) ( \
@@ -10369,10 +10345,13 @@ void set_acs_ifnames()
 #ifdef RTCONFIG_HAS_5G_2
 		|| (num_of_wl_if() >= 3 &&
 		    ((wl_get_band(nvram_safe_get(strcat_r(prefix_5g2, "ifname", tmp))) == WLC_BAND_5G &&
-		     !(nvram_get_hex(strcat_r(prefix_5g2, "band5grp", tmp)) & WL_5G_BAND_4)) ||
-		     (wl_get_band(nvram_safe_get(strcat_r(prefix_5g2, "ifname", tmp))) == WLC_BAND_6G &&
+		     !(nvram_get_hex(strcat_r(prefix_5g2, "band5grp", tmp)) & WL_5G_BAND_4))
+#ifdef RTCONFIG_WIFI6E
+		     || (wl_get_band(nvram_safe_get(strcat_r(prefix_5g2, "ifname", tmp))) == WLC_BAND_6G &&
 		      wl_get_band(nvram_safe_get(strcat_r(prefix_5g, "ifname", tmp))) == WLC_BAND_5G &&
-		     !(nvram_get_hex(strcat_r(prefix_5g, "band5grp", tmp)) & WL_5G_BAND_4))))
+		     !(nvram_get_hex(strcat_r(prefix_5g, "band5grp", tmp)) & WL_5G_BAND_4))
+#endif
+		     ))
 #endif
 	)
 		nvram_set("acs_band3", "1");
@@ -10383,17 +10362,17 @@ void set_acs_ifnames()
 	nvram_set("wl_acs_excl_chans_dfs", nvram_match("acs_dfs", "1") ? "" : list_5g_band2_chans);
 
 	/* band 4, UNII-4 */
-	if (nvram_get_int("acs_unii4"))
-		snprintf(list, sizeof(list), "");
-	else
+	if (!nvram_get_int("acs_unii4")) {
 		snprintf(list, sizeof(list), strlen(list_5g_unii4_chans) ? "%s,%s" : "%s", list_ch165, list_5g_unii4_chans);
 #ifdef RTCONFIG_AMAS
-	/* exclude band4 bw160 chanspecs once fronthaul ap provides */
-	if (excl_band4_bw160) {
-		strlcat(list, ",", sizeof(list));
-		strlcat(list, list_5g_band4_bw160_chans, sizeof(list));
-	}
+		/* exclude band4 bw160 chanspecs once fronthaul ap provides */
+		if (excl_band4_bw160) {
+			strlcat(list, ",", sizeof(list));
+			strlcat(list, list_5g_band4_bw160_chans, sizeof(list));
+		}
 #endif
+	}
+
 	/* band 3 */
 	snprintf(list2, sizeof(list2), strlen(list_5g_band3_chans) ? "%s,%s" : "%s", list, list_5g_band3_chans);
 
@@ -10401,17 +10380,17 @@ void set_acs_ifnames()
 	nvram_set("wl_acs_excl_chans_dfs_2", nvram_match("acs_band3", "1") ? list : list2);
 #elif defined(RTCONFIG_WIFI6E)
 	/* band 4, UNII-4 */
-	if (nvram_get_int("acs_unii4"))
-		snprintf(list, sizeof(list), "");
-	else
+	if (!nvram_get_int("acs_unii4")) {
 		snprintf(list, sizeof(list), strlen(list_5g_unii4_chans) ? "%s,%s" : "%s", list_ch165, list_5g_unii4_chans);
 #ifdef RTCONFIG_AMAS
-	/* exclude band4 bw160 chanspecs once fronthaul ap provides */
-	if (excl_band4_bw160) {
-		strlcat(list, ",", sizeof(list));
-		strlcat(list, list_5g_band4_bw160_chans, sizeof(list));
-	}
+		/* exclude band4 bw160 chanspecs once fronthaul ap provides */
+		if (excl_band4_bw160) {
+			strlcat(list, ",", sizeof(list));
+			strlcat(list, list_5g_band4_bw160_chans, sizeof(list));
+		}
 #endif
+	}
+
 	/* band 3 */
 	snprintf(list2, sizeof(list2), strlen(list_5g_band3_chans) ? "%s,%s" : "%s", list, list_5g_band3_chans);
 	/* band 2 */
@@ -10483,17 +10462,16 @@ void set_acs_ifnames()
 		nvram_set("wl_acs_excl_chans_dfs", nvram_match("acs_dfs", "1") ? (nvram_match("acs_band3", "1") ? "" : list) : list2);
 	} else if (nvram_match(strcat_r(prefix_5g, "band5grp", tmp), "1f")) {	// FCC-DFS including UNII-4
 		/* exclude acsd from selecting chanspec 100, 100l, 100/80, 100/160, 104, 104u, 104/80, 104/160, 108, 108l, 108/80, 108/160, 112, 112u, 112/80, 112/160, 116, 116l, 116/80, 116/160, 120, 120u, 120/80, 120/160, 124, 124l, 124/80, 124/160, 128, 128u, 128/80, 128/160, 132, 132l, 136, 136u, 140, 165, 165l, 165/80, 165/160, and UNII-4 chanspecs */
-		if (!nvram_get_int("acs_unii4"))
-			snprintf(list, sizeof(list), "");
-		else
+		if (!nvram_get_int("acs_unii4")) {
 			snprintf(list, sizeof(list), strlen(list_5g_unii4_chans) ? "%s,%s" : "%s", list_ch165, list_5g_unii4_chans);
 #ifdef RTCONFIG_AMAS
-		/* exclude band4 bw160 chanspecs once fronthaul ap provides */
-		if (excl_band4_bw160) {
-			strlcat(list, ",", sizeof(list));
-			strlcat(list, list_5g_band4_bw160_chans, sizeof(list));
-		}
+			/* exclude band4 bw160 chanspecs once fronthaul ap provides */
+			if (excl_band4_bw160) {
+				strlcat(list, ",", sizeof(list));
+				strlcat(list, list_5g_band4_bw160_chans, sizeof(list));
+			}
 #endif
+		}
 		snprintf(list2, sizeof(list2), strlen(list_5g_band3_chans) ? "%s,%s" : "%s", list, list_5g_band3_chans);
 		snprintf(list3, sizeof(list3), strlen(list_5g_band2_chans) ? "%s,%s" : "%s", list2, list_5g_band2_chans);
 		nvram_set(strcat_r(prefix_5g, "acs_excl_chans", tmp), nvram_match("acs_dfs", "1") ? (nvram_match("acs_band3", "1") ? list : list2) : list3);

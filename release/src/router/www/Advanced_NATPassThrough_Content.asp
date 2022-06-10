@@ -25,10 +25,10 @@ function initial(){
 	update_pppoerelay_option();
 	update_sip_alg_mode_option();
 
-	if(wan_proto=="v6plus" && array_ipv6_s46_ports.length > 1){
+	if(wan_proto=="v6plus" && s46_ports_check_flag && array_ipv6_s46_ports.length > 1){
 		$(".setup_info_icon").show();
 		$(".setup_info_icon").click(
-			function() {				
+			function() {
 				if($("#s46_ports_content").is(':visible'))
 					$("#s46_ports_content").fadeOut();
 				else{
@@ -38,7 +38,7 @@ function initial(){
 			}
 		);
 		$("#vts_ftpport").focus(
-			function() {				
+			function() {
 				var position_text = $("#vts_ftpport").position();
 				pop_s46_ports(position_text);
 			}
@@ -74,7 +74,7 @@ function applyRule(){
 	if(usb_support){
 		if(!validator.numberRange(document.form.vts_ftpport, 1, 65535))
 			return false;
-		if(wan_proto=="v6plus" && array_ipv6_s46_ports.length > 1){
+		if(wan_proto=="v6plus" && s46_ports_check_flag && array_ipv6_s46_ports.length > 1){
 			if (!validator.range_s46_ports(document.form.vts_ftpport, "none")){
 				if(!confirm("The following port related settings may not work properly since the port is not available in current v6plus usable port range. Do you want to continue?")){
 					document.form.vts_ftpport.focus();

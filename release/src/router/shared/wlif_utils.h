@@ -367,6 +367,8 @@ void wl_rateset_get_fields(wl_rateset_args_u_t *rs, int rsver, uint32 **rscount,
 		uint8 **rsmcs, uint16 **rsvht_mcs, uint16 **rshe_mcs);
 int wl_rateset_get_args_info(void *wl, int *rs_len, int *rs_ver);
 bool rateset_overwrite_by_supportedRatesBitmap(char *name, char *prefix);
+double wl_get_txpwr_target_max(char *name);
+double get_wifi_maxpower(int target_unit);
 #endif
 #endif
 #endif /* _wlif_utils_h_ */

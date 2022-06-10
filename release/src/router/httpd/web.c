@@ -2169,6 +2169,7 @@ websWriteCh(webs_t wp, char *ch, int count)
 const char *syslog_msg_filter[] = {
 	"net_ratelimit",
 	"exist in UDB, can't", "is used by someone else, can't use it", "not mesh client, can't update it", "not mesh client, can't delete it",
+	"ERROR: [send_redir_page",
 	NULL
 };
 #endif
@@ -13839,6 +13840,8 @@ static int get_single_char(FILE *stream)
 #define  FDT_PROPERTY_OFFSET  82
 #define  FDT_DESCP_OFFSET  92
 
+int sec_upgrade = 0;
+
 int inc_uploadImg(FILE * stream, int *len, uint32 *imageLen)
 {
 	char buf[1024];
@@ -14077,9 +14080,14 @@ int inc_uploadImg(FILE * stream, int *len, uint32 *imageLen)
 			prp = uploadBufPtr+FDT_PROPERTY_OFFSET;
 			descp = uploadBufPtr+FDT_DESCP_OFFSET;
 			
-			if(*prp==0 && *(prp+1)==0x3 && strncmp(buildname, descp, strlen(buildname)) == 0)
-				_dprintf("%s: model<%s> %s confirmed.\n", __func__, model, buildname);
-			else {
+			if(*prp==0 && *(prp+1)==0x3 && (strncmp(descp, buildname, strlen(buildname)) == 0 || strncmp(descp, RT_BUILD_NAME_SEC, strlen(RT_BUILD_NAME_SEC)) == 0)) {
+				_dprintf("%s: model<%s> %s confirmed. fit descp[%s]\n", __func__, model, buildname, descp);
+
+				if(strncmp(descp, RT_BUILD_NAME_SEC, strlen(RT_BUILD_NAME_SEC)) == 0) {
+					_dprintf("upgrade fw to secureBoot fw.\n");
+					sec_upgrade = 1;
+				}
+			} else {
 				_dprintf("%s: <%s(%d)> model's buildname Not Matched w/ img-description: %s(%d)/%s(%d). chk prp [%x][%x]\n", __func__, model, strlen(model), buildname, strlen(buildname), descp, strlen(descp), *prp, *(prp+1));
 				return -1;
 			}
@@ -14345,6 +14353,7 @@ do_upgrade_post(char *url, FILE *stream, int len, char *boundary)
 #if defined(RTCONFIG_HND_ROUTER_AX_6756) && !defined(RTCONFIG_SINGLEIMG_B)
 	uint32 imageLen;
         int ret;
+	int boot_set = 0;
 
 	_dprintf("%s: stream len=%d\n", __func__, len);
 	nvram_set("upgrade_done", "0");
@@ -14376,16 +14385,22 @@ do_upgrade_post(char *url, FILE *stream, int len, char *boundary)
 #endif
 
 #ifdef RTCONFIG_BCM_MFG
-	if (setBootImageState(BOOT_SET_NEW_IMAGE) != 0) {
-		_dprintf("setBootImageState(BOOT_SET_NEW_IMAGE) failed");
+	boot_set = BOOT_SET_NEW_IMAGE;
 #else
-	if (setBootImageState(BOOT_SET_NEW_IMAGE_ONCE) != 0) {
-		_dprintf("setBootImageState(BOOT_SET_NEW_IMAGE_ONCE) failed");
+	if (sec_upgrade == 1)
+		boot_set = BOOT_SET_NEW_IMAGE;
+	else
+		boot_set = BOOT_SET_NEW_IMAGE_ONCE;
 #endif
+	_dprintf("setBootImageState as [%s]", boot_set==BOOT_SET_NEW_IMAGE?"NEW":boot_set==BOOT_SET_NEW_IMAGE_ONCE?"NEW_ONCE":"unknown");
+
+	if (setBootImageState(boot_set) != 0) {
+		_dprintf("setBootImageState [%s] failed !", boot_set==BOOT_SET_NEW_IMAGE?"NEW":boot_set==BOOT_SET_NEW_IMAGE_ONCE?"NEW_ONCE":"unknown");
+
 		if(nvram_match(ATE_FACTORY_MODE_STR(), "1") || nvram_match(ATE_UPGRADE_MODE_STR(), "1"))
 			nvram_set_int("ate_upgrade_state", _ATE_FW_FAILURE);
 
-	}else {
+	} else {
 		if(nvram_match(ATE_FACTORY_MODE_STR(), "1") || nvram_match(ATE_UPGRADE_MODE_STR(), "1"))
 			nvram_set_int("ate_upgrade_state", _ATE_FW_COMPLETE);
 	}
@@ -27557,7 +27572,7 @@ ej_chk_lte_fw(int eid, webs_t wp, int argc, char **argv) {
 static int
 ej_chk_aqr_fw(int eid, webs_t wp, int argc, char **argv)
 {
-#if defined(RTCONFIG_SPF11_1_QSDK)
+#if defined(RTCONFIG_SPF11_1_QSDK) || defined(RTCONFIG_SPF11_3_QSDK) || defined(RTCONFIG_SPF11_4_QSDK)
 	/* *.cld in aq-fw-download don't have version string, define version number manually. */
 	const char *aqr107_fw_ver = "3.7.B";		/* AQR107, AQR-G2_v3.7.B-AQR_Asus_GT-AX6000-prov1_TXDis_ID44757_VER12795.cld */
 	const char *aqr113_fw_ver = "5.4.A";		/* AQR113/113C, AQR-G4_v5.4.B-AQR_Asus_RT-AX89X_TXDis_ID44751_VER11505.cld */
@@ -31391,6 +31406,97 @@ static int ej_get_iperf3_state(int eid, webs_t wp, int argc, char **argv) {
 #endif
 
 #ifdef RTCONFIG_CONNDIAG
+static struct json_object *convert_to_kbps(char *event_name, char *str_result) {
+	struct json_object *json_result;
+	struct json_object *json_txrx;
+	double txrx;
+	char txrx_buf[16];
+	if (!event_name || !str_result)
+		return NULL;
+
+	//_dprintf("str_result1=%s\n", str_result);
+
+	json_result = json_tokener_parse(str_result);
+	if (!strcmp(event_name, "STAINFO")) {
+		/* No need to convert phy rate, because the value is Mbps already.
+		if (json_object_object_get_ex(json_result, "sta_tx", &json_txrx)) {
+			txrx = strtod(json_object_get_string(json_txrx), NULL);
+			if (txrx != -1) {
+				snprintf(txrx_buf, sizeof(txrx_buf), "%.1f", txrx*8);
+				json_object_object_add(json_result, "sta_tx", json_object_new_string(txrx_buf));
+			}
+		}
+		if (json_object_object_get_ex(json_result, "sta_rx", &json_txrx)) {
+			txrx = strtod(json_object_get_string(json_txrx), NULL);
+			if (txrx != -1) {
+				snprintf(txrx_buf, sizeof(txrx_buf), "%.1f", txrx*8);
+				json_object_object_add(json_result, "sta_rx", json_object_new_string(txrx_buf));
+			}
+		}*/
+		if (json_object_object_get_ex(json_result, "sta_tbyte", &json_txrx)) {
+			txrx = strtod(json_object_get_string(json_txrx), NULL);
+			if (txrx != -1) {
+				snprintf(txrx_buf, sizeof(txrx_buf), "%.1f", txrx*8);
+				json_object_object_add(json_result, "sta_tbyte", json_object_new_string(txrx_buf));
+			}
+		}
+		if (json_object_object_get_ex(json_result, "sta_rbyte", &json_txrx)) {
+			txrx = strtod(json_object_get_string(json_txrx), NULL);
+			if (txrx != -1) {
+				snprintf(txrx_buf, sizeof(txrx_buf), "%.1f", txrx*8);
+				json_object_object_add(json_result, "sta_rbyte", json_object_new_string(txrx_buf));
+			}
+		}
+	} else if (!strcmp(event_name, "WIFISYS2") || !strcmp(event_name, "ETHINFO")) {
+		if (json_object_object_get_ex(json_result, "tx_byte", &json_txrx)) {
+			txrx = strtod(json_object_get_string(json_txrx), NULL);
+			if (txrx != -1) {
+				snprintf(txrx_buf, sizeof(txrx_buf), "%.1f", txrx*8);
+				json_object_object_add(json_result, "tx_byte", json_object_new_string(txrx_buf));
+			}
+		}
+		if (json_object_object_get_ex(json_result, "rx_byte", &json_txrx)) {
+			txrx = strtod(json_object_get_string(json_txrx), NULL);
+			if (txrx != -1) {
+				snprintf(txrx_buf, sizeof(txrx_buf), "%.1f", txrx*8);
+				json_object_object_add(json_result, "rx_byte", json_object_new_string(txrx_buf));
+			}
+		}
+		if (json_object_object_get_ex(json_result, "tx_rate", &json_txrx)) {
+			txrx = strtod(json_object_get_string(json_txrx), NULL);
+			if (txrx != -1) {
+				snprintf(txrx_buf, sizeof(txrx_buf), "%.1f", txrx*8);
+				json_object_object_add(json_result, "tx_rate", json_object_new_string(txrx_buf));
+			}
+		}
+		if (json_object_object_get_ex(json_result, "rx_rate", &json_txrx)) {
+			txrx = strtod(json_object_get_string(json_txrx), NULL);
+			if (txrx != -1) {
+				snprintf(txrx_buf, sizeof(txrx_buf), "%.1f", txrx*8);
+				json_object_object_add(json_result, "rx_rate", json_object_new_string(txrx_buf));
+			}
+		}
+	} else if (!strcmp(event_name, "PORTINFO")) {
+		if (json_object_object_get_ex(json_result, "tx_bytes", &json_txrx)) {
+			txrx = strtod(json_object_get_string(json_txrx), NULL);
+			if (txrx != -1) {
+				snprintf(txrx_buf, sizeof(txrx_buf), "%.1f", txrx*8);
+				json_object_object_add(json_result, "tx_bytes", json_object_new_string(txrx_buf));
+			}
+		}
+		if (json_object_object_get_ex(json_result, "rx_bytes", &json_txrx)) {
+			txrx = strtod(json_object_get_string(json_txrx), NULL);
+			if (txrx != -1) {
+				snprintf(txrx_buf, sizeof(txrx_buf), "%.1f", txrx*8);
+				json_object_object_add(json_result, "rx_bytes", json_object_new_string(txrx_buf));
+			}
+		}
+	}
+	//_dprintf("str_result2=%s\n", json_object_to_json_string(json_result));
+
+	return json_result;
+}
+
 static int ej_get_diag_db(int eid, webs_t wp, int argc, char **argv) {
 	//int rows = 0;
 	//int cols = 0;
@@ -31450,7 +31556,7 @@ static int ej_get_diag_db(int eid, webs_t wp, int argc, char **argv) {
 				i = tmp_result->col_count;
 				for(r = 0; r < tmp_result->row_count; ++r){
 					for(c = 0; c < tmp_result->col_count; ++c, ++i){
-						json_object_array_add(diag_array, json_tokener_parse(tmp_result->result[i]));
+						json_object_array_add(diag_array, convert_to_kbps(event_name, tmp_result->result[i]));
 					}
 				}
 				tmp_result = tmp_result->next;
@@ -31759,6 +31865,11 @@ static int ej_chk_s46_port_range(int eid, webs_t wp, int argc, char **argv)
 	char *nv, *nvp, *item, *nextp;
 	uint16_t range_port[max][2];
 
+	if (nvram_get_int("s46_hgw_case") <= S46_CASE_MAP_HGW_ON) {
+		websWrite(wp, "{\"pf\":\"0\",\"open_nat\":\"0\",\"pt\":\"0\",\"https\":\"0\",\"ssh\":\"0\",\"openvpn\":\"0\",\"ftp\":\"0\",\"ipsec\":\"0\"}");
+		return 0;
+	}
+
 	nvp = nv = strdup(nvram_safe_get("ipv6_s46_ports"));
 	for (i = 0, item = strtok_r(nvp, " ", &nextp); item; i++, item = strtok_r(NULL, " ", &nextp)) {
 		if (sscanf(item, "%hu-%hu", &range_port[i][0], &range_port[i][1]) != 2)
@@ -31774,6 +31885,7 @@ static int ej_chk_s46_port_range(int eid, webs_t wp, int argc, char **argv)
 			chk_srv_port_in_s46("openvpn", range_port, (i>15) ? max : i),
 			chk_srv_port_in_s46("ftp", range_port, (i>15) ? max : i),
 			chk_srv_port_in_s46("ipsec", range_port, (i>15) ? max : i));
+	return 0;
 }
 #endif
 

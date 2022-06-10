@@ -1185,7 +1185,6 @@ ifeq ($(RTCONFIG_APP_PREINSTALLED)$(RTCONFIG_APP_NETINSTALLED),y)
 endif
 endif
 	@cd $(INSTALLDIR)/sbin && ln -sf rc restart_wireless
-
 ifeq ($(RTCONFIG_HW_DOG), y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc hwdog
 endif

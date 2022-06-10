@@ -682,6 +682,22 @@ void set_wlan_service_status(int bssidx, int vifidx, int enabled)
 
 	dbg("set bss to %d on %s\n", val, ifname);
 
+#if defined(RTAC86U) || defined(GTAC2900)
+	int isup = 0;
+	char buf[16] = { 0 };
+	int bsscfg_idx = htod32(vifidx);
+
+	if (!wl_iovar_getbuf(ifname, "bss", &bsscfg_idx, sizeof(bsscfg_idx), buf, sizeof(buf))) {
+		isup = *(int *) buf;
+		isup = dtoh32(isup);
+		dbg("ifname %s bsscfg_idx %d bss %s\n", ifname, bsscfg_idx, isup ? "up" : "down");
+		if (!isup) {
+			dbg("reinit ifname %s\n", ifname);
+			doSystem("wl -i %s reinit", ifname);
+		}
+	}
+#endif
+
 	ret = wl_iovar_set(ifname, "bss", &setbuf, sizeof(setbuf));
 	if (ret) {
 		dbg("failed to set bss to %d on %s\n", val, ifname);
@@ -926,12 +942,9 @@ get_uplinkports_linkrate(char *ifname)
 		} else{
 			ret = hnd_get_phy_speed(word);
 			len += sprintf(out_buf + len, "L%d=%s;", i,
-#ifdef RTCONFIG_EXTPHY_BCM84880
-					(ret == 2500)? "Q" :
-#endif
-							(ret == 1000) ? "G" : "M");
+					(ret == 10000) ? "T" : ((ret == 5000) ? "H" : ((ret == 2500)? "Q" :((ret == 1000) ? "G" : "M"))));
 			lret |= 1 << i;
-			lrate[i] = (ret == 2500)? 2500 : (ret == 1000) ? 1000 : 100;
+			lrate[i] = (ret == 10000) ? 10000 : ((ret == 5000) ? 5000 : ((ret == 2500) ? 2500 : ((ret == 1000) ? 1000 : 100)));
 		}
 
 		++i;

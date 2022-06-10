@@ -6138,7 +6138,6 @@ int init_nvram(void)
 		add_rc_support("noitunes");
 		add_rc_support("wpa3");
 		add_rc_support("ofdma");
-		add_rc_support("smart_connect");
 		add_rc_support("app");
 
 		// the following values is model dep. so move it from default.c to here
@@ -8396,7 +8395,6 @@ int init_nvram(void)
 		add_rc_support("pwrctrl");
 		add_rc_support("WIFI_LOGO");
 		add_rc_support("nandflash");
-		add_rc_support("smart_connect");
 		add_rc_support("meoVoda");
 		add_rc_support("movistarTriple");
 		add_rc_support("app");
@@ -8609,13 +8607,6 @@ int init_nvram(void)
 		add_rc_support("pwrctrl");
 		add_rc_support("WIFI_LOGO");
 		add_rc_support("nandflash");
-#if defined(RTCONFIG_BCMBSD) && !defined(RT4GAC68U)
-#if defined(RTCONFIG_BCMBSD_V2)
-		add_rc_support("smart_connect_v2");
-#else
-		add_rc_support("smart_connect");
-#endif
-#endif
 		add_rc_support("meoVoda");
 		add_rc_support("movistarTriple");
 #ifndef RT4GAC68U
@@ -8802,7 +8793,6 @@ int init_nvram(void)
 //		add_rc_support("pwrctrl");
 		add_rc_support("WIFI_LOGO");
 		add_rc_support("nandflash");
-		add_rc_support("smart_connect");
 		add_rc_support("meoVoda");
 		add_rc_support("movistarTriple");
 		add_rc_support("app");
@@ -8975,7 +8965,6 @@ int init_nvram(void)
 		add_rc_support("pwrctrl");
 		add_rc_support("WIFI_LOGO");
 		add_rc_support("nandflash");
-		add_rc_support("smart_connect");
 		add_rc_support("movistarTriple");
 		add_rc_support("wifi2017");
 		add_rc_support("meoVoda");
@@ -9166,7 +9155,6 @@ int init_nvram(void)
 		add_rc_support("pwrctrl");
 		add_rc_support("WIFI_LOGO");
 		add_rc_support("nandflash");
-		add_rc_support("smart_connect");
 		add_rc_support("movistarTriple");
 		add_rc_support("wifi2017");
 #ifdef RTCONFIG_EXTPHY_BCM84880
@@ -9184,6 +9172,7 @@ int init_nvram(void)
 
 #if defined(RTAX88U)
 	case MODEL_RTAX88U:
+		nvram_set("fast_restart", "1");
 		nvram_unset("dhd0_rnr_flowring_physize");
 		nvram_unset("dhd1_rnr_flowring_physize");
 		nvram_unset("dhd2_rnr_flowring_physize");
@@ -9346,7 +9335,6 @@ int init_nvram(void)
 		add_rc_support("pwrctrl");
 		add_rc_support("WIFI_LOGO");
 		add_rc_support("nandflash");
-		add_rc_support("smart_connect");
 		add_rc_support("movistarTriple");
 		add_rc_support("wifi2017");
 		add_rc_support("app");
@@ -9519,7 +9507,6 @@ int init_nvram(void)
 		add_rc_support("pwrctrl");
 		add_rc_support("WIFI_LOGO");
 		add_rc_support("nandflash");
-		add_rc_support("smart_connect");
 		add_rc_support("movistarTriple");
 		add_rc_support("wifi2017");
 		add_rc_support("app");
@@ -9681,7 +9668,6 @@ int init_nvram(void)
 		add_rc_support("pwrctrl");
 		add_rc_support("WIFI_LOGO");
 		add_rc_support("nandflash");
-		add_rc_support("smart_connect");
 		add_rc_support("movistarTriple");
 		add_rc_support("wifi2017");
 		add_rc_support("app");
@@ -9839,7 +9825,6 @@ int init_nvram(void)
 		add_rc_support("pwrctrl");
 		add_rc_support("WIFI_LOGO");
 		add_rc_support("nandflash");
-		add_rc_support("smart_connect");
 		add_rc_support("movistarTriple");
 		add_rc_support("wifi2017");
 		add_rc_support("app");
@@ -9998,7 +9983,6 @@ int init_nvram(void)
 		add_rc_support("pwrctrl");
 		add_rc_support("WIFI_LOGO");
 		add_rc_support("nandflash");
-		add_rc_support("smart_connect");
 		add_rc_support("movistarTriple");
 		add_rc_support("wifi2017");
 		add_rc_support("app");
@@ -10157,7 +10141,6 @@ int init_nvram(void)
 		add_rc_support("pwrctrl");
 		add_rc_support("WIFI_LOGO");
 		add_rc_support("nandflash");
-		add_rc_support("smart_connect");
 		add_rc_support("movistarTriple");
 		add_rc_support("wifi2017");
 		add_rc_support("app");
@@ -10316,7 +10299,6 @@ int init_nvram(void)
 		add_rc_support("pwrctrl");
 		add_rc_support("WIFI_LOGO");
 		add_rc_support("nandflash");
-		add_rc_support("smart_connect");
 		add_rc_support("movistarTriple");
 		add_rc_support("wifi2017");
 		add_rc_support("app");
@@ -10494,7 +10476,6 @@ int init_nvram(void)
 		add_rc_support("pwrctrl");
 		add_rc_support("WIFI_LOGO");
 		add_rc_support("nandflash");
-		add_rc_support("smart_connect");
 		add_rc_support("movistarTriple");
 		add_rc_support("wifi2017");
 		add_rc_support("app");
@@ -10658,7 +10639,6 @@ int init_nvram(void)
 		add_rc_support("pwrctrl");
 		add_rc_support("WIFI_LOGO");
 		add_rc_support("nandflash");
-		add_rc_support("smart_connect");
 		add_rc_support("movistarTriple");
 		add_rc_support("wifi2017");
 		add_rc_support("app");
@@ -10818,7 +10798,6 @@ int init_nvram(void)
 		add_rc_support("pwrctrl");
 		add_rc_support("WIFI_LOGO");
 		add_rc_support("nandflash");
-		add_rc_support("smart_connect");
 		add_rc_support("movistarTriple");
 		add_rc_support("wifi2017");
 		add_rc_support("app");
@@ -10952,7 +10931,6 @@ int init_nvram(void)
 		add_rc_support("pwrctrl");
 		add_rc_support("WIFI_LOGO");
 		add_rc_support("nandflash");
-		add_rc_support("smart_connect");
 		add_rc_support("movistarTriple");
 		add_rc_support("wifi2017");
 		add_rc_support("app");
@@ -10967,8 +10945,13 @@ int init_nvram(void)
 #ifdef BCM6750
 	case MODEL_RTAX58U:
 #ifdef RTAX82_XD6
+#ifdef RTCONFIG_MSSID_REALMAC
+		nvram_unset("wl0_mbss_ign_mac_valid");
+		nvram_unset("wl1_mbss_ign_mac_valid");
+#else
 		nvram_set("wl0_mbss_ign_mac_valid", "1");
 		nvram_set("wl1_mbss_ign_mac_valid", "1");
+#endif
 #endif
 		nvram_set("lan_ifname", "br0");
 		if (is_router_mode()) {
@@ -11262,7 +11245,6 @@ int init_nvram(void)
 		add_rc_support("pwrctrl");
 		add_rc_support("WIFI_LOGO");
 		add_rc_support("nandflash");
-		add_rc_support("smart_connect");
 		add_rc_support("movistarTriple");
 		add_rc_support("wifi2017");
 		add_rc_support("app");
@@ -11285,8 +11267,13 @@ int init_nvram(void)
 
 #ifdef RTAX82_XD6S
 	case MODEL_RTAX82_XD6S:
+#ifdef RTCONFIG_MSSID_REALMAC
+		nvram_unset("wl0_mbss_ign_mac_valid");
+		nvram_unset("wl1_mbss_ign_mac_valid");
+#else
 		nvram_set("wl0_mbss_ign_mac_valid", "1");
 		nvram_set("wl1_mbss_ign_mac_valid", "1");
+#endif
 		nvram_set("lan_ifname", "br0");
 		if (is_router_mode()) {
 			nvram_set("lan_ifnames", "eth0 eth2 eth3");
@@ -11395,7 +11382,6 @@ int init_nvram(void)
 		add_rc_support("pwrctrl");
 		add_rc_support("WIFI_LOGO");
 		add_rc_support("nandflash");
-		add_rc_support("smart_connect");
 		add_rc_support("movistarTriple");
 		add_rc_support("wifi2017");
 		add_rc_support("app");
@@ -11534,7 +11520,6 @@ int init_nvram(void)
 		add_rc_support("pwrctrl");
 		add_rc_support("WIFI_LOGO");
 		add_rc_support("nandflash");
-		add_rc_support("smart_connect");
 		add_rc_support("movistarTriple");
 		add_rc_support("wifi2017");
 		add_rc_support("app");
@@ -11644,7 +11629,6 @@ int init_nvram(void)
 		add_rc_support("pwrctrl");
 		add_rc_support("WIFI_LOGO");
 		add_rc_support("nandflash");
-		add_rc_support("smart_connect");
 		add_rc_support("movistarTriple");
 		add_rc_support("wifi2017");
 		add_rc_support("app");
@@ -11805,7 +11789,6 @@ int init_nvram(void)
 		add_rc_support("pwrctrl");
 		add_rc_support("WIFI_LOGO");
 		add_rc_support("nandflash");
-		add_rc_support("smart_connect");
 		add_rc_support("movistarTriple");
 		add_rc_support("wifi2017");
 		add_rc_support("app");
@@ -12001,7 +11984,6 @@ int init_nvram(void)
 		add_rc_support("pwrctrl");
 		add_rc_support("WIFI_LOGO");
 		add_rc_support("nandflash");
-		add_rc_support("smart_connect");
 		add_rc_support("movistarTriple");
 		add_rc_support("wifi2017");
 		add_rc_support("app");
@@ -12146,15 +12128,15 @@ int init_nvram(void)
 					if (get_dualwan_by_unit(unit) == WANS_DUALWAN_IF_LAN) {
 						if (nvram_match("wans_lanport", "1")) {
 							if (!nvram_get_int("wans_extwan"))
-								sprintf(wan_if, "eth0");
-							else
 								sprintf(wan_if, "eth1");
+							else
+								sprintf(wan_if, "eth0");
 						} else if (nvram_match("wans_lanport", "2"))
-							sprintf(wan_if, "eth1");
-						else if (nvram_match("wans_lanport", "3"))
 							sprintf(wan_if, "eth2");
-						else if (nvram_match("wans_lanport", "4"))
+						else if (nvram_match("wans_lanport", "3"))
 							sprintf(wan_if, "eth3");
+						else if (nvram_match("wans_lanport", "4"))
+							sprintf(wan_if, "eth4");
 						add_wan_phy(wan_if);
 					}
 					else if (get_dualwan_by_unit(unit) == WANS_DUALWAN_IF_2G)
@@ -12168,7 +12150,7 @@ int init_nvram(void)
 								if (!nvram_get_int("wans_extwan"))
 									add_wan_phy("eth0.v0");
 								else
-									add_wan_phy("eth4.v0");
+									add_wan_phy("eth1.v0");
 							}
 							else
 								add_wan_phy(the_wan_phy());
@@ -12188,7 +12170,7 @@ int init_nvram(void)
 				if (!nvram_get_int("wans_extwan"))
 					nvram_set("wan_ifnames", "eth0 usb");
 				else
-					nvram_set("wan_ifnames", "eth4 usb");
+					nvram_set("wan_ifnames", "eth1 usb");
 			}
 		}
 		else
@@ -12205,7 +12187,6 @@ int init_nvram(void)
 		add_rc_support("pwrctrl");
 		add_rc_support("WIFI_LOGO");
 		add_rc_support("nandflash");
-		add_rc_support("smart_connect");
 		add_rc_support("movistarTriple");
 		add_rc_support("wifi2017");
 		add_rc_support("app");
@@ -12358,7 +12339,6 @@ int init_nvram(void)
 		add_rc_support("pwrctrl");
 		add_rc_support("WIFI_LOGO");
 		add_rc_support("nandflash");
-		add_rc_support("smart_connect");
 		add_rc_support("movistarTriple");
 		add_rc_support("wifi2017");
 		add_rc_support("app");
@@ -12566,7 +12546,6 @@ int init_nvram(void)
 		add_rc_support("11AX");
 		add_rc_support("pwrctrl");
 		add_rc_support("nandflash");
-		add_rc_support("smart_connect");
 		add_rc_support("wifi2017");
 		add_rc_support("app");
 		add_rc_support("ofdma");
@@ -12738,7 +12717,6 @@ int init_nvram(void)
 		add_rc_support("pwrctrl");
 		add_rc_support("WIFI_LOGO");
 		add_rc_support("nandflash");
-		add_rc_support("smart_connect");
 		add_rc_support("movistarTriple");
 		add_rc_support("wifi2017");
 		add_rc_support("ofdma");
@@ -12885,7 +12863,6 @@ int init_nvram(void)
 		add_rc_support("11AX");
 		add_rc_support("WIFI_LOGO");
 		add_rc_support("nandflash");
-		add_rc_support("smart_connect");
 		add_rc_support("wifi2017");
 		add_rc_support("ofdma");
 		add_rc_support("app");
@@ -13027,7 +13004,6 @@ int init_nvram(void)
 		add_rc_support("11AX");
 		add_rc_support("WIFI_LOGO");
 		add_rc_support("nandflash");
-		add_rc_support("smart_connect");
 		add_rc_support("wifi2017");
 		add_rc_support("ofdma");
 		add_rc_support("app");
@@ -13328,7 +13304,6 @@ int init_nvram(void)
 		add_rc_support("pwrctrl");
 		add_rc_support("WIFI_LOGO");
 		add_rc_support("nandflash");
-		add_rc_support("smart_connect");
 		add_rc_support("movistarTriple");
 		add_rc_support("wifi2017");
 		if(strcmp(productid, "RT-AX86S"))
@@ -13344,10 +13319,14 @@ int init_nvram(void)
 
 #if defined(RTAX68U)
 	case MODEL_RTAX68U:
+#if 0
 		if(nvram_get_int("wl1_txpower") == 0)
 			nvram_unset("avsint");
 		else
 			nvram_set("avsint", "0");
+#else
+		nvram_unset("avsint");
+#endif
 
 		nvram_set("lan_ifname", "br0");
 		if (is_router_mode()) {
@@ -13490,7 +13469,6 @@ int init_nvram(void)
 		add_rc_support("pwrctrl");
 		add_rc_support("WIFI_LOGO");
 		add_rc_support("nandflash");
-		add_rc_support("smart_connect");
 		add_rc_support("movistarTriple");
 		add_rc_support("wifi2017");
 		add_rc_support("app");
@@ -13652,7 +13630,6 @@ int init_nvram(void)
 		add_rc_support("pwrctrl");
 		add_rc_support("WIFI_LOGO");
 		add_rc_support("nandflash");
-		add_rc_support("smart_connect");
 		add_rc_support("movistarTriple");
 		add_rc_support("wifi2017");
 		add_rc_support("app");
@@ -13830,7 +13807,6 @@ int init_nvram(void)
 		add_rc_support("pwrctrl");
 		add_rc_support("WIFI_LOGO");
 		add_rc_support("nandflash");
-		add_rc_support("smart_connect");
 		add_rc_support("movistarTriple");
 		add_rc_support("wifi2017");
 #ifdef RTCONFIG_EXTPHY_BCM84880
@@ -14009,7 +13985,6 @@ int init_nvram(void)
 		add_rc_support("pwrctrl");
 		add_rc_support("WIFI_LOGO");
 		add_rc_support("nandflash");
-		add_rc_support("smart_connect");
 		add_rc_support("movistarTriple");
 		add_rc_support("wifi2017");
 //#ifdef RTCONFIG_EXTPHY_BCM84880
@@ -14120,7 +14095,6 @@ int init_nvram(void)
 		add_rc_support("pwrctrl");
 		add_rc_support("WIFI_LOGO");
 		add_rc_support("nandflash");
-		add_rc_support("smart_connect");
 		add_rc_support("movistarTriple");
 		add_rc_support("wifi2017");
 //#ifdef RTCONFIG_EXTPHY_BCM84880
@@ -14219,7 +14193,6 @@ int init_nvram(void)
 		add_rc_support("pwrctrl");
 		add_rc_support("WIFI_LOGO");
 		add_rc_support("nandflash");
-		add_rc_support("smart_connect");
 		add_rc_support("movistarTriple");
 		add_rc_support("wifi2017");
 //#ifdef RTCONFIG_EXTPHY_BCM84880
@@ -14381,7 +14354,6 @@ int init_nvram(void)
 		add_rc_support("pwrctrl");
 		add_rc_support("WIFI_LOGO");
 		add_rc_support("nandflash");
-		add_rc_support("smart_connect");
 		add_rc_support("movistarTriple");
 		add_rc_support("wifi2017");
 		add_rc_support("app");
@@ -14567,7 +14539,6 @@ int init_nvram(void)
 		add_rc_support("pwrctrl");
 		add_rc_support("WIFI_LOGO");
 		add_rc_support("nandflash");
-		add_rc_support("smart_connect");
 		add_rc_support("movistarTriple");
 		add_rc_support("wifi2017");
 		add_rc_support("2p5G_LWAN");
@@ -14822,7 +14793,6 @@ int init_nvram(void)
 #ifdef RTCONFIG_MMC_LED
 		nvram_set("mmc_irq", "177");
 #endif
-		add_rc_support("smart_connect");
 		if (!strncmp(nvram_safe_get("territory_code"), "AU/05", 5)) {
 			add_rc_support("nz_isp");
 			nvram_set("wifi_psk", cfe_nvram_safe_get_raw("secret_code"));
@@ -15814,15 +15784,13 @@ int init_nvram(void)
 #endif
 
 #if defined(RTCONFIG_AMAS)
-#if defined(RTCONFIG_FRONTHAUL_DWB) || defined(RTCONFIG_MSSID_PRELINK) || defined(RTCONFIG_FRONTHAUL_DBG)
+#if defined(RTCONFIG_FRONTHAUL_DWB) || defined(RTCONFIG_MSSID_PRELINK) || defined(RTCONFIG_FRONTHAUL_DBG) || defined(RTCONFIG_VIF_ONBOARDING)
 	init_amas_subunit();
 #if defined(RTCONFIG_FRONTHAUL_DWB)
 	if (nvram_get_int("fh_ap_enabled") >= 0)
 		nvram_set("fh_ap_bss", "0");  // Fronthaul AP is be control by cfg daemon. So disable it when booted.
 #endif
 	unset_selected_channel_info();
-#elif defined(RTCONFIG_VIF_ONBOARDING) && defined(RTCONFIG_QCA)
-	init_amas_subunit();
 #endif
 
 #if defined(RTCONFIG_CFGSYNC) && defined(RTCONFIG_LACP)
@@ -16847,8 +16815,15 @@ NO_USB_CAP:
 #ifdef RTCONFIG_COMFW
 	nvram_set_int("comfw_type", get_cf_id(model, RT_BUILD_NAME));
 #endif
+#ifdef RTCONFIG_SECUREBOOT
+	nvram_set("build_name", RT_BUILD_NAME_SEC);
+#else
 	nvram_set("build_name", RT_BUILD_NAME);
+#endif
 
+#if defined(RTCONFIG_BCMBSD)
+	add_rc_support("smart_connect");
+#endif
 	return 0;
 }  // end of init_nvram
 
@@ -18225,8 +18200,6 @@ def_boot_reinit:
 		f_write_string("/proc/sys/vm/min_free_kbytes", "61440", 0, 0);
 	else if (model==MODEL_RTAX55 || model==MODEL_RTAX3000N) {
 		f_write_string("/proc/sys/vm/min_free_kbytes", "32768", 0, 0);
-		f_write_string("/proc/sys/vm/overcommit_ratio", "60", 0, 0);
-	} else if (model==MODEL_RTAX92U) {
 		f_write_string("/proc/sys/vm/overcommit_ratio", "60", 0, 0);
 	} else	// fix _dma_rxfill error under stress test
 		f_write_string("/proc/sys/vm/min_free_kbytes", "20480", 0, 0);
@@ -19658,7 +19631,6 @@ _dprintf("%s %d turnning on power on ethernet here\n", __func__, __LINE__);
 #if defined(RTCONFIG_HND_ROUTER_AX_6756)
 			sync_boot_state();
 #endif
-
 #ifdef RTCONFIG_REALTEK
 			if (nvram_match("Ate_power_on_off_enable", "0")) {	/* avoid run in test to let all led off */
 				if (sw_mode() == SW_MODE_REPEATER ||

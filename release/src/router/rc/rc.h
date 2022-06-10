@@ -3370,4 +3370,5 @@ int transform_wanlanstatus(wanlan_st_t *wlst);
 #define PLC_LOG_1_FILE	"plc.log-1"
 #endif /* RTCONFIG_QCA_PLC2 */
 
+void wl_apply_akm_by_auth_mode(int unit, int subunit, char *sp_prefix_auth);
 #endif	/* __RC_H__ */

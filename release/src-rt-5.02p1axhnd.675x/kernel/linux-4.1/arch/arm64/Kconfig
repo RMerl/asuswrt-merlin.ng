@@ -23,6 +23,7 @@ config ARM64
 	select CLONE_BACKWARDS
 	select COMMON_CLK
 	select CPU_PM if (SUSPEND || CPU_IDLE)
+	select CRC32
 	select DCACHE_WORD_ACCESS
 	select GENERIC_ALLOCATOR
 	select GENERIC_CLOCKEVENTS

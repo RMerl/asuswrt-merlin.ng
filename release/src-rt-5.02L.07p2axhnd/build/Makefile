@@ -846,6 +846,9 @@ $(if $(findstring L_y, $(1)), \
 $(if $(findstring uy, $(7)), \
        $(HOSTTOOLS_DIR)/scripts/bcmImageMaker --cferom $(2) --blocksize $(FLASH_NAND_BLOCK_$(3)KB) --bootofs $(4) --bootsize $(FLASH_NAND_BLOCK_$(3)KB)  --rootfs ubi_rootfs$(3)kb_pureubi.img --image $(FLASH_NAND_CFEROM_FS_IMAGE_NAME_$(3))_pureubi --fsonly $(FLASH_NAND_FS_IMAGE_NAME_$(3))_pureubi --ubionlyimage $(IMG_DDR_TYPE_OPT) $(6) $(5);)\
        md5sum $(HND_SRC)/targets/$(PROFILE)/$(FLASH_NAND_CFEROM_FS_IMAGE_NAME_$(3))_pureubi.w > $(HND_SRC)/targets/$(PROFILE)/$(FLASH_NAND_CFEROM_FS_IMAGE_NAME_$(3))_pureubi.md5; \
+$(if $(findstring RT-AX86U, $(BUILD_NAME)), \
+       rm $(HND_SRC)/targets/$(PROFILE)/$(FLASH_NAND_CFEROM_FS_IMAGE_NAME_$(3))_pureubi.w; \
+)
 $(if $(LIVE_UPDATE_RSA_VER), \
 $(if $(wildcard $(KEY_PATH)/private*.pem), \
        for f in $(KEY_PATH)/private*.pem; do \

@@ -14959,7 +14959,9 @@ check_ddr_done:
 				nvram_set("apps_state_cancel", "");
 				nvram_set("apps_state_error", "");
 
+#if !defined(RTCONFIG_HND_ROUTER)
 				free_caches(FREE_MEM_PAGE, 1, 0);
+#endif
 
 				cmd[0] = nvtmp;
 				start_script(count, cmd);

@@ -983,7 +983,9 @@ int max_lock_time = MAX_LOGIN_BLOCK_TIME;
 static void
 handle_request(void)
 {
+#if !defined(RTCONFIG_HND_ROUTER)
 	static long flush_cache_t1 = 0;
+#endif
 	char line[10000], *cur;
 	char *method, *path, *protocol, *authorization, *boundary, *alang, *cookies, *referer, *useragent;
 	char *cp;
@@ -1239,11 +1241,13 @@ handle_request(void)
 		snprintf(current_page_name, sizeof(current_page_name), "%s", url);
 	}
 
+#if !defined(RTCONFIG_HND_ROUTER)
 	if (!strncmp(file, "Main_Login.asp", 14) && (uptime() - flush_cache_t1) > 10 * 60) {
 		/* free pagecahe when login, don't do it again in 10 minutes. */
 		f_write_string("/proc/sys/vm/drop_caches", "1", 0, 0);
 		flush_cache_t1 = uptime();
 	}
+#endif
 #if defined(RTCONFIG_QCA) && defined(RTCONFIG_QCA_LBD)
 	if (nvram_match("smart_connect_x", "1") && !nvram_match("wl_unit", "0")
 	 && strstr(url, "Advanced_Wireless_Content.asp")) {

@@ -75,6 +75,7 @@ ifeq ($(LINUX_KERNEL),)
 $(error Empty LINUX_KERNEL variable)
 endif
 export LINUX_KERNEL
+export LINUX_KERNEL_VERSION
 
 
 include $(SRCBASE)/target.mak

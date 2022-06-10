@@ -61,7 +61,8 @@ ifeq ($(findstring $(HND_ROUTER)$(PLATFORM_ROUTER), y spf11.1 ipq807x ipq60xx ip
 pf6_build_mod := $(filter-out MASQUERADE, ${pf6_build_mod})
 endif
 endif
-ifneq ($(HND_ROUTER),y)
+KERNEL_VERSION_GT_390 := $(shell expr $(LINUX_KERNEL_VERSION) \> 198909)
+ifneq ($(KERNEL_VERSION_GT_390), 1)
 pf6_build_mod := $(filter-out DNAT, ${pf6_build_mod})
 endif
 

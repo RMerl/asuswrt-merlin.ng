@@ -1,9 +1,0 @@
-all:
-
-install:
-
-dynamic:
-
-clean:
-
-

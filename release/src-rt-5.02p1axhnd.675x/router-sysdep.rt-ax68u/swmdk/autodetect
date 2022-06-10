@@ -1,2 +1,0 @@
-dependson: private/libs/mdk public/libs/bcm_flashutil public/libs/bcm_boardctl private/libs/ethswctl
-

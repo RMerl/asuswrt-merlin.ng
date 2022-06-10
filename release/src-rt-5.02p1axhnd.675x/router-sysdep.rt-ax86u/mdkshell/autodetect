@@ -1,4 +1,0 @@
-
-dependson: private/libs/mdk
-condition: ifneq ($(strip $(BUILD_MDK_SHELL)),)
-

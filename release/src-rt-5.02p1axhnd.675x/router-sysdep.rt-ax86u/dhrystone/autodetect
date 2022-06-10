@@ -1,2 +1,0 @@
-condition:ifneq ($(strip $(BENCHMARKS_SMP)),)
-

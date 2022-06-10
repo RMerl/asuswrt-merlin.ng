@@ -1,3 +1,0 @@
-
-condition: ifneq ($(strip $(BUILD_STRESS)),)
-

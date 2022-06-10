@@ -1,4 +1,0 @@
-
-dependson: private/libs/bcmtm
-condition: ifneq ($(strip $(BUILD_BCMTM)),)
-

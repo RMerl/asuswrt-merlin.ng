@@ -1,4 +1,0 @@
-<PUBLISH>
-@@
--# BRCM_DRIVER_SPDTEST is not set
-+BRCM_DRIVER_SPDTEST=m

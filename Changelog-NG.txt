@@ -2,11 +2,17 @@ Asuswrt-Merlin 386/NG Changelog
 ===============================
 
 386.7 (xx-xxx-xxxx)
+  - NEW: IPV6 support for DNSFilter for HND router models.
+         Custom settings can also let you specify IPv6 servers.
+         These (as well as providers that support IPv6) will
+         now also get intercepted and redirected like the IPv4
+         DNS servers are.
   - UPDATED: Merged with 386_49335 GPL for the RT-AC5300.
   - UPDATED: Merged with 386_48966 GPL for all other models.
   - UPDATED: openssl to 1.1.1o.
   - UPDATED: haveged to 1.9.18.
   - UPDATED: openvpn to 2.5.7.
+  - UPDATED: tor to 0.4.7.7.
   - CHANGED: dhcpc-event now has a second parameter that will
              contain "4" or "6" depending on the IP protocol of
              the event (dave14305)

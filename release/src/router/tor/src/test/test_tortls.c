@@ -1,4 +1,4 @@
-/* Copyright (c) 2010-2020, The Tor Project, Inc. */
+/* Copyright (c) 2010-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 #define TORTLS_PRIVATE

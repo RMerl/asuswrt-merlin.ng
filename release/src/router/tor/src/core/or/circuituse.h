@@ -1,7 +1,7 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2020, The Tor Project, Inc. */
+ * Copyright (c) 2007-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -76,7 +76,6 @@ bool circuit_purpose_is_hs_client(const uint8_t purpose);
 bool circuit_purpose_is_hs_service(const uint8_t purpose);
 bool circuit_purpose_is_hs_vanguards(const uint8_t purpose);
 
-bool circuit_is_hs_v2(const circuit_t *circ);
 bool circuit_is_hs_v3(const circuit_t *circ);
 
 int circuit_should_use_vanguards(uint8_t);

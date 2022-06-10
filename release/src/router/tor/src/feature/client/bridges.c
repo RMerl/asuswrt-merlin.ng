@@ -1,7 +1,7 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2020, The Tor Project, Inc. */
+ * Copyright (c) 2007-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -943,9 +943,17 @@ rewrite_node_address_for_bridge(const bridge_info_t *bridge, node_t *node)
 }
 
 /** We just learned a descriptor for a bridge. See if that
- * digest is in our entry guard list, and add it if not. */
+ * digest is in our entry guard list, and add it if not. Schedule the
+ * next fetch for a long time from now, and initiate any follow-up
+ * activities like continuing to bootstrap.
+ *
+ * <b>from_cache</b> * tells us whether we fetched it from disk (else
+ * the network)
+ *
+ * <b>desc_is_new</b> tells us if we preferred it to the old version we
+ * had, if any. */
 void
-learned_bridge_descriptor(routerinfo_t *ri, int from_cache)
+learned_bridge_descriptor(routerinfo_t *ri, int from_cache, int desc_is_new)
 {
   tor_assert(ri);
   tor_assert(ri->purpose == ROUTER_PURPOSE_BRIDGE);
@@ -961,12 +969,14 @@ learned_bridge_descriptor(routerinfo_t *ri, int from_cache)
 
     if (bridge) { /* if we actually want to use this one */
       node_t *node;
-      /* it's here; schedule its re-fetch for a long time from now. */
       if (!from_cache) {
         /* This schedules the re-fetch at a constant interval, which produces
          * a pattern of bridge traffic. But it's better than trying all
          * configured bridges several times in the first few minutes. */
         download_status_reset(&bridge->fetch_status);
+        /* it's here; schedule its re-fetch for a long time from now. */
+        bridge->fetch_status.next_attempt_at +=
+          get_options()->TestingBridgeDownloadInitialDelay;
       }
 
       node = node_get_mutable_by_id(ri->cache_info.identity_digest);
@@ -982,8 +992,10 @@ learned_bridge_descriptor(routerinfo_t *ri, int from_cache)
       entry_guard_learned_bridge_identity(&bridge->addrport_configured,
                               (const uint8_t*)ri->cache_info.identity_digest);
 
-      log_notice(LD_DIR, "new bridge descriptor '%s' (%s): %s", ri->nickname,
-                 from_cache ? "cached" : "fresh", router_describe(ri));
+      if (desc_is_new)
+        log_notice(LD_DIR, "new bridge descriptor '%s' (%s): %s",
+                   ri->nickname,
+                   from_cache ? "cached" : "fresh", router_describe(ri));
       /* If we didn't have a reachable bridge before this one, try directory
        * documents again. */
       if (first) {

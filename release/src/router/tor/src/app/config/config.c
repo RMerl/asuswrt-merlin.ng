@@ -1,7 +1,7 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2020, The Tor Project, Inc. */
+ * Copyright (c) 2007-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -103,8 +103,6 @@
 #include "feature/relay/routermode.h"
 #include "feature/relay/relay_config.h"
 #include "feature/relay/transport_config.h"
-#include "feature/rend/rendclient.h"
-#include "feature/rend/rendservice.h"
 #include "lib/geoip/geoip.h"
 #include "feature/stats/geoip_stats.h"
 #include "lib/compress/compress.h"
@@ -195,6 +193,7 @@ static const config_abbrev_t option_abbrevs_[] = {
   PLURAL(AuthDirBadDirCC),
   PLURAL(AuthDirBadExitCC),
   PLURAL(AuthDirInvalidCC),
+  PLURAL(AuthDirMiddleOnlyCC),
   PLURAL(AuthDirRejectCC),
   PLURAL(EntryNode),
   PLURAL(ExcludeNode),
@@ -333,6 +332,8 @@ static const config_var_t option_vars_[] = {
   V(AuthDirBadExitCCs,           CSV,      ""),
   V(AuthDirInvalid,              LINELIST, NULL),
   V(AuthDirInvalidCCs,           CSV,      ""),
+  V(AuthDirMiddleOnly,           LINELIST, NULL),
+  V(AuthDirMiddleOnlyCCs,        CSV,      ""),
   V(AuthDirReject,               LINELIST, NULL),
   V(AuthDirRejectCCs,            CSV,      ""),
   OBSOLETE("AuthDirRejectUnlisted"),
@@ -354,6 +355,7 @@ static const config_var_t option_vars_[] = {
   V(CacheDirectoryGroupReadable, AUTOBOOL,     "auto"),
   V(CellStatistics,              BOOL,     "0"),
   V(PaddingStatistics,           BOOL,     "1"),
+  V(OverloadStatistics,          BOOL,     "1"),
   V(LearnCircuitBuildTimeout,    BOOL,     "1"),
   V(CircuitBuildTimeout,         INTERVAL, "0"),
   OBSOLETE("CircuitIdleTimeout"),
@@ -424,23 +426,11 @@ static const config_var_t option_vars_[] = {
   OBSOLETE("DynamicDHGroups"),
   VPORT(DNSPort),
   OBSOLETE("DNSListenAddress"),
-  V(DormantClientTimeout,         INTERVAL, "24 hours"),
-  V(DormantTimeoutDisabledByIdleStreams, BOOL,     "1"),
+  V(DormantClientTimeout,        INTERVAL, "24 hours"),
+  V(DormantTimeoutEnabled,       BOOL,     "1"),
+  V(DormantTimeoutDisabledByIdleStreams,   BOOL,     "1"),
   V(DormantOnFirstStartup,       BOOL,      "0"),
   V(DormantCanceledByStartup,    BOOL,      "0"),
-  /* DoS circuit creation options. */
-  V(DoSCircuitCreationEnabled,   AUTOBOOL, "auto"),
-  V(DoSCircuitCreationMinConnections,      POSINT, "0"),
-  V(DoSCircuitCreationRate,      POSINT,     "0"),
-  V(DoSCircuitCreationBurst,     POSINT,     "0"),
-  V(DoSCircuitCreationDefenseType,         INT,  "0"),
-  V(DoSCircuitCreationDefenseTimePeriod,   INTERVAL, "0"),
-  /* DoS connection options. */
-  V(DoSConnectionEnabled,        AUTOBOOL, "auto"),
-  V(DoSConnectionMaxConcurrentCount,       POSINT, "0"),
-  V(DoSConnectionDefenseType,    INT,      "0"),
-  /* DoS single hop client options. */
-  V(DoSRefuseSingleHopClientRendezvous,    AUTOBOOL, "auto"),
   V(DownloadExtraInfo,           BOOL,     "0"),
   V(TestingEnableConnBwEvent,    BOOL,     "0"),
   V(TestingEnableCellStatsEvent, BOOL,     "0"),
@@ -498,12 +488,13 @@ static const config_var_t option_vars_[] = {
   V(MainloopStats,               BOOL,     "0"),
   V(HashedControlPassword,       LINELIST, NULL),
   OBSOLETE("HidServDirectoryV2"),
+  OBSOLETE("HiddenServiceAuthorizeClient"),
+  OBSOLETE("HidServAuth"),
   VAR("HiddenServiceDir",    LINELIST_S, RendConfigLines,    NULL),
   VAR("HiddenServiceDirGroupReadable",  LINELIST_S, RendConfigLines, NULL),
   VAR("HiddenServiceOptions",LINELIST_V, RendConfigLines,    NULL),
   VAR("HiddenServicePort",   LINELIST_S, RendConfigLines,    NULL),
   VAR("HiddenServiceVersion",LINELIST_S, RendConfigLines,    NULL),
-  VAR("HiddenServiceAuthorizeClient",LINELIST_S,RendConfigLines, NULL),
   VAR("HiddenServiceAllowUnknownPorts",LINELIST_S, RendConfigLines, NULL),
   VAR("HiddenServiceMaxStreams",LINELIST_S, RendConfigLines, NULL),
   VAR("HiddenServiceMaxStreamsCloseCircuit",LINELIST_S, RendConfigLines, NULL),
@@ -517,7 +508,6 @@ static const config_var_t option_vars_[] = {
   VAR("HiddenServiceOnionBalanceInstance",
       LINELIST_S, RendConfigLines, NULL),
   VAR("HiddenServiceStatistics", BOOL, HiddenServiceStatistics_option, "1"),
-  V(HidServAuth,                 LINELIST, NULL),
   V(ClientOnionAuthDir,          FILENAME, NULL),
   OBSOLETE("CloseHSClientCircuitsImmediatelyOnTimeout"),
   OBSOLETE("CloseHSServiceRendCircuitsImmediatelyOnTimeout"),
@@ -629,11 +619,12 @@ static const config_var_t option_vars_[] = {
   V(ConnectionPadding,           AUTOBOOL, "auto"),
   V(RefuseUnknownExits,          AUTOBOOL, "auto"),
   V(CircuitPadding,              BOOL,     "1"),
+  V(ReconfigDropsBridgeDescs,    BOOL,     "0"),
   V(ReducedCircuitPadding,       BOOL,     "0"),
   V(RejectPlaintextPorts,        CSV,      ""),
   V(RelayBandwidthBurst,         MEMUNIT,  "0"),
   V(RelayBandwidthRate,          MEMUNIT,  "0"),
-  V(RendPostPeriod,              INTERVAL, "1 hour"),
+  V(RendPostPeriod,              INTERVAL, "1 hour"), /* Used internally. */
   V(RephistTrackTime,            INTERVAL, "24 hours"),
   V_IMMUTABLE(RunAsDaemon,       BOOL,     "0"),
   V(ReducedExitPolicy,           BOOL,     "0"),
@@ -681,8 +672,11 @@ static const config_var_t option_vars_[] = {
   VAR("UseEntryGuards",          BOOL,     UseEntryGuards_option, "1"),
   OBSOLETE("UseEntryGuardsAsDirGuards"),
   V(UseGuardFraction,            AUTOBOOL, "auto"),
+  V(VanguardsLiteEnabled,        AUTOBOOL, "auto"),
   V(UseMicrodescriptors,         AUTOBOOL, "auto"),
   OBSOLETE("UseNTorHandshake"),
+  VAR("__AlwaysCongestionControl",  BOOL, AlwaysCongestionControl, "0"),
+  VAR("__SbwsExit",  BOOL, SbwsExit, "0"),
   V_IMMUTABLE(User,              STRING,   NULL),
   OBSOLETE("UserspaceIOCPBuffers"),
   OBSOLETE("V1AuthoritativeDirectory"),
@@ -2104,7 +2098,7 @@ options_act,(const or_options_t *old_options))
     return -1;
   }
 
-  if (rend_non_anonymous_mode_enabled(options)) {
+  if (hs_service_non_anonymous_mode_enabled(options)) {
     log_warn(LD_GENERAL, "This copy of Tor was compiled or configured to run "
              "in a non-anonymous mode. It will provide NO ANONYMITY.");
   }
@@ -2322,6 +2316,8 @@ options_act,(const or_options_t *old_options))
     }
 
     if (transition_affects_guards) {
+      if (options->ReconfigDropsBridgeDescs)
+        routerlist_drop_bridge_descriptors();
       if (guards_update_all()) {
         abandon_circuits = 1;
       }
@@ -2446,6 +2442,8 @@ typedef enum {
 static const struct {
   /** The string that the user has to provide. */
   const char *name;
+  /** Optional short name. */
+  const char *short_name;
   /** Does this option accept an argument? */
   takes_argument_t takes_argument;
   /** If not CMD_RUN_TOR, what should Tor do when it starts? */
@@ -2453,7 +2451,8 @@ static const struct {
   /** If nonzero, set the quiet level to this. 1 is "hush", 2 is "quiet" */
   int quiet;
 } CMDLINE_ONLY_OPTIONS[] = {
-  { .name="-f",
+  { .name="--torrc-file",
+    .short_name="-f",
     .takes_argument=ARGUMENT_NECESSARY },
   { .name="--allow-missing-torrc" },
   { .name="--defaults-torrc",
@@ -2467,6 +2466,7 @@ static const struct {
     .command=CMD_DUMP_CONFIG,
     .quiet=QUIET_SILENT },
   { .name="--list-fingerprint",
+    .takes_argument=ARGUMENT_OPTIONAL,
     .command=CMD_LIST_FINGERPRINT },
   { .name="--keygen",
     .command=CMD_KEYGEN },
@@ -2495,10 +2495,8 @@ static const struct {
   { .name="--library-versions",
     .command=CMD_IMMEDIATE,
     .quiet=QUIET_HUSH },
-  { .name="-h",
-    .command=CMD_IMMEDIATE,
-    .quiet=QUIET_HUSH },
   { .name="--help",
+    .short_name="-h",
     .command=CMD_IMMEDIATE,
     .quiet=QUIET_HUSH  },
   { .name="--list-torrc-options",
@@ -2542,7 +2540,9 @@ config_parse_commandline(int argc, char **argv, int ignore_errors)
     bool is_a_command = false;
 
     for (j = 0; CMDLINE_ONLY_OPTIONS[j].name != NULL; ++j) {
-      if (!strcmp(argv[i], CMDLINE_ONLY_OPTIONS[j].name)) {
+      if (!strcmp(argv[i], CMDLINE_ONLY_OPTIONS[j].name) ||
+          (CMDLINE_ONLY_OPTIONS[j].short_name &&
+           !strcmp(argv[i], CMDLINE_ONLY_OPTIONS[j].short_name))) {
         is_cmdline = 1;
         want_arg = CMDLINE_ONLY_OPTIONS[j].takes_argument;
         if (CMDLINE_ONLY_OPTIONS[j].command != CMD_RUN_TOR) {
@@ -2585,8 +2585,11 @@ config_parse_commandline(int argc, char **argv, int ignore_errors)
         parsed_cmdline_free(result);
         return NULL;
       }
-    } else if (want_arg == ARGUMENT_OPTIONAL && is_last) {
+    } else if (want_arg == ARGUMENT_OPTIONAL &&
+               /* optional arguments may never start with '-'. */
+               (is_last || argv[i+1][0] == '-')) {
       arg = tor_strdup("");
+      want_arg = ARGUMENT_NONE; // prevent skipping the next flag.
     } else {
       arg = (want_arg != ARGUMENT_NONE) ? tor_strdup(argv[i+1]) :
                                               tor_strdup("");
@@ -2685,7 +2688,7 @@ print_usage(void)
   printf(
 "Copyright (c) 2001-2004, Roger Dingledine\n"
 "Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson\n"
-"Copyright (c) 2007-2020, The Tor Project, Inc.\n\n"
+"Copyright (c) 2007-2021, The Tor Project, Inc.\n\n"
 "tor -f <torrc> [args]\n"
 "See man page for options, or https://www.torproject.org/ for "
 "documentation.\n");
@@ -3210,7 +3213,7 @@ options_validate_single_onion(or_options_t *options, char **msg)
   }
 
   /* Now that we've checked that the two options are consistent, we can safely
-   * call the rend_service_* functions that abstract these options. */
+   * call the hs_service_* functions that abstract these options. */
 
   /* If you run an anonymous client with an active Single Onion service, the
    * client loses anonymity. */
@@ -3219,13 +3222,13 @@ options_validate_single_onion(or_options_t *options, char **msg)
                                options->NATDPort_set ||
                                options->DNSPort_set ||
                                options->HTTPTunnelPort_set);
-  if (rend_service_non_anonymous_mode_enabled(options) && client_port_set) {
+  if (hs_service_non_anonymous_mode_enabled(options) && client_port_set) {
     REJECT("HiddenServiceNonAnonymousMode is incompatible with using Tor as "
            "an anonymous client. Please set Socks/Trans/NATD/DNSPort to 0, or "
            "revert HiddenServiceNonAnonymousMode to 0.");
   }
 
-  if (rend_service_allow_non_anonymous_connection(options)
+  if (hs_service_allow_non_anonymous_connection(options)
       && options->UseEntryGuards) {
     /* Single Onion services only use entry guards when uploading descriptors;
      * all other connections are one-hop. Further, Single Onions causes the
@@ -3275,7 +3278,7 @@ options_validate_cb(const void *old_options_, void *options_, char **msg)
   }
 #else /* defined(HAVE_SYS_UN_H) */
   if (options->ControlSocketsGroupWritable && !options->ControlSocket) {
-    *msg = tor_strdup("Setting ControlSocketGroupWritable without setting "
+    *msg = tor_strdup("Setting ControlSocketsGroupWritable without setting "
                       "a ControlSocket makes no sense.");
     return -1;
   }
@@ -3575,7 +3578,7 @@ options_validate_cb(const void *old_options_, void *options_, char **msg)
 
   if (!(options->UseEntryGuards) &&
       (options->RendConfigLines != NULL) &&
-      !rend_service_allow_non_anonymous_connection(options)) {
+      !hs_service_allow_non_anonymous_connection(options)) {
     log_warn(LD_CONFIG,
              "UseEntryGuards is disabled, but you have configured one or more "
              "hidden services on this Tor instance.  Your hidden services "
@@ -3618,7 +3621,7 @@ options_validate_cb(const void *old_options_, void *options_, char **msg)
   }
 
   /* Single Onion Services: non-anonymous hidden services */
-  if (rend_service_non_anonymous_mode_enabled(options)) {
+  if (hs_service_non_anonymous_mode_enabled(options)) {
     log_warn(LD_CONFIG,
              "HiddenServiceNonAnonymousMode is set. Every hidden service on "
              "this tor instance is NON-ANONYMOUS. If "
@@ -4318,16 +4321,21 @@ find_torrc_filename(const config_line_t *cmd_arg,
   char *fname=NULL;
   const config_line_t *p_index;
   const char *fname_opt = defaults_file ? "--defaults-torrc" : "-f";
+  const char *fname_long_opt = defaults_file ? "--defaults-torrc" :
+                                               "--torrc-file";
   const char *ignore_opt = defaults_file ? NULL : "--ignore-missing-torrc";
+  const char *keygen_opt = "--keygen";
 
   if (defaults_file)
     *ignore_missing_torrc = 1;
 
   for (p_index = cmd_arg; p_index; p_index = p_index->next) {
-    if (!strcmp(p_index->key, fname_opt)) {
+    // options_init_from_torrc ensures only the short or long name is present
+    if (!strcmp(p_index->key, fname_opt) ||
+        !strcmp(p_index->key, fname_long_opt)) {
       if (fname) {
         log_warn(LD_CONFIG, "Duplicate %s options on command line.",
-            fname_opt);
+            p_index->key);
         tor_free(fname);
       }
       fname = expand_filename(p_index->value);
@@ -4340,7 +4348,8 @@ find_torrc_filename(const config_line_t *cmd_arg,
       }
 
       *using_default_fname = 0;
-    } else if (ignore_opt && !strcmp(p_index->key,ignore_opt)) {
+    } else if ((ignore_opt && !strcmp(p_index->key, ignore_opt)) ||
+               (keygen_opt && !strcmp(p_index->key, keygen_opt))) {
       *ignore_missing_torrc = 1;
     }
   }
@@ -4487,6 +4496,25 @@ options_init_from_torrc(int argc, char **argv)
 
   if (config_line_find(cmdline_only_options, "--version")) {
     printf("Tor version %s.\n",get_version());
+    printf("Tor is running on %s with Libevent %s, "
+            "%s %s, Zlib %s, Liblzma %s, Libzstd %s and %s %s as libc.\n",
+            get_uname(),
+            tor_libevent_get_version_str(),
+            crypto_get_library_name(),
+            crypto_get_library_version_string(),
+            tor_compress_supports_method(ZLIB_METHOD) ?
+            tor_compress_version_str(ZLIB_METHOD) : "N/A",
+            tor_compress_supports_method(LZMA_METHOD) ?
+            tor_compress_version_str(LZMA_METHOD) : "N/A",
+            tor_compress_supports_method(ZSTD_METHOD) ?
+            tor_compress_version_str(ZSTD_METHOD) : "N/A",
+            tor_libc_get_name() ?
+            tor_libc_get_name() : "Unknown",
+            tor_libc_get_version_str());
+    printf("Tor compiled with %s version %s\n",
+            strcmp(COMPILER_VENDOR, "gnu") == 0?
+            COMPILER:COMPILER_VENDOR, COMPILER_VERSION);
+
     return 1;
   }
 
@@ -4511,6 +4539,16 @@ options_init_from_torrc(int argc, char **argv)
   } else {
     cf_defaults = load_torrc_from_disk(cmdline_only_options, 1);
     const config_line_t *f_line = config_line_find(cmdline_only_options, "-f");
+    const config_line_t *f_line_long = config_line_find(cmdline_only_options,
+                                                        "--torrc-file");
+    if (f_line && f_line_long) {
+      log_err(LD_CONFIG, "-f and --torrc-file cannot be used together.");
+      retval = -1;
+      goto err;
+    } else if (f_line_long) {
+      f_line = f_line_long;
+    }
+
     const int read_torrc_from_stdin =
     (f_line != NULL && strcmp(f_line->value, "-") == 0);
 
@@ -4803,7 +4841,7 @@ addressmap_register_auto(const char *from, const char *to,
   }
 
   addressmap_register(from, tor_strdup(to), expires, addrmap_source,
-                      from_wildcard, to_wildcard);
+                      from_wildcard, to_wildcard, 0);
 
   return 0;
 }
@@ -4950,9 +4988,9 @@ options_init_logs(const or_options_t *old_options, const or_options_t *options,
         if (!validate_only) {
           add_syslog_log(severity, options->SyslogIdentityTag);
         }
-#else
+#else /* !defined(HAVE_SYSLOG_H) */
         log_warn(LD_CONFIG, "The android logging API is no longer supported.");
-#endif
+#endif /* defined(HAVE_SYSLOG_H) */
         goto cleanup;
       }
     }
@@ -5439,6 +5477,77 @@ pt_parse_transport_line(const or_options_t *options,
   return r;
 }
 
+/**
+ * Parse a flag describing an extra dirport for a directory authority.
+ *
+ * Right now, the supported format is exactly:
+ * `{upload,download,voting}=http://[IP:PORT]/`.
+ * Other URL schemes, and other suffixes, might be supported in the future.
+ *
+ * Only call this function if `flag` starts with one of the above strings.
+ *
+ * Return 0 on success, and -1 on failure.
+ *
+ * If `ds` is provided, then add any parsed dirport to `ds`.  If `ds` is NULL,
+ * take no action other than parsing.
+ **/
+static int
+parse_dirauth_dirport(dir_server_t *ds, const char *flag)
+{
+  tor_assert(flag);
+
+  auth_dirport_usage_t usage;
+
+  if (!strcasecmpstart(flag, "upload=")) {
+    usage = AUTH_USAGE_UPLOAD;
+  } else if (!strcasecmpstart(flag, "download=")) {
+    usage = AUTH_USAGE_DOWNLOAD;
+  } else if (!strcasecmpstart(flag, "vote=")) {
+    usage = AUTH_USAGE_VOTING;
+  } else {
+    // We shouldn't get called with a flag that we don't recognize.
+    tor_assert_nonfatal_unreached();
+    return -1;
+  }
+
+  const char *eq = strchr(flag, '=');
+  tor_assert(eq);
+  const char *target = eq + 1;
+
+  // Find the part inside the http://{....}/
+  if (strcmpstart(target, "http://")) {
+    log_warn(LD_CONFIG, "Unsupported URL scheme in authority flag %s", flag);
+    return -1;
+  }
+  const char *addr = target + strlen("http://");
+
+  const char *eos = strchr(addr, '/');
+  size_t addr_len;
+  if (eos && strcmp(eos, "/")) {
+    log_warn(LD_CONFIG, "Unsupported URL prefix in authority flag %s", flag);
+    return -1;
+  } else if (eos) {
+    addr_len = eos - addr;
+  } else {
+    addr_len = strlen(addr);
+  }
+
+  // Finally, parse the addr:port part.
+  char *addr_string = tor_strndup(addr, addr_len);
+  tor_addr_port_t dirport;
+  memset(&dirport, 0, sizeof(dirport));
+  int rv = tor_addr_port_parse(LOG_WARN, addr_string,
+                               &dirport.addr, &dirport.port, -1);
+  if (ds != NULL && rv == 0) {
+    trusted_dir_server_add_dirport(ds, usage, &dirport);
+  } else if (rv == -1) {
+    log_warn(LD_CONFIG, "Unable to parse address in authority flag %s",flag);
+  }
+
+  tor_free(addr_string);
+  return rv;
+}
+
 /** Read the contents of a DirAuthority line from <b>line</b>. If
  * <b>validate_only</b> is 0, and the line is well-formed, and it
  * shares any bits with <b>required_type</b> or <b>required_type</b>
@@ -5459,6 +5568,7 @@ parse_dir_authority_line(const char *line, dirinfo_type_t required_type,
   char v3_digest[DIGEST_LEN];
   dirinfo_type_t type = 0;
   double weight = 1.0;
+  smartlist_t *extra_dirports = smartlist_new();
 
   memset(v3_digest, 0, sizeof(v3_digest));
 
@@ -5527,6 +5637,12 @@ parse_dir_authority_line(const char *line, dirinfo_type_t required_type,
         }
         ipv6_addrport_ptr = &ipv6_addrport;
       }
+    } else if (!strcasecmpstart(flag, "upload=") ||
+               !strcasecmpstart(flag, "download=") ||
+               !strcasecmpstart(flag, "vote=")) {
+      // We'll handle these after creating the authority object.
+      smartlist_add(extra_dirports, flag);
+      flag =  NULL; // prevent double-free.
     } else {
       log_warn(LD_CONFIG, "Unrecognized flag '%s' on DirAuthority line",
                flag);
@@ -5570,6 +5686,13 @@ parse_dir_authority_line(const char *line, dirinfo_type_t required_type,
     goto err;
   }
 
+  if (validate_only) {
+    SMARTLIST_FOREACH_BEGIN(extra_dirports, const char *, cp) {
+      if (parse_dirauth_dirport(NULL, cp) < 0)
+        goto err;
+    } SMARTLIST_FOREACH_END(cp);
+  }
+
   if (!validate_only && (!required_type || required_type & type)) {
     dir_server_t *ds;
     if (required_type)
@@ -5581,16 +5704,23 @@ parse_dir_authority_line(const char *line, dirinfo_type_t required_type,
                                       ipv6_addrport_ptr,
                                       digest, v3_digest, type, weight)))
       goto err;
+
+    SMARTLIST_FOREACH_BEGIN(extra_dirports, const char *, cp) {
+      if (parse_dirauth_dirport(ds, cp) < 0)
+        goto err;
+    } SMARTLIST_FOREACH_END(cp);
     dir_server_add(ds);
   }
 
   r = 0;
   goto done;
 
-  err:
+ err:
   r = -1;
 
-  done:
+ done:
+  SMARTLIST_FOREACH(extra_dirports, char*, s, tor_free(s));
+  smartlist_free(extra_dirports);
   SMARTLIST_FOREACH(items, char*, s, tor_free(s));
   smartlist_free(items);
   tor_free(addrport);
@@ -6032,7 +6162,7 @@ port_parse_config(smartlist_t *out,
       tor_free(addrtmp);
     } else {
       /* Try parsing integer port before address, because, who knows?
-         "9050" might be a valid address. */
+       * "9050" might be a valid address. */
       port = (int) tor_parse_long(addrport, 10, 0, 65535, &ok, NULL);
       if (ok) {
         tor_addr_copy(&addr, &default_addr);

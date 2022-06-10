@@ -8,7 +8,7 @@
 #include <stdint.h>
 #include "trunnel.h"
 
-struct trn_cell_extension_st;
+struct trn_extension_st;
 struct link_specifier_st;
 #define TRUNNEL_SHA1_LEN 20
 #define TRUNNEL_REND_COOKIE_LEN 20
@@ -25,7 +25,7 @@ struct trn_cell_introduce1_st {
   uint8_t auth_key_type;
   uint16_t auth_key_len;
   TRUNNEL_DYNARRAY_HEAD(, uint8_t) auth_key;
-  struct trn_cell_extension_st *extensions;
+  struct trn_extension_st *extensions;
   TRUNNEL_DYNARRAY_HEAD(, uint8_t) encrypted;
   uint8_t trunnel_error_code_;
 };
@@ -34,7 +34,7 @@ typedef struct trn_cell_introduce1_st trn_cell_introduce1_t;
 #if !defined(TRUNNEL_OPAQUE) && !defined(TRUNNEL_OPAQUE_TRN_CELL_INTRODUCE_ACK)
 struct trn_cell_introduce_ack_st {
   uint16_t status;
-  struct trn_cell_extension_st *extensions;
+  struct trn_extension_st *extensions;
   uint8_t trunnel_error_code_;
 };
 #endif
@@ -42,7 +42,7 @@ typedef struct trn_cell_introduce_ack_st trn_cell_introduce_ack_t;
 #if !defined(TRUNNEL_OPAQUE) && !defined(TRUNNEL_OPAQUE_TRN_CELL_INTRODUCE_ENCRYPTED)
 struct trn_cell_introduce_encrypted_st {
   uint8_t rend_cookie[TRUNNEL_REND_COOKIE_LEN];
-  struct trn_cell_extension_st *extensions;
+  struct trn_extension_st *extensions;
   uint8_t onion_key_type;
   uint16_t onion_key_len;
   TRUNNEL_DYNARRAY_HEAD(, uint8_t) onion_key;
@@ -169,21 +169,21 @@ int trn_cell_introduce1_setlen_auth_key(trn_cell_introduce1_t *inp, size_t newle
 /** Return the value of the extensions field of the
  * trn_cell_introduce1_t in 'inp'
  */
-struct trn_cell_extension_st * trn_cell_introduce1_get_extensions(trn_cell_introduce1_t *inp);
+struct trn_extension_st * trn_cell_introduce1_get_extensions(trn_cell_introduce1_t *inp);
 /** As trn_cell_introduce1_get_extensions, but take and return a const
  * pointer
  */
-const struct trn_cell_extension_st * trn_cell_introduce1_getconst_extensions(const trn_cell_introduce1_t *inp);
+const struct trn_extension_st * trn_cell_introduce1_getconst_extensions(const trn_cell_introduce1_t *inp);
 /** Set the value of the extensions field of the trn_cell_introduce1_t
  * in 'inp' to 'val'. Free the old value if any. Steals the
  * referenceto 'val'.Return 0 on success; return -1 and set the error
  * code on 'inp' on failure.
  */
-int trn_cell_introduce1_set_extensions(trn_cell_introduce1_t *inp, struct trn_cell_extension_st *val);
+int trn_cell_introduce1_set_extensions(trn_cell_introduce1_t *inp, struct trn_extension_st *val);
 /** As trn_cell_introduce1_set_extensions, but does not free the
  * previous value.
  */
-int trn_cell_introduce1_set0_extensions(trn_cell_introduce1_t *inp, struct trn_cell_extension_st *val);
+int trn_cell_introduce1_set0_extensions(trn_cell_introduce1_t *inp, struct trn_extension_st *val);
 /** Return the length of the dynamic array holding the encrypted field
  * of the trn_cell_introduce1_t in 'inp'.
  */
@@ -266,21 +266,21 @@ int trn_cell_introduce_ack_set_status(trn_cell_introduce_ack_t *inp, uint16_t va
 /** Return the value of the extensions field of the
  * trn_cell_introduce_ack_t in 'inp'
  */
-struct trn_cell_extension_st * trn_cell_introduce_ack_get_extensions(trn_cell_introduce_ack_t *inp);
+struct trn_extension_st * trn_cell_introduce_ack_get_extensions(trn_cell_introduce_ack_t *inp);
 /** As trn_cell_introduce_ack_get_extensions, but take and return a
  * const pointer
  */
-const struct trn_cell_extension_st * trn_cell_introduce_ack_getconst_extensions(const trn_cell_introduce_ack_t *inp);
+const struct trn_extension_st * trn_cell_introduce_ack_getconst_extensions(const trn_cell_introduce_ack_t *inp);
 /** Set the value of the extensions field of the
  * trn_cell_introduce_ack_t in 'inp' to 'val'. Free the old value if
  * any. Steals the referenceto 'val'.Return 0 on success; return -1
  * and set the error code on 'inp' on failure.
  */
-int trn_cell_introduce_ack_set_extensions(trn_cell_introduce_ack_t *inp, struct trn_cell_extension_st *val);
+int trn_cell_introduce_ack_set_extensions(trn_cell_introduce_ack_t *inp, struct trn_extension_st *val);
 /** As trn_cell_introduce_ack_set_extensions, but does not free the
  * previous value.
  */
-int trn_cell_introduce_ack_set0_extensions(trn_cell_introduce_ack_t *inp, struct trn_cell_extension_st *val);
+int trn_cell_introduce_ack_set0_extensions(trn_cell_introduce_ack_t *inp, struct trn_extension_st *val);
 /** Return a newly allocated trn_cell_introduce_encrypted with all
  * elements set to zero.
  */
@@ -347,21 +347,21 @@ const uint8_t  * trn_cell_introduce_encrypted_getconstarray_rend_cookie(const tr
 /** Return the value of the extensions field of the
  * trn_cell_introduce_encrypted_t in 'inp'
  */
-struct trn_cell_extension_st * trn_cell_introduce_encrypted_get_extensions(trn_cell_introduce_encrypted_t *inp);
+struct trn_extension_st * trn_cell_introduce_encrypted_get_extensions(trn_cell_introduce_encrypted_t *inp);
 /** As trn_cell_introduce_encrypted_get_extensions, but take and
  * return a const pointer
  */
-const struct trn_cell_extension_st * trn_cell_introduce_encrypted_getconst_extensions(const trn_cell_introduce_encrypted_t *inp);
+const struct trn_extension_st * trn_cell_introduce_encrypted_getconst_extensions(const trn_cell_introduce_encrypted_t *inp);
 /** Set the value of the extensions field of the
  * trn_cell_introduce_encrypted_t in 'inp' to 'val'. Free the old
  * value if any. Steals the referenceto 'val'.Return 0 on success;
  * return -1 and set the error code on 'inp' on failure.
  */
-int trn_cell_introduce_encrypted_set_extensions(trn_cell_introduce_encrypted_t *inp, struct trn_cell_extension_st *val);
+int trn_cell_introduce_encrypted_set_extensions(trn_cell_introduce_encrypted_t *inp, struct trn_extension_st *val);
 /** As trn_cell_introduce_encrypted_set_extensions, but does not free
  * the previous value.
  */
-int trn_cell_introduce_encrypted_set0_extensions(trn_cell_introduce_encrypted_t *inp, struct trn_cell_extension_st *val);
+int trn_cell_introduce_encrypted_set0_extensions(trn_cell_introduce_encrypted_t *inp, struct trn_extension_st *val);
 /** Return the value of the onion_key_type field of the
  * trn_cell_introduce_encrypted_t in 'inp'
  */

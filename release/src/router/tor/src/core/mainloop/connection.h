@@ -1,7 +1,7 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2020, The Tor Project, Inc. */
+ * Copyright (c) 2007-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -274,8 +274,8 @@ void connection_buf_add_compress(const char *string, size_t len,
                                  struct dir_connection_t *conn, int done);
 void connection_buf_add_buf(struct connection_t *conn, struct buf_t *buf);
 
-size_t connection_get_inbuf_len(struct connection_t *conn);
-size_t connection_get_outbuf_len(struct connection_t *conn);
+size_t connection_get_inbuf_len(const struct connection_t *conn);
+size_t connection_get_outbuf_len(const struct connection_t *conn);
 struct connection_t *connection_get_by_global_id(uint64_t id);
 
 struct connection_t *connection_get_by_type(int type);

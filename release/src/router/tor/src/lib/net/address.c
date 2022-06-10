@@ -1,6 +1,6 @@
 /* Copyright (c) 2003-2004, Roger Dingledine
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2020, The Tor Project, Inc. */
+ * Copyright (c) 2007-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -2005,20 +2005,15 @@ parse_port_range(const char *port, uint16_t *port_min_out,
     char *endptr = NULL;
     port_min = (int)tor_parse_long(port, 10, 0, 65535, &ok, &endptr);
     if (!ok) {
-      log_warn(LD_GENERAL,
-               "Malformed port %s on address range; rejecting.",
-               escaped(port));
-      return -1;
-    } else if (endptr && *endptr == '-') {
+      goto malformed_port;
+    } else if (endptr && *endptr != '\0') {
+      if (*endptr != '-')
+        goto malformed_port;
       port = endptr+1;
       endptr = NULL;
       port_max = (int)tor_parse_long(port, 10, 1, 65535, &ok, &endptr);
-      if (!ok) {
-        log_warn(LD_GENERAL,
-                 "Malformed port %s on address range; rejecting.",
-                 escaped(port));
-        return -1;
-      }
+      if (!ok)
+        goto malformed_port;
     } else {
       port_max = port_min;
     }
@@ -2037,6 +2032,11 @@ parse_port_range(const char *port, uint16_t *port_min_out,
   *port_max_out = (uint16_t) port_max;
 
   return 0;
+ malformed_port:
+  log_warn(LD_GENERAL,
+           "Malformed port %s on address range; rejecting.",
+           escaped(port));
+  return -1;
 }
 
 /** Given a host-order <b>addr</b>, call tor_inet_ntop() on it

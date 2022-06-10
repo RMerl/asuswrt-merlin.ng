@@ -1,4 +1,4 @@
-/* Copyright (c) 2020, The Tor Project, Inc. */
+/* Copyright (c) 2020-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -343,6 +343,18 @@ get_address_from_config(const or_options_t *options, int warn_severity,
      * used, custom authorities must be defined else it is a fatal error.
      * Furthermore, if the Address was resolved to an internal interface, we
      * stop immediately. */
+    if (ret == ERR_ADDRESS_IS_INTERNAL) {
+      static bool logged_once = false;
+      if (!logged_once) {
+        log_warn(LD_CONFIG, "Address set with an internal address. Tor will "
+                            "not work unless custom directory authorities "
+                            "are defined (AlternateDirAuthority). It is also "
+                            "possible to use an internal address if "
+                            "PublishServerDescriptor is set to 0 and "
+                            "AssumeReachable(IPv6) to 1.");
+        logged_once = true;
+      }
+    }
     tor_free(*hostname_out);
     return FN_RET_BAIL;
   }
@@ -852,4 +864,4 @@ resolve_addr_reset_suggested(int family)
   tor_addr_make_unspec(&last_suggested_addrs[af_to_idx(family)]);
 }
 
-#endif /* TOR_UNIT_TESTS */
+#endif /* defined(TOR_UNIT_TESTS) */

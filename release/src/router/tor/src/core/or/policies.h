@@ -1,7 +1,7 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2020, The Tor Project, Inc. */
+ * Copyright (c) 2007-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -106,6 +106,7 @@ int metrics_policy_permits_address(const tor_addr_t *addr);
 int authdir_policy_permits_address(const tor_addr_t *addr, uint16_t port);
 int authdir_policy_valid_address(const tor_addr_t *addr, uint16_t port);
 int authdir_policy_badexit_address(const tor_addr_t *addr, uint16_t port);
+int authdir_policy_middleonly_address(const tor_addr_t *addr, uint16_t port);
 
 int validate_addr_policies(const or_options_t *options, char **msg);
 void policy_expand_private(smartlist_t **policy);

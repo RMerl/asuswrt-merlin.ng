@@ -1,7 +1,7 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2020, The Tor Project, Inc. */
+ * Copyright (c) 2007-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -26,6 +26,7 @@ void dns_reset_correctness_checks(void);
 size_t dns_cache_total_allocation(void);
 void dump_dns_mem_usage(int severity);
 size_t dns_cache_handle_oom(time_t now, size_t min_remove_bytes);
+void dns_new_consensus_params(const networkstatus_t *ns);
 
 /* These functions are only used within the feature/relay module, and don't
  * need stubs. */
@@ -47,6 +48,8 @@ void dns_launch_correctness_checks(void);
   ((void)(severity))
 #define dns_cache_handle_oom(now, bytes) \
   ((void)(now), (void)(bytes), 0)
+#define dns_new_consensus_params(ns) \
+  ((void) ns)
 
 #define connection_dns_remove(conn) \
   STMT_BEGIN                        \

@@ -1,7 +1,7 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2020, The Tor Project, Inc. */
+ * Copyright (c) 2007-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -331,6 +331,13 @@ command_process_create_cell(cell_t *cell, channel_t *chan)
     return;
   }
 
+  /* Mark whether this circuit used TAP in case we need to use this
+   * information for onion service statistics later on. */
+  if (create_cell->handshake_type == ONION_HANDSHAKE_TYPE_FAST ||
+      create_cell->handshake_type == ONION_HANDSHAKE_TYPE_TAP) {
+    circ->used_legacy_circuit_handshake = true;
+  }
+
   if (!channel_is_client(chan)) {
     /* remember create types we've seen, but don't remember them from
      * clients, to be extra conservative about client statistics. */
@@ -353,15 +360,19 @@ command_process_create_cell(cell_t *cell, channel_t *chan)
     uint8_t rend_circ_nonce[DIGEST_LEN];
     int len;
     created_cell_t created_cell;
+    circuit_params_t params;
 
     memset(&created_cell, 0, sizeof(created_cell));
     len = onion_skin_server_handshake(ONION_HANDSHAKE_TYPE_FAST,
                                        create_cell->onionskin,
                                        create_cell->handshake_len,
                                        NULL,
+                                       NULL,
                                        created_cell.reply,
+                                       sizeof(created_cell.reply),
                                        keys, CPATH_KEY_MATERIAL_LEN,
-                                       rend_circ_nonce);
+                                       rend_circ_nonce,
+                                       &params);
     tor_free(create_cell);
     if (len < 0) {
       log_warn(LD_OR,"Failed to generate key material. Closing.");
@@ -556,7 +567,7 @@ command_process_relay_cell(cell_t *cell, channel_t *chan)
   }
 
   if ((reason = circuit_receive_relay_cell(cell, circ, direction)) < 0) {
-    log_fn(LOG_PROTOCOL_WARN,LD_PROTOCOL,"circuit_receive_relay_cell "
+    log_fn(LOG_DEBUG,LD_PROTOCOL,"circuit_receive_relay_cell "
            "(%s) failed. Closing.",
            direction==CELL_DIRECTION_OUT?"forward":"backward");
     /* Always emit a bandwidth event for closed circs */
@@ -587,11 +598,27 @@ command_process_relay_cell(cell_t *cell, channel_t *chan)
   }
 
   /* If this is a cell in an RP circuit, count it as part of the
-     hidden service stats */
+     onion service stats */
   if (options->HiddenServiceStatistics &&
       !CIRCUIT_IS_ORIGIN(circ) &&
-      TO_OR_CIRCUIT(circ)->circuit_carries_hs_traffic_stats) {
-    rep_hist_seen_new_rp_cell();
+      CONST_TO_OR_CIRCUIT(circ)->circuit_carries_hs_traffic_stats) {
+    /** We need to figure out of this is a v2 or v3 RP circuit to count it
+     *  appropriately. v2 services always use the TAP legacy handshake to
+     *  connect to the RP; we use this feature to distinguish between v2/v3. */
+    bool is_v2 = false;
+    if (CONST_TO_OR_CIRCUIT(circ)->used_legacy_circuit_handshake) {
+      is_v2 = true;
+    } else if (CONST_TO_OR_CIRCUIT(circ)->rend_splice) {
+      /* If this is a client->RP circuit we need to check the spliced circuit
+       * (which is the service->RP circuit) to see if it was using TAP and
+       * hence if it's a v2 circuit. That's because client->RP circuits can
+       * still use ntor even on v2; but service->RP will always use TAP. */
+      const or_circuit_t *splice = CONST_TO_OR_CIRCUIT(circ)->rend_splice;
+      if (splice->used_legacy_circuit_handshake) {
+        is_v2 = true;
+      }
+    }
+    rep_hist_seen_new_rp_cell(is_v2);
   }
 }
 

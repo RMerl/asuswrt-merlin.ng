@@ -1,4 +1,4 @@
-/* Copyright (c) 2020, The Tor Project, Inc. */
+/* Copyright (c) 2020-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -19,4 +19,4 @@
 
 #endif /* USE_TRACING_INSTRUMENTATION_LTTNG */
 
-#endif /* TOR_TRACE_PROBES_CIRCUIT_H */
+#endif /* !defined(TOR_TRACE_PROBES_CIRCUIT_H) */

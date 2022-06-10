@@ -1,7 +1,7 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2020, The Tor Project, Inc. */
+ * Copyright (c) 2007-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -37,7 +37,11 @@ typedef enum stream_status_event_t {
   STREAM_EVENT_NEW_RESOLVE  = 6,
   STREAM_EVENT_FAILED_RETRIABLE = 7,
   STREAM_EVENT_REMAP        = 8,
-  STREAM_EVENT_CONTROLLER_WAIT = 9
+  STREAM_EVENT_CONTROLLER_WAIT = 9,
+  STREAM_EVENT_XOFF_SENT = 10,
+  STREAM_EVENT_XOFF_RECV = 11,
+  STREAM_EVENT_XON_SENT = 12,
+  STREAM_EVENT_XON_RECV = 13
 } stream_status_event_t;
 
 /** Used to indicate the type of a buildtime event */
@@ -137,7 +141,7 @@ void control_event_logmsg_pending(void);
 int control_event_descriptors_changed(smartlist_t *routers);
 int control_event_address_mapped(const char *from, const char *to,
                                  time_t expires, const char *error,
-                                 const int cached);
+                                 const int cached, uint64_t stream_id);
 int control_event_my_descriptor_changed(void);
 int control_event_network_liveness_update(int liveness);
 int control_event_networkstatus_changed(smartlist_t *statuses);
@@ -202,13 +206,6 @@ void control_event_hs_descriptor_upload_end(const char *action,
                                             const char *reason);
 void control_event_hs_descriptor_uploaded(const char *hs_dir,
                                           const char *onion_address);
-/* Hidden service v2 HS_DESC specific. */
-void control_event_hsv2_descriptor_failed(const rend_data_t *rend_data,
-                                          const char *id_digest,
-                                          const char *reason);
-void control_event_hsv2_descriptor_received(const char *onion_address,
-                                            const rend_data_t *rend_data,
-                                            const char *id_digest);
 /* Hidden service v3 HS_DESC specific. */
 void control_event_hsv3_descriptor_failed(const char *onion_address,
                                           const char *desc_id,

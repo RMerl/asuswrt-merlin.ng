@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
 <head>
 <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8" />
-<meta name="generator" content="AsciiDoc 9.0.0rc2" />
+<meta name="generator" content="AsciiDoc 9.1.1" />
 <title>TOR(1)</title>
 <style type="text/css">
 /* Shared CSS for AsciiDoc xhtml11 and html5 backends */
@@ -819,14 +819,14 @@ configuration files.  See <strong><a href="#conf-format">THE CONFIGURATION FILE 
 </p>
 </dd>
 <dt class="hdlist1">
-<a id="opt-f"></a> <strong><code>-f</code></strong> <em>FILE</em>
+<a id="opt-f"></a> <strong><code>-f</code></strong>, <strong><code>--torrc-file</code></strong> <em>FILE</em>
 </dt>
 <dd>
 <p>
     Specify a new configuration file to contain further Tor configuration
     options, or pass <strong>-</strong> to make Tor read its configuration from standard
     input. (Default: <strong><code>@CONFDIR@/torrc</code></strong>, or <strong><code>$HOME/.torrc</code></strong> if
-    that file is not found)
+    that file is not found.)
 </p>
 </dd>
 <dt class="hdlist1">
@@ -868,11 +868,12 @@ configuration files.  See <strong><a href="#conf-format">THE CONFIGURATION FILE 
 </p>
 </dd>
 <dt class="hdlist1">
-<a id="opt-list-fingerprint"></a> <strong><code>--list-fingerprint</code></strong>
+<a id="opt-list-fingerprint"></a> <strong><code>--list-fingerprint</code></strong> [<em>key type</em>]
 </dt>
 <dd>
 <p>
-    Generate your keys and output your nickname and fingerprint.
+    Generate your keys and output your nickname and fingerprint. Optionally,
+    you can specify the key type as <code>rsa</code> (default) or <code>ed25519</code>.
 </p>
 </dd>
 <dt class="hdlist1">
@@ -890,7 +891,7 @@ configuration files.  See <strong><a href="#conf-format">THE CONFIGURATION FILE 
 <p>
     Write a list of Tor&#8217;s configured options to standard output.
     When the <code>short</code> flag is selected, only write the options that
-    are different from their default values
+    are different from their default values.
     When <code>full</code> is selected, write every option.
 </p>
 </dd>
@@ -2221,37 +2222,6 @@ MetricsPortPolicy accept 5.6.7.8</code></pre>
 </p>
 </dd>
 <dt class="hdlist1">
-<a id="ServerTransportListenAddr"></a> <strong>ServerTransportListenAddr</strong> <em>transport</em> <em>IP</em>:<em>PORT</em>
-</dt>
-<dd>
-<p>
-    When this option is set, Tor will suggest <em>IP</em>:<em>PORT</em> as the
-    listening address of any pluggable transport proxy that tries to
-    launch <em>transport</em>. (IPv4 addresses should written as-is; IPv6
-    addresses should be wrapped in square brackets.) (Default: none)
-</p>
-</dd>
-<dt class="hdlist1">
-<a id="ServerTransportOptions"></a> <strong>ServerTransportOptions</strong> <em>transport</em> <em>k=v</em> <em>k=v</em> &#8230;
-</dt>
-<dd>
-<p>
-    When this option is set, Tor will pass the <em>k=v</em> parameters to
-    any pluggable transport proxy that tries to launch <em>transport</em>.<br />
-    (Example: ServerTransportOptions obfs45 shared-secret=bridgepasswd cache=/var/lib/tor/cache) (Default: none)
-</p>
-</dd>
-<dt class="hdlist1">
-<a id="ServerTransportPlugin"></a> <strong>ServerTransportPlugin</strong> <em>transport</em> exec <em>path-to-binary</em> [options]
-</dt>
-<dd>
-<p>
-    The Tor relay launches the pluggable transport proxy in <em>path-to-binary</em>
-    using <em>options</em> as its command-line options, and expects to receive
-    proxied client traffic from it. (Default: none)
-</p>
-</dd>
-<dt class="hdlist1">
 <a id="Socks4Proxy"></a> <strong>Socks4Proxy</strong> <em>host</em>[:<em>port</em>]
 </dt>
 <dd>
@@ -2297,12 +2267,12 @@ MetricsPortPolicy accept 5.6.7.8</code></pre>
 </dt>
 <dd>
 <p>
-        Tor will use the given protocol to make all its OR (SSL) connections through
-        a TCP proxy on host:port, rather than connecting directly to servers. You may
-        want to set <strong>FascistFirewall</strong> to restrict the set of ports you might try to
-        connect to, if your proxy only allows connecting to certain ports. There is no
-        equivalent option for directory connections, because all Tor client versions
-        that support this option download directory documents via OR connections.<br />
+    Tor will use the given protocol to make all its OR (SSL) connections through
+    a TCP proxy on host:port, rather than connecting directly to servers. You may
+    want to set <strong>FascistFirewall</strong> to restrict the set of ports you might try to
+    connect to, if your proxy only allows connecting to certain ports. There is no
+    equivalent option for directory connections, because all Tor client versions
+    that support this option download directory documents via OR connections.<br />
 </p>
 <div class="literalblock">
 <div class="content">
@@ -2686,21 +2656,6 @@ https://www.haproxy.org/download/1.8/doc/proxy-protocol.txt +</code></pre>
     A list of ports that your firewall allows you to connect to. Only used when
     <strong>FascistFirewall</strong> is set. This option is deprecated; use ReachableAddresses
     instead. (Default: 80, 443)
-</p>
-</dd>
-<dt class="hdlist1">
-<a id="HidServAuth"></a> <strong>HidServAuth</strong> <em>onion-address</em> <em>auth-cookie</em> [<em>service-name</em>]
-</dt>
-<dd>
-<p>
-    Client authorization for a v2 hidden service. Valid onion addresses contain 16
-    characters in a-z2-7 plus ".onion", and valid auth cookies contain 22
-    characters in A-Za-z0-9+/. The service name is only used for internal
-    purposes, e.g., for Tor controllers. This option may be used multiple times
-    for different hidden services. If a hidden service uses authorization and
-    this option is not set, the hidden service is not accessible. Hidden
-    services can be configured to require authorization using the
-    <strong>HiddenServiceAuthorizeClient</strong> option.
 </p>
 </dd>
 <dt class="hdlist1">
@@ -3608,6 +3563,18 @@ have failed due to a time out. (v3 only)</code></pre>
 </p>
 </dd>
 <dt class="hdlist1">
+<a id="VanguardsLiteEnabled"></a> <strong>VanguardsLiteEnabled</strong> <strong>0</strong>|<strong>1</strong>|<strong>auto</strong>
+</dt>
+<dd>
+<p>
+    This option specifies whether clients should use the vanguards-lite
+    subsystem to protect against guard discovery attacks. If it&#8217;s set to
+    <em>auto</em>, clients will do what the vanguards-lite-enabled consensus parameter
+    tells them to do, and will default to enable the subsystem if the consensus
+    parameter isn&#8217;t set. (Default: auto)
+</p>
+</dd>
+<dt class="hdlist1">
 <a id="UseMicrodescriptors"></a> <strong>UseMicrodescriptors</strong> <strong>0</strong>|<strong>1</strong>|<strong>auto</strong>
 </dt>
 <dd>
@@ -3777,6 +3744,17 @@ The following options control when Tor enters and leaves dormant mode:</p></div>
     If true, then any open client stream (even one not reading or writing)
     counts as client activity for the purpose of DormantClientTimeout.
     If false, then only network activity counts. (Default: 1)
+</p>
+</dd>
+<dt class="hdlist1">
+<a id="DormantTimeoutEnabled"></a> <strong>DormantTimeoutEnabled</strong> <strong>0</strong>|<strong>1</strong>
+</dt>
+<dd>
+<p>
+    If false, then no amount of time without activity is sufficient to
+    make Tor go dormant.  Setting this option to zero is only recommended for
+    special-purpose applications that need to use the Tor binary for
+    something other than sending or receiving Tor traffic. (Default: 1)
 </p>
 </dd>
 </dl></div>
@@ -4173,13 +4151,14 @@ is non-zero):</p></div>
 </dt>
 <dd>
 <p>
-    The IPv4 address of this server, or a fully qualified domain name of
-    this server that resolves to an IPv4 address.  You can leave this
-    unset, and Tor will try to guess your IPv4 address.  This IPv4
-    address is the one used to tell clients and other servers where to
-    find your Tor server; it doesn&#8217;t affect the address that your server
-    binds to.  To bind to a different address, use the ORPort and
-    OutboundBindAddress options.
+    The address of this server, or a fully qualified domain name of this server
+    that resolves to an address.  You can leave this unset, and Tor will try to
+    guess your address.  If a domain name is provided, Tor will attempt to
+    resolve it and use the underlying IPv4/IPv6 address as its publish address
+    (taking precedence over the ORPort configuration). The publish address is
+    the one used to tell clients and other servers where to find your Tor
+    server; it doesn&#8217;t affect the address that your server binds to.  To bind
+    to a different address, use the ORPort and OutboundBindAddress options.
 </p>
 </dd>
 <dt class="hdlist1">
@@ -4231,21 +4210,6 @@ is non-zero):</p></div>
 </dl></div>
 <div class="dlist"><dl>
 <dt class="hdlist1">
-<a id="BridgeRecordUsageByCountry"></a> <strong>BridgeRecordUsageByCountry</strong> <strong>0</strong>|<strong>1</strong>
-</dt>
-<dd>
-<p>
-    When this option is enabled and BridgeRelay is also enabled, and we have
-    GeoIP data, Tor keeps a per-country count of how many client
-    addresses have contacted it so that it can help the bridge authority guess
-    which countries have blocked access to it. If ExtraInfoStatistics is
-    enabled, it will be published as part of the extra-info document.
-    (Default: 1)
-</p>
-</dd>
-</dl></div>
-<div class="dlist"><dl>
-<dt class="hdlist1">
 <a id="BridgeDistribution"></a> <strong>BridgeDistribution</strong> <em>string</em>
 </dt>
 <dd>
@@ -4254,7 +4218,8 @@ is non-zero):</p></div>
     bridge descriptor which indicates to the BridgeDB service how it
     would like its bridge address to be given out. Set it to "none" if
     you want BridgeDB to avoid distributing your bridge address, or "any" to
-    let BridgeDB decide. (Default: any)
+    let BridgeDB decide.  See <a href="https://bridges.torproject.org/info">https://bridges.torproject.org/info</a> for a more
+    up-to-date list of options. (Default: any)
 </p>
 </dd>
 <dt class="hdlist1">
@@ -4878,6 +4843,37 @@ reject *:*</code></pre>
 </p>
 </dd>
 <dt class="hdlist1">
+<a id="ServerTransportListenAddr"></a> <strong>ServerTransportListenAddr</strong> <em>transport</em> <em>IP</em>:<em>PORT</em>
+</dt>
+<dd>
+<p>
+    When this option is set, Tor will suggest <em>IP</em>:<em>PORT</em> as the
+    listening address of any pluggable transport proxy that tries to
+    launch <em>transport</em>. (IPv4 addresses should written as-is; IPv6
+    addresses should be wrapped in square brackets.) (Default: none)
+</p>
+</dd>
+<dt class="hdlist1">
+<a id="ServerTransportOptions"></a> <strong>ServerTransportOptions</strong> <em>transport</em> <em>k=v</em> <em>k=v</em> &#8230;
+</dt>
+<dd>
+<p>
+    When this option is set, Tor will pass the <em>k=v</em> parameters to
+    any pluggable transport proxy that tries to launch <em>transport</em>.<br />
+    (Example: ServerTransportOptions obfs45 shared-secret=bridgepasswd cache=/var/lib/tor/cache) (Default: none)
+</p>
+</dd>
+<dt class="hdlist1">
+<a id="ServerTransportPlugin"></a> <strong>ServerTransportPlugin</strong> <em>transport</em> exec <em>path-to-binary</em> [options]
+</dt>
+<dd>
+<p>
+    The Tor relay launches the pluggable transport proxy in <em>path-to-binary</em>
+    using <em>options</em> as its command-line options, and expects to receive
+    proxied client traffic from it. (Default: none)
+</p>
+</dd>
+<dt class="hdlist1">
 <a id="ShutdownWaitLength"></a> <strong>ShutdownWaitLength</strong> <em>NUM</em>
 </dt>
 <dd>
@@ -4920,6 +4916,19 @@ reject *:*</code></pre>
 extra-info document. The following options affect the different
 types of statistics that Tor relays collect and publish:</p></div>
 <div class="dlist"><dl>
+<dt class="hdlist1">
+<a id="BridgeRecordUsageByCountry"></a> <strong>BridgeRecordUsageByCountry</strong> <strong>0</strong>|<strong>1</strong>
+</dt>
+<dd>
+<p>
+    When this option is enabled and BridgeRelay is also enabled, and we have
+    GeoIP data, Tor keeps a per-country count of how many client
+    addresses have contacted it so that it can help the bridge authority guess
+    which countries have blocked access to it. If ExtraInfoStatistics is
+    enabled, it will be published as part of the extra-info document.
+    (Default: 1)
+</p>
+</dd>
 <dt class="hdlist1">
 <a id="CellStatistics"></a> <strong>CellStatistics</strong> <strong>0</strong>|<strong>1</strong>
 </dt>
@@ -5010,13 +5019,59 @@ types of statistics that Tor relays collect and publish:</p></div>
 </dt>
 <dd>
 <p>
-    Relays only.
+    Relays and bridges only.
     When this option is enabled, a Tor relay writes obfuscated
     statistics on its role as hidden-service directory, introduction
     point, or rendezvous point to disk every 24 hours.  If ExtraInfoStatistics
     is enabled, it will be published as part of the extra-info document.
     (Default: 1)
 </p>
+</dd>
+<dt class="hdlist1">
+<a id="OverloadStatistics"></a> <strong>OverloadStatistics</strong> <strong>0<strong>|</strong>1</strong>*
+</dt>
+<dd>
+<p>
+    Relays and bridges only.
+    When this option is enabled, a Tor relay will write an overload general
+    line in the server descriptor if the relay is considered overloaded.
+    (Default: 1)
+    <br />
+    A relay is considered overloaded if at least one of these conditions is
+    met:
+</p>
+<div class="ulist"><ul>
+<li>
+<p>
+Onionskins are starting to be dropped.
+</p>
+</li>
+<li>
+<p>
+The OOM was invoked.
+</p>
+</li>
+<li>
+<p>
+(Exit only) DNS timeout occurs X% of the time over Y seconds (values
+          controlled by consensus parameters, see param-spec.txt).
+    <br />
+    If ExtraInfoStatistics is enabled, it can also put two more specific
+    overload lines in the extra-info document if at least one of these
+    conditions is met:
+</p>
+</li>
+<li>
+<p>
+TCP Port exhaustion.
+</p>
+</li>
+<li>
+<p>
+Connection rate limits have been reached (read and write side).
+</p>
+</li>
+</ul></div>
 </dd>
 <dt class="hdlist1">
 <a id="PaddingStatistics"></a> <strong>PaddingStatistics</strong> <strong>0</strong>|<strong>1</strong>
@@ -5076,7 +5131,13 @@ details.)</p></div>
     more than once, but only one advertised DirPort is supported: all
     but one DirPort must have the <strong>NoAdvertise</strong> flag set. (Default: 0)<br />
     <br />
-    The same flags are supported here as are supported by ORPort.
+    The same flags are supported here as are supported by ORPort. This port can
+    only be IPv4.
+    <br />
+    As of Tor 0.4.6.1-alpha, non-authoritative relays (see
+    AuthoritativeDirectory) will not publish the DirPort but will still listen
+    on it. Clients don&#8217;t use the DirPorts on relays, so it is safe for you
+    to remove the DirPort from your torrc configuration.
 </p>
 </dd>
 <dt class="hdlist1">
@@ -5111,11 +5172,13 @@ details.)</p></div>
 <div class="sect1">
 <h2 id="_denial_of_service_mitigation_options">DENIAL OF SERVICE MITIGATION OPTIONS</h2>
 <div class="sectionbody">
-<div class="paragraph"><p>Tor has three built-in mitigation options that can be individually
-enabled/disabled and fine-tuned, but by default Tor directory authorities will
-define reasonable values for relays and no explicit configuration is required
-to make use of these protections. The mitigations take place at relays,
-and are as follows:</p></div>
+<div class="paragraph"><p>Tor has a series of built-in denial of service mitigation options that can be
+individually enabled/disabled and fine-tuned, but by default Tor directory
+authorities will define reasonable values for the network and no explicit
+configuration is required to make use of these protections.</p></div>
+<div class="paragraph"><p>The following is a series of configuration options for relays and then options
+for onion services and how they work.</p></div>
+<div class="paragraph"><p>The mitigations take place at relays, and are as follows:</p></div>
 <div class="olist arabic"><ol class="arabic">
 <li>
 <p>
@@ -5281,6 +5344,42 @@ Denial of Service mitigation subsystem described above.</p></div>
 </p>
 </dd>
 <dt class="hdlist1">
+<a id="DoSConnectionConnectRate"></a> <strong>DoSConnectionConnectRate</strong> <em>NUM</em>
+</dt>
+<dd>
+<p>
+    The allowed rate of client connection from a single address per second.
+    Coupled with the burst (see below), if the limit is reached, the address
+    is marked and a defense is applied (DoSConnectionDefenseType) for a period
+    of time defined by DoSConnectionConnectDefenseTimePeriod. If not defined
+    or set to 0, it is controlled by a consensus parameter.
+    (Default: 0)
+</p>
+</dd>
+<dt class="hdlist1">
+<a id="DoSConnectionConnectBurst"></a> <strong>DoSConnectionConnectBurst</strong> <em>NUM</em>
+</dt>
+<dd>
+<p>
+    The allowed burst of client connection from a single address per second.
+    See the DoSConnectionConnectRate for more details on this detection. If
+    not defined or set to 0, it is controlled by a consensus parameter.
+    (Default: 0)
+</p>
+</dd>
+<dt class="hdlist1">
+<a id="DoSConnectionConnectDefenseTimePeriod"></a> <strong>DoSConnectionConnectDefenseTimePeriod</strong> <em>N</em> <strong>seconds</strong>|<strong>minutes</strong>|<strong>hours</strong>
+</dt>
+<dd>
+<p>
+    The base time period in seconds that the client connection defense is
+    activated for. The actual value is selected randomly for each activation
+    from N+1 to 3/2 * N. If not defined or set to 0, it is controlled by a
+    consensus parameter.
+    (Default: 24 hours)
+</p>
+</dd>
+<dt class="hdlist1">
 <a id="DoSRefuseSingleHopClientRendezvous"></a> <strong>DoSRefuseSingleHopClientRendezvous</strong> <strong>0</strong>|<strong>1</strong>|<strong>auto</strong>
 </dt>
 <dd>
@@ -5293,6 +5392,77 @@ Denial of Service mitigation subsystem described above.</p></div>
 </p>
 </dd>
 </dl></div>
+<div class="paragraph"><p>As for onion services, only one possible mitigation exists. It was intended to
+protect the network first and thus do not help the service availability or
+reachability.</p></div>
+<div class="paragraph"><p>The mitigation we put in place is a rate limit of the amount of introduction
+that happens at the introduction point for a service. In other words, it rates
+limit the number of clients that are attempting to reach the service at the
+introduction point instead of at the service itself.</p></div>
+<div class="paragraph"><p>The following options are per onion service:</p></div>
+<div class="dlist"><dl>
+<dt class="hdlist1">
+<a id="HiddenServiceEnableIntroDoSDefense"></a> <strong>HiddenServiceEnableIntroDoSDefense</strong> <strong>0</strong>|<strong>1</strong>
+</dt>
+<dd>
+<p>
+    Enable DoS defense at the intropoint level. When this is enabled, the
+    rate and burst parameter (see below) will be sent to the intro point which
+    will then use them to apply rate limiting for introduction request to this
+    service.
+ <br />
+    The introduction point honors the consensus parameters except if this is
+    specifically set by the service operator using this option. The service
+    never looks at the consensus parameters in order to enable or disable this
+    defense. (Default: 0)
+</p>
+</dd>
+</dl></div>
+<div class="dlist"><dl>
+<dt class="hdlist1">
+<a id="HiddenServiceEnableIntroDoSBurstPerSec"></a> <strong>HiddenServiceEnableIntroDoSBurstPerSec</strong> <em>NUM</em>
+</dt>
+<dd>
+<p>
+    The allowed client introduction burst per second at the introduction
+    point. If this option is 0, it is considered infinite and thus if
+    <strong>HiddenServiceEnableIntroDoSDefense</strong> is set, it then effectively
+    disables the defenses. (Default: 200)
+</p>
+</dd>
+<dt class="hdlist1">
+<a id="HiddenServiceEnableIntroDoSRatePerSec"></a> <strong>HiddenServiceEnableIntroDoSRatePerSec</strong> <em>NUM</em>
+</dt>
+<dd>
+<p>
+    The allowed client introduction rate per second at the introduction
+    point. If this option is 0, it is considered infinite and thus if
+    <strong>HiddenServiceEnableIntroDoSDefense</strong> is set, it then effectively
+    disables the defenses. (Default: 25)
+</p>
+</dd>
+</dl></div>
+<div class="paragraph"><p>The rate is the maximum number of clients a service will ask its introduction
+points to allow every seconds. And the burst is a parameter that allows that
+many within one second.</p></div>
+<div class="paragraph"><p>For example, the default values of 25 and 200 respectively means that for every
+introduction points a service has (default 3 but can be configured with
+<strong>HiddenServiceNumIntroductionPoints</strong>), 25 clients per seconds will be allowed
+to reach the service and 200 at most within 1 second as a burst. This means
+that if 200 clients are seen within 1 second, it will take 8 seconds (200/25)
+for another client to be able to be allowed to introduce due to the rate of 25
+per second.</p></div>
+<div class="paragraph"><p>This might be too much for your use case or not, fine tuning these values is
+hard and are likely different for each service operator.</p></div>
+<div class="paragraph"><p>Why is this not helping reachability of the service? Because the defenses are
+at the introduction point, an attacker can easily flood all introduction point
+rendering the service unavailable due to no client being able to pass through.
+But, the service itself is not overwhelmed with connetions allowing it to
+function properly for the few clients that were able to go through or other any
+services running on the same tor instance.</p></div>
+<div class="paragraph"><p>The bottom line is that this protects the network by preventing an onion
+service to flood the network with new rendezvous circuits that is reducing load
+on the network.</p></div>
 </div>
 </div>
 <div class="sect1">
@@ -5352,6 +5522,16 @@ on the public Tor network.</p></div>
     (The address pattern syntax here and in the options below
     is the same as for exit policies, except that you don&#8217;t need to say
     "accept" or "reject", and ports are not needed.)
+</p>
+</dd>
+<dt class="hdlist1">
+<a id="AuthDirMiddleOnly"></a> <strong>AuthMiddleOnly</strong> <em>AddressPattern&#8230;</em>
+</dt>
+<dd>
+<p>
+    Authoritative directories only. A set of address patterns for servers that
+    will be listed as middle-only in any network status document this authority
+    publishes, if <strong>AuthDirListMiddleOnly</strong> is set.<br />
 </p>
 </dd>
 <dt class="hdlist1">
@@ -5435,6 +5615,18 @@ AuthDirHasIPv6Connectivity 1.)</code></pre>
 </p>
 </dd>
 <dt class="hdlist1">
+<a id="AuthDirListMiddleOnly"></a> <strong>AuthDirListMiddleOnly</strong> <strong>0</strong>|<strong>1</strong>
+</dt>
+<dd>
+<p>
+    Authoritative directories only. If set to 1, this directory has some
+    opinion about which nodes should only be used in the middle position.
+    (Do not set this to 1 unless you plan to list questionable relays
+    as "middle only"; otherwise, you are effectively voting <em>against</em>
+    middle-only status for every relay.)
+</p>
+</dd>
+<dt class="hdlist1">
 <a id="AuthDirMaxServersPerAddr"></a> <strong>AuthDirMaxServersPerAddr</strong> <em>NUM</em>
 </dt>
 <dd>
@@ -5467,10 +5659,6 @@ AuthDirHasIPv6Connectivity 1.)</code></pre>
     submitted for publication by this authority.
 </p>
 </dd>
-</dl></div>
-<div class="paragraph"><p><a id="AuthDirBadExitCCs"></a> <strong>AuthDirBadExitCCs</strong> <em>CC</em>,&#8230;<br /></p></div>
-<div class="paragraph"><p><a id="AuthDirInvalidCCs"></a> <strong>AuthDirInvalidCCs</strong> <em>CC</em>,&#8230;<br /></p></div>
-<div class="dlist"><dl>
 <dt class="hdlist1">
 <a id="AuthDirRejectRequestsUnderLoad"></a> <strong>AuthDirRejectRequestsUnderLoad</strong> <strong>0</strong>|<strong>1</strong>
 </dt>
@@ -5482,6 +5670,11 @@ AuthDirHasIPv6Connectivity 1.)</code></pre>
     always tried to be answered even if this is on. (Default: 1)
 </p>
 </dd>
+</dl></div>
+<div class="paragraph"><p><a id="AuthDirBadExitCCs"></a> <strong>AuthDirBadExitCCs</strong> <em>CC</em>,&#8230;<br /></p></div>
+<div class="paragraph"><p><a id="AuthDirInvalidCCs"></a> <strong>AuthDirInvalidCCs</strong> <em>CC</em>,&#8230;<br /></p></div>
+<div class="paragraph"><p><a id="AuthDirMiddleOnlytCCs"></a> <strong>AuthDirMiddleOnlyCCs</strong> <em>CC</em>,&#8230;<br /></p></div>
+<div class="dlist"><dl>
 <dt class="hdlist1">
 <a id="AuthDirRejectCCs"></a> <strong>AuthDirRejectCCs</strong> <em>CC</em>,&#8230;
 </dt>
@@ -5735,25 +5928,6 @@ apply per service and some apply for the whole tor instance.</p></div>
 </p>
 </dd>
 <dt class="hdlist1">
-<a id="HiddenServiceAuthorizeClient"></a> <strong>HiddenServiceAuthorizeClient</strong> <em>auth-type</em> <em>client-name</em>,<em>client-name</em>,<em>&#8230;</em>
-</dt>
-<dd>
-<p>
-    If configured, the v2 hidden service is accessible for authorized clients
-    only. The auth-type can either be 'basic' for a general-purpose
-    authorization protocol or 'stealth' for a less scalable protocol that also
-    hides service activity from unauthorized clients. Only clients that are
-    listed here are authorized to access the hidden service. Valid client names
-    are 1 to 16 characters long and only use characters in A-Za-z0-9+-_ (no
-    spaces). If this option is set, the hidden service is not accessible for
-    clients without authorization any more. Generated authorization data can be
-    found in the hostname file. Clients need to put this authorization data in
-    their configuration file using <strong>HidServAuth</strong>. This option is only for v2
-    services; v3 services configure client authentication in a subdirectory of
-    HiddenServiceDir instead (see <a href="#client-authorization">CLIENT AUTHORIZATION</a>).
-</p>
-</dd>
-<dt class="hdlist1">
 <a id="HiddenServiceDir"></a> <strong>HiddenServiceDir</strong> <em>DIRECTORY</em>
 </dt>
 <dd>
@@ -5779,46 +5953,6 @@ apply per service and some apply for the whole tor instance.</p></div>
     hidden service directory and hostname file. If the option is set to 0,
     only owner is able to read the hidden service directory. (Default: 0)
     Has no effect on Windows.
-</p>
-</dd>
-<dt class="hdlist1">
-<a id="HiddenServiceEnableIntroDoSDefense"></a> <strong>HiddenServiceEnableIntroDoSDefense</strong> <strong>0</strong>|<strong>1</strong>
-</dt>
-<dd>
-<p>
-    Enable DoS defense at the intropoint level. When this is enabled, the
-    rate and burst parameter (see below) will be sent to the intro point which
-    will then use them to apply rate limiting for introduction request to this
-    service.
- <br />
-    The introduction point honors the consensus parameters except if this is
-    specifically set by the service operator using this option. The service
-    never looks at the consensus parameters in order to enable or disable this
-    defense. (Default: 0)
-</p>
-</dd>
-</dl></div>
-<div class="dlist"><dl>
-<dt class="hdlist1">
-<a id="HiddenServiceEnableIntroDoSBurstPerSec"></a> <strong>HiddenServiceEnableIntroDoSBurstPerSec</strong> <em>NUM</em>
-</dt>
-<dd>
-<p>
-    The allowed client introduction burst per second at the introduction
-    point. If this option is 0, it is considered infinite and thus if
-    <strong>HiddenServiceEnableIntroDoSDefense</strong> is set, it then effectively
-    disables the defenses. (Default: 200)
-</p>
-</dd>
-<dt class="hdlist1">
-<a id="HiddenServiceEnableIntroDoSRatePerSec"></a> <strong>HiddenServiceEnableIntroDoSRatePerSec</strong> <em>NUM</em>
-</dt>
-<dd>
-<p>
-    The allowed client introduction rate per second at the introduction
-    point. If this option is 0, it is considered infinite and thus if
-    <strong>HiddenServiceEnableIntroDoSDefense</strong> is set, it then effectively
-    disables the defenses. (Default: 25)
 </p>
 </dd>
 <dt class="hdlist1">
@@ -5895,7 +6029,7 @@ apply per service and some apply for the whole tor instance.</p></div>
 <dd>
 <p>
     Number of introduction points the hidden service will have. You can&#8217;t
-    have more than 10 for v2 service and 20 for v3. (Default: 3)
+    have more than 20. (Default: 3)
 </p>
 </dd>
 <dt class="hdlist1">
@@ -5916,24 +6050,12 @@ apply per service and some apply for the whole tor instance.</p></div>
 </p>
 </dd>
 <dt class="hdlist1">
-<a id="HiddenServiceVersion"></a> <strong>HiddenServiceVersion</strong> <strong>2</strong>|<strong>3</strong>
+<a id="HiddenServiceVersion"></a> <strong>HiddenServiceVersion</strong> <strong>3</strong>
 </dt>
 <dd>
 <p>
     A list of rendezvous service descriptor versions to publish for the hidden
-    service. Currently, versions 2 and 3 are supported. (Default: 3)
-</p>
-</dd>
-<dt class="hdlist1">
-<a id="RendPostPeriod"></a> <strong>RendPostPeriod</strong> <em>N</em> <strong>seconds</strong>|<strong>minutes</strong>|<strong>hours</strong>|<strong>days</strong>|<strong>weeks</strong>
-</dt>
-<dd>
-<p>
-    Every time the specified period elapses, Tor uploads any rendezvous
-    service descriptors to the directory servers. This information is also
-    uploaded whenever it changes. Minimum value allowed is 10 minutes and
-    maximum is 3.5 days. This option is only for v2 services.
-    (Default: 1 hour)
+    service. Currently, only version 3 is supported. (Default: 3)
 </p>
 </dd>
 </dl></div>
@@ -6002,7 +6124,6 @@ apply per service and some apply for the whole tor instance.</p></div>
 <div class="sect1">
 <h2 id="client-authorization">CLIENT AUTHORIZATION</h2>
 <div class="sectionbody">
-<div class="paragraph"><p>(Version 3 only)</p></div>
 <div class="paragraph"><p>Service side:</p></div>
 <div class="literalblock">
 <div class="content">
@@ -6133,8 +6254,8 @@ RendPostPeriod 2 minutes</code></pre>
 </dt>
 <dd>
 <p>
-    Initial delay in seconds for when clients should download each bridge descriptor when they
-    have just started, or when they can not contact any of their bridges.
+    Initial delay in seconds for how long clients should wait before
+    downloading a bridge descriptor for a new bridge.
     Changing this requires that <strong>TestingTorNetwork</strong> is set. (Default: 0)
 </p>
 </dd>
@@ -6143,9 +6264,10 @@ RendPostPeriod 2 minutes</code></pre>
 </dt>
 <dd>
 <p>
-    Initial delay in seconds for when clients should download each bridge descriptor when they
-    know that one or more of their configured bridges are running. Changing
-    this requires that <strong>TestingTorNetwork</strong> is set. (Default: 10800)
+    How long to wait (in seconds) once clients have successfully
+    downloaded a bridge descriptor, before trying another download for
+    that same bridge. Changing this requires that <strong>TestingTorNetwork</strong>
+    is set. (Default: 10800)
 </p>
 </dd>
 <dt class="hdlist1">
@@ -6798,7 +6920,17 @@ a short history of bandwidth usage, as produced in the server
 </dt>
 <dd>
 <p>
-    Only used by servers. Contains the fingerprint of the server&#8217;s identity key.
+    Only used by servers. Contains the fingerprint of the server&#8217;s RSA
+    identity key.
+</p>
+</dd>
+<dt class="hdlist1">
+<em>DataDirectory</em>/<strong><code>fingerprint-ed25519</code></strong>
+</dt>
+<dd>
+<p>
+    Only used by servers. Contains the fingerprint of the server&#8217;s ed25519
+    identity key.
 </p>
 </dd>
 <dt class="hdlist1">
@@ -6824,7 +6956,8 @@ a short history of bandwidth usage, as produced in the server
     descriptors are accepted, but marked in the vote as not valid.
     If it is <strong>!badexit</strong>, then the authority will vote for it to receive a
     BadExit flag, indicating that it shouldn&#8217;t be used for traffic leaving
-    the Tor network.
+    the Tor network.  If it is <strong>!middleonly</strong>, then the authority will
+    vote for it to only be used in the middle of circuits.
     (Neither rejected nor invalid relays are included in the consensus.)
 </p>
 </dd>
@@ -7018,8 +7151,6 @@ report them at <a href="https://bugs.torproject.org/">https://bugs.torproject.or
 <div id="footnotes"><hr /></div>
 <div id="footer">
 <div id="footer-text">
-Last updated
- 2021-10-21 12:58:25 UTC
 </div>
 </div>
 </body>

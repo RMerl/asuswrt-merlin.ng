@@ -1,7 +1,7 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2020, The Tor Project, Inc. */
+ * Copyright (c) 2007-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -87,6 +87,10 @@ check_create_cell(const create_cell_t *cell, int unknown_ok)
   case ONION_HANDSHAKE_TYPE_NTOR:
     if (cell->handshake_len != NTOR_ONIONSKIN_LEN)
       return -1;
+    break;
+  case ONION_HANDSHAKE_TYPE_NTOR_V3:
+    /* ntor v3 has variable length fields that are checked
+     * elsewhere. Fall through to always valid here. */
     break;
   default:
     if (! unknown_ok)
@@ -521,6 +525,11 @@ create_cell_format_impl(cell_t *cell_out, const create_cell_t *cell_in,
 
   switch (cell_in->cell_type) {
   case CELL_CREATE:
+    if (BUG(cell_in->handshake_type == ONION_HANDSHAKE_TYPE_NTOR_V3)) {
+      log_warn(LD_BUG, "Create cells cannot contain ntorv3.");
+      return -1;
+    }
+
     if (cell_in->handshake_type == ONION_HANDSHAKE_TYPE_NTOR) {
       memcpy(p, NTOR_CREATE_MAGIC, 16);
       p += 16;
@@ -619,6 +628,11 @@ extend_cell_format(uint8_t *command_out, uint16_t *len_out,
   switch (cell_in->cell_type) {
   case RELAY_COMMAND_EXTEND:
     {
+      if (BUG(cell_in->create_cell.handshake_type ==
+              ONION_HANDSHAKE_TYPE_NTOR_V3)) {
+        log_warn(LD_BUG, "Extend cells cannot contain ntorv3!");
+        return -1;
+      }
       *command_out = RELAY_COMMAND_EXTEND;
       *len_out = 6 + TAP_ONIONSKIN_CHALLENGE_LEN + DIGEST_LEN;
       set_uint32(p, tor_addr_to_ipv4n(&cell_in->orport_ipv4.addr));

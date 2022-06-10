@@ -1,15 +1,15 @@
 #!/bin/sh
 
-# Fail if any subprocess fails unexpectedly
+# Fail this script if any subprocess fails unexpectedly.
 set -e
 
 umask 077
 unset TOR_DISABLE_PRACTRACKER
 
 TMPDIR=""
-clean () {
+clean() {
   if [ -n "$TMPDIR" ] && [ -d "$TMPDIR" ]; then
-    rm -rf "$TMPDIR"
+        rm -rf "$TMPDIR"
   fi
 }
 trap clean EXIT HUP INT TERM
@@ -27,7 +27,7 @@ PRACTRACKER_DIR="scripts/maint/practracker"
 TMPDIR="$(mktemp -d -t pracktracker.test.XXXXXX)"
 if test -z "${TMPDIR}" || test ! -d "${TMPDIR}" ; then
     echo >&2 "mktemp failed."
-    exit 1;
+    exit 1
 fi
 
 DATA="${PRACTRACKER_DIR}/testdata"
@@ -43,6 +43,7 @@ run_practracker() {
         --terse \
         "${DATA}/" "$@" || echo "practracker exit status: $?"
 }
+
 compare() {
     # we can't use cmp because we need to use -b for windows
     diff -b -u "$@" > "${TMPDIR}/test-diff" || true

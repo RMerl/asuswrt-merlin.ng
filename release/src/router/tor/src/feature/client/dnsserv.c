@@ -1,4 +1,4 @@
-/* Copyright (c) 2007-2020, The Tor Project, Inc. */
+/* Copyright (c) 2007-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -64,6 +64,9 @@ evdns_server_callback(struct evdns_server_request *req, void *data_)
   tor_assert(req);
 
   log_info(LD_APP, "Got a new DNS request!");
+
+  /* Receiving a request on the DNSPort counts as user activity. */
+  note_user_activity(approx_time());
 
   req->flags |= 0x80; /* set RA */
 

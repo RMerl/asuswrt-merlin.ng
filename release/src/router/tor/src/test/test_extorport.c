@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2020, The Tor Project, Inc. */
+/* Copyright (c) 2013-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 #define CONNECTION_PRIVATE
@@ -23,60 +23,6 @@
 #ifdef HAVE_SYS_STAT_H
 #include <sys/stat.h>
 #endif
-
-/* Test connection_or_remove_from_ext_or_id_map and
- * connection_or_set_ext_or_identifier */
-static void
-test_ext_or_id_map(void *arg)
-{
-  or_connection_t *c1 = NULL, *c2 = NULL, *c3 = NULL;
-  char *idp = NULL, *idp2 = NULL;
-  (void)arg;
-
-  /* pre-initialization */
-  tt_ptr_op(NULL, OP_EQ,
-            connection_or_get_by_ext_or_id("xxxxxxxxxxxxxxxxxxxx"));
-
-  c1 = or_connection_new(CONN_TYPE_EXT_OR, AF_INET);
-  c2 = or_connection_new(CONN_TYPE_EXT_OR, AF_INET);
-  c3 = or_connection_new(CONN_TYPE_OR, AF_INET);
-
-  tt_ptr_op(c1->ext_or_conn_id, OP_NE, NULL);
-  tt_ptr_op(c2->ext_or_conn_id, OP_NE, NULL);
-  tt_ptr_op(c3->ext_or_conn_id, OP_EQ, NULL);
-
-  tt_ptr_op(c1, OP_EQ, connection_or_get_by_ext_or_id(c1->ext_or_conn_id));
-  tt_ptr_op(c2, OP_EQ, connection_or_get_by_ext_or_id(c2->ext_or_conn_id));
-  tt_ptr_op(NULL, OP_EQ,
-            connection_or_get_by_ext_or_id("xxxxxxxxxxxxxxxxxxxx"));
-
-  idp = tor_memdup(c2->ext_or_conn_id, EXT_OR_CONN_ID_LEN);
-
-  /* Give c2 a new ID. */
-  connection_or_set_ext_or_identifier(c2);
-  tt_mem_op(idp, OP_NE, c2->ext_or_conn_id, EXT_OR_CONN_ID_LEN);
-  idp2 = tor_memdup(c2->ext_or_conn_id, EXT_OR_CONN_ID_LEN);
-  tt_assert(!tor_digest_is_zero(idp2));
-
-  tt_ptr_op(NULL, OP_EQ, connection_or_get_by_ext_or_id(idp));
-  tt_ptr_op(c2, OP_EQ, connection_or_get_by_ext_or_id(idp2));
-
-  /* Now remove it. */
-  connection_or_remove_from_ext_or_id_map(c2);
-  tt_ptr_op(NULL, OP_EQ, connection_or_get_by_ext_or_id(idp));
-  tt_ptr_op(NULL, OP_EQ, connection_or_get_by_ext_or_id(idp2));
-
- done:
-  if (c1)
-    connection_free_minimal(TO_CONN(c1));
-  if (c2)
-    connection_free_minimal(TO_CONN(c2));
-  if (c3)
-    connection_free_minimal(TO_CONN(c3));
-  tor_free(idp);
-  tor_free(idp2);
-  connection_or_clear_ext_or_id_map();
-}
 
 /* Simple connection_write_to_buf_impl_ replacement that unconditionally
  * writes to outbuf. */
@@ -527,7 +473,7 @@ test_ext_or_handshake(void *arg)
   tt_int_op(handshake_start_called,OP_EQ,1);
   tt_int_op(TO_CONN(conn)->type, OP_EQ, CONN_TYPE_OR);
   tt_int_op(TO_CONN(conn)->state, OP_EQ, 0);
-  close_closeable_connections();
+  connection_free_(TO_CONN(conn));
   conn = NULL;
 
   /* Okay, this time let's succeed the handshake but fail the USERADDR
@@ -581,7 +527,6 @@ test_ext_or_handshake(void *arg)
 }
 
 struct testcase_t extorport_tests[] = {
-  { "id_map", test_ext_or_id_map, TT_FORK, NULL, NULL },
   { "write_command", test_ext_or_write_command, TT_FORK, NULL, NULL },
   { "init_auth", test_ext_or_init_auth, TT_FORK, NULL, NULL },
   { "cookie_auth", test_ext_or_cookie_auth, TT_FORK, NULL, NULL },

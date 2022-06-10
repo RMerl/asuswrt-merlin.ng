@@ -1,5 +1,5 @@
 /* Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2020, The Tor Project, Inc. */
+ * Copyright (c) 2007-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -48,8 +48,8 @@
 #include "feature/control/control_cmd.h"
 #include "feature/control/control_events.h"
 #include "feature/control/control_proto.h"
-#include "feature/rend/rendcommon.h"
-#include "feature/rend/rendservice.h"
+#include "feature/hs/hs_common.h"
+#include "feature/hs/hs_service.h"
 #include "lib/evloop/procmon.h"
 
 #include "feature/control/control_connection_st.h"
@@ -240,9 +240,7 @@ connection_control_closed(control_connection_t *conn)
    */
   if (conn->ephemeral_onion_services) {
     SMARTLIST_FOREACH_BEGIN(conn->ephemeral_onion_services, char *, cp) {
-      if (rend_valid_v2_service_id(cp)) {
-        rend_service_del_ephemeral(cp);
-      } else if (hs_address_is_valid(cp)) {
+      if (hs_address_is_valid(cp)) {
         hs_service_del_ephemeral(cp);
       } else {
         /* An invalid .onion in our list should NEVER happen */

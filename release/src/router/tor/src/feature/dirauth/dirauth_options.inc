@@ -27,6 +27,10 @@ CONF_VAR(AuthDirHasIPv6Connectivity, BOOL, 0, "0")
  * good. */
 CONF_VAR(AuthDirListBadExits, BOOL, 0, "0")
 
+/** True iff we should list middle-only relays, and vote for all other
+ * relays as possibly suitable for other positions. */
+CONF_VAR(AuthDirListMiddleOnly, BOOL, 0, "0")
+
 /** Do not permit more than this number of servers per IP address. */
 CONF_VAR(AuthDirMaxServersPerAddr, POSINT, 0, "2")
 
@@ -108,5 +112,8 @@ CONF_VAR(VersioningAuthoritativeDirectory, BOOL, 0, "0")
  * same and the authority will try to answer them all regardless of bandwidth
  * pressure or not. */
 CONF_VAR(AuthDirRejectRequestsUnderLoad, BOOL, 0, "1")
+
+/** Boolean: Should we not give bandwidth weight measurements to dirauths? */
+CONF_VAR(AuthDirDontVoteOnDirAuthBandwidth, BOOL, 0, "1")
 
 END_CONF_STRUCT(dirauth_options_t)

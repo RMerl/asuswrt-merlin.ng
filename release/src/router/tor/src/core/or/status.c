@@ -1,4 +1,4 @@
-/* Copyright (c) 2010-2020, The Tor Project, Inc. */
+/* Copyright (c) 2010-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -105,10 +105,9 @@ log_onion_service_stats(void)
   }
 
   log_notice(LD_HEARTBEAT,
-             "Our onion service%s received %u v2 and %u v3 INTRODUCE2 cells "
+             "Heartbeat: Our onion service%s received %u v3 INTRODUCE2 cells "
              "and attempted to launch %d rendezvous circuits.",
              num_services == 1 ? "" : "s",
-             hs_stats_get_n_introduce2_v2_cells(),
              hs_stats_get_n_introduce2_v3_cells(),
              hs_stats_get_n_rendezvous_launches());
 }
@@ -146,6 +145,32 @@ note_connection(bool inbound, int family)
       ++n_outgoing_ipv6;
     }
   }
+}
+
+/**
+ * @name Counters for unrecognized cells
+ *
+ * Track cells that we drop because they are unrecognized and we have
+ * nobody to send them to.
+ **/
+/**@{*/
+static unsigned n_circs_closed_for_unrecognized_cells;
+static uint64_t n_unrecognized_cells_discarded;
+static uint64_t n_secs_on_circs_with_unrecognized_cells;
+/**@}*/
+
+/**
+ * Note that a circuit has closed @a n_seconds after having been created,
+ * because of one or more unrecognized cells.  Also note the number of
+ * unrecognized cells @a n_cells.
+ */
+void
+note_circ_closed_for_unrecognized_cells(time_t n_seconds, uint32_t n_cells)
+{
+  ++n_circs_closed_for_unrecognized_cells;
+  n_unrecognized_cells_discarded += n_cells;
+  if (n_seconds >= 0)
+    n_secs_on_circs_with_unrecognized_cells += (uint64_t) n_seconds;
 }
 
 /** Log a "heartbeat" message describing Tor's status and history so that the
@@ -239,6 +264,23 @@ log_heartbeat(time_t now)
          (main_loop_success_count),
          (main_loop_error_count),
          (main_loop_idle_count));
+  }
+
+  if (n_circs_closed_for_unrecognized_cells) {
+    double avg_time_alive = ((double) n_secs_on_circs_with_unrecognized_cells)
+      / n_circs_closed_for_unrecognized_cells;
+    double avg_cells = ((double) n_unrecognized_cells_discarded)
+      / n_circs_closed_for_unrecognized_cells;
+    log_fn(LOG_NOTICE, LD_HEARTBEAT,
+        "Since our last heartbeat, %u circuits were closed because of "
+        "unrecognized cells while we were the last hop. On average, each "
+        "one was alive for %lf seconds, and had %lf unrecognized cells.",
+        n_circs_closed_for_unrecognized_cells,
+        avg_time_alive,
+        avg_cells);
+    n_circs_closed_for_unrecognized_cells = 0;
+    n_unrecognized_cells_discarded = 0;
+    n_secs_on_circs_with_unrecognized_cells = 0;
   }
 
   /** Now, if we are an HS service, log some stats about our usage */

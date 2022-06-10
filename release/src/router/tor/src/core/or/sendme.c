@@ -1,4 +1,4 @@
-/* Copyright (c) 2019-2020, The Tor Project, Inc. */
+/* Copyright (c) 2019-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -21,6 +21,8 @@
 #include "core/or/or_circuit_st.h"
 #include "core/or/relay.h"
 #include "core/or/sendme.h"
+#include "core/or/congestion_control_common.h"
+#include "core/or/congestion_control_flow.h"
 #include "feature/nodelist/networkstatus.h"
 #include "lib/ctime/di_ops.h"
 #include "trunnel/sendme_cell.h"
@@ -63,13 +65,6 @@ pop_first_cell_digest(const circuit_t *circ)
       smartlist_len(circ->sendme_last_digests) == 0) {
     return NULL;
   }
-
-  /* More cell digest than the SENDME window is never suppose to happen. The
-   * cell should have been rejected before reaching this point due to its
-   * package_window down to 0 leading to a circuit close. Scream loudly but
-   * still pop the element so we don't memory leak. */
-  tor_assert_nonfatal(smartlist_len(circ->sendme_last_digests) <=
-                      CIRCWINDOW_START_MAX / CIRCWINDOW_INCREMENT);
 
   circ_digest = smartlist_get(circ->sendme_last_digests, 0);
   smartlist_del_keeporder(circ->sendme_last_digests, 0);
@@ -334,17 +329,18 @@ record_cell_digest_on_circ(circuit_t *circ, const uint8_t *sendme_digest)
 /** Return true iff the next cell for the given cell window is expected to be
  * a SENDME.
  *
- * We are able to know that because the package or deliver window value minus
- * one cell (the possible SENDME cell) should be a multiple of the increment
- * window value. */
-static bool
-circuit_sendme_cell_is_next(int window)
+ * We are able to know that because the package or inflight window value minus
+ * one cell (the possible SENDME cell) should be a multiple of the
+ * cells-per-sendme increment value (set via consensus parameter, negotiated
+ * for the circuit, and passed in as sendme_inc).
+ *
+ * This function is used when recording a cell digest and this is done quite
+ * low in the stack when decrypting or encrypting a cell. The window is only
+ * updated once the cell is actually put in the outbuf.
+ */
+STATIC bool
+circuit_sendme_cell_is_next(int deliver_window, int sendme_inc)
 {
-  /* At the start of the window, no SENDME will be expected. */
-  if (window == CIRCWINDOW_START) {
-    return false;
-  }
-
   /* Are we at the limit of the increment and if not, we don't expect next
    * cell is a SENDME.
    *
@@ -353,10 +349,12 @@ circuit_sendme_cell_is_next(int window)
    * decremented just yet so when this is called, we are currently processing
    * the "window - 1" cell.
    *
-   * This function is used when recording a cell digest and this is done quite
-   * low in the stack when decrypting or encrypting a cell. The window is only
-   * updated once the cell is actually put in the outbuf. */
-  if (((window - 1) % CIRCWINDOW_INCREMENT) != 0) {
+   * Because deliver_window starts at CIRCWINDOW_START and counts down,
+   * to get the actual number of received cells for this check, we must
+   * first convert to receieved cells, or the modulus operator will fail.
+   */
+  tor_assert(deliver_window <= CIRCWINDOW_START);
+  if (((CIRCWINDOW_START - (deliver_window - 1)) % sendme_inc) != 0) {
     return false;
   }
 
@@ -377,6 +375,10 @@ sendme_connection_edge_consider_sending(edge_connection_t *conn)
   tor_assert(conn);
 
   int log_domain = TO_CONN(conn)->type == CONN_TYPE_AP ? LD_APP : LD_EXIT;
+
+  /* If we use flow control, we do not send stream sendmes */
+  if (edge_uses_flow_control(conn))
+    goto end;
 
   /* Don't send it if we still have data to deliver. */
   if (connection_outbuf_too_full(TO_CONN(conn))) {
@@ -419,15 +421,16 @@ sendme_circuit_consider_sending(circuit_t *circ, crypt_path_t *layer_hint)
 {
   bool sent_one_sendme = false;
   const uint8_t *digest;
+  int sendme_inc = sendme_get_inc_count(circ, layer_hint);
 
   while ((layer_hint ? layer_hint->deliver_window : circ->deliver_window) <=
-          CIRCWINDOW_START - CIRCWINDOW_INCREMENT) {
+          CIRCWINDOW_START - sendme_inc) {
     log_debug(LD_CIRC,"Queuing circuit sendme.");
     if (layer_hint) {
-      layer_hint->deliver_window += CIRCWINDOW_INCREMENT;
+      layer_hint->deliver_window += sendme_inc;
       digest = cpath_get_sendme_digest(layer_hint);
     } else {
-      circ->deliver_window += CIRCWINDOW_INCREMENT;
+      circ->deliver_window += sendme_inc;
       digest = relay_crypto_get_sendme_digest(&TO_OR_CIRCUIT(circ)->crypto);
     }
     if (send_circuit_level_sendme(circ, layer_hint, digest) < 0) {
@@ -448,6 +451,9 @@ sendme_circuit_consider_sending(circuit_t *circ, crypt_path_t *layer_hint)
  * the length of the SENDME cell payload (excluding the header). The
  * cell_payload is the payload.
  *
+ * This function validates the SENDME's digest, and then dispatches to
+ * the appropriate congestion control algorithm in use on the circuit.
+ *
  * Return 0 on success (the SENDME is valid and the package window has
  * been updated properly).
  *
@@ -460,6 +466,7 @@ sendme_process_circuit_level(crypt_path_t *layer_hint,
 {
   tor_assert(circ);
   tor_assert(cell_payload);
+  congestion_control_t *cc;
 
   /* Validate the SENDME cell. Depending on the version, different validation
    * can be done. An invalid SENDME requires us to close the circuit. */
@@ -467,6 +474,36 @@ sendme_process_circuit_level(crypt_path_t *layer_hint,
     return -END_CIRC_REASON_TORPROTOCOL;
   }
 
+  /* origin circuits need to count valid sendmes as valid protocol data */
+  if (CIRCUIT_IS_ORIGIN(circ)) {
+    circuit_read_valid_data(TO_ORIGIN_CIRCUIT(circ), cell_payload_len);
+  }
+
+  // Get CC
+  if (layer_hint) {
+    cc = layer_hint->ccontrol;
+  } else {
+    cc = circ->ccontrol;
+  }
+
+  /* If there is no CC object, assume fixed alg */
+  if (!cc) {
+    return sendme_process_circuit_level_impl(layer_hint, circ);
+  }
+
+  return congestion_control_dispatch_cc_alg(cc, circ, layer_hint);
+}
+
+/**
+ * Process a SENDME for Tor's original fixed window circuit-level flow control.
+ * Updates the package_window and ensures that it does not exceed the max.
+ *
+ * Returns -END_CIRC_REASON_TORPROTOCOL if the max is exceeded, otherwise
+ * returns 0.
+ */
+int
+sendme_process_circuit_level_impl(crypt_path_t *layer_hint, circuit_t *circ)
+{
   /* If we are the origin of the circuit, we are the Client so we use the
    * layer hint (the Exit hop) for the package window tracking. */
   if (CIRCUIT_IS_ORIGIN(circ)) {
@@ -486,10 +523,6 @@ sendme_process_circuit_level(crypt_path_t *layer_hint,
     layer_hint->package_window += CIRCWINDOW_INCREMENT;
     log_debug(LD_APP, "circ-level sendme at origin, packagewindow %d.",
               layer_hint->package_window);
-
-    /* We count circuit-level sendme's as valid delivered data because they
-     * are rate limited. */
-    circuit_read_valid_data(TO_ORIGIN_CIRCUIT(circ), cell_payload_len);
   } else {
     /* We aren't the origin of this circuit so we are the Exit and thus we
      * track the package window with the circuit object. */
@@ -524,6 +557,12 @@ sendme_process_stream_level(edge_connection_t *conn, circuit_t *circ,
 {
   tor_assert(conn);
   tor_assert(circ);
+
+  if (edge_uses_flow_control(conn)) {
+    log_fn(LOG_PROTOCOL_WARN, LD_EDGE,
+           "Congestion control got stream sendme");
+    return -END_CIRC_REASON_TORPROTOCOL;
+  }
 
   /* Don't allow the other endpoint to request more than our maximum (i.e.
    * initial) stream SENDME window worth of data. Well-behaved stock clients
@@ -582,7 +621,12 @@ int
 sendme_stream_data_received(edge_connection_t *conn)
 {
   tor_assert(conn);
-  return --conn->deliver_window;
+
+  if (edge_uses_flow_control(conn)) {
+    return flow_control_decide_xoff(conn);
+  } else {
+    return --conn->deliver_window;
+  }
 }
 
 /* Called when a relay DATA cell is packaged on the given circuit. If
@@ -592,33 +636,55 @@ int
 sendme_note_circuit_data_packaged(circuit_t *circ, crypt_path_t *layer_hint)
 {
   int package_window, domain;
+  congestion_control_t *cc;
 
   tor_assert(circ);
 
-  if (CIRCUIT_IS_ORIGIN(circ)) {
-    /* Client side. */
-    tor_assert(layer_hint);
-    --layer_hint->package_window;
-    package_window = layer_hint->package_window;
+  if (layer_hint) {
+    cc = layer_hint->ccontrol;
     domain = LD_APP;
   } else {
-    /* Exit side. */
-    tor_assert(!layer_hint);
-    --circ->package_window;
-    package_window = circ->package_window;
+    cc = circ->ccontrol;
     domain = LD_EXIT;
   }
 
-  log_debug(domain, "Circuit package_window now %d.", package_window);
-  return package_window;
+  if (cc) {
+    congestion_control_note_cell_sent(cc, circ, layer_hint);
+  } else {
+    /* Fixed alg uses package_window and must update it */
+
+    if (CIRCUIT_IS_ORIGIN(circ)) {
+      /* Client side. */
+      tor_assert(layer_hint);
+      --layer_hint->package_window;
+      package_window = layer_hint->package_window;
+    } else {
+      /* Exit side. */
+      tor_assert(!layer_hint);
+      --circ->package_window;
+      package_window = circ->package_window;
+    }
+    log_debug(domain, "Circuit package_window now %d.", package_window);
+  }
+
+  /* Return appropriate number designating how many cells can still be sent */
+  return congestion_control_get_package_window(circ, layer_hint);
 }
 
 /* Called when a relay DATA cell is packaged for the given edge connection
  * conn. Update the package window and return its new value. */
 int
-sendme_note_stream_data_packaged(edge_connection_t *conn)
+sendme_note_stream_data_packaged(edge_connection_t *conn, size_t len)
 {
   tor_assert(conn);
+
+  if (edge_uses_flow_control(conn)) {
+    flow_control_note_sent_data(conn, len);
+    if (conn->xoff_received)
+      return -1;
+    else
+      return 1;
+  }
 
   --conn->package_window;
   log_debug(LD_APP, "Stream package_window now %d.", conn->package_window);
@@ -631,20 +697,14 @@ sendme_note_stream_data_packaged(edge_connection_t *conn)
 void
 sendme_record_cell_digest_on_circ(circuit_t *circ, crypt_path_t *cpath)
 {
-  int package_window;
   uint8_t *sendme_digest;
 
   tor_assert(circ);
 
-  package_window = circ->package_window;
-  if (cpath) {
-    package_window = cpath->package_window;
-  }
-
   /* Is this the last cell before a SENDME? The idea is that if the
    * package_window reaches a multiple of the increment, after this cell, we
    * should expect a SENDME. */
-  if (!circuit_sendme_cell_is_next(package_window)) {
+  if (!circuit_sent_cell_for_sendme(circ, cpath)) {
     return;
   }
 
@@ -670,7 +730,8 @@ sendme_record_received_cell_digest(circuit_t *circ, crypt_path_t *cpath)
 
   /* Only record if the next cell is expected to be a SENDME. */
   if (!circuit_sendme_cell_is_next(cpath ? cpath->deliver_window :
-                                           circ->deliver_window)) {
+                                           circ->deliver_window,
+                                   sendme_get_inc_count(circ, cpath))) {
     return;
   }
 
@@ -692,8 +753,7 @@ sendme_record_sending_cell_digest(circuit_t *circ, crypt_path_t *cpath)
   tor_assert(circ);
 
   /* Only record if the next cell is expected to be a SENDME. */
-  if (!circuit_sendme_cell_is_next(cpath ? cpath->package_window :
-                                           circ->package_window)) {
+  if (!circuit_sent_cell_for_sendme(circ, cpath)) {
     goto end;
   }
 

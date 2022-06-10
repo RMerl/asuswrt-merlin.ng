@@ -1,6 +1,6 @@
 /* Copyright (c) 2003, Roger Dingledine
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2020, The Tor Project, Inc. */
+ * Copyright (c) 2007-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -533,6 +533,7 @@ unglob_win32(const char *pattern, int prev_sep, int next_sep)
   return result;
 }
 #elif HAVE_GLOB
+#ifdef GLOB_ALTDIRFUNC  // prevent warning about unused functions
 /** Same as opendir but calls sandbox_intern_string before */
 static DIR *
 prot_opendir(const char *name)
@@ -571,6 +572,7 @@ wrap_closedir(void *arg)
 {
   closedir(arg);
 }
+#endif /* defined(GLOB_ALTDIRFUNC) */
 
 /** Function passed to glob to handle processing errors. <b>epath</b> is the
  * path that caused the error and <b>eerrno</b> is the errno set by the
@@ -627,11 +629,13 @@ tor_glob(const char *pattern)
     return NULL;
   }
 
-  // #40141: workaround for bug in glibc < 2.19 where patterns ending in path
-  // separator match files and folders instead of folders only
+  // #40141, !249: workaround for glibc bug where patterns ending in path
+  // separator match files and folders instead of folders only.
+  // this could be in #ifdef __GLIBC__ but: 1. it might affect other libcs too,
+  // and 2. it doesn't cost much to stat each match again since libc is already
+  // supposed to do it (otherwise the file may be on slow NFS or something)
   size_t pattern_len = strlen(pattern);
-  bool dir_only = has_glob(pattern) &&
-                  pattern_len > 0 && pattern[pattern_len-1] == *PATH_SEPARATOR;
+  bool dir_only = pattern_len > 0 && pattern[pattern_len-1] == *PATH_SEPARATOR;
 
   result = smartlist_new();
   size_t i;
@@ -652,7 +656,7 @@ tor_glob(const char *pattern)
 #else
   (void)pattern;
   return result;
-#endif /* !defined(HAVE_GLOB) */
+#endif /* defined(_WIN32) || ... */
 
   return result;
 }

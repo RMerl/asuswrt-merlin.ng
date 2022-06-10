@@ -1,4 +1,4 @@
-/* Copyright (c) 2014-2020, The Tor Project, Inc. */
+/* Copyright (c) 2014-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 #ifndef TOR_TEST_CONNECTION_H

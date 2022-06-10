@@ -864,10 +864,8 @@ RECURSIVE              = YES
 # run.
 
 EXCLUDE                = ./src/ext/ed25519 \
-                         ./src/ext/rust \
                          ./src/trunnel \
-                         ./src/test \
-                         ./src/rust/registry
+                         ./src/test
 
 # The EXCLUDE_SYMLINKS tag can be used to select whether or not files or
 # directories that are symbolic links (a Unix file system feature) are excluded

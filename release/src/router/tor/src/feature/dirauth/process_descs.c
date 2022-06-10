@@ -1,6 +1,6 @@
 /* Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2020, The Tor Project, Inc. */
+ * Copyright (c) 2007-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -226,6 +226,8 @@ dirserv_load_fingerprint_file(void)
         add_status = RTR_BADEXIT;
     } else if (!strcasecmp(nickname, "!invalid")) {
         add_status = RTR_INVALID;
+    }  else if (!strcasecmp(nickname, "!middleonly")) {
+        add_status = RTR_MIDDLEONLY;
     }
 
     /* Check if fingerprint is RSA or ed25519 by verifying it. */
@@ -402,21 +404,8 @@ dirserv_rejects_tor_version(const char *platform,
   static const char please_upgrade_string[] =
     "Tor version is insecure or unsupported. Please upgrade!";
 
-  /* Versions before Tor 0.3.5 are unsupported.
-   *
-   * Also, reject unstable versions of 0.3.5, since (as of this writing)
-   * they are almost none of the network. */
-  if (!tor_version_as_new_as(platform,"0.3.5.7")) {
-    if (msg)
-      *msg = please_upgrade_string;
-    return true;
-  }
-
-  /* Series between Tor 0.3.6 and 0.4.1 inclusive are unsupported. Reject
-   * them. 0.3.6.0-alpha-dev only existed for a short time, before it was
-   * renamed to 0.4.0.0-alpha-dev. */
-  if (tor_version_as_new_as(platform,"0.3.6.0-alpha-dev") &&
-      !tor_version_as_new_as(platform,"0.4.2.1-alpha")) {
+  /* Anything before 0.4.5.6 is unsupported. Reject them. */
+  if (!tor_version_as_new_as(platform,"0.4.5.6")) {
     if (msg) {
       *msg = please_upgrade_string;
     }
@@ -494,6 +483,13 @@ dirserv_get_status_impl(const char *id_digest,
            "Marking '%s' as bad exit because of address '%s'",
                nickname, fmt_addr(ipv4_addr));
     result |= RTR_BADEXIT;
+  }
+
+  if (authdir_policy_middleonly_address(ipv4_addr, ipv4_orport)) {
+    log_fn(severity, LD_DIRSERV,
+           "Marking '%s' as middle-only because of address '%s'",
+               nickname, fmt_addr(ipv4_addr));
+    result |= RTR_MIDDLEONLY;
   }
 
   if (!authdir_policy_permits_address(ipv4_addr, ipv4_orport)) {
@@ -630,6 +626,7 @@ dirserv_set_node_flags_from_authoritative_status(node_t *node,
 {
   node->is_valid = (authstatus & RTR_INVALID) ? 0 : 1;
   node->is_bad_exit = (authstatus & RTR_BADEXIT) ? 1 : 0;
+  node->is_middle_only = (authstatus & RTR_MIDDLEONLY) ? 1 : 0;
 }
 
 /** True iff <b>a</b> is more severe than <b>b</b>. */
@@ -962,6 +959,11 @@ directory_remove_invalid(void)
       log_info(LD_DIRSERV, "Router '%s' is now a %s exit", description,
                (r & RTR_BADEXIT) ? "bad" : "good");
       node->is_bad_exit = (r&RTR_BADEXIT) ? 1: 0;
+    }
+    if (bool_neq((r & RTR_MIDDLEONLY), node->is_middle_only)) {
+      log_info(LD_DIRSERV, "Router '%s' is now %smiddle-only", description,
+               (r & RTR_MIDDLEONLY) ? "" : "not");
+      node->is_middle_only = (r&RTR_MIDDLEONLY) ? 1: 0;
     }
   } SMARTLIST_FOREACH_END(node);
 

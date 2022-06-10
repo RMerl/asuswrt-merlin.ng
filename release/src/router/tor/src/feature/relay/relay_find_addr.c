@@ -1,4 +1,4 @@
-/* Copyright (c) 2001-2020, The Tor Project, Inc. */
+/* Copyright (c) 2001-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -221,7 +221,7 @@ relay_addr_learn_from_dirauth(void)
                            "learn for now our address from them.");
       return;
     }
-    extend_info_t *ei = extend_info_from_node(node, 1);
+    extend_info_t *ei = extend_info_from_node(node, 1, false);
     if (BUG(!ei)) {
       return;
     }

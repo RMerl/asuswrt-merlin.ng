@@ -1,4 +1,4 @@
-/* Copyright (c) 2016-2020, The Tor Project, Inc. */
+/* Copyright (c) 2016-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 #define PROTOVER_PRIVATE
@@ -23,13 +23,6 @@ static void
 test_protover_parse(void *arg)
 {
   (void) arg;
-#ifdef HAVE_RUST
-  /** This test is disabled on rust builds, because it only exists to test
-   * internal C functions. */
-  tt_skip();
- done:
-  ;
-#else /* !defined(HAVE_RUST) */
   char *re_encoded = NULL;
 
   const char *orig = "Foo=1,3 Bar=3 Baz= Quux=9-12,14,15-16";
@@ -64,18 +57,12 @@ test_protover_parse(void *arg)
     SMARTLIST_FOREACH(elts, proto_entry_t *, ent, proto_entry_free(ent));
   smartlist_free(elts);
   tor_free(re_encoded);
-#endif /* defined(HAVE_RUST) */
 }
 
 static void
 test_protover_parse_fail(void *arg)
 {
   (void)arg;
-#ifdef HAVE_RUST
-  /** This test is disabled on rust builds, because it only exists to test
-   * internal C functions. */
-  tt_skip();
-#else
   smartlist_t *elts;
 
   /* random junk */
@@ -108,7 +95,6 @@ test_protover_parse_fail(void *arg)
                            "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
   tt_ptr_op(elts, OP_EQ, NULL);
 
-#endif /* defined(HAVE_RUST) */
  done:
   ;
 }
@@ -265,7 +251,7 @@ test_protover_all_supported(void *arg)
 #endif /* !defined(ALL_BUGS_ARE_FATAL) */
 
   /* Protocol name too long */
-#if !defined(HAVE_RUST) && !defined(ALL_BUGS_ARE_FATAL)
+#if !defined(ALL_BUGS_ARE_FATAL)
   tor_capture_bugs_(1);
   tt_assert(protover_all_supported(
                  "DoSaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
@@ -273,7 +259,7 @@ test_protover_all_supported(void *arg)
                  "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
                  "aaaaaaaaaaaa=1-65536", &msg));
   tor_end_capture_bugs_();
-#endif /* !defined(HAVE_RUST) && !defined(ALL_BUGS_ARE_FATAL) */
+#endif /* !defined(ALL_BUGS_ARE_FATAL) */
 
  done:
   tor_end_capture_bugs_();
@@ -348,13 +334,10 @@ test_protover_supports_version(void *arg)
 /* Deprecated HSIntro versions */
 #define PROTOVER_HS_INTRO_DEPRECATED_1 1
 #define PROTOVER_HS_INTRO_DEPRECATED_2 2
-/* Highest supported HSv2 introduce protocol version.
- * It's not clear if we actually support version 2, see #25068. */
-#define PROTOVER_HS_INTRO_V2 3
 
 /* HSv2 Rend and HSDir protocol versions. */
 #define PROTOVER_HS_RENDEZVOUS_POINT_V2 1
-#define PROTOVER_HSDIR_V2 1
+#define PROTOVER_HSDIR_V2 2
 
 /* DirCache, Desc, Microdesc, and Cons protocol versions. */
 #define PROTOVER_DIRCACHE_V1 1
@@ -372,6 +355,8 @@ test_protover_supports_version(void *arg)
 #define PROTOVER_PADDING_V1 1
 
 #define PROTOVER_FLOWCTRL_V1 1
+
+#define PROTOVER_RELAY_NTOR_V3 4
 
 /* Make sure we haven't forgotten any supported protocols */
 static void
@@ -433,12 +418,6 @@ test_protover_supported_protocols(void *arg)
   tt_assert(!protocol_list_supports_protocol(supported_protocols,
                                             PRT_HSINTRO,
                                             PROTOVER_HS_INTRO_DEPRECATED_2));
-  /* We could test legacy HSIntro by calling rend_service_update_descriptor(),
-   * and checking the protocols field. But that's unlikely to change, so
-   * we just use a hard-coded value. */
-  tt_assert(protocol_list_supports_protocol(supported_protocols,
-                                            PRT_HSINTRO,
-                                            PROTOVER_HS_INTRO_V2));
   /* Test for HSv3 HSIntro */
   tt_assert(protocol_list_supports_protocol(supported_protocols,
                                             PRT_HSINTRO,
@@ -606,10 +585,10 @@ test_protover_vote_roundtrip_ours(void *args)
   (void) args;
   const char *examples[] = {
     protover_get_supported_protocols(),
-    DIRVOTE_RECOMMEND_RELAY_PROTO,
-    DIRVOTE_RECOMMEND_CLIENT_PROTO,
-    DIRVOTE_REQUIRE_RELAY_PROTO,
-    DIRVOTE_REQUIRE_CLIENT_PROTO,
+    protover_get_recommended_client_protocols(),
+    protover_get_recommended_relay_protocols(),
+    protover_get_required_client_protocols(),
+    protover_get_required_relay_protocols(),
   };
   unsigned u;
   smartlist_t *votes = smartlist_new();
@@ -650,7 +629,7 @@ test_protover_vote_roundtrip_ours(void *args)
  */
 #define PROTOVER(proto_string, version_macro) \
   (proto_string "=" STR(version_macro))
-#endif
+#endif /* defined(COCCI) */
 
 #define DEBUG_PROTOVER(flags) \
   STMT_BEGIN \
@@ -667,7 +646,8 @@ test_protover_vote_roundtrip_ours(void *args)
             "supports_establish_intro_dos_extension: %d,\n" \
             "supports_v3_hsdir: %d,\n" \
             "supports_v3_rendezvous_point: %d,\n" \
-            "supports_hs_setup_padding: %d.", \
+            "supports_hs_setup_padding: %d,\n" \
+            "supports_congestion_control: %d.", \
             (flags).protocols_known, \
             (flags).supports_extend2_cells, \
             (flags).supports_accepting_ipv6_extends, \
@@ -679,7 +659,8 @@ test_protover_vote_roundtrip_ours(void *args)
             (flags).supports_establish_intro_dos_extension, \
             (flags).supports_v3_hsdir, \
             (flags).supports_v3_rendezvous_point, \
-            (flags).supports_hs_setup_padding); \
+            (flags).supports_hs_setup_padding, \
+            (flags).supports_congestion_control); \
     STMT_END
 
 /* Test that the proto_string version version_macro sets summary_flag. */

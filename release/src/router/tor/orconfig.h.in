@@ -6,15 +6,27 @@
 /* All assert failures are fatal */
 #undef ALL_BUGS_ARE_FATAL
 
-/* # for 0.4.5.11 Approximate date when this software was released. (Updated
+/* # for 0.4.7.7 Approximate date when this software was released. (Updated
    when the version changes.) */
 #undef APPROX_RELEASE_DATE
 
 /* tor's build directory */
 #undef BUILDDIR
 
+/* Compiler name */
+#undef COMPILER
+
+/* Compiler vendor */
+#undef COMPILER_VENDOR
+
+/* Compiler version */
+#undef COMPILER_VERSION
+
 /* tor's configuration directory */
 #undef CONFDIR
+
+/* Flags passed to configure */
+#undef CONFIG_FLAGS
 
 /* Enable smartlist debugging */
 #undef DEBUG_SMARTLIST
@@ -27,6 +39,13 @@
 
 /* Define to 1 iff memset(0) sets doubles to 0.0 */
 #undef DOUBLE_0_REP_IS_ZERO_BYTES
+
+/* Defined if coverage support is enabled for the unit tests */
+#undef ENABLE_COVERAGE
+
+/* Defined if we're building with additional, fragile and expensive compiler
+   hardening */
+#undef ENABLE_FRAGILE_HARDENING
 
 /* Defined if we default to host local appdata paths on Windows */
 #undef ENABLE_LOCAL_APPDATA
@@ -383,9 +402,6 @@
 /* Define to 1 if you have the `RtlSecureZeroMemory' function. */
 #undef HAVE_RTLSECUREZEROMEMORY
 
-/* have Rust */
-#undef HAVE_RUST
-
 /* Define to 1 if the system has the type `sa_family_t'. */
 #undef HAVE_SA_FAMILY_T
 
@@ -400,6 +416,9 @@
 
 /* Define to 1 if you have the <signal.h> header file. */
 #undef HAVE_SIGNAL_H
+
+/* Define to 1 if you have the `snprintf' function. */
+#undef HAVE_SNPRINTF
 
 /* Define to 1 if you have the `socketpair' function. */
 #undef HAVE_SOCKETPAIR
@@ -632,6 +651,9 @@
 
 /* Define to 1 if you have the `vasprintf' function. */
 #undef HAVE_VASPRINTF
+
+/* Define to 1 if you have the `vsnprintf' function. */
+#undef HAVE_VSNPRINTF
 
 /* Have Zstd */
 #undef HAVE_ZSTD

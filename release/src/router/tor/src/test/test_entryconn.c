@@ -1,4 +1,4 @@
-/* Copyright (c) 2014-2020, The Tor Project, Inc. */
+/* Copyright (c) 2014-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 #include "orconfig.h"
@@ -17,7 +17,6 @@
 #include "feature/nodelist/nodelist.h"
 
 #include "feature/hs/hs_cache.h"
-#include "feature/rend/rendcache.h"
 
 #include "core/or/entry_connection_st.h"
 #include "core/or/socks_request_st.h"
@@ -307,7 +306,7 @@ test_entryconn_rewrite_cached_dns_ipv4(void *arg)
                       tor_strdup("240.240.241.241"),
                       expires,
                       ADDRMAPSRC_DNS,
-                      0, 0);
+                      0, 0, 0);
 
   strlcpy(ec->socks_request->address, "www.friendly.example.com",
           sizeof(ec->socks_request->address));
@@ -359,7 +358,7 @@ test_entryconn_rewrite_cached_dns_ipv6(void *arg)
                       tor_strdup("[::f00f]"),
                       expires,
                       ADDRMAPSRC_DNS,
-                      0, 0);
+                      0, 0, 0);
 
   strlcpy(ec->socks_request->address, "www.friendly.example.com",
           sizeof(ec->socks_request->address));
@@ -748,7 +747,6 @@ test_entryconn_rewrite_onion_v3(void *arg)
   /* Make an onion connection using the SOCKS request */
   conn->entry_cfg.onion_traffic = 1;
   ENTRY_TO_CONN(conn)->state = AP_CONN_STATE_SOCKS_WAIT;
-  tt_assert(!ENTRY_TO_EDGE_CONN(conn)->rend_data);
   tt_assert(!ENTRY_TO_EDGE_CONN(conn)->hs_ident);
 
   /* Handle SOCKS and rewrite! */
@@ -763,7 +761,6 @@ test_entryconn_rewrite_onion_v3(void *arg)
             "25njqamcweflpvkl73j4szahhihoc4xt3ktcgjnpaingr5yhkenl5sid");
   /* check that HS information got attached to the connection */
   tt_assert(ENTRY_TO_EDGE_CONN(conn)->hs_ident);
-  tt_assert(!ENTRY_TO_EDGE_CONN(conn)->rend_data);
 
  done:
   hs_free_all();

@@ -1,4 +1,4 @@
-/* Copyright (c) 2015-2020, The Tor Project, Inc. */
+/* Copyright (c) 2015-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 #include "orconfig.h"
@@ -19,7 +19,6 @@
 #include "feature/nodelist/microdesc.h"
 #include "feature/nodelist/nodelist.h"
 #include "feature/nodelist/networkstatus.h"
-#include "feature/rend/rendcache.h"
 #include "feature/dircommon/directory.h"
 #include "core/or/connection_or.h"
 #include "lib/net/resolve.h"
@@ -36,10 +35,6 @@
 
 static void * test_conn_get_basic_setup(const struct testcase_t *tc);
 static int test_conn_get_basic_teardown(const struct testcase_t *tc,
-                                        void *arg);
-
-static void * test_conn_get_rend_setup(const struct testcase_t *tc);
-static int test_conn_get_rend_teardown(const struct testcase_t *tc,
                                         void *arg);
 
 static void * test_conn_get_rsrc_setup(const struct testcase_t *tc);
@@ -177,52 +172,6 @@ test_conn_get_basic_teardown(const struct testcase_t *tc, void *arg)
   /* When conn == NULL, we can't cleanup anything */
  done:
   return 0;
-}
-
-static void *
-test_conn_get_rend_setup(const struct testcase_t *tc)
-{
-  dir_connection_t *conn = DOWNCAST(dir_connection_t,
-                                    test_conn_get_connection(
-                                                    TEST_CONN_STATE,
-                                                    TEST_CONN_TYPE,
-                                                    TEST_CONN_REND_PURPOSE));
-  tt_assert(conn);
-  assert_connection_ok(&conn->base_, time(NULL));
-
-  rend_cache_init();
-
-  /* TODO: use directory_initiate_request() to do this - maybe? */
-  tor_assert(strlen(TEST_CONN_REND_ADDR) == REND_SERVICE_ID_LEN_BASE32);
-  conn->rend_data = rend_data_client_create(TEST_CONN_REND_ADDR, NULL, NULL,
-                                            REND_NO_AUTH);
-  assert_connection_ok(&conn->base_, time(NULL));
-  return conn;
-
-  /* On failure */
- done:
-  test_conn_get_rend_teardown(tc, conn);
-  /* Returning NULL causes the unit test to fail */
-  return NULL;
-}
-
-static int
-test_conn_get_rend_teardown(const struct testcase_t *tc, void *arg)
-{
-  dir_connection_t *conn = DOWNCAST(dir_connection_t, arg);
-  int rv = 0;
-
-  tt_assert(conn);
-  assert_connection_ok(&conn->base_, time(NULL));
-
-  /* avoid a last-ditch attempt to refetch the descriptor */
-  conn->base_.purpose = TEST_CONN_REND_PURPOSE_SUCCESSFUL;
-
-  /* connection_free_() cleans up rend_data */
-  rv = test_conn_get_basic_teardown(tc, arg);
- done:
-  rend_cache_free_all();
-  return rv;
 }
 
 static dir_connection_t *
@@ -369,10 +318,6 @@ static struct testcase_setup_t test_conn_get_basic_st = {
   test_conn_get_basic_setup, test_conn_get_basic_teardown
 };
 
-static struct testcase_setup_t test_conn_get_rend_st = {
-  test_conn_get_rend_setup, test_conn_get_rend_teardown
-};
-
 static struct testcase_setup_t test_conn_get_rsrc_st = {
   test_conn_get_rsrc_setup, test_conn_get_rsrc_teardown
 };
@@ -483,37 +428,6 @@ test_conn_get_basic(void *arg)
                                                      &addr2,
                                                      !TEST_CONN_PORT,
                                                      !TEST_CONN_BASIC_PURPOSE)
-            == NULL);
-
- done:
-  ;
-}
-
-static void
-test_conn_get_rend(void *arg)
-{
-  dir_connection_t *conn = DOWNCAST(dir_connection_t, arg);
-  tt_assert(conn);
-  assert_connection_ok(&conn->base_, time(NULL));
-
-  tt_assert(connection_get_by_type_state_rendquery(
-                                            conn->base_.type,
-                                            conn->base_.state,
-                                            rend_data_get_address(
-                                                      conn->rend_data))
-            == TO_CONN(conn));
-  tt_assert(connection_get_by_type_state_rendquery(
-                                            TEST_CONN_TYPE,
-                                            TEST_CONN_STATE,
-                                            TEST_CONN_REND_ADDR)
-            == TO_CONN(conn));
-  tt_assert(connection_get_by_type_state_rendquery(TEST_CONN_REND_TYPE_2,
-                                                   !conn->base_.state,
-                                                   "")
-            == NULL);
-  tt_assert(connection_get_by_type_state_rendquery(TEST_CONN_REND_TYPE_2,
-                                                   !TEST_CONN_STATE,
-                                                   TEST_CONN_REND_ADDR_2)
             == NULL);
 
  done:
@@ -912,6 +826,7 @@ test_failed_orconn_tracker(void *arg)
 
   /* Prepare the OR connection that will be used in this test */
   or_connection_t or_conn;
+  memset(&or_conn, 0, sizeof(or_conn));
   tt_int_op(AF_INET,OP_EQ, tor_addr_parse(&or_conn.canonical_orport.addr,
                                           "18.0.0.1"));
   tt_int_op(AF_INET,OP_EQ, tor_addr_parse(&or_conn.base_.addr, "18.0.0.1"));
@@ -1078,12 +993,12 @@ test_conn_describe(void *arg)
 
 #define STR(x) #x
 /* where arg is an expression (constant, variable, compound expression) */
-#define CONNECTION_TESTCASE_ARG(name, fork, setup, arg)                 \
-  { #name "_" STR(x),                                                   \
+#define CONNECTION_TESTCASE_ARG(name, extra, fork, setup, arg)          \
+  { STR(name)"/"extra,                                                  \
       test_conn_##name,                                                 \
-      fork,                                                             \
-      &setup,                                                           \
-      (void *)arg }
+      (fork),                                                           \
+      &(setup),                                                         \
+      (void *)(arg) }
 #endif /* !defined(COCCI) */
 
 static const unsigned int PROXY_CONNECT_ARG = PROXY_CONNECT;
@@ -1091,17 +1006,16 @@ static const unsigned int PROXY_HAPROXY_ARG = PROXY_HAPROXY;
 
 struct testcase_t connection_tests[] = {
   CONNECTION_TESTCASE(get_basic, TT_FORK, test_conn_get_basic_st),
-  CONNECTION_TESTCASE(get_rend,  TT_FORK, test_conn_get_rend_st),
   CONNECTION_TESTCASE(get_rsrc,  TT_FORK, test_conn_get_rsrc_st),
 
-  CONNECTION_TESTCASE_ARG(download_status,  TT_FORK,
+  CONNECTION_TESTCASE_ARG(download_status, "microdesc", TT_FORK,
                           test_conn_download_status_st, "microdesc"),
-  CONNECTION_TESTCASE_ARG(download_status,  TT_FORK,
+  CONNECTION_TESTCASE_ARG(download_status, "ns", TT_FORK,
                           test_conn_download_status_st, "ns"),
 
-  CONNECTION_TESTCASE_ARG(https_proxy_connect,   TT_FORK,
+  CONNECTION_TESTCASE_ARG(https_proxy_connect, "https", TT_FORK,
                           test_conn_proxy_connect_st, &PROXY_CONNECT_ARG),
-  CONNECTION_TESTCASE_ARG(haproxy_proxy_connect, TT_FORK,
+  CONNECTION_TESTCASE_ARG(haproxy_proxy_connect, "haproxy", TT_FORK,
                           test_conn_proxy_connect_st, &PROXY_HAPROXY_ARG),
 
   //CONNECTION_TESTCASE(func_suffix, TT_FORK, setup_func_pair),

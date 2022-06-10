@@ -1,7 +1,7 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2020, The Tor Project, Inc. */
+ * Copyright (c) 2007-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -41,9 +41,6 @@ struct dir_connection_t {
   smartlist_t *spool;
   /** The compression object doing on-the-fly compression for spooled data. */
   struct tor_compress_state_t *compress_state;
-
-  /** What rendezvous service are we querying for? */
-  rend_data_t *rend_data;
 
   /* Hidden service connection identifier for dir connections: Used by HS
      client-side code to fetch HS descriptors, and by the service-side code to

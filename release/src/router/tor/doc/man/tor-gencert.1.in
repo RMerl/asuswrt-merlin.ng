@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: tor-gencert
-.\"    Author: [FIXME: author] [see http://www.docbook.org/tdg5/en/html/author]
+.\"    Author: Tor Project, Inc.
 .\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
-.\"      Date: 08/13/2021
+.\"      Date: 04/27/2022
 .\"    Manual: Tor Manual
 .\"    Source: Tor
 .\"  Language: English
 .\"
-.TH "TOR\-GENCERT" "1" "08/13/2021" "Tor" "Tor Manual"
+.TH "TOR\-GENCERT" "1" "04/27/2022" "Tor" "Tor Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -98,3 +98,9 @@ This probably doesn\(cqt run on Windows\&. That\(cqs not a big issue, since we d
 \fBtor\fR(1)
 .sp
 See also the "dir\-spec\&.txt" file, distributed with Tor\&.
+.SH "AUTHOR"
+.PP
+\fBTor Project, Inc\&.\fR
+.RS 4
+Author.
+.RE

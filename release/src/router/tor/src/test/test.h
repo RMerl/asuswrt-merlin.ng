@@ -1,6 +1,6 @@
 /* Copyright (c) 2001-2003, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2020, The Tor Project, Inc. */
+ * Copyright (c) 2007-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 #ifndef TOR_TEST_H
@@ -120,6 +120,7 @@ extern struct testcase_t crypto_ope_tests[];
 extern struct testcase_t crypto_openssl_tests[];
 extern struct testcase_t crypto_rng_tests[];
 extern struct testcase_t crypto_tests[];
+extern struct testcase_t dirauth_port_tests[];
 extern struct testcase_t dir_handle_get_tests[];
 extern struct testcase_t dir_tests[];
 extern struct testcase_t dirvote_tests[];
@@ -145,8 +146,6 @@ extern struct testcase_t hs_metrics_tests[];
 extern struct testcase_t hs_ntor_tests[];
 extern struct testcase_t hs_ob_tests[];
 extern struct testcase_t hs_service_tests[];
-extern struct testcase_t hs_tests[];
-extern struct testcase_t introduce_tests[];
 extern struct testcase_t keypin_tests[];
 extern struct testcase_t link_handshake_tests[];
 extern struct testcase_t logging_tests[];
@@ -156,6 +155,7 @@ extern struct testcase_t microdesc_tests[];
 extern struct testcase_t namemap_tests[];
 extern struct testcase_t netinfo_tests[];
 extern struct testcase_t nodelist_tests[];
+extern struct testcase_t ntor_v3_tests[];
 extern struct testcase_t oom_tests[];
 extern struct testcase_t oos_tests[];
 extern struct testcase_t options_tests[];
@@ -179,12 +179,12 @@ extern struct testcase_t pubsub_msg_tests[];
 extern struct testcase_t relay_tests[];
 extern struct testcase_t relaycell_tests[];
 extern struct testcase_t relaycrypt_tests[];
-extern struct testcase_t rend_cache_tests[];
 extern struct testcase_t replaycache_tests[];
 extern struct testcase_t router_tests[];
 extern struct testcase_t routerkeys_tests[];
 extern struct testcase_t routerlist_tests[];
 extern struct testcase_t routerset_tests[];
+extern struct testcase_t sandbox_tests[];
 extern struct testcase_t scheduler_tests[];
 extern struct testcase_t sendme_tests[];
 extern struct testcase_t socks_tests[];

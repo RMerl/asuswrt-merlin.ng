@@ -1,6 +1,6 @@
 /* Copyright (c) 2003, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2020, The Tor Project, Inc. */
+ * Copyright (c) 2007-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -700,6 +700,12 @@ tor_tls_context_new(crypto_pk_t *identity, unsigned int key_lifetime,
                      always_accept_verify_cb);
   /* let us realloc bufs that we're writing from */
   SSL_CTX_set_mode(result->ctx, SSL_MODE_ACCEPT_MOVING_WRITE_BUFFER);
+
+#ifdef SSL_OP_TLSEXT_PADDING
+  /* Adds a padding extension to ensure the ClientHello size is never between
+   * 256 and 511 bytes in length. */
+  SSL_CTX_set_options(result->ctx, SSL_OP_TLSEXT_PADDING);
+#endif
 
   return result;
 

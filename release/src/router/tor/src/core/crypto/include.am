@@ -5,6 +5,7 @@ LIBTOR_APP_A_SOURCES += 				\
 	src/core/crypto/onion_crypto.c		\
 	src/core/crypto/onion_fast.c		\
 	src/core/crypto/onion_ntor.c		\
+	src/core/crypto/onion_ntor_v3.c		\
 	src/core/crypto/onion_tap.c		\
 	src/core/crypto/relay_crypto.c
 
@@ -14,5 +15,6 @@ noinst_HEADERS +=					\
 	src/core/crypto/onion_crypto.h	        	\
 	src/core/crypto/onion_fast.h			\
 	src/core/crypto/onion_ntor.h			\
+	src/core/crypto/onion_ntor_v3.h			\
 	src/core/crypto/onion_tap.h			\
 	src/core/crypto/relay_crypto.h

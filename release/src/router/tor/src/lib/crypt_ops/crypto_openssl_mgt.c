@@ -1,7 +1,7 @@
 /* Copyright (c) 2001, Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2020, The Tor Project, Inc. */
+ * Copyright (c) 2007-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -106,7 +106,7 @@ crypto_openssl_get_version_str(void)
 #else
   /* This old name was changed around OpenSSL 1.1.0 */
   const int query = SSLEAY_VERSION;
-#endif
+#endif /* defined(OPENSSL_VERSION) */
 
   if (crypto_openssl_version_str == NULL) {
     const char *raw_version = OpenSSL_version(query);

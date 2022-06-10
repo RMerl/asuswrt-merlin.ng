@@ -1,4 +1,4 @@
-/* Copyright (c) 2018-2020, The Tor Project, Inc. */
+/* Copyright (c) 2018-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /*
@@ -9,7 +9,11 @@
 #ifndef TOR_DOS_H
 #define TOR_DOS_H
 
-/* Structure that keeps stats of client connection per-IP. */
+#include "core/or/or.h"
+
+#include "lib/evloop/token_bucket.h"
+
+/* Structure that keeps stats of circuit creation per client connection IP. */
 typedef struct cc_client_stats_t {
   /* Number of allocated circuits remaining for this address.  It is
    * decremented every time a new circuit is seen for this client address and
@@ -28,13 +32,28 @@ typedef struct cc_client_stats_t {
   time_t marked_until_ts;
 } cc_client_stats_t;
 
+/* Structure that keeps stats of client connection per-IP. */
+typedef struct conn_client_stats_t {
+  /* Concurrent connection count from the specific address. 2^32 - 1 is most
+   * likely way too big for the amount of allowed file descriptors. */
+  uint32_t concurrent_count;
+
+  /* Connect count from the specific address. We use a token bucket here to
+   * track the rate and burst of connections from the same IP address.*/
+  token_bucket_ctr_t connect_count;
+
+  /* The client address attempted too many connections, per the connect_count
+   * rules, and thus is marked so defense(s) can be applied. It is
+   * synchronized using the approx_time(). */
+  time_t marked_until_ts;
+} conn_client_stats_t;
+
 /* This object is a top level object that contains everything related to the
  * per-IP client DoS mitigation. Because it is per-IP, it is used in the geoip
  * clientmap_entry_t object. */
 typedef struct dos_client_stats_t {
-  /* Concurrent connection count from the specific address. 2^32 is most
-   * likely way too big for the amount of allowed file descriptors. */
-  uint32_t concurrent_count;
+  /* Client connection statistics. */
+  conn_client_stats_t conn_stats;
 
   /* Circuit creation statistics. This is only used if the circuit creation
    * subsystem has been enabled (dos_cc_enabled). */
@@ -51,6 +70,7 @@ void dos_free_all(void);
 void dos_consensus_has_changed(const networkstatus_t *ns);
 int dos_enabled(void);
 void dos_log_heartbeat(void);
+void dos_geoip_entry_init(struct clientmap_entry_t *geoip_ent);
 void dos_geoip_entry_about_to_free(const struct clientmap_entry_t *geoip_ent);
 
 void dos_new_client_conn(or_connection_t *or_conn,
@@ -102,6 +122,16 @@ dos_cc_defense_type_t dos_cc_get_defense_type(channel_t *chan);
 #define DOS_CONN_MAX_CONCURRENT_COUNT_DEFAULT 100
 /* DoSConnectionDefenseType maps to the dos_conn_defense_type_t enum. */
 #define DOS_CONN_DEFENSE_TYPE_DEFAULT DOS_CONN_DEFENSE_CLOSE
+/* DoSConnectionConnectRate default. Per second. */
+#define DOS_CONN_CONNECT_RATE_DEFAULT 20
+/* DoSConnectionConnectBurst default. Per second. */
+#define DOS_CONN_CONNECT_BURST_DEFAULT 40
+/* DoSConnectionConnectDefenseTimePeriod default. Set to 24 hours. */
+#define DOS_CONN_CONNECT_DEFENSE_TIME_PERIOD_DEFAULT (24 * 60 * 60)
+/* DoSCircuitCreationDefenseTimePeriod minimum value. Because we add a random
+ * offset to the marked timestamp, we need the minimum value to be non zero.
+ * We consider that 10 seconds is an acceptable lower bound. */
+#define DOS_CONN_CONNECT_DEFENSE_TIME_PERIOD_MIN (10)
 
 /* Type of defense that we can use for the concurrent connection DoS
  * mitigation. */
@@ -125,6 +155,7 @@ STATIC uint32_t get_param_conn_max_concurrent_count(
 STATIC uint32_t get_param_cc_circuit_burst(const networkstatus_t *ns);
 STATIC uint32_t get_param_cc_min_concurrent_connection(
                                             const networkstatus_t *ns);
+STATIC uint32_t get_param_conn_connect_burst(const networkstatus_t *ns);
 
 STATIC uint64_t get_circuit_rate_per_second(void);
 STATIC void cc_stats_refill_bucket(cc_client_stats_t *stats,

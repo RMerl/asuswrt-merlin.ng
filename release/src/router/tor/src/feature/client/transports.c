@@ -1,4 +1,4 @@
-/* Copyright (c) 2011-2020, The Tor Project, Inc. */
+/* Copyright (c) 2011-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -843,7 +843,7 @@ handle_methods_done(const managed_proxy_t *mp)
   tor_assert(mp->transports);
 
   if (smartlist_len(mp->transports) == 0)
-    log_notice(LD_GENERAL, "Managed proxy '%s' was spawned successfully, "
+    log_warn(LD_GENERAL, "Managed proxy '%s' was spawned successfully, "
                "but it didn't launch any pluggable transport listeners!",
                mp->argv[0]);
 
@@ -903,14 +903,22 @@ handle_proxy_line(const char *line, managed_proxy_t *mp)
     if (mp->conf_state != PT_PROTO_ACCEPTING_METHODS)
       goto err;
 
+    /* Log the error but do not kill the managed proxy.
+     * A proxy may contain several transports and if one
+     * of them is misconfigured, we still want to use
+     * the other transports. A managed proxy with no usable
+     * transports will log a warning.
+     * See https://gitlab.torproject.org/tpo/core/tor/-/issues/7362
+     * */
     parse_client_method_error(line);
-    goto err;
+    return;
   } else if (!strcmpstart(line, PROTO_SMETHOD_ERROR)) {
     if (mp->conf_state != PT_PROTO_ACCEPTING_METHODS)
       goto err;
 
+    /* Log the error but do not kill the managed proxy */
     parse_server_method_error(line);
-    goto err;
+    return;
   } else if (!strcmpstart(line, PROTO_CMETHOD)) {
     if (mp->conf_state != PT_PROTO_ACCEPTING_METHODS)
       goto err;

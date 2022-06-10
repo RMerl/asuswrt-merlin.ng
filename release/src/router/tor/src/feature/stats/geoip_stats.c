@@ -1,4 +1,4 @@
-/* Copyright (c) 2007-2020, The Tor Project, Inc. */
+/* Copyright (c) 2007-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -196,6 +196,8 @@ clientmap_entry_new(geoip_client_action_t action, const tor_addr_t *addr,
   if (transport_name) {
     entry->transport_name = tor_strdup(transport_name);
   }
+  /* Initialize the DoS object. */
+  dos_geoip_entry_init(entry);
 
   /* Allocated and initialized, note down its size for the OOM handler. */
   geoip_increment_client_history_cache_size(clientmap_entry_size(entry));
@@ -1204,11 +1206,11 @@ format_bridge_stats_controller(time_t now)
 char *
 format_client_stats_heartbeat(time_t now)
 {
-  const int n_hours = 6;
+  const int n_seconds = get_options()->HeartbeatPeriod;
   char *out = NULL;
   int n_clients = 0;
   clientmap_entry_t **ent;
-  unsigned cutoff = (unsigned)( (now-n_hours*3600)/60 );
+  unsigned cutoff = (unsigned)( (now-n_seconds)/60 );
 
   if (!start_of_bridge_stats_interval)
     return NULL; /* Not initialized. */
@@ -1224,8 +1226,7 @@ format_client_stats_heartbeat(time_t now)
   }
 
   tor_asprintf(&out, "Heartbeat: "
-               "In the last %d hours, I have seen %d unique clients.",
-               n_hours,
+               "Since last heartbeat message, I have seen %d unique clients.",
                n_clients);
 
   return out;

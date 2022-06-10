@@ -1,4 +1,4 @@
-/* Copyright (c) 2016-2020, The Tor Project, Inc. */
+/* Copyright (c) 2016-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -167,6 +167,10 @@ typedef struct hs_desc_encrypted_data_t {
   /** Is this descriptor a single onion service? */
   unsigned int single_onion_service : 1;
 
+  /** Flow control protocol version line. */
+  char *flow_control_pv;
+  uint8_t sendme_inc;
+
   /** A list of intro points. Contains hs_desc_intro_point_t objects. */
   smartlist_t *intro_points;
 } hs_desc_encrypted_data_t;
@@ -315,6 +319,8 @@ void hs_desc_superencrypted_data_free_contents(
                                         hs_desc_superencrypted_data_t *desc);
 void hs_desc_encrypted_data_free_contents(hs_desc_encrypted_data_t *desc);
 
+bool hs_desc_supports_congestion_control(const hs_descriptor_t *desc);
+
 #ifdef HS_DESCRIPTOR_PRIVATE
 
 /* Encoding. */
@@ -338,6 +344,25 @@ MOCK_DECL(STATIC size_t, decrypt_desc_layer,(const hs_descriptor_t *desc,
                                              const uint8_t *descriptor_cookie,
                                              bool is_superencrypted_layer,
                                              char **decrypted_out));
+
+STATIC hs_desc_decode_status_t desc_decode_encrypted_v3(
+                         const hs_descriptor_t *desc,
+                         const curve25519_secret_key_t *client_auth_sk,
+                         hs_desc_encrypted_data_t *desc_encrypted_out);
+
+STATIC hs_desc_decode_status_t
+desc_decode_superencrypted_v3(const hs_descriptor_t *desc,
+                              hs_desc_superencrypted_data_t *
+                              desc_superencrypted_out);
+
+MOCK_DECL(STATIC size_t, desc_decrypt_encrypted,(
+                        const hs_descriptor_t *desc,
+                        const curve25519_secret_key_t *client_auth_sk,
+                        char **decrypted_out));
+
+MOCK_DECL(STATIC size_t, desc_decrypt_superencrypted,(
+                        const hs_descriptor_t *desc,
+                        char **decrypted_out));
 
 #endif /* defined(HS_DESCRIPTOR_PRIVATE) */
 

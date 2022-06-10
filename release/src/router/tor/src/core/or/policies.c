@@ -1,6 +1,6 @@
 /* Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2020, The Tor Project, Inc. */
+ * Copyright (c) 2007-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -59,6 +59,9 @@ static smartlist_t *authdir_invalid_policy = NULL;
 /** Policy that addresses for incoming router descriptors must <b>not</b>
  * match in order to not be marked as BadExit. */
 static smartlist_t *authdir_badexit_policy = NULL;
+/** Policy that addresses for incoming router descriptors must <b>not</b>
+ * match in order to not be marked as MiddleOnly. */
+static smartlist_t *authdir_middleonly_policy = NULL;
 
 /** Parsed addr_policy_t describing which addresses we believe we can start
  * circuits at. */
@@ -1119,6 +1122,17 @@ authdir_policy_badexit_address(const tor_addr_t *addr, uint16_t port)
   return addr_is_in_cc_list(addr, get_options()->AuthDirBadExitCCs);
 }
 
+/** Return 1 if <b>addr</b>:<b>port</b> should be marked as MiddleOnly,
+ * based on <b>authdir_middleonly_policy</b>. Else return 0.
+ */
+int
+authdir_policy_middleonly_address(const tor_addr_t *addr, uint16_t port)
+{
+  if (!addr_policy_permits_tor_addr(addr, port, authdir_middleonly_policy))
+    return 1;
+  return addr_is_in_cc_list(addr, get_options()->AuthDirMiddleOnlyCCs);
+}
+
 #define REJECT(arg) \
   STMT_BEGIN *msg = tor_strdup(arg); goto err; STMT_END
 
@@ -1173,6 +1187,9 @@ validate_addr_policies(const or_options_t *options, char **msg)
   if (parse_addr_policy(options->AuthDirBadExit, &addr_policy,
                         ADDR_POLICY_REJECT))
     REJECT("Error in AuthDirBadExit entry.");
+  if (parse_addr_policy(options->AuthDirMiddleOnly, &addr_policy,
+                        ADDR_POLICY_REJECT))
+    REJECT("Error in AuthDirMiddleOnly entry.");
 
   if (parse_addr_policy(options->ReachableAddresses, &addr_policy,
                         ADDR_POLICY_ACCEPT))
@@ -1265,6 +1282,9 @@ policies_parse_from_options(const or_options_t *options)
     ret = -1;
   if (load_policy_from_option(options->AuthDirBadExit, "AuthDirBadExit",
                               &authdir_badexit_policy, ADDR_POLICY_REJECT) < 0)
+    ret = -1;
+  if (load_policy_from_option(options->AuthDirMiddleOnly, "AuthDirMiddleOnly",
+                         &authdir_middleonly_policy, ADDR_POLICY_REJECT) < 0)
     ret = -1;
   if (parse_metrics_port_policy(options) < 0) {
     ret = -1;
@@ -3112,6 +3132,8 @@ policies_free_all(void)
   authdir_invalid_policy = NULL;
   addr_policy_list_free(authdir_badexit_policy);
   authdir_badexit_policy = NULL;
+  addr_policy_list_free(authdir_middleonly_policy);
+  authdir_middleonly_policy = NULL;
 
   if (!HT_EMPTY(&policy_root)) {
     policy_map_ent_t **ent;

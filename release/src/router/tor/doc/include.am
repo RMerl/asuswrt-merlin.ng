@@ -51,10 +51,8 @@ EXTRA_DIST+= doc/asciidoc-helper.sh			\
 	     doc/TUNING						\
 	     doc/HACKING/README.1st.md				\
 	     doc/HACKING/CodingStandards.md 			\
-	     doc/HACKING/CodingStandardsRust.md			\
 	     doc/HACKING/Fuzzing.md				\
 	     doc/HACKING/GettingStarted.md 			\
-	     doc/HACKING/GettingStartedRust.md 			\
 	     doc/HACKING/HelpfulTools.md 			\
 	     doc/HACKING/HowToReview.md  			\
 	     doc/HACKING/Module.md				\

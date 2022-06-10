@@ -2967,6 +2967,8 @@ signed_error_t
 circpad_handle_padding_negotiate(circuit_t *circ, cell_t *cell)
 {
   int retval = 0;
+  /* Should we send back a STOP cell? */
+  bool respond_with_stop = true;
   circpad_negotiate_t *negotiate;
 
   if (CIRCUIT_IS_ORIGIN(circ)) {
@@ -2992,6 +2994,12 @@ circpad_handle_padding_negotiate(circuit_t *circ, cell_t *cell)
                negotiate->machine_type, negotiate->machine_ctr);
       goto done;
     }
+
+    /* If we reached this point we received a STOP command from an old or
+       unknown machine. Don't reply with our own STOP since there is no one to
+       handle it on the other end */
+    respond_with_stop = false;
+
     if (negotiate->machine_ctr <= circ->padding_machine_ctr) {
       log_info(LD_CIRC, "Received STOP command for old machine %u, ctr %u",
                negotiate->machine_type, negotiate->machine_ctr);
@@ -3023,10 +3031,13 @@ circpad_handle_padding_negotiate(circuit_t *circ, cell_t *cell)
     retval = -1;
 
   done:
-    circpad_padding_negotiated(circ, negotiate->machine_type,
-                   negotiate->command,
-                   (retval == 0) ? CIRCPAD_RESPONSE_OK : CIRCPAD_RESPONSE_ERR,
-                   negotiate->machine_ctr);
+    if (respond_with_stop) {
+      circpad_padding_negotiated(circ, negotiate->machine_type,
+                    negotiate->command,
+                    (retval == 0) ? CIRCPAD_RESPONSE_OK : CIRCPAD_RESPONSE_ERR,
+                    negotiate->machine_ctr);
+    }
+
     circpad_negotiate_free(negotiate);
 
     return retval;

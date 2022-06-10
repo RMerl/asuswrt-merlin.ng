@@ -4,11 +4,13 @@ dnl Copyright (c) 2007-2019, The Tor Project, Inc.
 dnl See LICENSE for licensing information
 
 AC_PREREQ([2.63])
-AC_INIT([tor],[0.4.5.11])
+AC_INIT([tor],[0.4.7.7])
 AC_CONFIG_SRCDIR([src/app/main/tor_main.c])
 AC_CONFIG_MACRO_DIR([m4])
 
 configure_flags="$*"
+AC_DEFINE_UNQUOTED([CONFIG_FLAGS], ["$configure_flags"], [Flags passed to configure])
+
 
 # DO NOT EDIT THIS DEFINITION BY HAND UNLESS YOU KNOW WHAT YOU'RE DOING.
 #
@@ -16,7 +18,7 @@ configure_flags="$*"
 # version number changes.  Tor uses it to make sure that it
 # only shuts down for missing "required protocols" when those protocols
 # are listed as required by a consensus after this date.
-AC_DEFINE(APPROX_RELEASE_DATE, ["2021-10-26"], # for 0.4.5.11
+AC_DEFINE(APPROX_RELEASE_DATE, ["2022-04-27"], # for 0.4.7.7
           [Approximate date when this software was released. (Updated when the version changes.)])
 
 # "foreign" means we don't follow GNU package layout standards
@@ -73,10 +75,6 @@ AC_ARG_ENABLE(oss-fuzz,
    AS_HELP_STRING(--enable-oss-fuzz, [build extra fuzzers based on 'oss-fuzz' environment]))
 AC_ARG_ENABLE(memory-sentinels,
    AS_HELP_STRING(--disable-memory-sentinels, [disable code that tries to prevent some kinds of memory access bugs. For fuzzing only.]))
-AC_ARG_ENABLE(rust,
-   AS_HELP_STRING(--enable-rust, [enable rust integration]))
-AC_ARG_ENABLE(cargo-online-mode,
-   AS_HELP_STRING(--enable-cargo-online-mode, [Allow cargo to make network requests to fetch crates. For builds with rust only.]))
 AC_ARG_ENABLE(restart-debugging,
    AS_HELP_STRING(--enable-restart-debugging, [Build Tor with support for debugging in-process restart. Developers only.]))
 AC_ARG_ENABLE(zstd-advanced-apis,
@@ -113,9 +111,13 @@ AM_CONDITIONAL(COVERAGE_ENABLED, test "x$enable_coverage" = "xyes")
 AM_CONDITIONAL(DISABLE_ASSERTS_IN_UNIT_TESTS, test "x$enable_asserts_in_tests" = "xno")
 AM_CONDITIONAL(LIBFUZZER_ENABLED, test "x$enable_libfuzzer" = "xyes")
 AM_CONDITIONAL(OSS_FUZZ_ENABLED, test "x$enable_oss_fuzz" = "xyes")
-AM_CONDITIONAL(USE_RUST, test "x$enable_rust" = "xyes")
 AM_CONDITIONAL(USE_NSS, test "x$enable_nss" = "xyes")
 AM_CONDITIONAL(USE_OPENSSL, test "x$enable_nss" != "xyes")
+
+if test "x$enable_coverage" = "xyes"; then
+  AC_DEFINE(ENABLE_COVERAGE, 1,
+  	    [Defined if coverage support is enabled for the unit tests])
+fi
 
 if test "x$enable_nss" = "xyes"; then
   AC_DEFINE(ENABLE_NSS, 1,
@@ -231,6 +233,7 @@ AC_ARG_ENABLE(fragile-hardening,
     AS_HELP_STRING(--enable-fragile-hardening, [enable more fragile and expensive compiler hardening; makes Tor slower]))
 if test "x$enable_expensive_hardening" = "xyes" || test "x$enable_fragile_hardening" = "xyes"; then
   fragile_hardening="yes"
+  AC_DEFINE(ENABLE_FRAGILE_HARDENING, 1, [Defined if we're building with additional, fragile and expensive compiler hardening])
   AC_DEFINE(DEBUG_SMARTLIST, 1, [Enable smartlist debugging])
 fi
 
@@ -428,6 +431,17 @@ AC_PROG_MAKE_SET
 AC_PROG_RANLIB
 AC_PROG_SED
 
+AX_COMPILER_VERSION
+AX_COMPILER_VENDOR
+
+AC_DEFINE_UNQUOTED([COMPILER_VERSION],["$ax_cv_c_compiler_version"], [Compiler version])
+AC_DEFINE_UNQUOTED([COMPILER_VENDOR],["$ax_cv_c_compiler_vendor"], [Compiler vendor])
+
+AS_CASE($ax_cv_c_compiler_vendor,
+        [gnu], AC_DEFINE([COMPILER],["GCC"],[Compiler name]),
+        AC_DEFINE([COMPILER],[],[Compiler name])
+)
+
 AC_ARG_VAR([PERL], [path to Perl binary])
 AC_CHECK_PROGS([PERL], [perl])
 AM_CONDITIONAL(USE_PERL, [test "x$ac_cv_prog_PERL" != "x"])
@@ -443,7 +457,7 @@ AM_CONDITIONAL(BUILD_HTML_DOCS, [test "x$enable_html_manual" != "xno"])
 AM_PROG_CC_C_O
 
 dnl Before autoconf 2.70, AC_PROG_CC_C99 is supposedly necessary for some
-dnl compilers if you wan't C99 support. Starting with 2.70, it is obsolete and
+dnl compilers if you want C99 support. Starting with 2.70, it is obsolete and
 dnl forbidden.
 m4_version_prereq([2.70], [:], [AC_PROG_CC_C99])
 
@@ -463,13 +477,6 @@ if test "x$PYTHON" = "x"; then
 fi
 
 AM_CONDITIONAL(USEPYTHON, [test "x$PYTHON" != "x"])
-
-dnl List all external rust crates we depend on here. Include the version
-rust_crates=" \
-    digest-0.7.2 \
-    libc-0.2.39 \
-"
-AC_SUBST(rust_crates)
 
 ifdef([AC_C_FLEXIBLE_ARRAY_MEMBER], [
 AC_C_FLEXIBLE_ARRAY_MEMBER
@@ -623,105 +630,6 @@ fi
 
 AC_C_BIGENDIAN
 
-AC_ARG_VAR([TOR_RUST_TARGET], [Rust target, must be specified when cross-compiling (HOST != BUILD). example: i686-pc-windows-gnu])
-
-if test "x$enable_rust" = "xyes"; then
-  AC_ARG_VAR([RUSTC], [path to the rustc binary])
-  AC_CHECK_PROG([RUSTC], [rustc], [rustc],[no])
-  if test "x$RUSTC" = "xno"; then
-    AC_MSG_ERROR([rustc unavailable but rust integration requested.])
-  fi
-
-  AC_ARG_VAR([CARGO], [path to the cargo binary])
-  AC_CHECK_PROG([CARGO], [cargo], [cargo],[no])
-  if test "x$CARGO" = "xno"; then
-    AC_MSG_ERROR([cargo unavailable but rust integration requested.])
-  fi
-
-  AC_DEFINE([HAVE_RUST], 1, [have Rust])
-  if test "x$enable_fatal_warnings" = "xyes"; then
-    RUST_WARN=
-  else
-    RUST_WARN=#
-  fi
-  if test "x$enable_cargo_online_mode" = "xyes"; then
-    CARGO_ONLINE=
-    RUST_DL=#
-  else
-    CARGO_ONLINE=--frozen
-    RUST_DL=
-
-    dnl When we're not allowed to touch the network, we need crate dependencies
-    dnl locally available.
-    AC_MSG_CHECKING([rust crate dependencies])
-    AC_ARG_VAR([TOR_RUST_DEPENDENCIES], [path to directory with local crate mirror])
-    if test "x$TOR_RUST_DEPENDENCIES" = "x"; then
-      TOR_RUST_DEPENDENCIES="${srcdir}/src/ext/rust/crates"
-    fi
-    dnl Check whether the path exists before we try to cd into it.
-    if test ! -d "$TOR_RUST_DEPENDENCIES"; then
-      AC_MSG_ERROR([Rust dependency directory $TOR_RUST_DEPENDENCIES does not exist. Specify a dependency directory using the TOR_RUST_DEPENDENCIES variable or allow cargo to fetch crates using --enable-cargo-online-mode.])
-      ERRORED=1
-    fi
-    dnl Make the path absolute, since we'll be using it from within a
-    dnl subdirectory.
-    TOR_RUST_DEPENDENCIES=$(cd "$TOR_RUST_DEPENDENCIES" ; pwd)
-
-    for dep in $rust_crates; do
-      if test ! -d "$TOR_RUST_DEPENDENCIES"/"$dep"; then
-        AC_MSG_ERROR([Failure to find rust dependency $TOR_RUST_DEPENDENCIES/$dep. Specify a dependency directory using the TOR_RUST_DEPENDENCIES variable or allow cargo to fetch crates using --enable-cargo-online-mode.])
-        ERRORED=1
-      fi
-    done
-    if test "x$ERRORED" = "x"; then
-      AC_MSG_RESULT([yes])
-    fi
-  fi
-
-  dnl For now both MSVC and MinGW rust libraries will output static libs with
-  dnl the MSVC naming convention.
-  if test "$bwin32" = "true"; then
-    tor_rust_static_name=tor_rust.lib
-  else
-    tor_rust_static_name=libtor_rust.a
-  fi
-
-  AC_CANONICAL_BUILD
-
-  if test -n "$TOR_RUST_TARGET"; then
-    if test "$host" = "$build"; then
-      AC_MSG_ERROR([HOST = BUILD is invalid if TOR_RUST_TARGET is specified, see configure --help for more information.])
-    fi
-    RUST_TARGET_PROP="target = '$TOR_RUST_TARGET'"
-    TOR_RUST_LIB_PATH="src/rust/target/$TOR_RUST_TARGET/release/$tor_rust_static_name"
-  else
-    if test "$host" != "$build"; then
-      AC_MSG_ERROR([TOR_RUST_TARGET must be specified when cross-compiling with Rust enabled.])
-    fi
-    RUST_TARGET_PROP=
-    TOR_RUST_LIB_PATH="src/rust/target/release/$tor_rust_static_name"
-  fi
-
-  AC_SUBST(RUST_TARGET_PROP)
-  AC_SUBST(TOR_RUST_LIB_PATH)
-  AC_SUBST(CARGO_ONLINE)
-  AC_SUBST(RUST_WARN)
-  AC_SUBST(RUST_DL)
-
-  dnl Let's check the rustc version, too
-  AC_MSG_CHECKING([rust version])
-  RUSTC_VERSION=`$RUSTC --version`
-  RUSTC_VERSION_MAJOR=`$RUSTC --version | cut -d ' ' -f 2 | cut -d '.' -f 1`
-  RUSTC_VERSION_MINOR=`$RUSTC --version | cut -d ' ' -f 2 | cut -d '.' -f 2`
-  if test "x$RUSTC_VERSION_MAJOR" = "x" -o "x$RUSTC_VERSION_MINOR" = "x"; then
-    AC_MSG_ERROR([rustc version couldn't be identified])
-  fi
-  if test "$RUSTC_VERSION_MAJOR" -lt 2 -a "$RUSTC_VERSION_MINOR" -lt 31; then
-    AC_MSG_ERROR([rustc must be at least version 1.31.0])
-  fi
-  AC_MSG_RESULT([$RUSTC_VERSION])
-fi
-
 AC_SEARCH_LIBS(socket, [socket network])
 AC_SEARCH_LIBS(gethostbyname, [nsl])
 AC_SEARCH_LIBS(dlopen, [dl])
@@ -781,6 +689,7 @@ AC_CHECK_FUNCS(
 	readpassphrase \
 	rint \
 	sigaction \
+	snprintf \
 	socketpair \
 	statvfs \
 	strncasecmp \
@@ -798,7 +707,8 @@ AC_CHECK_FUNCS(
 	uname \
 	usleep \
 	vasprintf \
-	_vscprintf
+	_vscprintf \
+	vsnprintf
 )
 
 # Apple messed up when they added some functions: they
@@ -897,8 +807,6 @@ if test "$bwin32" = "true"; then
   TOR_LIB_WS32=-lws2_32
   TOR_LIB_IPHLPAPI=-liphlpapi
   TOR_LIB_SHLWAPI=-lshlwapi
-  # Some of the cargo-cults recommend -lwsock32 as well, but I don't
-  # think it's actually necessary.
   TOR_LIB_GDI=-lgdi32
   TOR_LIB_USERENV=-luserenv
   TOR_LIB_BCRYPT=-lbcrypt
@@ -1103,7 +1011,7 @@ dnl warnings.
 AC_MSG_CHECKING([for OpenSSL >= 3.0.0])
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
 #include <openssl/opensslv.h>
-#if !defined(LIBRESSL_VERSION_NUMBER) && OPENSSL_VERSION_NUMBER <= 0x30000000L
+#if !defined(LIBRESSL_VERSION_NUMBER) && OPENSSL_VERSION_NUMBER >= 0x30000000L
 #error "you_have_version_3"
 #endif
    ]], [[]])],
@@ -1120,6 +1028,18 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
    ]], [[]])],
    [ AC_MSG_RESULT([no]) ],
    [ AC_MSG_ERROR([OpenSSL is too old. We require 1.0.1 or later. You can specify a path to a newer one with --with-openssl-dir.]) ])
+
+AC_MSG_CHECKING([whether LibreSSL TLS 1.3 APIs are busted])
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+#include <openssl/opensslv.h>
+#if defined(LIBRESSL_VERSION_NUMBER) && \
+     LIBRESSL_VERSION_NUMBER >= 0x3020100fL && \
+     LIBRESSL_VERSION_NUMBER < 0x3040100fL
+#error "oh no"
+#endif
+   ]], [[]])],
+   [ AC_MSG_RESULT([no]) ],
+   [ AC_MSG_ERROR([This version of LibreSSL won't work with Tor. Please upgrade to LibreSSL 3.4.1 or later. (Or downgrade to 3.2.0 if you really must.)]) ])
 
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
 #include <openssl/opensslv.h>
@@ -1441,33 +1361,6 @@ if test "$fragile_hardening" = "yes"; then
 
 TOR_CHECK_CFLAGS([-fno-omit-frame-pointer])
 fi
-
-dnl Find the correct libraries to add in order to use the sanitizers.
-dnl
-dnl When building Rust, Cargo will run the linker with the -nodefaultlibs
-dnl option, which will prevent the compiler from linking the sanitizer
-dnl libraries it needs.  We need to specify them manually.
-dnl
-dnl What's more, we need to specify them in a linker script rather than
-dnl from build.rs: these options aren't allowed in the cargo:rustc-flags
-dnl variable.
-RUST_LINKER_OPTIONS=""
-if test "x$have_clang" = "xyes"; then
-	if test "x$CFLAGS_ASAN" != "x"; then
-		RUST_LINKER_OPTIONS="$RUST_LINKER_OPTIONS -Clink-arg=$CFLAGS_ASAN -Cdefault-linker-libraries"
-	fi
-	if test "x$CFLAGS_UBSAN" != "x"; then
-        	RUST_LINKER_OPTIONS="$RUST_LINKER_OPTIONS -Clink-arg=$CFLAGS_UBSAN -Cdefault-linker-libraries"
-	fi
-else
-	if test "x$CFLAGS_ASAN" != "x"; then
-		RUST_LINKER_OPTIONS="$RUST_LINKER_OPTIONS -Clink-arg=-fsanitize=address -Cdefault-linker-libraries"
-	fi
-	if test "x$CFLAGS_UBSAN" != "x"; then
-        	RUST_LINKER_OPTIONS="$RUST_LINKER_OPTIONS -Clink-arg=-fsanitize=undefined -Cdefault-linker-libraries"
-	fi
-fi
-AC_SUBST(RUST_LINKER_OPTIONS)
 
 CFLAGS_BUGTRAP="$CFLAGS_FTRAPV $CFLAGS_ASAN $CFLAGS_UBSAN"
 CFLAGS_CONSTTIME="$CFLAGS_FWRAPV"
@@ -2679,11 +2572,9 @@ CPPFLAGS="$CPPFLAGS $TOR_CPPFLAGS_libevent $TOR_CPPFLAGS_openssl $TOR_CPPFLAGS_z
 AC_CONFIG_FILES([
 	Doxyfile
 	Makefile
-	config.rust
 	contrib/operator-tools/tor.logrotate
 	src/config/torrc.sample
 	src/config/torrc.minimal
-	src/rust/.cargo/config
 	scripts/maint/checkOptionDocs.pl
         warning_flags
 ])
@@ -2759,12 +2650,6 @@ AS_ECHO
 test "x$enable_fatal_warnings" = "xyes" && value=1 || value=0
 PPRINT_PROP_BOOL([Warnings are fatal (--enable-fatal-warnings)], $value)
 
-test "x$enable_rust" = "xyes" && value=1 || value=0
-PPRINT_PROP_BOOL([Rust support (--enable-rust)], $value)
-
-test "x$enable_cargo_online_mode" = "xyes" && value=1 || value=0
-PPRINT_PROP_BOOL([Cargo Online Fetch (--enable-cargo-online-mode)], $value)
-
 test "x$enable_android" = "xyes" && value=1 || value=0
 PPRINT_PROP_BOOL([Android support (--enable-android)], $value)
 
@@ -2807,10 +2692,10 @@ PPRINT_PROP_BOOL([libscrypt (--disable-libscrypt)], $value)
 test "x$enable_systemd" = "xyes" && value=1 || value=0
 PPRINT_PROP_BOOL([Systemd support (--enable-systemd)], $value)
 
-test "x$enable_lzma" = "xyes" && value=1 || value=0
+test "x$have_lzma" = "xyes" && value=1 || value=0
 PPRINT_PROP_BOOL([liblzma (--enable-lzma)], $value)
 
-test "x$enable_zstd" = "xyes" && value=1 || value=0
+test "x$have_zstd" = "xyes" && value=1 || value=0
 PPRINT_PROP_BOOL([libzstd (--enable-zstd)], $value)
 
 AS_ECHO

@@ -1,7 +1,7 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2020, The Tor Project, Inc. */
+ * Copyright (c) 2007-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -53,7 +53,7 @@
 #define MIN_SUPPORTED_CONSENSUS_METHOD 28
 
 /** The highest consensus method that we currently support. */
-#define MAX_SUPPORTED_CONSENSUS_METHOD 30
+#define MAX_SUPPORTED_CONSENSUS_METHOD 32
 
 /**
  * Lowest consensus method where microdescriptor lines are put in canonical
@@ -64,6 +64,15 @@
 /** Lowest consensus method where an unpadded base64 onion-key-ntor is allowed
  * See #7869 */
 #define MIN_METHOD_FOR_UNPADDED_NTOR_KEY 30
+
+/** Lowest consensus method for which we use the correct algorithm for
+ * extracting the bwweightscale= and maxunmeasuredbw= parameters. See #19011.
+ */
+#define MIN_METHOD_FOR_CORRECT_BWWEIGHTSCALE 31
+
+/** Lowest consensus method for which we handle the MiddleOnly flag specially.
+ */
+#define MIN_METHOD_FOR_MIDDLEONLY 32
 
 /** Default bandwidth to clip unmeasured bandwidths to using method >=
  * MIN_METHOD_TO_CLIP_UNMEASURED_BW.  (This is not a consensus method; do not
@@ -259,64 +268,9 @@ STATIC
 char *networkstatus_get_detached_signatures(smartlist_t *consensuses);
 STATIC microdesc_t *dirvote_create_microdescriptor(const routerinfo_t *ri,
                                                    int consensus_method);
-
-/** The recommended relay protocols for this authority's votes.
- * Recommending a new protocol causes old tor versions to log a warning.
- */
-#define DIRVOTE_RECOMMEND_RELAY_PROTO           \
-  "Cons=2 "                                     \
-  "Desc=2 "                                     \
-  "DirCache=2 "                                 \
-  "HSDir=2 "                                    \
-  "HSIntro=4 "                                  \
-  "HSRend=2 "                                   \
-  "Link=4-5 "                                   \
-  "LinkAuth=3 "                                 \
-  "Microdesc=2 "                                \
-  "Relay=2"
-
-/** The recommended client protocols for this authority's votes.
- * Recommending a new protocol causes old tor versions to log a warning.
- */
-#define DIRVOTE_RECOMMEND_CLIENT_PROTO          \
-  "Cons=2 "                                     \
-  "Desc=2 "                                     \
-  "DirCache=2 "                                 \
-  "HSDir=2 "                                    \
-  "HSIntro=4 "                                  \
-  "HSRend=2 "                                   \
-  "Link=4-5 "                                   \
-  "Microdesc=2 "                                \
-  "Relay=2"
-
-/** The required relay protocols for this authority's votes.
- * WARNING: Requiring a new protocol causes old tor versions to shut down.
- *          Requiring the wrong protocols can break the tor network.
- * See Proposal 303: When and how to remove support for protocol versions.
- */
-#define DIRVOTE_REQUIRE_RELAY_PROTO             \
-  "Cons=2 "                                     \
-  "Desc=2 "                                     \
-  "DirCache=2 "                                 \
-  "HSDir=2 "                                    \
-  "HSIntro=4 "                                  \
-  "HSRend=2 "                                   \
-  "Link=4-5 "                                   \
-  "LinkAuth=3 "                                 \
-  "Microdesc=2 "                                \
-  "Relay=2"
-
-/** The required relay protocols for this authority's votes.
- * WARNING: Requiring a new protocol causes old tor versions to shut down.
- *          Requiring the wrong protocols can break the tor network.
- * See Proposal 303: When and how to remove support for protocol versions.
- */
-#define DIRVOTE_REQUIRE_CLIENT_PROTO            \
-  "Cons=2 "                                     \
-  "Desc=2 "                                     \
-  "Link=4 "                                     \
-  "Microdesc=2 "                                \
-  "Relay=2"
+STATIC int64_t extract_param_buggy(const char *params,
+                                   const char *param_name,
+                                   int64_t default_value);
 
 #endif /* defined(DIRVOTE_PRIVATE) */
 

@@ -2,12 +2,12 @@
 .\"     Title: tor
 .\"    Author: [FIXME: author] [see http://www.docbook.org/tdg5/en/html/author]
 .\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
-.\"      Date: 10/26/2021
+.\"      Date: 04/27/2022
 .\"    Manual: Tor Manual
 .\"    Source: Tor
 .\"  Language: English
 .\"
-.TH "TOR" "1" "10/26/2021" "Tor" "Tor Manual"
+.TH "TOR" "1" "04/27/2022" "Tor" "Tor Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -82,14 +82,14 @@ The following options in this section are only recognized on the \fBtor\fR comma
 Display a short help message and exit\&.
 .RE
 .PP
-\fB\-f\fR \fIFILE\fR
+\fB\-f\fR, \fB\-\-torrc\-file\fR \fIFILE\fR
 .RS 4
 Specify a new configuration file to contain further Tor configuration options, or pass
 \fB\-\fR
 to make Tor read its configuration from standard input\&. (Default:
 \fB@CONFDIR@/torrc\fR, or
 \fB$HOME/\&.torrc\fR
-if that file is not found)
+if that file is not found\&.)
 .RE
 .PP
 \fB\-\-allow\-missing\-torrc\fR
@@ -115,9 +115,12 @@ Specify that Tor should treat a missing torrc file as though it were empty\&. Or
 Generate a hashed password for control port access\&.
 .RE
 .PP
-\fB\-\-list\-fingerprint\fR
+\fB\-\-list\-fingerprint\fR [\fIkey type\fR]
 .RS 4
-Generate your keys and output your nickname and fingerprint\&.
+Generate your keys and output your nickname and fingerprint\&. Optionally, you can specify the key type as
+rsa
+(default) or
+ed25519\&.
 .RE
 .PP
 \fB\-\-verify\-config\fR
@@ -129,7 +132,7 @@ Verify whether the configuration file is valid\&.
 .RS 4
 Write a list of Tor\(cqs configured options to standard output\&. When the
 short
-flag is selected, only write the options that are different from their default values When
+flag is selected, only write the options that are different from their default values\&. When
 full
 is selected, write every option\&.
 .RE
@@ -855,33 +858,6 @@ If KIST or KISTLite is used in the Schedulers option, this controls at which int
 If KIST is used in Schedulers, this is a multiplier of the per\-socket limit calculation of the KIST algorithm\&. (Default: 1\&.0)
 .RE
 .PP
-\fBServerTransportListenAddr\fR \fItransport\fR \fIIP\fR:\fIPORT\fR
-.RS 4
-When this option is set, Tor will suggest
-\fIIP\fR:\fIPORT\fR
-as the listening address of any pluggable transport proxy that tries to launch
-\fItransport\fR\&. (IPv4 addresses should written as\-is; IPv6 addresses should be wrapped in square brackets\&.) (Default: none)
-.RE
-.PP
-\fBServerTransportOptions\fR \fItransport\fR \fIk=v\fR \fIk=v\fR \&...
-.RS 4
-When this option is set, Tor will pass the
-\fIk=v\fR
-parameters to any pluggable transport proxy that tries to launch
-\fItransport\fR\&.
-
-(Example: ServerTransportOptions obfs45 shared\-secret=bridgepasswd cache=/var/lib/tor/cache) (Default: none)
-.RE
-.PP
-\fBServerTransportPlugin\fR \fItransport\fR exec \fIpath\-to\-binary\fR [options]
-.RS 4
-The Tor relay launches the pluggable transport proxy in
-\fIpath\-to\-binary\fR
-using
-\fIoptions\fR
-as its command\-line options, and expects to receive proxied client traffic from it\&. (Default: none)
-.RE
-.PP
 \fBSocks4Proxy\fR \fIhost\fR[:\fIport\fR]
 .RS 4
 Tor will make all OR connections through the SOCKS 4 proxy at host:port (or host:1080 if port is not specified)\&.
@@ -1120,13 +1096,6 @@ FirewallPorts)\&. This will allow you to run Tor as a client behind a firewall w
 A list of ports that your firewall allows you to connect to\&. Only used when
 \fBFascistFirewall\fR
 is set\&. This option is deprecated; use ReachableAddresses instead\&. (Default: 80, 443)
-.RE
-.PP
-\fBHidServAuth\fR \fIonion\-address\fR \fIauth\-cookie\fR [\fIservice\-name\fR]
-.RS 4
-Client authorization for a v2 hidden service\&. Valid onion addresses contain 16 characters in a\-z2\-7 plus "\&.onion", and valid auth cookies contain 22 characters in A\-Za\-z0\-9+/\&. The service name is only used for internal purposes, e\&.g\&., for Tor controllers\&. This option may be used multiple times for different hidden services\&. If a hidden service uses authorization and this option is not set, the hidden service is not accessible\&. Hidden services can be configured to require authorization using the
-\fBHiddenServiceAuthorizeClient\fR
-option\&.
 .RE
 .PP
 \fBHTTPTunnelPort\fR [\fIaddress\fR\fB:\fR]\fIport\fR|\fBauto\fR [\fIisolation flags\fR]
@@ -1807,6 +1776,12 @@ If UseEntryGuards is set to 1, we will try to pick a total of NUM routers as lon
 If UseEntryGuards is set to 1, we will try to pick NUM routers for our primary guard list, which is the set of routers we strongly prefer when connecting to the Tor network\&. If NUM is 0, we try to learn the number from the guard\-n\-primary\-guards consensus parameter, and default to 3 if the consensus parameter isn\(cqt set\&. (Default: 0)
 .RE
 .PP
+\fBVanguardsLiteEnabled\fR \fB0\fR|\fB1\fR|\fBauto\fR
+.RS 4
+This option specifies whether clients should use the vanguards\-lite subsystem to protect against guard discovery attacks\&. If it\(cqs set to
+\fIauto\fR, clients will do what the vanguards\-lite\-enabled consensus parameter tells them to do, and will default to enable the subsystem if the consensus parameter isn\(cqt set\&. (Default: auto)
+.RE
+.PP
 \fBUseMicrodescriptors\fR \fB0\fR|\fB1\fR|\fBauto\fR
 .RS 4
 Microdescriptors are a smaller version of the information that Tor needs in order to build its circuits\&. Using microdescriptors makes Tor clients download less directory information, thus saving bandwidth\&. Directory caches need to fetch regular descriptors and microdescriptors, so this option doesn\(cqt save any bandwidth for them\&. For legacy reasons, auto is accepted, but it has the same effect as 1\&. (Default: auto)
@@ -1877,6 +1852,11 @@ After the first time Tor starts, it begins in dormant mode if it was dormant bef
 \fBDormantTimeoutDisabledByIdleStreams\fR \fB0\fR|\fB1\fR
 .RS 4
 If true, then any open client stream (even one not reading or writing) counts as client activity for the purpose of DormantClientTimeout\&. If false, then only network activity counts\&. (Default: 1)
+.RE
+.PP
+\fBDormantTimeoutEnabled\fR \fB0\fR|\fB1\fR
+.RS 4
+If false, then no amount of time without activity is sufficient to make Tor go dormant\&. Setting this option to zero is only recommended for special\-purpose applications that need to use the Tor binary for something other than sending or receiving Tor traffic\&. (Default: 1)
 .RE
 .SH "NODE SELECTION OPTIONS"
 .sp
@@ -2158,7 +2138,7 @@ each day to the same time on the next day\&. All times are local, and given in 2
 .PP
 \fBAddress\fR \fIaddress\fR
 .RS 4
-The IPv4 address of this server, or a fully qualified domain name of this server that resolves to an IPv4 address\&. You can leave this unset, and Tor will try to guess your IPv4 address\&. This IPv4 address is the one used to tell clients and other servers where to find your Tor server; it doesn\(cqt affect the address that your server binds to\&. To bind to a different address, use the ORPort and OutboundBindAddress options\&.
+The address of this server, or a fully qualified domain name of this server that resolves to an address\&. You can leave this unset, and Tor will try to guess your address\&. If a domain name is provided, Tor will attempt to resolve it and use the underlying IPv4/IPv6 address as its publish address (taking precedence over the ORPort configuration)\&. The publish address is the one used to tell clients and other servers where to find your Tor server; it doesn\(cqt affect the address that your server binds to\&. To bind to a different address, use the ORPort and OutboundBindAddress options\&.
 .RE
 .PP
 \fBAddressDisableIPv6\fR \fB0\fR|\fB1\fR
@@ -2187,14 +2167,11 @@ Sets the relay to act as a "bridge" with respect to relaying connections from br
 Note: make sure that no MyFamily lines are present in your torrc when relay is configured in bridge mode\&.
 .RE
 .PP
-\fBBridgeRecordUsageByCountry\fR \fB0\fR|\fB1\fR
-.RS 4
-When this option is enabled and BridgeRelay is also enabled, and we have GeoIP data, Tor keeps a per\-country count of how many client addresses have contacted it so that it can help the bridge authority guess which countries have blocked access to it\&. If ExtraInfoStatistics is enabled, it will be published as part of the extra\-info document\&. (Default: 1)
-.RE
-.PP
 \fBBridgeDistribution\fR \fIstring\fR
 .RS 4
-If set along with BridgeRelay, Tor will include a new line in its bridge descriptor which indicates to the BridgeDB service how it would like its bridge address to be given out\&. Set it to "none" if you want BridgeDB to avoid distributing your bridge address, or "any" to let BridgeDB decide\&. (Default: any)
+If set along with BridgeRelay, Tor will include a new line in its bridge descriptor which indicates to the BridgeDB service how it would like its bridge address to be given out\&. Set it to "none" if you want BridgeDB to avoid distributing your bridge address, or "any" to let BridgeDB decide\&. See
+https://bridges\&.torproject\&.org/info
+for a more up\-to\-date list of options\&. (Default: any)
 .RE
 .PP
 \fBContactInfo\fR \fIemail_address\fR
@@ -2586,6 +2563,33 @@ When we\(cqre detecting DNS hijacking, make sure that these
 addresses aren\(cqt getting redirected\&. If they are, then our DNS is completely useless, and we\(cqll reset our exit policy to "reject *:*"\&. This option only affects name lookups that your server does on behalf of clients\&. (Default: "www\&.google\&.com, www\&.mit\&.edu, www\&.yahoo\&.com, www\&.slashdot\&.org")
 .RE
 .PP
+\fBServerTransportListenAddr\fR \fItransport\fR \fIIP\fR:\fIPORT\fR
+.RS 4
+When this option is set, Tor will suggest
+\fIIP\fR:\fIPORT\fR
+as the listening address of any pluggable transport proxy that tries to launch
+\fItransport\fR\&. (IPv4 addresses should written as\-is; IPv6 addresses should be wrapped in square brackets\&.) (Default: none)
+.RE
+.PP
+\fBServerTransportOptions\fR \fItransport\fR \fIk=v\fR \fIk=v\fR \&...
+.RS 4
+When this option is set, Tor will pass the
+\fIk=v\fR
+parameters to any pluggable transport proxy that tries to launch
+\fItransport\fR\&.
+
+(Example: ServerTransportOptions obfs45 shared\-secret=bridgepasswd cache=/var/lib/tor/cache) (Default: none)
+.RE
+.PP
+\fBServerTransportPlugin\fR \fItransport\fR exec \fIpath\-to\-binary\fR [options]
+.RS 4
+The Tor relay launches the pluggable transport proxy in
+\fIpath\-to\-binary\fR
+using
+\fIoptions\fR
+as its command\-line options, and expects to receive proxied client traffic from it\&. (Default: none)
+.RE
+.PP
 \fBShutdownWaitLength\fR \fINUM\fR
 .RS 4
 When we get a SIGINT and we\(cqre a server, we begin shutting down: we close listeners and start refusing new circuits\&. After
@@ -2605,6 +2609,11 @@ When creating a link certificate for our outermost SSL handshake, set its lifeti
 .SH "STATISTICS OPTIONS"
 .sp
 Relays publish most statistics in a document called the extra\-info document\&. The following options affect the different types of statistics that Tor relays collect and publish:
+.PP
+\fBBridgeRecordUsageByCountry\fR \fB0\fR|\fB1\fR
+.RS 4
+When this option is enabled and BridgeRelay is also enabled, and we have GeoIP data, Tor keeps a per\-country count of how many client addresses have contacted it so that it can help the bridge authority guess which countries have blocked access to it\&. If ExtraInfoStatistics is enabled, it will be published as part of the extra\-info document\&. (Default: 1)
+.RE
 .PP
 \fBCellStatistics\fR \fB0\fR|\fB1\fR
 .RS 4
@@ -2638,7 +2647,71 @@ When this option is enabled, Tor includes previously gathered statistics in its 
 .PP
 \fBHiddenServiceStatistics\fR \fB0\fR|\fB1\fR
 .RS 4
-Relays only\&. When this option is enabled, a Tor relay writes obfuscated statistics on its role as hidden\-service directory, introduction point, or rendezvous point to disk every 24 hours\&. If ExtraInfoStatistics is enabled, it will be published as part of the extra\-info document\&. (Default: 1)
+Relays and bridges only\&. When this option is enabled, a Tor relay writes obfuscated statistics on its role as hidden\-service directory, introduction point, or rendezvous point to disk every 24 hours\&. If ExtraInfoStatistics is enabled, it will be published as part of the extra\-info document\&. (Default: 1)
+.RE
+.PP
+\fBOverloadStatistics\fR \fB0\fR\fB\fB|\fR\fR\fB1\fR*
+.RS 4
+Relays and bridges only\&. When this option is enabled, a Tor relay will write an overload general line in the server descriptor if the relay is considered overloaded\&. (Default: 1)
+
+A relay is considered overloaded if at least one of these conditions is met:
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+Onionskins are starting to be dropped\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+The OOM was invoked\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+(Exit only) DNS timeout occurs X% of the time over Y seconds (values controlled by consensus parameters, see param\-spec\&.txt)\&.
+
+If ExtraInfoStatistics is enabled, it can also put two more specific overload lines in the extra\-info document if at least one of these conditions is met:
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+TCP Port exhaustion\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+Connection rate limits have been reached (read and write side)\&.
+.RE
 .RE
 .PP
 \fBPaddingStatistics\fR \fB0\fR|\fB1\fR
@@ -2671,7 +2744,9 @@ If this option is nonzero, advertise the directory service on this port\&. Set i
 flag set\&. (Default: 0)
 
 
-The same flags are supported here as are supported by ORPort\&.
+The same flags are supported here as are supported by ORPort\&. This port can only be IPv4\&.
+
+As of Tor 0\&.4\&.6\&.1\-alpha, non\-authoritative relays (see AuthoritativeDirectory) will not publish the DirPort but will still listen on it\&. Clients don\(cqt use the DirPorts on relays, so it is safe for you to remove the DirPort from your torrc configuration\&.
 .RE
 .PP
 \fBDirPortFrontPage\fR \fIFILENAME\fR
@@ -2685,7 +2760,11 @@ When this option is nonzero, Tor caches will not try to generate consensus diffs
 .RE
 .SH "DENIAL OF SERVICE MITIGATION OPTIONS"
 .sp
-Tor has three built\-in mitigation options that can be individually enabled/disabled and fine\-tuned, but by default Tor directory authorities will define reasonable values for relays and no explicit configuration is required to make use of these protections\&. The mitigations take place at relays, and are as follows:
+Tor has a series of built\-in denial of service mitigation options that can be individually enabled/disabled and fine\-tuned, but by default Tor directory authorities will define reasonable values for the network and no explicit configuration is required to make use of these protections\&.
+.sp
+The following is a series of configuration options for relays and then options for onion services and how they work\&.
+.sp
+The mitigations take place at relays, and are as follows:
 .sp
 .RS 4
 .ie n \{\
@@ -2802,10 +2881,62 @@ This is the type of defense applied to a detected client address for the connect
 The maximum threshold of concurrent connection from a client IP address\&. Above this limit, a defense selected by DoSConnectionDefenseType is applied\&. "0" means use the consensus parameter\&. If not defined in the consensus, the value is 100\&. (Default: 0)
 .RE
 .PP
+\fBDoSConnectionConnectRate\fR \fINUM\fR
+.RS 4
+The allowed rate of client connection from a single address per second\&. Coupled with the burst (see below), if the limit is reached, the address is marked and a defense is applied (DoSConnectionDefenseType) for a period of time defined by DoSConnectionConnectDefenseTimePeriod\&. If not defined or set to 0, it is controlled by a consensus parameter\&. (Default: 0)
+.RE
+.PP
+\fBDoSConnectionConnectBurst\fR \fINUM\fR
+.RS 4
+The allowed burst of client connection from a single address per second\&. See the DoSConnectionConnectRate for more details on this detection\&. If not defined or set to 0, it is controlled by a consensus parameter\&. (Default: 0)
+.RE
+.PP
+\fBDoSConnectionConnectDefenseTimePeriod\fR \fIN\fR \fBseconds\fR|\fBminutes\fR|\fBhours\fR
+.RS 4
+The base time period in seconds that the client connection defense is activated for\&. The actual value is selected randomly for each activation from N+1 to 3/2 * N\&. If not defined or set to 0, it is controlled by a consensus parameter\&. (Default: 24 hours)
+.RE
+.PP
 \fBDoSRefuseSingleHopClientRendezvous\fR \fB0\fR|\fB1\fR|\fBauto\fR
 .RS 4
 Refuse establishment of rendezvous points for single hop clients\&. In other words, if a client directly connects to the relay and sends an ESTABLISH_RENDEZVOUS cell, it is silently dropped\&. "auto" means use the consensus parameter\&. If not defined in the consensus, the value is 0\&. (Default: auto)
 .RE
+.sp
+As for onion services, only one possible mitigation exists\&. It was intended to protect the network first and thus do not help the service availability or reachability\&.
+.sp
+The mitigation we put in place is a rate limit of the amount of introduction that happens at the introduction point for a service\&. In other words, it rates limit the number of clients that are attempting to reach the service at the introduction point instead of at the service itself\&.
+.sp
+The following options are per onion service:
+.PP
+\fBHiddenServiceEnableIntroDoSDefense\fR \fB0\fR|\fB1\fR
+.RS 4
+Enable DoS defense at the intropoint level\&. When this is enabled, the rate and burst parameter (see below) will be sent to the intro point which will then use them to apply rate limiting for introduction request to this service\&.
+
+The introduction point honors the consensus parameters except if this is specifically set by the service operator using this option\&. The service never looks at the consensus parameters in order to enable or disable this defense\&. (Default: 0)
+.RE
+.PP
+\fBHiddenServiceEnableIntroDoSBurstPerSec\fR \fINUM\fR
+.RS 4
+The allowed client introduction burst per second at the introduction point\&. If this option is 0, it is considered infinite and thus if
+\fBHiddenServiceEnableIntroDoSDefense\fR
+is set, it then effectively disables the defenses\&. (Default: 200)
+.RE
+.PP
+\fBHiddenServiceEnableIntroDoSRatePerSec\fR \fINUM\fR
+.RS 4
+The allowed client introduction rate per second at the introduction point\&. If this option is 0, it is considered infinite and thus if
+\fBHiddenServiceEnableIntroDoSDefense\fR
+is set, it then effectively disables the defenses\&. (Default: 25)
+.RE
+.sp
+The rate is the maximum number of clients a service will ask its introduction points to allow every seconds\&. And the burst is a parameter that allows that many within one second\&.
+.sp
+For example, the default values of 25 and 200 respectively means that for every introduction points a service has (default 3 but can be configured with \fBHiddenServiceNumIntroductionPoints\fR), 25 clients per seconds will be allowed to reach the service and 200 at most within 1 second as a burst\&. This means that if 200 clients are seen within 1 second, it will take 8 seconds (200/25) for another client to be able to be allowed to introduce due to the rate of 25 per second\&.
+.sp
+This might be too much for your use case or not, fine tuning these values is hard and are likely different for each service operator\&.
+.sp
+Why is this not helping reachability of the service? Because the defenses are at the introduction point, an attacker can easily flood all introduction point rendering the service unavailable due to no client being able to pass through\&. But, the service itself is not overwhelmed with connetions allowing it to function properly for the few clients that were able to go through or other any services running on the same tor instance\&.
+.sp
+The bottom line is that this protects the network by preventing an onion service to flood the network with new rendezvous circuits that is reducing load on the network\&.
 .SH "DIRECTORY AUTHORITY SERVER OPTIONS"
 .sp
 The following options enable operation as a directory authority, and control how Tor behaves as a directory authority\&. You should not need to adjust any of them if you\(cqre running a regular relay or exit server on the public Tor network\&.
@@ -2837,6 +2968,13 @@ is set\&.
 
 
 (The address pattern syntax here and in the options below is the same as for exit policies, except that you don\(cqt need to say "accept" or "reject", and ports are not needed\&.)
+.RE
+.PP
+\fBAuthMiddleOnly\fR \fIAddressPattern\&...\fR
+.RS 4
+Authoritative directories only\&. A set of address patterns for servers that will be listed as middle\-only in any network status document this authority publishes, if
+\fBAuthDirListMiddleOnly\fR
+is set\&.
 .RE
 .PP
 \fBAuthDirFastGuarantee\fR \fIN\fR \fBbytes\fR|\fBKBytes\fR|\fBMBytes\fR|\fBGBytes\fR|\fBTBytes\fR|\fBKBits\fR|\fBMBits\fR|\fBGBits\fR|\fBTBits\fR
@@ -2915,6 +3053,13 @@ Authoritative directories only\&. A set of address patterns for servers that wil
 Authoritative directories only\&. If set to 1, this directory has some opinion about which nodes are unsuitable as exit nodes\&. (Do not set this to 1 unless you plan to list non\-functioning exits as bad; otherwise, you are effectively voting in favor of every declared exit as an exit\&.)
 .RE
 .PP
+\fBAuthDirListMiddleOnly\fR \fB0\fR|\fB1\fR
+.RS 4
+Authoritative directories only\&. If set to 1, this directory has some opinion about which nodes should only be used in the middle position\&. (Do not set this to 1 unless you plan to list questionable relays as "middle only"; otherwise, you are effectively voting
+\fIagainst\fR
+middle\-only status for every relay\&.)
+.RE
+.PP
 \fBAuthDirMaxServersPerAddr\fR \fINUM\fR
 .RS 4
 Authoritative directories only\&. The maximum number of servers that we will list as acceptable on a single IP address\&. Set this to "0" for "no limit"\&. (Default: 2)
@@ -2929,15 +3074,17 @@ Authoritative directories only\&. If non\-zero, do not allow any relay to publis
 .RS 4
 Authoritative directories only\&. A set of address patterns for servers that will never be listed at all in any network status document that this authority publishes, or accepted as an OR address in any descriptor submitted for publication by this authority\&.
 .RE
-.sp
-\fBAuthDirBadExitCCs\fR \fICC\fR,\&...
-.sp
-\fBAuthDirInvalidCCs\fR \fICC\fR,\&...
 .PP
 \fBAuthDirRejectRequestsUnderLoad\fR \fB0\fR|\fB1\fR
 .RS 4
 If set, the directory authority will start rejecting directory requests from non relay connections by sending a 503 error code if it is under bandwidth pressure (reaching the configured limit if any)\&. Relays will always tried to be answered even if this is on\&. (Default: 1)
 .RE
+.sp
+\fBAuthDirBadExitCCs\fR \fICC\fR,\&...
+.sp
+\fBAuthDirInvalidCCs\fR \fICC\fR,\&...
+.sp
+\fBAuthDirMiddleOnlyCCs\fR \fICC\fR,\&...
 .PP
 \fBAuthDirRejectCCs\fR \fICC\fR,\&...
 .RS 4
@@ -3066,13 +3213,6 @@ The next section describes the per service options that can only be set \fBafter
 If set to 1, then connections to unrecognized ports do not cause the current hidden service to close rendezvous circuits\&. (Setting this to 0 is not an authorization mechanism; it is instead meant to be a mild inconvenience to port\-scanners\&.) (Default: 0)
 .RE
 .PP
-\fBHiddenServiceAuthorizeClient\fR \fIauth\-type\fR \fIclient\-name\fR,\fIclient\-name\fR,\fI\&...\fR
-.RS 4
-If configured, the v2 hidden service is accessible for authorized clients only\&. The auth\-type can either be \*(Aqbasic\*(Aq for a general\-purpose authorization protocol or \*(Aqstealth\*(Aq for a less scalable protocol that also hides service activity from unauthorized clients\&. Only clients that are listed here are authorized to access the hidden service\&. Valid client names are 1 to 16 characters long and only use characters in A\-Za\-z0\-9+\-_ (no spaces)\&. If this option is set, the hidden service is not accessible for clients without authorization any more\&. Generated authorization data can be found in the hostname file\&. Clients need to put this authorization data in their configuration file using
-\fBHidServAuth\fR\&. This option is only for v2 services; v3 services configure client authentication in a subdirectory of HiddenServiceDir instead (see
-CLIENT AUTHORIZATION)\&.
-.RE
-.PP
 \fBHiddenServiceDir\fR \fIDIRECTORY\fR
 .RS 4
 Store data files for a hidden service in DIRECTORY\&. Every hidden service must have a separate directory\&. You may use this option multiple times to specify multiple services\&. If DIRECTORY does not exist, Tor will create it\&. Please note that you cannot add new Onion Service to already running Tor instance if
@@ -3083,27 +3223,6 @@ is enabled\&. (Note: in current versions of Tor, if DIRECTORY is a relative path
 \fBHiddenServiceDirGroupReadable\fR \fB0\fR|\fB1\fR
 .RS 4
 If this option is set to 1, allow the filesystem group to read the hidden service directory and hostname file\&. If the option is set to 0, only owner is able to read the hidden service directory\&. (Default: 0) Has no effect on Windows\&.
-.RE
-.PP
-\fBHiddenServiceEnableIntroDoSDefense\fR \fB0\fR|\fB1\fR
-.RS 4
-Enable DoS defense at the intropoint level\&. When this is enabled, the rate and burst parameter (see below) will be sent to the intro point which will then use them to apply rate limiting for introduction request to this service\&.
-
-The introduction point honors the consensus parameters except if this is specifically set by the service operator using this option\&. The service never looks at the consensus parameters in order to enable or disable this defense\&. (Default: 0)
-.RE
-.PP
-\fBHiddenServiceEnableIntroDoSBurstPerSec\fR \fINUM\fR
-.RS 4
-The allowed client introduction burst per second at the introduction point\&. If this option is 0, it is considered infinite and thus if
-\fBHiddenServiceEnableIntroDoSDefense\fR
-is set, it then effectively disables the defenses\&. (Default: 200)
-.RE
-.PP
-\fBHiddenServiceEnableIntroDoSRatePerSec\fR \fINUM\fR
-.RS 4
-The allowed client introduction rate per second at the introduction point\&. If this option is 0, it is considered infinite and thus if
-\fBHiddenServiceEnableIntroDoSDefense\fR
-is set, it then effectively disables the defenses\&. (Default: 25)
 .RE
 .PP
 \fBHiddenServiceExportCircuitID\fR \fIprotocol\fR
@@ -3155,7 +3274,7 @@ will cause the offending rendezvous circuit to be torn down, as opposed to strea
 .PP
 \fBHiddenServiceNumIntroductionPoints\fR \fINUM\fR
 .RS 4
-Number of introduction points the hidden service will have\&. You can\(cqt have more than 10 for v2 service and 20 for v3\&. (Default: 3)
+Number of introduction points the hidden service will have\&. You can\(cqt have more than 20\&. (Default: 3)
 .RE
 .PP
 \fBHiddenServicePort\fR \fIVIRTPORT\fR [\fITARGET\fR]
@@ -3164,14 +3283,9 @@ Configure a virtual port VIRTPORT for a hidden service\&. You may use this optio
 \fBunix:\fR\fIpath\fR\&. (You can specify an IPv6 target as [addr]:port\&. Unix paths may be quoted, and may use standard C escapes\&.) You may also have multiple lines with the same VIRTPORT: when a user connects to that VIRTPORT, one of the TARGETs from those lines will be chosen at random\&. Note that address\-port pairs have to be comma\-separated\&.
 .RE
 .PP
-\fBHiddenServiceVersion\fR \fB2\fR|\fB3\fR
+\fBHiddenServiceVersion\fR \fB3\fR
 .RS 4
-A list of rendezvous service descriptor versions to publish for the hidden service\&. Currently, versions 2 and 3 are supported\&. (Default: 3)
-.RE
-.PP
-\fBRendPostPeriod\fR \fIN\fR \fBseconds\fR|\fBminutes\fR|\fBhours\fR|\fBdays\fR|\fBweeks\fR
-.RS 4
-Every time the specified period elapses, Tor uploads any rendezvous service descriptors to the directory servers\&. This information is also uploaded whenever it changes\&. Minimum value allowed is 10 minutes and maximum is 3\&.5 days\&. This option is only for v2 services\&. (Default: 1 hour)
+A list of rendezvous service descriptor versions to publish for the hidden service\&. Currently, only version 3 is supported\&. (Default: 3)
 .RE
 .sp
 \fBPER INSTANCE OPTIONS:\fR
@@ -3202,8 +3316,6 @@ Makes hidden services non\-anonymous on this tor instance\&. Allows the non\-ano
 If set to 0, Tor will run any hidden services you configure, but it won\(cqt advertise them to the rendezvous directory\&. This option is only useful if you\(cqre using a Tor controller that handles hidserv publishing for you\&. (Default: 1)
 .RE
 .SH "CLIENT AUTHORIZATION"
-.sp
-(Version 3 only)
 .sp
 Service side:
 .sp
@@ -3370,14 +3482,14 @@ Overrides the default lifetime for a signing Ed25519 TLS Link authentication key
 .PP
 \fBTestingBridgeBootstrapDownloadInitialDelay\fR \fIN\fR
 .RS 4
-Initial delay in seconds for when clients should download each bridge descriptor when they have just started, or when they can not contact any of their bridges\&. Changing this requires that
+Initial delay in seconds for how long clients should wait before downloading a bridge descriptor for a new bridge\&. Changing this requires that
 \fBTestingTorNetwork\fR
 is set\&. (Default: 0)
 .RE
 .PP
 \fBTestingBridgeDownloadInitialDelay\fR \fIN\fR
 .RS 4
-Initial delay in seconds for when clients should download each bridge descriptor when they know that one or more of their configured bridges are running\&. Changing this requires that
+How long to wait (in seconds) once clients have successfully downloaded a bridge descriptor, before trying another download for that same bridge\&. Changing this requires that
 \fBTestingTorNetwork\fR
 is set\&. (Default: 10800)
 .RE
@@ -3840,7 +3952,12 @@ file holds the previously generated key, which the relay uses to handle any requ
 .PP
 \fIDataDirectory\fR/\fBfingerprint\fR
 .RS 4
-Only used by servers\&. Contains the fingerprint of the server\(cqs identity key\&.
+Only used by servers\&. Contains the fingerprint of the server\(cqs RSA identity key\&.
+.RE
+.PP
+\fIDataDirectory\fR/\fBfingerprint\-ed25519\fR
+.RS 4
+Only used by servers\&. Contains the fingerprint of the server\(cqs ed25519 identity key\&.
 .RE
 .PP
 \fIDataDirectory\fR/\fBhashed\-fingerprint\fR
@@ -3858,7 +3975,8 @@ for an example fingerprint line\&. If the status is
 \fB!reject\fR, then descriptors from the given identity are rejected by this server\&. If it is
 \fB!invalid\fR
 then descriptors are accepted, but marked in the vote as not valid\&. If it is
-\fB!badexit\fR, then the authority will vote for it to receive a BadExit flag, indicating that it shouldn\(cqt be used for traffic leaving the Tor network\&. (Neither rejected nor invalid relays are included in the consensus\&.)
+\fB!badexit\fR, then the authority will vote for it to receive a BadExit flag, indicating that it shouldn\(cqt be used for traffic leaving the Tor network\&. If it is
+\fB!middleonly\fR, then the authority will vote for it to only be used in the middle of circuits\&. (Neither rejected nor invalid relays are included in the consensus\&.)
 .RE
 .PP
 \fIDataDirectory\fR/\fBv3\-status\-votes\fR

@@ -22,7 +22,6 @@ CONF_VAR(HiddenServiceDirGroupReadable, BOOL, 0, "0")
 CONF_VAR(HiddenServicePort, LINELIST, 0, NULL)
 // "-1" means "auto" here.
 CONF_VAR(HiddenServiceVersion, INT, 0, "-1")
-CONF_VAR(HiddenServiceAuthorizeClient, STRING, 0, NULL)
 CONF_VAR(HiddenServiceAllowUnknownPorts, BOOL, 0, "0")
 CONF_VAR(HiddenServiceMaxStreams, POSINT, 0, "0")
 CONF_VAR(HiddenServiceMaxStreamsCloseCircuit, BOOL, 0, "0")

@@ -8,24 +8,29 @@ endif
 
 TRUNNELINPUTS = \
 	src/trunnel/ed25519_cert.trunnel \
+	src/trunnel/extension.trunnel \
 	src/trunnel/link_handshake.trunnel \
 	src/trunnel/pwbox.trunnel \
 	src/trunnel/channelpadding_negotiation.trunnel \
 	src/trunnel/sendme_cell.trunnel \
+	src/trunnel/flow_control_cells.trunnel \
+	src/trunnel/congestion_control.trunnel \
 	src/trunnel/socks5.trunnel \
 	src/trunnel/circpad_negotiation.trunnel
 
 TRUNNELSOURCES = \
 	src/ext/trunnel/trunnel.c \
 	src/trunnel/ed25519_cert.c \
+	src/trunnel/extension.c \
 	src/trunnel/link_handshake.c \
 	src/trunnel/pwbox.c			\
-	src/trunnel/hs/cell_common.c            \
 	src/trunnel/hs/cell_establish_intro.c	\
 	src/trunnel/hs/cell_introduce1.c \
 	src/trunnel/hs/cell_rendezvous.c \
 	src/trunnel/channelpadding_negotiation.c \
 	src/trunnel/sendme_cell.c                    \
+	src/trunnel/flow_control_cells.c                    \
+	src/trunnel/congestion_control.c       \
 	src/trunnel/socks5.c \
 	src/trunnel/netinfo.c \
 	src/trunnel/circpad_negotiation.c
@@ -35,14 +40,16 @@ TRUNNELHEADERS = \
 	src/ext/trunnel/trunnel-impl.h		\
 	src/trunnel/trunnel-local.h		\
 	src/trunnel/ed25519_cert.h		\
+	src/trunnel/extension.h \
 	src/trunnel/link_handshake.h		\
 	src/trunnel/pwbox.h			\
-	src/trunnel/hs/cell_common.h            \
 	src/trunnel/hs/cell_establish_intro.h	\
 	src/trunnel/hs/cell_introduce1.h \
 	src/trunnel/hs/cell_rendezvous.h \
 	src/trunnel/channelpadding_negotiation.h \
 	src/trunnel/sendme_cell.h                    \
+	src/trunnel/flow_control_cells.h                    \
+	src/trunnel/congestion_control.h    \
 	src/trunnel/socks5.h                    \
 	src/trunnel/netinfo.h \
 	src/trunnel/circpad_negotiation.h

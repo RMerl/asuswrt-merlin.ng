@@ -7,8 +7,7 @@ import os
 
 # We don't want to run metrics for unittests, automatically-generated C files,
 # external libraries or git leftovers.
-EXCLUDE_SOURCE_DIRS = {"src/test/", "src/trunnel/", "src/rust/",
-                       "src/ext/" }
+EXCLUDE_SOURCE_DIRS = {"src/test/", "src/trunnel/", "src/ext/" }
 
 EXCLUDE_FILES = {"orconfig.h"}
 

@@ -1,4 +1,4 @@
-/* Copyright (c) 2020, The Tor Project, Inc. */
+/* Copyright (c) 2020-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -41,5 +41,8 @@ typedef struct metrics_gauge_t {
 } metrics_gauge_t;
 
 const char *metrics_type_to_str(const metrics_type_t type);
+
+/* Helpers. */
+const char *metrics_format_label(const char *key, const char *value);
 
 #endif /* !defined(TOR_LIB_METRICS_METRICS_COMMON_H) */

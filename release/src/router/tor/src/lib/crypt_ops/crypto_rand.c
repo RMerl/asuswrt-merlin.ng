@@ -1,7 +1,7 @@
 /* Copyright (c) 2001, Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2020, The Tor Project, Inc. */
+ * Copyright (c) 2007-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -568,6 +568,8 @@ crypto_random_hostname(int min_rand_len, int max_rand_len, const char *prefix,
   prefixlen = strlen(prefix);
   resultlen = prefixlen + strlen(suffix) + randlen + 16;
 
+  /* (x+(n-1))/n is an idiom for dividing x by n, rounding up to the nearest
+   * integer and thus why this construction. */
   rand_bytes_len = ((randlen*5)+7)/8;
   if (rand_bytes_len % 5)
     rand_bytes_len += 5 - (rand_bytes_len%5);

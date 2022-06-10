@@ -1,6 +1,6 @@
 /* Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2020, The Tor Project, Inc. */
+ * Copyright (c) 2007-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 #define RENDCOMMON_PRIVATE
@@ -18,14 +18,11 @@
 #include "feature/dircache/dircache.h"
 #include "test/test.h"
 #include "lib/compress/compress.h"
-#include "feature/rend/rendcommon.h"
-#include "feature/rend/rendcache.h"
 #include "feature/relay/relay_config.h"
 #include "feature/relay/router.h"
 #include "feature/nodelist/authcert.h"
 #include "feature/nodelist/dirlist.h"
 #include "feature/nodelist/routerlist.h"
-#include "test/rend_test_helpers.h"
 #include "feature/nodelist/microdesc.h"
 #include "test/test_helpers.h"
 #include "feature/nodelist/nodelist.h"
@@ -44,7 +41,6 @@
 #include "feature/dircommon/dir_connection_st.h"
 #include "feature/dirclient/dir_server_st.h"
 #include "feature/nodelist/networkstatus_st.h"
-#include "feature/rend/rend_encoded_v2_service_descriptor_st.h"
 #include "feature/nodelist/routerinfo_st.h"
 #include "feature/nodelist/routerlist_st.h"
 
@@ -259,125 +255,6 @@ test_dir_handle_get_robots_txt(void *data)
     connection_free_minimal(TO_CONN(conn));
     tor_free(header);
     tor_free(body);
-}
-
-#define RENDEZVOUS2_GET(descid) GET("/tor/rendezvous2/" descid)
-static void
-test_dir_handle_get_rendezvous2_not_found_if_not_encrypted(void *data)
-{
-  dir_connection_t *conn = NULL;
-  char *header = NULL;
-  (void) data;
-
-  MOCK(connection_write_to_buf_impl_, connection_write_to_buf_mock);
-
-  conn = new_dir_conn();
-
-  // connection is not encrypted
-  tt_assert(!connection_dir_is_encrypted(conn));
-
-  tt_int_op(directory_handle_command_get(conn, RENDEZVOUS2_GET(), NULL, 0),
-            OP_EQ, 0);
-  fetch_from_buf_http(TO_CONN(conn)->outbuf, &header, MAX_HEADERS_SIZE,
-                      NULL, NULL, 1, 0);
-
-  tt_str_op(NOT_FOUND, OP_EQ, header);
-
-  done:
-    UNMOCK(connection_write_to_buf_impl_);
-    connection_free_minimal(TO_CONN(conn));
-    tor_free(header);
-}
-
-static void
-test_dir_handle_get_rendezvous2_on_encrypted_conn_with_invalid_desc_id(
-  void *data)
-{
-  dir_connection_t *conn = NULL;
-  char *header = NULL;
-  (void) data;
-
-  MOCK(connection_write_to_buf_impl_, connection_write_to_buf_mock);
-  conn = new_dir_conn();
-
-  // connection is encrypted
-  TO_CONN(conn)->linked = 1;
-  tt_assert(connection_dir_is_encrypted(conn));
-
-  tt_int_op(directory_handle_command_get(conn,
-            RENDEZVOUS2_GET("invalid-desc-id"), NULL, 0), OP_EQ, 0);
-  fetch_from_buf_http(TO_CONN(conn)->outbuf, &header, MAX_HEADERS_SIZE,
-                      NULL, NULL, 1, 0);
-
-  tt_str_op(header, OP_EQ, NOT_FOUND);
-
-  done:
-    UNMOCK(connection_write_to_buf_impl_);
-    connection_free_minimal(TO_CONN(conn));
-    tor_free(header);
-}
-
-static void
-test_dir_handle_get_rendezvous2_on_encrypted_conn_not_well_formed(void *data)
-{
-  dir_connection_t *conn = NULL;
-  char *header = NULL;
-  (void) data;
-
-  MOCK(connection_write_to_buf_impl_, connection_write_to_buf_mock);
-  conn = new_dir_conn();
-
-  // connection is encrypted
-  TO_CONN(conn)->linked = 1;
-  tt_assert(connection_dir_is_encrypted(conn));
-
-  //TODO: this can't be reached because rend_valid_descriptor_id() prevents
-  //this case to happen. This test is the same as
-  //test_dir_handle_get_rendezvous2_on_encrypted_conn_with_invalid_desc_id We
-  //should refactor to remove the case from the switch.
-
-  const char *req = RENDEZVOUS2_GET("1bababababababababababababababab");
-  tt_int_op(directory_handle_command_get(conn, req, NULL, 0), OP_EQ, 0);
-
-  fetch_from_buf_http(TO_CONN(conn)->outbuf, &header, MAX_HEADERS_SIZE,
-                      NULL, NULL, 1, 0);
-
-  tt_str_op(header, OP_EQ, NOT_FOUND);
-
-  done:
-    UNMOCK(connection_write_to_buf_impl_);
-    connection_free_minimal(TO_CONN(conn));
-    tor_free(header);
-}
-
-static void
-test_dir_handle_get_rendezvous2_not_found(void *data)
-{
-  dir_connection_t *conn = NULL;
-  char *header = NULL;
-  (void) data;
-
-  MOCK(connection_write_to_buf_impl_, connection_write_to_buf_mock);
-  conn = new_dir_conn();
-
-  rend_cache_init();
-
-  // connection is encrypted
-  TO_CONN(conn)->linked = 1;
-  tt_assert(connection_dir_is_encrypted(conn));
-
-  const char *req = RENDEZVOUS2_GET("3xqunszqnaolrrfmtzgaki7mxelgvkje");
-  tt_int_op(directory_handle_command_get(conn, req, NULL, 0), OP_EQ, 0);
-  fetch_from_buf_http(TO_CONN(conn)->outbuf, &header, MAX_HEADERS_SIZE,
-                      NULL, NULL, 1, 0);
-
-  tt_str_op(NOT_FOUND, OP_EQ, header);
-
-  done:
-    UNMOCK(connection_write_to_buf_impl_);
-    connection_free_minimal(TO_CONN(conn));
-    tor_free(header);
-    rend_cache_free_all();
 }
 
 static const routerinfo_t * dhg_tests_router_get_my_routerinfo(void);
@@ -2864,10 +2741,6 @@ struct testcase_t dir_handle_get_tests[] = {
   DIR_HANDLE_CMD(v1_command_not_found, 0),
   DIR_HANDLE_CMD(v1_command, 0),
   DIR_HANDLE_CMD(robots_txt, 0),
-  DIR_HANDLE_CMD(rendezvous2_not_found_if_not_encrypted, 0),
-  DIR_HANDLE_CMD(rendezvous2_not_found, 0),
-  DIR_HANDLE_CMD(rendezvous2_on_encrypted_conn_with_invalid_desc_id, 0),
-  DIR_HANDLE_CMD(rendezvous2_on_encrypted_conn_not_well_formed, 0),
   DIR_HANDLE_CMD(micro_d_not_found, 0),
   DIR_HANDLE_CMD(micro_d_server_busy, 0),
   DIR_HANDLE_CMD(micro_d, 0),

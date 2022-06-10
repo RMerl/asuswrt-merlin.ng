@@ -41,7 +41,7 @@ Once you've reached this point, here's what you need to know.
      $ git clone https://git.torproject.org/git/tor
      ```
 
-     This will give you a checkout of the master branch.  If you're
+     This will give you a checkout of the main branch.  If you're
      going to fix a bug that appears in a stable version, check out the
      appropriate "maint" branch, as in:
 

@@ -1,4 +1,4 @@
-/* Copyright (c) 2014-2020, The Tor Project, Inc. */
+/* Copyright (c) 2014-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -58,18 +58,16 @@
  * with which Ed25519 keys, and force such associations to be permanent.
  *
  * This module implements a key-pinning mechanism to ensure that it's safe
- * to use RSA keys as identitifers even as we migrate to Ed25519 keys.  It
- * remembers, for every Ed25519 key we've seen, what the associated Ed25519
+ * to use RSA keys as identifiers even as we migrate to Ed25519 keys.  It
+ * remembers, for every Ed25519 key we've seen, what the associated RSA
  * key is.  This way, if we see a different Ed25519 key with that RSA key,
  * we'll know that there's a mismatch.
  *
- * (As of this writing, these key associations are advisory only, mostly
- * because some relay operators kept mishandling their Ed25519 keys during
- * the initial Ed25519 rollout.  We should fix this problem, and then toggle
- * the AuthDirPinKeys option.)
+ * As of Tor 0.3.0.2-alpha the AuthDirPinKeys option has been on, meaning
+ * we drop descriptors with mismatches.
  *
  * We persist these entries to disk using a simple format, where each line
- * has a base64-encoded RSA SHA1 hash, then a base64-endoded Ed25519 key.
+ * has a base64-encoded RSA SHA1 hash, then a base64-encoded Ed25519 key.
  * Empty lines, malformed lines, and lines beginning with # are
  * ignored. Lines beginning with @ are reserved for future extensions.
  *

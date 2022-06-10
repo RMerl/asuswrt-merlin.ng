@@ -1,6 +1,6 @@
 /* Copyright (c) 2003-2004, Roger Dingledine
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2020, The Tor Project, Inc. */
+ * Copyright (c) 2007-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -8,9 +8,9 @@
  * \brief Compatibility wrappers around snprintf and its friends
  **/
 
+#include "lib/cc/torint.h"
 #include "lib/string/printf.h"
 #include "lib/err/torerr.h"
-#include "lib/cc/torint.h"
 #include "lib/malloc/malloc.h"
 
 #include <stdlib.h>
@@ -45,7 +45,7 @@ tor_vsnprintf(char *str, size_t size, const char *format, va_list args)
     return -1; /* no place for the NUL */
   if (size > SIZE_T_CEILING)
     return -1;
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(HAVE_VSNPRINTF)
   r = _vsnprintf(str, size, format, args);
 #else
   r = vsnprintf(str, size, format, args);

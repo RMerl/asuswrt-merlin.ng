@@ -1,4 +1,4 @@
-/* Copyright (c) 2016-2020, The Tor Project, Inc. */
+/* Copyright (c) 2016-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -216,7 +216,6 @@ token_check_object(memarea_t *area, const char *kwd,
       }
       break;
     case NEED_KEY_1024: /* There must be a 1024-bit public key. */
-    case NEED_SKEY_1024: /* There must be a 1024-bit private key. */
       if (tok->key && crypto_pk_num_bits(tok->key) != PK_BYTES*8) {
         tor_snprintf(ebuf, sizeof(ebuf), "Wrong size on key for %s: %d bits",
                      kwd, crypto_pk_num_bits(tok->key));
@@ -228,18 +227,11 @@ token_check_object(memarea_t *area, const char *kwd,
         tor_snprintf(ebuf, sizeof(ebuf), "Missing public key for %s", kwd);
         RET_ERR(ebuf);
       }
-      if (o_syn != NEED_SKEY_1024) {
-        if (crypto_pk_key_is_private(tok->key)) {
-          tor_snprintf(ebuf, sizeof(ebuf),
-               "Private key given for %s, which wants a public key", kwd);
-          RET_ERR(ebuf);
-        }
-      } else { /* o_syn == NEED_SKEY_1024 */
-        if (!crypto_pk_key_is_private(tok->key)) {
-          tor_snprintf(ebuf, sizeof(ebuf),
-               "Public key given for %s, which wants a private key", kwd);
-          RET_ERR(ebuf);
-        }
+
+      if (crypto_pk_key_is_private(tok->key)) {
+        tor_snprintf(ebuf, sizeof(ebuf),
+                "Private key given for %s, which wants a public key", kwd);
+        RET_ERR(ebuf);
       }
       break;
     case OBJ_OK:
@@ -409,15 +401,6 @@ get_next_token(memarea_t *area,
     tok->key = crypto_pk_asn1_decode(tok->object_body, tok->object_size);
     if (! tok->key)
       RET_ERR("Couldn't parse public key.");
-  } else if (!strcmp(tok->object_type, "RSA PRIVATE KEY")) { /* private key */
-    if (o_syn != NEED_SKEY_1024 && o_syn != OBJ_OK) {
-      RET_ERR("Unexpected private key.");
-    }
-    tok->key = crypto_pk_asn1_decode_private(tok->object_body,
-                                             tok->object_size,
-                                             1024);
-    if (! tok->key)
-      RET_ERR("Couldn't parse private key.");
   }
   *s = eol;
 

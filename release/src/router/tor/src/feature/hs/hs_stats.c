@@ -1,4 +1,4 @@
-/* Copyright (c) 2016-2020, The Tor Project, Inc. */
+/* Copyright (c) 2016-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -12,20 +12,14 @@
 
 /** Number of v3 INTRODUCE2 cells received */
 static uint32_t n_introduce2_v3 = 0;
-/** Number of v2 INTRODUCE2 cells received */
-static uint32_t n_introduce2_v2 = 0;
 /** Number of attempts to make a circuit to a rendezvous point */
 static uint32_t n_rendezvous_launches = 0;
 
 /** Note that we received another INTRODUCE2 cell. */
 void
-hs_stats_note_introduce2_cell(int is_hsv3)
+hs_stats_note_introduce2_cell(void)
 {
-  if (is_hsv3) {
-    n_introduce2_v3++;
-  } else {
-    n_introduce2_v2++;
-  }
+  n_introduce2_v3++;
 }
 
 /** Return the number of v3 INTRODUCE2 cells we have received. */
@@ -33,13 +27,6 @@ uint32_t
 hs_stats_get_n_introduce2_v3_cells(void)
 {
   return n_introduce2_v3;
-}
-
-/** Return the number of v2 INTRODUCE2 cells we have received. */
-uint32_t
-hs_stats_get_n_introduce2_v2_cells(void)
-{
-  return n_introduce2_v2;
 }
 
 /** Note that we attempted to launch another circuit to a rendezvous point. */

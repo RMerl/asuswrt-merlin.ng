@@ -1,4 +1,4 @@
-/* Copyright (c) 2017-2020, The Tor Project, Inc. */
+/* Copyright (c) 2017-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -40,6 +40,8 @@ typedef struct hs_cell_introduce1_data_t {
   const curve25519_keypair_t *client_kp;
   /** Rendezvous point link specifiers. */
   smartlist_t *link_specifiers;
+  /** Congestion control parameters. */
+  unsigned int cc_enabled : 1;
 } hs_cell_introduce1_data_t;
 
 /** This data structure contains data that we need to parse an INTRODUCE2 cell
@@ -82,6 +84,10 @@ typedef struct hs_cell_introduce2_data_t {
   smartlist_t *link_specifiers;
   /** Replay cache of the introduction point. */
   replaycache_t *replay_cache;
+  /** Flow control negotiation parameters. */
+  protover_summary_flags_t pv;
+  /** Congestion control parameters. */
+  unsigned int cc_enabled : 1;
 } hs_cell_introduce2_data_t;
 
 /* Build cell API. */
@@ -115,9 +121,9 @@ void hs_cell_introduce1_data_clear(hs_cell_introduce1_data_t *data);
 
 #ifdef TOR_UNIT_TESTS
 
-#include "trunnel/hs/cell_common.h"
+#include "trunnel/extension.h"
 
-STATIC trn_cell_extension_t *
+STATIC trn_extension_t *
 build_establish_intro_extensions(const hs_service_config_t *service_config,
                                  const hs_service_intro_point_t *ip);
 

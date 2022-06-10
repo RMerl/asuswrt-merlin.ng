@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2020, The Tor Project, Inc. */
+ * Copyright (c) 2019-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -15,10 +15,6 @@
  *   some more effort:
  *
  *   - circuit_list_path_impl()
- *   - Functions dealing with cpaths in HSv2 create_rend_cpath() and
- *     create_rend_cpath_legacy()
- *   - The cpath related parts of rend_service_receive_introduction() and
- *     rend_client_send_introduction().
  **/
 
 #define CRYPT_PATH_PRIVATE
@@ -31,6 +27,7 @@
 #include "core/or/circuitbuild.h"
 #include "core/or/circuitlist.h"
 #include "core/or/extendinfo.h"
+#include "core/or/congestion_control_common.h"
 
 #include "lib/crypt_ops/crypto_dh.h"
 #include "lib/crypt_ops/crypto_util.h"
@@ -169,6 +166,7 @@ cpath_free(crypt_path_t *victim)
   onion_handshake_state_release(&victim->handshake_state);
   crypto_dh_free(victim->rend_dh_handshake_state);
   extend_info_free(victim->extend_info);
+  congestion_control_free(victim->ccontrol);
 
   memwipe(victim, 0xBB, sizeof(crypt_path_t)); /* poison memory */
   tor_free(victim);

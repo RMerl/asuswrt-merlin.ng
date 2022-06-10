@@ -1,4 +1,4 @@
-/* Copyright (c) 2007-2020, The Tor Project, Inc. */
+/* Copyright (c) 2007-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 #include "orconfig.h"
@@ -248,6 +248,8 @@ generate_key(int bits)
   return rsa;
 }
 
+#define MIN_PASSPHRASE_LEN 4
+
 /** Try to read the identity key from <b>identity_key_file</b>.  If no such
  * file exists and create_identity_key is set, make a new identity key and
  * store it.  Return 0 on success, nonzero on failure.
@@ -288,11 +290,16 @@ load_identity_key(void)
      * the terminal. */
     if (!PEM_write_PKCS8PrivateKey_nid(f, identity_key,
                                        NID_pbe_WithSHA1And3_Key_TripleDES_CBC,
-                                       passphrase, (int)passphrase_len,
+                                       passphrase, (int) passphrase_len,
                                        NULL, NULL)) {
-      log_err(LD_GENERAL, "Couldn't write identity key to %s",
-              identity_key_file);
-      crypto_openssl_log_errors(LOG_ERR, "Writing identity key");
+      if ((int) passphrase_len < MIN_PASSPHRASE_LEN) {
+        log_err(LD_GENERAL, "Passphrase empty or too short. Passphrase needs "
+                "to be at least %d characters.", MIN_PASSPHRASE_LEN);
+      } else {
+        log_err(LD_GENERAL, "Couldn't write identity key to %s",
+                identity_key_file);
+        crypto_openssl_log_errors(LOG_ERR, "Writing identity key");
+      }
       abort_writing_to_file(open_file);
       return 1;
     }

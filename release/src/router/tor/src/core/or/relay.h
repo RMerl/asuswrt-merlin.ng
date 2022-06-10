@@ -1,7 +1,7 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2020, The Tor Project, Inc. */
+ * Copyright (c) 2007-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -48,6 +48,11 @@ extern uint64_t stats_n_data_cells_packaged;
 extern uint64_t stats_n_data_bytes_packaged;
 extern uint64_t stats_n_data_cells_received;
 extern uint64_t stats_n_data_bytes_received;
+
+extern uint64_t oom_stats_n_bytes_removed_dns;
+extern uint64_t oom_stats_n_bytes_removed_cell;
+extern uint64_t oom_stats_n_bytes_removed_geoip;
+extern uint64_t oom_stats_n_bytes_removed_hsdir;
 
 void dump_cell_pool_usage(int severity);
 size_t packed_cell_mem_cost(void);

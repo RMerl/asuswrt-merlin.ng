@@ -1,7 +1,7 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2020, The Tor Project, Inc. */
+ * Copyright (c) 2007-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -210,6 +210,9 @@ struct curve25519_public_key_t;
 #define RELAY_COMMAND_PADDING_NEGOTIATE 41
 #define RELAY_COMMAND_PADDING_NEGOTIATED 42
 
+#define RELAY_COMMAND_XOFF 43
+#define RELAY_COMMAND_XON 44
+
 /* Reasons why an OR connection is closed. */
 #define END_OR_CONN_REASON_DONE           1
 #define END_OR_CONN_REASON_REFUSED        2 /* connection refused */
@@ -328,69 +331,10 @@ struct curve25519_public_key_t;
  * passed through from a destroy or truncate cell. */
 #define END_CIRC_REASON_FLAG_REMOTE     512
 
-/** Length of 'y' portion of 'y.onion' URL. */
-#define REND_SERVICE_ID_LEN_BASE32 16
-
-/** Length of 'y.onion' including '.onion' URL. */
-#define REND_SERVICE_ADDRESS_LEN (16+1+5)
-
-/** Length of a binary-encoded rendezvous service ID. */
-#define REND_SERVICE_ID_LEN 10
-
-/** Time period for which a v2 descriptor will be valid. */
-#define REND_TIME_PERIOD_V2_DESC_VALIDITY (24*60*60)
-
-/** Time period within which two sets of v2 descriptors will be uploaded in
- * parallel. */
-#define REND_TIME_PERIOD_OVERLAPPING_V2_DESCS (60*60)
-
-/** Number of non-consecutive replicas (i.e. distributed somewhere
- * in the ring) for a descriptor. */
-#define REND_NUMBER_OF_NON_CONSECUTIVE_REPLICAS 2
-
-/** Number of consecutive replicas for a descriptor. */
-#define REND_NUMBER_OF_CONSECUTIVE_REPLICAS 3
-
-/** Length of v2 descriptor ID (32 base32 chars = 160 bits). */
+/** Length of v2 descriptor ID (32 base32 chars = 160 bits).
+ *
+ * XXX: It is still used by v3 code but should be renamed or maybe removed. */
 #define REND_DESC_ID_V2_LEN_BASE32 BASE32_DIGEST_LEN
-
-/** Length of the base32-encoded secret ID part of versioned hidden service
- * descriptors. */
-#define REND_SECRET_ID_PART_LEN_BASE32 BASE32_DIGEST_LEN
-
-/** Length of the base32-encoded hash of an introduction point's
- * identity key. */
-#define REND_INTRO_POINT_ID_LEN_BASE32 BASE32_DIGEST_LEN
-
-/** Length of the descriptor cookie that is used for client authorization
- * to hidden services. */
-#define REND_DESC_COOKIE_LEN 16
-
-/** Length of the base64-encoded descriptor cookie that is used for
- * exchanging client authorization between hidden service and client. */
-#define REND_DESC_COOKIE_LEN_BASE64 22
-
-/** Length of client identifier in encrypted introduction points for hidden
- * service authorization type 'basic'. */
-#define REND_BASIC_AUTH_CLIENT_ID_LEN 4
-
-/** Multiple of the number of clients to which the real number of clients
- * is padded with fake clients for hidden service authorization type
- * 'basic'. */
-#define REND_BASIC_AUTH_CLIENT_MULTIPLE 16
-
-/** Length of client entry consisting of client identifier and encrypted
- * session key for hidden service authorization type 'basic'. */
-#define REND_BASIC_AUTH_CLIENT_ENTRY_LEN (REND_BASIC_AUTH_CLIENT_ID_LEN \
-                                          + CIPHER_KEY_LEN)
-
-/** Maximum size of v2 hidden service descriptors. */
-#define REND_DESC_MAX_SIZE (20 * 1024)
-
-/** Legal characters for use in authorized client names for a hidden
- * service. */
-#define REND_LEGAL_CLIENTNAME_CHARACTERS \
-  "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+-_"
 
 /** Maximum length of authorized client names for a hidden service. */
 #define REND_CLIENTNAME_MAX_LEN 16
@@ -402,70 +346,9 @@ struct curve25519_public_key_t;
 /** Client authorization type that a hidden service performs. */
 typedef enum rend_auth_type_t {
   REND_NO_AUTH      = 0,
-  REND_BASIC_AUTH   = 1,
-  REND_STEALTH_AUTH = 2,
+  REND_V3_AUTH      = 1, /* Dummy flag to allow adding v3 services on the
+                          * control port */
 } rend_auth_type_t;
-
-/** Client-side configuration of authorization for a hidden service. */
-typedef struct rend_service_authorization_t {
-  uint8_t descriptor_cookie[REND_DESC_COOKIE_LEN];
-  char onion_address[REND_SERVICE_ADDRESS_LEN+1];
-  rend_auth_type_t auth_type;
-} rend_service_authorization_t;
-
-/** Client- and server-side data that is used for hidden service connection
- * establishment. Not all fields contain data depending on where this struct
- * is used. */
-typedef struct rend_data_t {
-  /* Hidden service protocol version of this base object. */
-  uint32_t version;
-
-  /** List of HSDir fingerprints on which this request has been sent to. This
-   * contains binary identity digest of the directory of size DIGEST_LEN. */
-  smartlist_t *hsdirs_fp;
-
-  /** Rendezvous cookie used by both, client and service. */
-  char rend_cookie[REND_COOKIE_LEN];
-
-  /** Number of streams associated with this rendezvous circuit. */
-  int nr_streams;
-} rend_data_t;
-
-typedef struct rend_data_v2_t {
-  /* Rendezvous base data. */
-  rend_data_t base_;
-
-  /** Onion address (without the .onion part) that a client requests. */
-  char onion_address[REND_SERVICE_ID_LEN_BASE32+1];
-
-  /** Descriptor ID for each replicas computed from the onion address. If
-   * the onion address is empty, this array MUST be empty. We keep them so
-   * we know when to purge our entry in the last hsdir request table. */
-  char descriptor_id[REND_NUMBER_OF_NON_CONSECUTIVE_REPLICAS][DIGEST_LEN];
-
-  /** (Optional) descriptor cookie that is used by a client. */
-  char descriptor_cookie[REND_DESC_COOKIE_LEN];
-
-  /** Authorization type for accessing a service used by a client. */
-  rend_auth_type_t auth_type;
-
-  /** Descriptor ID for a client request. The control port command HSFETCH
-   * uses this. It's set if the descriptor query should only use this
-   * descriptor ID. */
-  char desc_id_fetch[DIGEST_LEN];
-
-  /** Hash of the hidden service's PK used by a service. */
-  char rend_pk_digest[DIGEST_LEN];
-} rend_data_v2_t;
-
-/* From a base rend_data_t object <b>d</d>, return the v2 object. */
-static inline
-rend_data_v2_t *TO_REND_DATA_V2(const rend_data_t *d)
-{
-  tor_assert(d);
-  tor_assert(d->version == 2);
-  return DOWNCAST(rend_data_v2_t, d);
-}
 
 /* Stub because we can't include hs_ident.h. */
 struct hs_ident_edge_conn_t;
@@ -711,18 +594,6 @@ typedef struct or_handshake_state_t or_handshake_state_t;
 
 /** Length of Extended ORPort connection identifier. */
 #define EXT_OR_CONN_ID_LEN DIGEST_LEN /* 20 */
-/*
- * OR_CONN_HIGHWATER and OR_CONN_LOWWATER moved from connection_or.c so
- * channeltls.c can see them too.
- */
-
-/** When adding cells to an OR connection's outbuf, keep adding until the
- * outbuf is at least this long, or we run out of cells. */
-#define OR_CONN_HIGHWATER (32*1024)
-
-/** Add cells to an OR connection's outbuf whenever the outbuf's data length
- * drops below this size. */
-#define OR_CONN_LOWWATER (16*1024)
 
 typedef struct connection_t connection_t;
 typedef struct control_connection_t control_connection_t;
@@ -861,6 +732,9 @@ typedef struct protover_summary_flags_t {
    * negotiate hs circuit setup padding. Requires Padding=2. */
   unsigned int supports_hs_setup_padding : 1;
 
+  /** True iff this router supports congestion control.
+   * Requires both FlowCtrl=2 *and* Relay=4 */
+  unsigned int supports_congestion_control : 1;
 } protover_summary_flags_t;
 
 typedef struct routerinfo_t routerinfo_t;
@@ -919,7 +793,8 @@ typedef enum {
 #define ONION_HANDSHAKE_TYPE_TAP  0x0000
 #define ONION_HANDSHAKE_TYPE_FAST 0x0001
 #define ONION_HANDSHAKE_TYPE_NTOR 0x0002
-#define MAX_ONION_HANDSHAKE_TYPE 0x0002
+#define ONION_HANDSHAKE_TYPE_NTOR_V3 0x0003
+#define MAX_ONION_HANDSHAKE_TYPE 0x0003
 
 typedef struct onion_handshake_state_t onion_handshake_state_t;
 typedef struct relay_crypto_t relay_crypto_t;
@@ -1065,15 +940,9 @@ typedef struct vote_timing_t vote_timing_t;
 
 typedef struct microdesc_cache_t microdesc_cache_t;
 
-/********************************* rendcommon.c ***************************/
-
-typedef struct rend_authorized_client_t rend_authorized_client_t;
-typedef struct rend_encoded_v2_service_descriptor_t
-               rend_encoded_v2_service_descriptor_t;
-
 /** The maximum number of non-circuit-build-timeout failures a hidden
  * service client will tolerate while trying to build a circuit to an
- * introduction point.  See also rend_intro_point_t.unreachable_count. */
+ * introduction point. */
 #define MAX_INTRO_POINT_REACHABILITY_FAILURES 5
 
 /** The minimum and maximum number of distinct INTRODUCE2 cells which a
@@ -1101,9 +970,6 @@ typedef struct rend_encoded_v2_service_descriptor_t
  * before giving up. We try to reuse intro point that fails during their
  * lifetime so this is a hard limit on the amount of time we do that. */
 #define MAX_INTRO_POINT_CIRCUIT_RETRIES 3
-
-typedef struct rend_intro_point_t rend_intro_point_t;
-typedef struct rend_service_descriptor_t rend_service_descriptor_t;
 
 /********************************* routerlist.c ***************************/
 

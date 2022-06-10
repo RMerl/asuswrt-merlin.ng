@@ -1,4 +1,4 @@
-/* Copyright (c) 2020, The Tor Project, Inc. */
+/* Copyright (c) 2020-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -28,6 +28,7 @@ metrics_store_t *metrics_store_new(void);
 metrics_store_entry_t *metrics_store_add(metrics_store_t *store,
                                          metrics_type_t type,
                                          const char *name, const char *help);
+void metrics_store_reset(metrics_store_t *store);
 
 /* Accessors. */
 smartlist_t *metrics_store_get_all(const metrics_store_t *store,

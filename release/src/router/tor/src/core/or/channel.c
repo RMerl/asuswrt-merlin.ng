@@ -1,4 +1,4 @@
-/* * Copyright (c) 2012-2020, The Tor Project, Inc. */
+/* * Copyright (c) 2012-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -71,12 +71,12 @@
 #include "core/or/relay.h"
 #include "core/or/scheduler.h"
 #include "feature/client/entrynodes.h"
+#include "feature/hs/hs_service.h"
 #include "feature/nodelist/dirlist.h"
 #include "feature/nodelist/networkstatus.h"
 #include "feature/nodelist/nodelist.h"
 #include "feature/nodelist/routerlist.h"
 #include "feature/relay/router.h"
-#include "feature/rend/rendservice.h"
 #include "feature/stats/geoip_stats.h"
 #include "feature/stats/rephist.h"
 #include "lib/evloop/timers.h"
@@ -1897,7 +1897,7 @@ channel_do_open_actions(channel_t *chan)
     if (!get_options()->ConnectionPadding) {
       /* Disable if torrc disabled */
       channelpadding_disable_padding_on_channel(chan);
-    } else if (rend_service_allow_non_anonymous_connection(get_options()) &&
+    } else if (hs_service_allow_non_anonymous_connection(get_options()) &&
                !networkstatus_get_param(NULL,
                                         CHANNELPADDING_SOS_PARAM,
                                         CHANNELPADDING_SOS_DEFAULT, 0, 1)) {
@@ -2629,24 +2629,42 @@ channel_dump_statistics, (channel_t *chan, int severity))
          circuitmux_num_circuits(chan->cmux) : 0);
 
   /* Describe timestamps */
-  tor_log(severity, LD_GENERAL,
-      " * Channel %"PRIu64 " was last used by a "
-      "client at %"PRIu64 " (%"PRIu64 " seconds ago)",
-      (chan->global_identifier),
-      (uint64_t)(chan->timestamp_client),
-      (uint64_t)(now - chan->timestamp_client));
-  tor_log(severity, LD_GENERAL,
-      " * Channel %"PRIu64 " last received a cell "
-      "at %"PRIu64 " (%"PRIu64 " seconds ago)",
-      (chan->global_identifier),
-      (uint64_t)(chan->timestamp_recv),
-      (uint64_t)(now - chan->timestamp_recv));
-  tor_log(severity, LD_GENERAL,
-      " * Channel %"PRIu64 " last transmitted a cell "
-      "at %"PRIu64 " (%"PRIu64 " seconds ago)",
-      (chan->global_identifier),
-      (uint64_t)(chan->timestamp_xmit),
-      (uint64_t)(now - chan->timestamp_xmit));
+  if (chan->timestamp_client == 0) {
+      tor_log(severity, LD_GENERAL,
+              " * Channel %"PRIu64 " was never used by a "
+             "client", (chan->global_identifier));
+  } else {
+      tor_log(severity, LD_GENERAL,
+              " * Channel %"PRIu64 " was last used by a "
+              "client at %"PRIu64 " (%"PRIu64 " seconds ago)",
+              (chan->global_identifier),
+              (uint64_t)(chan->timestamp_client),
+              (uint64_t)(now - chan->timestamp_client));
+  }
+  if (chan->timestamp_recv == 0) {
+      tor_log(severity, LD_GENERAL,
+              " * Channel %"PRIu64 " never received a cell",
+              (chan->global_identifier));
+  } else {
+      tor_log(severity, LD_GENERAL,
+              " * Channel %"PRIu64 " last received a cell "
+              "at %"PRIu64 " (%"PRIu64 " seconds ago)",
+              (chan->global_identifier),
+              (uint64_t)(chan->timestamp_recv),
+              (uint64_t)(now - chan->timestamp_recv));
+  }
+  if (chan->timestamp_xmit == 0) {
+      tor_log(severity, LD_GENERAL,
+              " * Channel %"PRIu64 " never transmitted a cell",
+              (chan->global_identifier));
+  } else {
+      tor_log(severity, LD_GENERAL,
+              " * Channel %"PRIu64 " last transmitted a cell "
+              "at %"PRIu64 " (%"PRIu64 " seconds ago)",
+              (chan->global_identifier),
+              (uint64_t)(chan->timestamp_xmit),
+              (uint64_t)(now - chan->timestamp_xmit));
+  }
 
   /* Describe counters and rates */
   tor_log(severity, LD_GENERAL,

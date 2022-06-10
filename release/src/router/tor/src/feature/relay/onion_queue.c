@@ -1,7 +1,7 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2020, The Tor Project, Inc. */
+ * Copyright (c) 2007-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -33,6 +33,7 @@
 #include "core/or/circuitlist.h"
 #include "core/or/onion.h"
 #include "feature/nodelist/networkstatus.h"
+#include "feature/stats/rephist.h"
 
 #include "core/or/or_circuit_st.h"
 
@@ -41,7 +42,7 @@
 typedef struct onion_queue_t {
   TOR_TAILQ_ENTRY(onion_queue_t) next;
   or_circuit_t *circ;
-  uint16_t handshake_type;
+  uint16_t queue_idx;
   create_cell_t *onionskin;
   time_t when_added;
 } onion_queue_t;
@@ -52,19 +53,40 @@ typedef struct onion_queue_t {
 TOR_TAILQ_HEAD(onion_queue_head_t, onion_queue_t);
 typedef struct onion_queue_head_t onion_queue_head_t;
 
+/** We have 3 queues: tap, fast, and ntor. (ntorv3 goes into ntor queue). */
+#define MAX_QUEUE_IDX         ONION_HANDSHAKE_TYPE_NTOR
+
 /** Array of queues of circuits waiting for CPU workers. An element is NULL
  * if that queue is empty.*/
-static onion_queue_head_t ol_list[MAX_ONION_HANDSHAKE_TYPE+1] =
+static onion_queue_head_t ol_list[MAX_QUEUE_IDX+1] =
 { TOR_TAILQ_HEAD_INITIALIZER(ol_list[0]), /* tap */
   TOR_TAILQ_HEAD_INITIALIZER(ol_list[1]), /* fast */
   TOR_TAILQ_HEAD_INITIALIZER(ol_list[2]), /* ntor */
 };
 
 /** Number of entries of each type currently in each element of ol_list[]. */
-static int ol_entries[MAX_ONION_HANDSHAKE_TYPE+1];
+static int ol_entries[MAX_QUEUE_IDX+1];
 
 static int num_ntors_per_tap(void);
 static void onion_queue_entry_remove(onion_queue_t *victim);
+
+/**
+ * We combine ntorv3 and ntor into the same queue, so we must
+ * use this function to covert the cell type to a queue index.
+ */
+static inline uint16_t
+onionskin_type_to_queue(uint16_t type)
+{
+  if (type == ONION_HANDSHAKE_TYPE_NTOR_V3) {
+    return ONION_HANDSHAKE_TYPE_NTOR;
+  }
+
+  if (BUG(type > MAX_QUEUE_IDX)) {
+    return MAX_QUEUE_IDX; // use ntor if out of range
+  }
+
+  return type;
+}
 
 /* XXXX Check lengths vs MAX_ONIONSKIN_{CHALLENGE,REPLY}_LEN.
  *
@@ -143,6 +165,7 @@ onion_pending_add(or_circuit_t *circ, create_cell_t *onionskin)
 {
   onion_queue_t *tmp;
   time_t now = time(NULL);
+  uint16_t queue_idx = 0;
 
   if (onionskin->handshake_type > MAX_ONION_HANDSHAKE_TYPE) {
     /* LCOV_EXCL_START
@@ -153,42 +176,47 @@ onion_pending_add(or_circuit_t *circ, create_cell_t *onionskin)
     /* LCOV_EXCL_STOP */
   }
 
+  queue_idx = onionskin_type_to_queue(onionskin->handshake_type);
+
   tmp = tor_malloc_zero(sizeof(onion_queue_t));
   tmp->circ = circ;
-  tmp->handshake_type = onionskin->handshake_type;
+  tmp->queue_idx = queue_idx;
   tmp->onionskin = onionskin;
   tmp->when_added = now;
 
-  if (!have_room_for_onionskin(onionskin->handshake_type)) {
+  if (!have_room_for_onionskin(queue_idx)) {
 #define WARN_TOO_MANY_CIRC_CREATIONS_INTERVAL (60)
     static ratelim_t last_warned =
       RATELIM_INIT(WARN_TOO_MANY_CIRC_CREATIONS_INTERVAL);
-    char *m;
-    if (onionskin->handshake_type == ONION_HANDSHAKE_TYPE_NTOR &&
-        (m = rate_limit_log(&last_warned, approx_time()))) {
-      log_warn(LD_GENERAL,
-               "Your computer is too slow to handle this many circuit "
-               "creation requests! Please consider using the "
-               "MaxAdvertisedBandwidth config option or choosing a more "
-               "restricted exit policy.%s",m);
-      tor_free(m);
+    rep_hist_note_circuit_handshake_dropped(queue_idx);
+    if (queue_idx == ONION_HANDSHAKE_TYPE_NTOR) {
+      char *m;
+      if ((m = rate_limit_log(&last_warned, approx_time()))) {
+        log_warn(LD_GENERAL,
+                 "Your computer is too slow to handle this many circuit "
+                 "creation requests! Please consider using the "
+                 "MaxAdvertisedBandwidth config option or choosing a more "
+                 "restricted exit policy.%s",
+                 m);
+        tor_free(m);
+      }
     }
     tor_free(tmp);
     return -1;
   }
 
-  ++ol_entries[onionskin->handshake_type];
+  ++ol_entries[queue_idx];
   log_info(LD_OR, "New create (%s). Queues now ntor=%d and tap=%d.",
-    onionskin->handshake_type == ONION_HANDSHAKE_TYPE_NTOR ? "ntor" : "tap",
+    queue_idx == ONION_HANDSHAKE_TYPE_NTOR ? "ntor" : "tap",
     ol_entries[ONION_HANDSHAKE_TYPE_NTOR],
     ol_entries[ONION_HANDSHAKE_TYPE_TAP]);
 
   circ->onionqueue_entry = tmp;
-  TOR_TAILQ_INSERT_TAIL(&ol_list[onionskin->handshake_type], tmp, next);
+  TOR_TAILQ_INSERT_TAIL(&ol_list[queue_idx], tmp, next);
 
   /* cull elderly requests. */
   while (1) {
-    onion_queue_t *head = TOR_TAILQ_FIRST(&ol_list[onionskin->handshake_type]);
+    onion_queue_t *head = TOR_TAILQ_FIRST(&ol_list[queue_idx]);
     if (now - head->when_added < (time_t)ONIONQUEUE_WAIT_CUTOFF)
       break;
 
@@ -276,15 +304,15 @@ onion_next_task(create_cell_t **onionskin_out)
     return NULL; /* no onions pending, we're done */
 
   tor_assert(head->circ);
-  tor_assert(head->handshake_type <= MAX_ONION_HANDSHAKE_TYPE);
+  tor_assert(head->queue_idx <= MAX_QUEUE_IDX);
 //  tor_assert(head->circ->p_chan); /* make sure it's still valid */
 /* XXX I only commented out the above line to make the unit tests
  * more manageable. That's probably not good long-term. -RD */
   circ = head->circ;
   if (head->onionskin)
-    --ol_entries[head->handshake_type];
+    --ol_entries[head->queue_idx];
   log_info(LD_OR, "Processing create (%s). Queues now ntor=%d and tap=%d.",
-    head->handshake_type == ONION_HANDSHAKE_TYPE_NTOR ? "ntor" : "tap",
+    head->queue_idx == ONION_HANDSHAKE_TYPE_NTOR ? "ntor" : "tap",
     ol_entries[ONION_HANDSHAKE_TYPE_NTOR],
     ol_entries[ONION_HANDSHAKE_TYPE_TAP]);
 
@@ -300,7 +328,7 @@ onion_next_task(create_cell_t **onionskin_out)
 int
 onion_num_pending(uint16_t handshake_type)
 {
-  return ol_entries[handshake_type];
+  return ol_entries[onionskin_type_to_queue(handshake_type)];
 }
 
 /** Go through ol_list, find the onion_queue_t element which points to
@@ -326,23 +354,23 @@ onion_pending_remove(or_circuit_t *circ)
 static void
 onion_queue_entry_remove(onion_queue_t *victim)
 {
-  if (victim->handshake_type > MAX_ONION_HANDSHAKE_TYPE) {
+  if (victim->queue_idx > MAX_QUEUE_IDX) {
     /* LCOV_EXCL_START
      * We should have rejected this far before this point */
     log_warn(LD_BUG, "Handshake %d out of range! Dropping.",
-             victim->handshake_type);
+             victim->queue_idx);
     /* XXX leaks */
     return;
     /* LCOV_EXCL_STOP */
   }
 
-  TOR_TAILQ_REMOVE(&ol_list[victim->handshake_type], victim, next);
+  TOR_TAILQ_REMOVE(&ol_list[victim->queue_idx], victim, next);
 
   if (victim->circ)
     victim->circ->onionqueue_entry = NULL;
 
   if (victim->onionskin)
-    --ol_entries[victim->handshake_type];
+    --ol_entries[victim->queue_idx];
 
   tor_free(victim->onionskin);
   tor_free(victim);
@@ -354,7 +382,7 @@ clear_pending_onions(void)
 {
   onion_queue_t *victim, *next;
   int i;
-  for (i=0; i<=MAX_ONION_HANDSHAKE_TYPE; i++) {
+  for (i=0; i<=MAX_QUEUE_IDX; i++) {
     for (victim = TOR_TAILQ_FIRST(&ol_list[i]); victim; victim = next) {
       next = TOR_TAILQ_NEXT(victim,next);
       onion_queue_entry_remove(victim);

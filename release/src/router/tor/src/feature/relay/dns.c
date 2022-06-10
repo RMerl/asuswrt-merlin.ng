@@ -1,6 +1,6 @@
 /* Copyright (c) 2003-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2020, The Tor Project, Inc. */
+ * Copyright (c) 2007-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -61,8 +61,10 @@
 #include "core/or/relay.h"
 #include "feature/control/control_events.h"
 #include "feature/relay/dns.h"
+#include "feature/nodelist/networkstatus.h"
 #include "feature/relay/router.h"
 #include "feature/relay/routermode.h"
+#include "feature/stats/rephist.h"
 #include "lib/crypt_ops/crypto_rand.h"
 #include "lib/evloop/compat_libevent.h"
 #include "lib/sandbox/sandbox.h"
@@ -109,6 +111,7 @@ static int answer_is_wildcarded(const char *ip);
 static int evdns_err_is_transient(int err);
 static void inform_pending_connections(cached_resolve_t *resolve);
 static void make_pending_resolve_cached(cached_resolve_t *cached);
+static void configure_libevent_options(void);
 
 #ifdef DEBUG_DNS_CACHE
 static void assert_cache_ok_(void);
@@ -209,6 +212,19 @@ evdns_log_cb(int warn, const char *msg)
     return;
   }
   tor_log(severity, LD_EXIT, "eventdns: %s", msg);
+}
+
+/** New consensus just appeared, take appropriate actions if need be. */
+void
+dns_new_consensus_params(const networkstatus_t *ns)
+{
+  (void) ns;
+
+  /* Consensus has parameters for the Exit relay DNS side and so we only reset
+   * the DNS nameservers if we are in server mode. */
+  if (server_mode(get_options())) {
+    configure_libevent_options();
+  }
 }
 
 /** Initialize the DNS subsystem; called by the OR process. */
@@ -1352,6 +1368,111 @@ configured_nameserver_address(const size_t idx)
 }
 #endif /* defined(HAVE_EVDNS_BASE_GET_NAMESERVER_ADDR) */
 
+/** Return a pointer to a stack allocated buffer containing the string
+ * representation of the exit_dns_timeout consensus parameter. */
+static const char *
+get_consensus_param_exit_dns_timeout(void)
+{
+  static char str[4];
+
+  /* Get the Exit DNS timeout value from the consensus or default. This is in
+   * milliseconds. */
+#define EXIT_DNS_TIMEOUT_DEFAULT (1000)
+#define EXIT_DNS_TIMEOUT_MIN (1)
+#define EXIT_DNS_TIMEOUT_MAX (120000)
+  int32_t val = networkstatus_get_param(NULL, "exit_dns_timeout",
+                                        EXIT_DNS_TIMEOUT_DEFAULT,
+                                        EXIT_DNS_TIMEOUT_MIN,
+                                        EXIT_DNS_TIMEOUT_MAX);
+  /* NOTE: We convert it to seconds because libevent only supports that. In the
+   * future, if we support different resolver(s), we might want to specialize
+   * this call. */
+
+  /* NOTE: We also don't allow 0 and so we must cap the division to 1 second
+   * else all DNS request would fail if the consensus would ever tell us a
+   * value below 1000 (1 sec). */
+  val = MAX(1, val / 1000);
+
+  tor_snprintf(str, sizeof(str), "%d", val);
+  return str;
+}
+
+/** Return a pointer to a stack allocated buffer containing the string
+ * representation of the exit_dns_num_attempts consensus parameter. */
+static const char *
+get_consensus_param_exit_dns_attempts(void)
+{
+  static char str[4];
+
+  /* Get the Exit DNS number of attempt value from the consensus or default. */
+#define EXIT_DNS_NUM_ATTEMPTS_DEFAULT (2)
+#define EXIT_DNS_NUM_ATTEMPTS_MIN (0)
+#define EXIT_DNS_NUM_ATTEMPTS_MAX (255)
+  int32_t val = networkstatus_get_param(NULL, "exit_dns_num_attempts",
+                                        EXIT_DNS_NUM_ATTEMPTS_DEFAULT,
+                                        EXIT_DNS_NUM_ATTEMPTS_MIN,
+                                        EXIT_DNS_NUM_ATTEMPTS_MAX);
+  tor_snprintf(str, sizeof(str), "%d", val);
+  return str;
+}
+
+/** Configure the libevent options. This can safely be called after
+ * initialization or even if the evdns base is not set. */
+static void
+configure_libevent_options(void)
+{
+  /* This is possible because we can get called when a new consensus is set
+   * while the DNS subsystem is not initialized just yet. It should be
+   * harmless. */
+  if (!the_evdns_base) {
+    return;
+  }
+
+#define SET(k,v)  evdns_base_set_option(the_evdns_base, (k), (v))
+
+  // If we only have one nameserver, it does not make sense to back off
+  // from it for a timeout. Unfortunately, the value for max-timeouts is
+  // currently clamped by libevent to 255, but it does not hurt to set
+  // it higher in case libevent gets a patch for this.  Higher-than-
+  // default maximum of 3 with multiple nameservers to avoid spuriously
+  // marking one down on bursts of timeouts resulting from scans/attacks
+  // against non-responding authoritative DNS servers.
+  if (evdns_base_count_nameservers(the_evdns_base) == 1) {
+    SET("max-timeouts:", "1000000");
+  } else {
+    SET("max-timeouts:", "10");
+  }
+
+  // Elongate the queue of maximum inflight dns requests, so if a bunch
+  // remain pending at the resolver (happens commonly with Unbound) we won't
+  // stall every other DNS request. This potentially means some wasted
+  // CPU as there's a walk over a linear queue involved, but this is a
+  // much better tradeoff compared to just failing DNS requests because
+  // of a full queue.
+  SET("max-inflight:", "8192");
+
+  /* Set timeout to be 1 second. This tells libevent that it shouldn't wait
+   * more than N second to drop a DNS query and consider it "timed out". It is
+   * very important to differentiate here a libevent timeout and a DNS server
+   * timeout. And so, by setting this to N second, libevent sends back
+   * "DNS_ERR_TIMEOUT" if that N second is reached which does NOT indicate that
+   * the query itself timed out in transit. */
+  SET("timeout:", get_consensus_param_exit_dns_timeout());
+
+  /* This tells libevent to attemps up to X times a DNS query if the previous
+   * one failed to complete within N second. We believe that this should be
+   * enough to catch temporary hiccups on the first query. But after that, it
+   * should signal us that it won't be able to resolve it. */
+  SET("attempts:", get_consensus_param_exit_dns_attempts());
+
+  if (get_options()->ServerDNSRandomizeCase)
+    SET("randomize-case:", "1");
+  else
+    SET("randomize-case:", "0");
+
+#undef SET
+}
+
 /** Configure eventdns nameservers if force is true, or if the configuration
  * has changed since the last time we called this function, or if we failed on
  * our last attempt.  On Unix, this reads from /etc/resolv.conf or
@@ -1465,43 +1586,10 @@ configure_nameservers(int force)
   }
 #endif /* defined(_WIN32) */
 
-#define SET(k,v)  evdns_base_set_option(the_evdns_base, (k), (v))
+  /* Setup libevent options. */
+  configure_libevent_options();
 
-  // If we only have one nameserver, it does not make sense to back off
-  // from it for a timeout. Unfortunately, the value for max-timeouts is
-  // currently clamped by libevent to 255, but it does not hurt to set
-  // it higher in case libevent gets a patch for this.  Higher-than-
-  // default maximum of 3 with multiple nameservers to avoid spuriously
-  // marking one down on bursts of timeouts resulting from scans/attacks
-  // against non-responding authoritative DNS servers.
-  if (evdns_base_count_nameservers(the_evdns_base) == 1) {
-    SET("max-timeouts:", "1000000");
-  } else {
-    SET("max-timeouts:", "10");
-  }
-
-  // Elongate the queue of maximum inflight dns requests, so if a bunch
-  // remain pending at the resolver (happens commonly with Unbound) we won't
-  // stall every other DNS request. This potentially means some wasted
-  // CPU as there's a walk over a linear queue involved, but this is a
-  // much better tradeoff compared to just failing DNS requests because
-  // of a full queue.
-  SET("max-inflight:", "8192");
-
-  // Two retries at 5 and 10 seconds for bind9/named which relies on
-  // clients to handle retries.  Second retry for retried circuits with
-  // extended 15 second timeout.  Superfluous with local-system Unbound
-  // instance--has its own elaborate retry scheme.
-  SET("timeout:", "5");
-  SET("attempts:","3");
-
-  if (options->ServerDNSRandomizeCase)
-    SET("randomize-case:", "1");
-  else
-    SET("randomize-case:", "0");
-
-#undef SET
-
+  /* Relaunch periodical DNS check event. */
   dns_servers_relaunch_checks();
 
   nameservers_configured = 1;
@@ -1639,6 +1727,10 @@ evdns_callback(int result, char type, int count, int ttl, void *addresses,
     dns_found_answer(string_address, orig_query_type,
                      result, &addr, hostname, ttl);
 
+  /* The result can be changed within this function thus why we note the result
+   * at the end. */
+  rep_hist_note_dns_error(type, result);
+
   tor_free(arg_);
 }
 
@@ -1656,6 +1748,9 @@ launch_one_resolve(const char *address, uint8_t query_type,
   char *addr = tor_malloc(addr_len + 2);
   addr[0] = (char) query_type;
   memcpy(addr+1, address, addr_len + 1);
+
+  /* Note the query for our statistics. */
+  rep_hist_note_dns_request(query_type);
 
   switch (query_type) {
   case DNS_IPv4_A:

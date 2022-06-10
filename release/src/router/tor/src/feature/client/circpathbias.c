@@ -1,7 +1,7 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2020, The Tor Project, Inc. */
+ * Copyright (c) 2007-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -359,6 +359,17 @@ pathbias_should_count(origin_circuit_t *circ)
                circuit_purpose_to_string(circ->base_.purpose),
                pathbias_state_to_string(circ->path_state));
     }
+    circ->pathbias_shouldcount = PATHBIAS_SHOULDCOUNT_IGNORED;
+    return 0;
+  }
+
+  /* Ignore circuits where the controller helped choose the path.  When
+   * this happens, we can't be sure whether the path was chosen randomly
+   * or not. */
+  if (circ->any_hop_from_controller) {
+    /* (In this case, we _don't_ check to see if shouldcount is changing,
+     * since it's possible that an already-created circuit later gets extended
+     * by the controller. */
     circ->pathbias_shouldcount = PATHBIAS_SHOULDCOUNT_IGNORED;
     return 0;
   }

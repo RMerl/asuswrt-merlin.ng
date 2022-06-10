@@ -1,4 +1,4 @@
-/* Copyright (c) 2017-2020, The Tor Project, Inc. */
+/* Copyright (c) 2017-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -9,18 +9,19 @@
 #include "core/or/or.h"
 #include "app/config/config.h"
 #include "lib/crypt_ops/crypto_util.h"
-#include "feature/rend/rendservice.h"
 #include "feature/hs_common/replaycache.h"
 
 #include "feature/hs/hs_cell.h"
 #include "feature/hs/hs_ob.h"
 #include "core/crypto/hs_ntor.h"
+#include "core/or/congestion_control_common.h"
 
 #include "core/or/origin_circuit_st.h"
 
 /* Trunnel. */
+#include "trunnel/congestion_control.h"
 #include "trunnel/ed25519_cert.h"
-#include "trunnel/hs/cell_common.h"
+#include "trunnel/extension.h"
 #include "trunnel/hs/cell_establish_intro.h"
 #include "trunnel/hs/cell_introduce1.h"
 #include "trunnel/hs/cell_rendezvous.h"
@@ -194,36 +195,9 @@ parse_introduce2_encrypted(const uint8_t *decrypted_data,
   return NULL;
 }
 
-/** Build a legacy ESTABLISH_INTRO cell with the given circuit nonce and RSA
- * encryption key. The encoded cell is put in cell_out that MUST at least be
- * of the size of RELAY_PAYLOAD_SIZE. Return the encoded cell length on
- * success else a negative value and cell_out is untouched. */
-static ssize_t
-build_legacy_establish_intro(const char *circ_nonce, crypto_pk_t *enc_key,
-                             uint8_t *cell_out)
-{
-  ssize_t cell_len;
-
-  tor_assert(circ_nonce);
-  tor_assert(enc_key);
-  tor_assert(cell_out);
-
-  memwipe(cell_out, 0, RELAY_PAYLOAD_SIZE);
-
-  cell_len = rend_service_encode_establish_intro_cell((char*)cell_out,
-                                                      RELAY_PAYLOAD_SIZE,
-                                                      enc_key, circ_nonce);
-  return cell_len;
-}
-
 /** Parse an INTRODUCE2 cell from payload of size payload_len for the given
  * service and circuit which are used only for logging purposes. The resulting
  * parsed cell is put in cell_ptr_out.
- *
- * This function only parses prop224 INTRODUCE2 cells even when the intro point
- * is a legacy intro point. That's because intro points don't actually care
- * about the contents of the introduce cell. Legacy INTRODUCE cells are only
- * used by the legacy system now.
  *
  * Return 0 on success else a negative value and cell_ptr_out is untouched. */
 static int
@@ -400,6 +374,26 @@ introduce1_encrypt_and_encode(trn_cell_introduce1_t *cell,
   tor_free(encrypted);
 }
 
+/** Build and set the INTRODUCE congestion control extension in the given
+ * extensions. */
+static void
+build_introduce_cc_extension(trn_extension_t *extensions)
+{
+  trn_extension_field_t *field = NULL;
+
+  /* Build CC request extension. */
+  field = trn_extension_field_new();
+  trn_extension_field_set_field_type(field,
+                                     TRUNNEL_EXT_TYPE_CC_FIELD_REQUEST);
+
+  /* No payload indicating a request to use congestion control. */
+  trn_extension_field_set_field_len(field, 0);
+
+  /* Build final extension. */
+  trn_extension_add_fields(extensions, field);
+  trn_extension_set_num(extensions, trn_extension_get_num(extensions) + 1);
+}
+
 /** Using the INTRODUCE1 data, setup the ENCRYPTED section in cell. This means
  * set it, encrypt it and encode it. */
 static void
@@ -407,7 +401,7 @@ introduce1_set_encrypted(trn_cell_introduce1_t *cell,
                          const hs_cell_introduce1_data_t *data)
 {
   trn_cell_introduce_encrypted_t *enc_cell;
-  trn_cell_extension_t *ext;
+  trn_extension_t *ext;
 
   tor_assert(cell);
   tor_assert(data);
@@ -415,10 +409,13 @@ introduce1_set_encrypted(trn_cell_introduce1_t *cell,
   enc_cell = trn_cell_introduce_encrypted_new();
   tor_assert(enc_cell);
 
-  /* Set extension data. None are used. */
-  ext = trn_cell_extension_new();
+  /* Setup extension(s) if any. */
+  ext = trn_extension_new();
   tor_assert(ext);
-  trn_cell_extension_set_num(ext, 0);
+  /* Build congestion control extension is enabled. */
+  if (data->cc_enabled) {
+    build_introduce_cc_extension(ext);
+  }
   trn_cell_introduce_encrypted_set_extensions(enc_cell, ext);
 
   /* Set the rendezvous cookie. */
@@ -457,28 +454,6 @@ introduce1_set_auth_key(trn_cell_introduce1_t *cell,
          data->auth_pk->pubkey, trn_cell_introduce1_getlen_auth_key(cell));
 }
 
-/** Set the legacy ID field in the INTRODUCE1 cell from the given data. */
-static void
-introduce1_set_legacy_id(trn_cell_introduce1_t *cell,
-                         const hs_cell_introduce1_data_t *data)
-{
-  tor_assert(cell);
-  tor_assert(data);
-
-  if (data->is_legacy) {
-    uint8_t digest[DIGEST_LEN];
-    if (BUG(crypto_pk_get_digest(data->legacy_key, (char *) digest) < 0)) {
-      return;
-    }
-    memcpy(trn_cell_introduce1_getarray_legacy_key_id(cell),
-           digest, trn_cell_introduce1_getlen_legacy_key_id(cell));
-  } else {
-    /* We have to zeroed the LEGACY_KEY_ID field. */
-    memset(trn_cell_introduce1_getarray_legacy_key_id(cell), 0,
-           trn_cell_introduce1_getlen_legacy_key_id(cell));
-  }
-}
-
 /** Build and add to the given DoS cell extension the given parameter type and
  * value. */
 static void
@@ -504,20 +479,20 @@ build_establish_intro_dos_param(trn_cell_extension_dos_t *dos_ext,
  * possible if there is a bug.) */
 static int
 build_establish_intro_dos_extension(const hs_service_config_t *service_config,
-                                    trn_cell_extension_t *extensions)
+                                    trn_extension_t *extensions)
 {
   ssize_t ret;
   size_t dos_ext_encoded_len;
   uint8_t *field_array;
-  trn_cell_extension_field_t *field = NULL;
+  trn_extension_field_t *field = NULL;
   trn_cell_extension_dos_t *dos_ext = NULL;
 
   tor_assert(service_config);
   tor_assert(extensions);
 
   /* We are creating a cell extension field of the type DoS. */
-  field = trn_cell_extension_field_new();
-  trn_cell_extension_field_set_field_type(field,
+  field = trn_extension_field_new();
+  trn_extension_field_set_field_type(field,
                                           TRUNNEL_CELL_EXTENSION_TYPE_DOS);
 
   /* Build DoS extension field. We will put in two parameters. */
@@ -540,24 +515,23 @@ build_establish_intro_dos_extension(const hs_service_config_t *service_config,
   }
   dos_ext_encoded_len = ret;
   /* Set length field and the field array size length. */
-  trn_cell_extension_field_set_field_len(field, dos_ext_encoded_len);
-  trn_cell_extension_field_setlen_field(field, dos_ext_encoded_len);
+  trn_extension_field_set_field_len(field, dos_ext_encoded_len);
+  trn_extension_field_setlen_field(field, dos_ext_encoded_len);
   /* Encode the DoS extension into the cell extension field. */
-  field_array = trn_cell_extension_field_getarray_field(field);
+  field_array = trn_extension_field_getarray_field(field);
   ret = trn_cell_extension_dos_encode(field_array,
-                 trn_cell_extension_field_getlen_field(field), dos_ext);
+                 trn_extension_field_getlen_field(field), dos_ext);
   if (BUG(ret <= 0)) {
     goto err;
   }
   tor_assert(ret == (ssize_t) dos_ext_encoded_len);
 
   /* Finally, encode field into the cell extension. */
-  trn_cell_extension_add_fields(extensions, field);
+  trn_extension_add_fields(extensions, field);
 
   /* We've just add an extension field to the cell extensions so increment the
    * total number. */
-  trn_cell_extension_set_num(extensions,
-                             trn_cell_extension_get_num(extensions) + 1);
+  trn_extension_set_num(extensions, trn_extension_get_num(extensions) + 1);
 
   /* Cleanup. DoS extension has been encoded at this point. */
   trn_cell_extension_dos_free(dos_ext);
@@ -565,7 +539,7 @@ build_establish_intro_dos_extension(const hs_service_config_t *service_config,
   return 0;
 
  err:
-  trn_cell_extension_field_free(field);
+  trn_extension_field_free(field);
   trn_cell_extension_dos_free(dos_ext);
   return -1;
 }
@@ -576,18 +550,18 @@ build_establish_intro_dos_extension(const hs_service_config_t *service_config,
 
 /** Allocate and build all the ESTABLISH_INTRO cell extension. The given
  * extensions pointer is always set to a valid cell extension object. */
-STATIC trn_cell_extension_t *
+STATIC trn_extension_t *
 build_establish_intro_extensions(const hs_service_config_t *service_config,
                                  const hs_service_intro_point_t *ip)
 {
   int ret;
-  trn_cell_extension_t *extensions;
+  trn_extension_t *extensions;
 
   tor_assert(service_config);
   tor_assert(ip);
 
-  extensions = trn_cell_extension_new();
-  trn_cell_extension_set_num(extensions, 0);
+  extensions = trn_extension_new();
+  trn_extension_set_num(extensions, 0);
 
   /* If the defense has been enabled service side (by the operator with a
    * torrc option) and the intro point does support it. */
@@ -608,8 +582,7 @@ build_establish_intro_extensions(const hs_service_config_t *service_config,
 /** Build an ESTABLISH_INTRO cell with the given circuit nonce and intro point
  * object. The encoded cell is put in cell_out that MUST at least be of the
  * size of RELAY_PAYLOAD_SIZE. Return the encoded cell length on success else
- * a negative value and cell_out is untouched. This function also supports
- * legacy cell creation. */
+ * a negative value and cell_out is untouched. */
 ssize_t
 hs_cell_build_establish_intro(const char *circ_nonce,
                               const hs_service_config_t *service_config,
@@ -619,21 +592,11 @@ hs_cell_build_establish_intro(const char *circ_nonce,
   ssize_t cell_len = -1;
   uint16_t sig_len = ED25519_SIG_LEN;
   trn_cell_establish_intro_t *cell = NULL;
-  trn_cell_extension_t *extensions;
+  trn_extension_t *extensions;
 
   tor_assert(circ_nonce);
   tor_assert(service_config);
   tor_assert(ip);
-
-  /* Quickly handle the legacy IP. */
-  if (ip->base.is_only_legacy) {
-    tor_assert(ip->legacy_key);
-    cell_len = build_legacy_establish_intro(circ_nonce, ip->legacy_key,
-                                            cell_out);
-    tor_assert(cell_len <= RELAY_PAYLOAD_SIZE);
-    /* Success or not we are done here. */
-    goto done;
-  }
 
   /* Build the extensions, if any. */
   extensions = build_establish_intro_extensions(service_config, ip);
@@ -821,6 +784,31 @@ get_introduce2_keys_and_verify_mac(hs_cell_introduce2_data_t *data,
   return intro_keys_result;
 }
 
+/** Parse the given INTRODUCE cell extension. Update the data object
+ * accordingly depending on the extension. */
+static void
+parse_introduce_cell_extension(hs_cell_introduce2_data_t *data,
+                               const trn_extension_field_t *field)
+{
+  trn_extension_field_cc_t *cc_field = NULL;
+
+  tor_assert(data);
+  tor_assert(field);
+
+  switch (trn_extension_field_get_field_type(field)) {
+  case TRUNNEL_EXT_TYPE_CC_FIELD_REQUEST:
+    /* CC requests, enable it. */
+    data->cc_enabled = 1;
+    data->pv.protocols_known = 1;
+    data->pv.supports_congestion_control = data->cc_enabled;
+    break;
+  default:
+    break;
+  }
+
+  trn_extension_field_cc_free(cc_field);
+}
+
 /** Parse the INTRODUCE2 cell using data which contains everything we need to
  * do so and contains the destination buffers of information we extract and
  * compute from the cell. Return 0 on success else a negative value. The
@@ -949,6 +937,27 @@ hs_cell_parse_introduce2(hs_cell_introduce2_data_t *data,
     smartlist_add(data->link_specifiers, lspec_dup);
   }
 
+  /* Extract any extensions. */
+  const trn_extension_t *extensions =
+    trn_cell_introduce_encrypted_get_extensions(enc_cell);
+  if (extensions != NULL) {
+    for (size_t idx = 0; idx < trn_extension_get_num(extensions); idx++) {
+      const trn_extension_field_t *field =
+        trn_extension_getconst_fields(extensions, idx);
+      if (BUG(field == NULL)) {
+        /* The number of extensions should match the number of fields. */
+        break;
+      }
+      parse_introduce_cell_extension(data, field);
+    }
+  }
+
+  /* If the client asked for congestion control, but we don't support it,
+   * that's a failure. It should not have asked, based on our descriptor. */
+  if (data->cc_enabled && !congestion_control_enabled()) {
+    goto done;
+  }
+
   /* Success. */
   ret = 0;
   log_info(LD_REND, "Valid INTRODUCE2 cell. Launching rendezvous circuit.");
@@ -1008,7 +1017,7 @@ hs_cell_build_introduce1(const hs_cell_introduce1_data_t *data,
 {
   ssize_t cell_len;
   trn_cell_introduce1_t *cell;
-  trn_cell_extension_t *ext;
+  trn_extension_t *ext;
 
   tor_assert(data);
   tor_assert(cell_out);
@@ -1017,13 +1026,10 @@ hs_cell_build_introduce1(const hs_cell_introduce1_data_t *data,
   tor_assert(cell);
 
   /* Set extension data. None are used. */
-  ext = trn_cell_extension_new();
+  ext = trn_extension_new();
   tor_assert(ext);
-  trn_cell_extension_set_num(ext, 0);
+  trn_extension_set_num(ext, 0);
   trn_cell_introduce1_set_extensions(cell, ext);
-
-  /* Set the legacy ID field. */
-  introduce1_set_legacy_id(cell, data);
 
   /* Set the authentication key. */
   introduce1_set_auth_key(cell, data);
@@ -1066,18 +1072,6 @@ hs_cell_parse_introduce_ack(const uint8_t *payload, size_t payload_len)
   trn_cell_introduce_ack_t *cell = NULL;
 
   tor_assert(payload);
-
-  /* If it is a legacy IP, rend-spec.txt specifies that a ACK is 0 byte and a
-   * NACK is 1 byte. We can't use the legacy function for this so we have to
-   * do a special case. */
-  if (payload_len <= 1) {
-    if (payload_len == 0) {
-      ret = TRUNNEL_HS_INTRO_ACK_STATUS_SUCCESS;
-    } else {
-      ret = TRUNNEL_HS_INTRO_ACK_STATUS_UNKNOWN_ID;
-    }
-    goto end;
-  }
 
   if (trn_cell_introduce_ack_parse(&cell, payload, payload_len) < 0) {
     log_info(LD_REND, "Invalid INTRODUCE_ACK cell. Unable to parse it.");

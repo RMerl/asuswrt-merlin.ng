@@ -1,7 +1,7 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2020, The Tor Project, Inc. */
+ * Copyright (c) 2007-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -293,6 +293,13 @@ struct or_options_t {
    * disabled. */
   int CircuitPadding;
 
+  /** Boolean: if true, then this client will discard cached bridge
+   * descriptors on a setconf or other config change that impacts guards
+   * or bridges (see options_transition_affects_guards() for exactly which
+   * config changes trigger it). Useful for tools that test bridge
+   * reachability by fetching fresh descriptors. */
+  int ReconfigDropsBridgeDescs;
+
   /** Boolean: if true, then this client will only use circuit padding
    * algorithms that are known to use a low amount of overhead. If false,
    * we will use all available circuit padding algorithms.
@@ -336,7 +343,7 @@ struct or_options_t {
   /* Makes hidden service clients and servers non-anonymous on this tor
    * instance. Allows the non-anonymous HiddenServiceSingleHopMode. Enables
    * non-anonymous behaviour in the hidden service protocol.
-   * Use rend_service_non_anonymous_mode_enabled() instead of using this option
+   * Use hs_service_non_anonymous_mode_enabled() instead of using this option
    * directly.
    */
   int HiddenServiceNonAnonymousMode;
@@ -428,9 +435,6 @@ struct or_options_t {
   int NumCPUs; /**< How many CPUs should we try to use? */
   struct config_line_t *RendConfigLines; /**< List of configuration lines
                                           * for rendezvous services. */
-  struct config_line_t *HidServAuth; /**< List of configuration lines for
-                               * client-side authorizations for hidden
-                               * services */
   char *ClientOnionAuthDir; /**< Directory to keep client
                              * onion service authorization secret keys */
   char *ContactInfo; /**< Contact info to be published in the directory. */
@@ -495,6 +499,9 @@ struct or_options_t {
   struct smartlist_t *NodeFamilySets;
   struct config_line_t *AuthDirBadExit; /**< Address policy for descriptors to
                                   * mark as bad exits. */
+  /** Address policy for descriptors to mark as only suitable for the
+   * middle position in circuits. */
+  struct config_line_t *AuthDirMiddleOnly;
   struct config_line_t *AuthDirReject; /**< Address policy for descriptors to
                                  * reject. */
   struct config_line_t *AuthDirInvalid; /**< Address policy for descriptors to
@@ -508,6 +515,7 @@ struct or_options_t {
    */
   struct smartlist_t *AuthDirBadExitCCs;
   struct smartlist_t *AuthDirInvalidCCs;
+  struct smartlist_t *AuthDirMiddleOnlyCCs;
   struct smartlist_t *AuthDirRejectCCs;
   /**@}*/
 
@@ -589,6 +597,15 @@ struct or_options_t {
   int NumDirectoryGuards; /**< How many dir guards do we try to establish?
                            * If 0, use value from NumEntryGuards. */
   int NumPrimaryGuards; /**< How many primary guards do we want? */
+
+  /** Boolean: Switch to toggle the vanguards-lite subsystem */
+  int VanguardsLiteEnabled;
+
+  /** Boolean: Switch to override consensus to enable congestion control */
+  int AlwaysCongestionControl;
+
+  /** Boolean: Switch to specify this is an sbws measurement exit */
+  int SbwsExit;
 
   int RephistTrackTime; /**< How many seconds do we keep rephist info? */
   /** Should we always fetch our dir info on the mirror schedule (which
@@ -676,6 +693,9 @@ struct or_options_t {
 
   /** If true, include statistics file contents in extra-info documents. */
   int ExtraInfoStatistics;
+
+  /** If true, include overload statistics in extra-info documents. */
+  int OverloadStatistics;
 
   /** If true, do not believe anybody who tells us that a domain resolves
    * to an internal address, or that an internal address has a PTR mapping.
@@ -1031,39 +1051,17 @@ struct or_options_t {
    */
   int DisableSignalHandlers;
 
-  /** Autobool: Is the circuit creation DoS mitigation subsystem enabled? */
-  int DoSCircuitCreationEnabled;
-  /** Minimum concurrent connection needed from one single address before any
-   * defense is used. */
-  int DoSCircuitCreationMinConnections;
-  /** Circuit rate used to refill the token bucket. */
-  int DoSCircuitCreationRate;
-  /** Maximum allowed burst of circuits. Reaching that value, the address is
-   * detected as malicious and a defense might be used. */
-  int DoSCircuitCreationBurst;
-  /** When an address is marked as malicious, what defense should be used
-   * against it. See the dos_cc_defense_type_t enum. */
-  int DoSCircuitCreationDefenseType;
-  /** For how much time (in seconds) the defense is applicable for a malicious
-   * address. A random time delta is added to the defense time of an address
-   * which will be between 1 second and half of this value. */
-  int DoSCircuitCreationDefenseTimePeriod;
-
-  /** Autobool: Is the DoS connection mitigation subsystem enabled? */
-  int DoSConnectionEnabled;
-  /** Maximum concurrent connection allowed per address. */
-  int DoSConnectionMaxConcurrentCount;
-  /** When an address is reaches the maximum count, what defense should be
-   * used against it. See the dos_conn_defense_type_t enum. */
-  int DoSConnectionDefenseType;
-
-  /** Autobool: Do we refuse single hop client rendezvous? */
-  int DoSRefuseSingleHopClientRendezvous;
-
   /** Interval: how long without activity does it take for a client
    * to become dormant?
    **/
   int DormantClientTimeout;
+
+  /**
+   * Boolean: If enabled, then we consider the timeout when deciding whether
+   * to be dormant.  If not enabled, then only the SIGNAL ACTIVE/DORMANT
+   * controls can change our status.
+   **/
+  int DormantTimeoutEnabled;
 
   /** Boolean: true if having an idle stream is sufficient to prevent a client
    * from becoming dormant.

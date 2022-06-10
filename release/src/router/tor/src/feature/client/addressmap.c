@@ -1,7 +1,7 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2020, The Tor Project, Inc. */
+ * Copyright (c) 2007-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -576,7 +576,7 @@ void
 addressmap_register(const char *address, char *new_address, time_t expires,
                     addressmap_entry_source_t source,
                     const int wildcard_addr,
-                    const int wildcard_new_addr)
+                    const int wildcard_new_addr, uint64_t stream_id)
 {
   addressmap_entry_t *ent;
 
@@ -626,7 +626,8 @@ addressmap_register(const char *address, char *new_address, time_t expires,
   log_info(LD_CONFIG, "Addressmap: (re)mapped '%s' to '%s'",
            safe_str_client(address),
            safe_str_client(ent->new_address));
-  control_event_address_mapped(address, ent->new_address, expires, NULL, 1);
+  control_event_address_mapped(address, ent->new_address,
+                               expires, NULL, 1, stream_id);
 }
 
 /** An attempt to resolve <b>address</b> failed at some OR.
@@ -680,10 +681,14 @@ client_dns_set_addressmap_impl(entry_connection_t *for_conn,
                                int ttl)
 {
   char *extendedaddress=NULL, *extendedval=NULL;
-  (void)for_conn;
+  uint64_t stream_id = 0;
 
   tor_assert(address);
   tor_assert(name);
+
+  if (for_conn) {
+    stream_id = ENTRY_TO_CONN(for_conn)->global_identifier;
+  }
 
   if (ttl<0)
     ttl = DEFAULT_DNS_TTL;
@@ -705,7 +710,7 @@ client_dns_set_addressmap_impl(entry_connection_t *for_conn,
                  "%s", name);
   }
   addressmap_register(extendedaddress, extendedval,
-                      time(NULL) + ttl, ADDRMAPSRC_DNS, 0, 0);
+                      time(NULL) + ttl, ADDRMAPSRC_DNS, 0, 0, stream_id);
   tor_free(extendedaddress);
 }
 
@@ -1043,7 +1048,7 @@ addressmap_register_virtual_address(int type, char *new_address)
   log_info(LD_APP, "Registering map from %s to %s", *addrp, new_address);
   if (vent_needs_to_be_added)
     strmap_set(virtaddress_reversemap, new_address, vent);
-  addressmap_register(*addrp, new_address, 2, ADDRMAPSRC_AUTOMAP, 0, 0);
+  addressmap_register(*addrp, new_address, 2, ADDRMAPSRC_AUTOMAP, 0, 0, 0);
 
   /* FFFF register corresponding reverse mapping. */
 

@@ -1,4 +1,4 @@
-/* Copyright (c) 2016-2020, The Tor Project, Inc. */
+/* Copyright (c) 2016-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -14,7 +14,6 @@
 
 #include "trunnel/ed25519_cert.h"
 #include "feature/hs/hs_cache.h"
-#include "feature/rend/rendcache.h"
 #include "feature/dircache/dircache.h"
 #include "feature/dirclient/dirclient.h"
 #include "feature/nodelist/networkstatus.h"
@@ -51,8 +50,6 @@ init_test(void)
 {
   /* Always needed. Initialize the subsystem. */
   hs_cache_init();
-  /* We need the v2 cache since our OOM and cache cleanup does poke at it. */
-  rend_cache_init();
 }
 
 static void

@@ -1,4 +1,4 @@
-/* Copyright (c) 2017-2020, The Tor Project, Inc. */
+/* Copyright (c) 2017-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /** This is a wrapper over the little-t-tor HS ntor functions. The wrapper is

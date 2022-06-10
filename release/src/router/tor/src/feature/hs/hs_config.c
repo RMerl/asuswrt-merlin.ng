@@ -1,4 +1,4 @@
-/* Copyright (c) 2017-2020, The Tor Project, Inc. */
+/* Copyright (c) 2017-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -28,8 +28,6 @@
 #include "feature/hs/hs_client.h"
 #include "feature/hs/hs_ob.h"
 #include "feature/hs/hs_service.h"
-#include "feature/rend/rendclient.h"
-#include "feature/rend/rendservice.h"
 #include "lib/encoding/confline.h"
 #include "lib/conf/confdecl.h"
 #include "lib/confmgt/confmgt.h"
@@ -102,23 +100,6 @@ stage_services(smartlist_t *service_list)
 {
   tor_assert(service_list);
 
-  /* This is v2 specific. Trigger service pruning which will make sure the
-   * just configured services end up in the main global list. It should only
-   * be done in non validation mode because v2 subsystem handles service
-   * object differently. */
-  rend_service_prune_list();
-
-  /* Cleanup v2 service from the list, we don't need those object anymore
-   * because we validated them all against the others and we want to stage
-   * only >= v3 service. And remember, v2 has a different object type which is
-   * shadow copied from an hs_service_t type. */
-  SMARTLIST_FOREACH_BEGIN(service_list, hs_service_t *, s) {
-    if (s->config.version == HS_VERSION_TWO) {
-      SMARTLIST_DEL_CURRENT(service_list, s);
-      hs_service_free(s);
-    }
-  } SMARTLIST_FOREACH_END(s);
-
   /* This is >= v3 specific. Using the newly configured service list, stage
    * them into our global state. Every object ownership is lost after. */
   hs_service_stage_services(service_list);
@@ -146,8 +127,7 @@ service_is_duplicate_in_list(const smartlist_t *service_list,
   /* XXX: Validate if we have any service that has the given service dir path.
    * This has two problems:
    *
-   * a) It's O(n^2), but the same comment from the bottom of
-   *    rend_config_services() should apply.
+   * a) It's O(n^2)
    *
    * b) We only compare directory paths as strings, so we can't
    *    detect two distinct paths that specify the same directory
@@ -274,15 +254,6 @@ config_has_invalid_options(const config_line_t *line_,
     NULL /* End marker. */
   };
 
-  const char *opts_exclude_v2[] = {
-    "HiddenServiceExportCircuitID",
-    "HiddenServiceEnableIntroDoSDefense",
-    "HiddenServiceEnableIntroDoSRatePerSec",
-    "HiddenServiceEnableIntroDoSBurstPerSec",
-    "HiddenServiceOnionBalanceInstance",
-    NULL /* End marker. */
-  };
-
   /* Defining the size explicitly allows us to take advantage of the compiler
    * which warns us if we ever bump the max version but forget to grow this
    * array. The plus one is because we have a version 0 :). */
@@ -291,7 +262,7 @@ config_has_invalid_options(const config_line_t *line_,
   } exclude_lists[HS_VERSION_MAX + 1] = {
     { NULL }, /* v0. */
     { NULL }, /* v1. */
-    { opts_exclude_v2 }, /* v2 */
+    { NULL }, /* v2. */
     { opts_exclude_v3 }, /* v3. */
   };
 
@@ -315,16 +286,6 @@ config_has_invalid_options(const config_line_t *line_,
                             "version %" PRIu32 " of service in %s",
                  opt, service->config.version,
                  service->config.directory_path);
-
-        if (!strcasecmp(line->key, "HiddenServiceAuthorizeClient")) {
-          /* Special case this v2 option so that we can offer alternatives.
-           * If more such special cases appear, it would be good to
-           * generalize the exception mechanism here. */
-          log_warn(LD_CONFIG, "For v3 onion service client authorization, "
-                   "please read the 'CLIENT AUTHORIZATION' section in the "
-                   "manual.");
-        }
-
         ret = 1;
         /* Continue the loop so we can find all possible options. */
         continue;
@@ -479,6 +440,12 @@ config_generic_service(const hs_opts_t *hs_opts,
   /* Protocol version for the service. */
   if (hs_opts->HiddenServiceVersion == -1) {
     /* No value was set; stay with the default. */
+  } else if (hs_opts->HiddenServiceVersion == 2) {
+    log_warn(LD_CONFIG, "Onion services version 2 are obsolete. Please see "
+                        "https://blog.torproject.org/v2-deprecation-timeline "
+                        "for more details and for instructions on how to "
+                        "transition to version 3.");
+    goto err;
   } else if (CHECK_OOB(hs_opts, HiddenServiceVersion,
                        HS_VERSION_MIN, HS_VERSION_MAX)) {
     goto err;
@@ -492,8 +459,8 @@ config_generic_service(const hs_opts_t *hs_opts,
        portline; portline = portline->next) {
     char *err_msg = NULL;
     /* XXX: Can we rename this? */
-    rend_service_port_config_t *portcfg =
-      rend_service_parse_port_config(portline->value, " ", &err_msg);
+    hs_port_config_t *portcfg =
+      hs_parse_port_config(portline->value, " ", &err_msg);
     if (!portcfg) {
       if (err_msg) {
         log_warn(LD_CONFIG, "%s", err_msg);
@@ -526,7 +493,7 @@ config_generic_service(const hs_opts_t *hs_opts,
 
   /* Check if we are configured in non anonymous mode meaning every service
    * becomes a single onion service. */
-  if (rend_service_non_anonymous_mode_enabled(options)) {
+  if (hs_service_non_anonymous_mode_enabled(options)) {
     config->is_single_onion = 1;
   }
 
@@ -581,15 +548,19 @@ config_service(config_line_t *line, const or_options_t *options,
 
   tor_assert(service->config.version <= HS_VERSION_MAX);
 
-  /* Check permission on service directory that was just parsed. And this must
-   * be done regardless of the service version. Do not ask for the directory
-   * to be created, this is done when the keys are loaded because we could be
-   * in validation mode right now. */
-  if (hs_check_service_private_dir(options->User,
-                                   service->config.directory_path,
-                                   service->config.dir_group_readable,
-                                   0) < 0) {
-    goto err;
+  /* If we're running with TestingTorNetwork enabled, we relax the permissions
+   * check on the hs directory. */
+  if (!options->TestingTorNetwork) {
+    /* Check permission on service directory that was just parsed. And this
+     * must be done regardless of the service version. Do not ask for the
+     * directory to be created, this is done when the keys are loaded because
+     * we could be in validation mode right now. */
+    if (hs_check_service_private_dir(options->User,
+                                     service->config.directory_path,
+                                     service->config.dir_group_readable,
+                                     0) < 0) {
+      goto err;
+    }
   }
 
   /* We'll try to learn the service version here by loading the key(s) if
@@ -599,8 +570,7 @@ config_service(config_line_t *line, const or_options_t *options,
     service->config.version = config_learn_service_version(service);
   }
 
-  /* We make sure that this set of options for a service are valid that is for
-   * instance an option only for v2 is not used for v3. */
+  /* We make sure that this set of options for a service are valid. */
   if (config_has_invalid_options(line->next, service)) {
     goto err;
   }
@@ -609,9 +579,6 @@ config_service(config_line_t *line, const or_options_t *options,
    * start just after the service directory line so once we hit another
    * directory line, the function knows that it has to stop parsing. */
   switch (service->config.version) {
-  case HS_VERSION_TWO:
-    ret = rend_config_service(hs_opts, options, &service->config);
-    break;
   case HS_VERSION_THREE:
     ret = config_service_v3(hs_opts, &service->config);
     break;
@@ -677,6 +644,7 @@ hs_config_service_all(const or_options_t *options, int validate_only)
     int rv = config_service(section, options, new_service_list);
     config_free_lines(section);
     if (rv < 0) {
+      config_free_lines(remaining);
       goto err;
     }
   }
@@ -692,11 +660,6 @@ hs_config_service_all(const or_options_t *options, int validate_only)
      * services. We don't need those objects anymore. */
     SMARTLIST_FOREACH(new_service_list, hs_service_t *, s,
                       hs_service_free(s));
-    /* For the v2 subsystem, the configuration function adds the service
-     * object to the staging list and it is transferred in the main list
-     * through the prunning process. In validation mode, we thus have to purge
-     * the staging list so it's not kept in memory as valid service. */
-    rend_service_free_staging_list();
   }
 
   /* Success. Note that the service list has no ownership of its content. */
@@ -720,11 +683,6 @@ int
 hs_config_client_auth_all(const or_options_t *options, int validate_only)
 {
   int ret = -1;
-
-  /* Configure v2 authorization. */
-  if (rend_parse_service_authorization(options, validate_only) < 0) {
-    goto done;
-  }
 
   /* Configure v3 authorization. */
   if (hs_config_client_authorization(options, validate_only) < 0) {

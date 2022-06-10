@@ -1,7 +1,7 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2020, The Tor Project, Inc. */
+ * Copyright (c) 2007-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -403,7 +403,7 @@ dump_desc_compare_fifo_entries(const void **a_v, const void **b_v)
       }
     } else {
       /*
-       * We shouldn't see this, but what the hell, NULLs precede everythin
+       * We shouldn't see this, but what the hell, NULLs precede everything
        * else
        */
       return 1;

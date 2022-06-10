@@ -1,6 +1,6 @@
 /* Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2020, The Tor Project, Inc. */
+ * Copyright (c) 2007-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 #define CIRCUITBUILD_PRIVATE
@@ -113,7 +113,7 @@ test_new_route_len_safe_exit(void *arg)
   /* hidden service connecting to introduction point */
   r = new_route_len(CIRCUIT_PURPOSE_S_ESTABLISH_INTRO, &dummy_ei,
                     &dummy_nodes);
-  tt_int_op(DEFAULT_ROUTE_LEN, OP_EQ, r);
+  tt_int_op(DEFAULT_ROUTE_LEN+1, OP_EQ, r);
 
   /* router testing its own reachability */
   r = new_route_len(CIRCUIT_PURPOSE_TESTING, &dummy_ei, &dummy_nodes);

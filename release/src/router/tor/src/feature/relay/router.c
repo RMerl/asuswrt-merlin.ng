@@ -1,7 +1,7 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2020, The Tor Project, Inc. */
+ * Copyright (c) 2007-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 #define ROUTER_PRIVATE
@@ -565,8 +565,8 @@ log_new_relay_greeting(void)
   tor_log(LOG_NOTICE, LD_GENERAL, "You are running a new relay. "
          "Thanks for helping the Tor network! If you wish to know "
          "what will happen in the upcoming weeks regarding its usage, "
-         "have a look at https://blog.torproject.org/blog/lifecycle-of"
-         "-a-new-relay");
+         "have a look at https://blog.torproject.org/lifecycle-of-a"
+         "-new-relay");
 
   already_logged = 1;
 }
@@ -1357,8 +1357,8 @@ decide_to_advertise_dir_impl(const or_options_t *options,
 int
 router_should_advertise_dirport(const or_options_t *options, uint16_t dir_port)
 {
-  /* supports_tunnelled_dir_requests is not relevant, pass 0 */
-  return decide_to_advertise_dir_impl(options, dir_port, 0) ? dir_port : 0;
+  /* Only authorities should advertise a DirPort now. */
+  return authdir_mode(options) ? dir_port : 0;
 }
 
 /** Front-end to decide_to_advertise_dir_impl(): return 0 if we don't want to
@@ -3062,6 +3062,15 @@ router_dump_router_to_string(routerinfo_t *router,
     smartlist_add_strdup(chunks, "tunnelled-dir-server\n");
   }
 
+  /* Overload general information. */
+  if (options->OverloadStatistics) {
+    char *overload_general = rep_hist_get_overload_general_line();
+
+    if (overload_general) {
+      smartlist_add(chunks, overload_general);
+    }
+  }
+
   /* Sign the descriptor with Ed25519 */
   if (emit_ed_sigs)  {
     smartlist_add_strdup(chunks, "router-sig-ed25519 ");
@@ -3345,6 +3354,11 @@ extrainfo_dump_to_string_stats_helper(smartlist_t *chunks,
                         "hidserv-stats-end", now, &contents) > 0) {
       smartlist_add(chunks, contents);
     }
+    if (options->HiddenServiceStatistics &&
+        load_stats_file("stats"PATH_SEPARATOR"hidserv-v3-stats",
+                        "hidserv-v3-stats-end", now, &contents) > 0) {
+      smartlist_add(chunks, contents);
+    }
     if (options->EntryStatistics &&
         load_stats_file("stats"PATH_SEPARATOR"entry-stats",
                         "entry-stats-end", now, &contents) > 0) {
@@ -3369,6 +3383,12 @@ extrainfo_dump_to_string_stats_helper(smartlist_t *chunks,
       contents = rep_hist_get_padding_count_lines();
       if (contents)
         smartlist_add(chunks, contents);
+    }
+    if (options->OverloadStatistics) {
+      contents = rep_hist_get_overload_stats_lines();
+      if (contents) {
+        smartlist_add(chunks, contents);
+      }
     }
     /* bridge statistics */
     if (should_record_bridge_info(options)) {

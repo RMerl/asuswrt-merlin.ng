@@ -8,7 +8,7 @@
 #include <stdint.h>
 #include "trunnel.h"
 
-struct trn_cell_extension_st;
+struct trn_extension_st;
 #define TRUNNEL_SHA3_256_LEN 32
 #define TRUNNEL_CELL_EXTENSION_TYPE_DOS 1
 #define TRUNNEL_DOS_PARAM_TYPE_INTRO2_RATE_PER_SEC 1
@@ -27,7 +27,7 @@ struct trn_cell_establish_intro_st {
   uint8_t auth_key_type;
   uint16_t auth_key_len;
   TRUNNEL_DYNARRAY_HEAD(, uint8_t) auth_key;
-  struct trn_cell_extension_st *extensions;
+  struct trn_extension_st *extensions;
   const uint8_t *end_mac_fields;
   uint8_t handshake_mac[TRUNNEL_SHA3_256_LEN];
   const uint8_t *end_sig_fields;
@@ -47,7 +47,7 @@ struct trn_cell_extension_dos_st {
 typedef struct trn_cell_extension_dos_st trn_cell_extension_dos_t;
 #if !defined(TRUNNEL_OPAQUE) && !defined(TRUNNEL_OPAQUE_TRN_CELL_INTRO_ESTABLISHED)
 struct trn_cell_intro_established_st {
-  struct trn_cell_extension_st *extensions;
+  struct trn_extension_st *extensions;
   uint8_t trunnel_error_code_;
 };
 #endif
@@ -203,21 +203,21 @@ int trn_cell_establish_intro_setlen_auth_key(trn_cell_establish_intro_t *inp, si
 /** Return the value of the extensions field of the
  * trn_cell_establish_intro_t in 'inp'
  */
-struct trn_cell_extension_st * trn_cell_establish_intro_get_extensions(trn_cell_establish_intro_t *inp);
+struct trn_extension_st * trn_cell_establish_intro_get_extensions(trn_cell_establish_intro_t *inp);
 /** As trn_cell_establish_intro_get_extensions, but take and return a
  * const pointer
  */
-const struct trn_cell_extension_st * trn_cell_establish_intro_getconst_extensions(const trn_cell_establish_intro_t *inp);
+const struct trn_extension_st * trn_cell_establish_intro_getconst_extensions(const trn_cell_establish_intro_t *inp);
 /** Set the value of the extensions field of the
  * trn_cell_establish_intro_t in 'inp' to 'val'. Free the old value if
  * any. Steals the referenceto 'val'.Return 0 on success; return -1
  * and set the error code on 'inp' on failure.
  */
-int trn_cell_establish_intro_set_extensions(trn_cell_establish_intro_t *inp, struct trn_cell_extension_st *val);
+int trn_cell_establish_intro_set_extensions(trn_cell_establish_intro_t *inp, struct trn_extension_st *val);
 /** As trn_cell_establish_intro_set_extensions, but does not free the
  * previous value.
  */
-int trn_cell_establish_intro_set0_extensions(trn_cell_establish_intro_t *inp, struct trn_cell_extension_st *val);
+int trn_cell_establish_intro_set0_extensions(trn_cell_establish_intro_t *inp, struct trn_extension_st *val);
 /** Return the position for end_mac_fields when we parsed this object
  */
 const uint8_t * trn_cell_establish_intro_get_end_mac_fields(const trn_cell_establish_intro_t *inp);
@@ -415,21 +415,21 @@ int trn_cell_intro_established_clear_errors(trn_cell_intro_established_t *obj);
 /** Return the value of the extensions field of the
  * trn_cell_intro_established_t in 'inp'
  */
-struct trn_cell_extension_st * trn_cell_intro_established_get_extensions(trn_cell_intro_established_t *inp);
+struct trn_extension_st * trn_cell_intro_established_get_extensions(trn_cell_intro_established_t *inp);
 /** As trn_cell_intro_established_get_extensions, but take and return
  * a const pointer
  */
-const struct trn_cell_extension_st * trn_cell_intro_established_getconst_extensions(const trn_cell_intro_established_t *inp);
+const struct trn_extension_st * trn_cell_intro_established_getconst_extensions(const trn_cell_intro_established_t *inp);
 /** Set the value of the extensions field of the
  * trn_cell_intro_established_t in 'inp' to 'val'. Free the old value
  * if any. Steals the referenceto 'val'.Return 0 on success; return -1
  * and set the error code on 'inp' on failure.
  */
-int trn_cell_intro_established_set_extensions(trn_cell_intro_established_t *inp, struct trn_cell_extension_st *val);
+int trn_cell_intro_established_set_extensions(trn_cell_intro_established_t *inp, struct trn_extension_st *val);
 /** As trn_cell_intro_established_set_extensions, but does not free
  * the previous value.
  */
-int trn_cell_intro_established_set0_extensions(trn_cell_intro_established_t *inp, struct trn_cell_extension_st *val);
+int trn_cell_intro_established_set0_extensions(trn_cell_intro_established_t *inp, struct trn_extension_st *val);
 
 
 #endif

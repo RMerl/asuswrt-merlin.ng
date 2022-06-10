@@ -1,5 +1,5 @@
 /* Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2020, The Tor Project, Inc. */
+ * Copyright (c) 2007-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -33,13 +33,11 @@
 #include "feature/control/control_getinfo.h"
 #include "feature/control/control_proto.h"
 #include "feature/hs/hs_control.h"
+#include "feature/hs/hs_service.h"
 #include "feature/nodelist/nodelist.h"
 #include "feature/nodelist/routerinfo.h"
 #include "feature/nodelist/routerlist.h"
-#include "feature/rend/rendclient.h"
 #include "feature/rend/rendcommon.h"
-#include "feature/rend/rendparse.h"
-#include "feature/rend/rendservice.h"
 #include "lib/crypt_ops/crypto_rand.h"
 #include "lib/crypt_ops/crypto_util.h"
 #include "lib/encoding/confline.h"
@@ -53,11 +51,8 @@
 #include "feature/control/control_connection_st.h"
 #include "feature/nodelist/node_st.h"
 #include "feature/nodelist/routerinfo_st.h"
-#include "feature/rend/rend_authorized_client_st.h"
-#include "feature/rend/rend_encoded_v2_service_descriptor_st.h"
-#include "feature/rend/rend_service_descriptor_st.h"
 
-#include "src/app/config/statefile.h"
+#include "app/config/statefile.h"
 
 static int control_setconf_helper(control_connection_t *conn,
                                   const control_cmd_args_t *args,
@@ -822,11 +817,16 @@ handle_control_extendcircuit(control_connection_t *conn,
     circ->first_hop_from_controller = 1;
   }
 
+  circ->any_hop_from_controller = 1;
+
   /* now circ refers to something that is ready to be extended */
   first_node = zero_circ;
   SMARTLIST_FOREACH(nodes, const node_t *, node,
   {
-    extend_info_t *info = extend_info_from_node(node, first_node);
+    /* We treat every hop as an exit to try to negotiate congestion
+     * control, because we have no idea which hop the controller wil
+     * try to use for streams and when */
+    extend_info_t *info = extend_info_from_node(node, first_node, true);
     if (!info) {
       tor_assert_nonfatal(first_node);
       log_warn(LD_CONTROL,
@@ -1080,7 +1080,7 @@ static const control_cmd_syntax_t redirectstream_syntax = {
   .max_args = UINT_MAX, // XXX should be 3.
 };
 
-/** Called when we receive a REDIRECTSTERAM command.  Try to change the target
+/** Called when we receive a REDIRECTSTREAM command.  Try to change the target
  * address of the named AP stream, and report success or failure. */
 static int
 handle_control_redirectstream(control_connection_t *conn,
@@ -1233,7 +1233,7 @@ handle_control_resolve(control_connection_t *conn,
   send_control_done(conn);
   SMARTLIST_FOREACH(failed, const char *, arg, {
       control_event_address_mapped(arg, arg, time(NULL),
-                                   "internal", 0);
+                                   "internal", 0, 0);
   });
 
   smartlist_free(failed);
@@ -1443,9 +1443,7 @@ handle_control_hsfetch(control_connection_t *conn,
                        const control_cmd_args_t *args)
 
 {
-  char *desc_id = NULL;
   smartlist_t *hsdirs = NULL;
-  rend_data_t *rend_query = NULL;
   ed25519_public_key_t v3_pk;
   uint32_t version;
   const char *hsaddress = NULL;
@@ -1481,22 +1479,6 @@ handle_control_hsfetch(control_connection_t *conn,
     }
   }
 
-  if (version == HS_VERSION_TWO) {
-    rend_query = rend_data_client_create(hsaddress, desc_id, NULL,
-                                         REND_NO_AUTH);
-    if (rend_query == NULL) {
-      control_write_endreply(conn, 551, "Error creating the HS query");
-      goto done;
-    }
-  }
-
-  /* Using a descriptor ID, we force the user to provide at least one
-   * hsdir server using the SERVER= option. */
-  if (desc_id && (!hsdirs || !smartlist_len(hsdirs))) {
-    control_write_endreply(conn, 512, "SERVER option is required");
-    goto done;
-  }
-
   /* We are about to trigger HSDir fetch so send the OK now because after
    * that 650 event(s) are possible so better to have the 250 OK before them
    * to avoid out of order replies. */
@@ -1505,16 +1487,13 @@ handle_control_hsfetch(control_connection_t *conn,
   /* Trigger the fetch using the built rend query and possibly a list of HS
    * directory to use. This function ignores the client cache thus this will
    * always send a fetch command. */
-  if (version == HS_VERSION_TWO) {
-    rend_client_fetch_v2_desc(rend_query, hsdirs);
-  } else if (version == HS_VERSION_THREE) {
+  if (version == HS_VERSION_THREE) {
     hs_control_hsfetch_command(&v3_pk, hsdirs);
   }
 
  done:
   /* Contains data pointer that we don't own thus no cleanup. */
   smartlist_free(hsdirs);
-  rend_data_free(rend_query);
   return 0;
 }
 
@@ -1535,7 +1514,6 @@ handle_control_hspost(control_connection_t *conn,
 {
   smartlist_t *hs_dirs = NULL;
   const char *encoded_desc = args->cmddata;
-  size_t encoded_desc_len = args->cmddata_len;
   const char *onion_address = NULL;
   const config_line_t *line;
 
@@ -1575,49 +1553,6 @@ handle_control_hspost(control_connection_t *conn,
     goto done;
   }
 
-  /* As for HSFETCH, we no longer support v2 on the network and so we stop
-   * right now. Code is not removed in order to minimize the merge forward
-   * conflicts. */
-  goto done;
-
-  /* From this point on, it is only v2. */
-
-  /*  parse it. */
-  rend_encoded_v2_service_descriptor_t *desc =
-      tor_malloc_zero(sizeof(rend_encoded_v2_service_descriptor_t));
-  desc->desc_str = tor_memdup_nulterm(encoded_desc, encoded_desc_len);
-
-  rend_service_descriptor_t *parsed = NULL;
-  char *intro_content = NULL;
-  size_t intro_size;
-  size_t encoded_size;
-  const char *next_desc;
-  if (!rend_parse_v2_service_descriptor(&parsed, desc->desc_id, &intro_content,
-                                        &intro_size, &encoded_size,
-                                        &next_desc, desc->desc_str, 1)) {
-    /* Post the descriptor. */
-    char serviceid[REND_SERVICE_ID_LEN_BASE32+1];
-    if (!rend_get_service_id(parsed->pk, serviceid)) {
-      smartlist_t *descs = smartlist_new();
-      smartlist_add(descs, desc);
-
-      /* We are about to trigger HS descriptor upload so send the OK now
-       * because after that 650 event(s) are possible so better to have the
-       * 250 OK before them to avoid out of order replies. */
-      send_control_done(conn);
-
-      /* Trigger the descriptor upload */
-      directory_post_to_hs_dir(parsed, descs, hs_dirs, serviceid, 0);
-      smartlist_free(descs);
-    }
-
-    rend_service_descriptor_free(parsed);
-  } else {
-    control_write_endreply(conn, 554, "Invalid descriptor");
-  }
-
-  tor_free(intro_content);
-  rend_encoded_v2_service_descriptor_free(desc);
  done:
   smartlist_free(hs_dirs); /* Contents belong to the rend service code. */
   return 0;
@@ -1633,18 +1568,17 @@ handle_control_hspost(control_connection_t *conn,
  * The port_cfgs is a list of service port. Ownership transferred to service.
  * The max_streams refers to the MaxStreams= key.
  * The max_streams_close_circuit refers to the MaxStreamsCloseCircuit key.
- * The auth_type is the authentication type of the clients in auth_clients.
  * The ownership of that list is transferred to the service.
  *
  * On success (RSAE_OKAY), the address_out points to a newly allocated string
  * containing the onion address without the .onion part. On error, address_out
  * is untouched. */
-static hs_service_add_ephemeral_status_t
+STATIC hs_service_add_ephemeral_status_t
 add_onion_helper_add_service(int hs_version,
                              add_onion_secret_key_t *pk,
                              smartlist_t *port_cfgs, int max_streams,
-                             int max_streams_close_circuit, int auth_type,
-                             smartlist_t *auth_clients, char **address_out)
+                             int max_streams_close_circuit,
+                             smartlist_t *auth_clients_v3, char **address_out)
 {
   hs_service_add_ephemeral_status_t ret;
 
@@ -1652,17 +1586,11 @@ add_onion_helper_add_service(int hs_version,
   tor_assert(port_cfgs);
   tor_assert(address_out);
 
-  /* Version 2 is disabled. */
-  (void) auth_type;
-  (void) auth_clients;
-
   switch (hs_version) {
-  case HS_VERSION_TWO:
-    ret = RSAE_INTERNAL;
-    break;
   case HS_VERSION_THREE:
     ret = hs_service_add_ephemeral(pk->v3, port_cfgs, max_streams,
-                                   max_streams_close_circuit, address_out);
+                                   max_streams_close_circuit,
+                                   auth_clients_v3, address_out);
     break;
   default:
     tor_assert_unreached();
@@ -1686,7 +1614,7 @@ get_detached_onion_services(void)
 }
 
 static const char *add_onion_keywords[] = {
-   "Port", "Flags", "MaxStreams", "ClientAuth", NULL
+   "Port", "Flags", "MaxStreams", "ClientAuth", "ClientAuthV3", NULL
 };
 static const control_cmd_syntax_t add_onion_syntax = {
   .min_args = 1, .max_args = 1,
@@ -1704,22 +1632,21 @@ handle_control_add_onion(control_connection_t *conn,
    * material first, since there's no reason to touch that at all if any of
    * the other arguments are malformed.
    */
+  rend_auth_type_t auth_type = REND_NO_AUTH;
   smartlist_t *port_cfgs = smartlist_new();
-  smartlist_t *auth_clients = NULL;
-  smartlist_t *auth_created_clients = NULL;
+  smartlist_t *auth_clients_v3 = NULL;
+  smartlist_t *auth_clients_v3_str = NULL;
   int discard_pk = 0;
   int detach = 0;
   int max_streams = 0;
   int max_streams_close_circuit = 0;
-  rend_auth_type_t auth_type = REND_NO_AUTH;
   int non_anonymous = 0;
   const config_line_t *arg;
 
   for (arg = args->kwargs; arg; arg = arg->next) {
     if (!strcasecmp(arg->key, "Port")) {
       /* "Port=VIRTPORT[,TARGET]". */
-      rend_service_port_config_t *cfg =
-          rend_service_parse_port_config(arg->value, ",", NULL);
+      hs_port_config_t *cfg = hs_parse_port_config(arg->value, ",", NULL);
       if (!cfg) {
         control_write_endreply(conn, 512, "Invalid VIRTPORT/TARGET");
         goto out;
@@ -1750,7 +1677,7 @@ handle_control_add_onion(control_connection_t *conn,
       static const char *discard_flag = "DiscardPK";
       static const char *detach_flag = "Detach";
       static const char *max_s_close_flag = "MaxStreamsCloseCircuit";
-      static const char *basicauth_flag = "BasicAuth";
+      static const char *v3auth_flag = "V3Auth";
       static const char *non_anonymous_flag = "NonAnonymous";
 
       smartlist_t *flags = smartlist_new();
@@ -1769,8 +1696,8 @@ handle_control_add_onion(control_connection_t *conn,
           detach = 1;
         } else if (!strcasecmp(flag, max_s_close_flag)) {
           max_streams_close_circuit = 1;
-        } else if (!strcasecmp(flag, basicauth_flag)) {
-          auth_type = REND_BASIC_AUTH;
+        } else if (!strcasecmp(flag, v3auth_flag)) {
+          auth_type = REND_V3_AUTH;
         } else if (!strcasecmp(flag, non_anonymous_flag)) {
           non_anonymous = 1;
         } else {
@@ -1784,36 +1711,21 @@ handle_control_add_onion(control_connection_t *conn,
       smartlist_free(flags);
       if (bad)
         goto out;
-
-    } else if (!strcasecmp(arg->key, "ClientAuth")) {
-      int created = 0;
-      rend_authorized_client_t *client =
-        add_onion_helper_clientauth(arg->value, &created, conn);
-      if (!client) {
+    } else if (!strcasecmp(arg->key, "ClientAuthV3")) {
+      hs_service_authorized_client_t *client_v3 =
+                             parse_authorized_client_key(arg->value, LOG_INFO);
+      if (!client_v3) {
+        control_write_endreply(conn, 512, "Cannot decode v3 client auth key");
         goto out;
       }
 
-      if (auth_clients != NULL) {
-        int bad = 0;
-        SMARTLIST_FOREACH_BEGIN(auth_clients, rend_authorized_client_t *, ac) {
-          if (strcmp(ac->client_name, client->client_name) == 0) {
-            bad = 1;
-            break;
-          }
-        } SMARTLIST_FOREACH_END(ac);
-        if (bad) {
-          control_write_endreply(conn, 512, "Duplicate name in ClientAuth");
-          rend_authorized_client_free(client);
-          goto out;
-        }
-      } else {
-        auth_clients = smartlist_new();
-        auth_created_clients = smartlist_new();
+      if (auth_clients_v3 == NULL) {
+        auth_clients_v3 = smartlist_new();
+        auth_clients_v3_str = smartlist_new();
       }
-      smartlist_add(auth_clients, client);
-      if (created) {
-        smartlist_add(auth_created_clients, client);
-      }
+
+      smartlist_add(auth_clients_v3, client_v3);
+      smartlist_add(auth_clients_v3_str, tor_strdup(arg->value));
     } else {
       tor_assert_nonfatal_unreached();
       goto out;
@@ -1822,20 +1734,14 @@ handle_control_add_onion(control_connection_t *conn,
   if (smartlist_len(port_cfgs) == 0) {
     control_write_endreply(conn, 512, "Missing 'Port' argument");
     goto out;
-  } else if (auth_type == REND_NO_AUTH && auth_clients != NULL) {
+  } else if (auth_type == REND_NO_AUTH && auth_clients_v3 != NULL) {
     control_write_endreply(conn, 512, "No auth type specified");
     goto out;
-  } else if (auth_type != REND_NO_AUTH && auth_clients == NULL) {
+  } else if (auth_type != REND_NO_AUTH && auth_clients_v3 == NULL) {
     control_write_endreply(conn, 512, "No auth clients specified");
     goto out;
-  } else if ((auth_type == REND_BASIC_AUTH &&
-              smartlist_len(auth_clients) > 512) ||
-             (auth_type == REND_STEALTH_AUTH &&
-              smartlist_len(auth_clients) > 16)) {
-    control_write_endreply(conn, 512, "Too many auth clients");
-    goto out;
-  } else if (non_anonymous != rend_service_non_anonymous_mode_enabled(
-                                                              get_options())) {
+  } else if (non_anonymous != hs_service_non_anonymous_mode_enabled(
+                                                            get_options())) {
     /* If we failed, and the non-anonymous flag is set, Tor must be in
      * anonymous hidden service mode.
      * The error message changes based on the current Tor config:
@@ -1862,25 +1768,16 @@ handle_control_add_onion(control_connection_t *conn,
     goto out;
   }
 
-  /* Hidden service version 3 don't have client authentication support so if
-   * ClientAuth was given, send back an error. */
-  if (hs_version == HS_VERSION_THREE && auth_clients) {
-    control_write_endreply(conn, 513, "ClientAuth not supported");
-    goto out;
-  }
-
-  /* Create the HS, using private key pk, client authentication auth_type,
-   * the list of auth_clients, and port config port_cfg.
-   * rend_service_add_ephemeral() will take ownership of pk and port_cfg,
-   * regardless of success/failure.
-   */
+  /* Create the HS, using private key pk and port config port_cfg.
+   * hs_service_add_ephemeral() will take ownership of pk and port_cfg,
+   * regardless of success/failure. */
   char *service_id = NULL;
   int ret = add_onion_helper_add_service(hs_version, &pk, port_cfgs,
                                          max_streams,
-                                         max_streams_close_circuit, auth_type,
-                                         auth_clients, &service_id);
-  port_cfgs = NULL; /* port_cfgs is now owned by the rendservice code. */
-  auth_clients = NULL; /* so is auth_clients */
+                                         max_streams_close_circuit,
+                                         auth_clients_v3, &service_id);
+  port_cfgs = NULL; /* port_cfgs is now owned by the hs_service code. */
+  auth_clients_v3 = NULL; /* so is auth_clients_v3 */
   switch (ret) {
   case RSAE_OKAY:
   {
@@ -1901,15 +1798,9 @@ handle_control_add_onion(control_connection_t *conn,
       control_printf_midreply(conn, 250, "PrivateKey=%s:%s",
                               key_new_alg, key_new_blob);
     }
-    if (auth_created_clients) {
-      SMARTLIST_FOREACH(auth_created_clients, rend_authorized_client_t *, ac, {
-        char *encoded = rend_auth_encode_cookie(ac->descriptor_cookie,
-                                                auth_type);
-        tor_assert(encoded);
-        control_printf_midreply(conn, 250, "ClientAuth=%s:%s",
-                                ac->client_name, encoded);
-        memwipe(encoded, 0, strlen(encoded));
-        tor_free(encoded);
+    if (auth_clients_v3_str) {
+      SMARTLIST_FOREACH(auth_clients_v3_str, char *, client_str, {
+        control_printf_midreply(conn, 250, "ClientAuthV3=%s", client_str);
       });
     }
 
@@ -1939,20 +1830,21 @@ handle_control_add_onion(control_connection_t *conn,
 
  out:
   if (port_cfgs) {
-    SMARTLIST_FOREACH(port_cfgs, rend_service_port_config_t*, p,
-                      rend_service_port_config_free(p));
+    SMARTLIST_FOREACH(port_cfgs, hs_port_config_t*, p,
+                      hs_port_config_free(p));
     smartlist_free(port_cfgs);
   }
+  if (auth_clients_v3) {
+    SMARTLIST_FOREACH(auth_clients_v3, hs_service_authorized_client_t *, ac,
+                      service_authorized_client_free(ac));
+    smartlist_free(auth_clients_v3);
+  }
+  if (auth_clients_v3_str) {
+    SMARTLIST_FOREACH(auth_clients_v3_str, char *, client_str,
+                      tor_free(client_str));
+    smartlist_free(auth_clients_v3_str);
+  }
 
-  if (auth_clients) {
-    SMARTLIST_FOREACH(auth_clients, rend_authorized_client_t *, ac,
-                      rend_authorized_client_free(ac));
-    smartlist_free(auth_clients);
-  }
-  if (auth_created_clients) {
-    // Do not free entries; they are the same as auth_clients
-    smartlist_free(auth_created_clients);
-  }
   return 0;
 }
 
@@ -1976,7 +1868,6 @@ add_onion_helper_keyarg(const char *arg, int discard_pk,
                         control_connection_t *conn)
 {
   smartlist_t *key_args = smartlist_new();
-  crypto_pk_t *pk = NULL;
   const char *key_new_alg = NULL;
   char *key_new_blob = NULL;
   int ret = -1;
@@ -1990,27 +1881,12 @@ add_onion_helper_keyarg(const char *arg, int discard_pk,
   /* The format is "KeyType:KeyBlob". */
   static const char *key_type_new = "NEW";
   static const char *key_type_best = "BEST";
-  static const char *key_type_rsa1024 = "RSA1024";
   static const char *key_type_ed25519_v3 = "ED25519-V3";
 
   const char *key_type = smartlist_get(key_args, 0);
   const char *key_blob = smartlist_get(key_args, 1);
 
-  if (!strcasecmp(key_type_rsa1024, key_type)) {
-    /* "RSA:<Base64 Blob>" - Loading a pre-existing RSA1024 key. */
-    pk = crypto_pk_base64_decode_private(key_blob, strlen(key_blob));
-    if (!pk) {
-      control_write_endreply(conn, 512, "Failed to decode RSA key");
-      goto err;
-    }
-    if (crypto_pk_num_bits(pk) != PK_BYTES*8) {
-      crypto_pk_free(pk);
-      control_write_endreply(conn, 512, "Invalid RSA key size");
-      goto err;
-    }
-    decoded_key->v2 = pk;
-    *hs_version = HS_VERSION_TWO;
-  } else if (!strcasecmp(key_type_ed25519_v3, key_type)) {
+  if (!strcasecmp(key_type_ed25519_v3, key_type)) {
     /* parsing of private ed25519 key */
     /* "ED25519-V3:<Base64 Blob>" - Loading a pre-existing ed25519 key. */
     ed25519_secret_key_t *sk = tor_malloc_zero(sizeof(*sk));
@@ -2024,27 +1900,8 @@ add_onion_helper_keyarg(const char *arg, int discard_pk,
     *hs_version = HS_VERSION_THREE;
   } else if (!strcasecmp(key_type_new, key_type)) {
     /* "NEW:<Algorithm>" - Generating a new key, blob as algorithm. */
-    if (!strcasecmp(key_type_rsa1024, key_blob)) {
-      /* "RSA1024", RSA 1024 bit, also currently "BEST" by default. */
-      pk = crypto_pk_new();
-      if (crypto_pk_generate_key(pk)) {
-        control_printf_endreply(conn, 551, "Failed to generate %s key",
-                                key_type_rsa1024);
-        goto err;
-      }
-      if (!discard_pk) {
-        if (crypto_pk_base64_encode_private(pk, &key_new_blob)) {
-          crypto_pk_free(pk);
-          control_printf_endreply(conn, 551, "Failed to encode %s key",
-                                  key_type_rsa1024);
-          goto err;
-        }
-        key_new_alg = key_type_rsa1024;
-      }
-      decoded_key->v2 = pk;
-      *hs_version = HS_VERSION_TWO;
-    } else if (!strcasecmp(key_type_ed25519_v3, key_blob) ||
-               !strcasecmp(key_type_best, key_blob)) {
+    if (!strcasecmp(key_type_ed25519_v3, key_blob) ||
+        !strcasecmp(key_type_best, key_blob)) {
       /* "ED25519-V3", ed25519 key, also currently "BEST" by default. */
       ed25519_secret_key_t *sk = tor_malloc_zero(sizeof(*sk));
       if (ed25519_secret_key_generate(sk, 1) < 0) {
@@ -2093,68 +1950,6 @@ add_onion_helper_keyarg(const char *arg, int discard_pk,
   return ret;
 }
 
-/** Helper function to handle parsing a ClientAuth argument to the
- * ADD_ONION command.  Return a new rend_authorized_client_t, or NULL
- * and an optional control protocol error message on failure.  The
- * caller is responsible for freeing the returned auth_client.
- *
- * If 'created' is specified, it will be set to 1 when a new cookie has
- * been generated.
- *
- * Note: conn is only used for writing control replies. For testing
- * purposes, it can be NULL if control_write_reply() is appropriately
- * mocked.
- */
-STATIC rend_authorized_client_t *
-add_onion_helper_clientauth(const char *arg, int *created,
-                            control_connection_t *conn)
-{
-  int ok = 0;
-
-  tor_assert(arg);
-  tor_assert(created);
-
-  smartlist_t *auth_args = smartlist_new();
-  rend_authorized_client_t *client =
-    tor_malloc_zero(sizeof(rend_authorized_client_t));
-  smartlist_split_string(auth_args, arg, ":", 0, 0);
-  if (smartlist_len(auth_args) < 1 || smartlist_len(auth_args) > 2) {
-    control_write_endreply(conn, 512, "Invalid ClientAuth syntax");
-    goto err;
-  }
-  client->client_name = tor_strdup(smartlist_get(auth_args, 0));
-  if (smartlist_len(auth_args) == 2) {
-    char *decode_err_msg = NULL;
-    if (rend_auth_decode_cookie(smartlist_get(auth_args, 1),
-                                client->descriptor_cookie,
-                                NULL, &decode_err_msg) < 0) {
-      tor_assert(decode_err_msg);
-      control_write_endreply(conn, 512, decode_err_msg);
-      tor_free(decode_err_msg);
-      goto err;
-    }
-    *created = 0;
-  } else {
-    crypto_rand((char *) client->descriptor_cookie, REND_DESC_COOKIE_LEN);
-    *created = 1;
-  }
-
-  if (!rend_valid_client_name(client->client_name)) {
-    control_write_endreply(conn, 512, "Invalid name in ClientAuth");
-    goto err;
-  }
-
-  ok = 1;
- err:
-  SMARTLIST_FOREACH(auth_args, char *, item, tor_free(item));
-  smartlist_free(auth_args);
-  if (!ok) {
-    rend_authorized_client_free(client);
-    client = NULL;
-  }
-  return client;
-}
-
 static const control_cmd_syntax_t del_onion_syntax = {
   .min_args = 1, .max_args = 1,
 };
@@ -2170,9 +1965,7 @@ handle_control_del_onion(control_connection_t *conn,
   tor_assert(smartlist_len(args) == 1);
 
   const char *service_id = smartlist_get(args, 0);
-  if (rend_valid_v2_service_id(service_id)) {
-    hs_version = HS_VERSION_TWO;
-  } else if (hs_address_is_valid(service_id)) {
+  if (hs_address_is_valid(service_id)) {
     hs_version = HS_VERSION_THREE;
   } else {
     control_write_endreply(conn, 512, "Malformed Onion Service id");
@@ -2203,9 +1996,6 @@ handle_control_del_onion(control_connection_t *conn,
   } else {
     int ret = -1;
     switch (hs_version) {
-    case HS_VERSION_TWO:
-      ret = rend_service_del_ephemeral(service_id);
-      break;
     case HS_VERSION_THREE:
       ret = hs_service_del_ephemeral(service_id);
       break;

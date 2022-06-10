@@ -10,7 +10,6 @@ src_tools_tor_resolve_LDADD = \
 	src/trunnel/libor-trunnel.a \
 	$(TOR_UTIL_LIBS) \
         $(TOR_CRYPTO_LIBS) $(TOR_LIBS_CRYPTLIB)\
-	$(rust_ldadd) \
 	@TOR_LIB_MATH@ @TOR_LIB_WS32@ @TOR_LIB_IPHLPAPI@ @TOR_LIB_SHLWAPI@ @TOR_LIB_USERENV@
 
 if COVERAGE_ENABLED
@@ -34,7 +33,6 @@ src_tools_tor_gencert_LDFLAGS = @TOR_LDFLAGS_zlib@ $(TOR_LDFLAGS_CRYPTLIB)
 src_tools_tor_gencert_LDADD = \
 	$(TOR_CRYPTO_LIBS) \
 	$(TOR_UTIL_LIBS) \
-	$(rust_ldadd) \
 	@TOR_LIB_MATH@ @TOR_ZLIB_LIBS@ $(TOR_LIBS_CRYPTLIB) \
 	@TOR_LIB_WS32@ @TOR_LIB_IPHLPAPI@ @TOR_LIB_SHLWAPI@ @TOR_LIB_GDI@ @TOR_LIB_USERENV@ @CURVE25519_LIBS@
 endif

@@ -1,7 +1,7 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2020, The Tor Project, Inc. */
+ * Copyright (c) 2007-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -30,11 +30,6 @@ struct cpath_build_state_t {
    * These are for encrypted dir conns that exit to this router, not
    * for arbitrary exits from the circuit. */
   unsigned int onehop_tunnel : 1;
-  /** The crypt_path_t to append after rendezvous: used for rendezvous. */
-  crypt_path_t *pending_final_cpath;
-  /** A ref-counted reference to the crypt_path_t to append after
-   * rendezvous; used on the service side. */
-  crypt_path_reference_t *service_pending_final_cpath_ref;
   /** How many times has building a circuit for this task failed? */
   int failure_count;
   /** At what time should we give up on this task? */

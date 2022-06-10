@@ -1,4 +1,4 @@
-/* Copyright (c) 2016-2020, The Tor Project, Inc. */
+/* Copyright (c) 2016-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -16,6 +16,7 @@
 #include "core/or/circuitbuild.h"
 #include "core/or/circuitlist.h"
 #include "core/or/circuituse.h"
+#include "core/or/congestion_control_common.h"
 #include "core/or/extendinfo.h"
 #include "core/or/relay.h"
 #include "feature/client/circpathbias.h"
@@ -29,7 +30,6 @@
 #include "feature/nodelist/nickname.h"
 #include "feature/nodelist/node_select.h"
 #include "feature/nodelist/nodelist.h"
-#include "feature/rend/rendservice.h"
 #include "lib/crypt_ops/crypto_ope.h"
 #include "lib/crypt_ops/crypto_rand.h"
 #include "lib/crypt_ops/crypto_util.h"
@@ -60,7 +60,6 @@
 
 /* Trunnel */
 #include "trunnel/ed25519_cert.h"
-#include "trunnel/hs/cell_common.h"
 #include "trunnel/hs/cell_establish_intro.h"
 
 #ifdef HAVE_SYS_STAT_H
@@ -160,6 +159,15 @@ HT_PROTOTYPE(hs_service_ht,      /* Name of hashtable. */
 HT_GENERATE2(hs_service_ht, hs_service_t, hs_service_node,
              hs_service_ht_hash, hs_service_ht_eq,
              0.6, tor_reallocarray, tor_free_);
+
+/** Return true iff the given service has client authorization configured that
+ * is the client list is non empty. */
+static inline bool
+is_client_auth_enabled(const hs_service_t *service)
+{
+  return (service->config.clients != NULL &&
+          smartlist_len(service->config.clients) > 0);
+}
 
 /** Query the given service map with a public key and return a service object
  * if found else NULL. It is also possible to set a directory path in the
@@ -266,8 +274,8 @@ service_clear_config(hs_service_config_t *config)
   }
   tor_free(config->directory_path);
   if (config->ports) {
-    SMARTLIST_FOREACH(config->ports, rend_service_port_config_t *, p,
-                      rend_service_port_config_free(p););
+    SMARTLIST_FOREACH(config->ports, hs_port_config_t *, p,
+                      hs_port_config_free(p););
     smartlist_free(config->ports);
   }
   if (config->clients) {
@@ -706,7 +714,7 @@ get_extend_info_from_intro_point(const hs_service_intro_point_t *ip,
 
   /* In the case of a direct connection (single onion service), it is possible
    * our firewall policy won't allow it so this can return a NULL value. */
-  info = extend_info_from_node(node, direct_conn);
+  info = extend_info_from_node(node, direct_conn, false);
 
  end:
   return info;
@@ -1118,6 +1126,43 @@ client_filename_is_valid(const char *filename)
   return ret;
 }
 
+/** Parse an base32-encoded authorized client from a string.
+ *
+ * Return the key on success, return NULL, otherwise. */
+hs_service_authorized_client_t *
+parse_authorized_client_key(const char *key_str, int severity)
+{
+  hs_service_authorized_client_t *client = NULL;
+
+  /* We expect a specific length of the base64 encoded key so make sure we
+   * have that so we don't successfully decode a value with a different length
+   * and end up in trouble when copying the decoded key into a fixed length
+   * buffer. */
+  if (strlen(key_str) != BASE32_NOPAD_LEN(CURVE25519_PUBKEY_LEN)) {
+    log_fn(severity, LD_REND, "Client authorization encoded base32 public key "
+                              "length is invalid: %s", key_str);
+    goto err;
+  }
+
+  client = tor_malloc_zero(sizeof(hs_service_authorized_client_t));
+  if (base32_decode((char *) client->client_pk.public_key,
+                    sizeof(client->client_pk.public_key),
+                    key_str, strlen(key_str)) !=
+      sizeof(client->client_pk.public_key)) {
+    log_fn(severity, LD_REND, "Client authorization public key cannot be "
+             "decoded: %s", key_str);
+    goto err;
+  }
+
+  return client;
+
+ err:
+  if (client != NULL) {
+    service_authorized_client_free(client);
+  }
+  return NULL;
+}
+
 /** Parse an authorized client from a string. The format of a client string
  * looks like (see rend-spec-v3.txt):
  *
@@ -1164,23 +1209,7 @@ parse_authorized_client(const char *client_key_str)
     goto err;
   }
 
-  /* We expect a specific length of the base32 encoded key so make sure we
-   * have that so we don't successfully decode a value with a different length
-   * and end up in trouble when copying the decoded key into a fixed length
-   * buffer. */
-  if (strlen(pubkey_b32) != BASE32_NOPAD_LEN(CURVE25519_PUBKEY_LEN)) {
-    log_warn(LD_REND, "Client authorization encoded base32 public key "
-                      "length is invalid: %s", pubkey_b32);
-    goto err;
-  }
-
-  client = tor_malloc_zero(sizeof(hs_service_authorized_client_t));
-  if (base32_decode((char *) client->client_pk.public_key,
-                    sizeof(client->client_pk.public_key),
-                    pubkey_b32, strlen(pubkey_b32)) !=
-      sizeof(client->client_pk.public_key)) {
-    log_warn(LD_REND, "Client authorization public key cannot be decoded: %s",
-             pubkey_b32);
+  if ((client = parse_authorized_client_key(pubkey_b32, LOG_WARN)) == NULL) {
     goto err;
   }
 
@@ -1282,11 +1311,6 @@ load_client_keys(hs_service_t *service)
 
   } SMARTLIST_FOREACH_END(filename);
 
-  /* If the number of clients is greater than zero, set the flag to be true. */
-  if (smartlist_len(config->clients) > 0) {
-    config->is_client_auth_enabled = 1;
-  }
-
   /* Success. */
   ret = 0;
  end:
@@ -1304,7 +1328,7 @@ load_client_keys(hs_service_t *service)
 }
 
 /** Release all storage held in <b>client</b>. */
-STATIC void
+void
 service_authorized_client_free_(hs_service_authorized_client_t *client)
 {
   if (!client) {
@@ -1796,7 +1820,7 @@ build_service_desc_superencrypted(const hs_service_t *service,
 
   /* We do not need to build the desc authorized client if the client
    * authorization is disabled */
-  if (config->is_client_auth_enabled) {
+  if (is_client_auth_enabled(service)) {
     SMARTLIST_FOREACH_BEGIN(config->clients,
                             hs_service_authorized_client_t *, client) {
       hs_desc_authorized_client_t *desc_client;
@@ -2647,8 +2671,6 @@ run_housekeeping_event(time_t now)
 static void
 run_build_descriptor_event(time_t now)
 {
-  /* For v2 services, this step happens in the upload event. */
-
   /* Run v3+ events. */
   /* We start by rotating the descriptors only if needed. */
   rotate_all_descriptors(now);
@@ -2819,11 +2841,6 @@ run_build_circuit_event(time_t now)
   if (router_have_consensus_path() == CONSENSUS_PATH_UNKNOWN ||
       !have_completed_a_circuit()) {
     return;
-  }
-
-  /* Run v2 check. */
-  if (rend_num_services() > 0) {
-    rend_consider_services_intro_points(now);
   }
 
   /* Run v3+ check. */
@@ -3261,13 +3278,6 @@ refresh_service_descriptor(const hs_service_t *service,
 STATIC void
 run_upload_descriptor_event(time_t now)
 {
-  /* v2 services use the same function for descriptor creation and upload so
-   * we do everything here because the intro circuits were checked before. */
-  if (rend_num_services() > 0) {
-    rend_consider_services_upload(now);
-    rend_consider_descriptor_republication();
-  }
-
   /* Run v3+ check. */
   FOR_EACH_SERVICE_BEGIN(service) {
     FOR_EACH_DESCRIPTOR_BEGIN(service, desc) {
@@ -3582,7 +3592,7 @@ service_encode_descriptor(const hs_service_t *service,
 
   /* If the client authorization is enabled, send the descriptor cookie to
    * hs_desc_encode_descriptor. Otherwise, send NULL */
-  if (service->config.is_client_auth_enabled) {
+  if (is_client_auth_enabled(service)) {
     descriptor_cookie = desc->descriptor_cookie;
   }
 
@@ -3595,6 +3605,54 @@ service_encode_descriptor(const hs_service_t *service,
 /* ========== */
 /* Public API */
 /* ========== */
+
+/* Are HiddenServiceSingleHopMode and HiddenServiceNonAnonymousMode consistent?
+ */
+static int
+hs_service_non_anonymous_mode_consistent(const or_options_t *options)
+{
+  /* !! is used to make these options boolean */
+  return (!! options->HiddenServiceSingleHopMode ==
+          !! options->HiddenServiceNonAnonymousMode);
+}
+
+/* Do the options allow onion services to make direct (non-anonymous)
+ * connections to introduction or rendezvous points?
+ * Must only be called after options_validate_single_onion() has successfully
+ * checked onion service option consistency.
+ * Returns true if tor is in HiddenServiceSingleHopMode. */
+int
+hs_service_allow_non_anonymous_connection(const or_options_t *options)
+{
+  tor_assert(hs_service_non_anonymous_mode_consistent(options));
+  return options->HiddenServiceSingleHopMode ? 1 : 0;
+}
+
+/* Do the options allow us to reveal the exact startup time of the onion
+ * service?
+ * Single Onion Services prioritise availability over hiding their
+ * startup time, as their IP address is publicly discoverable anyway.
+ * Must only be called after options_validate_single_onion() has successfully
+ * checked onion service option consistency.
+ * Returns true if tor is in non-anonymous hidden service mode. */
+int
+hs_service_reveal_startup_time(const or_options_t *options)
+{
+  tor_assert(hs_service_non_anonymous_mode_consistent(options));
+  return hs_service_non_anonymous_mode_enabled(options);
+}
+
+/* Is non-anonymous mode enabled using the HiddenServiceNonAnonymousMode
+ * config option?
+ * Must only be called after options_validate_single_onion() has successfully
+ * checked onion service option consistency.
+ */
+int
+hs_service_non_anonymous_mode_enabled(const or_options_t *options)
+{
+  tor_assert(hs_service_non_anonymous_mode_consistent(options));
+  return options->HiddenServiceNonAnonymousMode ? 1 : 0;
+}
 
 /** Called when a circuit was just cleaned up. This is done right before the
  * circuit is marked for close. */
@@ -3622,7 +3680,7 @@ hs_service_circuit_cleanup_on_close(const circuit_t *circ)
   }
 }
 
-/** This is called every time the service map (v2 or v3) changes that is if an
+/** This is called every time the service map changes that is if an
  * element is added or removed. */
 void
 hs_service_map_has_changed(void)
@@ -3631,6 +3689,34 @@ hs_service_map_has_changed(void)
    * the HS service main loop event. If we changed to having no services, we
    * need to disable the event. */
   rescan_periodic_events(get_options());
+}
+
+/** Called when a new consensus has arrived and has been set globally. The new
+ * consensus is pointed by ns. */
+void
+hs_service_new_consensus_params(const networkstatus_t *ns)
+{
+  tor_assert(ns);
+
+  /* This value is the new value from the consensus. */
+  uint8_t current_sendme_inc = congestion_control_sendme_inc();
+
+  if (!hs_service_map)
+    return;
+
+  /* Check each service and look if their descriptor contains a different
+   * sendme increment. If so, nuke all intro points by forcing an expiration
+   * which will lead to rebuild and reupload with the new value. */
+  FOR_EACH_SERVICE_BEGIN(service) {
+    FOR_EACH_DESCRIPTOR_BEGIN(service, desc) {
+      if (desc->desc &&
+          desc->desc->encrypted_data.sendme_inc != current_sendme_inc) {
+        /* Passing the maximum time_t will force expiration of all intro points
+         * and thus will lead to a rebuild of the descriptor. */
+        cleanup_intro_points(service, LONG_MAX);
+      }
+    } FOR_EACH_DESCRIPTOR_END;
+  } FOR_EACH_SERVICE_END;
 }
 
 /** Upload an encoded descriptor in encoded_desc of the given version. This
@@ -3684,15 +3770,17 @@ hs_service_upload_desc_to_dir(const char *encoded_desc,
 /** Add the ephemeral service using the secret key sk and ports. Both max
  * streams parameter will be set in the newly created service.
  *
- * Ownership of sk and ports is passed to this routine.  Regardless of
- * success/failure, callers should not touch these values after calling this
- * routine, and may assume that correct cleanup has been done on failure.
+ * Ownership of sk, ports, and auth_clients_v3 is passed to this routine.
+ * Regardless of success/failure, callers should not touch these values
+ * after calling this routine, and may assume that correct cleanup has
+ * been done on failure.
  *
  * Return an appropriate hs_service_add_ephemeral_status_t. */
 hs_service_add_ephemeral_status_t
 hs_service_add_ephemeral(ed25519_secret_key_t *sk, smartlist_t *ports,
                          int max_streams_per_rdv_circuit,
-                         int max_streams_close_circuit, char **address_out)
+                         int max_streams_close_circuit,
+                         smartlist_t *auth_clients_v3, char **address_out)
 {
   hs_service_add_ephemeral_status_t ret;
   hs_service_t *service = NULL;
@@ -3734,6 +3822,16 @@ hs_service_add_ephemeral(ed25519_secret_key_t *sk, smartlist_t *ports,
                         "for v3 service.");
     ret = RSAE_BADVIRTPORT;
     goto err;
+  }
+
+  if (auth_clients_v3) {
+    service->config.clients = smartlist_new();
+    SMARTLIST_FOREACH(auth_clients_v3, hs_service_authorized_client_t *, c, {
+      if (c != NULL) {
+        smartlist_add(service->config.clients, c);
+      }
+    });
+    smartlist_free(auth_clients_v3);
   }
 
   /* Build the onion address for logging purposes but also the control port
@@ -3961,9 +4059,6 @@ hs_service_lists_fnames_for_sandbox(smartlist_t *file_list,
   tor_assert(file_list);
   tor_assert(dir_list);
 
-  /* Add files and dirs for legacy services. */
-  rend_services_add_filenames_to_lists(file_list, dir_list);
-
   /* Add files and dirs for v3+. */
   FOR_EACH_SERVICE_BEGIN(service) {
     /* Skip ephemeral service, they don't touch the disk. */
@@ -4014,10 +4109,7 @@ hs_service_receive_introduce2(origin_circuit_t *circ, const uint8_t *payload,
 
   if (circ->hs_ident) {
     ret = service_handle_introduce2(circ, payload, payload_len);
-    hs_stats_note_introduce2_cell(1);
-  } else {
-    ret = rend_service_receive_introduction(circ, payload, payload_len);
-    hs_stats_note_introduce2_cell(0);
+    hs_stats_note_introduce2_cell();
   }
 
  done:
@@ -4044,12 +4136,8 @@ hs_service_receive_intro_established(origin_circuit_t *circ,
     goto err;
   }
 
-  /* Handle both version. v2 uses rend_data and v3 uses the hs circuit
-   * identifier hs_ident. Can't be both. */
   if (circ->hs_ident) {
     ret = service_handle_intro_established(circ, payload, payload_len);
-  } else {
-    ret = rend_service_intro_established(circ, payload, payload_len);
   }
 
   if (ret < 0) {
@@ -4068,21 +4156,15 @@ hs_service_circuit_has_opened(origin_circuit_t *circ)
 {
   tor_assert(circ);
 
-  /* Handle both version. v2 uses rend_data and v3 uses the hs circuit
-   * identifier hs_ident. Can't be both. */
   switch (TO_CIRCUIT(circ)->purpose) {
   case CIRCUIT_PURPOSE_S_ESTABLISH_INTRO:
     if (circ->hs_ident) {
       service_intro_circ_has_opened(circ);
-    } else {
-      rend_service_intro_has_opened(circ);
     }
     break;
   case CIRCUIT_PURPOSE_S_CONNECT_REND:
     if (circ->hs_ident) {
       service_rendezvous_circ_has_opened(circ);
-    } else {
-      rend_service_rendezvous_has_opened(circ);
     }
     break;
   default:
@@ -4110,11 +4192,6 @@ hs_service_get_version_from_key(const hs_service_t *service)
     version = HS_VERSION_THREE;
     goto end;
   }
-  /* Version 2 check. */
-  if (rend_service_key_on_disk(directory_path)) {
-    version = HS_VERSION_TWO;
-    goto end;
-  }
 
  end:
   return version;
@@ -4125,13 +4202,6 @@ hs_service_get_version_from_key(const hs_service_t *service)
 int
 hs_service_load_all_keys(void)
 {
-  /* Load v2 service keys if we have v2. */
-  if (rend_num_services() != 0) {
-    if (rend_service_load_all_keys(NULL) < 0) {
-      goto err;
-    }
-  }
-
   /* Load or/and generate them for v3+. */
   SMARTLIST_FOREACH_BEGIN(hs_service_staging_list, hs_service_t *, service) {
     /* Ignore ephemeral service, they already have their keys set. */
@@ -4331,9 +4401,6 @@ hs_service_init(void)
   tor_assert(!hs_service_map);
   tor_assert(!hs_service_staging_list);
 
-  /* v2 specific. */
-  rend_service_init();
-
   hs_service_map = tor_malloc_zero(sizeof(struct hs_service_ht));
   HT_INIT(hs_service_ht, hs_service_map);
 
@@ -4344,7 +4411,6 @@ hs_service_init(void)
 void
 hs_service_free_all(void)
 {
-  rend_service_free_all();
   service_free_all();
   hs_config_free_all();
 }

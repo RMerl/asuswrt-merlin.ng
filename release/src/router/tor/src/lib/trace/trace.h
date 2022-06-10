@@ -1,4 +1,4 @@
-/* Copyright (c) 2020, The Tor Project, Inc. */
+/* Copyright (c) 2020-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -26,7 +26,7 @@ tracing_log_warning(void)
            "purpose, your tor is NOT safe to run.");
 }
 
-#else
+#else /* !defined(HAVE_TRACING) */
 
 /* NOP it. */
 #define tracing_log_warning()

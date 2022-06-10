@@ -1,4 +1,4 @@
-/* Copyright (c) 2016-2020, The Tor Project, Inc. */
+/* Copyright (c) 2016-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -172,6 +172,7 @@ typedef enum {
   R3_DESC_AUTH_KEY,
   R3_DESC_AUTH_CLIENT,
   R3_ENCRYPTED,
+  R3_FLOW_CONTROL,
 
   R_IPO_IDENTIFIER,
   R_IPO_IP_ADDRESS,
@@ -218,7 +219,6 @@ typedef struct directory_token_t {
 typedef enum {
   NO_OBJ,        /**< No object, ever. */
   NEED_OBJ,      /**< Object is required. */
-  NEED_SKEY_1024,/**< Object is required, and must be a 1024 bit private key */
   NEED_KEY_1024, /**< Object is required, and must be a 1024 bit public key */
   NEED_KEY,      /**< Object is required, and must be a public key. */
   OBJ_OK,        /**< Object is optional. */

@@ -1,4 +1,4 @@
-/* Copyright (c) 2015-2020, The Tor Project, Inc. */
+/* Copyright (c) 2015-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 #define CONTROL_CMD_PRIVATE
@@ -16,7 +16,6 @@
 #include "feature/dircache/dirserv.h"
 #include "feature/hs/hs_common.h"
 #include "feature/nodelist/networkstatus.h"
-#include "feature/rend/rendservice.h"
 #include "feature/nodelist/authcert.h"
 #include "feature/nodelist/nodelist.h"
 #include "feature/stats/rephist.h"
@@ -317,110 +316,6 @@ test_add_onion_helper_keyarg_v3(void *arg)
 }
 
 static void
-test_add_onion_helper_keyarg_v2(void *arg)
-{
-  int ret, hs_version;
-  add_onion_secret_key_t pk;
-  crypto_pk_t *pk1 = NULL;
-  const char *key_new_alg = NULL;
-  char *key_new_blob = NULL;
-  char *encoded = NULL;
-  char *arg_str = NULL;
-
-  (void) arg;
-  MOCK(control_write_reply, mock_control_write_reply);
-
-  memset(&pk, 0, sizeof(pk));
-
-  /* Test explicit RSA1024 key generation. */
-  tor_free(reply_str);
-  ret = add_onion_helper_keyarg("NEW:RSA1024", 0, &key_new_alg, &key_new_blob,
-                                &pk, &hs_version, NULL);
-  tt_int_op(ret, OP_EQ, 0);
-  tt_int_op(hs_version, OP_EQ, HS_VERSION_TWO);
-  tt_assert(pk.v2);
-  tt_str_op(key_new_alg, OP_EQ, "RSA1024");
-  tt_assert(key_new_blob);
-  tt_ptr_op(reply_str, OP_EQ, NULL);
-
-  /* Test discarding the private key. */
-  crypto_pk_free(pk.v2); pk.v2 = NULL;
-  tor_free(key_new_blob);
-  ret = add_onion_helper_keyarg("NEW:RSA1024", 1, &key_new_alg, &key_new_blob,
-                               &pk, &hs_version, NULL);
-  tt_int_op(ret, OP_EQ, 0);
-  tt_int_op(hs_version, OP_EQ, HS_VERSION_TWO);
-  tt_assert(pk.v2);
-  tt_ptr_op(key_new_alg, OP_EQ, NULL);
-  tt_ptr_op(key_new_blob, OP_EQ, NULL);
-  tt_ptr_op(reply_str, OP_EQ, NULL);
-
-  /* Test generating a invalid key type. */
-  crypto_pk_free(pk.v2); pk.v2 = NULL;
-  ret = add_onion_helper_keyarg("NEW:RSA512", 0, &key_new_alg, &key_new_blob,
-                               &pk, &hs_version, NULL);
-  tt_int_op(ret, OP_EQ, -1);
-  tt_int_op(hs_version, OP_EQ, HS_VERSION_TWO);
-  tt_assert(!pk.v2);
-  tt_ptr_op(key_new_alg, OP_EQ, NULL);
-  tt_ptr_op(key_new_blob, OP_EQ, NULL);
-  tt_assert(reply_str);
-
-  /* Test loading a RSA1024 key. */
-  tor_free(reply_str);
-  pk1 = pk_generate(0);
-  tt_int_op(0, OP_EQ, crypto_pk_base64_encode_private(pk1, &encoded));
-  tor_asprintf(&arg_str, "RSA1024:%s", encoded);
-  ret = add_onion_helper_keyarg(arg_str, 0, &key_new_alg, &key_new_blob,
-                                &pk, &hs_version, NULL);
-  tt_int_op(ret, OP_EQ, 0);
-  tt_int_op(hs_version, OP_EQ, HS_VERSION_TWO);
-  tt_assert(pk.v2);
-  tt_ptr_op(key_new_alg, OP_EQ, NULL);
-  tt_ptr_op(key_new_blob, OP_EQ, NULL);
-  tt_ptr_op(reply_str, OP_EQ, NULL);
-  tt_int_op(crypto_pk_cmp_keys(pk1, pk.v2), OP_EQ, 0);
-
-  /* Test loading a invalid key type. */
-  tor_free(arg_str);
-  crypto_pk_free(pk1); pk1 = NULL;
-  crypto_pk_free(pk.v2); pk.v2 = NULL;
-  tor_asprintf(&arg_str, "RSA512:%s", encoded);
-  ret = add_onion_helper_keyarg(arg_str, 0, &key_new_alg, &key_new_blob,
-                                &pk, &hs_version, NULL);
-  tt_int_op(ret, OP_EQ, -1);
-  tt_int_op(hs_version, OP_EQ, HS_VERSION_TWO);
-  tt_assert(!pk.v2);
-  tt_ptr_op(key_new_alg, OP_EQ, NULL);
-  tt_ptr_op(key_new_blob, OP_EQ, NULL);
-  tt_assert(reply_str);
-
-  /* Test loading a invalid key. */
-  tor_free(arg_str);
-  crypto_pk_free(pk.v2); pk.v2 = NULL;
-  tor_free(reply_str);
-  encoded[strlen(encoded)/2] = '\0';
-  tor_asprintf(&arg_str, "RSA1024:%s", encoded);
-  ret = add_onion_helper_keyarg(arg_str, 0, &key_new_alg, &key_new_blob,
-                               &pk, &hs_version, NULL);
-  tt_int_op(ret, OP_EQ, -1);
-  tt_int_op(hs_version, OP_EQ, HS_VERSION_TWO);
-  tt_assert(!pk.v2);
-  tt_ptr_op(key_new_alg, OP_EQ, NULL);
-  tt_ptr_op(key_new_blob, OP_EQ, NULL);
-  tt_assert(reply_str);
-
- done:
-  crypto_pk_free(pk1);
-  crypto_pk_free(pk.v2);
-  tor_free(key_new_blob);
-  tor_free(reply_str);
-  tor_free(encoded);
-  tor_free(arg_str);
-  UNMOCK(control_write_reply);
-}
-
-static void
 test_getinfo_helper_onion(void *arg)
 {
   (void)arg;
@@ -460,50 +355,50 @@ test_getinfo_helper_onion(void *arg)
 }
 
 static void
-test_rend_service_parse_port_config(void *arg)
+test_hs_parse_port_config(void *arg)
 {
   const char *sep = ",";
-  rend_service_port_config_t *cfg = NULL;
+  hs_port_config_t *cfg = NULL;
   char *err_msg = NULL;
 
   (void)arg;
 
   /* Test "VIRTPORT" only. */
-  cfg = rend_service_parse_port_config("80", sep, &err_msg);
+  cfg = hs_parse_port_config("80", sep, &err_msg);
   tt_assert(cfg);
   tt_ptr_op(err_msg, OP_EQ, NULL);
 
   /* Test "VIRTPORT,TARGET" (Target is port). */
-  rend_service_port_config_free(cfg);
-  cfg = rend_service_parse_port_config("80,8080", sep, &err_msg);
+  hs_port_config_free(cfg);
+  cfg = hs_parse_port_config("80,8080", sep, &err_msg);
   tt_assert(cfg);
   tt_ptr_op(err_msg, OP_EQ, NULL);
 
   /* Test "VIRTPORT,TARGET" (Target is IPv4:port). */
-  rend_service_port_config_free(cfg);
-  cfg = rend_service_parse_port_config("80,192.0.2.1:8080", sep, &err_msg);
+  hs_port_config_free(cfg);
+  cfg = hs_parse_port_config("80,192.0.2.1:8080", sep, &err_msg);
   tt_assert(cfg);
   tt_ptr_op(err_msg, OP_EQ, NULL);
 
   /* Test "VIRTPORT,TARGET" (Target is IPv6:port). */
-  rend_service_port_config_free(cfg);
-  cfg = rend_service_parse_port_config("80,[2001:db8::1]:8080", sep, &err_msg);
+  hs_port_config_free(cfg);
+  cfg = hs_parse_port_config("80,[2001:db8::1]:8080", sep, &err_msg);
   tt_assert(cfg);
   tt_ptr_op(err_msg, OP_EQ, NULL);
-  rend_service_port_config_free(cfg);
+  hs_port_config_free(cfg);
   cfg = NULL;
 
   /* XXX: Someone should add tests for AF_UNIX targets if supported. */
 
   /* Test empty config. */
-  rend_service_port_config_free(cfg);
-  cfg = rend_service_parse_port_config("", sep, &err_msg);
+  hs_port_config_free(cfg);
+  cfg = hs_parse_port_config("", sep, &err_msg);
   tt_ptr_op(cfg, OP_EQ, NULL);
   tt_assert(err_msg);
 
   /* Test invalid port. */
   tor_free(err_msg);
-  cfg = rend_service_parse_port_config("90001", sep, &err_msg);
+  cfg = hs_parse_port_config("90001", sep, &err_msg);
   tt_ptr_op(cfg, OP_EQ, NULL);
   tt_assert(err_msg);
   tor_free(err_msg);
@@ -513,24 +408,24 @@ test_rend_service_parse_port_config(void *arg)
 
   /* quoted unix port */
   tor_free(err_msg);
-  cfg = rend_service_parse_port_config("100 unix:\"/tmp/foo bar\"",
+  cfg = hs_parse_port_config("100 unix:\"/tmp/foo bar\"",
                                        " ", &err_msg);
   tt_assert(cfg);
   tt_ptr_op(err_msg, OP_EQ, NULL);
-  rend_service_port_config_free(cfg);
+  hs_port_config_free(cfg);
   cfg = NULL;
 
   /* quoted unix port */
   tor_free(err_msg);
-  cfg = rend_service_parse_port_config("100 unix:\"/tmp/foo bar\"",
+  cfg = hs_parse_port_config("100 unix:\"/tmp/foo bar\"",
                                        " ", &err_msg);
   tt_assert(cfg);
   tt_ptr_op(err_msg, OP_EQ, NULL);
-  rend_service_port_config_free(cfg);
+  hs_port_config_free(cfg);
   cfg = NULL;
 
   /* quoted unix port, missing end quote */
-  cfg = rend_service_parse_port_config("100 unix:\"/tmp/foo bar",
+  cfg = hs_parse_port_config("100 unix:\"/tmp/foo bar",
                                        " ", &err_msg);
   tt_ptr_op(cfg, OP_EQ, NULL);
   tt_str_op(err_msg, OP_EQ, "Couldn't process address <unix:\"/tmp/foo bar> "
@@ -539,7 +434,7 @@ test_rend_service_parse_port_config(void *arg)
 
   /* bogus IP address */
   MOCK(tor_addr_lookup, mock_tor_addr_lookup__fail_on_bad_addrs);
-  cfg = rend_service_parse_port_config("100 foo!!.example.com:9000",
+  cfg = hs_parse_port_config("100 foo!!.example.com:9000",
                                        " ", &err_msg);
   UNMOCK(tor_addr_lookup);
   tt_ptr_op(cfg, OP_EQ, NULL);
@@ -548,7 +443,7 @@ test_rend_service_parse_port_config(void *arg)
   tor_free(err_msg);
 
   /* bogus port port */
-  cfg = rend_service_parse_port_config("100 99999",
+  cfg = hs_parse_port_config("100 99999",
                                        " ", &err_msg);
   tt_ptr_op(cfg, OP_EQ, NULL);
   tt_str_op(err_msg, OP_EQ, "Unparseable or out-of-range port \"99999\" "
@@ -556,67 +451,15 @@ test_rend_service_parse_port_config(void *arg)
   tor_free(err_msg);
 
   /* Wrong target address and port separation */
-  cfg = rend_service_parse_port_config("80,127.0.0.1 1234", sep,
+  cfg = hs_parse_port_config("80,127.0.0.1 1234", sep,
                                        &err_msg);
   tt_ptr_op(cfg, OP_EQ, NULL);
   tt_assert(err_msg);
   tor_free(err_msg);
 
  done:
-  rend_service_port_config_free(cfg);
+  hs_port_config_free(cfg);
   tor_free(err_msg);
-}
-
-static void
-test_add_onion_helper_clientauth(void *arg)
-{
-  rend_authorized_client_t *client = NULL;
-  int created = 0;
-
-  (void)arg;
-
-  MOCK(control_write_reply, mock_control_write_reply);
-  /* Test "ClientName" only. */
-  tor_free(reply_str);
-  client = add_onion_helper_clientauth("alice", &created, NULL);
-  tt_assert(client);
-  tt_assert(created);
-  tt_ptr_op(reply_str, OP_EQ, NULL);
-  rend_authorized_client_free(client);
-
-  /* Test "ClientName:Blob" */
-  tor_free(reply_str);
-  client = add_onion_helper_clientauth("alice:475hGBHPlq7Mc0cRZitK/B",
-                                       &created, NULL);
-  tt_assert(client);
-  tt_assert(!created);
-  tt_ptr_op(reply_str, OP_EQ, NULL);
-  rend_authorized_client_free(client);
-
-  /* Test invalid client names */
-  tor_free(reply_str);
-  client = add_onion_helper_clientauth("no*asterisks*allowed", &created,
-                                       NULL);
-  tt_ptr_op(client, OP_EQ, NULL);
-  tt_assert(reply_str);
-
-  /* Test invalid auth cookie */
-  tor_free(reply_str);
-  client = add_onion_helper_clientauth("alice:12345", &created, NULL);
-  tt_ptr_op(client, OP_EQ, NULL);
-  tt_assert(reply_str);
-
-  /* Test invalid syntax */
-  tor_free(reply_str);
-  client = add_onion_helper_clientauth(":475hGBHPlq7Mc0cRZitK/B", &created,
-                                       NULL);
-  tt_ptr_op(client, OP_EQ, NULL);
-  tt_assert(reply_str);
-
- done:
-  rend_authorized_client_free(client);
-  tor_free(reply_str);
-  UNMOCK(control_write_reply);
 }
 
 /* Mocks and data/variables used for GETINFO download status tests */
@@ -2209,15 +2052,11 @@ struct testcase_t controller_tests[] = {
   PARSER_TEST(no_args_one_obj),
   PARSER_TEST(no_args_kwargs),
   PARSER_TEST(one_arg_kwargs),
-  { "add_onion_helper_keyarg_v2", test_add_onion_helper_keyarg_v2, 0,
-    NULL, NULL },
   { "add_onion_helper_keyarg_v3", test_add_onion_helper_keyarg_v3, 0,
     NULL, NULL },
   { "getinfo_helper_onion", test_getinfo_helper_onion, 0, NULL, NULL },
-  { "rend_service_parse_port_config", test_rend_service_parse_port_config, 0,
+  { "hs_parse_port_config", test_hs_parse_port_config, 0,
     NULL, NULL },
-  { "add_onion_helper_clientauth", test_add_onion_helper_clientauth, 0, NULL,
-    NULL },
   { "download_status_consensus", test_download_status_consensus, 0, NULL,
     NULL },
   {"getinfo_helper_current_consensus_from_cache",

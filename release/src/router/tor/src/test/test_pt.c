@@ -1,6 +1,6 @@
 /* Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2020, The Tor Project, Inc. */
+ * Copyright (c) 2007-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 #include "orconfig.h"
@@ -230,6 +230,10 @@ test_pt_protocol(void *arg)
   tt_assert(mp->conf_state == PT_PROTO_ACCEPTING_METHODS);
 
   strlcpy(line,"CMETHOD trebuchet socks5 127.0.0.1:1999",sizeof(line));
+  handle_proxy_line(line, mp);
+  tt_assert(mp->conf_state == PT_PROTO_ACCEPTING_METHODS);
+
+  strlcpy(line,"CMETHOD-ERROR fakename not supported",sizeof(line));
   handle_proxy_line(line, mp);
   tt_assert(mp->conf_state == PT_PROTO_ACCEPTING_METHODS);
 

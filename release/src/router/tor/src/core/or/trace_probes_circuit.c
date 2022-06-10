@@ -1,4 +1,4 @@
-/* Copyright (c) 2020, The Tor Project, Inc. */
+/* Copyright (c) 2020-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -25,6 +25,6 @@
 #define TRACEPOINT_DEFINE
 #define TRACEPOINT_CREATE_PROBES
 
-#include "trace_probes_circuit.h"
+#include "core/or/trace_probes_circuit.h"
 
-#endif /* USE_TRACING_INSTRUMENTATION_LTTNG */
+#endif /* defined(USE_TRACING_INSTRUMENTATION_LTTNG) */

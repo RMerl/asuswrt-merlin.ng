@@ -1,7 +1,7 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2020, The Tor Project, Inc. */
+ * Copyright (c) 2007-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -128,9 +128,6 @@ struct origin_circuit_t {
    */
   crypt_path_t *cpath;
 
-  /** Holds all rendezvous data on either client or service side. */
-  rend_data_t *rend_data;
-
   /** Holds hidden service identifier on either client or service side. This
    * is for both introduction and rendezvous circuit. */
   struct hs_ident_circuit_t *hs_ident;
@@ -181,6 +178,12 @@ struct origin_circuit_t {
    * allowed to attach streams to them.
    */
   unsigned first_hop_from_controller : 1;
+
+  /**
+   * If true, this circuit's path has been chosen, in full or in part,
+   * by the controller API, and it's okay to ignore checks that we'd
+   * usually do on the path as whole. */
+  unsigned int any_hop_from_controller : 1;
 
   /**
    * Tristate variable to guard against pathbias miscounting

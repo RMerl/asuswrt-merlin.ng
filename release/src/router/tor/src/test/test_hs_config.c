@@ -1,4 +1,4 @@
-/* Copyright (c) 2016-2020, The Tor Project, Inc. */
+/* Copyright (c) 2016-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -18,7 +18,6 @@
 #include "feature/hs/hs_common.h"
 #include "feature/hs/hs_config.h"
 #include "feature/hs/hs_service.h"
-#include "feature/rend/rendservice.h"
 
 static int
 helper_config_service(const char *conf, int validate_only)
@@ -50,18 +49,6 @@ test_invalid_service(void *arg)
     ret = helper_config_service(conf, 1);
     tt_int_op(ret, OP_EQ, -1);
     expect_log_msg_containing("HiddenServiceVersion must be 3, not 1");
-    teardown_capture_of_logs();
-  }
-
-  /* Version 2 not accepted anymore. */
-  {
-    const char *conf =
-      "HiddenServiceDir /tmp/tor-test-hs-RANDOM/hs1\n"
-      "HiddenServiceVersion 2\n";
-    setup_full_capture_of_logs(LOG_WARN);
-    ret = helper_config_service(conf, 1);
-    tt_int_op(ret, OP_EQ, -1);
-    expect_log_msg_containing("HiddenServiceVersion must be 3, not 2");
     teardown_capture_of_logs();
   }
 
@@ -194,7 +181,6 @@ test_valid_service(void *arg)
 
   (void) arg;
 
-  /* v3. */
   {
     const char *conf =
       "HiddenServiceDir /tmp/tor-test-hs-RANDOM/hs2\n"
@@ -342,8 +328,6 @@ test_staging_service_v3(void *arg)
   tt_int_op(ret, OP_EQ, 0);
   /* Ok, we have a service in our map! Registration went well. */
   tt_int_op(get_hs_service_staging_list_size(), OP_EQ, 1);
-  /* Make sure we don't have a magic v2 service out of this. */
-  tt_int_op(rend_num_services(), OP_EQ, 0);
 
  done:
   hs_free_all();

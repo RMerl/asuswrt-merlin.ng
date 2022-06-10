@@ -1,7 +1,7 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2020, The Tor Project, Inc. */
+ * Copyright (c) 2007-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -63,6 +63,10 @@ MOCK_DECL(int,
 circuit_deliver_create_cell,(circuit_t *circ,
                              const struct create_cell_t *create_cell,
                              int relayed));
+
+int client_circ_negotiation_message(const extend_info_t *ei,
+                                    uint8_t **msg_out,
+                                    size_t *msg_len_out);
 
 #ifdef CIRCUITBUILD_PRIVATE
 STATIC circid_t get_unique_circ_id_by_chan(channel_t *chan);

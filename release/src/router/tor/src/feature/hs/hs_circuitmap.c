@@ -1,4 +1,4 @@
-/* Copyright (c) 2016-2020, The Tor Project, Inc. */
+/* Copyright (c) 2016-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -273,7 +273,7 @@ hs_circuitmap_get_or_circuit(hs_token_type_t type,
 
 /**** Public relay-side getters: */
 
-/** Public function: Return v2 and v3 introduction circuit to this relay.
+/** Public function: Return v3 introduction circuit to this relay.
  * Always return a newly allocated list for which it is the caller's
  * responsibility to free it. */
 smartlist_t *
@@ -286,12 +286,11 @@ hs_circuitmap_get_all_intro_circ_relay_side(void)
     circuit_t *circ = *iter;
 
     /* An origin circuit or purpose is wrong or the hs token is not set to be
-     * a v2 or v3 intro relay side type, we ignore the circuit. Else, we have
+     * a v3 intro relay side type, we ignore the circuit. Else, we have
      * a match so add it to our list. */
     if (CIRCUIT_IS_ORIGIN(circ) ||
         circ->purpose != CIRCUIT_PURPOSE_INTRO_POINT ||
-        (circ->hs_token->type != HS_TOKEN_INTRO_V3_RELAY_SIDE &&
-         circ->hs_token->type != HS_TOKEN_INTRO_V2_RELAY_SIDE)) {
+        circ->hs_token->type != HS_TOKEN_INTRO_V3_RELAY_SIDE) {
       continue;
     }
     smartlist_add(circuit_list, circ);
@@ -309,16 +308,6 @@ hs_circuitmap_get_intro_circ_v3_relay_side(
 {
   return hs_circuitmap_get_or_circuit(HS_TOKEN_INTRO_V3_RELAY_SIDE,
                                       ED25519_PUBKEY_LEN, auth_key->pubkey,
-                                      CIRCUIT_PURPOSE_INTRO_POINT);
-}
-
-/** Public function: Return v2 introduction circuit to this relay with
- * <b>digest</b>. Return NULL if no such circuit is found in the circuitmap. */
-or_circuit_t *
-hs_circuitmap_get_intro_circ_v2_relay_side(const uint8_t *digest)
-{
-  return hs_circuitmap_get_or_circuit(HS_TOKEN_INTRO_V2_RELAY_SIDE,
-                                      REND_TOKEN_LEN, digest,
                                       CIRCUIT_PURPOSE_INTRO_POINT);
 }
 
@@ -343,16 +332,6 @@ hs_circuitmap_register_rend_circ_relay_side(or_circuit_t *circ,
   hs_circuitmap_register_circuit(TO_CIRCUIT(circ),
                                  HS_TOKEN_REND_RELAY_SIDE,
                                  REND_TOKEN_LEN, cookie);
-}
-/** Public function: Register v2 intro circuit with key <b>digest</b> to the
- * circuitmap. */
-void
-hs_circuitmap_register_intro_circ_v2_relay_side(or_circuit_t *circ,
-                                                const uint8_t *digest)
-{
-  hs_circuitmap_register_circuit(TO_CIRCUIT(circ),
-                                 HS_TOKEN_INTRO_V2_RELAY_SIDE,
-                                 REND_TOKEN_LEN, digest);
 }
 
 /** Public function: Register v3 intro circuit with key <b>auth_key</b> to the
@@ -388,30 +367,6 @@ hs_circuitmap_get_intro_circ_v3_service_side(const
   /* ...if nothing found, check for pending intro circs */
   circ = hs_circuitmap_get_origin_circuit(HS_TOKEN_INTRO_V3_SERVICE_SIDE,
                                           ED25519_PUBKEY_LEN, auth_key->pubkey,
-                                          CIRCUIT_PURPOSE_S_ESTABLISH_INTRO);
-
-  return circ;
-}
-
-/** Public function: Return v2 introduction circuit originating from this
- * hidden service with <b>digest</b>. Return NULL if no such circuit is found
- * in the circuitmap. */
-origin_circuit_t *
-hs_circuitmap_get_intro_circ_v2_service_side(const uint8_t *digest)
-{
-  origin_circuit_t *circ = NULL;
-
-  /* Check first for established intro circuits */
-  circ = hs_circuitmap_get_origin_circuit(HS_TOKEN_INTRO_V2_SERVICE_SIDE,
-                                          REND_TOKEN_LEN, digest,
-                                          CIRCUIT_PURPOSE_S_INTRO);
-  if (circ) {
-    return circ;
-  }
-
-  /* ...if nothing found, check for pending intro circs */
-  circ = hs_circuitmap_get_origin_circuit(HS_TOKEN_INTRO_V2_SERVICE_SIDE,
-                                          REND_TOKEN_LEN, digest,
                                           CIRCUIT_PURPOSE_S_ESTABLISH_INTRO);
 
   return circ;
@@ -514,17 +469,6 @@ hs_circuitmap_get_established_rend_circ_client_side(const uint8_t *cookie)
 }
 
 /**** Public servide-side setters: */
-
-/** Public function: Register v2 intro circuit with key <b>digest</b> to the
- * circuitmap. */
-void
-hs_circuitmap_register_intro_circ_v2_service_side(origin_circuit_t *circ,
-                                                  const uint8_t *digest)
-{
-  hs_circuitmap_register_circuit(TO_CIRCUIT(circ),
-                                 HS_TOKEN_INTRO_V2_SERVICE_SIDE,
-                                 REND_TOKEN_LEN, digest);
-}
 
 /** Public function: Register v3 intro circuit with key <b>auth_key</b> to the
  * circuitmap. */

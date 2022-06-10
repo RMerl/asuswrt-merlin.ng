@@ -41,7 +41,6 @@ rm -f "$TOPLEVEL/contrib/dist/suse/tor.sh" "$TOPLEVEL/contrib/dist/tor.sh"
 find "$TOPLEVEL/contrib" "$TOPLEVEL/doc" "$TOPLEVEL/scripts" "$TOPLEVEL/src" \
     -name "*.sh" \
     -not -path "$TOPLEVEL/src/ext/*" \
-    -not -path "$TOPLEVEL/src/rust/registry/*" \
     -exec shellcheck {} +
 
 # Check scripts that aren't named *.sh

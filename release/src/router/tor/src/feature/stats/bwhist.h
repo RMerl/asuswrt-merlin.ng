@@ -1,7 +1,7 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2020, The Tor Project, Inc. */
+ * Copyright (c) 2007-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -38,7 +38,7 @@ STATIC void add_obs(bw_array_t *b, time_t when, uint64_t n);
 STATIC void bw_array_free_(bw_array_t *b);
 STATIC size_t bwhist_fill_bandwidth_history(char *buf, size_t len,
                                             const bw_array_t *b);
-#endif /* defined(REPHIST_PRIVATE) */
+#endif /* defined(BWHIST_PRIVATE) */
 
 #ifdef TOR_UNIT_TESTS
 extern struct bw_array_t *write_array;

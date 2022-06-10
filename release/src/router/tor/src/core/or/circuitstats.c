@@ -1,7 +1,7 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2020, The Tor Project, Inc. */
+ * Copyright (c) 2007-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -34,8 +34,6 @@
 #include "lib/crypt_ops/crypto_rand.h"
 #include "core/mainloop/mainloop.h"
 #include "feature/nodelist/networkstatus.h"
-#include "feature/rend/rendclient.h"
-#include "feature/rend/rendservice.h"
 #include "feature/relay/router.h"
 #include "app/config/statefile.h"
 #include "core/or/circuitlist.h"
@@ -44,6 +42,7 @@
 #include "lib/time/tvdiff.h"
 #include "lib/encoding/confline.h"
 #include "feature/dirauth/authmode.h"
+#include "feature/hs/hs_service.h"
 #include "feature/relay/relay_periodic.h"
 
 #include "core/or/crypt_path_st.h"
@@ -146,8 +145,8 @@ circuit_build_times_disabled_(const or_options_t *options,
      *
      * If we fix both of these issues someday, we should test
      * these modes with LearnCircuitBuildTimeout on again. */
-    int single_onion_disabled = rend_service_allow_non_anonymous_connection(
-                                                                      options);
+    int single_onion_disabled = hs_service_allow_non_anonymous_connection(
+                                                               options);
 
     if (consensus_disabled || config_disabled || dirauth_disabled ||
         state_disabled || single_onion_disabled) {
@@ -203,10 +202,10 @@ circuit_build_times_max_timeouts(void)
  * Retrieve and bounds-check the cbtnummodes consensus parameter.
  *
  * Effect: This value governs how many modes to use in the weighted
- * average calculation of Pareto parameter Xm. A value of 3 introduces
- * some bias (2-5% of CDF) under ideal conditions, but allows for better
- * performance in the event that a client chooses guard nodes of radically
- * different performance characteristics.
+ * average calculation of Pareto parameter Xm. Analysis of pairs of
+ * geographically near, far, and mixed guaeds has shown that a value of
+ * 10 introduces some allows for the actual timeout rate to be within
+ * 2-7% of the cutoff quantile, for quantiles between 60-80%.
  */
 static int32_t
 circuit_build_times_default_num_xm_modes(void)
@@ -851,58 +850,49 @@ circuit_build_times_create_histogram(const circuit_build_times_t *cbt,
  * Return the Pareto start-of-curve parameter Xm.
  *
  * Because we are not a true Pareto curve, we compute this as the
- * weighted average of the N most frequent build time bins. N is either
- * 1 if we don't have enough circuit build time data collected, or
- * determined by the consensus parameter cbtnummodes (default 3).
+ * weighted average of the 10 most frequent build time bins. This
+ * heuristic allowed for the actual timeout rate to be closest
+ * to the chosen quantile cutoff, for quantiles 60-80%, out of
+ * many variant approaches (see #40157 for analysis).
  */
-static build_time_t
+STATIC build_time_t
 circuit_build_times_get_xm(circuit_build_times_t *cbt)
 {
-  build_time_t i, nbins;
+  build_time_t nbins = 0;
   build_time_t *nth_max_bin;
-  int32_t bin_counts=0;
-  build_time_t ret = 0;
-  uint32_t *histogram = circuit_build_times_create_histogram(cbt, &nbins);
-  int n=0;
+  build_time_t xm_total = 0;
+  build_time_t Xm = 0;
+  int32_t xm_counts=0;
   int num_modes = circuit_build_times_default_num_xm_modes();
+  uint32_t *histogram = circuit_build_times_create_histogram(cbt, &nbins);
 
   tor_assert(nbins > 0);
   tor_assert(num_modes > 0);
 
-  // Only use one mode if < 1000 buildtimes. Not enough data
-  // for multiple.
-  if (cbt->total_build_times < CBT_NCIRCUITS_TO_OBSERVE)
-    num_modes = 1;
-
   nth_max_bin = tor_calloc(num_modes, sizeof(build_time_t));
 
-  /* Determine the N most common build times */
-  for (i = 0; i < nbins; i++) {
-    if (histogram[i] >= histogram[nth_max_bin[0]]) {
-      nth_max_bin[0] = i;
-    }
-
-    for (n = 1; n < num_modes; n++) {
-      if (histogram[i] >= histogram[nth_max_bin[n]] &&
-           (!histogram[nth_max_bin[n-1]]
-               || histogram[i] < histogram[nth_max_bin[n-1]])) {
+  /* Determine the N most common build times, by selecting the
+   * nth largest mode, counting it, and removing it from the histogram. */
+  for (int n = 0; n < num_modes; n++) {
+    /* Get nth mode */
+    for (build_time_t i = 0; i < nbins; i++) {
+      if (histogram[i] > histogram[nth_max_bin[n]]) {
         nth_max_bin[n] = i;
       }
     }
+
+    /* Update average */
+    xm_counts += histogram[nth_max_bin[n]];
+    xm_total += CBT_BIN_TO_MS(nth_max_bin[n])*histogram[nth_max_bin[n]];
+
+    /* Prevent from re-counting this value */
+    histogram[nth_max_bin[n]] = 0;
   }
 
-  for (n = 0; n < num_modes; n++) {
-    bin_counts += histogram[nth_max_bin[n]];
-    ret += CBT_BIN_TO_MS(nth_max_bin[n])*histogram[nth_max_bin[n]];
-    log_info(LD_CIRC, "Xm mode #%d: %u %u", n, CBT_BIN_TO_MS(nth_max_bin[n]),
-             histogram[nth_max_bin[n]]);
-  }
-
-  /* bin_counts can become zero if all of our last CBT_NCIRCUITS_TO_OBSERVE
+  /* xm_counts can become zero if all of our last CBT_NCIRCUITS_TO_OBSERVE
    * circuits were abandoned before they completed. This shouldn't happen,
    * though. We should have reset/re-learned a lower timeout first. */
-  if (bin_counts == 0) {
-    ret = 0;
+  if (xm_counts == 0) {
     log_warn(LD_CIRC,
                "No valid circuit build time data out of %d times, %u modes, "
                "have_timeout=%d, %lfms", cbt->total_build_times, num_modes,
@@ -910,15 +900,13 @@ circuit_build_times_get_xm(circuit_build_times_t *cbt)
     goto done;
   }
 
-  tor_assert(bin_counts > 0);
-
-  ret /= bin_counts;
+  Xm = xm_total / xm_counts;
 
  done:
   tor_free(histogram);
   tor_free(nth_max_bin);
 
-  return ret;
+  return Xm;
 }
 
 /**
@@ -1005,43 +993,6 @@ circuit_build_times_shuffle_and_store_array(circuit_build_times_t *cbt,
   for (n = 0; n < MIN(num_times, CBT_NCIRCUITS_TO_OBSERVE); n++) {
     circuit_build_times_add_time(cbt, raw_times[n]);
   }
-}
-
-/**
- * Filter old synthetic timeouts that were created before the
- * new right-censored Pareto calculation was deployed.
- *
- * Once all clients before 0.2.1.13-alpha are gone, this code
- * will be unused.
- */
-static int
-circuit_build_times_filter_timeouts(circuit_build_times_t *cbt)
-{
-  int num_filtered=0, i=0;
-  double timeout_rate = 0;
-  build_time_t max_timeout = 0;
-
-  timeout_rate = circuit_build_times_timeout_rate(cbt);
-  max_timeout = (build_time_t)cbt->close_ms;
-
-  for (i = 0; i < CBT_NCIRCUITS_TO_OBSERVE; i++) {
-    if (cbt->circuit_build_times[i] > max_timeout) {
-      build_time_t replaced = cbt->circuit_build_times[i];
-      num_filtered++;
-      cbt->circuit_build_times[i] = CBT_BUILD_ABANDONED;
-
-      log_debug(LD_CIRC, "Replaced timeout %d with %d", replaced,
-               cbt->circuit_build_times[i]);
-    }
-  }
-
-  log_info(LD_CIRC,
-           "We had %d timeouts out of %d build times, "
-           "and filtered %d above the max of %u",
-          (int)(cbt->total_build_times*timeout_rate),
-          cbt->total_build_times, num_filtered, max_timeout);
-
-  return num_filtered;
 }
 
 /**
@@ -1169,10 +1120,6 @@ circuit_build_times_parse_state(circuit_build_times_t *cbt,
 
   circuit_build_times_set_timeout(cbt);
 
-  if (!state->CircuitBuildAbandonedCount && cbt->total_build_times) {
-    circuit_build_times_filter_timeouts(cbt);
-  }
-
  done:
   tor_free(loaded_times);
   return err ? -1 : 0;
@@ -1193,7 +1140,6 @@ circuit_build_times_update_alpha(circuit_build_times_t *cbt)
   build_time_t *x=cbt->circuit_build_times;
   double a = 0;
   int n=0,i=0,abandoned_count=0;
-  build_time_t max_time=0;
 
   /* https://en.wikipedia.org/wiki/Pareto_distribution#Parameter_estimation */
   /* We sort of cheat here and make our samples slightly more pareto-like
@@ -1213,14 +1159,13 @@ circuit_build_times_update_alpha(circuit_build_times_t *cbt)
 
     if (x[i] < cbt->Xm) {
       a += tor_mathlog(cbt->Xm);
+      n++;
     } else if (x[i] == CBT_BUILD_ABANDONED) {
       abandoned_count++;
     } else {
       a += tor_mathlog(x[i]);
-      if (x[i] > max_time)
-        max_time = x[i];
+      n++;
     }
-    n++;
   }
 
   /*
@@ -1229,30 +1174,23 @@ circuit_build_times_update_alpha(circuit_build_times_t *cbt)
    * performs this same check, and resets state if it hits it. If we
    * hit it at runtime, something serious has gone wrong.
    */
-  if (n!=cbt->total_build_times) {
+  if (n!=cbt->total_build_times-abandoned_count) {
     log_err(LD_CIRC, "Discrepancy in build times count: %d vs %d", n,
             cbt->total_build_times);
   }
-  tor_assert(n==cbt->total_build_times);
+  tor_assert_nonfatal(n==cbt->total_build_times-abandoned_count);
 
-  if (max_time <= 0) {
-    /* This can happen if Xm is actually the *maximum* value in the set.
-     * It can also happen if we've abandoned every single circuit somehow.
-     * In either case, tell the caller not to compute a new build timeout. */
-    log_warn(LD_BUG,
-             "Could not determine largest build time (%d). "
-             "Xm is %dms and we've abandoned %d out of %d circuits.", max_time,
-             cbt->Xm, abandoned_count, n);
-    return 0;
-  }
-
-  a += abandoned_count*tor_mathlog(max_time);
-
+  /* This is the "Maximum Likelihood Estimator" for parameter alpha of a Pareto
+   * Distribution. See:
+   * https://en.wikipedia.org/wiki/Pareto_distribution#Estimation_of_parameters
+   *
+   * The division in the estimator is done with subtraction outside the ln(),
+   * with the sum occurring in the for loop above.
+   *
+   * This done is to avoid the precision issues of logs of small values.
+   */
   a -= n*tor_mathlog(cbt->Xm);
-  // Estimator comes from Eq #4 in:
-  // "Bayesian estimation based on trimmed samples from Pareto populations"
-  // by Arturo J. Fernández. We are right-censored only.
-  a = (n-abandoned_count)/a;
+  a = n/a;
 
   cbt->alpha = a;
 
@@ -1661,9 +1599,8 @@ circuit_build_times_network_check_changed(circuit_build_times_t *cbt)
 
   log_notice(LD_CIRC,
             "Your network connection speed appears to have changed. Resetting "
-            "timeout to %lds after %d timeouts and %d buildtimes.",
-            tor_lround(cbt->timeout_ms/1000), timeout_count,
-            total_build_times);
+            "timeout to %ldms after %d timeouts and %d buildtimes.",
+            tor_lround(cbt->timeout_ms), timeout_count, total_build_times);
 
   return 1;
 }
@@ -1829,7 +1766,7 @@ circuit_build_times_set_timeout(circuit_build_times_t *cbt)
     return;
 
   if (cbt->timeout_ms < circuit_build_times_min_timeout()) {
-    log_info(LD_CIRC, "Set buildtimeout to low value %fms. Setting to %dms",
+    log_notice(LD_CIRC, "Set buildtimeout to low value %fms. Setting to %dms",
              cbt->timeout_ms, circuit_build_times_min_timeout());
     cbt->timeout_ms = circuit_build_times_min_timeout();
     if (cbt->close_ms < cbt->timeout_ms) {
@@ -1847,9 +1784,9 @@ circuit_build_times_set_timeout(circuit_build_times_t *cbt)
     log_info(LD_CIRC,
                "Based on %d circuit times, it looks like we don't need to "
                "wait so long for circuits to finish. We will now assume a "
-               "circuit is too slow to use after waiting %ld seconds.",
+               "circuit is too slow to use after waiting %ld milliseconds.",
                cbt->total_build_times,
-               tor_lround(cbt->timeout_ms/1000));
+               tor_lround(cbt->timeout_ms));
     log_info(LD_CIRC,
              "Circuit timeout data: %fms, %fms, Xm: %d, a: %f, r: %f",
              cbt->timeout_ms, cbt->close_ms, cbt->Xm, cbt->alpha,
@@ -1858,18 +1795,18 @@ circuit_build_times_set_timeout(circuit_build_times_t *cbt)
     log_info(LD_CIRC,
                "Based on %d circuit times, it looks like we need to wait "
                "longer for circuits to finish. We will now assume a "
-               "circuit is too slow to use after waiting %ld seconds.",
+               "circuit is too slow to use after waiting %ld milliseconds.",
                cbt->total_build_times,
-               tor_lround(cbt->timeout_ms/1000));
+               tor_lround(cbt->timeout_ms));
     log_info(LD_CIRC,
              "Circuit timeout data: %fms, %fms, Xm: %d, a: %f, r: %f",
              cbt->timeout_ms, cbt->close_ms, cbt->Xm, cbt->alpha,
              timeout_rate);
   } else {
     log_info(LD_CIRC,
-             "Set circuit build timeout to %lds (%fms, %fms, Xm: %d, a: %f,"
+             "Set circuit build timeout to %ldms (%fms, %fms, Xm: %d, a: %f,"
              " r: %f) based on %d circuit times",
-             tor_lround(cbt->timeout_ms/1000),
+             tor_lround(cbt->timeout_ms),
              cbt->timeout_ms, cbt->close_ms, cbt->Xm, cbt->alpha, timeout_rate,
              cbt->total_build_times);
   }

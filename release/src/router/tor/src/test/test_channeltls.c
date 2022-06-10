@@ -1,4 +1,4 @@
-/* Copyright (c) 2014-2020, The Tor Project, Inc. */
+/* Copyright (c) 2014-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 #include "orconfig.h"
@@ -20,6 +20,7 @@
 #include "lib/tls/tortls.h"
 
 #include "core/or/or_connection_st.h"
+#include "core/or/congestion_control_common.h"
 
 /* Test suite stuff */
 #include "test/test.h"
@@ -155,7 +156,7 @@ test_channeltls_num_bytes_queued(void *arg)
    * - 2 cells.
    */
   n = ch->num_cells_writeable(ch);
-  tt_int_op(n, OP_EQ, CEIL_DIV(OR_CONN_HIGHWATER, 512) - 2);
+  tt_int_op(n, OP_EQ, CEIL_DIV(or_conn_highwatermark(), 512) - 2);
   UNMOCK(buf_datalen);
   tlschan_buf_datalen_mock_target = NULL;
   tlschan_buf_datalen_mock_size = 0;

@@ -1,4 +1,4 @@
-/* Copyright (c) 2017-2020, The Tor Project, Inc. */
+/* Copyright (c) 2017-2021, The Tor Project, Inc. */
 /* Copyright (c) 2017, isis agora lovecruft  */
 /* See LICENSE for licensing information     */
 

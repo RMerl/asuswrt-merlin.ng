@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2020, The Tor Project, Inc. */
+/* Copyright (c) 2013-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 #define CHANNEL_OBJECT_PRIVATE
@@ -203,6 +203,10 @@ test_rend_token_maps(void *arg)
   c4 = or_circuit_new(0, NULL);
   c5 = origin_circuit_new();
 
+  ed25519_public_key_t intro_pk1 = { {1} }; /* Junk, not important. */
+  ed25519_public_key_t intro_pk2 = { {2} }; /* Junk, not important. */
+  ed25519_public_key_t intro_pk3 = { {3} }; /* Junk, not important. */
+
   /* Make sure we really filled up the tok* variables */
   tt_int_op(tok1[REND_TOKEN_LEN-1], OP_EQ, 'y');
   tt_int_op(tok2[REND_TOKEN_LEN-1], OP_EQ, ' ');
@@ -210,31 +214,37 @@ test_rend_token_maps(void *arg)
 
   /* No maps; nothing there. */
   tt_ptr_op(NULL, OP_EQ, hs_circuitmap_get_rend_circ_relay_side(tok1));
-  tt_ptr_op(NULL, OP_EQ, hs_circuitmap_get_intro_circ_v2_relay_side(tok1));
+  tt_ptr_op(NULL, OP_EQ,
+            hs_circuitmap_get_intro_circ_v3_relay_side(&intro_pk1));
 
   hs_circuitmap_register_rend_circ_relay_side(c1, tok1);
-  hs_circuitmap_register_intro_circ_v2_relay_side(c2, tok2);
+  hs_circuitmap_register_intro_circ_v3_relay_side(c2, &intro_pk2);
 
   tt_ptr_op(NULL, OP_EQ, hs_circuitmap_get_rend_circ_relay_side(tok3));
-  tt_ptr_op(NULL, OP_EQ, hs_circuitmap_get_intro_circ_v2_relay_side(tok3));
+  tt_ptr_op(NULL, OP_EQ,
+            hs_circuitmap_get_intro_circ_v3_relay_side(&intro_pk3));
   tt_ptr_op(NULL, OP_EQ, hs_circuitmap_get_rend_circ_relay_side(tok2));
-  tt_ptr_op(NULL, OP_EQ, hs_circuitmap_get_intro_circ_v2_relay_side(tok1));
+  tt_ptr_op(NULL, OP_EQ,
+            hs_circuitmap_get_intro_circ_v3_relay_side(&intro_pk2));
 
   /* Without purpose set, we don't get the circuits */
   tt_ptr_op(NULL, OP_EQ, hs_circuitmap_get_rend_circ_relay_side(tok1));
-  tt_ptr_op(NULL, OP_EQ, hs_circuitmap_get_intro_circ_v2_relay_side(tok2));
+  tt_ptr_op(NULL, OP_EQ,
+            hs_circuitmap_get_intro_circ_v3_relay_side(&intro_pk2));
 
   c1->base_.purpose = CIRCUIT_PURPOSE_REND_POINT_WAITING;
   c2->base_.purpose = CIRCUIT_PURPOSE_INTRO_POINT;
 
   /* Okay, make sure they show up now. */
   tt_ptr_op(c1, OP_EQ, hs_circuitmap_get_rend_circ_relay_side(tok1));
-  tt_ptr_op(c2, OP_EQ, hs_circuitmap_get_intro_circ_v2_relay_side(tok2));
+  tt_ptr_op(c2, OP_EQ,
+            hs_circuitmap_get_intro_circ_v3_relay_side(&intro_pk2));
 
   /* Two items at the same place with the same token. */
   c3->base_.purpose = CIRCUIT_PURPOSE_REND_POINT_WAITING;
   hs_circuitmap_register_rend_circ_relay_side(c3, tok2);
-  tt_ptr_op(c2, OP_EQ, hs_circuitmap_get_intro_circ_v2_relay_side(tok2));
+  tt_ptr_op(c2, OP_EQ,
+            hs_circuitmap_get_intro_circ_v3_relay_side(&intro_pk2));
   tt_ptr_op(c3, OP_EQ, hs_circuitmap_get_rend_circ_relay_side(tok2));
 
   /* Marking a circuit makes it not get returned any more */
@@ -246,31 +256,36 @@ test_rend_token_maps(void *arg)
   /* Freeing a circuit makes it not get returned any more. */
   circuit_free_(TO_CIRCUIT(c2));
   c2 = NULL;
-  tt_ptr_op(NULL, OP_EQ, hs_circuitmap_get_intro_circ_v2_relay_side(tok2));
+  tt_ptr_op(NULL, OP_EQ,
+            hs_circuitmap_get_intro_circ_v3_relay_side(&intro_pk2));
 
   /* c3 -- are you still there? */
   tt_ptr_op(c3, OP_EQ, hs_circuitmap_get_rend_circ_relay_side(tok2));
   /* Change its cookie.  This never happens in Tor per se, but hey. */
   c3->base_.purpose = CIRCUIT_PURPOSE_INTRO_POINT;
-  hs_circuitmap_register_intro_circ_v2_relay_side(c3, tok3);
+  hs_circuitmap_register_intro_circ_v3_relay_side(c3, &intro_pk3);
 
   tt_ptr_op(NULL, OP_EQ, hs_circuitmap_get_rend_circ_relay_side(tok2));
-  tt_ptr_op(c3, OP_EQ, hs_circuitmap_get_intro_circ_v2_relay_side(tok3));
+  tt_ptr_op(c3, OP_EQ,
+            hs_circuitmap_get_intro_circ_v3_relay_side(&intro_pk3));
 
   /* Now replace c3 with c4. */
   c4->base_.purpose = CIRCUIT_PURPOSE_INTRO_POINT;
-  hs_circuitmap_register_intro_circ_v2_relay_side(c4, tok3);
+  hs_circuitmap_register_intro_circ_v3_relay_side(c4, &intro_pk3);
 
-  tt_ptr_op(c4, OP_EQ, hs_circuitmap_get_intro_circ_v2_relay_side(tok3));
+  tt_ptr_op(c4, OP_EQ,
+            hs_circuitmap_get_intro_circ_v3_relay_side(&intro_pk3));
 
   tt_ptr_op(TO_CIRCUIT(c3)->hs_token, OP_EQ, NULL);
   tt_ptr_op(TO_CIRCUIT(c4)->hs_token, OP_NE, NULL);
-  tt_mem_op(TO_CIRCUIT(c4)->hs_token->token, OP_EQ, tok3, REND_TOKEN_LEN);
+  tt_mem_op(TO_CIRCUIT(c4)->hs_token->token, OP_EQ, &intro_pk3,
+            REND_TOKEN_LEN);
 
   /* Now clear c4's cookie. */
   hs_circuitmap_remove_circuit(TO_CIRCUIT(c4));
   tt_ptr_op(TO_CIRCUIT(c4)->hs_token, OP_EQ, NULL);
-  tt_ptr_op(NULL, OP_EQ, hs_circuitmap_get_intro_circ_v2_relay_side(tok3));
+  tt_ptr_op(NULL, OP_EQ,
+            hs_circuitmap_get_intro_circ_v3_relay_side(&intro_pk3));
 
   /* Now let's do a check for the client-side rend circuitmap */
   c5->base_.purpose = CIRCUIT_PURPOSE_C_ESTABLISH_REND;
@@ -401,6 +416,9 @@ test_hs_circuitmap_isolation(void *arg)
 
   hs_circuitmap_init();
 
+  ed25519_public_key_t intro_pk1 = { {1} }; /* Junk, not important. */
+  ed25519_public_key_t intro_pk2 = { {2} }; /* Junk, not important. */
+
   {
     const uint8_t tok1[REND_TOKEN_LEN] = "bet i got some of th";
 
@@ -416,7 +434,8 @@ test_hs_circuitmap_isolation(void *arg)
 
     /* check that service-side getters don't work */
     tt_ptr_op(NULL, OP_EQ, hs_circuitmap_get_rend_circ_service_side(tok1));
-    tt_ptr_op(NULL, OP_EQ, hs_circuitmap_get_intro_circ_v2_service_side(tok1));
+    tt_ptr_op(NULL, OP_EQ,
+              hs_circuitmap_get_intro_circ_v3_service_side(&intro_pk1));
 
     /* Check that the right getter works. */
     tt_ptr_op(circ1, OP_EQ, hs_circuitmap_get_rend_circ_relay_side(tok1));
@@ -436,17 +455,18 @@ test_hs_circuitmap_isolation(void *arg)
     circ4->base_.purpose = CIRCUIT_PURPOSE_S_ESTABLISH_INTRO;
 
     /* Register circ2 with tok2 as service-side intro v2 circ */
-    hs_circuitmap_register_intro_circ_v2_service_side(circ2, tok2);
+    hs_circuitmap_register_intro_circ_v3_service_side(circ2, &intro_pk2);
     /* Register circ3 with tok2 again but for different purpose */
-    hs_circuitmap_register_intro_circ_v2_relay_side(circ3, tok2);
+    hs_circuitmap_register_intro_circ_v3_relay_side(circ3, &intro_pk2);
 
     /* Check that the getters work */
     tt_ptr_op(circ2, OP_EQ,
-              hs_circuitmap_get_intro_circ_v2_service_side(tok2));
-    tt_ptr_op(circ3, OP_EQ, hs_circuitmap_get_intro_circ_v2_relay_side(tok2));
+              hs_circuitmap_get_intro_circ_v3_service_side(&intro_pk2));
+    tt_ptr_op(circ3, OP_EQ,
+              hs_circuitmap_get_intro_circ_v3_relay_side(&intro_pk2));
 
     /* Register circ4 with tok2: it should override circ2 */
-    hs_circuitmap_register_intro_circ_v2_service_side(circ4, tok2);
+    hs_circuitmap_register_intro_circ_v3_service_side(circ4, &intro_pk2);
 
     /* check that relay-side getters don't work */
     tt_ptr_op(NULL, OP_EQ, hs_circuitmap_get_rend_circ_relay_side(tok2));
@@ -454,7 +474,7 @@ test_hs_circuitmap_isolation(void *arg)
     /* Check that the getter returns circ4; the last circuit registered with
      * that token. */
     tt_ptr_op(circ4, OP_EQ,
-              hs_circuitmap_get_intro_circ_v2_service_side(tok2));
+              hs_circuitmap_get_intro_circ_v3_service_side(&intro_pk2));
   }
 
  done:

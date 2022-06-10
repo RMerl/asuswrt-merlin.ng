@@ -1,7 +1,7 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2020, The Tor Project, Inc. */
+ * Copyright (c) 2007-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -51,6 +51,8 @@ struct routerstatus_t {
                                      * choice as an entry guard. */
   unsigned int is_bad_exit:1; /**< True iff this node is a bad choice for
                                * an exit node. */
+  unsigned int is_middle_only:1; /**< True iff this node is marked as bad
+                                  * for anything besides middle positions. */
   unsigned int is_hs_dir:1; /**< True iff this router is a v2-or-later hidden
                              * service directory. */
   unsigned int is_v2_dir:1; /** True iff this router publishes an open DirPort
@@ -58,6 +60,7 @@ struct routerstatus_t {
                              */
   unsigned int is_staledesc:1; /** True iff the authorities think this router
                                 * should upload a new descriptor soon. */
+  unsigned int is_sybil:1; /** True iff this router is a sybil. */
 
   unsigned int has_bandwidth:1; /**< The vote/consensus had bw info */
   unsigned int has_exitsummary:1; /**< The vote/consensus had exit summaries */

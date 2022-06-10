@@ -1,18 +1,17 @@
-<?xml version="1.0"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
+<!DOCTYPE html>
+<html lang="en-US">
 <head>
-<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta charset="UTF-8">
 <title>This is a Tor Exit Router</title>
-
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAAAAXNSR0IArs4c6QAAAMxQTFRFAAAAcK9AAAAAaK9IAAAAaq9FAAAAaK9EAAAAaa9DAAAAaK9FAAAAaa9EAAAAaK9EAgICZ7FEAgICaLBDAgICZ7BEAQEBaLBEAQEBZ7BEAQEBaLBDAQEBZ7BEHDATAQEB9fje5unQ19nCx8q1uLqnqauZmpuLaLBEiox9e31wbG1iSHkvfkeYXV5UdkOPbj6FZzp8TU5GXzZyVzFpPj84Ty1fRyhWQCRNLy8qLykwJyQmMBs6ICAdKBcwIBMnGA4dEBAPEQoUCQUKAQEBYGuyKwAAACB0Uk5TABAQICAwMEBAUFBgYHBwgICPj5+fr6+/v8/P39/v7+9rEnzIAAABbUlEQVR42n2SbVuCMBSG8TXzpUzN1DTOBoyNmIZOpUJS9///U0f7EFzIno+77z3b2TXrZmo1y5i7oZl3ppXOsFKKHzuL3uu0nDeeF1PfwK3hwjfyiu/7C9MM9yg0ynG7/uT7PcP+vn57f7EMqUduPG+aDA0ibRl4VUNw6Bv4WNJ4p0sr2rYijKWb86B6e/uRA/U8sVke7HaRN+cxBZBEkM8wxJLCgLYkQCIGzGXbMPwoGDMJ4CkHqKPIIbwY+at2EwCBDnCXsa8Qs5/nC7BbIPfcAKRaobA8515UExIh5wwrpFyHmNyDtRIEQJSDkuTqKuzHWUEBFkTIPSaY2l+FSXbIBAWPA9BAuDL5E0ZWJjYVjiDYTwKi9PWI9CErjIQTCAqUg3D0VVjpelZoHWnEObguCKH1EoXviZXLIHbihLgMBNc/yLc2FuQyioMkAgkq0jvkul38sEedRAFL9Gm5Tm9+zPrI1pekp1n3f/UXYAE8WMMDnnoAAAAASUVORK5CYII=">
 <!--
 
 This notice is intended to be placed on a virtual host for a domain that
 your Tor exit node IP reverse resolves to so that people who may be about
 to file an abuse complaint would check it first before bothering you or
 your ISP. Ex:
-http://tor-exit.yourdomain.org or http://tor-readme.yourdomain.org.
+https://tor-exit.yourdomain.org or https://tor-readme.yourdomain.org.
 
 This type of setup has proven very effective at reducing abuse complaints
 for exit node operators.
@@ -21,213 +20,250 @@ There are a few places in this document that you may want to customize.
 They are marked with FIXME.
 
 -->
+<style>
+:root{
+--background-color: white;
+--text-color: rgb(33, 37, 41);
+--link-color: rgb(116, 42, 152);
+}
+@media (prefers-color-scheme: dark){
+:root{
+--background-color: rgb(34, 34, 34);
+--text-color: rgb(221, 221, 221);
+--link-color: rgb(219, 142, 255);
+}
+}
+*{
+font-family: Arial;
+box-sizing: border-box;
+}
+html{
+background: var(--background-color);
+}
+body{
+margin-left: auto;
+margin-right: auto;
+padding-left: 5vw;
+padding-right: 5vw;
+max-width: 1000px;
+}
+h1, p{
+color: var(--text-color);
+}
+h1{
+font-size: 55px;
+text-align: center;
+}
+p, a{
+font-size: 20px;
+}
+a{
+color: var(--link-color);
+text-decoration: none;
+}
+a:hover{
+filter: brightness(.8);
+text-decoration: underline;
+}
+.links{
+display: flex;
+flex-wrap: wrap;
+justify-content: space-evenly;
+}
+.links > a{
+margin: 10px;
+white-space: nowrap;
+}
+</style>
 
 </head>
 <body>
-
-<p style="text-align:center; font-size:xx-large; font-weight:bold">This is a
-Tor Exit Router</p>
+<main>
+<h1>This is a Tor Exit Router</h1>
+<p style="text-align:center">
+<svg xmlns="http://www.w3.org/2000/svg" width="500" viewBox="0 0 274.3 159.9" style="width:100%;max-width:500px">
+<desc></desc>
+<defs>
+<style>
+.a{fill:none}.b,.e{fill:#895ba5}.b{stroke:#895ba5}.j,.l,.m,.o,.b,.d{stroke-miterlimit:10}.l,.b{stroke-width:.75px}.k,.c,.f{fill:#24093b}.a,.c,.f{stroke:#24093b;stroke-linecap:round;stroke-linejoin:round}.m,.o,.c,.d{stroke-width:.5px}.i,.j,.d{fill:#6fc8b7}.j,.d{stroke:#6fc8b7}.l,.m,.g{fill:#fed916}.h{fill:#fff}.a{stroke-width:1.6px}.j{stroke-width:.68px}.l,.m{stroke:#fed916}.n,.o{fill:#cf63a6}.o{stroke:#cf63a6}
+</style>
+</defs>
+<path d="M153.6 27.5s6.2 13.1 18.1 3c-8-5.7-10.9-7.6-10.9-7.6z" class="c"/>
+<path d="M212.9 96.2c3.2 6.5 5.2 13.8 9 20 2.3 3.8 4 4.5 8.3 3.3 8.2-2.3 17.4-6.3 25.6-9.7l-1.2-7.6a7.5 7.5 0 0 1-3.2 1.2c-2 0-4-1-5.8-1.6-1.4-.4-3.9.4-4.6.8-3.5 1.9-4.8 4-7 7-.6-7.8-1.2-15.6-1.5-23.4-6.6 3.4-12.9 7-19.6 10z" class="d"/>
+<path d="M217.2 108.6c.6 1.3 1.7 2 1.5 2.8 1.7 1.9 1.8 5.2 3 6.6 2.3-4 5.5-7.4 7.9-11.2.5-1.5 1.8-2.3 2.4-3.3.7-1.8 2.8-4.4 2.4-7.1.6-3.7.4-7.4 1-11-4-5-19.5 18.8-19.5 19.2-.4.5 1.4 2.6 1.3 4zm3.4 6.8c-.4-.3.3-.5 0 0z" class="e"/>
+<path d="M221 115.4c-1.2-3.3-.3-9.3 1.4-11.6 2.3-3 5.3-3.6 7.4-5.5 1.7-1.4 3.3-4.8 3.6-5.9 6.3-23.1-13.8 5.3-17.2 11.2 1.6 4 3.1 8 4.9 11.8z" class="f"/>
+<path d="M220.6 97c2.5-2.7 5.3-5.1 7.7-8-5-.4-10-.8-14.8-1.5-4.1 5.4-8 11.1-11.9 16.7-8 13.6-14.5 28.2-21.6 42.3a9.1 9.1 0 0 0 5 2c.3.1.8.4 1.2.2.4-.3.4 0 .9-.6.4-.6 0 .4.8-.9 3-4.7 5.4-10.1 9-15.1.6-.9 2.7-2.8 4-4.5a16.8 16.8 0 0 0 2.3-3.2c2.7-4.9 5.5-11.3 9.2-16.8a119.3 119.3 0 0 1 8.2-10.6z" class="d"/>
+<path d="M233.4 75.7c0-.1-.2-.1-.2 0v.2zm-3.6 2.3c-2.5 1.1-4.2 2.1-6.5 2.7-2.5 1-5.7.5-7.7 2.8-2.6 2.8-4 6.5-6.7 9.2-2.6 3.5-4.3 7.6-7.4 10.5 0 2.2 2.3 3.3 4 4 1.5.3 2.4 1.8 3.9 2.2 1.5.7 3.3.1 4.3-1.2 2-2 3.4-4.6 5.8-6.1 5.3-4 11.6-6.9 16.1-12 2.6-2.6 4.5-6.7 2.7-10.2-.8-1.4-1.8-3-3.4-3.3-2.1.2-1.1-.1-5.1 1.4z" class="e"/>
+<path d="m185.4 133 7 6.2c-2 3.9-4.2 7.6-6.5 11.2-1.8-2.2-3.6-4.3-5.3-6.6a82.4 82.4 0 0 0 4.8-10.9z" class="g"/>
+<path d="M182.5 141.4c-1.3 0-1.2 1.3-2.2 2.2a13.9 13.9 0 0 0-1.8 2.3c-.3-2.6 0-4.4-1.4-7-.3-.6-1.8-2.3-3-2.2-.6 0-2.4-.4-3.2.1a12.4 12.4 0 0 0-2.2 1.2c2.6 4 5.2 7.9 7.7 12a24 24 0 0 0 3 3.5l2.8 2.5a103.3 103.3 0 0 0 6-8.8 24.5 24.5 0 0 0-2.6-3.4c-1.1-1.3-1.7-2.5-3-2.4z" class="f"/>
+<path d="m168.3 138-.8.6c-.6 1-1 2 0 3 4 4.7 8.1 9.4 12.3 14 1.1 1.3 2 .5 3.3-.1-5-5.9-9.8-11.7-14.8-17.4z" class="e"/>
+<path d="m248 113 .1-10.8 12.6-4v10L248 113z" class="g"/>
+<path d="M257.4 109.2c1.3.7 2-.6 3.4-1a13.6 13.6 0 0 0 2.8-1.1c-.9 2.7-1.8 4.2-1.5 7.5 0 .7.7 3 1.8 3.7.4.3 1.8 1.7 2.5 1.8a9.4 9.4 0 0 0 2.3.2c-.4-5.3-.9-10.6-1.5-15.8a37.3 37.3 0 0 0-1-5l-1.3-4c-3.2 1.7-6.4 3-9.5 4.9a26.3 26.3 0 0 0 .3 4.7c.4 1.9.3 3.4 1.7 4.1z" class="f"/>
+<path d="M269 120.3c.3 0 .7.2.9 0a2.5 2.5 0 0 0 1.3-2.8c-1.4-6.8-2.9-13.7-4.5-20.4-.4-1.7-1.4-1.6-2.7-1.7l5 25z" class="e"/>
+<path d="m185.2 134.6 6.5 6.4m58-39.4.1 10.8" class="a"/>
+<path d="M188.5 86.7c.4.6.7 1.3.8 2 0 1.2-.4 2-1.4 2.3-2.8.6-5.8 0-8.1-1.7-1.6-1-3-2.4-2.8-4.5" class="d"/>
+<path d="M213.8 50.2a55.2 55.2 0 0 0-8.7 14.6 61.4 61.4 0 0 0-4.3 17.4 13.5 13.5 0 0 0-6.8-.7 14.2 14.2 0 0 0-5.5 2.2l-1 4.5-.7 3.2c4.6-.5 9.2.2 14-.2 2.2-.2 3-.5 4.6-3.1 3.6-6.4 7-14 11.2-20.2-1.8-5.8-1.5-11.7-2.8-17.7z" class="d"/>
+<path d="m186.7 91.3 1.4-8.5 6-1.1-1.4 9.7-6-.1z" class="b"/>
+<path d="M249 83.2a3.5 3.5 0 0 0 2.4-2.3 2.1 2.1 0 0 0-1-2.7c-.9-.3-3.4 1.4-1.8 1.8 1.6.4 2.2-2.2 1.9-3.6-.8-3-2.7-4-5.2-3a5.4 5.4 0 0 0-3.8 5.8c.8 4.5 4.2 4.8 7.6 4z" class="d"/>
+<path d="M235.1 82.3a33.1 33.1 0 0 1-.4-16.9c1.8-5.8 4.6-7.7 6.4-12.2a6.3 6.3 0 0 0 .2-2.6c.7-4.3-3.3-6.3-5.7-6.4A46.6 46.6 0 0 0 218 48c-4.5 1.9-5 4.2-7.1 7-2.1 3-1.5 6-1.3 8.2.5 5 2.3 7 3.8 11.1a84 84 0 0 1 4 15.4c5.9-2.8 12-4.5 17.8-7.4z" class="b"/>
+<path d="m234.4 58.2.2-.5a15.3 15.3 0 0 1 4.3.7l4 .8 1.9.3a6.3 6.3 0 0 0 3-.3c1.7-.5 3.6-.5 5.2-1.2m-35.8 26.8c2.8-2.9 6.5-4.4 9.9-6a67.1 67.1 0 0 1 6.4-2.8" class="a"/>
+<path fill="#6fc8b7" stroke="#6fc8b7" stroke-miterlimit="10" stroke-width=".6" d="M220.3 46.4c-1.4 1.5-5 6.6-.8 6.2 4.3-.4 7.4-4.4 10.5-7.6a77.4 77.4 0 0 0-9.7 1.4z"/>
+<path d="M238.3 48.2a2.8 2.8 0 0 0-5.2-1.6c-2.7 3.8-8.9 13.7-3.7 17 5.6 3.5 9.1-10.3 8.9-15.4z" class="f"/>
+<path d="M242.6 46c5.8 2.2 12.6 3.7 18.3 6.4 3.3 1.6 3.5 3.9 1.2 7.3-3.3 5-8.3 10.3-12 15.5-1.8-1-3.5-2-5.3-2.8 2.7-4.5 5.3-8.9 8.1-13.2-5.6-.4-10.5-.5-16.4-1.3-.6 0-3.9-1.1-3.6-3.4.2-1.3 0-3.7 1-5.3.3-.3.3-1.2 1.3-1.7 2.3-1.2 4.4-2.7 7.4-1.5z" class="d"/>
+<path d="m247.5 67.2 1.5.4 5 1.6c-1.1 2.3-2.6 4.6-4 7q-2.5-2-5.2-3.8" class="b"/>
+<path d="M224.6 37a117.1 117.1 0 0 0-5.9 10.2 65.3 65.3 0 0 1 13-2.9q.6-5.7 1.5-11.4l-8.6 4z" class="f"/>
+<path d="M218.3 29.7c2.1-6.6 7.7-10 13.8-10.6 4.2 1 7.3 2.6 7 7.6 0 .6 0 .6-.4 1.3-2.1 2.6-6 6-9 8.7-2.4 2.1-4 2.4-6.7 3h-.5c-3.5-2.6-6-4.3-4.2-10z" class="i"/>
+<path d="M233.6 29.7c1.2.2 3 .4 3.9 1.2.9.8.2 1.2.3 2.2a3.7 3.7 0 0 1 0 .8 3.5 3.5 0 0 1-.5 1 4.3 4.3 0 0 1-4.1 2.3c-1.6-.1-2-.5-2.2-2.1" class="i"/>
+<path d="M235.4 31.5a6.4 6.4 0 0 0 1-.7c3.5-6-3-3.8-1 .7z" class="j"/>
+<path d="M224.7 23c-2-4.7.8-8.1 4-11.3 1.6-1.5 5-3.5 7.3-3.2 2.3.2 3 1.5 2 3.8s-3.5 3.8-5.2 5.4c2.2-.2 6-1.8 7.3 1.4 1.4 4-2.4 6.4-5.5 6.8-3.1.3-8.1 1.2-9.9-2.9z" class="f"/>
+<path d="m233.7 27.9.6.9m1.9-1 .2.1m-2.6 1.9.7.2m-13.3-4.2c-2.1 1.4-4.3 2.7-6.4 4.2 1.4-.1 2.8.5 4.3.4l.6.1m-2.5 3c4.2.3 8.5-.8 12-3.1" class="a"/>
+<path d="M65.3 25.6c-1.9-2-.8-6 2-6.5.7-.2 1.7 0 .7.6-1.7 1.7-3.9 3.4-6.4 3.1a5.2 5.2 0 0 1-5-4c-.6-2.3.2-5 2-6.5 1.7-1.8 3.5-4 6.1-4 6.7-.1-1.8 5.7-.4 2.4.6-1.5 1.3-3 2.3-4.2 2.2-3.2 5.7-5.9 9.7-6 2.7 0 5.9 1.6 6.3 4.5 1.2 9.3-9.6 27-17.3 20.6Z" class="k"/>
+<path d="M11.9 82.2c1.3 1.3 2.3 1 4.5.6 2.1-.4 4.4-2.1 6.2-3.9 0 2.4-.8 5-1.3 7.1.5 1.7 2.5-.3 2.8-.8 1.1-2 2.4-3.7 3.9-5.4 1.6-1.4 4-1.2 5.4-2.5 1.9-1.8 2.2-2.8-.6-3.6-2.7-.7-2.8-3-7.2-.1-2.8 1.8-9.6 8.8-13.7 8.6z" class="e"/>
+<path d="M55.8 93.4c2.8 7 4.9 15 8.2 21.4 2 4 3.7 5 8 4.3 7.7-1.2 16-4 23.8-4.9l-.2-8.2c-1 .2-2.2.7-3.1.4a23.6 23.6 0 0 1-5-3 5.7 5.7 0 0 0-4.1-.3c-3.5 1.4-4.8 3.5-7.2 6.3l.6-24.6c-7 3-14 5.8-21 8.6z" class="b"/>
+<path d="M58.3 99.4c1.3 4.2.8 7 4.8 14.8.4 1 .8 1.4 2.1-.2l10.9-14c1-1.1 1-1.2 1-2 .2-6.5 1.1-10.7 2-16.5-6.7 6.3-13.9 12-20.8 18z" class="k"/>
+<path d="M63.5 95c2.8-2.6 5.6-5 8.4-7.4a140.2 140.2 0 0 1-15.8-3.7c-4 5.9-7.5 11.9-11.6 17.8-9.9 14-20.3 28-30.2 42A13.4 13.4 0 0 0 20 146c.4 0 .9.3 1.4.1.5-.2.5 0 1.1-.6.6-.6 0 .3 1.2-1 4-4.6 8-10 13-14.6a51.6 51.6 0 0 0 4.8-4 12.3 12.3 0 0 0 2.8-3c3.2-5 7-11.3 10.9-17.1a134.4 134.4 0 0 1 8.4-10.9z" class="b"/>
+<path d="M63.3 78.6c-5-.4-7 4.8-9.5 7.8-2.7 4-5.1 8-7.6 11.9-4.6 4.5 2.9 6.5 5.3 8.9 5 2.7 6.6-5.2 10.3-7.1 3.9-3.9 9.2-5.4 14.3-6.6 3.3-.8 5.1-3.2 6.5-6.5 1.4-4 .8-9.3-2.5-12.1a46.7 46.7 0 0 0-16.8 3.7z" class="k"/>
+<path d="m24.3 129.5 5.6 7.2-9.1 11.3c-1.9-2.4-3.7-4.8-5.6-7z" class="l"/>
+<path d="M17.9 138.4c-1.6 0-1.8 1.4-3 2.4a15.7 15.7 0 0 0-2.2 2.4c-.4-2.9-.3-4.7-2-7.2-.3-.6-1.7-2.3-3.1-2.3-.5 0-2.4-.4-3.2 0a15.7 15.7 0 0 0-2.4 1.1c2.7 4.2 5.3 8.4 8.2 12.5a27.5 27.5 0 0 0 3.3 3.6c1 1 2 1.8 3 2.6 2.3-3 4.9-5.8 7.1-9a21.8 21.8 0 0 0-2.3-3.5c-1.2-1.4-1.9-2.5-3.4-2.5z" class="f"/>
+<path d="m1.6 135-.8.4c-.6 1.3-.9 2 0 3.1 4.2 4.9 8.6 10 13 14.6 1.2 1.2 2.1.5 3.5 0 0 0 0-.1.1 0L1.6 135Z" class="m"/>
+<path d="m88.7 115.2 1-11 12-.4-1.5 10.3-11.5 1.1z" class="l"/>
+<path d="M97.2 114c1 1.2 1.8.2 3.1.3a9.6 9.6 0 0 0 2.7-.5c-1.2 2.8-2.2 4.4-2.5 7.8-.1.7 0 3.4 1 4.4.3.3 1.3 2 2 2.2a10 10 0 0 0 2.2.6l1.1-16.8a43.8 43.8 0 0 0-.3-5.6l-.6-4.4c-3.1 1-6.3 1.4-9.4 2.5a33.5 33.5 0 0 0-.2 4.7c0 2.1-.1 3.6.9 4.8z" class="f"/>
+<path d="M106 129c.2 0 .5.3.8.1 1-.7 1.7-1.1 1.6-2.7-.3-7.2-.5-14.9-1-22-.1-2-1-2-2.3-2.6h-.1l1 27.2z" class="m"/>
+<path d="m22.7 131.3 6.1 7.1M91.1 104l-.8 11.1" class="a"/>
+<path d="M59.9 50.2c-2.6 2.1-4.8 3.6-6.9 6.2a53.5 53.5 0 0 0-8.2 15.3c-2.1-.3-3.5-.8-5.8-1-2.7-.2-5.4 0-8 .6l.5 6.6v2.6c3.9-.3 9.4 1.6 12.5 2.5 3.1 1 3.8 1 5.9-1.2 5.6-5.5 9.7-12 14.9-17.8-1.8-4.8-3.4-8.8-5-13.8Z" class="b"/>
+<path d="M79 75.3a17 17 0 0 1-1.6-10.9c1-5 3.2-8.1 4.4-12.3a7 7 0 0 0 .1-2.5c.3-4-3.8-5-5.9-4.6-5 .8-10.7 3-14.7 4-3.9.8-4.3 2.6-6.6 4.8-2.3 2.2-1.7 4.8-1.7 6.8 0 4.3 1.8 6.8 2.6 10.3 1 4 1.2 7.2 1.4 11.3 7.6-2 14.8-3.5 22.1-6.9Z" class="m"/>
+<path d="M63.2 48.1c-1.7 1.7-3.7 4.7-.2 4.8 3.4.1 6.3-3.3 8.7-6.4L63.2 48z" class="b"/>
+<path d="M81.3 47.7c-.4-2.8-5-2.9-6.6 0-2.6 4.3-7.6 13-2 15.5 6 2.7 9.6-9.9 8.6-15.5z" class="f"/>
+<path d="m66.8 37.6-4 11c3.8-1.2 7.6-1.8 11.4-3.2l1.5-9.6-9 1.8z" class="k"/>
+<path d="m30 80.1-.3-8.1a62.1 62.1 0 0 1 9.4-1.5 6.5 6.5 0 0 1 .9 4 19.4 19.4 0 0 1-2.6 6.3 55.3 55.3 0 0 0-7.3-.7z" class="f"/>
+<path d="M84.2 52.5c2.1 6 3.9 12.3 6.1 18.2 2.5 0 5.5-.6 7.8-.5a54.5 54.5 0 0 1 14.2 1.8 1.6 1.6 0 0 1 0 3c-7 2.4-15.4 4.2-22.3 5.8a6.5 6.5 0 0 1-5.7-1.5 43 43 0 0 1-10-19c-1-3.8 0-8.7 2.3-12 .5-.8 1.6-.7 2.4-.8h.1c2.2 1.2 4 2.1 5 5z" class="b"/>
+<path d="M95.6 70.1c.8.9 3.6 8 10.2 6.7 6.6-1.3 6.9-10.7-10.2-6.7z" class="c"/>
+<path d="M56 81.7c3 .4 6 1.1 9 .3a42.4 42.4 0 0 0 15.1-7.2" class="a"/>
+<path d="M60.7 34.3c2.2-5.9 7.3-8.1 12.4-8.7a9.4 9.4 0 0 1 3.2 1.7 5.7 5.7 0 0 1 2.5 3.7c0 .6-.4.8-.6 1.1l-5.3 6.7a32.9 32.9 0 0 1-5.1 3.2 12.8 12.8 0 0 1-3.2 1h-.4c-2.6-2.5-5.5-3.6-3.5-8.7z" class="e"/>
+<path d="M75.6 32.6c1.3.2 2.7.6 3.7 1.5.3.3.2.7.1 1v1.1c0 .8-.6 1.3-1 1.9a4 4 0 0 1-4.4.8c-.5-.2-.7-.8-.8-1.3l-.1-.4" class="e"/>
+<path d="m62.9 31.2-1.6 1.5-1.8 1.5c0 .2-.5.4-.5.5l3.1.4.6.2" class="a"/>
+<path d="M79.7 28.6c-4.6-1.5-11-5.8-15.1-4.9-.6.7-.6 1.7-1.2 2.3-.4 1-.2 2.3.8 2.7 3.8 0 12.2 4.9 14.6 4.3.5-2.4 1.4-1.7.9-4.4z" class="n"/>
+<path d="M83.4 29.3c-2.1 1.5-5.4 2-7.5.2-2-2-.9-6 2-6.5.7-.3 1.8 0 .6.7-1.7 1.8-4 3.5-6.7 3A5.3 5.3 0 0 1 67 22c5-6 11.8-17.7 18.8-17.8 2.9-.4 6.3 1 7 4 .9 3.5-1.5 7.3-5 7.7-4-.3 2.9-4 4.1-4 2.2-.1 4 1.4 4.8 3.3 1.3 3.4-.3 7.1-2.5 9.7a13 13 0 0 1-7.7 4.5c-2.2 0-4.4-2.3-3.3-4.5 2.2-1.2 4.6.5 1.3 3.7l-1 .6z" class="k"/>
+<path d="M63.9 27.6c5.6 2.5 10.4 4.3 15.4 6.4" class="a"/>
+<path fill="#fff" stroke="#24093b" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="M14.5 84.1c1.4-1.7 3.3-2.7 5-3.9 1-.7 1.8-1.6 2.8-2.2m29.4 32.6a26 26 0 0 0 7.2-7.2l3.5-3"/>
+<path d="M65.7 34.6c-.2 2-2 4.8 1 5.7M37.4 80.8c4.4 0 8.8 6.8 12.4-.2l4.6-3.3v0" class="a"/>
+<path d="M155.4 28.1c-.9 4.1-3.8 7.2-7.5 6.6-3.7-.6-5.4-4.2-4.5-8.3 1-4.2 4-7.1 7.8-6.5 3.8.6 5.2 4.2 4.3 8.3z" class="k"/>
+<path d="M142.8 36.6c1.2-2.9 2.6-4.2 5.2-4.8" class="a"/>
+<path d="M136.3 93.5c2.3 7.6 3.4 16 6.8 23 2.1 4.3 3.6 5.4 8.2 4.8 8.6-1 17.9-4.6 26.3-7.8l-1.1-8a7.9 7.9 0 0 1-3.4 1.2c-2 0-4-1.1-5.8-1.7-1.3-.6-3.7 0-4.5.4-3.4 1.7-5 3.7-7.3 6.4-.4-8-.3-16-.2-24-6.4 1.8-12.7 3.7-19 5.7z" class="o"/>
+<path d="M138 100c1.5 5.7 2.8 10.7 4.6 16.3.5 1.5.8.8 1.3.3a81 81 0 0 0 11-14.2c1-1.3.5-2.6.8-4.3l1.8-13-19.4 14.8Z" class="g"/>
+<path d="M142.3 115.6c-1.1-3.5.1-9.5 2-11.7 2.4-3 5.2-2.8 7.5-4.4 1.8-1.1 3.4-4.1 3.9-5.1 1.8-4.5 1.6-7 2-11.3-8.6 8.4-16.2 15.5-19 19.1 1 4.5 2.1 9.1 3.6 13.4z" class="f"/>
+<path fill="#cf63a6" stroke="#cf63a6" stroke-miterlimit="10" d="m143.2 96 8-6.4c-4.6-1.7-9-3.6-13.5-5.4-4 4.9-7.7 10-11.5 15l-1 1.4c-10.4 14.8-21 29.6-31.1 44.7a11 11 0 0 0 5.5 2.1c.4 0 .9.4 1.4.1.4-.2.5 0 1-.6.6-.7 0 .3 1.2-1.2 4-5 8.2-10.7 13.2-15.7.9-.8 3.4-2.4 5-4.1 1-.9 2-1.9 2.7-3 3.2-4.9 7-11.2 10.8-16.9 2.6-3.5 5.3-6.8 8.3-10z"/>
+<path d="M156.7 82.7c-.4 5.6-.4 6.6-3.8 11.1-1 1.1-2.2 2-3.6 2.7-2.3 1-5.5 2.6-8 3.6l-5.3 5.3c-.9 1.2-.6 1.6-3.7 1-3.8-1-8-3.8-8.2-5 0-.8 1.2-2 1.6-2.6 5-6.5 8.2-10.5 13-17 5.5.2 12.5 1 18 1z" class="g"/>
+<path d="m104.5 129.7 5.1 7.7-9.2 12-5.4-7 9.5-12.7z" class="h"/>
+<path d="M97.6 139.7c-1.5 0-1.8 1.5-3 2.5a16.3 16.3 0 0 0-2.1 2.5c-.3-2.9-.2-4.6-1.8-7.3-.3-.6-1.8-2.2-3-2.2-.6 0-2.4-.5-3 0a13.6 13.6 0 0 0-2.3 1c2.6 4.1 5.1 8.4 7.8 12.5a28.8 28.8 0 0 0 3 3.6l3 2.7c2.3-3 4.9-6 7-9.2a22.9 22.9 0 0 0-2.2-3.6c-1.3-1.4-1.8-2.6-3.4-2.5z" class="f"/>
+<path d="M82 136.2c-.2.2-.6.2-.7.5-.6 1-1 2 0 3 4 5 8.1 10 12.4 14.8 1 1.3 2 .6 3.3 0l-15-18.3Z" class="e"/>
+<path d="m169.4 116.6.4-11.2c4.4-1.3 8.7-2.7 13.1-3.8l-.1 10.1-13.4 5z" class="h"/>
+<path d="M179.2 112.7c1.4.8 2.3-.5 3.7-.8a13.8 13.8 0 0 0 2.8-1.1c-.9 2.8-1.8 4.5-1.5 7.8 0 .7.6 3 1.7 3.8.4.3 1.6 1.7 2.4 1.8a11 11 0 0 0 2.3.3c-.4-5.4-.7-10.7-1.3-16.1a38 38 0 0 0-1-5.2c-.3-1.6-.7-2.7-1.2-4.2-3.2 1.6-6.6 2.8-9.7 4.7a26.9 26.9 0 0 0 .2 4.7c.3 2 .2 3.5 1.6 4.3z" class="f"/>
+<path d="M191 124.6c.1 0 .5.2.7 0 1-.7 1.6-1.3 1.3-2.8-1.2-7-2.5-14-4-21-.5-1.8-1.5-1.6-2.8-2 0 0 0 .1 0 0l4.7 25.8z" class="e"/>
+<path d="M102.8 131.7c2 2.8 4 5 5.6 7.6m63-34.5-.1 11.3" class="a"/>
+<path d="M139.9 50.3a15.3 15.3 0 0 0-6.7 6.3c-1.2 2.3-1.4 4-3 8.9l-2.5 7a21.1 21.1 0 0 1-8-1.8 24.7 24.7 0 0 1-5.5-3.7 33.1 33.1 0 0 1-3.8 5.2c-.5.5-1.4.9-2 1.4a35.7 35.7 0 0 0 14 8.6c3 .9 5.5 1.6 8.2.9 8-2.1 11.3-14.8 11.7-16.4-.8-5.6-1.5-11-2.4-16.4z" class="o"/>
+<path d="M108.2 74c7-3.3 5.8-3 10.9-3.7-.2 1.4-.1 2.8-.8 4-1 1.7-2.6 3-4.5 3.7-2.2-2-3.3-2-5.6-4zM158 84.5c-1.7-4.3-.6-13.4.4-16.7 1.8-5.8 4.1-8.2 5.8-12.7.3-.9.4-1.8.3-2.7.7-4-3-6.5-5.1-6.6-5.2-.3-11.3 1.5-15.2 2.4-4 .8-4 2.6-6 4.7-2.2 2.1-1.5 5-1.5 7 0 4.5 1.6 7.3 2 11.4.6 4.7-.1 9.3-.8 14 6.7-.6 13.4.3 20.2-.8z" class="j"/>
+<path d="M145.6 47.2c-1.3 1.6-3.5 5 0 5.3 3.4.4 6.3-3.2 8.5-6q-4.2.2-8.5.7z" class="o"/>
+<path d="M164 49.8c-.5-3-5.2-4.4-6.8-1.7-2.7 4.2-8.2 12.4-3 16.3 6 4.3 10.7-8.5 9.8-14.6z" class="f"/>
+<path d="M148.9 36q-2 5.8-3.7 11.8l10.5-2 2.3-10.9-9.1 1z" class="k"/>
+<path d="M165 35.3a12.8 12.8 0 0 0-8.7-12.3 10.7 10.7 0 0 0-3.8 1 8.8 8.8 0 0 0-4 3.6 1.5 1.5 0 0 0 0 1.4c.9 3 2 5.5 3 8.3a28 28 0 0 0 4 4.5 11.8 11.8 0 0 0 2.8 1.9h.4c3.4-2.2 6.3-2.9 6.2-8.4z" class="n"/>
+<path d="M151 30a8 8 0 0 0-4.3 1c-.5.4-.4 1-.6 1.5-.5 1.3-.5 3 .7 4 .9.9 2.3 1.1 3.5.7.7-.2 1.1-1 1.5-1.6" class="n"/>
+<path d="M163 31.3c1 .9 1.6 2 2.5 3l1.6 1.7c.1.4-.7 0-1 .1l-2-.1-1.4-.2" class="a"/>
+<path d="M167 29.3c4.6 5.4 11.5 10 18.9 8.6 5-1 10-5.6 9.1-11-.4-3.6-4.4-5.7-7.7-4.4-3.2 1-6.5 3.4-10 1.9-3.8-2-5.9-6-9.7-8-6.1-4-15.5-2.7-19.4 3.7a6.4 6.4 0 0 0 1.4 6c2.9 2.7 7.3.4 13 1.6 1.8-.3 3.5-.6 4.4 1.6Zm8.2 6.7-.2-.1zm.8.4c-.5.4 0-.6 0 0zm-1.1-1.7h-.1z" class="k"/>
+<path d="M164.6 50.5c1.8 2 2.3 4.9 2.9 7.5.8 4.4 1.2 8.9 2.2 13.3.2 1.4.4 2.8 2.2 2.7 2.7.7 5.9 1.3 7.6 3.7 1.5 2.3.6 5.3 2 7.6.3 1 2.5 2.5.5 1.9-4.4-.5-8.4-2.4-12.7-2.8-6.1 0-7.8-7.5-10.1-12-2.4-6.4-4.5-14-2.1-20.8.5-2.3 2.8-4 5.1-2.5l1.3.6z" class="o"/>
+<path fill="none" stroke="#fed916" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="M148.1 31.8c2.2 1.2 3.7 3 3.2 6s-2.2 4.8-4.8 4.5c-2.6-.4-3.4-3-3.7-5.6"/>
+<path d="M138 83.4c2.4 1.3 4.5 3 7.2 3.4 4.5.7 8.7-.3 13.1-1.6m-20.4 0L128.5 97m29.9-60.2a8 8 0 0 0 5.3 2.6m23.2 32.4 1.4-14.8" class="a"/>
+<path d="M186.2 88.7c-4.8.9-10.2-1.5-12-6.2-2.9-6.7 1.9-14.6 8.5-16.6 5-2 11.6 0 14 5.2 3.3 7.5-2.8 16.2-10.5 17.6Z" class="g"/>
+<path d="M186.2 88.7c-5.2 1-11-2-12.5-7.3-2.2-7.8 4.8-16 12.7-16.3 5.5-.5 10.8 4 11.1 9.6.6 6.7-4.9 12.8-11.3 14Z" class="a"/>
+<path d="M185.6 84.4c-3.6.7-7.5-2-7.8-5.7-.2-2.7 1-5.5 3-7.2 1.5-1.2 3.6-2 5.5-2 2.1 0 4.3.8 5.5 2.6 1.9 2.4 1.6 6 0 8.4a8.5 8.5 0 0 1-4.1 3.4c-.7.1-1.4.5-2.1.5Z" class="a"/>
+<path d="M185.2 81c-2.5.4-4.7-2.3-3.7-4.7.7-2.8 4.6-4.6 6.8-2.4 2 1.5 1.5 4.5-.3 6-.8.7-1.8 1-2.8 1.1Zm10.3-19.2c-2.1.4-4.3 1-6.4 1.3m-79.6-5-1.8-14.7" class="a"/>
+<path d="m112.5 74.7-.7.3-.8.2-.7.1-.8.2-.8.1-.8-.1h-1.6l-.8-.1-.7-.3-.8-.2-.8-.1-.7-.4-.7-.4-.6-.5-.7-.4-.6-.6-.6-.5-.4-.7-.5-.6-.5-.6-.3-.8-.4-.7-.2-.8-.2-.7-.1-.8-.1-.8-.1-.8.1-.7v-.8l.2-.8.1-.8.3-.7.3-.8.3-.7.3-.7.5-.7.4-.6.5-.6.5-.7.5-.5.6-.6.6-.5.6-.5.7-.5.7-.3.7-.3.7-.4.7-.4.8-.1.7-.2.8-.3.8-.1.8-.1.8.1h.8l.8-.1.8.2.7.2.8.2.7.4.8.3.7.3.7.5.6.4.5.6.7.5.5.6.5.6.3.7.4.8.3.7.3.7.2.8.1.8.1.8v.7l.1.8-.2.8-.1.8-.2.8-.2.7-.4.7-.2.8-.4.7-.4.6-.4.7-.6.6-.4.7-.6.5-.5.6-.6.5-.6.5-.7.5-.7.3-.7.3-.7.4z" class="n"/>
+<path d="M112.5 74.7c-1.4.5-2.8.9-4.3.8-1.5.1-3-.1-4.5-.6a9.6 9.6 0 0 1-4-2.6 11 11 0 0 1-2.6-4.1c-.9-3-.7-6.1.7-8.8 1-2 2.5-3.7 4.2-5.1 1-1 2.4-1.4 3.6-2 1.7-.4 3.3-1.2 5-.9 2.3-.3 4.5.8 6.5 1.8 1.2 1 2.4 2 3.2 3.3a12 12 0 0 1 1.5 4.8 13.4 13.4 0 0 1-7.8 12.8l-1.5.6z" class="a"/>
+<path d="M111.1 70.7c-2.3.8-5.1.5-7.1-1-2.1-1.5-3.4-4.4-2.6-7a8.7 8.7 0 0 1 4.2-5.7 8.6 8.6 0 0 1 7-.8c3.1.9 5.1 4.5 4.4 7.7-.3 2.7-2.3 5-4.6 6.2l-1.3.6z" class="a"/>
+<path d="M109.8 67.5c-4 1.2-6.7-4.3-3.5-6.8 2.5-3 8.2-.9 7.1 3.2-.3 1.8-2 3-3.6 3.6zm6.5-20.9-6.3 2.5m-54.1 83.1c-5.3 0-12 8.7-14.5 7.3 2.4-5.3 9.2-7 14.5-7.3Zm72.3 10.1c-4.1 7.4-14 8.5-21.6 7.8a53 53 0 0 1 20.6-8.4l.7.1zm58.1 9.7c4.3-5.7 10.2-22 21-17.9 5 1.7 4.4 10.7-.9 10.7 4.4-9.1 16.3-14.3 25.6-9.3M73.4 60.8c3.3 6.7 6 14 11.6 19.2 6.5 1.4 13.3-1.4 19.7-2.6l5.6-1.5" class="a"/>
+<path d="M161.5 158c1.6-3.3 5.6-4.4 8.8-5.6 10-3 20.6-4.7 31-3.5 2.8 0 8.5 2.5 4.4 5.3-1.4 1.1-4 3.3 1.7-2.3a20 20 0 0 1 12.7-5c5.2 0 11 .9 15 4.6 2.2 1.6-1.3 6-2 5.5 2.8-1.9 6.5-1.8 9.7-2 3.2.2 6.8 0 9.5 1.9l.2.4-.5.6" class="o"/>
+<path d="M21.9 158.4a204 204 0 0 1 43-9.4c10.8-.8 23-2.8 33.4 1.5 2.4 4.1-7.3 4.4-10.4 5.5-2.6.5-7.7 1.6-2.5-.8a51 51 0 0 1 33.4-1.5c-1.7 3.8-8.9 3-12.8 4.4a207.6 207.6 0 0 1 77.6.6" class="o"/>
+<path d="M15 159.2c6.2-5.7 14.2-9 22.2-11.2 4.2-.9 9.4-1 12.4 2.5 1.4 3.4-3 5.2-5.4 6.3-1 .9-2.8.8-1.1-.6 3.3-4 9-5 13.9-3.7 3.4.8 1.2 5.5-1.6 5.3l-2 .8c10-4.6 22.1-4.7 32.2-.4 1.5.4 2.8 1.8.6 1.4l-71.2-.4Z" class="j"/>
+<path fill="#6fc8b7" stroke="#6fc8b7" stroke-linecap="round" stroke-linejoin="round" d="M213.7 157.6c4.8-2.7-9-5.2.4-6.8a43 43 0 0 1 8-.8c5.6 0 9.7 1.6 9.3 3-.5 1.5-4.2 2.7-8.5 3.6a10.4 10.4 0 0 1 5.5-3c3.2-.7 8.8-.8 11.5 0 1.8.7 1.7 1.5.4 2.2a27.6 27.6 0 0 1-5.6 1.7 66.4 66.4 0 0 1 20-2.2c7.7.2 15 1.4 19 3.1z"/>
+</svg>
+</p>
 
 <p>
-Most likely you are accessing this website because you had some issue with
+You are most likely accessing this website because you've had some issue with
 the traffic coming from this IP. This router is part of the <a
 href="https://www.torproject.org/">Tor Anonymity Network</a>, which is
-dedicated to <a href="https://www.torproject.org/about/overview">providing
+dedicated to <a href="https://2019.www.torproject.org/about/overview">providing
 privacy</a> to people who need it most: average computer users. This
 router IP should be generating no other traffic, unless it has been
 compromised.</p>
 
-<p style="text-align:center">
-<a href="https://www.torproject.org/about/overview">
-<img src="data:image/png;base64,
-iVBORw0KGgoAAAANSUhEUgAAAQQAAACQCAMAAADZVuXZAAAABGdBTUEAANbY1E9Y
-MgAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAGAUExURej4
-6Zycm+Hh4XZ2duTk5LS0tfP79OLc3P/r/6iopv///2ZmZgMDAw8PD/b29v39/cTE
-whUVFS8vL/Ly8by8uvv7+vn5+CUlJcXCm+/v7xsbGuzs7E5OTq2trASbBVpaWszM
-yaKipDk5ONra2iAhH8/OrX9/fPf35vv77j4+Pvj2zPz82Onp6PPz3t7e3ra2n66s
-if7+9b+/v+3t7efn529vb9DQ0GNjY4iIiLi9xtfX15aWldTU1Ofmyy6wMZCQjtkG
-Bufl4ZTcmYiLjujo4dbVwmppZmvLcd3czoaHhaSstsjIyMTL07Pmt9ny2sjty///
-/EVBPe/x05WcpZGRkVKzV+Pj3vDuw9vasqOfet/extbd5uPivOVXVvr9+dHY35WU
-hefm1IjJi8zR2e+bm/vg4C5PMvfFxf3w8DlyQP/4+Nvj6/77/IuTnZ7KolF8Vv39
-/+bi5v/9/HvCgCU7KLm5uMraylZfa3CZdf3//P3//7TQtu3k7ZwICPn9/eLu7gnB
-e20AAB3ZSURBVHja7F2JQ9rY1hdCOh/33YRAQhBDIAGJbLJYwAUqFhfUulu1taO1
-+zZdpp193ve9f/0754ZNwG4683yvHjAJycnJvb977pb8chz6x5X8Y+gf5JuXKxCu
-QPgYCE5KiEBGs980CKGACSBYRA4ZhA/5v0kQPJRQIsijQZql8qhMv0kQqtRLNSoG
-IPtZ3huZ/CZBoH5SclN11BX1gU9Eole9w1UX+a2CIN/cvwny4/6PN9maLW+ep4d4
-908wsG+bBbu4BYvvLjEI/iJRNU3LZBZuOrP7rn2X62Yms0XkgWcfb9Rnw+HwLC7C
-jc1rg6+hfrclawto0rWPcnNhYUHbWvD09kn/XECwFopwHDf29xdgq6/ngn37CwzP
-hYXW2nPBIIjlLXeJs1a4pclIKBn1BUa9At0vZPpP3WiEw3sPN1o/r/3ZmA3vbW70
-K8rlLQ4sWmAyFEr6mEkv2Vd71PzZrZlyWVJ0t6NScZhuXpHk93JP/jxBv1g2JIXX
-Taalg5a4JV80CNKWOblUKiEG2y0QjC1nT2J+b4Rn62qfufW9cPjhcc9OTSIlsFha
-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"
-alt="How Tor works" style="border-style:none"/>
-</a></p>
+<p>
+Tor works by running user traffic through a random chain of encrypted
+servers, and then letting the traffic exit the Tor network through an
+exit node like this one. This design makes it very hard for a service to
+know which user is connecting to it, since it can only see the IP-address
+of the Tor exit node:</p>
+
+<p style="text-align:center;margin:40px 0">
+<svg xmlns="http://www.w3.org/2000/svg" width="500" viewBox="0 0 490.28 293.73" style="width:100%;max-width:600px">
+<desc>Illustration showing how a user might connect to a service through the Tor network. The user first sends their data through three daisy-chained encrypted Tor servers that exist on three different continents. Then the last Tor server in the chain connects to the target service over the normal internet.</desc>
+<defs>
+<style>
+.t{
+fill: var(--text-color);
+stroke: var(--text-color);
+}
+</style>
+</defs>
+<path fill="#6fc8b7" d="M257.89 69.4c-6.61-6.36-10.62-7.73-18.36-8.62-7.97-1.83-20.06-7.99-24.17-.67-3.29 5.85-18.2 12.3-16.87 2.08.92-7.03 11.06-13.28 17-17.37 8.69-5.99 24.97-2.87 26.1-10.28 1.04-6.86-8.33-13.22-8.55-2.3-.38 12.84-19.62 2.24-8.73-6.2 8.92-6.9 16.05-9.02 25.61-6.15 12.37 4.83 25.58-2.05 33.73-.71 12.37-2.01 24.69-5.25 37.39-3.96 13 .43 24.08-.14 37.06.63 9.8 1.58 16.5 2.87 26.37 3.6 6.6.48 17.68-.82 24.3 1.9 8.3 4.24.44 10.94-6.89 11.8-8.79 1.05-23.59-1.19-26.6 1.86-5.8 7.41 10.75 5.68 11.27 14.54.57 9.45-5.42 9.38-8.72 16-2.7 4.2.3 13.93-1.18 18.45-1.85 5.64-19.64 4.47-14.7 14.4 4.16 8.34 1.17 19.14-10.33 12.02-5.88-3.65-9.85-22.04-15.66-21.9-11.06.27-11.37 13.18-12.7 17.52-1.3 4.27-3.79 2.33-6-.63-3.54-4.76-7.75-14.22-12.01-17.32-6.12-4.46-10.75-1.17-15.55 2.83-5.63 4.69-8.78 7.82-7.46 16.5.78 9.1-12.9 15.84-14.98 24.09-2.61 10.32-2.57 22.12-8.81 31.47-4 5.98-14.03 20.12-21.27 14.97-7.5-5.34-7.22-14.6-9.56-23.08-2.5-9.02.6-17.35-2.57-26.2-2.45-6.82-6.23-14.54-13.01-13.24-6.5.92-15.08 1.38-19.23-2.97-5.65-5.93-6-10.1-6.61-18.56 1.65-6.94 5.79-12.64 10.38-18.63 3.4-4.42 17.45-10.39 25.26-7.83 10.35 3.38 17.43 10.5 28.95 8.57 3.12-.53 9.14-4.65 7.1-6.62zm-145.6 37.27c-4.96-1.27-11.57 1.13-11.8 6.94-1.48 5.59-4.82 10.62-5.8 16.32.56 6.42 4.34 12.02 8.18 16.97 3.72 3.85 8.58 7.37 9.3 13.1 1.24 5.88 1.6 11.92 2.28 17.87.34 9.37.95 19.67 7.29 27.16 4.26 3.83 8.4-2.15 6.52-6.3-.54-4.54-.6-9.11 1.01-13.27 4.2-6.7 7.32-10.57 12.44-16.64 5.6-7.16 12.74-11.75 14-20.9.56-4.26 5.72-13.86 1.7-16.72-3.14-2.3-15.83-4-18.86-6.49-2.36-1.71-3.86-9.2-9.86-12.07-4.91-3.1-10.28-6.73-16.4-5.97zm11.16-49.42c6.13-2.93 10.58-4.77 14.61-10.25 3.5-4.28 2.46-12.62-2.59-15.45-7.27-3.22-13.08 5.78-18.81 8.71-5.96 4.2-12.07-5.48-6.44-10.6 5.53-4.13.38-9.2-5.66-8.48-6.12.8-12.48-1.45-18.6-1.73-5.3-.7-10.13-1-15.45-1.37-5.37-.05-16.51-2.23-25.13.87-5.42 1.79-12.5 5.3-16.73 9.06-4.85 4.2.2 7.56 5.54 7.45 5.3-.22 16.8-5.36 20.16.98 3.68 8.13-5.82 18.29-5.2 26.69.1 6.2 3.37 11 4.74 16.98 1.62 5.94 6.17 10.45 10 15.14 4.7 5.06 13.06 6.3 19.53 8.23 7.46.14 3.34-9.23 3.01-14.11 1.77-7.15 8.49-7.82 12.68-13.5 7.14-7.72 16.41-13.4 24.34-18.62zM190.88 3.1c-4.69 0-13.33.04-18.17-.34-7.65.12-13.1-.62-19.48-1.09-3.67.39-9.09 3.34-5.28 7.04 3.8.94 7.32 4.92 7.1 9.31 1.32 4.68 1.2 11.96 6.53 13.88 4.76-.2 7.12-7.6 11.93-8.25 6.85-2.05 12.5-4.58 17.87-9.09 2.48-2.76 7.94-6.38 5.26-10.33-1.55-1.31-2.18-.64-5.76-1.13zm178.81 157.37c-2.66 10.08-5.88 24.97 9.4 15.43 7.97-5.72 12.58-2.02 17.47 1.15.5.43 2.65 9.2 7.19 8.53 5.43-2.1 11.55-5.1 14.96-11.2 2.6-4.62 3.6-12.39 2.76-13.22-3.18-3.43-6.24-11.03-7.7-15.1-.76-2.14-2.24-2.6-2.74-.4-2.82 12.85-6.04 1.22-10.12-.05-8.2-1.67-29.62 7.17-31.22 14.86z"/>
+<g fill="none">
+<path stroke="#cf63a6" stroke-linecap="round" stroke-width="2.76" d="M135.2 140.58c61.4-3.82 115.95-118.83 151.45-103.33"/>
+<path stroke="#cf63a6" stroke-linecap="round" stroke-width="2.76" d="M74.43 46.66c38.15 8.21 64.05 42.26 60.78 93.92M286.65 37.25c-9.6 39.44-3.57 57.12-35.64 91.98"/>
+<path stroke="#e4c101" stroke-dasharray="9.06,2.265" stroke-width="2.27" d="M397.92 162.52c-31.38 1.26-90.89-53.54-148.3-36.17"/>
+<path stroke="#cf63a6" stroke-linecap="round" stroke-width="2.77" d="M17.6 245.88c14.35 0 14.4.05 28-.03"/>
+<path stroke="#e3bf01" stroke-dasharray="9.06,2.265" stroke-width="2.27" d="M46.26 274.14c-17.52-.12-16.68.08-30.34.07"/>
+</g>
+<g transform="translate(120.8 -35.81)">
+<circle cx="509.78" cy="68.74" r="18.12" fill="#240a3b" transform="translate(-93.3 38.03) scale(.50637)"/>
+<circle cx="440.95" cy="251.87" r="18.12" fill="#240a3b" transform="translate(-93.3 38.03) scale(.50637)"/>
+<circle cx="212.62" cy="272.19" r="18.12" fill="#240a3b" transform="translate(-93.3 38.03) scale(.50637)"/>
+<circle cx="92.12" cy="87.56" r="18.12" fill="#240a3b" transform="translate(-93.3 38.03) scale(.50637)"/>
+<circle cx="730.88" cy="315.83" r="18.12" fill="#67727b" transform="translate(-93.3 38.03) scale(.50637)"/>
+<circle cx="-102.85" cy="282.18" r="9.18" fill="#240a3b"/>
+<circle cx="-102.85" cy="309.94" r="9.18" fill="#67727b"/>
+</g>
+<g class="t">
+<text xml:space="preserve" x="-24.76" y="10.37" stroke-width=".26" font-size="16.93" font-weight="700" style="line-height:1.25" transform="translate(27.79 2.5)" word-spacing="0"><tspan x="-24.76" y="10.37">The user</tspan></text>
+<text xml:space="preserve" x="150.63" y="196.62" stroke-width=".26" font-size="16.93" font-weight="700" style="line-height:1.25" transform="translate(27.79 2.5)" word-spacing="0"><tspan x="150.63" y="196.62">This server</tspan></text>
+<text xml:space="preserve" x="346.39" y="202.63" stroke-width=".26" font-size="16.93" font-weight="700" style="line-height:1.25" transform="translate(27.79 2.5)" word-spacing="0"><tspan x="346.39" y="202.63">Your service</tspan></text>
+<text xml:space="preserve" x="34.52" y="249.07" stroke-width=".26" font-size="16.93" font-weight="700" style="line-height:1.25" transform="translate(27.79 2.5)" word-spacing="0"><tspan x="34.52" y="249.07">Tor encrypted link</tspan></text>
+<text xml:space="preserve" x="34.13" y="276.05" stroke-width=".26" font-size="16.93" font-weight="700" style="line-height:1.25" transform="translate(27.79 2.5)" word-spacing="0"><tspan x="34.13" y="276.05">Unencrypted link</tspan></text>
+<path fill="none" stroke-linecap="round" stroke-width="1.67" d="M222.6 184.1c-2.6-15.27 8.95-23.6 18.43-38.86m186.75 45.61c-.68-10.17-9.4-17.68-18.08-23.49"/>
+<path fill="none" stroke-linecap="round" stroke-width="1.67" d="M240.99 153.41c.35-3.41 1.19-6.17.04-8.17m-7.15 5.48c1.83-2.8 4.58-4.45 7.15-5.48"/>
+<path fill="none" stroke-linecap="round" stroke-width="1.67" d="M412.43 173.21c-2.2-3.15-2.54-3.85-2.73-5.85m0 0c2.46-.65 3.85.01 6.67 1.24M61.62 40.8C48.89 36.98 36.45 27.54 36.9 18.96M61.62 40.8c.05-2.58-3.58-4.8-5.25-5.26m-2.65 6.04c1.8.54 6.8 1.31 7.9-.78"/>
+<path fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.44" d="M1.22 229.4h247.74v63.1H1.22z"/>
+</g>
+</svg>
+</p>
 
 <p>
-Tor sees use by <a href="https://www.torproject.org/about/torusers">many
+<a href="https://2019.www.torproject.org/about/overview">Read more about how Tor works.</a></p>
+
+<p>
+Tor sees use by <a href="https://2019.www.torproject.org/about/torusers">many
 important segments of the population</a>, including whistle blowers,
 journalists, Chinese dissidents skirting the Great Firewall and oppressive
 censorship, abuse victims, stalker targets, the US military, and law
 enforcement, just to name a few.  While Tor is not designed for malicious
 computer users, it is true that they can use the network for malicious ends.
 In reality however, the actual amount of <a
-href="https://www.torproject.org/docs/faq-abuse">abuse</a> is quite low. This
+href="https://support.torproject.org/abuse/">abuse</a> is quite low. This
 is largely because criminals and hackers have significantly better access to
 privacy and anonymity than do the regular users whom they prey upon. Criminals
 can and do <a
-href="http://voices.washingtonpost.com/securityfix/2008/08/web_fraud_20_tools.html">build,
+href="https://web.archive.org/web/20200131013910/http://voices.washingtonpost.com/securityfix/2008/08/web_fraud_20_tools.html">build,
 sell, and trade</a> far larger and <a
-href="http://voices.washingtonpost.com/securityfix/2008/08/web_fraud_20_distributing_your.html">more
+href="https://web.archive.org/web/20200131013908/http://voices.washingtonpost.com/securityfix/2008/08/web_fraud_20_distributing_your.html">more
 powerful networks</a> than Tor on a daily basis. Thus, in the mind of this
 operator, the social need for easily accessible censorship-resistant private,
 anonymous communication trumps the risk of unskilled bad actors, who are
@@ -256,7 +292,7 @@ Furthermore, this machine also serves as a carrier of email, which means that
 its contents are further protected under the ECPA. <a
 href="https://www.law.cornell.edu/uscode/text/18/2707">18
 USC 2707</a> explicitly allows for civil remedies ($1000/account
-<i><b>plus</b></i>  legal fees)
+<i>plus</i>  legal fees)
 in the event of a seizure executed without good faith or probable cause (it
 should be clear at this point that traffic with an originating IP address of
 FIXME_DNS_NAME should not constitute probable cause to seize the
@@ -275,16 +311,16 @@ equipment, in accordance with <a
 href="https://www.law.cornell.edu/uscode/text/17/512">DMCA
 "safe harbor" provisions</a>. In other words, you will have just as much luck
 sending a takedown notice to the Internet backbone providers. Please consult
-<a href="https://www.torproject.org/eff/tor-dmca-response">EFF's prepared
+<a href="https://community.torproject.org/relay/community-resources/eff-tor-legal-faq/tor-dmca-response/">EFF's prepared
 response</a> for more information on this matter.</p>
 
 <p>For more information, please consult the following documentation:</p>
 
-<ol>
-<li><a href="https://www.torproject.org/about/overview">Tor Overview</a></li>
-<li><a href="https://www.torproject.org/docs/faq-abuse">Tor Abuse FAQ</a></li>
-<li><a href="https://www.torproject.org/eff/tor-legal-faq">Tor Legal FAQ</a></li>
-</ol>
+<div class="links">
+<a href="https://2019.www.torproject.org/about/overview">Tor Overview</a>
+<a href="https://support.torproject.org/abuse/">Tor Abuse FAQ</a>
+<a href="https://community.torproject.org/relay/community-resources/eff-tor-legal-faq/">Tor Legal FAQ</a>
+</div>
 
 <p>
 That being said, if you still have a complaint about the router,  you may
@@ -298,14 +334,15 @@ already blocked.</p>
 <p>
 You also have the option of blocking this IP address and others on
 the Tor network if you so desire. The Tor project provides a <a
-href="https://check.torproject.org/cgi-bin/TorBulkExitList.py">web service</a>
+href="https://check.torproject.org/torbulkexitlist">web service</a>
 to fetch a list of all IP addresses of Tor exit nodes that allow exiting to a
 specified IP:port combination, and an official <a
-href="https://www.torproject.org/tordnsel/dist/">DNSRBL</a> is also available to
+href="https://dist.torproject.org/tordnsel/">DNSRBL</a> is also available to
 determine if a given IP address is actually a Tor exit server. Please
 be considerate
 when using these options. It would be unfortunate to deny all Tor users access
 to your site indefinitely simply because of a few bad apples.</p>
 
+</main>
 </body>
 </html>

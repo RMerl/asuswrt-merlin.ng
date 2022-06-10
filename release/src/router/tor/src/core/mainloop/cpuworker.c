@@ -1,6 +1,6 @@
 /* Copyright (c) 2003-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2020, The Tor Project, Inc. */
+ * Copyright (c) 2007-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -21,6 +21,8 @@
 #include "core/or/channel.h"
 #include "core/or/circuitlist.h"
 #include "core/or/connection_or.h"
+#include "core/or/congestion_control_common.h"
+#include "core/or/congestion_control_flow.h"
 #include "app/config/config.h"
 #include "core/mainloop/cpuworker.h"
 #include "lib/crypt_ops/crypto_rand.h"
@@ -126,6 +128,11 @@ typedef struct cpuworker_request_t {
   /** A create cell for the cpuworker to process. */
   create_cell_t create_cell;
 
+  /**
+   * A copy of this relay's consensus params that are relevant to
+   * the circuit, for use in negotiation. */
+  circuit_params_t circ_ns_params;
+
   /* Turn the above into a tagged union if needed. */
 } cpuworker_request_t;
 
@@ -158,6 +165,8 @@ typedef struct cpuworker_reply_t {
   uint8_t keys[CPATH_KEY_MATERIAL_LEN];
   /** Input to use for authenticating introduce1 cells. */
   uint8_t rend_auth_material[DIGEST_LEN];
+  /** Negotiated circuit parameters. */
+  circuit_params_t circ_params;
 } cpuworker_reply_t;
 
 typedef struct cpuworker_job_u_t {
@@ -379,6 +388,18 @@ cpuworker_onion_handshake_replyfn(void *work_)
     goto done_processing;
   }
 
+  /* If the client asked for congestion control, if our consensus parameter
+   * allowed it to negotiate as enabled, allocate a congestion control obj. */
+  if (rpl.circ_params.cc_enabled) {
+    if (get_options()->SbwsExit) {
+      TO_CIRCUIT(circ)->ccontrol = congestion_control_new(&rpl.circ_params,
+                                                          CC_PATH_SBWS);
+    } else {
+      TO_CIRCUIT(circ)->ccontrol = congestion_control_new(&rpl.circ_params,
+                                                          CC_PATH_EXIT);
+    }
+  }
+
   if (onionskin_answer(circ,
                        &rpl.created_cell,
                        (const char*)rpl.keys, sizeof(rpl.keys),
@@ -387,6 +408,7 @@ cpuworker_onion_handshake_replyfn(void *work_)
     circuit_mark_for_close(TO_CIRCUIT(circ), END_CIRC_REASON_INTERNAL);
     goto done_processing;
   }
+
   log_debug(LD_OR,"onionskin_answer succeeded. Yay.");
 
  done_processing:
@@ -425,9 +447,12 @@ cpuworker_onion_handshake_threadfn(void *state_, void *work_)
   n = onion_skin_server_handshake(cc->handshake_type,
                                   cc->onionskin, cc->handshake_len,
                                   onion_keys,
+                                  &req.circ_ns_params,
                                   cell_out->reply,
+                                  sizeof(cell_out->reply),
                                   rpl.keys, CPATH_KEY_MATERIAL_LEN,
-                                  rpl.rend_auth_material);
+                                  rpl.rend_auth_material,
+                                  &rpl.circ_params);
   if (n < 0) {
     /* failure */
     log_debug(LD_OR,"onion_skin_server_handshake failed.");
@@ -450,6 +475,7 @@ cpuworker_onion_handshake_threadfn(void *state_, void *work_)
     }
     rpl.success = 1;
   }
+
   rpl.magic = CPUWORKER_REPLY_MAGIC;
   if (req.timed) {
     struct timeval tv_diff;
@@ -549,6 +575,11 @@ assign_onionskin_to_cpuworker(or_circuit_t *circ,
 
   if (should_time)
     tor_gettimeofday(&req.started_at);
+
+  /* Copy the current cached consensus params relevant to
+   * circuit negotiation into the CPU worker context */
+  req.circ_ns_params.cc_enabled = congestion_control_enabled();
+  req.circ_ns_params.sendme_inc_cells = congestion_control_sendme_inc();
 
   job = tor_malloc_zero(sizeof(cpuworker_job_t));
   job->circ = circ;

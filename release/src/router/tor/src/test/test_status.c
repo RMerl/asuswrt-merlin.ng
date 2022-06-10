@@ -1,4 +1,4 @@
-/* Copyright (c) 2014-2020, The Tor Project, Inc. */
+/* Copyright (c) 2014-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 #define STATUS_PRIVATE
@@ -359,8 +359,10 @@ test_status_hb_not_in_consensus(void *arg)
                  "initiated 0 and received 0 v3 connections; "
                  "initiated 0 and received 0 v4 connections; "
                  "initiated 0 and received 0 v5 connections.\n");
-  expect_log_msg("DoS mitigation since startup: 0 circuits killed with "
-                 "too many cells. [cc not enabled] [conn not enabled] "
+  expect_log_msg("Heartbeat: DoS mitigation since startup: 0 circuits killed "
+                 "with too many cells, [DoSCircuitCreationEnabled disabled], "
+                 "[DoSConnectionEnabled disabled], "
+                 "[DoSRefuseSingleHopClientRendezvous disabled], "
                  "0 INTRODUCE2 rejected.\n");
   tt_int_op(mock_saved_log_n_entries(), OP_EQ, 6);
 

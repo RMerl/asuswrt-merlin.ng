@@ -1,7 +1,7 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2020, The Tor Project, Inc. */
+ * Copyright (c) 2007-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -434,6 +434,8 @@ routerstatus_parse_entry_from_string(memarea_t *area,
         rs->is_possible_guard = 1;
       else if (!strcmp(tok->args[i], "BadExit"))
         rs->is_bad_exit = 1;
+      else if (!strcmp(tok->args[i], "MiddleOnly"))
+        rs->is_middle_only = 1;
       else if (!strcmp(tok->args[i], "Authority"))
         rs->is_authority = 1;
       else if (!strcmp(tok->args[i], "Unnamed") &&
@@ -446,6 +448,8 @@ routerstatus_parse_entry_from_string(memarea_t *area,
         rs->is_v2_dir = 1;
       } else if (!strcmp(tok->args[i], "StaleDesc")) {
         rs->is_staledesc = 1;
+      } else if (!strcmp(tok->args[i], "Sybil")) {
+        rs->is_sybil = 1;
       }
     }
     /* These are implied true by having been included in a consensus made

@@ -1,7 +1,7 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2020, The Tor Project, Inc. */
+ * Copyright (c) 2007-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -392,7 +392,9 @@ circuit_open_connection_for_extend(const struct extend_cell_t *ec,
                                 NULL, /*onion_key*/
                                 NULL, /*curve25519_key*/
                                 &chosen_ap->addr,
-                                chosen_ap->port);
+                                chosen_ap->port,
+                                NULL /* protover summary */,
+                                false);
 
   circ->n_chan_create_cell = tor_memdup(&ec->create_cell,
                                         sizeof(ec->create_cell));

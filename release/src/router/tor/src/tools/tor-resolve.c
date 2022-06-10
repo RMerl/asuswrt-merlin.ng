@@ -1,5 +1,5 @@
 /* Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson
- * Copyright (c) 2007-2020, The Tor Project, Inc.
+ * Copyright (c) 2007-2021, The Tor Project, Inc.
  */
 /* See LICENSE for licensing information */
 
@@ -253,7 +253,7 @@ build_socks_resolve_request(uint8_t **out,
 }
 
 static void
-onion_warning(const char *hostname)
+onion_hs_warning(const char *hostname)
 {
   log_warn(LD_NET,
         "%s is a hidden service; those don't have IP addresses. "
@@ -261,6 +261,15 @@ onion_warning(const char *hostname)
         "fake address for hidden services.  Or you can have your "
         "application send the address to Tor directly; we recommend an "
         "application that uses SOCKS 5 with hostnames.",
+           hostname);
+}
+
+static void
+onion_exit_warning(const char *hostname)
+{
+  log_warn(LD_NET,
+        "%s is a link pointing to an exit node; however, .exit domains"
+        "have been long defunct and are not valid anymore.",
            hostname);
 }
 
@@ -306,9 +315,15 @@ parse_socks4a_resolve_response(const char *hostname,
   if (status != 90) {
     log_warn(LD_NET,"Got status response '%d': socks request failed.", status);
     if (!strcasecmpend(hostname, ".onion")) {
-      onion_warning(hostname);
+      onion_hs_warning(hostname);
       result = -1; goto cleanup;
     }
+
+    if (!strcasecmpend(hostname, ".exit")) {
+      onion_exit_warning(hostname);
+      result = -1; goto cleanup;
+    }
+
     result = -1; goto cleanup;
   }
 
@@ -493,7 +508,11 @@ do_resolve(const char *hostname,
                (unsigned)reply_field,
                socks5_reason_to_string(reply_field));
       if (reply_field == 4 && !strcasecmpend(hostname, ".onion")) {
-        onion_warning(hostname);
+        onion_hs_warning(hostname);
+      }
+
+      if (reply_field == 4 && !strcasecmpend(hostname, ".exit")) {
+        onion_exit_warning(hostname);
       }
 
       socks5_server_reply_free(reply);

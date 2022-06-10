@@ -1,4 +1,4 @@
-/* Copyright (c) 2017-2020, The Tor Project, Inc. */
+/* Copyright (c) 2017-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -68,6 +68,10 @@ int hs_circuit_setup_e2e_rend_circ_legacy_client(origin_circuit_t *circ,
                                           const uint8_t *rend_cell_body);
 
 bool hs_circ_is_rend_sent_in_intro1(const origin_circuit_t *circ);
+
+void hs_circ_setup_congestion_control(origin_circuit_t *origin_circ,
+                                      uint8_t sendme_inc,
+                                      bool is_single_onion);
 
 #ifdef HS_CIRCUIT_PRIVATE
 

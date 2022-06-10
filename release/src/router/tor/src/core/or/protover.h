@@ -1,4 +1,4 @@
-/* Copyright (c) 2016-2020, The Tor Project, Inc. */
+/* Copyright (c) 2016-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -35,6 +35,8 @@ struct smartlist_t;
 /** The protover version number where relays can consider IPv6 connections
  *  canonical */
 #define PROTOVER_RELAY_CANONICAL_IPV6 3
+/** The protover version number where relays can accept ntorv3 */
+#define PROTOVER_RELAY_NTOR_V3 4
 
 /** The protover version number that signifies HSv3 intro point support */
 #define PROTOVER_HS_INTRO_V3 4
@@ -50,6 +52,9 @@ struct smartlist_t;
 
 /** The protover that signals support for HS circuit setup padding machines */
 #define PROTOVER_HS_SETUP_PADDING 2
+
+/** The protover that signals support for congestion control */
+#define PROTOVER_FLOWCTRL_CC 2
 
 /** List of recognized subprotocols. */
 /// C_RUST_COUPLED: src/rust/protover/ffi.rs `translate_to_rust`
@@ -70,9 +75,14 @@ typedef enum protocol_type_t {
 } protocol_type_t;
 
 bool protover_list_is_invalid(const char *s);
+const char *protover_get_supported(const protocol_type_t type);
 int protover_all_supported(const char *s, char **missing);
 int protover_is_supported_here(protocol_type_t pr, uint32_t ver);
 const char *protover_get_supported_protocols(void);
+const char *protover_get_recommended_client_protocols(void);
+const char *protover_get_recommended_relay_protocols(void);
+const char *protover_get_required_client_protocols(void);
+const char *protover_get_required_relay_protocols(void);
 
 char *protover_compute_vote(const struct smartlist_t *list_of_proto_strings,
                             int threshold);
@@ -99,13 +109,13 @@ typedef struct proto_entry_t {
   uint64_t bitmask;
 } proto_entry_t;
 
-#if !defined(HAVE_RUST) && defined(TOR_UNIT_TESTS)
+#if defined(TOR_UNIT_TESTS)
 STATIC struct smartlist_t *parse_protocol_list(const char *s);
 STATIC char *encode_protocol_list(const struct smartlist_t *sl);
 STATIC const char *protocol_type_to_str(protocol_type_t pr);
 STATIC int str_to_protocol_type(const char *s, protocol_type_t *pr_out);
 STATIC void proto_entry_free_(proto_entry_t *entry);
-#endif /* !defined(HAVE_RUST) && defined(TOR_UNIT_TESTS) */
+#endif /* defined(TOR_UNIT_TESTS) */
 
 #define proto_entry_free(entry) \
   FREE_AND_NULL(proto_entry_t, proto_entry_free_, (entry))

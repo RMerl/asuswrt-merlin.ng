@@ -1,4 +1,4 @@
-/* Copyright (c) 2020, The Tor Project, Inc. */
+/* Copyright (c) 2020-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -42,14 +42,17 @@ format_labels(smartlist_t *labels)
 
 /** Format the given entry in to the buffer data. */
 void
-prometheus_format_store_entry(const metrics_store_entry_t *entry, buf_t *data)
+prometheus_format_store_entry(const metrics_store_entry_t *entry, buf_t *data,
+                              bool no_comment)
 {
   tor_assert(entry);
   tor_assert(data);
 
-  buf_add_printf(data, "# HELP %s %s\n", entry->name, entry->help);
-  buf_add_printf(data, "# TYPE %s %s\n", entry->name,
-                 metrics_type_to_str(entry->type));
+  if (!no_comment) {
+    buf_add_printf(data, "# HELP %s %s\n", entry->name, entry->help);
+    buf_add_printf(data, "# TYPE %s %s\n", entry->name,
+                   metrics_type_to_str(entry->type));
+  }
   buf_add_printf(data, "%s%s %" PRIi64 "\n", entry->name,
                  format_labels(entry->labels),
                  metrics_store_entry_get_value(entry));

@@ -1,7 +1,7 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2020, The Tor Project, Inc. */
+ * Copyright (c) 2007-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -30,6 +30,18 @@ typedef struct half_edge_t {
   /** How much more data can the other end still send, based on
    * our deliver window */
   int data_pending;
+
+  /**
+   * Monotime timestamp of when the other end should have successfully
+   * shut down the stream and stop sending data, based on the larger
+   * of circuit RTT and CBT. Used if 'used_ccontrol' is true, to expire
+   * the half_edge at this monotime timestamp. */
+  uint64_t end_ack_expected_usec;
+
+  /**
+   * Did this edge use congestion control? If so, use
+   * timer instead of pending data approach */
+  int used_ccontrol : 1;
 
   /** Is there a connected cell pending? */
   int connected_pending : 1;

@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: torify
-.\"    Author: [FIXME: author] [see http://www.docbook.org/tdg5/en/html/author]
+.\"    Author: Tor Project, Inc.
 .\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
-.\"      Date: 08/13/2021
+.\"      Date: 04/27/2022
 .\"    Manual: Tor Manual
 .\"    Source: Tor
 .\"  Language: English
 .\"
-.TH "TORIFY" "1" "08/13/2021" "Tor" "Tor Manual"
+.TH "TORIFY" "1" "04/27/2022" "Tor" "Tor Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -47,3 +47,9 @@ torify will not ensure that different requests are processed on different circui
 .SH "SEE ALSO"
 .sp
 \fBtor\fR(1), \fBtorsocks\fR(1)
+.SH "AUTHOR"
+.PP
+\fBTor Project, Inc\&.\fR
+.RS 4
+Author.
+.RE

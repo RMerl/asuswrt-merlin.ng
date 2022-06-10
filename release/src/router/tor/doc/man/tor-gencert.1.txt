@@ -6,6 +6,7 @@
 :man manual:   Tor Manual
 tor-gencert(1)
 ==============
+Tor Project, Inc.
 
 NAME
 ----

@@ -33,3 +33,32 @@ torrc.sample.in:
     most people shouldn't mess with.
 
 
+==============================
+
+On the geoip format:
+
+Our geoip files are line-oriented. Any empty line, or line starting
+with a #, is ignored.
+
+All other lines are composed of three comma-separated values:
+START,END,CC. For the geoip file, START and END are IPv4 addresses
+as expressed as 32-bit integers (such as 3325256709 to represent
+198.51.100.5). For the geoip6 file, START and END are IPv6
+addresses, with no brackets. In both cases CC is a two-character
+country code.
+
+The semantic meaning of a line START,END,CC is that all addresses
+between START and END _inclusive_ should be mapped to the country code
+CC.
+
+We guarantee that all entries within these files are disjoint --
+that is, there is no address that is matched by more than one
+line. We also guarantee that all entries within these files are
+sorted in numerically ascending order by address.
+
+Thus, one effective search algorithm here is to perform a binary
+search on all the entries in the file.
+
+Note that there _are_ "gaps" in these databases: not every possible
+address maps to a country code. In those cases, Tor reports the
+country as ??.

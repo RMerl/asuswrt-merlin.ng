@@ -1,7 +1,7 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2020, The Tor Project, Inc. */
+ * Copyright (c) 2007-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -22,6 +22,7 @@
 struct hs_token_t;
 struct circpad_machine_spec_t;
 struct circpad_machine_runtime_t;
+struct congestion_control_t;
 
 /** Number of padding state machines on a circuit. */
 #define CIRCPAD_MAX_MACHINES (2)
@@ -244,6 +245,9 @@ struct circuit_t {
    * that STOP commands actually correspond to the current machine,
    * and not a previous one. */
   uint32_t padding_machine_ctr;
+
+  /** Congestion control fields */
+  struct congestion_control_t *ccontrol;
 };
 
 #endif /* !defined(CIRCUIT_ST_H) */

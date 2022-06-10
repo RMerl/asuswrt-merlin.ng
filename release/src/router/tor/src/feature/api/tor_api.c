@@ -1,7 +1,7 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2020, The Tor Project, Inc. */
+ * Copyright (c) 2007-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -18,9 +18,9 @@
 // Include this after the above headers, to insure that they don't
 // depend on anything else.
 #include "orconfig.h"
+#include "lib/cc/compat_compiler.h"
 #include "lib/cc/torint.h"
 #include "feature/api/tor_api_internal.h"
-#include "lib/cc/compat_compiler.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -39,7 +39,9 @@
 #include "lib/net/socketpair.h"
 #define raw_socketpair tor_ersatz_socketpair
 #define raw_closesocket closesocket
+#if !defined(HAVE_SNPRINTF)
 #define snprintf _snprintf
+#endif
 #else /* !defined(_WIN32) */
 #define raw_socketpair socketpair
 #define raw_closesocket close

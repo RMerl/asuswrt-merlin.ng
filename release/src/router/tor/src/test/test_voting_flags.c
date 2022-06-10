@@ -1,4 +1,4 @@
-/* Copyright (c) 2018-2020, The Tor Project, Inc. */
+/* Copyright (c) 2018-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 #include "orconfig.h"
@@ -62,7 +62,8 @@ check_result(flag_vote_test_cfg_t *c)
   bool result = false;
   routerstatus_t rs;
   memset(&rs, 0, sizeof(rs));
-  dirauth_set_routerstatus_from_routerinfo(&rs, &c->node, &c->ri, c->now, 0);
+  dirauth_set_routerstatus_from_routerinfo(&rs, &c->node, &c->ri, c->now,
+                                           0, 0);
 
   tt_i64_op(rs.published_on, OP_EQ, c->expected.published_on);
   tt_str_op(rs.nickname, OP_EQ, c->expected.nickname);

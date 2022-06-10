@@ -1,6 +1,6 @@
 /* Copyright (c) 2003-2004, Roger Dingledine
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2020, The Tor Project, Inc. */
+ * Copyright (c) 2007-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -144,13 +144,17 @@ tor_threadlocal_set(tor_threadlocal_t *threadlocal, void *value)
 int
 tor_cond_wait(tor_cond_t *cond, tor_mutex_t *lock_, const struct timeval *tv)
 {
-  CRITICAL_SECTION *lock = &lock_->mutex;
+  // recursive SRW locks are not supported because they need extra logic for
+  // acquiring and releasing but SleepConditionVariableSRW will use the OS
+  // lock release function which lacks our extra logic
+  tor_assert(lock_->type == NON_RECURSIVE);
+  SRWLOCK *lock = &lock_->mutex;
   DWORD ms = INFINITE;
   if (tv) {
     ms = tv->tv_sec*1000 + (tv->tv_usec+999)/1000;
   }
 
-  BOOL ok = SleepConditionVariableCS(&cond->cond, lock, ms);
+  BOOL ok = SleepConditionVariableSRW(&cond->cond, lock, ms, 0);
   if (!ok) {
     DWORD err = GetLastError();
     if (err == ERROR_TIMEOUT) {

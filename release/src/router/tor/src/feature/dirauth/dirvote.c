@@ -1,6 +1,6 @@
 /* Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2020, The Tor Project, Inc. */
+ * Copyright (c) 2007-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 #define DIRVOTE_PRIVATE
@@ -1479,6 +1479,21 @@ compute_nth_protocol_set(int n, int n_voters, const smartlist_t *votes)
   return result;
 }
 
+/** Helper: Takes a smartlist of `const char *` flags, and a flag to remove.
+ *
+ * Removes that flag if it is present in the list.  Doesn't free it.
+ */
+static void
+remove_flag(smartlist_t *sl, const char *flag)
+{
+  /* We can't use smartlist_string_remove() here, since that doesn't preserve
+   * order, and since it frees elements from the string. */
+
+  int idx = smartlist_string_pos(sl, flag);
+  if (idx >= 0)
+    smartlist_del_keeporder(sl, idx);
+}
+
 /** Given a list of vote networkstatus_t in <b>votes</b>, our public
  * authority <b>identity_key</b>, our private authority <b>signing_key</b>,
  * and the number of <b>total_authorities</b> that we believe exist in our
@@ -1633,6 +1648,9 @@ networkstatus_compute_consensus(smartlist_t *votes,
     tor_free(votesec_list);
     tor_free(distsec_list);
   }
+  // True if anybody is voting on the BadExit flag.
+  const bool badexit_flag_is_listed =
+    smartlist_contains_string(flags, "BadExit");
 
   chunks = smartlist_new();
 
@@ -1757,26 +1775,14 @@ networkstatus_compute_consensus(smartlist_t *votes,
   }
 
   {
-    char *max_unmeasured_param = NULL;
-    /* XXXX Extract this code into a common function.  Or don't!  see #19011 */
-    if (params) {
-      if (strcmpstart(params, "maxunmeasuredbw=") == 0)
-        max_unmeasured_param = params;
-      else
-        max_unmeasured_param = strstr(params, " maxunmeasuredbw=");
-    }
-    if (max_unmeasured_param) {
-      int ok = 0;
-      char *eq = strchr(max_unmeasured_param, '=');
-      if (eq) {
-        max_unmeasured_bw_kb = (uint32_t)
-          tor_parse_ulong(eq+1, 10, 1, UINT32_MAX, &ok, NULL);
-        if (!ok) {
-          log_warn(LD_DIR, "Bad element '%s' in max unmeasured bw param",
-                   escaped(max_unmeasured_param));
-          max_unmeasured_bw_kb = DEFAULT_MAX_UNMEASURED_BW_KB;
-        }
-      }
+    if (consensus_method < MIN_METHOD_FOR_CORRECT_BWWEIGHTSCALE) {
+      max_unmeasured_bw_kb = (int32_t) extract_param_buggy(
+                  params, "maxunmeasuredbw", DEFAULT_MAX_UNMEASURED_BW_KB);
+    } else {
+      max_unmeasured_bw_kb = dirvote_get_intermediate_param_value(
+                  param_list, "maxunmeasurdbw", DEFAULT_MAX_UNMEASURED_BW_KB);
+      if (max_unmeasured_bw_kb < 1)
+        max_unmeasured_bw_kb = 1;
     }
   }
 
@@ -1936,7 +1942,7 @@ networkstatus_compute_consensus(smartlist_t *votes,
       const char *chosen_name = NULL;
       int exitsummary_disagreement = 0;
       int is_named = 0, is_unnamed = 0, is_running = 0, is_valid = 0;
-      int is_guard = 0, is_exit = 0, is_bad_exit = 0;
+      int is_guard = 0, is_exit = 0, is_bad_exit = 0, is_middle_only = 0;
       int naming_conflict = 0;
       int n_listing = 0;
       char microdesc_digest[DIGEST256_LEN];
@@ -2067,7 +2073,6 @@ networkstatus_compute_consensus(smartlist_t *votes,
       }
 
       /* Set the flags. */
-      smartlist_add(chosen_flags, (char*)"s"); /* for the start of the line. */
       SMARTLIST_FOREACH_BEGIN(flags, const char *, fl) {
         if (!strcmp(fl, "Named")) {
           if (is_named)
@@ -2089,6 +2094,8 @@ networkstatus_compute_consensus(smartlist_t *votes,
               is_running = 1;
             else if (!strcmp(fl, "BadExit"))
               is_bad_exit = 1;
+            else if (!strcmp(fl, "MiddleOnly"))
+              is_middle_only = 1;
             else if (!strcmp(fl, "Valid"))
               is_valid = 1;
           }
@@ -2104,6 +2111,22 @@ networkstatus_compute_consensus(smartlist_t *votes,
        * that are not valid in a consensus.  See Proposal 272 */
       if (!is_valid)
         continue;
+
+      /* Starting with consensus method 32, we handle the middle-only
+       * flag specially: when it is present, we clear some flags, and
+       * set others. */
+      if (is_middle_only && consensus_method >= MIN_METHOD_FOR_MIDDLEONLY) {
+        remove_flag(chosen_flags, "Exit");
+        remove_flag(chosen_flags, "V2Dir");
+        remove_flag(chosen_flags, "Guard");
+        remove_flag(chosen_flags, "HSDir");
+        is_exit = is_guard = 0;
+        if (! is_bad_exit && badexit_flag_is_listed) {
+          is_bad_exit = 1;
+          smartlist_add(chosen_flags, (char *)"BadExit");
+          smartlist_sort_strings(chosen_flags); // restore order.
+        }
+      }
 
       /* Pick the version. */
       if (smartlist_len(versions)) {
@@ -2265,6 +2288,8 @@ networkstatus_compute_consensus(smartlist_t *votes,
         smartlist_add_asprintf(chunks, "m %s\n", m);
       }
       /*     Next line is all flags.  The "\n" is missing. */
+      smartlist_add_asprintf(chunks, "s%s",
+                             smartlist_len(chosen_flags)?" ":"");
       smartlist_add(chunks,
                     smartlist_join_strings(chosen_flags, " ", 0, NULL));
       /*     Now the version line. */
@@ -2277,7 +2302,8 @@ networkstatus_compute_consensus(smartlist_t *votes,
         smartlist_add_asprintf(chunks, "pr %s\n", chosen_protocol_list);
       }
       /*     Now the weight line. */
-      if (rs_out.has_bandwidth) {
+      if (rs_out.has_bandwidth && (!rs_out.is_authority ||
+          !dirauth_get_options()->AuthDirDontVoteOnDirAuthBandwidth)) {
         char *guardfraction_str = NULL;
         int unmeasured = rs_out.bw_is_unmeasured;
 
@@ -2326,38 +2352,16 @@ networkstatus_compute_consensus(smartlist_t *votes,
   smartlist_add_strdup(chunks, "directory-footer\n");
 
   {
-    int64_t weight_scale = BW_WEIGHT_SCALE;
-    char *bw_weight_param = NULL;
-
-    // Parse params, extract BW_WEIGHT_SCALE if present
-    // DO NOT use consensus_param_bw_weight_scale() in this code!
-    // The consensus is not formed yet!
-    /* XXXX Extract this code into a common function. Or not: #19011. */
-    if (params) {
-      if (strcmpstart(params, "bwweightscale=") == 0)
-        bw_weight_param = params;
-      else
-        bw_weight_param = strstr(params, " bwweightscale=");
+    int64_t weight_scale;
+    if (consensus_method < MIN_METHOD_FOR_CORRECT_BWWEIGHTSCALE) {
+      weight_scale = extract_param_buggy(params, "bwweightscale",
+                                         BW_WEIGHT_SCALE);
+    } else {
+      weight_scale = dirvote_get_intermediate_param_value(
+                       param_list, "bwweightscale", BW_WEIGHT_SCALE);
+      if (weight_scale < 1)
+        weight_scale = 1;
     }
-
-    if (bw_weight_param) {
-      int ok=0;
-      char *eq = strchr(bw_weight_param, '=');
-      if (eq) {
-        weight_scale = tor_parse_long(eq+1, 10, 1, INT32_MAX, &ok,
-                                         NULL);
-        if (!ok) {
-          log_warn(LD_DIR, "Bad element '%s' in bw weight param",
-              escaped(bw_weight_param));
-          weight_scale = BW_WEIGHT_SCALE;
-        }
-      } else {
-        log_warn(LD_DIR, "Bad element '%s' in bw weight param",
-            escaped(bw_weight_param));
-        weight_scale = BW_WEIGHT_SCALE;
-      }
-    }
-
     added_weights = networkstatus_compute_bw_weights_v10(chunks, G, M, E, D,
                                                          T, weight_scale);
   }
@@ -2457,6 +2461,53 @@ networkstatus_compute_consensus(smartlist_t *votes,
   smartlist_free(param_list);
 
   return result;
+}
+
+/** Extract the value of a parameter from a string encoding a list of
+ * parameters, badly.
+ *
+ * This is a deliberately buggy implementation, for backward compatibility
+ * with versions of Tor affected by #19011.  Once all authorities have
+ * upgraded to consensus method 31 or later, then we can throw away this
+ * function.  */
+STATIC int64_t
+extract_param_buggy(const char *params,
+                    const char *param_name,
+                    int64_t default_value)
+{
+  int64_t value = default_value;
+  const char *param_str = NULL;
+
+  if (params) {
+    char *prefix1 = NULL, *prefix2=NULL;
+    tor_asprintf(&prefix1, "%s=", param_name);
+    tor_asprintf(&prefix2, " %s=", param_name);
+    if (strcmpstart(params, prefix1) == 0)
+      param_str = params;
+    else
+      param_str = strstr(params, prefix2);
+    tor_free(prefix1);
+    tor_free(prefix2);
+  }
+
+  if (param_str) {
+    int ok=0;
+    char *eq = strchr(param_str, '=');
+    if (eq) {
+      value = tor_parse_long(eq+1, 10, 1, INT32_MAX, &ok, NULL);
+      if (!ok) {
+        log_warn(LD_DIR, "Bad element '%s' in %s",
+                 escaped(param_str), param_name);
+        value = default_value;
+      }
+    } else {
+      log_warn(LD_DIR, "Bad element '%s' in %s",
+               escaped(param_str), param_name);
+      value = default_value;
+    }
+  }
+
+  return value;
 }
 
 /** Given a list of networkstatus_t for each vote, return a newly allocated
@@ -4411,6 +4462,7 @@ get_all_possible_sybil(const smartlist_t *routers)
   // Return the digestmap: it now contains all the possible sybils
   return omit_as_sybil;
 }
+
 /** Given a platform string as in a routerinfo_t (possibly null), return a
  * newly allocated version string for a networkstatus document, or NULL if the
  * platform doesn't give a Tor version. */
@@ -4528,13 +4580,16 @@ routers_make_ed_keys_unique(smartlist_t *routers)
   } SMARTLIST_FOREACH_END(ri);
 }
 
-/** Routerstatus <b>rs</b> is part of a group of routers that are on
- * too narrow an IP-space. Clear out its flags since we don't want it be used
+/** Routerstatus <b>rs</b> is part of a group of routers that are on too
+ * narrow an IP-space. Clear out its flags since we don't want it be used
  * because of its Sybil-like appearance.
  *
  * Leave its BadExit flag alone though, since if we think it's a bad exit,
  * we want to vote that way in case all the other authorities are voting
  * Running and Exit.
+ *
+ * Also set the Sybil flag in order to let a relay operator know that's
+ * why their relay hasn't been voted on.
  */
 static void
 clear_status_flags_on_sybil(routerstatus_t *rs)
@@ -4542,6 +4597,7 @@ clear_status_flags_on_sybil(routerstatus_t *rs)
   rs->is_authority = rs->is_exit = rs->is_stable = rs->is_fast =
     rs->is_flagged_running = rs->is_named = rs->is_valid =
     rs->is_hs_dir = rs->is_v2_dir = rs->is_possible_guard = 0;
+  rs->is_sybil = 1;
   /* FFFF we might want some mechanism to check later on if we
    * missed zeroing any flags: it's easy to add a new flag but
    * forget to add it to this clause. */
@@ -4556,12 +4612,14 @@ const char DIRVOTE_UNIVERSAL_FLAGS[] =
   "HSDir "
   "Stable "
   "StaleDesc "
+  "Sybil "
   "V2Dir "
   "Valid";
 /** Space-separated list of all flags that we may or may not vote on,
  * depending on our configuration. */
 const char DIRVOTE_OPTIONAL_FLAGS[] =
   "BadExit "
+  "MiddleOnly "
   "Running";
 
 /** Return a new networkstatus_t* containing our current opinion. (For v3
@@ -4579,7 +4637,8 @@ dirserv_generate_networkstatus_vote_obj(crypto_pk_t *private_key,
   smartlist_t *routers, *routerstatuses;
   char identity_digest[DIGEST_LEN];
   char signing_key_digest[DIGEST_LEN];
-  const int listbadexits = d_options->AuthDirListBadExits;
+  const int list_bad_exits = d_options->AuthDirListBadExits;
+  const int list_middle_only = d_options->AuthDirListMiddleOnly;
   routerlist_t *rl = router_get_routerlist();
   time_t now = time(NULL);
   time_t cutoff = now - ROUTER_MAX_AGE_TO_PUBLISH;
@@ -4684,7 +4743,8 @@ dirserv_generate_networkstatus_vote_obj(crypto_pk_t *private_key,
       vrs = tor_malloc_zero(sizeof(vote_routerstatus_t));
       rs = &vrs->status;
       dirauth_set_routerstatus_from_routerinfo(rs, node, ri, now,
-                                               listbadexits);
+                                               list_bad_exits,
+                                               list_middle_only);
 
       if (ri->cache_info.signing_key_cert) {
         memcpy(vrs->ed25519_id,
@@ -4735,7 +4795,6 @@ dirserv_generate_networkstatus_vote_obj(crypto_pk_t *private_key,
     dirserv_read_measured_bandwidths(options->V3BandwidthsFile,
                                      routerstatuses, bw_file_headers,
                                      bw_file_digest256);
-
   } else {
     /*
      * No bandwidths file; clear the measured bandwidth cache in case we had
@@ -4782,16 +4841,14 @@ dirserv_generate_networkstatus_vote_obj(crypto_pk_t *private_key,
   v3_out->client_versions = client_versions;
   v3_out->server_versions = server_versions;
 
-  /* These are hardwired, to avoid disaster. */
   v3_out->recommended_relay_protocols =
-    tor_strdup(DIRVOTE_RECOMMEND_RELAY_PROTO);
+    tor_strdup(protover_get_recommended_relay_protocols());
   v3_out->recommended_client_protocols =
-    tor_strdup(DIRVOTE_RECOMMEND_CLIENT_PROTO);
-
-  v3_out->required_relay_protocols =
-    tor_strdup(DIRVOTE_REQUIRE_RELAY_PROTO);
+    tor_strdup(protover_get_recommended_client_protocols());
   v3_out->required_client_protocols =
-    tor_strdup(DIRVOTE_REQUIRE_CLIENT_PROTO);
+    tor_strdup(protover_get_required_client_protocols());
+  v3_out->required_relay_protocols =
+    tor_strdup(protover_get_required_relay_protocols());
 
   /* We are not allowed to vote to require anything we don't have. */
   tor_assert(protover_all_supported(v3_out->required_relay_protocols, NULL));
@@ -4809,8 +4866,10 @@ dirserv_generate_networkstatus_vote_obj(crypto_pk_t *private_key,
                          0, SPLIT_SKIP_SPACE|SPLIT_IGNORE_BLANK, 0);
   if (vote_on_reachability)
     smartlist_add_strdup(v3_out->known_flags, "Running");
-  if (listbadexits)
+  if (list_bad_exits)
     smartlist_add_strdup(v3_out->known_flags, "BadExit");
+  if (list_middle_only)
+    smartlist_add_strdup(v3_out->known_flags, "MiddleOnly");
   smartlist_sort_strings(v3_out->known_flags);
 
   if (d_options->ConsensusParams) {

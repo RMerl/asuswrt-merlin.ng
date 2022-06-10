@@ -1,4 +1,4 @@
-/* Copyright (c) 2019-2020, The Tor Project, Inc. */
+/* Copyright (c) 2019-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 #ifndef TOR_PROTO_HAPROXY_H

@@ -43,7 +43,7 @@ open(F, "@abs_top_srcdir@/doc/man/tor.1.txt") or die;
 while (<F>) {
     if (m!^(?:\[\[([A-za-z0-9_]+)\]\] *)?\*\*([A-Za-z0-9_]+)\*\*!) {
         $manPageOptions{$2} = 1;
-	print "Missing an anchor: $2\n" unless (defined $1 or $2 eq 'tor');
+        print "Missing an anchor: $2\n" unless (defined $1 or $2 eq 'tor');
     }
 }
 close F;

@@ -1,7 +1,7 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2020, The Tor Project, Inc. */
+ * Copyright (c) 2007-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -36,8 +36,6 @@
 int connection_ext_or_start_auth(or_connection_t *or_conn);
 
 void connection_or_set_ext_or_identifier(or_connection_t *conn);
-void connection_or_remove_from_ext_or_id_map(or_connection_t *conn);
-void connection_or_clear_ext_or_id_map(void);
 int connection_ext_or_finished_flushing(or_connection_t *conn);
 int connection_ext_or_process_inbuf(or_connection_t *or_conn);
 char *get_ext_or_auth_cookie_file_name(void);
@@ -71,10 +69,6 @@ connection_ext_or_process_inbuf(or_connection_t *conn)
 }
 #define connection_or_set_ext_or_identifier(conn) \
   ((void)(conn))
-#define connection_or_remove_from_ext_or_id_map(conn) \
-  ((void)(conn))
-#define connection_or_clear_ext_or_id_map() \
-  STMT_NIL
 
 #define get_ext_or_auth_cookie_file_name() \
   (NULL)
@@ -94,7 +88,6 @@ STATIC int handle_client_auth_nonce(const char *client_nonce,
 #ifdef TOR_UNIT_TESTS
 extern uint8_t *ext_or_auth_cookie;
 extern int ext_or_auth_cookie_is_set;
-or_connection_t *connection_or_get_by_ext_or_id(const char *id);
 #endif
 #endif /* defined(EXT_ORPORT_PRIVATE) */
 

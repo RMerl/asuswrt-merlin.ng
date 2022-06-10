@@ -1,4 +1,4 @@
-/* Copyright (c) 2016-2020, The Tor Project, Inc. */
+/* Copyright (c) 2016-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -19,7 +19,6 @@
 #include "test/test.h"
 #include "test/test_helpers.h"
 #include "test/log_test_helpers.h"
-#include "test/rend_test_helpers.h"
 #include "test/hs_test_helpers.h"
 
 #include "app/config/config.h"
@@ -38,7 +37,6 @@
 #include "feature/hs/hs_config.h"
 #include "feature/hs/hs_ident.h"
 #include "feature/hs/hs_cache.h"
-#include "feature/rend/rendcache.h"
 #include "core/or/circuitlist.h"
 #include "core/or/circuitbuild.h"
 #include "core/or/extendinfo.h"
@@ -55,6 +53,9 @@
 #include "feature/nodelist/networkstatus_st.h"
 #include "core/or/origin_circuit_st.h"
 #include "core/or/socks_request_st.h"
+
+#define TOR_CONGESTION_CONTROL_PRIVATE
+#include "core/or/congestion_control_common.h"
 
 static int
 mock_connection_ap_handshake_send_begin(entry_connection_t *ap_conn)
@@ -137,12 +138,9 @@ helper_add_random_client_auth(const ed25519_public_key_t *service_pk)
  * hidden service. */
 static int
 helper_get_circ_and_stream_for_test(origin_circuit_t **circ_out,
-                                    connection_t **conn_out,
-                                    int is_legacy)
+                                    connection_t **conn_out)
 {
-  int retval;
   channel_tls_t *n_chan=NULL;
-  rend_data_t *conn_rend_data = NULL;
   origin_circuit_t *or_circ = NULL;
   connection_t *conn = NULL;
   ed25519_public_key_t service_pk;
@@ -151,20 +149,13 @@ helper_get_circ_and_stream_for_test(origin_circuit_t **circ_out,
   conn = test_conn_get_connection(AP_CONN_STATE_CIRCUIT_WAIT,
                                   CONN_TYPE_AP /* ??? */,
                                   0);
-  if (is_legacy) {
-    /* Legacy: Setup rend_data of stream */
-    char service_id[REND_SERVICE_ID_LEN_BASE32+1] = {0};
-    TO_EDGE_CONN(conn)->rend_data = mock_rend_data(service_id);
-    conn_rend_data = TO_EDGE_CONN(conn)->rend_data;
-  } else {
-    /* prop224: Setup hs conn identifier on the stream */
-    ed25519_secret_key_t sk;
-    tt_int_op(0, OP_EQ, ed25519_secret_key_generate(&sk, 0));
-    tt_int_op(0, OP_EQ, ed25519_public_key_generate(&service_pk, &sk));
+  /* prop224: Setup hs conn identifier on the stream */
+  ed25519_secret_key_t sk;
+  tt_int_op(0, OP_EQ, ed25519_secret_key_generate(&sk, 0));
+  tt_int_op(0, OP_EQ, ed25519_public_key_generate(&service_pk, &sk));
 
-    /* Setup hs_conn_identifier of stream */
-    TO_EDGE_CONN(conn)->hs_ident = hs_ident_edge_conn_new(&service_pk);
-  }
+  /* Setup hs_conn_identifier of stream */
+  TO_EDGE_CONN(conn)->hs_ident = hs_ident_edge_conn_new(&service_pk);
 
   /* Make it wait for circuit */
   connection_ap_mark_as_pending_circuit(TO_ENTRY_CONN(conn));
@@ -184,23 +175,8 @@ helper_get_circ_and_stream_for_test(origin_circuit_t **circ_out,
   or_circ->build_state = tor_malloc_zero(sizeof(cpath_build_state_t));
   or_circ->build_state->is_internal = 1;
 
-  if (is_legacy) {
-    /* Legacy: Setup rend data and final cpath */
-    or_circ->build_state->pending_final_cpath =
-      tor_malloc_zero(sizeof(crypt_path_t));
-    or_circ->build_state->pending_final_cpath->magic = CRYPT_PATH_MAGIC;
-    or_circ->build_state->pending_final_cpath->rend_dh_handshake_state =
-      crypto_dh_new(DH_TYPE_REND);
-    tt_assert(
-         or_circ->build_state->pending_final_cpath->rend_dh_handshake_state);
-    retval = crypto_dh_generate_public(
-           or_circ->build_state->pending_final_cpath->rend_dh_handshake_state);
-    tt_int_op(retval, OP_EQ, 0);
-    or_circ->rend_data = rend_data_dup(conn_rend_data);
-  } else {
-    /* prop224: Setup hs ident on the circuit */
-    or_circ->hs_ident = hs_ident_circuit_new(&service_pk);
-  }
+  /* prop224: Setup hs ident on the circuit */
+  or_circ->hs_ident = hs_ident_circuit_new(&service_pk);
 
   TO_CIRCUIT(or_circ)->state = CIRCUIT_STATE_OPEN;
 
@@ -217,91 +193,6 @@ helper_get_circ_and_stream_for_test(origin_circuit_t **circ_out,
  done:
   /* something failed */
   return -1;
-}
-
-/* Test: Ensure that setting up legacy e2e rendezvous circuits works
- * correctly. */
-static void
-test_e2e_rend_circuit_setup_legacy(void *arg)
-{
-  ssize_t retval;
-  origin_circuit_t *or_circ = NULL;
-  connection_t *conn = NULL;
-
-  (void) arg;
-
-  /** In this test we create a v2 legacy HS stream and a circuit with the same
-   *  hidden service destination. We make the stream wait for circuits to be
-   *  established to the hidden service, and then we complete the circuit using
-   *  the hs_circuit_setup_e2e_rend_circ_legacy_client() function. We then
-   *  check that the end-to-end cpath was setup correctly and that the stream
-   *  was attached to the circuit as expected. */
-
-  MOCK(connection_ap_handshake_send_begin,
-       mock_connection_ap_handshake_send_begin);
-
-  /* Setup */
-  retval = helper_get_circ_and_stream_for_test( &or_circ, &conn, 1);
-  tt_int_op(retval, OP_EQ, 0);
-  tt_assert(or_circ);
-  tt_assert(conn);
-
-  /* Check number of hops */
-  retval = cpath_get_n_hops(&or_circ->cpath);
-  tt_int_op(retval, OP_EQ, 0);
-
-  /* Check that our stream is not attached on any circuits */
-  tt_ptr_op(TO_EDGE_CONN(conn)->on_circuit, OP_EQ, NULL);
-
-  /********************************************** */
-
-  /* Make a good RENDEZVOUS1 cell body because it needs to pass key exchange
-   * digest verification... */
-  uint8_t rend_cell_body[DH1024_KEY_LEN+DIGEST_LEN] = {2};
-  {
-    char keys[DIGEST_LEN+CPATH_KEY_MATERIAL_LEN];
-    crypto_dh_t *dh_state =
-      or_circ->build_state->pending_final_cpath->rend_dh_handshake_state;
-    /* compute and overwrite digest of cell body with the right value */
-    retval = crypto_dh_compute_secret(LOG_PROTOCOL_WARN, dh_state,
-                                      (char*)rend_cell_body, DH1024_KEY_LEN,
-                                      keys, DIGEST_LEN+CPATH_KEY_MATERIAL_LEN);
-    tt_int_op(retval, OP_GT, 0);
-    memcpy(rend_cell_body+DH1024_KEY_LEN, keys, DIGEST_LEN);
-  }
-
-  /* Setup the circuit */
-  retval = hs_circuit_setup_e2e_rend_circ_legacy_client(or_circ,
-                                                        rend_cell_body);
-  tt_int_op(retval, OP_EQ, 0);
-
-  /**********************************************/
-
-  /* See that a hop was added to the circuit's cpath */
-  retval = cpath_get_n_hops(&or_circ->cpath);
-  tt_int_op(retval, OP_EQ, 1);
-
-  /* Check the digest algo */
-  tt_int_op(
-         crypto_digest_get_algorithm(or_circ->cpath->pvt_crypto.f_digest),
-            OP_EQ, DIGEST_SHA1);
-  tt_int_op(
-         crypto_digest_get_algorithm(or_circ->cpath->pvt_crypto.b_digest),
-            OP_EQ, DIGEST_SHA1);
-  tt_assert(or_circ->cpath->pvt_crypto.f_crypto);
-  tt_assert(or_circ->cpath->pvt_crypto.b_crypto);
-
-  /* Ensure that circ purpose was changed */
-  tt_int_op(or_circ->base_.purpose, OP_EQ, CIRCUIT_PURPOSE_C_REND_JOINED);
-
-  /* Test that stream got attached */
-  tt_ptr_op(TO_EDGE_CONN(conn)->on_circuit, OP_EQ, TO_CIRCUIT(or_circ));
-
- done:
-  connection_free_minimal(conn);
-  if (or_circ)
-    tor_free(TO_CIRCUIT(or_circ)->n_chan);
-  circuit_free_(TO_CIRCUIT(or_circ));
 }
 
 /* Test: Ensure that setting up v3 rendezvous circuits works correctly. */
@@ -326,7 +217,7 @@ test_e2e_rend_circuit_setup(void *arg)
        mock_connection_ap_handshake_send_begin);
 
   /* Setup */
-  retval = helper_get_circ_and_stream_for_test(&or_circ, &conn, 0);
+  retval = helper_get_circ_and_stream_for_test(&or_circ, &conn);
   tt_int_op(retval, OP_EQ, 0);
   tt_assert(or_circ);
   tt_assert(conn);
@@ -883,6 +774,7 @@ test_desc_has_arrived_cleanup(void *arg)
   (void) arg;
 
   hs_init();
+  congestion_control_set_cc_enabled();
 
   MOCK(networkstatus_get_reasonably_live_consensus,
        mock_networkstatus_get_reasonably_live_consensus);
@@ -974,7 +866,6 @@ test_close_intro_circuits_new_desc(void *arg)
   (void) arg;
 
   hs_init();
-  rend_cache_init();
 
   /* This is needed because of the client cache expiration timestamp is based
    * on having a consensus. See cached_client_descriptor_has_expired(). */
@@ -1120,7 +1011,6 @@ test_close_intro_circuits_cache_clean(void *arg)
   (void) arg;
 
   hs_init();
-  rend_cache_init();
 
   /* This is needed because of the client cache expiration timestamp is based
    * on having a consensus. See cached_client_descriptor_has_expired(). */
@@ -1189,7 +1079,6 @@ test_close_intro_circuits_cache_clean(void *arg)
   circuit_free(circ);
   hs_descriptor_free(desc1);
   hs_free_all();
-  rend_cache_free_all();
   UNMOCK(networkstatus_get_reasonably_live_consensus);
 }
 
@@ -1301,7 +1190,7 @@ test_socks_hs_errors(void *arg)
   /* Code path will log this exit so build it. */
   ocirc->build_state->chosen_exit = extend_info_new("TestNickname", digest,
                                                     NULL, NULL, NULL, &addr,
-                                                    4242);
+                                                    4242, NULL, false);
   /* Attach socks connection to this rendezvous circuit. */
   ocirc->p_streams = ENTRY_TO_EDGE_CONN(socks_conn);
   /* Trigger the rendezvous failure. Timeout the circuit and free. */
@@ -1396,7 +1285,7 @@ test_close_intro_circuit_failure(void *arg)
   /* Code path will log this exit so build it. */
   ocirc->build_state->chosen_exit = extend_info_new("TestNickname", digest,
                                                     NULL, NULL, NULL, &addr,
-                                                    4242);
+                                                    4242, NULL, false);
   ed25519_pubkey_copy(&ocirc->hs_ident->intro_auth_pk, &intro_kp.pubkey);
 
   /* We'll make for close the circuit for a timeout failure. It should _NOT_
@@ -1423,7 +1312,7 @@ test_close_intro_circuit_failure(void *arg)
   /* Code path will log this exit so build it. */
   ocirc->build_state->chosen_exit = extend_info_new("TestNickname", digest,
                                                     NULL, NULL, NULL, &addr,
-                                                    4242);
+                                                    4242, NULL, false);
   ed25519_pubkey_copy(&ocirc->hs_ident->intro_auth_pk, &intro_kp.pubkey);
 
   /* On free, we should get an unreachable failure. */
@@ -1446,7 +1335,7 @@ test_close_intro_circuit_failure(void *arg)
   /* Code path will log this exit so build it. */
   ocirc->build_state->chosen_exit = extend_info_new("TestNickname", digest,
                                                     NULL, NULL, NULL, &addr,
-                                                    4242);
+                                                    4242, NULL, false);
   ed25519_pubkey_copy(&ocirc->hs_ident->intro_auth_pk, &intro_kp.pubkey);
 
   circuit_mark_for_close(circ, END_CIRC_REASON_TIMEOUT);
@@ -1554,8 +1443,6 @@ test_purge_ephemeral_client_auth(void *arg)
 }
 
 struct testcase_t hs_client_tests[] = {
-  { "e2e_rend_circuit_setup_legacy", test_e2e_rend_circuit_setup_legacy,
-    TT_FORK, NULL, NULL },
   { "e2e_rend_circuit_setup", test_e2e_rend_circuit_setup,
     TT_FORK, NULL, NULL },
   { "client_pick_intro", test_client_pick_intro,

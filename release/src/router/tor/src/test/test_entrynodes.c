@@ -1,4 +1,4 @@
-/* Copyright (c) 2014-2020, The Tor Project, Inc. */
+/* Copyright (c) 2014-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 #include "orconfig.h"
@@ -90,6 +90,12 @@ bfn_mock_node_get_by_id(const char *id)
                       return n);
 
   return NULL;
+}
+
+static int
+mock_router_have_minimum_dir_info(void)
+{
+  return 1;
 }
 
 /* Helper function to free a test node. */
@@ -3087,6 +3093,38 @@ test_entry_guard_vanguard_path_selection(void *arg)
   circuit_free_(circ);
 }
 
+static void
+test_entry_guard_layer2_guards(void *arg)
+{
+  (void) arg;
+  MOCK(router_have_minimum_dir_info, mock_router_have_minimum_dir_info);
+
+  /* First check the enable/disable switch */
+  get_options_mutable()->VanguardsLiteEnabled = 0;
+  tt_int_op(vanguards_lite_is_enabled(), OP_EQ, 0);
+
+  get_options_mutable()->VanguardsLiteEnabled = 1;
+  tt_int_op(vanguards_lite_is_enabled(), OP_EQ, 1);
+
+  get_options_mutable()->VanguardsLiteEnabled = -1;
+  tt_int_op(vanguards_lite_is_enabled(), OP_EQ, 1);
+
+  /* OK now let's move to actual testing */
+
+  /* Remove restrictions to route around Big Fake Network restrictions */
+  get_options_mutable()->EnforceDistinctSubnets = 0;
+
+  /* Create the L2 guardset */
+  maintain_layer2_guards();
+
+  const routerset_t *l2_guards = get_layer2_guards();
+  tt_assert(l2_guards);
+  tt_int_op(routerset_len(l2_guards), OP_EQ, 4);
+
+ done:
+  UNMOCK(router_have_minimum_dir_info);
+}
+
 static const struct testcase_setup_t big_fake_network = {
   big_fake_network_setup, big_fake_network_cleanup
 };
@@ -3151,6 +3189,8 @@ struct testcase_t entrynodes_tests[] = {
   BFN_TEST(retry_unreachable),
   BFN_TEST(manage_primary),
   BFN_TEST(correct_cascading_order),
+
+  BFN_TEST(layer2_guards),
 
   EN_TEST_FORK(guard_preferred),
 

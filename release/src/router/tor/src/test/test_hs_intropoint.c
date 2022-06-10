@@ -1,4 +1,4 @@
-/* Copyright (c) 2016-2020, The Tor Project, Inc. */
+/* Copyright (c) 2016-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -21,7 +21,6 @@
 #include "core/or/circuituse.h"
 #include "ht.h"
 #include "core/or/relay.h"
-#include "feature/rend/rendservice.h"
 
 #include "feature/hs/hs_cell.h"
 #include "feature/hs/hs_circuitmap.h"
@@ -34,9 +33,9 @@
 #include "core/or/or_circuit_st.h"
 
 /* Trunnel. */
+#include "trunnel/extension.h"
 #include "trunnel/hs/cell_establish_intro.h"
 #include "trunnel/hs/cell_introduce1.h"
-#include "trunnel/hs/cell_common.h"
 
 static size_t
 new_establish_intro_cell(const char *circ_nonce,
@@ -160,8 +159,8 @@ helper_create_introduce1_cell(void)
 
   /* Set the cell extensions to none. */
   {
-    trn_cell_extension_t *ext = trn_cell_extension_new();
-    trn_cell_extension_set_num(ext, 0);
+    trn_extension_t *ext = trn_extension_new();
+    trn_extension_set_num(ext, 0);
     trn_cell_introduce1_set_extensions(cell, ext);
   }
 
@@ -535,7 +534,7 @@ test_circuitmap_free_all(void)
   ;
 }
 
-/** Successfully register a v2 intro point and a v3 intro point. Ensure that HS
+/** Successfully register a v3 intro point. Ensure that HS
  *  circuitmap is maintained properly. */
 static void
 test_intro_point_registration(void *arg)
@@ -656,31 +655,6 @@ test_introduce1_suitable_circuit(void *arg)
 }
 
 static void
-test_introduce1_is_legacy(void *arg)
-{
-  int ret;
-  uint8_t request[256];
-
-  (void) arg;
-
-  /* For a cell to be considered legacy, according to the specification, the
-   * first 20 bytes MUST BE non-zero else it's a v3 cell. */
-  memset(request, 'a', DIGEST_LEN);
-  memset(request + DIGEST_LEN, 0, sizeof(request) - DIGEST_LEN);
-  ret = introduce1_cell_is_legacy(request);
-  tt_int_op(ret, OP_EQ, 1);
-
-  /* This is a NON legacy cell. */
-  memset(request, 0, DIGEST_LEN);
-  memset(request + DIGEST_LEN, 'a', sizeof(request) - DIGEST_LEN);
-  ret = introduce1_cell_is_legacy(request);
-  tt_int_op(ret, OP_EQ, 0);
-
- done:
-  ;
-}
-
-static void
 test_introduce1_validation(void *arg)
 {
   int ret;
@@ -692,20 +666,6 @@ test_introduce1_validation(void *arg)
    * function of that parsed cell. */
   cell = helper_create_introduce1_cell();
   tt_assert(cell);
-
-#ifndef ALL_BUGS_ARE_FATAL
-  /* It should NOT be a legacy cell which will trigger a BUG(). */
-  memset(cell->legacy_key_id, 'a', sizeof(cell->legacy_key_id));
-  tor_capture_bugs_(1);
-  ret = validate_introduce1_parsed_cell(cell);
-  tor_end_capture_bugs_();
-  tt_int_op(ret, OP_EQ, -1);
-#endif /* !defined(ALL_BUGS_ARE_FATAL) */
-
-  /* Reset legacy ID and make sure it's correct. */
-  memset(cell->legacy_key_id, 0, sizeof(cell->legacy_key_id));
-  ret = validate_introduce1_parsed_cell(cell);
-  tt_int_op(ret, OP_EQ, 0);
 
   /* Non existing auth key type. */
   cell->auth_key_type = 42;
@@ -807,35 +767,6 @@ test_received_introduce1_handling(void *arg)
       trn_cell_introduce1_getconstarray_auth_key(cell);
     memcpy(auth_key.pubkey, cell_auth_key, ED25519_PUBKEY_LEN);
     hs_circuitmap_register_intro_circ_v3_relay_side(service_circ, &auth_key);
-    ret = hs_intro_received_introduce1(circ, request, request_len);
-    circuit_free_(TO_CIRCUIT(circ));
-    circuit_free_(TO_CIRCUIT(service_circ));
-    tt_int_op(ret, OP_EQ, 0);
-  }
-
-  /* Valid legacy cell. */
-  {
-    tor_free(request);
-    trn_cell_introduce1_free(cell);
-    cell = helper_create_introduce1_cell();
-    uint8_t *legacy_key_id = trn_cell_introduce1_getarray_legacy_key_id(cell);
-    memset(legacy_key_id, 'a', DIGEST_LEN);
-    /* Add an arbitrary amount of data for the payload of a v2 cell. */
-    size_t request_len = trn_cell_introduce1_encoded_len(cell) + 256;
-    tt_size_op(request_len, OP_GT, 0);
-    request = tor_malloc_zero(request_len + 256);
-    ssize_t encoded_len =
-      trn_cell_introduce1_encode(request, request_len, cell);
-    tt_int_op((int)encoded_len, OP_GT, 0);
-
-    circ = helper_create_intro_circuit();
-    or_circuit_t *service_circ = helper_create_intro_circuit();
-    circuit_change_purpose(TO_CIRCUIT(service_circ),
-                           CIRCUIT_PURPOSE_INTRO_POINT);
-    /* Register the circuit in the map for the auth key of the cell. */
-    uint8_t token[REND_TOKEN_LEN];
-    memcpy(token, legacy_key_id, sizeof(token));
-    hs_circuitmap_register_intro_circ_v2_relay_side(service_circ, token);
     ret = hs_intro_received_introduce1(circ, request, request_len);
     circuit_free_(TO_CIRCUIT(circ));
     circuit_free_(TO_CIRCUIT(service_circ));
@@ -1044,9 +975,6 @@ struct testcase_t hs_intropoint_tests[] = {
 
   { "introduce1_suitable_circuit",
     test_introduce1_suitable_circuit, TT_FORK, NULL, &test_setup},
-
-  { "introduce1_is_legacy",
-    test_introduce1_is_legacy, TT_FORK, NULL, &test_setup},
 
   { "introduce1_validation",
     test_introduce1_validation, TT_FORK, NULL, &test_setup},

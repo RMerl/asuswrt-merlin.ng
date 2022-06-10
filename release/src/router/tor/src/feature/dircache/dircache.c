@@ -1,6 +1,6 @@
 /* Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2020, The Tor Project, Inc. */
+ * Copyright (c) 2007-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -31,7 +31,6 @@
 #include "feature/nodelist/routerlist.h"
 #include "feature/relay/relay_config.h"
 #include "feature/relay/routermode.h"
-#include "feature/rend/rendcache.h"
 #include "feature/stats/geoip_stats.h"
 #include "feature/stats/rephist.h"
 #include "lib/compress/compress.h"
@@ -1347,7 +1346,7 @@ handle_get_keys(dir_connection_t *conn, const get_handler_args_t *args)
   return 0;
 }
 
-/** Helper function for GET /tor/hs/3/... Only for version 3.
+/** Helper function for GET `/tor/hs/3/...`. Only for version 3.
  */
 STATIC int
 handle_get_hs_descriptor_v3(dir_connection_t *conn,

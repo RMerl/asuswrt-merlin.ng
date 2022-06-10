@@ -1,6 +1,6 @@
 /* Copyright (c) 2003-2004, Roger Dingledine
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2020, The Tor Project, Inc. */
+ * Copyright (c) 2007-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -39,8 +39,15 @@
 /** A generic lock structure for multithreaded builds. */
 typedef struct tor_mutex_t {
 #if defined(USE_WIN32_THREADS)
-  /** Windows-only: on windows, we implement locks with CRITICAL_SECTIONS. */
-  CRITICAL_SECTION mutex;
+  /** Windows-only: on windows, we implement locks with SRW locks. */
+  SRWLOCK mutex;
+  /** For recursive lock support (SRW locks are not recursive) */
+  enum mutex_type_t {
+    NON_RECURSIVE = 0,
+    RECURSIVE
+  } type;
+  LONG lock_owner; // id of the thread that owns the lock
+  int lock_count; // number of times the lock is held recursively
 #elif defined(USE_PTHREADS)
   /** Pthreads-only: with pthreads, we implement locks with
    * pthread_mutex_t. */

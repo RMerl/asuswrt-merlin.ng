@@ -1,4 +1,4 @@
-/* Copyright (c) 2017-2020, The Tor Project, Inc. */
+/* Copyright (c) 2017-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 #ifndef TOR_HS_TEST_HELPERS_H
@@ -17,6 +17,10 @@ hs_descriptor_t *hs_helper_build_hs_desc_no_ip(
                                  const ed25519_keypair_t *signing_kp);
 hs_descriptor_t *hs_helper_build_hs_desc_with_ip(
                                  const ed25519_keypair_t *signing_kp);
+hs_descriptor_t *
+hs_helper_build_hs_desc_with_rev_counter(const ed25519_keypair_t *signing_kp,
+                                         uint64_t revision_counter);
+
 hs_descriptor_t *hs_helper_build_hs_desc_with_client_auth(
                                  const uint8_t *descriptor_cookie,
                                  const curve25519_public_key_t *client_pk,

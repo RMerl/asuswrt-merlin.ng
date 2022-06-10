@@ -33,8 +33,8 @@ OFTC. If they don't, ask #tor-dev (also on OFTC).
 It's CI/builders. Looks like this: https://jenkins.torproject.org
 
 Runs automatically on commits merged to git.torproject.org. We CI the
-master branch and all supported tor versions. We also build nightly debian
-packages from master.
+main branch and all supported tor versions. We also build nightly debian
+packages from main.
 
 Builds Linux and Windows cross-compilation. Runs Linux tests.
 

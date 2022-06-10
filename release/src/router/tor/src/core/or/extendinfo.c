@@ -1,7 +1,7 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2020, The Tor Project, Inc. */
+ * Copyright (c) 2007-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -35,7 +35,9 @@ extend_info_new(const char *nickname,
                 const ed25519_public_key_t *ed_id,
                 crypto_pk_t *onion_key,
                 const curve25519_public_key_t *ntor_key,
-                const tor_addr_t *addr, uint16_t port)
+                const tor_addr_t *addr, uint16_t port,
+                const protover_summary_flags_t *pv,
+                bool for_exit_use)
 {
   extend_info_t *info = tor_malloc_zero(sizeof(extend_info_t));
   if (rsa_id_digest)
@@ -56,6 +58,12 @@ extend_info_new(const char *nickname,
   if (addr) {
     extend_info_add_orport(info, addr, port);
   }
+
+  if (pv && for_exit_use) {
+    info->exit_supports_congestion_control =
+      pv->supports_congestion_control;
+  }
+
   return info;
 }
 
@@ -89,7 +97,8 @@ extend_info_add_orport(extend_info_t *ei,
  * and IP version config.
  **/
 extend_info_t *
-extend_info_from_node(const node_t *node, int for_direct_connect)
+extend_info_from_node(const node_t *node, int for_direct_connect,
+                      bool for_exit)
 {
   crypto_pk_t *rsa_pubkey = NULL;
   extend_info_t *info = NULL;
@@ -149,7 +158,9 @@ extend_info_from_node(const node_t *node, int for_direct_connect)
                            rsa_pubkey,
                            curve_pubkey,
                            &ap.addr,
-                           ap.port);
+                           ap.port,
+                           &node->ri->pv,
+                           for_exit);
   } else if (valid_addr && node->rs && node->md) {
     info = extend_info_new(node->rs->nickname,
                            node->identity,
@@ -157,7 +168,9 @@ extend_info_from_node(const node_t *node, int for_direct_connect)
                            rsa_pubkey,
                            curve_pubkey,
                            &ap.addr,
-                           ap.port);
+                           ap.port,
+                           &node->rs->pv,
+                           for_exit);
   }
 
   crypto_pk_free(rsa_pubkey);
@@ -208,6 +221,15 @@ extend_info_supports_ntor(const extend_info_t* ei)
   return !fast_mem_is_zero(
                           (const char*)ei->curve25519_onion_key.public_key,
                           CURVE25519_PUBKEY_LEN);
+}
+
+/** Return true if we can use the Ntor v3 handshake with `ei` */
+int
+extend_info_supports_ntor_v3(const extend_info_t *ei)
+{
+  tor_assert(ei);
+  return extend_info_supports_ntor(ei) &&
+    ei->exit_supports_congestion_control;
 }
 
 /* Does ei have an onion key which it would prefer to use?

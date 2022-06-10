@@ -1,4 +1,4 @@
-/* Copyright (c) 2017-2020, The Tor Project, Inc. */
+/* Copyright (c) 2017-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -183,9 +183,9 @@ static HT_HEAD(cdm_diff_ht, cdm_diff_t) cdm_diff_ht = HT_INITIALIZER();
    // diff manager becomes larger than 64. To see if the issue goes away, we
    // hardcode this value to 64 now while we investigate a better solution.
 #  define CACHE_MAX_NUM 64
-#else
+#else /* !defined(_WIN32) */
 #  define CACHE_MAX_NUM 128
-#endif
+#endif /* defined(_WIN32) */
 
 /**
  * Configuration for this module

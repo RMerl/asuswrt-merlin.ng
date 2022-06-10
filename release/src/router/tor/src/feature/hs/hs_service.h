@@ -1,4 +1,4 @@
-/* Copyright (c) 2016-2020, The Tor Project, Inc. */
+/* Copyright (c) 2016-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -210,7 +210,7 @@ typedef struct hs_service_config_t {
   /** Have we explicitly set HiddenServiceVersion? */
   unsigned int hs_version_explicitly_set : 1;
 
-  /** List of rend_service_port_config_t */
+  /** List of hs_port_config_t */
   smartlist_t *ports;
 
   /** Path on the filesystem where the service persistent data is stored. NULL
@@ -229,9 +229,6 @@ typedef struct hs_service_config_t {
   /** How many introduction points this service has. Specified by
    * HiddenServiceNumIntroductionPoints option. */
   unsigned int num_intro_points;
-
-  /** True iff the client auth is enabled. */
-  unsigned int is_client_auth_enabled : 1;
 
   /** List of hs_service_authorized_client_t's of clients that may access this
    * service. Specified by HiddenServiceAuthorizeClient option. */
@@ -358,6 +355,7 @@ smartlist_t *hs_service_get_metrics_stores(void);
 
 void hs_service_map_has_changed(void);
 void hs_service_dir_info_changed(void);
+void hs_service_new_consensus_params(const networkstatus_t *ns);
 void hs_service_run_scheduled_events(time_t now);
 void hs_service_circuit_has_opened(origin_circuit_t *circ);
 int hs_service_receive_intro_established(origin_circuit_t *circ,
@@ -372,7 +370,8 @@ char *hs_service_lookup_current_desc(const ed25519_public_key_t *pk);
 hs_service_add_ephemeral_status_t
 hs_service_add_ephemeral(ed25519_secret_key_t *sk, smartlist_t *ports,
                          int max_streams_per_rdv_circuit,
-                         int max_streams_close_circuit, char **address_out);
+                         int max_streams_close_circuit,
+                         smartlist_t *auth_clients_v3, char **address_out);
 int hs_service_del_ephemeral(const char *address);
 
 /* Used outside of the HS subsystem by the control port command HSPOST. */
@@ -387,6 +386,20 @@ hs_service_exports_circuit_id(const ed25519_public_key_t *pk);
 
 void hs_service_dump_stats(int severity);
 void hs_service_circuit_cleanup_on_close(const circuit_t *circ);
+
+hs_service_authorized_client_t *
+parse_authorized_client_key(const char *key_str, int severity);
+
+void
+service_authorized_client_free_(hs_service_authorized_client_t *client);
+#define service_authorized_client_free(c) \
+  FREE_AND_NULL(hs_service_authorized_client_t, \
+                           service_authorized_client_free_, (c))
+
+/* Config options. */
+int hs_service_allow_non_anonymous_connection(const or_options_t *options);
+int hs_service_non_anonymous_mode_enabled(const or_options_t *options);
+int hs_service_reveal_startup_time(const or_options_t *options);
 
 #ifdef HS_SERVICE_PRIVATE
 
@@ -451,12 +464,6 @@ STATIC void service_descriptor_free_(hs_service_descriptor_t *desc);
 #define service_descriptor_free(d) \
   FREE_AND_NULL(hs_service_descriptor_t, \
                            service_descriptor_free_, (d))
-
-STATIC void
-service_authorized_client_free_(hs_service_authorized_client_t *client);
-#define service_authorized_client_free(c) \
-  FREE_AND_NULL(hs_service_authorized_client_t, \
-                           service_authorized_client_free_, (c))
 
 STATIC int
 write_address_to_file(const hs_service_t *service, const char *fname_);

@@ -1,7 +1,7 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2020, The Tor Project, Inc. */
+ * Copyright (c) 2007-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -38,6 +38,10 @@ struct extend_info_t {
   crypto_pk_t *onion_key;
   /** Ntor onion key for this hop. */
   curve25519_public_key_t curve25519_onion_key;
+  /** True if this hop is to be used as an _exit_,
+   * and it also supports supports NtorV3 _and_ negotiation
+   * of congestion control parameters */
+  bool exit_supports_congestion_control;
 };
 
 #endif /* !defined(EXTEND_INFO_ST_H) */

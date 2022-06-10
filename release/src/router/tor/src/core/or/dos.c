@@ -1,4 +1,4 @@
-/* Copyright (c) 2018-2020, The Tor Project, Inc. */
+/* Copyright (c) 2018-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /*
@@ -23,7 +23,9 @@
 #include "lib/crypt_ops/crypto_rand.h"
 
 #include "core/or/dos.h"
+#include "core/or/dos_sys.h"
 
+#include "core/or/dos_options_st.h"
 #include "core/or/or_connection_st.h"
 
 /*
@@ -61,9 +63,14 @@ static unsigned int dos_conn_enabled = 0;
  * They are initialized with the hardcoded default values. */
 static uint32_t dos_conn_max_concurrent_count;
 static dos_conn_defense_type_t dos_conn_defense_type;
+static uint32_t dos_conn_connect_rate = DOS_CONN_CONNECT_RATE_DEFAULT;
+static uint32_t dos_conn_connect_burst = DOS_CONN_CONNECT_BURST_DEFAULT;
+static int32_t dos_conn_connect_defense_time_period =
+  DOS_CONN_CONNECT_DEFENSE_TIME_PERIOD_DEFAULT;
 
 /* Keep some stats for the heartbeat so we can report out. */
 static uint64_t conn_num_addr_rejected;
+static uint64_t conn_num_addr_connect_rejected;
 
 /*
  * General interface of the denial of service mitigation subsystem.
@@ -77,8 +84,8 @@ static uint64_t num_single_hop_client_refused;
 MOCK_IMPL(STATIC unsigned int,
 get_param_cc_enabled, (const networkstatus_t *ns))
 {
-  if (get_options()->DoSCircuitCreationEnabled != -1) {
-    return get_options()->DoSCircuitCreationEnabled;
+  if (dos_get_options()->DoSCircuitCreationEnabled != -1) {
+    return dos_get_options()->DoSCircuitCreationEnabled;
   }
 
   return !!networkstatus_get_param(ns, "DoSCircuitCreationEnabled",
@@ -90,8 +97,8 @@ get_param_cc_enabled, (const networkstatus_t *ns))
 STATIC uint32_t
 get_param_cc_min_concurrent_connection(const networkstatus_t *ns)
 {
-  if (get_options()->DoSCircuitCreationMinConnections) {
-    return get_options()->DoSCircuitCreationMinConnections;
+  if (dos_get_options()->DoSCircuitCreationMinConnections) {
+    return dos_get_options()->DoSCircuitCreationMinConnections;
   }
   return networkstatus_get_param(ns, "DoSCircuitCreationMinConnections",
                                  DOS_CC_MIN_CONCURRENT_CONN_DEFAULT,
@@ -104,8 +111,8 @@ static uint32_t
 get_param_cc_circuit_rate(const networkstatus_t *ns)
 {
   /* This is in seconds. */
-  if (get_options()->DoSCircuitCreationRate) {
-    return get_options()->DoSCircuitCreationRate;
+  if (dos_get_options()->DoSCircuitCreationRate) {
+    return dos_get_options()->DoSCircuitCreationRate;
   }
   return networkstatus_get_param(ns, "DoSCircuitCreationRate",
                                  DOS_CC_CIRCUIT_RATE_DEFAULT,
@@ -117,8 +124,8 @@ get_param_cc_circuit_rate(const networkstatus_t *ns)
 STATIC uint32_t
 get_param_cc_circuit_burst(const networkstatus_t *ns)
 {
-  if (get_options()->DoSCircuitCreationBurst) {
-    return get_options()->DoSCircuitCreationBurst;
+  if (dos_get_options()->DoSCircuitCreationBurst) {
+    return dos_get_options()->DoSCircuitCreationBurst;
   }
   return networkstatus_get_param(ns, "DoSCircuitCreationBurst",
                                  DOS_CC_CIRCUIT_BURST_DEFAULT,
@@ -129,8 +136,8 @@ get_param_cc_circuit_burst(const networkstatus_t *ns)
 static uint32_t
 get_param_cc_defense_type(const networkstatus_t *ns)
 {
-  if (get_options()->DoSCircuitCreationDefenseType) {
-    return get_options()->DoSCircuitCreationDefenseType;
+  if (dos_get_options()->DoSCircuitCreationDefenseType) {
+    return dos_get_options()->DoSCircuitCreationDefenseType;
   }
   return networkstatus_get_param(ns, "DoSCircuitCreationDefenseType",
                                  DOS_CC_DEFENSE_TYPE_DEFAULT,
@@ -143,8 +150,8 @@ static int32_t
 get_param_cc_defense_time_period(const networkstatus_t *ns)
 {
   /* Time in seconds. */
-  if (get_options()->DoSCircuitCreationDefenseTimePeriod) {
-    return get_options()->DoSCircuitCreationDefenseTimePeriod;
+  if (dos_get_options()->DoSCircuitCreationDefenseTimePeriod) {
+    return dos_get_options()->DoSCircuitCreationDefenseTimePeriod;
   }
   return networkstatus_get_param(ns, "DoSCircuitCreationDefenseTimePeriod",
                                  DOS_CC_DEFENSE_TIME_PERIOD_DEFAULT,
@@ -156,8 +163,8 @@ get_param_cc_defense_time_period(const networkstatus_t *ns)
 MOCK_IMPL(STATIC unsigned int,
 get_param_conn_enabled, (const networkstatus_t *ns))
 {
-  if (get_options()->DoSConnectionEnabled != -1) {
-    return get_options()->DoSConnectionEnabled;
+  if (dos_get_options()->DoSConnectionEnabled != -1) {
+    return dos_get_options()->DoSConnectionEnabled;
   }
   return !!networkstatus_get_param(ns, "DoSConnectionEnabled",
                                    DOS_CONN_ENABLED_DEFAULT, 0, 1);
@@ -168,8 +175,8 @@ get_param_conn_enabled, (const networkstatus_t *ns))
 STATIC uint32_t
 get_param_conn_max_concurrent_count(const networkstatus_t *ns)
 {
-  if (get_options()->DoSConnectionMaxConcurrentCount) {
-    return get_options()->DoSConnectionMaxConcurrentCount;
+  if (dos_get_options()->DoSConnectionMaxConcurrentCount) {
+    return dos_get_options()->DoSConnectionMaxConcurrentCount;
   }
   return networkstatus_get_param(ns, "DoSConnectionMaxConcurrentCount",
                                  DOS_CONN_MAX_CONCURRENT_COUNT_DEFAULT,
@@ -180,12 +187,53 @@ get_param_conn_max_concurrent_count(const networkstatus_t *ns)
 static uint32_t
 get_param_conn_defense_type(const networkstatus_t *ns)
 {
-  if (get_options()->DoSConnectionDefenseType) {
-    return get_options()->DoSConnectionDefenseType;
+  if (dos_get_options()->DoSConnectionDefenseType) {
+    return dos_get_options()->DoSConnectionDefenseType;
   }
   return networkstatus_get_param(ns, "DoSConnectionDefenseType",
                                  DOS_CONN_DEFENSE_TYPE_DEFAULT,
                                  DOS_CONN_DEFENSE_NONE, DOS_CONN_DEFENSE_MAX);
+}
+
+/* Return the connection connect rate parameters either from the configuration
+ * file or, if not found, consensus parameter. */
+static uint32_t
+get_param_conn_connect_rate(const networkstatus_t *ns)
+{
+  if (dos_get_options()->DoSConnectionConnectRate) {
+    return dos_get_options()->DoSConnectionConnectRate;
+  }
+  return networkstatus_get_param(ns, "DoSConnectionConnectRate",
+                                 DOS_CONN_CONNECT_RATE_DEFAULT,
+                                 1, INT32_MAX);
+}
+
+/* Return the connection connect burst parameters either from the
+ * configuration file or, if not found, consensus parameter. */
+STATIC uint32_t
+get_param_conn_connect_burst(const networkstatus_t *ns)
+{
+  if (dos_get_options()->DoSConnectionConnectBurst) {
+    return dos_get_options()->DoSConnectionConnectBurst;
+  }
+  return networkstatus_get_param(ns, "DoSConnectionConnectBurst",
+                                 DOS_CONN_CONNECT_BURST_DEFAULT,
+                                 1, INT32_MAX);
+}
+
+/* Return the connection connect defense time period from the configuration
+ * file or, if not found, the consensus parameter. */
+static int32_t
+get_param_conn_connect_defense_time_period(const networkstatus_t *ns)
+{
+  /* Time in seconds. */
+  if (dos_get_options()->DoSConnectionConnectDefenseTimePeriod) {
+    return dos_get_options()->DoSConnectionConnectDefenseTimePeriod;
+  }
+  return networkstatus_get_param(ns, "DoSConnectionConnectDefenseTimePeriod",
+                                 DOS_CONN_CONNECT_DEFENSE_TIME_PERIOD_DEFAULT,
+                                 DOS_CONN_CONNECT_DEFENSE_TIME_PERIOD_MIN,
+                                 INT32_MAX);
 }
 
 /* Set circuit creation parameters located in the consensus or their default
@@ -206,6 +254,10 @@ set_dos_parameters(const networkstatus_t *ns)
   dos_conn_enabled = get_param_conn_enabled(ns);
   dos_conn_max_concurrent_count = get_param_conn_max_concurrent_count(ns);
   dos_conn_defense_type = get_param_conn_defense_type(ns);
+  dos_conn_connect_rate = get_param_conn_connect_rate(ns);
+  dos_conn_connect_burst = get_param_conn_connect_burst(ns);
+  dos_conn_connect_defense_time_period =
+    get_param_conn_connect_defense_time_period(ns);
 }
 
 /* Free everything for the circuit creation DoS mitigation subsystem. */
@@ -347,7 +399,7 @@ cc_has_exhausted_circuits(const dos_client_stats_t *stats)
 {
   tor_assert(stats);
   return stats->cc_stats.circuit_bucket == 0 &&
-         stats->concurrent_count >= dos_cc_min_concurrent_conn;
+         stats->conn_stats.concurrent_count >= dos_cc_min_concurrent_conn;
 }
 
 /* Mark client address by setting a timestamp in the stats object which tells
@@ -403,6 +455,20 @@ cc_channel_addr_is_marked(channel_t *chan)
 
 /* Concurrent connection private API. */
 
+/* Mark client connection stats by setting a timestamp which tells us until
+ * when it is marked as positively detected. */
+static void
+conn_mark_client(conn_client_stats_t *stats)
+{
+  tor_assert(stats);
+
+  /* We add a random offset of a maximum of half the defense time so it is
+   * less predictable and thus more difficult to game. */
+  stats->marked_until_ts =
+    approx_time() + dos_conn_connect_defense_time_period +
+    crypto_rand_int_range(1, dos_conn_connect_defense_time_period / 2);
+}
+
 /* Free everything for the connection DoS mitigation subsystem. */
 static void
 conn_free_all(void)
@@ -420,6 +486,63 @@ conn_consensus_has_changed(const networkstatus_t *ns)
   if (dos_conn_enabled && !get_param_conn_enabled(ns)) {
     conn_free_all();
   }
+}
+
+/** Called when a new client connection has arrived. The following will update
+ * the client connection statistics.
+ *
+ * The addr is used for logging purposes only.
+ *
+ * If the connect counter reaches its limit, it is marked. */
+static void
+conn_update_on_connect(conn_client_stats_t *stats, const tor_addr_t *addr)
+{
+  tor_assert(stats);
+  tor_assert(addr);
+
+  /* Update concurrent count for this new connect. */
+  stats->concurrent_count++;
+
+  /* Refill connect connection count. */
+  token_bucket_ctr_refill(&stats->connect_count, (uint32_t) approx_time());
+
+  /* Decrement counter for this new connection. */
+  if (token_bucket_ctr_get(&stats->connect_count) > 0) {
+    token_bucket_ctr_dec(&stats->connect_count, 1);
+  }
+
+  /* Assess connect counter. Mark it if counter is down to 0 and we haven't
+   * marked it before or it was reset. This is to avoid to re-mark it over and
+   * over again extending continuously the blocked time. */
+  if (token_bucket_ctr_get(&stats->connect_count) == 0 &&
+      stats->marked_until_ts == 0) {
+    conn_mark_client(stats);
+  }
+
+  log_debug(LD_DOS, "Client address %s has now %u concurrent connections. "
+                    "Remaining %" TOR_PRIuSZ "/sec connections are allowed.",
+            fmt_addr(addr), stats->concurrent_count,
+            token_bucket_ctr_get(&stats->connect_count));
+}
+
+/** Called when a client connection is closed. The following will update
+ * the client connection statistics.
+ *
+ * The addr is used for logging purposes only. */
+static void
+conn_update_on_close(conn_client_stats_t *stats, const tor_addr_t *addr)
+{
+  /* Extra super duper safety. Going below 0 means an underflow which could
+   * lead to most likely a false positive. In theory, this should never happen
+   * but lets be extra safe. */
+  if (BUG(stats->concurrent_count == 0)) {
+    return;
+  }
+
+  stats->concurrent_count--;
+  log_debug(LD_DOS, "Client address %s has lost a connection. Concurrent "
+                    "connections are now at %u",
+            fmt_addr(addr), stats->concurrent_count);
 }
 
 /* General private API */
@@ -547,9 +670,20 @@ dos_conn_addr_get_defense_type(const tor_addr_t *addr)
     goto end;
   }
 
+  /* Is this address marked as making too many client connections? */
+  if (entry->dos_stats.conn_stats.marked_until_ts >= approx_time()) {
+    conn_num_addr_connect_rejected++;
+    return dos_conn_defense_type;
+  }
+  /* Reset it to 0 here so that if the marked timestamp has expired that is
+   * we've gone beyond it, we have to reset it so the detection can mark it
+   * again in the future. */
+  entry->dos_stats.conn_stats.marked_until_ts = 0;
+
   /* Need to be above the maximum concurrent connection count to trigger a
    * defense. */
-  if (entry->dos_stats.concurrent_count > dos_conn_max_concurrent_count) {
+  if (entry->dos_stats.conn_stats.concurrent_count >
+      dos_conn_max_concurrent_count) {
     conn_num_addr_rejected++;
     return dos_conn_defense_type;
   }
@@ -574,7 +708,7 @@ dos_geoip_entry_about_to_free(const clientmap_entry_t *geoip_ent)
 
   /* The count is down to 0 meaning no connections right now, we can safely
    * clear the geoip entry from the cache. */
-  if (geoip_ent->dos_stats.concurrent_count == 0) {
+  if (geoip_ent->dos_stats.conn_stats.concurrent_count == 0) {
     goto end;
   }
 
@@ -595,6 +729,22 @@ dos_geoip_entry_about_to_free(const clientmap_entry_t *geoip_ent)
   return;
 }
 
+/** A new geoip client entry has been allocated, initialize its DoS object. */
+void
+dos_geoip_entry_init(clientmap_entry_t *geoip_ent)
+{
+  tor_assert(geoip_ent);
+
+  /* Initialize the connection count counter with the rate and burst
+   * parameters taken either from configuration or consensus.
+   *
+   * We do this even if the DoS connection detection is not enabled because it
+   * can be enabled at runtime and these counters need to be valid. */
+  token_bucket_ctr_init(&geoip_ent->dos_stats.conn_stats.connect_count,
+                        dos_conn_connect_rate, dos_conn_connect_burst,
+                        (uint32_t) approx_time());
+}
+
 /* Note down that we've just refused a single hop client. This increments a
  * counter later used for the heartbeat. */
 void
@@ -613,8 +763,8 @@ dos_should_refuse_single_hop_client(void)
     return 0;
   }
 
-  if (get_options()->DoSRefuseSingleHopClientRendezvous != -1) {
-    return get_options()->DoSRefuseSingleHopClientRendezvous;
+  if (dos_get_options()->DoSRefuseSingleHopClientRendezvous != -1) {
+    return dos_get_options()->DoSRefuseSingleHopClientRendezvous;
   }
 
   return (int) networkstatus_get_param(NULL,
@@ -626,55 +776,55 @@ dos_should_refuse_single_hop_client(void)
 void
 dos_log_heartbeat(void)
 {
-  char *conn_msg = NULL;
-  char *cc_msg = NULL;
-  char *single_hop_client_msg = NULL;
-  char *circ_stats_msg = NULL;
-  char *hs_dos_intro2_msg = NULL;
+  smartlist_t *elems = smartlist_new();
 
   /* Stats number coming from relay.c append_cell_to_circuit_queue(). */
-  tor_asprintf(&circ_stats_msg,
-               " %" PRIu64 " circuits killed with too many cells.",
-               stats_n_circ_max_cell_reached);
+  smartlist_add_asprintf(elems,
+                         "%" PRIu64 " circuits killed with too many cells",
+                         stats_n_circ_max_cell_reached);
 
   if (dos_cc_enabled) {
-    tor_asprintf(&cc_msg,
-                 " %" PRIu64 " circuits rejected,"
-                 " %" PRIu32 " marked addresses.",
-                 cc_num_rejected_cells, cc_num_marked_addrs);
+    smartlist_add_asprintf(elems,
+                           "%" PRIu64 " circuits rejected, "
+                           "%" PRIu32 " marked addresses",
+                           cc_num_rejected_cells, cc_num_marked_addrs);
+  } else {
+    smartlist_add_asprintf(elems, "[DoSCircuitCreationEnabled disabled]");
   }
 
   if (dos_conn_enabled) {
-    tor_asprintf(&conn_msg,
-                 " %" PRIu64 " connections closed.",
-                 conn_num_addr_rejected);
+    smartlist_add_asprintf(elems,
+                           "%" PRIu64 " same address concurrent "
+                           "connections rejected", conn_num_addr_rejected);
+    smartlist_add_asprintf(elems,
+                           "%" PRIu64 " connections rejected",
+                           conn_num_addr_connect_rejected);
+  } else {
+    smartlist_add_asprintf(elems, "[DoSConnectionEnabled disabled]");
   }
 
   if (dos_should_refuse_single_hop_client()) {
-    tor_asprintf(&single_hop_client_msg,
-                 " %" PRIu64 " single hop clients refused.",
-                 num_single_hop_client_refused);
+    smartlist_add_asprintf(elems,
+                           "%" PRIu64 " single hop clients refused",
+                           num_single_hop_client_refused);
+  } else {
+    smartlist_add_asprintf(elems,
+                           "[DoSRefuseSingleHopClientRendezvous disabled]");
   }
 
   /* HS DoS stats. */
-  tor_asprintf(&hs_dos_intro2_msg,
-               " %" PRIu64 " INTRODUCE2 rejected.",
-               hs_dos_get_intro2_rejected_count());
+  smartlist_add_asprintf(elems,
+                         "%" PRIu64 " INTRODUCE2 rejected",
+                         hs_dos_get_intro2_rejected_count());
+
+  char *msg = smartlist_join_strings(elems, ", ", 0, NULL);
 
   log_notice(LD_HEARTBEAT,
-             "DoS mitigation since startup:%s%s%s%s%s",
-             circ_stats_msg,
-             (cc_msg != NULL) ? cc_msg : " [cc not enabled]",
-             (conn_msg != NULL) ? conn_msg : " [conn not enabled]",
-             (single_hop_client_msg != NULL) ? single_hop_client_msg : "",
-             (hs_dos_intro2_msg != NULL) ? hs_dos_intro2_msg : "");
+             "Heartbeat: DoS mitigation since startup: %s.", msg);
 
-  tor_free(conn_msg);
-  tor_free(cc_msg);
-  tor_free(single_hop_client_msg);
-  tor_free(circ_stats_msg);
-  tor_free(hs_dos_intro2_msg);
-  return;
+  tor_free(msg);
+  SMARTLIST_FOREACH(elems, char *, e, tor_free(e));
+  smartlist_free(elems);
 }
 
 /* Called when a new client connection has been established on the given
@@ -709,11 +859,11 @@ dos_new_client_conn(or_connection_t *or_conn, const char *transport_name)
     goto end;
   }
 
-  entry->dos_stats.concurrent_count++;
+  /* Update stats from this new connect. */
+  conn_update_on_connect(&entry->dos_stats.conn_stats,
+                         &TO_CONN(or_conn)->addr);
+
   or_conn->tracked_for_dos_mitigation = 1;
-  log_debug(LD_DOS, "Client address %s has now %u concurrent connections.",
-            fmt_addr(&TO_CONN(or_conn)->addr),
-            entry->dos_stats.concurrent_count);
 
  end:
   return;
@@ -743,18 +893,8 @@ dos_close_client_conn(const or_connection_t *or_conn)
     goto end;
   }
 
-  /* Extra super duper safety. Going below 0 means an underflow which could
-   * lead to most likely a false positive. In theory, this should never happen
-   * but lets be extra safe. */
-  if (BUG(entry->dos_stats.concurrent_count == 0)) {
-    goto end;
-  }
-
-  entry->dos_stats.concurrent_count--;
-  log_debug(LD_DOS, "Client address %s has lost a connection. Concurrent "
-                    "connections are now at %u",
-            fmt_addr(&TO_CONN(or_conn)->addr),
-            entry->dos_stats.concurrent_count);
+  /* Update stats from this new close. */
+  conn_update_on_close(&entry->dos_stats.conn_stats, &TO_CONN(or_conn)->addr);
 
  end:
   return;

@@ -1,7 +1,7 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2020, The Tor Project, Inc. */
+ * Copyright (c) 2007-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -65,7 +65,9 @@
 #include "core/or/scheduler.h"
 #include "feature/nodelist/torcert.h"
 #include "core/or/channelpadding.h"
+#include "core/or/congestion_control_common.h"
 #include "feature/dirauth/authmode.h"
+#include "feature/hs/hs_service.h"
 
 #include "core/or/cell_st.h"
 #include "core/or/cell_queue_st.h"
@@ -635,7 +637,7 @@ connection_or_flushed_some(or_connection_t *conn)
   /* If we're under the low water mark, add cells until we're just over the
    * high water mark. */
   datalen = connection_get_outbuf_len(TO_CONN(conn));
-  if (datalen < OR_CONN_LOWWATER) {
+  if (datalen < or_conn_lowwatermark()) {
     /* Let the scheduler know */
     scheduler_channel_wants_writes(TLS_CHAN_TO_BASE(conn->chan));
   }
@@ -659,9 +661,9 @@ connection_or_num_cells_writeable(or_connection_t *conn)
    * used to trigger when to start writing after we've stopped.
    */
   datalen = connection_get_outbuf_len(TO_CONN(conn));
-  if (datalen < OR_CONN_HIGHWATER) {
+  if (datalen < or_conn_highwatermark()) {
     cell_network_size = get_cell_network_size(conn->wide_circ_ids);
-    n = CEIL_DIV(OR_CONN_HIGHWATER - datalen, cell_network_size);
+    n = CEIL_DIV(or_conn_highwatermark() - datalen, cell_network_size);
   }
 
   return n;
@@ -686,6 +688,11 @@ connection_or_finished_flushing(or_connection_t *conn)
       /* PROXY_HAPROXY gets connected by receiving an ack. */
       if (conn->proxy_type == PROXY_HAPROXY) {
         tor_assert(TO_CONN(conn)->proxy_state == PROXY_HAPROXY_WAIT_FOR_FLUSH);
+        IF_BUG_ONCE(buf_datalen(TO_CONN(conn)->inbuf) != 0) {
+          /* This should be impossible; we're not even reading. */
+          connection_or_close_for_error(conn, 0);
+          return -1;
+        }
         TO_CONN(conn)->proxy_state = PROXY_CONNECTED;
 
         if (connection_tls_start_handshake(conn, 0) < 0) {
@@ -1308,6 +1315,13 @@ note_or_connect_failed(const or_connection_t *or_conn)
   or_connect_failure_entry_t *ocf = NULL;
 
   tor_assert(or_conn);
+
+  if (or_conn->potentially_used_for_bootstrapping) {
+    /* Don't cache connection failures for connections we initiated ourself.
+     * If these direct connections fail, we're supposed to recognize that
+     * the destination is down and stop trying. See ticket 40499. */
+    return;
+  }
 
   ocf = or_connect_failure_find(or_conn);
   if (ocf == NULL) {
@@ -1974,7 +1988,8 @@ connection_or_client_learned_peer_id(or_connection_t *conn,
                                                    conn->identity_digest);
     const int is_authority_fingerprint = router_digest_is_trusted_dir(
                                                    conn->identity_digest);
-    const int non_anonymous_mode = rend_non_anonymous_mode_enabled(options);
+    const int non_anonymous_mode =
+      hs_service_non_anonymous_mode_enabled(options);
     int severity;
     const char *extra_log = "";
 

@@ -1,4 +1,4 @@
-/* Copyright (c) 2016-2020, The Tor Project, Inc. */
+/* Copyright (c) 2016-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -19,9 +19,6 @@ struct ed25519_keypair_t;
 /* Trunnel */
 #include "trunnel/ed25519_cert.h"
 
-/** Protocol version 2. Use this instead of hardcoding "2" in the code base,
- * this adds a clearer semantic to the value when used. */
-#define HS_VERSION_TWO 2
 /** Version 3 of the protocol (prop224). */
 #define HS_VERSION_THREE 3
 /** Earliest version we support. */
@@ -138,7 +135,7 @@ typedef enum {
 } hs_auth_key_type_t;
 
 /** Return value when adding an ephemeral service through the ADD_ONION
- * control port command. Both v2 and v3 share these. */
+ * control port command. */
 typedef enum {
   RSAE_BADAUTH     = -5, /**< Invalid auth_type/auth_clients */
   RSAE_BADVIRTPORT = -4, /**< Invalid VIRTPORT/TARGET(s) */
@@ -150,7 +147,7 @@ typedef enum {
 
 /** Represents the mapping from a virtual port of a rendezvous service to a
  * real port on some IP. */
-typedef struct rend_service_port_config_t {
+typedef struct hs_port_config_t {
   /** The incoming HS virtual port we're mapping */
   uint16_t virtual_port;
   /** Is this an AF_UNIX port? */
@@ -161,7 +158,7 @@ typedef struct rend_service_port_config_t {
   tor_addr_t real_addr;
   /** The socket path to connect to, if is_unix_addr */
   char unix_addr[FLEXIBLE_ARRAY_MEMBER];
-} rend_service_port_config_t;
+} hs_port_config_t;
 
 void hs_init(void);
 void hs_free_all(void);
@@ -193,24 +190,6 @@ void hs_build_blinded_keypair(const struct ed25519_keypair_t *kp,
                               uint64_t time_period_num,
                               struct ed25519_keypair_t *kp_out);
 int hs_service_requires_uptime_circ(const smartlist_t *ports);
-
-void rend_data_free_(rend_data_t *data);
-#define rend_data_free(data) \
-  FREE_AND_NULL(rend_data_t, rend_data_free_, (data))
-rend_data_t *rend_data_dup(const rend_data_t *data);
-rend_data_t *rend_data_client_create(const char *onion_address,
-                                     const char *desc_id,
-                                     const char *cookie,
-                                     rend_auth_type_t auth_type);
-rend_data_t *rend_data_service_create(const char *onion_address,
-                                      const char *pk_digest,
-                                      const uint8_t *cookie,
-                                      rend_auth_type_t auth_type);
-const char *rend_data_get_address(const rend_data_t *rend_data);
-const char *rend_data_get_desc_id(const rend_data_t *rend_data,
-                                  uint8_t replica, size_t *len_out);
-const uint8_t *rend_data_get_pk_digest(const rend_data_t *rend_data,
-                                       size_t *len_out);
 
 routerstatus_t *pick_hsdir(const char *desc_id, const char *desc_id_base32);
 
@@ -260,6 +239,11 @@ void hs_purge_hid_serv_from_last_hid_serv_requests(const char *desc_id);
 void hs_purge_last_hid_serv_requests(void);
 
 int hs_set_conn_addr_port(const smartlist_t *ports, edge_connection_t *conn);
+hs_port_config_t *hs_parse_port_config(const char *string, const char *sep,
+                                       char **err_msg_out);
+void hs_port_config_free_(hs_port_config_t *p);
+#define hs_port_config_free(p) \
+  FREE_AND_NULL(hs_port_config_t, hs_port_config_free_, (p))
 
 void hs_inc_rdv_stream_counter(origin_circuit_t *circ);
 void hs_dec_rdv_stream_counter(origin_circuit_t *circ);

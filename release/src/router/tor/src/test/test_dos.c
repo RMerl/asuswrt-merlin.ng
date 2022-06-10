@@ -1,4 +1,4 @@
-/* Copyright (c) 2018-2020, The Tor Project, Inc. */
+/* Copyright (c) 2018-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 #define DOS_PRIVATE
@@ -79,6 +79,9 @@ test_dos_conn_creation(void *arg)
   { /* Register many conns from this client but not enough to get it blocked */
     unsigned int i;
     for (i = 0; i < max_concurrent_conns; i++) {
+      /* Don't trigger the connect() rate limitation so advance the clock 1
+       * second for each connection. */
+      update_approx_time(++now);
       dos_new_client_conn(&or_conn, NULL);
     }
   }
@@ -470,7 +473,7 @@ test_known_relay(void *arg)
                               GEOIP_CLIENT_CONNECT);
   tt_assert(entry);
   /* We should have a count of 0. */
-  tt_uint_op(entry->dos_stats.concurrent_count, OP_EQ, 0);
+  tt_uint_op(entry->dos_stats.conn_stats.concurrent_count, OP_EQ, 0);
 
   /* To make sure that his is working properly, make a unknown client
    * connection and see if we do get it. */
@@ -483,7 +486,7 @@ test_known_relay(void *arg)
                               GEOIP_CLIENT_CONNECT);
   tt_assert(entry);
   /* We should have a count of 2. */
-  tt_uint_op(entry->dos_stats.concurrent_count, OP_EQ, 2);
+  tt_uint_op(entry->dos_stats.conn_stats.concurrent_count, OP_EQ, 2);
 
  done:
   routerstatus_free(rs); routerinfo_free(ri); microdesc_free(md);
@@ -496,11 +499,69 @@ test_known_relay(void *arg)
   UNMOCK(get_param_cc_enabled);
 }
 
+/** Test that the connection tracker of the DoS subsystem will block clients
+ *  who try to establish too many connections */
+static void
+test_dos_conn_rate(void *arg)
+{
+  (void) arg;
+
+  MOCK(get_param_cc_enabled, mock_enable_dos_protection);
+  MOCK(get_param_conn_enabled, mock_enable_dos_protection);
+
+  /* Initialize test data */
+  or_connection_t or_conn;
+  time_t now = 1281533250; /* 2010-08-11 13:27:30 UTC */
+  tt_int_op(AF_INET,OP_EQ, tor_addr_parse(&TO_CONN(&or_conn)->addr,
+                                          "18.0.0.1"));
+  tor_addr_t *addr = &TO_CONN(&or_conn)->addr;
+  update_approx_time(now);
+
+  /* Get DoS subsystem limits */
+  dos_init();
+  uint32_t burst_conn = get_param_conn_connect_burst(NULL);
+
+  /* Introduce new client */
+  geoip_note_client_seen(GEOIP_CLIENT_CONNECT, addr, NULL, now);
+  { /* Register many conns from this client but not enough to get it blocked */
+    unsigned int i;
+    for (i = 0; i < burst_conn - 1; i++) {
+      dos_new_client_conn(&or_conn, NULL);
+    }
+  }
+
+  /* Check that new conns are still permitted */
+  tt_int_op(DOS_CONN_DEFENSE_NONE, OP_EQ,
+            dos_conn_addr_get_defense_type(addr));
+
+  /* Register another conn and check that new conns are not allowed anymore.
+   * We should have reached our burst. */
+  dos_new_client_conn(&or_conn, NULL);
+  tt_int_op(DOS_CONN_DEFENSE_CLOSE, OP_EQ,
+            dos_conn_addr_get_defense_type(addr));
+
+  /* Advance the time 12 hours. It should still be blocked. */
+  update_approx_time(now + (12 * 60 * 60));
+  tt_int_op(DOS_CONN_DEFENSE_CLOSE, OP_EQ,
+            dos_conn_addr_get_defense_type(addr));
+
+  /* Advance the time 24 hours plus 13 hours. It should be unblocked.
+   * Remember, we had a random value between 24 hours and rand(24/2) thus
+   * adding 13 hours is safe. */
+  update_approx_time(now + (37 * 60 * 60));
+  tt_int_op(DOS_CONN_DEFENSE_NONE, OP_EQ,
+            dos_conn_addr_get_defense_type(addr));
+
+ done:
+  dos_free_all();
+}
+
 struct testcase_t dos_tests[] = {
   { "conn_creation", test_dos_conn_creation, TT_FORK, NULL, NULL },
   { "circuit_creation", test_dos_circuit_creation, TT_FORK, NULL, NULL },
   { "bucket_refill", test_dos_bucket_refill, TT_FORK, NULL, NULL },
   { "known_relay" , test_known_relay, TT_FORK,
     NULL, NULL },
+  { "conn_rate", test_dos_conn_rate, TT_FORK, NULL, NULL },
   END_OF_TESTCASES
 };

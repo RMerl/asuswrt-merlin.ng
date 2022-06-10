@@ -1,7 +1,7 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2020, The Tor Project, Inc. */
+ * Copyright (c) 2007-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -45,7 +45,8 @@ typedef struct authdir_config_t {
 #define RTR_REJECT  4  /**< We will not publish this router. */
 /*                 8  Historically used to avoid using this as a dir. */
 #define RTR_BADEXIT 16 /**< We'll tell clients not to use this as an exit. */
-/*                 32 Historically used to indicade Unnamed */
+/** We'll vote to only use this router as a midpoint. */
+#define RTR_MIDDLEONLY 32
 
 #endif /* defined(PROCESS_DESCS_PRIVATE) || defined(TOR_UNIT_TESTS) */
 

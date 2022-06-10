@@ -59,7 +59,7 @@ Some compatible licenses include:
 Each main development series (like 0.2.1, 0.2.2, etc) has its main work
 applied to a single branch.  At most one series can be the development series
 at a time; all other series are maintenance series that get bug-fixes only.
-The development series is built in a git branch called "master"; the
+The development series is built in a git branch called "main"; the
 maintenance series are built in branches called "maint-0.2.0", "maint-0.2.1",
 and so on.  We regularly merge the active maint branches forward.
 
@@ -75,7 +75,7 @@ If you're working on a bugfix for a bug that occurs in a particular version,
 base your bugfix branch on the "maint" branch for the first supported series
 that has that bug.  (As of June 2013, we're supporting 0.2.3 and later.)
 
-If you're working on a new feature, base it on the master branch. If you're
+If you're working on a new feature, base it on the main branch. If you're
 working on a new feature and it will take a while to implement and/or you'd
 like to avoid the possibility of unrelated bugs in Tor while you're
 implementing your feature, consider branching off of the latest maint- branch.

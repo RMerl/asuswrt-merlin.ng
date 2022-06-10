@@ -1,4 +1,4 @@
-/* Copyright (c) 2016-2020, The Tor Project, Inc. */
+/* Copyright (c) 2016-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -11,12 +11,15 @@
 #include "core/or/or.h"
 #include "app/config/config.h"
 #include "core/crypto/hs_ntor.h"
+#include "core/crypto/onion_crypto.h"
 #include "core/mainloop/connection.h"
 #include "core/or/circuitbuild.h"
 #include "core/or/circuitlist.h"
 #include "core/or/circuituse.h"
 #include "core/or/connection_edge.h"
+#include "core/or/congestion_control_common.h"
 #include "core/or/extendinfo.h"
+#include "core/or/protover.h"
 #include "core/or/reasons.h"
 #include "feature/client/circpathbias.h"
 #include "feature/dirclient/dirclient.h"
@@ -34,10 +37,10 @@
 #include "feature/nodelist/networkstatus.h"
 #include "feature/nodelist/nodelist.h"
 #include "feature/nodelist/routerset.h"
-#include "feature/rend/rendclient.h"
 #include "lib/crypt_ops/crypto_format.h"
 #include "lib/crypt_ops/crypto_rand.h"
 #include "lib/crypt_ops/crypto_util.h"
+#include "lib/evloop/compat_libevent.h"
 
 #include "core/or/cpath_build_state_st.h"
 #include "feature/dircommon/dir_connection_st.h"
@@ -46,11 +49,30 @@
 #include "core/or/origin_circuit_st.h"
 #include "core/or/socks_request_st.h"
 
+#include "trunnel/hs/cell_introduce1.h"
+
+/** This event is activated when we are notified that directory information has
+ * changed. It must be done asynchronous from the call due to possible
+ * recursion from the caller of that notification. See #40579. */
+static struct mainloop_event_t *dir_info_changed_ev = NULL;
+
 /** Client-side authorizations for hidden services; map of service identity
  * public key to hs_client_service_authorization_t *. */
 static digest256map_t *client_auths = NULL;
 
-#include "trunnel/hs/cell_introduce1.h"
+/** Mainloop callback. Scheduled to run when we are notified of a directory
+ * info change. See hs_client_dir_info_changed(). */
+static void
+dir_info_changed_callback(mainloop_event_t *event, void *arg)
+{
+  (void) event;
+  (void) arg;
+
+  /* We have possibly reached the minimum directory information or new
+   * consensus so retry all pending SOCKS connection in
+   * AP_CONN_STATE_RENDDESC_WAIT state in order to fetch the descriptor. */
+  retry_all_socks_conn_waiting_for_desc();
+}
 
 /** Return a human-readable string for the client fetch status code. */
 static const char *
@@ -360,16 +382,6 @@ note_connection_attempt_succeeded(const hs_ident_edge_conn_t *hs_conn_ident)
   /* Remove from the hid serv cache all requests for that service so we can
    * query the HSDir again later on for various reasons. */
   purge_hid_serv_request(&hs_conn_ident->identity_pk);
-
-  /* The v2 subsystem cleans up the intro point time out flag at this stage.
-   * We don't try to do it here because we still need to keep intact the intro
-   * point state for future connections. Even though we are able to connect to
-   * the service, doesn't mean we should reset the timed out intro points.
-   *
-   * It is not possible to have successfully connected to an intro point
-   * present in our cache that was on error or timed out. Every entry in that
-   * cache have a 2 minutes lifetime so ultimately the intro point(s) state
-   * will be reset and thus possible to be retried. */
 }
 
 /** Given the pubkey of a hidden service in <b>onion_identity_pk</b>, fetch its
@@ -632,6 +644,16 @@ send_introduce1(origin_circuit_t *intro_circ,
     goto tran_err;
   }
 
+  /* Check if the rendevous circuit was setup WITHOUT congestion control but if
+   * it is enabled and the service supports it. This can happen, see
+   * setup_rendezvous_circ_congestion_control() and so close rendezvous circuit
+   * so another one can be created. */
+  if (TO_CIRCUIT(rend_circ)->ccontrol == NULL && congestion_control_enabled()
+      && hs_desc_supports_congestion_control(desc)) {
+    circuit_mark_for_close(TO_CIRCUIT(rend_circ), END_CIRC_REASON_INTERNAL);
+    goto tran_err;
+  }
+
   /* We need to find which intro point in the descriptor we are connected to
    * on intro_circ. */
   ip = find_desc_intro_point_by_ident(intro_circ->hs_ident, desc);
@@ -767,6 +789,45 @@ client_intro_circ_has_opened(origin_circuit_t *circ)
   connection_ap_attach_pending(1);
 }
 
+/** Setup the congestion control parameters on the given rendezvous circuit.
+ * This looks at the service descriptor flow control line (if any).
+ *
+ * It is possible that we are unable to set congestion control on the circuit
+ * if the descriptor can't be found. In that case, the introduction circuit
+ * can't be opened without it so a fetch will be triggered.
+ *
+ * However, if the descriptor asks for congestion control but the RP circuit
+ * doesn't have it, it will be closed and a new circuit will be opened. */
+static void
+setup_rendezvous_circ_congestion_control(origin_circuit_t *circ)
+{
+  tor_assert(circ);
+
+  /* Setup congestion control parameters on the circuit. */
+  const hs_descriptor_t *desc =
+    hs_cache_lookup_as_client(&circ->hs_ident->identity_pk);
+  if (desc == NULL) {
+    /* This is possible because between launching the circuit and the circuit
+     * ending in opened state, the descriptor could have been removed from the
+     * cache. In this case, we just can't setup congestion control. */
+    return;
+  }
+
+  /* Check if the service lists support for congestion control in its
+   * descriptor. If not, we don't setup congestion control. */
+  if (!hs_desc_supports_congestion_control(desc)) {
+    return;
+  }
+
+  /* If network doesn't enable it, do not setup. */
+  if (!congestion_control_enabled()) {
+    return;
+  }
+
+  hs_circ_setup_congestion_control(circ, desc->encrypted_data.sendme_inc,
+                                   desc->encrypted_data.single_onion_service);
+}
+
 /** Called when a rendezvous circuit has opened. */
 static void
 client_rendezvous_circ_has_opened(origin_circuit_t *circ)
@@ -795,6 +856,9 @@ client_rendezvous_circ_has_opened(origin_circuit_t *circ)
 
   log_info(LD_REND, "Rendezvous circuit has opened to %s.",
            safe_str_client(extend_info_describe(rp_ei)));
+
+  /* Setup congestion control parameters on the circuit. */
+  setup_rendezvous_circ_congestion_control(circ);
 
   /* Ignore returned value, nothing we can really do. On failure, the circuit
    * will be marked for close. */
@@ -1131,7 +1195,7 @@ handle_introduce_ack_success(origin_circuit_t *intro_circ)
   rend_circ =
   hs_circuitmap_get_established_rend_circ_client_side(rendezvous_cookie);
   if (rend_circ == NULL) {
-    log_warn(LD_REND, "Can't find any rendezvous circuit. Stopping");
+    log_info(LD_REND, "Can't find any rendezvous circuit. Stopping");
     goto end;
   }
 
@@ -1951,16 +2015,8 @@ hs_client_note_connection_attempt_succeeded(const edge_connection_t *conn)
 {
   tor_assert(connection_edge_is_rendezvous_stream(conn));
 
-  if (BUG(conn->rend_data && conn->hs_ident)) {
-    log_warn(LD_BUG, "Stream had both rend_data and hs_ident..."
-             "Prioritizing hs_ident");
-  }
-
   if (conn->hs_ident) { /* It's v3: pass it to the prop224 handler */
     note_connection_attempt_succeeded(conn->hs_ident);
-    return;
-  } else if (conn->rend_data) { /* It's v2: pass it to the legacy handler */
-    rend_client_note_connection_attempt_ended(conn->rend_data);
     return;
   }
 }
@@ -2087,9 +2143,7 @@ int
 hs_client_send_introduce1(origin_circuit_t *intro_circ,
                           origin_circuit_t *rend_circ)
 {
-  return (intro_circ->hs_ident) ? send_introduce1(intro_circ, rend_circ) :
-                                  rend_client_send_introduction(intro_circ,
-                                                                rend_circ);
+  return send_introduce1(intro_circ, rend_circ);
 }
 
 /** Called when the client circuit circ has been established. It can be either
@@ -2100,21 +2154,15 @@ hs_client_circuit_has_opened(origin_circuit_t *circ)
 {
   tor_assert(circ);
 
-  /* Handle both version. v2 uses rend_data and v3 uses the hs circuit
-   * identifier hs_ident. Can't be both. */
   switch (TO_CIRCUIT(circ)->purpose) {
   case CIRCUIT_PURPOSE_C_INTRODUCING:
     if (circ->hs_ident) {
       client_intro_circ_has_opened(circ);
-    } else {
-      rend_client_introcirc_has_opened(circ);
     }
     break;
   case CIRCUIT_PURPOSE_C_ESTABLISH_REND:
     if (circ->hs_ident) {
       client_rendezvous_circ_has_opened(circ);
-    } else {
-      rend_client_rendcirc_has_opened(circ);
     }
     break;
   default:
@@ -2428,9 +2476,7 @@ hs_client_get_random_intro_from_edge(const edge_connection_t *edge_conn)
 {
   tor_assert(edge_conn);
 
-  return (edge_conn->hs_ident) ?
-    client_get_random_intro(&edge_conn->hs_ident->identity_pk) :
-    rend_client_get_random_intro(edge_conn->rend_data);
+  return client_get_random_intro(&edge_conn->hs_ident->identity_pk);
 }
 
 /** Called when get an INTRODUCE_ACK cell on the introduction circuit circ.
@@ -2452,9 +2498,7 @@ hs_client_receive_introduce_ack(origin_circuit_t *circ,
     goto end;
   }
 
-  ret = (circ->hs_ident) ? handle_introduce_ack(circ, payload, payload_len) :
-                           rend_client_introduction_acked(circ, payload,
-                                                          payload_len);
+  ret = handle_introduce_ack(circ, payload, payload_len);
   /* For path bias: This circuit was used successfully. NACK or ACK counts. */
   pathbias_mark_use_success(circ);
 
@@ -2488,9 +2532,8 @@ hs_client_receive_rendezvous2(origin_circuit_t *circ,
   log_info(LD_REND, "Got RENDEZVOUS2 cell from hidden service on circuit %u.",
            TO_CIRCUIT(circ)->n_circ_id);
 
-  ret = (circ->hs_ident) ? handle_rendezvous2(circ, payload, payload_len) :
-                           rend_client_receive_rendezvous(circ, payload,
-                                                          payload_len);
+  ret = handle_rendezvous2(circ, payload, payload_len);
+
  end:
   return ret;
 }
@@ -2511,9 +2554,7 @@ hs_client_reextend_intro_circuit(origin_circuit_t *circ)
 
   tor_assert(circ);
 
-  ei = (circ->hs_ident) ?
-    client_get_random_intro(&circ->hs_ident->identity_pk) :
-    rend_client_get_random_intro(circ->rend_data);
+  ei = client_get_random_intro(&circ->hs_ident->identity_pk);
   if (ei == NULL) {
     log_warn(LD_REND, "No usable introduction points left. Closing.");
     circuit_mark_for_close(TO_CIRCUIT(circ), END_CIRC_REASON_INTERNAL);
@@ -2584,6 +2625,9 @@ hs_client_free_all(void)
   /* Purge the hidden service request cache. */
   hs_purge_last_hid_serv_requests();
   client_service_authorization_free_all();
+
+  /* This is NULL safe. */
+  mainloop_event_free(dir_info_changed_ev);
 }
 
 /** Purge all potentially remotely-detectable state held in the hidden
@@ -2591,9 +2635,6 @@ hs_client_free_all(void)
 void
 hs_client_purge_state(void)
 {
-  /* v2 subsystem. */
-  rend_client_purge_state();
-
   /* Cancel all descriptor fetches. Do this first so once done we are sure
    * that our descriptor cache won't modified. */
   cancel_descriptor_fetches();
@@ -2609,14 +2650,27 @@ hs_client_purge_state(void)
   log_info(LD_REND, "Hidden service client state has been purged.");
 }
 
-/** Called when our directory information has changed. */
+/** Called when our directory information has changed.
+ *
+ * The work done in that function has to either be kept within the HS subsystem
+ * or else scheduled as a mainloop event. In other words, this function can't
+ * call outside to another subsystem to avoid risking recursion problems. */
 void
 hs_client_dir_info_changed(void)
 {
-  /* We have possibly reached the minimum directory information or new
-   * consensus so retry all pending SOCKS connection in
-   * AP_CONN_STATE_RENDDESC_WAIT state in order to fetch the descriptor. */
-  retry_all_socks_conn_waiting_for_desc();
+  /* Make sure the mainloop has been initialized. Code path exist that reaches
+   * this before it is. */
+  if (!tor_libevent_is_initialized()) {
+    return;
+  }
+
+  /* Lazily create the event. HS Client subsystem doesn't have an init function
+   * and so we do it here before activating it. */
+  if (!dir_info_changed_ev) {
+    dir_info_changed_ev = mainloop_event_new(dir_info_changed_callback, NULL);
+  }
+  /* Activate it to run immediately. */
+  mainloop_event_activate(dir_info_changed_ev);
 }
 
 #ifdef TOR_UNIT_TESTS

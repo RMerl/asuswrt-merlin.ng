@@ -1,4 +1,4 @@
-/* Copyright (c) 2018-2020, The Tor Project, Inc. */
+/* Copyright (c) 2018-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -230,6 +230,8 @@ test_mainloop_check_participation(void *arg)
   or_options_t *options = options_new();
   const time_t start = 1542658829;
   const time_t ONE_DAY = 24*60*60;
+
+  options->DormantTimeoutEnabled = 1;
 
   // Suppose we've been idle for a day or two
   reset_user_activity(start - 2*ONE_DAY);

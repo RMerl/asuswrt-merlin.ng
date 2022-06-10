@@ -1,4 +1,4 @@
-/* Copyright (c) 2017-2020, The Tor Project, Inc. */
+/* Copyright (c) 2017-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -20,7 +20,7 @@
 #include "feature/hs/hs_service.h"
 
 /* Trunnel. */
-#include "trunnel/hs/cell_common.h"
+#include "trunnel/extension.h"
 #include "trunnel/hs/cell_establish_intro.h"
 
 /** We simulate the creation of an outgoing ESTABLISH_INTRO cell, and then we
@@ -132,7 +132,7 @@ test_gen_establish_intro_dos_ext(void *arg)
   ssize_t ret;
   hs_service_config_t config;
   hs_service_intro_point_t *ip = NULL;
-  trn_cell_extension_t *extensions = NULL;
+  trn_extension_t *extensions = NULL;
   trn_cell_extension_dos_t *dos = NULL;
 
   (void) arg;
@@ -144,8 +144,8 @@ test_gen_establish_intro_dos_ext(void *arg)
 
   /* Case 1: No DoS parameters so no extension to be built. */
   extensions = build_establish_intro_extensions(&config, ip);
-  tt_int_op(trn_cell_extension_get_num(extensions), OP_EQ, 0);
-  trn_cell_extension_free(extensions);
+  tt_int_op(trn_extension_get_num(extensions), OP_EQ, 0);
+  trn_extension_free(extensions);
   extensions = NULL;
 
   /* Case 2: Enable the DoS extension. Parameter set to 0 should indicate to
@@ -153,15 +153,15 @@ test_gen_establish_intro_dos_ext(void *arg)
    * nonetheless in the cell. */
   config.has_dos_defense_enabled = 1;
   extensions = build_establish_intro_extensions(&config, ip);
-  tt_int_op(trn_cell_extension_get_num(extensions), OP_EQ, 1);
+  tt_int_op(trn_extension_get_num(extensions), OP_EQ, 1);
   /* Validate the extension. */
-  const trn_cell_extension_field_t *field =
-    trn_cell_extension_getconst_fields(extensions, 0);
-  tt_int_op(trn_cell_extension_field_get_field_type(field), OP_EQ,
+  const trn_extension_field_t *field =
+    trn_extension_getconst_fields(extensions, 0);
+  tt_int_op(trn_extension_field_get_field_type(field), OP_EQ,
             TRUNNEL_CELL_EXTENSION_TYPE_DOS);
   ret = trn_cell_extension_dos_parse(&dos,
-                 trn_cell_extension_field_getconstarray_field(field),
-                 trn_cell_extension_field_getlen_field(field));
+                 trn_extension_field_getconstarray_field(field),
+                 trn_extension_field_getlen_field(field));
   tt_int_op(ret, OP_EQ, 19);
   /* Rate per sec param. */
   const trn_cell_extension_dos_param_t *param =
@@ -175,21 +175,21 @@ test_gen_establish_intro_dos_ext(void *arg)
             TRUNNEL_DOS_PARAM_TYPE_INTRO2_BURST_PER_SEC);
   tt_u64_op(trn_cell_extension_dos_param_get_value(param), OP_EQ, 0);
   trn_cell_extension_dos_free(dos); dos = NULL;
-  trn_cell_extension_free(extensions); extensions = NULL;
+  trn_extension_free(extensions); extensions = NULL;
 
   /* Case 3: Enable the DoS extension. Parameter set to some normal values. */
   config.has_dos_defense_enabled = 1;
   config.intro_dos_rate_per_sec = 42;
   config.intro_dos_burst_per_sec = 250;
   extensions = build_establish_intro_extensions(&config, ip);
-  tt_int_op(trn_cell_extension_get_num(extensions), OP_EQ, 1);
+  tt_int_op(trn_extension_get_num(extensions), OP_EQ, 1);
   /* Validate the extension. */
-  field = trn_cell_extension_getconst_fields(extensions, 0);
-  tt_int_op(trn_cell_extension_field_get_field_type(field), OP_EQ,
+  field = trn_extension_getconst_fields(extensions, 0);
+  tt_int_op(trn_extension_field_get_field_type(field), OP_EQ,
             TRUNNEL_CELL_EXTENSION_TYPE_DOS);
   ret = trn_cell_extension_dos_parse(&dos,
-                 trn_cell_extension_field_getconstarray_field(field),
-                 trn_cell_extension_field_getlen_field(field));
+                 trn_extension_field_getconstarray_field(field),
+                 trn_extension_field_getlen_field(field));
   tt_int_op(ret, OP_EQ, 19);
   /* Rate per sec param. */
   param = trn_cell_extension_dos_getconst_params(dos, 0);
@@ -202,12 +202,12 @@ test_gen_establish_intro_dos_ext(void *arg)
             TRUNNEL_DOS_PARAM_TYPE_INTRO2_BURST_PER_SEC);
   tt_u64_op(trn_cell_extension_dos_param_get_value(param), OP_EQ, 250);
   trn_cell_extension_dos_free(dos); dos = NULL;
-  trn_cell_extension_free(extensions); extensions = NULL;
+  trn_extension_free(extensions); extensions = NULL;
 
  done:
   service_intro_point_free(ip);
   trn_cell_extension_dos_free(dos);
-  trn_cell_extension_free(extensions);
+  trn_extension_free(extensions);
 }
 
 struct testcase_t hs_cell_tests[] = {

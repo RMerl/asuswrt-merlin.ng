@@ -1,4 +1,4 @@
-/* Copyright (c) 2020, The Tor Project, Inc. */
+/* Copyright (c) 2020-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -174,6 +174,7 @@ test_get_subcredentials(void *arg)
   hs_subcredential_t *subcreds = NULL;
 
   (void) arg;
+  memset(&config, 0, sizeof(config));
 
   MOCK(networkstatus_get_live_consensus,
        mock_networkstatus_get_live_consensus);

@@ -1,6 +1,6 @@
 /* Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2020, The Tor Project, Inc. */
+ * Copyright (c) 2007-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -457,7 +457,26 @@ dirserv_get_flag_thresholds_line(void)
   return result;
 }
 
-/* DOCDOC running_long_enough_to_decide_unreachable */
+/** Directory authorities should avoid expressing an opinion on the
+ * Running flag if their own uptime is too low for the opinion to be
+ * accurate. They implement this step by not listing Running on the
+ * "known-flags" line in their vote.
+ *
+ * The default threshold is 30 minutes, because authorities do a full
+ * reachability sweep of the ID space every 10*128=1280 seconds
+ * (see REACHABILITY_TEST_CYCLE_PERIOD).
+ *
+ * For v3 dir auths, as long as some authorities express an opinion about
+ * Running, it's fine if a few authorities don't. There's an explicit
+ * check, when making the consensus, to abort if *no* authorities list
+ * Running as a known-flag.
+ *
+ * For the bridge authority, if it doesn't vote about Running, the
+ * resulting networkstatus file simply won't list any bridges as Running.
+ * That means the supporting tools, like bridgedb/rdsys and onionoo, need
+ * to be able to handle getting a bridge networkstatus document with no
+ * Running flags. For more details, see
+ * https://bugs.torproject.org/tpo/anti-censorship/rdsys/102 */
 int
 running_long_enough_to_decide_unreachable(void)
 {
@@ -565,7 +584,8 @@ dirauth_set_routerstatus_from_routerinfo(routerstatus_t *rs,
                                          node_t *node,
                                          const routerinfo_t *ri,
                                          time_t now,
-                                         int listbadexits)
+                                         int listbadexits,
+                                         int listmiddleonly)
 {
   const or_options_t *options = get_options();
   uint32_t routerbw_kb = dirserv_get_credible_bandwidth_kb(ri);
@@ -596,6 +616,14 @@ dirauth_set_routerstatus_from_routerinfo(routerstatus_t *rs,
 
   /* Override rs->is_bad_exit */
   rs->is_bad_exit = listbadexits && node->is_bad_exit;
+
+  /* Override rs->is_middle_only and related flags. */
+  rs->is_middle_only = listmiddleonly && node->is_middle_only;
+  if (rs->is_middle_only) {
+    if (listbadexits)
+      rs->is_bad_exit = 1;
+    rs->is_exit = rs->is_possible_guard = rs->is_hs_dir = rs->is_v2_dir = 0;
+  }
 
   /* Set rs->is_staledesc. */
   rs->is_staledesc =

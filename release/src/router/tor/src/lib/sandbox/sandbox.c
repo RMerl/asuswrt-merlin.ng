@@ -1,7 +1,7 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2020, The Tor Project, Inc. */
+ * Copyright (c) 2007-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -57,6 +57,10 @@
 #include <sys/prctl.h>
 #include <linux/futex.h>
 #include <sys/file.h>
+
+#ifdef ENABLE_FRAGILE_HARDENING
+#include <sys/ptrace.h>
+#endif
 
 #include <stdarg.h>
 #include <seccomp.h>
@@ -148,10 +152,17 @@ static sandbox_cfg_t *filter_dynamic = NULL;
 static int filter_nopar_gen[] = {
     SCMP_SYS(access),
     SCMP_SYS(brk),
+#ifdef __NR_clock_gettime64
+    SCMP_SYS(clock_gettime64),
+#else
     SCMP_SYS(clock_gettime),
+#endif
     SCMP_SYS(close),
     SCMP_SYS(clone),
     SCMP_SYS(dup),
+#ifdef __NR_clone3
+    SCMP_SYS(clone3),
+#endif
     SCMP_SYS(epoll_create),
     SCMP_SYS(epoll_wait),
 #ifdef __NR_epoll_pwait
@@ -191,6 +202,9 @@ static int filter_nopar_gen[] = {
     SCMP_SYS(getgid32),
 #endif
     SCMP_SYS(getpid),
+#ifdef ENABLE_FRAGILE_HARDENING
+    SCMP_SYS(getppid),
+#endif
 #ifdef __NR_getrlimit
     SCMP_SYS(getrlimit),
 #endif
@@ -241,6 +255,9 @@ static int filter_nopar_gen[] = {
     SCMP_SYS(sigreturn),
 #endif
     SCMP_SYS(stat),
+#if defined(__i386__) && defined(__NR_statx)
+    SCMP_SYS(statx),
+#endif
     SCMP_SYS(uname),
     SCMP_SYS(wait4),
     SCMP_SYS(write),
@@ -339,6 +356,7 @@ sb_rt_sigaction(scmp_filter_ctx ctx, sandbox_cfg_t *filter)
   return rc;
 }
 
+#ifdef __NR_time
 /**
  * Function responsible for setting up the time syscall for
  * the seccomp filter sandbox.
@@ -347,13 +365,11 @@ static int
 sb_time(scmp_filter_ctx ctx, sandbox_cfg_t *filter)
 {
   (void) filter;
-#ifdef __NR_time
+
   return seccomp_rule_add_1(ctx, SCMP_ACT_ALLOW, SCMP_SYS(time),
        SCMP_CMP(0, SCMP_CMP_EQ, 0));
-#else
-  return 0;
-#endif /* defined(__NR_time) */
 }
+#endif /* defined(__NR_time) */
 
 /**
  * Function responsible for setting up the accept4 syscall for
@@ -532,6 +548,24 @@ sb_open(scmp_filter_ctx ctx, sandbox_cfg_t *filter)
 
   int use_openat = libc_uses_openat_for_open();
 
+#ifdef ENABLE_FRAGILE_HARDENING
+  /* AddressSanitizer uses the "open" syscall to access information about the
+   * running process via the filesystem, so that call must be allowed without
+   * restriction or the sanitizer will be unable to execute normally when the
+   * process terminates. */
+  rc = seccomp_rule_add_0(ctx, SCMP_ACT_ALLOW, SCMP_SYS(open));
+  if (rc != 0) {
+    log_err(LD_BUG,"(Sandbox) failed to add open syscall, received "
+        "libseccomp error %d", rc);
+    return rc;
+  }
+
+  /* If glibc also uses only the "open" syscall to open files on this system
+   * there is no need to consider any additional rules. */
+  if (!use_openat)
+    return 0;
+#endif
+
   // for each dynamic parameter filters
   for (elem = filter; elem != NULL; elem = elem->next) {
     smp_param_t *param = elem->param;
@@ -575,6 +609,32 @@ sb_chmod(scmp_filter_ctx ctx, sandbox_cfg_t *filter)
   return 0;
 }
 
+#ifdef __i386__
+static int
+sb_chown32(scmp_filter_ctx ctx, sandbox_cfg_t *filter)
+{
+  int rc;
+  sandbox_cfg_t *elem = NULL;
+
+  // for each dynamic parameter filters
+  for (elem = filter; elem != NULL; elem = elem->next) {
+    smp_param_t *param = elem->param;
+
+    if (param != NULL && param->prot == 1 && param->syscall
+        == SCMP_SYS(chown32)) {
+      rc = seccomp_rule_add_1(ctx, SCMP_ACT_ALLOW, SCMP_SYS(chown32),
+            SCMP_CMP_STR(0, SCMP_CMP_EQ, param->value));
+      if (rc != 0) {
+        log_err(LD_BUG,"(Sandbox) failed to add chown32 syscall, received "
+            "libseccomp error %d", rc);
+        return rc;
+      }
+    }
+  }
+
+  return 0;
+}
+#else
 static int
 sb_chown(scmp_filter_ctx ctx, sandbox_cfg_t *filter)
 {
@@ -599,6 +659,7 @@ sb_chown(scmp_filter_ctx ctx, sandbox_cfg_t *filter)
 
   return 0;
 }
+#endif /* defined(__i386__) */
 
 /**
  * Function responsible for setting up the rename syscall for
@@ -687,6 +748,34 @@ sb_opendir(scmp_filter_ctx ctx, sandbox_cfg_t *filter)
   return 0;
 }
 
+#ifdef ENABLE_FRAGILE_HARDENING
+/**
+ * Function responsible for setting up the ptrace syscall for
+ * the seccomp filter sandbox.
+ */
+static int
+sb_ptrace(scmp_filter_ctx ctx, sandbox_cfg_t *filter)
+{
+  int rc;
+  pid_t pid = getpid();
+  (void) filter;
+
+  rc = seccomp_rule_add_2(ctx, SCMP_ACT_ALLOW, SCMP_SYS(ptrace),
+      SCMP_CMP(0, SCMP_CMP_EQ, PTRACE_ATTACH),
+      SCMP_CMP(1, SCMP_CMP_EQ, pid));
+  if (rc)
+    return rc;
+
+  rc = seccomp_rule_add_2(ctx, SCMP_ACT_ALLOW, SCMP_SYS(ptrace),
+      SCMP_CMP(0, SCMP_CMP_EQ, PTRACE_GETREGS),
+      SCMP_CMP(1, SCMP_CMP_EQ, pid));
+  if (rc)
+    return rc;
+
+  return 0;
+}
+#endif
+
 /**
  * Function responsible for setting up the socket syscall for
  * the seccomp filter sandbox.
@@ -734,7 +823,7 @@ sb_socket(scmp_filter_ctx ctx, sandbox_cfg_t *filter)
     SCMP_CMP(2, SCMP_CMP_EQ, IPPROTO_IP));
   if (rc)
     return rc;
-#endif
+#endif /* defined(ENABLE_NSS) */
 
   rc = seccomp_rule_add_3(ctx, SCMP_ACT_ALLOW, SCMP_SYS(socket),
       SCMP_CMP(0, SCMP_CMP_EQ, PF_UNIX),
@@ -1009,6 +1098,18 @@ sb_prctl(scmp_filter_ctx ctx, sandbox_cfg_t *filter)
   int rc = 0;
   (void) filter;
 
+#ifdef ENABLE_FRAGILE_HARDENING
+  rc = seccomp_rule_add_1(ctx, SCMP_ACT_ALLOW, SCMP_SYS(prctl),
+      SCMP_CMP(0, SCMP_CMP_EQ, PR_GET_DUMPABLE));
+  if (rc)
+    return rc;
+
+  rc = seccomp_rule_add_1(ctx, SCMP_ACT_ALLOW, SCMP_SYS(prctl),
+      SCMP_CMP(0, SCMP_CMP_EQ, PR_SET_PTRACER));
+  if (rc)
+    return rc;
+#endif
+
   rc = seccomp_rule_add_1(ctx, SCMP_ACT_ALLOW, SCMP_SYS(prctl),
       SCMP_CMP(0, SCMP_CMP_EQ, PR_SET_DUMPABLE));
   if (rc)
@@ -1052,6 +1153,13 @@ sb_rt_sigprocmask(scmp_filter_ctx ctx, sandbox_cfg_t *filter)
 {
   int rc = 0;
   (void) filter;
+
+#ifdef ENABLE_FRAGILE_HARDENING
+  rc = seccomp_rule_add_1(ctx, SCMP_ACT_ALLOW, SCMP_SYS(rt_sigprocmask),
+      SCMP_CMP(0, SCMP_CMP_EQ, SIG_BLOCK));
+  if (rc)
+    return rc;
+#endif
 
   rc = seccomp_rule_add_1(ctx, SCMP_ACT_ALLOW, SCMP_SYS(rt_sigprocmask),
       SCMP_CMP(0, SCMP_CMP_EQ, SIG_UNBLOCK));
@@ -1192,16 +1300,25 @@ sb_kill(scmp_filter_ctx ctx, sandbox_cfg_t *filter)
 static sandbox_filter_func_t filter_func[] = {
     sb_rt_sigaction,
     sb_rt_sigprocmask,
+#ifdef __NR_time
     sb_time,
+#endif
     sb_accept4,
 #ifdef __NR_mmap2
     sb_mmap2,
 #endif
+#ifdef __i386__
+    sb_chown32,
+#else
     sb_chown,
+#endif
     sb_chmod,
     sb_open,
     sb_openat,
     sb_opendir,
+#ifdef ENABLE_FRAGILE_HARDENING
+    sb_ptrace,
+#endif
     sb_rename,
 #ifdef __NR_fcntl64
     sb_fcntl64,
@@ -1468,6 +1585,12 @@ new_element(int syscall, char *value)
   return new_element2(syscall, value, NULL);
 }
 
+#ifdef __i386__
+#define SCMP_chown SCMP_SYS(chown32)
+#else
+#define SCMP_chown SCMP_SYS(chown)
+#endif
+
 #ifdef __NR_stat64
 #define SCMP_stat SCMP_SYS(stat64)
 #else
@@ -1518,7 +1641,7 @@ sandbox_cfg_allow_chown_filename(sandbox_cfg_t **cfg, char *file)
 {
   sandbox_cfg_t *elem = NULL;
 
-  elem = new_element(SCMP_SYS(chown), file);
+  elem = new_element(SCMP_chown, file);
 
   elem->next = *cfg;
   *cfg = elem;
@@ -1713,7 +1836,7 @@ get_syscall_from_ucontext(const ucontext_t *ctx)
 {
   return (int) ctx->uc_mcontext.M_SYSCALL;
 }
-#else
+#else /* !defined(SYSCALL_NAME_DEBUGGING) */
 static const char *
 get_syscall_name(int syscall_num)
 {
@@ -1726,7 +1849,7 @@ get_syscall_from_ucontext(const ucontext_t *ctx)
   (void) ctx;
   return -1;
 }
-#endif
+#endif /* defined(SYSCALL_NAME_DEBUGGING) */
 
 #ifdef USE_BACKTRACE
 #define MAX_DEPTH 256

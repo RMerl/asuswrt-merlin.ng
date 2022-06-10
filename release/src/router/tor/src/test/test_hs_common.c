@@ -1,4 +1,4 @@
-/* Copyright (c) 2017-2020, The Tor Project, Inc. */
+/* Copyright (c) 2017-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -787,7 +787,6 @@ test_parse_extended_hostname(void *arg)
   hostname_type_t type;
 
   char address1[] = "fooaddress.onion";
-  char address2[] = "aaaaaaaaaaaaaaaa.onion";
   char address3[] = "fooaddress.exit";
   char address4[] = "www.torproject.org";
   char address5[] = "foo.abcdefghijklmnop.onion";
@@ -801,9 +800,6 @@ test_parse_extended_hostname(void *arg)
     "15njqamcweflpvkl73j4szahhihoc4xt3ktcgjnpaingr5yhkenl5sid7jdl.onion";
 
   tt_assert(!parse_extended_hostname(address1, &type));
-  tt_int_op(type, OP_EQ, BAD_HOSTNAME);
-
-  tt_assert(!parse_extended_hostname(address2, &type));
   tt_int_op(type, OP_EQ, BAD_HOSTNAME);
 
   tt_assert(parse_extended_hostname(address3, &type));

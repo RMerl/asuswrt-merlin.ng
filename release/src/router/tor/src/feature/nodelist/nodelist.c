@@ -1,7 +1,7 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2020, The Tor Project, Inc. */
+ * Copyright (c) 2007-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -64,7 +64,6 @@
 #include "feature/nodelist/routerlist.h"
 #include "feature/nodelist/routerset.h"
 #include "feature/nodelist/torcert.h"
-#include "feature/rend/rendservice.h"
 #include "lib/encoding/binascii.h"
 #include "lib/err/backtrace.h"
 #include "lib/geoip/geoip.h"
@@ -1040,6 +1039,7 @@ nodelist_ensure_freshness(const networkstatus_t *ns)
     nodelist_set_consensus(ns);
   }
 }
+
 /** Return a list of a node_t * for every node we know about.  The caller
  * MUST NOT modify the list. (You can set and clear flags in the nodes if
  * you must, but you must not add or remove nodes.) */
@@ -1205,7 +1205,7 @@ node_ed25519_id_matches(const node_t *node, const ed25519_public_key_t *id)
 /** Dummy object that should be unreturnable.  Used to ensure that
  * node_get_protover_summary_flags() always returns non-NULL. */
 static const protover_summary_flags_t zero_protover_flags = {
-  0,0,0,0,0,0,0,0,0,0,0,0
+  0,0,0,0,0,0,0,0,0,0,0,0,0
 };
 
 /** Return the protover_summary_flags for a given node. */
@@ -2470,7 +2470,6 @@ void
 router_dir_info_changed(void)
 {
   need_to_update_have_min_dir_info = 1;
-  rend_hsdir_routers_changed();
   hs_service_dir_info_changed();
   hs_client_dir_info_changed();
 }
@@ -2821,6 +2820,7 @@ update_router_have_minimum_dir_info(void)
   const networkstatus_t *consensus =
     networkstatus_get_reasonably_live_consensus(now,usable_consensus_flavor());
   int using_md;
+  static int be_loud_when_things_work_again = 0;
 
   if (!consensus) {
     if (!networkstatus_get_latest_consensus())
@@ -2876,8 +2876,9 @@ update_router_have_minimum_dir_info(void)
   if (res && !have_min_dir_info) {
     control_event_client_status(LOG_NOTICE, "ENOUGH_DIR_INFO");
     control_event_boot_dir(BOOTSTRAP_STATUS_ENOUGH_DIRINFO, 0);
-    log_info(LD_DIR,
-             "We now have enough directory information to build circuits.");
+    tor_log(be_loud_when_things_work_again ? LOG_NOTICE : LOG_INFO, LD_DIR,
+            "We now have enough directory information to build circuits.");
+    be_loud_when_things_work_again = 0;
   }
 
   /* If paths have just become unavailable in this update. */
@@ -2886,6 +2887,10 @@ update_router_have_minimum_dir_info(void)
     tor_log(quiet ? LOG_INFO : LOG_NOTICE, LD_DIR,
         "Our directory information is no longer up-to-date "
         "enough to build circuits: %s", dir_info_status);
+    if (!quiet) {
+      /* remember to do a notice-level log when things come back */
+      be_loud_when_things_work_again = 1;
+    }
 
     /* a) make us log when we next complete a circuit, so we know when Tor
      * is back up and usable, and b) disable some activities that Tor

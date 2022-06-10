@@ -1,6 +1,6 @@
 /* Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2020, The Tor Project, Inc. */
+ * Copyright (c) 2007-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -500,7 +500,8 @@ nt_service_command_line(int *using_default_torrc)
     if (!strcmp(backup_argv[i], "--options") ||
         !strcmp(backup_argv[i], "-options")) {
       while (++i < backup_argc) {
-        if (!strcmp(backup_argv[i], "-f"))
+        if (!strcmp(backup_argv[i], "-f") ||
+            !strcmp(backup_argv[i], "--torrc-file"))
           *using_default_torrc = 0;
         smartlist_add(sl, backup_argv[i]);
       }

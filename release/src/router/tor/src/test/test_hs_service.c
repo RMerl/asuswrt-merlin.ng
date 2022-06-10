@@ -1,4 +1,4 @@
-/* Copyright (c) 2016-2020, The Tor Project, Inc. */
+/* Copyright (c) 2016-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -26,7 +26,6 @@
 #include "test/test.h"
 #include "test/test_helpers.h"
 #include "test/log_test_helpers.h"
-#include "test/rend_test_helpers.h"
 #include "test/hs_test_helpers.h"
 
 #include "core/or/or.h"
@@ -58,7 +57,6 @@
 #include "feature/hs/hs_service.h"
 #include "feature/nodelist/networkstatus.h"
 #include "feature/nodelist/nodelist.h"
-#include "feature/rend/rendservice.h"
 #include "lib/crypt_ops/crypto_rand.h"
 #include "lib/fs/dir.h"
 
@@ -343,7 +341,6 @@ helper_create_service_with_clients(int num_clients)
   int i;
   hs_service_t *service = helper_create_service();
   tt_assert(service);
-  service->config.is_client_auth_enabled = 1;
   service->config.clients = smartlist_new();
 
   for (i = 0; i < num_clients; i++) {
@@ -383,14 +380,13 @@ test_load_keys(void *arg)
 {
   int ret;
   char *conf = NULL;
-  char *hsdir_v2 = tor_strdup(get_fname("hs2"));
   char *hsdir_v3 = tor_strdup(get_fname("hs3"));
   char addr[HS_SERVICE_ADDR_LEN_BASE32 + 1];
 
   (void) arg;
 
-  /* We'll register two services, a v2 and a v3, then we'll load keys and
-   * validate that both are in a correct state. */
+  /* We'll register one service then we'll load keys and validate that both
+   * are in a correct state. */
 
   hs_init();
 
@@ -398,12 +394,6 @@ test_load_keys(void *arg)
   "HiddenServiceDir %s\n" \
   "HiddenServiceVersion %d\n" \
   "HiddenServicePort 65535\n"
-
-  /* v2 service. */
-  tor_asprintf(&conf, conf_fmt, hsdir_v2, HS_VERSION_TWO);
-  ret = helper_config_service(conf);
-  tor_free(conf);
-  tt_int_op(ret, OP_EQ, -1);
 
   /* v3 service. */
   tor_asprintf(&conf, conf_fmt, hsdir_v3, HS_VERSION_THREE);
@@ -434,11 +424,7 @@ test_load_keys(void *arg)
   tt_int_op(hs_address_is_valid(addr), OP_EQ, 1);
   tt_str_op(addr, OP_EQ, s->onion_address);
 
-  /* Check that the is_client_auth_enabled is not set. */
-  tt_assert(!s->config.is_client_auth_enabled);
-
  done:
-  tor_free(hsdir_v2);
   tor_free(hsdir_v3);
   hs_free_all();
 }
@@ -587,9 +573,6 @@ test_load_keys_with_client_auth(void *arg)
   tt_int_op(smartlist_len(service->config.clients), OP_EQ,
             smartlist_len(pubkey_b32_list));
 
-  /* Test that the is_client_auth_enabled flag is set. */
-  tt_assert(service->config.is_client_auth_enabled);
-
   /* Test that the keys in clients are correct. */
   SMARTLIST_FOREACH_BEGIN(pubkey_b32_list, char *, pubkey_b32) {
 
@@ -631,8 +614,8 @@ test_access_service(void *arg)
 
   (void) arg;
 
-  /* We'll register two services, a v2 and a v3, then we'll load keys and
-   * validate that both are in a correct state. */
+  /* We'll register one service then we'll load keys and validate that both
+   * are in a correct state. */
 
   hs_init();
 
@@ -2347,6 +2330,7 @@ test_intro2_handling(void *arg)
   intro_circ->cpath->prev = intro_circ->cpath;
   intro_circ->hs_ident = tor_malloc_zero(sizeof(*intro_circ->hs_ident));
   origin_circuit_t rend_circ;
+  TO_CIRCUIT(&rend_circ)->ccontrol = NULL;
   rend_circ.hs_ident = tor_malloc_zero(sizeof(*rend_circ.hs_ident));
   curve25519_keypair_generate(&rend_circ.hs_ident->rendezvous_client_kp, 0);
   memset(rend_circ.hs_ident->rendezvous_cookie, 'r', HS_REND_COOKIE_LEN);

@@ -1,4 +1,4 @@
-/* Copyright (c) 2016-2020, The Tor Project, Inc. */
+/* Copyright (c) 2016-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -20,7 +20,7 @@
 
 /* Trunnel */
 #include "trunnel/ed25519_cert.h"
-#include "trunnel/hs/cell_common.h"
+#include "trunnel/extension.h"
 #include "trunnel/hs/cell_establish_intro.h"
 #include "trunnel/hs/cell_introduce1.h"
 
@@ -155,14 +155,14 @@ hs_intro_send_intro_established_cell,(or_circuit_t *circ))
   uint8_t *encoded_cell = NULL;
   ssize_t encoded_len, result_len;
   trn_cell_intro_established_t *cell;
-  trn_cell_extension_t *ext;
+  trn_extension_t *ext;
 
   tor_assert(circ);
 
   /* Build the cell payload. */
   cell = trn_cell_intro_established_new();
-  ext = trn_cell_extension_new();
-  trn_cell_extension_set_num(ext, 0);
+  ext = trn_extension_new();
+  trn_extension_set_num(ext, 0);
   trn_cell_intro_established_set_extensions(cell, ext);
   /* Encode the cell to binary format. */
   encoded_len = trn_cell_intro_established_encoded_len(cell);
@@ -249,7 +249,7 @@ cell_dos_extension_parameters_are_valid(uint64_t intro2_rate_per_sec,
  * values, the DoS defenses is disabled on the circuit. */
 static void
 handle_establish_intro_cell_dos_extension(
-                                const trn_cell_extension_field_t *field,
+                                const trn_extension_field_t *field,
                                 or_circuit_t *circ)
 {
   ssize_t ret;
@@ -260,8 +260,8 @@ handle_establish_intro_cell_dos_extension(
   tor_assert(circ);
 
   ret = trn_cell_extension_dos_parse(&dos,
-                 trn_cell_extension_field_getconstarray_field(field),
-                 trn_cell_extension_field_getlen_field(field));
+                 trn_extension_field_getconstarray_field(field),
+                 trn_extension_field_getlen_field(field));
   if (ret < 0) {
     goto end;
   }
@@ -332,7 +332,7 @@ handle_establish_intro_cell_extensions(
                             const trn_cell_establish_intro_t *parsed_cell,
                             or_circuit_t *circ)
 {
-  const trn_cell_extension_t *extensions;
+  const trn_extension_t *extensions;
 
   tor_assert(parsed_cell);
   tor_assert(circ);
@@ -343,15 +343,15 @@ handle_establish_intro_cell_extensions(
   }
 
   /* Go over all extensions. */
-  for (size_t idx = 0; idx < trn_cell_extension_get_num(extensions); idx++) {
-    const trn_cell_extension_field_t *field =
-      trn_cell_extension_getconst_fields(extensions, idx);
+  for (size_t idx = 0; idx < trn_extension_get_num(extensions); idx++) {
+    const trn_extension_field_t *field =
+      trn_extension_getconst_fields(extensions, idx);
     if (BUG(field == NULL)) {
       /* The number of extensions should match the number of fields. */
       break;
     }
 
-    switch (trn_cell_extension_field_get_field_type(field)) {
+    switch (trn_extension_field_get_field_type(field)) {
     case TRUNNEL_CELL_EXTENSION_TYPE_DOS:
       /* After this, the circuit should be set for DoS defenses. */
       handle_establish_intro_cell_dos_extension(field, circ);
@@ -494,8 +494,8 @@ hs_intro_circuit_is_suitable_for_establish_intro(const or_circuit_t *circ)
   return circuit_is_suitable_intro_point(circ, "ESTABLISH_INTRO");
 }
 
-/** We just received an ESTABLISH_INTRO cell in <b>circ</b>. Figure out of it's
- * a legacy or a next gen cell, and pass it to the appropriate handler. */
+/** We just received an ESTABLISH_INTRO cell in <b>circ</b>. Pass it to the
+ * appropriate handler. */
 int
 hs_intro_received_establish_intro(or_circuit_t *circ, const uint8_t *request,
                             size_t request_len)
@@ -514,7 +514,8 @@ hs_intro_received_establish_intro(or_circuit_t *circ, const uint8_t *request,
   switch (first_byte) {
     case TRUNNEL_HS_INTRO_AUTH_KEY_TYPE_LEGACY0:
     case TRUNNEL_HS_INTRO_AUTH_KEY_TYPE_LEGACY1:
-      /* Don't accept version 2 introduction anymore. */
+      /* Likely version 2 onion service which is now obsolete. Avoid a
+       * protocol warning considering they still exists on the network. */
       goto err;
     case TRUNNEL_HS_INTRO_AUTH_KEY_TYPE_ED25519:
       return handle_establish_intro(circ, request, request_len);
@@ -540,7 +541,7 @@ send_introduce_ack_cell(or_circuit_t *circ, uint16_t status)
   uint8_t *encoded_cell = NULL;
   ssize_t encoded_len, result_len;
   trn_cell_introduce_ack_t *cell;
-  trn_cell_extension_t *ext;
+  trn_extension_t *ext;
 
   tor_assert(circ);
 
@@ -549,8 +550,8 @@ send_introduce_ack_cell(or_circuit_t *circ, uint16_t status)
   cell = trn_cell_introduce_ack_new();
   ret = trn_cell_introduce_ack_set_status(cell, status);
   /* We have no cell extensions in an INTRODUCE_ACK cell. */
-  ext = trn_cell_extension_new();
-  trn_cell_extension_set_num(ext, 0);
+  ext = trn_extension_new();
+  trn_extension_set_num(ext, 0);
   trn_cell_introduce_ack_set_extensions(cell, ext);
   /* A wrong status is a very bad code flow error as this value is controlled
    * by the code in this file and not an external input. This means we use a
@@ -718,23 +719,6 @@ handle_introduce1(or_circuit_t *client_circ, const uint8_t *request,
   return ret;
 }
 
-/** Identify if the encoded cell we just received is a legacy one or not. The
- * <b>request</b> should be at least DIGEST_LEN bytes long. */
-STATIC int
-introduce1_cell_is_legacy(const uint8_t *request)
-{
-  tor_assert(request);
-
-  /* If the first 20 bytes of the cell (DIGEST_LEN) are NOT zeroes, it
-   * indicates a legacy cell (v2). */
-  if (!fast_mem_is_zero((const char *) request, DIGEST_LEN)) {
-    /* Legacy cell. */
-    return 1;
-  }
-  /* Not a legacy cell. */
-  return 0;
-}
-
 /** Return true iff the circuit <b>circ</b> is suitable for receiving an
  * INTRODUCE1 cell. */
 STATIC int
@@ -773,13 +757,10 @@ int
 hs_intro_received_introduce1(or_circuit_t *circ, const uint8_t *request,
                              size_t request_len)
 {
-  int ret;
-
   tor_assert(circ);
   tor_assert(request);
 
-  /* A cell that can't hold a DIGEST_LEN is invalid as we need to check if
-   * it's a legacy cell or not using the first DIGEST_LEN bytes. */
+  /* A cell that can't hold a DIGEST_LEN is invalid. */
   if (request_len < DIGEST_LEN) {
     log_fn(LOG_PROTOCOL_WARN, LD_PROTOCOL, "Invalid INTRODUCE1 cell length.");
     goto err;
@@ -795,15 +776,8 @@ hs_intro_received_introduce1(or_circuit_t *circ, const uint8_t *request,
    * DoS mitigation since one circuit with one client can hammer a service. */
   circ->already_received_introduce1 = 1;
 
-  /* We are sure here to have at least DIGEST_LEN bytes. */
-  if (introduce1_cell_is_legacy(request)) {
-    /* Handle a legacy cell. */
-    ret = rend_mid_introduce_legacy(circ, request, request_len);
-  } else {
-    /* Handle a non legacy cell. */
-    ret = handle_introduce1(circ, request, request_len);
-  }
-  return ret;
+  /* Handle the cell. */
+  return handle_introduce1(circ, request, request_len);
 
  err:
   circuit_mark_for_close(TO_CIRCUIT(circ), END_CIRC_REASON_TORPROTOCOL);

@@ -1,6 +1,6 @@
 /* Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2020, The Tor Project, Inc. */
+ * Copyright (c) 2007-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 #include "orconfig.h"
@@ -4848,9 +4848,6 @@ test_dir_purpose_needs_anonymity_returns_true_for_bridges(void *arg)
   tt_int_op(1, OP_EQ, purpose_needs_anonymity(0, ROUTER_PURPOSE_BRIDGE, NULL));
   tt_int_op(1, OP_EQ, purpose_needs_anonymity(0, ROUTER_PURPOSE_BRIDGE,
                                            "foobar"));
-  tt_int_op(1, OP_EQ,
-            purpose_needs_anonymity(DIR_PURPOSE_HAS_FETCHED_RENDDESC_V2,
-                                    ROUTER_PURPOSE_BRIDGE, NULL));
  done: ;
 }
 
@@ -4861,21 +4858,6 @@ test_dir_purpose_needs_anonymity_returns_false_for_own_bridge_desc(void *arg)
   tt_int_op(0, OP_EQ, purpose_needs_anonymity(DIR_PURPOSE_FETCH_SERVERDESC,
                                            ROUTER_PURPOSE_BRIDGE,
                                            "authority.z"));
- done: ;
-}
-
-static void
-test_dir_purpose_needs_anonymity_returns_true_for_sensitive_purpose(void *arg)
-{
-  (void)arg;
-
-  tt_int_op(1, OP_EQ, purpose_needs_anonymity(
-                    DIR_PURPOSE_HAS_FETCHED_RENDDESC_V2,
-                    ROUTER_PURPOSE_GENERAL, NULL));
-  tt_int_op(1, OP_EQ, purpose_needs_anonymity(
-                    DIR_PURPOSE_UPLOAD_RENDDESC_V2, 0,  NULL));
-  tt_int_op(1, OP_EQ, purpose_needs_anonymity(
-                    DIR_PURPOSE_FETCH_RENDDESC_V2, 0, NULL));
  done: ;
 }
 
@@ -4937,12 +4919,6 @@ test_dir_fetch_type(void *arg)
   tt_int_op(dir_fetch_type(DIR_PURPOSE_FETCH_MICRODESC, ROUTER_PURPOSE_GENERAL,
                            NULL), OP_EQ, MICRODESC_DIRINFO);
 
-  /* This will give a warning, because this function isn't supposed to be
-   * used for HS descriptors. */
-  setup_full_capture_of_logs(LOG_WARN);
-  tt_int_op(dir_fetch_type(DIR_PURPOSE_FETCH_RENDDESC_V2,
-                           ROUTER_PURPOSE_GENERAL, NULL), OP_EQ, NO_DIRINFO);
-  expect_single_log_msg_containing("Unexpected purpose");
  done:
   teardown_capture_of_logs();
 }
@@ -5300,10 +5276,6 @@ test_dir_conn_purpose_to_string(void *data)
   EXPECT_CONN_PURPOSE(DIR_PURPOSE_FETCH_STATUS_VOTE, "status vote fetch");
   EXPECT_CONN_PURPOSE(DIR_PURPOSE_FETCH_DETACHED_SIGNATURES,
                       "consensus signature fetch");
-  EXPECT_CONN_PURPOSE(DIR_PURPOSE_FETCH_RENDDESC_V2,
-                      "hidden-service v2 descriptor fetch");
-  EXPECT_CONN_PURPOSE(DIR_PURPOSE_UPLOAD_RENDDESC_V2,
-                      "hidden-service v2 descriptor upload");
   EXPECT_CONN_PURPOSE(DIR_PURPOSE_FETCH_MICRODESC, "microdescriptor fetch");
 
   /* This will give a warning, because there is no purpose 1024. */
@@ -6680,13 +6652,7 @@ test_dir_find_dl_min_delay(void* data)
 
   dls.schedule = DL_SCHED_BRIDGE;
   /* client */
-  mock_options->ClientOnly = 1;
-  mock_options->UseBridges = 1;
-  if (num_bridges_usable(0) > 0) {
-    tt_int_op(find_dl_min_delay(&dls, mock_options), OP_EQ, bridge);
-  } else {
-    tt_int_op(find_dl_min_delay(&dls, mock_options), OP_EQ, bridge_bootstrap);
-  }
+  tt_int_op(find_dl_min_delay(&dls, mock_options), OP_EQ, bridge_bootstrap);
 
  done:
   UNMOCK(networkstatus_consensus_is_bootstrapping);
@@ -7286,7 +7252,6 @@ struct testcase_t dir_tests[] = {
   DIR(purpose_needs_anonymity_returns_true_for_bridges, 0),
   DIR(purpose_needs_anonymity_returns_false_for_own_bridge_desc, 0),
   DIR(purpose_needs_anonymity_returns_true_by_default, 0),
-  DIR(purpose_needs_anonymity_returns_true_for_sensitive_purpose, 0),
   DIR(purpose_needs_anonymity_ret_false_for_non_sensitive_conn, 0),
   DIR(post_parsing, 0),
   DIR(fetch_type, 0),

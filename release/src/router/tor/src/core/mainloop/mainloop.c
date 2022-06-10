@@ -1,7 +1,7 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2020, The Tor Project, Inc. */
+ * Copyright (c) 2007-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -91,8 +91,6 @@
 #include "feature/relay/routerkeys.h"
 #include "feature/relay/routermode.h"
 #include "feature/relay/selftest.h"
-#include "feature/rend/rendcache.h"
-#include "feature/rend/rendservice.h"
 #include "feature/stats/geoip_stats.h"
 #include "feature/stats/predict_ports.h"
 #include "feature/stats/connstats.h"
@@ -643,6 +641,13 @@ connection_start_reading,(connection_t *conn))
     if (connection_should_read_from_linked_conn(conn))
       connection_start_reading_from_linked_conn(conn);
   } else {
+    if (CONN_IS_EDGE(conn) && TO_EDGE_CONN(conn)->xoff_received) {
+      /* We should not get called here if we're waiting for an XON, but
+       * belt-and-suspenders */
+      log_notice(LD_NET,
+                 "Request to start reading on an edgeconn blocked with XOFF");
+      return;
+    }
     if (event_add(conn->read_event, NULL))
       log_warn(LD_NET, "Error from libevent setting read event state for %d "
                "to watched: %s",
@@ -1148,7 +1153,7 @@ directory_info_has_arrived(time_t now, int from_cache, int suppress_logs)
 
   if (server_mode(options) && !net_is_disabled() && !from_cache &&
       (have_completed_a_circuit() || !any_predicted_circuits(now)))
-   router_do_reachability_checks(1, 1);
+   router_do_reachability_checks();
 }
 
 /** Perform regular maintenance tasks for a single connection.  This
@@ -1224,7 +1229,7 @@ run_connection_housekeeping(int i, time_t now)
      * mark it now. */
     log_info(LD_OR,
              "Expiring non-used OR connection to fd %d (%s:%d) [Too old].",
-             (int)conn->s, conn->address, conn->port);
+             (int)conn->s, fmt_and_decorate_addr(&conn->addr), conn->port);
     if (conn->state == OR_CONN_STATE_CONNECTING)
       connection_or_connect_failed(TO_OR_CONN(conn),
                                    END_OR_CONN_REASON_TIMEOUT,
@@ -1234,7 +1239,7 @@ run_connection_housekeeping(int i, time_t now)
     if (past_keepalive) {
       /* We never managed to actually get this connection open and happy. */
       log_info(LD_OR,"Expiring non-open OR connection to fd %d (%s:%d).",
-               (int)conn->s,conn->address, conn->port);
+               (int)conn->s, fmt_and_decorate_addr(&conn->addr), conn->port);
       connection_or_close_normally(TO_OR_CONN(conn), 0);
     }
   } else if (we_are_hibernating() &&
@@ -1244,7 +1249,7 @@ run_connection_housekeeping(int i, time_t now)
      * flush.*/
     log_info(LD_OR,"Expiring non-used OR connection to fd %d (%s:%d) "
              "[Hibernating or exiting].",
-             (int)conn->s,conn->address, conn->port);
+             (int)conn->s, fmt_and_decorate_addr(&conn->addr), conn->port);
     connection_or_close_normally(TO_OR_CONN(conn), 1);
   } else if (!have_any_circuits &&
              now - or_conn->idle_timeout >=
@@ -1252,7 +1257,7 @@ run_connection_housekeeping(int i, time_t now)
     log_info(LD_OR,"Expiring non-used OR connection %"PRIu64" to fd %d "
              "(%s:%d) [no circuits for %d; timeout %d; %scanonical].",
              (chan->global_identifier),
-             (int)conn->s, conn->address, conn->port,
+             (int)conn->s, fmt_and_decorate_addr(&conn->addr), conn->port,
              (int)(now - chan->timestamp_last_had_circuits),
              or_conn->idle_timeout,
              or_conn->is_canonical ? "" : "non");
@@ -1264,14 +1269,14 @@ run_connection_housekeeping(int i, time_t now)
     log_fn(LOG_PROTOCOL_WARN,LD_PROTOCOL,
            "Expiring stuck OR connection to fd %d (%s:%d). (%d bytes to "
            "flush; %d seconds since last write)",
-           (int)conn->s, conn->address, conn->port,
+           (int)conn->s, fmt_and_decorate_addr(&conn->addr), conn->port,
            (int)connection_get_outbuf_len(conn),
            (int)(now-conn->timestamp_last_write_allowed));
     connection_or_close_normally(TO_OR_CONN(conn), 0);
   } else if (past_keepalive && !connection_get_outbuf_len(conn)) {
     /* send a padding cell */
     log_fn(LOG_DEBUG,LD_OR,"Sending keepalive to (%s:%d)",
-           conn->address, conn->port);
+           fmt_and_decorate_addr(&conn->addr), conn->port);
     memset(&cell,0,sizeof(cell_t));
     cell.command = CELL_PADDING;
     connection_or_write_cell_to_buf(&cell, or_conn);
@@ -1295,6 +1300,7 @@ signewnym_impl(time_t now)
   circuit_mark_all_dirty_circs_as_unusable();
   addressmap_clear_transient();
   hs_client_purge_state();
+  purge_vanguards_lite();
   time_of_last_signewnym = now;
   signewnym_is_pending = 0;
 
@@ -1372,6 +1378,7 @@ CALLBACK(save_state);
 CALLBACK(write_stats_file);
 CALLBACK(control_per_second_events);
 CALLBACK(second_elapsed);
+CALLBACK(manage_vglite);
 
 #undef CALLBACK
 
@@ -1393,6 +1400,9 @@ STATIC periodic_event_item_t mainloop_periodic_events[] = {
    * we are online and active. */
   CALLBACK(second_elapsed, NET_PARTICIPANT,
            FL(RUN_ON_DISABLE)),
+
+  /* Update vanguards-lite once per hour, if we have networking */
+  CALLBACK(manage_vglite, NET_PARTICIPANT, FL(NEED_NET)),
 
   /* XXXX Do we have a reason to do this on a callback? Does it do any good at
    * all?  For now, if we're dormant, we can let our listeners decay. */
@@ -1468,8 +1478,7 @@ get_my_roles(const or_options_t *options)
   int is_relay = server_mode(options);
   int is_dirauth = authdir_mode_v3(options);
   int is_bridgeauth = authdir_mode_bridge(options);
-  int is_hidden_service = !!hs_service_get_num_services() ||
-                          !!rend_num_services();
+  int is_hidden_service = !!hs_service_get_num_services();
   int is_dirserver = dir_server_mode(options);
   int sending_control_events = control_any_per_second_event_enabled();
 
@@ -1665,6 +1674,21 @@ mainloop_schedule_shutdown(int delay_sec)
   mainloop_event_schedule(scheduled_shutdown_ev, &delay_tv);
 }
 
+/**
+ * Update vanguards-lite layer2 nodes, once every 15 minutes
+ */
+static int
+manage_vglite_callback(time_t now, const or_options_t *options)
+{
+ (void)now;
+ (void)options;
+#define VANGUARDS_LITE_INTERVAL (15*60)
+
+  maintain_layer2_guards();
+
+  return VANGUARDS_LITE_INTERVAL;
+}
+
 /** Perform regular maintenance tasks.  This function gets run once per
  * second.
  */
@@ -1823,10 +1847,16 @@ check_network_participation_callback(time_t now, const or_options_t *options)
     goto found_activity;
   }
 
+  /* If we aren't allowed to become dormant, then participation doesn't
+     matter */
+  if (! options->DormantTimeoutEnabled) {
+    goto found_activity;
+  }
+
   /* If we're running an onion service, we can't become dormant. */
   /* XXXX this would be nice to change, so that we can be dormant with a
    * service. */
-  if (hs_service_get_num_services() || rend_num_services()) {
+  if (hs_service_get_num_services()) {
     goto found_activity;
   }
 
@@ -1937,7 +1967,11 @@ write_stats_file_callback(time_t now, const or_options_t *options)
       next_time_to_write_stats_files = next_write;
   }
   if (options->HiddenServiceStatistics) {
-    time_t next_write = rep_hist_hs_stats_write(now);
+    time_t next_write = rep_hist_hs_stats_write(now, false);
+    if (next_write && next_write < next_time_to_write_stats_files)
+      next_time_to_write_stats_files = next_write;
+
+    next_write = rep_hist_hs_stats_write(now, true);
     if (next_write && next_write < next_time_to_write_stats_files)
       next_time_to_write_stats_files = next_write;
   }
@@ -2009,7 +2043,6 @@ clean_caches_callback(time_t now, const or_options_t *options)
 {
   /* Remove old information from rephist and the rend cache. */
   rep_history_clean(now - options->RephistTrackTime);
-  rend_cache_clean(now, REND_CACHE_TYPE_SERVICE);
   hs_cache_clean_as_client(now);
   hs_cache_clean_as_dir(now);
   microdesc_cache_rebuild(NULL, 0);
@@ -2028,7 +2061,6 @@ rend_cache_failure_clean_callback(time_t now, const or_options_t *options)
   /* We don't keep entries that are more than five minutes old so we try to
    * clean it as soon as we can since we want to make sure the client waits
    * as little as possible for reachability reasons. */
-  rend_cache_failure_clean(now);
   hs_cache_client_intro_state_clean(now);
   return 30;
 }

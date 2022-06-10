@@ -1,6 +1,6 @@
 /* Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2020, The Tor Project, Inc. */
+ * Copyright (c) 2007-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 #include "core/or/or.h"
@@ -326,18 +326,15 @@ test_parsecommon_get_next_token_parse_keys(void *arg)
   const char *end2 = str2 + strlen(str2);
   const char **s2 = (const char **)&str2;
 
-  token_rule_t rule2 = T01("client-key", C_CLIENT_KEY, NO_ARGS,
-                           NEED_SKEY_1024);
-
+  token_rule_t rule2 = T01("client-key", C_CLIENT_KEY, NO_ARGS, OBJ_OK);
   token2 = get_next_token(area, s2, end2, &rule2);
   tt_assert(token2);
-
   tt_int_op(token2->tp, OP_EQ, C_CLIENT_KEY);
   tt_int_op(token2->n_args, OP_EQ, 0);
   tt_str_op(token2->object_type, OP_EQ, "RSA PRIVATE KEY");
   tt_int_op(token2->object_size, OP_EQ, 608);
   tt_assert(token2->object_body);
-  tt_assert(token2->key);
+  tt_assert(token2->key == NULL);
   tt_assert(!token->error);
 
  done:

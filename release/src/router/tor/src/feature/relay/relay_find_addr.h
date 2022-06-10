@@ -1,4 +1,4 @@
-/* Copyright (c) 2020, The Tor Project, Inc. */
+/* Copyright (c) 2020-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -28,5 +28,5 @@ void relay_addr_learn_from_dirauth(void);
 
 #endif /* RELAY_FIND_ADDR_PRIVATE */
 
-#endif /* TOR_RELAY_FIND_ADDR_H */
+#endif /* !defined(TOR_RELAY_FIND_ADDR_H) */
 

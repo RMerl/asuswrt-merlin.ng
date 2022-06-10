@@ -1,4 +1,4 @@
-/* Copyright (c) 2016-2020, The Tor Project, Inc. */
+/* Copyright (c) 2016-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -23,6 +23,9 @@
 #include "test/test_helpers.h"
 #include "test/log_test_helpers.h"
 #include "test/rng_test_helpers.h"
+
+#define TOR_CONGESTION_CONTROL_PRIVATE
+#include "core/or/congestion_control_common.h"
 
 #ifdef HAVE_CFLAG_WOVERLENGTH_STRINGS
 DISABLE_GCC_WARNING("-Woverlength-strings")
@@ -246,6 +249,8 @@ test_decode_descriptor(void *arg)
   hs_subcredential_t subcredential;
 
   (void) arg;
+
+  congestion_control_set_cc_enabled();
 
   ret = ed25519_keypair_generate(&signing_kp, 0);
   tt_int_op(ret, OP_EQ, 0);
@@ -835,6 +840,44 @@ test_build_authorized_client(void *arg)
   testing_disable_prefilled_rng();
 }
 
+static void
+test_validate_sendme(void *arg)
+{
+  (void)arg;
+
+  /* Test basic operation: factors of 2X in either direction are OK */
+  cc_sendme_inc = 31;
+  tt_assert(congestion_control_validate_sendme_increment(15));
+  tt_assert(congestion_control_validate_sendme_increment(62));
+
+  /* Test basic operation: Exceeding 2X fails */
+  cc_sendme_inc = 31;
+  tt_assert(!congestion_control_validate_sendme_increment(14));
+  tt_assert(!congestion_control_validate_sendme_increment(63));
+
+  /* Test potential overflow conditions */
+  cc_sendme_inc = 129;
+  tt_assert(congestion_control_validate_sendme_increment(255));
+  tt_assert(congestion_control_validate_sendme_increment(64));
+  tt_assert(!congestion_control_validate_sendme_increment(63));
+
+  cc_sendme_inc = 127;
+  tt_assert(!congestion_control_validate_sendme_increment(255));
+  tt_assert(congestion_control_validate_sendme_increment(254));
+
+  cc_sendme_inc = 255;
+  tt_assert(congestion_control_validate_sendme_increment(255));
+  tt_assert(congestion_control_validate_sendme_increment(127));
+  tt_assert(!congestion_control_validate_sendme_increment(126));
+
+  /* Test 0 case */
+  cc_sendme_inc = 1;
+  tt_assert(!congestion_control_validate_sendme_increment(0));
+
+done:
+  ;
+}
+
 struct testcase_t hs_descriptor[] = {
   /* Encoding tests. */
   { "cert_encoding", test_cert_encoding, TT_FORK,
@@ -854,6 +897,8 @@ struct testcase_t hs_descriptor[] = {
   { "decode_plaintext", test_decode_plaintext, TT_FORK,
     NULL, NULL },
   { "decode_bad_signature", test_decode_bad_signature, TT_FORK,
+    NULL, NULL },
+  { "validate_sendme", test_validate_sendme, TT_FORK,
     NULL, NULL },
 
   /* Misc. */

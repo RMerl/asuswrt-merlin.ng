@@ -1,9 +1,10 @@
-/* Copyright (c) 2017-2020, The Tor Project, Inc. */
+/* Copyright (c) 2017-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 #define HS_CLIENT_PRIVATE
 
 #include "core/or/or.h"
+#include "core/or/versions.h"
 #include "lib/crypt_ops/crypto_ed25519.h"
 #include "test/test.h"
 #include "feature/nodelist/torcert.h"
@@ -134,7 +135,8 @@ hs_helper_build_intro_point(const ed25519_keypair_t *signing_kp, time_t now,
  * points are added. */
 static hs_descriptor_t *
 hs_helper_build_hs_desc_impl(unsigned int no_ip,
-                             const ed25519_keypair_t *signing_kp)
+                             const ed25519_keypair_t *signing_kp,
+                             uint64_t rev_counter)
 {
   int ret;
   int i;
@@ -161,7 +163,7 @@ hs_helper_build_hs_desc_impl(unsigned int no_ip,
                     &signing_kp->pubkey, now, 3600,
                     CERT_FLAG_INCLUDE_SIGNING_KEY);
   tt_assert(desc->plaintext_data.signing_key_cert);
-  desc->plaintext_data.revision_counter = 42;
+  desc->plaintext_data.revision_counter = rev_counter;
   desc->plaintext_data.lifetime_sec = 3 * 60 * 60;
 
   hs_get_subcredential(&signing_kp->pubkey, &blinded_kp.pubkey,
@@ -185,6 +187,7 @@ hs_helper_build_hs_desc_impl(unsigned int no_ip,
   desc->encrypted_data.create2_ntor = 1;
   desc->encrypted_data.intro_auth_types = smartlist_new();
   desc->encrypted_data.single_onion_service = 1;
+  desc->encrypted_data.flow_control_pv = tor_strdup("FlowCtrl=1-2");
   smartlist_add(desc->encrypted_data.intro_auth_types, tor_strdup("ed25519"));
   desc->encrypted_data.intro_points = smartlist_new();
   if (!no_ip) {
@@ -226,18 +229,26 @@ hs_helper_get_subcred_from_identity_keypair(ed25519_keypair_t *signing_kp,
                        subcred_out);
 }
 
+/* Build a descriptor with a specific rev counter. */
+hs_descriptor_t *
+hs_helper_build_hs_desc_with_rev_counter(const ed25519_keypair_t *signing_kp,
+                                         uint64_t revision_counter)
+{
+  return hs_helper_build_hs_desc_impl(0, signing_kp, revision_counter);
+}
+
 /* Build a descriptor with introduction points. */
 hs_descriptor_t *
 hs_helper_build_hs_desc_with_ip(const ed25519_keypair_t *signing_kp)
 {
-  return hs_helper_build_hs_desc_impl(0, signing_kp);
+  return hs_helper_build_hs_desc_impl(0, signing_kp, 42);
 }
 
 /* Build a descriptor without any introduction points. */
 hs_descriptor_t *
 hs_helper_build_hs_desc_no_ip(const ed25519_keypair_t *signing_kp)
 {
-  return hs_helper_build_hs_desc_impl(1, signing_kp);
+  return hs_helper_build_hs_desc_impl(1, signing_kp, 42);
 }
 
 hs_descriptor_t *
@@ -247,7 +258,7 @@ hs_helper_build_hs_desc_with_client_auth(
                         const ed25519_keypair_t *signing_kp)
 {
   curve25519_keypair_t auth_ephemeral_kp;
-  hs_descriptor_t *desc = hs_helper_build_hs_desc_impl(0, signing_kp);
+  hs_descriptor_t *desc = hs_helper_build_hs_desc_impl(0, signing_kp, 42);
   hs_desc_authorized_client_t *desc_client;
 
   /* The number of client authorized auth has tobe a multiple of
@@ -323,6 +334,10 @@ hs_helper_desc_equal(const hs_descriptor_t *desc1,
   /* Encrypted data section. */
   tt_uint_op(desc1->encrypted_data.create2_ntor, OP_EQ,
              desc2->encrypted_data.create2_ntor);
+  tt_uint_op(desc1->encrypted_data.single_onion_service, OP_EQ,
+             desc2->encrypted_data.single_onion_service);
+  tt_str_op(desc1->encrypted_data.flow_control_pv, OP_EQ,
+            desc2->encrypted_data.flow_control_pv);
 
   /* Authentication type. */
   tt_int_op(!!desc1->encrypted_data.intro_auth_types, OP_EQ,

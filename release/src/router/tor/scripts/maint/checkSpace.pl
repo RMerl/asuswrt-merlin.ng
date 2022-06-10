@@ -7,13 +7,13 @@ my $found = 0;
 my $COLON_POS = 10;
 
 sub msg {
-  $found = 1;
-  my $v = shift;
-  $v =~ /^\s*([^:]+):(.*)$/;
-  chomp(my $errtype = $1);
-  my $rest = $2;
-  my $padding = ' ' x ($COLON_POS - length $errtype);
-  print "$padding$errtype:$rest\n";
+    $found = 1;
+    my $v = shift;
+    $v =~ /^\s*([^:]+):(.*)$/;
+    chomp(my $errtype = $1);
+    my $rest = $2;
+    my $padding = ' ' x ($COLON_POS - length $errtype);
+    print "$padding$errtype:$rest\n";
 }
 
 my $C = 0;

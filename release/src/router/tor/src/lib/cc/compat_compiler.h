@@ -1,6 +1,6 @@
 /* Copyright (c) 2003-2004, Roger Dingledine
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2020, The Tor Project, Inc. */
+ * Copyright (c) 2007-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -14,6 +14,15 @@
 
 #include "orconfig.h"
 #include <inttypes.h>
+
+#if defined(__MINGW32__) || defined(__MINGW64__)
+#define MINGW_ANY
+#endif
+
+#ifdef MINGW_ANY
+/* We need this for __MINGW_PRINTF_FORMAT, alas. */
+#include <stdio.h>
+#endif
 
 #if defined(__has_feature)
 #  if __has_feature(address_sanitizer)
@@ -36,16 +45,30 @@
 #error "It seems that you encode characters in something other than ASCII."
 #endif
 
+/* Use the right magic attribute on mingw, which might be printf, gnu_printf,
+ * or ms_printf, depending on how we're set up to build.
+ */
+#ifdef __MINGW_PRINTF_FORMAT
+#define PRINTF_FORMAT_ATTR __MINGW_PRINTF_FORMAT
+#else
+#define PRINTF_FORMAT_ATTR printf
+#endif
+#ifdef __MINGW_SCANF_FORMAT
+#define SCANF_FORMAT_ATTR __MINGW_SCANF_FORMAT
+#else
+#define SCANF_FORMAT_ATTR scanf
+#endif
+
 /* GCC can check printf and scanf types on arbitrary functions. */
 #ifdef __GNUC__
 #define CHECK_PRINTF(formatIdx, firstArg) \
-   __attribute__ ((format(printf, formatIdx, firstArg)))
+   __attribute__ ((format(PRINTF_FORMAT_ATTR, formatIdx, firstArg)))
 #else
 #define CHECK_PRINTF(formatIdx, firstArg)
 #endif /* defined(__GNUC__) */
 #ifdef __GNUC__
 #define CHECK_SCANF(formatIdx, firstArg) \
-   __attribute__ ((format(scanf, formatIdx, firstArg)))
+   __attribute__ ((format(SCANF_FORMAT_ATTR, formatIdx, firstArg)))
 #else
 #define CHECK_SCANF(formatIdx, firstArg)
 #endif /* defined(__GNUC__) */
@@ -190,10 +213,6 @@
 #define OP_LE <=
 #define OP_EQ ==
 #define OP_NE !=
-
-#if defined(__MINGW32__) || defined(__MINGW64__)
-#define MINGW_ANY
-#endif
 
 /** Macro: yield a pointer to the field at position <b>off</b> within the
  * structure <b>st</b>.  Example:

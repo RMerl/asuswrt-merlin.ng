@@ -1,4 +1,4 @@
-/* Copyright (c) 2020, The Tor Project, Inc. */
+/* Copyright (c) 2020-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -61,7 +61,7 @@ void resolve_addr_reset_suggested(int family);
 
 #endif /* TOR_UNIT_TESTS */
 
-#endif /* RESOLVE_ADDR_PRIVATE */
+#endif /* defined(RESOLVE_ADDR_PRIVATE) */
 
-#endif /* TOR_CONFIG_RESOLVE_ADDR_H */
+#endif /* !defined(TOR_CONFIG_RESOLVE_ADDR_H) */
 

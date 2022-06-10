@@ -107,7 +107,7 @@ TOR="${TOR_BINARY} --DisableNetwork 1 --ShutdownWaitLength 0 --ORPort 12345 --Ex
 
 # Step 1: Start Tor with --list-fingerprint --quiet.  Make sure everything is there.
 echo "Setup step #1"
-${TOR} --list-fingerprint ${SILENTLY} > /dev/null
+${TOR} ${SILENTLY} --list-fingerprint > /dev/null
 
 check_dir "${DATA_DIR}/keys"
 check_file "${DATA_DIR}/keys/ed25519_master_id_public_key"

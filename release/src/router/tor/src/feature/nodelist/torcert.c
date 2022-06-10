@@ -1,4 +1,4 @@
-/* Copyright (c) 2014-2020, The Tor Project, Inc. */
+/* Copyright (c) 2014-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -13,7 +13,7 @@
  * contents themselves may be another Ed25519 key, a digest of a
  * RSA key, or some other material.
  *
- * In this module there is also support for a crooss-certification of
+ * In this module there is also support for a cross-certification of
  * Ed25519 identities using (older) RSA1024 identities.
  *
  * Tor uses other types of certificate too, beyond those described in this

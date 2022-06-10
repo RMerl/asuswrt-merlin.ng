@@ -1,7 +1,7 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2020, The Tor Project, Inc. */
+ * Copyright (c) 2007-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -69,6 +69,8 @@
 #include "core/or/circuituse.h"
 #include "core/or/circuitpadding.h"
 #include "core/or/connection_edge.h"
+#include "core/or/congestion_control_flow.h"
+#include "core/or/circuitstats.h"
 #include "core/or/connection_or.h"
 #include "core/or/extendinfo.h"
 #include "core/or/policies.h"
@@ -96,9 +98,7 @@
 #include "feature/relay/dns.h"
 #include "feature/relay/router.h"
 #include "feature/relay/routermode.h"
-#include "feature/rend/rendclient.h"
 #include "feature/rend/rendcommon.h"
-#include "feature/rend/rendservice.h"
 #include "feature/stats/predict_ports.h"
 #include "feature/stats/rephist.h"
 #include "lib/buf/buffers.h"
@@ -165,6 +165,7 @@ static int connection_ap_process_natd(entry_connection_t *conn);
 static int connection_exit_connect_dir(edge_connection_t *exitconn);
 static int consider_plaintext_ports(entry_connection_t *conn, uint16_t port);
 static int connection_ap_supports_optimistic_data(const entry_connection_t *);
+static bool network_reentry_is_allowed(void);
 
 /**
  * Cast a `connection_t *` to an `edge_connection_t *`.
@@ -251,23 +252,8 @@ connection_mark_unattached_ap_,(entry_connection_t *conn, int endreason,
                                 int line, const char *file))
 {
   connection_t *base_conn = ENTRY_TO_CONN(conn);
-  edge_connection_t *edge_conn = ENTRY_TO_EDGE_CONN(conn);
   tor_assert(base_conn->type == CONN_TYPE_AP);
   ENTRY_TO_EDGE_CONN(conn)->edge_has_sent_end = 1; /* no circ yet */
-
-  /* If this is a rendezvous stream and it is failing without ever
-   * being attached to a circuit, assume that an attempt to connect to
-   * the destination hidden service has just ended.
-   *
-   * XXXX This condition doesn't limit to only streams failing
-   * without ever being attached.  That sloppiness should be harmless,
-   * but we should fix it someday anyway. */
-  if ((edge_conn->on_circuit != NULL || edge_conn->edge_has_sent_end) &&
-      connection_edge_is_rendezvous_stream(edge_conn)) {
-    if (edge_conn->rend_data) {
-      rend_client_note_connection_attempt_ended(edge_conn->rend_data);
-    }
-  }
 
   if (base_conn->marked_for_close) {
     /* This call will warn as appropriate. */
@@ -630,20 +616,39 @@ connection_half_edge_add(const edge_connection_t *conn,
 
   half_conn->stream_id = conn->stream_id;
 
-  // How many sendme's should I expect?
-  half_conn->sendmes_pending =
-   (STREAMWINDOW_START-conn->package_window)/STREAMWINDOW_INCREMENT;
-
    // Is there a connected cell pending?
   half_conn->connected_pending = conn->base_.state ==
       AP_CONN_STATE_CONNECT_WAIT;
 
-  /* Data should only arrive if we're not waiting on a resolved cell.
-   * It can arrive after waiting on connected, because of optimistic
-   * data. */
-  if (conn->base_.state != AP_CONN_STATE_RESOLVE_WAIT) {
-    // How many more data cells can arrive on this id?
-    half_conn->data_pending = conn->deliver_window;
+  if (edge_uses_flow_control(conn)) {
+    /* If the edge uses the new congestion control flow control, we must use
+     * time-based limits on half-edge activity. */
+    uint64_t timeout_usec = (uint64_t)(get_circuit_build_timeout_ms()*1000);
+    half_conn->used_ccontrol = 1;
+
+    /* If this is an onion service circuit, double the CBT as an approximate
+     * value for the other half of the circuit */
+    if (conn->hs_ident) {
+      timeout_usec *= 2;
+    }
+
+    /* The stream should stop seeing any use after the larger of the circuit
+     * RTT and the overall circuit build timeout */
+    half_conn->end_ack_expected_usec = MAX(timeout_usec,
+                                           edge_get_max_rtt(conn)) +
+                                        monotime_absolute_usec();
+  } else {
+    // How many sendme's should I expect?
+    half_conn->sendmes_pending =
+     (STREAMWINDOW_START-conn->package_window)/STREAMWINDOW_INCREMENT;
+
+    /* Data should only arrive if we're not waiting on a resolved cell.
+     * It can arrive after waiting on connected, because of optimistic
+     * data. */
+    if (conn->base_.state != AP_CONN_STATE_RESOLVE_WAIT) {
+      // How many more data cells can arrive on this id?
+      half_conn->data_pending = conn->deliver_window;
+    }
   }
 
   insert_at = smartlist_bsearch_idx(circ->half_streams, &half_conn->stream_id,
@@ -704,6 +709,12 @@ connection_half_edge_is_valid_data(const smartlist_t *half_conns,
   if (!half)
     return 0;
 
+  if (half->used_ccontrol) {
+    if (monotime_absolute_usec() > half->end_ack_expected_usec)
+      return 0;
+    return 1;
+  }
+
   if (half->data_pending > 0) {
     half->data_pending--;
     return 1;
@@ -754,6 +765,10 @@ connection_half_edge_is_valid_sendme(const smartlist_t *half_conns,
                                                           stream_id);
 
   if (!half)
+    return 0;
+
+  /* congestion control edges don't use sendmes */
+  if (half->used_ccontrol)
     return 0;
 
   if (half->sendmes_pending > 0) {
@@ -1285,15 +1300,6 @@ connection_ap_rescan_and_attach_pending(void)
   connection_ap_attach_pending(1);
 }
 
-#ifdef DEBUGGING_17659
-#define UNMARK() do {                           \
-    entry_conn->marked_pending_circ_line = 0;   \
-    entry_conn->marked_pending_circ_file = 0;   \
-  } while (0)
-#else /* !defined(DEBUGGING_17659) */
-#define UNMARK() do { } while (0)
-#endif /* defined(DEBUGGING_17659) */
-
 /** Tell any AP streams that are listed as waiting for a new circuit to try
  * again.  If there is an available circuit for a stream, attach it. Otherwise,
  * launch a new circuit.
@@ -1322,21 +1328,18 @@ connection_ap_attach_pending(int retry)
     connection_t *conn = ENTRY_TO_CONN(entry_conn);
     tor_assert(conn && entry_conn);
     if (conn->marked_for_close) {
-      UNMARK();
       continue;
     }
     if (conn->magic != ENTRY_CONNECTION_MAGIC) {
       log_warn(LD_BUG, "%p has impossible magic value %u.",
                entry_conn, (unsigned)conn->magic);
-      UNMARK();
       continue;
     }
     if (conn->state != AP_CONN_STATE_CIRCUIT_WAIT) {
-      log_warn(LD_BUG, "%p is no longer in circuit_wait. Its current state "
-               "is %s. Why is it on pending_entry_connections?",
-               entry_conn,
-               conn_state_to_string(conn->type, conn->state));
-      UNMARK();
+      /* The connection_ap_handshake_attach_circuit() call, for onion service,
+       * can lead to more than one connections in the "pending" list to change
+       * state and so it is OK to get here. Ignore it because this connection
+       * won't be in pending_entry_connections list after this point. */
       continue;
     }
 
@@ -1361,7 +1364,6 @@ connection_ap_attach_pending(int retry)
 
     /* If we got here, then we either closed the connection, or
      * we attached it. */
-    UNMARK();
   } SMARTLIST_FOREACH_END(entry_conn);
 
   smartlist_free(pending);
@@ -1432,7 +1434,6 @@ connection_ap_mark_as_non_pending_circuit(entry_connection_t *entry_conn)
 {
   if (PREDICT_UNLIKELY(NULL == pending_entry_connections))
     return;
-  UNMARK();
   smartlist_remove(pending_entry_connections, entry_conn);
 }
 
@@ -1946,14 +1947,14 @@ connection_ap_handshake_rewrite(entry_connection_t *conn,
   }
 }
 
-/** We just received a SOCKS request in <b>conn</b> to an onion address of type
- *  <b>addresstype</b>. Start connecting to the onion service. */
+/** We just received a SOCKS request in <b>conn</b> to a v3 onion. Start
+ *  connecting to the onion service. */
 static int
 connection_ap_handle_onion(entry_connection_t *conn,
                            socks_request_t *socks,
-                           origin_circuit_t *circ,
-                           hostname_type_t addresstype)
+                           origin_circuit_t *circ)
 {
+  int retval;
   time_t now = approx_time();
   connection_t *base_conn = ENTRY_TO_CONN(conn);
 
@@ -1989,102 +1990,38 @@ connection_ap_handle_onion(entry_connection_t *conn,
     return -1;
   }
 
-  /* Interface: Regardless of HS version after the block below we should have
-     set onion_address, rend_cache_lookup_result, and descriptor_is_usable. */
-  const char *onion_address = NULL;
-  int rend_cache_lookup_result = -ENOENT;
   int descriptor_is_usable = 0;
 
-  if (addresstype == ONION_V2_HOSTNAME) { /* it's a v2 hidden service */
-    rend_cache_entry_t *entry = NULL;
-    /* Look up if we have client authorization configured for this hidden
-     * service.  If we do, associate it with the rend_data. */
-    rend_service_authorization_t *client_auth =
-      rend_client_lookup_service_authorization(socks->address);
+  /* Create HS conn identifier with HS pubkey */
+  hs_ident_edge_conn_t *hs_conn_ident =
+    tor_malloc_zero(sizeof(hs_ident_edge_conn_t));
 
-    const uint8_t *cookie = NULL;
-    rend_auth_type_t auth_type = REND_NO_AUTH;
-    if (client_auth) {
-      log_info(LD_REND, "Using previously configured client authorization "
-               "for hidden service request.");
-      auth_type = client_auth->auth_type;
-      cookie = client_auth->descriptor_cookie;
-    }
-
-    /* Fill in the rend_data field so we can start doing a connection to
-     * a hidden service. */
-    rend_data_t *rend_data = ENTRY_TO_EDGE_CONN(conn)->rend_data =
-      rend_data_client_create(socks->address, NULL, (char *) cookie,
-                              auth_type);
-    if (rend_data == NULL) {
-      return -1;
-    }
-    onion_address = rend_data_get_address(rend_data);
-    log_info(LD_REND,"Got a hidden service request for ID '%s'",
-             safe_str_client(onion_address));
-
-    rend_cache_lookup_result = rend_cache_lookup_entry(onion_address,-1,
-                                                       &entry);
-    if (!rend_cache_lookup_result && entry) {
-      descriptor_is_usable = rend_client_any_intro_points_usable(entry);
-    }
-  } else { /* it's a v3 hidden service */
-    tor_assert(addresstype == ONION_V3_HOSTNAME);
-    const hs_descriptor_t *cached_desc = NULL;
-    int retval;
-    /* Create HS conn identifier with HS pubkey */
-    hs_ident_edge_conn_t *hs_conn_ident =
-      tor_malloc_zero(sizeof(hs_ident_edge_conn_t));
-
-    retval = hs_parse_address(socks->address, &hs_conn_ident->identity_pk,
-                              NULL, NULL);
-    if (retval < 0) {
-      log_warn(LD_GENERAL, "failed to parse hs address");
-      tor_free(hs_conn_ident);
-      return -1;
-    }
-    ENTRY_TO_EDGE_CONN(conn)->hs_ident = hs_conn_ident;
-
-    onion_address = socks->address;
-
-    /* Check the v3 desc cache */
-    cached_desc = hs_cache_lookup_as_client(&hs_conn_ident->identity_pk);
-    if (cached_desc) {
-      rend_cache_lookup_result = 0;
-      descriptor_is_usable =
-        hs_client_any_intro_points_usable(&hs_conn_ident->identity_pk,
-                                          cached_desc);
-      log_info(LD_GENERAL, "Found %s descriptor in cache for %s. %s.",
-               (descriptor_is_usable) ? "usable" : "unusable",
-               safe_str_client(onion_address),
-               (descriptor_is_usable) ? "Not fetching." : "Refetching.");
-    } else {
-      rend_cache_lookup_result = -ENOENT;
-    }
+  retval = hs_parse_address(socks->address, &hs_conn_ident->identity_pk,
+                            NULL, NULL);
+  if (retval < 0) {
+    log_warn(LD_GENERAL, "failed to parse hs address");
+    tor_free(hs_conn_ident);
+    return -1;
   }
+  ENTRY_TO_EDGE_CONN(conn)->hs_ident = hs_conn_ident;
 
-  /* Lookup the given onion address. If invalid, stop right now.
-   * Otherwise, we might have it in the cache or not. */
+  /* Check the v3 desc cache */
+  const hs_descriptor_t *cached_desc = NULL;
   unsigned int refetch_desc = 0;
-  if (rend_cache_lookup_result < 0) {
-    switch (-rend_cache_lookup_result) {
-    case EINVAL:
-      /* We should already have rejected this address! */
-      log_warn(LD_BUG,"Invalid service name '%s'",
-               safe_str_client(onion_address));
-      connection_mark_unattached_ap(conn, END_STREAM_REASON_TORPROTOCOL);
-      return -1;
-    case ENOENT:
-      /* We didn't have this; we should look it up. */
-      log_info(LD_REND, "No descriptor found in our cache for %s. Fetching.",
-               safe_str_client(onion_address));
-      refetch_desc = 1;
-      break;
-    default:
-      log_warn(LD_BUG, "Unknown cache lookup error %d",
-               rend_cache_lookup_result);
-      return -1;
-    }
+  cached_desc = hs_cache_lookup_as_client(&hs_conn_ident->identity_pk);
+  if (cached_desc) {
+    descriptor_is_usable =
+      hs_client_any_intro_points_usable(&hs_conn_ident->identity_pk,
+                                        cached_desc);
+    log_info(LD_GENERAL, "Found %s descriptor in cache for %s. %s.",
+             (descriptor_is_usable) ? "usable" : "unusable",
+             safe_str_client(socks->address),
+             (descriptor_is_usable) ? "Not fetching." : "Refetching.");
+  } else {
+    /* We couldn't find this descriptor; we should look it up. */
+    log_info(LD_REND, "No descriptor found in our cache for %s. Fetching.",
+             safe_str_client(socks->address));
+    refetch_desc = 1;
   }
 
   /* Help predict that we'll want to do hidden service circuits in the
@@ -2099,33 +2036,25 @@ connection_ap_handle_onion(entry_connection_t *conn,
     edge_connection_t *edge_conn = ENTRY_TO_EDGE_CONN(conn);
     connection_ap_mark_as_non_pending_circuit(conn);
     base_conn->state = AP_CONN_STATE_RENDDESC_WAIT;
-    if (addresstype == ONION_V2_HOSTNAME) {
-      tor_assert(edge_conn->rend_data);
-      rend_client_refetch_v2_renddesc(edge_conn->rend_data);
-      /* Whatever the result of the refetch, we don't go further. */
+    tor_assert(edge_conn->hs_ident);
+    /* Attempt to fetch the hsv3 descriptor. Check the retval to see how it
+     * went and act accordingly. */
+    int ret = hs_client_refetch_hsdesc(&edge_conn->hs_ident->identity_pk);
+    switch (ret) {
+    case HS_CLIENT_FETCH_MISSING_INFO:
+      /* Keeping the connection in descriptor wait state is fine because
+       * once we get enough dirinfo or a new live consensus, the HS client
+       * subsystem is notified and every connection in that state will
+       * trigger a fetch for the service key. */
+    case HS_CLIENT_FETCH_LAUNCHED:
+    case HS_CLIENT_FETCH_PENDING:
+    case HS_CLIENT_FETCH_HAVE_DESC:
       return 0;
-    } else {
-      tor_assert(addresstype == ONION_V3_HOSTNAME);
-      tor_assert(edge_conn->hs_ident);
-      /* Attempt to fetch the hsv3 descriptor. Check the retval to see how it
-       * went and act accordingly. */
-      int ret = hs_client_refetch_hsdesc(&edge_conn->hs_ident->identity_pk);
-      switch (ret) {
-      case HS_CLIENT_FETCH_MISSING_INFO:
-        /* Keeping the connection in descriptor wait state is fine because
-         * once we get enough dirinfo or a new live consensus, the HS client
-         * subsystem is notified and every connection in that state will
-         * trigger a fetch for the service key. */
-      case HS_CLIENT_FETCH_LAUNCHED:
-      case HS_CLIENT_FETCH_PENDING:
-      case HS_CLIENT_FETCH_HAVE_DESC:
-        return 0;
-      case HS_CLIENT_FETCH_ERROR:
-      case HS_CLIENT_FETCH_NO_HSDIRS:
-      case HS_CLIENT_FETCH_NOT_ALLOWED:
-        /* Can't proceed further and better close the SOCKS request. */
-        return -1;
-      }
+    case HS_CLIENT_FETCH_ERROR:
+    case HS_CLIENT_FETCH_NO_HSDIRS:
+    case HS_CLIENT_FETCH_NOT_ALLOWED:
+      /* Can't proceed further and better close the SOCKS request. */
+      return -1;
     }
   }
 
@@ -2200,7 +2129,7 @@ connection_ap_handshake_rewrite_and_attach(entry_connection_t *conn,
   }
 
   /* If this is a .exit hostname, strip off the .name.exit part, and
-   * see whether we're willing to connect there, and and otherwise handle the
+   * see whether we're willing to connect there, and otherwise handle the
    * .exit address.
    *
    * We'll set chosen_exit_name and/or close the connection as appropriate.
@@ -2304,7 +2233,7 @@ connection_ap_handshake_rewrite_and_attach(entry_connection_t *conn,
   }
 
   /* Now, we handle everything that isn't a .onion address. */
-  if (addresstype != ONION_V2_HOSTNAME && addresstype != ONION_V3_HOSTNAME) {
+  if (addresstype != ONION_V3_HOSTNAME) {
     /* Not a hidden-service request.  It's either a hostname or an IP,
      * possibly with a .exit that we stripped off.  We're going to check
      * if we're allowed to connect/resolve there, and then launch the
@@ -2490,6 +2419,25 @@ connection_ap_handshake_rewrite_and_attach(entry_connection_t *conn,
              * address. */
             conn->entry_cfg.ipv6_traffic = 0;
           }
+
+          /* Next, yet another check: we know it's a direct IP address. Is it
+           * the IP address of a known relay and its ORPort, or of a directory
+           * authority and its OR or Dir Port? If so, and if a consensus param
+           * says to, then exit relays will refuse this request (see ticket
+           * 2667 for details). Let's just refuse it locally right now, to
+           * save time and network load but also to give the user a more
+           * useful log message. */
+          if (!network_reentry_is_allowed() &&
+              nodelist_reentry_contains(&addr, socks->port)) {
+            log_warn(LD_APP, "Not attempting connection to %s:%d because "
+                     "the network would reject it. Are you trying to send "
+                     "Tor traffic over Tor? This traffic can be harmful to "
+                     "the Tor network. If you really need it, try using "
+                     "a bridge as a workaround.",
+                     safe_str_client(socks->address), socks->port);
+            connection_mark_unattached_ap(conn, END_STREAM_REASON_TORPROTOCOL);
+            return -1;
+          }
         }
       }
 
@@ -2570,24 +2518,9 @@ connection_ap_handshake_rewrite_and_attach(entry_connection_t *conn,
     return 0;
   } else {
     /* If we get here, it's a request for a .onion address! */
-    tor_assert(addresstype == ONION_V2_HOSTNAME ||
-               addresstype == ONION_V3_HOSTNAME);
+    tor_assert(addresstype == ONION_V3_HOSTNAME);
     tor_assert(!automap);
-
-    if (addresstype == ONION_V2_HOSTNAME) {
-      static bool log_once = false;
-      if (!log_once) {
-        log_warn(LD_PROTOCOL,
-                 "Warning! You've just connected to a v2 onion address. These "
-                 "addresses are deprecated for security reasons, and are no "
-                 "longer supported in Tor. Please encourage the site operator "
-                 "to upgrade. For more information see "
-                 "https://blog.torproject.org/v2-deprecation-timeline");
-        log_once = true;
-      }
-    }
-
-    return connection_ap_handle_onion(conn, socks, circ, addresstype);
+    return connection_ap_handle_onion(conn, socks, circ);
   }
 
   return 0; /* unreached but keeps the compiler happy */
@@ -3524,22 +3457,30 @@ tell_controller_about_resolved_result(entry_connection_t *conn,
                                       int ttl,
                                       time_t expires)
 {
+  uint64_t stream_id = 0;
+
+  if (BUG(!conn)) {
+    return;
+  }
+
+  stream_id = ENTRY_TO_CONN(conn)->global_identifier;
+
   expires = time(NULL) + ttl;
   if (answer_type == RESOLVED_TYPE_IPV4 && answer_len >= 4) {
     char *cp = tor_dup_ip(ntohl(get_uint32(answer)));
     if (cp)
       control_event_address_mapped(conn->socks_request->address,
-                                   cp, expires, NULL, 0);
+                                   cp, expires, NULL, 0, stream_id);
     tor_free(cp);
   } else if (answer_type == RESOLVED_TYPE_HOSTNAME && answer_len < 256) {
     char *cp = tor_strndup(answer, answer_len);
     control_event_address_mapped(conn->socks_request->address,
-                                 cp, expires, NULL, 0);
+                                 cp, expires, NULL, 0, stream_id);
     tor_free(cp);
   } else {
     control_event_address_mapped(conn->socks_request->address,
                                  "<error>", time(NULL)+ttl,
-                                 "error=yes", 0);
+                                 "error=yes", 0, stream_id);
   }
 }
 
@@ -3886,13 +3827,7 @@ handle_hs_exit_conn(circuit_t *circ, edge_connection_t *conn)
   conn->base_.address = tor_strdup("(rendezvous)");
   conn->base_.state = EXIT_CONN_STATE_CONNECTING;
 
-  /* The circuit either has an hs identifier for v3+ or a rend_data for legacy
-   * service. */
-  if (origin_circ->rend_data) {
-    conn->rend_data = rend_data_dup(origin_circ->rend_data);
-    tor_assert(connection_edge_is_rendezvous_stream(conn));
-    ret = rend_service_set_connection_addr_port(conn, origin_circ);
-  } else if (origin_circ->hs_ident) {
+  if (origin_circ->hs_ident) {
     /* Setup the identifier to be the one for the circuit service. */
     conn->hs_ident =
       hs_ident_edge_conn_new(&origin_circ->hs_ident->identity_pk);
@@ -4455,10 +4390,8 @@ int
 connection_edge_is_rendezvous_stream(const edge_connection_t *conn)
 {
   tor_assert(conn);
-  /* It should not be possible to set both of these structs */
-  tor_assert_nonfatal(!(conn->rend_data && conn->hs_ident));
 
-  if (conn->rend_data || conn->hs_ident) {
+  if (conn->hs_ident) {
     return 1;
   }
   return 0;

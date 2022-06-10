@@ -1,4 +1,4 @@
-/* Copyright (c) 2018-2020, The Tor Project, Inc. */
+/* Copyright (c) 2018-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -34,12 +34,11 @@ srv_to_control_string(const sr_srv_t *srv)
 }
 
 /**
- * If we have no consensus and we are not an authority, assume that this is
- * the voting interval.  We should never actually use this: only authorities
- * should be trying to figure out the schedule when they don't have a
- * consensus.
- **/
+ * If we have no consensus and we are not an authority, assume that this is the
+ * voting interval. This can be used while bootstrapping as a relay and we are
+ * asked to initialize HS stats (see rep_hist_hs_stats_init()) */
 #define DEFAULT_NETWORK_VOTING_INTERVAL (3600)
+#define TESTING_DEFAULT_NETWORK_VOTING_INTERVAL (20)
 
 /* This is an unpleasing workaround for tests.  Our unit tests assume that we
  * are scheduling all of our shared random stuff as if we were a directory
@@ -72,11 +71,13 @@ get_voting_interval(void)
      * It's better than falling back to the non-consensus case. */
     interval = (int)(consensus->fresh_until - consensus->valid_after);
   } else {
-    /* We should never be reaching this point, since a client should never
-     * call this code unless they have some kind of a consensus. All we can
-     * do is hope that this network is using the default voting interval. */
-    tor_assert_nonfatal_unreached_once();
-    interval = DEFAULT_NETWORK_VOTING_INTERVAL;
+    /* We can reach this as a relay when bootstrapping and we are asked to
+     * initialize HS stats (see rep_hist_hs_stats_init()). */
+    if (get_options()->TestingTorNetwork) {
+      interval = TESTING_DEFAULT_NETWORK_VOTING_INTERVAL;
+    } else {
+      interval = DEFAULT_NETWORK_VOTING_INTERVAL;
+    }
   }
   tor_assert(interval > 0);
   return interval;

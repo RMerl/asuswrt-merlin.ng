@@ -1,4 +1,4 @@
-/* Copyright (c) 2010-2020, The Tor Project, Inc. */
+/* Copyright (c) 2010-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -12,6 +12,9 @@
 #include "lib/testsupport/testsupport.h"
 
 void note_connection(bool inbound, int family);
+void note_circ_closed_for_unrecognized_cells(time_t n_seconds,
+                                             uint32_t n_cells);
+
 int log_heartbeat(time_t now);
 
 #ifdef STATUS_PRIVATE

@@ -1,7 +1,7 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2020, The Tor Project, Inc. */
+ * Copyright (c) 2007-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -712,7 +712,7 @@ ed_key_init_from_file(const char *fname, uint32_t flags,
 }
 
 /**
- * Create a new signing key and (optionally) certficiate; do not read or write
+ * Create a new signing key and (optionally) certificate; do not read or write
  * from disk.  See ed_key_init_from_file() for more information.
  */
 ed25519_keypair_t *

@@ -1,6 +1,6 @@
 /* Copyright (c) 2003, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2020, The Tor Project, Inc. */
+ * Copyright (c) 2007-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -587,6 +587,10 @@ tor_tls_write(tor_tls_t *tls, const char *cp, size_t n)
   tor_assert(tls);
   tor_assert(cp || n == 0);
   tor_assert(n < INT_MAX);
+
+  if (n == 0) {
+    return 0;
+  }
 
   PRInt32 rv = PR_Write(tls->ssl, cp, (int)n);
   // log_debug(LD_NET, "PR_Write(%zu) returned %d", n, (int)rv);

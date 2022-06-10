@@ -1,6 +1,6 @@
 /* Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2020, The Tor Project, Inc. */
+ * Copyright (c) 2007-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 #include "core/or/or.h"
@@ -68,7 +68,6 @@
  *   router_upload_dir_desc_to_dirservers() in router.c
  *   upload_service_descriptor() in rendservice.c
  * - directory_get_from_dirserver(), called from
- *   rend_client_refetch_renddesc() in rendclient.c
  *   run_scheduled_events() in main.c
  *   do_hup() in main.c
  * - connection_dir_process_inbuf(), called from
@@ -143,9 +142,6 @@ purpose_needs_anonymity(uint8_t dir_purpose, uint8_t router_purpose,
     case DIR_PURPOSE_FETCH_MICRODESC:
       return 0;
     case DIR_PURPOSE_HAS_FETCHED_HSDESC:
-    case DIR_PURPOSE_HAS_FETCHED_RENDDESC_V2:
-    case DIR_PURPOSE_UPLOAD_RENDDESC_V2:
-    case DIR_PURPOSE_FETCH_RENDDESC_V2:
     case DIR_PURPOSE_FETCH_HSDESC:
     case DIR_PURPOSE_UPLOAD_HSDESC:
       return 1;

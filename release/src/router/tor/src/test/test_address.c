@@ -1,4 +1,4 @@
-/* Copyright (c) 2014-2020, The Tor Project, Inc. */
+/* Copyright (c) 2014-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 #define ADDRESS_PRIVATE
@@ -1326,6 +1326,42 @@ test_address_dirserv_router_addr_private(void *opt_dir_allow_private)
   UNMOCK(get_options);
 }
 
+static void
+test_address_parse_port_range(void *arg)
+{
+  int ret;
+  uint16_t min_out = 0;
+  uint16_t max_out = 0;
+
+  (void) arg;
+
+  /* Invalid. */
+  ret = parse_port_range("0x00", &min_out, &max_out);
+  tt_int_op(ret, OP_EQ, -1);
+  ret = parse_port_range("0x01", &min_out, &max_out);
+  tt_int_op(ret, OP_EQ, -1);
+  ret = parse_port_range("1817161", &min_out, &max_out);
+  tt_int_op(ret, OP_EQ, -1);
+  ret = parse_port_range("65536", &min_out, &max_out);
+  tt_int_op(ret, OP_EQ, -1);
+  ret = parse_port_range("1-65536", &min_out, &max_out);
+  tt_int_op(ret, OP_EQ, -1);
+
+  /* Valid. */
+  ret = parse_port_range("65535", &min_out, &max_out);
+  tt_int_op(ret, OP_EQ, 0);
+  tt_int_op(min_out, OP_EQ, 65535);
+  tt_int_op(max_out, OP_EQ, 65535);
+
+  ret = parse_port_range("1-65535", &min_out, &max_out);
+  tt_int_op(ret, OP_EQ, 0);
+  tt_int_op(min_out, OP_EQ, 1);
+  tt_int_op(max_out, OP_EQ, 65535);
+
+ done:
+  ;
+}
+
 #define ADDRESS_TEST(name, flags) \
   { #name, test_address_ ## name, flags, NULL, NULL }
 #define ADDRESS_TEST_STR_ARG(name, flags, str_arg) \
@@ -1364,5 +1400,6 @@ struct testcase_t address_tests[] = {
   ADDRESS_TEST(tor_node_in_same_network_family, 0),
   ADDRESS_TEST(dirserv_router_addr_private, 0),
   ADDRESS_TEST_STR_ARG(dirserv_router_addr_private, 0, "allow_private"),
+  ADDRESS_TEST(parse_port_range, 0),
   END_OF_TESTCASES
 };

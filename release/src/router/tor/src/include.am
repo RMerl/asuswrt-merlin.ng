@@ -85,7 +85,6 @@ include src/app/main/include.am
 include src/core/include.am
 include src/app/include.am
 
-include src/rust/include.am
 include src/test/include.am
 include src/tools/include.am
 include src/win32/include.am

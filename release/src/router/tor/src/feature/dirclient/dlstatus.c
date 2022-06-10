@@ -1,6 +1,6 @@
 /* Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2020, The Tor Project, Inc. */
+ * Copyright (c) 2007-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -73,15 +73,14 @@ find_dl_min_delay(const download_status_t *dls, const or_options_t *options)
         }
       }
     case DL_SCHED_BRIDGE:
-      if (options->UseBridges && num_bridges_usable(0) > 0) {
-        /* A bridge client that is sure that one or more of its bridges are
-         * running can afford to wait longer to update bridge descriptors. */
-        return options->TestingBridgeDownloadInitialDelay;
-      } else {
-        /* A bridge client which might have no running bridges, must try to
-         * get bridge descriptors straight away. */
-        return options->TestingBridgeBootstrapDownloadInitialDelay;
-      }
+      /* Be conservative here: always return the 'during bootstrap' delay
+       * value, so we never delay while trying to fetch descriptors
+       * for new bridges. Once we do succeed at fetching a descriptor
+       * for our bridge, we will adjust its next_attempt_at based on
+       * the longer "TestingBridgeDownloadInitialDelay" value. See
+       * learned_bridge_descriptor() for details.
+       */
+      return options->TestingBridgeBootstrapDownloadInitialDelay;
     default:
       tor_assert(0);
   }

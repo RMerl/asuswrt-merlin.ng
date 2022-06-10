@@ -1,4 +1,4 @@
-/* * Copyright (c) 2012-2020, The Tor Project, Inc. */
+/* * Copyright (c) 2012-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -45,7 +45,10 @@
 /*** EWMA parameter #defines ***/
 
 /** How long does a tick last (seconds)? */
-#define EWMA_TICK_LEN 10
+#define EWMA_TICK_LEN_DEFAULT 10
+#define EWMA_TICK_LEN_MIN 1
+#define EWMA_TICK_LEN_MAX 600
+static int ewma_tick_len = EWMA_TICK_LEN_DEFAULT;
 
 /** The default per-tick scale factor, if it hasn't been overridden by a
  * consensus or a configuration setting.  zero means "disabled". */
@@ -148,7 +151,7 @@ cell_ewma_get_tick(void)
   monotime_coarse_get(&now);
   int32_t msec_diff = monotime_coarse_diff_msec32(&start_of_current_tick,
                                                   &now);
-  return current_tick_num + msec_diff / (1000*EWMA_TICK_LEN);
+  return current_tick_num + msec_diff / (1000*ewma_tick_len);
 }
 
 /**
@@ -527,15 +530,15 @@ cell_ewma_get_current_tick_and_fraction(double *remainder_out)
   monotime_coarse_get(&now);
   int32_t msec_diff = monotime_coarse_diff_msec32(&start_of_current_tick,
                                                   &now);
-  if (msec_diff > (1000*EWMA_TICK_LEN)) {
-    unsigned ticks_difference = msec_diff / (1000*EWMA_TICK_LEN);
+  if (msec_diff > (1000*ewma_tick_len)) {
+    unsigned ticks_difference = msec_diff / (1000*ewma_tick_len);
     monotime_coarse_add_msec(&start_of_current_tick,
                              &start_of_current_tick,
-                             ticks_difference * 1000 * EWMA_TICK_LEN);
+                             ticks_difference * 1000 * ewma_tick_len);
     current_tick_num += ticks_difference;
-    msec_diff %= 1000*EWMA_TICK_LEN;
+    msec_diff %= 1000*ewma_tick_len;
   }
-  *remainder_out = ((double)msec_diff) / (1.0e3 * EWMA_TICK_LEN);
+  *remainder_out = ((double)msec_diff) / (1.0e3 * ewma_tick_len);
   return current_tick_num;
 }
 
@@ -605,15 +608,20 @@ cmux_ewma_set_options(const or_options_t *options,
   /* Both options and consensus can be NULL. This assures us to either get a
    * valid configured value or the default one. */
   halflife = get_circuit_priority_halflife(options, consensus, &source);
+  ewma_tick_len = networkstatus_get_param(consensus,
+                                        "CircuitPriorityTickSecs",
+                                        EWMA_TICK_LEN_DEFAULT,
+                                        EWMA_TICK_LEN_MIN,
+                                        EWMA_TICK_LEN_MAX);
 
   /* convert halflife into halflife-per-tick. */
-  halflife /= EWMA_TICK_LEN;
+  halflife /= ewma_tick_len;
   /* compute per-tick scale factor. */
   ewma_scale_factor = exp(LOG_ONEHALF / halflife);
   log_info(LD_OR,
            "Enabled cell_ewma algorithm because of value in %s; "
            "scale factor is %f per %d seconds",
-           source, ewma_scale_factor, EWMA_TICK_LEN);
+           source, ewma_scale_factor, ewma_tick_len);
 }
 
 /** Return the multiplier necessary to convert the value of a cell sent in

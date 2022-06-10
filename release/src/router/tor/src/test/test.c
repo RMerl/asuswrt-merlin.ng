@@ -1,6 +1,5 @@
 /* Copyright (c) 2001-2004, Roger Dingledine.
-->a * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2020, The Tor Project, Inc. */
+ * Copyright (c) 2007-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -45,9 +44,6 @@
 #include "app/config/config.h"
 #include "core/or/connection_edge.h"
 #include "core/or/extendinfo.h"
-#include "feature/rend/rendcommon.h"
-#include "feature/rend/rendcache.h"
-#include "feature/rend/rendparse.h"
 #include "test/test.h"
 #include "core/mainloop/mainloop.h"
 #include "lib/memarea/memarea.h"
@@ -56,14 +52,13 @@
 #include "core/crypto/onion_fast.h"
 #include "core/crypto/onion_tap.h"
 #include "core/or/policies.h"
+#include "lib/sandbox/sandbox.h"
 #include "app/config/statefile.h"
 #include "lib/crypt_ops/crypto_curve25519.h"
+#include "feature/nodelist/networkstatus.h"
 
 #include "core/or/extend_info_st.h"
 #include "core/or/or_circuit_st.h"
-#include "feature/rend/rend_encoded_v2_service_descriptor_st.h"
-#include "feature/rend/rend_intro_point_st.h"
-#include "feature/rend/rend_service_descriptor_st.h"
 #include "feature/relay/onion_queue.h"
 
 /** Run unit tests for the onion handshake code. */
@@ -355,6 +350,227 @@ test_onion_queues(void *arg)
   tor_free(onionskin);
 }
 
+/**
+ * Test onion queue priority, separation, and resulting
+ * ordering.
+ *
+ * create and add a mix of TAP, NTOR2, and NTORv3. Ensure
+ * they all end up in the right queue. In particular, ntorv2
+ * and ntorv3 should share a queue, but TAP should be separate,
+ * and lower prioritt.
+ *
+ * We test this by way of adding TAP first, and then an interleaving
+ * order of ntor2 and ntor3, and check that the ntor2 and ntor3 are
+ * still interleaved, but TAP comes last. */
+static void
+test_onion_queue_order(void *arg)
+{
+  uint8_t buf_tap[TAP_ONIONSKIN_CHALLENGE_LEN] = {0};
+  uint8_t buf_ntor[NTOR_ONIONSKIN_LEN] = {0};
+  uint8_t buf_ntor3[CELL_PAYLOAD_SIZE] = {0};
+
+  or_circuit_t *circ_tap = or_circuit_new(0, NULL);
+  or_circuit_t *circ_ntor = or_circuit_new(0, NULL);
+  or_circuit_t *circ_ntor3 = or_circuit_new(0, NULL);
+
+  create_cell_t *onionskin = NULL;
+  create_cell_t *create_tap1 = tor_malloc_zero(sizeof(create_cell_t));
+  create_cell_t *create_ntor1 = tor_malloc_zero(sizeof(create_cell_t));
+  create_cell_t *create_ntor2 = tor_malloc_zero(sizeof(create_cell_t));
+  create_cell_t *create_v3ntor1 = tor_malloc_zero(sizeof(create_cell_t));
+  create_cell_t *create_v3ntor2 = tor_malloc_zero(sizeof(create_cell_t));
+  (void)arg;
+
+  create_cell_init(create_tap1, CELL_CREATE, ONION_HANDSHAKE_TYPE_TAP,
+                   TAP_ONIONSKIN_CHALLENGE_LEN, buf_tap);
+  create_cell_init(create_ntor1, CELL_CREATE, ONION_HANDSHAKE_TYPE_NTOR,
+                   NTOR_ONIONSKIN_LEN, buf_ntor);
+  create_cell_init(create_ntor2, CELL_CREATE, ONION_HANDSHAKE_TYPE_NTOR,
+                   NTOR_ONIONSKIN_LEN, buf_ntor);
+  create_cell_init(create_v3ntor1, CELL_CREATE2, ONION_HANDSHAKE_TYPE_NTOR_V3,
+                   NTOR_ONIONSKIN_LEN, buf_ntor3);
+  create_cell_init(create_v3ntor2, CELL_CREATE2, ONION_HANDSHAKE_TYPE_NTOR_V3,
+                   NTOR_ONIONSKIN_LEN, buf_ntor3);
+
+  /* sanity check queue init */
+  tt_int_op(0,OP_EQ, onion_num_pending(ONION_HANDSHAKE_TYPE_TAP));
+  tt_int_op(0,OP_EQ, onion_num_pending(ONION_HANDSHAKE_TYPE_NTOR));
+  tt_int_op(0,OP_EQ, onion_num_pending(ONION_HANDSHAKE_TYPE_NTOR_V3));
+
+  /* Add tap first so we can ensure it comes out last */
+  tt_int_op(0,OP_EQ, onion_pending_add(circ_tap, create_tap1));
+  tt_int_op(1,OP_EQ, onion_num_pending(ONION_HANDSHAKE_TYPE_TAP));
+  tt_int_op(0,OP_EQ, onion_num_pending(ONION_HANDSHAKE_TYPE_NTOR));
+  tt_int_op(0,OP_EQ, onion_num_pending(ONION_HANDSHAKE_TYPE_NTOR_V3));
+
+  /* Now add interleaving ntor2 and ntor3, to ensure they share
+   * the same queue and come out in this order */
+  tt_int_op(0,OP_EQ, onion_pending_add(circ_ntor, create_ntor1));
+  tt_int_op(1,OP_EQ, onion_num_pending(ONION_HANDSHAKE_TYPE_TAP));
+  tt_int_op(1,OP_EQ, onion_num_pending(ONION_HANDSHAKE_TYPE_NTOR));
+  tt_int_op(1,OP_EQ, onion_num_pending(ONION_HANDSHAKE_TYPE_NTOR_V3));
+
+  tt_int_op(0,OP_EQ, onion_pending_add(circ_ntor3, create_v3ntor1));
+  tt_int_op(1,OP_EQ, onion_num_pending(ONION_HANDSHAKE_TYPE_TAP));
+  tt_int_op(2,OP_EQ, onion_num_pending(ONION_HANDSHAKE_TYPE_NTOR));
+  tt_int_op(2,OP_EQ, onion_num_pending(ONION_HANDSHAKE_TYPE_NTOR_V3));
+
+  tt_int_op(0,OP_EQ, onion_pending_add(circ_ntor, create_ntor2));
+  tt_int_op(1,OP_EQ, onion_num_pending(ONION_HANDSHAKE_TYPE_TAP));
+  tt_int_op(3,OP_EQ, onion_num_pending(ONION_HANDSHAKE_TYPE_NTOR));
+  tt_int_op(3,OP_EQ, onion_num_pending(ONION_HANDSHAKE_TYPE_NTOR_V3));
+
+  tt_int_op(0,OP_EQ, onion_pending_add(circ_ntor3, create_v3ntor2));
+  tt_int_op(1,OP_EQ, onion_num_pending(ONION_HANDSHAKE_TYPE_TAP));
+  tt_int_op(4,OP_EQ, onion_num_pending(ONION_HANDSHAKE_TYPE_NTOR));
+  tt_int_op(4,OP_EQ, onion_num_pending(ONION_HANDSHAKE_TYPE_NTOR_V3));
+
+  /* Now remove 5 tasks, ensuring order and queue sizes */
+  tt_ptr_op(circ_ntor, OP_EQ, onion_next_task(&onionskin));
+  tt_int_op(1,OP_EQ, onion_num_pending(ONION_HANDSHAKE_TYPE_TAP));
+  tt_int_op(3,OP_EQ, onion_num_pending(ONION_HANDSHAKE_TYPE_NTOR));
+  tt_int_op(3,OP_EQ, onion_num_pending(ONION_HANDSHAKE_TYPE_NTOR_V3));
+  tt_ptr_op(onionskin, OP_EQ, create_ntor1);
+
+  tt_ptr_op(circ_ntor3, OP_EQ, onion_next_task(&onionskin));
+  tt_int_op(1,OP_EQ, onion_num_pending(ONION_HANDSHAKE_TYPE_TAP));
+  tt_int_op(2,OP_EQ, onion_num_pending(ONION_HANDSHAKE_TYPE_NTOR));
+  tt_int_op(2,OP_EQ, onion_num_pending(ONION_HANDSHAKE_TYPE_NTOR_V3));
+  tt_ptr_op(onionskin, OP_EQ, create_v3ntor1);
+
+  tt_ptr_op(circ_ntor, OP_EQ, onion_next_task(&onionskin));
+  tt_int_op(1,OP_EQ, onion_num_pending(ONION_HANDSHAKE_TYPE_TAP));
+  tt_int_op(1,OP_EQ, onion_num_pending(ONION_HANDSHAKE_TYPE_NTOR));
+  tt_int_op(1,OP_EQ, onion_num_pending(ONION_HANDSHAKE_TYPE_NTOR_V3));
+  tt_ptr_op(onionskin, OP_EQ, create_ntor2);
+
+  tt_ptr_op(circ_ntor3, OP_EQ, onion_next_task(&onionskin));
+  tt_int_op(1,OP_EQ, onion_num_pending(ONION_HANDSHAKE_TYPE_TAP));
+  tt_int_op(0,OP_EQ, onion_num_pending(ONION_HANDSHAKE_TYPE_NTOR));
+  tt_int_op(0,OP_EQ, onion_num_pending(ONION_HANDSHAKE_TYPE_NTOR_V3));
+  tt_ptr_op(onionskin, OP_EQ, create_v3ntor2);
+
+  tt_ptr_op(circ_tap, OP_EQ, onion_next_task(&onionskin));
+  tt_int_op(0,OP_EQ, onion_num_pending(ONION_HANDSHAKE_TYPE_TAP));
+  tt_int_op(0,OP_EQ, onion_num_pending(ONION_HANDSHAKE_TYPE_NTOR));
+  tt_int_op(0,OP_EQ, onion_num_pending(ONION_HANDSHAKE_TYPE_NTOR_V3));
+  tt_ptr_op(onionskin, OP_EQ, create_tap1);
+
+  clear_pending_onions();
+  tt_int_op(0,OP_EQ, onion_num_pending(ONION_HANDSHAKE_TYPE_TAP));
+  tt_int_op(0,OP_EQ, onion_num_pending(ONION_HANDSHAKE_TYPE_NTOR));
+
+ done:
+  circuit_free_(TO_CIRCUIT(circ_tap));
+  circuit_free_(TO_CIRCUIT(circ_ntor));
+  circuit_free_(TO_CIRCUIT(circ_ntor3));
+  tor_free(create_tap1);
+  tor_free(create_ntor1);
+  tor_free(create_ntor2);
+  tor_free(create_v3ntor1);
+  tor_free(create_v3ntor2);
+}
+
+static int32_t cbtnummodes = 10;
+
+static int32_t
+mock_xm_networkstatus_get_param(
+    const networkstatus_t *ns, const char *param_name, int32_t default_val,
+    int32_t min_val, int32_t max_val)
+{
+  (void)ns;
+  (void)default_val;
+  (void)min_val;
+  (void)max_val;
+  // only support cbtnummodes right now
+  tor_assert(strcmp(param_name, "cbtnummodes")==0);
+  return cbtnummodes;
+}
+
+static void
+test_circuit_timeout_xm_alpha(void *arg)
+{
+  circuit_build_times_t cbt;
+  build_time_t Xm;
+  int alpha_ret;
+  circuit_build_times_init(&cbt);
+  (void)arg;
+
+  /* Plan:
+   * 1. Create array of build times with 10 modes.
+   * 2. Make sure Xm calc is sane for 1,3,5,10,15,20 modes.
+   * 3. Make sure alpha calc is sane for 1,3,5,10,15,20 modes.
+   */
+
+  /* 110 build times, 9 modes, 8 mode ties, 10 abandoned */
+  build_time_t circuit_build_times[] = {
+    100, 20, 1000, 500, 200, 5000, 30, 600, 200, 300, CBT_BUILD_ABANDONED,
+    101, 21, 1001, 501, 201, 5001, 31, 601, 201, 301, CBT_BUILD_ABANDONED,
+    102, 22, 1002, 502, 202, 5002, 32, 602, 202, 302, CBT_BUILD_ABANDONED,
+    103, 23, 1003, 503, 203, 5003, 33, 603, 203, 303, CBT_BUILD_ABANDONED,
+    104, 24, 1004, 504, 204, 5004, 34, 604, 204, 304, CBT_BUILD_ABANDONED,
+    105, 25, 1005, 505, 205, 5005, 35, 605, 205, 305, CBT_BUILD_ABANDONED,
+    106, 26, 1006, 506, 206, 5006, 36, 606, 206, 306, CBT_BUILD_ABANDONED,
+    107, 27, 1007, 507, 207, 5007, 37, 607, 207, 307, CBT_BUILD_ABANDONED,
+    108, 28, 1008, 508, 208, 5008, 38, 608, 208, 308, CBT_BUILD_ABANDONED,
+    109, 29, 1009, 509, 209, 5009, 39, 609, 209, 309, CBT_BUILD_ABANDONED
+  };
+
+  memcpy(cbt.circuit_build_times, circuit_build_times,
+         sizeof(circuit_build_times));
+  cbt.total_build_times = 110;
+
+  MOCK(networkstatus_get_param, mock_xm_networkstatus_get_param);
+
+#define CBT_ALPHA_PRECISION 0.00001
+  cbtnummodes = 1;
+  Xm = circuit_build_times_get_xm(&cbt);
+  alpha_ret = circuit_build_times_update_alpha(&cbt);
+  tt_int_op(alpha_ret, OP_EQ, 1);
+  tt_int_op(Xm, OP_EQ, 205);
+  tt_assert(fabs(cbt.alpha - 1.394401) < CBT_ALPHA_PRECISION);
+
+  cbtnummodes = 3;
+  Xm = circuit_build_times_get_xm(&cbt);
+  alpha_ret = circuit_build_times_update_alpha(&cbt);
+  tt_int_op(alpha_ret, OP_EQ, 1);
+  tt_int_op(Xm, OP_EQ, 117);
+  tt_assert(fabs(cbt.alpha - 0.902313) < CBT_ALPHA_PRECISION);
+
+  cbtnummodes = 5;
+  Xm = circuit_build_times_get_xm(&cbt);
+  alpha_ret = circuit_build_times_update_alpha(&cbt);
+  tt_int_op(alpha_ret, OP_EQ, 1);
+  tt_int_op(Xm, OP_EQ, 146);
+  tt_assert(fabs(cbt.alpha - 1.049032) < CBT_ALPHA_PRECISION);
+
+  cbtnummodes = 10;
+  Xm = circuit_build_times_get_xm(&cbt);
+  alpha_ret = circuit_build_times_update_alpha(&cbt);
+  tt_int_op(alpha_ret, OP_EQ, 1);
+  tt_int_op(Xm, OP_EQ, 800);
+  tt_assert(fabs(cbt.alpha - 4.851754) < CBT_ALPHA_PRECISION);
+
+  cbtnummodes = 15;
+  Xm = circuit_build_times_get_xm(&cbt);
+  alpha_ret = circuit_build_times_update_alpha(&cbt);
+  tt_int_op(alpha_ret, OP_EQ, 1);
+  tt_int_op(Xm, OP_EQ, 800);
+  tt_assert(fabs(cbt.alpha - 4.851754) < CBT_ALPHA_PRECISION);
+
+  cbtnummodes = 20;
+  Xm = circuit_build_times_get_xm(&cbt);
+  alpha_ret = circuit_build_times_update_alpha(&cbt);
+  tt_int_op(alpha_ret, OP_EQ, 1);
+  tt_int_op(Xm, OP_EQ, 800);
+  tt_assert(fabs(cbt.alpha - 4.851754) < CBT_ALPHA_PRECISION);
+
+ done:
+#undef CBT_ALPHA_PRECISION
+  UNMOCK(networkstatus_get_param);
+  circuit_build_times_free_timeouts(&cbt);
+}
+
 static void
 test_circuit_timeout(void *arg)
 {
@@ -373,7 +589,6 @@ test_circuit_timeout(void *arg)
   double timeout1, timeout2;
   or_state_t *state=NULL;
   int i, runs;
-  double close_ms;
   (void)arg;
 
   initialize_periodic_events();
@@ -394,18 +609,11 @@ test_circuit_timeout(void *arg)
   circuit_build_times_initial_alpha(&initial,
                                     CBT_DEFAULT_QUANTILE_CUTOFF/100.0,
                                     timeout0);
-  close_ms = MAX(circuit_build_times_calculate_timeout(&initial,
-                             CBT_DEFAULT_CLOSE_QUANTILE/100.0),
-                 CBT_DEFAULT_TIMEOUT_INITIAL_VALUE);
   do {
     for (i=0; i < CBT_DEFAULT_MIN_CIRCUITS_TO_OBSERVE; i++) {
       build_time_t sample = circuit_build_times_generate_sample(&initial,0,1);
 
-      if (sample > close_ms) {
-        circuit_build_times_add_time(&estimate, CBT_BUILD_ABANDONED);
-      } else {
-        circuit_build_times_add_time(&estimate, sample);
-      }
+      circuit_build_times_add_time(&estimate, sample);
     }
     circuit_build_times_update_alpha(&estimate);
     timeout1 = circuit_build_times_calculate_timeout(&estimate,
@@ -526,127 +734,6 @@ test_circuit_timeout(void *arg)
   testing_disable_deterministic_rng();
 }
 
-/** Test encoding and parsing of rendezvous service descriptors. */
-static void
-test_rend_fns(void *arg)
-{
-  rend_service_descriptor_t *generated = NULL, *parsed = NULL;
-  char service_id[DIGEST_LEN];
-  char service_id_base32[REND_SERVICE_ID_LEN_BASE32+1];
-  const char *next_desc;
-  smartlist_t *descs = smartlist_new();
-  char computed_desc_id[DIGEST_LEN];
-  char parsed_desc_id[DIGEST_LEN];
-  crypto_pk_t *pk1 = NULL, *pk2 = NULL;
-  time_t now;
-  char *intro_points_encrypted = NULL;
-  size_t intro_points_size;
-  size_t encoded_size;
-  int i;
-
-  (void)arg;
-
-  /* Initialize the service cache. */
-  rend_cache_init();
-
-  pk1 = pk_generate(0);
-  pk2 = pk_generate(1);
-  generated = tor_malloc_zero(sizeof(rend_service_descriptor_t));
-  generated->pk = crypto_pk_dup_key(pk1);
-  crypto_pk_get_digest(generated->pk, service_id);
-  base32_encode(service_id_base32, REND_SERVICE_ID_LEN_BASE32+1,
-                service_id, REND_SERVICE_ID_LEN);
-  now = time(NULL);
-  generated->timestamp = now;
-  generated->version = 2;
-  generated->protocols = 42;
-  generated->intro_nodes = smartlist_new();
-
-  for (i = 0; i < 3; i++) {
-    rend_intro_point_t *intro = tor_malloc_zero(sizeof(rend_intro_point_t));
-    crypto_pk_t *okey = pk_generate(2 + i);
-    intro->extend_info =
-      extend_info_new(NULL, NULL, NULL, NULL, NULL, NULL, 0);
-    intro->extend_info->onion_key = okey;
-    crypto_pk_get_digest(intro->extend_info->onion_key,
-                         intro->extend_info->identity_digest);
-    //crypto_rand(info->identity_digest, DIGEST_LEN); /* Would this work? */
-    intro->extend_info->nickname[0] = '$';
-    base16_encode(intro->extend_info->nickname + 1,
-                  sizeof(intro->extend_info->nickname) - 1,
-                  intro->extend_info->identity_digest, DIGEST_LEN);
-    tor_addr_t addr;
-    uint16_t port;
-    /* Does not cover all IP addresses. */
-    tor_addr_from_ipv4h(&addr, crypto_rand_int(65536) + 1);
-    port = 1 + crypto_rand_int(65535);
-    extend_info_add_orport(intro->extend_info, &addr, port);
-    intro->intro_key = crypto_pk_dup_key(pk2);
-    smartlist_add(generated->intro_nodes, intro);
-  }
-  int rv = rend_encode_v2_descriptors(descs, generated, now, 0,
-                                      REND_NO_AUTH, NULL, NULL);
-  tt_int_op(rv, OP_GT, 0);
-  rv = rend_compute_v2_desc_id(computed_desc_id, service_id_base32, NULL,
-                               now, 0);
-  tt_int_op(rv, OP_EQ, 0);
-  tt_mem_op(((rend_encoded_v2_service_descriptor_t *)
-             smartlist_get(descs, 0))->desc_id, OP_EQ,
-            computed_desc_id, DIGEST_LEN);
-  rv = rend_parse_v2_service_descriptor(&parsed, parsed_desc_id,
-               &intro_points_encrypted, &intro_points_size, &encoded_size,
-               &next_desc,
-          ((rend_encoded_v2_service_descriptor_t *)smartlist_get(descs, 0))
-                                        ->desc_str, 1);
-  tt_int_op(rv, OP_EQ, 0);
-  tt_assert(parsed);
-  tt_mem_op(((rend_encoded_v2_service_descriptor_t *)
-         smartlist_get(descs, 0))->desc_id,OP_EQ, parsed_desc_id, DIGEST_LEN);
-  tt_int_op(rend_parse_introduction_points(parsed, intro_points_encrypted,
-                                         intro_points_size),OP_EQ, 3);
-  tt_assert(!crypto_pk_cmp_keys(generated->pk, parsed->pk));
-  tt_int_op(parsed->timestamp,OP_EQ, now);
-  tt_int_op(parsed->version,OP_EQ, 2);
-  tt_int_op(parsed->protocols,OP_EQ, 42);
-  tt_int_op(smartlist_len(parsed->intro_nodes),OP_EQ, 3);
-  for (i = 0; i < smartlist_len(parsed->intro_nodes); i++) {
-    rend_intro_point_t *par_intro = smartlist_get(parsed->intro_nodes, i),
-      *gen_intro = smartlist_get(generated->intro_nodes, i);
-    extend_info_t *par_info = par_intro->extend_info;
-    extend_info_t *gen_info = gen_intro->extend_info;
-    tt_assert(!crypto_pk_cmp_keys(gen_info->onion_key, par_info->onion_key));
-    tt_mem_op(gen_info->identity_digest,OP_EQ, par_info->identity_digest,
-               DIGEST_LEN);
-    tt_str_op(gen_info->nickname,OP_EQ, par_info->nickname);
-    const tor_addr_port_t *a1, *a2;
-    a1 = extend_info_get_orport(gen_info, AF_INET);
-    a2 = extend_info_get_orport(par_info, AF_INET);
-    tt_assert(a1 && a2);
-    tt_assert(tor_addr_eq(&a1->addr, &a2->addr));
-    tt_int_op(a2->port,OP_EQ, a2->port);
-  }
-
-  rend_service_descriptor_free(parsed);
-  rend_service_descriptor_free(generated);
-  parsed = generated = NULL;
-
- done:
-  if (descs) {
-    for (i = 0; i < smartlist_len(descs); i++)
-      rend_encoded_v2_service_descriptor_free_(smartlist_get(descs, i));
-    smartlist_free(descs);
-  }
-  if (parsed)
-    rend_service_descriptor_free(parsed);
-  if (generated)
-    rend_service_descriptor_free(generated);
-  if (pk1)
-    crypto_pk_free(pk1);
-  if (pk2)
-    crypto_pk_free(pk2);
-  tor_free(intro_points_encrypted);
-}
-
 #define ENT(name)                                                       \
   { #name, test_ ## name , 0, NULL, NULL }
 #define FORK(name)                                                      \
@@ -656,10 +743,11 @@ static struct testcase_t test_array[] = {
   ENT(onion_handshake),
   { "bad_onion_handshake", test_bad_onion_handshake, 0, NULL, NULL },
   ENT(onion_queues),
+  ENT(onion_queue_order),
   { "ntor_handshake", test_ntor_handshake, 0, NULL, NULL },
   { "fast_handshake", test_fast_handshake, 0, NULL, NULL },
   FORK(circuit_timeout),
-  FORK(rend_fns),
+  FORK(circuit_timeout_xm_alpha),
 
   END_OF_TESTCASES
 };
@@ -707,6 +795,7 @@ struct testgroup_t testgroups[] = {
   { "crypto/pem/", pem_tests },
   { "crypto/rng/", crypto_rng_tests },
   { "dir/", dir_tests },
+  { "dir/auth/ports/", dirauth_port_tests },
   { "dir/auth/process_descs/", process_descs_tests },
   { "dir/md/", microdesc_tests },
   { "dirauth/dirvote/", dirvote_tests},
@@ -734,15 +823,14 @@ struct testgroup_t testgroups[] = {
   { "hs_ntor/", hs_ntor_tests },
   { "hs_ob/", hs_ob_tests },
   { "hs_service/", hs_service_tests },
-  { "introduce/", introduce_tests },
   { "keypin/", keypin_tests },
-  { "legacy_hs/", hs_tests },
   { "link-handshake/", link_handshake_tests },
   { "mainloop/", mainloop_tests },
   { "metrics/", metrics_tests },
   { "netinfo/", netinfo_tests },
   { "nodelist/", nodelist_tests },
   { "oom/", oom_tests },
+  { "onion-handshake/ntor-v3/", ntor_v3_tests },
   { "oos/", oos_tests },
   { "options/", options_tests },
   { "options/act/", options_act_tests },
@@ -762,12 +850,14 @@ struct testgroup_t testgroups[] = {
   { "relay/" , relay_tests },
   { "relaycell/", relaycell_tests },
   { "relaycrypt/", relaycrypt_tests },
-  { "rend_cache/", rend_cache_tests },
   { "replaycache/", replaycache_tests },
   { "router/", router_tests },
   { "routerkeys/", routerkeys_tests },
   { "routerlist/", routerlist_tests },
   { "routerset/" , routerset_tests },
+#ifdef USE_LIBSECCOMP
+  { "sandbox/" , sandbox_tests },
+#endif
   { "scheduler/", scheduler_tests },
   { "sendme/", sendme_tests },
   { "shared-random/", sr_tests },

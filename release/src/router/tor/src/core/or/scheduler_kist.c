@@ -1,4 +1,4 @@
-/* Copyright (c) 2017-2020, The Tor Project, Inc. */
+/* Copyright (c) 2017-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -465,9 +465,17 @@ MOCK_IMPL(int, channel_should_write_to_kernel,
 MOCK_IMPL(void, channel_write_to_kernel, (channel_t *chan))
 {
   tor_assert(chan);
+
+  /* This is possible because a channel might have an outbuf table entry even
+   * though it has no more cells in its outbuf. Just move on. */
+  size_t outbuf_len = channel_outbuf_length(chan);
+  if (outbuf_len == 0) {
+    return;
+  }
+
   log_debug(LD_SCHED, "Writing %lu bytes to kernel for chan %" PRIu64,
-            (unsigned long)channel_outbuf_length(chan),
-            chan->global_identifier);
+            (unsigned long) outbuf_len, chan->global_identifier);
+
   /* Note that 'connection_handle_write()' may change the scheduler state of
    * the channel during the scheduling loop with
    * 'connection_or_flushed_some()' -> 'scheduler_channel_wants_writes()'.

@@ -40,11 +40,13 @@ def warn(msg):
     print(msg, file=sys.stderr)
 
 def fname_is_c(fname):
-    """ Return true iff 'fname' is the name of a file that we should
-        search for possibly disallowed #include directives. """
-    if fname.endswith(".h") or fname.endswith(".c"):
+    """
+    Return true if 'fname' is the name of a file that we should
+    search for possibly disallowed #include directives.
+    """
+    if fname.endswith((".c", ".h")):
         bname = os.path.basename(fname)
-        return not (bname.startswith(".") or bname.startswith("#"))
+        return not bname.startswith((".", "#"))
     else:
         return False
 

@@ -1,4 +1,4 @@
-/* Copyright (c) 2019-2020, The Tor Project, Inc. */
+/* Copyright (c) 2019-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -22,6 +22,7 @@ void sendme_circuit_consider_sending(circuit_t *circ,
 int sendme_process_circuit_level(crypt_path_t *layer_hint,
                                  circuit_t *circ, const uint8_t *cell_payload,
                                  uint16_t cell_payload_len);
+int sendme_process_circuit_level_impl(crypt_path_t *, circuit_t *);
 int sendme_process_stream_level(edge_connection_t *conn, circuit_t *circ,
                                 uint16_t cell_body_len);
 
@@ -32,7 +33,7 @@ int sendme_circuit_data_received(circuit_t *circ, crypt_path_t *layer_hint);
 /* Update package window functions. */
 int sendme_note_circuit_data_packaged(circuit_t *circ,
                                       crypt_path_t *layer_hint);
-int sendme_note_stream_data_packaged(edge_connection_t *conn);
+int sendme_note_stream_data_packaged(edge_connection_t *conn, size_t len);
 
 /* Record cell digest on circuit. */
 void sendme_record_cell_digest_on_circ(circuit_t *circ, crypt_path_t *cpath);
@@ -72,6 +73,8 @@ STATIC ssize_t build_cell_payload_v1(const uint8_t *cell_digest,
 STATIC bool sendme_is_valid(const circuit_t *circ,
                             const uint8_t *cell_payload,
                             size_t cell_payload_len);
+STATIC bool circuit_sendme_cell_is_next(int deliver_window,
+                                        int sendme_inc);
 
 #endif /* defined(TOR_UNIT_TESTS) */
 

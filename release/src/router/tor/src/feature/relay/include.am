@@ -15,6 +15,7 @@ MODULE_RELAY_SOURCES = 						\
 	src/feature/relay/routermode.c				\
 	src/feature/relay/relay_config.c			\
 	src/feature/relay/relay_handshake.c			\
+	src/feature/relay/relay_metrics.c			\
 	src/feature/relay/relay_periodic.c			\
 	src/feature/relay/relay_sys.c				\
 	src/feature/relay/routerkeys.c				\
@@ -30,6 +31,7 @@ noinst_HEADERS +=					\
 	src/feature/relay/onion_queue.h			\
 	src/feature/relay/relay_config.h		\
 	src/feature/relay/relay_handshake.h		\
+	src/feature/relay/relay_metrics.h			\
 	src/feature/relay/relay_periodic.h		\
 	src/feature/relay/relay_sys.h			\
 	src/feature/relay/relay_find_addr.h		\

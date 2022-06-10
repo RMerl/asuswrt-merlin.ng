@@ -1,7 +1,7 @@
 /* Copyright (c) 2001 Matej Pfajfar.
  * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
- * Copyright (c) 2007-2020, The Tor Project, Inc. */
+ * Copyright (c) 2007-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -650,5 +650,10 @@ void
 guard_get_guardfraction_bandwidth(guardfraction_bandwidth_t *guardfraction_bw,
                                   int orig_bandwidth,
                                   uint32_t guardfraction_percentage);
+
+bool vanguards_lite_is_enabled(void);
+const routerset_t *get_layer2_guards(void);
+void maintain_layer2_guards(void);
+void purge_vanguards_lite(void);
 
 #endif /* !defined(TOR_ENTRYNODES_H) */

@@ -1,4 +1,4 @@
-/* Copyright (c) 2016-2020, The Tor Project, Inc. */
+/* Copyright (c) 2016-2021, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
 /**
@@ -61,15 +61,17 @@
 #include "trunnel/ed25519_cert.h" /* Trunnel interface. */
 #include "feature/hs/hs_descriptor.h"
 #include "core/or/circuitbuild.h"
+#include "core/or/congestion_control_common.h"
+#include "core/or/protover.h"
 #include "lib/crypt_ops/crypto_rand.h"
 #include "lib/crypt_ops/crypto_util.h"
 #include "feature/dirparse/parsecommon.h"
-#include "feature/rend/rendcache.h"
 #include "feature/hs/hs_cache.h"
 #include "feature/hs/hs_config.h"
 #include "feature/nodelist/torcert.h" /* tor_cert_encode_ed22519() */
 #include "lib/memarea/memarea.h"
 #include "lib/crypt_ops/crypto_format.h"
+#include "core/or/versions.h"
 
 #include "core/or/extend_info_st.h"
 
@@ -93,6 +95,7 @@
 #define str_ip_legacy_key "legacy-key"
 #define str_ip_legacy_key_cert "legacy-key-cert"
 #define str_intro_point_start "\n" str_intro_point " "
+#define str_flow_control "flow-control"
 /* Constant string value for the construction to encrypt the encrypted data
  * section. */
 #define str_enc_const_superencryption "hsdir-superencrypted-data"
@@ -139,6 +142,7 @@ static token_rule_t hs_desc_encrypted_v3_token_table[] = {
   T1_START(str_create2_formats, R3_CREATE2_FORMATS, CONCAT_ARGS, NO_OBJ),
   T01(str_intro_auth_required, R3_INTRO_AUTH_REQUIRED, GE(1), NO_OBJ),
   T01(str_single_onion, R3_SINGLE_ONION_SERVICE, ARGS, NO_OBJ),
+  T01(str_flow_control, R3_FLOW_CONTROL, GE(2), NO_OBJ),
   END_OF_TABLE
 };
 
@@ -765,6 +769,13 @@ get_inner_encrypted_layer_plaintext(const hs_descriptor_t *desc)
 
     if (desc->encrypted_data.single_onion_service) {
       smartlist_add_asprintf(lines, "%s\n", str_single_onion);
+    }
+
+    if (congestion_control_enabled()) {
+      /* Add flow control line into the descriptor. */
+      smartlist_add_asprintf(lines, "%s %s %u\n", str_flow_control,
+                             protover_get_supported(PRT_FLOWCTRL),
+                             congestion_control_sendme_inc());
     }
   }
 
@@ -1608,8 +1619,8 @@ decrypt_desc_layer,(const hs_descriptor_t *desc,
  * put in decrypted_out which contains the superencrypted layer of the
  * descriptor. Return the length of decrypted_out on success else 0 is
  * returned and decrypted_out is set to NULL. */
-static size_t
-desc_decrypt_superencrypted(const hs_descriptor_t *desc, char **decrypted_out)
+MOCK_IMPL(STATIC size_t,
+desc_decrypt_superencrypted,(const hs_descriptor_t *desc,char **decrypted_out))
 {
   size_t superencrypted_len = 0;
   char *superencrypted_plaintext = NULL;
@@ -1640,10 +1651,10 @@ desc_decrypt_superencrypted(const hs_descriptor_t *desc, char **decrypted_out)
  * decrypted_out which contains the encrypted layer of the descriptor.
  * Return the length of decrypted_out on success else 0 is returned and
  * decrypted_out is set to NULL. */
-static size_t
-desc_decrypt_encrypted(const hs_descriptor_t *desc,
-                       const curve25519_secret_key_t *client_auth_sk,
-                       char **decrypted_out)
+MOCK_IMPL(STATIC size_t,
+desc_decrypt_encrypted,(const hs_descriptor_t *desc,
+                        const curve25519_secret_key_t *client_auth_sk,
+                        char **decrypted_out))
 {
   size_t encrypted_len = 0;
   char *encrypted_plaintext = NULL;
@@ -2146,7 +2157,7 @@ desc_decode_plaintext_v3(smartlist_t *tokens,
 
 /** Decode the version 3 superencrypted section of the given descriptor desc.
  * The desc_superencrypted_out will be populated with the decoded data. */
-static hs_desc_decode_status_t
+STATIC hs_desc_decode_status_t
 desc_decode_superencrypted_v3(const hs_descriptor_t *desc,
                               hs_desc_superencrypted_data_t *
                               desc_superencrypted_out)
@@ -2260,7 +2271,7 @@ desc_decode_superencrypted_v3(const hs_descriptor_t *desc,
 
 /** Decode the version 3 encrypted section of the given descriptor desc. The
  * desc_encrypted_out will be populated with the decoded data. */
-static hs_desc_decode_status_t
+STATIC hs_desc_decode_status_t
 desc_decode_encrypted_v3(const hs_descriptor_t *desc,
                          const curve25519_secret_key_t *client_auth_sk,
                          hs_desc_encrypted_data_t *desc_encrypted_out)
@@ -2334,6 +2345,23 @@ desc_decode_encrypted_v3(const hs_descriptor_t *desc,
   tok = find_opt_by_keyword(tokens, R3_SINGLE_ONION_SERVICE);
   if (tok) {
     desc_encrypted_out->single_onion_service = 1;
+  }
+
+  /* Get flow control if any. */
+  tok = find_opt_by_keyword(tokens, R3_FLOW_CONTROL);
+  if (tok) {
+    int ok;
+
+    tor_asprintf(&desc_encrypted_out->flow_control_pv, "FlowCtrl=%s",
+                 tok->args[0]);
+    uint8_t sendme_inc =
+      (uint8_t) tor_parse_uint64(tok->args[1], 10, 0, UINT8_MAX, &ok, NULL);
+    if (!ok || !congestion_control_validate_sendme_increment(sendme_inc)) {
+      log_warn(LD_REND, "Service descriptor flow control sendme "
+                        "value is invalid");
+      goto err;
+    }
+    desc_encrypted_out->sendme_inc = sendme_inc;
   }
 
   /* Initialize the descriptor's introduction point list before we start
@@ -2746,6 +2774,7 @@ hs_desc_encrypted_data_free_contents(hs_desc_encrypted_data_t *desc)
                       hs_desc_intro_point_free(ip));
     smartlist_free(desc->intro_points);
   }
+  tor_free(desc->flow_control_pv);
   memwipe(desc, 0, sizeof(*desc));
 }
 
@@ -2957,4 +2986,17 @@ hs_descriptor_clear_intro_points(hs_descriptor_t *desc)
                       ip, hs_desc_intro_point_free(ip));
     smartlist_clear(ips);
   }
+}
+
+/** Return true iff we support the given descriptor congestion control
+ * parameters. */
+bool
+hs_desc_supports_congestion_control(const hs_descriptor_t *desc)
+{
+  tor_assert(desc);
+
+  /* Validate that we support the protocol version in the descriptor. */
+  return desc->encrypted_data.flow_control_pv &&
+         protocol_list_supports_protocol(desc->encrypted_data.flow_control_pv,
+                                         PRT_FLOWCTRL, PROTOVER_FLOWCTRL_CC);
 }

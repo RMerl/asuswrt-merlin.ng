@@ -13,7 +13,7 @@ get_ticks(void) {
 		__asm__ __volatile__("rdtsc" : "=a" (lo), "=d" (hi));
 		return ((uint64_t)lo | ((uint64_t)hi << 32));
 	#else
-		need rdtsc for this compiler
+		#error need rdtsc for this compiler
 	#endif
 #elif defined(OS_SOLARIS)
 	return (uint64_t)gethrtime();
@@ -35,7 +35,7 @@ get_ticks(void) {
 	t = ((uint64_t)t2.tv_usec << 32) | (uint64_t)t2.tv_sec;
 	return t;
 #else
-	need ticks for this platform
+	#error need ticks for this platform
 #endif
 }
 

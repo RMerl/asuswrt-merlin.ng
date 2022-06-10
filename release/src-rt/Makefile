@@ -5158,10 +5158,8 @@ fi;
 	if [ "$(CONNTRACK)" = "y" ] || [ "$(PARENTAL2)" = "y" -o "$(PARENTAL)" = "y" ] && [ "$(CONFIG_BCMWL5)" = "y" ] && [ "$(ARM)" = "y" ]; then \
 		sed -i "/CONFIG_NF_CT_NETLINK/d" $(1); \
 		echo "CONFIG_NF_CT_NETLINK=y" >>$(1); \
-		if [ "$(HND_ROUTER_AX_675X)" = "y" ] || [ "$(HND_ROUTER_AX_6756)" = "y" ]; then \
-			sed -i "/CONFIG_NF_CT_NETLINK_TIMEOUT/d" $(1); \
-			echo "# CONFIG_NF_CT_NETLINK_TIMEOUT is not set" >>$(1); \
-		fi; \
+		sed -i "/CONFIG_NF_CT_NETLINK_TIMEOUT/d" $(1); \
+		echo "# CONFIG_NF_CT_NETLINK_TIMEOUT is not set" >>$(1); \
 	fi; \
 	if [ "$(NFCM)" = "y" ]; then \
 		sed -i "/CONFIG_NF_CT_NETLINK/d" $(1); \

@@ -1612,9 +1612,14 @@ TRACE_PT("3g begin with %s.\n", wan_ifname);
 			update_wan_state(prefix, WAN_STATE_STOPPED, WAN_STOPPED_REASON_SYSTEM_ERR);
 			return;
 		}
-#if defined(TUFAX3000_V2)
+#if defined(TUFAX3000_V2) || defined(RTAXE7800)
 		if (!strcmp(wan_ifname, "eth1"))
 			doSystem("ethswctl -c wan -i %s -o %s", wan_ifname, "enable");
+#endif
+#if defined(XT8PRO) || defined(ET8PRO) || defined(XT8_V2)
+		if (!strcmp(wan_ifname, "eth3")){
+			doSystem("ethswctl -c wan -i %s -o %s", wan_ifname, "enable");
+		}
 #endif
 #ifdef RTCONFIG_IPV6
 #if (defined(RTAX82_XD6) || defined(RTAX82_XD6S))

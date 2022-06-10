@@ -2195,19 +2195,33 @@ var validator = {
 	},
 
 	wlKey: function(key_obj){
-		var wep_type = document.form.wl_wep_x.value;
+		var wep_type = "";
+		if (document.form === undefined) {
+			var wep_type_id = key_obj.id.slice(0, 8) + "x";
+			wep_type = document.getElementById(wep_type_id).value;
+		} else {
+			wep_type = document.form.wl_wep_x.value;
+		}
+
 		var iscurrect = true;
 		var str = "<#JS_wepkey#>";
+		var wl_key_type = '<% nvram_get("wl_key_type"); %>';
 
 		if(wep_type == "0")
 			iscurrect = true;	// do nothing
 		else if(wep_type == "1"){
 			if(key_obj.value.length == 5 && this.string(key_obj)){
-				document.form.wl_key_type.value = 1; /*Lock Add 11.25 for ralink platform*/
+				if (wl_key_type !== "") {
+					document.form.wl_key_type.value = 1; /*Lock Add 11.25 for ralink platform*/
+				}
+
 				iscurrect = true;
 			}
 			else if(key_obj.value.length == 10 && this.hex(key_obj)){
-				document.form.wl_key_type.value = 0; /*Lock Add 11.25 for ralink platform*/
+				if (wl_key_type !== "") {
+					document.form.wl_key_type.value = 0; /*Lock Add 11.25 for ralink platform*/
+				}
+
 				iscurrect = true;
 			}
 			else{
@@ -2218,11 +2232,17 @@ var validator = {
 		}
 		else if(wep_type == "2"){
 			if(key_obj.value.length == 13 && this.string(key_obj)){
-				document.form.wl_key_type.value = 1; /*Lock Add 11.25 for ralink platform*/
+				if (wl_key_type !== "") {
+  					document.form.wl_key_type.value = 1; /*Lock Add 11.25 for ralink platform*/
+				}
+
 				iscurrect = true;
 			}
 			else if(key_obj.value.length == 26 && this.hex(key_obj)){
-				document.form.wl_key_type.value = 0; /*Lock Add 11.25 for ralink platform*/
+				if (wl_key_type !== "") {
+					document.form.wl_key_type.value = 0; /*Lock Add 11.25 for ralink platform*/
+				}
+
 				iscurrect = true;
 			}
 			else{

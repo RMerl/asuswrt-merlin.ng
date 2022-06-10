@@ -126,10 +126,7 @@ exit:
 #ifdef RTCONFIG_BRCM_HOSTAPD
 #define HAPD_TIMEOUT	5
 #define HAPD_RETRY	5
-#define HAPD_ON_PRIMARY_IFACE           0x0     /* run hostapd on primary interface */
-#define HAPD_ON_VIRTUAL_IFACE           0x1     /* run hostapd on virtual interface */
-extern int stop_hostapd_per_radio(int radio_idx);
-extern int start_hostapd_per_radio(int radio_idx);
+extern int restart_hostapd_per_radio_wps_ob(int radio_idx);
 #endif
 
 int
@@ -156,6 +153,7 @@ start_wps_method_ob(void)
 	wps_band = nvram_get_int("wps_band_x");
 
 	if(!HAPD_DISABLED() && !nvram_get_int("wps_enable_x")) {
+		nvram_unset("wps_tmp_prefix");
 #if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
 		if (is_dpsr(wps_band)
 #ifdef RTCONFIG_DPSTA
@@ -170,23 +168,20 @@ start_wps_method_ob(void)
 		if (nvram_get_int("wps_via_vif")) {
 			snprintf(prefix, sizeof(prefix), "wl%d.%d", wps_band,
 				(!nvram_get_int("re_mode")) ? nvram_get_int("obvif_cap_subunit"): nvram_get_int("obvif_re_subunit"));
-			nvram_unset("wps_via_vif");
 		}
 #endif
 		_dprintf("Prepare to trigger WPS upon radio [%d][%s]\n", wps_band, prefix);
-		nvram_set(strcat_r(prefix, "_wps_mode", tmp), "enabled");
+		if(nvram_match(strcat_r(prefix, "_wps_mode", tmp), "enabled")) {
+			goto start;
+		}
 
+		nvram_set(strcat_r(prefix, "_wps_mode", tmp), "enabled");
+		nvram_set("wps_tmp_prefix", prefix);
 		_dprintf("restart hostapd upon radio [%d]\n", wps_band);
 		for (try = 0; try < HAPD_RETRY; try++) {
 			hapd_is_ready = 0;
-			_dprintf("hostapd[%d] stop ... %d\n", wps_band, try);
-			if (stop_hostapd_per_radio(wps_band) == -1) {
-				sleep(1);
-				continue;
-			}
-
-			_dprintf("hostapd[%d] start ... %d\n", wps_band, try);
-			if (start_hostapd_per_radio(wps_band) == -1) {
+			_dprintf("hostapd[%d] restart ... %d\n", wps_band, try);
+			if(restart_hostapd_per_radio_wps_ob(wps_band) != 0) {
 				sleep(1);
 				continue;
 			}
@@ -219,19 +214,17 @@ start_wps_method_ob(void)
 					}
 					pclose(fp);
 				}
-
-				if(!hapd_is_ready)
-					continue;
-				else
+				if(hapd_is_ready)
 					break;
 			}
-
-			if(hapd_is_ready) {
-				start_wps_pbcd();
+			if(hapd_is_ready)
 				break;
-			}
 		}
 	}
+
+start:
+	if(hapd_is_ready && !pids("wps_pbcd"))
+		start_wps_pbcd();
 
 	if(hapd_is_ready)
 #endif
@@ -260,7 +253,8 @@ stop_wps_method_ob(void)
 	stop_wps_method();
 #ifdef RTCONFIG_BRCM_HOSTAPD
 	if(!HAPD_DISABLED() && !nvram_get_int("wps_enable_x")) {
-		stop_wps_pbcd();
+		if(pids("wps_pbcd"))
+			stop_wps_pbcd();
 		wps_band = nvram_get_int("wps_band_x");
 #if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
 		if (is_dpsr(wps_band)
@@ -272,26 +266,18 @@ stop_wps_method_ob(void)
 		else
 #endif
 			snprintf(prefix, sizeof(prefix), "wl%d", wps_band);
-#ifdef RTCONFIG_VIF_ONBOARDING
-		if (nvram_get_int("wps_via_vif")) {
-			snprintf(prefix, sizeof(prefix), "wl%d.%d", wps_band,
-				(!nvram_get_int("re_mode")) ? nvram_get_int("obvif_cap_subunit"): nvram_get_int("obvif_re_subunit"));
-			nvram_unset("wps_via_vif");
+		if(nvram_safe_get("wps_tmp_prefix")) {
+			snprintf(prefix, sizeof(prefix), "%s", nvram_safe_get("wps_tmp_prefix"));
+			nvram_unset("wps_tmp_prefix");
 		}
-#endif
+
 		if(nvram_match(strcat_r(prefix, "_wps_mode", tmp), "enabled")) {
 			nvram_set(strcat_r(prefix, "_wps_mode", tmp), "disabled");
 			_dprintf("restart hostapd upon radio [%d]\n", wps_band);
 			for (try = 0; try < HAPD_RETRY; try++) {
 				hapd_is_ready = 0;
-				_dprintf("hostapd[%d] stop ... %d\n", wps_band, try);
-				if (stop_hostapd_per_radio(wps_band) == -1) {
-					sleep(1);
-					continue;
-				}
-
-				_dprintf("hostapd[%d] start ... %d\n", wps_band, try);
-				if (start_hostapd_per_radio(wps_band) == -1) {
+				_dprintf("hostapd[%d] restart ... %d\n", wps_band, try);
+				if(restart_hostapd_per_radio_wps_ob(wps_band) != 0) {
 					sleep(1);
 					continue;
 				}
@@ -404,7 +390,6 @@ start_wps_method(void)
 #endif
 	strlcpy(ifname, nvram_safe_get(strcat_r(prefix, "ifname", tmp)), sizeof(ifname));
 	wps_sta_pin = nvram_safe_get("wps_sta_pin");
-
 #ifdef RTCONFIG_QTN
 	int retval;
 
@@ -456,6 +441,8 @@ start_wps_method(void)
 					} else {
 						dbg("Err : %s failed to execute %s \n",
 							__FUNCTION__, cmd);
+						if(nvram_safe_get("wps_tmp_prefix"))
+							stop_wps_method_ob();
 					}
 				}
 			}
@@ -476,6 +463,8 @@ start_wps_method(void)
 				} else {
 					dbg("Err : %s failed to execute %s \n",
 						__FUNCTION__, cmd);
+					if(nvram_safe_get("wps_tmp_prefix"))
+						stop_wps_method_ob();
 				}
 			}
 		}

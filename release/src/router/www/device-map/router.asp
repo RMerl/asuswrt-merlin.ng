@@ -1140,10 +1140,12 @@ function validateInput(){
 		id = prefix + '_wep_key';
 		obj = document.getElementById(id);
 		if(obj){
+            var wep_index = variable[prefix+'_key'];
 			if(!validator.wlKey(obj)){
 				obj.focus();
 				return false;
 			}
+            variable[prefix+'_key'+wep_index] = variable[prefix+'_wep_key'];
 		}
 
 		if(system.AMESHSupport && (parent.isSwMode("rt") || parent.isSwMode("ap"))){

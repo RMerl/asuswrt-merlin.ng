@@ -71,6 +71,7 @@ endif
 # declare the init var here. Don't include router's arch related var here due to it will break the multi-arch rules
 ifeq ($(HND_ROUTER),y)
 export BUILD_NAME ?= $(shell echo $(MAKECMDGOALS) | tr a-z A-Z)
+export BUILD_NAME_SEC ?= $(BUILD_NAME)_sec
 export HND_SRC := $(shell pwd | sed 's/\(.*src-rt-.*hnd.*\).*/\1/')
 export BCM_WLIMPL
 ifeq ($(or $(HND_ROUTER_AX_675X),$(HND_ROUTER_AX_6756),$(HND_ROUTER_AX_6710),$(BCM_502L07P2)),y)
@@ -116,7 +117,7 @@ endif
 
 # tmp depend on busybox
 E2FSPROGS := $(if $(filter $(BUSYBOX),busybox-1.17.4),n,y)
-BUILDTOOLSDIR := $(shell pwd | sed 's/release.*/buildtools/g')
+export BUILDTOOLSDIR := $(shell pwd | sed 's/release.*/buildtools/g')
 ifneq ($(LB),)
 LBSTRING := -test
 ifeq ($(ASUSWRTTARGETMAKDIR),)
@@ -201,7 +202,7 @@ endif
 endif
 
 ifeq ($(SECUREBOOT), y)
-$(shell cd $(HND_SRC)/targets/$(PROFILE) && rm -f $(PROFILE) && ln -sf $(PROFILE).$(BUILD_NAME)_sec $(PROFILE) && cd $(HND_SRC))
+$(shell cd $(HND_SRC)/targets/$(PROFILE) && rm -f $(PROFILE) && ln -sf $(PROFILE).$(BUILD_NAME_SEC) $(PROFILE) && cd $(HND_SRC))
 include $(HND_SRC)/targets/$(PROFILE)/$(PROFILE)
 export EXTENDNO := $(EXTENDNO)_sec
 endif
@@ -465,7 +466,14 @@ default:
 
 ifeq ($(HND_ROUTER),y)
 cfe_sysdep:
-	if [ -d $(SRCBASE)/../../../../../../../targets/cfe/sysdeps/$(BUILD_NAME) ]; then \
+	if [ "$(BCM_502L07P2)" = "y" ] && [ -d "$(SRCBASE)/../../../../../../../targets/cfe/sysdeps/$(BUILD_NAME).502l07p2" ]; then \
+		cp -f $(SRCBASE)/../../../../../../../targets/cfe/sysdeps/$(BUILD_NAME).502l07p2/cfe${BRCM_CHIP}.bin $(SRCBASE)/../../../../../../../targets/cfe/. ; \
+		cp -f $(SRCBASE)/../../../../../../../targets/cfe/sysdeps/$(BUILD_NAME).502l07p2/cfe${BRCM_CHIP}ram.bin $(SRCBASE)/../../../../../../../targets/cfe/. ; \
+		cp -f $(SRCBASE)/../../../../../../../targets/cfe/sysdeps/$(BUILD_NAME).502l07p2/cfe${BRCM_CHIP}rom.bin $(SRCBASE)/../../../../../../../targets/cfe/. ; \
+		if [ -f $(SRCBASE)/../../../../../../../targets/cfe/sysdeps/$(BUILD_NAME).502l07p2/precfe${BRCM_CHIP}rom.bin ]; then \
+			cp -f $(SRCBASE)/../../../../../../../targets/cfe/sysdeps/$(BUILD_NAME).502l07p2/precfe${BRCM_CHIP}rom.bin $(SRCBASE)/../../../../../../../targets/cfe/. ; \
+		fi; \
+	elif [ -d $(SRCBASE)/../../../../../../../targets/cfe/sysdeps/$(BUILD_NAME) ]; then \
 		if [ "$(BCM_MFG)" = "y" ] && [ "$(BUILD_NAME)" = "RT-AX82U" ]; then \
 			cp -f $(SRCBASE)/../../../../../../../targets/cfe/sysdeps/$(BUILD_NAME)_mfg/cfe${BRCM_CHIP}.bin $(SRCBASE)/../../../../../../../targets/cfe/. ; \
 			cp -f $(SRCBASE)/../../../../../../../targets/cfe/sysdeps/$(BUILD_NAME)_mfg/cfe${BRCM_CHIP}ram.bin $(SRCBASE)/../../../../../../../targets/cfe/. ; \
@@ -493,15 +501,9 @@ cfe_sysdep:
 				cp -f $(SRCBASE)/../../../../../../../targets/cfe/sysdeps/$(CUSTOM_MODEL)/precfe${BRCM_CHIP}rom.bin $(SRCBASE)/../../../../../../../targets/cfe/. ; \
 			fi; \
 		else \
-			if [ "$(BCM_502L07P2)" = "y" ] && [ -d "$(SRCBASE)/../../../../../../../targets/cfe/sysdeps/$(BUILD_NAME).502l07p2" ]; then \
-				cp -f $(SRCBASE)/../../../../../../../targets/cfe/sysdeps/$(BUILD_NAME).502l07p2/cfe${BRCM_CHIP}.bin $(SRCBASE)/../../../../../../../targets/cfe/. ; \
-				cp -f $(SRCBASE)/../../../../../../../targets/cfe/sysdeps/$(BUILD_NAME).502l07p2/cfe${BRCM_CHIP}ram.bin $(SRCBASE)/../../../../../../../targets/cfe/. ; \
-				cp -f $(SRCBASE)/../../../../../../../targets/cfe/sysdeps/$(BUILD_NAME).502l07p2/cfe${BRCM_CHIP}rom.bin $(SRCBASE)/../../../../../../../targets/cfe/. ; \
-			else \
-				cp -f $(SRCBASE)/../../../../../../../targets/cfe/sysdeps/$(BUILD_NAME)/cfe${BRCM_CHIP}.bin $(SRCBASE)/../../../../../../../targets/cfe/. ; \
-				cp -f $(SRCBASE)/../../../../../../../targets/cfe/sysdeps/$(BUILD_NAME)/cfe${BRCM_CHIP}ram.bin $(SRCBASE)/../../../../../../../targets/cfe/. ; \
-				cp -f $(SRCBASE)/../../../../../../../targets/cfe/sysdeps/$(BUILD_NAME)/cfe${BRCM_CHIP}rom.bin $(SRCBASE)/../../../../../../../targets/cfe/. ; \
-			fi; \
+			cp -f $(SRCBASE)/../../../../../../../targets/cfe/sysdeps/$(BUILD_NAME)/cfe${BRCM_CHIP}.bin $(SRCBASE)/../../../../../../../targets/cfe/. ; \
+			cp -f $(SRCBASE)/../../../../../../../targets/cfe/sysdeps/$(BUILD_NAME)/cfe${BRCM_CHIP}ram.bin $(SRCBASE)/../../../../../../../targets/cfe/. ; \
+			cp -f $(SRCBASE)/../../../../../../../targets/cfe/sysdeps/$(BUILD_NAME)/cfe${BRCM_CHIP}rom.bin $(SRCBASE)/../../../../../../../targets/cfe/. ; \
 			if [ -f $(SRCBASE)/../../../../../../../targets/cfe/sysdeps/$(BUILD_NAME)/precfe${BRCM_CHIP}rom.bin ]; then \
 				cp -f $(SRCBASE)/../../../../../../../targets/cfe/sysdeps/$(BUILD_NAME)/precfe${BRCM_CHIP}rom.bin $(SRCBASE)/../../../../../../../targets/cfe/. ; \
 			fi; \
@@ -639,6 +641,7 @@ endif
 endif
 	@echo '#define RT_SWPJVERNO "$(SWPJVERNO)"' >> router/shared/version.h
 	@echo '#define RT_BUILD_NAME "$(BUILD_NAME)"' >> router/shared/version.h
+	@echo '#define RT_BUILD_NAME_SEC "$(BUILD_NAME_SEC)"' >> router/shared/version.h
 	@echo '#define RT_BUILD_INFO "$(BUILD_TIME) $(BUILD_USER)@$(BUILD_INFO)"' >> router/shared/version.h
 	@echo '#define RT_CUSTOM_MODEL "$(CUSTOM_MODEL)"' >> router/shared/version.h
 	@echo '#endif' >> router/shared/version.h
@@ -2911,7 +2914,15 @@ define RouterOptions
 		echo "RTCONFIG_ISP_OPTUS=y" >>$(1); \
 		sed -i "/RTCONFIG_TR181/d" $(1); \
 		echo "RTCONFIG_TR181=y" >>$(1); \
-	fi;
+		sed -i "/RTCONFIG_TR143_110/d" $(1); \
+		echo "RTCONFIG_TR143_110=y" >>$(1); \
+		sed -i "/RTCONFIG_ACS_SUBNET/d" $(1);\
+		echo "RTCONFIG_ACS_SUBNET=y">>$(1);\
+	fi; \
+	if [ "$(ACS_SUBNET)" = "y" ];then \
+		sed -i "/RTCONFIG_ACS_SUBNET/d" $(1);\
+		echo "RTCONFIG_ACS_SUBNET=y">>$(1);\
+	fi; \
 	if [ "$(TR_ISP)" = "XLNPROVU" ]; then \
 		sed -i "/RTCONFIG_ISP_XLNPROVU/d" $(1); \
 		echo "RTCONFIG_ISP_XLNPROVU=y" >>$(1); \
@@ -3897,6 +3908,10 @@ define RouterOptions
 	if [ "$(SECUREBOOT)" = "y" ]; then \
 		sed -i "/RTCONFIG_SECUREBOOT/d" $(1); \
 		echo "RTCONFIG_SECUREBOOT=y" >>$(1); \
+	fi;
+	if [ "$(BSC_SR)" = "y" ]; then \
+		sed -i "/RTCONFIG_BSC_SR/d" $(1); \
+		echo "RTCONFIG_BSC_SR=y" >>$(1); \
 	fi;
 	$(call platformRouterOptions, $(1))
 endef
@@ -5504,6 +5519,14 @@ fi;
 	if [ "$(BUILD_NAME)" = "RT-AX3000N" ]; then \
 		sed -i "/CONFIG_BCM_MAX_UCAST_FLOWS/d" $(1); \
 		echo "CONFIG_BCM_MAX_UCAST_FLOWS=4096" >>$(1); \
+		sed -i "/CONFIG_FAT_FS/d" $(1); \
+		echo "# CONFIG_FAT_FS is not set" >>$(1); \
+		sed -i "/CONFIG_VFAT_FS/d" $(1); \
+		echo "# CONFIG_VFAT_FS is not set" >>$(1); \
+		sed -i "/CONFIG_HFS_FS/d" $(1); \
+		echo "# CONFIG_HFS_FS is not set" >>$(1); \
+		sed -i "/CONFIG_HFSPLUS_FS/d" $(1); \
+		echo "# CONFIG_HFSPLUS_FS is not set" >>$(1); \
 	fi;
 	if [ "$(BUILD_NAME)" = "RT-AX95Q" ] || [ "$(BUILD_NAME)" = "RT-AXE95Q" ] || [ "$(BUILD_NAME)" = "RT-AX56U" ] || [ "$(BUILD_NAME)" = "RT-AX56_XD4" ]; then \
 		sed -i "/CONFIG_DEBUG_SLAB\b/d" $(1); \
@@ -5616,7 +5639,11 @@ ifneq (,$(wildcard $(LINUXDIR)/../dts/$(BCM_CHIP)/$(BCM_CHIP).dtsi.$(BUILD_NAME)
 	cp -f $(LINUXDIR)/../dts/$(BCM_CHIP)/$(BCM_CHIP).dtsi.$(BUILD_NAME) $(LINUXDIR)/../dts/$(BCM_CHIP)/$(BCM_CHIP).dtsi
 endif
 	-cp -f bootloaders/build/work/generate_bundle_itb_base bootloaders/build/work/generate_bundle_itb
+ifeq ($(SECUREBOOT), y)
+	-sed -i 's/Broadcom BCA image upgrade package tree binary/$(BUILD_NAME_SEC)/g' bootloaders/build/work/generate_bundle_itb
+else
 	-sed -i 's/Broadcom BCA image upgrade package tree binary/$(BUILD_NAME)/g' bootloaders/build/work/generate_bundle_itb
+endif
 ifneq (,$(wildcard $(LINUXDIR)/../dts/$(BCM_CHIP)/$(BCM_CHIP)_pinctrl.dtsi.$(BUILD_NAME)))
 	cp -f $(LINUXDIR)/../dts/$(BCM_CHIP)/$(BCM_CHIP)_pinctrl.dtsi.$(BUILD_NAME) $(LINUXDIR)/../dts/$(BCM_CHIP)/$(BCM_CHIP)_pinctrl.dtsi
 endif

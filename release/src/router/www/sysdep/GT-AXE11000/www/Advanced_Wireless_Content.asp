@@ -3307,15 +3307,36 @@ function handle_smart_connect(value, flag){
 }
 
 function handleAiMeshBackhaul(value){
+	var fh_ap_enabled = '<% nvram_get("fh_ap_enabled"); %>';
 	if(value === '2'){
-		document.querySelector('#fh_connection_hint').style.display = 'none';
-		document.querySelector('#fh_ap_enabled').value = '2';
+		if(meshBackhaulAutoSupport){
+			document.querySelector('#fh_connection_hint').style.display = 'none';
+			document.querySelector('#fh_ap_enabled').value = '2';
+		}
+		
 		if(unii4Support){
-			document.querySelector('#acs_unii4_checkbox').checked =  true;
+			document.querySelector('#acs_unii4_checkbox').checked =  false;
 		}
 	}
 	else if(value === '0'){
-		document.querySelector('#fh_connection_hint').style.display = '';		
+		if(meshBackhaulAutoSupport){
+			document.querySelector('#fh_connection_hint').style.display = '';
+		}
+		
+		if(unii4Support){
+			if(fh_ap_enabled === '1'){
+				document.querySelector('#acs_unii4_checkbox').checked =  false;
+				if(meshBackhaulAutoSupport){
+					document.querySelector('#fh_connection_hint_checkbox').checked = true;
+				}
+			}
+			else{
+				document.querySelector('#acs_unii4_checkbox').checked =  true;
+				if(meshBackhaulAutoSupport){
+					document.querySelector('#fh_connection_hint_checkbox').checked = false;
+				}				
+			}
+		}	
 	}
 }
 
@@ -3336,7 +3357,7 @@ function handleFhConnectionHint(value){
 
 function handleUNII4Hint(value){
 	if(value){
-		alert("The compatibility issue may occur if your clients don't support U-NII-4 channels");
+		alert("<#WLANConfig11b_EChannel_U-NII-4_alert#>");
 	}
 }
 
@@ -3346,7 +3367,7 @@ function gen_fronthaul_ap(value){
 		var get_cfg_clientlist = httpApi.hookGet("get_cfg_clientlist");
 		if(get_cfg_clientlist[0] != undefined){
 			var $selectObj = $("<select/>").attr("id","fh_ap_enabled").addClass("input_option");
-			if(meshBackhaulAutoSupport){
+			if(meshBackhaulAutoSupport || unii4Support) {
 				$selectObj.attr('onChange', 'handleAiMeshBackhaul(this.value)');
 			}
 
@@ -3368,7 +3389,7 @@ function gen_fronthaul_ap(value){
 				var $tdObj = $("<td>");
 				$trObj.append($thObj).append($tdObj.append($selectObj));
 				if(meshBackhaulAutoSupport ){
-					var fh_connect_obj ='<div id="fh_connection_hint" style="color:#FC0;"><input id="fh_connection_hint_checkbox" type="checkbox" onchange="handleFhConnectionHint(this.checked)">Release for fronthaul connection when wireless backhaul is not performing</div>';
+					var fh_connect_obj ='<div id="fh_connection_hint" style="color:#FC0;"><input id="fh_connection_hint_checkbox" type="checkbox" onchange="handleFhConnectionHint(this.checked)"><#AiMesh_WiFi_Backhaul_release_fronthaul#></div>';
 					$trObj.append($thObj).append($tdObj.append(fh_connect_obj));
 				}
 
@@ -3888,6 +3909,7 @@ function handle_auth(obj){
 						<select name="band1_channel" class="input_option" onChange="handle_channel('1', this.value);"></select>
 						<span id="band1_autoChannel" style="display:none;margin-left:10px;">Current Control Channel</span><br>
 						<span id="band1_acsDFS"><input id="band1_acsDFS_checkbox" type="checkbox" <% nvram_match("acs_dfs", "1" , "checked" ); %>><#WLANConfig11b_EChannel_dfs#></span>
+						<div><span id="acs_unii4_field" style="display:none;"><input id="acs_unii4_checkbox" type="checkbox" onClick="handleUNII4Hint(this.checked)" <% nvram_match("acs_unii4", "1", "checked"); %>><#WLANConfig11b_EChannel_U-NII-4#></span></div>
 					</td>
 				</tr>
 				<tr id="band1_extChannel_field">
@@ -4015,8 +4037,7 @@ function handle_auth(obj){
 						<span id="band2_autoChannel" style="display:none;margin-left:10px;">Current Control Channel</span><br>
 						<span id="band2_psc6g" style="">
 							<input id="band2_psc6g_checkbox" type="checkbox" onclick="separateGenChannel('2', document.form.band2_channel.value, document.form.band2_bw.value);" <% nvram_match("psc6g", "1" , "checked" ); %>><#Enable_PSC_Hint#> <#PSC_Faq#>
-						</span>
-						<div><span id="acs_unii4_field" style="display:none;"><input id="acs_unii4_checkbox" type="checkbox" onClick="handleUNII4Hint(this.checked)" <% nvram_match("acs_unii4", "1", "checked"); %>>Auto select channel including U-NII-4 channels</span></div>
+						</span>						
 					</td>
 				</tr>
 				<tr id="band2_extChannel_field" style="">

@@ -2659,3 +2659,100 @@ end:
 }
 #endif	/* MULTIAP */
 #endif	/* CONFIG_HOSTAPD */
+
+#if defined(CONFIG_BCMWL5)
+#define DIV_QUO(num, div) ((num)/div)  /* Return the quotient of division to avoid floats */
+#define DIV_REM(num, div) (((num%div) * 100)/div) /* Return the remainder of division */
+
+double wl_get_txpwr_target_max(char *name)
+{
+        int err;
+        txpwr_target_max_t target_pwr;
+        int i;
+	double ab;
+	int test_val;
+
+        if ((err = wl_iovar_get(name, "txpwr_target_max", (void *)&target_pwr,  sizeof(target_pwr))) < 0) {
+                fprintf(stderr, "Error: txpwr_target failed. Make sure interface is up.\n");
+                return err;
+        }
+
+        if (target_pwr.version != TXPWR_TARGET_VERSION) {
+                fprintf(stderr, "Error: version [%d] mismatch Driver version:%d\n",
+                        TXPWR_TARGET_VERSION, target_pwr.version);
+                return err;
+        }
+
+  test_val = nvram_get_int("tx_test_val");
+  if(test_val > 0) {
+        printf("maximum tx Power Target (chanspec:0x%x):\t", target_pwr.chanspec);
+        for (i = 0; i < target_pwr.rf_cores; i++)
+                printf("%2d.%02d  ",
+                       DIV_QUO(test_val, 4),
+                       DIV_REM(test_val, 4));
+        printf("\n");
+
+	ab = (double)(DIV_QUO(test_val, 4)) + (double)((double)(DIV_REM(test_val, 4))/100);
+	printf("chk ab=%f, txpwr-0=%d\n", ab, test_val);
+
+  } else {
+
+        printf("chk Maximum Tx Power Target (chanspec:0x%x):\t", target_pwr.chanspec);
+        for (i = 0; i < target_pwr.rf_cores; i++)
+                printf("%2d.%02d  ",
+                       DIV_QUO(target_pwr.txpwr[i], 4),
+                       DIV_REM(target_pwr.txpwr[i], 4));
+        printf("\n");
+
+	ab = (double)(DIV_QUO(target_pwr.txpwr[0], 4)) + (double)((double)(DIV_REM(target_pwr.txpwr[0], 4))/100);
+	printf("chk ab=%f, txpwr-0=%d\n", ab, target_pwr.txpwr[0]);
+  }
+
+        return ab;
+}
+
+double get_wifi_maxpower(int target_unit)
+{
+	int unit;
+	char word[100], *next;
+
+	foreach (word, nvram_safe_get("wl_ifnames"), next) {
+		unit = -1;
+		wl_ioctl(word, WLC_GET_INSTANCE, &unit, sizeof(unit));
+		if(unit < 0) {
+			printf("%s get unit fail\n", word);
+			continue;
+		}
+		if(unit == target_unit) {
+			printf("get wifi maxpower of wlif:%s\n", word);
+			return wl_get_txpwr_target_max(word);
+		}
+	}
+}
+
+double get_wifi_5G_maxpower()
+{
+	return get_wifi_maxpower(WL_5G_BAND);
+}
+
+double get_wifi_5GH_maxpower()
+{
+#if defined(RTCONFIG_HAS_5G_2)
+	return get_wifi_maxpower(WL_5G_2_BAND);
+#else
+	return 0;
+#endif
+}
+
+
+double get_wifi_6G_maxpower()
+{
+#if defined(RTCONFIG_WIFI6E)
+	return get_wifi_maxpower(WL_6G_BAND);
+#else
+	return 0;
+#endif
+}
+
+
+#endif

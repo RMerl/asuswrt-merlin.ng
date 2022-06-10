@@ -147,7 +147,8 @@ int get_parameter_from_ini_file(const char *param_name, char *param_val, size_t 
 	return 0;
 }
 
-#if defined(RTCONFIG_SPF11_QSDK) || defined(RTCONFIG_SPF11_1_QSDK)
+#if defined(RTCONFIG_SPF11_QSDK) || defined(RTCONFIG_SPF11_1_QSDK) \
+ || defined(RTCONFIG_SPF11_3_QSDK) || defined(RTCONFIG_SPF11_4_QSDK)
 /* Get one board/default parameter from .ini file and return it's value in string format.
  * If board-specific parameter absent, return default parameter instead.
  * If @param_name is replicated multi-times, first one is returned.
@@ -164,16 +165,43 @@ int get_board_or_default_parameter_from_ini_file(const char *board_name, const c
 {
 	int c, r;
 	char key_name[256];
+	char *p, prefix[2][64];
+#if defined(RTCONFIG_SOC_IPQ8074)
+	unsigned char soc_ver = get_soc_version_major();
+	char ver[sizeof("_v?XXX")];
+#endif
 
 	if (!board_name || !param_name || !param_val || !param_val_size || !ini_fn)
 		return -1;
 
+	strlcpy(prefix[0], board_name, 64);
+	strlcpy(prefix[1], board_name, 64);
+	for (p = prefix[1]; *p != '\0'; ++p) {
+		if (!isdigit(*p))
+			continue;
+
+		*p = '\0';
+		break;
+	}
+#if defined(RTCONFIG_SOC_IPQ8074)
+	snprintf(ver, sizeof(ver), "_v%d", (soc_ver == 1)? 1 : 2);
+	strlcat(prefix[1], ver, 64);
+#endif
+	strlcat(prefix[1], "_default", 64);
+
+	/* INI file has strings with the below format
+	 * <board_name>_<feature>=0/1   or
+	 * <board_name>_<PCI_device_id>_<PCI_Slot_number>_<feature>=0/1
+	 * Append a "_" to the board_name here so that grep would be able to
+	 * differentiate boards with similar names like ap-mp03.1 and
+	 * ap-mp03.1-c2
+	 */
 	for (c = 0; c <= 1; ++c) {
-		/* e.g.
-		 * ap-hk06_v2_enable_daemon_support=0
-		 * ap-hk_v1_default_enable_daemon_support=1
+		/* 1st run: ap-hk01-c2_XXX
+		 * 2nd run: ap-hk_v?_default_XXX (Hawkeye only)
+		 *          ap-cp_default_XXX    (Another SOC)
 		 */
-		snprintf(key_name, sizeof(key_name), "%s_%s%s", board_name, (c == 0)? "" : "default_", param_name);
+		snprintf(key_name, sizeof(key_name), "%s_%s", (c == 0)? prefix[0] : prefix[1], param_name);
 
 		*param_val = '\0';
 		r = get_parameter_from_ini_file(key_name, param_val, param_val_size, ini_fn);
@@ -183,7 +211,7 @@ int get_board_or_default_parameter_from_ini_file(const char *board_name, const c
 
 	return 0;
 }
-#endif	/* RTCONFIG_SPF11_QSDK || RTCONFIG_SPF11_1_QSDK */
+#endif	/* RTCONFIG_SPF11_QSDK || RTCONFIG_SPF11_1_QSDK || RTCONFIG_SPF11_3_QSDK || defined(RTCONFIG_SPF11_4_QSDK) */
 
 /* Get one parameter from .ini file and return it's value in integer format.
  * If @param_name is replicated multi-times, first one is returned.
@@ -2216,5 +2244,24 @@ char *set_steer(const char *mac,int val)
 fail:
 	close(sock);
 	return got_buf;
+}
+#endif
+
+#ifdef RTCONFIG_AMAS
+double get_wifi_maxpower(int band_type)
+{
+	return 0;
+} 
+double get_wifi_5G_maxpower()
+{
+	return 0;
+}
+double get_wifi_5GH_maxpower()
+{
+	return 0;
+}
+double get_wifi_6G_maxpower()
+{
+	return 0;
 }
 #endif

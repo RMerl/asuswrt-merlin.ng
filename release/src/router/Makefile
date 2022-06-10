@@ -1641,6 +1641,7 @@ obj-$(HND_ROUTER) += bpmctl
 obj-$(HND_ROUTER) += dnsspoof
 ifeq ($(RTCONFIG_HND_ROUTER_AX_6756),y)
 obj-$(RTCONFIG_SECUREBOOT) += sotpctl
+obj-$(RTCONFIG_SECUREBOOT) += fscryptctl
 endif
 obj-$(HND_ROUTER) += ethctl
 obj-$(HND_ROUTER) += ethctl_lib
@@ -8738,6 +8739,15 @@ endif
 
 .PHONY : sotpctl
 
+ifneq ($(PREBUILT_BCMBIN),1)
+fscryptctl:
+else
+fscryptctl:
+endif
+	$(eval TOPX_DIR:=$(firstword $(wildcard $(TOP_PLATFORM)/$@) $(wildcard $@)))
+	$(MAKE) -C $(TOPX_DIR)
+
+.PHONY : fscryptctl
 
 ifneq ($(PREBUILT_BCMBIN),1)
 fcctl: fcctl_lib

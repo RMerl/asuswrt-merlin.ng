@@ -43,8 +43,10 @@ body{
 }
 .main-field-bg{
 	margin:20px auto 0;
-	width: 887px;
+	width: 100%;
 	height: 849px;
+	display: flex;
+	justify-content: center;
 }
 .main-field-bg-odm{
 	margin:20px auto 0;
@@ -53,7 +55,6 @@ body{
 	background: url('./images/New_ui/COD_rog_bg_login.png') no-repeat;
 }
 .main-field-padding{
-	width: 887px;
 	margin: 0 auto;	
 }
 .logo-rog{
@@ -67,7 +68,6 @@ body{
 	height: 191px;
 }
 .model-name{
-	width: 420px;
 	height: 100%;
 	font-size: 48px;
 	font-weight: bold;

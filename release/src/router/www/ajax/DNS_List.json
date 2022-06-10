@@ -185,7 +185,7 @@
     "21":{
             "FilterMode": "Privacy-respecting",
             "DNSService": "Quad9",
-            "ServiceIP1": "9.9.9.9",
+            "ServiceIP1": "9.9.9.11",
             "ServiceIP2": "149.112.112.11",
             "Description": "Collects no information about users, and is governed by Swiss privacy law.",
             "url": "https://quad9.net/asus/private",

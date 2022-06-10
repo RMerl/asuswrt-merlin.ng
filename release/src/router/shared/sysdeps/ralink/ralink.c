@@ -374,3 +374,22 @@ phy_port_mapping get_phy_port_mapping(void)
 	return port_mapping;
 }
 #endif
+
+#ifdef RTCONFIG_AMAS
+double get_wifi_maxpower(int band_type)
+{
+	return 0;
+} 
+double get_wifi_5G_maxpower()
+{
+	return 0;
+}
+double get_wifi_5GH_maxpower()
+{
+	return 0;
+}
+double get_wifi_6G_maxpower()
+{
+	return 0;
+}
+#endif

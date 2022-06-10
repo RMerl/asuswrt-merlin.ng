@@ -450,7 +450,7 @@ var tableApi = {
 					//$(".createNewRule").children().find(".inputText").first().focus();
 
 
-					if(wan_proto=="v6plus" && array_ipv6_s46_ports.length > 1){
+					if(wan_proto=="v6plus" && s46_ports_check_flag && array_ipv6_s46_ports.length > 1){
 						if($(".setup_info_icon").length >= 1){
 							$(".setup_info_icon").show();
 							$(".setup_info_icon").click(

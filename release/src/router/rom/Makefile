@@ -407,4 +407,8 @@ ifeq ($(BUILD_NAME), RT-AX82U_V2)
 endif
 endif
 
+ifeq ($(RTAX86U), y)
+	install -m 0755 9873w_b0-b4.bin $(INSTALLDIR)/rom
+endif
+
 .PHONY: dummy

@@ -237,18 +237,18 @@ function showWlHint(updateFlag){
 
 		var ssid_nvram = [htmlEnDeCode.htmlEncode(decodeURIComponent('<% nvram_char_to_ascii("", "wl0_ssid"); %>')), htmlEnDeCode.htmlEncode(decodeURIComponent('<% nvram_char_to_ascii("", "wl1_ssid"); %>')), htmlEnDeCode.htmlEncode(decodeURIComponent('<% nvram_char_to_ascii("", "wl2_ssid"); %>'))];
 		var auth_nvram = [decodeURIComponent('<% nvram_char_to_ascii("", "wl0_auth_mode_x"); %>'), decodeURIComponent('<% nvram_char_to_ascii("", "wl1_auth_mode_x"); %>'), decodeURIComponent('<% nvram_char_to_ascii("", "wl2_auth_mode_x"); %>')];
-		var key_nvram = [decodeURIComponent('<% nvram_char_to_ascii("", "wl0_wpa_psk"); %>'), decodeURIComponent('<% nvram_char_to_ascii("", "wl1_wpa_psk"); %>'), decodeURIComponent('<% nvram_char_to_ascii("", "wl2_wpa_psk"); %>')];
+		var key_nvram = [htmlEnDeCode.htmlEncode(decodeURIComponent('<% nvram_char_to_ascii("", "wl0_wpa_psk"); %>')), htmlEnDeCode.htmlEncode(decodeURIComponent('<% nvram_char_to_ascii("", "wl1_wpa_psk"); %>')), htmlEnDeCode.htmlEncode(decodeURIComponent('<% nvram_char_to_ascii("", "wl2_wpa_psk"); %>'))];
 		var smart_connect_nvram = '<% nvram_get("smart_connect_x"); %>';
 
 		var ssid_param = [htmlEnDeCode.htmlEncode(decodeURIComponent('<% get_ascii_parameter("wl0_ssid"); %>')), htmlEnDeCode.htmlEncode(decodeURIComponent('<% get_ascii_parameter("wl1_ssid"); %>')), htmlEnDeCode.htmlEncode(decodeURIComponent('<% get_ascii_parameter("wl2_ssid"); %>'))];
 		var auth_param = [decodeURIComponent('<% get_ascii_parameter("wl0_auth_mode_x"); %>'), decodeURIComponent('<% get_ascii_parameter("wl1_auth_mode_x"); %>'), decodeURIComponent('<% get_ascii_parameter("wl2_auth_mode_x"); %>')];
-		var key_param = [decodeURIComponent('<% get_ascii_parameter("wl0_wpa_psk"); %>'), decodeURIComponent('<% get_ascii_parameter("wl1_wpa_psk"); %>'), decodeURIComponent('<% get_ascii_parameter("wl2_wpa_psk"); %>')];
+		var key_param = [htmlEnDeCode.htmlEncode(decodeURIComponent('<% get_ascii_parameter("wl0_wpa_psk"); %>')), htmlEnDeCode.htmlEncode(decodeURIComponent('<% get_ascii_parameter("wl1_wpa_psk"); %>')), htmlEnDeCode.htmlEncode(decodeURIComponent('<% get_ascii_parameter("wl2_wpa_psk"); %>'))];
 
 		var applyParam = {
 			unit: decodeURIComponent('<% get_ascii_parameter("wl_unit"); %>'),
 			ssid: htmlEnDeCode.htmlEncode(decodeURIComponent('<% get_ascii_parameter("wl_ssid"); %>')),
 			auth: decodeURIComponent('<% get_ascii_parameter("wl_auth_mode_x"); %>'),
-			key: decodeURIComponent('<% get_ascii_parameter("wl_wpa_psk"); %>'),
+			key: htmlEnDeCode.htmlEncode(decodeURIComponent('<% get_ascii_parameter("wl_wpa_psk"); %>')),
 			smartConnect: decodeURIComponent('<% get_ascii_parameter("smart_connect_x"); %>')
 		}
 

@@ -88,6 +88,8 @@ if(amesh_support && ameshRouter_support) {
 	}
 }
 
+var get_s46_hgw_case = '<% nvram_get("s46_hgw_case"); %>';	//topology 2,3,6
+var s46_ports_check_flag = (get_s46_hgw_case=='3' || get_s46_hgw_case=='6')? true:false;	//true for topology 3||6
 var check_ipv6_s46_ports_hook = (Softwire46_support && wan_proto=="v6plus")? '<%chk_s46_port_range();%>':'0';
 // '{"pf":"1","open_nat":"0","pt":"1","https":"0","ssh":"0","openvpn":"0","ftp":"1","ipsec":"1"}';
 var check_ipv6_s46_ports = "0";

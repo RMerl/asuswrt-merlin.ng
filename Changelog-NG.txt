@@ -2,9 +2,11 @@ Asuswrt-Merlin 386/NG Changelog
 ===============================
 
 386.7 (xx-xxx-xxxx)
-  - UPDATED: Merged with 386_48966 GPL.
+  - UPDATED: Merged with 386_49335 GPL for the RT-AC5300.
+  - UPDATED: Merged with 386_48966 GPL for all other models.
   - UPDATED: openssl to 1.1.1o.
   - UPDATED: haveged to 1.9.18.
+  - UPDATED: openvpn to 2.5.7.
   - CHANGED: dhcpc-event now has a second parameter that will
              contain "4" or "6" depending on the IP protocol of
              the event (dave14305)
@@ -12,6 +14,8 @@ Asuswrt-Merlin 386/NG Changelog
            and GT-AX6000.
   - FIXED: CVE-2022-0934 in dnsmasq (backport)
   - FIXED: CVE-2022-26376 (reported by Cisco Talos, fixed by Asus)
+  - FIXED: DNSFilter client list was limited to around 10 clients
+           on some models.
 
 
 386.6 (20-Apr-2022)

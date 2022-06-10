@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019, Broadcom. All Rights Reserved.
+# Copyright (C) 2021, Broadcom. All Rights Reserved.
 #
 # Permission to use, copy, modify, and/or distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above
@@ -29,10 +29,7 @@ ALL_OBJS = emfu.o emfu_linux.o
 CCFLAGS = -Os -Wall -I$(SRCBASE)/include ${WLAN_StdIncPathA} ${WLAN_ComponentIncPathA} -I$(SRCBASE)/common/include -I$(SRCBASE_ROUTER)/shared -I$(SRCBASE)/../components/router/shared/ -I$(HND_SRC)/router-sysdep/bcmdrv/include/emf/emf/
 
 ifneq ($(wildcard ./prebuilt),)
-prebuilt_files = $(shell find . -name *$(PREBUILT_TAIL) -print)
-
 all:
-	$(foreach f,$(prebuilt_files),$(shell cp -pf $(f) $(subst _saved-$(shell echo $(PREBUILT_TAIL)),,$(f))))
 	-cp prebuilt/emf emf
 else
 all: emf

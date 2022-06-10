@@ -97,34 +97,18 @@ DSLCPE_WLAN_VERSION=cpe$(BRCM_VERSION).$(BRCM_VERSION)$(BRCM_RELEASE).$(DSLCPE_W
 CFLAGS += -DDSLCPE_WLAN_VERSION=\"$(DSLCPE_WLAN_VERSION)\"
 CFLAGS += $(BRCM_WERROR_CFLAGS)
 
-# WLMNGR2_APP = wlmngr2
+WLMNGR2_APP = wlmngr2
 
 
 WLLIB_APPS = nvram wlctl dhdctl
-# WLLIBS += nvram bcmwlcrypto bcmwlshared bshared $(WLLIB_APPS)
 WLLIBS += nvram bcmwlshared bshared $(WLLIB_APPS)
 
 
 ROUTER_SHARED_DIR = $(BUILD_DIR)/bcmdrivers/broadcom/net/wl/bcm9$(BRCM_CHIP)$(WL_SRC_BASE)/router/shared
 BCMCRYPTO_DIR = $(BUILD_DIR)/bcmdrivers/broadcom/net/wl/bcm9$(BRCM_CHIP)$(WL_SRC_BASE)/bcmcrypto
 
-WLANAPP_DIRS = acsd epittcp libupnp wps ses wapi ias hspot_ap bsd ssd toad eventd aspmd appeventd utils dhd_monitor
-
-ifeq ($(strip $(BRCM_IKOS)),)
-ifneq ($(strip $(BUILD_BRCM_UNFWLCFG)),)
-WLANAPP_DIRS += wlssk 
-ifneq ($(strip $(BUILD_BRCM_CMS)),)
-WLANAPP_DIRS += wlDiag
-endif
-export BUILD_BRCM_UNFWLCFG
-else
-WLANAPP_DIRS += $(WLMNGR2_APP)
-# WLLIBS += wlcsm_dm
-EXTRA_LDFLAGS +=  -lwlcsm
-export EXTRA_LDFLAGS
-endif
-endif #BRCM_IKOS
-
+#WLANAPP_DIRS = acsd epittcp libupnp wps ses wapi ias hspot_ap bsd ssd toad eventd aspmd appeventd utils dhd_monitor
+WLANAPP_DIRS = acsd wps ses wapi ias hspot_ap bsd ssd toad eventd aspmd appeventd
 WLANAPP_DIRS += util scripts
 #
 # We need to declare these directory names as phony targets,
@@ -142,18 +126,9 @@ endif
 
 $(WLANAPP_DIRS): $(WLLIBS)
 
-ifneq ($(PREBUILT_BCMBIN),1)
-ifneq ($(strip $(WL_BASE)),)
-#when it is impl22 or above, it will instal www for wirless router. 
-#all: setuplink $(WLANAPP_DIRS) www_install
-all: setuplink $(WLANAPP_DIRS)
-else
-all: $(WLANAPP_DIRS)
-endif
-else
 all:
-	-cp -f $(TOP_PLATFORM)/wlan/nvram/$(PRBM_DIR)/libnvram.so nvram/
-endif
+	@echo done
+
 install:
 	@echo done
 
@@ -367,13 +342,9 @@ endif
 export BUILD_NVRAM=dynamic
 ifneq ($(strip $(BUILD_NVRAM)),)
 nvram:
-ifneq ($(PREBUILT_BCMBIN),1)
-	$(MAKE) -C $@ $(BUILD_NVRAM)
-else
-	-cp -f $(TOP_PLATFORM)/wlan/nvram/$(PRBM_DIR)/libnvram.so nvram/
-	-cp -f $(TOP_PLATFORM)/wlan/nvram/$(PRBM_DIR)/nvram nvram/
+	-cp -f $(TOP_PLATFORM)/wlan/nvram/prebuilt/libnvram.so nvram/
+	-cp -f $(TOP_PLATFORM)/wlan/nvram/prebuilt/nvram nvram/
 	$(MAKE) -C $@ all
-endif
 else
 nvram:
 	@echo "skipping $@ (not configured)"
@@ -398,12 +369,8 @@ wlssk:
 	$(MAKE) -C $@ all install
 
 util:
-ifneq ($(PREBUILT_BCMBIN),1)
-	$(MAKE) -C $@ all install
-else
-	-cp -f $(TOP_PLATFORM)/wlan/util/$(PRBM_DIR)/nvramUpdate util/
+	-cp -f $(TOP_PLATFORM)/wlan/util/prebuilt/nvramUpdate util/
 	$(MAKE) -C $@ install
-endif
 
 wlDiag:
 	$(MAKE) -C $@ all install

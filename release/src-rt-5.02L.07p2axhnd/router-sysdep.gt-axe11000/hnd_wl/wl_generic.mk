@@ -23,17 +23,15 @@ uniq = $(if $1,$(firstword $1) $(call uniq,$(filter-out $(firstword $1),$1)))
     DPSTASRC := ../dpsta
 
 # abspath removes any '..' in the path as well
-#WLSRC_BASE := $(abspath $(src)/$(SRCBASE_OFFSET))
-#ROUTER_BASE := $(abspath $(src)/$(ROUTERBASE_OFFSET))
 WLSRC_BASE := $(src)/$(SRCBASE_OFFSET)
 ROUTER_BASE := $(src)/$(ROUTERBASE_OFFSET)
 CLM_FILE_SUFFIX := _nic
 CLM_FILE_SUFFIX_NIC = _nic
 
-ifeq ($(PREBUILT_EXTRAMOD),1)
-REBUILD_WL_MODULE=0
-else
 REBUILD_WL_MODULE=$(shell if [ -f "$(WLSRC_BASE)/wl/sys/wlc.c" -a "$(REUSE_PREBUILT_WL)" != "1" ]; then echo 1; else echo 0; fi)
+
+ifneq ($(wildcard $(src)/$(HND_DIR)/../hnd_extra/prebuilt/wl.o),)
+REBUILD_HND_MODULE=0
 endif
 
 $(info "Rebuild WL Module: $(REBUILD_WL_MODULE) ----")
@@ -55,6 +53,10 @@ ifeq ($(REBUILD_WL_MODULE),1)
 
     # include router config to source MFP, HSPOT & WNM settings
     include $(ROUTER_BASE)/../router/.config
+
+    ifdef RTCONFIG_BCM_WIFI_NIC_DEBUG
+        KBUILD_CFLAGS += -g -DBCMDBG -DBCMDBG_DUMP
+    endif
 
     KBUILD_CFLAGS += -I$(ROUTER_BASE)/bcmdrv/include
     KBUILD_CFLAGS += -DBCMDRIVER -Dlinux
@@ -80,13 +82,6 @@ endif
     ifdef CONFIG_CR4_OFFLOAD
         WLOFFLD=1
     endif
-    ifdef RTCONFIG_BCMARM
-        MFP=1
-    endif
-    ifdef RTCONFIG_BRCM_HOSTAPD
-        WL_AP_CFG80211=1
-        WL_SAE=1
-    endif
     include $(WLCFGDIR)/$(WLCONFFILE)
 
     # Disable ROUTER_COMA in ARM router for now.
@@ -98,7 +93,7 @@ endif
     ifeq ($(BCMOTP),1)
 	BCMOTP_SHARED_SYMBOLS_USE=1
     endif
-#endif // endif
+#endif
 
     ifeq ($(WLAUTOD11SHM),1)
         # Include makefile to build d11 shm files
@@ -206,6 +201,10 @@ ifneq ($(strip $(BUILD_HND_NIC)),)
     # on BCA_HNDROUTER platforms
     EXTRA_CFLAGS += -DBCA_HNDNIC
 endif
+ifneq ($(strip $(BUILD_OPENWRT_NATIVE)),)
+    # For native OpenWrt we need stricter cfg80211 API compliance
+    EXTRA_CFLAGS += -DWL_CFG80211_STRICT
+endif
     ifneq ("$(CONFIG_CC_OPTIMIZE_FOR_SIZE)","y")
          EXTRA_CFLAGS += -finline-limit=2048
     endif
@@ -226,7 +225,7 @@ endif
 	ifeq ($(WLTEST),1)
 		EXTRA_CFLAGS += -DBCMDBG_PHYDUMP
 	endif
-#endif // endif
+#endif
 
     # allow C99/C11 extensions such as variable declaration in for loop
     EXTRA_CFLAGS += -std=gnu99

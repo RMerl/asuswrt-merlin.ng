@@ -1,7 +1,7 @@
 /*
  * Broadcom CSI Monitor Sample Application
  *
- * Copyright (C) 2020, Broadcom. All Rights Reserved.
+ * Copyright (C) 2021, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -55,7 +55,7 @@
 
 #if !defined(NETLINK_CSIMON)
 #define NETLINK_CSIMON 23	/* netlink subsystem for CSI Monitor */
-#endif // endif
+#endif
 #define CSIMON_GRP_BIT 2	/* Multicast group bit for CSI record transfer */
 
 /* MAX_PAYLOAD contains CSI record whihc is made up of CSI report (up to 1952B)

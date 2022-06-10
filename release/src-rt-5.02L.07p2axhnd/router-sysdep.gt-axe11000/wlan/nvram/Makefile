@@ -121,11 +121,7 @@ ifeq ($(strip $(WLCSM_DEBUG)),1)
 all:  libnvram nvram  wlcsmdbg wldbg wltest $(KERNEL_NVRAM_FILE_NAME)
 else
 ifeq ($(strip $(BUILD_BRCM_UNFWLCFG)),)
-ifneq ($(PREBUILT_BCMBIN),1)
-all:  libnvram nvram 
-else
 all:
-endif
 else
 all:
 endif
@@ -183,26 +179,11 @@ install:
 
 dynamic: all
 
-ifeq ($(wildcard ./*.c),)
 libnvram:
 	cp -f ./prebuilt/libnvram.so .
-else
-libnvram: nvram_shared.o brcm_generic_lock.o $(WLCSM_LIB)
-	$(LD) -shared -soname libnvram.so -o libnvram.so nvram_shared.o brcm_generic_lock.o  -L$(LIBDIR) $(WLCSM_LIB) -lc -lpthread
-	install -m 755 libnvram.so $(INSTALL_DIR)/lib
-endif
 
-ifeq ($(wildcard ./*.c),)
 nvram:
 	cp -f ./prebuilt/nvram .
-else
-nvram: libnvram main.o $(WLCSM_LIB)
-ifneq ($(strip $(BUILD_BRCM_CMS)),)
-	$(CC) -o $@ main.o -s -Os -fomit-frame-pointer $(CMS_LIB_PATH) -L$(LIBDIR) -L$(EXTRALIBDIR) -lc -lgcc_s -lpthread $(LIBS)
-else
-	$(CC) -o $@ main.o -s -Os -fomit-frame-pointer -L$(LIBDIR) -L$(EXTRALIBDIR) -lc -lgcc_s -lpthread $(LIBS) $(WLCSM_LIB)
-endif
-endif
 
 clean:
 	-rm -f *.o

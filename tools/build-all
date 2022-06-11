@@ -193,16 +193,16 @@ if [ "$BAX56" = "y" ]; then
 	clean_tree amng.ax56 release/src-rt-5.02axhnd.675x rt-ax56u $BRANCH_AX56
 fi
 if [ "$BAX86" = "y" ]; then
-	clean_tree amng.ax86 release/src-rt-5.02p1axhnd.675x rt-ax86u $BRANCH_AX86
+	clean_tree amng.ax86 release/src-rt-5.02L.07p2axhnd rt-ax86u $BRANCH_AX86
 fi
 if [ "$BAX68" = "y" ]; then
-        clean_tree amng.ax68 release/src-rt-5.02p1axhnd.675x rt-ax68u $BRANCH_AX68
+        clean_tree amng.ax68 release/src-rt-5.02L.07p2axhnd rt-ax68u $BRANCH_AX68
 fi
 if [ "$BGTAXE11000" = "y" ]; then
-	clean_tree amng.gtaxe11000 release/src-rt-5.02p1axhnd.675x gt-axe11000 $BRANCH_GTAXE11000
+	clean_tree amng.gtaxe11000 release/src-rt-5.02L.07p2axhnd gt-axe11000 $BRANCH_GTAXE11000
 fi
 if [ "$BAC68V4" = "y" ]; then
-        clean_tree amng.ac68v4 release/src-rt-5.02p1axhnd.675x rt-ac68u_v4 $BRANCH_AC68V4
+        clean_tree amng.ac68v4 release/src-rt-5.02L.07p2axhnd rt-ac68u_v4 $BRANCH_AC68V4
 fi
 if [ "$BGTAX6000" = "y" ]; then
 	clean_tree amng.gtax6000 release/src-rt-5.04axhnd.675x gt-ax6000 $BRANCH_GTAX6000
@@ -241,11 +241,11 @@ if [ "$BGTAX11000" = "y" ]; then
 fi
 
 if [ "$BGTAXE11000" = "y" ]; then
-	build_fw amng.gtaxe11000/release/src-rt-5.02p1axhnd.675x gt-axe11000 &
+	build_fw amng.gtaxe11000/release/src-rt-5.02L.07p2axhnd gt-axe11000 &
 fi
 
 if [ "$BAC68V4" = "y" ]; then
-	build_fw amng.ac68v4/release/src-rt-5.02p1axhnd.675x rt-ac68u_v4 &
+	build_fw amng.ac68v4/release/src-rt-5.02L.07p2axhnd rt-ac68u_v4 &
 fi
 
 if [ "$BAX58" = "y" ]; then
@@ -257,11 +257,11 @@ if [ "$BAX56" = "y" ]; then
 fi
 
 if [ "$BAX86" = "y" ]; then
-	build_fw amng.ax86/release/src-rt-5.02p1axhnd.675x rt-ax86u &
+	build_fw amng.ax86/release/src-rt-5.02L.07p2axhnd rt-ax86u &
 fi
 
 if [ "$BAX68" = "y" ]; then
-	build_fw amng.ax68/release/src-rt-5.02p1axhnd.675x rt-ax68u &
+	build_fw amng.ax68/release/src-rt-5.02L.07p2axhnd rt-ax68u &
 fi
 
 if [ "$BAC68" = "y" ]; then

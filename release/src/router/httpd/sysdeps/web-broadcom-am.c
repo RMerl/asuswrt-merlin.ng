@@ -682,7 +682,7 @@ sta_list:
 					line = strtok(arplistptr, "\n");
 					while (line) {
 						if ( (sscanf(line,"%15s %*s %x %17s", ipentry, &flagentry, macentry) == 3) &&
-						     (!strcasecmp(macentry, ether_etoa((void *)&auth->ea[i], ea))) &&
+						     (!strcasecmp(macentry, ether_etoa((void *)&auth->ea[ii], ea))) &&
 						     (flagentry != 0) ) {
 						         found = 1;
 						         break;

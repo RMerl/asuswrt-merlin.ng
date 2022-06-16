@@ -19235,10 +19235,6 @@ int service_main(int argc, char *argv[])
 
 void setup_leds()
 {
-	int model;
-
-	model = get_model();
-
 /*** Disable ***/
 	if (nvram_get_int("led_disable") == 1) {
 		setAllLedOff();
@@ -19246,12 +19242,6 @@ void setup_leds()
 #ifdef RTCONFIG_USB
 		stop_usbled();
 #endif
-#if defined(RTCONFIG_RGBLED)
-		nvram_set_int("aurargb_enable", 0);
-		nvram_commit();
-		start_aurargb();
-#endif
-
 	} else {
 /*** Enable ***/
 		nvram_set("AllLED", "1");
@@ -19380,11 +19370,6 @@ void setup_leds()
 #ifdef RTCONFIG_LOGO_LED
 		led_control(LED_LOGO, LED_ON);
 #endif
-#if defined(RTCONFIG_RGBLED)
-		nvram_set_int("aurargb_enable", 1);
-		nvram_commit();
-		start_aurargb();
-#endif
 #ifdef GTAX6000
 		AntennaGroupReset(LED_ON);
 		setAntennaGroupOn();
@@ -19402,6 +19387,9 @@ void setup_leds()
 #endif
 
 	}
+#if defined(RTCONFIG_RGBLED)
+	start_aurargb();
+#endif
 }
 
 #if !defined(HND_ROUTER)

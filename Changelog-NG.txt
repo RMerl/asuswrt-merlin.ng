@@ -22,6 +22,10 @@ Asuswrt-Merlin 386/NG Changelog
   - FIXED: CVE-2022-26376 (reported by Cisco Talos, fixed by Asus)
   - FIXED: DNSFilter client list was limited to around 10 clients
            on some models.
+  - FIXED: AuraRGB could be re-enabled on reboot if it was
+           previously disabled.
+  - FIXED: Wifi LEDs wouldn't turn back on when re-enabling
+           LEDs on the RT-AX86S.
 
 
 386.6 (20-Apr-2022)

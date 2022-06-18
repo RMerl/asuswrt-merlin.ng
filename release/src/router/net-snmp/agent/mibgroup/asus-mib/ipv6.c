@@ -91,6 +91,10 @@ struct variable7 ipv6_variables[] = {
 {IPV6DNSSERVER3,  ASN_OCTET_STR,  RWRITE,  var_ipv6, 2,  { 4,4 }},
 #define ENABLEROUTERADVERTISEMENT		30
 {ENABLEROUTERADVERTISEMENT,  ASN_INTEGER,  RWRITE,  var_ipv6, 2,  { 5,1 }},
+#define IPV6CUSTOMDNSENABLE		31
+{IPV6CUSTOMDNSENABLE,  ASN_INTEGER,  RWRITE,  var_ipv6, 2,  { 6,1 }},
+#define IPV6DHCPDNSSERVER		32
+{IPV6DHCPDNSSERVER,  ASN_OCTET_STR,  RWRITE,  var_ipv6, 2,  { 6,2 }},
 
 };
 /*    (L = length of the oidsuffix) */
@@ -457,6 +461,30 @@ var_ipv6(struct variable *vp,
         if(nmp_safe_get("ipv6_dns3") != NULL)
         {
             strcpy(tmpstr, nmp_safe_get("ipv6_dns3"));
+            tmpstr[strlen(tmpstr)] = '\0';
+            *var_len = strlen( tmpstr );
+            return ( u_char * ) tmpstr; 
+        }
+        return NULL;
+    case IPV6CUSTOMDNSENABLE:
+        *write_method = write_ipv6CustomDNSEnable
+        if(nmp_safe_get("ipv6_customdnsenable") != NULL)
+        {
+            tmpval = nmp_get_int("ipv6_customdnsenable");
+            if(tmpval == 1) /* enable */
+                tmpval = 1;
+            else if(tmpval == 0) /* disable */
+                tmpval = 2;
+            *var_len = sizeof( long );
+            return ( u_char * ) &tmpval;
+        }
+        return NULL;
+    case IPV6DHCPDNSSERVER:
+        *write_method = write_ipv6DHCPDNSServer;
+        memset(tmpstr, 0, SPRINT_MAX_LEN);
+        if(nmp_safe_get("ipv6_dhcp_dns") != NULL)
+        {
+            strcpy(tmpstr, nmp_safe_get("ipv6_dhcp_dns"));
             tmpstr[strlen(tmpstr)] = '\0';
             *var_len = strlen( tmpstr );
             return ( u_char * ) tmpstr; 
@@ -2147,6 +2175,124 @@ write_ipv6DNSServer3(int      action,
     return SNMP_ERR_NOERROR;
 }
 
+int
+write_ipv6CustomDNSEnable(int      action,
+            u_char   *var_val,
+            u_char   var_val_type,
+            size_t   var_val_len,
+            u_char   *statP,
+            oid      *name,
+            size_t   name_len)
+{
+    long value;
+
+    value = * (long *) var_val;
+
+    switch ( action ) {
+        case RESERVE1:
+          if (var_val_type != ASN_INTEGER) {
+              fprintf(stderr, "write to ipv6CustomDNSEnable not ASN_INTEGER\n");
+              return SNMP_ERR_WRONGTYPE;
+          }
+          if (var_val_len > sizeof(long)) {
+              fprintf(stderr,"write to ipv6CustomDNSEnable: bad length\n");
+              return SNMP_ERR_WRONGLENGTH;
+          }
+          if (*(long *)var_val < 1 || *(long *)var_val > 2){
+              fprintf ( stderr,"write to ipv6CustomDNSEnable: value out of range\n" );
+              return SNMP_ERR_WRONGVALUE;
+          }
+          break;
+
+        case RESERVE2:
+          break;
+
+        case FREE:
+             /* Release any resources that have been allocated */
+          break;
+
+        case ACTION:
+             /*
+              * The variable has been stored in 'value' for you to use,
+              * and you have just been asked to do something with it.
+              * Note that anything done here must be reversable in the UNDO case
+              */
+             if(value >= 1 && value <= 2) {
+                if(value == 1)
+                    nmp_set("ipv6_customdnsenable", "1");
+                else if(value == 2)
+                    nmp_set("ipv6_customdnsenable", "0");
+             }
+          break;
+
+        case UNDO:
+             /* Back out any changes made in the ACTION case */
+          break;
+
+        case COMMIT:
+             /*
+              * Things are working well, so it's now safe to make the change
+              * permanently.  Make sure that anything done here can't fail!
+              */
+          break;
+    }
+    return SNMP_ERR_NOERROR;
+}
+
+int
+write_ipv6DHCPDNSServer(int      action,
+            u_char   *var_val,
+            u_char   var_val_type,
+            size_t   var_val_len,
+            u_char   *statP,
+            oid      *name,
+            size_t   name_len)
+{
+    memset(tmpstr, 0, SPRINT_MAX_LEN);
+
+    switch ( action ) {
+        case RESERVE1:
+          if (var_val_type != ASN_OCTET_STR) {
+              fprintf(stderr, "write to ipv6DHCPDNSServer not ASN_OCTET_STR\n");
+              return SNMP_ERR_WRONGTYPE;
+          }
+          if ( var_val_len > 39 ) {
+              fprintf(stderr, "write to ipv6DHCPDNSServer: bad length\n");
+              return SNMP_ERR_WRONGLENGTH;
+          }
+          break;
+
+        case RESERVE2:
+          break;
+
+        case FREE:
+             /* Release any resources that have been allocated */
+          break;
+
+        case ACTION:
+             /*
+              * The variable has been stored in 'value' for you to use,
+              * and you have just been asked to do something with it.
+              * Note that anything done here must be reversable in the UNDO case
+              */
+            strncpy(tmpstr, (u_char *)var_val, var_val_len); 
+            tmpstr[var_val_len] = '\0';
+            nmp_set("ipv6_dhcp_dns", tmpstr);      
+          break;
+
+        case UNDO:
+             /* Back out any changes made in the ACTION case */
+          break;
+
+        case COMMIT:
+             /*
+              * Things are working well, so it's now safe to make the change
+              * permanently.  Make sure that anything done here can't fail!
+              */
+          break;
+    }
+    return SNMP_ERR_NOERROR;
+}
 
 int
 write_enableRouterAdvertisement(int      action,

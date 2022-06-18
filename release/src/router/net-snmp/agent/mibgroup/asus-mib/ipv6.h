@@ -35,6 +35,8 @@ FindVarMethod var_ipv6;
     WriteMethod write_ipv6DNSServer1;
     WriteMethod write_ipv6DNSServer2;
     WriteMethod write_ipv6DNSServer3;
+    WriteMethod write_ipv6CustomDNSEnable;
+    WriteMethod write_ipv6DHCPDNSServer;
     WriteMethod write_enableRouterAdvertisement;
 
 #endif /* IPV6_H */

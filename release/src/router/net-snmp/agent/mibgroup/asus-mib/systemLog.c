@@ -416,6 +416,33 @@ var_systemLog(struct variable *vp,
             return ( u_char * )tmpstr;   
         }  
         return NULL;
+    case IPV6DNSADDRESS:
+        if(strcmp(nmp_get("ipv6_service"), "disabled"))
+        {
+            memset(tmpstr, 0x0, SPRINT_MAX_LEN_SYSLOG);
+            if (!strcmp(nmp_get("ipv6_service"), "dhcp6") &&
+                nmp_get_int("ipv6_customdnsenable")) {
+                sprintf(tmpstr, "%s", nmp_safe_get("ipv6_get_dns"));
+            } 
+            else
+            {
+                char nvname[sizeof("ipv6_dnsXXX")];
+                char *next = tmpstr;
+                char *wan_dns;
+                int i;                
+
+                tmpstr[0] = '\0';
+                for (i = 1; i <= 3; i++) {
+                    snprintf(nvname, sizeof(nvname), "ipv6_dns%d", i);
+                    wan_dns = nmp_safe_get(nvname);
+                    if (*wan_dns)
+                        next += sprintf(next, *tmpstr ? " %s" : "%s", wan_dns);
+                }
+            }  
+            *var_len = strlen(tmpstr);
+            return ( u_char * )tmpstr;   
+        }  
+        return NULL;
     default:
       ERROR_MSG("");
     }

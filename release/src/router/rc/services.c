@@ -1864,7 +1864,12 @@ void start_dnsmasq(void)
 #endif
 
 		/* DNS server */
-		fprintf(fp, "dhcp-option=lan,option6:23,[::]\n");
+		value = nvram_safe_get("ipv6_dhcp_dns");
+		if (nvram_match("ipv6_customdnsenable","1") && *value) {
+			fprintf(fp, "dhcp-option=lan,option6:23,[%s]\n", value);
+		} else {
+			fprintf(fp, "dhcp-option=lan,option6:23,[::]\n");
+		}
 
 		/* LAN Domain */
 		value = nvram_safe_get("lan_domain");

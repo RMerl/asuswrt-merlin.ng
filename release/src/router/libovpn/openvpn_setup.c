@@ -975,6 +975,7 @@ void ovpn_setup_client_fw(ovpn_cconf_t *cconf, int unit) {
 
 	fprintf(fp, "#!/bin/sh\n");
 	fprintf(fp, "iptables -I OVPNCF -i %s -j %s\n", cconf->if_name, (cconf->fw ? "DROP" : "ACCEPT"));
+	fprintf(fp, "iptables -I OVPNCI -i %s -j %s\n", cconf->if_name, (cconf->fw ? "DROP" : "ACCEPT"));
 
 #if !defined(HND_ROUTER)
 	// Setup traffic accounting

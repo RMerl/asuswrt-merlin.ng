@@ -1289,8 +1289,7 @@ circuit_finish_handshake(origin_circuit_t *circ,
          * don't seem able to do it, so there is some magic way that hops can
          * still get added. Perhaps some cases of circuit pre-build that change
          * purpose? */
-        static ratelim_t cc_path_limit = RATELIM_INIT(600);
-        log_fn_ratelim(&cc_path_limit, LOG_NOTICE, LD_CIRC,
+        log_info(LD_CIRC,
                    "Unexpected path length %d for exit circuit %d, purpose %d",
                     circ_len, circ->global_identifier,
                     TO_CIRCUIT(circ)->purpose);
@@ -2520,8 +2519,19 @@ onion_extend_cpath(origin_circuit_t *circ)
   }
 
   if (!info) {
-    log_warn(LD_CIRC,"Failed to find node for hop #%d of our path. Discarding "
-             "this circuit.", cur_len+1);
+    /* This can happen on first startup, possibly due to insufficient relays
+     * downloaded to pick vanguards-lite layer2 nodes, or other ephemeral
+     * reasons. It only happens briefly, is hard to reproduce, and then goes
+     * away for ever. :/ */
+    if (!router_have_minimum_dir_info()) {
+       log_info(LD_CIRC,
+                "Failed to find node for hop #%d of our path. Discarding "
+                "this circuit.", cur_len+1);
+    } else {
+       log_notice(LD_CIRC,
+                 "Failed to find node for hop #%d of our path. Discarding "
+                 "this circuit.", cur_len+1);
+    }
     return -1;
   }
 

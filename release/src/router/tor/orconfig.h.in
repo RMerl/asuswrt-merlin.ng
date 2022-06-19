@@ -6,7 +6,7 @@
 /* All assert failures are fatal */
 #undef ALL_BUGS_ARE_FATAL
 
-/* # for 0.4.7.7 Approximate date when this software was released. (Updated
+/* # for 0.4.7.8 Approximate date when this software was released. (Updated
    when the version changes.) */
 #undef APPROX_RELEASE_DATE
 

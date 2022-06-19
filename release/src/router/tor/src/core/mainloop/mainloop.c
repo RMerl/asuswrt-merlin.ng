@@ -644,8 +644,8 @@ connection_start_reading,(connection_t *conn))
     if (CONN_IS_EDGE(conn) && TO_EDGE_CONN(conn)->xoff_received) {
       /* We should not get called here if we're waiting for an XON, but
        * belt-and-suspenders */
-      log_notice(LD_NET,
-                 "Request to start reading on an edgeconn blocked with XOFF");
+      log_info(LD_NET,
+               "Request to start reading on an edgeconn blocked with XOFF");
       return;
     }
     if (event_add(conn->read_event, NULL))

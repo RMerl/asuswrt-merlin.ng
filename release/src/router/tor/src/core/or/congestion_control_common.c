@@ -695,10 +695,9 @@ congestion_control_update_circuit_estimates(congestion_control_t *cc,
 static bool
 time_delta_should_use_heuristics(const congestion_control_t *cc)
 {
-
-  /* If we have exited slow start, we should have processed at least
-   * a cwnd worth of RTTs */
-  if (!cc->in_slow_start) {
+  /* If we have exited slow start and also have an EWMA RTT, we
+   * should have processed at least a cwnd worth of RTTs */
+  if (!cc->in_slow_start && cc->ewma_rtt_usec) {
     return true;
   }
 
@@ -735,34 +734,27 @@ time_delta_stalled_or_jumped(const congestion_control_t *cc,
     log_fn_ratelim(&stall_info_limit, LOG_INFO, LD_CIRC,
            "Congestion control cannot measure RTT due to monotime stall.");
 
-    /* If delta is every 0, the monotime clock has stalled, and we should
-     * not use it anywhere. */
     is_monotime_clock_broken = true;
-
-    return is_monotime_clock_broken;
-  }
-
-  /* If the old_delta is 0, we have no previous values on this circuit.
-   *
-   * So, return the global monotime status from other circuits, and
-   * do not update.
-   */
-  if (old_delta == 0) {
-    return is_monotime_clock_broken;
+    return true;
   }
 
   /*
    * For the heuristic cases, we need at least a few timestamps,
    * to average out any previous partial stalls or jumps. So until
-   * than point, let's just use the cached status from other circuits.
+   * that point, let's just assume its OK.
    */
   if (!time_delta_should_use_heuristics(cc)) {
-    return is_monotime_clock_broken;
+    return false;
   }
 
   /* If old_delta is significantly larger than new_delta, then
-   * this means that the monotime clock recently stopped moving
-   * forward. */
+   * this means that the monotime clock could have recently
+   * stopped moving forward. However, use the cache for this
+   * value, because it may also be caused by network activity,
+   * or by a previous clock jump that was not detected.
+   *
+   * So if we have not gotten a 0-delta recently, we will
+   * still allow this new low RTT, but just yell about it. */
   if (old_delta > new_delta * DELTA_DISCREPENCY_RATIO_MAX) {
     static ratelim_t dec_notice_limit = RATELIM_INIT(300);
     log_fn_ratelim(&dec_notice_limit, LOG_NOTICE, LD_CIRC,
@@ -770,29 +762,28 @@ time_delta_stalled_or_jumped(const congestion_control_t *cc,
            "), likely due to clock jump.",
            new_delta/1000, old_delta/1000);
 
-    is_monotime_clock_broken = true;
-
     return is_monotime_clock_broken;
   }
 
   /* If new_delta is significantly larger than old_delta, then
-   * this means that the monotime clock suddenly jumped forward. */
+   * this means that the monotime clock suddenly jumped forward.
+   * However, do not cache this value, because it may also be caused
+   * by network activity.
+   */
   if (new_delta > old_delta * DELTA_DISCREPENCY_RATIO_MAX) {
     static ratelim_t dec_notice_limit = RATELIM_INIT(300);
-    log_fn_ratelim(&dec_notice_limit, LOG_NOTICE, LD_CIRC,
+    log_fn_ratelim(&dec_notice_limit, LOG_PROTOCOL_WARN, LD_CIRC,
            "Sudden increase in circuit RTT (%"PRIu64" vs %"PRIu64
-           "), likely due to clock jump.",
+           "), likely due to clock jump or suspended remote endpoint.",
            new_delta/1000, old_delta/1000);
 
-    is_monotime_clock_broken = true;
-
-    return is_monotime_clock_broken;
+    return true;
   }
 
   /* All good! Update cached status, too */
   is_monotime_clock_broken = false;
 
-  return is_monotime_clock_broken;
+  return false;
 }
 
 /**

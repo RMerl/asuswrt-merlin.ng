@@ -238,6 +238,9 @@ static int filter_nopar_gen[] = {
 #endif
     SCMP_SYS(read),
     SCMP_SYS(rt_sigreturn),
+#ifdef __NR_rseq
+    SCMP_SYS(rseq),
+#endif
     SCMP_SYS(sched_getaffinity),
 #ifdef __NR_sched_yield
     SCMP_SYS(sched_yield),

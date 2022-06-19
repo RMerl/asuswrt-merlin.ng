@@ -2,6 +2,45 @@ This document summarizes new features and bugfixes in each stable
 release of Tor. If you want to see more detailed descriptions of the
 changes in each development snapshot, see the ChangeLog file.
 
+Changes in version 0.4.7.8 - 2022-06-17
+  This version fixes several bugfixes including a High severity security issue
+  categorized as a Denial of Service. Everyone running an earlier version
+  should upgrade to this version.
+
+  o Major bugfixes (congestion control, TROVE-2022-001):
+    - Fix a scenario where RTT estimation can become wedged, seriously
+      degrading congestion control performance on all circuits. This
+      impacts clients, onion services, and relays, and can be triggered
+      remotely by a malicious endpoint. Tracked as CVE-2022-33903. Fixes
+      bug 40626; bugfix on 0.4.7.5-alpha.
+
+  o Minor features (fallbackdir):
+    - Regenerate fallback directories generated on June 17, 2022.
+
+  o Minor features (geoip data):
+    - Update the geoip files to match the IPFire Location Database, as
+      retrieved on 2022/06/17.
+
+  o Minor bugfixes (linux seccomp2 sandbox):
+    - Allow the rseq system call in the sandbox. This solves a crash
+      issue with glibc 2.35 on Linux. Patch from pmu-ipf. Fixes bug
+      40601; bugfix on 0.3.5.11.
+
+  o Minor bugfixes (logging):
+    - Demote a harmless warn log message about finding a second hop to
+      from warn level to info level, if we do not have enough
+      descriptors yet. Leave it at notice level for other cases. Fixes
+      bug 40603; bugfix on 0.4.7.1-alpha.
+    - Demote a notice log message about "Unexpected path length" to info
+      level. These cases seem to happen arbitrarily, and we likely will
+      never find all of them before the switch to arti. Fixes bug 40612;
+      bugfix on 0.4.7.5-alpha.
+
+  o Minor bugfixes (relay, logging):
+    - Demote a harmless XOFF log message to from notice level to info
+      level. Fixes bug 40620; bugfix on 0.4.7.5-alpha.
+
+
 Changes in version 0.4.7.7 - 2022-04-27
   This is the first stable version of the 0.4.7.x series. This series
   includes several major bugfixes from previous series and several features

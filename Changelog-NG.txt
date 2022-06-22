@@ -1,7 +1,7 @@
 Asuswrt-Merlin 386/NG Changelog
 ===============================
 
-386.7 (xx-xxx-xxxx)
+386.7 (22-June-2022)
   - NEW: IPV6 support for DNSFilter for HND router models.
          Custom settings can also let you specify IPv6 servers.
          These (as well as providers that support IPv6) will
@@ -12,7 +12,7 @@ Asuswrt-Merlin 386/NG Changelog
   - UPDATED: openssl to 1.1.1o.
   - UPDATED: haveged to 1.9.18.
   - UPDATED: openvpn to 2.5.7.
-  - UPDATED: tor to 0.4.7.7.
+  - UPDATED: tor to 0.4.7.8.
   - CHANGED: dhcpc-event now has a second parameter that will
              contain "4" or "6" depending on the IP protocol of
              the event (dave14305)

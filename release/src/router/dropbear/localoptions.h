@@ -34,6 +34,7 @@
 
 /* The default path. This will often get replaced by the shell */
 #define DEFAULT_PATH "/bin:/sbin:/usr/bin:/usr/sbin:/opt/bin:/opt/sbin:/opt/usr/bin:/opt/usr/sbin"
+#define DEFAULT_ROOT_PATH "/bin:/sbin:/usr/bin:/usr/sbin:/opt/bin:/opt/sbin:/opt/usr/bin:/opt/usr/sbin"
 
 /* Linux will attempt TCP fast open, falling back if not supported by the kernel.
  * Currently server is enabled but client is disabled by default until there

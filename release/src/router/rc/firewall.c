@@ -6287,7 +6287,6 @@ mangle_setting(char *wan_if, char *wan_ip, char *lan_if, char *lan_ip, char *log
 		fp = fopen("/tmp/mangle_rules_ipv6.dnsfilter", "w");
 		if (fp != NULL) {
 			fprintf(fp, "*mangle\n"
-			    ":DNSFILTERI - [0:0]\n"
 			    ":DNSFILTERF - [0:0]\n"
 			    ":DNSFILTER_DOT - [0:0]\n");
 
@@ -6497,7 +6496,6 @@ mangle_setting2(char *lan_if, char *lan_ip, char *logaccept, char *logdrop)
 		fp = fopen("/tmp/mangle_rules_ipv6.dnsfilter", "w");
 		if (fp != NULL) {
 			fprintf(fp, "*mangle\n"
-				":DNSFILTERI - [0:0]\n"
 				":DNSFILTERF - [0:0]\n"
 				":DNSFILTER_DOT - [0:0]\n");
 

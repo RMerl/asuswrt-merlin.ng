@@ -2096,7 +2096,7 @@ start_dhcp6c(void)
 			((unsigned long)(duid.ea[3] & 0x0f) << 16) |
 			((unsigned long)(duid.ea[4]) << 8) |
 			((unsigned long)(duid.ea[5])) : 1;
-		i = (nvram_get_int(ipv6_nvname("ipv6_prefix_len_wan")) ? : 64);
+		i = (nvram_get_int(ipv6_nvname("ipv6_prefix_len_wan")) ? : 0);
 		if ((i < 48) || (i > 64))
 			i = 0;
 		snprintf(prefix_arg, sizeof(prefix_arg), "%d:%lx", i, iaid);

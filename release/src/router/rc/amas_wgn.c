@@ -1102,8 +1102,10 @@ void wgn_filter_forward(
 
 		fprintf(fp, "-A FORWARD -i %s -j WGNPControls\n", word);
 #if defined(RTCONFIG_IPV6)
-		if (fp_ipv6)
+		if (fp_ipv6) {
 			fprintf(fp_ipv6, "-A FORWARD -i %s -j WGNPControls\n", word);
+			fprintf(fp_ipv6, "-A FORWARD -i %s -o %s -j ACCEPT\n", word, wan_if);
+		}
 #endif
 		//iptables -A  FORWARD  -i brX -o eth0 -j ACCEPT
 		fprintf(fp, "-A FORWARD -i %s -o %s -j ACCEPT\n", word, wan_if);

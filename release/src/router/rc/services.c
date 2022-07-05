@@ -1926,7 +1926,7 @@ void start_dnsmasq(void)
 		}
 #endif /* RTCONFIG_YANDEXDNS */
 
-#if defined(RTCONFIG_DNSFILTER) && !defined(HND_ROUTER)
+#ifdef RTCONFIG_DNSFILTER
 		if (nvram_get_int("dnsfilter_enable_x"))
 			dnsfilter_setup_dnsmasq(fp);
 #endif
@@ -2051,8 +2051,10 @@ void start_dnsmasq(void)
 #ifdef RTCONFIG_DNSPRIVACY
 	       nvram_get_int("dnspriv_enable") ||
 #endif
-	       (nvram_get_int("dnsfilter_enable_x") && nvram_get_int("dnsfilter_mode")) )	// DNSFilter enabled in Global mode
-	    )
+#ifdef RTCONFIG_DNSFILTER
+	       (nvram_get_int("dnsfilter_enable_x") && nvram_get_int("dnsfilter_mode"))	// DNSFilter enabled in Global mode
+#endif
+	    ))
 	) {
 
 		fprintf(fp, "address=/use-application-dns.net/\n");

@@ -1,6 +1,18 @@
 Asuswrt-Merlin 386/NG Changelog
 ===============================
 
+386.7_2 (xx-xxx-2022)
+  - UPDATED: openssl to 1.1.1q.
+  - FIXED: Some ISPs would fail to allocate a proper IPv6 prefix (tvlz)
+  - FIXED: Packet checksum errors logged when using DNSFilter in Router
+           mode.  Router mode will no longer use DNAT, except for newer
+           HND 5.04 models like the GT-AX6000 or XT12, which work
+           properly.  Non-Router mode on HND will still use
+           the new DNAT support added in 386.7.
+  - FIXED: Some SSH clients would end up with an incorrect PATH
+           value for the default search path.
+
+
 386.7 (22-June-2022)
   - NEW: IPV6 support for DNSFilter for HND router models.
          Custom settings can also let you specify IPv6 servers.

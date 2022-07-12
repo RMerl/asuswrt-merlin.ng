@@ -1127,7 +1127,7 @@ void ovpn_setup_server_watchdog(ovpn_sconf_t *sconf, int unit) {
 
 	if ((fp = fopen(buffer, "w"))) {
 		fprintf(fp, "#!/bin/sh\n"
-		            "if [ -z $(pidof vpnserver%d) ]\n"
+		            "if [ -z \"$(pidof vpnserver%d)\" ]\n"
 		            "then\n"
 		            "   service restart_vpnserver%d\n"
 		            "fi\n",

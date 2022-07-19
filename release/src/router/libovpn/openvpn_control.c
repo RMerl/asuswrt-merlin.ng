@@ -908,6 +908,10 @@ void ovpn_start_server(int unit) {
 
 	ovpn_setup_server_watchdog(sconf, unit);
 
+	// Update running ovpn client tables
+	if (sconf->if_type == OVPN_IF_TUN)
+		update_client_routes(sconf->if_name, 1);
+
 	free(sconf);
 }
 
@@ -963,6 +967,13 @@ void ovpn_stop_server(int unit) {
 	if (getpid() != 1) {
 		notify_rc(buffer);
 		return;
+	}
+
+	// Remove routes from running ovpn clients
+	snprintf(buffer, sizeof(buffer), "vpn_server%d_if", unit);
+	if (!strcmp(nvram_safe_get(buffer), "tun")) {
+		snprintf(buffer, sizeof(buffer), "tun%d", OVPN_SERVER_BASEIF + unit);
+		update_client_routes(buffer, 0);
 	}
 
 	// Remove watchdog
@@ -1060,4 +1071,67 @@ void stop_ovpn_serverall() {
 		if (pidof(buffer) >= 0)
 			ovpn_stop_server(unit);
         }
+}
+
+
+/* Remove/add server routes from client routing tables */
+
+void update_client_routes(char *server_iface, int addroute) {
+	int unit;
+	char buffer[32];
+
+	for( unit = 1; unit <= OVPN_CLIENT_MAX; unit++ ) {
+		sprintf(buffer, "vpnclient%d", unit);
+		if ( pidof(buffer) >= 0 ) {
+			if (addroute)
+				_add_server_routes(server_iface, unit);
+			else
+				_del_server_routes(server_iface, unit);
+		}
+	}
+}
+
+
+/* Add / remove OpenVPN server routes from client tables */
+/* Server-agnostic, could eventually be reused for other servers like WG/IPSEC */
+
+void _add_server_routes(char *server_iface, int client_unit) {
+	char buffer[128], routecmd[128], line[128];
+	FILE *fp_route;
+
+	snprintf(buffer, sizeof (buffer), "/usr/sbin/ip route list table main | grep %s > /tmp/vpnroute%d_tmp", server_iface, client_unit);
+	system(buffer);
+
+	snprintf(buffer, sizeof (buffer), "/tmp/vpnroute%d_tmp", client_unit);
+	fp_route = fopen(buffer, "r");
+
+	if (fp_route) {
+		while (fgets(line, sizeof(line), fp_route) != NULL) {
+			snprintf(routecmd, sizeof (routecmd), "/usr/sbin/ip route add %s table ovpnc%d", trimNL(line), client_unit);
+			system(routecmd);
+		}
+		fclose(fp_route);
+	}
+	unlink(buffer);
+}
+
+
+void _del_server_routes(char *server_iface, int client_unit) {
+	char buffer[128], routecmd[128], line[128];
+	FILE *fp_route;
+
+	snprintf(buffer, sizeof (buffer), "/usr/sbin/ip route list table ovpnc%d | grep %s > /tmp/vpnroute%d_tmp", client_unit, server_iface, client_unit);
+	system(buffer);
+
+	snprintf(buffer, sizeof (buffer), "/tmp/vpnroute%d_tmp", client_unit);
+	fp_route = fopen(buffer, "r");
+
+	if (fp_route) {
+		while (fgets(line, sizeof(line), fp_route) != NULL) {
+			snprintf(routecmd, sizeof (routecmd), "/usr/sbin/ip route del %s table ovpnc%d", trimNL(line), client_unit);
+			system(routecmd);
+		}
+		fclose(fp_route);
+	}
+	unlink(buffer);
 }

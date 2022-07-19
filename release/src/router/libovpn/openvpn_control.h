@@ -36,5 +36,7 @@ extern void ovpn_update_exclusive_dns_rules();
 
 extern void start_ovpn_serverall();
 extern void stop_ovpn_serverall();
-
+extern void update_client_routes(char *server_iface, int addroute);
+void _add_server_routes(char *server_iface, int client_unit);
+void _del_server_routes(char *server_iface, int client_unit);
 #endif

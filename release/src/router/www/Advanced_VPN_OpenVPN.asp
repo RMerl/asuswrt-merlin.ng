@@ -332,7 +332,7 @@ function formShowAndHide(server_enable, server_type) {
 		document.getElementById("OpenVPN_setting").style.display = "none";
 		document.getElementById("divAdvanced").style.display = "none";
 		//if(vpn_server_mode != "openvpn") {
-		//	document.getElementById("divApply").style.display = "none";
+			document.getElementById("divApply").style.display = "none";
 		//}
 	}
 }

@@ -3,6 +3,9 @@ Asuswrt-Merlin 386/NG Changelog
 
 386.7_2 (xx-xxx-2022)
   - UPDATED: openssl to 1.1.1q.
+  - UPDATED: RT-AX86U driver + SDK updated to latest upstream version
+  - UPDATED: RT-AX88U and GT-AX11000 radio firmware downgraded to the
+             previous version.
   - FIXED: Some ISPs would fail to allocate a proper IPv6 prefix (tvlz)
   - FIXED: Packet checksum errors logged when using DNSFilter in Router
            mode.  Router mode will no longer use DNAT, except for newer
@@ -11,6 +14,9 @@ Asuswrt-Merlin 386/NG Changelog
            the new DNAT support added in 386.7.
   - FIXED: Some SSH clients would end up with an incorrect PATH
            value for the default search path.
+  - FIXED: OpenVPN clients wouldn't get updated routing tables
+           if an OpenVPN server was stopped/started while an
+           OpenVPN client was connected
 
 
 386.7 (22-June-2022)

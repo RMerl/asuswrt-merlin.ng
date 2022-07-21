@@ -103,6 +103,7 @@ ASUS_eula_desc1_4=Sen lisäksi, voidaksesi ottaa IFTTT™:n kaukosäädintoiminn
 ASUS_eula_desc2=ASUS on sitoutunut suojaamaan ja kunnioittamaan yksityisyyttäsi. Voit siirtyä kohtaan Advanced Settings (Lisäasetukset) > Administration (Hallinta)> Privacy (Tietosuoja) ottaaksesi milloin tahansa käyttöön / pois käytöstä tuotetietojen jakamisen ASUKSEN kanssa. Saadaksesi lisätietoja, kuinka ASUS suojaa yksityisyyttäsi, siirry kohtaan <a id="eula_url" style="font-weight: bolder;text-decoration:underline;cursor:pointer;" target="_blank">ASUS-tietosuojakäytäntö</a>.
 ASUS_eula_age=Olen yli 16-vuotias.
 ASUS_eula_age_confirm=Vahvista, että ikäsi on yli 16 vuotta.
+ASUS_eula_use_confirm=Vahvista, että ASUS-käyttöehdot.
 ASUS_eula_withdraw0=Sovelluksa  %1$@ ja Etäyhteydet  (ASUS-reititinsovellus/Lyra-sovellus/AiCloud/ AiDisk) varten:
 ASUS_eula_withdraw_desc1=Huomaa, että ASUS kerää tietojasi, mukaan lukien tuotteesi mallinimi, laiteohjelmistoversio, internet-tila, IP-osoite, MAC-osoite ja DDNS-nimi, yllä mainituilla toiminnoilla.
 ASUS_eula_withdraw_desc1_2=Jos haluat ottaa pois käytöstä tietojesi jakamisen yllä mainituilla toiminnoilla ASUKSEN kanssa, napsauta alla olevaa <span style="font-weight: bold;">[Withdraw] (Peruuta) </span> -painiketta. Huomaa kuitenkin, että kyseiset ominaisuudet/toiminnot eivät ehkä toimi, jos lopetat tietojesi jakamisen ASUKSEN kanssa.
@@ -246,7 +247,7 @@ FIRM_fail_desc=Laiteohjelmiston päivitys epäonnistui. Se voi johtua vääräst
 FIRM_ok_desc=Laiteohjelmistoa päivitetään. Odota noin 3 minuuttia.
 FIRM_ok_aimesh=Laiteohjelmistopäivityksesi on valmis. Sulje tämä ikkuna ja käytä AiMesh-reititintäsi uudelleen.
 FIRM_reboot_manually=Laiteohjelmistopäivitys on valmis. Käynnistä ZVMODELVZ manuaalisesti uudelleen.
-FIRM_trx_valid_fail_desc=To comply with regulatory amendments, we have modified our certification rule to ensure better firmware quality. This version is not compatible with all previously released ASUS firmware and uncertified third party firmware. Please check our official websites for the certified firmware.
+FIRM_trx_valid_fail_desc=To comply with regulatory amendments, we have modified our certificate rule to ensure better firmware quality. This version is not compatible with all previously released ASUS firmware and uncertified third party firmware. Please check our official websites for the certified firmware.
 Five_attempts_logout_hint=Olet antanut väärän salasanan viidellä yrityskerralla. Sinut kirjataan ulos.
 footer_copyright_desc=2022 ASUSTeK Computer Inc. Kaikki oikeudet pidätetään.
 FW_n1=Jotta määritysparametri voi olla mukana sekä vanhassa että uudessa laiteohjelmistossa, sen asetus säilytetään päivitysprosessin ajan.
@@ -1081,13 +1082,14 @@ AiMesh_confirm_msg_ChangeSSID=Jos vaihdat langattoman verkon tunnusta, tämä va
 AiMesh_confirm_msg_ChangeKey=Jos vaihdat esijaettua WPA-avainta, tämä vaikuttaa AiMesh-solmusi WiFi-yhteyksiin.
 AiMesh_confirm_msg_CountryCode=Jos vaihdat maanumeroasi, tämä saattaa vaikuttaa AiMesh-järjestelmääsi.
 AiMesh_confirm_msg5=Jos poistat Radio-toiminnon käytöstä, tämä vaikuttaa AiMesh-reitittimesi WiFi-yhteyksiin.
-AiMesh_confirm_msg6=Jos piilotat langattoman verkon tunnuksen, tämä vaikuttaa AiMesh-reitittimesi WiFi-yhteyksiin.
+AiMesh_confirm_msg6=Piilotettu SSID-nimi ei auta Wi-Fi-verkkosi suojaamisessa ja saattaa aiheuttaa joitakin yhteysongelmia.
 AiMesh_confirm_msg7=Jos piilotat langattoman verkon tunnuksen, WPS-toiminto poistetaan käytöstä. Lisäksi tämä vaikuttaa AiMesh-reitittimesi WiFi-yhteyksiin.
 AiMesh_confirm_msg8=Jos poistat DHCP-palvelimen käytöstä, tämä vaikuttaa AiMesh-reitittimesi WiFi-yhteyksiin.
 AiMesh_confirm_msg9=Ottaen huomioon AiMesh-järjestelmän ja päätelaitteiden yhteensopivuuden suosittelemme käyttämään WPA2-Personal-salausta. Haluatko vaihtaa todennustilaan #AUTHMODE ?\n*Jos kärsit yhteysongelmista, vaihda WPA2-Personal-salaukseen tai pyydä tarkempia tietoja laitteen valmistajalta.
 AiMesh_confirm_msg10=Jotta AiMesh-järjestelmäsi ja päätelaitteidesi pysyvät yhteydessä keskenään, lue <a id="wpa3FaqLink">Usein kysytyt kysymykset</a>, ennen kuin vaihdat salaustilaksi WPA3-Personal.
 AiMesh_confirm_msg11=Käytät tällä hetkellä WPA3-personal-salausta. Jotta voit AiMesh-järjestelmän, todennusmenetelmäksi on vaihdettava WPA2/WPA3-personal. Haluatko jatkaa?
 AiMesh_confirm_msg12=You can read this <a id='wpa3FaqLink'>FAQ</a> for more information.
+AiMesh_confirm_msg13=Katso lisätietoja osoitteesta <a style='font-weight: bolder;text-decoration: underline;color:#000000;' href='' target='_blank'>tässä UKK-asiakirjassa</a>
 AiMesh_Feature_Desc=Edistynyt ASUS AiMesh on uusi innovatiivinen reitittimen ominaisuus, joka yhdistää useita ASUS-reitittimiä yhteen luoden koko kodin kattavan WiFi-verkon.
 AiMesh_FAQ=Lue lisää ASUS AiMesh -ominaisuudesta
 AiMesh_FindNode=Etsi AiMesh-noodi
@@ -3442,6 +3444,7 @@ TZ17=Atlantin aika (Kanada)
 TZ18=La Paz
 TZ18_1=Caracas
 TZ19=Santiago
+TZ19_1=Asunción
 TZ20=Newfoundland
 TZ21=Brasilia
 TZ22=Buenos Aires, Georgetown
@@ -3626,7 +3629,7 @@ vpn_network_place=Verkkosijainti (Samba) -tuki
 vpn_openvpn_AdvDNS=Ilmoita DNS asiakkaille
 vpn_openvpn_Auth=Käyttöoikeuksien myöntämistila
 vpn_openvpn_AuthOnly=Vain Käyttäjänimi / Salasanan todennus
-vpn_openvpn_AuthOnly_hint=Authorization Mode fixes on TLS
+vpn_openvpn_AuthOnly_hint=Authentication Mode fixes on TLS
 vpn_openvpn_AuthHMAC=HMAC-todennus
 vpn_openvpn_ExtraHMAC=Ylimääräinen HMAC-todennus
 vpn_openvpn_ClientMutual=Salli Asiakas <-> Asiakas

@@ -3510,7 +3510,7 @@ start_samba(void)
 
 #if defined(SMP) && !defined(HND_ROUTER)
 #if defined(RTCONFIG_BCMARM) || defined(RTCONFIG_SOC_IPQ8064) || defined(RTCONFIG_SOC_IPQ8074)
-#if defined(RTCONFIG_HND_ROUTER_AX_675X)
+#if defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(BCM6750) || defined(BCM6756) || defined(BCM6855)
 	taskset_ret = -1;
 #else
 	if(!nvram_match("stop_taskset", "1")){

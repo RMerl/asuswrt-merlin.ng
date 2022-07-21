@@ -288,7 +288,7 @@ endif
 export $(MODEL):=y
 endif
 
-ifeq ($(and $(HND_ROUTER_AX_6756),$(BCM_MFG)),y)
+ifeq ($(and $(HND_ROUTER_AX_6756),$(BCM_MFG),$(WLTEST)),y)
 export WLTEST := 1
 endif
 
@@ -694,6 +694,7 @@ ifeq ($(HND_ROUTER),y)
 	@rm -rf image
 	@ln -sf targets/${PROFILE} image
 	$(MAKE) buildimage
+	@rm -rf targets/${PROFILE}/*cferom*
 else
 	@-mkdir -p image
 
@@ -3480,10 +3481,10 @@ define RouterOptions
 		else \
 			echo "# RTCONFIG_FRONTHAUL_DBG is not set" >>$(1); \
 		fi; \
-		if [ "$(AMAS_QCA_WDS)" = "y" ]; then \
-			echo "RTCONFIG_AMAS_QCA_WDS=y" >>$(1); \
+		if [ "$(AMAS_WDS)" = "y" ]; then \
+			echo "RTCONFIG_AMAS_WDS=y" >>$(1); \
 		else \
-			echo "# RTCONFIG_AMAS_QCA_WDS is not set" >>$(1); \
+			echo "# RTCONFIG_AMAS_WDS is not set" >>$(1); \
 		fi; \
 		if [ "$(BH_SWITCH_ETH_FIRST)" = "y" ]; then \
 			echo "RTCONFIG_BH_SWITCH_ETH_FIRST=y" >>$(1); \
@@ -3541,11 +3542,6 @@ define RouterOptions
 			else \
 				echo "# RTCONFIG_BANDINDEX_NEW is not set" >>$(1); \
 			fi; \
-		fi; \
-		if [ "$(AMAS_UNII4_BH)" = "y" ]; then \
-			echo "RTCONFIG_AMAS_UNII4_BH=y" >>$(1); \
-		else \
-			echo "# RTCONFIG_AMAS_UNII4_BH is not set" >>$(1); \
 		fi; \
 		sed -i "/RTCONFIG_CONNDIAG/d" $(1); \
 		echo "RTCONFIG_CONNDIAG=y" >>$(1); \
@@ -3672,6 +3668,10 @@ define RouterOptions
 		else \
 			echo "# RTCONFIG_BCM_MFG is not set" >>$(1); \
 		fi; \
+	fi;
+	if [ "$(WLTEST)" = "y" ] || [ "$(WLTEST)" = "1" ]; then \
+		sed -i "/RTCONFIG_WLTEST/d" $(1); \
+		echo "RTCONFIG_WLTEST=y" >>$(1); \
 	fi;
 	if [ "$(OPEN_NAT)" = "y" ]; then \
 		sed -i "/RTCONFIG_OPEN_NAT/d" $(1); \
@@ -4125,6 +4125,15 @@ define BusyboxOptions
 		echo "# CONFIG_TFTP_DEBUG is not set" >>$(1); \
 		sed -i "/CONFIG_TELNET\b/d" $(1); \
 		echo "CONFIG_TELNET=y" >>$(1); \
+	fi;
+	if [ "$(MUSL_LIBC)" = "y" ] || [ "$(MUSL32)" = "y" ] || [ "$(MUSL64)" = "y" ] ; then \
+		sed -i "/CONFIG_NSLOOKUP=y/d" $(1); \
+		echo "# CONFIG_NSLOOKUP is not set" >>$(1); \
+	else \
+		sed -i "/CONFIG_NSLOOKUP_LEDE=y/d" $(1); \
+		echo "# CONFIG_NSLOOKUP_LEDE is not set" >>$(1); \
+		sed -i "/CONFIG_FEATURE_NSLOOKUP_LEDE_LONG_OPTIONS=y/d" $(1); \
+		echo "# CONFIG_FEATURE_NSLOOKUP_LEDE_LONG_OPTIONS is not set" >>$(1); \
 	fi;
 	if [ "$(SLIM)" = "y" ]; then \
 		sed -i "/CONFIG_AWK/d" $(1); \

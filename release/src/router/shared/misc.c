@@ -6081,7 +6081,7 @@ void update_wlx_psr_mbss(void)
 
 	for (unit=0; unit<num_of_wl_if(); unit++) {
 		wlx_psr_mbss = 0;
-		for (subunit=2; subunit<num_of_mssid_support(unit); subunit++) {
+		for (subunit=2; subunit<=num_of_mssid_support(unit); subunit++) {
 			memset(nv, 0, sizeof(nv));
 			snprintf(nv, sizeof(nv), "wl%d.%d_bss_enabled", unit, subunit);
 			if (nvram_get_int(nv) == 1) {
@@ -6197,4 +6197,69 @@ unsigned short get_extend_cap()
 		extend_cap |= __cpu_to_le16(EXTEND_CAP_ISPCTRL_LOGIN);
 
        return extend_cap;
+}
+
+void wl_vif_to_subnet(const char *ifname, char *net, int len)
+{
+	int i, found = 0;
+	char word[64];
+	char *next = NULL;
+	char nv[64];
+	char br_name[64];
+	char *br_ifnames = NULL;
+	char ipaddr[32], ipmask[32];
+
+ 	int fd;
+	struct ifreq ifr;
+	
+
+	if (!ifname || strlen(ifname) <= 0)
+		return;
+
+	if (!net || len <= 0)
+		return;
+
+	for (found=0, i=0; i<256; i++) {
+		memset(nv, 0, sizeof(nv));
+		snprintf(nv, sizeof(nv), "br%d_ifnames", i);
+		if ((br_ifnames = strdup(nvram_safe_get(nv)))) {
+			foreach (word, br_ifnames, next) {
+				if ((found = !strcmp(word, ifname)))
+					break;
+			}
+			
+			free(br_ifnames);
+		}
+
+		if (found)
+			break;
+	}
+
+	if (found) {
+		memset(nv, 0, sizeof(nv));
+		snprintf(nv, sizeof(nv), "br%d_ifname", i);
+		memset(br_name, 0, sizeof(br_name));
+		strlcpy(br_name, nvram_safe_get(nv), sizeof(br_name));
+
+		memset(&ifr, 0, sizeof(struct ifreq));
+		if ((fd = socket(AF_INET, SOCK_DGRAM, 0)) >= 0) {
+			ifr.ifr_addr.sa_family = AF_INET;
+			strlcpy(ifr.ifr_name, br_name, IFNAMSIZ-1);
+
+			memset(ipaddr, 0, sizeof(ipaddr));
+			if (ioctl(fd, SIOCGIFADDR, &ifr) >= 0)
+				snprintf(ipaddr, sizeof(ipaddr)-1, "%s", inet_ntoa(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr));
+
+			memset(ipmask, 0, sizeof(ipmask));
+			if (ioctl(fd, SIOCGIFNETMASK, &ifr) >= 0)
+				snprintf(ipmask, sizeof(ipmask)-1, "%s", inet_ntoa(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr));
+
+			if (strlen(ipaddr)>0 && strlen(ipmask)>0)
+				snprintf(net, len, "%s/%s", ipaddr, ipmask);
+			close(fd);
+		}
+	}
+
+	return;
+
 }

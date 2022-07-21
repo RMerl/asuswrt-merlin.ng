@@ -103,6 +103,7 @@ ASUS_eula_desc1_4=또한 ASUS는 귀하의 제품에서 IFTTT™의 리모컨 �
 ASUS_eula_desc2=ASUS 는 귀하의 개인정보를 보호하고 존중할 것을 약속합니다. Advanced Settings(고급 설정) > Administration(관리) > Privacy(개인정보 보호정책)로 들어와서 언제라도 ASUS와의 제품 정보 공유를 사용/사용 안 함으로 설정할 수 있습니다. ASUS가 귀하의 개인정보를 보호하는 방법에 대한 자세한 내용은<a id="eula_url" style="font-weight: bolder;text-decoration:underline;cursor:pointer;" target="_blank">ASUS 개인정보 보호정책</a>을 참조하십시오.
 ASUS_eula_age=제 나이는 16세 이상입니다.
 ASUS_eula_age_confirm=귀하의 나이가 16세 이상인지 확인하십시오.
+ASUS_eula_use_confirm=ASUS 이용약관 확인하십시오.
 ASUS_eula_withdraw0=%1$@ 및 원격 연결(ASUS 라우터 앱/Lyra 앱/AiCloud/AiDisk)의 경우:
 ASUS_eula_withdraw_desc1=귀하의 제품 모델 이름, 펌웨어 버전, 인터넷 상태, IP 주소, MAC 주소 및 DDNS 이름이 ASUS에 의해 상기 기능을 통해 수집된다는 점에 유의하십시오.
 ASUS_eula_withdraw_desc1_2=상기 기능을 통한 ASUS와의 정보 공유를 사용 안 함으로 설정하고 싶을 경우, 아래의 <span style="font-weight: bold;">[철회]</span> 를 클릭하십시오. 그러나 귀하가 ASUS와의 정보 공유를 중단할 경우 이같은 특장점/기능이 작동하지 않을 수 있다는 점에 유의하십시오.
@@ -246,7 +247,7 @@ FIRM_fail_desc=펌웨어 업그레이드에 실패. 올바른 이미지가 아�
 FIRM_ok_desc=펌웨어 업그레이드 중. 약 3분간 기다려주십시오.
 FIRM_ok_aimesh=펌웨어 업데이트가 완료되었습니다. 이 창을 닫고 AiMesh 라우터에 다시 액세스하십시오.
 FIRM_reboot_manually=펌웨어 업그레이드 완료. ZVMODELVZ 를 재시작하여 주십시오.
-FIRM_trx_valid_fail_desc=To comply with regulatory amendments, we have modified our certification rule to ensure better firmware quality. This version is not compatible with all previously released ASUS firmware and uncertified third party firmware. Please check our official websites for the certified firmware.
+FIRM_trx_valid_fail_desc=To comply with regulatory amendments, we have modified our certificate rule to ensure better firmware quality. This version is not compatible with all previously released ASUS firmware and uncertified third party firmware. Please check our official websites for the certified firmware.
 Five_attempts_logout_hint=암호를 5회 잘못 입력했습니다. 로그아웃됩니다.
 footer_copyright_desc=2022 아수스 텍 컴퓨터 주식 회사 모든 권리 보유
 FW_n1=구성 매개변수는 펌웨어 업데이트가 진행되는 동안 매개변수의 설정을 유지합니다.
@@ -1081,13 +1082,14 @@ AiMesh_confirm_msg_ChangeSSID=SSID 를 변경하면 AiMesh 노드의 WiFi 연결
 AiMesh_confirm_msg_ChangeKey=WPA 의 사전 공유된 키를 변경하면 AiMesh 노드의 WiFi 연결이 영향을 받습니다.
 AiMesh_confirm_msg_CountryCode=국가 코드를 변경하면 AiMesh 시스템이 영향을 받습니다.
 AiMesh_confirm_msg5=무선 기능을 비활성화하면 AiMesh 라우터의 WiFi 연결이 영향을 받습니다.
-AiMesh_confirm_msg6=SSID를 숨기면 AiMesh 라우터의 WiFi 연결이 영향을 받습니다.
+AiMesh_confirm_msg6=숨겨진 SSID는 Wi-Fi 네트워크를 보호하는 데 도움이 되지 않으며, 몇몇 연결 문제를 초래할 수 있습니다.
 AiMesh_confirm_msg7=SSID를 숨기면 WPS 기능이 비활성화되고 AiMesh 라우터의 WiFi 연결이 영향을 받습니다.
 AiMesh_confirm_msg8=DHCP 서버를 비활성화하면 AiMesh 라우터의 WiFi 연결이 영향을 받습니다.
 AiMesh_confirm_msg9=AiMesh 시스템과 최종 장치의 호환성을 고려할 때 WPA2-Personal 사용을 권장합니다. #AUTHMODE 로 전환하시겠습니까?\n*연결 문제가 발생한 경우, WPA2-Personal로 전환하거나 제조업체를 통해 추가 정보를 확인하시기 바랍니다.
 AiMesh_confirm_msg10=AiMesh 시스템과 최종 장치의 연결을 보장하기 위해 WPA3-Personal로 전환하기 전에 이 <a id="wpa3FaqLink">FAQ</a>를 읽어 보십시오.
 AiMesh_confirm_msg11=현재 WPA3-personal을 사용 중입니다. AiMesh 시스템을 생성하기 위해 인증 방법이 WPA2/WPA3-personal로 변경됩니다. 계속하시겠습니까?
 AiMesh_confirm_msg12=You can read this <a id='wpa3FaqLink'>FAQ</a> for more information.
+AiMesh_confirm_msg13=보다 자세한 내용은 <a style='font-weight: bolder;text-decoration: underline;color:#000000;' href='' target='_blank'>이 FAQ</a> 을 방문하십시오.
 AiMesh_Feature_Desc=고급 ASUS AiMesh 는여러개의 ASUS 라우터를함께연결하여가정전체의 WiFi 네트워크를구성할수있는새로운혁신적라우터기능입니다.
 AiMesh_FAQ=ASUS AiMesh 에대한자세한내용을확인하십시오.
 AiMesh_FindNode=AiMesh 노드찾기
@@ -3442,6 +3444,7 @@ TZ17=대서양 시간 (캐나다)
 TZ18=라 파스
 TZ18_1=카라카스
 TZ19=산티아고
+TZ19_1=아순시온
 TZ20=뉴 펀들 랜드
 TZ21=브라질리아
 TZ22=부에노스 아이레스, 조지 타운
@@ -3626,7 +3629,7 @@ vpn_network_place=네트워크 장소(Samba) 지원
 vpn_openvpn_AdvDNS=클라이언트에 DNS 광고
 vpn_openvpn_Auth=권한 부여 모드
 vpn_openvpn_AuthOnly=사용자 이름 / 암호 인증 전용
-vpn_openvpn_AuthOnly_hint=Authorization Mode fixes on TLS
+vpn_openvpn_AuthOnly_hint=Authentication Mode fixes on TLS
 vpn_openvpn_AuthHMAC=HMAC 인증
 vpn_openvpn_ExtraHMAC=추가 HMAC 인증(tls-auth)
 vpn_openvpn_ClientMutual=클라이언트 <-> 클라이언트 허용

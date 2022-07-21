@@ -50,6 +50,7 @@
 #include <sys/ioctl.h>
 #include <board.h>
 #endif	/* BCA_HNDROUTER */
+#include <wpsdefs.h>
 
 #ifndef MAX_NVPARSE
 #define MAX_NVPARSE 16
@@ -544,6 +545,287 @@ get_wsec(wsec_info_t *info, unsigned char *mac, char *osifname)
 
 	return WLIFU_WSEC_SUCCESS;
 }
+#if 0
+/* get the Max NSS */
+int
+wl_wlif_get_max_nss(wl_bss_info_t *bi_in)
+{
+	int i = 0, mcs_idx = 0;
+	int mcs = 0, isht = 0;
+	int nss = 0;
+	//XXX: remove this typecast once the wl_bss_info_t is updated to v109_1
+	wl_bss_info_v109_1_t *bi = (wl_bss_info_v109_1_t *)bi_in;
+
+	if (dtoh32(bi->version) != LEGACY_WL_BSS_INFO_VERSION && (bi->n_cap || bi->he_cap)) {
+		if (bi->he_cap) {
+			uint mcs_cap = 0;
+
+			for (i = 1; i <= HE_CAP_MCS_MAP_NSS_MAX; i++) {
+				mcs_cap = HE_CAP_MAX_MCS_NSS_GET_MCS(i,
+					dtoh16(bi->he_sup_bw80_tx_mcs));
+				if (mcs_cap != HE_CAP_MAX_MCS_NONE) {
+					nss++; /* Calculate the number of streams */
+				}
+			}
+			if (nss) {
+				return nss;
+			}
+		}
+		if (bi->vht_cap) {
+			uint mcs_cap = 0;
+
+			for (i = 1; i <= VHT_CAP_MCS_MAP_NSS_MAX; i++) {
+				mcs_cap = VHT_MCS_MAP_GET_MCS_PER_SS(i,
+					dtoh16(bi->vht_txmcsmap));
+				if (mcs_cap != VHT_CAP_MCS_MAP_NONE) {
+					nss++; /* Calculate the number of streams */
+				}
+			}
+
+			if (nss) {
+				return nss;
+			}
+		}
+
+		/* For 802.11n networks, use MCS table */
+		for (mcs_idx = 0; mcs_idx < (MCSSET_LEN * 8); mcs_idx++) {
+			if (isset(bi->basic_mcs, mcs_idx) && mcs_idx < MCS_TABLE_SIZE) {
+				mcs = mcs_idx;
+				isht = 1;
+			}
+		}
+
+		if (isht) {
+			int nss = 0;
+
+			if (mcs > 32) {
+				printf("MCS is Out of range \n");
+			} else if (mcs == 32) {
+				nss = 1;
+			} else {
+				nss = 1 + (mcs / 8);
+			}
+
+			return nss;
+		}
+	}
+
+	return nss;
+}
+#endif
+#ifdef __CONFIG_RSDB__
+int
+wl_wlif_get_rsdb_mode()
+{
+	char *mode;
+	int rsdb_mode = WLIF_RSDB_MODE_2X2; /* default rsdb_mode is mimo */
+
+	mode = nvram_get("rsdb_mode");
+	if (mode)
+		rsdb_mode = atoi(mode);
+	return rsdb_mode;
+}
+#endif /* __CONFIG_RSDB__ */
+
+/* Generic utility function to check for a known capability */
+int
+wl_wlif_get_chip_cap(char *ifname, char *cap)
+{
+	char caps[WLC_IOCTL_MEDLEN], var[WLC_IOCTL_SMLEN], *next;
+
+	if (wl_iovar_get(ifname, "cap", (void *)caps, sizeof(caps)) != BCME_OK)
+		return FALSE;
+
+	foreach(var, caps, next) {
+		if (strncmp(var, cap, sizeof(var)) == 0)
+			return TRUE;
+	}
+
+	return FALSE;
+}
+
+int
+get_bridge_by_ifname(char* ifname, char** brname)
+{
+	char name[IFNAMSIZ] = {0}, *next = NULL;
+	char nv_name[16] = {0};
+	char *br_ifnames = NULL;
+	int i, found = 0;
+
+	/* Search in LAN network */
+	br_ifnames = nvram_safe_get("lan_ifnames");
+	foreach(name, br_ifnames, next) {
+		if (!strcmp(name, ifname)) {
+			found = 1;
+			break;
+		}
+	}
+
+	if (found) {
+		*brname = nvram_safe_get("lan_ifname");
+		return 0;
+	}
+
+	/* Search in GUEST networks */
+	for (i = 1; i < WLIFU_MAX_NO_BRIDGE; i++) {
+		snprintf(nv_name, 16, "lan%d_ifnames", i);
+		br_ifnames = nvram_safe_get(nv_name);
+		foreach(name, br_ifnames, next) {
+			if (!strcmp(name, ifname)) {
+				found = 1;
+				break;
+			}
+		}
+		if (found) {
+			snprintf(nv_name, 16, "lan%d_ifname", i);
+			*brname = nvram_safe_get(nv_name);
+			return 0;
+		}
+	}
+
+	return -1;
+}
+
+/* Get associated AP ifname for WDS link */
+int
+wl_wlif_wds_ap_ifname(char *ifname, char *apname)
+{
+	int ret;
+	char wdsap_nvifname[IFNAMSIZ] = {0};
+
+	if (wl_probe(ifname) < 0) {
+		return -1;
+	}
+
+	/* Get associated AP ifname and convert it to OS ifname */
+	ret = wl_iovar_get(ifname, "wds_ap_ifname", (void *)wdsap_nvifname, IFNAMSIZ);
+
+	if (!ret) {
+		ret = nvifname_to_osifname(wdsap_nvifname, apname, IFNAMSIZ);
+	} else {
+		printf("Err: get %s wds_ap_ifname fails %d\n", ifname, ret);
+	}
+
+	return ret;
+}
+
+/* Helper function to get size of all lan_ifname */
+int
+get_all_lanifname_sz(void)
+{
+	char tmp[WLIF_MIN_BUF];
+	int ifnames_sz = 0;
+	int i;
+
+	for (i = 0; i < WLIFU_MAX_NO_BRIDGE; ++i) {
+		char *p = NULL;
+
+		if (i == 0) {
+			snprintf(tmp, sizeof(tmp), "lan_ifname");
+		} else {
+			snprintf(tmp, sizeof(tmp), "lan%d_ifname", i);
+		}
+
+		if ((p = nvram_get(tmp)) != NULL) {
+			ifnames_sz += strlen(p) + 1; /* 1 for space */
+		}
+	}
+
+	if (ifnames_sz == 0) {
+		return 0;
+	}
+
+	ifnames_sz++; /* For null termination */
+	return ifnames_sz;
+}
+
+/* Helper function to get concatenated lan_ifname */
+int
+get_all_lanifname(char *ifnames, int ifnames_sz)
+{
+	char tmp[WLIF_MIN_BUF];
+	int i;
+
+	ifnames[0] = 0;
+	for (i = 0; i < WLIFU_MAX_NO_BRIDGE; ++i) {
+		char *p = NULL;
+
+		if (i == 0) {
+			snprintf(tmp, sizeof(tmp), "lan_ifname");
+		} else {
+			snprintf(tmp, sizeof(tmp), "lan%d_ifname", i);
+		}
+
+		if ((p = nvram_get(tmp)) != NULL) {
+			if (strlen(p) + strlen(ifnames) < (ifnames_sz-1)) {
+				strcat(ifnames, p);
+				strcat(ifnames, " ");
+			}
+		}
+	}
+
+	return strlen(ifnames);
+}
+
+/* Helper function to get size of all lan_ifnames (list) */
+int
+get_all_lanifnames_listsz(void)
+{
+	char tmp[WLIF_MIN_BUF];
+	int ifnames_listsz = 0;
+	int i;
+
+	for (i = 0; i < WLIFU_MAX_NO_BRIDGE; ++i) {
+		char *p = NULL;
+
+		if (i == 0) {
+			snprintf(tmp, sizeof(tmp), "lan_ifnames");
+		} else {
+			snprintf(tmp, sizeof(tmp), "lan%d_ifnames", i);
+		}
+
+		if ((p = nvram_get(tmp)) != NULL) {
+			ifnames_listsz += strlen(p) + 1; /* 1 for space */
+		}
+	}
+
+	if (ifnames_listsz == 0)
+		return 0;
+
+	ifnames_listsz ++; /* For null termination */
+
+	return ifnames_listsz;
+}
+
+/* Helper function to get concatenated lan_ifnames (list) */
+int
+get_all_lanifnames_list(char *ifnames_list, int ifnames_listsz)
+{
+	char tmp[WLIF_MIN_BUF];
+	int i;
+
+	ifnames_list[0] = 0;
+	for (i = 0; i < WLIFU_MAX_NO_BRIDGE; ++i) {
+		char *p = NULL;
+
+		if (i == 0) {
+			snprintf(tmp, sizeof(tmp), "lan_ifnames");
+		} else {
+			snprintf(tmp, sizeof(tmp), "lan%d_ifnames", i);
+		}
+
+		p = nvram_get(tmp);
+		if (!p || (strlen(p) <= 0)) {
+			continue;
+		}
+
+		if (strlen(p) + strlen(ifnames_list) < (ifnames_listsz-1)) {
+			strcat(ifnames_list, p);
+			strcat(ifnames_list, " ");
+		}
+	}
+	return strlen(ifnames_list);
+}
 
 #if defined(CONFIG_HOSTAPD) && defined(BCA_HNDROUTER)
 #define WLIF_WPS_LED_OFFSET			0
@@ -715,7 +997,6 @@ wl_wlif_update_wps_ui(wlif_wps_ui_status_code_id_t idx)
 	nvram_set("wps_proc_status", wlif_wps_ui_status_arr[idx].val);
 }
 
-#if 0 // TODO: wlan 17.10.157.60
 /* Updates the dpp_status nvram to reflect the dpp status in dpp.asp page */
 void
 wl_wlif_update_dpp_ui(DPP_UI_SCSTATE idx, char *ifname)
@@ -731,7 +1012,6 @@ wl_wlif_update_dpp_ui(DPP_UI_SCSTATE idx, char *ifname)
 	snprintf(buffer, sizeof(buffer), "%d", idx);
 	nvram_set(nv_name, buffer);
 }
-#endif
 
 /* Gets the status code from the wps_proc_status nvram value */
 int
@@ -797,7 +1077,6 @@ wl_wlif_save_wpa_settings(char *type, char *val, wlif_wps_nw_creds_t *creds)
 	}
 }
 
-#if 0 // TODO: wlan 17.10.157.60
 /* convert ascii string to hex string */
 void wl_ascii_str_to_hex_str(char *ascii_str, uint16 ascii_len, char *hex_str, uint16 hex_len)
 {
@@ -854,7 +1133,6 @@ int wl_wlif_hexstr2ascii(const char *hex_str, unsigned char *buf, size_t len)
 	}
 	return 0;
 }
-#endif
 
 /* Apply the DPP credentials to radio interface received from the wps session */
 int

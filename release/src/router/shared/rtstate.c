@@ -1312,9 +1312,17 @@ char *get_default_ssid(int unit, int subunit)
 			strlcat(ssid, "_5G", sizeof(ssid));
 #endif
 #if defined(RTCONFIG_NEWSSID_REV5)
-#if defined(RTAX56_XD4) || defined(XD4PRO)
+#if defined(RTAX56_XD4)
 		if (nvram_match("SSIDRULE", "RT-V5")){
 			strlcat(ssid, "_XD4", sizeof(ssid));
+		}
+#elif defined(XD4PRO)
+		if (nvram_match("SSIDRULE", "RT-V5")){
+			if(nvram_match("odmpid","ZenWiFi_XD4_Pro")){
+				strlcat(ssid, "_XD4_Pro", sizeof(ssid));
+			}else{ /* odmpid","ZenWiFi_XD5" */
+				strlcat(ssid, "_XD5", sizeof(ssid));
+			}
 		}
 #elif defined(ET12) || defined(XT12)
 		strlcat(ssid, "_", sizeof(ssid));

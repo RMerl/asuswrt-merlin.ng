@@ -103,6 +103,7 @@ ASUS_eula_desc1_4=Selain itu, ASUS mungkin berkongsi kod pengaktifan yang dijana
 ASUS_eula_desc2=ASUS komited untuk melindungi dan menghormati privasi anda. Anda boleh melawat Tetapan Lanjutan > Pentadbiran > Privasi untuk mendayakan/menyahdayakan perkongsian maklumat produk anda dengan ASUS sepanjang masa. Untuk mengetahui lebih lanjut tentang cara ASUS melindungi privasi anda, sila lawati <a id="eula_url" style="font-weight: bolder;text-decoration:underline;cursor:pointer;" target="_blank">Dasar Privasi ASUS</a>.
 ASUS_eula_age=Saya berumur lebih 16 tahun.
 ASUS_eula_age_confirm=Sila sahkan umur anda lebih 16 tahun.
+ASUS_eula_use_confirm=Sila sahkan Terma Penggunaan ASUS.
 ASUS_eula_withdraw0=Untuk sambungan %1$@ dan Jauh (APLIKASI Penghala ASUS/APLIKASI Lyra/AiCloud/AiDisk):
 ASUS_eula_withdraw_desc1=Sila ambil perhatian bahawa maklumat anda, termasuk nama model produk anda, versi perisian tegar, status Internet, Alamat IP, Alamat MAC dan nama DDNS, akan dikumpulkan oleh ASUS menerusi fungsi di atas.
 ASUS_eula_withdraw_desc1_2=Jika anda mahu menyahdayakan perkongsian maklumat anda dengan ASUS menerusi fungsi di atas, sila klik <span style="font-weight: bold;">[Tarik Balik]</span> di bawah. Walau bagaimanapun, sila ambil perhatian bahawa ciri/fungsi tersebut mungkin tidak berfungsi jika anda berhenti berkongsi maklumat anda dengan ASUS.
@@ -246,7 +247,7 @@ FIRM_fail_desc=Perisian tegar gagal menaik taraf. Ia mungkin disebabkan oleh ime
 FIRM_ok_desc=Perisian tegar sedang menaik taraf. Sila tunggu kira-kira 3 minit.
 FIRM_ok_aimesh=Kemas kini perisian tegar anda telah selesai. Tutup tetingkap ini dan akses penghala AiMesh anda sekali lagi.
 FIRM_reboot_manually=Naik taraf perisian tegar selesai. Sila but semula ZVMODELVZ secara manual.
-FIRM_trx_valid_fail_desc=To comply with regulatory amendments, we have modified our certification rule to ensure better firmware quality. This version is not compatible with all previously released ASUS firmware and uncertified third party firmware. Please check our official websites for the certified firmware.
+FIRM_trx_valid_fail_desc=To comply with regulatory amendments, we have modified our certificate rule to ensure better firmware quality. This version is not compatible with all previously released ASUS firmware and uncertified third party firmware. Please check our official websites for the certified firmware.
 Five_attempts_logout_hint=Anda telah memasukkan kata laluan yang salah sebanyak 5 percubaan. Anda akan dilog keluar.
 footer_copyright_desc=2022 ASUSTeK Computer Inc. Semua hak cipta terpelihara.
 FW_n1=Parameter konfigurasi akan mengekalkan tetapannya semasa proses kemas kini perisian tegar.
@@ -1081,13 +1082,14 @@ AiMesh_confirm_msg_ChangeSSID=Jika anda mengubah SSID anda, ketersambungan WiFi 
 AiMesh_confirm_msg_ChangeKey=Jika anda mengubah Kunci Dikongsi Awal WPA, ketersambungan WiFi nod AiMesh anda akan terjejas.
 AiMesh_confirm_msg_CountryCode=Mengubah kod negara anda boleh menjejaskan sistem AiMesh anda.
 AiMesh_confirm_msg5=Jika anda menyahdayakan kefungsian Radio, ketersambungan WiFi penghala AiMesh anda akan terjejas.
-AiMesh_confirm_msg6=Jika anda menyembunyikan SSID anda, ketersambungan WiFi penghala AiMesh anda akan terjejas.
+AiMesh_confirm_msg6=Hidden SSID does not help secure your Wi-Fi network, and may cause some connection issues.
 AiMesh_confirm_msg7=Jika anda menyembunyikan SSID anda, fungsi WPS akan dinyahdayakan dan ketersambungan WiFi penghala AiMesh anda akan terjejas.
 AiMesh_confirm_msg8=Jika anda menyahdayakan Pelayan DHCP, ketersambungan WiFi penghala AiMesh anda akan terjejas.
 AiMesh_confirm_msg9=Mempertimbangkan keserasian sistem AiMesh dan peranti akhir, kami cadangkan anda menggunakan WPA2-Peribadi. Adakah anda ingin beralih ke #AUTHMODE?\n*Jika anda menghadapi masalah sambungan, sila beralih ke WPA2-Peribadi atau semak dengan pengilang untuk mendapatkan maklumat lanjut.
 AiMesh_confirm_msg10=Untuk memastikan sambungan sistem AiMesh dan peranti akhir anda, sila baca ini <a id="wpa3FaqLink">FAQ</a> sebelum beralih ke WPA3-Peribadi.
 AiMesh_confirm_msg11=Anda sedang menggunakan WPA3-peribadi. Untuk mencipta sistem AiMesh, kaedah pengesahan anda akan diubah kepada WPA2/WPA3-peribadi. Adakah anda mahu meneruskan?
 AiMesh_confirm_msg12=You can read this <a id='wpa3FaqLink'>FAQ</a> for more information.
+AiMesh_confirm_msg13=Untuk butiran lanjut, sila lawati <a style='font-weight: bolder;text-decoration: underline;color:#000000;' href='' target='_blank'>Soalan Lazim</a>
 AiMesh_Feature_Desc=AiMesh ASUS Lanjutan ialah ciri penghala baharu inovatif yang menyambungkan berbilang penghala ASUS bersama, mewujudkan rangkaian WiFi seluruh rumah.
 AiMesh_FAQ=Ketahui lebih lanjut tentang AiMesh ASUS
 AiMesh_FindNode=Cari nod AiMesh
@@ -3442,6 +3444,7 @@ TZ17=Masa Atlantik (Kanada)
 TZ18=La Paz
 TZ18_1=Caracas
 TZ19=Santiago
+TZ19_1=Asuncion
 TZ20=Newfoundland
 TZ21=Brasilia
 TZ22=Buenos Aires, Georgetown
@@ -3626,7 +3629,7 @@ vpn_network_place=Sokongan Tempat Rangkaian (Samba)
 vpn_openvpn_AdvDNS=Iklankan DNS kepada klien
 vpn_openvpn_Auth=Mod Pengesahan
 vpn_openvpn_AuthOnly=Pengesahan Nama Pengguna / Kata Laluan Sahaja
-vpn_openvpn_AuthOnly_hint=Authorization Mode fixes on TLS
+vpn_openvpn_AuthOnly_hint=Authentication Mode fixes on TLS
 vpn_openvpn_AuthHMAC=Pengesahan HMAC
 vpn_openvpn_ExtraHMAC=Pengesahan HMAC Tambahan
 vpn_openvpn_ClientMutual=Benarkan Klien <-> Klien

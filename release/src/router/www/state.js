@@ -821,6 +821,7 @@ var external_ip = 0;
 var link_internet = '<% nvram_get("link_internet"); %>';
 var le_restart_httpd_chk = "";
 
+var wifison_ready = '<% nvram_get("wifison_ready"); %>';
 var ui_lang = '<% nvram_get("preferred_lang"); %>';
 
 if(lyra_hide_support){
@@ -831,7 +832,19 @@ if(lyra_hide_support){
 	var IOS_app_link = "https://itunes.apple.com/tw/app/asus-router/id1033794044";
 }
 
-var wifison_ready = '<% nvram_get("wifison_ready"); %>';
+var aimesh_location_arr = [
+	{value:"Home",text:"<#AiMesh_NodeLocation01#>"}, {value:"Living Room",text:"<#AiMesh_NodeLocation02#>"}, {value:"Dining Room",text:"<#AiMesh_NodeLocation03#>"},
+	{value:"Bedroom",text:"<#AiMesh_NodeLocation04#>"}, {value:"Office",text:"<#AiMesh_NodeLocation05#>"}, {value:"Stairwell",text:"<#AiMesh_NodeLocation06#>"},
+	{value:"Hall",text:"<#AiMesh_NodeLocation07#>"}, {value:"Kitchen",text:"<#AiMesh_NodeLocation08#>"}, {value:"Attic",text:"<#AiMesh_NodeLocation09#>"},
+	{value:"Basement",text:"<#AiMesh_NodeLocation10#>"}, {value:"Yard",text:"<#AiMesh_NodeLocation11#>"}, {value:"Master Bedroom",text:"<#AiMesh_NodeLocation12#>"},
+	{value:"Guest Room",text:"<#AiMesh_NodeLocation13#>"}, {value:"Kids Room",text:"<#AiMesh_NodeLocation14#>"}, {value:"Study Room",text:"<#AiMesh_NodeLocation15#>"},
+	{value:"Hallway",text:"<#AiMesh_NodeLocation16#>"}, {value:"Walk-in Closet",text:"<#AiMesh_NodeLocation17#>"}, {value:"Bathroom",text:"<#AiMesh_NodeLocation18#>"},
+	{value:"First Floor",text:"First Floor"}, {value:"Second Floor",text:"<#AiMesh_NodeLocation19#>"}, {value:"Third Floor",text:"<#AiMesh_NodeLocation20#>"},
+	{value:"Storage",text:"<#AiMesh_NodeLocation21#>"}, {value:"Balcony",text:"<#AiMesh_NodeLocation22#>"}, {value:"Meeting Room",text:"<#AiMesh_NodeLocation23#>"},
+	{value:"Garage",text:"<#AiMesh_NodeLocation25#>"}, {value:"Gaming Room",text:"Gaming Room"}, {value:"Gym",text:"Gym"},
+	{value:"Custom",text:"<#AiMesh_NodeLocation24#>"}
+];
+
 var radioHintIgnored = false;
 var blockAllDeviceHintIgnored = false;
 (function(){

@@ -2,9 +2,75 @@
 #include <netdb.h>
 #include "pc_block.h"
 
+static void config_redirect_pc_block_all(FILE *fp) {
+	char *lan_if = nvram_safe_get("lan_ifname");
+	char *lan_ip = nvram_safe_get("lan_ipaddr");
+	char *lan_mask = nvram_safe_get("lan_netmask");
+	char *fftype = "PCREDIRECT";
 
-// MAC address in list and not in time period -> redirect to blocking page
-void config_blocking_redirect(FILE *fp){
+	if (nvram_get_int("MULTIFILTER_BLOCK_ALL") != 1) return;
+
+	fprintf(fp, "-A PREROUTING -i %s -j %s\n", lan_if, fftype);
+	fprintf(fp, "-A %s -i %s ! -d %s/%s -p tcp --dport 80 -j DNAT --to-destination %s:%s\n", fftype, lan_if, lan_ip, lan_mask, lan_ip, DFT_SERV_PORT);
+	_dprintf("%s(%d) BLOCK ALL DEVICES\n", __FUNCTION__, __LINE__);
+}
+
+static void config_redirect_pc_block(FILE *fp) {
+	pc_s *pc_list = NULL, *enabled_list = NULL, *follow_pc;
+	char *lan_if = nvram_safe_get("lan_ifname");
+	char *lan_ip = nvram_safe_get("lan_ipaddr");
+	char *lan_mask = nvram_safe_get("lan_netmask");
+	char *fftype = "PCREDIRECT";
+	int pc_count;
+
+	follow_pc = get_all_pc_list(&pc_list);
+	if(follow_pc == NULL){
+		_dprintf("Couldn't get the Parental-control rules correctly!\n");
+		return;
+	}
+
+	pc_count = count_pc_rules(pc_list, 2);
+	if (!(nvram_get_int("MULTIFILTER_ALL") != 0 && pc_count > 0)) {
+		free_pc_list(&pc_list);
+		pc_list = NULL;
+		return;
+	}
+
+	follow_pc = match_enabled_pc_list(pc_list, &enabled_list, 2);
+	free_pc_list(&pc_list);
+	if(follow_pc == NULL){
+		_dprintf("Couldn't get the enabled rules of Parental-control correctly!\n");
+		return;
+	}
+
+	for(follow_pc = enabled_list; follow_pc != NULL; follow_pc = follow_pc->next){
+		const char *chk_type;
+		char follow_addr[18] = {0};
+#ifdef RTCONFIG_AMAS
+		if (strlen(follow_pc->mac) && amas_lib_device_ip_query(follow_pc->mac, follow_addr)) {
+			chk_type = iptables_chk_ip;
+			if (illegal_ipv4_address(follow_addr))
+				continue;
+		} else
+#endif
+		{
+			chk_type = iptables_chk_mac;
+			snprintf(follow_addr, sizeof(follow_addr), "%s", follow_pc->mac);
+			if (!isValidMacAddress(follow_addr))
+				continue;
+		}
+
+		fprintf(fp, "-A PREROUTING -i %s %s %s -j %s\n", lan_if, chk_type, follow_addr, fftype);
+
+		// MAC address in list and not in time period -> Redirect to blocking page.
+		fprintf(fp, "-A %s -i %s ! -d %s/%s -p tcp --dport 80 %s %s -j DNAT --to-destination %s:%s\n", fftype, lan_if, lan_ip, lan_mask, chk_type, follow_addr, lan_ip, DFT_SERV_PORT);
+	}
+
+	free_pc_list(&enabled_list);
+	_dprintf("%s(%d) BLOCK DEVICE\n", __FUNCTION__, __LINE__);
+}
+
+static void config_redirect_pc_time(FILE *fp) {
 	pc_s *pc_list = NULL, *enabled_list = NULL, *follow_pc;
 	pc_event_s *follow_e;
 	char *lan_if = nvram_safe_get("lan_ifname");
@@ -15,12 +81,20 @@ void config_blocking_redirect(FILE *fp){
 	int i;
 #endif
 	char *fftype;
+	int pc_count;
 
 	fftype = "PCREDIRECT";
 
 	follow_pc = get_all_pc_list(&pc_list);
 	if(follow_pc == NULL){
 		_dprintf("Couldn't get the Parental-control rules correctly!\n");
+		return;
+	}
+
+	pc_count = count_pc_rules(pc_list, 1);
+	if (!(nvram_get_int("MULTIFILTER_ALL") != 0 && pc_count > 0)) {
+		free_pc_list(&pc_list);
+		pc_list = NULL;
 		return;
 	}
 
@@ -35,7 +109,6 @@ void config_blocking_redirect(FILE *fp){
 		const char *chk_type;
 		char follow_addr[18] = {0};
 #ifdef RTCONFIG_AMAS
-		_dprintf("config_blocking_redirect\n");
 		if (strlen(follow_pc->mac) && amas_lib_device_ip_query(follow_pc->mac, follow_addr)) {
 			chk_type = iptables_chk_ip;
 			if (illegal_ipv4_address(follow_addr))
@@ -142,6 +215,19 @@ void config_blocking_redirect(FILE *fp){
 	}
 
 	free_pc_list(&enabled_list);
+	_dprintf("%s(%d) TIME SCHEDULING\n", __FUNCTION__, __LINE__);
+}
+
+// MAC address in list and not in time period -> redirect to blocking page
+void config_blocking_redirect(FILE *fp){
+	/* pc_block - 20220615
+		1. time-scheduling - BLOCK ALL DEVICES
+		2. time-scheduling - BLOCK
+		3. time-scheduling - TIME
+	*/
+	config_redirect_pc_block_all(fp);
+	config_redirect_pc_block(fp);
+	config_redirect_pc_time(fp);
 }
 
 void pc_block_exit(int signo){

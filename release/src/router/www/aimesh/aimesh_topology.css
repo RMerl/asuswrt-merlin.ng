@@ -180,6 +180,9 @@
 .translucent_bg.Meeting_Room{
 	background-image: url("/images/New_ui/amesh/location/Meeting_Room.png");
 }
+.translucent_bg.Gaming_Room{
+	background-image: url("/images/New_ui/amesh/location/Gaming_Room.jpg");
+}
 .translucent_bg.Hallway{
 	background-image: url("/images/New_ui/amesh/location/Hallway.png");
 }
@@ -190,10 +193,13 @@
 	background-image: url("/images/New_ui/amesh/location/Stairwell.png");
 }
 .translucent_bg.Third_Floor{
-	background-image: url("/images/New_ui/amesh/location/Third_Floor.png");
+	background-image: url("/images/New_ui/amesh/location/Third_Floor.jpg");
 }
 .translucent_bg.Second_Floor{
 	background-image: url("/images/New_ui/amesh/location/Second_Floor.png");
+}
+.translucent_bg.First_Floor{
+	background-image: url("/images/New_ui/amesh/location/First_Floor.jpg");
 }
 .translucent_bg.Attic{
 	background-image: url("/images/New_ui/amesh/location/Attic.png");
@@ -212,6 +218,9 @@
 }
 .translucent_bg.Garage{
 	background-image: url("/images/New_ui/amesh/location/Garage.png");
+}
+.translucent_bg.Gym{
+	background-image: url("/images/New_ui/amesh/location/Gym.jpg");
 }
 .model_info_bg{
 	position: absolute;
@@ -344,6 +353,9 @@
 .location_dropdown_icon.Second_Floor:before, .location_dropdown_icon.selected.Second_Floor:before, .topology_icon.Second_Floor:before{
 	background-position: 66.5% 20%;
 }
+.location_dropdown_icon.First_Floor:before, .location_dropdown_icon.selected.First_Floor:before, .topology_icon.First_Floor:before{
+	background-position: 66.5% 79%;
+}
 .location_dropdown_icon.Attic:before, .location_dropdown_icon.selected.Attic:before, .topology_icon.Attic:before{
 	background-position: 66.5% 40%;
 }
@@ -361,6 +373,12 @@
 }
 .location_dropdown_icon.Garage:before, .location_dropdown_icon.selected.Garage:before, .topology_icon.Garage:before{
 	background-position: 83.5% 59%;
+}
+.location_dropdown_icon.Gym:before, .location_dropdown_icon.selected.Gym:before, .topology_icon.Gym:before{
+	background-position: 100% 21%;
+}
+.location_dropdown_icon.Gaming_Room:before, .location_dropdown_icon.selected.Gaming_Room:before, .topology_icon.Gaming_Room:before{
+	background-position: 100% 40%;
 }
 .location_dropdown_icon.Custom:before, .location_dropdown_icon.selected.Custom:before, .topology_icon.Custom:before{
 	background-position: 100% 0%;

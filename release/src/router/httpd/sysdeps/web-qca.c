@@ -2445,5 +2445,6 @@ const char *syslog_msg_filter[] = {
 	"[AUTH] vap", "[MLME] vap", "[ASSOC] vap", "[INACT] vap",
 #endif
 	"exist in UDB, can't", "is used by someone else, can't use it", "not mesh client, can't update it", "not mesh client, can't delete it",
+	"ERROR: [send_redir_page",
 	NULL
 };

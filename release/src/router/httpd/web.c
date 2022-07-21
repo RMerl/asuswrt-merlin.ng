@@ -281,6 +281,9 @@ extern int ej_wl_channel_list_5g_80m(int eid, webs_t wp, int argc, char_t **argv
 #endif
 extern int ej_wl_channel_list_5g_2(int eid, webs_t wp, int argc, char_t **argv);
 extern int ej_wl_channel_list_60g(int eid, webs_t wp, int argc, char_t **argv);
+#if defined(CONFIG_BCMWL5) && defined(RTCONFIG_WIFI6E)
+extern int ej_wl_channel_list_6g(int eid, webs_t wp, int argc, char_t **argv);
+#endif
 #ifdef CONFIG_BCMWL5
 extern int ej_wl_chanspecs(int eid, webs_t wp, int argc, char_t **argv, int unit);
 extern int ej_wl_chanspecs_2g(int eid, webs_t wp, int argc, char_t **argv);
@@ -306,9 +309,15 @@ extern int ej_wl_rate_6g(int eid, webs_t wp, int argc, char_t **argv);
 extern int ej_wl_cap_2g(int eid, webs_t wp, int argc, char **argv);
 extern int ej_wl_cap_5g(int eid, webs_t wp, int argc, char **argv);
 extern int ej_wl_cap_5g_2(int eid, webs_t wp, int argc, char **argv);
+#if defined(RTCONFIG_WIFI6E)
+extern int ej_wl_cap_6g(int eid, webs_t wp, int argc, char **argv);
+#endif
 extern int ej_wl_chipnum_2g(int eid, webs_t wp, int argc, char **argv);
 extern int ej_wl_chipnum_5g(int eid, webs_t wp, int argc, char **argv);
 extern int ej_wl_chipnum_5g_2(int eid, webs_t wp, int argc, char **argv);
+#if defined(RTCONFIG_WIFI6E)
+extern int ej_wl_chipnum_6g(int eid, webs_t wp, int argc, char **argv);
+#endif
 #endif
 extern int ej_nat_accel_status(int eid, webs_t wp, int argc, char_t **argv);
 #ifdef RTCONFIG_PROXYSTA
@@ -4380,6 +4389,9 @@ int validate_apply(webs_t wp, json_object *root) {
 				{
 					reg_default_final_token();
 					nvram_set("x_Setting", "1");
+#ifdef RTAXE7800
+					notify_rc("addif_extwan");
+#endif
 					notify_rc("restart_firewall");
 #ifdef RTCONFIG_EXTPHY_BCM84880
 					notify_rc("br_addif");
@@ -4387,6 +4399,9 @@ int validate_apply(webs_t wp, json_object *root) {
 				}
 			}else if(fromapp_flag != 0) {
 				nvram_set("x_Setting", "1");
+#ifdef RTAXE7800
+				notify_rc("addif_extwan");
+#endif
 				notify_rc("restart_firewall");
 			}
 		}
@@ -13345,6 +13360,9 @@ do_lang_post(char *url, FILE *stream, int len, char *boundary)
 			cprintf ("set x_Setting --> 1\n");
 			reg_default_final_token();
 			nvram_set("x_Setting", "1");
+#ifdef RTAXE7800
+			notify_rc("addif_extwan");
+#endif
 			notify_rc("restart_firewall");
 		}
 		cprintf ("!!!!!!!!!Commit new language settings.\n");
@@ -21251,7 +21269,7 @@ do_bandwidth_monitor_ej(char *url, FILE *stream) {
 }
 #endif
 
-#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX6000) || defined(GTAXE16000) || defined(GTAX11000_PRO) || defined(GT10) || defined(RTAX82U_V2)
+#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX6000) || defined(GTAXE16000) || defined(GTAX11000_PRO) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2)
 static void
 do_set_ledg_cgi(char *url, FILE *stream) {
 
@@ -21514,6 +21532,9 @@ do_chpass_cgi(char *url, FILE *stream)
 		if(is_def_pwd){
 			reg_default_final_token();
 			nvram_set("x_Setting", "1");
+#ifdef RTAXE7800
+			notify_rc("addif_extwan");
+#endif
 			notify_rc("restart_firewall");
 #ifdef RTCONFIG_EXTPHY_BCM84880
 			notify_rc("br_addif");
@@ -21877,7 +21898,7 @@ struct mime_handler mime_handlers[] = {
 	{ "set_ookla_speedtest_start_time.cgi", "text/html", no_cache_IE7, do_html_post_and_get, set_ookla_speedtest_start_time_cgi, do_auth },
 #endif
 	{ "del_client_data.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_del_client_data_cgi, do_auth },
-#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX6000) || defined(GTAXE16000) || defined(GTAX11000_PRO) || defined(GT10) || defined(RTAX82U_V2)
+#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX6000) || defined(GTAXE16000) || defined(GTAX11000_PRO) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2)
 	{ "set_ledg.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_set_ledg_cgi, do_auth },
 #endif
 #if defined(GTAX6000)
@@ -32268,6 +32289,11 @@ struct ej_handler ej_handlers[] = {
 		|| defined(RPAC92)
 	{ "channel_list_5g_2", ej_wl_channel_list_5g_2},
 #endif
+
+#if defined(CONFIG_BCMWL5) && defined(RTCONFIG_WIFI6E)
+	{ "channel_list_6g", ej_wl_channel_list_6g},
+#endif
+
 #if defined(RTCONFIG_QTN) || defined(RTCONFIG_QSR10G) || defined(RTCONFIG_LANTIQ)
 	{ "channel_list_5g_20m", ej_wl_channel_list_5g_20m},
 	{ "channel_list_5g_40m", ej_wl_channel_list_5g_40m},
@@ -32308,9 +32334,15 @@ struct ej_handler ej_handlers[] = {
 	{ "wl_cap_2g", ej_wl_cap_2g },
 	{ "wl_cap_5g", ej_wl_cap_5g },
 	{ "wl_cap_5g_2", ej_wl_cap_5g_2 },
+#if defined(RTCONFIG_WIFI6E)
+	{ "wl_cap_6g", ej_wl_cap_6g },
+#endif
 	{ "wl_chipnum_2g", ej_wl_chipnum_2g },
 	{ "wl_chipnum_5g", ej_wl_chipnum_5g },
 	{ "wl_chipnum_5g_2", ej_wl_chipnum_5g_2 },
+#if defined(RTCONFIG_WIFI6E)
+	{ "wl_chipnum_6g", ej_wl_chipnum_6g},
+#endif	
 #endif
 	{ "nat_accel_status", ej_nat_accel_status },
 	{ "get_wl_channel_list_2g", ej_get_wl_channel_list_2g },
@@ -32795,12 +32827,12 @@ struct log_pass_url_list log_pass_handlers[] = {
 	{ NULL, NULL }
 };	/* */
 
-#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX6000) || defined(GTAXE16000) || defined(GTAX11000_PRO) || defined(GT10) || defined(RTAX82U_V2)
+#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX6000) || defined(GTAXE16000) || defined(GTAX11000_PRO) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2)
 void switch_ledg(int action)
 {
 	switch(action) {
 		case LEDG_QIS_RUN:
-#ifdef TUFAX5400
+#if defined(TUFAX5400) || defined(TUFAX5400_V2)
 			nvram_set_int("ledg_scheme", LEDG_SCHEME_RAINBOW);
 #else
 			nvram_set_int("ledg_scheme", LEDG_SCHEME_COLOR_CYCLE);

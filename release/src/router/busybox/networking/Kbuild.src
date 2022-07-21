@@ -28,6 +28,7 @@ lib-$(CONFIG_IPCALC)       += ipcalc.o
 lib-$(CONFIG_NAMEIF)       += nameif.o
 lib-$(CONFIG_NC)           += nc.o
 lib-$(CONFIG_NETSTAT)      += netstat.o
+lib-$(CONFIG_NSLOOKUP_LEDE) += nslookup_lede.o
 lib-$(CONFIG_NSLOOKUP)     += nslookup.o
 lib-$(CONFIG_NTPD)         += ntpd.o
 lib-$(CONFIG_PSCAN)        += pscan.o

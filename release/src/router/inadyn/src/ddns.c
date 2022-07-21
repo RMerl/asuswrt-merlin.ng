@@ -750,7 +750,21 @@ static int update_alias_table(ddns_t *ctx)
 				alias->name, event, rc);
 		}
 
-		if (RC_DDNS_RSP_NOTOK == rc || RC_DDNS_RSP_AUTH_FAIL == rc || RC_DDNS_RSP_NOHOST == rc)
+		if (RC_DDNS_RSP_NOTOK == rc || RC_DDNS_RSP_AUTH_FAIL == rc
+#ifdef ASUSWRT
+			/* Time-out case */
+			|| RC_TCP_INVALID_REMOTE_ADDR == rc
+			|| RC_TCP_CONNECT_FAILED == rc
+			|| RC_TCP_SEND_ERROR == rc
+			|| RC_TCP_RECV_ERROR == rc
+			|| RC_OS_INVALID_IP_ADDRESS == rc
+			|| RC_DDNS_RSP_RETRY_LATER == rc
+			|| RC_DDNS_INVALID_CHECKIP_RSP == rc
+			/* connect_fail case */
+			|| RC_HTTPS_FAILED_CONNECT == rc
+			|| RC_HTTPS_FAILED_GETTING_CERT == rc
+#endif
+			)
 			remember = rc;
 
 		if (RC_DDNS_RSP_RETRY_LATER == rc && !remember)
@@ -938,36 +952,46 @@ static int check_error(ddns_t *ctx, int rc)
 	const char *errstr = "Error response from DDNS server";
 
 	switch (rc) {
-	case RC_OK:
-		ctx->update_period = ctx->normal_update_period_sec;
-		break;
-
-	/* dyn_dns_update_ip() failed, inform the user the (network) error
-	 * is not fatal and that we will retry again in a short while. */
-	case RC_TCP_INVALID_REMOTE_ADDR: /* Probably temporary DNS error. */
-	case RC_TCP_CONNECT_FAILED:      /* Cannot connect to DDNS server atm. */
-	case RC_TCP_SEND_ERROR:
-	case RC_TCP_RECV_ERROR:
-	case RC_OS_INVALID_IP_ADDRESS:
-	case RC_DDNS_RSP_RETRY_LATER:
-	case RC_DDNS_INVALID_CHECKIP_RSP:
-		ctx->update_period = ctx->error_update_period_sec;
-		logit(LOG_WARNING, "Will retry again in %d sec ...", ctx->update_period);
-		break;
-
-	case RC_DDNS_RSP_NOTOK:
-	case RC_DDNS_RSP_AUTH_FAIL:
-		if (ignore_errors) {
-			logit(LOG_WARNING, "%s, ignoring ...", errstr);
+		case RC_OK:
+			ctx->update_period = ctx->normal_update_period_sec;
 			break;
-		}
-		logit(LOG_ERR, "%s, exiting!", errstr);
-		return 1;
 
-	/* All other errors, socket creation failures, invalid pointers etc.  */
-	default:
-		logit(LOG_ERR, "Unrecoverable error %d, exiting ...", rc);
-		return 1;
+		/* dyn_dns_update_ip() failed, inform the user the (network) error
+		 * is not fatal and that we will retry again in a short while. */
+		/* Time-out case */
+		case RC_TCP_INVALID_REMOTE_ADDR: /* Probably temporary DNS error. */
+		case RC_TCP_CONNECT_FAILED:      /* Cannot connect to DDNS server atm. */
+		case RC_TCP_SEND_ERROR:
+		case RC_TCP_RECV_ERROR:
+		case RC_OS_INVALID_IP_ADDRESS:
+		case RC_DDNS_RSP_RETRY_LATER:
+		case RC_DDNS_INVALID_CHECKIP_RSP:
+#ifndef ASUSWRT
+			ctx->update_period = ctx->error_update_period_sec;
+			logit(LOG_WARNING, "Will retry again in %d sec ...", ctx->update_period);
+			break;
+#else
+			logit(LOG_WARNING, "Will retry again, rc=%d", rc);
+			return 1;
+		/* connect_fail case */
+		case RC_HTTPS_FAILED_CONNECT:
+		case RC_HTTPS_FAILED_GETTING_CERT:
+			logit(LOG_WARNING, "Will retry again, rc=%d", rc);
+			return 1;
+#endif
+		case RC_DDNS_RSP_NOTOK:
+		case RC_DDNS_RSP_AUTH_FAIL:
+			if (ignore_errors) {
+				logit(LOG_WARNING, "%s, ignoring ...", errstr);
+				break;
+			}
+			logit(LOG_ERR, "%s, exiting!", errstr);
+			return 1;
+
+		/* All other errors, socket creation failures, invalid pointers etc.  */
+		default:
+			logit(LOG_ERR, "Unrecoverable error %d, exiting ...", rc);
+			return 1;
 	}
 
 	return 0;

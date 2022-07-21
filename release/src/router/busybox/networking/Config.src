@@ -668,6 +668,20 @@ config NSLOOKUP
 	help
 	  nslookup is a tool to query Internet name servers.
 
+config NSLOOKUP_LEDE
+	bool "nslookup_lede"
+	default y
+	depends on !NSLOOKUP
+	help
+	nslookup is a tool to query Internet name servers (LEDE flavor).
+
+config FEATURE_NSLOOKUP_LEDE_LONG_OPTIONS
+	bool "Enable long options"
+	default y
+	depends on NSLOOKUP_LEDE && LONG_OPTS
+	help
+	Support long options for the nslookup applet.
+
 config NTPD
 	bool "ntpd"
 	default y

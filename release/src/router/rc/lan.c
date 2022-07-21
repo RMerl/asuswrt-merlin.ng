@@ -1340,7 +1340,7 @@ void start_lan(void)
 #endif
 #endif
 
-#ifdef RTAX82U_V2
+#if defined(RTAX82U_V2) || defined(TUFAX5400_V2)
 	// configure 6715 GPIO direction
 	eval("wl", "-i", "eth6", "gpioout", "0x2002", "0x2002");
 	eval("wl", "-i", "eth6", "ledbh", "13", "7");
@@ -6109,9 +6109,26 @@ void start_lan_port(int dt)
 	lanport_ctrl(1);
 #endif
 #ifdef HND_ROUTER
-	_dprintf("[%s(%d)] run GPY211_INIT_SPEED ...\n", __func__, __LINE__);
+#if defined(TUFAX3000_V2) || defined(RTAXE7800) || defined(GT10)
+	char lan_ifnames[64], word[64], *next;
+	int gpy211_war = 0;
+
+	strlcpy(lan_ifnames, nvram_safe_get("lan_ifnames"), sizeof(lan_ifnames));
+	foreach (word, lan_ifnames, next) {
+		if (!strcmp(word, "eth0")) {
+			gpy211_war = 1;
+			break;
+		}
+	}
+
 	/* add war for 2500BaseX speed issue */
-	GPY211_INIT_SPEED();
+	if (gpy211_war) {
+#endif
+		_dprintf("[%s(%d)] run GPY211_INIT_SPEED ...\n", __func__, __LINE__);
+		GPY211_INIT_SPEED();
+#if defined(TUFAX3000_V2) || defined(RTAXE7800) || defined(GT10)
+	}
+#endif
 #endif
 }
 

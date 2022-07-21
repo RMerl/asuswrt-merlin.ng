@@ -682,8 +682,14 @@ function applyRule(){
 		document.form.wandog_enable.value = "0";
 	}
 
-	if(document.form.wandog_enable_chk.checked)
+	if(document.form.wandog_enable_chk.checked){
+		if(document.form.wandog_target.value == "" || document.form.wandog_target.value.trim().length==0){
+			alert("<#JS_fieldblank#>");
+			document.form.wandog_target.focus();
+			return false;
+		}
 		document.form.wandog_enable.value = "1";
+	}
 	else
 		document.form.wandog_enable.value = "0";
 

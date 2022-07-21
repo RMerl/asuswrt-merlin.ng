@@ -103,6 +103,7 @@ ASUS_eula_desc1_4=Además, para habilitar su función de control remoto de IFTTT
 ASUS_eula_desc2=ASUS se compromete a proteger y respetar su privacidad; Puede visitar Configuración avanzada > Administración > Privacidad para habilitar y deshabilitar el uso compartido de la información del producto con ASUS en todo momento. Para obtener más información sobre cómo ASUS protege su privacidad, visite la <a id="eula_url" style="font-weight: bolder;text-decoration:underline;cursor:pointer;" target="_blank">política de privacidad de ASUS</a>.
 ASUS_eula_age=Tengo más de 16 años de edad.
 ASUS_eula_age_confirm=Confirme que tiene más de 16 años.
+ASUS_eula_use_confirm=Confirme que Condiciones de uso de ASUS.
 ASUS_eula_withdraw0=Para %1$@ y Conexión remota  (aplicación ASUS Router/aplicación Lyra/AiCloud/AiDisk):
 ASUS_eula_withdraw_desc1=Tenga en cuenta que ASUS, a través de las funciones anteriores, recopilará su información, incluido el nombre del modelo del producto, la versión de firmware, el estado de Internet, la dirección IP, la dirección MAC y el nombre DDNS.
 ASUS_eula_withdraw_desc1_2=Si desea deshabilitar el uso compartido de la información con ASUS a través de las funciones anteriores, haga clic en <span style="font-weight: bold;">[Renunciar]</span> a continuación. Sin embargo, tenga en  que dichas características y funciones pueden no estar disponibles si deja de compartir su información con ASUS.
@@ -246,7 +247,7 @@ FIRM_fail_desc=Error de actualización del firmware. Esta anomalía puede estar 
 FIRM_ok_desc=El firmware se está actualizando. Espere aproximadamente 3 minutos.
 FIRM_ok_aimesh=La actualización de firmware ha finalizado. Cierre esta ventana y vuelva a acceder al router AiMesh.
 FIRM_reboot_manually=Actualización de firmware finalizada. Reinicie ZVMODELVZ manualmente.
-FIRM_trx_valid_fail_desc=To comply with regulatory amendments, we have modified our certification rule to ensure better firmware quality. This version is not compatible with all previously released ASUS firmware and uncertified third party firmware. Please check our official websites for the certified firmware.
+FIRM_trx_valid_fail_desc=To comply with regulatory amendments, we have modified our certificate rule to ensure better firmware quality. This version is not compatible with all previously released ASUS firmware and uncertified third party firmware. Please check our official websites for the certified firmware.
 Five_attempts_logout_hint=Ha introducido una contraseña incorrecta 5 veces. Se cerrará su sesión.
 footer_copyright_desc=2022 ASUSTeK Computer Inc. Reservados todos los derechos.
 FW_n1=Los parámetros de configuración mantendrán sus ajustes durante el proceso de actualización del firmware.
@@ -1081,13 +1082,14 @@ AiMesh_confirm_msg_ChangeSSID=Si cambia su SSID, la conectividad WiFi del nodo A
 AiMesh_confirm_msg_ChangeKey=Si cambia su clave precompartida WPA, la conectividad WiFi del nodo AiMesh se verá afectada.
 AiMesh_confirm_msg_CountryCode=El cambio de código de país puede afectar al sistema AiMesh.
 AiMesh_confirm_msg5=Si deshabilita la funcionalidad Radio, la conectividad WiFi del router AiMesh se verá afectada.
-AiMesh_confirm_msg6=Si oculta su SSID, la conectividad WiFi del router AiMesh se verá afectada.
+AiMesh_confirm_msg6=SSID oculta no ayuda a proteger su red Wi-Fi y podría provocar ciertos problemas de conexión.
 AiMesh_confirm_msg7=Si oculta su SSID, la función WPS se deshabilitará y la conectividad WiFi del router AiMesh se verá afectada.
 AiMesh_confirm_msg8=Si deshabilita el servidor DHCP, la conectividad WiFi del router AiMesh se verá afectada.
 AiMesh_confirm_msg9=Considerando la compatibilidad del sistema AiMesh y de los dispositivos finales, le sugerimos que utilice WPA2-Personal. ¿Desea cambiar a  #AUTHMODE ?\n*Si observa problemas de conexión, cambie a WPA2-Personal o consulte al fabricante para obtener más información.
 AiMesh_confirm_msg10=Para asegurar la conexión de su sistema AiMesh y de los dispositivos finales, lea esto <a id="wpa3FaqLink">FAQ</a> antes de cambiar a WPA3-Personal.
 AiMesh_confirm_msg11=Actualmente utiliza WPA3-personal. Para crear un sistema AiMesh, su método de autenticación cambiará a WPA2/WPA3-personal. ¿Desea continuar?
 AiMesh_confirm_msg12=You can read this <a id='wpa3FaqLink'>FAQ</a> for more information.
+AiMesh_confirm_msg13=Para obtener más detalles, visite <a style='font-weight: bolder;text-decoration: underline;color:#000000;' href='' target='_blank'>esta Pregunta Frecuente</a>
 AiMesh_Feature_Desc=Advanced ASUS AiMesh es una nueva e innovadora función de router que conecta varios routers de ASUS conjuntamente, creando una red WiFi para toda la casa.
 AiMesh_FAQ=Buscar más información sobre ASUS AiMesh
 AiMesh_FindNode=Buscar nodo AiMesh
@@ -3442,6 +3444,7 @@ TZ17=Hora del Atlántico (Canadá)
 TZ18=La Paz
 TZ18_1=Caracas
 TZ19=Santiago
+TZ19_1=Asunción
 TZ20=Terranova
 TZ21=Brasilia
 TZ22=Buenos Aires, Georgetown
@@ -3626,7 +3629,7 @@ vpn_network_place=Compatibilidad con sitio de red (Samba)
 vpn_openvpn_AdvDNS=Anunciar DNS a clientes
 vpn_openvpn_Auth=Modo de autorización
 vpn_openvpn_AuthOnly=Solo autenticación mediante nombre de usuario y contraseña
-vpn_openvpn_AuthOnly_hint=Authorization Mode fixes on TLS
+vpn_openvpn_AuthOnly_hint=Authentication Mode fixes on TLS
 vpn_openvpn_AuthHMAC=Autorización HMAC
 vpn_openvpn_ExtraHMAC=Autorización HMAC adicional
 vpn_openvpn_ClientMutual=Permitir Cliente <-> Cliente

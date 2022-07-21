@@ -82,6 +82,11 @@ config RTCONFIG_BCM_MFG
 	depends on RTCONFIG_BCMARM && RTCONFIG_BCMWL6
 	default n
 
+config RTCONFIG_WLTEST
+	bool "wltest mode"
+	depends on RTCONFIG_BCMARM && RTCONFIG_BCMWL6
+	default n
+
 config RTCONFIG_HND_ROUTER_AX
 	bool "Bcm hnd 11ax bsp"
 	default n
@@ -1026,6 +1031,11 @@ config RTCONFIG_SWITCH_RTL8370MB_PHY_QCA8033_X2
 	depends on RTCONFIG_QCA
 	default n
 
+config RTCONFIG_SWITCH_IPQ50XX_QCA8337
+	bool "Qualcomm Atheros IPQ50XX + QCA8337"
+	depends on RTCONFIG_QCA
+	default n
+
 config RTCONFIG_QCA953X
 	bool "Qualcomm Atheros QCA953X Chip Support"
 	default n
@@ -1369,6 +1379,10 @@ config RTCONFIG_TEMPROOTFS
 	bool "temp rootfilesystem"
 	default n
 
+config RTCONFIG_SINGLEIMG_B
+	bool "504 force use singleImg at idx-1"
+	default n
+
 config RTCONFIG_ATEUSB3_FORCE
 	bool "ATE USB3 control"
 	default n
@@ -1628,12 +1642,16 @@ config RTCONFIG_TR181
 	bool "Support TR-181 data model"
 	default n
 
-config RTCONFIG_TR143_110
-	bool "Support TR-143-1-1-0 data model"
-	default n
-
 config RTCONFIG_ISP_OPTUS
 	bool "Support ISP OPTUS Customize"
+	default n
+
+config RTCONFIG_ACS_SUBNET
+	bool "Support ACS SUBNET Customize"
+	default n
+
+config RTCONFIG_ISP_XLNPROVU
+	bool "Support ISP XLN/PROVU Customize"
 	default n
 
 config RTCONFIG_STAINFO
@@ -2255,8 +2273,8 @@ config RTCONFIG_QCA_LBD
 	bool "qca lbd support"
 	default n
 
-config RTCONFIG_AMAS_QCA_WDS
-	bool "qca amas wds support"
+config RTCONFIG_AMAS_WDS
+	bool "amas wds support"
 	default n
 
 config RTCONFIG_GEFORCENOW
@@ -2616,6 +2634,10 @@ config RTCONFIG_AVOID_TZ_ENV
 config RTCONFIG_BANDINDEX_NEW
         bool " Bandindex version greater than 1"
         default n
+
+config RTCONFIG_SECUREBOOT
+	bool " SecureBoot fw"
+	default n
 
 config RTCONFIG_BSC_SR
         bool " sync bsscolor and enable spatial-reuse"

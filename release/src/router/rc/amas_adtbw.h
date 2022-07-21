@@ -10,6 +10,7 @@
 #define AMAS_ADTBW_DFT_BW160_RSSI_THRESH_EU -66
 #define AMAS_ADTBW_DFT_BW80_HIT_THRESH 3
 #define AMAS_ADTBW_DFT_BW160_HIT_THRESH 3
+#define AMAS_ADTBW_DFT_CH_SWITCH_SCORE_THRESH 150
 
 #define AMAS_ADTBW_DFT_CTRLCH_B3 104
 #define AMAS_ADTBW_DFT_CTRLCH_B4 149
@@ -63,6 +64,7 @@ typedef struct	amas_adtbw_config {
 	int rssi_bw80_unii4;
 	int rssi_bw160_unii4;
 	int eu_force_bw160;
+	int ch_switch_score_diff;
 	uint dwb_mode;	// fh_ap_enabled option
 	uint acs_unii4;	// acs_unii4 opition
 	uint unii4_dwb_activate; // check for backhaul ssid "_dwb" && closed = 1

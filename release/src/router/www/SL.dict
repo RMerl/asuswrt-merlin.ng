@@ -103,6 +103,7 @@ ASUS_eula_desc1_4=Poleg tega, da bi vam lahko omogočili funkcijo daljinskega na
 ASUS_eula_desc2=Podjetje ASUS je zavezano k varovanju in spoštovanju vaše zasebnosti; Da bi omogočili/onemogočili delitev podatkov o vašem izdelku s podjetjem ASUS, lahko kadar koli obiščete Napredne nastavitve> Skrbništvo > Zasebnost. Če želite izvedeti več o tem, kako podjetje ASUS varuje vašo zasebnost, prosimo, obiščite <a id="eula_url" style="font-weight: bolder;text-decoration:underline;cursor:pointer;" target="_blank">Pravilnik o zasebnosti podjetja ASUS</a>.
 ASUS_eula_age=Sem starejši/-a od 16 let.
 ASUS_eula_age_confirm=Prosimo, potrdite, da ste starejši od 16 let.
+ASUS_eula_use_confirm=Prosimo, potrdite, da Pogoji uporabe ASUS.
 ASUS_eula_withdraw0=Za funkcije %1$@ in oddaljena povezava(aplikacija usmerjevalnika ASUS/aplikacija Lyra/AiCloud/AiDisk):
 ASUS_eula_withdraw_desc1=Prosimo, upoštevajte, da bo podjetje ASUS prek zgoraj navedenih funkcij zbiralo vaše podatke, vključno z imenom modela izdelka, različico vdelane programske opreme, stanjem interneta, naslovom IP, naslovom MAC in imenom DDNS.
 ASUS_eula_withdraw_desc1_2=Če želite onemogočiti delitev vaših podatkov s podjetjem ASUS prek zgoraj navedenih funkcij, prosimo kliknite <span style="font-weight: bold;">[Odstop]</span> spodaj. Vendar prosimo, upoštevajte, da takšne funkcije/funkcionalnosti morda ne bodo delovale, če prenehate deliti podatke s podjetjem ASUS.
@@ -1081,13 +1082,14 @@ AiMesh_confirm_msg_ChangeSSID=Če spremenite svoj SSID, bo to vplivalo na povezl
 AiMesh_confirm_msg_ChangeKey=Če spremenite svoj predhodno deljen ključ WPA, bo to vplivalo na povezljivost omrežja WiFi na vozlišču AiMesh.
 AiMesh_confirm_msg_CountryCode=Sprememba kode države lahko vpliva na sistem AiMesh.
 AiMesh_confirm_msg5=Če onemogočite radijsko funkcionalnost, bo to vplivalo na povezljivost omrežja WiFi na usmerjevalniku AiMesh.
-AiMesh_confirm_msg6=Če skrijete svoj SSID, bo to vplivalo na povezljivost omrežja WiFi na usmerjevalniku AiMesh.
+AiMesh_confirm_msg6=Skriti SSID ne pomaga zaščititi omrežja Wi-Fi in lahko povzroči težave pri povezovanju.
 AiMesh_confirm_msg7=Če skrijete SSID, bo funkcija WPS onemogočena in to bo vplivalo na povezljivost omrežja WiFi na usmerjevalniku AiMesh.
 AiMesh_confirm_msg8=Če onemogočite strežnik DHCP, bo to vplivalo na povezljivost omrežja WiFi na usmerjevalniku AiMesh.
 AiMesh_confirm_msg9=Glede na združljivost sistema AiMesh in končnih naprav priporočamo, da uporabite način WPA2-Personal. Želite preklopiti na način  #AUTHMODE?\n*Če se pojavijo težave s povezavo, preklopite na način WPA2-Personal ali se obrnite na proizvajalca, pri katerem boste dobili več informacij.
 AiMesh_confirm_msg10=Za vzpostavitev povezave med sistemom AiMesh in končnimi napravami pred preklopom na način WPA3-Personal preberite temo <a id="wpa3FaqLink">FAQ</a>.
 AiMesh_confirm_msg11=Trenutno uporabljate WPA3-personal. Z namenom ustvarjanja sistema AiMesh bo način preverjanja pristnosti spremenjen v WPA2/WPA3-personal. Ali želite nadaljevati?
 AiMesh_confirm_msg12=You can read this <a id='wpa3FaqLink'>FAQ</a> for more information.
+AiMesh_confirm_msg13=Dodatne podrobnosti najdete na spletnem mestu <a style='font-weight: bolder;text-decoration: underline;color:#000000;' href='' target='_blank'>pogosto zastavljeno vprašanje</a>
 AiMesh_Feature_Desc=Napredni ASUS AiMesh je inovativna nova funkcija usmerjevalnikov, ki povezuje več usmerjevalnikov ASUS in ustvarja omrežje WiFi za celoten dom.
 AiMesh_FAQ=Več o funkciji ASUS AiMesh
 AiMesh_FindNode=Iskanje vozlišča AiMesh
@@ -3442,6 +3444,7 @@ TZ17=Atlantski čas (Kanada)
 TZ18=La Paz
 TZ18_1=Caracas
 TZ19=Santiago
+TZ19_1=Asunción
 TZ20=Nova Fundlandija
 TZ21=Brasilia
 TZ22=Buenos Aires, Georgetown
@@ -3626,7 +3629,7 @@ vpn_network_place=Podpora za omrežni pogon (Samba)
 vpn_openvpn_AdvDNS=Oglašuj sistem DNS odjemalcem
 vpn_openvpn_Auth=Način odobritve
 vpn_openvpn_AuthOnly=Preverjanje pristnosti z uporabniškim imenom/geslom Samo
-vpn_openvpn_AuthOnly_hint=Authorization Mode fixes on TLS
+vpn_openvpn_AuthOnly_hint=Authentication Mode fixes on TLS
 vpn_openvpn_AuthHMAC=Dodatna odobritev HMAC
 vpn_openvpn_ExtraHMAC=Dodatna odobritev HMAC
 vpn_openvpn_ClientMutual=Dovoli odjemalec<->odjemalec

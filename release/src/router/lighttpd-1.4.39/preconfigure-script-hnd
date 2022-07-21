@@ -23,7 +23,9 @@ if [ -n "$NVRAM_ENCRYPT" ]; then
         CFLAGS+=" -DNVRAM_ENCRYPT_ENABLE=1"
 fi
 
-export LDFLAGS="-L$uclib -ldl -L$cur_dir/../pcre-$PCRE_VER/.libs -lpcre -L$cur_dir/../libxml2/.libs -lxml2 -lm -L$router_dir/openssl -L$cur_dir/../curl-7.21.7/lib/.libs"
+#export LDFLAGS="-L$uclib -ldl -L$cur_dir/../pcre-$PCRE_VER/.libs -lpcre -L$cur_dir/../libxml2/.libs -lxml2 -lm -L$router_dir/openssl -L$cur_dir/../curl-7.21.7/lib/.libs"
+export LDFLAGS="              -L$cur_dir/../pcre-$PCRE_VER/.libs -lpcre -L$cur_dir/../libxml2/.libs -lxml2 -lm -L$router_dir/openssl -L$cur_dir/../curl-7.21.7/lib/.libs"
+
 
 TR069=`cat ../.config |grep "RTCONFIG_TR069=y"`
 if [ -n "$TR069" ]; then

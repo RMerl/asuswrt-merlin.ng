@@ -331,7 +331,7 @@ void enable_wan_led()
 #ifdef GTAC2900
 	eval("sw", "0x800c00a0", "0");				// disable event on tx/rx activity
 #else
-#if defined(RTAX58U_V2) || defined(GTAX6000) || defined(RTAXE7800) || defined(RTAX82U_V2)
+#if defined(RTAX58U_V2) || defined(GTAX6000) || defined(RTAXE7800) || defined(RTAX82U_V2) || defined(TUFAX5400_V2)
 #ifdef RTAXE7800
 	if (nvram_get_int("wans_extwan"))
 #endif
@@ -351,7 +351,7 @@ void disable_wan_led()
 #ifdef RTCONFIG_HND_ROUTER_AX
 	return;
 #elif defined(HND_ROUTER)
-#if defined(RTAX58U_V2) || defined(GTAX6000) || defined(RTAXE7800) || defined(RTAX82U_V2)
+#if defined(RTAX58U_V2) || defined(GTAX6000) || defined(RTAXE7800) || defined(RTAX82U_V2) || defined(TUFAX5400_V2)
 #ifdef RTAXE7800
 	if (nvram_get_int("wans_extwan"))
 #endif

@@ -561,7 +561,7 @@ ceventc_dump() {
 	echo "================================="
 	display_cmd_op "CEVENTCDUMP: ceventc -i $IFNAME dump" "$CEVENTCCMD -i $IFNAME dump"
 	## Flush ceventc log
-	ceventc -i $IFNAME flush > /dev/NULL 2>&1
+	#ceventc -i $IFNAME flush > /dev/NULL 2>&1
 }
 
 #driver_init

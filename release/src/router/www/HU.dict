@@ -103,6 +103,7 @@ ASUS_eula_desc1_4=Ezenkívül ha az IFTTT™ távoli vezérlési funkcióját en
 ASUS_eula_desc2=Az ASUS mindent megtesz a személyes adatok védelme és tiszteletben tartása érdekében. Bármikor igény szerint megnyithatja az Advanced Settings (Speciális beállítások) > Administration (Adminisztrálás) > Privacy (Adatvédelem) menüpontot, és engedélyezheti vagy letilthatja a termékkel kapcsolatos információk megosztását az ASUS vállalattal. Ha további részleteket szeretne megtudni arról, hogy az ASUS hogyan gondoskodik az adatok védelméről, tekintse meg az <a id="eula_url" style="font-weight: bolder;text-decoration:underline;cursor:pointer;" target="_blank">ASUS adatvédelmi nyilatkozatát</a>.
 ASUS_eula_age=Már elmúltam 16 éves.
 ASUS_eula_age_confirm=Kérjük, erősítse meg, hogy már elmúlt 16 éves.
+ASUS_eula_use_confirm=Kérjük, erősítse meg, hogy ASUS használati feltételek.
 ASUS_eula_withdraw0=A %1$@ és távoli csatlakozás (ASUS Router alkalmazás/Lyra alkalmazás/AiCloud/AiDisk) esetében:
 ASUS_eula_withdraw_desc1=Kérjük, vegye figyelembe, hogy az ASUS a fenti funkciókon keresztül gyűjti az információkat, többek között a termék típusának nevét, a firmware verziószámát, az internet állapotát, az IP-címet, a MAC-címet és a DDNS-nevet.
 ASUS_eula_withdraw_desc1_2=Ha azt szeretné, hogy az információk ne legyenek megosztva az ASUS vállalattal a fenti funkciókon keresztül, kattintson az alábbi <span style="font-weight: bold;">[Visszavonás]</span> lehetőségre. Azt mindenképpen vegye figyelembe, hogy ha nem osztja meg az információkat az ASUS vállalattal, akkor elképzelhető, hogy ezek a szolgáltatások és funkciók nem fognak működni.
@@ -246,7 +247,7 @@ FIRM_fail_desc=A firmware frissítése sikertelen. Ellenőrizze a firmware verzi
 FIRM_ok_desc=A Firmware frissítése folyik. Kérjük, várjon kb. 3 percig.
 FIRM_ok_aimesh=A firmware frissítés befejeződött. Zárja be ezt az ablakot és lépjen be újra az AiMesh routerre,
 FIRM_reboot_manually=A firmware frissítése sikeresen megtörtént. Kérjük, indítsa újra manuálisan a ZVMODELVZ-t.
-FIRM_trx_valid_fail_desc=To comply with regulatory amendments, we have modified our certification rule to ensure better firmware quality. This version is not compatible with all previously released ASUS firmware and uncertified third party firmware. Please check our official websites for the certified firmware.
+FIRM_trx_valid_fail_desc=To comply with regulatory amendments, we have modified our certificate rule to ensure better firmware quality. This version is not compatible with all previously released ASUS firmware and uncertified third party firmware. Please check our official websites for the certified firmware.
 Five_attempts_logout_hint=5 alkalommal is helytelen jelszót adott meg. A rendszer kijelentkezteti.
 footer_copyright_desc=2022 ASUSTeK Computer Inc. Minden jog fenntartva.
 FW_n1=A konfigurációs paraméterek beállításai a firmware-frissítési folyamat során megmaradnak.
@@ -1081,13 +1082,14 @@ AiMesh_confirm_msg_ChangeSSID=Amennyiben megváltoztatja az SSID-t, az AiMesh cs
 AiMesh_confirm_msg_ChangeKey=Amennyiben megváltoztatja az a WPA előre megosztott kulcsot, az AiMesh csomópont WiFi csatlakozása megsínyli ezt.
 AiMesh_confirm_msg_CountryCode=Az országkód megváltoztatása befolyásolhatja az AiMesh rendszert.
 AiMesh_confirm_msg5=Amennyiben kikapcsolja a rádió funkciót, az AiMesh router WiFi csatlakozása megsínyli ezt.
-AiMesh_confirm_msg6=Amennyiben elrejti az SSID-t, az AiMesh router WiFi csatlakozása megsínyli ezt.
+AiMesh_confirm_msg6=A rejtett SSID nem segíti a Wi-Fi hálózat biztonságát, és kapcsolódási problémákat okozhat.
 AiMesh_confirm_msg7=Amennyiben elrejti az SSID-t, a WPS funkció kikapcsol és az AiMesh router WiFi csatlakozása megsínyli ezt.
 AiMesh_confirm_msg8=Amennyiben kikapcsolja a DHCP kiszolgálót, az AiMesh router WiFi csatlakozása megsínyli ezt.
 AiMesh_confirm_msg9=Az AiMesh rendszer és a végeszközök kompatibilitására figyelemmel javasoljuk a WPA2-Personal használatát. Szeretne átváltani a következőre: #AUTHMODE ?\n*Ha kapcsolódási problémák merülnek fel, váltson WPA2-Personal módszerre, vagy forduljon a gyártó(k)hoz további információkért.
 AiMesh_confirm_msg10=Az AiMesh rendszer és a végeszköz(ök) kapcsolódásának biztosítása érdekében olvassa el ezt a <a id="wpa3FaqLink">FAQ</a>-ot, mielőtt WPA3-Personal módra váltana.
 AiMesh_confirm_msg11=Ön jelenleg WPA3-personal biztonságot használ. AiMesh rendszer létrehozásához a hitelesítési módszer WPA2/WPA3-personal-ra változik. Kívánja folytatni?
 AiMesh_confirm_msg12=You can read this <a id='wpa3FaqLink'>FAQ</a> for more information.
+AiMesh_confirm_msg13=A további részletekért látogasson el a <a style='font-weight: bolder;text-decoration: underline;color:#000000;' href='' target='_blank'>ezt a GYIK-et</a> oldalra.
 AiMesh_Feature_Desc=A továbbfejlesztett ASUS AiMesh egy olyan új, innovatív router funkció, amely több ASUS routert összekötve egész otthonra kiterjedő WiFi hálózatot hoz létre.
 AiMesh_FAQ=Bővebben az ASUS AiMesh funkcióról
 AiMesh_FindNode=AiMesh csomópont keresése
@@ -3442,6 +3444,7 @@ TZ17=Atlanti-óceán idő (Kanada)
 TZ18=La Paz
 TZ18_1=Caracas
 TZ19=Santiago
+TZ19_1=Asuncion
 TZ20=Új-Fundland
 TZ21=Brasilia
 TZ22=Buenos Aires, Georgetown
@@ -3626,7 +3629,7 @@ vpn_network_place=Hálózati hely (Samba) támogatás
 vpn_openvpn_AdvDNS=DNS hirdetése kliensek felé
 vpn_openvpn_Auth=Hitelesítési mód
 vpn_openvpn_AuthOnly=Csak Felhasználónév- / Jelszó-hitelesítés
-vpn_openvpn_AuthOnly_hint=Authorization Mode fixes on TLS
+vpn_openvpn_AuthOnly_hint=Authentication Mode fixes on TLS
 vpn_openvpn_AuthHMAC=HMAC hitelesítés
 vpn_openvpn_ExtraHMAC=Extra HMAC hitelesítés
 vpn_openvpn_ClientMutual=Kliens <-> Kliens engedélyezése

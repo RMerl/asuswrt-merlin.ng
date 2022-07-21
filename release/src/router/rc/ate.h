@@ -7,6 +7,7 @@ enum ate_led_color {
 	LED_COLOR_RED,
 	LED_COLOR_GREEN,
 	LED_COLOR_ORANGE,
+	LED_COLOR_PURPLE,
 
 	LED_COLOR_MAX
 };

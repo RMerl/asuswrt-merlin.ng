@@ -103,6 +103,7 @@ ASUS_eula_desc1_4=Om uw afstandsbedieningsfunctie van IFTTT™ in te schakelen v
 ASUS_eula_desc2=ASUS zet zich in voor het beschermen en respecteren van uw privacy; U kunt op elk ogenblik naar Advanced Settings > Administration > Privacy (Geavanceerde instellingen > Beheer > Privacy) gaan om het delen van uw productinformatie met ASUS in/uit te schakelen. Voor meer informatie over de manier waarop ASUS uw privacy beschermt, gaat u naar <a id="eula_url" style="font-weight: bolder;text-decoration:underline;cursor:pointer;" target="_blank">ASUS Privacybeleid</a>.
 ASUS_eula_age=Ik ben ouder dan 16 jaar.
 ASUS_eula_age_confirm=Bevestig dat u ouder bent dan 16.
+ASUS_eula_use_confirm=Bevestig dat ASUS-gebruiksvoorwaarden.
 ASUS_eula_withdraw0=Voor %1$@ en Externe verbinding(ASUS Router-APP/Lyra-APP/AiCloud/AiDisk):
 ASUS_eula_withdraw_desc1=Houd ermee rekening dat uw informatie, met inbegrip van uw productmodelnaam, de firmwareversie, de internetstatus, het IP-adres, het MAC-adres en de DDNS-naam, door ASUS wordt verzameld via de bovenstaande functies.
 ASUS_eula_withdraw_desc1_2=Als u het delen van uw informatie met ASUS via de bovenstaande functies wilt uitschakelen, klik u onderaan op<span style="font-weight: bold;">[Withdraw] (terugtrekken)</span>. Houd er echter rekening mee dat dergelijke functies mogelijk niet werken als u het delen van uw informatie met ASUS stopzet.
@@ -1081,13 +1082,14 @@ AiMesh_confirm_msg_ChangeSSID=Als u uw SSID wijzigt, wordt de WiFi-connectivitei
 AiMesh_confirm_msg_ChangeKey=Als u uw vooraf gedeelde WPA-sleutel wijzigt, wordt de WiFi-connectiviteit van uw AiMesh-knooppunt beïnvloed.
 AiMesh_confirm_msg_CountryCode=Het wijzigen van uw landcode kan uw AiMesh-systeem beïnvloeden.
 AiMesh_confirm_msg5=Als u de radiofunctionaliteit wilt uitschakelen, wordt de WiFi-connectiviteit van uw AiMesh-router beïnvloed.
-AiMesh_confirm_msg6=Als u uw SSID verbergt, wordt de WiFi-connectiviteit van uw AiMesh-router beïnvloed.
+AiMesh_confirm_msg6=Verborgen SSID helpt niet bij het beveiligen van uw wifinetwerk en kan verbindingsproblemen veroorzaken.
 AiMesh_confirm_msg7=Als u uw SSID verbergt, wordt de WPS-functie uitgeschakeld en wordt de WiFi-connectiviteit van uw AiMesh-router beïnvloed.
 AiMesh_confirm_msg8=Als u de DHCP-server uitschakelt, wordt de WiFi-connectiviteit van uw AiMesh-router beïnvloed.
 AiMesh_confirm_msg9=Vanwege de compatibiliteit van het AiMesh-systeem en eindapparaten adviseren we u om WPA2-Personal te gebruiken. Wilt u overschakelen naar #AUTHMODE?\n*Schakel over naar WPA2-Personal of raadpleeg de fabrikant(en) voor meer informatie als u problemen met de verbinding ondervindt.
 AiMesh_confirm_msg10=Lees deze <a id="wpa3FaqLink">veelgestelde vragen</a> om de verbinding van uw AiMesh-systeem en eindapparaten te garanderen voordat u overschakelt naar WPA3-Personal.
 AiMesh_confirm_msg11=U gebruikt momenteel WPA3-personal. Om een AiMesh-systeem te maken, zal uw verificatiemethode worden gewijzigd naar WPA2/WPA3-personal. Wilt u doorgaan?
 AiMesh_confirm_msg12=You can read this <a id='wpa3FaqLink'>FAQ</a> for more information.
+AiMesh_confirm_msg13=Voor meer details, <a style='font-weight: bolder;text-decoration: underline;color:#000000;' href='' target='_blank'>FAQ</a>
 AiMesh_Feature_Desc=Geavanceerde ASUS AiMesh is een vernieuwende router die meerdere ASUS-routers met elkaar verbindt, waardoor een WiFinetwork in het hele huis ontstaat.
 AiMesh_FAQ=Kom meer te weten over ASUS AiMesh
 AiMesh_FindNode=AiMesh-knooppunt zoeken
@@ -3442,6 +3444,7 @@ TZ17=Atlantic Time (Canada)
 TZ18=La Paz
 TZ18_1=Caracas
 TZ19=Santiago
+TZ19_1=Asuncion
 TZ20=Newfoundland
 TZ21=Brasilia
 TZ22=Buenos Aires, Georgetown
@@ -3626,7 +3629,7 @@ vpn_network_place=Ondersteuning Netwerklocatie (Samba)
 vpn_openvpn_AdvDNS=DNS adverteren voor clients
 vpn_openvpn_Auth=Machtigingsmodus
 vpn_openvpn_AuthOnly=Gebruikersnaam- / wachtwoordverificatie Alleen
-vpn_openvpn_AuthOnly_hint=Authorization Mode fixes on TLS
+vpn_openvpn_AuthOnly_hint=Authentication Mode fixes on TLS
 vpn_openvpn_AuthHMAC=HMAC-verificatie
 vpn_openvpn_ExtraHMAC=Extra HMAC-verificatie
 vpn_openvpn_ClientMutual=Client <-> client toestaan

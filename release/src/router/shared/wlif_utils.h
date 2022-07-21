@@ -29,12 +29,12 @@
 #endif
 #if defined(RTCONFIG_BCM_502L07P2)
 #include "ethernet.h"
-#include <wpsdefs.h>
 #else
 #include "bcm_usched.h"
 #include "proto/ethernet.h"
 #endif
 #include <wlioctl.h>
+#include <wpsdefs.h>
 
 #ifndef IFNAMSIZ
 #define IFNAMSIZ 16
@@ -134,7 +134,9 @@ extern bool wl_wlif_is_wet_ap(char *ifname);
  * Params:
  * @bi: BSS info.
  */
+#if 0
 extern int wl_wlif_get_max_nss(wl_bss_info_t* bi);
+#endif
 #if !defined(RTCONFIG_HND_ROUTER_AX)
 extern bool wl_wlif_is_psr_ap(char *ifname);
 extern int wl_wlif_do_bss_trans(void *hdl, char *ifname, uint8 rclass, chanspec_t chanspec, struct ether_addr bssid, struct ether_addr addr, int timeout, int event_fd);
@@ -248,11 +250,9 @@ typedef struct wlif_dpp_config_settings {
 	char dpp_connector[WLIF_DPP_PARAMS_MAX_SIZE];		// DPP connector
 	char dpp_csign[WLIF_DPP_PARAMS_MAX_SIZE];		// DPP C-sign
 	char dpp_netaccess_key[WLIF_DPP_PARAMS_MAX_SIZE];	// DPP Net access key
-#if 0 // TODO: wlan 17.10.157.60
 	char dpp_pp_key[WLIF_DPP_PARAMS_MAX_SIZE];		// DPP PP key
 	unsigned char dpp_psk[WLIF_PSK_MAX_SZ + /* '\0' */ 1];	// PSK
 	char dpp_pass[2*WLIF_PSK_MAX_SZ + /* '\0' */ 1];	// PASS
-#endif
 } wlif_dpp_creds_t;
 #endif
 
@@ -270,10 +270,8 @@ void wl_wlif_set_ap_as_configured(char *ifname);
 int wl_wlif_get_wps_status_code();
 /* Updates the nvram value of wps_proc_status which is used to update ui */
 void wl_wlif_update_wps_ui(wlif_wps_ui_status_code_id_t idx);
-#if 0 // TODO: wlan 17.10.157.60
 /* Updates the nvram value of dpp_status which is used to update ui */
 void wl_wlif_update_dpp_ui(DPP_UI_SCSTATE idx, char *ifname);
-#endif
 /* Function to parse the hostapd config file */
 int wl_wlif_parse_hapd_config(char *ifname, wlif_wps_nw_creds_t *creds);
 /* Function to parse the  wpa_supplicant config file */
@@ -288,7 +286,6 @@ int wl_wlif_wps_stop_session(char *wps_ifname, bool bUpdateUI);
 #else
 int wl_wlif_wps_stop_session(char *wps_ifname);
 #endif
-/* Function pointer to be provided to the thread creation routine */
 typedef void* (*wlif_thrd_func)(void *arg);
 /* Thread creation routine */
 int wl_wlif_create_thrd(pthread_t *thread_id, wlif_thrd_func fptr, void *arg, bool is_detached);
@@ -303,7 +300,6 @@ int wl_wlif_wps_map_timeout();
 #ifdef RTCONFIG_HND_ROUTER_AX
 /* Applies DPP credentials to the interface provided in bss */
 int wl_wlif_apply_dpp_creds(wlif_bss_t *bss, wlif_dpp_creds_t *dpp_creds);
-#if 0 // TODO: wlan 17.10.157.60
 /* convert ascii string to hex string */
 void wl_ascii_str_to_hex_str(char *ascii_str, uint16 ascii_len, char *hex_str, uint16 hex_len);
 /* convert hex string to ascii */
@@ -313,7 +309,6 @@ int get_all_lanifname_sz(void);
 int get_all_lanifname(char *ifnames, int ifnames_sz);
 int get_all_lanifnames_listsz(void);
 int get_all_lanifnames_list(char *ifnames_list, int ifnames_listsz);
-#endif
 #endif
 
 /* wps session timeout */

@@ -88,6 +88,7 @@ static struct time_mapping_s time_mapping_list[] = {
 	{ "GT10", 50,     120,     90},
 	{ "RT-AX3000N", 50,     120,     60},
 	{ "RT-AX82U_V2",50,     120,     60},
+	{ "TUF-AX5400_V2",50,   120,     60},
 	/* END */
 	{ NULL, 0, 0, 0 }
 };

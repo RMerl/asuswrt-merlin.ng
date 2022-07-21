@@ -233,8 +233,8 @@ function force_update() {
 	submitForm();
 }
 
-function change_ddns_realip(v){
-	if(ipv6_service != "disabled" && v == "0")
+function show_ipv6update_setting(){
+	if(ipv6_service != "disabled")
 		showhide("ddns_ipv6update_tr", 1);
 	else
 		showhide("ddns_ipv6update_tr", 0);
@@ -269,7 +269,7 @@ function ddns_load_body(){
         }
 	inputCtrl(document.form.ddns_refresh_x, 1);
 	showhide("ddns_ipcheck_tr", 1);
-		change_ddns_realip(document.form.ddns_realip_x.value);
+		show_ipv6update_setting();
         change_ddns_setting(document.form.ddns_server_x.value);
 
 	    if(document.form.ddns_server_x.value == "WWW.ORAY.COM"){
@@ -995,7 +995,7 @@ function check_unregister_result(){
 			<tr id="ddns_ipcheck_tr">
 				<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(5,17);">Method to retrieve WAN IP</a></th>
                                 <td>
-				<select name="ddns_realip_x" class="input_option" onchange="change_ddns_realip(this.value);">
+				<select name="ddns_realip_x" class="input_option">
 					<option class="content_input_fd" value="0" <% nvram_match("ddns_realip_x", "0","selected"); %>><#IPConnection_VSList_Internal#></option>
 					<option class="content_input_fd" value="1" <% nvram_match("ddns_realip_x", "1","selected"); %>><#IPConnection_VSList_External#></option>
 				</select>

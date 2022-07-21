@@ -143,10 +143,22 @@ start_wps_method_ob(void)
 	int hapd_is_ready = 1;
 	int try = 0;
 	uint32 flags = 0;
+	char word[256], *next;
+	int unit;
 
 #if defined(RTCONFIG_AMAS) && defined(RTCONFIG_CFGSYNC)
 	if (nvram_get_int("cfg_obstatus") == OB_TYPE_LOCKED) {
+		unit = 0;
 		wps_band = 0;
+		foreach (word, nvram_safe_get("wl_ifnames"), next) {
+			snprintf(tmp, sizeof(tmp), "wl%d_nband", unit);
+			if (nvram_get_int(tmp) == WLC_BAND_2G) {
+				wps_band = unit;
+				break;
+			}
+			unit++;
+		}
+		dbg("wps_band(%d) for wps registrar\n", wps_band);
 	}
 	else
 #endif

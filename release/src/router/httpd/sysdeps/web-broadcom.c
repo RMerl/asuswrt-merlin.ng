@@ -3080,7 +3080,7 @@ ej_wl_chanspecs(int eid, webs_t wp, int argc, char_t **argv, int unit)
 		}
 #ifdef RTAX3000N
 		if ((get_model() == MODEL_RTAX3000N) &&
-			!strcmp(get_productid(), "RT-AX55_V2") &&
+			!strcmp(get_productid(), "RT-AX55") &&
 			strstr(chanbuf, "/160")) {
 			snprintf(tmpx, sizeof(tmpx), "%s \"%s\"]", tmp1, "0");
 			strlcpy(tmp1, tmpx, sizeof(tmp1));
@@ -3121,6 +3121,14 @@ ERROR:
 int
 ej_wl_channel_list_2g(int eid, webs_t wp, int argc, char_t **argv)
 {
+	char prefix[16], tmp[32];
+	int unit;
+	for(unit = 0; unit < num_of_wl_if(); unit++) {
+		snprintf(prefix, sizeof(prefix), "wl%d_", unit);
+		if(WL_NBAND_2G == nvram_get_int(strlcat_r(prefix, "nband", tmp, sizeof(tmp))))
+			return ej_wl_channel_list(eid, wp, argc, argv, unit);
+	}
+
 	return ej_wl_channel_list(eid, wp, argc, argv, 0);
 }
 
@@ -3128,6 +3136,14 @@ ej_wl_channel_list_2g(int eid, webs_t wp, int argc, char_t **argv)
 int
 ej_wl_channel_list_5g(int eid, webs_t wp, int argc, char_t **argv)
 {
+	char prefix[16], tmp[32];
+	int unit;
+	for(unit = 0; unit < num_of_wl_if(); unit++) {
+		snprintf(prefix, sizeof(prefix), "wl%d_", unit);
+		if(WL_NBAND_5G == nvram_get_int(strlcat_r(prefix, "nband", tmp, sizeof(tmp))))
+			return ej_wl_channel_list(eid, wp, argc, argv, unit);
+	}
+
 	return ej_wl_channel_list(eid, wp, argc, argv, 1);
 }
 #endif
@@ -3135,8 +3151,38 @@ ej_wl_channel_list_5g(int eid, webs_t wp, int argc, char_t **argv)
 int
 ej_wl_channel_list_5g_2(int eid, webs_t wp, int argc, char_t **argv)
 {
+	char prefix[16], tmp[32];
+	int unit, count = 0;
+	for(unit = 0; unit < num_of_wl_if(); unit++) {
+		snprintf(prefix, sizeof(prefix), "wl%d_", unit);
+		if( WL_NBAND_5G == nvram_get_int(strlcat_r(prefix, "nband", tmp, sizeof(tmp))) ||
+		    WL_NBAND_6G == nvram_get_int(strlcat_r(prefix, "nband", tmp, sizeof(tmp)))) {
+			if(!count) {
+				count++;
+				continue;
+			}
+			return ej_wl_channel_list(eid, wp, argc, argv, unit);
+		}
+	}
+
 	return ej_wl_channel_list(eid, wp, argc, argv, 2);
 }
+
+#ifdef RTCONFIG_WIFI6E
+int
+ej_wl_channel_list_6g(int eid, webs_t wp, int argc, char_t **argv)
+{
+	char prefix[16], tmp[32];
+	int unit;
+	for(unit = 0; unit < num_of_wl_if(); unit++) {
+		snprintf(prefix, sizeof(prefix), "wl%d_", unit);
+		if(WL_NBAND_6G == nvram_get_int(strlcat_r(prefix, "nband", tmp, sizeof(tmp))))
+			return ej_wl_channel_list(eid, wp, argc, argv, unit);
+	}
+
+	return ej_wl_channel_list(eid, wp, argc, argv, 2);
+}
+#endif
 
 int
 ej_wl_chanspecs_2g(int eid, webs_t wp, int argc, char_t **argv)
@@ -3503,6 +3549,10 @@ ej_wl_rate_5g_2(int eid, webs_t wp, int argc, char_t **argv)
 	for(i=0; i<(sizeof(wl_band_list)/sizeof(wl_band_list[0])) && wl_band_list[i][0] != '\0'; i++){
 		if(strncmp("5g2", wl_band_list[i], 3) == 0)
 			break;
+#ifdef RTCONFIG_WIFI6E
+		else if((num_of_wl_if() == 3) && (strncmp("6g1", wl_band_list[i], 3) == 0))
+			break;
+#endif
 	}
 	return ej_wl_rate(eid, wp, argc, argv, i);
 }
@@ -3557,20 +3607,66 @@ ERROR:
 int
 ej_wl_cap_2g(int eid, webs_t wp, int argc, char **argv)
 {
+	char prefix[16], tmp[32];
+	int unit;
+	for(unit = 0; unit < num_of_wl_if(); unit++) {
+		snprintf(prefix, sizeof(prefix), "wl%d_", unit);
+		if(WL_NBAND_2G == nvram_get_int(strlcat_r(prefix, "nband", tmp, sizeof(tmp))))
+			return ej_wl_cap(eid, wp, argc, argv, unit);
+	}
+
 	return ej_wl_cap(eid, wp, argc, argv, 0);
 }
 
 int
 ej_wl_cap_5g(int eid, webs_t wp, int argc, char **argv)
 {
+	char prefix[16], tmp[32];
+	int unit;
+	for(unit = 0; unit < num_of_wl_if(); unit++) {
+		snprintf(prefix, sizeof(prefix), "wl%d_", unit);
+		if(WL_NBAND_5G == nvram_get_int(strlcat_r(prefix, "nband", tmp, sizeof(tmp))))
+			return ej_wl_cap(eid, wp, argc, argv, unit);
+	}
+
 	return ej_wl_cap(eid, wp, argc, argv, 1);
 }
 
 int
 ej_wl_cap_5g_2(int eid, webs_t wp, int argc, char **argv)
 {
+	char prefix[16], tmp[32];
+	int unit, count = 0;
+	for(unit = 0; unit < num_of_wl_if(); unit++) {
+		snprintf(prefix, sizeof(prefix), "wl%d_", unit);
+		if( WL_NBAND_5G == nvram_get_int(strlcat_r(prefix, "nband", tmp, sizeof(tmp))) ||
+		    WL_NBAND_6G == nvram_get_int(strlcat_r(prefix, "nband", tmp, sizeof(tmp)))) {
+			if(!count) {
+				count++;
+				continue;
+			}
+			return ej_wl_cap(eid, wp, argc, argv, unit);
+		}
+	}
+
 	return ej_wl_cap(eid, wp, argc, argv, 2);
 }
+
+#ifdef RTCONFIG_WIFI6E
+int
+ej_wl_cap_6g(int eid, webs_t wp, int argc, char **argv)
+{
+	char prefix[16], tmp[32];
+	int unit;
+	for(unit = 0; unit < num_of_wl_if(); unit++) {
+		snprintf(prefix, sizeof(prefix), "wl%d_", unit);
+		if(WL_NBAND_6G == nvram_get_int(strlcat_r(prefix, "nband", tmp, sizeof(tmp))))
+			return ej_wl_cap(eid, wp, argc, argv, unit);
+	}
+
+	return ej_wl_cap(eid, wp, argc, argv, 2);
+}
+#endif
 
 static int ej_wl_chipnum(int eid, webs_t wp, int argc, char_t **argv, int unit)
 {
@@ -3617,20 +3713,66 @@ ERROR:
 int
 ej_wl_chipnum_2g(int eid, webs_t wp, int argc, char **argv)
 {
+	char prefix[16], tmp[32];
+	int unit;
+	for(unit = 0; unit < num_of_wl_if(); unit++) {
+		snprintf(prefix, sizeof(prefix), "wl%d_", unit);
+		if(WL_NBAND_2G == nvram_get_int(strlcat_r(prefix, "nband", tmp, sizeof(tmp))))
+			return ej_wl_chipnum(eid, wp, argc, argv, unit);
+	}
+
 	return ej_wl_chipnum(eid, wp, argc, argv, 0);
 }
 
 int
 ej_wl_chipnum_5g(int eid, webs_t wp, int argc, char **argv)
 {
+	char prefix[16], tmp[32];
+	int unit;
+	for(unit = 0; unit < num_of_wl_if(); unit++) {
+		snprintf(prefix, sizeof(prefix), "wl%d_", unit);
+		if(WL_NBAND_5G == nvram_get_int(strlcat_r(prefix, "nband", tmp, sizeof(tmp))))
+			return ej_wl_chipnum(eid, wp, argc, argv, unit);
+	}
+
 	return ej_wl_chipnum(eid, wp, argc, argv, 1);
 }
 
 int
 ej_wl_chipnum_5g_2(int eid, webs_t wp, int argc, char **argv)
 {
+	char prefix[16], tmp[32];
+	int unit, count = 0;
+	for(unit = 0; unit < num_of_wl_if(); unit++) {
+		snprintf(prefix, sizeof(prefix), "wl%d_", unit);
+		if( WL_NBAND_5G == nvram_get_int(strlcat_r(prefix, "nband", tmp, sizeof(tmp))) ||
+		    WL_NBAND_6G == nvram_get_int(strlcat_r(prefix, "nband", tmp, sizeof(tmp)))) {
+			if(!count) {
+				count++;
+				continue;
+			}
+			return ej_wl_chipnum(eid, wp, argc, argv, unit);
+		}
+	}
+
 	return ej_wl_chipnum(eid, wp, argc, argv, 2);
 }
+
+#ifdef RTCONFIG_WIFI6E
+int
+ej_wl_chipnum_6g(int eid, webs_t wp, int argc, char **argv)
+{
+	char prefix[16], tmp[32];
+	int unit;
+	for(unit = 0; unit < num_of_wl_if(); unit++) {
+		snprintf(prefix, sizeof(prefix), "wl%d_", unit);
+		if(WL_NBAND_6G == nvram_get_int(strlcat_r(prefix, "nband", tmp, sizeof(tmp))))
+			return ej_wl_chipnum(eid, wp, argc, argv, unit);
+	}
+
+	return ej_wl_chipnum(eid, wp, argc, argv, 2);
+}
+#endif
 
 static int wps_stop_count = 0;
 

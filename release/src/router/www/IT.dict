@@ -103,6 +103,7 @@ ASUS_eula_desc1_4=Inoltre, per abilitare la funzione di controllo remoto di IFTT
 ASUS_eula_desc2=ASUS si impegna a proteggere e rispettare la vostra privacy; Per abilitare/disabilitare in ogni momento la condivisione di informazioni con ASUS potete andare su Impostazioni avanzate > Amministrazione > Privacy. Per ulteriori informazioni su come ASUS protegge la vostra privacy consultate l\'<a id="eula_url" style="font-weight: bolder;text-decoration:underline;cursor:pointer;" target="_blank">Informativa sulla privacy ASUS</a>.
 ASUS_eula_age=Ho più di 16 anni.
 ASUS_eula_age_confirm=Prego confermi di avere più di 16 anni.
+ASUS_eula_use_confirm=Prego confermi Termini di utilizzo ASUS.
 ASUS_eula_withdraw0=Per %1$@ e Connessione remota(ASUS Router APP/Lyra APP/AiCloud/AiDisk):
 ASUS_eula_withdraw_desc1=Tenete presente che le vostre informazioni tra cui nome del prodotto, versione del firmware, stato Internet, indirizzo IP, indirizzo MAC e nome DDNS verranno raccolte da ASUS tramite le funzioni sopra indicate.
 ASUS_eula_withdraw_desc1_2=Se volete disabilitare la condivisione delle informazioni con ASUS tramite tali funzioni cliccate su <span style="font-weight: bold;">[Recedi]</span> qui di seguito. Tuttavia tenete presente che tali funzioni potrebbero non funzionare correttamente se interrompete la condivisione delle vostre informazioni con ASUS.
@@ -1081,13 +1082,14 @@ AiMesh_confirm_msg_ChangeSSID=Se cambi il SSID la connettività WiFi del router 
 AiMesh_confirm_msg_ChangeKey=Se cambi il chiave WPA precondivisa la connettività WiFi del router AiMesh sarà interrotta.
 AiMesh_confirm_msg_CountryCode=Se cambi il codice regionale il sistema AiMesh potrebbe avere dei problemi.
 AiMesh_confirm_msg5=Se disabiliti la funzione Radio la connettività WiFi del router AiMesh verrà disabilitata.
-AiMesh_confirm_msg6=Se nascondi il SSID la connettività WiFi del router AiMesh sarà interrotta.
+AiMesh_confirm_msg6=L'SSID nascosto non consente di proteggere la rete Wi-Fi e può causare alcuni problemi di connessione.
 AiMesh_confirm_msg7=Se nascondi il SSID la funzione WPS verrà disabilitata e la connettività WiFi del router AiMesh sarà interrotta.
 AiMesh_confirm_msg8=Se disabiliti il server DHCP la connettività WiFi del router AiMesh sarà interrotta.
 AiMesh_confirm_msg9=Considerata la compatibilità del sistema AiMesh e dei dispositivi finali, ti suggeriamo di utilizzare WPA2-Personal. Passare a #AUTHMODE ?\n*In caso di problemi di connessione, passa a WPA2-Personal oppure chiedi informazioni al produttore/ai produttori.
 AiMesh_confirm_msg10=Per garantire la connessione del sistema AiMesh e dei dispositivi finali, leggi queste <a id="wpa3FaqLink">FAQ</a> prima di passare a WPA3-Personal.
 AiMesh_confirm_msg11=Al momento stai utilizzando WPA3-personal. Per creare un sistema AiMesh, il metodo di autenticazione sarà convertito in WPA2/WPA3-personal. Continuare?
 AiMesh_confirm_msg12=You can read this <a id='wpa3FaqLink'>FAQ</a> for more information.
+AiMesh_confirm_msg13=Per maggiori dettagli visitate il sito <a style='font-weight: bolder;text-decoration: underline;color:#000000;' href='' target='_blank'>questa FAQ</a>
 AiMesh_Feature_Desc=ASUS AiMesh è una funzione innovativa che permette di connettere router ASUS multipli tra di loro per fornire una copertura WiFi completa della vostra casa.
 AiMesh_FAQ=Dimmi di più su ASUS AiMesh
 AiMesh_FindNode=Trova nodo AiMesh
@@ -3442,6 +3444,7 @@ TZ17=Orario Atlantico (Canada)
 TZ18=La Paz
 TZ18_1=Caracas
 TZ19=Santiago
+TZ19_1=Asunción
 TZ20=Terranova
 TZ21=Brasilia
 TZ22=Buenos Aires, Georgetown
@@ -3626,7 +3629,7 @@ vpn_network_place=Supporto Risorse di rete (Samba)
 vpn_openvpn_AdvDNS=Inoltra DNS ai client
 vpn_openvpn_Auth=Modalità di autorizzazione
 vpn_openvpn_AuthOnly=Autenticazione solo con Nome utente / Password
-vpn_openvpn_AuthOnly_hint=Authorization Mode fixes on TLS
+vpn_openvpn_AuthOnly_hint=Authentication Mode fixes on TLS
 vpn_openvpn_AuthHMAC=Autorizzazione HMAC
 vpn_openvpn_ExtraHMAC=Autorizzazione HMAC extra
 vpn_openvpn_ClientMutual=Permetti client <-> Client
@@ -3642,8 +3645,8 @@ vpn_openvpn_desc4=If your WAN IP address is dynamic, please click <a href="http:
 vpn_openvpn_dhcp=Assegna tramite DHCP
 vpn_openvpn_Encrypt=Algoritmo di cifratura
 vpn_openvpn_fail1=Routing conflict! <p>Please check the client's IP address settings from the Impostazioni avanzate page or check the routing table on System log.
-vpn_openvpn_fail2=Certification Authentication / Server certification / Server Key field error! <p>Please check the Keys and Certification contents on the Impostazioni avanzate page.
-vpn_openvpn_fail3=Diffle Hellman parameters field error! <p>Please check the Keys and Certification contents on the Impostazioni avanzate page.
+vpn_openvpn_fail2=Certificate Authentication / Server certificate / Server Key field error! <p>Please check the Keys and Certificate contents on the Impostazioni avanzate page.
+vpn_openvpn_fail3=Diffle Hellman parameters field error! <p>Please check the Keys and Certificate contents on the Impostazioni avanzate page.
 vpn_openvpn_fail4=OpenVPN server daemon failed to start. <p>Please check your device environment or contents on the Impostazioni avanzate page.
 vpn_openvpn_hint1=Per usare la vostra chiave personale cliccate sul collegamento giallo per modificare le impostazioni.
 vpn_openvpn_hint2=Fate riferimento al <a style="font-weight: bolder;text-decoration:underline;" class="hyperlink" href="Main_LogStatus_Content.asp">Registro di sistema</a> per qualsiasi errore legato a OpenVPN

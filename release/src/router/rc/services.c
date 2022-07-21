@@ -4265,7 +4265,7 @@ start_ddns(char *caller)
 #ifdef RTCONFIG_INADYN
 		realip == 0 &&
 #endif
-		wan_public) {
+		wan_public && !nvram_get_int("ddns_ipv6_update")) {
 		logmessage("ddns", "use Private WAN IP (%s).(%d)", wan_ip, ddns_check_retry);
 		nvram_unset("ddns_updated");
 		nvram_set("ddns_return_code", "299");
@@ -4671,7 +4671,7 @@ asusddns_reg_domain(int reg)
 #ifdef RTCONFIG_INADYN
 		realip == 0 &&
 #endif
-		wan_public) {
+		wan_public && !nvram_get_int("ddns_ipv6_update")) {
 		logmessage("asusddns", "use Private WAN IP (%s).", wan_ip);
 		nvram_unset("ddns_updated");
 		nvram_set("ddns_return_code", "299");
@@ -5358,7 +5358,7 @@ mcpd_conf(void)
 	   to enable mcpd bring up							*/
 	if (!nvram_match("switch_wantag", "") && nvram_get_int("switch_stb_x") > 0 &&
 		nvram_get_int("switch_stb_x") <= 6 && !nvram_match("switch_wantag", "free")) {
-		if (model == MODEL_RTAX58U || model == MODEL_RTAX82U_V2)
+		if (model == MODEL_RTAX58U || model == MODEL_RTAX82U_V2 || model == MODEL_TUFAX5400_V2)
 			proxy_ifname = "eth4.v0";
 		else if (model == MODEL_RTAX82_XD6S)
 			proxy_ifname = "eth1.v0";
@@ -10479,7 +10479,7 @@ start_services(void)
 #else
 	start_haveged();
 #endif
-#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2)
+#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2)
 	start_ledg();
 	start_ledbtn();
 #endif
@@ -11143,7 +11143,7 @@ stop_services(void)
 #ifdef GTAX6000
 	stop_antled();
 #endif
-#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2)
+#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2)
 	stop_ledg();
 	stop_ledbtn();
 #endif
@@ -11250,7 +11250,7 @@ stop_services_mfg(void)
 #ifdef GTAX6000
 	stop_antled();
 #endif
-#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2)
+#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2)
 	stop_ledg();
 	stop_ledbtn();
 #endif
@@ -11429,7 +11429,7 @@ stop_services_mfg(void)
 	stop_netool();
 #endif
 #ifdef HND_ROUTER
-	stop_jitterentropy();
+	//stop_jitterentropy();
 #endif
 #ifdef RTCONFIG_CONNDIAG
 	stop_conn_diag();
@@ -12226,7 +12226,7 @@ void restore_config_before_firmware_downgrade()
 #endif
 }
 
-#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2)
+#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2)
 int
 start_ledg(void)
 {
@@ -13494,7 +13494,8 @@ script_allnet:
 #ifdef RTCONFIG_CONNDIAG
 			stop_conn_diag();
 #endif
-			stop_cfgsync();
+			if (!strstr(nvram_safe_get("rc_service"), "start_cfgsync"))
+				stop_cfgsync();
 #endif
 #ifdef RTCONFIG_CAPTIVE_PORTAL
 			stop_chilli();
@@ -13641,7 +13642,8 @@ script_allnet:
 #endif
 #endif
 #ifdef RTCONFIG_CFGSYNC
-			start_cfgsync();
+			if (!strstr(nvram_safe_get("rc_service"), "start_cfgsync"))
+				start_cfgsync();
 #ifdef RTCONFIG_CONNDIAG
 			start_conn_diag();
 #endif
@@ -13725,7 +13727,8 @@ script_allnet:
 #ifdef RTCONFIG_CONNDIAG
 			stop_conn_diag();
 #endif
-			stop_cfgsync();
+			if (!strstr(nvram_safe_get("rc_service"), "start_cfgsync"))
+				stop_cfgsync();
 #endif
 			stop_wan();
 			stop_lan();
@@ -13853,7 +13856,8 @@ script_allnet:
 #endif
 #endif
 #ifdef RTCONFIG_CFGSYNC
-			start_cfgsync();
+			if (!strstr(nvram_safe_get("rc_service"), "start_cfgsync"))
+				start_cfgsync();
 #ifdef RTCONFIG_CONNDIAG
 			start_conn_diag();
 #endif
@@ -13977,7 +13981,8 @@ script_allnet:
 #ifdef RTCONFIG_CONNDIAG
 			stop_conn_diag();
 #endif
-			stop_cfgsync();
+			if (!strstr(nvram_safe_get("rc_service"), "start_cfgsync"))
+				stop_cfgsync();
 #endif
 #if defined(RTCONFIG_AMAS)
 			stop_amas_lib();
@@ -14124,7 +14129,8 @@ script_allnet:
 			start_plchost();
 #endif
 #ifdef RTCONFIG_CFGSYNC
-			start_cfgsync();
+			if (!strstr(nvram_safe_get("rc_service"), "start_cfgsync"))
+				start_cfgsync();
 #ifdef RTCONFIG_CONNDIAG
 			start_conn_diag();
 #endif
@@ -17427,6 +17433,14 @@ start_write_smb_conf();
 		}
         }
 #endif
+#ifdef RTAXE7800
+	else if (strcmp(script, "addif_extwan") == 0)
+	{
+#ifndef RTCONFIG_BCM_MFG
+		eval("brctl", "addif", nvram_safe_get("lan_ifname"), "eth1");
+#endif
+	}
+#endif
 #if defined(RTCONFIG_HND_ROUTER_AX)
 	else if (strcmp(script, "cable_media") == 0)
         {
@@ -17495,7 +17509,7 @@ start_write_smb_conf();
 		if (action & RC_SERVICE_STOP) stop_watchdog();
 		if (action & RC_SERVICE_START) start_watchdog();
 	}
-#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2)
+#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2)
 	else if (strcmp(script, "ledg") == 0)
 	{
 		if (action & RC_SERVICE_STOP) stop_ledg();
@@ -19064,7 +19078,14 @@ void start_pc_block(void)
 
 	get_all_pc_list(&pc_list);
 
-	if(nvram_get_int("MULTIFILTER_ALL") != 0 && count_pc_rules(pc_list, 1) > 0)
+	/* pc_block - 20220615
+		1. time-scheduling - BLOCK ALL DEVICES
+		2. time-scheduling - BLOCK
+		3. time-scheduling - TIME
+	*/
+	if (nvram_get_int("MULTIFILTER_BLOCK_ALL") == 1
+		|| (nvram_get_int("MULTIFILTER_ALL") != 0 && count_pc_rules(pc_list, 2))
+		|| (nvram_get_int("MULTIFILTER_ALL") != 0 && count_pc_rules(pc_list, 1)))
 		_eval(pc_block_argv, NULL, 0, &pid);
 
 	free_pc_list(&pc_list);

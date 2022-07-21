@@ -103,6 +103,7 @@ ASUS_eula_desc1_4=În plus, pentru a activa funcția de control la distanță a 
 ASUS_eula_desc2=ASUS se angajează să vă protejeze și respecte confidențialitatea. Puteți vizita Setări avansate > Administrare> Confidențialitate pentru a activa/dezactiva în orice moment trimiterea informațiilor despre produs la ASUS. Pentru a afla mai multe despre modul în care ASUS vă protejează confidențialitatea, vizitați <a id="eula_url" style="font-weight: bolder;text-decoration:underline;cursor:pointer;" target="_blank">Politica de confidențialitate ASUS</a>.
 ASUS_eula_age=Am peste 16 ani.
 ASUS_eula_age_confirm=Confirmați că vârsta dvs. este mai mare de 16 ani.
+ASUS_eula_use_confirm=Confirmați că Condiții de utilizare ASUS.
 ASUS_eula_withdraw0=Pentru %1$@ și Conexiunea la distanță  (aplicație ASUS Router/aplicație Lyra/AiCloud/AiDisk):
 ASUS_eula_withdraw_desc1=Vă rugăm să rețineți că informațiile dvs., inclusiv numele modelului de produs, versiunea firmware, starea internetului, adresa IP, adresa MAC și numele DDNS, vor fi colectate de ASUS prin intermediul funcțiilor de mai sus.
 ASUS_eula_withdraw_desc1_2=Daca doriți să dezactivați partajarea informațiilor cu ASUS prin intermediul funcțiilor de mai sus, faceți clic pe <span style="font-weight: bold;">[<Retragere]</span> de mai jos. În orice caz, vă rugăm să rețineți că astfel de caracteristici/funcții ar putea să nu funcționeze dacă nu mai trimiteți informațiile la ASUS.
@@ -246,7 +247,7 @@ FIRM_fail_desc=Nu s-a putut actualiza componenta firmware. Verificaţi versiunea
 FIRM_ok_desc=Componenta firmware în curs de actualizare. Aşteptaţi circa 3 minute.
 FIRM_ok_aimesh=Actualizarea firmware-ului dvs. a fost terminată. Închideți această fereastră și accesați din nou routerul AiMesh.
 FIRM_reboot_manually=Componenta firmware a fost actualizată cu succes. Reporniţi manual dispozitivul ZVMODELVZ.
-FIRM_trx_valid_fail_desc=To comply with regulatory amendments, we have modified our certification rule to ensure better firmware quality. This version is not compatible with all previously released ASUS firmware and uncertified third party firmware. Please check our official websites for the certified firmware.
+FIRM_trx_valid_fail_desc=To comply with regulatory amendments, we have modified our certificate rule to ensure better firmware quality. This version is not compatible with all previously released ASUS firmware and uncertified third party firmware. Please check our official websites for the certified firmware.
 Five_attempts_logout_hint=Ați introdus o parolă incorectă de 5 ori. Veți fi deconectat.
 footer_copyright_desc=2022 ASUSTeK Computer Inc. Toate drepturile rezervate.
 FW_n1=Parametrii de configurare își vor păstra setările în timpul procesului de actualizare a firmware-ului.
@@ -1081,13 +1082,14 @@ AiMesh_confirm_msg_ChangeSSID=Dacă schimbați SSID, conectivitatea WiFi a nodul
 AiMesh_confirm_msg_ChangeKey=Dacă schimbați pre-partajată WPA, conectivitatea WiFi a nodului AiMesh va fi afectată.
 AiMesh_confirm_msg_CountryCode=Schimbarea codului de țară poate afecta sistemul dvs. AiMesh.
 AiMesh_confirm_msg5=Dacă dezactivați funcția Radio, conectivitatea WiFi a routerului AiMesh va fi afectată.
-AiMesh_confirm_msg6=Dacă ascundeți SSID, conectivitatea WiFi a routerului AiMesh va fi afectată.
+AiMesh_confirm_msg6=SSID ascuns nu ajută la securizarea rețelei Wi-Fi și poate cauza unele probleme de conexiune.
 AiMesh_confirm_msg7=Dacă ascundeți SSID, funcția WPS va fi dezactivată și conectivitatea WiFi a routerului AiMesh va fi afectată.
 AiMesh_confirm_msg8=Dacă dezactivați serverul DHCP, conectivitatea WiFi a routerului AiMesh va fi afectată.
 AiMesh_confirm_msg9=Luând în considerare compatibilitatea dintre sistemul AiMesh și dispozitivele dvs., vă sugerăm să utilizați WPA2-Personal. Doriți să treceți la  #AUTHMODE?\n*Dacă întâmpinați probleme de conexiune, treceți la WPA2-Personal sau contactați producătorul pentru mai multe informații.
 AiMesh_confirm_msg10=Pentru a asigura conexiunea sistemului AiMesh și a dispozitivelor terminale, citiți <a id="wpa3FaqLink">FAQ</a> înainte de a trece la WPA3-Personal.
 AiMesh_confirm_msg11=Momentan utilizați WPA3-personal. Pentru a crea un sistem AiMesh, metoda dvs. de autentificare va fi schimbată la WPA2/WPA3-personal. Doriți să continuați?
 AiMesh_confirm_msg12=You can read this <a id='wpa3FaqLink'>FAQ</a> for more information.
+AiMesh_confirm_msg13=Pentru detalii suplimentare, vizitaţi <a style='font-weight: bolder;text-decoration: underline;color:#000000;' href='' target='_blank'>această întrebare frecventă</a>
 AiMesh_Feature_Desc=Advanced ASUS AiMesh este o funcție nouă a routerului care permite conectarea mai multor routere ASUS și crearea unei rețele WiFi cu acoperire în toată locuința.
 AiMesh_FAQ=Aflați mai multe despre ASUS AiMesh
 AiMesh_FindNode=Găsire nod AiMesh
@@ -3442,6 +3444,7 @@ TZ17=Ora Atlanticului (Canada)
 TZ18=La Paz
 TZ18_1=Caracas
 TZ19=Santiago
+TZ19_1=Asunción
 TZ20=Newfoundland
 TZ21=Brasilia
 TZ22=Buenos Aires, Georgetown
@@ -3626,7 +3629,7 @@ vpn_network_place=Asistenţă pentru locaţia de reţea (Samba)
 vpn_openvpn_AdvDNS=Publicare DNS pentru clienţi
 vpn_openvpn_Auth=Mod autorizare
 vpn_openvpn_AuthOnly=Doar autentificare cu nume de utilizator / parolă
-vpn_openvpn_AuthOnly_hint=Authorization Mode fixes on TLS
+vpn_openvpn_AuthOnly_hint=Authentication Mode fixes on TLS
 vpn_openvpn_AuthHMAC=Autorizaţie HMAC suplimentară
 vpn_openvpn_ExtraHMAC=Autorizaţie HMAC suplimentară
 vpn_openvpn_ClientMutual=Permite Client <-> Client
@@ -3642,8 +3645,8 @@ vpn_openvpn_desc4=If your WAN IP address is dynamic, please click <a href="http:
 vpn_openvpn_dhcp=Alocare de la DHCP
 vpn_openvpn_Encrypt=Cifru criptare
 vpn_openvpn_fail1=Conflict de rutare! <p>Verificați setările de adresă IP ale clientului pe pagina Setări avansate sau verificați tabelul de rutare din jurnalul de sistem.
-vpn_openvpn_fail2=Eroare câmp Certification Authentication (Autentificare certificare) / Server certification (Certificare server) / Server Key (Cheie server)! <p>Verificați conținutul pentru Keys (Chei) și Certification (Certificare) pe pagina Setări avansate.
-vpn_openvpn_fail3=Eroare câmp de parametri Diffle Hellman! <p>Verificați conținutul pentru Keys (Chei) și Certification (Certificare) pe pagina Setări avansate.
+vpn_openvpn_fail2=Eroare câmp Certificate Authenticate (Autentificare certificare) / Server certificate (Certificare server) / Server Key (Cheie server)! <p>Verificați conținutul pentru Keys (Chei) și Certificate (Certificare) pe pagina Setări avansate.
+vpn_openvpn_fail3=Eroare câmp de parametri Diffle Hellman! <p>Verificați conținutul pentru Keys (Chei) și Certificate (Certificare) pe pagina Setări avansate.
 vpn_openvpn_fail4=Pornirea daemonului de server OpenVPN nu a reușit.  <p>Verificați mediul dispozitivului sau conținutul pe pagina Setări avansate.
 vpn_openvpn_hint1=Pentru a utiliza propria cheie, faceţi clic pe linkul galben pentru a modifica setările.
 vpn_openvpn_hint2=Consultaţi <a style="font-weight: bolder;text-decoration:underline;" class="hyperlink" href="Main_LogStatus_Content.asp">Jurnal de sistem</a> pentru orice mesaje de eroare legate de OpenVPN.

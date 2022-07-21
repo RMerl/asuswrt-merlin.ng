@@ -344,7 +344,7 @@ function change_common_radio(o, s, v, r){
 			change_ddns_setting(document.form.ddns_server_x.value);
 			inputCtrl(document.form.ddns_refresh_x, 1);
 			showhide("ddns_ipcheck_tr", 1);
-			change_ddns_realip(document.form.ddns_realip_x.value);
+			show_ipv6update_setting();
 		}else{
 			if(document.form.ddns_server_x.value == "WWW.ASUS.COM"){
 				document.form.DDNSName.parentNode.parentNode.parentNode.style.display = "none";

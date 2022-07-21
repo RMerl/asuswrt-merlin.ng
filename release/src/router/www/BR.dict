@@ -103,6 +103,7 @@ ASUS_eula_desc1_4=Além disso, para habilitar sua função de controle remoto do
 ASUS_eula_desc2=A ASUS está empenhada em proteger e respeitar a sua privacidade. Você pode visitar Advanced Settings > Administration > Privacy  (Configurações avançadas> Administração> Privacidade) para ativar / desativar o compartilhamento de informações do seu produto com a ASUS em todos os momentos. Para saber mais sobre como a ASUS protege sua privacidade, por favor visite a <a id="eula_url" style="font-weight: bolder;text-decoration:underline;cursor:pointer;" target="_blank">Política de Privacidade da ASUS</a>.
 ASUS_eula_age=Eu tenho mais de 16 anos.
 ASUS_eula_age_confirm=Por favor, confirme sua idade acima de 16 anos.
+ASUS_eula_use_confirm=Por favor, confirme Termos de Uso ASUS.
 ASUS_eula_withdraw0=Para %1$@ e Conexão remota (aplicativo do Roteador ASUS/Lyra APP/AiCloud/AiDisk):
 ASUS_eula_withdraw_desc1=Observe que suas informações, incluindo o nome do modelo do produto, versão do firmware, status da Internet, endereço IP, endereço MAC e nome do DDNS, serão coletadas pela ASUS através das funções acima.
 ASUS_eula_withdraw_desc1_2=Se você gostaria de desabilitar o compartilhamento de suas informações com a ASUS através das funções acima, clique em <span style="font-weight: bold;">[(Retirar]</span> abaixo. No entanto, observe que esses recursos / funções podem não funcionar se você parar de compartilhar suas informações com a ASUS.
@@ -1081,13 +1082,14 @@ AiMesh_confirm_msg_ChangeSSID=Se você alterar seu SSID, a conectividade WiFi do
 AiMesh_confirm_msg_ChangeKey=Se você alterar a Chave Pre-Compartilhada WPA, a conectividade WiFi do seu nó AiMesh será afetada.
 AiMesh_confirm_msg_CountryCode=Alterar o código do país pode afetar seu sistema AiMesh.
 AiMesh_confirm_msg5=Se você desabilitar a funcionalidade de rádio, a conectividade WiFi do seu roteador AiMesh será afetada.
-AiMesh_confirm_msg6=Se você ocultar seu SSID, a conectividade WiFi do seu roteador AiMesh será afetada.
+AiMesh_confirm_msg6=O SSID oculto não ajuda a proteger sua rede Wi-Fi, e pode causar problemas de conexão.
 AiMesh_confirm_msg7=Se você ocultar seu SSID, a função WPS será desativada e a conectividade WiFi do seu roteador AiMesh será afetada.
 AiMesh_confirm_msg8=Se você desabilitar o Servidor DHCP, a conectividade WiFi do seu roteador AiMesh será afetada.
 AiMesh_confirm_msg9=Considerando a compatibilidade do sistema AiMesh e dos dispositivos-fim, sugerimos que você use WPA2-Personal. Quer mudar para #AUTHMODE ?\n*Se você tiver problemas de conexão, mude para WPA2-Personal ou verifique com o(s) fabricante(s) para obter mais informações.
 AiMesh_confirm_msg10=Para garantir a conexão do seu sistema AiMesh e do(s) dispositivo(s)-fim, leia estas <a id="wpa3FaqLink">FAQs</a> antes de mudar para WPA3-Personal.
 AiMesh_confirm_msg11=Você está usando o WPA3-personal. Para criar um sistema AiMesh, seu método de autenticação será alterado para WPA2/WPA3-personal. Deseja continuar?
 AiMesh_confirm_msg12=You can read this <a id='wpa3FaqLink'>FAQ</a> for more information.
+AiMesh_confirm_msg13=Para mais detalhes, visite <a style='font-weight: bolder;text-decoration: underline;color:#000000;' href='' target='_blank'>Perguntas e Respostas</a>
 AiMesh_Feature_Desc=O avançado ASUS AiMesh é um novo e inovador recurso de roteador que conecta vários roteadores ASUS, criando uma rede WiFi totalmente residencial.
 AiMesh_FAQ=Saiba mais sobre ASUS AiMesh
 AiMesh_FindNode=Encontrar o nó AiMesh
@@ -3442,6 +3444,7 @@ TZ17=Horário do Atlântico (Canadá)
 TZ18=La Paz
 TZ18_1=Caracas
 TZ19=Santiago
+TZ19_1=Assunção
 TZ20=Newfoundland
 TZ21=Brasília (Brasil)
 TZ22=Buenos Aires, Georgetown
@@ -3626,7 +3629,7 @@ vpn_network_place=Suporte ao Local de Rede (Samba)
 vpn_openvpn_AdvDNS=Anunciar DNS para clientes
 vpn_openvpn_Auth=Modo de Autorização
 vpn_openvpn_AuthOnly=Autenticação Nome de usuário / Senha. Apenas
-vpn_openvpn_AuthOnly_hint=Authorization Mode fixes on TLS
+vpn_openvpn_AuthOnly_hint=Authentication Mode fixes on TLS
 vpn_openvpn_AuthHMAC=Autorização HMAC
 vpn_openvpn_ExtraHMAC=Autorização Extra HMAC
 vpn_openvpn_ClientMutual=Permitir Cliente <-> Cliente

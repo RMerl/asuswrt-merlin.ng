@@ -103,6 +103,7 @@ ASUS_eula_desc1_4=ASUSでは、お客様の製品からIFTTT™のリモート�
 ASUS_eula_desc2=ASUSでは、お客様のプライバシー情報の保護を順守し、適切な取り扱いに取り組んでいます。「詳細設定」→「管理」→「プライバシー」から、常にASUS製品情報の共有設定を有効/無効にすることができます。ASUSのプライバシー保護に関する詳細内容については、<a id="eula_url" style="font-weight: bolder;text-decoration:underline;cursor:pointer;" target="_blank">ASUSの個人情報保護方針</a>をご覧ください。
 ASUS_eula_age=私は16歳以上です。
 ASUS_eula_age_confirm=年齢が16歳以上であることをご確認ください。
+ASUS_eula_use_confirm=ASUS の利用規約を確認ください。
 ASUS_eula_withdraw0=%1$@ とリモート接続（ASUS Router APP/Lyra APP/AiCloud/AiDisk）:
 ASUS_eula_withdraw_desc1=製品モデル名、ファームウェアのバージョン、インターネットの状態、IP アドレス、MAC アドレス、DDNS 名を含むお客様情報は上記機能を通じ、ASUS により収集されます。
 ASUS_eula_withdraw_desc1_2=上記機能の使用によるASUSとの情報共有を希望しない場合は、下記の<span style="font-weight: bold;">「共有しない」</span>をクリックしてください。ASUSとの情報共有を無効にすることによって、それらの機能が正常に動作しない場合があります。
@@ -246,7 +247,7 @@ FIRM_fail_desc=ファームウェア更新に失敗しました。不適切な�
 FIRM_ok_desc=ファームウェアの更新中です。約3分ほどお待ちください。
 FIRM_ok_aimesh=ファームウェアの更新が完了しました。このウィンドウを閉じて、AiMesh ルーターに再度接続してください。
 FIRM_reboot_manually=ファームウェアの更新が完了しました。ルーターを手動で再起動してください。
-FIRM_trx_valid_fail_desc=To comply with regulatory amendments, we have modified our certification rule to ensure better firmware quality. This version is not compatible with all previously released ASUS firmware and uncertified third party firmware. Please check our official websites for the certified firmware.
+FIRM_trx_valid_fail_desc=To comply with regulatory amendments, we have modified our certificate rule to ensure better firmware quality. This version is not compatible with all previously released ASUS firmware and uncertified third party firmware. Please check our official websites for the certified firmware.
 Five_attempts_logout_hint=5回の試行で正しくないパスワードを入力しました。ログアウトされます。
 footer_copyright_desc=2022 ASUSTeK Computer Inc. All rights reserved.
 FW_n1=設定パラメーターは、ファームウェア更新中においても設定を維持します。
@@ -1081,13 +1082,14 @@ AiMesh_confirm_msg_ChangeSSID=SSID を変更すると、メッシュネットワ
 AiMesh_confirm_msg_ChangeKey=WPA 暗号化キーを変更すると、メッシュネットワークに影響することを十分にご理解いただいた上で変更を行なってください。
 AiMesh_confirm_msg_CountryCode=国番号を変更すると、AiMesh システムに影響を与える場合があります。
 AiMesh_confirm_msg5=ワイヤレス機能を無効にすると、メッシュネットワークに影響することを十分にご理解いただいた上で変更を行なってください。
-AiMesh_confirm_msg6=SSIDを非表示にすると、メッシュネットワークに影響することを十分にご理解いただいた上で変更を行なってください。
+AiMesh_confirm_msg6=非表示の SSID は、Wi-Fi ネットワークの安全をサポートしません。そして、いくつかの接続問題を引き起こすことがあります。
 AiMesh_confirm_msg7=SSIDを非表示にすると、WPS機能が無効になり、メッシュネットワークに影響することを十分にご理解いただいた上で変更を行なってください。
 AiMesh_confirm_msg8=DHCPサーバーを無効にすると、メッシュネットワークに影響することを十分にご理解いただいた上で変更を行なってください。
 AiMesh_confirm_msg9=AiMeshシステムとエンドデバイスの間の互換性を保つため、WPA2パーソナルの利用をおすすめします。 #AUTHMODE に切り替えますか？\n*接続上の問題が生じた場合は、WPA2パーソナルに切り替え、メーカーに問い合わせて情報収集してください。
 AiMesh_confirm_msg10=AiMeshシステムとエンドデバイスを確実に接続するためには、WPA3パーソナルに切り替える前んじ<a id="wpa3FaqLink">FAQ</a>をお読みください。
 AiMesh_confirm_msg11=現在お使いになっているのはWPA3パーソナルです。AiMeshシステムを作るには、認証方法がWPA2/WPA3パーソナルに変更されます。続けますか？
 AiMesh_confirm_msg12=詳細は <a id='wpa3FaqLink'>こちら</a> の FAQ でご確認ください。
+AiMesh_confirm_msg13=詳細に関しては、 <a style='font-weight: bolder;text-decoration: underline;color:#000000;' href='' target='_blank'>この FAQ</a>を参照してください。
 AiMesh_Feature_Desc=革新的な新しい機能 ASUS AiMesh では、複数の AiMesh メインルーターを相互接続し、ご家庭全体に WiFi ネットワークを構築することができます。
 AiMesh_FAQ=ASUS AiMesh の詳細を確認する
 AiMesh_FindNode=AiMesh ノードを探す
@@ -3442,6 +3444,7 @@ TZ17=大西洋時間（カナダ）
 TZ18=ラパス
 TZ18_1=カラカス
 TZ19=サンティアゴ
+TZ19_1=アスンシオン
 TZ20=ニューファンドランド
 TZ21=ブラジリア
 TZ22=ブエノスアイレス、ジョージタウン
@@ -3651,7 +3654,7 @@ vpn_openvpn_hint3=OpenVPN の詳細設定を行う前に、OpenVPN クライア�
 vpn_openvpn_init=現在、OpenVPN サーバーの設定を初期化しています。サーバーの設定が完了するまでしばらくお待ちください。
 vpn_openvpn_interface=インタフェース
 vpn_openvpn_KC_Authorizing=認証中
-vpn_openvpn_KC_CA=認証機関
+vpn_openvpn_KC_CA=CA 認証
 vpn_openvpn_KC_DH=Diffie-Hellmanパラメーター
 vpn_openvpn_KC_Edit1=だけの内容を貼り付け
 vpn_openvpn_KC_Edit2=の行を含むブロックのみをペーストします。

@@ -132,17 +132,17 @@ function getScArray(mode){
 function getAllWlArray(){
 	if(isSupport("quadband")){
 		var wlArrayRet = [			
+			{"title":"2.4 GHz", "ifname":get_wl_unit_by_band("2G"), "suffix": ""},
 			{"title":"5 GHz-1", "ifname":get_wl_unit_by_band("5G"), "suffix": "_5G-1"},
 			{"title":"5 GHz-2", "ifname":get_wl_unit_by_band("5G2"), "suffix": "_5G-2"},
 			{"title":"6 GHz", "ifname":get_wl_unit_by_band("6G"), "suffix": "_6G"},
-			{"title":"2.4 GHz", "ifname":get_wl_unit_by_band("2G"), "suffix": ""},
 		];
 		if(isSwMode('RP') || isSwMode('MB')){
 			wlArrayRet = [				
+				{ title: '2.4 GHz', ifname: get_wl_unit_by_band('2G'), suffix: '' },				
 				{ title: '5 GHz-1', ifname: get_wl_unit_by_band('5G'), suffix: '_5G-1' },
 				{ title: '5 GHz-2', ifname: get_wl_unit_by_band('5G2'), suffix: '_5G-2' },
 				{ title: '6 GHz', ifname: get_wl_unit_by_band('6G'), suffix: '_6G' },
-				{ title: '2.4 GHz', ifname: get_wl_unit_by_band('2G'), suffix: '' },				
 			];
 		}
 		document.querySelector('label[for="wireless_checkbox"]').innerHTML = 'Separate 2.4 GHz, 5 GHz-1, 5 GHz-2 and 6 GHz';
@@ -1340,6 +1340,8 @@ function setupFronthaulNetwork(_smart_connect){
 				qisPostData.acs_unii4 = "0";
 				break;
 		}
+
+		if(parseInt(_smart_connect) == 0) delete qisPostData.acs_unii4;
 	}
 }
 

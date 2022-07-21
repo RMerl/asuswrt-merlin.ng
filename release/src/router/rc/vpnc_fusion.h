@@ -19,7 +19,7 @@
 #define PROTO_HMA "HMA"
 #define PROTO_NORDVPN "NordVPN"
 
-#define MAX_VPNC_DATA_LEN	68
+#define MAX_VPNC_DATA_LEN	256
 #define MAX_VPNC_PROFILE	16
 #define MAX_DEV_POLICY		64
 #define MAX_VPNC_CONN		4

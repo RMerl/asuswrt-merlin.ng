@@ -220,7 +220,7 @@ static int wifi_sw_old = -1;
 #if defined(RTCONFIG_TURBO_BTN)
 static int g_boost_status[BOOST_MODE_MAX] = { 0 };
 #endif
-#if (defined(RTCONFIG_LED_BTN) || (!defined(RTCONFIG_WIFI_TOG_BTN) && !defined(RTCONFIG_QCA) && !defined(RTCONFIG_WPS_ALLLED_BTN))) && !defined(RTAX82U) && !defined(DSL_AX82U) && !defined(GSAX3000) && !defined(GSAX5400) && !defined(TUFAX5400) && !defined(GTAX6000) && !defined(GT10) && !defined(RTAX82U_V2)
+#if (defined(RTCONFIG_LED_BTN) || (!defined(RTCONFIG_WIFI_TOG_BTN) && !defined(RTCONFIG_QCA) && !defined(RTCONFIG_WPS_ALLLED_BTN))) && !defined(RTAX82U) && !defined(DSL_AX82U) && !defined(GSAX3000) && !defined(GSAX5400) && !defined(TUFAX5400) && !defined(GTAX6000) && !defined(GT10) && !defined(RTAX82U_V2) && !defined(TUFAX5400_V2)
 #if defined(RTCONFIG_QCA)
 static int LED_status_old = 0;
 static int LED_status = 0;
@@ -525,6 +525,7 @@ int init_toggle(void)
 		case MODEL_CTAX56_XD4:
 		case MODEL_RTAX58U:
 		case MODEL_RTAX82U_V2:
+		case MODEL_TUFAX5400_V2:
 		case MODEL_RTAX82_XD6S:
 		case MODEL_RTAX58U_V2:
 		case MODEL_GT10:
@@ -3748,7 +3749,7 @@ void btn_check(void)
 	handle_turbo_button();
 	handle_led_onoff_button();
 
-#if (((defined(RTCONFIG_LED_BTN) || !defined(RTCONFIG_WIFI_TOG_BTN)) && !defined(RTCONFIG_QCA)) && !defined(RTAX82U) && !defined(DSL_AX82U) && !defined(GSAX3000) && !defined(GSAX5400) && !defined(TUFAX5400)) && !defined(GTAX6000) && !defined(GT10) && !defined(RTAX82U_V2)
+#if (((defined(RTCONFIG_LED_BTN) || !defined(RTCONFIG_WIFI_TOG_BTN)) && !defined(RTCONFIG_QCA)) && !defined(RTAX82U) && !defined(DSL_AX82U) && !defined(GSAX3000) && !defined(GSAX5400) && !defined(TUFAX5400)) && !defined(GTAX6000) && !defined(GT10) && !defined(RTAX82U_V2) && !defined(TUFAX5400_V2)
 	LED_status_old = LED_status;
 #if !defined(RTCONFIG_LED_BTN) && !defined(RTCONFIG_WIFI_TOG_BTN)
 	LED_status = nvram_match("btn_ez_radiotoggle", "0") && nvram_match("btn_ez_mode", "1") &&
@@ -3853,12 +3854,15 @@ void btn_check(void)
 		if (LED_status_on)
 #endif
 		{
+#if defined(RTAX86U_PRO)
+			setAllLedNormal();
+#else
 			led_control(LED_POWER, LED_ON);
 
 #if defined(RTAC3200) || defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER)
 #ifdef HND_ROUTER
 #ifndef GTAC2900
-#if defined(RTAX58U_V2) || defined(GTAX6000) || defined(RTAXE7800) || defined(RTAX3000N) || defined(RTAX82U_V2)
+#if defined(RTAX58U_V2) || defined(GTAX6000) || defined(RTAXE7800) || defined(RTAX3000N) || defined(RTAX82U_V2) || defined(TUFAX5400_V2)
 #ifdef RTAXE7800
 			if (nvram_get_int("wans_extwan"))
 #endif
@@ -3877,10 +3881,10 @@ void btn_check(void)
 #if defined(TUFAX3000_V2) || defined(RTAXE7800)
 			bcm53134_led_control(2);
 #endif
-#ifdef RTCONFIG_FAKE_ETLAN_LED
-			nvram_set_int("etlan_led_reset", 1);
-#else
+#if !defined(RTCONFIG_FAKE_ETLAN_LED) || defined(RTAX86U)
 			setLANLedOn();
+#else
+			nvram_set_int("etlan_led_reset", 1);
 #endif
 #endif
 #else
@@ -3908,8 +3912,6 @@ void btn_check(void)
 				eval("wl", "-i", "eth6", "ledbh", "13", "7");
 #elif defined(GTAXE16000)
 				eval("wl", "-i", "eth7", "ledbh", "13", "7");
-#elif defined(RTAX86U_PRO)
-				eval("wl", "-i", "eth6", "ledbh", "7", "7");
 #elif defined(RTAX92U)
 				eval("wl", "-i", "eth5", "ledbh", "10", "7");
 #elif defined(RTAX95Q) || defined(XT8PRO) || defined(XT8_V2) || defined(RTAXE95Q) || defined(ET8PRO)
@@ -3975,8 +3977,6 @@ void btn_check(void)
 				eval("wl", "-i", "eth7", "ledbh", "13", "7");
 #elif defined(GTAXE16000)
 				eval("wl", "-i", "eth8", "ledbh", "13", "7");
-#elif defined(RTAX86U_PRO)
-				eval("wl", "-i", "eth7", "ledbh", "13", "7");
 #elif defined(RTAX82_XD6S)
 				eval("wl", "-i", "eth3", "ledbh", "15", "7");
 #elif defined(BCM6750)
@@ -3986,7 +3986,7 @@ void btn_check(void)
 					kill_pidfile_s("/var/run/ledbtn.pid", SIGUSR1);
 				} else
 #endif
-#ifdef RTAX82U_V2
+#if defined(RTAX82U_V2) || defined(TUFAX5400_V2)
 				eval("wl", "-i", "eth6", "ledbh", "13", "7");
 #else
 				eval("wl", "-i", "eth6", "ledbh", "15", "7");
@@ -4054,7 +4054,7 @@ void btn_check(void)
 			led_control(LED_LOGO, LED_ON);
 #endif
 			kill_pidfile_s("/var/run/usbled.pid", SIGTSTP); // inform usbled to reset status
-#if defined(RTAX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2)
+#if defined(RTAX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2)
 			kill_pidfile_s("/var/run/ledg.pid", SIGTSTP);
 #endif
 #ifdef GTAX6000
@@ -4072,6 +4072,7 @@ void btn_check(void)
 #if defined(XT12) || defined(ET12)
 			bcm_cled_ctrl_single_white(BCM_CLED_WHITE, BCM_CLED_STEADY_NOBLINK);
 #endif
+#endif // RTAX86U_PRO
 		}
 		else
 			setAllLedOff();
@@ -6272,6 +6273,7 @@ void led_check(int sig)
 		case MODEL_CTAX56_XD4:
 		case MODEL_RTAX58U:
 		case MODEL_RTAX82U_V2:
+		case MODEL_TUFAX5400_V2:
 		case MODEL_RTAX58U_V2:
 		case MODEL_GT10:
 		case MODEL_RTAXE7800:
@@ -9975,13 +9977,18 @@ watchdog_main(int argc, char *argv[])
 	if(ATE_BRCM_FACTORY_MODE()) {
 		_dprintf("watchdog turn on factory mode led\n");
 #ifdef RPAX58
-                eval("sw", "0xff803014", "0x58a0");
+                eval("sw", "0xff803014", "0xd8a0");
 #else
                 eval("sw", "0xff803014", "0xffffa75f");
 #endif
                 eval("sw", "0xff803018", "0x00001000");
 		_bcm_cled_ctrl(BCM_CLED_BLUE, BCM_CLED_STEADY_NOBLINK);
+#ifdef RPAX58
+                eval("sw", "0xFF80301c", "0xd8a0");
+#else
                 eval("sw", "0xFF80301c", "0x58a0");
+#endif
+
 	}
 #endif
 

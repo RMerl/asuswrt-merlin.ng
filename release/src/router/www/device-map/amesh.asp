@@ -504,7 +504,7 @@ function gen_current_onboardinglist(_onboardingList, _wclientlist, _wiredclientl
 					}
 				}
 				var location_text = "<#AiMesh_NodeLocation01#>";
-				var specific_location = location_array.filter(function(item, index, _array){
+				var specific_location = aimesh_location_arr.filter(function(item, index, _array){
 					return (item.value == alias);
 				})[0];
 				if(specific_location != undefined)
@@ -1632,16 +1632,6 @@ function open_AiMesh_node_usb_app(_node_info) {
 	window.open(url, '_new' ,'width=' + window_width + ',height=' + window_height + ', top=' + window_top + ',left=' + window_left + ',menubar=no,scrollbars=yes,toolbar=no,resizable=no,status=no,location=no');
 }
 
-var location_array = [
-	{value:"Home",text:"<#AiMesh_NodeLocation01#>"}, {value:"Living Room",text:"<#AiMesh_NodeLocation02#>"}, {value:"Dining Room",text:"<#AiMesh_NodeLocation03#>"},
-	{value:"Bedroom",text:"<#AiMesh_NodeLocation04#>"}, {value:"Office",text:"<#AiMesh_NodeLocation05#>"}, {value:"Stairwell",text:"<#AiMesh_NodeLocation06#>"},
-	{value:"Hall",text:"<#AiMesh_NodeLocation07#>"}, {value:"Kitchen",text:"<#AiMesh_NodeLocation08#>"}, {value:"Attic",text:"<#AiMesh_NodeLocation09#>"},
-	{value:"Basement",text:"<#AiMesh_NodeLocation10#>"}, {value:"Yard",text:"<#AiMesh_NodeLocation11#>"}, {value:"Master Bedroom",text:"<#AiMesh_NodeLocation12#>"},
-	{value:"Guest Room",text:"<#AiMesh_NodeLocation13#>"}, {value:"Kids Room",text:"<#AiMesh_NodeLocation14#>"}, {value:"Study Room",text:"<#AiMesh_NodeLocation15#>"},
-	{value:"Hallway",text:"<#AiMesh_NodeLocation16#>"}, {value:"Walk-in Closet",text:"<#AiMesh_NodeLocation17#>"}, {value:"Bathroom",text:"<#AiMesh_NodeLocation18#>"},
-	{value:"Second Floor",text:"<#AiMesh_NodeLocation19#>"}, {value:"Third Floor",text:"<#AiMesh_NodeLocation20#>"}, {value:"Storage",text:"<#AiMesh_NodeLocation21#>"},
-	{value:"Balcony",text:"<#AiMesh_NodeLocation22#>"}, {value:"Meeting Room",text:"<#AiMesh_NodeLocation23#>"}, {value:"Garage",text:"<#AiMesh_NodeLocation25#>"},
-	{value:"Custom",text:"<#AiMesh_NodeLocation24#>"}];
 var aimesh_node_hide_flag = false;
 function popAMeshClientListEditTable(event) {
 	aimesh_node_hide_flag = false;
@@ -1776,7 +1766,7 @@ function popAMeshClientListEditTable(event) {
 			}
 		}
 	}
-	var specific_location = location_array.filter(function(item, index, _array){
+	var specific_location = aimesh_location_arr.filter(function(item, index, _array){
 		return (item.value == alias);
 	})[0];
 	var location_text = "<#AiMesh_NodeLocation01#>";
@@ -1800,10 +1790,10 @@ function popAMeshClientListEditTable(event) {
 	);
 	$popupBgHtml.find("#aimesh_node_macaddr").html(labelMac);
 
-	for(var i = 0; i < location_array.length; i += 1) {
+	for(var i = 0; i < aimesh_location_arr.length; i += 1) {
 		$popupBgHtml.find("#aimesh_node_location_select").append($('<option>', {
-			value: location_array[i].value,
-			text: location_array[i].text,
+			value: aimesh_location_arr[i].value,
+			text: aimesh_location_arr[i].text,
 			class: "aimesh_node_input_select_option"
 		}));
 	}
@@ -1898,7 +1888,7 @@ function popAMeshClientListEditTable(event) {
 			var location_value = $(this).val();
 			if(location_value != "Custom"){
 				$popupBgHtml.find('#aimesh_node_location_input').attr("disabled", true);
-				var specific_location = location_array.filter(function(item, index, _array){
+				var specific_location = aimesh_location_arr.filter(function(item, index, _array){
 					return (item.value == location_value);
 				})[0];
 				$popupBgHtml.find('#aimesh_node_location_input').val(specific_location.text);
@@ -1969,7 +1959,7 @@ function popAMeshClientListEditTable(event) {
 			if(validAiMeshLocation()) {
 				var location_value = $(this).val();
 				var location_text = "<#AiMesh_NodeLocation01#>";
-				var specific_location = location_array.filter(function(item, index, _array){
+				var specific_location = aimesh_location_arr.filter(function(item, index, _array){
 					return (item.value == location_value);
 				})[0];
 				if(specific_location != undefined){

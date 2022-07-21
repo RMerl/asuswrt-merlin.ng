@@ -1035,6 +1035,7 @@ function register_event(){
 				based_modelid == "TUF-AX3000" ||
 				based_modelid == "TUF-AX3000_V2" ||
 				based_modelid == "TUF-AX5400" ||
+				based_modelid == "TUF-AX5400_V2" ||
 				based_modelid == "DSL-AX82U" ||
 				based_modelid == "RT-AX82U" ||
 				based_modelid == "RT-AX82U_V2" ||
@@ -1083,6 +1084,7 @@ function register_event(){
 				based_modelid == "TUF-AX3000" ||
 				based_modelid == "TUF-AX3000_V2" ||
 				based_modelid == "TUF-AX5400" ||
+				based_modelid == "TUF-AX5400_V2" ||
 				based_modelid == "DSL-AX82U" ||
 				based_modelid == "RT-AX82U" ||
 				based_modelid == "RT-AX82U_V2" ||
@@ -1131,6 +1133,7 @@ function register_event(){
 				based_modelid == "TUF-AX3000" ||
 				based_modelid == "TUF-AX3000_V2" ||
 				based_modelid == "TUF-AX5400" ||
+				based_modelid == "TUF-AX5400_V2" ||
 				based_modelid == "DSL-AX82U" ||
 				based_modelid == "RT-AX82U" ||
 				based_modelid == "RT-AX82U_V2" ||
@@ -1179,6 +1182,7 @@ function register_event(){
 				based_modelid == "TUF-AX3000" ||
 				based_modelid == "TUF-AX3000_V2" ||
 				based_modelid == "TUF-AX5400" ||
+				based_modelid == "TUF-AX5400_V2" ||
 				based_modelid == "DSL-AX82U" ||
 				based_modelid == "RT-AX82U" ||
 				based_modelid == "RT-AX82U_V2" ||
@@ -1285,6 +1289,7 @@ function register_event(){
 				based_modelid == "TUF-AX3000" ||
 				based_modelid == "TUF-AX3000_V2" ||
 				based_modelid == "TUF-AX5400" ||
+				based_modelid == "TUF-AX5400_V2" ||
 				based_modelid == "DSL-AX82U" ||
 				based_modelid == "RT-AX82U" ||
 				based_modelid == "RT-AX82U_V2" ||
@@ -1333,6 +1338,7 @@ function register_event(){
 				based_modelid == "TUF-AX3000" ||
 				based_modelid == "TUF-AX3000_V2" ||
 				based_modelid == "TUF-AX5400" ||
+				based_modelid == "TUF-AX5400_V2" ||
 				based_modelid == "DSL-AX82U" ||
 				based_modelid == "RT-AX82U" ||
 				based_modelid == "RT-AX82U_V2" ||
@@ -1381,6 +1387,7 @@ function register_event(){
 				based_modelid == "TUF-AX3000" ||
 				based_modelid == "TUF-AX3000_V2" ||
 				based_modelid == "TUF-AX5400" ||
+				based_modelid == "TUF-AX5400_V2" ||
 				based_modelid == "DSL-AX82U" ||
 				based_modelid == "RT-AX82U" ||
 				based_modelid == "RT-AX82U_V2" ||
@@ -1429,6 +1436,7 @@ function register_event(){
 				based_modelid == "TUF-AX3000" ||
 				based_modelid == "TUF-AX3000_V2" ||
 				based_modelid == "TUF-AX5400" ||
+				based_modelid == "TUF-AX5400_V2" ||
 				based_modelid == "DSL-AX82U" ||
 				based_modelid == "RT-AX82U" ||
 				based_modelid == "RT-AX82U_V2" ||
@@ -1589,6 +1597,7 @@ function check_power(power_value,flag){
 			based_modelid == "TUF-AX3000" ||
 			based_modelid == "TUF-AX3000_V2" ||
 			based_modelid == "TUF-AX5400" ||
+			based_modelid == "TUF-AX5400_V2" ||
 			based_modelid == "DSL-AX82U" ||
 			based_modelid == "RT-AX82U" ||
 			based_modelid == "RT-AX82U_V2" ||
@@ -1646,6 +1655,7 @@ function set_lg_power(power_value,flag,idx){
 			based_modelid == "TUF-AX3000" ||
 			based_modelid == "TUF-AX3000_V2" ||
 			based_modelid == "TUF-AX5400" ||
+			based_modelid == "TUF-AX5400_V2" ||
 			based_modelid == "DSL-AX82U" ||
 			based_modelid == "RT-AX82U" ||
 			based_modelid == "RT-AX82U_V2" ||
@@ -1686,6 +1696,7 @@ function set_lg_power(power_value,flag,idx){
 			based_modelid == "TUF-AX3000" ||
 			based_modelid == "TUF-AX3000_V2" ||
 			based_modelid == "TUF-AX5400" ||
+			based_modelid == "TUF-AX5400_V2" ||
 			based_modelid == "DSL-AX82U" ||
 			based_modelid == "RT-AX82U" ||
 			based_modelid == "RT-AX82U_V2" ||

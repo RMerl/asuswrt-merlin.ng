@@ -65,6 +65,7 @@ struct REPLACE_PRODUCTID_S replace_productid_t[] =
 	{"ZenWiFi_CV4", "ZenWiFi Voice", "global"},
 	{"ZenWiFi_Pro_XT12", "灵耀Pro AX11000", "CN"},
 	{"ZenWiFi_XD5", "灵耀AX魔方 Pro", "CN"},
+	{"ZenWiFi_XD4_Pro", "灵耀AX魔方 Pro", "CN"},
 	{"ZenWiFi_XT9", "灵耀AX7800", "CN"},
 	{"ZenWiFi_XD6", "灵耀AX5400", "CN"},
 	{"TUF-AX3000_V2", "TUF GAMING 小旋风", "CN"},

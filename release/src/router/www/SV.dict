@@ -103,6 +103,7 @@ ASUS_eula_desc1_4=Dessutom kan ASUS, för att aktivera fjärrkontrollen för IFT
 ASUS_eula_desc2=ASUS värnar om att skydda och respektera din integritet;Du kan alltid gå in på Advanced Settings (Avancerade inställningar) > Administration (Administration) > Privacy (Sekretess) för att aktivera/inaktivera din produktinformation med ASUS. För att lära dig mer om hur ASUS skyddar din integritet, besök <a id="eula_url" style="font-weight: bolder;text-decoration:underline;cursor:pointer;" target="_blank">ASUS sekretesspolicy</a>.
 ASUS_eula_age=Jag är äldre än 16 år.
 ASUS_eula_age_confirm=Bekräfta att du är äldre än 16 år.
+ASUS_eula_use_confirm=Bekräfta att ASUS användarvillkor.
 ASUS_eula_withdraw0=För %1$@ och fjärranslutning  (ASUS Router APP/Lyra APP/AiCloud/AiDisk):
 ASUS_eula_withdraw_desc1=Observera att din information, inklusive produktens modellnamn, version på inbyggda programvara, Internetstatus, IP-adress, MAC-adress och DDNS-namn, kommer att samlas in av ASUS genom ovanstående funktioner.
 ASUS_eula_withdraw_desc1_2=Om du vill inaktivera delningen av din information med ASUS genom ovanstående funktioner, klicka på <span style="font-weight: bold;">[Withdraw] (Återkalla)</span>. Observera emellertid att sådana egenskaper/funktioner kanske inte fungerar för att stoppa delningen av din information med ASUS.
@@ -246,7 +247,7 @@ FIRM_fail_desc=Uppdatering av den fast programvaran misslyckades. Det kan bero p
 FIRM_ok_desc=Den fasta programvaran uppdateras. Vänta i ungefär tre minuter.
 FIRM_ok_aimesh=Din fasta programvara har uppdaterats. Stäng det här fönstret och logga in i din AiMesh-router igen.
 FIRM_reboot_manually=Uppgradering av fast program är klart. Starta om ZVMODELVZ manuellt.
-FIRM_trx_valid_fail_desc=To comply with regulatory amendments, we have modified our certification rule to ensure better firmware quality. This version is not compatible with all previously released ASUS firmware and uncertified third party firmware. Please check our official websites for the certified firmware.
+FIRM_trx_valid_fail_desc=To comply with regulatory amendments, we have modified our certificate rule to ensure better firmware quality. This version is not compatible with all previously released ASUS firmware and uncertified third party firmware. Please check our official websites for the certified firmware.
 Five_attempts_logout_hint=Du har angett ett felaktigt lösenord 5 gånger. Du blir utloggad.
 footer_copyright_desc=2022 ASUSTeK Computer Inc. Alla rättigheter förbehållna.
 FW_n1=Om en konfigurationsparameter finns i både den nya och den gamla versionen kommer dess inställning att behållas under uppgraderingen.
@@ -1081,13 +1082,14 @@ AiMesh_confirm_msg_ChangeSSID=Om du ändrar ditt SSID kommer AiMesh-nodens WiFi-
 AiMesh_confirm_msg_ChangeKey=Om du ändrar ditt den delade WPA-nyckeln kommer AiMesh-nodens WiFi-anslutning att påverkas.
 AiMesh_confirm_msg_CountryCode=Om du ändrar landskoden kan ditt AiMesh-system påverkas.
 AiMesh_confirm_msg5=Om du stänger av radiofunktionen kommer AiMesh-routerns WiFi-anslutning att påverkas.
-AiMesh_confirm_msg6=Om du döljer ditt SSID kommer AiMesh-routerns WiFi-anslutning att påverkas.
+AiMesh_confirm_msg6=Dolda SSID bidrar inte till att göra ditt Wi-Fi-nätverk säkert och kan orsaka vissa anslutningsproblem.
 AiMesh_confirm_msg7=Om du döljer ditt SSID stängs WPS-funktionen av, och AiMesh-routerns WiFi-anslutning påverkas.
 AiMesh_confirm_msg8=Om du stänger av DHCP-servern kommer AiMesh-routerns WiFi-anslutning att påverkas.
 AiMesh_confirm_msg9=Beaktat kompatibiliteten för AiMesh-system och enheter föreslår vi att du använder WPA2-Personal. Vill du byta till #AUTHMODE?\n*Om du upplever anslutningsproblem ber vi dig byta till WPA2-Personal eller be leverantören(erna) om mer information.
 AiMesh_confirm_msg10=För att säkerställa anslutningen för ditt AiMesh-system och slutenheter ber vi dig läsa dessa <a id="wpa3FaqLink">FAQ</a> innan du byter till WPA3-Personal.
 AiMesh_confirm_msg11=Du använder för närvarande WPA3-Personal. För att skapa ett AiMesh-system blir din autentiseringsmetod ändrad till WPA2/WPA3-Personal. Vill du fortsätta?
 AiMesh_confirm_msg12=You can read this <a id='wpa3FaqLink'>FAQ</a> for more information.
+AiMesh_confirm_msg13=För ytterligare detaljer besök <a style='font-weight: bolder;text-decoration: underline;color:#000000;' href='' target='_blank'>denna Vanliga frågor</a>
 AiMesh_Feature_Desc=Advanced ASUS AiMesh är en ny router-funktion som kopplar samman flera ASUS-routrar, och skapar ett WiFi-nätverk i hela hemmet.
 AiMesh_FAQ=Ta reda på mer om ASUS AiMesh
 AiMesh_FindNode=Hitta AiMesh-nod
@@ -3442,6 +3444,7 @@ TZ17=Atlantic Time (Kanada)
 TZ18=La Paz
 TZ18_1=Caracas
 TZ19=Santiago
+TZ19_1=Asunción
 TZ20=Newfoundland
 TZ21=Brasilia
 TZ22=Buenos Aires, Georgetown
@@ -3626,7 +3629,7 @@ vpn_network_place=Nätverksplats (Samba) support
 vpn_openvpn_AdvDNS=Annonsera DNS till klienter
 vpn_openvpn_Auth=Verifieringsläge
 vpn_openvpn_AuthOnly=Endast verifiering genom användarnamn / lösenord
-vpn_openvpn_AuthOnly_hint=Authorization Mode fixes on TLS
+vpn_openvpn_AuthOnly_hint=Authentication Mode fixes on TLS
 vpn_openvpn_AuthHMAC=Extra HMAC-verifiering
 vpn_openvpn_ExtraHMAC=Extra HMAC-verifiering
 vpn_openvpn_ClientMutual=Tillåt klient <-> Klient

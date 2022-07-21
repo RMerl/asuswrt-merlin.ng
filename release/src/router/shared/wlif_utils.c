@@ -1208,7 +1208,7 @@ int wl_wlif_unblock_mac(char *ifname, struct ether_addr addr, int flag)
 
 	return TRUE;
 }
-
+#if 0
 /* get the Max NSS */
 int
 wl_wlif_get_max_nss(wl_bss_info_t *bi)
@@ -1259,6 +1259,7 @@ wl_wlif_get_max_nss(wl_bss_info_t *bi)
 
 	return nss;
 }
+#endif
 #endif
 
 #if defined(CONFIG_HOSTAPD) && defined(BCA_HNDROUTER)

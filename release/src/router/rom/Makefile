@@ -401,7 +401,7 @@ ifeq ($(BUILD_NAME), RT-AXE7800)
 	mkdir -p $(INSTALLDIR)/rom/dhd/6715b0_mfg
 	install -m 0644 dhd/6715b0_mfg/RT-AXE7800/rtecdc_17.10.188.6401.bin $(INSTALLDIR)/rom/dhd/6715b0_mfg/rtecdc.bin
 endif
-ifeq ($(BUILD_NAME), RT-AX82U_V2)
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-AX82U_V2 TUF-AX5400_V2))
 	mkdir -p $(INSTALLDIR)/rom/dhd/6715b0_mfg
 	install -m 0644 dhd/6715b0_mfg/RT-AX82U_V2/rtecdc_17.10.188.6401.bin $(INSTALLDIR)/rom/dhd/6715b0_mfg/rtecdc.bin
 endif

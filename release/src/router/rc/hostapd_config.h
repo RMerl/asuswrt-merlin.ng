@@ -1,7 +1,7 @@
 /*
  * Hostapd config header file
  *
- * Copyright (C) 2021, Broadcom. All Rights Reserved.
+ * Copyright (C) 2022, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: hostapd_config.h 796839 2021-03-15 07:38:09Z $
+ * $Id: hostapd_config.h 799234 2021-05-25 07:01:27Z $
  */
 
 #ifndef _hostapd_config_h_
@@ -41,7 +41,7 @@ extern void hapd_wpasupp_wds_hndlr(const char *pkt);
 #endif /* HAPD_WDS */
 extern char *hapd_wpasupp_strncpy(char *dest, const char *src, size_t n);
 
-#if !defined(RTCONFIG_BCM_502L07P2)
+#if !defined(RTCONFIG_HND_ROUTER_AX_6756)
 extern int hapd_wpasupp_get_all_lanifname_sz(void);
 extern int hapd_wpasupp_get_all_lanifname(char *ifnames, int ifnames_sz);
 extern int hapd_wpasupp_get_all_lanifnames_listsz(void);

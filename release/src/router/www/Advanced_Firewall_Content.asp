@@ -576,7 +576,7 @@ function updateDateTime(){
         					<tr>
           						<th ><a class="hintstyle" href="javascript:void(0);" onClick="openHint(10,4);"><#FirewallConfig_LanWanICMP_itemname#></a></th>
           						<td>
-          							<input type="text" maxlength="32" class="input_32_table" name="filter_lw_icmp_x" value="<% nvram_get("filter_lw_icmp_x"); %>" onKeyPress="return validator.isPortlist(this,event)" autocorrect="off" autocapitalize="off">
+								<input type="text" maxlength="64" class="input_32_table" name="filter_lw_icmp_x" value="<% nvram_get("filter_lw_icmp_x"); %>" onKeyPress="return validator.isPortlist(this,event)" autocorrect="off" autocapitalize="off">
           						</td>
         					</tr>
 

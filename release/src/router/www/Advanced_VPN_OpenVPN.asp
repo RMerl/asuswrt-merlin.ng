@@ -153,6 +153,7 @@ function initial(){
 		document.getElementById("divSwitchMenu").style.display = "";
 	}
 
+	showopenvpnd_clientlist();
 	formShowAndHide(vpn_server_enable, "openvpn");
 
 	/*Advanced Setting start */
@@ -318,11 +319,9 @@ function formShowAndHide(server_enable, server_type) {
 		if(!email_support)
 			document.getElementById('exportViaEmail').style.display = "none";
 					
-		showopenvpnd_clientlist();
 		update_vpn_client_state();
 		openvpnd_connected_status();
 		check_vpn_server_state();
-		document.getElementById("divApply").style.display = "";
 	}
 	else{
 		document.getElementById("trVPNServerMode").style.display = "none";
@@ -331,9 +330,6 @@ function formShowAndHide(server_enable, server_type) {
 		$('*[data-group="cert_btn"]').hide();
 		document.getElementById("OpenVPN_setting").style.display = "none";
 		document.getElementById("divAdvanced").style.display = "none";
-		//if(vpn_server_mode != "openvpn") {
-			document.getElementById("divApply").style.display = "none";
-		//}
 	}
 }
 
@@ -2007,7 +2003,7 @@ function handle_ipv6_submit_settings(){
 										<!-- Custom setting table end-->
 									</div>
 
-									<div id="divApply" class="apply_gen" style="display:none;">
+									<div id="divApply" class="apply_gen">
 										<input type="button" id="restoreButton" class="button_gen" value="<#Setting_factorydefault_value#>" onclick="defaultSettings();">
 										<input class="button_gen" onclick="applyRule()" type="button" value="<#CTL_apply#>"/>
 									</div>

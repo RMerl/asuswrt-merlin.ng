@@ -1,7 +1,10 @@
 #!/bin/sh
 
-MODEL=XT12
+MODEL=GT-AXE16000
 SDK=arm_4912hnd
+
+# Set to 1 to create NEW SDK directories
+CREATESDK=0
 
 # Model Dirs
 mkdir -p bwdpi_source/asus/prebuild/$MODEL
@@ -18,37 +21,39 @@ mkdir -p amas-utils/prebuild/$MODEL
 mkdir -p asd/prebuild/$MODEL
 mkdir -p libasc/prebuild/$MODEL
 
+if [ "$CREATESDK" = "1" ]; then
 # SDK dirs
-mkdir -p aaews/prebuild/$SDK
-mkdir -p asusnatnl/natnl/prebuild/$SDK
-mkdir -p asuswebstorage/prebuild/$SDK
-mkdir -p bsd/prebuilt/$SDK
-mkdir -p dhd/prebuilt/$SDK
-mkdir -p dropbox_client/prebuild/$SDK
-mkdir -p eventd/prebuilt/$SDK
-mkdir -p ftpclient/prebuild/$SDK
-mkdir -p infosvr/prebuild/$SDK
-mkdir -p inotify/prebuild/$SDK
-mkdir -p libbcm/prebuilt/$SDK
-mkdir -p libletsencrypt/prebuild/$SDK
-mkdir -p lighttpd-1.4.39/prebuild/$SDK
-mkdir -p networkmap/prebuild/$SDK
-mkdir -p nt_center/actMail/prebuild/$SDK
-mkdir -p nt_center/lib/prebuild/$SDK
-mkdir -p nt_center/prebuild/$SDK
-mkdir -p protect_srv/lib/prebuild/$SDK
-mkdir -p protect_srv/prebuild/$SDK
-mkdir -p sambaclient/prebuild/$SDK
-mkdir -p sysstate/commands/prebuild/$SDK
-mkdir -p sysstate/log_daemon/prebuild/$SDK
-mkdir -p u2ec/prebuild/$SDK
-mkdir -p usbclient/prebuild/$SDK
-mkdir -p wb/prebuild/$SDK
-mkdir -p webdav_client/prebuild/$SDK
-mkdir -p wlc_nt/prebuild/$SDK
-mkdir -p dblog/commands/prebuild/$SDK
-mkdir -p dblog/daemon/prebuild/$SDK
-mkdir -p libasuslog/prebuild/$SDK
+	mkdir -p aaews/prebuild/$SDK
+	mkdir -p asusnatnl/natnl/prebuild/$SDK
+	mkdir -p asuswebstorage/prebuild/$SDK
+	mkdir -p bsd/prebuilt/$SDK
+	mkdir -p dhd/prebuilt/$SDK
+	mkdir -p dropbox_client/prebuild/$SDK
+	mkdir -p eventd/prebuilt/$SDK
+	mkdir -p ftpclient/prebuild/$SDK
+	mkdir -p infosvr/prebuild/$SDK
+	mkdir -p inotify/prebuild/$SDK
+	mkdir -p libbcm/prebuilt/$SDK
+	mkdir -p libletsencrypt/prebuild/$SDK
+	mkdir -p lighttpd-1.4.39/prebuild/$SDK
+	mkdir -p networkmap/prebuild/$SDK
+	mkdir -p nt_center/actMail/prebuild/$SDK
+	mkdir -p nt_center/lib/prebuild/$SDK
+	mkdir -p nt_center/prebuild/$SDK
+	mkdir -p protect_srv/lib/prebuild/$SDK
+	mkdir -p protect_srv/prebuild/$SDK
+	mkdir -p sambaclient/prebuild/$SDK
+	mkdir -p sysstate/commands/prebuild/$SDK
+	mkdir -p sysstate/log_daemon/prebuild/$SDK
+	mkdir -p u2ec/prebuild/$SDK
+	mkdir -p usbclient/prebuild/$SDK
+	mkdir -p wb/prebuild/$SDK
+	mkdir -p webdav_client/prebuild/$SDK
+	mkdir -p wlc_nt/prebuild/$SDK
+	mkdir -p dblog/commands/prebuild/$SDK
+	mkdir -p dblog/daemon/prebuild/$SDK
+	mkdir -p libasuslog/prebuild/$SDK
+fi
 
 # Links to SDK dirs
 ln -s $SDK aaews/prebuild/$MODEL

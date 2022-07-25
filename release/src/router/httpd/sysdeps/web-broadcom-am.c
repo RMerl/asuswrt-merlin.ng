@@ -355,14 +355,18 @@ ej_wl_unit_status_array(int eid, webs_t wp, int argc, char_t **argv, int unit)
 
         switch (unit) {
         case 0:
-		ret += websWrite(wp, "dataarray24 = [");
+		ret += websWrite(wp, "dataarray0 = [");
                 break;
         case 1:
-		ret += websWrite(wp, "dataarray5 = [");
+		ret += websWrite(wp, "dataarray1 = [");
 		break;
         case 2:
-		ret += websWrite(wp, "dataarray52 = [");
+		ret += websWrite(wp, "dataarray2 = [");
                 break;
+	case 3:
+		ret += websWrite(wp, "dataarray3 = [");
+		break;
+
         }
 
 	if (nvram_match(strcat_r(prefix, "mode", tmp), "wds"))
@@ -453,13 +457,16 @@ sta_list:
 // Open client array
 	switch(unit) {
 	case 0:
-		ret += websWrite(wp, "wificlients24 = [");
+		ret += websWrite(wp, "wificlients0 = [");
 		break;
 	case 1:
-		ret += websWrite(wp, "wificlients5 = [");
+		ret += websWrite(wp, "wificlients1 = [");
 		break;
 	case 2:
-		ret += websWrite(wp, "wificlients52 = [");
+		ret += websWrite(wp, "wificlients2 = [");
+		break;
+	case 3:
+		ret += websWrite(wp, "wificlients3 = [");
 		break;
 	}
 

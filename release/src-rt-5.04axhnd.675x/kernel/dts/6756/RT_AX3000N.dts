@@ -78,8 +78,7 @@
         compatible = "brcm,gpio-led";
         software_led;
         pin = <5>;
-        active_low;
-        init_low;
+        init_high;
     };
     /* WAN LED */
     led0: port_0-led-0 {

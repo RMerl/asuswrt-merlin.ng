@@ -318,7 +318,7 @@ wl_stats () {
     display_cmd_op "LAST ADJ EST POWER: wl -i $IFNAME txpwr_adj_est" "$WLCMD -i $IFNAME txpwr_adj_est"
     display_cmd_op "CEVENT: ceventc -i $IFNAME dump" "ceventc -i $IFNAME dump"
     ## Flush ceventc log
-    ceventc -i $IFNAME flush > /dev/NULL 2>&1
+    #ceventc -i $IFNAME flush > /dev/NULL 2>&1
 }
 
 dhd_stats () {

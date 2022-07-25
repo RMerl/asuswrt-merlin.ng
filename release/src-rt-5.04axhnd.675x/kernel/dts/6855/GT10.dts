@@ -147,6 +147,7 @@
             oam-idx = <3>;
             status = "okay";
             label = "eth0";
+            is-wan;
         };
     };
 };

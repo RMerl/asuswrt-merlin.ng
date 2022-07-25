@@ -132,6 +132,7 @@ update_list:
                         if (SKB_FAST_RELEASE_TO_BPM(skb)) {
 #if defined(CONFIG_BCM_XRDP)
 	                        (*skb->recycle_hook)(skb, skb->recycle_context, SKB_DATA_RECYCLE);
+                                skb->recycle_hook = (RecycleFuncP)gbpm_recycle_skb;
 #else
                                 bufp_arr[idx++] = gbpm_invalidate_dirtyp(skb);
 #endif /* CONFIG_BCM_XRDP */

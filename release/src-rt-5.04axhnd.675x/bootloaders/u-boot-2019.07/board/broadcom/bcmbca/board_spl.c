@@ -147,7 +147,7 @@ static void bcmbca_set_ldo_trim(void)
 }
 #endif
 
-#if defined(XD4PRO) || defined(XT8PRO) || defined(XT8_V2) || defined(ET8PRO)
+#if defined(XD4PRO) || defined(XT8PRO) || defined(BM68) || defined(XT8_V2) || defined(ET8PRO) || defined(ET8_V2)
 #define AL_AH_REG       0xFF803014
 #define SW_INPUT_REG    0xFF803010
 #define LED_ACT_CFG     0xFF80301c
@@ -329,7 +329,7 @@ void board_init_f(ulong dummy)
 	reserve_mmu();
 	enable_caches();
 #endif
-#if defined(XD4PRO) || defined(XT8PRO) || defined(XT8_V2) || defined(ET8PRO)
+#if defined(XD4PRO) || defined(XT8PRO) || defined(BM68) || defined(XT8_V2) || defined(ET8PRO) || defined(ET8_V2)
 	PowerCLEDOn();
 #endif
 }

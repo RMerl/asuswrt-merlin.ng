@@ -1,0 +1,57 @@
+OBJS = common.o obj_hndlr.o ssm_hndlr.o mcpd_main.o igmp_main.o igmp_proxy.o igmp_snooping.o
+OBJS += mcpd_mroute.o mcpd_nl.o mcpd_config.o mcpd_timer.o mcpd_ctl.o
+OBJS += mcpd_ulog.o
+ifneq ($(strip $(BUILD_IPV6)), )
+OBJS += mld_main.o mld_proxy.o mld_snooping.o mcpd_mroute6.o
+endif
+
+ifneq ($(strip $(BRCM_OVS_SUPPORT_MCAST)),)
+OBJS += mcpd_ovs.o
+endif
+
+
+LIBS = -L$(HND_SRC)/router-sysdep/bcmmcast/ -lbcmmcast -L$(HND_SRC)/router-sysdep/bridgeutil/ -lbridgeutil
+
+# mcpd to omcid integration is only available in CMS/BDK mode (not BaseShell)
+# mcpd_omci.o uses BCMIPC to communicate with omcid, so BCMIPC must be defined.
+# mcpd_omci.o does not use CMS Msg, but does use cms_util, which needs cms_msg,
+# so that is why we still need to link with cms_msg.
+ifneq ($(strip $(BUILD_BRCM_CMS))$(strip $(BUILD_BRCM_BDK)),)
+ifneq ($(strip $(BUILD_GPON)),)
+ifneq ($(strip $(BUILD_BCMIPC)),)
+OBJS   += mcpd_omci.o
+LIBS   += -lomciutil -lcms_msg $(CMS_COMMON_LIBS) -lbcmipc
+CFLAGS += -DBCMIPC_OMCID
+endif
+endif
+endif
+
+LIBS += $(SSP_TYP_LIBS)
+
+
+CFLAGS += -Werror -Wfatal-errors
+ifneq ($(strip $(BRCM_OVS_SUPPORT_MCAST)),)
+CFLAGS += -DCONFIG_BCM_OVS_MCAST
+endif
+CFLAGS += -I$(INC_BRCMDRIVER_PUB_PATH)/$(BRCM_BOARD)
+CFLAGS += -I$(INC_BRCMSHARED_PUB_PATH)/$(BRCM_BOARD)
+CFLAGS += -I$(KERNEL_LINKS_DIR)
+ifneq ($(strip $(BUILD_IPV6)),)
+CFLAGS += -DSUPPORT_MLD
+endif
+
+CFLAGS += $(SSP_TYP_COMPILER_OPTS)
+
+$(EXE): $(OBJS)
+	$(CC) $(BCM_LD_FLAGS) -o $@ $(OBJS) -Wl,-rpath,$(CMS_LIB_RPATH) $(CMS_LIB_PATH) $(LIBS)
+
+
+binaryonly_prepare:
+	-cp $(EXE) $(mdir)/$(SAVED)
+	-$(MAKE) -f $(name) clean
+	rm -f $(mdir)/*.c $(mdir)/*.h $(mdir)/Makefile.fullsrc
+
+
+# Generate and use dependencies.
+CFLAGS += -MD -I$(HND_SRC)/userspace/private/include/ -I$(HND_SRC)/userspace/public/include/ -I$(HND_SRC)/userspace/public/include/linux/
+-include $(OBJS:.o=.d)

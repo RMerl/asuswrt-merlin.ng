@@ -319,17 +319,17 @@ static void set_reserved_memory(void *dtb_ptr, bd_t *bd)
 		return;
 	}	
 
-#if defined(XT8PRO) || defined(XT8_V2) || defined(ET8PRO)
+#if defined(XT8PRO) || defined(BM68) || defined(XT8_V2) || defined(ET8PRO) || defined(ET8_V2)
 	printf("cathy force RSVD: dhd2=11\n");
 	env_set_ulong("dhd2", 11);
 	printf("cathy force RSVD: dhd0=0\n");
 	env_set_ulong("dhd0", 0);
 #endif
 
-#if defined(RTAX58U_V2) || defined(TUFAX3000_V2) || defined(RTAXE7800) || defined(GT10) || defined(RTAX3000N) || defined(RTAX82U_V2) || defined(RPAX58) || defined(XD4PRO)
+#if defined(RTAX58U_V2) || defined(TUFAX3000_V2) || defined(RTAXE7800) || defined(GT10) || defined(RTAX3000N) || defined(RTAX82U_V2) || defined(RPAX58) || defined(XD4PRO) || defined(TUFAX5400_V2)
 	env_set_ulong("dhd0", 0);
 #endif
-#if defined(GTAX6000) || defined(RTAXE7800) || defined(GT10) || defined(RTAX82U_V2)
+#if defined(GTAX6000) || defined(RTAXE7800) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2)
 	env_set_ulong("dhd1", 11);
 #endif
 #if defined(GT10)

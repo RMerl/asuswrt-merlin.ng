@@ -897,6 +897,18 @@ static inline void _kfree_skb_defer(struct sk_buff *skb)
 
 	/* drop skb->head and call any destructors for packet */
 	skb_release_all(skb);
+	
+#if defined(CONFIG_BCM_KF_BLOG) && defined(CONFIG_BLOG)
+    blog_free(skb, blog_free_reason_kfree);
+#endif
+
+#if defined(CONFIG_BCM_KF_NBUFF)
+	/* If the skb came from a preallocated pool, pass it to recycler hook */
+	if (skb->recycle_hook && (skb->recycle_flags & SKB_RECYCLE)){
+		(*skb->recycle_hook)(skb, skb->recycle_context, SKB_RECYCLE);
+		return;
+	}
+#endif /* CONFIG_BCM_KF_NBUFF */
 
 	/* record skb to CPU local list */
 	nc->skb_cache[nc->skb_count++] = skb;

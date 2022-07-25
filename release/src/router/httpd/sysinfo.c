@@ -301,7 +301,7 @@ int ej_show_sysinfo(int eid, webs_t wp, int argc, char_t ** argv)
 			else
 			{
 #ifdef RTCONFIG_QTN
-				if (radio == 5)
+				if (radio == 1)
 					temperature = get_qtn_temperature();
 				else
 #endif
@@ -639,13 +639,17 @@ unsigned int get_phy_temperature(int radio)
 
 	strcpy(buf, "phy_tempsense");
 
-	if (radio == 2) {
+	if (radio == 0) {
 		interface = nvram_safe_get("wl0_ifname");
-	} else if (radio == 5) {
+	} else if (radio == 1) {
 		interface = nvram_safe_get("wl1_ifname");
-#ifdef RTCONFIG_HAS_5G_2
-	} else if (radio == 52) {
+#if defined(RTCONFIG_HAS_5G_2) || defined (RTCONFIG_WIFI6E)
+	} else if (radio == 2) {
 		interface = nvram_safe_get("wl2_ifname");
+#endif
+#if defined(GTAXE16000)
+	} else if (radio == 3) {
+		interface = nvram_safe_get("wl3_ifname");
 #endif
 	} else {
 		return 0;

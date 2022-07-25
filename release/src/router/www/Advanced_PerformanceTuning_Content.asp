@@ -63,7 +63,11 @@ function update_coretmp(e){
       update_coretmp();
     },
     success: function(response){
-			updateNum(curr_coreTmp_2, curr_coreTmp_5, parseInt(curr_cpuTemp));
+			if (based_modelid === 'GT-AXE16000') {
+				updateNum(curr_coreTmp_3, curr_coreTmp_0, parseInt(curr_cpuTemp));
+			} else {
+				updateNum(curr_coreTmp_0, curr_coreTmp_1, parseInt(curr_cpuTemp));
+			}
 			setTimeout("update_coretmp();", 5000);
 		}    
   });

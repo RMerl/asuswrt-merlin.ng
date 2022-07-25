@@ -48,9 +48,11 @@ overlib.isOut = true;
 var refreshRate = 3;
 var timedEvent = 0;
 
-var dataarray24 = [], wificlients24 = [];
-var dataarray5 = [], wificlients5 = [];
-var dataarray52 = [], wificlients52 = [];
+var dataarray0 = [], wificlients0 = [];
+var dataarray1 = [], wificlients1 = [];
+var dataarray2 = [], wificlients2 = [];
+var dataarray3 = [], wificlients3 = [];
+
 var dfs_statusarray1 = [], dfs_statusarray2 = [];
 
 <% get_wl_status(); %>;
@@ -68,6 +70,11 @@ if (band5g_support) {
 		                 "<% nvram_get("wl2.2_ssid"); %>",
 		                 "<% nvram_get("wl2.3_ssid"); %>"]);
 	}
+}
+if (based_modelid === 'GT-AXE16000') {
+		guestnames.push(["<% nvram_get("wl3.1_ssid"); %>",
+		                 "<% nvram_get("wl3.2_ssid"); %>",
+		                 "<% nvram_get("wl3.3_ssid"); %>"]);
 }
 
 var classObj= {
@@ -125,6 +132,31 @@ function initial(){
 
 
 function redraw(){
+	if (based_modelid === 'GT-AXE16000') {
+		dataarray24 = dataarray3;
+		wificlients24 = wificlients3;
+		dataarray5 = dataarray0;
+		wificlients5 = wificlients0;
+		dataarray52 = dataarray1;
+		wificlients52 = wificlients1;
+		dataarray6 = dataarray2;
+		wificlients6 = wificlients2;
+	} else {
+		dataarray24 = dataarray0;
+		wificlients24 = wificlients0;
+		if (band5g_support) {
+			dataarray5 = dataarray1;
+			wificlients5 = wificlients1;
+		}
+		if (band6g_support) {
+			dataarray6 = dataarray2;
+			wificlients6 = wificlients2;
+		} else if (wl_info.band5g_2_support) {
+			dataarray52 = dataarray2;
+			wificlients52 = wificlients2;
+		}
+	}
+
 	if (dataarray24.length == 0) {
 		document.getElementById('wifi24headerblock').innerHTML='<span class="wifiheader" style="font-size: 125%;">Wireless 2.4 GHz is disabled.</span>';
 	} else {
@@ -133,11 +165,11 @@ function redraw(){
 	}
 
 	if (band6g_support) {
-		if (dataarray52.length == 0) {
-		        document.getElementById('wifi52headerblock').innerHTML='<span class="wifiheader" style="font-size: 125%;">Wireless 6 GHz is disabled.</span>';
+		if (dataarray6.length == 0) {
+		        document.getElementById('wifi6headerblock').innerHTML='<span class="wifiheader" style="font-size: 125%;">Wireless 6 GHz is disabled.</span>';
 		} else {
-		        display_header(dataarray52, 'Wireless 6 GHz', document.getElementById('wifi52headerblock'), []);
-		        display_clients(wificlients52, document.getElementById('wifi52block'), 2);
+		        display_header(dataarray6, 'Wireless 6 GHz', document.getElementById('wifi6headerblock'), []);
+		        display_clients(wificlients6, document.getElementById('wifi6block'), 2);
 		}
 	}
 
@@ -200,6 +232,9 @@ function display_clients(clientsarray, obj, unit) {
 					flags = client[11].replace(ii,"");
 					if (guestheader < ii) {
 						guestheader = ii;
+						if (based_modelid === 'GT-AXE16000') {
+							unit = (unit+3)%4;
+						}
 						if (sw_mode == "2")
 							code += '<tr><th colspan="6" style="color:white;height:20px;"><span class="hint-color" style="font-weight:bolder;">Local Clients:</span> ' + guestnames[unit][ii-1] + '</th></tr>';
 						else
@@ -423,6 +458,9 @@ function hide_details_window(){
 									<br><br>
 									<div id="wifi52headerblock"></div>
 									<div id="wifi52block"></div>
+									<br><br>
+									<div id="wifi6headerblock"></div>
+									<div id="wifi6block"></div>
 									<div id="flags_mumimo_div" style="display:none;">Flags: <span class="wifiheader">P</span>=Powersave Mode, <span class="wifiheader">S</span>=Short GI, <span class="wifiheader">T</span>=STBC, <span class="wifiheader">M</span>=MU Beamforming, <span class="wifiheader">A</span>=Associated, <span class="wifiheader">U</span>=Authenticated</div>
 									<div id="flags_div">Flags: <span class="wifiheader">P</span>=Powersave Mode, <span class="wifiheader">S</span>=Short GI, <span class="wifiheader">T</span>=STBC, <span class="wifiheader">A</span>=Associated, <span class="wifiheader">U</span>=Authenticated</div>
 									<br>

@@ -127,7 +127,7 @@ then
 	cp release/src-rt-5.02L.07p2axhnd/targets/cfe/prebuilt/* $REPO/release/src-rt-5.02L.07p2axhnd/targets/cfe/sysdeps/$BUILD_NAME/
 	rsync -a --del release/src-rt-5.02L.07p2axhnd/router-sysdep/ $REPO/release/src-rt-5.02L.07p2axhnd/router-sysdep.$BUILD_NAME_LC
 
-elif [ "$BUILD_NAME" == "GT-AX6000" ] || [ "$BUILD_NAME" == "XT12" ]
+elif [ "$BUILD_NAME" == "GT-AX6000" ] || [ "$BUILD_NAME" == "XT12" ] || [ "$BUILD_NAME" == "GT-AXE16000" ] || [ "$BUILD_NAME" == "GT-AX11000_PRO" ]
 then
         SDK="_4912hnd"
         ARCH="_arm"
@@ -135,6 +135,7 @@ then
 
 	rsync -a --del release/src-rt-5.04axhnd.675x/bootloaders/obj/ $REPO/release/src-rt-5.04axhnd.675x/bootloaders/obj.$BUILD_NAME_LC
 	cp release/src-rt-5.04axhnd.675x/hostTools/prebuilt/addvtoken $REPO/release/src-rt-5.04axhnd.675x/hostTools/prebuilt/$BUILD_NAME/
+	cp release/src-rt-5.04axhnd.675x/hostTools/prebuilt/lzop $REPO/release/src-rt-5.04axhnd.675x/hostTools/prebuilt/$BUILD_NAME/
 	cp release/src-rt-5.04axhnd.675x/hostTools/prebuilt/cmplzma $REPO/release/src-rt-5.04axhnd.675x/hostTools/prebuilt/
 	cp release/src-rt-5.04axhnd.675x/hostTools/prebuilt/lzmacmd $REPO/release/src-rt-5.04axhnd.675x/hostTools/prebuilt/
 	cp release/src-rt-5.04axhnd.675x/hostTools/prebuilt//cmplzma $REPO/release/src-rt-5.04axhnd.675x/hostTools/prebuilt/
@@ -245,7 +246,7 @@ if [ "$BUILD_NAME" == "RT-AC88U" ]
 then
 	cp release/src/router/rtl_bin/prebuilt/* $REPO/release/src/router/rtl_bin/prebuilt/
 fi
-if [ "$BUILD_NAME" == "GT-AC2900" ] || [ "$BUILD_NAME" == "GT-AX11000" ] || [ "$BUILD_NAME" == "GT-AXE11000" ] || [ "$BUILD_NAME" == "GT-AX6000" ]
+if [ "$BUILD_NAME" == "GT-AC2900" ] || [ "$BUILD_NAME" == "GT-AX11000" ] || [ "$BUILD_NAME" == "GT-AXE11000" ] || [ "$BUILD_NAME" == "GT-AX6000" ] || [ "$BUILD_NAME" == "GT-AXE16000" ] || [ "$BUILD_NAME" == "GT-AX11000_PRO" ]
 then
         cp release/src/router/aura_sw/prebuild/* $REPO/release/src/router/aura_sw/prebuild/$BUILD_NAME/
 fi

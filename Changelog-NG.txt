@@ -1,6 +1,10 @@
 Asuswrt-Merlin 386/NG Changelog
 ===============================
 
+386.8 (xx-xxx-xxxx)
+  - UPDATED: Merged with GPL 386_49634.
+
+
 386.7_2 (24-July-2022)
   - UPDATED: openssl to 1.1.1q.
   - UPDATED: RT-AX86U driver + SDK updated to latest upstream version

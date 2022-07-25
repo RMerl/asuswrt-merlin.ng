@@ -475,6 +475,18 @@ int _bcm_cled_ctrl(int rgb, int cled_mode)
                 "0x00000000"
 	};
 	read_cled_value_x(&led_y);
+
+	bcm_cled_x_led_s led_p = {
+                "0xff803110",
+                "0x00000000",
+                "0xff803114",
+                "0x00000000",
+                "0xff803118",
+                "0x00000000",
+                "0xff80311c",
+                "0x00000000"
+	};
+	read_cled_value_x(&led_p);
 #endif
 
 	for(index = 0; index < CLED_RGB_NUM; index++) {
@@ -519,6 +531,13 @@ int _bcm_cled_ctrl(int rgb, int cled_mode)
 #endif
 				state_changed = 1;
 			}
+#ifdef RPAX58
+			if(is_cled_value_correct_x(&led_p, "0\n", "a34a32\n", "c34\n", "0\n") == 0){
+				set_cled_value_x(&led_p, "0x00000000", "0x00a34a32", "0x00000c34", "0x00000000");
+				eval("sw", led_p.config0_path, "0x00000000");
+				state_changed = 1;
+			}
+#endif
 #endif
 		}else if(rgb == BCM_CLED_GREEN){
 			if(is_cled_value_correct(&led[index], BCM_CLED_GREEN, LED_BEHAVIOR_READ[cled_mode], "a34a32\n", "c34\n", "0\n") == 0 ||
@@ -550,6 +569,13 @@ int _bcm_cled_ctrl(int rgb, int cled_mode)
 #endif
 				state_changed = 1;
 			}
+#ifdef RPAX58
+			if(is_cled_value_correct_x(&led_p, "0\n", "a34a32\n", "c34\n", "0\n") == 0){
+				set_cled_value_x(&led_p, "0x00000000", "0x00a34a32", "0x00000c34", "0x00000000");
+				eval("sw", led_p.config0_path, "0x00000000");
+				state_changed = 1;
+			}
+#endif
 #endif
 		}else if(rgb == BCM_CLED_BLUE){
 			if(is_cled_value_correct(&led[index], BCM_CLED_BLUE, LED_BEHAVIOR_READ[cled_mode], "a34a32\n", "c34\n", "0\n") == 0 ||
@@ -581,6 +607,13 @@ int _bcm_cled_ctrl(int rgb, int cled_mode)
 #endif
 				state_changed = 1;
 			}
+#ifdef RPAX58
+			if(is_cled_value_correct_x(&led_p, "0\n", "a34a32\n", "c34\n", "0\n") == 0){
+				set_cled_value_x(&led_p, "0x00000000", "0x00a34a32", "0x00000c34", "0x00000000");
+				eval("sw", led_p.config0_path, "0x00000000");
+				state_changed = 1;
+			}
+#endif
 #endif
 		}else if(rgb == BCM_CLED_YELLOW){
 #if defined(RPAX56) || defined(RPAX58)
@@ -591,6 +624,13 @@ int _bcm_cled_ctrl(int rgb, int cled_mode)
 #endif
 				state_changed = 1;
 			}
+#ifdef RPAX58
+			if(is_cled_value_correct_x(&led_p, "0\n", "a34a32\n", "c34\n", "0\n") == 0){
+				set_cled_value_x(&led_p, "0x00000000", "0x00a34a32", "0x00000c34", "0x00000000");
+				eval("sw", led_p.config0_path, "0x00000000");
+				state_changed = 1;
+			}
+#endif
 			if(is_cled_value_correct_x(&led_y, LED_BEHAVIOR_READ[cled_mode], "a34a32\n", "c34\n", "0\n") == 0){
 				set_cled_value_x(&led_y, LED_BEHAVIOR_READ[cled_mode], "0x00a34a32", "0x00000c34", "0x00000000");
 #ifdef RPAX58
@@ -658,6 +698,13 @@ int _bcm_cled_ctrl(int rgb, int cled_mode)
 #endif
 				state_changed = 1;
 			}
+#ifdef RPAX58
+			if(is_cled_value_correct_x(&led_p, "0\n", "a34a32\n", "c34\n", "0\n") == 0){
+				set_cled_value_x(&led_p, "0\n", "0x00a34a32", "0x00000c34", "0x00000000");
+				eval("sw", led_p.config0_path, "0");
+				state_changed = 1;
+			}
+#endif
 #else
 			if(is_cled_value_correct(&led[index], BCM_CLED_RED, LED_BEHAVIOR_READ[cled_mode], "a34a32\n", "c34\n", "0\n") == 0){
 				set_cled_value(&led[index], BCM_CLED_RED, LED_BEHAVIOR_WRITE[cled_mode], "0x00a34a32", "0x00000c34", "0x00000000");
@@ -669,6 +716,36 @@ int _bcm_cled_ctrl(int rgb, int cled_mode)
 			}
 			if(is_cled_value_correct(&led[index], BCM_CLED_BLUE, LED_BEHAVIOR_READ[cled_mode], "a34a32\n", "c34\n", "0\n") == 0){
 				set_cled_value(&led[index], BCM_CLED_BLUE, LED_BEHAVIOR_WRITE[cled_mode], "0x00a34a32", "0x00000c34", "0x00000000");
+				state_changed = 1;
+			}
+#endif
+#ifdef RPAX58
+		}else if(rgb == BCM_CLED_PURPLE){
+			if(is_cled_value_correct(&led[index], BCM_CLED_RED, LED_BEHAVIOR_READ[cled_mode], "a34a32\n", "c34\n", "0\n") == 0){
+				set_cled_value(&led[index], BCM_CLED_RED, LED_BEHAVIOR_WRITE[cled_mode], "0x00a34a32", "0x00000c34", "0x00000000");
+				state_changed = 1;
+			}
+			if(is_cled_value_correct(&led[index], BCM_CLED_BLUE, LED_BEHAVIOR_READ[cled_mode], "a34a32\n", "c34\n", "0\n") == 0){
+				set_cled_value(&led[index], BCM_CLED_BLUE, LED_BEHAVIOR_WRITE[cled_mode], "0x00a34a32", "0x00000c34", "0x00000000");
+				state_changed = 1;
+			}
+			if(is_cled_value_correct(&led[index], BCM_CLED_GREEN, "0\n", "a34a32\n", "c34\n", "0\n") == 0){
+				set_cled_value(&led[index], BCM_CLED_GREEN, "0x00000000", "0x00a34a32", "0x00000c34", "0x00000000");
+				state_changed = 1;
+			}
+			if(is_cled_value_correct_x(&led_p, LED_BEHAVIOR_READ[cled_mode], "a34a32\n", "c34\n", "0\n") == 0){
+				set_cled_value_x(&led_p, LED_BEHAVIOR_READ[cled_mode], "0x00a34a32", "0x00000c34", "0x00000000");
+				eval("sw", led_p.config0_path, led_p.config0_val);
+				state_changed = 1;
+			}
+			if(is_cled_value_correct_x(&led_y, "0\n", "a34a32\n", "c34\n", "0\n") == 0){
+				set_cled_value_x(&led_y, "0x00000000", "0x00a34a32", "0x00000c34", "0x00000000");
+				eval("sw", led_y.config0_path, "0x00000000");
+				state_changed = 1;
+			}
+			if(is_cled_value_correct_x(&led_w, "0\n", "a34a32\n", "c34\n", "0\n") == 0){
+				set_cled_value_x(&led_w, "0x00000000", "0x00a34a32", "0x00000c34", "0x00000000");
+				eval("sw", led_w.config0_path, "0x00000000");
 				state_changed = 1;
 			}
 #endif
@@ -694,6 +771,12 @@ int _bcm_cled_ctrl(int rgb, int cled_mode)
 				set_cled_value_x(&led_y, "0x00000000", "0x00a34a32", "0x00000c34", "0x00000000");
 				state_changed = 1;
 			}
+#ifdef RPAX58
+			if(is_cled_value_correct_x(&led_p, "0\n", "a34a32\n", "c34\n", "0\n") == 0){
+				set_cled_value_x(&led_p, "0x00000000", "0x00a34a32", "0x00000c34", "0x00000000");
+				state_changed = 1;
+			}
+#endif
 #endif
 		}
 #endif
@@ -730,7 +813,7 @@ int bcm_cled_ctrl(int rgb, int cled_mode)
 #elif defined(RPAX56)
                 f_write_string("/proc/bcm_cled/activate", "0x000058a0", 0, 0);
 #elif defined(RPAX58)
-		eval("sw", "0xff80301c", "0x000058a0");
+		eval("sw", "0xff80301c", "0x0000d8a0");
 #elif defined(ET12) || defined(XT12)
 		eval("sw", "0xff80301c", "0x0027E006");
 #elif defined(GT10)
@@ -753,7 +836,7 @@ int rc_bcm_cled_ctrl(int rgb, int cled_mode)
 #if defined(RPAX56)
                 f_write_string("/proc/bcm_cled/activate", "0x000058a0", 0, 0);
 #elif defined(RPAX58)
-		eval("sw", "0xff80301c", "0x000058a0");
+		eval("sw", "0xff80301c", "0x0000d8a0");
 #endif
 	}
 	return state_changed;
@@ -809,7 +892,7 @@ int bcm_cled_ctrl_single_white(int rgb, int cled_mode) {
 
 	if(state_changed)
 #if defined(RPAX58)
-		 eval("sw", "0xff80301c", "0x000058a0");
+		 eval("sw", "0xff80301c", "0x0000d8a0");
 #else
 		 eval("sw", "0xff80301c", "0x01C00000");
 #endif
@@ -1634,10 +1717,6 @@ void set_radio(int on, int unit, int subunit)
 		if (on) eval("wl", "-i", nvram_safe_get(wl_nvname("ifname", unit, 0)), "bss", "-C", tmp, "up");
 		else eval("wl", "-i", nvram_safe_get(wl_nvname("ifname", unit, 0)), "bss", "-C", tmp, "down");
 
-		if (nvram_get_int("led_disable")==1) {
-			led_control(LED_2G, LED_OFF);
-			led_control(LED_5G, LED_OFF);
-		}
 		return;
 	}
 
@@ -1659,11 +1738,6 @@ void set_radio(int on, int unit, int subunit)
 		//led(LED_DIAG, 0);
 	}
 #endif
-
-	if (nvram_get_int("led_disable")==1) {
-		led_control(LED_2G, LED_OFF);
-		led_control(LED_5G, LED_OFF);
-	}
 }
 
 /* Return nvram variable name, e.g. et0macaddr, which is used to repented as LAN MAC.
@@ -1852,8 +1926,8 @@ int get_bonding_speed(char *bond_if)
 			"/sys/class/net/%s/speed", bond_if);
 	f_read_string(confbuf, buf, sizeof(buf));
 
-	if(strcmp(buf, "2000\n")==0) return 2000;
-	else if(strcmp(buf, "1000\n") == 0) return 1000;
+	if(strlen(buf) && strstr(buf, "00\n") != NULL)
+	    return atoi(buf);
 	else return 0;
 }
 
@@ -1917,7 +1991,7 @@ int get_bonding_port_status(int port)
 	int ports[lan_ports+1];
 	/* 7 3	W0 L1 */
 	ports[0]=7; ports[1]=3;
-#elif defined(RTAX58U) || defined(TUFAX3000) || defined(TUFAX5400) || defined(RTAX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(RTAX82U_V2)
+#elif defined(RTAX58U) || defined(TUFAX3000) || defined(TUFAX5400) || defined(RTAX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(RTAX82U_V2) || defined(TUFAX5400_V2)
 	int lan_ports=4;
 	int ports[lan_ports+1];
 	/* 4 3 2 1 0	W0 L1 L2 L3 L4 */
@@ -1981,9 +2055,9 @@ int get_bonding_port_status(int port)
 	/* 6 5 3 2 1 0  L5(2.5G) W0 L1 L2 L3 L4 */
 	char *ports[6] = { "eth5", "eth0", "eth1", "eth2", "eth3", "eth4" };
 #elif defined(GTAX11000_PRO)
-	char *ports[6] = { "eth5", "eth0", "eth1", "eth2", "eth3", "eth4" };
+	char *ports[6] = { "eth0", "eth1", "eth2", "eth3", "eth4", "eth5" };
 #elif defined(GTAXE16000)
-	char *ports[7] = { "eth6", "eth5", "eth0", "eth1", "eth2", "eth3", "eth4" };
+	char *ports[7] = { "eth0", "eth1", "eth2", "eth3", "eth4", "eth5", "eth6" };
 #elif defined(ET12) || defined(XT12)
 	char *ports[4] = { "eth0", "eth1", "eth2", "eth3" };
 #elif defined(RTCONFIG_EXTPHY_BCM84880) /* GT-AX11000 */

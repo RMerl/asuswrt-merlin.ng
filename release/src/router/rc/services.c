@@ -19338,19 +19338,20 @@ void setup_leds()
 		eval("et", "robowr", "0", "0x1a", "0x01ff");
 #endif
 
-#if defined(GTAX11000) || defined(GTAXE11000)
 #ifdef RTCONFIG_EXTPHY_BCM84880
-		eval("ethctl", "phy", "ext", EXTPHY_ADDR_STR, "0x7fff0", "0x1");
-		eval("ethctl", "phy", "ext", EXTPHY_ADDR_STR, "0x1a832", "0x6");
-#endif
-#elif defined(GTAX6000)
-		if (nvram_get_int("ext_phy_model") == EXT_PHY_GPY211)
-			eval("ethctl", "phy", "ext", EXTPHY_GPY_ADDR_STR, "0x1e0001", "0x3f0");
-		else
-		{
+#if defined(RTAX86U) || defined(GTAX11000) || defined(GTAX6000)
+		int ext_phy_model = nvram_get_int("ext_phy_model");
+
+		if(!strcmp(get_productid(), "RT-AX86S")) ;
+		else if(ext_phy_model == EXT_PHY_GPY211)
+				eval("ethctl", "phy", "ext", EXTPHY_GPY_ADDR_STR, "0x1e0001", "0x3f0");
+		else if(ext_phy_model == EXT_PHY_RTL8226)
+			eval("ethctl", "phy", "ext", EXTPHY_RTL_ADDR_STR, "0x1fd032", "0x0027");        // RTL LCR2 LED Control Reg
+		else if(ext_phy_model == EXT_PHY_BCM54991){
 			eval("ethctl", "phy", "ext", EXTPHY_ADDR_STR, "0x1a832", "0x6");        // default. CTL LED3 MASK LOW
 			eval("ethctl", "phy", "ext", EXTPHY_ADDR_STR, "0x1a835", "0x40");       // default. CTL LED4 MASK LOW
 		}
+#endif
 #endif
 
 #ifdef RTCONFIG_LAN4WAN_LED
@@ -19390,6 +19391,8 @@ void setup_leds()
 			eval("wl", "-i", "eth6", "ledbh", "9", "7");
 #elif defined(GTAX6000)
 			eval("wl", "-i", "eth6", "ledbh", "13", "7");
+#elif defined(GTAXE16000)
+			eval("wl", "-i", "eth7", "ledbh", "13", "7");
 #endif
 		}
 
@@ -19424,10 +19427,12 @@ void setup_leds()
 			eval("wl", "-i", "eth7", "ledbh", "9", "7");
 #elif defined(GTAX6000)
 			eval("wl", "-i", "eth7", "ledbh", "13", "7");
+#elif defined(GTAXE16000)
+			eval("wl", "-i", "eth8", "ledbh", "13", "7");
 #endif
 		}
 
-#if defined(RTAC3200) || defined(RTAC5300) || defined(GTAX11000) || defined(GTAXE11000)
+#if defined(RTAC3200) || defined(RTCONFIG_HAS_5G_2)
 		if (nvram_match("wl2_radio", "1")) {
 #if defined(RTAC3200)
 			eval("wl", "-i", "eth3", "ledbh", "10", "7");
@@ -19437,6 +19442,16 @@ void setup_leds()
 			eval("wl", "-i", "eth8", "ledbh", "15", "7");
 #elif defined(GTAXE11000)
 			eval("wl", "-i", "eth8", "ledbh", "9", "7");
+#elif defined(GTAXE16000)
+			eval("wl", "-i", "eth9", "ledbh", "13", "7");
+#endif
+		}
+#endif
+
+#ifdef RTCONFIG_QUADBAND
+		if (nvram_match("wl3_radio", "1")) {
+#if defined(GTAXE16000)
+			eval("wl", "-i", "eth10", "ledbh", "13", "7");
 #endif
 		}
 #endif
@@ -19444,6 +19459,14 @@ void setup_leds()
 #ifdef RTCONFIG_LOGO_LED
 		led_control(LED_LOGO, LED_ON);
 #endif
+
+#if defined(RTAX82U) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTAX6000)
+		kill_pidfile_s("/var/run/ledg.pid", SIGTSTP);
+#endif
+#if defined(XT12) || defined(ET12)
+		bcm_cled_ctrl_single_white(BCM_CLED_WHITE, BCM_CLED_STEADY_NOBLINK);
+#endif
+
 #ifdef GTAX6000
 		AntennaGroupReset(LED_ON);
 		setAntennaGroupOn();
@@ -19458,6 +19481,9 @@ void setup_leds()
 
 		start_ledg();
 		start_antled();
+#endif
+#if defined(GTAXE16000)
+		notify_rc("restart_ledg");
 #endif
 
 	}

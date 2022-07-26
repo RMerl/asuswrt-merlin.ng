@@ -1,0 +1,21 @@
+OBJS := bcm_mcast_ctl.o
+
+LIBS := -L$(HND_SRC)/router-sysdep/bcmmcast/ -lbcmmcast
+
+CFLAGS += -Werror -Wfatal-errors
+
+
+$(EXE): $(OBJS)
+	$(CC) $(BCM_LD_FLAGS) -o $@ $(OBJS) -Wl,-rpath,$(CMS_LIB_RPATH) $(CMS_LIB_PATH) $(LIBS)
+	ln -sf bcmmcastctl bmc
+
+
+binaryonly_prepare:
+	-cp $(EXE) $(mdir)/$(SAVED)
+	-$(MAKE) -f $(name) clean
+	rm -f $(mdir)/*.c $(mdir)/*.h $(mdir)/Makefile.fullsrc
+
+
+# Generate and use dependencies.
+CFLAGS += -MD -I$(HND_SRC)/userspace/private/include/ -I$(HND_SRC)/userspace/public/include/
+-include $(OBJS:.o=.d)

@@ -1,0 +1,25 @@
+OBJS := ethctl.o ethctl_cmd.o
+
+LIBS := -L$(HND_SRC)/router-sysdep/ethctl_lib/ -lethctl
+
+#CFLAGS += -Werror -Wfatal-errors
+
+CFLAGS += -DCONFIG_BCM9$(BRCM_CHIP) 
+
+$(EXE): $(OBJS)
+	$(CC) $(BCM_LD_FLAGS) -o $@ $(OBJS) -Wl,-rpath,$(CMS_LIB_RPATH) $(CMS_LIB_PATH) $(LIBS)
+
+# force ethctl_cmd to be built every time for the build date and time.
+ethctl_cmd.o: FORCE
+
+.PHONY: FORCE
+
+binaryonly_prepare:
+	-cp $(EXE) $(mdir)/$(SAVED)
+	-$(MAKE) -f $(name) clean
+	rm -f $(mdir)/*.c $(mdir)/*.h $(mdir)/Makefile.fullsrc
+
+
+# Generate and use dependencies.
+CFLAGS += -MD -I$(HND_SRC)/userspace/private/include/ -I$(HND_SRC)/bcmdrivers/opensource/phy/
+-include $(OBJS:.o=.d)

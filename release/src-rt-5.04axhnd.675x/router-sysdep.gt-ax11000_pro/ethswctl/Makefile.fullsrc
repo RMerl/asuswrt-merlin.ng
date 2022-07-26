@@ -1,0 +1,24 @@
+OBJS := ethswctl.o
+
+LIBS := -L$(HND_SRC)/router-sysdep/ethswctl_lib/ -lethswctl
+
+#CFLAGS += -Werror -Wfatal-errors
+CFLAGS += -Wfatal-errors
+
+ifeq ($(findstring _$(strip $(BRCM_CHIP))_,_63138_4908_63158_63178_),_$(strip $(BRCM_CHIP))_)
+CFLAGS += -DACB_ALGORITHM2
+endif
+
+$(EXE): $(OBJS)
+	$(CC) $(BCM_LD_FLAGS) -o $@ $(OBJS) -Wl,-rpath,$(CMS_LIB_RPATH) $(CMS_LIB_PATH) $(LIBS)
+
+
+binaryonly_prepare:
+	-cp $(EXE) $(mdir)/$(SAVED)
+	-$(MAKE) -f $(name) clean
+	rm -f $(mdir)/*.c $(mdir)/*.h $(mdir)/Makefile.fullsrc
+
+
+# Generate and use dependencies.
+CFLAGS += -MD -I$(HND_SRC)/userspace/private/include/
+-include $(OBJS:.o=.d)

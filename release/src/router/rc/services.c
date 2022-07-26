@@ -19393,6 +19393,8 @@ void setup_leds()
 			eval("wl", "-i", "eth6", "ledbh", "13", "7");
 #elif defined(GTAXE16000)
 			eval("wl", "-i", "eth7", "ledbh", "13", "7");
+#elif defined(GTAX11000_PRO)
+			eval("wl", "-i", "eth6", "ledbh", "13", "7");
 #endif
 		}
 
@@ -19429,6 +19431,8 @@ void setup_leds()
 			eval("wl", "-i", "eth7", "ledbh", "13", "7");
 #elif defined(GTAXE16000)
 			eval("wl", "-i", "eth8", "ledbh", "13", "7");
+#elif defined(GTAX11000_PRO)
+			eval("wl", "-i", "eth7", "ledbh", "13", "7");
 #endif
 		}
 
@@ -19444,6 +19448,8 @@ void setup_leds()
 			eval("wl", "-i", "eth8", "ledbh", "9", "7");
 #elif defined(GTAXE16000)
 			eval("wl", "-i", "eth9", "ledbh", "13", "7");
+#elif defined(GTAX11000_PRO)
+			eval("wl", "-i", "eth8", "ledbh", "13", "7");
 #endif
 		}
 #endif
@@ -19482,7 +19488,7 @@ void setup_leds()
 		start_ledg();
 		start_antled();
 #endif
-#if defined(GTAXE16000)
+#if defined(GTAXE16000) || defined(GTAX11000_PRO)
 		notify_rc("restart_ledg");
 #endif
 

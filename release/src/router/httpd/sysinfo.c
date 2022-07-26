@@ -256,17 +256,23 @@ int ej_show_sysinfo(int eid, webs_t wp, int argc, char_t ** argv)
 		} else if(strcmp(type,"nvram.total") == 0) {
 			sprintf(result,"%d",NVRAM_SPACE);
 		} else if(strcmp(type,"nvram.used") == 0) {
-			char *buf;
 			int size = 0;
+#ifdef HND_ROUTER
+			size = f_size("/data/.kernel_nvram.setting");
+			if (size == -1)
+#endif
+			{
+				char *buf;
 
-			buf = malloc(NVRAM_SPACE);
-			if (buf) {
-				nvram_getall(buf, NVRAM_SPACE);
-				tmp = buf;
-				while (*tmp) tmp += strlen(tmp) +1;
+				buf = malloc(NVRAM_SPACE);
+				if (buf) {
+					nvram_getall(buf, NVRAM_SPACE);
+					tmp = buf;
+					while (*tmp) tmp += strlen(tmp) +1;
 
-				size = sizeof(struct nvram_header) + (int) tmp - (int) buf;
-				free(buf);
+					size = sizeof(struct nvram_header) + (int) tmp - (int) buf;
+					free(buf);
+				}
 			}
 			sprintf(result,"%d",size);
 

@@ -47,7 +47,6 @@ function initial(){
 			</td>	
 			<td valign="top">
 				<div id="tabMenu" style="*margin-top: -160px;"></div>
-				<br>
 		<!--=====Beginning of Main Content=====-->
 				<div class="app_table" id="applist_table" style="margin-top:-10px;">
 					<table>

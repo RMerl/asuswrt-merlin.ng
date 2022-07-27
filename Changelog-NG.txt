@@ -2,7 +2,14 @@ Asuswrt-Merlin 386/NG Changelog
 ===============================
 
 386.8 (xx-xxx-xxxx)
+  - NOTE: This release is only available for a few select models.
+  - NEW: Added support for the GT-AXE16000.
+  - NEW: Added support for the GT-AX11000_Pro.
+  - NEW: Added support for new RT-AX88U hardware revision.
   - UPDATED: Merged with GPL 386_49634.
+  - FIXED: inaccurate nvram usage on Sysinfo page for some HND
+           models.  Now accurately report kernel nvram usage.
+  - FIXED: WiFi Radar page alignment.
 
 
 386.7_2 (24-July-2022)

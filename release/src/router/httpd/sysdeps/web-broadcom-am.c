@@ -116,7 +116,11 @@ wl_extent_channel(int unit)
         snprintf(prefix, sizeof(prefix), "wl%d_", unit);
         name = nvram_safe_get(strcat_r(prefix, "ifname", tmp));
 
-	if ((unit == 1) || (unit == 2)) {
+#if defined(GTAXE16000)
+	if (unit != 3) {
+#else
+	if (unit != 0) {
+#endif
 		if ((ret = wl_ioctl(name, WLC_GET_BSSID, &bssid, ETHER_ADDR_LEN)) == 0) {
 			/* The adapter is associated. */
 			*(uint32*)buf = htod32(WLC_IOCTL_MAXLEN);
@@ -168,15 +172,14 @@ ej_wl_extent_channel(int eid, webs_t wp, int argc, char_t **argv)
 	char wl_ifnames[32] = { 0 };
 
 	strlcpy(wl_ifnames, nvram_safe_get("wl_ifnames"), sizeof(wl_ifnames));
-	foreach (word, wl_ifnames, next)
-                count_wl_if++;
+	ret = websWrite(wp, "[");
 
-        ret = websWrite(wp, "[\"%d\", \"%d\"", wl_extent_channel(0), wl_extent_channel(1));
-        if (count_wl_if >= 3)
-                ret += websWrite(wp, ", \"%d\"", wl_extent_channel(2));
-        ret += websWrite(wp, "]");
+	foreach (word, wl_ifnames, next) {
+		ret += websWrite(wp, "\"%d\",",  wl_extent_channel(count_wl_if++));
+	}
 
-        return ret;
+	ret += websWrite(wp, "\"0\"]");
+	return ret;
 }
 
 

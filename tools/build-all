@@ -48,6 +48,8 @@ BAC68V4=y
 
 BGTAX6000=y
 BXT12=y
+BGTAXE16000=y
+BGTAX11000_PRO=y
 
 ### Branches for each model
 BRANCH_AC68=master
@@ -72,6 +74,8 @@ BRANCH_AC68V4=master
 
 BRANCH_GTAX6000=master
 BRANCH_XT12=master
+BRANCH_GTAXE16000=master
+BRANCH_GTAX11000_PRO=master
 
 ### Paths
 # Store built images there
@@ -99,15 +103,20 @@ build_fw()
 	if make "$FWMODEL" > "output.txt" 2>&1; then
 		cd image || exit 1
 		if [ "$FWMODEL" = "rt-ac86u" ] || [ "$FWMODEL" = "gt-ac2900" ] || [ "$FWMODEL" = "rt-ax88u" ] || [ "$FWMODEL" = "gt-ax11000" ] ; then
-			FWNAME="$(find -- *_cferom_ubi.w | head -n 1)"
+#			FWNAME="$(find -- *_cferom_ubi.w | head -n 1)"
+			FWNAME="$(find -- *_ubi.w | head -n 1)"
 			ZIPNAME="$(echo "$FWNAME" | sed 's~_cferom_ubi.w~~g').zip"
 		elif [ "$FWMODEL" = "rt-ax58u" ] || [ "$FWMODEL" = "rt-ac68u_v4" ]; then
                         FWNAME="$(find -- *_cferom_puresqubi.w | head -n 1)"
                         ZIPNAME="$(echo "$FWNAME" | sed 's~_cferom_puresqubi.w~~g').zip"
-		elif [ "$FWMODEL" = "rt-ax86u" ] || [ "$FWMODEL" = "rt-ax68u" ] || [ "$FWMODEL" = "rt-ax56u" ] || [ "$FWMODEL" = "gt-axe11000" ] ; then
-			FWNAME="$(find -- *_cferom_pureubi.w | head -n 1)"
-			ZIPNAME="$(echo "$FWNAME" | sed 's~_cferom_pureubi.w~~g').zip"
-		elif [ "$FWMODEL" = "gt-ax6000" ] || [ "$FWMODEL" = "xt12" ] ; then
+		elif [ "$FWMODEL" = "rt-ax86u" ] || [ "$FWMODEL" = "rt-ax68u" ] ; then
+#			rm *_cferom_pureubi.w	# Broken cferom, do not use until fixed upstream
+			FWNAME="$(find -- *_pureubi.w | head -n 1)"
+			ZIPNAME="$(echo "$FWNAME" | sed 's~_pureubi.w~~g').zip"
+                elif [ "$FWMODEL" = "rt-ax56u" ] || [ "$FWMODEL" = "gt-axe11000" ] ; then
+                        FWNAME="$(find -- *_cferom_pureubi.w | head -n 1)"
+                        ZIPNAME="$(echo "$FWNAME" | sed 's~_cferom_pureubi.w~~g').zip"
+		elif [ "$FWMODEL" = "gt-ax6000" ] || [ "$FWMODEL" = "xt12" ] || [ "$FWMODEL" = "gt-axe16000" ] || [ "$FWMODEL" = "gt-ax11000_pro" ] ; then
 			FWNAME="$(find -- *_nand_squashfs.pkgtb | head -n 1)"
 			ZIPNAME="$(echo "$FWNAME" | sed 's~_nand_squashfs.pkgtb~~g').zip"
 		else
@@ -210,6 +219,12 @@ fi
 if [ "$BXT12" = "y" ]; then
 	clean_tree amng.xt12 release/src-rt-5.04axhnd.675x xt12 $BRANCH_XT12
 fi
+if [ "$BGTAXE16000" = "y" ]; then
+        clean_tree amng.gtaxe16000 release/src-rt-5.04axhnd.675x gt-axe16000 $BRANCH_XT12
+fi
+if [ "$BGTAX11000_PRO" = "y" ]; then
+        clean_tree amng.gtax11000_pro release/src-rt-5.04axhnd.675x gt-ax11000_pro $BRANCH_XT12
+fi
 
 echo "--- $(date +%R) - All trees ready!"
 
@@ -222,6 +237,13 @@ fi
 
 if [ "$BXT12" = "y" ]; then
         build_fw amng.xt12/release/src-rt-5.04axhnd.675x xt12 &
+fi
+if [ "$BGTAX11000_PRO" = "y" ]; then
+        build_fw amng.gtax11000_pro/release/src-rt-5.04axhnd.675x gt-ax11000_pro &
+fi
+
+if [ "$BGTAXE16000" = "y" ]; then
+        build_fw amng.gtaxe16000/release/src-rt-5.04axhnd.675x gt-axe16000 &
 fi
 
 if [ "$BAC86" = "y" ]; then

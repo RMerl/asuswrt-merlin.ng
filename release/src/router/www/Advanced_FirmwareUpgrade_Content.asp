@@ -496,6 +496,7 @@ function initial(){
 
 var dead = 0;
 var note_display=0;	//formal path
+// We get a cfg_check 2 which won't show new version or link to release note, like 7/9 results do.
 function detect_firmware(flag){
 	$.ajax({
 		url: '/detect_firmware.asp',
@@ -507,7 +508,7 @@ function detect_firmware(flag){
 			else{
   				document.getElementById('update_scan').style.display="none";
   				document.getElementById('update_states').innerHTML="<#info_failed#>&nbsp;<#FW_n4#>";
-				document.getElementById("faq_link2").href=faq_href2;
+//				document.getElementById("faq_link2").href=faq_href2;
 				document.getElementById('update').disabled = false;
 			}
 		},
@@ -521,7 +522,7 @@ function detect_firmware(flag){
 					if(cfg_check == "2" || cfg_check == "3"){
 						document.getElementById('update_scan').style.display="none";
 						document.getElementById('update_states').innerHTML="<#info_failed#>&nbsp;<#FW_n4#>";
-						document.getElementById("faq_link2").href=faq_href2;
+//						document.getElementById("faq_link2").href=faq_href2;
 						document.getElementById('update').disabled = false;
 					}
 					else if(cfg_check == "7" || cfg_check == "9"){
@@ -659,7 +660,7 @@ function detect_update(){
 
 	if(download_info > 0){
 		document.getElementById('update_states').style.display="";
-		document.getElementById('update_states').innerHTML="<#check_proceeding#>";
+		document.getElementById('update_states').innerHTML="Checking for available updates.";
 		document.getElementById('update_scan').style.display="";
 		document.getElementById('update').disabled = true;
 		if(cfg_sync_support){
@@ -1069,6 +1070,7 @@ function show_amas_fw_result() {
 					var ck_fw_result = "<#is_latest#>";
 					var online = get_cfg_clientlist[idx].online;
 					var fwver = get_cfg_clientlist[idx].fwver;
+					var product_id = get_cfg_clientlist[idx].product_id;
 					$("#amas_" + mac_id + "").children().find(".checkFWResult").html(ck_fw_result);
 					if(newfwver != "") {
 						if (check_is_merlin_fw(fwver)) {
@@ -1079,7 +1081,7 @@ function show_amas_fw_result() {
 						}
 						$("#amas_" + mac_id + "").children().find(".checkFWResult").addClass("aimesh_fw_release_note");
 						$("#amas_" + mac_id + "").children().find(".checkFWResult").html(ck_fw_result);
-						$("#amas_" + mac_id + "").children().find(".checkFWResult").click({"isMerlin" : check_is_merlin_fw(fwver), "model_name": frs_model_name, "newfwver": newfwver}, show_fw_release_note);
+						$("#amas_" + mac_id + "").children().find(".checkFWResult").click({"isMerlin" : check_is_merlin_fw(fwver), "model_name": frs_model_name, "product_id": product_id, "newfwver": newfwver}, show_fw_release_note);
 					}
 					if(online == "1")
 						$("#amas_" + mac_id + "").children("#checkNewFW").css("display", "");
@@ -1154,8 +1156,8 @@ function show_fw_release_note(event) {
 	document.amas_release_note.model.value = event.data.model_name;
 	if (event.data.isMerlin) {
 		document.amas_release_note.version.value = event.data.newfwver.replace("3.0.0.4.","");
-		if (event.data.model_name)
-			siteurl = "https://fwupdate.asuswrt-merlin.net/" + event.data.model_name;
+		if (event.data.product_id)
+			siteurl = "https://fwupdate.asuswrt-merlin.net/" + event.data.product_id;
 		else
 			siteurl = download_url;
 	} else {

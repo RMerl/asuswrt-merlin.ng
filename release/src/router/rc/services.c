@@ -4177,7 +4177,7 @@ start_ddns(char *caller)
 	FILE *fp;
 	char tmp[100], prefix[sizeof("wanXXXXXXXXXX_")];
 	char *wan_ip, *wan_ifname;
-#ifdef RTCONFIG_IPV6_DISABLED
+#ifdef RTCONFIG_IPV6
 	char ip6_addr[INET6_ADDRSTRLEN] = {0};
 #endif
 	char *server, *user, *passwd, *host, *service;
@@ -4247,7 +4247,7 @@ start_ddns(char *caller)
 		nvram_set("ddns_return_code_chk", "-1");
 		return -1;
 	}
-#ifdef RTCONFIG_IPV6_DISABLED
+#ifdef RTCONFIG_IPV6
 	if (nvram_get_int("ddns_ipv6_update")
 		&& ipv6_enabled() && (_get_ipv6_addr(wan_ifname, ip6_addr, sizeof(ip6_addr)) != 0))
 	{
@@ -4282,7 +4282,7 @@ start_ddns(char *caller)
 	if (inet_addr_(wan_ip) == inet_addr_(nvram_safe_get("ddns_ipaddr")) &&
 		strcmp(nvram_safe_get("ddns_server_x"), nvram_safe_get("ddns_server_x_old")) == 0 &&
 		strcmp(nvram_safe_get("ddns_hostname_x"), nvram_safe_get("ddns_hostname_old")) == 0
-#ifdef RTCONFIG_IPV6_DISABLED
+#ifdef RTCONFIG_IPV6
 		&& nvram_match("ddns_ipv6_ipaddr", ip6_addr)
 #endif
 		&& f_exists(cache_path) /* Not forced to restart DDNS */
@@ -4407,7 +4407,7 @@ start_ddns(char *caller)
 	unlink(cache_path);
 	nvram_unset("ddns_cache");
 	nvram_unset("ddns_ipaddr");
-#ifdef RTCONFIG_IPV6_DISABLED
+#ifdef RTCONFIG_IPV6
 	nvram_unset("ddns_ipv6_ipaddr");
 #endif
 	nvram_unset("ddns_status");
@@ -4417,7 +4417,7 @@ start_ddns(char *caller)
 	if ((!nvram_match("ddns_server_x_old", "") && strcmp(nvram_safe_get("ddns_server_x"), nvram_safe_get("ddns_server_x_old")) != 0)
 		|| (!nvram_match("ddns_hostname_old", "") && strcmp(nvram_safe_get("ddns_hostname_x"), nvram_safe_get("ddns_hostname_old")) != 0)
 		|| (inet_addr_(wan_ip) != inet_addr_(nvram_safe_get("ddns_ipaddr")))
-#ifdef RTCONFIG_IPV6_DISABLED
+#ifdef RTCONFIG_IPV6
 		|| (!nvram_match("ddns_ipv6_ipaddr", ip6_addr))
 #endif
 		|| (!f_exists(cache_path)) /* Forced to restart DDNS */
@@ -4425,7 +4425,7 @@ start_ddns(char *caller)
 		system("rm -f /var/cache/inadyn/*.cache");
 		nvram_unset("ddns_cache");
 		nvram_unset("ddns_ipaddr");
-#ifdef RTCONFIG_IPV6_DISABLED
+#ifdef RTCONFIG_IPV6
 		nvram_unset("ddns_ipv6_ipaddr");
 #endif
 		nvram_unset("ddns_status");
@@ -4592,7 +4592,7 @@ asusddns_reg_domain(int reg)
 	FILE *fp;
 	char tmp[100], prefix[sizeof("wanXXXXXXXXXX_")];
 	char *wan_ip, *wan_ifname;
-#ifdef RTCONFIG_IPV6_DISABLED
+#ifdef RTCONFIG_IPV6
 	char ip6_addr[INET6_ADDRSTRLEN] = {0};
 #endif
 #ifndef RTCONFIG_INADYN
@@ -4653,7 +4653,7 @@ asusddns_reg_domain(int reg)
 		nvram_set("ddns_return_code_chk", "-1");
 		return -1;
 	}
-#ifdef RTCONFIG_IPV6_DISABLED
+#ifdef RTCONFIG_IPV6
 	if (nvram_get_int("ddns_ipv6_update")
 		&& ipv6_enabled() && (_get_ipv6_addr(wan_ifname, ip6_addr, sizeof(ip6_addr)) != 0))
 	{
@@ -4692,7 +4692,7 @@ asusddns_reg_domain(int reg)
 	if (inet_addr_(wan_ip) == inet_addr_(nvram_safe_get("ddns_ipaddr")) &&
 		strcmp(nvram_safe_get("ddns_server_x"), nvram_safe_get("ddns_server_x_old")) == 0 &&
 		strcmp(nvram_safe_get("ddns_hostname_x"), nvram_safe_get("ddns_hostname_old")) == 0
-#ifdef RTCONFIG_IPV6_DISABLED
+#ifdef RTCONFIG_IPV6
 		&& nvram_match("ddns_ipv6_ipaddr", ip6_addr)
 #endif
 		&& f_exists(cache_path) /* Not forced to restart DDNS */
@@ -4721,7 +4721,7 @@ asusddns_reg_domain(int reg)
 	if ((!nvram_match("ddns_server_x_old", "") && strcmp(nvram_safe_get("ddns_server_x"), nvram_safe_get("ddns_server_x_old")) != 0)
 		|| (!nvram_match("ddns_hostname_old", "") && strcmp(nvram_safe_get("ddns_hostname_x"), nvram_safe_get("ddns_hostname_old")) != 0)
 		|| (inet_addr_(wan_ip) != inet_addr_(nvram_safe_get("ddns_ipaddr")))
-#ifdef RTCONFIG_IPV6_DISABLED
+#ifdef RTCONFIG_IPV6
 		|| (!nvram_match("ddns_ipv6_ipaddr", ip6_addr))
 #endif
 	) {

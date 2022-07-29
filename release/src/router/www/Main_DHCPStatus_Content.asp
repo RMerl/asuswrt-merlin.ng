@@ -100,7 +100,7 @@ function show_leases() {
 		tableApi.genTableAPI(tableStruct);
 
 	} else {
-		document.getElementById("leaseblock").innerHTML = '<span style="color:#FFCC00;">No active leases.</span>';
+		document.getElementById("leaseblock").innerHTML = '<span class="hint-color" style="padding-left:10px;">No active leases.</span>';
 	}
 }
 

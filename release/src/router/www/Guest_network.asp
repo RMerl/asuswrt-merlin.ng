@@ -661,6 +661,7 @@ function gen_gntable(){
 			htmlcode6 += '</table>';
 			document.getElementById("guest_table6").innerHTML = htmlcode6;
 			check_bw_status(gn_array_6g_tmp);
+			genQRCodes(gn_array_6g_tmp, 3);
 		}
 	}	
 
@@ -1549,6 +1550,10 @@ function apply_amazon_wss(){
 }
 
 function genQRCodes(gn_array, unit){
+	if(based_modelid === 'GT-AXE16000'){
+		unit = (unit+3)%4;
+	}
+
 	for(var i=0; i < gn_array.length; i++){
 		var gn_entry = gn_array[i];
 

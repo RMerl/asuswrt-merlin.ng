@@ -257,7 +257,9 @@ void dnsfilter6_settings_mangle(FILE *fp) {
 	int dnsmode, count;
 	dnsf_srv_entry_t dnsfsrv;
 
-	fprintf(fp, "-A FORWARD -i br+ -p udp -m udp --dport 53 -j DNSFILTERF\n"
+	fprintf(fp, "-A INPUT -i br+ -p udp -m udp --dport 53 -j DNSFILTERI\n"
+		    "-A INPUT -i br+ -p tcp -m tcp --dport 53 -j DNSFILTERI\n"
+		    "-A FORWARD -i br+ -p udp -m udp --dport 53 -j DNSFILTERF\n"
 		    "-A FORWARD -i br+ -p tcp -m tcp --dport 53 -j DNSFILTERF\n");
 
 #ifdef HND_ROUTER
@@ -273,7 +275,9 @@ void dnsfilter6_settings_mangle(FILE *fp) {
 		if (!*mac || !ether_atoe(mac, ea))
 			continue;
 		if (dnsmode == DNSF_SRV_UNFILTERED) {
-			fprintf(fp, "-A DNSFILTERF -m mac --mac-source %s -j ACCEPT\n", mac);
+			fprintf(fp, "-A DNSFILTERI -m mac --mac-source %s -j ACCEPT\n"
+				    "-A DNSFILTERF -m mac --mac-source %s -j ACCEPT\n",
+					mac, mac);
 		} else {	// Filtered
 			count = get_dns_filter(AF_INET6, dnsmode, &dnsfsrv);
 			if (count) {
@@ -283,7 +287,9 @@ void dnsfilter6_settings_mangle(FILE *fp) {
 				fprintf(fp, "-A DNSFILTERF -m mac --mac-source %s -d %s -j ACCEPT\n", mac, dnsfsrv.server2);
 			}
 			// Reject other dnsfsrv for that client
-			fprintf(fp, "-A DNSFILTERF -m mac --mac-source %s -j DROP\n", mac);
+			fprintf(fp, "-A DNSFILTERI -m mac --mac-source %s -j %s\n"
+			            "-A DNSFILTERF -m mac --mac-source %s -j DROP\n",
+			            mac, (dnsmode == DNSF_SRV_ROUTER ? "ACCEPT" : "DROP"), mac);
 		}
 	}
 	free(nv);
@@ -293,13 +299,18 @@ void dnsfilter6_settings_mangle(FILE *fp) {
 		/* Allow other queries to the default server, and drop the rest */
 		count = get_dns_filter(AF_INET6, dnsmode, &dnsfsrv);
 		if (count) {
-			fprintf(fp, "-A DNSFILTERF -d %s -j ACCEPT\n", dnsfsrv.server1);
+			fprintf(fp, "-A DNSFILTERI -d %s -j ACCEPT\n"
+				    "-A DNSFILTERF -d %s -j ACCEPT\n",
+				dnsfsrv.server1, dnsfsrv.server1);
 		}
 		if (count == 2) {
-			fprintf(fp, "-A DNSFILTERF -d %s -j ACCEPT\n", dnsfsrv.server2);
+			fprintf(fp, "-A DNSFILTERI -d %s -j ACCEPT\n"
+				    "-A DNSFILTERF -d %s -j ACCEPT\n",
+				dnsfsrv.server2, dnsfsrv.server2);
 		}
-
-		fprintf(fp, "-A DNSFILTERF -j DROP\n");
+		fprintf(fp, "-A DNSFILTERI -j %s\n"
+			    "-A DNSFILTERF -j DROP\n",
+		            (dnsmode == DNSF_SRV_ROUTER ? "ACCEPT" : "DROP"));
 	}
 }
 

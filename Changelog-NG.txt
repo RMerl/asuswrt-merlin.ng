@@ -2,14 +2,26 @@ Asuswrt-Merlin 386/NG Changelog
 ===============================
 
 386.8 (xx-xxx-xxxx)
-  - NOTE: This release is only available for a few select models.
+  - NOTE: This release is only available for the RT-AX88U as
+          well as the two new models listed below.
   - NEW: Added support for the GT-AXE16000.
   - NEW: Added support for the GT-AX11000_Pro.
   - NEW: Added support for new RT-AX88U hardware revision.
   - UPDATED: Merged with GPL 386_49634.
+  - CHANGED: Re-enabled IPv6 DDNS support.
+  - CHANGED: Once again block router DNS access over IPv6 when
+             using DNSFilter on a pre-HND model (reverte back
+             to 386.7 behaviour for that scenario)
   - FIXED: inaccurate nvram usage on Sysinfo page for some HND
            models.  Now accurately report kernel nvram usage.
   - FIXED: WiFi Radar page alignment.
+  - FIXED: AiMesh node new firmware popup would use the device model
+           (like RT-AC66U_B1) rather than the product id (like
+           RT-AC68U) for the generated download URL.
+  - FIXED: OVPN client with DNS set to strict had lower priority
+           than DNSPrivacy servers.
+  - FIXED: IPv6 DNS may be missing if DNSPrivacy is enabled.
+  - FIXED: WiFI Radar pages missing on XT12.
 
 
 386.7_2 (24-July-2022)

@@ -2071,3 +2071,43 @@ function check_is_merlin_fw(_fw) {
 		return false;
 }
 
+function is_unit_24g(_unit) {
+	if (based_modelid == "GT-AXE16000") {
+		if (_unit == 3) return true;
+	} else {
+		if (_unit == 0) return true;
+	}
+	return false;
+}
+
+function is_unit_5g(_unit) {
+	if (based_modelid == "GT-AXE16000") {
+		if (_unit == 0) return true;
+	} else if (wl_info.band5g_support) {
+		if (_unit == 1) return true;
+	}
+	return false;
+}
+
+function is_unit_5g_2(_unit) {
+	if (based_modelid == "GT-AXE16000") {
+		if (_unit == 1) return true;
+	} else if (wl_info.band5g_2_support) {
+		if (_unit == 2) return true;
+	}
+	return false;
+}
+
+function is_unit_6g(_unit) {
+	if (wl_info.band6g_support) {
+		if (_unit == 2) return true;
+	}
+	return false;
+}
+
+function is_unit_60g(_unit) {
+	if (wl_info.band60g_support) {
+		if (_unit == 3) return true;
+	}
+	return false;
+}

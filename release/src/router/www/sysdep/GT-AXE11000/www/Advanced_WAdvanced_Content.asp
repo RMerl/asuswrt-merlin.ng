@@ -331,7 +331,7 @@ function initial(){
 	inputCtrl(document.form.wl_itxbf, 0);
 	inputCtrl(document.form.traffic_5g, 0);
 
-	if(is_unit_5g(wl_unit_value) || is_unit_5g_2(wl_unit_value)){ // 5GHz up
+	if(is_unit_5g(wl_unit_value) || is_unit_5g_2(wl_unit_value) || is_unit_6g(wl_unit_value)){ // 5GHz up
 		if(	based_modelid == "RT-AC3200" ||
 			based_modelid == "RT-AC56S" || based_modelid == "RT-AC56U" ||
 			based_modelid == "RT-AC68U" || based_modelid == "RT-AC68A" || based_modelid == "DSL-AC68U" || based_modelid == "4G-AC68U" ||

@@ -473,14 +473,17 @@ function overHint(itemNum){
 
 	// wifi hw switch
 	if(itemNum == 8){
-		if (based_modelid == "GT-AXE16000")
+		if (based_modelid == "GT-AXE16000") {
 			band_unit = [ 3, 0, 1, 2];
-		else
+			radio_state = [ wlan2_radio_flag, wlan0_radio_flag, wlan1_radio_flag, "<% nvram_get("wl2_radio"); %>" ];
+		} else {
 			band_unit = [ 0, 1, 2, 2];
+			radio_state = [ wlan0_radio_flag, wlan1_radio_flag, wlan2_radio_flag, wlan2_radio_flag ];
+		}
 
 		statusmenu = "<div class='StatusHint'>WiFi :</div>";
 		wifiDesc = "<b>&nbsp;2.4G:</b> ";
-		if ( wlan0_radio_flag == 1) {
+		if ( radio_state[0] == 1) {
 			if ((extent_chan_arr[band_unit[0]] == 0) || (extent_chan_arr[band_unit[0]] == undefined) || (extent_chan_arr[band_unit[0]] == control_chan_arr[band_unit[0]]))
 				wifiDesc += "Channel " + control_chan_arr[band_unit[0]];
 			else
@@ -494,7 +497,7 @@ function overHint(itemNum){
 				wifiDesc += "<br><b>5G-1:</b> ";
 			else
 				wifiDesc += "<br><b>&nbsp;&nbsp;&nbsp;5G:</b> ";
-			if (wlan1_radio_flag == 1) {
+			if (radio_state[1] == 1) {
 				if ((extent_chan_arr[band_unit[1]] == 0) || (extent_chan_arr[band_unit[1]] == undefined) || (extent_chan_arr[band_unit[1]] == control_chan_arr[band_unit[1]]))
 					wifiDesc += "Channel " + control_chan_arr[band_unit[1]];
 				else
@@ -505,7 +508,7 @@ function overHint(itemNum){
 
 			if (wl_info.band5g_2_support) {
 				wifiDesc += "<br><b>5G-2:</b> ";
-				if  ("<% nvram_get("wl2_radio"); %>" == 1) {
+				if  (radio_state[2] == 1) {
 					if ((extent_chan_arr[band_unit[2]] == 0) || (extent_chan_arr[band_unit[2]] == undefined) || (extent_chan_arr[band_unit[2]] == control_chan_arr[band_unit[2]]))
 						wifiDesc += "Channel " + control_chan_arr[band_unit[2]];
 					else
@@ -519,7 +522,7 @@ function overHint(itemNum){
 
 		if (band6g_support) {
 			wifiDesc += "<br><b>&nbsp;&nbsp;&nbsp;6G:</b> ";
-			if  ("<% nvram_get("wl2_radio"); %>" == 1) {
+			if  (radio_state[3] == 1) {
 				if ((extent_chan_arr[band_unit[3]] == 0) || (extent_chan_arr[band_unit[3]] == undefined) || (extent_chan_arr[band_unit[3]] == control_chan_arr[band_unit[3]]))
 					wifiDesc += "Channel 6g" + control_chan_arr[band_unit[3]];
 				else

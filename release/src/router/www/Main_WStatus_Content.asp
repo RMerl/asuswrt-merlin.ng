@@ -53,7 +53,7 @@ var dataarray1 = [], wificlients1 = [];
 var dataarray2 = [], wificlients2 = [];
 var dataarray3 = [], wificlients3 = [];
 
-var dfs_statusarray1 = [], dfs_statusarray2 = [];
+var dfs_statusarray0 = [], dfs_statusarray1 = [], dfs_statusarray2 = [];
 
 <% get_wl_status(); %>;
 
@@ -141,12 +141,15 @@ function redraw(){
 		wificlients52 = wificlients1;
 		dataarray6 = dataarray2;
 		wificlients6 = wificlients2;
+		dfs_statusarray5 = dfs_statusarray0;
+		dfs_statusarray52 = dfs_statusarray1;
 	} else {
 		dataarray24 = dataarray0;
 		wificlients24 = wificlients0;
 		if (band5g_support) {
 			dataarray5 = dataarray1;
 			wificlients5 = wificlients1;
+			dfs_statusarray5 = dfs_statusarray1;
 		}
 		if (band6g_support) {
 			dataarray6 = dataarray2;
@@ -154,6 +157,7 @@ function redraw(){
 		} else if (wl_info.band5g_2_support) {
 			dataarray52 = dataarray2;
 			wificlients52 = wificlients2;
+			dfs_statusarray52 = dfs_statusarray2;
 		}
 	}
 
@@ -178,20 +182,20 @@ function redraw(){
 			if (dataarray5.length == 0) {
 				document.getElementById('wifi5headerblock').innerHTML='<span class="wifiheader" style="font-size: 125%;">Wireless 5 GHz-1 is disabled.</span>';
 			} else {
-				display_header(dataarray5, 'Wireless 5 GHz-1', document.getElementById('wifi5headerblock'), dfs_statusarray1);
+				display_header(dataarray5, 'Wireless 5 GHz-1', document.getElementById('wifi5headerblock'), dfs_statusarray5);
 				display_clients(wificlients5, document.getElementById('wifi5block'), 1);
 			}
 			if (dataarray52.length == 0) {
 				document.getElementById('wifi52headerblock').innerHTML='<span class="wifiheader" style="font-size: 125%;">Wireless 5 GHz-2 is disabled.</span>';
 			} else {
-				display_header(dataarray52, 'Wireless 5 GHz-2', document.getElementById('wifi52headerblock'), dfs_statusarray2);
+				display_header(dataarray52, 'Wireless 5 GHz-2', document.getElementById('wifi52headerblock'), dfs_statusarray52);
 				display_clients(wificlients52, document.getElementById('wifi52block'), 2);
 			}
 		} else {
 			if (dataarray5.length == 0) {
 				document.getElementById('wifi5headerblock').innerHTML='<span class="wifiheader" style="font-size: 125%;">Wireless 5 GHz is disabled.</span>';
 			} else {
-				display_header(dataarray5, 'Wireless 5 GHz', document.getElementById('wifi5headerblock'), dfs_statusarray1);
+				display_header(dataarray5, 'Wireless 5 GHz', document.getElementById('wifi5headerblock'), dfs_statusarray5);
 				display_clients(wificlients5, document.getElementById('wifi5block'), 1);
 			}
 		}

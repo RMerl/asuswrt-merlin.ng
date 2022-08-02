@@ -655,11 +655,19 @@ sta_list:
 #ifdef RTCONFIG_BCMARM
 			ret += websWrite(wp, "\"%s%s%s",
 				(sta->flags & WL_STA_PS) ? "P" : "_",
-				((sta->ht_capabilities & WL_STA_CAP_SHORT_GI_20) || (sta->ht_capabilities & WL_STA_CAP_SHORT_GI_40)) ? "S" : "_",
-				((sta->ht_capabilities & WL_STA_CAP_TX_STBC) || (sta->ht_capabilities & WL_STA_CAP_RX_STBC_MASK)) ? "T" : "_");
+				((sta->ht_capabilities & (WL_STA_CAP_SHORT_GI_20 | WL_STA_CAP_SHORT_GI_40))) ? "S" : "_",
+				((sta->ht_capabilities & (WL_STA_CAP_TX_STBC | WL_STA_CAP_RX_STBC_MASK))
+#if (WL_STA_VER >= 7)
+				|| (sta->he_flags & (WL_STA_HE_TX_STBCCAP | WL_STA_HE_RX_STBCCAP))
+#endif
+				) ? "T" : "_");
 #ifdef RTCONFIG_MUMIMO
 			ret += websWrite(wp, "%s",
-				((sta->vht_flags & WL_STA_MU_BEAMFORMER) || (sta->vht_flags & WL_STA_MU_BEAMFORMEE)) ? "M" : "_");
+				((sta->vht_flags & (WL_STA_MU_BEAMFORMER | WL_STA_MU_BEAMFORMEE))
+#if (WL_STA_VER >= 7)
+				 || (sta->he_flags & (WL_STA_HE_SU_BEAMFORMER | WL_STA_HE_MU_BEAMFORMER | WL_STA_HE_SU_MU_BEAMFORMEE))
+#endif
+				) ? "M" : "_");
 #endif
 #else
 			ret += websWrite(wp, "\"%s",

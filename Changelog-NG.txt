@@ -22,6 +22,8 @@ Asuswrt-Merlin 386/NG Changelog
            than DNSPrivacy servers.
   - FIXED: IPv6 DNS may be missing if DNSPrivacy is enabled.
   - FIXED: WiFI Radar pages missing on XT12.
+  - FIXED: QRcode failing to generate if the SSID contained unicode
+           characters (like emojis or other UTF8 entities)
 
 
 386.7_2 (24-July-2022)

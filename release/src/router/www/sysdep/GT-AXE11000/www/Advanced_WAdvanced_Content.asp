@@ -292,7 +292,7 @@ function initial(){
 		document.getElementById("DLSCapable").style.display = "none";	
 		document.getElementById("PktAggregate").style.display = "none";
 		
-		if(is_unit_5g(is_unit_5g(wl_unit_value)) || machine_arm){	// MODELDEP: for Broadcom SDK 6.x model
+		if(is_unit_5g(wl_unit_value) || is_unit_5g_2(wl_unit_value) || machine_arm){	// MODELDEP: for Broadcom SDK 6.x model
 			inputCtrl(document.form.wl_noisemitigation, 0);
 		}
 	}
@@ -1292,8 +1292,8 @@ function check_nodes_support_wireless_scheduler() {
 }
 
 function he_frame_mode(obj) {
-	if (obj.value == '0' && is_unit_5g(wl_unit_value)) {
-		document.form.acs_dfs.value = 0;		
+	if (obj.value == '0' && (is_unit_5g(wl_unit_value) || is_unit_5g_2(wl_unit_value))) {
+		document.form.acs_dfs.value = 0;
 	}
 }
 function regen_mode(){	//please sync to initial() : //Change wireless mode help desc

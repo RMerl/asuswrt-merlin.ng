@@ -1297,20 +1297,18 @@ function he_frame_mode(obj) {
 	}
 }
 function regen_mode(){	//please sync to initial() : //Change wireless mode help desc
+	var _nmode_x = '<% nvram_get("wl_nmode_x"); %>';
 	if(is_unit_24g(wl_unit_value)){
-		var _nmode_x = '<% nvram_get("wl0_nmode_x"); %>';
 		_temp = ['<#Auto#>', 'N only', 'Legacy'];
 		_temp_value = ['0', '1', '2'];
 		add_options_x2(document.form.wl_nmode_x, _temp, _temp_value, _nmode_x);
 	}
-	else if(is_unit_5g(wl_unit_value)){
-		var _nmode_x = '<% nvram_get("wl1_nmode_x"); %>';
+	else if(is_unit_5g(wl_unit_value) || is_unit_5g_2(wl_unit_value)){
 		_temp = ['<#Auto#>', 'AX only', 'N/AC/AX mixed', 'Legacy'];
 		_temp_value = ['0', '9', '8', '2'];
 		add_options_x2(document.form.wl_nmode_x, _temp, _temp_value, _nmode_x);
 	}
-	else if(is_unit_5g_2(wl_unit_value)){
-		var _nmode_x = '<% nvram_get("wl2_nmode_x"); %>';
+	else if(is_unit_6g(wl_unit_value)){
 		_temp = ['<#Auto#>', 'AX only'];
 		_temp_value = ['0', '9'];
 		add_options_x2(document.form.wl_nmode_x, _temp, _temp_value, _nmode_x);

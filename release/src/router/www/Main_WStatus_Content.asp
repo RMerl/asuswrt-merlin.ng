@@ -19,10 +19,6 @@
 <script language="JavaScript" type="text/javascript" src="/js/httpApi.js"></script>
 <script language="JavaScript" type="text/javascript" src="/client_function.js"></script>
 <style>
-.wifiheader{
-        background-color:#475a5f;
-        color:#FFCC00;
-}
 p{
 	font-weight: bolder;
 }
@@ -33,7 +29,6 @@ p{
         -moz-border-radius: 5px;
         border-radius: 5px;
         z-index:500;
-        background-color:#2B373B;
         display:none;
         margin-left: 18%;
         top: 250px;
@@ -162,7 +157,7 @@ function redraw(){
 	}
 
 	if (dataarray24.length == 0) {
-		document.getElementById('wifi24headerblock').innerHTML='<span class="wifiheader" style="font-size: 125%;">Wireless 2.4 GHz is disabled.</span>';
+		document.getElementById('wifi24headerblock').innerHTML='<span class="hint-color" style="font-size: 125%;">Wireless 2.4 GHz is disabled.</span>';
 	} else {
 		display_header(dataarray24, 'Wireless 2.4 GHz', document.getElementById('wifi24headerblock'), []);
 		display_clients(wificlients24, document.getElementById('wifi24block'), 0);
@@ -170,7 +165,7 @@ function redraw(){
 
 	if (band6g_support) {
 		if (dataarray6.length == 0) {
-		        document.getElementById('wifi6headerblock').innerHTML='<span class="wifiheader" style="font-size: 125%;">Wireless 6 GHz is disabled.</span>';
+		        document.getElementById('wifi6headerblock').innerHTML='<span class="hint-color" style="font-size: 125%;">Wireless 6 GHz is disabled.</span>';
 		} else {
 		        display_header(dataarray6, 'Wireless 6 GHz', document.getElementById('wifi6headerblock'), []);
 		        display_clients(wificlients6, document.getElementById('wifi6block'), 2);
@@ -180,20 +175,20 @@ function redraw(){
 	if (band5g_support) {
 		if (wl_info.band5g_2_support) {
 			if (dataarray5.length == 0) {
-				document.getElementById('wifi5headerblock').innerHTML='<span class="wifiheader" style="font-size: 125%;">Wireless 5 GHz-1 is disabled.</span>';
+				document.getElementById('wifi5headerblock').innerHTML='<span class="hint-color" style="font-size: 125%;">Wireless 5 GHz-1 is disabled.</span>';
 			} else {
 				display_header(dataarray5, 'Wireless 5 GHz-1', document.getElementById('wifi5headerblock'), dfs_statusarray5);
 				display_clients(wificlients5, document.getElementById('wifi5block'), 1);
 			}
 			if (dataarray52.length == 0) {
-				document.getElementById('wifi52headerblock').innerHTML='<span class="wifiheader" style="font-size: 125%;">Wireless 5 GHz-2 is disabled.</span>';
+				document.getElementById('wifi52headerblock').innerHTML='<span class="hint-color" style="font-size: 125%;">Wireless 5 GHz-2 is disabled.</span>';
 			} else {
 				display_header(dataarray52, 'Wireless 5 GHz-2', document.getElementById('wifi52headerblock'), dfs_statusarray52);
 				display_clients(wificlients52, document.getElementById('wifi52block'), 2);
 			}
 		} else {
 			if (dataarray5.length == 0) {
-				document.getElementById('wifi5headerblock').innerHTML='<span class="wifiheader" style="font-size: 125%;">Wireless 5 GHz is disabled.</span>';
+				document.getElementById('wifi5headerblock').innerHTML='<span class="hint-color" style="font-size: 125%;">Wireless 5 GHz is disabled.</span>';
 			} else {
 				display_header(dataarray5, 'Wireless 5 GHz', document.getElementById('wifi5headerblock'), dfs_statusarray5);
 				display_clients(wificlients5, document.getElementById('wifi5block'), 1);
@@ -320,25 +315,25 @@ function display_header(dataarray, title, obj, dfs_statusarray) {
 	var time, formatted_time;
 
 	code = '<table width="100%" style="border: none;">';
-	code += '<thead><tr><span class="wifiheader" style="font-size: 125%;">' + title +'</span></tr></thead>';
-	code += '<tr><td colspan="3"><span class="wifiheader">SSID: </span>' + dataarray[0] + '</td><td colspan="2"><span class="wifiheader">Mode: </span>' + dataarray[6] + '</td></tr>';
+	code += '<thead><tr><span class="hint-color" style="font-size: 125%;">' + title +'</span></tr></thead>';
+	code += '<tr><td colspan="3"><span class="hint-color">SSID: </span>' + dataarray[0] + '</td><td colspan="2"><span class="hint-color">Mode: </span>' + dataarray[6] + '</td></tr>';
 
 	code += '<tr>';
 	if (dataarray[1] != 0)
-		code += '<td><span class="wifiheader">RSSI: </span>' + dataarray[1] + ' dBm</td>';
+		code += '<td><span class="hint-color">RSSI: </span>' + dataarray[1] + ' dBm</td>';
 	if (dataarray[2] != 0)
-		code += '<td><span class="wifiheader">SNR: </span>' + dataarray[2] +' dB</td>';
+		code += '<td><span class="hint-color">SNR: </span>' + dataarray[2] +' dB</td>';
 	if (dataarray[3] != 0)
-		code += '<td><span class="wifiheader">Noise: </span>' + dataarray[3] + ' dBm</td>';
+		code += '<td><span class="hint-color">Noise: </span>' + dataarray[3] + ' dBm</td>';
 
-	code += '<td><span class="wifiheader">Channel: </span>'+ dataarray[4] + '</td> <td><span class="wifiheader">BSSID: </span>' + dataarray[5] +'</td></tr>';
+	code += '<td><span class="hint-color">Channel: </span>'+ dataarray[4] + '</td> <td><span class="hint-color">BSSID: </span>' + dataarray[5] +'</td></tr>';
 
 	if (dfs_statusarray.length > 1) {
-		code += '<tr><td colspan="2"><span class="wifiheader">DFS State: </span>' + dfs_statusarray[0] + '</td>';
+		code += '<tr><td colspan="2"><span class="hint-color">DFS State: </span>' + dfs_statusarray[0] + '</td>';
 		time = parseInt(dfs_statusarray[1]);
 		formatted_time = Math.floor(time / 3600) + "h " + Math.floor(time / 60) % 60 + "m " + time % 60 + "s";
-		code += '<td><span class="wifiheader">Time elapsed: </span>' + formatted_time + '</td>';
-		code += '<td><span class="wifiheader">Channel cleared for radar: </span>' + dfs_statusarray[2] + '</td></tr>';
+		code += '<td><span class="hint-color">Time elapsed: </span>' + formatted_time + '</td>';
+		code += '<td><span class="hint-color">Channel cleared for radar: </span>' + dfs_statusarray[2] + '</td></tr>';
 	}
 
 	code += '</table>';
@@ -465,8 +460,8 @@ function hide_details_window(){
 									<br><br>
 									<div id="wifi6headerblock"></div>
 									<div id="wifi6block"></div>
-									<div id="flags_mumimo_div" style="display:none;">Flags: <span class="wifiheader">P</span>=Powersave Mode, <span class="wifiheader">S</span>=Short GI, <span class="wifiheader">T</span>=STBC, <span class="wifiheader">M</span>=MU Beamforming, <span class="wifiheader">A</span>=Associated, <span class="wifiheader">U</span>=Authenticated</div>
-									<div id="flags_div">Flags: <span class="wifiheader">P</span>=Powersave Mode, <span class="wifiheader">S</span>=Short GI, <span class="wifiheader">T</span>=STBC, <span class="wifiheader">A</span>=Associated, <span class="wifiheader">U</span>=Authenticated</div>
+									<div id="flags_mumimo_div" style="display:none;">Flags: <span class="hint-color">P</span>=Powersave Mode, <span class="hint-color">S</span>=Short GI, <span class="hint-color">T</span>=STBC, <span class="hint-color">M</span>=MU Beamforming, <span class="hint-color">A</span>=Associated, <span class="hint-color">U</span>=Authenticated</div>
+									<div id="flags_div">Flags: <span class="hint-color">P</span>=Powersave Mode, <span class="hint-color">S</span>=Short GI, <span class="hint-color">T</span>=STBC, <span class="hint-color">A</span>=Associated, <span class="hint-color">U</span>=Authenticated</div>
 									<br>
 									<div class="apply_gen">
 										<input type="button" onClick="location.reload();" value="<#CTL_refresh#>" class="button_gen" >
@@ -483,7 +478,7 @@ function hide_details_window(){
 <div id="footer"></div>
 </form>
 
-<div id="details_window"  class="contentM_details" style="box-shadow: 1px 5px 10px #000;">
+<div id="details_window"  class="contentM_details  pop_div_bg">
 	<div style="margin: 15px;">
 		<textarea id="wl_log" cols="63" rows="30" class="textarea_ssh_table" style="width:99%;font-family:'Courier New', Courier, mono; font-size:13px;" readonly="readonly" wrap="off"></textarea>
 	</div>

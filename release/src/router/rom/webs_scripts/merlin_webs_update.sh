@@ -1,6 +1,23 @@
 #!/bin/sh
 
-wget_options="-q -t 2 -T 30"
+if [ -z "$(nvram get merlin_fwupdate_uuid)" ]; then
+	# If there is no UUID then generate the UUID and save it as a persistent variable for later use.
+	# A factory reset will make it regenerate.
+	uuid="$(cat /proc/sys/kernel/random/uuid)" # generate a uuid
+	nvram set merlin_fwupdate_uuid="$uuid"
+	nvram commit
+fi
+
+if [ "$(nvram get merlin_fwupdate_uuid)" = "0" ]; then
+	# If UUID variable is 0, the original check update method is maintained -- no unique identifier is sent to the update server.
+	wget_options="-q -t 2 -T 30"
+else
+	productid="$(nvram get productid)" # Get router model
+	fw_version="$(nvram get buildno)_$(nvram get extendno)" # Get firmware version
+	uuid="$(nvram get merlin_fwupdate_uuid)" # Get uuid
+	# the unique identifier consists of three pieces of information model-firmware-uuid.
+	wget_options="--user-agent=\"$productid-$fw_version-$uuid\" -q -t 2 -T 30"
+fi
 
 fwsite="https://fwupdate.asuswrt-merlin.net"
 

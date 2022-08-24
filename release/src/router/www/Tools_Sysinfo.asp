@@ -108,18 +108,18 @@ function update_temperatures(){
 		},
 		success: function(response){
 			if (based_modelid === 'GT-AXE16000') {
-				curr_coreTmp_24_raw = curr_coreTmp_3_raw;
-				curr_coreTmp_5_raw = curr_coreTmp_0_raw;
-				curr_coreTmp_52_raw = curr_coreTmp_1_raw;
-				curr_coreTmp_6_raw = curr_coreTmp_2_raw;
+				curr_coreTmp_24_raw = curr_coreTmp_wl3_raw;
+				curr_coreTmp_5_raw = curr_coreTmp_wl0_raw;
+				curr_coreTmp_52_raw = curr_coreTmp_wl1_raw;
+				curr_coreTmp_6_raw = curr_coreTmp_wl2_raw;
 			} else {
-				curr_coreTmp_24_raw = curr_coreTmp_0_raw;
+				curr_coreTmp_24_raw = curr_coreTmp_wl0_raw;
 				if (band5g_support)
-					curr_coreTmp_5_raw = curr_coreTmp_1_raw;
+					curr_coreTmp_5_raw = curr_coreTmp_wl1_raw;
 				if (wl_info.band5g_2_support)
-					curr_coreTmp_52_raw = curr_coreTmp_2_raw;
+					curr_coreTmp_52_raw = curr_coreTmp_wl2_raw;
 				else if (wl_info.band6g_support)
-					curr_coreTmp_6_raw = curr_coreTmp_2_raw;
+					curr_coreTmp_6_raw = curr_coreTmp_wl2_raw;
 			}
 
 			code = "<b>2.4 GHz:</b><span> " + curr_coreTmp_24_raw + "</span>";

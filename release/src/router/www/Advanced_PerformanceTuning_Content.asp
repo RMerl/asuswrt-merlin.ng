@@ -23,8 +23,13 @@ var temp_base = 30;
 var d_temp = 20;
 var rpm_base = 1500;
 var d_rpm = 250;
-curr_coreTmp_2 = "<% sysinfo("temperature.2"); %>".replace("&deg;C", "");
-curr_coreTmp_5 = "<% sysinfo("temperature.5"); %>".replace("&deg;C", ""); 
+if (based_modelid === 'GT-AXE16000') {
+	curr_coreTmp_2 = "<% sysinfo("temperature.3"); %>".replace("&deg;C", "");
+	curr_coreTmp_5 = "<% sysinfo("temperature.0"); %>".replace("&deg;C", "");
+} else {
+	curr_coreTmp_2 = "<% sysinfo("temperature.0"); %>".replace("&deg;C", "");
+	curr_coreTmp_5 = "<% sysinfo("temperature.1"); %>".replace("&deg;C", "");
+}
 curr_cpuTemp = "<% get_cpu_temperature(); %>";
 var coreTmp_2 = new Array();
 var coreTmp_5 = new Array();
@@ -64,9 +69,9 @@ function update_coretmp(e){
     },
     success: function(response){
 			if (based_modelid === 'GT-AXE16000') {
-				updateNum(curr_coreTmp_3, curr_coreTmp_0, parseInt(curr_cpuTemp));
+				updateNum(curr_coreTmp_wl3, curr_coreTmp_wl0, parseInt(curr_cpuTemp));
 			} else {
-				updateNum(curr_coreTmp_0, curr_coreTmp_1, parseInt(curr_cpuTemp));
+				updateNum(curr_coreTmp_wl0, curr_coreTmp_wl1, parseInt(curr_cpuTemp));
 			}
 			setTimeout("update_coretmp();", 5000);
 		}    

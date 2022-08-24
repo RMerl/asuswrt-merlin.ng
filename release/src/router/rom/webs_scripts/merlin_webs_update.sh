@@ -21,6 +21,7 @@ current_extendno=$(nvram get extendno)
 
 # Overload extendno: alpha is 11-19, beta is 51-59, release is 100-109.
 current_extendno=$(echo $current_extendno | sed s/-g.*//;)
+current_extendno=$(echo $current_extendno | sed s/_.*//;)
 current_extendno=$(echo $current_extendno | sed "s/^[0-9]$/10&/;")
 current_extendno=$(echo $current_extendno | sed s/^alpha/1/;)
 current_extendno=$(echo $current_extendno | sed s/^beta/5/;)

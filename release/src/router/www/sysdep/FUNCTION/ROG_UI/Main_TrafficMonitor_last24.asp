@@ -140,6 +140,8 @@ function switchPage(page){
 		location.href = "/Main_TrafficMonitor_realtime.asp";
 	else if(page == "2")
 		return false;
+	else if(page == "4")
+		location.href = "/Main_TrafficMonitor_monthly.asp";
 	else
 		location.href = "/Main_TrafficMonitor_daily.asp";
 }
@@ -228,6 +230,7 @@ function setUnit(unit){
 									<option value="1"><#menu4_2_1#></option>
 									<option value="2" selected><#menu4_2_2#></option>
 									<option value="3"><#menu4_2_3#></option>
+									<option value="4">Monthly</option>
 								</select>	
 							</div>
 							</td></tr></table>

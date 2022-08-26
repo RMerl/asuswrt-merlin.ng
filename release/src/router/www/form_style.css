@@ -2252,6 +2252,10 @@ padding-top:1px;
 	z-index:200;
 	background-color:#2B373B;
 }
+.qrcodepanelpad{
+	background-color: #596E74;
+	padding: 10px;
+}
 
 .hint-color{
 	color: #FFCC00;

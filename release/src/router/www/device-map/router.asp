@@ -513,7 +513,7 @@ function genElement(){
 		code += '<div id="qrcodepanel' + unit + '" class="qrcodepanel" style="display:none; width:180px; margin-top:-200px; margin-left:0px;">';
 		code += '<div style="padding:10px;"><div style="text-align:center;">Scan to connect:</div>';
 		code += '<div style="margin:10px 0 10px 0px;height:2px;width:100%;padding:0;" class="splitLine"></div>';
-		code += '<div style="background-color: #596E74; padding:10px;" id="qr' + unit +'"></div><input style="margin-top:10px; width:100%;" type="button" class="button_gen" value="Close" onclick="hide_qr_code(' + unit + ');"></div></div>';
+		code += '<div class="qrcodepanelpad" id="qr' + unit +'"></div><input style="margin-top:10px; width:100%;" type="button" class="button_gen" value="Close" onclick="hide_qr_code(' + unit + ');"></div></div>';
 		code += '<div style="display:none;" id="showqrdiv' + unit + '"><span style="color:#FFCC00;cursor:pointer;text-decoration:underline" onclick="show_qr_code(' + unit + ');">Show QR code</span></div>';
 		code += '</div>';
 	}

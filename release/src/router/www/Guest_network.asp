@@ -475,7 +475,7 @@ function gen_gntable_tr(unit, gn_array, slicesb){
 						htmlcode += '<tfoot><div id="qrcodepanel' + unit + subunit + '" class="qrcodepanel" style="display:none; width:180px; margin-left:15px;">';
 						htmlcode += '<div style="padding:10px;"><div style="text-align:center;">Scan to connect:</div>';
 						htmlcode += '<div style="margin:10px 0 10px 0px;height:2px;width:100%;padding:0;" class="splitLine"></div>';
-						htmlcode += '<div style="background-color: #596E74; padding:10px;" id="qr' + unit + subunit + '"></div><input style="margin-top:10px; width:100%;" type="button" class="button_gen" value="Close" onclick="hide_qr_code(\'' + unit + subunit + '\');"></div></div>';
+						htmlcode += '<div class="qrcodepanelpad" id="qr' + unit + subunit + '"></div><input style="margin-top:10px; width:100%;" type="button" class="button_gen" value="Close" onclick="hide_qr_code(\'' + unit + subunit + '\');"></div></div>';
 
 						htmlcode += '<tfoot><tr><td align="center" class="gninfo_table_bottom"><div id="showqrdiv' + unit + subunit + '"><span style="color:#FFCC00;cursor:pointer;text-decoration:underline" onclick="show_qr_code(\'' + unit + subunit + '\');">Show QR code</span></div>';
 						htmlcode += '</td></tr>';

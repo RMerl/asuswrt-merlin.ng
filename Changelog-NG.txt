@@ -1,6 +1,23 @@
 Asuswrt-Merlin 386/NG Changelog
 ===============================
 
+V.next (xx-xxx-xxxx)
+  - CHANGED: Setting an OpenVPN client to redirect all traffic while
+             in "Exclusive" DNS mode will now force redirect ALL
+             DNS traffic just like in VPN Director mode.
+             While this will allow redirecting clients with
+             hardcoded DNS servers, it also means that your whole
+             LAN will lose the ability of doing local name
+             resolution.  It might be best to use VPN Director
+             in that case to control which client should
+             be involved in the DNS redirection, or use
+             DNSFilter instead of Exclusive DNS mode.
+  - FIXED: Wrong temperatures used by the temperature graphs
+           (386.8 regression)
+  - FIXED: Guest Network clients couldn't route through VPN
+           (regression in 386.4 following a GPL merge).
+
+
 386.8 (13-Aug-2022)
   - NOTE: This release is only available for the RT-AX88U as
           well as the two new models listed below.

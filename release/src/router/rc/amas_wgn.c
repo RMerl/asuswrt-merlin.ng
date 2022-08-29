@@ -1101,9 +1101,15 @@ void wgn_filter_forward(
 			continue;
 
 		fprintf(fp, "-A FORWARD -i %s -j WGNPControls\n", word);
+#ifdef RTCONFIG_OPENVPN
+		fprintf(fp, "-A FORWARD -i %s -o tun+ -j ACCEPT\n", word);
+#endif
 #if defined(RTCONFIG_IPV6)
 		if (fp_ipv6) {
 			fprintf(fp_ipv6, "-A FORWARD -i %s -j WGNPControls\n", word);
+#ifdef RTCONFIG_OPENVPN
+			fprintf(fp_ipv6, "-A FORWARD -i %s -o tun+ -j ACCEPT\n", word);
+#endif
 			fprintf(fp_ipv6, "-A FORWARD -i %s -o %s -j ACCEPT\n", word, wan_if);
 		}
 #endif

@@ -1390,6 +1390,7 @@ getdns_context_create_with_extended_memory_functions(
 #endif
 	result->processing = 0;
 	result->destroying = 0;
+	result->to_destroy = 0;
 	result->my_mf.mf_arg         = userarg;
 	result->my_mf.mf.ext.malloc  = malloc;
 	result->my_mf.mf.ext.realloc = realloc;
@@ -1642,8 +1643,11 @@ getdns_context_destroy(struct getdns_context *context)
 	if (context == NULL)
 		return;
 
-	/*  If being destroyed during getdns callback, fail via assert */
 	assert(context->processing == 0);
+	if (context->processing == 1) {
+		context->to_destroy = 1;
+		return;
+	}
 	if (context->destroying)
 		return;
 
@@ -3768,7 +3772,6 @@ getdns_context_get_num_pending_requests(const getdns_context* context,
 
 	if (context->outbound_requests.count)
 		context->extension->vmt->run_once(context->extension, 0);
-
 	return context->outbound_requests.count;
 }
 
@@ -4095,6 +4098,9 @@ getdns_context_get_api_information(const getdns_context* context)
 
 	    && ! getdns_dict_util_set_string(
 	    result, "compilation_comment", GETDNS_COMPILATION_COMMENT)
+
+	    && ! getdns_dict_util_set_string(
+	    result, "build_cflags", GETDNS_BUILD_CFLAGS)
 
 	    && ! getdns_dict_util_set_string(
 	    result, "default_trust_anchor_location", TRUST_ANCHOR_FILE)

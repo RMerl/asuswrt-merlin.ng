@@ -6,14 +6,14 @@ endif ()
 
 # The following must be set BEFORE doing project() or enable_language().
 if (NOT CMAKE_BUILD_TYPE)
-  message(STATUS "No build type defined; defaulting to 'Debug'")
-  set(CMAKE_BUILD_TYPE "Debug" CACHE STRING
+  message(STATUS "No build type defined; defaulting to 'RelWithDebInfo'")
+  set(CMAKE_BUILD_TYPE "RelWithDebInfo" CACHE STRING
     "The type of build. Possible values are: Debug, Release, RelWithDebInfo and MinSizeRel.")
 endif ()
 
 set(PACKAGE "getdns")
 set(PACKAGE_NAME "getdns")
-set(PACKAGE_VERSION "1.7.0")
+set(PACKAGE_VERSION "1.7.2")
 set(PACKAGE_BUGREPORT "team@getdnsapi.net")
 set(PACKAGE_URL "https://getdnsapi.net")
 
@@ -25,7 +25,7 @@ set(PACKAGE_STRING "${PACKAGE_NAME} ${PACKAGE_VERSION}${RELEASE_CANDIDATE}")
 set(PACKAGE_TARNAME "${PACKAGE}-${PACKAGE_VERSION}${RELEASE_CANDIDATE}")
 
 set(GETDNS_VERSION "${PACKAGE_VERSION}${RELEASE_CANDIDATE}")
-set(GETDNS_NUMERIC_VERSION 0x01070000)
+set(GETDNS_NUMERIC_VERSION 0x01070200)
 set(API_VERSION "December 2015")
 set(API_NUMERIC_VERSION 0x07df0c00)
 
@@ -340,6 +340,7 @@ check_include_file(openssl/engine.h HAVE_OPENSSL_ENGINE_H)
 check_include_file(openssl/bn.h HAVE_OPENSSL_BN_H)
 check_include_file(openssl/dsa.h HAVE_OPENSSL_DSA_H)
 check_include_file(openssl/rsa.h HAVE_OPENSSL_RSA_H)
+check_include_file(openssl/param_build.h HAVE_OPENSSL_PARAM_BUILD_H)
 
 set(CMAKE_REQUIRED_LIBRARIES ${OPENSSL_LIBRARIES} ${getdns_system_libs})
 check_function_exists(DSA_SIG_set0 HAVE_DSA_SIG_SET0)
@@ -371,6 +372,8 @@ check_function_exists(SSL_CTX_set_ciphersuites HAVE_SSL_CTX_SET_CIPHERSUITES)
 check_function_exists(SSL_set_ciphersuites HAVE_SSL_SET_CIPHERSUITES)
 
 check_function_exists(OPENSSL_init_crypto HAVE_OPENSSL_INIT_CRYPTO)
+
+check_function_exists(OSSL_PARAM_BLD_new HAVE_OSSL_PARAM_BLD_NEW)
 
 check_symbol_exists(SSL_dane_enable "openssl/ssl.h" HAVE_SSL_DANE_ENABLE)
 check_symbol_exists(SSL_CTX_set1_curves_list "openssl/ssl.h" HAVE_DECL_SSL_CTX_SET1_CURVES_LIST)
@@ -684,9 +687,6 @@ if (NOT HAVE_SSL_DANE_ENABLE)
   target_include_directories(getdns_objects PRIVATE src/ssl_dane)
   set(USE_DANESSL 1)
 endif ()
-if (Libidn_FOUND)
-  target_include_directories(getdns_objects PRIVATE ${LIBIDN_INCLUDE_DIR})
-endif ()
 if (Libidn2_FOUND)
   target_include_directories(getdns_objects PRIVATE ${LIBIDN2_INCLUDE_DIR})
 endif ()
@@ -720,9 +720,6 @@ if (ENABLE_STATIC)
   if (Libunbound_FOUND)
     target_link_libraries(getdns PUBLIC Libunbound::Libunbound)
   endif ()
-  if (Libidn_FOUND)
-    target_link_libraries(getdns PUBLIC Libidn::Libidn)
-  endif ()
   if (Libidn2_FOUND)
     target_link_libraries(getdns PUBLIC Libidn2::Libidn2)
   endif ()
@@ -751,9 +748,6 @@ if (ENABLE_SHARED)
     )
   if (Libunbound_FOUND)
     target_link_libraries(getdns_shared PUBLIC Libunbound::Libunbound)
-  endif ()
-  if (Libidn_FOUND)
-    target_link_libraries(getdns_shared PUBLIC Libidn::Libidn)
   endif ()
   if (Libidn2_FOUND)
     target_link_libraries(getdns_shared PUBLIC Libidn2::Libidn2)
@@ -1038,6 +1032,8 @@ try_compile(HAVE_ATTR_UNUSED
   )
 
 # Substitutions in files.
+string(TOUPPER "${CMAKE_BUILD_TYPE}" GETDNS_BUILD_RELTYPE)
+string(REPLACE "\"" "\\\"" GETDNS_BUILD_CFLAGS "${CMAKE_C_FLAGS} ${CMAKE_C_FLAGS_${GETDNS_BUILD_RELTYPE}}")
 configure_file(cmake/include/cmakeconfig.h.in config.h)
 configure_file(src/getdns/getdns.h.in getdns/getdns.h)
 configure_file(src/getdns/getdns_extra.h.in getdns/getdns_extra.h)
@@ -1070,6 +1066,8 @@ foreach (man ${mans})
 endforeach()
 
 set(prefix ${CMAKE_INSTALL_PREFIX})
+cmake_path(APPEND libdir_for_pc_file "\${prefix}" "${CMAKE_INSTALL_LIBDIR}")
+cmake_path(APPEND includedir_for_pc_file "\${prefix}" "${CMAKE_INSTALL_INCLUDEDIR}")
 configure_file(getdns.pc.in getdns.pc @ONLY)
 
 # Installing.
@@ -1105,11 +1103,10 @@ if (BUILD_GETDNS_SERVER_MON)
 endif ()
 
 install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/getdns DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/man3 DESTINATION share/man)
+install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/man3 DESTINATION ${CMAKE_INSTALL_MANDIR})
 
-set(docdir share/doc/getdns)
-install(FILES AUTHORS ChangeLog COPYING LICENSE NEWS README.md DESTINATION ${docdir})
-install(FILES spec/index.html DESTINATION ${docdir}/spec)
+install(FILES AUTHORS ChangeLog COPYING LICENSE NEWS README.md DESTINATION ${CMAKE_INSTALL_DOCDIR})
+install(FILES spec/index.html DESTINATION ${CMAKE_INSTALL_DOCDIR}/spec)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/getdns.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
 
 install(CODE "message(\"\

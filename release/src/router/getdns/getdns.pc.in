@@ -1,7 +1,7 @@
 prefix=@prefix@
 exec_prefix=${prefix}
-libdir=${exec_prefix}/@CMAKE_INSTALL_LIBDIR@
-includedir=${prefix}/@CMAKE_INSTALL_INCLUDEDIR@
+libdir=@libdir_for_pc_file@
+includedir=@includedir_for_pc_file@
 
 Name: getdns
 Version: @GETDNS_VERSION@

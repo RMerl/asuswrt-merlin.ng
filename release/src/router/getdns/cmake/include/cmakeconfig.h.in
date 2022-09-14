@@ -61,6 +61,7 @@
 #cmakedefine HAVE_OPENSSL_BN_H          1
 #cmakedefine HAVE_OPENSSL_DSA_H         1
 #cmakedefine HAVE_OPENSSL_RSA_H         1
+#cmakedefine HAVE_OPENSSL_PARAM_BUILD_H 1
 
 #cmakedefine HAVE_DSA_SIG_SET0		1
 #cmakedefine HAVE_DSA_SET0_PQG		1
@@ -95,6 +96,8 @@
 #cmakedefine HAVE_SSL_SET_CIPHERSUITES	1
 
 #cmakedefine HAVE_OPENSSL_INIT_CRYPTO	1
+
+#cmakedefine HAVE_OSSL_PARAM_BLD_NEW	1
 
 #cmakedefine HAVE_SSL_DANE_ENABLE			1
 #cmakedefine HAVE_DECL_SSL_CTX_SET1_CURVES_LIST		1

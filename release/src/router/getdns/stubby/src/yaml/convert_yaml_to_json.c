@@ -62,8 +62,10 @@ static int quote_next_scalar;
 
 static const char* QUOTE_KEY_VALUES[] = {
 	"tls_ca_path",
+	"tls_ca_file",
 	"tls_cipher_list",
 	"tls_ciphersuites",
+	"tls_curves_list",
 	"appdata_dir",
 	"dnssec_trust_anchors",
 	"tls_auth_name",

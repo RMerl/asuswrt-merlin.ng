@@ -28,42 +28,51 @@ This module will set the following variables in your project:
 
 #]=======================================================================]
 
-find_path(LIBEVENT2_INCLUDE_DIR event2/event.h
-  HINTS
-  "${LIBEVENT2_DIR}"
-  "${LIBEVENT2_DIR}/include"
-)
+find_package(PkgConfig QUIET)
+if (PKG_CONFIG_FOUND)
+    pkg_check_modules(PkgLibevent IMPORTED_TARGET GLOBAL QUIET libevent>=2)
+endif ()
 
-find_library(LIBEVENT2_LIBRARY NAMES event_core libevent_core
-  HINTS
-  "${LIBEVENT2_DIR}"
-  "${LIBEVENT2_DIR}/lib"
-)
-
-set(LIBEVENT2_LIBRARIES "")
-
-if (LIBEVENT2_INCLUDE_DIR AND LIBEVENT2_LIBRARY)
-  if (NOT TARGET Libevent2::Libevent_core)
-    add_library(Libevent2::Libevent_core UNKNOWN IMPORTED)
-    set_target_properties(Libevent2::Libevent_core PROPERTIES
-      INTERFACE_INCLUDE_DIRECTORIES "${LIBEVENT2_INCLUDE_DIR}"
-      IMPORTED_LINK_INTERFACE_LANGUAGES "C"
-      IMPORTED_LOCATION "${LIBEVENT2_LIBRARY}"
-      )
-  endif ()
-
-  if (NOT LIBEVENT2_VERSION AND LIBEVENT2_INCLUDE_DIR AND EXISTS "${LIBEVENT2_INCLUDE_DIR}/event2/event.h")
-    file(STRINGS "${LIBEVENT2_INCLUDE_DIR}/event2/event-config.h" LIBEVENT2_H REGEX "^#define _?EVENT_+VERSION ")
-    string(REGEX REPLACE "^.*EVENT_+VERSION \"([^\"]+)\".*$" "\\1" LIBEVENT2_VERSION "${LIBEVENT2_H}")
-  endif ()
-endif()
-
-list(APPEND LIBEVENT2_LIBRARIES "${LIBEVENT2_LIBRARY}")
-
-include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(Libevent2
-  REQUIRED_VARS LIBEVENT2_LIBRARIES LIBEVENT2_INCLUDE_DIR
-  VERSION_VAR LIBEVENT2_VERSION
+if (PkgLibevent_FOUND)
+  set(LIBEVENT2_INCLUDE_DIR ${PkgLibevent_INCLUDE_DIRS} CACHE FILEPATH "libevent2 include path")
+  set(LIBEVENT2_LIBRARIES ${PkgLibevent_LIBRARIES} CACHE STRING "libevent2 libraries")
+  set(LIBEVENT2_VERSION ${PkgLibevent_VERSION})
+  add_library(Libevent2::Libevent_core ALIAS PkgConfig::PkgLibevent)
+  set(Libevent2_FOUND ON)
+else ()
+  find_path(LIBEVENT2_INCLUDE_DIR event2/event.h
+    HINTS
+    "${LIBEVENT2_DIR}"
+    "${LIBEVENT2_DIR}/include"
   )
+  
+  find_library(LIBEVENT2_LIBRARIES NAMES event_core libevent_core
+    HINTS
+    "${LIBEVENT2_DIR}"
+    "${LIBEVENT2_DIR}/lib"
+  )
+  
+  if (LIBEVENT2_INCLUDE_DIR AND LIBEVENT2_LIBRARIES)
+    if (NOT TARGET Libevent2::Libevent_core)
+      add_library(Libevent2::Libevent_core UNKNOWN IMPORTED)
+      set_target_properties(Libevent2::Libevent_core PROPERTIES
+        INTERFACE_INCLUDE_DIRECTORIES "${LIBEVENT2_INCLUDE_DIR}"
+        IMPORTED_LINK_INTERFACE_LANGUAGES "C"
+        IMPORTED_LOCATION "${LIBEVENT2_LIBRARIES}"
+        )
+    endif ()
+  
+    if (NOT LIBEVENT2_VERSION AND LIBEVENT2_INCLUDE_DIR AND EXISTS "${LIBEVENT2_INCLUDE_DIR}/event2/event.h")
+      file(STRINGS "${LIBEVENT2_INCLUDE_DIR}/event2/event-config.h" LIBEVENT2_H REGEX "^#define _?EVENT_+VERSION ")
+      string(REGEX REPLACE "^.*EVENT_+VERSION \"([^\"]+)\".*$" "\\1" LIBEVENT2_VERSION "${LIBEVENT2_H}")
+    endif ()
+  endif ()
 
-mark_as_advanced(LIBEVENT2_INCLUDE_DIR LIBEVENT2_LIBRARIES LIBEVENT2_LIBRARY)
+  include(FindPackageHandleStandardArgs)
+  find_package_handle_standard_args(Libevent2
+    REQUIRED_VARS LIBEVENT2_LIBRARIES LIBEVENT2_INCLUDE_DIR
+    VERSION_VAR LIBEVENT2_VERSION
+  )
+endif ()
+
+mark_as_advanced(LIBEVENT2_INCLUDE_DIR LIBEVENT2_LIBRARIES)

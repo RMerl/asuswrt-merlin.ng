@@ -150,11 +150,13 @@ static const char *default_config =
 static getdns_dict *listen_dict = NULL;
 static getdns_list *listen_list = NULL;
 
-static getdns_return_t parse_config(getdns_context *context, const char *config_str, int yaml_config)
+static getdns_return_t parse_config(getdns_context *context,
+		const char *config_str, int yaml_config, long *log_level)
 {
         getdns_dict *config_dict;
         getdns_list *list;
         getdns_return_t r;
+	uint32_t config_log_level;
 
         if (yaml_config) {
                 r = getdns_yaml2dict(config_str, &config_dict);
@@ -202,6 +204,21 @@ static getdns_return_t parse_config(getdns_context *context, const char *config_
                 (void) getdns_dict_remove_name(
                     config_dict, "listen_addresses");
         }
+	if (r)
+		; /* exit with current error */
+
+	else if (!(r = getdns_dict_get_int(
+	    config_dict, "log_level", &config_log_level))) {
+		if (config_log_level > GETDNS_LOG_DEBUG)
+			stubby_error("log level '%d' from config file is invalid or out of range (0-7)", (int)config_log_level);
+		else
+			*log_level = config_log_level;
+		(void) getdns_dict_remove_name(
+		    config_dict, "log_level");
+
+	} else if (r == GETDNS_RETURN_NO_SUCH_DICT_NAME)
+		r = GETDNS_RETURN_GOOD;
+
         if (!r && (r = getdns_context_config(context, config_dict))) {
                 stubby_error("Could not configure context with "
                     "config dict: %s", stubby_getdns_strerror(r));
@@ -210,7 +227,9 @@ static getdns_return_t parse_config(getdns_context *context, const char *config_
         return r;
 }
 
-static getdns_return_t parse_config_file(getdns_context *context, const char *fn)
+extern long log_level;
+static getdns_return_t parse_config_file(getdns_context *context,
+		const char *fn, long *config_log_level)
 {
         FILE *fh;
         char *config_file = NULL;
@@ -250,17 +269,20 @@ static getdns_return_t parse_config_file(getdns_context *context, const char *fn
         fclose(fh);
         r = parse_config(context, config_file,
                          strstr(fn, ".yml") != NULL ||
-                         strstr(fn, ".yaml") != NULL);
+                         strstr(fn, ".yaml") != NULL,
+			 config_log_level);
         free(config_file);
-        if (r == GETDNS_RETURN_GOOD)
+        if (r == GETDNS_RETURN_GOOD
+	&&  (          log_level <= GETDNS_LOG_DEBUG
+	    || *config_log_level >= GETDNS_LOG_DEBUG))
                 stubby_log(NULL,GETDNS_LOG_UPSTREAM_STATS, GETDNS_LOG_DEBUG,
                            "Read config from file %s", fn);
         return r;
 }
 
-void init_config(getdns_context *context)
+void init_config(getdns_context *context, long *log_level)
 {
-        (void) parse_config(context, default_config, 0);
+        (void) parse_config(context, default_config, 0, log_level);
 }
 
 void delete_config(void)
@@ -272,7 +294,8 @@ void delete_config(void)
         listen_list = NULL;
 }
 
-int read_config(getdns_context *context, const char *custom_config_fn, int *validate_dnssec)
+int read_config(getdns_context *context, const char *custom_config_fn,
+		int *validate_dnssec, long *log_level)
 {
         char *conf_fn;
         int found_conf = 0;
@@ -281,9 +304,9 @@ int read_config(getdns_context *context, const char *custom_config_fn, int *vali
         getdns_list *api_info_keys = NULL;
         int dnssec_validation = 0;
 
-        (void) parse_config(context, default_config, 0);
+        (void) parse_config(context, default_config, 0, log_level);
         if (custom_config_fn) {
-                if ((r = parse_config_file(context, custom_config_fn))) {
+                if ((r = parse_config_file(context, custom_config_fn, log_level))) {
                         stubby_error("Could not parse config file "
                                      "\"%s\": %s", custom_config_fn,
                                      stubby_getdns_strerror(r));
@@ -295,7 +318,7 @@ int read_config(getdns_context *context, const char *custom_config_fn, int *vali
                         stubby_error("Error getting user config file");
                         return 0;
                 }
-                r = parse_config_file(context, conf_fn);
+                r = parse_config_file(context, conf_fn, log_level);
                 if (r == GETDNS_RETURN_GOOD)
                         found_conf = 1;
                 else if (r != GETDNS_RETURN_IO_ERROR)
@@ -309,7 +332,7 @@ int read_config(getdns_context *context, const char *custom_config_fn, int *vali
                                 stubby_error("Error getting system config file");
                                 return 0;
                         }
-                        r = parse_config_file(context, conf_fn);
+                        r = parse_config_file(context, conf_fn, log_level);
                         if (r == GETDNS_RETURN_GOOD)
                                 found_conf = 1;
                         else if (r != GETDNS_RETURN_IO_ERROR)

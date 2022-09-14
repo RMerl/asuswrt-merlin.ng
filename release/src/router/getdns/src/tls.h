@@ -409,39 +409,6 @@ getdns_return_t _getdns_tls_get_api_information(getdns_dict* dict);
 unsigned char* _getdns_tls_hmac_hash(struct mem_funcs* mfs, int algorithm, const void* key, size_t key_size, const void* data, size_t data_size, size_t* output_size);
 
 /**
- * Return a new HMAC handle.
- *
- * @param mfs		pointer to getdns memory functions.
- * @param algorithm	hash algorithm to use (<code>GETDNS_HMAC_?</code>).
- * @param key		the key.
- * @param key_size	the key size.
- * @return HMAC handle or NULL on error.
- */
-_getdns_tls_hmac* _getdns_tls_hmac_new(struct mem_funcs* mfs, int algorithm, const void* key, size_t key_size);
-
-/**
- * Add data to a HMAC.
- *
- * @param h		the HMAC.
- * @param data		the data to add.
- * @param data_size	the size of data to add.
- * @return GETDNS_RETURN_GOOD if added.
- * @return GETDNS_RETURN_INVALID_PARAMETER if h is null or has no HMAC.
- * @return GETDNS_RETURN_GENERIC_ERROR on error.
- */
-getdns_return_t _getdns_tls_hmac_add(_getdns_tls_hmac* h, const void* data, size_t data_size);
-
-/**
- * Return the HMAC digest and free the handle.
- *
- * @param mfs		pointer to getdns memory functions.
- * @param h		the HMAC.
- * @param output_size	the output size will be written here if not NULL.
- * @return output	malloc'd buffer with output, NULL on error.
- */
-unsigned char* _getdns_tls_hmac_end(struct mem_funcs* mfs, _getdns_tls_hmac* h, size_t* output_size);
-
-/**
  * Calculate a SHA1 hash.
  *
  * @param data		the data to hash.

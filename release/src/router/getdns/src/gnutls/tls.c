@@ -393,6 +393,12 @@ _getdns_tls_connection* _getdns_tls_connection_new(struct mem_funcs* mfs, _getdn
 	if (dane_state_init(&res->dane_state, DANE_F_IGNORE_DNSSEC) != DANE_E_SUCCESS)
 		goto failed;
 
+	gnutls_datum_t proto;
+	proto.data = (unsigned char *)"dot";
+	proto.size = 3;
+	if (gnutls_alpn_set_protocols(res->tls, &proto, 1, 0) != GNUTLS_E_SUCCESS)
+		goto failed;
+
 	gnutls_transport_set_int(res->tls, fd);
 	return res;
 
@@ -866,55 +872,6 @@ unsigned char* _getdns_tls_hmac_hash(struct mem_funcs* mfs, int algorithm, const
 
 	if (output_size)
 		*output_size = md_len;
-	return res;
-}
-
-_getdns_tls_hmac* _getdns_tls_hmac_new(struct mem_funcs* mfs, int algorithm, const void* key, size_t key_size)
-{
-	gnutls_mac_algorithm_t alg;
-	_getdns_tls_hmac* res;
-
-	if (get_gnu_mac_algorithm(algorithm, &alg) != GETDNS_RETURN_GOOD)
-		return NULL;
-
-	if (!(res = GETDNS_MALLOC(*mfs, struct _getdns_tls_hmac)))
-		return NULL;
-
-	if (gnutls_hmac_init(&res->tls, alg, key, key_size) < 0) {
-		GETDNS_FREE(*mfs, res);
-		return NULL;
-	}
-	res->md_len = gnutls_hmac_get_len(alg);
-	return res;
-}
-
-getdns_return_t _getdns_tls_hmac_add(_getdns_tls_hmac* h, const void* data, size_t data_size)
-{
-	if (!h || !h->tls || !data)
-		return GETDNS_RETURN_INVALID_PARAMETER;
-
-	if (gnutls_hmac(h->tls, data, data_size) < 0)
-		return GETDNS_RETURN_GENERIC_ERROR;
-	else
-		return GETDNS_RETURN_GOOD;
-}
-
-unsigned char* _getdns_tls_hmac_end(struct mem_funcs* mfs, _getdns_tls_hmac* h, size_t* output_size)
-{
-	unsigned char* res;
-
-	if (!h || !h->tls)
-		return NULL;
-
-	res = (unsigned char*) GETDNS_XMALLOC(*mfs, unsigned char, h->md_len);
-	if (!res)
-		return NULL;
-
-	gnutls_hmac_deinit(h->tls, res);
-	if (output_size)
-		*output_size = h->md_len;
-
-	GETDNS_FREE(*mfs, h);
 	return res;
 }
 

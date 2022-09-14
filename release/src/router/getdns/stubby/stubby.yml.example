@@ -26,9 +26,12 @@
 # in future: https://github.com/getdnsapi/stubby/issues/79
 
 ################################### LOGGING ####################################
-# Logging is currently configured at runtime using command line arguments. See
-# > stubby -h
-# for details.
+# Define at which level messages will be logged to stdout. Can be one of:
+# GETDNS_LOG_EMERG, GETDNS_LOG_ALERT, GETDNS_LOG_CRIT, GETDNS_LOG_ERR,
+# GETDNS_LOG_WARNING, GETDNS_LOG_NOTICE, GETDNS_LOG_INFO or GETDNS_LOG_DEBUG
+# where GETDNS_LOG_EMERG is the least and GETDNS_LOG_DEBUG the most verbose.
+log_level: GETDNS_LOG_NOTICE
+
 
 ########################## BASIC & PRIVACY SETTINGS ############################
 # Specifies whether to run as a recursive or stub resolver
@@ -61,6 +64,11 @@ tls_query_padding_blocksize: 128
 
 # EDNS0 option for ECS client privacy as described in Section 7.1.2 of
 # https://tools.ietf.org/html/rfc7871
+# If you really want to use a resolver that sends ECS (such as Google or one of
+# the Quad9 ones) in order to gain better geo-location of content, then be aware
+# that this will expose a portion of your IP address in queries to some 
+# authoritative servers. You will need to configure that server and also set this
+# parameter to 0 to fully enable ECS.
 edns_client_subnet_private : 1
 
 ############################# CONNECTION SETTINGS ##############################
@@ -83,44 +91,48 @@ idle_timeout: 10000
 
 # Control the maximum number of connection failures that will be permitted
 # before Stubby backs-off from using an individual upstream (default 2)
-# tls_connection_retries: 5
+# tls_connection_retries: 2
 
 # Control the maximum time in seconds Stubby will back-off from using an
 # individual upstream after failures under normal circumstances (default 3600)
-# tls_backoff_time: 300
+# tls_backoff_time: 3600
 
 # Specify the location for CA certificates used for verification purposes are
 # located - this overrides the OS specific default location.
 # tls_ca_path: "/etc/ssl/certs/"
 
-# Limit the total number of outstanding queries permitted
-# limit_outstanding_queries: 100
+# Limit the total number of outstanding queries permitted on one TCP/TLS
+# connection (default is 0, no limit)
+# limit_outstanding_queries: 0
 
 # Specify the timeout in milliseconds on getting a response to an individual
 # request (default 5000)
-# timeout: 1000
+# timeout: 5000
 
 # Set the acceptable ciphers for DNS over TLS.  With OpenSSL 1.1.1 this list is
 # for TLS1.2 and older only. Ciphers for TLS1.3 should be set with the
-# tls_ciphersuites option. This option can also be given per upstream.
+# tls_ciphersuites option. This option can also be given per upstream. 
+# (default as shown)
 # tls_cipher_list: "EECDH+AESGCM:EECDH+CHACHA20"
 
 # Set the acceptable cipher for DNS over TLS1.3. OpenSSL >= 1.1.1 is required
 # for this option. This option can also be given per upstream.
+# (default as shown)
 # tls_ciphersuites: "TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256:TLS_AES_128_GCM_SHA256"
 
 # Set the minimum acceptable TLS version. Works with OpenSSL >= 1.1.1 only.
-# This option can also be given per upstream.
+# This option can also be given per upstream. (default is 1.2)
 # tls_min_version: GETDNS_TLS1_2
 
 # Set the maximum acceptable TLS version. Works with OpenSSL >= 1.1.1 only.
-# This option can also be given per upstream.
+# This option can also be given per upstream. (default is 1.3)
 # tls_max_version: GETDNS_TLS1_3
 
 ################################ LISTEN ADDRESS ################################
 # Set the listen addresses for the stubby DAEMON. This specifies localhost IPv4
 # and IPv6. It will listen on port 53 by default. Use <IP_address>@<port> to
-# specify a different port
+# specify a different port. (Note that due to restrictions within the config
+# file parser, IPv6 address cannot start with `::` )
 listen_addresses:
   - 127.0.0.1
   - 0::1
@@ -132,6 +144,7 @@ listen_addresses:
 # stubby is not able to fetch and validate the DNSSEC trust-anchor itself,
 # (using Zero configuration DNSSEC) stubby will not return answers at all.
 # If DNSSEC validation is required, a trust-anchor is also required.
+# (default is no DNSSEC validation)
 # dnssec: GETDNS_EXTENSION_TRUE
 
 # Stubby tries to fetch and validate the DNSSEC root trust anchor on the fly
@@ -165,10 +178,14 @@ listen_addresses:
 # Specify the list of upstream recursive name servers to send queries to
 # In Strict mode upstreams need either a tls_auth_name or a tls_pubkey_pinset
 # so the upstream can be authenticated.
-# The list below includes all the available test servers but only has the subset
-# operated the stubby/getdns developers enabled. You can enable any of the
-# others you want to use by uncommenting the relevant section. See:
-# https://dnsprivacy.org/wiki/display/DP/DNS+Privacy+Test+Servers
+# The list below includes various public resolvers and some of the available test
+# servers but only has the getdns developer operated upstream enabled by default. 
+###############################################################################
+####  Users are recommended to use more than one upstream for robustness  #####
+###############################################################################
+# You can enable other resolvers by uncommenting the relevant 
+# section below or adding their information directly. Also see this list for
+# other test servers: https://dnsprivacy.org/wiki/display/DP/DNS+Privacy+Test+Servers
 # If you don't have IPv6 then comment then out those upstreams.
 # In Opportunistic mode they only require an IP address in address_data.
 # The information for an upstream can include the following:
@@ -190,20 +207,9 @@ listen_addresses:
 # 3) Remove all the upstream_recursive_servers listed below
 
 upstream_recursive_servers:
-############################ DEFAULT UPSTREAMS  ################################
+############################ DEFAULT UPSTREAM  ################################
 ####### IPv4 addresses ######
 ### Test servers ###
-# The Surfnet/Sinodun servers
-  - address_data: 145.100.185.15
-    tls_auth_name: "dnsovertls.sinodun.com"
-    tls_pubkey_pinset:
-      - digest: "sha256"
-        value: 62lKu9HsDVbyiPenApnc4sfmSYTHOVfFgL3pyB+cBL4=
-  - address_data: 145.100.185.16
-    tls_auth_name: "dnsovertls1.sinodun.com"
-    tls_pubkey_pinset:
-      - digest: "sha256"
-        value: cE2ecALeE5B+urJhDrJlVFmf38cJLAvqekONvjvpqUA=
 # The getdnsapi.net server
   - address_data: 185.49.141.37
     tls_auth_name: "getdnsapi.net"
@@ -212,17 +218,6 @@ upstream_recursive_servers:
         value: foxZRnIh9gZpWnl+zEiKa0EJ2rdCGroMWm02gaxSc9Q=
 ####### IPv6 addresses ######
 ### Test servers ###
-# The Surfnet/Sinodun servers
-  - address_data: 2001:610:1:40ba:145:100:185:15
-    tls_auth_name: "dnsovertls.sinodun.com"
-    tls_pubkey_pinset:
-      - digest: "sha256"
-        value: 62lKu9HsDVbyiPenApnc4sfmSYTHOVfFgL3pyB+cBL4=
-  - address_data: 2001:610:1:40ba:145:100:185:16
-    tls_auth_name: "dnsovertls1.sinodun.com"
-    tls_pubkey_pinset:
-      - digest: "sha256"
-        value: cE2ecALeE5B+urJhDrJlVFmf38cJLAvqekONvjvpqUA=
 # The getdnsapi.net server
   - address_data: 2a04:b900:0:100::38
     tls_auth_name: "getdnsapi.net"
@@ -237,11 +232,21 @@ upstream_recursive_servers:
 ## Quad 9 'secure' service - Filters, does DNSSEC, doesn't send ECS
 #  - address_data: 9.9.9.9
 #    tls_auth_name: "dns.quad9.net"
+#  - address_data: 149.112.112.112
+#    tls_auth_name: "dns.quad9.net"
+## Quad 9 'secure w/ECS' service - Filters, does DNSSEC, DOES send ECS
+## See the entry for `edns_client_subnet_private` for more details on ECS
+#  - address_data: 9.9.9.11
+#    tls_auth_name: "dns11.quad9.net"
+#  - address_data: 149.112.112.11
+#    tls_auth_name: "dns11.quad9.net"
 ## Quad 9 'insecure' service - No filtering, no DNSSEC, doesn't send ECS
 #  - address_data: 9.9.9.10
-#    tls_auth_name: "dns.quad9.net"
+#    tls_auth_name: "dns10.quad9.net"
+#  - address_data: 149.112.112.10
+#    tls_auth_name: "dns10.quad9.net"
 ## Cloudflare 1.1.1.1 and 1.0.0.1
-## (NOTE: recommend reducing idle_timeout to 9000 if using Coudflare)
+## (NOTE: recommend reducing idle_timeout to 9000 if using Cloudflare)
 #  - address_data: 1.1.1.1
 #    tls_auth_name: "cloudflare-dns.com"
 #  - address_data: 1.0.0.1
@@ -250,82 +255,30 @@ upstream_recursive_servers:
 #  - address_data: 91.239.100.100
 #    tls_auth_name: "anycast.censurfridns.dk"
 #    tls_pubkey_pinset:
+#######  pin for "deic-ore.anycast.censurfridns.dk RSA"
 #      - digest: "sha256"
 #        value: 2JjZgBZkfjSjs117vX+AnyKeYzJNM38zwsaxHwStWsg=
-#        comment: "deic-ore.anycast.censurfridns.dk RSA"
+#######  pin for "deic-ore.anycast.censurfridns.dk ECDSA"
 #      - digest: "sha256"
 #        value: UXs8xWXai9ZXBAjDKYDiYl/jbIYtyV/bY2w3F1FFTDs=
-#        comment: "deic-ore.anycast.censurfridns.dk ECDSA"
+#######  pin for "deic-lgb.anycast.censurfridns.dk RSA"
 #      - digest: "sha256"
 #        value: oDxJrI/lG1Jhl1J7LvapMlYwlHMphZUODvCDBm0nof8=
-#        comment: "deic-lgb.anycast.censurfridns.dk RSA"
+#######  pin for "deic-lgb.anycast.censurfridns.dk ECDSA"
 #      - digest: "sha256"
 #        value: iYkCUwXdH7sT8qh26zt+r5dbTySL43wgJtLCTHaSH9M=
-#        comment: "deic-lgb.anycast.censurfridns.dk ECDSA"
+#######  pin for "kracon.anycast.censurfridns.dk RSA"
 #      - digest: "sha256"
 #        value: Clii3HzZr48onFoog7I0ma5QmMPSpOBpCykXqgA0Wn0=
-#        comment: "kracon.anycast.censurfridns.dk RSA"
+#######  pin for "kracon.anycast.censurfridns.dk ECDSA"
 #      - digest: "sha256"
 #        value: 6eW98h0+xxuaGQkgNalEU5e/hbgKyUoydpPMY6xcKyY=
-#        comment: "kracon.anycast.censurfridns.dk ECDSA"
+#######  pin for "rgnet-iad.anycast.censurfridns.dk RSA"
 #      - digest: "sha256"
 #        value: sp2Low3+oTsQljNzs3gkYgLRYo7o91t3XGka+pwX//4=
-#        comment: "rgnet-iad.anycast.censurfridns.dk RSA"
+#######  pin for "rgnet-iad.anycast.censurfridns.dk ECDSA"
 #      - digest: "sha256"
 #        value: /NPc7sIUzKLAQbsvRRhK6Ul3jip6Gi49bxutfrzpsQM=
-#        comment: "rgnet-iad.anycast.censurfridns.dk ECDSA"
-#  - address_data: 2001:67c:28a4::0
-#    tls_auth_name: "anycast.censurfridns.dk"
-#    tls_pubkey_pinset:
-#      - digest: "sha256"
-#        value: 2JjZgBZkfjSjs117vX+AnyKeYzJNM38zwsaxHwStWsg=
-#        comment: "deic-ore.anycast.censurfridns.dk RSA"
-#      - digest: "sha256"
-#        value: UXs8xWXai9ZXBAjDKYDiYl/jbIYtyV/bY2w3F1FFTDs=
-#        comment: "deic-ore.anycast.censurfridns.dk ECDSA"
-#      - digest: "sha256"
-#        value: oDxJrI/lG1Jhl1J7LvapMlYwlHMphZUODvCDBm0nof8=
-#        comment: "deic-lgb.anycast.censurfridns.dk RSA"
-#      - digest: "sha256"
-#        value: iYkCUwXdH7sT8qh26zt+r5dbTySL43wgJtLCTHaSH9M=
-#        comment: "deic-lgb.anycast.censurfridns.dk ECDSA"
-#      - digest: "sha256"
-#        value: Clii3HzZr48onFoog7I0ma5QmMPSpOBpCykXqgA0Wn0=
-#        comment: "kracon.anycast.censurfridns.dk RSA"
-#      - digest: "sha256"
-#        value: 6eW98h0+xxuaGQkgNalEU5e/hbgKyUoydpPMY6xcKyY=
-#        comment: "kracon.anycast.censurfridns.dk ECDSA"
-#      - digest: "sha256"
-#        value: sp2Low3+oTsQljNzs3gkYgLRYo7o91t3XGka+pwX//4=
-#        comment: "rgnet-iad.anycast.censurfridns.dk RSA"
-#      - digest: "sha256"
-#        value: /NPc7sIUzKLAQbsvRRhK6Ul3jip6Gi49bxutfrzpsQM=
-#        comment: "rgnet-iad.anycast.censurfridns.dk ECDSA"
-#  - address_data: 89.233.43.71
-#    tls_auth_name: "unicast.censurfridns.dk"
-#    tls_pubkey_pinset:
-#      - digest: "sha256"
-#        value: wikE3jYAA6jQmXYTr/rbHeEPmC78dQwZbQp6WdrseEs=
-#        comment: "unicast.censurfridns.dk RSA"
-#      - digest: "sha256"
-#        value: INSZEZpDoWKiavosV2/xVT8O83vk/RRwS+LTiL+IpHs=
-#        comment: "unicast.censurfridns.dk ECDSA"
-#  - address_data: 2a01:3a0:53:53::0
-#    tls_auth_name: "unicast.censurfridns.dk"
-#    tls_pubkey_pinset:
-#      - digest: "sha256"
-#        value: wikE3jYAA6jQmXYTr/rbHeEPmC78dQwZbQp6WdrseEs=
-#        comment: "unicast.censurfridns.dk RSA"
-#      - digest: "sha256"
-#        value: INSZEZpDoWKiavosV2/xVT8O83vk/RRwS+LTiL+IpHs=
-#        comment: "unicast.censurfridns.dk ECDSA"
-#
-## Fondation RESTENA (NREN for Luxembourg)
-#  - address_data: 158.64.1.29
-#    tls_auth_name: "kaitain.restena.lu"
-#    tls_pubkey_pinset:
-#      - digest: "sha256"
-#        value: 7ftvIkA+UeN/ktVkovd/7rPZ6mbkhVI7/8HnFJIiLa4=
 ## Google
 #  - address_data: 8.8.8.8
 #    tls_auth_name: "dns.google"
@@ -341,44 +294,33 @@ upstream_recursive_servers:
 #    tls_auth_name: "dns-family.adguard.com"
 #  - address_data: 176.103.130.134
 #    tls_auth_name: "dns-family.adguard.com"
-## Comcast public Beta
+## Comcast
 #  - address_data: 96.113.151.145
 #    tls_auth_name: "dot.xfinity.com"
-### Test servers ###
-## A Surfnet/Sinodun server supporting TLS 1.2 and 1.3
-#  - address_data: 145.100.185.18
-#    tls_auth_name: "dnsovertls3.sinodun.com"
+### A few unicast test servers ###
+## The Uncensored DNS servers
+#  - address_data: 89.233.43.71
+#    tls_auth_name: "unicast.censurfridns.dk"
 #    tls_pubkey_pinset:
+#######  pin for "unicast.censurfridns.dk RSA"
 #      - digest: "sha256"
-#        value: 5SpFz7JEPzF71hditH1v2dBhSErPUMcLPJx1uk2svT8=
-## A Surfnet/Sinodun server using Knot resolver. Warning - has issue when used
-## for DNSSEC
-#  - address_data: 145.100.185.17
-#    tls_auth_name: "dnsovertls2.sinodun.com"
-#    tls_pubkey_pinset:
+#        value: wikE3jYAA6jQmXYTr/rbHeEPmC78dQwZbQp6WdrseEs=
+#######  pin for  "unicast.censurfridns.dk ECDSA"
 #      - digest: "sha256"
-#        value: NAXBESvpjZMnPWQcrxa2KFIkHV/pDEIjRkA3hLWogSg=
-## dns.cmrg.net server using Knot resolver. Warning - has issue when used for
-## DNSSEC.
-#  - address_data: 199.58.81.218
-#    tls_auth_name: "dns.cmrg.net"
-#    tls_pubkey_pinset:
-#      - digest: "sha256"
-#        value: 3IOHSS48KOc/zlkKGtI46a9TY9PPKDVGhE3W2ZS4JZo=
-#      - digest: "sha256"
-#        value: 5zFN3smRPuHIlM/8L+hANt99LW26T97RFHqHv90awjo=
-## Lorraine Data Network  (self-signed cert).
-#  - address_data: 80.67.188.188
-#    tls_pubkey_pinset:
-#      - digest: "sha256"
-#        value: WaG0kHUS5N/ny0labz85HZg+v+f0b/UQ73IZjFep0nM=
+#        value: INSZEZpDoWKiavosV2/xVT8O83vk/RRwS+LTiL+IpHs=
 ## dns.neutopia.org
 #  - address_data: 89.234.186.112
 #    tls_auth_name: "dns.neutopia.org"
 #    tls_pubkey_pinset:
 #      - digest: "sha256"
 #        value: wTeXHM8aczvhRSi0cv2qOXkXInoDU+2C+M8MpRyT3OI=
-## NIC Chile (self-signed cert)
+## Fondation RESTENA (NREN for Luxembourg)
+#  - address_data: 158.64.1.29
+#    tls_auth_name: "kaitain.restena.lu"
+#    tls_pubkey_pinset:
+#      - digest: "sha256"
+#        value: 7ftvIkA+UeN/ktVkovd/7rPZ6mbkhVI7/8HnFJIiLa4=
+## NIC Chile
 #  - address_data: 200.1.123.46
 #    tls_pubkey_pinset:
 #      - digest: "sha256"
@@ -387,21 +329,59 @@ upstream_recursive_servers:
 #  - address_data: 146.255.56.98
 #    tls_auth_name: "dot1.applied-privacy.net"
 
+
 ####### IPv6 addresses #######
 ### Anycast services ###
 ## Quad 9 'secure' service - Filters, does DNSSEC, doesn't send ECS
 #  - address_data: 2620:fe::fe
 #    tls_auth_name: "dns.quad9.net"
-## Quad 9 'insecure' service - No filtering, does DNSSEC, may send ECS (it is
-## unclear if it honours the edns_client_subnet_private request from stubby)
-#  - address_data: 2620:fe::10
+#  - address_data: 2620:fe::9
 #    tls_auth_name: "dns.quad9.net"
+## Quad 9 'secure w/ECS' service - Filters, does DNSSEC, DOES send ECS
+## See the entry for `edns_client_subnet_private` for more details on ECS
+#  - address_data: 2620:fe::11
+#    tls_auth_name: "dns11.quad9.net"
+#  - address_data: 2620:fe::fe:11
+#    tls_auth_name: "dns11.quad9.net"
+## Quad 9 'insecure' service - No filtering, does DNSSEC, doesn't send ECS 
+#  - address_data: 2620:fe::10
+#    tls_auth_name: "dns10.quad9.net"
+#  - address_data: 2620:fe::fe:10
+#    tls_auth_name: "dns10.quad9.net"
 ## Cloudflare servers
-## (NOTE: recommend reducing idle_timeout to 9000 if using Coudflare)
+## (NOTE: recommend reducing idle_timeout to 9000 if using Cloudflare)
 #  - address_data: 2606:4700:4700::1111
 #    tls_auth_name: "cloudflare-dns.com"
 #  - address_data: 2606:4700:4700::1001
 #    tls_auth_name: "cloudflare-dns.com"
+## The Uncensored DNS servers
+#  - address_data: 2001:67c:28a4::0
+#    tls_auth_name: "anycast.censurfridns.dk"
+#    tls_pubkey_pinset:
+#######  pin for "deic-ore.anycast.censurfridns.dk RSA"
+#      - digest: "sha256"
+#        value: 2JjZgBZkfjSjs117vX+AnyKeYzJNM38zwsaxHwStWsg=
+#######  pin for "deic-ore.anycast.censurfridns.dk ECDSA"
+#      - digest: "sha256"
+#        value: UXs8xWXai9ZXBAjDKYDiYl/jbIYtyV/bY2w3F1FFTDs=
+#######  pin for "deic-lgb.anycast.censurfridns.dk RSA"
+#      - digest: "sha256"
+#        value: oDxJrI/lG1Jhl1J7LvapMlYwlHMphZUODvCDBm0nof8=
+#######  pin for "deic-lgb.anycast.censurfridns.dk ECDSA"
+#      - digest: "sha256"
+#        value: iYkCUwXdH7sT8qh26zt+r5dbTySL43wgJtLCTHaSH9M=
+#######  pin for "kracon.anycast.censurfridns.dk RSA"
+#      - digest: "sha256"
+#        value: Clii3HzZr48onFoog7I0ma5QmMPSpOBpCykXqgA0Wn0=
+#######  pin for "kracon.anycast.censurfridns.dk ECDSA"
+#      - digest: "sha256"
+#        value: 6eW98h0+xxuaGQkgNalEU5e/hbgKyUoydpPMY6xcKyY=
+#######  pin for "rgnet-iad.anycast.censurfridns.dk RSA"
+#      - digest: "sha256"
+#        value: sp2Low3+oTsQljNzs3gkYgLRYo7o91t3XGka+pwX//4=
+#######  pin for "rgnet-iad.anycast.censurfridns.dk ECDSA"
+#      - digest: "sha256"
+#        value: /NPc7sIUzKLAQbsvRRhK6Ul3jip6Gi49bxutfrzpsQM=
 ## Google
 #  - address_data: 2001:4860:4860::8888
 #    tls_auth_name: "dns.google"
@@ -417,62 +397,33 @@ upstream_recursive_servers:
 #    tls_auth_name: "dns-family.adguard.com"
 #  - address_data: 2a00:5a60::bad2:0ff
 #    tls_auth_name: "dns-family.adguard.com"
-## Comcast public Beta
+## Comcast
 #  - address_data: 2001:558:fe21:6b:96:113:151:145
 #    tls_auth_name: "dot.xfinity.com"
-### Test servers ###
+### A few unicast test servers ###
 ## The Uncensored DNS server
 #  - address_data: 2a01:3a0:53:53::0
 #    tls_auth_name: "unicast.censurfridns.dk"
 #    tls_pubkey_pinset:
+#######  pin for  "unicast.censurfridns.dk RSA"
 #      - digest: "sha256"
 #        value: wikE3jYAA6jQmXYTr/rbHeEPmC78dQwZbQp6WdrseEs=
+#######  pin for "unicast.censurfridns.dk ECDSA"
+#      - digest: "sha256"
+#        value: INSZEZpDoWKiavosV2/xVT8O83vk/RRwS+LTiL+IpHs=
 ## Fondation RESTENA (NREN for Luxembourg)
 #  - address_data: 2001:a18:1::29
 #    tls_auth_name: "kaitain.restena.lu"
 #    tls_pubkey_pinset:
 #      - digest: "sha256"
 #        value: 7ftvIkA+UeN/ktVkovd/7rPZ6mbkhVI7/8HnFJIiLa4=
-## A Surfnet/Sinodun server supporting TLS 1.2 and 1.3
-#  - address_data: 2001:610:1:40ba:145:100:185:18
-#    tls_auth_name: "dnsovertls3.sinodun.com"
-#    tls_pubkey_pinset:
-#      - digest: "sha256"
-#        value: 5SpFz7JEPzF71hditH1v2dBhSErPUMcLPJx1uk2svT8=
-## A Surfnet/Sinodun server using Knot resolver. Warning - has issue when used
-## for DNSSEC
-#  - address_data: 2001:610:1:40ba:145:100:185:17
-#    tls_auth_name: "dnsovertls2.sinodun.com"
-#    tls_pubkey_pinset:
-#      - digest: "sha256"
-#        value: NAXBESvpjZMnPWQcrxa2KFIkHV/pDEIjRkA3hLWogSg=
-## dns.cmrg.net server using Knot resolver. Warning - has issue when used for
-## DNSSEC.
-#  - address_data: 2001:470:1c:76d::53
-#    tls_auth_name: "dns.cmrg.net"
-#    tls_pubkey_pinset:
-#      - digest: "sha256"
-#        value: 3IOHSS48KOc/zlkKGtI46a9TY9PPKDVGhE3W2ZS4JZo=
-#      - digest: "sha256"
-#        value: 5zFN3smRPuHIlM/8L+hANt99LW26T97RFHqHv90awjo=
-## Go6Lab
-#  - address_data: 2001:67c:27e4::35
-#    tls_auth_name: "privacydns.go6lab.si"
-#    tls_pubkey_pinset:
-#      - digest: "sha256"
-#        value: g5lqtwHia/plKqWU/Fe2Woh4+7MO3d0JYqYJpj/iYAw=
-## Lorraine Data Network  (self-signed cert).
-#  - address_data: 2001:913::8
-#    tls_pubkey_pinset:
-#      - digest: "sha256"
-#        value: WaG0kHUS5N/ny0labz85HZg+v+f0b/UQ73IZjFep0nM=
 ## dns.neutopia.org
 #  - address_data: 2a00:5884:8209::2
 #    tls_auth_name: "dns.neutopia.org"
 #    tls_pubkey_pinset:
 #      - digest: "sha256"
 #        value: wTeXHM8aczvhRSi0cv2qOXkXInoDU+2C+M8MpRyT3OI=
-## NIC Chile (self-signed cert)
+## NIC Chile
 #  - address_data: 2001:1398:1:0:200:1:123:46
 #    tls_pubkey_pinset:
 #      - digest: "sha256"
@@ -483,34 +434,20 @@ upstream_recursive_servers:
 
 ####### Servers that listen on port 443 (IPv4 and IPv6) #######
 ### Test servers ###
-## Surfnet/Sinodun servers
-#  - address_data: 145.100.185.15
+## The getdnsapi.net server
+#  - address_data: 185.49.141.37
 #    tls_port: 443
-#    tls_auth_name: "dnsovertls.sinodun.com"
+#    tls_auth_name: "getdnsapi.net"
 #    tls_pubkey_pinset:
 #      - digest: "sha256"
-#        value: 62lKu9HsDVbyiPenApnc4sfmSYTHOVfFgL3pyB+cBL4=
-#  - address_data: 145.100.185.16
+#        value: foxZRnIh9gZpWnl+zEiKa0EJ2rdCGroMWm02gaxSc9Q=
+## The getdnsapi.net server (IPv6 address)
+#  - address_data: 2a04:b900:0:100::38
 #    tls_port: 443
-#    tls_auth_name: "dnsovertls1.sinodun.com"
+#    tls_auth_name: "getdnsapi.net"
 #    tls_pubkey_pinset:
 #      - digest: "sha256"
-#        value: cE2ecALeE5B+urJhDrJlVFmf38cJLAvqekONvjvpqUA=
-## dns.cmrg.net server using Knot resolver
-#  - address_data: 199.58.81.218
-#    tls_port: 443
-#    tls_auth_name: "dns.cmrg.net"
-#    tls_pubkey_pinset:
-#      - digest: "sha256"
-#        value: 3IOHSS48KOc/zlkKGtI46a9TY9PPKDVGhE3W2ZS4JZo=
-#      - digest: "sha256"
-#        value: 5zFN3smRPuHIlM/8L+hANt99LW26T97RFHqHv90awjo=
-## Lorraine Data Network  (self-signed cert)
-#  - address_data: 80.67.188.188
-#    tls_port: 443
-#    tls_pubkey_pinset:
-#      - digest: "sha256"
-#        value: WaG0kHUS5N/ny0labz85HZg+v+f0b/UQ73IZjFep0nM=
+#        value: foxZRnIh9gZpWnl+zEiKa0EJ2rdCGroMWm02gaxSc9Q=
 ## dns.neutopia.org
 #  - address_data: 89.234.186.112
 #    tls_port: 443
@@ -518,34 +455,6 @@ upstream_recursive_servers:
 #    tls_pubkey_pinset:
 #      - digest: "sha256"
 #        value: wTeXHM8aczvhRSi0cv2qOXkXInoDU+2C+M8MpRyT3OI=
-## The Surfnet/Sinodun servers
-#  - address_data: 2001:610:1:40ba:145:100:185:15
-#    tls_port: 443
-#    tls_auth_name: "dnsovertls.sinodun.com"
-#    tls_pubkey_pinset:
-#      - digest: "sha256"
-#        value: 62lKu9HsDVbyiPenApnc4sfmSYTHOVfFgL3pyB+cBL4=
-#  - address_data: 2001:610:1:40ba:145:100:185:16
-#    tls_port: 443
-#    tls_auth_name: "dnsovertls1.sinodun.com"
-#    tls_pubkey_pinset:
-#      - digest: "sha256"
-#        value: cE2ecALeE5B+urJhDrJlVFmf38cJLAvqekONvjvpqUA=
-## dns.cmrg.net server using Knot resolver
-#  - address_data: 2001:470:1c:76d::53
-#    tls_port: 443
-#    tls_auth_name: "dns.cmrg.net"
-#    tls_pubkey_pinset:
-#      - digest: "sha256"
-#        value: 3IOHSS48KOc/zlkKGtI46a9TY9PPKDVGhE3W2ZS4JZo=
-#      - digest: "sha256"
-#        value: 5zFN3smRPuHIlM/8L+hANt99LW26T97RFHqHv90awjo=
-## Lorraine Data Network (self-signed cert)
-#  - address_data: 2001:913::8
-#    tls_port: 443
-#    tls_pubkey_pinset:
-#      - digest: "sha256"
-#        value: WaG0kHUS5N/ny0labz85HZg+v+f0b/UQ73IZjFep0nM=
 ## dns.neutopia.org
 #  - address_data: 2a00:5884:8209::2
 #    tls_port: 443
@@ -553,6 +462,7 @@ upstream_recursive_servers:
 #    tls_pubkey_pinset:
 #      - digest: "sha256"
 #        value: wTeXHM8aczvhRSi0cv2qOXkXInoDU+2C+M8MpRyT3OI=
+### A few unicast test servers ###
 ## Foundation for Applied Privacy 
 #  - address_data: 146.255.56.98
 #    tls_port: 443

@@ -1,3 +1,31 @@
+* 2022-08-19: version 0.4.2
+  * Fix Issue #320: Stubby doesn't start without "log_level"
+    entry. Thanks Johnny S. Lee
+
+* 2022-08-19: Version 0.4.1
+  * Several updates to the servers in the config file:
+     * sinodun.dnsovertls*.com servers are removed and will be
+       decommissioned in the near future. This leaves only the
+       getdnsapi.net server as the default.
+       A recommendation is made that users choose additional servers
+       from the list available.
+     * Additional Quad9 servers added (thanks pataquets).
+     * LDN servers removed as the service is now stopped. 
+     * Tidy up of remaining server data.
+     * Change `comment` lines on Uncensored server data to more clearly
+       be comments (not valid YAML)
+     * Fix and improve descriptions of default values
+     * getdnsapi.net DoT servers liston on port 443 now too
+  * Fixes for parsing of quoted key values for `tls-ca-file`,
+    `tls-curves-list` and `resolvconf`
+  * Add Dockerfile into `contrib` - thanks to pataquets.
+  * Strengthen version checking for LibIDN2 during the cmake step so
+    LibIDN2 version 2.3.3 can be properly found (thanks jpbion).
+  * Updated systemd/stubby.service file. Thanks Bruno Pagani
+  * log level configurable in config file with log_level setting
+    Command line setting (with -v or -l) overrules the config file
+    setting
+
 * 2021-06-04: Version 0.4.0
   * We announce the intention to remove the dnsovertls*.sinodun.com 
     servers from the default resolver list in the next release,

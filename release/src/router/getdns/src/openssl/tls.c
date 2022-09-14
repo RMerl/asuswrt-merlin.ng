@@ -320,6 +320,10 @@ void _getdns_tls_init()
 #endif
 }
 
+#define DOT_PROTO_ALPN_ID     "dot"
+#define DOT_PROTO_ALPN	   "\x3" DOT_PROTO_ALPN_ID
+#define DOT_PROTO_ALPN_LEN (sizeof(DOT_PROTO_ALPN) - 1)
+
 _getdns_tls_context* _getdns_tls_context_new(struct mem_funcs* mfs, const getdns_log_config* log)
 {
 	_getdns_tls_context* res;
@@ -348,6 +352,8 @@ _getdns_tls_context* _getdns_tls_context_new(struct mem_funcs* mfs, const getdns
 		GETDNS_FREE(*mfs, res);
 		return NULL;
 	}
+	SSL_CTX_set_alpn_protos(res->ssl, (const uint8_t *)DOT_PROTO_ALPN,
+				DOT_PROTO_ALPN_LEN);
 	return res;
 }
 
@@ -1185,70 +1191,6 @@ unsigned char* _getdns_tls_hmac_hash(struct mem_funcs* mfs, int algorithm, const
 		return NULL;
 
 	(void) HMAC(digester, key, key_size, data, data_size, res, &md_len);
-
-	if (output_size)
-		*output_size = md_len;
-	return res;
-}
-
-_getdns_tls_hmac* _getdns_tls_hmac_new(struct mem_funcs* mfs, int algorithm, const void* key, size_t key_size)
-{
-	const EVP_MD *digester = get_digester(algorithm);
-	_getdns_tls_hmac* res;
-
-	if (!digester)
-		return NULL;
-
-	if (!(res = GETDNS_MALLOC(*mfs, struct _getdns_tls_hmac)))
-		return NULL;
-
-#ifdef HAVE_HMAC_CTX_NEW
-	res->ctx = HMAC_CTX_new();
-	if (!res->ctx) {
-		GETDNS_FREE(*mfs, res);
-		return NULL;
-	}
-#else
-	res->ctx = &res->ctx_space;
-	HMAC_CTX_init(res->ctx);
-#endif
-	if (!HMAC_Init_ex(res->ctx, key, key_size, digester, NULL)) {
-#ifdef HAVE_HMAC_CTX_NEW
-		HMAC_CTX_free(res->ctx);
-#endif
-		GETDNS_FREE(*mfs, res);
-		return NULL;
-	}
-
-	return res;
-}
-
-getdns_return_t _getdns_tls_hmac_add(_getdns_tls_hmac* h, const void* data, size_t data_size)
-{
-	if (!h || !h->ctx || !data)
-		return GETDNS_RETURN_INVALID_PARAMETER;
-
-	if (!HMAC_Update(h->ctx, data, data_size))
-		return GETDNS_RETURN_GENERIC_ERROR;
-	else
-		return GETDNS_RETURN_GOOD;
-}
-
-unsigned char* _getdns_tls_hmac_end(struct mem_funcs* mfs, _getdns_tls_hmac* h, size_t* output_size)
-{
-	unsigned char* res;
-	unsigned int md_len;
-
-	res = (unsigned char*) GETDNS_XMALLOC(*mfs, unsigned char, GETDNS_TLS_MAX_DIGEST_LENGTH);
-	if (!res)
-		return NULL;
-
-	(void) HMAC_Final(h->ctx, res, &md_len);
-
-#ifdef HAVE_HMAC_CTX_NEW
-	HMAC_CTX_free(h->ctx);
-#endif
-	GETDNS_FREE(*mfs, h);
 
 	if (output_size)
 		*output_size = md_len;

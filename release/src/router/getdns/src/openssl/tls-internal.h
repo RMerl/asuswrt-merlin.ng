@@ -81,12 +81,4 @@ typedef struct _getdns_tls_x509
 	X509* ssl;
 } _getdns_tls_x509;
 
-typedef struct _getdns_tls_hmac
-{
-	HMAC_CTX *ctx;
-#ifndef HAVE_HMAC_CTX_NEW
-	HMAC_CTX ctx_space;
-#endif
-} _getdns_tls_hmac;
-
 #endif /* _GETDNS_TLS_INTERNAL_H */

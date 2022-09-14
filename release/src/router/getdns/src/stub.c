@@ -717,6 +717,8 @@ static void
 stub_timeout_cb(void *userarg)
 {
 	getdns_network_req *netreq = (getdns_network_req *)userarg;
+        getdns_upstream    *upstream = netreq? netreq->upstream: NULL;
+        getdns_upstreams   *upstreams = upstream? upstream->upstreams: NULL;
 	DEBUG_STUB("%s %-35s: MSG:  %p\n",
 	           STUB_DEBUG_CLEANUP, __FUNC__, (void*)netreq);
 	stub_cleanup(netreq);
@@ -731,7 +733,9 @@ stub_timeout_cb(void *userarg)
 			    "%-40s : Upstream   : UDP - Resps=%6d, Timeouts  =%6d (logged every 100 responses)\n",
 			             netreq->upstream->addr_str,
 			             (int)netreq->upstream->udp_responses, (int)netreq->upstream->udp_timeouts);
-		stub_next_upstream(netreq);
+		 /* Only choose next stream if the timeout is on current UDP stream */
+		if (upstreams && (upstream == &upstreams->upstreams[upstreams->current_udp]))
+		   stub_next_upstream(netreq);
 	} else {
 		netreq->upstream->responses_timeouts++;
 	}

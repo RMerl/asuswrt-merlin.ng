@@ -514,29 +514,13 @@ static int
 setup_key_digest(int algo, EVP_PKEY** evp_key, const EVP_MD** digest_type, 
 	unsigned char* key, size_t keylen)
 {
-#if defined(USE_DSA) && defined(USE_SHA1)
-	DSA* dsa;
-#endif
-	RSA* rsa;
-
 	switch(algo) {
 #if defined(USE_DSA) && defined(USE_SHA1)
 		case LDNS_DSA:
 		case LDNS_DSA_NSEC3:
-			*evp_key = EVP_PKEY_new();
+			*evp_key = sldns_key_dsa2pkey_raw(key, keylen);
 			if(!*evp_key) {
-				log_err("verify: malloc failure in crypto");
-				return 0;
-			}
-			dsa = sldns_key_buf2dsa_raw(key, keylen);
-			if(!dsa) {
-				verbose(VERB_QUERY, "verify: "
-					"sldns_key_buf2dsa_raw failed");
-				return 0;
-			}
-			if(EVP_PKEY_assign_DSA(*evp_key, dsa) == 0) {
-				verbose(VERB_QUERY, "verify: "
-					"EVP_PKEY_assign_DSA failed");
+				verbose(VERB_QUERY, "verify: sldns_key_dsa2pkey failed");
 				return 0;
 			}
 #ifdef HAVE_EVP_DSS1
@@ -559,20 +543,9 @@ setup_key_digest(int algo, EVP_PKEY** evp_key, const EVP_MD** digest_type,
 #if defined(HAVE_EVP_SHA512) && defined(USE_SHA2)
 		case LDNS_RSASHA512:
 #endif
-			*evp_key = EVP_PKEY_new();
+			*evp_key = sldns_key_rsa2pkey_raw(key, keylen);
 			if(!*evp_key) {
-				log_err("verify: malloc failure in crypto");
-				return 0;
-			}
-			rsa = sldns_key_buf2rsa_raw(key, keylen);
-			if(!rsa) {
-				verbose(VERB_QUERY, "verify: "
-					"sldns_key_buf2rsa_raw SHA failed");
-				return 0;
-			}
-			if(EVP_PKEY_assign_RSA(*evp_key, rsa) == 0) {
-				verbose(VERB_QUERY, "verify: "
-					"EVP_PKEY_assign_RSA SHA failed");
+				verbose(VERB_QUERY, "verify: sldns_key_rsa2pkey SHA failed");
 				return 0;
 			}
 
@@ -596,20 +569,9 @@ setup_key_digest(int algo, EVP_PKEY** evp_key, const EVP_MD** digest_type,
 #endif /* defined(USE_SHA1) || (defined(HAVE_EVP_SHA256) && defined(USE_SHA2)) || (defined(HAVE_EVP_SHA512) && defined(USE_SHA2)) */
 
 		case LDNS_RSAMD5:
-			*evp_key = EVP_PKEY_new();
+			*evp_key = sldns_key_rsa2pkey_raw(key, keylen);
 			if(!*evp_key) {
-				log_err("verify: malloc failure in crypto");
-				return 0;
-			}
-			rsa = sldns_key_buf2rsa_raw(key, keylen);
-			if(!rsa) {
-				verbose(VERB_QUERY, "verify: "
-					"sldns_key_buf2rsa_raw MD5 failed");
-				return 0;
-			}
-			if(EVP_PKEY_assign_RSA(*evp_key, rsa) == 0) {
-				verbose(VERB_QUERY, "verify: "
-					"EVP_PKEY_assign_RSA MD5 failed");
+				verbose(VERB_QUERY, "verify: sldns_key_rsa2pkey MD5 failed");
 				return 0;
 			}
 			*digest_type = EVP_md5();

@@ -1599,7 +1599,7 @@ getdns_context_set_follow_redirects(getdns_context *context,
  *                  contains at least two names: address_type (whose value is
  *                  a bindata; it is currently either "IPv4" or "IPv6") and
  *                  address_data (whose value is a bindata).
- *                  This implementation also accepts a list of addressxi
+ *                  This implementation also accepts a list of address
  *                  bindatas. Or a list of rr_dicts for address records (i.e.
  *                  the additional section of a NS query for ".", or a with
  *                  getdns_fp2rr_list() converted root.hints file).

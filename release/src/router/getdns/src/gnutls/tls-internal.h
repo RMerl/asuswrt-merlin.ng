@@ -94,10 +94,4 @@ typedef struct _getdns_tls_x509
 	gnutls_datum_t tls;
 } _getdns_tls_x509;
 
-typedef struct _getdns_tls_hmac
-{
-	gnutls_hmac_hd_t tls;
-	unsigned int md_len;
-} _getdns_tls_hmac;
-
 #endif /* _GETDNS_TLS_INTERNAL_H */

@@ -44,6 +44,8 @@ static void default_stubby_verror(getdns_loglevel_type level, const char *fmt, v
         (void) fputc('\n', stderr);
 }
 
+long log_level = GETDNS_LOG_DEBUG + 1;
+
 static void default_stubby_vlog(void *userarg, uint64_t system,
                                 getdns_loglevel_type level,
                                 const char *fmt, va_list ap)
@@ -56,10 +58,12 @@ static void default_stubby_vlog(void *userarg, uint64_t system,
         time_t tsec;
 
         _ftime_s(&timeb);
+        if (level > log_level) return;
         tsec = (time_t)timeb.time;
         tv.tv_usec = timeb.millitm * 1000;
         gmtime_s(&tm, &tsec);
 #else
+        if (level > log_level) return;
 	if (use_syslog)
 		(void) vsyslog(level, fmt, ap);
         gettimeofday(&tv, NULL);

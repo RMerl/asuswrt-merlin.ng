@@ -151,6 +151,30 @@ static gldns_lookup_table gldns_wireparse_errors_data[] = {
 	{ GLDNS_WIREPARSE_ERR_SYNTAX_INTEGER_OVERFLOW, "Syntax error, integer overflow" },
 	{ GLDNS_WIREPARSE_ERR_INCLUDE, "$INCLUDE directive was seen in the zone" },
 	{ GLDNS_WIREPARSE_ERR_PARENTHESIS, "Parse error, parenthesis mismatch" },
+	{ GLDNS_WIREPARSE_ERR_SVCB_UNKNOWN_KEY, "Unknown SvcParamKey"},
+	{ GLDNS_WIREPARSE_ERR_SVCB_MISSING_PARAM, "SvcParam is missing a SvcParamValue"},
+	{ GLDNS_WIREPARSE_ERR_SVCB_DUPLICATE_KEYS, "Duplicate SVCB key found"},
+	{ GLDNS_WIREPARSE_ERR_SVCB_MANDATORY_TOO_MANY_KEYS, "Too many keys in mandatory" },
+	{ GLDNS_WIREPARSE_ERR_SVCB_TOO_MANY_PARAMS,
+		"Too many SvcParams. Unbound only allows 63 entries" },
+	{ GLDNS_WIREPARSE_ERR_SVCB_MANDATORY_MISSING_PARAM,
+		"Mandatory SvcParamKey is missing"},
+	{ GLDNS_WIREPARSE_ERR_SVCB_MANDATORY_DUPLICATE_KEY,
+		"Keys in SvcParam mandatory MUST be unique" },
+	{ GLDNS_WIREPARSE_ERR_SVCB_MANDATORY_IN_MANDATORY, 
+		"mandatory MUST not be included as mandatory parameter" },
+	{ GLDNS_WIREPARSE_ERR_SVCB_PORT_VALUE_SYNTAX,
+		"Could not parse port SvcParamValue" },
+	{ GLDNS_WIREPARSE_ERR_SVCB_IPV4_TOO_MANY_ADDRESSES,
+		"Too many IPv4 addresses in ipv4hint" },
+	{ GLDNS_WIREPARSE_ERR_SVCB_IPV6_TOO_MANY_ADDRESSES,
+		"Too many IPv6 addresses in ipv6hint" },
+	{ GLDNS_WIREPARSE_ERR_SVCB_ALPN_KEY_TOO_LARGE,
+		"Alpn strings need to be smaller than 255 chars"},
+	{ GLDNS_WIREPARSE_ERR_SVCB_NO_DEFAULT_ALPN_VALUE,
+		"No-default-alpn should not have a value" },
+	{ GLDNS_WIREPARSE_ERR_SVCPARAM_BROKEN_RDATA,
+		"General SVCParam error" },
 	{ 0, NULL }
 };
 gldns_lookup_table* gldns_wireparse_errors = gldns_wireparse_errors_data;
@@ -172,6 +196,7 @@ static gldns_lookup_table gldns_edns_options_data[] = {
 	{ 8, "edns-client-subnet" },
 	{ 11, "edns-tcp-keepalive"},
 	{ 12, "Padding" },
+	{ 15, "EDE"},
 	{ 0, NULL}
 };
 gldns_lookup_table* gldns_edns_options = gldns_edns_options_data;
@@ -197,6 +222,12 @@ static gldns_lookup_table gldns_tsig_errors_data[] = {
 	{ 0, NULL }
 };
 gldns_lookup_table* gldns_tsig_errors = gldns_tsig_errors_data;
+
+/* draft-ietf-dnsop-svcb-https-06: 6. Initial SvcParamKeys */
+const char *svcparamkey_strs[] = {
+	"mandatory", "alpn", "no-default-alpn", "port",
+	"ipv4hint", "ech", "ipv6hint"
+};
 
 char* gldns_wire2str_pkt(uint8_t* data, size_t len)
 {
@@ -789,6 +820,7 @@ int gldns_wire2str_dname_scan(uint8_t** d, size_t* dlen, char** s, size_t* slen,
 	unsigned i, counter=0;
 	unsigned maxcompr = 1000; /* loop detection, max compr ptrs */
 	int in_buf = 1;
+	size_t dname_len = 0;
 	if(comprloop) {
 		if(*comprloop != 0)
 			maxcompr = 30; /* for like ipv6 reverse name, per label */
@@ -844,6 +876,16 @@ int gldns_wire2str_dname_scan(uint8_t** d, size_t* dlen, char** s, size_t* slen,
 			labellen = (uint8_t)*dlen;
 		else if(!in_buf && pos+(size_t)labellen > pkt+pktlen)
 			labellen = (uint8_t)(pkt + pktlen - pos);
+		dname_len += ((size_t)labellen)+1;
+		if(dname_len > GLDNS_MAX_DOMAINLEN) {
+			/* dname_len counts the uncompressed length we have
+			 * seen so far, and the domain name has become too
+			 * long, prevent the loop from printing overly long
+			 * content. */
+			w += gldns_str_print(s, slen,
+				"ErrorDomainNameTooLong");
+			return w;
+		}
 		for(i=0; i<(unsigned)labellen; i++) {
 			w += dname_char_print(s, slen, *pos++);
 		}
@@ -942,6 +984,253 @@ int gldns_wire2str_ttl_scan(uint8_t** d, size_t* dlen, char** s, size_t* slen)
 	return gldns_str_print(s, slen, "%u", (unsigned)ttl);
 }
 
+static int
+gldns_print_svcparamkey(char** s, size_t* slen, uint16_t svcparamkey)
+{
+	if (svcparamkey < SVCPARAMKEY_COUNT) {
+		return gldns_str_print(s, slen, "%s", svcparamkey_strs[svcparamkey]);
+	}
+	else {
+		return gldns_str_print(s, slen, "key%d", (int)svcparamkey);
+	}
+}
+
+static int gldns_wire2str_svcparam_port2str(char** s,
+	size_t* slen, uint16_t data_len, uint8_t* data)
+{
+	int w = 0;
+
+	if (data_len != 2)
+		return -1; /* wireformat error, a short is 2 bytes */
+	w = gldns_str_print(s, slen, "=%d", (int)gldns_read_uint16(data));
+
+	return w;
+}
+
+static int gldns_wire2str_svcparam_ipv4hint2str(char** s,
+	size_t* slen, uint16_t data_len, uint8_t* data)
+{
+	char ip_str[INET_ADDRSTRLEN + 1];
+
+	int w = 0;
+
+	assert(data_len > 0);
+
+	if ((data_len % GLDNS_IP4ADDRLEN) == 0) {
+		if (inet_ntop(AF_INET, data, ip_str, sizeof(ip_str)) == NULL)
+			return -1; /* wireformat error, incorrect size or inet family */
+
+		w += gldns_str_print(s, slen, "=%s", ip_str);
+		data += GLDNS_IP4ADDRLEN;
+
+		while ((data_len -= GLDNS_IP4ADDRLEN) > 0) {
+			if (inet_ntop(AF_INET, data, ip_str, sizeof(ip_str)) == NULL)
+				return -1; /* wireformat error, incorrect size or inet family */
+
+			w += gldns_str_print(s, slen, ",%s", ip_str);
+			data += GLDNS_IP4ADDRLEN;
+		}
+	} else
+		return -1;
+
+	return w;
+}
+
+static int gldns_wire2str_svcparam_ipv6hint2str(char** s,
+	size_t* slen, uint16_t data_len, uint8_t* data)
+{
+	char ip_str[INET6_ADDRSTRLEN + 1];
+
+	int w = 0;
+
+	assert(data_len > 0);
+
+	if ((data_len % GLDNS_IP6ADDRLEN) == 0) {
+		if (inet_ntop(AF_INET6, data, ip_str, sizeof(ip_str)) == NULL)
+			return -1; /* wireformat error, incorrect size or inet family */
+
+		w += gldns_str_print(s, slen, "=%s", ip_str);
+		data += GLDNS_IP6ADDRLEN;
+
+		while ((data_len -= GLDNS_IP6ADDRLEN) > 0) {
+			if (inet_ntop(AF_INET6, data, ip_str, sizeof(ip_str)) == NULL)
+				return -1; /* wireformat error, incorrect size or inet family */
+
+			w += gldns_str_print(s, slen, ",%s", ip_str);
+			data += GLDNS_IP6ADDRLEN;
+		}
+	} else
+		return -1;
+
+	return w;
+}
+
+static int gldns_wire2str_svcparam_mandatory2str(char** s,
+	size_t* slen, uint16_t data_len, uint8_t* data)
+{
+	int w = 0;
+
+	assert(data_len > 0);
+
+	if (data_len % sizeof(uint16_t))
+		return -1; /* wireformat error, data_len must be multiple of shorts */
+	w += gldns_str_print(s, slen, "=");
+	w += gldns_print_svcparamkey(s, slen, gldns_read_uint16(data));
+	data += 2;
+
+	while ((data_len -= sizeof(uint16_t))) {
+		w += gldns_str_print(s, slen, ",");
+		w += gldns_print_svcparamkey(s, slen, gldns_read_uint16(data));
+		data += 2;
+	}
+
+	return w;
+}
+
+static int gldns_wire2str_svcparam_alpn2str(char** s,
+	size_t* slen, uint16_t data_len, uint8_t* data)
+{
+	uint8_t *dp = (void *)data;
+	int w = 0;
+
+	assert(data_len > 0); /* Guaranteed by gldns_wire2str_svcparam_scan */
+
+	w += gldns_str_print(s, slen, "=\"");
+	while (data_len) {
+		/* alpn is list of length byte (str_len) followed by a string of that size */
+		uint8_t i, str_len = *dp++;
+
+		if (str_len > --data_len)
+			return -1;
+
+		for (i = 0; i < str_len; i++) {
+			if (dp[i] == '"' || dp[i] == '\\')
+				w += gldns_str_print(s, slen, "\\\\\\%c", dp[i]);
+
+			else if (dp[i] == ',')
+				w += gldns_str_print(s, slen, "\\\\%c", dp[i]);
+
+			else if (!isprint(dp[i]))
+				w += gldns_str_print(s, slen, "\\%03u", (unsigned) dp[i]);
+
+			else
+				w += gldns_str_print(s, slen, "%c", dp[i]);
+		}
+		dp += str_len;
+		if ((data_len -= str_len))
+			w += gldns_str_print(s, slen, "%s", ",");
+	}
+	w += gldns_str_print(s, slen, "\"");
+	
+	return w;
+}
+
+static int gldns_wire2str_svcparam_ech2str(char** s,
+	size_t* slen, uint16_t data_len, uint8_t* data)
+{
+	int size;
+	int w = 0;
+
+	assert(data_len > 0); /* Guaranteed by gldns_wire2str_svcparam_scan */
+
+	w += gldns_str_print(s, slen, "=\"");
+
+	if ((size = gldns_b64_ntop(data, data_len, *s, *slen)) < 0)
+		return -1;
+
+	(*s) += size;
+	(*slen) -= size;
+
+	w += gldns_str_print(s, slen, "\"");	
+
+	return w + size;
+}
+
+int gldns_wire2str_svcparam_scan(uint8_t** d, size_t* dlen, char** s, size_t* slen)
+{
+	uint8_t ch;
+	uint16_t svcparamkey, data_len;
+	int written_chars = 0;
+	int r, i;
+
+	/* verify that we have enough data to read svcparamkey and data_len */
+	if(*dlen < 4)
+		return -1;
+
+	svcparamkey = gldns_read_uint16(*d);
+	data_len = gldns_read_uint16(*d+2);
+	*d    += 4;
+	*dlen -= 4;
+
+	/* verify that we have data_len data */
+	if (data_len > *dlen)
+		return -1; 
+
+	written_chars += gldns_print_svcparamkey(s, slen, svcparamkey);
+	if (!data_len) {
+
+	 	/* Some SvcParams MUST have values */
+	 	switch (svcparamkey) {
+	 	case SVCB_KEY_ALPN:
+	 	case SVCB_KEY_PORT:
+	 	case SVCB_KEY_IPV4HINT:
+	 	case SVCB_KEY_IPV6HINT:
+	 	case SVCB_KEY_MANDATORY:
+	 		return -1;
+	 	default:
+	 		return written_chars;
+	 	}
+	}
+
+	switch (svcparamkey) {
+	case SVCB_KEY_PORT:
+		r = gldns_wire2str_svcparam_port2str(s, slen, data_len, *d);
+		break;
+	case SVCB_KEY_IPV4HINT:
+		r = gldns_wire2str_svcparam_ipv4hint2str(s, slen, data_len, *d);
+		break;
+	case SVCB_KEY_IPV6HINT:
+		r = gldns_wire2str_svcparam_ipv6hint2str(s, slen, data_len, *d);
+		break;
+	case SVCB_KEY_MANDATORY:
+		r = gldns_wire2str_svcparam_mandatory2str(s, slen, data_len, *d);
+		break;
+	case SVCB_KEY_NO_DEFAULT_ALPN:
+		return -1;  /* wireformat error, should not have a value */
+	case SVCB_KEY_ALPN:
+		r = gldns_wire2str_svcparam_alpn2str(s, slen, data_len, *d);
+		break;
+	case SVCB_KEY_ECH:
+		r = gldns_wire2str_svcparam_ech2str(s, slen, data_len, *d);
+		break;
+	default:
+		r = gldns_str_print(s, slen, "=\"");
+
+		for (i = 0; i < data_len; i++) {
+			ch = (*d)[i];
+
+			if (ch == '"' || ch == '\\')
+				r += gldns_str_print(s, slen, "\\%c", ch);
+
+			else if (!isprint(ch))
+				r += gldns_str_print(s, slen, "\\%03u", (unsigned) ch);
+
+			else
+				r += gldns_str_print(s, slen, "%c", ch);
+
+		}
+		r += gldns_str_print(s, slen, "\"");
+		break;
+	}
+	if (r <= 0)
+		return -1; /* wireformat error */
+	
+	written_chars += r;
+	*d    += data_len;
+	*dlen -= data_len;
+	return written_chars;
+}
+
 int gldns_wire2str_rdf_scan(uint8_t** d, size_t* dlen, char** s, size_t* slen,
 	int rdftype, uint8_t* pkt, size_t pktlen, int* comprloop)
 {
@@ -1022,6 +1311,8 @@ int gldns_wire2str_rdf_scan(uint8_t** d, size_t* dlen, char** s, size_t* slen,
 	case GLDNS_RDF_TYPE_AMTRELAY:
 		return gldns_wire2str_amtrelay_scan(d, dlen, s, slen, pkt,
 			pktlen, comprloop);
+	case GLDNS_RDF_TYPE_SVCPARAM:
+		return gldns_wire2str_svcparam_scan(d, dlen, s, slen);
 	case GLDNS_RDF_TYPE_TSIGERROR:
 		return gldns_wire2str_tsigerror_scan(d, dlen, s, slen);
 	}

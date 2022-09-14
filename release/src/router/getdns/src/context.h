@@ -397,6 +397,7 @@ struct getdns_context {
 
 	int processing;
 	int destroying;
+	int to_destroy;
 
 	struct mem_funcs mf;
 	struct mem_funcs my_mf;

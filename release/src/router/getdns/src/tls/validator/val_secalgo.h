@@ -47,6 +47,8 @@
 #define sldns_ecdsa2pkey_raw            gldns_ecdsa2pkey_raw
 #define sldns_buffer_begin              gldns_buffer_begin
 #define sldns_buffer_limit              gldns_buffer_limit
+#define sldns_key_dsa2pkey_raw		gldns_key_dsa2pkey_raw
+#define sldns_key_rsa2pkey_raw		gldns_key_rsa2pkey_raw
 
 #include "util/val_secalgo.h"
 

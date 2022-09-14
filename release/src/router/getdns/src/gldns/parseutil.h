@@ -58,7 +58,7 @@ time_t gldns_mktime_from_utc(const struct tm *tm);
  * The function interprets time as the number of seconds since epoch
  * with respect to now using serial arithmetics (rfc1982).
  * That number of seconds is then converted to broken-out time information.
- * This is especially usefull when converting the inception and expiration
+ * This is especially useful when converting the inception and expiration
  * fields of RRSIG records.
  *
  * \param[in] time number of seconds since epoch (midnight, January 1st, 1970)
@@ -74,9 +74,11 @@ struct tm * gldns_serial_arithmetics_gmtime_r(int32_t time, time_t now, struct t
  * converts a ttl value (like 5d2h) to a long.
  * \param[in] nptr the start of the string
  * \param[out] endptr points to the last char in case of error
+ * \param[out] overflow returns if the string causes integer overflow error,
+ * 	       the number is too big, string of digits too long.
  * \return the convert duration value
  */
-uint32_t gldns_str2period(const char *nptr, const char **endptr);
+uint32_t gldns_str2period(const char *nptr, const char **endptr, int* overflow);
 
 /**
  * Returns the int value of the given (hex) digit
@@ -102,6 +104,7 @@ size_t gldns_b64_pton_calculate_size(size_t srcsize);
 int gldns_b64_pton(char const *src, uint8_t *target, size_t targsize);
 int gldns_b64url_pton(char const *src, size_t srcsize, uint8_t *target,
 	size_t targsize);
+int gldns_b64_contains_nonurl(char const *src, size_t srcsize);
 
 /**
  * calculates the size needed to store the result of b32_ntop

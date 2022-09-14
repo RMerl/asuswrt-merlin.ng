@@ -48,7 +48,7 @@ Once it is built you should take a look at `spec/example` to see how the library
 Download the sources from our [github repo](https://github.com/getdnsapi/getdns) 
 or from [getdnsapi.net](https://getdnsapi.net) and verify the download using
 the checksums (SHA1 or MD5) or using gpg to verify the signature.  Our keys are
-available from the [pgp keyservers](https://keyserver.pgp.com)
+available from the [openpgp keyserver](https://keys.openpgp.org/)
 
 * `willem@nlnetlabs.nl`, key id E5F8F8212F77A498
 

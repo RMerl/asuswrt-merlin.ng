@@ -1189,7 +1189,7 @@ _getdns_ipaddr_dict_mf(struct mem_funcs *mf, const char *ipstr)
 			tsig_name_str = "";
 		}
 	}
-	if (*ipstr == '*') {
+	if (*ipstr == '*' && *(ipstr+1) == '\0') {
 		getdns_dict_util_set_string(r, "address_type", "IPv6");
 		addr.size = 16;
 		(void) memset(buf, 0, 16);

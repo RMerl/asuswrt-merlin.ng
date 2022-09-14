@@ -1,3 +1,24 @@
+* 2022-08-19: Version 1.7.2
+  * Updated to Stubby 0.4.2 quickfix release
+
+* 2022-08-19: Version 1.7.1
+  * Always send the `dot` ALPN when using DoT
+  * Strengthen version determination for Libidn2 during cmake processing
+    (thanks jpbion).
+  * Fix for issue in UDP stream selection in case of timeouts.
+    Thanks Shikha Sharma
+  * Fix using asterisk in ipstr for any address. Thanks uzlonewolf.
+  * Issue stubby#295: rdata not correctly written for validation for
+    certain RR type. Also, set default built type to RelWithDebInfo and
+    expose CFLAGS via GETDNS_BUILD_CFLAGS define and via
+    getdns_context_get_api_information()
+  * Issue #524: Bug fixes from submodules' upstream?
+    Thanks Johnnyslee
+  * Issue #517: Allow Absolute path CMAKE_INSTALL_{INCLUDE,LIB}DIR in
+    pkg-config files. Thanks Alex Shpilkin
+  * Issue #512: Update README.md to show correct PGP key location.
+    Thanks Katze Prior.
+
 * 2021-06-04: Version 1.7.0
   * Make TLS Handshake timeout max 4/5th of timeout for the query,
     just like connection setup timeout was, so fallback transport

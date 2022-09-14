@@ -23,9 +23,26 @@ extern "C" {
 #endif
 struct gldns_struct_lookup_table;
 
+#define GLDNS_IP4ADDRLEN      (32/8)
+#define GLDNS_IP6ADDRLEN      (128/8)
+
 /** buffer to read an RR, cannot be larger than 64K because of packet size */
 #define GLDNS_RR_BUF_SIZE 65535 /* bytes */
 #define GLDNS_DEFAULT_TTL	3600
+
+/* SVCB keys currently defined in draft-ietf-dnsop-svcb-https */
+#define SVCB_KEY_MANDATORY		0
+#define SVCB_KEY_ALPN			1
+#define SVCB_KEY_NO_DEFAULT_ALPN	2
+#define SVCB_KEY_PORT			3
+#define SVCB_KEY_IPV4HINT		4
+#define SVCB_KEY_ECH			5
+#define SVCB_KEY_IPV6HINT		6
+#define SVCPARAMKEY_COUNT		7
+
+#define MAX_NUMBER_OF_SVCPARAMS	64
+
+#define SVCB_MAX_COMMA_SEPARATED_VALUES	1000
 
 /*
  * To convert class and type to string see
@@ -170,7 +187,7 @@ uint8_t* gldns_wirerr_get_rdatawl(uint8_t* rr, size_t len, size_t dname_len);
 #define GLDNS_WIREPARSE_MASK 0x0fff
 #define GLDNS_WIREPARSE_SHIFT 12
 #define GLDNS_WIREPARSE_ERROR(e) ((e)&GLDNS_WIREPARSE_MASK)
-#define GLDNS_WIREPARSE_OFFSET(e) (((e)&~GLDNS_WIREPARSE_MASK)>>GLDNS_WIREPARSE_SHIFT)
+#define GLDNS_WIREPARSE_OFFSET(e) ((((unsigned)(e))&~GLDNS_WIREPARSE_MASK)>>GLDNS_WIREPARSE_SHIFT)
 /* use lookuptable to get error string, gldns_wireparse_errors */
 #define GLDNS_WIREPARSE_ERR_OK 0
 #define GLDNS_WIREPARSE_ERR_GENERAL 342
@@ -204,6 +221,20 @@ uint8_t* gldns_wirerr_get_rdatawl(uint8_t* rr, size_t len, size_t dname_len);
 #define GLDNS_WIREPARSE_ERR_SYNTAX_INTEGER_OVERFLOW 370
 #define GLDNS_WIREPARSE_ERR_INCLUDE 371
 #define GLDNS_WIREPARSE_ERR_PARENTHESIS 372
+#define GLDNS_WIREPARSE_ERR_SVCB_UNKNOWN_KEY 373
+#define GLDNS_WIREPARSE_ERR_SVCB_MISSING_PARAM 374
+#define GLDNS_WIREPARSE_ERR_SVCB_TOO_MANY_PARAMS 375
+#define GLDNS_WIREPARSE_ERR_SVCB_DUPLICATE_KEYS 376
+#define GLDNS_WIREPARSE_ERR_SVCB_MANDATORY_TOO_MANY_KEYS 377
+#define GLDNS_WIREPARSE_ERR_SVCB_MANDATORY_MISSING_PARAM 378
+#define GLDNS_WIREPARSE_ERR_SVCB_MANDATORY_DUPLICATE_KEY 379
+#define GLDNS_WIREPARSE_ERR_SVCB_MANDATORY_IN_MANDATORY 380
+#define GLDNS_WIREPARSE_ERR_SVCB_PORT_VALUE_SYNTAX 381
+#define GLDNS_WIREPARSE_ERR_SVCB_IPV4_TOO_MANY_ADDRESSES 382
+#define GLDNS_WIREPARSE_ERR_SVCB_IPV6_TOO_MANY_ADDRESSES 383
+#define GLDNS_WIREPARSE_ERR_SVCB_ALPN_KEY_TOO_LARGE 384
+#define GLDNS_WIREPARSE_ERR_SVCB_NO_DEFAULT_ALPN_VALUE 385
+#define GLDNS_WIREPARSE_ERR_SVCPARAM_BROKEN_RDATA 386
 
 /**
  * Get reference to a constant string for the (parse) error.

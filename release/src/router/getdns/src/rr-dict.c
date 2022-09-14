@@ -1314,7 +1314,7 @@ _getdns_rr_buffer_write_cached_name(gldns_buffer *buf, getdns_bindata *name, nam
 			}
 		}
 		unsigned name_offset = gldns_buffer_position(buf);
-		if (name_offset < 0xc000) {
+		if (name_offset < 0x4000) {
 			/* Cache name */
 			entry_ptr = &name_cache->entry[count % NAME_CACHE_ENTRIES];
 			entry_ptr->name = name;

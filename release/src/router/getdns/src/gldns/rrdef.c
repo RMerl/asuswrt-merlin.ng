@@ -155,6 +155,9 @@ static const gldns_rdf_type type_csync_wireformat[] = {
 static const gldns_rdf_type type_zonemd_wireformat[] = {
 	GLDNS_RDF_TYPE_INT32, GLDNS_RDF_TYPE_INT8, GLDNS_RDF_TYPE_INT8, GLDNS_RDF_TYPE_HEX
 };
+static const gldns_rdf_type type_svcb_wireformat[] = {
+	GLDNS_RDF_TYPE_INT16, GLDNS_RDF_TYPE_DNAME
+};
 /* nsec3 is some vars, followed by same type of data of nsec */
 static const gldns_rdf_type type_nsec3_wireformat[] = {
 /*	GLDNS_RDF_TYPE_NSEC3_VARS, GLDNS_RDF_TYPE_NSEC3_NEXT_OWNER, GLDNS_RDF_TYPE_NSEC*/
@@ -388,8 +391,10 @@ static gldns_rr_descriptor rdata_field_descriptors[] = {
 	{GLDNS_RR_TYPE_CSYNC, "CSYNC", 3, 3, type_csync_wireformat, GLDNS_RDF_TYPE_NONE, GLDNS_RR_NO_COMPRESS, 0 },
 	/* 63 */
 	{GLDNS_RR_TYPE_ZONEMD, "ZONEMD", 4, 4, type_zonemd_wireformat, GLDNS_RDF_TYPE_NONE, GLDNS_RR_NO_COMPRESS, 0 },
-{(enum gldns_enum_rr_type)0, "TYPE64", 1, 1, type_0_wireformat, GLDNS_RDF_TYPE_NONE, GLDNS_RR_NO_COMPRESS, 0 },
-{(enum gldns_enum_rr_type)0, "TYPE65", 1, 1, type_0_wireformat, GLDNS_RDF_TYPE_NONE, GLDNS_RR_NO_COMPRESS, 0 },
+	/* 64 */
+	{GLDNS_RR_TYPE_SVCB, "SVCB", 2, 2, type_svcb_wireformat, GLDNS_RDF_TYPE_SVCPARAM, GLDNS_RR_NO_COMPRESS, 1 },
+	/* 65 */
+	{GLDNS_RR_TYPE_HTTPS, "HTTPS", 2, 2, type_svcb_wireformat, GLDNS_RDF_TYPE_SVCPARAM, GLDNS_RR_NO_COMPRESS, 1 },
 {(enum gldns_enum_rr_type)0, "TYPE66", 1, 1, type_0_wireformat, GLDNS_RDF_TYPE_NONE, GLDNS_RR_NO_COMPRESS, 0 },
 {(enum gldns_enum_rr_type)0, "TYPE67", 1, 1, type_0_wireformat, GLDNS_RDF_TYPE_NONE, GLDNS_RR_NO_COMPRESS, 0 },
 {(enum gldns_enum_rr_type)0, "TYPE68", 1, 1, type_0_wireformat, GLDNS_RDF_TYPE_NONE, GLDNS_RR_NO_COMPRESS, 0 },

@@ -14,12 +14,8 @@
 
 #include "config.h"
 #include "gldns/parseutil.h"
-#ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>
-#endif
-#ifdef HAVE_TIME_H
 #include <time.h>
-#endif
 #include <ctype.h>
 
 gldns_lookup_table *
@@ -213,11 +209,13 @@ gldns_hexdigit_to_int(char ch)
 }
 
 uint32_t
-gldns_str2period(const char *nptr, const char **endptr)
+gldns_str2period(const char *nptr, const char **endptr, int* overflow)
 {
 	int sign = 0;
 	uint32_t i = 0;
 	uint32_t seconds = 0;
+	const uint32_t maxint = 0xffffffff;
+	*overflow = 0;
 
 	for(*endptr = nptr; **endptr; (*endptr)++) {
 		switch (**endptr) {
@@ -240,26 +238,46 @@ gldns_str2period(const char *nptr, const char **endptr)
 				break;
 			case 's':
 			case 'S':
+				if(seconds > maxint-i) {
+					*overflow = 1;
+					return 0;
+				}
 				seconds += i;
 				i = 0;
 				break;
 			case 'm':
 			case 'M':
+				if(i > maxint/60 || seconds > maxint-(i*60)) {
+					*overflow = 1;
+					return 0;
+				}
 				seconds += i * 60;
 				i = 0;
 				break;
 			case 'h':
 			case 'H':
+				if(i > maxint/(60*60) || seconds > maxint-(i*60*60)) {
+					*overflow = 1;
+					return 0;
+				}
 				seconds += i * 60 * 60;
 				i = 0;
 				break;
 			case 'd':
 			case 'D':
+				if(i > maxint/(60*60*24) || seconds > maxint-(i*60*60*24)) {
+					*overflow = 1;
+					return 0;
+				}
 				seconds += i * 60 * 60 * 24;
 				i = 0;
 				break;
 			case 'w':
 			case 'W':
+				if(i > maxint/(60*60*24*7) || seconds > maxint-(i*60*60*24*7)) {
+					*overflow = 1;
+					return 0;
+				}
 				seconds += i * 60 * 60 * 24 * 7;
 				i = 0;
 				break;
@@ -273,14 +291,26 @@ gldns_str2period(const char *nptr, const char **endptr)
 			case '7':
 			case '8':
 			case '9':
+				if(i > maxint/10 || i*10 > maxint - (**endptr - '0')) {
+					*overflow = 1;
+					return 0;
+				}
 				i *= 10;
 				i += (**endptr - '0');
 				break;
 			default:
+				if(seconds > maxint-i) {
+					*overflow = 1;
+					return 0;
+				}
 				seconds += i;
 				/* disregard signedness */
 				return seconds;
 		}
+	}
+	if(seconds > maxint-i) {
+		*overflow = 1;
+		return 0;
 	}
 	seconds += i;
 	/* disregard signedness */
@@ -793,4 +823,19 @@ int gldns_b64url_pton(char const *src, size_t srcsize, uint8_t *target,
 		return 0;
 	}
 	return gldns_b64_pton_base(src, srcsize, target, targsize, 1);
+}
+
+int gldns_b64_contains_nonurl(char const *src, size_t srcsize)
+{
+	const char* s = src;
+	while(*s && srcsize) {
+		char d = *s++;
+		srcsize--;
+		/* the '+' and the '/' and padding '=' is not allowed in b64
+		 * url encoding */
+		if(d == '+' || d == '/' || d == '=') {
+			return 1;
+		}
+	}
+	return 0;
 }

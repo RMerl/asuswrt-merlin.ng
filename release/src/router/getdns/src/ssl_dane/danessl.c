@@ -70,7 +70,7 @@ typedef int CRYPTO_ONCE;
 #define DANESSL_F_LIBRARY_INIT		106
 #define DANESSL_F_LIST_ALLOC		107
 #define DANESSL_F_MATCH			108
-#define DANESSL_F_PUSH_EXT		109
+#define DANESSL_F_ADD_EXT		109
 #define DANESSL_F_SET_TRUST_ANCHOR	110
 #define DANESSL_F_VERIFY_CERT		111
 #define DANESSL_F_WRAP_CERT		112
@@ -102,7 +102,7 @@ static ERR_STRING_DATA dane_str_functs[] = {
     {DANESSL_F_LIBRARY_INIT,		"DANESSL_library_init"},
     {DANESSL_F_LIST_ALLOC,		"list_alloc"},
     {DANESSL_F_MATCH,			"match"},
-    {DANESSL_F_PUSH_EXT,		"push_ext"},
+    {DANESSL_F_ADD_EXT,			"add_ext"},
     {DANESSL_F_SET_TRUST_ANCHOR,	"set_trust_anchor"},
     {DANESSL_F_VERIFY_CERT,		"verify_cert"},
     {DANESSL_F_WRAP_CERT,		"wrap_cert"},
@@ -297,23 +297,20 @@ static int match(DANE_SELECTOR_LIST slist, X509 *cert, int depth)
     return matched;
 }
 
-static int push_ext(X509 *cert, X509_EXTENSION *ext)
-{
-    if (ext) {
-	if (X509_add_ext(cert, ext, -1))
-	    return 1;
-	X509_EXTENSION_free(ext);
-    }
-    DANEerr(DANESSL_F_PUSH_EXT, ERR_R_MALLOC_FAILURE);
-    return 0;
-}
-
 static int add_ext(X509 *issuer, X509 *subject, int ext_nid, char *ext_val)
 {
+    int ret = 0;
     X509V3_CTX v3ctx;
+    X509_EXTENSION *ext;
 
     X509V3_set_ctx(&v3ctx, issuer, subject, 0, 0, 0);
-    return push_ext(subject, X509V3_EXT_conf_nid(0, &v3ctx, ext_nid, ext_val));
+    if ((ext = X509V3_EXT_conf_nid(0, &v3ctx, ext_nid, ext_val)) != 0) {
+	ret = X509_add_ext(subject, ext, -1);
+	X509_EXTENSION_free(ext);
+    }
+    if (ret == 0)
+        DANEerr(DANESSL_F_ADD_EXT, ERR_R_MALLOC_FAILURE);
+    return ret;
 }
 
 static int set_serial(X509 *cert, AUTHORITY_KEYID *akid, X509 *subject)
@@ -654,14 +651,13 @@ static int set_trust_anchor(X509_STORE_CTX *ctx, DANESSL *dane, X509 *cert)
 	    if (!wrap_cert(dane, ca, depth))
 		matched = -1;
 	} else if (matched == MATCHED_PKEY) {
-	    if ((takey = X509_get_pubkey(ca)) == 0 ||
-		!wrap_issuer(dane, takey, cert, depth, WRAP_MID)) {
-		if (takey)
-		    EVP_PKEY_free(takey);
-		else
-		    DANEerr(DANESSL_F_SET_TRUST_ANCHOR, ERR_R_MALLOC_FAILURE);
+	    if ((takey = X509_get_pubkey(ca)) == 0)
+		DANEerr(DANESSL_F_SET_TRUST_ANCHOR, ERR_R_MALLOC_FAILURE);
+	    if (takey == 0 ||
+		!wrap_issuer(dane, takey, cert, depth, WRAP_MID))
 		matched = -1;
-	    }
+	    if (takey)
+		EVP_PKEY_free(takey);
 	}
 	break;
     }

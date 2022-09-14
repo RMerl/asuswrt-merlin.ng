@@ -36,10 +36,11 @@ char *system_config_file(void);
 char *system_service_config_file(void);
 #endif
 
-void init_config(getdns_context *context);
+void init_config(getdns_context *context, long *log_level);
 void delete_config(void);
 
-int read_config(getdns_context *context, const char *custom_config_fn, int *validate_dnssec);
+int read_config(getdns_context *context, const char *custom_config_fn,
+	int *validate_dnssec, long *log_level);
 
 char *config_get_api_info(getdns_context *context);
 

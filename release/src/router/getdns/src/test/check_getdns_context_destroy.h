@@ -183,6 +183,7 @@
      }
      END_TEST
 
+#if 0
      START_TEST (getdns_context_destroy_7)
      {
       /*
@@ -205,7 +206,6 @@
        RUN_EVENT_LOOP;
 
        CONTEXT_DESTROY;
-
        ck_assert_msg(flag == 1, "flag should == 1, got %d", flag);
      }
      END_TEST
@@ -229,10 +229,10 @@
          &flag, &transaction_id, destroy_callbackfn),
          GETDNS_RETURN_GOOD, "Return code from getdns_address()");
        getdns_cancel_callback(context, transaction_id);
+
        RUN_EVENT_LOOP;
 
        CONTEXT_DESTROY;
-
        ck_assert_msg(flag == 1, "flag should == 1, got %d", flag);
      }
      END_TEST
@@ -264,10 +264,10 @@
        RUN_EVENT_LOOP;
 
        CONTEXT_DESTROY;
-
        ck_assert_msg(flag == 1, "flag should == 1, got %d", flag);
      }
      END_TEST
+#endif
 
      void verify_getdns_context_destroy(struct extracted_response *ex_response)
      {
@@ -301,10 +301,11 @@
        tcase_add_test(tc_pos, getdns_context_destroy_4);
        tcase_add_test(tc_pos, getdns_context_destroy_5);
        tcase_add_test(tc_pos, getdns_context_destroy_6);
-       // raise aborts via assertion failures
+#if 0
        tcase_add_test_raise_signal(tc_pos, getdns_context_destroy_7, SIGABRT);
        tcase_add_test_raise_signal(tc_pos, getdns_context_destroy_8, SIGABRT);
        tcase_add_test_raise_signal(tc_pos, getdns_context_destroy_9, SIGABRT);
+#endif
        suite_add_tcase(s, tc_pos);
 
        return s;

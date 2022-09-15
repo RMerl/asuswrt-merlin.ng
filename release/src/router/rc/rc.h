@@ -550,7 +550,7 @@ extern int getMAC_5G(void);
 #if defined(RTCONFIG_QCA) && defined(RTCONFIG_HAS_5G_2) && defined(RTCONFIG_WIFI6E)
 #define getMAC_6G() getMAC_5G_2()
 #endif
-extern int GetPhyStatus(int verbose, phy_info_list *list);
+static int GetPhyStatus(int verbose, phy_info_list *list);
 #ifdef CONFIG_BCMWL5
 #if defined(RTCONFIG_AMAS) && defined(RTCONFIG_BHCOST_OPT)
 extern unsigned int get_uplinkports_linkrate(char *ifname);
@@ -1364,6 +1364,7 @@ extern unsigned int num_of_mssid_support(unsigned int unit);
 #ifdef RTCONFIG_BCMFA
 extern void fa_nvram_adjust();
 #endif
+extern void adjust_jffs_content(void);
 
 // format.c
 extern void adjust_merlin_config();

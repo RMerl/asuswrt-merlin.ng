@@ -211,7 +211,7 @@ void start_k3screen(void)
 	kprintf("k3screen: ok\n");
 }
 
-int GetPhyStatus(int verbose, phy_info_list *list)
+static int GetPhyStatus(int verbose, phy_info_list *list)
 {
 	int port[] = { 3, 1, 0, 2 };
 	int i, ret, lret = 0, mask, ret_code = 0;

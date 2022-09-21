@@ -1066,8 +1066,8 @@ foreach (man ${mans})
 endforeach()
 
 set(prefix ${CMAKE_INSTALL_PREFIX})
-cmake_path(APPEND libdir_for_pc_file "\${prefix}" "${CMAKE_INSTALL_LIBDIR}")
-cmake_path(APPEND includedir_for_pc_file "\${prefix}" "${CMAKE_INSTALL_INCLUDEDIR}")
+#cmake_path(APPEND libdir_for_pc_file "\${prefix}" "${CMAKE_INSTALL_LIBDIR}")
+#cmake_path(APPEND includedir_for_pc_file "\${prefix}" "${CMAKE_INSTALL_INCLUDEDIR}")
 configure_file(getdns.pc.in getdns.pc @ONLY)
 
 # Installing.

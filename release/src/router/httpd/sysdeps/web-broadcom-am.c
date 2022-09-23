@@ -764,7 +764,7 @@ sta_list:
 					ipv6listptr = ipv6list;
 					foundipv6 = 0;
 					while ((ipv6listptr < ipv6list+strlen(ipv6list)-2) && (sscanf(ipv6listptr,"%*s %17s %40s", macentry, ipentry) == 2)) {
-						if (strcasecmp(macentry, ether_etoa((void *)&auth->ea[i], ea)) == 0) {
+						if (strcasecmp(macentry, ether_etoa((void *)&auth->ea[ii], ea)) == 0) {
 							ret += websWrite(wp, "\"%s\",", ipentry);
 							foundipv6 = 1;
 							break;

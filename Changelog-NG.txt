@@ -2,6 +2,8 @@ Asuswrt-Merlin 386/NG Changelog
 ===============================
 
 V.next (xx-xxx-xxxx)
+  - UPDATED: getdns/stubby to 1.7.2/0.4.2.
+  - UPDATED: zlib to 1.2.12 + backports.
   - CHANGED: Setting an OpenVPN client to redirect all traffic while
              in "Exclusive" DNS mode will now force redirect ALL
              DNS traffic just like in VPN Director mode.
@@ -16,6 +18,7 @@ V.next (xx-xxx-xxxx)
            (386.8 regression)
   - FIXED: Guest Network clients couldn't route through VPN
            (regression in 386.4 following a GPL merge).
+  - FIXED: CVE-2022-37434 in zlib.
 
 
 386.8 (13-Aug-2022)

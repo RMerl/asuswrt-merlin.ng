@@ -1576,8 +1576,7 @@ obj-$(RTCONFIG_GETREALIP) += ministun
 CFGSYNC_PKG := openssl cfg_mnt
 obj-$(RTCONFIG_CFGSYNC) += $(CFGSYNC_PKG)
 
-#obj-$(RTCONFIG_WIREGUARD) += wireguard-tools
-obj-$(HND_ROUTER) += wireguard-tools
+obj-$(RTCONFIG_WIREGUARD) += wireguard-tools
 obj-$(RTCONFIG_WIREGUARD) += zlib
 obj-$(RTCONFIG_WIREGUARD) += libpng
 obj-$(RTCONFIG_WIREGUARD) += qrencode

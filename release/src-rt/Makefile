@@ -4013,7 +4013,7 @@ define RouterOptions
 		sed -i "/RTCONFIG_LIB_CODB/d" $(1); \
 		echo "RTCONFIG_LIB_CODB=y" >>$(1); \
 	fi;
-	if [ "$(TEMPOWIREGUARD)" = "y" ]; then \
+	if [ "$(WIREGUARD)" = "y" ]; then \
 		sed -i "/RTCONFIG_WIREGUARD/d" $(1); \
 		echo "RTCONFIG_WIREGUARD=y" >>$(1); \
 	fi;

@@ -28,6 +28,14 @@ BUILD_DIR:=$(HND_SRC)
 
 include $(BUILD_DIR)/make.common
 
+# add by Andrew
+include $(BUILD_DIR)/router/.config
+
+endif
+
+#add by Andrew
+ifeq ($(RTCONFIG_EXT_BCM53134), y)
+CFLAGS += -DRTCONFIG_EXT_BCM53134
 endif
 
 ifeq ($(findstring _$(strip $(BRCM_CHIP))_,_63138_4908_63158_),_$(strip $(BRCM_CHIP))_)

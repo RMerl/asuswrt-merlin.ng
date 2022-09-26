@@ -38,7 +38,7 @@ INSTALL = install
 
 ifeq ($(wildcard ./*.c),)
 all:
-	cp -f ./prebuild/dns_ping .
+	cp -f ./prebuild/$(BUILD_NAME)/dns_ping .
 else
 all: dns_ping
 endif

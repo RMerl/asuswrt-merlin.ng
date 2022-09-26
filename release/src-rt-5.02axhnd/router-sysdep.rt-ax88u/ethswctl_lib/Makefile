@@ -31,6 +31,9 @@ BUILD_DIR:=$(HND_SRC)
 
 include $(BUILD_DIR)/make.common
 
+# add by Andrew
+include $(BUILD_DIR)/router/.config
+
 #
 # Private apps and libs are allowed to include header files from the
 # private and public directories
@@ -49,6 +52,11 @@ ALLOWED_INCLUDE_PATHS := -I.\
 
 
 CFLAGS += -DCONFIG_BCM9$(BRCM_CHIP)
+
+# add by Andrew
+ifeq ($(RTCONFIG_EXT_BCM53134), y)
+CFLAGS += -DRTCONFIG_EXT_BCM53134
+endif
 
 ifneq ($(strip $(BUILD_BRCM_CMS)),)
 CFLAGS += -DBRCM_CMS_BUILD

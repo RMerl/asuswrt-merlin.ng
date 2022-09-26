@@ -25,7 +25,7 @@ endif
 
 ifneq ($(wildcard ./prebuild),)
 all:
-	@-cp -f ./prebuild/* .
+	@-cp -f ./prebuild/$(BUILD_NAME)/* .
 else
 all: fsmd req_fsm
 endif

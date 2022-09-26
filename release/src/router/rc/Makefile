@@ -521,9 +521,10 @@ OBJS += dsl_fb.o
 endif
 #endif
 
-ifeq ($(RTCONFIG_FRS_LIVE_UPDATE),y)
+#ifeq ($(RTCONFIG_FRS_LIVE_UPDATE),y)
+# Link it, private.o needs read_asd_enc_file() from it
 OBJS += frs_service.o
-endif
+#endif
 
 ifeq ($(RTCONFIG_ACCOUNT_BINDING),y)
 OBJS += asus_ddns.o

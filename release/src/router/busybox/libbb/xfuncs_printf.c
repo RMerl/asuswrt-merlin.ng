@@ -22,6 +22,10 @@
 
 #include "libbb.h"
 
+void FAST_FUNC bb_die_memory_exhausted(void)
+{
+	bb_simple_error_msg_and_die(bb_msg_memory_exhausted);
+}
 
 /* All the functions starting with "x" call bb_error_msg_and_die() if they
  * fail, so callers never need to check for errors.  If it returned, it

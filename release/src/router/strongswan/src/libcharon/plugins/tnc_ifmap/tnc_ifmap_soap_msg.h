@@ -15,7 +15,7 @@
 
 /**
  * @defgroup tnc_ifmap_soap_msg tnc_ifmap_soap_msg
- * @{ @ingroup tnc_ifmap 
+ * @{ @ingroup tnc_ifmap
  */
 
 #ifndef TNC_IFMAP_SOAP_MSG_H_

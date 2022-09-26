@@ -56,7 +56,7 @@ static int _update_userticket()
 	}
 
 	ASUSDDNS_DBG("Update userticket!\n");
-	snprintf(event, sizeof(event), DDNS_GENERIC_MSG, EID_DDNS_REFRESH_TOKEN);
+	snprintf(event, sizeof(event), AAE_DDNS_GENERIC_MSG, AAE_EID_DDNS_REFRESH_TOKEN);
 	
 	aae_sendIpcMsgAndWaitResp(MASTIFF_IPC_SOCKET_PATH, event, strlen(event), out, sizeof(out), 5);
 	
@@ -65,7 +65,7 @@ static int _update_userticket()
 	json_object *eidObj = NULL;
 	json_object *stsObj = NULL;
 	root = json_tokener_parse((char *)out);
-	json_object_object_get_ex(root, DDNS_PREFIX, &ddnsObj);
+	json_object_object_get_ex(root, AAE_DDNS_PREFIX, &ddnsObj);
 	json_object_object_get_ex(ddnsObj, AAE_IPC_EVENT_ID, &eidObj);
 	json_object_object_get_ex(ddnsObj, AAE_IPC_STATUS, &stsObj);
 	if (!ddnsObj || !eidObj || !stsObj)
@@ -76,7 +76,7 @@ static int _update_userticket()
 	{
 		int eid = json_object_get_int(eidObj);
 		char *status = json_object_get_string(stsObj);
-		if ((eid == EID_DDNS_REFRESH_TOKEN) && (!strcmp(status, "0")))
+		if ((eid == AAE_EID_DDNS_REFRESH_TOKEN) && (!strcmp(status, "0")))
 		{
 			ASUSDDNS_DBG("Success to aae_refresh_ticket\n");
 		}
@@ -100,17 +100,26 @@ static size_t _write_data(void *ptr, size_t size, size_t nmemb, FILE *stream)
 	return written;
 }
 
+void delete_char(char str[], char ch)
+{
+	int i, j;
+	for(i = j = 0; str[i] != '\0'; i++)
+		if(str[i] != ch)
+			str[j++] = str[i];
+
+	str[j] = '\0';
+}
+
 static int _acquire_token(const char *res_path, const int check_CA)
 {
 	CURL *curl;
 	CURLcode res;
 	char *cusid = NULL, *userticket = NULL, *auth_status = NULL;
-	char ddns_url[256];
-	json_object *obj = NULL, *cusid_obj = NULL, *userticket_obj = NULL, *devicemd5mac_obj = NULL, *sid_obj = NULL;
+	char ddns_url[256], devicemac[64];
+	json_object *obj = NULL, *cusid_obj = NULL, *userticket_obj = NULL, *devicemac_obj = NULL, *devicemd5mac_obj = NULL, *sid_obj = NULL;
 	unsigned char digest[MD5_DIGEST_BYTES]={0};
 	char md_label_mac[MD5_DIGEST_BYTES * 2 + 1]={0};
 	char *label_mac_str=NULL;
-	char *key = NULL;
 	const char *auth_string = NULL;
 	int ret, i;
 	FILE *fp_res = NULL;
@@ -175,9 +184,20 @@ static int _acquire_token(const char *res_path, const int check_CA)
 		goto Err;
 	}
 
+	snprintf(devicemac, sizeof(devicemac), "%s", nvram_safe_get("label_mac"));
+	delete_char(devicemac, ':');
+	devicemac_obj = json_object_new_string(devicemac);
+	if(devicemac_obj)
+		json_object_object_add(obj, "devicemac", devicemac_obj);
+	else
+	{
+		ASUSDDNS_DBG("Cannot add json object, devicemac!\n");
+		ret = ASUSDDNS_ERR_JSON_ERR;
+		goto Err;
+	}
+
 	label_mac_str = nvram_safe_get("label_mac");
 	hmac_md5(label_mac_str, strlen(label_mac_str), digest);
-
 	for (i = 0; i < MD5_DIGEST_BYTES; i++)
 	{
 		sprintf(&md_label_mac[i*2], "%02x", (unsigned int)digest[i]);
@@ -208,13 +228,15 @@ static int _acquire_token(const char *res_path, const int check_CA)
 	}
 
 	auth_string = json_object_to_json_string(obj);
-	//ASUSDDNS_DBG("auth_string=%s\n", auth_string);
+	ASUSDDNS_DBG("auth_string=%s\n", auth_string);
 	curl = curl_easy_init();
 
 	if(curl)
 	{
-#ifdef RTCONFIG_ASUSDDNS_ACCOUNT_BASE
-		if (nvram_get_int("oauth_auth_status") == 2) {
+#ifdef RTCONFIG_ACCOUNT_BINDING
+		if (nvram_match("oauth_auth_status", "2") && nvram_match("ddns_replace_status", "1") &&
+			((strstr(nvram_safe_get("aae_ddnsinfo"), ".asuscomm.com") && (strstr(nvram_safe_get("ddns_hostname_x"), ".asuscomm.com")))
+			|| (strstr(nvram_safe_get("aae_ddnsinfo"), ".asuscomm.cn") && (strstr(nvram_safe_get("ddns_hostname_x"), ".asuscomm.cn"))))) {
 			snprintf(ddns_url, sizeof(ddns_url), "https://%s%s",  nvram_safe_get("aae_ddnsinfo"), ASUSDDNS_REQ_TOKEN_PATH);
 		} else
 #endif

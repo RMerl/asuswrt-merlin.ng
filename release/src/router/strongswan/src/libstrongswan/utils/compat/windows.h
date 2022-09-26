@@ -135,16 +135,6 @@ int WINAPI inet_pton(int af, const char *src, void *dst);
 #endif
 
 /**
- * Provided by printf hook backend
- */
-int asprintf(char **strp, const char *fmt, ...);
-
-/**
- * Provided by printf hook backend
- */
-int vasprintf(char **strp, const char *fmt, va_list ap);
-
-/**
  * timeradd(3) from <sys/time.h>
  */
 static inline void timeradd(struct timeval *a, struct timeval *b,
@@ -221,6 +211,11 @@ static inline int setenv(const char *name, const char *value, int overwrite)
 	}
 	return 0;
 }
+
+/**
+ * stat(2) behaves like lstat(2) for symbolic links on Windows
+ */
+#define lstat stat
 
 /**
  * Lazy binding, ignored on Windows

@@ -1087,7 +1087,7 @@ void wl_ascii_str_to_hex_str(char *ascii_str, uint16 ascii_len, char *hex_str, u
 	}
 
 	while (ascii_str[i] != '\0' && i < (ascii_len - 1) && (i * 2) < (hex_len - 1)) {
-		sprintf((hex_str + i*2), "%02X", ascii_str[i]);
+		snprintf((hex_str + i*2), 3,"%02X", ascii_str[i]);
 		i = i + 1;
 	}
 	hex_str[hex_len - 1] = '\0';

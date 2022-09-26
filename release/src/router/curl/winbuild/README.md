@@ -1,3 +1,9 @@
+<!--
+Copyright (C) 2000 - 2022 Daniel Stenberg, <daniel@haxx.se>, et al.
+
+SPDX-License-Identifier: curl
+-->
+
 # Building curl with Visual C++
 
  This document describes how to compile, build and install curl and libcurl
@@ -56,7 +62,7 @@ Open a Visual Studio Command prompt:
  [type] Native of Cross platform build.  This type of command prompt may not
  exist in all Visual Studio versions.
 
- See also: [Set the Path and Environment Variables for Command-Line Builds](https://msdn.microsoft.com/en-us/library/f2ccy3wt.aspx)
+ See also: [Set the Path and Environment Variables for Command-Line Builds](https://docs.microsoft.com/en-us/cpp/build/building-on-the-command-line)
 
 ## Build in the console
 
@@ -80,9 +86,11 @@ where `<options>` is one or many of:
                                    Uncompress them into the deps folder.
  - `WITH_SSL=<dll/static>`       - Enable OpenSSL support, DLL or static
  - `WITH_NGHTTP2=<dll/static>`   - Enable HTTP/2 support, DLL or static
+ - `WITH_MSH3=<dll/static>`      - Enable (experimental) HTTP/3 support, DLL or static
  - `WITH_MBEDTLS=<dll/static>`   - Enable mbedTLS support, DLL or static
  - `WITH_CARES=<dll/static>`     - Enable c-ares support, DLL or static
  - `WITH_ZLIB=<dll/static>`      - Enable zlib support, DLL or static
+ - `WITH_SSH=<dll/static>`       - Enable libSSH support, DLL or static
  - `WITH_SSH2=<dll/static>`      - Enable libSSH2 support, DLL or static
  - `WITH_PREFIX=<dir>`           - Where to install the build
  - `ENABLE_SSPI=<yes/no>`        - Enable SSPI support, defaults to yes
@@ -102,6 +110,7 @@ where `<options>` is one or many of:
  - `CARES_PATH=<path>`           - Custom path for c-ares
  - `MBEDTLS_PATH=<path>`         - Custom path for mbedTLS
  - `NGHTTP2_PATH=<path>`         - Custom path for nghttp2
+ - `MSH3_PATH=<path>`            - Custom path for msh3
  - `SSH2_PATH=<path>`            - Custom path for libSSH2
  - `SSL_PATH=<path>`             - Custom path for OpenSSL
  - `ZLIB_PATH=<path>`            - Custom path for zlib
@@ -117,11 +126,69 @@ where `<options>` is one or many of:
  differently, you must destroy the build directory containing the
  configuration so that nmake can build it from scratch.
 
+ This option is not recommended unless you have enough development experience
+ to know how to match the runtime library for linking (that is, the CRT).
+ If RTLIBCFG=static then release builds use /MT and debug builds use /MTd.
+
+## Building your own application with libcurl (Visual Studio example)
+
+ When you build curl and libcurl, nmake will show the relative path where the
+ output directory is. The output directory is named from the options nmake used
+ when building. You may also see temp directories of the same name but with
+ suffixes -obj-curl and -obj-lib.
+
+ For example let's say you've built curl.exe and libcurl.dll from the Visual
+ Studio 2010 x64 Win64 Command Prompt:
+
+ nmake /f Makefile.vc mode=dll VC=10
+
+ The output directory will have a name similar to
+ ..\builds\libcurl-vc10-x64-release-dll-ipv6-sspi-schannel.
+
+ The output directory contains subdirectories bin, lib and include. Those are
+ the directories to set in your Visual Studio project. You can either copy the
+ output directory to your project or leave it in place. Following the example,
+ let's assume you leave it in place and your curl top source directory is
+ C:\curl-7.82.0. You would set these options for configurations using the x64
+ platform:
+
+~~~
+ - Configuration Properties > Debugging > Environment
+    PATH=C:\curl-7.82.0\builds\libcurl-vc10-x64-release-dll-ipv6-sspi-schannel\bin;%PATH%
+
+ - C/C++ > General > Additional Include Directories
+    C:\curl-7.82.0\builds\libcurl-vc10-x64-release-dll-ipv6-sspi-schannel\include;
+
+ - Linker > General > Additional Library Directories
+    C:\curl-7.82.0\builds\libcurl-vc10-x64-release-dll-ipv6-sspi-schannel\lib;
+
+ - Linker > Input > Additional Dependencies
+    libcurl.lib;
+~~~
+
+ For configurations using the x86 platform (aka Win32 platform) you would
+ need to make a separate x86 build of libcurl.
+
+ If you build libcurl static (mode=static) or debug (DEBUG=yes) then the
+ library name will vary and separate builds may be necessary for separate
+ configurations of your project within the same platform. This is discussed
+ in the next section.
+
 ## Building your own application with a static libcurl
 
  When building an application that uses the static libcurl library on Windows,
  you must define CURL_STATICLIB. Otherwise the linker will look for dynamic
  import symbols.
+
+ The static library name has an '_a' suffix in the basename and the debug
+ library name has a '_debug' suffix in the basename. For example,
+ libcurl_a_debug.lib is a static debug build of libcurl.
+
+ You may need a separate build of libcurl for each VC configuration combination
+ (eg: Debug|Win32, Debug|x64, Release|Win32, Release|x64).
+
+ You must specify any additional dependencies needed by your build of static
+ libcurl (eg: advapi32.lib;crypt32.lib;normaliz.lib;ws2_32.lib;wldap32.lib).
 
 ## Legacy Windows and SSL
 

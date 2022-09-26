@@ -1,6 +1,6 @@
 if !USE_WINDOWS
 
-sbin_PROGRAMS = sec-updater 
+sbin_PROGRAMS = sec-updater
 
 AM_CPPFLAGS = \
 	-I$(top_srcdir)/src/libstrongswan \

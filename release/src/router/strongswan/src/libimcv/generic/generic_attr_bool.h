@@ -28,7 +28,7 @@ typedef struct generic_attr_bool_t generic_attr_bool_t;
 
 /**
  * Class implementing a generic PA-TNC attribute containing a boolean status
- * value encoded as a 32 bit unsigned integer (0,1) in network order 
+ * value encoded as a 32 bit unsigned integer (0,1) in network order
  */
 struct generic_attr_bool_t {
 

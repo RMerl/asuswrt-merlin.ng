@@ -117,7 +117,7 @@ struct fetcher_t {
 	 *
 	 * The fetcher returns NOT_SUPPORTED to indicate that it is uncappable
 	 * to handle such URLs. Other return values indicate a failure, and
-	 * fetching of that URL gets cancelled.
+	 * fetching of that URL gets canceled.
 	 * If no FETCH_CALLBACK function is set as option, userdata must be
 	 * a chunk_t*. This chunk gets allocated, accumulated data using the
 	 * fetcher_default_callback() function.

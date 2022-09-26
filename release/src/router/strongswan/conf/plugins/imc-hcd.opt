@@ -6,7 +6,7 @@ libimcv.plugins.imc-hcd.subtypes
 
 libimcv.plugins.imc-hcd.subtypes.<section>
 	Defines a PWG HCD PA subtype section. Recognized subtype section names are
-    _system_, _control_, _marker_, _finisher_, _interface_ and _scanner_.
+	_system_, _control_, _marker_, _finisher_, _interface_ and _scanner_.
 
 libimcv.plugins.imc-hcd.subtypes.<section>.attributes_natural_language = en
 	Variable length natural language tag conforming to RFC 5646 specifies

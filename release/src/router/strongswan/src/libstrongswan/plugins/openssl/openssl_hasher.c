@@ -93,14 +93,19 @@ METHOD(hasher_t, destroy, void,
  */
 const EVP_MD *openssl_get_md(hash_algorithm_t hash)
 {
+	const EVP_MD *md;
 	char *name;
 
-	name = enum_to_name(hash_algorithm_short_names, hash);
+	name = strdupnull(enum_to_name(hash_algorithm_short_names, hash));
 	if (!name)
 	{
 		return NULL;
 	}
-	return EVP_get_digestbyname(name);
+	/* for SHA3, we use underscores, while OpenSSL uses dashes */
+	translate(name, "_", "-");
+	md = EVP_get_digestbyname(name);
+	free(name);
+	return md;
 }
 
 /*

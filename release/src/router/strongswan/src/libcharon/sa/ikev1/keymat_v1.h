@@ -62,7 +62,7 @@ struct keymat_v1_t {
 	 *
 	 * @param proposal		selected algorithms
 	 * @param dh			diffie hellman key, NULL if none used
-	 * @param spi_i			SPI chosen by initiatior
+	 * @param spi_i			SPI chosen by initiator
 	 * @param spi_r			SPI chosen by responder
 	 * @param nonce_i		quick mode initiator nonce
 	 * @param nonce_r		quick mode responder nonce
@@ -95,7 +95,7 @@ struct keymat_v1_t {
 	/**
 	 * Get HASH data for authentication.
 	 *
-	 * @param initiatior	TRUE to create HASH_I, FALSE for HASH_R
+	 * @param initiator		TRUE to create HASH_I, FALSE for HASH_R
 	 * @param dh			public DH value of peer to create HASH for
 	 * @param dh_other		others public DH value
 	 * @param ike_sa_id		IKE_SA identifier

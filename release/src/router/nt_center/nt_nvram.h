@@ -14,6 +14,7 @@
 
 #ifdef ASUSWRT_SDK /* ASUSWRT SDK */
  #include <shutils.h>
+ #include <bcmnvram.h>
  #include <shared.h>
 #else /* DSL_ASUSWRT SDK */
  #include <shared.h>

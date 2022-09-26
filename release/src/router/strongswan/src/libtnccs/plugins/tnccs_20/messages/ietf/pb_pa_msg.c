@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 Sansar Choinyanbuu
+ * Copyright (C) 2010 Sansar Choinyambuu
  * Copyright (C) 2010 Andreas Steffen
  *
  * HSR Hochschule fuer Technik Rapperswil

@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2009 Martin Willi
- * Copyright (C) 2015-2017 Andreas Steffen
+ * Copyright (C) 2015-2019 Andreas Steffen
  * HSR Hochschule fuer Technik Rapperswil
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -65,6 +65,7 @@ static int self()
 	int require_explicit = X509_NO_CONSTRAINT;
 	chunk_t serial = chunk_empty;
 	chunk_t encoding = chunk_empty;
+	chunk_t critical_extension_oid = chunk_empty;
 	time_t not_before, not_after, lifetime = 1095 * 24 * 60 * 60;
 	char *datenb = NULL, *datena = NULL, *dateform = NULL;
 	x509_flag_t flags = 0;
@@ -100,6 +101,10 @@ static int self()
 				else if (streq(arg, "ed25519"))
 				{
 					type = KEY_ED25519;
+				}
+				else if (streq(arg, "ed448"))
+				{
+					type = KEY_ED448;
 				}
 				else if (streq(arg, "bliss"))
 				{
@@ -289,6 +294,10 @@ static int self()
 			case 'o':
 				ocsp->insert_last(ocsp, arg);
 				continue;
+			case 'X':
+				chunk_free(&critical_extension_oid);
+				critical_extension_oid = asn1_oid_from_string(arg);
+				continue;
 			case EOF:
 				break;
 			default:
@@ -359,23 +368,10 @@ static int self()
 	{
 		serial = chunk_from_hex(chunk_create(hex, strlen(hex)), NULL);
 	}
-	else
+	else if (!allocate_serial(8, &serial))
 	{
-		rng_t *rng = lib->crypto->create_rng(lib->crypto, RNG_WEAK);
-
-		if (!rng)
-		{
-			error = "no random number generator found";
-			goto end;
-		}
-		if (!rng_allocate_bytes_not_zero(rng, 8, &serial, FALSE))
-		{
-			error = "failed to generate serial number";
-			rng->destroy(rng);
-			goto end;
-		}
-		serial.ptr[0] &= 0x7F;
-		rng->destroy(rng);
+		error = "failed to generate serial number";
+		goto end;
 	}
 	scheme = get_signature_scheme(private, digest, pss);
 	if (!scheme)
@@ -399,6 +395,7 @@ static int self()
 						BUILD_POLICY_REQUIRE_EXPLICIT, require_explicit,
 						BUILD_POLICY_INHIBIT_MAPPING, inhibit_mapping,
 						BUILD_POLICY_INHIBIT_ANY, inhibit_any,
+						BUILD_CRITICAL_EXTENSION, critical_extension_oid,
 						BUILD_END);
 	if (!cert)
 	{
@@ -430,6 +427,7 @@ end:
 	mappings->destroy_function(mappings, (void*)destroy_policy_mapping);
 	ocsp->destroy(ocsp);
 	signature_params_destroy(scheme);
+	free(critical_extension_oid.ptr);
 	free(encoding.ptr);
 	free(serial.ptr);
 
@@ -448,6 +446,7 @@ usage:
 	policies->destroy_function(policies, (void*)destroy_cert_policy);
 	mappings->destroy_function(mappings, (void*)destroy_policy_mapping);
 	ocsp->destroy(ocsp);
+	free(critical_extension_oid.ptr);
 	return command_usage(error);
 }
 
@@ -459,7 +458,7 @@ static void __attribute__ ((constructor))reg()
 	command_register((command_t) {
 		self, 's', "self",
 		"create a self signed certificate",
-		{"[--in file|--keyid hex] [--type rsa|ecdsa|ed25519|bliss|priv]",
+		{"[--in file|--keyid hex] [--type rsa|ecdsa|ed25519|ed448|bliss|priv]",
 		 " --dn distinguished-name [--san subjectAltName]+",
 		 "[--lifetime days] [--serial hex] [--ca] [--ocsp uri]+",
 		 "[--flag serverAuth|clientAuth|crlSign|ocspSigning|msSmartcardLogon]+",
@@ -468,7 +467,7 @@ static void __attribute__ ((constructor))reg()
 		 "[--policy-explicit len] [--policy-inhibit len] [--policy-any len]",
 		 "[--cert-policy oid [--cps-uri uri] [--user-notice text]]+",
 		 "[--digest md5|sha1|sha224|sha256|sha384|sha512|sha3_224|sha3_256|sha3_384|sha3_512]",
-		 "[--rsa-padding pkcs1|pss]",
+		 "[--rsa-padding pkcs1|pss] [--critical oid]",
 		 "[--outform der|pem]"},
 		{
 			{"help",			'h', 0, "show usage information"},
@@ -498,6 +497,7 @@ static void __attribute__ ((constructor))reg()
 			{"ocsp",			'o', 1, "OCSP AuthorityInfoAccess URI to include"},
 			{"digest",			'g', 1, "digest for signature creation, default: key-specific"},
 			{"rsa-padding",		'R', 1, "padding for RSA signatures, default: pkcs1"},
+			{"critical",		'X', 1, "critical extension OID to include for test purposes"},
 			{"outform",			'f', 1, "encoding of generated cert, default: der"},
 		}
 	});

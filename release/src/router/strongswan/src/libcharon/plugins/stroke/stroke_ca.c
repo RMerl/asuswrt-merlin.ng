@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2015 Tobias Brunner
+ * Copyright (C) 2008-2019 Tobias Brunner
  * Copyright (C) 2008 Martin Willi
  * HSR Hochschule fuer Technik Rapperswil
  *
@@ -90,11 +90,6 @@ struct ca_section_t {
 	linked_list_t *ocsp;
 
 	/**
-	 * Hashes of certificates issued by this CA
-	 */
-	linked_list_t *hashes;
-
-	/**
 	 * Base URI used for certificates from this CA
 	 */
 	char *certuribase;
@@ -132,7 +127,6 @@ static ca_section_t *ca_section_create(char *name, char *path)
 	ca->path = strdup(path);
 	ca->crl = linked_list_create();
 	ca->ocsp = linked_list_create();
-	ca->hashes = linked_list_create();
 	ca->certuribase = NULL;
 	return ca;
 }
@@ -144,7 +138,6 @@ static void ca_section_destroy(ca_section_t *this)
 {
 	this->crl->destroy_function(this->crl, free);
 	this->ocsp->destroy_function(this->ocsp, free);
-	this->hashes->destroy_offset(this->hashes, offsetof(identification_t, destroy));
 	this->cert->destroy(this->cert);
 	free(this->certuribase);
 	free(this->path);
@@ -182,41 +175,15 @@ CALLBACK(certs_filter, bool,
 	cert_data_t *data, enumerator_t *orig, va_list args)
 {
 	ca_cert_t *cacert;
-	public_key_t *public;
 	certificate_t **out;
 
 	VA_ARGS_VGET(args, out);
 
 	while (orig->enumerate(orig, &cacert))
 	{
-		certificate_t *cert = cacert->cert;
-
-		if (data->cert != CERT_ANY && data->cert != cert->get_type(cert))
+		if (certificate_matches(cacert->cert, data->cert, data->key, data->id))
 		{
-			continue;
-		}
-		public = cert->get_public_key(cert);
-		if (public)
-		{
-			if (data->key == KEY_ANY || data->key == public->get_type(public))
-			{
-				if (data->id && public->has_fingerprint(public,
-											data->id->get_encoding(data->id)))
-				{
-					public->destroy(public);
-					*out = cert;
-					return TRUE;
-				}
-			}
-			public->destroy(public);
-		}
-		else if (data->key != KEY_ANY)
-		{
-			continue;
-		}
-		if (!data->id || cert->has_subject(cert, data->id))
-		{
-			*out = cert;
+			*out = cacert->cert;
 			return TRUE;
 		}
 	}
@@ -303,32 +270,18 @@ static enumerator_t *create_inner_cdp(ca_section_t *section, cdp_data_t *data)
  */
 static enumerator_t *create_inner_cdp_hashandurl(ca_section_t *section, cdp_data_t *data)
 {
-	enumerator_t *enumerator = NULL, *hash_enum;
-	identification_t *current;
+	enumerator_t *enumerator = NULL;
 
 	if (!data->id || !section->certuribase)
 	{
 		return NULL;
 	}
 
-	hash_enum = section->hashes->create_enumerator(section->hashes);
-	while (hash_enum->enumerate(hash_enum, &current))
+	if (section->cert->has_subject(section->cert, data->id) != ID_MATCH_NONE)
 	{
-		if (current->matches(current, data->id))
-		{
-			char *url, *hash;
-
-			url = malloc(strlen(section->certuribase) + 40 + 1);
-			strcpy(url, section->certuribase);
-			hash = chunk_to_hex(current->get_encoding(current), NULL, FALSE).ptr;
-			strncat(url, hash, 40);
-			free(hash);
-
-			enumerator = enumerator_create_single(url, free);
-			break;
-		}
+		enumerator = enumerator_create_single(strdup(section->certuribase),
+											  free);
 	}
-	hash_enum->destroy(hash_enum);
 	return enumerator;
 }
 
@@ -616,46 +569,6 @@ static void list_uris(linked_list_t *list, char *label, FILE *out)
 	enumerator->destroy(enumerator);
 }
 
-METHOD(stroke_ca_t, check_for_hash_and_url, void,
-	private_stroke_ca_t *this, certificate_t* cert)
-{
-	ca_section_t *section;
-	enumerator_t *enumerator;
-
-	hasher_t *hasher = lib->crypto->create_hasher(lib->crypto, HASH_SHA1);
-	if (hasher == NULL)
-	{
-		DBG1(DBG_IKE, "unable to use hash-and-url: sha1 not supported");
-		return;
-	}
-
-	this->lock->write_lock(this->lock);
-	enumerator = this->sections->create_enumerator(this->sections);
-	while (enumerator->enumerate(enumerator, (void**)&section))
-	{
-		if (section->certuribase && cert->issued_by(cert, section->cert, NULL))
-		{
-			chunk_t hash, encoded;
-
-			if (cert->get_encoding(cert, CERT_ASN1_DER, &encoded))
-			{
-				if (hasher->allocate_hash(hasher, encoded, &hash))
-				{
-					section->hashes->insert_last(section->hashes,
-						identification_create_from_encoding(ID_KEY_ID, hash));
-					chunk_free(&hash);
-				}
-				chunk_free(&encoded);
-			}
-			break;
-		}
-	}
-	enumerator->destroy(enumerator);
-	this->lock->unlock(this->lock);
-
-	hasher->destroy(hasher);
-}
-
 METHOD(stroke_ca_t, list, void,
 	private_stroke_ca_t *this, stroke_msg_t *msg, FILE *out)
 {
@@ -735,7 +648,6 @@ stroke_ca_t *stroke_ca_create()
 			.get_cert_ref = _get_cert_ref,
 			.reload_certs = _reload_certs,
 			.replace_certs = _replace_certs,
-			.check_for_hash_and_url = _check_for_hash_and_url,
 			.destroy = _destroy,
 		},
 		.sections = linked_list_create(),

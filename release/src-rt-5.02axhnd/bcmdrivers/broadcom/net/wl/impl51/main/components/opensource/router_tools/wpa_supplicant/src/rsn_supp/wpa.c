@@ -2624,7 +2624,7 @@ struct wpa_sm * wpa_sm_init(struct wpa_sm_ctx *ctx)
 	sm->renew_snonce = 1;
 	sm->ctx = ctx;
 
-	sm->dot11RSNAConfigPMKLifetime = 43200;
+	sm->dot11RSNAConfigPMKLifetime = DEFAULT_DOT11RSNACONFIGPMKLIFETIME;
 	sm->dot11RSNAConfigPMKReauthThreshold = 70;
 	sm->dot11RSNAConfigSATimeout = 60;
 

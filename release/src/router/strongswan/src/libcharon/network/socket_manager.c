@@ -66,7 +66,7 @@ METHOD(socket_manager_t, receiver, status_t,
 		this->lock->unlock(this->lock);
 		return NOT_SUPPORTED;
 	}
-	/* receive is blocking and the thread can be cancelled */
+	/* receive is blocking and the thread can be canceled */
 	thread_cleanup_push((thread_cleanup_t)this->lock->unlock, this->lock);
 	status = this->socket->receive(this->socket, packet);
 	thread_cleanup_pop(TRUE);

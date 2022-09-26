@@ -49,6 +49,9 @@
 #fileflex_png{
 	background-position: 0% 63%;
 }
+#DownloadAcceleration_png{
+	background-position: 0% 50.5%;
+}
 .app_list{
 	position: relative;
 	background-image: url(images/New_ui/USBExt/app_list_active.svg);
@@ -119,7 +122,8 @@ function initial(){
 			["<#Servers_Center#>", "mediaserver.asp", "<#UPnPMediaServer_Help#>", "server_png", ""],
 			["<#Network_Printer_Server#>", "PrinterServer.asp", "<#Network_Printer_desc#>", "PrinterServer_png", ""],
 			["3G/4G", "Advanced_Modem_Content.asp", "<#HSDPAConfig_hsdpa_enable_hint1#>", "modem_png", ""],
-			["<#TimeMach#>", "Advanced_TimeMachine.asp", "<#TimeMach_enable_hint#>", "TimeMachine_png", "1.0.0.1"]];
+			["<#TimeMach#>", "Advanced_TimeMachine.asp", "<#TimeMach_enable_hint#>", "TimeMachine_png", "1.0.0.1"],
+			["Tencent Download Acceleration", "Advanced_TencentDownloadAcceleration.asp", "Tencent Download Acceleration", "DownloadAcceleration_png", "1.0.0.1"]];
 
 	if(re_mode == "1"){
 		$("#FormTitle").addClass("perNode_app_table");
@@ -158,6 +162,11 @@ function initial(){
 	if(!timemachine_support){
 		if(default_apps_array.getIndexByValue2D("<#TimeMach#>") != -1)
 			default_apps_array = default_apps_array.del(default_apps_array.getIndexByValue2D("<#TimeMach#>")[0]);
+	}
+
+	if(!tencent_game_acc_support){
+		if(default_apps_array.getIndexByValue2D("Tencent Download Acceleration") != -1)
+			default_apps_array = default_apps_array.del(default_apps_array.getIndexByValue2D("Tencent Download Acceleration")[0]);
 	}
 
 	trNum = default_apps_array.length;

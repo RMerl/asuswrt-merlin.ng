@@ -39,7 +39,7 @@ struct forecast_listener_t {
 	 * Create an enumerator over active tunnels.
 	 *
 	 * The enumerator enumerates over local or remote traffic selectors,
-	 * associated firewall marks and if decasulated packets should get
+	 * associated firewall marks and if decapsulated packets should get
 	 * reinjected into other tunnels.
 	 *
 	 * @param local		TRUE to enumerate local, FALSE to enumerate remote TS

@@ -2,7 +2,7 @@ AM_CPPFLAGS = \
 	-I$(top_srcdir)/src/libstrongswan \
 	-I$(top_srcdir)/src/libtncif \
 	-I$(top_srcdir)/src/libimcv \
-	-I$(top_srcdir)/src/libtpmtss 
+	-I$(top_srcdir)/src/libtpmtss
 
 AM_CFLAGS = \
 	$(PLUGIN_CFLAGS)

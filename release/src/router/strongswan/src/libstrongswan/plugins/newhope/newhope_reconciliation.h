@@ -35,7 +35,7 @@ struct newhope_reconciliation_t {
 	 * Generate reconciliation polynomial
 	 *
 	 * @param v			polynomial v
-	 * @param rbits		pseudo random bit array	
+	 * @param rbits		pseudo random bit array
 	 * @return			return array with reconciliation polynomial
 	 */
 	uint8_t* (*help_reconcile)(newhope_reconciliation_t *this,

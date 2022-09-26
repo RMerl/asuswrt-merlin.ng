@@ -31,7 +31,7 @@
 typedef struct imv_session_manager_t imv_session_manager_t;
 
 /**
- * IMV session manager interface 
+ * IMV session manager interface
  */
 struct imv_session_manager_t {
 

@@ -79,17 +79,6 @@ static const nvset_t nvset_list[] = {
 
 // for backup =========================================================
 
-int web_eat(int max)
-{
-	char buf[512];
-	int n;
-	while (max > 0) {
-		 if ((n = web_read(buf, (max < sizeof(buf)) ? max : sizeof(buf))) <= 0) return 0;
-		 max -= n;
-	}
-	return 1;
-}
-
 int f_write(const char *path, const void *buffer, int len, unsigned flags, unsigned cmode)
 {
 	static const char nl = '\n';

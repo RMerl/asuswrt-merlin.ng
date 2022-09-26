@@ -125,7 +125,7 @@ static const asn1Object_t defaultObjects[] = {
 	{ 1,   "explicit int1",	ASN1_CONTEXT_C_1,	ASN1_DEF			}, /* 1 */
 	{ 2,     "int1",		ASN1_INTEGER,		ASN1_BODY			}, /* 2 */
 	{ 1,   "int2",			ASN1_INTEGER,		ASN1_DEF|ASN1_BODY	}, /* 3 */
-	{ 1,   "implicit int3", ASN1_CONTEXT_S_3,	ASN1_DEF|ASN1_BODY	}, /* 4 */		
+	{ 1,   "implicit int3", ASN1_CONTEXT_S_3,	ASN1_DEF|ASN1_BODY	}, /* 4 */
 	{ 0, "exit",			ASN1_EOC,			ASN1_EXIT			}
 };
 
@@ -204,7 +204,7 @@ static const asn1Object_t optionObjects[] = {
 	{ 1,   "end opt",		ASN1_EOC,			ASN1_END			}, /* 4 */
 	{ 1,   "int2",			ASN1_INTEGER,		ASN1_OPT|ASN1_BODY	}, /* 5 */
 	{ 1,   "end opt",		ASN1_EOC,			ASN1_END			}, /* 6 */
-	{ 1,   "implicit int3", ASN1_CONTEXT_S_3,	ASN1_OPT|ASN1_BODY	}, /* 7 */		
+	{ 1,   "implicit int3", ASN1_CONTEXT_S_3,	ASN1_OPT|ASN1_BODY	}, /* 7 */
 	{ 1,   "end opt",		ASN1_EOC,			ASN1_END			}, /* 8 */
 	{ 0, "exit",			ASN1_EOC,			ASN1_EXIT			}
 };

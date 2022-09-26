@@ -287,7 +287,20 @@ METHOD(host_resolver_t, resolve, host_t*,
 			this->pool->insert_last(this->pool, thread);
 		}
 	}
-	query->done->wait(query->done, this->mutex);
+	if (this->threads)
+	{
+		query->done->wait(query->done, this->mutex);
+	}
+	else
+	{
+		DBG1(DBG_LIB, "resolving '%s' failed: no resolver threads", query->name);
+		/* this should always be the case if we end up here, but make sure */
+		if (query->refcount == 1)
+		{
+			this->queries->remove(this->queries, query);
+			this->queue->remove_last(this->queue, (void**)&query);
+		}
+	}
 	this->mutex->unlock(this->mutex);
 
 	result = query->result ? query->result->clone(query->result) : NULL;

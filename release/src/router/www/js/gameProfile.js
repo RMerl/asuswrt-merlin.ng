@@ -29,6 +29,7 @@
 {"title":"Diablo 3","port":"80,1119,6120","protocol":"BOTH","platform":"PC","class":"diablo3","id":"diablo3"},
 {"title":"Diablo 3","port":"3074,3478:3480,3658,5223,8080","protocol":"BOTH","platform":"PS3","class":"diablo3","id":"diablo3"},
 {"title":"Diablo 3","port":"88,3074","protocol":"BOTH","platform":"XBOX360","class":"diablo3","id":"diablo3"},
+{"title":"Diablo Immortal","port":"1119,3724","protocol":"BOTH","platform":"PC","class":"diabloImmortal","id":"diabloImmortal"},
 {"title":"Dota 2","port":"4380,27000:27031,27036:27037","protocol":"BOTH","platform":"PC","class":"dota2","id":"dota2"},
 {"title":"Fallout 76","port":"3000:3010","protocol":"UDP","platform":"PC","class":"fallout76","id":"fallout76"},
 {"title":"Fallout 76","port":"1935,3074,3478:3480","protocol":"BOTH","platform":"PS4","class":"fallout76","id":"fallout76"},

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2018 Tobias Brunner
+ * Copyright (C) 2008-2019 Tobias Brunner
  * Copyright (C) 2016 Andreas Steffen
  * Copyright (C) 2005-2007 Martin Willi
  * Copyright (C) 2005 Jan Hutter
@@ -40,11 +40,11 @@ typedef struct child_cfg_create_t child_cfg_create_t;
  */
 enum action_t {
 	/** No action */
-	ACTION_NONE,
-	/** Route config to establish or reestablish on demand */
-	ACTION_ROUTE,
-	/** Start or restart config immediately */
-	ACTION_RESTART,
+	ACTION_NONE = 0,
+	/** Install trap policy to (re-)establish on demand */
+	ACTION_TRAP = (1<<0),
+	/** Start or restart immediately */
+	ACTION_START = (1<<1),
 };
 
 /**
@@ -96,17 +96,14 @@ struct child_cfg_t {
 	/**
 	 * Select a proposal from a supplied list.
 	 *
-	 * Returned propsal is newly created and must be destroyed after usage.
+	 * Returned proposal is newly created and must be destroyed after usage.
 	 *
 	 * @param proposals		list from which proposals are selected
-	 * @param strip_dh		TRUE strip out diffie hellman groups
-	 * @param private		accept algorithms from a private range
-	 * @param prefer_self	whether to prefer configured or supplied proposals
+	 * @param flags			flags to consider during proposal selection
 	 * @return				selected proposal, or NULL if nothing matches
 	 */
 	proposal_t* (*select_proposal)(child_cfg_t*this, linked_list_t *proposals,
-								   bool strip_dh, bool private,
-								   bool prefer_self);
+								   proposal_selection_flag_t flags);
 
 	/**
 	 * Add a traffic selector to the config.
@@ -127,7 +124,7 @@ struct child_cfg_t {
 	 * side, one for the remote side.
 	 * If a list with traffic selectors is supplied, these are used to narrow
 	 * down the traffic selector list to the greatest common divisor.
-	 * Some traffic selector may be "dymamic", meaning they are narrowed down
+	 * Some traffic selector may be "dynamic", meaning they are narrowed down
 	 * to a specific address (host-to-host or virtual-IP setups). Use
 	 * the "host" parameter to narrow such traffic selectors to that address.
 	 * Resulted list and its traffic selectors must be destroyed after use.
@@ -227,6 +224,14 @@ struct child_cfg_t {
 	uint32_t (*get_reqid)(child_cfg_t *this);
 
 	/**
+	 * Optional interface ID to set on policies/SAs.
+	 *
+	 * @param inbound		TRUE for inbound, FALSE for outbound
+	 * @return				interface ID
+	 */
+	uint32_t (*get_if_id)(child_cfg_t *this, bool inbound);
+
+	/**
 	 * Optional mark to set on policies/SAs.
 	 *
 	 * @param inbound		TRUE for inbound, FALSE for outbound
@@ -241,6 +246,41 @@ struct child_cfg_t {
 	 * @return				mark
 	 */
 	mark_t (*get_set_mark)(child_cfg_t *this, bool inbound);
+
+	/**
+	 * Optional security label to be configured on policies.
+	 *
+	 * @return				label or NULL
+	 */
+	sec_label_t *(*get_label)(child_cfg_t *this);
+
+	/**
+	 * Get the mode in which the security label is used.
+	 *
+	 * @return				label mode (never SEC_LABEL_MODE_SYSTEM)
+	 */
+	sec_label_mode_t (*get_label_mode)(child_cfg_t *this);
+
+	/**
+	 * Select a security label from the given list that matches the configured
+	 * label.
+	 *
+	 * This fails under the following conditions:
+	 * - a label is configured but no labels are provided
+	 * - no label is configured but at least one label is provided
+	 * - the configured and provided labels don't match
+	 *
+	 * If no label is configured and none are provided, that's considered a
+	 * success and label will be set to NULL.
+	 *
+	 * @param labels		list of labels to match
+	 * @param log			FALSE to avoid logging details about the selection
+	 * @param label[out]	selected label or NULL if no label necessary
+	 * @param exact[out]	TRUE if there was an exact match
+	 * @return				FALSE on failure
+	 */
+	bool (*select_label)(child_cfg_t *this, linked_list_t *labels, bool log,
+						 sec_label_t **label, bool *exact);
 
 	/**
 	 * Get the TFC padding value to use for CHILD_SA.
@@ -350,6 +390,10 @@ struct child_cfg_create_t {
 	child_cfg_option_t options;
 	/** Specific reqid to use for CHILD_SA, 0 for auto assignment */
 	uint32_t reqid;
+	/** Optional inbound interface ID */
+	uint32_t if_id_in;
+	/** Optional outbound interface ID */
+	uint32_t if_id_out;
 	/** Optional inbound mark */
 	mark_t mark_in;
 	/** Optional outbound mark */
@@ -358,6 +402,10 @@ struct child_cfg_create_t {
 	mark_t set_mark_in;
 	/** Optional outbound mark the SA should apply to traffic */
 	mark_t set_mark_out;
+	/** Optional security label configured on policies (cloned) */
+	sec_label_t *label;
+	/** Optional security label mode */
+	sec_label_mode_t label_mode;
 	/** Mode to propose for CHILD_SA */
 	ipsec_mode_t mode;
 	/** TFC padding size, 0 to disable, -1 to pad to PMTU */

@@ -245,23 +245,29 @@ Suite *stream_suite_create()
 {
 	Suite *s;
 	TCase *tc;
+	int count = countof(services);
+
+	if (getenv("TESTS_NO_IPV6"))
+	{
+		count--;
+	}
 
 	s = suite_create("stream");
 
 	tc = tcase_create("sync");
-	tcase_add_loop_test(tc, test_sync, 0, countof(services));
+	tcase_add_loop_test(tc, test_sync, 0, count);
 	suite_add_tcase(s, tc);
 
 	tc = tcase_create("async");
-	tcase_add_loop_test(tc, test_async, 0, countof(services));
+	tcase_add_loop_test(tc, test_async, 0, count);
 	suite_add_tcase(s, tc);
 
 	tc = tcase_create("all");
-	tcase_add_loop_test(tc, test_all, 0, countof(services));
+	tcase_add_loop_test(tc, test_all, 0, count);
 	suite_add_tcase(s, tc);
 
 	tc = tcase_create("concurrency");
-	tcase_add_loop_test(tc, test_concurrency, 0, countof(services));
+	tcase_add_loop_test(tc, test_concurrency, 0, count);
 	suite_add_tcase(s, tc);
 
 	return s;

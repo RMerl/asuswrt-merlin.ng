@@ -46,7 +46,7 @@ struct hash_payload_t {
 	/**
 	 * Get the hash value.
 	 *
-	 * @return				chunkt to internal hash data
+	 * @return				chunk to internal hash data
 	 */
 	chunk_t (*get_hash) (hash_payload_t *this);
 

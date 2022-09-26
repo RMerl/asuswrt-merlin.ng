@@ -14,6 +14,8 @@
  */
 
 #include <stdio.h>
+
+#include <library.h>
 #include <utils/identification.h>
 
 /**
@@ -24,6 +26,9 @@ int main(int argc, char *argv[])
 	identification_t *id;
 	chunk_t enc;
 	int i;
+
+	library_init(NULL, "id2sql");
+	atexit(library_deinit);
 
 	if (argc < 2)
 	{
@@ -45,6 +50,7 @@ int main(int argc, char *argv[])
 		printf("%02x", (unsigned int)enc.ptr[i]);
 	}
 	printf("'\n");
+	id->destroy(id);
 	return 0;
 }
 

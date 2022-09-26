@@ -132,7 +132,7 @@ bool libimcv_init(bool is_imv)
 	if (lib)
 	{
 		/* did main program initialize libstrongswan? */
-		if (libstrongswan_ref == 0)
+		if (!ref_cur(&libstrongswan_ref))
 		{
 			ref_get(&libstrongswan_ref);
 		}
@@ -171,9 +171,11 @@ bool libimcv_init(bool is_imv)
 	lib->settings->add_fallback(lib->settings, "%s.plugins", "libimcv.plugins",
 								lib->ns);
 
-	if (libimcv_ref == 0)
+	if (!ref_cur(&libimcv_ref))
 	{
 		char *uri, *script;
+
+		libtpmtss_init();
 
 		/* initialize the PA-TNC attribute manager */
 	 	imcv_pa_tnc_attributes = pa_tnc_attr_manager_create();
@@ -246,6 +248,8 @@ void libimcv_deinit(void)
 		DESTROY_IF(imcv_db);
 		DESTROY_IF(imcv_sessions);
 		DBG1(DBG_LIB, "libimcv terminated");
+
+		libtpmtss_deinit();
 	}
 	if (ref_put(&libstrongswan_ref))
 	{

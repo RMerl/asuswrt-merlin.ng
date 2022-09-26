@@ -1,4 +1,9 @@
 /*
+ * Copyright (C) 2020 Tobias Brunner
+ * Copyright (C) 2020-2021 Pascal Knecht
+ * Copyright (C) 2020 Méline Sieber
+ * HSR Hochschule fuer Technik Rapperswil
+ *
  * Copyright (C) 2010-2014 Martin Willi
  * Copyright (C) 2010-2014 revosec AG
  *
@@ -14,9 +19,12 @@
  */
 
 #include "tls_crypto.h"
+#include "tls_hkdf.h"
 
 #include <utils/debug.h>
 #include <plugins/plugin_feature.h>
+#include <collections/hashtable.h>
+#include <collections/array.h>
 
 ENUM_BEGIN(tls_cipher_suite_names, TLS_NULL_WITH_NULL_NULL,
 								   TLS_DH_anon_WITH_3DES_EDE_CBC_SHA,
@@ -175,9 +183,17 @@ ENUM_NEXT(tls_cipher_suite_names, TLS_EMPTY_RENEGOTIATION_INFO_SCSV,
 								  TLS_EMPTY_RENEGOTIATION_INFO_SCSV,
 								  TLS_DH_anon_WITH_CAMELLIA_256_CBC_SHA256,
 	"TLS_EMPTY_RENEGOTIATION_INFO_SCSV");
+ENUM_NEXT(tls_cipher_suite_names, TLS_AES_128_GCM_SHA256,
+								  TLS_AES_128_CCM_8_SHA256,
+								  TLS_EMPTY_RENEGOTIATION_INFO_SCSV,
+	"TLS_AES_128_GCM_SHA256",
+	"TLS_AES_256_GCM_SHA384",
+	"TLS_CHACHA20_POLY1305_SHA256",
+	"TLS_AES_128_CCM_SHA256",
+	"TLS_AES_128_CCM_8_SHA256");
 ENUM_NEXT(tls_cipher_suite_names, TLS_ECDH_ECDSA_WITH_NULL_SHA,
 								  TLS_ECDHE_PSK_WITH_NULL_SHA384,
-								  TLS_EMPTY_RENEGOTIATION_INFO_SCSV,
+								  TLS_AES_128_CCM_8_SHA256,
 	"TLS_ECDH_ECDSA_WITH_NULL_SHA",
 	"TLS_ECDH_ECDSA_WITH_RC4_128_SHA",
 	"TLS_ECDH_ECDSA_WITH_3DES_EDE_CBC_SHA",
@@ -237,7 +253,14 @@ ENUM_NEXT(tls_cipher_suite_names, TLS_ECDH_ECDSA_WITH_NULL_SHA,
 	"TLS_ECDHE_PSK_WITH_NULL_SHA",
 	"TLS_ECDHE_PSK_WITH_NULL_SHA256",
 	"TLS_ECDHE_PSK_WITH_NULL_SHA384");
-ENUM_END(tls_cipher_suite_names, TLS_ECDHE_PSK_WITH_NULL_SHA384);
+ENUM_NEXT(tls_cipher_suite_names, TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256,
+		TLS_DHE_RSA_WITH_CHACHA20_POLY1305_SHA256,
+		TLS_ECDHE_PSK_WITH_NULL_SHA384,
+	"TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256",
+	"TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256",
+	"TLS_DHE_RSA_WITH_CHACHA20_POLY1305_SHA256");
+ENUM_END(tls_cipher_suite_names, TLS_DHE_RSA_WITH_CHACHA20_POLY1305_SHA256);
+
 
 ENUM(tls_hash_algorithm_names, TLS_HASH_NONE, TLS_HASH_SHA512,
 	"NONE",
@@ -249,11 +272,44 @@ ENUM(tls_hash_algorithm_names, TLS_HASH_NONE, TLS_HASH_SHA512,
 	"SHA512",
 );
 
-ENUM(tls_signature_algorithm_names, TLS_SIG_RSA, TLS_SIG_ECDSA,
-	"RSA",
-	"DSA",
-	"ECDSA",
+ENUM_BEGIN(tls_signature_scheme_names,
+		   TLS_SIG_RSA_PKCS1_SHA1, TLS_SIG_RSA_PKCS1_SHA1,
+	"RSA_PKCS1_SHA1");
+ENUM_NEXT(tls_signature_scheme_names,
+		  TLS_SIG_ECDSA_SHA1, TLS_SIG_ECDSA_SHA1, TLS_SIG_RSA_PKCS1_SHA1,
+	"ECDSA_SHA1");
+ENUM_NEXT(tls_signature_scheme_names,
+		  TLS_SIG_RSA_PKCS1_SHA224, TLS_SIG_ECDSA_SHA224, TLS_SIG_ECDSA_SHA1,
+	"RSA_PKCS1_SHA224",
+	"DSA_SHA224",
+	"ECDSA_SHA224");
+ENUM_NEXT(tls_signature_scheme_names,
+		  TLS_SIG_RSA_PKCS1_SHA256, TLS_SIG_ECDSA_SHA256, TLS_SIG_ECDSA_SHA224,
+	"RSA_PKCS1_SHA256",
+	"DSA_SHA256",
+	"ECDSA_SHA256");
+ENUM_NEXT(tls_signature_scheme_names,
+		  TLS_SIG_RSA_PKCS1_SHA384, TLS_SIG_ECDSA_SHA384, TLS_SIG_ECDSA_SHA256,
+	"RSA_PKCS1_SHA384",
+	"DSA_SHA384",
+	"ECDSA_SHA384");
+ENUM_NEXT(tls_signature_scheme_names,
+		  TLS_SIG_RSA_PKCS1_SHA512, TLS_SIG_ECDSA_SHA512, TLS_SIG_ECDSA_SHA384,
+	"RSA_PKCS1_SHA512",
+	"DSA_SHA512",
+	"ECDSA_SHA512");
+ENUM_NEXT(tls_signature_scheme_names,
+		  TLS_SIG_RSA_PSS_RSAE_SHA256, TLS_SIG_RSA_PSS_PSS_SHA512, TLS_SIG_ECDSA_SHA512,
+	"RSA_PSS_RSAE_SHA256",
+	"RSA_PSS_RSAE_SHA384",
+	"RSA_PSS_RSAE_SHA512",
+	"ED25519",
+	"ED448",
+	"RSA_PSS_PSS_SHA256",
+	"RSA_PSS_PSS_SHA384",
+	"RSA_PSS_PSS_SHA512",
 );
+ENUM_END(tls_signature_scheme_names, TLS_SIG_RSA_PSS_PSS_SHA512);
 
 ENUM_BEGIN(tls_client_certificate_type_names,
 		   TLS_RSA_SIGN, TLS_DSS_EPHEMERAL_DH,
@@ -279,7 +335,7 @@ ENUM(tls_ecc_curve_type_names, TLS_ECC_EXPLICIT_PRIME, TLS_ECC_NAMED_CURVE,
 	"NAMED_CURVE",
 );
 
-ENUM(tls_named_curve_names, TLS_SECT163K1, TLS_SECP521R1,
+ENUM_BEGIN(tls_named_group_names, TLS_SECT163K1, TLS_SECP521R1,
 	"SECT163K1",
 	"SECT163R1",
 	"SECT163R2",
@@ -306,6 +362,18 @@ ENUM(tls_named_curve_names, TLS_SECT163K1, TLS_SECP521R1,
 	"SECP384R1",
 	"SECP521R1",
 );
+ENUM_NEXT(tls_named_group_names, TLS_CURVE25519, TLS_CURVE448, TLS_SECP521R1,
+	"CURVE25519",
+	"CURVE448",
+);
+ENUM_NEXT(tls_named_group_names, TLS_FFDHE2048, TLS_FFDHE8192, TLS_CURVE448,
+	"FFDHE2048",
+	"FFDHE3072",
+	"FFDHE4096",
+	"FFDHE6144",
+	"FFDHE8192",
+);
+ENUM_END(tls_named_group_names, TLS_FFDHE8192);
 
 ENUM(tls_ansi_point_format_names, TLS_ANSI_COMPRESSED, TLS_ANSI_HYBRID_Y,
 	"compressed",
@@ -349,6 +417,11 @@ struct private_tls_crypto_t {
 	 * Number of supported suites
 	 */
 	int suite_count;
+
+	/**
+	 * HKDF for TLS 1.3
+	 */
+	tls_hkdf_t *hkdf;
 
 	/**
 	 * Selected cipher suite
@@ -415,216 +488,274 @@ typedef struct {
 	integrity_algorithm_t mac;
 	encryption_algorithm_t encr;
 	size_t encr_size;
+	tls_version_t min_version;
+	tls_version_t max_version;
 } suite_algs_t;
 
 /**
  * Mapping suites to a set of algorithms
+ *
+ * The order represents the descending preference of cipher suites and follows
+ * this rule set:
+ *
+ *   1. TLS 1.3 > Legacy TLS
+ *   2. AES > CAMELLIA > NULL
+ *   3. AES256 > AES128
+ *   4. GCM > CBC
+ *   5. ECDHE > DHE > NULL
+ *   6. ECDSA > RSA
+ *   7. SHA384 > SHA256 > SHA1
+ *
  */
 static suite_algs_t suite_algs[] = {
-	{ TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA,
-		KEY_ECDSA, ECP_256_BIT,
-		HASH_SHA256, PRF_HMAC_SHA2_256,
-		AUTH_HMAC_SHA1_160, ENCR_AES_CBC, 16
+	/* Cipher suites of TLS 1.3: key exchange and authentication
+	 * delegated to extensions, therefore KEY_ANY, MODP_NONE, PRF_UNDEFINED */
+	{ TLS_AES_256_GCM_SHA384,
+		KEY_ANY, MODP_NONE,
+		HASH_SHA384, PRF_UNDEFINED,
+		AUTH_HMAC_SHA2_384_384, ENCR_AES_GCM_ICV16, 32,
+		TLS_1_3, TLS_1_3,
 	},
-	{ TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,
-		KEY_ECDSA, ECP_256_BIT,
-		HASH_SHA256, PRF_HMAC_SHA2_256,
-		AUTH_HMAC_SHA2_256_256, ENCR_AES_CBC, 16
+	{ TLS_AES_128_GCM_SHA256,
+		KEY_ANY, MODP_NONE,
+		HASH_SHA256, PRF_UNDEFINED,
+		AUTH_HMAC_SHA2_256_256, ENCR_AES_GCM_ICV16, 16,
+		TLS_1_3, TLS_1_3,
 	},
-	{ TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA,
+	{ TLS_CHACHA20_POLY1305_SHA256,
+		KEY_ANY, MODP_NONE,
+		HASH_SHA256, PRF_UNDEFINED,
+		AUTH_HMAC_SHA2_256_256, ENCR_CHACHA20_POLY1305, 32,
+		TLS_1_3, TLS_1_3,
+	},
+	{ TLS_AES_128_CCM_SHA256,
+		KEY_ANY, MODP_NONE,
+		HASH_SHA256, PRF_UNDEFINED,
+		AUTH_HMAC_SHA2_256_256, ENCR_AES_CCM_ICV16, 16,
+		TLS_1_3, TLS_1_3,
+	},
+	{ TLS_AES_128_CCM_8_SHA256,
+		KEY_ANY, MODP_NONE,
+		HASH_SHA256, PRF_UNDEFINED,
+		AUTH_HMAC_SHA2_256_256, ENCR_AES_CCM_ICV8, 16,
+		TLS_1_3, TLS_1_3,
+	},
+	/* Legacy TLS cipher suites */
+	{ TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,
 		KEY_ECDSA, ECP_384_BIT,
-		HASH_SHA256, PRF_HMAC_SHA2_256,
-		AUTH_HMAC_SHA1_160, ENCR_AES_CBC, 32
+		HASH_SHA384, PRF_HMAC_SHA2_384,
+		AUTH_UNDEFINED, ENCR_AES_GCM_ICV16, 32,
+		TLS_1_2, TLS_1_2,
 	},
 	{ TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384,
 		KEY_ECDSA, ECP_384_BIT,
 		HASH_SHA384, PRF_HMAC_SHA2_384,
-		AUTH_HMAC_SHA2_384_384, ENCR_AES_CBC, 32
+		AUTH_HMAC_SHA2_384_384, ENCR_AES_CBC, 32,
+		TLS_1_2, TLS_1_2,
+	},
+	{ TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA,
+		KEY_ECDSA, ECP_384_BIT,
+		HASH_SHA256, PRF_HMAC_SHA2_256,
+		AUTH_HMAC_SHA1_160, ENCR_AES_CBC, 32,
+		TLS_1_0, TLS_1_2,
 	},
 	{ TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
 		KEY_ECDSA, ECP_256_BIT,
 		HASH_SHA256, PRF_HMAC_SHA2_256,
-		AUTH_UNDEFINED, ENCR_AES_GCM_ICV16, 16
+		AUTH_UNDEFINED, ENCR_AES_GCM_ICV16, 16,
+		TLS_1_2, TLS_1_2,
 	},
-	{ TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,
-		KEY_ECDSA, ECP_384_BIT,
-		HASH_SHA384, PRF_HMAC_SHA2_384,
-		AUTH_UNDEFINED, ENCR_AES_GCM_ICV16, 32
-	},
-	{ TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,
-		KEY_RSA, ECP_256_BIT,
+	{ TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,
+		KEY_ECDSA, ECP_256_BIT,
 		HASH_SHA256, PRF_HMAC_SHA2_256,
-		AUTH_HMAC_SHA1_160, ENCR_AES_CBC, 16
+		AUTH_HMAC_SHA2_256_256, ENCR_AES_CBC, 16,
+		TLS_1_2, TLS_1_2,
 	},
-	{ TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,
-		KEY_RSA, ECP_256_BIT,
+	{ TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA,
+		KEY_ECDSA, ECP_256_BIT,
 		HASH_SHA256, PRF_HMAC_SHA2_256,
-		AUTH_HMAC_SHA2_256_256, ENCR_AES_CBC, 16
-	},
-	{ TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,
-		KEY_RSA, ECP_384_BIT,
-		HASH_SHA256, PRF_HMAC_SHA2_256,
-		AUTH_HMAC_SHA1_160, ENCR_AES_CBC, 32
-	},
-	{ TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384,
-		KEY_RSA, ECP_384_BIT,
-		HASH_SHA384, PRF_HMAC_SHA2_384,
-		AUTH_HMAC_SHA2_384_384, ENCR_AES_CBC, 32
-	},
-	{ TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
-		KEY_RSA, ECP_256_BIT,
-		HASH_SHA256, PRF_HMAC_SHA2_256,
-		AUTH_UNDEFINED, ENCR_AES_GCM_ICV16, 16
+		AUTH_HMAC_SHA1_160, ENCR_AES_CBC, 16,
+		TLS_1_0, TLS_1_2,
 	},
 	{ TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
 		KEY_RSA, ECP_384_BIT,
 		HASH_SHA384, PRF_HMAC_SHA2_384,
-		AUTH_UNDEFINED, ENCR_AES_GCM_ICV16, 32
+		AUTH_UNDEFINED, ENCR_AES_GCM_ICV16, 32,
+		TLS_1_2, TLS_1_2,
 	},
-	{ TLS_DHE_RSA_WITH_AES_128_CBC_SHA,
-		KEY_RSA, MODP_2048_BIT,
-		HASH_SHA256,PRF_HMAC_SHA2_256,
-		AUTH_HMAC_SHA1_160, ENCR_AES_CBC, 16
+	{ TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384,
+		KEY_RSA, ECP_384_BIT,
+		HASH_SHA384, PRF_HMAC_SHA2_384,
+		AUTH_HMAC_SHA2_384_384, ENCR_AES_CBC, 32,
+		TLS_1_2, TLS_1_2,
 	},
-	{ TLS_DHE_RSA_WITH_AES_128_CBC_SHA256,
-		KEY_RSA, MODP_3072_BIT,
+	{ TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,
+		KEY_RSA, ECP_384_BIT,
 		HASH_SHA256, PRF_HMAC_SHA2_256,
-		AUTH_HMAC_SHA2_256_256, ENCR_AES_CBC, 16
+		AUTH_HMAC_SHA1_160, ENCR_AES_CBC, 32,
+		TLS_1_0, TLS_1_2,
 	},
-	{ TLS_DHE_RSA_WITH_AES_256_CBC_SHA,
-		KEY_RSA, MODP_3072_BIT,
+	{ TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
+		KEY_RSA, ECP_256_BIT,
 		HASH_SHA256, PRF_HMAC_SHA2_256,
-		AUTH_HMAC_SHA1_160, ENCR_AES_CBC, 32
+		AUTH_UNDEFINED, ENCR_AES_GCM_ICV16, 16,
+		TLS_1_2, TLS_1_2,
 	},
-	{ TLS_DHE_RSA_WITH_AES_256_CBC_SHA256,
-		KEY_RSA, MODP_4096_BIT,
+	{ TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,
+		KEY_RSA, ECP_256_BIT,
 		HASH_SHA256, PRF_HMAC_SHA2_256,
-		AUTH_HMAC_SHA2_256_256, ENCR_AES_CBC, 32
+		AUTH_HMAC_SHA2_256_256, ENCR_AES_CBC, 16,
+		TLS_1_2, TLS_1_2,
 	},
-	{ TLS_DHE_RSA_WITH_AES_128_GCM_SHA256,
-		KEY_RSA, MODP_3072_BIT,
+	{ TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,
+		KEY_RSA, ECP_256_BIT,
 		HASH_SHA256, PRF_HMAC_SHA2_256,
-		AUTH_UNDEFINED, ENCR_AES_GCM_ICV16, 16
+		AUTH_HMAC_SHA1_160, ENCR_AES_CBC, 16,
+		TLS_1_0, TLS_1_2,
 	},
 	{ TLS_DHE_RSA_WITH_AES_256_GCM_SHA384,
 		KEY_RSA, MODP_4096_BIT,
 		HASH_SHA384, PRF_HMAC_SHA2_384,
-		AUTH_UNDEFINED, ENCR_AES_GCM_ICV16, 32
+		AUTH_UNDEFINED, ENCR_AES_GCM_ICV16, 32,
+		TLS_1_2, TLS_1_2,
 	},
-	{ TLS_DHE_RSA_WITH_CAMELLIA_128_CBC_SHA,
-		KEY_RSA, MODP_2048_BIT,
+	{ TLS_DHE_RSA_WITH_AES_256_CBC_SHA256,
+		KEY_RSA, MODP_4096_BIT,
 		HASH_SHA256, PRF_HMAC_SHA2_256,
-		AUTH_HMAC_SHA1_160, ENCR_CAMELLIA_CBC, 16
+		AUTH_HMAC_SHA2_256_256, ENCR_AES_CBC, 32,
+		TLS_1_2, TLS_1_2,
 	},
-	{ TLS_DHE_RSA_WITH_CAMELLIA_128_CBC_SHA256,
+	{ TLS_DHE_RSA_WITH_AES_256_CBC_SHA,
 		KEY_RSA, MODP_3072_BIT,
 		HASH_SHA256, PRF_HMAC_SHA2_256,
-		AUTH_HMAC_SHA2_256_256, ENCR_CAMELLIA_CBC, 16
-	},
-	{ TLS_DHE_RSA_WITH_CAMELLIA_256_CBC_SHA,
-		KEY_RSA, MODP_3072_BIT,
-		HASH_SHA256, PRF_HMAC_SHA2_256,
-		AUTH_HMAC_SHA1_160, ENCR_CAMELLIA_CBC, 32
+		AUTH_HMAC_SHA1_160, ENCR_AES_CBC, 32,
+		SSL_3_0, TLS_1_2,
 	},
 	{ TLS_DHE_RSA_WITH_CAMELLIA_256_CBC_SHA256,
 		KEY_RSA, MODP_4096_BIT,
 		HASH_SHA256, PRF_HMAC_SHA2_256,
-		AUTH_HMAC_SHA2_256_256, ENCR_CAMELLIA_CBC, 32
+		AUTH_HMAC_SHA2_256_256, ENCR_CAMELLIA_CBC, 32,
+		TLS_1_2, TLS_1_2,
 	},
-	{ TLS_DHE_RSA_WITH_3DES_EDE_CBC_SHA,
+	{ TLS_DHE_RSA_WITH_CAMELLIA_256_CBC_SHA,
+		KEY_RSA, MODP_3072_BIT,
+		HASH_SHA256, PRF_HMAC_SHA2_256,
+		AUTH_HMAC_SHA1_160, ENCR_CAMELLIA_CBC, 32,
+		SSL_3_0, TLS_1_2,
+	},
+	{ TLS_DHE_RSA_WITH_AES_128_GCM_SHA256,
+		KEY_RSA, MODP_3072_BIT,
+		HASH_SHA256, PRF_HMAC_SHA2_256,
+		AUTH_UNDEFINED, ENCR_AES_GCM_ICV16, 16,
+		TLS_1_2, TLS_1_2,
+	},
+	{ TLS_DHE_RSA_WITH_AES_128_CBC_SHA256,
+		KEY_RSA, MODP_3072_BIT,
+		HASH_SHA256, PRF_HMAC_SHA2_256,
+		AUTH_HMAC_SHA2_256_256, ENCR_AES_CBC, 16,
+		TLS_1_2, TLS_1_2,
+	},
+	{ TLS_DHE_RSA_WITH_AES_128_CBC_SHA,
+		KEY_RSA, MODP_2048_BIT,
+		HASH_SHA256,PRF_HMAC_SHA2_256,
+		AUTH_HMAC_SHA1_160, ENCR_AES_CBC, 16,
+		SSL_3_0, TLS_1_2,
+	},
+	{ TLS_DHE_RSA_WITH_CAMELLIA_128_CBC_SHA256,
+		KEY_RSA, MODP_3072_BIT,
+		HASH_SHA256, PRF_HMAC_SHA2_256,
+		AUTH_HMAC_SHA2_256_256, ENCR_CAMELLIA_CBC, 16,
+		TLS_1_2, TLS_1_2,
+	},
+	{ TLS_DHE_RSA_WITH_CAMELLIA_128_CBC_SHA,
 		KEY_RSA, MODP_2048_BIT,
 		HASH_SHA256, PRF_HMAC_SHA2_256,
-		AUTH_HMAC_SHA1_160, ENCR_3DES, 0
-	},
-	{ TLS_RSA_WITH_AES_128_CBC_SHA,
-		KEY_RSA, MODP_NONE,
-		HASH_SHA256, PRF_HMAC_SHA2_256,
-		AUTH_HMAC_SHA1_160, ENCR_AES_CBC, 16
-	},
-	{ TLS_RSA_WITH_AES_128_CBC_SHA256,
-		KEY_RSA, MODP_NONE,
-		HASH_SHA256, PRF_HMAC_SHA2_256,
-		AUTH_HMAC_SHA2_256_256, ENCR_AES_CBC, 16
-	},
-	{ TLS_RSA_WITH_AES_256_CBC_SHA,
-		KEY_RSA, MODP_NONE,
-		HASH_SHA256, PRF_HMAC_SHA2_256,
-		AUTH_HMAC_SHA1_160, ENCR_AES_CBC, 32
-	},
-	{ TLS_RSA_WITH_AES_256_CBC_SHA256,
-		KEY_RSA, MODP_NONE,
-		HASH_SHA256, PRF_HMAC_SHA2_256,
-		AUTH_HMAC_SHA2_256_256, ENCR_AES_CBC, 32
-	},
-	{ TLS_RSA_WITH_AES_128_GCM_SHA256,
-		KEY_RSA, MODP_NONE,
-		HASH_SHA256, PRF_HMAC_SHA2_256,
-		AUTH_UNDEFINED, ENCR_AES_GCM_ICV16, 16
+		AUTH_HMAC_SHA1_160, ENCR_CAMELLIA_CBC, 16,
+		SSL_3_0, TLS_1_2,
 	},
 	{ TLS_RSA_WITH_AES_256_GCM_SHA384,
 		KEY_RSA, MODP_NONE,
 		HASH_SHA384, PRF_HMAC_SHA2_384,
-		AUTH_UNDEFINED, ENCR_AES_GCM_ICV16, 32
+		AUTH_UNDEFINED, ENCR_AES_GCM_ICV16, 32,
+		TLS_1_2, TLS_1_2,
 	},
-	{ TLS_RSA_WITH_CAMELLIA_128_CBC_SHA,
+	{ TLS_RSA_WITH_AES_256_CBC_SHA256,
 		KEY_RSA, MODP_NONE,
 		HASH_SHA256, PRF_HMAC_SHA2_256,
-		AUTH_HMAC_SHA1_160, ENCR_CAMELLIA_CBC, 16
+		AUTH_HMAC_SHA2_256_256, ENCR_AES_CBC, 32,
+		TLS_1_2, TLS_1_2,
 	},
-	{ TLS_RSA_WITH_CAMELLIA_128_CBC_SHA256,
+	{ TLS_RSA_WITH_AES_256_CBC_SHA,
 		KEY_RSA, MODP_NONE,
 		HASH_SHA256, PRF_HMAC_SHA2_256,
-		AUTH_HMAC_SHA2_256_256, ENCR_CAMELLIA_CBC, 16
+		AUTH_HMAC_SHA1_160, ENCR_AES_CBC, 32,
+		SSL_3_0, TLS_1_2,
 	},
-	{ TLS_RSA_WITH_CAMELLIA_256_CBC_SHA,
+	{ TLS_RSA_WITH_AES_128_GCM_SHA256,
 		KEY_RSA, MODP_NONE,
 		HASH_SHA256, PRF_HMAC_SHA2_256,
-		AUTH_HMAC_SHA1_160, ENCR_CAMELLIA_CBC, 32
+		AUTH_UNDEFINED, ENCR_AES_GCM_ICV16, 16,
+		TLS_1_2, TLS_1_2,
+	},
+	{ TLS_RSA_WITH_AES_128_CBC_SHA256,
+		KEY_RSA, MODP_NONE,
+		HASH_SHA256, PRF_HMAC_SHA2_256,
+		AUTH_HMAC_SHA2_256_256, ENCR_AES_CBC, 16,
+		TLS_1_2, TLS_1_2,
+	},
+	{ TLS_RSA_WITH_AES_128_CBC_SHA,
+		KEY_RSA, MODP_NONE,
+		HASH_SHA256, PRF_HMAC_SHA2_256,
+		AUTH_HMAC_SHA1_160, ENCR_AES_CBC, 16,
+		SSL_3_0, TLS_1_2,
 	},
 	{ TLS_RSA_WITH_CAMELLIA_256_CBC_SHA256,
 		KEY_RSA, MODP_NONE,
 		HASH_SHA256, PRF_HMAC_SHA2_256,
-		AUTH_HMAC_SHA2_256_256, ENCR_CAMELLIA_CBC, 32
+		AUTH_HMAC_SHA2_256_256, ENCR_CAMELLIA_CBC, 32,
+		TLS_1_2, TLS_1_2,
 	},
-	{ TLS_ECDHE_ECDSA_WITH_3DES_EDE_CBC_SHA,
-		KEY_ECDSA, ECP_256_BIT,
-		HASH_SHA256, PRF_HMAC_SHA2_256,
-		AUTH_HMAC_SHA1_160, ENCR_3DES, 0
-	},
-	{ TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA,
-		KEY_RSA, ECP_256_BIT,
-		HASH_SHA256, PRF_HMAC_SHA2_256,
-		AUTH_HMAC_SHA1_160, ENCR_3DES, 0
-	},
-	{ TLS_RSA_WITH_3DES_EDE_CBC_SHA,
+	{ TLS_RSA_WITH_CAMELLIA_256_CBC_SHA,
 		KEY_RSA, MODP_NONE,
 		HASH_SHA256, PRF_HMAC_SHA2_256,
-		AUTH_HMAC_SHA1_160, ENCR_3DES, 0
+		AUTH_HMAC_SHA1_160, ENCR_CAMELLIA_CBC, 32,
+		SSL_3_0, TLS_1_2,
+	},
+	{ TLS_RSA_WITH_CAMELLIA_128_CBC_SHA256,
+		KEY_RSA, MODP_NONE,
+		HASH_SHA256, PRF_HMAC_SHA2_256,
+		AUTH_HMAC_SHA2_256_256, ENCR_CAMELLIA_CBC, 16,
+		TLS_1_2, TLS_1_2,
+	},
+	{ TLS_RSA_WITH_CAMELLIA_128_CBC_SHA,
+		KEY_RSA, MODP_NONE,
+		HASH_SHA256, PRF_HMAC_SHA2_256,
+		AUTH_HMAC_SHA1_160, ENCR_CAMELLIA_CBC, 16,
+		SSL_3_0, TLS_1_2,
 	},
 	{ TLS_ECDHE_ECDSA_WITH_NULL_SHA,
 		KEY_ECDSA, ECP_256_BIT,
 		HASH_SHA256, PRF_HMAC_SHA2_256,
-		AUTH_HMAC_SHA1_160, ENCR_NULL, 0
+		AUTH_HMAC_SHA1_160, ENCR_NULL, 0,
+		TLS_1_0, TLS_1_2,
 	},
 	{ TLS_ECDHE_RSA_WITH_NULL_SHA,
 		KEY_ECDSA, ECP_256_BIT,
 		HASH_SHA256, PRF_HMAC_SHA2_256,
-		AUTH_HMAC_SHA1_160, ENCR_NULL, 0
-	},
-	{ TLS_RSA_WITH_NULL_SHA,
-		KEY_RSA, MODP_NONE,
-		HASH_SHA256, PRF_HMAC_SHA2_256,
-		AUTH_HMAC_SHA1_160, ENCR_NULL, 0
+		AUTH_HMAC_SHA1_160, ENCR_NULL, 0,
+		TLS_1_0, TLS_1_2,
 	},
 	{ TLS_RSA_WITH_NULL_SHA256,
 		KEY_RSA, MODP_NONE,
 		HASH_SHA256, PRF_HMAC_SHA2_256,
-		AUTH_HMAC_SHA2_256_256, ENCR_NULL, 0
+		AUTH_HMAC_SHA2_256_256, ENCR_NULL, 0,
+		TLS_1_2, TLS_1_2,
 	},
-	{ TLS_RSA_WITH_NULL_MD5,
+	{ TLS_RSA_WITH_NULL_SHA,
 		KEY_RSA, MODP_NONE,
 		HASH_SHA256, PRF_HMAC_SHA2_256,
-		AUTH_HMAC_MD5_128, ENCR_NULL, 0
+		AUTH_HMAC_SHA1_160, ENCR_NULL, 0,
+		SSL_3_0, TLS_1_2,
 	},
 };
 
@@ -693,8 +824,12 @@ static void filter_suite(suite_algs_t suites[], int *count, int offset,
 				}
 			}
 			if (current.prf && current.prf != suites[i].prf)
-			{	/* skip, PRF does not match */
-				continue;
+			{
+				if (suites[i].prf != PRF_UNDEFINED)
+				{
+					/* skip, PRF does not match nor is it undefined */
+					continue;
+				}
 			}
 			if (current.hash && current.hash != suites[i].hash)
 			{	/* skip, hash does not match */
@@ -702,8 +837,10 @@ static void filter_suite(suite_algs_t suites[], int *count, int offset,
 			}
 			if (current.dh && current.dh != suites[i].dh)
 			{
-				if (suites[i].dh != MODP_NONE)
-				{	/* skip DH group, does not match nor NONE */
+				if (suites[i].dh != MODP_NONE &&
+					!(diffie_hellman_group_is_ec(current.dh) &&
+					  diffie_hellman_group_is_ec(suites[i].dh)))
+				{	/* skip DH group, does not match nor NONE nor both ECDH */
 					continue;
 				}
 			}
@@ -829,56 +966,12 @@ static void filter_cipher_config_suites(private_tls_crypto_t *this,
 			enumerator = enumerator_create_token(config, ",", " ");
 			while (enumerator->enumerate(enumerator, &token))
 			{
-				if (strcaseeq(token, "aes128") &&
-					suites[i].encr == ENCR_AES_CBC &&
-					suites[i].encr_size == 16)
-				{
-					suites[remaining++] = suites[i];
-					break;
-				}
-				if (strcaseeq(token, "aes256") &&
-					suites[i].encr == ENCR_AES_CBC &&
-					suites[i].encr_size == 32)
-				{
-					suites[remaining++] = suites[i];
-					break;
-				}
-				if (strcaseeq(token, "aes128gcm") &&
-					suites[i].encr == ENCR_AES_GCM_ICV16 &&
-					suites[i].encr_size == 16)
-				{
-					suites[remaining++] = suites[i];
-					break;
-				}
-				if (strcaseeq(token, "aes256gcm") &&
-					suites[i].encr == ENCR_AES_GCM_ICV16 &&
-					suites[i].encr_size == 32)
-				{
-					suites[remaining++] = suites[i];
-					break;
-				}
-				if (strcaseeq(token, "camellia128") &&
-					suites[i].encr == ENCR_CAMELLIA_CBC &&
-					suites[i].encr_size == 16)
-				{
-					suites[remaining++] = suites[i];
-					break;
-				}
-				if (strcaseeq(token, "camellia256") &&
-					suites[i].encr == ENCR_CAMELLIA_CBC &&
-					suites[i].encr_size == 32)
-				{
-					suites[remaining++] = suites[i];
-					break;
-				}
-				if (strcaseeq(token, "3des") &&
-					suites[i].encr == ENCR_3DES)
-				{
-					suites[remaining++] = suites[i];
-					break;
-				}
-				if (strcaseeq(token, "null") &&
-					suites[i].encr == ENCR_NULL)
+				const proposal_token_t *tok;
+
+				tok = lib->proposal->get_token(lib->proposal, token);
+				if (tok != NULL && tok->type == ENCRYPTION_ALGORITHM &&
+					suites[i].encr == tok->algorithm &&
+					(!tok->keysize || suites[i].encr_size == tok->keysize / 8))
 				{
 					suites[remaining++] = suites[i];
 					break;
@@ -909,12 +1002,6 @@ static void filter_mac_config_suites(private_tls_crypto_t *this,
 			enumerator = enumerator_create_token(config, ",", " ");
 			while (enumerator->enumerate(enumerator, &token))
 			{
-				if (strcaseeq(token, "md5") &&
-					suites[i].mac == AUTH_HMAC_MD5_128)
-				{
-					suites[remaining++] = suites[i];
-					break;
-				}
 				if (strcaseeq(token, "sha1") &&
 					suites[i].mac == AUTH_HMAC_SHA1_160)
 				{
@@ -973,19 +1060,49 @@ static void filter_specific_config_suites(private_tls_crypto_t *this,
 }
 
 /**
+ * Filter key exchange curves by curve user config
+ */
+static bool filter_curve_config(tls_named_group_t curve)
+{
+	enumerator_t *enumerator;
+	char *token, *config;
+
+	config = lib->settings->get_str(lib->settings, "%s.tls.ke_group", NULL,
+									lib->ns);
+	if (config)
+	{
+		enumerator = enumerator_create_token(config, ",", " ");
+		while (enumerator->enumerate(enumerator, &token))
+		{
+			const proposal_token_t *tok;
+
+			tok = lib->proposal->get_token(lib->proposal, token);
+			if (tok != NULL && tok->type == DIFFIE_HELLMAN_GROUP &&
+				curve == tls_ec_group_to_curve(tok->algorithm))
+			{
+				enumerator->destroy(enumerator);
+				return TRUE;
+			}
+		}
+		enumerator->destroy(enumerator);
+	}
+	return !config;
+}
+
+/**
  * Filter out unsupported suites on given suite array
  */
 static void filter_unsupported_suites(suite_algs_t suites[], int *count)
 {
 	/* filter suite list by each algorithm */
 	filter_suite(suites, count, offsetof(suite_algs_t, encr),
-				 lib->crypto->create_crypter_enumerator);
-	filter_suite(suites, count, offsetof(suite_algs_t, encr),
 				 lib->crypto->create_aead_enumerator);
-	filter_suite(suites, count, offsetof(suite_algs_t, mac),
-				 lib->crypto->create_signer_enumerator);
 	filter_suite(suites, count, offsetof(suite_algs_t, prf),
 				 lib->crypto->create_prf_enumerator);
+	filter_suite(suites, count, offsetof(suite_algs_t, encr),
+				 lib->crypto->create_crypter_enumerator);
+	filter_suite(suites, count, offsetof(suite_algs_t, mac),
+				 lib->crypto->create_signer_enumerator);
 	filter_suite(suites, count, offsetof(suite_algs_t, hash),
 				 lib->crypto->create_hasher_enumerator);
 	filter_suite(suites, count, offsetof(suite_algs_t, dh),
@@ -995,16 +1112,39 @@ static void filter_unsupported_suites(suite_algs_t suites[], int *count)
 /**
  * Initialize the cipher suite list
  */
-static void build_cipher_suite_list(private_tls_crypto_t *this,
-									bool require_encryption)
+static void build_cipher_suite_list(private_tls_crypto_t *this)
 {
-	suite_algs_t suites[countof(suite_algs)];
-	int count = countof(suite_algs), i;
+	suite_algs_t suites[countof(suite_algs)] = {};
+	tls_version_t min_version, max_version, new_min_version, new_max_version;
+	bool require_encryption = TRUE;
+	int count = 0, i;
 
-	/* copy all suites */
-	for (i = 0; i < count; i++)
+	switch (this->tls->get_purpose(this->tls))
 	{
-		suites[i] = suite_algs[i];
+		case TLS_PURPOSE_EAP_TLS:
+			require_encryption = FALSE;
+			break;
+		case TLS_PURPOSE_GENERIC:
+			if (this->tls->get_flags(this->tls) & TLS_FLAG_ENCRYPTION_OPTIONAL)
+			{
+				require_encryption = FALSE;
+			}
+			break;
+		default:
+			break;
+	}
+
+	min_version = this->tls->get_version_min(this->tls);
+	max_version = this->tls->get_version_max(this->tls);
+
+	/* copy all suites appropriate for the current min/max versions */
+	for (i = 0; i < countof(suite_algs); i++)
+	{
+		if (suite_algs[i].min_version <= max_version &&
+			suite_algs[i].max_version >= min_version)
+		{
+			suites[count++] = suite_algs[i];
+		}
 	}
 
 	if (require_encryption)
@@ -1033,17 +1173,40 @@ static void build_cipher_suite_list(private_tls_crypto_t *this,
 	this->suites = malloc(sizeof(tls_cipher_suite_t) * count);
 
 	DBG2(DBG_TLS, "%d supported TLS cipher suites:", count);
+	new_min_version = max_version;
+	new_max_version = min_version;
 	for (i = 0; i < count; i++)
 	{
 		DBG2(DBG_TLS, "  %N", tls_cipher_suite_names, suites[i].suite);
 		this->suites[i] = suites[i].suite;
+
+		/* set TLS min/max versions appropriate to the final cipher suites */
+		new_max_version = max(new_max_version, suites[i].max_version);
+		new_min_version = min(new_min_version, suites[i].min_version);
+	}
+	new_max_version = min(new_max_version, max_version);
+	new_min_version = max(new_min_version, min_version);
+
+	if ((min_version != new_min_version || max_version != new_max_version) &&
+		this->tls->set_version(this->tls, new_min_version, new_max_version))
+	{
+		DBG2(DBG_TLS, "TLS min/max %N/%N according to the cipher suites",
+			 tls_numeric_version_names, new_min_version,
+			 tls_numeric_version_names, new_max_version);
 	}
 }
 
 METHOD(tls_crypto_t, get_cipher_suites, int,
 	private_tls_crypto_t *this, tls_cipher_suite_t **suites)
 {
-	*suites = this->suites;
+	if (!this->suites)
+	{
+		build_cipher_suite_list(this);
+	}
+	if (suites)
+	{
+		*suites = this->suites;
+	}
 	return this->suite_count;
 }
 
@@ -1068,7 +1231,7 @@ static bool create_null(private_tls_crypto_t *this, suite_algs_t *algs)
  */
 static bool create_traditional(private_tls_crypto_t *this, suite_algs_t *algs)
 {
-	if (this->tls->get_version(this->tls) < TLS_1_1)
+	if (this->tls->get_version_max(this->tls) < TLS_1_1)
 	{
 		this->aead_in = tls_aead_create_implicit(algs->mac,
 								algs->encr, algs->encr_size);
@@ -1097,8 +1260,16 @@ static bool create_traditional(private_tls_crypto_t *this, suite_algs_t *algs)
  */
 static bool create_aead(private_tls_crypto_t *this, suite_algs_t *algs)
 {
-	this->aead_in = tls_aead_create_aead(algs->encr, algs->encr_size);
-	this->aead_out = tls_aead_create_aead(algs->encr, algs->encr_size);
+	if (this->tls->get_version_max(this->tls) < TLS_1_3)
+	{
+		this->aead_in = tls_aead_create_aead(algs->encr, algs->encr_size);
+		this->aead_out = tls_aead_create_aead(algs->encr, algs->encr_size);
+	}
+	else
+	{
+		this->aead_in = tls_aead_create_seq(algs->encr, algs->encr_size);
+		this->aead_out = tls_aead_create_seq(algs->encr, algs->encr_size);
+	}
 	if (!this->aead_in || !this->aead_out)
 	{
 		DBG1(DBG_TLS, "selected TLS transforms %N-%u not supported",
@@ -1124,19 +1295,32 @@ static void destroy_aeads(private_tls_crypto_t *this)
 static bool create_ciphers(private_tls_crypto_t *this, suite_algs_t *algs)
 {
 	destroy_aeads(this);
+	DESTROY_IF(this->hkdf);
 	DESTROY_IF(this->prf);
-	if (this->tls->get_version(this->tls) < TLS_1_2)
+	if (this->tls->get_version_max(this->tls) < TLS_1_3)
 	{
-		this->prf = tls_prf_create_10();
+		if (this->tls->get_version_max(this->tls) < TLS_1_2)
+		{
+			this->prf = tls_prf_create_10();
+		}
+		else
+		{
+			this->prf = tls_prf_create_12(algs->prf);
+		}
+		if (!this->prf)
+		{
+			DBG1(DBG_TLS, "selected TLS PRF not supported");
+			return FALSE;
+		}
 	}
 	else
 	{
-		this->prf = tls_prf_create_12(algs->prf);
-	}
-	if (!this->prf)
-	{
-		DBG1(DBG_TLS, "selected TLS PRF not supported");
-		return FALSE;
+		this->hkdf = tls_hkdf_create(algs->hash, chunk_empty);
+		if (!this->hkdf)
+		{
+			DBG1(DBG_TLS, "TLS HKDF creation unsuccessful");
+			return FALSE;
+		}
 	}
 	if (algs->encr == ENCR_NULL)
 	{
@@ -1179,7 +1363,9 @@ METHOD(tls_crypto_t, select_cipher_suite, tls_cipher_suite_t,
 				algs = find_suite(this->suites[i]);
 				if (algs)
 				{
-					if (key == KEY_ANY || key == algs->key)
+					if (key == KEY_ANY || key == algs->key ||
+						(algs->key == KEY_ECDSA && key == KEY_ED25519) ||
+						(algs->key == KEY_ECDSA && key == KEY_ED448))
 					{
 						if (create_ciphers(this, algs))
 						{
@@ -1194,92 +1380,147 @@ METHOD(tls_crypto_t, select_cipher_suite, tls_cipher_suite_t,
 	return 0;
 }
 
-METHOD(tls_crypto_t, get_dh_group, diffie_hellman_group_t,
-	private_tls_crypto_t *this)
-{
-	suite_algs_t *algs;
-
-	algs = find_suite(this->suite);
-	if (algs)
-	{
-		return algs->dh;
-	}
-	return MODP_NONE;
+/**
+ * Parameters for RSA/PSS signature schemes
+ */
+#define PSS_PARAMS(bits) static rsa_pss_params_t pss_params_sha##bits = { \
+	.hash = HASH_SHA##bits, \
+	.mgf1_hash = HASH_SHA##bits, \
+	.salt_len = HASH_SIZE_SHA##bits, \
 }
 
+PSS_PARAMS(256);
+PSS_PARAMS(384);
+PSS_PARAMS(512);
+
+typedef struct {
+	tls_signature_scheme_t sig;
+	signature_params_t params;
+	/* min/max versions for use in CertificateVerify */
+	tls_version_t min_version;
+	tls_version_t max_version;
+} scheme_algs_t;
+
 /**
- * Map signature schemes to TLS key types and hashes, ordered by preference
+ * Map TLS signature schemes, ordered by preference
  */
-static struct {
-	tls_signature_algorithm_t sig;
-	tls_hash_algorithm_t hash;
-	signature_scheme_t scheme;
-} schemes[] = {
-	{ TLS_SIG_ECDSA,	TLS_HASH_SHA256,	SIGN_ECDSA_WITH_SHA256_DER   },
-	{ TLS_SIG_ECDSA,	TLS_HASH_SHA384,	SIGN_ECDSA_WITH_SHA384_DER   },
-	{ TLS_SIG_ECDSA,	TLS_HASH_SHA512,	SIGN_ECDSA_WITH_SHA512_DER   },
-	{ TLS_SIG_ECDSA,	TLS_HASH_SHA1,		SIGN_ECDSA_WITH_SHA1_DER     },
-	{ TLS_SIG_RSA,		TLS_HASH_SHA256,	SIGN_RSA_EMSA_PKCS1_SHA2_256 },
-	{ TLS_SIG_RSA,		TLS_HASH_SHA384,	SIGN_RSA_EMSA_PKCS1_SHA2_384 },
-	{ TLS_SIG_RSA,		TLS_HASH_SHA512,	SIGN_RSA_EMSA_PKCS1_SHA2_512 },
-	{ TLS_SIG_RSA,		TLS_HASH_SHA224,	SIGN_RSA_EMSA_PKCS1_SHA2_224 },
-	{ TLS_SIG_RSA,		TLS_HASH_SHA1,		SIGN_RSA_EMSA_PKCS1_SHA1     },
-	{ TLS_SIG_RSA,		TLS_HASH_MD5,		SIGN_RSA_EMSA_PKCS1_MD5      },
+static scheme_algs_t schemes[] = {
+	{ TLS_SIG_ECDSA_SHA256, { .scheme = SIGN_ECDSA_WITH_SHA256_DER },
+		TLS_1_0, TLS_1_3 },
+	{ TLS_SIG_ECDSA_SHA384, { .scheme = SIGN_ECDSA_WITH_SHA384_DER },
+		TLS_1_0, TLS_1_3 },
+	{ TLS_SIG_ECDSA_SHA512, { .scheme = SIGN_ECDSA_WITH_SHA512_DER },
+		TLS_1_0, TLS_1_3 },
+	{ TLS_SIG_ED25519, { .scheme = SIGN_ED25519 },
+		TLS_1_0, TLS_1_3 },
+	{ TLS_SIG_ED448, { .scheme = SIGN_ED448 },
+		TLS_1_0, TLS_1_3 },
+	{ TLS_SIG_RSA_PSS_RSAE_SHA256, { .scheme = SIGN_RSA_EMSA_PSS, .params = &pss_params_sha256, },
+		TLS_1_2, TLS_1_3 },
+	{ TLS_SIG_RSA_PSS_RSAE_SHA384, { .scheme = SIGN_RSA_EMSA_PSS, .params = &pss_params_sha384, },
+		TLS_1_2, TLS_1_3 },
+	{ TLS_SIG_RSA_PSS_RSAE_SHA512, { .scheme = SIGN_RSA_EMSA_PSS, .params = &pss_params_sha512, },
+		TLS_1_2, TLS_1_3 },
+	/* the parameters for the next three should actually be taken from the
+	 * public key, we currently don't have an API for that, so assume defaults */
+	{ TLS_SIG_RSA_PSS_PSS_SHA256, { .scheme = SIGN_RSA_EMSA_PSS, .params = &pss_params_sha256, },
+		TLS_1_2, TLS_1_3 },
+	{ TLS_SIG_RSA_PSS_PSS_SHA384, { .scheme = SIGN_RSA_EMSA_PSS, .params = &pss_params_sha384, },
+		TLS_1_2, TLS_1_3 },
+	{ TLS_SIG_RSA_PSS_PSS_SHA512, { .scheme = SIGN_RSA_EMSA_PSS, .params = &pss_params_sha512, },
+		TLS_1_2, TLS_1_3 },
+	{ TLS_SIG_RSA_PKCS1_SHA256, { .scheme = SIGN_RSA_EMSA_PKCS1_SHA2_256 },
+		TLS_1_0, TLS_1_2 },
+	{ TLS_SIG_RSA_PKCS1_SHA384, { .scheme = SIGN_RSA_EMSA_PKCS1_SHA2_384 },
+		TLS_1_0, TLS_1_2 },
+	{ TLS_SIG_RSA_PKCS1_SHA512, { .scheme = SIGN_RSA_EMSA_PKCS1_SHA2_512 },
+		TLS_1_0, TLS_1_2 },
 };
 
+/**
+ * Filter signature scheme config
+ */
+static bool filter_signature_scheme_config(tls_signature_scheme_t signature)
+{
+	enumerator_t *enumerator;
+	char *token, *config;
+
+	config = lib->settings->get_str(lib->settings, "%s.tls.signature", NULL,
+									lib->ns);
+	if (config)
+	{
+		enumerator = enumerator_create_token(config, ",", " ");
+		while (enumerator->enumerate(enumerator, &token))
+		{
+			tls_signature_scheme_t sig;
+
+			if (enum_from_name(tls_signature_scheme_names, token, &sig) &&
+				sig == signature)
+			{
+				enumerator->destroy(enumerator);
+				return TRUE;
+			}
+		}
+		enumerator->destroy(enumerator);
+	}
+	return !config;
+}
+
 METHOD(tls_crypto_t, get_signature_algorithms, void,
-	private_tls_crypto_t *this, bio_writer_t *writer)
+	private_tls_crypto_t *this, bio_writer_t *writer, bool cert)
 {
 	bio_writer_t *supported;
+	tls_version_t min_version, max_version;
 	int i;
 
 	supported = bio_writer_create(32);
 
-	for (i = 0; i < countof(schemes); i++)
+	if (!cert)
 	{
-		if (schemes[i].sig == TLS_SIG_RSA && !this->rsa)
-		{
-			continue;
-		}
-		if (schemes[i].sig == TLS_SIG_ECDSA && !this->ecdsa)
-		{
-			continue;
-		}
-		if (!lib->plugins->has_feature(lib->plugins,
-						PLUGIN_PROVIDE(PUBKEY_VERIFY, schemes[i].scheme)))
-		{
-			continue;
-		}
-		supported->write_uint8(supported, schemes[i].hash);
-		supported->write_uint8(supported, schemes[i].sig);
+		min_version = this->tls->get_version_min(this->tls);
+		max_version = this->tls->get_version_max(this->tls);
 	}
 
-	supported->wrap16(supported);
+	for (i = 0; i < countof(schemes); i++)
+	{
+		if ((cert || (schemes[i].min_version <= max_version &&
+					  schemes[i].max_version >= min_version)) &&
+			lib->plugins->has_feature(lib->plugins,
+					PLUGIN_PROVIDE(PUBKEY_VERIFY, schemes[i].params.scheme)) &&
+			filter_signature_scheme_config(schemes[i].sig))
+		{
+			supported->write_uint16(supported, schemes[i].sig);
+		}
+	}
+
 	writer->write_data16(writer, supported->get_buf(supported));
 	supported->destroy(supported);
 }
 
 /**
- * Get the signature scheme from a TLS 1.2 hash/sig algorithm pair
+ * Get the signature parameters from a TLS signature scheme
  */
-static signature_scheme_t hashsig_to_scheme(key_type_t type,
-											tls_hash_algorithm_t hash,
-											tls_signature_algorithm_t sig)
+static signature_params_t *params_for_scheme(tls_signature_scheme_t sig,
+											 bool sign)
 {
 	int i;
 
-	if ((sig == TLS_SIG_RSA && type == KEY_RSA) ||
-		(sig == TLS_SIG_ECDSA && type == KEY_ECDSA))
+	for (i = 0; i < countof(schemes); i++)
 	{
-		for (i = 0; i < countof(schemes); i++)
+		/* strongSwan supports only RSA_PSS_RSAE schemes for signing but can
+		 * verify public keys in rsaEncryption as well as rsassaPss encoding. */
+		if (sign && (sig == TLS_SIG_RSA_PSS_PSS_SHA256 ||
+					 sig == TLS_SIG_RSA_PSS_PSS_SHA384 ||
+					 sig == TLS_SIG_RSA_PSS_PSS_SHA512))
 		{
-			if (schemes[i].sig == sig && schemes[i].hash == hash)
-			{
-				return schemes[i].scheme;
-			}
+			continue;
+		}
+		if (schemes[i].sig == sig)
+		{
+			return &schemes[i].params;
 		}
 	}
-	return SIGN_UNKNOWN;
+	return NULL;
 }
 
 /**
@@ -1287,41 +1528,67 @@ static signature_scheme_t hashsig_to_scheme(key_type_t type,
  */
 static struct {
 	diffie_hellman_group_t group;
-	tls_named_curve_t curve;
+	tls_named_group_t curve;
 } curves[] = {
 	{ ECP_256_BIT, TLS_SECP256R1},
 	{ ECP_384_BIT, TLS_SECP384R1},
 	{ ECP_521_BIT, TLS_SECP521R1},
 	{ ECP_224_BIT, TLS_SECP224R1},
 	{ ECP_192_BIT, TLS_SECP192R1},
+	{ CURVE_25519, TLS_CURVE25519},
+	{ CURVE_448,   TLS_CURVE448},
 };
 
 CALLBACK(group_filter, bool,
 	void *null, enumerator_t *orig, va_list args)
 {
-	diffie_hellman_group_t group, *out;
-	tls_named_curve_t *curve;
+	diffie_hellman_group_t group, *group_out;
+	tls_named_group_t curve, *curve_out;
 	char *plugin;
-	int i;
 
-	VA_ARGS_VGET(args, out, curve);
+	VA_ARGS_VGET(args, group_out, curve_out);
 
 	while (orig->enumerate(orig, &group, &plugin))
 	{
-		for (i = 0; i < countof(curves); i++)
+		curve = tls_ec_group_to_curve(group);
+		if (curve)
 		{
-			if (curves[i].group == group)
+			if (group_out)
 			{
-				if (out)
-				{
-					*out = curves[i].group;
-				}
-				if (curve)
-				{
-					*curve = curves[i].curve;
-				}
-				return TRUE;
+				*group_out = group;
 			}
+			if (curve_out)
+			{
+				*curve_out = curve;
+			}
+			return TRUE;
+		}
+	}
+	return FALSE;
+}
+
+CALLBACK(config_filter, bool,
+	void *null, enumerator_t *orig, va_list args)
+{
+	diffie_hellman_group_t group, *group_out;
+	tls_named_group_t curve, *curve_out;
+
+	VA_ARGS_VGET(args, group_out, curve_out);
+
+	while (orig->enumerate(orig, &group, &curve))
+	{
+		if (filter_curve_config(curve))
+
+		{
+			if (group_out)
+			{
+				*group_out = group;
+			}
+			if (curve_out)
+			{
+				*curve_out = curve;
+			}
+			return TRUE;
 		}
 	}
 	return FALSE;
@@ -1331,8 +1598,54 @@ METHOD(tls_crypto_t, create_ec_enumerator, enumerator_t*,
 	private_tls_crypto_t *this)
 {
 	return enumerator_create_filter(
-							lib->crypto->create_dh_enumerator(lib->crypto),
-							group_filter, NULL, NULL);
+							enumerator_create_filter(
+								lib->crypto->create_dh_enumerator(lib->crypto),
+								group_filter, NULL, NULL),
+							config_filter, NULL, NULL);
+}
+
+/**
+ * Check if the given ECDH group is supported or return the first one we
+ * actually do support.
+ */
+static diffie_hellman_group_t supported_ec_group(private_tls_crypto_t *this,
+												 diffie_hellman_group_t orig)
+{
+	diffie_hellman_group_t current, first = MODP_NONE;
+	enumerator_t *enumerator;
+
+	enumerator = create_ec_enumerator(this);
+	while (enumerator->enumerate(enumerator, &current, NULL))
+	{
+		if (current == orig)
+		{
+			enumerator->destroy(enumerator);
+			return orig;
+		}
+		else if (first == MODP_NONE)
+		{
+			first = current;
+		}
+	}
+	enumerator->destroy(enumerator);
+	return first;
+}
+
+METHOD(tls_crypto_t, get_dh_group, diffie_hellman_group_t,
+	private_tls_crypto_t *this)
+{
+	suite_algs_t *algs;
+
+	algs = find_suite(this->suite);
+	if (algs)
+	{
+		if (diffie_hellman_group_is_ec(algs->dh))
+		{
+			return supported_ec_group(this, algs->dh);
+		}
+		return algs->dh;
+	}
+	return MODP_NONE;
 }
 
 METHOD(tls_crypto_t, set_protection, void,
@@ -1357,7 +1670,7 @@ METHOD(tls_crypto_t, append_handshake, void,
  */
 static bool hash_data(private_tls_crypto_t *this, chunk_t data, chunk_t *hash)
 {
-	if (this->tls->get_version(this->tls) >= TLS_1_2)
+	if (this->tls->get_version_max(this->tls) >= TLS_1_2)
 	{
 		hasher_t *hasher;
 		suite_algs_t *alg;
@@ -1403,32 +1716,118 @@ static bool hash_data(private_tls_crypto_t *this, chunk_t data, chunk_t *hash)
 	return TRUE;
 }
 
+METHOD(tls_crypto_t, hash_handshake, bool,
+	private_tls_crypto_t *this, chunk_t *out)
+{
+	chunk_t hash;
+
+	if (!hash_data(this, this->handshake, &hash))
+	{
+		return FALSE;
+	}
+
+	chunk_free(&this->handshake);
+	append_handshake(this, TLS_MESSAGE_HASH, hash);
+
+	if (out)
+	{
+		*out = hash;
+	}
+	else
+	{
+		free(hash.ptr);
+	}
+	return TRUE;
+}
+
+/**
+ * TLS 1.3 static part of the data the server signs (64 spaces followed by the
+ * context string "TLS 1.3, server CertificateVerify" and a 0 byte).
+ */
+static chunk_t tls13_sig_data_server = chunk_from_chars(
+	0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20,
+	0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20,
+	0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20,
+	0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20,
+	0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20,
+	0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20,
+	0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20,
+	0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20,
+	0x54, 0x4c, 0x53, 0x20, 0x31, 0x2e, 0x33, 0x2c,
+	0x20, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x20,
+	0x43, 0x65, 0x72, 0x74, 0x69, 0x66, 0x69, 0x63,
+	0x61, 0x74, 0x65, 0x56, 0x65, 0x72, 0x69, 0x66,
+	0x79, 0x00,
+);
+
+/**
+ * TLS 1.3 static part of the data the peer signs (64 spaces followed by the
+ * context string "TLS 1.3, client CertificateVerify" and a 0 byte).
+ */
+static chunk_t tls13_sig_data_client = chunk_from_chars(
+	0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20,
+	0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20,
+	0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20,
+	0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20,
+	0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20,
+	0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20,
+	0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20,
+	0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20,
+	0x54, 0x4c, 0x53, 0x20, 0x31, 0x2e, 0x33, 0x2c,
+	0x20, 0x63, 0x6c, 0x69, 0x65, 0x6e, 0x74, 0x20,
+	0x43, 0x65, 0x72, 0x74, 0x69, 0x66, 0x69, 0x63,
+	0x61, 0x74, 0x65, 0x56, 0x65, 0x72, 0x69, 0x66,
+	0x79, 0x00,
+);
+
 METHOD(tls_crypto_t, sign, bool,
 	private_tls_crypto_t *this, private_key_t *key, bio_writer_t *writer,
 	chunk_t data, chunk_t hashsig)
 {
-	if (this->tls->get_version(this->tls) >= TLS_1_2)
+	if (this->tls->get_version_max(this->tls) >= TLS_1_2)
 	{
-		signature_scheme_t scheme;
+		/* fallback to SHA1/RSA and SHA1/ECDSA */
+		const chunk_t hashsig_def = chunk_from_chars(0x02, 0x01, 0x02, 0x03);
+		signature_params_t *params;
+		key_type_t type;
+		uint16_t scheme;
 		bio_reader_t *reader;
-		uint8_t hash, alg;
 		chunk_t sig;
 		bool done = FALSE;
 
+		if (this->tls->get_version_max(this->tls) >= TLS_1_3)
+		{
+			chunk_t transcript_hash;
+
+			if (!hash_data(this, data, &transcript_hash))
+			{
+				DBG1(DBG_TLS, "unable to create transcript hash");
+				return FALSE;
+			}
+			if (this->tls->is_server(this->tls))
+			{
+				data = chunk_cata("cm", tls13_sig_data_server, transcript_hash);
+			}
+			else
+			{
+				data = chunk_cata("cm", tls13_sig_data_client, transcript_hash);
+			}
+		}
+
 		if (!hashsig.len)
 		{	/* fallback if none given */
-			hashsig = chunk_from_chars(
-				TLS_HASH_SHA1, TLS_SIG_RSA, TLS_HASH_SHA1, TLS_SIG_ECDSA);
+			hashsig = hashsig_def;
 		}
+		type = key->get_type(key);
 		reader = bio_reader_create(hashsig);
 		while (reader->remaining(reader) >= 2)
 		{
-			if (reader->read_uint8(reader, &hash) &&
-				reader->read_uint8(reader, &alg))
+			if (reader->read_uint16(reader, &scheme))
 			{
-				scheme = hashsig_to_scheme(key->get_type(key), hash, alg);
-				if (scheme != SIGN_UNKNOWN &&
-					key->sign(key, scheme, NULL, data, &sig))
+				params = params_for_scheme(scheme, TRUE);
+				if (params &&
+					type == key_type_from_signature_scheme(params->scheme) &&
+					key->sign(key, params->scheme, params->params, data, &sig))
 				{
 					done = TRUE;
 					break;
@@ -1441,10 +1840,9 @@ METHOD(tls_crypto_t, sign, bool,
 			DBG1(DBG_TLS, "none of the proposed hash/sig algorithms supported");
 			return FALSE;
 		}
-		DBG2(DBG_TLS, "created signature with %N/%N",
-			 tls_hash_algorithm_names, hash, tls_signature_algorithm_names, alg);
-		writer->write_uint8(writer, hash);
-		writer->write_uint8(writer, alg);
+		DBG2(DBG_TLS, "created signature with %N", tls_signature_scheme_names,
+			 scheme);
+		writer->write_uint16(writer, scheme);
 		writer->write_data16(writer, sig);
 		free(sig.ptr);
 	}
@@ -1476,6 +1874,20 @@ METHOD(tls_crypto_t, sign, bool,
 				}
 				DBG2(DBG_TLS, "created signature with SHA1/ECDSA");
 				break;
+			case KEY_ED25519:
+				if (!key->sign(key, SIGN_ED25519, NULL, data, &sig))
+				{
+					return FALSE;
+				}
+				DBG2(DBG_TLS, "created signature with Ed25519");
+				break;
+			case KEY_ED448:
+				if (!key->sign(key, SIGN_ED448, NULL, data, &sig))
+				{
+					return FALSE;
+				}
+				DBG2(DBG_TLS, "created signature with Ed448");
+				break;
 			default:
 				return FALSE;
 		}
@@ -1489,33 +1901,52 @@ METHOD(tls_crypto_t, verify, bool,
 	private_tls_crypto_t *this, public_key_t *key, bio_reader_t *reader,
 	chunk_t data)
 {
-	if (this->tls->get_version(this->tls) >= TLS_1_2)
+	if (this->tls->get_version_max(this->tls) >= TLS_1_2)
 	{
-		signature_scheme_t scheme = SIGN_UNKNOWN;
-		uint8_t hash, alg;
+		signature_params_t *params;
+		uint16_t scheme;
 		chunk_t sig;
 
-		if (!reader->read_uint8(reader, &hash) ||
-			!reader->read_uint8(reader, &alg) ||
+		if (!reader->read_uint16(reader, &scheme) ||
 			!reader->read_data16(reader, &sig))
 		{
 			DBG1(DBG_TLS, "received invalid signature");
 			return FALSE;
 		}
-		scheme = hashsig_to_scheme(key->get_type(key), hash, alg);
-		if (scheme == SIGN_UNKNOWN)
+		params = params_for_scheme(scheme, FALSE);
+		if (!params)
 		{
-			DBG1(DBG_TLS, "signature algorithms %N/%N not supported",
-				 tls_hash_algorithm_names, hash,
-				 tls_signature_algorithm_names, alg);
+			DBG1(DBG_TLS, "signature algorithms %N not supported",
+				 tls_signature_scheme_names, scheme);
 			return FALSE;
 		}
-		if (!key->verify(key, scheme, NULL, data, sig))
+		if (this->tls->get_version_max(this->tls) >= TLS_1_3)
 		{
+			chunk_t transcript_hash;
+
+			if (!hash_data(this, data, &transcript_hash))
+			{
+				DBG1(DBG_TLS, "Unable to create transcript hash");
+				return FALSE;
+			}
+
+			if (this->tls->is_server(this->tls))
+			{
+				data = chunk_cata("cm", tls13_sig_data_client, transcript_hash);
+			}
+			else
+			{
+				data = chunk_cata("cm", tls13_sig_data_server, transcript_hash);
+			}
+		}
+		if (!key->verify(key, params->scheme, params->params, data, sig))
+		{
+			DBG1(DBG_TLS, "signature verification with %N failed",
+				 tls_signature_scheme_names, scheme);
 			return FALSE;
 		}
-		DBG2(DBG_TLS, "verified signature with %N/%N",
-			 tls_hash_algorithm_names, hash, tls_signature_algorithm_names, alg);
+		DBG2(DBG_TLS, "verified signature with %N",
+			 tls_signature_scheme_names, scheme);
 	}
 	else
 	{
@@ -1551,6 +1982,20 @@ METHOD(tls_crypto_t, verify, bool,
 				}
 				DBG2(DBG_TLS, "verified signature with SHA1/ECDSA");
 				break;
+			case KEY_ED25519:
+				if (!key->verify(key, SIGN_ED25519, NULL, data, sig))
+				{
+					return FALSE;
+				}
+				DBG2(DBG_TLS, "verified signature with Ed25519");
+				break;
+			case KEY_ED448:
+				if (!key->verify(key, SIGN_ED448, NULL, data, sig))
+				{
+					return FALSE;
+				}
+				DBG2(DBG_TLS, "verified signature with Ed448");
+				break;
 			default:
 				return FALSE;
 		}
@@ -1571,7 +2016,7 @@ METHOD(tls_crypto_t, verify_handshake, bool,
 	return verify(this, key, reader, this->handshake);
 }
 
-METHOD(tls_crypto_t, calculate_finished, bool,
+METHOD(tls_crypto_t, calculate_finished_legacy, bool,
 	private_tls_crypto_t *this, char *label, char out[12])
 {
 	chunk_t seed;
@@ -1590,6 +2035,38 @@ METHOD(tls_crypto_t, calculate_finished, bool,
 		return FALSE;
 	}
 	free(seed.ptr);
+	return TRUE;
+}
+
+METHOD(tls_crypto_t, calculate_finished, bool,
+	private_tls_crypto_t *this, bool server, chunk_t *out)
+{
+	chunk_t finished_key, finished_hash;
+
+	if (!this->hkdf)
+	{
+		return FALSE;
+	}
+	if (!hash_data(this, this->handshake, &finished_hash))
+	{
+		DBG1(DBG_TLS, "creating hash of handshake failed");
+		return FALSE;
+	}
+	if (!this->hkdf->derive_finished(this->hkdf, server, &finished_key))
+	{
+		DBG1(DBG_TLS, "generating finished key failed");
+		chunk_clear(&finished_hash);
+		return FALSE;
+	}
+	if (!this->hkdf->allocate_bytes(this->hkdf, finished_key, finished_hash, out))
+	{
+		DBG1(DBG_TLS, "generating finished HMAC failed");
+		chunk_clear(&finished_key);
+		chunk_clear(&finished_hash);
+		return FALSE;
+	}
+	chunk_clear(&finished_key);
+	chunk_clear(&finished_hash);
 	return TRUE;
 }
 
@@ -1709,6 +2186,119 @@ METHOD(tls_crypto_t, derive_secrets, bool,
 		   expand_keys(this, client_random, server_random);
 }
 
+/**
+ * Derive and configure the client/server key/IV on an AEAD using a given label.
+ */
+static bool derive_labeled_key(private_tls_crypto_t *this, bool server,
+							   tls_hkdf_label_t label, tls_aead_t *aead)
+{
+	chunk_t key = chunk_empty, iv = chunk_empty;
+	bool success = FALSE;
+
+	if (!this->hkdf->generate_secret(this->hkdf, label, this->handshake,
+									 NULL) ||
+		!this->hkdf->derive_key(this->hkdf, server,
+								aead->get_encr_key_size(aead), &key) ||
+		!this->hkdf->derive_iv(this->hkdf, server,
+							   aead->get_iv_size(aead), &iv))
+	{
+		DBG1(DBG_TLS, "deriving key material failed");
+		goto out;
+	}
+
+	if (!aead->set_keys(aead, chunk_empty, key, iv))
+	{
+		DBG1(DBG_TLS, "setting AEAD key material failed");
+		goto out;
+	}
+	success = TRUE;
+
+out:
+	chunk_clear(&key);
+	chunk_clear(&iv);
+	return success;
+}
+
+/**
+ * Derive and configure the keys/IVs using the given labels.
+ */
+static bool derive_labeled_keys(private_tls_crypto_t *this,
+								tls_hkdf_label_t client_label,
+								tls_hkdf_label_t server_label)
+{
+	tls_aead_t *aead_c, *aead_s;
+	suite_algs_t *algs;
+
+	algs = find_suite(this->suite);
+	destroy_aeads(this);
+	if (!create_aead(this, algs))
+	{
+		return FALSE;
+	}
+	aead_c = this->aead_out;
+	aead_s = this->aead_in;
+	if (this->tls->is_server(this->tls))
+	{
+		aead_c = this->aead_in;
+		aead_s = this->aead_out;
+	}
+	return derive_labeled_key(this, FALSE, client_label, aead_c) &&
+		   derive_labeled_key(this, TRUE, server_label, aead_s);
+}
+
+METHOD(tls_crypto_t, derive_handshake_keys, bool,
+	private_tls_crypto_t *this, chunk_t shared_secret)
+{
+	this->hkdf->set_shared_secret(this->hkdf, shared_secret);
+	return derive_labeled_keys(this, TLS_HKDF_C_HS_TRAFFIC,
+							   TLS_HKDF_S_HS_TRAFFIC);
+}
+
+METHOD(tls_crypto_t, derive_app_keys, bool,
+	private_tls_crypto_t *this)
+{
+	if (!derive_labeled_keys(this, TLS_HKDF_C_AP_TRAFFIC,
+							 TLS_HKDF_S_AP_TRAFFIC))
+	{
+		return FALSE;
+	}
+
+	/* EAP-MSK */
+	if (this->msk_label)
+	{
+		/* because the length is encoded when expanding key material, we
+		 * request the same number of bytes as FreeRADIUS (the first 64 for
+		 * the MSK, the next for the EMSK, which we just ignore) */
+		if (!this->hkdf->export(this->hkdf, this->msk_label, chunk_empty,
+								this->handshake, 128, &this->msk))
+		{
+			return FALSE;
+		}
+		this->msk.len = 64;
+	}
+	return TRUE;
+}
+
+METHOD(tls_crypto_t, update_app_keys, bool,
+	private_tls_crypto_t *this, bool inbound)
+{
+	suite_algs_t *algs;
+	tls_hkdf_label_t label = TLS_HKDF_UPD_C_TRAFFIC;
+
+	algs = find_suite(this->suite);
+	destroy_aeads(this);
+	if (!create_aead(this, algs))
+	{
+		return FALSE;
+	}
+	if (this->tls->is_server(this->tls) != inbound)
+	{
+		label = TLS_HKDF_UPD_S_TRAFFIC;
+	}
+	return derive_labeled_key(this, label == TLS_HKDF_UPD_S_TRAFFIC, label,
+							  inbound ? this->aead_in : this->aead_out);
+}
+
 METHOD(tls_crypto_t, resume_session, tls_cipher_suite_t,
 	private_tls_crypto_t *this, chunk_t session, identification_t *id,
 	chunk_t client_random, chunk_t server_random)
@@ -1754,10 +2344,12 @@ METHOD(tls_crypto_t, change_cipher, void,
 		if (inbound)
 		{
 			this->protection->set_cipher(this->protection, TRUE, this->aead_in);
+			this->aead_in = NULL;
 		}
 		else
 		{
 			this->protection->set_cipher(this->protection, FALSE, this->aead_out);
+			this->aead_out = NULL;
 		}
 	}
 }
@@ -1775,6 +2367,7 @@ METHOD(tls_crypto_t, destroy, void,
 	free(this->handshake.ptr);
 	free(this->msk.ptr);
 	DESTROY_IF(this->prf);
+	DESTROY_IF(this->hkdf);
 	free(this->suites);
 	free(this);
 }
@@ -1798,12 +2391,17 @@ tls_crypto_t *tls_crypto_create(tls_t *tls, tls_cache_t *cache)
 			.create_ec_enumerator = _create_ec_enumerator,
 			.set_protection = _set_protection,
 			.append_handshake = _append_handshake,
+			.hash_handshake = _hash_handshake,
 			.sign = _sign,
 			.verify = _verify,
 			.sign_handshake = _sign_handshake,
 			.verify_handshake = _verify_handshake,
+			.calculate_finished_legacy = _calculate_finished_legacy,
 			.calculate_finished = _calculate_finished,
 			.derive_secrets = _derive_secrets,
+			.derive_handshake_keys = _derive_handshake_keys,
+			.derive_app_keys = _derive_app_keys,
+			.update_app_keys = _update_app_keys,
 			.resume_session = _resume_session,
 			.get_session = _get_session,
 			.change_cipher = _change_cipher,
@@ -1814,6 +2412,8 @@ tls_crypto_t *tls_crypto_create(tls_t *tls, tls_cache_t *cache)
 		.cache = cache,
 	);
 
+	/* FIXME: EDDSA keys are currently treated like ECDSA keys. A cleaner
+	 * separation would be welcome. */
 	enumerator = lib->creds->create_builder_enumerator(lib->creds);
 	while (enumerator->enumerate(enumerator, &type, &subtype))
 	{
@@ -1825,6 +2425,8 @@ tls_crypto_t *tls_crypto_create(tls_t *tls, tls_cache_t *cache)
 					this->rsa = TRUE;
 					break;
 				case KEY_ECDSA:
+				case KEY_ED25519:
+				case KEY_ED448:
 					this->ecdsa = TRUE;
 					break;
 				default:
@@ -1839,22 +2441,13 @@ tls_crypto_t *tls_crypto_create(tls_t *tls, tls_cache_t *cache)
 		case TLS_PURPOSE_EAP_TLS:
 			/* MSK PRF ASCII constant label according to EAP-TLS RFC 5216 */
 			this->msk_label = "client EAP encryption";
-			build_cipher_suite_list(this, FALSE);
 			break;
 		case TLS_PURPOSE_EAP_PEAP:
 			this->msk_label = "client EAP encryption";
-			build_cipher_suite_list(this, TRUE);
 			break;
 		case TLS_PURPOSE_EAP_TTLS:
 			/* MSK PRF ASCII constant label according to EAP-TTLS RFC 5281 */
 			this->msk_label = "ttls keying material";
-			build_cipher_suite_list(this, TRUE);
-			break;
-		case TLS_PURPOSE_GENERIC:
-			build_cipher_suite_list(this, TRUE);
-			break;
-		case TLS_PURPOSE_GENERIC_NULLOK:
-			build_cipher_suite_list(this, FALSE);
 			break;
 		default:
 			break;
@@ -1865,15 +2458,20 @@ tls_crypto_t *tls_crypto_create(tls_t *tls, tls_cache_t *cache)
 /**
  * See header.
  */
-int tls_crypto_get_supported_suites(bool null, tls_cipher_suite_t **out)
+int tls_crypto_get_supported_suites(bool null, tls_version_t version,
+									tls_cipher_suite_t **out)
 {
-	suite_algs_t suites[countof(suite_algs)];
-	int count = countof(suite_algs), i;
+	suite_algs_t suites[countof(suite_algs)] = {};
+	int count = 0, i;
 
 	/* initialize copy of suite list */
-	for (i = 0; i < count; i++)
+	for (i = 0; i < countof(suite_algs); i++)
 	{
-		suites[i] = suite_algs[i];
+		if (suite_algs[i].min_version <= version &&
+			suite_algs[i].max_version >= version)
+		{
+			suites[count++] = suite_algs[i];
+		}
 	}
 
 	filter_unsupported_suites(suites, &count);
@@ -1892,4 +2490,285 @@ int tls_crypto_get_supported_suites(bool null, tls_cipher_suite_t **out)
 		}
 	}
 	return count;
+}
+
+/**
+ * See header.
+ */
+int tls_crypto_get_supported_groups(diffie_hellman_group_t **out)
+{
+	enumerator_t *enumerator;
+	diffie_hellman_group_t groups[countof(curves)];
+	diffie_hellman_group_t group;
+	tls_named_group_t curve;
+	int count = 0, i;
+
+	enumerator = enumerator_create_filter(
+							lib->crypto->create_dh_enumerator(lib->crypto),
+							group_filter, NULL, NULL);
+
+	while (enumerator->enumerate(enumerator, &group, &curve))
+	{
+		groups[count++] = group;
+	}
+	enumerator->destroy(enumerator);
+
+	if (out)
+	{
+		*out = calloc(count, sizeof(diffie_hellman_group_t));
+		for (i = 0; i < count; i++)
+		{
+			(*out)[i] = groups[i];
+		}
+	}
+	return count;
+}
+
+/**
+ * See header.
+ */
+int tls_crypto_get_supported_signatures(tls_version_t version,
+										tls_signature_scheme_t **out)
+{
+	scheme_algs_t sigs[countof(schemes)];
+	int count = 0, i;
+
+	/* initialize copy of signature scheme list */
+	for (i = 0; i < countof(schemes); i++)
+	{
+		/* only RSA_PSS_RSAE schemes supported for signing and verifying */
+		if (schemes[i].sig == TLS_SIG_RSA_PSS_PSS_SHA256 ||
+			schemes[i].sig == TLS_SIG_RSA_PSS_PSS_SHA384 ||
+			schemes[i].sig == TLS_SIG_RSA_PSS_PSS_SHA512)
+		{
+			continue;
+		}
+		if (schemes[i].min_version <= version &&
+			schemes[i].max_version >= version &&
+			lib->plugins->has_feature(lib->plugins,
+					PLUGIN_PROVIDE(PUBKEY_VERIFY, schemes[i].params.scheme)))
+		{
+			sigs[count++] = schemes[i];
+		}
+	}
+
+	if (out)
+	{
+		*out = calloc(count, sizeof(tls_signature_scheme_t));
+		for (i = 0; i < count; i++)
+		{
+			(*out)[i] = sigs[i].sig;
+		}
+	}
+	return count;
+}
+
+/**
+ * See header.
+ */
+tls_named_group_t tls_ec_group_to_curve(diffie_hellman_group_t group)
+{
+	int i;
+
+	for (i = 0; i < countof(curves); i++)
+	{
+		if (curves[i].group == group)
+		{
+			return curves[i].curve;
+		}
+	}
+	return 0;
+}
+
+/**
+ * See header.
+ */
+key_type_t tls_signature_scheme_to_key_type(tls_signature_scheme_t sig)
+{
+	int i;
+
+	for (i = 0; i < countof(schemes); i++)
+	{
+		if (schemes[i].sig == sig)
+		{
+			return key_type_from_signature_scheme(schemes[i].params.scheme);
+		}
+	}
+	return 0;
+}
+
+/**
+ * Hashtable hash function
+ */
+static u_int hash_key_type(key_type_t *type)
+{
+	return chunk_hash(chunk_from_thing(*type));
+}
+
+/**
+ * Hashtable equals function
+ */
+static bool equals_key_type(key_type_t *key1, key_type_t *key2)
+{
+	return *key1 == *key2;
+}
+
+CALLBACK(filter_key_types, bool,
+	void *data, enumerator_t *orig, va_list args)
+{
+	key_type_t *key_type, *out;
+
+	VA_ARGS_VGET(args, out);
+
+	if (orig->enumerate(orig, NULL, &key_type))
+	{
+		*out = *key_type;
+		return TRUE;
+	}
+	return FALSE;
+}
+
+CALLBACK(destroy_key_types, void,
+	hashtable_t *ht)
+{
+	ht->destroy_function(ht, (void*)free);
+}
+
+/**
+ * Create an enumerator over supported key types within a specific TLS range
+ */
+static enumerator_t *get_supported_key_types(tls_version_t min_version,
+										  tls_version_t max_version)
+{
+	hashtable_t *ht;
+	key_type_t *type, lookup;
+	int i;
+
+	ht = hashtable_create((hashtable_hash_t)hash_key_type,
+						  (hashtable_equals_t)equals_key_type, 4);
+	for (i = 0; i < countof(schemes); i++)
+	{
+		if (schemes[i].min_version <= max_version &&
+			schemes[i].max_version >= min_version)
+		{
+			lookup = key_type_from_signature_scheme(schemes[i].params.scheme);
+			if (!ht->get(ht, &lookup))
+			{
+				type = malloc_thing(key_type_t);
+				*type = lookup;
+				ht->put(ht, type, type);
+			}
+		}
+	}
+	return enumerator_create_filter(ht->create_enumerator(ht),
+									filter_key_types, ht, destroy_key_types);
+}
+
+/**
+ * Create an array of an intersection of server and peer supported key types
+ */
+static array_t *create_common_key_types(enumerator_t *enumerator, chunk_t hashsig)
+{
+	array_t *key_types;
+	key_type_t v, lookup;
+	uint16_t sig_scheme;
+
+	key_types = array_create(sizeof(key_type_t), 8);
+	while (enumerator->enumerate(enumerator, &v))
+	{
+		bio_reader_t *reader;
+
+		reader = bio_reader_create(hashsig);
+		while (reader->remaining(reader) &&
+			   reader->read_uint16(reader, &sig_scheme))
+		{
+			lookup = tls_signature_scheme_to_key_type(sig_scheme);
+			if (v == lookup)
+			{
+				array_insert(key_types, ARRAY_TAIL, &lookup);
+				break;
+			}
+		}
+		reader->destroy(reader);
+	}
+	return key_types;
+}
+
+typedef struct {
+	enumerator_t public;
+	array_t *key_types;
+	identification_t *peer;
+	private_key_t *key;
+	auth_cfg_t *auth;
+} private_key_enumerator_t;
+
+METHOD(enumerator_t, private_key_enumerate, bool,
+	private_key_enumerator_t *this, va_list args)
+{
+	key_type_t type;
+	auth_cfg_t **auth_out;
+	private_key_t **key_out;
+
+	VA_ARGS_VGET(args, key_out, auth_out);
+
+	DESTROY_IF(this->key);
+	DESTROY_IF(this->auth);
+	this->auth = auth_cfg_create();
+
+	while (array_remove(this->key_types, ARRAY_HEAD, &type))
+	{
+		this->key = lib->credmgr->get_private(lib->credmgr, type, this->peer,
+											  this->auth);
+		if (this->key)
+		{
+			*key_out = this->key;
+			if (auth_out)
+			{
+				*auth_out = this->auth;
+			}
+			return TRUE;
+		}
+	}
+	return FALSE;
+}
+
+METHOD(enumerator_t, private_key_destroy, void,
+	private_key_enumerator_t *this)
+{
+	DESTROY_IF(this->key);
+	DESTROY_IF(this->auth);
+	array_destroy(this->key_types);
+	free(this);
+}
+
+/**
+ * See header.
+ */
+enumerator_t *tls_create_private_key_enumerator(tls_version_t min_version,
+												tls_version_t max_version,
+												chunk_t hashsig,
+												identification_t *peer)
+{
+	private_key_enumerator_t *enumerator;
+	enumerator_t *key_types;
+
+	key_types = get_supported_key_types(min_version, max_version);
+
+	INIT(enumerator,
+		.public = {
+			.enumerate = enumerator_enumerate_default,
+			.venumerate = _private_key_enumerate,
+			.destroy = _private_key_destroy,
+		},
+		.key_types = create_common_key_types(key_types, hashsig),
+		.peer = peer,
+	);
+	key_types->destroy(key_types);
+
+	if (!array_count(enumerator->key_types))
+	{
+		private_key_destroy(enumerator);
+		return NULL;
+	}
+	return &enumerator->public;
 }

@@ -63,6 +63,7 @@ libimcv_la_SOURCES = \
 	ita/ita_attr_get_settings.h ita/ita_attr_get_settings.c \
 	ita/ita_attr_settings.h ita/ita_attr_settings.c \
 	ita/ita_attr_angel.h ita/ita_attr_angel.c \
+	ita/ita_attr_symlinks.h ita/ita_attr_symlinks.c \
 	os_info/os_info.h os_info/os_info.c \
 	pa_tnc/pa_tnc_attr.h \
 	pa_tnc/pa_tnc_msg.h pa_tnc/pa_tnc_msg.c \
@@ -81,6 +82,7 @@ libimcv_la_SOURCES = \
 	pts/pts_ima_bios_list.h pts/pts_ima_bios_list.c \
 	pts/pts_ima_event_list.h pts/pts_ima_event_list.c \
 	pts/pts_meas_algo.h pts/pts_meas_algo.c \
+	pts/pts_symlinks.h pts/pts_symlinks.c \
 	pts/components/pts_component.h \
 	pts/components/pts_component_manager.h pts/components/pts_component_manager.c \
 	pts/components/pts_comp_evidence.h pts/components/pts_comp_evidence.c \

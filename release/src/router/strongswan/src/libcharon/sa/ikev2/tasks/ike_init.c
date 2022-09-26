@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2018 Tobias Brunner
+ * Copyright (C) 2008-2019 Tobias Brunner
  * Copyright (C) 2005-2008 Martin Willi
  * Copyright (C) 2005 Jan Hutter
  * HSR Hochschule fuer Technik Rapperswil
@@ -433,6 +433,13 @@ static bool build_payloads(private_ike_init_t *this, message_t *message)
 	{
 		message->add_notify(message, FALSE, USE_PPK, chunk_empty);
 	}
+	/* notify the peer if we accept childless IKE_SAs */
+	if (!this->old_sa && !this->initiator &&
+		 ike_cfg->childless(ike_cfg) != CHILDLESS_NEVER)
+	{
+		message->add_notify(message, FALSE, CHILDLESS_IKEV2_SUPPORTED,
+							chunk_empty);
+	}
 	return TRUE;
 }
 
@@ -446,17 +453,23 @@ static void process_sa_payload(private_ike_init_t *this, message_t *message,
 	enumerator_t *enumerator;
 	linked_list_t *proposal_list;
 	host_t *me, *other;
-	bool private, prefer_configured;
+	proposal_selection_flag_t flags = 0;
 
 	ike_cfg = this->ike_sa->get_ike_cfg(this->ike_sa);
 
 	proposal_list = sa_payload->get_proposals(sa_payload);
-	private = this->ike_sa->supports_extension(this->ike_sa, EXT_STRONGSWAN);
-	prefer_configured = lib->settings->get_bool(lib->settings,
-							"%s.prefer_configured_proposals", TRUE, lib->ns);
-
-	this->proposal = ike_cfg->select_proposal(ike_cfg, proposal_list, private,
-											  prefer_configured);
+	if (!this->ike_sa->supports_extension(this->ike_sa, EXT_STRONGSWAN) &&
+		!lib->settings->get_bool(lib->settings, "%s.accept_private_algs",
+								 FALSE, lib->ns))
+	{
+		flags |= PROPOSAL_SKIP_PRIVATE;
+	}
+	if (!lib->settings->get_bool(lib->settings,
+							"%s.prefer_configured_proposals", TRUE, lib->ns))
+	{
+		flags |= PROPOSAL_PREFER_SUPPLIED;
+	}
+	this->proposal = ike_cfg->select_proposal(ike_cfg, proposal_list, flags);
 	if (!this->proposal)
 	{
 		if (!this->initiator && !this->old_sa)
@@ -474,7 +487,7 @@ static void process_sa_payload(private_ike_init_t *this, message_t *message,
 				DBG1(DBG_IKE, "no matching proposal found, trying alternative "
 					 "config");
 				this->proposal = cfg->select_proposal(cfg, proposal_list,
-													private, prefer_configured);
+													  flags);
 				if (this->proposal)
 				{
 					alt_cfg = cfg->get_ref(cfg);
@@ -576,6 +589,13 @@ static void process_payloads(private_ike_init_t *this, message_t *message)
 						{
 							this->ike_sa->enable_extension(this->ike_sa,
 														   EXT_IKE_REDIRECTION);
+						}
+						break;
+					case CHILDLESS_IKEV2_SUPPORTED:
+						if (this->initiator && !this->old_sa)
+						{
+							this->ike_sa->enable_extension(this->ike_sa,
+														   EXT_IKE_CHILDLESS);
 						}
 						break;
 					default:

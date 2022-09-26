@@ -39,7 +39,7 @@ START_TEST(test_ntt_fft_impulse)
 		x[i] = 0;
 	}
 	x[0] = 1;
- 
+
 	fft = ntt_fft_create(fft_params[_i]);
 	fft->transform(fft, x, X, FALSE);
 
@@ -72,7 +72,7 @@ START_TEST(test_ntt_fft_wrap)
 	}
 	fft = ntt_fft_create(fft_params[_i]);
 	ck_assert(fft->get_size(fft) == n);
-	ck_assert(fft->get_modulus(fft) == q); 
+	ck_assert(fft->get_modulus(fft) == q);
 	fft->transform(fft, x, X, FALSE);
 
 	for (j = 0; j < n; j++)
@@ -92,7 +92,7 @@ START_TEST(test_ntt_fft_wrap)
 		}
 		y[j] = 0;
 	}
-	fft->destroy(fft);  
+	fft->destroy(fft);
 }
 END_TEST
 

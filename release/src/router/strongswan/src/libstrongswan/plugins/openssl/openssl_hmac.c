@@ -42,6 +42,10 @@
 #include <openssl/evp.h>
 #include <openssl/hmac.h>
 
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+#include <openssl/core_names.h>
+#endif
+
 #include "openssl_hmac.h"
 
 #include <crypto/mac.h>
@@ -60,6 +64,19 @@ struct private_mac_t {
 	 */
 	mac_t public;
 
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+	/**
+	 * HMAC context
+	 */
+	EVP_MAC_CTX *hmac;
+
+	/**
+	 * Base context because EVP_MAC_init() does not reset the internal state if
+	 * no key is passed, so the above is a copy that's replaced with every
+	 * reset that does not change the key
+	 */
+	EVP_MAC_CTX *hmac_base;
+#else
 	/**
 	 * Hasher to use
 	 */
@@ -69,6 +86,7 @@ struct private_mac_t {
 	 * Current HMAC context
 	 */
 	HMAC_CTX *hmac;
+#endif
 
 #if OPENSSL_VERSION_NUMBER < 0x10100000L
 	/**
@@ -76,71 +94,94 @@ struct private_mac_t {
 	 */
 	HMAC_CTX hmac_ctx;
 #endif
-
-	/**
-	 * Key set on HMAC_CTX?
-	 */
-	bool key_set;
 };
+
+/**
+ * Resets the state with the given key, or only resets the internal state
+ * if key is chunk_empty.
+ */
+static bool reset(private_mac_t *this, chunk_t key)
+{
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+	if (!key.len || EVP_MAC_init(this->hmac_base, key.ptr, key.len, NULL))
+	{
+		EVP_MAC_CTX_free(this->hmac);
+		this->hmac = EVP_MAC_CTX_dup(this->hmac_base);
+		return TRUE;
+	}
+#else
+	if (HMAC_Init_ex(this->hmac, key.ptr, key.len, this->hasher, NULL))
+	{
+		return TRUE;
+	}
+#endif
+	return FALSE;
+}
 
 METHOD(mac_t, set_key, bool,
 	private_mac_t *this, chunk_t key)
 {
-#if OPENSSL_VERSION_NUMBER >= 0x10000000L
-	if (HMAC_Init_ex(this->hmac, key.ptr, key.len, this->hasher, NULL))
-	{
-		this->key_set = TRUE;
-		return TRUE;
+	if (!key.ptr)
+	{	/* HMAC_Init_ex() won't reset the key if a NULL pointer is passed,
+		 * use a lengthy string in case there is a limit in FIPS-mode */
+		key = chunk_from_str("00000000000000000000000000000000");
 	}
-	return FALSE;
-#else /* OPENSSL_VERSION_NUMBER < 1.0 */
-	HMAC_Init_ex(this->hmac, key.ptr, key.len, this->hasher, NULL);
-	this->key_set = TRUE;
+	if (!reset(this, key))
+	{
+		return FALSE;
+	}
 	return TRUE;
+}
+
+METHOD(mac_t, get_mac_size, size_t,
+	private_mac_t *this)
+{
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+	return EVP_MAC_CTX_get_mac_size(this->hmac);
+#else
+	return EVP_MD_size(this->hasher);
 #endif
 }
 
 METHOD(mac_t, get_mac, bool,
 	private_mac_t *this, chunk_t data, uint8_t *out)
 {
-	if (!this->key_set)
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+	if (!EVP_MAC_update(this->hmac, data.ptr, data.len))
 	{
 		return FALSE;
 	}
-#if OPENSSL_VERSION_NUMBER >= 0x10000000L
+#else
 	if (!HMAC_Update(this->hmac, data.ptr, data.len))
 	{
 		return FALSE;
 	}
-	if (out == NULL)
+#endif
+	if (!out)
 	{
 		return TRUE;
 	}
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+	if (!EVP_MAC_final(this->hmac, out, NULL, get_mac_size(this)))
+	{
+		return FALSE;
+	}
+#else
 	if (!HMAC_Final(this->hmac, out, NULL))
 	{
 		return FALSE;
 	}
-#else /* OPENSSL_VERSION_NUMBER < 1.0 */
-	HMAC_Update(this->hmac, data.ptr, data.len);
-	if (out == NULL)
-	{
-		return TRUE;
-	}
-	HMAC_Final(this->hmac, out, NULL);
 #endif
-	return set_key(this, chunk_empty);
-}
-
-METHOD(mac_t, get_mac_size, size_t,
-	private_mac_t *this)
-{
-	return EVP_MD_size(this->hasher);
+	return reset(this, chunk_empty);
 }
 
 METHOD(mac_t, destroy, void,
 	private_mac_t *this)
 {
-#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+	EVP_MAC_CTX_free(this->hmac_base);
+	EVP_MAC_CTX_free(this->hmac);
+#elif OPENSSL_VERSION_NUMBER >= 0x10100000L
 	HMAC_CTX_free(this->hmac);
 #else
 	HMAC_CTX_cleanup(&this->hmac_ctx);
@@ -169,22 +210,48 @@ static mac_t *hmac_create(hash_algorithm_t algo)
 			.set_key = _set_key,
 			.destroy = _destroy,
 		},
-		.hasher = EVP_get_digestbyname(name),
 	);
 
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+	OSSL_PARAM params[] = {
+		OSSL_PARAM_utf8_string(OSSL_MAC_PARAM_DIGEST, name, 0),
+		OSSL_PARAM_END,
+	};
+	EVP_MAC *mac = EVP_MAC_fetch(NULL, "HMAC", NULL);
+
+	if (!mac)
+	{
+		free(this);
+		return NULL;
+	}
+	this->hmac_base = EVP_MAC_CTX_new(mac);
+	EVP_MAC_free(mac);
+	if (!this->hmac_base || !EVP_MAC_CTX_set_params(this->hmac_base, params))
+	{
+		free(this);
+		return NULL;
+	}
+#else /* OPENSSL_VERSION_NUMBER */
+	this->hasher = EVP_get_digestbyname(name);
 	if (!this->hasher)
 	{
 		free(this);
 		return NULL;
 	}
-
 #if OPENSSL_VERSION_NUMBER >= 0x10100000L
 	this->hmac = HMAC_CTX_new();
 #else
 	HMAC_CTX_init(&this->hmac_ctx);
 	this->hmac = &this->hmac_ctx;
 #endif
+#endif /* OPENSSL_VERSION_NUMBER */
 
+	/* make sure the underlying hash algorithm is supported */
+	if (!set_key(this, chunk_empty))
+	{
+		destroy(this);
+		return NULL;
+	}
 	return &this->public;
 }
 

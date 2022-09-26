@@ -64,6 +64,8 @@ static certificate_t *fetch_ocsp(char *url, certificate_t *subject,
 								 certificate_t *issuer)
 {
 	certificate_t *request, *response;
+	ocsp_request_t *ocsp_request;
+	ocsp_response_t *ocsp_response;
 	chunk_t send, receive = chunk_empty;
 
 	/* TODO: requestor name, signature */
@@ -83,7 +85,6 @@ static certificate_t *fetch_ocsp(char *url, certificate_t *subject,
 		request->destroy(request);
 		return NULL;
 	}
-	request->destroy(request);
 
 	DBG1(DBG_CFG, "  requesting ocsp status from '%s' ...", url);
 	if (lib->fetcher->fetch(lib->fetcher, url, &receive,
@@ -92,6 +93,7 @@ static certificate_t *fetch_ocsp(char *url, certificate_t *subject,
 							FETCH_END) != SUCCESS)
 	{
 		DBG1(DBG_CFG, "ocsp request to %s failed", url);
+		request->destroy(request);
 		chunk_free(&receive);
 		chunk_free(&send);
 		return NULL;
@@ -105,8 +107,20 @@ static certificate_t *fetch_ocsp(char *url, certificate_t *subject,
 	if (!response)
 	{
 		DBG1(DBG_CFG, "parsing ocsp response failed");
+		request->destroy(request);
 		return NULL;
 	}
+	ocsp_request = (ocsp_request_t*)request;
+	ocsp_response = (ocsp_response_t*)response;
+	if (ocsp_response->get_nonce(ocsp_response).len &&
+		!chunk_equals_const(ocsp_request->get_nonce(ocsp_request),
+							ocsp_response->get_nonce(ocsp_response)))
+	{
+		DBG1(DBG_CFG, "nonce in ocsp response doesn't match");
+		request->destroy(request);
+		return NULL;
+	}
+	request->destroy(request);
 	return response;
 }
 

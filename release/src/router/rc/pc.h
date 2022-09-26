@@ -30,8 +30,23 @@ struct pc_event{
 	int end_hour;
 	int start_min;
 	int end_min;
+#ifdef RTCONFIG_PC_REWARD
+	int end_year;
+	int end_mon;
+	int end_sec;
+	int access;
+	time_t ts;
+	int utc;
+#endif
 	pc_event_s *next;
 };
+
+#ifdef RTCONFIG_PC_REWARD
+enum {
+	PC_REWARD_ACCESS_BLOCKED,
+	PC_REWARD_ACCESS_ALLOWED
+};
+#endif
 
 enum {
 	INITIAL,
@@ -61,6 +76,7 @@ pc_event_s *get_event_list_by_sched_v2(pc_event_s **target_list, char *sched_v2_
 extern pc_s *get_all_pc_list(pc_s **pc_list);
 extern pc_s *op_get_all_pc_list(pc_s **pc_list);
 extern pc_s *get_all_pc_tmp_list(pc_s **pc_list);
+extern pc_s *get_all_pc_reward_list(pc_s **pc_list);
 
 extern pc_event_s *initial_event(pc_event_s **target_e);
 extern void free_event_list(pc_event_s **target_list);
@@ -91,6 +107,9 @@ extern int op_cleantrack_pc_list(pc_s *pc_list, int verb);
 #endif
 extern void config_daytime_string(pc_s *pc_list, FILE *fp, char *logaccept, char *logdrop, int temp);
 extern void config_pause_block_string(pc_s *pc_list, FILE *fp, char *logaccept, char *logdrop, int temp);
+#ifdef RTCONFIG_PC_REWARD
+extern void config_pc_reward_string(pc_s *pc_list, FILE *fp);
+#endif
 #ifdef RTCONFIG_ISP_OPTUS
 // For optus customization
 #define CHAIN_OPTUS_PAUSE "OPTUS_PAUSE"

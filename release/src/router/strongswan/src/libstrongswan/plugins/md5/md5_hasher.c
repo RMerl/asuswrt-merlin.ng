@@ -91,7 +91,7 @@ Rotation is separate from addition to prevent recomputation.
 typedef struct private_md5_hasher_t private_md5_hasher_t;
 
 /**
- * Private data structure with hasing context.
+ * Private data structure with hashing context.
  */
 struct private_md5_hasher_t {
 	/**

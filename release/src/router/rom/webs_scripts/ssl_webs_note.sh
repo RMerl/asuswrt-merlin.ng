@@ -1,5 +1,7 @@
 #!/bin/sh
 
+betaupg_support=`nvram get rc_support|grep -i betaupg`
+
 wget_options="-q -t 2 -T 30 --no-check-certificate"
 
 dl_path_SQ="https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless_SQ"
@@ -26,13 +28,37 @@ fi
 
 new_firm=`echo $2 | sed s/'\.'/_/4 | sed s/'\.'//g;`
 echo "---- $1 $new_firm ----" >> /tmp/webs_upgrade.log
+
+# for beta path
+forbeta=0
+if [ "$betaupg_support" != "" ]; then
+	firmver_new_1st_bit=${new_firm:0:1}
+	echo "---- firmver_new_1st_bit : $firmver_new_1st_bit ----" >> /tmp/webs_upgrade.log
+
+	if [ "$firmver_new_1st_bit" == "9" ]; then
+		forbeta=1
+	fi
+	echo "---- forbeta : $forbeta ----" >> /tmp/webs_upgrade.log
+fi
+
 releasenote_file=$1_"$new_firm"_"$LANG"_note.zip
 releasenote_file_US=$1_"$new_firm"_US_note.zip
 releasenote_path="/tmp/release_note.txt"
 
 wget_release=""
 wget_release2=""
-if [ "$forsq" -ge 2 ] && [ "$forsq" -le 9 ]; then
+if [ "$betaupg_support" != "" ] && [ "$forbeta" == "1" ]; then
+	echo "---- download beta release note ${dl_path_SQ}/$releasenote_file ----" >> /tmp/webs_upgrade.log
+        wget $wget_options ${dl_path_SQ}/$releasenote_file -O $releasenote_path
+        wget_release=$?
+        echo "---- [LiveUpdate] wget pLang release note, exit code: ${wget_release} ----" >> /tmp/webs_upgrade.log
+        if [ "$wget_release" != "0" ]; then
+                echo "---- download beta release note ${dl_path_SQ}/$releasenote_file_US ----" >> /tmp/webs_upgrade.log
+                wget $wget_options ${dl_path_SQ}/$releasenote_file_US -O $releasenote_path
+                wget_release2=$?
+                echo "---- [LiveUpdate] wget US release note, exit code: ${wget_release2} ----" >> /tmp/webs_upgrade.log
+        fi
+elif [ "$forsq" -ge 2 ] && [ "$forsq" -le 9 ]; then
 	echo "---- download SQ beta_user release note ${dl_path_SQ_beta}${forsq}/$releasenote_file ----" >> /tmp/webs_upgrade.log
 	wget $wget_options ${dl_path_SQ_beta}${forsq}/$releasenote_file -O $releasenote_path
 	wget_release=$?

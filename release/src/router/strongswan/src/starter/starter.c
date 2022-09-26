@@ -41,8 +41,6 @@
 #include "files.h"
 #include "starterstroke.h"
 #include "invokecharon.h"
-#include "netkey.h"
-#include "klips.h"
 #include "cmp.h"
 
 #ifndef LOG_AUTHPRIV
@@ -257,14 +255,14 @@ static void fatal_signal_handler(int signal)
 	abort();
 }
 
-static bool check_pid(char *pid_file)
+static bool check_pid(char *file)
 {
 	struct stat stb;
 	FILE *pidfile;
 
-	if (stat(pid_file, &stb) == 0)
+	if (stat(file, &stb) == 0)
 	{
-		pidfile = fopen(pid_file, "r");
+		pidfile = fopen(file, "r");
 		if (pidfile)
 		{
 			char buf[64];
@@ -281,8 +279,8 @@ static bool check_pid(char *pid_file)
 				return TRUE;
 			}
 		}
-		DBG1(DBG_APP, "removing pidfile '%s', process not running", pid_file);
-		unlink(pid_file);
+		DBG1(DBG_APP, "removing pidfile '%s', process not running", file);
+		unlink(file);
 	}
 	return FALSE;
 }
@@ -521,19 +519,6 @@ int main (int argc, char **argv)
 		cleanup();
 		exit(LSB_RC_INVALID_ARGUMENT);
 	}
-
-#ifndef SKIP_KERNEL_IPSEC_MODPROBES
-	/* determine if we have a native netkey IPsec stack */
-	if (!starter_netkey_init())
-	{
-		DBG1(DBG_APP, "no netkey IPsec stack detected");
-		if (!starter_klips_init())
-		{
-			DBG1(DBG_APP, "no KLIPS IPsec stack detected");
-			DBG1(DBG_APP, "no known IPsec stack detected, ignoring!");
-		}
-	}
-#endif
 
 	last_reload = time_monotonic(NULL);
 

@@ -383,7 +383,7 @@ static void process_filter_id(radius_message_t *msg)
 }
 
 /**
- * Handle Session-Timeout attribte and Interim updates
+ * Handle Session-Timeout attribute and Interim updates
  */
 static void process_timeout(radius_message_t *msg)
 {
@@ -502,7 +502,7 @@ static void add_unity_split_attribute(eap_radius_provider_t *provider,
 		}
 		writer->write_data(writer, net->get_address(net));
 		writer->write_data(writer, mask->get_address(mask));
-		padding = writer->skip(writer, 6); /* 6 bytes pdding */
+		padding = writer->skip(writer, 6); /* 6 bytes padding */
 		memset(padding.ptr, 0, padding.len);
 		mask->destroy(mask);
 		net->destroy(net);
@@ -733,7 +733,9 @@ METHOD(eap_method_t, get_msk, status_t,
 		*out = msk;
 		return SUCCESS;
 	}
-	return FAILED;
+	/* we assume the selected method did not establish an MSK, if it failed
+	 * to establish one, process() would have failed */
+	return NOT_SUPPORTED;
 }
 
 METHOD(eap_method_t, get_identifier, uint8_t,

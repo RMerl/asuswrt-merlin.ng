@@ -17,6 +17,8 @@
 
 #include "packet.h"
 
+#include <metadata/metadata_set.h>
+
 typedef struct private_packet_t private_packet_t;
 
 /**
@@ -53,6 +55,11 @@ struct private_packet_t {
 	 * actual chunk returned from get_data, adjusted when skip_bytes is called
 	 */
 	chunk_t adjusted_data;
+
+	/**
+	 * Set of metadata objects, if any
+	 */
+	metadata_set_t *metadata;
 };
 
 METHOD(packet_t, set_source, void,
@@ -111,36 +118,70 @@ METHOD(packet_t, skip_bytes, void,
 	this->adjusted_data = chunk_skip(this->adjusted_data, bytes);
 }
 
+METHOD(packet_t, get_metadata, metadata_t*,
+	private_packet_t *this, const char *key)
+{
+	return metadata_set_get(this->metadata, key);
+}
+
+METHOD(packet_t, set_metadata, void,
+	private_packet_t *this, const char *key, metadata_t *data)
+{
+	if (!this->metadata && data)
+	{
+		this->metadata = metadata_set_create();
+	}
+	metadata_set_put(this->metadata, key, data);
+}
+
 METHOD(packet_t, destroy, void,
 	private_packet_t *this)
 {
 	DESTROY_IF(this->source);
 	DESTROY_IF(this->destination);
+	metadata_set_destroy(this->metadata);
 	free(this->data.ptr);
 	free(this);
+}
+
+/**
+ * Clone the packet with or without data
+ */
+static packet_t *clone_packet(private_packet_t *this, bool skip_data)
+{
+	private_packet_t *other;
+
+	other = (private_packet_t*)packet_create();
+	if (this->destination)
+	{
+		set_destination(other, this->destination->clone(this->destination));
+	}
+	if (this->source)
+	{
+		set_source(other, this->source->clone(this->source));
+	}
+	other->metadata = metadata_set_clone(this->metadata);
+	set_dscp(other, this->dscp);
+
+	if (!skip_data && this->data.ptr)
+	{
+		set_data(other, chunk_clone(this->adjusted_data));
+	}
+	return &other->public;
 }
 
 METHOD(packet_t, clone_, packet_t*,
 	private_packet_t *this)
 {
-	packet_t *other;
+	return clone_packet(this, FALSE);
+}
 
-	other = packet_create();
-	if (this->destination)
-	{
-		other->set_destination(other,
-							   this->destination->clone(this->destination));
-	}
-	if (this->source)
-	{
-		other->set_source(other, this->source->clone(this->source));
-	}
-	if (this->data.ptr)
-	{
-		other->set_data(other, chunk_clone(this->adjusted_data));
-	}
-	other->set_dscp(other, this->dscp);
-	return other;
+/*
+ * Described in header
+ */
+packet_t *packet_clone_no_data(packet_t *packet)
+{
+	return clone_packet((private_packet_t*)packet, TRUE);
 }
 
 /**
@@ -160,6 +201,8 @@ packet_t *packet_create_from_data(host_t *src, host_t *dst, chunk_t data)
 			.get_destination = _get_destination,
 			.get_dscp = _get_dscp,
 			.set_dscp = _set_dscp,
+			.get_metadata = _get_metadata,
+			.set_metadata = _set_metadata,
 			.skip_bytes = _skip_bytes,
 			.clone = _clone_,
 			.destroy = _destroy,

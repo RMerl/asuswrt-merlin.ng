@@ -53,7 +53,7 @@ START_TEST(test_imcv_seg_env)
 	pa_tnc_attr_t *attr, *attr1, *base_attr, *base_attr1, *error;
 	tcg_seg_attr_seg_env_t *seg_env_attr;
 	ita_attr_command_t *ita_attr;
-	seg_env_t *seg_env, *seg_env1;
+	seg_env_t *seg_env, *seg_env1 = NULL;
 	pen_type_t type;
 	uint32_t base_attr_id, max_seg_size, last_seg_size, seg_size, offset;
 	uint8_t flags;
@@ -145,6 +145,7 @@ START_TEST(test_imcv_seg_env)
 		}
 
 		/* check reconstructed base attribute */
+		ck_assert(seg_env1);
 		base_attr1 = seg_env1->get_base_attr(seg_env1);
 		ck_assert(base_attr1);
 		type = base_attr1->get_type(base_attr1);

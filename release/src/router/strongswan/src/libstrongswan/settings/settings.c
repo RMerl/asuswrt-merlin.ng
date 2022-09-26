@@ -611,7 +611,7 @@ inline int settings_value_as_int(char *value, int def)
 		{	/* manually detect 0x prefix as we want to avoid octal encoding */
 			base = 16;
 		}
-		intval = strtol(value, &end, base);
+		intval = strtoul(value, &end, base);
 		if (errno == 0 && *end == 0 && end != value)
 		{
 			return intval;
@@ -1071,13 +1071,37 @@ METHOD(settings_t, load_string_section, bool,
 	return extend_section(this, parent, section, merge);
 }
 
+CALLBACK(clear_content, void,
+	char *str, int idx, void *clear)
+{
+	if (*(bool*)clear)
+	{
+		memwipe(str, strlen(str));
+	}
+	free(str);
+}
+
+/**
+ * Destroy the settings object and optionally clear content memory
+ */
+static void destroy_settings(private_settings_t *this, bool clear)
+{
+	settings_section_destroy(this->top, clear ? this->contents : NULL);
+	array_destroy_function(this->contents, clear_content, &clear);
+	this->lock->destroy(this->lock);
+	free(this);
+}
+
 METHOD(settings_t, destroy, void,
 	private_settings_t *this)
 {
-	settings_section_destroy(this->top, NULL);
-	array_destroy_function(this->contents, (void*)free, NULL);
-	this->lock->destroy(this->lock);
-	free(this);
+	destroy_settings(this, FALSE);
+}
+
+METHOD(settings_t, destroy_clear, void,
+	private_settings_t *this)
+{
+	destroy_settings(this, TRUE);
 }
 
 static private_settings_t *settings_create_base()
@@ -1105,6 +1129,7 @@ static private_settings_t *settings_create_base()
 			.load_string = _load_string,
 			.load_string_section = _load_string_section,
 			.destroy = _destroy,
+			.destroy_clear = _destroy_clear,
 		},
 		.top = settings_section_create(NULL),
 		.contents = array_create(0, 0),

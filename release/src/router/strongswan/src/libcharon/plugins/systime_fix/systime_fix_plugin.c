@@ -205,7 +205,7 @@ static bool load_validator(private_systime_fix_plugin_t *this)
 	struct tm tm = {
 		.tm_mday = 1,
 	};
-	char *str, *fmt;
+	char *str, *fmt, buf[32];
 
 	fmt = lib->settings->get_str(lib->settings,
 			"%s.plugins.%s.threshold_format", "%Y", lib->ns, get_name(this));
@@ -235,7 +235,8 @@ static bool load_validator(private_systime_fix_plugin_t *this)
 		return FALSE;
 	}
 
-	DBG1(DBG_CFG, "enabling %s, threshold: %s", get_name(this), asctime(&tm));
+	DBG1(DBG_CFG, "enabling %s, threshold: %s", get_name(this),
+		 asctime_r(&tm, buf));
 	this->validator = systime_fix_validator_create(this->threshold);
 	return TRUE;
 }

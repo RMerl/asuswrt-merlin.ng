@@ -4,7 +4,6 @@ ifeq ($(TOP_PLATFORM),)
 TOP_PLATFORM=$(TOP)
 endif
 
-
 CFLAGS += -Os -Wall $(EXTRACFLAGS) -fPIC
 CFLAGS += -I. -I$(TOP)/shared -I$(SRCBASE)/include -I$(TOP)/sqlite -I$(TOP)/rc -I$(TOP)/httpd
 CFLAGS += -I$(TOP)/bwdpi_source/src/tdts_udb_sample
@@ -19,6 +18,10 @@ endif
 LDFLAGS += -L$(TOP)/bwdpi_source/asus -lbwdpi
 LDFLAGS += -L$(LIBDIR) -lm -L$(TOP)/sqlite/.libs -lsqlite3
 
+ifeq ($(RTCONFIG_NOTIFICATION_CENTER),y)
+CFLAGS  += -I$(TOP)/json-c
+LDFLAGS += -L$(TOP)/json-c/.libs -ljson-c
+endif
 
 ifeq ($(RTCONFIG_QTN),y)
 CFLAGS += -I$(TOP)/libqcsapi_client

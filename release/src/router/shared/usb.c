@@ -437,3 +437,125 @@ char *get_usb_storage_path(char *path)
 }
 
 
+
+#ifdef RTCONFIG_NEW_PHYMAP
+static uint64_t get_usb_mib_by_ifname(char *ifname, char *type)
+{
+	char tmp[100], buf[32];
+	int result = 0;
+
+	if (!ifname || !type)
+		return result;
+
+	snprintf(tmp, sizeof(tmp), "/sys/class/net/%s/statistics/%s", ifname, type);
+
+	f_read_string(tmp, buf, sizeof(buf));
+	return strtoull(buf, NULL, 10);
+}
+
+void get_usb_modem_status(phy_info_list *list)
+{
+	int i;
+	char cap_buf[64] = {0};
+	phy_port_mapping port_mapping;
+	if (!list)
+		return;
+	get_phy_port_mapping(&port_mapping);
+	// Clean all state and dupex.
+	for (i = 0; i < port_mapping.count; i++) {
+		if ((port_mapping.port[i].cap & PHY_PORT_CAP_USB) > 0 ||
+			(port_mapping.port[i].cap & PHY_PORT_CAP_MOBILE) > 0) {
+			if (list->phy_info[i].cap == 0) {
+				snprintf(list->phy_info[i].label_name, sizeof(list->phy_info[i].label_name), "%s", 
+					port_mapping.port[i].label_name);
+				list->phy_info[i].cap = port_mapping.port[i].cap;
+				snprintf(list->phy_info[i].cap_name, sizeof(list->phy_info[i].cap_name), "%s", 
+					get_phy_port_cap_name(port_mapping.port[i].cap, cap_buf, sizeof(cap_buf)));
+				list->count++;
+			}
+			snprintf(list->phy_info[i].duplex, sizeof(list->phy_info[i].duplex), "none");
+			snprintf(list->phy_info[i].state, sizeof(list->phy_info[i].state), "down");
+		}
+	}
+
+	if (!is_router_mode())
+		return;
+
+#if defined(RTCONFIG_DUALWAN)
+	char *wans_dualwan = nvram_safe_get("wans_dualwan");
+	if (strlen(wans_dualwan)) {
+		int unit;
+		for(unit = WAN_UNIT_FIRST; unit < WAN_UNIT_MAX; ++unit) {
+			int wan = get_dualwan_by_unit(unit);
+			if (wan == WANS_DUALWAN_IF_USB) {
+				if (is_wan_connect(unit)) {
+					int i, usb_idx = 1;
+					char modem_path[16];
+					char usb_path_node[16];
+					char prefix[32], tmp[32];
+					for (i = 0; i < port_mapping.count; i++) {
+						if ((port_mapping.port[i].cap & PHY_PORT_CAP_USB) > 0 ||
+							(port_mapping.port[i].cap & PHY_PORT_CAP_MOBILE) > 0) {
+							snprintf(prefix, sizeof(prefix), "usb_path%d", usb_idx);
+							snprintf(list->phy_info[i].duplex, sizeof(list->phy_info[i].duplex), "none");
+							snprintf(list->phy_info[i].state, sizeof(list->phy_info[i].state), "down");
+							list->phy_info[i].link_rate = 0;
+							snprintf(modem_path, sizeof(modem_path), "%s", nvram_safe_get("usb_modem_act_path"));
+							if (nvram_get(prefix)) {
+								//_dprintf("%s=%s\n", prefix, nvram_safe_get(prefix));
+								snprintf(usb_path_node, sizeof(usb_path_node), "%s", nvram_safe_get(strlcat_r(prefix, "_node", tmp, sizeof(tmp))));
+								if (nvram_match(prefix, "modem") && !strcmp(usb_path_node, modem_path)) {
+									snprintf(list->phy_info[i].state, sizeof(list->phy_info[i].state), "up");
+									list->phy_info[i].link_rate = nvram_get_int(strlcat_r(prefix, "_speed", tmp, sizeof(tmp)));
+									if (list->status_and_speed_only == 0) {
+										char usb_ifname[8];
+										snprintf(usb_ifname, sizeof(usb_ifname), get_wan_ifname(unit));
+										//_dprintf("usb_ifname=%s\n", usb_ifname);
+										list->phy_info[i].tx_bytes = get_usb_mib_by_ifname(usb_ifname, "tx_bytes");
+										list->phy_info[i].rx_bytes = get_usb_mib_by_ifname(usb_ifname, "rx_bytes");
+										list->phy_info[i].tx_packets = get_usb_mib_by_ifname(usb_ifname, "tx_packets");
+										list->phy_info[i].rx_packets = get_usb_mib_by_ifname(usb_ifname, "rx_packets");
+										list->phy_info[i].crc_errors = get_usb_mib_by_ifname(usb_ifname, "rx_crc_errors");
+									}
+								} else {
+									snprintf(list->phy_info[i].state, sizeof(list->phy_info[i].state), "down");
+									list->phy_info[i].link_rate = 0;
+								}
+							} else {
+								int j;
+								for (j = 1; j <= MAX_USB_HUB_PORT; j++) {
+									snprintf(prefix, sizeof(prefix), "usb_path%d.%d", usb_idx, j);
+									snprintf(usb_path_node, sizeof(usb_path_node), "%s", nvram_safe_get(strlcat_r(prefix, "_node", tmp, sizeof(tmp))));
+									//_dprintf("prefix=%s, usb_path_node=%s\n", prefix, usb_path_node);
+									if (nvram_match(prefix, "modem") && !strcmp(usb_path_node, modem_path)) {
+										snprintf(list->phy_info[i].state, sizeof(list->phy_info[i].state), "up");
+										list->phy_info[i].link_rate = nvram_get_int(strlcat_r(prefix, "_speed", tmp, sizeof(tmp)));
+										if (list->status_and_speed_only == 0) {
+											char usb_ifname[8];
+											snprintf(usb_ifname, sizeof(usb_ifname), get_wan_ifname(unit));
+											//_dprintf("usb_ifname=%s\n", usb_ifname);
+											list->phy_info[i].tx_bytes = get_usb_mib_by_ifname(usb_ifname, "tx_bytes");
+											list->phy_info[i].rx_bytes = get_usb_mib_by_ifname(usb_ifname, "rx_bytes");
+											list->phy_info[i].tx_packets = get_usb_mib_by_ifname(usb_ifname, "tx_packets");
+											list->phy_info[i].rx_packets = get_usb_mib_by_ifname(usb_ifname, "rx_packets");
+											list->phy_info[i].crc_errors = get_usb_mib_by_ifname(usb_ifname, "rx_crc_errors");
+										}
+										break;
+									} else {
+										snprintf(list->phy_info[i].state, sizeof(list->phy_info[i].state), "down");
+										list->phy_info[i].link_rate = 0;
+									}
+								}
+							}
+							usb_idx++;
+						}
+					}
+				}
+			}
+		}
+	}
+#endif
+}
+#endif
+
+

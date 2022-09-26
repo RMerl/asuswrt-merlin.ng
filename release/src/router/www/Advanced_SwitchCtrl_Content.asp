@@ -57,7 +57,7 @@ function disable_lacp_if_conflicts_with_iptv(){
 			document.form.lacp_enabled.value = "0";
 		}
 	}
-	else if(based_modelid == "XT8PRO"){
+	else if(based_modelid == "XT8PRO" || based_modelid == "BM68"){
 		// LAN2 and/or LAN3.
 		if(switch_stb_x_orig == "2" || switch_stb_x_orig == "3" || switch_stb_x_orig == "5" || switch_stb_x_orig == "6" || switch_stb_x_orig == "8"){
 			var note_str = "This function is disabled because LAN2 or LAN3 is configured as IPTV STB port."; //untranslated
@@ -158,7 +158,7 @@ function initial(){
 			new_str = document.getElementById("lacp_note").innerHTML.replace(/LAN1/g, "LAN5");
 			document.getElementById("lacp_note").innerHTML = new_str.replace(/LAN2/g, "LAN6");
 		}
-		else if(based_modelid == "XT8PRO"){
+		else if(based_modelid == "XT8PRO" || based_modelid == "BM68"){
 			var new_str = "";
 			new_str = document.getElementById("lacp_note").innerHTML.replace(/LAN1/g, "LAN3");
 			document.getElementById("lacp_note").innerHTML = new_str;
@@ -182,7 +182,7 @@ function initial(){
 			var bonding_port_settings = [{"val": "4", "text": "LAN5"}, {"val": "3", "text": "LAN6"}];
 		else if(based_modelid == "RT-AC86U" || based_modelid == "GT-AC2900")
 			var bonding_port_settings = [{"val": "4", "text": "LAN1"}, {"val": "3", "text": "LAN2"}];
-		else if(based_modelid == "XT8PRO")
+		else if(based_modelid == "XT8PRO" || based_modelid == "BM68")
 			var bonding_port_settings = [{"val": "2", "text": "LAN2"}, {"val": "3", "text": "LAN3"}];
 		else
 			var bonding_port_settings = [{"val": "1", "text": "LAN1"}, {"val": "2", "text": "LAN2"}];

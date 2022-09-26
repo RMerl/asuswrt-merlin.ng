@@ -29,6 +29,7 @@ enum _sched_v2_type {
 	SCHED_V2_TYPE_UNKNOWN = 0,
 	SCHED_V2_TYPE_DAY,
 	SCHED_V2_TYPE_WEEK,
+	SCHED_V2_TYPE_WEEK_ONLINE
 };
 
 typedef enum _sched_v2_d_index sched_v2_d_index;
@@ -92,7 +93,7 @@ struct _sched_v2 {
 extern char *convert_to_str_sched_v1(const char *str_sched, char *buf, int buf_size) ;
 #endif
 extern void free_sched_v2_list(sched_v2_t **sched_v2_list);
-extern int parse_str_v2_to_sched_v2_list(const char *str_sched_v2, sched_v2_t **sched_v2_list, int merge_same_period);
+extern int parse_str_v2_to_sched_v2_list(const char *str_sched_v2, sched_v2_t **sched_v2_list, int merge_same_period, int skip_disabled);
 
 extern int check_sched_v2_on_off(const char *sched_str);
 extern void convert_wl_sched_v1_to_sched_v2();

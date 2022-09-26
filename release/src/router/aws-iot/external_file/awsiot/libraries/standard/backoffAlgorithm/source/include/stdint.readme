@@ -1,0 +1,37 @@
+#ifndef _STDINT_H
+#define _STDINT_H
+
+/*******************************************************************************
+ * THIS IS NOT A FULL stdint.h IMPLEMENTATION - It only contains the definitions
+ * necessary to build the library code.  It is provided to allow the library to
+ * be built using compilers that do not provide their own stdint.h definition.
+ *
+ * To use this file:
+ *
+ *    1) Copy this file into a directory that is in your compiler's include path.
+ *       The directory must be part of the include path for system header file,
+ *       for example passed using gcc's "-I" or "-isystem" options.
+ *
+ *    2) Rename the copied file stdint.h.
+ *
+ */
+
+typedef signed char          int8_t;
+typedef unsigned char        uint8_t;
+typedef short                int16_t;
+typedef unsigned short       uint16_t;
+typedef long                 int32_t;
+typedef unsigned long        uint32_t;
+typedef long long            int64_t;
+typedef unsigned long long   uint64_t;
+
+#define INT8_MAX      ( ( signed char ) 127 )
+#define UINT8_MAX     ( ( unsigned char ) 255 )
+#define INT16_MAX     ( ( short ) 32767 )
+#define UINT16_MAX    ( ( unsigned short ) 65535 )
+#define INT32_MAX     2147483647L
+#define UINT32_MAX    4294967295UL
+#define INT64_MAX     9223372036854775807LL
+#define UINT64_MAX    18446744073709551615ULL
+
+#endif /* _STDINT_H */

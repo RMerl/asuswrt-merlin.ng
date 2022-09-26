@@ -1,0 +1,6 @@
+if(NOT EXISTS "${CMAKE_CURRENT_LIST_DIR}/libminiupnpc-shared.cmake" OR MINIUPNPC_USE_STATIC_LIBS)
+  include("${CMAKE_CURRENT_LIST_DIR}/miniupnpc-private.cmake")
+  include("${CMAKE_CURRENT_LIST_DIR}/libminiupnpc-static.cmake")
+else()
+  include("${CMAKE_CURRENT_LIST_DIR}/libminiupnpc-shared.cmake")
+endif()

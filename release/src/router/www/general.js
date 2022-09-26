@@ -343,7 +343,6 @@ function change_common_radio(o, s, v, r){
 
 			change_ddns_setting(document.form.ddns_server_x.value);
 			inputCtrl(document.form.ddns_refresh_x, 1);
-			showhide("ddns_ipcheck_tr", 1);
 			show_ipv6update_setting();
 		}else{
 			if(document.form.ddns_server_x.value == "WWW.ASUS.COM"){
@@ -364,7 +363,6 @@ function change_common_radio(o, s, v, r){
 			showhide("check_ddns_field", 0);
 			inputCtrl(document.form.ddns_regular_period, 0);
 			inputCtrl(document.form.ddns_refresh_x, 0);
-			showhide("ddns_ipcheck_tr", 0);
 			showhide("ddns_ipv6update_tr", 0);
 
 			document.getElementById("ddns_status_tr").style.display = "none";
@@ -462,6 +460,8 @@ function openLink(s){
 			tourl = "https://WWW.SELFHOST.DE";
 		else if (document.form.ddns_server_x.value == 'WWW.DNSOMATIC.COM')
 			tourl = "https://dnsomatic.com/create/";
+		else if (document.form.ddns_server_x.value == 'DNS.HE.NET')
+			tourl = "https://ipv6.he.net/certification/register.php";
 		else if (document.form.ddns_server_x.value == 'WWW.TUNNELBROKER.NET')
 			tourl = "https://www.tunnelbroker.net/register.php";
 		else if (document.form.ddns_server_x.value == 'WWW.ASUS.COM')

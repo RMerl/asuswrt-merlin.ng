@@ -78,7 +78,7 @@ static crypter_aead_t aead[] = {
 	{ ENCR_AES_CBC, FALSE },
 	{ ENCR_CAMELLIA_CBC, FALSE }
 };
-     
+
 START_TEST(test_crypter_is_aead)
 {
 	ck_assert(encryption_algorithm_is_aead(aead[_i].alg) == aead[_i].is_aead);

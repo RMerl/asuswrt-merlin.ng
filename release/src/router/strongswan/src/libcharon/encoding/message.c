@@ -78,9 +78,9 @@ typedef struct {
 	/* Payload type */
 	 payload_type_t type;
 	/* Minimal occurrence of this payload. */
-	size_t min_occurence;
+	size_t min_occurrence;
 	/* Max occurrence of this payload. */
-	size_t max_occurence;
+	size_t max_occurrence;
 	/* TRUE if payload must be encrypted */
 	bool encrypted;
 	/* If payload occurs, the message rule is fulfilled */
@@ -1653,7 +1653,7 @@ static ike_header_t *create_header(private_message_t *this)
 /**
  * Generates the message, if needed, wraps the payloads in an encrypted payload.
  *
- * The generator and the possible enrypted payload are returned.  The latter
+ * The generator and the possible encrypted payload are returned.  The latter
  * is not yet encrypted (but the transform is set).  It is also not added to
  * the payload list (so unless there are unencrypted payloads that list will
  * be empty afterwards).
@@ -1744,12 +1744,25 @@ static status_t generate_message(private_message_t *this, keymat_t *keymat,
 	{
 		aead = keymat->get_aead(keymat, FALSE);
 	}
-	if (aead && encrypting)
+	if (encrypting)
 	{
-		*encrypted = wrap_payloads(this);
-		(*encrypted)->set_transform(*encrypted, aead);
+		if (aead)
+		{
+			*encrypted = wrap_payloads(this);
+			(*encrypted)->set_transform(*encrypted, aead);
+		}
+		else if (this->exchange_type == INFORMATIONAL ||
+				 this->exchange_type == INFORMATIONAL_V1)
+		{	/* allow sending unencrypted INFORMATIONALs */
+			encrypting = FALSE;
+		}
+		else
+		{
+			DBG1(DBG_ENC, "unable to encrypt payloads without AEAD transform");
+			return FAILED;
+		}
 	}
-	else
+	if (!encrypting)
 	{
 		DBG2(DBG_ENC, "not encrypting payloads");
 		this->is_encrypted = FALSE;
@@ -1876,17 +1889,13 @@ METHOD(message_t, generate, status_t,
 static message_t *clone_message(private_message_t *this)
 {
 	message_t *message;
-	host_t *src, *dst;
 
-	src = this->packet->get_source(this->packet);
-	dst = this->packet->get_destination(this->packet);
-
-	message = message_create(this->major_version, this->minor_version);
+	message = message_create_from_packet(packet_clone_no_data(this->packet));
+	message->set_major_version(message, this->major_version);
+	message->set_minor_version(message, this->minor_version);
 	message->set_ike_sa_id(message, this->ike_sa_id);
 	message->set_message_id(message, this->message_id);
 	message->set_request(message, this->is_request);
-	message->set_source(message, src->clone(src));
-	message->set_destination(message, dst->clone(dst));
 	message->set_exchange_type(message, this->exchange_type);
 	memcpy(((private_message_t*)message)->reserved, this->reserved,
 		   sizeof(this->reserved));
@@ -2587,11 +2596,11 @@ static status_t verify(private_message_t *this)
 				found++;
 				DBG2(DBG_ENC, "found payload of type %N",
 					 payload_type_names, type);
-				if (found > rule->max_occurence)
+				if (found > rule->max_occurrence)
 				{
 					DBG1(DBG_ENC, "payload of type %N more than %d times (%d) "
 						 "occurred in current message", payload_type_names,
-						 type, rule->max_occurence, found);
+						 type, rule->max_occurrence, found);
 					enumerator->destroy(enumerator);
 					return VERIFY_ERROR;
 				}
@@ -2599,10 +2608,10 @@ static status_t verify(private_message_t *this)
 		}
 		enumerator->destroy(enumerator);
 
-		if (!complete && found < rule->min_occurence)
+		if (!complete && found < rule->min_occurrence)
 		{
 			DBG1(DBG_ENC, "payload of type %N not occurred %d times (%d)",
-				 payload_type_names, rule->type, rule->min_occurence, found);
+				 payload_type_names, rule->type, rule->min_occurrence, found);
 			return VERIFY_ERROR;
 		}
 		if (found && rule->sufficient)
@@ -2933,6 +2942,18 @@ METHOD(message_t, add_fragment_v2, status_t,
 	return SUCCESS;
 }
 
+METHOD(message_t, get_metadata, metadata_t*,
+	private_message_t *this, const char *key)
+{
+	return this->packet->get_metadata(this->packet, key);
+}
+
+METHOD(message_t, set_metadata, void,
+	private_message_t *this, const char *key, metadata_t *data)
+{
+	this->packet->set_metadata(this->packet, key, data);
+}
+
 METHOD(message_t, destroy, void,
 	private_message_t *this)
 {
@@ -3000,6 +3021,8 @@ message_t *message_create_from_packet(packet_t *packet)
 			.get_packet = _get_packet,
 			.get_packet_data = _get_packet_data,
 			.get_fragments = _get_fragments,
+			.get_metadata = _get_metadata,
+			.set_metadata = _set_metadata,
 			.destroy = _destroy,
 		},
 		.exchange_type = EXCHANGE_TYPE_UNDEFINED,

@@ -342,13 +342,13 @@ function nt_action_click(flag){
 		if(nc_setting_array != ""){
 			nc_setting_array[1] = 0;
 			if(nc_setting_array[2] == notification.TYPE_OF_TURN_OFF){
-				nc_setting_array[1] = notification.ACTION_NOTIFY_NONE;
+				nc_setting_array[1] = notification.ACT_NOTIFY_NONE;
 			}else{
 				if(document.form.nc_mail_enable.value == '1')
-					nc_setting_array[1] += notification.ACTION_NOTIFY_EMAIL;
+					nc_setting_array[1] += notification.ACT_NOTIFY_EMAIL;
 				if(document.form.nc_web_app_enable.value == '1'){
-					nc_setting_array[1] += notification.ACTION_NOTIFY_WEBUI;
-					nc_setting_array[1] += notification.ACTION_NOTIFY_APP;
+					nc_setting_array[1] += notification.ACT_NOTIFY_DB;
+					nc_setting_array[1] += notification.ACT_NOTIFY_APPUSH;
 				}
 			}
 		}

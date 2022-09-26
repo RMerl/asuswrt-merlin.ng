@@ -223,6 +223,10 @@
     background-image: url('https://nw-dlcdnet.asus.com/plugin/gameImages/diablo3.jpg'), url('../images/gameprofile/default-game.png');
 }
 
+.game-p-diabloImmortal {
+    background-image: url('https://nw-dlcdnet.asus.com/plugin/gameImages/diabloImmortal.jpg'), url('../images/gameprofile/default-game.png');
+}
+
 .game-p-fifa17 {
     background-image: url('https://nw-dlcdnet.asus.com/plugin/gameImages/fifa17.jpg'), url('../images/gameprofile/default-game.png');
 }

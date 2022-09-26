@@ -224,11 +224,22 @@ METHOD(kernel_ipsec_t, del_policy, status_t,
 	return SUCCESS;
 }
 
+CALLBACK(destroy_spis, void,
+	entry_t *entry, const void* key)
+{
+	/* only free allocated SPIs, other SAs that were not properly deleted will
+	 * cause a leak */
+	if (entry->alloc)
+	{
+		free(entry);
+	}
+}
+
 METHOD(kernel_ipsec_t, destroy, void,
 	private_kernel_ipsec_t *this)
 {
 	charon->bus->remove_listener(charon->bus, &this->listener);
-	this->sas->destroy(this->sas);
+	this->sas->destroy_function(this->sas, destroy_spis);
 	free(this);
 }
 

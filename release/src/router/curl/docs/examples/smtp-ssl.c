@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2021, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -17,6 +17,8 @@
  *
  * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
  * KIND, either express or implied.
+ *
+ * SPDX-License-Identifier: curl
  *
  ***************************************************************************/
 
@@ -101,7 +103,7 @@ int main(void)
      * than smtp:// to request a SSL based connection. */
     curl_easy_setopt(curl, CURLOPT_URL, "smtps://mainserver.example.net");
 
-    /* If you want to connect to a site who isn't using a certificate that is
+    /* If you want to connect to a site who is not using a certificate that is
      * signed by one of the certs in the CA bundle you have, you can skip the
      * verification of the server's certificate. This makes the connection
      * A LOT LESS SECURE.
@@ -113,7 +115,7 @@ int main(void)
     curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
 #endif
 
-    /* If the site you're connecting to uses a different host name that what
+    /* If the site you are connecting to uses a different host name that what
      * they have mentioned in their server certificate's commonName (or
      * subjectAltName) fields, libcurl will refuse to connect. You can skip
      * this check, but this will make the connection less secure. */
@@ -121,7 +123,7 @@ int main(void)
     curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
 #endif
 
-    /* Note that this option isn't strictly required, omitting it will result
+    /* Note that this option is not strictly required, omitting it will result
      * in libcurl sending the MAIL FROM command with empty sender data. All
      * autoresponses should have an empty reverse-path, and should be directed
      * to the address in the reverse-path which triggered them. Otherwise,
@@ -137,7 +139,7 @@ int main(void)
     recipients = curl_slist_append(recipients, CC_MAIL);
     curl_easy_setopt(curl, CURLOPT_MAIL_RCPT, recipients);
 
-    /* We're using a callback function to specify the payload (the headers and
+    /* We are using a callback function to specify the payload (the headers and
      * body of the message). You could just use the CURLOPT_READDATA option to
      * specify a FILE pointer to read from. */
     curl_easy_setopt(curl, CURLOPT_READFUNCTION, payload_source);

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 Tobias Brunner
+ * Copyright (C) 2012-2020 Tobias Brunner
  * Copyright (C) 2005-2006 Martin Willi
  * Copyright (C) 2005 Jan Hutter
  * HSR Hochschule fuer Technik Rapperswil
@@ -117,7 +117,7 @@ struct proposal_substructure_t {
 	bool (*get_cpi) (proposal_substructure_t *this, uint16_t *cpi);
 
 	/**
-	 * Get proposals contained in a propsal_substructure_t.
+	 * Get proposals contained in a proposal_substructure_t.
 	 *
 	 * @param list		list to add created proposals to
 	 */
@@ -131,18 +131,20 @@ struct proposal_substructure_t {
 	enumerator_t* (*create_substructure_enumerator)(proposal_substructure_t *this);
 
 	/**
-	 * Get the (shortest) lifetime of a proposal (IKEv1 only).
+	 * Get the lifetime of a transform (IKEv1 only).
 	 *
+	 * @param transform			transform number
 	 * @return					lifetime, in seconds
 	 */
-	uint32_t (*get_lifetime)(proposal_substructure_t *this);
+	uint32_t (*get_lifetime)(proposal_substructure_t *this, uint8_t transform);
 
 	/**
-	 * Get the (shortest) life duration of a proposal (IKEv1 only).
+	 * Get the life duration of a transform (IKEv1 only).
 	 *
+	 * @param transform			transform number
 	 * @return					life duration, in bytes
 	 */
-	uint64_t (*get_lifebytes)(proposal_substructure_t *this);
+	uint64_t (*get_lifebytes)(proposal_substructure_t *this, uint8_t transform);
 
 	/**
 	 * Get the first authentication method from the proposal (IKEv1 only).
@@ -181,20 +183,6 @@ proposal_substructure_t *proposal_substructure_create(payload_type_t type);
  */
 proposal_substructure_t *proposal_substructure_create_from_proposal_v2(
 														proposal_t *proposal);
-/**
- * Creates an IKEv1 proposal_substructure_t from a proposal_t.
- *
- * @param proposal	proposal to build a substruct out of it
- * @param lifetime	lifetime in seconds
- * @param lifebytes	lifebytes, in bytes
- * @param auth		authentication method to use, or AUTH_NONE
- * @param mode		IPsec encapsulation mode, TRANSPORT or TUNNEL
- * @param udp		ENCAP_UDP to use UDP encapsulation
- * @return			proposal_substructure_t object PLV1_PROPOSAL_SUBSTRUCTURE
- */
-proposal_substructure_t *proposal_substructure_create_from_proposal_v1(
-			proposal_t *proposal,  uint32_t lifetime, uint64_t lifebytes,
-			auth_method_t auth, ipsec_mode_t mode, encap_t udp);
 
 /**
  * Creates an IKEv1 proposal_substructure_t from a list of proposal_t.

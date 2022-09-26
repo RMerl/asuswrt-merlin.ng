@@ -16,7 +16,7 @@
     </div>
     <div class="menu">
 	     <?cs if:?login ?>
-	      Logged in as <i><?cs var:login ?></i> 
+	      Logged in as <i><?cs var:login ?></i>
 	      | <a href="<?cs var:base ?>/user/edit">Edit</a>
 	      | <a href="<?cs var:base ?>/user/logout">Logout</a>
 	      | <a href="<?cs var:base ?>/user/help">Help</a>

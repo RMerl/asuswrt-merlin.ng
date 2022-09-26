@@ -1,0 +1,48 @@
+#!/bin/bash
+
+DIR="$(dirname `readlink -f $0`)/.."
+. $DIR/testing.conf
+. $DIR/scripts/function.sh
+
+[ `id -u` -eq 0 ] || die "You must be root to run $0"
+[ -f "$BASEIMG" ] || die "Base image $BASEIMG not found"
+[ -f "$ROOTIMG" ] || die "Root image $ROOTIMG not found"
+running_any $STRONGSWANHOSTS && die "Please stop test environment before running $0"
+
+SRCUID=${SUDO_UID:-$(id -u)}
+SRCGID=${SUDO_GID:-$(id -g)}
+
+check_commands partprobe qemu-img qemu-nbd bindfs
+
+load_qemu_nbd
+
+mkdir -p $LOOPDIR
+mkdir -p $IMGDIR
+
+log_action "Connecting root image to NBD device $NBDEV"
+execute "qemu-nbd -c $NBDEV $ROOTIMG"
+do_on_exit qemu-nbd -d $NBDEV
+partprobe $NBDEV
+
+log_action "Mounting $NBDPARTITION to $LOOPDIR"
+execute "mount $NBDPARTITION $LOOPDIR"
+do_on_exit umount $LOOPDIR
+
+log_action "Mounting proc filesystem to $LOOPDIR/proc"
+execute "mount -t proc none $LOOPDIR/proc"
+do_on_exit umount $LOOPDIR/proc
+
+mkdir -p $LOOPDIR/root/testing
+log_action "Mounting ${DIR} as /root/testing"
+execute "bindfs -u $SRCUID -g $SRCGID --create-for-user=$SRCUID --create-for-group=$SRCGID ${DIR} $LOOPDIR/root/testing"
+do_on_exit umount $LOOPDIR/root/testing
+
+log_action "Building certificates"
+execute_chroot "/root/testing/scripts/build-certs-chroot"
+
+# rebuild the guest images to generate the CRLs on winnetou
+if [ -z "$2" ]; then
+	# cleanup before mounting guest images
+	on_exit
+	$DIR/scripts/build-guestimages
+fi

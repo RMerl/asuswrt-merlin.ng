@@ -22,7 +22,7 @@ typedef struct private_sha1_prf_t private_sha1_prf_t;
 typedef struct private_sha1_hasher_t private_sha1_hasher_t;
 
 /**
- * Private data structure with hasing context.
+ * Private data structure with hashing context.
  */
 struct private_sha1_hasher_t {
 	/**

@@ -250,6 +250,7 @@ var modemObj = {
 }
 
 var systemVariable = {
+	"qisSession": "",
 	"originWanType": "", /* ToDo: Secondary WAN support */
 	"originPppAccount":{
 		"username": "",
@@ -262,7 +263,7 @@ var systemVariable = {
 	"wanDnsenable": "",
 	"detwanResult": {
 		"wanType": "",
-		"isIPConflict": false,
+		"isIPConflict": false
 	},
 	"isNewFw": 0,
 	"newFwVersion": "",
@@ -293,6 +294,9 @@ var systemVariable = {
 	"amas_newWindow_addNode": false,
 	"authModePostData": {},
 	"eth_wan_list":{},
+	"ispProfiles": [],
+	"ispPortDefinitions": {},
+	"cloudIspProfiles": []
 }
 
 var aimeshObj = {
@@ -345,7 +349,7 @@ var dsl_wanObj = {
 		"dsl_unit": "8",
 		"dsl_proto": "",
 		"dsl_dot1q": "",
-		"dsl_vid": "",
+		"dsl_vid": ""
 	},
 
 	"dslDHCPObj" : {

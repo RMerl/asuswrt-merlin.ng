@@ -50,7 +50,7 @@ struct vendor_entry_t {
 	char *qualifier_flag_names;
 
 	/**
-	 * Vendor-specific size of Qualfiier Type field
+	 * Vendor-specific size of Qualifier Type field
 	 */
 	int qualifier_type_size;
 

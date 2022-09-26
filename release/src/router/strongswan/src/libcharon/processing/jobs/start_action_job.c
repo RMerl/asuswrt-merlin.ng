@@ -42,8 +42,7 @@ METHOD(job_t, execute, job_requeue_t,
 	enumerator_t *enumerator, *children;
 	peer_cfg_t *peer_cfg;
 	child_cfg_t *child_cfg;
-	ipsec_mode_t mode;
-	char *name;
+	action_t action;
 
 	enumerator = charon->backends->create_peer_cfg_enumerator(charon->backends,
 											NULL, NULL, NULL, NULL, IKE_ANY);
@@ -52,34 +51,39 @@ METHOD(job_t, execute, job_requeue_t,
 		children = peer_cfg->create_child_cfg_enumerator(peer_cfg);
 		while (children->enumerate(children, &child_cfg))
 		{
-			name = child_cfg->get_name(child_cfg);
-
-			switch (child_cfg->get_start_action(child_cfg))
+			action = child_cfg->get_start_action(child_cfg);
+			if (action == ACTION_NONE)
 			{
-				case ACTION_RESTART:
-					DBG1(DBG_JOB, "start action: initiate '%s'", name);
-					charon->controller->initiate(charon->controller,
-												 peer_cfg->get_ref(peer_cfg),
-												 child_cfg->get_ref(child_cfg),
-												 NULL, NULL, 0, FALSE);
-					break;
-				case ACTION_ROUTE:
-					DBG1(DBG_JOB, "start action: route '%s'", name);
-					mode = child_cfg->get_mode(child_cfg);
-					if (mode == MODE_PASS || mode == MODE_DROP)
-					{
+				continue;
+			}
+
+			DBG1(DBG_JOB, "start action: %N '%s'", action_names, action,
+				 child_cfg->get_name(child_cfg));
+
+			if (action & ACTION_TRAP)
+			{
+				switch (child_cfg->get_mode(child_cfg))
+				{
+					case MODE_PASS:
+					case MODE_DROP:
 						charon->shunts->install(charon->shunts,
 												peer_cfg->get_name(peer_cfg),
 												child_cfg);
-					}
-					else
-					{
+						/* no need to check for ACTION_START */
+						continue;
+					default:
 						charon->traps->install(charon->traps, peer_cfg,
 											   child_cfg);
-					}
-					break;
-				case ACTION_NONE:
-					break;
+						break;
+				}
+			}
+
+			if (action & ACTION_START)
+			{
+				charon->controller->initiate(charon->controller,
+											 peer_cfg->get_ref(peer_cfg),
+											 child_cfg->get_ref(child_cfg),
+											 NULL, NULL, 0, FALSE);
 			}
 		}
 		children->destroy(children);

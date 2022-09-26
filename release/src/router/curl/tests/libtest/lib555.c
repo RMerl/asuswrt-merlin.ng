@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2020, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -17,6 +17,8 @@
  *
  * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
  * KIND, either express or implied.
+ *
+ * SPDX-License-Identifier: curl
  *
  ***************************************************************************/
 
@@ -36,14 +38,7 @@
 #define TEST_HANG_TIMEOUT 60 * 1000
 
 static const char uploadthis[] =
-#ifdef CURL_DOES_CONVERSIONS
-  /* ASCII representation with escape sequences for non-ASCII platforms */
-  "\x74\x68\x69\x73\x20\x69\x73\x20\x74\x68\x65\x20\x62\x6c\x75\x72"
-  "\x62\x20\x77\x65\x20\x77\x61\x6e\x74\x20\x74\x6f\x20\x75\x70\x6c"
-  "\x6f\x61\x64\x0a";
-#else
   "this is the blurb we want to upload\n";
-#endif
 
 static size_t readcallback(char  *ptr,
                            size_t size,
@@ -129,10 +124,6 @@ int test(char *URL)
     multi_perform(m, &running);
 
     abort_on_test_timeout();
-
-#ifdef TPF
-    sleep(1); /* avoid ctl-10 dump */
-#endif
 
     if(!running)
       break; /* done */

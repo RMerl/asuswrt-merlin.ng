@@ -29,7 +29,7 @@
 typedef struct bliss_plugin_t bliss_plugin_t;
 
 /**
- * Plugin implementing the BLISS post-quantu authentication algorithm
+ * Plugin implementing the BLISS post-quantum authentication algorithm
  */
 struct bliss_plugin_t {
 

@@ -75,9 +75,9 @@ struct simaka_provider_t {
 						   char autn[AKA_AUTN_LEN]);
 
 	/**
-	 * Process AKA resynchroniusation request of a peer.
+	 * Process AKA resynchronization request of a peer.
 	 *
-	 * @param id		permanent identity of peer requesting resynchronisation
+	 * @param id		permanent identity of peer requesting resynchronization
 	 * @param rand		random value rand
 	 * @param auts		synchronization parameter auts
 	 * @return			TRUE if resynchronized successfully
@@ -95,7 +95,7 @@ struct simaka_provider_t {
 									  identification_t *id);
 
 	/**
-	 * Generate a pseudonym identitiy for a given peer identity.
+	 * Generate a pseudonym identity for a given peer identity.
 	 *
 	 * @param id		permanent identity to generate a pseudonym for
 	 * @return			generated pseudonym, NULL to not use a pseudonym identity

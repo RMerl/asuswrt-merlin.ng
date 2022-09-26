@@ -18,6 +18,13 @@
 
 typedef struct private_diffie_hellman_t private_diffie_hellman_t;
 
+/** Mock DH public and shared key */
+static chunk_t mock_key = chunk_from_chars(
+									0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,
+									0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,
+									0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,
+									0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08);
+
 /**
  * Private data
  */
@@ -37,7 +44,7 @@ struct private_diffie_hellman_t {
 METHOD(diffie_hellman_t, get_my_public_value, bool,
 	private_diffie_hellman_t *this, chunk_t *value)
 {
-	*value = chunk_empty;
+	*value = chunk_clone(mock_key);
 	return TRUE;
 }
 
@@ -50,7 +57,7 @@ METHOD(diffie_hellman_t, set_other_public_value, bool,
 METHOD(diffie_hellman_t, get_shared_secret, bool,
 	private_diffie_hellman_t *this, chunk_t *secret)
 {
-	*secret = chunk_empty;
+	*secret = chunk_clone(mock_key);
 	return TRUE;
 }
 

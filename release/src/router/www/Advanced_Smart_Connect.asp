@@ -12,13 +12,13 @@
 <link rel="stylesheet" type="text/css" href="index_style.css"> 
 <link rel="stylesheet" type="text/css" href="form_style.css">
 <link rel="stylesheet" type="text/css" href="/device-map/device-map.css">
+<script type="text/javascript" src="/js/jquery.js"></script>
+<script type="text/javascript" src="/calendar/jquery-ui.js"></script> 
 <script type="text/javascript" src="/state.js"></script>
 <script type="text/javascript" src="/general.js"></script>
 <script type="text/javascript" src="/help.js"></script>
 <script type="text/javascript" src="/popup.js"></script>
 <script type="text/javascript" src="/validator.js"></script>
-<script type="text/javascript" src="/js/jquery.js"></script>
-<script type="text/javascript" src="/calendar/jquery-ui.js"></script> 
 <script language="JavaScript" type="text/javascript" src="/client_function.js"></script>
 <style>
 .ui-slider {
@@ -1023,9 +1023,11 @@ function register_event(){
 				based_modelid == "RT-AX92U" ||
 				based_modelid == "RT-AX95Q" ||
 				based_modelid == "XT8PRO" ||
+				based_modelid == "BM68" ||
 				based_modelid == "XT8_V2" ||
 				based_modelid == "RT-AXE95Q" ||
 				based_modelid == "ET8PRO" ||
+				based_modelid == "ET8_V2" ||
 				based_modelid == "RT-AX56_XD4" ||
 				based_modelid == "XD4PRO" ||
 				based_modelid == "CT-AX56_XD4" ||
@@ -1072,9 +1074,11 @@ function register_event(){
 				based_modelid == "RT-AX92U" ||
 				based_modelid == "RT-AX95Q" ||
 				based_modelid == "XT8PRO" ||
+				based_modelid == "BM68" ||
 				based_modelid == "XT8_V2" ||
 				based_modelid == "RT-AXE95Q" ||
 				based_modelid == "ET8PRO" ||
+				based_modelid == "ET8_V2" ||
 				based_modelid == "RT-AX56_XD4" ||
 				based_modelid == "XD4PRO" ||
 				based_modelid == "CT-AX56_XD4" ||
@@ -1121,9 +1125,11 @@ function register_event(){
 				based_modelid == "RT-AX92U" ||
 				based_modelid == "RT-AX95Q" ||
 				based_modelid == "XT8PRO" ||
+				based_modelid == "BM68" ||
 				based_modelid == "XT8_V2" ||
 				based_modelid == "RT-AXE95Q" ||
 				based_modelid == "ET8PRO" ||
+				based_modelid == "ET8_V2" ||
 				based_modelid == "RT-AX56_XD4" ||
 				based_modelid == "XD4PRO" ||
 				based_modelid == "CT-AX56_XD4" ||
@@ -1170,9 +1176,11 @@ function register_event(){
 				based_modelid == "RT-AX92U" ||
 				based_modelid == "RT-AX95Q" ||
 				based_modelid == "XT8PRO" ||
+				based_modelid == "BM68" ||
 				based_modelid == "XT8_V2" ||
 				based_modelid == "RT-AXE95Q" ||
 				based_modelid == "ET8PRO" ||
+				based_modelid == "ET8_V2" ||
 				based_modelid == "RT-AX56_XD4" ||
 				based_modelid == "XD4PRO" ||
 				based_modelid == "CT-AX56_XD4" ||
@@ -1217,7 +1225,7 @@ function register_event(){
 				based_modelid == "RT-AC3100" ||
 				based_modelid == "GT-AX11000" ||
 				based_modelid == "RT-AX92U" ||
-				based_modelid == "RT-AX95Q" || based_modelid == "XT8PRO" || based_modelid == "XT8_V2" || based_modelid == "RT-AXE95Q" || based_modelid == "ET8PRO"
+				based_modelid == "RT-AX95Q" || based_modelid == "XT8PRO" || based_modelid == "BM68" || based_modelid == "XT8_V2" || based_modelid == "RT-AXE95Q" || based_modelid == "ET8PRO" || based_modelid == "ET8_V2"
 				|| based_modelid == "RT-AX86U" || based_modelid == "RT-AX68U" || based_modelid == "RT-AC68U_V4" ||
 				based_modelid == "RT-AXE7800" || based_modelid == "GT10" ||
 				based_modelid == "GT-AXE11000" ||
@@ -1246,7 +1254,7 @@ function register_event(){
 				based_modelid == "RT-AC3100" ||
 				based_modelid == "GT-AX11000" ||
 				based_modelid == "RT-AX92U" ||
-				based_modelid == "RT-AX95Q" || based_modelid == "XT8PRO" || based_modelid == "XT8_V2" || based_modelid == "RT-AXE95Q" || based_modelid == "ET8PRO"
+				based_modelid == "RT-AX95Q" || based_modelid == "XT8PRO" || based_modelid == "BM68" || based_modelid == "XT8_V2" || based_modelid == "RT-AXE95Q" || based_modelid == "ET8PRO" || based_modelid == "ET8_V2"
 				|| based_modelid == "RT-AX86U" || based_modelid == "RT-AX68U" || based_modelid == "RT-AC68U_V4" ||
 				based_modelid == "RT-AXE7800" || based_modelid == "GT10" ||
 				based_modelid == "GT-AXE11000" ||
@@ -1277,9 +1285,11 @@ function register_event(){
 				based_modelid == "RT-AX92U" ||
 				based_modelid == "RT-AX95Q" ||
 				based_modelid == "XT8PRO" ||
+				based_modelid == "BM68" ||
 				based_modelid == "XT8_V2" ||
 				based_modelid == "RT-AXE95Q" ||
 				based_modelid == "ET8PRO" ||
+				based_modelid == "ET8_V2" ||
 				based_modelid == "RT-AX56_XD4" ||
 				based_modelid == "XD4PRO" ||
 				based_modelid == "CT-AX56_XD4" ||
@@ -1326,9 +1336,11 @@ function register_event(){
 				based_modelid == "RT-AX92U" ||
 				based_modelid == "RT-AX95Q" ||
 				based_modelid == "XT8PRO" ||
+				based_modelid == "BM68" ||
 				based_modelid == "XT8_V2" ||
 				based_modelid == "RT-AXE95Q" ||
 				based_modelid == "ET8PRO" ||
+				based_modelid == "ET8_V2" ||
 				based_modelid == "RT-AX56_XD4" ||
 				based_modelid == "XD4PRO" ||
 				based_modelid == "CT-AX56_XD4" ||
@@ -1375,9 +1387,11 @@ function register_event(){
 				based_modelid == "RT-AX92U" ||
 				based_modelid == "RT-AX95Q" ||
 				based_modelid == "XT8PRO" ||
+				based_modelid == "BM68" ||
 				based_modelid == "XT8_V2" ||
 				based_modelid == "RT-AXE95Q" ||
 				based_modelid == "ET8PRO" ||
+				based_modelid == "ET8_V2" ||
 				based_modelid == "RT-AX56_XD4" ||
 				based_modelid == "XD4PRO" ||
 				based_modelid == "CT-AX56_XD4" ||
@@ -1424,9 +1438,11 @@ function register_event(){
 				based_modelid == "RT-AX92U" ||
 				based_modelid == "RT-AX95Q" ||
 				based_modelid == "XT8PRO" ||
+				based_modelid == "BM68" ||
 				based_modelid == "XT8_V2" ||
 				based_modelid == "RT-AXE95Q" ||
 				based_modelid == "ET8PRO" ||
+				based_modelid == "ET8_V2" ||
 				based_modelid == "RT-AX56_XD4" ||
 				based_modelid == "XD4PRO" ||
 				based_modelid == "CT-AX56_XD4" ||
@@ -1471,7 +1487,7 @@ function register_event(){
 				based_modelid == "RT-AC3100" ||
 				based_modelid == "GT-AX11000" ||
 				based_modelid == "RT-AX92U" ||
-				based_modelid == "RT-AX95Q" || based_modelid == "XT8PRO" || based_modelid == "XT8_V2" || based_modelid == "RT-AXE95Q" || based_modelid == "ET8PRO"
+				based_modelid == "RT-AX95Q" || based_modelid == "XT8PRO" || based_modelid == "BM68" || based_modelid == "XT8_V2" || based_modelid == "RT-AXE95Q" || based_modelid == "ET8PRO" || based_modelid == "ET8_V2"
 				|| based_modelid == "RT-AX86U" || based_modelid == "RT-AX68U" || based_modelid == "RT-AC68U_V4" ||
 				based_modelid == "RT-AXE7800" || based_modelid == "GT10" ||
 				based_modelid == "GT-AXE11000" ||
@@ -1500,7 +1516,7 @@ function register_event(){
 				based_modelid == "RT-AC3100" ||
 				based_modelid == "GT-AX11000" ||
 				based_modelid == "RT-AX92U" ||
-				based_modelid == "RT-AX95Q" || based_modelid == "XT8PRO" || based_modelid == "XT8_V2" || based_modelid == "RT-AXE95Q" || based_modelid == "ET8PRO"
+				based_modelid == "RT-AX95Q" || based_modelid == "XT8PRO" || based_modelid == "BM68" || based_modelid == "XT8_V2" || based_modelid == "RT-AXE95Q" || based_modelid == "ET8PRO" || based_modelid == "ET8_V2"
 				|| based_modelid == "RT-AX86U" || based_modelid == "RT-AX68U" || based_modelid == "RT-AC68U_V4" ||
 				based_modelid == "RT-AXE7800" || based_modelid == "GT10" ||
 				based_modelid == "GT-AXE11000" ||
@@ -1585,9 +1601,11 @@ function check_power(power_value,flag){
 			based_modelid == "RT-AX92U" ||
 			based_modelid == "RT-AX95Q" ||
 			based_modelid == "XT8PRO" ||
+			based_modelid == "BM68" ||
 			based_modelid == "XT8_V2" ||
 			based_modelid == "RT-AXE95Q" ||
 			based_modelid == "ET8PRO" ||
+			based_modelid == "ET8_V2" ||
 			based_modelid == "RT-AX56_XD4" ||
 			based_modelid == "XD4PRO" ||
 			based_modelid == "CT-AX56_XD4" ||
@@ -1643,9 +1661,11 @@ function set_lg_power(power_value,flag,idx){
 			based_modelid == "RT-AX92U" ||
 			based_modelid == "RT-AX95Q" ||
 			based_modelid == "XT8PRO" ||
+			based_modelid == "BM68" ||
 			based_modelid == "XT8_V2" ||
 			based_modelid == "RT-AXE95Q" ||
 			based_modelid == "ET8PRO" ||
+			based_modelid == "ET8_V2" ||
 			based_modelid == "RT-AX56_XD4" ||
 			based_modelid == "XD4PRO" ||
 			based_modelid == "CT-AX56_XD4" ||
@@ -1684,9 +1704,11 @@ function set_lg_power(power_value,flag,idx){
 			based_modelid == "RT-AX92U" ||
 			based_modelid == "RT-AX95Q" ||
 			based_modelid == "XT8PRO" ||
+			based_modelid == "BM68" ||
 			based_modelid == "XT8_V2" ||
 			based_modelid == "RT-AXE95Q" ||
 			based_modelid == "ET8PRO" ||
+			based_modelid == "ET8_V2" ||
 			based_modelid == "RT-AX56_XD4" ||
 			based_modelid == "XD4PRO" ||
 			based_modelid == "CT-AX56_XD4" ||

@@ -5,7 +5,7 @@
 .\" *                            | (__| |_| |  _ <| |___
 .\" *                             \___|\___/|_| \_\_____|
 .\" *
-.\" * Copyright (C) 1998 - 2020, Daniel Stenberg, <daniel@haxx.se>, et al.
+.\" * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
 .\" *
 .\" * This software is licensed as described in the file COPYING, which
 .\" * you should have received as part of this distribution. The terms
@@ -18,9 +18,11 @@
 .\" * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
 .\" * KIND, either express or implied.
 .\" *
+.\" * SPDX-License-Identifier: curl
+.\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_IOCTLFUNCTION 3 "November 04, 2020" "libcurl 7.79.1" "curl_easy_setopt options"
+.TH CURLOPT_IOCTLFUNCTION 3 "May 17, 2022" "libcurl 7.84.0" "curl_easy_setopt options"
 
 .SH NAME
 CURLOPT_IOCTLFUNCTION \- callback for I/O operations
@@ -49,7 +51,7 @@ Pass a pointer to your callback function, which should match the prototype
 shown above.
 
 This callback function gets called by libcurl when something special
-I/O-related needs to be done that the library can't do by itself. For now,
+I/O-related needs to be done that the library cannot do by itself. For now,
 rewinding the read data stream is the only action it can request. The
 rewinding of the read data stream may be necessary when doing an HTTP PUT or
 POST with a multi-pass authentication method.

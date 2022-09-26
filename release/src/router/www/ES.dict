@@ -115,12 +115,12 @@ ASUS_eula_withdraw_desc2_AlexaIFTTT=En el futuro, si tiene la intención de habi
 ASUS_eula_withdraw_note=No puede completar el procedimiento de renuncia sin conexión a Internet. Intente realizar la renuncia cuando se conecte a Internet.
 ASUS_eula_withdraw_unstable=No puede completar el procedimiento de renuncia porque el estado de Internet es inestable. Realice la renuncia más tarde.
 TM_eula_confirm=Al utilizar ASUS AiProtection, acepta la
-TM_eula_desc1=Al usar AiProtection, el analizador de tráfico, el analizador de aplicaciones, CdS adaptativa/realce de juegos y el historial web, acepta el <a id="eula_url" style="text-decoration:underline;" target="_blank">Contrato de Licencia para el Usuario Final de Trend Micro</a>.
-TM_eula_desc2=Tenga en cuentaque Trend Micro recopilará su información a través de AiProtection, el analizador de tráfico, el analizador de aplicaciones, CdS adaptativo y el historial web. También reconoce y acepta que ASUS no es responsable ni del acuerdo entre usted y Trend Micro ni de ningún contenido del servicio provisto por Trend Micro. Si tiene alguna consulta sobre cómo Trend Micro recopila, procesa y usa su información anterior, consulte la declaración relacionada con la privacidad emitida por Trend Micro o póngase en contacto con Trend Micro para obtener más detalles.
+TM_eula_desc1=Al usar AiProtection, Control paterno( Filtros Web y de aplicaciones ), el analizador de tráfico, el analizador de aplicaciones, CdS adaptativa/realce de juegos y el historial web, acepta el <a id="eula_url" style="text-decoration:underline;" target="_blank">Contrato de Licencia para el Usuario Final de Trend Micro</a>.
+TM_eula_desc2=Tenga en cuentaque Trend Micro recopilará su información a través de AiProtection, Control paterno( Filtros Web y de aplicaciones ), el analizador de tráfico, el analizador de aplicaciones, CdS adaptativo y el historial web. También reconoce y acepta que ASUS no es responsable ni del acuerdo entre usted y Trend Micro ni de ningún contenido del servicio provisto por Trend Micro. Si tiene alguna consulta sobre cómo Trend Micro recopila, procesa y usa su información anterior, consulte la declaración relacionada con la privacidad emitida por Trend Micro o póngase en contacto con Trend Micro para obtener más detalles.
 TM_eula_desc3=Si desea deshabilitar el uso compartido de la información con Trend Micro a través de las funciones anteriores, vaya a:  GUI web del router > Configuración avanzada > Administración > Privacidad.
 TM_privacy_policy=<a id="tm_eula_url" style="text-decoration:underline;" target="_blank">TrendMicro Privacy Policy</a>
 TM_data_collection=<a id="tm_disclosure_url" style="text-decoration:underline;" target="_blank">Privacy and Personal Data Collection Disclosure</a>
-TM_eula_withdraw0=Para AiProtection, analizador de tráfico, analizador de aplicaciones, CdS adaptativo, realce de juegos e historial web:
+TM_eula_withdraw0=Para AiProtection, Control paterno( Filtros Web y de aplicaciones ), analizador de tráfico, analizador de aplicaciones, CdS adaptativo, realce de juegos e historial web:
 TM_eula_withdraw_desc1=Tenga en cuenta que Trend Micro recopilará su información a través de las funciones anteriores.
 TM_eula_withdraw_desc2=ISi desea deshabilitar el uso compartido de la información con Trend Micro a través de las funciones anteriores, haga clic en <span style="font-weight: bold;">[Renunciar]</span> a continuación. Sin embargo, tenga en  que dichas características y funciones pueden no estar disponibles si deja de compartir su información con Trend Micro.
 withdraw_confirm=¿Está seguro de que desea renunciar?
@@ -1175,6 +1175,9 @@ AiMesh_NodeLocation22=Balcón
 AiMesh_NodeLocation23=Sala de reuniones
 AiMesh_NodeLocation24=Personalizado
 AiMesh_NodeLocation25=Garaje
+AiMesh_NodeLocation26=Primera planta
+AiMesh_NodeLocation27=Sala de juegos
+AiMesh_NodeLocation28=Gimnasio
 AiMesh_OfflineTips=Sugerencias cuando no hay conexión
 AiMesh_OfflineTips1=Asegúrese de que el nodo AiMesh está encendido.
 AiMesh_OfflineTips2=Reinicie el nodo AiMesh e inténtelo de nuevo.
@@ -1795,6 +1798,8 @@ DDNS_https_cert_Import=Importa su propio certificado
 DDNS_https_cert_Import_desc=Cargue aquí un certificado emitido por una entidad de certificación. Se necesita una clave privada y el certificado SSL.
 DDNS_https_cert_PrivateKey=Clave privada
 DDNS_https_cert_PrivateKey_note=Las claves privadas no se pueden proteger mediante frase de paso.
+DDNS_ipv6_update=Actualización de IPv6
+DDNS_ipv6_update_desc=Si el entorno de red del cliente utiliza una dirección de red IPv6, al habilitar esta función se resolverá el dominio a una dirección de red IPv6 primero al acceder al dispositivo remoto.
 DDNS_ssl_cert=Certificado SSL
 DDNS_termofservice_Title=Término de servicio
 DDNS_transfer=Transfer ASUS DDNS name
@@ -2143,7 +2148,7 @@ FirewallConfig_DoSEnable_itemdesc=Permite habilitar o deshabilitar la función d
 FirewallConfig_DoSEnable_itemname=Desea habilitar la protección DoS
 FirewallConfig_FirewallEnable_itemdesc=Deshabilitar el cortafuegos provocará la desactivación de todas las funciones relacionadas.
 FirewallConfig_FirewallEnable_itemname=Desea habilitar el firewall
-FirewallIPv4_enable=Desea habilitar IPv4 Firewall
+FirewallIPv4_enable=Desea habilitar IPv4 reglas de firewall de entrada
 FirewallIPv4=Firewall IPv4
 FirewallConfig_FTPPrompt_itemdesc=Cuando establece 20:21 como el rango de puerto de su servidor FTP para la configuración de su WAN, su servidor FTP está reñido con el servidor FTP nativo del ZVMODELVZ.
 FirewallConfig_KeywordFilterEnable_itemname=Habilitar filtro de palabras clave
@@ -2251,6 +2256,9 @@ FW_updated=Updated
 FW_new_firmware_available=Nuevo firmware disponible.
 FW_rlnote_loading=Cargando la nota de la versión; espere…
 FW_rlnote_failed=No se pudo encontrar la nota de la versión.
+FW_rollback=Restaurar
+FW_rollback_choose=Elija una versión de firmware
+FW_rollback_selector=Selector de restauración de firmware
 Game_acceleration=Aceleración del juego
 Game_Boost=Mejora de juegos
 Game_Boost_acceleration=Aceleración del juego de triple nivel
@@ -2994,6 +3002,7 @@ PM_RADIUS_Create=Crear un nuevo cliente RADIUS
 PM_Group_Table=Tabla de grupos
 PoolName=Nombre de la partición
 Port_format=Para el intervalo de puertos de origen o destino, puede llevar a cabo una de las acciones siguientes: a) introduzca un puerto específico, como por ejemplo \"95\"; o b) introduzca puertos que se encuentren dentro de un intervalo, como por ejemplo \"103:315\", \">100\" o \"<65535\".
+Port_Gaming=Puerto de juegos
 Port_Mapping_desc1=Port Mapping (Asignación de puertos)
 Port_Mapping_desc2=Port Mapping (Asignación de puertos) admite la interfaz IPTV WAN para un puerto LAN específico. Puede seleccionar el puerto LAN apropiado y, a continuación, hacer clic en Apply (Aplicar).
 Port_Mapping_desc3=Habilitar asignación de puertos
@@ -3474,7 +3483,7 @@ TZ40_2=Kaliningrado
 TZ41=Atenas
 TZ42=Jerusalén
 TZ43=Harare, Pretoria
-TZ43_2=Kiev
+TZ43_2=Kyiv
 TZ44=Moscú, San Petersburgo
 TZ45=Volgogrado
 TZ46=Kuwait, Riad
@@ -3537,10 +3546,10 @@ Uplink_rate=Datos enviados/s
 Uplink_traffic=Datos enviados
 upnp_Desc=Configure el servidor de iTunes y multimedia UPnP.
 [###MODEL_DEP###][RT-AC1200G+][RT-AC1200G][RT-AC82U]upnp_Desc=Configure el servidor de multimedia UPnP.
-UPnPMediaServer_Help=ZVMODELVZ admite los estándares UPnP. Puede habilitarlo y permitir que otros dispositivos UPnP, como por ejemplo PS3 o un reproductor multimedia digital, acceda a los archivos multimedia que se encuentran en el disco USB.
-[###MODEL_DEP###][RT-AC1200][RT-N600]UPnPMediaServer_Help=ZVMODELVZ admite los estándares UPnP. Puede habilitarlo y permitir que otros dispositivos UPnP, como por ejemplo PS3 o un reproductor multimedia digital, acceda a los archivos multimedia que se encuentran en el disco USB.
-[###MODEL_DEP###][RT-AC1200G][RT-AC82U]UPnPMediaServer_Help=ZVMODELVZ admite los estándares UPnP. Puede habilitarlo y permitir que otros dispositivos UPnP, como por ejemplo PS3 o un reproductor multimedia digital, acceda a los archivos multimedia que se encuentran en el disco USB.
-[###MODEL_DEP###][AC2900]UPnPMediaServer_Help=ZVMODELVZ admite los estándares UPnP. Puede habilitarlo y permitir que otros dispositivos UPnP, como por ejemplo PS3 o un reproductor multimedia digital, acceda a los archivos multimedia que se encuentran en el disco USB.
+UPnPMediaServer_Help=Configure <a id='upnp_link'>UPnP, iTunes</a>, <a id='ftp_link'>FTP</a> y <a id='samba_link'>Network Place (Samba)</a>.
+[###MODEL_DEP###][RT-AC1200][RT-N600]UPnPMediaServer_Help=Configure <a id='upnp_link'>UPnP, iTunes</a> y <a id='samba_link'>Network Place (Samba)</a>.
+[###MODEL_DEP###][RT-AC1200G][RT-AC82U]UPnPMediaServer_Help=Configure <a id='upnp_link'>UPnP</a>, <a id='ftp_link'>FTP</a> y <a id='samba_link'>Network Place (Samba)</a>.
+[###MODEL_DEP###][AC2900]UPnPMediaServer_Help=Configure <a id='upnp_link'>UPnP</a> y <a id='samba_link'>Network Place (Samba)</a>.
 url_keyword_alert=Palabra clave de dirección URL
 USB_Application_check=Compruebe la aplicación USB
 USB_Application_disk_checking=Comprobando el disco
@@ -3740,6 +3749,9 @@ vpn_ipsec_update_cert_fail=Error de actualización; vuelva a intentarlo.
 vpn_ipsec_clients_reconnect_hint=Todos sus clientes VPN se volverán a conectar después de hacer clic en Aplicar. ¿Confirma que desea continuar?
 vpn_ipsec_IKE_ver=Versión de IKE admitida
 vpn_ipsec_set_DDNS=haga clic aquí para configurar el DDNS.
+vpn_wireguard_server_faq=¿Cómo configurar el servidor WireGuard®?
+vpn_wireguard_site2site_faq=¿Cómo configurar una VPN de sitio a sitio con WireGuard®?
+vpn_wireguard_client_faq=¿Cómo configurar el cliente WireGuard® en VPN Fusion?
 vpnc_desc1=Los clientes VPN (Virtual Private Network, es decir, Red privada virtual) se suelen utilizar para establecer conexión con un servidor VPN para acceder a recursos privados de forma segura a través de una red pública.
 vpnc_desc2=Algunos dispositivos como descodificadores, televisores inteligentes y reproductores Blu-ray no admiten el software VPN.
 vpnc_desc3=La función VPN ASUSWRT proporciona acceso VPN a todos los dispositivos de una red doméstica sin tener que instalar el software VPN en cada dispositivo.

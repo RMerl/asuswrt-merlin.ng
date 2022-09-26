@@ -37,7 +37,7 @@ struct sql_logger_t {
 	logger_t logger;
 
 	/**
-	 * Destry the backend.
+	 * Destroy the backend.
 	 */
 	void (*destroy)(sql_logger_t *this);
 };

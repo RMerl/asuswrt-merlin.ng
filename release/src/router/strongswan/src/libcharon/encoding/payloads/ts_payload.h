@@ -63,11 +63,20 @@ struct ts_payload_t {
 	/**
 	 * Get a list of nested traffic selectors as traffic_selector_t.
 	 *
-	 * Resulting list and its traffic selectors must be destroyed after usage
+	 * Resulting list and its traffic selectors must be destroyed after use.
 	 *
 	 * @return				list of traffic selectors
 	 */
-	linked_list_t *(*get_traffic_selectors) (ts_payload_t *this);
+	linked_list_t *(*get_traffic_selectors)(ts_payload_t *this);
+
+	/**
+	 * Get a list of security labels as sec_label_t.
+	 *
+	 * Resulting list and its security labels must be destroyed after use.
+	 *
+	 * @return				list of security labels
+	 */
+	linked_list_t *(*get_sec_labels)(ts_payload_t *this);
 
 	/**
 	 * Destroys an ts_payload_t object.
@@ -84,13 +93,16 @@ struct ts_payload_t {
 ts_payload_t *ts_payload_create(bool is_initiator);
 
 /**
- * Creates ts_payload with a list of traffic_selector_t
+ * Creates ts_payload with a list of traffic_selector_t and an optional security
+ * label.
  *
  * @param is_initiator		TRUE for TSi, FALSE for TSr payload type
  * @param traffic_selectors	list of traffic selectors to include
+ * @param label				optional security label to include
  * @return					ts_payload_t object
  */
 ts_payload_t *ts_payload_create_from_traffic_selectors(bool is_initiator,
-											linked_list_t *traffic_selectors);
+											linked_list_t *traffic_selectors,
+											sec_label_t *label);
 
 #endif /** TS_PAYLOAD_H_ @}*/

@@ -1,3 +1,5 @@
+c: Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+SPDX-License-Identifier: curl
 Long: quote
 Arg: <command>
 Short: Q
@@ -5,14 +7,19 @@ Help: Send command(s) to server before transfer
 Protocols: FTP SFTP
 Category: ftp sftp
 Example: --quote "DELE file" ftp://example.com/foo
+Added: 5.3
+See-also: request
 ---
 Send an arbitrary command to the remote FTP or SFTP server. Quote commands are
 sent BEFORE the transfer takes place (just after the initial PWD command in an
 FTP transfer, to be exact). To make commands take place after a successful
-transfer, prefix them with a dash '-'.  To make commands be sent after curl
-has changed the working directory, just before the transfer command(s), prefix
-the command with a '+' (this is only supported for FTP). You may specify any
-number of commands.
+transfer, prefix them with a dash '-'.
+
+(FTP only) To make commands be sent after curl has changed the working
+directory, just before the file transfer command(s), prefix the command with a
+'+'. This is not performed when a directory listing is performed.
+
+You may specify any number of commands.
 
 By default curl will stop at first failure. To make curl continue even if the
 command fails, prefix the command with an asterisk (*). Otherwise, if the
@@ -25,8 +32,8 @@ servers, or one of the commands listed below to SFTP servers.
 This option can be used multiple times.
 
 SFTP is a binary protocol. Unlike for FTP, curl interprets SFTP quote commands
-itself before sending them to the server.  File names may be quoted
-shell-style to embed spaces or special characters.  Following is the list of
+itself before sending them to the server. File names may be quoted
+shell-style to embed spaces or special characters. Following is the list of
 all supported SFTP quote commands:
 .RS
 .IP "atime date file"

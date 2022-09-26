@@ -168,8 +168,8 @@ START_TEST(test_bliss_sign_fail)
 	ck_assert(!pubkey->get_fingerprint(pubkey, KEYID_PGPV4, &fp));
 
 	/* encryption / decryption operation is not defined for BLISS */
-	ck_assert(!pubkey->encrypt(pubkey, ENCRYPT_UNKNOWN, chunk_empty, NULL));
-	ck_assert(!privkey->decrypt(privkey, ENCRYPT_UNKNOWN, chunk_empty, NULL));
+	ck_assert(!pubkey->encrypt(pubkey, ENCRYPT_UNKNOWN, NULL, chunk_empty, NULL));
+	ck_assert(!privkey->decrypt(privkey, ENCRYPT_UNKNOWN, NULL, chunk_empty, NULL));
 
 	/* sign with invalid signature scheme */
 	ck_assert(!privkey->sign(privkey, SIGN_UNKNOWN, NULL, msg, &signature));

@@ -1777,7 +1777,7 @@ prepare_auth_resp_fils(struct hostapd_data *hapd,
 
 		if (sta->fils_erp_pmkid_set) {
 			/* TODO: get PMKLifetime from WPA parameters */
-			unsigned int dot11RSNAConfigPMKLifetime = 43200;
+			unsigned int dot11RSNAConfigPMKLifetime = DEFAULT_DOT11RSNACONFIGPMKLIFETIME;
 			int session_timeout;
 
 			session_timeout = dot11RSNAConfigPMKLifetime;

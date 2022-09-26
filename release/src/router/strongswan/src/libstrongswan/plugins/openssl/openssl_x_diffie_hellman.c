@@ -20,6 +20,7 @@
 #if OPENSSL_VERSION_NUMBER >= 0x1010100fL && !defined(OPENSSL_NO_ECDH)
 
 #include "openssl_x_diffie_hellman.h"
+#include "openssl_util.h"
 
 #include <utils/debug.h>
 
@@ -45,14 +46,14 @@ struct private_diffie_hellman_t {
 	EVP_PKEY *key;
 
 	/**
+	 * Public key provided by peer
+	 */
+	EVP_PKEY *pub;
+
+	/**
 	 * Shared secret
 	 */
 	chunk_t shared_secret;
-
-	/**
-	 * True if shared secret is computed
-	 */
-	bool computed;
 };
 
 /**
@@ -71,80 +72,24 @@ static int map_key_type(diffie_hellman_group_t group)
 	}
 }
 
-/**
- * Compute the shared secret
- */
-static bool compute_shared_key(private_diffie_hellman_t *this, EVP_PKEY *pub,
-							   chunk_t *shared_secret)
-{
-	EVP_PKEY_CTX *ctx;
-	bool success = FALSE;
-
-	ctx = EVP_PKEY_CTX_new(this->key, NULL);
-	if (!ctx)
-	{
-		return FALSE;
-	}
-
-	if (EVP_PKEY_derive_init(ctx) <= 0)
-	{
-		goto error;
-	}
-
-	if (EVP_PKEY_derive_set_peer(ctx, pub) <= 0)
-	{
-		goto error;
-	}
-
-	if (EVP_PKEY_derive(ctx, NULL, &shared_secret->len) <= 0)
-	{
-		goto error;
-	}
-
-	*shared_secret = chunk_alloc(shared_secret->len);
-
-	if (EVP_PKEY_derive(ctx, shared_secret->ptr, &shared_secret->len) <= 0)
-	{
-		goto error;
-	}
-
-	success = TRUE;
-
-error:
-	EVP_PKEY_CTX_free(ctx);
-	return success;
-}
-
 METHOD(diffie_hellman_t, set_other_public_value, bool,
 	private_diffie_hellman_t *this, chunk_t value)
 {
-	EVP_PKEY *pub;
-
 	if (!diffie_hellman_verify_value(this->group, value))
 	{
 		return FALSE;
 	}
 
-	pub =  EVP_PKEY_new_raw_public_key(map_key_type(this->group), NULL,
-                                       value.ptr, value.len);
-	if (!pub)
+	EVP_PKEY_free(this->pub);
+	this->pub = EVP_PKEY_new_raw_public_key(map_key_type(this->group), NULL,
+											value.ptr, value.len);
+	if (!this->pub)
 	{
 		DBG1(DBG_LIB, "%N public value is malformed",
 			 diffie_hellman_group_names, this->group);
 		return FALSE;
 	}
-
 	chunk_clear(&this->shared_secret);
-
-	if (!compute_shared_key(this, pub, &this->shared_secret))
-	{
-		DBG1(DBG_LIB, "%N shared secret computation failed",
-			 diffie_hellman_group_names, this->group);
-		EVP_PKEY_free(pub);
-		return FALSE;
-	}
-	this->computed = TRUE;
-	EVP_PKEY_free(pub);
 	return TRUE;
 }
 
@@ -184,8 +129,11 @@ METHOD(diffie_hellman_t, set_private_value, bool,
 METHOD(diffie_hellman_t, get_shared_secret, bool,
 	private_diffie_hellman_t *this, chunk_t *secret)
 {
-	if (!this->computed)
+	if (!this->shared_secret.len &&
+		!openssl_compute_shared_key(this->key, this->pub, &this->shared_secret))
 	{
+		DBG1(DBG_LIB, "%N shared secret computation failed",
+			 diffie_hellman_group_names, this->group);
 		return FALSE;
 	}
 	*secret = chunk_clone(this->shared_secret);
@@ -202,6 +150,7 @@ METHOD(diffie_hellman_t, destroy, void,
 	private_diffie_hellman_t *this)
 {
 	EVP_PKEY_free(this->key);
+	EVP_PKEY_free(this->pub);
 	chunk_clear(&this->shared_secret);
 	free(this);
 }

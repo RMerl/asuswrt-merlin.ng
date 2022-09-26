@@ -2,8 +2,7 @@ check_LTLIBRARIES = libtest.la
 
 libtest_la_SOURCES = \
   test_suite.c test_suite.h \
-  test_runner.c test_runner.h \
-  utils/test_rng.c utils/test_rng.h
+  test_runner.c test_runner.h
 
 libtest_la_CFLAGS = \
   -I$(top_srcdir)/src/libstrongswan \
@@ -41,6 +40,12 @@ libstrongswan_tests_SOURCES = tests.h tests.c \
   suites/test_array.c \
   suites/test_ecdsa.c \
   suites/test_rsa.c \
+  suites/test_rsa_pkcs1.c \
+  suites/test_rsa_oaep_sha1.c \
+  suites/test_rsa_oaep_sha224.c \
+  suites/test_rsa_oaep_sha256.c \
+  suites/test_rsa_oaep_sha384.c \
+  suites/test_rsa_oaep_sha512.c \
   suites/test_certpolicy.c \
   suites/test_certnames.c \
   suites/test_host.c \
@@ -54,12 +59,15 @@ libstrongswan_tests_SOURCES = tests.h tests.c \
   suites/test_asn1.c \
   suites/test_asn1_parser.c \
   suites/test_printf.c \
-  suites/test_test_rng.c \
+  suites/test_rng_tester.c \
   suites/test_mgf1.c \
+  suites/test_prf_plus.c \
   suites/test_ntru.c \
   suites/test_ed25519.c \
   suites/test_ed448.c \
-  suites/test_signature_params.c
+  suites/test_signature_params.c \
+  suites/test_metadata.c \
+  suites/test_metadata_set.c
 
 libstrongswan_tests_CFLAGS = \
   -I$(top_srcdir)/src/libstrongswan \

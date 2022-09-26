@@ -1,8 +1,10 @@
+c: Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+SPDX-License-Identifier: curl
 Short: 1
 Long: tlsv1
 Tags: Versions
 Protocols: SSL
-Added:
+Added: 7.9.2
 Mutexed: tlsv1.1 tlsv1.2 tlsv1.3
 Requires: TLS
 See-also: http1.1 http2

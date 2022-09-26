@@ -76,7 +76,7 @@ METHOD(job_t, execute, job_requeue_t,
 	}
 	else
 	{
-		ike_sa->update_hosts(ike_sa, NULL, this->new, FALSE);
+		ike_sa->update_hosts(ike_sa, NULL, this->new, 0);
 		charon->ike_sa_manager->checkin(charon->ike_sa_manager, ike_sa);
 	}
 	return JOB_REQUEUE_NONE;

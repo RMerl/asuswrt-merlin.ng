@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 Sansar Choinyanbuu
+ * Copyright (C) 2010 Sansar Choinyambuu
  * Copyright (C) 2010-2015 Andreas Steffen
  * HSR Hochschule fuer Technik Rapperswil
  *
@@ -443,7 +443,7 @@ static status_t process_tnc_msg(private_pb_tnc_batch_t *this)
 	}
 
 	if (msg_len < msg_infos[msg_type].min_size ||
-	   (msg_infos[msg_type].exact_size && 
+	   (msg_infos[msg_type].exact_size &&
 		msg_len != msg_infos[msg_type].min_size))
 	{
 		DBG1(DBG_TNC, "%N/%N message length must be %s %u bytes but is %u bytes",

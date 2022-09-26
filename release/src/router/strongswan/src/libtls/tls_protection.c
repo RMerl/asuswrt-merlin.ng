@@ -73,23 +73,19 @@ METHOD(tls_protection_t, process, status_t,
 		return NEED_MORE;
 	}
 
-	if (this->aead_in)
+	if (this->version < TLS_1_3 ||
+		type == TLS_APPLICATION_DATA)
 	{
-		if (!this->aead_in->decrypt(this->aead_in, this->version,
-									type, this->seq_in, &data))
+		if (this->aead_in)
 		{
-			DBG1(DBG_TLS, "TLS record decryption failed");
-			this->alert->add(this->alert, TLS_FATAL, TLS_BAD_RECORD_MAC);
-			return NEED_MORE;
+			if (!this->aead_in->decrypt(this->aead_in, this->version,
+										&type, this->seq_in, &data))
+			{
+				DBG1(DBG_TLS, "TLS record decryption failed");
+				this->alert->add(this->alert, TLS_FATAL, TLS_BAD_RECORD_MAC);
+				return NEED_MORE;
+			}
 		}
-	}
-
-	if (type == TLS_CHANGE_CIPHER_SPEC)
-	{
-		this->seq_in = 0;
-	}
-	else
-	{
 		this->seq_in++;
 	}
 	return this->compression->process(this->compression, type, data);
@@ -103,15 +99,14 @@ METHOD(tls_protection_t, build, status_t,
 	status = this->compression->build(this->compression, type, data);
 	if (status == NEED_MORE)
 	{
-		if (*type == TLS_CHANGE_CIPHER_SPEC)
+		if (*type == TLS_CHANGE_CIPHER_SPEC && this->version < TLS_1_3)
 		{
-			this->seq_out = 0;
 			return status;
 		}
 		if (this->aead_out)
 		{
 			if (!this->aead_out->encrypt(this->aead_out, this->version,
-										 *type, this->seq_out, data))
+										 type, this->seq_out, data))
 			{
 				DBG1(DBG_TLS, "TLS record encryption failed");
 				chunk_free(data);
@@ -128,11 +123,15 @@ METHOD(tls_protection_t, set_cipher, void,
 {
 	if (inbound)
 	{
+		DESTROY_IF(this->aead_in);
 		this->aead_in = aead;
+		this->seq_in = 0;
 	}
 	else
 	{
+		DESTROY_IF(this->aead_out);
 		this->aead_out = aead;
+		this->seq_out = 0;
 	}
 }
 
@@ -145,6 +144,8 @@ METHOD(tls_protection_t, set_version, void,
 METHOD(tls_protection_t, destroy, void,
 	private_tls_protection_t *this)
 {
+	DESTROY_IF(this->aead_in);
+	DESTROY_IF(this->aead_out);
 	free(this);
 }
 

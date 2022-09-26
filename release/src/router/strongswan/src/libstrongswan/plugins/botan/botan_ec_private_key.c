@@ -141,7 +141,7 @@ METHOD(private_key_t, sign, bool,
 
 METHOD(private_key_t, decrypt, bool,
 	private_botan_ec_private_key_t *this, encryption_scheme_t scheme,
-	chunk_t crypto, chunk_t *plain)
+	void *params, chunk_t crypto, chunk_t *plain)
 {
 	DBG1(DBG_LIB, "EC private key decryption not implemented");
 	return FALSE;
@@ -329,14 +329,14 @@ botan_ec_private_key_t *botan_ec_private_key_gen(key_type_t type, va_list args)
 			return NULL;
 	}
 
-	if (botan_rng_init(&rng, "system"))
+	if (!botan_get_rng(&rng, RNG_TRUE))
 	{
 		return NULL;
 	}
 
 	this = create_empty(oid);
 
-	if (botan_privkey_create_ecdsa(&this->key, rng, curve))
+	if (botan_privkey_create(&this->key, "ECDSA", curve, rng))
 	{
 		DBG1(DBG_LIB, "EC private key generation failed");
 		botan_rng_destroy(rng);
@@ -429,7 +429,7 @@ botan_ec_private_key_t *botan_ec_private_key_load(key_type_t type, va_list args)
 
 	this = create_empty(oid);
 
-	if (botan_rng_init(&rng, "user"))
+	if (!botan_get_rng(&rng, RNG_STRONG))
 	{
 		chunk_clear(&pkcs8);
 		free(this);

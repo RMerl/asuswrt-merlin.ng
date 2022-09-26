@@ -196,6 +196,11 @@ int main(int argc, char *argv[])
 	if (argc > 2)
 	{
 		len = atoi(argv[2]);
+		if (len > (1 << 30))
+		{
+			fprintf(stderr, "buffer too large (1 GiB limit)\n");
+			return 1;
+		}
 	}
 	if (argc > 3)
 	{

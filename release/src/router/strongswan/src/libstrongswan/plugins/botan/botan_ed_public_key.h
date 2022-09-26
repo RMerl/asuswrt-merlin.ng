@@ -21,6 +21,11 @@
  * THE SOFTWARE.
  */
 
+/**
+ * @defgroup botan_ed_public_key botan_ed_public_key
+ * @{ @ingroup botan_p
+ */
+
 #ifndef BOTAN_ED_PUBLIC_KEY_H_
 #define BOTAN_ED_PUBLIC_KEY_H_
 

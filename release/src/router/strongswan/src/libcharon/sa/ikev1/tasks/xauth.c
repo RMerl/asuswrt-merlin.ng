@@ -150,17 +150,17 @@ static bool allowed(private_xauth_t *this)
 	if (charon->ike_sa_manager->check_uniqueness(charon->ike_sa_manager,
 												 this->ike_sa, FALSE))
 	{
-		DBG1(DBG_IKE, "cancelling XAuth due to uniqueness policy");
+		DBG1(DBG_IKE, "canceling XAuth due to uniqueness policy");
 		return FALSE;
 	}
 	if (!charon->bus->authorize(charon->bus, FALSE))
 	{
-		DBG1(DBG_IKE, "XAuth authorization hook forbids IKE_SA, cancelling");
+		DBG1(DBG_IKE, "XAuth authorization hook forbids IKE_SA, canceling");
 		return FALSE;
 	}
 	if (!charon->bus->authorize(charon->bus, TRUE))
 	{
-		DBG1(DBG_IKE, "final authorization hook forbids IKE_SA, cancelling");
+		DBG1(DBG_IKE, "final authorization hook forbids IKE_SA, canceling");
 		return FALSE;
 	}
 	return TRUE;

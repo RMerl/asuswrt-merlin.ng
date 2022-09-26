@@ -55,11 +55,11 @@ struct sw_collector_history_t {
 							  char *buf);
 
 	/**
-	 * Extract packages from event in installation history 
+	 * Extract packages from event in installation history
 	 *
 	 * @param args			Arguments to be processed
 	 * @param eid			Primary key pointing to current event
-	 * @param op			Extraction operation 
+	 * @param op			Extraction operation
 	 * @return				TRUE if extraction succeeded
 	 */
 	bool (*extract_packages)(sw_collector_history_t *this, chunk_t args,

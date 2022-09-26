@@ -346,32 +346,47 @@ void update_macfilter_relist(void)
 #endif
 
 #ifdef RTCONFIG_NEW_PHYMAP
-/* phy port related start */
-phy_port_mapping get_phy_port_mapping(void)
+extern int get_trunk_port_mapping(int trunk_port_value)
 {
-	static const phy_port_mapping port_mapping = {
-#if 0
-#if defined(MAPAC1300) || defined(MAPAC2200) || defined(VZWAC1300) || defined(SHAC1300) /* for Lyra */
-		.count = 2, 
-		.port[0] = { .phy_port_id = WAN_PORT, .cap = PHY_PORT_CAP_WAN, .max_rate = 1000 }, 
-		.port[1] = { .phy_port_id = LAN4_PORT, .cap = PHY_PORT_CAP_LAN, .max_rate = 1000 }
-#elif defined(RTAC95U)
-		.count = 4, 
-		.port[0] = { .phy_port_id = WAN_PORT, .cap = PHY_PORT_CAP_WAN, .max_rate = 1000 }, 
-		.port[1] = { .phy_port_id = LAN1_PORT, .cap = PHY_PORT_CAP_LAN, .max_rate = 1000 }, 
-		.port[2] = { .phy_port_id = LAN2_PORT, .cap = PHY_PORT_CAP_LAN, .max_rate = 1000 }, 
-		.port[3] = { .phy_port_id = LAN3_PORT, .cap = PHY_PORT_CAP_LAN, .max_rate = 1000 }
+	return trunk_port_value;
+}
+
+/* phy port related start */
+void get_phy_port_mapping(phy_port_mapping *port_mapping)
+{
+	static phy_port_mapping port_mapping_static = {
+#if defined(RT4GAX56)
+		.count = 6,
+		.is_mobile_router = 1,
+		.port[0] = { .phy_port_id = -1, .label_name = "W0", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = NULL },
+		.port[1] = { .phy_port_id = -1, .label_name = "L1", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = NULL },
+		.port[2] = { .phy_port_id = -1, .label_name = "L2", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = NULL },
+		.port[3] = { .phy_port_id = -1, .label_name = "L3", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = NULL },
+		.port[4] = { .phy_port_id = -1, .label_name = "L4", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = NULL },
+		.port[5] = { .phy_port_id = -1, .label_name = "M1", .cap = PHY_PORT_CAP_MOBILE, .max_rate = 480, .ifname = NULL }
+#elif defined(RT4GAC86U)
+		.count = 7,
+		.is_mobile_router = 1,
+		.port[0] = { .phy_port_id = -1, .label_name = "W0", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = NULL },
+		.port[1] = { .phy_port_id = -1, .label_name = "L1", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = NULL },
+		.port[2] = { .phy_port_id = -1, .label_name = "L2", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = NULL },
+		.port[3] = { .phy_port_id = -1, .label_name = "L3", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = NULL },
+		.port[4] = { .phy_port_id = -1, .label_name = "L4", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = NULL },
+		.port[5] = { .phy_port_id = -1, .label_name = "U1", .cap = PHY_PORT_CAP_USB, .max_rate = 480, .ifname = NULL },
+		.port[6] = { .phy_port_id = -1, .label_name = "M1", .cap = PHY_PORT_CAP_MOBILE, .max_rate = 5000, .ifname = NULL }
 #else
-		.count = 5, 
-		.port[0] = { .phy_port_id = WAN_PORT, .cap = PHY_PORT_CAP_WAN, .max_rate = 1000 }, 
-		.port[1] = { .phy_port_id = LAN1_PORT, .cap = PHY_PORT_CAP_LAN, .max_rate = 1000 }, 
-		.port[2] = { .phy_port_id = LAN2_PORT, .cap = PHY_PORT_CAP_LAN, .max_rate = 1000 }, 
-		.port[3] = { .phy_port_id = LAN3_PORT, .cap = PHY_PORT_CAP_LAN, .max_rate = 1000 }, 
-		.port[4] = { .phy_port_id = LAN4_PORT, .cap = PHY_PORT_CAP_LAN, .max_rate = 1000 }
-#endif
+		#error "port_mapping is not defined."
 #endif
 	};
-	return port_mapping;
+
+	if (!port_mapping)
+		return;
+
+	memcpy(port_mapping, &port_mapping_static, sizeof(phy_port_mapping));
+
+	add_sw_cap(port_mapping);
+	swap_wanlan(port_mapping);
+	return;
 }
 #endif
 

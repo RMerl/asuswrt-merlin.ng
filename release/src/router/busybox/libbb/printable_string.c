@@ -9,7 +9,7 @@
 #include "libbb.h"
 #include "unicode.h"
 
-const char* FAST_FUNC printable_string(uni_stat_t *stats, const char *str)
+const char* FAST_FUNC printable_string2(uni_stat_t *stats, const char *str)
 {
 	char *dst;
 	const char *s;
@@ -54,4 +54,9 @@ const char* FAST_FUNC printable_string(uni_stat_t *stats, const char *str)
 	}
 #endif
 	return auto_string(dst);
+}
+
+const char* FAST_FUNC printable_string(const char *str)
+{
+	return printable_string2(NULL, str);
 }

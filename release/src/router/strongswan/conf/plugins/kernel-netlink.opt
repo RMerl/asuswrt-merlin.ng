@@ -18,6 +18,16 @@ charon.plugins.kernel-netlink.fwmark =
 	inverts the meaning (i.e. the rule only applies to packets that don't match
 	the mark).
 
+charon.plugins.kernel-netlink.hw_offload_feature_interface = lo
+	Interface to be used to find hardware offload feature flag on.
+
+	If the kernel supports hardware offloading, the plugin needs to find the
+	feature flag which represents hardware offloading support for network
+	devices. Using the loopback device for this purpose is usually fine, since
+	it should always be present. For rare cases in which the loopback device
+	cannot be used to obtain the appropriate feature flag, this option can
+	be used to specify an alternative interface for offload feature detection.
+
 charon.plugins.kernel-netlink.mss = 0
 	MSS to set on installed routes, 0 to disable.
 

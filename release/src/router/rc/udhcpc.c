@@ -200,7 +200,7 @@ static char
 	return buf;
 }
 
-#ifdef RTCONFIG_TR181
+#if defined(RTCONFIG_TR181) || defined(RTCONFIG_DSL)
 static int
 opt_add(const void *buf, size_t size, unsigned char id, void *data, unsigned char len)
 {
@@ -717,7 +717,7 @@ start_udhcpc(char *wan_ifname, int unit, pid_t *ppid)
 	char clientid[sizeof("61:") + (128*2) + 1];
 #ifdef RTCONFIG_TR069
 	char vendorid[32+32+sizeof(" dslforum.org")];
-#ifdef RTCONFIG_TR181
+#if defined(RTCONFIG_TR181) || defined(RTCONFIG_DSL)
 	unsigned char optbuf[sizeof(struct viopt_hdr) + 128];
 	unsigned char hwaddr[6];
 	char vivopts[sizeof("125:") + sizeof(optbuf)*2];
@@ -745,7 +745,7 @@ start_udhcpc(char *wan_ifname, int unit, pid_t *ppid)
 		NULL, NULL,	/* -V wan_vendorid */
 #ifdef RTCONFIG_TR069
 		NULL,		/* -O43 */
-#ifdef RTCONFIG_TR181
+#if defined(RTCONFIG_TR181) || defined(RTCONFIG_DSL)
 		NULL, NULL,	/* -x 125:vivopts */
 #endif
 #endif
@@ -764,7 +764,7 @@ start_udhcpc(char *wan_ifname, int unit, pid_t *ppid)
 	/* Skip dhcp and start zcip for pppoe, if desired */
 	if ((nvram_match(strcat_r(prefix, "proto", tmp), "pppoe") &&
 	    nvram_match(strcat_r(prefix, "vpndhcp", tmp), "0"))
-#if defined(RTCONFIG_IPV6) && (defined(RTAX82_XD6) || defined(RTAX82_XD6S))
+#if defined(RTCONFIG_IPV6) && (defined(RTAX82_XD6) || defined(RTAX82_XD6S) || defined(XD6_V2))
 	||  (!strncmp(nvram_safe_get("territory_code"), "CH", 2) &&
 	    ipv6_enabled() && nvram_match(ipv6_nvname("ipv6_only"), "1"))
 #endif
@@ -859,7 +859,7 @@ start_udhcpc(char *wan_ifname, int unit, pid_t *ppid)
 	}
 
 #ifdef RTCONFIG_TR069
-#ifdef RTCONFIG_TR181
+#if defined(RTCONFIG_TR181) || defined(RTCONFIG_DSL)
 	if (ether_atoe(get_lan_hwaddr(), hwaddr)) {
 		struct viopt_hdr *viopt = (struct viopt_hdr *) optbuf;
 		unsigned char *ptr = viopt->data;
@@ -969,7 +969,7 @@ config(void)
 
 	wan_up(wan_ifname);
 
-#if defined(RTCONFIG_IPV6) && (defined(RTAX82_XD6) || defined(RTAX82_XD6S))
+#if defined(RTCONFIG_IPV6) && (defined(RTAX82_XD6) || defined(RTAX82_XD6S) || defined(XD6_V2))
 	if ((!strncmp(nvram_safe_get("territory_code"), "CH", 2) &&
 		ipv6_enabled() &&
 		nvram_match(ipv6_nvname("ipv6_only"), "1")) &&
@@ -1647,7 +1647,7 @@ void set_s46_ra_addr(int wan_type, char *wan_ifname)
 	FILE *fp;
 
 	if (wan_type == WAN_V6PLUS)
-		snprintf(buf, sizeof(buf), "ip a s %s | grep \"scope global mngtmpaddr dynamic\" | awk -F \" \" '{printf $2}' 2>/dev/null", wan_ifname);
+		snprintf(buf, sizeof(buf), "ip a s %s | grep \"scope global\" | grep  \"dynamic\" | grep \"mngtmpaddr\" | awk -F \" \" '{printf $2}' 2>/dev/null", wan_ifname);
 	else
 		return;
 

@@ -6,7 +6,7 @@
 #                            | (__| |_| |  _ <| |___
 #                             \___|\___/|_| \_\_____|
 #
-# Copyright (C) 2017 - 2020, Daniel Stenberg, <daniel@haxx.se>, et al.
+# Copyright (C) 2017 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
 #
 # This software is licensed as described in the file COPYING, which
 # you should have received as part of this distribution. The terms
@@ -18,6 +18,8 @@
 #
 # This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
 # KIND, either express or implied.
+#
+# SPDX-License-Identifier: curl
 #
 ###########################################################################
 
@@ -50,6 +52,8 @@ print <<HEADER
  *
  * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
  * KIND, either express or implied.
+ *
+ * SPDX-License-Identifier: curl
  *
  ***************************************************************************/
 #include "test.h"
@@ -128,6 +132,7 @@ static curl_sockopt_callback sockoptcb;
 static curl_opensocket_callback opensocketcb;
 static curl_seek_callback seekcb;
 static curl_sshkeycallback ssh_keycb;
+static curl_sshhostkeycallback ssh_hostkeycb;
 static curl_chunk_bgn_callback chunk_bgn_cb;
 static curl_chunk_end_callback chunk_end_cb;
 static curl_fnmatch_callback fnmatch_cb;
@@ -136,6 +141,7 @@ static curl_xferinfo_callback xferinfocb;
 static curl_hstsread_callback hstsreadcb;
 static curl_hstswrite_callback hstswritecb;
 static curl_resolver_start_callback resolver_start_cb;
+static curl_prereq_callback prereqcb;
 
 int test(char *URL)
 {

@@ -229,7 +229,7 @@ Vici::Message - Perl extension for building and parsing strongSwan VICI messages
 
 =head1 SYNOPSIS
 
-  use Vici::Message;
+use Vici::Message;
 
 =head1 DESCRIPTION
 

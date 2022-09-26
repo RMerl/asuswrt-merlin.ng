@@ -256,23 +256,6 @@ function addRow_Group(){
 
 		manually_dhcp_list_array[document.form.dhcp_staticip_x_0.value.toUpperCase()] = item_para;
 
-		if(vpn_fusion_support) {
-			var policy_flag = false;
-			$.each(vpnc_dev_policy_list_array, function(index, value){
-				if(value[0] == document.form.dhcp_staticip_x_0.value){
-					policy_flag = true;
-					return false;
-				}
-			});
-			if(!policy_flag){
-				var newRuleArray = new Array();
-				newRuleArray.push(document.form.dhcp_staticip_x_0.value);
-				newRuleArray.push("0");
-				newRuleArray.push("0");
-				vpnc_dev_policy_list_array.push(newRuleArray);
-			}
-		}
-
 		document.form.dhcp_staticip_x_0.value = "";
 		document.form.dhcp_staticmac_x_0.value = "";
 		document.form.dhcp_dnsip_x_0.value = "";
@@ -968,14 +951,14 @@ function sortClientIP(){
 			  </thead>		
 			  
 			  <tr>
-				<th width="200"><a class="hintstyle" href="javascript:void(0);" onClick="openHint(5,7);">DNS Server 1</a></th>
+				<th width="200"><a class="hintstyle" href="javascript:void(0);" onClick="openHint(5,7);"><#LANHostConfig_x_LDNSServer1_itemname#> 1</a></th>
 				<td>
 				  <input type="text" maxlength="15" class="input_15_table" name="dhcp_dns1_x" value="<% nvram_get("dhcp_dns1_x"); %>" onKeyPress="return validator.isIPAddr(this,event)" autocorrect="off" autocapitalize="off">
 				  <div id="yadns_hint" style="display:none;"></div>
 				</td>
 			  </tr>
 			  <tr>
-				<th width="200"><a class="hintstyle" href="javascript:void(0);" onClick="openHint(5,7);">DNS Server 2</a></th>
+				<th width="200"><a class="hintstyle" href="javascript:void(0);" onClick="openHint(5,7);"><#LANHostConfig_x_LDNSServer1_itemname#> 2</a></th>
 				<td>
 				  <input type="text" maxlength="15" class="input_15_table" name="dhcp_dns2_x" value="<% nvram_get("dhcp_dns2_x"); %>" onKeyPress="return validator.isIPAddr(this,event)">
 				</td>

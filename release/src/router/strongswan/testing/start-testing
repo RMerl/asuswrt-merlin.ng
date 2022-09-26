@@ -17,7 +17,7 @@ echo "Starting test environment"
 [ `id -u` -eq 0 ] || die "You must be root to run $0"
 running_any $STRONGSWANHOSTS && die "Please stop test environment before running $0"
 
-check_commands kvm virsh
+check_commands virsh qemu-system-x86_64
 
 [ -f $KNLSRC ] || die "Kernel $KNLSRC not found"
 log_action "Deploying kernel $KERNEL"

@@ -313,11 +313,11 @@ do
 	    continue
 	fi
 
-	[ -f $DEFAULTTESTSDIR/${testname}/description.txt ] || die "!! File 'description.txt' is missing"
-	[ -f $DEFAULTTESTSDIR/${testname}/test.conf ]       || die "!! File 'test.conf' is missing"
-	[ -f $DEFAULTTESTSDIR/${testname}/pretest.dat ]     || die "!! File 'pretest.dat' is missing"
-	[ -f $DEFAULTTESTSDIR/${testname}/posttest.dat ]    || die "!! File 'posttest.dat' is missing"
-	[ -f $DEFAULTTESTSDIR/${testname}/evaltest.dat ]    || die "!! File 'evaltest.dat' is missing"
+	[ ! -f $DEFAULTTESTSDIR/${testname}/description.txt ] && echo "!! File 'description.txt' is missing" && continue
+	[ ! -f $DEFAULTTESTSDIR/${testname}/test.conf ]       && echo "!! File 'test.conf' is missing" && continue
+	[ ! -f $DEFAULTTESTSDIR/${testname}/pretest.dat ]     && echo "!! File 'pretest.dat' is missing" && continue
+	[ ! -f $DEFAULTTESTSDIR/${testname}/posttest.dat ]    && echo "!! File 'posttest.dat' is missing" && continue
+	[ ! -f $DEFAULTTESTSDIR/${testname}/evaltest.dat ]    && echo "!! File 'evaltest.dat' is missing" && continue
 
 	TESTRESULTDIR=$TODAYDIR/$testname
 	mkdir -p $TESTRESULTDIR
@@ -406,12 +406,16 @@ do
 	echo -e "\nPRE-TEST\n" >> $CONSOLE_LOG 2>&1
 
 	eval `awk -F "::" '{
-	    if ($1 !~ /^#.*/ && $2 != "")
-	    {
-		printf("echo \"$(print_time)%s# %s\"; ", $1, $2)
-		printf("ssh \044SSHCONF root@\044ipv4_%s \"%s\"; ", $1, $2)
-		printf("echo;\n")
-	    }
+		if ($0 ~ /^#.*/)
+		{
+			printf("echo \"%s\"; ", $0);
+		}
+		else if ($2 != "")
+		{
+			printf("echo \"$(print_time)%s# %s\"; ", $1, $2)
+			printf("ssh \044SSHCONF root@\044ipv4_%s \"%s\"; ", $1, $2)
+			printf("echo;\n")
+		}
 	}' $TESTDIR/pretest.dat` >> $CONSOLE_LOG 2>&1
 
 
@@ -443,12 +447,18 @@ do
 		command=$2
 		pattern=$3
 		hit=$4
-		if (host ~ /^#.*/ || command == "")
+		if ($0 ~ /^#.*/)
+		{
+			printf("echo \"%s\"; ", $0);
+			next
+		}
+		else if (command == "")
 		{
 			next
 		}
 		printf("cmd_err=\044(tempfile -p test -s err); ")
 		printf("cmd_out=\044(tempfile -p test -s out); ")
+		printf("start_time=\044(print_time); ")
 		if (command == "tcpdump")
 		{
 			printf("if [ \044TDUP_%s == \"true\" ]; then stop_tcpdump %s; fi; \n", host, host)
@@ -475,11 +485,11 @@ do
 		printf("if [ \044cmd_fail -ne 0 ]; then echo \"~~~~~~~ FAIL ~~~~~~~\"; fi; \n")
 		if (command == "tcpdump")
 		{
-			printf("echo \"$(print_time)%s# cat /tmp/tcpdump.log | grep \047%s\047  [%s]\"; ", host, pattern, hit)
+			printf("echo \"\044{start_time}%s# cat /tmp/tcpdump.log | grep \047%s\047  [%s]\"; ", host, pattern, hit)
 		}
 		else
 		{
-			printf("echo \"$(print_time)%s# %s | grep \047%s\047  [%s]\"; ", host, command, pattern, hit)
+			printf("echo \"\044{start_time}%s# %s | grep \047%s\047  [%s]\"; ", host, command, pattern, hit)
 		}
 		printf("if [ -n \"\044cmd_res\" ]; then echo \"\044cmd_res\"; fi; \n")
 		printf("cat \044cmd_err; \n")
@@ -693,19 +703,9 @@ do
 	do
 	    eval HOSTLOGIN=root@\$ipv4_${host}
 
-		RADIUS_DIR=/etc/freeradius/3.0
-		RADIUS_EAP_FILE=mods-enabled/eap
-		RADIUS_EAP_NAME=eap
-		if [ "$BASEIMGSUITE" == "jessie" ]
-		then
-			RADIUS_DIR=/etc/freeradius
-			RADIUS_EAP_FILE=eap.conf
-			RADIUS_EAP_NAME=eap.conf
-		fi
-
-		for file in clients.conf radiusd.conf proxy.conf users sites-enabled/default sites-enabled/inner-tunnel $RADIUS_EAP_FILE
+		for file in clients.conf radiusd.conf proxy.conf users sites-enabled/default sites-enabled/inner-tunnel mods-enabled/eap
 	    do
-		scp $SSHCONF $HOSTLOGIN:$RADIUS_DIR/$file \
+		scp $SSHCONF $HOSTLOGIN:/etc/freeradius/3.0/$file \
 		    $TESTRESULTDIR/${host}.$(basename $file) > /dev/null 2>&1
 	    done
 
@@ -721,7 +721,7 @@ do
 	  <ul>
 	    <li><a href="$host.clients.conf">clients.conf</a></li>
 	    <li><a href="$host.radiusd.conf">radiusd.conf</a></li>
-	    <li><a href="$host.$RADIUS_EAP_NAME">$RADIUS_EAP_NAME</a></li>
+	    <li><a href="$host.eap">eap</a></li>
 	  </ul>
 	</td>
 	<td valign="top">
@@ -775,12 +775,16 @@ do
 	echo -e "\nPOST-TEST\n" >> $CONSOLE_LOG 2>&1
 
 	eval `awk -F "::" '{
-	    if ($1 !~ /^#.*/ && $2 != "")
-	    {
-		printf("echo \"$(print_time)%s# %s\"; ", $1, $2)
-		printf("ssh \044SSHCONF root@\044ipv4_%s \"%s\"; ", $1, $2)
-		printf("echo;\n")
-	    }
+		if ($0 ~ /^#.*/)
+		{
+			printf("echo \"%s\"; ", $0);
+		}
+		else if ($2 != "")
+		{
+			printf("echo \"$(print_time)%s# %s\"; ", $1, $2)
+			printf("ssh \044SSHCONF root@\044ipv4_%s \"%s\"; ", $1, $2)
+			printf("echo;\n")
+		}
 	}' $TESTDIR/posttest.dat` >> $CONSOLE_LOG 2>&1
 
 	##########################################################################

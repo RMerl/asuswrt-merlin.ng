@@ -90,6 +90,10 @@ typedef u_int8_t u8;
 #ifdef RTCONFIG_AMAS_ADTBW
 #include <amas_adtbw.h>
 #endif
+#if defined(RTCONFIG_NOTIFICATION_CENTER)
+#include <libnt.h>
+#include <json.h>
+#endif
 
 const int ifup_vap =
 #if defined(RTCONFIG_QCA)
@@ -1343,7 +1347,7 @@ void start_lan(void)
 #if defined(RTAX82U_V2) || defined(TUFAX5400_V2)
 	// configure 6715 GPIO direction
 	eval("wl", "-i", "eth6", "gpioout", "0x2002", "0x2002");
-	eval("wl", "-i", "eth6", "ledbh", "13", "7");
+	eval("wl", "-i", "eth6", "ledbh", "15", "7");
 #endif
 
 #ifdef RTAXE7800
@@ -1358,7 +1362,7 @@ void start_lan(void)
 	eval("wl", "-i", "eth6", "gpioout", "0x2002", "0x2002");
 #endif
 
-#ifdef GTAX6000
+#if defined(GTAX6000) || defined(RTAX88U_PRO)
 	// configure 6715 GPIO direction
 	eval("wl", "-i", "eth6", "gpioout", "0x2002", "0x2002");
 	eval("wl", "-i", "eth7", "gpioout", "0x2002", "0x2002");
@@ -3671,6 +3675,28 @@ int radio_switch(int subunit)
 #ifdef RTCONFIG_BCMWL6
 	if (sw) led_bh_prep(1); // restore ledbh if needed
 #endif
+
+#ifdef RTCONFIG_NOTIFICATION_CENTER
+	json_object *root = NULL;
+	char buf[256] = {0};
+	char str[32] = {0};
+
+	if (!sw) {
+		dbG("[radio switch] radio switch off and SYS_ALL_WIFI_TURN_OFF_EVENT\n");
+		root = json_object_new_object();
+		if (root) {
+			json_object_object_add(root, "dut", json_object_new_string(get_productid()));
+		}
+
+		snprintf(str, sizeof(str), "0x%x", SYS_ALL_WIFI_TURN_OFF_EVENT);
+		snprintf(buf, sizeof(buf), "%s", json_object_to_json_string(root));
+		eval("Notify_Event2NC", str, buf);
+
+		/* free obj */
+		if (root) json_object_put(root);
+	}
+#endif
+
 	return 0;
 }
 
@@ -5408,6 +5434,9 @@ void lanaccess_mssid(const char *limited_ifname, int mode)
 	if (strcmp(lan_subnet, cap_subnet))
 		eval("ebtables", "-t", "broute", mode ? "-A" : "-D", "BROUTING", "-i", (char*)limited_ifname, "-p", "ipv4", "--ip-dst", cap_subnet, "--ip-proto", "tcp", "-j", "DROP");
 #endif
+#if defined(RTCONFIG_HND_ROUTER_AX_6756)
+	eval("ebtables", "-t", "broute", mode ? "-A" : "-D", "BROUTING", "-i", (char*)limited_ifname, "-p", "ipv4", "--ip-dst", lan_subnet, "-j", "SKIPLOG");
+#endif
 #endif	/* RTAC87U */
 }
 
@@ -5751,7 +5780,7 @@ void restart_wireless(void)
 	}
 #endif
 #if defined(RTCONFIG_ASUSCTRL)
-#if defined(RTCONFIG_BCMARM) ||  defined(RTCONFIG_QCA)
+#if defined(RTCONFIG_BCMARM) ||  defined(RTCONFIG_QCA) || defined(RTCONFIG_RALINK)
 	setting_SG_mode_wps();
 #endif
 #endif

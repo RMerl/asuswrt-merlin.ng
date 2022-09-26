@@ -22,6 +22,7 @@
 #define BWDPI_MON_DELOG         "/tmp/BWMON_LOG"
 #define BWDPI_SUP_DEBUG         "/tmp/BWSUP_DEBUG"
 #define BWDPI_WBL_DEBUG         "/tmp/WRS_WBL_DEBUG"
+#define BWDPI_CC_EVENT_DEBUG    "/tmp/BWDPI_CC_EVENT_DEBUG"
 
 /* DEBUG FUNCTION */
 #define BWDPI_DBG(fmt,args...) \
@@ -66,6 +67,11 @@
 #define WBL_DBG(fmt,args...) \
 	if(f_exists(BWDPI_WBL_DEBUG) > 0) { \
 		printf("[WBL][%s:(%d)]"fmt, __FUNCTION__, __LINE__, ##args); \
+	}
+
+#define CC_DBG(fmt,args...) \
+	if(f_exists(BWDPI_CC_EVENT_DEBUG) > 0) { \
+		printf("[CC_EVENT][%s:(%d)]"fmt, __FUNCTION__, __LINE__, ##args); \
 	}
 
 // folder path
@@ -125,6 +131,7 @@
 #define BWDPI_MON_CC    BWDPI_MON_DIR"/AiProtectionMonitorCCevent.txt"
 #define BWDPI_MON_VP    BWDPI_MON_DIR"/AiProtectionMonitorVPevent.txt"
 #define BWDPI_MON_MALS  BWDPI_MON_DIR"/AiProtectionMonitorMALSevent.txt"
+#define BWDPI_CC_EVENT  BWDPI_MON_DIR"/CCevent.log"
 
 // Avoid the trigger event loop issue, add a copy file for nt_center usage
 #define NT_MON_CC    BWDPI_MON_DIR"/NT-AiMonitorCCevent.txt"
@@ -209,3 +216,8 @@ extern int wbl_setup_global_rule(char *mac);
 extern int wbl_setup_mac_rule(char *mac);
 extern int clean_wbl_conf();
 extern int setup_wbl_conf(int type, char *mac);
+
+// infected_cc.c
+#ifdef RTCONFIG_NOTIFICATION_CENTER
+extern void AiProtectionMonitor_InfectedEvent();
+#endif

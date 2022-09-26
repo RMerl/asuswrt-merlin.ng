@@ -15,7 +15,7 @@
 
 /**
  * @defgroup tnc_ifmap_http tnc_ifmap_http
- * @{ @ingroup tnc_ifmap 
+ * @{ @ingroup tnc_ifmap
  */
 
 #ifndef TNC_IFMAP_HTTP_H_

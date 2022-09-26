@@ -250,7 +250,7 @@ function openSelItem(item){
 	}
 	
 	if(isdir==1){
-		doPROPFIND(loc, null, 0);
+		doPROPFIND(loc, false, null, 0);
 	}
 	else
 		window.open(loc);
@@ -538,7 +538,7 @@ function createThumbView(query_type, parent_url, folder_array, file_array){
 	});
 }
 
-function doPROPFIND(open_url, complete_handler, auth){
+function doPROPFIND(open_url, append_result, complete_handler, auth){
 	if(client==null)
 		return;
 	
@@ -764,7 +764,7 @@ function doPROPFIND(open_url, complete_handler, auth){
 	  			}
 		  	}
 		  	else if(error==501){
-					doPROPFIND(open_url);
+					doPROPFIND(open_url, false);
 				}
 				else{
 					alert(m.getString(error));					
@@ -810,7 +810,7 @@ $(document).ready(function(){
 	
 	var openurl = g_storage.get(g_sharelink_openurl_key);
 	if(openurl==undefined) openurl = g_root_path;
-	doPROPFIND( openurl, null, 0);
+	doPROPFIND( openurl, false, null, 0);
 	
 	//- modal window
 	var modalWindow_html = "";

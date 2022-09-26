@@ -1,0 +1,1582 @@
+﻿body{
+	margin: 0;
+	background-color: initial !important;
+}
+.mobile{
+	display: none;
+}
+.desktop{
+	display: block;
+}
+.no_highlights{
+	-webkit-tap-highlight-color: transparent;
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
+.bg{
+	background-color: transparent;
+	color: #FFFFFF;
+	font-family: Arial, Helvetica, sans-serif, "Microsoft JhengHei";
+	font-size: 13px;
+	line-height: 180%;
+	width: 100%;
+	min-height: 100%;
+	display: flex;
+	justify-content: center;
+	background: initial;
+}
+.container{
+	width: 98%;
+	margin: 1%;
+	height: 100%;
+}
+.content_container{
+	display: flex;
+	justify-content: space-between;
+	width: 100%;
+	height: auto;
+}
+.vpn_icon_all_collect{
+	background-image: url(/images/New_ui/VPN/vpn_icon_all_collect.svg);
+	background-repeat: no-repeat;
+}
+.server_list_container{
+	width: 50%;
+	height: auto;
+	min-width: 360px;
+}
+.server_list_container .svr_item_horizontal_line{
+	width: 90%;
+	margin: auto;
+	outline: 1px solid rgba(228, 235, 249, 0.2);
+}
+.profile_setting_container{
+	width: 50%;
+	box-shadow: 0px 1px 4px 0px rgb(0 0 0 / 20%);
+	min-width: 360px;
+	height: 100%;
+	border-radius: 8px;
+}
+.profile_setting_container .popup_edit_profile_container{
+	background: rgb(40, 58, 70);
+	border-radius: 8px;
+}
+.profile_setting_container .get_start_container{
+	background: rgb(48, 61, 67);
+	border: 1px solid rgba(255, 255, 255, 0.02);
+	box-shadow: 0px 2px 4px 0px rgb(0 0 0 / 20%), 0px 1px 4px 0px rgb(60 60 60 / 30%);
+	border-radius: 8px;
+}
+.profile_setting_container .get_start_container .main_info_container{
+	background: rgba(0, 0, 0, 0.1);
+}
+.profile_setting_container .get_start_container .sub_info_container{
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	height: 60px;
+}
+.get_start_container .main_info_container .title{
+	height: 50px;
+	display: flex;
+	align-items: flex-end;
+	margin: 0 28px;
+	color: rgb(76, 180, 255);
+	font-size: 11px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.2px;
+	line-height: 16px;
+}
+.get_start_container .main_info_container .desc{
+	height: 80px;
+	color: rgb(255, 255, 255);
+	font-size: 24px;
+	font-weight: 600;
+	letter-spacing: -0.2px;
+	display: flex;
+	align-items: center;
+	margin: 0 28px;
+}
+.get_start_container .main_info_container .add_btn{
+	width: 124px !important;
+	margin: 12px 28px;
+}
+.get_start_container .main_info_container .get_start_img{
+	background-image: url(/images/New_ui/VPN/get_start.svg);
+	background-repeat: no-repeat;
+	height: 300px;
+	background-position: 50%;
+	margin-top: 24px;
+}
+.get_start_container .sub_info_container .title{
+	color: rgba(171, 180, 194, 0.87);
+	font-size: 11px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.2px;
+	line-height: 16px;
+	margin-left: 16px;
+}
+.profile_setting_title{
+	width: 100%;
+	height: 76px;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+.profile_setting_title .title{
+	color: rgb(255, 255, 255);
+	font-size: 24px;
+	font-weight: 600;
+	letter-spacing: -0.2px;
+	line-height: 24px;
+	margin-left: 4%;
+}
+.profile_setting_title .del_btn{
+	width: 24px;
+	height: 24px;
+	cursor: pointer;
+	margin-right: 4%;
+	background-position: -162px 0px;
+}
+.profile_setting_title .del_btn:hover{
+	background-position: -162px -55px;
+}
+.svr_list_title_container, .client_list_title_container{
+	width: 90%;
+	height: 56px;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin: auto;
+	color: #a4b7c3;
+}
+.profile_setting_item.keys_item .vpnc_keys_icon{
+	width: 24px;
+	height: 24px;
+	cursor: pointer;
+	background-position: 0px 0px;
+}
+.profile_setting_item.keys_item .vpnc_keys_icon{
+	background-position: -53px 0px;
+}
+.profile_setting_item.keys_item .vpnc_keys_icon:hover{
+	background-position: -53px -55px;
+}
+.client_list_title_container{
+	width: 100%;
+	color: #ABB4C2;
+	position: relative;
+}
+.client_list_title_container:before{
+	position: absolute;
+	content: "";
+	bottom: 0;
+	width: 100%;
+	border-bottom: 1px solid rgba(171, 180, 194, 0.2);
+}
+.svr_list_title, .client_list_title{
+	height: 16px;
+	font-size: 14px;
+	font-weight: 500;
+	text-transform: uppercase;
+	letter-spacing: 0.1px;
+	line-height: 16px;
+	width: 80%;
+}
+.client_list_title{
+	margin-left: 4%;
+	text-transform: initial;
+}
+.svr_list_help_icon{
+	-moz-transform: rotate(90deg);
+	-webkit-transform: rotate(90deg);
+	-o-transform: rotate(90deg);
+	-ms-transform: rotate(90deg);
+	transform: rotate(90deg);
+	font-size: 24px;
+	font-weight: bolder;
+	cursor: pointer;
+	margin-left: 2%;
+}
+.svr_list_add_container, .client_list_add_container{
+	display: flex;
+	justify-content: space-around;
+	align-items: center;
+}
+.client_list_add_container{
+	margin-right: 4%;
+}
+.svr_list_num, .client_list_num{
+	height: 16px;
+	font-size: 12px;
+	font-weight: 600;
+	letter-spacing: 1.2px;
+	line-height: 16px;
+	margin-right: 18px;
+	position: relative;
+}
+.client_list_num{
+	font-size: 14px;
+	font-size: 14px;
+	color: #FFFFFF;
+	letter-spacing: 0.1px;
+	text-align: center;
+}
+.client_list_num:before{
+	content: "";
+	position: absolute;
+	left: -34px;
+	top: -4px;
+	width: 24px;
+	height: 24px;
+	background-position: -108px -163px;
+	background-image: url(/images/New_ui/VPN/vpn_icon_all_collect.svg);
+	background-repeat: no-repeat;
+}
+.svr_list_add_icon, .client_list_add_icon{
+	width: 24px;
+	height: 24px;
+	cursor: pointer;
+	background-position: 0px 0px;
+}
+.svr_list_add_icon:hover{
+	background-position: 0px -55px;
+}
+.client_list_add_icon{
+	background-position: -53px 0px;
+}
+.client_list_add_icon:hover{
+	background-position: -53px -55px;
+}
+.svr_item_container{
+	position: relative;
+}
+.svr_item_container, .svr_item_error_hint_container{
+	width: 90%;
+	margin: auto;
+	height: 80px;
+	background: rgb(48, 61, 67);
+	border: 1px solid rgb(54, 71, 82);
+	box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.2), 0px 1px 4px 0px rgba(60, 60, 60, 0.3);
+	border-radius: 8px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	margin-bottom: 16px;
+}
+.svr_item_container.selected{
+	background: rgb(43, 67, 86);
+	box-shadow: 0px 2px 4px 0px rgb(0 0 0 / 20%), 0px 1px 4px 0px rgb(60 60 60 / 30%);
+	border-color: rgba(0, 133, 255, 0.4);
+}
+.svr_item_text_container{
+	width: 70%;
+	height: 100%;
+	position: relative;
+	margin-left: 12%;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	color: #FFF;
+	font-size: 15px;
+	font-weight: 600;
+	line-height: 24px;
+	cursor: pointer;
+}
+.svr_item_text_container:before{
+	position: absolute;
+	content: "";
+	height: 40%;
+	border-right: 1px solid rgb(255 255 255 / 0.3);
+	right: 0;
+	top: 30%;
+}
+.svr_item_container.default .svr_item_text_container:before{
+	content: initial;
+}
+.svr_item_text_container:after, .svr_item_container.internet:after{
+	position: absolute;
+	content: "";
+	top: 35px;
+	right: 16px;
+	width: 7px;
+	height: 7px;
+	border-top: 2px solid rgb(255 255 255 / 0.3);
+	border-right: 2px solid rgb(255 255 255 / 0.3);
+	-o-transform: rotate(45deg);
+	-ms-transform: rotate(45deg);
+	-moz-transform: rotate(45deg);
+	-webkit-transform: rotate(45deg);
+	transform: rotate(45deg);
+}
+.svr_item_container.default .svr_item_text_container:after{
+	content: initial;
+}
+.svr_item_main_info{
+	color: #FFF;
+	font-size: 15px;
+	font-weight: 600;
+	line-height: 24px;
+	position: relative;
+}
+.svr_item_main_info:before{
+	content: "";
+	position: absolute;
+	left: -13%;
+	top: 0px;
+	width: 24px;
+	height: 24px;
+	background-position: -540px 0px;
+	background-image: url(/images/New_ui/VPN/vpn_icon_all_collect.svg);
+	background-repeat: no-repeat;
+}
+.svr_item_main_info > .main_info_text{
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	width: 90%;
+}
+.svr_item_container.active .svr_item_main_info:before{
+	background-position: -540px -55px;
+}
+.svr_item_container.error_hint.active .svr_item_main_info:before{
+	background-position: -540px -108px;
+}
+.svr_item_container.default_wan_selected .svr_item_main_info:before{
+	background-position: -540px -162px
+}
+.svr_item_container.active.default_wan_selected .svr_item_main_info:before{
+	background-position: -540px -216px
+}
+.svr_item_container.error_hint.active.default_wan_selected .svr_item_main_info:before{
+	background-position: -540px -270px
+}
+.svr_item_container.default_wan_selected .default_wan_tag{
+	position: absolute;
+	right: 4%;
+	top: -12px;
+	font-size: 12px;
+	color: #FFFFFF;
+	height: 24px;
+	line-height: 24px;
+	padding-left: 20px;
+	padding-right: 8px;
+	background: rgb(54 69 81);
+	border: 1px solid #2597FF;
+	box-shadow: 0px 4px 8px rgb(0 0 0 / 60%), 0px 0px 1px rgb(0 0 0 / 90%);
+	border-radius: 15px;
+	display: block;
+}
+.default_wan_tag{
+	display: none;
+}
+.default_wan_tag > div{
+	position: relative;
+}
+.default_wan_tag > div:before{
+	position: absolute;
+	content: "";
+	width: 14px;
+	height: 100%;
+	background-image: url(/images/New_ui/amesh/client_control.svg);
+	background-repeat: no-repeat;
+	background-size: 300px;
+	background-position: -230px 3px;
+	left: -16px;
+}
+.svr_item_container.internet{
+	justify-content: start;
+	margin-top: 32px;
+	color: rgb(0, 133, 255);
+}
+.svr_item_container.internet:after{
+	right: 6%;
+}
+.svr_item_container.internet.connected .svr_item_main_info:before{
+	background-position: -594px -54px;
+}
+.svr_item_container.internet.disconnected .svr_item_main_info:before{
+	background-position: -594px -108px;
+}
+.svr_item_container.internet.standby .svr_item_main_info:before{
+	background-position: -594px 0px;
+}
+.svr_item_container.internet.connected.default_wan_selected .svr_item_main_info:before{
+	background-position: -594px -216px;
+}
+.svr_item_container.internet.disconnected.default_wan_selected .svr_item_main_info:before{
+	background-position: -594px -270px;
+}
+.svr_item_container.internet.standby.default_wan_selected .svr_item_main_info:before{
+	background-position: -594px -162px;
+}
+.svr_item_container.internet .svr_item_text_container:before, .svr_item_container.internet .svr_item_text_container:after{
+	content: initial;
+}
+.svr_item_sub_info{
+	display: flex;
+	height: 24px;
+	color: #FFF;
+	font-size: 14px;
+	font-weight: 500;
+	line-height: 24px;
+	position: relative;
+}
+.svr_item_container.default .svr_item_sub_info:before{
+	position: absolute;
+	content: "";
+	width: 36%;
+	height: 10px;
+	background: rgb(255 255 255 / 0.3);
+	border-radius: 30px;
+	top: 6px;
+}
+.svr_item_sub_info .vpn_type{
+	position: relative;
+}
+.svr_item_sub_info .vpn_type:before{
+	content: "";
+	position: absolute;
+	width: 6px;
+	height: 6px;
+	background-color: rgb(255 255 255 / 0.3);
+	border-radius: 50%;
+	top: 9px;
+	right: -15px;
+}
+.svr_item_sub_info .vpn_status{
+	color: rgba(164, 183, 195, 0.6);
+	font-size: 14px;
+	font-weight: 500;
+	letter-spacing: 0.1px;
+	margin-left: 24px;
+}
+.svr_item_container.active .svr_item_sub_info .vpn_status,
+.svr_item_container.internet.connected .svr_item_sub_info{
+	color: rgb(0, 133, 255);
+}
+.svr_item_container.error_hint{
+	border-radius: 8px 8px 0 0;
+}
+.svr_item_container.active.error_hint .svr_item_sub_info .vpn_status{
+	color: rgb(249, 61, 61);
+}
+.svr_item_error_hint_container{
+	height: 32px;
+	margin-top: -10px;
+	margin-bottom: 10px;
+	background: rgb(0 0 0 / 50%);
+	border-radius: 0 0 8px 8px;
+	border-top: initial;
+}
+.svr_item_error_hint_container > div{
+	color: rgb(249, 61, 61);
+	font-size: 14px;
+	font-weight: 500;
+	letter-spacing: 0.1px;
+	margin-left: 4%;
+	position: relative;
+	width: 100%;
+	height: 100%;
+	line-height: 34px;
+}
+.svr_item_error_hint_container > div:before{
+	content: "";
+	position: absolute;
+	width: 24px;
+	height: 24px;
+	right: 6%;
+	top: 4px;
+	background-image: url(/images/New_ui/VPN/vpn_icon_all_collect.svg);
+	background-repeat: no-repeat;
+	background-position: -216px -163px;
+}
+.svr_item_switch_container{
+	width: 18%;
+	display: flex;
+	justify-content: center;
+	height: 100%;
+	align-items: center;
+}
+.switch{
+	border-radius: 50px;
+	width: 36px;
+	height: 20px;
+	position: relative;
+	-webkit-transition: all 0.6s;
+	transition: all 0.6s;
+	cursor: pointer;
+}
+.switch.off{
+	background: rgb(255 255 255 / 0.3);
+}
+.switch.on{
+	background: rgb(30, 162, 255);
+}
+.switch:before{
+	border-radius: 50%;
+	display: block;
+	position: absolute;
+	content: "";
+	height: 16px;
+	width: 16px;
+	left: 2px;
+	top: 2px;
+	-webkit-transition: 0.6s;
+	transition: all 0.6s;
+	-webkit-transition-delay: 0.01s;
+	transition-delay: 0.01s;
+	background: #f7f7f7;
+}
+.switch.on:before{
+	-webkit-transform: translateX(16px);
+	-ms-transform: translateX(16px);
+	transform: translateX(16px);
+}
+.checkbox, .checkbox.off{
+	width: 16px;
+	height: 16px;
+	border-radius: 1px;
+	box-shadow: 0 0 0 1.5px #fff;
+	cursor: pointer;
+	position: relative;
+}
+.checkbox.on{
+	box-shadow: 0 0 0 1.5px rgb(0, 145, 255);
+	background-color: rgb(0, 145, 255);
+}
+.checkbox.on:before, .checkbox.disable:before{
+	position: absolute;
+	content: "";
+	top: 2px;
+	right: 2px;
+	width: 10px;
+	height: 6px;
+	border-top: 2px solid #FFF;
+	border-right: 2px solid #FFF;
+	-o-transform: rotate(135deg);
+	-ms-transform: rotate(135deg);
+	-moz-transform: rotate(135deg);
+	-webkit-transform: rotate(135deg);
+	transform: rotate(135deg);
+}
+.checkbox.disable{
+	cursor: initial;
+	box-shadow: 0 0 0 1.5px rgb(89, 110, 116);
+	background-color: rgb(89, 110, 116);
+}
+.checkbox.disable:before{
+	border-top: 2px solid rgb(255 255 255 / 60%);
+	border-right: 2px solid rgb(255 255 255 / 60%);
+}
+.profile_setting_item{
+	background-color: rgb(35, 52, 62);
+	display: flex;
+	flex-wrap: wrap;
+	height: 90px;
+	align-items: center;
+	min-width: 360px;
+	position: relative;
+}
+.profile_setting_item.nowrap{
+	height: 48px !important;
+	flex-wrap: nowrap !important;
+}
+.profile_setting_item.textarea{
+	height: auto !important;
+}
+.profile_setting_item.default_connect{
+	height: 60px !important;
+}
+.profile_setting_item:before, .profile_title_item:before{
+	position: absolute;
+	content: "";
+	bottom: 0;
+	width: 100%;
+	border-bottom: 1px solid rgba(171, 180, 194, 0.2);
+}
+.profile_setting_item .title{
+	color: rgba(171, 180, 194, 0.87);
+	font-size: 13px;
+	font-weight: 600;
+	margin-left: 4%;
+	word-break: break-word;
+	flex: 0 0 92%;
+	margin-top: 2%;
+}
+.profile_setting_item.nowrap .title{
+	flex: 0 0 30%;
+	max-width: 160px;
+	margin-top: initial;
+}
+.profile_setting_item.nowrap.switch_item .title{
+	position: absolute;
+	max-width: 290px;
+}
+.profile_setting_item.default_connect .title{
+	max-width: 160px;
+	margin-top: initial;
+}
+.profile_setting_item.keys_item .title{
+	position: absolute;
+	max-width: 290px;
+}
+.profile_setting_item.btn_item{
+	height: auto !important;
+}
+.btn_item > div{
+	margin: 10px 0% 10px 4%;
+}
+.btn_item .btn_container{
+	width: 200px;
+	height: 40px;
+	border-radius: 5px;
+	border: 1px solid rgb(0, 133, 255);
+	box-shadow: 0px 2px 3px 0px rgb(20 50 80 / 5%);
+	background: rgba(0, 133, 255, 0.2);
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	cursor: pointer;
+	position: relative;
+}
+.btn_item .btn_container .text{
+	color: rgb(255, 255, 255);
+	font-size: 12px;
+	letter-spacing: 1.25px;
+	position: relative;
+	width: 140px;
+	height: 100%;
+	word-break: break-word;
+	display: flex;
+	justify-content: flex-start;
+	align-items: center;
+}
+.btn_item .btn_container .text.import_file:before, .btn_item .btn_container .text.create_account:before{
+	position: absolute;
+	content: "";
+	background-image: url(/images/New_ui/VPN/vpn_icon_all_collect.svg);
+	background-repeat: no-repeat;
+	background-position: 0px -163px;
+	width: 24px;
+	height: 24px;
+	left: -40px;
+}
+.btn_item .btn_container .text.create_account:before{
+	background-position: -54px -163px;
+}
+.btn_item .btn_container .text.import_file.loadingicon:before{
+	background-image: url(/images/InternetScan.gif);
+	background-size: 20px;
+	background-position: 50%;
+}
+.btn_item .status_text{
+	color: #FC0;
+	margin-top: 6px;
+}
+.input_container{
+	flex: 0 0 92%;
+	margin-left: 4%;
+	margin-bottom: 2%;
+	position: relative;
+}
+.profile_setting_item.nowrap .input_container{
+	flex: 0 0 60%;
+	max-width: 310px;
+	margin: initial;
+	justify-content: flex-end;
+	display: flex;
+}
+.profile_setting_item.nowrap.switch_item .input_container,
+.profile_setting_item.keys_item .input_container{
+	flex: 0 0 95%;
+	min-width: 350px;
+	max-width: initial;
+}
+.textInput, .custom_select_container, .textareaInput{
+	width: 100%;
+	padding-left: 4%;
+	font-size: 14px;
+	color: #FFF;
+	height: 40px;
+	line-height: 40px;
+	border-radius: 5px;
+	background: rgba(239,246,255,0.20);
+	border: 1px solid rgba(171,180,194,0.20);
+	letter-spacing: 0.1px;
+	resize: none;
+}
+.textareaInput{
+	padding-left: initial;
+	height: initial;
+	line-height: initial;
+}
+.textInput:focus, .textareaInput:focus{
+	box-shadow: 0 0 3px rgb(0, 133, 255);
+	border: 1px solid rgb(0, 133, 255)
+	outline-offset: 0px;
+	outline: none;
+}
+.custom_select_container{
+	width: initial;
+	position: relative;
+}
+.custom_select_container:before, .profile_title_item.arrow_icon:after{
+	position: absolute;
+	content: "";
+	top: 14px;
+	right: 14px;
+	width: 7px;
+	height: 7px;
+	border-top: 2px solid #FFF;
+	border-right: 2px solid #FFF;
+	-o-transform: rotate(135deg);
+	-ms-transform: rotate(135deg);
+	-moz-transform: rotate(135deg);
+	-webkit-transform: rotate(135deg);
+	transform: rotate(135deg);
+}
+.custom_select_container.no_arrow:before{
+	content: initial;
+}
+.custom_select_container.arrow_up:before, .profile_title_item.arrow_icon.arrow_up:after{
+	-o-transform: rotate(-45deg);
+	-ms-transform: rotate(-45deg);
+	-moz-transform: rotate(-45deg);
+	-webkit-transform: rotate(-45deg);
+	transform: rotate(-45deg);
+	top: 18px;
+}
+.profile_title_item.arrow_icon{
+	cursor: pointer;
+}
+.profile_title_item.arrow_icon:after, .profile_title_item.arrow_icon.arrow_up:after{
+	top: -3px;
+	bottom: 0;
+	margin: auto;
+	right: 4%;
+}
+.profile_title_item.arrow_icon.arrow_up:after{
+	top: 0;
+}
+.custom_select_container .select_options_container{
+	position: absolute;
+	left: 0;
+	right: 0;
+	margin: auto;
+	background: rgb(43, 57, 68);
+	box-shadow: 0px 3px 4px 0px rgb(0 0 0 / 14%), 0px 3px 3px -2px rgb(0 0 0 / 12%), 0px 1px 8px 0px rgb(0 0 0 / 20%);
+	border-radius: 5px;
+	height: auto;
+	z-index: 1000;
+	max-height: 450px;
+	overflow-y: auto;
+}
+.custom_select_container .select_options_container div{
+	padding-left: 18px;
+	font-size: 13px;
+}
+.custom_select_container .select_options_container div.selected{
+	position: relative;
+	color: rgb(46, 162, 248);
+}
+.custom_select_container .select_options_container div.selected:before{
+	position: absolute;
+	content: "";
+	top: 14px;
+	right: 14px;
+	width: 8px;
+	height: 5px;
+	border-top: 2px solid rgb(46, 162, 248);
+	border-right: 2px solid rgb(46, 162, 248);
+	-o-transform: rotate(135deg);
+	-ms-transform: rotate(135deg);
+	-moz-transform: rotate(135deg);
+	-webkit-transform: rotate(135deg);
+	transform: rotate(135deg);
+}
+.custom_select_container .select_options_container div:hover{
+	background: rgba(239, 246, 255, 0.2);
+	border-radius: 4px;
+	font-weight: 500;
+	letter-spacing: 0.1px;
+}
+.custom_select_container .select_options_container.container_hide{
+	display: none;
+}
+.action_container{
+	height: 80px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+.action_container .btn_container, .get_start_container .main_info_container .add_btn{
+	width: 50%;
+	height: 40px;
+	background: rgb(0, 145, 255);
+	border: 1px solid rgba(23, 62, 103, 0.2);
+	box-shadow: 0px 2px 3px 0px rgb(20 50 80 / 5%);
+	border-radius: 5px;
+	line-height: 40px;
+	color: rgb(255, 255, 255);
+	font-size: 14px;
+	font-weight: 600;
+	letter-spacing: 1.25px;
+	text-align: center;
+	cursor: pointer;
+}
+.action_container .btn_container.valid_fail{
+	background: rgba(239, 246, 255, 0.6);
+}
+.action_container.loading{
+	position: relative;
+	display: none;
+}
+.action_container.loading:before{
+	position: absolute;
+	content: "";
+	background-image: url(/images/InternetScan.gif);
+	width: 30px;
+	height: 30px;
+	background-repeat: no-repeat;
+	background-size: cover;
+}
+.icon_eye{
+	width: 24px;
+	height: 24px;
+	cursor: pointer;
+	position: absolute;
+	right: 12px;
+	top: 8px;
+}
+.icon_eye.close{
+	background-position: -270px 1px;
+}
+.icon_eye.close:hover{
+	background-position: -270px -54px;
+}
+.icon_eye.open{
+	background-position: -216px 0px;
+}
+.icon_eye.open:hover{
+	background-position: -216px -55px;
+}
+.dropdown_select{
+	line-height: 40px;
+	height: 40px;
+	width: 100%;
+	padding-left: 6px;
+	outline: none;
+	color: #FFF;
+	background: rgba(239,246,255,0.20);
+	border: 1px solid rgba(171,180,194,0.20);
+	border-radius: 5px;
+	font-size: 14px;
+	letter-spacing: 0.1px;
+}
+.dropdown_select option{
+	background: rgb(43, 57, 68);
+}
+.profile_title_item{
+	height: 60px;
+	color: rgba(164, 183, 195, 0.6);
+	font-size: 14px;
+	font-weight: 500;
+	letter-spacing: 0.1px;
+	display: flex;
+	align-items: center;
+	position: relative;
+}
+.profile_title_item span{
+	margin-left: 4%;
+}
+.profile_title_item.edit_keys_desc{
+	height: auto;
+	padding-top: 8px;
+	padding-bottom: 8px;
+	flex-flow: column;
+	align-items: flex-start;
+	color: #FFF;
+}
+.profile_title_item.edit_keys_desc > div{
+	margin-left: 4%;
+}
+.profile_title_item.edit_keys_desc span{
+	margin-left: initial;
+}
+.popup_bg{
+	position: absolute;
+	margin: auto;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	z-index: 9999;
+	background-color: #444F53;
+	filter: alpha(opacity=94);
+	opacity: .94;
+	background-repeat: repeat;
+	visibility: hidden;
+	overflow: hidden;
+}
+.loadingBlock{
+	filter:alpha(opacity=90);
+	opacity:.90;
+	-webkit-border-radius: 10px;
+	-moz-border-radius: 10px;
+	border-radius: 10px;
+	behavior: url(/PIE.htc);
+	border-radius: 10px 10px 10px 10px;
+	border: 0px;
+	font-size:20px;
+	color:#FFFFFF;
+	font-weight:bolder;
+	background-color:#000000;
+	position:absolute;
+	z-index:200;
+	width: 80%;
+	max-width: 400px;
+	top: 20vh;
+	left: 0;
+	right: 0;
+}
+.hidden_mask{
+	display: none;
+	position: fixed;
+	width: 100%;
+	height: 100%;
+	left: 0;
+	top: 0;
+	z-index: 200;
+	background: rgb(66, 77, 82);
+	opacity: .6;
+}
+.hidden_mask.popup_element_second{
+	z-index: 400;
+}
+.hidden_mask.popup_customize_alert{
+	z-index: 600;
+}
+.blur_effect{
+	-webkit-filter: blur(4px); /* Chrome, Opera */
+	-moz-filter: blur(4px);
+	-ms-filter: blur(4px);
+	filter: blur(4px);
+}
+.popup_container{
+	font-family: Arial, Helvetica, sans-serif, "Microsoft JhengHei";
+	display: none;
+	height: auto;
+	top: 4%;
+	width: 60%;
+	max-width: 540px;
+	position: absolute;
+	margin: auto;
+	z-index: 300;
+	left: 0;
+	right: 0;
+	align-items: center;
+	line-height: 180%;
+}
+.popup_container.popup_element_second{
+	z-index: 500;
+}
+.popup_container.popup_customize_alert{
+	z-index: 700;
+	top: 12%;
+}
+.popup_container .close_btn, .popup_container .del_btn{
+	position: absolute;
+	width: 24px;
+	height: 24px;
+	right: 0;
+	top: 0;
+	cursor: pointer;
+	background-position: -108px 0px;
+}
+.popup_container .close_btn:hover{
+	background-position: -108px -55px;
+}
+.popup_container .del_btn{
+	background-position: -162px 0px;
+	top: 8px;
+	right: 8px;
+}
+.popup_container .del_btn:hover{
+	background-position: -162px -55px;
+}
+.popup_container .popup_title_container{
+	position: relative;
+	margin-bottom: 20px;
+}
+.popup_title_container .title{
+	min-height: 40px;
+	height: auto;
+	color: hsl(0deg 0% 100%);
+	font-size: 32px;
+	font-weight: 600;
+	letter-spacing: -0.2px;
+	line-height: 40px;
+	padding-left: 12px;
+}
+.popup_container .popup_content_container{
+	position: relative;
+	background: rgb(43, 57, 68);
+	border: 1px solid rgba(255, 255, 255, 0.02);
+	box-shadow: 0px 2px 4px 0px rgb(0 0 0 / 20%), 0px 1px 4px 0px rgb(60 60 60 / 30%);
+	border-radius: 8px;
+	padding: 5%;
+}
+.popup_container > div{
+	width: 100%;
+}
+.popup_container .popup_content_container.profile_setting{
+	padding: initial;
+}
+.popup_container .popup_edit_client_container .popup_content_container{
+	padding: 0 5%;
+}
+.popup_container .popup_content_container .profile_setting_item{
+	background: rgba(0, 0, 0, 0.1);
+	min-width: initial;
+	height: 90px;
+}
+.popup_container .popup_content_container .client_list_content_container .client_container,
+.popup_container .popup_content_container .wan_status_container{
+	background: rgba(0, 0, 0, 0.1);
+}
+.feature_desc .title{
+	height: 16px;
+	color: rgb(43, 163, 255);
+	font-size: 11px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.2px;
+	line-height: 16px;
+}
+.feature_desc .desc{
+	margin-top: 18px;
+	margin-bottom: 36px;
+	color: rgb(255, 255, 255);
+	font-size: 14px;
+	font-weight: normal;
+	line-height: 16px;
+	position: relative;
+}
+.feature_desc .desc:before{
+	content: "";
+	position: absolute;
+	bottom: -18px;
+	width: 100%;
+	border-bottom: 1px solid #616E79;
+	height: 1px;
+}
+.feature_desc .step_text_container{
+	display: flex;
+	flex-direction: column;
+	margin-top: 8px;
+	padding-left: 60px;
+	position: relative;
+}
+.feature_desc .step_text{
+	position: relative;
+	height: 50px;
+	color: rgb(255, 255, 255);
+	font-size: 14px;
+	font-weight: 500;
+	letter-spacing: 0.1px;
+	display: flex;
+	align-items: center;
+}
+.feature_desc .step_text:before{
+	content: "";
+	position: absolute;
+	width: 40px;
+	height: 40px;
+	left: -60px;
+	border-radius: 24px;
+	background-color: rgba(164, 183, 195, 0.2);
+	background-image: url(/images/New_ui/VPN/vpn_icon_all_collect.svg);
+	background-repeat: no-repeat;
+}
+.feature_desc .step_text.add:before{
+	background-position: 8px -208px;
+}
+.feature_desc .step_text.select:before{
+	background-position: -46px -208px;
+}
+.feature_desc .step_text.edit:before{
+	background-position: -100px -208px;
+}
+.feature_desc .faq{
+	font-size: 14px;
+	font-weight: normal;
+	margin-top: 20px;
+}
+.del_profile .title{
+	height: 40px;
+	color: #ffffff;
+	font-size: 28px;
+	font-weight: 600;
+	letter-spacing: -0.18px;
+	line-height: 40px;
+}
+.del_profile .desc{
+	height: 24px;
+	color: #a4b7c3;
+	font-size: 16px;
+	font-weight: 500;
+	line-height: 24px;
+}
+.del_profile .action_btn_container, .customize_alert .action_btn_container{
+	display: flex;
+	justify-content: flex-end;
+	margin-top: 30px;
+	position: relative;
+}
+.del_profile .action_btn_container .btn, .customize_alert .action_btn_container .btn{
+	width: 108px;
+	height: 40px;
+	line-height: 40px;
+	font-size: 14px;
+	font-weight: 500;
+	text-align: center;
+	letter-spacing: 0.1px;
+	border-radius: 5px;
+	margin-left: 24px;
+	cursor: pointer;
+}
+.del_profile .action_btn_container .del, .customize_alert .action_btn_container .ok{
+	background: rgb(0, 133, 255);
+	color: #ffffff;
+}
+.del_profile .action_btn_container .cancel{
+	box-shadow: 0 0 0 1px rgb(164 183 195 / 60%);
+	color: rgba(164, 183, 195, 0.6);
+}
+.customize_alert .desc{
+	color: #ffffff;
+	font-size: 20px;
+	font-weight: 600;
+	letter-spacing: -0.18px;
+	height: auto;;
+}
+.function_desc_container{
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	height: 60px;
+	position: relative;
+}
+.function_desc_container .title{
+	font-size: 16px;
+	font-weight: normal;
+	margin-left: 2%;
+}
+.function_desc_container .vpnc_help_icon, .get_start_container .sub_info_container .vpnc_help_icon{
+	background-position: -324px 0px;
+	width: 24px;
+	height: 24px;
+	margin-right: 16px;
+	cursor: pointer;
+}
+.function_desc_container .vpnc_help_icon:hover, .get_start_container .sub_info_container .vpnc_help_icon:hover{
+	background-position: -324px -54px;
+}
+.function_desc_container:before{
+	position: absolute;
+	content: "";
+	background: #32393B;
+	background: -webkit-linear-gradient(#32393B 0%, #32393B 20%, #667881 80%, #667881 100%);
+	background: -o-linear-gradient(#32393B 0%, #32393B 20%, #667881 80%, #667881 100%);
+	background: linear-gradient(#32393B 0%, #32393B 20%, #667881 80%,#667881 100%);
+	height: 2px;
+	width: 100%;
+	bottom: 6px;
+}
+.validate_hint, .vpn_type_maxi_hint{
+	min-height: 32px;
+	height: auto;
+	background: rgb(0 0 0 / 50%);
+	display: flex;
+	align-items: center;
+	padding-left: 4%;
+	color: rgb(249, 61, 61);
+	font-weight: 500;
+	letter-spacing: 0.1px;
+}
+.vpn_type_maxi_hint{
+	color: #FC0;
+}
+.client_list_content_container .client_container{
+	display: flex;
+	align-items: center;
+	justify-content: space-around;
+	color: rgba(171, 180, 194, 0.87);
+	font-size: 13px;
+	font-weight: 600;
+	background-color: rgb(35, 52, 62);
+	position: relative;
+	height: 56px;
+}
+.client_container.checkbox_mode{
+	justify-content: space-between;
+}
+.client_list_content_container .client_container.no_data{
+	height: 40px;
+	color: #FC0;
+}
+.client_list_content_container .client_container:before{
+	position: absolute;
+	content: "";
+	bottom: 0;
+	width: 100%;
+	border-bottom: 1px solid rgba(171, 180, 194, 0.2);
+}
+.client_container .client_icon_container{
+	position: relative;
+	background-repeat: no-repeat;
+	height: 36px;
+	width: 36px;
+	margin-left: 3%;
+	margin-right: 3%;
+}
+.client_container.checkbox_mode .client_icon_container{
+	margin-left: 2%;
+	margin-right: 0%;
+}
+.client_icon_container.default_icon, .client_icon_container.user_icon{
+	background-size: 100%;
+	border-radius: 8px;
+	background-color: rgb(89, 110, 116);
+	box-shadow: 0px 0px 0px 1px rgb(89, 110, 116);
+	background-position: 50%;
+}
+.client_icon_container.vender_icon{
+	background-image: url(/images/New_ui/networkmap/vender-list.png);
+	background-size: 180%;
+}
+.client_container .client_info_container{
+	width: 70%;
+}
+.client_container .client_name{
+	color: #FFF;
+	font-size: 15px;
+	font-weight: 600;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+.client_info_container .client_ip{
+	color: rgba(171, 180, 194, 0.87);
+	font-size: 14px;
+	font-weight: 500;
+	letter-spacing: 0.1px;
+	margin-top: 3px;
+}
+.client_container .client_switch_container, .client_container .client_checkbox_container{
+	width: 10%;
+	margin-right: 2%;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+.client_container .client_checkbox_container{
+	justify-content: flex-end;
+}
+.popup_edit_client_container .client_list_content_container{
+	height: auto;
+	max-height: 70vh;
+	overflow: auto;
+	margin-top: 3%;
+}
+.popup_edit_client_container .client_list_content_container::-webkit-scrollbar-track,
+.custom_select_container .select_options_container::-webkit-scrollbar-track{
+	border: 4px solid rgb(43, 57, 68);
+	background-color: rgb(89, 110, 116);
+	border-radius: 6px;
+}
+.popup_edit_client_container .client_list_content_container::-webkit-scrollbar,
+.custom_select_container .select_options_container::-webkit-scrollbar{
+	width: 10px;
+}
+.popup_edit_client_container .client_list_content_container::-webkit-scrollbar-thumb,
+.custom_select_container .select_options_container::-webkit-scrollbar-thumb{
+	border-radius: 10px;
+	background-color: rgb(89, 110, 116);
+	border: 2px solid rgb(43, 57, 68);
+}
+.popup_edit_client_container .client_list_content_container .client_container{
+	background-color: initial !important;
+}
+.wan_status_container{
+	width: 100%;
+	height: auto;
+	background-color: rgb(35, 52, 62);
+	box-shadow: 0 2px 4px 0 rgb(0 0 0 / 20%), 0 1px 4px 0 rgb(60 60 60 / 30%);
+	position: relative;
+}
+.wan_status_container > div{
+	height: 60px;
+	position: relative;
+}
+.wan_status_container .connect_title{
+	position: relative;
+	font-size: 16px;
+	color: #FFFFFF;
+	margin-left: 4%;
+	top: 24px;
+}
+.wan_status_container .connect_title:before{
+	content: "";
+	position: absolute;
+	left: 0;
+	top: -8px;
+	width: 24px;
+	border-top: 3px solid rgb(0, 145, 255);
+}
+.wan_status_container .connect_status_text{
+	font-size: 20px;
+	margin-left: 4%;
+}
+.wan_status_container.connected .connect_status_text{
+	color: rgb(0, 133, 255);
+}
+.wan_status_container.disconnected .connect_status_text{
+	color: rgba(164, 183, 195, 0.6);
+}
+.wan_status_container .connect_icon_container{
+	position: absolute;
+	height: 100px;
+	width: 50%;
+	top: 0;
+	right: 2%;
+}
+.wan_status_container .connect_icon_container > div{
+	background: url(/images/New_ui/vpn/cards_usage.svg) no-repeat;
+	background-size: initial;
+	width: 65px;
+	height: 65px;
+	position: absolute;
+}
+.wan_status_container .connect_icon_container > .router{
+	background-position: 8px 0px;
+	right: 88px;
+	top: 62px;
+}
+.wan_status_container .connect_icon_container > .connect_line{
+	background-position: -251px -6px;
+	right: 28px;
+	top: 62px;
+}
+.wan_status_container .connect_icon_container > .internet{
+	background-position: -78px 6px;
+	right: 12px;
+	top: 6px;
+}
+.wan_status_container .connect_icon_container > .connect_status{
+	background-position: 2px -224px;
+	right: 52px;
+	top: 86px;
+	width: 24px;
+	height: 24px;
+}
+.wan_status_container.connected .connect_icon_container > .internet{
+	background-position: -162px 6px;
+}
+.wan_status_container.connected .connect_icon_container > .connect_status{
+	background-position: -48px -224px;
+}
+.wan_status_container.standby .connect_icon_container > .connect_status{
+	background: initial;
+}
+.wan_connect_info_container > div{
+	float: left;
+	width: 49%;
+	height: 100%;
+	position: relative;
+}
+.wan_connect_info_container > div:first-child:before{
+	position: absolute;
+	content: " ";
+	right: 0;
+	height: 90%;
+	border-left: 1px solid rgba(171, 180, 194, 0.2);
+}
+.wan_connect_info_container > div > div{
+	height: 45%;
+	padding-left: 8%;
+}
+.wan_connect_info_container .info_title{
+	font-size: 12px;
+	color: rgba(171, 180, 194, 0.87);
+}
+.wan_connect_info_container .info_text{
+	font-size: 16px;
+	color: #FFFFFF;
+}
+.wan_status_container:before{
+	position: absolute;
+	content: "";
+	bottom: 0;
+	width: 100%;
+	border-bottom: 1px solid rgba(171, 180, 194, 0.2);
+}
+@media (max-width: 575px) {
+	.mobile{
+		display: block;
+	}
+	.desktop{
+		display: none;
+	}
+	.container{
+		width: 100%;
+		margin: initial;
+	}
+	.server_list_container{
+		width: 100%;
+	}
+	.svr_item_container, .svr_item_container.active, .svr_item_container.selected{
+		background: #1E2A41;
+		box-shadow: 0px 4px 5px 0px rgb(0 0 0 / 14%), 0px 1px 10px 0px rgb(0 0 0 / 12%), 0px 2px 4px -1px rgb(0 0 0 / 20%);
+		border-color: rgb(54, 71, 82);
+	}
+	.svr_item_container.default_wan_selected .default_wan_tag{
+		background: #1E2A41;
+	}
+	.svr_item_error_hint_container{
+		border: 1px solid;
+		border-color: rgb(54, 71, 82);
+		border-top: initial;
+	}
+	.action_container{
+		justify-content: space-around;
+	}
+	.action_container .btn_container{
+		width: 40%;
+	}
+	.action_container .btn_container.delete{
+		background: initial;
+		border: 1px solid rgba(228, 235, 249, 0.4);
+		color: rgba(255, 255, 255, 0.6);
+	}
+	.profile_setting_container, .function_desc_container{
+		width: 100%;
+		display: none;
+	}
+	.popup_container{
+		width: 96%;
+		min-width: 340px;
+		top: 2%;
+	}
+	.popup_container .popup_edit_profile_container, .popup_container .popup_edit_client_container{
+		height: 100%;
+	}
+	.popup_container .popup_content_container{
+		background: #1E2A41;
+	}
+	.popup_container.popup_customize_alert{
+		top: -10%;
+		bottom: 0;
+	}
+	.popup_container .close_btn{
+		top: 10px;
+		right: 10px;
+	}
+	.del_profile{
+		margin-bottom: -5%;
+	}
+	.del_profile .action_btn_container{
+		color: #007aff;
+		flex-direction: row-reverse;
+		margin: 24px -6% -6% -6%;
+	}
+	.del_profile .action_btn_container:before{
+		content: "";
+		position: absolute;
+		border-top: 1px solid #333b49;
+		width: 100%;
+	}
+	.del_profile .action_btn_container:after{
+		content: "";
+		position: absolute;
+		border-left: 1px solid #333b49;
+		left: 50%;
+		height: 100%;
+	}
+	.del_profile .action_btn_container .btn{
+		width: 50%;
+		margin-left: 0;
+	}
+	.del_profile .action_btn_container .del{
+		background: inherit;
+		color: inherit;
+	}
+	.del_profile .action_btn_container .cancel{
+		box-shadow: inherit;
+		color: inherit;
+	}
+	.del_profile .desc{
+		color: rgb(255, 255, 255);
+		font-size: 17px;
+		text-align: center;
+		letter-spacing: -0.41px;
+		line-height: 22px;
+	}
+	.client_list_content_container.popup::-webkit-scrollbar-track{
+		border: 4px solid #1E2A41;
+		background-color: rgb(89, 110, 116);
+	}
+	.client_list_content_container.popup::-webkit-scrollbar-thumb{
+		background-color: rgb(89, 110, 116);
+		border: 2px solid #1E2A41;
+	}
+}
+@media (min-width: 992px) {
+	.profile_setting_item, .popup_container .popup_content_container .profile_setting_item{
+		height: 70px;
+	}
+	.popup_container.textarea_width{
+		width: 80% !important;
+		max-width: 750px !important;
+	}
+	.popup_container.textarea_width .profile_setting_item.textarea .input_container{
+		max-width: 540px;
+	}
+	.profile_setting_item .title{
+		flex: 0 0 30%;
+		max-width: 160px;
+		margin-top: initial;
+	}
+	.input_container{
+		flex: 0 0 70%;
+		max-width: 312px;
+		margin: initial;
+	}
+	.profile_setting_item.keys_item .input_container{
+		flex: 0 0 93%;
+		max-width: 470px;
+		margin-left: 4%;
+		min-width: initial;
+	}
+	.profile_setting_item.textarea{
+		padding: 12px 0;
+	}
+	.action_container .btn_container{
+		width: 200px;
+	}
+}
+@media (min-width: 1200px) {
+	.server_list_container{
+		width: 40%;
+	}
+	.profile_setting_container{
+		width: 60%;
+	}
+}

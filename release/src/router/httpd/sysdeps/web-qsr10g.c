@@ -1257,19 +1257,19 @@ ej_wl_sta_list_qtn_core(int eid, webs_t wp, int argc, char_t **argv, int unit)
 					firstRow = 0;
 				else
 				retval += websWrite(wp, ", ");
-				if(from_app == 0)
+				if(from_app == 0 && hook_get_json == 0)
 					retval += websWrite(wp, "[");
 
 				retval += websWrite(wp, "\"%s\"", wl_ether_etoa((struct ether_addr *) &sta_address));
-				if(from_app == 1){
+				if(from_app == 1 || hook_get_json == 1){
 					retval += websWrite(wp, ":{");
 					retval += websWrite(wp, "\"isWL\":");
 				}
-				if(from_app == 0)
+				if(from_app == 0 && hook_get_json == 0)
 					retval += websWrite(wp, ", \"%s\"", "Yes");
 				else
 					retval += websWrite(wp, "\"%s\"", "Yes");
-				if(from_app == 0)
+				if(from_app == 0 && hook_get_json == 0)
 					retval += websWrite(wp, ", \"%s\"", !(nvram_match(strlcat_r(prefix, "auth_mode_x", tmp, sizeof(tmp)), "open")) ? "Yes" : "No");
 				if(from_app == 1){
 					ret += websWrite(wp, ",\"rssi\":");
@@ -1277,11 +1277,11 @@ ej_wl_sta_list_qtn_core(int eid, webs_t wp, int argc, char_t **argv, int unit)
 				ret= qcsapi_wifi_get_rssi_in_dbm_per_association(ifname, i, &rssi);
 				if (ret < 0)
 					dbG("Qcsapi qcsapi_wifi_get_rssi_in_dbm_per_association %s error, return: %d\n", ifname, ret);
-				if(from_app == 0)
+				if(from_app == 0 && hook_get_json == 0)
 					retval += websWrite(wp, ", \"%d\"", rssi);
 				else
 					retval += websWrite(wp, "\"%d\"", rssi);
-				if(from_app == 0)
+				if(from_app == 0 && hook_get_json == 0)
 					retval += websWrite(wp, "]");
 				else
 					retval += websWrite(wp, "}");
@@ -1401,13 +1401,17 @@ ej_wl_stainfo_list_2g(int eid, webs_t wp, int argc, char_t **argv)
 	int i, unit = 1;
 	char prefix[] = "wlXXXXXXXXXX_", tmp[128];
 
+	if(hook_get_json == 1)
+		websWrite(wp, "[");
+
 	if (!rpc_qtn_ready())
-		return retval;
+		goto END;
+
 
 	ret += ej_wl_stainfo_list_qtn(eid, wp, argc, argv, WIFINAME2G);
 
         if (nvram_get_int("sw_mode") == SW_MODE_REPEATER && nvram_get_int("wlc_band"))
-                return ret;
+                goto END;
 
 	for (i = 1; i < 4; i++) {
 		snprintf(prefix, sizeof(prefix), "wl%d.%d_", unit, i);
@@ -1419,6 +1423,9 @@ ej_wl_stainfo_list_2g(int eid, webs_t wp, int argc, char_t **argv)
 		}
 	}
 
+END:
+	if(hook_get_json == 1)
+		websWrite(wp, "]");
 	return retval;
 }
 
@@ -1429,13 +1436,16 @@ ej_wl_stainfo_list_5g(int eid, webs_t wp, int argc, char_t **argv)
 	int i, unit = 1;
 	char prefix[] = "wlXXXXXXXXXX_", tmp[128];
 
+	if(hook_get_json == 1)
+		websWrite(wp, "[");
+
 	if (!rpc_qtn_ready())
-		return retval;
+		goto END;
 
 	ret += ej_wl_stainfo_list_qtn(eid, wp, argc, argv, WIFINAME);
 
         if (nvram_get_int("sw_mode") == SW_MODE_REPEATER && nvram_get_int("wlc_band"))
-                return ret;
+                goto END;
 
 	for (i = 1; i < 4; i++) {
 		snprintf(prefix, sizeof(prefix), "wl%d.%d_", unit, i);
@@ -1447,6 +1457,9 @@ ej_wl_stainfo_list_5g(int eid, webs_t wp, int argc, char_t **argv)
 		}
 	}
 
+END:
+	if(hook_get_json == 1)
+		websWrite(wp, "]");
 	return retval;
 }
 #endif
@@ -2036,6 +2049,9 @@ int ej_wl_auth_list(int eid, webs_t wp, int argc, char_t **argv)
 	auth = malloc(mac_list_size);
 	//wme = malloc(mac_list_size);
 
+	if(hook_get_json == 1)
+		websWrite(wp, "{");
+
 	//if (!auth || !wme)
 	if (!auth)
 		goto exit;
@@ -2053,6 +2069,8 @@ int ej_wl_auth_list(int eid, webs_t wp, int argc, char_t **argv)
 	}
 
 exit:
+	if(hook_get_json == 1)
+		websWrite(wp, "}");
 	if (auth) free(auth);
 	//if (wme) free(wme);
 
@@ -2062,13 +2080,19 @@ exit:
 int
 ej_wl_sta_list_2g(int eid, webs_t wp, int argc, char_t **argv)
 {
-	return ej_wl_sta_list_qtn(eid, wp, argc, argv, 0);
+	if(hook_get_json == 1) websWrite(wp, "{");
+	ej_wl_sta_list_qtn(eid, wp, argc, argv, 0);
+	if(hook_get_json == 1) websWrite(wp, "}");
+	return 1;
 }
 
 int
 ej_wl_sta_list_5g(int eid, webs_t wp, int argc, char_t **argv)
 {
+	if(hook_get_json == 1) websWrite(wp, "{");
 	return ej_wl_sta_list_qtn(eid, wp, argc, argv, 1);
+	if(hook_get_json == 1) websWrite(wp, "}");
+	return 1;
 }
 
 int ej_get_wlstainfo_list(int eid, webs_t wp, int argc, char_t **argv)
@@ -2161,7 +2185,7 @@ static int ej_wl_rate(int eid, webs_t wp, int argc, char_t **argv, int unit)
 	return retval;
 
 ERROR:
-	if(from_app == 0)
+	if(from_app == 0 && hook_get_json == 0)
 		retval += websWrite(wp, "%s", rate_buf);
 	else
 		retval += websWrite(wp, "\"%s\"", rate_buf);

@@ -379,7 +379,7 @@ START_TEST(test_ed25519_gen)
 	key2->destroy(key2);
 
 	/* decryption not supported */
-	ck_assert(!key->decrypt(key, ENCRYPT_UNKNOWN, msg, NULL));
+	ck_assert(!key->decrypt(key, ENCRYPT_UNKNOWN, NULL, msg, NULL));
 
 	/* wrong signature scheme */
 	ck_assert(!key->sign(key, SIGN_ED448, NULL, msg, &sig));
@@ -414,7 +414,7 @@ START_TEST(test_ed25519_gen)
 	pubkey2->destroy(pubkey2);
 
 	/* encryption not supported */
-	ck_assert(!pubkey->encrypt(pubkey, ENCRYPT_UNKNOWN, msg, NULL));
+	ck_assert(!pubkey->encrypt(pubkey, ENCRYPT_UNKNOWN, NULL, msg, NULL));
 
 	/* verify with wrong signature scheme */
 	ck_assert(!pubkey->verify(pubkey, SIGN_ED448, NULL, msg, sig));
@@ -532,8 +532,8 @@ START_TEST(test_ed25519_fail)
 							  chunk_empty));
 
 	/* RFC 8032, section 5.1.7 requires that 0 <= s < L to prevent signature
-	 * malleability.  Only a warning because Botan and OpenSSL are both
-	 * vulnerable to this. */
+	 * malleability.  Only a warning because Botan, OpenSSL and wolfSSL are
+	 * all vulnerable to this. */
 	if (pubkey->verify(pubkey, SIGN_ED25519, NULL, sig_tests[0].msg,
 					   malleable_sig))
 	{

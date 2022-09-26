@@ -214,7 +214,8 @@ int  ext_rtk_phyState(int verbose, char* BCMPorts, phy_info_list *list)
 	phyState pS;
 
 #ifdef RTCONFIG_NEW_PHYMAP
-	phy_port_mapping port_mapping = get_phy_port_mapping();
+	phy_port_mapping port_mapping;
+	get_phy_port_mapping(&port_mapping);
 	int o[port_mapping.extsw_count];
 	for (i = 0; i < port_mapping.extsw_count; i++) {
 		pS.link[i] = 0;
@@ -303,9 +304,10 @@ int  ext_rtk_phyState(int verbose, char* BCMPorts, phy_info_list *list)
 		rtk_stat_port_cntr_t Port_cntrs;
 #ifdef RTCONFIG_NEW_PHYMAP
 		for(i = 0; i < port_mapping.extsw_count; i++) {
-			list->phy_info[list->count].phy_port_id = port_mapping.port[list->count].phy_port_id;
+			list->phy_info[list->count].phy_port_id = port_mapping.port[1+i+port_mapping.extsw_count].phy_port_id;
 			snprintf(list->phy_info[list->count].label_name, sizeof(list->phy_info[list->count].label_name), "%s", 
 				port_mapping.port[1+i+port_mapping.extsw_count].label_name);
+			list->phy_info[list->count].cap = port_mapping.port[1+i+port_mapping.extsw_count].cap;
 			snprintf(list->phy_info[list->count].cap_name, sizeof(list->phy_info[list->count].cap_name), "%s",
 				get_phy_port_cap_name(port_mapping.port[1+i+port_mapping.extsw_count].cap, cap_buf, sizeof(cap_buf)));
 #else
@@ -313,6 +315,7 @@ int  ext_rtk_phyState(int verbose, char* BCMPorts, phy_info_list *list)
 			list->phy_info[list->count].phy_port_id = o[i];
 			snprintf(list->phy_info[list->count].label_name, sizeof(list->phy_info[list->count].label_name), "L%d", 
 				list->count);
+			list->phy_info[list->count].cap = PHY_PORT_CAP_LAN;
 			snprintf(list->phy_info[list->count].cap_name, sizeof(list->phy_info[list->count].cap_name), "lan");
 #endif
 
@@ -323,14 +326,17 @@ int  ext_rtk_phyState(int verbose, char* BCMPorts, phy_info_list *list)
 				&Port_cntrs, i, o[i], list->count, list->phy_info[list->count].phy_port, list->phy_info[list->count].cap_name, list->phy_info[list->count].state);*/
 			if (pS.link[o[i]] == 1) {
 				list->phy_info[list->count].link_rate = ((pS.speed[o[i]] == 0) ? 10 : ((pS.speed[o[i]] == 1) ? 100 : 1000));
-				snprintf(list->phy_info[list->count].duplex, sizeof(list->phy_info[list->count].duplex), "%s", 
-					pS.duplex ? "full" : "half");
-				if(!ext_rtk_phy_mib(o[i], &Port_cntrs)) { 
-					list->phy_info[list->count].tx_bytes = Port_cntrs.ifOutOctets;
-					list->phy_info[list->count].rx_bytes = Port_cntrs.ifInOctets;
-					list->phy_info[list->count].tx_packets = Port_cntrs.ifOutUcastPkts + Port_cntrs.ifOutMulticastPkts + Port_cntrs.ifOutBrocastPkts;
-					list->phy_info[list->count].rx_packets = Port_cntrs.ifInUcastPkts + Port_cntrs.ifInMulticastPkts + Port_cntrs.ifInBroadcastPkts;
-					list->phy_info[list->count].crc_errors = Port_cntrs.dot3StatsFCSErrors;
+
+				if( list  && list->status_and_speed_only == 0 ) {
+					snprintf(list->phy_info[list->count].duplex, sizeof(list->phy_info[list->count].duplex), "%s", 
+						pS.duplex ? "full" : "half");
+					if(!ext_rtk_phy_mib(o[i], &Port_cntrs)) { 
+						list->phy_info[list->count].tx_bytes = Port_cntrs.ifOutOctets;
+						list->phy_info[list->count].rx_bytes = Port_cntrs.ifInOctets;
+						list->phy_info[list->count].tx_packets = Port_cntrs.ifOutUcastPkts + Port_cntrs.ifOutMulticastPkts + Port_cntrs.ifOutBrocastPkts;
+						list->phy_info[list->count].rx_packets = Port_cntrs.ifInUcastPkts + Port_cntrs.ifInMulticastPkts + Port_cntrs.ifInBroadcastPkts;
+						list->phy_info[list->count].crc_errors = Port_cntrs.dot3StatsFCSErrors;
+					}
 				}
 			} else {
 				snprintf(list->phy_info[list->count].duplex, sizeof(list->phy_info[list->count].duplex), "none");

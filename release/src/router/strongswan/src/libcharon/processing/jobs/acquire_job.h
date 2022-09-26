@@ -24,7 +24,7 @@
 typedef struct acquire_job_t acquire_job_t;
 
 #include <library.h>
-#include <selectors/traffic_selector.h>
+#include <kernel/kernel_interface.h>
 #include <processing/jobs/job.h>
 
 /**
@@ -42,13 +42,10 @@ struct acquire_job_t {
 /**
  * Creates a job of type ACQUIRE.
  *
- * @param reqid		reqid of the trapped CHILD_SA to acquire
- * @param src_ts	source traffic selector
- * @param dst_ts	destination traffic selector
+ * @param reqid     reqid of the triggered policy
+ * @param data		data from the acquire
  * @return			acquire_job_t object
  */
-acquire_job_t *acquire_job_create(uint32_t reqid,
-								  traffic_selector_t *src_ts,
-								  traffic_selector_t *dst_ts);
+acquire_job_t *acquire_job_create(uint32_t reqid, kernel_acquire_data_t *data);
 
 #endif /** REKEY_CHILD_SA_JOB_H_ @}*/

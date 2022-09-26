@@ -733,7 +733,8 @@ typedef struct uni_stat_t {
 } uni_stat_t;
 /* Returns a string with unprintable chars replaced by '?' or
  * SUBST_WCHAR. This function is unicode-aware. */
-const char* FAST_FUNC printable_string(uni_stat_t *stats, const char *str);
+const char* FAST_FUNC printable_string(const char *str);
+const char* FAST_FUNC printable_string2(uni_stat_t *stats, const char *str);
 /* Prints unprintable char ch as ^C or M-c to file
  * (M-c is used only if ch is ORed with PRINTABLE_META),
  * else it is printed as-is (except for ch = 0x9b) */

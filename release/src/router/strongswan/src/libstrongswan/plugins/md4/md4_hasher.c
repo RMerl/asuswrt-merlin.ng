@@ -76,7 +76,7 @@ static uint8_t PADDING[64] = {
 typedef struct private_md4_hasher_t private_md4_hasher_t;
 
 /**
- * Private data structure with hasing context.
+ * Private data structure with hashing context.
  */
 struct private_md4_hasher_t {
 	/**

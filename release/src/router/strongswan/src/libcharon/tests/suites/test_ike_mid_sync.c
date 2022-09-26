@@ -493,7 +493,7 @@ START_TEST(test_active)
 	charon->bus->remove_listener(charon->bus, &mid.listener);
 
 	/* the active task was queued again */
-	call_ikesa(a, initiate, NULL, 0, NULL, NULL);
+	call_ikesa(a, initiate, NULL, NULL);
 	exchange_test_helper->process_message(exchange_test_helper, b, NULL);
 	exchange_test_helper->process_message(exchange_test_helper, a, NULL);
 	send_dpd(b, a);

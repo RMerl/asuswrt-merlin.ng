@@ -74,7 +74,7 @@ libtls library messages
 libipsec library messages
 .TP
 .B lib
-libstrongwan library messages
+libstrongswan library messages
 .TP
 .B tnc
 Trusted Network Connect

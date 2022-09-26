@@ -79,4 +79,13 @@ signature_params_t *get_signature_scheme(private_key_t *private,
  */
 traffic_selector_t* parse_ts(char *str);
 
+/**
+ * Generate a random serial number for certificates.
+ *
+ * @param len       length of the generated serial number
+ * @param serial    allocated serial number
+ * @return          TRUE if allocation was successful
+ */
+bool allocate_serial(size_t len, chunk_t *serial);
+
 #endif /** PKI_H_ @}*/

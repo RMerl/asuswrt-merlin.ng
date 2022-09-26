@@ -114,10 +114,6 @@ var pppoe_failed_flag = false;
 if(isMobile() && tmo_support && sw_mode != 2 && qisFlag != "sitesurvey_rep" && qisFlag != "sitesurvey_mb")
 	location.href = "MobileQIS_Login.asp";
 
-if(isMobile() && (based_modelid == "RT-AC88U" || based_modelid == "RT-AC3100" || based_modelid == "RT-AC5300" || based_modelid == "GT-AC5300" || based_modelid == "GT-AC9600")){
-	location.href = "QIS_wizard_m.htm" + ((qisFlag !== "") ? "?flag="+qisFlag : "");
-}
-	
 var parent_macaddr = '<% nvram_get("lan_hwaddr"); %>';
 var isRepeater = true;
 var reduced_internet_type = "disable";

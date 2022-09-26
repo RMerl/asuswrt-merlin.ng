@@ -69,7 +69,7 @@ $!
 $!   This is to make sure that the backup save set for the unmodified
 $!   source is up to date.
 $!
-$! Copyright 2011 - 2020, John Malmberg
+$! Copyright 2013 - 2022, John Malmberg
 $!
 $! Permission to use, copy, modify, and/or distribute this software for any
 $! purpose with or without fee is hereby granted, provided that the above
@@ -82,6 +82,8 @@ $! ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
 $! WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
 $! ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT
 $! OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+$!
+$! SPDX-License-Identifier: ISC
 $!
 $! 18-Aug-2011  J. Malmberg
 $!==========================================================================
@@ -260,19 +262,12 @@ $!  These files are in the wrong format for VMS diff, and we don't change them.
 $   ref_skip = 0
 $   if ref_type .eqs. ".PDF" then ref_skip = 1
 $   if ref_type .eqs. ".HTML" then ref_skip = 1
-$   if ref_type .eqs. ".HQX" then ref_skip = 1
 $   if ref_type .eqs. ".P12" then ref_skip = 1
 $   if ref_type .eqs. "."
 $   then
 $       if f$locate("test", ref_fname) .eq. 0 then ref_skip = 1
 $       if ref_fname .eqs. "configure." then ref_skip = 1
 $   endif
-$   if ref_fname .eqs. "MACINSTALL.TXT" then ref_skip = 1
-$   if ref_fname .eqs. "$macinstall.txt" then ref_skip = 1
-$   if ref_fname .eqs. "curl.mcp$5nxml$5nsit$5nhqx" then ref_skip = 1
-$   if ref_fname .eqs. "curl_GUSIConfig.cpp" then ref_skip = 1
-$   if ref_fname .eqs. "curl_$gusic$onfig.cpp" then ref_skip = 1
-$   if ref_fname .eqs. "macos_main.cpp" then ref_skip = 1
 $!
 $!
 $   if ref_skip .ne. 0

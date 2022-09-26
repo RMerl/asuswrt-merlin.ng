@@ -1,0 +1,272 @@
+﻿.bg{
+	color: rgb(94, 100, 112);
+}
+.vpn_icon_all_collect{
+	background-image: url(/images/New_ui/VPN/vpn_icon_all_collect_white.svg);
+	background-repeat: no-repeat;
+}
+.profile_setting_container .popup_edit_profile_container{
+	background: rgb(255, 255, 255);
+}
+.profile_setting_container .get_start_container{
+	background: rgb(255, 255, 255);
+}
+.profile_setting_container .get_start_container .main_info_container{
+	background: rgb(255, 255, 255);
+	box-shadow: 0px 1px 4px 0px rgb(0 0 0 / 20%);
+}
+.get_start_container .main_info_container .title{
+	color: rgb(0, 112, 255);
+}
+.get_start_container .main_info_container .desc{
+	color: rgb(94, 100, 112);
+}
+.get_start_container .sub_info_container .title{
+	color: rgb(94, 100, 112);
+}
+.profile_setting_title .title{
+	color: rgb(94, 100, 112);
+}
+.svr_list_title_container, .client_list_title_container{
+	color: rgb(94, 100, 112);
+}
+.client_list_num:before{
+	background-image: url(/images/New_ui/VPN/vpn_icon_all_collect_white.svg);
+}
+.svr_item_container, .svr_item_error_hint_container{
+	background: rgb(255, 255, 255);
+	box-shadow: 0px 1px 2px 0px rgb(20 50 80 / 20%);
+	border: 1px solid rgb(0 0 0 / 10%);
+}
+.svr_item_container.selected{
+	background: rgb(255, 255, 255);
+}
+.svr_item_text_container:before{
+	border-right: 1px solid rgb(0 0 0 / 0.2);
+}
+.svr_item_text_container:after, .svr_item_container.internet:after{
+	border-top: 2px solid rgb(0 0 0 / 0.2);
+	border-right: 2px solid rgb(0 0 0 / 0.2);
+}
+.svr_item_main_info{
+	color: rgb(94, 100, 112);
+}
+.svr_item_main_info:before{
+	background-position: -432px 0px;
+	background-image: url(/images/New_ui/VPN/vpn_icon_all_collect_white.svg);
+}
+.svr_item_container.active .svr_item_main_info:before{
+	background-position: -432px -55px;
+}
+.svr_item_container.error_hint.active .svr_item_main_info:before{
+	background-position: -432px -108px;
+}
+.svr_item_container.default_wan_selected .svr_item_main_info:before{
+	background-position: -432px -162px
+}
+.svr_item_container.active.default_wan_selected .svr_item_main_info:before{
+	background-position: -432px -216px
+}
+.svr_item_container.error_hint.active.default_wan_selected .svr_item_main_info:before{
+	background-position: -432px -270px
+}
+
+.svr_item_container.internet.connected .svr_item_main_info:before{
+	background-position: -486px -54px;
+}
+.svr_item_container.internet.disconnected .svr_item_main_info:before{
+	background-position: -486px -108px;
+}
+.svr_item_container.internet.standby .svr_item_main_info:before{
+	background-position: -486px 0px;
+}
+.svr_item_container.internet.connected.default_wan_selected .svr_item_main_info:before{
+	background-position: -486px -216px;
+}
+.svr_item_container.internet.disconnected.default_wan_selected .svr_item_main_info:before{
+	background-position: -486px -270px;
+}
+.svr_item_container.internet.standby.default_wan_selected .svr_item_main_info:before{
+	background-position: -486px -162px;
+}
+.svr_item_sub_info{
+	color: rgba(94, 100, 112, 0.87);
+}
+.svr_item_container.default .svr_item_sub_info:before{
+	background: rgba(94, 100, 112, 0.2);
+}
+.svr_item_sub_info .vpn_type:before{
+	background: rgba(94, 100, 112, 0.2);
+}
+.svr_item_sub_info .vpn_status{
+	color: rgba(94, 100, 112, 0.87);
+}
+.svr_item_error_hint_container > div:before{
+	background-image: url(/images/New_ui/VPN/vpn_icon_all_collect_white.svg);
+}
+.switch.off{
+	background: rgb(0 0 0 / 0.3);
+}
+.checkbox, .checkbox.off{
+	box-shadow: 0 0 0 1.5px rgb(0, 110, 255);
+}
+.checkbox.on{
+	box-shadow: 0 0 0 1.5px rgb(0, 110, 255);
+	background-color: rgb(0, 110, 255);
+}
+.profile_setting_item{
+	background: rgb(247, 249, 252);
+}
+.profile_setting_item .title{
+	color: rgb(94, 100, 112);
+}
+.btn_item .btn_container .text{
+	color: rgb(0, 112, 255);
+}
+.btn_item .btn_container .text.import_file:before, .btn_item .btn_container .text.create_account:before{
+	background-image: url(/images/New_ui/VPN/vpn_icon_all_collect_white.svg);
+	background-position: 0px -163px;
+}
+.textInput, .custom_select_container{
+	color: rgb(94, 100, 112);
+}
+.textInput:focus{
+	box-shadow: 0 0 3px rgb(0, 133, 255);
+	border: 1px solid rgb(0, 133, 255);
+}
+.custom_select_container:before, .profile_title_item.arrow_icon:after{
+	border-top: 2px solid rgb(0, 145, 255);
+	border-right: 2px solid rgb(0, 145, 255);
+}
+.custom_select_container .select_options_container{
+	background: rgb(247, 249, 252);
+}
+.custom_select_container .select_options_container div.selected{
+	color: rgb(0, 112, 255);
+}
+.custom_select_container .select_options_container div.selected:before{
+	border-top: 2px solid rgb(0, 145, 255);
+	border-right: 2px solid rgb(0, 145, 255);
+}
+.custom_select_container .select_options_container div:hover{
+	background: rgb(255, 255, 255);
+}
+.action_container .btn_container, .get_start_container .main_info_container .add_btn{
+	background: rgb(0, 110, 255);
+}
+.action_container .btn_container.valid_fail{
+	background: rgba(94, 100, 112, 0.6);
+}
+.profile_title_item{
+	color: rgba(63, 69, 80, 0.6);
+}
+.popup_bg{
+	background: rgb(255 255 255 / 80%);
+}
+.hidden_mask{
+	background: rgb(255, 255, 255);
+}
+.popup_title_container .title{
+	color: rgb(94, 100, 112);
+}
+.popup_container .popup_content_container{
+	background: rgb(255, 255, 255);
+	color: rgb(94, 100, 112);
+}
+.popup_container .popup_content_container .profile_setting_item{
+	background: rgb(247, 249, 252);
+}
+.popup_container .popup_content_container .client_list_content_container .client_container,
+.popup_container .popup_content_container .wan_status_container{
+	background: rgb(247, 249, 252);
+}
+.feature_desc .title{
+	color: rgb(0, 110, 255);
+}
+.feature_desc .desc{
+	color: rgba(94, 100, 112, 0.87);
+}
+.feature_desc .desc:before{
+	border-bottom: 1px solid rgba(94, 100, 112, 0.2);
+}
+.feature_desc .step_text{
+	color: rgba(94, 100, 112, 0.87);
+}
+.feature_desc .step_text:before{
+	background-image: url(/images/New_ui/VPN/vpn_icon_all_collect_white.svg);
+	background-color: rgb(0, 110, 255);
+}
+.del_profile .title{
+	color: rgb(94, 100, 112);
+}
+.del_profile .desc{
+	color: rgba(94, 100, 112, 0.87);
+}
+.del_profile .action_btn_container .del, .customize_alert .action_btn_container .ok{
+	background: rgb(0, 110, 255);
+}
+.del_profile .action_btn_container .cancel{
+	box-shadow: 0 0 0 1px rgb(94 100 112 / 40%);
+	color: rgba(23, 62, 103, 0.6);
+}
+.customize_alert .desc{
+	color: rgb(94, 100, 112);
+}
+.validate_hint, .vpn_type_maxi_hint{
+	background: initial;
+}
+.vpn_type_maxi_hint{
+	color: rgb(0, 110, 255);
+}
+.client_list_content_container .client_container{
+	background: rgb(247, 249, 252);
+}
+.client_list_content_container .client_container.no_data{
+	color: rgb(0, 110, 255);
+}
+.client_container .client_name{
+	color: rgb(94, 100, 112);
+}
+.client_info_container .client_ip{
+	color: rgba(94, 100, 112, 0.87);
+}
+.wan_status_container{
+	background: rgb(247, 249, 252);
+}
+.wan_status_container .connect_title{
+	color: rgb(94, 100, 112);
+}
+.wan_connect_info_container .info_title{
+	color: rgba(94, 100, 112, 0.87);
+}
+.wan_connect_info_container .info_text{
+	color: rgb(94, 100, 112);
+}
+@media (max-width: 575px) {
+	.svr_item_container, .svr_item_container.active, .svr_item_container.selected{
+		background: rgb(255, 255, 255);
+		box-shadow: 0px 1px 2px 0px rgb(20 50 80 / 20%);
+		border: 1px solid rgb(0 0 0 / 10%);
+	}
+	.action_container .btn_container.delete{
+		box-shadow: 0 0 0 1px rgb(94 100 112 / 40%);
+		color: rgba(23, 62, 103, 0.6);
+	}
+	.del_profile .action_btn_container:before{
+		border-top: 1px solid rgba(84, 84, 88, 0.65);
+	}
+	.del_profile .action_btn_container:after{
+		border-left: 1px solid rgba(84, 84, 88, 0.65);
+	}
+	.del_profile .action_btn_container .btn{
+		font-weight: bolder;
+	}
+	.del_profile .action_btn_container .del{
+		background: inherit;
+		color: inherit;
+	}
+	.del_profile .action_btn_container .cancel{
+		box-shadow: inherit;
+		color: inherit;
+	}
+}

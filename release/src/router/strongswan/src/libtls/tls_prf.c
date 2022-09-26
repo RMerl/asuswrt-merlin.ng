@@ -182,7 +182,7 @@ METHOD(tls_prf_t, destroy10, void,
 /**
  * See header
  */
-tls_prf_t *tls_prf_create_10(pseudo_random_function_t prf)
+tls_prf_t *tls_prf_create_10()
 {
 	private_tls_prf10_t *this;
 

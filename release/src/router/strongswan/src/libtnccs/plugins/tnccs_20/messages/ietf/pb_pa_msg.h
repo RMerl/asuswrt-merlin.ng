@@ -80,7 +80,7 @@ struct pb_pa_msg_t {
  * Create a PB-PA message from parameters
  *
  * @param vendor_id			PA Message Vendor ID
- * @param subtype			PA Subtype		
+ * @param subtype			PA Subtype
  * @param collector_id		Posture Collector ID
  * @param validator_id		Posture Validator ID
  * @param excl				Exclusive Flag

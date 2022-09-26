@@ -292,6 +292,10 @@ define(function(){
 			menus: function(){
 				var retArray = [];
 
+				if(!dnsfilter_support){
+					retArray.push("DNSFilter.asp");
+				}
+
 				if(!multissid_support){
 					retArray.push("menu_GuestNetwork");
 				}

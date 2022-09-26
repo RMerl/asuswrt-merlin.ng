@@ -45,7 +45,7 @@ struct rmsg_t {
 struct rattr_t {
 	/** attribute type, radius_attribute_type_t */
 	uint8_t type;
-	/** length of the attriubte, including the Type, Length and Value fields */
+	/** length of the attribute, including the Type, Length and Value fields */
 	uint8_t length;
 	/** variable length attribute value */
 	uint8_t value[];

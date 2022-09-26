@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2021, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -17,6 +17,8 @@
  *
  * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
  * KIND, either express or implied.
+ *
+ * SPDX-License-Identifier: curl
  *
  ***************************************************************************/
 /* <DESC>
@@ -135,7 +137,7 @@ int main(void)
 
   http_handle = curl_easy_init();
 
-  /* set the options (I left out a few, you'll get the point anyway) */
+  /* set the options (I left out a few, you will get the point anyway) */
   curl_easy_setopt(http_handle, CURLOPT_URL, "https://www.example.com/");
 
   curl_easy_setopt(http_handle, CURLOPT_DEBUGFUNCTION, my_trace);

@@ -25,7 +25,7 @@
 typedef enum tty_escape_t tty_escape_t;
 
 /**
- * Excape codes for tty colors
+ * Escape codes for tty colors
  */
 enum tty_escape_t {
 	/** text properties */

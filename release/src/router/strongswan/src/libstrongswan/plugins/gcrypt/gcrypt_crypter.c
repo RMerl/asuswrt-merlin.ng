@@ -198,9 +198,29 @@ gcrypt_crypter_t *gcrypt_crypter_create(encryption_algorithm_t algo,
 			gcrypt_alg = GCRY_CIPHER_BLOWFISH;
 			break;
 		case ENCR_AES_CTR:
-			mode = GCRY_CIPHER_MODE_CTR;
+		case ENCR_AES_ECB:
+			mode = (algo == ENCR_AES_CTR) ? GCRY_CIPHER_MODE_CTR :
+											GCRY_CIPHER_MODE_ECB;
 			/* fall */
 		case ENCR_AES_CBC:
+			switch (key_size)
+			{
+				case 0:
+				case 16:
+					gcrypt_alg = GCRY_CIPHER_AES128;
+					break;
+				case 24:
+					gcrypt_alg = GCRY_CIPHER_AES192;
+					break;
+				case 32:
+					gcrypt_alg = GCRY_CIPHER_AES256;
+					break;
+				default:
+					return NULL;
+			}
+			break;
+		case ENCR_AES_CFB:
+			mode = GCRY_CIPHER_MODE_CFB;
 			switch (key_size)
 			{
 				case 0:

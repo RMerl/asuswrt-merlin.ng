@@ -42,7 +42,7 @@ TNC_IMV_Evaluation_Result tncif_policy_update_evaluation(
 /**
  * Create an empty TNC Identity object
  *
- * @param rec			Existing recommendationto be updated
+ * @param rec			Existing recommendation to be updated
  * @param rec_add		Partial recommendation to be added
  * @return				Updated recommendation
  */

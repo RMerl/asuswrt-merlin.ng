@@ -52,7 +52,7 @@ time_t time_monotonic(timeval_t *tv)
 	 * monotonic time source only if it is also supported by pthread. */
 	timespec_t ts;
 
-	if (clock_gettime(CLOCK_MONOTONIC, &ts) == 0)
+	if (clock_gettime(TIME_CLOCK_ID, &ts) == 0)
 	{
 		if (tv)
 		{

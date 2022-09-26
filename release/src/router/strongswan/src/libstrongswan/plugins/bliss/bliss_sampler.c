@@ -185,7 +185,7 @@ METHOD(bliss_sampler_t, gaussian, bool,
 				return FALSE;
 			}
 			if (x || y || u)
-			{ 
+			{
 				break;
 			}
 		}

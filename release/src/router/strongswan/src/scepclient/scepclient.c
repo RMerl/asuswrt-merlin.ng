@@ -322,7 +322,7 @@ static void version(void)
 /**
  * @brief prints the usage of the program to the stderr output
  *
- * If message is set, program is exitet with 1 (error)
+ * If message is set, program is exited with 1 (error)
  * @param message message in case of an error
  */
 static void usage(const char *message)
@@ -547,7 +547,7 @@ int main(int argc, char **argv)
 		};
 
 		/* parse next option */
-		int c = getopt_long(argc, argv, "hv+:qi:o:fk:d:s:p:a:u:c:m:t:x:APRCMS", long_opts, NULL);
+		int c = getopt_long(argc, argv, "hv+:ql:i:o:fT:k:d:s:p:a:u:c:m:t:x:APRCMS", long_opts, NULL);
 
 		switch (c)
 		{
@@ -959,7 +959,7 @@ int main(int argc, char **argv)
 	{
 		char ca_path[PATH_MAX];
 		container_t *container;
-		pkcs7_t *pkcs7;
+		pkcs7_t *p7;
 
 		if (!scep_http_request(scep_url, chunk_create(ca_name, strlen(ca_name)),
 							   SCEP_GET_CA_CERT, http_get_request,
@@ -970,10 +970,10 @@ int main(int argc, char **argv)
 
 		join_paths(ca_path, sizeof(ca_path), CA_CERT_PATH, file_out_ca_cert);
 
-		pkcs7 = lib->creds->create(lib->creds, CRED_CONTAINER, CONTAINER_PKCS7,
+		p7 = lib->creds->create(lib->creds, CRED_CONTAINER, CONTAINER_PKCS7,
 								BUILD_BLOB_ASN1_DER, scep_response, BUILD_END);
 
-		if (!pkcs7)
+		if (!p7)
 		{	/* no PKCS#7 encoded CA+RA certificates, assume simple CA cert */
 
 			DBG1(DBG_APP, "unable to parse PKCS#7, assuming plain CA cert");
@@ -990,7 +990,7 @@ int main(int argc, char **argv)
 			int ra_certs = 0, ca_certs = 0;
 			int ra_index = 1, ca_index = 1;
 
-			enumerator = pkcs7->create_cert_enumerator(pkcs7);
+			enumerator = p7->create_cert_enumerator(p7);
 			while (enumerator->enumerate(enumerator, &cert))
 			{
 				x509_t *x509 = (x509_t*)cert;
@@ -1005,7 +1005,7 @@ int main(int argc, char **argv)
 			}
 			enumerator->destroy(enumerator);
 
-			enumerator = pkcs7->create_cert_enumerator(pkcs7);
+			enumerator = p7->create_cert_enumerator(p7);
 			while (enumerator->enumerate(enumerator, &cert))
 			{
 				x509_t *x509 = (x509_t*)cert;
@@ -1042,7 +1042,7 @@ int main(int argc, char **argv)
 				chunk_free(&encoding);
 			}
 			enumerator->destroy(enumerator);
-			container = &pkcs7->container;
+			container = &p7->container;
 			container->destroy(container);
 		}
 		exit_scepclient(NULL); /* no further output required */

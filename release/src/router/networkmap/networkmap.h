@@ -82,12 +82,13 @@ enum
 
 #define NCL_LIMIT		14336   //database limit to 14KB to avoid UI glitch
 
-#define NMP_DEBUG_FILE			"/tmp/NMP_DEBUG"
-#define NMP_DEBUG_MORE_FILE		"/tmp/NMP_DEBUG_MORE"
+#define NMP_DEBUG_FILE				"/tmp/NMP_DEBUG"
+#define NMP_DEBUG_MORE_FILE			"/tmp/NMP_DEBUG_MORE"
 #define NMP_DEBUG_FUNCTION_FILE		"/tmp/NMP_DEBUG_FUNCTION"
-#define NMP_DEBUG_VC_FILE		"/tmp/NMP_DEBUG_VC"
+#define NMP_DEBUG_VC_FILE			"/tmp/NMP_DEBUG_VC"
 
 #define NEWORKMAP_OUI_FILE		"/usr/networkmap/networkmap.oui.js"
+
 #if (defined(RTCONFIG_JFFS2) || defined(RTCONFIG_JFFSV1) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS))
 #define NMP_CL_JSON_FILE		"/jffs/nmp_cl_json.js"
 #define NMP_VC_JSON_FILE		"/jffs/nmp_vc_json.js"
@@ -96,6 +97,8 @@ enum
 #define NMP_VC_JSON_FILE		"/tmp/nmp_vc_json.js"
 #endif
 #define ARP_PATH			"/proc/net/arp"
+
+
 
 #define NMP_CONSOLE_DEBUG(fmt, args...) do{ \
 	if(nvram_match("nmp_debug", "1")) { \
@@ -174,6 +177,8 @@ enum
 #define TYPE_LINUX_DEVICE	22
 #define TYPE_WINDOWS		30
 #define TYPE_ANDROID		31
+
+#define SUCCESS		0
 
 enum
 {
@@ -256,4 +261,7 @@ int FindDevice(unsigned char *pIP, unsigned char *pMac, int replaceMac);
 void find_wireless_device(P_CLIENT_DETAIL_INFO_TABLE p_client_detail_info_tab, int offline);
 void type_filter(P_CLIENT_DETAIL_INFO_TABLE p_client_detail_info_tab, int x, unsigned char type, unsigned char base, int isDev);
 int isBaseType(int type);
+
+int QueryConvTypes(P_CLIENT_DETAIL_INFO_TABLE p_client_detail_info_tab, int i);
+
 #endif  /*__NETWORKMAP_H__*/

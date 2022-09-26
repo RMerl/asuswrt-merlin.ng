@@ -106,7 +106,7 @@ TNC_Result TNC_IMC_API TNC_IMC_Initialize(TNC_IMCID imc_id,
 		return TNC_RESULT_FATAL;
 	}
 
-	os = imc_os_info_create();
+	os = imc_os_info_create(FALSE);
 	if (!os)
 	{
 		imc_hcd->destroy(imc_hcd);

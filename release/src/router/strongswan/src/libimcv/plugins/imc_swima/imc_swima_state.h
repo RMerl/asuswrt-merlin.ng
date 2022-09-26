@@ -52,7 +52,7 @@ struct imc_swima_subscription_t {
 	swima_inventory_t *targets;
 
 	/**
-	 * Retrieve SW Identifieres only
+	 * Retrieve SW Identifiers only
 	 */
 	bool sw_id_only;
 

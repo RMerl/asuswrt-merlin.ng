@@ -253,7 +253,7 @@ METHOD(job_t, execute, job_requeue_t,
 					task->migrate(task, ike_sa);
 					ike_sa->queue_task(ike_sa, task);
 				}
-				if (ike_sa->initiate(ike_sa, NULL, 0, NULL, NULL) == DESTROY_ME)
+				if (ike_sa->initiate(ike_sa, NULL, NULL) == DESTROY_ME)
 				{
 					charon->ike_sa_manager->checkin_and_destroy(
 											charon->ike_sa_manager, ike_sa);

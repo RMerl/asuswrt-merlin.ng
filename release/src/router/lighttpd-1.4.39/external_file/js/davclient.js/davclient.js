@@ -409,7 +409,7 @@ global.davlib = new function() {
     };
 
     this.DavClient.prototype.PROPFIND = function(path, auth, handler, 
-                                                 context, depth, mtype) {
+                                                 context, depth, mtype, start, end) {
         /* perform a PROPFIND request
 
             read the metadata of a resource (optionally including its children)
@@ -430,7 +430,15 @@ global.davlib = new function() {
 		request.setRequestHeader('Mtype', mtype);
         request.setRequestHeader('Content-type', 'text/xml; charset=UTF-8');
         // XXX maybe we want to change this to allow getting selected props
-                
+        
+        if (typeof start!="undefined") {
+            request.setRequestHeader('Start', start);
+        }
+
+        if (typeof end!="undefined") {
+            request.setRequestHeader('End', end);
+        }
+
         var xml = '<?xml version="1.0" encoding="UTF-8" ?>' +
                   '<D:propfind xmlns:D="DAV:">' +
                   '<D:allprop />' +

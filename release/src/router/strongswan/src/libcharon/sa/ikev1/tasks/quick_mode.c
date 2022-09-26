@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2015 Tobias Brunner
+ * Copyright (C) 2012-2019 Tobias Brunner
  * HSR Hochschule fuer Technik Rapperswil
  *
  * Copyright (C) 2011 Martin Willi
@@ -151,19 +151,9 @@ struct private_quick_mode_t {
 	uint64_t lifebytes;
 
 	/**
-	 * Reqid to use, 0 for auto-allocate
+	 * Data collected to create the CHILD_SA
 	 */
-	uint32_t reqid;
-
-	/**
-	 * Explicit inbound mark value to use, if any
-	 */
-	u_int mark_in;
-
-	/**
-	 * Explicit inbound mark value to use, if any
-	 */
-	u_int mark_out;
+	child_sa_create_t child;
 
 	/**
 	 * SPI of SA we rekey
@@ -184,11 +174,6 @@ struct private_quick_mode_t {
 	 * SA protocol (ESP|AH) negotiated
 	 */
 	protocol_id_t proto;
-
-	/**
-	 * Use UDP encapsulation
-	 */
-	bool udp;
 
 	/**
 	 * Message ID of handled quick mode exchange
@@ -627,7 +612,7 @@ static bool get_ts(private_quick_mode_t *this, message_t *message)
 		tsr = traffic_selector_create_from_subnet(hsr->clone(hsr),
 					hsr->get_family(hsr) == AF_INET ? 32 : 128, 0, 0, 65535);
 	}
-	if (this->mode == MODE_TRANSPORT && this->udp &&
+	if (this->mode == MODE_TRANSPORT && this->child.encap &&
 	   (!tsi->is_host(tsi, hsi) || !tsr->is_host(tsr, hsr)))
 	{	/* change TS in case of a NAT in transport mode */
 		DBG2(DBG_IKE, "changing received traffic selectors %R=== %R due to NAT",
@@ -759,8 +744,8 @@ static void apply_lifetimes(private_quick_mode_t *this, sa_payload_t *sa_payload
 	uint32_t lifetime;
 	uint64_t lifebytes;
 
-	lifetime = sa_payload->get_lifetime(sa_payload);
-	lifebytes = sa_payload->get_lifebytes(sa_payload);
+	lifetime = sa_payload->get_lifetime(sa_payload, this->proposal);
+	lifebytes = sa_payload->get_lifebytes(sa_payload, this->proposal);
 	if (this->lifetime != lifetime)
 	{
 		DBG1(DBG_IKE, "received %us lifetime, configured %us",
@@ -788,7 +773,7 @@ static status_t send_notify(private_quick_mode_t *this, notify_type_t type)
 
 	this->ike_sa->queue_task(this->ike_sa,
 						(task_t*)informational_create(this->ike_sa, notify));
-	/* cancel all active/passive tasks in favour of informational */
+	/* cancel all active/passive tasks in favor of informational */
 	this->ike_sa->flush_queue(this->ike_sa,
 					this->initiator ? TASK_QUEUE_ACTIVE : TASK_QUEUE_PASSIVE);
 	return ALREADY_DONE;
@@ -817,7 +802,7 @@ static linked_list_t *get_proposals(private_quick_mode_t *this,
 				proposal->destroy(proposal);
 				continue;
 			}
-			proposal->strip_dh(proposal, group);
+			proposal->promote_dh_group(proposal, group);
 		}
 		proposal->set_spi(proposal, this->spi_i);
 	}
@@ -839,15 +824,19 @@ METHOD(task_t, build_i, status_t,
 			diffie_hellman_group_t group;
 			encap_t encap;
 
-			this->udp = this->ike_sa->has_condition(this->ike_sa, COND_NAT_ANY);
 			this->mode = this->config->get_mode(this->config);
+			this->child.if_id_in_def = this->ike_sa->get_if_id(this->ike_sa,
+															   TRUE);
+			this->child.if_id_out_def = this->ike_sa->get_if_id(this->ike_sa,
+																FALSE);
+			this->child.encap = this->ike_sa->has_condition(this->ike_sa,
+															COND_NAT_ANY);
 			this->child_sa = child_sa_create(
 									this->ike_sa->get_my_host(this->ike_sa),
 									this->ike_sa->get_other_host(this->ike_sa),
-									this->config, this->reqid, this->udp,
-									this->mark_in, this->mark_out);
+									this->config, &this->child);
 
-			if (this->udp && this->mode == MODE_TRANSPORT)
+			if (this->child.encap && this->mode == MODE_TRANSPORT)
 			{
 				/* TODO-IKEv1: disable NAT-T for TRANSPORT mode by default? */
 				add_nat_oa_payloads(this, message);
@@ -863,7 +852,7 @@ METHOD(task_t, build_i, status_t,
 				}
 			}
 
-			list = this->config->get_proposals(this->config, MODP_NONE);
+			list = this->config->get_proposals(this->config, FALSE);
 			if (list->get_first(list, (void**)&proposal) == SUCCESS)
 			{
 				this->proto = proposal->get_protocol(proposal);
@@ -914,7 +903,7 @@ METHOD(task_t, build_i, status_t,
 			}
 
 			get_lifetimes(this);
-			encap = get_encap(this->ike_sa, this->udp);
+			encap = get_encap(this->ike_sa, this->child.encap);
 			sa_payload = sa_payload_create_from_proposals_v1(list,
 								this->lifetime, this->lifebytes, AUTH_NONE,
 								this->mode, encap, this->cpi_i);
@@ -1026,7 +1015,7 @@ static void check_for_rekeyed_child(private_quick_mode_t *this, bool responder)
 
 	name = this->config->get_name(this->config);
 	enumerator = this->ike_sa->create_child_sa_enumerator(this->ike_sa);
-	while (this->reqid == 0 && enumerator->enumerate(enumerator, &child_sa))
+	while (!this->child.reqid && enumerator->enumerate(enumerator, &child_sa))
 	{
 		if (streq(child_sa->get_name(child_sa), name))
 		{
@@ -1041,12 +1030,16 @@ static void check_for_rekeyed_child(private_quick_mode_t *this, bool responder)
 						remote->equals(remote, other_ts) &&
 						this->proposal->equals(this->proposal, proposal))
 					{
-						this->reqid = child_sa->get_reqid(child_sa);
 						this->rekey = child_sa->get_spi(child_sa, TRUE);
-						this->mark_in = child_sa->get_mark(child_sa,
-															TRUE).value;
-						this->mark_out = child_sa->get_mark(child_sa,
-															FALSE).value;
+						this->child.reqid = child_sa->get_reqid(child_sa);
+						this->child.mark_in = child_sa->get_mark(child_sa,
+																 TRUE).value;
+						this->child.mark_out = child_sa->get_mark(child_sa,
+																  FALSE).value;
+						this->child.if_id_in = child_sa->get_if_id(child_sa,
+																   TRUE);
+						this->child.if_id_out = child_sa->get_if_id(child_sa,
+																	FALSE);
 						child_sa->set_state(child_sa, CHILD_REKEYING);
 						DBG1(DBG_IKE, "detected rekeying of CHILD_SA %s{%u}",
 							 child_sa->get_name(child_sa),
@@ -1079,7 +1072,7 @@ METHOD(task_t, process_r, status_t,
 			linked_list_t *tsi, *tsr, *hostsi, *hostsr, *list = NULL;
 			peer_cfg_t *peer_cfg;
 			uint16_t group;
-			bool private, prefer_configured;
+			proposal_selection_flag_t flags = 0;
 
 			sa_payload = (sa_payload_t*)message->get_payload(message,
 													PLV1_SECURITY_ASSOCIATION);
@@ -1089,7 +1082,8 @@ METHOD(task_t, process_r, status_t,
 				return send_notify(this, INVALID_PAYLOAD_TYPE);
 			}
 
-			this->mode = sa_payload->get_encap_mode(sa_payload, &this->udp);
+			this->mode = sa_payload->get_encap_mode(sa_payload,
+													&this->child.encap);
 
 			if (!get_ts(this, message))
 			{
@@ -1102,7 +1096,7 @@ METHOD(task_t, process_r, status_t,
 			hostsi = get_dynamic_hosts(this->ike_sa, FALSE);
 			hostsr = get_dynamic_hosts(this->ike_sa, TRUE);
 			this->config = peer_cfg->select_child_cfg(peer_cfg, tsr, tsi,
-													  hostsr, hostsi);
+													  hostsr, hostsi, NULL, NULL);
 			hostsi->destroy(hostsi);
 			hostsr->destroy(hostsr);
 			if (this->config)
@@ -1138,16 +1132,20 @@ METHOD(task_t, process_r, status_t,
 				DESTROY_IF(list);
 				list = sa_payload->get_proposals(sa_payload);
 			}
-			private = this->ike_sa->supports_extension(this->ike_sa,
-													   EXT_STRONGSWAN);
-			prefer_configured = lib->settings->get_bool(lib->settings,
-							"%s.prefer_configured_proposals", TRUE, lib->ns);
+			if (!this->ike_sa->supports_extension(this->ike_sa, EXT_STRONGSWAN)
+				&& !lib->settings->get_bool(lib->settings,
+									"%s.accept_private_algs", FALSE, lib->ns))
+			{
+				flags |= PROPOSAL_SKIP_PRIVATE;
+			}
+			if (!lib->settings->get_bool(lib->settings,
+							"%s.prefer_configured_proposals", TRUE, lib->ns))
+			{
+				flags |= PROPOSAL_PREFER_SUPPLIED;
+			}
 			this->proposal = this->config->select_proposal(this->config, list,
-											FALSE, private, prefer_configured);
+														   flags);
 			list->destroy_offset(list, offsetof(proposal_t, destroy));
-
-			get_lifetimes(this);
-			apply_lifetimes(this, sa_payload);
 
 			if (!this->proposal)
 			{
@@ -1156,6 +1154,9 @@ METHOD(task_t, process_r, status_t,
 				return send_notify(this, NO_PROPOSAL_CHOSEN);
 			}
 			this->spi_i = this->proposal->get_spi(this->proposal);
+
+			get_lifetimes(this);
+			apply_lifetimes(this, sa_payload);
 
 			if (!get_nonce(this, &this->nonce_i, message))
 			{
@@ -1180,12 +1181,14 @@ METHOD(task_t, process_r, status_t,
 			}
 
 			check_for_rekeyed_child(this, TRUE);
-
+			this->child.if_id_in_def = this->ike_sa->get_if_id(this->ike_sa,
+															   TRUE);
+			this->child.if_id_out_def = this->ike_sa->get_if_id(this->ike_sa,
+																FALSE);
 			this->child_sa = child_sa_create(
 									this->ike_sa->get_my_host(this->ike_sa),
 									this->ike_sa->get_other_host(this->ike_sa),
-									this->config, this->reqid, this->udp,
-									this->mark_in, this->mark_out);
+									this->config, &this->child);
 
 			tsi = linked_list_create_with_items(this->tsi, NULL);
 			tsr = linked_list_create_with_items(this->tsr, NULL);
@@ -1221,6 +1224,21 @@ METHOD(task_t, process_r, status_t,
 					return NEED_MORE;
 				}
 				return SUCCESS;
+			}
+			if (!this->rekey)
+			{
+				/* do another check in case SAs were created since we handled
+				 * the QM request, this is consistent with the rekey check
+				 * before installation on the initiator */
+				check_for_rekeyed_child(this, TRUE);
+				if (this->rekey)
+				{
+					this->child_sa->destroy(this->child_sa);
+					this->child_sa = child_sa_create(
+									this->ike_sa->get_my_host(this->ike_sa),
+									this->ike_sa->get_other_host(this->ike_sa),
+									this->config, &this->child);
+				}
 			}
 			if (!install(this))
 			{
@@ -1277,13 +1295,13 @@ METHOD(task_t, build_r, status_t,
 				}
 			}
 
-			if (this->udp && this->mode == MODE_TRANSPORT)
+			if (this->child.encap && this->mode == MODE_TRANSPORT)
 			{
 				/* TODO-IKEv1: disable NAT-T for TRANSPORT mode by default? */
 				add_nat_oa_payloads(this, message);
 			}
 
-			encap = get_encap(this->ike_sa, this->udp);
+			encap = get_encap(this->ike_sa, this->child.encap);
 			sa_payload = sa_payload_create_from_proposal_v1(this->proposal,
 								this->lifetime, this->lifebytes, AUTH_NONE,
 								this->mode, encap, this->cpi_r);
@@ -1329,7 +1347,7 @@ METHOD(task_t, process_i, status_t,
 		{
 			sa_payload_t *sa_payload;
 			linked_list_t *list = NULL;
-			bool private;
+			proposal_selection_flag_t flags = 0;
 
 			sa_payload = (sa_payload_t*)message->get_payload(message,
 													PLV1_SECURITY_ASSOCIATION);
@@ -1354,10 +1372,14 @@ METHOD(task_t, process_i, status_t,
 				DESTROY_IF(list);
 				list = sa_payload->get_proposals(sa_payload);
 			}
-			private = this->ike_sa->supports_extension(this->ike_sa,
-													   EXT_STRONGSWAN);
+			if (!this->ike_sa->supports_extension(this->ike_sa, EXT_STRONGSWAN)
+				&& !lib->settings->get_bool(lib->settings,
+									"%s.accept_private_algs", FALSE, lib->ns))
+			{
+				flags |= PROPOSAL_SKIP_PRIVATE;
+			}
 			this->proposal = this->config->select_proposal(this->config, list,
-														FALSE, private, TRUE);
+														   flags);
 			list->destroy_offset(list, offsetof(proposal_t, destroy));
 			if (!this->proposal)
 			{
@@ -1408,14 +1430,21 @@ METHOD(quick_mode_t, get_mid, uint32_t,
 METHOD(quick_mode_t, use_reqid, void,
 	private_quick_mode_t *this, uint32_t reqid)
 {
-	this->reqid = reqid;
+	this->child.reqid = reqid;
 }
 
 METHOD(quick_mode_t, use_marks, void,
-	private_quick_mode_t *this, u_int in, u_int out)
+	private_quick_mode_t *this, uint32_t in, uint32_t out)
 {
-	this->mark_in = in;
-	this->mark_out = out;
+	this->child.mark_in = in;
+	this->child.mark_out = out;
+}
+
+METHOD(quick_mode_t, use_if_ids, void,
+	private_quick_mode_t *this, uint32_t in, uint32_t out)
+{
+	this->child.if_id_in = in;
+	this->child.if_id_out = out;
 }
 
 METHOD(quick_mode_t, rekey, void,
@@ -1446,8 +1475,6 @@ METHOD(task_t, migrate, void,
 	this->dh = NULL;
 	this->spi_i = 0;
 	this->spi_r = 0;
-	this->mark_in = 0;
-	this->mark_out = 0;
 
 	if (!this->initiator)
 	{
@@ -1488,6 +1515,7 @@ quick_mode_t *quick_mode_create(ike_sa_t *ike_sa, child_cfg_t *config,
 			.get_mid = _get_mid,
 			.use_reqid = _use_reqid,
 			.use_marks = _use_marks,
+			.use_if_ids = _use_if_ids,
 			.rekey = _rekey,
 		},
 		.ike_sa = ike_sa,

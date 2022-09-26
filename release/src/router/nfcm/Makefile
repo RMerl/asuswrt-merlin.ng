@@ -3,11 +3,15 @@
 # Makefile
 #
 #***********************************************************************
+include $(LINUXDIR)/.config
 include ../common.mak
+include $(SRCBASE)/.config
+include ../.config
 
 CFLAGS += -I$(TOP)/libev-4.33 -I$(TOP)/libnfnetlink-1.0.1/include 
 CFLAGS += -I$(TOP)/libmnl-1.0.4/include -I$(TOP)/libnfnetlink-1.0.1/include 
-CFLAGS += -I$(TOP)/libnetfilter_conntrack-1.0.7/include -I$(TOP)/sqlite -DSQL -I$(TOP)/json-c
+CFLAGS += -I$(TOP)/libnetfilter_conntrack-1.0.7/include -I$(TOP)/libnetfilter_conntrack-1.0.7/include/libnetfilter_conntrack
+CFLAGS += -I$(TOP)/sqlite -DSQL -I$(TOP)/json-c
 CFLAGS += -I$(TOP)/shared
 
 LDFLAGS += -L$(TOP)/libev-4.33/.libs -lev 
@@ -22,11 +26,50 @@ ifeq ($(RTCONFIG_BCM_502L07P2),y)
 LDFLAGS += -L$(TOP_PLATFORM)/ethctl_lib -lethctl
 endif
 
-OBJS = log.o nfct.o nfarp.o nfjs.o nfsql.o nfcm.o
+ifeq ($(RTCONFIG_LIB_CODB),y)
+CFLAGS += -DCODB -I$(TOP)/libcodb
+LDFLAGS += -L$(TOP)/libcodb -lcodb
+endif
+
+ifeq ($(RTCONFIG_EXT_RTL8370MB),y)
+CFLAGS += -I$(LINUXDIR)/drivers/char/rtl8370mb
+endif
+
+ifeq ($(RTCONFIG_EXT_RTL8365MB),y)
+CFLAGS += -I$(LINUXDIR)/drivers/char/rtl8365mb
+endif
+
+ifeq ($(RTCONFIG_EXT_BCM53134),y)
+CFLAGS += -I$(INC_BRCMDRIVER_PUB_PATH)/bcm963xx/bcm
+endif
+
+#if CONFIG_ET is set to 'y' or 'm', then defined it
+ifneq (,$(filter $(CONFIG_ET),y m))
+CFLAGS += -DCONFIG_ET
+CFLAGS += -I$(SRCBASE)/et/sys
+endif
+
+OBJS = log.o nfsw.o nfct.o nfarp.o nfjs.o nfsql.o nfcm.o
 
 ifeq ($(QCA), y)
-  OBJS += nffdb.o
-  CFLAGS += -DQCA
+  OBJS += nffdb.o nfssdk.o 
+  CFLAGS += -DQCA -DISISC # -DUMAC_SUPPORT_CFG80211=1 -DUMAC_SUPPORT_WEXT=1 -DATH_SUPPORT_EXT_STAT=1 -DATH_EXTRA_RATE_INFO_STA=0
+
+  CFLAGS += -I$(SRCBASE)/$(PLATFORM_ROUTER)/qca-ssdk-shell/source/include
+  CFLAGS += -I$(SRCBASE)/$(PLATFORM_ROUTER)/qca-ssdk-shell/source/include/api
+  CFLAGS += -I$(SRCBASE)/$(PLATFORM_ROUTER)/qca-ssdk-shell/source/include/fal
+  CFLAGS += -I$(SRCBASE)/$(PLATFORM_ROUTER)/qca-ssdk-shell/source/include/shell
+  CFLAGS += -I$(SRCBASE)/$(PLATFORM_ROUTER)/qca-ssdk-shell/source/include/init
+  CFLAGS += -I$(SRCBASE)/$(PLATFORM_ROUTER)/qca-ssdk-shell/source/include/common
+  CFLAGS += -I$(SRCBASE)/$(PLATFORM_ROUTER)/qca-ssdk-shell/source/include/sal/os
+  CFLAGS += -I$(SRCBASE)/$(PLATFORM_ROUTER)/qca-ssdk-shell/source/include/sal/os/linux_user
+  CFLAGS += -I$(SRCBASE)/$(PLATFORM_ROUTER)/qca-wifi/source/os/linux/tools
+
+  LDFLAGS += -L$(SRCBASE)/$(PLATFORM_ROUTER)/qca-ssdk-shell/source/build/bin -l:ssdk_us_km.a
+#  LDFLAGS += -L$(SRCBASE)/$(PLATFORM_ROUTER)/qca-wifi/source/os/linux/tools -lqca_tools
+#  LDFLAGS += -L$(SRCBASE)/$(PLATFORM_ROUTER)/qca-cfg80211/source/qca_nl80211_lib -lqca_nl80211_wrapper
+#  LDFLAGS += -L$(SRCBASE)/$(PLATFORM_ROUTER)/libnl/source/lib/.libs -lnl-3 -lnl-genl-3
+
   CFLAGS += -I$(TOP)/shared/sysdeps/qca
   CFlAGS += -I$(TOP)/wireless_tools
   CFLAGS += -I$(TOP)/kernel_header/include -I$(SRCBASE)/include
@@ -34,6 +77,7 @@ ifeq ($(QCA), y)
 else ifeq ($(HND), y)
   OBJS += nfmc.o
   CFLAGS += -DHND -I$(HND_SRC)/userspace/private/include 
+  CFLAGS += -I$(INC_BRCMDRIVER_PUB_PATH)/bcm963xx/bcm
   CFLAGS += -I$(SRCBASE)/wl/sys
   LDFLAGS += -lethswctl
   ifeq ($(AX), y)
@@ -59,14 +103,23 @@ else ifeq ($(HND), y)
     LDFLAGS += -L$(TOP_PLATFORM)/wlcsm$(EXHND) -lwlcsm
   endif
 else
-  OBJS += nfrob.o
+  OBJS += nfmc.o
   CFLAGS += -I$(SRCBASE)/wl/sys
   CFLAGS += -I$(SRCBASE)/shared/bcmwifi/include/
   CFLAGS += -I$(SRCBASE)/common/include
   CFLAGS += -I$(SRCBASE)/include
+
   LDFLAGS += -L$(TOP_PLATFORM)/nvram$(BCMEX)$(EX7) 
   LDFLAGS += -L$(TOP_PLATFORM)/nvram$(BCMEX)
 endif
+
+ifeq ($(RTCONFIG_CFGSYNC), y)
+  OBJS += nfcfg.o
+  CFLAGS += -DAIMESH
+endif
+
+#CFLAGS += -DNFCMDBG
+#CFLAGS += -D_MACDBG_
 
 all: nfcm
 
@@ -85,11 +138,13 @@ nfcm: $(OBJS)
 #	@echo HND=$(HND)
 #	@echo AX=$(AX)
 #	@echo QCA=$(QCA)
+#	@echo LINUXDIR=$(LINUXDIR)
 #	@echo "=============================";
 	$(CC) -o nfcm $(OBJS) $(LDFLAGS)
 
 .PHONY: clean
 clean:
 #	@echo OBJS=$(OBJS)
+	@echo LINUXDIR=$(LINUXDIR)
 	-rm -rf nfcm stamp-h1 $(OBJS)
 

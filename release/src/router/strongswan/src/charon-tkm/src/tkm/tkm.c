@@ -119,6 +119,8 @@ void tkm_deinit()
 
 	ees_server_finalize();
 
+	ike_finalize();
+
 	tkmlib_final();
 	free(this);
 	tkm = NULL;

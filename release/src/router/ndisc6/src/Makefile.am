@@ -12,11 +12,11 @@ AM_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/include \
 	-DLOCALEDIR=\"$(localedir)\"
 AM_LIBADD = @top_builddir@/compat/libcompat.a
 
-mysuidexec_PROGRAMS = ndisc6 rdisc6 rltraceroute6
-myexec_PROGRAMS = tcptraceroute6
-myexec_SCRIPTS = tracert6
-bin_PROGRAMS = tcpspray name2addr
-bin_SCRIPTS = tcpspray6 dnssort addr2name
+mysuidexec_PROGRAMS = rdisc6 #ndisc6 rltraceroute6
+myexec_PROGRAMS = #tcptraceroute6
+myexec_SCRIPTS = #tracert6
+bin_PROGRAMS = #tcpspray name2addr
+bin_SCRIPTS = #tcpspray6 dnssort addr2name
 noinst_HEADERS = gettime.h
 dist_noinst_SCRIPTS = gen-alias
 EXTRA_DIST = dnssort.in

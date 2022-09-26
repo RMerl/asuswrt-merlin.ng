@@ -121,12 +121,19 @@ METHOD(enumerator_t, peer_enumerator_enumerate, bool,
 	peer_enumerator_t *this, va_list args)
 {
 	char *name, *ike_proposal, *esp_proposal, *ike_rekey, *esp_rekey;
-	char *local_id, *local_addr, *local_net;
-	char *remote_id, *remote_addr, *remote_net;
+	char *local_id, *local_net, *remote_id, *remote_net;
 	peer_cfg_t **cfg;
 	child_cfg_t *child_cfg;
 	ike_cfg_t *ike_cfg;
 	auth_cfg_t *auth;
+	ike_cfg_create_t ike = {
+		.version = IKEV2,
+		.local = "0.0.0.0",
+		.local_port = charon->socket->get_port(charon->socket, FALSE),
+		.remote = "0.0.0.0",
+		.remote_port = IKEV2_UDP_PORT,
+		.no_certreq = TRUE,
+	};
 	peer_cfg_create_t peer = {
 		.cert_policy = CERT_SEND_IF_ASKED,
 		.unique = UNIQUE_NO,
@@ -152,8 +159,6 @@ METHOD(enumerator_t, peer_enumerator_enumerate, bool,
 	name = "unnamed";
 	local_id = NULL;
 	remote_id = NULL;
-	local_addr = "0.0.0.0";
-	remote_addr = "0.0.0.0";
 	local_net = NULL;
 	remote_net = NULL;
 	ike_proposal = NULL;
@@ -162,14 +167,12 @@ METHOD(enumerator_t, peer_enumerator_enumerate, bool,
 	esp_rekey = NULL;
 
 	if (this->inner->enumerate(this->inner, &name, &local_id, &remote_id,
-			&local_addr, &remote_addr, &local_net, &remote_net,
+			&ike.local, &ike.remote, &local_net, &remote_net,
 			&ike_proposal, &esp_proposal, &ike_rekey, &esp_rekey))
 	{
+
 		DESTROY_IF(this->peer_cfg);
-		ike_cfg = ike_cfg_create(IKEV2, FALSE, FALSE, local_addr,
-								 charon->socket->get_port(charon->socket, FALSE),
-								 remote_addr, IKEV2_UDP_PORT,
-								 FRAGMENTATION_NO, 0);
+		ike_cfg = ike_cfg_create(&ike);
 		ike_cfg->add_proposal(ike_cfg, create_proposal(ike_proposal, PROTO_IKE));
 		peer.rekey_time = create_rekey(ike_rekey);
 		this->peer_cfg = peer_cfg_create(name, ike_cfg, &peer);
@@ -248,23 +251,26 @@ METHOD(enumerator_t, ike_enumerator_enumerate, bool,
 	ike_enumerator_t *this, va_list args)
 {
 	ike_cfg_t **cfg;
-	char *local_addr, *remote_addr, *ike_proposal;
+	ike_cfg_create_t ike = {
+		.version = IKEV2,
+		.local = "0.0.0.0",
+		.local_port = charon->socket->get_port(charon->socket, FALSE),
+		.remote = "0.0.0.0",
+		.remote_port = IKEV2_UDP_PORT,
+		.no_certreq = TRUE,
+	};
+	char *ike_proposal;
 
 	VA_ARGS_VGET(args, cfg);
 
 	/* defaults */
-	local_addr = "0.0.0.0";
-	remote_addr = "0.0.0.0";
 	ike_proposal = NULL;
 
 	if (this->inner->enumerate(this->inner, NULL,
-							   &local_addr, &remote_addr, &ike_proposal))
+							   &ike.local, &ike.remote, &ike_proposal))
 	{
 		DESTROY_IF(this->ike_cfg);
-		this->ike_cfg = ike_cfg_create(IKEV2, FALSE, FALSE, local_addr,
-								charon->socket->get_port(charon->socket, FALSE),
-								remote_addr, IKEV2_UDP_PORT,
-								FRAGMENTATION_NO, 0);
+		this->ike_cfg = ike_cfg_create(&ike);
 		this->ike_cfg->add_proposal(this->ike_cfg,
 									create_proposal(ike_proposal, PROTO_IKE));
 

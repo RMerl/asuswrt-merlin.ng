@@ -178,6 +178,7 @@ define(function(){
 					{url: "PrinterServer.asp", tabName: "__INHERIT__"},
 					{url: "Advanced_Modem_Content.asp", tabName: "__INHERIT__"},
 					{url: "Advanced_TimeMachine.asp", tabName: "__INHERIT__"},
+					{url: "Advanced_TencentDownloadAcceleration.asp", tabName: "__INHERIT__"},
 					{url: "fileflex.asp", tabName: "__INHERIT__"},
 					{url: "NULL", tabName: "__INHERIT__"}
 				] 

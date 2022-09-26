@@ -48,20 +48,27 @@ static void conf_parser_error(parser_helper_t *ctx, const char *s);
  * Make sure to call lexer with the proper context
  */
 #undef yylex
-static int yylex(YYSTYPE *lvalp, parser_helper_t *ctx)
+static int yylex(CONF_PARSER_STYPE *yylval, parser_helper_t *ctx)
 {
-	return conf_parser_lex(lvalp, ctx->scanner);
+	return conf_parser_lex(yylval, ctx->scanner);
 }
 
 %}
 %debug
 
 /* generate verbose error messages */
-%error-verbose
+%define parse.error verbose
 /* generate a reentrant parser */
 %define api.pure
 /* prefix function/variable declarations */
-%name-prefix "conf_parser_"
+%define api.prefix {conf_parser_}
+/* make sure flex uses the right definition */
+%code provides
+{
+	#define YY_DECL \
+		int conf_parser_lex(CONF_PARSER_STYPE *yylval, void *yyscanner)
+	YY_DECL;
+}
 
 /* interact properly with the reentrant lexer */
 %lex-param {parser_helper_t *ctx}
@@ -205,14 +212,7 @@ value:
  */
 static void conf_parser_error(parser_helper_t *ctx, const char *s)
 {
-	char *text = conf_parser_get_text(ctx->scanner);
-	int len = conf_parser_get_leng(ctx->scanner);
-
-	if (len && text[len-1] == '\n')
-	{	/* cut off newline at the end to avoid muti-line log messages */
-		len--;
-	}
-	PARSER_DBG1(ctx, "%s [%.*s]", s, (int)len, text);
+	PARSER_DBG1(ctx, "%s", s);
 }
 
 /**

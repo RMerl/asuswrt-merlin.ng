@@ -29,7 +29,7 @@ PLUGINS = \
 	pem \
 	socket-default \
 	openssl \
-	stroke
+	vici
 
 all: build_charon
 
@@ -39,13 +39,14 @@ build_charon: build_charon.gpr src/charon-tkm.c
 build_tests: build_tests.gpr
 	@$(GPRBUILD) -p $< $(BUILD_OPTS) $(TEST_OPTS)
 
-check-tkm: build_tests
+check: build_tests
+	if test -z "${TESTS_TKM}"; then \
+		echo -e >&2 \
+			"\nSome TKM tests are not enabled, by default, because they have" \
+			"\nto be run as root and require a running TKM daemon. They may" \
+			"\nbe enabled by defining the TESTS_TKM environment variable.\n"; \
+	fi
 	@LD_LIBRARY_PATH=$(LIBPT) obj/tests
-
-check:
-	@echo "TKM tests are not run automatically because they have to be run as root" >&2
-	@echo "and require a properly configured TKM daemon to be running." >&2
-	@echo "They can be run from '$(abs_builddir)' with 'make check-tkm'" >&2
 
 install: build_charon
 	$(INSTALL) -m 755 obj/charon-tkm $(DESTDIR)$(ipsecdir)

@@ -38,8 +38,8 @@ static void include_files(parser_helper_t *ctx);
 /* due to that disable interactive mode, which requires isatty() */
 %option never-interactive
 
-/* don't use global variables, and interact properly with bison */
-%option reentrant bison-bridge
+/* don't use global variables */
+%option reentrant
 
 /* maintain the line number */
 %option yylineno
@@ -62,7 +62,7 @@ static void include_files(parser_helper_t *ctx);
 
 %%
 
-^[\t ]*"version"[^\n]*$	/* eat legacy version delcaration */
+^[\t ]*"version"[^\n]*$	/* eat legacy version declaration */
 ^[\t ]+					return SPACES;
 [\t ]+					/* eat other whitespace */
 [\t ]*#[^\n]*			/* eat comments */

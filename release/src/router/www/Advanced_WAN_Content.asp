@@ -43,6 +43,7 @@
 <script type="text/javascript" src="/validator.js"></script>
 <script type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/js/httpApi.js"></script>
+<script type="text/javascript" src="/js/searchIspNameProfile.js"></script>
 <script>
 
 var wans_dualwan = '<% nvram_get("wans_dualwan"); %>';
@@ -219,6 +220,11 @@ function initial(){
 	else{
 		inputCtrl(document.form.dnspriv_enable, 0);
 		change_dnspriv_enable(0);
+	}
+
+	if(dnssec_support){
+		document.getElementById("dnssec_tr").style.display = "";
+		showhide("dnssec_strict_tr", "<% nvram_get("dnssec_enable"); %>" == "1" ? 1 : 0);
 	}
 
 	if(dnssec_support){
@@ -548,6 +554,17 @@ function applyRule(){
 		    (getRadioValue(document.form.dns_fwd_local) != '<% nvram_get("dns_fwd_local"); %>') )
 
 				document.form.action_script.value += ";restart_dnsmasq";
+
+		if((dnssec_support &&
+				(getRadioValue(document.form.dnssec_enable) != '<% nvram_get("dnssec_enable"); %>') ||
+				(getRadioValue(document.form.dnssec_check_unsigned_x) != '<% nvram_get("dnssec_check_unsigned_x"); %>')) ||
+				(dnspriv_support &&
+				(document.form.dns_priv_override.value == 0) &&
+				(document.form.dnspriv_enable.value != '<% nvram_get("dnspriv_enable"); %>')) ||
+				(getRadioValue(document.form.dns_norebind) != '<% nvram_get("dns_norebind"); %>') ||
+				(document.form.dns_priv_override.value != '<% nvram_get("dns_priv_override"); %>') ||
+				(getRadioValue(document.form.dns_fwd_local) != '<% nvram_get("dns_fwd_local"); %>'))
+			document.form.action_script.value += ";restart_dnsmasq";
 
 		if(reboot_confirm==1){
 
@@ -2176,35 +2193,36 @@ function DNSList_match(ip1, ip2){
 					</td>
           		</tr>
 			<tr>
-				<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(50,5);">Forward local domain queries to upstream DNS</a></th>
+					<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,42);">Forward local domain queries to upstream DNS</a></th><!-- untranslated -->
 				<td>
 					<input type="radio" value="1" name="dns_fwd_local" <% nvram_match("dns_fwd_local", "1", "checked"); %> /><#checkbox_Yes#>
 					<input type="radio" value="0" name="dns_fwd_local" <% nvram_match("dns_fwd_local", "0", "checked"); %> /><#checkbox_No#>
 				</td>
 			</tr>
 			<tr>
-				<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(50,9);">Enable DNS Rebind protection</a></th>
+				<tr>
+					<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,43);">Enable DNS Rebind protection</a></th><!-- untranslated -->
 				<td>
 					<input type="radio" value="1" name="dns_norebind" <% nvram_match("dns_norebind", "1", "checked"); %> /><#checkbox_Yes#>
 					<input type="radio" value="0" name="dns_norebind" <% nvram_match("dns_norebind", "0", "checked"); %> /><#checkbox_No#>
 				</td>
 			</tr>
 			<tr id="dnssec_tr" style="display:none;">
-				<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(50,6);">Enable DNSSEC support</a></th>
+				<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,44);">Enable DNSSEC support</a></th><!-- untranslated -->
 				<td>
 					<input type="radio" value="1" name="dnssec_enable" onclick="showhide('dnssec_strict_tr',1);" <% nvram_match("dnssec_enable", "1", "checked"); %> /><#checkbox_Yes#>
 					<input type="radio" value="0" name="dnssec_enable" onclick="showhide('dnssec_strict_tr',0);" <% nvram_match("dnssec_enable", "0", "checked"); %> /><#checkbox_No#>
 				</td>
 			</tr>
 			<tr id="dnssec_strict_tr" style="display:none;">
-				<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(50,25);">Validate unsigned DNSSEC replies</a></th>
+					<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,45);">Validate unsigned DNSSEC replies</a></th><!-- untranslated -->
 				<td>
 					<input type="radio" value="1" name="dnssec_check_unsigned_x" <% nvram_match("dnssec_check_unsigned_x", "1", "checked"); %> /><#checkbox_Yes#>
 					<input type="radio" value="0" name="dnssec_check_unsigned_x" <% nvram_match("dnssec_check_unsigned_x", "0", "checked"); %> /><#checkbox_No#>
 				</td>
 			</tr>
 			<tr id="dns_priv_override_tr">
-				<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(50,31);">Prevent client auto DoH</a></th>
+				<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,46);">Prevent client auto DoH</a></th><!-- untranslated -->
 				<td>
 					<select id="dns_priv_override" class="input_option" name="dns_priv_override">
 						<option value="0" <% nvram_match("dns_priv_override", "0", "selected"); %>>Auto</option>

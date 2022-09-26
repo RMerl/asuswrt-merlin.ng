@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2021, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -17,6 +17,8 @@
  *
  * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
  * KIND, either express or implied.
+ *
+ * SPDX-License-Identifier: curl
  *
  ***************************************************************************/
 #include "tool_setup.h"
@@ -635,12 +637,11 @@ CURLcode FindWin32CACert(struct OperationConfig *config,
 
     res_len = SearchPath(NULL, bundle_file, NULL, PATH_MAX, buf, &ptr);
     if(res_len > 0) {
+      char *mstr = curlx_convert_tchar_to_UTF8(buf);
       Curl_safefree(config->cacert);
-#ifdef UNICODE
-      config->cacert = curlx_convert_wchar_to_UTF8(buf);
-#else
-      config->cacert = strdup(buf);
-#endif
+      if(mstr)
+        config->cacert = strdup(mstr);
+      curlx_unicodefree(mstr);
       if(!config->cacert)
         result = CURLE_OUT_OF_MEMORY;
     }
@@ -766,7 +767,9 @@ bool tool_isVistaOrGreater;
 
 CURLcode win32_init(void)
 {
-  if(curlx_verify_windows_version(6, 0, PLATFORM_WINNT,
+  /* curlx_verify_windows_version must be called during init at least once
+     because it has its own initialization routine. */
+  if(curlx_verify_windows_version(6, 0, 0, PLATFORM_WINNT,
                                   VERSION_GREATER_THAN_EQUAL))
     tool_isVistaOrGreater = true;
   else

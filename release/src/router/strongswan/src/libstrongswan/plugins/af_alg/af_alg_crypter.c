@@ -2,6 +2,9 @@
  * Copyright (C) 2010 Martin Willi
  * Copyright (C) 2010 revosec AG
  *
+ * Copyright (C) 2019 Andreas Steffen
+ * HSR Hochschule fuer Technik Rapperswil
+ *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
  * Free Software Foundation; either version 2 of the License, or (at your
@@ -68,6 +71,9 @@ static struct {
 	{ENCR_AES_CBC,		"cbc(aes)",					16,	16,	16,	16,	},
 	{ENCR_AES_CBC,		"cbc(aes)",					16,	24,	24,	16,	},
 	{ENCR_AES_CBC,		"cbc(aes)",					16,	32,	32,	16,	},
+	{ENCR_AES_ECB,		"ecb(aes)",					16,	16,	16,	 0,	},
+	{ENCR_AES_ECB,		"ecb(aes)",					16,	24,	24,	 0,	},
+	{ENCR_AES_ECB,		"ecb(aes)",					16,	32,	32,	 0,	},
 	{ENCR_AES_CTR,		"rfc3686(ctr(aes))",		 1,	16,	20,	 8,	},
 	{ENCR_AES_CTR,		"rfc3686(ctr(aes))",		 1,	24,	28,	 8,	},
 	{ENCR_AES_CTR,		"rfc3686(ctr(aes))",		 1,	32,	36,	 8,	},

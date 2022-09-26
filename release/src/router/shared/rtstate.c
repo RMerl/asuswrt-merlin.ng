@@ -343,7 +343,7 @@ char *get_wan_ifname(int unit)
 			nvram_safe_get(strlcat_r(prefix, "pppoe_ifname", tmp, sizeof(tmp)));
 	} else
 #endif
-#if defined(RTAX82_XD6) || defined(RTAX82_XD6S)
+#if defined(RTAX82_XD6) || defined(RTAX82_XD6S) || defined(XD6_V2)
 	if (!strncmp(nvram_safe_get("territory_code"), "CH", 2) &&
 		nvram_match(ipv6_nvname("ipv6_only"), "1"))
 		return nvram_safe_get(strlcat_r(prefix, "ifname", tmp, sizeof(tmp)));
@@ -1297,7 +1297,7 @@ char *get_default_ssid(int unit, int subunit)
 		strlcat(ssid, "_CD6", sizeof(ssid));
 #elif defined(PLAX56_XP4)
 		strlcat(ssid, "_XP4", sizeof(ssid));
-#elif defined(RTAX82_XD6)
+#elif defined(RTAX82_XD6) || defined(XD6_V2)
 		if (strstr(nvram_safe_get("odmpid"), "XD6E"))
 			strlcat(ssid, "_XD6E", sizeof(ssid));
 		else
@@ -1329,6 +1329,8 @@ char *get_default_ssid(int unit, int subunit)
 		strlcat(ssid, nvram_safe_get("model"), sizeof(ssid));
 #elif defined(XT8PRO)
 		strlcat(ssid, "_XT9", sizeof(ssid));
+#elif defined(BM68)
+		strlcat(ssid, "_BM68", sizeof(ssid));
 #elif defined(XT8_V2)
 		strlcat(ssid, "_XT8", sizeof(ssid));
 #else

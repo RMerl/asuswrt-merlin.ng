@@ -5,7 +5,7 @@
 #                            | (__| |_| |  _ <| |___
 #                             \___|\___/|_| \_\_____|
 #
-# Copyright (C) 1999 - 2021, Daniel Stenberg, <daniel@haxx.se>, et al.
+# Copyright (C) 1999 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
 #
 # This software is licensed as described in the file COPYING, which
 # you should have received as part of this distribution. The terms
@@ -17,6 +17,8 @@
 #
 # This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
 # KIND, either express or implied.
+#
+# SPDX-License-Identifier: curl
 #
 #***************************************************************************
 
@@ -164,6 +166,26 @@ NGHTTP2_LIBS     = nghttp2.lib
 !ENDIF
 !ENDIF
 
+!IFDEF MSH3_PATH
+MSH3_INC_DIR     = $(MSH3_PATH)\include
+MSH3_LIB_DIR     = $(MSH3_PATH)\lib
+MSH3_LFLAGS      = $(MSH3_LFLAGS) "/LIBPATH:$(MSH3_LIB_DIR)"
+!ELSE
+MSH3_INC_DIR     = $(DEVEL_INCLUDE)
+MSH3_LIB_DIR     = $(DEVEL_LIB)
+!ENDIF
+
+!IF "$(WITH_MSH3)"=="dll"
+MSH3_CFLAGS      = /DUSE_MSH3 /I"$(MSH3_INC_DIR)"
+MSH3_LIBS        = msh3.lib
+!ELSEIF "$(WITH_MSH3)"=="static"
+MSH3_CFLAGS      = /DUSE_MSH3 /DMSH3_STATICLIB /I"$(MSH3_INC_DIR)"
+!IF EXISTS("$(NGHTTP2_LIB_DIR)\msh3_static.lib")
+MSH3_LIBS        = msh3_static.lib
+!ELSE
+MSH3_LIBS        = msh3.lib
+!ENDIF
+!ENDIF
 
 !IFDEF MBEDTLS_PATH
 MBEDTLS_INC_DIR  = $(MBEDTLS_PATH)\include
@@ -285,6 +307,27 @@ SSH2        = static
 !IFDEF USE_SSH2
 SSH2_CFLAGS = /DHAVE_LIBSSH2 /DHAVE_LIBSSH2_H /DLIBSSH2_WIN32 /DLIBSSH2_LIBRARY /DUSE_LIBSSH2
 SSH2_CFLAGS = $(SSH2_CFLAGS) /I$(SSH2_INC_DIR)
+!ENDIF
+
+
+!IFDEF SSH_PATH
+SSH_INC_DIR= $(SSH_PATH)\include
+SSH_LIB_DIR= $(SSH_PATH)\lib
+SSH_LFLAGS = $(SSH_LFLAGS) "/LIBPATH:$(SSH_LIB_DIR)"
+!ELSE
+SSH_LIB_DIR= $(DEVEL_LIB)
+SSH_INC_DIR= $(DEVEL_INCLUDE)
+!ENDIF
+
+!IF "$(WITH_SSH)"=="dll" || "$(WITH_SSH)"=="static"
+SSH_LIBS   = ssh.lib
+USE_SSH    = true
+SSH        = $(WITH_SSH)
+!ENDIF
+
+!IFDEF USE_SSH
+SSH_CFLAGS = /DHAVE_LIBSSH /DHAVE_LIBSSH_LIBSSH_H /DLIBSSH_WIN32 /DLIBSSH_LIBRARY /DUSE_LIBSSH /DCURL_USE_LIBSSH
+SSH_CFLAGS = $(SSH_CFLAGS) /I$(SSH_INC_DIR)
 !ENDIF
 
 
@@ -449,6 +492,11 @@ CFLAGS = $(CFLAGS) $(SSH2_CFLAGS)
 LFLAGS = $(LFLAGS) $(SSH2_LFLAGS) $(SSH2_LIBS)
 !ENDIF
 
+!IF "$(USE_SSH)"=="true"
+CFLAGS = $(CFLAGS) $(SSH_CFLAGS)
+LFLAGS = $(LFLAGS) $(SSH_LFLAGS) $(SSH_LIBS)
+!ENDIF
+
 !IF "$(USE_IDN)"=="true"
 CFLAGS = $(CFLAGS) $(IDN_CFLAGS)
 !ENDIF
@@ -464,6 +512,11 @@ CFLAGS = $(CFLAGS) $(SSPI_CFLAGS)
 !IF "$(USE_NGHTTP2)"=="true"
 CFLAGS = $(CFLAGS) $(NGHTTP2_CFLAGS)
 LFLAGS = $(LFLAGS) $(NGHTTP2_LFLAGS) $(NGHTTP2_LIBS)
+!ENDIF
+
+!IF "$(USE_MSH3)"=="true"
+CFLAGS = $(CFLAGS) $(MSH3_CFLAGS)
+LFLAGS = $(LFLAGS) $(MSH3_LFLAGS) $(MSH3_LIBS)
 !ENDIF
 
 !IF "$(GEN_PDB)"=="true"
@@ -519,8 +572,10 @@ package: $(TARGET)
 $(TARGET): $(LIB_OBJS) $(LIB_DIROBJ) $(DIRDIST)
 	@echo Using SSL: $(USE_SSL)
 	@echo Using NGHTTP2: $(USE_NGHTTP2)
+	@echo Using MSH3: $(USE_MSH3)
 	@echo Using c-ares: $(USE_CARES)
 	@echo Using SSH2: $(USE_SSH2)
+	@echo Using SSH: $(USE_SSH)
 	@echo Using ZLIB: $(USE_ZLIB)
 	@echo Using IDN:  $(USE_IDN)
 	@echo Using IPv6: $(USE_IPV6)

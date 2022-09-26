@@ -17,7 +17,7 @@
 #include "tnc_ifmap_listener.h"
 
 #include <daemon.h>
- 
+
 typedef struct private_tnc_ifmap_plugin_t private_tnc_ifmap_plugin_t;
 
 /**

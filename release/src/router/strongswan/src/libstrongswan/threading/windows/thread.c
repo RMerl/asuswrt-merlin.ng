@@ -87,7 +87,7 @@ struct private_thread_t {
 	bool cancelability;
 
 	/**
-	 * Has the thread been cancelled by thread->cancel()?
+	 * Has the thread been canceled by thread->cancel()?
 	 */
 	bool canceled;
 

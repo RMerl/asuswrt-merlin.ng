@@ -60,7 +60,11 @@ static struct time_mapping_s time_mapping_list[] = {
 	{ "RT-AX55",    50,     120,     60},
 	{ "RT-AX58U",   50,     120,     60},
 	{ "RT-AX58U_V2",50,     120,     60},
+#ifndef TUFAX3000_V2
 	{ "TUF-AX3000", 50,     120,     60},
+#else
+	{ "TUF-AX3000", 50,     120,     90},
+#endif
 	{ "TUF-AX3000_V2",50,   120,     90},
 	{ "TUF-AX5400", 50,     120,     60},
 	{ "RT-AX82U",   50,     120,     60},
@@ -86,9 +90,13 @@ static struct time_mapping_s time_mapping_list[] = {
 	{ "RT-AX86U_PRO",    50,   120,     60},
 	{ "XT8_V2",   50,     120,     60},
 	{ "GT10", 50,     120,     90},
+	{ "GT6",  50,     120,     90},
 	{ "RT-AX3000N", 50,     120,     60},
 	{ "RT-AX82U_V2",50,     120,     60},
 	{ "TUF-AX5400_V2",50,   120,     60},
+	{ "BM68",   50,     120,     60},
+	{ "RT-AX88U_PRO", 50,    120,     60},
+	{ "ET8_V2",   50,     120,     60},
 	/* END */
 	{ NULL, 0, 0, 0 }
 };

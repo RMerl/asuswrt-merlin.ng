@@ -64,7 +64,7 @@ my $moon_key = "-----BEGIN RSA PRIVATE KEY-----\n" .
     "YeivMDc9hj0YLXA47ryQHTx4vB5Nv3TI/LoUG6VrCvZvocQOXe/n7TguwAjJj7ef" .
     "E55Gy8lXDRENyJMP1vif3N2iH8eQ1ASf8k/+gnBNkjSlYSSQUDfV\n" .
     "-----END RSA PRIVATE KEY-----\n";
- 
+
 my $moon_cert = "-----BEGIN CERTIFICATE-----\n" .
     "MIIEIjCCAwqgAwIBAgIBKzANBgkqhkiG9w0BAQsFADBFMQswCQYDVQQGEwJDSDEZ" .
     "MBcGA1UEChMQTGludXggc3Ryb25nU3dhbjEbMBkGA1UEAxMSc3Ryb25nU3dhbiBS" .
@@ -283,7 +283,7 @@ my %child = (
     local_ts  => \@l_ts,
     remote_ts => \@r_ts,
     esp_proposals => \@esp,
-);  
+);
 my %children = ( 'net-net' => \%child );
 my @l_addrs = ( '192.168.0.1' );
 my @r_addrs = ( '192.168.0.2' );
@@ -640,7 +640,7 @@ print $res ? "ok\n" : "failed: $errmsg\n";
 # close vici socket
 close($socket);
 
-=head1 COPYRIGHT AND LICENCE
+=head1 COPYRIGHT AND LICENSE
 
 Copyright (c) 2015 Andreas Steffen
 

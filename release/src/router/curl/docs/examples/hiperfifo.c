@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2021, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -17,6 +17,8 @@
  *
  * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
  * KIND, either express or implied.
+ *
+ * SPDX-License-Identifier: curl
  *
  ***************************************************************************/
 /* <DESC>
@@ -447,13 +449,13 @@ int main(int argc, char **argv)
   curl_multi_setopt(g.multi, CURLMOPT_TIMERFUNCTION, multi_timer_cb);
   curl_multi_setopt(g.multi, CURLMOPT_TIMERDATA, &g);
 
-  /* we don't call any curl_multi_socket*() function yet as we have no handles
+  /* we do not call any curl_multi_socket*() function yet as we have no handles
      added! */
 
   event_base_dispatch(g.evbase);
 
-  /* this, of course, won't get called since only way to stop this program is
-     via ctrl-C, but it is here to show how cleanup /would/ be done. */
+  /* this, of course, will not get called since only way to stop this program
+     is via ctrl-C, but it is here to show how cleanup /would/ be done. */
   clean_fifo(&g);
   event_del(&g.timer_event);
   event_base_free(g.evbase);

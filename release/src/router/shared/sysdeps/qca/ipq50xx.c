@@ -1048,7 +1048,7 @@ rtkswitch_Reset_Storm_Control(void)
 	return 0;
 }
 
-void ATE_port_status(phy_info_list *list)
+void ATE_port_status(int verbose, phy_info_list *list)
 {
 	int i, len;
 	char buf[50];
@@ -1070,7 +1070,8 @@ void ATE_port_status(phy_info_list *list)
 		else
 			; // break;
 	}
-	puts(buf);
+	if (verbose)
+		puts(buf);
 }
 
 /* Callback function which is used to fin brvX interface, X must be number.

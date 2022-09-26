@@ -14,7 +14,7 @@
  */
 
 /**
- * @defgroup ietf_attr_port_filtert ietf_attr_port_filter
+ * @defgroup ietf_attr_port_filter ietf_attr_port_filter
  * @{ @ingroup ietf_attr
  */
 

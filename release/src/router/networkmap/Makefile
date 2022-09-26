@@ -1,13 +1,15 @@
 include ../.config
 
 EXEC = networkmap
-OBJS = function.o connections.o sm.o networkmap.o
+OBJS = function.o connections.o sm.o download.o shared_func.o protect_name.o networkmap.o
 
 ifeq ($(HND_ROUTER),y)
 CFLAGS += -Werror=return-type -Werror=uninitialized -Wno-date-time 
 endif
 CFLAGS  += -I. -I$(TOP)/shared -I$(TOP)/kernel_header/include -I$(SRCBASE)/include -I$(TOP)/json-c
 CFLAGS  += -s -O2 -DNO_PARALLEL
+CFLAGS  += -I$(TOP)/libasc
+CFLAGS  += -I$(TOP)/curl/include
 
 ifeq ($(RTCONFIG_RALINK),y)
 CFLAGS += -I$(TOP)/shared/sysdeps/ralink -I$(TOP)/wireless_tools
@@ -40,6 +42,14 @@ ifeq ($(RTCONFIG_QTN),y)
 CFLAGS += -I$(TOP)/libqcsapi_client -I$(TOP)/shared/sysdeps/qtn
 LDFLAGS += -L$(TOP)/libqcsapi_client -lqcsapi_client
 endif
+endif
+
+LDFLAGS += -L$(TOP)/curl/lib/.libs -lcurl -L$(TOP)/
+LDFLAGS += -L$(TOP)/libasc -lasc
+
+ifeq ($(RTCONFIG_TR069),y)
+LDFLAGS += -L$(TOP)/libssh2-1.9.0/src/.libs -lssh2
+LDFLAGS += -L$(TOP)/zlib -lz
 endif
 
 ifeq ($(RTCONFIG_QSR10G),y)
@@ -189,7 +199,10 @@ ifneq ($(wildcard $(SRCBASE)/router/networkmap/arpstorm),)
 endif
 endif
 	install -d $(INSTALLDIR)/usr/networkmap
-	cp -f networkmap.oui.js $(INSTALLDIR)/usr/networkmap/networkmap.oui.js
+	cp -f db/networkmap.oui.js $(INSTALLDIR)/usr/networkmap/networkmap.oui.js
+	cp -f db/nmp_conv_type.js $(INSTALLDIR)/usr/networkmap/nmp_conv_type.js
+	cp -f db/nmp_vendor_type.js $(INSTALLDIR)/usr/networkmap/nmp_vendor_type.js
+	cp -f db/nmp_bwdpi_type.js $(INSTALLDIR)/usr/networkmap/nmp_bwdpi_type.js
 
 clean:
 ifneq ($(AC2900),y)

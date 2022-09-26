@@ -446,7 +446,7 @@ static unsigned calc_name_len(const char *name)
 	uni_stat_t uni_stat;
 
 	// TODO: quote tab as \t, etc, if -Q
-	name = printable_string(&uni_stat, name);
+	name = printable_string2(&uni_stat, name);
 
 	if (!(option_mask32 & OPT_Q)) {
 		return uni_stat.unicode_width;
@@ -475,7 +475,7 @@ static unsigned print_name(const char *name)
 	uni_stat_t uni_stat;
 
 	// TODO: quote tab as \t, etc, if -Q
-	name = printable_string(&uni_stat, name);
+	name = printable_string2(&uni_stat, name);
 
 	if (!(option_mask32 & OPT_Q)) {
 		fputs(name, stdout);

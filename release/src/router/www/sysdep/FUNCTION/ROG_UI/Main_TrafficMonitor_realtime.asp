@@ -267,7 +267,7 @@ function setUnit(unit){
         			<tr>
         				<td>
 							<span id="tab-area"></span>
-							<span id="iftitle" style="font-weight: bold; color: #91071F; position: absolute; top: 372px; left: 45%; min-width: 180px;"></span>
+							<span id="iftitle" class="iftitle"></span>
 							<!--========= svg =========-->
 							<!--[if IE]>
 								<div id="svg-table" align="left" class="IE8HACK">

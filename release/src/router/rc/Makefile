@@ -1,3 +1,4 @@
+
 include ../common.mak
 
 ifeq ($(HND_ROUTER_AX),y)
@@ -225,6 +226,10 @@ CFLAGS  += -I$(TOP)/nt_center/actMail
 CFLAGS  += -DASUSWRT_SDK
 endif
 
+ifeq ($(RTCONFIG_ASD),y)
+CFLAGS  += -I$(TOP)/asd
+endif
+
 ifeq ($(RTCONFIG_PROTECTION_SERVER),y)
 CFLAGS  += -I$(TOP)/protect_srv/include
 endif
@@ -336,6 +341,7 @@ OBJS += obd-broadcom.o
 ifeq ($(RTCONFIG_BHCOST_OPT),y)
 OBJS += amas-ssd-broadcom.o
 endif
+OBJS += amas-ssd-cd-broadcom.o
 endif
 ifeq ($(RTCONFIG_BCM_MFG),y)
 ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-AC68U RT-AC3200 4G-AC68U GT-AC2900 RT-AX58U TUF-AX3000 TUF-AX5400 RT-AX82U RT-AX55 RT-AX1800 DSL-AX82U GS-AX3000 GS-AX5400))
@@ -388,6 +394,9 @@ ifeq ($(RTCONFIG_AMAS),y)
 OBJS += obd-qca.o
 ifeq ($(RTCONFIG_BHCOST_OPT),y)
 OBJS += amas-ssd-qca.o
+endif
+ifeq ($(RTCONFIG_CONNDIAG),y)
+OBJS += amas-ssd-cd-qca.o
 endif
 endif
 ifeq ($(RTCONFIG_WIFI_SON),y)
@@ -484,6 +493,7 @@ endif
 
 ifeq ($(RTCONFIG_TPVPN),y)
 CFLAGS += -I$(TOP)/libasc
+CFLAGS += -I$(TOP)/libdisk
 LDFLAGS += -L$(TOP)/libasc -lasc
 OBJS += tpvpn.o
 endif
@@ -496,6 +506,9 @@ ifeq ($(RTCONFIG_PARENTALCTRL),y)
 OBJS += pc.o
 OBJS += pc_block.o
 OBJS += pc_tmp.o
+ifeq ($(RTCONFIG_PC_REWARD),y)
+OBJS += pc_reward.o
+endif
 endif
 
 ifeq ($(RTCONFIG_INTERNETCTRL),y)
@@ -512,7 +525,7 @@ ifeq ($(RTCONFIG_FRS_LIVE_UPDATE),y)
 OBJS += frs_service.o
 endif
 
-ifeq ($(RTCONFIG_ASUSDDNS_ACCOUNT_BASE),y)
+ifeq ($(RTCONFIG_ACCOUNT_BINDING),y)
 OBJS += asus_ddns.o
 endif
 
@@ -665,7 +678,7 @@ ifeq ($(RTCONFIG_IPERF),y)
 OBJS += monitor.o
 endif
 
-ifeq ($(or $(RTCONFIG_FRS_LIVE_UPDATE),$(RTCONFIG_FRS_FEEDBACK),$(RTCONFIG_URLFW),$(RTCONFIG_SOFTWIRE46)),y)
+ifeq ($(or $(RTCONFIG_FRS_LIVE_UPDATE),$(RTCONFIG_FRS_FEEDBACK),$(RTCONFIG_URLFW),$(RTCONFIG_SOFTWIRE46),$(RTCONFIG_ACCOUNT_BINDING)),y)
 CFLAGS += -I$(TOP)/curl-7.21.7/include
 LDFLAGS += -L$(TOP)/curl-7.21.7/lib/.libs -lcurl
 ifeq ($(RTCONFIG_TR069),y)
@@ -779,6 +792,12 @@ ifeq ($(RTCONFIG_AMAS_WGN), y)
 OBJS += amas_wgn.o
 endif
 
+#Tencent download
+ifeq ($(RTCONFIG_TC_DOWNLOAD), y)
+OBJS += tc_utils.o
+CFLAGS += -D _FILE_OFFSET_BITS=64
+endif
+
 ifeq ($(RTCONFIG_BCMARM),y)
 ifeq ($(RTCONFIG_QTN),y)
 vpath %.c sysdeps sysdeps/broadcom sysdeps/qtn $(TOP)/libqcsapi_client/qcsapi_rpc_common/client $(TOP)/sysdeps/qtn $(SRCBASE)/shared
@@ -844,6 +863,9 @@ endif
 ifeq ($(RTCONFIG_BHCOST_OPT),y)
 OBJS += amas_ssd.o amas_ipc.o
 endif
+ifeq ($(RTCONFIG_CONNDIAG),y)
+OBJS += amas_ssd_cd.o
+endif
 ifeq ($(RTCONFIG_PRELINK),y)
 OBJS += amas_prelink.o
 endif
@@ -865,6 +887,12 @@ endif
 
 CFLAGS += -I$(TOP)/wlceventd
 LDFLAGS2 = $(LDFLAGS)
+
+## added by Andrew (2011/10/08)
+OBJS += alt_watchdog.o
+CFLAGS += -I$(TOP)/libev-4.33
+LDFLAGS2 += -L$(TOP)/libev-4.33/.libs -lev
+## end of add
 
 ifeq ($(RTCONFIG_QCA_LBD),y)
 OBJS += $(if $(wildcard sysdeps/qca/lbd-qca.c),lbd-qca.o,prebuild/lbd-qca.o)
@@ -888,6 +916,12 @@ endif
 CFLAGS += -I$(TOP)/acsd$(BCMEX)$(EX7)
 CFLAGS  += -I$(TOP)/sqlite
 LDFLAGS2 += -L$(TOP)/sqlite/.libs -lsqlite3
+
+ifeq ($(RTCONFIG_LIB_CODB),y)
+CFLAGS += -I$(TOP)/libcodb
+LDFLAGS2 += -L$(TOP)/libcodb -lcodb
+endif
+
 LDFLAGS2 += -L. -lconn_diag
 
 OBJS += conn_diag.o
@@ -931,6 +965,14 @@ ifeq ($(RTCONFIG_BCM_OAM),y)
 OBJS += oam.o
 endif
 
+ifeq ($(RTCONFIG_SCHED_DAEMON),y)
+OBJS += sched_daemon.o
+endif
+
+ifeq ($(RTCONFIG_TIME_QUOTA),y)
+OBJS += time_quota.o
+endif
+
 ifeq ($(RTCONFIG_WIREGUARD),y)
 CFLAGS += -DRTCONFIG_CROND
 OBJS += wireguard.o
@@ -938,6 +980,10 @@ endif
 
 ifeq ($(RTCONFIG_QCA_PLC2),y)
 OBJS += detect_plc.o
+endif
+
+ifeq ($(RTCONFIG_IG_SITE2SITE),y)
+OBJS += ig_s2s_client.o
 endif
 
 all: PB rc $(if $(RTCONFIG_BRCM_HOSTAPD), $(WPS_PBCD)) init.prep
@@ -1016,6 +1062,7 @@ endif
 #	@cd $(INSTALLDIR)/sbin && ln -sf rc ots
 	@cd $(INSTALLDIR)/sbin && ln -sf rc watchdog
 	@cd $(INSTALLDIR)/sbin && ln -sf rc check_watchdog
+	@cd $(INSTALLDIR)/sbin && ln -sf rc alt_watchdog
 ifeq ($(RTCONFIG_SINGLEIMG_B),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc fwupg_flashing
 endif
@@ -1252,6 +1299,9 @@ ifeq ($(RTCONFIG_PARENTALCTRL),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc pc
 	@cd $(INSTALLDIR)/sbin && ln -sf rc pc_block
 	@cd $(INSTALLDIR)/sbin && ln -sf rc pc_tmp
+ifeq ($(RTCONFIG_PC_REWARD),y)
+	@cd $(INSTALLDIR)/sbin && ln -sf rc pc_reward
+endif
 endif
 ifeq ($(RTCONFIG_INTERNETCTRL),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc ic
@@ -1381,6 +1431,10 @@ ifeq ($(RTCONFIG_BHCOST_OPT),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc amas_ipc
 	@cd $(INSTALLDIR)/sbin && ln -sf rc amas_misc
 endif
+ifeq ($(RTCONFIG_CONNDIAG),y)
+	@cd $(INSTALLDIR)/sbin && ln -sf rc amas_ssd_cd
+	@cd $(INSTALLDIR)/sbin && ln -sf rc amas_portstatus
+endif
 ifeq ($(RTCONFIG_CFGSYNC),y)
 ifeq ($(HND_ROUTER_AX),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc rmd
@@ -1419,6 +1473,9 @@ ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-AX82U RT-AX82U_V2 GS-AX3000 GS-AX5
 	@cd $(INSTALLDIR)/sbin && ln -sf rc ledg
 	@cd $(INSTALLDIR)/sbin && ln -sf rc ledbtn
 endif
+ifeq ($(DSL_AX82U),y)
+	@cd $(INSTALLDIR)/sbin && ln -sf rc ledg
+endif
 
 ifeq ($(GTAX6000),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc antled
@@ -1433,7 +1490,16 @@ ifeq ($(RTCONFIG_QCA_PLC2),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc detect_plc
 endif
 
-ifeq ($(RTCONFIG_ASUSDDNS_ACCOUNT_BASE),y)
+ifeq ($(RTCONFIG_SCHED_DAEMON),y)
+	@cd $(INSTALLDIR)/sbin && ln -sf rc sched_daemon
+endif
+
+# tencent download
+ifeq ($(RTCONFIG_TC_DOWNLOAD), y)
+	@cd $(INSTALLDIR)/sbin && ln -sf rc tc_download
+endif
+
+ifeq ($(RTCONFIG_ACCOUNT_BINDING),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc update_asus_ddns_token
 endif
 	@cd $(INSTALLDIR)/sbin && ln -sf rc collect_debuglog
@@ -1449,6 +1515,20 @@ endif
 
 ifeq ($(RTCONFIG_ISP_CUSTOMIZE_TOOL),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc tci
+	@rm -rf $(INSTALLDIR)/../rom/${EX_ROM}/ict/
+	@if [ -f $(TOP)/rom/ict/settings.ini ] ; then \
+		install -D $(TOP)/rom/ict/settings.ini $(INSTALLDIR)/../rom/${EX_ROM}/ict/settings.ini ; \
+	fi;
+	@if [ -f $(TOP)/rom/ict/settings.cfg ] ; then \
+		install -D $(TOP)/rom/ict/settings.cfg $(INSTALLDIR)/../rom/${EX_ROM}/ict/settings.cfg ; \
+	fi;
+	@if [ -f $(TOP)/rom/ict/package.tar.gz ] ; then \
+		install -D $(TOP)/rom/ict/package.tar.gz $(INSTALLDIR)/../rom/${EX_ROM}/ict/package.tar.gz ; \
+	fi;
+endif
+
+ifeq ($(RTCONFIG_IG_SITE2SITE),y)
+	@cd $(INSTALLDIR)/sbin && ln -sf rc ig_s2s_client
 endif
 
 clean:
@@ -1603,6 +1683,14 @@ ifneq ($(wildcard ./prebuild/amas-ssd-broadcom),)
 amas-ssd-broadcom:
 	@-cp -f ./prebuild/amas-ssd-broadcom .
 endif
+ifneq ($(wildcard ./prebuild/amas-ssd-cd-broadcom),)
+amas-ssd-cd-broadcom:
+	@-cp -f ./prebuild/amas-ssd-cd-broadcom .
+endif
+ifneq ($(wildcard ./prebuild/amas-ssd-cd-broadcom.o),)
+amas-ssd-cd-broadcom.o:
+	@-cp -f ./prebuild/amas-ssd-cd-broadcom.o .
+endif
 endif
 endif
 
@@ -1648,6 +1736,10 @@ endif
 ifneq ($(wildcard ./prebuild/amas-ssd-qca.o),)
 amas-ssd-qca:
 	@-cp -f ./prebuild/amas-ssd-qca.o .
+endif
+ifneq ($(wildcard ./prebuild/amas-ssd-cd-qca.o),)
+amas-ssd-cd-qca:
+	@-cp -f ./prebuild/amas-ssd-cd-qca.o .
 endif
 endif
 endif
@@ -1833,6 +1925,10 @@ ifneq ($(wildcard ./prebuild/amas_ssd.o),)
 amas_ssd.o:
 	@-cp -f ./prebuild/amas_ssd.o .
 endif
+ifneq ($(wildcard ./prebuild/amas_ssd_cd.o),)
+amas_ssd_cd.o:
+	@-cp -f ./prebuild/amas_ssd_cd.o .
+endif
 ifneq ($(wildcard ./prebuild/amas_ipc.o),)
 amas_ipc.o:
 	@-cp -f ./prebuild/amas_ipc.o .
@@ -1865,10 +1961,24 @@ tpvpn.o:
 endif
 endif
 
+ifeq ($(RTCONFIG_SCHED_DAEMON),y)
+ifneq ($(wildcard ./prebuild/sched_daemon.o),)
+sched_daemon.o.o:
+	@-cp -f ./prebuild/sched_daemon.o .
+endif
+endif
+
 ifeq ($(GTAX6000),y)
 ifneq ($(wildcard ./prebuild/antled.o),)
 broadcom.o:
 	@-cp -f ./prebuild/antled.o .
+endif
+endif
+
+ifeq ($(RTCONFIG_IG_SITE2SITE),y)
+ifneq ($(wildcard ./prebuild/ig_s2s_client.o),)
+ig_s2s_client.o:
+	@-cp -f ./prebuild/ig_s2s_client.o .
 endif
 endif
 

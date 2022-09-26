@@ -1263,6 +1263,8 @@ function card_confirm(event) {
 					if(typeof app_group_tag != "undefined")	onEditClient[6] = app_group_tag;
 					var app_age_tag = originalCustomListArray[i].split('>')[7]; // for app age tag
 					if(typeof app_age_tag != "undefined")	onEditClient[7] = app_age_tag;
+					var app_groupid_tag = originalCustomListArray[i].split('>')[8]; // for app groupid tag
+					if(typeof app_groupid_tag != "undefined")	onEditClient[8] = app_groupid_tag;
 					originalCustomListArray.splice(i, 1); // remove the selected client from original list
 				}
 			}

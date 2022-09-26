@@ -305,9 +305,17 @@ static eap_payload_t* server_process_eap(private_eap_authenticator_t *this,
 				this->method->destroy(this->method);
 				return server_initiate_eap(this, FALSE);
 			}
-			if (this->method->get_msk(this->method, &this->msk) == SUCCESS)
+			switch (this->method->get_msk(this->method, &this->msk))
 			{
-				this->msk = chunk_clone(this->msk);
+				case SUCCESS:
+					this->msk = chunk_clone(this->msk);
+					break;
+				case NOT_SUPPORTED:
+					break;
+				case FAILED:
+				default:
+					DBG1(DBG_IKE, "failed to establish MSK");
+					goto failure;
 			}
 			if (vendor)
 			{
@@ -326,6 +334,7 @@ static eap_payload_t* server_process_eap(private_eap_authenticator_t *this,
 			return eap_payload_create_code(EAP_SUCCESS, in->get_identifier(in));
 		case FAILED:
 		default:
+failure:
 			/* type might have changed for virtual methods */
 			type = this->method->get_type(this->method, &vendor);
 			if (vendor)
@@ -661,9 +670,24 @@ METHOD(authenticator_t, process_client, status_t,
 				uint32_t vendor;
 				auth_cfg_t *cfg;
 
-				if (this->method->get_msk(this->method, &this->msk) == SUCCESS)
+				if (!this->method)
 				{
-					this->msk = chunk_clone(this->msk);
+					DBG1(DBG_IKE, "received unexpected %N",
+						 eap_code_names, eap_payload->get_code(eap_payload));
+					return FAILED;
+				}
+				switch (this->method->get_msk(this->method, &this->msk))
+				{
+					case SUCCESS:
+						this->msk = chunk_clone(this->msk);
+						break;
+					case NOT_SUPPORTED:
+						break;
+					case FAILED:
+					default:
+						DBG1(DBG_IKE, "received %N but failed to establish MSK",
+							 eap_code_names, eap_payload->get_code(eap_payload));
+						return FAILED;
 				}
 				type = this->method->get_type(this->method, &vendor);
 				if (vendor)

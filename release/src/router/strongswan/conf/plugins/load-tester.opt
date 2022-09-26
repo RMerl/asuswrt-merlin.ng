@@ -25,7 +25,7 @@ charon.plugins.load-tester.crl
 	certificates.
 
 charon.plugins.load-tester.delay = 0
-	Delay between initiatons for each thread.
+	Delay between initiations for each thread.
 
 charon.plugins.load-tester.delete_after_established = no
 	Delete an IKE_SA as soon as it has been established.
@@ -66,7 +66,7 @@ charon.plugins.load-tester.initiators = 0
 	Number of concurrent initiator threads to use in load test.
 
 charon.plugins.load-tester.initiator_auth = pubkey
-	Authentication method(s) the intiator uses.
+	Authentication method(s) the initiator uses.
 
 charon.plugins.load-tester.initiator_id =
 	Initiator ID used in load test.
@@ -119,7 +119,7 @@ charon.plugins.load-tester.responder_tsr = initiator_tsr
 	Traffic selector on responder side, as narrowed by responder.
 
 charon.plugins.load-tester.request_virtual_ip = no
-	Request an INTERNAL_IPV4_ADDR from the server.
+	Request an INTERNAL_IPV4_ADDR and INTERNAL_IPV6_ADDR from the server.
 
 charon.plugins.load-tester.shutdown_when_complete = no
 	Shutdown the daemon after all IKE_SAs have been established.

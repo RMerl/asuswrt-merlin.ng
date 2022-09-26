@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2013 Tobias Brunner
+ * Copyright (C) 2008-2019 Tobias Brunner
  * Copyright (C) 2005-2008 Martin Willi
  * Copyright (C) 2005 Jan Hutter
  * HSR Hochschule fuer Technik Rapperswil
@@ -114,7 +114,7 @@ bool chunk_write(chunk_t chunk, char *path, mode_t mask, bool force);
 bool chunk_from_fd(int fd, chunk_t *chunk);
 
 /**
- * mmap() a file to a chunk
+ * mmap() a file to a chunk.
  *
  * The returned chunk structure is allocated from heap, but it must be freed
  * through chunk_unmap(). A user may alter the chunk ptr or len, but must pass
@@ -129,15 +129,28 @@ bool chunk_from_fd(int fd, chunk_t *chunk);
 chunk_t *chunk_map(char *path, bool wr);
 
 /**
- * munmap() a chunk previously mapped with chunk_map()
+ * munmap() a chunk previously mapped with chunk_map().
  *
  * When unmapping a writeable map, the return value should be checked to
  * ensure changes landed on disk.
  *
  * @param chunk			pointer returned from chunk_map()
- * @return				TRUE of changes written back to file
+ * @return				TRUE if changes written back to file
  */
 bool chunk_unmap(chunk_t *chunk);
+
+/**
+ * munmap() a chunk previously mapped with chunk_map() after clearing it.
+ *
+ * @note Writable maps (i.e. created with wr = TRUE) are NOT cleared.
+ *
+ * When unmapping a writeable map, the return value should be checked to
+ * ensure changes landed on disk.
+ *
+ * @param chunk         pointer returned from chunk_map()
+ * @return              TRUE if changes written back to file
+ */
+bool chunk_unmap_clear(chunk_t *chunk);
 
 /**
  * Convert a chunk of data to hex encoding.
@@ -292,6 +305,16 @@ static inline chunk_t chunk_skip_zero(chunk_t chunk)
 	return chunk;
 }
 
+/**
+ * Copy the data from src to dst, left-padded with chr if dst is longer,
+ * otherwise data is copied truncated on the left.
+ *
+ * @param dst			data is copied here
+ * @param src			data is copied from here
+ * @param chr			value to use for padding if necessary
+ * @return				the destination chunk
+ */
+chunk_t chunk_copy_pad(chunk_t dst, chunk_t src, u_char chr);
 
 /**
  *  Compare two chunks, returns zero if a equals b
@@ -347,7 +370,7 @@ bool chunk_increment(chunk_t chunk);
  *
  * @param chunk			chunk to check for printability
  * @param sane			pointer where sane version is allocated, or NULL
- * @param replace		character to use for replaceing unprintable characters
+ * @param replace		character to use for replacing unprintable characters
  * @return				TRUE if all characters in chunk are printable
  */
 bool chunk_printable(chunk_t chunk, chunk_t *sane, char replace);

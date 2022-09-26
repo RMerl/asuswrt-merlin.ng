@@ -28,6 +28,7 @@ enum fdb_node_wl_attr {
 	FDB_ATTR_WL_MAX
 };
 
+#if 0
 typedef struct fdb_node_s {
 #if defined(RTAX89U) || defined(GTAXY16000)
     uint8_t sw[2];
@@ -40,7 +41,7 @@ typedef struct fdb_node_s {
 } fdb_node_t;
 
 extern void fdb_list_free(struct list_head *list);
-
-
+extern void fdb_list_parse(struct list_head *list);
+#endif
 
 #endif // __NFFDB_H__

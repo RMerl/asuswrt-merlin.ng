@@ -8,6 +8,7 @@
 #include <syslog.h>
 #include <errno.h>
 #include <sys/stat.h>
+#include <network_utility.h>
 #include "rc_ipsec.h"
 
 /* for struct utsname */
@@ -601,6 +602,7 @@ void rc_strongswan_conf_set()
 		"	send_vendor_id = yes\n"
 		"	max_packet = 32000\n"
 		"	interfaces_ignore = %s\n"
+		"	install_routes = no\n"
 		"	starter { load_warning = no }\n"
 		"	load_modular = yes\n"
 		"	i_dont_care_about_security_and_use_aggressive_mode_psk = yes\n"
@@ -1084,6 +1086,8 @@ void rc_ipsec_gen_cert(int skip_checking)
     }
     chmod(FILE_PATH_CA_ETC"generate.sh", 0777);
     system(FILE_PATH_CA_ETC"generate.sh");
+    /* 0:nvram 1:openvpn 2:ipsec 3:usericon */
+    sync_profile_update_time(2);
 	if(check_if_file_exist(FILE_PATH_CA_ETC FILE_NAME_CERT_PEM)&&check_if_file_exist(FILE_PATH_CA_ETC FILE_NAME_SVR_PRIVATE_KEY)&&check_if_file_exist(FILE_PATH_CA_ETC FILE_NAME_SVR_CERT_PEM)){
 		DBG(("CA files are generated properly.\n"));
 		logmessage("ipsec", "CA files are generated properly.\n");
@@ -1164,10 +1168,11 @@ void rc_ipsec_secrets_set()
 	char ipsec_client_list_name[SZ_MIN] = {0}, buf[SZ_MAX] = {0}, s_tmp[SZ_MAX] = {0};
 	char auth2meth[SZ_MIN] = {0};
 #ifdef RTCONFIG_INSTANT_GUARD
-	char ig_client_list[1024] = {0}, ig_client_buf[128] = {0};
+	char ig_client_list[2048] = {0}, ig_client_buf[128] = {0}, ig_guest_client_list[4096] = {0};
 	char *desc = NULL, *ts = NULL, *active = NULL;
+	char *lan_access = NULL;
 #endif
-	char ipsec_client_list_buf[1024] = {0}, ig_client_list_tmp[1024] = {0};
+	char ipsec_client_list_buf[1024] = {0}, ig_client_list_tmp[4096] = {0};
 	char *name = NULL, *passwd = NULL;
 	char word[1024] = {0}, *word_next = NULL;
 	int i,prof_count = 0, unit;
@@ -1238,12 +1243,14 @@ void rc_ipsec_secrets_set()
 				if(nvram_get_int("ipsec_ig_enable") == 1)
 				{
 					strlcpy(ig_client_list, nvram_safe_get("ig_client_list"), sizeof(ig_client_list));
+                    strlcpy(ig_guest_client_list, nvram_safe_get("ig_guest_client_list"), sizeof(ig_guest_client_list));
 				}
 #endif
 				//if(NULL != nvram_safe_get(ipsec_client_list_name)){
 				if(strlen(nvram_safe_get(ipsec_client_list_name)) > 0
 #ifdef RTCONFIG_INSTANT_GUARD
 				|| strlen(ig_client_list) > 0
+                || strlen(ig_guest_client_list) > 0
 #endif
 				){
 					memset(buf, 0, sizeof(char) * SZ_MAX);
@@ -1281,6 +1288,16 @@ void rc_ipsec_secrets_set()
 								strlcat(ig_client_list_tmp, ig_client_buf, sizeof(ig_client_list_tmp));
 							}
 						}
+                        strlcpy(ig_guest_client_list, nvram_safe_get("ig_guest_client_list"), sizeof(ig_guest_client_list));
+                        foreach_60(word, ig_guest_client_list, word_next){
+                            if((vstrsep(word, ">", &name, &passwd, &desc, &ts, &active, &lan_access)) != 6)
+                                continue;
+                            if(active != NULL && !strcmp(active, "1")){
+                                snprintf(ig_client_buf, sizeof(ig_client_buf), "\n%s : %s %s"
+                                        , name, (IKE_TYPE_V2 == prof[prof_count][i].ike) ? "EAP" : "XAUTH", passwd);
+                                strlcat(ig_client_list_tmp, ig_client_buf, sizeof(ig_client_list_tmp));
+                            }
+                        }
 					}
 #endif
 					fprintf(fp, "\n#ipsec_client_list_%d\n\n%s%s\n", i+1, s_tmp, ig_client_list_tmp);
@@ -1297,7 +1314,7 @@ void rc_ipsec_secrets_set()
 void ipsec_conf_local_set(FILE *fp, int prof_idx, ipsec_prof_type_t prof_type)
 {
 	char left_ipaddr[16];
-	char tmp_str[12];
+	char tmp_str[16];
 	int unit = 0;
 	char word[80], *next;
 	/*char lan_class[32];
@@ -1328,8 +1345,8 @@ void ipsec_conf_local_set(FILE *fp, int prof_idx, ipsec_prof_type_t prof_type)
 			}
 			unit ++;
 		}
-		sprintf(tmp_str,"wan%d_ipaddr", unit);
-		strcpy(left_ipaddr, nvram_safe_get(tmp_str));
+		snprintf(tmp_str, sizeof(tmp_str), "wan%d_ipaddr", unit);
+		snprintf(left_ipaddr, sizeof(left_ipaddr), "%s", nvram_safe_get(tmp_str));
 	}
 	
 	if(0 != strlen(left_ipaddr) && 0 != strcmp(left_ipaddr,"0.0.0.0"))
@@ -1338,6 +1355,18 @@ void ipsec_conf_local_set(FILE *fp, int prof_idx, ipsec_prof_type_t prof_type)
 		fprintf(fp, "  left=%%defaultroute\n  #receive web value#left=%s\n", prof[prof_type][prof_idx].local_pub_ip);
 	
 	
+	if (VPN_TYPE_HOST_NET_CLI == prof[prof_type][prof_idx].vpn_type) {
+		fprintf(fp, "  leftsourceip=%%config4,%%config6\n");
+		fprintf(fp, "  leftupdown=\"%s %d %u\"\n", FILE_PATH_IPSEC_UPDOWN, prof_idx + 1, prof[prof_type][prof_idx].vpn_type);
+	}
+	else if ( (VPN_TYPE_NET_NET_CLI == prof[prof_type][prof_idx].vpn_type)
+			|| (VPN_TYPE_NET_NET_SVR == prof[prof_type][prof_idx].vpn_type)
+			|| (VPN_TYPE_NET_NET_PEER == prof[prof_type][prof_idx].vpn_type)
+	) {
+		fprintf(fp, "  leftsubnet=%s\n", prof[prof_type][prof_idx].local_subnet);
+		fprintf(fp, "  leftupdown=\"%s %d %u\"\n", FILE_PATH_IPSEC_UPDOWN, prof_idx + 1, prof[prof_type][prof_idx].vpn_type);
+	}
+	else {
 	fprintf(fp, "  leftsubnet=%s\n"
                 "  leftfirewall=%s\n  #interface=%s\n"
                 , (VPN_TYPE_HOST_NET == prof[prof_type][prof_idx].vpn_type) ?
@@ -1346,6 +1375,7 @@ void ipsec_conf_local_set(FILE *fp, int prof_idx, ipsec_prof_type_t prof_type)
                    (prof[prof_type][prof_idx].traversal == 1)) ? "yes" : "no"
                 , prof[prof_type][prof_idx].local_public_interface
            );
+	}
     if((0 != prof[prof_type][prof_idx].local_port) && (nvram_get_int("ipsec_isakmp_port") != prof[prof_type][prof_idx].local_port) &&
        (nvram_get_int("ipsec_nat_t_port") != prof[prof_type][prof_idx].local_port)){
         fprintf(fp, "  leftprotoport=17/%d\n", prof[prof_type][prof_idx].local_port);
@@ -1366,6 +1396,12 @@ void ipsec_conf_local_set(FILE *fp, int prof_idx, ipsec_prof_type_t prof_type)
        (IPSEC_AUTH2_TYP_DIS != prof[prof_type][prof_idx].xauth)){
         fprintf(fp, "  rightauth2=%s\n", prof[prof_type][prof_idx].rightauth2_method);
     }
+	else if((VPN_TYPE_HOST_NET_CLI == prof[prof_type][prof_idx].vpn_type)
+		&& (IKE_TYPE_V1 == prof[prof_type][prof_idx].ike)
+		&& (IPSEC_AUTH2_TYP_DIS != prof[prof_type][prof_idx].xauth)
+		){
+		fprintf(fp, "  leftauth2=xauth\n");
+	}
     if((0 != strcmp(prof[prof_type][prof_idx].local_id, "null")) && 
        ('\0' != prof[prof_type][prof_idx].local_id[0])){
         fprintf(fp, "  leftid=%s\n", prof[prof_type][prof_idx].local_id);
@@ -1554,6 +1590,15 @@ void rc_ipsec_topology_set()
     char *s_tmp = NULL, buf1[SZ_BUF];
     s_tmp = &buf1[0];
 
+#ifdef RTCONFIG_INSTANT_GUARD
+	char ig_guest_client_list[4096] = {0};
+	char word[1024] = {0}, *word_next = NULL;
+	char *name = NULL, *passwd = NULL;
+	char *desc = NULL, *ts = NULL, *active = NULL;
+	char *lan_access = NULL;
+#endif
+
+
     memset(p_tmp, 0, sizeof(char) * SZ_MIN);
     fp = fopen("/tmp/etc/ipsec.conf", "w");
     fprintf(fp,"conn %%default\n  keyexchange=ikev1\n  authby=secret\n  ike=aes256-sha1-modp1024\n");
@@ -1586,6 +1631,9 @@ void rc_ipsec_topology_set()
 			else if(VPN_TYPE_HOST_NET == prof[prof_count][i].vpn_type){
             	fprintf(fp,"#Host-to-NET[prof#%d]:%s\n\n", i, s_tmp);
 	        } 
+			else if(VPN_TYPE_HOST_NET_CLI == prof[prof_count][i].vpn_type){
+				fprintf(fp,"#Host-to-NET CLI[prof#%d]:%s\n\n", i, s_tmp);
+			}
 			else {
             	continue;
         	}
@@ -1613,8 +1661,10 @@ void rc_ipsec_topology_set()
 
 	        ipsec_conf_local_set(fp, i, prof_count);
 	        ipsec_conf_remote_set(fp, i, prof_count);
-			
-	        if(VPN_TYPE_HOST_NET != prof[prof_count][i].vpn_type){
+
+			if(VPN_TYPE_HOST_NET != prof[prof_count][i].vpn_type
+			 && VPN_TYPE_HOST_NET_CLI != prof[prof_count][i].vpn_type
+			){
 	            ipsec_conf_phase1_set(fp, i, prof_count);
 	            ipsec_conf_phase2_set(fp, i, prof_count);
         	}
@@ -1632,10 +1682,39 @@ void rc_ipsec_topology_set()
 			if(DPD_NONE != prof[prof_count][i].dead_peer_detection)
 				fprintf(fp,"  dpddelay=%ds\n", prof[prof_count][i].ipsec_dpd);
 			
-	        if(VPN_TYPE_NET_NET_CLI == prof[prof_count][i].vpn_type || VPN_TYPE_NET_NET_PEER == prof[prof_count][i].vpn_type)
+			if(VPN_TYPE_NET_NET_CLI == prof[prof_count][i].vpn_type
+			 || VPN_TYPE_NET_NET_PEER == prof[prof_count][i].vpn_type
+			 || VPN_TYPE_HOST_NET_CLI == prof[prof_count][i].vpn_type)
 				fprintf(fp,"  auto=start\n");
 			else
 		        fprintf(fp,"  auto=add\n\n");
+
+#ifdef RTCONFIG_INSTANT_GUARD
+			/* for blocking LAN access */
+			if(PROF_SVR == prof_count){
+				if(nvram_get_int("ipsec_ig_enable") == 1){
+					strlcpy(ig_guest_client_list, nvram_safe_get("ig_guest_client_list"), sizeof(ig_guest_client_list));
+					foreach_60(word, ig_guest_client_list, word_next){
+						if((vstrsep(word, ">", &name, &passwd, &desc, &ts, &active, &lan_access)) != 6)
+							continue;
+						if(active != NULL && !strcmp(active, "1")){
+							if(lan_access != NULL && !strcmp(lan_access, "1")){
+								//if lan_access is 1, then do nothing here.
+							}
+							else
+							{
+								//By default, then we block the LAN access by adding following connections.
+								fprintf(fp,"\nconn %s_%s\n", prof[prof_count][i].profilename, name);
+								fprintf(fp, "  also=%s\n", prof[prof_count][i].profilename);
+								fprintf(fp, "  rightid=%s\n", name);
+								fprintf(fp, "  leftsubnet=%s/32[%%any/53]\n\n", nvram_safe_get("lan_ipaddr"));
+							}
+						}
+					}
+				}
+			}
+#endif /* RTCONFIG_INSTANT_GUARD */
+
 	    }
 	}
 	}
@@ -2342,6 +2421,29 @@ void add_upnp_port(int type)
 }
 #endif /* RTCONFIG_UPNPC_NEW */
 
+static void rc_strongswan_plugin_set()
+{
+	FILE *fp;
+	char path[128] = {0};
+	strlcpy(path, "/etc/strongswan.d/charon/updown.conf", sizeof(path));
+	fp = fopen(path, "w");
+	if (fp) {
+		fputs("updown {\n"
+				"	dns_handler = yes\n"
+				"	load = yes\n"
+				"}\n", fp);
+		fclose(fp);
+	}
+	strlcpy(path, "/etc/strongswan.d/charon/resolve.conf", sizeof(path));
+	fp = fopen(path, "w");
+	if (fp) {
+		fputs("resolve {\n"
+				"	load = no\n"
+				"}\n", fp);
+		fclose(fp);
+	}
+}
+
 void rc_ipsec_set(ipsec_conn_status_t conn_status, ipsec_prof_type_t prof_type)
 {
     static bool ipsec_start_en = FALSE;
@@ -2372,6 +2474,7 @@ void rc_ipsec_set(ipsec_conn_status_t conn_status, ipsec_prof_type_t prof_type)
     rc_ipsec_gen_cert(0);
     rc_ipsec_ca_init();
     rc_strongswan_conf_set();
+    rc_strongswan_plugin_set();
 #if defined(RTCONFIG_QUICKSEC)
 	rc_ipsec_topology_set_XML();
 #endif
@@ -2402,7 +2505,9 @@ void rc_ipsec_set(ipsec_conn_status_t conn_status, ipsec_prof_type_t prof_type)
 		nvram_set_int("ipsec_client_enable",1);
 	else
 		nvram_set_int("ipsec_client_enable",0);
-	
+
+	symlink("/sbin/rc", FILE_PATH_IPSEC_UPDOWN);
+
 	if((nvram_get_int("ipsec_server_enable") == 1 || nvram_get_int("ipsec_client_enable") == 1 )
 #ifdef RTCONFIG_INSTANT_GUARD
          || nvram_get_int("ipsec_ig_enable")
@@ -2417,13 +2522,13 @@ void rc_ipsec_set(ipsec_conn_status_t conn_status, ipsec_prof_type_t prof_type)
 			}
 		}
 		ipsec_start_en = TRUE;*/
-#if defined(RTCONFIG_QUICKSEC)		
+
 		modprobe("ah4");
 		modprobe("esp4");
 		modprobe("ipcomp");
 		modprobe("xfrm4_tunnel");
 		modprobe("xfrm_user");
-#endif
+
 		/* ipsec must be restart if strongswan.conf changed, or it will not apply the new settings. */
 		if((TRUE == ipsec_start_en) && (IPSEC_INIT != conn_status)&& (0 != strcmp(pre_samba_prof.dns1, samba_prof.dns1) || 0 != strcmp(pre_samba_prof.dns2, samba_prof.dns2) || 
 				0 != strcmp(pre_samba_prof.nbios1, samba_prof.nbios1) || 0 != strcmp(pre_samba_prof.nbios2, samba_prof.nbios2))){
@@ -2681,3 +2786,375 @@ void rc_ipsec_set(ipsec_conn_status_t conn_status, ipsec_prof_type_t prof_type)
     return;
 }
 
+/*******************************************************************
+* NAME: get_virtual_subnet
+* AUTHOR: Renjie Lee
+* CREATE DATE: 2021/10/14
+* DESCRIPTION: get virtual subnet from nvram_name(ipsec_profile_1 or ipsec_profile_2)
+* INPUT: nvram_name:the nvram name of ipsec profile
+*        _size:the size of 'output'
+* OUTPUT: output:output buffer
+* RETURN: subnet string, like "10.10.10" (default value)
+* NOTE:
+*******************************************************************/
+char *get_virtual_subnet(char *nvram_name, char *output, int _size)
+{
+	char ipsec_profile[1024] = {0};
+	char virtual_subnet[32] = {0};
+
+	if((nvram_name) && (nvram_safe_get(nvram_name)))
+	{
+		snprintf(ipsec_profile, sizeof(ipsec_profile), "%s", nvram_safe_get(nvram_name));
+		get_string_in_62(ipsec_profile, 14, virtual_subnet, sizeof(virtual_subnet));
+		if(strlen(virtual_subnet) == 0)
+		{
+			snprintf(virtual_subnet, sizeof(virtual_subnet), "10.10.10");
+		}
+	}
+	else
+	{
+		snprintf(virtual_subnet, sizeof(virtual_subnet), "10.10.10");
+	}
+
+	snprintf(output, _size, "%s", virtual_subnet);
+	return output;
+}
+
+#ifdef RTCONFIG_VPN_FUSION
+static int _get_vpnc_idx_by_prof_idx(int prof_idx)
+{
+	char *nv = NULL, *nvp = NULL, *b = NULL;
+	char *desc, *nv_proto, *nv_unit, *username, *passwd, *active, *vpnc_idx, *region, *conntype;
+	int ret = 0;
+
+	nv = nvp = strdup(nvram_safe_get("vpnc_clientlist"));
+	if (nv) {
+		while ((b = strsep(&nvp, "<"))) {
+			if (vstrsep(b, ">", &desc, &nv_proto, &nv_unit, &username, &passwd, &active, &vpnc_idx, &region, &conntype) < 4)
+				continue;
+			if (!nv_proto || !nv_unit || !vpnc_idx)
+				continue;
+			if (!strcmp(PROTO_IPSec, nv_proto) && atoi(nv_unit) == prof_idx) {
+				ret = atoi(vpnc_idx);
+				break;
+			}
+		}
+		free(nv);
+	}
+	return (ret);
+}
+#else
+int write_ipc_resolv_dnsmasq(FILE* fp_servers)
+{
+	char buf[64] = {0};
+	char ipsec_dns[128] = {0};
+	char *next = NULL;
+	int added = 0;
+
+	nvram_safe_get_r("ipsec_client_dns", ipsec_dns, sizeof(ipsec_dns));
+	foreach (buf, ipsec_dns, next) {
+		fprintf(fp_servers, "server=%s\n", buf);
+		added = 1;
+	}
+	return (added);
+}
+#endif
+
+static void _ipsec_updown_host_net_cli(int unit)
+{
+	char vif[IFNAMSIZ] = {0};
+	char *verb = safe_getenv("PLUTO_VERB");
+	char *addr_peer = safe_getenv("PLUTO_PEER");
+	char *addr_me = safe_getenv("PLUTO_ME");
+	int v6 = is_valid_ip6(addr_peer);
+	char nv[16] = {0};
+	char wan_gateway[64] = {0};
+	char *wan_if = safe_getenv("PLUTO_INTERFACE");
+	char *my_ip4 = getenv("PLUTO_MY_SOURCEIP4_1");
+	char *my_ip6 = getenv("PLUTO_MY_SOURCEIP6_1");
+	char buf[128] = {0};
+	char *peer_net = safe_getenv("PLUTO_PEER_CLIENT");
+	char *dns4_1 = getenv("PLUTO_DNS4_1");
+	char *dns4_2 = getenv("PLUTO_DNS4_2");
+	FILE *fp;
+#ifdef RTCONFIG_VPN_FUSION
+	int vpnc_idx = 0;
+	char table_str[8] = {0};
+#endif
+
+	snprintf(vif, sizeof(vif), "%s%d", IPSEC_CLI_IF_PREFIX, unit);
+	if (v6) {
+		snprintf(wan_gateway, sizeof(wan_gateway), "%s", ipv6_gateway_address());
+		snprintf(buf, sizeof(buf), "/proc/sys/net/ipv6/conf/%s/disable_policy", vif);
+	}
+	else {
+		snprintf(nv, sizeof(nv), "wan%d_gateway", wan_primary_ifunit());
+		snprintf(wan_gateway, sizeof(wan_gateway), "%s", nvram_safe_get(nv));
+		snprintf(buf, sizeof(buf), "/proc/sys/net/ipv4/conf/%s/disable_policy", vif);
+	}
+
+	if (strstr(verb, "up")) {
+		// tunnel interface
+		eval("ip", "link", "add", vif, "type", v6 ? "vti6":"vti"
+			, "local", addr_me, "remote", addr_peer);
+		if (my_ip4)
+			eval("ip", "addr", "add", my_ip4, "dev", vif);
+		if (my_ip6)
+			eval("ip", "addr", "add", my_ip6, "dev", vif);
+		eval("ip", "link", "set", vif, "up");
+		// disable policy
+		f_write_string(buf, "1", 0, 0);
+		// nat
+		eval("iptables", "-t", "nat", "-A", "POSTROUTING", "-o", vif, "!", "-s", my_ip4, "-j", "MASQUERADE");
+		fp = fopen(FILE_PATH_IPSEC_IPTABLES_RULE, "a");
+		if (fp) {
+			fprintf(fp, "iptables -t nat -D POSTROUTING -o %s ! -s %s -j MASQUERADE\n", vif, my_ip4);
+			fprintf(fp, "iptables -t nat -A POSTROUTING -o %s ! -s %s -j MASQUERADE\n", vif, my_ip4);
+			fclose(fp);
+		}
+#ifdef RTCONFIG_VPN_FUSION
+		vpnc_idx = _get_vpnc_idx_by_prof_idx(unit);
+		if (vpnc_idx) {
+			snprintf(table_str, sizeof(table_str), "%d", vpnc_idx);
+			{// copy from main
+				char cmd[128] = {0};
+				eval("ip", "route", "flush", "table", table_str);
+				system("ip route show table main > /tmp/route_tmp");
+				fp = fopen("/tmp/route_tmp", "r");
+				if(fp) {
+					while(fgets(buf, sizeof(buf), fp)) {
+						snprintf(cmd, sizeof(cmd), "ip route add %s table %s ", trim_r(buf), table_str);
+						//_dprintf("[%s]\n", cmd);
+						system(cmd);
+					}
+					fclose(fp);
+				}
+				unlink("/tmp/route_tmp");
+			}
+			// server route
+			eval("ip", "route", "add", addr_peer, "via", wan_gateway, "dev", wan_if, "table", table_str);
+			// server subnet
+			if (!strcmp(peer_net, "0.0.0.0/0")) {
+				eval("ip", "route", "add", "0.0.0.0/1", "dev", vif, "table", table_str);
+				eval("ip", "route", "add", "128.0.0.0/1", "dev", vif, "table", table_str);
+			}
+			else {
+				eval("ip", "route", "add", peer_net, "dev", vif, "table", table_str);
+			}
+			// vpnc dns
+			snprintf(nv, sizeof(nv), "vpnc%d_dns", vpnc_idx);
+			if (dns4_1 && dns4_2)
+				snprintf(buf, sizeof(buf), "%s %s", dns4_1, dns4_2);
+			else if (dns4_1)
+				snprintf(buf, sizeof(buf), "%s", dns4_1);
+			else
+				memset(buf, 0, sizeof(buf));
+			nvram_set(nv, buf);
+			if (dns4_1)
+				eval("ip", "route", "add", dns4_1, "dev", vif, "table", table_str);
+			if (dns4_2)
+				eval("ip", "route", "add", dns4_1, "dev", vif, "table", table_str);
+			// vpnc ifname
+			snprintf(nv, sizeof(nv), "vpnc%d_ifname", vpnc_idx);
+			nvram_set(nv, vif);
+			// vpnc ipaddr
+			snprintf(nv, sizeof(nv), "vpnc%d_ipaddr", vpnc_idx);
+			nvram_set(nv, my_ip4);
+			// vpnc up
+			vpnc_init();
+			vpnc_up(vpnc_idx, vif);
+		}
+		else {
+			cprintf("%s: wrong vpnc profile\n", __FUNCTION__);
+		}
+#else
+		// server route
+		eval("ip", "route", "add", addr_peer, "via", wan_gateway, "dev", wan_if);
+		// server subnet
+		if (!strcmp(peer_net, "0.0.0.0/0")) {
+			eval("ip", "route", "add", "0.0.0.0/1", "dev", vif);
+			eval("ip", "route", "add", "128.0.0.0/1", "dev", vif);
+		}
+		else {
+			eval("ip", "route", "add", peer_net, "dev", vif);
+		}
+		// dns
+		if (dns4_1 && dns4_2)
+			snprintf(buf, sizeof(buf), "%s %s", dns4_1, dns4_2);
+		else if (dns4_1)
+			snprintf(buf, sizeof(buf), "%s", dns4_1);
+		else
+			memset(buf, 0, sizeof(buf));
+		nvram_set("ipsec_client_dns", buf);
+		update_resolvconf();
+		if (dns4_1)
+			eval("ip", "route", "add", dns4_1, "dev", vif);
+		if (dns4_2)
+			eval("ip", "route", "add", dns4_1, "dev", vif);
+#endif
+	}
+	else {	//down
+		eval("ip", "link", "del", vif);
+		// nat
+		eval("iptables", "-t", "nat", "-D", "POSTROUTING", "-o", vif, "!", "-s", my_ip4, "-j", "MASQUERADE");
+		eval("sed", "-i", "/MASQUERADE/d", FILE_PATH_IPSEC_IPTABLES_RULE);
+#ifdef RTCONFIG_VPN_FUSION
+		vpnc_idx = _get_vpnc_idx_by_prof_idx(unit);
+		if (vpnc_idx) {
+			// server route
+			snprintf(table_str, sizeof(table_str), "%d", vpnc_idx);
+			eval("ip", "route", "del", addr_peer, "via", wan_gateway, "dev", wan_if, "table", table_str);
+			// vpnc state
+			update_vpnc_state(vpnc_idx, WAN_STATE_STOPPED, 0);
+			// vpnc down
+			vpnc_init();
+			vpnc_down(vpnc_idx, vif);
+		}
+		else {
+			cprintf("%s: wrong vpnc profile\n", __FUNCTION__);
+		}
+#else
+		// server route
+		eval("ip", "route", "del", addr_peer, "via", wan_gateway, "dev", wan_if);
+		// dns
+		nvram_set("ipsec_client_dns", "");
+#endif
+	}
+}
+
+static void _get_my_ip_by_subnet(const char* subnet, char *ip, size_t len, int v6)
+{
+	char network[64] = {0};
+	char *p;
+	char buf[512] = {0};
+	FILE* fp;
+
+	strlcpy(network, subnet, sizeof(network));
+	if ((p = strchr(network, '/')) != NULL) {
+		*p = '\0';
+	}
+
+	if (v6) {
+		snprintf(buf, sizeof(buf), "ip -6 route show table local | grep %s | awk '{print $2}' > /tmp/ipsec_my_subnet", network);
+		system(buf);
+		fp = fopen("/tmp/ipsec_my_subnet", "r");
+		if (fp) {
+			while (fgets(ip, len, fp)) {
+				trimNL(ip);
+				if (*(ip + strlen(ip) - 1) == ':')
+					continue;
+				else
+					break;
+			}
+			fclose(fp);
+		}
+	}
+	else {
+		snprintf(buf, sizeof(buf), "ip -4 route show table local | grep %s | awk '{print $10}' > /tmp/ipsec_my_subnet", network);
+		system(buf);
+		f_read_string("/tmp/ipsec_my_subnet", ip, len);
+		trimNL(ip);
+		trimWS(ip);
+	}
+}
+
+static void _ipsec_updown_net_net()
+{
+	char *verb = safe_getenv("PLUTO_VERB");
+	int v6 = strstr(verb, "v6") ? 1 : 0;
+	char nv[16] = {0};
+	char wan_gateway[64] = {0};
+	char *wan_if = safe_getenv("PLUTO_INTERFACE");
+	char *peer_net = safe_getenv("PLUTO_PEER_CLIENT");
+	char *my_net = safe_getenv("PLUTO_MY_CLIENT");
+	char my_srcip[64] = {0};
+
+	if (v6) {
+		snprintf(wan_gateway, sizeof(wan_gateway), "%s", ipv6_gateway_address());
+	}
+	else {
+		snprintf(nv, sizeof(nv), "wan%d_gateway", wan_primary_ifunit());
+		snprintf(wan_gateway, sizeof(wan_gateway), "%s", nvram_safe_get(nv));
+	}
+
+	if (strstr(verb, "up")) {
+		_get_my_ip_by_subnet(my_net, my_srcip, sizeof(my_srcip), v6);
+		cprintf("my ip: [%s]\n", my_srcip);
+		eval("ip", "route", "add", peer_net, "via", wan_gateway, "dev", wan_if, "proto", "static", "src", my_srcip);
+	}
+	else { //down
+		eval("ip", "route", "del", peer_net);
+	}
+}
+
+int ipsec_updown_main(int argc, char *argv[])
+{
+	int unit = 0;
+	int vpn_type = 0;
+
+	if (argv[1])
+		unit = atoi(argv[1]);
+	else {
+		cprintf("Unknown vpn profile unit\n");
+		return -1;
+	}
+
+	if (argv[2])
+		vpn_type = atoi(argv[2]);
+	else {
+		cprintf("Unknown vpn type\n");
+		return -1;
+	}
+
+	if (vpn_type == VPN_TYPE_HOST_NET_CLI) {
+		_ipsec_updown_host_net_cli(unit);
+	}
+	else {
+		_ipsec_updown_net_net();
+	}
+
+	return 0;
+}
+
+void rc_ipsec_ctrl(int prof_type, int prof_idx, int enable)
+{
+	char prof_nv[32] = {0};
+	char buf[1024] = {0};
+	char *p;
+	int cnt = 0;
+	char en = (enable) ? '1' : '0';
+	char prof_name[64] = {0}, *prof_start = NULL;
+
+	if (prof_type == PROF_CLI)
+		snprintf(prof_nv, sizeof(prof_nv), "ipsec_profile_client_%d", prof_idx);
+	else if (prof_type == PROF_SVR)
+		snprintf(prof_nv, sizeof(prof_nv), "ipsec_profile_%d", prof_idx);
+	else
+		return;
+	strlcpy(buf, nvram_safe_get(prof_nv), sizeof(buf));
+	p = buf;
+	while ((p = strchr(p+1, '>')) != NULL) {
+		cnt++;
+		if (enable == 0) {
+			if (cnt == 1) {
+				prof_start = p + 1;
+				continue;
+			}
+			else if (cnt == 2) {
+				if ((p - prof_start) < sizeof(prof_name)) {
+					strncpy(prof_name, prof_start, (size_t)(p - prof_start));
+					// cprintf("profile name: %s\n", prof_name);
+					eval("ipsec", "down", prof_name);
+				}
+			}
+		}
+		if (cnt == 37) {
+			if (*(p+1) != en) {
+				*(p+1) = en;
+				nvram_set(prof_nv, buf);
+				rc_ipsec_set(IPSEC_SET, PROF_CLI);
+				break;
+			}
+		}
+	}
+}

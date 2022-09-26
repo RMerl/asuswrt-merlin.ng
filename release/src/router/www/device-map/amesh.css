@@ -997,6 +997,32 @@
 	font-size: 13px;
 	display: none;
 }
+
+.aimesh_fw_revert {
+	color: #FC0;
+	cursor: pointer;
+	text-decoration: underline;
+	margin-left: 10px;
+}
+.aimesh_fw_revert_node {
+	color: #FC0;
+	cursor: pointer;
+	text-decoration: underline;
+	margin-left: 10px;
+}
+.aimesh_fw_rbk {
+	color: #FC0;
+	cursor: pointer;
+	text-decoration: underline;
+	margin-left: 10px;
+}
+.aimesh_fw_rbk_node {
+	color: #FC0;
+	cursor: pointer;
+	text-decoration: underline;
+	margin-left: 10px;
+}
+
 .aimesh_fw_update_offline {
 	color: #FC0;
 	cursor: pointer;

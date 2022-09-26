@@ -360,7 +360,7 @@ END_TEST
 
 /**
  * Both peers initiate the IKE_SA rekeying concurrently but the proposed DH
- * gropus are not the same.  After handling the INVALID_KE_PAYLOAD they should
+ * groups are not the same.  After handling the INVALID_KE_PAYLOAD they should
  * still handle the collision properly depending on the nonces.
  */
 START_TEST(test_collision_ke_invalid)

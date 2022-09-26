@@ -100,7 +100,7 @@ static bool establish(private_main_mode_t *this)
 {
 	if (!charon->bus->authorize(charon->bus, TRUE))
 	{
-		DBG1(DBG_IKE, "final authorization hook forbids IKE_SA, cancelling");
+		DBG1(DBG_IKE, "final authorization hook forbids IKE_SA, canceling");
 		return FALSE;
 	}
 
@@ -186,7 +186,7 @@ static status_t send_notify(private_main_mode_t *this, notify_type_t type)
 
 	this->ike_sa->queue_task(this->ike_sa,
 						(task_t*)informational_create(this->ike_sa, notify));
-	/* cancel all active/passive tasks in favour of informational */
+	/* cancel all active/passive tasks in favor of informational */
 	this->ike_sa->flush_queue(this->ike_sa,
 					this->initiator ? TASK_QUEUE_ACTIVE : TASK_QUEUE_PASSIVE);
 	return ALREADY_DONE;
@@ -199,7 +199,7 @@ static status_t send_delete(private_main_mode_t *this)
 {
 	this->ike_sa->queue_task(this->ike_sa,
 						(task_t*)isakmp_delete_create(this->ike_sa, TRUE));
-	/* cancel all active tasks in favour of informational */
+	/* cancel all active tasks in favor of informational */
 	this->ike_sa->flush_queue(this->ike_sa,
 					this->initiator ? TASK_QUEUE_ACTIVE : TASK_QUEUE_PASSIVE);
 	return ALREADY_DONE;
@@ -302,7 +302,13 @@ METHOD(task_t, build_i, status_t,
 		}
 		case MM_SA:
 		{
+			identification_t *id;
 			uint16_t group;
+
+			/* we might need the identity to look up a PSK when processing the
+			 * response */
+			id = this->ph1->get_id(this->ph1, this->peer_cfg, TRUE);
+			this->ike_sa->set_my_id(this->ike_sa, id->clone(id));
 
 			if (!this->ph1->create_hasher(this->ph1))
 			{
@@ -331,8 +337,7 @@ METHOD(task_t, build_i, status_t,
 			id_payload_t *id_payload;
 			identification_t *id;
 
-			id = this->ph1->get_id(this->ph1, this->peer_cfg, TRUE);
-			this->ike_sa->set_my_id(this->ike_sa, id->clone(id));
+			id = this->ike_sa->get_my_id(this->ike_sa);
 			id_payload = id_payload_create_from_identification(PLV1_ID, id);
 			message->add_payload(message, &id_payload->payload_interface);
 
@@ -362,7 +367,7 @@ METHOD(task_t, process_r, status_t,
 		{
 			linked_list_t *list;
 			sa_payload_t *sa_payload;
-			bool private, prefer_configured;
+			proposal_selection_flag_t flags = 0;
 
 			this->ike_cfg = this->ike_sa->get_ike_cfg(this->ike_sa);
 			DBG0(DBG_IKE, "%H is initiating a Main Mode IKE_SA",
@@ -371,7 +376,8 @@ METHOD(task_t, process_r, status_t,
 
 			this->ike_sa->update_hosts(this->ike_sa,
 									   message->get_destination(message),
-									   message->get_source(message), TRUE);
+									   message->get_source(message),
+									   UPDATE_HOSTS_FORCE_ADDRS);
 
 			sa_payload = (sa_payload_t*)message->get_payload(message,
 													PLV1_SECURITY_ASSOCIATION);
@@ -386,12 +392,19 @@ METHOD(task_t, process_r, status_t,
 			}
 
 			list = sa_payload->get_proposals(sa_payload);
-			private = this->ike_sa->supports_extension(this->ike_sa,
-													   EXT_STRONGSWAN);
-			prefer_configured = lib->settings->get_bool(lib->settings,
-							"%s.prefer_configured_proposals", TRUE, lib->ns);
+			if (!this->ike_sa->supports_extension(this->ike_sa, EXT_STRONGSWAN)
+				&& !lib->settings->get_bool(lib->settings,
+									"%s.accept_private_algs", FALSE, lib->ns))
+			{
+				flags |= PROPOSAL_SKIP_PRIVATE;
+			}
+			if (!lib->settings->get_bool(lib->settings,
+							"%s.prefer_configured_proposals", TRUE, lib->ns))
+			{
+				flags |= PROPOSAL_PREFER_SUPPLIED;
+			}
 			this->proposal = this->ike_cfg->select_proposal(this->ike_cfg,
-											list, private, prefer_configured);
+											list, flags);
 			list->destroy_offset(list, offsetof(proposal_t, destroy));
 			if (!this->proposal)
 			{
@@ -401,7 +414,8 @@ METHOD(task_t, process_r, status_t,
 			this->ike_sa->set_proposal(this->ike_sa, this->proposal);
 
 			this->method = sa_payload->get_auth_method(sa_payload);
-			this->lifetime = sa_payload->get_lifetime(sa_payload);
+			this->lifetime = sa_payload->get_lifetime(sa_payload,
+													  this->proposal);
 
 			this->state = MM_SA;
 			return NEED_MORE;
@@ -469,7 +483,7 @@ METHOD(task_t, process_r, status_t,
 			if (!charon->bus->authorize(charon->bus, FALSE))
 			{
 				DBG1(DBG_IKE, "Main Mode authorization hook forbids IKE_SA, "
-					 "cancelling");
+					 "canceling");
 				charon->bus->alert(charon->bus, ALERT_PEER_AUTH_FAILED);
 				return send_notify(this, AUTHENTICATION_FAILED);
 			}
@@ -551,7 +565,7 @@ METHOD(task_t, build_r, status_t,
 					if (charon->ike_sa_manager->check_uniqueness(
 								charon->ike_sa_manager, this->ike_sa, FALSE))
 					{
-						DBG1(DBG_IKE, "cancelling Main Mode due to uniqueness "
+						DBG1(DBG_IKE, "canceling Main Mode due to uniqueness "
 							 "policy");
 						return send_notify(this, AUTHENTICATION_FAILED);
 					}
@@ -624,8 +638,8 @@ METHOD(task_t, process_i, status_t,
 			linked_list_t *list;
 			sa_payload_t *sa_payload;
 			auth_method_t method;
+			proposal_selection_flag_t flags = 0;
 			uint32_t lifetime;
-			bool private;
 
 			sa_payload = (sa_payload_t*)message->get_payload(message,
 													PLV1_SECURITY_ASSOCIATION);
@@ -635,10 +649,14 @@ METHOD(task_t, process_i, status_t,
 				return send_notify(this, INVALID_PAYLOAD_TYPE);
 			}
 			list = sa_payload->get_proposals(sa_payload);
-			private = this->ike_sa->supports_extension(this->ike_sa,
-														   EXT_STRONGSWAN);
+			if (!this->ike_sa->supports_extension(this->ike_sa, EXT_STRONGSWAN)
+				&& !lib->settings->get_bool(lib->settings,
+									"%s.accept_private_algs", FALSE, lib->ns))
+			{
+				flags |= PROPOSAL_SKIP_PRIVATE;
+			}
 			this->proposal = this->ike_cfg->select_proposal(this->ike_cfg,
-															list, private, TRUE);
+															list, flags);
 			list->destroy_offset(list, offsetof(proposal_t, destroy));
 			if (!this->proposal)
 			{
@@ -647,7 +665,7 @@ METHOD(task_t, process_i, status_t,
 			}
 			this->ike_sa->set_proposal(this->ike_sa, this->proposal);
 
-			lifetime = sa_payload->get_lifetime(sa_payload);
+			lifetime = sa_payload->get_lifetime(sa_payload, this->proposal);
 			if (lifetime != this->lifetime)
 			{
 				DBG1(DBG_IKE, "received lifetime %us does not match configured "
@@ -707,7 +725,7 @@ METHOD(task_t, process_i, status_t,
 			if (!charon->bus->authorize(charon->bus, FALSE))
 			{
 				DBG1(DBG_IKE, "Main Mode authorization hook forbids IKE_SA, "
-					 "cancelling");
+					 "canceling");
 				charon->bus->alert(charon->bus, ALERT_PEER_AUTH_FAILED);
 				return send_delete(this);
 			}
@@ -730,7 +748,7 @@ METHOD(task_t, process_i, status_t,
 					if (charon->ike_sa_manager->check_uniqueness(
 								charon->ike_sa_manager, this->ike_sa, FALSE))
 					{
-						DBG1(DBG_IKE, "cancelling Main Mode due to uniqueness "
+						DBG1(DBG_IKE, "canceling Main Mode due to uniqueness "
 							 "policy");
 						return send_delete(this);
 					}

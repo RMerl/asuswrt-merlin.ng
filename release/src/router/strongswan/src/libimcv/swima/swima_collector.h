@@ -39,7 +39,7 @@ struct swima_collector_t {
 	 * @return				Software [Identity] Inventory
 	 */
 	swima_inventory_t* (*collect_inventory)(swima_collector_t *this,
-											bool sw_id_only, 
+											bool sw_id_only,
 											swima_inventory_t *targets);
 
 	/**

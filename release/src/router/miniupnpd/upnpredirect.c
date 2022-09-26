@@ -178,7 +178,12 @@ lease_file_remove(unsigned short eport, int proto)
 		syslog(LOG_ERR, "could not rename temporary lease file to %s", lease_file);
 		remove(tmpfilename);
 	}
-
+#ifdef ASUSWRT
+	char cmd[1024] = {0};
+	snprintf(cmd, sizeof(cmd), "aupnpc-ipc -D -p %s -e %d", proto == IPPROTO_TCP? "TCP": "UDP", eport);
+	syslog(LOG_DEBUG, "send request to aupnpc.");
+	system(cmd);
+#endif
 	return 0;
 
 }
@@ -415,6 +420,29 @@ upnp_redirect(const char * rhost, unsigned short eport,
 				lease_file_add(eport, iaddr, iport, proto, desc, timestamp);
 			}
 #endif /* ENABLE_LEASEFILE */
+#ifdef ASUSWRT
+			if(r == 0)
+			{
+				char cmd[1024] = {0};
+				snprintf(cmd, sizeof(cmd), "aupnpc-ipc -A -p %s -e %d", proto == IPPROTO_TCP? "TCP": "UDP", eport);
+				if(rhost && rhost[0] != '\0')
+					snprintf(cmd + strlen(cmd), sizeof(cmd) - strlen(cmd), " -s %s", rhost);	
+				if(timestamp > 0)
+				{
+					unsigned int lease = timestamp;
+					if (lease != 0)
+					{
+						lease -= upnp_time();
+#ifndef LEASEFILE_USE_REMAINING_TIME
+						lease += time(NULL);
+#endif
+					}
+					snprintf(cmd + strlen(cmd), sizeof(cmd) - strlen(cmd), " -t %u", lease);	
+				}
+				syslog(LOG_DEBUG, "send request to aupnpc.");
+				system(cmd);
+			}
+#endif
 			return r;
 		} else {
 			syslog(LOG_INFO, "port %hu %s (rhost '%s') already redirected to %s:%hu",
@@ -453,6 +481,26 @@ upnp_redirect_internal(const char * rhost, unsigned short eport,
 
 #ifdef ENABLE_LEASEFILE
 	lease_file_add( eport, iaddr, iport, proto, desc, timestamp);
+#endif
+#ifdef ASUSWRT
+	char cmd[1024] = {0};
+	snprintf(cmd, sizeof(cmd), "aupnpc-ipc -A -p %s -e %d", proto == IPPROTO_TCP? "TCP": "UDP", eport);
+	if(rhost && rhost[0] != '\0')
+		snprintf(cmd + strlen(cmd), sizeof(cmd) - strlen(cmd), " -s %s", rhost);	
+	if(timestamp > 0)
+	{
+		unsigned int lease = timestamp;
+		if (lease != 0)
+		{
+			lease -= upnp_time();
+#ifndef LEASEFILE_USE_REMAINING_TIME
+			lease += time(NULL);
+#endif
+		}
+		snprintf(cmd + strlen(cmd), sizeof(cmd) - strlen(cmd), " -t %u", lease);	
+	}
+	syslog(LOG_DEBUG, "send request to aupnpc.");
+	system(cmd);
 #endif
 /*	syslog(LOG_INFO, "creating pass rule to %s:%hu protocol %s for: %s",
 		iaddr, iport, protocol, desc);*/

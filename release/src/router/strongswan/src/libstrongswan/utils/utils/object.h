@@ -123,4 +123,15 @@
 	static typeof(_cb_##name) *name = (typeof(_cb_##name)*)_cb_##name; \
 	static ret _cb_##name(param1, ##__VA_ARGS__)
 
+/**
+ * Same as CALLBACK(), but for two void* arguments (e.g. for comparisons).
+ */
+#define CALLBACK2(name, ret, param1, param2, ...) \
+	static ret _cb_##name(union {void *_generic; param1;} \
+	__attribute__((transparent_union)), \
+	union {void *_generic; param2;} \
+	__attribute__((transparent_union)), ##__VA_ARGS__); \
+	static typeof(_cb_##name) *name = (typeof(_cb_##name)*)_cb_##name; \
+	static ret _cb_##name(param1, param2, ##__VA_ARGS__)
+
 #endif /** OBJECT_H_ @} */

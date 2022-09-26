@@ -5,6 +5,11 @@
 
 #define SM_DEBUG_FILE	"/tmp/SM_DEBUG"
 
+#define NMP_CONV_TYPE_FILE			"/usr/networkmap/nmp_conv_type.js"
+#define NMP_VENDOR_TYPE_FILE		"/usr/networkmap/nmp_vendor_type.js"
+#define NMP_BWDPI_TYPE_FILE			"/usr/networkmap/nmp_bwdpi_type.js"
+
+
 #define SM_DEBUG(fmt, args...) \
 	if(f_exists(SM_DEBUG_FILE)) { \
 		cprintf(fmt, ## args); \
@@ -39,6 +44,8 @@ struct _match_rule {
 	unsigned char		baseID;
 };
 
+ac_state *construct_ac_file(convType *type, char * parse_filename);
+
 ac_state *construct_ac_trie(convType *type);
 ac_state *find_next_state(ac_state *state, unsigned char transChar);
 ac_state *create_ac_state();
@@ -46,5 +53,7 @@ void add_new_next_state(ac_state *curState, unsigned char pChar, ac_state *nextS
 void add_match_rule_to_state(ac_state *state, unsigned char type, unsigned char base);
 unsigned char prefix_search(ac_state *sm, const char *text, unsigned char *baseID);
 unsigned char full_search(ac_state *sm, const char *text, unsigned char *baseID);
-unsigned int prefix_search_index(ac_state *sm, const char *text, unsigned char *baseID);
+
+unsigned int prefix_search_index(ac_state *sm, const char *text, unsigned char *baseID, unsigned char *typeID);
+
 #endif

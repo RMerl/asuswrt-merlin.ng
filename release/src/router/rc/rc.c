@@ -31,10 +31,24 @@
 #include <lp5523led.h>
 #endif
 
+#include "conn_diag-sql.h"
+
 #if defined(RTCONFIG_SOC_IPQ8074)
 #include <sys/vfs.h>
 #include <inttypes.h>
 #include <sys/reboot.h>
+#endif
+
+
+#if defined(RTCONFIG_TUNNEL) && defined(RTCONFIG_ACCOUNT_BINDING)
+#include <json.h>
+#endif
+
+#ifdef RTCONFIG_USB
+//#include <usb_info.h>
+//#include <disk_io_tools.h>
+#include <disk_initial.h>
+//#include <disk_share.h>
 #endif
 
 #ifdef RTCONFIG_COMFW
@@ -712,10 +726,16 @@ static int rctest_main(int argc, char *argv[])
 
 		//if ((ret = GetPhyStatus(1, &phy_list)) == 1) {
 			GetPhyStatus(1, &phy_list);
+#ifdef RTCONFIG_NEW_PHYMAP
+#ifdef RTCONFIG_USB
+			get_usb_modem_status(&phy_list);
+#endif
+#endif
 			for(i=0;i<phy_list.count;i++) {
-				fprintf(stderr, " phy_port_id=%d, label_name=%s, cap_name=%s, state=%s, link_rate=%d, duplex=%s, tx_packets=%u, rx_packets=%u, tx_bytes=%llu, rx_bytes=%llu, crc_errors=%u\n", 
+				fprintf(stderr, " phy_port_id=%d, label_name=%s, cap=%u, cap_name=%s, state=%s, link_rate=%d, duplex=%s, tx_packets=%u, rx_packets=%u, tx_bytes=%llu, rx_bytes=%llu, crc_errors=%u\n", 
 					phy_list.phy_info[i].phy_port_id,
 					phy_list.phy_info[i].label_name,
+					phy_list.phy_info[i].cap,
 					phy_list.phy_info[i].cap_name,
 					phy_list.phy_info[i].state,
 					phy_list.phy_info[i].link_rate,
@@ -730,6 +750,174 @@ static int rctest_main(int argc, char *argv[])
 		//	_dprintf("GetPhyStatus failed (%d): ", ret);
 		_dprintf("\n");
 	}
+#ifdef RTCONFIG_NEW_PHYMAP
+	else if (strcmp(argv[1], "port_status")==0) {
+		phy_info_list phy_list = {0};
+		int /*ret,*/ i, j, usb_port = 1;
+		phy_port_mapping port_mapping;
+		get_phy_port_mapping(&port_mapping);
+		phy_list.count = port_mapping.count;
+		for(i=0;i<port_mapping.count;i++) {
+			phy_list.phy_info[i].phy_port_id = port_mapping.port[i].phy_port_id;
+			snprintf(phy_list.phy_info[i].label_name, sizeof(phy_list.phy_info[i].label_name), port_mapping.port[i].label_name);
+			phy_list.phy_info[i].cap = port_mapping.port[i].cap;
+			//phy_list.phy_info[i].max_rate = port_mapping.port[i].max_rate;
+		}
+		GetPhyStatus(0, &phy_list);
+
+#ifdef RTCONFIG_USB
+		get_usb_modem_status(&phy_list);
+#endif
+
+		for(i=0;i<phy_list.count;i++) {
+
+			fprintf(stderr, " phy_port_id=%d, label_name=%s, cap=%u, cap_name=%s, max_rate=%d, ifname=%s, state=%s, link_rate=%d, duplex=%s, tx_packets=%u, rx_packets=%u, tx_bytes=%llu, rx_bytes=%llu, crc_errors=%u\n", 
+				phy_list.phy_info[i].phy_port_id,
+				phy_list.phy_info[i].label_name,
+				phy_list.phy_info[i].cap,
+				phy_list.phy_info[i].cap_name,
+				port_mapping.port[i].max_rate,
+				port_mapping.port[i].ifname,
+				phy_list.phy_info[i].state,
+				phy_list.phy_info[i].link_rate,
+				phy_list.phy_info[i].duplex,
+				phy_list.phy_info[i].tx_packets,
+				phy_list.phy_info[i].rx_packets,
+				phy_list.phy_info[i].tx_bytes,
+				phy_list.phy_info[i].rx_bytes,
+				phy_list.phy_info[i].crc_errors);
+#ifdef RTCONFIG_USB
+			if ((phy_list.phy_info[i].cap & PHY_PORT_CAP_USB) > 0) {
+				int max_hub_port = sizeof(phy_list.phy_info[i].usb_devices)/sizeof(usb_device_info_t);
+				get_usb_devices_by_usb_port(phy_list.phy_info[i].usb_devices, max_hub_port, usb_port++);
+				for (j=0; j<max_hub_port; j++) {
+					if (strlen(phy_list.phy_info[i].usb_devices[j].type) == 0)
+						continue;
+					fprintf(stderr, "usb_path=%s, node=%s, type=%s, manufacturer=%s, product=%s, serial=%s, device_name=%s, speed=%d, storage_size=%llu, storage_used=%llu\n", 
+						phy_list.phy_info[i].usb_devices[j].usb_path,
+						phy_list.phy_info[i].usb_devices[j].node,
+						phy_list.phy_info[i].usb_devices[j].type,
+						phy_list.phy_info[i].usb_devices[j].manufacturer,
+						phy_list.phy_info[i].usb_devices[j].product,
+						phy_list.phy_info[i].usb_devices[j].serial,
+						phy_list.phy_info[i].usb_devices[j].device_name,
+						phy_list.phy_info[i].usb_devices[j].speed,
+						phy_list.phy_info[i].usb_devices[j].storage_size_in_kilobytes,
+						phy_list.phy_info[i].usb_devices[j].storage_used_in_kilobytes);
+				}
+			}
+#endif
+		}
+
+		char *port_status_buf = NULL;
+		if(get_node_eth_port_status(NULL, &port_status_buf) > 0){
+			fprintf(stderr, "%s\n", port_status_buf);
+			free_node_eth_port_status(&port_status_buf);
+		}
+	}
+#endif
+#if defined(RTCONFIG_LIB_CODB)
+	else if (strcmp(argv[1], "codb_test")==0) {
+		codb_test();
+#if 0		
+		if(nvram_get_int("iperf_test")==1){
+			char capmac[] = "04:D9:F5:B5:93:E0";
+			char remac[]  = "04:D9:F5:B5:94:70";
+			char smac[32],cmac[32];
+
+			snprintf(smac,sizeof(smac),"%s",nvram_safe_get("iperf_test_smac"));
+			snprintf(cmac,sizeof(cmac),"%s",nvram_safe_get("iperf_test_cmac"));
+			if(strlen(smac)==17 && strlen(cmac)==17)
+				exec_iperf(smac,cmac);
+			else
+				_dprintf("server mac or client mac error\n");
+		} else if(nvram_get_int("cablediag_test")==1)
+		{
+			char capmac[] = "04:D9:F5:B5:93:E0";
+			char remac[]  = "04:D9:F5:B5:94:70";
+			exec_force_cable_diag(capmac,NULL);
+		}
+		//exec_force_cable_diag(capmac,remac);
+#endif
+	}
+#endif	
+#if defined(RTCONFIG_TUNNEL) && defined(RTCONFIG_ACCOUNT_BINDING)
+	else if (strcmp(argv[1], "aae_refresh_userticket")==0) {
+		char event[AAE_MAX_IPC_PACKET_SIZE];
+		char out[AAE_MAX_IPC_PACKET_SIZE];
+		snprintf(event, sizeof(event), AAE_DDNS_GENERIC_MSG, AAE_EID_DDNS_REFRESH_TOKEN);
+		aae_sendIpcMsgAndWaitResp(MASTIFF_IPC_SOCKET_PATH, event, strlen(event), out, sizeof(out), 10);
+		json_object *root = NULL;
+		json_object *ddnsObj = NULL;
+		json_object *eidObj = NULL;
+		json_object *stsObj = NULL;
+		root = json_tokener_parse((char *)out);
+		json_object_object_get_ex(root, AAE_DDNS_PREFIX, &ddnsObj);
+		json_object_object_get_ex(ddnsObj, AAE_IPC_EVENT_ID, &eidObj);
+		json_object_object_get_ex(ddnsObj, AAE_IPC_STATUS, &stsObj);
+		if (!ddnsObj || !eidObj || !stsObj)
+			printf("Failed to aae_refresh_userticket\n");
+		else {
+			int eid = json_object_get_int(eidObj);
+			const char *status = json_object_get_string(stsObj);
+			if ((eid == AAE_EID_DDNS_REFRESH_TOKEN) && (!strcmp(status, "0")))
+				printf("Success to aae_refresh_userticket\n");
+			else
+				printf("Failed to aae_refresh_userticket\n");
+		}
+		json_object_put(root);
+	}
+	else if (strcmp(argv[1], "aae_refresh_deviceticket")==0) {
+		char event[AAE_MAX_IPC_PACKET_SIZE];
+		char out[AAE_MAX_IPC_PACKET_SIZE];
+		snprintf(event, sizeof(event), AAE_NTC_GENERIC_MSG, AAE_EID_NTC_REFRESH_DEVICE_TICKET);
+		aae_sendIpcMsgAndWaitResp(MASTIFF_IPC_SOCKET_PATH, event, strlen(event), out, sizeof(out), 10);
+		json_object *root = NULL;
+		json_object *ntcObj = NULL;
+		json_object *eidObj = NULL;
+		json_object *stsObj = NULL;
+		root = json_tokener_parse((char *)out);
+		json_object_object_get_ex(root, AAE_NTC_PREFIX, &ntcObj);
+		json_object_object_get_ex(ntcObj, AAE_IPC_EVENT_ID, &eidObj);
+		json_object_object_get_ex(ntcObj, AAE_IPC_STATUS, &stsObj);
+		if (!ntcObj || !eidObj || !stsObj)
+			printf("Failed to aae_refresh_deviceticket\n");
+		else {
+			int eid = json_object_get_int(eidObj);
+			const char *status = json_object_get_string(stsObj);
+			if ((eid == AAE_EID_NTC_REFRESH_DEVICE_TICKET) && (!strcmp(status, "0")))
+				printf("Success to aae_refresh_deviceticket\n");
+			else
+				printf("Failed to aae_refresh_deviceticket\n");
+		}
+		json_object_put(root);
+	}
+	else if (strcmp(argv[1], "aae_send_payload2")==0) {
+		char event[AAE_MAX_IPC_PACKET_SIZE];
+		char out[AAE_MAX_IPC_PACKET_SIZE];
+		snprintf(event, sizeof(event), AAE_HTTPD_PAYLOAD2_MSG, AAE_EID_HTTPD_PAYLOAD2, "{\"oauth_dm_cusid\":\"45a008e300c4e1a7739ac60e14da27854e4c6d6774475be258e7f64e8db33b79\", \"mobile_deviceid\":\"8588309ead48e0a818d3d552c74ef14e\", \"dm_ticket\":\"test\"}");
+		aae_sendIpcMsgAndWaitResp(MASTIFF_IPC_SOCKET_PATH, event, strlen(event), out, sizeof(out), 5);
+		json_object *root = NULL;
+		json_object *httpdObj = NULL;
+		json_object *eidObj = NULL;
+		json_object *stsObj = NULL;
+		root = json_tokener_parse((char *)out);
+		json_object_object_get_ex(root, AAE_HTTPD_PREFIX, &httpdObj);
+		json_object_object_get_ex(httpdObj, AAE_IPC_EVENT_ID, &eidObj);
+		json_object_object_get_ex(httpdObj, AAE_IPC_STATUS, &stsObj);
+		if (!httpdObj || !eidObj || !stsObj)
+			printf("Failed to aae_send_payload2\n");
+		else {
+			int eid = json_object_get_int(eidObj);
+			const char *status = json_object_get_string(stsObj);
+			if ((eid == AAE_EID_HTTPD_PAYLOAD2) && (!strcmp(status, "0")))
+				printf("Success to aae_send_payload2\n");
+			else
+				printf("Failed to aae_send_payload2\n");
+		}
+		json_object_put(root);
+	}
+#endif
 	else {
 		on = atoi(argv[2]);
 		_dprintf("%s %d\n", argv[1], on);
@@ -911,7 +1099,7 @@ static int rctest_main(int argc, char *argv[])
 		else if (strcmp(argv[1], "gpior") == 0) {
 			printf("%d\n", get_gpio(atoi(argv[2])));
 		}
-#if defined(RTCONFIG_HND_ROUTER_AX_6710) || defined(RTAX58U) || defined(TUFAX3000) || defined(TUFAX5400) || defined(RTAX82U) || defined(RTAX82_XD6) || defined(RTAX82_XD6S) || defined(GSAX3000) || defined(GSAX5400) || defined(BCM6756) || defined(GTAX6000) || defined(RTAX86U_PRO) || defined(BCM6855) || defined(RTAX82U_V2) || defined(TUFAX5400_V2)
+#if defined(RTCONFIG_HND_ROUTER_AX_6710) || defined(RTAX58U) || defined(TUFAX3000) || defined(TUFAX5400) || defined(RTAX82U) || defined(RTAX82_XD6) || defined(RTAX82_XD6S) || defined(GSAX3000) || defined(GSAX5400) || defined(BCM6756) || defined(GTAX6000) || defined(RTAX86U_PRO) || defined(BCM6855) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(RTAX88U_PRO) || defined(XD6_V2)
 		else if (strcmp(argv[1], "gpio2r") == 0) {
 			printf("%d\n", get_gpio2(atoi(argv[2])));
 		}
@@ -1067,10 +1255,10 @@ char *fix_fw_name(char *orig_fw_name)
 static inline char *fix_fw_name(char *orig_fw_name) { return orig_fw_name; }
 #endif
 
-#if defined(RTCONFIG_QCA) || defined(RTCONFIG_LANTIQ) || defined(RTAX95Q) || defined(XT8PRO) || defined(XT8_V2) || defined(RTAXE95Q) || defined(ET8PRO) || defined(RTAX56_XD4) || defined(XD4PRO) || defined(RTAX55) || defined(RTAX1800)
+#if defined(RTCONFIG_QCA) || defined(RTCONFIG_LANTIQ) || defined(RTAX95Q) || defined(XT8PRO) || defined(BM68) || defined(XT8_V2) || defined(RTAXE95Q) || defined(ET8PRO) || defined(ET8_V2) || defined(RTAX56_XD4) || defined(XD4PRO) || defined(RTAX55) || defined(RTAX1800)
 /* download firmware */
 #ifndef FIRMWARE_DIR
-#if defined(RTCONFIG_QCA) || defined(RTAX95Q) || defined(XT8PRO) || defined(XT8_V2) || defined(RTAXE95Q) || defined(ET8PRO) || defined(RTAX56_XD4) || defined(XD4PRO) || defined(RTAX55) || defined(RTAX1800)
+#if defined(RTCONFIG_QCA) || defined(RTAX95Q) || defined(XT8PRO) || defined(BM68) || defined(XT8_V2) || defined(RTAXE95Q) || defined(ET8PRO) || defined(ET8_V2) || defined(RTAX56_XD4) || defined(XD4PRO) || defined(RTAX55) || defined(RTAX1800)
 #define FIRMWARE_DIR	"/lib/firmware"
 #else
 #define FIRMWARE_DIR	"/tmp"
@@ -1486,7 +1674,7 @@ static int hotplug_main(int argc, char *argv[])
 			return coma_uevent();
 #endif /* LINUX_2_6_36 */
 #endif
-#if defined(RTCONFIG_QCA) || defined(RTCONFIG_LANTIQ) || defined(RTAX95Q) || defined(XT8PRO) || defined(XT8_V2) || defined(RTAXE95Q) || defined(ET8PRO) || defined(RTAX56_XD4) || defined(XD4PRO) || defined(RTAX55) || defined(RTAX1800)
+#if defined(RTCONFIG_QCA) || defined(RTCONFIG_LANTIQ) || defined(RTAX95Q) || defined(XT8PRO) || defined(BM68) || defined(XT8_V2) || defined(RTAXE95Q) || defined(ET8PRO) || defined(ET8_V2) || defined(RTAX56_XD4) || defined(XD4PRO) || defined(RTAX55) || defined(RTAX1800)
 		else if(!strcmp(argv[1], "firmware")) {
 			hotplug_firmware();
 		}
@@ -1679,6 +1867,7 @@ static const applets_t applets[] = {
 #if defined(RTCONFIG_DUAL_TRX2)
 	{ "fixdmgfw",			fixdmgfw_main			},
 #endif
+	{ "alt_watchdog",		alt_watchdog_main		}, // <-- add by Andrew
 	{ "watchdog",			watchdog_main			},
 	{ "check_watchdog",		check_watchdog_main		},
 	{ "fwupg_flashing",		fwupg_flashing_main		},
@@ -1907,11 +2096,23 @@ static const applets_t applets[] = {
 	{ "restart_plc",		restart_plc_main				},
 	{ "detect_plc",			detect_plc_main					},
 #endif
+#if defined(RTCONFIG_SCHED_DAEMON)
+	{ "sched_daemon",		sched_daemon_main				},
+#endif
+#ifdef RTCONFIG_TC_DOWNLOAD
+	{ "tc_download",		tc_download_main	},
+#endif
 #ifdef RTCONFIG_ISP_CUSTOMIZE_TOOL
 	{ "tci",			tci_main		},
 #endif
-#ifdef RTCONFIG_ASUSDDNS_ACCOUNT_BASE
+#ifdef RTCONFIG_ACCOUNT_BINDING
 	{ "update_asus_ddns_token",		update_asus_ddns_token_main			},
+#endif
+#if defined(RTCONFIG_IG_SITE2SITE)
+	{ "ig_s2s_client",      ig_s2s_client_main      },
+ #endif
+#ifdef RTCONFIG_IPSEC
+	{ "ipsec_updown",		ipsec_updown_main      },
 #endif
 	{NULL, NULL}
 };
@@ -2485,6 +2686,7 @@ int main(int argc, char **argv)
 
 		return asus_usb_interface(argv[1], argv[2]);
 	}
+#ifdef RTCONFIG_USB
 	else if (!strcmp(base, "get_usb_node_by_string")) {
 		char usb_node[16];
 
@@ -2498,6 +2700,7 @@ int main(int argc, char **argv)
 
 		return 0;
 	}
+#endif
 	else if (!strcmp(base, "unset_usb_nvram")) {
 		if(argc > 2)
 			return 0;
@@ -2753,6 +2956,12 @@ int main(int argc, char **argv)
 		pc_tmp_main(argc, argv);
 		return 0;
 	}
+#ifdef RTCONFIG_PC_REWARD
+	else if (!strcmp(base, "pc_reward")) {
+		pc_reward_main(argc, argv);
+		return 0;
+	}
+#endif
 #endif
 #ifdef RTCONFIG_INTERNETCTRL
 	else if (!strcmp(base, "ic")) {
@@ -2810,6 +3019,14 @@ int main(int argc, char **argv)
 	else if (!strcmp(base, "amas_lanctrl")) {
 		return amas_lanctrl_main();
 	}
+#ifdef RTCONFIG_CONNDIAG
+	else if (!strcmp(base, "amas_ssd_cd")) {
+		return amas_ssd_cd_main();
+	}
+	else if (!strcmp(base, "amas_portstatus")) {
+		return amas_portstatus_main();
+	}
+#endif
 #ifdef RTCONFIG_BHCOST_OPT
 	else if (!strcmp(base, "amas_status")) {
 		return amas_status_main();
@@ -3281,7 +3498,6 @@ void exe_eu_wa_rr(void){
 #ifdef NO_NBAND
 	return ;
 #endif
-
 	//find dfs ifname
 	strncpy(ifnames_tmp,nvram_safe_get("wl_ifnames"),sizeof(ifnames_tmp));
 

@@ -118,7 +118,7 @@ METHOD(public_key_t, verify, bool,
 
 METHOD(public_key_t, encrypt, bool,
 	private_public_key_t *this, encryption_scheme_t scheme,
-	chunk_t crypto, chunk_t *plain)
+	void *params, chunk_t crypto, chunk_t *plain)
 {
 	DBG1(DBG_LIB, "encryption scheme %N not supported", encryption_scheme_names,
 		 scheme);

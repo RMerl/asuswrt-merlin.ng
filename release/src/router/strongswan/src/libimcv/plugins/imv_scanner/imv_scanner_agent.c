@@ -429,7 +429,6 @@ METHOD(imv_agent_if_t, batch_ending, TNC_Result,
 					written = snprintf(pos, len, " %u", port);
 					if (written < 0 || written >= len)
 					{
-						pos += len - 1;
 						*pos = '\0';
 					}
 					else

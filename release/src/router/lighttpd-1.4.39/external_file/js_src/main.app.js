@@ -752,7 +752,7 @@ function doRescanSamba(){
 			g_storage.setl("onRescanSamba", 1);
 			g_storage.setl("onRescanSambaCount", 0);
 			g_storage.set("HostList", "");
-			doPROPFIND("/");
+			doPROPFIND("/", false);
 		}
 	});
 }
@@ -781,7 +781,7 @@ function doMKDIR(name){
 	
 	client.MKCOL(this_url, function(error){
 		if(error[0]==2){
-			doPROPFIND(openurl);
+			doPROPFIND(openurl, false);
 		}
 		else
 			alert(m.getString(error));
@@ -813,7 +813,7 @@ function doRENAME(old_name, new_name){
 		
 	client.MOVE(old_name, this_url, function(error){
 		if(error[0]==2){
-			doPROPFIND(openurl);
+			doPROPFIND(openurl, false);
 		}
 		else
 			alert(m.getString(error) + " : " + decodeURI(old_name));
@@ -847,7 +847,7 @@ function closeUploadPanel(v){
 	
 	if(v==1){
 		var openurl = addPathSlash(g_storage.get('openurl'));
-		doPROPFIND(openurl);
+		doPROPFIND(openurl, false);
 	}
 }
 
@@ -933,7 +933,7 @@ function fullscreenJqmWindow(v){
 }
 
 function doLOGOUT(){
-	doPROPFIND("/", function(){
+	doPROPFIND("/", false, function(){
 		var openurl = addPathSlash(g_storage.get('openurl'));
 		client.LOGOUT("/", function(error){	
 			if(error[0]==2){
@@ -1008,11 +1008,11 @@ function createOpenUrlUI(open_url){
 	$("p#openurl").append(b);
 		
 	$("a#url_path").click(function(){
-		doPROPFIND($(this).attr("uhref"));
+		doPROPFIND($(this).attr("uhref"), false);
 	});
 }
 
-function doPROPFIND(open_url, complete_handler, auth){
+function doPROPFIND(open_url, append_result, complete_handler, auth){
 	if(client==null)
 		return;
 	
@@ -1266,7 +1266,7 @@ function doPROPFIND(open_url, complete_handler, auth){
 	  				}
 		  		}
 		  		else if(error==501){
-					doPROPFIND(open_url);
+					doPROPFIND(open_url, false);
 				}
 		  		else if(error==401){	
 		  			setTimeout(openLoginWindow(open_url), 1000);
@@ -1288,7 +1288,7 @@ function doPROPFIND(open_url, complete_handler, auth){
 }
 
 function doLOGIN(path, auth){		
-	doPROPFIND(path, function(){
+	doPROPFIND(path, false, function(){
 				
 	}, auth);
 }	
@@ -1583,7 +1583,7 @@ function openSelItem(item){
 	}
 	
 	if(isdir=="1"){
-		doPROPFIND(loc, null, null);
+		doPROPFIND(loc, false, null, null);
 		return;
 	}
 	
@@ -1920,7 +1920,7 @@ function menuHandler(event){
 			var curPath = $(".ui-listview").attr("path");
 			
 			if(loc!=curPath){				
-				doPROPFIND( loc, function(){
+				doPROPFIND( loc, false, function(){
 					adjustLayout();
 				}, 0);	
 			}
@@ -1979,7 +1979,7 @@ function menuHandler(event){
   	});  
   
   	$("a#btn-home").live("click", function() {
-  		doPROPFIND( "/", function(){
+  		doPROPFIND( "/", false, function(){
 			$("a#btn-home").removeClass("ui-btn-active");
 		}, 0);
   	});
@@ -1987,7 +1987,7 @@ function menuHandler(event){
   	$("a#btn-refresh").live("click", function() {
   		var loc = g_storage.get('openurl');	
 		loc = (loc==undefined) ? "/" : loc;		
-		doPROPFIND( loc, function(){
+		doPROPFIND( loc, false, function(){
 			$("a#btn-refresh").removeClass("ui-btn-active");
 		}, 0);	
   	});
@@ -2091,7 +2091,7 @@ function menuHandler(event){
 			
 			if(g_selected_files.length<=0){
 				var openurl = addPathSlash(g_storage.get('openurl'));
-				doPROPFIND(openurl);
+				doPROPFIND(openurl, false);
 				return;
 			}
 			
@@ -2270,7 +2270,7 @@ function menuHandler(event){
   		var loc = g_storage.get('openurl');
 		client.LOGOUT(loc, function(error){	
 			if(error==200){				
-				doPROPFIND(loc);
+				doPROPFIND(loc, false);
 			}
 		});
 	});

@@ -87,9 +87,9 @@ START_TEST(test_regular)
 	assert_hook_called(child_rekey);
 	assert_no_notify(IN, REKEY_SA);
 	exchange_test_helper->process_message(exchange_test_helper, a, NULL);
-	assert_child_sa_state(a, spi_a, CHILD_DELETING, CHILD_OUTBOUND_INSTALLED);
+	assert_child_sa_state(a, spi_a, CHILD_DELETING, CHILD_OUTBOUND_NONE);
 	assert_child_sa_state(a, 3, CHILD_INSTALLED, CHILD_OUTBOUND_INSTALLED);
-	assert_ipsec_sas_installed(a, spi_a, spi_b, 3, 4);
+	assert_ipsec_sas_installed(a, spi_a, 3, 4);
 	assert_hook();
 
 	/* INFORMATIONAL { D } --> */
@@ -196,9 +196,9 @@ START_TEST(test_regular_ke_invalid)
 	assert_hook_called(child_rekey);
 	assert_no_notify(IN, REKEY_SA);
 	exchange_test_helper->process_message(exchange_test_helper, a, NULL);
-	assert_child_sa_state(a, spi_a, CHILD_DELETING);
+	assert_child_sa_state(a, spi_a, CHILD_DELETING, CHILD_OUTBOUND_NONE);
 	assert_child_sa_state(a, 5, CHILD_INSTALLED, CHILD_OUTBOUND_INSTALLED);
-	assert_ipsec_sas_installed(a, spi_a, spi_b, 5, 6);
+	assert_ipsec_sas_installed(a, spi_a, 5, 6);
 	assert_hook();
 
 	/* INFORMATIONAL { D } --> */
@@ -250,9 +250,9 @@ START_TEST(test_regular_ke_invalid)
 	assert_hook_called(child_rekey);
 	assert_no_notify(IN, REKEY_SA);
 	exchange_test_helper->process_message(exchange_test_helper, a, NULL);
-	assert_child_sa_state(a, 5, CHILD_DELETING, CHILD_OUTBOUND_INSTALLED);
+	assert_child_sa_state(a, 5, CHILD_DELETING, CHILD_OUTBOUND_NONE);
 	assert_child_sa_state(a, 7, CHILD_INSTALLED, CHILD_OUTBOUND_INSTALLED);
-	assert_ipsec_sas_installed(a, 5, 6, 7, 8);
+	assert_ipsec_sas_installed(a, 5, 7, 8);
 	assert_hook();
 
 	/* INFORMATIONAL { D } --> */
@@ -320,9 +320,9 @@ START_TEST(test_regular_responder_ignore_soft_expire)
 	assert_hook_called(child_rekey);
 	assert_no_notify(IN, REKEY_SA);
 	exchange_test_helper->process_message(exchange_test_helper, a, NULL);
-	assert_child_sa_state(a, 1, CHILD_DELETING);
+	assert_child_sa_state(a, 1, CHILD_DELETING, CHILD_OUTBOUND_NONE);
 	assert_child_sa_state(a, 3, CHILD_INSTALLED, CHILD_OUTBOUND_INSTALLED);
-	assert_ipsec_sas_installed(a, 1, 2, 3, 4);
+	assert_ipsec_sas_installed(a, 1, 3, 4);
 	assert_hook();
 
 	/* we don't expect this to get called anymore */
@@ -398,9 +398,9 @@ START_TEST(test_regular_responder_handle_hard_expire)
 	assert_hook_called(child_rekey);
 	assert_no_notify(IN, REKEY_SA);
 	exchange_test_helper->process_message(exchange_test_helper, a, NULL);
-	assert_child_sa_state(a, 1, CHILD_DELETING);
+	assert_child_sa_state(a, 1, CHILD_DELETING, CHILD_OUTBOUND_NONE);
 	assert_child_sa_state(a, 3, CHILD_INSTALLED, CHILD_OUTBOUND_INSTALLED);
-	assert_ipsec_sas_installed(a, 1, 2, 3, 4);
+	assert_ipsec_sas_installed(a, 1, 3, 4);
 	assert_hook();
 
 	/* we don't expect this to get called anymore */
@@ -446,7 +446,7 @@ START_TEST(test_regular_responder_handle_hard_expire)
 END_TEST
 
 /**
- * Both peers initiate the CHILD_SA reekying concurrently and should handle
+ * Both peers initiate the CHILD_SA rekeying concurrently and should handle
  * the collision properly depending on the nonces.
  */
 START_TEST(test_collision)
@@ -521,8 +521,8 @@ START_TEST(test_collision)
 		assert_child_sa_state(a, data[_i].spi_a, CHILD_INSTALLED,
 							  CHILD_OUTBOUND_INSTALLED);
 		assert_child_sa_state(a, data[_i].spi_del_a, CHILD_DELETING,
-							  CHILD_OUTBOUND_INSTALLED);
-		assert_ipsec_sas_installed(a, 1, 2, 3, 5, 6);
+							  CHILD_OUTBOUND_NONE);
+		assert_ipsec_sas_installed(a, 1, 3, 5, 6);
 	}
 	else
 	{
@@ -548,8 +548,8 @@ START_TEST(test_collision)
 		assert_child_sa_state(b, data[_i].spi_b, CHILD_INSTALLED,
 							  CHILD_OUTBOUND_INSTALLED);
 		assert_child_sa_state(b, data[_i].spi_del_b, CHILD_DELETING,
-							  CHILD_OUTBOUND_INSTALLED);
-		assert_ipsec_sas_installed(b, 1, 2, 4, 5, 6);
+							  CHILD_OUTBOUND_NONE);
+		assert_ipsec_sas_installed(b, 2, 4, 5, 6);
 	}
 	else
 	{
@@ -571,7 +571,7 @@ START_TEST(test_collision)
 	assert_jobs_scheduled(1);
 	exchange_test_helper->process_message(exchange_test_helper, b, NULL);
 	assert_child_sa_state(b, data[_i].spi_del_b, CHILD_DELETING,
-						  data[_i].spi_del_b == 2 ? CHILD_OUTBOUND_INSTALLED
+						  data[_i].spi_del_b == 2 ? CHILD_OUTBOUND_NONE
 												  : CHILD_OUTBOUND_REGISTERED);
 	assert_child_sa_state(b, data[_i].spi_del_a, CHILD_DELETED,
 						  CHILD_OUTBOUND_NONE);
@@ -580,7 +580,7 @@ START_TEST(test_collision)
 	assert_child_sa_count(b, 3);
 	if (data[_i].spi_del_b == 2)
 	{
-		assert_ipsec_sas_installed(b, 1, 2, 4, 5, 6);
+		assert_ipsec_sas_installed(b, 2, 4, 5, 6);
 	}
 	else
 	{
@@ -591,7 +591,7 @@ START_TEST(test_collision)
 	assert_jobs_scheduled(1);
 	exchange_test_helper->process_message(exchange_test_helper, a, NULL);
 	assert_child_sa_state(a, data[_i].spi_del_a, CHILD_DELETING,
-						  data[_i].spi_del_a == 1 ? CHILD_OUTBOUND_INSTALLED
+						  data[_i].spi_del_a == 1 ? CHILD_OUTBOUND_NONE
 												  : CHILD_OUTBOUND_REGISTERED);
 	assert_child_sa_state(a, data[_i].spi_del_b, CHILD_DELETED,
 						  CHILD_OUTBOUND_NONE);
@@ -600,7 +600,7 @@ START_TEST(test_collision)
 	assert_child_sa_count(a, 3);
 	if (data[_i].spi_del_a == 1)
 	{
-		assert_ipsec_sas_installed(a, 1, 2, 3, 5, 6);
+		assert_ipsec_sas_installed(a, 1, 3, 5, 6);
 	}
 	else
 	{
@@ -740,8 +740,8 @@ START_TEST(test_collision_delayed_response)
 		assert_child_sa_state(b, data[_i].spi_b, CHILD_INSTALLED,
 							  CHILD_OUTBOUND_INSTALLED);
 		assert_child_sa_state(b, data[_i].spi_del_b, CHILD_DELETING,
-							  CHILD_OUTBOUND_INSTALLED);
-		assert_ipsec_sas_installed(b, 1, 2, 4, 5, 6);
+							  CHILD_OUTBOUND_NONE);
+		assert_ipsec_sas_installed(b, 2, 4, 5, 6);
 	}
 	else
 	{
@@ -809,8 +809,8 @@ START_TEST(test_collision_delayed_response)
 		exchange_test_helper->process_message(exchange_test_helper, a, msg);
 		assert_hook();
 		assert_child_sa_state(a, data[_i].spi_del_a, CHILD_DELETING,
-							  CHILD_OUTBOUND_INSTALLED);
-		assert_ipsec_sas_installed(a, 1, 2, 3, 5, 6);
+							  CHILD_OUTBOUND_NONE);
+		assert_ipsec_sas_installed(a, 1, 3, 5, 6);
 	}
 	else
 	{
@@ -937,9 +937,9 @@ START_TEST(test_collision_delayed_request)
 	/* CREATE_CHILD_SA { SA, Nr, [KEr,] TSi, TSr } --> */
 	assert_hook_rekey(child_rekey, 2, 4);
 	exchange_test_helper->process_message(exchange_test_helper, b, NULL);
-	assert_child_sa_state(b, 2, CHILD_DELETING, CHILD_OUTBOUND_INSTALLED);
+	assert_child_sa_state(b, 2, CHILD_DELETING, CHILD_OUTBOUND_NONE);
 	assert_child_sa_state(b, 4, CHILD_INSTALLED, CHILD_OUTBOUND_INSTALLED);
-	assert_ipsec_sas_installed(b, 1, 2, 4, 5);
+	assert_ipsec_sas_installed(b, 2, 4, 5);
 	assert_hook();
 
 	/* we don't expect this hook to get called anymore */
@@ -948,7 +948,7 @@ START_TEST(test_collision_delayed_request)
 	/* CREATE_CHILD_SA { N(REKEY_SA), SA, Ni, [KEi,] TSi, TSr } --> (delayed) */
 	assert_single_notify(OUT, TEMPORARY_FAILURE);
 	exchange_test_helper->process_message(exchange_test_helper, b, msg);
-	assert_child_sa_state(b, 2, CHILD_DELETING, CHILD_OUTBOUND_INSTALLED);
+	assert_child_sa_state(b, 2, CHILD_DELETING, CHILD_OUTBOUND_NONE);
 	assert_child_sa_state(b, 4, CHILD_INSTALLED, CHILD_OUTBOUND_INSTALLED);
 
 	/* <-- INFORMATIONAL { D } */
@@ -1060,9 +1060,9 @@ START_TEST(test_collision_delayed_request_more)
 	/* CREATE_CHILD_SA { SA, Nr, [KEr,] TSi, TSr } --> */
 	assert_hook_rekey(child_rekey, 2, 4);
 	exchange_test_helper->process_message(exchange_test_helper, b, NULL);
-	assert_child_sa_state(b, 2, CHILD_DELETING, CHILD_OUTBOUND_INSTALLED);
+	assert_child_sa_state(b, 2, CHILD_DELETING, CHILD_OUTBOUND_NONE);
 	assert_child_sa_state(b, 4, CHILD_INSTALLED, CHILD_OUTBOUND_INSTALLED);
-	assert_ipsec_sas_installed(b, 1, 2, 4, 5);
+	assert_ipsec_sas_installed(b, 2, 4, 5);
 	assert_hook();
 
 	/* we don't expect this hook to get called anymore */
@@ -1236,7 +1236,7 @@ START_TEST(test_collision_ke_invalid)
 		assert_child_sa_state(a, data[_i].spi_a, CHILD_INSTALLED,
 							  CHILD_OUTBOUND_INSTALLED);
 		assert_child_sa_state(a, data[_i].spi_del_a, CHILD_DELETING,
-							  CHILD_OUTBOUND_INSTALLED);
+							  CHILD_OUTBOUND_NONE);
 	}
 	else
 	{
@@ -1259,7 +1259,7 @@ START_TEST(test_collision_ke_invalid)
 		assert_child_sa_state(b, data[_i].spi_b, CHILD_INSTALLED,
 							  CHILD_OUTBOUND_INSTALLED);
 		assert_child_sa_state(b, data[_i].spi_del_b, CHILD_DELETING,
-							  CHILD_OUTBOUND_INSTALLED);
+							  CHILD_OUTBOUND_NONE);
 	}
 	else
 	{
@@ -1279,7 +1279,7 @@ START_TEST(test_collision_ke_invalid)
 	assert_jobs_scheduled(1);
 	exchange_test_helper->process_message(exchange_test_helper, b, NULL);
 	assert_child_sa_state(b, data[_i].spi_del_b, CHILD_DELETING,
-						  data[_i].spi_del_b == 2 ? CHILD_OUTBOUND_INSTALLED
+						  data[_i].spi_del_b == 2 ? CHILD_OUTBOUND_NONE
 												  : CHILD_OUTBOUND_REGISTERED);
 	assert_child_sa_state(b, data[_i].spi_del_a, CHILD_DELETED,
 						  CHILD_OUTBOUND_NONE);
@@ -1291,7 +1291,7 @@ START_TEST(test_collision_ke_invalid)
 	assert_jobs_scheduled(1);
 	exchange_test_helper->process_message(exchange_test_helper, a, NULL);
 	assert_child_sa_state(a, data[_i].spi_del_a, CHILD_DELETING,
-						  data[_i].spi_del_a == 1 ? CHILD_OUTBOUND_INSTALLED
+						  data[_i].spi_del_a == 1 ? CHILD_OUTBOUND_NONE
 												  : CHILD_OUTBOUND_REGISTERED);
 	assert_child_sa_state(a, data[_i].spi_del_b, CHILD_DELETED,
 						  CHILD_OUTBOUND_NONE);
@@ -1441,7 +1441,7 @@ START_TEST(test_collision_ke_invalid_delayed_retry)
 	/* CREATE_CHILD_SA { SA, Nr, [KEr,] TSi, TSr } --> */
 	assert_hook_rekey(child_rekey, 2, 8);
 	exchange_test_helper->process_message(exchange_test_helper, b, NULL);
-	assert_child_sa_state(b, 2, CHILD_DELETING, CHILD_OUTBOUND_INSTALLED);
+	assert_child_sa_state(b, 2, CHILD_DELETING, CHILD_OUTBOUND_NONE);
 	assert_child_sa_state(b, 8, CHILD_INSTALLED, CHILD_OUTBOUND_INSTALLED);
 	assert_hook();
 
@@ -1451,7 +1451,7 @@ START_TEST(test_collision_ke_invalid_delayed_retry)
 	/* CREATE_CHILD_SA { N(REKEY_SA), SA, Ni, [KEi,] TSi, TSr } --> (delayed) */
 	assert_single_notify(OUT, TEMPORARY_FAILURE);
 	exchange_test_helper->process_message(exchange_test_helper, b, msg);
-	assert_child_sa_state(b, 2, CHILD_DELETING, CHILD_OUTBOUND_INSTALLED);
+	assert_child_sa_state(b, 2, CHILD_DELETING, CHILD_OUTBOUND_NONE);
 	assert_child_sa_state(b, 8, CHILD_INSTALLED, CHILD_OUTBOUND_INSTALLED);
 
 	/* <-- INFORMATIONAL { D } */

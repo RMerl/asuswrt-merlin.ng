@@ -331,7 +331,7 @@ void enable_wan_led()
 #ifdef GTAC2900
 	eval("sw", "0x800c00a0", "0");				// disable event on tx/rx activity
 #else
-#if defined(RTAX58U_V2) || defined(GTAX6000) || defined(RTAXE7800) || defined(RTAX82U_V2) || defined(TUFAX5400_V2)
+#if defined(RTAX58U_V2) || defined(GTAX6000) || defined(RTAXE7800) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(RTAX88U_PRO)
 #ifdef RTAXE7800
 	if (nvram_get_int("wans_extwan"))
 #endif
@@ -351,7 +351,7 @@ void disable_wan_led()
 #ifdef RTCONFIG_HND_ROUTER_AX
 	return;
 #elif defined(HND_ROUTER)
-#if defined(RTAX58U_V2) || defined(GTAX6000) || defined(RTAXE7800) || defined(RTAX82U_V2) || defined(TUFAX5400_V2)
+#if defined(RTAX58U_V2) || defined(GTAX6000) || defined(RTAXE7800) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(RTAX88U_PRO)
 #ifdef RTAXE7800
 	if (nvram_get_int("wans_extwan"))
 #endif
@@ -856,15 +856,16 @@ int do_dns_detect(int wan_unit)
 #endif
 
 	snprintf(host, sizeof(host), "%s", nvram_safe_get("dns_probe_host"));
-	// the dns probe is disabled
-	if(*host == '\0')
-		return 1;
 
 	snprintf(content, sizeof(content), "%s", nvram_safe_get("dns_probe_content"));
-	if (*content == '\0' || *host == '\0') {
-		snprintf(content, sizeof(content), "%s", nvram_default_get("dns_probe_content"));
+	if (*host == '\0'){
 		snprintf(host, sizeof(host), "%s", nvram_default_get("dns_probe_host"));
+		snprintf(content, sizeof(content), "%s", nvram_default_get("dns_probe_content"));
 	}
+	if (*content == '\0'){
+		strlcpy(content, "*", sizeof(content));
+	}
+
 	if (debug)
 		_dprintf("%s: %s %s %s\n", __FUNCTION__, "check", host, content);
 
@@ -1068,11 +1069,13 @@ int detect_internet(int wan_unit)
 	int wan_ppp, is_ppp_demand, ppp_echo_dns;
 	int dns_ret, ping_ret;
 	char tmp[100], prefix[16];
+	int default_route_ret;
+
+	default_route_ret = found_default_route(wan_unit);
 
 #ifdef DETECT_INTERNET_MORE
 	snprintf(wan_ifname, sizeof(wan_ifname), "%s", get_wan_ifname(wan_unit));
 #endif
-
 
 	snprintf(prefix, sizeof(prefix), "wan%d_", wan_unit);
 
@@ -1101,17 +1104,17 @@ int detect_internet(int wan_unit)
 	else
 #endif
 #if defined(RTCONFIG_DUALWAN)
-	if(wandog_enable)
+	if(wandog_enable && default_route_ret)
 		ping_ret = is_ppp_demand ? -1 : wanduck_ping_detect(wan_unit);
 	else
 #endif
 		ping_ret = -1;
 
-	if(
+	if(!default_route_ret
 #ifdef RTCONFIG_DUALWAN
-			strcmp(dualwan_mode, "lb") &&
+			&& strcmp(dualwan_mode, "lb")
 #endif
-			!found_default_route(wan_unit))
+			)
 		link_internet = DISCONN;
 #ifdef DETECT_INTERNET_MORE
 	else if(!get_packets_of_net_dev(wan_ifname, &rx_packets, &tx_packets) || rx_packets <= RX_THRESHOLD)
@@ -2197,6 +2200,12 @@ int if_wan_connected(int wan_unit){
 
 		return link_internet;
 	}
+#ifdef RTCONFIG_DUALWAN
+	else if(!strcmp(dualwan_mode, "fb") && wan_unit == WAN_FB_UNIT){
+		_dprintf("# wanduck: try to detect the fail-back WAN line(%d)...\n", wan_unit);
+		return detect_backup_internet(wan_unit);
+	}
+#endif
 
 #ifdef RTCONFIG_NOTIFICATION_CENTER
 	check_unpublic_event(wan_unit, CONNED);
@@ -2565,39 +2574,16 @@ int detect_backup_internet(int wan_unit)
 	 || (dnsprobe_enable && dns_ret > 0 && wandog_enable && ping_ret > 0)
 	) {
 		_dprintf("Detect WAN(%d) internet success.\n", wan_unit);
-		return 1;
+		return CONNED;
+	}
+	else if (!dnsprobe_enable && !wandog_enable && current_state[wan_unit] == WAN_STATE_CONNECTED) {
+		_dprintf("Network Detection disabled. WAN(%d) state CONNECTED.\n", wan_unit);
+		return CONNED;
 	}
 	else {
 		_dprintf("Detect WAN(%d) internet failed.\n", wan_unit);
-		return 0;
+		return DISCONN;
 	}
-}
-
-int switch_backup_line(int wan_unit, int restart_other)
-{
-	char wan_ifname[16] = {0};
-	int unit = 0;
-	char buf[32] = {0};
-
-	strlcpy(wan_ifname, get_wan_ifname(wan_unit), sizeof(wan_ifname));
-
-	_dprintf("%s: switch to WAN %d\n", __FUNCTION__, wan_unit);
-
-	set_wan_primary_ifunit(wan_unit);
-	wan_up(wan_ifname);
-
-	if (restart_other) {
-		for(unit = WAN_UNIT_FIRST; unit < WAN_UNIT_MAX; ++unit){
-			if(unit == wan_unit)
-				continue;
-
-			_dprintf("wanduck: restart_wan_if %d.\n", unit);
-			snprintf(buf, sizeof(buf), "restart_wan_if %d", unit);
-			notify_rc(buf);
-		}
-	}
-
-	return 0;
 }
 #endif
 
@@ -3204,12 +3190,14 @@ int switch_wan_line(const int wan_unit, const int restart_other){
 		_dprintf("wanduck2: %s.\n", cmd);
 		notify_rc_and_wait(cmd);
 	}
+#if 0
 	else if(if_wan_ppp(wan_unit, 0)){
 		// the connection which built in advance was invalid
 		snprintf(cmd, sizeof(cmd), "restart_wan_if %d", wan_unit);
 		_dprintf("wanduck2(ppp): %s.\n", cmd);
 		notify_rc(cmd);
 	}
+#endif
 	else if(strcmp(get_wan_ifname(wan_unit), "")){
 		snprintf(cmd, sizeof(cmd), "restart_wan_line %d", wan_unit);
 		_dprintf("wanduck2: %s.\n", cmd);
@@ -4128,7 +4116,6 @@ _dprintf("wanduck(%d): detect the modem to be reset...\n", current_wan_unit);
 					if(!(dualwan_unit__usbif(other_wan_unit) && current_state[other_wan_unit] == WAN_STATE_INITIALIZING))
 #endif
 						conn_state[other_wan_unit] = if_wan_connected(other_wan_unit);
-					_dprintf("wanduck: detect the fail-back line(%d)...\n", other_wan_unit);
 if(test_log)
 _dprintf("wanduck(%d) fail-back: state %d, state_old %d, changed %d, wan_state %d.\n"
 		, other_wan_unit, conn_state[other_wan_unit], conn_state_old[other_wan_unit], conn_changed_state[other_wan_unit], current_state[other_wan_unit]);
@@ -4925,13 +4912,6 @@ _dprintf("nat_rule: stop_nat_rules 7.\n");
 
 #ifdef RTCONFIG_DUALWAN
 		if(!strcmp(dualwan_mode, "fb") && other_wan_unit == WAN_FB_UNIT){
-#if 1
-			if(conn_state[other_wan_unit] == CONNED) {
-				_dprintf("# wanduck: try to detect the fail-back WAN line(%d)...\n", other_wan_unit);
-				if (detect_backup_internet(other_wan_unit))
-					switch_backup_line(other_wan_unit, nvram_get_int("wandog_fb_restart"));
-			}
-#else
 			if(conn_state[other_wan_unit] == CONNED
 					&& get_disconn_count(other_wan_unit) >= max_fb_count
 					){
@@ -4941,7 +4921,6 @@ _dprintf("nat_rule: stop_nat_rules 7.\n");
 				handle_wan_line(other_wan_unit, rule_setup);
 				switch_wan_line(other_wan_unit, 0);
 			}
-#endif
 			else if(conn_state[other_wan_unit] == PHY_RECONN){
 				_dprintf("\n# wanduck(fail-back): Try to prepare the backup line.\n");
 				snprintf(cmd, sizeof(cmd), "restart_wan_if %d", other_wan_unit);

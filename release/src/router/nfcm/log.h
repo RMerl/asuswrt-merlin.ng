@@ -8,6 +8,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include <arpa/inet.h>
+#include <time.h>
 
 #define htod32(i) (g_swap?bcmswap32(i):(uint32)(i))
 #define dtoh32(i) (g_swap?bcmswap32(i):(uint32)(i))
@@ -22,14 +23,26 @@
 #define IFNAMESIZE        16
 #endif
 
+extern time_t g_app_timestamp;
+extern time_t g_sum_timestamp;
+
+extern int nfcm_app_debug;
+extern int nfcm_sum_debug;
+
+
 extern int wl_ioctl(char *name, int cmd, void *buf, int len);
 extern int wl_iovar_getint(char *ifname, char *iovar, int *val);
 
 extern char *mac2str(const unsigned char *e, char *a);
+extern char *str2mac(const unsigned char *a, char *e);
 extern bool is_in_lanv4(struct in_addr *src);
+extern bool is_router_addr(struct in_addr *addr);
+extern bool is_broadcast_addr(struct in_addr *addr);
+extern bool is_multi_addr(struct in_addr *addr);
 
 extern void getFormattedTime(char * const p, int sz);
 extern int mylog(const char* fmt, ...);
+extern void nf_printf(const char *format, ...);
 
 #ifdef _WIN32
 #define __SHORT_FILE__ (strrchr(__FILE__, '\\') ? strrchr(__FILE__, '\\') + 1 : __FILE__)
@@ -42,7 +55,7 @@ extern int mylog(const char* fmt, ...);
 	char LAgGV3nzJsTholGvGL2eTNXmhsqYe___xxooxxoo___[24];\
 	getFormattedTime(LAgGV3nzJsTholGvGL2eTNXmhsqYe___xxooxxoo___,\
 		sizeof(LAgGV3nzJsTholGvGL2eTNXmhsqYe___xxooxxoo___));\
-	mylog("[%d] %s <%s> [%s:%d] [%s] " fmt "\n", \
+	nf_printf("[%d] %s <%s> [%s:%d] [%s] " fmt "\n", \
 		getpid(), \
 		LAgGV3nzJsTholGvGL2eTNXmhsqYe___xxooxxoo___, \
 		level,\

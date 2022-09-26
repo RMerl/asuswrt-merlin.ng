@@ -7,7 +7,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2021, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -19,6 +19,8 @@
  *
  * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
  * KIND, either express or implied.
+ *
+ * SPDX-License-Identifier: curl
  *
  ***************************************************************************/
 
@@ -328,9 +330,6 @@
 /* Define if you have the <unistd.h> header file. */
 #define HAVE_UNISTD_H
 
-/* Define if you have the <winsock.h> header file. */
-#undef HAVE_WINSOCK_H
-
 /* Define if you have the <x509.h> header file. */
 #undef HAVE_X509_H
 
@@ -374,7 +373,8 @@
 /* Define if you can safely include both <sys/time.h> and <time.h>. */
 #define TIME_WITH_SYS_TIME
 
-/* Define to enable HTTP3 support (experimental, requires NGTCP2 or QUICHE) */
+/* Define to enable HTTP3 support (experimental, requires NGTCP2, QUICHE or
+   MSH3) */
 #undef ENABLE_QUIC
 
 /* Version number of package */

@@ -52,7 +52,7 @@ struct plugin_t {
 	/**
 	 * Try to reload plugin configuration.
 	 *
-	 * @return		TRUE if reloaded, FALSE if reloading not supporty by plugin
+	 * @return		TRUE if reloaded, FALSE if reloading not supported by plugin
 	 */
 	bool (*reload)(plugin_t *this);
 

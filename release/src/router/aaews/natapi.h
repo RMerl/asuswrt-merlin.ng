@@ -2,6 +2,9 @@
 #define _NATAPI_H
 #include <dlfcn.h>
 #include <natnl_lib.h>
+
+#define MAX_CALLS   8
+
 int lib_load(void** handle, const char* lib_path);
 int lib_unload	(void* handle);
 int lib_get_func(void* handle, const char* func_name, void** func_sym);

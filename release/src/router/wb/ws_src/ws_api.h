@@ -31,8 +31,11 @@
 #define KEEP_ALIVE			"/aae/keepalive"
 #define PUSH_SENDMSG		"/aae/wlpush_sendmsg"
 #define PNS_SENDMSG			"/aae/pns_sendmsg"
+#define PNS_SENDMSG_FCM		"/aae/pns_sendmsg_fcm"
 #define PSR_SENDMSG			"/aae/psr_sendmsg"
 #define GET_USER_TICKET_BY_REFRESH	"/aae/getuserticketbyrefresh"
+#define GET_AWS_CERTIFICATE	"/aae/getawscertificate"
+#define REMOTELOGIN	"/aae/remotelogin"
 
 #define MAX_STATUS_LEN 	32
 #define MAX_URL_LEN		128
@@ -54,6 +57,9 @@
 #define MAX_DESC_LEN		512
 #define MAX_PIN_LEN		64
 #define MAX_IP_ADDR_LEN		128 	//32
+#define MAX_CA_DATA_LEN		2048
+
+#define DM_API_LEVEL 22
 
 typedef struct _AAE_STATUS
 {
@@ -97,6 +103,8 @@ typedef struct _Login{
 	pSrvInfo	turninfoList;
 	pSrvInfo	pnsinfoList;
 	pSrvInfo	psrinfoList;
+	pSrvInfo	webstorageinfoList;
+	pSrvInfo	ddnsinfoList;
 	char	deviceticketexpiretime[MAX_DEV_TICKET_EXP_LEN];
 	char 	time[MAX_TIME_LEN];
 } Login, *pLogin;
@@ -204,8 +212,19 @@ typedef struct _GetUserTicketByRefresh
 {
 	char 	status[MAX_STATUS_LEN];
 	char	userticket[MAX_DEVTICKET_LEN];
+	char    userrefreshticket[MAX_REFRESH_TICKET_LEN];
 	char	time[MAX_TIME_LEN];
 }GetUserTicketByRefresh, *pGetUserTicketByRefresh;
+
+typedef struct _GetAWSCertificate
+{
+	char 	status[MAX_STATUS_LEN];
+	char	awsiotendpoint[MAX_DEVTICKET_LEN];
+	char	rootca[MAX_CA_DATA_LEN];
+	char	certificate[MAX_CA_DATA_LEN];
+	char	privatekey[MAX_CA_DATA_LEN];
+	char    message[MAX_DESC_LEN];
+}GetAWSCertificate, *pGetAWSCertificate;
 
 typedef struct _PsrSendMsg
 {
@@ -214,6 +233,18 @@ typedef struct _PsrSendMsg
 	char 	result_content[MAX_DESC_LEN];
 	char	time[MAX_TIME_LEN];
 } PsrSendMsg, *pPsrSendMsg;
+
+typedef struct _PnsSendMsgFcm
+{
+	char 	status[MAX_STATUS_LEN];
+	char	time[MAX_TIME_LEN];
+} PnsSendMsgFcm, *pPnsSendMsgFcm;
+
+typedef struct _RemoteLogin
+{
+	char 	status[MAX_STATUS_LEN];
+	char	time[MAX_TIME_LEN];
+} RemoteLogin, *pRemoteLogin;
 
 typedef enum _ws_status_code
 {
@@ -382,12 +413,27 @@ int send_getuserticketbyrefresh_req(
 	const char* server, 
 	const char* serviceid, 
 	const char* cusid, 
+	const char* devicemd5mac,
 	const char* refresh_ticket,
 	const char* devicetype, 
 	const char* fwver, 
 	const int apilevel,
 	const char* modelname,
 	GetUserTicketByRefresh* pGSA
+);
+
+int send_getawscertificate_req(
+	const char* server, 
+	const char* serviceid, 
+	const char* cusid, 
+	const char* userticket,
+	const char* deviceid,
+	const char* deviceticket,
+	const char* devicetype, 
+	const char* fwver, 
+	const int apilevel,
+	const char* modelname,
+	GetAWSCertificate* pGAC
 );
 
 int send_psr_sendmsg_req(
@@ -402,6 +448,33 @@ int send_psr_sendmsg_req(
 	const char* modelname,
 	const char *msg,
 	PsrSendMsg *pPsm
+);
+
+int send_pns_sendmsg_fcm_req(
+	const char *server,
+	const char *cusid,
+	const char *deviceid,
+	const char *deviceticket,
+    const char *appids,
+	const char* devicetype, 
+	const char* fwver, 
+	const char* apilevel,
+	const char* modelname,
+	const char *msg,
+	PnsSendMsgFcm *pPsm
+);
+
+int send_remotelogin_req(
+	const char *server,
+	const char* serviceid, 
+	const char *oauth_dm_cusid,
+	const char *mobile_deviceid,
+	const char *dm_ticket,
+	const char* devicetype, 
+	const char* fwver, 
+	const int apilevel,
+	const char* modelname,
+	RemoteLogin *pRl
 );
 
 char *get_curl_status_string(int error);

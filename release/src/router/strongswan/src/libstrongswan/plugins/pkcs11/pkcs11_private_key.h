@@ -30,6 +30,7 @@ typedef struct pkcs11_private_key_t pkcs11_private_key_t;
 #include <credentials/keys/private_key.h>
 
 #include "pkcs11.h"
+#include "pkcs11_library.h"
 
 /**
  * Private Key implementation on top of PKCS#11.
@@ -58,12 +59,16 @@ pkcs11_private_key_t *pkcs11_private_key_connect(key_type_t type, va_list args);
  *
  * Verifies that the given key is usable for this scheme.
  *
+ * @param lib			PKCS#11 library of the token the key resides on
+ * @param slot			slot of the token
  * @param scheme		signature scheme
  * @param type			key type
  * @param keylen		key length in bits
  * @param hash			hash algorithm to apply first (HASH_UNKNOWN if none)
  */
-CK_MECHANISM_PTR pkcs11_signature_scheme_to_mech(signature_scheme_t scheme,
+CK_MECHANISM_PTR pkcs11_signature_scheme_to_mech(pkcs11_library_t *lib,
+												 CK_SLOT_ID slot,
+												 signature_scheme_t scheme,
 												 key_type_t type, size_t keylen,
 												 hash_algorithm_t *hash);
 

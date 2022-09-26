@@ -24,6 +24,7 @@
 
 #include <library.h>
 #include <crypto/hashers/hasher.h>
+#include <tpm_tss.h>
 
 typedef enum pts_meas_algorithms_t pts_meas_algorithms_t;
 
@@ -32,6 +33,7 @@ typedef enum pts_meas_algorithms_t pts_meas_algorithms_t;
  */
 enum pts_meas_algorithms_t {
 	PTS_MEAS_ALGO_NONE     =      0,
+	PTS_MEAS_ALGO_SHA512   = (1<<12),
 	PTS_MEAS_ALGO_SHA384   = (1<<13),
 	PTS_MEAS_ALGO_SHA256   = (1<<14),
 	PTS_MEAS_ALGO_SHA1     = (1<<15)
@@ -47,11 +49,11 @@ extern enum_name_t *pts_meas_algorithm_names;
  * see section 3.8.5 of PTS Protocol: Binding to TNC IF-M Specification
  *
  *					   1
- *   0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 
+ *   0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5
  *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
  *  |1|2|3|R|R|R|R|R|R|R|R|R|R|R|R|R|
  *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
- *  
+ *
  */
 
 /**
@@ -68,6 +70,8 @@ bool pts_meas_algo_probe(pts_meas_algorithms_t *algorithms);
  * sha1 :  PTS_MEAS_ALGO_SHA1
  * sha256: PTS_MEAS_ALGO_SHA1 | PTS_MEAS_ALGO_SHA256
  * sha384: PTS_MEAS_ALGO_SHA1 | PTS_MEAS_ALGO_SHA256 | PTS_MEAS_ALGO_SHA384
+ * sha512: PTS_MEAS_ALGO_SHA1 | PTS_MEAS_ALGO_SHA256 | PTS_MEAS_ALGO_SHA384 |
+           PTS_MEAS_ALGO_SHA512
  *
  * The PTS-IMC is expected to select the strongest supported algorithm
  *
@@ -75,6 +79,14 @@ bool pts_meas_algo_probe(pts_meas_algorithms_t *algorithms);
  * @param algorithms	returns set of available PTS measurement algorithms
  */
 bool pts_meas_algo_update(char *hash_alg, pts_meas_algorithms_t *algorithms);
+
+/**
+ * Remove the PTS measurement algorithms not having an assigned PCR bank
+ *
+ * @param tpm				handle to TPM object
+ * @param algorithms		reduced set of algorithms with assigned PCR banks
+ */
+void pts_meas_algo_with_pcr(tpm_tss_t *tpm, pts_meas_algorithms_t *algorithms);
 
 /**
  * Select the strongest PTS measurement algorithm
@@ -98,8 +110,8 @@ hash_algorithm_t pts_meas_algo_to_hash(pts_meas_algorithms_t algorithm);
 /**
  * Convert hash_algorithm_t to pts_meas_algorithms_t
  *
- * @param algorithm		PTS measurement algorithm type
- * @return				libstrongswan hash algorithm type
+ * @param algorithm		libstrongswan hash algorithm type
+ * @return				PTS measurement algorithm type
  */
 pts_meas_algorithms_t pts_meas_algo_from_hash(hash_algorithm_t algorithm);
 

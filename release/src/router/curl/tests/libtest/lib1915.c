@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 2020 - 2021, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 2020 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -17,6 +17,8 @@
  *
  * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
  * KIND, either express or implied.
+ *
+ * SPDX-License-Identifier: curl
  *
  ***************************************************************************/
 #include "test.h"
@@ -30,7 +32,7 @@ struct entry {
   const char *exp;
 };
 
-static struct entry preload_hosts[] = {
+static const struct entry preload_hosts[] = {
   /* curl turns 39 that day just before 31-bit time_t overflow */
   { "1.example.com", "20370320 01:02:03" },
   { "2.example.com", "20370320 03:02:01" },

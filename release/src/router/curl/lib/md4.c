@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2021, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -18,6 +18,8 @@
  * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
  * KIND, either express or implied.
  *
+ * SPDX-License-Identifier: curl
+ *
  ***************************************************************************/
 
 #include "curl_setup.h"
@@ -27,6 +29,7 @@
 #include "curl_md4.h"
 #include "warnless.h"
 
+
 #ifdef USE_OPENSSL
 #include <openssl/opensslconf.h>
 #if defined(OPENSSL_VERSION_MAJOR) && (OPENSSL_VERSION_MAJOR >= 3)
@@ -34,6 +37,13 @@
 #define OPENSSL_NO_MD4
 #endif
 #endif /* USE_OPENSSL */
+
+#ifdef USE_WOLFSSL
+#include <wolfssl/options.h>
+#ifdef NO_MD4
+#define WOLFSSL_NO_MD4
+#endif
+#endif
 
 #ifdef USE_MBEDTLS
 #include <mbedtls/version.h>
@@ -74,8 +84,11 @@ static void MD4_Final(unsigned char *result, MD4_CTX *ctx)
   md4_digest(ctx, MD4_DIGEST_SIZE, result);
 }
 
+/* When OpenSSL or wolfSSL is available, we use their MD4 functions. */
+#elif defined(USE_WOLFSSL) && !defined(WOLFSSL_NO_MD4)
+#include <wolfssl/openssl/md4.h>
+
 #elif defined(USE_OPENSSL) && !defined(OPENSSL_NO_MD4)
-/* When OpenSSL is available we use the MD4-functions from OpenSSL */
 #include <openssl/md4.h>
 
 #elif (defined(__MAC_OS_X_VERSION_MAX_ALLOWED) && \
@@ -180,7 +193,7 @@ static void MD4_Update(MD4_CTX *ctx, const void *data, unsigned long size)
 {
   if(!ctx->data) {
     ctx->data = malloc(size);
-    if(ctx->data != NULL) {
+    if(ctx->data) {
       memcpy(ctx->data, data, size);
       ctx->size = size;
     }
@@ -189,7 +202,7 @@ static void MD4_Update(MD4_CTX *ctx, const void *data, unsigned long size)
 
 static void MD4_Final(unsigned char *result, MD4_CTX *ctx)
 {
-  if(ctx->data != NULL) {
+  if(ctx->data) {
 #if !defined(HAS_MBEDTLS_RESULT_CODE_BASED_FUNCTIONS)
     mbedtls_md4(ctx->data, ctx->size, result);
 #else

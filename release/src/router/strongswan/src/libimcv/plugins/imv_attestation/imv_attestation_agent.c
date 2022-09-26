@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2011-2012 Sansar Choinyambuu
- * Copyright (C) 2011-2015 Andreas Steffen
+ * Copyright (C) 2011-2020 Andreas Steffen
  * HSR Hochschule fuer Technik Rapperswil
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -34,6 +34,7 @@
 #include <ietf/ietf_attr_product_info.h>
 #include <ietf/ietf_attr_string_version.h>
 #include <ita/ita_attr.h>
+#include <ita/ita_attr_symlinks.h>
 #include <tcg/tcg_attr.h>
 #include <tcg/pts/tcg_pts_attr_meas_algo.h>
 #include <tcg/pts/tcg_pts_attr_proto_caps.h>
@@ -44,6 +45,7 @@
 #include <pts/pts.h>
 #include <pts/pts_database.h>
 #include <pts/pts_creds.h>
+#include <pts/pts_symlinks.h>
 #include <pts/components/ita/ita_comp_func_name.h>
 
 #include <tncif_pa_subtypes.h>
@@ -285,6 +287,20 @@ static TNC_Result receive_msg(private_imv_attestation_agent_t *this,
 					value = attr->get_value(attr);
 					DBG1(DBG_IMV, "device ID is %.*s", value.len, value.ptr);
 					session->set_device_id(session, value);
+					break;
+				}
+				case ITA_ATTR_SYMLINKS:
+				{
+					imv_attestation_state_t *attestation_state;
+					ita_attr_symlinks_t *attr_cast;
+					pts_symlinks_t *symlinks;
+					pts_t *pts;
+
+					attr_cast = (ita_attr_symlinks_t*)attr;
+					symlinks = attr_cast->get_symlinks(attr_cast);
+					attestation_state = (imv_attestation_state_t*)state;
+					pts = attestation_state->get_pts(attestation_state);
+					pts->set_symlinks(pts, symlinks);
 					break;
 				}
 				default:
@@ -859,7 +875,7 @@ METHOD(imv_agent_if_t, destroy, void,
 	if (this->pts_creds)
 	{
 		this->pts_credmgr->remove_set(this->pts_credmgr,
-						 			  this->pts_creds->get_set(this->pts_creds));
+									  this->pts_creds->get_set(this->pts_creds));
 		this->pts_creds->destroy(this->pts_creds);
 	}
 	DESTROY_IF(this->pts_db);
@@ -887,7 +903,7 @@ imv_agent_if_t *imv_attestation_agent_create(const char *name, TNC_IMVID id,
 	}
 
 	hash_alg = lib->settings->get_str(lib->settings,
-				"%s.plugins.imv-attestation.hash_algorithm", "sha256", lib->ns);
+				"%s.plugins.imv-attestation.hash_algorithm", "sha384", lib->ns);
 	dh_group = lib->settings->get_str(lib->settings,
 				"%s.plugins.imv-attestation.dh_group", "ecp256", lib->ns);
 	mandatory_dh_groups = lib->settings->get_bool(lib->settings,

@@ -345,6 +345,97 @@ function updateWebHistory() {
 		getWebHistory(document.form.clientList.value, '1');
 	}, 200);
 }
+function exportWebHistoryLog(){
+	var all_array = [];
+	var mac = document.form.clientList.value;
+	var page = 1;
+
+	var get_history = function(_mac, _page){
+		 $.get("/appGet.cgi?hook=bwdpi_history()&client=" + _mac + "&page=" + _page + "", function(data){
+			var result = jQuery.parseJSON(data);
+			var len = result.bwdpi_history.length;
+			if(len > 0){
+				all_array = $.merge(all_array, result.bwdpi_history);
+				if(len == 50){
+					page++;
+					get_history(mac, page);
+				}
+				else{
+					export_CSV(all_array);
+				}
+			}
+			else{
+				export_CSV(all_array);
+			}
+		});
+	};
+	get_history(mac, page);
+}
+function export_CSV(export_array) {
+	var data = [["<#Access_Time#>", "<#MAC_Address#>", "<#Client_Name#>".replace(/&#39;/g, "'"), "<#Domain_Name#>"]];
+	var tempArray = new Array();
+
+	var setArray = function(array) {
+		for(var i = 0; i < array.length; i += 1) {
+			var thisLog = {
+				macAddr: array[i][0],
+				timeStamp: array[i][1],
+				hostName: array[i][2]
+			}
+
+			tempArray = [];
+			tempArray[0] = (convertTime(thisLog.timeStamp)).replace("&nbsp&nbsp", "  ");
+			if(clientList[thisLog.macAddr] != undefined) {
+				var clientName = (clientList[thisLog.macAddr].nickName == "") ? clientList[thisLog.macAddr].name : clientList[thisLog.macAddr].nickName;
+				tempArray[1] = thisLog.macAddr;
+				tempArray[2] = clientName;
+			}
+			else
+				tempArray[2] = tempArray[1] = thisLog.macAddr;
+
+			tempArray[3] = thisLog.hostName;
+			data.push(tempArray);
+		}
+	};
+	setArray(export_array);
+
+	var csvContent = '';
+	data.forEach(function (infoArray, index) {
+		var dataString = infoArray.join(',');
+		csvContent += index < data.length ? dataString + '\n' : dataString;
+	});
+
+	var download = function(content, fileName, mimeType) {
+		var a = document.createElement('a');
+		mimeType = mimeType || 'application/octet-stream';
+
+		if (navigator.msSaveBlob) { // IE10
+			return navigator.msSaveBlob(new Blob([content], { type: mimeType }), fileName);
+		}
+		else if ('download' in a) { //html5 A[download]
+			a.href = 'data:' + mimeType + ',' + "%EF%BB%BF" + encodeURIComponent(content);
+			a.setAttribute('download', fileName);
+			document.getElementById("log_table").appendChild(a);
+			setTimeout(function() {
+				a.click();
+				document.getElementById("log_table").removeChild(a);
+			}, 66);
+			return true;
+		}
+		else { //do iframe dataURL download (old ch+FF):
+			var f = document.createElement('iframe');
+			document.getElementById("log_table").appendChild(f);
+			f.src = 'data:' + mimeType + ',' + "%EF%BB%BF" + encodeURIComponent(content);
+
+			setTimeout(function() {
+				document.getElementById("log_table").removeChild(f);
+				}, 333);
+			return true;
+		}
+	};
+
+	download(csvContent, 'Web_History.csv', 'data:text/csv;charset=utf-8');
+}
 </script>
 </head>
 <body onload="initial();" onunload="unload_body();" class="bg">
@@ -421,6 +512,7 @@ function updateWebHistory() {
 										<div class="apply_gen">
 											<input class="button_gen" onClick="httpApi.cleanLog('web_history', updateWebHistory);" type="button" value="<#CTL_clear#>" >
 											<input class="button_gen" onClick="getWebHistory(document.form.clientList.value, '1')" type="button" value="<#CTL_refresh#>">
+											<input class="button_gen" onClick="exportWebHistoryLog()" type="button" value="<#btn_Export#>" >
 										</div>
 									</div>
 								</td>

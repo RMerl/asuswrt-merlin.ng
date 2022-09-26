@@ -51,7 +51,7 @@ struct pt_tls_client_t {
  * Create a pt_tls_client instance.
  *
  * The client identity is used for:
- * - TLS authentication if an appropirate certificate is found
+ * - TLS authentication if an appropriate certificate is found
  * - SASL authentication if requested from the server
  *
  * @param address		address/port to run assessments against, gets owned

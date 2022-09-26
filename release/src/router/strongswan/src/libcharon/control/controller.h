@@ -78,7 +78,7 @@ struct controller_t {
 	 * until the IKE_SA is established or failed.
 	 *
 	 * @param peer_cfg		peer_cfg to use for IKE_SA setup
-	 * @param child_cfg		child_cfg to set up CHILD_SA from
+	 * @param child_cfg		optional child_cfg to set up CHILD_SA from
 	 * @param cb			logging callback
 	 * @param param			parameter to include in each call of cb
 	 * @param timeout		timeout in ms to wait for callbacks, 0 to disable

@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2011-2012 Sansar Choinyambuu
- * Copyright (C) 2011-2014 Andreas Steffen
+ * Copyright (C) 2011-2020 Andreas Steffen
  * HSR Hochschule fuer Technik Rapperswil
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -24,6 +24,7 @@
 #include <ietf/ietf_attr_product_info.h>
 #include <ietf/ietf_attr_string_version.h>
 #include <ietf/ietf_attr_assess_result.h>
+#include <ita/ita_attr_symlinks.h>
 #include <tcg/pts/tcg_pts_attr_proto_caps.h>
 #include <tcg/pts/tcg_pts_attr_meas_algo.h>
 #include <os_info/os_info.h>
@@ -198,6 +199,25 @@ static TNC_Result receive_message(imc_state_t *state, imc_msg_t *in_msg)
 			{
 				result = TNC_RESULT_FATAL;
 				break;
+			}
+		}
+		else if (type.vendor_id == PEN_ITA)
+		{
+			if (type.type == ITA_ATTR_GET_SYMLINKS)
+			{
+				pts_symlinks_t *symlinks;
+				chunk_t dir;
+				pts_t *pts;
+
+				dir = attr->get_value(attr);
+				attestation_state = (imc_attestation_state_t*)state;
+				pts = attestation_state->get_pts(attestation_state);
+				symlinks = pts->extract_symlinks(pts, dir);
+				if (symlinks)
+				{
+					attr = ita_attr_symlinks_create(symlinks);
+					out_msg->add_attribute(out_msg, attr);
+				}
 			}
 		}
 	}

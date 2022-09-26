@@ -151,12 +151,7 @@ function qis_delay_redirect(next_url){
 }
 
 function redirect(){
-	if(isMobile()){
-		parent.location.href = 'http://'+parent.document.form.lan_ipaddr.value+'/QIS_wizard_m.htm?flag=detect';
-	}
-	else{
-		parent.location.href = 'http://'+parent.document.form.lan_ipaddr.value+'/QIS_wizard.htm?flag=detect';
-	}	
+	parent.location.href = 'http://'+parent.document.form.lan_ipaddr.value+'/QIS_wizard.htm?flag=detect';
 }
 
 function redirect_qis(){
@@ -280,18 +275,18 @@ function showWlHint(){
 
 		var ssid_nvram = [htmlEnDeCode.htmlEncode(decodeURIComponent('<% nvram_char_to_ascii("", "wl0_ssid"); %>')), htmlEnDeCode.htmlEncode(decodeURIComponent('<% nvram_char_to_ascii("", "wl1_ssid"); %>')), htmlEnDeCode.htmlEncode(decodeURIComponent('<% nvram_char_to_ascii("", "wl2_ssid"); %>'))];
 		var auth_nvram = [decodeURIComponent('<% nvram_char_to_ascii("", "wl0_auth_mode_x"); %>'), decodeURIComponent('<% nvram_char_to_ascii("", "wl1_auth_mode_x"); %>'), decodeURIComponent('<% nvram_char_to_ascii("", "wl2_auth_mode_x"); %>')];
-		var key_nvram = [decodeURIComponent('<% nvram_char_to_ascii("", "wl0_wpa_psk"); %>'), decodeURIComponent('<% nvram_char_to_ascii("", "wl1_wpa_psk"); %>'), decodeURIComponent('<% nvram_char_to_ascii("", "wl2_wpa_psk"); %>')];
+		var key_nvram = [htmlEnDeCode.htmlEncode(decodeURIComponent('<% nvram_char_to_ascii("", "wl0_wpa_psk"); %>')), htmlEnDeCode.htmlEncode(decodeURIComponent('<% nvram_char_to_ascii("", "wl1_wpa_psk"); %>')), htmlEnDeCode.htmlEncode(decodeURIComponent('<% nvram_char_to_ascii("", "wl2_wpa_psk"); %>'))];
 		var smart_connect_nvram = '<% nvram_get("smart_connect_x"); %>';
 
 		var ssid_param = [htmlEnDeCode.htmlEncode(decodeURIComponent('<% get_ascii_parameter("wl0_ssid"); %>')), htmlEnDeCode.htmlEncode(decodeURIComponent('<% get_ascii_parameter("wl1_ssid"); %>')), htmlEnDeCode.htmlEncode(decodeURIComponent('<% get_ascii_parameter("wl2_ssid"); %>'))];
 		var auth_param = [decodeURIComponent('<% get_ascii_parameter("wl0_auth_mode_x"); %>'), decodeURIComponent('<% get_ascii_parameter("wl1_auth_mode_x"); %>'), decodeURIComponent('<% get_ascii_parameter("wl2_auth_mode_x"); %>')];
-		var key_param = [decodeURIComponent('<% get_ascii_parameter("wl0_wpa_psk"); %>'), decodeURIComponent('<% get_ascii_parameter("wl1_wpa_psk"); %>'), decodeURIComponent('<% get_ascii_parameter("wl2_wpa_psk"); %>')];
+		var key_param = [htmlEnDeCode.htmlEncode(decodeURIComponent('<% get_ascii_parameter("wl0_wpa_psk"); %>')), htmlEnDeCode.htmlEncode(decodeURIComponent('<% get_ascii_parameter("wl1_wpa_psk"); %>')), htmlEnDeCode.htmlEncode(decodeURIComponent('<% get_ascii_parameter("wl2_wpa_psk"); %>'))];
 
 		var applyParam = {
 			unit: decodeURIComponent('<% get_ascii_parameter("wl_unit"); %>'),
 			ssid: htmlEnDeCode.htmlEncode(decodeURIComponent('<% get_ascii_parameter("wl_ssid"); %>')),
 			auth: decodeURIComponent('<% get_ascii_parameter("wl_auth_mode_x"); %>'),
-			key: decodeURIComponent('<% get_ascii_parameter("wl_wpa_psk"); %>'),
+			key: htmlEnDeCode.htmlEncode(decodeURIComponent('<% get_ascii_parameter("wl_wpa_psk"); %>')),
 			smartConnect: decodeURIComponent('<% get_ascii_parameter("smart_connect_x"); %>')
 		}
 
@@ -547,16 +542,10 @@ function initial(){
 			
 			if(getflag == "manual"){
 				if(rc_support.search("gobi") >= 0){
-					if(isMobile())
-						setTimeout("qis_delay_redirect('/qis_m/QIS_modem.htm');", restart_time*1000);
-					else
-						setTimeout("qis_delay_redirect('/qis/QIS_modem.htm');", restart_time*1000);
+					setTimeout("qis_delay_redirect('/qis/QIS_modem.htm');", restart_time*1000);
 				}	
 				else{
-					if(isMobile() && (parent.based_modelid == "RT-AC88U" || parent.based_modelid == "RT-AC3100" || parent.based_modelid == "RT-AC5300" || parent.based_modelid == "GT-AC5300"))
-						setTimeout("qis_delay_redirect('/qis_m/QIS_wireless.htm');", restart_time*1000);
-					else
-						setTimeout("qis_delay_redirect('/qis/QIS_wireless.htm');", restart_time*1000);
+					setTimeout("qis_delay_redirect('/qis/QIS_wireless.htm');", restart_time*1000);
 				}	
 			}
 			else if(parent.document.getElementById("hidden_frame")){
@@ -573,10 +562,7 @@ function initial(){
 				
 				}
 				else if(getflag == "static"){
-					if(isMobile())
-						qis_delay_redirect('/qis_m/QIS_wireless.htm');
-					else
-						qis_delay_redirect('/qis/QIS_wireless.htm');		
+					qis_delay_redirect('/qis/QIS_wireless.htm');		
 				}
 				else if(getflag == "pppoe"){
 					setTimeout("qis_delay_redirect('/qis/QIS_wireless.htm');", 500);
@@ -588,35 +574,23 @@ function initial(){
 					qis_delay_redirect('/qis/QIS_detect.htm?flag=sim');
 				}
 				else{
-					if(isMobile())
-						setTimeout("qis_delay_redirect('/qis_m/QIS_verify_detect.htm');", restart_time*1000);
-					else
-						setTimeout("qis_delay_redirect('/qis/QIS_verify_detect.htm');", restart_time*1000);
+					setTimeout("qis_delay_redirect('/qis/QIS_verify_detect.htm');", restart_time*1000);
 				}
 			}
 			else{
 				if(getflag == "auto_way_vpn"){
 					parent.showLoading(restart_time);
-					if(isMobile())
-						setTimeout("delay_redirect('/qis_m/QIS_verify_detect.htm');", restart_time*1000);
-					else
-						setTimeout("delay_redirect('/qis/QIS_verify_detect.htm');", restart_time*1000);
+					setTimeout("delay_redirect('/qis/QIS_verify_detect.htm');", restart_time*1000);
 					return;
 				}
 				else if(getflag == "detect"){
 					parent.showLoading(restart_time);
-					if(isMobile())
-						setTimeout("delay_redirect('/qis_m/QIS_detect.htm');", restart_time*1000);
-					else
-						setTimeout("delay_redirect('/qis/QIS_detect.htm');", restart_time*1000);
+					setTimeout("delay_redirect('/qis/QIS_detect.htm');", restart_time*1000);
 					return;
 				}		
 				else if(getflag == "verify_detect"){
 					parent.showLoading(restart_time);
-					if(isMobile())
-						setTimeout("delay_redirect('/qis_m/QIS_verify_detect.htm');", restart_time*1000);
-					else
-						setTimeout("delay_redirect('/qis/QIS_verify_detect.htm');", restart_time*1000);
+					setTimeout("delay_redirect('/qis/QIS_verify_detect.htm');", restart_time*1000);
 					return;
 				}
 				else{
@@ -674,6 +648,9 @@ function initial(){
 	}
 	else if(action_script.indexOf("start_webs_upgrade") != -1) {
   		setTimeout("parent.startDownloading();", 1000);
+	}
+	else if(action_script.indexOf("start_revert_fw") != -1) {
+  		setTimeout("parent.startRevertDownloading();", 1000);
 	}
 	else if(action_script == "restart_cloudsync"){
 		parent.showLoading(restart_time, "waiting");

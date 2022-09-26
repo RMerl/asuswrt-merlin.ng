@@ -274,7 +274,7 @@ METHOD(credential_manager_t, get_cert, certificate_t*,
 	enumerator = create_cert_enumerator(this, cert, key, id, trusted);
 	if (enumerator->enumerate(enumerator, &current))
 	{
-		/* TODO: best match? order by keyid, subject, sualtname */
+		/* TODO: best match? order by keyid, subject, subjectAltName */
 		found = current->get_ref(current);
 	}
 	enumerator->destroy(enumerator);

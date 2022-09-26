@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016 Tobias Brunner
+ * Copyright (C) 2012-2020 Tobias Brunner
  * Copyright (C) 2006-2009 Martin Willi
  * HSR Hochschule fuer Technik Rapperswil
  *
@@ -363,13 +363,17 @@ struct bus_t {
 	/**
 	 * IKE_SA derived keys hook.
 	 *
-	 * @param sk_ei		SK_ei, or Ka for IKEv1
-	 * @param sk_er		SK_er
+	 * @param sk_d		SK_d, or SKEYID_d for IKEv1
 	 * @param sk_ai		SK_ai, or SKEYID_a for IKEv1
 	 * @param sk_ar		SK_ar
+	 * @param sk_ei		SK_ei, or Ka for IKEv1
+	 * @param sk_er		SK_er
+	 * @param sk_pi		SK_pi
+	 * @param sk_pr		SK_pr
 	 */
-	void (*ike_derived_keys)(bus_t *this, chunk_t sk_ei, chunk_t sk_er,
-							 chunk_t sk_ai, chunk_t sk_ar);
+	void (*ike_derived_keys)(bus_t *this, chunk_t sk_d, chunk_t sk_ai,
+							 chunk_t sk_ar, chunk_t sk_ei, chunk_t sk_er,
+							 chunk_t sk_pi, chunk_t sk_pr);
 
 	/**
 	 * CHILD_SA keymat hook.
@@ -417,10 +421,11 @@ struct bus_t {
 	 * IKE_SA peer endpoint update hook.
 	 *
 	 * @param ike_sa	updated IKE_SA, having old endpoints set
-	 * @param local		TRUE if local endpoint gets updated, FALSE for remote
-	 * @param new		new endpoint address and port
+	 * @param local		new/current local endpoint address and port
+	 * @param remote	new/current remote endpoint address and port
 	 */
-	void (*ike_update)(bus_t *this, ike_sa_t *ike_sa, bool local, host_t *new);
+	void (*ike_update)(bus_t *this, ike_sa_t *ike_sa, host_t *local,
+					   host_t *remote);
 
 	/**
 	 * IKE_SA reestablishing hook (before resolving hosts).
@@ -461,7 +466,7 @@ struct bus_t {
 	 * CHILD_SA migration hook.
 	 *
 	 * @param new		ID of new SA when called for the old, NULL otherwise
-	 * @param uniue		unique ID of new SA when called for the old, 0 otherwise
+	 * @param unique	unique ID of new SA when called for the old, 0 otherwise
 	 */
 	void (*children_migrate)(bus_t *this, ike_sa_id_t *new, uint32_t unique);
 

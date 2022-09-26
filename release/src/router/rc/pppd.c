@@ -249,7 +249,7 @@ start_pppd(int unit)
 		fprintf(fp, "maxfail %d\n", nvram_get_int(strcat_r(prefix, "pppoe_maxfail", tmp)));
 	}
 
-#if defined(RTCONFIG_IPV6) && (defined(RTAX82_XD6) || defined(RTAX82_XD6S))
+#if defined(RTCONFIG_IPV6) && (defined(RTAX82_XD6) || defined(RTAX82_XD6S) || defined(XD6_V2))
 	if (!strncmp(nvram_safe_get("territory_code"), "CH", 2) &&
 		nvram_match(ipv6_nvname("ipv6_only"), "1"))
 	switch (get_ipv6_service_by_unit(unit)) {

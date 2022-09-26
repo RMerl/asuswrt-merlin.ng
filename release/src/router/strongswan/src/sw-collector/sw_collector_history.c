@@ -488,19 +488,22 @@ sw_collector_history_t *sw_collector_history_create(sw_collector_db_t *db,
 {
 	private_sw_collector_history_t *this;
 	swid_gen_info_t *info;
-	os_type_t os_type;
 	char *os;
 
 	info = swid_gen_info_create();
+	info->get_os(info, &os);
 
 	/* check if OS supports apg/dpkg history logs */
-	info->get_os(info, &os);
-	os_type = info->get_os_type(info);
-	if (os_type != 	OS_TYPE_DEBIAN && os_type != OS_TYPE_UBUNTU)
+	switch (info->get_os_type(info))
 	{
-		DBG1(DBG_IMC, "%.*s not supported", os);
-		info->destroy(info);
-		return NULL;
+		case OS_TYPE_DEBIAN:
+		case OS_TYPE_UBUNTU:
+		case OS_TYPE_RASPBIAN:
+			break;
+		default:
+			DBG1(DBG_IMC, "%.*s not supported", os);
+			info->destroy(info);
+			return NULL;
 	}
 
 	INIT(this,

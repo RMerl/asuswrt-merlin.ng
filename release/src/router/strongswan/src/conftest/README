@@ -1,7 +1,7 @@
 
 
-             conftest - an IKEv2 conformance testing framework
-             =================================================
+            conftest - an IKEv2 conformance testing framework
+            =================================================
 
 
 1. Introduction
@@ -40,9 +40,9 @@ strongSwan software suite.
 
 The syntax is as follows:
 
- settings := (section|keyvalue)*
- section  := name { settings }
- keyvalue := key = value\n
+  settings := (section|keyvalue)*
+  section  := name { settings }
+  keyvalue := key = value\n
 
 Settings contain zero or more sub-sections or key/value pairs. A section
 consists of a name, followed by curly open and close brackets. The value in the
@@ -108,7 +108,7 @@ The following CHILD_SA specific configuration options are supported:
   lts:         Local side traffic selectors, comma separated CIDR subnets
   rts:         Remote side traffic selectors, comma separated CIDR subnets
   transport:   Propose IPsec transport mode instead of tunnel mode
-  tfc_padding: Inject Traffic Flow Confidentialty bytes to align packets to the
+  tfc_padding: Inject Traffic Flow Confidentiality bytes to align packets to the
                given length
   proposal:    CHILD_SA proposal list, same syntax as IKE_SA proposal list
 
@@ -150,24 +150,24 @@ The actions section in the test specific configuration file defines
 the IKEv2 protocol actions to trigger. Currently, the following actions
 are supported and take these arguments (as key/value pairs):
 
-  initiate:    Initiate an IKE- and CHILD_SA
-               config: name of the CHILD_SA configuration to initiate
-               delay: Delay to trigger action after startup
-  rekey_ike:   Rekey an IKE_SA
-               config: name of originating IKE_SA configuration
-               delay: Delay to trigger action after startup
-  rekey_child: Rekey an CHILD_SA
-               config: name of originating CHILD_SA configuration
-               delay: Delay to trigger action after startup
-  liveness:    Do a liveness check (DPD) on the IKE_SA
-               config: name of originating IKE_SA configuration
-               delay: Delay to trigger action after startup
-  close_ike:   Close an IKE_SA
-               config: name of originating IKE_SA configuration
-               delay: Delay to trigger action after startup
-  close_child: Close a CHILD_SA
-               config: name of originating IKE_SA configuration
-               delay: Delay to trigger action after startup
+  initiate:     Initiate an IKE- and CHILD_SA
+                config: name of the CHILD_SA configuration to initiate
+                delay: Delay to trigger action after startup
+  rekey_ike:    Rekey an IKE_SA
+                config: name of originating IKE_SA configuration
+                delay: Delay to trigger action after startup
+  rekey_child:  Rekey an CHILD_SA
+                config: name of originating CHILD_SA configuration
+                delay: Delay to trigger action after startup
+  liveness:     Do a liveness check (DPD) on the IKE_SA
+                config: name of originating IKE_SA configuration
+                delay: Delay to trigger action after startup
+  close_ike:    Close an IKE_SA
+                config: name of originating IKE_SA configuration
+                delay: Delay to trigger action after startup
+  close_child:  Close a CHILD_SA
+                config: name of originating IKE_SA configuration
+                delay: Delay to trigger action after startup
 
 To trigger the same action multiple times, the action sections must be named
 uniquely. Append an arbitrary string to the action name. The following example
@@ -271,7 +271,7 @@ Currently, the following hooks are defined with the following options:
     request:          yes to set in request, no in response
     id:               IKEv2 message identifier of message to mangle
     from:             proposal number to mangle
-    to:               new porposal number to set instead of from
+    to:               new proposal number to set instead of from
   set_reserved:       set arbitrary reserved bits/bytes in payloads
     request:          yes to set in request, no in response
     id:               IKEv2 message identifier of message to mangle

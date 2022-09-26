@@ -2,30 +2,30 @@
 
 ## Cookie overview
 
-  Cookies are `name=contents` pairs that a HTTP server tells the client to
+  Cookies are `name=contents` pairs that an HTTP server tells the client to
   hold and then the client sends back those to the server on subsequent
   requests to the same domains and paths for which the cookies were set.
 
   Cookies are either "session cookies" which typically are forgotten when the
   session is over which is often translated to equal when browser quits, or
-  the cookies aren't session cookies they have expiration dates after which
+  the cookies are not session cookies they have expiration dates after which
   the client will throw them away.
 
   Cookies are set to the client with the Set-Cookie: header and are sent to
   servers with the Cookie: header.
 
-  For a very long time, the only spec explaining how to use cookies was the
+  For a long time, the only spec explaining how to use cookies was the
   original [Netscape spec from 1994](https://curl.se/rfc/cookie_spec.html).
 
   In 2011, [RFC6265](https://www.ietf.org/rfc/rfc6265.txt) was finally
   published and details how cookies work within HTTP. In 2016, an update which
   added support for prefixes was
-  [proposed](https://tools.ietf.org/html/draft-ietf-httpbis-cookie-prefixes-00),
+  [proposed](https://datatracker.ietf.org/doc/html/draft-ietf-httpbis-cookie-prefixes-00),
   and in 2017, another update was
-  [drafted](https://tools.ietf.org/html/draft-ietf-httpbis-cookie-alone-01)
+  [drafted](https://datatracker.ietf.org/doc/html/draft-ietf-httpbis-cookie-alone-01)
   to deprecate modification of 'secure' cookies from non-secure origins. Both
   of these drafts have been incorporated into a proposal to
-  [replace](https://tools.ietf.org/html/draft-ietf-httpbis-rfc6265bis-02)
+  [replace](https://datatracker.ietf.org/doc/html/draft-ietf-httpbis-rfc6265bis-02)
   RFC6265. Cookie prefixes and secure cookie modification protection has been
   implemented by curl.
 
@@ -36,7 +36,7 @@
   sharing the cookies with browsers, only to see browsers move away from that
   format. Modern browsers no longer use it, while curl still does.
 
-  The netscape cookie file format stores one cookie per physical line in the
+  The Netscape cookie file format stores one cookie per physical line in the
   file with a bunch of associated meta data, each field separated with
   TAB. That file is called the cookiejar in curl terminology.
 
@@ -48,7 +48,7 @@
   The cookie file format is text based and stores one cookie per line. Lines
   that start with `#` are treated as comments.
 
-  Each line that each specifies a single cookie consists of seven text fields
+  Each line that specifies a single cookie consists of seven text fields
   separated with TAB characters. A valid line must end with a newline
   character.
 
@@ -74,7 +74,7 @@
   `-b, --cookie`
 
   tell curl a file to read cookies from and start the cookie engine, or if it
-  isn't a file it will pass on the given string. -b name=var works and so does
+  is not a file it will pass on the given string. -b name=var works and so does
   -b cookiefile.
 
   `-j, --junk-session-cookies`
@@ -111,23 +111,28 @@
   `CURLOPT_COOKIELIST`
 
   Provide detailed information about a single cookie to add to the internal
-  storage of cookies. Pass in the cookie as a HTTP header with all the details
-  set, or pass in a line from a netscape cookie file. This option can also be
-  used to flush the cookies etc.
+  storage of cookies. Pass in the cookie as an HTTP header with all the
+  details set, or pass in a line from a Netscape cookie file. This option can
+  also be used to flush the cookies etc.
+
+  `CURLOPT_COOKIESESSION`
+
+  Tell libcurl to ignore all cookies it is about to load that are session
+  cookies.
 
   `CURLINFO_COOKIELIST`
 
   Extract cookie information from the internal cookie storage as a linked
   list.
 
-## Cookies with javascript
+## Cookies with JavaScript
 
-  These days a lot of the web is built up by javascript. The webbrowser loads
-  complete programs that render the page you see. These javascript programs
+  These days a lot of the web is built up by JavaScript. The webbrowser loads
+  complete programs that render the page you see. These JavaScript programs
   can also set and access cookies.
 
   Since curl and libcurl are plain HTTP clients without any knowledge of or
-  capability to handle javascript, such cookies will not be detected or used.
+  capability to handle JavaScript, such cookies will not be detected or used.
 
   Often, if you want to mimic what a browser does on such websites, you can
   record web browser HTTP traffic when using such a site and then repeat the

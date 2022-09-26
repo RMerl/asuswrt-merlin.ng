@@ -16,7 +16,7 @@
       <td></td>
       <td align="right">
         <input type="submit" value="Back" name="back"/>
-        <input type="submit" value="Delete" name="delete" onclick="return confirm('Permanently delete this peer?')"/> 
+        <input type="submit" value="Delete" name="delete" onclick="return confirm('Permanently delete this peer?')"/>
       	<input type="submit" value="Save" name="save"/>
       </td>
     </tr>

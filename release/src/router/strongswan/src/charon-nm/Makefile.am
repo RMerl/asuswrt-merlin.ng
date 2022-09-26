@@ -23,7 +23,6 @@ charon_nm_LDADD = \
 	$(top_builddir)/src/libcharon/libcharon.la \
 	-lm $(PTHREADLIB) $(ATOMICLIB) $(DLLIB) ${nm_LIBS}
 
-dbusservicedir = $(sysconfdir)/dbus-1/system.d
-dbusservice_DATA = nm-strongswan-service.conf
+dbuspolicy_DATA = nm-strongswan-service.conf
 
-EXTRA_DIST = $(dbusservice_DATA)
+EXTRA_DIST = $(dbuspolicy_DATA)

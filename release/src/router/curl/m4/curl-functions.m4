@@ -5,7 +5,7 @@
 #                            | (__| |_| |  _ <| |___
 #                             \___|\___/|_| \_\_____|
 #
-# Copyright (C) 1998 - 2021, Daniel Stenberg, <daniel@haxx.se>, et al.
+# Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
 #
 # This software is licensed as described in the file COPYING, which
 # you should have received as part of this distribution. The terms
@@ -17,6 +17,8 @@
 #
 # This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
 # KIND, either express or implied.
+#
+# SPDX-License-Identifier: curl
 #
 #***************************************************************************
 
@@ -486,7 +488,7 @@ curl_includes_unistd="\
 dnl CURL_INCLUDES_WINSOCK2
 dnl -------------------------------------------------
 dnl Set up variable with list of headers that must be
-dnl included when winsock(2).h is to be included.
+dnl included when winsock2.h is to be included.
 
 AC_DEFUN([CURL_INCLUDES_WINSOCK2], [
 curl_includes_winsock2="\
@@ -498,15 +500,10 @@ curl_includes_winsock2="\
 #  include <windows.h>
 #  ifdef HAVE_WINSOCK2_H
 #    include <winsock2.h>
-#  else
-#    ifdef HAVE_WINSOCK_H
-#      include <winsock.h>
-#    endif
 #  endif
 #endif
 /* includes end */"
   CURL_CHECK_HEADER_WINDOWS
-  CURL_CHECK_HEADER_WINSOCK
   CURL_CHECK_HEADER_WINSOCK2
 ])
 
@@ -1154,7 +1151,7 @@ AC_DEFUN([CURL_CHECK_FUNC_FCNTL_O_NONBLOCK], [
   tst_allow_fcntl_o_nonblock="unknown"
   #
   case $host_os in
-    sunos4* | aix3* | beos*)
+    sunos4* | aix3*)
       dnl O_NONBLOCK does not work on these platforms
       curl_disallow_fcntl_o_nonblock="yes"
       ;;
@@ -2053,6 +2050,10 @@ AC_DEFUN([CURL_CHECK_FUNC_GETADDRINFO], [
         ;;
       hpux*)
         dnl hpux 11.11 and newer
+        tst_tsafe_getaddrinfo="yes"
+        ;;
+      midnightbsd*)
+        dnl all MidnightBSD versions
         tst_tsafe_getaddrinfo="yes"
         ;;
       netbsd[[123]].*)
@@ -6515,11 +6516,18 @@ dnl CURL_LIBRARY_PATH variable. It keeps the LD_LIBRARY_PATH
 dnl changes contained within this macro.
 
 AC_DEFUN([CURL_RUN_IFELSE], [
-   old=$LD_LIBRARY_PATH
-   LD_LIBRARY_PATH=$CURL_LIBRARY_PATH:$old
-   export LD_LIBRARY_PATH
-   AC_RUN_IFELSE([AC_LANG_SOURCE([$1])], $2, $3, $4)
-   LD_LIBRARY_PATH=$old # restore
+   case $host_os in
+     darwin*)
+      AC_RUN_IFELSE([AC_LANG_SOURCE([$1])], $2, $3, $4)
+     ;;
+     *)
+      old=$LD_LIBRARY_PATH
+      LD_LIBRARY_PATH=$CURL_LIBRARY_PATH:$old
+      export LD_LIBRARY_PATH
+      AC_RUN_IFELSE([AC_LANG_SOURCE([$1])], $2, $3, $4)
+      LD_LIBRARY_PATH=$old # restore
+     ;;
+   esac
 ])
 
 dnl CURL_COVERAGE
@@ -6556,7 +6564,30 @@ AC_DEFUN([CURL_COVERAGE],[
     fi
 
     CPPFLAGS="$CPPFLAGS -DNDEBUG"
-    CFLAGS="$CLAGS -O0 -g -fprofile-arcs -ftest-coverage"
+    CFLAGS="$CFLAGS -O0 -g -fprofile-arcs -ftest-coverage"
     LIBS="$LIBS -lgcov"
   fi
+])
+
+dnl CURL_ATOMIC
+dnl --------------------------------------------------
+dnl Check if _Atomic works
+dnl
+AC_DEFUN([CURL_ATOMIC],[
+  AC_MSG_CHECKING([if _Atomic is available])
+  AC_COMPILE_IFELSE([
+    AC_LANG_PROGRAM([[
+      $curl_includes_unistd
+    ]],[[
+      _Atomic int i = 0;
+    ]])
+  ],[
+    AC_MSG_RESULT([yes])
+    AC_DEFINE_UNQUOTED(HAVE_ATOMIC, 1,
+      [Define to 1 if you have _Atomic support.])
+    tst_atomic="yes"
+  ],[
+    AC_MSG_RESULT([no])
+    tst_atomic="no"
+  ])
 ])

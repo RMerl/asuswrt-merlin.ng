@@ -383,7 +383,7 @@ METHOD(pa_tnc_attr_t, process, status_t,
 		if (!reader->read_data32(reader, &quote_sig))
 		{
 			DBG1(DBG_TNC, "insufficient data for PTS Simple Evidence Final "
-						  "TPM Quote Singature");
+						  "TPM Quote Signature");
 			goto end;
 		}
 		this->quote_sig = chunk_clone(quote_sig);

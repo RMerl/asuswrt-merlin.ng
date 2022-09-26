@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2021, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -18,6 +18,8 @@
  * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
  * KIND, either express or implied.
  *
+ * SPDX-License-Identifier: curl
+ *
  ***************************************************************************/
 
 #include "curl_setup.h"
@@ -29,6 +31,7 @@
 #include "vssh/ssh.h"
 #include "quic.h"
 #include "curl_printf.h"
+#include "easy_lock.h"
 
 #ifdef USE_ARES
 #  if defined(CURL_STATICLIB) && !defined(CARES_STATICLIB) &&   \
@@ -44,10 +47,6 @@
 
 #ifdef USE_LIBPSL
 #include <libpsl.h>
-#endif
-
-#if defined(HAVE_ICONV) && defined(CURL_DOES_CONVERSIONS)
-#include <iconv.h>
 #endif
 
 #ifdef USE_LIBRTMP
@@ -106,7 +105,7 @@ static void zstd_version(char *buf, size_t bufsz)
  * zeros in the data.
  */
 
-#define VERSION_PARTS 17 /* number of substrings we can concatenate */
+#define VERSION_PARTS 16 /* number of substrings we can concatenate */
 
 char *curl_version(void)
 {
@@ -134,9 +133,6 @@ char *curl_version(void)
 #endif
 #ifdef USE_LIBPSL
   char psl_version[40];
-#endif
-#if defined(HAVE_ICONV) && defined(CURL_DOES_CONVERSIONS)
-  char iconv_version[40]="iconv";
 #endif
 #ifdef USE_SSH
   char ssh_version[40];
@@ -206,15 +202,7 @@ char *curl_version(void)
   msnprintf(psl_version, sizeof(psl_version), "libpsl/%s", psl_get_version());
   src[i++] = psl_version;
 #endif
-#if defined(HAVE_ICONV) && defined(CURL_DOES_CONVERSIONS)
-#ifdef _LIBICONV_VERSION
-  msnprintf(iconv_version, sizeof(iconv_version), "iconv/%d.%d",
-            _LIBICONV_VERSION >> 8, _LIBICONV_VERSION & 255);
-#else
-  /* version unknown, let the default stand */
-#endif /* _LIBICONV_VERSION */
-  src[i++] = iconv_version;
-#endif
+
 #ifdef USE_SSH
   Curl_ssh_version(ssh_version, sizeof(ssh_version));
   src[i++] = ssh_version;
@@ -433,9 +421,6 @@ static curl_version_info_data version_info = {
 #if defined(WIN32) && defined(UNICODE) && defined(_UNICODE)
   | CURL_VERSION_UNICODE
 #endif
-#if defined(CURL_DOES_CONVERSIONS)
-  | CURL_VERSION_CONV
-#endif
 #if defined(USE_TLS_SRP)
   | CURL_VERSION_TLSAUTH_SRP
 #endif
@@ -468,6 +453,9 @@ static curl_version_info_data version_info = {
 #endif
 #if defined(USE_GSASL)
   | CURL_VERSION_GSASL
+#endif
+#if defined(GLOBAL_INIT_IS_THREADSAFE)
+  | CURL_VERSION_THREADSAFE
 #endif
   ,
   NULL, /* ssl_version */
@@ -549,15 +537,6 @@ curl_version_info_data *curl_version_info(CURLversion stamp)
     version_info.features |= CURL_VERSION_IDN;
 #elif defined(USE_WIN32_IDN)
   version_info.features |= CURL_VERSION_IDN;
-#endif
-
-#if defined(HAVE_ICONV) && defined(CURL_DOES_CONVERSIONS)
-#ifdef _LIBICONV_VERSION
-  version_info.iconv_ver_num = _LIBICONV_VERSION;
-#else
-  /* version unknown */
-  version_info.iconv_ver_num = -1;
-#endif /* _LIBICONV_VERSION */
 #endif
 
 #if defined(USE_SSH)

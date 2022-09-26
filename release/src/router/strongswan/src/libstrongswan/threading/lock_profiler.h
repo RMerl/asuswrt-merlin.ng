@@ -24,12 +24,12 @@
 /**
  * Do not report mutexes with an overall waiting time smaller than this (in us)
  */
-#define PROFILE_WAIT_TRESHHOLD 10000
+#define PROFILE_WAIT_TRESHOLD 10000
 
 /**
  * Do not report mutexes with an overall lock count smaller than this
  */
-#define PROFILE_LOCK_TRESHHOLD 1000
+#define PROFILE_LOCK_TRESHOLD 1000
 
 #include <utils/backtrace.h>
 
@@ -58,8 +58,8 @@ struct lock_profile_t {
 static inline void profiler_cleanup(lock_profile_t *profile)
 {
 	if (profile->waited.tv_sec > 0 ||
-		profile->waited.tv_usec > PROFILE_WAIT_TRESHHOLD ||
-		profile->locked > PROFILE_LOCK_TRESHHOLD)
+		profile->waited.tv_usec > PROFILE_WAIT_TRESHOLD ||
+		profile->locked > PROFILE_LOCK_TRESHOLD)
 	{
 		fprintf(stderr, "%d.%03ds / %d times in lock created at:",
 			profile->waited.tv_sec, profile->waited.tv_usec, profile->locked);

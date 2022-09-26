@@ -23,8 +23,14 @@
  */
 static ike_cfg_t *create_ike_cfg()
 {
-	return ike_cfg_create(IKEV2, TRUE, FALSE, "127.0.0.1", 500,
-						  "127.0.0.1", 500, FRAGMENTATION_NO, 0);
+	ike_cfg_create_t ike = {
+		.version = IKEV2,
+		.local = "127.0.0.1",
+		.local_port = 500,
+		.remote = "127.0.0.1",
+		.remote_port = 500,
+	};
+	return ike_cfg_create(&ike);
 }
 
 /**

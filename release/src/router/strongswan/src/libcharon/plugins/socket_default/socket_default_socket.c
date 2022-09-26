@@ -142,7 +142,7 @@ struct private_socket_default_socket_t {
 	bool set_source;
 
 	/**
-	 * TRUE to force sending source interface on outbound packetrs
+	 * TRUE to force sending source interface on outbound packets
 	 */
 	bool set_sourceif;
 
@@ -559,7 +559,11 @@ METHOD(socket_t, sender, status_t,
 	{
 		if (family == AF_INET)
 		{
+#ifdef __FreeBSD__
+			int ds4;
+#else
 			uint8_t ds4;
+#endif
 
 			ds4 = packet->get_dscp(packet) << 2;
 			if (setsockopt(skt, SOL_IP, IP_TOS, &ds4, sizeof(ds4)) == 0)

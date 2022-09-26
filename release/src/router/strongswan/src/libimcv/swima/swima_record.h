@@ -106,7 +106,7 @@ struct swima_record_t {
  * Creates a swima_record_t object
  *
  * @param record_id			Record ID
- * @param sw_id				Software Identifierl
+ * @param sw_id				Software Identifier
  * @param sw_locator		Software Locator or empty chunk
  */
 swima_record_t* swima_record_create(uint32_t record_id, chunk_t sw_id,

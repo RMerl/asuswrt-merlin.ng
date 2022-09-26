@@ -48,6 +48,10 @@ static int gen()
 				{
 					type = KEY_ED25519;
 				}
+				else if (streq(arg, "ed448"))
+				{
+					type = KEY_ED448;
+				}
 				else if (streq(arg, "bliss"))
 				{
 					type = KEY_BLISS;
@@ -108,6 +112,9 @@ static int gen()
 			case KEY_ED25519:
 				size = 256;
 				break;
+			case KEY_ED448:
+				size = 456;
+				break;
 			case KEY_BLISS:
 				size = 1;
 				break;
@@ -166,7 +173,7 @@ static void __attribute__ ((constructor))reg()
 {
 	command_register((command_t) {
 		gen, 'g', "gen", "generate a new private key",
-		{"[--type rsa|ecdsa|ed25519|bliss] [--size bits] [--safe-primes]",
+		{"[--type rsa|ecdsa|ed25519|ed448|bliss] [--size bits] [--safe-primes]",
 		 "[--shares n] [--threshold l] [--outform der|pem]"},
 		{
 			{"help",		'h', 0, "show usage information"},

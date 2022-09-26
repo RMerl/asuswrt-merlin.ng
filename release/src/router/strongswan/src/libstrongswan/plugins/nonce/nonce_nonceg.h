@@ -21,6 +21,10 @@
 #ifndef NONCE_NONCEG_H_
 #define NONCE_NONCEG_H_
 
+#ifndef NONCE_RNG_QUALITY
+#define NONCE_RNG_QUALITY RNG_WEAK
+#endif
+
 typedef struct nonce_nonceg_t nonce_nonceg_t;
 
 #include <library.h>

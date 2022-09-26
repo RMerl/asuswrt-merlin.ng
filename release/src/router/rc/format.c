@@ -5,10 +5,6 @@
 #ifdef RTCONFIG_OPENVPN
 #include <openvpn_config.h>
 #endif
-#if defined(RTCONFIG_VPN_FUSION)
-#include <vpnc_fusion.h>
-extern int vpnc_load_profile(VPNC_PROFILE *list, const int list_size, const int prof_ver);
-#endif
 #if defined(RTCONFIG_NOTIFICATION_CENTER)
 #include <libnt.h>
 #endif
@@ -587,40 +583,5 @@ void adjust_vpnc_config(void)
 		nvram_set("vpnc_dev_policy_list", buf);
 	}
 	
-}
-#endif
-
-#if defined(RTCONFIG_NOTIFICATION_CENTER)
-void force_off_push_msg(void)
-{
-	char *nv, *nvp, *b;
-	char *eID, *eAct, *eType;
-	char  replacebox[4096], rerule[256];
-	int   action;
-	int   RESAVE = OFF;
-	
-	/* force disable push msg. 
-	Format:[<eID>eAction>eType]
-	*/
-	memset(replacebox, 0, sizeof(replacebox));
-	nv = nvp = strdup(nvram_safe_get("nc_setting_conf"));
-	while(nvp)
-	{
-		if ((b = strsep(&nvp, "<")) == NULL) break;
-		if ((vstrsep(b, ">", &eID, &eAct, &eType)) != 3) continue;
-			
-			memset(rerule, 0, sizeof(rerule));
-			action = atoi(eAct);
-			if ((action & ACTION_NOTIFY_APP)) {
-				RESAVE = ON;
-			}
-			NC_ACTION_CLR(action, NC_ACT_APP_BIT);
-			snprintf(rerule, sizeof(rerule), "<%s>%d>%s", eID, action, eType);
-			//dbg("[%s(%d)] %s\n", __FUNCTION__, __LINE__, rerule);
-			strcat(replacebox, rerule);
-	}		
-	if (RESAVE) 
-		nvram_set("nc_setting_conf", replacebox);
-	if(nv) free(nv);
 }
 #endif

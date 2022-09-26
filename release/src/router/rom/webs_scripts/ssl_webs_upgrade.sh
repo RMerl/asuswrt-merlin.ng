@@ -1,6 +1,7 @@
 #!/bin/sh
 
 IS_BCMHND=`nvram get rc_support|grep -i bcmhnd`
+betaupg_support=`nvram get rc_support|grep -i betaupg`
 
 wget_options="-q -t 2 -T 30 --no-check-certificate"
 
@@ -85,6 +86,12 @@ rsa_path=/tmp/rsasign.bin
 rm -f $firmware_path
 rm -f $rsa_path
 
+# for beta path
+forbeta=0
+if [ "$betaupg_support" != "" ]; then
+	forbeta=`nvram get webs_update_beta`
+fi
+
 # for sq
 forsq=`nvram get apps_sq`
 if [ -z "$forsq" ]; then
@@ -117,6 +124,21 @@ if [ "$update_url" != "" ]; then
 	wget $wget_options ${update_url}/$firmware_rsasign -O $rsa_path
 	wget_result2=$?
 	echo "---- wget rsa nvram webs_state_url, exit code: ${wget_result2} ----" >> /tmp/webs_upgrade.log
+	logger -t AUTO_UPGRADE "exit code: ${wget_result2}"
+
+elif [ "$betaupg_support" != "" ] && [ "$forbeta" == "1" ]; then
+	echo "---- wget fw beta ${dl_path_SQ}/$firmware_file ----" >> /tmp/webs_upgrade.log
+	logger -t AUTO_UPGRADE "wget fw beta $firmware_file"
+	wget -t 2 -T 30 --no-check-certificate --output-file=/tmp/fwget_log ${dl_path_SQ}/$firmware_file -O $firmware_path
+	wget_result=$?
+	echo "---- [LiveUpdate] wget fw, exit code: ${wget_result} ----" >> /tmp/webs_upgrade.log
+	logger -t AUTO_UPGRADE "exit code: ${wget_result}"
+
+	echo "---- wget fw beta ${dl_path_SQ}/$firmware_rsasign ----" >> /tmp/webs_upgrade.log
+	logger -t AUTO_UPGRADE "wget fw beta $firmware_rsasign"
+	wget $wget_options ${dl_path_SQ}/$firmware_rsasign -O $rsa_path
+	wget_result2=$?
+	echo "---- [LiveUpdate] wget rsa, exit code: ${wget_result2} ----" >> /tmp/webs_upgrade.log
 	logger -t AUTO_UPGRADE "exit code: ${wget_result2}"
 
 elif [ "$forsq" -ge 2 ] && [ "$forsq" -le 9 ]; then

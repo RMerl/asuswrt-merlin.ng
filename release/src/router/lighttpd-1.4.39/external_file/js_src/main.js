@@ -26,6 +26,10 @@ var g_mouse_y = 0;
 var g_fileview_only = 0;
 var g_query_type = 0;
 
+var g_propfind_index = 0;
+var g_propfind_count = 1000;
+var g_propfind_page = 0;
+
 var g_webdav_client = new davlib.DavClient();
 g_webdav_client.initialize();
 	
@@ -148,7 +152,7 @@ function doRescanSamba(){
 			g_storage.setl("onRescanSambaCount", 0);
 			g_storage.setl("rescan_samba_timer", 0);
 			g_storage.set("HostList", "");
-			doPROPFIND("/");
+			doPROPFIND("/", false);
 		}
 	});
 }
@@ -175,7 +179,7 @@ function doMKDIR(name){
 	
 	g_webdav_client.MKCOL(this_url, function(error){
 		if(error[0]==2){
-			doPROPFIND(openurl);
+			doPROPFIND(openurl, false, null, '', g_propfind_index, g_propfind_count);
 			closeJqmWindow(0);
 		}
 		else
@@ -227,7 +231,7 @@ function doRENAME(old_name, new_name, callbackHandler){
     	//alert(locktoken);
 		g_webdav_client.MOVE(old_name, this_url, function(error){
 			if(error[0]==2){
-				doPROPFIND(openurl);
+				doPROPFIND(openurl, false, null, '', g_propfind_index, g_propfind_count);
 				closeJqmWindow(0);
 			}
 			else{
@@ -252,7 +256,7 @@ function doRENAME(old_name, new_name, callbackHandler){
 	/*
 	g_webdav_client.MOVE(old_name, this_url, function(error){
 		if(error[0]==2){
-			doPROPFIND(openurl);
+			doPROPFIND(openurl, false);
 			closeJqmWindow(0);
 		}
 		else
@@ -345,7 +349,7 @@ function fullscreenJqmWindow(v){
 }
 
 function doLOGOUT(){
-	doPROPFIND("/", function(){
+	doPROPFIND("/", false, function(){
 				
 		var openurl = addPathSlash(g_storage.get('openurl'));
 		g_webdav_client.LOGOUT("/", function(error){	
@@ -664,7 +668,7 @@ function parserPropfindXML(xmlDoc, open_url, append_result){
 														
 						if(this_short_name.length>len){
 							this_short_name = this_short_name.substring(0, len) + "...";
-						}
+						}F
 						*/
 					}
 					else{
@@ -699,7 +703,7 @@ function parserPropfindXML(xmlDoc, open_url, append_result){
 			}
 			else{
 				g_file_array.push({ contenttype: this_contenttype, 
-					                furl: this_href, 
+									furl: this_href, 
 					                name: this_name,
 					                uname: this_uncode_name,
 					                shortname: this_short_name,
@@ -747,12 +751,17 @@ function content2XMLDOM(content){
 	return xmlDoc;
 }
 
-function doPROPFIND(open_url, complete_handler, auth){
+function doPROPFIND(open_url, append_result, complete_handler, auth, start, end){
 	if(g_webdav_client==null)
 		return;
 	
 	showHideLoadStatus(true);
 	
+	var prev_open_url = g_storage.get('openurl');
+	if (prev_open_url!=open_url) {
+		g_propfind_page = 0;
+	}
+
 	try{		
 		g_webdav_client.PROPFIND(open_url, auth, function(error, statusstring, content){		
 			if(error){
@@ -771,10 +780,21 @@ function doPROPFIND(open_url, complete_handler, auth){
 						var this_router_username = xmlDoc.documentElement.getAttribute('ruser');
 						var this_computer_name = xmlDoc.documentElement.getAttribute('computername');
 						var this_isusb = xmlDoc.documentElement.getAttribute('isusb'); 
+						var this_query_count = (open_url=="/") ? 0 : xmlDoc.documentElement.getAttribute('qcount');
+						var this_query_end = end;
+						var this_total_page = (this_query_count==0||this_query_count<=g_propfind_count) ? 0 : Math.floor(this_query_count/g_propfind_count) + 1;
 						
 						g_query_type = this_query_type;
-						
-						parserPropfindXML(xmlDoc, open_url, false);
+						// alert(append_result+", "+start+", "+end + ", "+ this_query_count);
+						if(!append_result){
+							g_folder_array = null;
+							g_folder_array = new Array();
+							
+							g_file_array = null;
+							g_file_array = new Array();
+						}
+
+						parserPropfindXML(xmlDoc, open_url, append_result);
 						
 						//- Sort By Name
 						g_folder_array.sort(sortByName);
@@ -819,6 +839,49 @@ function doPROPFIND(open_url, complete_handler, auth){
 						else{
 							$("div#btnThumbView").css("display", (g_list_view.get()==1) ? "block" : "none");
 							$("div#btnListView").css("display", (g_list_view.get()==1) ? "none" : "block");
+							
+							if (this_total_page>0) {
+								
+								var nav_div = "<div class='nextDiv'>";
+								nav_div += get_nav_div(this_total_page);
+								nav_div += "<span>";
+								$("#main_right_container #fileview").append(nav_div);
+
+								$(".prevPageDiv").click(function(){
+									var _page = parseInt($(".activeSlide").attr("data-page"));
+									if (_page-1<0) {
+										_page = 0;
+									}
+									
+									var obj = getPageIndex(_page);
+									var _start = obj.start;
+									var _end = obj.end;
+									doPROPFIND(open_url, false, null, auth, _start, _end);
+								});
+
+								$(".nextPageDiv").click(function(){
+									var _page = parseInt($(".activeSlide").attr("data-page"));
+									if (_page+1>this_total_page) {
+										_page = this_total_page-1;
+									}
+									
+									var obj = getPageIndex(_page);
+									var _start = obj.start;
+									var _end = obj.end;
+									doPROPFIND(open_url, false, null, auth, _start, _end);
+								});
+
+								$(".pageDiv").click(function(){
+									$(".pageDiv").removeClass("activeSlide");
+									$(this).addClass("activeSlide");
+
+									var _page = parseInt($(this).attr("data-page"));
+									var obj = getPageIndex(_page);
+									var _start = obj.start;
+									var _end = obj.end;
+									doPROPFIND(open_url, false, null, auth, _start, _end);
+								});
+							}
 						}
 						
 						$("div#btnUpload").css("display", (this_query_type==0&&g_select_mode==0) ? "block" : "none");
@@ -868,7 +931,7 @@ function doPROPFIND(open_url, complete_handler, auth){
 					}
 		  		}
 		  		else if(error==501){
-					doPROPFIND(open_url);
+					doPROPFIND(open_url, false, null, '', g_propfind_index, g_propfind_count);
 				}
 		  		else if(error==401){					
 					setTimeout( function(){
@@ -881,7 +944,7 @@ function doPROPFIND(open_url, complete_handler, auth){
 				
 				showHideLoadStatus(false);
 			}
-		}, null, 1);
+		}, null, 1, '', start, end);
 		
 		resetTimer();
 	}
@@ -892,8 +955,7 @@ function doPROPFIND(open_url, complete_handler, auth){
 }
 
 function doLOGIN(path, auth){
-	
-	doPROPFIND(path, function(){
+	doPROPFIND(path, false, function(){
 		if( g_opening_uid != '' ){
 			g_storage.set('openhostuid', g_opening_uid);
 			$("#hostview .host_item").each(function(){
@@ -906,7 +968,7 @@ function doLOGIN(path, auth){
 			});	
 			g_opening_uid='';
 		}
-	}, auth);
+	}, auth, g_propfind_index, g_propfind_count);
 }	
 
 function refreshHostList(){
@@ -1068,19 +1130,20 @@ function refreshHostList(){
 						if(this_href!=""){
 								if( this_contenttype=="httpd/unix-directory" ){									
 									folder_array.push({ contenttype: this_contenttype, 
-										                  href: this_href,
-										                  name: this_name,
-										                  uname: this_uncode_name,
-										                  shortname: this_short_name,
-										                  online: this_online,
-										                  time: this_lastmodified,
-										                  size: this_contentlength,
-										                  ip: this_ip,
-										                  mac: this_mac, 
-										                  uid: this_uniqueid,
-										                  type: this_type,
-										                  freadonly: this_attr_readonly,
-										                  fhidden: this_attr_hidden });
+														href: this_href,
+														furl: this_href,
+										                name: this_name,
+										                uname: this_uncode_name,
+										                shortname: this_short_name,
+										                online: this_online,
+										                time: this_lastmodified,
+										                size: this_contentlength,
+										                ip: this_ip,
+										                mac: this_mac, 
+										                uid: this_uniqueid,
+										                type: this_type,
+										                freadonly: this_attr_readonly,
+										                fhidden: this_attr_hidden });
 								}
 						}
 					}
@@ -1227,7 +1290,7 @@ function openSelItem(item){
 	}
 		
 	if(isdir=="1"){
-		doPROPFIND(loc, null, null);
+		doPROPFIND(loc, false, null, '', g_propfind_index, g_propfind_count);
 		return;
 	}
 	
@@ -1430,10 +1493,12 @@ $(document).ready(function(){
 	document.onmousedown = function(e) {		
 		resetTimer();
 	};
+
 	document.onmousemove = function(e) {		
 		getMouseXY(e);
 		resetTimer();
 	};
+
 	$(document).keydown(function(e) {
 		//- Esc
 		if (e.keyCode == 27) {
@@ -1473,16 +1538,16 @@ $(document).ready(function(){
 		
 		g_storage.set("HostList", "");
 		
-		doPROPFIND( "/", function(){
+		doPROPFIND( "/", false, function(){
 			if( loc!=undefined && loc!="/" && loc.indexOf("https://")==0 ){
-				doPROPFIND(loc);
+				doPROPFIND(loc, false);
 			}
-		}, 0);
+		}, 0, g_propfind_index, g_propfind_count);
 	}
 	else{
 		//- Query host list first.
 		var loc = g_storage.get('openurl');
-		doPROPFIND(loc);
+		doPROPFIND(loc, false);
 	}
 	
 	initAudioPlayer();
@@ -1499,7 +1564,7 @@ $(document).ready(function(){
 			g_show_modal = 0;
 			if(g_reload_page==1){
 				var openurl = addPathSlash(g_storage.get('openurl'));
-				doPROPFIND(openurl);
+				doPROPFIND(openurl, false, null, '', g_propfind_index, g_propfind_count);
 			}
 		});
 	}
@@ -1671,7 +1736,7 @@ $(document).ready(function(){
 		
 		if(g_selected_files.length<=0){
 			var openurl = addPathSlash(g_storage.get('openurl'));
-			doPROPFIND(openurl);
+			doPROPFIND(openurl, false, null, '', g_propfind_index, g_propfind_count);
 			return;
 		}
 		
@@ -1834,8 +1899,8 @@ $(document).ready(function(){
 		
 		var loc = g_storage.get('openurl');
 		g_webdav_client.LOGOUT(loc, function(error){	
-			if(error==200){				
-				doPROPFIND(loc);
+			if(error==200){
+				doPROPFIND(loc, false, null, '', g_propfind_index, g_propfind_count);
 			}
 		});
 	});
@@ -1855,7 +1920,8 @@ $(document).ready(function(){
 		
 		var media_type = isAiModeView();
 		if( media_type < 0 ){
-			doPROPFIND(loc);
+			g_propfind_page = 0;
+			doPROPFIND(loc, false, null, '', g_propfind_index, g_propfind_count);
 		}
 		else{
 			var data_id = (g_storage.get('data-id')==undefined)?"":g_storage.get('data-id');
@@ -1875,7 +1941,8 @@ $(document).ready(function(){
 		
 		var media_type = isAiModeView();		
 		if( media_type < 0 ){
-			doPROPFIND(loc);
+			g_propfind_page = 0;
+			doPROPFIND(loc, false, null, '', g_propfind_index, g_propfind_count);
 		}
 		else{
 			var data_id = (g_storage.get('data-id')==undefined)?"":g_storage.get('data-id');
@@ -2123,6 +2190,58 @@ $(document).ready(function(){
 				$modalWindow.jqmShow();
 			}
 		}
+		else if (func=="web_feedback") {
+			var http_enable = parseInt(g_storage.get('http_enable')); //- 0: http, 1: https, 2: both
+			var misc_http_enable = parseInt(g_storage.get('misc_http_enable'));
+	    	var misc_http_port = g_storage.get('misc_http_port');
+			var misc_https_port = g_storage.get('misc_https_port');
+			var lan_http_port = g_storage.get('lan_http_port');
+	    	var lan_https_port = g_storage.get('lan_https_port');
+	    	var location_host = g_storage.get('request_host_url');//window.location.host;
+	    	var misc_protocol = "http";
+	    	var misc_port = misc_http_port;
+	    
+	        if(location_host.indexOf("://")!=-1){
+                location_host = location_host.substr(location_host.indexOf("://")+3); 
+            }
+                            
+	    	if(misc_http_enable==0){
+	    		if( !isPrivateIP() ){
+	    			alert(m.getString('msg_no_config'));    	
+	    			return;
+	    		}
+	  		}
+	  			
+	  		if(http_enable==1){
+	  			misc_protocol = "https";
+	  			misc_port = misc_https_port;
+	  		}
+	  		else{
+	  			misc_protocol = "http";
+	  			misc_port = misc_http_port;
+	  		}
+	  		
+	  		var url;
+	  		  			
+	  		if( isPrivateIP() ){
+	  			url = misc_protocol + "://" + location_host.split(":")[0];
+	  			
+	  			if(http_enable==1)
+					url += ":" + lan_https_port;
+				else if(lan_http_port)
+	  				url += ":" + lan_http_port; 	
+	  		}
+	  		else{
+	  			url = misc_protocol + "://" + location_host.split(":")[0];
+	  		
+	  			if(misc_port!="")
+	  				url += ":" + misc_port; 
+	  		}
+	  	    
+			url = url + "/Advanced_Feedback.asp";
+			
+	  		window.open(url);
+		}
 		else if(func=="version"){
 			var $modalWindow = $("div#modalWindow");
 			var page_size = getPageSize();
@@ -2268,7 +2387,7 @@ $(document).ready(function(){
 			*/
 			/*
 			var url = "/AICLOUD1769668842/ASUS";
-			doPROPFIND( url, function(){				
+			doPROPFIND( url, false, function(){				
 				alert("complete");
 			}, 0);
 			*/
@@ -2299,10 +2418,13 @@ $(document).ready(function(){
 		//- Query host list first.
 		var loc = g_storage.get('openurl');
 		g_storage.set("HostList", "");
-		doPROPFIND( "/", function(){				
-			loc = (loc==undefined) ? "/" : loc;		
-			if(loc!="/")
-				doPROPFIND(loc);		
+		
+		doPROPFIND( "/", false, function(){				
+			loc = (loc==undefined) ? "/" : loc;
+			if(loc!="/") {
+				doPROPFIND(loc, false, null, '', g_propfind_index, g_propfind_count);
+			}
+
 		}, 0);
 	});
 	
@@ -2337,7 +2459,7 @@ $(document).ready(function(){
 		if(g_fileview_only==1)
 			return;
 			
-		doPROPFIND( "/", function(){
+		doPROPFIND( "/", false, function(){
 			g_storage.set('openhostuid', '');
 			window.location.reload();
 		}, 0);
@@ -2752,7 +2874,7 @@ $(document).ready(function(){
 				
 				g_webdav_client.DELETE(uhref, function(){
 					var openurl = addPathSlash(g_storage.get('openurl'));
-					doPROPFIND(openurl);
+					doPROPFIND(openurl, false, null, '', g_propfind_index, g_propfind_count);
 				});
 			}
 			else if(key=="copy"){	
@@ -2954,4 +3076,47 @@ window.onunload = function (e) {
 
 function doBackgroundPlay(){
 	alert("doBackgroundPlay");
+}
+
+function get_nav_div(totalPages) {
+	var output = "";
+
+	output += "<div id='nav' class='navDiv'>";
+
+	var showSkipPage = false;
+	for (var i = 0; i < totalPages; i++) {
+		if (i == g_propfind_page) {
+			output += "<span class='select'>" + (i + 1) + "</span>";
+			showSkipPage = false;
+		} else {
+
+			if (Math.abs(i - g_propfind_page) > 2 && i != totalPages - 1 && i != 0 && totalPages > 10) {
+				if (showSkipPage == false) {
+					output += "<span>...</span>";
+					showSkipPage = true;
+				}
+				continue;
+			}
+
+			output += "<a class='pageDiv' data-page='" + i + "'>" + (i + 1) + "</a>";
+		}
+	}
+
+	output += "</div>";
+	
+	return output;
+}
+
+function getPageIndex(pageNum) {
+
+	g_propfind_page = pageNum;
+
+	var _start = pageNum*g_propfind_count + 1;
+	var _end = _start + g_propfind_count - 1;
+
+	var _obj = {};
+	_obj.start = _start;
+	_obj.end = _end;
+
+	return _obj;
 }

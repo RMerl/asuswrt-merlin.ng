@@ -193,7 +193,7 @@ function wl_chanspec_list_change(){
 						for(j=1; j<mesh_5g.auto.chanspec.length; j++){
 							_wl_channel.push(mesh_5g.auto.chanspec[j]);
 
-							if(mesh_5g.auto.chanlist[j] > '165'){
+							if(parseInt(mesh_5g.auto.chanlist[j]) > 165){
 								_unii4 = true;
 							}
 						}
@@ -478,7 +478,7 @@ function wl_chanspec_list_change(){
                             _wl_channel.push(mesh_5g2.auto.chanspec[j]);
                         }
 
-						if(mesh_5g2.auto.chanlist[j] > '165'){
+						if(parseInt(mesh_5g2.auto.chanlist[j]) > 165){
 							_unii4 = true;
 						}						
 					}
@@ -957,6 +957,20 @@ function change_channel(obj){
 					document.getElementById('acs_band1_checkbox').style.display = "none";
 					document.form.acs_band1.disabled = true;
 				}
+			}
+		}
+
+		if(unii4Support){
+			if(wl_unit == '1' && !band5g2_support && document.form.wl_channel.value  == 0){
+				document.getElementById('acs_unii4_field').style.display = "";
+				// document.getElementById('acs_unii4_checkbox').disabled = false;
+			}
+			else if(wl_unit == '2' && wl_nband_array[2] =='1' && document.form.wl_channel.value == 0){
+				document.getElementById('acs_unii4_field').style.display = "";
+			}
+			else{
+				document.getElementById('acs_unii4_field').style.display = "none";
+				// document.getElementById('acs_unii4_checkbox').disabled = true;
 			}
 		}
 

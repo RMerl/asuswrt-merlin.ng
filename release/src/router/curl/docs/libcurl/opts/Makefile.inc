@@ -5,7 +5,7 @@
 #                            | (__| |_| |  _ <| |___
 #                             \___|\___/|_| \_\_____|
 #
-# Copyright (C) 1998 - 2021, Daniel Stenberg, <daniel@haxx.se>, et al.
+# Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
 #
 # This software is licensed as described in the file COPYING, which
 # you should have received as part of this distribution. The terms
@@ -18,6 +18,8 @@
 # This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
 # KIND, either express or implied.
 #
+# SPDX-License-Identifier: curl
+#
 ###########################################################################
 # Shared between Makefile.am and CMakeLists.txt
 
@@ -25,6 +27,8 @@ man_MANS =                                      \
   CURLINFO_ACTIVESOCKET.3                       \
   CURLINFO_APPCONNECT_TIME.3                    \
   CURLINFO_APPCONNECT_TIME_T.3                  \
+  CURLINFO_CAINFO.3                             \
+  CURLINFO_CAPATH.3                             \
   CURLINFO_CERTINFO.3                           \
   CURLINFO_CONDITION_UNMET.3                    \
   CURLINFO_CONNECT_TIME.3                       \
@@ -228,10 +232,12 @@ man_MANS =                                      \
   CURLOPT_MAXCONNECTS.3                         \
   CURLOPT_MAXFILESIZE.3                         \
   CURLOPT_MAXFILESIZE_LARGE.3                   \
+  CURLOPT_MAXLIFETIME_CONN.3                    \
   CURLOPT_MAXREDIRS.3                           \
   CURLOPT_MAX_RECV_SPEED_LARGE.3                \
   CURLOPT_MAX_SEND_SPEED_LARGE.3                \
   CURLOPT_MIMEPOST.3                            \
+  CURLOPT_MIME_OPTIONS.3                        \
   CURLOPT_NETRC.3                               \
   CURLOPT_NETRC_FILE.3                          \
   CURLOPT_NEW_DIRECTORY_PERMS.3                 \
@@ -254,6 +260,8 @@ man_MANS =                                      \
   CURLOPT_POSTQUOTE.3                           \
   CURLOPT_POSTREDIR.3                           \
   CURLOPT_PREQUOTE.3                            \
+  CURLOPT_PREREQDATA.3                          \
+  CURLOPT_PREREQFUNCTION.3                      \
   CURLOPT_PRE_PROXY.3                           \
   CURLOPT_PRIVATE.3                             \
   CURLOPT_PROGRESSDATA.3                        \
@@ -326,6 +334,7 @@ man_MANS =                                      \
   CURLOPT_SSH_AUTH_TYPES.3                      \
   CURLOPT_SSH_COMPRESSION.3                     \
   CURLOPT_SSH_HOST_PUBLIC_KEY_MD5.3             \
+  CURLOPT_SSH_HOST_PUBLIC_KEY_SHA256.3          \
   CURLOPT_SSH_KEYDATA.3                         \
   CURLOPT_SSH_KEYFUNCTION.3                     \
   CURLOPT_SSH_KNOWNHOSTS.3                      \
@@ -395,4 +404,9 @@ man_MANS =                                      \
   CURLOPT_WRITEFUNCTION.3                       \
   CURLOPT_XFERINFODATA.3                        \
   CURLOPT_XFERINFOFUNCTION.3                    \
-  CURLOPT_XOAUTH2_BEARER.3
+  CURLOPT_XOAUTH2_BEARER.3                      \
+  CURLSHOPT_LOCKFUNC.3                          \
+  CURLSHOPT_SHARE.3                             \
+  CURLSHOPT_UNLOCKFUNC.3                        \
+  CURLSHOPT_UNSHARE.3                           \
+  CURLSHOPT_USERDATA.3

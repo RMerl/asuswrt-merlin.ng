@@ -28,6 +28,7 @@
 #include <unistd.h>
 #include <limits.h>
 #include <stdlib.h>
+#include <time.h>
 
 /**
  * Get a tty color escape character for stderr
@@ -43,29 +44,54 @@ __declspec(dllexport)
 bool test_runner_available = TRUE;
 
 /**
- * Destroy a single test suite and associated data
+ * Destroy data associated with a test case.
+ */
+static void destroy_case(test_case_t *tcase)
+{
+	array_destroy(tcase->functions);
+	array_destroy(tcase->fixtures);
+}
+
+/**
+ * Destroy a single test suite and associated data.
  */
 static void destroy_suite(test_suite_t *suite)
 {
-	test_case_t *tcase;
-
-	while (array_remove(suite->tcases, 0, &tcase))
-	{
-		array_destroy(tcase->functions);
-		array_destroy(tcase->fixtures);
-	}
+	array_destroy_function(suite->tcases, (void*)destroy_case, NULL);
 	free(suite);
 }
 
 /**
- * Filter loaded test suites, either remove suites listed (exclude=TRUE), or all
- * that are not listed (exclude=FALSE).
+ * Identifies on which component to apply the given filter.
  */
-static void apply_filter(array_t *loaded, char *filter, bool exclude)
+typedef enum {
+	FILTER_SUITES,
+	FILTER_CASES,
+	FILTER_FUNCTIONS,
+} filter_component_t;
+
+/**
+ * Check if the component with the given name should be filtered/removed.
+ */
+static bool filter_name(const char *name, hashtable_t *names, bool exclude)
 {
-	enumerator_t *enumerator, *names;
+	return (exclude && names->get(names, name)) ||
+		   (!exclude && !names->get(names, name));
+}
+
+/**
+ * Filter loaded test suites/cases/functions, either remove components listed
+ * (exclude=TRUE), or all that are not listed (exclude=FALSE).
+ * Empty test cases/suites are removed and destroyed.
+ */
+static void apply_filter(array_t *loaded, filter_component_t comp, char *filter,
+						 bool exclude)
+{
+	enumerator_t *enumerator, *tcases, *functions, *names;
 	hashtable_t *listed;
 	test_suite_t *suite;
+	test_case_t *tcase;
+	test_function_t *func;
 	char *name;
 
 	listed = hashtable_create(hashtable_hash_str, hashtable_equals_str, 8);
@@ -74,11 +100,50 @@ static void apply_filter(array_t *loaded, char *filter, bool exclude)
 	{
 		listed->put(listed, name, name);
 	}
+
 	enumerator = array_create_enumerator(loaded);
 	while (enumerator->enumerate(enumerator, &suite))
 	{
-		if ((exclude && listed->get(listed, suite->name)) ||
-			(!exclude && !listed->get(listed, suite->name)))
+		if (comp == FILTER_SUITES)
+		{
+			if (filter_name(suite->name, listed, exclude))
+			{
+				array_remove_at(loaded, enumerator);
+				destroy_suite(suite);
+			}
+			continue;
+		}
+		tcases = array_create_enumerator(suite->tcases);
+		while (tcases->enumerate(tcases, &tcase))
+		{
+			if (comp == FILTER_CASES)
+			{
+				if (filter_name(tcase->name, listed, exclude))
+				{
+					array_remove_at(suite->tcases, tcases);
+					destroy_case(tcase);
+				}
+				continue;
+			}
+			functions = array_create_enumerator(tcase->functions);
+			while (functions->enumerate(functions, &func))
+			{
+				if (filter_name(func->name, listed, exclude))
+				{
+					array_remove_at(tcase->functions, functions);
+				}
+			}
+			functions->destroy(functions);
+
+			if (!array_count(tcase->functions))
+			{
+				array_remove_at(suite->tcases, tcases);
+				destroy_case(tcase);
+			}
+		}
+		tcases->destroy(tcases);
+
+		if (!array_count(suite->tcases))
 		{
 			array_remove_at(loaded, enumerator);
 			destroy_suite(suite);
@@ -112,22 +177,23 @@ static bool is_in_filter(const char *find, char *filter)
 }
 
 /**
- * Removes and destroys test suites that are not selected or
- * explicitly excluded.
+ * Removes and destroys test suites/cases/functions that are not selected or
+ * explicitly excluded. Takes names of two environment variables.
  */
-static void filter_suites(array_t *loaded)
+static void filter_components(array_t *loaded, filter_component_t comp,
+							  char *sel, char *exc)
 {
 	char *filter;
 
-	filter = getenv("TESTS_SUITES");
+	filter = getenv(sel);
 	if (filter)
 	{
-		apply_filter(loaded, filter, FALSE);
+		apply_filter(loaded, comp, filter, FALSE);
 	}
-	filter = getenv("TESTS_SUITES_EXCLUDE");
+	filter = getenv(exc);
 	if (filter)
 	{
-		apply_filter(loaded, filter, TRUE);
+		apply_filter(loaded, comp, filter, TRUE);
 	}
 }
 
@@ -167,7 +233,12 @@ static array_t *load_suites(test_configuration_t configs[],
 			array_insert(suites, -1, configs[i].suite());
 		}
 	}
-	filter_suites(suites);
+	filter_components(suites, FILTER_SUITES, "TESTS_SUITES",
+					  "TESTS_SUITES_EXCLUDE");
+	filter_components(suites, FILTER_CASES, "TESTS_CASES",
+					  "TESTS_CASES_EXCLUDE");
+	filter_components(suites, FILTER_FUNCTIONS, "TESTS_FUNCTIONS",
+					  "TESTS_FUNCTIONS_EXCLUDE");
 
 	if (lib->leak_detective)
 	{
@@ -214,7 +285,7 @@ static bool run_test(test_function_t *tfun, int i)
 /**
  * Invoke fixture setup/teardown
  */
-static bool call_fixture(test_case_t *tcase, bool up)
+static bool call_fixture(test_case_t *tcase, bool up, int i)
 {
 	enumerator_t *enumerator;
 	test_fixture_t *fixture;
@@ -229,14 +300,14 @@ static bool call_fixture(test_case_t *tcase, bool up)
 			{
 				if (fixture->setup)
 				{
-					fixture->setup();
+					fixture->setup(i);
 				}
 			}
 			else
 			{
 				if (fixture->teardown)
 				{
-					fixture->teardown();
+					fixture->teardown(i);
 				}
 			}
 		}
@@ -386,22 +457,44 @@ static void collect_failure_info(array_t *failures, char *name, int i)
 }
 
 /**
+ * Context data to collect warnings
+ */
+typedef struct {
+	char *name;
+	int i;
+	array_t *warnings;
+} warning_ctx_t;
+
+/**
+ * Callback to collect warnings
+ */
+CALLBACK(warning_cb, void,
+	warning_ctx_t *ctx, const char *msg, const char *file, const int line)
+{
+	failure_t warning = {
+		.name = ctx->name,
+		.i = ctx->i,
+		.file = file,
+		.line = line,
+	};
+
+	strncpy(warning.msg, msg, sizeof(warning.msg) - 1);
+	warning.msg[sizeof(warning.msg)-1] = 0;
+	array_insert(ctx->warnings, -1, &warning);
+}
+
+/**
  * Collect warning information, add failure_t to array
  */
 static bool collect_warning_info(array_t *warnings, char *name, int i)
 {
-	failure_t warning = {
+	warning_ctx_t ctx = {
 		.name = name,
 		.i = i,
+		.warnings = warnings,
 	};
 
-	warning.line = test_warning_get(warning.msg, sizeof(warning.msg),
-									&warning.file);
-	if (warning.line)
-	{
-		array_insert(warnings, -1, &warning);
-	}
-	return warning.line;
+	return test_warnings_get(warning_cb, &ctx);
 }
 
 /**
@@ -442,15 +535,60 @@ static void print_failures(array_t *failures, bool warnings)
 	threads_deinit();
 }
 
+#if defined(CLOCK_THREAD_CPUTIME_ID) && defined(HAVE_CLOCK_GETTIME)
+
+/**
+ * Start a timer
+ */
+static void start_timing(struct timespec *start)
+{
+	clock_gettime(CLOCK_THREAD_CPUTIME_ID, start);
+}
+
+/**
+ * End a timer, return ms
+ */
+static double end_timing(struct timespec *start)
+{
+	struct timespec end;
+
+	if (!getenv("TESTS_TIMING"))
+	{
+		return 0;
+	}
+	clock_gettime(CLOCK_THREAD_CPUTIME_ID, &end);
+	return (end.tv_nsec - start->tv_nsec) / 1000000.0 +
+			(end.tv_sec - start->tv_sec) * 1000.0;
+}
+
+#else /* CLOCK_THREAD_CPUTIME_ID */
+
+#define start_timing(start) ((start)->tv_sec = 0, (start)->tv_nsec = 0)
+#define end_timing(...) (0)
+
+#endif /* CLOCK_THREAD_CPUTIME_ID */
+
 /**
  * Run a single test case with fixtures
  */
-static bool run_case(test_case_t *tcase, test_runner_init_t init, char *cfg)
+static bool run_case(test_case_t *tcase, test_runner_init_t init, char *cfg,
+					 level_t level)
 {
 	enumerator_t *enumerator;
 	test_function_t *tfun;
-	int passed = 0;
+	double *times;
+	double total_time = 0;
+	int tests = 0, ti = 0, passed = 0;
 	array_t *failures, *warnings;
+
+	/* determine the number of tests we will run */
+	enumerator = array_create_enumerator(tcase->functions);
+	while (enumerator->enumerate(enumerator, &tfun))
+	{
+		tests += tfun->end - tfun->start;
+	}
+	enumerator->destroy(enumerator);
+	times = calloc(tests, sizeof(double));
 
 	failures = array_create(sizeof(failure_t), 0);
 	warnings = array_create(sizeof(failure_t), 0);
@@ -467,23 +605,31 @@ static bool run_case(test_case_t *tcase, test_runner_init_t init, char *cfg)
 		{
 			if (pre_test(init, cfg))
 			{
+				struct timespec start;
 				bool ok = FALSE;
 				int leaks = 0;
 
-				test_setup_timeout(tcase->timeout);
+				if (level >= 0)
+				{
+					fprintf(stderr, "\nRunning function '%s' [%d]:\n",
+							tfun->name, i);
+				}
 
-				if (call_fixture(tcase, TRUE))
+				test_setup_timeout(tcase->timeout);
+				start_timing(&start);
+
+				if (call_fixture(tcase, TRUE, i))
 				{
 					if (run_test(tfun, i))
 					{
-						if (call_fixture(tcase, FALSE))
+						if (call_fixture(tcase, FALSE, i))
 						{
 							ok = TRUE;
 						}
 					}
 					else
 					{
-						call_fixture(tcase, FALSE);
+						call_fixture(tcase, FALSE, i);
 					}
 				}
 				if (!post_test(init, ok, failures, tfun->name, i, &leaks))
@@ -491,6 +637,8 @@ static bool run_case(test_case_t *tcase, test_runner_init_t init, char *cfg)
 					ok = FALSE;
 				}
 
+				times[ti] = end_timing(&start);
+				total_time += times[ti++];
 				test_setup_timeout(0);
 
 				if (ok)
@@ -530,6 +678,20 @@ static bool run_case(test_case_t *tcase, test_runner_init_t init, char *cfg)
 	}
 	enumerator->destroy(enumerator);
 
+	if (total_time)
+	{
+		fprintf(stderr, " %s%s%.3f ms%s", tty_escape_get(2, TTY_BOLD),
+				TTY(BLUE), total_time, tty_escape_get(2, TTY_RESET));
+		if (ti > 1)
+		{
+			fprintf(stderr, " %s[", TTY(BLUE));
+			for (ti = 0; ti < tests; ti++)
+			{
+				fprintf(stderr, "%s%.3f ms", times[ti], ti == 0 ? "" : ", ");
+			}
+			fprintf(stderr, "]%s", TTY(DEF));
+		}
+	}
 	fprintf(stderr, "\n");
 
 	print_failures(warnings, TRUE);
@@ -543,7 +705,8 @@ static bool run_case(test_case_t *tcase, test_runner_init_t init, char *cfg)
 /**
  * Run a single test suite
  */
-static bool run_suite(test_suite_t *suite, test_runner_init_t init, char *cfg)
+static bool run_suite(test_suite_t *suite, test_runner_init_t init, char *cfg,
+					  level_t level)
 {
 	enumerator_t *enumerator;
 	test_case_t *tcase;
@@ -554,7 +717,7 @@ static bool run_suite(test_suite_t *suite, test_runner_init_t init, char *cfg)
 	enumerator = array_create_enumerator(suite->tcases);
 	while (enumerator->enumerate(enumerator, &tcase))
 	{
-		if (run_case(tcase, init, cfg))
+		if (run_case(tcase, init, cfg, level))
 		{
 			passed++;
 		}
@@ -614,7 +777,7 @@ int test_runner_run(const char *name, test_configuration_t configs[],
 	enumerator = array_create_enumerator(suites);
 	while (enumerator->enumerate(enumerator, &suite))
 	{
-		if (run_suite(suite, init, cfg))
+		if (run_suite(suite, init, cfg, level))
 		{
 			passed++;
 		}

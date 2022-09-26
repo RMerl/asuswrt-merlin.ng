@@ -84,6 +84,8 @@ enum auth_rule_t {
 	AUTH_RULE_XAUTH_BACKEND,
 	/** XAuth identity to use or require, identification_t* */
 	AUTH_RULE_XAUTH_IDENTITY,
+	/** subject of certificate authority, identification_t* */
+	AUTH_RULE_CA_IDENTITY,
 	/** certificate authority, certificate_t* */
 	AUTH_RULE_CA_CERT,
 	/** intermediate certificate in trustchain, certificate_t* */

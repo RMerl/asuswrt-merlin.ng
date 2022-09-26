@@ -464,6 +464,9 @@ var live_update_support = isSupport("update");
 var no_update_support = isSupport("noupdate");
 var no_fw_manual_support = isSupport("noFwManual");
 var afwupg_support = isSupport("afwupg");
+var betaupg_support = isSupport("betaupg");
+var revertfw_support = isSupport("revertfw");
+var rbkfw_support = isSupport("rbkfw");
 var cooler_support = isSupport("fanctrl");
 var power_support = isSupport("pwrctrl");
 var repeater_support = isSupport("repeater");
@@ -709,6 +712,7 @@ var conndiag_support = (function(){
 	return (isSupport("conndiag") && ('<% nvram_get("enable_diag"); %>' == "2"));
 })();
 var tencent_qmacc_support = isSupport("tencent_qmacc");
+var tencent_game_acc_support = isSupport("tc_game_acc");
 var outfox_support = isSupport("outfox");
 var wtfast_v2_support = isSupport("wtfast_v2");
 
@@ -726,9 +730,6 @@ if(tmo_support && isMobile()){
 	if(location.pathname != "/MobileQIS_Login.asp")
 		location.href = "MobileQIS_Login.asp";
 }
-	
-if(isMobile() && (based_modelid == "RT-AC88U" || based_modelid == "RT-AX88U" || based_modelid == "RT-AC86U" || based_modelid == "GT-AC2900" || based_modelid == "RT-AC3100" || based_modelid == "RT-AC5300" || based_modelid == "GT-AC5300" || based_modelid == "GT-AC9600" || based_modelid == "GT-AX11000" || based_modelid == "GT-AXE11000" || based_modelid == "GT-AX6000" || based_modelid == "GT-AX11000_PRO" || based_modelid == "GT-AXE16000"))
-	QISWIZARD = "QIS_wizard_m.htm";	
 
 var stopFlag = 0;
 
@@ -1837,12 +1838,82 @@ function show_footer(){
 	// APP Link End
 
 	footer_code += '</td>';
-	footer_code += '<td width="270" id="bottom_help_FAQ" align="right" style="font-family:Arial, Helvetica, sans-serif;">FAQ&nbsp&nbsp<input type="text" id="FAQ_input" class="input_FAQ_table" maxlength="40" onKeyPress="submitenter(this,event);" autocorrect="off" autocapitalize="off"></td>';
+	footer_code += '<td width="270" id="bottom_help_FAQ" align="right" style="font-family:Arial, Helvetica, sans-serif;">FAQ&nbsp&nbsp<input type="text" id="FAQ_input" class="input_FAQ_table" maxlength="40" onKeyPress="submitenter(this,event);" autocorrect="off" autocapitalize="off" onkeyup="filterFAQ();"></td>';
+	footer_code += '<div id="faq-block" class="faq-filter-block" style="display:none"></div>';
+	footer_code += '</td>';
 	footer_code += '<td width="30" align="left"><div id="bottom_help_FAQ_icon" class="bottom_help_FAQ_icon" style="cursor:pointer;margin-left:3px;" target="_blank" onClick="search_supportsite();"></div></td>';
 	footer_code += '</tr></table></div>\n';
 	//}
 
 	document.getElementById("footer").innerHTML = footer_code;
+}
+function filterFAQ(){
+	var string = $("#FAQ_input").val().trim().toUpperCase();
+	if(string != "" && string != " "){
+		$('#faq-block').show();
+		genFAQList(string)
+	}
+	else{
+		$('#faq-block').hide();
+	}
+}
+
+function genFAQList(_str){
+	var code = '';
+	$.ajax({
+		url: '/js/faq.js',
+		dataType: 'script',
+		error: function(xhr) {
+			setTimeout(function(){
+				genFAQList();
+			}, 2000);
+		},
+		success: function(response){
+			var current_mode = (function(){
+				if(isSwMode('rt')){
+					return 'RT';
+				}
+				else if(isSwMode('ap')){
+					return 'AP';
+				}
+				else if(isSwMode('mb')){
+					return 'MB';
+				}
+				else if(isSwMode('re')){
+					return 'RE';
+				}
+
+				return '';
+			})();
+
+			for(var i=0; i< Object.values(faq_data).length; i++){
+				var _idx = Object.values(faq_data)[i].index.toUpperCase();
+				var name = Object.values(faq_data)[i].name;
+				var _name = Object.values(faq_data)[i].name.toUpperCase();
+				var link = Object.values(faq_data)[i].link;
+				var menu = Object.values(faq_data)[i].menu;
+				var support = (function(){
+					var _mode = Object.values(faq_data)[i].mode;
+					var rc = Object.values(faq_data)[i].support;
+					for(var j=0; j<_mode.length; j++){
+						if((_mode[j] == current_mode) && rc){
+							return true;
+						}					
+					}
+
+					return false;
+				})();
+
+				if( (_idx.indexOf(_str) != -1 || _name.indexOf(_str) != -1) && support){
+					code += '<div>';
+					code += '<a href="'+ link +'">'+ name + ' - ' + menu +'</a>';
+					code += '</div>';
+				}
+			}
+		
+			$('#faq-block').html(code);
+		}
+	});
 }
 
 function get_supportsite_lang(obj){
@@ -2953,8 +3024,10 @@ function refreshStatus(xhr){
 
 	if(location.pathname == "/"+ QISWIZARD)
 		return false;
-	else if(location.pathname == "/Advanced_VPNClient_Content.asp" && !vpn_fusion_support)
-		show_vpnc_rulelist();
+	else if(location.pathname == "/Advanced_VPNClient_Content.asp" && !vpn_fusion_support){
+		if(typeof show_vpnc_rulelist == "function")
+			show_vpnc_rulelist();
+	}
 	else if(location.pathname == "/Advanced_Feedback.asp") {
 		updateUSBStatus();
 		if(dblog_support)
@@ -3740,7 +3813,8 @@ function isMobile(){
 		//(navigator.userAgent.match(/Android/i) && navigator.userAgent.match(/Mobile/i))||			//Android phone
 		(navigator.userAgent.match(/Opera/i) && (navigator.userAgent.match(/Mobi/i) || navigator.userAgent.match(/Mini/i))) ||		// Opera mobile or Opera Mini
 		navigator.userAgent.match(/IEMobile/i)	||		// IE Mobile
-		navigator.userAgent.match(/BlackBerry/i)		//BlackBerry
+		navigator.userAgent.match(/BlackBerry/i) ||		//BlackBerry
+		navigator.userAgent.match(/WebView/i)	//WebView
 	 ){
 		return true;
 	}

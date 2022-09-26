@@ -374,7 +374,7 @@ static void init_defaults(void)
 	main_opts.reverse_sdp = TRUE;
 	main_opts.name_resolv = TRUE;
 	main_opts.debug_keys = FALSE;
-#if !defined(RTAX95Q) && !defined(XT8PRO) && !defined(XT8_V2) && !defined(RTAXE95Q) && !defined(ET8PRO) && !defined(RTAX56_XD4) && !defined(XD4PRO) && !defined(ET12) && !defined(XT12)
+#if !defined(RTAX95Q) && !defined(XT8PRO) && !defined(BM68) && !defined(XT8_V2) && !defined(RTAXE95Q) && !defined(ET8PRO) && !defined(ET8_V2) && !defined(RTAX56_XD4) && !defined(XD4PRO) && !defined(ET12) && !defined(XT12)
 	main_opts.mode = BT_MODE_LE;
 #endif
 

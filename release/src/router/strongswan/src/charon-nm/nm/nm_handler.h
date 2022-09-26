@@ -39,10 +39,11 @@ struct nm_handler_t {
 	 * Create an enumerator over received attributes of a given kind.
 	 *
 	 * @param type		type of attributes to enumerate
-	 * @return			enumerator over attribute data (chunk_t)
+	 * @return			enumerator over attribute data (chunk_t*)
 	 */
 	enumerator_t* (*create_enumerator)(nm_handler_t *this,
 									   configuration_attribute_type_t type);
+
 	/**
 	 * Reset state, flush all received attributes.
 	 */

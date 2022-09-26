@@ -1328,10 +1328,11 @@ int mount_r(char *mnt_dev, char *mnt_dir, char *_type)
 			sprintf(options + strlen(options), ",allow_utime=0022" + (options[0] ? 0 : 1));
 #endif
 
-			if (nvram_invmatch("smbd_cset", ""))
-				sprintf(options + strlen(options), ",iocharset=%s%s",
-						isdigit(nvram_get("smbd_cset")[0]) ? "cp" : "",
-						nvram_get("smbd_cset"));
+			if(nvram_match("smbd_cset", "utf8"))
+				sprintf(options + strlen(options), ",utf8" + (options[0] ? 0 : 1));
+			else
+			if(nvram_invmatch("smbd_cset", ""))
+				sprintf(options + strlen(options), ",iocharset=%s%s", isdigit(nvram_get("smbd_cset")[0]) ? "cp" : "", nvram_get("smbd_cset"));
 
 			if (nvram_invmatch("smbd_cpage", "")) {
 				char cp[16];
@@ -1392,29 +1393,33 @@ int mount_r(char *mnt_dev, char *mnt_dir, char *_type)
 		else if (strncmp(type, "ntfs", 4) == 0) {
 			sprintf(options, "umask=0000,nodev");
 
-			if (nvram_invmatch("smbd_cset", ""))
-				sprintf(options + strlen(options), "%snls=%s%s", options[0] ? "," : "",
-						isdigit(nvram_get("smbd_cset")[0]) ? "cp" : "",
-						nvram_get("smbd_cset"));
+			if(nvram_match("smbd_cset", "utf8"))
+				sprintf(options + strlen(options), ",utf8" + (options[0] ? 0 : 1));
+			else{
+				if(nvram_invmatch("smbd_cset", ""))
+						sprintf(options + strlen(options), "%snls=%s%s", options[0] ? "," : "", isdigit(nvram_get("smbd_cset")[0]) ? "cp" : "", nvram_get("smbd_cset"));
+
 #if defined(RTCONFIG_REALTEK) && defined(RTCONFIG_TUXERA_NTFS)
 			/* TUXERA module not support codepage options. */
-#else			
-			if (nvram_invmatch("smbd_cpage", "")) {
-				char cp[16];
+#else
+				if (nvram_invmatch("smbd_cpage", "")) {
+					char cp[16];
 
-				snprintf(cp, sizeof(cp), "%s", nvram_safe_get("smbd_cpage"));
-				sprintf(options + strlen(options), ",codepage=%s" + (options[0] ? 0 : 1), cp);
-				snprintf(flagfn, sizeof(flagfn), "nls_cp%s", cp);
-				TRACE_PT("USB %s(%s) is setting the code page to %s!\n", mnt_dev, type, flagfn);
+					snprintf(cp, sizeof(cp), "%s", nvram_safe_get("smbd_cpage"));
+					sprintf(options + strlen(options), ",codepage=%s" + (options[0] ? 0 : 1), cp);
+					snprintf(flagfn, sizeof(flagfn), "nls_cp%s", cp);
+					TRACE_PT("USB %s(%s) is setting the code page to %s!\n", mnt_dev, type, flagfn);
 
-				snprintf(cp, sizeof(cp), "%s", nvram_safe_get("smbd_nlsmod"));
-				if(strlen(cp) > 0 && (strcmp(cp, flagfn) != 0))
-					modprobe_r(cp);
+					snprintf(cp, sizeof(cp), "%s", nvram_safe_get("smbd_nlsmod"));
+					if(strlen(cp) > 0 && (strcmp(cp, flagfn) != 0))
+						modprobe_r(cp);
 
-				modprobe(flagfn);
-				nvram_set("smbd_nlsmod", flagfn);
-			}
+					modprobe(flagfn);
+					nvram_set("smbd_nlsmod", flagfn);
+				}
 #endif
+			}
+
 #ifndef RTCONFIG_BCMARM
 			sprintf(options + strlen(options), ",noatime" + (options[0] ? 0 : 1));
 #endif
@@ -1504,7 +1509,10 @@ int mount_r(char *mnt_dev, char *mnt_dir, char *_type)
 #ifdef RTCONFIG_OPENPLUS_TFAT
 				else
 #endif
+				{
 					ret = eval("mount", "-t", "tfat", "-o", options, mnt_dev, mnt_dir);
+					_dprintf("%s: fat options: %s, ret: %d.\n", __func__, options, ret);
+				}
 #endif
 
 				if(ret != 0){
@@ -1528,8 +1536,9 @@ int mount_r(char *mnt_dev, char *mnt_dir, char *_type)
 					else
 #endif
 					{
-						//ret = eval("mount", "-t", "tntfs", "-o", options, mnt_dev, mnt_dir);
-						ret = eval("mount", "-t", "tntfs", "-o", "nodev", mnt_dev, mnt_dir);
+						ret = eval("mount", "-t", "tntfs", "-o", options, mnt_dev, mnt_dir);
+						//ret = eval("mount", "-t", "tntfs", "-o", "nodev", mnt_dev, mnt_dir);
+						_dprintf("%s: ntfs options: %s, ret: %d.\n", __func__, options, ret);
 					}
 #endif
 #if defined(RTCONFIG_PARAGON_NTFS)
@@ -5742,6 +5751,43 @@ void webdav_account_default(void)
 	}
 }
 //#endif
+void start_wsdd()
+{
+	unsigned char ea[ETHER_ADDR_LEN];
+	char serial[18];
+	pid_t pid;
+	char bootparms[64];
+	char *wsdd_argv[] = { "/usr/sbin/wsdd2",
+				"-d",
+				"-w",
+				"-i",
+				nvram_safe_get("lan_ifname"),
+				"-b",
+				NULL,	// boot parameters
+				NULL };
+	stop_wsdd();
+
+	if (!ether_atoe(get_lan_hwaddr(), ea))
+		f_read("/dev/urandom", ea, sizeof(ea));
+
+	snprintf(serial, sizeof(serial), "%02x%02x%02x%02x%02x%02x",
+		ea[0], ea[1], ea[2], ea[3], ea[4], ea[5]);
+
+	snprintf(bootparms, sizeof(bootparms), "sku:%s,serial:%s", get_productid(), serial);
+	wsdd_argv[6] = bootparms;
+
+#if 0
+	if(!f_exists("/etc/machine-id"))
+		system("echo $(nvram get lan_hwaddr) | md5sum | cut -b -32 > /etc/machine-id");
+#endif
+
+	_eval(wsdd_argv, NULL, 0, &pid);
+}
+
+void stop_wsdd() {
+	if (pids("wsdd2"))
+		killall_tk("wsdd2");
+}
 
 
 #ifdef RTCONFIG_NFS
@@ -5856,43 +5902,3 @@ void stop_nfsd(void)
 }
 
 #endif
-
-
-void start_wsdd()
-{
-	unsigned char ea[ETHER_ADDR_LEN];
-	char serial[18];
-	pid_t pid;
-	char bootparms[64];
-	char *wsdd_argv[] = { "/usr/sbin/wsdd2",
-				"-d",
-				"-w",
-				"-i",
-				nvram_safe_get("lan_ifname"),
-				"-b",
-				NULL,	// boot parameters
-				NULL };
-	stop_wsdd();
-
-	if (!ether_atoe(get_lan_hwaddr(), ea))
-		f_read("/dev/urandom", ea, sizeof(ea));
-
-	snprintf(serial, sizeof(serial), "%02x%02x%02x%02x%02x%02x",
-		ea[0], ea[1], ea[2], ea[3], ea[4], ea[5]);
-
-	snprintf(bootparms, sizeof(bootparms), "sku:%s,serial:%s", get_productid(), serial);
-	wsdd_argv[6] = bootparms;
-
-#if 0
-	if(!f_exists("/etc/machine-id"))
-		system("echo $(nvram get lan_hwaddr) | md5sum | cut -b -32 > /etc/machine-id");
-#endif
-
-	_eval(wsdd_argv, NULL, 0, &pid);
-}
-
-void stop_wsdd() {
-	if (pids("wsdd2"))
-		killall_tk("wsdd2");
-}
-

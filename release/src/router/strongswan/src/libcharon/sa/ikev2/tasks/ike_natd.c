@@ -22,7 +22,7 @@
 #include <config/peer_cfg.h>
 #include <crypto/hashers/hasher.h>
 #include <encoding/payloads/notify_payload.h>
-
+#include <sa/ikev2/tasks/ike_mobike.h>
 
 typedef struct private_ike_natd_t private_ike_natd_t;
 
@@ -52,12 +52,12 @@ struct private_ike_natd_t {
 	hasher_t *hasher;
 
 	/**
-	 * Did we process any NAT detection notifys for a source address?
+	 * Did we process any NAT detection notifies for a source address?
 	 */
 	bool src_seen;
 
 	/**
-	 * Did we process any NAT detection notifys for a destination address?
+	 * Did we process any NAT detection notifies for a destination address?
 	 */
 	bool dst_seen;
 
@@ -72,9 +72,14 @@ struct private_ike_natd_t {
 	bool dst_matched;
 
 	/**
-	 * whether NAT mappings for our NATed address has changed
+	 * Whether NAT mappings for our NATed address has changed
 	 */
 	bool mapping_changed;
+
+	/**
+	 * Whether we faked a NAT situation because we didn't know our own IP
+	 */
+	bool fake_no_source_ip;
 };
 
 /**
@@ -140,7 +145,7 @@ static notify_payload_t *build_natd_payload(private_ike_natd_t *this,
 
 	ike_sa_id = this->ike_sa->get_id(this->ike_sa);
 	config = this->ike_sa->get_ike_cfg(this->ike_sa);
-	if (force_encap(config) && type == NAT_DETECTION_SOURCE_IP)
+	if (type == NAT_DETECTION_SOURCE_IP && (force_encap(config) || host->is_anyaddr(host)))
 	{
 		uint32_t addr;
 
@@ -168,7 +173,7 @@ static notify_payload_t *build_natd_payload(private_ike_natd_t *this,
 }
 
 /**
- * read notifys from message and evaluate them
+ * Process NAT detection notifies
  */
 static void process_payloads(private_ike_natd_t *this, message_t *message)
 {
@@ -250,6 +255,29 @@ static void process_payloads(private_ike_natd_t *this, message_t *message)
 	{
 		this->ike_sa->enable_extension(this->ike_sa, EXT_NATT);
 
+		if (this->fake_no_source_ip)
+		{
+			if (this->dst_matched)
+			{	/* after we faked a NAT, we now see that we are not behind one.
+				 * we still have to register this as NAT to enable UDP-encap but
+				 * we do so as actual local NAT, so DPDs will contain NAT-D
+				 * payloads and we can remove this condition later via MOBIKE */
+				this->dst_matched = FALSE;
+			}
+			else
+			{	/* we are behind a NAT anyway, so nothing special to be done */
+				this->fake_no_source_ip = FALSE;
+			}
+		}
+		else if (this->initiator && this->dst_matched &&
+				 this->ike_sa->has_condition(this->ike_sa, COND_NAT_HERE))
+		{	/* we are not behind a NAT anymore, which might be because we
+			 * didn't know our source IP initially. this flag triggers a MOBIKE
+			 * update during a DPD, but it's not checked during MOBIKE updates
+			 * when moving from behind a NAT to a public address */
+			this->mapping_changed = TRUE;
+		}
+
 		this->ike_sa->set_condition(this->ike_sa, COND_NAT_HERE,
 									!this->dst_matched);
 		this->ike_sa->set_condition(this->ike_sa, COND_NAT_THERE,
@@ -270,19 +298,29 @@ METHOD(task_t, process_i, status_t,
 
 	if (message->get_exchange_type(message) == IKE_SA_INIT)
 	{
-		peer_cfg_t *peer_cfg = this->ike_sa->get_peer_cfg(this->ike_sa);
+		peer_cfg_t *peer_cfg;
+		ike_mobike_t *mobike;
+
+		peer_cfg = this->ike_sa->get_peer_cfg(this->ike_sa);
 		if (this->ike_sa->has_condition(this->ike_sa, COND_NAT_ANY) ||
-			/* if peer supports NAT-T, we switch to port 4500 even
-			 * if no NAT is detected. can't be done later (when we would know
-			 * whether the peer supports MOBIKE) because there would be no
-			 * exchange to actually do the switch (other than a forced DPD). */
 			(peer_cfg->use_mobike(peer_cfg) &&
 			 this->ike_sa->supports_extension(this->ike_sa, EXT_NATT)))
-		{
+		{	/* if the peer supports NAT-T, we switch to port 4500 even if no
+			 * NAT is detected. can't be done later (when we would know
+			 * whether the peer supports MOBIKE) because there is no exchange
+			 * to actually do the switch (other than a forced DPD) */
 			this->ike_sa->float_ports(this->ike_sa);
 		}
-	}
 
+		if (this->fake_no_source_ip)
+		{	/* the NAT-D payloads revealed that we are not behind a NAT, so
+			 * queue a MOBIKE-enabled DPD to check if UDP-encap can actually be
+			 * disabled once we know if MOBIKE is supported */
+			mobike = ike_mobike_create(this->ike_sa, TRUE);
+			mobike->dpd(mobike);
+			this->ike_sa->queue_task(this->ike_sa, &mobike->task);
+		}
+	}
 	return SUCCESS;
 }
 
@@ -290,7 +328,6 @@ METHOD(task_t, build_i, status_t,
 	private_ike_natd_t *this, message_t *message)
 {
 	notify_payload_t *notify;
-	enumerator_t *enumerator;
 	ike_cfg_t *ike_cfg;
 	host_t *host;
 
@@ -302,22 +339,9 @@ METHOD(task_t, build_i, status_t,
 
 	ike_cfg = this->ike_sa->get_ike_cfg(this->ike_sa);
 
-	/* destination is always set */
-	host = message->get_destination(message);
-	notify = build_natd_payload(this, NAT_DETECTION_DESTINATION_IP, host);
-	if (notify)
-	{
-		message->add_payload(message, (payload_t*)notify);
-	}
-
-	/* source may be any, we have 3 possibilities to get our source address:
-	 * 1. It is defined in the config => use the one of the IKE_SA
-	 * 2. We do a routing lookup in the kernel interface
-	 * 3. Include all possbile addresses
-	 */
 	host = message->get_source(message);
 	if (!host->is_anyaddr(host) || force_encap(ike_cfg))
-	{	/* 1. or if we force UDP encap, as it doesn't matter if it's %any */
+	{
 		notify = build_natd_payload(this, NAT_DETECTION_SOURCE_IP, host);
 		if (notify)
 		{
@@ -325,36 +349,33 @@ METHOD(task_t, build_i, status_t,
 		}
 	}
 	else
-	{
-		host = charon->kernel->get_source_addr(charon->kernel,
-							this->ike_sa->get_other_host(this->ike_sa), NULL);
-		if (host)
-		{	/* 2. */
-			host->set_port(host, ike_cfg->get_my_port(ike_cfg));
+	{	/* if we were not able to determine the source address (e.g. because
+		 * DHCP is not done yet), we default to forcing encap for IPv4 and
+		 * disabling NAT-D for IPv6 by not sending any notifies */
+		if (host->get_family(host) == AF_INET)
+		{
+			DBG1(DBG_IKE, "unable to determine source address, faking NAT "
+				 "situation");
+			this->fake_no_source_ip = TRUE;
 			notify = build_natd_payload(this, NAT_DETECTION_SOURCE_IP, host);
 			if (notify)
 			{
 				message->add_payload(message, (payload_t*)notify);
 			}
-			host->destroy(host);
 		}
 		else
-		{	/* 3. */
-			enumerator = charon->kernel->create_address_enumerator(
-											charon->kernel, ADDR_TYPE_REGULAR);
-			while (enumerator->enumerate(enumerator, (void**)&host))
-			{
-				/* apply port 500 to host, but work on a copy */
-				host = host->clone(host);
-				host->set_port(host, ike_cfg->get_my_port(ike_cfg));
-				notify = build_natd_payload(this, NAT_DETECTION_SOURCE_IP, host);
-				host->destroy(host);
-				if (notify)
-				{
-					message->add_payload(message, (payload_t*)notify);
-				}
-			}
-			enumerator->destroy(enumerator);
+		{
+			DBG1(DBG_IKE, "unable to determine source address, disabling NAT-D");
+		}
+	}
+
+	if (message->get_notify(message, NAT_DETECTION_SOURCE_IP))
+	{
+		host = message->get_destination(message);
+		notify = build_natd_payload(this, NAT_DETECTION_DESTINATION_IP, host);
+		if (notify)
+		{
+			message->add_payload(message, (payload_t*)notify);
 		}
 	}
 	return NEED_MORE;
@@ -421,6 +442,7 @@ METHOD(task_t, migrate, void,
 	this->src_matched = FALSE;
 	this->dst_matched = FALSE;
 	this->mapping_changed = FALSE;
+	this->fake_no_source_ip = FALSE;
 }
 
 METHOD(task_t, destroy, void,

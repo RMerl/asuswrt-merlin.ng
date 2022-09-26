@@ -517,9 +517,11 @@ int init_toggle(void)
 		case MODEL_RTAX92U:
 		case MODEL_RTAX95Q:
 		case MODEL_XT8PRO:
+		case MODEL_BM68:
 		case MODEL_XT8_V2:
 		case MODEL_RTAXE95Q:
 		case MODEL_ET8PRO:
+		case MODEL_ET8_V2:
 		case MODEL_RTAX56_XD4:
 		case MODEL_XD4PRO:
 		case MODEL_CTAX56_XD4:
@@ -527,6 +529,7 @@ int init_toggle(void)
 		case MODEL_RTAX82U_V2:
 		case MODEL_TUFAX5400_V2:
 		case MODEL_RTAX82_XD6S:
+		case MODEL_XD6_V2:
 		case MODEL_RTAX58U_V2:
 		case MODEL_GT10:
 		case MODEL_RTAXE7800:
@@ -3914,7 +3917,7 @@ void btn_check(void)
 				eval("wl", "-i", "eth7", "ledbh", "13", "7");
 #elif defined(RTAX92U)
 				eval("wl", "-i", "eth5", "ledbh", "10", "7");
-#elif defined(RTAX95Q) || defined(XT8PRO) || defined(XT8_V2) || defined(RTAXE95Q) || defined(ET8PRO)
+#elif defined(RTAX95Q) || defined(XT8PRO) || defined(BM68) || defined(XT8_V2) || defined(RTAXE95Q) || defined(ET8PRO) || defined(ET8_V2)
 				eval("wl", "-i", "eth4", "ledbh", "10", "7");
 #elif defined(RTAX56_XD4) || defined(XD4PRO) || defined(CTAX56_XD4)
 				eval("wl", "-i", "wl0", "ledbh", "10", "7");
@@ -3961,7 +3964,7 @@ void btn_check(void)
 				eval("wl", "-i", "eth7", "ledbh", "15", "7");
 #elif defined(RTAX92U)
 				eval("wl", "-i", "eth6", "ledbh", "10", "7");
-#elif defined(RTAX95Q) || defined(XT8PRO) || defined(XT8_V2) || defined(RTAXE95Q) || defined(ET8PRO)
+#elif defined(RTAX95Q) || defined(XT8PRO) || defined(BM68) || defined(XT8_V2) || defined(RTAXE95Q) || defined(ET8PRO) || defined(ET8_V2)
 				eval("wl", "-i", "eth5", "ledbh", "10", "7");
 #elif defined(RTAX56_XD4) || defined(XD4PRO) || defined(CTAX56_XD4)
 				eval("wl", "-i", "wl1", "ledbh", "10", "7");
@@ -3986,11 +3989,7 @@ void btn_check(void)
 					kill_pidfile_s("/var/run/ledbtn.pid", SIGUSR1);
 				} else
 #endif
-#if defined(RTAX82U_V2) || defined(TUFAX5400_V2)
-				eval("wl", "-i", "eth6", "ledbh", "13", "7");
-#else
 				eval("wl", "-i", "eth6", "ledbh", "15", "7");
-#endif
 #elif defined(RTAX86U)
 				if(!strcmp(get_productid(), "RT-AX86S"))
 					eval("wl", "-i", "eth6", "ledbh", "15", "7");
@@ -4022,7 +4021,7 @@ void btn_check(void)
 				eval("wl", "-i", "eth8", "ledbh", "15", "7");
 #elif defined(RTAX92U)
 				eval("wl", "-i", "eth7", "ledbh", "15", "7");
-#elif defined(RTAX95Q) || defined(XT8PRO) || defined(XT8_V2) || defined(RTAXE95Q) || defined(ET8PRO)
+#elif defined(RTAX95Q) || defined(XT8PRO) || defined(BM68) || defined(XT8_V2) || defined(RTAXE95Q) || defined(ET8PRO) || defined(ET8_V2)
 				eval("wl", "-i", "eth6", "ledbh", "15", "7");
 #elif defined(RTAC5300)
 				eval("wl", "-i", "eth3", "ledbh", "9", "7");
@@ -4755,7 +4754,7 @@ int svcStatus[12] = { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
 //int timecheck(int argc, char *argv[])
 void timecheck(void)
 {
-#if !defined(RTCONFIG_WL_SCHED_V2) || defined(RTCONFIG_LP5523)
+#if (!defined(RTCONFIG_SCHED_DAEMON) && !defined(RTCONFIG_WL_SCHED_V2)) || defined(RTCONFIG_LP5523)
 	int activeNow;
 	char schedTime[2048];
 	char prefix[]="wlXXXXXX_";
@@ -4781,7 +4780,7 @@ void timecheck(void)
 #endif
 #endif
 
-#ifndef RTCONFIG_WL_SCHED_V2
+#if !defined(RTCONFIG_SCHED_DAEMON) && !defined(RTCONFIG_WL_SCHED_V2)
 	WL_SCHED_DBG("[wifi-scheduler] start to timecheck()...\n");
 
 	item = 0;
@@ -4877,7 +4876,7 @@ void timecheck(void)
 
 	}
 end_of_wl_sched:
-#endif // ifndef RTCONFIG_WL_SCHED_V2
+#endif // #if !defined(RTCONFIG_SCHED_DAEMON) && !defined(RTCONFIG_WL_SCHED_V2)
 
 	// guest ssid expire check
 	if ((is_router_mode() || access_point_mode()) &&
@@ -5040,8 +5039,9 @@ void timecheck_v2(void)
 	char word[256], *next;
 	int unit = 0, item = 0;
 #if defined(RTCONFIG_AMAS) && defined(RTCONFIG_QCA)
-       char sctmp[20];
+	char sctmp[20];
 #endif 
+
 	// Check whether conversion needed.
 	convert_wl_sched_v1_to_sched_v2();
 
@@ -5075,6 +5075,7 @@ void timecheck_v2(void)
 #if defined(RTCONFIG_AMAS) && defined(RTCONFIG_QCA)
 		snprintf(sctmp, sizeof(sctmp), "wl%d_qca_sched", unit);
 #endif
+
 		//dbG("[watchdog] timecheck unit=%s radio=%s, timesched=%s\n", prefix, nvram_safe_get(strcat_r(prefix, "radio", tmp)), nvram_safe_get(strcat_r(prefix, "timesched", tmp2))); // radio toggle test
 		if (nvram_match(strcat_r(prefix, "radio", tmp), "0") ||
 			nvram_match(strcat_r(prefix, "timesched", tmp2), "0")) {
@@ -5103,8 +5104,9 @@ void timecheck_v2(void)
 		if (svcStatus[item] != activeNow) {
 #ifdef RTCONFIG_QCA
 #if defined(RTCONFIG_AMAS)
-		  	nvram_set_int(sctmp,activeNow);
+			nvram_set_int(sctmp,activeNow);
 #endif
+
 #if defined(RTCONFIG_LYRA_5G_SWAP)
 			if (match_radio_status(swap_5g_band(unit), activeNow)) {
 #else
@@ -5331,11 +5333,11 @@ unsigned long get_etlan_count()
 	char buf[256];
 	char *ifname, *p;
 	unsigned long counter=0;
-#if defined(GTAC5300) || defined(RTAX88U) || defined(GTAX11000) || defined(RTAX92U) || defined(RTAX95Q) || defined(XT8PRO) || defined(XT8_V2) || defined(RTAXE95Q) || defined(ET8PRO) || defined(RTAX56U) || defined(RTAX56_XD4) || defined(XD4PRO) || defined(CTAX56_XD4) || defined(RTAX86U) || defined(RTAX68U) || defined(RTAX55) || defined(RTAX1800) || defined(GTAXE11000) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTAX6000) || defined(RTAX3000N)
+#if defined(GTAC5300) || defined(RTAX88U) || defined(GTAX11000) || defined(RTAX92U) || defined(RTAX95Q) || defined(XT8PRO) || defined(BM68) || defined(XT8_V2) || defined(RTAXE95Q) || defined(ET8PRO) || defined(ET8_V2) || defined(RTAX56U) || defined(RTAX56_XD4) || defined(XD4PRO) || defined(CTAX56_XD4) || defined(RTAX86U) || defined(RTAX68U) || defined(RTAX55) || defined(RTAX1800) || defined(GTAXE11000) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTAX6000) || defined(RTAX3000N) || defined(RTAX88U_PRO)
 	unsigned long tmpcnt=0;
 #endif
 
-#if defined(RTAX95Q) || defined(XT8PRO) || defined(XT8_V2) || defined(RTAXE95Q) || defined(ET8PRO) || defined(RTAX56_XD4) || defined(XD4PRO) || defined(CTAX56_XD4)
+#if defined(RTAX95Q) || defined(XT8PRO) || defined(BM68) || defined(XT8_V2) || defined(RTAXE95Q) || defined(ET8PRO) || defined(ET8_V2) || defined(RTAX56_XD4) || defined(XD4PRO) || defined(CTAX56_XD4)
 	return -1;
 #endif
 #if defined(RTAX86U)
@@ -5354,9 +5356,9 @@ unsigned long get_etlan_count()
 		if ((ifname = strrchr(buf, ' ')) == NULL) ifname = buf;
 		else ++ifname;
 
-#if defined(GTAC5300) || defined(RTAX88U) || defined(GTAX11000) || defined(RTAX92U) || defined(RTAX95Q) || defined(XT8PRO) || defined(XT8_V2) || defined(RTAXE95Q) || defined(ET8PRO) || defined(RTAX56U) || defined(RTAX68U) || defined(RTAX55) || defined(RTAX1800) || defined(GTAXE11000) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTAX6000) || defined(RTAX3000N)
+#if defined(GTAC5300) || defined(RTAX88U) || defined(GTAX11000) || defined(RTAX92U) || defined(RTAX95Q) || defined(XT8PRO) || defined(BM68) || defined(XT8_V2) || defined(RTAXE95Q) || defined(ET8PRO) || defined(ET8_V2) || defined(RTAX56U) || defined(RTAX68U) || defined(RTAX55) || defined(RTAX1800) || defined(GTAXE11000) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTAX6000) || defined(RTAX3000N)
 		if (strcmp(ifname, "eth1")
-#if defined(GTAC5300) || defined(RTAX88U) || defined(GTAX11000) || defined(RTAX92U) || defined(RTAX95Q) || defined(XT8PRO) || defined(XT8_V2) || defined(RTAXE95Q) || defined(ET8PRO) || defined(RTAX56U) || defined(RTAX68U) || defined(GTAXE11000) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTAX6000)
+#if defined(GTAC5300) || defined(RTAX88U) || defined(GTAX11000) || defined(RTAX92U) || defined(RTAX95Q) || defined(XT8PRO) || defined(BM68) || defined(XT8_V2) || defined(RTAXE95Q) || defined(ET8PRO) || defined(ET8_V2) || defined(RTAX56U) || defined(RTAX68U) || defined(GTAXE11000) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTAX6000) || defined(RTAX88U_PRO)
 			&& strcmp(ifname, "eth2") && strcmp(ifname, "eth3") && strcmp(ifname, "eth4")
 #endif
 #if defined(GTAXE16000)
@@ -5517,11 +5519,11 @@ void fake_etlan_led(void)
 #if defined(RTCONFIG_EXTPHY_BCM84880) && !defined(BCM4912)
 	if ((nvram_get_int("wans_extwan") && !(phystatus & 0x3e)) || // configure 2.5G port as WAN, need to consider 1G WAN connectivity
 			(!nvram_get_int("wans_extwan") && !(phystatus & 0x1e)))  // configure 2.5G port as LAN, ignore 2.5G port
-#elif defined(GTAX6000)
+#elif defined(GTAX6000) || defined(RTAX88U_PRO)
 	if (!((phystatus & 0x2) || (phystatus & 0x4) || (phystatus & 0x8) || (phystatus & 0x10)))
 #else
 	if (!phystatus
-#if defined(RTAX92U) || defined(RTAX95Q) || defined(XT8PRO) || defined(XT8_V2) || defined(RTAXE95Q) || defined(ET8PRO) || defined(RTAX68U)
+#if defined(RTAX92U) || defined(RTAX95Q) || defined(XT8PRO) || defined(BM68) || defined(XT8_V2) || defined(RTAXE95Q) || defined(ET8PRO) || defined(ET8_V2) || defined(RTAX68U)
 			|| phystatus == 1 // ignore WAN
 #endif
 #if defined(GTAXE16000)
@@ -6265,9 +6267,11 @@ void led_check(int sig)
 		case MODEL_RTAX92U:
 		case MODEL_RTAX95Q:
 		case MODEL_XT8PRO:
+		case MODEL_BM68:
 		case MODEL_XT8_V2:
 		case MODEL_RTAXE95Q:
 		case MODEL_ET8PRO:
+		case MODEL_ET8_V2:
 		case MODEL_RTAX56_XD4:
 		case MODEL_XD4PRO:
 		case MODEL_CTAX56_XD4:
@@ -6283,6 +6287,7 @@ void led_check(int sig)
 		case MODEL_GTAX6000:
 		case MODEL_GTAX11000_PRO:
 		case MODEL_GTAXE16000:
+		case MODEL_RTAX88U_PRO:
 		default:
 			snprintf(p1_node, sizeof(p1_node), "%s", nvram_safe_get("usb_path1_node"));
 			snprintf(p2_node, sizeof(p2_node), "%s", nvram_safe_get("usb_path2_node"));
@@ -6976,6 +6981,14 @@ void httpd_check()
 	}
 }
 
+void awsiot_check()
+{
+#ifdef RTCONFIG_AWSIOT
+	if (!pids("awsiot"))
+		start_awsiot();
+#endif
+}
+
 #ifdef RTCONFIG_UPNPC_NEW
 void renew_ipsec_upnpc_duration(int type)
 {
@@ -7568,63 +7581,6 @@ void modem_flow_check(int modem_unit) {
 	return;
 }
 #endif
-#endif
-
-#ifdef RTCONFIG_NOTIFICATION_CENTER
-void ntevent_intranet_usage_insight()
-{
-	time_t now;
-	struct tm *tm;
-
-	if (!nvram_get_int("ntp_ready")) return;
-
-	char str[32];
-	time(&now);
-	tm = localtime(&now);
-
-	/* send event at 9:00 each Monday */
-	if (tm->tm_wday == 1 && tm->tm_hour == 9 && tm->tm_min == 0) {
-		snprintf(str, 32, "0x%x", HINT_INTERNET_USAGE_INSIGHT_EVENT);
-		eval("Notify_Event2NC", str, "");
-	}
-}
-#endif
-
-#if defined(RTCONFIG_USB) && defined(RTCONFIG_NOTIFICATION_CENTER) && defined(RTCONFIG_CLOUDSYNC)
-static void ntevent_disk_usage_check(){
-	char str[32];
-	int ntevent_firstdisk = nvram_get_int("ntevent_firstdisk");
-	int ntevent_nodiskuse_sec = nvram_get_int("ntevent_nodiskuse_sec");
-	int ntevent_nodiskuse = nvram_get_int("ntevent_nodiskuse");
-	int link_internet = nvram_get_int("link_internet");
-	time_t now;
-	unsigned long timestamp;
-
-	if(ntevent_nodiskuse_sec <= 0){
-		ntevent_nodiskuse_sec = 86400*3;
-		nvram_set("ntevent_nodiskuse_sec", "259200");
-		nvram_commit();
-	}
-
-	if(link_internet == 2 && !ntevent_nodiskuse && !ntevent_firstdisk){
-		time(&now);
-		snprintf(str, 32, "%s", nvram_safe_get("ntevent_nodiskuse_start"));
-		if(strlen(str) > 0){
-			timestamp = strtoll(str, (char **) NULL, 10);
-			if(now-timestamp > ntevent_nodiskuse_sec){
-				snprintf(str, 32, "0x%x", HINT_USB_CHECK_EVENT);
-				eval("Notify_Event2NC", str, "");
-				nvram_set("ntevent_nodiskuse", "1");
-				nvram_commit();
-			}
-		}
-		else{
-			snprintf(str, 32, "%lu", now);
-			nvram_set("ntevent_nodiskuse_start", str);
-			nvram_commit();
-		}
-	}
-}
 #endif
 
 #ifdef RTCONFIG_CFGSYNC
@@ -8497,6 +8453,14 @@ void mastiff_check()
 		start_mastiff();
 }
 #endif /* RTCONFIG_TUNNEL */
+
+#ifdef RTCONFIG_UPLOADER
+void uploader_check()
+{
+	if (!pids("uploader"))
+		start_uploader();
+}
+#endif /* RTCONFIG_UPLOADER */
 
 #ifdef RTCONFIG_USER_LOW_RSSI
 #define ETHER_ADDR_STR_LEN	18
@@ -9388,8 +9352,16 @@ void fprobe_check()
 }
 #endif
 
+#ifdef RTCONFIG_NFCM
+void nfcm_check()
+{
+    if(!pids("nfcm"))
+        start_nfcm();
+}
+#endif
+
 #if defined(RTCONFIG_BT_CONN)
-#if (defined(RTAX82_XD6) || defined(RTAX82_XD6S)) && !defined(RTCONFIG_BCM_MFG)
+#if (defined(RTAX82_XD6) || defined(RTAX82_XD6S) || defined(XD6_V2)) && !defined(RTCONFIG_BCM_MFG)
 static int bt_down_count = 0;
 static int bt_reset_once = 0;
 #endif
@@ -9418,7 +9390,7 @@ static void bluetooth_check()
 		return;
 	if (check_bluetooth_device("hci0"))
 	{
-#if (defined(RTAX82_XD6) || defined(RTAX82_XD6S)) && !defined(RTCONFIG_BCM_MFG)
+#if (defined(RTAX82_XD6) || defined(RTAX82_XD6S) || defined(XD6_V2)) && !defined(RTCONFIG_BCM_MFG)
 		if (!check_bluetooth_device_up("hci0") && (uptime() > 24) && !nvram_get_int("bt_turn_off"))
 		{
 			if (bt_down_count++ < 10)
@@ -9445,6 +9417,14 @@ static void bluetooth_check()
 #endif
 		notify_rc("start_bluetooth_service");
 	}
+}
+#endif
+
+#if defined(RTCONFIG_SCHED_DAEMON)
+static void sched_daemon_check()
+{
+	if (!pids("sched_daemon"))
+		start_sched_daemon();
 }
 #endif
 
@@ -9644,7 +9624,7 @@ void watchdog(int sig)
 	single_led_status();
 #endif
 #if defined(RTCONFIG_BT_CONN)
-#if defined(RTAX95Q) || defined(XT8PRO) || defined(XT8_V2) || defined(RTAXE95Q) || defined(ET8PRO) || defined(RTAX56_XD4) || defined(XD4PRO) || defined(RTAX82_XD6) || defined(RTAX82_XD6S)
+#if defined(RTAX95Q) || defined(XT8PRO) || defined(BM68) || defined(XT8_V2) || defined(RTAXE95Q) || defined(ET8PRO) || defined(ET8_V2) || defined(RTAX56_XD4) || defined(XD4PRO) || defined(RTAX82_XD6) || defined(RTAX82_XD6S) || defined(XD6_V2)
 	bluetooth_check();
 #endif
 	bt_turn_off_service();
@@ -9663,6 +9643,10 @@ void watchdog(int sig)
 
 #ifdef RTCONFIG_FPROBE
 	//fprobe_check();
+#endif
+
+#ifdef RTCONFIG_NFCM
+	nfcm_check();
 #endif
 
 #if defined(RTCONFIG_QCA)
@@ -9799,7 +9783,7 @@ wdp:
 	/* check for time-related services */
 	timecheck();
 
-#ifdef RTCONFIG_WL_SCHED_V2
+#if !defined(RTCONFIG_SCHED_DAEMON) && defined(RTCONFIG_WL_SCHED_V2)
 	timecheck_v2();
 #endif
 #ifdef RTCONFIG_BACKUP_LOG
@@ -9862,7 +9846,6 @@ wdp:
 
 #ifdef RTCONFIG_NOTIFICATION_CENTER
 	alert_mail_service();
-	ntevent_intranet_usage_insight();
 #endif
 
 #ifdef RTCONFIG_BWDPI
@@ -9876,10 +9859,6 @@ wdp:
 
 #ifdef RTCONFIG_ERP_TEST
 	ErP_Test();
-#endif
-
-#if defined(RTCONFIG_USB) && defined(RTCONFIG_NOTIFICATION_CENTER) && defined(RTCONFIG_CLOUDSYNC)
-	ntevent_disk_usage_check();
 #endif
 
 #if defined(RTAC1200G) || defined(RTAC1200GP)
@@ -9900,6 +9879,9 @@ wdp:
 	if(!nvram_get_int("aae_disable_force"))
 		mastiff_check();
 #endif
+#ifdef RTCONFIG_UPLOADER
+	uploader_check();
+#endif
 #if defined(RTCONFIG_AMAS)
 	amaslib_check();
 #if defined(RTCONFIG_QCA_LBD)
@@ -9913,6 +9895,12 @@ wdp:
 	thermal_monitor();
 #endif
 
+#if defined(RTCONFIG_SCHED_DAEMON)
+	sched_daemon_check();
+#endif
+#ifdef RTCONFIG_AWSIOT
+	awsiot_check();
+#endif
 #ifdef RTCONFIG_UPNPC_NEW
 	if(nvram_get_int("ipsec_ig_enable") == 1)
 	{
@@ -9933,6 +9921,9 @@ wdp:
 		if(nvram_match("ci", "1")){
 			system("sh /tmp/mnt/sda1/auto_test.sh");
 		}
+#endif
+#ifdef RTCONFIG_WIREGUARD
+	check_wgc_endpoint();
 #endif
 }
 

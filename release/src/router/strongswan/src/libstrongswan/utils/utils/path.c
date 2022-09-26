@@ -24,22 +24,68 @@
 #include <unistd.h>
 #include <sys/stat.h>
 
-/**
- * Described in header.
+/*
+ * Described in header
  */
-char* path_dirname(const char *path)
+char *path_first_separator(const char *path, int len)
+{
+	if (!path)
+	{
+		return NULL;
+	}
+	if (len < 0)
+	{
+		len = strlen(path);
+	}
+	for (; len; path++, len--)
+	{
+		if (path_is_separator(*path))
+		{
+			return (char*)path;
+		}
+	}
+	return NULL;
+}
+
+/*
+ * Described in header
+ */
+char *path_last_separator(const char *path, int len)
+{
+	if (!path)
+	{
+		return NULL;
+	}
+	if (len < 0)
+	{
+		len = strlen(path);
+	}
+	while (len)
+	{
+		if (path_is_separator(path[--len]))
+		{
+			return (char*)&path[len];
+		}
+	}
+	return NULL;
+}
+
+/*
+ * Described in header
+ */
+char *path_dirname(const char *path)
 {
 	char *pos;
 
-	pos = path ? strrchr(path, DIRECTORY_SEPARATOR[0]) : NULL;
+	pos = path_last_separator(path, -1);
 
 	if (pos && !pos[1])
-	{	/* if path ends with slashes we have to look beyond them */
-		while (pos > path && *pos == DIRECTORY_SEPARATOR[0])
-		{	/* skip trailing slashes */
+	{	/* if path ends with separators, we have to look beyond them */
+		while (pos > path && path_is_separator(*pos))
+		{	/* skip trailing separators */
 			pos--;
 		}
-		pos = memrchr(path, DIRECTORY_SEPARATOR[0], pos - path + 1);
+		pos = path_last_separator(path, pos - path + 1);
 	}
 	if (!pos)
 	{
@@ -54,17 +100,17 @@ char* path_dirname(const char *path)
 #endif
 		return strdup(".");
 	}
-	while (pos > path && *pos == DIRECTORY_SEPARATOR[0])
-	{	/* skip superfluous slashes */
+	while (pos > path && path_is_separator(*pos))
+	{	/* skip superfluous separators */
 		pos--;
 	}
 	return strndup(path, pos - path + 1);
 }
 
-/**
- * Described in header.
+/*
+ * Described in header
  */
-char* path_basename(const char *path)
+char *path_basename(const char *path)
 {
 	char *pos, *trail = NULL;
 
@@ -72,26 +118,26 @@ char* path_basename(const char *path)
 	{
 		return strdup(".");
 	}
-	pos = strrchr(path, DIRECTORY_SEPARATOR[0]);
+	pos = path_last_separator(path, -1);
 	if (pos && !pos[1])
-	{	/* if path ends with slashes we have to look beyond them */
-		while (pos > path && *pos == DIRECTORY_SEPARATOR[0])
-		{	/* skip trailing slashes */
+	{	/* if path ends with separators, we have to look beyond them */
+		while (pos > path && path_is_separator(*pos))
+		{	/* skip trailing separators */
 			pos--;
 		}
-		if (pos == path && *pos == DIRECTORY_SEPARATOR[0])
-		{	/* contains only slashes */
-			return strdup(DIRECTORY_SEPARATOR);
+		if (pos == path && path_is_separator(*pos))
+		{	/* contains only separators */
+			return strndup(pos, 1);
 		}
 		trail = pos + 1;
-		pos = memrchr(path, DIRECTORY_SEPARATOR[0], trail - path);
+		pos = path_last_separator(path, trail - path);
 	}
 	pos = pos ? pos + 1 : (char*)path;
 	return trail ? strndup(pos, trail - pos) : strdup(pos);
 }
 
-/**
- * Described in header.
+/*
+ * Described in header
  */
 bool path_absolute(const char *path)
 {
@@ -108,22 +154,21 @@ bool path_absolute(const char *path)
 	{	/* drive letter */
 		return TRUE;
 	}
-#else /* !WIN32 */
-	if (path[0] == DIRECTORY_SEPARATOR[0])
+#endif /* WIN32 */
+	if (path_is_separator(path[0]))
 	{
 		return TRUE;
 	}
-#endif
 	return FALSE;
 }
 
-/**
- * Described in header.
+/*
+ * Described in header
  */
 bool mkdir_p(const char *path, mode_t mode)
 {
 	int len;
-	char *pos, full[PATH_MAX];
+	char *pos, sep, full[PATH_MAX];
 	pos = full;
 	if (!path || *path == '\0')
 	{
@@ -135,19 +180,20 @@ bool mkdir_p(const char *path, mode_t mode)
 		DBG1(DBG_LIB, "path string %s too long", path);
 		return FALSE;
 	}
-	/* ensure that the path ends with a '/' */
-	if (full[len-1] != '/')
+	/* ensure that the path ends with a separator */
+	if (!path_is_separator(full[len-1]))
 	{
-		full[len++] = '/';
+		full[len++] = DIRECTORY_SEPARATOR[0];
 		full[len] = '\0';
 	}
-	/* skip '/' at the beginning */
-	while (*pos == '/')
+	/* skip separators at the beginning */
+	while (path_is_separator(*pos))
 	{
 		pos++;
 	}
-	while ((pos = strchr(pos, '/')))
+	while ((pos = path_first_separator(pos, -1)))
 	{
+		sep = *pos;
 		*pos = '\0';
 		if (access(full, F_OK) < 0)
 		{
@@ -161,7 +207,7 @@ bool mkdir_p(const char *path, mode_t mode)
 				return FALSE;
 			}
 		}
-		*pos = '/';
+		*pos = sep;
 		pos++;
 	}
 	return TRUE;

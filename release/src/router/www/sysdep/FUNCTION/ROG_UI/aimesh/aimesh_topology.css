@@ -712,7 +712,8 @@
 	background-position: -99px -136.8px;
 }
 .connect_type_status_bg.uplink > div, .manage_settings_bg > div,
-.connect_type_status_bg .fronthaul_title, .connect_type_status_bg .fronthaul_info > div{
+.connect_type_status_bg .fronthaul_title, .connect_type_status_bg .fronthaul_info > div,
+.connect_type_status_bg.port_status > div:first-child{
 	height: 60px;
 	position: relative;
 }
@@ -1725,13 +1726,18 @@
 .popup_hint_bg .notice_text_blue{
 	color: #33ACFF;
 }
-.popup_hint_bg .notice_text > span.gray{
+.popup_hint_bg .notice_text > span.gray, .popup_hint_bg .notice_text_gray{
 	color: #64737c;
 }
 .popup_hint_bg .notice_text .not_support_hint{
 	position: absolute;
 	top: 8px;
 	right: 0;
+}
+.popup_hint_bg .ol_item{
+	margin: 0;
+	padding: 0;
+	margin-left: 16px;
 }
 .popup_hint_bg .horizontal_line:before{
 	content: "";
@@ -2712,4 +2718,161 @@
 .splitLine{
 	margin: 5px;
 	height: 1px;
+}
+.port_status_bg{
+	display: flex;
+	align-items: flex-start;
+	height: auto;
+	margin-left: 16px;
+	position: relative;
+	margin-bottom: 6px;
+}
+.port_status_bg:before{
+	content: "";
+	position: absolute;
+	left: 0%;
+	bottom: -6px;
+	height: 1px;
+	width: 95%;
+	border-bottom: 1px solid #3E4E59;
+}
+.port_status_bg > div{
+	display: flex;
+	flex-wrap: wrap;
+	height: auto;
+	position: relative;
+}
+.port_status_bg .label_W_bg{
+	width: auto;
+	max-width: 92px;
+	margin-right: 6px;
+}
+.port_status_bg .label_W_bg:before{
+	position: absolute;
+	content: "";
+	right: -5px;
+	top: -4%;
+	height: 100%;
+	border-left: 1px solid #3E4E59;
+}
+.port_status_bg .label_L_bg:before{
+	position: absolute;
+	content: "";
+	top: -4%;
+	height: 100%;
+	border-right: 1px solid #3E4E59;
+	left: -5px;
+}
+.port_status_bg .label_W_bg > div, .port_status_bg .label_L_bg > div{
+	display: flex;
+	width: 46px;
+	height: auto;
+	flex-direction: column;
+	align-items: center;
+	margin-bottom: 8px;
+}
+.port_status_bg .label_L_bg{
+	margin-left: 3px;
+	flex-grow: 1;
+	flex-shrink: 0;
+	flex-basis: 65%;
+}
+.port_status_bg .port_icon{
+	background-image: url(/images/New_ui/amesh/port_status.svg);
+	background-size: 100px;
+	width: 30px;
+	height: 26px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	border-radius: 2px;
+	position: relative;
+}
+.port_status_bg .port_icon.conn{
+	background-position: 0px 0px;
+}
+.port_status_bg .port_icon.warn{
+	background-position: 0px -43px;
+}
+.port_status_bg .port_icon.unplug{
+	background-position: 0px -86px;
+}
+.port_status_bg .port_icon.USB.conn{
+	background-position: 1px -330px;
+}
+.port_status_bg .port_icon.USB.unplug{
+    background-position: 1px -290px;
+}
+.port_status_bg .port_icon .wan_icon{
+	width: 20px;
+	height: 20px;
+	background-image: url(/images/New_ui/amesh/port_status.svg);
+	background-size: 110px;
+	background-position: 4px -136px;
+}
+.port_status_bg .port_icon .lan_idx{
+	font-size: 13px;
+	margin-top: 0px;
+}
+.port_status_bg .port_text{
+	text-align: center;
+	line-height: 100%;
+	font-size: 11px;
+	margin-top: 4px;
+}
+.port_status_icon_desc{
+	display: flex;
+	justify-content: flex-start;
+	align-items: center;
+	height: 36px;
+	margin-left: 32px;
+}
+.port_status_icon_desc > div{
+	width: 33%;
+	position: relative;
+}
+.port_status_icon_desc > div:before, .port_status_notice_item:before{
+	position: absolute;
+	content: "";
+	width: 12px;
+	height: 12px;
+	left: -15px;
+	top: 4px;
+}
+.port_status_icon_desc > div.conn:before{
+	background-color: #25C100;
+}
+.port_status_icon_desc > div.warn:before, .port_status_notice_item.warn:before{
+	background-color: #ECC000;
+}
+.port_status_icon_desc > div.unplug:before{
+	background-color: #D7D7D7;
+}
+.port_status_notice_icon{
+	background-image: url(/images/New_ui/amesh/bind_notice.png);
+	cursor: pointer;
+	background-repeat: no-repeat;
+	width: 22px;
+	height: 22px;
+	position: absolute;
+	background-size: contain;
+	top: 22px;
+	margin-left: 8px;
+	display: none;
+}
+.port_status_notice_item{
+	position: relative;
+	margin-left: 24px;
+	margin-bottom: 3px;
+}
+.port_status_bg .label_W_bg .port_icon:before{
+    position: absolute;
+    content: "";
+    width: 16px;
+    height: 16px;
+    background-image: url(/images/New_ui/amesh/port_status.svg);
+    background-size: 70px;
+    right: -5px;
+    bottom: -5px;
+    background-position: 0px -179px;
 }

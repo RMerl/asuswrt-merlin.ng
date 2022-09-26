@@ -29,7 +29,7 @@ typedef enum pts_tcg_comp_func_name_t pts_tcp_comp_func_name_t;
 /**
  * PTS Component Functional Name Qualifier Flags for the TCG namespace
  * see section 5.2 of PTS Protocol: Binding to TNC IF-M Specification
- *	
+ *
  *	 0 1 2 3 4 5
  *  +-+-+-+-+-+-+
  *  |K|S| Type  |

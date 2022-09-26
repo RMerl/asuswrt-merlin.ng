@@ -1,0 +1,910 @@
+{
+	"jffs": [
+		{
+			"productid": "RT-AX56_XD4",
+			"features": [
+				{
+					"name": "TrendMicro",
+					"rtconfig": "RTCONFIG_BWDPI",
+					"__data": "Lite Version",
+					"data": [
+						{
+							"name": "TrendMicro Signature",
+							"priority": 1,
+							"__priority": "Hard Limit",
+							"max_size": 786432,
+							"min_size": 786432,
+							"type": "file",
+							"path": "/jffs/signature/rule.trf"
+						},
+						{
+							"name": "AiProtectionMonitor & Mails Log",
+							"__name": "AiProtectionMonitor & MALS & C&C",
+							"priority": 1,
+							"__priority": "Hard Limit",
+							"max_size": 3670016,
+							"min_size": 3670016,
+							"type": "dir",
+							"path": "/jffs/.sys/AiProtectionMonitor"
+						}
+					]
+				}
+			]
+		},
+		{
+			"productid": "CT-AX56_XD4",
+			"features": [
+				{
+					"name": "TrendMicro",
+					"rtconfig": "RTCONFIG_BWDPI",
+					"__data": "Lite Version",
+					"data": [
+						{
+							"name": "TrendMicro Signature",
+							"priority": 1,
+							"__priority": "Hard Limit",
+							"max_size": 786432,
+							"min_size": 786432,
+							"type": "file",
+							"path": "/jffs/signature/rule.trf"
+						},
+						{
+							"name": "AiProtectionMonitor & Mails Log",
+							"__name": "AiProtectionMonitor & MALS & C&C",
+							"priority": 1,
+							"__priority": "Hard Limit",
+							"max_size": 3670016,
+							"min_size": 3670016,
+							"type": "dir",
+							"path": "/jffs/.sys/AiProtectionMonitor"
+						}
+					]
+				}
+			]
+		},
+		{
+			"productid": "XD4PRO",
+			"features": [
+				{
+					"name": "TrendMicro",
+					"rtconfig": "RTCONFIG_BWDPI",
+					"__data": "Lite Version",
+					"data": [
+						{
+							"name": "TrendMicro Signature",
+							"priority": 1,
+							"__priority": "Hard Limit",
+							"max_size": 786432,
+							"min_size": 786432,
+							"type": "file",
+							"path": "/jffs/signature/rule.trf"
+						},
+						{
+							"name": "AiProtectionMonitor & Mails Log",
+							"__name": "AiProtectionMonitor & MALS & C&C",
+							"priority": 1,
+							"__priority": "Hard Limit",
+							"max_size": 3670016,
+							"min_size": 3670016,
+							"type": "dir",
+							"path": "/jffs/.sys/AiProtectionMonitor"
+						}
+					]
+				}
+			]
+		},
+		{
+			"productid": "RT-AX55",
+			"features": [
+				{
+					"name": "TrendMicro",
+					"rtconfig": "RTCONFIG_BWDPI",
+					"__data": "Lite Version + Web History",
+					"data": [
+						{
+							"name": "TrendMicro Signature",
+							"priority": 1,
+							"__priority": "Hard Limit",
+							"max_size": 786432,
+							"min_size": 786432,
+							"type": "file",
+							"path": "/jffs/signature/rule.trf"
+						},
+						{
+							"name": "AiProtectionMonitor & Mails Log",
+							"__name": "AiProtectionMonitor & MALS & C&C",
+							"priority": 1,
+							"__priority": "Hard Limit",
+							"max_size": 3670016,
+							"min_size": 3670016,
+							"type": "dir",
+							"path": "/jffs/.sys/AiProtectionMonitor"
+						},
+						{
+							"name": "Web History",
+							"priority": 1,
+							"__priority": "Hard Limit",
+							"max_size": 3145728,
+							"min_size": 3145728,
+							"type": "dir",
+							"path": "/jffs/.sys/WebHistory"
+						}
+					]
+				}
+			]
+		},
+		{
+			"productid": "RT-AC59_CD6R",
+			"features": [
+				{
+					"name": "TrendMicro",
+					"rtconfig": "RTCONFIG_BWDPI",
+					"__data": "Lite Version, small db",
+					"data": [
+						{
+							"name": "TrendMicro Signature",
+							"priority": 1,
+							"__priority": "Hard Limit",
+							"max_size": 786432,
+							"min_size": 786432,
+							"type": "file",
+							"path": "/jffs/signature/rule.trf"
+						},
+						{
+							"name": "AiProtectionMonitor & Mails Log",
+							"__name": "AiProtectionMonitor & MALS & C&C",
+							"priority": 1,
+							"__priority": "Hard Limit",
+							"max_size": 1572864,
+							"min_size": 1572864,
+							"type": "dir",
+							"path": "/jffs/.sys/AiProtectionMonitor"
+						}
+					]
+				}
+			]
+		},
+		{
+			"productid": "MAP-AC1750",
+			"features": [
+				{
+					"name": "TrendMicro",
+					"rtconfig": "RTCONFIG_BWDPI",
+					"__data": "Lite Version, small db",
+					"data": [
+						{
+							"name": "TrendMicro Signature",
+							"priority": 1,
+							"__priority": "Hard Limit",
+							"max_size": 786432,
+							"min_size": 786432,
+							"type": "file",
+							"path": "/jffs/signature/rule.trf"
+						},
+						{
+							"name": "AiProtectionMonitor & Mails Log",
+							"__name": "AiProtectionMonitor & MALS & C&C",
+							"priority": 1,
+							"__priority": "Hard Limit",
+							"max_size": 1572864,
+							"min_size": 1572864,
+							"type": "dir",
+							"path": "/jffs/.sys/AiProtectionMonitor"
+						}
+					]
+				}
+			]
+		},
+		{
+			"productid": "BLUECAVE",
+			"features": [
+				{
+					"name": "TrendMicro",
+					"rtconfig": "RTCONFIG_BWDPI",
+					"__data": "FULL Version, small db",
+					"data": [
+						{
+							"name": "TrendMicro Signature",
+							"priority": 1,
+							"__priority": "Hard Limit",
+							"max_size": 1572864,
+							"min_size": 1572864,
+							"type": "file",
+							"path": "/jffs/signature/rule.trf"
+						},
+						{
+							"name": "Traffic Analyzer",
+							"priority": 1,
+							"__priority": "Hard Limit",
+							"max_size": 2097152,
+							"min_size": 2097152,
+							"type": "dir",
+							"path": "/jffs/.sys/TrafficAnalyzer"
+						},
+						{
+							"name": "AiProtectionMonitor & Mails Log",
+							"priority": 1,
+							"__priority": "Hard Limit",
+							"max_size": 1572864,
+							"min_size": 1572864,
+							"type": "dir",
+							"path": "/jffs/.sys/AiProtectionMonitor"
+						},
+						{
+							"name": "Web History",
+							"priority": 1,
+							"__priority": "Hard Limit",
+							"max_size": 1048576,
+							"min_size": 1048576,
+							"type": "dir",
+							"path": "/jffs/.sys/WebHistory"
+						}
+					]
+				}
+			]
+		},
+		{
+			"productid": "4G-AX56",
+			"features": [
+				{
+					"name": "TrendMicro",
+					"rtconfig": "RTCONFIG_BWDPI",
+					"__data": "Lite Version",
+					"data": [
+						{
+							"name": "TrendMicro Signature",
+							"priority": 1,
+							"__priority": "Hard Limit",
+							"max_size": 786432,
+							"min_size": 786432,
+							"type": "file",
+							"path": "/jffs/signature/rule.trf"
+						},
+						{
+							"name": "AiProtectionMonitor & Mails Log",
+							"__name": "AiProtectionMonitor & MALS & C&C",
+							"priority": 1,
+							"__priority": "Hard Limit",
+							"max_size": 3670016,
+							"min_size": 3670016,
+							"type": "dir",
+							"path": "/jffs/.sys/AiProtectionMonitor"
+						}
+					]
+				}
+			]
+		},
+		{
+			"productid": "RT-AX53U",
+			"features": [
+				{
+					"name": "TrendMicro",
+					"rtconfig": "RTCONFIG_BWDPI",
+					"__data": "Lite Version",
+					"data": [
+						{
+							"name": "TrendMicro Signature",
+							"priority": 1,
+							"__priority": "Hard Limit",
+							"max_size": 786432,
+							"min_size": 786432,
+							"type": "file",
+							"path": "/jffs/signature/rule.trf"
+						},
+						{
+							"name": "AiProtectionMonitor & Mails Log",
+							"__name": "AiProtectionMonitor & MALS & C&C",
+							"priority": 1,
+							"__priority": "Hard Limit",
+							"max_size": 3670016,
+							"min_size": 3670016,
+							"type": "dir",
+							"path": "/jffs/.sys/AiProtectionMonitor"
+						}
+					]
+				}
+			]
+		},
+		{
+			"productid": "RT-AC85U",
+			"features": [
+				{
+					"name": "TrendMicro",
+					"rtconfig": "RTCONFIG_BWDPI",
+					"__data": "Partial Version",
+					"data": [
+						{
+							"name": "TrendMicro Signature",
+							"priority": 1,
+							"__priority": "Hard Limit",
+							"max_size": 786432,
+							"min_size": 786432,
+							"type": "file",
+							"path": "/jffs/signature/rule.trf"
+						},
+						{
+							"name": "Traffic Analyzer",
+							"priority": 1,
+							"__priority": "Hard Limit",
+							"max_size": 14680064,
+							"min_size": 14680064,
+							"type": "dir",
+							"path": "/jffs/.sys/TrafficAnalyzer"
+						},
+						{
+							"name": "AiProtectionMonitor & Mails Log",
+							"priority": 1,
+							"__priority": "Hard Limit",
+							"max_size": 3670016,
+							"min_size": 3670016,
+							"type": "dir",
+							"path": "/jffs/.sys/AiProtectionMonitor"
+						},
+						{
+							"name": "Web History",
+							"priority": 1,
+							"__priority": "Hard Limit",
+							"max_size": 3145728,
+							"min_size": 3145728,
+							"type": "dir",
+							"path": "/jffs/.sys/WebHistory"
+						}
+					]
+				}
+			]
+		},
+		{
+			"productid": "RT-AC65U",
+			"features": [
+				{
+					"name": "TrendMicro",
+					"rtconfig": "RTCONFIG_BWDPI",
+					"__data": "Partial Version",
+					"data": [
+						{
+							"name": "TrendMicro Signature",
+							"priority": 1,
+							"__priority": "Hard Limit",
+							"max_size": 786432,
+							"min_size": 786432,
+							"type": "file",
+							"path": "/jffs/signature/rule.trf"
+						},
+						{
+							"name": "Traffic Analyzer",
+							"priority": 1,
+							"__priority": "Hard Limit",
+							"max_size": 14680064,
+							"min_size": 14680064,
+							"type": "dir",
+							"path": "/jffs/.sys/TrafficAnalyzer"
+						},
+						{
+							"name": "AiProtectionMonitor & Mails Log",
+							"priority": 1,
+							"__priority": "Hard Limit",
+							"max_size": 3670016,
+							"min_size": 3670016,
+							"type": "dir",
+							"path": "/jffs/.sys/AiProtectionMonitor"
+						},
+						{
+							"name": "Web History",
+							"priority": 1,
+							"__priority": "Hard Limit",
+							"max_size": 3145728,
+							"min_size": 3145728,
+							"type": "dir",
+							"path": "/jffs/.sys/WebHistory"
+						}
+					]
+				}
+			]
+		},
+		{
+			"productid": "RT-AC56S",
+			"features": [
+				{
+					"name": "TrendMicro",
+					"rtconfig": "RTCONFIG_BWDPI",
+					"__data": "Partial Version",
+					"data": [
+						{
+							"name": "TrendMicro Signature",
+							"priority": 1,
+							"__priority": "Hard Limit",
+							"max_size": 786432,
+							"min_size": 786432,
+							"type": "file",
+							"path": "/jffs/signature/rule.trf"
+						},
+						{
+							"name": "Traffic Analyzer",
+							"priority": 1,
+							"__priority": "Hard Limit",
+							"max_size": 14680064,
+							"min_size": 14680064,
+							"type": "dir",
+							"path": "/jffs/.sys/TrafficAnalyzer"
+						},
+						{
+							"name": "AiProtectionMonitor & Mails Log",
+							"priority": 1,
+							"__priority": "Hard Limit",
+							"max_size": 3670016,
+							"min_size": 3670016,
+							"type": "dir",
+							"path": "/jffs/.sys/AiProtectionMonitor"
+						},
+						{
+							"name": "Web History",
+							"priority": 1,
+							"__priority": "Hard Limit",
+							"max_size": 3145728,
+							"min_size": 3145728,
+							"type": "dir",
+							"path": "/jffs/.sys/WebHistory"
+						}
+					]
+				}
+			]
+		},
+		{
+			"productid": "DSL-AC68U",
+			"features": [
+				{
+					"name": "DSL firmware backup",
+					"rtconfig": "RTCONFIG_DSL_TCLINUX",
+					"data": [
+						{
+							"name": "DSL firmware backup",
+							"priority": 3,
+							"__priority": "Hard Limit",
+							"max_size": 4194304,
+							"min_size": 4194304,
+							"type": "file",
+							"path": "/jffs/tclinux.bin"
+						}
+					]
+				}
+			]
+		},
+		{
+			"productid": "general",
+			"features": [
+				{
+					"name": "System Log",
+					"rtconfig": "NOCONFIG_SYSLOG",
+					"data": [
+						{
+							"name": "System Log",
+							"priority": 1,
+							"__priority": "Hard Limit",
+							"max_size": 262656,
+							"min_size": 262656,
+							"type": "file",
+							"path": "/jffs/syslog.log"
+						},
+						{
+							"name": "System Log Backup",
+							"priority": 1,
+							"__priority": "Hard Limit",
+							"max_size": 262656,
+							"min_size": 262656,
+							"type": "file",
+							"path": "/jffs/syslog.log-1"
+						}
+					]
+				},
+				{
+					"name": "Network Map Customized Icon",
+					"rtconfig": "RTCONFIG_JFFS2USERICON",
+					"data": [
+						{
+							"name": "User Icon",
+							"priority": 1,
+							"__priority": "Hard Limit",
+							"max_size": 1048576,
+							"min_size": 131072,
+							"type": "dir",
+							"path": "/jffs/usericon"
+						}
+					]
+				},
+				{
+					"name": "JFFS nvram",
+					"rtconfig": "RTCONFIG_JFFS_NVRAM",
+					"data": [
+						{
+							"name": "JFFS nvram",
+							"priority": 1,
+							"__priority": "Hard Limit",
+							"max_size": 2097152,
+							"min_size": 2097152,
+							"type": "dir",
+							"path": "/jffs/nvram"
+						}
+					]
+				},
+				{
+					"name": "TrendMicro",
+					"rtconfig": "RTCONFIG_BWDPI",
+					"data": [
+						{
+							"name": "TrendMicro Signature",
+							"priority": 1,
+							"__priority": "Hard Limit",
+							"max_size": 1572864,
+							"min_size": 1572864,
+							"type": "file",
+							"path": "/jffs/signature/rule.trf"
+						},
+						{
+							"name": "Traffic Analyzer",
+							"priority": 1,
+							"__priority": "Hard Limit",
+							"max_size": 14680064,
+							"min_size": 14680064,
+							"type": "dir",
+							"path": "/jffs/.sys/TrafficAnalyzer"
+						},
+						{
+							"name": "AiProtectionMonitor & Mails Log",
+							"priority": 1,
+							"__priority": "Hard Limit",
+							"max_size": 3670016,
+							"min_size": 3670016,
+							"type": "dir",
+							"path": "/jffs/.sys/AiProtectionMonitor"
+						},
+						{
+							"name": "Web History",
+							"priority": 1,
+							"__priority": "Hard Limit",
+							"max_size": 3145728,
+							"min_size": 3145728,
+							"type": "dir",
+							"path": "/jffs/.sys/WebHistory"
+						}
+					]
+				},
+				{
+					"name": "OpenVPN",
+					"rtconfig": "RTCONFIG_OPENVPN",
+					"data": [
+						{
+							"name": "OpenVPN certificate",
+							"priority": 1,
+							"__priority": "Hard Limit",
+							"max_size": 30720,
+							"min_size": 30720,
+							"type": "dir",
+							"path": "/jffs/openvpn"
+						}
+					]
+				},
+				{
+					"name": "Let's Encrypt",
+					"rtconfig": "RTCONFIG_LETSENCRYPT",
+					"data": [
+						{
+							"name": "Let's Encrypt certificate",
+							"priority": 1,
+							"__priority": "Hard Limit",
+							"max_size": 30720,
+							"min_size": 30720,
+							"type": "dir",
+							"path": "/jffs/.le"
+						}
+					]
+				},
+				{
+					"name": "Captive portal",
+					"rtconfig": "RTCONFIG_CAPTIVE_PORTAL",
+					"data": [
+						{
+							"name": "Captive portal",
+							"priority": 1,
+							"__priority": "Hard Limit",
+							"max_size": 20971520,
+							"min_size": 20971520,
+							"type": "dir",
+							"path": "/jffs/customized_splash"
+						}
+					]
+				},
+				{
+					"name": "Notification Center",
+					"rtconfig": "RTCONFIG_NOTIFICATION_CENTER",
+					"data": [
+						{
+							"name": "Notification Center",
+							"priority": 1,
+							"__priority": "Hard Limit",
+							"max_size": 3145728,
+							"min_size": 3145728,
+							"type": "dir",
+							"path": "/jffs/.sys/nc"
+						}
+					]
+				},
+				{
+					"name": "SSH server",
+					"rtconfig": "RTCONFIG_SSH",
+					"data": [
+						{
+							"name": "SSH server key",
+							"priority": 1,
+							"__priority": "Hard Limit",
+							"max_size": 4096,
+							"min_size": 4096,
+							"name": "SSH server key",
+							"type": "dir",
+							"path": "/jffs/.ssh"
+						}
+					]
+				},
+				{
+					"name": "Third party VPN",
+					"rtconfig": "RTCONFIG_TPVPN",
+					"data": [
+						{
+							"name": "HMA config file information",
+							"priority": 1,
+							"__priority": "Hard Limit",
+							"max_size": 40960,
+							"min_size": 40960,
+							"type": "dir",
+							"path": "/jffs/.sys/vpn"
+						}
+					]
+				},
+				{
+					"name": "ASD",
+					"rtconfig": "RTCONFIG_ASD",
+					"data": [
+						{
+							"name": "ASD Signature",
+							"priority": 1,
+							"__priority": "Hard Limit",
+							"max_size": 10240,
+							"min_size": 10240,
+							"type": "dir",
+							"path": "/jffs/asd"
+						},
+						{
+							"name": "ASD Log",
+							"priority": 1,
+							"__priority": "Hard Limit",
+							"max_size": 262656,
+							"min_size": 262656,
+							"type": "file",
+							"path": "/jffs/asd.log"
+						},
+						{
+							"name": "ASD Log Backup",
+							"priority": 3,
+							"__priority": "Debug log",
+							"max_size": 262656,
+							"min_size": 262656,
+							"type": "file",
+							"path": "/jffs/asd.log.1"
+						},
+						{
+							"name": "ASD rule hit record",
+							"priority": 3,
+							"__priority": "Debug log",
+							"max_size": 1024,
+							"min_size": 1024,
+							"type": "file",
+							"path": "/jffs/asd_json"
+						}				
+					]
+				},
+				{
+					"name": "ISP_CUSTOMIZE",
+					"rtconfig": "RTCONFIG_ISP_CUSTOMIZE",
+					"data": [
+						{
+							"name": "ISP CUSTOMIZE Package file",
+							"priority": 1,
+							"__priority": "Hard Limit",
+							"max_size": 10240,
+							"min_size": 10240,
+							"type": "file",
+							"path": "/jffs/.package.tar.gz"
+						},
+						{
+							"name": "ISP CUSTOMIZE Package folder",
+							"priority": 1,
+							"__priority": "Hard Limit",
+							"max_size": 10240,
+							"min_size": 10240,
+							"type": "folder",
+							"path": "/jffs/.package"
+						}
+					]
+				},
+				{
+					"name": "ISP CUSTOMIZE TOOL",
+					"rtconfig": "RTCONFIG_ISP_CUSTOMIZE_TOOL",
+					"data": [
+						{
+							"name": "ISP CUSTOMIZE Package folder",
+							"priority": 1,
+							"__priority": "Hard Limit",
+							"max_size": 102400,
+							"min_size": 102400,
+							"type": "folder",
+							"path": "/jffs/.ict"
+						}
+					]
+				},
+				{
+					"name": "AHS",
+					"rtconfig": "RTCONFIG_AHS",
+					"data": [
+						{
+							"name": "AHS Log",
+							"priority": 1,
+							"__priority": "Hard Limit",
+							"max_size": 1048576,
+							"min_size": 1048576,
+							"type": "file",
+							"path": "/jffs/ahs/ahs_jffs.log"
+						},
+						{
+							"name": "AHS Log Backup",
+							"priority": 3,
+							"__priority": "Debug log",
+							"max_size": 1048576,
+							"min_size": 1048576,
+							"type": "file",
+							"path": "/jffs/ahs/ahs_jffs.log.1"
+						}
+					]
+				},
+				{
+					"name": "AMAS",
+					"rtconfig": "RTCONFIG_AMAS",
+					"data": [
+						{
+							"name": "amas_ssd log",
+							"priority": 1,
+							"__priority": "Hard Limit",
+							"max_size": 205312,
+							"min_size": 205312,
+							"type": "file",
+							"path": "/jffs/.sys/amas/amas_ssd_dbg.log"
+						},
+						{
+							"name": "amas_ssd log backup",
+							"priority": 3,
+							"__priority": "Hard Limit",
+							"max_size": 205312,
+							"min_size": 205312,
+							"type": "file",
+							"path": "/jffs/.sys/amas/amas_ssd_dbg.log-1"
+						},
+						{
+							"name": "amas_wlcconnect log",
+							"priority": 1,
+							"__priority": "Hard Limit",
+							"max_size": 205312,
+							"min_size": 205312,
+							"type": "file",
+							"path": "/jffs/amas_wlcconnect.log"
+						},
+						{
+							"name": "amas_wlcconnect log backup",
+							"priority": 3,
+							"__priority": "Hard Limit",
+							"max_size": 205312,
+							"min_size": 205312,
+							"type": "file",
+							"path": "/jffs/amas_wlcconnect.log-1"
+						}
+					]
+				},
+				{
+					"name": "CFG_MNT",
+					"rtconfig": "RTCONFIG_CFGSYNC",
+					"data": [
+						{
+							"name": "cfg_mnt log",
+							"priority": 1,
+							"__priority": "Hard Limit",
+							"max_size": 205312,
+							"min_size": 205312,
+							"type": "file",
+							"path": "/jffs/.sys/cfg_mnt/cfg_dbg.log"
+						},
+						{
+							"name": "cfg_mnt log backup",
+							"priority": 3,
+							"__priority": "Hard Limit",
+							"max_size": 205312,
+							"min_size": 205312,
+							"type": "file",
+							"path": "/jffs/.sys/cfg_mnt/cfg_dbg.log-1"
+						}
+					]
+				},
+				{
+					"name": "OOKLA speedtest",
+					"rtconfig": "RTCONFIG_OOKLA",
+					"data": [
+						{
+							"name": "OOKLA speedtest",
+							"priority": 1,
+							"__priority": "Hard Limit",
+							"max_size": 71680,
+							"min_size": 71680,
+							"type": "dir",
+							"path": "/jffs/.sys/OOKLA"
+						}
+					]
+				},
+				{
+					"name": "HTTPD certificate",
+					"rtconfig": "RTCONFIG_HTTPS",
+					"data": [
+						{
+							"name": "HTTPS/SSL certificate backup",
+							"priority": 1,
+							"__priority": "Hard Limit",
+							"max_size": 8192,
+							"min_size": 8192,
+							"type": "file",
+							"path": "/jffs/cert.tgz"
+						},
+						{
+							"name": "HTTPS/SSL user upload certificate",
+							"priority": 1,
+							"__priority": "Hard Limit",
+							"max_size": 10240,
+							"min_size": 10240,
+							"type": "dir",
+							"path": "/jffs/.cert"
+						}
+					]
+				},
+				{
+					"name": "IPSEC",
+					"rtconfig": "RTCONFIG_IPSEC",
+					"data": [
+						{
+							"name": "Private keys, CA, and certificate for IPsec server",
+							"priority": 1,
+							"__priority": "Hard Limit",
+							"max_size": 22528,
+							"min_size": 22528,
+							"type": "dir",
+							"path": "/jffs/ca_files"
+						}
+					]
+				},
+				{
+					"name": "CONNECTION DIAGNOSTIC",
+					"rtconfig": "RTCONFIG_CONNDIAG",
+					"data": [
+						{
+							"name": "The database files of connection diagnostic",
+							"priority": 2,
+							"__priority": "Soft Limit",
+							"max_size": 10485760,
+							"min_size": 0,
+							"type": "dir",
+							"path": "/jffs/.diag"
+						}
+					]
+				},
+				{
+					"name": "last",
+					"rtconfig": null,
+					"data": null
+				}
+			]
+		}
+	]
+}

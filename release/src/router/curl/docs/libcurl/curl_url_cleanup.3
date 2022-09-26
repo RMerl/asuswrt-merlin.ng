@@ -5,7 +5,7 @@
 .\" *                            | (__| |_| |  _ <| |___
 .\" *                             \___|\___/|_| \_\_____|
 .\" *
-.\" * Copyright (C) 1998 - 2021, Daniel Stenberg, <daniel@haxx.se>, et al.
+.\" * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
 .\" *
 .\" * This software is licensed as described in the file COPYING, which
 .\" * you should have received as part of this distribution. The terms
@@ -18,20 +18,21 @@
 .\" * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
 .\" * KIND, either express or implied.
 .\" *
+.\" * SPDX-License-Identifier: curl
+.\" *
 .\" **************************************************************************
-.TH curl_url_cleanup 3 "March 27, 2021" "libcurl 7.79.1" "libcurl Manual"
+.TH curl_url_cleanup 3 "May 17, 2022" "libcurl 7.84.0" "libcurl Manual"
 
 .SH NAME
 curl_url_cleanup - free a CURLU handle
 .SH SYNOPSIS
-.B #include <curl/curl.h>
+.nf
+#include <curl/curl.h>
 
 void curl_url_cleanup(CURLU *handle);
 .fi
 .SH DESCRIPTION
 Frees all the resources associated with the given CURLU handle!
-.SH RETURN VALUE
-none
 .SH EXAMPLE
 .nf
   CURLU *url = curl_url();
@@ -39,7 +40,9 @@ none
   curl_url_cleanup(url);
 .fi
 .SH AVAILABILITY
-Added in curl 7.62.0
+Added in 7.62.0
+.SH RETURN VALUE
+none
 .SH "SEE ALSO"
 .BR curl_url_dup "(3), " curl_url "(3), " curl_url_set "(3), "
 .BR curl_url_get "(3), " CURLOPT_CURLU "(3), "

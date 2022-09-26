@@ -1,6 +1,8 @@
 #ifndef __NFCM_H__
 #define __NFCM_H__
 
+#include <libnetfilter_conntrack_tcp.h>
+
 #include "list.h"
 #include "log.h"
 
@@ -121,6 +123,14 @@ enum ct_direction {
 	DIR_DST = 1,
 };
 
+
+typedef enum {
+    NFCM_DB_APP = 0,
+    NFCM_DB_SUM = 1,
+    NFCM_DB_TCP = 2,
+    NFCM_DB_MAX = 3
+} NFCM_DB_TYPE;
+
 typedef enum {
     PHY_UNKNOWN = 0,
     PHY_ETHER = 1,
@@ -131,6 +141,10 @@ typedef enum {
 typedef struct phy_port_s {
     PHY_TYPE eth_type;
     u_int8_t eth_port;
+
+    // for wl guest network
+    bool is_guest;
+    char ifname[IFNAMESIZE];
 } phy_port_t;
 
 /*
@@ -156,37 +170,38 @@ struct in6_addr {
 };
 */
 
+extern int nf_conntrack_timer;
+extern int nf_conntrack_period;
+
 typedef struct nf_node_s {
     bool isv4;
+    char src_mac[ETHER_ADDR_LENGTH];
+
     uint8_t proto;
+
     struct in_addr srcv4;
     uint16_t src_port;
     struct in6_addr srcv6;
+
     struct in_addr dstv4;
     uint16_t dst_port;    //when proto is ICMP, the dst_port is "(type<<8)|code"
     struct in6_addr dstv6;
 
-    uint64_t up_pkts;
-    uint64_t up_diff_pkts;
-    uint64_t up_ttl_pkts;
-
     uint64_t up_bytes;
-    uint64_t up_diff_bytes;
+    uint64_t up_dif_bytes;
     uint64_t up_ttl_bytes;
-
     int64_t  up_speed; // bytes per second
 
-    uint64_t dn_pkts;
-    uint64_t dn_ttl_pkts;
-    uint64_t dn_diff_pkts;
-
     uint64_t dn_bytes;
-    uint64_t dn_diff_bytes;
+    uint64_t dn_dif_bytes;
     uint64_t dn_ttl_bytes;
-
     int64_t  dn_speed; // bytes per second
 
     phy_port_t layer1_info;
+
+    time_t timestamp; //first timestamp the node created
+    time_t time_in;   // time elasped in the invalid state
+    uint8_t state; // dedicated for TCP conntrack
 
     struct list_head list;
 } nf_node_t;
@@ -201,5 +216,9 @@ typedef struct lan_info_s {
 } lan_info_t;
 
 extern void nf_list_free(struct list_head *list);
+extern bool is_acceptable_addr(nf_node_t *nn);
+extern void get_date_time(int utc, char *buff, int len);
+
+extern int get_eth_type(char *ethtype, PHY_TYPE etype);
 
 #endif // __NFCM_H__

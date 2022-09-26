@@ -182,12 +182,13 @@ struct public_key_t {
 	 * Encrypt a chunk of data.
 	 *
 	 * @param scheme	encryption scheme to use
+	 * @param params	optional parameters required by the specified scheme
 	 * @param plain		chunk containing plaintext data
 	 * @param crypto	where to allocate encrypted data
 	 * @return			TRUE if data successfully encrypted
 	 */
 	bool (*encrypt)(public_key_t *this, encryption_scheme_t scheme,
-					chunk_t plain, chunk_t *crypto);
+					void *params, chunk_t plain, chunk_t *crypto);
 
 	/**
 	 * Check if two public keys are equal.
@@ -246,7 +247,7 @@ struct public_key_t {
 };
 
 /**
- * Generic public key equals() implementation, usable by implementors.
+ * Generic public key equals() implementation, usable by implementers.
  *
  * @param public		public key to check
  * @param other			key to compare
@@ -255,7 +256,7 @@ struct public_key_t {
 bool public_key_equals(public_key_t *public, public_key_t *other);
 
 /**
- * Generic public key has_fingerprint() implementation, usable by implementors.
+ * Generic public key has_fingerprint() implementation, usable by implementers.
  *
  * @param public		public key to check
  * @param fingerprint	fingerprint to check

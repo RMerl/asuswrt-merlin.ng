@@ -5,7 +5,7 @@
 .\" *                            | (__| |_| |  _ <| |___
 .\" *                             \___|\___/|_| \_\_____|
 .\" *
-.\" * Copyright (C) 1998 - 2021, Daniel Stenberg, <daniel@haxx.se>, et al.
+.\" * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
 .\" *
 .\" * This software is licensed as described in the file COPYING, which
 .\" * you should have received as part of this distribution. The terms
@@ -18,16 +18,20 @@
 .\" * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
 .\" * KIND, either express or implied.
 .\" *
+.\" * SPDX-License-Identifier: curl
+.\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_CURLU 3 "September 08, 2021" "libcurl 7.79.1" "curl_easy_setopt options"
+.TH CURLOPT_CURLU 3 "May 17, 2022" "libcurl 7.84.0" "curl_easy_setopt options"
 
 .SH NAME
 CURLOPT_CURLU \- URL in CURLU * format
 .SH SYNOPSIS
+.nf
 #include <curl/curl.h>
 
 CURLcode curl_easy_setopt(CURL *handle, CURLOPT_CURLU, void *pointer);
+.fi
 .SH DESCRIPTION
 Pass in a pointer to the \fIURL\fP to work with. The parameter should be a
 CURLU *. Setting \fICURLOPT_CURLU(3)\fP will explicitly override
@@ -37,9 +41,9 @@ CURLU *. Setting \fICURLOPT_CURLU(3)\fP will explicitly override
 transfer is started.
 
 libcurl will use this handle and its contents read-only and will not change
-its contents. An application can very well update the contents of the URL
-handle after a transfer is done and if the same handle is then used in a
-subsequent request the updated contents will then be used.
+its contents. An application can update the contents of the URL handle after a
+transfer is done and if the same handle is then used in a subsequent request
+the updated contents will then be used.
 .SH DEFAULT
 The default value of this parameter is NULL.
 .SH PROTOCOLS
@@ -68,4 +72,4 @@ Returns CURLE_OK if the option is supported, and CURLE_UNKNOWN_OPTION if not.
 .SH "SEE ALSO"
 .BR CURLOPT_URL "(3), "
 .BR curl_url "(3), " curl_url_get "(3), " curl_url_set "(3), "
-.BR curl_url_dup "(3), " curl_url_cleanup "(3), "
+.BR curl_url_dup "(3), " curl_url_cleanup "(3), " curl_url_strerror "(3)"

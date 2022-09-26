@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2009-2010 Martin Willi
+ * Copyright (C) 2016-2019 Andreas Steffen
  * HSR Hochschule fuer Technik Rapperswil
  * Copyright (C) 2010 revosec AG
  *
@@ -24,6 +25,7 @@
 
 #include <utils/debug.h>
 #include <collections/linked_list.h>
+#include <crypto/rngs/rng_tester.h>
 
 typedef struct private_crypto_tester_t private_crypto_tester_t;
 
@@ -66,6 +68,16 @@ struct private_crypto_tester_t {
 	 * List of XOF test vectors
 	 */
 	linked_list_t *xof;
+
+	/**
+	 * List of KDF test vectors
+	 */
+	linked_list_t *kdf;
+
+	/**
+	 * List of DRBG test vectors
+	 */
+	linked_list_t *drbg;
 
 	/**
 	 * List of RNG test vectors
@@ -1179,6 +1191,337 @@ failure:
 	return !failed;
 }
 
+
+
+/**
+ * Create a KDF using the given arguments
+ */
+static kdf_t *create_kdf_args(kdf_constructor_t create,
+							  key_derivation_function_t alg, ...)
+{
+	va_list args;
+	kdf_t *kdf;
+
+	va_start(args, alg);
+	kdf = create(alg, args);
+	va_end(args);
+	return kdf;
+}
+
+/**
+ * Create a KDF using arguments from the given test vector
+ */
+static kdf_t *create_kdf_vector(kdf_constructor_t create,
+								key_derivation_function_t alg,
+								kdf_test_vector_t *vector)
+{
+	switch (alg)
+	{
+		case KDF_PRF:
+		case KDF_PRF_PLUS:
+			return create_kdf_args(create, alg, vector->arg.prf);
+		case KDF_UNDEFINED:
+			break;
+	}
+	return NULL;
+}
+
+/**
+ * Check if the given test vector applies to the passed arguments
+ */
+static bool kdf_vector_applies(key_derivation_function_t alg,
+							   kdf_test_args_t *args, kdf_test_vector_t *vector)
+{
+	bool applies = FALSE;
+
+	switch (alg)
+	{
+		case KDF_PRF:
+		case KDF_PRF_PLUS:
+		{
+			pseudo_random_function_t prf;
+			VA_ARGS_VGET(args->args, prf);
+			applies = (prf == vector->arg.prf);
+			break;
+		}
+		case KDF_UNDEFINED:
+			break;
+	}
+	return applies;
+}
+
+METHOD(crypto_tester_t, test_kdf, bool,
+	private_crypto_tester_t *this, key_derivation_function_t alg,
+	kdf_constructor_t create, kdf_test_args_t *args, u_int *speed,
+	const char *plugin_name)
+{
+	enumerator_t *enumerator;
+	kdf_test_vector_t *vector;
+	va_list copy;
+	bool failed = FALSE;
+	u_int tested = 0, construction_failed = 0;
+
+	enumerator = this->kdf->create_enumerator(this->kdf);
+	while (enumerator->enumerate(enumerator, &vector))
+	{
+		kdf_t *kdf;
+		chunk_t out = chunk_empty;
+
+		if (vector->alg != alg ||
+			(args && !kdf_vector_applies(alg, args, vector)))
+		{
+			continue;
+		}
+
+		tested++;
+		failed = TRUE;
+		if (args)
+		{
+			va_copy(copy, args->args);
+			kdf = create(alg, copy);
+			va_end(copy);
+		}
+		else
+		{
+			kdf = create_kdf_vector(create, alg, vector);
+		}
+		if (!kdf)
+		{
+			if (args)
+			{
+				DBG1(DBG_LIB, "disabled %N[%s]: creating instance failed",
+					 key_derivation_function_names, alg, plugin_name);
+				break;
+			}
+			/* while there could be a problem, the constructor might just not
+			 * be able to create an instance for this test vector, we check
+			 * for that at the end */
+			construction_failed++;
+			failed = FALSE;
+			continue;
+		}
+
+		if (vector->key.len &&
+			!kdf->set_param(kdf, KDF_PARAM_KEY, vector->key))
+		{
+			goto failure;
+		}
+		if (vector->salt.len &&
+			!kdf->set_param(kdf, KDF_PARAM_SALT, vector->salt))
+		{
+			goto failure;
+		}
+		if (kdf_has_fixed_output_length(alg))
+		{
+			if (kdf->get_length(kdf) != vector->out.len)
+			{
+				goto failure;
+			}
+		}
+		else if (kdf->get_length(kdf) != SIZE_MAX)
+		{
+			goto failure;
+		}
+		/* allocated bytes */
+		if (!kdf->allocate_bytes(kdf, vector->out.len, &out))
+		{
+			goto failure;
+		}
+		if (!chunk_equals(out, vector->out))
+		{
+			goto failure;
+		}
+		/* allocate without knowing the length */
+		if (kdf_has_fixed_output_length(alg))
+		{
+			chunk_free(&out);
+			if (!kdf->allocate_bytes(kdf, 0, &out))
+			{
+				goto failure;
+			}
+			if (!chunk_equals(out, vector->out))
+			{
+				goto failure;
+			}
+		}
+		/* bytes to existing buffer */
+		memset(out.ptr, 0, out.len);
+		if (!kdf->get_bytes(kdf, out.len, out.ptr))
+		{
+			goto failure;
+		}
+		if (!chunk_equals(out, vector->out))
+		{
+			goto failure;
+		}
+
+		failed = FALSE;
+failure:
+		kdf->destroy(kdf);
+		chunk_free(&out);
+		if (failed)
+		{
+			DBG1(DBG_LIB, "disabled %N[%s]: %s test vector failed",
+				 key_derivation_function_names, alg, plugin_name,
+				 get_name(vector));
+			break;
+		}
+	}
+	enumerator->destroy(enumerator);
+	if (!tested)
+	{
+		DBG1(DBG_LIB, "%s %N[%s]: no test vectors found",
+			 this->required ? "disabled" : "enabled ",
+			 key_derivation_function_names, alg, plugin_name);
+		return !this->required;
+	}
+	tested -= construction_failed;
+	if (!tested)
+	{
+		DBG1(DBG_LIB, "%s %N[%s]: unable to apply any available test vectors",
+			 this->required ? "disabled" : "enabled ",
+			 key_derivation_function_names, alg, plugin_name);
+		return !this->required;
+	}
+	if (!failed)
+	{
+		if (speed)
+		{
+			DBG2(DBG_LIB, "benchmarking for %N is currently not supported",
+				 key_derivation_function_names, alg);
+		}
+		DBG1(DBG_LIB, "enabled  %N[%s]: passed %u test vectors",
+			 key_derivation_function_names, alg, plugin_name, tested);
+	}
+	return !failed;
+}
+
+/**
+ * Benchmark a DRBG
+ */
+static u_int bench_drbg(private_crypto_tester_t *this,
+						drbg_type_t type, drbg_constructor_t create)
+{
+	drbg_t *drbg;
+	rng_t *entropy;
+	uint32_t strength = 128;
+	chunk_t seed = chunk_alloca(48);
+
+	memset(seed.ptr, 0x81, seed.len);
+	entropy = rng_tester_create(seed);
+
+	drbg = create(type, strength, entropy, chunk_empty);
+	if (drbg)
+	{
+		struct timespec start;
+		u_int runs = 0;
+		size_t out_len = 128;
+		char out_buf[out_len];
+
+		start_timing(&start);
+		while (end_timing(&start) < this->bench_time)
+		{
+			if (drbg->generate(drbg, out_len, out_buf))
+			{
+				runs++;
+			}
+		}
+		drbg->destroy(drbg);
+
+		return runs;
+	}
+	return 0;
+}
+
+METHOD(crypto_tester_t, test_drbg, bool,
+	private_crypto_tester_t *this, drbg_type_t type,
+	drbg_constructor_t create, u_int *speed, const char *plugin_name)
+{
+	enumerator_t *enumerator;
+	drbg_test_vector_t *vector;
+	bool failed = FALSE;
+	u_int tested = 0;
+
+	enumerator = this->drbg->create_enumerator(this->drbg);
+	while (enumerator->enumerate(enumerator, &vector))
+	{
+		drbg_t *drbg;
+		rng_t *entropy;
+		chunk_t out = chunk_empty;
+
+		if (vector->type != type)
+		{
+			continue;
+		}
+		tested++;
+		failed = TRUE;
+
+		entropy = rng_tester_create(vector->entropy);
+		out = chunk_alloc(vector->out.len);
+
+		drbg = create(type, vector->strength, entropy,
+					  vector->personalization_str);
+		if (!drbg)
+		{
+			DBG1(DBG_LIB, "disabled %N[%s]: creating instance failed",
+				 drbg_type_names, type, plugin_name);
+			entropy->destroy(entropy);
+			chunk_free(&out);
+			break;
+		}
+		if (!drbg->reseed(drbg))
+		{
+			goto failure;
+		}
+		if (!drbg->generate(drbg, out.len, out.ptr))
+		{
+			goto failure;
+		}
+		if (!drbg->generate(drbg, out.len, out.ptr))
+		{
+			goto failure;
+		}
+		if (!chunk_equals(out, vector->out))
+		{
+			goto failure;
+		}
+		failed = FALSE;
+
+failure:
+		drbg->destroy(drbg);
+		chunk_free(&out);
+		if (failed)
+		{
+			DBG1(DBG_LIB, "disabled %N[%s]: %s test vector failed",
+				 drbg_type_names, type, plugin_name, get_name(vector));
+			break;
+		}
+	}
+	enumerator->destroy(enumerator);
+	if (!tested)
+	{
+		DBG1(DBG_LIB, "%s %N[%s]: no test vectors found",
+			 this->required ? "disabled" : "enabled ",
+			 drbg_type_names, type, plugin_name);
+		return !this->required;
+	}
+	if (!failed)
+	{
+		if (speed)
+		{
+			*speed = bench_drbg(this, type, create);
+			DBG1(DBG_LIB, "enabled  %N[%s]: passed %u test vectors, %d points",
+				 drbg_type_names, type, plugin_name, tested, *speed);
+		}
+		else
+		{
+			DBG1(DBG_LIB, "enabled  %N[%s]: passed %u test vectors",
+				 drbg_type_names, type, plugin_name, tested);
+		}
+	}
+	return !failed;
+}
+
 /**
  * Benchmark a RNG
  */
@@ -1489,6 +1832,18 @@ METHOD(crypto_tester_t, add_xof_vector, void,
 	this->xof->insert_last(this->xof, vector);
 }
 
+METHOD(crypto_tester_t, add_kdf_vector, void,
+	private_crypto_tester_t *this, kdf_test_vector_t *vector)
+{
+	this->kdf->insert_last(this->kdf, vector);
+}
+
+METHOD(crypto_tester_t, add_drbg_vector, void,
+	private_crypto_tester_t *this, drbg_test_vector_t *vector)
+{
+	this->drbg->insert_last(this->drbg, vector);
+}
+
 METHOD(crypto_tester_t, add_rng_vector, void,
 	private_crypto_tester_t *this, rng_test_vector_t *vector)
 {
@@ -1510,6 +1865,8 @@ METHOD(crypto_tester_t, destroy, void,
 	this->hasher->destroy(this->hasher);
 	this->prf->destroy(this->prf);
 	this->xof->destroy(this->xof);
+	this->kdf->destroy(this->kdf);
+	this->drbg->destroy(this->drbg);
 	this->rng->destroy(this->rng);
 	this->dh->destroy(this->dh);
 	free(this);
@@ -1530,6 +1887,8 @@ crypto_tester_t *crypto_tester_create()
 			.test_hasher = _test_hasher,
 			.test_prf = _test_prf,
 			.test_xof = _test_xof,
+			.test_kdf = _test_kdf,
+			.test_drbg = _test_drbg,
 			.test_rng = _test_rng,
 			.test_dh = _test_dh,
 			.add_crypter_vector = _add_crypter_vector,
@@ -1538,6 +1897,8 @@ crypto_tester_t *crypto_tester_create()
 			.add_hasher_vector = _add_hasher_vector,
 			.add_prf_vector = _add_prf_vector,
 			.add_xof_vector = _add_xof_vector,
+			.add_kdf_vector = _add_kdf_vector,
+			.add_drbg_vector = _add_drbg_vector,
 			.add_rng_vector = _add_rng_vector,
 			.add_dh_vector = _add_dh_vector,
 			.destroy = _destroy,
@@ -1548,6 +1909,8 @@ crypto_tester_t *crypto_tester_create()
 		.hasher = linked_list_create(),
 		.prf = linked_list_create(),
 		.xof = linked_list_create(),
+		.kdf = linked_list_create(),
+		.drbg = linked_list_create(),
 		.rng = linked_list_create(),
 		.dh = linked_list_create(),
 

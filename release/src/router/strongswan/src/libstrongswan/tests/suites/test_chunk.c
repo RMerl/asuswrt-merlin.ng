@@ -574,6 +574,40 @@ START_TEST(test_increment)
 END_TEST
 
 /*******************************************************************************
+ * chunk_copy_pad tests
+ */
+
+static struct {
+	size_t len;
+	u_char chr;
+	chunk_t src;
+	chunk_t exp;
+} copy_pad_data[] = {
+	{0, 0x00, { NULL, 0 }, { NULL, 0 }},
+	{4, 0x00, { NULL, 0 }, chunk_from_chars(0x00,0x00,0x00,0x00)},
+	{0, 0x00, chunk_from_chars(0x01), { NULL, 0 }},
+	{1, 0x00, chunk_from_chars(0x01), chunk_from_chars(0x01)},
+	{2, 0x00, chunk_from_chars(0x01), chunk_from_chars(0x00,0x01)},
+	{3, 0x00, chunk_from_chars(0x01), chunk_from_chars(0x00,0x00,0x01)},
+	{4, 0x00, chunk_from_chars(0x01), chunk_from_chars(0x00,0x00,0x00,0x01)},
+	{4, 0x02, chunk_from_chars(0x01), chunk_from_chars(0x02,0x02,0x02,0x01)},
+	{1, 0x00, chunk_from_chars(0x01,0x02,0x03,0x04), chunk_from_chars(0x04)},
+	{2, 0x00, chunk_from_chars(0x01,0x02,0x03,0x04), chunk_from_chars(0x03,0x04)},
+	{3, 0x00, chunk_from_chars(0x01,0x02,0x03,0x04), chunk_from_chars(0x02,0x03,0x04)},
+	{4, 0x00, chunk_from_chars(0x01,0x02,0x03,0x04), chunk_from_chars(0x01,0x02,0x03,0x04)},
+};
+
+START_TEST(test_copy_pad)
+{
+	chunk_t chunk;
+
+	chunk = chunk_copy_pad(chunk_alloca(copy_pad_data[_i].len),
+						   copy_pad_data[_i].src, copy_pad_data[_i].chr);
+	ck_assert_chunk_eq(chunk, copy_pad_data[_i].exp);
+}
+END_TEST
+
+/*******************************************************************************
  * chunk_printable tests
  */
 
@@ -905,6 +939,44 @@ START_TEST(test_chunk_map)
 }
 END_TEST
 
+START_TEST(test_chunk_map_clear)
+{
+	chunk_t *map, contents = chunk_from_chars(0x01,0x02,0x03,0x04,0x05);
+#ifdef WIN32
+	char *path = "C:\\Windows\\Temp\\strongswan-chunk-map-test";
+#else
+	char *path = "/tmp/strongswan-chunk-map-clear-test";
+#endif
+
+	ck_assert(chunk_write(contents, path, 022, TRUE));
+
+	/* read */
+	map = chunk_map(path, FALSE);
+	ck_assert(map != NULL);
+	ck_assert_msg(chunk_equals(*map, contents), "%B", map);
+	ck_assert(chunk_unmap_clear(map));
+	/* we can't verify that clearing worked as we don't have access to the
+	 * memory anymore and mmap with MAP_ANONYMOUS | MAP_UNINITIALIZED of the
+	 * same area will only work if the kernel allows this */
+
+	/* write */
+	map = chunk_map(path, TRUE);
+	ck_assert(map != NULL);
+	ck_assert_msg(chunk_equals(*map, contents), "%B", map);
+	map->ptr[0] = 0x42;
+	ck_assert(chunk_unmap_clear(map));
+
+	/* verify write */
+	contents.ptr[0] = 0x42;
+	map = chunk_map(path, FALSE);
+	ck_assert(map != NULL);
+	ck_assert_msg(chunk_equals(*map, contents), "%B", map);
+	ck_assert(chunk_unmap_clear(map));
+
+	unlink(path);
+}
+END_TEST
+
 /*******************************************************************************
  * test for chunk_from_fd
  */
@@ -1076,6 +1148,10 @@ Suite *chunk_suite_create()
 	tcase_add_loop_test(tc, test_increment, 0, countof(increment_data));
 	suite_add_tcase(s, tc);
 
+	tc = tcase_create("chunk_copy_pad");
+	tcase_add_loop_test(tc, test_copy_pad, 0, countof(copy_pad_data));
+	suite_add_tcase(s, tc);
+
 	tc = tcase_create("chunk_printable");
 	tcase_add_loop_test(tc, test_printable, 0, countof(printable_data));
 	tcase_add_loop_test(tc, test_printable_sanitize, 0, countof(printable_data));
@@ -1106,6 +1182,7 @@ Suite *chunk_suite_create()
 
 	tc = tcase_create("chunk_map");
 	tcase_add_test(tc, test_chunk_map);
+	tcase_add_test(tc, test_chunk_map_clear);
 	suite_add_tcase(s, tc);
 
 	tc = tcase_create("chunk_from_fd");

@@ -47,7 +47,7 @@ struct stroke_cred_t {
 	 * Reread secrets from config files.
 	 *
 	 * @param msg		stroke message
-	 * @param prompt	I/O channel to prompt for private key passhprase
+	 * @param prompt	I/O channel to prompt for private key passphrase
 	 */
 	void (*reread)(stroke_cred_t *this, stroke_msg_t *msg, FILE *prompt);
 

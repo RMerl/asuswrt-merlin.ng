@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2008 Martin Willi
- * Copyright (C) 2016 Andreas Steffen
+ * Copyright (C) 2016-2019 Andreas Steffen
  * HSR Hochschule fuer Technik Rapperswil
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -75,5 +75,6 @@ ENUM(builder_part_names, BUILD_FROM_FILE, BUILD_END,
 	"BUILD_THRESHOLD",
 	"BUILD_EDDSA_PUB",
 	"BUILD_EDDSA_PRIV_ASN1_DER",
+	"BUILD_CRITICAL_EXTENSION",
 	"BUILD_END",
 );

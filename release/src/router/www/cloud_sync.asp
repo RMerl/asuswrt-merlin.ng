@@ -157,9 +157,7 @@ window.onresize = function() {
 var getflag = '<% get_parameter("flag"); %>';
 var decode_flag = f23.s52d(getflag);
 var decode_array = decode_flag.split(">");
-var isInvite = false;
-if(decode_array.length == 4)
-	isInvite = true;
+var isInvite = true;
 
 var cloud_status = "";
 var cloud_obj = "";
@@ -198,6 +196,23 @@ var _layer_order = "";
 var PROTOCOL = "cifs";
 var faq_href = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=156";
 
+function valid_flag(){
+	if(getflag != ""){
+		if(decode_array.length != 4)
+			return false;
+
+		decode_array.forEach(function(item, i) {
+		console.log(i, item);
+		if (!item.match(/^[0-9a-z]+$/))
+			return false;
+		});
+
+		return true;
+
+	}else
+		return false;
+}
+
 function initial(){
 	show_menu();	
 	document.getElementById("faq_link").href=faq_href;
@@ -209,7 +224,7 @@ function initial(){
 	if(!rrsut_support)
 		document.getElementById("rrsLink").style.display = "none";
 	else{
-		if(getflag != ""){
+		if(valid_flag()){
 			setTimeout("showInvitation(getflag);", 300);
 		}
 	}

@@ -24,7 +24,12 @@ done
 for host in $STRONGSWANHOSTS
 do
 	log_action "Guest $host"
-	execute "virsh shutdown $host"
+
+	if running_any $host; then
+		execute "virsh shutdown $host"
+	else
+		echo_warn "...not running"
+	fi
 	rm -f $VIRTIMGSTORE/$host.$IMGEXT
 done
 

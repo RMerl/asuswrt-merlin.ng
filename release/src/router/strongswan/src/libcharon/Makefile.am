@@ -726,10 +726,23 @@ if MONOLITHIC
 endif
 endif
 
+if USE_SELINUX
+  SUBDIRS += plugins/selinux
+if MONOLITHIC
+  libcharon_la_LIBADD += plugins/selinux/libstrongswan-selinux.la
+endif
+endif
+
 if USE_ATTR_SQL
   SUBDIRS += plugins/attr_sql
 if MONOLITHIC
   libcharon_la_LIBADD += plugins/attr_sql/libstrongswan-attr-sql.la
+endif
+endif
+
+if USE_TPM
+if MONOLITHIC
+  libcharon_la_LIBADD += $(top_builddir)/src/libtpmtss/libtpmtss.la
 endif
 endif
 

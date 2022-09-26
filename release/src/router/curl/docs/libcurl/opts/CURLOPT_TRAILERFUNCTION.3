@@ -5,7 +5,7 @@
 .\" *                            | (__| |_| |  _ <| |___
 .\" *                             \___|\___/|_| \_\_____|
 .\" *
-.\" * Copyright (C) 1998 - 2021, Daniel Stenberg, <daniel@haxx.se>, et al.
+.\" * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
 .\" *
 .\" * This software is licensed as described in the file COPYING, which
 .\" * you should have received as part of this distribution. The terms
@@ -18,18 +18,23 @@
 .\" * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
 .\" * KIND, either express or implied.
 .\" *
+.\" * SPDX-License-Identifier: curl
+.\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_TRAILERFUNCTION 3 "September 08, 2021" "libcurl 7.79.1" "curl_easy_setopt options"
+.TH CURLOPT_TRAILERFUNCTION 3 "May 17, 2022" "libcurl 7.84.0" "curl_easy_setopt options"
 
 .SH NAME
 CURLOPT_TRAILERFUNCTION \- callback for sending trailing headers
 .SH SYNOPSIS
+.nf
 #include <curl.h>
 
 int curl_trailer_callback(struct curl_slist ** list, void *userdata);
 
-CURLcode curl_easy_setopt(CURL *handle, CURLOPT_TRAILERFUNCTION, curl_trailer_callback *func);
+CURLcode curl_easy_setopt(CURL *handle, CURLOPT_TRAILERFUNCTION,
+                          curl_trailer_callback *func);
+.fi
 .SH DESCRIPTION
 Pass a pointer to a callback function.
 
@@ -67,7 +72,7 @@ HTTP
 static int trailer_cb(struct curl_slist **tr, void *data)
 {
   /* libcurl will free the list */
-  tr = curl_slist_append(*tr, "My-super-awesome-trailer: trailer-stuff");
+  *tr = curl_slist_append(*tr, "My-super-awesome-trailer: trailer-stuff");
   return CURL_TRAILERFUNC_OK;
 }
 

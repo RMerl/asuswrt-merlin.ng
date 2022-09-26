@@ -1,16 +1,23 @@
+c: Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+SPDX-License-Identifier: curl
 Long: proxy
 Short: x
 Arg: [protocol://]host[:port]
 Help: Use this proxy
 Category: proxy
 Example: --proxy http://proxy.example $URL
+Added: 4.0
+See-also: socks5 proxy-basic
 ---
 Use the specified proxy.
 
 The proxy string can be specified with a protocol:// prefix. No protocol
 specified or http:// will be treated as HTTP proxy. Use socks4://, socks4a://,
 socks5:// or socks5h:// to request a specific SOCKS version to be used.
-(The protocol support was added in curl 7.21.7)
+(Added in 7.21.7)
+
+Unix domain sockets are supported for socks proxy. Set localhost for the host
+part. e.g. socks5h://localhost/path/to/socket.sock
 
 HTTPS proxy support via https:// protocol prefix was added in 7.52.0 for
 OpenSSL, GnuTLS and NSS.
@@ -34,7 +41,7 @@ User and password that might be provided in the proxy string are URL decoded
 by curl. This allows you to pass in special characters such as @ by using %40
 or pass in a colon with %3a.
 
-The proxy host can be specified the exact same way as the proxy environment
+The proxy host can be specified the same way as the proxy environment
 variables, including the protocol prefix (http://) and the embedded user +
 password.
 

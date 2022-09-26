@@ -27,7 +27,7 @@ typedef struct pubkey_authenticator_t pubkey_authenticator_t;
 #include <sa/authenticator.h>
 
 /**
- * Implementation of authenticator_t using public key authenitcation.
+ * Implementation of authenticator_t using public key authentication.
  */
 struct pubkey_authenticator_t {
 

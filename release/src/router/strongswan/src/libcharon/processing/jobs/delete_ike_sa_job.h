@@ -33,7 +33,7 @@ typedef struct delete_ike_sa_job_t delete_ike_sa_job_t;
  * Class representing an DELETE_IKE_SA Job.
  *
  * This job is responsible for deleting established or half open IKE_SAs.
- * A half open IKE_SA is every IKE_SA which hasn't reache the SA_ESTABLISHED
+ * A half open IKE_SA is every IKE_SA which hasn't reached the SA_ESTABLISHED
  * state.
  */
 struct delete_ike_sa_job_t {

@@ -225,7 +225,7 @@ enum {
 #define XFRM_NR_MSGTYPES (XFRM_MSG_MAX + 1 - XFRM_MSG_BASE)
 
 /*
- * Generic LSM security context for comunicating to user space
+ * Generic LSM security context for communicating to user space
  * NOTE: Same format as sadb_x_sec_ctx
  */
 struct xfrm_user_sec_ctx {
@@ -310,6 +310,7 @@ enum xfrm_attr_type_t {
 	XFRMA_OFFLOAD_DEV,	/* struct xfrm_state_offload */
 	XFRMA_SET_MARK,		/* __u32 */
 	XFRMA_SET_MARK_MASK,	/* __u32 */
+	XFRMA_IF_ID,		/* __u32 */
 	__XFRMA_MAX
 
 #define XFRMA_OUTPUT_MARK XFRMA_SET_MARK	/* Compatibility */

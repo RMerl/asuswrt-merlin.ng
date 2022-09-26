@@ -62,7 +62,7 @@ METHOD(public_key_t, verify, bool,
 
 METHOD(public_key_t, encrypt_, bool,
 	private_tkm_public_key_t *this, encryption_scheme_t scheme,
-	chunk_t plain, chunk_t *crypto)
+	void *params, chunk_t plain, chunk_t *crypto)
 {
 	return FALSE;
 }

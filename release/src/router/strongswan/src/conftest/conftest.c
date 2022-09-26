@@ -129,7 +129,7 @@ static bool load_cert(settings_t *settings, bool trusted)
 }
 
 /**
- * Load certificates from the confiuguration file
+ * Load certificates from the configuration file
  */
 static bool load_certs(settings_t *settings, char *dir)
 {
@@ -163,7 +163,7 @@ static bool load_certs(settings_t *settings, char *dir)
 }
 
 /**
- * Load private keys from the confiuguration file
+ * Load private keys from the configuration file
  */
 static bool load_keys(settings_t *settings, char *dir)
 {
@@ -382,7 +382,7 @@ static void load_log_levels(file_logger_t *logger, char *section)
 static void load_logger_options(file_logger_t *logger, char *section)
 {
 	char *time_format;
-	bool add_ms, ike_name;
+	bool add_ms, ike_name, log_level;
 
 	time_format = conftest->test->get_str(conftest->test,
 					"log.%s.time_format", NULL, section);
@@ -390,8 +390,10 @@ static void load_logger_options(file_logger_t *logger, char *section)
 					"log.%s.time_add_ms", FALSE, section);
 	ike_name = conftest->test->get_bool(conftest->test,
 					"log.%s.ike_name", FALSE, section);
+	log_level = conftest->test->get_bool(conftest->test,
+					"log.%s.log_level", FALSE, section);
 
-	logger->set_options(logger, time_format, add_ms, ike_name);
+	logger->set_options(logger, time_format, add_ms, ike_name, log_level);
 }
 
 /**
@@ -457,7 +459,7 @@ int main(int argc, char *argv[])
 	lib->credmgr->add_set(lib->credmgr, &conftest->creds->set);
 
 	logger = file_logger_create("stdout");
-	logger->set_options(logger, NULL, FALSE, FALSE);
+	logger->set_options(logger, NULL, FALSE, FALSE, FALSE);
 	logger->open(logger, FALSE, FALSE);
 	logger->set_level(logger, DBG_ANY, LEVEL_CTRL);
 	charon->bus->add_logger(charon->bus, &logger->logger);

@@ -16,17 +16,21 @@ enum arp_node_attr {
 };
 
 typedef struct arp_node_s {
-    bool isv4;
-    bool iswl;
+    bool is_v4;
+    bool is_wl;
     struct in_addr srcv4;
     struct in6_addr srcv6;
     int8_t port;
 	char mac[ETHER_ADDR_LENGTH];
 
+    // for wl guest network
+    bool is_guest;
+    char ifname[IFNAMESIZE];
+
 	struct list_head list;
 } arp_node_t;
 
 extern void arp_list_free(struct list_head *list);
-extern void arp_list_parse(char *fname, struct list_head *arlist, struct list_head *list);
+extern void arp_list_parse(struct list_head *arlist, struct list_head *list);
 
 #endif // __NFARP_H__

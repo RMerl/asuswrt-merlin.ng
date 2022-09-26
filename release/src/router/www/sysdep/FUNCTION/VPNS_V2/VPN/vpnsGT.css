@@ -1,0 +1,88 @@
+﻿.profile_setting_container .popup_edit_profile_container,
+.client_content_bg .client_contorl_bg{
+	background: rgb(40, 41, 49);
+}
+.svr_item_container{
+	background: rgb(40, 41, 49);
+	border-color: rgba(40, 41, 49, 0.5);
+}
+.svr_item_container.selected{
+	background: rgb(40, 41, 49);
+	border-color: rgb(255, 0, 25);
+}
+.switch.on{
+	background: rgb(255, 0, 25);
+}
+.checkbox.on{
+	box-shadow: 0 0 0 1.5px rgba(240, 0, 28, 0.6);
+	background-color: rgba(240, 0, 28, 0.6);
+}
+.profile_setting_item{
+	background-color: rgba(0, 0, 0, 0.1);
+}
+.btn_item .btn_container{
+	border: 1px solid rgb(255, 0, 25);
+	background: rgba(255, 0, 25, 0.2);
+}
+.textInput:focus, .textareaInput:focus{
+	box-shadow: 0 0 3px rgb(255, 0, 25);
+	border: 1px solid rgb(255, 0, 25)
+}
+.custom_select_container .select_options_container{
+	background: rgb(40, 41, 49);
+}
+.custom_select_container .select_options_container div.selected{
+	color: rgb(255, 0, 25);
+}
+.custom_select_container .select_options_container div.selected:before{
+	border-top: 2px solid rgb(255, 0, 25);
+	border-right: 2px solid rgb(255, 0, 25);
+}
+.action_container .btn_container{
+	background: rgba(240, 0, 28, 0.6);
+}
+.dropdown_select option{
+	background: rgb(40, 41, 49);
+}
+.hidden_mask{
+	background: rgb(0, 0, 0);
+}
+.popup_container .popup_content_container{
+	background: rgb(40, 41, 49);
+}
+.feature_desc .title{
+	color: rgb(240, 0, 28);
+}
+.customize_alert .action_btn_container .ok{
+	background: rgb(255, 0, 25);
+}
+.client_list_content_container .client_container{
+	background-color: rgba(0, 0, 0, 0.1);
+}
+.popup_edit_client_container .client_list_content_container::-webkit-scrollbar-track,
+.custom_select_container .select_options_container::-webkit-scrollbar-track{
+	border: 4px solid rgb(40, 41, 49);
+	background-color: rgb(104, 5, 22);
+}
+.popup_edit_client_container .client_list_content_container::-webkit-scrollbar-thumb,
+.custom_select_container .select_options_container::-webkit-scrollbar-thumb{
+	background-color: rgb(104, 5, 22);
+	border: 2px solid rgb(40, 41, 49);
+}
+.client_content_bg .detail_icon.active{
+	border: 2px solid rgb(255, 0, 25);
+	color: rgb(255, 0, 25);
+}
+.client_content_bg .client_contorl_bg .contorl_btn{
+	background-color: rgb(255, 0, 25);
+}
+.radio_options_container .radio_container.selected,
+.btn_options_container .btn_container.selected{
+	border: 1px solid rgb(255, 0, 25);
+}
+.radio_options_container .radio_container.selected .radio_icon{
+	border: 1px solid rgb(255, 0, 25);
+}
+.radio_options_container .radio_container.selected .radio_icon:before{
+	background-color: rgb(255, 0, 25);
+}

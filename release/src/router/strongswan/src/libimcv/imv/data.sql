@@ -592,6 +592,30 @@ INSERT INTO products (      /* 99 */
  'Debian 9.6 x86_64'
 );
 
+INSERT INTO products (      /* 100 */
+  name
+) VALUES (
+ 'Debian 9.7 x86_64'
+);
+
+INSERT INTO products (      /* 101 */
+  name
+) VALUES (
+ 'Debian 9.13 x86_64'
+);
+
+INSERT INTO products (      /* 102 */
+  name
+) VALUES (
+ 'Debian 10 x86_64'
+);
+
+INSERT INTO products (      /* 103 */
+  name
+) VALUES (
+ 'Debian 11 x86_64'
+);
+
 /* Directories */
 
 INSERT INTO directories (		/*  1 */
@@ -1303,6 +1327,30 @@ INSERT INTO groups_product_defaults (
 INSERT INTO groups_product_defaults (
   group_id, product_id
 ) VALUES (
+  5, 100
+);
+
+INSERT INTO groups_product_defaults (
+  group_id, product_id
+) VALUES (
+  5, 101
+);
+
+INSERT INTO groups_product_defaults (
+  group_id, product_id
+) VALUES (
+  5, 102
+);
+
+INSERT INTO groups_product_defaults (
+  group_id, product_id
+) VALUES (
+  5, 103
+);
+
+INSERT INTO groups_product_defaults (
+  group_id, product_id
+) VALUES (
   6, 9
 );
 
@@ -1695,7 +1743,7 @@ INSERT INTO policies (			/* 10 */
 INSERT INTO policies (			/* 11 */
   type, name, dir, rec_fail, rec_noresult
 ) VALUES (
-  8, 'Get /bin', 1, 0, 0
+  8, 'Get /usr/sbin', 12, 0, 0
 );
 
 INSERT INTO policies (			/*  12 */
@@ -1725,7 +1773,7 @@ INSERT INTO policies (			/* 15 */
 INSERT INTO policies (          /* 16 */
   type, name, dir, rec_fail, rec_noresult
 ) VALUES (
-  9, 'Measure /bin', 1, 2, 2
+  9, 'Measure /usr/sbin', 12, 2, 2
 );
 
 INSERT INTO policies (			/* 17 */

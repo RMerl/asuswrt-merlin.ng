@@ -5,7 +5,7 @@
 .\" *                            | (__| |_| |  _ <| |___
 .\" *                             \___|\___/|_| \_\_____|
 .\" *
-.\" * Copyright (C) 1998 - 2021, Daniel Stenberg, <daniel@haxx.se>, et al.
+.\" * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
 .\" *
 .\" * This software is licensed as described in the file COPYING, which
 .\" * you should have received as part of this distribution. The terms
@@ -18,16 +18,20 @@
 .\" * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
 .\" * KIND, either express or implied.
 .\" *
+.\" * SPDX-License-Identifier: curl
+.\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_COOKIEFILE 3 "May 16, 2021" "libcurl 7.79.1" "curl_easy_setopt options"
+.TH CURLOPT_COOKIEFILE 3 "May 17, 2022" "libcurl 7.84.0" "curl_easy_setopt options"
 
 .SH NAME
 CURLOPT_COOKIEFILE \- file name to read cookies from
 .SH SYNOPSIS
+.nf
 #include <curl/curl.h>
 
 CURLcode curl_easy_setopt(CURL *handle, CURLOPT_COOKIEFILE, char *filename);
+.fi
 .SH DESCRIPTION
 Pass a pointer to a null-terminated string as parameter. It should point to
 the file name of your file holding cookie data to read. The cookie data can be
@@ -45,7 +49,7 @@ libcurl will instead read from stdin.
 This option only \fBreads\fP cookies. To make libcurl write cookies to file,
 see \fICURLOPT_COOKIEJAR(3)\fP.
 
-If you use the Set-Cookie file format and don't specify a domain then the
+If you use the Set-Cookie file format and do not specify a domain then the
 cookie is not sent since the domain will never match. To address this, set a
 domain in Set-Cookie line (doing that will include sub-domains) or preferably:
 use the Netscape format.

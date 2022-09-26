@@ -1258,7 +1258,7 @@ rtkswitch_Reset_Storm_Control(void)
 	return 0;
 }
 
-void ATE_port_status(phy_info_list *list)
+void ATE_port_status(int verbose, phy_info_list *list)
 {
 	int i;
 	char buf[512];
@@ -1307,7 +1307,8 @@ void ATE_port_status(phy_info_list *list)
 		(pS.link[3] == 1) ? (pS.speed[3] == 2) ? 'G' : 'M': 'X',
 		(pS.link[4] == 1) ? (pS.speed[4] == 2) ? 'G' : 'M': 'X');
 #endif	
-	puts(buf);
+	if (verbose)
+		puts(buf);
 }
 
 #ifdef RTCONFIG_LAN4WAN_LED

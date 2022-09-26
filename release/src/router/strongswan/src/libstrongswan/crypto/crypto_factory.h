@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2008 Martin Willi
- * Copyright (C) 2016 Andreas Steffen
+ * Copyright (C) 2016-2019 Andreas Steffen
  * HSR Hochschule fuer Technik Rapperswil
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -33,6 +33,8 @@ typedef struct crypto_factory_t crypto_factory_t;
 #include <crypto/prfs/prf.h>
 #include <crypto/rngs/rng.h>
 #include <crypto/xofs/xof.h>
+#include <crypto/kdfs/kdf.h>
+#include <crypto/drbgs/drbg.h>
 #include <crypto/nonce_gen.h>
 #include <crypto/diffie_hellman.h>
 #include <crypto/transform.h>
@@ -65,9 +67,23 @@ typedef hasher_t* (*hasher_constructor_t)(hash_algorithm_t algo);
 typedef prf_t* (*prf_constructor_t)(pseudo_random_function_t algo);
 
 /**
- * Constructor function for pseudo random functions
+ * Constructor function for extended output functions
  */
 typedef xof_t* (*xof_constructor_t)(ext_out_function_t algo);
+
+/**
+ * Constructor function for key derivation functions
+ *
+ * The additional arguments depend on the algorithm, see comments
+ * for key_derivation_function_t.
+ */
+typedef kdf_t* (*kdf_constructor_t)(key_derivation_function_t algo, va_list args);
+
+/**
+ * Constructor function for deterministic random bit generators
+ */
+typedef drbg_t* (*drbg_constructor_t)(drbg_type_t type, uint32_t strength,
+								rng_t *entropy, chunk_t personalization_str);
 
 /**
  * Constructor function for source of randomness
@@ -146,6 +162,33 @@ struct crypto_factory_t {
 	 * @return				xof_t instance, NULL if not supported
 	 */
 	xof_t* (*create_xof)(crypto_factory_t *this, ext_out_function_t algo);
+
+
+	/**
+	 * Create a key derivation function instance.
+	 *
+	 * Additional arguments depend on the KDF, please refer to the comments in
+	 * key_derivation_function_t.
+	 *
+	 * @param algo			KDF to create
+	 * @param ...			arguments depending on algo
+	 * @return				kdf_t instance, NULL if not supported
+	 */
+	kdf_t* (*create_kdf)(crypto_factory_t *this,
+						 key_derivation_function_t algo, ...);
+
+	/**
+	 * Create a deterministic random bit generator instance.
+	 *
+	 * @param type					DRBG type to use
+	 * @param strength				security strength in bits
+	 * @param entropy				entropy source to be used (adopted)
+	 * @param personalization_str	optional personalization string
+	 * @return						drbg_t instance, NULL if not supported
+	 */
+	drbg_t* (*create_drbg)(crypto_factory_t *this, drbg_type_t type,
+						   uint32_t strength, rng_t *entropy,
+						   chunk_t personalization_str);
 
 	/**
 	 * Create a source of randomness.
@@ -286,6 +329,42 @@ struct crypto_factory_t {
 	void (*remove_xof)(crypto_factory_t *this, xof_constructor_t create);
 
 	/**
+	 * Register a kdf constructor.
+	 *
+	 * @param algo			algorithm to constructor
+	 * @param plugin_name	plugin that registered this algorithm
+	 * @param create		constructor function for that algorithm
+	 * @return				TRUE if registered, FALSE if test vector failed
+	 */
+	bool (*add_kdf)(crypto_factory_t *this, key_derivation_function_t algo,
+					const char *plugin_name, kdf_constructor_t create);
+
+	/**
+	 * Unregister a kdf constructor.
+	 *
+	 * @param create		constructor function to unregister
+	 */
+	void (*remove_kdf)(crypto_factory_t *this, kdf_constructor_t create);
+
+	/**
+	 * Register a drbg constructor.
+	 *
+	 * @param type			type to constructor
+	 * @param plugin_name	plugin that registered this algorithm
+	 * @param create		constructor function for that algorithm
+	 * @return				TRUE if registered, FALSE if test vector failed
+	 */
+	bool (*add_drbg)(crypto_factory_t *this, drbg_type_t type,
+					 const char *plugin_name, drbg_constructor_t create);
+
+	/**
+	 * Unregister a drbg constructor.
+	 *
+	 * @param create		constructor function to unregister
+	 */
+	void (*remove_drbg)(crypto_factory_t *this, drbg_constructor_t create);
+
+	/**
 	 * Register a source of randomness.
 	 *
 	 * @param quality		quality of randomness this RNG serves
@@ -380,6 +459,20 @@ struct crypto_factory_t {
 	 * @return				enumerator over ext_out_function_t, plugin
 	 */
 	enumerator_t* (*create_xof_enumerator)(crypto_factory_t *this);
+
+	/**
+	 * Create an enumerator over all registered KDFs.
+	 *
+	 * @return				enumerator over key_derivation_function_t, plugin
+	 */
+	enumerator_t* (*create_kdf_enumerator)(crypto_factory_t *this);
+
+	/**
+	 * Create an enumerator over all registered DRBGs.
+	 *
+	 * @return				enumerator over drbg_type_t, plugin
+	 */
+	enumerator_t* (*create_drbg_enumerator)(crypto_factory_t *this);
 
 	/**
 	 * Create an enumerator over all registered diffie hellman groups.

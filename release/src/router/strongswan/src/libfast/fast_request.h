@@ -171,7 +171,7 @@ struct fast_request_t {
 	 * server-push functionality.
 	 *
 	 * @param format	printf like format string
-	 * @param ...		argmuent list to format string
+	 * @param ...		argument list to format string
 	 * @return			number of streamed bytes, < 0 if stream closed
 	 */
 	int (*streamf)(fast_request_t *this, char *format, ...);
@@ -209,7 +209,7 @@ struct fast_request_t {
 /**
  * Create a request from the fastcgi struct.
  *
- * @param fd			file descripter opened with FCGX_OpenSocket
+ * @param fd			file descriptor opened with FCGX_OpenSocket
  * @param debug			no stripping, no compression, timing information
  */
 fast_request_t *fast_request_create(int fd, bool debug);

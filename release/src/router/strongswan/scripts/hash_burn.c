@@ -45,13 +45,13 @@ int main(int argc, char *argv[])
 
 	if (!enum_from_name(hash_algorithm_short_names, argv[1], &alg))
 	{
-		fprintf(stderr, "unknown hash algorthm: %s\n", argv[1]);
+		fprintf(stderr, "unknown hash algorithm: %s\n", argv[1]);
 		return 1;
 	}
 	hasher = lib->crypto->create_hasher(lib->crypto, alg);
 	if (!hasher)
 	{
-		fprintf(stderr, "hash algorthm not supported: %N\n",
+		fprintf(stderr, "hash algorithm not supported: %N\n",
 				hash_algorithm_names, alg);
 		return 1;
 	}

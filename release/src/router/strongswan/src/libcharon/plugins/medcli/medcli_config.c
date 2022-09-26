@@ -87,9 +87,15 @@ static peer_cfg_t *build_mediation_config(private_medcli_config_t *this,
 	auth_cfg_t *auth;
 	ike_cfg_t *ike_cfg;
 	peer_cfg_t *med_cfg;
+	ike_cfg_create_t ike = {
+		.version = IKEV2,
+		.local = "0.0.0.0",
+		.local_port = charon->socket->get_port(charon->socket, FALSE),
+		.remote_port = IKEV2_UDP_PORT,
+		.no_certreq = TRUE,
+	};
 	peer_cfg_create_t peer = *defaults;
 	chunk_t me, other;
-	char *address;
 
 	/* query mediation server config:
 	 * - build ike_cfg/peer_cfg for mediation connection on-the-fly
@@ -98,14 +104,12 @@ static peer_cfg_t *build_mediation_config(private_medcli_config_t *this,
 			"SELECT Address, ClientConfig.KeyId, MediationServerConfig.KeyId "
 			"FROM MediationServerConfig JOIN ClientConfig",
 			DB_TEXT, DB_BLOB, DB_BLOB);
-	if (!e || !e->enumerate(e, &address, &me, &other))
+	if (!e || !e->enumerate(e, &ike.remote, &me, &other))
 	{
 		DESTROY_IF(e);
 		return NULL;
 	}
-	ike_cfg = ike_cfg_create(IKEV2, FALSE, FALSE, "0.0.0.0",
-							 charon->socket->get_port(charon->socket, FALSE),
-							 address, IKEV2_UDP_PORT, FRAGMENTATION_NO, 0);
+	ike_cfg = ike_cfg_create(&ike);
 	ike_cfg->add_proposal(ike_cfg, proposal_create_default(PROTO_IKE));
 	ike_cfg->add_proposal(ike_cfg, proposal_create_default_aead(PROTO_IKE));
 
@@ -192,8 +196,8 @@ METHOD(backend_t, get_peer_cfg_by_name, peer_cfg_t*,
 	peer_cfg->add_auth_cfg(peer_cfg, auth, FALSE);
 
 	child_cfg = child_cfg_create(name, &child);
-	child_cfg->add_proposal(child_cfg, proposal_create_default(PROTO_ESP));
 	child_cfg->add_proposal(child_cfg, proposal_create_default_aead(PROTO_ESP));
+	child_cfg->add_proposal(child_cfg, proposal_create_default(PROTO_ESP));
 	child_cfg->add_traffic_selector(child_cfg, TRUE, ts_from_string(local_net));
 	child_cfg->add_traffic_selector(child_cfg, FALSE, ts_from_string(remote_net));
 	peer_cfg->add_child_cfg(peer_cfg, child_cfg);
@@ -273,8 +277,8 @@ METHOD(enumerator_t, peer_enumerator_enumerate, bool,
 	this->current->add_auth_cfg(this->current, auth, FALSE);
 
 	child_cfg = child_cfg_create(name, &child);
-	child_cfg->add_proposal(child_cfg, proposal_create_default(PROTO_ESP));
 	child_cfg->add_proposal(child_cfg, proposal_create_default_aead(PROTO_ESP));
+	child_cfg->add_proposal(child_cfg, proposal_create_default(PROTO_ESP));
 	child_cfg->add_traffic_selector(child_cfg, TRUE, ts_from_string(local_net));
 	child_cfg->add_traffic_selector(child_cfg, FALSE, ts_from_string(remote_net));
 	this->current->add_child_cfg(this->current, child_cfg);
@@ -397,6 +401,14 @@ METHOD(medcli_config_t, destroy, void,
 medcli_config_t *medcli_config_create(database_t *db)
 {
 	private_medcli_config_t *this;
+	ike_cfg_create_t ike = {
+		.version = IKEV2,
+		.local = "0.0.0.0",
+		.local_port = charon->socket->get_port(charon->socket, FALSE),
+		.remote = "0.0.0.0",
+		.remote_port = IKEV2_UDP_PORT,
+		.no_certreq = TRUE,
+	};
 
 	INIT(this,
 		.public = {
@@ -410,10 +422,7 @@ medcli_config_t *medcli_config_create(database_t *db)
 		.db = db,
 		.rekey = lib->settings->get_time(lib->settings, "medcli.rekey", 1200),
 		.dpd = lib->settings->get_time(lib->settings, "medcli.dpd", 300),
-		.ike = ike_cfg_create(IKEV2, FALSE, FALSE, "0.0.0.0",
-							  charon->socket->get_port(charon->socket, FALSE),
-							  "0.0.0.0", IKEV2_UDP_PORT,
-							  FRAGMENTATION_NO, 0),
+		.ike = ike_cfg_create(&ike),
 	);
 	this->ike->add_proposal(this->ike, proposal_create_default(PROTO_IKE));
 	this->ike->add_proposal(this->ike, proposal_create_default_aead(PROTO_IKE));

@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2021, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -17,6 +17,8 @@
  *
  * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
  * KIND, either express or implied.
+ *
+ * SPDX-License-Identifier: curl
  *
  ***************************************************************************/
 /* <DESC>
@@ -104,7 +106,7 @@ main(void)
       return 1;
     }
 
-    /* HTTP-header style cookie. If you use the Set-Cookie format and don't
+    /* HTTP-header style cookie. If you use the Set-Cookie format and do not
     specify a domain then the cookie is sent for any domain and will not be
     modified, likely not what you intended. Starting in 7.43.0 any-domain
     cookies will not be exported either. For more information refer to the

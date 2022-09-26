@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Andreas Stefffen
+ * Copyright (C) 2015 Andreas Steffen
  * HSR Hochschule fuer Technik Rapperswil
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -13,6 +13,9 @@
  * for more details.
  */
 
+#ifndef LOAD_AUTHORITIES_H_
+#define LOAD_AUTHORITIES_H_
+
 #include "command.h"
 
 /**
@@ -24,3 +27,5 @@
  */
 int load_authorities_cfg(vici_conn_t *conn, command_format_options_t format,
 						 settings_t *cfg);
+
+#endif /** LOAD_AUTHORITIES_H_ */

@@ -3254,7 +3254,7 @@ static int ej_wl_rssi(int eid, webs_t wp, int argc, char_t **argv, int unit)
 	char ifname[IFNAMSIZ] = { 0 };
 	char word[256], *next;
 	int unit_max = 0, unit_cur = -1;
-	char rssi_buf[32];
+	char rssi_buf[32] = {0};
 #ifdef RTCONFIG_QTN
 	int rssi_by_chain[4];
 #endif
@@ -3276,7 +3276,10 @@ static int ej_wl_rssi(int eid, webs_t wp, int argc, char_t **argv, int unit)
 		qcsapi_wifi_get_rssi_by_chain(WIFINAME, 3, &rssi_by_chain[3]);
 		rssi = (rssi_by_chain[0] + rssi_by_chain[1] + rssi_by_chain[2] + rssi_by_chain[3]) / 4;
 
-		retval += websWrite(wp, "%d dBm", rssi);
+		if(hook_get_json == 1)
+			retval += websWrite(wp, "\"%d dBm\"", rssi);
+		else
+			retval += websWrite(wp, "%d dBm", rssi);
 
 		return retval;
 	}
@@ -3311,7 +3314,10 @@ static int ej_wl_rssi(int eid, webs_t wp, int argc, char_t **argv, int unit)
 	}
 
 ERROR:
-	retval += websWrite(wp, "%s", rssi_buf);
+	if(hook_get_json == 1)
+		retval += websWrite(wp, "\"%s\"", rssi_buf);
+	else
+		retval += websWrite(wp, "%s", rssi_buf);
 	return retval;
 }
 
@@ -3375,8 +3381,10 @@ static int ej_wl_rate(int eid, webs_t wp, int argc, char_t **argv, int unit)
 				snprintf(rate_buf, sizeof(rate_buf), "%d Mbps", (int)speed);
 			}
 		}
-
-		retval += websWrite(wp, "%s", rate_buf);
+		if(hook_get_json == 1)
+			retval += websWrite(wp, "\"%s\"", rate_buf);
+		else
+			retval += websWrite(wp, "%s", rate_buf);
 		return retval;
 	}
 #endif
@@ -3513,7 +3521,7 @@ ERROR:
 #ifdef RTCONFIG_BCMWL6
 	close(s);
 #endif
-	if(from_app == 0)
+	if(from_app == 0 && hook_get_json == 0)
 		retval += websWrite(wp, "%s", rate_buf);
 	else
 		retval += websWrite(wp, "\"%s\"", rate_buf);
@@ -5026,6 +5034,9 @@ static int wl_sta_list(int eid, webs_t wp, int argc, char_t **argv, int unit) {
 	if ((repeater_mode() || psr_mode()) && (nvram_get_int("wlc_band") == unit))
 		snprintf(ifname, sizeof(ifname), "wl%d.%d", unit, 1);
 
+	if(hook_get_json == 1)
+		websWrite(wp, "{");
+
 	if (!strlen(ifname))
 		goto exit;
 
@@ -5054,46 +5065,46 @@ static int wl_sta_list(int eid, webs_t wp, int argc, char_t **argv, int unit) {
 		else
 			ret += websWrite(wp, ", ");
 
-		if (from_app == 0)
-			ret += websWrite(wp, "[");
+		if (from_app == 0 && hook_get_json == 0)
+			websWrite(wp, "[");
 
 		ret += websWrite(wp, "\"%s\"", ether_etoa((void *)&auth->ea[i], ea));
 
-		if (from_app != 0) {
+		if (from_app != 0 || hook_get_json == 1) {
 			ret += websWrite(wp, ":{");
 			ret += websWrite(wp, "\"isWL\":");
 		}
 
 		value = (sta->flags & WL_STA_ASSOC) ? "Yes" : "No";
-		if (from_app == 0)
+		if (from_app == 0 && hook_get_json == 0)
 			ret += websWrite(wp, ", \"%s\"", value);
 		else
 			ret += websWrite(wp, "\"%s\"", value);
 
 		value = (sta->flags & WL_STA_AUTHO) ? "Yes" : "No";
-		if (from_app == 0)
+		if (from_app == 0 && hook_get_json == 0)
 			ret += websWrite(wp, ", \"%s\"", value);
 
-		if (from_app != 0) {
+		if (from_app != 0 || hook_get_json == 1) {
 			ret += websWrite(wp, ",\"rssi\":");
 		}
 
 		memcpy(&scb_val.ea, &auth->ea[i], ETHER_ADDR_LEN);
 		if (wl_ioctl(ifname, WLC_GET_RSSI, &scb_val, sizeof(scb_val_t))) {
-			if (from_app == 0)
+			if (from_app == 0 && hook_get_json == 0)
 				ret += websWrite(wp, ", \"%d\"", 0);
 			else
 				ret += websWrite(wp, "\"%d\"", 0);
 		} else {
-			if (from_app == 0)
+			if (from_app == 0 && hook_get_json == 0)
 				ret += websWrite(wp, ", \"%d\"", scb_val.val);
 			else
 				ret += websWrite(wp, "\"%d\"", scb_val.val);
 		}
-		if (from_app == 0)
-			ret += websWrite(wp, "]");
+		if (from_app == 0 && hook_get_json == 0)
+			websWrite(wp, "]");
 		else
-			ret += websWrite(wp, "}");
+			websWrite(wp, "}");
 	}
 
 	for (i = 1; i < wl_max_no_vifs(unit); i++) {
@@ -5123,52 +5134,54 @@ static int wl_sta_list(int eid, webs_t wp, int argc, char_t **argv, int unit) {
 				else
 					ret += websWrite(wp, ", ");
 
-				if (from_app == 0)
-					ret += websWrite(wp, "[");
+				if (from_app == 0 && hook_get_json == 0)
+					websWrite(wp, "[");
 
 				ret += websWrite(wp, "\"%s\"", ether_etoa((void *)&auth->ea[ii], ea));
 
-				if (from_app != 0) {
+				if (from_app != 0 && hook_get_json == 0) {
 					ret += websWrite(wp, ":{");
 					ret += websWrite(wp, "\"isWL\":");
 				}
 
 				value = (sta->flags & WL_STA_ASSOC) ? "Yes" : "No";
-				if (from_app == 0)
+				if (from_app == 0 && hook_get_json == 0)
 					ret += websWrite(wp, ", \"%s\"", value);
 				else
 					ret += websWrite(wp, "\"%s\"", value);
 
 				value = (sta->flags & WL_STA_AUTHO) ? "Yes" : "No";
-				if (from_app == 0)
+				if (from_app == 0 && hook_get_json == 0)
 					ret += websWrite(wp, ", \"%s\"", value);
 
-				if (from_app != 0) {
+				if (from_app != 0 || hook_get_json == 1) {
 					ret += websWrite(wp, ",\"rssi\":");
 				}
 
 				memcpy(&scb_val.ea, &auth->ea[ii], ETHER_ADDR_LEN);
 				if (wl_ioctl(name_vif, WLC_GET_RSSI, &scb_val, sizeof(scb_val_t))) {
-					if (from_app == 0)
+					if (from_app == 0 && hook_get_json == 0)
 						ret += websWrite(wp, ", \"%d\"", 0);
 					else
 						ret += websWrite(wp, "\"%d\"", 0);
 				} else {
-					if (from_app == 0)
+					if (from_app == 0 && hook_get_json == 0)
 						ret += websWrite(wp, ", \"%d\"", scb_val.val);
 					else
 						ret += websWrite(wp, "\"%d\"", scb_val.val);
 				}
-				if (from_app == 0)
-					ret += websWrite(wp, "]");
+				if (from_app == 0 && hook_get_json == 0)
+					websWrite(wp, "]");
 				else
-					ret += websWrite(wp, "}");
+					websWrite(wp, "}");
 			}
 		}
 	}
 
 	/* error/exit */
 exit:
+	if(hook_get_json == 1)
+		websWrite(wp, "}");
 	if (auth) free(auth);
 
 	return ret;
@@ -5194,6 +5207,9 @@ static int wl_stainfo_list(int eid, webs_t wp, int argc, char_t **argv, int unit
 
 	if ((repeater_mode() || psr_mode()) && (nvram_get_int("wlc_band") == unit))
 		snprintf(ifname, sizeof(ifname), "wl%d.%d", unit, 1);
+
+	if(hook_get_json == 1)
+		websWrite(wp, "[");
 
 	if (!strlen(ifname))
 		goto exit;
@@ -5284,6 +5300,8 @@ static int wl_stainfo_list(int eid, webs_t wp, int argc, char_t **argv, int unit
 
 	/* error/exit */
 exit:
+	if(hook_get_json == 1)
+		websWrite(wp, "]");
 	if (auth) free(auth);
 
 	return ret;
@@ -5502,6 +5520,9 @@ int ej_wl_auth_list(int eid, webs_t wp, int argc, char_t **argv) {
 	auth = malloc(mac_list_size);
 	//wme = malloc(mac_list_size);
 
+	if(hook_get_json == 1)
+		websWrite(wp, "[");
+
 	//if (!auth || !wme)
 	if (!auth)
 		goto exit;
@@ -5517,7 +5538,7 @@ int ej_wl_auth_list(int eid, webs_t wp, int argc, char_t **argv) {
 					ret += websWrite(wp, ", ");
 				ret += ej_wl_sta_list_5g(eid, wp, argc, argv);
 			}
-			return ret;
+			goto exit;
 		}
 #endif
 		snprintf(prefix, sizeof(prefix), "wl%d_", unit);
@@ -5612,7 +5633,8 @@ int ej_wl_auth_list(int eid, webs_t wp, int argc, char_t **argv) {
 exit:
 	if (auth) free(auth);
 	//if (wme) free(wme);
-
+	if(hook_get_json == 1)
+		websWrite(wp, "]");
 	return ret;
 }
 
@@ -6563,8 +6585,15 @@ ej_wl_pre_auth_psta(int eid, webs_t wp, int argc, char_t **argv)
 		_dprintf("%s, wait wpas reason:%d \n  chk:[0-ss:%s][0-r:%s][1-ss:%s][1-r:%s]\n", __func__, i, nvram_safe_get("wlc0_ssid"), nvram_safe_get("wpas0_reason"), nvram_safe_get("wlc1_ssid"), nvram_safe_get("wpas1_reason"));
 		sleep(1);
 	}
-	retval += websWrite(wp, "wpas0_reason=%s;", nvram_safe_get("wpas0_reason"));
-	retval += websWrite(wp, "wpas1_reason=%s;", nvram_safe_get("wpas1_reason"));
+	if(hook_get_json == 1){
+		retval += websWrite(wp, "{");
+		retval += websWrite(wp, "\"wpas0_reason\":\"%s\",", nvram_safe_get("wpas0_reason"));
+		retval += websWrite(wp, "\"wpas1_reason\":\"%s\"", nvram_safe_get("wpas1_reason"));
+		retval += websWrite(wp, "}");
+	}else{
+		retval += websWrite(wp, "wpas0_reason=%s;", nvram_safe_get("wpas0_reason"));
+		retval += websWrite(wp, "wpas1_reason=%s;", nvram_safe_get("wpas1_reason"));
+	}
 
 	notify_rc("stop_wpasupp");
 }

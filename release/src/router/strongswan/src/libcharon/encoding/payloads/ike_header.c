@@ -172,7 +172,7 @@ static encoding_rule_t encodings[] = {
 	{ FLAG,			offsetof(private_ike_header_t, flags.encryption)},
 	/* 4 Byte message id, stored in the field message_id */
 	{ U_INT_32,		offsetof(private_ike_header_t, message_id)		},
-	/* 4 Byte length fied, stored in the field length */
+	/* 4 Byte length field, stored in the field length */
 	{ HEADER_LENGTH,	offsetof(private_ike_header_t, length)			}
 };
 

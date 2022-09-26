@@ -1,7 +1,7 @@
 #ifndef __VPNC_FUSION_H__
 #define __VPNC_FUSION_H__
 
-//#define USE_IPTABLE_ROUTE_TARGE		1
+#include <net/if.h>
 
 #define INTERNET_ROUTE_TABLE_ID	1
 
@@ -19,7 +19,7 @@
 #define PROTO_HMA "HMA"
 #define PROTO_NORDVPN "NordVPN"
 
-#define MAX_VPNC_DATA_LEN	256
+#define MAX_VPNC_DATA_LEN	68
 #define MAX_VPNC_PROFILE	16
 #define MAX_DEV_POLICY		64
 #define MAX_VPNC_CONN		4
@@ -68,6 +68,10 @@ typedef struct _vpnc_tp{
 	char conntype[8];
 }VPNC_TPVPN;
 
+typedef struct _vpnc_ipsec{
+	int prof_idx;
+}VPNC_IPSEC;
+
 typedef struct _vpnc_profile{
 	int active;	//0: inactive, 1:active
 	int vpnc_idx;	// 1 ~ MAX_VPNC_PROFILE
@@ -78,18 +82,18 @@ typedef struct _vpnc_profile{
 		VPNC_OVPN ovpn;
 		VPNC_WG wg;
 		VPNC_TPVPN tpvpn;
+		VPNC_IPSEC ipsec;
 	}config;	
 }VPNC_PROFILE;
 
 typedef struct _vpnc_dev_policy{
 	int active;	// 0:disable ; 1:enable
-#ifdef USE_IPTABLE_ROUTE_TARGE
-	char mac[20];	//mac address of client
-#else
 	char src_ip[16];	//ip address of client
-#endif
 	char dst_ip[16];	//ip address of destinaction
 	int vpnc_idx;	//vpn client index
+#ifdef RTCONFIG_VPN_FUSION_SUPPORT_INTERFACE
+	char iif[IFNAMSIZ];
+#endif
 }VPNC_DEV_POLICY;
 
 typedef enum{
@@ -103,6 +107,14 @@ typedef enum{
 #define VPNC_PROFILE_VER1		1
 
 #define VPNC_RULE_PRIORITY	"100"
-#define VPNC_RULE_PRIORITY_DEFAULT		"10000"
 
+#define VPNC_RULE_PRIORITY_NETWORK	1000
+extern char vpnc_resolv_path[] ;
+#ifdef RTCONFIG_VPN_FUSION_SUPPORT_INTERFACE
+extern int vpnc_set_iif_routing_rule(const int vpnc_idx, const char* br_ifname);
+#endif
+
+int update_default_routing_rule();
+
+#define VPNC_RULE_PRIORITY_DEFAULT		"10000"
 #endif

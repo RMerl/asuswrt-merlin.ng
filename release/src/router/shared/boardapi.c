@@ -287,7 +287,7 @@ static const struct led_btn_table_s {
 	{ "led_yellow_gpio",    &led_gpio_table[LED_YELLOW_GPIO] },
 	{ "led_purple_gpio",    &led_gpio_table[LED_PURPLE_GPIO] },
 #endif
-#if defined(RTAX95Q) || defined(XT8PRO) || defined(XT8_V2) || defined(RTAXE95Q) || defined(ET8PRO) || defined(RTAX56_XD4) || defined(XD4PRO) || defined(RTAX82_XD6) || defined(RTAX82_XD6S)  || defined(ET12) || defined(XT12)
+#if defined(RTAX95Q) || defined(XT8PRO) || defined(BM68) || defined(XT8_V2) || defined(RTAXE95Q) || defined(ET8PRO) || defined(ET8_V2) || defined(RTAX56_XD4) || defined(XD4PRO) || defined(RTAX82_XD6) || defined(RTAX82_XD6S)  || defined(ET12) || defined(XT12) || defined(XD6_V2)
 	{ "bt_rst_gpio",        &led_gpio_table[BT_RESET] },
 	{ "bt_disable_gpio",    &led_gpio_table[BT_DISABLE] },
 	{ "led_rgb1_red_gpio",  &led_gpio_table[LED_RGB1_RED] },
@@ -1281,12 +1281,6 @@ int lanport_ctrl(int ctrl)
 		mask |= (0x0001<<atoi(word));
 #endif
 	}
-
-#if defined(BCM4912)
-	if((rp_mode() || mb_mode()))
-		doSystem("ethctl eth0 phy-reset");
-#endif
-
 #if defined(BCM6750) || defined(BCM4912) || defined(BCM6756) || defined(BCM6855)
 	return 1;
 #else

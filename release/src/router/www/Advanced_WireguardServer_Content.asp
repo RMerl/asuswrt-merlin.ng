@@ -41,30 +41,17 @@ window.onresize = function() {
 }
 var wgs_enable = '<% nvram_get("wgs_enable"); %>';
 var wgsc_enable = '<% nvram_get("wgsc_enable"); %>';
+var wgsc_status = <% get_wgsc_status(); %>;
 
 function initial(){
 	show_menu();
 
-	var vpn_server_array = { "PPTP" : ["PPTP", "Advanced_VPN_PPTP.asp"], "OpenVPN" : ["OpenVPN", "Advanced_VPN_OpenVPN.asp"], "IPSEC" : ["IPSec VPN", "Advanced_VPN_IPSec.asp"], "Wireguard" : ["Wireguard VPN", "Advanced_WireguardServer_Content.asp"]};
-	if(!pptpd_support) {
-		delete vpn_server_array.PPTP;
-	}
-	if(!openvpnd_support) {
-		delete vpn_server_array.OpenVPN;
-	}
-	if(!ipsec_srv_support) {
-		delete vpn_server_array.IPSEC;
-	}
-	if(!wireguard_support) {
-		delete vpn_server_array.Wireguard;
-	}
-
-	$('#divSwitchMenu').html(gen_switch_menu(vpn_server_array, "Wireguard"));
-
 	if (wgs_enable == '1') {
 		document.getElementById("WgsLogTable").style.display = "";
-		if (wgsc_enable == '1')
+		if (wgsc_enable == '1') {
 			document.getElementById("wg_export_setting").style.display = "";
+			document.getElementById("WgscConfTable").style.display = "";
+		}
 	}
 }
 
@@ -148,7 +135,6 @@ function hideQRCode(){
 				<td bgcolor="#4D595D" valign="top"  >
 					<div>&nbsp;</div>
 					<div class="formfonttitle">VPN - WireGuard Server</div>
-					<div id="divSwitchMenu" style="margin-top:-40px;float:right;"></div
 					<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 					<div id="titl_desc" class="formfontdesc">WireGuard Server</div>
 
@@ -264,6 +250,12 @@ function hideQRCode(){
 								<input type="radio" value="0" name="wgsc_enable" class="input" <% nvram_match("wgsc_enable", "0", "checked"); %>><#checkbox_No#></input>
 							</td>
 						</tr>
+						<tr id="wgsc_name" class="rept ew">
+							<th>WireGuard Client Name</th>
+							<td>
+								<input type="text" maxlength="64" name="wgsc_name" id="wgsc_name" class="input_32_table" value="<% nvram_get("wgsc_name"); %>" autocorrect="off" autocapitalize="off"></input>
+							</td>
+						</tr>
 						<tr>
 							<th>Preshared Key (Optional)</th>
 							<td>
@@ -308,11 +300,31 @@ function hideQRCode(){
 						<input class="button_gen" onclick="applyRule();" type="button" value="<#CTL_apply#>"/>
 					</div>
 
-					<table id="WgsLogTable" width="100%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable" style="display:none">
+					<table id="WgscConfTable" width="100%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable" style="display:none">
+						<thead>
+							<tr>
+								<td colspan="2">Content of Client Configuration File</td>
+							</tr>
+						</thead>
 						<tr>
 							<td>
 								<div style="margin-top:8px">
-									<textarea class="textarea_ssh_table" style="width:99%; font-family:'Courier New', Courier, mono; font-size:13px;" cols="63" rows="25" readonly="readonly" wrap=off><% nvram_dump("wgs.log",""); %></textarea>
+									<textarea class="textarea_ssh_table" style="width:99%; font-family:'Courier New', Courier, mono; font-size:13px;" cols="63" rows="10" readonly="readonly" wrap=off><% nvram_dump("wgs_client.conf",""); %></textarea>
+								</div>
+							</td>
+						</tr>
+					</table>
+
+					<table id="WgsLogTable" width="100%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable" style="display:none">
+						<thead>
+							<tr>
+								<td colspan="2">Server Status</td>
+							</tr>
+						</thead>
+						<tr>
+							<td>
+								<div style="margin-top:8px">
+									<textarea class="textarea_ssh_table" style="width:99%; font-family:'Courier New', Courier, mono; font-size:13px;" cols="63" rows="15" readonly="readonly" wrap=off><% nvram_dump("wgs.log",""); %></textarea>
 								</div>
 								<div class="apply_gen">
 									<input type="button" onClick="location.reload();" value="<#CTL_refresh#>" class="button_gen">

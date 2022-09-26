@@ -66,7 +66,7 @@ struct private_fast_dispatcher_t {
 	mutex_t *mutex;
 
 	/**
-	 * Hahstable with active sessions
+	 * Hashtable with active sessions
 	 */
 	hashtable_t *sessions;
 

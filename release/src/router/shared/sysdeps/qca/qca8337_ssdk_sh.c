@@ -982,7 +982,7 @@ rtkswitch_Reset_Storm_Control(void)
 	return 0;
 }
 
-void ATE_port_status(phy_info_list *list)
+void ATE_port_status(int verbose, phy_info_list *list)
 {
 	int i;
 	char buf[32] = {0};
@@ -995,9 +995,13 @@ void ATE_port_status(phy_info_list *list)
 		list->count = 0;
 
 #ifdef RTCONFIG_NEW_PHYMAP
-	phy_port_mapping port_mapping = get_phy_port_mapping();
+	phy_port_mapping port_mapping;
+	get_phy_port_mapping(&port_mapping);
 
 	for (i = 0; i < port_mapping.count; i++) {
+		// Only handle WAN/LAN ports
+		if (((port_mapping.port[i].cap & PHY_PORT_CAP_WAN) == 0) && ((port_mapping.port[i].cap & PHY_PORT_CAP_LAN) == 0))
+			continue;
 		pS.link[i] = 0;
 		pS.speed[i] = 0;
 		get_qca8337_port_info(port_mapping.port[i].phy_port_id, &pS.link[i], &pS.speed[i], list ? &list->phy_info[i] : NULL);
@@ -1005,9 +1009,10 @@ void ATE_port_status(phy_info_list *list)
 			list->phy_info[i].phy_port_id = port_mapping.port[i].phy_port_id;
 			snprintf(list->phy_info[i].label_name, sizeof(list->phy_info[i].label_name), "%s", 
 				port_mapping.port[i].label_name);
+			list->phy_info[list->count].cap = port_mapping.port[i].cap;
 			snprintf(list->phy_info[i].cap_name, sizeof(list->phy_info[i].cap_name), "%s", 
 				get_phy_port_cap_name(port_mapping.port[i].cap, cap_buf, sizeof(cap_buf)));
-			if (pS.link[i] == 1)
+			if (pS.link[i] == 1 && !list->status_and_speed_only)
 				get_qca8337_port_mib(port_mapping.port[i].phy_port_id, &list->phy_info[i]);
 
 			list->count++;
@@ -1031,15 +1036,17 @@ void ATE_port_status(phy_info_list *list)
 		if (list) {
 			list->phy_info[list->count].phy_port_id = lan_id_to_port_nr(i);
 			if (!list->count) {
+				list->phy_info[list->count].cap = PHY_PORT_CAP_WAN;
 				snprintf(list->phy_info[list->count].cap_name, sizeof(list->phy_info[i].cap_name), "wan");
 				snprintf(list->phy_info[list->count].label_name, sizeof(list->phy_info[list->count].label_name), "W0");
 			}
 			else {
+				list->phy_info[list->count].cap = PHY_PORT_CAP_LAN;
 				snprintf(list->phy_info[list->count].cap_name, sizeof(list->phy_info[i].cap_name), "lan");
 				snprintf(list->phy_info[list->count].label_name, sizeof(list->phy_info[list->count].label_name), "L%d", 
 					list->count);
 			}
-			if (pS.link[i] == 1)
+			if (pS.link[i] == 1 && !list->status_and_speed_only)
 				get_qca8337_port_mib(lan_id_to_port_nr(i), &list->phy_info[i]);
 
 			list->count++;
@@ -1065,7 +1072,8 @@ void ATE_port_status(phy_info_list *list)
 		(pS.link[4] == 1) ? (pS.speed[4] == 2) ? 'G' : 'M': 'X');
 #endif
 #endif // #ifdef RTCONFIG_NEW_PHYMAP
-	puts(buf);
+	if (verbose)
+		puts(buf);
 }
 
 #ifdef RTCONFIG_LAN4WAN_LED
@@ -1100,10 +1108,15 @@ int led_ctrl(void)
 #endif	/* LAN4WAN_LED*/
 
 #ifdef RTCONFIG_NEW_PHYMAP
-/* phy port related start */
-phy_port_mapping get_phy_port_mapping(void)
+extern int get_trunk_port_mapping(int trunk_port_value)
 {
-	static const phy_port_mapping port_mapping = {
+	return trunk_port_value;
+}
+
+/* phy port related start */
+void get_phy_port_mapping(phy_port_mapping *port_mapping)
+{
+	static phy_port_mapping port_mapping_static = {
 #if defined(RTAC59_CD6R)
 		.count = 4,
 		.port[0] = { .phy_port_id = WAN_PORT, .label_name = "W0", .cap = PHY_PORT_CAP_WAN, .max_rate = 1000, .ifname = NULL },
@@ -1123,7 +1136,15 @@ phy_port_mapping get_phy_port_mapping(void)
 		.port[4] = { .phy_port_id = LAN4_PORT, .label_name = "L4", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = NULL }
 #endif
 	};
-	return port_mapping;
+
+	if (!port_mapping)
+		return;
+
+	memcpy(port_mapping, &port_mapping_static, sizeof(phy_port_mapping));
+
+	add_sw_cap(port_mapping);
+	swap_wanlan(port_mapping);
+	return;
 }
 /* phy port related end.*/
 #endif

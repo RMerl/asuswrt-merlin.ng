@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24" height="24" viewBox="0 0 24 24">
+  <defs>
+    <path id="ic-download-a" d="M19,9 L15,9 L15,3 L9,3 L9,9 L5,9 L12,16 L19,9 L19,9 Z M5,18 L5,20 L19,20 L19,18 L5,18 L5,18 Z"/>
+    <rect id="ic-download-c" width="50" height="50" x="0" y="0"/>
+  </defs>
+  <g fill="none" fill-rule="evenodd">
+    <mask id="ic-download-b" fill="#fff">
+      <use xlink:href="#ic-download-a"/>
+    </mask>
+    <g mask="url(#ic-download-b)">
+      <use fill="#EFF6FF" transform="translate(-13 -13)" xlink:href="#ic-download-c"/>
+    </g>
+  </g>
+</svg>

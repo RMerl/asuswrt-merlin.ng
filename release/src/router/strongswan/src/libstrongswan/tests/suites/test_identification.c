@@ -62,6 +62,23 @@ START_TEST(test_from_data)
 	ck_assert(chunk_equals(expected, encoding));
 	a->destroy(a);
 
+	/* this is not actually ASN.1, even though it starts with 0x30 and the
+	 * correct length (0x31=49) */
+	expected = chunk_from_str("01234567-aaaa-bbbb-cccc-ddddeeeeffff@strongswan.org");
+	a = identification_create_from_data(chunk_from_chars(
+								0x30,0x31,0x32,0x33,0x34,0x35,0x36,0x37,
+								0x2d,0x61,0x61,0x61,0x61,0x2d,0x62,0x62,
+								0x62,0x62,0x2d,0x63,0x63,0x63,0x63,0x2d,
+								0x64,0x64,0x64,0x64,0x65,0x65,0x65,0x65,
+								0x66,0x66,0x66,0x66,0x40,0x73,0x74,0x72,
+								0x6f,0x6e,0x67,0x73,0x77,0x61,0x6e,0x2e,
+								0x6f,0x72,0x67));
+	ck_assert(ID_RFC822_ADDR == a->get_type(a));
+	encoding = a->get_encoding(a);
+	ck_assert(expected.ptr != encoding.ptr);
+	ck_assert(chunk_equals(expected, encoding));
+	a->destroy(a);
+
 	/* everything else is handled by the string parser */
 	expected = chunk_from_str("moon@strongswan.org");
 	a = identification_create_from_data(expected);
@@ -467,6 +484,8 @@ START_TEST(test_equals)
 							 "C=CH, E=moon@strongswan.org, CN=moon");
 
 	ck_assert(id_equals(a, "C=CH, E=moon@strongswan.org, CN=moon"));
+	ck_assert(id_equals(a, "C=CH, email=moon@strongswan.org, CN=moon"));
+	ck_assert(id_equals(a, "C=CH, emailAddress=moon@strongswan.org, CN=moon"));
 	ck_assert(id_equals(a, "C==CH , E==moon@strongswan.org , CN==moon"));
 	ck_assert(id_equals(a, "  C=CH, E=moon@strongswan.org, CN=moon  "));
 	ck_assert(id_equals(a, "C=ch, E=moon@STRONGSWAN.ORG, CN=Moon"));
@@ -624,21 +643,111 @@ static bool id_matches(identification_t *a, char *b_str, id_match_t expected)
 	return match == expected;
 }
 
+static char* rdn_matching[] = { NULL, "reordered", "relaxed" };
+
+static struct {
+	char *id;
+	id_match_t match[3];
+} matches_data[] = {
+	/* C=CH, E=moon@strongswan.org, CN=moon */
+	{ "C=CH, E=moon@strongswan.org, CN=moon", {
+		ID_MATCH_PERFECT, ID_MATCH_PERFECT, ID_MATCH_PERFECT }},
+	{ "C=CH, email=moon@strongswan.org, CN=moon", {
+		ID_MATCH_PERFECT, ID_MATCH_PERFECT, ID_MATCH_PERFECT }},
+	{ "C=CH, emailAddress=moon@strongswan.org, CN=moon", {
+		ID_MATCH_PERFECT, ID_MATCH_PERFECT, ID_MATCH_PERFECT }},
+	{ "CN=moon, C=CH, E=moon@strongswan.org", {
+		ID_MATCH_NONE, ID_MATCH_PERFECT, ID_MATCH_PERFECT }},
+	{ "C=CH, E=*@strongswan.org, CN=moon", {
+		ID_MATCH_NONE, ID_MATCH_NONE, ID_MATCH_NONE }},
+	{ "C=CH, E=*, CN=moon", {
+		ID_MATCH_ONE_WILDCARD, ID_MATCH_ONE_WILDCARD, ID_MATCH_ONE_WILDCARD }},
+	{ "C=CH, E=*, CN=*", {
+		ID_MATCH_ONE_WILDCARD - 1, ID_MATCH_ONE_WILDCARD - 1, ID_MATCH_ONE_WILDCARD - 1 }},
+	{ "C=*, E=*, CN=*", {
+		ID_MATCH_ONE_WILDCARD - 2, ID_MATCH_ONE_WILDCARD - 2, ID_MATCH_ONE_WILDCARD - 2 }},
+	{ "C=*, E=*, CN=*, O=BADInc", {
+		ID_MATCH_NONE, ID_MATCH_NONE, ID_MATCH_NONE }},
+	{ "C=CH, CN=*", {
+		ID_MATCH_NONE, ID_MATCH_NONE, ID_MATCH_ONE_WILDCARD - 1 }},
+	{ "C=*, E=*", {
+		ID_MATCH_NONE, ID_MATCH_NONE, ID_MATCH_ONE_WILDCARD - 2 }},
+	{ "C=*, E=a@b.c, CN=*", {
+		ID_MATCH_NONE, ID_MATCH_NONE, ID_MATCH_NONE }},
+	{ "C=CH, O=strongSwan, E=*, CN=*", {
+		ID_MATCH_NONE, ID_MATCH_NONE, ID_MATCH_NONE }},
+	{ "", {
+		ID_MATCH_ANY, ID_MATCH_ANY, ID_MATCH_ANY }},
+	{ "%any", {
+		ID_MATCH_ANY, ID_MATCH_ANY, ID_MATCH_ANY }},
+};
+
 START_TEST(test_matches)
 {
 	identification_t *a;
+	int i;
+
+	if (rdn_matching[_i])
+	{
+		lib->settings->set_str(lib->settings, "%s.rdn_matching",
+							   rdn_matching[_i], lib->ns);
+	}
 
 	a = identification_create_from_string("C=CH, E=moon@strongswan.org, CN=moon");
 
-	ck_assert(id_matches(a, "C=CH, E=moon@strongswan.org, CN=moon", ID_MATCH_PERFECT));
-	ck_assert(id_matches(a, "C=CH, E=*@strongswan.org, CN=moon", ID_MATCH_NONE));
-	ck_assert(id_matches(a, "C=CH, E=*, CN=moon", ID_MATCH_ONE_WILDCARD));
-	ck_assert(id_matches(a, "C=CH, E=*, CN=*", ID_MATCH_ONE_WILDCARD - 1));
-	ck_assert(id_matches(a, "C=*, E=*, CN=*", ID_MATCH_ONE_WILDCARD - 2));
-	ck_assert(id_matches(a, "C=*, E=*, CN=*, O=BADInc", ID_MATCH_NONE));
-	ck_assert(id_matches(a, "C=*, E=*", ID_MATCH_NONE));
-	ck_assert(id_matches(a, "C=*, E=a@b.c, CN=*", ID_MATCH_NONE));
-	ck_assert(id_matches(a, "%any", ID_MATCH_ANY));
+	for (i = 0; i < countof(matches_data); i++)
+	{
+		ck_assert(id_matches(a, matches_data[i].id, matches_data[i].match[_i]));
+	}
+
+	a->destroy(a);
+}
+END_TEST
+
+static struct {
+	char *id;
+	id_match_t match[3];
+} matches_two_ou_data[] = {
+	/* C=CH, OU=Research, OU=Floor A, CN=moon */
+	{ "C=CH, OU=Research, OU=Floor A, CN=moon", {
+		ID_MATCH_PERFECT, ID_MATCH_PERFECT, ID_MATCH_PERFECT }},
+	{ "C=CH, OU=Floor A, CN=moon", {
+		ID_MATCH_NONE, ID_MATCH_NONE, ID_MATCH_ONE_WILDCARD }},
+	{ "C=CH, CN=moon", {
+		ID_MATCH_NONE, ID_MATCH_NONE, ID_MATCH_ONE_WILDCARD - 1 }},
+	{ "C=CH, OU=*, CN=moon", {
+		ID_MATCH_NONE, ID_MATCH_NONE, ID_MATCH_ONE_WILDCARD - 1 }},
+	{ "C=CH, OU=*, OU=*, CN=moon", {
+		ID_MATCH_ONE_WILDCARD - 1, ID_MATCH_ONE_WILDCARD - 1, ID_MATCH_ONE_WILDCARD - 1 }},
+	{ "C=CH, OU=Research, OU=*, CN=moon", {
+		ID_MATCH_ONE_WILDCARD, ID_MATCH_ONE_WILDCARD, ID_MATCH_ONE_WILDCARD }},
+	{ "C=CH, OU=*, OU=Floor A, CN=moon", {
+		ID_MATCH_ONE_WILDCARD, ID_MATCH_ONE_WILDCARD, ID_MATCH_ONE_WILDCARD }},
+	{ "C=CH, OU=*, OU=Research, CN=moon", {
+		ID_MATCH_NONE, ID_MATCH_ONE_WILDCARD, ID_MATCH_ONE_WILDCARD }},
+	{ "C=CH, OU=Floor A, OU=*, CN=moon", {
+		ID_MATCH_NONE, ID_MATCH_ONE_WILDCARD, ID_MATCH_ONE_WILDCARD }},
+	{ "C=CH, OU=Floor A, OU=Research, CN=moon", {
+		ID_MATCH_NONE, ID_MATCH_PERFECT, ID_MATCH_PERFECT }},
+};
+
+START_TEST(test_matches_two_ou)
+{
+	identification_t *a;
+	int i;
+
+	if (rdn_matching[_i])
+	{
+		lib->settings->set_str(lib->settings, "%s.rdn_matching",
+							   rdn_matching[_i], lib->ns);
+	}
+
+	a = identification_create_from_string("C=CH, OU=Research, OU=Floor A, CN=moon");
+
+	for (i = 0; i < countof(matches_two_ou_data); i++)
+	{
+		ck_assert(id_matches(a, matches_two_ou_data[i].id, matches_two_ou_data[i].match[_i]));
+	}
 
 	a->destroy(a);
 }
@@ -1090,7 +1199,8 @@ Suite *identification_suite_create()
 	suite_add_tcase(s, tc);
 
 	tc = tcase_create("matches");
-	tcase_add_test(tc, test_matches);
+	tcase_add_loop_test(tc, test_matches, 0, countof(rdn_matching));
+	tcase_add_loop_test(tc, test_matches_two_ou, 0, countof(rdn_matching));
 	tcase_add_test(tc, test_matches_any);
 	tcase_add_test(tc, test_matches_binary);
 	tcase_add_test(tc, test_matches_range);

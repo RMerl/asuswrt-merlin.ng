@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2020, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -17,6 +17,8 @@
  *
  * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
  * KIND, either express or implied.
+ *
+ * SPDX-License-Identifier: curl
  *
  ***************************************************************************/
 #include "tool_setup.h"
@@ -124,12 +126,12 @@ CURLcode create_dir_hierarchy(const char *outfile, FILE *errors)
   /* !checksrc! disable BANNEDFUNC 2 */
   tempdir = strtok(outdup, PATH_DELIMITERS);
 
-  while(tempdir != NULL) {
+  while(tempdir) {
     bool skip = false;
     tempdir2 = strtok(NULL, PATH_DELIMITERS);
     /* since strtok returns a token for the last word even
        if not ending with DIR_CHAR, we need to prune it */
-    if(tempdir2 != NULL) {
+    if(tempdir2) {
       size_t dlen = strlen(dirbuildup);
       if(dlen)
         msnprintf(&dirbuildup[dlen], outlen - dlen, "%s%s", DIR_CHAR, tempdir);

@@ -233,6 +233,20 @@ static inline char * strcat_r(const char *s1, const char *s2, char *buf)
 				next = strchr(next, ' '))
 #endif // endif
 
+/* Copy each token in wordlist delimited by ascii_38 into word */
+#define foreach_38(word, wordlist, next) \
+		for (next = &wordlist[strspn(wordlist, "&")], \
+				strncpy(word, next, sizeof(word)), \
+				word[strcspn(word, "&")] = '\0', \
+				word[sizeof(word) - 1] = '\0', \
+				next = strchr(next, '&'); \
+				strlen(word); \
+				next = next ? &next[strspn(next, "&")] : "", \
+				strncpy(word, next, sizeof(word)), \
+				word[strcspn(word, "&")] = '\0', \
+				word[sizeof(word) - 1] = '\0', \
+				next = strchr(next, '&'))
+
 /* Copy each token in wordlist delimited by ascii_44 into word */
 #define foreach_44(word, wordlist, next) \
 		for (next = &wordlist[strspn(wordlist, ",")], \
@@ -331,6 +345,22 @@ static inline char * strcat_r(const char *s1, const char *s2, char *buf)
 				word[strcspn(word, " ")] = '\0', \
 				word[sizeof(word) - 1] = '\0', \
 				next = strchr(next, ' '), \
+				count--)
+
+/* Copy each token in wordlist delimited by ascii_38 into word and keep empty string */
+#define foreach_38_keep_empty_string(count, word, wordlist, next) \
+		for (count = get_char_count(wordlist, '&'), \
+				next = strchr(wordlist, '&'), \
+				strncpy(word, wordlist, sizeof(word)), \
+				word[strcspn(word, "&")] = '\0', \
+				word[sizeof(word) - 1] = '\0', \
+				next = next ? strchr(next, '&') : ""; \
+				count >= 0; \
+				next = next ? &next[strcspn(next, "&")+1] : "", \
+				strncpy(word, next, sizeof(word)), \
+				word[strcspn(word, "&")] = '\0', \
+				word[sizeof(word) - 1] = '\0', \
+				next = strchr(next, '&'), \
 				count--)
 
 /* Copy each token in wordlist delimited by ascii_44 into word and keep empty string */

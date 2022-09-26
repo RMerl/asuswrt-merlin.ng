@@ -57,7 +57,7 @@ static struct {
 struct timer_entry *timerx;
 struct task_table *TT;
 
-unsigned int now_sigs, task_mask;
+unsigned int now_sigs, sig_task_mask;
 int max_timeout=0;
 
 #ifndef CLOCK_MONOTONIC
@@ -299,7 +299,7 @@ void tasks_run(struct task_table *tt, int num, int _max_timeout)
 	TT = tt;
 	init_timers();
 	now_sigs = 0;
-	task_mask = 0;
+	sig_task_mask = 0;
 
 	timerx = (struct timer_entry*)malloc(sizeof(struct timer_entry)*num);
 	if(!timerx) return;
@@ -321,7 +321,7 @@ void tasks_run(struct task_table *tt, int num, int _max_timeout)
 				mod_timer(tt[i].timer, tt[i].fire_time);
 		} else {
 			if(tt[i].tfunc) {
-				task_mask |= 1<<tt[i].sig;
+				sig_task_mask |= 1<<tt[i].sig;
 				signal(tt[i].sig, mark_sig);
 			} else 
 				signal(tt[i].sig, SIG_IGN);
@@ -333,7 +333,7 @@ void tasks_run(struct task_table *tt, int num, int _max_timeout)
 	/* run tasks */
 	while (1)
 	{
-		if(now_sigs & task_mask)
+		if(now_sigs & sig_task_mask)
 			take_sig_tasks(tt);
 
 		timeout = next_timer(NULL);

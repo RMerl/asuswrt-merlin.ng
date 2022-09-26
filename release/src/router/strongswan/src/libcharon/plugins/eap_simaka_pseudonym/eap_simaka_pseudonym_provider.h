@@ -18,8 +18,8 @@
  * @{ @ingroup eap_simaka_pseudonym
  */
 
-#ifndef EAP_SIMAKA_PSEDUONYM_PROVIDER_H_
-#define EAP_SIMAKA_PSEDUONYM_PROVIDER_H_
+#ifndef EAP_SIMAKA_PSEUDONYM_PROVIDER_H_
+#define EAP_SIMAKA_PSEUDONYM_PROVIDER_H_
 
 #include <simaka_provider.h>
 
@@ -46,4 +46,4 @@ struct eap_simaka_pseudonym_provider_t {
  */
 eap_simaka_pseudonym_provider_t *eap_simaka_pseudonym_provider_create();
 
-#endif /** EAP_SIMAKA_PSEDUONYM_PROVIDER_H_ @}*/
+#endif /** EAP_SIMAKA_PSEUDONYM_PROVIDER_H_ @}*/

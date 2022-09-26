@@ -190,6 +190,7 @@ bool signature_params_parse(chunk_t asn1, int level0,
 
 	oid = asn1_parse_algorithmIdentifier(asn1, level0, &parameters);
 	params->scheme = signature_scheme_from_oid(oid);
+	params->params = NULL;
 	switch (params->scheme)
 	{
 		case SIGN_UNKNOWN:
@@ -208,7 +209,13 @@ bool signature_params_parse(chunk_t asn1, int level0,
 			break;
 		}
 		default:
-			params->params = NULL;
+			if (parameters.len &&
+				!chunk_equals(parameters, chunk_from_chars(0x05, 0x00)))
+			{
+				DBG1(DBG_IKE, "unexpected parameters for %N",
+					 signature_scheme_names, params->scheme);
+				return FALSE;
+			}
 			break;
 	}
 	return TRUE;
@@ -322,7 +329,11 @@ bool rsa_pss_params_parse(chunk_t asn1, int level0, rsa_pss_params_t *params)
 			case RSASSA_PSS_PARAMS_SALT_LEN:
 				if (object.len)
 				{
-					params->salt_len = (size_t)asn1_parse_integer_uint64(object);
+					params->salt_len = (ssize_t)asn1_parse_integer_uint64(object);
+					if (params->salt_len < 0)
+					{
+						goto end;
+					}
 				}
 				break;
 			case RSASSA_PSS_PARAMS_TRAILER:

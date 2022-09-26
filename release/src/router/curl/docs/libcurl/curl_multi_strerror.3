@@ -5,7 +5,7 @@
 .\" *                            | (__| |_| |  _ <| |___
 .\" *                             \___|\___/|_| \_\_____|
 .\" *
-.\" * Copyright (C) 1998 - 2020, Daniel Stenberg, <daniel@haxx.se>, et al.
+.\" * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
 .\" *
 .\" * This software is licensed as described in the file COPYING, which
 .\" * you should have received as part of this distribution. The terms
@@ -18,8 +18,10 @@
 .\" * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
 .\" * KIND, either express or implied.
 .\" *
+.\" * SPDX-License-Identifier: curl
+.\" *
 .\" **************************************************************************
-.TH curl_multi_strerror 3 "November 04, 2020" "libcurl 7.79.1" "libcurl Manual"
+.TH curl_multi_strerror 3 "May 17, 2022" "libcurl 7.84.0" "libcurl Manual"
 
 .SH NAME
 curl_multi_strerror - return string describing error code
@@ -30,9 +32,18 @@ curl_multi_strerror - return string describing error code
 .SH DESCRIPTION
 The curl_multi_strerror() function returns a string describing the CURLMcode
 error code passed in the argument \fIerrornum\fP.
+.SH EXAMPLE
+.nf
+int still_running;
+
+CURLMcode mc = curl_multi_perform(multi_handle, &still_running);
+if(mc)
+  printf("error: %s\\n", curl_multi_strerror(mc));
+.fi
 .SH AVAILABILITY
 This function was added in libcurl 7.12.0
 .SH RETURN VALUE
 A pointer to a null-terminated string.
 .SH "SEE ALSO"
-.BR libcurl-errors "(3), " curl_easy_strerror "(3), " curl_share_strerror "(3)"
+.BR libcurl-errors "(3), " curl_easy_strerror "(3), "
+.BR curl_share_strerror "(3), " curl_url_strerror "(3)"

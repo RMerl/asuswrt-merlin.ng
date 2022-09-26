@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2008 Martin Willi
- * Copyright (C) 2016 Andreas Steffen
+ * Copyright (C) 2016-2019 Andreas Steffen
  * HSR Hochschule fuer Technik Rapperswil
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -160,6 +160,8 @@ enum builder_part_t {
 	BUILD_EDDSA_PUB,
 	/** DER encoded ASN.1 EdDSA private key */
 	BUILD_EDDSA_PRIV_ASN1_DER,
+	/** OID of an [unsupported] critical extension */
+	BUILD_CRITICAL_EXTENSION,
 	/** end of variable argument builder list */
 	BUILD_END,
 };

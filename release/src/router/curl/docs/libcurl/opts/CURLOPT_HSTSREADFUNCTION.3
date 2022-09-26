@@ -5,7 +5,7 @@
 .\" *                            | (__| |_| |  _ <| |___
 .\" *                             \___|\___/|_| \_\_____|
 .\" *
-.\" * Copyright (C) 1998 - 2021, Daniel Stenberg, <daniel@haxx.se>, et al.
+.\" * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
 .\" *
 .\" * This software is licensed as described in the file COPYING, which
 .\" * you should have received as part of this distribution. The terms
@@ -18,18 +18,29 @@
 .\" * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
 .\" * KIND, either express or implied.
 .\" *
+.\" * SPDX-License-Identifier: curl
+.\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_HSTSREADFUNCTION 3 "September 16, 2021" "libcurl 7.79.1" "curl_easy_setopt options"
+.TH CURLOPT_HSTSREADFUNCTION 3 "May 17, 2022" "libcurl 7.84.0" "curl_easy_setopt options"
 
 .SH NAME
 CURLOPT_HSTSREADFUNCTION \- read callback for HSTS hosts
 .SH SYNOPSIS
+.nf
 #include <curl/curl.h>
+
+struct curl_hstsentry {
+  char *name;
+  size_t namelen;
+  unsigned int includeSubDomains:1;
+  char expire[18]; /* YYYYMMDD HH:MM:SS [null-terminated] */
+};
 
 CURLSTScode hstsread(CURL *easy, struct curl_hstsentry *sts, void *userp);
 
 CURLcode curl_easy_setopt(CURL *handle, CURLOPT_HSTSREADFUNCTION, hstsread);
+.fi
 .SH DESCRIPTION
 Pass a pointer to your callback function, as the prototype shows above.
 
@@ -51,7 +62,7 @@ no entry to return. It can also return \fICURLSTS_FAIL\fP to signal
 error. Returning \fICURLSTS_FAIL\fP will stop the transfer from being
 performed and make \fICURLE_ABORTED_BY_CALLBACK\fP get returned.
 
-This option doesn't enable HSTS, you need to use \fICURLOPT_HSTS_CTRL(3)\fP to
+This option does not enable HSTS, you need to use \fICURLOPT_HSTS_CTRL(3)\fP to
 do that.
 .SH DEFAULT
 NULL - no callback.

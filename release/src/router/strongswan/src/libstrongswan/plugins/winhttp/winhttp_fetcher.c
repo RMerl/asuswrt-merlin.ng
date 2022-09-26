@@ -165,7 +165,7 @@ static bool read_result(private_winhttp_fetcher_t *this, HINTERNET request,
 		}
 		if (!this->cb(user, chunk_create(buf, received)))
 		{
-			DBG1(DBG_LIB, "processing response failed or cancelled");
+			DBG1(DBG_LIB, "processing response failed or canceled");
 			return FALSE;
 		}
 	}

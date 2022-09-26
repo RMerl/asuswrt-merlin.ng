@@ -1,4 +1,4 @@
-.TH "PKI \-\-ISSUE" 1 "2016-12-13" "@PACKAGE_VERSION@" "strongSwan"
+.TH "PKI \-\-ISSUE" 1 "2019-05-06" "@PACKAGE_VERSION@" "strongSwan"
 .
 .SH "NAME"
 .
@@ -24,9 +24,10 @@ pki \-\-issue \- Issue a certificate using a CA certificate and key
 .OP \-\-crl uri\ \fR[\fB\-\-crlissuer\ \fIissuer\fR]
 .OP \-\-ocsp uri
 .OP \-\-pathlen len
-.OP \-\-nc-permitted name
 .OP \-\-addrblock block
+.OP \-\-nc-permitted name
 .OP \-\-nc-excluded name
+.OP \-\-critical oid
 .OP \-\-policy\-mapping mapping
 .OP \-\-policy\-explicit len
 .OP \-\-policy\-inhibit len
@@ -71,8 +72,9 @@ key/request is read from \fISTDIN\fR.
 .BI "\-t, \-\-type " type
 Type of the input. One of \fIpub\fR (public key), \fIpriv\fR (private key),
 \fIrsa\fR (RSA private key), \fIecdsa\fR (ECDSA private key),
-\fIed25519\fR (Ed25519 private key) \fIbliss\fR (BLISS private key) or
-\fIpkcs10\fR (PKCS#10 certificate request), defaults to \fIpub\fR.
+\fIed25519\fR (Ed25519 private key), \fIed448\fR (Ed448 private key),
+\fIbliss\fR (BLISS private key) or \fIpkcs10\fR (PKCS#10 certificate request),
+defaults to \fIpub\fR.
 .TP
 .BI "\-k, \-\-cakey " file
 CA private key file. Either this or
@@ -180,6 +182,9 @@ the
 or
 .B email:
 prefix to force a constraint type.
+.TP
+.BI "\-X, \-\-critical " oid
+Add a critical extension with the given OID.
 .TP
 .BI "\-M, \-\-policy-mapping " issuer-oid:subject-oid
 Add policyMapping from issuer to subject OID.

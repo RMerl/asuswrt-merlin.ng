@@ -105,7 +105,7 @@ METHOD(private_key_t, sign, bool,
 
 METHOD(private_key_t, decrypt, bool,
 	private_tpm_private_key_t *this, encryption_scheme_t scheme,
-	chunk_t crypt, chunk_t *plain)
+	void *params, chunk_t crypt, chunk_t *plain)
 {
 	return FALSE;
 }

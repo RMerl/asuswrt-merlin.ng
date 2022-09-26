@@ -1,0 +1,3 @@
+charon.plugins.drbg.max_drbg_requests = 4294967294
+	Number of pseudo-random bit requests from the DRBG before an automatic
+	reseeding occurs.

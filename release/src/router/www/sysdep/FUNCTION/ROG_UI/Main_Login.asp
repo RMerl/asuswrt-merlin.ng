@@ -106,6 +106,14 @@ body{
 	justify-content: center;
 	margin: 0 0 20px 0;
 }
+.warming_desc{
+	margin:0px 30px 0px 185px;
+	font-size: 14px;
+	align-items: center;
+	color:#FC0;
+	line-height:20px;
+	width: 520px;
+}
 .error-hint-bg{
 	width: 537px;
 	height: 70px;
@@ -386,7 +394,7 @@ function isSupport(_ptn){
 var odm_support = isSupport("odm");
 var captcha_support = isSupport("captcha");
 if(captcha_support)
-	var captcha_on = (login_info.error_num >= 2 && login_info.error_status != "7")? true : false;
+	var captcha_on = (login_info.error_num >= 2 && login_info.error_status != "7" && login_info.error_status != "11")? true : false;
 else
 	var captcha_on = false;
 
@@ -409,6 +417,11 @@ function initial(){
 	if(isIE8 || isIE9){
 		document.getElementById("name_title_ie").style.display ="";
 		document.getElementById("password_title_ie").style.display ="";
+	}
+
+	if(flag != 11 && login_info.last_time_lock_warning){
+		document.getElementById("last_time_lock_warning").style.display ="";
+		document.getElementById("last_time_lock_warning").innerHTML ="You have entered an incorrect username or password 9 times. If there's one more failed account or password attempt, your router will be blocked from accessing, and need to be reset to factory setting.";
 	}
 
 	if(flag != ""){
@@ -473,6 +486,12 @@ function initial(){
 		else if(flag == 10){
 			document.getElementById("error_status_field").style.display ="none";
 			document.getElementById("error_captcha_field").style.display ="";
+		}
+		else if(flag == 11){
+			document.getElementById("error_status_field").innerHTML ="You have entered an incorrect username or password 10 times. For security reasons, please manually reset your router to factory settings by pressing the reset button on the back.";
+			document.getElementById("error_status_field").className = "error_hint error_hint1";
+			disable_input(1);
+			disable_button(1);
 		}
 		else{
 			document.getElementById("error_status_field").style.display ="none";
@@ -622,7 +641,7 @@ function login(){
 			|| redirect_page.indexOf(" ") != -1 
 			|| redirect_page.indexOf("//") != -1 
 			|| redirect_page.indexOf("http") != -1
-			|| (redirect_page.indexOf(".asp") == -1 && redirect_page.indexOf(".htm") == -1 && redirect_page != "send_IFTTTPincode.cgi" && redirect_page != "cfg_onboarding.cgi")
+			|| (redirect_page.indexOf(".asp") == -1 && redirect_page.indexOf(".htm") == -1 && redirect_page != "send_IFTTTPincode.cgi" && redirect_page != "cfg_onboarding.cgi" && redirect_page != "enable_ig_s2s_client.cgi")
 		){
 			document.form.next_page.value = "";
 		}
@@ -701,6 +720,7 @@ function regen_captcha(){
 					<div class="input-container">
 						<input type="password" name="login_passwd" tabindex="2" class="form-input" maxlength="200" placeholder="<#HSDPAConfig_Password_itemname#>" autocapitalize="off" autocomplete="off">
 					</div>
+					<div class="warming_desc" style="display:none;" id="last_time_lock_warning"></div>
 					<div id="error_status_field" class="error-hint-bg" style="display: none;" ></div>
 					<div class="input-container">
 						<div id="captcha_field" style="display: none;">

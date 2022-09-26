@@ -31,7 +31,7 @@
  */
 
 /**
- * SW_RESPONSE_TOO_LARGE_ERROR 
+ * SW_RESPONSE_TOO_LARGE_ERROR
  *
  *                       1                   2                   3
  *   0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1

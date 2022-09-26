@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2014 Tobias Brunner
+ * Copyright (C) 2012-2020 Tobias Brunner
  * Copyright (C) 2005-2010 Martin Willi
  * Copyright (C) 2005 Jan Hutter
  * HSR Hochschule fuer Technik Rapperswil
@@ -404,16 +404,22 @@ METHOD(sa_payload_t, create_substructure_enumerator, enumerator_t*,
 }
 
 METHOD(sa_payload_t, get_lifetime, uint32_t,
-	private_sa_payload_t *this)
+	private_sa_payload_t *this, proposal_t *proposal)
 {
 	proposal_substructure_t *substruct;
 	enumerator_t *enumerator;
+	uint8_t number = proposal->get_number(proposal);
 	uint32_t lifetime = 0;
 
 	enumerator = this->proposals->create_enumerator(this->proposals);
-	if (enumerator->enumerate(enumerator, &substruct))
+	while (enumerator->enumerate(enumerator, &substruct))
 	{
-		lifetime = substruct->get_lifetime(substruct);
+		if (substruct->get_proposal_number(substruct) == number)
+		{
+			lifetime = substruct->get_lifetime(substruct,
+									proposal->get_transform_number(proposal));
+			break;
+		}
 	}
 	enumerator->destroy(enumerator);
 
@@ -421,16 +427,22 @@ METHOD(sa_payload_t, get_lifetime, uint32_t,
 }
 
 METHOD(sa_payload_t, get_lifebytes, uint64_t,
-	private_sa_payload_t *this)
+	private_sa_payload_t *this, proposal_t *proposal)
 {
 	proposal_substructure_t *substruct;
 	enumerator_t *enumerator;
+	uint8_t number = proposal->get_number(proposal);
 	uint64_t lifebytes = 0;
 
 	enumerator = this->proposals->create_enumerator(this->proposals);
-	if (enumerator->enumerate(enumerator, &substruct))
+	while (enumerator->enumerate(enumerator, &substruct))
 	{
-		lifebytes = substruct->get_lifebytes(substruct);
+		if (substruct->get_proposal_number(substruct) == number)
+		{
+			lifebytes = substruct->get_lifebytes(substruct,
+									proposal->get_transform_number(proposal));
+			break;
+		}
 	}
 	enumerator->destroy(enumerator);
 

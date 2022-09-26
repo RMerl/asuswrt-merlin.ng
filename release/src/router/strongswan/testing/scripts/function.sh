@@ -183,21 +183,21 @@ running_any()
 
 function searchandreplace {
 
-    SEARCHSTRING="$1"
-    REPLACESTRING="$2"
-    DESTDIR="$3"
+	SEARCHSTRING="$1"
+	REPLACESTRING="$2"
+	DESTDIR="$3"
 
-    [ -d "$DESTDIR" ] || die "$DESTDIR is not a directory!"
+	[ -d "$DESTDIR" ] || die "$DESTDIR is not a directory!"
 
 
-    ###########################################
-    # search and replace in each found file the
-    # given string
-    #
+	###########################################
+	# search and replace in each found file the
+	# given string
+	#
 
-    for eachfoundfile in `find $DESTDIR -type f`
-    do
-        sed -i -e "s/$SEARCHSTRING/$REPLACESTRING/g" "$eachfoundfile"
-    done
+	for eachfoundfile in `find $DESTDIR -type f`
+	do
+		sed -i -e "s/$SEARCHSTRING/$REPLACESTRING/g" "$eachfoundfile"
+	done
 
 }

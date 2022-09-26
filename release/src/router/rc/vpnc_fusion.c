@@ -44,8 +44,7 @@
 #include <openvpn_config.h>
 #include <openvpn_utils.h>
 
-#include "vpnc_fusion.h"
-
+#include <vpn_utils.h>
 
 VPNC_PROFILE vpnc_profile[MAX_VPNC_PROFILE] = {{0}};
 
@@ -57,16 +56,19 @@ static int vpnc_get_dev_policy_list(VPNC_DEV_POLICY *list, const int list_size, 
 int vpnc_set_policy_by_ifname(const char *vpnc_ifname, const int action);
 int stop_vpnc_by_unit(const int unit);
 int set_routing_table(const int cmd, const int vpnc_id);
-#if 1
 static void vpnc_dump_vpnc_profile(const VPNC_PROFILE *profile);
-#endif
-static VPNC_PROFILE* vpnc_get_profile_by_vpnc_id(VPNC_PROFILE *list, const int list_size, const int vpnc_id);
+static VPNC_PROFILE *vpnc_get_profile_by_vpnc_id(VPNC_PROFILE *list, const int list_size, const int vpnc_id);
 static VPNC_PROTO vpnc_get_proto_in_profile_by_vpnc_id(const int vpnc_id);
 int set_default_routing_table(const VPNC_ROUTE_CMD cmd, const int table_id);
-int set_routing_rule(const VPNC_ROUTE_CMD cmd, const char *source_ip, const int vpnc_id);
+int set_routing_rule(const VPNC_ROUTE_CMD cmd, const VPNC_DEV_POLICY *policy);
 int clean_routing_rule_by_vpnc_idx(const int vpnc_idx);
 int clean_vpnc_setting_value(const int vpnc_idx);
 int get_vpnc_state(const int vpnc_idx);
+int vpnc_update_resolvconf(const int unit);
+
+char vpnc_resolv_path[] = "/tmp/resolv.vpnc%d";
+static int _set_network_routing_rule(const VPNC_ROUTE_CMD cmd, const int vpnc_idx);
+static int _gen_vpnc_resolv_conf(const int vpnc_idx);
 
 int vpnc_pppstatus(const int unit)
 {
@@ -76,33 +78,31 @@ int vpnc_pppstatus(const int unit)
 	return _pppstatus(statusfile);
 }
 
-int
-start_vpnc(void)	//start up all active vpnc profile
+int start_vpnc(void) // start up all active vpnc profile
 {
 	int i;
 
-	//init vpnc profile
+	// init vpnc profile
 	vpnc_init();
 
-	for(i = 0; i < vpnc_profile_num; ++i)
+	for (i = 0; i < vpnc_profile_num; ++i)
 	{
-		if(vpnc_profile[i].active)
+		if (vpnc_profile[i].active)
 			start_vpnc_by_unit(i);
 	}
 	return 0;
 }
 
-void
-stop_vpnc(void)	//start up all active vpnc profile
+void stop_vpnc(void) // start up all active vpnc profile
 {
 	int i;
 
-	//init vpnc profile
+	// init vpnc profile
 	vpnc_init();
 
-	for(i = 0; i < vpnc_profile_num; ++i)
+	for (i = 0; i < vpnc_profile_num; ++i)
 	{
-		if(vpnc_profile[i].active)
+		if (vpnc_profile[i].active)
 			stop_vpnc_by_unit(i);
 	}
 
@@ -110,24 +110,24 @@ stop_vpnc(void)	//start up all active vpnc profile
 }
 
 /*******************************************************************
-* NAME: change_default_wan_as_vpnc_updown
-* AUTHOR: Andy Chiu
-* CREATE DATE: 2017/1/24
-* DESCRIPTION: change the default wan when a vpn client connection established or lost.
-* INPUT:  unit: index of vpn client. up: 1: connected, 0:disconnected
-* OUTPUT:
-* RETURN:  0: success, -1:failed
-* NOTE:
-*******************************************************************/
+ * NAME: change_default_wan_as_vpnc_updown
+ * AUTHOR: Andy Chiu
+ * CREATE DATE: 2017/1/24
+ * DESCRIPTION: change the default wan when a vpn client connection established or lost.
+ * INPUT:  unit: index of vpn client. up: 1: connected, 0:disconnected
+ * OUTPUT:
+ * RETURN:  0: success, -1:failed
+ * NOTE:
+ *******************************************************************/
 int change_default_wan_as_vpnc_updown(const int unit, const int up)
 {
 	char tmp[100];
 
 	snprintf(tmp, sizeof(tmp), "%d", unit);
 
-	if(nvram_match("vpnc_default_wan", tmp))
+	if (nvram_match("vpnc_default_wan", tmp))
 	{
-		if(up)
+		if (up)
 			set_default_routing_table(VPNC_ROUTE_ADD, unit);
 		else
 			set_default_routing_table(VPNC_ROUTE_DEL, unit);
@@ -136,20 +136,20 @@ int change_default_wan_as_vpnc_updown(const int unit, const int up)
 }
 
 /*******************************************************************
-* NAME: change_default_wan
-* AUTHOR: Andy Chiu
-* CREATE DATE: 2017/1/24
-* DESCRIPTION: when web ui change default wan, call this function to handle default wan
-* INPUT:
-* OUTPUT:
-* RETURN:  0:success, -1:failed
-* NOTE:	2020/3/27, Andy Chiu. Add nvram commit to save the vhanged default wan value.
-*******************************************************************/
+ * NAME: change_default_wan
+ * AUTHOR: Andy Chiu
+ * CREATE DATE: 2017/1/24
+ * DESCRIPTION: when web ui change default wan, call this function to handle default wan
+ * INPUT:
+ * OUTPUT:
+ * RETURN:  0:success, -1:failed
+ * NOTE:	2020/3/27, Andy Chiu. Add nvram commit to save the vhanged default wan value.
+ *******************************************************************/
 int change_default_wan()
 {
 	int default_wan_new;
 
-	//get default_wan
+	// get default_wan
 	default_wan_new = nvram_get_int("vpnc_default_wan_tmp");
 
 #ifdef RTCONFIG_TUNNEL
@@ -162,13 +162,15 @@ int change_default_wan()
 
 	vpnc_update_resolvconf(default_wan_new);
 
+	nvram_set("vpnc_default_wan_tmp", "");
+
 	nvram_commit_x();
 	return 0;
 }
 
 int vpnc_ppp_linkunit(const char *linkname)
 {
-	if(!linkname)
+	if (!linkname)
 		return -1;
 	else if (strncmp(linkname, "vpn", 3))
 		return -1;
@@ -180,7 +182,7 @@ int vpnc_ppp_linkunit(const char *linkname)
 
 int vpnc_ppp_linkunit_by_ifname(const char *ifname)
 {
-	if(!ifname)
+	if (!ifname)
 		return -1;
 	else if (strncmp(ifname, "ppp", 3))
 		return -1;
@@ -190,7 +192,6 @@ int vpnc_ppp_linkunit_by_ifname(const char *ifname)
 		return atoi(ifname + 3);
 }
 
-
 void update_vpnc_state(const int vpnc_idx, const int state, const int reason)
 {
 	char tmp[100];
@@ -198,18 +199,20 @@ void update_vpnc_state(const int vpnc_idx, const int state, const int reason)
 
 	_dprintf("%s(%d, %d, %d)\n", __FUNCTION__, vpnc_idx, state, reason);
 
-	//create prefix
+	// create prefix
 	snprintf(prefix, sizeof(prefix), "vpnc%d_", vpnc_idx);
 
 	nvram_set_int(strlcat_r(prefix, "state_t", tmp, sizeof(tmp)), state);
 	nvram_set_int(strlcat_r(prefix, "sbstate_t", tmp, sizeof(tmp)), 0);
 
-	if (state == WAN_STATE_STOPPED) {
+	if (state == WAN_STATE_STOPPED)
+	{
 		// Save Stopped Reason
 		// keep ip info if it is stopped from connected
 		nvram_set_int(strlcat_r(prefix, "sbstate_t", tmp, sizeof(tmp)), reason);
 	}
-	else if(state == WAN_STATE_STOPPING) {
+	else if (state == WAN_STATE_STOPPING)
+	{
 		snprintf(tmp, sizeof(tmp), "/var/run/ppp-vpn%d.status", vpnc_idx);
 		unlink(tmp);
 	}
@@ -225,10 +228,10 @@ void update_ovpn_vpnc_state(const int vpnc_idx, const int state, const int reaso
 
 	prof = vpnc_get_profile_by_vpnc_id(vpnc_profile, MAX_VPNC_PROFILE, vpnc_idx);
 
-	if(prof && prof->protocol == VPNC_PROTO_OVPN)
+	if (prof && prof->protocol == VPNC_PROTO_OVPN)
 	{
-		snprintf(prefix , sizeof(prefix), "vpn_client%d_", prof->config.ovpn.ovpn_idx);
-		if(state == WAN_STATE_STOPPED && reason == WAN_STOPPED_REASON_IPGATEWAY_CONFLICT)
+		snprintf(prefix, sizeof(prefix), "vpn_client%d_", prof->config.ovpn.ovpn_idx);
+		if (state == WAN_STATE_STOPPED && reason == WAN_STOPPED_REASON_IPGATEWAY_CONFLICT)
 		{
 			nvram_set_int(strlcat_r(prefix, "state", tmp, sizeof(tmp)), OVPN_STS_ERROR);
 			nvram_set_int(strlcat_r(prefix, "errno", tmp, sizeof(tmp)), OVPN_ERRNO_ROUTE);
@@ -236,23 +239,24 @@ void update_ovpn_vpnc_state(const int vpnc_idx, const int state, const int reaso
 	}
 }
 
-
-//Andy Chiu, 2019/12/27. Only the DNS setting of default WAN could be set in resolve.dnsmasq.
-//Don't modify resolve.conf.
-//If the default WAN does not include dns, copy resolve.conf to resolve.dnsmasq.
+// Andy Chiu, 2019/12/27. Only the DNS setting of default WAN could be set in resolve.dnsmasq.
+// Don't modify resolve.conf.
+// If the default WAN does not include dns, copy resolve.conf to resolve.dnsmasq.
 int vpnc_update_resolvconf(const int unit)
 {
 	FILE *fp = NULL, *fp_servers = NULL;
-	char tmp[100], prefix[sizeof("vpncXXXXXXXXXX_")], *p;
+	char tmp[100], prefix[sizeof("vpncXXXXXXXXXX_")];
 	char *wan_dns, *next;
 	int lock, reload_dns = 0;
 
-	//only default WAN need to be handled.
-	if(nvram_get_int("vpnc_default_wan") == unit)
+	_gen_vpnc_resolv_conf(unit);
+
+	// only default WAN need to be handled.
+	if (nvram_get_int("vpnc_default_wan") == unit)
 	{
-		//get dns setting
+		// get dns setting
 		snprintf(prefix, sizeof(prefix), "vpnc%d_", unit);
-		wan_dns = nvram_safe_get(strcat_r(prefix, "dns", tmp));
+		wan_dns = nvram_safe_get(strlcat_r(prefix, "dns", tmp, sizeof(tmp)));
 
 #ifdef RTCONFIG_YANDEXDNS
 		int yadns_mode = nvram_get_int("yadns_enable_x") ? nvram_get_int("yadns_mode") : YADNS_DISABLED;
@@ -263,43 +267,48 @@ int vpnc_update_resolvconf(const int unit)
 
 		lock = file_lock("resolv");
 #ifdef RTCONFIG_YANDEXDNS
-		if (yadns_mode != YADNS_DISABLED) {
+		if (yadns_mode != YADNS_DISABLED)
+		{
 			/* keep yandex.dns servers */
 			fp_servers = NULL;
-		} else
+		}
+		else
 #endif
 #ifdef RTCONFIG_DNSPRIVACY
-		if (dnspriv_enable) {
+			if (dnspriv_enable)
+		{
 			/* keep dns privacy servers */
 			fp_servers = NULL;
-		} else
+		}
+		else
 #endif
-		if(!(fp_servers = fopen("/tmp/resolv.dnsmasq", "w+"))) {
+			if (!(fp_servers = fopen("/tmp/resolv.dnsmasq", "w+")))
+		{
 			perror("/tmp/resolv.dnsmasq");
 			file_unlock(lock);
 			return -1;
 		}
 
-		if(fp_servers)
+		if (fp_servers)
 		{
-			if(wan_dns[0] != '\0')	//write dns setting of VPN client to resolv.dnsmasq
+			if (wan_dns[0] != '\0') // write dns setting of VPN client to resolv.dnsmasq
 			{
-				foreach(tmp, wan_dns, next)
+				foreach (tmp, wan_dns, next)
 				{
 					fprintf(fp_servers, "server=%s\n", tmp);
 				}
 				reload_dns = 1;
 			}
-			else	//write resolv.conf to resolv.dnsmasq
+			else // write resolv.conf to resolv.dnsmasq
 			{
 				fp = fopen("/tmp/resolv.conf", "r");
-				if(fp)
+				if (fp)
 				{
-					while(fgets(tmp, sizeof(tmp), fp))
+					while (fgets(tmp, sizeof(tmp), fp))
 					{
-						if(!strncmp(tmp, "nameserver ", 11))
+						if (!strncmp(tmp, "nameserver ", 11))
 						{
-							if(tmp[strlen(tmp) - 1] == '\n')
+							if (tmp[strlen(tmp) - 1] == '\n')
 								tmp[strlen(tmp) - 1] = '\0';
 							fprintf(fp_servers, "server=%s\n", tmp + 11);
 						}
@@ -312,80 +321,35 @@ int vpnc_update_resolvconf(const int unit)
 		}
 
 		file_unlock(lock);
-		if(reload_dns)
+		if (reload_dns)
 			reload_dnsmasq();
 		return 0;
 	}
 	return 0;
 }
 
-void vpnc_add_firewall_rule(const int unit, const char *vpnc_ifname)
-{
-	char tmp[100], vpnc_prefix[] = "vpncXXXX_", wan_prefix[] = "wanXXXXXXXXXX_";
-	char *wan_proto = NULL;
-	char lan_if[IFNAMSIZ+1];
-
-	if(!vpnc_ifname)
-		return;
-
-	//generate prefix, vpncX_
-	snprintf(vpnc_prefix, sizeof(vpnc_prefix), "vpnc%d_", unit);
-
-	//get lan interface name
-	snprintf(lan_if, sizeof(lan_if), "%s", nvram_safe_get("lan_ifname"));
-
-	if (check_if_file_exist(strlcat_r("/tmp/ppp/link.", vpnc_ifname, tmp, sizeof(tmp))))
-	{
-		snprintf(wan_prefix, sizeof(wan_prefix), "wan%d_", wan_primary_ifunit());
-		wan_proto = nvram_safe_get(strlcat_r(wan_prefix, "proto", tmp, sizeof(tmp)));
-		if (!strcmp(wan_proto, "dhcp") || !strcmp(wan_proto, "static"))
-			//eval("iptables", "-I", "FORWARD", "-p", "tcp", "--syn", "-j", "TCPMSS", "--clamp-mss-to-pmtu");
-			eval("iptables", "-I", "FORWARD", "-p", "tcp", "--tcp-flags", "SYN,RST", "SYN", "-j", "TCPMSS", "--clamp-mss-to-pmtu");
-#ifdef RTCONFIG_BCMARM
-		else	/* mark tcp connection to bypass CTF */
-#ifdef HND_ROUTER
-			if (nvram_match("fc_disable", "0") && nvram_match("fc_pt_war", "1"))
-#else
-			if (nvram_match("ctf_disable", "0"))
-#endif
-			eval("iptables", "-t", "mangle", "-A", "FORWARD", "-p", "tcp",
-				"-m", "state", "--state", "NEW","-j", "MARK", "--set-mark", "0x01/0x7");
-#endif
-
-		eval("iptables", "-A", "FORWARD", "-o", (char*)vpnc_ifname, "!", "-i", lan_if, "-j", "DROP");
-		eval("iptables", "-t", "nat", "-I", "PREROUTING", "-d",
-			nvram_safe_get(strlcat_r(vpnc_prefix, "ipaddr", tmp, sizeof(tmp))), "-j", "VSERVER");
-		eval("iptables", "-t", "nat", "-I", "POSTROUTING", "-o",
-			(char*)vpnc_ifname, "!", "-s", nvram_safe_get(strlcat_r(vpnc_prefix, "ipaddr", tmp, sizeof(tmp))), "-j", "MASQUERADE");
-
-	}
-	//Add dev policy
-	vpnc_set_policy_by_ifname(vpnc_ifname, 1);
-}
-
-int
-vpnc_up(const int unit, const char *vpnc_ifname)
+int vpnc_up(const int unit, const char *vpnc_ifname)
 {
 	char tmp[100], wan_prefix[] = "wanXXXXXXXXXX_", vpnc_prefix[] = "vpncXXXX_";
 	struct in_addr wan_ip, lan_ip, netmask;
 
-	if(!vpnc_ifname)
+	if (!vpnc_ifname)
 		return -1;
 
-	_dprintf("[%s, %d]unit=%d, vpnc_ifname=%s\n", __FUNCTION__, __LINE__, unit, vpnc_ifname);
+	_dprintf("[%s]unit=%d, vpnc_ifname=%s\n", __FUNCTION__, unit, vpnc_ifname);
 
-	//get vpnc_prefix and wan_prefix
+	// get vpnc_prefix and wan_prefix
 	snprintf(vpnc_prefix, sizeof(vpnc_prefix), "vpnc%d_", unit);
 	snprintf(wan_prefix, sizeof(wan_prefix), "wan%d_", wan_primary_ifunit());
 
-	//check ip conflict
-	_dprintf("[%s, %d]wan_ip=%s\n", __FUNCTION__, __LINE__, nvram_safe_get(strlcat_r(vpnc_prefix, "ipaddr", tmp, sizeof(tmp))));
+	// check ip conflict
+	_dprintf("[%s]vpnc_ip=%s\n", __FUNCTION__, nvram_safe_get(strlcat_r(vpnc_prefix, "ipaddr", tmp, sizeof(tmp))));
 	inet_aton(nvram_safe_get(strlcat_r(vpnc_prefix, "ipaddr", tmp, sizeof(tmp))), &wan_ip);
 	inet_aton(nvram_safe_get("lan_ipaddr"), &lan_ip);
 	inet_aton(nvram_safe_get("lan_netmask"), &netmask);
 
-	_dprintf("[%s, %d]wan_ip=%x, lan_ip=%x, lan_netmask=%x\n", __FUNCTION__, __LINE__, wan_ip.s_addr, lan_ip.s_addr, netmask.s_addr);
-	if((wan_ip.s_addr & netmask.s_addr) == (lan_ip.s_addr & netmask.s_addr))
+	//_dprintf("[%s, %d]wan_ip=%x, lan_ip=%x, lan_netmask=%x\n", __FUNCTION__, __LINE__, wan_ip.s_addr, lan_ip.s_addr, netmask.s_addr);
+	if ((wan_ip.s_addr & netmask.s_addr) == (lan_ip.s_addr & netmask.s_addr))
 	{
 		_dprintf("%s: ip conflict\n", __FUNCTION__);
 		update_vpnc_state(unit, WAN_STATE_STOPPED, WAN_STOPPED_REASON_IPGATEWAY_CONFLICT);
@@ -394,25 +358,29 @@ vpnc_up(const int unit, const char *vpnc_ifname)
 	}
 
 	/* Add dns servers to resolv.conf */
-	if (nvram_invmatch(strcat_r(vpnc_prefix, "dns", tmp), ""))
+	if (nvram_invmatch(strlcat_r(vpnc_prefix, "dns", tmp, sizeof(tmp)), ""))
 		vpnc_update_resolvconf(unit);
-
-	/* Add firewall rules for VPN client */
-	vpnc_add_firewall_rule(unit, vpnc_ifname);
 
 	update_vpnc_state(unit, WAN_STATE_CONNECTED, 0);
 
-        set_policy_dns_iptables_rules();
+	/* Add firewall rules for VPN client */
+	// vpnc_add_firewall_rule(unit, vpnc_ifname);
+	start_firewall(wan_primary_ifunit(), 0);
+	vpnc_set_policy_by_ifname(vpnc_ifname, 1);
+
+	_set_network_routing_rule(VPNC_ROUTE_ADD, unit);
+
+	// set up default wan
+	change_default_wan_as_vpnc_updown(unit, 1);
 	return 0;
 }
 
-int
-vpnc_ipup_main(int argc, char **argv)
+int vpnc_ipup_main(int argc, char **argv)
 {
 	FILE *fp;
 	char *vpnc_ifname = safe_getenv("IFNAME");
 	char *vpnc_linkname = safe_getenv("LINKNAME");
-	char tmp[100], vpnc_prefix[] ="vpncXXXX_";
+	char tmp[100], vpnc_prefix[] = "vpncXXXX_";
 	char buf[256], *value;
 	int unit;
 
@@ -427,18 +395,20 @@ vpnc_ipup_main(int argc, char **argv)
 	_dprintf("%s: unit=%d ifname=%s\n", __FUNCTION__, unit, vpnc_ifname);
 
 	/* Touch connection file */
-	if (!(fp = fopen(strlcat_r("/tmp/ppp/link.", vpnc_ifname, tmp, sizeof(tmp)), "a"))) {
+	if (!(fp = fopen(strlcat_r("/tmp/ppp/link.", vpnc_ifname, tmp, sizeof(tmp)), "a")))
+	{
 		perror(tmp);
 		return errno;
 	}
 	fclose(fp);
 
-	if ((value = getenv("IPLOCAL"))) {
+	if ((value = getenv("IPLOCAL")))
+	{
 		if (nvram_invmatch(strlcat_r(vpnc_prefix, "ipaddr", tmp, sizeof(tmp)), value))
 			ifconfig(vpnc_ifname, IFUP, "0.0.0.0", NULL);
 		_ifconfig(vpnc_ifname, IFUP, value, "255.255.255.255", getenv("IPREMOTE"), 0);
 		nvram_set(strlcat_r(vpnc_prefix, "ipaddr", tmp, sizeof(tmp)), value);
-		//nvram_set(strlcat_r(vpnc_prefix, "netmask", tmp, sizeof(tmp)), "255.255.255.255");
+		// nvram_set(strlcat_r(vpnc_prefix, "netmask", tmp, sizeof(tmp)), "255.255.255.255");
 	}
 
 	if ((value = getenv("IPREMOTE")))
@@ -456,87 +426,40 @@ vpnc_ipup_main(int argc, char **argv)
 	// load vpnc profile list
 	vpnc_init();
 
-	if(!vpnc_up(unit, vpnc_ifname))
+	if (!vpnc_up(unit, vpnc_ifname))
 	{
-		//add routing table
+		// add routing table
 		set_routing_table(1, unit);
-
-		//set up default wan
-		change_default_wan_as_vpnc_updown(unit, 1);
 	}
 
 	_dprintf("%s:: done\n", __FUNCTION__);
 	return 0;
 }
 
-void vpnc_del_firewall_rule(const int vpnc_idx, const char *vpnc_ifname)
+void vpnc_down(const int vpnc_idx, char *vpnc_ifname)
 {
-	char tmp[100], prefix[] = "vpncXXXX_", wan_prefix[] = "wanXXXXXXXXXX_";
-	char *wan_proto = NULL;
-	char lan_if[IFNAMSIZ+1];
-
-	if(!vpnc_ifname)
+	if (!vpnc_ifname)
 		return;
 
-	snprintf(prefix, sizeof(prefix), "vpnc%d_", vpnc_idx);
-
-	strcpy(lan_if, nvram_safe_get("lan_ifname"));
-
-	snprintf(wan_prefix, sizeof(wan_prefix), "wan%d_", wan_primary_ifunit());
-	wan_proto = nvram_safe_get(strlcat_r(wan_prefix, "proto", tmp, sizeof(tmp)));
-	if (!strcmp(wan_proto, "dhcp") || !strcmp(wan_proto, "static"))
-		//eval("iptables", "-D", "FORWARD", "-p", "tcp", "--syn", "-j", "TCPMSS", "--clamp-mss-to-pmtu");
-		eval("iptables", "-D", "FORWARD", "-p", "tcp", "--tcp-flags", "SYN,RST", "SYN", "-j", "TCPMSS", "--clamp-mss-to-pmtu");
-#ifdef RTCONFIG_BCMARM
-	else
-#ifdef HND_ROUTER
-		if (nvram_match("fc_disable", "0") && nvram_match("fc_pt_war", "1"))
-#else
-		if (nvram_match("ctf_disable", "0"))
-#endif
-		eval("iptables", "-t", "mangle", "-D", "FORWARD", "-p", "tcp",
-			"-m", "state", "--state", "NEW","-j", "MARK", "--set-mark", "0x01/0x7");
-#endif
-
-	eval("iptables", "-D", "FORWARD", "-o", (char*)vpnc_ifname, "!", "-i", lan_if, "-j", "DROP");
-	eval("iptables", "-t", "nat", "-D", "PREROUTING", "-d",
-		nvram_safe_get(strlcat_r(prefix, "ipaddr", tmp, sizeof(tmp))), "-j", "VSERVER");
-	eval("iptables", "-t", "nat", "-D", "POSTROUTING", "-o",
-		(char*)vpnc_ifname, "!", "-s", nvram_safe_get(strlcat_r(prefix, "ipaddr", tmp, sizeof(tmp))), "-j", "MASQUERADE");
-
-	//delete device policies
 	vpnc_set_policy_by_ifname(vpnc_ifname, 0);
+	start_firewall(wan_primary_ifunit(), 0);
+	_set_network_routing_rule(VPNC_ROUTE_DEL, vpnc_idx);
+	update_resolvconf();
 
-}
+	// clean routing rule
+	clean_routing_rule_by_vpnc_idx(vpnc_idx);
 
-void
-vpnc_down(const int vpnc_idx, char *vpnc_ifname)
-{
-	int unit, default_wan;
-	char tmp[100], vpnc_prefix[] = "vpncXXXX_", wan_prefix[] = "wanXXXXXXXXXX_";
-	char *wan_ifname = NULL, *wan_proto = NULL;
+	// set up default wan
+	change_default_wan_as_vpnc_updown(vpnc_idx, 0);
 
-	if(!vpnc_ifname)
-		return;
-
-	unit = vpnc_ppp_linkunit_by_ifname(vpnc_ifname);
-
-	if(unit == -1)
-		return;
-
-	/* Delete firewall rules for VPN client */
-	vpnc_del_firewall_rule(unit, vpnc_ifname);
-
-	//Andy Chiu, 2016/11/25. Delete iptables rule for device policy list.
-	//vpnc_set_policy_by_ifname(vpnc_ifname, 0);
-        set_policy_dns_iptables_rules();
+	// clean setting value.
+	clean_vpnc_setting_value(vpnc_idx);
 }
 
 /*
  * Called when link goes down
  */
-int
-vpnc_ipdown_main(int argc, char **argv)
+int vpnc_ipdown_main(int argc, char **argv)
 {
 	char *vpnc_ifname = safe_getenv("IFNAME");
 	char *vpnc_linkname = safe_getenv("LINKNAME");
@@ -559,22 +482,10 @@ vpnc_ipdown_main(int argc, char **argv)
 
 	vpnc_down(unit, vpnc_ifname);
 
-	/* Add dns servers to resolv.conf */
-	update_resolvconf();
-
 	unlink(strlcat_r("/tmp/ppp/link.", vpnc_ifname, tmp, sizeof(tmp)));
 
-	//clean routing rule
-	clean_routing_rule_by_vpnc_idx(unit);
-
-	//del routing table
+	// del routing table
 	set_routing_table(0, unit);
-
-	//set up default wan
-	change_default_wan_as_vpnc_updown(unit, 0);
-
-	//clean setting value
-	clean_vpnc_setting_value(unit);
 
 	_dprintf("%s:: done\n", __FUNCTION__);
 	return 0;
@@ -583,8 +494,7 @@ vpnc_ipdown_main(int argc, char **argv)
 /*
  * Called when interface comes up
  */
-int
-vpnc_ippreup_main(int argc, char **argv)
+int vpnc_ippreup_main(int argc, char **argv)
 {
 	char *vpnc_ifname = safe_getenv("IFNAME");
 	char *vpnc_linkname = safe_getenv("LINKNAME");
@@ -610,8 +520,7 @@ vpnc_ippreup_main(int argc, char **argv)
 /*
  * Called when link closing with auth fail
  */
-int
-vpnc_authfail_main(int argc, char **argv)
+int vpnc_authfail_main(int argc, char **argv)
 {
 	char *vpnc_ifname = safe_getenv("IFNAME");
 	char *vpnc_linkname = safe_getenv("LINKNAME");
@@ -633,23 +542,23 @@ vpnc_authfail_main(int argc, char **argv)
 }
 
 /*******************************************************************
-* NAME: _find_vpnc_idx_by_ovpn_unit
-* AUTHOR: Andy Chiu
-* CREATE DATE: 2017/2/23
-* DESCRIPTION: get vpnc_idx by ovpn unit
-* INPUT:  ovpn_unit: the unit of OpenVPN config
-* OUTPUT:
-* RETURN:  -1: not found. Otherwise, matched profile vpnc_idx
-* NOTE:
-*******************************************************************/
+ * NAME: _find_vpnc_idx_by_ovpn_unit
+ * AUTHOR: Andy Chiu
+ * CREATE DATE: 2017/2/23
+ * DESCRIPTION: get vpnc_idx by ovpn unit
+ * INPUT:  ovpn_unit: the unit of OpenVPN config
+ * OUTPUT:
+ * RETURN:  -1: not found. Otherwise, matched profile vpnc_idx
+ * NOTE:
+ *******************************************************************/
 static int _find_vpnc_idx_by_ovpn_unit(const int ovpn_unit)
 {
 	int i;
 	VPNC_PROFILE *prof;
-	for(i = 0; i < vpnc_profile_num; ++i)
+	for (i = 0; i < vpnc_profile_num; ++i)
 	{
 		prof = vpnc_profile + i;
-		if(prof->protocol == VPNC_PROTO_OVPN && prof->config.ovpn.ovpn_idx == ovpn_unit)
+		if (prof->protocol == VPNC_PROTO_OVPN && prof->config.ovpn.ovpn_idx == ovpn_unit)
 			return prof->vpnc_idx;
 	}
 	return -1;
@@ -659,10 +568,10 @@ int find_vpnc_idx_by_wgc_unit(int wgc_unit)
 {
 	int i;
 	VPNC_PROFILE *prof;
-	for(i = 0; i < vpnc_profile_num; ++i)
+	for (i = 0; i < vpnc_profile_num; ++i)
 	{
 		prof = vpnc_profile + i;
-		if(prof->protocol == VPNC_PROTO_WG && prof->config.wg.wg_idx == wgc_unit)
+		if (prof->protocol == VPNC_PROTO_WG && prof->config.wg.wg_idx == wgc_unit)
 			return prof->vpnc_idx;
 	}
 	return -1;
@@ -683,14 +592,15 @@ void vpnc_ovpn_set_dns(int ovpn_unit)
 	snprintf(path, sizeof(path), "/etc/openvpn/client%d/resolv.dnsmasq", ovpn_unit);
 
 	fp = fopen(path, "r");
-	if (!fp) {
+	if (!fp)
+	{
 		_dprintf("[%s] no %s file\n", __FUNCTION__, path);
 		return;
 	}
-	while(fgets(buf, sizeof(buf), fp) != NULL)
+	while (fgets(buf, sizeof(buf), fp) != NULL)
 	{
-		//e.g. server=1.1.1.1
-		if(sscanf (buf,"server=%15s", addr) != 1)
+		// e.g. server=1.1.1.1
+		if (sscanf(buf, "server=%15s", addr) != 1)
 		{
 			_dprintf("\n=====\nunknown %s\n=====\n", buf);
 			continue;
@@ -703,7 +613,7 @@ void vpnc_ovpn_set_dns(int ovpn_unit)
 		{
 			size = strlen(old) + strlen(addr) + 2;
 			new = malloc(size);
-			if(new)
+			if (new)
 			{
 				snprintf(new, size, "%s %s", old, addr);
 				nvram_set(nvname, new);
@@ -730,40 +640,38 @@ void vpnc_handle_dns_policy_rule(const VPNC_ROUTE_CMD cmd, const int vpnc_id)
 	char *vpn_dns, *next;
 
 	snprintf(nvname, sizeof(nvname), "vpnc%d_dns", vpnc_id);
-	snprintf(cmd_str, sizeof(cmd_str), "%s", (cmd == VPNC_ROUTE_DEL)? "del": "add");
+	snprintf(cmd_str, sizeof(cmd_str), "%s", (cmd == VPNC_ROUTE_DEL) ? "del" : "add");
 	snprintf(id_str, sizeof(id_str), "%d", vpnc_id);
 
 	vpn_dns = nvram_safe_get(nvname);
-	foreach(tmp, vpn_dns, next) {
+	foreach (tmp, vpn_dns, next)
+	{
 		//_dprintf("dns %s\n", tmp);
 		eval("ip", "rule", cmd_str, "from", "0/0", "to", tmp, "table", id_str, "priority", VPNC_RULE_PRIORITY);
 	}
 }
 
 /*******************************************************************
-* NAME: vpnc_ovpn_up_main
-* AUTHOR: Andy Chiu
-* CREATE DATE: 2017/2/22
-* DESCRIPTION: callback for openvpn
-* INPUT:
-* OUTPUT:
-* RETURN:
-* NOTE:
-*******************************************************************/
+ * NAME: vpnc_ovpn_up_main
+ * AUTHOR: Andy Chiu
+ * CREATE DATE: 2017/2/22
+ * DESCRIPTION: callback for openvpn
+ * INPUT:
+ * OUTPUT:
+ * RETURN:
+ * NOTE:
+ *******************************************************************/
 int vpnc_ovpn_up_main(int argc, char **argv)
 {
-	int unit, vpnc_idx, cnt = 0;
+	int unit, vpnc_idx;
 	char *ifname = safe_getenv("dev");
 	char *ipaddr = safe_getenv("ifconfig_local");
 	char *vpn_gateway = safe_getenv("route_vpn_gateway");
-	char *route_network = NULL, *route_netmask = NULL, *route_gateway=NULL, *route_metric=NULL;
-	char *remote = NULL;
+	char tmp[100], prefix[] = "vpncXXXX_";
 
-	char tmp[100], prefix[] = "vpncXXXX_", tmp2[100];
-
-	if(argc < 2)
+	if (argc < 2)
 	{
-		_dprintf("[%s, %d]parameters error!\n", __FUNCTION__, __LINE__);
+		_dprintf("[%s]parameters error!\n", __FUNCTION__);
 		return 0;
 	}
 
@@ -776,87 +684,47 @@ int vpnc_ovpn_up_main(int argc, char **argv)
 
 	vpnc_idx = _find_vpnc_idx_by_ovpn_unit(unit);
 
-	if(vpnc_idx != -1 )
+	if (vpnc_idx != -1)
 	{
 		snprintf(prefix, sizeof(prefix), "vpnc%d_", vpnc_idx);
 		nvram_set(strlcat_r(prefix, "ifname", tmp, sizeof(tmp)), ifname);
-		if(ipaddr)
+		if (ipaddr)
 			nvram_set(strlcat_r(prefix, "ipaddr", tmp, sizeof(tmp)), ipaddr);
-		if(vpn_gateway)
+		if (vpn_gateway)
 			nvram_set(strlcat_r(prefix, "gateway", tmp, sizeof(tmp)), vpn_gateway);
-		nvram_set(strlcat_r(prefix, "dns", tmp, sizeof(tmp)), "");	//clean dns
+		nvram_set(strlcat_r(prefix, "dns", tmp, sizeof(tmp)), ""); // clean dns
 
 		vpnc_ovpn_set_dns(unit);
 		vpnc_update_resolvconf(vpnc_idx);
-		//update_resolvconf();
-
-#if 0	// integrate with OpenVPN client
-		//set route table
-		cnt = 0;
-		while(1)
-		{
-			snprintf(tmp, sizeof(tmp), "route_network_%d", cnt + 1);
-			route_network = safe_getenv(tmp);
-			if(!route_network || route_network[0] == '\0')
-				break;
-			snprintf(tmp, sizeof(tmp), "route_netmask_%d", cnt + 1);
-			route_netmask = safe_getenv(tmp);
-			snprintf(tmp, sizeof(tmp), "route_gateway_%d", cnt + 1);
-			route_gateway = safe_getenv(tmp);
-			snprintf(tmp, sizeof(tmp), "route_metric_%d", cnt + 1);
-			route_metric = safe_getenv(tmp);
-
-			snprintf(tmp2, sizeof(tmp2), "route_network_%d", cnt);
-			nvram_set(strlcat_r(prefix, tmp2, tmp, sizeof(tmp)), route_network);
-			snprintf(tmp2, sizeof(tmp2), "route_netmask_%d", cnt);
-			nvram_set(strlcat_r(prefix, tmp2, tmp, sizeof(tmp)), route_netmask);
-			snprintf(tmp2, sizeof(tmp2), "route_gateway_%d", cnt);
-			nvram_set(strlcat_r(prefix, tmp2, tmp, sizeof(tmp)), route_gateway);
-			snprintf(tmp2, sizeof(tmp2), "route_metric_%d", cnt);
-			nvram_set(strlcat_r(prefix, tmp2, tmp, sizeof(tmp)), route_metric);
-
-			++cnt;
-		}
-
-		nvram_set_int(strlcat_r(prefix, "route_num", tmp, sizeof(tmp)), cnt);
-
-		//set remote ip
-		remote = safe_getenv("trusted_ip");
-		if(remote && remote[0] != '\0')
-			nvram_set("trusted_ip", remote);
-#endif
-
-		//set dns server policy rule
-		//vpnc_handle_dns_policy_rule(VPNC_ROUTE_ADD, vpnc_idx);
-		set_policy_dns_iptables_rules();
+		// update_resolvconf();
+		start_firewall(wan_primary_ifunit(), 0);
 	}
 	return 0;
-
 }
 
 /*******************************************************************
-* NAME: vpnc_ovpn_down_main
-* AUTHOR: Andy Chiu
-* CREATE DATE: 2017/2/22
-* DESCRIPTION: callback for openvpn
-* INPUT:
-* OUTPUT:
-* RETURN:
-* NOTE:
-*******************************************************************/
+ * NAME: vpnc_ovpn_down_main
+ * AUTHOR: Andy Chiu
+ * CREATE DATE: 2017/2/22
+ * DESCRIPTION: callback for openvpn
+ * INPUT:
+ * OUTPUT:
+ * RETURN:
+ * NOTE:
+ *******************************************************************/
 int vpnc_ovpn_down_main(int argc, char **argv)
 {
 	int unit, vpnc_idx;
 	char *ifname = safe_getenv("dev");
-	if(argc < 2)
+	if (argc < 2)
 	{
-		_dprintf("[%s, %d]parameters error!\n", __FUNCTION__, __LINE__);
+		_dprintf("[%s]parameters error!\n", __FUNCTION__);
 		return 0;
 	}
 
 	unit = atoi(argv[1]);
 
-	_dprintf("[%s, %d]unit=%d\n", __FUNCTION__, __LINE__, unit);
+	_dprintf("[%s]unit=%d\n", __FUNCTION__, unit);
 
 	ovpn_down_handler();
 
@@ -864,48 +732,26 @@ int vpnc_ovpn_down_main(int argc, char **argv)
 	vpnc_init();
 
 	vpnc_idx = _find_vpnc_idx_by_ovpn_unit(unit);
- 	if(vpnc_idx != -1 )
+	if (vpnc_idx != -1)
 	{
 		/* override wan_state to get real reason */
 		update_vpnc_state(vpnc_idx, WAN_STATE_STOPPED, 0);
 
 		vpnc_down(vpnc_idx, ifname);
-
-		/* Add dns servers to resolv.conf */
-		update_resolvconf();
-
-		//clean dns server policy rule
-		//vpnc_handle_dns_policy_rule(VPNC_ROUTE_DEL, vpnc_idx);
-
-		//clean routing rule
-		clean_routing_rule_by_vpnc_idx(vpnc_idx);
-
-#if 0	// integrate with OpenVPN client.
-		set_routing_table(0, vpnc_idx);
-#endif
-
-		//set up default wan
-		change_default_wan_as_vpnc_updown(vpnc_idx, 0);
-
-		//clean setting value.
-		clean_vpnc_setting_value(vpnc_idx);
-
-		set_policy_dns_iptables_rules();
 	}
 	return 0;
 }
 
-
 /*******************************************************************
-* NAME: _check_ovpn_route
-* AUTHOR: Andy Chiu
-* CREATE DATE: 2019/4/11
-* DESCRIPTION: check the routing rule sent from vpn server
-* INPUT:  vpnc_idx: int. the index of vpn client.
-* OUTPUT:
-* RETURN:  0: routing rules are okay. -1: routing rule is error.
-* NOTE:
-*******************************************************************/
+ * NAME: _check_ovpn_route
+ * AUTHOR: Andy Chiu
+ * CREATE DATE: 2019/4/11
+ * DESCRIPTION: check the routing rule sent from vpn server
+ * INPUT:  vpnc_idx: int. the index of vpn client.
+ * OUTPUT:
+ * RETURN:  0: routing rules are okay. -1: routing rule is error.
+ * NOTE:
+ *******************************************************************/
 int _check_ovpn_route(int vpnc_idx)
 {
 	int n = 1, flag = -1;
@@ -918,31 +764,31 @@ int _check_ovpn_route(int vpnc_idx)
 
 	snprintf(tag, sizeof(tag), "vpnclient%d", vpnc_idx);
 
-	while(1)
+	while (1)
 	{
 		snprintf(env, sizeof(env), "route_network_%d", n);
 		route_network = safe_getenv(env);
-		if(!route_network || route_network[0] == '\0')
+		if (!route_network || route_network[0] == '\0')
 			break;
 		snprintf(env, sizeof(env), "route_netmask_%d", n);
 		route_netmask = safe_getenv(env);
 		snprintf(env, sizeof(env), "route_gateway_%d", n);
 		route_gateway = safe_getenv(env);
 
-		if ( inet_pton(AF_INET, route_network, &network) > 0
-		  && inet_pton(AF_INET, route_netmask, &netmask) > 0
-		) {
+		if (inet_pton(AF_INET, route_network, &network) > 0 && inet_pton(AF_INET, route_netmask, &netmask) > 0)
+		{
 			_dprintf("route: %s / %s\n", route_network, route_netmask);
-			if ( current_route(network.s_addr, netmask.s_addr)
-			  || current_addr(network.s_addr)
-			) {
-				if (network.s_addr & netmask.s_addr) {
+			if (current_route(network.s_addr, netmask.s_addr) || current_addr(network.s_addr))
+			{
+				if (network.s_addr & netmask.s_addr)
+				{
 					_dprintf("route conflict: %s/%s\n", route_network, route_netmask);
 					logmessage_normal(tag, "WARNING: Ignore conflicted routing rule: %s %s gw %s", route_network, route_netmask, route_gateway);
 				}
-				else {
+				else
+				{
 					_dprintf("Detect default gateway: %s/%s\n", route_network, route_netmask);
-					//logmessage_normal(tag, "WARNING: Replace default vpn gateway by using 0.0.0.0/1 and 128.0.0.0/1");
+					// logmessage_normal(tag, "WARNING: Replace default vpn gateway by using 0.0.0.0/1 and 128.0.0.0/1");
 				}
 				update_ovpn_vpnc_state(vpnc_idx, WAN_STATE_STOPPED, WAN_STOPPED_REASON_IPGATEWAY_CONFLICT);
 				flag = 0;
@@ -955,50 +801,47 @@ int _check_ovpn_route(int vpnc_idx)
 }
 
 /*******************************************************************
-* NAME: vpnc_ovpn_route_up_main
-* AUTHOR: Andy Chiu
-* CREATE DATE: 2017/2/22
-* DESCRIPTION: callback for openvpn
-* INPUT:
-* OUTPUT:
-* RETURN:
-* NOTE:
-*******************************************************************/
+ * NAME: vpnc_ovpn_route_up_main
+ * AUTHOR: Andy Chiu
+ * CREATE DATE: 2017/2/22
+ * DESCRIPTION: callback for openvpn
+ * INPUT:
+ * OUTPUT:
+ * RETURN:
+ * NOTE:
+ *******************************************************************/
 int vpnc_ovpn_route_up_main(int argc, char **argv)
 {
 	int unit, vpnc_idx;
 	char *ifname = safe_getenv("dev");
 	char rt_table[8] = {0};
 
-	if(argc < 2)
+	if (argc < 2)
 	{
-		_dprintf("[%s, %d]parameters error!\n", __FUNCTION__, __LINE__);
+		_dprintf("[%s]parameters error!\n", __FUNCTION__);
 		return 0;
 	}
 
 	unit = atoi(argv[1]);
 
-	_dprintf("[%s, %d]openvpn unit = %d, ifname = %s\n", __FUNCTION__, __LINE__, unit, ifname);
+	_dprintf("[%s]openvpn unit = %d, ifname = %s\n", __FUNCTION__, unit, ifname);
 
 	// load vpnc profile list
 	vpnc_init();
 
 	vpnc_idx = _find_vpnc_idx_by_ovpn_unit(unit);
 
-	if(vpnc_idx != -1 )
+	if (vpnc_idx != -1)
 	{
-		if(!vpnc_up(vpnc_idx, ifname))
+		if (!vpnc_up(vpnc_idx, ifname))
 		{
-#if 1		// integrate with OpenVPN client.
+#if 1 // integrate with OpenVPN client.
 			snprintf(rt_table, sizeof(rt_table), "%d", vpnc_idx);
 			setenv("rt_table", rt_table, 1);
 			ovpn_route_up_handler();
 #else
 			set_routing_table(1, vpnc_idx);
 #endif
-
-			//set up default wan
-			change_default_wan_as_vpnc_updown(vpnc_idx, 1);
 		}
 	}
 	return 0;
@@ -1010,24 +853,24 @@ int vpnc_ovpn_route_pre_down_main(int argc, char **argv)
 	char *ifname = safe_getenv("dev");
 	char rt_table[8] = {0};
 
-	if(argc < 2)
+	if (argc < 2)
 	{
-		_dprintf("[%s, %d]parameters error!\n", __FUNCTION__, __LINE__);
+		_dprintf("[%s]parameters error!\n", __FUNCTION__);
 		return 0;
 	}
 
 	unit = atoi(argv[1]);
 
-	_dprintf("[%s, %d]openvpn unit = %d, ifname = %s\n", __FUNCTION__, __LINE__, unit, ifname);
+	_dprintf("[%s]openvpn unit = %d, ifname = %s\n", __FUNCTION__, unit, ifname);
 
 	// load vpnc profile list
 	vpnc_init();
 
 	vpnc_idx = _find_vpnc_idx_by_ovpn_unit(unit);
 
-	if(vpnc_idx != -1 )
+	if (vpnc_idx != -1)
 	{
-#if 1	// integrate with OpenVPN client.
+#if 1 // integrate with OpenVPN client.
 		snprintf(rt_table, sizeof(rt_table), "%d", vpnc_idx);
 		setenv("rt_table", rt_table, 1);
 		ovpn_route_pre_down_handler();
@@ -1040,30 +883,30 @@ int vpnc_ovpn_route_pre_down_main(int argc, char **argv)
 }
 
 /*******************************************************************
-* NAME: vpnc_dump_dev_policy_list
-* AUTHOR: Andy Chiu
-* CREATE DATE: 2016/11/23
-* DESCRIPTION: dump VPNC_DEV_POLICY list
-* INPUT:  list: an array to store policy, list_size: size of list
-* OUTPUT:
-* RETURN:
-* NOTE:
-*******************************************************************/
+ * NAME: vpnc_dump_dev_policy_list
+ * AUTHOR: Andy Chiu
+ * CREATE DATE: 2016/11/23
+ * DESCRIPTION: dump VPNC_DEV_POLICY list
+ * INPUT:  list: an array to store policy, list_size: size of list
+ * OUTPUT:
+ * RETURN:
+ * NOTE:
+ *******************************************************************/
 static int
 vpnc_ovpn_sync_account(const VPNC_PROFILE *prof)
 {
 	char attr[64];
 
-	if(!prof || prof->protocol != VPNC_PROTO_OVPN)
+	if (!prof || prof->protocol != VPNC_PROTO_OVPN)
 		return -1;
 
-	if(prof->basic.username[0] != '\0')
+	if (prof->basic.username[0] != '\0')
 	{
 		snprintf(attr, sizeof(attr), "vpn_client%d_username", prof->config.ovpn.ovpn_idx);
 		nvram_set(attr, prof->basic.username);
 	}
 
-	if(prof->basic.password[0] != '\0')
+	if (prof->basic.password[0] != '\0')
 	{
 		snprintf(attr, sizeof(attr), "vpn_client%d_password", prof->config.ovpn.ovpn_idx);
 		nvram_set(attr, prof->basic.password);
@@ -1071,316 +914,100 @@ vpnc_ovpn_sync_account(const VPNC_PROFILE *prof)
 	return 0;
 }
 
-/*******************************************************************
-* NAME: vpnc_dump_dev_policy_list
-* AUTHOR: Andy Chiu
-* CREATE DATE: 2016/11/23
-* DESCRIPTION: dump VPNC_DEV_POLICY list
-* INPUT:  list: an array to store policy, list_size: size of list
-* OUTPUT:
-* RETURN:
-* NOTE:
-*******************************************************************/
-#if 0
-static void
-vpnc_dump_dev_policy_list(const VPNC_DEV_POLICY *list, const int list_size)
-{
-	int i;
-	const VPNC_DEV_POLICY *policy;
-
-	if(!list || list_size <= 0)
-		return;
-
-	_dprintf("[%s, %d]Start to dump!\n", __FUNCTION__, __LINE__);
-	for(i = 0, policy = list; i < list_size; ++i, ++policy)
-	{
-#ifdef USE_IPTABLE_ROUTE_TARGE
-		_dprintf("[%s, %d]<%d><active:%d><mac:%s><dst_ip:%s><vpnc_idx:%d>\n", __FUNCTION__, __LINE__,
-			i, policy->active, policy->mac, policy->dst_ip, policy->vpnc_idx);
-#else
-		if(policy->src_ip[0] != '\0')
-			_dprintf("[%s, %d]<%d><active:%d><src_ip:%s><dst_ip:%s><vpnc_idx:%d>\n", __FUNCTION__, __LINE__,
-				i, policy->active, policy->src_ip, policy->dst_ip, policy->vpnc_idx);
-#endif
-	}
-	_dprintf("[%s, %d]End of dump!\n", __FUNCTION__, __LINE__);
-}
-#endif
-
-#if 1
 static void
 vpnc_dump_vpnc_profile(const VPNC_PROFILE *profile)
 {
-	if(!profile)
+	if (!profile)
 		return;
-	_dprintf("[%s, %d]<active:%d><vpnc_idx:%d><proto:%d><server:%s><username:%s><password:%s>"
-		, __FUNCTION__, __LINE__, profile->active, profile->vpnc_idx, profile->protocol, profile->basic.server, profile->basic.username, profile->basic.password);
-	switch(profile->protocol)
+	_dprintf("[%s]<active:%d><vpnc_idx:%d><proto:%d><server:%s><username:%s><password:%s>", __FUNCTION__, profile->active, profile->vpnc_idx, profile->protocol, profile->basic.server, profile->basic.username, profile->basic.password);
+	switch (profile->protocol)
 	{
-		case VPNC_PROTO_PPTP:
-			_dprintf("<option:%d>\n", profile->config.pptp.option);
-			break;
-		case VPNC_PROTO_OVPN:
-			_dprintf("<ovpn_idx:%d>\n", profile->config.ovpn.ovpn_idx);
-			break;
-		case VPNC_PROTO_IPSEC:
-		default:
-			_dprintf("\n");
-			break;
+	case VPNC_PROTO_PPTP:
+		_dprintf("<option:%d>\n", profile->config.pptp.option);
+		break;
+	case VPNC_PROTO_OVPN:
+		_dprintf("<ovpn_idx:%d>\n", profile->config.ovpn.ovpn_idx);
+		break;
+	case VPNC_PROTO_IPSEC:
+	default:
+		_dprintf("\n");
+		break;
 	}
 }
-#endif
 
 /*******************************************************************
-* NAME: vpnc_dump_vpnc_profile_list
-* AUTHOR: Andy Chiu
-* CREATE DATE: 2016/12/06
-* DESCRIPTION: dump VPNC_PROFILE list
-* INPUT:  list: an array to store vpnc profile, list_size: size of list
-* OUTPUT:
-* RETURN:
-* NOTE:
-*******************************************************************/
-#if 0
-static void
-vpnc_dump_vpnc_profile_list(const VPNC_PROFILE *list, const int list_size)
+ * NAME: vpnc_get_profile_by_vpnc_id
+ * AUTHOR: Andy Chiu
+ * CREATE DATE: 2016/12/07
+ * DESCRIPTION: Parser the nvram setting and load the VPNC_PROFILE list
+ * INPUT:  list: an array to store vpnc profile, list_size: size of list
+ * OUTPUT:
+ * RETURN:  number of profiles, -1: fialed
+ * NOTE:
+ *******************************************************************/
+static VPNC_PROFILE *vpnc_get_profile_by_vpnc_id(VPNC_PROFILE *list, const int list_size, const int vpnc_id)
 {
 	int i;
-	const VPNC_PROFILE *profile;
-
-	if(!list || list_size <= 0)
-		return;
-
-	_dprintf("[%s, %d]Start to dump!\n", __FUNCTION__, __LINE__);
-
-	for(i = 0, profile = list; i < list_size; ++i, profile = list + i)
-		vpnc_dump_vpnc_profile(profile);
-
-	_dprintf("[%s, %d]End of dump!\n", __FUNCTION__, __LINE__);
-}
-#endif
-
-/*******************************************************************
-* NAME: vpnc_set_basic_conf
-* AUTHOR: Andy Chiu
-* CREATE DATE: 2016/12/07
-* DESCRIPTION: set basic config dat structure
-* INPUT:  server: string. server ip. username: string. password: string.
-* OUTPUT:  basic_conf: a pointer of VPNC_BASIC_CONF
-* RETURN:  0: success, -1: fialed
-* NOTE:
-*******************************************************************/
-static int
-vpnc_set_basic_conf(const char *server, const char *username, const char *passwd, VPNC_BASIC_CONF *basic_conf)
-{
-	if(!basic_conf)
-		return -1;
-
-	memset(basic_conf, 0, sizeof(VPNC_BASIC_CONF));
-
-	if(server)
-		snprintf(basic_conf->server, sizeof(basic_conf->server), "%s", server);
-	if(username)
-		snprintf(basic_conf->username, sizeof(basic_conf->username), "%s", username);
-	if(passwd)
-		snprintf(basic_conf->password, sizeof(basic_conf->password), "%s", passwd);
-
-	return 0;
-}
-
-/*******************************************************************
-* NAME: vpnc_load_profile
-* AUTHOR: Andy Chiu
-* CREATE DATE: 2016/12/07
-* DESCRIPTION: Parser the nvram setting and load the VPNC_PROFILE list
-* INPUT:  list: an array to store vpnc profile, list_size: size of list
-* OUTPUT:
-* RETURN:  number of profiles, -1: fialed
-* NOTE:
-*******************************************************************/
-int vpnc_load_profile(VPNC_PROFILE *list, const int list_size, const int prof_ver)
-{
-	char *nv = NULL, *nvp = NULL, *b = NULL;
-	int cnt = 0, i;
-	char * desc, *proto, *server, *username, *passwd, *active, *vpnc_idx;
-	char *region, *conntype;
-
-	if(!list || list_size <= 0)
-		return -1;
-
-	// load "vpnc_clientlist" to set username, password and server ip
-	nv = nvp = strdup(nvram_safe_get("vpnc_clientlist"));
-
-	cnt = 0;
-	memset(list, 0, sizeof(VPNC_PROFILE)*list_size);
-	while (nv && (b = strsep(&nvp, "<")) != NULL && cnt <= list_size) {
-		if(VPNC_PROFILE_VER1 == prof_ver)
-		{
-			//proto, server, active and vpnc_idx are mandatory
-			if (vstrsep(b, ">", &desc, &proto, &server, &username, &passwd, &active, &vpnc_idx, &region, &conntype) < 4)
-				continue;
-
-			if(!active || !vpnc_idx)
-			continue;
-
-			list[cnt].active = atoi(active);
-			list[cnt].vpnc_idx = atoi(vpnc_idx);
-		}
-		else
-		{
-			//proto and server are mandatory
-			if (vstrsep(b, ">", &desc, &proto, &server, &username, &passwd) < 2)
-				continue;
-		}
-
-		if(proto && server)
-		{
-			vpnc_set_basic_conf(server, username, passwd, &(list[cnt].basic));
-
-			if(!strcmp(proto, PROTO_PPTP))
-			{
-				list[cnt].protocol = VPNC_PROTO_PPTP;
-			}
-			else if(!strcmp(proto, PROTO_L2TP))
-			{
-				list[cnt].protocol = VPNC_PROTO_L2TP;
-			}
-			else if(!strcmp(proto, PROTO_OVPN))
-			{
-				list[cnt].protocol = VPNC_PROTO_OVPN;
-				list[cnt].config.ovpn.ovpn_idx = atoi(server);
-			}
-#ifdef RTCONFIG_WIREGUARD
-			else if(!strcmp(proto, PROTO_WG))
-			{
-				char prefix[16] = {0};
-				list[cnt].protocol = VPNC_PROTO_WG;
-				list[cnt].config.wg.wg_idx = atoi(server);
-				snprintf(prefix, sizeof(prefix), "%s%d_", WG_CLIENT_NVRAM_PREFIX, list[cnt].config.wg.wg_idx);
-				nvram_pf_set_int(prefix, "enable", list[cnt].active);
-			}
-#endif
-#ifdef RTCONFIG_TPVPN
-			else if(!strcmp(proto, PROTO_HMA))
-			{
-				if (is_tpvpn_configured(TPVPN_HMA, region, conntype, atoi(server)))
-				{
-					list[cnt].protocol = VPNC_PROTO_OVPN;
-					list[cnt].config.ovpn.ovpn_idx = atoi(server);
-				}
-				else
-				{
-					list[cnt].protocol = VPNC_PROTO_HMA;
-					list[cnt].config.tpvpn.tpvpn_idx = atoi(server);
-					if(region && conntype)
-					{
-						strlcpy(list[cnt].config.tpvpn.region, region, sizeof(list[cnt].config.tpvpn.region));
-						strlcpy(list[cnt].config.tpvpn.conntype, conntype, sizeof(list[cnt].config.tpvpn.conntype));
-					}
-					else
-						logmessage_normal("VPN", "no data for HMA\n");
-				}
-			}
-			else if(!strcmp(proto, PROTO_NORDVPN))
-			{
-				list[cnt].protocol = VPNC_PROTO_NORDVPN;
-				list[cnt].config.tpvpn.tpvpn_idx = atoi(server);
-				if(region)
-					strlcpy(list[cnt].config.tpvpn.region, region, sizeof(list[cnt].config.tpvpn.region));
-				else
-					logmessage_normal("VPN", "no data for NordVPN\n");
-			}
-#endif
-			++cnt;
-		}
-	}
-	SAFE_FREE(nv);
-
-	//load "vpnc_pptp_options_x_list" to set pptp option
-	nv = nvp = strdup(nvram_safe_get("vpnc_pptp_options_x_list"));
-	i = 0;
-	while (nv && (b = strsep(&nvp, "<")) != NULL && i <= cnt) {
-
-		if(i > 0 && VPNC_PROTO_PPTP == list[i - 1].protocol)
-		{
-			if(!strcmp(b, "auto"))
-				list[i - 1].config.pptp.option = VPNC_PPTP_OPT_AUTO;
-			else if(!strcmp(b, "-mppc"))
-				list[i - 1].config.pptp.option = VPNC_PPTP_OPT_MPPC;
-			else if(!strcmp(b, "+mppe-40"))
-				list[i - 1].config.pptp.option = VPNC_PPTP_OPT_MPPE40;
-			else if(!strcmp(b, "+mppe-56"))
-				list[i - 1].config.pptp.option = VPNC_PPTP_OPT_MPPE56;
-			else if(!strcmp(b, "+mppe-128"))
-				list[i - 1].config.pptp.option = VPNC_PPTP_OPT_MPPE128;
-			else
-				list[i - 1].config.pptp.option = VPNC_PPTP_OPT_UNDEF;
-		}
-		++i;
-	}
-	SAFE_FREE(nv);
-	if(i != cnt + 1)
-		_dprintf("[%s, %d]the numbers of vpnc_clientlist(%d) and vpnc_pptp_options_x_list(%d) are different!\n", __FUNCTION__, __LINE__, cnt, i);
-
-	//vpnc_dump_vpnc_profile_list(list, cnt);
-	return cnt;
-}
-
-/*******************************************************************
-* NAME: vpnc_get_profile_by_vpnc_id
-* AUTHOR: Andy Chiu
-* CREATE DATE: 2016/12/07
-* DESCRIPTION: Parser the nvram setting and load the VPNC_PROFILE list
-* INPUT:  list: an array to store vpnc profile, list_size: size of list
-* OUTPUT:
-* RETURN:  number of profiles, -1: fialed
-* NOTE:
-*******************************************************************/
-static VPNC_PROFILE* vpnc_get_profile_by_vpnc_id(VPNC_PROFILE *list, const int list_size, const int vpnc_id)
-{
-	int i;
-	if(!list || !list_size)
+	if (!list || !list_size)
 		return NULL;
 
-	for(i = 0; i < list_size; ++i)
+	for (i = 0; i < list_size; ++i)
 	{
-		if(list[i].vpnc_idx == vpnc_id)
+		if (list[i].vpnc_idx == vpnc_id)
 			return &(list[i]);
 	}
 	return NULL;
 }
 
 /*******************************************************************
-* NAME: vpnc_get_proto_in_profile_by_vpnc_id
-* AUTHOR: Andy Chiu
-* CREATE DATE: 2020/6/11
-* DESCRIPTION: get the protocol of the profile by vpnc_id
-* INPUT:  vpnc_id: number. The index of the vpnc profile
-* OUTPUT:
-* RETURN:  a value in VPNC_PROTO
-* NOTE:
-*******************************************************************/
+ * NAME: vpnc_get_proto_in_profile_by_vpnc_id
+ * AUTHOR: Andy Chiu
+ * CREATE DATE: 2020/6/11
+ * DESCRIPTION: get the protocol of the profile by vpnc_id
+ * INPUT:  vpnc_id: number. The index of the vpnc profile
+ * OUTPUT:
+ * RETURN:  a value in VPNC_PROTO
+ * NOTE:
+ *******************************************************************/
 static VPNC_PROTO vpnc_get_proto_in_profile_by_vpnc_id(const int vpnc_id)
 {
 	VPNC_PROFILE *prof = NULL;
-	prof =  vpnc_get_profile_by_vpnc_id(vpnc_profile, MAX_VPNC_PROFILE, vpnc_id);
-	if(prof)
+	prof = vpnc_get_profile_by_vpnc_id(vpnc_profile, MAX_VPNC_PROFILE, vpnc_id);
+	if (prof)
 	{
 		return prof->protocol;
 	}
 	return VPNC_PROTO_UNDEF;
 }
-	
+
+
+static void vpnc_dump_dev_policy_list(VPNC_DEV_POLICY *list, const int list_size)
+{
+	int i;
+	if(list)
+	{
+		_dprintf("[%s]\n", __FUNCTION__);
+		for(i = 0; i < list_size; ++i)
+		{
+			_dprintf("\tactive(%d), src_ip(%s), dst_ip(%s), vpnc_idx(%d))", list[i].active, list[i].src_ip? list[i].src_ip: "", list[i].dst_ip? list[i].dst_ip: "", list[i].vpnc_idx);
+#ifdef RTCONFIG_VPN_FUSION_SUPPORT_INTERFACE
+			_dprintf(", iif(%s)\n", list[i].iif? list[i].iif: "");
+#endif
+			_dprintf("\n");
+		}
+	}
+}
+
 /*******************************************************************
-* NAME: vpnc_get_dev_policy_list
-* AUTHOR: Andy Chiu
-* CREATE DATE: 2016/11/23
-* DESCRIPTION: parser vpnc_dev_policy_list
-* INPUT:  list_size: size of list
-* OUTPUT:  list: an array to store policy
-* RETURN:  number of the list.
-* NOTE:
-*******************************************************************/
+ * NAME: vpnc_get_dev_policy_list
+ * AUTHOR: Andy Chiu
+ * CREATE DATE: 2016/11/23
+ * DESCRIPTION: parser vpnc_dev_policy_list
+ * INPUT:  list_size: size of list
+ * OUTPUT:  list: an array to store policy
+ * RETURN:  number of the list.
+ * NOTE:
+ *******************************************************************/
 static int
 vpnc_get_dev_policy_list(VPNC_DEV_POLICY *list, const int list_size, const int tmp_flag)
 {
@@ -1389,84 +1016,87 @@ vpnc_get_dev_policy_list(VPNC_DEV_POLICY *list, const int list_size, const int t
 
 	char *nv, *nvp, *b;
 	char *active, *dst_ip, *vpnc_idx;
-#ifdef USE_IPTABLE_ROUTE_TARGE
-	char *mac;
-#else
 	char *src_ip;
+#ifdef RTCONFIG_VPN_FUSION_SUPPORT_INTERFACE
+	char *iif;
 #endif
 
-	if(!list || list_size <= 0)
+	if (!list || list_size <= 0)
 		return 0;
 
 	memset(list, 0, sizeof(VPNC_DEV_POLICY) * list_size);
 
 	/* Protection level per client */
-	if(!tmp_flag)
+	if (!tmp_flag)
 		nv = nvp = strdup(nvram_safe_get("vpnc_dev_policy_list"));
 	else
 		nv = nvp = strdup(nvram_safe_get("vpnc_dev_policy_list_tmp"));
 
 	cnt = 0;
-	while (nv && (b = strsep(&nvp, "<")) != NULL && cnt < list_size) {
-#ifdef USE_IPTABLE_ROUTE_TARGE
-		if (vstrsep(b, ">", &active, &mac, &dst_ip, &vpnc_idx) < 3)
+	while (nv && (b = strsep(&nvp, "<")) != NULL && cnt < list_size)
+	{
+#ifdef RTCONFIG_VPN_FUSION_SUPPORT_INTERFACE
+		if (vstrsep(b, ">", &active, &src_ip, &dst_ip, &vpnc_idx, &iif) < 3)
 			continue;
 
-		if(!active || !mac || !vpnc_idx)
+		if (!active || !vpnc_idx || (!src_ip && !iif))
 			continue;
 
-		snprintf(policy->mac, sizeof(policy->mac), "%s", mac);
+		if(iif)
+			snprintf(policy->iif, sizeof(policy->iif), "%s", iif);
 #else
 		if (vstrsep(b, ">", &active, &src_ip, &dst_ip, &vpnc_idx) < 3)
 			continue;
 
-		if(!active || !src_ip || !vpnc_idx)
+		if (!active || !src_ip || !vpnc_idx)
 			continue;
-
-		snprintf(policy->src_ip, sizeof(policy->src_ip), "%s", src_ip);
 #endif
-		policy->active = atoi(active);
-		if(dst_ip)
-			snprintf(policy->dst_ip, sizeof(policy->dst_ip), "%s", dst_ip);
-		policy->vpnc_idx = atoi(vpnc_idx);
+		if(src_ip)
+			snprintf(policy->src_ip, sizeof(policy->src_ip), "%s", src_ip);
 
+		policy->active = atoi(active);
+
+		if (dst_ip)
+			snprintf(policy->dst_ip, sizeof(policy->dst_ip), "%s", dst_ip);
+
+		policy->vpnc_idx = atoi(vpnc_idx);
 		++cnt;
 		++policy;
 	}
 	free(nv);
 
-	//vpnc_dump_dev_policy_list(list, list_size);
+	// vpnc_dump_dev_policy_list(list, list_size);
 	return cnt;
 }
 
 /*******************************************************************
-* NAME: vpnc_find_index_by_ifname
-* AUTHOR: Andy Chiu
-* CREATE DATE: 2016/11/25
-* DESCRIPTION: Find vpnc index by interface name
-* INPUT:  vpnc_ifname: interface name
-* OUTPUT:
-* RETURN:  index of vpnc. -1 is not found.
-* NOTE:
-*******************************************************************/
+ * NAME: vpnc_find_index_by_ifname
+ * AUTHOR: Andy Chiu
+ * CREATE DATE: 2016/11/25
+ * DESCRIPTION: Find vpnc index by interface name
+ * INPUT:  vpnc_ifname: interface name
+ * OUTPUT:
+ * RETURN:  index of vpnc. -1 is not found.
+ * NOTE:
+ *******************************************************************/
 static int
 _vpnc_find_index_by_ifname(const char *vpnc_ifname)
 {
 	int unit;
-	if(!vpnc_ifname)
+	if (!vpnc_ifname)
 		return -1;
 
-	if(!strncmp(vpnc_ifname, "ppp", 3))	//pptp/l2tp
+	if (!strncmp(vpnc_ifname, "ppp", 3)) // pptp/l2tp
 	{
 		return vpnc_ppp_linkunit_by_ifname(vpnc_ifname);
 	}
-	else if(!strncmp(vpnc_ifname, "tun", 3))	//openvpn
+	else if (!strncmp(vpnc_ifname, "tun", 3)) // openvpn
 	{
 		unit = atoi(vpnc_ifname + 3) - OVPN_CLIENT_BASE;
 		return _find_vpnc_idx_by_ovpn_unit(unit);
 	}
 #ifdef RTCONFIG_WIREGUARD
-	else if(!strncmp(vpnc_ifname, WG_CLIENT_IF_PREFIX, 3))	//wireguard
+	else if (!strncmp(vpnc_ifname, WG_CLIENT_IF_PREFIX, 3)) // wireguard
 	{
 		unit = atoi(vpnc_ifname + 3);
 		return find_vpnc_idx_by_wgc_unit(unit);
@@ -1475,46 +1105,43 @@ _vpnc_find_index_by_ifname(const char *vpnc_ifname)
 	return -1;
 }
 
-
 /*******************************************************************
-* NAME: vpnc_set_policy_by_ifname
-* AUTHOR: Andy Chiu
-* CREATE DATE: 2016/11/25
-* DESCRIPTION: set device policy by vpnc interface name
-* INPUT:  vpnc_ifname: interface name
-*		action: 1: add rules for interface up. 0: remove rule for interface down.
-* OUTPUT:
-* RETURN:  -1: failed, 0: success
-* NOTE:
-*******************************************************************/
-int
-vpnc_set_policy_by_ifname(const char *vpnc_ifname, const int action)
+ * NAME: vpnc_set_policy_by_ifname
+ * AUTHOR: Andy Chiu
+ * CREATE DATE: 2016/11/25
+ * DESCRIPTION: set device policy by vpnc interface name
+ * INPUT:  vpnc_ifname: interface name
+ *		action: 1: add rules for interface up. 0: remove rule for interface down.
+ * OUTPUT:
+ * RETURN:  -1: failed, 0: success
+ * NOTE:
+ *******************************************************************/
+int vpnc_set_policy_by_ifname(const char *vpnc_ifname, const int action)
 {
 	int policy_cnt, vpnc_idx, i;
 	VPNC_DEV_POLICY *policy;
 	char *lan_ifname = nvram_safe_get("lan_ifname");
 	VPNC_DEV_POLICY dev_policy[MAX_DEV_POLICY] = {{0}};
+	policy_cnt = vpnc_get_dev_policy_list(dev_policy, MAX_DEV_POLICY, 0);
 
-	policy_cnt =  vpnc_get_dev_policy_list(dev_policy, MAX_DEV_POLICY, 0);
-
-	if(!vpnc_ifname || !policy_cnt || !lan_ifname || lan_ifname[0] == '\0')
+	if (!vpnc_ifname || !policy_cnt || !lan_ifname || lan_ifname[0] == '\0')
 		return -1;
 
 	vpnc_idx = _vpnc_find_index_by_ifname(vpnc_ifname);
 
-	for(i = 0, policy = dev_policy; i < policy_cnt; ++i, ++policy)
+	for (i = 0, policy = dev_policy; i < policy_cnt; ++i, ++policy)
 	{
-		if(policy->active && vpnc_idx == policy->vpnc_idx)
+		if (policy->active && vpnc_idx == policy->vpnc_idx)
 		{
-			if(!action)	//remove rule
+			if (!action) // remove rule
 			{
-				//Can not support destination ip
-				set_routing_rule(VPNC_ROUTE_DEL, policy->src_ip, policy->vpnc_idx);
+				// Can not support destination ip
+				set_routing_rule(VPNC_ROUTE_DEL, policy);
 			}
-			else		//add value
+			else // add value
 			{
-				//Can not support destination ip
-				set_routing_rule(VPNC_ROUTE_ADD, policy->src_ip, policy->vpnc_idx);
+				// Can not support destination ip
+				set_routing_rule(VPNC_ROUTE_ADD, policy);
 			}
 		}
 	}
@@ -1522,357 +1149,230 @@ vpnc_set_policy_by_ifname(const char *vpnc_ifname, const int action)
 }
 
 /*******************************************************************
-* NAME: vpnc_handle_policy_rule
-* AUTHOR: Andy Chiu
-* CREATE DATE: 2016/1/25
-* DESCRIPTION: add/del iptable rule
-* INPUT:  action: 0:delete rule, 1: add rule.  lan_ifname: lan interface name. cliemt mac: client mac address.
-* 		vpnc_ifname: vpn client interface name. target_ip(optional): target ip address. target_port(optional): target port. set -1 as unused.
-* OUTPUT:
-* RETURN:  0:success, -1:failed.
-* NOTE:
-*******************************************************************/
-int vpnc_handle_policy_rule(const int action, const char *src_ip, const int vpnc_idx)
+ * NAME: vpnc_handle_policy_rule
+ * AUTHOR: Andy Chiu
+ * CREATE DATE: 2016/1/25
+ * DESCRIPTION: add/del iptable rule
+ * INPUT:  action: 0:delete rule, 1: add rule.
+ * 		policy: pointer of structure VPNC_DEV_POLICY
+ * OUTPUT:
+ * RETURN:  0:success, -1:failed.
+ * NOTE:
+ *******************************************************************/
+int vpnc_handle_policy_rule(const int action, const VPNC_DEV_POLICY *policy)
 {
-	if(!src_ip)
+	if (!policy)
 	{
-		_dprintf("[%s, %d] parameters error!\n", __FUNCTION__, __LINE__);
+		_dprintf("[%s] parameters error!\n", __FUNCTION__);
 		return -1;
 	}
 
-	if(!action)	//delete
+	if (!action) // delete
 	{
 		//_dprintf("[%s, %d]remove rule. src_ip=%s, vpnc_idx=%d\n", __FUNCTION__, __LINE__,  src_ip, vpnc_idx);
-
-		if(vpnc_idx != -1)
+		if (policy->vpnc_idx != -1)
 		{
-			set_routing_rule(VPNC_ROUTE_DEL, src_ip, vpnc_idx);
+			set_routing_rule(VPNC_ROUTE_DEL, policy);
 		}
 	}
-	else	//add
+	else // add
 	{
 		//_dprintf("[%s, %d]add rule. src_ip=%s, vpnc_idx=%d\n", __FUNCTION__, __LINE__, src_ip, vpnc_idx);
-
-		if(vpnc_idx != -1 && get_vpnc_state(vpnc_idx) == WAN_STATE_CONNECTED)
+		if (policy->vpnc_idx != -1 && get_vpnc_state(policy->vpnc_idx) == WAN_STATE_CONNECTED)
 		{
-			set_routing_rule(VPNC_ROUTE_ADD, src_ip, vpnc_idx);
+			set_routing_rule(VPNC_ROUTE_ADD, policy);
 		}
 	}
 	return 0;
 }
 
-#ifdef USE_IPTABLE_ROUTE_TARGE
 /*******************************************************************
-* NAME: vpnc_active_dev_policy
-* AUTHOR: Andy Chiu
-* CREATE DATE: 2016/1/24
-* DESCRIPTION: when web ui active/inactive one dev policy, this function will handle it
-* INPUT:  policy_idx: index of vpnc_dev_policy_list. Start from 0.
-* OUTPUT:
-* RETURN:  0:success, -1:failed.
-* NOTE:
-*******************************************************************/
-int vpnc_active_dev_policy(const int policy_idx)
-{
-	int policy_cnt;
-	VPNC_DEV_POLICY *policy;
-	VPNC_DEV_POLICY 	dev_policy[MAX_DEV_POLICY] = {0};
-#ifdef USE_IPTABLE_ROUTE_TARGE
-	char *lan_ifname = nvram_safe_get("lan_ifname");
-	char *vpnc_ifname = NULL, tmp[100];
-#endif
-
-	policy_cnt =  vpnc_get_dev_policy_list(dev_policy, MAX_DEV_POLICY, 0);
-
-	_dprintf("[%s, %d]idx<%d> policy cnt<%d>\n", __FUNCTION__, __LINE__, policy_idx, policy_cnt);
-
-	if(!policy_cnt || policy_idx >= policy_cnt || policy_idx < 0)
-	{
-		_dprintf("[%s, %d] policy_idx(%d) is not exist in the policy list(%d)\n", __FUNCTION__, __LINE__, policy_idx, policy_cnt);
-		return -1;
-	}
-
-	policy = &(dev_policy[policy_idx]);
-
-#ifdef USE_IPTABLE_ROUTE_TARGE
-	if!lan_ifname || lan_ifname[0] == '\0'()
-		return -1;
-	snprintf(tmp, sizeof(tmp), "vpnc%d_ifname", policy->vpnc_idx);
-	vpnc_ifname = nvram_safe_get(tmp);
-
-	if(!vpnc_ifname || vpnc_ifname[0] =='\0')
-	{
-		_dprintf("[%s, %d] Can not find interface name by vpnc_idx(%d)\n", __FUNCTION__, __LINE__, policy_idx);
-		return -1;
-	}
-
-	if(policy->active)
-		vpnc_handle_policy_rule(1, lan_ifname, policy->mac, vpnc_ifname, policy->dst_ip, -1);
-	else
-		vpnc_handle_policy_rule(0, lan_ifname, policy->mac, vpnc_ifname, policy->dst_ip, -1);
-#endif
-	return 0;
-
-}
-
-/*******************************************************************
-* NAME: vpnc_active_dev_policy
-* AUTHOR: Andy Chiu
-* CREATE DATE: 2016/1/24
-* DESCRIPTION: when web ui active/inactive one dev policy, this function will handle it
-* INPUT:  policy_idx: index of vpnc_dev_policy_list. Start from 0.
-* OUTPUT:
-* RETURN:  0:success, -1:failed.
-* NOTE:
-*******************************************************************/
-int vpnc_remove_tmp_policy_rule()
-{
-	char *nv;
-	char *active, *mac, *dst_ip, *vpnc_idx;
-	VPNC_DEV_POLICY policy;
-#ifdef USE_IPTABLE_ROUTE_TARGE
-	char *lan_ifname = nvram_safe_get("lan_ifname");
-	char *vpnc_ifname = NULL, tmp[100];
-#endif
-
-	/* Protection level per client */
-	nv = strdup(nvram_safe_get("vpnc_tmp_dev_policy"));
-	memset(&policy, 0, sizeof(VPNC_DEV_POLICY));
-
-	_dprintf("[%s, %d]remove vpnc_tmp_dev_policy=%s\n", __FUNCTION__, __LINE__, nv);
-
-	if (vstrsep(nv, ">", &active, &mac, &dst_ip, &vpnc_idx) >= 3)
-	{
-		if(!active || !mac || !vpnc_idx)
-		{
-			free(nv);
-			_dprintf("[%s, %d] Invalid value in vpnc_tmp_dev_policy\n", __FUNCTION__, __LINE__);
-			return -1;
-		}
-
-		policy.active = atoi(active);
-		snprintf(policy.mac, sizeof(policy.mac), "%s", mac);
-		policy.vpnc_idx = atoi(vpnc_idx);
-
-#ifdef USE_IPTABLE_ROUTE_TARGE
-		if(dst_ip)
-			snprintf(policy.dst_ip, sizeof(policy.dst_ip), "%s", dst_ip);
-		snprintf(tmp, sizeof(tmp), "vpnc%d_ifname", policy.vpnc_idx);
-		vpnc_ifname = nvram_safe_get(tmp);
-
-		if(!vpnc_ifname || vpnc_ifname[0] =='\0')
-		{
-			_dprintf("[%s, %d] Can not find interface name by vpnc_idx(%d)\n", __FUNCTION__, __LINE__, policy.vpnc_idx);
-			free(nv);
-			return -1;
-		}
-
-		if(policy.active)
-			vpnc_handle_policy_rule(0, lan_ifname, policy.mac, vpnc_ifname, policy.dst_ip, -1);
-#endif
-
-	}
-
-	free(nv);
-	return 0;
-}
-#else
-/*******************************************************************
-* NAME: vpnc_set_dev_policy_rule
-* AUTHOR: Andy Chiu
-* CREATE DATE: 2017/4/18
-* DESCRIPTION: compare vpnc_dev_policy_list_tmp and vpnc_dev_policy_list_tmp,
-*				remove old rules and add new rules
-* INPUT:
-* OUTPUT:
-* RETURN:  0:success, -1:failed.
-* NOTE:
-*******************************************************************/
+ * NAME: vpnc_set_dev_policy_rule
+ * AUTHOR: Andy Chiu
+ * CREATE DATE: 2017/4/18
+ * DESCRIPTION: compare vpnc_dev_policy_list_tmp and vpnc_dev_policy_list_tmp,
+ *				remove old rules and add new rules
+ * INPUT:
+ * OUTPUT:
+ * RETURN:  0:success, -1:failed.
+ * NOTE:
+ *******************************************************************/
 int vpnc_set_dev_policy_rule()
 {
 	int policy_cnt_new, policy_cnt_old, i, j, flag;
 	VPNC_DEV_POLICY *policy_ptr;
-	VPNC_DEV_POLICY	dev_policy_new[MAX_DEV_POLICY] = {{0}}, dev_policy_old[MAX_DEV_POLICY] = {{0}};
+	VPNC_DEV_POLICY dev_policy_new[MAX_DEV_POLICY] = {{0}}, dev_policy_old[MAX_DEV_POLICY] = {{0}};
 
-	policy_cnt_old =  vpnc_get_dev_policy_list(dev_policy_old, MAX_DEV_POLICY, 1);
-	policy_cnt_new =  vpnc_get_dev_policy_list(dev_policy_new, MAX_DEV_POLICY, 0);
+	policy_cnt_old = vpnc_get_dev_policy_list(dev_policy_old, MAX_DEV_POLICY, 1);
+	policy_cnt_new = vpnc_get_dev_policy_list(dev_policy_new, MAX_DEV_POLICY, 0);
 
-	_dprintf("[%s, %d]old policy cnt<%d> new policy cnt<%d>\n", __FUNCTION__, __LINE__, policy_cnt_old, policy_cnt_new);
-
-	//check old policy list, if it does not exist in the new list or different, remove the old rule.
-	for(i = 0; i < policy_cnt_old; ++i)
+	// check old policy list, if it does not exist in the new list or different, remove the old rule.
+	for (i = 0; i < policy_cnt_old; ++i)
 	{
 		policy_ptr = &dev_policy_old[i];
-		if(policy_ptr->active)
+		if (policy_ptr->active)
 		{
 			flag = 1;
-			for(j = 0; j < policy_cnt_new; ++j)
+			for (j = 0; j < policy_cnt_new; ++j)
 			{
-				if(!memcmp(policy_ptr, &dev_policy_new[j], sizeof(VPNC_DEV_POLICY)))	//policy is not changed
+				if (!memcmp(policy_ptr, &dev_policy_new[j], sizeof(VPNC_DEV_POLICY))) // policy is not changed
 				{
 					flag = 0;
 					break;
 				}
 			}
-			if(flag)
+			if (flag)
 			{
-				vpnc_handle_policy_rule(0, policy_ptr->src_ip, policy_ptr->vpnc_idx);
+				vpnc_handle_policy_rule(0, policy_ptr);
 			}
 		}
-
 	}
 
-	//check new policy list, if it does not exist in the old list, add the rule.
-	for(i = 0; i < policy_cnt_new; ++i)
+	// check new policy list, if it does not exist in the old list, add the rule.
+	for (i = 0; i < policy_cnt_new; ++i)
 	{
 		policy_ptr = &dev_policy_new[i];
-		if(policy_ptr->active)
+		if (policy_ptr->active)
 		{
 			flag = 1;
-			for(j = 0; j < policy_cnt_old; ++j)
+			for (j = 0; j < policy_cnt_old; ++j)
 			{
-				if(!memcmp(policy_ptr, &dev_policy_old[j], sizeof(VPNC_DEV_POLICY)))	//policy is not changed
+				if (!memcmp(policy_ptr, &dev_policy_old[j], sizeof(VPNC_DEV_POLICY))) // policy is not changed
 				{
 					flag = 0;
 					break;
 				}
 			}
-			if(flag)
+			if (flag)
 			{
-				vpnc_handle_policy_rule(1, policy_ptr->src_ip, policy_ptr->vpnc_idx);
+				vpnc_handle_policy_rule(1, policy_ptr);
 			}
 		}
-
 	}
-        start_firewall(wan_primary_ifunit(), 0);
-        return 0;
+	start_firewall(wan_primary_ifunit(), 0);
+	return 0;
 }
-#endif
 /*******************************************************************
-* NAME: vpnc_init
-* AUTHOR: Andy Chiu
-* CREATE DATE: 2016/12/07
-* DESCRIPTION: initialize variables
-* INPUT:
-* OUTPUT:
-* RETURN:
-* NOTE:
-*******************************************************************/
-void
-vpnc_init()
+ * NAME: vpnc_init
+ * AUTHOR: Andy Chiu
+ * CREATE DATE: 2016/12/07
+ * DESCRIPTION: initialize variables
+ * INPUT:
+ * OUTPUT:
+ * RETURN:
+ * NOTE:
+ *******************************************************************/
+void vpnc_init()
 {
-	//load profile
+	// load profile
 	vpnc_profile_num = vpnc_load_profile(vpnc_profile, MAX_VPNC_PROFILE, VPNC_PROFILE_VER1);
 	//_dprintf("[%s, %d]vpnc_profile_num=%d\n", __FUNCTION__, __LINE__, vpnc_profile_num);
 }
 
 /*******************************************************************
-* NAME: start_vpnc_by_unit
-* AUTHOR: Andy Chiu
-* CREATE DATE: 2016/12/07
-* DESCRIPTION: start to connect the vpnc by profile
-* INPUT:  unit: index of vpnc client list. (NOT vpnc_idx)
-* OUTPUT:
-* RETURN:  0: success, -1: failed
-* NOTE:
-*******************************************************************/
-int
-start_vpnc_by_unit(const int unit)
+ * NAME: start_vpnc_by_unit
+ * AUTHOR: Andy Chiu
+ * CREATE DATE: 2016/12/07
+ * DESCRIPTION: start to connect the vpnc by profile
+ * INPUT:  unit: index of vpnc client list. (NOT vpnc_idx)
+ * OUTPUT:
+ * RETURN:  0: success, -1: failed
+ * NOTE:
+ *******************************************************************/
+int start_vpnc_by_unit(const int unit)
 {
 	FILE *fp;
 	char options[80], l2tp_conf[128], l2tp_ctrl[128], l2tp_pid[128];
-	char *pppd_argv[] = { "/usr/sbin/pppd", "file", options, NULL};
+	char *pppd_argv[] = {"/usr/sbin/pppd", "file", options, NULL};
 	char tmp[100], prefix[] = "vpnc_", vpnc_prefix[] = "vpncXXXXXXXXXX_", wan_prefix[] = "wanXXXXXXXXXX_";
-	char buf[256];	/* although maximum length of pppoe_username/pppoe_passwd is 64. pppd accepts up to 256 characters. */
+	char buf[256]; /* although maximum length of pppoe_username/pppoe_passwd is 64. pppd accepts up to 256 characters. */
 	mode_t mask;
 	int ret = 0;
 	VPNC_PROFILE *prof;
 
-	if(unit >= vpnc_profile_num)
+	if (unit >= vpnc_profile_num)
 		return -1;
 
-	_dprintf("[%s, %d]Start unit(%d)!\n", __FUNCTION__, __LINE__, unit);
+	_dprintf("[%s]Start unit(%d)!\n", __FUNCTION__, unit);
 
 	prof = vpnc_profile + unit;
 
-	//vpnc_dump_vpnc_profile(prof);
+	// vpnc_dump_vpnc_profile(prof);
 
-	//stop if connection exist.
+	// stop if connection exist.
 	stop_vpnc_by_unit(unit);
 
-	//init prefix
+	// init prefix
 	snprintf(wan_prefix, sizeof(wan_prefix), "wan%d_", wan_primary_ifunit());
 	snprintf(vpnc_prefix, sizeof(vpnc_prefix), "vpnc%d_", prof->vpnc_idx);
 
 	/* unset vpnc_dut_disc */
 	nvram_unset(strlcat_r(vpnc_prefix, "dut_disc", tmp, sizeof(tmp)));
 
-	//init option path
-	if(VPNC_PROTO_PPTP == prof->protocol)
+	// init option path
+	if (VPNC_PROTO_PPTP == prof->protocol)
 		snprintf(options, sizeof(options), "/tmp/ppp/vpnc%d_options.pptp", prof->vpnc_idx);
-	else if(VPNC_PROTO_L2TP == prof->protocol)
+	else if (VPNC_PROTO_L2TP == prof->protocol)
 		snprintf(options, sizeof(options), "/tmp/ppp/vpnc%d_options.l2tp", prof->vpnc_idx);
-	else if(VPNC_PROTO_OVPN == prof->protocol)
+	else if (VPNC_PROTO_OVPN == prof->protocol)
 	{
-		_dprintf("[%s, %d]Start to connect OpenVPN(%d).\n", __FUNCTION__, __LINE__, prof->config.ovpn.ovpn_idx);
+		_dprintf("[%s]Start to connect OpenVPN(%d).\n", __FUNCTION__, prof->config.ovpn.ovpn_idx);
 		vpnc_ovpn_sync_account(prof);
 		start_ovpn_client(prof->config.ovpn.ovpn_idx);
 		return 0;
 	}
-	else if(VPNC_PROTO_IPSEC== prof->protocol)
+#ifdef RTCONFIG_IPSEC
+	else if (VPNC_PROTO_IPSEC == prof->protocol)
 	{
-		//TODO:
-		_dprintf("[%s, %d]Start to connect IPSec.\n", __FUNCTION__, __LINE__);
+		_dprintf("[%s]Start to connect IPSec(%d).\n", __FUNCTION__, prof->config.ipsec.prof_idx);
+		rc_ipsec_ctrl(0, prof->config.ipsec.prof_idx, 1);
 		return 0;
 	}
+#endif
 #ifdef RTCONFIG_WIREGUARD
-	else if(VPNC_PROTO_WG== prof->protocol)
+	else if (VPNC_PROTO_WG == prof->protocol)
 	{
-		_dprintf("[%s, %d]Start to connect WireGuard(%d).\n", __FUNCTION__, __LINE__, prof->config.wg.wg_idx);
+		char vpnc_ifname[IFNAMSIZ] = {0};
+		_dprintf("[%s]Start to connect WireGuard(%d).\n", __FUNCTION__, prof->config.wg.wg_idx);
 		start_wgc(prof->config.wg.wg_idx);
-		vpnc_update_resolvconf(prof->vpnc_idx);
-		update_vpnc_state(prof->vpnc_idx, WAN_STATE_CONNECTED, 0);
-		set_policy_dns_iptables_rules();
+		snprintf(vpnc_ifname, sizeof(vpnc_ifname), "%s%d", WG_CLIENT_IF_PREFIX, prof->config.wg.wg_idx);
+		vpnc_up(prof->vpnc_idx, vpnc_ifname);
 		return 0;
 	}
-	else if(VPNC_PROTO_NORDVPN == prof->protocol)
+	else if (VPNC_PROTO_NORDVPN == prof->protocol)
 	{
 		char cmd[256] = {0};
-		_dprintf("[%s, %d]Start to connect NordVPN(%d).\n", __FUNCTION__, __LINE__, prof->config.tpvpn.tpvpn_idx);
-		snprintf(cmd, sizeof(cmd), "nordvpn setconf '%s' %d &"
-			, prof->config.tpvpn.region
-			, prof->config.tpvpn.tpvpn_idx
-			);
+		_dprintf("[%s]Start to connect NordVPN(%d).\n", __FUNCTION__, prof->config.tpvpn.tpvpn_idx);
+		snprintf(cmd, sizeof(cmd), "nordvpn setconf '%s' %d &", prof->config.tpvpn.region, prof->config.tpvpn.tpvpn_idx);
 		system(cmd);
 		return 0;
 	}
 #endif
-	else if(VPNC_PROTO_HMA == prof->protocol)
+	else if (VPNC_PROTO_HMA == prof->protocol)
 	{
 		char cmd[256] = {0};
-		_dprintf("[%s, %d]Start to connect HMA(%d).\n", __FUNCTION__, __LINE__, prof->config.tpvpn.tpvpn_idx);
-		snprintf(cmd, sizeof(cmd), "hmavpn setconf '%s' '%s' %d %d &"
-			, prof->config.tpvpn.region , prof->config.tpvpn.conntype
-			, prof->config.tpvpn.tpvpn_idx, unit
-			);
+		_dprintf("[%s]Start to connect HMA(%d).\n", __FUNCTION__, prof->config.tpvpn.tpvpn_idx);
+		snprintf(cmd, sizeof(cmd), "hmavpn setconf '%s' '%s' %d %d &", prof->config.tpvpn.region, prof->config.tpvpn.conntype, prof->config.tpvpn.tpvpn_idx, unit);
 		system(cmd);
 		return 0;
 	}
 	else
 	{
-		_dprintf("[%s, %d]Unknown protocol\n", __FUNCTION__, __LINE__);
+		_dprintf("[%s]Unknown protocol\n", __FUNCTION__);
 		return -1;
 	}
 
-	//init vpncX_ state.
+	// init vpncX_ state.
 	update_vpnc_state(prof->vpnc_idx, WAN_STATE_INITIALIZING, 0);
 
-	//Run PPTP/L2TP
-	if (VPNC_PROTO_PPTP == prof->protocol || VPNC_PROTO_L2TP == prof->protocol) {
+	// Run PPTP/L2TP
+	if (VPNC_PROTO_PPTP == prof->protocol || VPNC_PROTO_L2TP == prof->protocol)
+	{
 		mask = umask(0000);
 
 		/* Generate options file */
-		if (!(fp = fopen(options, "w"))) {
+		if (!(fp = fopen(options, "w")))
+		{
 			perror(options);
 			umask(mask);
 			return -1;
@@ -1881,11 +1381,12 @@ start_vpnc_by_unit(const int unit)
 #ifdef HND_ROUTER
 		/* workaround for ppp packets are dropped by fc GRE learning when pptp server / client enabled */
 		char wan_proto[16];
-		snprintf(wan_proto, sizeof(wan_proto), "%s", nvram_safe_get(strcat_r(wan_prefix, "proto", tmp)));
+		snprintf(wan_proto, sizeof(wan_proto), "%s", nvram_safe_get(strlcat_r(wan_prefix, "proto", tmp, sizeof(tmp))));
 		if (nvram_match("fc_disable", "0") &&
 			(!strcmp(wan_proto, "pppoe") ||
 			 !strcmp(wan_proto, "pptp") ||
-			 !strcmp(wan_proto, "l2tp"))) {
+			 !strcmp(wan_proto, "l2tp")))
+		{
 			dbg("[%s, %d] Flow Cache Learning of GRE flows Tunnel: DISABLED, PassThru: ENABLED\n", __FUNCTION__, __LINE__);
 			eval("fc", "config", "--gre", "0");
 		}
@@ -1897,16 +1398,17 @@ start_vpnc_by_unit(const int unit)
 		char *wan_ifname = nvram_safe_get(strlcat_r(wan_prefix, "pppoe_ifname", tmp, sizeof(tmp)));
 		route_add(wan_ifname, 0, nvram_safe_get(strlcat_r(wan_prefix, "gateway", tmp, sizeof(tmp))), "0.0.0.0", "255.255.255.255");
 
-		//generate ppp profile
+		// generate ppp profile
 		/* do not authenticate peer and do not use eap */
 		fprintf(fp, "noauth\n");
 		fprintf(fp, "refuse-eap\n");
 		fprintf(fp, "user '%s'\n",
-			ppp_safe_escape(prof->basic.username, buf, sizeof(buf)));
+				ppp_safe_escape(prof->basic.username, buf, sizeof(buf)));
 		fprintf(fp, "password '%s'\n",
-			ppp_safe_escape(prof->basic.password, buf, sizeof(buf)));
+				ppp_safe_escape(prof->basic.password, buf, sizeof(buf)));
 
-		if (VPNC_PROTO_PPTP == prof->protocol) {
+		if (VPNC_PROTO_PPTP == prof->protocol)
+		{
 			fprintf(fp, "plugin pptp.so\n");
 			fprintf(fp, "pptp_server '%s'\n", prof->basic.server);
 			/* see KB Q189595 -- historyless & mtu */
@@ -1915,30 +1417,37 @@ start_vpnc_by_unit(const int unit)
 			else
 				fprintf(fp, "nomppe-stateful mtu 1400\n");
 
-			if (VPNC_PPTP_OPT_MPPC == prof->config.pptp.option) {
+			if (VPNC_PPTP_OPT_MPPC == prof->config.pptp.option)
+			{
 				fprintf(fp, "nomppe nomppc\n");
-			} else
-			if (VPNC_PPTP_OPT_MPPE40 == prof->config.pptp.option) {
-				fprintf(fp, "require-mppe\n"
-					    "require-mppe-40\n");
-			} else
-			if (VPNC_PPTP_OPT_MPPE56 == prof->config.pptp.option) {
-				fprintf(fp, "nomppe-40\n"
-					    "require-mppe\n"
-					    "require-mppe-56\n");
-			} else
-			if (VPNC_PPTP_OPT_MPPE128 == prof->config.pptp.option) {
-				fprintf(fp, "nomppe-40\n"
-					    "nomppe-56\n"
-					    "require-mppe\n"
-					    "require-mppe-128\n");
-			} else
-			if (VPNC_PPTP_OPT_AUTO == prof->config.pptp.option) {
-				fprintf(fp, "require-mppe-40\n"
-					    "require-mppe-56\n"
-					    "require-mppe-128\n");
 			}
-		} else {
+			else if (VPNC_PPTP_OPT_MPPE40 == prof->config.pptp.option)
+			{
+				fprintf(fp, "require-mppe\n"
+							"require-mppe-40\n");
+			}
+			else if (VPNC_PPTP_OPT_MPPE56 == prof->config.pptp.option)
+			{
+				fprintf(fp, "nomppe-40\n"
+							"require-mppe\n"
+							"require-mppe-56\n");
+			}
+			else if (VPNC_PPTP_OPT_MPPE128 == prof->config.pptp.option)
+			{
+				fprintf(fp, "nomppe-40\n"
+							"nomppe-56\n"
+							"require-mppe\n"
+							"require-mppe-128\n");
+			}
+			else if (VPNC_PPTP_OPT_AUTO == prof->config.pptp.option)
+			{
+				fprintf(fp, "require-mppe-40\n"
+							"require-mppe-56\n"
+							"require-mppe-128\n");
+			}
+		}
+		else
+		{
 			fprintf(fp, "nomppe nomppc\n");
 
 			if (nvram_match(strlcat_r(wan_prefix, "proto", tmp, sizeof(tmp)), "pptp") || nvram_match(strlcat_r(wan_prefix, "proto", tmp, sizeof(tmp)), "l2tp"))
@@ -1947,9 +1456,11 @@ start_vpnc_by_unit(const int unit)
 				fprintf(fp, "mtu 1400\n");
 		}
 
-		if (VPNC_PROTO_L2TP != prof->protocol) {
+		if (VPNC_PROTO_L2TP != prof->protocol)
+		{
 			ret = nvram_get_int(strlcat_r(prefix, "pppoe_idletime", tmp, sizeof(tmp)));
-			if (ret && nvram_get_int(strlcat_r(prefix, "pppoe_demand", tmp, sizeof(tmp)))) {
+			if (ret && nvram_get_int(strlcat_r(prefix, "pppoe_demand", tmp, sizeof(tmp))))
+			{
 				fprintf(fp, "idle %d ", ret);
 				if (nvram_invmatch(strlcat_r(prefix, "pppoe_txonly_x", tmp, sizeof(tmp)), "0"))
 					fprintf(fp, "tx_only ");
@@ -1958,7 +1469,7 @@ start_vpnc_by_unit(const int unit)
 			fprintf(fp, "persist\n");
 		}
 
-		fprintf(fp, "holdoff %d\n", nvram_get_int(strlcat_r(prefix, "pppoe_holdoff", tmp, sizeof(tmp))) ? : 10);
+		fprintf(fp, "holdoff %d\n", nvram_get_int(strlcat_r(prefix, "pppoe_holdoff", tmp, sizeof(tmp))) ?: 10);
 		fprintf(fp, "maxfail %d\n", nvram_get_int(strlcat_r(prefix, "pppoe_maxfail", tmp, sizeof(tmp))));
 
 		if (nvram_invmatch(strlcat_r(prefix, "dnsenable_x", tmp, sizeof(tmp)), "0"))
@@ -1992,7 +1503,7 @@ start_vpnc_by_unit(const int unit)
 
 		/* user specific options */
 		fprintf(fp, "%s\n",
-			nvram_safe_get(strlcat_r(prefix, "pppoe_options_x", tmp, sizeof(tmp))));
+				nvram_safe_get(strlcat_r(prefix, "pppoe_options_x", tmp, sizeof(tmp))));
 
 		fclose(fp);
 
@@ -2002,35 +1513,37 @@ start_vpnc_by_unit(const int unit)
 			snprintf(l2tp_ctrl, sizeof(l2tp_ctrl), L2TP_VPNC_CTRL, prof->vpnc_idx);
 			snprintf(l2tp_pid, sizeof(l2tp_pid), L2TP_VPNC_PID, prof->vpnc_idx);
 
-			//generate l2tp profile
-			if (!(fp = fopen(l2tp_conf, "w"))) {
+			// generate l2tp profile
+			if (!(fp = fopen(l2tp_conf, "w")))
+			{
 				perror(l2tp_conf);
 				return -1;
 			}
 
 			fprintf(fp, "# automagically generated\n"
-				"global\n\n"
-				"load-handler \"sync-pppd.so\"\n"
-				"load-handler \"cmd.so\"\n\n"
-				"section sync-pppd\n\n"
-				"lac-pppd-opts \"file %s\"\n\n"
-				"section peer\n"
-				"port 1701\n"
-				"peername %s\n"
-				"hostname %s\n"
-				"lac-handler sync-pppd\n"
-				"persist yes\n"
-				"maxfail %d\n"
-				"holdoff %d\n"
-				"hide-avps no\n"
-				"section cmd\n"
-				"socket-path " "%s" "\n\n",
-				options,
-	                        prof->basic.server,
-				nvram_invmatch(strlcat_r(prefix, "hostname", tmp, sizeof(tmp)), "") ?
-					nvram_safe_get(strlcat_r(prefix, "hostname", tmp, sizeof(tmp))) : "localhost",
-				nvram_get_int(strlcat_r(prefix, "pppoe_maxfail", tmp, sizeof(tmp)))  ? : 32767,
-				nvram_get_int(strlcat_r(prefix, "pppoe_holdoff", tmp, sizeof(tmp))) ? : 10, l2tp_ctrl);
+						"global\n\n"
+						"load-handler \"sync-pppd.so\"\n"
+						"load-handler \"cmd.so\"\n\n"
+						"section sync-pppd\n\n"
+						"lac-pppd-opts \"file %s\"\n\n"
+						"section peer\n"
+						"port 1701\n"
+						"peername %s\n"
+						"hostname %s\n"
+						"lac-handler sync-pppd\n"
+						"persist yes\n"
+						"maxfail %d\n"
+						"holdoff %d\n"
+						"hide-avps no\n"
+						"section cmd\n"
+						"socket-path "
+						"%s"
+						"\n\n",
+					options,
+					prof->basic.server,
+					nvram_invmatch(strlcat_r(prefix, "hostname", tmp, sizeof(tmp)), "") ? nvram_safe_get(strlcat_r(prefix, "hostname", tmp, sizeof(tmp))) : "localhost",
+					nvram_get_int(strlcat_r(prefix, "pppoe_maxfail", tmp, sizeof(tmp))) ?: 32767,
+					nvram_get_int(strlcat_r(prefix, "pppoe_holdoff", tmp, sizeof(tmp))) ?: 10, l2tp_ctrl);
 
 			fclose(fp);
 
@@ -2038,9 +1551,10 @@ start_vpnc_by_unit(const int unit)
 			eval("/usr/sbin/l2tpd", "-c", l2tp_conf, "-p", l2tp_pid);
 
 			ret = 3;
-			do {
+			do
+			{
 				_dprintf("%s: wait l2tpd up at %d seconds...\n", __FUNCTION__, ret);
-				usleep(1000*1000);
+				usleep(1000 * 1000);
 			} while (!pids("l2tpd") && ret--);
 
 			/* start-session */
@@ -2048,38 +1562,35 @@ start_vpnc_by_unit(const int unit)
 
 			/* pppd sync nodetach noaccomp nobsdcomp nodeflate */
 			/* nopcomp novj novjccomp file /tmp/ppp/options.l2tp */
-
 		}
 		else
 		{
-			ret = _eval(pppd_argv, NULL, 0, NULL);	//launch pppd
+			ret = _eval(pppd_argv, NULL, 0, NULL); // launch pppd
 		}
 	}
 	update_vpnc_state(prof->vpnc_idx, WAN_STATE_CONNECTING, 0);
 
 	return ret;
-
 }
 
 /*******************************************************************
-* NAME: stop_vpnc_by_unit
-* AUTHOR: Andy Chiu
-* CREATE DATE: 2016/12/07
-* DESCRIPTION: stop connecting the vpnc by profile
-* INPUT:  unit: index of vpnc client list. (NOT vpnc_idx)
-* OUTPUT:
-* RETURN:  0: success, -1: failed
-* NOTE:
-*******************************************************************/
-int
-stop_vpnc_by_unit(const int unit)
+ * NAME: stop_vpnc_by_unit
+ * AUTHOR: Andy Chiu
+ * CREATE DATE: 2016/12/07
+ * DESCRIPTION: stop connecting the vpnc by profile
+ * INPUT:  unit: index of vpnc client list. (NOT vpnc_idx)
+ * OUTPUT:
+ * RETURN:  0: success, -1: failed
+ * NOTE:
+ *******************************************************************/
+int stop_vpnc_by_unit(const int unit)
 {
 	VPNC_PROFILE *prof;
 	char pidfile[sizeof("/var/run/ppp-vpnXXXXXXXXXX.pid")];
 	char l2tp_pid[128];
 	char tmp[100], vpnc_prefix[] = "vpncXXXXX_";
 
-	if(unit >= vpnc_profile_num)
+	if (unit >= vpnc_profile_num)
 		return -1;
 
 	prof = vpnc_profile + unit;
@@ -2096,75 +1607,85 @@ stop_vpnc_by_unit(const int unit)
 	/* Reset the state of vpnc_dut_disc */
 	nvram_set_int(strlcat_r(vpnc_prefix, "dut_disc", tmp, sizeof(tmp)), prof->vpnc_idx);
 
-	if(VPNC_PROTO_PPTP == prof->protocol || VPNC_PROTO_L2TP == prof->protocol)
+	if (VPNC_PROTO_PPTP == prof->protocol || VPNC_PROTO_L2TP == prof->protocol)
 	{
 		update_vpnc_state(prof->vpnc_idx, WAN_STATE_STOPPING, 0);
-		if(VPNC_PROTO_L2TP == prof->protocol)
+		if (VPNC_PROTO_L2TP == prof->protocol)
 		{
-			//stop l2tp
+			// stop l2tp
 			snprintf(l2tp_pid, sizeof(l2tp_pid), L2TP_VPNC_PID, prof->vpnc_idx);
-			if(check_if_file_exist(l2tp_pid))
+			if (check_if_file_exist(l2tp_pid))
 			{
 				kill_pidfile_tk(l2tp_pid);
-				usleep(1000*10000);
+				usleep(1000 * 10000);
 			}
 		}
 		/* Stop pppd */
 		if (kill_pidfile_s(pidfile, SIGHUP) == 0 &&
-		    kill_pidfile_s(pidfile, SIGTERM) == 0) {
-			usleep(3000*1000);
+			kill_pidfile_s(pidfile, SIGTERM) == 0)
+		{
+			usleep(3000 * 1000);
 			kill_pidfile_tk(pidfile);
 		}
 #ifdef HND_ROUTER
 		/* workaround for ppp packets are dropped by fc GRE learning when pptp server / client enabled */
-		if (nvram_match("fc_disable", "0")) eval("fc", "config", "--gre", "1");
+		if (nvram_match("fc_disable", "0"))
+			eval("fc", "config", "--gre", "1");
 #endif
 	}
-	else if(VPNC_PROTO_OVPN == prof->protocol)
+	else if (VPNC_PROTO_OVPN == prof->protocol)
 	{
-		_dprintf("[%s, %d]Stop OpenVPN(%d).\n", __FUNCTION__, __LINE__, prof->config.ovpn.ovpn_idx);
+		_dprintf("[%s]Stop OpenVPN(%d).\n", __FUNCTION__, prof->config.ovpn.ovpn_idx);
 		stop_ovpn_client(prof->config.ovpn.ovpn_idx);
 	}
 #ifdef RTCONFIG_WIREGUARD
-	else if(VPNC_PROTO_WG == prof->protocol)
+	else if (VPNC_PROTO_WG == prof->protocol)
 	{
-		_dprintf("[%s, %d]Stop WireGuard(%d).\n", __FUNCTION__, __LINE__, prof->config.wg.wg_idx);
+		char vpnc_ifname[IFNAMSIZ] = {0};
+		_dprintf("[%s]Stop WireGuard(%d).\n", __FUNCTION__, prof->config.wg.wg_idx);
 		stop_wgc(prof->config.wg.wg_idx);
+		snprintf(vpnc_ifname, sizeof(vpnc_ifname), "%s%d", WG_CLIENT_IF_PREFIX, prof->config.wg.wg_idx);
+		vpnc_down(prof->config.wg.wg_idx, vpnc_ifname);
 	}
-	else if(VPNC_PROTO_NORDVPN == prof->protocol)
+	else if (VPNC_PROTO_NORDVPN == prof->protocol)
 	{
-		_dprintf("[%s, %d]Stop NordVPN(%d).\n", __FUNCTION__, __LINE__, prof->config.tpvpn.tpvpn_idx);
+		_dprintf("[%s]Stop NordVPN(%d).\n", __FUNCTION__, prof->config.tpvpn.tpvpn_idx);
 		stop_wgc(prof->config.tpvpn.tpvpn_idx);
 	}
 #endif
+	else if (VPNC_PROTO_IPSEC == prof->protocol)
+	{
+		_dprintf("[%s]Stop IPSec(%d).\n", __FUNCTION__, prof->config.ipsec.prof_idx);
+		rc_ipsec_ctrl(0, prof->config.ipsec.prof_idx, 0);
+	}
 	return 0;
 }
 
 /*******************************************************************
-* NAME: set_routing_table
-* AUTHOR: Andy Chiu
-* CREATE DATE: 2017/2/7
-* DESCRIPTION: set multipath routing table
-* INPUT:  cmd: 1:add, 0:delete.  vpnc_id: index of vpnc profile
-* OUTPUT:
-* RETURN:  0: success, -1: failed
-* NOTE:
-*******************************************************************/
+ * NAME: set_routing_table
+ * AUTHOR: Andy Chiu
+ * CREATE DATE: 2017/2/7
+ * DESCRIPTION: set multipath routing table
+ * INPUT:  cmd: 1:add, 0:delete.  vpnc_id: index of vpnc profile
+ * OUTPUT:
+ * RETURN:  0: success, -1: failed
+ * NOTE:
+ *******************************************************************/
 static int _clean_routing_table(const int vpnc_id)
 {
 	FILE *fp = NULL;
 	char tmp[256], tmp2[256];
 
-	//delete all rules in vpnc routing table
+	// delete all rules in vpnc routing table
 	snprintf(tmp, sizeof(tmp), "ip route show table %d > /tmp/route_tmp", vpnc_id);
 	system(tmp);
 	fp = fopen("/tmp/route_tmp", "r");
-	if(fp)
+	if (fp)
 	{
-		while(fgets(tmp2, sizeof(tmp2), fp))
+		while (fgets(tmp2, sizeof(tmp2), fp))
 		{
 			char *ptr = strchr(tmp2, '\n');
-			if(ptr)
+			if (ptr)
 			{
 				*ptr = '\0';
 			}
@@ -2176,7 +1697,7 @@ static int _clean_routing_table(const int vpnc_id)
 	}
 	else
 	{
-		_dprintf("[%s, %d]Can not get route table %d\n", __FUNCTION__, __LINE__, vpnc_id);
+		_dprintf("[%s]Can not get route table %d\n", __FUNCTION__, vpnc_id);
 		unlink("/tmp/route_tmp");
 		return -1;
 	}
@@ -2186,8 +1707,8 @@ static int _clean_routing_table(const int vpnc_id)
 int set_routing_table(const int cmd, const int vpnc_id)
 {
 	char tmp[256], tmp2[256], tag[32];
-	char prefix[] = "vpncXXXXX_", id_str[16], wan_prefix[]= "wanXXXXXX_";
-	char *route_network = NULL, *route_netmask = NULL, *route_gateway=NULL, *route_metric=NULL;
+	char prefix[] = "vpncXXXXX_", id_str[16], wan_prefix[] = "wanXXXXXX_";
+	char *route_network = NULL, *route_netmask = NULL, *route_gateway = NULL, *route_metric = NULL;
 	VPNC_PROFILE *prof = NULL;
 	FILE *fp;
 	int cnt, i;
@@ -2197,21 +1718,21 @@ int set_routing_table(const int cmd, const int vpnc_id)
 
 	//_dprintf("[%s, %d]cmd=%d, vpnc_id=%d\n", __FUNCTION__, __LINE__, cmd, vpnc_id);
 
-	//get protocol
-	prof =  vpnc_get_profile_by_vpnc_id(vpnc_profile, MAX_VPNC_PROFILE, vpnc_id);
+	// get protocol
+	prof = vpnc_get_profile_by_vpnc_id(vpnc_profile, MAX_VPNC_PROFILE, vpnc_id);
 
-	if(!prof && vpnc_id != INTERNET_ROUTE_TABLE_ID)
+	if (!prof && vpnc_id != INTERNET_ROUTE_TABLE_ID)
 	{
-		_dprintf("[%s, %d]Can not get vpnc profile(%d)\n", __FUNCTION__, __LINE__, vpnc_id);
+		_dprintf("[%s]Can not get vpnc profile(%d)\n", __FUNCTION__, vpnc_id);
 		return -1;
 	}
 
-	if(vpnc_id >= VPNC_UNIT_BASIC)	//VPNC
+	if (vpnc_id >= VPNC_UNIT_BASIC) // VPNC
 	{
 		snprintf(id_str, sizeof(id_str), "%d", vpnc_id);
 		snprintf(prefix, sizeof(prefix), "vpnc%d_", vpnc_id);
 	}
-	else	//internet
+	else // internet
 	{
 		snprintf(id_str, sizeof(id_str), "%d", INTERNET_ROUTE_TABLE_ID);
 		snprintf(prefix, sizeof(prefix), "wan%d_", wan_primary_ifunit());
@@ -2221,21 +1742,21 @@ int set_routing_table(const int cmd, const int vpnc_id)
 
 	_clean_routing_table(vpnc_id);
 
-	if(cmd)
+	if (cmd)
 	{
-		//get main route table and set to vpnc route table
+		// get main route table and set to vpnc route table
 		system("ip route show table main> /tmp/route_tmp");
 		fp = fopen("/tmp/route_tmp", "r");
-		if(fp)
+		if (fp)
 		{
-			while(fgets(tmp2, sizeof(tmp2), fp))
+			while (fgets(tmp2, sizeof(tmp2), fp))
 			{
 				char *ptr = strchr(tmp2, '\n');
-				if(ptr)
+				if (ptr)
 				{
 					*ptr = '\0';
 				}
-				if(!strncmp(tmp2, "default", 7) && (prof->protocol == VPNC_PROTO_PPTP || prof->protocol == VPNC_PROTO_L2TP))
+				if (!strncmp(tmp2, "default", 7) && (prof->protocol == VPNC_PROTO_PPTP || prof->protocol == VPNC_PROTO_L2TP))
 				{
 					snprintf(tmp, sizeof(tmp), "ip route add %s metric 1 table %d", tmp2, vpnc_id);
 				}
@@ -2248,42 +1769,41 @@ int set_routing_table(const int cmd, const int vpnc_id)
 		}
 		else
 		{
-			_dprintf("[%s, %d]Can not get main routing table\n", __FUNCTION__, __LINE__);
+			_dprintf("[%s]Can not get main routing table\n", __FUNCTION__);
 			unlink("/tmp/route_tmp");
 			return -1;
 		}
 
-
-		//set vpnc route table
-		if(vpnc_id != INTERNET_ROUTE_TABLE_ID)
+		// set vpnc route table
+		if (vpnc_id != INTERNET_ROUTE_TABLE_ID)
 		{
-			if(prof->protocol == VPNC_PROTO_PPTP || prof->protocol == VPNC_PROTO_L2TP)
+			if (prof->protocol == VPNC_PROTO_PPTP || prof->protocol == VPNC_PROTO_L2TP)
 			{
-				//set default routing
-//				eval("ip", "route", "add", "default", "via", nvram_safe_get(strlcat_r(prefix, "gateway", tmp, sizeof(tmp))),
-//					"dev", nvram_safe_get(strlcat_r(prefix, "ifname", tmp, sizeof(tmp))), "table", id_str);
+				// set default routing
+				//				eval("ip", "route", "add", "default", "via", nvram_safe_get(strlcat_r(prefix, "gateway", tmp, sizeof(tmp))),
+				//					"dev", nvram_safe_get(strlcat_r(prefix, "ifname", tmp, sizeof(tmp))), "table", id_str);
 				eval("ip", "route", "add", "0.0.0.0/1", "via", nvram_safe_get(strlcat_r(prefix, "gateway", tmp, sizeof(tmp))),
-					"dev", nvram_safe_get(strlcat_r(prefix, "ifname", tmp, sizeof(tmp))), "table", id_str);
+					 "dev", nvram_safe_get(strlcat_r(prefix, "ifname", tmp, sizeof(tmp))), "table", id_str);
 				eval("ip", "route", "add", "128.0.0.0/1", "via", nvram_safe_get(strlcat_r(prefix, "gateway", tmp, sizeof(tmp))),
-					"dev", nvram_safe_get(strlcat_r(prefix, "ifname", tmp, sizeof(tmp))), "table", id_str);
+					 "dev", nvram_safe_get(strlcat_r(prefix, "ifname", tmp, sizeof(tmp))), "table", id_str);
 			}
-			else if(prof->protocol == VPNC_PROTO_OVPN)
+			else if (prof->protocol == VPNC_PROTO_OVPN)
 			{
-				//set default routing
+				// set default routing
 				eval("ip", "route", "add", "0.0.0.0/1", "via", nvram_safe_get(strlcat_r(prefix, "gateway", tmp, sizeof(tmp))),
-					"dev", nvram_safe_get(strlcat_r(prefix, "ifname", tmp, sizeof(tmp))), "table", id_str);
+					 "dev", nvram_safe_get(strlcat_r(prefix, "ifname", tmp, sizeof(tmp))), "table", id_str);
 				eval("ip", "route", "add", "128.0.0.0/1", "via", nvram_safe_get(strlcat_r(prefix, "gateway", tmp, sizeof(tmp))),
-					"dev", nvram_safe_get(strlcat_r(prefix, "ifname", tmp, sizeof(tmp))), "table", id_str);
+					 "dev", nvram_safe_get(strlcat_r(prefix, "ifname", tmp, sizeof(tmp))), "table", id_str);
 
-				//set remote routing rule			
+				// set remote routing rule
 				eval("ip", "route", "add", nvram_safe_get("trusted_ip"),
-					"via", nvram_safe_get(strlcat_r(wan_prefix, "gateway", tmp, sizeof(tmp))),
-					"dev", nvram_safe_get(strlcat_r(wan_prefix, "gw_ifname", tmp, sizeof(tmp))),
-					"table", id_str);
+					 "via", nvram_safe_get(strlcat_r(wan_prefix, "gateway", tmp, sizeof(tmp))),
+					 "dev", nvram_safe_get(strlcat_r(wan_prefix, "gw_ifname", tmp, sizeof(tmp))),
+					 "table", id_str);
 
-				//set route
+				// set route
 				cnt = nvram_get_int(strlcat_r(prefix, "route_num", tmp, sizeof(tmp)));
-				for(i = 0; i < cnt; ++i)
+				for (i = 0; i < cnt; ++i)
 				{
 					snprintf(tmp2, sizeof(tmp2), "route_network_%d", i);
 					route_network = nvram_safe_get(strlcat_r(prefix, tmp2, tmp, sizeof(tmp)));
@@ -2294,20 +1814,20 @@ int set_routing_table(const int cmd, const int vpnc_id)
 					snprintf(tmp2, sizeof(tmp2), "route_metric_%d", i);
 					route_metric = nvram_safe_get(strlcat_r(prefix, tmp2, tmp, sizeof(tmp)));
 
-					if ( inet_pton(AF_INET, route_network, &network) > 0
-					  && inet_pton(AF_INET, route_netmask, &netmask) > 0
-					) {
+					if (inet_pton(AF_INET, route_network, &network) > 0 && inet_pton(AF_INET, route_netmask, &netmask) > 0)
+					{
 						_dprintf("route: %s / %s\n", route_network, route_netmask);
-						if ( current_route(network.s_addr, netmask.s_addr)
-						  || current_addr(network.s_addr))
+						if (current_route(network.s_addr, netmask.s_addr) || current_addr(network.s_addr))
 						{
-							if (network.s_addr & netmask.s_addr) {
+							if (network.s_addr & netmask.s_addr)
+							{
 								_dprintf("route conflict: %s/%s\n", route_network, route_netmask);
 								logmessage_normal(tag, "WARNING: Ignore conflicted routing rule: %s %s gw %s", route_network, route_netmask, route_gateway);
 							}
-							else {
+							else
+							{
 								_dprintf("Detect default gateway: %s/%s\n", route_network, route_netmask);
-								//logmessage_normal(tag, "WARNING: Replace default vpn gateway by using 0.0.0.0/1 and 128.0.0.0/1");
+								// logmessage_normal(tag, "WARNING: Replace default vpn gateway by using 0.0.0.0/1 and 128.0.0.0/1");
 							}
 							update_ovpn_vpnc_state(vpnc_id, WAN_STATE_STOPPED, WAN_STOPPED_REASON_IPGATEWAY_CONFLICT);
 						}
@@ -2315,79 +1835,161 @@ int set_routing_table(const int cmd, const int vpnc_id)
 						{
 							int cidr = convert_subnet_mask_to_cidr(route_netmask);
 
-							if(cidr < 32 && cidr > 0)
+							if (cidr < 32 && cidr > 0)
 								snprintf(tmp2, sizeof(tmp2), "%s/%d", route_network, cidr);
 							else
 								snprintf(tmp2, sizeof(tmp2), "%s", route_network);
 
-							if(route_metric && route_metric[0] != '\0')
+							if (route_metric && route_metric[0] != '\0')
 								eval("ip", "route", "add", tmp2, "via", route_gateway, "dev", nvram_safe_get(strlcat_r(prefix, "ifname", tmp, sizeof(tmp))), "metric", route_metric, "table", id_str);
 							else
 								eval("ip", "route", "add", tmp2, "via", route_gateway, "dev", nvram_safe_get(strlcat_r(prefix, "ifname", tmp, sizeof(tmp))), "table", id_str);
 						}
 					}
 				}
-
 			}
 		}
 	}
 	return 0;
-
 }
 
 /*******************************************************************
-* NAME: set_routing_table
-* AUTHOR: Andy Chiu
-* CREATE DATE: 2017/2/7
-* DESCRIPTION: set multipath routing table
-* INPUT:  cmd: VPNC_ROUTE_CMD.  vpnc_id: index of vpnc profile
-* OUTPUT:
-* RETURN:  0: success, -1: failed
-* NOTE:
-*******************************************************************/
-int set_routing_rule(const VPNC_ROUTE_CMD cmd, const char *source_ip, const int vpnc_id)
+ * NAME: set_routing_table
+ * AUTHOR: Andy Chiu
+ * CREATE DATE: 2017/2/7
+ * DESCRIPTION: set multipath routing table
+ * INPUT:  cmd: VPNC_ROUTE_CMD.  vpnc_id: index of vpnc profile
+ * OUTPUT:
+ * RETURN:  0: success, -1: failed
+ * NOTE:
+ *******************************************************************/
+int set_routing_rule(const VPNC_ROUTE_CMD cmd, const VPNC_DEV_POLICY *policy)
 {
 	char cmd_str[8], id_str[8];
 
-	if(!source_ip)
+	if (!policy)
 		return -1;
 
 	//_dprintf("[%s, %d]<%d><%s><%d>\n", __FUNCTION__, __LINE__, cmd, source_ip, vpnc_id);
-	snprintf(cmd_str, sizeof(cmd_str), "%s", (cmd == VPNC_ROUTE_DEL)? "del": "add");
+	snprintf(cmd_str, sizeof(cmd_str), "%s", (cmd == VPNC_ROUTE_DEL) ? "del" : "add");
 
-	if(vpnc_id >= VPNC_UNIT_BASIC)
-		snprintf(id_str, sizeof(id_str), "%d", vpnc_id);
+	if (policy->vpnc_idx >= VPNC_UNIT_BASIC)
+		snprintf(id_str, sizeof(id_str), "%d", policy->vpnc_idx );
 	else
 		snprintf(id_str, sizeof(id_str), "main");
 
-	eval("ip", "rule", cmd_str, "from", (char *) source_ip, "table", id_str, "priority", VPNC_RULE_PRIORITY);
+	if(policy->src_ip[0] != '\0')
+	{
+		eval("ip", "rule", cmd_str, "from", (char*)policy->src_ip, "table", id_str, "priority", VPNC_RULE_PRIORITY);
+	}
+
+#ifdef RTCONFIG_VPN_FUSION_SUPPORT_INTERFACE
+	char priority[8];
+	snprintf(priority, sizeof(priority), "%d", VPNC_RULE_PRIORITY_NETWORK + policy->vpnc_idx * 3);
+
+	if(policy->iif[0] != '\0')
+	{
+		eval("ip", "rule", cmd_str, "iif", (char*)policy->iif, "table", id_str, "priority", priority);
+	}
+#endif
 	return 0;
 }
 
-
 /*******************************************************************
-* NAME: set_default_routing_table
-* AUTHOR: Andy Chiu
-* CREATE DATE: 2017/2/7
-* DESCRIPTION: set multipath routing table
-* INPUT:  cmd: VPNC_ROUTE_CMD.  vpnc_id: index of vpnc profile
-* OUTPUT:
-* RETURN:  0: success, -1: failed
-* NOTE:
-*******************************************************************/
+ * NAME: set_default_routing_table
+ * AUTHOR: Andy Chiu
+ * CREATE DATE: 2017/2/7
+ * DESCRIPTION: set multipath routing table
+ * INPUT:  cmd: VPNC_ROUTE_CMD.  vpnc_id: index of vpnc profile
+ * OUTPUT:
+ * RETURN:  0: success, -1: failed
+ * NOTE:
+ *******************************************************************/
 int set_default_routing_table(const VPNC_ROUTE_CMD cmd, const int table_id)
 {
 	char id_str[8];
+	char tmp[256], *ifname;
+	static const char iprule_tmp[] = "/tmp/iprule_tmp";
+	FILE *fp;
+	char word[256], *next;
+#ifdef RTCONFIG_VPN_FUSION_SUPPORT_INTERFACE
+	int policy_cnt;
+	VPNC_DEV_POLICY dev_policy[MAX_DEV_POLICY] = {{0}};
+	policy_cnt = vpnc_get_dev_policy_list(dev_policy, MAX_DEV_POLICY, 0);
+	int i, flag;
+#endif
 
 	//_dprintf("[%s, %d]<%d><%d>\n", __FUNCTION__, __LINE__, cmd, table_id);
 	snprintf(id_str, sizeof(id_str), "%d", table_id);
 
-	//remove current default routing table
-	eval("ip", "rule", "del", "priority", VPNC_RULE_PRIORITY_DEFAULT);
+	// remove current default routing table
+	snprintf(tmp, sizeof(tmp), "ip rule show | grep %s > %s", VPNC_RULE_PRIORITY_DEFAULT, iprule_tmp);
+	system(tmp);
+	fp = fopen(iprule_tmp, "r");
+	if(fp)
+	{
+		while(fgets(tmp, sizeof(tmp), fp))
+		{
+			eval("ip", "rule", "del", "priority", VPNC_RULE_PRIORITY_DEFAULT);
+		}
+	}
+	unlink(iprule_tmp);
 
-	if(VPNC_ROUTE_ADD == cmd && table_id > 0)
-		eval("ip", "rule", "add", "from", "all", "table", id_str, "priority", VPNC_RULE_PRIORITY_DEFAULT);
+	if (VPNC_ROUTE_ADD == cmd && table_id > 0)
+	{
+#ifdef RTCONFIG_MULTILAN_CFG
+		//eval("ip", "rule", "add", "iif", "br0", "table", id_str, "priority", VPNC_RULE_PRIORITY_DEFAULT);
+#else
+		//set routeing rule for lan ifname
+		ifname = nvram_safe_get("lan_ifname");
+		eval("ip", "rule", "add", "iif", ifname, "table", id_str, "priority", VPNC_RULE_PRIORITY_DEFAULT);
 
+		//set routing rule for guest network interface
+		if(nvram_match("wgn_enabled", "1"))
+		{
+			foreach(word, nvram_safe_get("wgn_ifnames"), next)
+			{
+#if defined(RTCONFIG_VPN_FUSION_SUPPORT_INTERFACE)
+				flag = 0;
+
+				for(i = 0; i < policy_cnt; ++i)
+				{
+					if(dev_policy[i].active && !strcmp(dev_policy[i].iif[0], word))
+					{
+						flag = 1;
+						break;
+					}
+				}
+				if(flag)
+					continue;
+#endif
+				eval("ip", "rule", "add", "iif", word, "table", id_str, "priority", VPNC_RULE_PRIORITY_DEFAULT);
+			}
+		}
+
+#endif
+
+	}
+
+	return 0;
+}
+
+/*******************************************************************
+ * NAME: update_default_routing_rule
+ * AUTHOR: Andy Chiu
+ * CREATE DATE: 2022/6/23
+ * DESCRIPTION: update the default ip rule
+ * INPUT:
+ * OUTPUT:
+ * RETURN:  0: success, -1: failed
+ * NOTE:
+ *******************************************************************/
+int update_default_routing_rule()
+{
+	int unit;
+
+	unit = nvram_get_int("vpnc_default_wan");
+	set_default_routing_table(VPNC_ROUTE_ADD, unit);
 	return 0;
 }
 
@@ -2396,13 +1998,13 @@ int clean_routing_rule_by_vpnc_idx(const int vpnc_idx)
 	VPNC_DEV_POLICY dev_policy[MAX_DEV_POLICY] = {{0}};
 	int policy_cnt = 0, i, cnt = 0;
 
-	policy_cnt =  vpnc_get_dev_policy_list(dev_policy, MAX_DEV_POLICY, 0);
+	policy_cnt = vpnc_get_dev_policy_list(dev_policy, MAX_DEV_POLICY, 0);
 
-	for(i = 0; i < policy_cnt; ++i)
+	for (i = 0; i < policy_cnt; ++i)
 	{
-		if(dev_policy[i].active && dev_policy[i].vpnc_idx == vpnc_idx)
+		if (dev_policy[i].active && dev_policy[i].vpnc_idx == vpnc_idx)
 		{
-			set_routing_rule(VPNC_ROUTE_DEL, dev_policy[i].src_ip, vpnc_idx);
+			set_routing_rule(VPNC_ROUTE_DEL, &dev_policy[i]);
 			++cnt;
 		}
 	}
@@ -2414,13 +2016,13 @@ int vpnc_set_internet_policy(const int action)
 	VPNC_DEV_POLICY dev_policy[MAX_DEV_POLICY] = {{0}};
 	int policy_cnt = 0, i;
 
-	policy_cnt =  vpnc_get_dev_policy_list(dev_policy, MAX_DEV_POLICY, 0);
+	policy_cnt = vpnc_get_dev_policy_list(dev_policy, MAX_DEV_POLICY, 0);
 
-	for(i = 0; i < policy_cnt; ++i)
+	for (i = 0; i < policy_cnt; ++i)
 	{
-		if(dev_policy[i].active && dev_policy[i].vpnc_idx == 0)
+		if (dev_policy[i].active && dev_policy[i].vpnc_idx == 0)
 		{
-			set_routing_rule(action? VPNC_ROUTE_ADD: VPNC_ROUTE_DEL, dev_policy[i].src_ip, 0);
+			set_routing_rule(action ? VPNC_ROUTE_ADD : VPNC_ROUTE_DEL, &dev_policy[i]);
 		}
 	}
 	return 0;
@@ -2428,47 +2030,16 @@ int vpnc_set_internet_policy(const int action)
 
 int clean_vpnc_setting_value(const int vpnc_idx)
 {
-	char prefix[] = "vpncXXXX_", tmp[128], tmp2[128];
-	VPNC_PROFILE *prof = NULL;
-	int cnt, i;
+	char prefix[] = "vpncXXXX_", tmp[128];
 
 	//_dprintf("[%s, %d]idx=%d\n", __FUNCTION__, __LINE__, vpnc_idx);
-
 	snprintf(prefix, sizeof(prefix), "vpnc%d_", vpnc_idx);
 
-	//unset general settings, dns, gateway, ifname, ipaddr.
+	// unset general settings, dns, gateway, ifname, ipaddr.
 	nvram_unset(strlcat_r(prefix, "dns", tmp, sizeof(tmp)));
 	nvram_unset(strlcat_r(prefix, "gateway", tmp, sizeof(tmp)));
 	nvram_unset(strlcat_r(prefix, "ifname", tmp, sizeof(tmp)));
 	nvram_unset(strlcat_r(prefix, "ipaddr", tmp, sizeof(tmp)));
-
-#if 0	// integrate with OpenVPN client
-	//unset OpenVPN settings.
-	prof = vpnc_get_profile_by_vpnc_id(vpnc_profile, MAX_VPNC_PROFILE, vpnc_idx);
-
-	if(prof && prof->protocol == VPNC_PROTO_OVPN)
-	{
-		nvram_unset("trusted_ip");
-		cnt = nvram_get_int(strlcat_r(prefix, "route_num", tmp, sizeof(tmp)));
-
-		nvram_unset(strlcat_r(prefix, "route_num", tmp, sizeof(tmp)));
-
-		for(i = 0; i < cnt; ++i)
-		{
-			snprintf(tmp2, sizeof(tmp2), "route_gateway_%d", i);
-			nvram_unset(strlcat_r(prefix, tmp2, tmp, sizeof(tmp)));
-
-			snprintf(tmp2, sizeof(tmp2), "route_network_%d", i);
-			nvram_unset(strlcat_r(prefix, tmp2, tmp, sizeof(tmp)));
-
-			snprintf(tmp2, sizeof(tmp2), "route_netmask_%d", i);
-			nvram_unset(strlcat_r(prefix, tmp2, tmp, sizeof(tmp)));
-
-			snprintf(tmp2, sizeof(tmp2), "route_metric_%d", i);
-			nvram_unset(strlcat_r(prefix, tmp2, tmp, sizeof(tmp)));
-		}
-	}
-#endif
 
 	return 0;
 }
@@ -2481,19 +2052,18 @@ int is_vpnc_dns_active()
 
 	vpnc_init();
 
-	//only need to check whether the default wan has dns setting.
+	// only need to check whether the default wan has dns setting.
 	default_wan = nvram_get_int("vpnc_default_wan");
 	prof = vpnc_get_profile_by_vpnc_id(vpnc_profile, MAX_VPNC_PROFILE, default_wan);
 
-	if(prof && prof->active)
+	if (prof && prof->active)
 	{
 		snprintf(prefix, sizeof(prefix), "vpnc%d_", default_wan);
 		if (nvram_get_int(strlcat_r(prefix, "state_t", tmp, sizeof(tmp))) == WAN_STATE_CONNECTED &&
 			nvram_invmatch(strlcat_r(prefix, "dns", tmp, sizeof(tmp)), ""))
-			{
-				return 1;
-			}
-
+		{
+			return 1;
+		}
 	}
 	return 0;
 }
@@ -2503,7 +2073,8 @@ void reset_vpnc_state(void)
 	int i;
 	char vpnc_prefix[] = "vpncXXXX_";
 
-	for (i = VPNC_UNIT_BASIC; i < VPNC_UNIT_BASIC + MAX_VPNC_PROFILE; i++) {
+	for (i = VPNC_UNIT_BASIC; i < VPNC_UNIT_BASIC + MAX_VPNC_PROFILE; i++)
+	{
 		snprintf(vpnc_prefix, sizeof(vpnc_prefix), "vpnc%d_", i);
 		nvram_pf_unset(vpnc_prefix, "state_t");
 		nvram_pf_unset(vpnc_prefix, "sbstate_t");
@@ -2514,74 +2085,73 @@ int get_vpnc_state(const int vpnc_idx)
 {
 	char vpnc_prefix[] = "vpncXXXX_", tmp[128];
 
-	if(vpnc_idx)	//vpn client
+	if (vpnc_idx) // vpn client
 		snprintf(vpnc_prefix, sizeof(vpnc_prefix), "vpnc%d_", vpnc_idx);
 	else
-		snprintf(vpnc_prefix, sizeof(vpnc_prefix), "wan%d_", wan_primary_ifunit());	//internet
+		snprintf(vpnc_prefix, sizeof(vpnc_prefix), "wan%d_", wan_primary_ifunit()); // internet
 
 	return nvram_get_int(strlcat_r(vpnc_prefix, "state_t", tmp, sizeof(tmp)));
 }
 
-int write_vpn_fusion_nat(FILE *fp, const char* lan_ip)
+int write_vpn_fusion_nat(FILE *fp, const char *lan_ip)
 {
 	VPNC_DEV_POLICY dev_policy[MAX_DEV_POLICY] = {{0}};
 	int policy_cnt = 0, i;
-	char vpnc_prefix[] = "vpncXXXX_", tmp[128], tmp2[128], cmd[512], *p, *dns;
+	char vpnc_prefix[] = "vpncXXXX_", tmp[128], *p, *dns;
 	VPNC_PROTO proto;
 
-	if(!fp || !lan_ip)
+	if (!fp || !lan_ip)
 		return -1;
 
 	vpnc_init();
-	if(!vpnc_profile_num)
+	if (!vpnc_profile_num)
 		return 0;
 
-	//write dns forwarding rule
+	// write dns forwarding rule
 	fprintf(fp, "-A PREROUTING -p udp -d %s --dport 53 -j VPN_FUSION\n", lan_ip);
 
-	//write vpnc nat rules
-	for (i = VPNC_UNIT_BASIC; i < VPNC_UNIT_BASIC + MAX_VPNC_PROFILE; i++) 
+	// write vpnc nat rules
+	for (i = VPNC_UNIT_BASIC; i < VPNC_UNIT_BASIC + MAX_VPNC_PROFILE; i++)
 	{
 		snprintf(vpnc_prefix, sizeof(vpnc_prefix), "vpnc%d_", i);
 
-		if(nvram_match(strlcat_r(vpnc_prefix, "state_t", tmp, sizeof(tmp)), "2"))   //connected
+		if (nvram_match(strlcat_r(vpnc_prefix, "state_t", tmp, sizeof(tmp)), "2")) // connected
 		{
 			proto = vpnc_get_proto_in_profile_by_vpnc_id(i);
-			if(proto == VPNC_PROTO_PPTP || proto == VPNC_PROTO_L2TP)
+			if (proto == VPNC_PROTO_PPTP || proto == VPNC_PROTO_L2TP)
 			{
-				//set PREROUTING
+				// set PREROUTING
 				fprintf(fp, "-I PREROUTING -d %s -j VSERVER\n", nvram_safe_get(strlcat_r(vpnc_prefix, "ipaddr", tmp, sizeof(tmp))));
 
-				//set POSTROUTING
-				fprintf(fp, "-I POSTROUTING -o %s ! -s %s -j MASQUERADE\n", nvram_safe_get(strlcat_r(vpnc_prefix, "ifname", tmp, sizeof(tmp)))
-					, nvram_safe_get(strlcat_r(vpnc_prefix, "ipaddr", tmp, sizeof(tmp))));
-			}			
+				// set POSTROUTING
+				fprintf(fp, "-I POSTROUTING -o %s ! -s %s -j MASQUERADE\n", nvram_safe_get(strlcat_r(vpnc_prefix, "ifname", tmp, sizeof(tmp))), nvram_safe_get(strlcat_r(vpnc_prefix, "ipaddr", tmp, sizeof(tmp))));
+			}
 		}
 	}
 
-	//write policy rules
-	policy_cnt =  vpnc_get_dev_policy_list(dev_policy, MAX_DEV_POLICY, 0);
+	// write policy rules
+	policy_cnt = vpnc_get_dev_policy_list(dev_policy, MAX_DEV_POLICY, 0);
 
-	for(i = 0; i < policy_cnt; ++i)
+	for (i = 0; i < policy_cnt; ++i)
 	{
-		if(dev_policy[i].active)
+		if (dev_policy[i].active)
 		{
 			snprintf(vpnc_prefix, sizeof(vpnc_prefix), "vpnc%d_", dev_policy[i].vpnc_idx);
 
-			//check vpnc connetced
-			if(nvram_match(strlcat_r(vpnc_prefix, "state_t", tmp, sizeof(tmp)), "2"))   //connected
+			// check vpnc connetced
+			if (nvram_match(strlcat_r(vpnc_prefix, "state_t", tmp, sizeof(tmp)), "2")) // connected
 			{
-				dns = strdup(nvram_safe_get(strcat_r(vpnc_prefix, "dns", tmp)));
-				if(dns)
+				dns = strdup(nvram_safe_get(strlcat_r(vpnc_prefix, "dns", tmp, sizeof(tmp))));
+				if (dns)
 				{
-					if(dns[0] != '\0')  //has dns
+					if (dns[0] != '\0') // has dns
 					{
-						//only redirect to the first dns server.
+						// only redirect to the first dns server.
 						p = strchr(dns, ' ');
-						if(p)
+						if (p)
 							*p = '\0';
 						fprintf(fp, "-A VPN_FUSION -p udp -s %s -d %s --dport 53 -j DNAT --to-destination %s\n",
-						dev_policy[i].src_ip, lan_ip, dns);
+								dev_policy[i].src_ip, lan_ip, dns);
 					}
 					SAFE_FREE(dns);
 				}
@@ -2591,49 +2161,179 @@ int write_vpn_fusion_nat(FILE *fp, const char* lan_ip)
 	return 0;
 }
 
-int set_policy_dns_iptables_rules()
+int write_vpn_fusion_filter(FILE *fp, const char *lan_ip)
 {
-    //confirm the active policy
-    VPNC_DEV_POLICY dev_policy[MAX_DEV_POLICY] = {{0}};
-    int policy_cnt = 0, i;
-    char vpnc_prefix[] = "vpncXXXX_", tmp[128], tmp2[128], cmd[512], *p;
-    char *lan_ip, *dns;
+	char vpnc_prefix[] = "vpncXXXX_", tmp[128];
+	VPNC_PROTO proto;
+	char lan_if[IFNAMSIZ + 1];
+	int i, j;
+#ifdef RTCONFIG_VPN_FUSION_SUPPORT_INTERFACE
+	int policy_cnt;
+	VPNC_DEV_POLICY dev_policy[MAX_DEV_POLICY] = {{0}};
+	policy_cnt = vpnc_get_dev_policy_list(dev_policy, MAX_DEV_POLICY, 0);
+#endif
 
-    //get lan ip
-    lan_ip = nvram_safe_get("lan_ipaddr");
+	if (!fp || !lan_ip)
+		return -1;
 
-    //flush the chain, VPN_FUSION
-    eval("iptables", "-t", "nat", "-F", "VPN_FUSION");
+	vpnc_init();
+	if (!vpnc_profile_num)
+		return 0;
 
-    policy_cnt =  vpnc_get_dev_policy_list(dev_policy, MAX_DEV_POLICY, 0);
+	// get lan interface name
+	snprintf(lan_if, sizeof(lan_if), "%s", nvram_safe_get("lan_ifname"));
 
-    for(i = 0; i < policy_cnt; ++i)
-    {
-        if(dev_policy[i].active)
-        {
-            snprintf(vpnc_prefix, sizeof(vpnc_prefix), "vpnc%d_", dev_policy[i].vpnc_idx);
-            //check vpnc connetced
+	// write vpnc filter rules
+	for (i = VPNC_UNIT_BASIC; i < VPNC_UNIT_BASIC + MAX_VPNC_PROFILE; i++)
+	{
+		snprintf(vpnc_prefix, sizeof(vpnc_prefix), "vpnc%d_", i);
 
-            int z = nvram_get_int(strlcat_r(vpnc_prefix, "state_t", tmp, sizeof(tmp)));
-           if(nvram_match(strlcat_r(vpnc_prefix, "state_t", tmp, sizeof(tmp)), "2"))   //connected
-            {
-                dns = strdup(nvram_safe_get(strcat_r(vpnc_prefix, "dns", tmp)));
-
-                if(dns)
-                {
-                    if(dns[0] != '\0')
-                    {
-                        //only redirect to the first dns server.
-                        p = strchr(dns, ' ');
-                        if(p)
-                            *p = '\0';
-                        eval("iptables", "-t", "nat", "-A", "VPN_FUSION", "-p", "udp", "-s", dev_policy[i].src_ip, "-d", lan_ip,
-                            "--dport", "53", "-j", "DNAT", "--to-destination", dns);
-                    }
-                    SAFE_FREE(dns);
-                }
-            }
-        }
-    }
+		if (nvram_match(strlcat_r(vpnc_prefix, "state_t", tmp, sizeof(tmp)), "2")) // connected
+		{
+			proto = vpnc_get_proto_in_profile_by_vpnc_id(i);
+			if (proto == VPNC_PROTO_PPTP || proto == VPNC_PROTO_L2TP)
+			{
+#if defined(RTCONFIG_VPN_FUSION_SUPPORT_INTERFACE)
+			for(j = 0; j < policy_cnt; ++j)
+			{
+				if(dev_policy[j].active && dev_policy[j].vpnc_idx == i && dev_policy[j].iif[0] != '\0')
+				{
+					fprintf(fp, "-A FORWARD -o %s -i %s -j ACCEPT\n", nvram_safe_get(strlcat_r(vpnc_prefix, "ifname", tmp, sizeof(tmp))), dev_policy[j].iif);
+				}
+			}
+#endif
+				// set FORWARD
+				fprintf(fp, "-I FORWARD -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu\n");
+				fprintf(fp, "-A FORWARD -o %s ! -i %s -j DROP\n", nvram_safe_get(strlcat_r(vpnc_prefix, "ifname", tmp, sizeof(tmp))), lan_if);
+			}
+		}
+	}
+	return 0;
 }
 
+int write_vpn_fusion_mangle()
+{
+	int i;
+	char vpnc_prefix[] = "vpncXXXX_", tmp[128];
+	VPNC_PROTO proto;
+
+	vpnc_init();
+	if (!vpnc_profile_num)
+		return 0;
+
+	// write vpnc nat rules
+	for (i = VPNC_UNIT_BASIC; i < VPNC_UNIT_BASIC + MAX_VPNC_PROFILE; i++)
+	{
+		snprintf(vpnc_prefix, sizeof(vpnc_prefix), "vpnc%d_", i);
+
+		if (nvram_match(strlcat_r(vpnc_prefix, "state_t", tmp, sizeof(tmp)), "2")) // connected
+		{
+			proto = vpnc_get_proto_in_profile_by_vpnc_id(i);
+			if (proto == VPNC_PROTO_PPTP || proto == VPNC_PROTO_L2TP)
+			{
+				// set FORWARD in mangle table
+				eval("iptables", "-t", "mangle", "-A", "FORWARD", "-p", "tcp", "-m", "state", "--state", "NEW", "-j", "MARK", "--set-mark", "0x01/0x7");
+				break;
+			}
+		}
+	}
+	return 0;
+}
+
+static int _gen_vpnc_resolv_conf(const int vpnc_idx)
+{
+	FILE *fp;
+	char resolv_file[128], vpnc_prefix[] = "vpncXXXXXX_", *vpnc_dns, *next, tmp[128];
+
+	snprintf(resolv_file, sizeof(resolv_file), vpnc_resolv_path, vpnc_idx);
+	snprintf(vpnc_prefix, sizeof(vpnc_prefix), "vpnc%d_", vpnc_idx);
+
+	vpnc_dns = nvram_safe_get(strlcat_r(vpnc_prefix, "dns", tmp, sizeof(tmp)));
+	if (vpnc_dns[0] == '\0')
+	{
+		unlink(resolv_file);
+		return -1;
+	}
+
+	fp = fopen(resolv_file, "w");
+	if (fp)
+	{
+		foreach (tmp, vpnc_dns, next)
+		{
+			fprintf(fp, "server=%s\n", tmp);
+		}
+		fclose(fp);
+		return 0;
+	}
+	return -1;
+}
+
+#ifdef RTCONFIG_VPN_FUSION_SUPPORT_INTERFACE
+int vpnc_set_iif_routing_rule(const int vpnc_idx, const char *br_ifname)
+{
+	char priority[8], id_str[8];
+
+	if (!br_ifname || br_ifname[0] == '\0')
+		return -1;
+
+	snprintf(priority, sizeof(priority), "%d", VPNC_RULE_PRIORITY_NETWORK + vpnc_idx * 3);
+	snprintf(id_str, sizeof(id_str), "%d", vpnc_idx);
+
+	// remove old rule
+	eval("ip", "rule", "del", "iif", (char*)br_ifname);
+
+	if (vpnc_idx != 0)
+	{
+		eval("ip", "rule", "add", "iif", (char*)br_ifname, "table", id_str, "priority", priority);
+	}
+	return 0;
+}
+#endif
+
+static int _set_network_routing_rule(const VPNC_ROUTE_CMD cmd, const int vpnc_idx)
+{
+	char tmp[64] = {0}, vpnc_prefix[] = "vpncXXXX_", *vpnc_dns, *next;
+	char cmd_str[8], id_str[8], priority[8];
+	int i;
+#ifdef RTCONFIG_VPN_FUSION_SUPPORT_INTERFACE
+	int policy_cnt;
+	VPNC_DEV_POLICY dev_policy[MAX_DEV_POLICY] = {{0}};
+	policy_cnt = vpnc_get_dev_policy_list(dev_policy, MAX_DEV_POLICY, 0);
+#endif
+
+	snprintf(cmd_str, sizeof(cmd_str), "%s", (cmd == VPNC_ROUTE_DEL) ? "del" : "add");
+	snprintf(id_str, sizeof(id_str), "%d", vpnc_idx);
+	snprintf(priority, sizeof(priority), "%d", VPNC_RULE_PRIORITY_NETWORK + vpnc_idx * 3);
+
+#if defined(RTCONFIG_VPN_FUSION_SUPPORT_INTERFACE)
+			for(i = 0; i < policy_cnt; ++i)
+			{
+				if(dev_policy[i].active && dev_policy[i].vpnc_idx == vpnc_idx && dev_policy[i].iif[0] != '\0')
+				{
+					if (cmd == VPNC_ROUTE_ADD)
+					{
+						eval("ip", "rule", "del", "priority", priority);
+					}
+					eval("ip", "rule", cmd_str, "iif", dev_policy[i].iif, "table", id_str, "priority", priority);
+				}
+			}
+#endif
+
+	// set dns
+	snprintf(vpnc_prefix, sizeof(vpnc_prefix), "vpnc%d_", vpnc_idx);
+	vpnc_dns = nvram_safe_get(strlcat_r(vpnc_prefix, "dns", tmp, sizeof(tmp)));
+
+	if (vpnc_dns[0] != '\0') // write dns setting of VPN client to resolv.dnsmasq
+	{
+		//_dprintf("[%s, %d]<%s>\n", __FUNCTION__, __LINE__, vpnc_dns);
+		i = 1;
+		foreach (tmp, vpnc_dns, next)
+		{
+			snprintf(priority, sizeof(priority), "%d", VPNC_RULE_PRIORITY_NETWORK + vpnc_idx * 3 + i);
+			//_dprintf("[%s, %d]<%s><%s>\n", __FUNCTION__, __LINE__, priority, tmp);
+			eval("ip", "rule", cmd_str, "to", tmp, "table", id_str, "priority", priority);
+			++i;
+		}
+	}
+	return 0;
+}

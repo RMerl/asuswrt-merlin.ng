@@ -87,7 +87,7 @@ struct container_t {
 	 * Get the encoding of the full signed/encrypted container.
 	 *
 	 * @param data	allocated container encoding
-	 * @return		TRUE if encodign successful
+	 * @return		TRUE if encoding successful
 	 */
 	bool (*get_encoding)(container_t *this, chunk_t *encoding);
 

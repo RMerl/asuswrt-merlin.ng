@@ -1,0 +1,94 @@
+﻿.profile_setting_container .popup_edit_profile_container,
+.client_content_bg .client_contorl_bg{
+	background: rgb(38, 38, 38);
+}
+.svr_item_container{
+	background: rgb(38, 38, 38);
+	border-color: rgba(38, 38, 38, 0.5);
+}
+.svr_item_container.selected{
+	background: rgb(38, 38, 38);
+	border-color: rgb(255, 170, 0);
+}
+.switch.on{
+	background: rgb(255, 170, 0);
+}
+.checkbox.on{
+	box-shadow: 0 0 0 1.5px rgb(255,165,35);
+	background-color: rgb(255,165,35);
+}
+.checkbox.on:before, .checkbox.disable:before{
+	border-top: 2px solid #000;
+	border-right: 2px solid #000;
+}
+.profile_setting_item{
+	background-color: rgba(0, 0, 0, 0.1);
+}
+.btn_item .btn_container{
+	border: 1px solid rgb(255, 170, 0);
+	background: rgba(255, 170, 0, 0.2);
+}
+.textInput:focus, .textareaInput:focus{
+	box-shadow: 0 0 3px rgb(255, 170, 0);
+	border: 1px solid rgb(255, 170, 0)
+}
+.custom_select_container .select_options_container{
+	background: rgb(38, 38, 38);
+}
+.custom_select_container .select_options_container div.selected{
+	color: rgb(255, 170, 0);
+}
+.custom_select_container .select_options_container div.selected:before{
+	border-top: 2px solid rgb(255, 170, 0);
+	border-right: 2px solid rgb(255, 170, 0);
+}
+.action_container .btn_container{
+	background: rgb(255,165,35);
+	color: #000;
+}
+.dropdown_select option{
+	background: rgb(38, 38, 38);
+}
+.hidden_mask{
+	background: rgba(38, 38, 38, 0.1);
+}
+.popup_container .popup_content_container{
+	background: rgb(38, 38, 38);
+}
+.feature_desc .title{
+	color: rgb(255, 170, 0);
+}
+.customize_alert .action_btn_container .ok{
+	background: rgb(255, 170, 0);
+	color: #000;
+}
+.client_list_content_container .client_container{
+	background-color: rgba(38, 38, 38, 0.1);
+}
+.popup_edit_client_container .client_list_content_container::-webkit-scrollbar-track,
+.custom_select_container .select_options_container::-webkit-scrollbar-track{
+	border: 4px solid rgb(38, 38, 38);
+	background-color: rgb(146, 101, 15);
+}
+.popup_edit_client_container .client_list_content_container::-webkit-scrollbar-thumb,
+.custom_select_container .select_options_container::-webkit-scrollbar-thumb{
+	background-color: rgb(146, 101, 15);
+	border: 2px solid rgb(38, 38, 38);
+}
+.client_content_bg .detail_icon.active{
+	border: 2px solid rgb(255, 170, 0);
+	color: rgb(255, 170, 0);
+}
+.client_content_bg .client_contorl_bg .contorl_btn{
+	background-color: rgb(255, 170, 0);
+}
+.radio_options_container .radio_container.selected,
+.btn_options_container .btn_container.selected{
+	border: 1px solid rgb(255, 170, 0);
+}
+.radio_options_container .radio_container.selected .radio_icon{
+	border: 1px solid rgb(255, 170, 0);
+}
+.radio_options_container .radio_container.selected .radio_icon:before{
+	background-color: rgb(255, 170, 0);
+}

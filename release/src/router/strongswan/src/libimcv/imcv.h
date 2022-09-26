@@ -34,9 +34,6 @@
  * @defgroup libimcv_seg seg
  * @ingroup libimcv
  *
- * @defgroup libimcv_swid swid
- * @ingroup libimcv
- *
  * @defgroup libimcv_swima swima
  * @ingroup libimcv
  *

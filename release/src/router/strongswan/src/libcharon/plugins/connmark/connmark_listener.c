@@ -494,24 +494,13 @@ METHOD(listener_t, child_rekey, bool,
 
 METHOD(listener_t, ike_update, bool,
 	private_connmark_listener_t *this, ike_sa_t *ike_sa,
-	bool local, host_t *new)
+	host_t *local, host_t *remote)
 {
 	struct iptc_handle *ipth;
 	enumerator_t *enumerator;
 	child_sa_t *child_sa;
-	host_t *dst, *src;
 	bool oldencap, newencap;
 
-	if (local)
-	{
-		dst = new;
-		src = ike_sa->get_other_host(ike_sa);
-	}
-	else
-	{
-		dst = ike_sa->get_my_host(ike_sa);
-		src = new;
-	}
 	/* during ike_update(), has_encap() on the CHILD_SA has not yet been
 	 * updated, but shows the old state. */
 	newencap = ike_sa->has_condition(ike_sa, COND_NAT_ANY);
@@ -525,9 +514,9 @@ METHOD(listener_t, ike_update, bool,
 			ipth = init_handle();
 			if (ipth)
 			{
-				if (manage_policies(this, ipth, dst, src, oldencap,
+				if (manage_policies(this, ipth, local, remote, oldencap,
 									child_sa, FALSE) &&
-					manage_policies(this, ipth, dst, src, newencap,
+					manage_policies(this, ipth, local, remote, newencap,
 									child_sa, TRUE))
 				{
 					commit_handle(ipth);

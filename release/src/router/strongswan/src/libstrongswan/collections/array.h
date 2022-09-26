@@ -87,7 +87,7 @@ void array_compress(array_t *array);
 /**
  * Create an enumerator over an array.
  *
- * The enumerater enumerates directly over the array element (pass a pointer to
+ * The enumerator enumerates directly over the array element (pass a pointer to
  * element types), unless the array is pointer based. If zero is passed as
  * element size during construction, the enumerator enumerates over the
  * dereferenced pointer values.

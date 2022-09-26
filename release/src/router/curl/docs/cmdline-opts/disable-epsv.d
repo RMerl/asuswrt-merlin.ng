@@ -1,8 +1,12 @@
+c: Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+SPDX-License-Identifier: curl
 Long: disable-epsv
 Help: Inhibit using EPSV
 Protocols: FTP
 Category: ftp
 Example: --disable-epsv ftp://example.com/
+Added: 7.9.2
+See-also: disable-eprt ftp-port
 ---
 Tell curl to disable the use of the EPSV command when doing passive FTP
 transfers. Curl will normally always first attempt to use EPSV before

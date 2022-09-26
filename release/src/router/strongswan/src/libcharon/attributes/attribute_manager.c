@@ -233,7 +233,7 @@ typedef struct {
 	enumerator_t *inner;
 	/** IKE_SA to request attributes for */
 	ike_sa_t *ike_sa;
-	/** virtual IPs we are requesting along with attriubutes */
+	/** virtual IPs we are requesting along with attributes */
 	linked_list_t *vips;
 } initiator_enumerator_t;
 

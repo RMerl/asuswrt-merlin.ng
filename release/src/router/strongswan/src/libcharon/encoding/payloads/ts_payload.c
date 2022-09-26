@@ -218,10 +218,11 @@ METHOD(ts_payload_t, set_initiator, void,
 	this->is_initiator = is_initiator;
 }
 
-METHOD(ts_payload_t, get_traffic_selectors, linked_list_t*,
-	private_ts_payload_t *this)
+/**
+ * Get a list of either traffic selectors or labels
+ */
+static linked_list_t *get_list(private_ts_payload_t *this, bool labels)
 {
-	traffic_selector_t *ts;
 	enumerator_t *enumerator;
 	traffic_selector_substructure_t *subst;
 	linked_list_t *list;
@@ -230,12 +231,40 @@ METHOD(ts_payload_t, get_traffic_selectors, linked_list_t*,
 	enumerator = this->substrs->create_enumerator(this->substrs);
 	while (enumerator->enumerate(enumerator, &subst))
 	{
-		ts = subst->get_traffic_selector(subst);
-		list->insert_last(list, ts);
+		if (labels)
+		{
+			sec_label_t *label = subst->get_sec_label(subst);
+
+			if (label)
+			{
+				list->insert_last(list, label);
+			}
+		}
+		else
+		{
+			traffic_selector_t *ts = subst->get_traffic_selector(subst);
+
+			if (ts)
+			{
+				list->insert_last(list, ts);
+			}
+		}
 	}
 	enumerator->destroy(enumerator);
 
 	return list;
+}
+
+METHOD(ts_payload_t, get_traffic_selectors, linked_list_t*,
+	private_ts_payload_t *this)
+{
+	return get_list(this, FALSE);
+}
+
+METHOD(ts_payload_t, get_sec_labels, linked_list_t*,
+	private_ts_payload_t *this)
+{
+	return get_list(this, TRUE);
 }
 
 METHOD2(payload_t, ts_payload_t, destroy, void,
@@ -267,6 +296,7 @@ ts_payload_t *ts_payload_create(bool is_initiator)
 			.get_initiator = _get_initiator,
 			.set_initiator = _set_initiator,
 			.get_traffic_selectors = _get_traffic_selectors,
+			.get_sec_labels = _get_sec_labels,
 			.destroy = _destroy,
 		},
 		.next_payload = PL_NONE,
@@ -281,7 +311,8 @@ ts_payload_t *ts_payload_create(bool is_initiator)
  * Described in header
  */
 ts_payload_t *ts_payload_create_from_traffic_selectors(bool is_initiator,
-											linked_list_t *traffic_selectors)
+											linked_list_t *traffic_selectors,
+											sec_label_t *label)
 {
 	enumerator_t *enumerator;
 	traffic_selector_t *ts;
@@ -297,6 +328,12 @@ ts_payload_t *ts_payload_create_from_traffic_selectors(bool is_initiator,
 		this->substrs->insert_last(this->substrs, subst);
 	}
 	enumerator->destroy(enumerator);
+
+	if (label)
+	{
+		subst = traffic_selector_substructure_create_from_sec_label(label);
+		this->substrs->insert_last(this->substrs, subst);
+	}
 	compute_length(this);
 
 	return &this->public;

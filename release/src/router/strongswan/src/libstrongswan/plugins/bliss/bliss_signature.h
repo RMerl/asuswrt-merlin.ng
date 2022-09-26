@@ -40,7 +40,7 @@ struct bliss_signature_t {
 	chunk_t (*get_encoding)(bliss_signature_t *this);
 
 	/**
-	 * Get signature parameters extracted from compressd binary encoding
+	 * Get signature parameters extracted from compressed binary encoding
 	 *
 	 * @param z1		signature vector z1 of size n
 	 * @param z2d		signature vector z2d of size n

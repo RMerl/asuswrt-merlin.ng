@@ -135,7 +135,7 @@ swid_gen_info_t *swid_gen_info_create(void)
 			.create_sw_id = _create_sw_id,
 			.destroy = _destroy,
 		},
-		.os_info = imc_os_info_create(),
+		.os_info = imc_os_info_create(FALSE),
 		.tag_creator = strdup(tag_creator),
 	);
 
@@ -155,7 +155,7 @@ swid_gen_info_t *swid_gen_info_create(void)
 				 (int)os_version.len, os_version.ptr, (int)os_arch.len,
 				 os_arch.ptr) == -1)
 	{
-		DBG1(DBG_IMC, "constructon of OS string failed");
+		DBG1(DBG_IMC, "construction of OS string failed");
 		destroy(this);
 		return NULL;
 	}
@@ -165,7 +165,7 @@ swid_gen_info_t *swid_gen_info_create(void)
 				 os_name.ptr, (int)os_version.len, os_version.ptr,
 				 (int)os_arch.len, os_arch.ptr) == -1)
 	{
-		DBG1(DBG_IMC, "constructon of product string failed");
+		DBG1(DBG_IMC, "construction of product string failed");
 		destroy(this);
 		return NULL;
 	}

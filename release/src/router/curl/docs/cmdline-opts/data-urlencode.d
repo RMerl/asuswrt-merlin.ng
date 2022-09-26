@@ -1,6 +1,8 @@
+c: Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+SPDX-License-Identifier: curl
 Long: data-urlencode
 Arg: <data>
-Help: HTTP POST data url encoded
+Help: HTTP POST data URL encoded
 Protocols: HTTP
 See-also: data data-raw
 Added: 7.18.0
@@ -19,7 +21,7 @@ curl using one of the following syntaxes:
 .RS
 .IP "content"
 This will make curl URL-encode the content and pass that on. Just be careful
-so that the content doesn't contain any = or @ symbols, as that will then make
+so that the content does not contain any = or @ symbols, as that will then make
 the syntax match one of the other cases below!
 .IP "=content"
 This will make curl URL-encode the content and pass that on. The preceding =

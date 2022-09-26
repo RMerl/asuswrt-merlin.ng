@@ -187,6 +187,7 @@ var ipsec_profile_client_5_ext = decodeURIComponent('<% nvram_char_to_ascii("","
 var all_profile_subnet_list = "";
 var control_profile_flag = true;
 var serverList_maxNum = 0;
+var vpnc_activate_maximum = ((isSupport("MaxRule_VPN_FUSION_Conn") == "0") ? 2 : parseInt(isSupport("MaxRule_VPN_FUSION_Conn")));
 var openvpnc_max = 5;
 
 var faq_href1 = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=123";
@@ -1077,7 +1078,7 @@ function connect_Row(rowdata) {
 		serverList_maxNum--;
 	}
 	else { //"vpnc" making connection
-		if(serverList_maxNum >= 4) {
+		if(serverList_maxNum >= vpnc_activate_maximum) {
 			alert("It reached the max number of concurrent active VPN connections, please deactivate one of active VPN profile before activate a new one.");
 			return;
 		}

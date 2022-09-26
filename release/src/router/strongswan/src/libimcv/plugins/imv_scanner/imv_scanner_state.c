@@ -66,7 +66,7 @@ struct private_imv_scanner_state_t {
 	uint32_t action_flags;
 
 	/**
-	 * IMV database session associatied with TNCCS connection
+	 * IMV database session associated with TNCCS connection
 	 */
 	imv_session_t *session;
 
@@ -321,8 +321,12 @@ METHOD(imv_state_t, reset, void,
 
 	this->handshake_state = IMV_SCANNER_STATE_INIT;
 
-	DESTROY_IF(&this->port_filter_attr->pa_tnc_attribute);
-	this->port_filter_attr = NULL;
+	if (this->port_filter_attr)
+	{
+		this->port_filter_attr->pa_tnc_attribute.destroy(
+									&this->port_filter_attr->pa_tnc_attribute);
+		this->port_filter_attr = NULL;
+	}
 	this->violating_ports->destroy_function(this->violating_ports, free);
 	this->violating_ports = linked_list_create();
 }
@@ -333,7 +337,11 @@ METHOD(imv_state_t, destroy, void,
 	DESTROY_IF(this->session);
 	DESTROY_IF(this->reason_string);
 	DESTROY_IF(this->remediation_string);
-	DESTROY_IF(&this->port_filter_attr->pa_tnc_attribute);
+	if (this->port_filter_attr)
+	{
+		this->port_filter_attr->pa_tnc_attribute.destroy(
+									&this->port_filter_attr->pa_tnc_attribute);
+	}
 	this->contracts->destroy(this->contracts);
 	this->violating_ports->destroy_function(this->violating_ports, free);
 	free(this);
@@ -354,7 +362,11 @@ METHOD(imv_scanner_state_t, get_handshake_state, imv_scanner_handshake_state_t,
 METHOD(imv_scanner_state_t, set_port_filter_attr, void,
 	private_imv_scanner_state_t *this, ietf_attr_port_filter_t *attr)
 {
-	DESTROY_IF(&this->port_filter_attr->pa_tnc_attribute);
+	if (this->port_filter_attr)
+	{
+		this->port_filter_attr->pa_tnc_attribute.destroy(
+									&this->port_filter_attr->pa_tnc_attribute);
+	}
 	this->port_filter_attr = attr;
 }
 

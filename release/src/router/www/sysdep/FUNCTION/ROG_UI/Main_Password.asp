@@ -373,12 +373,11 @@ function submitForm(){
 		setTimeout(function(){
 			httpApi.chpass(postData);
 		}, 100);
-		var nextPage = decodeURIComponent('<% get_ascii_parameter("nextPage"); %>');
 		setTimeout(function(){
 			if('<% nvram_get("w_Setting"); %>' == '0' && sw_mode != 2)
 				location.href = '/QIS_wizard.htm?flag=wireless';
 			else
-				location.href = (nextPage != "") ? nextPage : "/";
+				location.href = "/";
 		}, 3000);
 	}
 	else

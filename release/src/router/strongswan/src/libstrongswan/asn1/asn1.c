@@ -637,58 +637,35 @@ chunk_t asn1_integer_from_uint64(uint64_t val)
 	return chunk_clone(enc);
 }
 
-/**
- * ASN.1 definition of an algorithmIdentifier
- */
-static const asn1Object_t algorithmIdentifierObjects[] = {
-	{ 0, "algorithmIdentifier",	ASN1_SEQUENCE,		ASN1_NONE			}, /* 0 */
-	{ 1,   "algorithm",			ASN1_OID,			ASN1_BODY			}, /* 1 */
-	{ 1,   "parameters",		ASN1_OID,			ASN1_RAW|ASN1_OPT	}, /* 2 */
-	{ 1,   "end opt",			ASN1_EOC,			ASN1_END			}, /* 3 */
-	{ 1,   "parameters",		ASN1_SEQUENCE,		ASN1_RAW|ASN1_OPT	}, /* 4 */
-	{ 1,   "end opt",			ASN1_EOC,			ASN1_END			}, /* 5 */
-	{ 1,   "parameters",		ASN1_OCTET_STRING,	ASN1_RAW|ASN1_OPT	}, /* 6 */
-	{ 1,   "end opt",			ASN1_EOC,			ASN1_END			}, /* 7 */
-	{ 0, "exit",				ASN1_EOC,			ASN1_EXIT			}
-};
-#define ALGORITHM_ID_ALG				1
-#define ALGORITHM_ID_PARAMETERS_OID		2
-#define ALGORITHM_ID_PARAMETERS_SEQ		4
-#define ALGORITHM_ID_PARAMETERS_OCT		6
-
 /*
- * Defined in header
+ * Described in header
  */
 int asn1_parse_algorithmIdentifier(chunk_t blob, int level0, chunk_t *parameters)
 {
-	asn1_parser_t *parser;
 	chunk_t object;
-	int objectID;
 	int alg = OID_UNKNOWN;
 
-	parser = asn1_parser_create(algorithmIdentifierObjects, blob);
-	parser->set_top_level(parser, level0);
-
-	while (parser->iterate(parser, &objectID, &object))
+	if (asn1_unwrap(&blob, &blob) == ASN1_SEQUENCE)
 	{
-		switch (objectID)
+		DBG2(DBG_ASN, "L%d - algorithmIdentifier:", level0);
+
+		if (asn1_unwrap(&blob, &object) == ASN1_OID)
 		{
-			case ALGORITHM_ID_ALG:
-				alg = asn1_known_oid(object);
-				break;
-			case ALGORITHM_ID_PARAMETERS_OID:
-			case ALGORITHM_ID_PARAMETERS_SEQ:
-			case ALGORITHM_ID_PARAMETERS_OCT:
-				if (parameters != NULL)
+			DBG2(DBG_ASN, "L%d - algorithm:", level0+1);
+			asn1_debug_simple_object(object, ASN1_OID, FALSE);
+			alg = asn1_known_oid(object);
+
+			if (blob.len)
+			{
+				DBG2(DBG_ASN, "L%d - parameters:", level0+1);
+				DBG3(DBG_ASN, "%B", &blob);
+				if (parameters)
 				{
-					*parameters = object;
+					*parameters = blob;
 				}
-				break;
-			default:
-				break;
+			}
 		}
 	}
-	parser->destroy(parser);
 	return alg;
 }
 
@@ -851,15 +828,14 @@ chunk_t asn1_bitstring(const char *mode, chunk_t content)
  */
 chunk_t asn1_integer(const char *mode, chunk_t content)
 {
-	chunk_t object;
+	chunk_t zero = chunk_from_chars(0x00), object;
 	size_t len;
 	u_char *pos;
 	bool move;
 
-
 	if (content.len == 0)
 	{	/* make sure 0 is encoded properly */
-		content = chunk_from_chars(0x00);
+		content = zero;
 		move = FALSE;
 	}
 	else

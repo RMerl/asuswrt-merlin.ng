@@ -134,6 +134,7 @@
 							else return "RT";
 						})();
 					}
+					systemVariable.qisSession = "qis"+Date.now();
 					systemVariable.opMode = systemVariable.originOpMode;
 					systemVariable.wirelessBand = initNvram.wl_ifnames.split(" ").length;
 					systemVariable.sdkVersion = initNvram.wl_version.split(".")[0];
@@ -150,12 +151,15 @@
 					systemVariable.linkLnternet = httpApi.isConnected();
 					systemVariable.maxPasswordLen = getSupportNum("MaxLen_http_passwd");
 
+					httpApi.log("tcode", systemVariable.territoryCode, systemVariable.qisSession)
+
 					if(isSupport("2p5G_LWAN"))
 						systemVariable.originWansExtwan = httpApi.nvramGet(["wans_extwan"]).wans_extwan;
 					if(isSupport("10G_LWAN") || isSupport("10GS_LWAN"))
 						systemVariable.originWansDualwan = httpApi.nvramGet(["wans_dualwan"]).wans_dualwan;
 					$("#switchWanTagContainer").append(Get_Component_ISPSelect);
 					$("#switch_wantag").attr("class", "optionInput");
+					getCloudProfiles();
 
 					var allWlArray =  getAllWlArray();
 					for(var i = 0; i < allWlArray.length; i += 1){
@@ -314,7 +318,7 @@
 							<div style="font-weight: normal;"><#Setup_node_desc_step2#></div>
 						</div>
 						<div style="text-align: center;">
-							<div><img id="product_location" width="504" src="/images/product_location.png"></div>
+							<div><img id="product_location" src="/images/product_location.png"></div>
 						</div>
 					</div>
 

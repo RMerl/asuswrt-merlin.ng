@@ -55,7 +55,7 @@ METHOD(job_t, execute, job_requeue_t,
 											  this->ike_sa_id);
 	if (ike_sa)
 	{
-		if (ike_sa->initiate(ike_sa, NULL, 0, NULL, NULL) == DESTROY_ME)
+		if (ike_sa->initiate(ike_sa, NULL, NULL) == DESTROY_ME)
 		{
 			charon->ike_sa_manager->checkin_and_destroy(charon->ike_sa_manager,
 														ike_sa);

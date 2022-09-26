@@ -921,7 +921,10 @@ function cancel_dblog(){
 	parent.document.canceldblogForm.submit();
 }
 
+var referer_obj = "";
 function openHint(hint_array_id, hint_show_id, flag){
+	if(flag != undefined && flag != "")
+		referer_obj = flag;
 	statusmenu = "";
 	if(hint_array_id == 24){
 		var _caption = "";
@@ -2181,6 +2184,10 @@ function horizontalPlacement(browserWidth, horizontalScrollAmount, widthFix) {
 		}
 	}	
 
+	if(referer_obj == "rwd_vpns"){
+		if(o3_x > placeX)
+			placeX = o3_x;
+	}
 	return placeX;
 }
 
@@ -2849,7 +2856,10 @@ function chkPass(pwd, flag, obj, id) {
 		/* Display updated score criteria to client */
 		if(typeof document.forms[0] == "undefined" || (typeof document.forms[0] != "undefined" && document.form.current_page.value != "AiProtection_HomeProtection.asp")){		//for Router weakness status, Jimeing added at 2014/06/07
 			oScorebarBorder.style.display = "flex";
-			oScorebar.style.backgroundPosition = "-" + parseInt(nScore * 4) + "px";
+			if(flag == 'rwd_vpn_pwd')
+				oScorebar.style.backgroundPosition = parseInt(nScore) + "%";
+			else
+				oScorebar.style.backgroundPosition = "-" + parseInt(nScore * 4) + "px";
 		}
 		else{
 			if(nScore >= 0 && nScore < 40){

@@ -81,7 +81,7 @@ wget(int method, const char *server, char *buf, size_t count, off_t offset)
 	struct sockaddr_in sin;
 	int chunked = 0, len = 0;
 
-	strncpy(url, server, sizeof(url));
+	strlcpy(url, server, sizeof(url));
 
 	/* Parse URL */
 	if (!strncmp(url, "http://", 7)) {
@@ -172,6 +172,8 @@ wget(int method, const char *server, char *buf, size_t count, off_t offset)
 	len = (len > count) ? count : len;
 	len = fread(buf, 1, len, fp);
 
+	buf[len] = '\0';
+
  done:
 	/* Close socket */
 	fflush(fp);
@@ -182,12 +184,12 @@ wget(int method, const char *server, char *buf, size_t count, off_t offset)
 int
 http_get(const char *server, char *buf, size_t count, off_t offset)
 {
-	return wget(METHOD_GET, server, buf, count, offset);
+	return wget(METHOD_GET, server, buf, count-1, offset);
 }
 
 int
 http_post(const char *server, char *buf, size_t count)
 {
 	/* No continuation generally possible with POST */
-	return wget(METHOD_POST, server, buf, count, 0);
+	return wget(METHOD_POST, server, buf, count-1, 0);
 }

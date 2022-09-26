@@ -22,7 +22,7 @@
  - "standard" proxy environment variables support
  - compiles on win32 (reported builds on 70+ operating systems)
  - selectable network interface for outgoing traffic
- - IPv6 support on unix and Windows
+ - IPv6 support on Unix and Windows
  - happy eyeballs dual-stack connects
  - persistent connections
  - SOCKS 4 + 5 support, with or without local name resolving
@@ -31,7 +31,7 @@
  - replaceable memory functions (malloc, free, realloc, etc)
  - asynchronous name resolving (6)
  - both a push and a pull style interface
- - international domain names (11)
+ - international domain names (10)
 
 ## HTTP
 
@@ -51,7 +51,7 @@
  - maximum amount of redirects to follow
  - custom HTTP request
  - cookie get/send fully parsed
- - reads/writes the netscape cookie file format
+ - reads/writes the Netscape cookie file format
  - custom headers (replace/remove internally generated headers)
  - custom user-agent string
  - custom referrer string
@@ -62,7 +62,7 @@
  - retrieve file modification date
  - Content-Encoding support for deflate and gzip
  - "Transfer-Encoding: chunked" support in uploads
- - automatic data compression (12)
+ - automatic data compression (11)
 
 ## HTTPS (1)
 
@@ -78,7 +78,7 @@
 
  - download
  - authentication
- - Kerberos 5 (13)
+ - Kerberos 5 (12)
  - active/passive using PORT, EPRT, PASV or EPSV
  - single file size information (compare to HTTP HEAD)
  - 'type=' URL support
@@ -147,7 +147,7 @@
 
  - authentication: Plain, Login, CRAM-MD5, Digest-MD5, NTLM (9), Kerberos 5
    (4) and External.
- - send e-mails
+ - send emails
  - mail from support
  - mail size support
  - mail auth support for trusted server-to-server relaying
@@ -165,8 +165,8 @@
  - authentication: Clear Text, APOP and SASL
  - SASL based authentication: Plain, Login, CRAM-MD5, Digest-MD5, NTLM (9),
    Kerberos 5 (4) and External.
- - list e-mails
- - retrieve e-mails
+ - list emails
+ - retrieve emails
  - enhanced command support for: CAPA, DELE, TOP, STAT, UIDL and NOOP via
    custom requests
  - via http-proxy
@@ -184,8 +184,8 @@
    Kerberos 5 (4) and External.
  - list the folders of a mailbox
  - select a mailbox with support for verifying the UIDVALIDITY
- - fetch e-mails with support for specifying the UID and SECTION
- - upload e-mails via the append command
+ - fetch emails with support for specifying the UID and SECTION
+ - upload emails via the append command
  - enhanced command support for: EXAMINE, CREATE, DELETE, RENAME, STATUS,
    STORE, COPY and UID via custom requests
  - via http-proxy
@@ -198,7 +198,7 @@
 
 ## MQTT
 
- - Subscribe to and publish topics using url scheme `mqtt://broker/topic`
+ - Subscribe to and publish topics using URL scheme `mqtt://broker/topic`
 
 ## Footnotes
 
@@ -212,9 +212,8 @@
   6. requires c-ares
   7. requires libssh2, libssh or wolfSSH
   8. requires libssh2 or libssh
-  9. requires OpenSSL, GnuTLS, mbedTLS, NSS, yassl, Secure Transport or SSPI
+  9. requires OpenSSL, GnuTLS, mbedTLS, NSS, Secure Transport or SSPI
      (native Windows)
-  10. -
-  11. requires libidn2 or Windows
-  12. requires libz, brotli and/or zstd
-  13. requires a GSS-API implementation (such as Heimdal or MIT Kerberos)
+  10. requires libidn2 or Windows
+  11. requires libz, brotli and/or zstd
+  12. requires a GSS-API implementation (such as Heimdal or MIT Kerberos)

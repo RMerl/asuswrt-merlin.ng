@@ -40,6 +40,7 @@ iv_gen_t* iv_gen_create_for_alg(encryption_algorithm_t alg)
 		case ENCR_SERPENT_CBC:
 		case ENCR_TWOFISH_CBC:
 		case ENCR_RC2_CBC:
+		case ENCR_AES_CFB:
 			return iv_gen_rand_create();
 		case ENCR_AES_CTR:
 		case ENCR_AES_CCM_ICV8:
@@ -61,6 +62,7 @@ iv_gen_t* iv_gen_create_for_alg(encryption_algorithm_t alg)
 		case ENCR_DES_ECB:
 		case ENCR_DES_IV32:
 		case ENCR_DES_IV64:
+		case ENCR_AES_ECB:
 			break;
 	}
 	return NULL;

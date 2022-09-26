@@ -14,7 +14,7 @@
  */
 
 /**
- * @defgroup ietf_attr_string_versiont ietf_attr_string_version
+ * @defgroup ietf_attr_string_version ietf_attr_string_version
  * @{ @ingroup ietf_attr
  */
 

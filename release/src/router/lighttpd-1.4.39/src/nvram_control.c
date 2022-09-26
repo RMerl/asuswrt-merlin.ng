@@ -82,6 +82,7 @@
 #define MS_DLNA "ms_dlna"
 #define MS_PATH "ms_path"
 #define DMS_DBCWD "dms_dbcwd"
+#define DMS_DBDIR "dms_dbdir"
 #define DMS_DIR "dms_dir"
 #define HTTPS_CRT_CN "https_crt_cn"
 #define ODMPID "odmpid"
@@ -137,6 +138,7 @@
 #define DMS_ENABLE "dms_enable"
 #define MS_DLNA "ms_dlna"
 #define DMS_DBCWD "dms_dbcwd"
+#define DMS_DBDIR "dms_dbdir"
 #define DMS_DIR "dms_dir"
 #define HTTPS_CRT_CN "https_crt_cn"
 #define HTTPS_CRT_SAVE "https_crt_save"
@@ -1546,7 +1548,11 @@ char* nvram_get_dms_dbcwd(void)
 	*/
 	return NULL;
 #else
-	return nvram_get(DMS_DBCWD);
+    char* dir = nvram_get(DMS_DBCWD);
+    if (dir==NULL || (dir!=NULL && strcmp(dir, "")==0))
+        dir = nvram_get(DMS_DBDIR);
+
+	return dir;
 #endif
 }
 

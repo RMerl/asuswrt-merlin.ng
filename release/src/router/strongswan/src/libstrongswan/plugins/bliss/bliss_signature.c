@@ -102,7 +102,7 @@ METHOD(bliss_signature_t, get_encoding, chunk_t,
 	encoding = packer->extract_buf(packer);
 
 	DBG2(DBG_LIB, "efficiency of Huffman coder is %6.4f bits/tuple (%u bits)",
-				   coder->get_bits(coder)/(double)(this->set->n), 
+				   coder->get_bits(coder)/(double)(this->set->n),
 				   coder->get_bits(coder));
 	DBG2(DBG_LIB, "generated BLISS signature (%u bits encoded in %u bytes)",
 				   packer->get_bits(packer), encoding.len);

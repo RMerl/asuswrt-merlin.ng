@@ -450,7 +450,7 @@ endif
 
 ifeq ($(or $(RTCONFIG_VPN_FUSION),$(RTCONFIG_TPVPN),$(RTCONFIG_IG_SITE2SITE),$(RTCONFIG_WIREGUARD)),y)
 OBJS += vpn_utils.o
-CFLAGS += -I$(TOP)/libvpn/
+CFLAGS += -I$(TOP)/libovpn/
 endif
 
 ifeq ($(OPDBG),y)

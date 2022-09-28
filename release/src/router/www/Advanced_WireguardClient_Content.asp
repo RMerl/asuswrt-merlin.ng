@@ -17,12 +17,14 @@
 <script src="/popup.js"></script>
 <script src="/validator.js"></script>
 <script src="/js/jquery.js"></script>
+<script src="/js/httpApi.js"></script>
 
 <script>
 
 <% get_wgc_parameter(); %>
 
 var wgc_enable = '<% nvram_get("wgc_enable"); %>';
+var wgc_unit = '<% nvram_get("wgc_unit"); %>';
 
 function initial(){
 	show_menu();
@@ -63,6 +65,60 @@ function change_wgc_unit(unit){
 	document.chg_wgc.wgc_unit.value=unit.toString();
 	document.chg_wgc.submit();
 }
+
+function Importwg(){
+        if (document.getElementById('wgfile').value == "") return false;
+        document.getElementById('importWgFile').style.display = "none";
+        document.getElementById('loadingicon').style.display = "";
+
+	var postData = {
+		"wgc_upload_unit": wgc_unit,
+		"file": $('#wgfile').prop('files')[0]
+	};
+	httpApi.uploadWGCFile(postData);
+
+	var count = 0;
+	var timer = 10;
+	var interval_check = setInterval(function(inputObj){
+		var status_text = wgcFileChecker("init");
+		if(status_text != ""){
+			clearInterval(interval_check);
+			document.getElementById('importWgFile').style.display = "";
+			document.getElementById('loadingicon').style.display = "none";
+
+			if(httpApi.nvramGet(["wgc_upload_state"])["wgc_upload_state"] == "0"){
+				document.getElementById("importWgFile").innerHTML = status_text;
+				setTimeout("location.href='Advanced_WireguardClient_Content.asp';", 3000);
+			}
+		}
+		else if(count >= timer){
+			clearInterval(interval_check);
+			document.getElementById('loadingicon').style.display = "none";
+			document.getElementById("importWgFile").innerHTML = "<#SET_fail_desc#>";
+		}
+		count++;
+	},1000, $(this));
+}
+
+function wgcFileChecker(_init){
+	var result = "";
+	var wgc_upload_state = _init;
+	var wgc_upload_state_current = httpApi.nvramGet(["wgc_upload_state"],true)["wgc_upload_state"];
+	if(wgc_upload_state_current != "")
+		wgc_upload_state = wgc_upload_state_current;
+
+	if(wgc_upload_state != "init"){
+		if(wgc_upload_state == "err"){
+			result = "<#Setting_upload_hint#>";
+		}
+		else if(wgc_upload_state == "0"){
+			result = "<#Main_alert_proceeding_desc3#>";
+		}
+	}
+	return result;
+}
+
+
 
 </script>
 
@@ -119,7 +175,7 @@ function change_wgc_unit(unit){
 							</tr>
 						</thead>
 						<tr id="wgc_unit_field" class="rept ew">
-							<th>WireGuard Index</th>
+							<th>WireGuard Unit</th>
 							<td>
 								<select name="wgc_unit" class="input_option" onChange="change_wgc_unit(this.value);">
 									<option class="content_input_fd" value="1" <% nvram_match("wgc_unit", "1","selected"); %>>1</option>
@@ -144,6 +200,16 @@ function change_wgc_unit(unit){
 								<input type="radio" value="0" name="wgc_nat" class="input" <% nvram_match("wgc_nat", "0", "checked"); %>><#checkbox_No#></input>
 							</td>
 						</tr>
+                                        <tr>
+                                                <th>Import config</th>
+                                                <td>
+                                                        <input id="wgfile" type="file" name="file" class="input" style="color:#FFCC00;*color:#000;">
+                                                        <input id="" class="button_gen" onclick="Importwg();" type="button" value="<#CTL_upload#>" />
+                                                                <img id="loadingicon" style="margin-left:5px;display:none;" src="/images/InternetScan.gif">
+                                                                <span id="importWgFile" style="display:none;"><#Main_alert_proceeding_desc3#></span>
+                                                </td>
+                                        </tr>
+
 					</table>
 
 					<table id="WgcInterfaceTable" width="100%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable">

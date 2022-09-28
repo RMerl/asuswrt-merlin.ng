@@ -46,6 +46,26 @@ function initial(){
 	if (wgc_enable == '1') {
 		document.getElementById("WgcLogTable").style.display = "";
 	}
+
+	var state = "0";
+	switch (wgc_unit) {
+	case "1":
+		state = "<% sysinfo("wgcstatus.1"); %>";
+		break;
+	case "2":
+		state = "<% sysinfo("wgcstatus.2"); %>";
+		break;
+	case "3":
+		state = "<% sysinfo("wgcstatus.3"); %>";
+		break;
+	case "4":
+		state = "<% sysinfo("wgcstatus.4"); %>";
+		break;
+	case "5":
+		state = "<% sysinfo("wgcstatus.5"); %>";
+		break;
+	}
+	document.getElementById("wgcstate").innerHTML = (state == "0" ? "Stopped" : "Connected");
 }
 
 function applyRule(){
@@ -191,6 +211,7 @@ function wgcFileChecker(_init){
 							<td>
 								<input type="radio" value="1" name="wgc_enable" class="input" <% nvram_match("wgc_enable", "1", "checked"); %>><#checkbox_Yes#></input>
 								<input type="radio" value="0" name="wgc_enable" class="input" <% nvram_match("wgc_enable", "0", "checked"); %>><#checkbox_No#></input>
+								<span style="margin-left:20px;" id="wgcstate"></span>
 							</td>
 						</tr>
 						<tr id="wgc_nat">

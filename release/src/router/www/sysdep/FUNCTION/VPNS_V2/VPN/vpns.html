@@ -41,7 +41,8 @@ $(function () {
 	}
 	else{
 		var productid = httpApi.nvramGet(["productid"]).productid;
-		if(productid.substr(0,2) == "GT"){
+//		if(productid.substr(0,2) == "GT"){
+		if(isSupport("rog")){
 			$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/VPN/vpnsGT.css">');
 		}
 		else if(productid.substr(0,3) == "TUF"){
@@ -52,9 +53,9 @@ $(function () {
 if(isSupport("pptpd")){
 	$('<script />', { type : 'text/javascript', src : "/VPN/vpns_pptp.js"}).appendTo('head');
 }
-if(isSupport("openvpnd")){
-	$('<script />', { type : 'text/javascript', src : "/VPN/vpns_openvpn.js"}).appendTo('head');
-}
+//if(isSupport("openvpnd")){
+//	$('<script />', { type : 'text/javascript', src : "/VPN/vpns_openvpn.js"}).appendTo('head');
+//}
 if(isSupport("ipsec_srv")){
 	$('<script />', { type : 'text/javascript', src : "/VPN/vpns_ipsec.js"}).appendTo('head');
 }
@@ -133,6 +134,7 @@ function show_vpn_serverlist(){
 			});
 		});
 	}
+/*
 	if(isSupport("openvpnd")){
 		var openvpn_settings = httpApi.nvramGet(["VPNServer_enable", "enable_samba"], true);
 		var $svr_item_container = $("<div>").addClass("svr_item_container").attr({"type":"openvpn"});
@@ -206,6 +208,7 @@ function show_vpn_serverlist(){
 			});
 		});
 	}
+*/
 	if(isSupport("ipsec_srv")){
 		var ipsec_settings = httpApi.nvramGet(["ipsec_server_enable"], true);
 		var $svr_item_container = $("<div>").addClass("svr_item_container").attr({"type":"ipsec"});
@@ -368,6 +371,14 @@ function show_vpn_serverlist(){
 }
 function initial(){
 	show_loading_obj();
+
+	var vpn_server_array = { "OpenVPN" : ["OpenVPN", "/Advanced_VPN_OpenVPN.asp"], "Others" : ["Others", "/Advanced_VPNServer_Content.asp"]};
+	if(!isSupport("openvpnd")){
+		delete vpn_server_array.OpenVPN;
+	}
+
+	$('#divSwitchMenu').html(gen_switch_menu(vpn_server_array, "Others"));
+
 	show_vpn_serverlist();
 }
 $(document).ready(initial);
@@ -383,6 +394,7 @@ $(document).ready(initial);
 	<div class="container no_highlights">
 		<div class="function_desc_container">
 			<div class="title"><#BOP_isp_heart_item#></div>
+			<div id="divSwitchMenu" style="float:right;"></div>
 		</div>
 		<div class="content_container">
 			<div class="server_list_container">

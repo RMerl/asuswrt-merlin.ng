@@ -183,18 +183,9 @@ function initial(){
 	update_digest();
 	/*Advanced Setting end */
 
-	var vpn_server_array = { "PPTP" : ["PPTP", "Advanced_VPN_PPTP.asp"], "OpenVPN" : ["OpenVPN", "Advanced_VPN_OpenVPN.asp"], "IPSEC" : ["IPSec VPN", "Advanced_VPN_IPSec.asp"], "Wireguard" : ["Wireguard VPN", "Advanced_WireguardServer_Content.asp"]};
-	if(!pptpd_support) {
-		delete vpn_server_array.PPTP;
-	}
-	if(!openvpnd_support) {
-		delete vpn_server_array.OpenVPN;
-	}
-	if(!ipsec_srv_support) {
-		delete vpn_server_array.IPSEC;
-	}
-	if(!wireguard_support) {
-		delete vpn_server_array.Wireguard;
+	var vpn_server_array = { "OpenVPN" : ["OpenVPN", "Advanced_VPN_OpenVPN.asp"], "Others" : ["Others", "Advanced_VPNServer_Content.asp"]};
+	if(!pptpd_support && !ipsec_srv_support && !wireguard_support)  {
+		delete vpn_server_array.Others;
 	}
 
 	$('#divSwitchMenu').html(gen_switch_menu(vpn_server_array, "OpenVPN"));

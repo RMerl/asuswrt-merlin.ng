@@ -498,6 +498,26 @@ int ej_show_sysinfo(int eid, webs_t wp, int argc, char_t ** argv)
 					}
 				}
 			}
+
+#if RTCONFIG_WIREGUARD
+		} else if(strncmp(type,"wgcstatus",9) == 0 ) {
+			int num = 0;
+
+			sscanf(type,"wgcstatus.%d", &num);
+
+                        if (num > 0)
+			{
+				if (is_wgc_connected(num))
+				{
+					strlcpy(result, "1", sizeof(result));
+				} else {
+					strlcpy(result, "0", sizeof(result));
+				}
+			} else {
+				strlcpy(result, "0", sizeof(result));
+			}
+#endif
+
 		} else if(strcmp(type,"ethernet.rtk") == 0 ) {
 #ifdef RTCONFIG_EXT_RTL8365MB
 			int states[4];

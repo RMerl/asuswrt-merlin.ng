@@ -959,7 +959,8 @@ function Get_Component_Setting_Profile(_type){
 	$content_container.append(Get_Component_Input(conn_name_parm));
 
 	$content_container.append($("<div>").addClass("profile_title_item").append($("<span>").html("VPN authentication")));/* untranslated */
-	var vpn_type_items = [{"text":"PPTP", "value":"pptp"},{"text":"L2TP", "value":"l2tp"},{"text":"OpenVPN", "value":"openvpn"}];
+//	var vpn_type_items = [{"text":"PPTP", "value":"pptp"},{"text":"L2TP", "value":"l2tp"},{"text":"OpenVPN", "value":"openvpn"}];
+	var vpn_type_items = [{"text":"PPTP", "value":"pptp"},{"text":"L2TP", "value":"l2tp"}];
 	if(support_WG)
 		vpn_type_items.push({"text":"WireGuard", "value":"wireguard"});
 	var vpn_type_parm = {"title": "<#QIS_internet_vpn_type#>", "id": "vpn_type", "options": vpn_type_items, "set_value": "pptp"}

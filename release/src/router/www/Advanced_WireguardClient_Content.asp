@@ -47,6 +47,15 @@ function initial(){
 		document.getElementById("WgcLogTable").style.display = "";
 	}
 
+	// Client list
+	free_options(document.form.wgc_unit);
+	add_option(document.form.wgc_unit, "1: <% nvram_get("wgc1_desc"); %>", "1", (wgc_unit == 1));
+	add_option(document.form.wgc_unit, "2: <% nvram_get("wgc2_desc"); %>", "2", (wgc_unit == 2));
+	add_option(document.form.wgc_unit, "3: <% nvram_get("wgc3_desc"); %>", "3", (wgc_unit == 3));
+	add_option(document.form.wgc_unit, "4: <% nvram_get("wgc4_desc"); %>", "4", (wgc_unit == 4));
+	add_option(document.form.wgc_unit, "5: <% nvram_get("wgc5_desc"); %>", "5", (wgc_unit == 5));
+
+	// State
 	var state = "0";
 	switch (wgc_unit) {
 	case "1":
@@ -186,7 +195,6 @@ function wgcFileChecker(_init){
 					<div class="formfonttitle">VPN - WireGuard Client</div>
 					<div id="divSwitchMenu" style="margin-top:-40px;float:right;"></div
 					<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
-					<div id="titl_desc" class="formfontdesc">WireGuard Client</div>
 
 					<table id="WgcBasicTable" width="100%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable">
 						<thead>
@@ -195,15 +203,16 @@ function wgcFileChecker(_init){
 							</tr>
 						</thead>
 						<tr id="wgc_unit_field" class="rept ew">
-							<th>WireGuard Unit</th>
+							<th>Select client instance</th>
 							<td>
 								<select name="wgc_unit" class="input_option" onChange="change_wgc_unit(this.value);">
-									<option class="content_input_fd" value="1" <% nvram_match("wgc_unit", "1","selected"); %>>1</option>
-									<option class="content_input_fd" value="2" <% nvram_match("wgc_unit", "2","selected"); %>>2</option>
-									<option class="content_input_fd" value="3" <% nvram_match("wgc_unit", "3","selected"); %>>3</option>
-									<option class="content_input_fd" value="4" <% nvram_match("wgc_unit", "4","selected"); %>>4</option>
-									<option class="content_input_fd" value="5" <% nvram_match("wgc_unit", "5","selected"); %>>5</option>
 								</select>
+							</td>
+						</tr>
+						<tr>
+							<th>Description</th>
+							<td>
+								<input type="text" maxlength="25" class="input_25_table" name="wgc_desc" value="<% nvram_get("wgc_desc"); %>">
 							</td>
 						</tr>
 						<tr id="wgc_enable">

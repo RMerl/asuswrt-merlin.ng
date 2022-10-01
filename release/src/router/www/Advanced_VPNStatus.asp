@@ -14,6 +14,7 @@
 
 <style>
 	.statcell { width:25% !important; text-align:left !important; }
+	.wgsheader:first-letter { text-transform: capitalize; }
 </style>
 
 <script language="JavaScript" type="text/javascript" src="/state.js"></script>
@@ -21,6 +22,7 @@
 <script language="JavaScript" type="text/javascript" src="/popup.js"></script>
 <script language="JavaScript" type="text/javascript" src="/help.js"></script>
 <script language="JavaScript" type="text/javascript" src="/js/jquery.js"></script>
+<script language="JavaScript" type="text/javascript" src="/js/httpApi.js"></script>
 <script>
 wan_route_x = '<% nvram_get("wan_route_x"); %>';
 wan_nat_x = '<% nvram_get("wan_nat_x"); %>';
@@ -29,162 +31,175 @@ wan_proto = '<% nvram_get("wan_proto"); %>';
 var overlib_str0 = new Array();	//Viz add 2013.04 for record longer VPN client username/pwd
 var overlib_str1 = new Array();	//Viz add 2013.04 for record longer VPN client username/pwd
 vpnc_clientlist_array = decodeURIComponent('<% nvram_char_to_ascii("","vpnc_clientlist"); %>');
+var wgs_object = {};
 
 function initial(){
 	show_menu();
 
-	if (openvpnd_support) {
-		setTimeout("refreshData()",1000);
-	} else {
-		showhide("server1", 0);
-		showhide("server2", 0);
-		showhide("client1", 0);
-		showhide("client2", 0);
-		showhide("client3", 0);
-		showhide("client4", 0);
-		showhide("client5", 0);
+	if (openvpnd_support || ipsec_srv_support || pptpd_support) {
+		setTimeout("refresh_vpn_data()",1000);
 	}
-
-	if (!pptpd_support)
-		showhide("pptpserver", 0);
 
 	if (ipsec_srv_support)
 		setTimeout("refresh_ipsec_data()",1200);
-	else
-		showhide("ipsecsrv", 0);
+
+	if (wireguard_support) {
+		build_wgsc_array();
+		setTimeout("display_wg_data()",1200);
+	}
 }
 
 
-function refreshData(){
+function refresh_vpn_data(){
 	$.ajax({
 		url: 'ajax_vpn_status.asp',
 		dataType: 'script',
 		error: function(xhr){
-			refreshData();
+			refresh_vpn_data();
 		},
 		success: function(response){
-			displayData();
+			display_vpn_data();
 		}
 	});
 }
 
-function displayData(){
-	var state_srv_run = " - Running";
-	var state_srv_stop = " - <span style=\"background-color: transparent; color: white;\">Stopped</span>";
-	var state_clnt_ced = " - Connected";
-	var state_clnt_cing = " - Connecting...";
-	var state_clnt_err = " - Error connecting";
-	var state_clnt_disc = " - <span style=\"background-color: transparent; color: white;\">Stopped</span>";
+
+var state_srv_run = " - Running";
+var state_srv_stop = " - <span style=\"background-color: transparent; color: white;\">Stopped</span>";
+var state_clnt_ced = " - Connected";
+var state_clnt_cing = " - Connecting...";
+var state_clnt_err = " - Error connecting";
+var state_clnt_disc = " - <span style=\"background-color: transparent; color: white;\">Stopped</span>";
+
+function display_vpn_data(){
 	var state_desc, tmp;
 
-	if (server1pid > 0)
-		document.getElementById("server1_Block_Running").innerHTML = state_srv_run;
-	else
-		document.getElementById("server1_Block_Running").innerHTML = state_srv_stop;
-
-	if (server2pid > 0)
-		document.getElementById("server2_Block_Running").innerHTML = state_srv_run;
-	else
-		document.getElementById("server2_Block_Running").innerHTML = state_srv_stop;
-
-	for (var unit = 1; unit < 6; unit++) {
-		switch (unit) {
-			case 1:
-				client_state = vpnc_state_t1;
-				client_errno = vpnc_errno_t1;
-				tmp = "<% nvram_get("vpn_client1_addr"); %>";
-				client_server = " ("+ tmp.shorter(42) +
-				                " <% nvram_get("vpn_client1_proto"); %>" +
-				                ":<% nvram_get("vpn_client1_port"); %>)";
-				client_desc = "<span style=\"background-color: transparent; color: white;\"><% nvram_get("vpn_client1_desc"); %></span>";
-				break;
-			case 2:
-				client_state = vpnc_state_t2;
-				client_errno = vpnc_errno_t2;
-				tmp = "<% nvram_get("vpn_client2_addr"); %>";
-				client_server = " ("+ tmp.shorter(42) + 
-				                " <% nvram_get("vpn_client2_proto"); %>" +
-				                ":<% nvram_get("vpn_client2_port"); %>)";
-				client_desc = "<span style=\"background-color: transparent; color: white;\"><% nvram_get("vpn_client2_desc"); %></span>";
-				break;
-			case 3:
-				client_state = vpnc_state_t3;
-				client_errno = vpnc_errno_t3;
-				tmp = "<% nvram_get("vpn_client3_addr"); %>";
-				client_server = " ("+ tmp.shorter(42) + 
-				                " <% nvram_get("vpn_client3_proto"); %>" +
-				                ":<% nvram_get("vpn_client3_port"); %>)";
-				client_desc = "<span style=\"background-color: transparent; color: white;\"><% nvram_get("vpn_client3_desc"); %></span>";
-				break;
-			case 4:
-				client_state = vpnc_state_t4;
-				client_errno = vpnc_errno_t4;
-				tmp = "<% nvram_get("vpn_client4_addr"); %>";
-				client_server = " ("+ tmp.shorter(42) + 
-				                " <% nvram_get("vpn_client4_proto"); %>" +
-				                ":<% nvram_get("vpn_client4_port"); %>)";
-				client_desc = "<span style=\"background-color: transparent; color: white;\"><% nvram_get("vpn_client4_desc"); %></span>";
-				break;
-			case 5:
-				client_state = vpnc_state_t5;
-				client_errno = vpnc_errno_t5;
-				tmp = "<% nvram_get("vpn_client5_addr"); %>";
-				client_server = " ("+ tmp.shorter(42) + 
-				                " <% nvram_get("vpn_client5_proto"); %>" +
-				                ":<% nvram_get("vpn_client5_port"); %>)";
-				client_desc = "<span style=\"background-color: transparent; color: white;\"><% nvram_get("vpn_client5_desc"); %></span>";
-				break;
+	if (openvpnd_support) {
+		if (server1pid > 0) {
+			document.getElementById("ovpnserver1_Block_Running").innerHTML = state_srv_run;
+			showhide("ovpnserver1", 1);
+		} else {
+			showhide("ovpnserver1", 0);
 		}
 
-		switch (client_state) {
-			case "0":
-				document.getElementById("client"+unit+"_Block_Running").innerHTML = client_desc + state_clnt_disc;
-				break;
-			case "1":
-				document.getElementById("client"+unit+"_Block_Running").innerHTML = client_desc + state_clnt_cing + client_server;
-				break;
-			case "2":
-				document.getElementById("client"+unit+"_Block_Running").innerHTML = client_desc + state_clnt_ced + client_server;
-				break;
-			case "-1":
-				code = state_clnt_err;
-				if (client_errno == 1 || client_errno == 2 || client_errno == 3)
-					code += " - <#vpn_openvpn_conflict#>";
-				else if(client_errno == 4 || client_errno == 5 || client_errno == 6)
-					code += " - <#qis_fail_desc1#>";
-				document.getElementById("client"+unit+"_Block_Running").innerHTML = client_desc + code;
-				break;
+		if (server2pid > 0) {
+			document.getElementById("ovpnmserver2_Block_Running").innerHTML = state_srv_run;
+			showhide("ovpnserver2", 1);
+		} else {
+			showhide("ovpnserver2", 0);
 		}
-	}        
 
-	parseStatus(vpn_server1_status, "server1_Block", "", "");
-	parseStatus(vpn_server2_status, "server2_Block", "", "");
-	parseStatus(vpn_client1_status, "client1_Block", vpn_client1_ip, vpn_client1_rip);
-	parseStatus(vpn_client2_status, "client2_Block", vpn_client2_ip, vpn_client2_rip);
-	parseStatus(vpn_client3_status, "client3_Block", vpn_client3_ip, vpn_client3_rip);
-	parseStatus(vpn_client4_status, "client4_Block", vpn_client4_ip, vpn_client4_rip);
-	parseStatus(vpn_client5_status, "client5_Block", vpn_client5_ip, vpn_client5_rip);
+		for (var unit = 1; unit < 6; unit++) {
+			switch (unit) {
+				case 1:
+					client_state = vpnc_state_t1;
+					client_errno = vpnc_errno_t1;
+					tmp = "<% nvram_get("vpn_client1_addr"); %>";
+					client_server = " ("+ tmp.shorter(42) +
+					                " <% nvram_get("vpn_client1_proto"); %>" +
+					                ":<% nvram_get("vpn_client1_port"); %>)";
+					client_desc = "<span style=\"background-color: transparent; color: white;\"><% nvram_get("vpn_client1_desc"); %></span>";
+					break;
+				case 2:
+					client_state = vpnc_state_t2;
+					client_errno = vpnc_errno_t2;
+					tmp = "<% nvram_get("vpn_client2_addr"); %>";
+					client_server = " ("+ tmp.shorter(42) +
+					                " <% nvram_get("vpn_client2_proto"); %>" +
+					                ":<% nvram_get("vpn_client2_port"); %>)";
+					client_desc = "<span style=\"background-color: transparent; color: white;\"><% nvram_get("vpn_client2_desc"); %></span>";
+					break;
+				case 3:
+					client_state = vpnc_state_t3;
+					client_errno = vpnc_errno_t3;
+					tmp = "<% nvram_get("vpn_client3_addr"); %>";
+					client_server = " ("+ tmp.shorter(42) +
+					                " <% nvram_get("vpn_client3_proto"); %>" +
+					                ":<% nvram_get("vpn_client3_port"); %>)";
+					client_desc = "<span style=\"background-color: transparent; color: white;\"><% nvram_get("vpn_client3_desc"); %></span>";
+					break;
+				case 4:
+					client_state = vpnc_state_t4;
+					client_errno = vpnc_errno_t4;
+					tmp = "<% nvram_get("vpn_client4_addr"); %>";
+					client_server = " ("+ tmp.shorter(42) +
+					                " <% nvram_get("vpn_client4_proto"); %>" +
+					                ":<% nvram_get("vpn_client4_port"); %>)";
+					client_desc = "<span style=\"background-color: transparent; color: white;\"><% nvram_get("vpn_client4_desc"); %></span>";
+					break;
+				case 5:
+					client_state = vpnc_state_t5;
+					client_errno = vpnc_errno_t5;
+					tmp = "<% nvram_get("vpn_client5_addr"); %>";
+					client_server = " ("+ tmp.shorter(42) +
+					                " <% nvram_get("vpn_client5_proto"); %>" +
+					                ":<% nvram_get("vpn_client5_port"); %>)";
+					client_desc = "<span style=\"background-color: transparent; color: white;\"><% nvram_get("vpn_client5_desc"); %></span>";
+					break;
+			}
+
+			switch (client_state) {
+				case "0":
+					document.getElementById("ovpnclient"+unit+"_Block_Running").innerHTML = client_desc + state_clnt_disc;
+					showhide("ovpnclient"+unit, 0);
+					break;
+				case "1":
+					document.getElementById("ovpnclient"+unit+"_Block_Running").innerHTML = client_desc + state_clnt_cing + client_server;
+					showhide("ovpnclient"+unit, 1);
+					break;
+				case "2":
+					document.getElementById("ovpnclient"+unit+"_Block_Running").innerHTML = client_desc + state_clnt_ced + client_server;
+					showhide("ovpnclient"+unit, 1);
+					break;
+				case "-1":
+					code = state_clnt_err;
+					if (client_errno == 1 || client_errno == 2 || client_errno == 3)
+						code += " - <#vpn_openvpn_conflict#>";
+					else if(client_errno == 4 || client_errno == 5 || client_errno == 6)
+						code += " - <#qis_fail_desc1#>";
+					document.getElementById("ovpnclient"+unit+"_Block_Running").innerHTML = client_desc + code;
+					showhide("ovpnclient"+unit, 1);
+					break;
+			}
+		}
+
+		parseOVPNStatus(vpn_server1_status, "ovpnserver1_Block", "", "");
+		parseOVPNStatus(vpn_server2_status, "ovpnserver2_Block", "", "");
+		parseOVPNStatus(vpn_client1_status, "ovpnclient1_Block", vpn_client1_ip, vpn_client1_rip);
+		parseOVPNStatus(vpn_client2_status, "ovpnclient2_Block", vpn_client2_ip, vpn_client2_rip);
+		parseOVPNStatus(vpn_client3_status, "ovpnclient3_Block", vpn_client3_ip, vpn_client3_rip);
+		parseOVPNStatus(vpn_client4_status, "ovpnclient4_Block", vpn_client4_ip, vpn_client4_rip);
+		parseOVPNStatus(vpn_client5_status, "ovpnclient5_Block", vpn_client5_ip, vpn_client5_rip);
+	}
+
 
 	if (pptpd_support) {
-		if (pptpdpid > 0)
+		if (pptpdpid > 0) {
 			document.getElementById("pptp_Block_Running").innerHTML = state_srv_run;
-		else
+			showhide("pptpserver", 1);
+		} else {
 			document.getElementById("pptp_Block_Running").innerHTML = state_srv_stop;
+			showhide("pptpserver", 0);
+		}
 		parsePPTPClients();
 	}
 
 	if ( (vpnc_support) && (vpnc_clientlist_array != "") ) {
+		showhide("vpnc", 1);
 		show_vpnc_rulelist();
+	} else {
+		showhide("vpnc", 0);
 	}
 
 	if(ipsec_srv_support) {
-		if('<% nvram_get("ipsec_server_enable"); %>' == "1")
+		if('<% nvram_get("ipsec_server_enable"); %>' == "1") {
 			document.getElementById("ipsec_srv_Block_Running").innerHTML = state_srv_run;
-		else
+			showhide("ipsecsrv", 1);
+		} else {
 			document.getElementById("ipsec_srv_Block_Running").innerHTML = state_srv_stop;
+			showhide("ipsecsrv", 0);
+		}
 	}
-
-	setTimeout("refreshData()",2000);
 }
 
 
@@ -221,7 +236,7 @@ function parsePPTPClients() {
 }
 
 
-function parseStatus(text, block, ipaddress, ripaddress){
+function parseOVPNStatus(text, block, ipaddress, ripaddress){
 	document.getElementById(block).innerHTML = "";
 	var code = "";
 
@@ -432,6 +447,7 @@ function parseIPSecData(profileName){
 	document.getElementById('ipsec_srv_Block').innerHTML += code;
 }
 
+
 function show_vpnc_rulelist(){
 	if(vpnc_clientlist_array[0] == "<")
 		vpnc_clientlist_array = vpnc_clientlist_array.split("<")[1];
@@ -517,6 +533,189 @@ function refresh_ipsec_data() {
 }
 
 
+function display_wg_data(){
+	if ("<% nvram_get("wgs_enable"); %>" == "1") {
+		document.getElementById("wgserver_Block_Running").innerHTML = state_srv_run;
+		parseWGSStatus("wgserver_Block");
+		showhide("wgserver", 1);
+	} else {
+		document.getElementById("wgserver_Block_Running").innerHTML = state_srv_stop;
+		showhide("wgserver", 0);
+	}
+
+	for (var unit = 1; unit < 6; unit++) {
+		switch (unit) {
+			case 1:
+				client_state = "<% sysinfo("wgcstatus.1"); %>";
+				tmp = "<% nvram_get("wgc1_ep_addr"); %>";
+				client_server = " ("+ tmp.shorter(42) +
+				                " - port <% nvram_get("wgc1_ep_port"); %>)";
+				desc = "<% nvram_get("wgc1_desc"); %>";
+				if (desc == "")
+					desc = "Client " + unit;
+				client_desc = "<span style=\"background-color: transparent; color: white;\">" + desc + "</span>";
+				break;
+			case 2:
+				client_state = "<% sysinfo("wgcstatus.2"); %>";
+				tmp = "<% nvram_get("wgc2_ep_addr"); %>";
+				client_server = " ("+ tmp.shorter(42) +
+				                " - port <% nvram_get("wgc2_ep_port"); %>)";
+				desc = "<% nvram_get("wgc2_desc"); %>";
+				if (desc == "")
+					desc = "Client " + unit;
+				client_desc = "<span style=\"background-color: transparent; color: white;\">" + desc + "</span>";
+				break;
+			case 3:
+				client_state = "<% sysinfo("wgcstatus.3"); %>";
+				tmp = "<% nvram_get("wgc3_ep_addr"); %>";
+				client_server = " ("+ tmp.shorter(42) +
+				                " - port <% nvram_get("wgc3_ep_port"); %>)";
+				desc = "<% nvram_get("wgc3_desc"); %>";
+				if (desc == "")
+					desc = "Client " + unit;
+                                client_desc = "<span style=\"background-color: transparent; color: white;\">" + desc + "</span>";
+				break;
+			case 4:
+				client_state = "<% sysinfo("wgcstatus.4"); %>";
+				tmp = "<% nvram_get("wgc4_ep_addr"); %>";
+				client_server = " ("+ tmp.shorter(42) +
+				                " - port <% nvram_get("wgc4_ep_port"); %>)";
+				desc = "<% nvram_get("wgc4_desc"); %>";
+				if (desc == "")
+					desc = "Client " + unit;
+                                client_desc = "<span style=\"background-color: transparent; color: white;\">" + desc + "</span>";
+				break;
+			case 5:
+				client_state = "<% sysinfo("wgcstatus.5"); %>";
+				tmp = "<% nvram_get("wgc5_ep_addr"); %>";
+				client_server = " ("+ tmp.shorter(42) +
+				                " - port <% nvram_get("wgc5_ep_port"); %>)";
+				desc = "<% nvram_get("wgc5_desc"); %>";
+				if (desc == "")
+					desc = "Client " + unit;
+                                client_desc = "<span style=\"background-color: transparent; color: white;\">" + desc + "</span>";
+				break;
+		}
+
+		switch (client_state) {
+			case "0":
+				document.getElementById("wgclient"+unit+"_Block_Running").innerHTML = client_desc + state_clnt_disc;
+				showhide("wgclient"+unit, 0);
+				break;
+			case "1":
+				document.getElementById("wgclient"+unit+"_Block_Running").innerHTML = client_desc + state_clnt_ced + client_server;
+				get_wgc_data(unit, "wgclient"+unit+"_Block");
+				showhide("wgclient"+unit, 1);
+				break;
+		}
+	}
+
+	setTimeout("display_wg_data()",2000);
+}
+
+
+function get_wgc_data(_unit, _block) {
+	httpApi.nvramSet({"wgc_unit": _unit});
+	$.ajax({
+		url: '/appGet.cgi?hook=nvram_dump(\"wgc.log\",\"wgc.sh\")',
+		dataType: 'text',
+		error: function(xhr){
+			setTimeout("get_wgc_data(_unit, _block);", 1000);
+		},
+		success: function(response){
+			var got_peer = 0;
+			var code = "<table width='100%' border='1' align='center' cellpadding='4' cellspacing='0' bordercolor='#6b8fa3' class='FormTable_table'><thead><tr><td colspan='2'>Client Status</tr></thead>";
+			data = response.toString().slice(23).split("\n");
+			for (i = 0; i < data.length; ++i) {
+				var fields = data[i].split(/:(.*)/s);
+				if (fields.length < 2) continue;
+				if (fields[0].trim() == "preshared key") continue;
+
+				if (fields[0] == "peer") {
+					got_peer = 1;
+				}
+				if (got_peer == 1) {
+					code += "<tr><th class='wgsheader' style='text-align:left;'>" + fields[0] + "</td><td style='text-align:left;'>" + fields[1] + "</td></tr>";
+				}
+			}
+			code += "</table>";
+			document.getElementById(_block).innerHTML = code;
+		}
+	});
+}
+
+function build_wgsc_array() {
+	var wgsc_settings = httpApi.nvramGet(["wgs1_c1_name", "wgs1_c1_pub",
+	                                      "wgs1_c2_name", "wgs1_c2_pub",
+	                                      "wgs1_c3_name", "wgs1_c3_pub",
+	                                      "wgs1_c4_name", "wgs1_c4_pub",
+	                                      "wgs1_c5_name", "wgs1_c5_pub",
+	                                      "wgs1_c6_name", "wgs1_c6_pub",
+	                                      "wgs1_c7_name", "wgs1_c7_pub",
+	                                      "wgs1_c8_name", "wgs1_c8_pub",
+	                                      "wgs1_c9_name", "wgs1_c9_pub",
+	                                      "wgs1_c10_name", "wgs1_c10_pub"]);
+
+	for (index = 1; index < 11; index++) {
+		wgs_object[wgsc_settings["wgs1_c" + index + "_pub"]] = wgsc_settings["wgs1_c" + index +"_name"];
+	}
+}
+
+function parseWGSStatus(_block) {
+	$.ajax({
+		url: '/appGet.cgi?hook=nvram_dump(\"wgs.log\",\"wgs.sh\")',
+		dataType: 'text',
+		error: function(xhr){
+			setTimeout("parseWGSStatus(_block);", 1000);
+		},
+		success: function(response){
+			var code = "<table width='100%' border='1' align='center' cellpadding='4' cellspacing='0' bordercolor='#6b8fa3' class='FormTable_table'><thead><tr><td colspan='2'>Peers</tr></thead>";
+			var active_peer = 0, have_peers = 0;
+			var data = response.toString().slice(23,-4).split("\n");
+			for (var i = 0; i < data.length; ++i) {
+				var fields = data[i].split(/:(.*)/s);
+				if (fields.length < 2) continue;
+				if (fields[0] == "peer") {
+					if (is_wgsc_connected(fields[1].trim())) {
+						active_peer = 1;
+						have_peers = 1;
+						code += "<tr><th colspan='2' style='text-align:left;color:#FFCC00;text-decoration:bold;'>Peer: " + wgs_object[fields[1].trim()] + "</th></tr>";
+						code += "<tr><th class='wgsheader' style='text-align:left;'>Public ID</td><td style='text-align:left;'>" + fields[1] + "</td></tr>";
+					} else {
+						active_peer = 0;
+					}
+				} else if (active_peer == 1) {
+					code += "<tr><th class='wgsheader' style='text-align:left;'>" + fields[0] + "</td><td style='text-align:left;'>" + fields[1] + "</td></tr>";
+				}
+			}
+			code += "</table>";
+			if (have_peers == 1)
+				document.getElementById(_block).innerHTML = code;
+		}
+	});
+}
+
+
+function is_wgsc_connected(_pubkey) {
+	var state = 0;
+
+	var get_wgsc_status = httpApi.hookGet("get_wgsc_status", true);
+	if(get_wgsc_status.client_status != undefined){
+		$.each(get_wgsc_status.client_status, function(index, value){
+			if (value.pub == _pubkey) {
+				if(value.status == "1") {
+					state = 1;
+					return;
+				} else {
+					state = 0;
+					return;
+				}
+			}
+		});
+	}
+	return state;
+}
+
 </script>
 </head>
 
@@ -563,7 +762,7 @@ function refresh_ipsec_data() {
                 <div>&nbsp;</div>
                 <div class="formfonttitle">VPN - Status</div>
 		<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
-				<table width="100%" style="margin-bottom:20px;" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" id="pptpserver" class="FormTable">
+				<table width="100%" style="margin-bottom:20px;display:none;" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" id="pptpserver" class="FormTable">
 					<thead>
 						<tr>
 							<td>PPTP VPN Server<span id="pptp_Block_Running" style="background: transparent;"></span></td>
@@ -576,33 +775,33 @@ function refresh_ipsec_data() {
 					</tr>
 
 				</table>
-				<table width="100%" id="server1" style="margin-bottom:20px;" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
+				<table width="100%" id="ovpnserver1" style="margin-bottom:20px;display:none;" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
 					<thead>
 						<tr>
-							<td>OpenVPN Server 1<span id="server1_Block_Running" style="background: transparent;"></span></td>
+							<td>OpenVPN Server 1<span id="ovpnserver1_Block_Running" style="background: transparent;"></span></td>
 						</tr>
 					</thead>
 					<tr>
 						<td style="border: none;">
-							<div id="server1_Block"></div>
+							<div id="ovpnserver1_Block"></div>
 						</td>
 					</tr>
 
 				</table>
-				<table width="100%" id="server2" style="margin-bottom:20px;" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
+				<table width="100%" id="ovpnserver2" style="margin-bottom:20px;display:none;" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
 					<thead>
 						<tr>
-							<td>OpenVPN Server 2<span id="server2_Block_Running" style="background: transparent;"></span></td>
+							<td>OpenVPN Server 2<span id="ovpnserver2_Block_Running" style="background: transparent;"></span></td>
 						</tr>
 					</thead>
 					<tr>
 						<td style="border: none;">
-							<div id="server2_Block"></div>
+							<div id="ovpnserver2_Block"></div>
 						</td>
 					</tr>
 
 				</table>
-				<table width="100%" id="ipsecsrv" style="margin-bottom:20px;" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
+				<table width="100%" id="ipsecsrv" style="margin-bottom:20px;display:none;" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
 					<thead>
 						<tr>
                                                         <td>IPSec Server<span id="ipsec_srv_Block_Running" style="background: transparent;"></span></td>
@@ -614,72 +813,84 @@ function refresh_ipsec_data() {
 						</td>
 					</tr>
                                 </table>
-				<table width="100%" id="client1" style="margin-bottom:20px;" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
+				<table width="100%" id="wgserver" style="margin-bottom:20px;display:none;" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
 					<thead>
 						<tr>
-							<td>OpenVPN <span id="client1_Block_Running" style="background: transparent;"></span></td>
+							<td>WireGuard Server <span id="wgserver_Block_Running" style="background: transparent;"></span></td>
 						</tr>
 					</thead>
 					<tr>
 						<td style="border: none;">
-							<div id="client1_Block"></div>
+							<div id="wgserver_Block"></div>
 						</td>
 					</tr>
-
 				</table>
-				<table width="100%" id="client2" style="margin-bottom:20px;" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
+				<table width="100%" id="ovpnclient1" style="margin-bottom:20px;display:none;" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
 					<thead>
 						<tr>
-							<td>OpenVPN <span id="client2_Block_Running" style="background: transparent;"></span></td>
+							<td>OpenVPN <span id="ovpnclient1_Block_Running" style="background: transparent;"></span></td>
 						</tr>
 					</thead>
 					<tr>
 						<td style="border: none;">
-							<div id="client2_Block"></div>
+							<div id="ovpnclient1_Block"></div>
 						</td>
 					</tr>
 
 				</table>
-				<table width="100%" id="client3" style="margin-bottom:20px;" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
+				<table width="100%" id="ovpnclient2" style="margin-bottom:20px;display:none;" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
 					<thead>
 						<tr>
-							<td>OpenVPN <span id="client3_Block_Running" style="background: transparent;"></span></td>
+							<td>OpenVPN <span id="ovpnclient2_Block_Running" style="background: transparent;"></span></td>
 						</tr>
 					</thead>
 					<tr>
 						<td style="border: none;">
-							<div id="client3_Block"></div>
+							<div id="ovpnclient2_Block"></div>
 						</td>
 					</tr>
 
 				</table>
-				<table width="100%" id="client4" style="margin-bottom:20px;" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
+				<table width="100%" id="ovpnclient3" style="margin-bottom:20px;display:none;" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
 					<thead>
 						<tr>
-							<td>OpenVPN <span id="client4_Block_Running" style="background: transparent;"></span></td>
+							<td>OpenVPN <span id="ovpnclient3_Block_Running" style="background: transparent;"></span></td>
 						</tr>
 					</thead>
 					<tr>
 						<td style="border: none;">
-							<div id="client4_Block"></div>
+							<div id="ovpnclient3_Block"></div>
 						</td>
 					</tr>
 
 				</table>
-				<table width="100%" id="client5" style="margin-bottom:20px;" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable">
+				<table width="100%" id="ovpnclient4" style="margin-bottom:20px;display:none;" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
 					<thead>
 						<tr>
-							<td>OpenVPN <span id="client5_Block_Running" style="background: transparent;"></span></td>
+							<td>OpenVPN <span id="ovpnclient4_Block_Running" style="background: transparent;"></span></td>
 						</tr>
 					</thead>
 					<tr>
 						<td style="border: none;">
-							<div id="client5_Block"></div>
+							<div id="ovpnclient4_Block"></div>
 						</td>
 					</tr>
 
 				</table>
-				<table width="100%" id="vpnc" style="margin-bottom:20px;" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
+				<table width="100%" id="ovpnclient5" style="margin-bottom:20px;display:none;" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable">
+					<thead>
+						<tr>
+							<td>OpenVPN <span id="ovpnclient5_Block_Running" style="background: transparent;"></span></td>
+						</tr>
+					</thead>
+					<tr>
+						<td style="border: none;">
+							<div id="ovpnclient5_Block"></div>
+						</td>
+					</tr>
+
+				</table>
+				<table width="100%" id="vpnc" style="margin-bottom:20px;display:none;" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
 					<thead>
 						<tr>
 							<td>PPTP/L2TP Clients<span id="vpnc_Block_Running" style="background: transparent;"></span></td>
@@ -692,6 +903,73 @@ function refresh_ipsec_data() {
 					</tr>
 
 				</table>
+
+				<table width="100%" id="wgclient1" style="margin-bottom:20px;display:none;" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
+					<thead>
+						<tr>
+							<td>WireGuard <span id="wgclient1_Block_Running" style="background: transparent;"></span></td>
+						</tr>
+					</thead>
+					<tr>
+						<td style="border: none;">
+							<div id="wgclient1_Block"></div>
+						</td>
+					</tr>
+
+				</table>
+				<table width="100%" id="wgclient2" style="margin-bottom:20px;display:none;" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
+					<thead>
+						<tr>
+							<td>WireGuard <span id="wgclient2_Block_Running" style="background: transparent;"></span></td>
+						</tr>
+					</thead>
+					<tr>
+						<td style="border: none;">
+							<div id="wgclient2_Block"></div>
+						</td>
+					</tr>
+				</table>
+				<table width="100%" id="wgclient3" style="margin-bottom:20px;display:none;" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
+					<thead>
+						<tr>
+							<td>WireGuard <span id="wgclient3_Block_Running" style="background: transparent;"></span></td>
+						</tr>
+					</thead>
+					<tr>
+						<td style="border: none;">
+							<div id="wgclient3_Block"></div>
+						</td>
+					</tr>
+
+				</table>
+				<table width="100%" id="wgclient4" style="margin-bottom:20px;display:none;" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
+					<thead>
+						<tr>
+							<td>WireGuard <span id="wgclient4_Block_Running" style="background: transparent;"></span></td>
+						</tr>
+					</thead>
+					<tr>
+						<td style="border: none;">
+							<div id="wgclient4_Block"></div>
+						</td>
+					</tr>
+
+				</table>
+				<table width="100%" id="wgclient5" style="margin-bottom:20px;display:none;" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable">
+					<thead>
+						<tr>
+							<td>WireGuard <span id="wgclient5_Block_Running" style="background: transparent;"></span></td>
+						</tr>
+					</thead>
+					<tr>
+						<td style="border: none;">
+							<div id="wgclient5_Block"></div>
+						</td>
+					</tr>
+
+				</table>
+
+
 
 				<div class="apply_gen">
 					<input name="button" type="button" class="button_gen" onclick="applyRule();" value="<#CTL_refresh#>"/>

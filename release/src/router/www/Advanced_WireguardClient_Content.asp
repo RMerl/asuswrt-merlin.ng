@@ -25,6 +25,7 @@
 
 var wgc_enable = '<% nvram_get("wgc_enable"); %>';
 var wgc_unit = '<% nvram_get("wgc_unit"); %>';
+var directorrules_array = "<% nvram_char_to_ascii("", "vpndirector_rulelist"); %>";
 
 function initial(){
 	show_menu();
@@ -75,6 +76,8 @@ function initial(){
 		break;
 	}
 	document.getElementById("wgcstate").innerHTML = (state == "0" ? "Stopped" : "Connected");
+
+	show_director_rules();
 }
 
 function applyRule(){
@@ -147,7 +150,39 @@ function wgcFileChecker(_init){
 	return result;
 }
 
+function show_director_rules(){
+	var directorrules_row =  decodeURIComponent(directorrules_array).split('<');
+	var code = "";
+	var line;
+	var width = ["10%", "25%", "22%", "22%", "11%"];
 
+	code +='<table width="100%" cellspacing="0" cellpadding="4" align="center" class="list_table" id="directorrules_table">';
+	if(directorrules_row.length == 1)
+		code +='<tr><td class="hint-color" colspan="6"><#IPConnection_VSList_Norule#></td></tr>';
+	else{
+		for(var i = 1; i < directorrules_row.length; i++){
+			line ='<tr id="row'+i+'">';
+			var directorrules_col = directorrules_row[i].split('>');
+				for(var j = 0; j < directorrules_col.length; j++){
+					if (j == 0) {
+						line += '<td width="' + width[j] +'">' + (directorrules_col[0] == "1" ? "<img title='Enabled' src='/images/New_ui/enable.svg'" :
+					                "<img title='Disabled' src='/images/New_ui/disable.svg'") +
+						        'style="width:25px; height:25px;"></td>';
+					} else {
+						line +='<td width="' + width[j] +'">'+ directorrules_col[j] +'</td>';
+					}
+				}
+				line += '</tr>';
+				if (directorrules_col[4] == "WAN" ||
+				    directorrules_col[4] == "WGC" + wgc_unit) {
+					code += line;
+				}
+		}
+	}
+
+	code +='</table>';
+	document.getElementById("directorrules_Block").innerHTML = code;
+}
 
 </script>
 
@@ -311,7 +346,29 @@ function wgcFileChecker(_init){
 						<input class="button_gen" onclick="applyRule();" type="button" value="<#CTL_apply#>"/>
 					</div>
 
+					<table id="selectiveTable" width="100%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable_table" style="margin-top:8px;">
+						<thead>
+							<tr>
+								<td colspan="5">VPN Director rules related to this client - <a href="Advanced_VPNDirector.asp" style="text-decoration:underline;">click here</a> to edit</td>
+							</tr>
+						</thead>
+						<tr>
+							<th width="10%">Enabled</th>
+							<th width="25%"><#IPConnection_autofwDesc_itemname#></th>
+							<th width="22%">Local IP</th>
+							<th width="22%">Remote IP</th>
+							<th width="11%">Iface</th>
+						</tr>
+					</table>
+					<div id="directorrules_Block"></div>
+					<br>
+
 					<table id="WgcLogTable" width="100%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable" style="display:none">
+						<thead>
+							<tr>
+								<td>Client status log:</td>
+							</tr>
+						</thead>
 						<tr>
 							<td>
 								<div style="margin-top:8px">

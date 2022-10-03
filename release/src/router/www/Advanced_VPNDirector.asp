@@ -66,6 +66,13 @@ var ovpn_info = {
         "state": ""
         }
 
+var wgc_info = {
+	"desc": "",
+	"routing": "",
+	"state": ""
+	}
+
+
 function initial(){
 	show_menu();
 
@@ -98,7 +105,9 @@ function initial(){
 
 	show_vpndirector_rulelist();
 	build_interface_list();
-	show_vpn_summary(0);
+	show_ovpn_summary(0);
+	if (wireguard_support)
+		show_wgc_summary(0);
 }
 
 
@@ -112,8 +121,57 @@ function build_interface_list() {
 	             .append("<option value='OVPN4'>OpenVPN 4: " + get_ovpn_infos(4, 0).desc + "</option>")
 	             .append("<option value='OVPN5'>OpenVPN 5: " + get_ovpn_infos(5, 0).desc + "</option>")
 	             .val('WAN');
+
+	if (wireguard_support) {
+		$('#iface_x').append("<option value='WGC1'>WireGuard 1: " + get_wgc_infos(1, 0).desc + "</option>")
+		             .append("<option value='WGC2'>WireGuard 2: " + get_wgc_infos(2, 0).desc + "</option>")
+		             .append("<option value='WGC3'>WireGuard 3: " + get_wgc_infos(3, 0).desc + "</option>")
+		             .append("<option value='WGC4'>WireGuard 4: " + get_wgc_infos(4, 0).desc + "</option>")
+		             .append("<option value='WGC5'>WireGuard 5: " + get_wgc_infos(5, 0).desc + "</option>")
+	}
 }
 
+
+function get_wgc_infos(unit, refresh) {
+	if (refresh) {
+		var vpnstate = httpApi.nvramGet(["wgc1_enable", "wgc2_enable", "wgc3_enable", "wgc4_enable", "wgc5_enable"], true);
+	} else {
+		var vpnstate = Array();
+		vpnstate["wgc1_enable"] = "<% nvram_get("wgc1_enable"); %>";
+		vpnstate["wgc2_enable"] = "<% nvram_get("wgc2_enable"); %>";
+		vpnstate["wgc3_enable"] = "<% nvram_get("wgc3_enable"); %>";
+		vpnstate["wgc4_enable"] = "<% nvram_get("wgc4_enable"); %>";
+		vpnstate["wgc5_enable"] = "<% nvram_get("wgc5_enable"); %>";
+	}
+
+	switch (unit) {
+		case 1:
+			wgc_info.desc = "<% nvram_get("wgc1_desc"); %>";
+			wgc_info.state = vpnstate["wgc1_enable"];
+			break;
+		case 2:
+			wgc_info.desc = "<% nvram_get("wgc2_desc"); %>";
+			wgc_info.state = vpnstate["wgc2_enable"];
+			break;
+		case 3:
+			wgc_info.desc = "<% nvram_get("wgc3_desc"); %>";
+			wgc_info.state = vpnstate["wgc3_enable"];
+			break;
+		case 4:
+			wgc_info.desc = "<% nvram_get("wgc4_desc"); %>";
+			wgc_info.state = vpnstate["wgc4_enable"];
+			break;
+		case 5:
+			wgc_info.desc = "<% nvram_get("wgc5_desc"); %>";
+			wgc_info.state = vpnstate["wgc5_enable"];
+			break;
+		defaults:
+			wgc_info.desc = "";
+			wgc_info.state = "0";
+	}
+
+	return wgc_info;
+}
 
 function get_ovpn_infos(unit, refresh) {
 	if (refresh) {
@@ -208,7 +266,7 @@ function del_Row(_this){
 }
 
 
-function show_vpn_summary(refresh) {
+function show_ovpn_summary(refresh) {
 	var code = '<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable_table">';
 	code += '<thead><tr><td colspan="4">OpenVPN clients status</td></tr></thead>';
 
@@ -237,9 +295,9 @@ function show_vpn_summary(refresh) {
 		code += '<td style="text-align:left; padding-left:10px;">' + ( ovpn_info.state == 2 ? '<span class="hint-color">Connected</span>' : 'Disconnected') + '</td>';
 		code +=	'<td style="text-align:left; padding-left:10px;">' + routing + '</td>';
 		if (ovpn_info.state == 2)
-			code += '<td style="text-align:left; padding-left:10px;"><span onclick="stop_client(\''+i+'\', this);" style="text-decoration:underline; cursor:pointer;">Stop Client</span></td></tr>';
+			code += '<td style="text-align:left; padding-left:10px;"><span onclick="stop_ovpn_client(\''+i+'\', this);" style="text-decoration:underline; cursor:pointer;">Stop Client</span></td></tr>';
 		else if ((ovpn_info.state == 0) || (ovpn_info.state == -1))
-                        code += '<td style="text-align:left; padding-left:10px;"><span onclick="start_client(\''+i+'\', this);" style="text-decoration:underline; cursor:pointer;">Start Client</span></td></tr>';
+                        code += '<td style="text-align:left; padding-left:10px;"><span onclick="start_ovpn_client(\''+i+'\', this);" style="text-decoration:underline; cursor:pointer;">Start Client</span></td></tr>';
 		else
 			code += '<td>...&nbsp;</td></tr>';
 	}
@@ -248,7 +306,29 @@ function show_vpn_summary(refresh) {
 	document.getElementById("vpn_status_Block").innerHTML = code;
 }
 
-function stop_client(unit, _this) {
+
+function show_wgc_summary(refresh) {
+	var code = '<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable_table">';
+	code += '<thead><tr><td colspan="4">WireGuard clients status</td></tr></thead>';
+
+	for (i = 1; i<= 5; i++) {
+		get_wgc_infos(i, refresh);
+
+		code += '<tr><th style="text-align:left; padding-left:10px;">WGC' + i + ': ' + wgc_info.desc + '</th>';
+		code += '<td style="text-align:left; padding-left:10px;">' + ( wgc_info.state == 1 ? '<span class="hint-color">Enabled</span>' : 'Disabled') + '</td>';
+
+		if (wgc_info.state == 1)
+			code += '<td style="text-align:left; padding-left:10px;"><span onclick="disable_wgc_client(\''+i+'\', this);" style="text-decoration:underline; cursor:pointer;">Disable Client</span></td></tr>';
+		else
+			code += '<td style="text-align:left; padding-left:10px;"><span onclick="enable_wgc_client(\''+i+'\', this);" style="text-decoration:underline; cursor:pointer;">Enable Client</span></td></tr>';
+	}
+	code += "</table>";
+
+	document.getElementById("wgc_status_Block").innerHTML = code;
+}
+
+
+function stop_ovpn_client(unit, _this) {
 	_this.outerHTML = '<img id="SearchingIcon" src="/images/InternetScan.gif">';
 	var obj = {
 		"action_mode": "apply",
@@ -257,10 +337,10 @@ function stop_client(unit, _this) {
 	obj["rc_service"] = "stop_vpnclient" + unit;
 	httpApi.nvramSet(obj);
 
-	setTimeout("show_vpn_summary(1)", 5000);
+	setTimeout("show_ovpn_summary(1)", 5000);
 }
 
-function start_client(unit, _this) {
+function start_ovpn_client(unit, _this) {
 	_this.outerHTML = '<img id="SearchingIcon" src="/images/InternetScan.gif">';
 	var obj = {
 		"action_mode": "apply",
@@ -268,9 +348,39 @@ function start_client(unit, _this) {
 	obj["rc_service"] = "start_vpnclient" + unit;
 	httpApi.nvramSet(obj);
 
-	setTimeout("show_vpn_summary(1)", 5000);
+	setTimeout("show_ovpn_summary(1)", 5000);
 	// Some clients take longer to start, so refresh a second time
-	setTimeout("show_vpn_summary(1)", 10000);
+	setTimeout("show_ovpn_summary(1)", 10000);
+}
+
+function disable_wgc_client(unit, _this) {
+	_this.outerHTML = '<img id="SearchingIcon" src="/images/InternetScan.gif">';
+
+	var obj = {
+		"action_mode": "apply",
+	}
+
+	obj["rc_service"] = "stop_wgc " + unit;
+	obj["wgc_unit"] = unit;
+	obj["wgc_enable"] = "0";
+	httpApi.nvramSet(obj);
+
+	setTimeout("show_wgc_summary(1)", 3000);
+}
+
+function enable_wgc_client(unit, _this) {
+	_this.outerHTML = '<img id="SearchingIcon" src="/images/InternetScan.gif">';
+
+	var obj = {
+		"action_mode": "apply",
+	}
+
+	obj["rc_service"] = "start_wgc " + unit;
+	obj["wgc_unit"] = unit;
+	obj["wgc_enable"] = "1";
+	httpApi.nvramSet(obj);
+
+	setTimeout("show_wgc_summary(1)", 3000);
 }
 
 
@@ -496,15 +606,17 @@ function applyRule() {
 								<div>&nbsp;</div>
 								<div class="formfonttitle">VPN Director</div>
 								<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
-								<div id="page_title" class="formfontdesc" style="margin-bottom:0px;">VPN Director allows you to direct LAN traffic through specific OpenVPN tunnels.
+								<div id="page_title" class="formfontdesc" style="margin-bottom:0px;">VPN Director allows you to direct LAN traffic through specific VPN tunnels.
 									<ul>
 										<li>OpenVPN clients set to redirect all traffic have the highest priority</li>
 										<li>WAN rules will have priority over OpenVPN rules</li>
-										<li>OpenVPN 1 rules have higher priority than OpenVPN 5 rules</li>
+										<li>OpenVPN rules will have priority over WireGuard rules</li>
+										<li>CLient 1 rules have higher priority than client 5 rules</li>
 										<li>Rules can be individually enabled or disabled by clicking on the first column</li>
 									</ul>
 								</div>
 								<div id="vpn_status_Block"></div>
+								<div id="wgc_status_Block"></div>
 								<br>
 								<div class="addRuleFrame">
 									<div class="addRuleText">Add new rule ( <#List_limit#> 199 )</div>

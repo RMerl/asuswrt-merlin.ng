@@ -35396,6 +35396,7 @@ wgsc_status_loop:
 							}
 							// add status
 							if (client_array_obj) {
+								json_object_object_add(client_array_obj, "pub", json_object_new_string(nvram_safe_get(nv)));
 								json_object_object_add(client_array_obj, "index", json_object_new_int(c_unit));
 								json_object_object_add(client_array_obj, "status", json_object_new_int(status));
 								json_object_array_add(client_status, client_array_obj);

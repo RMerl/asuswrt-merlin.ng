@@ -16844,20 +16844,22 @@ retry_wps_enr:
 #ifdef RTCONFIG_WIREGUARD
 				for (i = WG_CLIENT_MAX; i > 0; i--) {
 					amvpn_set_routing_rules(i, VPNDIR_PROTO_WIREGUARD);
+					amvpn_clear_exclusive_dns(i, VPNDIR_PROTO_WIREGUARD);
+					wgc_set_exclusive_dns(i);
 				}
 #endif
 				for (i = OVPN_CLIENT_MAX; i > 0; i --) {
 					amvpn_set_routing_rules(i, VPNDIR_PROTO_OPENVPN);
-					ovpn_clear_exclusive_dns(i);
+					amvpn_clear_exclusive_dns(i, VPNDIR_PROTO_OPENVPN);
 					ovpn_set_exclusive_dns(i);
 				}
 			} else {
 				// unit-specific only called for OpenVPN for now
 				amvpn_set_routing_rules(unit, VPNDIR_PROTO_OPENVPN);
-				ovpn_clear_exclusive_dns(unit);
+				amvpn_clear_exclusive_dns(unit, VPNDIR_PROTO_OPENVPN);
 				ovpn_set_exclusive_dns(unit);
 				// Refresh prerouting rules to ensure correct order
-				ovpn_update_exclusive_dns_rules();
+				amvpn_update_exclusive_dns_rules();
 			}
 			file_unlock(lock);
 		}

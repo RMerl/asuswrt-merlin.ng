@@ -1056,6 +1056,10 @@ void start_wgc(int unit)
 	_wg_client_dns_setup_vpnc(prefix, ifname, table);
 #else
 	_wg_client_dns_setup(prefix, ifname);
+	// VPNDirector DNS
+	wgc_set_exclusive_dns(unit);
+	amvpn_update_exclusive_dns_rules();
+
 	update_resolvconf();
 #endif
 
@@ -1086,7 +1090,7 @@ void stop_wgc(int unit)
 	_wg_client_ep_route_del(prefix, table);
 
 	// VPNDirector - flushing table
-	amvpn_clear_routing_rules(unit, VPNDIR_PROTO_OPENVPN);
+	amvpn_clear_routing_rules(unit, VPNDIR_PROTO_WIREGUARD);
 	snprintf(buffer, sizeof (buffer),"/usr/sbin/ip route flush table wgc%d", unit);
 	system(buffer);
 
@@ -1094,6 +1098,9 @@ void stop_wgc(int unit)
 	snprintf(path, sizeof(path), "%s/resolv_%s.dnsmasq", WG_DIR_CONF, ifname);
 	unlink(path);
 	update_resolvconf();
+
+	// VPNDIrector DNS
+	amvpn_clear_exclusive_dns(unit, VPNDIR_PROTO_WIREGUARD);
 
 	/// netfilter
 	_wg_x_nf_del(ifname);

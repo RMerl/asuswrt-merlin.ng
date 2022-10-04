@@ -17,7 +17,7 @@
  */
 
 /*
- * OpenVPN utility library for Asuswrt-Merlin
+ * VPN utility library for Asuswrt-Merlin
  * Provides some of the functions found in Asuswrt's
  * proprietary libvpn, either re-implemented, or
  * implemented as wrappers around AM's functions.

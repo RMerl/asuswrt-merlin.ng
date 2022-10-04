@@ -17,5 +17,13 @@ void _add_server_routes(char *server_iface, int client_unit, vpndir_proto_t prot
 void _del_server_routes(char *server_iface, int client_unit, vpndir_proto_t proto);
 extern char *amvpn_get_policy_rules(int unit, char *buffer, int bufferlen, vpndir_proto_t proto);
 extern int amvpn_set_policy_rules(char *buffer);
+
+extern void amvpn_clear_exclusive_dns(int unit, vpndir_proto_t proto);
+extern void amvpn_update_exclusive_dns_rules();
+extern void ovpn_set_exclusive_dns(int unit);
+#ifdef RTCONFIG_WIREGUARD
+extern void wgc_set_exclusive_dns(int unit);
+#endif
+
 #endif
 

@@ -118,6 +118,7 @@ typedef unsigned long long u64;
 #ifdef RTCONFIG_OPENVPN
 #include "openvpn_options.h"
 #include "openvpn_config.h"
+#include "amvpn_routing.h"
 #endif
 
 #include <net/if.h>
@@ -1770,7 +1771,7 @@ ej_nvram_char_to_ascii(int eid, webs_t wp, int argc, char_t **argv)
 	}
 
 	if (!strcmp(name, "vpndirector_rulelist"))
-		str = ovpn_get_policy_rules(-1, buffer, sizeof (buffer));
+		str = amvpn_get_policy_rules(-1, buffer, sizeof (buffer), VPNDIR_PROTO_NONE);
 	else {
 		wl_nband_to_wlx(name, name_tmp, sizeof(name_tmp));
 
@@ -4225,7 +4226,7 @@ int validate_apply(webs_t wp, json_object *root) {
 				}
 			}
 			else if (!strcmp(name, "vpndirector_rulelist")) {
-				ovpn_set_policy_rules(value);
+				amvpn_set_policy_rules(value);
 			}
 #endif
 			else if(!strncmp(name, "sshd_", 5)) {

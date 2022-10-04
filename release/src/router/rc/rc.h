@@ -70,6 +70,7 @@
 #include "openvpn_config.h"
 #include "openvpn_control.h"
 #include "openvpn_setup.h"
+#include "amvpn_routing.h"
 #endif
 
 #ifdef RTCONFIG_PARENTALCTRL

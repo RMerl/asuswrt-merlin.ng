@@ -104,6 +104,7 @@ static void _wg_client_ep_route_add(char* prefix, int table)
 	char addr[64] = {0};
 	char* p = NULL;
 	int v6 = 0;
+	int unit = 1;
 
 	snprintf(table_str, sizeof(table_str), "%d", table);
 
@@ -126,6 +127,12 @@ static void _wg_client_ep_route_add(char* prefix, int table)
 				"via", v6 ? wan6_gateway : wan_gateway,
 				"dev", v6 ? wan6_ifname : wan_ifname);
 	}
+
+	// VPNDirector - update all other client tables
+	sscanf(prefix, "wgc%d%*s", &unit);
+	sprintf(buf, "wgc%d", unit);
+	update_client_routes(buf, 1);
+	amvpn_set_routing_rules(unit, VPNDIR_PROTO_WIREGUARD);
 }
 
 static void _wg_client_ep_route_del(char* prefix, int table)
@@ -134,6 +141,7 @@ static void _wg_client_ep_route_del(char* prefix, int table)
 	char buf[1024] = {0};
 	char addr[64] = {0};
 	char* p = NULL;
+	int unit = 1;
 
 	snprintf(table_str, sizeof(table_str), "%d", table);
 	snprintf(buf, sizeof(buf), "%s", nvram_pf_safe_get(prefix, "ep_addr_r"));
@@ -145,6 +153,12 @@ static void _wg_client_ep_route_del(char* prefix, int table)
 		else
 			eval("ip", "route", "del", addr);
 	}
+
+	// VPNDirector - update all other client tables
+	sscanf(prefix, "wgc%d%*s", &unit);
+	amvpn_set_routing_rules(unit, VPNDIR_PROTO_WIREGUARD);
+	sprintf(buf, "wgc%d", unit);
+	update_client_routes(buf, 0);
 }
 
 static void _wg_client_check_conf(char* prefix)
@@ -1003,6 +1017,9 @@ void start_wgc(int unit)
 
 #ifdef RTCONFIG_VPN_FUSION
 	table = find_vpnc_idx_by_wgc_unit(unit);
+#else
+	/// VPNDirector table
+	table = 115 + unit;
 #endif
 
 	/// check configuration
@@ -1053,6 +1070,7 @@ void stop_wgc(int unit)
 	char path[128] = {0};
 	int table = 0;
 	int wg_enable = is_wg_enabled();
+	char buffer[64];
 
 	_dprintf("%s %d\n", __FUNCTION__, unit);
 
@@ -1061,8 +1079,16 @@ void stop_wgc(int unit)
 
 #ifdef RTCONFIG_VPN_FUSION
 	table = find_vpnc_idx_by_wgc_unit(unit);
+#else
+	// VPNDirector
+	table = 115 + unit;
 #endif
 	_wg_client_ep_route_del(prefix, table);
+
+	// VPNDirector - flushing table
+	amvpn_clear_routing_rules(unit, VPNDIR_PROTO_OPENVPN);
+	snprintf(buffer, sizeof (buffer),"/usr/sbin/ip route flush table wgc%d", unit);
+	system(buffer);
 
 	/// dns
 	snprintf(path, sizeof(path), "%s/resolv_%s.dnsmasq", WG_DIR_CONF, ifname);

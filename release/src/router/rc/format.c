@@ -83,7 +83,7 @@ void adjust_merlin_config(void)
 	}
 
 	if (*buffer)
-		ovpn_set_policy_rules(buffer);
+		amvpn_set_policy_rules(buffer);
 
 
 /* Migrate OVPN custom settings, either from stock _custom, or previous AM _custom2 and _cust2 (386.3) */

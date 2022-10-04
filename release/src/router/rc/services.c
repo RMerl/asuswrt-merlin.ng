@@ -16841,13 +16841,19 @@ retry_wps_enr:
 			unit = atoi(&script[10]);
 			lock = file_lock(VPNROUTING_LOCK);
 			if (unit == 0) {
-				for (i = OVPN_CLIENT_MAX; i > 0; i--) {
-					ovpn_set_routing_rules(i);
+#ifdef RTCONFIG_WIREGUARD
+				for (i = WG_CLIENT_MAX; i > 0; i--) {
+					amvpn_set_routing_rules(i, VPNDIR_PROTO_WIREGUARD);
+				}
+#endif
+				for (i = OVPN_CLIENT_MAX; i > 0; i --) {
+					amvpn_set_routing_rules(i, VPNDIR_PROTO_OPENVPN);
 					ovpn_clear_exclusive_dns(i);
 					ovpn_set_exclusive_dns(i);
 				}
 			} else {
-				ovpn_set_routing_rules(unit);
+				// unit-specific only called for OpenVPN for now
+				amvpn_set_routing_rules(unit, VPNDIR_PROTO_OPENVPN);
 				ovpn_clear_exclusive_dns(unit);
 				ovpn_set_exclusive_dns(unit);
 				// Refresh prerouting rules to ensure correct order

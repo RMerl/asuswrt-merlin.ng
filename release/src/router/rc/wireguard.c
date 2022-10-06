@@ -978,6 +978,8 @@ void start_wgs(int unit)
 
 	/// sysdeps
 	_wg_config_sysdeps(1);
+
+	logmessage("WireGuard", "Starting server.");
 }
 
 void stop_wgs(int unit)
@@ -999,6 +1001,8 @@ void stop_wgs(int unit)
 
 	/// sysdeps
 	_wg_config_sysdeps(wg_enable);
+
+	logmessage("WireGuard", "Stopping server.");
 }
 
 void start_wgc(int unit)
@@ -1065,6 +1069,8 @@ void start_wgc(int unit)
 
 	/// sysdeps
 	_wg_config_sysdeps(1);
+
+	logmessage("WireGuard", "Starting client %d.", unit);
 }
 
 void stop_wgc(int unit)
@@ -1114,6 +1120,8 @@ void stop_wgc(int unit)
 
 	/// sysdeps
 	_wg_config_sysdeps(wg_enable);
+
+	logmessage("WireGuard", "Stopping client %d.", unit);
 }
 
 int write_wgc_resolv_dnsmasq(FILE* fp_servers)

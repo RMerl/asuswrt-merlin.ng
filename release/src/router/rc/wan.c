@@ -2542,10 +2542,10 @@ int update_resolvconf(void)
 				if (dnspriv_enable)
 					break;
 #endif
-#if defined(RTCONFIG_WIREGUARD) && !defined(RTCONFIG_VPN_FUSION)
-				if (write_wgc_resolv_dnsmasq(fp_servers))
-					break;
-#endif
+//#if defined(RTCONFIG_WIREGUARD) && !defined(RTCONFIG_VPN_FUSION)
+//				if (write_wgc_resolv_dnsmasq(fp_servers))
+//					break;
+//#endif
 #if defined(RTCONFIG_IPSEC) && !defined(RTCONFIG_VPN_FUSION)
 				if (write_ipc_resolv_dnsmasq(fp_servers))
 					break;

@@ -90,6 +90,294 @@ function applyRule(){
 }
 
 function validForm(){
+	var ip_RegExp = {
+		"IPv4" : "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$",
+		"IPv4_CIDR" : "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$",
+		"IPv6" : "^((([0-9A-Fa-f]{1,4}:){7}[0-9A-Fa-f]{1,4})|(([0-9A-Fa-f]{1,4}:){6}:[0-9A-Fa-f]{1,4})|(([0-9A-Fa-f]{1,4}:){5}:([0-9A-Fa-f]{1,4}:)?[0-9A-Fa-f]{1,4})|(([0-9A-Fa-f]{1,4}:){4}:([0-9A-Fa-f]{1,4}:){0,2}[0-9A-Fa-f]{1,4})|(([0-9A-Fa-f]{1,4}:){3}:([0-9A-Fa-f]{1,4}:){0,3}[0-9A-Fa-f]{1,4})|(([0-9A-Fa-f]{1,4}:){2}:([0-9A-Fa-f]{1,4}:){0,4}[0-9A-Fa-f]{1,4})|(([0-9A-Fa-f]{1,4}:){6}((\\b((25[0-5])|(1\\d{2})|(2[0-4]\\d)|(\\d{1,2}))\\b)\\.){3}(\\b((25[0-5])|(1\\d{2})|(2[0-4]\\d)|(\\d{1,2}))\\b))|(([0-9A-Fa-f]{1,4}:){0,5}:((\\b((25[0-5])|(1\\d{2})|(2[0-4]\\d)|(\\d{1,2}))\\b)\\.){3}(\\b((25[0-5])|(1\\d{2})|(2[0-4]\\d)|(\\d{1,2}))\\b))|(::([0-9A-Fa-f]{1,4}:){0,5}((\\b((25[0-5])|(1\\d{2})|(2[0-4]\\d)|(\\d{1,2}))\\b)\\.){3}(\\b((25[0-5])|(1\\d{2})|(2[0-4]\\d)|(\\d{1,2}))\\b))|([0-9A-Fa-f]{1,4}::([0-9A-Fa-f]{1,4}:){0,5}[0-9A-Fa-f]{1,4})|(::([0-9A-Fa-f]{1,4}:){0,6}[0-9A-Fa-f]{1,4})|(([0-9A-Fa-f]{1,4}:){1,7}:))$",
+		"IPv6_CIDR" : "^((([0-9A-Fa-f]{1,4}:){7}[0-9A-Fa-f]{1,4})|(([0-9A-Fa-f]{1,4}:){6}:[0-9A-Fa-f]{1,4})|(([0-9A-Fa-f]{1,4}:){5}:([0-9A-Fa-f]{1,4}:)?[0-9A-Fa-f]{1,4})|(([0-9A-Fa-f]{1,4}:){4}:([0-9A-Fa-f]{1,4}:){0,2}[0-9A-Fa-f]{1,4})|(([0-9A-Fa-f]{1,4}:){3}:([0-9A-Fa-f]{1,4}:){0,3}[0-9A-Fa-f]{1,4})|(([0-9A-Fa-f]{1,4}:){2}:([0-9A-Fa-f]{1,4}:){0,4}[0-9A-Fa-f]{1,4})|(([0-9A-Fa-f]{1,4}:){6}((\\b((25[0-5])|(1\\d{2})|(2[0-4]\\d)|(\\d{1,2}))\\b)\\.){3}(\\b((25[0-5])|(1\\d{2})|(2[0-4]\\d)|(\\d{1,2}))\\b))|(([0-9A-Fa-f]{1,4}:){0,5}:((\\b((25[0-5])|(1\\d{2})|(2[0-4]\\d)|(\\d{1,2}))\\b)\\.){3}(\\b((25[0-5])|(1\\d{2})|(2[0-4]\\d)|(\\d{1,2}))\\b))|(::([0-9A-Fa-f]{1,4}:){0,5}((\\b((25[0-5])|(1\\d{2})|(2[0-4]\\d)|(\\d{1,2}))\\b)\\.){3}(\\b((25[0-5])|(1\\d{2})|(2[0-4]\\d)|(\\d{1,2}))\\b))|([0-9A-Fa-f]{1,4}::([0-9A-Fa-f]{1,4}:){0,5}[0-9A-Fa-f]{1,4})|(::([0-9A-Fa-f]{1,4}:){0,6}[0-9A-Fa-f]{1,4})|(([0-9A-Fa-f]{1,4}:){1,7}:))(\/([0-9]|[1-9][0-9]|1[01][0-9]|12[0-8]))$"
+	};
+
+	var valid_base64 = function(str){
+		var format = /^([0-9a-zA-Z+/]{4})*(([0-9a-zA-Z+/]{2}==)|([0-9a-zA-Z+/]{3}=))?$/;
+		if(format.test(str))
+			return true;
+		else
+			return false;
+	};
+
+	var valid_is_IP_format = function(str, type){
+		var cidr_exist = str.indexOf("/");
+		if(cidr_exist != -1)
+			str = str.substr(0, cidr_exist);
+		var format = new RegExp(ip_RegExp[type], "gi");
+		return format.test(str);
+	};
+
+	var valid_IP_CIDR = function(addr, type, mode){
+		//mode, 0:IP, 1:IP/CIDR, 2:IP or IP/CIDR
+		var testResultPass = {
+			'isError': false,
+			'errReason': ''
+		};
+		var testResultFail = {
+			'isError': true,
+			'errReason': addr + " <#JS_validip#>"
+		};
+		var IP = new RegExp(ip_RegExp[type],"gi");
+		var IP_CIDR = new RegExp(ip_RegExp[type + "_CIDR"], "gi");
+		if(mode == "0"){
+			if(IP.test(addr))
+				return testResultPass;
+			else{
+				testResultFail.errReason = testResultFail.errReason + ", IP Address without CIDR."
+				return testResultFail;
+			}
+		}
+		else if(mode == "1"){
+			if(IP_CIDR.test(addr))
+				return testResultPass;
+			else{
+				testResultFail.errReason = testResultFail.errReason + ", IP Address/CIDR"
+				return testResultFail;
+			}
+		}
+		else if(mode == "2"){
+			if(IP_CIDR.test(addr) || IP.test(addr))
+				return testResultPass;
+			else{
+				testResultFail.errReason = testResultFail.errReason + ", IP Address without CIDR or IP Address/CIDR."
+				return testResultFail;
+			}
+		}
+		else
+			return testResultFail;
+	};
+
+	var valid_is_IP_format = function(str, type){
+		var cidr_exist = str.indexOf("/");
+		if(cidr_exist != -1)
+			str = str.substr(0, cidr_exist);
+		var format = new RegExp(ip_RegExp[type], "gi");
+		return format.test(str);
+	};
+
+	var valid_domainName = function(str){
+		var testResult = {
+			'isError': false,
+			'errReason': ''
+		};
+		var format = new RegExp(/^(?:[a-z0-9](?:[a-z0-9-_]{0,61}[a-z0-9])?\.)*[a-z0-9][a-z0-9-_]{0,61}[a-z0-9]$/i);
+		if(format.test(str))
+			return testResult;
+		else{
+			testResult.isError = true;
+			testResult.errReason = str + " <#JS_valid_FQDN#>";
+			return testResult;
+		}
+	};
+
+// Misc fields
+	if (document.form.wgc_desc.value == "") {
+		document.form.wgc_desc.focus();
+		alert("You must provide a description!");
+		return false;
+	}
+
+	if (document.form.wgc_priv.value == "") {
+		document.form.wgc_priv.focus();
+		alert("Missing private key!");
+		return false;
+	}
+
+	if (!valid_base64(document.form.wgc_priv.value)) {
+		alert("Invalid private key!");
+		document.form.wgc_priv.focus();
+		return false;
+	}
+
+	if (document.form.wgc_addr.value == "") {
+		document.form.wgc_addr.focus();
+		alert("You must provide an address!");
+		return false;
+	}
+
+// Server
+	var wgc_addr_array = $("#wgc_addr").val().split(",");
+	var isValid_wgc_addr = "";
+	$.each(wgc_addr_array, function(index, address){
+		if(valid_is_IP_format(address, "IPv4")){
+			isValid_wgc_addr = valid_IP_CIDR(address, "IPv4", "2");
+			if(isValid_wgc_addr.isError)
+				return false;
+		}
+		else if(valid_is_IP_format(address, "IPv6")){
+			isValid_wgc_addr = valid_IP_CIDR(address, "IPv6", "2");
+			if(isValid_wgc_addr.isError)
+				return false;
+		}
+		else{
+			isValid_wgc_addr = { 'isError' : true, 'errReason' : "Invalid address!" };
+			return false;
+		}
+	});
+
+	if (isValid_wgc_addr.isError) {
+		alert(isValid_wgc_addr.errReason);
+		document.form.wgc_addr.focus();
+		return false;
+	}
+
+// DNS
+	var $wgc_dns = $("#wgc_dns");//IPv4, IPv6, host nmae
+	$wgc_dns.val($wgc_dns.val().replace(/\s+/g, ''));//remove space
+	if($wgc_dns.val().substr($wgc_dns.val().length-1) == ",")
+		$wgc_dns.val($wgc_dns.val().slice(0,-1));//remove last ","
+
+	if($wgc_dns.val() != ""){
+		var isValid_wgc_dns = "";
+		var wgc_dns_array = $wgc_dns.val().split(",");
+		$.each(wgc_dns_array, function(index, item){
+			if(valid_is_IP_format(item, "IPv4")){
+				isValid_wgc_dns = valid_IP_CIDR(item, "IPv4", "0");
+				if(isValid_wgc_dns.isError)
+					return false;
+			}
+			else if(valid_is_IP_format(item, "IPv6")){
+				isValid_wgc_dns = valid_IP_CIDR(item, "IPv6", "0");
+				if(isValid_wgc_dns.isError)
+					return false;
+			}
+			else{
+				isValid_wgc_dns = valid_domainName(item);
+				if(isValid_wgc_dns.isError)
+					return false;
+			}
+		});
+
+		if(isValid_wgc_dns.isError){
+			alert(isValid_wgc_dns.errReason);
+			$wgc_dns.focus();
+			return false;
+		}
+	}
+
+
+// Public key
+	var $wgc_ppub = $("#wgc_ppub");
+	$wgc_ppub.val($wgc_ppub.val().trim());
+	if($wgc_ppub.val() == ""){
+		alert("Missing public key!");
+		$wgc_ppub.focus();
+		return false;
+	}
+	var isValid_wgc_ppub = valid_base64($wgc_ppub.val());
+	if(!isValid_wgc_ppub){
+		alert("Invalid public key!");
+		$wgc_ppub.focus();
+		return false;
+	}
+
+
+// Preshared key
+	var $wgc_psk = $("#wgc_psk");
+	$wgc_psk.val($wgc_psk.val().trim());
+	if($wgc_psk.val() != ""){
+		var isValid_wgc_psk = valid_base64($wgc_psk.val());
+		if(!isValid_wgc_psk){
+			alert("Invalid pre-shared key!");
+			$wgc_psk.focus();
+			return false;
+		}
+	}
+
+
+// AllowedIPs
+	var $wgc_aips = $("#wgc_aips");//IPv4_CIDR, IPv6_CIDR
+	$wgc_aips.val($wgc_aips.val().replace(/\s+/g, ''));//remove space
+	if($wgc_aips.val().substr($wgc_aips.val().length-1) == ",")
+		$wgc_aips.val($wgc_aips.val().slice(0,-1));//remove last ","
+	if($wgc_aips.val() == ""){
+		alert("You must specify allowed IP addresses (use 0.0.0.0/0 for \"any\")");
+		$wgc_aips.focus();
+		return false;
+	}
+
+	var isValid_wgc_aips = "";
+	var wgc_aips_array = $wgc_aips.val().split(",");
+	$.each(wgc_aips_array, function(index, address){
+		if(address == "::/0")
+			return true;
+		if(valid_is_IP_format(address, "IPv4")){
+			isValid_wgc_aips = valid_IP_CIDR(address, "IPv4", "1");
+			if(isValid_wgc_aips.isError)
+			return false;
+		}
+		else if(valid_is_IP_format(address, "IPv6")){
+			isValid_wgc_aips = valid_IP_CIDR(address, "IPv6", "1");
+			if(isValid_wgc_aips.isError)
+				return false;
+		}
+		else{
+			isvalid_wgc_aips.isError = true;
+			isvalid_wgc_aips.errReason = "Invalid IP address!";
+			return false;
+		}
+	});
+
+	if(isValid_wgc_aips.isError){
+		alert(isValid_wgc_aips.errReason);
+		$wgc_aips.focus();
+		return false;
+	}
+
+
+// Endpoint
+	var $wgc_ep_addr = $("#wgc_ep_addr");//IPv4, IPv6, host name
+	$wgc_ep_addr.val($wgc_ep_addr.val().trim());
+	if($wgc_ep_addr.val() == ""){
+		alert("You must specify an endpoint IP address!");
+		$wgc_ep_addr.focus();
+		return false;
+	}
+	var isValid_wgc_ep_addr = "";
+	if(valid_is_IP_format($wgc_ep_addr.val(), "IPv4")){
+		isValid_wgc_ep_addr = valid_IP_CIDR($wgc_ep_addr.val(), "IPv4", "0");
+	}
+	else if(valid_is_IP_format($wgc_ep_addr.val(), "IPv6")){
+		isValid_wgc_ep_addr = valid_IP_CIDR($wgc_ep_addr.val(), "IPv6", "0");
+	}
+	else{
+		isValid_wgc_ep_addr = valid_domainName($wgc_ep_addr.val());
+	}
+	if(isValid_wgc_ep_addr.isError){
+		alert(isValid_wgc_ep_addr.errReason);
+		$wgc_ep_addr.focus();
+		return false;
+	}
+
+	var $wgc_ep_port = $("#wgc_ep_port");
+	$wgc_ep_port.val($wgc_ep_port.val().trim());
+	if($wgc_ep_port.val() == ""){
+		alert("You must specify an endpoint port!");
+		$wgc_ep_port.focus();
+		return false;
+	}
+
+	if(!validator.numberRange(document.getElementById("wgc_ep_port"), 1, 65535))
+		return false;
+
+// Keep alive
+	var $wgc_alive = $("#wgc_alive");
+	$wgc_alive.val($wgc_alive.val().trim());
+	if($wgc_alive.val() == ""){
+		alert("You must specify a keep alive value!");
+		$wgc_alive.focus();
+		return false;
+	}
+
+	if(!validator.numberRange(document.getElementById("wgc_alive"), 1, 65535))
+		return false;
+
 	return true;
 }
 

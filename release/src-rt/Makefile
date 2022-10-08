@@ -713,7 +713,7 @@ endif
 
 	@$(MAKE) image
 endif
-	@-type -P python >/dev/null 2>&1 && python ../../buildtools/checkjffs.py
+#	@-type -P python >/dev/null 2>&1 && python ../../buildtools/checkjffs.py
 
 rtk_clean_img:
 ifeq ($(RTCONFIG_REALTEK),y)

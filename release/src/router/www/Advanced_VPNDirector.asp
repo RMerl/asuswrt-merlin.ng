@@ -523,11 +523,6 @@ function saveRule(_mode, _rowIdx) {
 	if (!Block_chars(document.getElementById("desc_x"), ["<" ,">" ,"'" ,"%"]))
 		return false;
 
-	if ( $("#localIP_x").val() == "" && $("#remoteIP_x").val() == "") {
-		alert("You need to specify either a local or remote address!");
-		return false;
-	}
-
 	if (!validator.ipv4cidr(document.getElementById("remoteIP_x")) ||
 	    !validator.ipv4cidr(document.getElementById("localIP_x"))) {
 		return false;

@@ -197,9 +197,6 @@ void _write_routing_rules(int unit, char *rules, int verb, vpndir_proto_t proto)
 		if (!atoi(&enable[0]))
 			continue;
 
-		if (!*src && !*dst)
-			continue;
-
 		if (!strcmp(target,"WAN")) {
 			strcpy(table, "main");
 			ruleprio = wanprio++;

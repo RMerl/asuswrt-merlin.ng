@@ -500,6 +500,8 @@ static void _wg_client_gen_conf(char* prefix, char* path)
 	char ep_addr[128] = {0};
 	int alive = nvram_pf_get_int(prefix, "alive");
 	char *p;
+	char buffer[32];
+	int unit = 1;
 
 	snprintf(priv, sizeof(priv), "%s", nvram_pf_safe_get(prefix, "priv"));
 	snprintf(ppub, sizeof(ppub), "%s", nvram_pf_safe_get(prefix, "ppub"));
@@ -530,7 +532,15 @@ static void _wg_client_gen_conf(char* prefix, char* path)
 		if (alive)
 			fprintf(fp, "PersistentKeepalive = %d\n", alive);
 
+
 		fclose(fp);
+
+		if (strlen(prefix) > 3)
+			unit = atoi(prefix + 3);
+
+		sprintf(buffer, "wgclient%d", unit);
+		use_custom_config(buffer, path);
+		run_postconf(buffer, path);
 	}
 }
 
@@ -703,6 +713,9 @@ static void _wg_server_gen_client_conf(char* s_prefix, char* c_prefix, char* c_p
 			fprintf(fp, "PersistentKeepalive = %d\n", alive);
 
 		fclose(fp);
+
+		use_custom_config("wgserver_peer", c_path);
+		run_postconf("wgserver_peer", c_path);
 	}
 }
 
@@ -766,6 +779,9 @@ static void _wg_server_gen_conf(char* prefix, char* path)
 		}
 
 		fclose(fp);
+
+		use_custom_config("wgserver", path);
+		run_postconf("wgserver", path);
 	}
 }
 

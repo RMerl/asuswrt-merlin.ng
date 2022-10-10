@@ -122,15 +122,13 @@ define(function(){
 					{url: "Advanced_VPNStatus.asp", tabName: "VPN Status"},
 					{url: "Advanced_VPNDirector.asp", tabName: "VPN Director"},
 					{url: "Advanced_VPN_OpenVPN.asp", tabName: "<#BOP_isp_heart_item#>"},
-					{url: "Advanced_VPN_PPTP.asp", tabName: "__INHERIT__"},
-					{url: "Advanced_VPN_IPSec.asp", tabName: "__INHERIT__"},
+					{url: "Advanced_VPNServer_Content.asp", tabName: "__INHERIT__"},
 					{url: "Advanced_OpenVPNClient_Content.asp", tabName: (vpn_fusion_support) ? "<#VPN_Fusion#>" : "<#vpnc_title#>"},
 					{url: "Advanced_VPNClient_Content.asp", tabName: "__INHERIT__"},
 					{url: "Advanced_TOR_Content.asp", tabName: "TOR"},
 					{url: "Advanced_Instant_Guard.asp", tabName: "<#Instant_Guard_title#>"},
-					{url: "Advanced_WireguardServer_Content.asp", tabName: "__INHERIT__"},
 					{url: "Advanced_WireguardClient_Content.asp", tabName: "__INHERIT__"},
- 					{url: "NULL", tabName: "__INHERIT__"}
+					{url: "NULL", tabName: "__INHERIT__"}
 				]
 			},
 			{

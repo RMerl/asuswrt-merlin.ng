@@ -31,6 +31,8 @@ Asuswrt-Merlin 386/NG Changelog
              in that case to control which client should
              be involved in the DNS redirection, or use
              DNSFilter instead of Exclusive DNS mode.
+  - CHANGED: Reworked VPN Status page to only show currently
+             active services.
   - FIXED: Wrong temperatures used by the temperature graphs
            (386.8 regression)
 

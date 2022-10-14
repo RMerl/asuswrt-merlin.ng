@@ -75,10 +75,13 @@
  * $ awk 'BEGIN { for(i=1; i<ARGC; ++i) { print i ": " ARGV[i] }}' -argz
  * 1: -argz
  */
-#define OPTSTR_AWK "+" \
-	"F:v:*f:*" \
-	IF_FEATURE_AWK_GNU_EXTENSIONS("e:*") \
+#define OPTSTR_AWK \
+	"F:v:f:" \
+	IF_FEATURE_AWK_GNU_EXTENSIONS("e:") \
 	"W:"
+#define OPTCOMPLSTR_AWK \
+	"v::f::" \
+	IF_FEATURE_AWK_GNU_EXTENSIONS("e::")
 enum {
 	OPTBIT_F,	/* define field separator */
 	OPTBIT_v,	/* define variable */
@@ -3634,6 +3637,7 @@ int awk_main(int argc UNUSED_PARAM, char **argv)
 			}
 		}
 	}
+	opt_complementary = OPTCOMPLSTR_AWK;
 	opt = getopt32(argv, OPTSTR_AWK, &opt_F, &list_v, &list_f, IF_FEATURE_AWK_GNU_EXTENSIONS(&list_e,) NULL);
 	argv += optind;
 	//argc -= optind;

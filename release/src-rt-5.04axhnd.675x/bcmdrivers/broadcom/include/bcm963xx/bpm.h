@@ -176,8 +176,15 @@ static __inline__ sk_buff_data_t bpm_buf_to_end(uint8_t* buf)
 #define BPM_BUF_TO_TAIL(buf, datalen) \
     ( (sk_buff_data_t) ( ((sk_buff_data_t)(buf)) + (datalen) ) )
 
+#if (defined(CONFIG_BCM94912) || defined(CONFIG_BCM96855)) && defined(CONFIG_BCM_JUMBO_FRAME)
+static __inline__ sk_buff_data_t bpm_buf_to_end(uint8_t* buf)
+{
+    return ( (sk_buff_data_t) ( (uint8_t*)(buf) + bpm_buf_to_end_offset()) );
+}
+#else
 #define BPM_BUF_TO_END(buf) \
     ( (sk_buff_data_t) ( (uint8_t*)(buf) + BPM_BUF_TO_END_OFFSET) )
+#endif
 
 #endif /* ! NET_SKBUFF_DATA_USES_OFFSET */
 

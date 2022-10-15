@@ -1055,7 +1055,6 @@ static bp_elem_t g_bcm96752ref1[] = {
 
 static bp_elem_t rt_ax82u_v2[] = {
   {bp_cpBoardId,               .u.cp = "RT_AX82U_V2"},
-
   /* wlan fem_ctrl reserved signals*/
   {bp_usGpioWlanReserved,      .u.us = BP_GPIO_34_AH},
   {bp_usGpioWlanReserved,      .u.us = BP_GPIO_35_AH},
@@ -1063,7 +1062,7 @@ static bp_elem_t rt_ax82u_v2[] = {
   {bp_usGpioWlanReserved,      .u.us = BP_GPIO_40_AH},
   {bp_usGpioWlanReserved,      .u.us = BP_GPIO_42_AH},
   {bp_usGpioWlanReserved,      .u.us = BP_GPIO_44_AH},
-
+#if 0
   {bp_usButtonIdx,             .u.us = 0},
   {bp_usGpio_Intr,             .u.us = BP_GPIO_10_AL},  // LED button
 
@@ -1074,17 +1073,28 @@ static bp_elem_t rt_ax82u_v2[] = {
   {bp_ulNetLedActivity,        .u.ul = BP_NET_LED_ACTIVITY_ALL},
 
   {bp_usIntfEnd},
-
+#endif
   {bp_usUsbPwrOn1,             .u.us = BP_GPIO_86_AL},
   {bp_usUsbPwrFlt1,            .u.us = BP_GPIO_85_AL},
   {bp_usUsbPwrOn0,             .u.us = BP_GPIO_84_AL},
   {bp_usUsbPwrFlt0,            .u.us = BP_GPIO_83_AL},
+#if 0
   {bp_ulMemoryConfig,          .u.ul = BP_DDR_SPEED_800_11_11_11 | BP_DDR_TOTAL_SIZE_512MB| BP_DDR_DEVICE_WIDTH_16 | BP_DDR_TOTAL_WIDTH_16BIT | BP_DDR_63178_DEFAULT},
+#endif
   {bp_last}
 };
 
 static bp_elem_t tuf_ax5400_v2[] = {
   {bp_cpBoardId,               .u.cp = "TUF_AX5400_V2"},
+  {bp_usUsbPwrOn1,             .u.us = BP_GPIO_86_AL},
+  {bp_usUsbPwrFlt1,            .u.us = BP_GPIO_85_AL},
+  {bp_usUsbPwrOn0,             .u.us = BP_GPIO_84_AL},
+  {bp_usUsbPwrFlt0,            .u.us = BP_GPIO_83_AL},
+  {bp_last}
+};
+
+static bp_elem_t xd6_v2[] = {
+  {bp_cpBoardId,               .u.cp = "XD6_V2"},
 
   /* wlan fem_ctrl reserved signals*/
   {bp_usGpioWlanReserved,      .u.us = BP_GPIO_34_AH},
@@ -1094,50 +1104,30 @@ static bp_elem_t tuf_ax5400_v2[] = {
   {bp_usGpioWlanReserved,      .u.us = BP_GPIO_42_AH},
   {bp_usGpioWlanReserved,      .u.us = BP_GPIO_44_AH},
 
-  MOVED_DT({bp_usGphyBaseAddress,       .u.us = BCM963178_PHY_BASE},)  // use phy addressses on SF2 with base address 0x8
-  MOVED_DT({bp_ucPhyType0,              .u.uc = BP_ENET_EXTERNAL_SWITCH},)
-  MOVED_DT({bp_usConfigType,            .u.us = BP_ENET_CONFIG_MMAP},) // Accessing SF2 as MMapped external switch
-  MOVED_DT({bp_ulPortMap,               .u.ul = 0x1f},)
-  MOVED_DT({bp_ulPhyId0,                .u.ul = (BCM963178_PHY_BASE + 0x00) | (ADVERTISE_ALL_GMII | PHY_ADV_CFG_VALID)},)
-  MOVED_DT({bp_ulPhyId1,                .u.ul = (BCM963178_PHY_BASE + 0x01) | (ADVERTISE_ALL_GMII | PHY_ADV_CFG_VALID)},)
-  MOVED_DT({bp_ulPhyId2,                .u.ul = (BCM963178_PHY_BASE + 0x02) | (ADVERTISE_ALL_GMII | PHY_ADV_CFG_VALID)},)
-  MOVED_DT({bp_ulPhyId3,                .u.ul = (BCM963178_PHY_BASE + 0x03) | (ADVERTISE_ALL_GMII | PHY_ADV_CFG_VALID)},)
-  MOVED_DT({bp_ulPhyId4,                .u.ul = (BCM963178_PHY_BASE + 0x04) | (ADVERTISE_ALL_GMII | PHY_ADV_CFG_VALID)},)
-
-  {bp_usIntfId,                .u.us = 0},
-  {bp_usIntfType,              .u.us = BP_INTF_TYPE_GPHY},
-  {bp_usPortNum,               .u.us = 0},
-  MOVED_DT({bp_usNetLed3,               .u.us = BP_GPIO_47_AL},)
-  MOVED_DT({bp_ulNetLedActivity,        .u.ul = BP_NET_LED_ACTIVITY_ALL},)
-  {bp_usIntfEnd},
-  {bp_usIntfId,                .u.us = 1},
-  {bp_usIntfType,              .u.us = BP_INTF_TYPE_GPHY},
-  {bp_usPortNum,               .u.us = 1},
-  MOVED_DT({bp_usNetLed3,               .u.us = BP_GPIO_51_AL},)
-  MOVED_DT({bp_ulNetLedActivity,        .u.ul = BP_NET_LED_ACTIVITY_ALL},)
-  {bp_usIntfEnd},
-  {bp_usIntfId,                .u.us = 2},
-  {bp_usIntfType,              .u.us = BP_INTF_TYPE_GPHY},
-  {bp_usPortNum,               .u.us = 2},
-  MOVED_DT({bp_usNetLed3,               .u.us = BP_GPIO_50_AL},)
-  MOVED_DT({bp_ulNetLedActivity,        .u.ul = BP_NET_LED_ACTIVITY_ALL},)
-  {bp_usIntfEnd},
-  {bp_usIntfId,                .u.us = 3},
-  {bp_usIntfType,              .u.us = BP_INTF_TYPE_GPHY},
-  {bp_usPortNum,               .u.us = 3},
-  MOVED_DT({bp_usNetLed3,               .u.us = BP_GPIO_49_AL},)
-  MOVED_DT({bp_ulNetLedActivity,        .u.ul = BP_NET_LED_ACTIVITY_ALL},)
-  {bp_usIntfEnd},
-  {bp_usIntfId,                .u.us = 4},
-  {bp_usIntfType,              .u.us = BP_INTF_TYPE_GPHY},
-  {bp_usPortNum,               .u.us = 4},
-  MOVED_DT({bp_usNetLed3,               .u.us = BP_GPIO_56_AL},)
-  MOVED_DT({bp_ulNetLedActivity,        .u.ul = BP_NET_LED_ACTIVITY_ALL},)
-  {bp_usIntfEnd},
+  {bp_usUsbPwrOn1,             .u.us = BP_GPIO_86_AL},
+  {bp_usUsbPwrFlt1,            .u.us = BP_GPIO_85_AL},
+  {bp_usUsbPwrOn0,             .u.us = BP_GPIO_84_AL},
+  {bp_usUsbPwrFlt0,            .u.us = BP_GPIO_83_AL},
   {bp_ulMemoryConfig,          .u.ul = BP_DDR_SPEED_800_11_11_11 | BP_DDR_TOTAL_SIZE_512MB| BP_DDR_DEVICE_WIDTH_16 | BP_DDR_TOTAL_WIDTH_16BIT | BP_DDR_63178_DEFAULT},
   {bp_last}
 };
 
-bp_elem_t * g_BoardParms[] = {g_bcm963178sv, g_bcm963178sv_p200, g_bcm963178ref1, g_bcm963178rfdvt, g_bcm963178ref3, g_bcm96750ref4, g_bcm96752ref1, g_bcm963178ref2, g_bcm963178ref1_epa, g_bcm963178ref2_p200, g_bcm963178ref2_p300, g_bcm96750ref1, g_bcm963178ref5, g_bcm963178ref6, g_bcm963178ref1_rgmii, rt_ax82u_v2, tuf_ax5400_v2, 0};
+static bp_elem_t rt_ax5400[] = {
+  {bp_cpBoardId,               .u.cp = "RT_AX5400"},
+  {bp_usGpioWlanReserved,      .u.us = BP_GPIO_34_AH},
+  {bp_usGpioWlanReserved,      .u.us = BP_GPIO_35_AH},
+  {bp_usGpioWlanReserved,      .u.us = BP_GPIO_36_AH},
+  {bp_usGpioWlanReserved,      .u.us = BP_GPIO_40_AH},
+  {bp_usGpioWlanReserved,      .u.us = BP_GPIO_42_AH},
+  {bp_usGpioWlanReserved,      .u.us = BP_GPIO_44_AH},
+
+  {bp_usUsbPwrOn1,             .u.us = BP_GPIO_86_AL},
+  {bp_usUsbPwrFlt1,            .u.us = BP_GPIO_85_AL},
+  {bp_usUsbPwrOn0,             .u.us = BP_GPIO_84_AL},
+  {bp_usUsbPwrFlt0,            .u.us = BP_GPIO_83_AL},
+  {bp_last}
+};
+
+bp_elem_t * g_BoardParms[] = {g_bcm963178sv, g_bcm963178sv_p200, g_bcm963178ref1, g_bcm963178rfdvt, g_bcm963178ref3, g_bcm96750ref4, g_bcm96752ref1, g_bcm963178ref2, g_bcm963178ref1_epa, g_bcm963178ref2_p200, g_bcm963178ref2_p300, g_bcm96750ref1, g_bcm963178ref5, g_bcm963178ref6, g_bcm963178ref1_rgmii, rt_ax82u_v2, tuf_ax5400_v2, xd6_v2, rt_ax5400, 0};
 
 

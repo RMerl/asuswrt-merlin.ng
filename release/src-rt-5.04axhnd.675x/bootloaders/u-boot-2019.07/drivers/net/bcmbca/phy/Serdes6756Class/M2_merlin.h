@@ -102,7 +102,7 @@ prog_seq_tbl PMD_clr_bypass_tx_osr_lane[] = {
    CL36
 -------------------------------------------------------------------- */
 //Figure 28 Force Speed 2.5G
-prog_seq_tbl force_speed_2p5g[] = {
+prog_seq_tbl force_speed_2p5g_vco9g[] = {
   {"Miscellaneous digital  control1 register", 0x3,  0xc30b, 0x087f, 0x0043},  //merged [11]=0x0, [06]=0x1 [00]=0x3
   {"cl36_rx_0 register",                       0x3,  0xC456, 0x0010, 0x0010},  //spd_2p5G_sel[04] = 1'b1 for 2.5G at 9.375G VCO
   {"pma_control_0 register",                   0x3,  0xc457, 0x0001, 0x0001},  //00:00 rx rstb_lane = 1'b1 
@@ -110,6 +110,16 @@ prog_seq_tbl force_speed_2p5g[] = {
   {"Misc register",                            0x3,  0xc433, 0x0003, 0x0003},  //merged [01] = 1'b1, [00] = 1'b1
   {"",                                         0x0,  0x0000, 0x0000, 0x0000}
 }; 
+prog_seq_tbl force_speed_2p5g_vco10g[]= {
+  {"Credit",                                   0x3,  0x9270, 0x3fff, 0x0021},  // Credit needs to be set on the top
+  {"Miscellaneous digital  control1 register", 0x3,  0xc30b, 0x087f, 0x0043},  //merged [11]=0x0, [06]=0x1 [00]=0x3
+  {"cl36_rx_0 register",                       0x3,  0xC456, 0x0010, 0x0010},  //spd_2p5G_sel[04] = 1'b1 for 2.5G at 9.375G VCO
+  {"pma_control_0 register",                   0x3,  0xc457, 0x0001, 0x0001},  //00:00 rx rstb_lane = 1'b1 
+  {"Miscellaneous digital  control1 register", 0x3,  0xc30b, 0x0080, 0x0080},  //07:07 mac_creditenable = 1'b1
+  {"Misc register",                            0x3,  0xc433, 0x0003, 0x0003},  //merged [01] = 1'b1, [00] = 1'b1
+  {"",                                         0x0,  0x0000, 0x0000, 0x0000}
+}; 
+
 //Figure 29 Force Speed 1.0G
 prog_seq_tbl force_speed_1g[] = {
   {"Miscellaneous digital  control1 register", 0x3,  0xc30b, 0x087f, 0x0042},  // merged [11]=0x0, [06]=0x1, [05:00]=0x2 

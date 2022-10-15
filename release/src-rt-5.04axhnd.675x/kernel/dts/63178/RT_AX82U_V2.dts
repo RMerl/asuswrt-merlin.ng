@@ -56,6 +56,7 @@
 
 		port4@4 {
 			status = "okay";
+			network-leds = <&led3>;
 		};
 	};
 };
@@ -92,6 +93,22 @@
 		pin = <31>;
 		active_low;
 		init_low;
+	};
+
+	/* WAN LED */
+	led3: port_4-led-3-pin_21 {
+		active_low;
+		link = <LED_SPEED_GBE>;
+		activity = <LED_SPEED_GBE>;
+		status = "okay";
+	};
+
+	/* WAN LED GPIO */
+	led4:led_gpio_21 {
+		compatible = "brcm,gpio-led";
+		software_led;
+		pin = <21>;
+		active_low;
 	};
 
 	/* LED Group1 Red */

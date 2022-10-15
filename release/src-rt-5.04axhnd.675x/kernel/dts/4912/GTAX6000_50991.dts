@@ -262,8 +262,8 @@
 	led17:parallel-port_5-led_2 {
 		active_low;
 		pinctrl-0 = <&a_per_led_17_pin_17>;
-		link = <(LED_SPEED_100|LED_SPEED_1G|LED_SPEED_2500)>;
-		activity = <(LED_SPEED_100|LED_SPEED_1G|LED_SPEED_2500)>;
+		link = <(LED_SPEED_GBE|LED_SPEED_2500)>;
+		activity = <(LED_SPEED_GBE|LED_SPEED_2500)>;
 		status = "okay";
 	};
 

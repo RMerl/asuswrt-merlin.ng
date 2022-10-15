@@ -170,8 +170,18 @@ static ssize_t
 biqos_proc_enable_write(struct file *file, const char __user *buf, size_t cnt,
 	loff_t *data) {
 
-	if(buf && *buf >= '0' && *buf <= '9' )
-		bcm_iqos_enable_g = *buf - '0';
+	char tbuf[4];
+	size_t minsize = min_t(size_t, (sizeof(tbuf) - 1), cnt);
+
+	memset(tbuf, 0, sizeof(tbuf));
+	if (copy_from_user(&tbuf, buf, minsize)) {
+		return -EFAULT;
+	}
+
+	tbuf[minsize + 1] = '\0';
+
+	if(tbuf && *tbuf >= '0' && *tbuf <= '9')
+		bcm_iqos_enable_g = *tbuf - '0';
 
 	return cnt;
 }
@@ -1333,6 +1343,7 @@ void blog_put( Blog_t * blog_p )
     }
     if (RX_ESP(blog_p))
     {
+        dst_release(blog_p->esprx.dst_p);
         secpath_put(blog_p->esprx.secPath_p);        
     }
 #endif

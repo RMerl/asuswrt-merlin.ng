@@ -2160,19 +2160,20 @@ int enet_create_netdevice(enetx_port_t *p)
              dev->features       |= NETIF_F_SG | NETIF_F_IP_CSUM | NETIF_F_IPV6_CSUM | NETIF_F_TSO | NETIF_F_TSO6;
              dev->vlan_features  |= NETIF_F_SG | NETIF_F_IP_CSUM | NETIF_F_IPV6_CSUM | NETIF_F_TSO | NETIF_F_TSO6;
              dev->hw_features    |= NETIF_F_SG | NETIF_F_IP_CSUM | NETIF_F_IPV6_CSUM | NETIF_F_TSO | NETIF_F_TSO6;
-        #if !defined(CONFIG_BCM_PKTRUNNER_GSO) && defined(CONFIG_BCM_SW_GSO)
+#if !defined(CONFIG_BCM_PKTRUNNER_GSO) && defined(CONFIG_BCM_SW_GSO)
              ndev->priv_feat |= BCMENET_PRIV_FEAT_SW_GSO;
-        #endif
+#endif
              break;
          // SW-GSO is support is selected if HW-GSO is not supported
-     #if defined(CONFIG_BCM_SW_GSO)
+#if defined(CONFIG_BCM_SW_GSO)
          case PORT_CAP_WAN_ONLY:
+         case PORT_CAP_LAN_WAN:
              dev->features       |= NETIF_F_SG | NETIF_F_IP_CSUM | NETIF_F_IPV6_CSUM | NETIF_F_TSO | NETIF_F_TSO6;
              dev->vlan_features  |= NETIF_F_SG | NETIF_F_IP_CSUM | NETIF_F_IPV6_CSUM | NETIF_F_TSO | NETIF_F_TSO6;
              dev->hw_features    |= NETIF_F_SG | NETIF_F_IP_CSUM | NETIF_F_IPV6_CSUM | NETIF_F_TSO | NETIF_F_TSO6;
              ndev->priv_feat |= BCMENET_PRIV_FEAT_SW_GSO;
              break;
-        #endif
+#endif
          default:
 		     /* UFO not supported in 4.19 kernel */
              dev->features       &= ~(NETIF_F_SG | NETIF_F_IP_CSUM | NETIF_F_IPV6_CSUM | NETIF_F_TSO | NETIF_F_TSO6 );

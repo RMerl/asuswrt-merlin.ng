@@ -37,6 +37,7 @@ Boston, MA 02111-1307, USA.
 #include <linux/nbuff.h>
 #include <linux/ip.h>
 #include <linux/if_arp.h>
+#include <net/ip_tunnels.h>
 #include <net/xfrm.h>
 #include <net/dst.h>
 #include <bcmspudrv.h>
@@ -239,6 +240,7 @@ void spu_blog_emit_aead(struct iproc_reqctx_s *rctx)
 
         blog_ptr(pSkb)->esprx.secPath_p = secpath_get(pSkb->sp);
         blog_ptr(pSkb)->rx.info.bmap.ESP = 1;
+        blog_ptr(pSkb)->esprx.dst_p = dst_clone(skb_dst(pSkb));
 
         /* insert spu_dev_ds as transmit device */
         skb_dev = pSkb->dev;
@@ -260,6 +262,7 @@ void spu_blog_emit_aead(struct iproc_reqctx_s *rctx)
         blog_emit_args(rctx->pNBuf, iproc_priv.spu_dev_ds, TYPE_IP, 0, BLOG_SPU_DS, &fcArgs);
         skb_pull(pSkb, BLOG_IPV4_HDR_LEN);
         pSkb->dev = skb_dev;
+        rcu_assign_pointer(rctx->ctx->ip_tunnel, XFRM_TUNNEL_SKB_CB(pSkb)->tunnel.ip4);
     }
 } /* spu_blog_emit_aead */
 
@@ -476,7 +479,22 @@ static void spu_blog_fc_crypt_done_ds(struct bcmspu_message *mssg)
     if ((blogAction == PKT_NORM) || (blogAction == PKT_BLOG))
     {
         int seq_hi;
+        struct ip_tunnel *t;
+
         flow_log("%s:%d - not blogged\n", __func__, __LINE__);
+
+        rcu_read_lock();
+        t = rcu_dereference(rctx->ctx->ip_tunnel);
+        if (!t) {
+            rcu_read_unlock();
+        } else if (hlist_unhashed(&t->hash_node)) {
+            rcu_read_unlock();
+            rcu_assign_pointer(rctx->ctx->ip_tunnel, NULL);
+            nbuff_free(rctx->pNBuf);
+            secpath_put(rctx->sp);
+            kfree(rctx);
+            return;
+        }
 
         /* nbuf is an fkb - translate to skb */
         if ( skb == NULL )
@@ -491,6 +509,8 @@ static void spu_blog_fc_crypt_done_ds(struct bcmspu_message *mssg)
         }
 
         skb->dev = iproc_priv.spu_dev_ds;
+        XFRM_TUNNEL_SKB_CB(skb)->tunnel.ip4 = t;
+        skb_dst_set(skb, dst_clone(rctx->dst));
         seq_hi = htonl(xfrm_replay_seqhi(xfrm, seqno));
         hlen += BLOG_ESP_SEQNUM_LEN + rctx->iv_ctr_len;
         XFRM_SKB_CB(skb)->seq.input.low = seqno;
@@ -507,7 +527,10 @@ static void spu_blog_fc_crypt_done_ds(struct bcmspu_message *mssg)
 
         skb->sp = secpath_get(rctx->sp);
         dev_hold(skb->dev);
+        local_bh_disable();
         xfrm_input_resume(skb, nexthdr);
+        local_bh_enable();
+        if (t) rcu_read_unlock();
     }
     else
     {
@@ -515,11 +538,11 @@ static void spu_blog_fc_crypt_done_ds(struct bcmspu_message *mssg)
         atomic_inc(&iproc_priv.blogged[SPU_STREAM_DS]);
         hlen += BLOG_ESP_SEQNUM_LEN+rctx->iv_ctr_len;
         pktlen = pktlen - hlen - rctx->ctx->digestsize - padlen - 2;
-        spin_lock(&xfrm->lock);
+        spin_lock_bh(&xfrm->lock);
         xfrm->repl->advance(xfrm, seqno);
         xfrm->curlft.bytes += pktlen;
         xfrm->curlft.packets++;
-        spin_unlock(&xfrm->lock); 
+        spin_unlock_bh(&xfrm->lock); 
     }
     /* free the request context */
     secpath_put(rctx->sp);
@@ -598,7 +621,7 @@ static int spu_blog_xmit_us(pNBuff_t pNBuf, struct net_device *dev)
     }
     net = xs_net(xfrm);
 
-    spin_lock(&xfrm->lock);
+    spin_lock_bh(&xfrm->lock);
     do
     {
         /* A new key has genid = 0. When the key is renewed, genid is incremented.
@@ -656,7 +679,7 @@ static int spu_blog_xmit_us(pNBuff_t pNBuf, struct net_device *dev)
         xfrm->curlft.bytes = datalen;
         xfrm->curlft.packets++;
     } while (0);
-    spin_unlock(&xfrm->lock);
+    spin_unlock_bh(&xfrm->lock);
     if ( ret != 0 )
     {
         blog_p->tuple_offset = 0xff;
@@ -818,7 +841,7 @@ static int spu_blog_xmit_ds(pNBuff_t pNBuf, struct net_device *dev)
     hlen = BLOG_IPV4_HDR_LEN + BLOG_ESP_SPI_LEN;
     seqno = _read32_align16((uint16_t *)&pdata[hlen]);
 
-    spin_lock(&xfrm->lock);
+    spin_lock_bh(&xfrm->lock);
     do
     {
         ret = xfrm->repl->check(xfrm, NULL, seqno);
@@ -846,7 +869,7 @@ static int spu_blog_xmit_ds(pNBuff_t pNBuf, struct net_device *dev)
             break;
         }
     } while (0);
-    spin_unlock(&xfrm->lock);
+    spin_unlock_bh(&xfrm->lock);
     if ( ret )
     {
         secpath_put(secpath);
@@ -870,6 +893,7 @@ static int spu_blog_xmit_ds(pNBuff_t pNBuf, struct net_device *dev)
     rctx->ctx                 = ctx;
     rctx->iv_ctr_len          = blog_p->esptx.ivsize; //ctx->iv_ctr_len;
     rctx->pNBuf               = pNBuf;
+    rctx->dst                 = blog_p->esprx.dst_p;
     rctx->sp                  = secpath;
 
     rctx->gfp            = GFP_ATOMIC;
@@ -953,7 +977,11 @@ static struct net_device *spu_blog_create_device(char *name, uint32_t dir)
         /* Set mtu to a huge value so that fcache will not fragment packets
          * destined to SPU device.
          */
-        dev->mtu = BCM_MAX_MTU_PAYLOAD_SIZE;
+#if defined(CONFIG_BCM94912) && defined(CONFIG_BCM_JUMBO_FRAME)
+	dev->mtu = bcm_max_mtu_payload_size();
+#else
+	dev->mtu = BCM_MAX_MTU_PAYLOAD_SIZE;
+#endif
 
         ret = register_netdev(dev);
         if (ret)
@@ -980,6 +1008,30 @@ static struct net_device *spu_blog_create_device(char *name, uint32_t dir)
 
     return dev;
 }  /* spu_blog_create_device() */
+
+static int spu_blog_netdev_evt_handler(struct notifier_block *nb,
+                unsigned long evt, void *ptr)
+{
+    struct net_device *dev = netdev_notifier_info_to_dev(ptr);
+    struct iproc_ctx_s *ctx;
+    struct ip_tunnel *t;
+
+    if (!dev || evt != NETDEV_GOING_DOWN)
+        return NOTIFY_DONE;
+
+    write_lock(&iproc_priv.ctxListLock[SPU_STREAM_DS]);
+    list_for_each_entry(ctx, &iproc_priv.ctxList[SPU_STREAM_DS], entry) {
+        if ((t=ctx->ip_tunnel) && (t->dev == dev))
+            rcu_assign_pointer(ctx->ip_tunnel, NULL);
+    }
+    write_unlock(&iproc_priv.ctxListLock[SPU_STREAM_DS]);
+
+    return NOTIFY_DONE;
+}
+
+static struct notifier_block spu_blog_netdev_notifier = {
+    .notifier_call = spu_blog_netdev_evt_handler,
+};
 
 int spu_blog_register(void)
 {
@@ -1008,7 +1060,7 @@ int spu_blog_register(void)
         return -1;
     }
 
-    return 0;
+    return register_netdevice_notifier(&spu_blog_netdev_notifier);
 } /* spu_blog_register */
 
 void spu_blog_unregister(void)
@@ -1025,5 +1077,7 @@ void spu_blog_unregister(void)
         unregister_netdev(iproc_priv.spu_dev_ds);
         free_netdev(iproc_priv.spu_dev_ds);
     }
+
+    unregister_netdevice_notifier(&spu_blog_netdev_notifier);
 } /* spu_blog_unregister */
 

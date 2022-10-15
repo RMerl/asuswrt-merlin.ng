@@ -206,7 +206,6 @@ static int phy_drv_serdes_6756class_init_lock(phy_dev_t *phy_dev)
 
     phy_dsl_serdes_init(phy_dev);
     merlin28_serdes_init(phy_dev);
-    phy_serdes->inited = 2;
     phy_dsl_serdes_post_init(phy_dev);
     phy_serdes->inited = 3;
 

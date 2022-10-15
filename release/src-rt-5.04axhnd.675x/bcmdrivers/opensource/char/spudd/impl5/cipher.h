@@ -221,6 +221,7 @@ struct iproc_ctx_s {
 	unsigned int         ipdaddr;
 	unsigned int         spi;
 	enum spu_stream_type stream;
+	void *ip_tunnel;
 #endif
 
 	u8 enckey[MAX_KEY_SIZE + ARC4_STATE_SIZE];

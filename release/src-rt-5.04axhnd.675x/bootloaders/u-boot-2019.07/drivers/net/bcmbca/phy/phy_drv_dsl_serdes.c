@@ -202,6 +202,12 @@ int phy_dsl_serdes_post_init(phy_dev_t *phy_dev)
 
         phy_dev->current_inter_phy_type = phy_get_best_inter_phy_configure_type(phy_dev,
                 phy_dev->configured_inter_phy_types, phy_serdes->config_speed);
+        if (!PhyIsPortConnectedToExternalSwitch(phy_dev) && phy_dev->usxgmii_m_type == USXGMII_M_NONE)
+        /* Exclude external switch connection from power down operation */
+        {
+            dsl_serdes_power_set(phy_dev, 0);
+            return 0;
+        }
     }
     else
         phy_dev->current_inter_phy_type = sfp_phy_get_best_inter_phy_configure_type(phy_dev,
@@ -215,8 +221,16 @@ static int phy_dsl_serdes_power_set(phy_dev_t *phy_dev, int enable)
     int rc = 0;
     phy_serdes_t *phy_serdes = (phy_serdes_t *)phy_dev->priv;
 
-    dsl_serdes_power_set(phy_dev, enable);
     phy_serdes->power_admin_on = enable > 0;
+
+    /* Bypass power on when external PHY link is down; - For non BRCM PHY and power saving */
+    /* Exclude external switch connection from power down operation */
+    if (!PhyIsPortConnectedToExternalSwitch(phy_dev) && phy_serdes->sfp_module_type == SFP_FIXED_PHY && 
+        phy_dev->usxgmii_m_type == USXGMII_M_NONE &&
+        phy_dev->cascade_next->link == 0 && enable)
+        return 0;
+
+    dsl_serdes_power_set(phy_dev, enable);
 
     if (enable)
         dsl_serdes_cfg_speed_set(phy_dev, phy_serdes->config_speed, PHY_DUPLEX_FULL);
@@ -464,9 +478,26 @@ int dsl_serdes_caps_get(phy_dev_t *phy_dev, int caps_type, uint32_t *caps)
 
 int dsl_serdes_cfg_speed_set_lock(phy_dev_t *phy_dev, phy_speed_t speed, phy_duplex_t duplex)
 {
-    int rc;
+    int rc = 0;
+    phy_serdes_t *phy_serdes = (phy_serdes_t *)phy_dev->priv;
     mutex_lock(&serdes_mutex);
+
+    if (!PhyIsPortConnectedToExternalSwitch(phy_dev) && 
+        phy_serdes->sfp_module_type == SFP_FIXED_PHY && phy_dev->usxgmii_m_type == USXGMII_M_NONE)
+    {   /* Work around for some non Broadcom PHYs not sync link status between Copper side and Serdes side */
+        /* Exclude external switch connection from power down operation */
+        if (phy_dev->cascade_next->link == 0)
+        {
+            dsl_serdes_power_set(phy_dev, 0);
+            phy_dev->link = 0;
+            goto ret;
+        }
+        else
+            dsl_serdes_power_set(phy_dev, 1);
+    }
+
     rc = dsl_serdes_cfg_speed_set(phy_dev, speed, duplex);
+ret:
     mutex_unlock(&serdes_mutex);
     return rc;
 }

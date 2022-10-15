@@ -362,7 +362,7 @@ int is_wgc_connected(int unit)
 	memset(buf, 0 , sizeof(buf));
 	if (f_read_string(filename, buf, sizeof(buf))) {
 		char *p = strstr(buf, "sec:");
-		unsigned long long t = (p) ? strtoull (p + 4, NULL, 0) : 0;
+		unsigned long long t = (p) ? strtoull (p + 4, NULL, 0) : 999;
 		if (strstr(buf, "Now"))
 			return 1;
 		else if (t <= 180)
